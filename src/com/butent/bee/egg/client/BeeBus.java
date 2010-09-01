@@ -1,0 +1,283 @@
+package com.butent.bee.egg.client;
+
+import com.butent.bee.egg.client.event.BeeChangeHandler;
+import com.butent.bee.egg.client.event.BeeClickHandler;
+import com.butent.bee.egg.client.event.BeeKeyPressHandler;
+import com.butent.bee.egg.client.event.BeeValueChangeHandler;
+import com.butent.bee.egg.client.utils.BeeXml;
+import com.butent.bee.egg.shared.Assert;
+import com.butent.bee.egg.shared.BeeService;
+import com.butent.bee.egg.shared.BeeStage;
+import com.butent.bee.egg.shared.utils.BeeUtils;
+
+import com.google.gwt.event.dom.client.HasChangeHandlers;
+import com.google.gwt.event.dom.client.HasClickHandlers;
+import com.google.gwt.event.dom.client.HasKeyPressHandlers;
+import com.google.gwt.event.logical.shared.HasValueChangeHandlers;
+import com.google.gwt.event.shared.GwtEvent;
+import com.google.gwt.event.shared.HandlerManager;
+
+public class BeeBus implements BeeModule {
+  private final HandlerManager eventBus;
+
+  private static BeeClickHandler clickHandler = null;
+  private static BeeValueChangeHandler<Boolean> boolVch = null;
+  private static BeeValueChangeHandler<String> stringVch = null;
+  private static BeeValueChangeHandler<Integer> intVch = null;
+  private static BeeChangeHandler vch = null;
+  private static BeeKeyPressHandler keyHandler = null;
+
+  public BeeBus(HandlerManager bus) {
+    this.eventBus = bus;
+  }
+
+  @Override
+  public String getName() {
+    return getClass().getName();
+  }
+
+  @Override
+  public int getPriority(int p) {
+    switch (p) {
+    case PRIORITY_INIT:
+      return DO_NOT_CALL;
+    case PRIORITY_START:
+      return DO_NOT_CALL;
+    case PRIORITY_END:
+      return DO_NOT_CALL;
+    default:
+      return DO_NOT_CALL;
+    }
+  }
+
+  @Override
+  public void init() {
+    initEvents();
+  }
+
+  @Override
+  public void start() {
+  }
+
+  @Override
+  public void end() {
+  }
+
+  public void initEvents() {
+  }
+
+  public void fireEvent(GwtEvent<?> ev) {
+    eventBus.fireEvent(ev);
+  }
+
+  public static void addClickHandler(HasClickHandlers w) {
+    w.addClickHandler(ensureClickHandler());
+  }
+
+  public static void addBoolVch(HasValueChangeHandlers<Boolean> w) {
+    w.addValueChangeHandler(ensureBoolVch());
+  }
+
+  public static void addStringVch(HasValueChangeHandlers<String> w) {
+    w.addValueChangeHandler(ensureStringVch());
+  }
+
+  public static void addIntVch(HasValueChangeHandlers<Integer> w) {
+    w.addValueChangeHandler(ensureIntVch());
+  }
+
+  public static void addKeyHandler(HasKeyPressHandlers w) {
+    w.addKeyPressHandler(ensureKeyHandler());
+  }
+
+  public static void addVch(HasChangeHandlers w) {
+    w.addChangeHandler(ensureVch());
+  }
+
+  public boolean dispatchService(String svc, String stg, GwtEvent<?> event) {
+    Assert.notEmpty(svc);
+
+    if (BeeService.isRpcService(svc))
+      return BeeKeeper.getRpc().dispatchService(svc);
+    else if (BeeService.isUiService(svc))
+      return dispatchUiService(svc, event);
+    else if (BeeService.isCompositeService(svc))
+      return dispatchCompositeService(svc, stg, event);
+    else {
+      BeeGlobal.showError("Unknown service type", svc);
+      return false;
+    }
+  }
+
+  private static BeeClickHandler ensureClickHandler() {
+    if (clickHandler == null)
+      clickHandler = new BeeClickHandler();
+    return clickHandler;
+  }
+
+  private static BeeValueChangeHandler<Boolean> ensureBoolVch() {
+    if (boolVch == null)
+      boolVch = new BeeValueChangeHandler<Boolean>();
+    return boolVch;
+  }
+
+  private static BeeValueChangeHandler<String> ensureStringVch() {
+    if (stringVch == null)
+      stringVch = new BeeValueChangeHandler<String>();
+    return stringVch;
+  }
+
+  private static BeeValueChangeHandler<Integer> ensureIntVch() {
+    if (intVch == null)
+      intVch = new BeeValueChangeHandler<Integer>();
+    return intVch;
+  }
+
+  private static BeeKeyPressHandler ensureKeyHandler() {
+    if (keyHandler == null)
+      keyHandler = new BeeKeyPressHandler();
+    return keyHandler;
+  }
+
+  private static BeeChangeHandler ensureVch() {
+    if (vch == null)
+      vch = new BeeChangeHandler();
+    return vch;
+  }
+
+  private boolean dispatchUiService(String svc, GwtEvent<?> event) {
+    if (svc.equals(BeeService.SERVICE_CLOSE_DIALOG))
+      return BeeGlobal.closeDialog(event);
+    else if (svc.equals(BeeService.SERVICE_CONFIRM_DIALOG))
+      return BeeGlobal.closeDialog(event);
+    else if (svc.equals(BeeService.SERVICE_CANCEL_DIALOG))
+      return BeeGlobal.closeDialog(event);
+    else {
+      BeeGlobal.showError("Unknown UI service", svc);
+      return false;
+    }
+  }
+
+  private boolean dispatchCompositeService(String svc, String stg,
+      GwtEvent<?> event) {
+    Assert.notEmpty(svc);
+    Assert.notEmpty(stg);
+
+    boolean ok = true;
+
+    if (svc.equals(BeeService.SERVICE_GET_CLASS)) {
+      if (stg.equals(BeeStage.STAGE_GET_PARAMETERS)) {
+        BeeGlobal.inputFields(new BeeStage(BeeService.SERVICE_GET_CLASS,
+            BeeStage.STAGE_CONFIRM), "Class Info", BeeService.FIELD_CLASS_NAME,
+            BeeService.FIELD_PACKAGE_LIST);
+        ok = true;
+      } else if (stg.equals(BeeStage.STAGE_CONFIRM)) {
+        String cls = BeeGlobal.getFieldValue(BeeService.FIELD_CLASS_NAME);
+        String pck = BeeGlobal.getFieldValue(BeeService.FIELD_PACKAGE_LIST);
+
+        if (BeeUtils.isEmpty(cls)) {
+          BeeGlobal.showError("Class name not specified");
+        } else if (cls.trim().length() < 2) {
+          BeeGlobal.showError("Class name", cls, "too short");
+        } else {
+          BeeGlobal.closeDialog(event);
+          BeeKeeper.getRpc().makePostRequest(
+              BeeService.SERVICE_CLASS_INFO,
+              BeeXml.createString(BeeService.XML_TAG_DATA,
+                  BeeService.FIELD_CLASS_NAME, cls,
+                  BeeService.FIELD_PACKAGE_LIST, pck));
+          ok = true;
+        }
+      } else {
+        BeeGlobal.showError("Unknown composite service stage", svc, stg);
+      }
+    }
+
+    else if (svc.equals(BeeService.SERVICE_GET_XML)) {
+      if (stg.equals(BeeStage.STAGE_GET_PARAMETERS)) {
+        BeeGlobal.inputFields(new BeeStage(BeeService.SERVICE_GET_XML,
+            BeeStage.STAGE_CONFIRM), "Xml Info", BeeService.FIELD_XML_FILE);
+        ok = true;
+      } else if (stg.equals(BeeStage.STAGE_CONFIRM)) {
+        String fnm = BeeGlobal.getFieldValue(BeeService.FIELD_XML_FILE);
+        if (BeeUtils.isEmpty(fnm)) {
+          BeeGlobal.showError("File name not specified");
+        } else {
+          BeeGlobal.closeDialog(event);
+          BeeKeeper.getRpc().makePostRequest(
+              BeeService.SERVICE_XML_INFO,
+              BeeXml.createString(BeeService.XML_TAG_DATA,
+                  BeeService.FIELD_XML_FILE, fnm));
+          ok = true;
+        }
+      } else {
+        BeeGlobal.showError("Unknown composite service stage", svc, stg);
+      }
+    }
+
+    else if (svc.equals(BeeService.SERVICE_GET_DATA)) {
+      if (stg.equals(BeeStage.STAGE_GET_PARAMETERS)) {
+        BeeGlobal.inputFields(new BeeStage(BeeService.SERVICE_GET_DATA,
+            BeeStage.STAGE_CONFIRM), "Jdbc Test", BeeService.FIELD_JDBC_QUERY,
+            BeeService.FIELD_CONNECTION_AUTO_COMMIT,
+            BeeService.FIELD_CONNECTION_HOLDABILITY,
+            BeeService.FIELD_CONNECTION_READ_ONLY,
+            BeeService.FIELD_CONNECTION_TRANSACTION_ISOLATION,
+            BeeService.FIELD_STATEMENT_CURSOR_NAME,
+            BeeService.FIELD_STATEMENT_ESCAPE_PROCESSING,
+            BeeService.FIELD_STATEMENT_FETCH_DIRECTION,
+            BeeService.FIELD_STATEMENT_FETCH_SIZE,
+            BeeService.FIELD_STATEMENT_MAX_FIELD_SIZE,
+            BeeService.FIELD_STATEMENT_MAX_ROWS,
+            BeeService.FIELD_STATEMENT_POOLABLE,
+            BeeService.FIELD_STATEMENT_QUERY_TIMEOUT,
+            BeeService.FIELD_STATEMENT_RS_CONCURRENCY,
+            BeeService.FIELD_STATEMENT_RS_HOLDABILITY,
+            BeeService.FIELD_STATEMENT_RS_TYPE,
+            BeeService.FIELD_RESULT_SET_FETCH_DIRECTION,
+            BeeService.FIELD_RESULT_SET_FETCH_SIZE,
+            BeeService.FIELD_JDBC_RETURN);
+        ok = true;
+      } else if (stg.equals(BeeStage.STAGE_CONFIRM)) {
+        String sql = BeeGlobal.getFieldValue(BeeService.FIELD_JDBC_QUERY);
+        if (BeeUtils.isEmpty(sql)) {
+          BeeGlobal.showError("Query not specified");
+        } else {
+          BeeGlobal.closeDialog(event);
+          BeeKeeper.getRpc().makePostRequest(
+              BeeService.SERVICE_DB_JDBC,
+              BeeXml.fromFields(BeeService.XML_TAG_DATA,
+                  BeeService.FIELD_JDBC_QUERY,
+                  BeeService.FIELD_CONNECTION_AUTO_COMMIT,
+                  BeeService.FIELD_CONNECTION_HOLDABILITY,
+                  BeeService.FIELD_CONNECTION_READ_ONLY,
+                  BeeService.FIELD_CONNECTION_TRANSACTION_ISOLATION,
+                  BeeService.FIELD_STATEMENT_CURSOR_NAME,
+                  BeeService.FIELD_STATEMENT_ESCAPE_PROCESSING,
+                  BeeService.FIELD_STATEMENT_FETCH_DIRECTION,
+                  BeeService.FIELD_STATEMENT_FETCH_SIZE,
+                  BeeService.FIELD_STATEMENT_MAX_FIELD_SIZE,
+                  BeeService.FIELD_STATEMENT_MAX_ROWS,
+                  BeeService.FIELD_STATEMENT_POOLABLE,
+                  BeeService.FIELD_STATEMENT_QUERY_TIMEOUT,
+                  BeeService.FIELD_STATEMENT_RS_CONCURRENCY,
+                  BeeService.FIELD_STATEMENT_RS_HOLDABILITY,
+                  BeeService.FIELD_STATEMENT_RS_TYPE,
+                  BeeService.FIELD_RESULT_SET_FETCH_DIRECTION,
+                  BeeService.FIELD_RESULT_SET_FETCH_SIZE,
+                  BeeService.FIELD_JDBC_RETURN));
+          ok = true;
+        }
+      } else {
+        BeeGlobal.showError("Unknown composite service stage", svc, stg);
+      }
+    }
+
+    else {
+      BeeGlobal.showError("Unknown composite service", svc, stg);
+    }
+
+    return ok;
+  }
+
+}

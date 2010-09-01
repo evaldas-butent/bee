@@ -1,0 +1,18 @@
+.errText {
+  color: red;
+}
+
+#closeButton {
+  margin: 15px 6px 6px;
+}
+
+.topLeft {
+  margin-left: 4px;
+  margin-top: 3px; 
+}	
+
+.selectedRadio {
+  color: crimson;
+  background-color: azure;
+  border: 2px solid green;
+}  

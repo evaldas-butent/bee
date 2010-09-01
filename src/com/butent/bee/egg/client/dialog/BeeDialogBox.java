@@ -1,0 +1,38 @@
+package com.butent.bee.egg.client.dialog;
+
+import com.butent.bee.egg.client.utils.BeeDom;
+import com.butent.bee.egg.shared.HasId;
+import com.google.gwt.user.client.ui.DialogBox;
+
+public class BeeDialogBox extends DialogBox implements HasId {
+
+  public BeeDialogBox() {
+    super();
+    createId();
+  }
+
+  public BeeDialogBox(boolean autoHide, boolean modal) {
+    super(autoHide, modal);
+    createId();
+  }
+
+  public BeeDialogBox(boolean autoHide) {
+    super(autoHide);
+    createId();
+  }
+
+  private void createId() {
+    BeeDom.setId(this);
+  }
+
+  @Override
+  public String getId() {
+    return BeeDom.getId(this);
+  }
+
+  @Override
+  public void setId(String id) {
+    BeeDom.setId(this, id);
+  }
+
+}
