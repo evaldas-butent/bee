@@ -13,6 +13,7 @@ public abstract class BeeConst {
   public static final String UNKNOWN = "unknown";
   public static final String EMPTY = "(empty)";
   public static final String DEFAULT = "default";
+  public static final String ERROR = "error";
 
   public static final String DEFAULT_LIST_SEPARATOR = ", ";
   public static final String DEFAULT_VALUE_SEPARATOR = "=";
@@ -71,6 +72,7 @@ public abstract class BeeConst {
   public static final String JDBC_RESULT_SET = "result set";
   public static final String JDBC_META_DATA = "meta data";
   public static final String JDBC_ROW_COUNT = "row count";
+  public static final String JDBC_COLUMNS = "columns";
 
   public static final boolean validDsType(String tp) {
     boolean ok = false;

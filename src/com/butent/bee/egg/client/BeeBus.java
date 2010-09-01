@@ -163,7 +163,7 @@ public class BeeBus implements BeeModule {
     Assert.notEmpty(svc);
     Assert.notEmpty(stg);
 
-    boolean ok = true;
+    boolean ok = false;
 
     if (svc.equals(BeeService.SERVICE_GET_CLASS)) {
       if (stg.equals(BeeStage.STAGE_GET_PARAMETERS)) {

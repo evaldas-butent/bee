@@ -248,7 +248,7 @@ public class BeeGlobal implements BeeModule {
     createField(BeeService.FIELD_JDBC_RETURN, "Jdbc return",
         BeeType.TYPE_STRING, BeeConst.JDBC_RESULT_SET, BeeWidget.RADIO,
         BeeConst.JDBC_RESULT_SET, BeeConst.JDBC_META_DATA,
-        BeeConst.JDBC_ROW_COUNT);
+        BeeConst.JDBC_ROW_COUNT, BeeConst.JDBC_COLUMNS);
 
     createField(FIELD_DEBUG, "Debug", BeeType.TYPE_BOOLEAN,
         BeeUtils.toString(false));

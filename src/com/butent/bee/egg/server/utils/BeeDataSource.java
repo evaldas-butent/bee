@@ -10,6 +10,7 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
+import com.butent.bee.egg.server.jdbc.BeeResultSet;
 import com.butent.bee.egg.server.jdbc.JdbcException;
 import com.butent.bee.egg.server.jdbc.JdbcUtils;
 import com.butent.bee.egg.shared.BeeConst;

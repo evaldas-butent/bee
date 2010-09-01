@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import javax.ejb.EJB;
@@ -13,6 +14,7 @@ import com.butent.bee.egg.server.Assert;
 import com.butent.bee.egg.server.DataSourceBean;
 import com.butent.bee.egg.server.http.RequestInfo;
 import com.butent.bee.egg.server.http.ResponseBuffer;
+import com.butent.bee.egg.server.jdbc.BeeResultSet;
 import com.butent.bee.egg.server.jdbc.JdbcException;
 import com.butent.bee.egg.server.jdbc.JdbcUtils;
 import com.butent.bee.egg.server.utils.BeeDataSource;
@@ -85,22 +87,23 @@ public class DataServiceBean {
       buff.add("Request data not found");
       return;
     }
+    
+    Map<String, String> map = XmlUtils.getText(reqData);
 
-    String sql = XmlUtils.getText(reqData, BeeService.FIELD_JDBC_QUERY);
+    String sql = map.get(BeeService.FIELD_JDBC_QUERY);
     if (BeeUtils.isEmpty(sql)) {
       buff.addLine("Parameter", BeeService.FIELD_JDBC_QUERY, "not found");
       return;
     }
 
-    String ret = XmlUtils.getText(reqData, BeeService.FIELD_JDBC_RETURN);
-
+    String ret = map.get(BeeService.FIELD_JDBC_RETURN);
     boolean debug = reqInfo.isDebug();
 
     try {
       Statement stmt = conn.createStatement();
       ResultSet rs = stmt.executeQuery(sql);
 
-      if (BeeConst.JDBC_META_DATA.equals(ret)) {
+      if (BeeConst.JDBC_COLUMNS.equals(ret)) {
         rsb.rsMdToResponse(rs, buff, debug);
       } else if (BeeConst.JDBC_ROW_COUNT.equals(ret)) {
         BeeDate start = new BeeDate();
@@ -110,7 +113,11 @@ public class DataServiceBean {
         buff.addLine(enter.toLog(), start.toLog(), end.toLog());
         buff.addLine(ret, rc, BeeUtils.bracket(BeeUtils.toSeconds(end.getTime()
             - start.getTime())));
-      } else {
+      } 
+      else if (BeeConst.JDBC_META_DATA.equals(ret)) {
+        buff.addSub(new BeeResultSet(rs).getRsInfo());
+      }
+      else {
         rsb.rsToResponse(rs, buff, debug);
       }
 

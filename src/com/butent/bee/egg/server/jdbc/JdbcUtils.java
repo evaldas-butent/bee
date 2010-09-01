@@ -7,6 +7,7 @@ import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,12 +16,12 @@ import java.util.logging.Logger;
 
 import javax.sql.DataSource;
 
-import com.butent.bee.egg.server.utils.BeeResultSet;
 
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeColumn;
 import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.utils.BeeUtils;
+import com.butent.bee.egg.shared.utils.LogUtils;
 import com.butent.bee.egg.shared.utils.PropUtils;
 import com.butent.bee.egg.shared.utils.StringProp;
 
@@ -467,6 +468,58 @@ public abstract class JdbcUtils {
     }
 
     return arr;
+  }
+  
+  public static String getCursorName(ResultSet rs) {
+    Assert.notNull(rs);
+    String crs;
+    
+    try {
+      if (supportsCursorName(getConnection(rs)))
+        crs = rs.getCursorName();
+      else
+        crs = BeeConst.STRING_EMPTY;
+    }
+    catch (SQLFeatureNotSupportedException ex) {
+      crs = JdbcConst.FEATURE_NOT_SUPPORTED;
+    } catch (SQLException ex) {
+      LogUtils.warning(logger, ex);
+      crs = BeeConst.ERROR;
+    } catch (JdbcException ex) {
+      LogUtils.warning(logger, ex);
+      crs = BeeConst.ERROR;
+    }
+    
+    return crs;
+  }
+  
+  public static boolean supportsCursorName(Connection conn) {
+    Assert.notNull(conn);
+    boolean ok;
+    
+    try {
+      ok = conn.getMetaData().supportsPositionedUpdate();
+    }
+    catch (SQLException ex) {
+      LogUtils.warning(logger, ex);
+      ok = false;
+    }
+    
+    return ok;
+  }
+  
+  public static Connection getConnection(ResultSet rs) throws JdbcException {
+    Assert.notNull(rs);
+    Connection conn;
+    
+    try {
+      conn = rs.getStatement().getConnection();
+    }
+    catch (SQLException ex) {
+      throw new JdbcException(ex);
+    }
+    
+    return conn;
   }
 
 }

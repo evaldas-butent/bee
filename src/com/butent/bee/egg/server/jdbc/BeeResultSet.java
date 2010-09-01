@@ -1,4 +1,4 @@
-package com.butent.bee.egg.server.utils;
+package com.butent.bee.egg.server.jdbc;
 
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -7,8 +7,6 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.butent.bee.egg.server.jdbc.JdbcException;
-import com.butent.bee.egg.server.jdbc.JdbcUtils;
 import com.butent.bee.egg.shared.BeeColumn;
 import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.Transformable;
@@ -153,7 +151,7 @@ public class BeeResultSet implements Transformable {
 
     try {
       setConcurrency(rs.getConcurrency());
-      // setCursorName(rs.getCursorName());
+      setCursorName(JdbcUtils.getCursorName(rs));
       setFetchDirection(rs.getFetchDirection());
       setFetchSize(rs.getFetchSize());
       setHoldability(rs.getHoldability());
@@ -264,12 +262,19 @@ public class BeeResultSet implements Transformable {
 
   @Override
   public String toString() {
-    return "BeeRs []";
+    List<SubProp> lst = getRsInfo();
+    StringBuilder sb = new StringBuilder();
+    
+    for (SubProp el : lst) {
+      if (sb.length() > 0)
+        sb.append(BeeConst.DEFAULT_ROW_SEPARATOR);
+      sb.append(BeeUtils.concat(1, el.getName(), el.getSub(), el.getValue()));
+    }  
+    return sb.toString();
   }
 
-  @Override
   public String transform() {
-    return null;
+    return toString();
   }
 
 }
