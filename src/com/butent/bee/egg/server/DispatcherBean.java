@@ -8,7 +8,7 @@ import javax.ejb.Stateless;
 import com.butent.bee.egg.server.data.DataServiceBean;
 import com.butent.bee.egg.server.http.RequestInfo;
 import com.butent.bee.egg.server.http.ResponseBuffer;
-
+import com.butent.bee.egg.server.ui.UiLoaderBean;
 import com.butent.bee.egg.shared.BeeService;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
@@ -21,6 +21,8 @@ public class DispatcherBean {
   SystemServiceBean sysBean;
   @EJB
   DataServiceBean dataBean;
+  @EJB
+  UiLoaderBean uiBean;
 
   public void doService(String svc, String dsn, RequestInfo reqInfo,
       ResponseBuffer buff) {
@@ -31,6 +33,8 @@ public class DispatcherBean {
       dataBean.doService(svc, dsn, reqInfo, buff);
     else if (BeeService.isSysService(svc))
       sysBean.doService(svc, reqInfo, buff);
+    else if (svc.startsWith("rpc_ui_"))
+      uiBean.doService(svc, reqInfo, buff);
     else {
       String msg = BeeUtils.concat(1, svc, "service type not recognized");
       logger.warning(msg);

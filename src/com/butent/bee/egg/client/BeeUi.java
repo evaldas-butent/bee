@@ -11,8 +11,6 @@ import com.butent.bee.egg.client.layout.BeeSplit;
 import com.butent.bee.egg.client.utils.BeeDom;
 import com.butent.bee.egg.client.widget.BeeButton;
 import com.butent.bee.egg.client.widget.BeeCheckBox;
-import com.butent.bee.egg.client.widget.BeeLabel;
-
 import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.BeeName;
 import com.butent.bee.egg.shared.BeeService;
@@ -20,7 +18,6 @@ import com.butent.bee.egg.shared.BeeStage;
 import com.butent.bee.egg.shared.HasId;
 import com.butent.bee.egg.shared.Pair;
 import com.butent.bee.egg.shared.utils.BeeUtils;
-
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Panel;
@@ -189,7 +186,8 @@ public class BeeUi implements BeeModule {
   }
 
   private Widget initWest() {
-    return new BeeLabel("West");
+    // return new BeeLabel("West");
+    return new BeeButton("West Coast", "rpc_ui_form");
   }
 
   private void setActiveWidget(Widget w) {
