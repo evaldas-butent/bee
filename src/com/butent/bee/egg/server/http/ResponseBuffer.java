@@ -1,7 +1,10 @@
 package com.butent.bee.egg.server.http;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
+import java.util.logging.Level;
 
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeColumn;
@@ -17,6 +20,8 @@ public class ResponseBuffer {
   private int count = 0;
 
   private int columnCount = 0;
+
+  private List<ResponseMessage> messages = new ArrayList<ResponseMessage>();
 
   public ResponseBuffer() {
     setDefaultSeparator();
@@ -78,8 +83,12 @@ public class ResponseBuffer {
     return count;
   }
 
-  private void setDefaultSeparator() {
-    separator = new char[] { BeeService.DEFAULT_INFORMATION_SEPARATOR };
+  public int getMessageCount() {
+    return messages.size();
+  }
+
+  public String getMessage(int i) {
+    return messages.get(i).transform();
   }
 
   public boolean isDefaultSeparator() {
@@ -132,55 +141,6 @@ public class ResponseBuffer {
   public void addLine(Object... obj) {
     if (obj.length > 0)
       add(BeeUtils.concat(1, obj));
-  }
-
-  private void checkSeparator(CharSequence s) {
-    if (!BeeUtils.contains(s, separator))
-      return;
-
-    char[] newSep = nextSeparator(s);
-    updateSeparator(newSep);
-  }
-
-  private char[] nextSeparator(CharSequence s) {
-    if (separator == null || separator.length == 0)
-      return null;
-
-    int n = separator.length;
-    char[] newSep = new char[n];
-    System.arraycopy(separator, 0, newSep, 0, n);
-
-    while (BeeUtils.contains(buffer, newSep) || BeeUtils.contains(s, newSep)) {
-      if (newSep[n - 1] < Character.MAX_VALUE) {
-        newSep[n - 1]++;
-      } else {
-        char[] arr = new char[n + 1];
-        System.arraycopy(newSep, 0, arr, 0, n);
-        arr[n] = Character.MIN_VALUE;
-        newSep = arr;
-      }
-    }
-
-    return newSep;
-  }
-
-  private void updateSeparator(char[] newSep) {
-    if (newSep == null || newSep.length == 0)
-      return;
-
-    if (count > 0 && separator != null && separator.length > 0) {
-      if (separator.length == 1 && newSep.length == 1) {
-        for (int i = 0; i < buffer.length(); i++)
-          if (buffer.charAt(i) == separator[0])
-            buffer.setCharAt(i, newSep[0]);
-      } else {
-        String s = buffer.toString().replace(new String(separator),
-            new String(newSep));
-        setBuffer(new StringBuilder(s));
-      }
-    }
-
-    setSeparator(newSep);
   }
 
   public void addColumn(BeeColumn col) {
@@ -285,6 +245,94 @@ public class ResponseBuffer {
       add(el.getValue());
       add(new BeeDate().toLog());
     }
+  }
+
+  public void addMessage(String msg) {
+    messages.add(new ResponseMessage(msg));
+  }
+
+  public void addMessage(Object... obj) {
+    messages.add(new ResponseMessage(obj));
+  }
+
+  public void addMessage(Level level, String msg) {
+    messages.add(new ResponseMessage(level, msg));
+  }
+
+  public void addMessage(Level level, Object... obj) {
+    messages.add(new ResponseMessage(level, obj));
+  }
+
+  public void addMessages(Level level, String... msg) {
+    for (String s : msg)
+      addMessage(level, s);
+  }
+
+  public void addMessages(String... msg) {
+    for (String s : msg)
+      addMessage(s);
+  }
+
+  public void addError(Throwable err) {
+    messages.add(new ResponseMessage(Level.SEVERE, err.toString()));
+  }
+
+  public void addErrors(List<? extends Throwable> lst) {
+    for (Throwable err : lst)
+      addError(err);
+  }
+
+  private void setDefaultSeparator() {
+    separator = new char[] { BeeService.DEFAULT_INFORMATION_SEPARATOR };
+  }
+
+  private void checkSeparator(CharSequence s) {
+    if (!BeeUtils.contains(s, separator))
+      return;
+
+    char[] newSep = nextSeparator(s);
+    updateSeparator(newSep);
+  }
+
+  private char[] nextSeparator(CharSequence s) {
+    if (separator == null || separator.length == 0)
+      return null;
+
+    int n = separator.length;
+    char[] newSep = new char[n];
+    System.arraycopy(separator, 0, newSep, 0, n);
+
+    while (BeeUtils.contains(buffer, newSep) || BeeUtils.contains(s, newSep)) {
+      if (newSep[n - 1] < Character.MAX_VALUE) {
+        newSep[n - 1]++;
+      } else {
+        char[] arr = new char[n + 1];
+        System.arraycopy(newSep, 0, arr, 0, n);
+        arr[n] = Character.MIN_VALUE;
+        newSep = arr;
+      }
+    }
+
+    return newSep;
+  }
+
+  private void updateSeparator(char[] newSep) {
+    if (newSep == null || newSep.length == 0)
+      return;
+
+    if (count > 0 && separator != null && separator.length > 0) {
+      if (separator.length == 1 && newSep.length == 1) {
+        for (int i = 0; i < buffer.length(); i++)
+          if (buffer.charAt(i) == separator[0])
+            buffer.setCharAt(i, newSep[0]);
+      } else {
+        String s = buffer.toString().replace(new String(separator),
+            new String(newSep));
+        setBuffer(new StringBuilder(s));
+      }
+    }
+
+    setSeparator(newSep);
   }
 
 }

@@ -53,6 +53,8 @@ public class BeeService {
   public static final String RPC_FIELD_OPT = RPC_FIELD_PREFIX + "opt";
   public static final String RPC_FIELD_COLS = RPC_FIELD_PREFIX + "cc";
   public static final String RPC_FIELD_ROWS = RPC_FIELD_PREFIX + "rc";
+  public static final String RPC_FIELD_MSG_CNT = RPC_FIELD_PREFIX + "mc";
+  public static final String RPC_FIELD_MSG = RPC_FIELD_PREFIX + "msg";
 
   public static final String FIELD_CLASS_NAME = RPC_FIELD_PREFIX + "class_name";
   public static final String FIELD_PACKAGE_LIST = RPC_FIELD_PREFIX
@@ -136,6 +138,10 @@ public class BeeService {
   public static boolean isCompositeService(String svc) {
     Assert.notEmpty(svc);
     return svc.startsWith(COMPOSITE_SERVICE_PREFIX);
+  }
+
+  public static String rpcMessageName(int i) {
+    return RPC_FIELD_MSG + i;
   }
 
 }

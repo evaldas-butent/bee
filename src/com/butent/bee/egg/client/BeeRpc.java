@@ -103,7 +103,7 @@ public class BeeRpc implements BeeModule {
     try {
       req = bld.sendRequest(data, back);
 
-      info.setStatus(RpcInfo.STATUS_OPEN);
+      info.setState(BeeConst.STATE_OPEN);
       ok = true;
     } catch (RequestException ex) {
       info.endError(ex);

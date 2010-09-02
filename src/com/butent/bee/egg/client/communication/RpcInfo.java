@@ -40,18 +40,11 @@ public class RpcInfo {
 
   public final static String COL_ERR_MSG = "Error Msg";
 
-  public static final int STATUS_UNKNOWN = 0;
-  public static final int STATUS_OPEN = 1;
-  public static final int STATUS_CLOSED = 2;
-  public static final int STATUS_ERROR = 4;
-  public static final int STATUS_EXPIRED = 8;
-  public static final int STATUS_CANCELED = 16;
-
   private int id;
   private String name = null;
   private RequestBuilder.Method type = RequestBuilder.GET;
 
-  private int status = STATUS_UNKNOWN;
+  private int state = BeeConst.STATE_UNKNOWN;
   private final BeeDuration duration;
 
   private RequestBuilder reqBuilder = null;
@@ -127,12 +120,12 @@ public class RpcInfo {
     this.type = type;
   }
 
-  public int getStatus() {
-    return status;
+  public int getState() {
+    return state;
   }
 
-  public void setStatus(int status) {
-    this.status = status;
+  public void setState(int state) {
+    this.state = state;
   }
 
   public RequestBuilder getReqBuilder() {
@@ -255,11 +248,11 @@ public class RpcInfo {
     int r = done();
 
     if (st > 0)
-      setStatus(st);
+      setState(st);
     else if (!BeeJs.isEmpty(err))
-      setStatus(STATUS_ERROR);
+      setState(BeeConst.STATE_ERROR);
     else
-      setStatus(STATUS_CLOSED);
+      setState(BeeConst.STATE_CLOSED);
 
     setRespMsg(msg);
     if (rows != BeeConst.SIZE_UNKNOWN)
@@ -276,21 +269,22 @@ public class RpcInfo {
   }
 
   public int endMessage(String msg) {
-    return end(STATUS_CLOSED, msg, BeeConst.SIZE_UNKNOWN,
+    return end(BeeConst.STATE_CLOSED, msg, BeeConst.SIZE_UNKNOWN,
         BeeConst.SIZE_UNKNOWN, BeeConst.SIZE_UNKNOWN, null);
   }
 
   public int endResult(int rows, int cols) {
-    return end(STATUS_CLOSED, null, rows, cols, BeeConst.SIZE_UNKNOWN, null);
+    return end(BeeConst.STATE_CLOSED, null, rows, cols, BeeConst.SIZE_UNKNOWN,
+        null);
   }
 
   public int endError(Exception ex) {
-    return end(STATUS_ERROR, null, BeeConst.SIZE_UNKNOWN,
+    return end(BeeConst.STATE_ERROR, null, BeeConst.SIZE_UNKNOWN,
         BeeConst.SIZE_UNKNOWN, BeeConst.SIZE_UNKNOWN, ex.getMessage());
   }
 
   public boolean filterStatus(int st) {
-    return (status & st) != 0;
+    return (state & st) != 0;
   }
 
   public String getStartTime() {
@@ -308,24 +302,24 @@ public class RpcInfo {
   public String getStatusString() {
     String s;
 
-    switch (status) {
-    case STATUS_OPEN: {
+    switch (state) {
+    case BeeConst.STATE_OPEN: {
       s = "Open";
       break;
     }
-    case STATUS_CLOSED: {
+    case BeeConst.STATE_CLOSED: {
       s = "Finished";
       break;
     }
-    case STATUS_ERROR: {
+    case BeeConst.STATE_ERROR: {
       s = "Error";
       break;
     }
-    case STATUS_EXPIRED: {
+    case BeeConst.STATE_EXPIRED: {
       s = "Expired";
       break;
     }
-    case STATUS_CANCELED: {
+    case BeeConst.STATE_CANCELED: {
       s = "Canceled";
       break;
     }

@@ -10,6 +10,7 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
+import com.butent.bee.egg.server.jdbc.BeeConnection;
 import com.butent.bee.egg.server.jdbc.BeeResultSet;
 import com.butent.bee.egg.server.jdbc.JdbcException;
 import com.butent.bee.egg.server.jdbc.JdbcUtils;
@@ -164,11 +165,14 @@ public class BeeDataSource implements Transformable {
         "DB Version", dbMd.getDatabaseProductVersion(), "Driver Name",
         dbMd.getDriverName(), "Driver Version", dbMd.getDriverVersion(),
         "JDBC Major Version", dbMd.getJDBCMajorVersion(), "JDBC Minor Version",
-        dbMd.getJDBCMinorVersion(), "URL", dbMd.getURL(), "Catalog",
-        conn.getCatalog(), "User", dbMd.getUserName(), "Catalog Term",
-        dbMd.getCatalogTerm(), "Catalog Separator", dbMd.getCatalogSeparator(),
-        "Schema Term", dbMd.getSchemaTerm(), "Procedure Term",
-        dbMd.getProcedureTerm(), "Extra Name Characters",
+        dbMd.getJDBCMinorVersion(), "URL", dbMd.getURL());
+
+    PropUtils.appendString(lst, "Connection", BeeConnection.getInfo(conn));
+
+    PropUtils.addPropSub(lst, false, "User", dbMd.getUserName(),
+        "Catalog Term", dbMd.getCatalogTerm(), "Catalog Separator",
+        dbMd.getCatalogSeparator(), "Schema Term", dbMd.getSchemaTerm(),
+        "Procedure Term", dbMd.getProcedureTerm(), "Extra Name Characters",
         dbMd.getExtraNameCharacters(), "Identifier Quote",
         dbMd.getIdentifierQuoteString(), "Search String Escape",
         dbMd.getSearchStringEscape(), "Max Catalog Name",
@@ -191,45 +195,10 @@ public class BeeDataSource implements Transformable {
         dbMd.getMaxCharLiteralLength(), "Max Connections",
         dbMd.getMaxConnections(), "Max Statements", dbMd.getMaxStatements());
 
-    switch (dbMd.getDefaultTransactionIsolation()) {
-    case (Connection.TRANSACTION_NONE): {
-      s = "none";
-      break;
-    }
-    case (Connection.TRANSACTION_READ_COMMITTED): {
-      s = "read committed";
-      break;
-    }
-    case (Connection.TRANSACTION_READ_UNCOMMITTED): {
-      s = "read uncommitted";
-      break;
-    }
-    case (Connection.TRANSACTION_REPEATABLE_READ): {
-      s = "repeatable read";
-      break;
-    }
-    case (Connection.TRANSACTION_SERIALIZABLE): {
-      s = "serializable";
-      break;
-    }
-    default:
-      s = null;
-    }
-    PropUtils.addSub(lst, "Default Transaction Isolation", null, s);
-
-    switch (dbMd.getResultSetHoldability()) {
-    case (ResultSet.HOLD_CURSORS_OVER_COMMIT): {
-      s = "hold cursors over commit";
-      break;
-    }
-    case (ResultSet.CLOSE_CURSORS_AT_COMMIT): {
-      s = "close cursors at commit";
-      break;
-    }
-    default:
-      s = null;
-    }
-    PropUtils.addSub(lst, "Result Set Holdability", null, s);
+    PropUtils.addPropSub(lst, false, "Default Transaction Isolation", JdbcUtils
+        .transactionIsolationAsString(dbMd.getDefaultTransactionIsolation()),
+        "Result Set Holdability", JdbcUtils.holdabilityAsString(dbMd
+            .getResultSetHoldability()));
 
     PropUtils.addSplit(lst, "SQL Keywords", null, dbMd.getSQLKeywords(),
         BeeConst.STRING_COMMA);

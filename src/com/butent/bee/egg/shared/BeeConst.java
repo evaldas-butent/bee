@@ -35,8 +35,13 @@ public abstract class BeeConst {
   public static final String STRING_FALSE = Boolean.toString(false);
   public static final String STRING_TRUE = Boolean.toString(true);
 
+  public static final int INT_ERROR = -1;
+  public static final int INT_FALSE = 0;
+  public static final int INT_TRUE = 1;
+
   public static final char CHAR_SPACE = ' ';
   public static final char CHAR_ZERO = '0';
+  public static final char CHAR_NINE = '9';
 
   public static final int SIZE_UNKNOWN = -1;
   public static final int TIME_UNKNOWN = -1;
@@ -74,7 +79,16 @@ public abstract class BeeConst {
   public static final String JDBC_ROW_COUNT = "row count";
   public static final String JDBC_COLUMNS = "columns";
 
-  public static final boolean validDsType(String tp) {
+  public static final int STATE_UNKNOWN = 0;
+  public static final int STATE_INITIALIZED = 1;
+  public static final int STATE_OPEN = 2;
+  public static final int STATE_CLOSED = 4;
+  public static final int STATE_ERROR = 8;
+  public static final int STATE_EXPIRED = 16;
+  public static final int STATE_CANCELED = 32;
+  public static final int STATE_CHANGED = 64;
+
+  public static boolean validDsType(String tp) {
     boolean ok = false;
 
     if (tp == null || tp.isEmpty())
@@ -88,4 +102,16 @@ public abstract class BeeConst {
 
     return ok;
   }
+
+  public static boolean isDefault(String s) {
+    if (s == null)
+      return false;
+    else
+      return s.trim().equalsIgnoreCase(DEFAULT);
+  }
+
+  public static boolean isError(int x) {
+    return x == INT_ERROR;
+  }
+
 }

@@ -192,7 +192,9 @@ public class BeeGlobal implements BeeModule {
     setFieldWidth(BeeService.FIELD_JDBC_QUERY, "500px");
 
     createField(BeeService.FIELD_CONNECTION_AUTO_COMMIT,
-        "Connection auto commit", BeeType.TYPE_BOOLEAN, BeeConst.STRING_FALSE);
+        "Connection auto commit", BeeType.TYPE_STRING, BeeConst.DEFAULT,
+        BeeWidget.RADIO, BeeConst.DEFAULT, BeeConst.STRING_FALSE,
+        BeeConst.STRING_TRUE);
     createField(BeeService.FIELD_CONNECTION_READ_ONLY, "Connection read only",
         BeeType.TYPE_BOOLEAN, BeeConst.STRING_FALSE);
     createField(BeeService.FIELD_CONNECTION_HOLDABILITY,
@@ -209,7 +211,9 @@ public class BeeGlobal implements BeeModule {
     createField(BeeService.FIELD_STATEMENT_CURSOR_NAME, "Cursor name",
         BeeType.TYPE_STRING, BeeConst.STRING_EMPTY);
     createField(BeeService.FIELD_STATEMENT_ESCAPE_PROCESSING,
-        "Escape Processing", BeeType.TYPE_BOOLEAN, BeeConst.STRING_FALSE);
+        "Escape Processing", BeeType.TYPE_STRING, BeeConst.DEFAULT,
+        BeeWidget.RADIO, BeeConst.DEFAULT, BeeConst.STRING_FALSE,
+        BeeConst.STRING_TRUE);
     createField(BeeService.FIELD_STATEMENT_FETCH_DIRECTION,
         "Statement fetch direction", BeeType.TYPE_STRING, BeeConst.DEFAULT,
         BeeWidget.RADIO, BeeConst.DEFAULT, BeeConst.FETCH_FORWARD,
@@ -221,7 +225,8 @@ public class BeeGlobal implements BeeModule {
     createField(BeeService.FIELD_STATEMENT_MAX_ROWS, "Statement max rows",
         BeeType.TYPE_INT, BeeConst.STRING_EMPTY);
     createField(BeeService.FIELD_STATEMENT_POOLABLE, "Poolable",
-        BeeType.TYPE_BOOLEAN, BeeConst.STRING_FALSE);
+        BeeType.TYPE_STRING, BeeConst.DEFAULT, BeeWidget.RADIO,
+        BeeConst.DEFAULT, BeeConst.STRING_FALSE, BeeConst.STRING_TRUE);
     createField(BeeService.FIELD_STATEMENT_QUERY_TIMEOUT, "Query timeout",
         BeeType.TYPE_INT, BeeConst.STRING_EMPTY);
 

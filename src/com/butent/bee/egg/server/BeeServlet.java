@@ -83,6 +83,14 @@ public class BeeServlet extends HttpServlet {
       if (cc > 0)
         resp.setIntHeader(BeeService.RPC_FIELD_COLS, cc);
 
+      int mc = buff.getMessageCount();
+      if (mc > 0) {
+        resp.setIntHeader(BeeService.RPC_FIELD_MSG_CNT, mc);
+        for (int i = 0; i < mc; i++) {
+          resp.setHeader(BeeService.rpcMessageName(i), buff.getMessage(i));
+        }
+      }
+
       resp.setContentType("text/plain");
       resp.setCharacterEncoding("utf-8");
 

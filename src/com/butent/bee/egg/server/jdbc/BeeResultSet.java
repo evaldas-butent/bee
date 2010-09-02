@@ -7,6 +7,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeColumn;
 import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.Transformable;
@@ -32,12 +33,11 @@ public class BeeResultSet implements Transformable {
 
   private List<Exception> errors = new ArrayList<Exception>();
 
-  public BeeResultSet() {
+  protected BeeResultSet() {
     super();
   }
 
   public BeeResultSet(ResultSet rs) {
-    this();
     setRsInfo(rs);
   }
 
@@ -146,8 +146,7 @@ public class BeeResultSet implements Transformable {
   }
 
   public void setRsInfo(ResultSet rs) {
-    if (rs == null)
-      return;
+    Assert.notNull(rs);
 
     try {
       setConcurrency(rs.getConcurrency());
@@ -241,9 +240,8 @@ public class BeeResultSet implements Transformable {
         getCursorName(), "fetch size", valueAsString(getFetchSize()),
         "max field size", valueAsString(getMaxFieldSize()), "max rows",
         valueAsString(getMaxRows()), "query timeout",
-        valueAsString(getQueryTimeout()), "poolable",
-        isPoolable() ? Boolean.toString(isPoolable()) : null, "column count",
-        valueAsString(getColumnCount()));
+        valueAsString(getQueryTimeout()), "poolable", isPoolable(),
+        "column count", valueAsString(getColumnCount()));
 
     BeeColumn[] arr = getColumns();
 
@@ -264,12 +262,12 @@ public class BeeResultSet implements Transformable {
   public String toString() {
     List<SubProp> lst = getRsInfo();
     StringBuilder sb = new StringBuilder();
-    
+
     for (SubProp el : lst) {
       if (sb.length() > 0)
         sb.append(BeeConst.DEFAULT_ROW_SEPARATOR);
       sb.append(BeeUtils.concat(1, el.getName(), el.getSub(), el.getValue()));
-    }  
+    }
     return sb.toString();
   }
 

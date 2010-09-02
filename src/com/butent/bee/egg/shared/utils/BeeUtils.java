@@ -417,16 +417,48 @@ public abstract class BeeUtils {
   }
 
   public static boolean inList(String x, String... lst) {
+    Assert.notEmpty(x);
     Assert.parameterCount(lst.length + 1, 2);
     boolean ok = false;
-    if (x == null)
-      return ok;
 
     for (int i = 0; i < lst.length; i++)
       if (x.equals(lst[i])) {
         ok = true;
         break;
       }
+
+    return ok;
+  }
+
+  public static boolean inListIgnoreCase(String x, String... lst) {
+    Assert.notEmpty(x);
+    Assert.parameterCount(lst.length + 1, 2);
+    boolean ok = false;
+
+    for (int i = 0; i < lst.length; i++)
+      if (x.equalsIgnoreCase(lst[i])) {
+        ok = true;
+        break;
+      }
+
+    return ok;
+  }
+
+  public static boolean inListSame(String x, String... lst) {
+    Assert.notEmpty(x);
+    Assert.parameterCount(lst.length + 1, 2);
+    boolean ok = false;
+
+    String z = x.trim().toLowerCase();
+
+    for (int i = 0; i < lst.length; i++) {
+      if (lst[i] == null)
+        continue;
+      if (z.equalsIgnoreCase(lst[i].trim())) {
+        ok = true;
+        break;
+      }
+    }
 
     return ok;
   }
@@ -719,6 +751,10 @@ public abstract class BeeUtils {
     return b ? BeeConst.STRING_TRUE : BeeConst.STRING_FALSE;
   }
 
+  public static int toInt(boolean b) {
+    return b ? BeeConst.INT_TRUE : BeeConst.INT_FALSE;
+  }
+
   public static boolean toBoolean(String s) {
     if (s == null)
       return false;
@@ -726,9 +762,46 @@ public abstract class BeeUtils {
       return same(s, BeeConst.STRING_TRUE) || same(s, BeeConst.YES);
   }
 
+  public static boolean toBoolean(int x) {
+    return x == BeeConst.INT_TRUE;
+  }
+
+  public static boolean isBoolean(String s) {
+    if (s == null)
+      return false;
+    else
+      return same(s, BeeConst.STRING_TRUE) || same(s, BeeConst.YES)
+          || same(s, BeeConst.STRING_FALSE) || same(s, BeeConst.NO);
+  }
+
+  public static boolean isBoolean(int x) {
+    return x == BeeConst.INT_TRUE || x == BeeConst.INT_FALSE;
+  }
+
   public static String toSeconds(long millis) {
     return Long.toString(millis / 1000) + BeeConst.STRING_POINT
         + toLeadingZeroes((int) (millis % 1000), 3);
   }
 
+  public static boolean isDigit(CharSequence s) {
+    if (s == null)
+      return false;
+
+    int len = s.length();
+    if (len < 1)
+      return false;
+
+    boolean ok = true;
+    char c;
+
+    for (int i = 0; i < len; i++) {
+      c = s.charAt(i);
+      if (c < BeeConst.CHAR_ZERO || c > BeeConst.CHAR_NINE) {
+        ok = false;
+        break;
+      }
+    }
+
+    return ok;
+  }
 }

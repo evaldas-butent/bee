@@ -40,26 +40,42 @@ public class BeeCallback implements RequestCallback {
       else
         sep = Character.toString(BeeService.DEFAULT_INFORMATION_SEPARATOR);
 
-      int cc = BeeUtils.toInt(resp.getHeader(BeeService.RPC_FIELD_COLS));
       boolean hasSep = txt.indexOf(sep) > 0;
+
+      int cc = BeeUtils.toInt(resp.getHeader(BeeService.RPC_FIELD_COLS));
+      int mc = BeeUtils.toInt(resp.getHeader(BeeService.RPC_FIELD_MSG_CNT));
+
+      boolean debug = BeeGlobal.isDebug();
 
       BeeKeeper.getLog().finish(dur,
           BeeUtils.addName(BeeService.RPC_FIELD_COLS, cc),
+          BeeUtils.addName(BeeService.RPC_FIELD_MSG_CNT, mc),
           BeeUtils.addName("len", len),
           hasSep ? BeeConst.STRING_EMPTY : BeeUtils.addName("text", txt));
-      BeeKeeper.getLog().log("response headers", resp.getHeadersAsString());
+
+      if (debug)
+        BeeKeeper.getLog().log("response headers", resp.getHeadersAsString());
+
+      if (mc > 0)
+        for (int i = 0; i < mc; i++)
+          BeeKeeper.getLog().log(resp.getHeader(BeeService.rpcMessageName(i)));
 
       if (hasSep) {
-        dur.restart("split");
+        if (debug)
+          dur.restart("split");
         JsArrayString arr = BeeJs.split(txt, sep);
-        BeeKeeper.getLog().finish(dur,
-            BeeUtils.addName("arr size", arr.length()));
+        if (debug)
+          BeeKeeper.getLog().finish(dur,
+              BeeUtils.addName("arr size", arr.length()));
 
         if (cc > 0)
           BeeKeeper.getUi().updateActivePanel(BeeGlobal.createGrid(cc, arr));
-        else
-          for (int i = 0; i < arr.length(); i++)
-            BeeKeeper.getLog().log(arr.get(i));
+        else {
+          for (int i = 0; i < arr.length(); i++) {
+            if (!BeeUtils.isEmpty(arr.get(i)))
+              BeeKeeper.getLog().log(arr.get(i));
+          }
+        }
       }
 
       BeeKeeper.getLog().addSeparator();
