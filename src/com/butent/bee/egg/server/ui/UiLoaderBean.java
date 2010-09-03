@@ -10,6 +10,7 @@ import com.butent.bee.egg.server.http.RequestInfo;
 import com.butent.bee.egg.server.http.ResponseBuffer;
 import com.butent.bee.egg.server.utils.XmlUtils;
 import com.butent.bee.egg.shared.BeeColumn;
+import com.butent.bee.egg.shared.BeeService;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
 @Stateless
@@ -50,7 +51,8 @@ public class UiLoaderBean {
       buff.add(new Object[] { fName, "UiPanel", null, null });
 
       buff.add(new Object[] { "vLayout", "UiVerticalLayout", null, null });
-      buff.add(new Object[] { "Button1", "UiButton", "", "caption=Mygtukas" });
+      buff.add(new Object[] { "Button1", "UiButton", "",
+          "caption=Database Tables;service=" + BeeService.SERVICE_DB_TABLES });
       buff.add(new Object[] { "hLayout", "UiHorizontalLayout", "", null });
       buff.add(new Object[] { "Label1", "UiLabel", "hLayout",
           "caption=Tekstas 1" });

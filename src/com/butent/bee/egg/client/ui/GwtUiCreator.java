@@ -2,18 +2,20 @@ package com.butent.bee.egg.client.ui;
 
 import java.util.logging.Logger;
 
+import com.butent.bee.egg.client.BeeBus;
 import com.butent.bee.egg.client.widget.BeeButton;
 import com.butent.bee.egg.client.widget.BeeLabel;
 import com.butent.bee.egg.client.widget.BeeTextBox;
-import com.butent.bee.egg.shared.ui.UiCreator;
 import com.butent.bee.egg.shared.ui.UiButton;
 import com.butent.bee.egg.shared.ui.UiComponent;
+import com.butent.bee.egg.shared.ui.UiCreator;
 import com.butent.bee.egg.shared.ui.UiField;
 import com.butent.bee.egg.shared.ui.UiHorizontalLayout;
 import com.butent.bee.egg.shared.ui.UiLabel;
 import com.butent.bee.egg.shared.ui.UiPanel;
 import com.butent.bee.egg.shared.ui.UiVerticalLayout;
 import com.butent.bee.egg.shared.ui.UiWindow;
+import com.butent.bee.egg.shared.utils.BeeUtils;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.HorizontalPanel;
@@ -100,6 +102,12 @@ public class GwtUiCreator implements UiCreator {
     BeeButton b = new BeeButton();
     b.setText(button.getProperty("caption"));
     b.setTitle(button.getId());
+
+    String svc = button.getProperty("service");
+    if (!BeeUtils.isEmpty(svc)) {
+      b.setService(svc);
+      BeeBus.addClickHandler(b);
+    }
 
     createChilds(b, button);
 
