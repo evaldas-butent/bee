@@ -14,6 +14,7 @@ import javax.servlet.http.HttpSession;
 
 import com.butent.bee.egg.server.http.RequestInfo;
 import com.butent.bee.egg.server.http.ResponseBuffer;
+import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.BeeService;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 import com.butent.bee.egg.shared.utils.LogUtils;
@@ -70,11 +71,11 @@ public class BeeServlet extends HttpServlet {
     dispatcher.doService(svc, dsn, reqInfo, buff);
 
     int respLen = buff.getSize();
+    int mc = buff.getMessageCount();
 
-    if (respLen > 0) {
+    if (respLen > 0 || mc > 0) {
       int cnt = buff.getCount();
       int cc = buff.getColumnCount();
-      int mc = buff.getMessageCount();
 
       LogUtils.infoNow(logger, rid, "sending response", meth, svc, dsn, cc,
           cnt, respLen, mc);
@@ -102,10 +103,21 @@ public class BeeServlet extends HttpServlet {
       resp.setCharacterEncoding("utf-8");
 
       // resp.setContentLength(respLen);
+      
+      String s;
+      if (respLen > 0) {
+        s = buff.getString();
+      }
+      else if (mc > 0) {
+        s = "Messages " + BeeUtils.bracket(mc);
+      }
+      else {
+        s = BeeConst.EMPTY;
+      }
 
       try {
         ServletOutputStream out = resp.getOutputStream();
-        out.print(buff.getString());
+        out.print(s);
         out.flush();
       } catch (IOException ex) {
         logger.severe(ex.getMessage());

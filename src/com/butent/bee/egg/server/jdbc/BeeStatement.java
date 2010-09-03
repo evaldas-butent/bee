@@ -1,5 +1,6 @@
 package com.butent.bee.egg.server.jdbc;
 
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLWarning;
 import java.sql.Statement;
@@ -35,17 +36,31 @@ public class BeeStatement {
     Assert.notNull(stmt);
     List<StringProp> lst = new ArrayList<StringProp>();
 
+    int z;
+
     try {
+      z = stmt.getFetchDirection();
       PropUtils.addString(lst, "Fetch Direction",
-          JdbcUtils.fetchDirectionAsString(stmt.getFetchDirection()),
-          "Fetch Size", stmt.getFetchSize(), "Max Field Size",
-          stmt.getMaxFieldSize(), "Max Rows", stmt.getMaxRows(),
-          "Query Timeout", stmt.getQueryTimeout(), "Concurrency",
-          JdbcUtils.concurrencyAsString(stmt.getResultSetConcurrency()),
-          "Holdability",
-          JdbcUtils.holdabilityAsString(stmt.getResultSetHoldability()),
-          "Result Set Type", JdbcUtils.rsTypeAsString(stmt.getResultSetType()),
-          "Closed", stmt.isClosed(), "Poolable", stmt.isPoolable());
+          BeeUtils.concat(1, z, JdbcUtils.fetchDirectionAsString(z)));
+
+      PropUtils.addString(lst, "Fetch Size", stmt.getFetchSize());
+
+      z = stmt.getResultSetType();
+      PropUtils.addString(lst, "Result Set Type",
+          BeeUtils.concat(1, z, JdbcUtils.rsTypeAsString(z)));
+
+      z = stmt.getResultSetConcurrency();
+      PropUtils.addString(lst, "Concurrency",
+          BeeUtils.concat(1, z, JdbcUtils.concurrencyAsString(z)));
+
+      z = stmt.getResultSetHoldability();
+      PropUtils.addString(lst, "Holdability",
+          BeeUtils.concat(1, z, JdbcUtils.holdabilityAsString(z)));
+
+      PropUtils.addString(lst, "Max Field Size", stmt.getMaxFieldSize(),
+          "Max Rows", stmt.getMaxRows(), "Query Timeout",
+          stmt.getQueryTimeout(), "Closed", stmt.isClosed(), "Poolable",
+          stmt.isPoolable());
 
       SQLWarning warn = stmt.getWarnings();
       if (warn != null) {
@@ -81,6 +96,8 @@ public class BeeStatement {
       holdability = stmt.getResultSetHoldability();
       resultSetType = stmt.getResultSetType();
       poolable = stmt.isPoolable();
+
+      state = BeeConst.STATE_INITIALIZED;
     } catch (SQLException ex) {
       handleError(ex);
     }
@@ -241,56 +258,128 @@ public class BeeStatement {
     return updateFetchDirection(stmt, direction);
   }
 
-  public boolean updateFetchSize(Statement stmt, String s) {
+  public boolean updateFetchSize(Statement stmt, int size) {
     Assert.notNull(stmt);
-    Assert.notEmpty(s);
     Assert.state(validState());
 
-    if (!BeeUtils.isDigit(s)) {
-      LogUtils.warning(logger, "fetch size", s, "not a number");
-      return false;
+    if (size == getFetchSize())
+      return true;
+    boolean ok;
+
+    try {
+      stmt.setFetchSize(size);
+      int z = stmt.getFetchSize();
+      if (z == size) {
+        addState(BeeConst.STATE_CHANGED);
+        ok = true;
+      } else {
+        LogUtils.warning(logger, "fetch size not updated:", "expected", size,
+            "getFetchSize", z);
+        ok = false;
+      }
+    } catch (SQLException ex) {
+      if (size < 0) {
+        LogUtils.warning(logger, ex, "Fetch Size:", size);
+      } else {
+        handleError(ex);
+      }
+      ok = false;
     }
 
-    return updateFetchSize(stmt, BeeUtils.toInt(s));
+    return ok;
   }
 
-  public boolean updateMaxFieldSize(Statement stmt, String s) {
+  public boolean updateMaxFieldSize(Statement stmt, int size) {
     Assert.notNull(stmt);
-    Assert.notEmpty(s);
     Assert.state(validState());
 
-    if (!BeeUtils.isDigit(s)) {
-      LogUtils.warning(logger, "max field size", s, "not a number");
-      return false;
+    if (size == getMaxFieldSize())
+      return true;
+    boolean ok;
+
+    try {
+      stmt.setMaxFieldSize(size);
+      int z = stmt.getMaxFieldSize();
+      if (z == size) {
+        addState(BeeConst.STATE_CHANGED);
+        ok = true;
+      } else {
+        LogUtils.warning(logger, "max field size not updated:", "expected",
+            size, "getMaxFieldSize", z);
+        ok = false;
+      }
+    } catch (SQLException ex) {
+      if (size < 0) {
+        LogUtils.warning(logger, ex, "Max Field Size:", size);
+      } else {
+        handleError(ex);
+      }
+      ok = false;
     }
 
-    return updateMaxFieldSize(stmt, BeeUtils.toInt(s));
+    return ok;
   }
 
-  public boolean updateMaxRows(Statement stmt, String s) {
+  public boolean updateMaxRows(Statement stmt, int rows) {
     Assert.notNull(stmt);
-    Assert.notEmpty(s);
     Assert.state(validState());
 
-    if (!BeeUtils.isDigit(s)) {
-      LogUtils.warning(logger, "max rows", s, "not a number");
-      return false;
+    if (rows == getMaxRows())
+      return true;
+    boolean ok;
+
+    try {
+      stmt.setMaxRows(rows);
+      int z = stmt.getMaxRows();
+      if (z == rows) {
+        addState(BeeConst.STATE_CHANGED);
+        ok = true;
+      } else {
+        LogUtils.warning(logger, "max rows not updated:", "expected", rows,
+            "getMaxRows", z);
+        ok = false;
+      }
+    } catch (SQLException ex) {
+      if (rows < 0) {
+        LogUtils.warning(logger, ex, "Max Rows:", rows);
+      } else {
+        handleError(ex);
+      }
+      ok = false;
     }
 
-    return updateMaxRows(stmt, BeeUtils.toInt(s));
+    return ok;
   }
 
-  public boolean updateQueryTimeout(Statement stmt, String s) {
+  public boolean updateQueryTimeout(Statement stmt, int timeout) {
     Assert.notNull(stmt);
-    Assert.notEmpty(s);
     Assert.state(validState());
 
-    if (!BeeUtils.isDigit(s)) {
-      LogUtils.warning(logger, "query timeout", s, "not a number");
-      return false;
+    if (timeout == getQueryTimeout())
+      return true;
+    boolean ok;
+
+    try {
+      stmt.setQueryTimeout(timeout);
+      int z = stmt.getQueryTimeout();
+      if (z == timeout) {
+        addState(BeeConst.STATE_CHANGED);
+        ok = true;
+      } else {
+        LogUtils.warning(logger, "query timeout not updated:", "expected",
+            timeout, "getQueryTimeout", z);
+        ok = false;
+      }
+    } catch (SQLException ex) {
+      if (timeout < 0) {
+        LogUtils.warning(logger, ex, "Query Timeout:", timeout);
+      } else {
+        handleError(ex);
+      }
+      ok = false;
     }
 
-    return updateQueryTimeout(stmt, BeeUtils.toInt(s));
+    return ok;
   }
 
   public boolean updatePoolable(Statement stmt, String s) {
@@ -308,6 +397,164 @@ public class BeeStatement {
     return updatePoolable(stmt, BeeUtils.toBoolean(s));
   }
 
+  public boolean setCursorName(Statement stmt, String cn) {
+    Assert.notNull(stmt);
+    Assert.notEmpty(cn);
+    boolean ok;
+
+    try {
+      stmt.setCursorName(cn);
+      ok = true;
+    } catch (SQLException ex) {
+      handleError(ex);
+      ok = false;
+    }
+
+    return ok;
+  }
+
+  public boolean setEscapeProcessing(Statement stmt, boolean enable) {
+    Assert.notNull(stmt);
+    boolean ok;
+
+    try {
+      stmt.setEscapeProcessing(enable);
+      ok = true;
+    } catch (SQLException ex) {
+      handleError(ex);
+      ok = false;
+    }
+
+    return ok;
+  }
+
+  public int getFetchDirectionQuietly(Statement stmt) {
+    if (stmt == null) {
+      noStatement();
+      return BeeConst.INT_ERROR;
+    }
+
+    int z;
+
+    try {
+      z = stmt.getFetchDirection();
+    } catch (SQLException ex) {
+      handleError(ex);
+      z = BeeConst.INT_ERROR;
+    }
+
+    return z;
+  }
+
+  public int getFetchSizeQuietly(Statement stmt) {
+    if (stmt == null) {
+      noStatement();
+      return BeeConst.INT_ERROR;
+    }
+
+    int z;
+
+    try {
+      z = stmt.getFetchSize();
+    } catch (SQLException ex) {
+      handleError(ex);
+      z = BeeConst.INT_ERROR;
+    }
+
+    return z;
+  }
+
+  public int getMaxFieldSizeQuietly(Statement stmt) {
+    if (stmt == null) {
+      noStatement();
+      return BeeConst.INT_ERROR;
+    }
+
+    int z;
+
+    try {
+      z = stmt.getMaxFieldSize();
+    } catch (SQLException ex) {
+      handleError(ex);
+      z = BeeConst.INT_ERROR;
+    }
+
+    return z;
+  }
+
+  public int getMaxRowsQuietly(Statement stmt) {
+    if (stmt == null) {
+      noStatement();
+      return BeeConst.INT_ERROR;
+    }
+
+    int z;
+
+    try {
+      z = stmt.getMaxRows();
+    } catch (SQLException ex) {
+      handleError(ex);
+      z = BeeConst.INT_ERROR;
+    }
+
+    return z;
+  }
+
+  public int getQueryTimeoutQuietly(Statement stmt) {
+    if (stmt == null) {
+      noStatement();
+      return BeeConst.INT_ERROR;
+    }
+
+    int z;
+
+    try {
+      z = stmt.getQueryTimeout();
+    } catch (SQLException ex) {
+      handleError(ex);
+      z = BeeConst.INT_ERROR;
+    }
+
+    return z;
+  }
+
+  public int getPoolableQuietly(Statement stmt) {
+    if (stmt == null) {
+      noStatement();
+      return BeeConst.INT_ERROR;
+    }
+
+    int z;
+
+    try {
+      z = BeeUtils.toInt(stmt.isPoolable());
+    } catch (SQLException ex) {
+      handleError(ex);
+      z = BeeConst.INT_ERROR;
+    }
+
+    return z;
+  }
+
+  public ResultSet executeQuery(Statement stmt, String sql) {
+    Assert.notNull(stmt);
+    Assert.notEmpty(sql);
+    ResultSet rs;
+
+    try {
+      rs = stmt.executeQuery(sql);
+    } catch (SQLException ex) {
+      handleError(ex);
+      rs = null;
+    }
+
+    return rs;
+  }
+
+  public boolean hasErrors() {
+    return !errors.isEmpty();
+  }
+
   private boolean updateFetchDirection(Statement stmt, int direction) {
     if (direction == getFetchDirection())
       return true;
@@ -315,74 +562,6 @@ public class BeeStatement {
 
     try {
       stmt.setFetchDirection(direction);
-      addState(BeeConst.STATE_CHANGED);
-      ok = true;
-    } catch (SQLException ex) {
-      handleError(ex);
-      ok = false;
-    }
-
-    return ok;
-  }
-
-  private boolean updateFetchSize(Statement stmt, int size) {
-    if (size == getFetchSize())
-      return true;
-    boolean ok;
-
-    try {
-      stmt.setFetchSize(size);
-      addState(BeeConst.STATE_CHANGED);
-      ok = true;
-    } catch (SQLException ex) {
-      handleError(ex);
-      ok = false;
-    }
-
-    return ok;
-  }
-
-  private boolean updateMaxFieldSize(Statement stmt, int size) {
-    if (size == getMaxFieldSize())
-      return true;
-    boolean ok;
-
-    try {
-      stmt.setMaxFieldSize(size);
-      addState(BeeConst.STATE_CHANGED);
-      ok = true;
-    } catch (SQLException ex) {
-      handleError(ex);
-      ok = false;
-    }
-
-    return ok;
-  }
-
-  private boolean updateMaxRows(Statement stmt, int rows) {
-    if (rows == getMaxRows())
-      return true;
-    boolean ok;
-
-    try {
-      stmt.setMaxRows(rows);
-      addState(BeeConst.STATE_CHANGED);
-      ok = true;
-    } catch (SQLException ex) {
-      handleError(ex);
-      ok = false;
-    }
-
-    return ok;
-  }
-
-  private boolean updateQueryTimeout(Statement stmt, int timeout) {
-    if (timeout == getQueryTimeout())
-      return true;
-    boolean ok;
-
-    try {
-      stmt.setQueryTimeout(timeout);
       addState(BeeConst.STATE_CHANGED);
       ok = true;
     } catch (SQLException ex) {
@@ -551,8 +730,12 @@ public class BeeStatement {
     addState(BeeConst.STATE_ERROR);
   }
 
+  private void noStatement() {
+    handleError(new SQLException("statement not available"));
+  }
+
   private void addState(int st) {
-    this.state &= st;
+    this.state |= st;
   }
 
   private boolean hasState(int st) {

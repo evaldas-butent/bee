@@ -233,6 +233,10 @@ public class BeeSystem {
     else
       return ste.toString();
   }
+  
+  public static long freeMemory() {
+    return Runtime.getRuntime().freeMemory();
+  }
 
   private static PackageComparator ensurePackageComparator() {
     if (packageComparator == null)

@@ -15,8 +15,8 @@ import com.butent.bee.egg.shared.utils.LogUtils;
 import com.google.gwt.user.client.ui.HasWidgets;
 
 public class BeeLog implements BeeModule {
-  private Logger logger;
-  private LogArea area;
+  private Logger logger = null;
+  private LogArea area = null;
 
   public BeeLog() {
     super();
@@ -48,12 +48,10 @@ public class BeeLog implements BeeModule {
     getLogger().setLevel(lvl);
   }
 
-  @Override
   public String getName() {
     return getClass().getName();
   }
 
-  @Override
   public int getPriority(int p) {
     switch (p) {
     case PRIORITY_INIT:
@@ -67,21 +65,13 @@ public class BeeLog implements BeeModule {
     }
   }
 
-  @Override
   public void init() {
   }
 
-  @Override
   public void start() {
   }
 
-  @Override
   public void end() {
-  }
-
-  private void addArea(HasWidgets p) {
-    if (p != null)
-      getLogger().addHandler(new LogWidgetHandler(p));
   }
 
   public void log(String msg) {
@@ -105,6 +95,15 @@ public class BeeLog implements BeeModule {
       log(dur, obj);
     else
       log(dur.toString());
+  }
+  
+  public void clear() {
+    getArea().clear();
+  }
+
+  private void addArea(HasWidgets p) {
+    if (p != null)
+      getLogger().addHandler(new LogWidgetHandler(p));
   }
 
 }

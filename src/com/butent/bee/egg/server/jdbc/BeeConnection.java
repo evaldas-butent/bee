@@ -2,6 +2,7 @@ package com.butent.bee.egg.server.jdbc;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
 import java.sql.SQLWarning;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -36,12 +37,21 @@ public class BeeConnection {
     Assert.notNull(conn);
     List<StringProp> lst = new ArrayList<StringProp>();
 
+    int z;
+
     try {
       PropUtils.addString(lst, "Auto Commit", conn.getAutoCommit(), "Catalog",
-          conn.getCatalog(), "Holdability", JdbcUtils.holdabilityAsString(conn
-              .getHoldability()), "Transaction Isolation", JdbcUtils
-              .transactionIsolationAsString(conn.getTransactionIsolation()),
-          "Read Only", conn.isReadOnly());
+          conn.getCatalog());
+
+      z = conn.getHoldability();
+      PropUtils.addString(lst, "Holdability",
+          BeeUtils.concat(1, z, JdbcUtils.holdabilityAsString(z)));
+
+      z = conn.getTransactionIsolation();
+      PropUtils.addString(lst, "Transaction Isolation",
+          BeeUtils.concat(1, z, JdbcUtils.transactionIsolationAsString(z)));
+
+      PropUtils.addString(lst, "Read Only", conn.isReadOnly());
 
       Properties prp = conn.getClientInfo();
       if (!BeeUtils.isEmpty(prp))
@@ -85,6 +95,7 @@ public class BeeConnection {
       transactionIsolation = conn.getTransactionIsolation();
       typeMap = conn.getTypeMap();
       readOnly = conn.isReadOnly();
+
       state = BeeConst.STATE_INITIALIZED;
     } catch (SQLException ex) {
       handleError(ex);
@@ -224,6 +235,11 @@ public class BeeConnection {
         else
           stmt = conn.createStatement(type, concur, hold);
       }
+    } catch (SQLFeatureNotSupportedException ex) {
+      LogUtils.warning(logger, ex, "type:", type,
+          JdbcUtils.rsTypeAsString(type), "concurrency:",
+          JdbcUtils.concurrencyAsString(concur), "holdability:", hold,
+          JdbcUtils.holdabilityAsString(hold));
     } catch (SQLException ex) {
       handleError(ex);
     }
@@ -249,10 +265,13 @@ public class BeeConnection {
 
   public void revert(Connection conn) {
     Assert.notNull(conn);
-    Assert.state(validState());
 
-    if (!hasState(BeeConst.STATE_CHANGED))
+    if (!validState()) {
       return;
+    }
+    if (!hasState(BeeConst.STATE_CHANGED)) {
+      return;
+    }
 
     try {
       if (conn.getAutoCommit() != isAutoCommit())
@@ -307,7 +326,7 @@ public class BeeConnection {
     if (BeeConst.isDefault(s))
       return true;
     int ti = JdbcUtils.transactionIsolationFromString(s);
-    if (!JdbcUtils.validHoldability(ti)) {
+    if (!JdbcUtils.validTransactionIsolation(ti)) {
       LogUtils.warning(logger, "unrecognized transaction isolation", s);
       return false;
     }
@@ -430,8 +449,19 @@ public class BeeConnection {
 
     try {
       conn.setHoldability(hold);
-      addState(BeeConst.STATE_CHANGED);
-      ok = true;
+      int z = conn.getHoldability();
+      if (z == hold) {
+        addState(BeeConst.STATE_CHANGED);
+        ok = true;
+      } else {
+        LogUtils.warning(logger, "holdability not set:", "expected", hold,
+            JdbcUtils.holdabilityAsString(hold), "getHoldability", z,
+            JdbcUtils.holdabilityAsString(z));
+        ok = false;
+      }
+    } catch (SQLFeatureNotSupportedException ex) {
+      LogUtils.warning(logger, hold, JdbcUtils.holdabilityAsString(hold), ex);
+      ok = false;
     } catch (SQLException ex) {
       handleError(ex);
       ok = false;
@@ -447,10 +477,29 @@ public class BeeConnection {
 
     try {
       conn.setTransactionIsolation(ti);
-      addState(BeeConst.STATE_CHANGED);
-      ok = true;
+      int z = conn.getTransactionIsolation();
+      if (z == ti) {
+        addState(BeeConst.STATE_CHANGED);
+        ok = true;
+      } else {
+        LogUtils.warning(logger, "Transaction isolation not set:", "expected",
+            ti, JdbcUtils.transactionIsolationAsString(ti),
+            "getTransactionIsolation", z,
+            JdbcUtils.transactionIsolationAsString(z));
+        ok = false;
+      }
+    } catch (SQLFeatureNotSupportedException ex) {
+      LogUtils.warning(logger, ti, JdbcUtils.transactionIsolationAsString(ti),
+          ex);
+      ok = false;
     } catch (SQLException ex) {
-      handleError(ex);
+      if (ti == Connection.TRANSACTION_NONE) {
+        LogUtils.warning(logger,
+            "Transaction isolation level NONE not supported");
+      } else {
+        LogUtils.severe(logger, ex, "Transaction isolation level", ti,
+            JdbcUtils.transactionIsolationAsString(ti), "not supported");
+      }
       ok = false;
     }
 
@@ -464,8 +513,18 @@ public class BeeConnection {
 
     try {
       conn.setReadOnly(ro);
-      addState(BeeConst.STATE_CHANGED);
-      ok = true;
+      boolean z = conn.isReadOnly();
+      if (z == ro) {
+        addState(BeeConst.STATE_CHANGED);
+        ok = true;
+      } else {
+        LogUtils.warning(logger, "read only not set:", "expected",
+            BeeUtils.toString(ro), "isReadOnly", BeeUtils.toString(z));
+        ok = false;
+      }
+    } catch (SQLFeatureNotSupportedException ex) {
+      LogUtils.warning(logger, "ReadOnly", BeeUtils.toString(ro), ex);
+      ok = false;
     } catch (SQLException ex) {
       handleError(ex);
       ok = false;
@@ -545,7 +604,7 @@ public class BeeConnection {
   }
 
   private void addState(int st) {
-    this.state &= st;
+    this.state |= st;
   }
 
   private boolean hasState(int st) {

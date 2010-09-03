@@ -688,11 +688,27 @@ public abstract class BeeUtils {
     int i;
 
     try {
-      i = Integer.parseInt(s);
+      i = Integer.parseInt(s.trim());
     } catch (NumberFormatException ex) {
       i = 0;
     }
     return i;
+  }
+
+  public static boolean isInt(String s) {
+    if (isEmpty(s)) {
+      return false;
+    }
+    boolean ok;
+
+    try {
+      Integer.parseInt(s.trim());
+      ok = true;
+    } catch (NumberFormatException ex) {
+      ok = false;
+    }
+    
+    return ok;
   }
 
   public static String increment(String s) {
@@ -802,6 +818,19 @@ public abstract class BeeUtils {
       }
     }
 
+    return ok;
+  }
+  
+  public static boolean allEmpty(Object... obj) {
+    boolean ok = true;
+    
+    for (Object z : obj) {
+      if (! isEmpty(z)) {
+        ok = false;
+        break;
+      }
+    }
+    
     return ok;
   }
 }

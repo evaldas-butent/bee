@@ -196,7 +196,8 @@ public class BeeGlobal implements BeeModule {
         BeeWidget.RADIO, BeeConst.DEFAULT, BeeConst.STRING_FALSE,
         BeeConst.STRING_TRUE);
     createField(BeeService.FIELD_CONNECTION_READ_ONLY, "Connection read only",
-        BeeType.TYPE_BOOLEAN, BeeConst.STRING_FALSE);
+        BeeType.TYPE_STRING, BeeConst.DEFAULT, BeeWidget.RADIO,
+        BeeConst.DEFAULT, BeeConst.STRING_FALSE, BeeConst.STRING_TRUE);
     createField(BeeService.FIELD_CONNECTION_HOLDABILITY,
         "Connection holdability", BeeType.TYPE_STRING, BeeConst.DEFAULT,
         BeeWidget.RADIO, BeeConst.DEFAULT, BeeConst.HOLD_CURSORS_OVER_COMMIT,
@@ -219,16 +220,16 @@ public class BeeGlobal implements BeeModule {
         BeeWidget.RADIO, BeeConst.DEFAULT, BeeConst.FETCH_FORWARD,
         BeeConst.FETCH_REVERSE, BeeConst.FETCH_UNKNOWN);
     createField(BeeService.FIELD_STATEMENT_FETCH_SIZE, "Statement fetch size",
-        BeeType.TYPE_INT, BeeConst.STRING_EMPTY);
+        BeeType.TYPE_STRING, BeeConst.STRING_EMPTY);
     createField(BeeService.FIELD_STATEMENT_MAX_FIELD_SIZE,
-        "Statement max field size", BeeType.TYPE_INT, BeeConst.STRING_EMPTY);
+        "Statement max field size", BeeType.TYPE_STRING, BeeConst.STRING_EMPTY);
     createField(BeeService.FIELD_STATEMENT_MAX_ROWS, "Statement max rows",
-        BeeType.TYPE_INT, BeeConst.STRING_EMPTY);
+        BeeType.TYPE_STRING, BeeConst.STRING_EMPTY);
     createField(BeeService.FIELD_STATEMENT_POOLABLE, "Poolable",
         BeeType.TYPE_STRING, BeeConst.DEFAULT, BeeWidget.RADIO,
         BeeConst.DEFAULT, BeeConst.STRING_FALSE, BeeConst.STRING_TRUE);
     createField(BeeService.FIELD_STATEMENT_QUERY_TIMEOUT, "Query timeout",
-        BeeType.TYPE_INT, BeeConst.STRING_EMPTY);
+        BeeType.TYPE_STRING, BeeConst.STRING_EMPTY);
 
     createField(BeeService.FIELD_STATEMENT_RS_TYPE, "Statement rs type",
         BeeType.TYPE_STRING, BeeConst.DEFAULT, BeeWidget.RADIO,
@@ -240,15 +241,15 @@ public class BeeGlobal implements BeeModule {
         BeeConst.CONCUR_UPDATABLE);
     createField(BeeService.FIELD_STATEMENT_RS_HOLDABILITY,
         "Statement rs holdability", BeeType.TYPE_STRING, BeeConst.DEFAULT,
-        BeeWidget.RADIO, BeeConst.DEFAULT, BeeConst.DEFAULT,
-        BeeConst.HOLD_CURSORS_OVER_COMMIT, BeeConst.CLOSE_CURSORS_AT_COMMIT);
+        BeeWidget.RADIO, BeeConst.DEFAULT, BeeConst.HOLD_CURSORS_OVER_COMMIT,
+        BeeConst.CLOSE_CURSORS_AT_COMMIT);
 
     createField(BeeService.FIELD_RESULT_SET_FETCH_DIRECTION,
         "Rs fetch direction", BeeType.TYPE_STRING, BeeConst.DEFAULT,
         BeeWidget.RADIO, BeeConst.DEFAULT, BeeConst.FETCH_FORWARD,
         BeeConst.FETCH_REVERSE, BeeConst.FETCH_UNKNOWN);
     createField(BeeService.FIELD_RESULT_SET_FETCH_SIZE, "Rs fetch size",
-        BeeType.TYPE_INT, BeeConst.STRING_EMPTY);
+        BeeType.TYPE_STRING, BeeConst.STRING_EMPTY);
 
     createField(BeeService.FIELD_JDBC_RETURN, "Jdbc return",
         BeeType.TYPE_STRING, BeeConst.JDBC_RESULT_SET, BeeWidget.RADIO,

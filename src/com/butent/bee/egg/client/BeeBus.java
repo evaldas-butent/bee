@@ -230,9 +230,9 @@ public class BeeBus implements BeeModule {
             BeeService.FIELD_STATEMENT_MAX_ROWS,
             BeeService.FIELD_STATEMENT_POOLABLE,
             BeeService.FIELD_STATEMENT_QUERY_TIMEOUT,
+            BeeService.FIELD_STATEMENT_RS_TYPE,
             BeeService.FIELD_STATEMENT_RS_CONCURRENCY,
             BeeService.FIELD_STATEMENT_RS_HOLDABILITY,
-            BeeService.FIELD_STATEMENT_RS_TYPE,
             BeeService.FIELD_RESULT_SET_FETCH_DIRECTION,
             BeeService.FIELD_RESULT_SET_FETCH_SIZE,
             BeeService.FIELD_JDBC_RETURN);
@@ -259,9 +259,9 @@ public class BeeBus implements BeeModule {
                   BeeService.FIELD_STATEMENT_MAX_ROWS,
                   BeeService.FIELD_STATEMENT_POOLABLE,
                   BeeService.FIELD_STATEMENT_QUERY_TIMEOUT,
+                  BeeService.FIELD_STATEMENT_RS_TYPE,
                   BeeService.FIELD_STATEMENT_RS_CONCURRENCY,
                   BeeService.FIELD_STATEMENT_RS_HOLDABILITY,
-                  BeeService.FIELD_STATEMENT_RS_TYPE,
                   BeeService.FIELD_RESULT_SET_FETCH_DIRECTION,
                   BeeService.FIELD_RESULT_SET_FETCH_SIZE,
                   BeeService.FIELD_JDBC_RETURN));

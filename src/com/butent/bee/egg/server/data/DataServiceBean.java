@@ -2,9 +2,9 @@ package com.butent.bee.egg.server.data;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.ejb.EJB;
@@ -16,9 +16,11 @@ import com.butent.bee.egg.server.http.RequestInfo;
 import com.butent.bee.egg.server.http.ResponseBuffer;
 import com.butent.bee.egg.server.jdbc.BeeConnection;
 import com.butent.bee.egg.server.jdbc.BeeResultSet;
-import com.butent.bee.egg.server.jdbc.JdbcException;
+import com.butent.bee.egg.server.jdbc.BeeStatement;
+import com.butent.bee.egg.server.jdbc.JdbcConst;
 import com.butent.bee.egg.server.jdbc.JdbcUtils;
 import com.butent.bee.egg.server.utils.BeeDataSource;
+import com.butent.bee.egg.server.utils.BeeSystem;
 import com.butent.bee.egg.server.utils.XmlUtils;
 import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.BeeDate;
@@ -102,7 +104,7 @@ public class DataServiceBean {
         map.put(key, BeeConst.STRING_EMPTY);
 
     String cAc = map.get(BeeService.FIELD_CONNECTION_AUTO_COMMIT);
-    String cH = map.get(BeeService.FIELD_CONNECTION_HOLDABILITY);
+    String cHo = map.get(BeeService.FIELD_CONNECTION_HOLDABILITY);
     String cRo = map.get(BeeService.FIELD_CONNECTION_READ_ONLY);
     String cTi = map.get(BeeService.FIELD_CONNECTION_TRANSACTION_ISOLATION);
 
@@ -112,7 +114,7 @@ public class DataServiceBean {
     String sFs = map.get(BeeService.FIELD_STATEMENT_FETCH_SIZE);
     String sMf = map.get(BeeService.FIELD_STATEMENT_MAX_FIELD_SIZE);
     String sMr = map.get(BeeService.FIELD_STATEMENT_MAX_ROWS);
-    String sP = map.get(BeeService.FIELD_STATEMENT_POOLABLE);
+    String sPo = map.get(BeeService.FIELD_STATEMENT_POOLABLE);
     String sQt = map.get(BeeService.FIELD_STATEMENT_QUERY_TIMEOUT);
     String sRc = map.get(BeeService.FIELD_STATEMENT_RS_CONCURRENCY);
     String sRh = map.get(BeeService.FIELD_STATEMENT_RS_HOLDABILITY);
@@ -127,15 +129,15 @@ public class DataServiceBean {
     String before = "before:";
     String after = "after:";
 
-    boolean b1, b2;
-    int i1, i2;
+    boolean vb, ok;
+    int v1, v2, vu;
 
     BeeConnection bc = new BeeConnection(conn);
 
     if (BeeUtils.isBoolean(cAc)) {
-      b1 = bc.isAutoCommit();
+      vb = bc.isAutoCommit();
       bc.updateAutoCommit(conn, cAc);
-      i2 = bc.getAutoCommitQuietly(conn);
+      v2 = bc.getAutoCommitQuietly(conn);
 
       if (bc.hasErrors()) {
         bc.revert(conn);
@@ -143,14 +145,14 @@ public class DataServiceBean {
         return;
       }
 
-      buff.addMessage("Connection Auto Commit:", cAc, before, b1, after,
-          BeeUtils.toBoolean(i2));
+      buff.addMessage("Connection Auto Commit:", cAc, before, vb, after,
+          BeeUtils.toBoolean(v2));
     }
 
-    if (!BeeUtils.isEmpty(cH)) {
-      i1 = bc.getHoldability();
-      bc.updateHoldability(conn, cH);
-      i2 = bc.getHoldabilityQuietly(conn);
+    if (!BeeUtils.isEmpty(cHo)) {
+      v1 = bc.getHoldability();
+      bc.updateHoldability(conn, cHo);
+      v2 = bc.getHoldabilityQuietly(conn);
 
       if (bc.hasErrors()) {
         bc.revert(conn);
@@ -158,15 +160,15 @@ public class DataServiceBean {
         return;
       }
 
-      buff.addMessage("Connection Holdability:", cH, before, i1,
-          JdbcUtils.holdabilityAsString(i1), after, i2,
-          JdbcUtils.holdabilityAsString(i2));
+      buff.addMessage("Connection Holdability:", cHo, before, v1,
+          JdbcUtils.holdabilityAsString(v1), after, v2,
+          JdbcUtils.holdabilityAsString(v2));
     }
 
     if (!BeeUtils.isEmpty(cTi)) {
-      i1 = bc.getTransactionIsolation();
+      v1 = bc.getTransactionIsolation();
       bc.updateTransactionIsolation(conn, cTi);
-      i2 = bc.getTransactionIsolationQuietly(conn);
+      v2 = bc.getTransactionIsolationQuietly(conn);
 
       if (bc.hasErrors()) {
         bc.revert(conn);
@@ -174,15 +176,15 @@ public class DataServiceBean {
         return;
       }
 
-      buff.addMessage("Connection Transaction Isolation:", cTi, before, i1,
-          JdbcUtils.transactionIsolationAsString(i1), after, i2,
-          JdbcUtils.transactionIsolationAsString(i2));
+      buff.addMessage("Connection Transaction Isolation:", cTi, before, v1,
+          JdbcUtils.transactionIsolationAsString(v1), after, v2,
+          JdbcUtils.transactionIsolationAsString(v2));
     }
 
     if (BeeUtils.isBoolean(cRo)) {
-      b1 = bc.isReadOnly();
+      vb = bc.isReadOnly();
       bc.updateReadOnly(conn, cRo);
-      i2 = bc.getReadOnlyQuietly(conn);
+      v2 = bc.getReadOnlyQuietly(conn);
 
       if (bc.hasErrors()) {
         bc.revert(conn);
@@ -190,39 +192,321 @@ public class DataServiceBean {
         return;
       }
 
-      buff.addMessage("Connection Read Only:", cRo, before, b1, after,
-          BeeUtils.toBoolean(i2));
+      buff.addMessage("Connection Read Only:", cRo, before, vb, after,
+          BeeUtils.toBoolean(v2));
     }
 
-    try {
-      Statement stmt = conn.createStatement();
-      ResultSet rs = stmt.executeQuery(sql);
+    Statement stmt = bc.createStatement(conn, sRt, sRc, sRh);
+    if (bc.hasErrors() || stmt == null) {
+      bc.revert(conn);
+      buff.addErrors(bc.getErrors());
+      if (stmt == null) {
+        buff.addMessage(Level.SEVERE, "Statement not created");
+      }
+      JdbcUtils.closeStatement(stmt);
+      return;
+    }
+    
+    BeeStatement bs = new BeeStatement(stmt);
+    if (bs.hasErrors()) {
+      bc.revert(conn);
+      buff.addErrors(bs.getErrors());
+      JdbcUtils.closeStatement(stmt);
+      return;
+    }
 
-      if (BeeConst.JDBC_COLUMNS.equals(ret)) {
-        rsb.rsMdToResponse(rs, buff, debug);
-      } else if (BeeConst.JDBC_ROW_COUNT.equals(ret)) {
-        BeeDate start = new BeeDate();
-        int rc = JdbcUtils.getSize(rs);
-        BeeDate end = new BeeDate();
+    if (!BeeUtils.allEmpty(sRt, sRc, sRh)) {
+      buff.addMessage("Statement parameters:", sRt, sRc, sRh);
+      buff.addMessage("Statement created:", bs.getResultSetType(),
+          JdbcUtils.rsTypeAsString(bs.getResultSetType()), bs.getConcurrency(),
+          JdbcUtils.concurrencyAsString(bs.getConcurrency()),
+          bs.getHoldability(),
+          JdbcUtils.holdabilityAsString(bs.getHoldability()));
+    }
 
-        buff.addLine(enter.toLog(), start.toLog(), end.toLog());
-        buff.addLine(ret, rc, BeeUtils.bracket(BeeUtils.toSeconds(end.getTime()
-            - start.getTime())));
-      } else if (BeeConst.JDBC_META_DATA.equals(ret)) {
-        buff.addSub(new BeeResultSet(rs).getRsInfo());
+    if (!BeeUtils.isEmpty(sCn)) {
+      if (JdbcUtils.supportsCursorName(conn)) {
+        buff.addMessage("Cursor name:", sCn);
+        bs.setCursorName(stmt, sCn);
+        
+        if (bs.hasErrors()) {
+          bc.revert(conn);
+          buff.addErrors(bs.getErrors());
+          JdbcUtils.closeStatement(stmt);
+          return;
+        }
+        
       } else {
-        rsb.rsToResponse(rs, buff, debug);
+        buff.addMessage(Level.WARNING, "Cursor name:", sCn,
+            JdbcConst.FEATURE_NOT_SUPPORTED);
+      }
+    }
+
+    if (BeeUtils.isBoolean(sEp)) {
+      buff.addMessage("Escape Processing:", sEp);
+      bs.setEscapeProcessing(stmt, BeeUtils.toBoolean(sEp));
+
+      if (bs.hasErrors()) {
+        bc.revert(conn);
+        buff.addErrors(bs.getErrors());
+        JdbcUtils.closeStatement(stmt);
+        return;
+      }
+    }
+
+    if (!BeeUtils.isEmpty(sFd)) {
+      v1 = bs.getFetchDirection();
+      bs.updateFetchDirection(stmt, sFd);
+      v2 = bs.getFetchDirectionQuietly(stmt);
+
+      if (bs.hasErrors()) {
+        bc.revert(conn);
+        buff.addErrors(bs.getErrors());
+        JdbcUtils.closeStatement(stmt);
+        return;
       }
 
-      rs.close();
-      stmt.close();
-    } catch (JdbcException ex) {
-      LogUtils.error(logger, ex);
-      buff.add(ex.toString());
-    } catch (SQLException ex) {
-      LogUtils.error(logger, ex);
-      buff.add(ex.toString());
+      buff.addMessage("Statement Fetch Direction:", sFd, before, v1,
+          JdbcUtils.fetchDirectionAsString(v1), after, v2,
+          JdbcUtils.fetchDirectionAsString(v2));
     }
+
+    if (!BeeUtils.isEmpty(sFs)) {
+      ok = true;
+      if (BeeUtils.inListSame(sFs, "min", "-")) {
+        vu = Integer.MIN_VALUE;
+      } else if (BeeUtils.isInt(sFs)) {
+        vu = BeeUtils.toInt(sFs);
+      } else {
+        buff.addMessage(Level.WARNING, "Statement Fetch Size:", sFs,
+            "not an integer");
+        vu = BeeConst.INT_ERROR;
+        ok = false;
+      }
+
+      if (ok) {
+        v1 = bs.getFetchSize();
+        bs.updateFetchSize(stmt, vu);
+        v2 = bs.getFetchSizeQuietly(stmt);
+
+        if (bs.hasErrors()) {
+          bc.revert(conn);
+          buff.addErrors(bs.getErrors());
+          JdbcUtils.closeStatement(stmt);
+          return;
+        }
+
+        buff.addMessage("Statement Fetch Size:", sFs, BeeUtils.bracket(vu),
+            before, v1, after, v2);
+      }
+    }
+
+    if (!BeeUtils.isEmpty(sMf)) {
+      if (BeeUtils.isInt(sMf)) {
+        vu = BeeUtils.toInt(sMf);
+        ok = true;
+      } else {
+        buff.addMessage(Level.WARNING, "Statement Max Field Size:", sMf,
+            "not an integer");
+        vu = BeeConst.INT_ERROR;
+        ok = false;
+      }
+
+      if (ok) {
+        v1 = bs.getMaxFieldSize();
+        bs.updateMaxFieldSize(stmt, vu);
+        v2 = bs.getMaxFieldSizeQuietly(stmt);
+
+        if (bs.hasErrors()) {
+          bc.revert(conn);
+          buff.addErrors(bs.getErrors());
+          JdbcUtils.closeStatement(stmt);
+          return;
+        }
+
+        buff.addMessage("Statement Max Field Size:", sMf, BeeUtils.bracket(vu),
+            before, v1, after, v2);
+      }
+    }
+
+    if (!BeeUtils.isEmpty(sMr)) {
+      if (BeeUtils.isInt(sMr)) {
+        vu = BeeUtils.toInt(sMr);
+        ok = true;
+      } else {
+        buff.addMessage(Level.WARNING, "Statement Max Rows:", sMr,
+            "not an integer");
+        vu = BeeConst.INT_ERROR;
+        ok = false;
+      }
+
+      if (ok) {
+        v1 = bs.getMaxRows();
+        bs.updateMaxRows(stmt, vu);
+        v2 = bs.getMaxRowsQuietly(stmt);
+
+        if (bs.hasErrors()) {
+          bc.revert(conn);
+          buff.addErrors(bs.getErrors());
+          JdbcUtils.closeStatement(stmt);
+          return;
+        }
+
+        buff.addMessage("Statement Max Rows:", sMr, BeeUtils.bracket(vu),
+            before, v1, after, v2);
+      }
+    }
+
+    if (!BeeUtils.isEmpty(sQt)) {
+      if (BeeUtils.isInt(sQt)) {
+        vu = BeeUtils.toInt(sQt);
+        ok = true;
+      } else {
+        buff.addMessage(Level.WARNING, "Statement Query Timeout:", sQt,
+            "not an integer");
+        vu = BeeConst.INT_ERROR;
+        ok = false;
+      }
+
+      if (ok) {
+        v1 = bs.getQueryTimeout();
+        bs.updateQueryTimeout(stmt, vu);
+        v2 = bs.getQueryTimeoutQuietly(stmt);
+
+        if (bs.hasErrors()) {
+          bc.revert(conn);
+          buff.addErrors(bs.getErrors());
+          JdbcUtils.closeStatement(stmt);
+          return;
+        }
+
+        buff.addMessage("Statement Query Timeout:", sQt, BeeUtils.bracket(vu),
+            before, v1, after, v2);
+      }
+    }
+
+    if (!BeeUtils.isEmpty(sPo)) {
+      vb = bs.isPoolable();
+      bs.updatePoolable(stmt, sPo);
+      v2 = bs.getPoolableQuietly(stmt);
+
+      if (bs.hasErrors()) {
+        bc.revert(conn);
+        buff.addErrors(bs.getErrors());
+        JdbcUtils.closeStatement(stmt);
+        return;
+      }
+
+      buff.addMessage("Statement Poolable:", sPo, before, vb, after,
+          BeeUtils.toBoolean(v2));
+    }
+    
+    long memQ1 = BeeSystem.freeMemory();
+    ResultSet rs = bs.executeQuery(stmt, sql);
+    long memQ2 = BeeSystem.freeMemory();
+
+    if (bs.hasErrors() || rs == null) {
+      bc.revert(conn);
+      buff.addErrors(bs.getErrors());
+      if (rs == null) {
+        buff.addMessage(Level.SEVERE, BeeUtils.bracket(sql),
+            "result set not created");
+      }
+      JdbcUtils.closeResultSet(rs);
+      JdbcUtils.closeStatement(stmt);
+      return;
+    }
+
+    buff.addWarnings(JdbcUtils.getWarnings(stmt));
+    
+    BeeResultSet br = new BeeResultSet();
+
+    if (!BeeUtils.isEmpty(rFd)) {
+      br.setFetchDirection(br.getFetchDirectionQuietly(rs));
+      br.setInitialized();
+
+      v1 = br.getFetchDirection();
+      br.updateFetchDirection(rs, rFd);
+      v2 = br.getFetchDirectionQuietly(rs);
+
+      if (br.hasErrors()) {
+        bc.revert(conn);
+        buff.addErrors(br.getErrors());
+        JdbcUtils.closeResultSet(rs);
+        JdbcUtils.closeStatement(stmt);
+        return;
+      }
+
+      buff.addMessage("Result Set Fetch Direction:", rFd, before, v1,
+          JdbcUtils.fetchDirectionAsString(v1), after, v2,
+          JdbcUtils.fetchDirectionAsString(v2));
+    }
+
+    if (!BeeUtils.isEmpty(rFs)) {
+      ok = true;
+      if (BeeUtils.inListSame(rFs, "min", "-")) {
+        vu = Integer.MIN_VALUE;
+      } else if (BeeUtils.isInt(rFs)) {
+        vu = BeeUtils.toInt(rFs);
+      } else {
+        buff.addMessage(Level.WARNING, "Result Set Fetch Size:", rFs,
+            "not an integer");
+        vu = BeeConst.INT_ERROR;
+        ok = false;
+      }
+
+      if (ok) {
+        br.setFetchSize(br.getFetchSizeQuietly(rs));
+        br.setInitialized();
+
+        v1 = br.getFetchSize();
+        br.updateFetchSize(rs, vu);
+        v2 = br.getFetchSizeQuietly(rs);
+
+        if (br.hasErrors()) {
+          bc.revert(conn);
+          buff.addErrors(br.getErrors());
+          JdbcUtils.closeResultSet(rs);
+          JdbcUtils.closeStatement(stmt);
+          return;
+        }
+
+        buff.addMessage("Result Set Fetch Size:", rFs, BeeUtils.bracket(vu),
+            before, v1, after, v2);
+      }
+    }
+
+    if (BeeConst.JDBC_COLUMNS.equals(ret)) {
+      rsb.rsMdToResponse(rs, buff, debug);
+
+    } else if (BeeConst.JDBC_ROW_COUNT.equals(ret)) {
+      BeeDate start = new BeeDate();
+      long memC1 = BeeSystem.freeMemory();
+      int rc = JdbcUtils.getSize(rs);
+      long memC2 = BeeSystem.freeMemory();
+      BeeDate end = new BeeDate();
+
+      buff.addLine(enter.toLog(), start.toLog(), end.toLog());
+      buff.addLine(ret, rc,
+          BeeUtils.bracket(BeeUtils.toSeconds(end.getTime() - start.getTime())),
+          "type", JdbcUtils.getTypeInfo(rs));
+      buff.addLine("memory",
+          BeeUtils.addName("executeQuery", memQ1 - memQ2),
+          BeeUtils.addName(ret, memC1 - memC2));
+
+    } else if (BeeConst.JDBC_META_DATA.equals(ret)) {
+      buff.addSubColumns();
+      buff.appendStringProp("Connection", BeeConnection.getInfo(conn));
+      buff.appendStringProp("Statement", BeeStatement.getInfo(stmt));
+      buff.appendStringProp("Result Set", BeeResultSet.getInfo(rs));
+
+    } else {
+      rsb.rsToResponse(rs, buff, debug);
+    }
+
+    JdbcUtils.closeResultSet(rs);
+    JdbcUtils.closeStatement(stmt);
+    bc.revert(conn);
 
   }
 

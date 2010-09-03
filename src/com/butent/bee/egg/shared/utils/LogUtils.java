@@ -70,6 +70,19 @@ public class LogUtils {
       logger.warning(BeeUtils.concat(1, obj));
   }
 
+  public static void severe(Logger logger, Object... obj) {
+    Assert.notNull(logger);
+    Assert.parameterCount(obj.length + 1, 2);
+    logger.severe(BeeUtils.concat(1, obj));
+  }
+
+  public static void severe(Logger logger, Throwable err, Object... obj) {
+    if (err != null)
+      logger.severe(transformError(err));
+    if (obj.length > 0)
+      logger.severe(BeeUtils.concat(1, obj));
+  }
+
   private static String transformError(Throwable err) {
     return err.toString();
   }

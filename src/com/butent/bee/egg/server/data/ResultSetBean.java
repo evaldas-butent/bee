@@ -13,6 +13,7 @@ import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeColumn;
 import com.butent.bee.egg.shared.BeeDate;
 import com.butent.bee.egg.shared.utils.BeeUtils;
+import com.butent.bee.egg.shared.utils.LogUtils;
 
 @Stateless
 public class ResultSetBean {
@@ -32,14 +33,27 @@ public class ResultSetBean {
       metaCols[i] = new BeeColumn(arr[i]);
   }
 
-  public void rsToResponse(ResultSet rs, ResponseBuffer buff, boolean debug)
-      throws JdbcException {
+  public void rsToResponse(ResultSet rs, ResponseBuffer buff, boolean debug) {
     Assert.noNulls(rs, buff);
     BeeDate start = new BeeDate();
 
-    BeeColumn[] cols = JdbcUtils.getColumns(rs);
-    int c = cols.length;
-    Assert.isPositive(c);
+    BeeColumn[] cols = null;
+    int c;
+    
+    try {
+      cols = JdbcUtils.getColumns(rs);
+      c = cols.length;
+    }
+    catch (JdbcException ex) {
+      LogUtils.error(logger, ex);
+      buff.addError(ex);
+      c = 0;
+    }
+
+    if (c <= 0) {
+      buff.addSevere("Cannot get result set meta data");
+      return;
+    }
 
     for (int i = 0; i < c; i++) {
       buff.addColumn(cols[i]);
@@ -56,19 +70,33 @@ public class ResultSetBean {
           buff.add(new BeeDate().toLog());
       }
     } catch (SQLException ex) {
-      logger.severe(ex.getMessage());
-      throw new JdbcException(ex);
+      LogUtils.error(logger, ex);
+      buff.addError(ex);
+      buff.clearData();
     }
   }
 
-  public void rsMdToResponse(ResultSet rs, ResponseBuffer buff, boolean debug)
-      throws JdbcException {
+  public void rsMdToResponse(ResultSet rs, ResponseBuffer buff, boolean debug) {
     Assert.noNulls(rs, buff);
     BeeDate start = new BeeDate();
 
-    BeeColumn[] cols = JdbcUtils.getColumns(rs);
-    int c = cols.length;
-    Assert.isPositive(c);
+    BeeColumn[] cols = null;
+    int c;
+    
+    try {
+      cols = JdbcUtils.getColumns(rs);
+      c = cols.length;
+    }
+    catch (JdbcException ex) {
+      LogUtils.error(logger, ex);
+      buff.addError(ex);
+      c = 0;
+    }
+    
+    if (c <= 0) {
+      buff.addSevere("Cannot get result set meta data");
+      return;
+    }
 
     for (int i = 0; i < metaCols.length; i++) {
       buff.addColumn(metaCols[i]);

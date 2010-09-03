@@ -1,5 +1,6 @@
 package com.butent.bee.egg.client.grid;
 
+import com.butent.bee.egg.client.BeeGlobal;
 import com.butent.bee.egg.client.BeeKeeper;
 import com.butent.bee.egg.client.utils.BeeDuration;
 import com.butent.bee.egg.shared.Assert;
@@ -50,6 +51,9 @@ public class BeeGrid {
 
     int len = data.length();
     Assert.isTrue(len >= c * 2);
+    
+    boolean debug = BeeGlobal.isDebug();
+    BeeDuration dur = null;
 
     final String[] head = new String[c];
     BeeColumn z = new BeeColumn();
@@ -66,14 +70,20 @@ public class BeeGrid {
     final ListDataProvider<Integer> adapter = new ListDataProvider<Integer>();
     final CellTable<Integer> table = new CellTable<Integer>(r);
     adapter.addDataDisplay(table);
+    
+    if (debug) {
+      dur = new BeeDuration("adapter " + r);
+    }
 
-    BeeDuration dur = new BeeDuration("adapter " + r);
     for (int i = 0; i < r; i++) {
       adapter.getList().add(i);
     }
-    BeeKeeper.getLog().finish(dur);
 
-    dur.restart("add cols " + c);
+    if (debug) {
+      BeeKeeper.getLog().finish(dur);
+      dur.restart("add cols " + c);
+    }  
+
     for (int j = 0; j < c; j++) {
       final int k = j;
 
@@ -86,7 +96,10 @@ public class BeeGrid {
         }
       }, head[j], s);
     }
-    BeeKeeper.getLog().finish(dur);
+    
+    if (debug) {
+      BeeKeeper.getLog().finish(dur);
+    }  
 
     return table;
   }

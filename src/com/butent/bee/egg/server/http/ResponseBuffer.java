@@ -63,6 +63,18 @@ public class ResponseBuffer {
     this.buffer = buffer;
   }
 
+  public List<ResponseMessage> getMessages() {
+    return messages;
+  }
+
+  public void setMessages(List<ResponseMessage> messages) {
+    this.messages = messages;
+  }
+
+  public void setCount(int count) {
+    this.count = count;
+  }
+
   public int getColumnCount() {
     return columnCount;
   }
@@ -213,6 +225,18 @@ public class ResponseBuffer {
       addPropSub(el);
   }
 
+  public void appendStringProp(String root, Collection<StringProp> lst) {
+    Assert.notEmpty(root);
+    Assert.notEmpty(lst);
+    
+    for (StringProp el : lst) {
+      add(root);
+      add(el.getName());
+      add(el.getValue());
+      add(new BeeDate().toLog());
+    }
+  }
+  
   public void addStringProp(Collection<StringProp> lst, String... cap) {
     Assert.notEmpty(lst);
 
@@ -273,6 +297,24 @@ public class ResponseBuffer {
       addMessage(s);
   }
 
+  public void addWarning(Throwable err) {
+    messages.add(new ResponseMessage(Level.WARNING, err.toString()));
+  }
+
+  public void addWarning(Object... obj) {
+    messages.add(new ResponseMessage(Level.WARNING, obj));
+  }
+
+  public void addWarnings(List<?> lst) {
+    for (Object w : lst) {
+      addWarning(w);
+    }
+  }
+
+  public void addSevere(Object... obj) {
+    messages.add(new ResponseMessage(Level.SEVERE, obj));
+  }
+
   public void addError(Throwable err) {
     messages.add(new ResponseMessage(Level.SEVERE, err.toString()));
   }
@@ -280,6 +322,13 @@ public class ResponseBuffer {
   public void addErrors(List<? extends Throwable> lst) {
     for (Throwable err : lst)
       addError(err);
+  }
+
+  public void clearData() {
+    setBuffer(new StringBuilder());
+    setCount(0);
+    setColumnCount(0);
+    setDefaultSeparator();
   }
 
   private void setDefaultSeparator() {
@@ -334,5 +383,5 @@ public class ResponseBuffer {
 
     setSeparator(newSep);
   }
-
+  
 }

@@ -11,6 +11,7 @@ import java.sql.SQLFeatureNotSupportedException;
 import java.sql.SQLWarning;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -233,6 +234,10 @@ public class JdbcUtils {
       return BeeConst.CLOSE_CURSORS_AT_COMMIT;
     case (ResultSet.HOLD_CURSORS_OVER_COMMIT):
       return BeeConst.HOLD_CURSORS_OVER_COMMIT;
+    case (BeeConst.INT_FALSE):
+      return JdbcConst.FEATURE_NOT_SUPPORTED;
+    case (BeeConst.INT_ERROR):
+      return BeeConst.ERROR;
     default:
       return BeeConst.UNKNOWN;
     }
@@ -246,6 +251,10 @@ public class JdbcUtils {
       z = ResultSet.CLOSE_CURSORS_AT_COMMIT;
     else if (BeeUtils.same(s, BeeConst.HOLD_CURSORS_OVER_COMMIT))
       z = ResultSet.HOLD_CURSORS_OVER_COMMIT;
+    else if (BeeUtils.same(s, JdbcConst.FEATURE_NOT_SUPPORTED))
+      z = BeeConst.INT_FALSE;
+    else if (BeeUtils.same(s, BeeConst.ERROR))
+      z = BeeConst.INT_ERROR;
     else
       z = JdbcConst.UNKNOWN_HOLDABILITY;
 
@@ -638,9 +647,6 @@ public class JdbcUtils {
     } catch (SQLException ex) {
       LogUtils.warning(logger, ex);
       crs = BeeConst.ERROR;
-    } catch (JdbcException ex) {
-      LogUtils.warning(logger, ex);
-      crs = BeeConst.ERROR;
     }
 
     return crs;
@@ -700,6 +706,120 @@ public class JdbcUtils {
     while (ex != null) {
       lst.add(transform(ex));
       ex = ex.getNextException();
+    }
+
+    return lst;
+  }
+
+  public static String getHoldabilityInfo(ResultSet rs) {
+    Assert.notNull(rs);
+    String info;
+
+    try {
+      int z = rs.getHoldability();
+      info = BeeUtils.concat(1, z, holdabilityAsString(z));
+    } catch (SQLFeatureNotSupportedException ex) {
+      info = JdbcConst.FEATURE_NOT_SUPPORTED;
+    } catch (SQLException ex) {
+      LogUtils.warning(logger, ex);
+      info = ex.toString();
+    }
+
+    return info;
+  }
+
+  public static int getHoldability(ResultSet rs) {
+    Assert.notNull(rs);
+    int z;
+
+    try {
+      z = rs.getHoldability();
+    } catch (SQLFeatureNotSupportedException ex) {
+      LogUtils.warning(logger, ex);
+      z = BeeConst.INT_FALSE;
+    } catch (SQLException ex) {
+      LogUtils.warning(logger, ex);
+      z = BeeConst.INT_ERROR;
+    }
+
+    return z;
+  }
+
+  public static String getTypeInfo(ResultSet rs) {
+    Assert.notNull(rs);
+    String info;
+
+    try {
+      int z = rs.getType();
+      info = BeeUtils.concat(1, z, rsTypeAsString(z));
+    } catch (SQLFeatureNotSupportedException ex) {
+      info = JdbcConst.FEATURE_NOT_SUPPORTED;
+    } catch (SQLException ex) {
+      LogUtils.warning(logger, ex);
+      info = ex.toString();
+    }
+
+    return info;
+  }
+
+  public static List<String> getWarnings(Connection conn) {
+    Assert.notNull(conn);
+    SQLWarning warn;
+
+    try {
+      warn = conn.getWarnings();
+    } catch (SQLException ex) {
+      LogUtils.warning(logger, ex);
+      warn = null;
+    }
+
+    List<String> lst;
+    if (warn == null) {
+      lst = Collections.emptyList();
+    } else {
+      lst = unchain(warn);
+    }
+
+    return lst;
+  }
+
+  public static List<String> getWarnings(Statement stmt) {
+    Assert.notNull(stmt);
+    SQLWarning warn;
+
+    try {
+      warn = stmt.getWarnings();
+    } catch (SQLException ex) {
+      LogUtils.warning(logger, ex);
+      warn = null;
+    }
+
+    List<String> lst;
+    if (warn == null) {
+      lst = Collections.emptyList();
+    } else {
+      lst = unchain(warn);
+    }
+
+    return lst;
+  }
+
+  public static List<String> getWarnings(ResultSet rs) {
+    Assert.notNull(rs);
+    SQLWarning warn;
+
+    try {
+      warn = rs.getWarnings();
+    } catch (SQLException ex) {
+      LogUtils.warning(logger, ex);
+      warn = null;
+    }
+
+    List<String> lst;
+    if (warn == null) {
+      lst = Collections.emptyList();
+    } else {
+      lst = unchain(warn);
     }
 
     return lst;
