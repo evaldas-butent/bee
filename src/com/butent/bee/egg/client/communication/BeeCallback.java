@@ -2,17 +2,23 @@ package com.butent.bee.egg.client.communication;
 
 import com.butent.bee.egg.client.BeeGlobal;
 import com.butent.bee.egg.client.BeeKeeper;
+import com.butent.bee.egg.client.ui.GwtUiCreator;
+import com.butent.bee.egg.client.ui.GwtUiLoader;
 import com.butent.bee.egg.client.utils.BeeDuration;
 import com.butent.bee.egg.client.utils.BeeJs;
 import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.BeeService;
+import com.butent.bee.egg.shared.BeeStage;
+import com.butent.bee.egg.shared.BeeType;
+import com.butent.bee.egg.shared.BeeWidget;
+import com.butent.bee.egg.shared.ui.UiComponent;
 import com.butent.bee.egg.shared.utils.BeeUtils;
-
 import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.http.client.Request;
 import com.google.gwt.http.client.RequestCallback;
 import com.google.gwt.http.client.RequestTimeoutException;
 import com.google.gwt.http.client.Response;
+import com.google.gwt.user.client.ui.Panel;
 
 public class BeeCallback implements RequestCallback {
 
@@ -81,7 +87,32 @@ public class BeeCallback implements RequestCallback {
               BeeUtils.addName("arr size", arr.length()));
         }
 
-        if (cc > 0) {
+        String svc = null;
+        int id = BeeUtils.toInt(resp.getHeader(BeeService.RPC_FIELD_QID));
+        RpcInfo rpc = BeeKeeper.getRpc().getRpcInfo(id);
+        if (!BeeUtils.isEmpty(rpc)) {
+          svc = rpc.getName();
+        }
+
+        if ("rpc_ui_form_list".equals(svc)) {
+          String[] lst = new String[arr.length() - cc];
+          for (int i = cc; i < arr.length(); i++) {
+            lst[i - 1] = arr.get(i);
+          }
+          BeeGlobal.createField("form_name", "Form name", BeeType.TYPE_STRING,
+              lst[0], BeeWidget.LIST, lst);
+
+          BeeGlobal.inputFields(new BeeStage("comp_ui_form",
+              BeeStage.STAGE_CONFIRM), "Load form", "form_name");
+        }
+
+        else if ("rpc_ui_form".equals(svc) && !debug) {
+          UiComponent c = new GwtUiLoader().getFormContent("testForm", cc, arr);
+          BeeKeeper.getUi().updateActivePanel(
+              (Panel) c.createInstance(new GwtUiCreator()));
+        }
+
+        else if (cc > 0) {
           BeeKeeper.getUi().updateActivePanel(BeeGlobal.createGrid(cc, arr));
         } else {
           for (int i = 0; i < arr.length(); i++) {
