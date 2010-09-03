@@ -35,13 +35,15 @@ public class BeeCallback implements RequestCallback {
       String hSep = resp.getHeader(BeeService.RPC_FIELD_SEP);
       String sep;
 
-      if (BeeUtils.isHexString(hSep))
+      if (BeeUtils.isHexString(hSep)) {
         sep = new String(BeeUtils.fromHex(hSep));
-      else
+      } else {
         sep = Character.toString(BeeService.DEFAULT_INFORMATION_SEPARATOR);
+      }
 
       boolean hasSep = txt.indexOf(sep) > 0;
 
+      int cnt = BeeUtils.toInt(resp.getHeader(BeeService.RPC_FIELD_CNT));
       int cc = BeeUtils.toInt(resp.getHeader(BeeService.RPC_FIELD_COLS));
       int mc = BeeUtils.toInt(resp.getHeader(BeeService.RPC_FIELD_MSG_CNT));
 
@@ -50,39 +52,52 @@ public class BeeCallback implements RequestCallback {
       BeeKeeper.getLog().finish(dur,
           BeeUtils.addName(BeeService.RPC_FIELD_COLS, cc),
           BeeUtils.addName(BeeService.RPC_FIELD_MSG_CNT, mc),
+          BeeUtils.addName(BeeService.RPC_FIELD_CNT, cnt),
           BeeUtils.addName("len", len),
           hasSep ? BeeConst.STRING_EMPTY : BeeUtils.addName("text", txt));
 
-      if (debug)
+      if (debug) {
         BeeKeeper.getLog().log("response headers", resp.getHeadersAsString());
+      }
 
-      if (mc > 0)
-        for (int i = 0; i < mc; i++)
+      if (mc > 0) {
+        for (int i = 0; i < mc; i++) {
           BeeKeeper.getLog().log(resp.getHeader(BeeService.rpcMessageName(i)));
+        }
+      }
 
       if (hasSep) {
-        if (debug)
+        if (debug) {
           dur.restart("split");
+        }
+
         JsArrayString arr = BeeJs.split(txt, sep);
-        if (debug)
+        if (cnt > 0 && arr.length() > cnt) {
+          arr.setLength(cnt);
+        }
+
+        if (debug) {
           BeeKeeper.getLog().finish(dur,
               BeeUtils.addName("arr size", arr.length()));
+        }
 
-        if (cc > 0)
+        if (cc > 0) {
           BeeKeeper.getUi().updateActivePanel(BeeGlobal.createGrid(cc, arr));
-        else {
+        } else {
           for (int i = 0; i < arr.length(); i++) {
-            if (!BeeUtils.isEmpty(arr.get(i)))
+            if (!BeeUtils.isEmpty(arr.get(i))) {
               BeeKeeper.getLog().log(arr.get(i));
+            }
           }
         }
       }
 
       BeeKeeper.getLog().addSeparator();
 
-    } else
+    } else {
       BeeKeeper.getLog().log("response status", resp.getStatusCode(),
           resp.getStatusText());
+    }
   }
 
 }

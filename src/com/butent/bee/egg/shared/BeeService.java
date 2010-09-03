@@ -51,6 +51,7 @@ public class BeeService {
   public static final String RPC_FIELD_DSN = RPC_FIELD_PREFIX + "dsn";
   public static final String RPC_FIELD_SEP = RPC_FIELD_PREFIX + "sep";
   public static final String RPC_FIELD_OPT = RPC_FIELD_PREFIX + "opt";
+  public static final String RPC_FIELD_CNT = RPC_FIELD_PREFIX + "cnt";
   public static final String RPC_FIELD_COLS = RPC_FIELD_PREFIX + "cc";
   public static final String RPC_FIELD_ROWS = RPC_FIELD_PREFIX + "rc";
   public static final String RPC_FIELD_MSG_CNT = RPC_FIELD_PREFIX + "mc";

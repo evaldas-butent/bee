@@ -47,7 +47,7 @@ public class BeeGrid {
   }
 
   public Widget createGrid(final int c, final JsArrayString data) {
-    Assert.isTrue(c > 1);
+    Assert.isPositive(c);
     Assert.notNull(data);
 
     int len = data.length();

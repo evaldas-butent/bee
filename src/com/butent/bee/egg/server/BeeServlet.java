@@ -72,18 +72,25 @@ public class BeeServlet extends HttpServlet {
     int respLen = buff.getSize();
 
     if (respLen > 0) {
-      LogUtils.infoNow(logger, rid, "sending response", meth, svc, dsn,
-          buff.getColumnCount(), buff.getCount(), respLen);
+      int cnt = buff.getCount();
+      int cc = buff.getColumnCount();
+      int mc = buff.getMessageCount();
+
+      LogUtils.infoNow(logger, rid, "sending response", meth, svc, dsn, cc,
+          cnt, respLen, mc);
 
       resp.setHeader(BeeService.RPC_FIELD_QID, rid);
-      if (!BeeUtils.isEmpty(sep) || !buff.isDefaultSeparator())
+      if (!BeeUtils.isEmpty(sep) || !buff.isDefaultSeparator()) {
         resp.setHeader(BeeService.RPC_FIELD_SEP, buff.getHexSeparator());
+      }
 
-      int cc = buff.getColumnCount();
-      if (cc > 0)
+      if (cnt > 0) {
+        resp.setIntHeader(BeeService.RPC_FIELD_CNT, cnt);
+      }
+      if (cc > 0) {
         resp.setIntHeader(BeeService.RPC_FIELD_COLS, cc);
+      }
 
-      int mc = buff.getMessageCount();
       if (mc > 0) {
         resp.setIntHeader(BeeService.RPC_FIELD_MSG_CNT, mc);
         for (int i = 0; i < mc; i++) {
