@@ -11,6 +11,7 @@ import com.butent.bee.egg.client.layout.BeeSplit;
 import com.butent.bee.egg.client.utils.BeeDom;
 import com.butent.bee.egg.client.widget.BeeButton;
 import com.butent.bee.egg.client.widget.BeeCheckBox;
+import com.butent.bee.egg.client.widget.BeeLabel;
 import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.BeeName;
 import com.butent.bee.egg.shared.BeeService;
@@ -178,6 +179,9 @@ public class BeeUi implements BeeModule {
         BeeProperties.COMMUNICATION_METHOD));
     p.add(new BeeCheckBox(new BeeName(BeeGlobal.FIELD_DEBUG)));
 
+    p.add(new BeeButton("North land", "comp_ui_form",
+        BeeStage.STAGE_GET_PARAMETERS));
+
     return p;
   }
 
@@ -186,8 +190,7 @@ public class BeeUi implements BeeModule {
   }
 
   private Widget initWest() {
-    // return new BeeLabel("West");
-    return new BeeButton("West Coast", "rpc_ui_form");
+    return new BeeLabel("West");
   }
 
   private void setActiveWidget(Widget w) {

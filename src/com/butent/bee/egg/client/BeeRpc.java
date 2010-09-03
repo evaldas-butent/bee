@@ -7,7 +7,6 @@ import com.butent.bee.egg.client.communication.RpcUtil;
 import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.BeeService;
 import com.butent.bee.egg.shared.utils.BeeUtils;
-
 import com.google.gwt.http.client.Request;
 import com.google.gwt.http.client.RequestBuilder;
 import com.google.gwt.http.client.RequestException;
@@ -72,6 +71,10 @@ public class BeeRpc implements BeeModule {
 
   public boolean makePostRequest(String svc, String data, int timeout) {
     return makeRequest(RequestBuilder.POST, svc, data, timeout);
+  }
+
+  public RpcInfo getRpcInfo(int id) {
+    return rpcList.locateInfo(id);
   }
 
   private boolean makeRequest(RequestBuilder.Method type, String svc,

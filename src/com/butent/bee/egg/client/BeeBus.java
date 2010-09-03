@@ -9,7 +9,6 @@ import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeService;
 import com.butent.bee.egg.shared.BeeStage;
 import com.butent.bee.egg.shared.utils.BeeUtils;
-
 import com.google.gwt.event.dom.client.HasChangeHandlers;
 import com.google.gwt.event.dom.client.HasClickHandlers;
 import com.google.gwt.event.dom.client.HasKeyPressHandlers;
@@ -266,6 +265,26 @@ public class BeeBus implements BeeModule {
                   BeeService.FIELD_RESULT_SET_FETCH_DIRECTION,
                   BeeService.FIELD_RESULT_SET_FETCH_SIZE,
                   BeeService.FIELD_JDBC_RETURN));
+          ok = true;
+        }
+      } else {
+        BeeGlobal.showError("Unknown composite service stage", svc, stg);
+      }
+    }
+
+    else if (svc.equals("comp_ui_form")) {
+      if (stg.equals(BeeStage.STAGE_GET_PARAMETERS)) {
+        BeeKeeper.getRpc().makeGetRequest("rpc_ui_form_list");
+        ok = true;
+      } else if (stg.equals(BeeStage.STAGE_CONFIRM)) {
+        String fName = BeeGlobal.getFieldValue("form_name");
+
+        if (BeeUtils.isEmpty(fName)) {
+          BeeGlobal.showError("Form name not specified");
+        } else {
+          BeeGlobal.closeDialog(event);
+          BeeKeeper.getRpc().makePostRequest("rpc_ui_form",
+              BeeXml.createString(BeeService.XML_TAG_DATA, "form_name", fName));
           ok = true;
         }
       } else {

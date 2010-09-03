@@ -1,5 +1,6 @@
 package com.butent.bee.egg.server.ui;
 
+import java.util.Map;
 import java.util.logging.Logger;
 
 import javax.ejb.Stateless;
@@ -7,6 +8,7 @@ import javax.ejb.Stateless;
 import com.butent.bee.egg.server.Assert;
 import com.butent.bee.egg.server.http.RequestInfo;
 import com.butent.bee.egg.server.http.ResponseBuffer;
+import com.butent.bee.egg.server.utils.XmlUtils;
 import com.butent.bee.egg.shared.BeeColumn;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
@@ -18,26 +20,29 @@ public class UiLoaderBean {
     Assert.notEmpty(svc);
     Assert.notNull(buff);
 
-    if (svc.equals("rpc_ui_form"))
+    if (svc.equals("rpc_ui_form")) {
       formInfo(reqInfo, buff);
-    else if (svc.equals("rpc_ui_grid"))
+    } else if (svc.equals("rpc_ui_form_list")) {
+      formList(reqInfo, buff);
+    } else if (svc.equals("rpc_ui_grid")) {
       gridInfo(reqInfo, buff);
-    else {
+    } else {
       String msg = BeeUtils.concat(1, svc, "loader service not recognized");
       logger.warning(msg);
       buff.add(msg);
     }
   }
 
-  private void gridInfo(RequestInfo reqInfo, ResponseBuffer buff) {
-    // TODO Auto-generated method stub
-
+  private void formList(RequestInfo reqInfo, ResponseBuffer buff) {
+    buff.addColumn(new BeeColumn("Form"));
+    buff.add("testForm");
+    buff.add("unavailableForm");
   }
 
   private void formInfo(RequestInfo reqInfo, ResponseBuffer buff) {
-    String fName = reqInfo.getContent();
+    String fName = getXmlField(reqInfo, buff, "form_name");
 
-    if ("testForm".equals(fName) || "post".equals(fName)) {
+    if ("testForm".equals(fName)) {
       buff.addColumn(new BeeColumn("Object"));
       buff.addColumn(new BeeColumn("Class"));
       buff.addColumn(new BeeColumn("Parent"));
@@ -61,9 +66,29 @@ public class UiLoaderBean {
       buff.add(new Object[] { "Label1", "UiLabel", "vLayout", null });
       buff.add(new Object[] { "Unknown", "UiUnknown", "hLayout", null });
     } else {
-      String msg = "Form name not recognized: " + reqInfo.getContent();
+      String msg = "Form name not recognized: " + fName;
       logger.warning(msg);
       buff.add(msg);
     }
+  }
+
+  private void gridInfo(RequestInfo reqInfo, ResponseBuffer buff) {
+    // TODO Auto-generated method stub
+  }
+
+  private String getXmlField(RequestInfo reqInfo, ResponseBuffer buff,
+      String fieldName) {
+    String xml = reqInfo.getContent();
+    if (BeeUtils.isEmpty(xml)) {
+      buff.add("Request data not found");
+      return null;
+    }
+
+    Map<String, String> fields = XmlUtils.getText(xml);
+    if (BeeUtils.isEmpty(fields)) {
+      buff.addLine("No elements with text found in", xml);
+      return null;
+    }
+    return fields.get(fieldName);
   }
 }

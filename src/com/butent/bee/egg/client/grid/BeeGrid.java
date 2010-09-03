@@ -9,9 +9,7 @@ import com.butent.bee.egg.shared.utils.BeeUtils;
 import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.TextColumn;
-
 import com.google.gwt.user.client.ui.Widget;
-
 import com.google.gwt.view.client.ListDataProvider;
 
 public class BeeGrid {

@@ -47,7 +47,7 @@ public class RpcList extends LinkedList<RpcInfo> {
     return el.getId();
   }
 
-  private RpcInfo locateInfo(int id) {
+  public RpcInfo locateInfo(int id) {
     RpcInfo el = null;
     if (isEmpty())
       return el;
