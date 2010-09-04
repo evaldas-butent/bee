@@ -17,6 +17,7 @@ public class BeeKeeper {
   private static BeeUser USER;
   private static BeeGlobal GLOB;
   private static BeeProperties PROP;
+  private static BeeMenu MENU;
 
   private BeeModule[] modules;
 
@@ -31,9 +32,10 @@ public class BeeKeeper {
     USER = new BeeUser();
     GLOB = new BeeGlobal();
     PROP = new BeeProperties();
+    MENU = new BeeMenu();
 
     modules = new BeeModule[] { UI, BUS, RPC, LOG, STYLE, SCHED, USER, GLOB,
-        PROP };
+        PROP, MENU };
   }
 
   public static BeeUi getUi() {
@@ -54,6 +56,10 @@ public class BeeKeeper {
 
   public static BeeProperties getProp() {
     return PROP;
+  }
+
+  public static BeeMenu getMenu() {
+    return MENU;
   }
 
   public void init() {

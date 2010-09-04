@@ -131,6 +131,48 @@ public class XmlUtils {
     return getTreeInfo(doc, "0");
   }
 
+  public static StringProp[][] getAttributesFromFile(String fileName, String tagName) {
+    Assert.notEmpty(fileName);
+    Assert.notEmpty(tagName);
+    
+    Document doc = fromFile(fileName);
+    if (doc == null) {
+      LogUtils.warning(logger, fileName, "cannot parse xml");
+      return null;
+    }
+    
+    NodeList lst = doc.getElementsByTagName(tagName);
+    int r = (lst == null) ? 0 : lst.getLength();
+    if (r <= 0) {
+      LogUtils.warning(logger, "tag", tagName, "not found in", fileName);
+      return null;
+    }
+
+    StringProp[][] arr = new StringProp[r][];
+    
+    NamedNodeMap attributes;
+    Attr attr;
+    int c;
+
+    for (int i = 0; i < r; i++) {
+      attributes = lst.item(i).getAttributes();
+      c = (attributes == null) ? 0 : attributes.getLength();
+      
+      if (c <= 0) {
+        arr[i] = null;
+      }
+      else {
+        arr[i] = new StringProp[c];
+        for (int j = 0; j < c; j++) {
+          attr = (Attr) attributes.item(j);
+          arr[i][j] = new StringProp(attr.getName(), attr.getValue());
+        }
+      }
+    }
+    
+    return arr;
+  }
+
   public static List<SubProp> getRootInfo(Document doc) {
     Assert.notNull(doc);
     List<SubProp> lst = new ArrayList<SubProp>();

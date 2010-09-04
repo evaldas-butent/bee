@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.Transformable;
 import com.butent.bee.egg.shared.utils.BeeUtils;
@@ -17,6 +18,7 @@ import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.PopupPanel;
+import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.Widget;
 
 public abstract class BeeDom {
@@ -26,22 +28,21 @@ public abstract class BeeDom {
     }
 
     public native String getName() /*-{
-                                   return this.name;
-                                   }-*/;
+      return this.name;
+    }-*/;
 
     public native String getValue() /*-{
-                                    return this.value;
-                                    }-*/;
+      return this.value;
+    }-*/;
 
     public native void setName(String nm) /*-{
-                                          this.name = nm;
-                                          }-*/;
+      this.name = nm;
+    }-*/;
 
     public native void setValue(String v) /*-{
-                                          this.value = v;
-                                          }-*/;
+      this.value = v;
+    }-*/;
 
-    @Override
     public String transform() {
       return getName() + BeeConst.DEFAULT_VALUE_SEPARATOR + getValue();
     }
@@ -64,41 +65,34 @@ public abstract class BeeDom {
     return BeeUtils.createUniqueName(DEFAULT_NAME_PREFIX);
   }
 
-  public static String getId(Widget w) {
-    if (w == null)
-      return null;
-    else
-      return w.getElement().getId();
+  public static String getId(UIObject obj) {
+    Assert.notNull(obj);
+    return obj.getElement().getId();
   }
 
-  public static String setId(Widget w, String id) {
-    if (w == null || BeeUtils.isEmpty(id))
-      return null;
-    else {
-      String s = id.trim();
-      w.getElement().setId(s);
-      return s;
-    }
+  public static String setId(UIObject obj, String id) {
+    Assert.notNull(obj);
+    Assert.notEmpty(id);
+
+    String s = id.trim();
+    obj.getElement().setId(s);
+
+    return s;
   }
 
-  public static String setId(Widget w) {
-    return setId(w, createUniqueId());
+  public static String setId(UIObject obj) {
+    return setId(obj, createUniqueId());
   }
 
   public static int getTabIndex(Widget w) {
-    if (w == null)
-      return BeeConst.INDEX_UNKNOWN;
-    else
-      return w.getElement().getTabIndex();
+    Assert.notNull(w);
+    return w.getElement().getTabIndex();
   }
 
   public static int setTabIndex(Widget w, int idx) {
-    if (w == null)
-      return BeeConst.INDEX_UNKNOWN;
-    else {
-      w.getElement().setTabIndex(idx);
-      return idx;
-    }
+    Assert.notNull(w);
+    w.getElement().setTabIndex(idx);
+    return idx;
   }
 
   public static String getService(Widget w) {
@@ -118,54 +112,56 @@ public abstract class BeeDom {
   }
 
   public static String getAttribute(Widget w, String name) {
-    if (w == null || BeeUtils.isEmpty(name))
-      return null;
-    else
-      return w.getElement().getAttribute(name);
+    Assert.notNull(w);
+    Assert.notEmpty(name);
+
+    return w.getElement().getAttribute(name);
   }
 
   public static String setAttribute(Widget w, String name, String value) {
-    if (w == null || BeeUtils.isEmpty(name) || BeeUtils.isEmpty(value))
-      return null;
-    else {
-      String s = name.trim();
-      w.getElement().setAttribute(name.trim().toLowerCase(), value.trim());
-      return s;
-    }
+    Assert.notNull(w);
+    Assert.notEmpty(name);
+    Assert.notEmpty(value);
+
+    String s = name.trim();
+    w.getElement().setAttribute(name.trim().toLowerCase(), value.trim());
+    return s;
   }
 
   public static void removeAttribute(Widget w, String name) {
-    if (w != null && !BeeUtils.isEmpty(name))
-      w.getElement().removeAttribute(name);
+    Assert.notNull(w);
+    Assert.notEmpty(name);
+
+    w.getElement().removeAttribute(name);
   }
 
   public static native NodeList<Element> getElementsByName(String name) /*-{
-                                                                        return $doc.getElementsByName(name);
-                                                                        }-*/;
+    return $doc.getElementsByName(name);
+  }-*/;
 
   public static List<Widget> getSiblings(Widget w) {
-    if (w == null)
-      return null;
+    Assert.notNull(w);
 
     Widget p = w.getParent();
-    if (!(p instanceof HasWidgets))
+    if (!(p instanceof HasWidgets)) {
       return null;
+    }
 
     List<Widget> sib = new ArrayList<Widget>();
 
-    for (Iterator<Widget> it = ((HasWidgets) p).iterator(); it.hasNext();)
+    for (Iterator<Widget> it = ((HasWidgets) p).iterator(); it.hasNext();) {
       sib.add(it.next());
+    }
 
     return sib;
   }
 
   public static native JsArray<ElementAttribute> getNativeAttributes(Element el) /*-{
-                                                                                 return el.attributes;
-                                                                                 }-*/;
+    return el.attributes;
+  }-*/;
 
   public static List<StringProp> getAttributes(Element el) {
-    if (el == null)
-      return null;
+    Assert.notNull(el);
 
     JsArray<ElementAttribute> arr = getNativeAttributes(el);
     if (arr == null)
@@ -183,46 +179,45 @@ public abstract class BeeDom {
   }
 
   public static boolean isInputElement(Element el) {
-    if (el == null)
-      return false;
-    else
-      return el.getTagName().equalsIgnoreCase(TAG_INPUT);
+    Assert.notNull(el);
+    return el.getTagName().equalsIgnoreCase(TAG_INPUT);
   }
 
   public static List<String> getAncestry(Widget w) {
-    if (w == null)
-      return null;
+    Assert.notNull(w);
+    List<String> lst = new ArrayList<String>();
 
     Widget p = w.getParent();
-    if (p == null)
-      return null;
-
-    List<String> lst = new ArrayList<String>();
+    if (p == null) {
+      return lst;
+    }
 
     for (int i = 0; i < MAX_GENERATIONS; i++) {
       lst.add(BeeUtils.concat(1, i, p.getClass().getName(), p.getElement()
           .getId(), p.getStyleName()));
 
       p = p.getParent();
-      if (p == null)
+      if (p == null) {
         break;
+      }
     }
 
     return lst;
   }
 
   public static PopupPanel parentPopup(Widget w) {
-    if (w == null)
-      return null;
+    Assert.notNull(w);
 
     Widget p = w;
     for (int i = 0; i < MAX_GENERATIONS; i++) {
-      if (p instanceof PopupPanel)
+      if (p instanceof PopupPanel) {
         return (PopupPanel) p;
+      }
 
       p = p.getParent();
-      if (p == null)
+      if (p == null) {
         break;
+      }
     }
 
     return null;

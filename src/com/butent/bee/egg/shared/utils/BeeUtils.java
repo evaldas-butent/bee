@@ -15,6 +15,7 @@ import com.butent.bee.egg.shared.BeeType;
 import com.butent.bee.egg.shared.Transformable;
 
 public abstract class BeeUtils {
+  private static final String SERIALIZATION_SEPARATOR = ";";
   private static int NAME_COUNTER = 0;
 
   public static boolean isEmpty(Object x) {
@@ -351,15 +352,20 @@ public abstract class BeeUtils {
   }
 
   public static int compare(String s1, String s2) {
-    if (isEmpty(s1))
-      if (isEmpty(s2))
+    if (isEmpty(s1)) {
+      if (isEmpty(s2)) {
         return BeeConst.COMPARE_EQUAL;
-      else
+      }
+      else {
         return BeeConst.COMPARE_LESS;
-    else if (isEmpty(s2))
+      }
+    }  
+    else if (isEmpty(s2)) {
       return BeeConst.COMPARE_MORE;
-    else
+    }
+    else {
       return s1.compareTo(s2);
+    }
   }
 
   public static int compare(int x1, int x2) {
@@ -529,22 +535,30 @@ public abstract class BeeUtils {
 
     int tp;
 
-    if (x instanceof Boolean)
+    if (x instanceof Boolean) {
       tp = BeeType.TYPE_BOOLEAN;
-    else if (instanceOfStringType(x))
+    }
+    else if (instanceOfStringType(x)) {
       tp = BeeType.TYPE_STRING;
-    else if (x instanceof Character)
+    }  
+    else if (x instanceof Character) {
       tp = BeeType.TYPE_CHAR;
+    }  
     else if (x instanceof Number) {
       tp = BeeType.TYPE_NUMBER;
-      if (instanceOfIntegerType(x))
+      if (instanceOfIntegerType(x)) {
         tp += BeeType.TYPE_INT;
-      if (instanceOfFloatingPoint(x))
+      }  
+      if (instanceOfFloatingPoint(x)) {
+        tp += BeeType.TYPE_FLOAT;
         tp += BeeType.TYPE_DOUBLE;
-    } else if (instanceOfDateTime(x))
+      }  
+    } else if (instanceOfDateTime(x)) {
       tp = BeeType.TYPE_DATE;
-    else
+    }  
+    else {
       tp = BeeType.TYPE_UNKNOWN;
+    }  
 
     for (int i = 0; i < types.length; i++)
       if ((tp & types[i]) != 0) {
@@ -799,6 +813,10 @@ public abstract class BeeUtils {
         + toLeadingZeroes((int) (millis % 1000), 3);
   }
 
+  public static String elapsedSeconds(long start) {
+    return bracket(toSeconds(System.currentTimeMillis() - start));
+  }
+
   public static boolean isDigit(CharSequence s) {
     if (s == null)
       return false;
@@ -822,6 +840,7 @@ public abstract class BeeUtils {
   }
   
   public static boolean allEmpty(Object... obj) {
+    Assert.parameterCount(obj.length, 1);
     boolean ok = true;
     
     for (Object z : obj) {
@@ -833,4 +852,77 @@ public abstract class BeeUtils {
     
     return ok;
   }
+
+  public static boolean allNotEmpty(Object... obj) {
+    Assert.parameterCount(obj.length, 1);
+    boolean ok = true;
+    
+    for (Object z : obj) {
+      if (isEmpty(z)) {
+        ok = false;
+        break;
+      }
+    }
+    
+    return ok;
+  }
+  
+  public static String serialize(Object obj) {
+    if (obj == null) {
+      return SERIALIZATION_SEPARATOR;
+    }
+    else {
+      String s = transform(obj);
+      return s.length() + SERIALIZATION_SEPARATOR + s;
+    }
+  }
+  
+  public static String serializeValues(Object... obj) {
+    int n = obj.length;
+    Assert.parameterCount(n, 1);
+    
+    StringBuilder sb = new StringBuilder();
+    sb.append(n);
+    sb.append(SERIALIZATION_SEPARATOR);
+    
+    for (int i = 0; i < n; i++) {
+      sb.append(serialize(obj[i]));
+    }
+    
+    return sb.toString();
+  }
+  
+  public static String[] deserializeValues(String ser) {
+    Assert.notEmpty(ser);
+    
+    int p1 = ser.indexOf(SERIALIZATION_SEPARATOR);
+    Assert.isPositive(p1);
+    
+    int n = toInt(ser.substring(0, p1));
+    Assert.isPositive(n);
+    
+    String[] arr = new String[n];
+    int p2, len;
+    
+    for (int i = 0; i < n; i++) {
+      p2 = ser.indexOf(SERIALIZATION_SEPARATOR, p1 + 1);
+      
+      if (p2 == p1 + 1) {
+        arr[i] = null;
+        break;
+      }
+      
+      len = toInt(ser.substring(p1 + 1, p2));
+      if (len > 0) {
+        arr[i] = ser.substring(p2 + 1, p2 + 1 + len);
+        p1 = p2 + len;
+      } else {
+        arr[i] = BeeConst.STRING_EMPTY;
+        p1 = p2;
+      }
+    }
+    
+    return arr;
+  }
+  
 }

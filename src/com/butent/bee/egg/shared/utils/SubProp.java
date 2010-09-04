@@ -67,7 +67,6 @@ public class SubProp extends StringProp {
         .transform(getValue()));
   }
 
-  @Override
   public String transform() {
     return toString();
   }

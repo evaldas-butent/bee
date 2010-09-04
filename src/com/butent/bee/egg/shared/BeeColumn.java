@@ -9,7 +9,7 @@ import com.butent.bee.egg.shared.utils.BeeUtils;
 import com.butent.bee.egg.shared.utils.PropUtils;
 import com.butent.bee.egg.shared.utils.StringProp;
 
-public class BeeColumn implements Transformable {
+public class BeeColumn implements Transformable, BeeSerializable {
   public static final char SERIALIZATION_SEPARATOR = ',';
 
   public static final int NO_NULLS = 0;

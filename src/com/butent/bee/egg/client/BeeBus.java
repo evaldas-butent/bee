@@ -30,12 +30,10 @@ public class BeeBus implements BeeModule {
     this.eventBus = bus;
   }
 
-  @Override
   public String getName() {
     return getClass().getName();
   }
 
-  @Override
   public int getPriority(int p) {
     switch (p) {
     case PRIORITY_INIT:
@@ -49,16 +47,13 @@ public class BeeBus implements BeeModule {
     }
   }
 
-  @Override
   public void init() {
     initEvents();
   }
 
-  @Override
   public void start() {
   }
 
-  @Override
   public void end() {
   }
 

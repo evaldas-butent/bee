@@ -7,7 +7,6 @@ import com.google.gwt.user.client.ui.ValueBoxBase;
 
 public class BeeKeyPressHandler implements KeyPressHandler {
 
-  @Override
   public void onKeyPress(KeyPressEvent event) {
     if (event.getNativeEvent().getKeyCode() == KeyCodes.KEY_ENTER) {
       Object source = event.getSource();

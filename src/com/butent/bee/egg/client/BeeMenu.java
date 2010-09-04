@@ -1,6 +1,10 @@
 package com.butent.bee.egg.client;
 
-public class BeeUser implements BeeModule {
+public class BeeMenu implements BeeModule {
+
+  public BeeMenu() {
+    super();
+  }
 
   public String getName() {
     return getClass().getName();

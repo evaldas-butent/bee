@@ -23,6 +23,8 @@ public class DispatcherBean {
   DataServiceBean dataBean;
   @EJB
   UiLoaderBean uiBean;
+  @EJB
+  MenuBean menuBean;
 
   public void doService(String svc, String dsn, RequestInfo reqInfo,
       ResponseBuffer buff) {
@@ -33,6 +35,8 @@ public class DispatcherBean {
       dataBean.doService(svc, dsn, reqInfo, buff);
     else if (BeeService.isSysService(svc))
       sysBean.doService(svc, reqInfo, buff);
+    else if (BeeUtils.same(svc, BeeService.SERVICE_GET_MENU))
+      menuBean.getMenu(buff);
     else if (svc.startsWith("rpc_ui_"))
       uiBean.doService(svc, reqInfo, buff);
     else {

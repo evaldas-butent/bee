@@ -30,6 +30,8 @@ public class BeeService {
   public static final String SERVICE_LOGIN = RPC_SERVICE_PREFIX + "login";
   public static final String SERVICE_LOGOUT = RPC_SERVICE_PREFIX + "logout";
 
+  public static final String SERVICE_GET_MENU = RPC_SERVICE_PREFIX + "get_menu";
+
   public static final String SERVICE_CLOSE_DIALOG = UI_SERVICE_PREFIX
       + "close_dialog";
   public static final String SERVICE_CONFIRM_DIALOG = UI_SERVICE_PREFIX

@@ -23,7 +23,6 @@ public class Counter implements Transformable {
     return (++counter);
   }
 
-  @Override
   public String transform() {
     return Integer.toString(getCounter());
   }

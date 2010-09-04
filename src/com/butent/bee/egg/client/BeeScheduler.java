@@ -28,12 +28,10 @@ public class BeeScheduler implements BeeModule {
         .getFormat(PredefinedFormat.DATE_TIME_FULL).format(new Date()));
   }
 
-  @Override
   public String getName() {
     return getClass().getName();
   }
 
-  @Override
   public int getPriority(int p) {
     switch (p) {
     case PRIORITY_INIT:
@@ -47,15 +45,12 @@ public class BeeScheduler implements BeeModule {
     }
   }
 
-  @Override
   public void init() {
   }
 
-  @Override
   public void start() {
   }
 
-  @Override
   public void end() {
   }
 

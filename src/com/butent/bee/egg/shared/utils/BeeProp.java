@@ -37,7 +37,6 @@ public class BeeProp<T> implements Comparable<BeeProp<T>>, Transformable {
     this.value = value;
   }
 
-  @Override
   public int compareTo(BeeProp<T> oth) {
     if (name == null)
       if (oth.name == null)
@@ -79,7 +78,6 @@ public class BeeProp<T> implements Comparable<BeeProp<T>>, Transformable {
     return name + BeeConst.DEFAULT_VALUE_SEPARATOR + BeeUtils.transform(value);
   }
 
-  @Override
   public String transform() {
     return toString();
   }

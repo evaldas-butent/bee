@@ -90,7 +90,7 @@ public abstract class BeeConst {
 
   public static final String SERVER = "server";
   public static final String CLIENT = "client";
-  
+
   public static boolean validDsType(String tp) {
     boolean ok = false;
 

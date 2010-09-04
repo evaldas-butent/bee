@@ -2,12 +2,13 @@ package com.butent.bee.egg.client.layout;
 
 import com.butent.bee.egg.client.utils.BeeDom;
 import com.butent.bee.egg.shared.HasId;
-import com.google.gwt.user.client.ui.SplitLayoutPanel;
+import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.user.client.ui.TabLayoutPanel;
 
-public class BeeSplit extends SplitLayoutPanel implements HasId {
+public class BeeTab extends TabLayoutPanel implements HasId {
 
-  public BeeSplit() {
-    super();
+  public BeeTab(double barHeight, Unit barUnit) {
+    super(barHeight, barUnit);
     BeeDom.setId(this);
   }
 

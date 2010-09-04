@@ -26,12 +26,10 @@ public class BeePopupPanel extends PopupPanel implements HasId {
     BeeDom.setId(this);
   }
 
-  @Override
   public String getId() {
     return BeeDom.getId(this);
   }
 
-  @Override
   public void setId(String id) {
     BeeDom.setId(this, id);
   }

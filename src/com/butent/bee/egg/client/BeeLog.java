@@ -100,6 +100,10 @@ public class BeeLog implements BeeModule {
   public void clear() {
     getArea().clear();
   }
+  
+  public void stack() {
+    LogUtils.stack(getLogger(), new Throwable());
+  }
 
   private void addArea(HasWidgets p) {
     if (p != null)
