@@ -91,8 +91,10 @@ public abstract class BeeUtils {
   }
 
   public static String transformCollection(Collection<?> lst, Object... sep) {
-    if (isEmpty(lst))
+    if (isEmpty(lst)) {
       return BeeConst.STRING_EMPTY;
+    }
+    
     int cSep = sep.length;
     String z = cSep > 0 ? normSep(sep[0]) : BeeConst.DEFAULT_LIST_SEPARATOR;
 
@@ -102,15 +104,18 @@ public abstract class BeeUtils {
 
     if (cSep > 1) {
       nextSep = new Object[cSep - 1];
-      for (int i = 0; i < cSep - 1; i++)
+      for (int i = 0; i < cSep - 1; i++) {
         nextSep[i] = sep[i + 1];
-    } else
+      }
+    } else {
       nextSep = new String[] { z };
+    }
 
     for (Iterator<?> it = lst.iterator(); it.hasNext();) {
       el = it.next();
-      if (sb.length() > 0)
+      if (sb.length() > 0) {
         sb.append(z);
+      }
       sb.append(transform(el, nextSep));
     }
 
@@ -355,15 +360,12 @@ public abstract class BeeUtils {
     if (isEmpty(s1)) {
       if (isEmpty(s2)) {
         return BeeConst.COMPARE_EQUAL;
-      }
-      else {
+      } else {
         return BeeConst.COMPARE_LESS;
       }
-    }  
-    else if (isEmpty(s2)) {
+    } else if (isEmpty(s2)) {
       return BeeConst.COMPARE_MORE;
-    }
-    else {
+    } else {
       return s1.compareTo(s2);
     }
   }
@@ -537,28 +539,24 @@ public abstract class BeeUtils {
 
     if (x instanceof Boolean) {
       tp = BeeType.TYPE_BOOLEAN;
-    }
-    else if (instanceOfStringType(x)) {
+    } else if (instanceOfStringType(x)) {
       tp = BeeType.TYPE_STRING;
-    }  
-    else if (x instanceof Character) {
+    } else if (x instanceof Character) {
       tp = BeeType.TYPE_CHAR;
-    }  
-    else if (x instanceof Number) {
+    } else if (x instanceof Number) {
       tp = BeeType.TYPE_NUMBER;
       if (instanceOfIntegerType(x)) {
         tp += BeeType.TYPE_INT;
-      }  
+      }
       if (instanceOfFloatingPoint(x)) {
         tp += BeeType.TYPE_FLOAT;
         tp += BeeType.TYPE_DOUBLE;
-      }  
+      }
     } else if (instanceOfDateTime(x)) {
       tp = BeeType.TYPE_DATE;
-    }  
-    else {
+    } else {
       tp = BeeType.TYPE_UNKNOWN;
-    }  
+    }
 
     for (int i = 0; i < types.length; i++)
       if ((tp & types[i]) != 0) {
@@ -697,8 +695,9 @@ public abstract class BeeUtils {
   }
 
   public static int toInt(String s) {
-    if (isEmpty(s))
+    if (isEmpty(s)) {
       return 0;
+    }
     int i;
 
     try {
@@ -721,7 +720,7 @@ public abstract class BeeUtils {
     } catch (NumberFormatException ex) {
       ok = false;
     }
-    
+
     return ok;
   }
 
@@ -838,80 +837,79 @@ public abstract class BeeUtils {
 
     return ok;
   }
-  
+
   public static boolean allEmpty(Object... obj) {
     Assert.parameterCount(obj.length, 1);
     boolean ok = true;
-    
+
     for (Object z : obj) {
-      if (! isEmpty(z)) {
+      if (!isEmpty(z)) {
         ok = false;
         break;
       }
     }
-    
+
     return ok;
   }
 
   public static boolean allNotEmpty(Object... obj) {
     Assert.parameterCount(obj.length, 1);
     boolean ok = true;
-    
+
     for (Object z : obj) {
       if (isEmpty(z)) {
         ok = false;
         break;
       }
     }
-    
+
     return ok;
   }
-  
+
   public static String serialize(Object obj) {
     if (obj == null) {
       return SERIALIZATION_SEPARATOR;
-    }
-    else {
+    } else {
       String s = transform(obj);
       return s.length() + SERIALIZATION_SEPARATOR + s;
     }
   }
-  
+
   public static String serializeValues(Object... obj) {
     int n = obj.length;
     Assert.parameterCount(n, 1);
-    
+
     StringBuilder sb = new StringBuilder();
     sb.append(n);
     sb.append(SERIALIZATION_SEPARATOR);
-    
+
     for (int i = 0; i < n; i++) {
       sb.append(serialize(obj[i]));
     }
-    
+
     return sb.toString();
   }
-  
+
   public static String[] deserializeValues(String ser) {
     Assert.notEmpty(ser);
-    
+
     int p1 = ser.indexOf(SERIALIZATION_SEPARATOR);
     Assert.isPositive(p1);
-    
+
     int n = toInt(ser.substring(0, p1));
     Assert.isPositive(n);
-    
+
     String[] arr = new String[n];
     int p2, len;
-    
+
     for (int i = 0; i < n; i++) {
       p2 = ser.indexOf(SERIALIZATION_SEPARATOR, p1 + 1);
-      
+
       if (p2 == p1 + 1) {
         arr[i] = null;
         break;
       }
-      
+
       len = toInt(ser.substring(p1 + 1, p2));
       if (len > 0) {
         arr[i] = ser.substring(p2 + 1, p2 + 1 + len);
@@ -921,8 +919,22 @@ public abstract class BeeUtils {
         p1 = p2;
       }
     }
-    
+
     return arr;
   }
-  
+
+  public static boolean startsSame(String s1, String s2) {
+    if (isEmpty(s1) || isEmpty(s2)) {
+      return false;
+    }
+
+    int len = Math.min(s1.trim().length(), s2.trim().length());
+    if (len > 0) {
+      return s1.trim().substring(0, len)
+          .equalsIgnoreCase(s2.trim().substring(0, len));
+    } else {
+      return false;
+    }
+  }
+
 }

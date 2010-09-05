@@ -74,14 +74,22 @@ public class BeeLog implements BeeModule {
   public void end() {
   }
 
-  public void log(String msg) {
+  public void info(String msg) {
     LogUtils.info(getLogger(), msg);
   }
 
-  public void log(Object... obj) {
+  public void info(Object... obj) {
     LogUtils.info(getLogger(), obj);
   }
 
+  public void warning(Object... obj) {
+    LogUtils.warning(getLogger(), obj);
+  }
+
+  public void severe(Object... obj) {
+    LogUtils.severe(getLogger(), obj);
+  }
+  
   public void addSeparator() {
     getLogger().log(LogFormatter.LOG_SEPARATOR_LEVEL,
         LogFormatter.LOG_SEPARATOR_TAG);
@@ -92,9 +100,9 @@ public class BeeLog implements BeeModule {
 
     dur.finish();
     if (obj.length > 0)
-      log(dur, obj);
+      info(dur, obj);
     else
-      log(dur.toString());
+      info(dur.toString());
   }
   
   public void clear() {
@@ -102,7 +110,9 @@ public class BeeLog implements BeeModule {
   }
   
   public void stack() {
-    LogUtils.stack(getLogger(), new Throwable());
+    Throwable err = new Throwable();
+    err.fillInStackTrace();
+    LogUtils.stack(getLogger(), err);
   }
 
   private void addArea(HasWidgets p) {

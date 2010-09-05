@@ -4,10 +4,10 @@ import com.butent.bee.egg.client.communication.BeeCallback;
 import com.butent.bee.egg.client.communication.RpcInfo;
 import com.butent.bee.egg.client.communication.RpcList;
 import com.butent.bee.egg.client.communication.RpcUtil;
+import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.BeeService;
 import com.butent.bee.egg.shared.utils.BeeUtils;
-import com.google.gwt.http.client.Request;
 import com.google.gwt.http.client.RequestBuilder;
 import com.google.gwt.http.client.RequestException;
 
@@ -15,7 +15,7 @@ public class BeeRpc implements BeeModule {
   private final String rpcUrl;
 
   private RpcList rpcList = new RpcList();
-  private BeeCallback back = new BeeCallback();
+  private BeeCallback callBack = new BeeCallback();
 
   public BeeRpc(String url) {
     this.rpcUrl = url;
@@ -72,16 +72,39 @@ public class BeeRpc implements BeeModule {
   public boolean makePostRequest(String svc, String data, int timeout) {
     return makeRequest(RequestBuilder.POST, svc, data, timeout);
   }
+  
+  public BeeCallback getCallBack() {
+    return callBack;
+  }
+
+  public void setCallBack(BeeCallback callBack) {
+    this.callBack = callBack;
+  }
+
+  public RpcList getRpcList() {
+    return rpcList;
+  }
+
+  public void setRpcList(RpcList rpcList) {
+    this.rpcList = rpcList;
+  }
 
   public RpcInfo getRpcInfo(int id) {
     return rpcList.locateInfo(id);
   }
+  
+  public String getService(int id) {
+    RpcInfo info = getRpcInfo(id);
+    return (info == null) ? BeeConst.STRING_EMPTY : info.getName();
+  }
 
   private boolean makeRequest(RequestBuilder.Method type, String svc,
       String data, int timeout) {
+    Assert.notNull(type);
+    Assert.notEmpty(svc);
+    
     boolean ok = false;
-    if (type == null || BeeUtils.isEmpty(svc))
-      return ok;
+    boolean debug = BeeGlobal.isDebug();
 
     RpcInfo info = new RpcInfo(type, svc);
     int id = info.getId();
@@ -90,31 +113,39 @@ public class BeeRpc implements BeeModule {
     String url = RpcUtil.addQueryString(rpcUrl, qs);
 
     RequestBuilder bld = new RequestBuilder(type, url);
-    if (timeout > 0)
+    if (timeout > 0) {
       bld.setTimeoutMillis(timeout);
+      info.setTimeout(timeout);
+    }  
     buildHeaders(bld, id);
 
     info.setReqMsg(qs);
 
-    Request req = null;
-
-    BeeKeeper.getLog().log("sending request", id, type.toString(), url);
-    if (!BeeUtils.isEmpty(data))
-      BeeKeeper.getLog().log("sending data", BeeUtils.bracket(data.length()),
-          data);
+    BeeKeeper.getLog().info("sending request", id, type.toString(), url);
+    
+    if (!BeeUtils.isEmpty(data)) {
+      int size = data.length();
+      info.setReqSize(size);
+      
+      if (debug) {
+        BeeKeeper.getLog().info("sending data", BeeUtils.bracket(size), data);
+      }
+    }
 
     try {
-      req = bld.sendRequest(data, back);
+      bld.sendRequest(data, callBack);
 
       info.setState(BeeConst.STATE_OPEN);
       ok = true;
     } catch (RequestException ex) {
       info.endError(ex);
 
-      BeeKeeper.getLog().log("send request error", id, ex);
+      BeeKeeper.getLog().severe("send request error", id, ex);
     }
-
-    info.setReqInfo(RpcUtil.requestInfo(bld, req));
+    
+    if (debug) {
+      info.setReqInfo(RpcUtil.requestInfo(bld));
+    }
     rpcList.addInfo(info);
 
     return ok;
@@ -126,19 +157,23 @@ public class BeeRpc implements BeeModule {
   }
 
   private void buildHeaders(RequestBuilder bld, int id) {
-    if (id > 0)
+    if (id > 0) {
       bld.setHeader(BeeService.RPC_FIELD_QID, BeeUtils.transform(id));
+    }
 
     String opt = buildOptions();
-    if (!BeeUtils.isEmpty(opt))
+    if (!BeeUtils.isEmpty(opt)) {
       bld.setHeader(BeeService.RPC_FIELD_OPT, opt);
+    }
   }
 
   private String buildOptions() {
-    if (BeeGlobal.isDebug())
+    if (BeeGlobal.isDebug()) {
       return BeeService.OPTION_DEBUG;
-    else
+    }  
+    else {
       return BeeConst.STRING_EMPTY;
+    }
   }
 
   private String getDsn() {

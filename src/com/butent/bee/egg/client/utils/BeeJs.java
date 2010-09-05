@@ -63,5 +63,14 @@ public abstract class BeeJs {
   public static native double currentTimeMillis() /*-{
     return (new Date()).getTime();
   }-*/;
+  
+  public static native String eval(String xpr) /*-{
+    try {
+      return eval(xpr).toString();
+    }
+    catch (err) {
+      return err.toString();
+    }
+  }-*/;
 
 }

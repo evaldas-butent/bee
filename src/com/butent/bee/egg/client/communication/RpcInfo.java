@@ -3,9 +3,9 @@ package com.butent.bee.egg.client.communication;
 import java.util.Collection;
 
 import com.butent.bee.egg.client.utils.BeeDuration;
-import com.butent.bee.egg.client.utils.BeeJs;
 
 import com.butent.bee.egg.shared.BeeConst;
+import com.butent.bee.egg.shared.utils.BeeUtils;
 import com.butent.bee.egg.shared.utils.StringProp;
 import com.butent.bee.egg.shared.utils.SubProp;
 
@@ -20,7 +20,7 @@ public class RpcInfo {
   public final static String COL_NAME = "Name";
   public final static String COL_TYPE = "Type";
 
-  public final static String COL_STATUS = "Status";
+  public final static String COL_STATE = "State";
 
   public final static String COL_START = "Start";
   public final static String COL_END = "End";
@@ -32,11 +32,13 @@ public class RpcInfo {
   public final static String COL_REQ_ROWS = "Request Rows";
   public final static String COL_REQ_COLS = "Request Columns";
   public final static String COL_REQ_SIZE = "Request Size";
+  public final static String COL_REQ_INFO = "Request Info";
 
   public final static String COL_RESP_MSG = "Response Msg";
   public final static String COL_RESP_ROWS = "Response Rows";
   public final static String COL_RESP_COLS = "Response Columns";
   public final static String COL_RESP_SIZE = "Response Size";
+  public final static String COL_RESP_INFO = "Response Info";
 
   public final static String COL_ERR_MSG = "Error Msg";
 
@@ -239,38 +241,23 @@ public class RpcInfo {
   public void setErrMsg(String errMsg) {
     this.errMsg = errMsg;
   }
-
-  private int done() {
-    return duration.finish();
+  
+  public void setTimeout(int timeout) {
+    duration.setTimeout(timeout);
   }
 
-  private int end(int st, String msg, int rows, int cols, int size, String err) {
-    int r = done();
-
-    if (st > 0)
-      setState(st);
-    else if (!BeeJs.isEmpty(err))
-      setState(BeeConst.STATE_ERROR);
-    else
-      setState(BeeConst.STATE_CLOSED);
-
-    setRespMsg(msg);
-    if (rows != BeeConst.SIZE_UNKNOWN)
-      setRespRows(rows);
-    if (cols != BeeConst.SIZE_UNKNOWN)
-      setRespCols(cols);
-    if (size != BeeConst.SIZE_UNKNOWN)
-      setRespSize(size);
-
-    if (!BeeJs.isEmpty(err))
-      setErrMsg(err);
-
-    return r;
+  public int getTimeout() {
+    return duration.getTimeout();
   }
-
+  
   public int endMessage(String msg) {
     return end(BeeConst.STATE_CLOSED, msg, BeeConst.SIZE_UNKNOWN,
         BeeConst.SIZE_UNKNOWN, BeeConst.SIZE_UNKNOWN, null);
+  }
+
+  public int endMessage(String msg, int size) {
+    return end(BeeConst.STATE_CLOSED, msg, BeeConst.SIZE_UNKNOWN,
+        BeeConst.SIZE_UNKNOWN, size, null);
   }
 
   public int endResult(int rows, int cols) {
@@ -278,12 +265,34 @@ public class RpcInfo {
         null);
   }
 
-  public int endError(Exception ex) {
-    return end(BeeConst.STATE_ERROR, null, BeeConst.SIZE_UNKNOWN,
-        BeeConst.SIZE_UNKNOWN, BeeConst.SIZE_UNKNOWN, ex.getMessage());
+  public int endResult(int rows, int cols, int size) {
+    return end(BeeConst.STATE_CLOSED, null, rows, cols, size, null);
   }
 
-  public boolean filterStatus(int st) {
+  public int endRows(int rows, int size) {
+    return end(BeeConst.STATE_CLOSED, null, rows, BeeConst.SIZE_UNKNOWN, size, null);
+  }
+  
+  public int endColumns(int cols, int size) {
+    return end(BeeConst.STATE_CLOSED, null, BeeConst.SIZE_UNKNOWN, cols, size, null);
+  }
+
+  public int endSize(int size) {
+    return end(BeeConst.STATE_CLOSED, null, 
+        BeeConst.SIZE_UNKNOWN, BeeConst.SIZE_UNKNOWN, size, null);
+  }
+
+  public int endError(Exception ex) {
+    return end(BeeConst.STATE_ERROR, null, BeeConst.SIZE_UNKNOWN,
+        BeeConst.SIZE_UNKNOWN, BeeConst.SIZE_UNKNOWN, ex.toString());
+  }
+
+  public int endError(String msg) {
+    return end(BeeConst.STATE_ERROR, null, BeeConst.SIZE_UNKNOWN,
+        BeeConst.SIZE_UNKNOWN, BeeConst.SIZE_UNKNOWN, msg);
+  }
+
+  public boolean filterState(int st) {
     return (state & st) != 0;
   }
 
@@ -299,7 +308,15 @@ public class RpcInfo {
     return duration.getCompletedTime();
   }
 
-  public String getStatusString() {
+  public String getTimeoutString() {
+    return duration.getTimeoutAsTime();
+  }
+
+  public String getExpireTime() {
+    return duration.getExpireTime();
+  }
+
+  public String getStateString() {
     String s;
 
     switch (state) {
@@ -331,10 +348,63 @@ public class RpcInfo {
   }
 
   public String getSizeString(int z) {
-    if (z != BeeConst.SIZE_UNKNOWN)
-      return BeeJs.transform(z);
-    else
+    if (z != BeeConst.SIZE_UNKNOWN) {
+      return BeeUtils.transform(z);
+    }
+    else {
       return BeeConst.STRING_EMPTY;
+    }
+  }
+  
+  public String getTypeString() {
+    if (getType() == null) {
+      return BeeConst.STRING_EMPTY;
+    } else {
+      return getType().toString();
+    }
+  }
+  
+  public String getReqInfoString() {
+    return BeeUtils.transformCollection(getReqInfo(), BeeConst.DEFAULT_ROW_SEPARATOR);
+  }
+
+  public String getRespInfoString() {
+    return BeeUtils.transformCollection(getRespInfo(), BeeConst.DEFAULT_ROW_SEPARATOR);
+  }
+
+  private int done() {
+    return duration.finish();
+  }
+
+  private int end(int st, String msg, int rows, int cols, int size, String err) {
+    int r = done();
+
+    if (st > 0) {
+      setState(st);
+    }
+    else if (!BeeUtils.isEmpty(err)) {
+      setState(BeeConst.STATE_ERROR);
+    }
+    else {
+      setState(BeeConst.STATE_CLOSED);
+    }
+
+    setRespMsg(msg);
+    if (rows != BeeConst.SIZE_UNKNOWN) {
+      setRespRows(rows);
+    }
+    if (cols != BeeConst.SIZE_UNKNOWN) {
+      setRespCols(cols);
+    }
+    if (size != BeeConst.SIZE_UNKNOWN) {
+      setRespSize(size);
+    }
+
+    if (!BeeUtils.isEmpty(err)) {
+      setErrMsg(err);
+    }
+
+    return r;
   }
 
 }
