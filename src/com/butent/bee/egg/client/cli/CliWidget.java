@@ -5,7 +5,6 @@ import com.butent.bee.egg.client.BeeKeeper;
 import com.butent.bee.egg.client.communication.RpcList;
 import com.butent.bee.egg.client.utils.BeeJs;
 import com.butent.bee.egg.client.widget.BeeTextBox;
-import com.butent.bee.egg.shared.BeeService;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
 import com.google.gwt.dom.client.Element;
@@ -31,13 +30,13 @@ public class CliWidget extends BeeTextBox {
       BeeKeeper.getLog().clear();
     } else if (BeeUtils.same(v, "stack")) {
       BeeKeeper.getLog().stack();
-    } else if (BeeUtils.same(v, "menu")) {
-      BeeKeeper.getRpc().dispatchService(BeeService.SERVICE_GET_MENU);
+
     } else if (BeeUtils.startsSame(v, "eval")) {
       String xpr = v.trim().substring("eval".length()).trim();
       if (!BeeUtils.isEmpty(xpr)) {
         BeeGlobal.showDialog(xpr, BeeJs.eval(xpr));
       }
+
     } else if (BeeUtils.same(v, "rpc")) {
       if (BeeKeeper.getRpc().getRpcList().isEmpty()) {
         BeeGlobal.showDialog("RpcList empty");
@@ -46,6 +45,10 @@ public class CliWidget extends BeeTextBox {
             BeeGlobal.createSimpleGrid(RpcList.DEFAULT_INFO_COLUMNS, BeeKeeper
                 .getRpc().getRpcList().getDefaultInfo()));
       }
+
+    } else if (BeeUtils.same(v, "menu")) {
+      BeeKeeper.getMenu().showMenu();
+
     } else {
       BeeGlobal.showDialog(v);
     }

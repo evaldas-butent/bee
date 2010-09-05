@@ -179,6 +179,10 @@ public class BeeCallback implements RequestCallback {
       BeeKeeper.getUi().updateActivePanel(
           (Panel) c.createInstance(new GwtUiCreator()));
     }
+    
+    else if (BeeService.equals(svc, BeeService.SERVICE_GET_MENU)) {
+      BeeKeeper.getMenu().loadCallBack(arr);
+    }
 
     else if (cc > 0) {
       BeeKeeper.getUi().updateActivePanel(BeeGlobal.createGrid(cc, arr));

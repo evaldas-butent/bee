@@ -133,7 +133,7 @@ public class BeeDuration {
   @Override
   public String toString() {
     return BeeUtils.concat(1, getMessage(), getStartTime(), getEndTime(),
-        getCompletedTime());
+        BeeUtils.bracket(getCompletedTime()));
   }
 
 }

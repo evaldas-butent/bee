@@ -6,19 +6,23 @@ import com.butent.bee.egg.client.cli.CliWidget;
 import com.butent.bee.egg.client.composite.ButtonGroup;
 import com.butent.bee.egg.client.composite.RadioGroup;
 import com.butent.bee.egg.client.layout.BeeFlow;
+import com.butent.bee.egg.client.layout.BeeHorizontal;
 import com.butent.bee.egg.client.layout.BeeScroll;
 import com.butent.bee.egg.client.layout.BeeSplit;
 import com.butent.bee.egg.client.utils.BeeDom;
 import com.butent.bee.egg.client.widget.BeeButton;
 import com.butent.bee.egg.client.widget.BeeCheckBox;
-import com.butent.bee.egg.client.widget.BeeLabel;
+import com.butent.bee.egg.client.widget.BeeListBox;
+import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.BeeName;
 import com.butent.bee.egg.shared.BeeService;
 import com.butent.bee.egg.shared.BeeStage;
 import com.butent.bee.egg.shared.HasId;
 import com.butent.bee.egg.shared.Pair;
+import com.butent.bee.egg.shared.menu.MenuConst;
 import com.butent.bee.egg.shared.utils.BeeUtils;
+
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Panel;
@@ -30,7 +34,9 @@ public class BeeUi implements BeeModule {
 
   private String screenId = null;
   private String activeId = null;
+
   private Panel activePanel = null;
+  private SimplePanel menuPanel = null;
 
   private String elDsn = null;
 
@@ -74,6 +80,14 @@ public class BeeUi implements BeeModule {
     return rootUi;
   }
 
+  public SimplePanel getMenuPanel() {
+    return menuPanel;
+  }
+
+  public void setMenuPanel(SimplePanel menuPanel) {
+    this.menuPanel = menuPanel;
+  }
+
   public String getName() {
     return getClass().getName();
   }
@@ -101,7 +115,25 @@ public class BeeUi implements BeeModule {
   public void end() {
   }
 
-  public void createUi() {
+  public String getDsn() {
+    return BeeUtils.getElement(BeeConst.DS_TYPES,
+        RadioGroup.getValue(getElDsn()));
+  }
+
+  public void updateActivePanel(Widget w) {
+    Assert.notNull(w);
+
+    Panel p = getActivePanel();
+    if (p instanceof SimplePanel)
+      ((SimplePanel) p).setWidget(w);
+  }
+
+  public void updateMenu(Widget w) {
+    Assert.notNull(w);
+    getMenuPanel().setWidget(w);
+  }
+
+  private void createUi() {
     Widget w;
     BeeSplit p = new BeeSplit();
 
@@ -115,7 +147,7 @@ public class BeeUi implements BeeModule {
 
     w = initWest();
     if (w != null)
-      p.addWest(w, 200);
+      p.addWest(w, 240);
 
     w = initEast();
     if (w != null)
@@ -190,7 +222,23 @@ public class BeeUi implements BeeModule {
   }
 
   private Widget initWest() {
-    return new BeeLabel("West");
+    BeeSplit spl = new BeeSplit();
+
+    BeeHorizontal hp = new BeeHorizontal();
+    hp.setSpacing(10);
+    
+    hp.add(new BeeListBox(MenuConst.FIELD_ROOT_LAYOUT, true));
+    hp.add(new BeeListBox(MenuConst.FIELD_ITEM_LAYOUT, true));
+    hp.add(new BeeButton("F5", BeeService.SERVICE_REFRESH_MENU));
+
+    spl.addNorth(hp, 140);
+
+    BeeScroll mp = new BeeScroll();
+    spl.add(mp);
+
+    setMenuPanel(mp);
+
+    return spl;
   }
 
   private void setActiveWidget(Widget w) {
@@ -200,21 +248,6 @@ public class BeeUi implements BeeModule {
       if (w instanceof HasId)
         setActiveId(((HasId) w).getId());
     }
-  }
-
-  public String getDsn() {
-    return BeeUtils.getElement(BeeConst.DS_TYPES,
-        RadioGroup.getValue(getElDsn()));
-  }
-
-  public void updateActivePanel(Widget w) {
-    if (w == null)
-      return;
-
-    Panel p = getActivePanel();
-
-    if (p instanceof SimplePanel)
-      ((SimplePanel) p).setWidget(w);
   }
 
 }

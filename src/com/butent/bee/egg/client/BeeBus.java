@@ -140,12 +140,20 @@ public class BeeBus implements BeeModule {
   }
 
   private boolean dispatchUiService(String svc, GwtEvent<?> event) {
-    if (svc.equals(BeeService.SERVICE_CLOSE_DIALOG))
+    if (svc.equals(BeeService.SERVICE_CLOSE_DIALOG)) {
       return BeeGlobal.closeDialog(event);
-    else if (svc.equals(BeeService.SERVICE_CONFIRM_DIALOG))
+    }
+    else if (svc.equals(BeeService.SERVICE_CONFIRM_DIALOG)) {
       return BeeGlobal.closeDialog(event);
-    else if (svc.equals(BeeService.SERVICE_CANCEL_DIALOG))
+    }
+    else if (svc.equals(BeeService.SERVICE_CANCEL_DIALOG)) {
       return BeeGlobal.closeDialog(event);
+    }
+    
+    else if (svc.equals(BeeService.SERVICE_REFRESH_MENU)) {
+      return BeeKeeper.getMenu().drawMenu();
+    }
+
     else {
       BeeGlobal.showError("Unknown UI service", svc);
       return false;

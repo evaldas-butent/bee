@@ -144,5 +144,9 @@ public class MenuEntry implements HasId, BeeSerializable {
   public boolean isValid() {
     return BeeUtils.allNotEmpty(getId(), getText());
   }
+  
+  public boolean isRoot() {
+    return BeeUtils.isEmpty(getParent());
+  }
 
 }

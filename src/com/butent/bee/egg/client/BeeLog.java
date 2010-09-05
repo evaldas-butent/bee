@@ -99,10 +99,12 @@ public class BeeLog implements BeeModule {
     Assert.notNull(dur);
 
     dur.finish();
-    if (obj.length > 0)
+    if (obj.length > 0) {
       info(dur, obj);
-    else
+    }
+    else {
       info(dur.toString());
+    }
   }
   
   public void clear() {
@@ -116,8 +118,9 @@ public class BeeLog implements BeeModule {
   }
 
   private void addArea(HasWidgets p) {
-    if (p != null)
+    if (p != null) {
       getLogger().addHandler(new LogWidgetHandler(p));
+    }
   }
 
 }

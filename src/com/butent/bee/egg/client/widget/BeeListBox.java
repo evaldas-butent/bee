@@ -42,6 +42,24 @@ public class BeeListBox extends ListBox implements HasId, HasBeeChangeHandler {
       setSelectedIndex(getIndex(v));
   }
 
+  public BeeListBox(String fieldName, int cnt) {
+    this(fieldName);
+    if (cnt > 0) {
+      setVisibleItemCount(cnt);
+    }
+  }
+
+  public BeeListBox(String fieldName, boolean allVisible) {
+    this(fieldName);
+    
+    if (allVisible) {
+      int cnt = getItemCount();
+      if (cnt > 0) {
+        setVisibleItemCount(cnt);
+      }
+    }
+  }
+  
   public String getId() {
     return BeeDom.getId(this);
   }

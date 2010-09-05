@@ -14,7 +14,6 @@ import javax.ejb.Startup;
 
 import com.butent.bee.egg.server.http.ResponseBuffer;
 import com.butent.bee.egg.server.utils.XmlUtils;
-import com.butent.bee.egg.shared.BeeColumn;
 import com.butent.bee.egg.shared.menu.MenuConst;
 import com.butent.bee.egg.shared.menu.MenuEntry;
 import com.butent.bee.egg.shared.utils.BeeUtils;
@@ -166,8 +165,6 @@ public class MenuBean {
     if (lst.size() > 1) {
       Collections.sort(lst, MenuConst.MENU_COMPARATOR);
     }
-    
-    buff.addColumn(new BeeColumn("menu items"));
     
     for (MenuEntry entry : lst) {
       buff.add(entry.serialize());

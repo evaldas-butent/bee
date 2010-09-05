@@ -94,7 +94,7 @@ public abstract class BeeUtils {
     if (isEmpty(lst)) {
       return BeeConst.STRING_EMPTY;
     }
-    
+
     int cSep = sep.length;
     String z = cSep > 0 ? normSep(sep[0]) : BeeConst.DEFAULT_LIST_SEPARATOR;
 
@@ -224,16 +224,15 @@ public abstract class BeeUtils {
   public static String transform(Object x) {
     String s;
 
-    if (x == null)
+    if (x == null) {
       s = BeeConst.STRING_EMPTY;
-    else if (x instanceof String)
+    } else if (x instanceof String) {
       s = ((String) x).trim();
-    else if (x instanceof Transformable)
+    } else if (x instanceof Transformable) {
       s = ((Transformable) x).transform();
-    else if (x instanceof Exception)
-      s = ((Exception) x).getMessage();
-    else
+    } else {
       s = x.toString();
+    }
 
     return s;
   }
@@ -687,11 +686,13 @@ public abstract class BeeUtils {
   }
 
   public static String bracket(Object x) {
-    if (x == null)
+    String s = transform(x);
+
+    if (s.isEmpty()) {
       return BeeConst.STRING_EMPTY;
-    else
-      return BeeConst.STRING_OPEN_BRACKET + transform(x)
-          + BeeConst.STRING_CLOSE_BRACKET;
+    } else {
+      return BeeConst.STRING_OPEN_BRACKET + s + BeeConst.STRING_CLOSE_BRACKET;
+    }
   }
 
   public static int toInt(String s) {
@@ -907,7 +908,8 @@ public abstract class BeeUtils {
 
       if (p2 == p1 + 1) {
         arr[i] = null;
-        break;
+        p1 = p2;
+        continue;
       }
 
       len = toInt(ser.substring(p1 + 1, p2));

@@ -14,6 +14,7 @@ import com.butent.bee.egg.shared.BeeService;
 import com.butent.bee.egg.shared.BeeStage;
 import com.butent.bee.egg.shared.BeeType;
 import com.butent.bee.egg.shared.BeeWidget;
+import com.butent.bee.egg.shared.menu.MenuConst;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
 import com.google.gwt.core.client.JsArrayString;
@@ -258,6 +259,17 @@ public class BeeGlobal implements BeeModule {
 
     createField(FIELD_DEBUG, "Debug", BeeType.TYPE_BOOLEAN,
         BeeUtils.toString(false));
+
+    createField(MenuConst.FIELD_ROOT_LAYOUT,
+        "Menu Root", BeeType.TYPE_STRING, MenuConst.DEFAULT_ROOT_LAYOUT,
+        BeeWidget.LIST, MenuConst.LAYOUT_HORIZONTAL,
+        MenuConst.LAYOUT_VERTICAL, MenuConst.LAYOUT_STACK,
+        MenuConst.LAYOUT_TREE, MenuConst.LAYOUT_CELL, MenuConst.LAYOUT_TAB);
+    createField(MenuConst.FIELD_ITEM_LAYOUT,
+        "Menu Items", BeeType.TYPE_STRING, MenuConst.DEFAULT_ITEM_LAYOUT,
+        BeeWidget.LIST, MenuConst.LAYOUT_HORIZONTAL,
+        MenuConst.LAYOUT_VERTICAL, MenuConst.LAYOUT_STACK,
+        MenuConst.LAYOUT_TREE, MenuConst.LAYOUT_CELL, MenuConst.LAYOUT_LIST);
   }
 
 }

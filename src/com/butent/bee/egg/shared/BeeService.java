@@ -1,5 +1,7 @@
 package com.butent.bee.egg.shared;
 
+import com.butent.bee.egg.shared.utils.BeeUtils;
+
 public class BeeService {
   public static final String RPC_SERVICE_PREFIX = "rpc_";
   public static final String UI_SERVICE_PREFIX = "ui_";
@@ -38,6 +40,8 @@ public class BeeService {
       + "confirm_dialog";
   public static final String SERVICE_CANCEL_DIALOG = UI_SERVICE_PREFIX
       + "cancel_dialog";
+  public static final String SERVICE_REFRESH_MENU = UI_SERVICE_PREFIX
+      + "refresh_menu";
 
   public static final String SERVICE_GET_CLASS = COMPOSITE_SERVICE_PREFIX
       + "get_class";
@@ -147,4 +151,11 @@ public class BeeService {
     return RPC_FIELD_MSG + i;
   }
 
+  public static boolean equals(String s1, String s2) {
+    if (BeeUtils.isEmpty(s1) || BeeUtils.isEmpty(s2)) {
+      return false;
+    } else {
+      return BeeUtils.same(s1, s2);
+    }
+  }
 }
