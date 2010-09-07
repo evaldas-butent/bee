@@ -10,7 +10,6 @@ import javax.ejb.Stateless;
 
 import com.butent.bee.egg.server.http.RequestInfo;
 import com.butent.bee.egg.server.http.ResponseBuffer;
-import com.butent.bee.egg.server.lang.StringUtils;
 import com.butent.bee.egg.server.utils.BeeClass;
 import com.butent.bee.egg.server.utils.BeeJvm;
 import com.butent.bee.egg.server.utils.BeeMX;
@@ -137,7 +136,7 @@ public class SystemServiceBean {
     if (BeeUtils.isEmpty(pck))
       classes = BeeJvm.findClassWithDefaultPackages(cnm);
     else
-      classes = BeeJvm.findClass(cnm, StringUtils.split(pck, " ,;"));
+      classes = BeeJvm.findClass(cnm, pck.split(","));
 
     if (BeeUtils.isEmpty(classes)) {
       buff.addLine("Class not found", cnm, pck);

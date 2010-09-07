@@ -3,14 +3,12 @@ package com.butent.bee.egg.shared;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.butent.bee.egg.shared.lang.StringUtils;
-
 import com.butent.bee.egg.shared.utils.BeeUtils;
 import com.butent.bee.egg.shared.utils.PropUtils;
 import com.butent.bee.egg.shared.utils.StringProp;
 
 public class BeeColumn implements Transformable, BeeSerializable {
-  public static final char SERIALIZATION_SEPARATOR = ',';
+  public static final String SERIALIZATION_SEPARATOR = ",";
 
   public static final int NO_NULLS = 0;
   public static final int NULLABLE = 1;
@@ -294,7 +292,7 @@ public class BeeColumn implements Transformable, BeeSerializable {
   public void deserialize(String s) {
     Assert.notEmpty(s);
 
-    String[] arr = StringUtils.split(s, SERIALIZATION_SEPARATOR);
+    String[] arr = s.split(SERIALIZATION_SEPARATOR);
     Assert.arrayLength(arr, 5);
 
     int i = 0;

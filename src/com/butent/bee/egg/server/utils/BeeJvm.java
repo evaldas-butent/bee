@@ -15,7 +15,6 @@ import java.util.regex.PatternSyntaxException;
 
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.exceptions.BeeException;
-import com.butent.bee.egg.shared.lang.StringUtils;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 import com.butent.bee.egg.shared.utils.LogUtils;
 import com.butent.bee.egg.shared.utils.StringProp;
@@ -142,7 +141,7 @@ public class BeeJvm {
         if (z.equalsIgnoreCase(nm)) {
           exact = cls;
           break;
-        } else if (StringUtils.containsIgnoreCase(z, nm)) {
+        } else if (BeeUtils.context(nm, z)) {
           found.add(cls);
         } else if (rx && p.matcher(z).matches()) {
           found.add(cls);
