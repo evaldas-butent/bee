@@ -4,10 +4,6 @@ import com.butent.bee.egg.shared.Assert;
 
 public class UiField extends UiComponent {
 
-  protected UiField(String id) {
-    super(id);
-  }
-
   @Override
   public Object createInstance(UiCreator creator) {
     Assert.notEmpty(creator);

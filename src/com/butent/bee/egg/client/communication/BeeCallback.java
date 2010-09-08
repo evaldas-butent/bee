@@ -3,7 +3,6 @@ package com.butent.bee.egg.client.communication;
 import com.butent.bee.egg.client.BeeGlobal;
 import com.butent.bee.egg.client.BeeKeeper;
 import com.butent.bee.egg.client.ui.GwtUiCreator;
-import com.butent.bee.egg.client.ui.GwtUiLoader;
 import com.butent.bee.egg.client.utils.BeeDuration;
 import com.butent.bee.egg.client.utils.BeeJs;
 import com.butent.bee.egg.shared.BeeConst;
@@ -13,7 +12,6 @@ import com.butent.bee.egg.shared.BeeType;
 import com.butent.bee.egg.shared.BeeWidget;
 import com.butent.bee.egg.shared.ui.UiComponent;
 import com.butent.bee.egg.shared.utils.BeeUtils;
-
 import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.http.client.Request;
 import com.google.gwt.http.client.RequestCallback;
@@ -102,7 +100,7 @@ public class BeeCallback implements RequestCallback {
 
     if (debug) {
       BeeKeeper.getLog().info("response headers", resp.getHeadersAsString());
-      
+
       if (info != null) {
         info.setRespInfo(RpcUtil.responseInfo(resp,
             (cc > 0) ? BeeConst.STRING_EMPTY : txt));
@@ -175,11 +173,11 @@ public class BeeCallback implements RequestCallback {
     }
 
     else if ("rpc_ui_form".equals(svc) && !debug) {
-      UiComponent c = new GwtUiLoader().getFormContent("testForm", cc, arr);
+      UiComponent c = UiComponent.restore(arr.get(0));
       BeeKeeper.getUi().updateActivePanel(
           (Panel) c.createInstance(new GwtUiCreator()));
     }
-    
+
     else if (BeeService.equals(svc, BeeService.SERVICE_GET_MENU)) {
       BeeKeeper.getMenu().loadCallBack(arr);
     }

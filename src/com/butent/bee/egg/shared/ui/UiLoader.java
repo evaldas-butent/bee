@@ -13,30 +13,42 @@ import com.butent.bee.egg.shared.utils.BeeUtils;
 
 public abstract class UiLoader {
 
-  public class UiRow {
-    private final String id, className, parent, properties;
+  protected class UiRow {
+    private String id, className, parent, properties;
 
-    public UiRow(String id, String className, String parent, String properties) {
-      this.id = id;
-      this.className = className;
-      this.parent = parent;
-      this.properties = properties;
+    public UiRow() {
     }
 
-    private String getId() {
+    public String getId() {
       return id;
     }
 
-    private String getClassName() {
+    public String getClassName() {
       return className;
     }
 
-    private String getParent() {
+    public String getParent() {
       return parent;
     }
 
-    private String getProperties() {
+    public String getProperties() {
       return properties;
+    }
+
+    public void setId(String id) {
+      this.id = id;
+    }
+
+    public void setClass(String className) {
+      this.className = className;
+    }
+
+    public void setParent(String parent) {
+      this.parent = parent;
+    }
+
+    public void setProperties(String properties) {
+      this.properties = properties;
     }
   }
 

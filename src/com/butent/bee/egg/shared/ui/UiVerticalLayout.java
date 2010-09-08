@@ -4,10 +4,6 @@ import com.butent.bee.egg.shared.Assert;
 
 public class UiVerticalLayout extends UiComponent {
 
-  protected UiVerticalLayout(String id) {
-    super(id);
-  }
-
   @Override
   public Object createInstance(UiCreator creator) {
     Assert.notEmpty(creator);

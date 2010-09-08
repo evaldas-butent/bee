@@ -3,6 +3,7 @@ package com.butent.bee.egg.server.ui;
 import java.util.Map;
 import java.util.logging.Logger;
 
+import javax.ejb.EJB;
 import javax.ejb.Stateless;
 
 import com.butent.bee.egg.server.Assert;
@@ -10,12 +11,15 @@ import com.butent.bee.egg.server.http.RequestInfo;
 import com.butent.bee.egg.server.http.ResponseBuffer;
 import com.butent.bee.egg.server.utils.XmlUtils;
 import com.butent.bee.egg.shared.BeeColumn;
-import com.butent.bee.egg.shared.BeeService;
+import com.butent.bee.egg.shared.ui.UiComponent;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
 @Stateless
 public class UiLoaderBean {
   private static Logger logger = Logger.getLogger(UiLoaderBean.class.getName());
+
+  @EJB
+  UiHolderBean holder;
 
   public void doService(String svc, RequestInfo reqInfo, ResponseBuffer buff) {
     Assert.notEmpty(svc);
@@ -43,34 +47,14 @@ public class UiLoaderBean {
   private void formInfo(RequestInfo reqInfo, ResponseBuffer buff) {
     String fName = getXmlField(reqInfo, buff, "form_name");
 
-    if ("testForm".equals(fName)) {
-      buff.addColumn(new BeeColumn("Object"));
-      buff.addColumn(new BeeColumn("Class"));
-      buff.addColumn(new BeeColumn("Parent"));
-      buff.addColumn(new BeeColumn("Properties"));
-      buff.add(new Object[] { fName, "UiPanel", null, null });
+    UiComponent form = holder.getForm(fName);
 
-      buff.add(new Object[] { "vLayout", "UiVerticalLayout", null, null });
-      buff.add(new Object[] { "Button1", "UiButton", "",
-          "caption=Database Tables;service=" + BeeService.SERVICE_DB_TABLES });
-      buff.add(new Object[] { "hLayout", "UiHorizontalLayout", "", null });
-      buff.add(new Object[] { "Label1", "UiLabel", "hLayout",
-          "caption=Tekstas 1" });
-      buff.add(new Object[] { "Label2", "UiLabel", "Label1", null });
-      buff.add(new Object[] { "Field3", "UiField", "hLayout",
-          "caption=Laukas 3" });
-      buff.add(new Object[] { "Field4", "UiField", "vLayout",
-          "caption=Laukas 4" });
-      buff.add(new Object[] { "Label3", "UiLabel", "vLayout",
-          "caption=Tekstas 3" });
-      buff.add(new Object[] { "LookingForParents", "UiLabel", "unknownParent",
-          null });
-      buff.add(new Object[] { "Label1", "UiLabel", "vLayout", null });
-      buff.add(new Object[] { "Unknown", "UiUnknown", "hLayout", null });
-    } else {
+    if (BeeUtils.isEmpty(form)) {
       String msg = "Form name not recognized: " + fName;
       logger.warning(msg);
       buff.add(msg);
+    } else {
+      buff.add(form.serialize());
     }
   }
 
