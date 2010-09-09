@@ -9,6 +9,7 @@ import com.butent.bee.egg.client.layout.BeeFlow;
 import com.butent.bee.egg.client.layout.BeeHorizontal;
 import com.butent.bee.egg.client.layout.BeeScroll;
 import com.butent.bee.egg.client.layout.BeeSplit;
+import com.butent.bee.egg.client.ui.GwtUiCreator;
 import com.butent.bee.egg.client.utils.BeeDom;
 import com.butent.bee.egg.client.widget.BeeButton;
 import com.butent.bee.egg.client.widget.BeeCheckBox;
@@ -21,8 +22,8 @@ import com.butent.bee.egg.shared.BeeStage;
 import com.butent.bee.egg.shared.HasId;
 import com.butent.bee.egg.shared.Pair;
 import com.butent.bee.egg.shared.menu.MenuConst;
+import com.butent.bee.egg.shared.ui.UiComponent;
 import com.butent.bee.egg.shared.utils.BeeUtils;
-
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Panel;
@@ -109,6 +110,7 @@ public class BeeUi implements BeeModule {
   }
 
   public void start() {
+    UiComponent.setCreator(new GwtUiCreator());
     createUi();
   }
 
@@ -226,7 +228,7 @@ public class BeeUi implements BeeModule {
 
     BeeHorizontal hp = new BeeHorizontal();
     hp.setSpacing(10);
-    
+
     hp.add(new BeeListBox(MenuConst.FIELD_ROOT_LAYOUT, true));
     hp.add(new BeeListBox(MenuConst.FIELD_ITEM_LAYOUT, true));
     hp.add(new BeeButton("F5", BeeService.SERVICE_REFRESH_MENU));

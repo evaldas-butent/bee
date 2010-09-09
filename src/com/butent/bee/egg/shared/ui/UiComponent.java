@@ -16,6 +16,11 @@ import com.butent.bee.egg.shared.utils.BeeUtils;
 public abstract class UiComponent implements HasId, BeeSerializable {
 
   private static Logger logger = Logger.getLogger(UiComponent.class.getName());
+  private static UiCreator creator;
+
+  public static void setCreator(UiCreator creator) {
+    UiComponent.creator = creator;
+  }
 
   public static UiComponent createComponent(String oClass, String oName) {
     Assert.notEmpty(oName);
@@ -222,6 +227,10 @@ public abstract class UiComponent implements HasId, BeeSerializable {
         addChild(c);
       }
     }
+  }
+
+  public Object createInstance() {
+    return createInstance(creator);
   }
 
   public abstract Object createInstance(UiCreator creator);

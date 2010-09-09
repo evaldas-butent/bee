@@ -9,5 +9,4 @@ public class UiHorizontalLayout extends UiComponent {
     Assert.notEmpty(creator);
     return creator.createHorizontalLayout(this);
   }
-
 }

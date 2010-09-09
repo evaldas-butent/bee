@@ -9,5 +9,4 @@ public class UiVerticalLayout extends UiComponent {
     Assert.notEmpty(creator);
     return creator.createVerticalLayout(this);
   }
-
 }

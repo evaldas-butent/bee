@@ -2,7 +2,6 @@ package com.butent.bee.egg.client.communication;
 
 import com.butent.bee.egg.client.BeeGlobal;
 import com.butent.bee.egg.client.BeeKeeper;
-import com.butent.bee.egg.client.ui.GwtUiCreator;
 import com.butent.bee.egg.client.utils.BeeDuration;
 import com.butent.bee.egg.client.utils.BeeJs;
 import com.butent.bee.egg.shared.BeeConst;
@@ -174,8 +173,7 @@ public class BeeCallback implements RequestCallback {
 
     else if ("rpc_ui_form".equals(svc) && !debug) {
       UiComponent c = UiComponent.restore(arr.get(0));
-      BeeKeeper.getUi().updateActivePanel(
-          (Panel) c.createInstance(new GwtUiCreator()));
+      BeeKeeper.getUi().updateActivePanel((Panel) c.createInstance());
     }
 
     else if (BeeService.equals(svc, BeeService.SERVICE_GET_MENU)) {

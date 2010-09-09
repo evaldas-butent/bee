@@ -9,5 +9,4 @@ public class UiField extends UiComponent {
     Assert.notEmpty(creator);
     return creator.createField(this);
   }
-
 }
