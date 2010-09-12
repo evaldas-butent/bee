@@ -96,6 +96,12 @@ public abstract class UiComponent implements HasId, BeeSerializable {
     this.id = id;
   }
 
+  @Override
+  public void createId() {
+    // TODO Auto-generated method stub
+    
+  }
+
   public UiComponent getParent() {
     return parent;
   }

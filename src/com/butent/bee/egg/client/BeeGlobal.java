@@ -73,6 +73,10 @@ public class BeeGlobal implements BeeModule {
     msgBox.showError(obj);
   }
 
+  public static void showGrid(String cap, String[] cols, Object data) {
+    msgBox.showGrid(cap, cols, data);
+  }
+
   public static boolean closeDialog(GwtEvent<?> event) {
     if (event == null)
       return false;
@@ -80,7 +84,7 @@ public class BeeGlobal implements BeeModule {
       return msgBox.close(event.getSource());
   }
 
-  public static Widget createSimpleGrid(String[] cols, String[][] data) {
+  public static Widget createSimpleGrid(String[] cols, Object data) {
     return grids.simpleGrid(cols, data);
   }
 
@@ -260,16 +264,31 @@ public class BeeGlobal implements BeeModule {
     createField(FIELD_DEBUG, "Debug", BeeType.TYPE_BOOLEAN,
         BeeUtils.toString(false));
 
-    createField(MenuConst.FIELD_ROOT_LAYOUT,
-        "Menu Root", BeeType.TYPE_STRING, MenuConst.DEFAULT_ROOT_LAYOUT,
-        BeeWidget.LIST, MenuConst.LAYOUT_HORIZONTAL,
-        MenuConst.LAYOUT_VERTICAL, MenuConst.LAYOUT_STACK,
-        MenuConst.LAYOUT_TREE, MenuConst.LAYOUT_CELL, MenuConst.LAYOUT_TAB);
-    createField(MenuConst.FIELD_ITEM_LAYOUT,
-        "Menu Items", BeeType.TYPE_STRING, MenuConst.DEFAULT_ITEM_LAYOUT,
-        BeeWidget.LIST, MenuConst.LAYOUT_HORIZONTAL,
-        MenuConst.LAYOUT_VERTICAL, MenuConst.LAYOUT_STACK,
-        MenuConst.LAYOUT_TREE, MenuConst.LAYOUT_CELL, MenuConst.LAYOUT_LIST);
+    createField(MenuConst.fieldMenuLayout(0), "Root", BeeType.TYPE_STRING,
+        MenuConst.DEFAULT_ROOT_LAYOUT, BeeWidget.LIST,
+        MenuConst.LAYOUT_MENU_HOR, MenuConst.LAYOUT_MENU_VERT,
+        MenuConst.LAYOUT_STACK, MenuConst.LAYOUT_TREE,
+        MenuConst.LAYOUT_CELL_TREE, MenuConst.LAYOUT_CELL_BROWSER,
+        MenuConst.LAYOUT_LIST, MenuConst.LAYOUT_CELL_LIST, MenuConst.LAYOUT_TAB,
+        MenuConst.LAYOUT_RADIO_HOR, MenuConst.LAYOUT_RADIO_VERT,
+        MenuConst.LAYOUT_BUTTONS_HOR, MenuConst.LAYOUT_BUTTONS_VERT);
+
+    for (int i = 1; i < MenuConst.MAX_MENU_DEPTH; i++) {
+      createField(MenuConst.fieldMenuLayout(i), "Items " + BeeUtils.bracket(i),
+          BeeType.TYPE_STRING, MenuConst.DEFAULT_ITEM_LAYOUT, BeeWidget.LIST,
+          MenuConst.LAYOUT_MENU_HOR, MenuConst.LAYOUT_MENU_VERT,
+          MenuConst.LAYOUT_STACK, MenuConst.LAYOUT_TREE,
+          MenuConst.LAYOUT_CELL_TREE, MenuConst.LAYOUT_CELL_BROWSER,
+          MenuConst.LAYOUT_LIST, MenuConst.LAYOUT_CELL_LIST, MenuConst.LAYOUT_TAB,
+          MenuConst.LAYOUT_RADIO_HOR, MenuConst.LAYOUT_RADIO_VERT,
+          MenuConst.LAYOUT_BUTTONS_HOR, MenuConst.LAYOUT_BUTTONS_VERT);
+    }
+
+    createField(MenuConst.FIELD_ROOT_LIMIT, "Max  Roots", BeeType.TYPE_INT,
+        BeeUtils.transform(MenuConst.DEFAULT_ROOT_LIMIT));
+    createField(MenuConst.FIELD_ITEM_LIMIT, "Max  Items", BeeType.TYPE_INT,
+        BeeUtils.transform(MenuConst.DEFAULT_ITEM_LIMIT));
+
   }
 
 }

@@ -9,7 +9,7 @@ public class BeeTab extends TabLayoutPanel implements HasId {
 
   public BeeTab(double barHeight, Unit barUnit) {
     super(barHeight, barUnit);
-    BeeDom.setId(this);
+    createId();
   }
 
   public String getId() {
@@ -18,6 +18,10 @@ public class BeeTab extends TabLayoutPanel implements HasId {
 
   public void setId(String id) {
     BeeDom.setId(this, id);
+  }
+
+  public void createId() {
+    BeeDom.createId(this, "tab");
   }
 
 }

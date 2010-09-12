@@ -7,12 +7,11 @@ import com.google.gwt.user.client.ui.FlexTable;
 public class BeeFlexTable extends FlexTable implements HasId {
 
   public BeeFlexTable() {
-    super();
     createId();
   }
 
-  private void createId() {
-    BeeDom.setId(this);
+  public void createId() {
+    BeeDom.createId(this, "flex");
   }
 
   public String getId() {

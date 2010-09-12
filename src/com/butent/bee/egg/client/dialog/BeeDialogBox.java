@@ -21,8 +21,8 @@ public class BeeDialogBox extends DialogBox implements HasId {
     createId();
   }
 
-  private void createId() {
-    BeeDom.setId(this);
+  public void createId() {
+    BeeDom.createId(this, "dialog");
   }
 
   public String getId() {

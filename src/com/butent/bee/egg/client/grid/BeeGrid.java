@@ -2,60 +2,66 @@ package com.butent.bee.egg.client.grid;
 
 import com.butent.bee.egg.client.BeeGlobal;
 import com.butent.bee.egg.client.BeeKeeper;
+import com.butent.bee.egg.client.data.JsData;
 import com.butent.bee.egg.client.utils.BeeDuration;
 import com.butent.bee.egg.shared.Assert;
-import com.butent.bee.egg.shared.BeeColumn;
+import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.BeeDate;
+import com.butent.bee.egg.shared.data.BeeColumn;
+import com.butent.bee.egg.shared.data.BeeView;
+import com.butent.bee.egg.shared.data.StringData;
 import com.butent.bee.egg.shared.utils.BeeUtils;
+
 import com.google.gwt.core.client.JsArrayString;
-import com.google.gwt.user.cellview.client.CellTable;
-import com.google.gwt.user.cellview.client.TextColumn;
 import com.google.gwt.user.client.ui.Widget;
-import com.google.gwt.view.client.ListDataProvider;
 
 public class BeeGrid {
 
   public BeeGrid() {
   }
 
-  public Widget simpleGrid(final String[] colNames, final String[][] data) {
-    final int c = colNames.length;
-    final int r = data.length;
+  public Widget simpleGrid(String[] colNames, Object data) {
+    Assert.notNull(colNames);
+    Assert.notNull(data);
 
-    final ListDataProvider<Integer> adapter = new ListDataProvider<Integer>();
-    final CellTable<Integer> table = new CellTable<Integer>(r);
-    adapter.addDataDisplay(table);
+    int c = colNames.length;
+    Assert.isPositive(c);
 
-    for (int i = 0; i < r; ++i) {
-      adapter.getList().add(i);
+    int r = BeeConst.SIZE_UNKNOWN;
+    BeeView view = null;
+
+    if (data instanceof String[][]) {
+      r = ((String[][]) data).length;
+      view = new StringData((String[][]) data);
+    } else if (data instanceof JsArrayString) {
+      r = ((JsArrayString) data).length() / c;
+      view = new JsData((JsArrayString) data, c);
     }
 
+    Assert.isPositive(r);
+    Assert.notNull(view);
+
+    BeeCellTable table = new BeeCellTable(r);
+    table.initData(r);
+
     for (int j = 0; j < c; j++) {
-      final int k = j;
-
-      table.addColumn(new TextColumn<Integer>() {
-        @Override
-        public String getValue(Integer row) {
-          return data[row][k];
-        }
-      }, colNames[j]);
-
+      table.addColumn(new BeeTextColumn(view, j), colNames[j]);
     }
 
     return table;
   }
 
-  public Widget createGrid(final int c, final JsArrayString data) {
+  public Widget createGrid(int c, JsArrayString data) {
     Assert.isPositive(c);
     Assert.notNull(data);
 
     int len = data.length();
     Assert.isTrue(len >= c * 2);
-    
+
     boolean debug = BeeGlobal.isDebug();
     BeeDuration dur = null;
 
-    final String[] head = new String[c];
+    String[] head = new String[c];
     BeeColumn z = new BeeColumn();
 
     for (int i = 0; i < c; i++) {
@@ -63,43 +69,32 @@ public class BeeGrid {
       head[i] = z.getName();
     }
 
-    final int r = len / c - 1;
+    int r = len / c - 1;
+    String foot = BeeUtils.concat(1, r, '*', c, '=', len - c);
 
-    final String foot = BeeUtils.concat(1, r, '*', c, '=', len - c);
+    BeeCellTable table = new BeeCellTable(r);
 
-    final ListDataProvider<Integer> adapter = new ListDataProvider<Integer>();
-    final CellTable<Integer> table = new CellTable<Integer>(r);
-    adapter.addDataDisplay(table);
-    
     if (debug) {
-      dur = new BeeDuration("adapter " + r);
+      dur = new BeeDuration("init data " + r);
     }
-
-    for (int i = 0; i < r; i++) {
-      adapter.getList().add(i);
-    }
-
+    table.initData(r);
     if (debug) {
       BeeKeeper.getLog().finish(dur);
       dur.restart("add cols " + c);
-    }  
+    }
+
+    BeeView view = new JsData(data, c, c);
 
     for (int j = 0; j < c; j++) {
-      final int k = j;
-
       String s = BeeUtils.iif(j == 0, foot, j == c - 1, new BeeDate().toLog(),
           BeeUtils.bracket(j + 1));
 
-      table.addColumn(new TextColumn<Integer>() {
-        public String getValue(Integer row) {
-          return data.get((row + 1) * c + k);
-        }
-      }, head[j], s);
+      table.addColumn(new BeeTextColumn(view, j), head[j], s);
     }
-    
+
     if (debug) {
       BeeKeeper.getLog().finish(dur);
-    }  
+    }
 
     return table;
   }

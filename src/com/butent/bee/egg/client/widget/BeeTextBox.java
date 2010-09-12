@@ -63,8 +63,8 @@ public class BeeTextBox extends TextBox implements HasId, HasBeeKeyHandler,
     return true;
   }
 
-  private void createId() {
-    BeeDom.setId(this);
+  public void createId() {
+    BeeDom.createId(this, "t");
   }
 
   private void addDefaultHandlers() {

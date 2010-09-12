@@ -2,10 +2,9 @@ package com.butent.bee.egg.shared.menu;
 
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeSerializable;
-import com.butent.bee.egg.shared.HasId;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
-public class MenuEntry implements HasId, BeeSerializable {
+public class MenuEntry implements BeeSerializable {
   private String id = null;
   private String parent = null;
 
@@ -149,4 +148,8 @@ public class MenuEntry implements HasId, BeeSerializable {
     return BeeUtils.isEmpty(getParent());
   }
 
+  public boolean isLeaf() {
+    return BeeUtils.same(getType(), "B");
+  }
+  
 }

@@ -19,8 +19,8 @@ import java.util.logging.Logger;
 import javax.sql.DataSource;
 
 import com.butent.bee.egg.shared.Assert;
-import com.butent.bee.egg.shared.BeeColumn;
 import com.butent.bee.egg.shared.BeeConst;
+import com.butent.bee.egg.shared.data.BeeColumn;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 import com.butent.bee.egg.shared.utils.LogUtils;
 import com.butent.bee.egg.shared.utils.PropUtils;

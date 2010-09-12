@@ -52,6 +52,11 @@ public class RadioGroup extends BeeSpan implements HasService {
     BeeDom.setService(this, svc);
   }
 
+  @Override
+  public void createId() {
+    BeeDom.createId(this, "rg");
+  }
+
   public static int getValue(String name) {
     int v = BeeConst.SELECTION_UNKNOWN;
     if (BeeUtils.isEmpty(name))

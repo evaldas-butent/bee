@@ -26,8 +26,8 @@ public class BeeCellTree extends CellTree implements HasId {
     BeeDom.setId(this, id);
   }
 
-  private void createId() {
-    BeeDom.setId(this);
+  public void createId() {
+    BeeDom.createId(this, "celltree");
   }
 
 }

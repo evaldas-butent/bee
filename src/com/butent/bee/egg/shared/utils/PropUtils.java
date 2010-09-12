@@ -20,6 +20,7 @@ public abstract class PropUtils {
       return false;
   }
 
+  @SuppressWarnings("unchecked")
   public static <T> int addHive(Collection<BeeProp<T>> lst, Object... x) {
     int c = x.length;
     int r = 0;
@@ -93,8 +94,26 @@ public abstract class PropUtils {
   }
 
   public static void appendSub(Collection<SubProp> dst, Collection<SubProp> src) {
-    if (dst != null && src != null && !src.isEmpty())
+    if (dst != null && src != null && !src.isEmpty()) {
       dst.addAll(src);
+    }
+  }
+
+  public static void appendSub(Collection<SubProp> dst, String prefix,
+      Collection<SubProp> src) {
+    Assert.notNull(dst);
+    Assert.notEmpty(prefix);
+
+    if (src != null && !src.isEmpty()) {
+      SubProp el;
+
+      for (Iterator<SubProp> it = src.iterator(); it.hasNext();) {
+        el = new SubProp(it.next());
+        el.setName(BeeUtils.concat(1, prefix, el.getName()));
+        
+        dst.add(el);
+      }
+    }
   }
 
   public static void appendString(Collection<SubProp> dst, String root,
@@ -179,6 +198,40 @@ public abstract class PropUtils {
       addString(lst, obj);
 
     return lst;
+  }
+
+  public static String[][] subToArray(List<SubProp> lst) {
+    Assert.notEmpty(lst);
+
+    int r = lst.size();
+    String[][] arr = new String[r][4];
+
+    for (int i = 0; i < r; i++) {
+      SubProp el = lst.get(i);
+
+      arr[i][0] = el.getName();
+      arr[i][1] = el.getSub();
+      arr[i][2] = el.getValue();
+      arr[i][3] = el.getDate().toLog();
+    }
+
+    return arr;
+  }
+
+  public static String[][] stringToArray(List<StringProp> lst) {
+    Assert.notEmpty(lst);
+
+    int r = lst.size();
+    String[][] arr = new String[r][2];
+
+    for (int i = 0; i < r; i++) {
+      StringProp el = lst.get(i);
+
+      arr[i][0] = el.getName();
+      arr[i][1] = el.getValue();
+    }
+
+    return arr;
   }
 
   private static boolean validName(String nm) {

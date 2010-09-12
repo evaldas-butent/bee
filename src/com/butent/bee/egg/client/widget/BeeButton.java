@@ -79,8 +79,8 @@ public class BeeButton extends Button implements HasId, HasService, HasStage {
     BeeDom.setStage(this, stg);
   }
 
-  private void createId() {
-    BeeDom.setId(this);
+  public void createId() {
+    BeeDom.createId(this, "b");
   }
 
 }

@@ -53,6 +53,15 @@ public class FileUtils {
     return fl.exists() && fl.isFile() && fl.length() > 0;
   }
 
+  public static boolean isInputFile(File fl) {
+    if (fl == null) {
+      return false;
+    }
+    else {
+      return fl.exists() && fl.isFile() && fl.length() > 0;
+    }
+  }
+
   public static void closeQuietly(Reader rdr) {
     if (rdr == null)
       return;

@@ -11,7 +11,7 @@ public class BeeSpan extends ComplexPanel implements InsertPanel, HasId {
 
   public BeeSpan() {
     setElement(DOM.createSpan());
-    BeeDom.setId(this);
+    createId();
   }
 
   @Override
@@ -29,6 +29,10 @@ public class BeeSpan extends ComplexPanel implements InsertPanel, HasId {
 
   public void setId(String id) {
     BeeDom.setId(this, id);
+  }
+
+  public void createId() {
+    BeeDom.createId(this, "span");
   }
 
 }

@@ -53,10 +53,7 @@ public class BeeListBox extends ListBox implements HasId, HasBeeChangeHandler {
     this(fieldName);
     
     if (allVisible) {
-      int cnt = getItemCount();
-      if (cnt > 0) {
-        setVisibleItemCount(cnt);
-      }
+      setAllVisible();
     }
   }
   
@@ -88,9 +85,16 @@ public class BeeListBox extends ListBox implements HasId, HasBeeChangeHandler {
       BeeGlobal.setFieldValue(getFieldName(), getValue(getSelectedIndex()));
     return true;
   }
+  
+  public void setAllVisible() {
+    int cnt = getItemCount();
+    if (cnt > 0) {
+      setVisibleItemCount(cnt);
+    }
+  }
 
-  private void createId() {
-    BeeDom.setId(this);
+  public void createId() {
+    BeeDom.createId(this, "list");
   }
 
   private void addDefaultHandlers() {

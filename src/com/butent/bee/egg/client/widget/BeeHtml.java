@@ -35,8 +35,8 @@ public class BeeHtml extends HTML implements HasId {
     BeeDom.setId(this, id);
   }
 
-  private void createId() {
-    BeeDom.setId(this);
+  public void createId() {
+    BeeDom.createId(this, "html");
   }
 
 }

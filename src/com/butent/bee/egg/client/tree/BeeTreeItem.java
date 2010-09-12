@@ -27,4 +27,8 @@ public class BeeTreeItem extends TreeItem implements HasId {
     BeeDom.setId(this, id);
   }
 
+  public void createId() {
+    BeeDom.createId(this, "treeitem");
+  }
+
 }

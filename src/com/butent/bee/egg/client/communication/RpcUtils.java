@@ -15,7 +15,7 @@ import com.google.gwt.http.client.Header;
 import com.google.gwt.http.client.RequestBuilder;
 import com.google.gwt.http.client.Response;
 
-public class RpcUtil {
+public class RpcUtils {
   public static final String buildQueryString(String... x) {
     int c = x.length;
     if (c < 2) {

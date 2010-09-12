@@ -52,8 +52,8 @@ public class BeeFileUpload extends FileUpload implements HasId,
     return true;
   }
 
-  private void createId() {
-    BeeDom.setId(this);
+  public void createId() {
+    BeeDom.createId(this, "upload");
   }
 
   private void addDefaultHandlers() {

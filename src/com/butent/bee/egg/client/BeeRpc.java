@@ -3,7 +3,7 @@ package com.butent.bee.egg.client;
 import com.butent.bee.egg.client.communication.BeeCallback;
 import com.butent.bee.egg.client.communication.RpcInfo;
 import com.butent.bee.egg.client.communication.RpcList;
-import com.butent.bee.egg.client.communication.RpcUtil;
+import com.butent.bee.egg.client.communication.RpcUtils;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.BeeService;
@@ -110,7 +110,7 @@ public class BeeRpc implements BeeModule {
     int id = info.getId();
 
     String qs = buildQuery(svc, getDsn());
-    String url = RpcUtil.addQueryString(rpcUrl, qs);
+    String url = RpcUtils.addQueryString(rpcUrl, qs);
 
     RequestBuilder bld = new RequestBuilder(type, url);
     if (timeout > 0) {
@@ -144,7 +144,7 @@ public class BeeRpc implements BeeModule {
     }
     
     if (debug) {
-      info.setReqInfo(RpcUtil.requestInfo(bld));
+      info.setReqInfo(RpcUtils.requestInfo(bld));
     }
     rpcList.addInfo(info);
 
@@ -152,7 +152,7 @@ public class BeeRpc implements BeeModule {
   }
 
   private String buildQuery(String svc, String dsn) {
-    return RpcUtil.buildQueryString(BeeService.RPC_FIELD_QNM, svc,
+    return RpcUtils.buildQueryString(BeeService.RPC_FIELD_QNM, svc,
         BeeService.RPC_FIELD_DSN, dsn);
   }
 

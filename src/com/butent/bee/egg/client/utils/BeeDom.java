@@ -8,20 +8,24 @@ import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.Transformable;
 import com.butent.bee.egg.shared.utils.BeeUtils;
+import com.butent.bee.egg.shared.utils.PropUtils;
 import com.butent.bee.egg.shared.utils.StringProp;
+import com.butent.bee.egg.shared.utils.SubProp;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
+import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.Node;
 import com.google.gwt.dom.client.NodeList;
+import com.google.gwt.dom.client.Style;
 
-import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.Widget;
 
-public abstract class BeeDom {
+public class BeeDom {
   static final class ElementAttribute extends JavaScriptObject implements
       Transformable {
     protected ElementAttribute() {
@@ -54,15 +58,34 @@ public abstract class BeeDom {
   private static String ATTRIBUTE_STAGE = "data-stg";
 
   private static String DEFAULT_NAME_PREFIX = "b";
+  
+  private static String DEFAULT_ID_PREFIX = "b";
+  private static String ID_SEPARATOR = "-";
+  private static int ID_COUNTER = 0;
 
   private static int MAX_GENERATIONS = 100;
 
   public static String createUniqueId() {
-    return DOM.createUniqueId();
+    return createUniqueId(DEFAULT_ID_PREFIX);
+  }
+
+  public static String createUniqueId(String prefix) {
+    ID_COUNTER++;
+    return prefix.trim() + ID_SEPARATOR + ID_COUNTER;
   }
 
   public static String createUniqueName() {
     return BeeUtils.createUniqueName(DEFAULT_NAME_PREFIX);
+  }
+
+  public static String createId(UIObject obj, String prefix) {
+    Assert.notNull(obj);
+    Assert.notEmpty(prefix);
+
+    String id = createUniqueId(prefix);
+    obj.getElement().setId(id);
+
+    return id;
   }
 
   public static String getId(UIObject obj) {
@@ -78,10 +101,6 @@ public abstract class BeeDom {
     obj.getElement().setId(s);
 
     return s;
-  }
-
-  public static String setId(UIObject obj) {
-    return setId(obj, createUniqueId());
   }
 
   public static int getTabIndex(Widget w) {
@@ -223,4 +242,224 @@ public abstract class BeeDom {
     return null;
   }
 
+  public static String getClassQuietly(Object obj) {
+    if (obj == null) {
+      return BeeConst.STRING_EMPTY;
+    } else {
+      return obj.getClass().getName();
+    }
+  }
+
+  public static List<StringProp> getWidgetInfo(Widget w) {
+    Assert.notNull(w);
+    List<StringProp> lst = new ArrayList<StringProp>();
+
+    PropUtils.addString(lst, "Class", getClassQuietly(w), "Layout Data",
+        w.getLayoutData(), "Parent", getClassQuietly(w.getParent()),
+        "Attached", w.isAttached());
+
+    return lst;
+  }
+
+  public static List<SubProp> getWidgetExtendedInfo(Widget w, String prefix) {
+    Assert.notNull(w);
+    List<SubProp> lst = new ArrayList<SubProp>();
+
+    PropUtils.appendString(lst, BeeUtils.concat(1, prefix, "Widget"),
+        getWidgetInfo(w));
+    PropUtils.appendSub(lst, getUIObjectExtendedInfo(w, prefix));
+    
+    return lst;
+  }
+
+  public static List<StringProp> getUIObjectInfo(UIObject obj) {
+    Assert.notNull(obj);
+    List<StringProp> lst = new ArrayList<StringProp>();
+
+    PropUtils.addString(lst, "Absolute Left", obj.getAbsoluteLeft(),
+        "Absolute Top", obj.getAbsoluteTop(), "Class", getClassQuietly(obj),
+        "Offset Height", obj.getOffsetHeight(), "Offset Width",
+        obj.getOffsetWidth(), "Style Name", obj.getStyleName(),
+        "Style Primary Name", obj.getStylePrimaryName(), "Title",
+        obj.getTitle(), "Visible", obj.isVisible());
+
+    return lst;
+  }
+
+  public static List<SubProp> getUIObjectExtendedInfo(UIObject obj, String prefix) {
+    Assert.notNull(obj);
+    List<SubProp> lst = new ArrayList<SubProp>();
+
+    PropUtils.appendString(lst, BeeUtils.concat(1, prefix, "UI Object"),
+        getUIObjectInfo(obj));
+      
+    Element el = obj.getElement();
+    PropUtils.appendString(lst, BeeUtils.concat(1, prefix, "Element"),
+        getElementInfo(el));
+
+    Style st = el.getStyle();
+    if (st != null) {
+      PropUtils.appendString(lst, BeeUtils.concat(1, prefix, "Style"), getStyleInfo(st));
+    }
+    PropUtils.appendString(lst, BeeUtils.concat(1, prefix, "Node"), getNodeInfo(el));
+
+    return lst;
+  }
+
+  public static List<StringProp> getElementInfo(Element el) {
+    Assert.notNull(el);
+    List<StringProp> lst = new ArrayList<StringProp>();
+
+    PropUtils.addString(lst, "Absolute Bottom", el.getAbsoluteBottom(),
+        "Absolute Left", el.getAbsoluteLeft(), "Absolute Right",
+        el.getAbsoluteRight(), "Absolute Top", el.getAbsoluteTop(),
+        "Class Name", el.getClassName(), "Client Height",
+        el.getClientHeight(), "Client Width", el.getClientWidth(), "Dir",
+        el.getDir(), "Id", el.getId(), "First Child Element",
+        transformElement(el.getFirstChildElement()), "Inner HTML", el.getInnerHTML(),
+        "Inner Text", el.getInnerText(), "Lang", el.getLang(),
+        "Next Sibling Element", transformElement(el.getNextSiblingElement()),
+        "Offset Height", el.getOffsetHeight(), "Offset Left", el.getOffsetLeft(),
+        "Offset Parent", transformElement(el.getOffsetParent()), 
+        "Offset Top", el.getOffsetTop(),
+        "Offset Width", el.getOffsetWidth(), "Scroll Height",
+        el.getScrollHeight(), "Scroll Left", el.getScrollLeft(), "Scroll Top",
+        el.getScrollTop(), "Scroll Width", el.getScrollWidth(),
+        "Tab Index", el.getTabIndex(),
+        "Tag Name", el.getTagName(), "Title", el.getTitle());
+
+    return lst;
+  }
+
+  public static List<StringProp> getNodeInfo(Node nd) {
+    Assert.notNull(nd);
+    List<StringProp> lst = new ArrayList<StringProp>();
+
+    PropUtils.addString(lst, "Child Count", nd.getChildCount(),
+        "First Child", transformNode(nd.getFirstChild()),
+        "Last Child", transformNode(nd.getLastChild()),
+        "Next Sibling", transformNode(nd.getNextSibling()),
+        "Node Name", nd.getNodeName(), "Node Type", nd.getNodeType(),
+        "Node Value", nd.getNodeValue(),
+        "Parent Element", transformElement(nd.getParentElement()),
+        "Parent Node", transformNode(nd.getParentNode()),
+        "Previous Sibling", transformNode(nd.getPreviousSibling()),
+        "Has Child Nodes", nd.hasChildNodes(),
+        "Has Parent Element", nd.hasParentElement());
+
+    return lst;
+  }
+
+  public static List<SubProp> getInfo(Object obj, String prefix, int depth) {
+    Assert.notNull(obj);
+    List<SubProp> lst = new ArrayList<SubProp>();
+
+    if (obj instanceof Element) {
+      PropUtils.appendString(lst, BeeUtils.concat(1, prefix, "Element"),
+          getElementInfo((Element) obj));
+    }
+    if (obj instanceof Node) {
+      PropUtils.appendString(lst, BeeUtils.concat(1, prefix, "Node"), 
+          getNodeInfo((Node) obj));
+    }
+
+    if (obj instanceof Widget) {
+      PropUtils.appendString(lst, BeeUtils.concat(1, prefix, "Widget"),
+          getWidgetInfo((Widget) obj));
+    }
+    if (obj instanceof UIObject) {
+      PropUtils.appendSub(lst, getUIObjectExtendedInfo((UIObject) obj, prefix));
+    }
+    
+    if (obj instanceof HasWidgets && depth > 0) {
+      Widget w;
+      int i = 0;
+      String p;
+      
+      for (Iterator<Widget> iter = ((HasWidgets) obj).iterator(); iter.hasNext(); ) {
+        w = iter.next();
+        p = BeeUtils.concat(BeeConst.DEFAULT_PROPERTY_SEPARATOR, prefix, i++);
+        
+        if (depth == 1) { 
+          PropUtils.appendSub(lst, getWidgetExtendedInfo(w, p));
+        }
+        else {
+          getInfo(w, p, depth--);
+        }
+      }
+    }
+
+    return lst;
+  }
+  
+  public static List<StringProp> getStyleInfo(Style st) {
+    Assert.notNull(st);
+    List<StringProp> lst = new ArrayList<StringProp>();
+
+    PropUtils.addString(lst,
+        "Background Color", st.getBackgroundColor(),
+        "Background Image", st.getBackgroundImage(),
+        "Border Color", st.getBorderColor(),
+        "Border Style", st.getBorderStyle(),
+        "Border Width", st.getBorderWidth(),
+        "Bottom", st.getBottom(),
+        "Color", st.getColor(),
+        "Cursor", st.getCursor(),
+        "Display", st.getDisplay(),
+        "Font Size", st.getFontSize(),
+        "Font Style", st.getFontStyle(),
+        "Font Weight", st.getFontWeight(),
+        "Height", st.getHeight(),
+        "Left", st.getLeft(),
+        "List Style Type", st.getListStyleType(),
+        "Margin", st.getMargin(),
+        "Margin Bottom", st.getMarginBottom(),
+        "Margin Left", st.getMarginLeft(),
+        "Margin Right", st.getMarginRight(),
+        "Margin Top", st.getMarginTop(),
+        "Opacity", st.getOpacity(),
+        "Overflow", st.getOverflow(),
+        "Padding", st.getPadding(),
+        "Padding Bottom", st.getPaddingBottom(),
+        "Padding Left", st.getPaddingLeft(),
+        "Padding Right", st.getPaddingRight(),
+        "Padding Top", st.getPaddingTop(),
+        "Position", st.getPosition(),
+        "Right", st.getRight(),
+        "Text Decoration", st.getTextDecoration(),
+        "Top", st.getTop(),
+        "Vertical Align", st.getVerticalAlign(),
+        "Visibility", st.getVisibility(),
+        "Width", st.getWidth(),
+        "Z Index", st.getZIndex());
+    
+    return lst;
+  }
+
+  private static String transformElement(Element el) {
+    if (el == null) {
+      return BeeConst.STRING_EMPTY;
+    }
+    else {
+      return BeeUtils.concat(1, el.getTagName(), el.getId());
+    }
+  }
+
+  private static String transformNode(Node nd) {
+    if (nd == null) {
+      return BeeConst.STRING_EMPTY;
+    }
+    else {
+      return BeeUtils.concat(1, nd.getNodeName(), nd.getNodeValue());
+    }
+  }
+
+  public static int getClientWidth() {
+    return Document.get().getClientWidth();
+  }
+
+  public static int getClientHeight() {
+    return Document.get().getClientHeight();
+  }
+  
 }

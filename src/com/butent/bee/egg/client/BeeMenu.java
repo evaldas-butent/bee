@@ -8,16 +8,22 @@ import com.butent.bee.egg.client.layout.BeeTab;
 import com.butent.bee.egg.client.menu.BeeMenuBar;
 import com.butent.bee.egg.client.menu.BeeMenuItem;
 import com.butent.bee.egg.client.menu.BeeMenuItemSeparator;
+import com.butent.bee.egg.client.menu.MenuCell;
 import com.butent.bee.egg.client.menu.MenuCommand;
+import com.butent.bee.egg.client.menu.MenuDataProvider;
+import com.butent.bee.egg.client.menu.MenuTreeViewModel;
+import com.butent.bee.egg.client.tree.BeeCellBrowser;
+import com.butent.bee.egg.client.tree.BeeCellTree;
 import com.butent.bee.egg.client.tree.BeeTree;
 import com.butent.bee.egg.client.tree.BeeTreeItem;
 import com.butent.bee.egg.client.utils.BeeDuration;
+import com.butent.bee.egg.client.widget.BeeCellList;
 import com.butent.bee.egg.client.widget.BeeListBox;
 import com.butent.bee.egg.shared.Assert;
-import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.BeeService;
 import com.butent.bee.egg.shared.menu.MenuConst;
 import com.butent.bee.egg.shared.menu.MenuEntry;
+import com.butent.bee.egg.shared.menu.MenuUtils;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
 import com.google.gwt.core.client.JsArrayString;
@@ -30,11 +36,6 @@ public class BeeMenu implements BeeModule {
 
   private String rootLayout = MenuConst.DEFAULT_ROOT_LAYOUT;
   private String itemLayout = MenuConst.DEFAULT_ITEM_LAYOUT;
-
-  private BeeMenuItemSeparator defaultItemSeparator = new BeeMenuItemSeparator();
-  
-  private int rootLimit = BeeConst.SIZE_UNKNOWN;
-  private int itemLimit = BeeConst.SIZE_UNKNOWN;
 
   public BeeMenu() {
     super();
@@ -100,30 +101,6 @@ public class BeeMenu implements BeeModule {
     this.itemLayout = itemLayout;
   }
 
-  public BeeMenuItemSeparator getDefaultItemSeparator() {
-    return defaultItemSeparator;
-  }
-
-  public void setDefaultItemSeparator(BeeMenuItemSeparator defaultItemSeparator) {
-    this.defaultItemSeparator = defaultItemSeparator;
-  }
-
-  public int getRootLimit() {
-    return rootLimit;
-  }
-
-  public void setRootLimit(int rootLimit) {
-    this.rootLimit = rootLimit;
-  }
-
-  public int getItemLimit() {
-    return itemLimit;
-  }
-
-  public void setItemLimit(int itemLimit) {
-    this.itemLimit = itemLimit;
-  }
-
   public void loadMenu() {
     BeeKeeper.getRpc().dispatchService(BeeService.SERVICE_GET_MENU);
   }
@@ -167,15 +144,23 @@ public class BeeMenu implements BeeModule {
   public boolean drawMenu() {
     Assert.state(validState());
 
-    String rl = BeeGlobal.getFieldValue(MenuConst.FIELD_ROOT_LAYOUT);
-    String il = BeeGlobal.getFieldValue(MenuConst.FIELD_ITEM_LAYOUT);
+    String rl = BeeGlobal.getFieldValue(MenuConst.fieldMenuLayout(0));
+    String il = BeeGlobal.getFieldValue(MenuConst.fieldMenuLayout(1));
 
     Assert.isTrue(MenuConst.isValidLayout(rl));
     Assert.isTrue(MenuConst.isValidLayout(il));
-
-    BeeDuration dur = new BeeDuration("draw menu");
+    
+    boolean debug = BeeGlobal.isDebug();
+    BeeDuration dur = null;
+    if (debug) {
+      dur = new BeeDuration("draw menu");
+    }
+    
     Widget w = createMenu(rl, il);
-    BeeKeeper.getLog().finish(dur);
+    
+    if (debug) {
+      BeeKeeper.getLog().finish(dur);
+    }
 
     boolean ok = (w != null);
     if (ok) {
@@ -215,9 +200,9 @@ public class BeeMenu implements BeeModule {
       } else {
         entry = getItems().get(i - rc);
       }
-      
+
       j = 0;
-      
+
       arr[i][j++] = entry.getId();
       arr[i][j++] = entry.getParent();
       arr[i][j++] = BeeUtils.transform(entry.getOrder());
@@ -230,34 +215,36 @@ public class BeeMenu implements BeeModule {
       arr[i][j++] = entry.getKeyName();
       arr[i][j++] = BeeUtils.toString(entry.isVisible());
     }
-    
+
     BeeKeeper.getUi().updateActivePanel(BeeGlobal.createSimpleGrid(cols, arr));
   }
 
   private Widget createMenu(String rl, String il) {
     Widget rw = createRootWidget(rl);
 
+    if (BeeUtils.inListSame(rl, MenuConst.LAYOUT_CELL_TREE,
+        MenuConst.LAYOUT_CELL_BROWSER)) {
+      return rw;
+    }
+    
     List<MenuEntry> children;
     Widget cw;
-    
-//    int rLim = getRootLimit();
-//    int iLim = getItemLimit();
-    
-    int rLim = 5;
-    int iLim = 15;
+
+    int rLim = BeeGlobal.getFieldInt(MenuConst.FIELD_ROOT_LIMIT);
+    int iLim = BeeGlobal.getFieldInt(MenuConst.FIELD_ITEM_LIMIT);
 
     int rc = 0;
     int ic;
 
     for (MenuEntry root : getRoots()) {
-      children = getChildren(root.getId());
+      children = MenuUtils.getChildren(getItems(), root.getId(), true);
+      ic = 0;
 
       if (BeeUtils.isEmpty(children)) {
         cw = null;
       } else {
         cw = createItemWidget(il);
-        
-        ic = 0;
+
         for (MenuEntry item : children) {
           addItem(cw, item);
           ic++;
@@ -267,13 +254,17 @@ public class BeeMenu implements BeeModule {
         }
       }
 
+      prepareWidget(cw, ic, children, false);
+
       addRoot(rw, root, cw);
       rc++;
-      
+
       if (rLim > 0 && rc >= rLim) {
         break;
       }
     }
+
+    prepareWidget(rw, rc, getRoots(), true);
 
     return rw;
   }
@@ -281,14 +272,24 @@ public class BeeMenu implements BeeModule {
   private Widget createRootWidget(String layout) {
     Widget w = null;
 
-    if (BeeUtils.same(layout, MenuConst.LAYOUT_HORIZONTAL)) {
+    if (BeeUtils.same(layout, MenuConst.LAYOUT_MENU_HOR)) {
       w = new BeeMenuBar();
-    } else if (BeeUtils.same(layout, MenuConst.LAYOUT_VERTICAL)) {
+    } else if (BeeUtils.same(layout, MenuConst.LAYOUT_MENU_VERT)) {
       w = new BeeMenuBar(true);
     } else if (BeeUtils.same(layout, MenuConst.LAYOUT_STACK)) {
       w = new BeeStack(Unit.EM);
+    } else if (BeeUtils.same(layout, MenuConst.LAYOUT_LIST)) {
+      w = new BeeListBox();
+    } else if (BeeUtils.same(layout, MenuConst.LAYOUT_CELL_LIST)) {
+      w = new BeeCellList<MenuEntry>(new MenuCell());
     } else if (BeeUtils.same(layout, MenuConst.LAYOUT_TREE)) {
       w = new BeeTree();
+    } else if (BeeUtils.same(layout, MenuConst.LAYOUT_CELL_TREE)) {
+      w = new BeeCellTree(new MenuTreeViewModel(new MenuDataProvider(getRoots()),
+          new MenuDataProvider(getItems())), null);
+    } else if (BeeUtils.same(layout, MenuConst.LAYOUT_CELL_BROWSER)) {
+      w = new BeeCellBrowser(new MenuTreeViewModel(new MenuDataProvider(getRoots()),
+          new MenuDataProvider(getItems())), null);
     } else if (BeeUtils.same(layout, MenuConst.LAYOUT_TAB)) {
       w = new BeeTab(20, Unit.PX);
     } else {
@@ -301,14 +302,16 @@ public class BeeMenu implements BeeModule {
   private Widget createItemWidget(String layout) {
     Widget w = null;
 
-    if (BeeUtils.same(layout, MenuConst.LAYOUT_HORIZONTAL)) {
+    if (BeeUtils.same(layout, MenuConst.LAYOUT_MENU_HOR)) {
       w = new BeeMenuBar();
-    } else if (BeeUtils.same(layout, MenuConst.LAYOUT_HORIZONTAL)) {
+    } else if (BeeUtils.same(layout, MenuConst.LAYOUT_MENU_VERT)) {
       w = new BeeMenuBar(true);
     } else if (BeeUtils.same(layout, MenuConst.LAYOUT_TREE)) {
       w = new BeeTree();
     } else if (BeeUtils.same(layout, MenuConst.LAYOUT_LIST)) {
       w = new BeeListBox();
+    } else if (BeeUtils.same(layout, MenuConst.LAYOUT_CELL_LIST)) {
+      w = new BeeCellList<MenuEntry>(new MenuCell());
     } else {
       w = new BeeMenuBar(true);
     }
@@ -326,13 +329,13 @@ public class BeeMenu implements BeeModule {
 
     if (w instanceof BeeMenuBar) {
       if (sep_before) {
-        ((BeeMenuBar) w).addSeparator(getDefaultItemSeparator());
+        ((BeeMenuBar) w).addSeparator(new BeeMenuItemSeparator());
       }
 
       ((BeeMenuBar) w).addItem(new BeeMenuItem(txt, new MenuCommand(svc, opt)));
 
       if (sep_after) {
-        ((BeeMenuBar) w).addSeparator(getDefaultItemSeparator());
+        ((BeeMenuBar) w).addSeparator(new BeeMenuItemSeparator());
       }
 
     } else if (w instanceof BeeListBox) {
@@ -340,6 +343,28 @@ public class BeeMenu implements BeeModule {
 
     } else if (w instanceof BeeTree) {
       ((BeeTree) w).addItem(txt);
+    }
+
+  }
+
+  @SuppressWarnings("unchecked")
+  private void prepareWidget(Widget w, int cnt, List<MenuEntry> entries,
+      boolean isRoot) {
+    if (w instanceof BeeListBox) {
+      ((BeeListBox) w).setAllVisible();
+    }
+
+    else if (w instanceof BeeCellList) {
+      if (cnt > 0) {
+        if (entries.size() < cnt) {
+          ((BeeCellList<MenuEntry>) w).setRowData(0,
+              entries.subList(0, cnt - 1));
+        } else {
+          ((BeeCellList<MenuEntry>) w).setRowData(0, entries);
+        }
+
+        ((BeeCellList<MenuEntry>) w).setRowCount(cnt);
+      }
     }
 
   }
@@ -364,6 +389,10 @@ public class BeeMenu implements BeeModule {
       }
     }
 
+    else if (rw instanceof BeeListBox) {
+      ((BeeListBox) rw).addItem(txt);
+    }
+
     else if (rw instanceof BeeTree) {
       BeeTreeItem it = new BeeTreeItem(txt);
       if (cw != null) {
@@ -371,29 +400,13 @@ public class BeeMenu implements BeeModule {
       }
       ((BeeTree) rw).addItem(it);
     }
-    
+
     else if (rw instanceof BeeTab) {
       if (cw != null) {
         ((BeeTab) rw).add(cw, txt);
       }
     }
 
-  }
-
-  private List<MenuEntry> getChildren(String id) {
-    List<MenuEntry> lst = new ArrayList<MenuEntry>();
-    boolean tg = false;
-
-    for (MenuEntry entry : items) {
-      if (BeeUtils.same(entry.getParent(), id)) {
-        lst.add(entry);
-        tg = true;
-      } else if (tg) {
-        break;
-      }
-    }
-
-    return lst;
   }
 
   private void clear() {

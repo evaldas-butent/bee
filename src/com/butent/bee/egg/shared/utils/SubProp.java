@@ -4,11 +4,19 @@ import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.BeeDate;
 
 public class SubProp extends StringProp {
+  public static String[] COLUMN_HEADERS = new String[] { "Name", "Sub",
+      "Value", "Date" };
+  public static int COLUMN_COUNT = COLUMN_HEADERS.length;
+
   private String sub;
   private BeeDate date = new BeeDate();
 
   public SubProp() {
     super();
+  }
+
+  public SubProp(SubProp sp) {
+    this(sp.getName(), sp.getSub(), sp.getValue());
   }
 
   public SubProp(String name) {

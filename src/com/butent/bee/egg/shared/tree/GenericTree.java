@@ -4,17 +4,17 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 
-public class BeeTree<T> {
+public class GenericTree<T> {
 
   private T root;
 
-  private ArrayList<BeeTree<T>> leafs = new ArrayList<BeeTree<T>>();
+  private ArrayList<GenericTree<T>> leafs = new ArrayList<GenericTree<T>>();
 
-  private BeeTree<T> parent = null;
+  private GenericTree<T> parent = null;
 
-  private HashMap<T, BeeTree<T>> locate = new HashMap<T, BeeTree<T>>();
+  private HashMap<T, GenericTree<T>> locate = new HashMap<T, GenericTree<T>>();
 
-  public BeeTree(T root) {
+  public GenericTree(T root) {
     this.root = root;
     locate.put(root, this);
   }
@@ -27,8 +27,8 @@ public class BeeTree<T> {
     }
   }
 
-  public BeeTree<T> addLeaf(T leaf) {
-    BeeTree<T> t = new BeeTree<T>(leaf);
+  public GenericTree<T> addLeaf(T leaf) {
+    GenericTree<T> t = new GenericTree<T>(leaf);
     leafs.add(t);
     t.parent = this;
     t.locate = this.locate;
@@ -36,8 +36,8 @@ public class BeeTree<T> {
     return t;
   }
 
-  public BeeTree<T> setAsParent(T parentRoot) {
-    BeeTree<T> t = new BeeTree<T>(parentRoot);
+  public GenericTree<T> setAsParent(T parentRoot) {
+    GenericTree<T> t = new GenericTree<T>(parentRoot);
     t.leafs.add(this);
     this.parent = t;
     t.locate = this.locate;
@@ -50,31 +50,31 @@ public class BeeTree<T> {
     return root;
   }
 
-  public BeeTree<T> getTree(T element) {
+  public GenericTree<T> getTree(T element) {
     return locate.get(element);
   }
 
-  public BeeTree<T> getParent() {
+  public GenericTree<T> getParent() {
     return parent;
   }
 
   public Collection<T> getSuccessors(T root) {
     Collection<T> successors = new ArrayList<T>();
-    BeeTree<T> tree = getTree(root);
+    GenericTree<T> tree = getTree(root);
     if (null != tree) {
-      for (BeeTree<T> leaf : tree.leafs) {
+      for (GenericTree<T> leaf : tree.leafs) {
         successors.add(leaf.root);
       }
     }
     return successors;
   }
 
-  public Collection<BeeTree<T>> getSubTrees() {
+  public Collection<GenericTree<T>> getSubTrees() {
     return leafs;
   }
 
-  public static <T> Collection<T> getSuccessors(T of, Collection<BeeTree<T>> in) {
-    for (BeeTree<T> tree : in) {
+  public static <T> Collection<T> getSuccessors(T of, Collection<GenericTree<T>> in) {
+    for (GenericTree<T> tree : in) {
       if (tree.locate.containsKey(of)) {
         return tree.getSuccessors(of);
       }
@@ -96,7 +96,7 @@ public class BeeTree<T> {
       inc = inc + " ";
     }
     s = inc + root;
-    for (BeeTree<T> child : leafs) {
+    for (GenericTree<T> child : leafs) {
       s += "\n" + child.printTree(increment + indent);
     }
     return s;

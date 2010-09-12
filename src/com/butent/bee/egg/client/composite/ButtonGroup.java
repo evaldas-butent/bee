@@ -63,6 +63,11 @@ public class ButtonGroup extends BeeSpan implements HasService, HasStage {
     add(new BeeButton(cap, bst));
   }
 
+  @Override
+  public void createId() {
+    BeeDom.createId(this, "bg");
+  }
+
   private void add(BeeButton b) {
     super.add(b);
     buttons.add(b);

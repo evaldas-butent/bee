@@ -101,7 +101,7 @@ public class BeeCallback implements RequestCallback {
       BeeKeeper.getLog().info("response headers", resp.getHeadersAsString());
 
       if (info != null) {
-        info.setRespInfo(RpcUtil.responseInfo(resp,
+        info.setRespInfo(RpcUtils.responseInfo(resp,
             (cc > 0) ? BeeConst.STRING_EMPTY : txt));
       }
     }

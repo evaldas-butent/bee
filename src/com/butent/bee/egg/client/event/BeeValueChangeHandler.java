@@ -7,7 +7,6 @@ import com.butent.bee.egg.client.BeeStyle;
 import com.butent.bee.egg.client.utils.BeeDom;
 import com.butent.bee.egg.client.widget.BeeCheckBox;
 import com.butent.bee.egg.client.widget.BeeRadioButton;
-import com.butent.bee.egg.client.widget.BeeTextBox;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
@@ -50,8 +49,8 @@ public class BeeValueChangeHandler<I> implements ValueChangeHandler<I> {
       return;
     }
 
-    if (source instanceof BeeTextBox && value instanceof String) {
-      ((BeeTextBox) source).onValueChange((String) value);
+    if (source instanceof HasBeeValueChangeHandler) {
+      ((HasBeeValueChangeHandler<I>) source).onValueChange((I) value);
       return;
     }
   }

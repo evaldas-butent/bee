@@ -91,6 +91,10 @@ public abstract class BeeConst {
   public static final String SERVER = "server";
   public static final String CLIENT = "client";
 
+  public static final Object[] EMPTY_OBJECT_ARRAY = new Object[0];
+  public static final String[] EMPTY_STRING_ARRAY = new String[0];
+  public static final int[] EMPTY_INT_ARRAY = new int[0];   
+
   public static boolean validDsType(String tp) {
     boolean ok = false;
 

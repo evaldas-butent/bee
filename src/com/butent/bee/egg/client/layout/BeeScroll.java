@@ -17,8 +17,8 @@ public class BeeScroll extends ScrollPanel implements HasId {
     createId();
   }
 
-  private void createId() {
-    BeeDom.setId(this);
+  public void createId() {
+    BeeDom.createId(this, "scroll");
   }
 
   public String getId() {

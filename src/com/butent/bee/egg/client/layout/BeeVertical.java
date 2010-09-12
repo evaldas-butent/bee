@@ -7,7 +7,7 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 public class BeeVertical extends VerticalPanel implements HasId {
 
   public BeeVertical() {
-    BeeDom.setId(this);
+    createId();
   }
 
   public String getId() {
@@ -16,6 +16,10 @@ public class BeeVertical extends VerticalPanel implements HasId {
 
   public void setId(String id) {
     BeeDom.setId(this, id);
+  }
+
+  public void createId() {
+    BeeDom.createId(this, "vert");
   }
 
 }

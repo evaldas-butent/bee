@@ -7,9 +7,9 @@ import java.util.List;
 import java.util.logging.Level;
 
 import com.butent.bee.egg.shared.Assert;
-import com.butent.bee.egg.shared.BeeColumn;
 import com.butent.bee.egg.shared.BeeDate;
 import com.butent.bee.egg.shared.BeeService;
+import com.butent.bee.egg.shared.data.BeeColumn;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 import com.butent.bee.egg.shared.utils.StringProp;
 import com.butent.bee.egg.shared.utils.SubProp;
@@ -173,33 +173,14 @@ public class ResponseBuffer {
     int c = cap.length;
     String nm;
 
-    int i = 0;
-    if (c > i && !BeeUtils.isEmpty(cap[i]))
-      nm = cap[i].trim();
-    else
-      nm = "Name";
-    addColumn(new BeeColumn(nm));
-
-    i++;
-    if (c > i && !BeeUtils.isEmpty(cap[i]))
-      nm = cap[i].trim();
-    else
-      nm = "Sub";
-    addColumn(new BeeColumn(nm));
-
-    i++;
-    if (c > i && !BeeUtils.isEmpty(cap[i]))
-      nm = cap[i].trim();
-    else
-      nm = "Value";
-    addColumn(new BeeColumn(nm));
-
-    i++;
-    if (c > i && !BeeUtils.isEmpty(cap[i]))
-      nm = cap[i].trim();
-    else
-      nm = "Date";
-    addColumn(new BeeColumn(nm));
+    for (int i = 0; i < SubProp.COLUMN_COUNT; i++) {
+      if (c > i && !BeeUtils.isEmpty(cap[i])) {
+        nm = cap[i].trim();
+      } else {
+        nm = SubProp.COLUMN_HEADERS[i];
+      }
+      addColumn(new BeeColumn(nm));
+    }
   }
 
   public void addPropSub(SubProp el) {
@@ -228,7 +209,7 @@ public class ResponseBuffer {
   public void appendStringProp(String root, Collection<StringProp> lst) {
     Assert.notEmpty(root);
     Assert.notEmpty(lst);
-    
+
     for (StringProp el : lst) {
       add(root);
       add(el.getName());
@@ -236,7 +217,7 @@ public class ResponseBuffer {
       add(new BeeDate().toLog());
     }
   }
-  
+
   public void addStringProp(Collection<StringProp> lst, String... cap) {
     Assert.notEmpty(lst);
 
@@ -383,5 +364,5 @@ public class ResponseBuffer {
 
     setSeparator(newSep);
   }
-  
+
 }

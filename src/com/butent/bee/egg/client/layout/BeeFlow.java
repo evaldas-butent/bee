@@ -7,8 +7,7 @@ import com.google.gwt.user.client.ui.FlowPanel;
 public class BeeFlow extends FlowPanel implements HasId {
 
   public BeeFlow() {
-    super();
-    BeeDom.setId(this);
+    createId();
   }
 
   public String getId() {
@@ -19,4 +18,8 @@ public class BeeFlow extends FlowPanel implements HasId {
     BeeDom.setId(this, id);
   }
 
+  public void createId() {
+    BeeDom.createId(this, "flow");
+  }
+  
 }

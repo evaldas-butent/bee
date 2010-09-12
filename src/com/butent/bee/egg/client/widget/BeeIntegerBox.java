@@ -25,7 +25,8 @@ public class BeeIntegerBox extends IntegerBox implements HasId,
   public BeeIntegerBox(String fieldName) {
     this();
     this.fieldName = fieldName;
-
+    
+    setWidth("6em");
     setTextAlignment(TextBoxBase.ALIGN_RIGHT);
     setValue(BeeGlobal.getFieldInt(fieldName));
   }
@@ -57,8 +58,8 @@ public class BeeIntegerBox extends IntegerBox implements HasId,
     return true;
   }
 
-  private void createId() {
-    BeeDom.setId(this);
+  public void createId() {
+    BeeDom.createId(this, "int");
   }
 
   private void addDefaultHandlers() {

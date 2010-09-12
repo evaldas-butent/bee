@@ -7,8 +7,7 @@ import com.google.gwt.user.client.ui.SplitLayoutPanel;
 public class BeeSplit extends SplitLayoutPanel implements HasId {
 
   public BeeSplit() {
-    super();
-    BeeDom.setId(this);
+    createId();
   }
 
   public String getId() {
@@ -17,6 +16,10 @@ public class BeeSplit extends SplitLayoutPanel implements HasId {
 
   public void setId(String id) {
     BeeDom.setId(this, id);
+  }
+
+  public void createId() {
+    BeeDom.createId(this, "split");
   }
 
 }

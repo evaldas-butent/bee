@@ -1,6 +1,6 @@
 package com.butent.bee.egg.server.utils;
 
-import java.io.FileReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
@@ -122,7 +122,7 @@ public class XmlUtils {
   public static List<SubProp> getFileInfo(String fileName) {
     Assert.notEmpty(fileName);
 
-    Document doc = fromFile(fileName);
+    Document doc = fromFileName(fileName);
     if (doc == null) {
       LogUtils.warning(logger, fileName, "cannot parse xml");
       return PropUtils.EMPTY_PROP_SUB_LIST;
@@ -135,7 +135,7 @@ public class XmlUtils {
     Assert.notEmpty(fileName);
     Assert.notEmpty(tagName);
     
-    Document doc = fromFile(fileName);
+    Document doc = fromFileName(fileName);
     if (doc == null) {
       LogUtils.warning(logger, fileName, "cannot parse xml");
       return null;
@@ -190,8 +190,9 @@ public class XmlUtils {
         getDOMConfigurationInfo(doc.getDomConfig()));
 
     DocumentType dtp = doc.getDoctype();
-    if (dtp != null)
+    if (dtp != null) {
       PropUtils.appendString(lst, root + " Doctype", getDocumentTypeInfo(dtp));
+    }
 
     PropUtils.appendString(lst, "Document Node", getNodeInfo(doc));
 
@@ -200,10 +201,12 @@ public class XmlUtils {
     PropUtils.addSub(lst, root, "ElementsByTagName " + ALL_TAGS,
         BeeUtils.bracket(c));
 
-    if (c > 0)
-      for (int i = 0; i < c; i++)
+    if (c > 0) {
+      for (int i = 0; i < c; i++) {
         PropUtils.addSub(lst, root, "Node " + BeeUtils.progress(i + 1, c),
             transformNode(nodes.item(i)));
+      }
+    }
 
     Element el = doc.getDocumentElement();
     PropUtils.appendString(lst, "Document Element", getElementInfo(el));
@@ -263,9 +266,10 @@ public class XmlUtils {
           BeeUtils.concat(1, "unknown node type", tp));
     }
 
-    if (!BeeUtils.isEmpty(tpInf))
+    if (!BeeUtils.isEmpty(tpInf)) {
       PropUtils.appendString(lst, BeeUtils.concat(1, root, getNodeName(tp)),
           tpInf);
+    }
 
     PropUtils.appendString(lst, BeeUtils.concat(1, root, "Node"),
         getNodeInfo(nd));
@@ -303,8 +307,9 @@ public class XmlUtils {
 
       for (int i = 0; i < c; i++) {
         Node attr = attributes.item(i);
-        if (!isAttribute(attr))
+        if (!isAttribute(attr)) {
           continue;
+        }
 
         PropUtils.addString(lst, "Attribute", BeeUtils.progress(i + 1, c));
         lst.addAll(getAttrInfo((Attr) attr));
@@ -329,8 +334,9 @@ public class XmlUtils {
         getDOMConfigurationInfo(doc.getDomConfig()));
 
     DocumentType dtp = doc.getDoctype();
-    if (dtp != null)
+    if (dtp != null) {
       PropUtils.appendStringProp(lst, "Doctype", getDocumentTypeInfo(dtp));
+    }
 
     Element el = doc.getDocumentElement();
     PropUtils.appendStringProp(lst, "Document Element", getElementInfo(el));
@@ -463,12 +469,14 @@ public class XmlUtils {
     Map<String, String> ret = new HashMap<String, String>();
 
     Document doc = fromString(xml);
-    if (doc == null)
+    if (doc == null) {
       return ret;
+    }
 
     NodeList nodes = doc.getElementsByTagName(ALL_TAGS);
-    if (nodes == null)
+    if (nodes == null) {
       return ret;
+    }
 
     Node nd;
     Element el;
@@ -476,15 +484,17 @@ public class XmlUtils {
 
     for (int i = 0; i < nodes.getLength(); i++) {
       nd = nodes.item(i);
-      if (!isElement(nd))
+      if (!isElement(nd)) {
         continue;
+      }
       el = (Element) nd;
 
       tg = el.getTagName();
       txt = el.getTextContent();
 
-      if (!BeeUtils.isEmpty(tg) && !BeeUtils.isEmpty(txt))
+      if (!BeeUtils.isEmpty(tg) && !BeeUtils.isEmpty(txt)) {
         ret.put(tg, txt);
+      }
     }
 
     return ret;
@@ -495,31 +505,31 @@ public class XmlUtils {
     Assert.notEmpty(tag);
 
     Document doc = fromString(xml);
-    if (doc == null)
+    if (doc == null) {
       return null;
+    }
 
     NodeList nodes = doc.getElementsByTagName(tag.trim());
-    if (nodes == null)
+    if (nodes == null) {
       return null;
+    }
 
     Node nd;
     String txt;
 
     for (int i = 0; i < nodes.getLength(); i++) {
       nd = nodes.item(i);
-      if (!isElement(nd))
+      if (!isElement(nd)) {
         continue;
+      }
 
       txt = ((Element) nd).getTextContent();
-      if (!BeeUtils.isEmpty(txt))
+      if (!BeeUtils.isEmpty(txt)) {
         return txt;
+      }
     }
 
     return BeeConst.STRING_EMPTY;
-  }
-
-  private static boolean validNodeType(short type) {
-    return nodeTypes.containsKey(type);
   }
 
   private static String getNodeName(short type) {
@@ -527,34 +537,42 @@ public class XmlUtils {
   }
 
   private static String transformNode(Node nd) {
-    if (nd == null)
+    if (nd == null) {
       return BeeConst.STRING_EMPTY;
-    else
+    }
+    else {
       return BeeUtils.concat(1, nd.getNodeName(), nd.getNodeValue());
+    }
   }
 
   private static String transformElement(Element el) {
-    if (el == null)
+    if (el == null) {
       return BeeConst.STRING_EMPTY;
-    else
+    }
+    else {
       return BeeUtils.concat(1, el.getNodeName(), el.getTagName());
+    }
   }
 
   private static String transformTypeInfo(TypeInfo ti) {
-    if (ti == null)
+    if (ti == null) {
       return BeeConst.STRING_EMPTY;
-    else
+    }
+    else {
       return BeeUtils.concat(1, ti.getTypeName(), ti.getTypeNamespace());
+    }
   }
 
   private static List<StringProp> getDOMConfigurationInfo(DOMConfiguration cfg) {
     List<StringProp> lst = new ArrayList<StringProp>();
-    if (cfg == null)
+    if (cfg == null) {
       return lst;
+    }
 
     DOMStringList names = cfg.getParameterNames();
-    if (names == null)
+    if (names == null) {
       return lst;
+    }
 
     String key;
 
@@ -567,25 +585,30 @@ public class XmlUtils {
   }
 
   private static String transformDOMImplementation(DOMImplementation imp) {
-    if (imp == null)
+    if (imp == null) {
       return BeeConst.STRING_EMPTY;
-    else
+    }
+    else {
       return imp.toString();
+    }
   }
 
   private static List<StringProp> getNamedNodeMapInfo(NamedNodeMap nodes,
       String msg) {
     List<StringProp> lst = new ArrayList<StringProp>();
-    if (nodes == null)
+    if (nodes == null) {
       return lst;
+    }
 
     int c = nodes.getLength();
     PropUtils.addString(lst, BeeUtils.ifString(msg, "Named Nodes"),
         BeeUtils.bracket(c));
-    if (c > 0)
-      for (int i = 0; i < c; i++)
+    if (c > 0) {
+      for (int i = 0; i < c; i++) {
         PropUtils.addString(lst, "Node " + BeeUtils.progress(i + 1, c),
             transformNode(nodes.item(i)));
+      }
+    }
 
     return lst;
   }
@@ -603,21 +626,20 @@ public class XmlUtils {
     return doc;
   }
 
-  private static Document fromFile(String fileName) {
-    FileReader fr = FileUtils.getFileReader(fileName);
-    if (fr == null)
+  private static Document fromFileName(String fileName) {
+    File fl = new File(fileName);
+    if (! FileUtils.isInputFile(fl)) {
+      LogUtils.severe(logger, fileName, "not an input file");
       return null;
+    }
 
-    Document doc = createDocument(fr);
-
-    FileUtils.closeQuietly(fr);
+    Document doc = createDocument(fl);
     return doc;
   }
 
   private static Document createDocument(Reader rdr) {
     Document ret = null;
-    if (domBuilder == null) {
-      LogUtils.warning(logger, "Document Builder not available");
+    if (! checkBuilder()) {
       return ret;
     }
 
@@ -630,6 +652,33 @@ public class XmlUtils {
     }
 
     return ret;
+  }
+  
+  private static Document createDocument(File fl) {
+    Document ret = null;
+    if (! checkBuilder()) {
+      return ret;
+    }
+
+    try {
+      ret = domBuilder.parse(fl);
+    } catch (SAXException ex) {
+      LogUtils.error(logger, ex);
+    } catch (IOException ex) {
+      LogUtils.error(logger, ex);
+    }
+
+    return ret;
+  }
+
+  private static boolean checkBuilder() {
+    if (domBuilder == null) {
+      LogUtils.severe(logger, "Document Builder not available");
+      return false;
+    }
+    else {
+      return true;
+    }
   }
 
 }

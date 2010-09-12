@@ -32,8 +32,8 @@ public class BeeLabel extends Label implements HasId {
     this(BeeUtils.transform(obj));
   }
 
-  private void createId() {
-    BeeDom.setId(this);
+  public void createId() {
+    BeeDom.createId(this, "l");
   }
 
   public String getId() {

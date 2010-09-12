@@ -2,10 +2,15 @@ package com.butent.bee.egg.shared.utils;
 
 import java.util.logging.Logger;
 
+import com.butent.bee.egg.client.BeeKeeper;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeDate;
 
+import com.google.gwt.core.client.GWT;
+
 public class LogUtils {
+  private static Logger defaultLogger = null;
+
   public static String now() {
     return new BeeDate().toLog();
   }
@@ -36,20 +41,27 @@ public class LogUtils {
   }
 
   public static void error(Logger logger, Throwable err, Object... obj) {
-    if (err != null)
+    if (err != null) {
       logger.severe(transformError(err));
-    if (obj.length > 0)
+    }
+    if (obj.length > 0) {
       logger.severe(BeeUtils.concat(1, obj));
+    }
 
     if (err != null) {
       stack(logger, err);
     }
   }
 
+  public static void error(Throwable err, Object... obj) {
+    error(getDefaultLogger(), err, obj);
+  }
+  
   public static void stack(Logger logger, Throwable err) {
     StackTraceElement[] arr = err.getStackTrace();
-    for (int i = 0; i < arr.length; i++)
+    for (int i = 0; i < arr.length; i++) {
       logger.info("[" + i + "] " + arr[i].toString());
+    }
   }
 
   public static void warning(Logger logger, String msg) {
@@ -64,10 +76,12 @@ public class LogUtils {
   }
 
   public static void warning(Logger logger, Throwable err, Object... obj) {
-    if (err != null)
+    if (err != null) {
       logger.warning(transformError(err));
-    if (obj.length > 0)
+    }
+    if (obj.length > 0) {
       logger.warning(BeeUtils.concat(1, obj));
+    }
   }
 
   public static void severe(Logger logger, Object... obj) {
@@ -76,11 +90,37 @@ public class LogUtils {
     logger.severe(BeeUtils.concat(1, obj));
   }
 
+  public static void severe(Object... obj) {
+    severe(getDefaultLogger(), obj);
+  }
+  
   public static void severe(Logger logger, Throwable err, Object... obj) {
-    if (err != null)
+    if (err != null) {
       logger.severe(transformError(err));
-    if (obj.length > 0)
+    }
+    if (obj.length > 0) {
       logger.severe(BeeUtils.concat(1, obj));
+    }
+  }
+
+  public static void severe(Throwable err, Object... obj) {
+    severe(getDefaultLogger(), err, obj);
+  }
+  
+  public static void setDefaultLogger(Logger def) {
+    defaultLogger = def;
+  }
+
+  public static Logger getDefaultLogger() {
+    if (defaultLogger == null) {
+      if (GWT.isClient()) {
+        setDefaultLogger(BeeKeeper.getLog().getLogger());
+      } else {
+        setDefaultLogger(Logger.getLogger(LogUtils.class.getName()));
+      }
+    }
+
+    return defaultLogger;
   }
 
   private static String transformError(Throwable err) {

@@ -14,6 +14,10 @@ public class Egg implements EntryPoint {
 
     bk.init();
     bk.start();
+    
+    if (GWT.isProdMode()) {
+      GWT.setUncaughtExceptionHandler(new BeeExceptionHandler());
+    }
   }
 
 }

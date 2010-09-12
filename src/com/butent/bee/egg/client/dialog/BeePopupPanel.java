@@ -22,8 +22,8 @@ public class BeePopupPanel extends PopupPanel implements HasId {
     createId();
   }
 
-  private void createId() {
-    BeeDom.setId(this);
+  public void createId() {
+    BeeDom.createId(this, "popup");
   }
 
   public String getId() {

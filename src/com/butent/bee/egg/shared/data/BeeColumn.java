@@ -1,8 +1,12 @@
-package com.butent.bee.egg.shared;
+package com.butent.bee.egg.shared.data;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import com.butent.bee.egg.shared.Assert;
+import com.butent.bee.egg.shared.BeeConst;
+import com.butent.bee.egg.shared.BeeSerializable;
+import com.butent.bee.egg.shared.Transformable;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 import com.butent.bee.egg.shared.utils.PropUtils;
 import com.butent.bee.egg.shared.utils.StringProp;

@@ -10,14 +10,17 @@ public class BeeRadioButton extends RadioButton implements HasId, HasService {
 
   public BeeRadioButton(String name, String label, boolean asHTML) {
     super(name, label, asHTML);
+    createId();
   }
 
   public BeeRadioButton(String name, String label) {
     super(name, label);
+    createId();
   }
 
   public BeeRadioButton(String name) {
     super(name);
+    createId();
   }
 
   public String getId() {
@@ -26,6 +29,10 @@ public class BeeRadioButton extends RadioButton implements HasId, HasService {
 
   public void setId(String id) {
     BeeDom.setId(this, id);
+  }
+
+  public void createId() {
+    BeeDom.createId(this, "r");
   }
 
   public String getService() {

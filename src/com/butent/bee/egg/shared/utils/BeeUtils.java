@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import com.butent.bee.egg.shared.Assert;
@@ -51,13 +52,18 @@ public abstract class BeeUtils {
   }
 
   public static boolean isEmpty(Object x, int... orType) {
-    if (filterType(x, orType))
+    if (filterType(x, orType)) {
       return false;
-    else
+    } else {
       return isEmpty(x);
+    }
   }
 
   public static boolean isZero(byte x) {
+    return x == 0;
+  }
+
+  public static boolean isZero(short x) {
     return x == 0;
   }
 
@@ -86,10 +92,53 @@ public abstract class BeeUtils {
   }
 
   public static boolean isZero(Object x) {
-    if (x instanceof Number)
+    if (x instanceof Number) {
       return ((Number) x).doubleValue() == Double.valueOf(0.0d);
-    else
+    } else {
       return false;
+    }
+  }
+
+  @SuppressWarnings("unchecked")
+  public static <T> T zero(T x) {
+    if (x == null) {
+      return null;
+    } else if (x instanceof Integer) {
+      return (T) Integer.valueOf(0);
+    } else if (x instanceof Byte) {
+      return (T) Byte.valueOf((byte) 0);
+    } else if (x instanceof Short) {
+      return (T) Short.valueOf((short) 0);
+    } else if (x instanceof Long) {
+      return (T) Long.valueOf(0);
+    } else if (x instanceof BigInteger) {
+      return (T) BigInteger.ZERO;
+    } else if (x instanceof BigDecimal) {
+      return (T) BigDecimal.ZERO;
+    } else if (x instanceof Float) {
+      return (T) Float.valueOf(0.0f);
+    } else if (x instanceof Double) {
+      return (T) Double.valueOf(0.0f);
+    } else {
+      return (T) Integer.valueOf(0);
+    }
+  }
+
+  public static <T extends Comparable<T>> boolean isPositive(T x) {
+    if (x instanceof Number) {
+      T z = zero(x);
+      return x.compareTo(z) > 0;
+    } else {
+      return false;
+    }
+  }
+
+  public static boolean isPositive(Object x) {
+    if (x instanceof Comparable) {
+      return isPositive((Comparable<?>) x);
+    } else {
+      return false;
+    }
   }
 
   public static String transformCollection(Collection<?> lst, Object... sep) {
@@ -277,25 +326,43 @@ public abstract class BeeUtils {
   }
 
   public static String space(int l) {
-    if (l == 1)
+    if (l == 1) {
       return BeeConst.STRING_SPACE;
-    else if (l < 1)
+    } else if (l < 1) {
       return BeeConst.STRING_EMPTY;
-    else
+    } else {
       return replicate(BeeConst.CHAR_SPACE, l);
+    }
   }
 
   public static String normSep(Object x) {
     String sep;
 
-    if (x instanceof String)
+    if (x instanceof String && length(x) > 0) {
       sep = (String) x;
-    else if (x instanceof Number)
+    } else if (x instanceof Number) {
       sep = space(((Number) x).intValue());
-    else if (x instanceof Character)
+    } else if (x instanceof Character) {
       sep = new String(new char[] { (Character) x });
-    else
+    }
+    if (x instanceof CharSequence && length(x) > 0) {
+      sep = ((CharSequence) x).toString();
+    } else {
       sep = BeeConst.DEFAULT_LIST_SEPARATOR;
+    }
+
+    return sep;
+  }
+
+  public static String normSep(Object x, Object def) {
+    String sep;
+
+    if (x instanceof CharSequence && length(x) > 0 || x instanceof Number
+        && isPositive(x) || x instanceof Character) {
+      sep = normSep(x);
+    } else {
+      sep = normSep(def);
+    }
 
     return sep;
   }
@@ -503,11 +570,12 @@ public abstract class BeeUtils {
   }
 
   public static boolean instanceOfIntegerType(Object x) {
-    if (x == null)
+    if (x == null) {
       return false;
-    else
+    } else {
       return (x instanceof Byte || x instanceof Short || x instanceof Integer
           || x instanceof Long || x instanceof BigInteger || x instanceof BigDecimal);
+    }
   }
 
   public static boolean instanceOfFloatingPoint(Object x) {
@@ -1007,4 +1075,132 @@ public abstract class BeeUtils {
     }
   }
 
+  public static int length(Object x) {
+    int len;
+
+    if (x == null) {
+      len = 0;
+    } else if (x instanceof CharSequence) {
+      len = ((CharSequence) x).length();
+    } else if (x instanceof Character) {
+      len = 1;
+    } else if (x instanceof Collection) {
+      len = ((Collection<?>) x).size();
+    } else if (x instanceof Map) {
+      len = ((Map<?, ?>) x).size();
+    } else if (isArray(x)) {
+      len = ((Object[]) x).length;
+    } else {
+      len = 0;
+    }
+
+    return len;
+  }
+
+  public static String[] split(String str, Object separators) {
+    if (str == null) {
+      return null;
+    }
+    int len = str.length();
+    if (len == 0) {
+      return BeeConst.EMPTY_STRING_ARRAY;
+    }
+
+    String sep = normSep(separators, BeeConst.STRING_SPACE);
+    int z = sep.length();
+    char ch = sep.charAt(0);
+
+    if (z == 1 && str.indexOf(ch) < 0) {
+      return new String[] { str.trim() };
+    }
+
+    List<String> lst = new ArrayList<String>();
+    int i = 0;
+    int start = 0;
+
+    boolean match = false;
+    boolean ok;
+
+    while (i < len) {
+      if (z == 1) {
+        ok = (str.charAt(i) == ch);
+      } else {
+        ok = (sep.indexOf(str.charAt(i)) >= 0);
+      }
+
+      if (ok) {
+        if (match) {
+          lst.add(str.substring(start, i).trim());
+          match = false;
+        }
+        start = ++i;
+      } else {
+        match = true;
+        i++;
+      }
+    }
+
+    if (match) {
+      lst.add(str.substring(start, i).trim());
+    }
+
+    return lst.toArray(new String[lst.size()]);
+  }
+  
+  public static <T extends Comparable<T>> T min(T... x) {
+    int n = x.length;
+    Assert.parameterCount(n, 2);
+    T z = x[0];
+
+    for (int i = 1; i < n; i++) {
+      if (x[i].compareTo(z) < 0) {
+        z = x[i];
+      }
+    }
+    
+    return z;
+  }
+  
+  public static <T extends Comparable<T>> T max(T... x) {
+    int n = x.length;
+    Assert.parameterCount(n, 2);
+    T z = x[0];
+
+    for (int i = 1; i < n; i++) {
+      if (x[i].compareTo(z) > 0) {
+        z = x[i];
+      }
+    }
+    
+    return z;
+  }
+
+  public static int fitStart(int start, int len, int end) {
+    if (start + len <= end) {
+      return start;
+    }
+    else {
+      return end - len;
+    }
+  }
+
+  public static int fitStart(int start, int len, int end, int min) {
+    return max(fitStart(start, len, end), min);
+  }
+  
+  public static <T> List<T> join (List<? extends T>... src) {
+    int n = src.length;
+    Assert.parameterCount(n, 2);
+    
+    List<T> dst = new ArrayList<T>();
+    
+    for (List<? extends T> lst : src) {
+      if (lst != null) {
+        dst.addAll(lst);
+      }
+    }
+
+    return dst;
+  }
+  
 }

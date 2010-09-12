@@ -73,7 +73,6 @@ public class BeeCheckBox extends CheckBox implements HasId,
 
   public BeeCheckBox(BeeName nm) {
     this();
-    createId();
 
     String fld = nm.getName();
     if (!BeeUtils.isEmpty(fld)) {
@@ -131,8 +130,8 @@ public class BeeCheckBox extends CheckBox implements HasId,
     return true;
   }
 
-  private void createId() {
-    BeeDom.setId(this);
+  public void createId() {
+    BeeDom.createId(this, "c");
   }
 
   private void addDefaultHandler() {

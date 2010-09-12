@@ -9,7 +9,7 @@ public class BeeStack extends StackLayoutPanel implements HasId {
 
   public BeeStack(Unit unit) {
     super(unit);
-    BeeDom.setId(this);
+    createId();
   }
 
   public String getId() {
@@ -18,6 +18,10 @@ public class BeeStack extends StackLayoutPanel implements HasId {
 
   public void setId(String id) {
     BeeDom.setId(this, id);
+  }
+
+  public void createId() {
+    BeeDom.createId(this, "stack");
   }
 
 }

@@ -1,18 +1,20 @@
 package com.butent.bee.egg.client;
 
 import java.util.Date;
+import java.util.List;
 
 import com.butent.bee.egg.client.cli.CliWidget;
 import com.butent.bee.egg.client.composite.ButtonGroup;
 import com.butent.bee.egg.client.composite.RadioGroup;
+import com.butent.bee.egg.client.grid.BeeFlexTable;
 import com.butent.bee.egg.client.layout.BeeFlow;
-import com.butent.bee.egg.client.layout.BeeHorizontal;
+import com.butent.bee.egg.client.layout.BeeLayoutPanel;
 import com.butent.bee.egg.client.layout.BeeScroll;
 import com.butent.bee.egg.client.layout.BeeSplit;
-import com.butent.bee.egg.client.ui.GwtUiCreator;
 import com.butent.bee.egg.client.utils.BeeDom;
 import com.butent.bee.egg.client.widget.BeeButton;
 import com.butent.bee.egg.client.widget.BeeCheckBox;
+import com.butent.bee.egg.client.widget.BeeIntegerBox;
 import com.butent.bee.egg.client.widget.BeeListBox;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeConst;
@@ -22,8 +24,10 @@ import com.butent.bee.egg.shared.BeeStage;
 import com.butent.bee.egg.shared.HasId;
 import com.butent.bee.egg.shared.Pair;
 import com.butent.bee.egg.shared.menu.MenuConst;
-import com.butent.bee.egg.shared.ui.UiComponent;
 import com.butent.bee.egg.shared.utils.BeeUtils;
+import com.butent.bee.egg.shared.utils.PropUtils;
+import com.butent.bee.egg.shared.utils.SubProp;
+
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Panel;
@@ -37,7 +41,7 @@ public class BeeUi implements BeeModule {
   private String activeId = null;
 
   private Panel activePanel = null;
-  private SimplePanel menuPanel = null;
+  private Panel menuPanel = null;
 
   private String elDsn = null;
 
@@ -81,11 +85,11 @@ public class BeeUi implements BeeModule {
     return rootUi;
   }
 
-  public SimplePanel getMenuPanel() {
+  public Panel getMenuPanel() {
     return menuPanel;
   }
 
-  public void setMenuPanel(SimplePanel menuPanel) {
+  public void setMenuPanel(Panel menuPanel) {
     this.menuPanel = menuPanel;
   }
 
@@ -110,7 +114,6 @@ public class BeeUi implements BeeModule {
   }
 
   public void start() {
-    UiComponent.setCreator(new GwtUiCreator());
     createUi();
   }
 
@@ -126,13 +129,33 @@ public class BeeUi implements BeeModule {
     Assert.notNull(w);
 
     Panel p = getActivePanel();
-    if (p instanceof SimplePanel)
+    if (p instanceof SimplePanel) {
       ((SimplePanel) p).setWidget(w);
+    }
   }
 
   public void updateMenu(Widget w) {
     Assert.notNull(w);
-    getMenuPanel().setWidget(w);
+
+    Panel p = getMenuPanel();
+    Assert.notNull(p);
+    
+    p.clear();
+    p.add(w);
+  }
+
+  public void showGrid(List<SubProp> lst) {
+    Assert.notEmpty(lst);
+
+    updateActivePanel(BeeGlobal.createSimpleGrid(SubProp.COLUMN_HEADERS,
+        PropUtils.subToArray(lst)));
+  }
+
+  public void showGrid(String[] cols, Object data) {
+    Assert.notEmpty(cols);
+    Assert.notNull(data);
+
+    updateActivePanel(BeeGlobal.createSimpleGrid(cols, data));
   }
 
   private void createUi() {
@@ -149,7 +172,7 @@ public class BeeUi implements BeeModule {
 
     w = initWest();
     if (w != null)
-      p.addWest(w, 240);
+      p.addWest(w, 400);
 
     w = initEast();
     if (w != null)
@@ -226,16 +249,31 @@ public class BeeUi implements BeeModule {
   private Widget initWest() {
     BeeSplit spl = new BeeSplit();
 
-    BeeHorizontal hp = new BeeHorizontal();
-    hp.setSpacing(10);
+    BeeFlexTable fp = new BeeFlexTable();
+    fp.setCellSpacing(3);
 
-    hp.add(new BeeListBox(MenuConst.FIELD_ROOT_LAYOUT, true));
-    hp.add(new BeeListBox(MenuConst.FIELD_ITEM_LAYOUT, true));
-    hp.add(new BeeButton("F5", BeeService.SERVICE_REFRESH_MENU));
+    int r = MenuConst.MAX_MENU_DEPTH;
+    String fld, cap;
 
-    spl.addNorth(hp, 140);
+    for (int i = 0; i < r; i++) {
+      fld = MenuConst.fieldMenuLayout(i);
+      cap = BeeGlobal.getFieldCaption(fld);
 
-    BeeScroll mp = new BeeScroll();
+      if (!BeeUtils.isEmpty(cap)) {
+        fp.setText(i, 0, cap);
+      }
+      fp.setWidget(i, 1, new BeeListBox(fld));
+    }
+
+    fp.setWidget(0, 2, new BeeIntegerBox(MenuConst.FIELD_ROOT_LIMIT));
+    fp.setWidget(1, 2, new BeeIntegerBox(MenuConst.FIELD_ITEM_LIMIT));
+
+    fp.setWidget(r - 1, 2, new BeeButton("Refresh",
+        BeeService.SERVICE_REFRESH_MENU));
+
+    spl.addNorth(fp, 100);
+    
+    BeeLayoutPanel mp = new BeeLayoutPanel();
     spl.add(mp);
 
     setMenuPanel(mp);

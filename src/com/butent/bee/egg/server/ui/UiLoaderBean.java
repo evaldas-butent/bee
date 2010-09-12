@@ -10,8 +10,8 @@ import com.butent.bee.egg.server.Assert;
 import com.butent.bee.egg.server.http.RequestInfo;
 import com.butent.bee.egg.server.http.ResponseBuffer;
 import com.butent.bee.egg.server.utils.XmlUtils;
-import com.butent.bee.egg.shared.BeeColumn;
 import com.butent.bee.egg.shared.ui.UiComponent;
+import com.butent.bee.egg.shared.data.BeeColumn;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
 @Stateless
