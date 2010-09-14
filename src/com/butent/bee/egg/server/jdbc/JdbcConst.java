@@ -16,12 +16,12 @@ public class JdbcConst {
   public static final int DEFAULT_RESULT_SET_TYPE = ResultSet.TYPE_FORWARD_ONLY;
   public static final int DEFAULT_CONCURRENCY = ResultSet.CONCUR_READ_ONLY;
 
-  public static String rsRows(int cnt) {
-    return "result set has " + String.valueOf(cnt) + " rows";
-  }
-
   public static String rsColumns(int cnt) {
     return "result set has " + String.valueOf(cnt) + " columns";
+  }
+
+  public static String rsRows(int cnt) {
+    return "result set has " + String.valueOf(cnt) + " rows";
   }
 
 }

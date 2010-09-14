@@ -1,5 +1,12 @@
 package com.butent.bee.egg.client.communication;
 
+import com.google.gwt.core.client.JsArrayString;
+import com.google.gwt.http.client.Request;
+import com.google.gwt.http.client.RequestCallback;
+import com.google.gwt.http.client.RequestTimeoutException;
+import com.google.gwt.http.client.Response;
+import com.google.gwt.user.client.ui.Panel;
+
 import com.butent.bee.egg.client.BeeGlobal;
 import com.butent.bee.egg.client.BeeKeeper;
 import com.butent.bee.egg.client.utils.BeeDuration;
@@ -11,12 +18,6 @@ import com.butent.bee.egg.shared.BeeType;
 import com.butent.bee.egg.shared.BeeWidget;
 import com.butent.bee.egg.shared.ui.UiComponent;
 import com.butent.bee.egg.shared.utils.BeeUtils;
-import com.google.gwt.core.client.JsArrayString;
-import com.google.gwt.http.client.Request;
-import com.google.gwt.http.client.RequestCallback;
-import com.google.gwt.http.client.RequestTimeoutException;
-import com.google.gwt.http.client.Response;
-import com.google.gwt.user.client.ui.Panel;
 
 public class BeeCallback implements RequestCallback {
 
@@ -101,8 +102,8 @@ public class BeeCallback implements RequestCallback {
       BeeKeeper.getLog().info("response headers", resp.getHeadersAsString());
 
       if (info != null) {
-        info.setRespInfo(RpcUtils.responseInfo(resp,
-            (cc > 0) ? BeeConst.STRING_EMPTY : txt));
+        info.setRespInfo(RpcUtils.responseInfo(resp, (cc > 0)
+            ? BeeConst.STRING_EMPTY : txt));
       }
     }
 
@@ -147,13 +148,18 @@ public class BeeCallback implements RequestCallback {
     }
 
     if (debug) {
-      BeeKeeper.getLog()
-          .finish(dur, BeeUtils.addName("arr size", arr.length()));
+      BeeKeeper.getLog().finish(dur, BeeUtils.addName("arr size", arr.length()));
     }
 
     dispatchResponse(svc, cc, arr, debug);
 
     BeeKeeper.getLog().addSeparator();
+  }
+
+  private void dispatchMessages(int mc, Response resp) {
+    for (int i = 0; i < mc; i++) {
+      BeeKeeper.getLog().info(resp.getHeader(BeeService.rpcMessageName(i)));
+    }
   }
 
   private void dispatchResponse(String svc, int cc, JsArrayString arr,
@@ -169,18 +175,12 @@ public class BeeCallback implements RequestCallback {
       BeeGlobal.inputFields(
           new BeeStage("comp_ui_form", BeeStage.STAGE_CONFIRM), "Load form",
           "form_name");
-    }
-
-    else if ("rpc_ui_form".equals(svc) && !debug) {
+    } else if ("rpc_ui_form".equals(svc) && !debug) {
       UiComponent c = UiComponent.restore(arr.get(0));
       BeeKeeper.getUi().updateActivePanel((Panel) c.createInstance());
-    }
-
-    else if (BeeService.equals(svc, BeeService.SERVICE_GET_MENU)) {
+    } else if (BeeService.equals(svc, BeeService.SERVICE_GET_MENU)) {
       BeeKeeper.getMenu().loadCallBack(arr);
-    }
-
-    else if (cc > 0) {
+    } else if (cc > 0) {
       BeeKeeper.getUi().updateActivePanel(BeeGlobal.createGrid(cc, arr));
     } else {
       for (int i = 0; i < arr.length(); i++) {
@@ -189,13 +189,5 @@ public class BeeCallback implements RequestCallback {
         }
       }
     }
-
   }
-
-  private void dispatchMessages(int mc, Response resp) {
-    for (int i = 0; i < mc; i++) {
-      BeeKeeper.getLog().info(resp.getHeader(BeeService.rpcMessageName(i)));
-    }
-  }
-
 }

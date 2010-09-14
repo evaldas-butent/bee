@@ -1,46 +1,45 @@
 package com.butent.bee.egg.client.communication;
 
-import java.util.Collection;
+import com.google.gwt.http.client.Request;
+import com.google.gwt.http.client.RequestBuilder;
+import com.google.gwt.http.client.Response;
 
 import com.butent.bee.egg.client.utils.BeeDuration;
-
 import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 import com.butent.bee.egg.shared.utils.StringProp;
 import com.butent.bee.egg.shared.utils.SubProp;
 
-import com.google.gwt.http.client.Request;
-import com.google.gwt.http.client.RequestBuilder;
-import com.google.gwt.http.client.Response;
+import java.util.Collection;
 
 public class RpcInfo {
   private static int COUNTER = 0;
 
-  public final static String COL_ID = "Id";
-  public final static String COL_NAME = "Name";
-  public final static String COL_TYPE = "Type";
+  public static final String COL_ID = "Id";
+  public static final String COL_NAME = "Name";
+  public static final String COL_TYPE = "Type";
 
-  public final static String COL_STATE = "State";
+  public static final String COL_STATE = "State";
 
-  public final static String COL_START = "Start";
-  public final static String COL_END = "End";
-  public final static String COL_COMPLETED = "Completed";
-  public final static String COL_TIMEOUT = "Timeout";
-  public final static String COL_EXPIRES = "Expires";
+  public static final String COL_START = "Start";
+  public static final String COL_END = "End";
+  public static final String COL_COMPLETED = "Completed";
+  public static final String COL_TIMEOUT = "Timeout";
+  public static final String COL_EXPIRES = "Expires";
 
-  public final static String COL_REQ_MSG = "Request Msg";
-  public final static String COL_REQ_ROWS = "Request Rows";
-  public final static String COL_REQ_COLS = "Request Columns";
-  public final static String COL_REQ_SIZE = "Request Size";
-  public final static String COL_REQ_INFO = "Request Info";
+  public static final String COL_REQ_MSG = "Request Msg";
+  public static final String COL_REQ_ROWS = "Request Rows";
+  public static final String COL_REQ_COLS = "Request Columns";
+  public static final String COL_REQ_SIZE = "Request Size";
+  public static final String COL_REQ_INFO = "Request Info";
 
-  public final static String COL_RESP_MSG = "Response Msg";
-  public final static String COL_RESP_ROWS = "Response Rows";
-  public final static String COL_RESP_COLS = "Response Columns";
-  public final static String COL_RESP_SIZE = "Response Size";
-  public final static String COL_RESP_INFO = "Response Info";
+  public static final String COL_RESP_MSG = "Response Msg";
+  public static final String COL_RESP_ROWS = "Response Rows";
+  public static final String COL_RESP_COLS = "Response Columns";
+  public static final String COL_RESP_SIZE = "Response Size";
+  public static final String COL_RESP_INFO = "Response Info";
 
-  public final static String COL_ERR_MSG = "Error Msg";
+  public static final String COL_ERR_MSG = "Error Msg";
 
   private int id;
   private String name = null;
@@ -66,21 +65,11 @@ public class RpcInfo {
   private int respCols = BeeConst.SIZE_UNKNOWN;
   private int respSize = BeeConst.SIZE_UNKNOWN;
 
-  String errMsg = null;
+  private String errMsg = null;
 
   public RpcInfo() {
     id = ++COUNTER;
     duration = new BeeDuration();
-  }
-
-  public RpcInfo(String name) {
-    this();
-    this.name = name;
-  }
-
-  public RpcInfo(String name, String reqMsg) {
-    this(name);
-    this.reqMsg = reqMsg;
   }
 
   public RpcInfo(RequestBuilder.Method type) {
@@ -98,158 +87,31 @@ public class RpcInfo {
     this.reqMsg = reqMsg;
   }
 
-  public int getId() {
-    return id;
-  }
-
-  public void setId(int id) {
-    this.id = id;
-  }
-
-  public String getName() {
-    return name;
-  }
-
-  public void setName(String name) {
+  public RpcInfo(String name) {
+    this();
     this.name = name;
   }
 
-  public RequestBuilder.Method getType() {
-    return type;
-  }
-
-  public void setType(RequestBuilder.Method type) {
-    this.type = type;
-  }
-
-  public int getState() {
-    return state;
-  }
-
-  public void setState(int state) {
-    this.state = state;
-  }
-
-  public RequestBuilder getReqBuilder() {
-    return reqBuilder;
-  }
-
-  public void setReqBuilder(RequestBuilder reqBuilder) {
-    this.reqBuilder = reqBuilder;
-  }
-
-  public Request getRequest() {
-    return request;
-  }
-
-  public void setRequest(Request request) {
-    this.request = request;
-  }
-
-  public Collection<StringProp> getReqInfo() {
-    return reqInfo;
-  }
-
-  public void setReqInfo(Collection<StringProp> reqInfo) {
-    this.reqInfo = reqInfo;
-  }
-
-  public String getReqMsg() {
-    return reqMsg;
-  }
-
-  public void setReqMsg(String reqMsg) {
+  public RpcInfo(String name, String reqMsg) {
+    this(name);
     this.reqMsg = reqMsg;
   }
 
-  public int getReqRows() {
-    return reqRows;
+  public int endColumns(int cols, int size) {
+    return end(BeeConst.STATE_CLOSED, null, BeeConst.SIZE_UNKNOWN, cols, size,
+        null);
   }
 
-  public void setReqRows(int reqRows) {
-    this.reqRows = reqRows;
+  public int endError(Exception ex) {
+    return end(BeeConst.STATE_ERROR, null, BeeConst.SIZE_UNKNOWN,
+        BeeConst.SIZE_UNKNOWN, BeeConst.SIZE_UNKNOWN, ex.toString());
   }
 
-  public int getReqCols() {
-    return reqCols;
+  public int endError(String msg) {
+    return end(BeeConst.STATE_ERROR, null, BeeConst.SIZE_UNKNOWN,
+        BeeConst.SIZE_UNKNOWN, BeeConst.SIZE_UNKNOWN, msg);
   }
 
-  public void setReqCols(int reqCols) {
-    this.reqCols = reqCols;
-  }
-
-  public int getReqSize() {
-    return reqSize;
-  }
-
-  public void setReqSize(int reqSize) {
-    this.reqSize = reqSize;
-  }
-
-  public Response getResponse() {
-    return response;
-  }
-
-  public void setResponse(Response response) {
-    this.response = response;
-  }
-
-  public Collection<SubProp> getRespInfo() {
-    return respInfo;
-  }
-
-  public void setRespInfo(Collection<SubProp> respInfo) {
-    this.respInfo = respInfo;
-  }
-
-  public String getRespMsg() {
-    return respMsg;
-  }
-
-  public void setRespMsg(String respMsg) {
-    this.respMsg = respMsg;
-  }
-
-  public int getRespRows() {
-    return respRows;
-  }
-
-  public void setRespRows(int respRows) {
-    this.respRows = respRows;
-  }
-
-  public int getRespCols() {
-    return respCols;
-  }
-
-  public void setRespCols(int respCols) {
-    this.respCols = respCols;
-  }
-
-  public int getRespSize() {
-    return respSize;
-  }
-
-  public void setRespSize(int respSize) {
-    this.respSize = respSize;
-  }
-
-  public String getErrMsg() {
-    return errMsg;
-  }
-
-  public void setErrMsg(String errMsg) {
-    this.errMsg = errMsg;
-  }
-  
-  public void setTimeout(int timeout) {
-    duration.setTimeout(timeout);
-  }
-
-  public int getTimeout() {
-    return duration.getTimeout();
-  }
-  
   public int endMessage(String msg) {
     return end(BeeConst.STATE_CLOSED, msg, BeeConst.SIZE_UNKNOWN,
         BeeConst.SIZE_UNKNOWN, BeeConst.SIZE_UNKNOWN, null);
@@ -270,92 +132,164 @@ public class RpcInfo {
   }
 
   public int endRows(int rows, int size) {
-    return end(BeeConst.STATE_CLOSED, null, rows, BeeConst.SIZE_UNKNOWN, size, null);
-  }
-  
-  public int endColumns(int cols, int size) {
-    return end(BeeConst.STATE_CLOSED, null, BeeConst.SIZE_UNKNOWN, cols, size, null);
+    return end(BeeConst.STATE_CLOSED, null, rows, BeeConst.SIZE_UNKNOWN, size,
+        null);
   }
 
   public int endSize(int size) {
-    return end(BeeConst.STATE_CLOSED, null, 
-        BeeConst.SIZE_UNKNOWN, BeeConst.SIZE_UNKNOWN, size, null);
-  }
-
-  public int endError(Exception ex) {
-    return end(BeeConst.STATE_ERROR, null, BeeConst.SIZE_UNKNOWN,
-        BeeConst.SIZE_UNKNOWN, BeeConst.SIZE_UNKNOWN, ex.toString());
-  }
-
-  public int endError(String msg) {
-    return end(BeeConst.STATE_ERROR, null, BeeConst.SIZE_UNKNOWN,
-        BeeConst.SIZE_UNKNOWN, BeeConst.SIZE_UNKNOWN, msg);
+    return end(BeeConst.STATE_CLOSED, null, BeeConst.SIZE_UNKNOWN,
+        BeeConst.SIZE_UNKNOWN, size, null);
   }
 
   public boolean filterState(int st) {
     return (state & st) != 0;
   }
 
-  public String getStartTime() {
-    return duration.getStartTime();
+  public String getCompletedTime() {
+    return duration.getCompletedTime();
   }
 
   public String getEndTime() {
     return duration.getEndTime();
   }
 
-  public String getCompletedTime() {
-    return duration.getCompletedTime();
-  }
-
-  public String getTimeoutString() {
-    return duration.getTimeoutAsTime();
+  public String getErrMsg() {
+    return errMsg;
   }
 
   public String getExpireTime() {
     return duration.getExpireTime();
   }
 
-  public String getStateString() {
-    String s;
+  public int getId() {
+    return id;
+  }
 
-    switch (state) {
-    case BeeConst.STATE_OPEN: {
-      s = "Open";
-      break;
-    }
-    case BeeConst.STATE_CLOSED: {
-      s = "Finished";
-      break;
-    }
-    case BeeConst.STATE_ERROR: {
-      s = "Error";
-      break;
-    }
-    case BeeConst.STATE_EXPIRED: {
-      s = "Expired";
-      break;
-    }
-    case BeeConst.STATE_CANCELED: {
-      s = "Canceled";
-      break;
-    }
-    default:
-      s = "Unknown";
-    }
+  public String getName() {
+    return name;
+  }
 
-    return s;
+  public RequestBuilder getReqBuilder() {
+    return reqBuilder;
+  }
+
+  public int getReqCols() {
+    return reqCols;
+  }
+
+  public Collection<StringProp> getReqInfo() {
+    return reqInfo;
+  }
+
+  public String getReqInfoString() {
+    return BeeUtils.transformCollection(getReqInfo(),
+        BeeConst.DEFAULT_ROW_SEPARATOR);
+  }
+
+  public String getReqMsg() {
+    return reqMsg;
+  }
+
+  public int getReqRows() {
+    return reqRows;
+  }
+
+  public int getReqSize() {
+    return reqSize;
+  }
+
+  public Request getRequest() {
+    return request;
+  }
+
+  public int getRespCols() {
+    return respCols;
+  }
+
+  public Collection<SubProp> getRespInfo() {
+    return respInfo;
+  }
+
+  public String getRespInfoString() {
+    return BeeUtils.transformCollection(getRespInfo(),
+        BeeConst.DEFAULT_ROW_SEPARATOR);
+  }
+
+  public String getRespMsg() {
+    return respMsg;
+  }
+
+  public Response getResponse() {
+    return response;
+  }
+
+  public int getRespRows() {
+    return respRows;
+  }
+
+  public int getRespSize() {
+    return respSize;
   }
 
   public String getSizeString(int z) {
     if (z != BeeConst.SIZE_UNKNOWN) {
       return BeeUtils.transform(z);
-    }
-    else {
+    } else {
       return BeeConst.STRING_EMPTY;
     }
   }
-  
+
+  public String getStartTime() {
+    return duration.getStartTime();
+  }
+
+  public int getState() {
+    return state;
+  }
+
+  public String getStateString() {
+    String s;
+
+    switch (state) {
+      case BeeConst.STATE_OPEN: {
+        s = "Open";
+        break;
+      }
+      case BeeConst.STATE_CLOSED: {
+        s = "Finished";
+        break;
+      }
+      case BeeConst.STATE_ERROR: {
+        s = "Error";
+        break;
+      }
+      case BeeConst.STATE_EXPIRED: {
+        s = "Expired";
+        break;
+      }
+      case BeeConst.STATE_CANCELED: {
+        s = "Canceled";
+        break;
+      }
+      default:
+        s = "Unknown";
+    }
+
+    return s;
+  }
+
+  public int getTimeout() {
+    return duration.getTimeout();
+  }
+
+  public String getTimeoutString() {
+    return duration.getTimeoutAsTime();
+  }
+
+  public RequestBuilder.Method getType() {
+    return type;
+  }
+
   public String getTypeString() {
     if (getType() == null) {
       return BeeConst.STRING_EMPTY;
@@ -363,13 +297,81 @@ public class RpcInfo {
       return getType().toString();
     }
   }
-  
-  public String getReqInfoString() {
-    return BeeUtils.transformCollection(getReqInfo(), BeeConst.DEFAULT_ROW_SEPARATOR);
+
+  public void setErrMsg(String errMsg) {
+    this.errMsg = errMsg;
   }
 
-  public String getRespInfoString() {
-    return BeeUtils.transformCollection(getRespInfo(), BeeConst.DEFAULT_ROW_SEPARATOR);
+  public void setId(int id) {
+    this.id = id;
+  }
+
+  public void setName(String name) {
+    this.name = name;
+  }
+
+  public void setReqBuilder(RequestBuilder reqBuilder) {
+    this.reqBuilder = reqBuilder;
+  }
+
+  public void setReqCols(int reqCols) {
+    this.reqCols = reqCols;
+  }
+
+  public void setReqInfo(Collection<StringProp> reqInfo) {
+    this.reqInfo = reqInfo;
+  }
+
+  public void setReqMsg(String reqMsg) {
+    this.reqMsg = reqMsg;
+  }
+
+  public void setReqRows(int reqRows) {
+    this.reqRows = reqRows;
+  }
+
+  public void setReqSize(int reqSize) {
+    this.reqSize = reqSize;
+  }
+
+  public void setRequest(Request request) {
+    this.request = request;
+  }
+
+  public void setRespCols(int respCols) {
+    this.respCols = respCols;
+  }
+
+  public void setRespInfo(Collection<SubProp> respInfo) {
+    this.respInfo = respInfo;
+  }
+
+  public void setRespMsg(String respMsg) {
+    this.respMsg = respMsg;
+  }
+
+  public void setResponse(Response response) {
+    this.response = response;
+  }
+
+  public void setRespRows(int respRows) {
+    this.respRows = respRows;
+  }
+
+  public void setRespSize(int respSize) {
+    this.respSize = respSize;
+  }
+
+  public void setState(int state) {
+    this.state = state;
+  }
+
+  public void setTimeout(int timeout) {
+    duration.setTimeout(timeout);
+  }
+
+  public void setType(RequestBuilder.Method type) {
+    this.type = type;
   }
 
   private int done() {
@@ -381,11 +383,9 @@ public class RpcInfo {
 
     if (st > 0) {
       setState(st);
-    }
-    else if (!BeeUtils.isEmpty(err)) {
+    } else if (!BeeUtils.isEmpty(err)) {
       setState(BeeConst.STATE_ERROR);
-    }
-    else {
+    } else {
       setState(BeeConst.STATE_CLOSED);
     }
 

@@ -9,16 +9,8 @@ public class ArgumentTypeException extends BeeRuntimeException {
     super();
   }
 
-  public ArgumentTypeException(String message, Throwable cause) {
-    super(message, cause);
-  }
-
   public ArgumentTypeException(String message) {
     super(message);
-  }
-
-  public ArgumentTypeException(Throwable cause) {
-    super(cause);
   }
 
   public ArgumentTypeException(String argType, String reqType) {
@@ -33,16 +25,24 @@ public class ArgumentTypeException extends BeeRuntimeException {
     this.reqType = reqType;
   }
 
+  public ArgumentTypeException(String message, Throwable cause) {
+    super(message, cause);
+  }
+
+  public ArgumentTypeException(Throwable cause) {
+    super(cause);
+  }
+
   public String getArgType() {
     return argType;
   }
 
-  public void setArgType(String argType) {
-    this.argType = argType;
-  }
-
   public String getReqType() {
     return reqType;
+  }
+
+  public void setArgType(String argType) {
+    this.argType = argType;
   }
 
   public void setReqType(String reqType) {

@@ -1,9 +1,9 @@
 package com.butent.bee.egg.server.http;
 
+import com.butent.bee.egg.server.concurrency.Counter;
+
 import javax.servlet.http.HttpSessionEvent;
 import javax.servlet.http.HttpSessionListener;
-
-import com.butent.bee.egg.server.concurrency.Counter;
 
 public class SessionListener implements HttpSessionListener {
   private String attrCnt = null;
@@ -21,12 +21,10 @@ public class SessionListener implements HttpSessionListener {
 
   @Override
   public void sessionDestroyed(HttpSessionEvent se) {
-    se.getSession()
-        .getServletContext()
-        .log(
-            "session destroyed "
-                + HttpUtils.counterInfo(attrCnt,
-                    se.getSession().getAttribute(attrCnt)));
+    se.getSession().getServletContext().log(
+        "session destroyed "
+            + HttpUtils.counterInfo(attrCnt,
+                se.getSession().getAttribute(attrCnt)));
     se.getSession().removeAttribute(attrCnt);
   }
 

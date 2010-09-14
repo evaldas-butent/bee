@@ -3,13 +3,13 @@ package com.butent.bee.egg.shared.sql;
 import java.util.List;
 
 public interface FromSource {
-  public Object getSource();
+  String getAlias();
 
-  public String getAlias();
+  String getCondition(boolean queryMode);
 
-  public String getJoinMode();
+  String getJoinMode();
 
-  public String getCondition(boolean queryMode);
+  List<Object> getQueryParameters();
 
-  public List<Object> getQueryParameters();
+  Object getSource();
 }

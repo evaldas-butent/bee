@@ -1,12 +1,12 @@
 package com.butent.bee.egg.client.menu;
 
-import com.butent.bee.egg.client.dialog.BeeDecoratedPopupPanel;
-import com.butent.bee.egg.client.utils.BeeDom;
-
 import com.google.gwt.dom.client.EventTarget;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Event.NativePreviewEvent;
+
+import com.butent.bee.egg.client.dialog.BeeDecoratedPopupPanel;
+import com.butent.bee.egg.client.utils.BeeDom;
 
 public class MenuPopup extends BeeDecoratedPopupPanel {
   private BeeMenuBar parentMenu = null;
@@ -14,14 +14,6 @@ public class MenuPopup extends BeeDecoratedPopupPanel {
 
   public MenuPopup() {
     super();
-  }
-
-  public MenuPopup(boolean autoHide, boolean modal) {
-    super(autoHide, modal);
-  }
-
-  public MenuPopup(boolean autoHide) {
-    super(autoHide);
   }
 
   public MenuPopup(BeeMenuBar bar, BeeMenuItem item, boolean autoHide,
@@ -35,25 +27,33 @@ public class MenuPopup extends BeeDecoratedPopupPanel {
     parentItem.getSubMenu().onShow();
   }
 
+  public MenuPopup(boolean autoHide) {
+    super(autoHide);
+  }
+
+  public MenuPopup(boolean autoHide, boolean modal) {
+    super(autoHide, modal);
+  }
+
   @Override
   public void createId() {
     BeeDom.createId(this, "menupopup");
-  }
-
-  public BeeMenuBar getParentMenu() {
-    return parentMenu;
-  }
-
-  public void setParentMenu(BeeMenuBar parentMenu) {
-    this.parentMenu = parentMenu;
   }
 
   public BeeMenuItem getParentItem() {
     return parentItem;
   }
 
+  public BeeMenuBar getParentMenu() {
+    return parentMenu;
+  }
+
   public void setParentItem(BeeMenuItem parentItem) {
     this.parentItem = parentItem;
+  }
+
+  public void setParentMenu(BeeMenuBar parentMenu) {
+    this.parentMenu = parentMenu;
   }
 
   @Override
@@ -61,18 +61,18 @@ public class MenuPopup extends BeeDecoratedPopupPanel {
     if (!event.isCanceled()) {
 
       switch (event.getTypeInt()) {
-      case Event.ONMOUSEDOWN:
-        EventTarget target = event.getNativeEvent().getEventTarget();
-        Element parentMenuElement = parentItem.getParentMenu().getElement();
-        if (parentMenuElement.isOrHasChild(Element.as(target))) {
-          event.cancel();
+        case Event.ONMOUSEDOWN:
+          EventTarget target = event.getNativeEvent().getEventTarget();
+          Element parentMenuElement = parentItem.getParentMenu().getElement();
+          if (parentMenuElement.isOrHasChild(Element.as(target))) {
+            event.cancel();
+            return;
+          }
+          super.onPreviewNativeEvent(event);
+          if (event.isCanceled()) {
+            parentMenu.selectItem(null);
+          }
           return;
-        }
-        super.onPreviewNativeEvent(event);
-        if (event.isCanceled()) {
-          parentMenu.selectItem(null);
-        }
-        return;
       }
     }
     super.onPreviewNativeEvent(event);

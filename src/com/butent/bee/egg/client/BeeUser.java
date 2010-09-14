@@ -2,20 +2,23 @@ package com.butent.bee.egg.client;
 
 public class BeeUser implements BeeModule {
 
+  public void end() {
+  }
+
   public String getName() {
     return getClass().getName();
   }
 
   public int getPriority(int p) {
     switch (p) {
-    case PRIORITY_INIT:
-      return DO_NOT_CALL;
-    case PRIORITY_START:
-      return DO_NOT_CALL;
-    case PRIORITY_END:
-      return DO_NOT_CALL;
-    default:
-      return DO_NOT_CALL;
+      case PRIORITY_INIT:
+        return DO_NOT_CALL;
+      case PRIORITY_START:
+        return DO_NOT_CALL;
+      case PRIORITY_END:
+        return DO_NOT_CALL;
+      default:
+        return DO_NOT_CALL;
     }
   }
 
@@ -23,9 +26,6 @@ public class BeeUser implements BeeModule {
   }
 
   public void start() {
-  }
-
-  public void end() {
   }
 
 }

@@ -1,5 +1,9 @@
 package com.butent.bee.egg.server;
 
+import com.butent.bee.egg.server.utils.BeeDataSource;
+import com.butent.bee.egg.shared.BeeConst;
+import com.butent.bee.egg.shared.utils.BeeUtils;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -16,23 +20,54 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
-import com.butent.bee.egg.server.utils.BeeDataSource;
-import com.butent.bee.egg.shared.BeeConst;
-import com.butent.bee.egg.shared.utils.BeeUtils;
-
 @Singleton
 @Startup
 @DependsOn("ConfigBean")
 @Lock(LockType.READ)
 public class DataSourceBean {
   private static final String PROPERTY_DSN = "DataSourceName";
-  private static Logger logger = Logger.getLogger(DataSourceBean.class
-      .getName());
+  private static Logger logger = Logger.getLogger(DataSourceBean.class.getName());
 
   @EJB
   ConfigBean config;
 
   private List<BeeDataSource> bds = new ArrayList<BeeDataSource>();
+
+  @PreDestroy
+  public void destroy() {
+    if (!bds.isEmpty()) {
+      for (BeeDataSource z : bds) {
+        if (z.isOpen()) {
+          try {
+            z.close();
+            logger.info("closed " + z.getTp());
+          } catch (Exception ex) {
+            logger.warning(ex.getMessage());
+          }
+        }
+      }
+    }
+
+    logger.info(BeeUtils.concat(1, getClass().getSimpleName(), "destroy end"));
+  }
+
+  public BeeDataSource locateDs(String dsn) {
+    Assert.notEmpty(dsn);
+    BeeDataSource z = null;
+
+    for (BeeDataSource k : bds) {
+      if (dsn.equals(k.getTp())) {
+        z = k;
+        break;
+      }
+    }
+
+    if (z == null) {
+      logger.warning(BeeUtils.concat(1, "dsn", dsn, "not found"));
+    }
+
+    return z;
+  }
 
   @SuppressWarnings("unused")
   @PostConstruct
@@ -53,14 +88,15 @@ public class DataSourceBean {
     for (String z : arr) {
       nm = z.trim();
 
-      if (BeeUtils.context("my", nm))
+      if (BeeUtils.context("my", nm)) {
         tp = BeeConst.MYSQL;
-      else if (BeeUtils.context("ms", nm))
+      } else if (BeeUtils.context("ms", nm)) {
         tp = BeeConst.MSSQL;
-      else if (BeeUtils.context("or", nm))
+      } else if (BeeUtils.context("or", nm)) {
         tp = BeeConst.ORACLE;
-      else
+      } else {
         tp = null;
+      }
 
       if (BeeUtils.isEmpty(tp)) {
         logger.warning(BeeUtils.concat(1, "dsn", z, "not recognized"));
@@ -76,45 +112,13 @@ public class DataSourceBean {
         ok = false;
       }
 
-      if (ok)
+      if (ok) {
         bds.add(new BeeDataSource(tp, ds));
+      }
     }
 
     logger.info(BeeUtils.concat(1, getClass().getSimpleName(), bds.size(),
         "data sources initialized"));
-  }
-
-  @PreDestroy
-  public void destroy() {
-    if (!bds.isEmpty())
-      for (BeeDataSource z : bds)
-        if (z.isOpen()) {
-          try {
-            z.close();
-            logger.info("closed " + z.getTp());
-          } catch (Exception ex) {
-            logger.warning(ex.getMessage());
-          }
-        }
-
-    logger.info(BeeUtils.concat(1, getClass().getSimpleName(), "destroy end"));
-  }
-
-  public BeeDataSource locateDs(String dsn) {
-    Assert.notEmpty(dsn);
-    BeeDataSource z = null;
-
-    for (BeeDataSource k : bds) {
-      if (dsn.equals(k.getTp())) {
-        z = k;
-        break;
-      }
-    }
-
-    if (z == null)
-      logger.warning(BeeUtils.concat(1, "dsn", dsn, "not found"));
-
-    return z;
   }
 
 }

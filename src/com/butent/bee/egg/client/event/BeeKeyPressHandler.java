@@ -13,8 +13,9 @@ public class BeeKeyPressHandler implements KeyPressHandler {
 
       if (source instanceof HasBeeKeyHandler) {
         boolean ok = ((HasBeeKeyHandler) source).onBeeKey(event);
-        if (!ok && source instanceof ValueBoxBase<?>)
+        if (!ok && source instanceof ValueBoxBase<?>) {
           ((ValueBoxBase<?>) source).cancelKey();
+        }
       }
     }
   }

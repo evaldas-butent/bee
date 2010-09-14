@@ -1,5 +1,12 @@
 package com.butent.bee.egg.server;
 
+import com.butent.bee.egg.server.http.RequestInfo;
+import com.butent.bee.egg.server.http.ResponseBuffer;
+import com.butent.bee.egg.shared.BeeConst;
+import com.butent.bee.egg.shared.BeeService;
+import com.butent.bee.egg.shared.utils.BeeUtils;
+import com.butent.bee.egg.shared.utils.LogUtils;
+
 import java.io.IOException;
 import java.util.logging.Logger;
 
@@ -12,15 +19,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import com.butent.bee.egg.server.http.RequestInfo;
-import com.butent.bee.egg.server.http.ResponseBuffer;
-import com.butent.bee.egg.shared.BeeConst;
-import com.butent.bee.egg.shared.BeeService;
-import com.butent.bee.egg.shared.utils.BeeUtils;
-import com.butent.bee.egg.shared.utils.LogUtils;
-
 @SuppressWarnings("serial")
-@WebServlet(name = "BeeServlet", urlPatterns = { "/egg/bee" })
+@WebServlet(name = "BeeServlet", urlPatterns = {"/egg/bee"})
 public class BeeServlet extends HttpServlet {
   private static Logger logger = Logger.getLogger(BeeServlet.class.getName());
 
@@ -56,15 +56,13 @@ public class BeeServlet extends HttpServlet {
     opt = reqInfo.getOptions();
 
     LogUtils.infoNow(logger, rid, "received request", meth, svc, dsn, sep, opt);
-    LogUtils
-        .info(logger, rid, "received headers", reqInfo.getHeadersAsString());
+    LogUtils.info(logger, rid, "received headers", reqInfo.getHeadersAsString());
 
-    if (reqInfo.getContentLen() > 0)
-      LogUtils
-          .info(logger, rid, "received content", reqInfo.getContentType(),
-              BeeUtils.bracket(reqInfo.getContentLen()),
-              BeeUtils.bracket(reqInfo.getContent().length()),
-              reqInfo.getContent());
+    if (reqInfo.getContentLen() > 0) {
+      LogUtils.info(logger, rid, "received content", reqInfo.getContentType(),
+          BeeUtils.bracket(reqInfo.getContentLen()),
+          BeeUtils.bracket(reqInfo.getContent().length()), reqInfo.getContent());
+    }
 
     ResponseBuffer buff = new ResponseBuffer(sep);
 
@@ -103,15 +101,13 @@ public class BeeServlet extends HttpServlet {
       resp.setCharacterEncoding("utf-8");
 
       // resp.setContentLength(respLen);
-      
+
       String s;
       if (respLen > 0) {
         s = buff.getString();
-      }
-      else if (mc > 0) {
+      } else if (mc > 0) {
         s = "Messages " + BeeUtils.bracket(mc);
-      }
-      else {
+      } else {
         s = BeeConst.EMPTY;
       }
 

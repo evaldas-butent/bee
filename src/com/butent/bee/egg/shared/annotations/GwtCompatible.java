@@ -43,24 +43,11 @@ import java.lang.annotation.Target;
  * <p>
  * Note that a {@code GwtCompatible} type may have some {@link GwtIncompatible}
  * methods.
- * 
- * @author Charles Fry
- * @author Hayward Chan
  */
 @Retention(RetentionPolicy.CLASS)
-@Target({ ElementType.TYPE, ElementType.METHOD })
+@Target({ElementType.TYPE, ElementType.METHOD})
 @GwtCompatible
 public @interface GwtCompatible {
-
-  /**
-   * When {@code true}, the annotated type or the type of the method return
-   * value is GWT serializable.
-   * 
-   * @see <a
-   *      href="http://code.google.com/docreader/#p=google-web-toolkit-doc-1-5&t=DevGuideSerializableTypes">
-   *      Documentation about GWT serialization</a>
-   */
-  boolean serializable() default false;
 
   /**
    * When {@code true}, the annotated type is emulated in GWT. The emulated
@@ -72,4 +59,14 @@ public @interface GwtCompatible {
    *      Documentation about GWT emulated source</a>
    */
   boolean emulated() default false;
+
+  /**
+   * When {@code true}, the annotated type or the type of the method return
+   * value is GWT serializable.
+   * 
+   * @see <a
+   *      href="http://code.google.com/docreader/#p=google-web-toolkit-doc-1-5&t=DevGuideSerializableTypes">
+   *      Documentation about GWT serialization</a>
+   */
+  boolean serializable() default false;
 }

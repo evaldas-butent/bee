@@ -1,5 +1,8 @@
 package com.butent.bee.egg.server.http;
 
+import com.butent.bee.egg.server.concurrency.Counter;
+import com.butent.bee.egg.shared.utils.BeeUtils;
+
 import java.io.IOException;
 
 import javax.servlet.Filter;
@@ -12,23 +15,21 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
-import com.butent.bee.egg.server.concurrency.Counter;
-import com.butent.bee.egg.shared.utils.BeeUtils;
-
 public class RequestFilter implements Filter {
   public static Counter COUNTER = new Counter();
   private FilterConfig config = null;
 
   @Override
-  public void init(FilterConfig filterConfig) throws ServletException {
-    config = filterConfig;
+  public void destroy() {
+    config = null;
   }
 
   @Override
   public void doFilter(ServletRequest request, ServletResponse response,
       FilterChain chain) throws IOException, ServletException {
-    if (config == null)
+    if (config == null) {
       return;
+    }
 
     String rid = ((HttpServletRequest) request).getQueryString();
 
@@ -58,8 +59,8 @@ public class RequestFilter implements Filter {
   }
 
   @Override
-  public void destroy() {
-    config = null;
+  public void init(FilterConfig filterConfig) throws ServletException {
+    config = filterConfig;
   }
 
 }

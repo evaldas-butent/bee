@@ -8,12 +8,7 @@ public class BeeNumber extends Number {
   }
 
   @Override
-  public int intValue() {
-    return 0;
-  }
-
-  @Override
-  public long longValue() {
+  public double doubleValue() {
     return 0;
   }
 
@@ -23,7 +18,12 @@ public class BeeNumber extends Number {
   }
 
   @Override
-  public double doubleValue() {
+  public int intValue() {
+    return 0;
+  }
+
+  @Override
+  public long longValue() {
     return 0;
   }
 

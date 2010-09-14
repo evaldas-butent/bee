@@ -7,12 +7,12 @@ public class BeeException extends Exception {
     super();
   }
 
-  public BeeException(String message, Throwable cause) {
-    super(message, cause);
-  }
-
   public BeeException(String message) {
     super(message);
+  }
+
+  public BeeException(String message, Throwable cause) {
+    super(message, cause);
   }
 
   public BeeException(Throwable cause) {

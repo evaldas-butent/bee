@@ -11,16 +11,8 @@ public class ArgumentCountException extends BeeRuntimeException {
     super();
   }
 
-  public ArgumentCountException(String message, Throwable cause) {
-    super(message, cause);
-  }
-
-  public ArgumentCountException(String message) {
-    super(message);
-  }
-
-  public ArgumentCountException(Throwable cause) {
-    super(cause);
+  public ArgumentCountException(int cnt, int min) {
+    this(cnt, min, -1);
   }
 
   public ArgumentCountException(int cnt, int min, int max) {
@@ -31,32 +23,40 @@ public class ArgumentCountException extends BeeRuntimeException {
     this.max = max;
   }
 
-  public ArgumentCountException(int cnt, int min) {
-    this(cnt, min, -1);
+  public ArgumentCountException(String message) {
+    super(message);
+  }
+
+  public ArgumentCountException(String message, Throwable cause) {
+    super(message, cause);
+  }
+
+  public ArgumentCountException(Throwable cause) {
+    super(cause);
   }
 
   public int getCnt() {
     return cnt;
   }
 
-  public void setCnt(int cnt) {
-    this.cnt = cnt;
+  public int getMax() {
+    return max;
   }
 
   public int getMin() {
     return min;
   }
 
-  public void setMin(int min) {
-    this.min = min;
-  }
-
-  public int getMax() {
-    return max;
+  public void setCnt(int cnt) {
+    this.cnt = cnt;
   }
 
   public void setMax(int max) {
     this.max = max;
+  }
+
+  public void setMin(int min) {
+    this.min = min;
   }
 
 }

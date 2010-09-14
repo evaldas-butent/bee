@@ -1,5 +1,8 @@
 package com.butent.bee.egg.client.grid;
 
+import com.google.gwt.core.client.JsArrayString;
+import com.google.gwt.user.client.ui.Widget;
+
 import com.butent.bee.egg.client.BeeGlobal;
 import com.butent.bee.egg.client.BeeKeeper;
 import com.butent.bee.egg.client.data.JsData;
@@ -12,43 +15,9 @@ import com.butent.bee.egg.shared.data.BeeView;
 import com.butent.bee.egg.shared.data.StringData;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
-import com.google.gwt.core.client.JsArrayString;
-import com.google.gwt.user.client.ui.Widget;
-
 public class BeeGrid {
 
   public BeeGrid() {
-  }
-
-  public Widget simpleGrid(String[] colNames, Object data) {
-    Assert.notNull(colNames);
-    Assert.notNull(data);
-
-    int c = colNames.length;
-    Assert.isPositive(c);
-
-    int r = BeeConst.SIZE_UNKNOWN;
-    BeeView view = null;
-
-    if (data instanceof String[][]) {
-      r = ((String[][]) data).length;
-      view = new StringData((String[][]) data);
-    } else if (data instanceof JsArrayString) {
-      r = ((JsArrayString) data).length() / c;
-      view = new JsData((JsArrayString) data, c);
-    }
-
-    Assert.isPositive(r);
-    Assert.notNull(view);
-
-    BeeCellTable table = new BeeCellTable(r);
-    table.initData(r);
-
-    for (int j = 0; j < c; j++) {
-      table.addColumn(new BeeTextColumn(view, j), colNames[j]);
-    }
-
-    return table;
   }
 
   public Widget createGrid(int c, JsArrayString data) {
@@ -94,6 +63,37 @@ public class BeeGrid {
 
     if (debug) {
       BeeKeeper.getLog().finish(dur);
+    }
+
+    return table;
+  }
+
+  public Widget simpleGrid(String[] colNames, Object data) {
+    Assert.notNull(colNames);
+    Assert.notNull(data);
+
+    int c = colNames.length;
+    Assert.isPositive(c);
+
+    int r = BeeConst.SIZE_UNKNOWN;
+    BeeView view = null;
+
+    if (data instanceof String[][]) {
+      r = ((String[][]) data).length;
+      view = new StringData((String[][]) data);
+    } else if (data instanceof JsArrayString) {
+      r = ((JsArrayString) data).length() / c;
+      view = new JsData((JsArrayString) data, c);
+    }
+
+    Assert.isPositive(r);
+    Assert.notNull(view);
+
+    BeeCellTable table = new BeeCellTable(r);
+    table.initData(r);
+
+    for (int j = 0; j < c; j++) {
+      table.addColumn(new BeeTextColumn(view, j), colNames[j]);
     }
 
     return table;

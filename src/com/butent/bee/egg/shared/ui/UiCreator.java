@@ -2,17 +2,17 @@ package com.butent.bee.egg.shared.ui;
 
 public interface UiCreator {
 
-  public Object createLabel(UiLabel label);
+  Object createButton(UiButton button);
 
-  public Object createWindow(UiWindow window);
+  Object createField(UiField field);
 
-  public Object createHorizontalLayout(UiHorizontalLayout horizontalLayout);
+  Object createHorizontalLayout(UiHorizontalLayout horizontalLayout);
 
-  public Object createVerticalLayout(UiVerticalLayout beeVerticalLayout);
+  Object createLabel(UiLabel label);
 
-  public Object createField(UiField field);
+  Object createPanel(UiPanel panel);
 
-  public Object createPanel(UiPanel panel);
+  Object createVerticalLayout(UiVerticalLayout beeVerticalLayout);
 
-  public Object createButton(UiButton button);
+  Object createWindow(UiWindow window);
 }

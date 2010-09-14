@@ -1,11 +1,5 @@
 package com.butent.bee.egg.server.http;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.logging.Level;
-
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeDate;
 import com.butent.bee.egg.shared.BeeService;
@@ -13,6 +7,12 @@ import com.butent.bee.egg.shared.data.BeeColumn;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 import com.butent.bee.egg.shared.utils.StringProp;
 import com.butent.bee.egg.shared.utils.SubProp;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.logging.Level;
 
 public class ResponseBuffer {
   private char[] separator;
@@ -28,91 +28,14 @@ public class ResponseBuffer {
   }
 
   public ResponseBuffer(char sep) {
-    this.separator = new char[] { sep };
+    this.separator = new char[]{sep};
   }
 
   public ResponseBuffer(String sep) {
-    if (BeeUtils.isHexString(sep))
+    if (BeeUtils.isHexString(sep)) {
       setHexSeparator(sep);
-    else
+    } else {
       setDefaultSeparator();
-  }
-
-  public char[] getSeparator() {
-    return separator;
-  }
-
-  public String getHexSeparator() {
-    return BeeUtils.toHex(getSeparator());
-  }
-
-  public void setSeparator(char[] separator) {
-    this.separator = separator;
-  }
-
-  public void setHexSeparator(String sep) {
-    if (BeeUtils.isHexString(sep))
-      this.separator = BeeUtils.fromHex(sep);
-  }
-
-  public StringBuilder getBuffer() {
-    return buffer;
-  }
-
-  public void setBuffer(StringBuilder buffer) {
-    this.buffer = buffer;
-  }
-
-  public List<ResponseMessage> getMessages() {
-    return messages;
-  }
-
-  public void setMessages(List<ResponseMessage> messages) {
-    this.messages = messages;
-  }
-
-  public void setCount(int count) {
-    this.count = count;
-  }
-
-  public int getColumnCount() {
-    return columnCount;
-  }
-
-  public void setColumnCount(int columnCount) {
-    this.columnCount = columnCount;
-  }
-
-  public String getString() {
-    return buffer.toString();
-  }
-
-  public int getSize() {
-    return buffer.length();
-  }
-
-  public int getCount() {
-    return count;
-  }
-
-  public int getMessageCount() {
-    return messages.size();
-  }
-
-  public String getMessage(int i) {
-    return messages.get(i).transform();
-  }
-
-  public boolean isDefaultSeparator() {
-    return (separator != null && separator.length == 1 && separator[0] == BeeService.DEFAULT_INFORMATION_SEPARATOR);
-  }
-
-  public void build(Object... obj) {
-    if (obj.length == 0)
-      return;
-
-    for (Object z : obj) {
-      add(z);
     }
   }
 
@@ -125,9 +48,14 @@ public class ResponseBuffer {
     addSeparator();
   }
 
-  public void addSeparator() {
-    buffer.append(separator);
-    count++;
+  public void add(Collection<?> lst) {
+    if (BeeUtils.isEmpty(lst)) {
+      addSeparator();
+    } else {
+      for (Iterator<?> it = lst.iterator(); it.hasNext();) {
+        add(it.next());
+      }
+    }
   }
 
   public void add(Object x) {
@@ -135,24 +63,13 @@ public class ResponseBuffer {
   }
 
   public void add(Object... lst) {
-    if (lst.length == 0)
+    if (lst.length == 0) {
       addSeparator();
-    else
-      for (int i = 0; i < lst.length; i++)
+    } else {
+      for (int i = 0; i < lst.length; i++) {
         add(lst[i]);
-  }
-
-  public void add(Collection<?> lst) {
-    if (BeeUtils.isEmpty(lst))
-      addSeparator();
-    else
-      for (Iterator<?> it = lst.iterator(); it.hasNext();)
-        add(it.next());
-  }
-
-  public void addLine(Object... obj) {
-    if (obj.length > 0)
-      add(BeeUtils.concat(1, obj));
+      }
+    }
   }
 
   public void addColumn(BeeColumn col) {
@@ -165,8 +82,117 @@ public class ResponseBuffer {
   public void addColumns(BeeColumn... cols) {
     Assert.isPositive(cols.length);
 
-    for (BeeColumn col : cols)
+    for (BeeColumn col : cols) {
       addColumn(col);
+    }
+  }
+
+  public void addError(Throwable err) {
+    messages.add(new ResponseMessage(Level.SEVERE, err.toString()));
+  }
+
+  public void addErrors(List<? extends Throwable> lst) {
+    for (Throwable err : lst) {
+      addError(err);
+    }
+  }
+
+  public void addLine(Object... obj) {
+    if (obj.length > 0) {
+      add(BeeUtils.concat(1, obj));
+    }
+  }
+
+  public void addMessage(Level level, Object... obj) {
+    messages.add(new ResponseMessage(level, obj));
+  }
+
+  public void addMessage(Level level, String msg) {
+    messages.add(new ResponseMessage(level, msg));
+  }
+
+  public void addMessage(Object... obj) {
+    messages.add(new ResponseMessage(obj));
+  }
+
+  public void addMessage(String msg) {
+    messages.add(new ResponseMessage(msg));
+  }
+
+  public void addMessages(Level level, String... msg) {
+    for (String s : msg) {
+      addMessage(level, s);
+    }
+  }
+
+  public void addMessages(String... msg) {
+    for (String s : msg) {
+      addMessage(s);
+    }
+  }
+
+  public void addPropSub(SubProp el) {
+    Assert.notEmpty(el);
+
+    add(el.getName());
+    add(el.getSub());
+    add(el.getValue());
+    add(el.getDate().toLog());
+  }
+
+  public void addSeparator() {
+    buffer.append(separator);
+    count++;
+  }
+
+  public void addSevere(Object... obj) {
+    messages.add(new ResponseMessage(Level.SEVERE, obj));
+  }
+
+  public void addStringProp(Collection<StringProp> lst, String... cap) {
+    Assert.notEmpty(lst);
+
+    int c = cap.length;
+    String nm;
+
+    int i = 0;
+    if (c > i && !BeeUtils.isEmpty(cap[i])) {
+      nm = cap[i].trim();
+    } else {
+      nm = "Name";
+    }
+    addColumn(new BeeColumn(nm));
+
+    i++;
+    if (c > i && !BeeUtils.isEmpty(cap[i])) {
+      nm = cap[i].trim();
+    } else {
+      nm = "Value";
+    }
+    addColumn(new BeeColumn(nm));
+
+    i++;
+    if (c > i && !BeeUtils.isEmpty(cap[i])) {
+      nm = cap[i].trim();
+    } else {
+      nm = "Date";
+    }
+    addColumn(new BeeColumn(nm));
+
+    for (StringProp el : lst) {
+      add(el.getName());
+      add(el.getValue());
+      add(new BeeDate().toLog());
+    }
+  }
+
+  public void addSub(Collection<SubProp> lst, String... cap) {
+    Assert.notEmpty(lst);
+    addSubColumns(cap);
+
+    for (SubProp el : lst) {
+      addPropSub(el);
+    }
   }
 
   public void addSubColumns(String... cap) {
@@ -183,27 +209,18 @@ public class ResponseBuffer {
     }
   }
 
-  public void addPropSub(SubProp el) {
-    Assert.notEmpty(el);
-
-    add(el.getName());
-    add(el.getSub());
-    add(el.getValue());
-    add(el.getDate().toLog());
+  public void addWarning(Object... obj) {
+    messages.add(new ResponseMessage(Level.WARNING, obj));
   }
 
-  public void addSub(Collection<SubProp> lst, String... cap) {
-    Assert.notEmpty(lst);
-    addSubColumns(cap);
-
-    for (SubProp el : lst)
-      addPropSub(el);
+  public void addWarning(Throwable err) {
+    messages.add(new ResponseMessage(Level.WARNING, err.toString()));
   }
 
-  public void appendSub(Collection<SubProp> lst) {
-    Assert.notEmpty(lst);
-    for (SubProp el : lst)
-      addPropSub(el);
+  public void addWarnings(List<?> lst) {
+    for (Object w : lst) {
+      addWarning(w);
+    }
   }
 
   public void appendStringProp(String root, Collection<StringProp> lst) {
@@ -218,91 +235,21 @@ public class ResponseBuffer {
     }
   }
 
-  public void addStringProp(Collection<StringProp> lst, String... cap) {
+  public void appendSub(Collection<SubProp> lst) {
     Assert.notEmpty(lst);
-
-    int c = cap.length;
-    String nm;
-
-    int i = 0;
-    if (c > i && !BeeUtils.isEmpty(cap[i]))
-      nm = cap[i].trim();
-    else
-      nm = "Name";
-    addColumn(new BeeColumn(nm));
-
-    i++;
-    if (c > i && !BeeUtils.isEmpty(cap[i]))
-      nm = cap[i].trim();
-    else
-      nm = "Value";
-    addColumn(new BeeColumn(nm));
-
-    i++;
-    if (c > i && !BeeUtils.isEmpty(cap[i]))
-      nm = cap[i].trim();
-    else
-      nm = "Date";
-    addColumn(new BeeColumn(nm));
-
-    for (StringProp el : lst) {
-      add(el.getName());
-      add(el.getValue());
-      add(new BeeDate().toLog());
+    for (SubProp el : lst) {
+      addPropSub(el);
     }
   }
 
-  public void addMessage(String msg) {
-    messages.add(new ResponseMessage(msg));
-  }
-
-  public void addMessage(Object... obj) {
-    messages.add(new ResponseMessage(obj));
-  }
-
-  public void addMessage(Level level, String msg) {
-    messages.add(new ResponseMessage(level, msg));
-  }
-
-  public void addMessage(Level level, Object... obj) {
-    messages.add(new ResponseMessage(level, obj));
-  }
-
-  public void addMessages(Level level, String... msg) {
-    for (String s : msg)
-      addMessage(level, s);
-  }
-
-  public void addMessages(String... msg) {
-    for (String s : msg)
-      addMessage(s);
-  }
-
-  public void addWarning(Throwable err) {
-    messages.add(new ResponseMessage(Level.WARNING, err.toString()));
-  }
-
-  public void addWarning(Object... obj) {
-    messages.add(new ResponseMessage(Level.WARNING, obj));
-  }
-
-  public void addWarnings(List<?> lst) {
-    for (Object w : lst) {
-      addWarning(w);
+  public void build(Object... obj) {
+    if (obj.length == 0) {
+      return;
     }
-  }
 
-  public void addSevere(Object... obj) {
-    messages.add(new ResponseMessage(Level.SEVERE, obj));
-  }
-
-  public void addError(Throwable err) {
-    messages.add(new ResponseMessage(Level.SEVERE, err.toString()));
-  }
-
-  public void addErrors(List<? extends Throwable> lst) {
-    for (Throwable err : lst)
-      addError(err);
+    for (Object z : obj) {
+      add(z);
+    }
   }
 
   public void clearData() {
@@ -312,21 +259,89 @@ public class ResponseBuffer {
     setDefaultSeparator();
   }
 
-  private void setDefaultSeparator() {
-    separator = new char[] { BeeService.DEFAULT_INFORMATION_SEPARATOR };
+  public StringBuilder getBuffer() {
+    return buffer;
+  }
+
+  public int getColumnCount() {
+    return columnCount;
+  }
+
+  public int getCount() {
+    return count;
+  }
+
+  public String getHexSeparator() {
+    return BeeUtils.toHex(getSeparator());
+  }
+
+  public String getMessage(int i) {
+    return messages.get(i).transform();
+  }
+
+  public int getMessageCount() {
+    return messages.size();
+  }
+
+  public List<ResponseMessage> getMessages() {
+    return messages;
+  }
+
+  public char[] getSeparator() {
+    return separator;
+  }
+
+  public int getSize() {
+    return buffer.length();
+  }
+
+  public String getString() {
+    return buffer.toString();
+  }
+
+  public boolean isDefaultSeparator() {
+    return (separator != null && separator.length == 1 && separator[0] == BeeService.DEFAULT_INFORMATION_SEPARATOR);
+  }
+
+  public void setBuffer(StringBuilder buffer) {
+    this.buffer = buffer;
+  }
+
+  public void setColumnCount(int columnCount) {
+    this.columnCount = columnCount;
+  }
+
+  public void setCount(int count) {
+    this.count = count;
+  }
+
+  public void setHexSeparator(String sep) {
+    if (BeeUtils.isHexString(sep)) {
+      this.separator = BeeUtils.fromHex(sep);
+    }
+  }
+
+  public void setMessages(List<ResponseMessage> messages) {
+    this.messages = messages;
+  }
+
+  public void setSeparator(char[] separator) {
+    this.separator = separator;
   }
 
   private void checkSeparator(CharSequence s) {
-    if (!BeeUtils.contains(s, separator))
+    if (!BeeUtils.contains(s, separator)) {
       return;
+    }
 
     char[] newSep = nextSeparator(s);
     updateSeparator(newSep);
   }
 
   private char[] nextSeparator(CharSequence s) {
-    if (separator == null || separator.length == 0)
+    if (separator == null || separator.length == 0) {
       return null;
+    }
 
     int n = separator.length;
     char[] newSep = new char[n];
@@ -346,15 +361,22 @@ public class ResponseBuffer {
     return newSep;
   }
 
+  private void setDefaultSeparator() {
+    separator = new char[]{BeeService.DEFAULT_INFORMATION_SEPARATOR};
+  }
+
   private void updateSeparator(char[] newSep) {
-    if (newSep == null || newSep.length == 0)
+    if (newSep == null || newSep.length == 0) {
       return;
+    }
 
     if (count > 0 && separator != null && separator.length > 0) {
       if (separator.length == 1 && newSep.length == 1) {
-        for (int i = 0; i < buffer.length(); i++)
-          if (buffer.charAt(i) == separator[0])
+        for (int i = 0; i < buffer.length(); i++) {
+          if (buffer.charAt(i) == separator[0]) {
             buffer.setCharAt(i, newSep[0]);
+          }
+        }
       } else {
         String s = buffer.toString().replace(new String(separator),
             new String(newSep));

@@ -1,11 +1,13 @@
 package com.butent.bee.egg.client;
 
 public interface BeeModule {
-  static int PRIORITY_INIT = 1;
-  static int PRIORITY_START = 2;
-  static int PRIORITY_END = 3;
+  int PRIORITY_INIT = 1;
+  int PRIORITY_START = 2;
+  int PRIORITY_END = 3;
 
-  static int DO_NOT_CALL = -1;
+  int DO_NOT_CALL = -1;
+
+  void end();
 
   String getName();
 
@@ -14,6 +16,4 @@ public interface BeeModule {
   void init();
 
   void start();
-
-  void end();
 }

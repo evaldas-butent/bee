@@ -1,8 +1,8 @@
 package com.butent.bee.egg.shared;
 
-import java.util.Date;
-
 import com.butent.bee.egg.shared.utils.BeeUtils;
+
+import java.util.Date;
 
 public class BeeType {
   public static final int TYPE_UNKNOWN = 0;
@@ -27,12 +27,6 @@ public class BeeType {
   public static final int TYPE_ENUM = 16384;
 
   public static final int TYPE_NULL = 32768;
-
-  public static boolean isValid(int tp) {
-    return BeeUtils.inList(tp, TYPE_BOOLEAN, TYPE_STRING, TYPE_CHAR, TYPE_TEXT,
-        TYPE_NUMBER, TYPE_BYTE, TYPE_SHORT, TYPE_INT, TYPE_LONG, TYPE_FLOAT,
-        TYPE_DOUBLE, TYPE_DATE, TYPE_FILE, TYPE_BLOB, TYPE_ENUM);
-  }
 
   public static int getType(Object x) {
     if (x == null) {
@@ -68,6 +62,12 @@ public class BeeType {
     } else {
       return TYPE_UNKNOWN;
     }
+  }
+
+  public static boolean isValid(int tp) {
+    return BeeUtils.inList(tp, TYPE_BOOLEAN, TYPE_STRING, TYPE_CHAR, TYPE_TEXT,
+        TYPE_NUMBER, TYPE_BYTE, TYPE_SHORT, TYPE_INT, TYPE_LONG, TYPE_FLOAT,
+        TYPE_DOUBLE, TYPE_DATE, TYPE_FILE, TYPE_BLOB, TYPE_ENUM);
   }
 
 }

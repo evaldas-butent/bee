@@ -8,16 +8,9 @@ public class KeyNotFoundException extends BeeRuntimeException {
     super();
   }
 
-  public KeyNotFoundException(String message, Throwable cause) {
-    super(message, cause);
-  }
-
-  public KeyNotFoundException(String message) {
-    super(message);
-  }
-
-  public KeyNotFoundException(Throwable cause) {
-    super(cause);
+  public KeyNotFoundException(Object key) {
+    this();
+    this.key = key;
   }
 
   public KeyNotFoundException(Object key, String message) {
@@ -25,9 +18,16 @@ public class KeyNotFoundException extends BeeRuntimeException {
     this.key = key;
   }
 
-  public KeyNotFoundException(Object key) {
-    this();
-    this.key = key;
+  public KeyNotFoundException(String message) {
+    super(message);
+  }
+
+  public KeyNotFoundException(String message, Throwable cause) {
+    super(message, cause);
+  }
+
+  public KeyNotFoundException(Throwable cause) {
+    super(cause);
   }
 
   public Object getKey() {

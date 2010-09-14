@@ -1,10 +1,10 @@
 package com.butent.bee.egg.shared.sql;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.utils.BeeUtils;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public abstract class Conditions implements Condition {
   private List<Condition> conditionList = new ArrayList<Condition>();

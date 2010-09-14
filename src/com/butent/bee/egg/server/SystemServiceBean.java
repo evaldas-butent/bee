@@ -1,13 +1,5 @@
 package com.butent.bee.egg.server;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.logging.Logger;
-
-import javax.ejb.Stateless;
-
 import com.butent.bee.egg.server.http.RequestInfo;
 import com.butent.bee.egg.server.http.ResponseBuffer;
 import com.butent.bee.egg.server.utils.BeeClass;
@@ -21,37 +13,110 @@ import com.butent.bee.egg.shared.utils.BeeUtils;
 import com.butent.bee.egg.shared.utils.PropUtils;
 import com.butent.bee.egg.shared.utils.SubProp;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.logging.Logger;
+
+import javax.ejb.Stateless;
+
 @Stateless
 public class SystemServiceBean {
-  private static Logger logger = Logger.getLogger(SystemServiceBean.class
-      .getName());
+  private static Logger logger = Logger.getLogger(SystemServiceBean.class.getName());
 
   public void doService(String svc, RequestInfo reqInfo, ResponseBuffer buff) {
     Assert.notEmpty(svc);
     Assert.notNull(buff);
 
-    if (svc.equals(BeeService.SERVICE_TEST_CONNECTION))
+    if (svc.equals(BeeService.SERVICE_TEST_CONNECTION)) {
       connectionInfo(reqInfo, buff);
-    else if (svc.equals(BeeService.SERVICE_SERVER_INFO))
+    } else if (svc.equals(BeeService.SERVICE_SERVER_INFO)) {
       systemInfo(buff);
-    else if (svc.equals(BeeService.SERVICE_VM_INFO))
+    } else if (svc.equals(BeeService.SERVICE_VM_INFO)) {
       vmInfo(buff);
-    else if (svc.equals(BeeService.SERVICE_LOADER_INFO))
+    } else if (svc.equals(BeeService.SERVICE_LOADER_INFO)) {
       loaderInfo(buff);
-    else if (svc.equals(BeeService.SERVICE_CLASS_INFO))
+    } else if (svc.equals(BeeService.SERVICE_CLASS_INFO)) {
       classInfo(reqInfo, buff);
-    else if (svc.equals(BeeService.SERVICE_XML_INFO))
+    } else if (svc.equals(BeeService.SERVICE_XML_INFO)) {
       xmlInfo(reqInfo, buff);
-    else {
+    } else {
       String msg = BeeUtils.concat(1, svc, "system service not recognized");
       logger.warning(msg);
       buff.add(msg);
     }
   }
 
+  private void classInfo(RequestInfo reqInfo, ResponseBuffer buff) {
+    String xml = reqInfo.getContent();
+    if (BeeUtils.isEmpty(xml)) {
+      buff.add("Request data not found");
+      return;
+    }
+
+    Map<String, String> fields = XmlUtils.getText(xml);
+    if (BeeUtils.isEmpty(fields)) {
+      buff.addLine("No elements with text found in", xml);
+      return;
+    }
+
+    String cnm = fields.get(BeeService.FIELD_CLASS_NAME);
+    String pck = fields.get(BeeService.FIELD_PACKAGE_LIST);
+
+    if (BeeUtils.isEmpty(cnm)) {
+      buff.addLine("Parameter", BeeService.FIELD_CLASS_NAME, "not found in",
+          xml);
+      return;
+    }
+
+    Set<Class<?>> classes;
+    if (BeeUtils.isEmpty(pck)) {
+      classes = BeeJvm.findClassWithDefaultPackages(cnm);
+    } else {
+      classes = BeeJvm.findClass(cnm, pck.split(","));
+    }
+
+    if (BeeUtils.isEmpty(classes)) {
+      buff.addLine("Class not found", cnm, pck);
+      return;
+    }
+    int c = classes.size();
+
+    buff.addSubColumns();
+    buff.addPropSub(new SubProp(cnm, pck, BeeUtils.bracket(c)));
+
+    int i = 0;
+    if (c > 1) {
+      for (Class<?> cls : classes) {
+        i++;
+        buff.addPropSub(new SubProp(cls.getName(), null,
+            BeeUtils.progress(i, c)));
+      }
+    }
+
+    i = 0;
+    for (Class<?> cls : classes) {
+      i++;
+      if (c > 1) {
+        buff.addPropSub(new SubProp(cls.getName(), null,
+            BeeUtils.progress(i, c)));
+      }
+      buff.appendSub(BeeClass.getClassInfo(cls));
+    }
+  }
+
   private void connectionInfo(RequestInfo reqInfo, ResponseBuffer buff) {
     Assert.notNull(reqInfo);
     buff.addSub(reqInfo.getInfo());
+  }
+
+  private void loaderInfo(ResponseBuffer buff) {
+    if (BeeJvm.CVF_FAILURE == null) {
+      buff.addStringProp(BeeJvm.getLoadedClasses());
+    } else {
+      buff.add(BeeJvm.CVF_FAILURE);
+    }
   }
 
   private void systemInfo(ResponseBuffer buff) {
@@ -103,68 +168,6 @@ public class SystemServiceBean {
     buff.addSub(lst);
   }
 
-  private void loaderInfo(ResponseBuffer buff) {
-    if (BeeJvm.CVF_FAILURE == null)
-      buff.addStringProp(BeeJvm.getLoadedClasses());
-    else
-      buff.add(BeeJvm.CVF_FAILURE);
-  }
-
-  private void classInfo(RequestInfo reqInfo, ResponseBuffer buff) {
-    String xml = reqInfo.getContent();
-    if (BeeUtils.isEmpty(xml)) {
-      buff.add("Request data not found");
-      return;
-    }
-
-    Map<String, String> fields = XmlUtils.getText(xml);
-    if (BeeUtils.isEmpty(fields)) {
-      buff.addLine("No elements with text found in", xml);
-      return;
-    }
-
-    String cnm = fields.get(BeeService.FIELD_CLASS_NAME);
-    String pck = fields.get(BeeService.FIELD_PACKAGE_LIST);
-
-    if (BeeUtils.isEmpty(cnm)) {
-      buff.addLine("Parameter", BeeService.FIELD_CLASS_NAME, "not found in",
-          xml);
-      return;
-    }
-
-    Set<Class<?>> classes;
-    if (BeeUtils.isEmpty(pck))
-      classes = BeeJvm.findClassWithDefaultPackages(cnm);
-    else
-      classes = BeeJvm.findClass(cnm, pck.split(","));
-
-    if (BeeUtils.isEmpty(classes)) {
-      buff.addLine("Class not found", cnm, pck);
-      return;
-    }
-    int c = classes.size();
-
-    buff.addSubColumns();
-    buff.addPropSub(new SubProp(cnm, pck, BeeUtils.bracket(c)));
-
-    int i = 0;
-    if (c > 1)
-      for (Class<?> cls : classes) {
-        i++;
-        buff.addPropSub(new SubProp(cls.getName(), null, BeeUtils
-            .progress(i, c)));
-      }
-
-    i = 0;
-    for (Class<?> cls : classes) {
-      i++;
-      if (c > 1)
-        buff.addPropSub(new SubProp(cls.getName(), null, BeeUtils
-            .progress(i, c)));
-      buff.appendSub(BeeClass.getClassInfo(cls));
-    }
-  }
-
   private void xmlInfo(RequestInfo reqInfo, ResponseBuffer buff) {
     String reqData = reqInfo.getContent();
     if (BeeUtils.isEmpty(reqData)) {
@@ -185,10 +188,11 @@ public class SystemServiceBean {
 
     List<SubProp> lst = XmlUtils.getFileInfo(fileName);
 
-    if (BeeUtils.isEmpty(lst))
+    if (BeeUtils.isEmpty(lst)) {
       buff.addLine(fileName, "cannot get xml info");
-    else
+    } else {
       buff.addSub(lst);
+    }
   }
 
 }

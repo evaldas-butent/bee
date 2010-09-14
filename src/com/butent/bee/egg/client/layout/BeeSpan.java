@@ -1,11 +1,12 @@
 package com.butent.bee.egg.client.layout;
 
-import com.butent.bee.egg.client.utils.BeeDom;
-import com.butent.bee.egg.shared.HasId;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.ui.ComplexPanel;
 import com.google.gwt.user.client.ui.InsertPanel;
 import com.google.gwt.user.client.ui.Widget;
+
+import com.butent.bee.egg.client.utils.BeeDom;
+import com.butent.bee.egg.shared.HasId;
 
 public class BeeSpan extends ComplexPanel implements InsertPanel, HasId {
 
@@ -19,20 +20,20 @@ public class BeeSpan extends ComplexPanel implements InsertPanel, HasId {
     super.add(w, getElement());
   }
 
-  public void insert(Widget w, int beforeIndex) {
-    insert(w, getElement(), beforeIndex, true);
+  public void createId() {
+    BeeDom.createId(this, "span");
   }
 
   public String getId() {
     return BeeDom.getId(this);
   }
 
-  public void setId(String id) {
-    BeeDom.setId(this, id);
+  public void insert(Widget w, int beforeIndex) {
+    insert(w, getElement(), beforeIndex, true);
   }
 
-  public void createId() {
-    BeeDom.createId(this, "span");
+  public void setId(String id) {
+    BeeDom.setId(this, id);
   }
 
 }

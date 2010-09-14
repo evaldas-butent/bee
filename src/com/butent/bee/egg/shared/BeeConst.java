@@ -5,7 +5,7 @@ public abstract class BeeConst {
   public static final String MSSQL = "MsSql";
   public static final String ORACLE = "Oracle";
 
-  public static final String[] DS_TYPES = { MYSQL, MSSQL, ORACLE };
+  public static final String[] DS_TYPES = {MYSQL, MSSQL, ORACLE};
 
   public static final String NO = "no";
   public static final String YES = "yes";
@@ -93,32 +93,35 @@ public abstract class BeeConst {
 
   public static final Object[] EMPTY_OBJECT_ARRAY = new Object[0];
   public static final String[] EMPTY_STRING_ARRAY = new String[0];
-  public static final int[] EMPTY_INT_ARRAY = new int[0];   
-
-  public static boolean validDsType(String tp) {
-    boolean ok = false;
-
-    if (tp == null || tp.isEmpty())
-      return ok;
-
-    for (int i = 0; i < DS_TYPES.length; i++)
-      if (tp.equals(DS_TYPES[i])) {
-        ok = true;
-        break;
-      }
-
-    return ok;
-  }
+  public static final int[] EMPTY_INT_ARRAY = new int[0];
 
   public static boolean isDefault(String s) {
-    if (s == null)
+    if (s == null) {
       return false;
-    else
+    } else {
       return s.trim().equalsIgnoreCase(DEFAULT);
+    }
   }
 
   public static boolean isError(int x) {
     return x == INT_ERROR;
+  }
+
+  public static boolean validDsType(String tp) {
+    boolean ok = false;
+
+    if (tp == null || tp.isEmpty()) {
+      return ok;
+    }
+
+    for (int i = 0; i < DS_TYPES.length; i++) {
+      if (tp.equals(DS_TYPES[i])) {
+        ok = true;
+        break;
+      }
+    }
+
+    return ok;
   }
 
 }

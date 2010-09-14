@@ -1,5 +1,10 @@
 package com.butent.bee.egg.server.utils;
 
+import com.butent.bee.egg.shared.Assert;
+import com.butent.bee.egg.shared.utils.BeeUtils;
+import com.butent.bee.egg.shared.utils.PropUtils;
+import com.butent.bee.egg.shared.utils.SubProp;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -10,12 +15,17 @@ import java.lang.reflect.TypeVariable;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.butent.bee.egg.shared.Assert;
-import com.butent.bee.egg.shared.utils.BeeUtils;
-import com.butent.bee.egg.shared.utils.PropUtils;
-import com.butent.bee.egg.shared.utils.SubProp;
-
 public class BeeClass {
+  public static Annotation[] getAnnotations(Class<?> cls) {
+    Assert.notNull(cls);
+    return cls.getAnnotations();
+  }
+
+  public static Class<?>[] getClasses(Class<?> cls) {
+    Assert.notNull(cls);
+    return cls.getClasses();
+  }
+
   public static <T> List<SubProp> getClassInfo(Class<T> cls) {
     Assert.notNull(cls);
 
@@ -49,93 +59,113 @@ public class BeeClass {
     // very long "Protection Domain", cls.getProtectionDomain(),
 
     Annotation[] annArr = getDeclaredAnnotations(cls);
-    if (!BeeUtils.isEmpty(annArr))
-      for (Annotation ann : annArr)
+    if (!BeeUtils.isEmpty(annArr)) {
+      for (Annotation ann : annArr) {
         PropUtils.addSub(lst, "Declared Annotation", transformAnnotation(ann));
+      }
+    }
 
     annArr = getAnnotations(cls);
-    if (!BeeUtils.isEmpty(annArr))
-      for (Annotation ann : annArr)
+    if (!BeeUtils.isEmpty(annArr)) {
+      for (Annotation ann : annArr) {
         PropUtils.addSub(lst, "Annotation", transformAnnotation(ann));
+      }
+    }
 
     Class<?>[] clArr = getDeclaredClasses(cls);
-    if (!BeeUtils.isEmpty(clArr))
-      for (Class<?> z : clArr)
+    if (!BeeUtils.isEmpty(clArr)) {
+      for (Class<?> z : clArr) {
         PropUtils.addSub(lst, "Declared Class", transformClass(z));
+      }
+    }
 
     clArr = getClasses(cls);
-    if (!BeeUtils.isEmpty(clArr))
-      for (Class<?> z : clArr)
+    if (!BeeUtils.isEmpty(clArr)) {
+      for (Class<?> z : clArr) {
         PropUtils.addSub(lst, "Class", transformClass(z));
+      }
+    }
 
     Constructor<?>[] constrArr = getDeclaredConstructors(cls);
-    if (!BeeUtils.isEmpty(constrArr))
-      for (Constructor<?> constr : constrArr)
+    if (!BeeUtils.isEmpty(constrArr)) {
+      for (Constructor<?> constr : constrArr) {
         PropUtils.addSub(lst, "Declared Constructor",
             transformConstructor(constr));
+      }
+    }
 
     constrArr = getConstructors(cls);
-    if (!BeeUtils.isEmpty(constrArr))
-      for (Constructor<?> constr : constrArr)
+    if (!BeeUtils.isEmpty(constrArr)) {
+      for (Constructor<?> constr : constrArr) {
         PropUtils.addSub(lst, "Constructor", transformConstructor(constr));
+      }
+    }
 
     Method[] methArr = getDeclaredMethods(cls);
-    if (!BeeUtils.isEmpty(methArr))
-      for (Method meth : methArr)
+    if (!BeeUtils.isEmpty(methArr)) {
+      for (Method meth : methArr) {
         PropUtils.addSub(lst, "Declared Method", transformMethod(meth));
+      }
+    }
 
     methArr = getMethods(cls);
-    if (!BeeUtils.isEmpty(methArr))
-      for (Method meth : methArr)
+    if (!BeeUtils.isEmpty(methArr)) {
+      for (Method meth : methArr) {
         PropUtils.addSub(lst, "Method", transformMethod(meth));
+      }
+    }
 
     Field[] fldArr = getDeclaredFields(cls);
-    if (!BeeUtils.isEmpty(fldArr))
-      for (Field fld : fldArr)
+    if (!BeeUtils.isEmpty(fldArr)) {
+      for (Field fld : fldArr) {
         PropUtils.addSub(lst, "Declared Field", transformField(fld));
+      }
+    }
 
     fldArr = getDeclaredFields(cls);
-    if (!BeeUtils.isEmpty(fldArr))
-      for (Field fld : fldArr)
+    if (!BeeUtils.isEmpty(fldArr)) {
+      for (Field fld : fldArr) {
         PropUtils.addSub(lst, "Field", transformField(fld));
+      }
+    }
 
     T[] enumArr = getEnumConstants(cls);
-    if (!BeeUtils.isEmpty(enumArr))
-      for (T en : enumArr)
+    if (!BeeUtils.isEmpty(enumArr)) {
+      for (T en : enumArr) {
         PropUtils.addSub(lst, "Enum Constant", en);
+      }
+    }
 
     Type[] tpArr = getGenericInterfaces(cls);
-    if (!BeeUtils.isEmpty(tpArr))
-      for (Type tp : tpArr)
+    if (!BeeUtils.isEmpty(tpArr)) {
+      for (Type tp : tpArr) {
         PropUtils.addSub(lst, "Generic Interface", tp);
+      }
+    }
 
     clArr = getInterfaces(cls);
-    if (!BeeUtils.isEmpty(clArr))
-      for (Class<?> z : clArr)
+    if (!BeeUtils.isEmpty(clArr)) {
+      for (Class<?> z : clArr) {
         PropUtils.addSub(lst, "Interface", transformClass(z));
+      }
+    }
 
     Object[] objArr = getSigners(cls);
-    if (!BeeUtils.isEmpty(objArr))
-      for (Object obj : objArr)
+    if (!BeeUtils.isEmpty(objArr)) {
+      for (Object obj : objArr) {
         PropUtils.addSub(lst, "Signer", obj);
+      }
+    }
 
     TypeVariable<Class<T>>[] tpParArr = getTypeParameters(cls);
-    if (!BeeUtils.isEmpty(tpParArr))
-      for (TypeVariable<Class<T>> tpPar : tpParArr)
+    if (!BeeUtils.isEmpty(tpParArr)) {
+      for (TypeVariable<Class<T>> tpPar : tpParArr) {
         PropUtils.addSub(lst, "Type Parameter", tpPar.getGenericDeclaration(),
             tpPar.getName());
+      }
+    }
 
     return lst;
-  }
-
-  public static Annotation[] getAnnotations(Class<?> cls) {
-    Assert.notNull(cls);
-    return cls.getAnnotations();
-  }
-
-  public static Class<?>[] getClasses(Class<?> cls) {
-    Assert.notNull(cls);
-    return cls.getClasses();
   }
 
   public static Constructor<?>[] getConstructors(Class<?> cls) {
@@ -178,11 +208,6 @@ public class BeeClass {
     return cls.getFields();
   }
 
-  public static Method[] getMethods(Class<?> cls) {
-    Assert.notNull(cls);
-    return cls.getMethods();
-  }
-
   public static Type[] getGenericInterfaces(Class<?> cls) {
     Assert.notNull(cls);
     return cls.getGenericInterfaces();
@@ -191,6 +216,11 @@ public class BeeClass {
   public static Class<?>[] getInterfaces(Class<?> cls) {
     Assert.notNull(cls);
     return cls.getInterfaces();
+  }
+
+  public static Method[] getMethods(Class<?> cls) {
+    Assert.notNull(cls);
+    return cls.getMethods();
   }
 
   public static Object[] getSigners(Class<?> cls) {
@@ -204,45 +234,51 @@ public class BeeClass {
   }
 
   public static String transformAnnotation(Annotation ann) {
-    if (ann == null)
+    if (ann == null) {
       return null;
-    else
+    } else {
       return ann.toString();
+    }
   }
 
   private static String transformClass(Class<?> cls) {
-    if (cls == null)
+    if (cls == null) {
       return null;
-    else
+    } else {
       return cls.getName();
+    }
   }
 
   private static String transformConstructor(Constructor<?> constr) {
-    if (constr == null)
+    if (constr == null) {
       return null;
-    else
+    } else {
       return constr.toGenericString();
+    }
   }
 
   private static String transformField(Field fld) {
-    if (fld == null)
+    if (fld == null) {
       return null;
-    else
+    } else {
       return fld.toGenericString();
+    }
   }
 
   private static String transformMethod(Method meth) {
-    if (meth == null)
+    if (meth == null) {
       return null;
-    else
+    } else {
       return meth.toGenericString();
+    }
   }
 
   private static String transformPackage(Package pck) {
-    if (pck == null)
+    if (pck == null) {
       return null;
-    else
+    } else {
       return pck.getName();
+    }
   }
 
 }

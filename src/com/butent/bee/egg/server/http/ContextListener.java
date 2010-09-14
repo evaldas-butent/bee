@@ -1,9 +1,9 @@
 package com.butent.bee.egg.server.http;
 
+import com.butent.bee.egg.server.concurrency.Counter;
+
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
-
-import com.butent.bee.egg.server.concurrency.Counter;
 
 public class ContextListener implements ServletContextListener {
   private String attrCnt = null;
@@ -14,18 +14,18 @@ public class ContextListener implements ServletContextListener {
   }
 
   @Override
-  public void contextInitialized(ServletContextEvent sce) {
-    sce.getServletContext().setAttribute(attrCnt, new Counter());
-    sce.getServletContext().log("context initialized");
-  }
-
-  @Override
   public void contextDestroyed(ServletContextEvent sce) {
     sce.getServletContext().log(
         "context destroyed "
-            + HttpUtils.counterInfo(attrCnt, sce.getServletContext()
-                .getAttribute(attrCnt)));
+            + HttpUtils.counterInfo(attrCnt,
+                sce.getServletContext().getAttribute(attrCnt)));
     sce.getServletContext().removeAttribute(attrCnt);
+  }
+
+  @Override
+  public void contextInitialized(ServletContextEvent sce) {
+    sce.getServletContext().setAttribute(attrCnt, new Counter());
+    sce.getServletContext().log("context initialized");
   }
 
 }

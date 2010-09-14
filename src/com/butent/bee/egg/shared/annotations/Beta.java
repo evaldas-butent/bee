@@ -11,12 +11,11 @@ import java.lang.annotation.Target;
  * incompatible changes, or even removal, in a future release. An API bearing
  * this annotation is exempt from any compatibility guarantees made by its
  * containing library.
- * 
- * @author Kevin Bourrillion
  */
 @Retention(RetentionPolicy.CLASS)
-@Target({ ElementType.ANNOTATION_TYPE, ElementType.CONSTRUCTOR,
-    ElementType.FIELD, ElementType.METHOD, ElementType.TYPE })
+@Target({
+    ElementType.ANNOTATION_TYPE, ElementType.CONSTRUCTOR, ElementType.FIELD,
+    ElementType.METHOD, ElementType.TYPE})
 @Documented
 @GwtCompatible
 @Beta

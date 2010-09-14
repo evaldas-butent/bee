@@ -1,18 +1,22 @@
 package com.butent.bee.egg.client.widget;
 
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.ui.Button;
+
 import com.butent.bee.egg.client.BeeBus;
+import com.butent.bee.egg.client.utils.BeeCommand;
 import com.butent.bee.egg.client.utils.BeeDom;
+import com.butent.bee.egg.client.utils.HasCommand;
 import com.butent.bee.egg.shared.BeeStage;
 import com.butent.bee.egg.shared.HasId;
 import com.butent.bee.egg.shared.HasService;
 import com.butent.bee.egg.shared.HasStage;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
-import com.google.gwt.dom.client.Element;
-import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.user.client.ui.Button;
-
-public class BeeButton extends Button implements HasId, HasService, HasStage {
+public class BeeButton extends Button implements HasId, HasService, HasStage,
+    HasCommand {
+  private BeeCommand command = null;
 
   public BeeButton() {
     super();
@@ -24,13 +28,26 @@ public class BeeButton extends Button implements HasId, HasService, HasStage {
     createId();
   }
 
-  public BeeButton(String html, ClickHandler handler) {
-    super(html, handler);
+  public BeeButton(String html) {
+    super(html);
     createId();
   }
 
-  public BeeButton(String html) {
-    super(html);
+  public BeeButton(String html, BeeCommand cmnd) {
+    this(html);
+
+    if (cmnd != null) {
+      setCommand(cmnd);
+      BeeBus.addClickHandler(this);
+    }
+  }
+
+  public BeeButton(String html, BeeStage bst) {
+    this(html, bst.getService(), bst.getStage());
+  }
+
+  public BeeButton(String html, ClickHandler handler) {
+    super(html, handler);
     createId();
   }
 
@@ -51,36 +68,40 @@ public class BeeButton extends Button implements HasId, HasService, HasStage {
     }
   }
 
-  public BeeButton(String html, BeeStage bst) {
-    this(html, bst.getService(), bst.getStage());
+  public void createId() {
+    BeeDom.createId(this, "b");
+  }
+
+  public BeeCommand getCommand() {
+    return command;
   }
 
   public String getId() {
     return BeeDom.getId(this);
   }
 
-  public void setId(String id) {
-    BeeDom.setId(this, id);
-  }
-
   public String getService() {
     return BeeDom.getService(this);
-  }
-
-  public void setService(String svc) {
-    BeeDom.setService(this, svc);
   }
 
   public String getStage() {
     return BeeDom.getStage(this);
   }
 
-  public void setStage(String stg) {
-    BeeDom.setStage(this, stg);
+  public void setCommand(BeeCommand command) {
+    this.command = command;
   }
 
-  public void createId() {
-    BeeDom.createId(this, "b");
+  public void setId(String id) {
+    BeeDom.setId(this, id);
+  }
+
+  public void setService(String svc) {
+    BeeDom.setService(this, svc);
+  }
+
+  public void setStage(String stg) {
+    BeeDom.setStage(this, stg);
   }
 
 }

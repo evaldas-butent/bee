@@ -1,6 +1,11 @@
 package com.butent.bee.egg.client.ui;
 
-import java.util.logging.Logger;
+import com.google.gwt.user.client.ui.FlowPanel;
+import com.google.gwt.user.client.ui.HasWidgets;
+import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.google.gwt.user.client.ui.Panel;
+import com.google.gwt.user.client.ui.VerticalPanel;
+import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.egg.client.BeeBus;
 import com.butent.bee.egg.client.widget.BeeButton;
@@ -16,68 +21,28 @@ import com.butent.bee.egg.shared.ui.UiPanel;
 import com.butent.bee.egg.shared.ui.UiVerticalLayout;
 import com.butent.bee.egg.shared.ui.UiWindow;
 import com.butent.bee.egg.shared.utils.BeeUtils;
-import com.google.gwt.user.client.ui.FlowPanel;
-import com.google.gwt.user.client.ui.HasWidgets;
-import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.Panel;
-import com.google.gwt.user.client.ui.VerticalPanel;
-import com.google.gwt.user.client.ui.Widget;
+
+import java.util.logging.Logger;
 
 public class GwtUiCreator implements UiCreator {
 
   private static Logger logger = Logger.getLogger(GwtUiCreator.class.getName());
 
   @Override
-  public Object createLabel(UiLabel label) {
-    BeeLabel l = new BeeLabel();
-    l.setText(label.getProperty("caption"));
-    l.setTitle(label.getId());
+  public Object createButton(UiButton button) {
+    BeeButton b = new BeeButton();
+    b.setText(button.getProperty("caption"));
+    b.setTitle(button.getId());
 
-    createChilds(l, label);
+    String svc = button.getProperty("service");
+    if (!BeeUtils.isEmpty(svc)) {
+      b.setService(svc);
+      BeeBus.addClickHandler(b);
+    }
 
-    return l;
-  }
+    createChilds(b, button);
 
-  @Override
-  public Object createWindow(UiWindow window) {
-    Panel w = new FlowPanel();
-    w.setTitle(window.getId());
-
-    createChilds(w, window);
-
-    return w;
-  }
-
-  @Override
-  public Object createPanel(UiPanel panel) {
-    Panel p = new FlowPanel();
-    p.setTitle(panel.getId());
-
-    createChilds(p, panel);
-
-    return p;
-  }
-
-  @Override
-  public Object createHorizontalLayout(UiHorizontalLayout layout) {
-    HorizontalPanel h = new HorizontalPanel();
-    h.setTitle(layout.getId());
-    h.setBorderWidth(1);
-
-    createChilds(h, layout);
-
-    return h;
-  }
-
-  @Override
-  public Object createVerticalLayout(UiVerticalLayout layout) {
-    VerticalPanel v = new VerticalPanel();
-    v.setTitle(layout.getId());
-    v.setBorderWidth(1);
-
-    createChilds(v, layout);
-
-    return v;
+    return b;
   }
 
   @Override
@@ -98,20 +63,56 @@ public class GwtUiCreator implements UiCreator {
   }
 
   @Override
-  public Object createButton(UiButton button) {
-    BeeButton b = new BeeButton();
-    b.setText(button.getProperty("caption"));
-    b.setTitle(button.getId());
+  public Object createHorizontalLayout(UiHorizontalLayout layout) {
+    HorizontalPanel h = new HorizontalPanel();
+    h.setTitle(layout.getId());
+    h.setBorderWidth(1);
 
-    String svc = button.getProperty("service");
-    if (!BeeUtils.isEmpty(svc)) {
-      b.setService(svc);
-      BeeBus.addClickHandler(b);
-    }
+    createChilds(h, layout);
 
-    createChilds(b, button);
+    return h;
+  }
 
-    return b;
+  @Override
+  public Object createLabel(UiLabel label) {
+    BeeLabel l = new BeeLabel();
+    l.setText(label.getProperty("caption"));
+    l.setTitle(label.getId());
+
+    createChilds(l, label);
+
+    return l;
+  }
+
+  @Override
+  public Object createPanel(UiPanel panel) {
+    Panel p = new FlowPanel();
+    p.setTitle(panel.getId());
+
+    createChilds(p, panel);
+
+    return p;
+  }
+
+  @Override
+  public Object createVerticalLayout(UiVerticalLayout layout) {
+    VerticalPanel v = new VerticalPanel();
+    v.setTitle(layout.getId());
+    v.setBorderWidth(1);
+
+    createChilds(v, layout);
+
+    return v;
+  }
+
+  @Override
+  public Object createWindow(UiWindow window) {
+    Panel w = new FlowPanel();
+    w.setTitle(window.getId());
+
+    createChilds(w, window);
+
+    return w;
   }
 
   private void createChilds(Widget cc, UiComponent u) {

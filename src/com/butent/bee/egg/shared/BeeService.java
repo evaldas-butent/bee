@@ -111,15 +111,28 @@ public class BeeService {
 
   public static final char DEFAULT_INFORMATION_SEPARATOR = Character.MIN_VALUE;
 
-  public final static String QUERY_STRING_SEPARATOR = "?";
-  public final static String QUERY_STRING_PAIR_SEPARATOR = "&";
-  public final static String QUERY_STRING_VALUE_SEPARATOR = "=";
+  public static final String QUERY_STRING_SEPARATOR = "?";
+  public static final String QUERY_STRING_PAIR_SEPARATOR = "&";
+  public static final String QUERY_STRING_VALUE_SEPARATOR = "=";
 
-  public final static String OPTION_DEBUG = "debug";
+  public static final String OPTION_DEBUG = "debug";
 
-  public static boolean isRpcService(String svc) {
+  public static boolean equals(String s1, String s2) {
+    if (BeeUtils.isEmpty(s1) || BeeUtils.isEmpty(s2)) {
+      return false;
+    } else {
+      return BeeUtils.same(s1, s2);
+    }
+  }
+
+  public static boolean isCompositeService(String svc) {
     Assert.notEmpty(svc);
-    return svc.startsWith(RPC_SERVICE_PREFIX);
+    return svc.startsWith(COMPOSITE_SERVICE_PREFIX);
+  }
+
+  public static boolean isDbMetaService(String svc) {
+    Assert.notEmpty(svc);
+    return svc.startsWith(DB_META_SERVICE_PREFIX);
   }
 
   public static boolean isDbService(String svc) {
@@ -127,9 +140,9 @@ public class BeeService {
     return svc.startsWith(DB_SERVICE_PREFIX);
   }
 
-  public static boolean isDbMetaService(String svc) {
+  public static boolean isRpcService(String svc) {
     Assert.notEmpty(svc);
-    return svc.startsWith(DB_META_SERVICE_PREFIX);
+    return svc.startsWith(RPC_SERVICE_PREFIX);
   }
 
   public static boolean isSysService(String svc) {
@@ -142,20 +155,8 @@ public class BeeService {
     return svc.startsWith(UI_SERVICE_PREFIX);
   }
 
-  public static boolean isCompositeService(String svc) {
-    Assert.notEmpty(svc);
-    return svc.startsWith(COMPOSITE_SERVICE_PREFIX);
-  }
-
   public static String rpcMessageName(int i) {
     return RPC_FIELD_MSG + i;
   }
 
-  public static boolean equals(String s1, String s2) {
-    if (BeeUtils.isEmpty(s1) || BeeUtils.isEmpty(s2)) {
-      return false;
-    } else {
-      return BeeUtils.same(s1, s2);
-    }
-  }
 }

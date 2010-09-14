@@ -5,6 +5,17 @@ import java.util.Collection;
 import java.util.HashMap;
 
 public class GenericTree<T> {
+  private static final int indent = 2;
+
+  public static <T> Collection<T> getSuccessors(T of,
+      Collection<GenericTree<T>> in) {
+    for (GenericTree<T> tree : in) {
+      if (tree.locate.containsKey(of)) {
+        return tree.getSuccessors(of);
+      }
+    }
+    return new ArrayList<T>();
+  }
 
   private T root;
 
@@ -19,14 +30,6 @@ public class GenericTree<T> {
     locate.put(root, this);
   }
 
-  public void addLeaf(T parent, T leaf) {
-    if (locate.containsKey(parent)) {
-      locate.get(parent).addLeaf(leaf);
-    } else {
-      addLeaf(parent).addLeaf(leaf);
-    }
-  }
-
   public GenericTree<T> addLeaf(T leaf) {
     GenericTree<T> t = new GenericTree<T>(leaf);
     leafs.add(t);
@@ -36,26 +39,24 @@ public class GenericTree<T> {
     return t;
   }
 
-  public GenericTree<T> setAsParent(T parentRoot) {
-    GenericTree<T> t = new GenericTree<T>(parentRoot);
-    t.leafs.add(this);
-    this.parent = t;
-    t.locate = this.locate;
-    t.locate.put(root, this);
-    t.locate.put(parentRoot, t);
-    return t;
+  public void addLeaf(T parent, T leaf) {
+    if (locate.containsKey(parent)) {
+      locate.get(parent).addLeaf(leaf);
+    } else {
+      addLeaf(parent).addLeaf(leaf);
+    }
+  }
+
+  public GenericTree<T> getParent() {
+    return parent;
   }
 
   public T getRoot() {
     return root;
   }
 
-  public GenericTree<T> getTree(T element) {
-    return locate.get(element);
-  }
-
-  public GenericTree<T> getParent() {
-    return parent;
+  public Collection<GenericTree<T>> getSubTrees() {
+    return leafs;
   }
 
   public Collection<T> getSuccessors(T root) {
@@ -69,25 +70,24 @@ public class GenericTree<T> {
     return successors;
   }
 
-  public Collection<GenericTree<T>> getSubTrees() {
-    return leafs;
+  public GenericTree<T> getTree(T element) {
+    return locate.get(element);
   }
 
-  public static <T> Collection<T> getSuccessors(T of, Collection<GenericTree<T>> in) {
-    for (GenericTree<T> tree : in) {
-      if (tree.locate.containsKey(of)) {
-        return tree.getSuccessors(of);
-      }
-    }
-    return new ArrayList<T>();
+  public GenericTree<T> setAsParent(T parentRoot) {
+    GenericTree<T> t = new GenericTree<T>(parentRoot);
+    t.leafs.add(this);
+    this.parent = t;
+    t.locate = this.locate;
+    t.locate.put(root, this);
+    t.locate.put(parentRoot, t);
+    return t;
   }
 
   @Override
   public String toString() {
     return printTree(0);
   }
-
-  private static final int indent = 2;
 
   private String printTree(int increment) {
     String s = "";

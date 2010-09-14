@@ -1,8 +1,9 @@
 package com.butent.bee.egg.client.grid;
 
+import com.google.gwt.user.client.ui.FlexTable;
+
 import com.butent.bee.egg.client.utils.BeeDom;
 import com.butent.bee.egg.shared.HasId;
-import com.google.gwt.user.client.ui.FlexTable;
 
 public class BeeFlexTable extends FlexTable implements HasId {
 

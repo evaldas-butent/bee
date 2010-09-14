@@ -6,12 +6,12 @@ public class FromList extends FromSingle {
     super(source, alias);
   }
 
-  public FromList(String source, String alias) {
-    super(source, alias);
-  }
-
   public FromList(String source) {
     super(source);
+  }
+
+  public FromList(String source, String alias) {
+    super(source, alias);
   }
 
   @Override

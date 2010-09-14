@@ -19,12 +19,12 @@ public class BeeName implements Transformable {
     this.name = name;
   }
 
-  public String transform() {
-    return toString();
-  }
-
   public String toString() {
     return name == null ? "" : name;
+  }
+
+  public String transform() {
+    return toString();
   }
 
 }

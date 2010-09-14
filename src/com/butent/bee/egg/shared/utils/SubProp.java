@@ -4,8 +4,8 @@ import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.BeeDate;
 
 public class SubProp extends StringProp {
-  public static String[] COLUMN_HEADERS = new String[] { "Name", "Sub",
-      "Value", "Date" };
+  public static String[] COLUMN_HEADERS = new String[]{
+      "Name", "Sub", "Value", "Date"};
   public static int COLUMN_COUNT = COLUMN_HEADERS.length;
 
   private String sub;
@@ -13,10 +13,6 @@ public class SubProp extends StringProp {
 
   public SubProp() {
     super();
-  }
-
-  public SubProp(SubProp sp) {
-    this(sp.getName(), sp.getSub(), sp.getValue());
   }
 
   public SubProp(String name) {
@@ -34,45 +30,31 @@ public class SubProp extends StringProp {
     this.sub = sub;
   }
 
-  public String getSub() {
-    return sub;
-  }
-
-  public void setSub(String sub) {
-    this.sub = sub;
+  public SubProp(SubProp sp) {
+    this(sp.getName(), sp.getSub(), sp.getValue());
   }
 
   public BeeDate getDate() {
     return date;
   }
 
+  public String getSub() {
+    return sub;
+  }
+
   public void setDate(BeeDate date) {
     this.date = date;
   }
 
-  @Override
-  public boolean equals(Object obj) {
-    boolean ok = super.equals(obj);
-
-    if (!ok || !(obj instanceof SubProp))
-      return false;
-
-    String z = ((SubProp) obj).getSub();
-    if (sub == null)
-      ok = (z == null);
-    else if (z == null)
-      ok = false;
-    else
-      ok = sub.equals(z);
-
-    return ok;
+  public void setSub(String sub) {
+    this.sub = sub;
   }
 
   @Override
   public String toString() {
     return BeeUtils.concat(BeeConst.DEFAULT_VALUE_SEPARATOR, BeeUtils.concat(
-        BeeConst.DEFAULT_PROPERTY_SEPARATOR, getName(), getSub()), BeeUtils
-        .transform(getValue()));
+        BeeConst.DEFAULT_PROPERTY_SEPARATOR, getName(), getSub()),
+        BeeUtils.transform(getValue()));
   }
 
   public String transform() {

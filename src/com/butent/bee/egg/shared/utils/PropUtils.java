@@ -1,12 +1,12 @@
 package com.butent.bee.egg.shared.utils;
 
+import com.butent.bee.egg.shared.Assert;
+import com.butent.bee.egg.shared.BeeConst;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-
-import com.butent.bee.egg.shared.Assert;
-import com.butent.bee.egg.shared.BeeConst;
 
 public abstract class PropUtils {
   public static List<StringProp> EMPTY_STRING_PROP_LIST = new ArrayList<StringProp>();
@@ -16,8 +16,9 @@ public abstract class PropUtils {
     if (validName(nm) && validValue(v)) {
       lst.add(new BeeProp<T>(nm, v));
       return true;
-    } else
+    } else {
       return false;
+    }
   }
 
   @SuppressWarnings("unchecked")
@@ -25,46 +26,19 @@ public abstract class PropUtils {
     int c = x.length;
     int r = 0;
 
-    if (c < 2)
+    if (c < 2) {
       return r;
+    }
 
-    for (int i = 0; i < c - 1; i += 2)
-      if (x[i] instanceof String)
-        if (addBee(lst, (String) x[i], (T) x[i + 1]))
+    for (int i = 0; i < c - 1; i += 2) {
+      if (x[i] instanceof String) {
+        if (addBee(lst, (String) x[i], (T) x[i + 1])) {
           r++;
-
-    return r;
-  }
-
-  public static int addString(Collection<StringProp> lst, Object... x) {
-    int c = x.length;
-    Assert.parameterCount(c + 1, 3);
-    int r = 0;
-
-    if (c < 2)
-      return r;
-
-    for (int i = 0; i < c - 1; i += 2)
-      if (x[i] instanceof String && validName((String) x[i])
-          && validValue(x[i + 1])) {
-        lst.add(new StringProp((String) x[i], transformValue(x[i + 1])));
-        r++;
+        }
       }
+    }
 
     return r;
-  }
-
-  public static boolean addSub(Collection<SubProp> lst, String nm, Object sub,
-      Object v) {
-    if (validName(nm) && validValue(v)) {
-      lst.add(new SubProp(nm, transformSub(sub), transformValue(v)));
-      return true;
-    } else
-      return false;
-  }
-
-  public static boolean addSub(Collection<SubProp> lst, String nm, Object v) {
-    return addSub(lst, nm, null, v);
   }
 
   public static int addPropSub(Collection<SubProp> lst, boolean subMd,
@@ -74,45 +48,111 @@ public abstract class PropUtils {
     boolean ok;
 
     int step = subMd ? 3 : 2;
-    if (c < step)
+    if (c < step) {
       return r;
+    }
 
     for (int i = 0; i <= c - step; i += step) {
-      if (!(x[i] instanceof String))
+      if (!(x[i] instanceof String)) {
         continue;
+      }
 
-      if (subMd)
+      if (subMd) {
         ok = addSub(lst, (String) x[i], x[i + 1], x[i + 2]);
-      else
+      } else {
         ok = addSub(lst, (String) x[i], null, x[i + 1]);
+      }
 
-      if (ok)
+      if (ok) {
         r++;
+      }
     }
 
     return r;
   }
 
-  public static void appendSub(Collection<SubProp> dst, Collection<SubProp> src) {
-    if (dst != null && src != null && !src.isEmpty()) {
-      dst.addAll(src);
+  public static int addRoot(Collection<SubProp> lst, String root, Object... x) {
+    Assert.notNull(lst);
+    Assert.notEmpty(root);
+
+    int c = x.length;
+    Assert.isTrue(c >= 2);
+
+    int r = 0;
+
+    for (int i = 0; i < c - 1; i += 2) {
+      if (addSub(lst, root, x[i], x[i + 1])) {
+        r++;
+      }
     }
+
+    return r;
   }
 
-  public static void appendSub(Collection<SubProp> dst, String prefix,
-      Collection<SubProp> src) {
-    Assert.notNull(dst);
-    Assert.notEmpty(prefix);
+  public static int addSplit(Collection<SubProp> lst, String nm, Object sub,
+      String v, String sep) {
+    int r = 0;
 
-    if (src != null && !src.isEmpty()) {
-      SubProp el;
+    if (lst == null || !validName(nm) || BeeUtils.isEmpty(v)) {
+      return r;
+    }
 
-      for (Iterator<SubProp> it = src.iterator(); it.hasNext();) {
-        el = new SubProp(it.next());
-        el.setName(BeeUtils.concat(1, prefix, el.getName()));
-        
-        dst.add(el);
+    String z;
+    if (sep != null && sep.length() > 0) {
+      z = sep;
+    } else {
+      z = BeeConst.STRING_COMMA;
+    }
+
+    if (v.contains(z)) {
+      String[] arr = v.split(z);
+      if (arr.length > 1 && addSub(lst, nm, sub, BeeUtils.bracket(arr.length))) {
+        r++;
       }
+
+      for (int i = 0; i < arr.length; i++) {
+        if (addSub(lst, nm, sub, arr[i])) {
+          r++;
+        }
+      }
+    } else if (addSub(lst, nm, sub, v)) {
+      r++;
+    }
+
+    return r;
+  }
+
+  public static int addString(Collection<StringProp> lst, Object... x) {
+    int c = x.length;
+    Assert.parameterCount(c + 1, 3);
+    int r = 0;
+
+    if (c < 2) {
+      return r;
+    }
+
+    for (int i = 0; i < c - 1; i += 2) {
+      if (x[i] instanceof String && validName((String) x[i])
+          && validValue(x[i + 1])) {
+        lst.add(new StringProp((String) x[i], transformValue(x[i + 1])));
+        r++;
+      }
+    }
+
+    return r;
+  }
+
+  public static boolean addSub(Collection<SubProp> lst, String nm, Object v) {
+    return addSub(lst, nm, null, v);
+  }
+
+  public static boolean addSub(Collection<SubProp> lst, String nm, Object sub,
+      Object v) {
+    if (validName(nm) && validValue(v)) {
+      lst.add(new SubProp(nm, transformSub(sub), transformValue(v)));
+      return true;
+    } else {
+      return false;
     }
   }
 
@@ -135,9 +175,9 @@ public abstract class PropUtils {
       Collection<StringProp> src) {
     Assert.notNull(dst);
     if (src != null && !src.isEmpty()) {
-      if (BeeUtils.isEmpty(root))
+      if (BeeUtils.isEmpty(root)) {
         dst.addAll(src);
-      else {
+      } else {
         StringProp el;
 
         for (Iterator<StringProp> it = src.iterator(); it.hasNext();) {
@@ -148,56 +188,53 @@ public abstract class PropUtils {
     }
   }
 
-  public static int addSplit(Collection<SubProp> lst, String nm, Object sub,
-      String v, String sep) {
-    int r = 0;
-
-    if (lst == null || !validName(nm) || BeeUtils.isEmpty(v))
-      return r;
-
-    String z;
-    if (sep != null && sep.length() > 0)
-      z = sep;
-    else
-      z = BeeConst.STRING_COMMA;
-
-    if (v.contains(z)) {
-      String[] arr = v.split(z);
-      if (arr.length > 1 && addSub(lst, nm, sub, BeeUtils.bracket(arr.length)))
-        r++;
-
-      for (int i = 0; i < arr.length; i++)
-        if (addSub(lst, nm, sub, arr[i]))
-          r++;
-    } else if (addSub(lst, nm, sub, v))
-      r++;
-
-    return r;
+  public static void appendSub(Collection<SubProp> dst, Collection<SubProp> src) {
+    if (dst != null && src != null && !src.isEmpty()) {
+      dst.addAll(src);
+    }
   }
 
-  public static int addRoot(Collection<SubProp> lst, String root, Object... x) {
-    Assert.notNull(lst);
-    Assert.notEmpty(root);
+  public static void appendSub(Collection<SubProp> dst, String prefix,
+      Collection<SubProp> src) {
+    Assert.notNull(dst);
+    Assert.notEmpty(prefix);
 
-    int c = x.length;
-    Assert.isTrue(c >= 2);
+    if (src != null && !src.isEmpty()) {
+      SubProp el;
 
-    int r = 0;
+      for (Iterator<SubProp> it = src.iterator(); it.hasNext();) {
+        el = new SubProp(it.next());
+        el.setName(BeeUtils.concat(1, prefix, el.getName()));
 
-    for (int i = 0; i < c - 1; i += 2)
-      if (addSub(lst, root, x[i], x[i + 1]))
-        r++;
-
-    return r;
+        dst.add(el);
+      }
+    }
   }
 
   public static List<StringProp> createStringProp(Object... obj) {
     List<StringProp> lst = new ArrayList<StringProp>();
 
-    if (obj.length > 0)
+    if (obj.length > 0) {
       addString(lst, obj);
+    }
 
     return lst;
+  }
+
+  public static String[][] stringToArray(List<StringProp> lst) {
+    Assert.notEmpty(lst);
+
+    int r = lst.size();
+    String[][] arr = new String[r][2];
+
+    for (int i = 0; i < r; i++) {
+      StringProp el = lst.get(i);
+
+      arr[i][0] = el.getName();
+      arr[i][1] = el.getValue();
+    }
+
+    return arr;
   }
 
   public static String[][] subToArray(List<SubProp> lst) {
@@ -218,48 +255,6 @@ public abstract class PropUtils {
     return arr;
   }
 
-  public static String[][] stringToArray(List<StringProp> lst) {
-    Assert.notEmpty(lst);
-
-    int r = lst.size();
-    String[][] arr = new String[r][2];
-
-    for (int i = 0; i < r; i++) {
-      StringProp el = lst.get(i);
-
-      arr[i][0] = el.getName();
-      arr[i][1] = el.getValue();
-    }
-
-    return arr;
-  }
-
-  private static boolean validName(String nm) {
-    return (nm != null && !nm.isEmpty());
-  }
-
-  private static boolean validValue(Object v) {
-    if (v == null)
-      return false;
-    else if (v instanceof String)
-      return !((String) v).isEmpty();
-    else
-      return true;
-  }
-
-  private static String transformSub(Object s) {
-    return transformValue(s);
-  }
-
-  private static String transformValue(Object v) {
-    if (v == null)
-      return BeeConst.STRING_EMPTY;
-    else if (v instanceof String)
-      return transformString((String) v);
-    else
-      return BeeUtils.transform(v);
-  }
-
   private static String transformString(String v) {
     if (v.isEmpty()) {
       return v;
@@ -271,6 +266,34 @@ public abstract class PropUtils {
       }
     } else {
       return v;
+    }
+  }
+
+  private static String transformSub(Object s) {
+    return transformValue(s);
+  }
+
+  private static String transformValue(Object v) {
+    if (v == null) {
+      return BeeConst.STRING_EMPTY;
+    } else if (v instanceof String) {
+      return transformString((String) v);
+    } else {
+      return BeeUtils.transform(v);
+    }
+  }
+
+  private static boolean validName(String nm) {
+    return (nm != null && !nm.isEmpty());
+  }
+
+  private static boolean validValue(Object v) {
+    if (v == null) {
+      return false;
+    } else if (v instanceof String) {
+      return !((String) v).isEmpty();
+    } else {
+      return true;
     }
   }
 

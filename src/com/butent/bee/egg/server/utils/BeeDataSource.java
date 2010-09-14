@@ -1,25 +1,23 @@
 package com.butent.bee.egg.server.utils;
 
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.sql.DataSource;
-
 import com.butent.bee.egg.server.jdbc.BeeConnection;
 import com.butent.bee.egg.server.jdbc.BeeResultSet;
 import com.butent.bee.egg.server.jdbc.JdbcException;
 import com.butent.bee.egg.server.jdbc.JdbcUtils;
 import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.Transformable;
-
 import com.butent.bee.egg.shared.utils.BeeUtils;
 import com.butent.bee.egg.shared.utils.PropUtils;
 import com.butent.bee.egg.shared.utils.SubProp;
+
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.sql.DataSource;
 
 public class BeeDataSource implements Transformable {
   public static final int STATUS_ERROR = -1;
@@ -39,46 +37,14 @@ public class BeeDataSource implements Transformable {
     this.ds = ds;
   }
 
-  public String getTp() {
-    return tp;
-  }
-
-  public DataSource getDs() {
-    return ds;
-  }
-
-  public Connection getConn() {
-    return conn;
-  }
-
-  public List<SQLException> getErrors() {
-    return errors;
-  }
-
-  public int getStatus() {
-    return status;
-  }
-
-  public void setStatus(int st) {
-    this.status = st;
-  }
-
-  public boolean isOpen() {
-    return this.getConn() != null;
-  }
-
-  public boolean open() {
-    close();
-
-    if (this.ds != null)
-      try {
-        conn = ds.getConnection();
-        setStatus(STATUS_OPEN);
-      } catch (SQLException ex) {
-        addError(ex);
-      }
-
-    return isOpen();
+  public boolean check() {
+    if (isOpen()) {
+      return true;
+    } else if (getStatus() == STATUS_ERROR) {
+      return false;
+    } else {
+      return open();
+    }
   }
 
   public void close() {
@@ -94,56 +60,8 @@ public class BeeDataSource implements Transformable {
     }
   }
 
-  public boolean check() {
-    if (isOpen())
-      return true;
-    else if (getStatus() == STATUS_ERROR)
-      return false;
-    else
-      return open();
-  }
-
-  private void addError(SQLException ex) {
-    if (ex != null) {
-      errors.add(ex);
-      setStatus(STATUS_ERROR);
-    }
-  }
-
-  @Override
-  public String toString() {
-    return BeeUtils.concat(1, "Type", tp, "DataSource", ds, "Connection", conn);
-  }
-
-  public String transform() {
-    return toString();
-  }
-
-  public DatabaseMetaData getDbMd() throws JdbcException {
-    if (isOpen())
-      try {
-        return conn.getMetaData();
-      } catch (SQLException ex) {
-        throw new JdbcException(ex);
-      }
-    else
-      return null;
-  }
-
-  public String ping() {
-    String r = "sp_helpserver";
-    // select @@version
-    // select sysutcdatetime(), sysdatetime()
-    // select system_user
-
-    // select version(), user(), database()
-    // select utc_timestamp(), sysdate(), now()
-
-    // select * from v$version
-    // select user, sysdate from "adm_par"
-    // sys_context('userenv', 'current_schema'), sys_context('userenv', 'lang')
-
-    return r;
+  public Connection getConn() {
+    return conn;
   }
 
   public List<SubProp> getDbInfo() throws SQLException {
@@ -152,12 +70,14 @@ public class BeeDataSource implements Transformable {
     int c;
     boolean ok;
 
-    if (!isOpen())
+    if (!isOpen()) {
       return null;
+    }
 
     DatabaseMetaData dbMd = conn.getMetaData();
-    if (BeeUtils.isEmpty(dbMd))
+    if (BeeUtils.isEmpty(dbMd)) {
       return null;
+    }
 
     List<SubProp> lst = new ArrayList<SubProp>();
 
@@ -195,10 +115,13 @@ public class BeeDataSource implements Transformable {
         dbMd.getMaxCharLiteralLength(), "Max Connections",
         dbMd.getMaxConnections(), "Max Statements", dbMd.getMaxStatements());
 
-    PropUtils.addPropSub(lst, false, "Default Transaction Isolation", JdbcUtils
-        .transactionIsolationAsString(dbMd.getDefaultTransactionIsolation()),
-        "Result Set Holdability", JdbcUtils.holdabilityAsString(dbMd
-            .getResultSetHoldability()));
+    PropUtils.addPropSub(
+        lst,
+        false,
+        "Default Transaction Isolation",
+        JdbcUtils.transactionIsolationAsString(dbMd.getDefaultTransactionIsolation()),
+        "Result Set Holdability",
+        JdbcUtils.holdabilityAsString(dbMd.getResultSetHoldability()));
 
     PropUtils.addSplit(lst, "SQL Keywords", null, dbMd.getSQLKeywords(),
         BeeConst.STRING_COMMA);
@@ -330,8 +253,9 @@ public class BeeDataSource implements Transformable {
     rs = dbMd.getClientInfoProperties();
     while (rs.next()) {
       k = rs.getString("NAME");
-      if (BeeUtils.isEmpty(k))
+      if (BeeUtils.isEmpty(k)) {
         continue;
+      }
 
       v = BeeUtils.concat(null, BeeUtils.addName("Max", rs.getInt("MAX_LEN")),
           BeeUtils.addName("Default", rs.getString("DEFAULT_VALUE")),
@@ -352,8 +276,9 @@ public class BeeDataSource implements Transformable {
       rs = dbMd.getFunctions(null, null, null);
       while (rs.next()) {
         k = rs.getString("FUNCTION_NAME");
-        if (BeeUtils.isEmpty(k))
+        if (BeeUtils.isEmpty(k)) {
           continue;
+        }
 
         v = BeeUtils.concat(null,
             BeeUtils.addName("Cat", rs.getString("FUNCTION_CAT")),
@@ -374,8 +299,9 @@ public class BeeDataSource implements Transformable {
       rs = dbMd.getProcedures(null, null, null);
       while (rs.next()) {
         k = rs.getString("PROCEDURE_NAME");
-        if (BeeUtils.isEmpty(k))
+        if (BeeUtils.isEmpty(k)) {
           continue;
+        }
 
         v = BeeUtils.concat(null,
             BeeUtils.addName("Cat", rs.getString("PROCEDURE_CAT")),
@@ -389,8 +315,9 @@ public class BeeDataSource implements Transformable {
     rs = dbMd.getCatalogs();
     while (rs.next()) {
       k = rs.getString(1);
-      if (BeeUtils.isEmpty(k))
+      if (BeeUtils.isEmpty(k)) {
         continue;
+      }
 
       z = dbMd.getTables(k, null, null, null);
       c = JdbcUtils.getSize(z);
@@ -405,8 +332,9 @@ public class BeeDataSource implements Transformable {
     rs = dbMd.getSchemas();
     while (rs.next()) {
       k = rs.getString("TABLE_SCHEM");
-      if (BeeUtils.isEmpty(k))
+      if (BeeUtils.isEmpty(k)) {
         continue;
+      }
 
       try {
         s = rs.getString("TABLE_CATALOG");
@@ -430,10 +358,12 @@ public class BeeDataSource implements Transformable {
       rs = dbMd.getSchemas();
 
       List<SubProp> rsInf = new BeeResultSet(rs).getRsInfo();
-      if (!BeeUtils.isEmpty(rsInf))
-        for (SubProp el : rsInf)
+      if (!BeeUtils.isEmpty(rsInf)) {
+        for (SubProp el : rsInf) {
           PropUtils.addSub(lst, BeeUtils.concat(1, "getSchemas", el.getName()),
               el.getSub(), el.getValue());
+        }
+      }
 
       PropUtils.appendString(lst, "getSchemas Data", JdbcUtils.getRs(rs));
 
@@ -443,10 +373,11 @@ public class BeeDataSource implements Transformable {
     rs = dbMd.getTableTypes();
     while (rs.next()) {
       k = rs.getString(1);
-      if (BeeUtils.isEmpty(k))
+      if (BeeUtils.isEmpty(k)) {
         continue;
+      }
 
-      z = dbMd.getTables(null, null, null, new String[] { k.trim() });
+      z = dbMd.getTables(null, null, null, new String[]{k.trim()});
       c = JdbcUtils.getSize(z);
       z.close();
 
@@ -459,8 +390,9 @@ public class BeeDataSource implements Transformable {
     rs = dbMd.getTypeInfo();
     while (rs.next()) {
       k = rs.getString("TYPE_NAME");
-      if (BeeUtils.isEmpty(k))
+      if (BeeUtils.isEmpty(k)) {
         continue;
+      }
 
       c = rs.getInt("DATA_TYPE");
 
@@ -478,16 +410,16 @@ public class BeeDataSource implements Transformable {
           BeeUtils.addName("Create", rs.getString("CREATE_PARAMS")));
 
       switch (rs.getInt("NULLABLE")) {
-      case (DatabaseMetaData.typeNoNulls): {
-        s = BeeConst.NO;
-        break;
-      }
-      case (DatabaseMetaData.typeNullable): {
-        s = BeeConst.YES;
-        break;
-      }
-      default:
-        s = null;
+        case (DatabaseMetaData.typeNoNulls): {
+          s = BeeConst.NO;
+          break;
+        }
+        case (DatabaseMetaData.typeNullable): {
+          s = BeeConst.YES;
+          break;
+        }
+        default:
+          s = null;
       }
       PropUtils.addSub(lst, nm, k, BeeUtils.addName("Nullable", s));
 
@@ -495,24 +427,24 @@ public class BeeDataSource implements Transformable {
           rs.getBoolean("CASE_SENSITIVE") ? BeeConst.YES : BeeConst.NO));
 
       switch (rs.getInt("SEARCHABLE")) {
-      case (DatabaseMetaData.typePredNone): {
-        s = BeeConst.NO;
-        break;
-      }
-      case (DatabaseMetaData.typeSearchable): {
-        s = BeeConst.YES;
-        break;
-      }
-      case (DatabaseMetaData.typePredBasic): {
-        s = "except LIKE";
-        break;
-      }
-      case (DatabaseMetaData.typePredChar): {
-        s = "only LIKE";
-        break;
-      }
-      default:
-        s = null;
+        case (DatabaseMetaData.typePredNone): {
+          s = BeeConst.NO;
+          break;
+        }
+        case (DatabaseMetaData.typeSearchable): {
+          s = BeeConst.YES;
+          break;
+        }
+        case (DatabaseMetaData.typePredBasic): {
+          s = "except LIKE";
+          break;
+        }
+        case (DatabaseMetaData.typePredChar): {
+          s = "only LIKE";
+          break;
+        }
+        default:
+          s = null;
       }
       PropUtils.addSub(lst, nm, k, BeeUtils.addName("Searchable", s));
 
@@ -538,6 +470,89 @@ public class BeeDataSource implements Transformable {
     rs.close();
 
     return lst;
+  }
+
+  public DatabaseMetaData getDbMd() throws JdbcException {
+    if (isOpen()) {
+      try {
+        return conn.getMetaData();
+      } catch (SQLException ex) {
+        throw new JdbcException(ex);
+      }
+    } else {
+      return null;
+    }
+  }
+
+  public DataSource getDs() {
+    return ds;
+  }
+
+  public List<SQLException> getErrors() {
+    return errors;
+  }
+
+  public int getStatus() {
+    return status;
+  }
+
+  public String getTp() {
+    return tp;
+  }
+
+  public boolean isOpen() {
+    return this.getConn() != null;
+  }
+
+  public boolean open() {
+    close();
+
+    if (this.ds != null) {
+      try {
+        conn = ds.getConnection();
+        setStatus(STATUS_OPEN);
+      } catch (SQLException ex) {
+        addError(ex);
+      }
+    }
+
+    return isOpen();
+  }
+
+  public String ping() {
+    String r = "sp_helpserver";
+    // select @@version
+    // select sysutcdatetime(), sysdatetime()
+    // select system_user
+
+    // select version(), user(), database()
+    // select utc_timestamp(), sysdate(), now()
+
+    // select * from v$version
+    // select user, sysdate from "adm_par"
+    // sys_context('userenv', 'current_schema'), sys_context('userenv', 'lang')
+
+    return r;
+  }
+
+  public void setStatus(int st) {
+    this.status = st;
+  }
+
+  @Override
+  public String toString() {
+    return BeeUtils.concat(1, "Type", tp, "DataSource", ds, "Connection", conn);
+  }
+
+  public String transform() {
+    return toString();
+  }
+
+  private void addError(SQLException ex) {
+    if (ex != null) {
+      errors.add(ex);
+      setStatus(STATUS_ERROR);
+    }
   }
 
 }

@@ -1,7 +1,10 @@
 package com.butent.bee.egg.client;
 
-import java.util.Date;
-import java.util.List;
+import com.google.gwt.i18n.client.DateTimeFormat;
+import com.google.gwt.user.client.ui.HasWidgets;
+import com.google.gwt.user.client.ui.Panel;
+import com.google.gwt.user.client.ui.SimplePanel;
+import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.egg.client.cli.CliWidget;
 import com.butent.bee.egg.client.composite.ButtonGroup;
@@ -28,11 +31,8 @@ import com.butent.bee.egg.shared.utils.BeeUtils;
 import com.butent.bee.egg.shared.utils.PropUtils;
 import com.butent.bee.egg.shared.utils.SubProp;
 
-import com.google.gwt.i18n.client.DateTimeFormat;
-import com.google.gwt.user.client.ui.HasWidgets;
-import com.google.gwt.user.client.ui.Panel;
-import com.google.gwt.user.client.ui.SimplePanel;
-import com.google.gwt.user.client.ui.Widget;
+import java.util.Date;
+import java.util.List;
 
 public class BeeUi implements BeeModule {
   private final HasWidgets rootUi;
@@ -49,48 +49,28 @@ public class BeeUi implements BeeModule {
     this.rootUi = root;
   }
 
-  public String getScreenId() {
-    return screenId;
-  }
-
-  public void setScreenId(String screenId) {
-    this.screenId = screenId;
+  public void end() {
   }
 
   public String getActiveId() {
     return activeId;
   }
 
-  public void setActiveId(String activeId) {
-    this.activeId = activeId;
+  public Panel getActivePanel() {
+    return activePanel;
+  }
+
+  public String getDsn() {
+    return BeeUtils.getElement(BeeConst.DS_TYPES,
+        RadioGroup.getValue(getElDsn()));
   }
 
   public String getElDsn() {
     return elDsn;
   }
 
-  public void setElDsn(String elDsn) {
-    this.elDsn = elDsn;
-  }
-
-  public Panel getActivePanel() {
-    return activePanel;
-  }
-
-  public void setActivePanel(Panel activePanel) {
-    this.activePanel = activePanel;
-  }
-
-  public HasWidgets getRootUi() {
-    return rootUi;
-  }
-
   public Panel getMenuPanel() {
     return menuPanel;
-  }
-
-  public void setMenuPanel(Panel menuPanel) {
-    this.menuPanel = menuPanel;
   }
 
   public String getName() {
@@ -99,49 +79,46 @@ public class BeeUi implements BeeModule {
 
   public int getPriority(int p) {
     switch (p) {
-    case PRIORITY_INIT:
-      return DO_NOT_CALL;
-    case PRIORITY_START:
-      return 10;
-    case PRIORITY_END:
-      return DO_NOT_CALL;
-    default:
-      return DO_NOT_CALL;
+      case PRIORITY_INIT:
+        return DO_NOT_CALL;
+      case PRIORITY_START:
+        return 10;
+      case PRIORITY_END:
+        return DO_NOT_CALL;
+      default:
+        return DO_NOT_CALL;
     }
+  }
+
+  public HasWidgets getRootUi() {
+    return rootUi;
+  }
+
+  public String getScreenId() {
+    return screenId;
   }
 
   public void init() {
   }
 
-  public void start() {
-    createUi();
+  public void setActiveId(String activeId) {
+    this.activeId = activeId;
   }
 
-  public void end() {
+  public void setActivePanel(Panel activePanel) {
+    this.activePanel = activePanel;
   }
 
-  public String getDsn() {
-    return BeeUtils.getElement(BeeConst.DS_TYPES,
-        RadioGroup.getValue(getElDsn()));
+  public void setElDsn(String elDsn) {
+    this.elDsn = elDsn;
   }
 
-  public void updateActivePanel(Widget w) {
-    Assert.notNull(w);
-
-    Panel p = getActivePanel();
-    if (p instanceof SimplePanel) {
-      ((SimplePanel) p).setWidget(w);
-    }
+  public void setMenuPanel(Panel menuPanel) {
+    this.menuPanel = menuPanel;
   }
 
-  public void updateMenu(Widget w) {
-    Assert.notNull(w);
-
-    Panel p = getMenuPanel();
-    Assert.notNull(p);
-    
-    p.clear();
-    p.add(w);
+  public void setScreenId(String screenId) {
+    this.screenId = screenId;
   }
 
   public void showGrid(List<SubProp> lst) {
@@ -158,25 +135,52 @@ public class BeeUi implements BeeModule {
     updateActivePanel(BeeGlobal.createSimpleGrid(cols, data));
   }
 
+  public void start() {
+    createUi();
+  }
+
+  public void updateActivePanel(Widget w) {
+    Assert.notNull(w);
+
+    Panel p = getActivePanel();
+    if (p instanceof SimplePanel) {
+      ((SimplePanel) p).setWidget(w);
+    }
+  }
+
+  public void updateMenu(Widget w) {
+    Assert.notNull(w);
+
+    Panel p = getMenuPanel();
+    Assert.notNull(p);
+
+    p.clear();
+    p.add(w);
+  }
+
   private void createUi() {
     Widget w;
     BeeSplit p = new BeeSplit();
 
     w = initNorth();
-    if (w != null)
+    if (w != null) {
       p.addNorth(w, 40);
+    }
 
     w = initSouth();
-    if (w != null)
+    if (w != null) {
       p.addSouth(w, 28);
+    }
 
     w = initWest();
-    if (w != null)
+    if (w != null) {
       p.addWest(w, 400);
+    }
 
     w = initEast();
-    if (w != null)
+    if (w != null) {
       p.addEast(w, 200);
+    }
 
     w = initCenter();
     if (w != null) {
@@ -192,12 +196,11 @@ public class BeeUi implements BeeModule {
   private Widget initCenter() {
     int r = DateTimeFormat.PredefinedFormat.values().length;
 
-    String[] cols = { "Format", "Value" };
+    String[] cols = {"Format", "Value"};
     String[][] data = new String[r][2];
 
     int i = 0;
-    for (DateTimeFormat.PredefinedFormat dtf : DateTimeFormat.PredefinedFormat
-        .values()) {
+    for (DateTimeFormat.PredefinedFormat dtf : DateTimeFormat.PredefinedFormat.values()) {
       data[i][0] = dtf.toString();
       data[i][1] = DateTimeFormat.getFormat(dtf).format(new Date());
       i++;
@@ -272,7 +275,7 @@ public class BeeUi implements BeeModule {
         BeeService.SERVICE_REFRESH_MENU));
 
     spl.addNorth(fp, 100);
-    
+
     BeeLayoutPanel mp = new BeeLayoutPanel();
     spl.add(mp);
 
@@ -285,8 +288,9 @@ public class BeeUi implements BeeModule {
     if (w instanceof Panel) {
       setActivePanel((Panel) w);
 
-      if (w instanceof HasId)
+      if (w instanceof HasId) {
         setActiveId(((HasId) w).getId());
+      }
     }
   }
 

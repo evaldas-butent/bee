@@ -1,5 +1,8 @@
 package com.butent.bee.egg.shared.ui;
 
+import com.butent.bee.egg.shared.Assert;
+import com.butent.bee.egg.shared.utils.BeeUtils;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -7,9 +10,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
-
-import com.butent.bee.egg.shared.Assert;
-import com.butent.bee.egg.shared.utils.BeeUtils;
 
 public abstract class UiLoader {
 
@@ -19,12 +19,12 @@ public abstract class UiLoader {
     public UiRow() {
     }
 
-    public String getId() {
-      return id;
-    }
-
     public String getClassName() {
       return className;
+    }
+
+    public String getId() {
+      return id;
     }
 
     public String getParent() {
@@ -35,12 +35,12 @@ public abstract class UiLoader {
       return properties;
     }
 
-    public void setId(String id) {
-      this.id = id;
-    }
-
     public void setClass(String className) {
       this.className = className;
+    }
+
+    public void setId(String id) {
+      this.id = id;
     }
 
     public void setParent(String parent) {
@@ -106,6 +106,8 @@ public abstract class UiLoader {
     return root;
   }
 
+  protected abstract List<UiRow> getFormData(String formName, Object... params);
+
   private void addChilds(UiComponent parent, Map<String, List<UiRow>> rows,
       Set<String> orphans) {
     List<UiRow> childs = rows.get(parent.getId());
@@ -115,8 +117,7 @@ public abstract class UiLoader {
         String oId = row.getId();
 
         orphans.remove(oId);
-        UiComponent child = UiComponent
-            .createComponent(row.getClassName(), oId);
+        UiComponent child = UiComponent.createComponent(row.getClassName(), oId);
 
         if (!BeeUtils.isEmpty(child)) {
           child.loadProperties(row.getProperties());
@@ -126,6 +127,4 @@ public abstract class UiLoader {
       }
     }
   }
-
-  protected abstract List<UiRow> getFormData(String formName, Object... params);
 }

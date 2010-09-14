@@ -1,19 +1,21 @@
 package com.butent.bee.egg.client.widget;
 
+import com.google.gwt.user.client.Element;
+import com.google.gwt.user.client.ui.CheckBox;
+
 import com.butent.bee.egg.client.BeeBus;
 import com.butent.bee.egg.client.BeeGlobal;
 import com.butent.bee.egg.client.BeeProperties;
 import com.butent.bee.egg.client.event.HasBeeValueChangeHandler;
 import com.butent.bee.egg.client.utils.BeeDom;
-
 import com.butent.bee.egg.shared.BeeName;
 import com.butent.bee.egg.shared.HasId;
 import com.butent.bee.egg.shared.Pair;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
-import com.google.gwt.user.client.Element;
-import com.google.gwt.user.client.ui.CheckBox;
-
+/**
+ *
+ */
 public class BeeCheckBox extends CheckBox implements HasId,
     HasBeeValueChangeHandler<Boolean> {
   private String propKey = null;
@@ -27,25 +29,29 @@ public class BeeCheckBox extends CheckBox implements HasId,
     createId();
   }
 
+  public BeeCheckBox(BeeName nm) {
+    this();
+
+    String fld = nm.getName();
+    if (!BeeUtils.isEmpty(fld)) {
+      setText(BeeGlobal.getFieldCaption(fld));
+      initField(fld);
+      addDefaultHandler();
+    }
+  }
+
   public BeeCheckBox(Element elem) {
     super(elem);
     createId();
   }
 
-  public BeeCheckBox(String label, boolean asHTML) {
-    super(label, asHTML);
-    createId();
-  }
+  public BeeCheckBox(Pair<String, String> caption) {
+    this();
 
-  public BeeCheckBox(String label) {
-    super(label);
-    createId();
-  }
+    setUncheckedCaption(caption.getA());
+    setCheckedCaption(caption.getB());
 
-  public BeeCheckBox(String label, String property) {
-    this(label);
-
-    initProperty(property);
+    setCaption();
     addDefaultHandler();
   }
 
@@ -61,65 +67,45 @@ public class BeeCheckBox extends CheckBox implements HasId,
     addDefaultHandler();
   }
 
-  public BeeCheckBox(Pair<String, String> caption) {
-    this();
+  public BeeCheckBox(String label) {
+    super(label);
+    createId();
+  }
 
-    setUncheckedCaption(caption.getA());
-    setCheckedCaption(caption.getB());
+  public BeeCheckBox(String label, boolean asHTML) {
+    super(label, asHTML);
+    createId();
+  }
 
-    setCaption();
+  public BeeCheckBox(String label, String property) {
+    this(label);
+
+    initProperty(property);
     addDefaultHandler();
   }
 
-  public BeeCheckBox(BeeName nm) {
-    this();
-
-    String fld = nm.getName();
-    if (!BeeUtils.isEmpty(fld)) {
-      setText(BeeGlobal.getFieldCaption(fld));
-      initField(fld);
-      addDefaultHandler();
-    }
-  }
-
-  public String getId() {
-    return BeeDom.getId(this);
-  }
-
-  public void setId(String id) {
-    BeeDom.setId(this, id);
-  }
-
-  public String getPropKey() {
-    return propKey;
-  }
-
-  public void setPropKey(String propKey) {
-    this.propKey = propKey;
+  public void createId() {
+    BeeDom.createId(this, "c");
   }
 
   public String getCheckedCaption() {
     return checkedCaption;
   }
 
-  public void setCheckedCaption(String checkedCaption) {
-    this.checkedCaption = checkedCaption;
-  }
-
-  public String getUncheckedCaption() {
-    return uncheckedCaption;
-  }
-
-  public void setUncheckedCaption(String uncheckedCaption) {
-    this.uncheckedCaption = uncheckedCaption;
-  }
-
   public String getFieldName() {
     return fieldName;
   }
 
-  public void setFieldName(String fieldName) {
-    this.fieldName = fieldName;
+  public String getId() {
+    return BeeDom.getId(this);
+  }
+
+  public String getPropKey() {
+    return propKey;
+  }
+
+  public String getUncheckedCaption() {
+    return uncheckedCaption;
   }
 
   public boolean onValueChange(Boolean v) {
@@ -130,19 +116,28 @@ public class BeeCheckBox extends CheckBox implements HasId,
     return true;
   }
 
-  public void createId() {
-    BeeDom.createId(this, "c");
+  public void setCheckedCaption(String checkedCaption) {
+    this.checkedCaption = checkedCaption;
+  }
+
+  public void setFieldName(String fieldName) {
+    this.fieldName = fieldName;
+  }
+
+  public void setId(String id) {
+    BeeDom.setId(this, id);
+  }
+
+  public void setPropKey(String propKey) {
+    this.propKey = propKey;
+  }
+
+  public void setUncheckedCaption(String uncheckedCaption) {
+    this.uncheckedCaption = uncheckedCaption;
   }
 
   private void addDefaultHandler() {
     BeeBus.addBoolVch(this);
-  }
-
-  private void initProperty(String p) {
-    if (!BeeUtils.isEmpty(p)) {
-      setPropKey(p);
-      setValue(BeeProperties.getBooleanProperty(p));
-    }
   }
 
   private void initField(String fld) {
@@ -152,29 +147,40 @@ public class BeeCheckBox extends CheckBox implements HasId,
     }
   }
 
-  private void updateProperty(boolean v) {
-    String p = getPropKey();
-    if (!BeeUtils.isEmpty(p))
-      BeeProperties.setProperty(p, BeeUtils.toString(v));
-  }
-
-  private void updateField(boolean v) {
-    if (!BeeUtils.isEmpty(getFieldName()))
-      BeeGlobal.setFieldValue(getFieldName(), BeeUtils.toString(v));
-  }
-
-  private void setCaption(boolean v) {
-    if (v) {
-      if (!BeeUtils.isEmpty(checkedCaption))
-        setText(checkedCaption);
-    } else {
-      if (!BeeUtils.isEmpty(uncheckedCaption))
-        setText(uncheckedCaption);
+  private void initProperty(String p) {
+    if (!BeeUtils.isEmpty(p)) {
+      setPropKey(p);
+      setValue(BeeProperties.getBooleanProperty(p));
     }
   }
 
   private void setCaption() {
     setCaption(getValue());
+  }
+
+  private void setCaption(boolean v) {
+    if (v) {
+      if (!BeeUtils.isEmpty(checkedCaption)) {
+        setText(checkedCaption);
+      }
+    } else {
+      if (!BeeUtils.isEmpty(uncheckedCaption)) {
+        setText(uncheckedCaption);
+      }
+    }
+  }
+
+  private void updateField(boolean v) {
+    if (!BeeUtils.isEmpty(getFieldName())) {
+      BeeGlobal.setFieldValue(getFieldName(), BeeUtils.toString(v));
+    }
+  }
+
+  private void updateProperty(boolean v) {
+    String p = getPropKey();
+    if (!BeeUtils.isEmpty(p)) {
+      BeeProperties.setProperty(p, BeeUtils.toString(v));
+    }
   }
 
 }

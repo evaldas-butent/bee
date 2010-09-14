@@ -1,15 +1,5 @@
 package com.butent.bee.egg.server.data;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.Statement;
-import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-
 import com.butent.bee.egg.server.Assert;
 import com.butent.bee.egg.server.DataSourceBean;
 import com.butent.bee.egg.server.http.RequestInfo;
@@ -28,10 +18,19 @@ import com.butent.bee.egg.shared.BeeService;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 import com.butent.bee.egg.shared.utils.LogUtils;
 
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.Statement;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.ejb.EJB;
+import javax.ejb.Stateless;
+
 @Stateless
 public class DataServiceBean {
-  private static Logger logger = Logger.getLogger(DataServiceBean.class
-      .getName());
+  private static Logger logger = Logger.getLogger(DataServiceBean.class.getName());
 
   @EJB
   DataSourceBean dsb;
@@ -45,14 +44,15 @@ public class DataServiceBean {
     Assert.notEmpty(svc);
 
     BeeDataSource ds = checkDs(dsn, buff);
-    if (ds == null)
+    if (ds == null) {
       return;
+    }
 
-    if (BeeService.isDbMetaService(svc))
+    if (BeeService.isDbMetaService(svc)) {
       mdb.doService(svc, ds, reqInfo, buff);
-    else if (svc.equals(BeeService.SERVICE_DB_JDBC))
+    } else if (svc.equals(BeeService.SERVICE_DB_JDBC)) {
       testJdbc(ds.getConn(), reqInfo, buff);
-    else {
+    } else {
       String msg = BeeUtils.concat(1, svc, dsn, "data service not recognized");
       LogUtils.warning(logger, msg);
       buff.add(msg);
@@ -99,9 +99,11 @@ public class DataServiceBean {
       return;
     }
 
-    for (String key : map.keySet())
-      if (BeeConst.isDefault(map.get(key)))
+    for (String key : map.keySet()) {
+      if (BeeConst.isDefault(map.get(key))) {
         map.put(key, BeeConst.STRING_EMPTY);
+      }
+    }
 
     String cAc = map.get(BeeService.FIELD_CONNECTION_AUTO_COMMIT);
     String cHo = map.get(BeeService.FIELD_CONNECTION_HOLDABILITY);
@@ -206,7 +208,7 @@ public class DataServiceBean {
       JdbcUtils.closeStatement(stmt);
       return;
     }
-    
+
     BeeStatement bs = new BeeStatement(stmt);
     if (bs.hasErrors()) {
       bc.revert(conn);
@@ -228,14 +230,14 @@ public class DataServiceBean {
       if (JdbcUtils.supportsCursorName(conn)) {
         buff.addMessage("Cursor name:", sCn);
         bs.setCursorName(stmt, sCn);
-        
+
         if (bs.hasErrors()) {
           bc.revert(conn);
           buff.addErrors(bs.getErrors());
           JdbcUtils.closeStatement(stmt);
           return;
         }
-        
+
       } else {
         buff.addMessage(Level.WARNING, "Cursor name:", sCn,
             JdbcConst.FEATURE_NOT_SUPPORTED);
@@ -400,7 +402,7 @@ public class DataServiceBean {
       buff.addMessage("Statement Poolable:", sPo, before, vb, after,
           BeeUtils.toBoolean(v2));
     }
-    
+
     long memQ1 = BeeSystem.freeMemory();
     ResultSet rs = bs.executeQuery(stmt, sql);
     long memQ2 = BeeSystem.freeMemory();
@@ -418,7 +420,7 @@ public class DataServiceBean {
     }
 
     buff.addWarnings(JdbcUtils.getWarnings(stmt));
-    
+
     BeeResultSet br = new BeeResultSet();
 
     if (!BeeUtils.isEmpty(rFd)) {
@@ -478,7 +480,6 @@ public class DataServiceBean {
 
     if (BeeConst.JDBC_COLUMNS.equals(ret)) {
       rsb.rsMdToResponse(rs, buff, debug);
-
     } else if (BeeConst.JDBC_ROW_COUNT.equals(ret)) {
       BeeDate start = new BeeDate();
       long memC1 = BeeSystem.freeMemory();
@@ -487,19 +488,18 @@ public class DataServiceBean {
       BeeDate end = new BeeDate();
 
       buff.addLine(enter.toLog(), start.toLog(), end.toLog());
-      buff.addLine(ret, rc,
+      buff.addLine(
+          ret,
+          rc,
           BeeUtils.bracket(BeeUtils.toSeconds(end.getTime() - start.getTime())),
           "type", JdbcUtils.getTypeInfo(rs));
-      buff.addLine("memory",
-          BeeUtils.addName("executeQuery", memQ1 - memQ2),
+      buff.addLine("memory", BeeUtils.addName("executeQuery", memQ1 - memQ2),
           BeeUtils.addName(ret, memC1 - memC2));
-
     } else if (BeeConst.JDBC_META_DATA.equals(ret)) {
       buff.addSubColumns();
       buff.appendStringProp("Connection", BeeConnection.getInfo(conn));
       buff.appendStringProp("Statement", BeeStatement.getInfo(stmt));
       buff.appendStringProp("Result Set", BeeResultSet.getInfo(rs));
-
     } else {
       rsb.rsToResponse(rs, buff, debug);
     }
@@ -507,7 +507,5 @@ public class DataServiceBean {
     JdbcUtils.closeResultSet(rs);
     JdbcUtils.closeStatement(stmt);
     bc.revert(conn);
-
   }
-
 }

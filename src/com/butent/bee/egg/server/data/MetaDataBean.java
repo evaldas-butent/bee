@@ -1,14 +1,5 @@
 package com.butent.bee.egg.server.data;
 
-import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.List;
-import java.util.logging.Logger;
-
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-
 import com.butent.bee.egg.server.http.RequestInfo;
 import com.butent.bee.egg.server.http.ResponseBuffer;
 import com.butent.bee.egg.server.jdbc.JdbcException;
@@ -17,6 +8,15 @@ import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeService;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 import com.butent.bee.egg.shared.utils.SubProp;
+
+import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.List;
+import java.util.logging.Logger;
+
+import javax.ejb.EJB;
+import javax.ejb.Stateless;
 
 @Stateless
 public class MetaDataBean {
@@ -31,21 +31,17 @@ public class MetaDataBean {
     Assert.notNull(ds);
     Assert.notNull(buff);
 
-    if (svc.equals(BeeService.SERVICE_DB_PING))
+    if (svc.equals(BeeService.SERVICE_DB_PING)) {
       ping(ds, buff);
-    else if (svc.equals(BeeService.SERVICE_DB_INFO))
+    } else if (svc.equals(BeeService.SERVICE_DB_INFO)) {
       dbInfo(ds, buff);
-    else if (svc.equals(BeeService.SERVICE_DB_TABLES))
+    } else if (svc.equals(BeeService.SERVICE_DB_TABLES)) {
       getTables(ds, reqInfo, buff);
-    else {
+    } else {
       String msg = BeeUtils.concat(1, svc, "meta data service not recognized");
       logger.warning(msg);
       buff.add(msg);
     }
-  }
-
-  private void ping(BeeDataSource ds, ResponseBuffer buff) {
-    buff.add(ds.toString());
   }
 
   private void dbInfo(BeeDataSource ds, ResponseBuffer buff) {
@@ -61,8 +57,9 @@ public class MetaDataBean {
     }
 
     if (prp.isEmpty()) {
-      if (ok)
+      if (ok) {
         buff.addLine(ds.getTp(), "no info available");
+      }
       return;
     }
 
@@ -83,6 +80,10 @@ public class MetaDataBean {
     } catch (SQLException ex) {
       logger.severe(ex.getMessage());
     }
+  }
+
+  private void ping(BeeDataSource ds, ResponseBuffer buff) {
+    buff.add(ds.toString());
   }
 
 }

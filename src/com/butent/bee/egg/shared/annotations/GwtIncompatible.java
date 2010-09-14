@@ -16,11 +16,9 @@ import java.lang.annotation.Target;
  * <p>
  * Note that this annotation should only be applied to methods, fields, or inner
  * classes of types which are annotated as {@link GwtCompatible}.
- * 
- * @author Charles Fry
  */
 @Retention(RetentionPolicy.CLASS)
-@Target({ ElementType.TYPE, ElementType.METHOD, ElementType.FIELD })
+@Target({ElementType.TYPE, ElementType.METHOD, ElementType.FIELD})
 @GwtCompatible
 public @interface GwtIncompatible {
 

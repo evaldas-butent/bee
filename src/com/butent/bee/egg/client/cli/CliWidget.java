@@ -1,5 +1,11 @@
 package com.butent.bee.egg.client.cli;
 
+import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.core.client.JsArrayString;
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.event.dom.client.KeyPressEvent;
+import com.google.gwt.user.client.DOM;
+
 import com.butent.bee.egg.client.BeeGlobal;
 import com.butent.bee.egg.client.BeeKeeper;
 import com.butent.bee.egg.client.communication.RpcList;
@@ -7,12 +13,6 @@ import com.butent.bee.egg.client.utils.BeeJs;
 import com.butent.bee.egg.client.widget.BeeTextBox;
 import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.utils.BeeUtils;
-
-import com.google.gwt.core.client.JavaScriptObject;
-import com.google.gwt.core.client.JsArrayString;
-import com.google.gwt.dom.client.Element;
-import com.google.gwt.event.dom.client.KeyPressEvent;
-import com.google.gwt.user.client.DOM;
 
 public class CliWidget extends BeeTextBox {
 
@@ -48,8 +48,8 @@ public class CliWidget extends BeeTextBox {
         BeeGlobal.showDialog("RpcList empty");
       } else {
         BeeKeeper.getUi().updateActivePanel(
-            BeeGlobal.createSimpleGrid(RpcList.DEFAULT_INFO_COLUMNS, BeeKeeper
-                .getRpc().getRpcList().getDefaultInfo()));
+            BeeGlobal.createSimpleGrid(RpcList.DEFAULT_INFO_COLUMNS,
+                BeeKeeper.getRpc().getRpcList().getDefaultInfo()));
       }
 
     } else if (BeeUtils.same(v, "menu")) {
@@ -59,9 +59,8 @@ public class CliWidget extends BeeTextBox {
       if (BeeUtils.same(arr[0], "eval")) {
         String xpr = v.substring("eval".length()).trim();
         BeeGlobal.showDialog(xpr, BeeJs.evalToString(xpr));
-      }
-
-      else if (BeeUtils.inListSame(arr[0], "p", "prop")) {
+      
+      } else if (BeeUtils.inListSame(arr[0], "p", "prop")) {
         JavaScriptObject obj = BeeJs.eval(arr[1]);
         if (obj == null) {
           BeeGlobal.showError(arr[1], "not a js object");
@@ -74,15 +73,12 @@ public class CliWidget extends BeeTextBox {
         if (BeeJs.isEmpty(prp)) {
           BeeGlobal.showError(v, "properties not found");
         } else if (BeeUtils.same(arr[0], "p")) {
-          BeeGlobal.showGrid(v, new String[] { "property", "type", "value" },
-              prp);
+          BeeGlobal.showGrid(v, new String[]{"property", "type", "value"}, prp);
         } else {
-          BeeKeeper.getUi().showGrid(
-              new String[] { "property", "type", "value" }, prp);
+          BeeKeeper.getUi().showGrid(new String[]{"property", "type", "value"},
+              prp);
         }
-      }
-
-      else if (BeeUtils.inListSame(arr[0], "f", "func")) {
+      } else if (BeeUtils.inListSame(arr[0], "f", "func")) {
         JavaScriptObject obj = BeeJs.eval(arr[1]);
         if (obj == null) {
           BeeGlobal.showError(arr[1], "not a js object");
@@ -97,13 +93,11 @@ public class CliWidget extends BeeTextBox {
         } else if (fnc.length() <= 5) {
           BeeGlobal.showDialog(v, fnc.join());
         } else if (BeeUtils.same(arr[0], "f")) {
-          BeeGlobal.showGrid(v, new String[] { "function" }, fnc);
+          BeeGlobal.showGrid(v, new String[]{"function"}, fnc);
         } else {
-          BeeKeeper.getUi().showGrid(new String[] { "function" }, fnc);
+          BeeKeeper.getUi().showGrid(new String[]{"function"}, fnc);
         }
-      }
-
-      else if (BeeUtils.same(arr[0], "id")) {
+      } else if (BeeUtils.same(arr[0], "id")) {
         JavaScriptObject obj = DOM.getElementById(arr[1]);
         if (obj == null) {
           BeeGlobal.showError(arr[1], "element id not found");
@@ -116,11 +110,10 @@ public class CliWidget extends BeeTextBox {
         if (BeeJs.isEmpty(prp)) {
           BeeGlobal.showError(v, "properties not found");
         } else if (prp.length() <= 20) {
-          BeeGlobal.showGrid(v, new String[] { "property", "type", "value" },
-              prp);
+          BeeGlobal.showGrid(v, new String[]{"property", "type", "value"}, prp);
         } else {
-          BeeKeeper.getUi().showGrid(
-              new String[] { "property", "type", "value" }, prp);
+          BeeKeeper.getUi().showGrid(new String[]{"property", "type", "value"},
+              prp);
         }
       }
 

@@ -1,9 +1,9 @@
 package com.butent.bee.egg.shared;
 
+import com.butent.bee.egg.shared.utils.BeeUtils;
+
 import java.util.ArrayList;
 import java.util.List;
-
-import com.butent.bee.egg.shared.utils.BeeUtils;
 
 public class BeeField implements Transformable {
   private String caption = null;
@@ -23,12 +23,12 @@ public class BeeField implements Transformable {
     this(null, type, null);
   }
 
-  public BeeField(String caption, int type) {
-    this(caption, type, null);
-  }
-
   public BeeField(int type, String value) {
     this(null, type, value);
+  }
+
+  public BeeField(String caption, int type) {
+    this(caption, type, null);
   }
 
   public BeeField(String caption, int type, String value) {
@@ -48,52 +48,53 @@ public class BeeField implements Transformable {
     this(caption, type, value, widget);
 
     this.items = new ArrayList<String>();
-    for (int i = 0; i < items.length; i++)
+    for (int i = 0; i < items.length; i++) {
       this.items.add(items[i]);
+    }
   }
 
   public String getCaption() {
     return caption;
   }
 
-  public void setCaption(String caption) {
-    this.caption = caption;
+  public List<String> getItems() {
+    return items;
   }
 
   public int getType() {
     return type;
   }
 
-  public void setType(int type) {
-    this.type = type;
-  }
-
   public String getValue() {
     return value;
-  }
-
-  public void setValue(String value) {
-    this.value = value;
   }
 
   public BeeWidget getWidget() {
     return widget;
   }
 
-  public void setWidget(BeeWidget widget) {
-    this.widget = widget;
+  public String getWidth() {
+    return width;
   }
 
-  public List<String> getItems() {
-    return items;
+  public void setCaption(String caption) {
+    this.caption = caption;
   }
 
   public void setItems(List<String> items) {
     this.items = items;
   }
 
-  public String getWidth() {
-    return width;
+  public void setType(int type) {
+    this.type = type;
+  }
+
+  public void setValue(String value) {
+    this.value = value;
+  }
+
+  public void setWidget(BeeWidget widget) {
+    this.widget = widget;
   }
 
   public void setWidth(String width) {

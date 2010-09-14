@@ -21,56 +21,34 @@ public class BeeProp<T> implements Comparable<BeeProp<T>>, Transformable {
     this.value = value;
   }
 
-  public String getName() {
-    return name;
+  public int compareTo(BeeProp<T> oth) {
+    if (name == null) {
+      if (oth.name == null) {
+        return 0;
+      } else {
+        return -1;
+      }
+    } else if (name == null) {
+      return 1;
+    } else {
+      return name.compareTo(oth.name);
+    }
   }
 
-  public void setName(String name) {
-    this.name = name;
+  public String getName() {
+    return name;
   }
 
   public T getValue() {
     return value;
   }
 
+  public void setName(String name) {
+    this.name = name;
+  }
+
   public void setValue(T value) {
     this.value = value;
-  }
-
-  public int compareTo(BeeProp<T> oth) {
-    if (name == null)
-      if (oth.name == null)
-        return 0;
-      else
-        return -1;
-    else if (name == null)
-      return 1;
-    else
-      return name.compareTo(oth.name);
-  }
-
-  @Override
-  public boolean equals(Object obj) {
-    if (this == obj)
-      return true;
-    if (obj == null)
-      return false;
-    if (getClass() != obj.getClass())
-      return false;
-
-    BeeProp<?> other = (BeeProp<?>) obj;
-
-    if (name == null) {
-      if (other.name != null)
-        return false;
-    } else if (!name.equals(other.name))
-      return false;
-    if (value == null) {
-      if (other.value != null)
-        return false;
-    } else if (!value.equals(other.value))
-      return false;
-    return true;
   }
 
   @Override

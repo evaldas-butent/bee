@@ -1,9 +1,10 @@
 package com.butent.bee.egg.client.layout;
 
-import com.butent.bee.egg.client.utils.BeeDom;
-import com.butent.bee.egg.shared.HasId;
 import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.Widget;
+
+import com.butent.bee.egg.client.utils.BeeDom;
+import com.butent.bee.egg.shared.HasId;
 
 public class BeeScroll extends ScrollPanel implements HasId {
 

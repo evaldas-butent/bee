@@ -1,11 +1,12 @@
 package com.butent.bee.egg.client;
 
-import java.util.Date;
-
-import com.butent.bee.egg.client.widget.BeeLabel;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.i18n.client.DateTimeFormat.PredefinedFormat;
 import com.google.gwt.user.client.Timer;
+
+import com.butent.bee.egg.client.widget.BeeLabel;
+
+import java.util.Date;
 
 public class BeeScheduler implements BeeModule {
 
@@ -23,9 +24,7 @@ public class BeeScheduler implements BeeModule {
     clockTimer.scheduleRepeating(1000);
   }
 
-  private void updateClock() {
-    clockLabel.setText(DateTimeFormat
-        .getFormat(PredefinedFormat.DATE_TIME_FULL).format(new Date()));
+  public void end() {
   }
 
   public String getName() {
@@ -34,14 +33,14 @@ public class BeeScheduler implements BeeModule {
 
   public int getPriority(int p) {
     switch (p) {
-    case PRIORITY_INIT:
-      return DO_NOT_CALL;
-    case PRIORITY_START:
-      return DO_NOT_CALL;
-    case PRIORITY_END:
-      return DO_NOT_CALL;
-    default:
-      return DO_NOT_CALL;
+      case PRIORITY_INIT:
+        return DO_NOT_CALL;
+      case PRIORITY_START:
+        return DO_NOT_CALL;
+      case PRIORITY_END:
+        return DO_NOT_CALL;
+      default:
+        return DO_NOT_CALL;
     }
   }
 
@@ -51,7 +50,9 @@ public class BeeScheduler implements BeeModule {
   public void start() {
   }
 
-  public void end() {
+  private void updateClock() {
+    clockLabel.setText(DateTimeFormat.getFormat(PredefinedFormat.DATE_TIME_FULL).format(
+        new Date()));
   }
 
 }

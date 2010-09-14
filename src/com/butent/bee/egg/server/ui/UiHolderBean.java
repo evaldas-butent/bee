@@ -1,5 +1,9 @@
 package com.butent.bee.egg.server.ui;
 
+import com.butent.bee.egg.shared.Assert;
+import com.butent.bee.egg.shared.ui.UiComponent;
+import com.butent.bee.egg.shared.ui.UiLoader;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -8,10 +12,6 @@ import javax.ejb.EJB;
 import javax.ejb.Lock;
 import javax.ejb.LockType;
 import javax.ejb.Singleton;
-
-import com.butent.bee.egg.shared.Assert;
-import com.butent.bee.egg.shared.ui.UiComponent;
-import com.butent.bee.egg.shared.ui.UiLoader;
 
 @Singleton
 @Lock(LockType.READ)
@@ -23,17 +23,6 @@ public class UiHolderBean {
   UiLoader loader;
   Map<String, UiComponent> formCache = new HashMap<String, UiComponent>();
 
-  @SuppressWarnings("unused")
-  @PostConstruct
-  private void init() {
-    setLoader(loaderBean);
-  }
-
-  @Lock(LockType.WRITE)
-  public void setLoader(UiLoader loader) {
-    this.loader = loader;
-  }
-
   public UiComponent getForm(String root, Object... params) {
     Assert.notEmpty(root);
 
@@ -41,6 +30,17 @@ public class UiHolderBean {
       loadForm(root, params);
     }
     return formCache.get(root);
+  }
+
+  @Lock(LockType.WRITE)
+  public void setLoader(UiLoader loader) {
+    this.loader = loader;
+  }
+
+  @SuppressWarnings("unused")
+  @PostConstruct
+  private void init() {
+    setLoader(loaderBean);
   }
 
   @Lock(LockType.WRITE)

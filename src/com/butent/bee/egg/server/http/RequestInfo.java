@@ -1,5 +1,12 @@
 package com.butent.bee.egg.server.http;
 
+import com.butent.bee.egg.shared.BeeConst;
+import com.butent.bee.egg.shared.BeeService;
+import com.butent.bee.egg.shared.Transformable;
+import com.butent.bee.egg.shared.utils.BeeUtils;
+import com.butent.bee.egg.shared.utils.PropUtils;
+import com.butent.bee.egg.shared.utils.SubProp;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
@@ -15,13 +22,6 @@ import javax.servlet.SessionTrackingMode;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
-
-import com.butent.bee.egg.shared.BeeConst;
-import com.butent.bee.egg.shared.BeeService;
-import com.butent.bee.egg.shared.Transformable;
-import com.butent.bee.egg.shared.utils.BeeUtils;
-import com.butent.bee.egg.shared.utils.PropUtils;
-import com.butent.bee.egg.shared.utils.SubProp;
 
 public class RequestInfo implements Transformable {
   private static int COUNTER = 0;
@@ -58,13 +58,17 @@ public class RequestInfo implements Transformable {
     headers = HttpUtils.getHeaders(req);
     params = HttpUtils.getParameters(req);
 
-    if (!BeeUtils.isEmpty(headers))
-      for (Map.Entry<String, String> el : headers.entrySet())
+    if (!BeeUtils.isEmpty(headers)) {
+      for (Map.Entry<String, String> el : headers.entrySet()) {
         setRpcInfo(el.getKey(), el.getValue());
+      }
+    }
 
-    if (!BeeUtils.isEmpty(params))
-      for (Map.Entry<String, String> el : params.entrySet())
+    if (!BeeUtils.isEmpty(params)) {
+      for (Map.Entry<String, String> el : params.entrySet()) {
         setRpcInfo(el.getKey(), el.getValue());
+      }
+    }
 
     contentLen = req.getContentLength();
     if (contentLen > 0) {
@@ -73,139 +77,45 @@ public class RequestInfo implements Transformable {
     }
   }
 
-  public String getId() {
-    return id;
-  }
-
-  public void setId(String id) {
-    this.id = id;
-  }
-
-  public String getService() {
-    return service;
-  }
-
-  public void setService(String svc) {
-    this.service = svc;
-  }
-
-  public String getDsn() {
-    return dsn;
-  }
-
-  public void setDsn(String dsn) {
-    this.dsn = dsn;
-  }
-
-  public String getSeparator() {
-    return separator;
-  }
-
-  public void setSeparator(String separator) {
-    this.separator = separator;
-  }
-
-  public String getOptions() {
-    return options;
-  }
-
-  public void setOptions(String options) {
-    this.options = options;
-  }
-
-  public String getMethod() {
-    return method;
-  }
-
-  public void setMethod(String method) {
-    this.method = method;
-  }
-
-  public Map<String, String> getHeaders() {
-    return headers;
-  }
-
-  public void setHeaders(Map<String, String> headers) {
-    this.headers = headers;
-  }
-
-  public Map<String, String> getParams() {
-    return params;
-  }
-
-  public void setParams(Map<String, String> params) {
-    this.params = params;
-  }
-
-  public HttpServletRequest getRequest() {
-    return request;
-  }
-
-  public void setRequest(HttpServletRequest request) {
-    this.request = request;
-  }
-
-  public String getQuery() {
-    return query;
-  }
-
-  public void setQuery(String query) {
-    this.query = query;
+  public String getContent() {
+    return content;
   }
 
   public int getContentLen() {
     return contentLen;
   }
 
-  public void setContentLen(int contentLen) {
-    this.contentLen = contentLen;
-  }
-
   public String getContentType() {
     return contentType;
   }
 
-  public void setContentType(String contentType) {
-    this.contentType = contentType;
+  public String getDsn() {
+    return dsn;
   }
 
-  public String getContent() {
-    return content;
-  }
-
-  public void setContent(String content) {
-    this.content = content;
+  public Map<String, String> getHeaders() {
+    return headers;
   }
 
   public String getHeadersAsString() {
     return BeeUtils.transformMap(headers);
   }
 
-  public boolean isDebug() {
-    return BeeUtils.context(BeeService.OPTION_DEBUG, options);
-  }
-
-  @Override
-  public String toString() {
-    return BeeUtils.concat(BeeConst.DEFAULT_ROW_SEPARATOR, BeeUtils
-        .transformOptions("counter", COUNTER, "method", method, "id", id,
-            "service", service, "dsn", dsn, "sep", separator, "opt", options),
-        headers, params);
-  }
-
-  public String transform() {
-    return toString();
+  public String getId() {
+    return id;
   }
 
   public Collection<SubProp> getInfo() {
-    if (request == null)
+    if (request == null) {
       return null;
+    }
 
     Collection<SubProp> reqInfo = new ArrayList<SubProp>();
 
-    if (request.isAsyncStarted())
+    if (request.isAsyncStarted()) {
       PropUtils.appendSub(reqInfo,
           getAsyncContextInfo(request.getAsyncContext()));
+    }
 
     PropUtils.appendSub(reqInfo, getAttributeInfo(request));
 
@@ -217,8 +127,9 @@ public class RequestInfo implements Transformable {
     PropUtils.appendSub(reqInfo, getCookieInfo(request));
 
     DispatcherType dt = request.getDispatcherType();
-    if (dt != null)
+    if (dt != null) {
       PropUtils.addSub(reqInfo, "Dispatcher Type", null, dt.toString());
+    }
 
     PropUtils.appendSub(reqInfo, getHeaderInfo(request));
     PropUtils.appendSub(reqInfo, getLocaleInfo(request));
@@ -256,28 +167,125 @@ public class RequestInfo implements Transformable {
     return reqInfo;
   }
 
+  public String getMethod() {
+    return method;
+  }
+
+  public String getOptions() {
+    return options;
+  }
+
+  public Map<String, String> getParams() {
+    return params;
+  }
+
+  public String getQuery() {
+    return query;
+  }
+
+  public HttpServletRequest getRequest() {
+    return request;
+  }
+
+  public String getSeparator() {
+    return separator;
+  }
+
+  public String getService() {
+    return service;
+  }
+
+  public boolean isDebug() {
+    return BeeUtils.context(BeeService.OPTION_DEBUG, options);
+  }
+
+  public void setContent(String content) {
+    this.content = content;
+  }
+
+  public void setContentLen(int contentLen) {
+    this.contentLen = contentLen;
+  }
+
+  public void setContentType(String contentType) {
+    this.contentType = contentType;
+  }
+
+  public void setDsn(String dsn) {
+    this.dsn = dsn;
+  }
+
+  public void setHeaders(Map<String, String> headers) {
+    this.headers = headers;
+  }
+
+  public void setId(String id) {
+    this.id = id;
+  }
+
+  public void setMethod(String method) {
+    this.method = method;
+  }
+
+  public void setOptions(String options) {
+    this.options = options;
+  }
+
+  public void setParams(Map<String, String> params) {
+    this.params = params;
+  }
+
+  public void setQuery(String query) {
+    this.query = query;
+  }
+
+  public void setRequest(HttpServletRequest request) {
+    this.request = request;
+  }
+
+  public void setSeparator(String separator) {
+    this.separator = separator;
+  }
+
+  public void setService(String svc) {
+    this.service = svc;
+  }
+
+  @Override
+  public String toString() {
+    return BeeUtils.concat(BeeConst.DEFAULT_ROW_SEPARATOR,
+        BeeUtils.transformOptions("counter", COUNTER, "method", method, "id",
+            id, "service", service, "dsn", dsn, "sep", separator, "opt",
+            options), headers, params);
+  }
+
+  public String transform() {
+    return toString();
+  }
+
   private Collection<SubProp> getAsyncContextInfo(AsyncContext ac) {
-    if (ac == null)
+    if (ac == null) {
       return null;
+    }
 
     Collection<SubProp> info = new ArrayList<SubProp>();
     String root = "Async Context";
 
-    PropUtils
-        .addPropSub(info, true, root, "Timeout", ac.getTimeout(), root,
-            "Has Original Request And Response",
-            ac.hasOriginalRequestAndResponse());
+    PropUtils.addPropSub(info, true, root, "Timeout", ac.getTimeout(), root,
+        "Has Original Request And Response", ac.hasOriginalRequestAndResponse());
 
     return info;
   }
 
   private Collection<SubProp> getAttributeInfo(HttpServletRequest req) {
-    if (req == null)
+    if (req == null) {
       return null;
+    }
 
     Enumeration<String> lst = req.getAttributeNames();
-    if (BeeUtils.isEmpty(lst))
+    if (BeeUtils.isEmpty(lst)) {
       return null;
+    }
 
     Collection<SubProp> info = new ArrayList<SubProp>();
     String root = "Attribute";
@@ -292,12 +300,14 @@ public class RequestInfo implements Transformable {
   }
 
   private Collection<SubProp> getCookieInfo(HttpServletRequest req) {
-    if (req == null)
+    if (req == null) {
       return null;
+    }
 
     Cookie[] arr = req.getCookies();
-    if (BeeUtils.isEmpty(arr))
+    if (BeeUtils.isEmpty(arr)) {
       return null;
+    }
 
     Collection<SubProp> info = new ArrayList<SubProp>();
     PropUtils.addSub(info, "Cookies", "cnt", arr.length);
@@ -306,8 +316,9 @@ public class RequestInfo implements Transformable {
 
     for (Cookie coo : arr) {
       nm = coo.getName();
-      if (BeeUtils.isEmpty(nm))
+      if (BeeUtils.isEmpty(nm)) {
         continue;
+      }
 
       PropUtils.addPropSub(info, true, nm, "Value", coo.getValue(), nm,
           "Comment", coo.getComment(), nm, "Domain", coo.getDomain(), nm,
@@ -320,12 +331,14 @@ public class RequestInfo implements Transformable {
   }
 
   private Collection<SubProp> getHeaderInfo(HttpServletRequest req) {
-    if (req == null)
+    if (req == null) {
       return null;
+    }
 
     Map<String, String> lst = HttpUtils.getHeaders(req);
-    if (BeeUtils.isEmpty(lst))
+    if (BeeUtils.isEmpty(lst)) {
       return null;
+    }
 
     Collection<SubProp> info = new ArrayList<SubProp>();
     String root = "Header";
@@ -333,12 +346,14 @@ public class RequestInfo implements Transformable {
 
     for (Map.Entry<String, String> el : lst.entrySet()) {
       nm = el.getKey();
-      if (BeeUtils.isEmpty(nm))
+      if (BeeUtils.isEmpty(nm)) {
         continue;
+      }
 
       v = el.getValue();
-      if (BeeUtils.isEmpty(v))
+      if (BeeUtils.isEmpty(v)) {
         continue;
+      }
 
       PropUtils.addSub(info, root, nm, v);
     }
@@ -347,8 +362,9 @@ public class RequestInfo implements Transformable {
   }
 
   private Collection<SubProp> getLocaleInfo(HttpServletRequest req) {
-    if (req == null)
+    if (req == null) {
       return null;
+    }
 
     Locale loc;
     List<Locale> lst = new ArrayList<Locale>();
@@ -356,14 +372,18 @@ public class RequestInfo implements Transformable {
     Enumeration<Locale> z = req.getLocales();
     if (BeeUtils.isEmpty(z)) {
       loc = req.getLocale();
-      if (loc != null)
+      if (loc != null) {
         lst.add(loc);
-    } else
-      while (z.hasMoreElements())
+      }
+    } else {
+      while (z.hasMoreElements()) {
         lst.add(z.nextElement());
+      }
+    }
 
-    if (lst.isEmpty())
+    if (lst.isEmpty()) {
       return null;
+    }
 
     Collection<SubProp> info = new ArrayList<SubProp>();
     String root;
@@ -390,12 +410,14 @@ public class RequestInfo implements Transformable {
   }
 
   private Collection<SubProp> getParameterInfo(HttpServletRequest req) {
-    if (req == null)
+    if (req == null) {
       return null;
+    }
 
     Map<String, String> lst = HttpUtils.getParameters(req);
-    if (BeeUtils.isEmpty(lst))
+    if (BeeUtils.isEmpty(lst)) {
       return null;
+    }
 
     Collection<SubProp> info = new ArrayList<SubProp>();
     String root = "Parameter";
@@ -404,8 +426,9 @@ public class RequestInfo implements Transformable {
     for (Map.Entry<String, String> el : lst.entrySet()) {
       nm = el.getKey();
       v = el.getValue();
-      if (BeeUtils.isEmpty(nm) || BeeUtils.isEmpty(v))
+      if (BeeUtils.isEmpty(nm) || BeeUtils.isEmpty(v)) {
         continue;
+      }
 
       PropUtils.addSub(info, root, nm, v);
     }
@@ -414,8 +437,9 @@ public class RequestInfo implements Transformable {
   }
 
   private Collection<SubProp> getServletContextInfo(ServletContext sc) {
-    if (sc == null)
+    if (sc == null) {
       return null;
+    }
 
     Collection<SubProp> info = new ArrayList<SubProp>();
     String root = "Servlet Context";
@@ -424,45 +448,52 @@ public class RequestInfo implements Transformable {
     String[] arr;
 
     Enumeration<String> lst = sc.getAttributeNames();
-    if (!BeeUtils.isEmpty(lst))
+    if (!BeeUtils.isEmpty(lst)) {
       while (lst.hasMoreElements()) {
         nm = lst.nextElement();
 
         v = BeeUtils.transform(sc.getAttribute(nm));
-        if (BeeUtils.isEmpty(v))
+        if (BeeUtils.isEmpty(v)) {
           continue;
+        }
 
         if (v.length() > 100) {
           arr = splitValue(v);
-          if (arr == null)
+          if (arr == null) {
             c = 0;
-          else
+          } else {
             c = arr.length;
+          }
 
           if (c > 1) {
-            for (int i = 0; i < c; i++)
+            for (int i = 0; i < c; i++) {
               PropUtils.addSub(info, root + " attribute " + nm,
                   BeeUtils.transform(i), arr[i]);
+            }
             continue;
           }
         }
 
         PropUtils.addSub(info, root + " attribute " + nm, null, v);
       }
+    }
 
     PropUtils.addSub(info, root, "Context Path", sc.getContextPath());
 
     Set<SessionTrackingMode> trackMd = sc.getDefaultSessionTrackingModes();
-    if (!BeeUtils.isEmpty(trackMd))
-      for (SessionTrackingMode md : trackMd)
-        PropUtils
-            .addSub(info, root, "Default Session Tracking Mode", md.name());
+    if (!BeeUtils.isEmpty(trackMd)) {
+      for (SessionTrackingMode md : trackMd) {
+        PropUtils.addSub(info, root, "Default Session Tracking Mode", md.name());
+      }
+    }
 
     trackMd = sc.getEffectiveSessionTrackingModes();
-    if (!BeeUtils.isEmpty(trackMd))
-      for (SessionTrackingMode md : trackMd)
+    if (!BeeUtils.isEmpty(trackMd)) {
+      for (SessionTrackingMode md : trackMd) {
         PropUtils.addSub(info, root, "Effective Session Tracking Mode",
             md.name());
+      }
+    }
 
     PropUtils.addPropSub(info, true, root, "Effective Major Version",
         sc.getEffectiveMajorVersion(), root, "Effective Minor Version",
@@ -472,30 +503,33 @@ public class RequestInfo implements Transformable {
         sc.getServletContextName());
 
     lst = sc.getInitParameterNames();
-    if (!BeeUtils.isEmpty(lst))
+    if (!BeeUtils.isEmpty(lst)) {
       while (lst.hasMoreElements()) {
         nm = lst.nextElement();
         PropUtils.addSub(info, root + " init parameter", nm,
             sc.getInitParameter(nm));
       }
+    }
 
     return info;
   }
 
   private Collection<SubProp> getSessionInfo(HttpSession hs) {
-    if (hs == null)
+    if (hs == null) {
       return null;
+    }
 
     Collection<SubProp> info = new ArrayList<SubProp>();
     String root = "Session";
     String nm;
 
     Enumeration<String> lst = hs.getAttributeNames();
-    if (!BeeUtils.isEmpty(lst))
+    if (!BeeUtils.isEmpty(lst)) {
       while (lst.hasMoreElements()) {
         nm = lst.nextElement();
         PropUtils.addSub(info, root + " attribute", nm, hs.getAttribute(nm));
       }
+    }
 
     PropUtils.addPropSub(info, true, root, "Id", hs.getId(), root,
         "Creation Time", hs.getCreationTime(), root, "Last Accessed Time",
@@ -506,30 +540,33 @@ public class RequestInfo implements Transformable {
   }
 
   private void setRpcInfo(String nm, String v) {
-    if (BeeUtils.isEmpty(nm) || BeeUtils.isEmpty(v))
+    if (BeeUtils.isEmpty(nm) || BeeUtils.isEmpty(v)) {
       return;
+    }
 
-    if (nm.equalsIgnoreCase(BeeService.RPC_FIELD_QID))
+    if (nm.equalsIgnoreCase(BeeService.RPC_FIELD_QID)) {
       id = v;
-    else if (nm.equalsIgnoreCase(BeeService.RPC_FIELD_QNM))
+    } else if (nm.equalsIgnoreCase(BeeService.RPC_FIELD_QNM)) {
       service = v;
-    else if (nm.equalsIgnoreCase(BeeService.RPC_FIELD_DSN))
+    } else if (nm.equalsIgnoreCase(BeeService.RPC_FIELD_DSN)) {
       dsn = v;
-    else if (nm.equalsIgnoreCase(BeeService.RPC_FIELD_SEP))
+    } else if (nm.equalsIgnoreCase(BeeService.RPC_FIELD_SEP)) {
       separator = v;
-    else if (nm.equalsIgnoreCase(BeeService.RPC_FIELD_OPT))
+    } else if (nm.equalsIgnoreCase(BeeService.RPC_FIELD_OPT)) {
       options = v;
+    }
   }
 
   private String[] splitValue(String s) {
-    if (BeeUtils.isEmpty(s))
+    if (BeeUtils.isEmpty(s)) {
       return null;
-    else if (s.contains(", "))
+    } else if (s.contains(", ")) {
       return s.split(", ");
-    else if (s.contains(";"))
+    } else if (s.contains(";")) {
       return s.split(";");
-    else
+    } else {
       return null;
+    }
   }
 
 }

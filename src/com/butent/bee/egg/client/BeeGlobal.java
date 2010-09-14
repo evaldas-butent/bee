@@ -1,8 +1,8 @@
 package com.butent.bee.egg.client;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import com.google.gwt.core.client.JsArrayString;
+import com.google.gwt.event.shared.GwtEvent;
+import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.egg.client.dialog.BeeInputBox;
 import com.butent.bee.egg.client.dialog.BeeMessageBox;
@@ -17,9 +17,9 @@ import com.butent.bee.egg.shared.BeeWidget;
 import com.butent.bee.egg.shared.menu.MenuConst;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
-import com.google.gwt.core.client.JsArrayString;
-import com.google.gwt.event.shared.GwtEvent;
-import com.google.gwt.user.client.ui.Widget;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class BeeGlobal implements BeeModule {
   public static final String FIELD_DEBUG = "debug";
@@ -30,66 +30,12 @@ public class BeeGlobal implements BeeModule {
 
   private static final Map<String, BeeField> fields = new HashMap<String, BeeField>();
 
-  public String getName() {
-    return getClass().getName();
-  }
-
-  public int getPriority(int p) {
-    switch (p) {
-    case PRIORITY_INIT:
-      return 20;
-    case PRIORITY_START:
-      return DO_NOT_CALL;
-    case PRIORITY_END:
-      return DO_NOT_CALL;
-    default:
-      return DO_NOT_CALL;
-    }
-  }
-
-  public void init() {
-    initFields();
-  }
-
-  public void start() {
-  }
-
-  public void end() {
-  }
-
-  public static void showDialog(Object... obj) {
-    msgBox.showInfo(obj);
-  }
-
-  public static void showDialog(String cap, String msg, Throwable err) {
-    if (err == null) {
-      msgBox.showInfo(cap, msg);
-    } else {
-      msgBox.showError(cap, msg, err);
-    }
-  }
-
-  public static void showError(Object... obj) {
-    msgBox.showError(obj);
-  }
-
-  public static void showGrid(String cap, String[] cols, Object data) {
-    msgBox.showGrid(cap, cols, data);
-  }
-
   public static boolean closeDialog(GwtEvent<?> event) {
-    if (event == null)
+    if (event == null) {
       return false;
-    else
+    } else {
       return msgBox.close(event.getSource());
-  }
-
-  public static Widget createSimpleGrid(String[] cols, Object data) {
-    return grids.simpleGrid(cols, data);
-  }
-
-  public static Widget createGrid(int c, JsArrayString data) {
-    return grids.createGrid(c, data);
+    }
   }
 
   public static void createField(String name, String caption, int type,
@@ -108,18 +54,30 @@ public class BeeGlobal implements BeeModule {
     fields.put(name, new BeeField(caption, type, value, widget, items));
   }
 
+  public static Widget createGrid(int c, JsArrayString data) {
+    return grids.createGrid(c, data);
+  }
+
+  public static Widget createSimpleGrid(String[] cols, Object data) {
+    return grids.simpleGrid(cols, data);
+  }
+
   public static BeeField getField(String name) {
     Assert.contains(fields, name);
 
     return fields.get(name);
   }
 
+  public static boolean getFieldBoolean(String name) {
+    return BeeUtils.toBoolean(getField(name).getValue());
+  }
+
   public static String getFieldCaption(String name) {
     return getField(name).getCaption();
   }
 
-  public static BeeWidget getFieldWidget(String name) {
-    return getField(name).getWidget();
+  public static int getFieldInt(String name) {
+    return BeeUtils.toInt(getField(name).getValue());
   }
 
   public static List<String> getFieldItems(String name) {
@@ -130,43 +88,20 @@ public class BeeGlobal implements BeeModule {
     return getField(name).getType();
   }
 
-  public static String getFieldWidth(String name) {
-    return getField(name).getWidth();
-  }
-
   public static String getFieldValue(String name) {
     return getField(name).getValue();
   }
 
-  public static void setField(String name, BeeField fld) {
-    Assert.notEmpty(name);
-    Assert.notNull(fld);
-
-    fields.put(name, fld);
+  public static BeeWidget getFieldWidget(String name) {
+    return getField(name).getWidget();
   }
 
-  public static void setFieldValue(String name, String value) {
-    getField(name).setValue(value);
-  }
-
-  public static void setFieldValue(String name, Integer value) {
-    getField(name).setValue(BeeUtils.transform(value));
-  }
-
-  public static void setFieldWidth(String name, String width) {
-    getField(name).setWidth(width);
+  public static String getFieldWidth(String name) {
+    return getField(name).getWidth();
   }
 
   public static void inputFields(BeeStage bst, String cap, String... flds) {
     inpBox.inputFields(bst, cap, flds);
-  }
-
-  public static boolean getFieldBoolean(String name) {
-    return BeeUtils.toBoolean(getField(name).getValue());
-  }
-
-  public static int getFieldInt(String name) {
-    return BeeUtils.toInt(getField(name).getValue());
   }
 
   public static boolean isDebug() {
@@ -177,8 +112,74 @@ public class BeeGlobal implements BeeModule {
     return fields.containsKey(name);
   }
 
+  public static void setField(String name, BeeField fld) {
+    Assert.notEmpty(name);
+    Assert.notNull(fld);
+
+    fields.put(name, fld);
+  }
+
+  public static void setFieldValue(String name, Integer value) {
+    getField(name).setValue(BeeUtils.transform(value));
+  }
+
+  public static void setFieldValue(String name, String value) {
+    getField(name).setValue(value);
+  }
+
+  public static void setFieldWidth(String name, String width) {
+    getField(name).setWidth(width);
+  }
+
+  public static void showDialog(Object... obj) {
+    msgBox.showInfo(obj);
+  }
+
+  public static void showDialog(String cap, String msg, Throwable err) {
+    if (err == null) {
+      msgBox.showInfo(cap, msg);
+    } else {
+      msgBox.showError(cap, msg, err);
+    }
+  }
+
+  public static void showError(Object... obj) {
+    msgBox.showError(obj);
+  }
+
   public static void showFields() {
     inputFields(null, "Fields", fields.keySet().toArray(new String[0]));
+  }
+
+  public static void showGrid(String cap, String[] cols, Object data) {
+    msgBox.showGrid(cap, cols, data);
+  }
+
+  public void end() {
+  }
+
+  public String getName() {
+    return getClass().getName();
+  }
+
+  public int getPriority(int p) {
+    switch (p) {
+      case PRIORITY_INIT:
+        return 20;
+      case PRIORITY_START:
+        return DO_NOT_CALL;
+      case PRIORITY_END:
+        return DO_NOT_CALL;
+      default:
+        return DO_NOT_CALL;
+    }
+  }
+
+  public void init() {
+    initFields();
+  }
+
+  public void start() {
   }
 
   private void initFields() {
@@ -269,9 +270,10 @@ public class BeeGlobal implements BeeModule {
         MenuConst.LAYOUT_MENU_HOR, MenuConst.LAYOUT_MENU_VERT,
         MenuConst.LAYOUT_STACK, MenuConst.LAYOUT_TREE,
         MenuConst.LAYOUT_CELL_TREE, MenuConst.LAYOUT_CELL_BROWSER,
-        MenuConst.LAYOUT_LIST, MenuConst.LAYOUT_CELL_LIST, MenuConst.LAYOUT_TAB,
-        MenuConst.LAYOUT_RADIO_HOR, MenuConst.LAYOUT_RADIO_VERT,
-        MenuConst.LAYOUT_BUTTONS_HOR, MenuConst.LAYOUT_BUTTONS_VERT);
+        MenuConst.LAYOUT_LIST, MenuConst.LAYOUT_CELL_LIST,
+        MenuConst.LAYOUT_TAB, MenuConst.LAYOUT_RADIO_HOR,
+        MenuConst.LAYOUT_RADIO_VERT, MenuConst.LAYOUT_BUTTONS_HOR,
+        MenuConst.LAYOUT_BUTTONS_VERT);
 
     for (int i = 1; i < MenuConst.MAX_MENU_DEPTH; i++) {
       createField(MenuConst.fieldMenuLayout(i), "Items " + BeeUtils.bracket(i),
@@ -279,16 +281,15 @@ public class BeeGlobal implements BeeModule {
           MenuConst.LAYOUT_MENU_HOR, MenuConst.LAYOUT_MENU_VERT,
           MenuConst.LAYOUT_STACK, MenuConst.LAYOUT_TREE,
           MenuConst.LAYOUT_CELL_TREE, MenuConst.LAYOUT_CELL_BROWSER,
-          MenuConst.LAYOUT_LIST, MenuConst.LAYOUT_CELL_LIST, MenuConst.LAYOUT_TAB,
-          MenuConst.LAYOUT_RADIO_HOR, MenuConst.LAYOUT_RADIO_VERT,
-          MenuConst.LAYOUT_BUTTONS_HOR, MenuConst.LAYOUT_BUTTONS_VERT);
+          MenuConst.LAYOUT_LIST, MenuConst.LAYOUT_CELL_LIST,
+          MenuConst.LAYOUT_TAB, MenuConst.LAYOUT_RADIO_HOR,
+          MenuConst.LAYOUT_RADIO_VERT, MenuConst.LAYOUT_BUTTONS_HOR,
+          MenuConst.LAYOUT_BUTTONS_VERT);
     }
 
     createField(MenuConst.FIELD_ROOT_LIMIT, "Max  Roots", BeeType.TYPE_INT,
         BeeUtils.transform(MenuConst.DEFAULT_ROOT_LIMIT));
     createField(MenuConst.FIELD_ITEM_LIMIT, "Max  Items", BeeType.TYPE_INT,
         BeeUtils.transform(MenuConst.DEFAULT_ITEM_LIMIT));
-
   }
-
 }

@@ -1,17 +1,17 @@
 package com.butent.bee.egg.client.menu;
 
+import com.google.gwt.user.client.Element;
+import com.google.gwt.user.client.ui.PopupPanel.PositionCallback;
+
 import com.butent.bee.egg.client.utils.BeeDom;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.utils.BeeUtils;
-import com.google.gwt.user.client.Element;
-
-import com.google.gwt.user.client.ui.PopupPanel.PositionCallback;
 
 public class MenuPositionCallback implements PositionCallback {
   private Element parent = null;
   private MenuPopup popup = null;
 
-  private boolean vertical = false;;
+  private boolean vertical = false;
   private boolean rtl = false;
 
   public MenuPositionCallback(Element parent, MenuPopup popup,
@@ -46,7 +46,7 @@ public class MenuPositionCallback implements PositionCallback {
         y = parent.getAbsoluteTop() + parent.getOffsetHeight() + 2;
       }
     }
-    
+
     x = BeeUtils.fitStart(x, offsetWidth, BeeDom.getClientWidth() - 10, 10);
     y = BeeUtils.fitStart(y, offsetHeight, BeeDom.getClientHeight() - 10, 10);
 

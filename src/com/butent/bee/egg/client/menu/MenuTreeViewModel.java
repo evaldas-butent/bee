@@ -1,20 +1,21 @@
 package com.butent.bee.egg.client.menu;
 
-import java.util.List;
+import com.google.gwt.view.client.TreeViewModel;
 
 import com.butent.bee.egg.shared.menu.MenuEntry;
 
-import com.google.gwt.view.client.TreeViewModel;
+import java.util.List;
 
 public class MenuTreeViewModel implements TreeViewModel {
   private MenuDataProvider rootProvider = null;
   private MenuDataProvider itemProvider = null;
   private MenuCell cell = null;
 
-  public MenuTreeViewModel(MenuDataProvider rootProvider, MenuDataProvider itemProvider) {
+  public MenuTreeViewModel(MenuDataProvider rootProvider,
+      MenuDataProvider itemProvider) {
     this(rootProvider, itemProvider, new MenuCell());
   }
-  
+
   public MenuTreeViewModel(MenuDataProvider rootProvider,
       MenuDataProvider itemProvider, MenuCell cell) {
     super();
@@ -27,10 +28,6 @@ public class MenuTreeViewModel implements TreeViewModel {
     return cell;
   }
 
-  public void setCell(MenuCell cell) {
-    this.cell = cell;
-  }
-
   @Override
   public <T> NodeInfo<?> getNodeInfo(T value) {
     List<MenuEntry> lst;
@@ -38,13 +35,11 @@ public class MenuTreeViewModel implements TreeViewModel {
 
     if (value == null) {
       return new DefaultNodeInfo<MenuEntry>(rootProvider, cell);
-    }
-    else if (value instanceof MenuEntry) {
+    } else if (value instanceof MenuEntry) {
       lst = itemProvider.getChildren(((MenuEntry) value).getId(), true);
       provider = new MenuDataProvider(lst);
       return new DefaultNodeInfo<MenuEntry>(provider, cell);
-    }
-    else {
+    } else {
       return null;
     }
   }
@@ -56,6 +51,10 @@ public class MenuTreeViewModel implements TreeViewModel {
     } else {
       return false;
     }
+  }
+
+  public void setCell(MenuCell cell) {
+    this.cell = cell;
   }
 
 }

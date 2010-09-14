@@ -1,8 +1,5 @@
 package com.butent.bee.egg.shared.data;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.BeeSerializable;
@@ -10,6 +7,9 @@ import com.butent.bee.egg.shared.Transformable;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 import com.butent.bee.egg.shared.utils.PropUtils;
 import com.butent.bee.egg.shared.utils.StringProp;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class BeeColumn implements Transformable, BeeSerializable {
   public static final String SERIALIZATION_SEPARATOR = ",";
@@ -56,197 +56,27 @@ public class BeeColumn implements Transformable, BeeSerializable {
     setName(name);
   }
 
-  public int getIdx() {
-    return idx;
-  }
+  public void deserialize(String s) {
+    Assert.notEmpty(s);
 
-  public void setIdx(int idx) {
-    this.idx = idx;
-  }
+    String[] arr = s.split(SERIALIZATION_SEPARATOR);
+    Assert.arrayLength(arr, 5);
 
-  public String getName() {
-    return name;
-  }
+    int i = 0;
 
-  public void setName(String name) {
-    this.name = name;
-  }
-
-  public String getSchema() {
-    return schema;
-  }
-
-  public void setSchema(String schema) {
-    this.schema = schema;
+    setName(arr[i++]);
+    setType(BeeUtils.toInt(arr[i++]));
+    setPrecision(BeeUtils.toInt(arr[i++]));
+    setScale(BeeUtils.toInt(arr[i++]));
+    setNullable(BeeUtils.toInt(arr[i++]));
   }
 
   public String getCatalog() {
     return catalog;
   }
 
-  public void setCatalog(String catalog) {
-    this.catalog = catalog;
-  }
-
-  public String getTable() {
-    return table;
-  }
-
-  public void setTable(String table) {
-    this.table = table;
-  }
-
   public String getClazz() {
     return clazz;
-  }
-
-  public void setClazz(String clazz) {
-    this.clazz = clazz;
-  }
-
-  public int getType() {
-    return type;
-  }
-
-  public void setType(int type) {
-    this.type = type;
-  }
-
-  public String getTypeName() {
-    return typeName;
-  }
-
-  public void setTypeName(String typeName) {
-    this.typeName = typeName;
-  }
-
-  public String getLabel() {
-    return label;
-  }
-
-  public void setLabel(String label) {
-    this.label = label;
-  }
-
-  public int getDisplaySize() {
-    return displaySize;
-  }
-
-  public void setDisplaySize(int displaySize) {
-    this.displaySize = displaySize;
-  }
-
-  public int getPrecision() {
-    return precision;
-  }
-
-  public void setPrecision(int precision) {
-    this.precision = precision;
-  }
-
-  public int getScale() {
-    return scale;
-  }
-
-  public void setScale(int scale) {
-    this.scale = scale;
-  }
-
-  public int getNullable() {
-    return nullable;
-  }
-
-  public void setNullable(int nullable) {
-    this.nullable = nullable;
-  }
-
-  public boolean isSigned() {
-    return signed;
-  }
-
-  public void setSigned(boolean signed) {
-    this.signed = signed;
-  }
-
-  public boolean isAutoIncrement() {
-    return autoIncrement;
-  }
-
-  public void setAutoIncrement(boolean autoIncrement) {
-    this.autoIncrement = autoIncrement;
-  }
-
-  public boolean isCaseSensitive() {
-    return caseSensitive;
-  }
-
-  public void setCaseSensitive(boolean caseSensitive) {
-    this.caseSensitive = caseSensitive;
-  }
-
-  public boolean isCurrency() {
-    return currency;
-  }
-
-  public void setCurrency(boolean currency) {
-    this.currency = currency;
-  }
-
-  public boolean isDefinitelyWritable() {
-    return definitelyWritable;
-  }
-
-  public void setDefinitelyWritable(boolean definitelyWritable) {
-    this.definitelyWritable = definitelyWritable;
-  }
-
-  public boolean isReadOnly() {
-    return readOnly;
-  }
-
-  public void setReadOnly(boolean readOnly) {
-    this.readOnly = readOnly;
-  }
-
-  public boolean isSearchable() {
-    return searchable;
-  }
-
-  public void setSearchable(boolean searchable) {
-    this.searchable = searchable;
-  }
-
-  public boolean isWritable() {
-    return writable;
-  }
-
-  public void setWritable(boolean writable) {
-    this.writable = writable;
-  }
-
-  public String nullableAsString() {
-    switch (getNullable()) {
-    case (NULLABLE):
-      return "nullable";
-    case (NO_NULLS):
-      return "no nulls";
-    case (NULLABLE_UNKNOWN):
-      return "nullable unkown";
-    default:
-      return BeeConst.UNKNOWN;
-    }
-  }
-
-  private String valueAsString(int v) {
-    if (v == BeeConst.INDEX_UNKNOWN || v == BeeConst.SIZE_UNKNOWN
-        || v == BeeConst.TIME_UNKNOWN)
-      return BeeUtils.concat(1, v, BeeConst.UNKNOWN);
-    else
-      return Integer.toString(v);
-  }
-
-  private String valueAsString(boolean v) {
-    return v ? Boolean.toString(v) : BeeConst.STRING_EMPTY;
   }
 
   public List<StringProp> getColumnInfo() {
@@ -268,21 +98,93 @@ public class BeeColumn implements Transformable, BeeSerializable {
     return lst;
   }
 
-  @Override
-  public String toString() {
-    if (validState())
-      return BeeUtils.transformCollection(getColumnInfo(),
-          BeeConst.DEFAULT_LIST_SEPARATOR);
-    else
-      return BeeConst.STRING_EMPTY;
+  public int getDisplaySize() {
+    return displaySize;
   }
 
-  public String transform() {
-    return toString();
+  public int getIdx() {
+    return idx;
   }
 
-  private boolean validState() {
-    return !BeeUtils.isEmpty(getName());
+  public String getLabel() {
+    return label;
+  }
+
+  public String getName() {
+    return name;
+  }
+
+  public int getNullable() {
+    return nullable;
+  }
+
+  public int getPrecision() {
+    return precision;
+  }
+
+  public int getScale() {
+    return scale;
+  }
+
+  public String getSchema() {
+    return schema;
+  }
+
+  public String getTable() {
+    return table;
+  }
+
+  public int getType() {
+    return type;
+  }
+
+  public String getTypeName() {
+    return typeName;
+  }
+
+  public boolean isAutoIncrement() {
+    return autoIncrement;
+  }
+
+  public boolean isCaseSensitive() {
+    return caseSensitive;
+  }
+
+  public boolean isCurrency() {
+    return currency;
+  }
+
+  public boolean isDefinitelyWritable() {
+    return definitelyWritable;
+  }
+
+  public boolean isReadOnly() {
+    return readOnly;
+  }
+
+  public boolean isSearchable() {
+    return searchable;
+  }
+
+  public boolean isSigned() {
+    return signed;
+  }
+
+  public boolean isWritable() {
+    return writable;
+  }
+
+  public String nullableAsString() {
+    switch (getNullable()) {
+      case (NULLABLE):
+        return "nullable";
+      case (NO_NULLS):
+        return "no nulls";
+      case (NULLABLE_UNKNOWN):
+        return "nullable unkown";
+      default:
+        return BeeConst.UNKNOWN;
+    }
   }
 
   public String serialize() {
@@ -293,19 +195,119 @@ public class BeeColumn implements Transformable, BeeSerializable {
         + getScale() + SERIALIZATION_SEPARATOR + getNullable();
   }
 
-  public void deserialize(String s) {
-    Assert.notEmpty(s);
+  public void setAutoIncrement(boolean autoIncrement) {
+    this.autoIncrement = autoIncrement;
+  }
 
-    String[] arr = s.split(SERIALIZATION_SEPARATOR);
-    Assert.arrayLength(arr, 5);
+  public void setCaseSensitive(boolean caseSensitive) {
+    this.caseSensitive = caseSensitive;
+  }
 
-    int i = 0;
+  public void setCatalog(String catalog) {
+    this.catalog = catalog;
+  }
 
-    setName(arr[i++]);
-    setType(BeeUtils.toInt(arr[i++]));
-    setPrecision(BeeUtils.toInt(arr[i++]));
-    setScale(BeeUtils.toInt(arr[i++]));
-    setNullable(BeeUtils.toInt(arr[i++]));
+  public void setClazz(String clazz) {
+    this.clazz = clazz;
+  }
+
+  public void setCurrency(boolean currency) {
+    this.currency = currency;
+  }
+
+  public void setDefinitelyWritable(boolean definitelyWritable) {
+    this.definitelyWritable = definitelyWritable;
+  }
+
+  public void setDisplaySize(int displaySize) {
+    this.displaySize = displaySize;
+  }
+
+  public void setIdx(int idx) {
+    this.idx = idx;
+  }
+
+  public void setLabel(String label) {
+    this.label = label;
+  }
+
+  public void setName(String name) {
+    this.name = name;
+  }
+
+  public void setNullable(int nullable) {
+    this.nullable = nullable;
+  }
+
+  public void setPrecision(int precision) {
+    this.precision = precision;
+  }
+
+  public void setReadOnly(boolean readOnly) {
+    this.readOnly = readOnly;
+  }
+
+  public void setScale(int scale) {
+    this.scale = scale;
+  }
+
+  public void setSchema(String schema) {
+    this.schema = schema;
+  }
+
+  public void setSearchable(boolean searchable) {
+    this.searchable = searchable;
+  }
+
+  public void setSigned(boolean signed) {
+    this.signed = signed;
+  }
+
+  public void setTable(String table) {
+    this.table = table;
+  }
+
+  public void setType(int type) {
+    this.type = type;
+  }
+
+  public void setTypeName(String typeName) {
+    this.typeName = typeName;
+  }
+
+  public void setWritable(boolean writable) {
+    this.writable = writable;
+  }
+
+  @Override
+  public String toString() {
+    if (validState()) {
+      return BeeUtils.transformCollection(getColumnInfo(),
+          BeeConst.DEFAULT_LIST_SEPARATOR);
+    } else {
+      return BeeConst.STRING_EMPTY;
+    }
+  }
+
+  public String transform() {
+    return toString();
+  }
+
+  private boolean validState() {
+    return !BeeUtils.isEmpty(getName());
+  }
+
+  private String valueAsString(boolean v) {
+    return v ? Boolean.toString(v) : BeeConst.STRING_EMPTY;
+  }
+
+  private String valueAsString(int v) {
+    if (v == BeeConst.INDEX_UNKNOWN || v == BeeConst.SIZE_UNKNOWN
+        || v == BeeConst.TIME_UNKNOWN) {
+      return BeeUtils.concat(1, v, BeeConst.UNKNOWN);
+    } else {
+      return Integer.toString(v);
+    }
   }
 
 }

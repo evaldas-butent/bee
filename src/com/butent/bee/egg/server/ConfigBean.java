@@ -1,5 +1,7 @@
 package com.butent.bee.egg.server;
 
+import com.butent.bee.egg.shared.utils.BeeUtils;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Date;
@@ -13,22 +15,25 @@ import javax.ejb.LockType;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
 
-import com.butent.bee.egg.shared.utils.BeeUtils;
-
 @Singleton
 @Startup
 @Lock(LockType.READ)
 public class ConfigBean {
   private static final String PROPERTIES_FILE = "/com/butent/bee/egg/server/server.properties";
 
-  private Properties properties = new Properties();
   private static Logger logger = Logger.getLogger(ConfigBean.class.getName());
+  private Properties properties = new Properties();
+
+  public String getProperty(String key) {
+    Assert.notEmpty(key);
+    return properties.getProperty(key);
+  }
 
   @SuppressWarnings("unused")
   @PostConstruct
   private void init() {
-    InputStream inp = Thread.currentThread().getContextClassLoader()
-        .getResourceAsStream(PROPERTIES_FILE);
+    InputStream inp = Thread.currentThread().getContextClassLoader().getResourceAsStream(
+        PROPERTIES_FILE);
 
     if (inp == null) {
       logger.warning(BeeUtils.concat(1, PROPERTIES_FILE, "not found",
@@ -44,11 +49,6 @@ public class ConfigBean {
     } catch (IOException ex) {
       logger.log(Level.SEVERE, PROPERTIES_FILE, ex);
     }
-  }
-
-  public String getProperty(String key) {
-    Assert.notEmpty(key);
-    return properties.getProperty(key);
   }
 
 }

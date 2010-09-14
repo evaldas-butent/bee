@@ -1,11 +1,11 @@
 package com.butent.bee.egg.shared.sql;
 
+import com.butent.bee.egg.shared.Assert;
+import com.butent.bee.egg.shared.utils.BeeUtils;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
-import com.butent.bee.egg.shared.Assert;
-import com.butent.bee.egg.shared.utils.BeeUtils;
 
 public class JoinCondition implements Condition {
   private String leftExpression;
@@ -53,8 +53,7 @@ public class JoinCondition implements Condition {
     List<Object> paramList = null;
 
     if (rightExpression instanceof QueryBuilder) {
-      Map<Integer, Object> paramMap = ((QueryBuilder) rightExpression)
-          .getParameters(true);
+      Map<Integer, Object> paramMap = ((QueryBuilder) rightExpression).getParameters(true);
 
       if (!BeeUtils.isEmpty(paramMap)) {
         paramList = new ArrayList<Object>(paramMap.size());

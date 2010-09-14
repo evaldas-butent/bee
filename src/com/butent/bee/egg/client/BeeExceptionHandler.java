@@ -1,7 +1,8 @@
 package com.butent.bee.egg.client;
 
-import com.butent.bee.egg.shared.utils.LogUtils;
 import com.google.gwt.core.client.GWT.UncaughtExceptionHandler;
+
+import com.butent.bee.egg.shared.utils.LogUtils;
 
 public class BeeExceptionHandler implements UncaughtExceptionHandler {
 

@@ -1,27 +1,17 @@
 package com.butent.bee.egg.client.menu;
 
-import com.butent.bee.egg.client.utils.BeeDom;
-import com.butent.bee.egg.shared.HasId;
-
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.ui.HasHTML;
 import com.google.gwt.user.client.ui.UIObject;
+
+import com.butent.bee.egg.client.utils.BeeDom;
+import com.butent.bee.egg.shared.HasId;
 
 public class BeeMenuItem extends UIObject implements HasHTML, HasId {
   private static final String DEPENDENT_STYLENAME_SELECTED_ITEM = "selected";
 
   private MenuCommand command;
   private BeeMenuBar parentMenu, subMenu;
-
-  public BeeMenuItem(String text, MenuCommand cmd) {
-    this(text, false);
-    setCommand(cmd);
-  }
-
-  public BeeMenuItem(String text, boolean asHTML, MenuCommand cmd) {
-    this(text, asHTML);
-    setCommand(cmd);
-  }
 
   public BeeMenuItem(String text, BeeMenuBar subMenu) {
     this(text, false);
@@ -31,6 +21,16 @@ public class BeeMenuItem extends UIObject implements HasHTML, HasId {
   public BeeMenuItem(String text, boolean asHTML, BeeMenuBar subMenu) {
     this(text, asHTML);
     setSubMenu(subMenu);
+  }
+
+  public BeeMenuItem(String text, boolean asHTML, MenuCommand cmd) {
+    this(text, asHTML);
+    setCommand(cmd);
+  }
+
+  public BeeMenuItem(String text, MenuCommand cmd) {
+    this(text, false);
+    setCommand(cmd);
   }
 
   BeeMenuItem(String text, boolean asHTML) {
@@ -47,14 +47,6 @@ public class BeeMenuItem extends UIObject implements HasHTML, HasId {
     createId();
   }
 
-  public String getId() {
-    return BeeDom.getId(this);
-  }
-
-  public void setId(String id) {
-    BeeDom.setId(this, id);
-  }
-
   public void createId() {
     BeeDom.createId(this, "menuitem");
   }
@@ -65,6 +57,10 @@ public class BeeMenuItem extends UIObject implements HasHTML, HasId {
 
   public String getHTML() {
     return DOM.getInnerHTML(getElement());
+  }
+
+  public String getId() {
+    return BeeDom.getId(this);
   }
 
   public BeeMenuBar getParentMenu() {
@@ -87,12 +83,16 @@ public class BeeMenuItem extends UIObject implements HasHTML, HasId {
     DOM.setInnerHTML(getElement(), html);
   }
 
+  public void setId(String id) {
+    BeeDom.setId(this, id);
+  }
+
   public void setSubMenu(BeeMenuBar subMenu) {
     this.subMenu = subMenu;
     if (this.parentMenu != null) {
       this.parentMenu.updateSubmenuIcon(this);
     }
-  
+
     if (subMenu != null) {
       subMenu.getElement().setTabIndex(-1);
     }

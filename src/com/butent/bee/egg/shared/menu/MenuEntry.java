@@ -27,97 +27,12 @@ public class MenuEntry implements BeeSerializable {
     super();
   }
 
-  public String getParent() {
-    return parent;
-  }
-
-  public void setParent(String parent) {
-    this.parent = parent;
-  }
-
-  public int getOrder() {
-    return order;
-  }
-
-  public void setOrder(int order) {
-    this.order = order;
-  }
-
-  public int getSeparators() {
-    return separators;
-  }
-
-  public void setSeparators(int separators) {
-    this.separators = separators;
-  }
-
-  public String getText() {
-    return text;
-  }
-
-  public void setText(String text) {
-    this.text = text;
-  }
-
-  public String getService() {
-    return service;
-  }
-
-  public void setService(String service) {
-    this.service = service;
-  }
-
-  public String getParameters() {
-    return parameters;
-  }
-
-  public void setParameters(String parameters) {
-    this.parameters = parameters;
-  }
-
-  public String getType() {
-    return type;
-  }
-
-  public void setType(String type) {
-    this.type = type;
-  }
-
-  public String getStyle() {
-    return style;
-  }
-
-  public void setStyle(String style) {
-    this.style = style;
-  }
-
-  public String getKeyName() {
-    return keyName;
-  }
-
-  public void setKeyName(String keyName) {
-    this.keyName = keyName;
-  }
-
-  public boolean isVisible() {
-    return visible;
-  }
-
-  public void setVisible(boolean visible) {
-    this.visible = visible;
-  }
-
-  public String serialize() {
-    return BeeUtils.serializeValues(id, parent, order, separators, text,
-        service, parameters, type, style, keyName, visible);
-  }
-
   public void deserialize(String s) {
     Assert.notEmpty(s);
     String[] arr = BeeUtils.deserializeValues(s);
     Assert.arrayLength(arr, 11);
     int i = 0;
-    
+
     setId(arr[i++]);
     setParent(arr[i++]);
     setOrder(BeeUtils.toInt(arr[i++]));
@@ -136,20 +51,105 @@ public class MenuEntry implements BeeSerializable {
     return id;
   }
 
-  public void setId(String id) {
-    this.id = id;
+  public String getKeyName() {
+    return keyName;
   }
-  
-  public boolean isValid() {
-    return BeeUtils.allNotEmpty(getId(), getText());
+
+  public int getOrder() {
+    return order;
   }
-  
-  public boolean isRoot() {
-    return BeeUtils.isEmpty(getParent());
+
+  public String getParameters() {
+    return parameters;
+  }
+
+  public String getParent() {
+    return parent;
+  }
+
+  public int getSeparators() {
+    return separators;
+  }
+
+  public String getService() {
+    return service;
+  }
+
+  public String getStyle() {
+    return style;
+  }
+
+  public String getText() {
+    return text;
+  }
+
+  public String getType() {
+    return type;
   }
 
   public boolean isLeaf() {
     return BeeUtils.same(getType(), "B");
   }
-  
+
+  public boolean isRoot() {
+    return BeeUtils.isEmpty(getParent());
+  }
+
+  public boolean isValid() {
+    return BeeUtils.allNotEmpty(getId(), getText());
+  }
+
+  public boolean isVisible() {
+    return visible;
+  }
+
+  public String serialize() {
+    return BeeUtils.serializeValues(id, parent, order, separators, text,
+        service, parameters, type, style, keyName, visible);
+  }
+
+  public void setId(String id) {
+    this.id = id;
+  }
+
+  public void setKeyName(String keyName) {
+    this.keyName = keyName;
+  }
+
+  public void setOrder(int order) {
+    this.order = order;
+  }
+
+  public void setParameters(String parameters) {
+    this.parameters = parameters;
+  }
+
+  public void setParent(String parent) {
+    this.parent = parent;
+  }
+
+  public void setSeparators(int separators) {
+    this.separators = separators;
+  }
+
+  public void setService(String service) {
+    this.service = service;
+  }
+
+  public void setStyle(String style) {
+    this.style = style;
+  }
+
+  public void setText(String text) {
+    this.text = text;
+  }
+
+  public void setType(String type) {
+    this.type = type;
+  }
+
+  public void setVisible(boolean visible) {
+    this.visible = visible;
+  }
+
 }

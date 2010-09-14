@@ -1,8 +1,9 @@
 package com.butent.bee.egg.client.utils;
 
-import com.butent.bee.egg.shared.Assert;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.user.client.Element;
+
+import com.butent.bee.egg.shared.Assert;
 
 public class BeeImpl {
   public static void blur(Element elem) {

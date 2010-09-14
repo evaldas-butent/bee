@@ -11,7 +11,5 @@ public class BeeChangeHandler implements ChangeHandler {
     if (source instanceof HasBeeChangeHandler) {
       ((HasBeeChangeHandler) source).onChange();
     }
-
   }
-
 }

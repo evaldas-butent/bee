@@ -1,18 +1,18 @@
 package com.butent.bee.egg.server.ui;
 
+import com.butent.bee.egg.server.Assert;
+import com.butent.bee.egg.server.http.RequestInfo;
+import com.butent.bee.egg.server.http.ResponseBuffer;
+import com.butent.bee.egg.server.utils.XmlUtils;
+import com.butent.bee.egg.shared.data.BeeColumn;
+import com.butent.bee.egg.shared.ui.UiComponent;
+import com.butent.bee.egg.shared.utils.BeeUtils;
+
 import java.util.Map;
 import java.util.logging.Logger;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
-
-import com.butent.bee.egg.server.Assert;
-import com.butent.bee.egg.server.http.RequestInfo;
-import com.butent.bee.egg.server.http.ResponseBuffer;
-import com.butent.bee.egg.server.utils.XmlUtils;
-import com.butent.bee.egg.shared.ui.UiComponent;
-import com.butent.bee.egg.shared.data.BeeColumn;
-import com.butent.bee.egg.shared.utils.BeeUtils;
 
 @Stateless
 public class UiLoaderBean {
@@ -38,12 +38,6 @@ public class UiLoaderBean {
     }
   }
 
-  private void formList(RequestInfo reqInfo, ResponseBuffer buff) {
-    buff.addColumn(new BeeColumn("Form"));
-    buff.add("testForm");
-    buff.add("unavailableForm");
-  }
-
   private void formInfo(RequestInfo reqInfo, ResponseBuffer buff) {
     String fName = getXmlField(reqInfo, buff, "form_name");
 
@@ -58,8 +52,10 @@ public class UiLoaderBean {
     }
   }
 
-  private void gridInfo(RequestInfo reqInfo, ResponseBuffer buff) {
-    // TODO Auto-generated method stub
+  private void formList(RequestInfo reqInfo, ResponseBuffer buff) {
+    buff.addColumn(new BeeColumn("Form"));
+    buff.add("testForm");
+    buff.add("unavailableForm");
   }
 
   private String getXmlField(RequestInfo reqInfo, ResponseBuffer buff,
@@ -76,5 +72,9 @@ public class UiLoaderBean {
       return null;
     }
     return fields.get(fieldName);
+  }
+
+  private void gridInfo(RequestInfo reqInfo, ResponseBuffer buff) {
+    // TODO Auto-generated method stub
   }
 }

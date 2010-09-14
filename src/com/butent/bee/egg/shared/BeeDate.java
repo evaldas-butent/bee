@@ -1,8 +1,8 @@
 package com.butent.bee.egg.shared;
 
-import java.util.Date;
-
 import com.butent.bee.egg.shared.utils.BeeUtils;
+
+import java.util.Date;
 
 @SuppressWarnings("serial")
 public class BeeDate extends Date {
@@ -17,28 +17,13 @@ public class BeeDate extends Date {
 
   @SuppressWarnings("deprecation")
   @Override
-  public int getYear() {
-    return super.getYear() + 1900;
-  }
-
-  @SuppressWarnings("deprecation")
-  @Override
-  public int getMonth() {
-    // TODO Auto-generated method stub
-    return super.getMonth() + 1;
-  }
-
-  @SuppressWarnings("deprecation")
-  @Override
   public int getDay() {
-    // TODO Auto-generated method stub
     return super.getDate();
   }
 
   @SuppressWarnings("deprecation")
   @Override
   public int getHours() {
-    // TODO Auto-generated method stub
     return super.getHours();
   }
 
@@ -49,15 +34,32 @@ public class BeeDate extends Date {
   @SuppressWarnings("deprecation")
   @Override
   public int getMinutes() {
-    // TODO Auto-generated method stub
     return super.getMinutes();
   }
 
   @SuppressWarnings("deprecation")
   @Override
+  public int getMonth() {
+    return super.getMonth() + 1;
+  }
+
+  @SuppressWarnings("deprecation")
+  @Override
   public int getSeconds() {
-    // TODO Auto-generated method stub
     return super.getSeconds();
+  }
+
+  @SuppressWarnings("deprecation")
+  @Override
+  public int getYear() {
+    return super.getYear() + 1900;
+  }
+
+  public String toLog() {
+    return BeeUtils.toLeadingZeroes(getHours(), 2) + ":"
+        + BeeUtils.toLeadingZeroes(getMinutes(), 2) + ":"
+        + BeeUtils.toLeadingZeroes(getSeconds(), 2) + "."
+        + BeeUtils.toLeadingZeroes(getMillis(), 3);
   }
 
   @Override
@@ -68,12 +70,5 @@ public class BeeDate extends Date {
         + BeeUtils.toLeadingZeroes(getHours(), 2)
         + BeeUtils.toLeadingZeroes(getMinutes(), 2)
         + BeeUtils.toLeadingZeroes(getSeconds(), 2);
-  }
-
-  public String toLog() {
-    return BeeUtils.toLeadingZeroes(getHours(), 2) + ":"
-        + BeeUtils.toLeadingZeroes(getMinutes(), 2) + ":"
-        + BeeUtils.toLeadingZeroes(getSeconds(), 2) + "."
-        + BeeUtils.toLeadingZeroes(getMillis(), 3);
   }
 }

@@ -1,11 +1,11 @@
 package com.butent.bee.egg.shared.sql;
 
+import com.butent.bee.egg.shared.Assert;
+import com.butent.bee.egg.shared.utils.BeeUtils;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
-import com.butent.bee.egg.shared.Assert;
-import com.butent.bee.egg.shared.utils.BeeUtils;
 
 public class FromSingle implements FromSource {
 
@@ -22,6 +22,10 @@ public class FromSingle implements FromSource {
     this.alias = alias;
   }
 
+  public FromSingle(String source) {
+    this(source, null);
+  }
+
   public FromSingle(String source, String alias) {
     Assert.notEmpty(source);
 
@@ -29,23 +33,9 @@ public class FromSingle implements FromSource {
     this.alias = alias;
   }
 
-  public FromSingle(String source) {
-    this(source, null);
-  }
-
-  @Override
-  public Object getSource() {
-    return source;
-  }
-
   @Override
   public String getAlias() {
     return alias;
-  }
-
-  @Override
-  public String getJoinMode() {
-    return "";
   }
 
   @Override
@@ -65,12 +55,16 @@ public class FromSingle implements FromSource {
   }
 
   @Override
+  public String getJoinMode() {
+    return "";
+  }
+
+  @Override
   public List<Object> getQueryParameters() {
     List<Object> paramList = null;
 
     if (source instanceof QueryBuilder) {
-      Map<Integer, Object> paramMap = ((QueryBuilder) source)
-          .getParameters(true);
+      Map<Integer, Object> paramMap = ((QueryBuilder) source).getParameters(true);
 
       if (!BeeUtils.isEmpty(paramMap)) {
         paramList = new ArrayList<Object>(paramMap.size());
@@ -81,5 +75,10 @@ public class FromSingle implements FromSource {
       }
     }
     return paramList;
+  }
+
+  @Override
+  public Object getSource() {
+    return source;
   }
 }

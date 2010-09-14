@@ -1,7 +1,8 @@
 package com.butent.bee.egg.client.dialog;
 
-import java.util.Collection;
-import java.util.Iterator;
+import com.google.gwt.user.client.ui.HasHorizontalAlignment;
+import com.google.gwt.user.client.ui.PopupPanel;
+import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.egg.client.BeeGlobal;
 import com.butent.bee.egg.client.grid.BeeCellTable;
@@ -11,11 +12,36 @@ import com.butent.bee.egg.client.widget.BeeLabel;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
-import com.google.gwt.user.client.ui.HasHorizontalAlignment;
-import com.google.gwt.user.client.ui.PopupPanel;
-import com.google.gwt.user.client.ui.Widget;
+import java.util.Collection;
+import java.util.Iterator;
 
 public class BeeMessageBox {
+
+  public boolean close(Object src) {
+    boolean ok = false;
+
+    if (src instanceof Widget) {
+      PopupPanel p = BeeDom.parentPopup((Widget) src);
+
+      if (p != null) {
+        p.hide();
+        ok = true;
+      }
+    }
+
+    return ok;
+  }
+
+  public void showError(Object... x) {
+    showInfo(x);
+  }
+
+  public void showGrid(String cap, String[] cols, Object data) {
+    Assert.notEmpty(cols);
+    Assert.notNull(data);
+
+    showInfo(cap, BeeGlobal.createSimpleGrid(cols, data));
+  }
 
   public void showInfo(Object... x) {
     int n = x.length;
@@ -33,8 +59,7 @@ public class BeeMessageBox {
       } else if (x[i] instanceof String) {
         vp.add(new BeeLabel((String) x[i]));
       } else if (x[i] instanceof Collection) {
-        for (Iterator<?> iter = ((Collection<?>) x[i]).iterator(); iter
-            .hasNext();) {
+        for (Iterator<?> iter = ((Collection<?>) x[i]).iterator(); iter.hasNext();) {
           vp.add(new BeeLabel(iter.next()));
         }
       } else if (BeeUtils.isArray(x[i])) {
@@ -58,32 +83,6 @@ public class BeeMessageBox {
 
     box.center();
     b.setFocus(true);
-  }
-
-  public void showError(Object... x) {
-    showInfo(x);
-  }
-
-  public boolean close(Object src) {
-    boolean ok = false;
-
-    if (src instanceof Widget) {
-      PopupPanel p = BeeDom.parentPopup((Widget) src);
-
-      if (p != null) {
-        p.hide();
-        ok = true;
-      }
-    }
-
-    return ok;
-  }
-
-  public void showGrid(String cap, String[] cols, Object data) {
-    Assert.notEmpty(cols);
-    Assert.notNull(data);
-
-    showInfo(cap, BeeGlobal.createSimpleGrid(cols, data));
   }
 
 }

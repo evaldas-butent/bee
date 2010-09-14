@@ -1,5 +1,11 @@
 package com.butent.bee.egg.server.utils;
 
+import com.butent.bee.egg.shared.Assert;
+import com.butent.bee.egg.shared.utils.BeeUtils;
+import com.butent.bee.egg.shared.utils.PropUtils;
+import com.butent.bee.egg.shared.utils.StringProp;
+import com.butent.bee.egg.shared.utils.SubProp;
+
 import java.lang.management.ClassLoadingMXBean;
 import java.lang.management.CompilationMXBean;
 import java.lang.management.GarbageCollectorMXBean;
@@ -14,17 +20,10 @@ import java.lang.management.OperatingSystemMXBean;
 import java.lang.management.RuntimeMXBean;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
-
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-
-import com.butent.bee.egg.shared.Assert;
-import com.butent.bee.egg.shared.utils.BeeUtils;
-import com.butent.bee.egg.shared.utils.PropUtils;
-import com.butent.bee.egg.shared.utils.StringProp;
-import com.butent.bee.egg.shared.utils.SubProp;
 
 public class BeeMX {
   public static List<StringProp> getClassLoadingInfo() {
@@ -56,39 +55,16 @@ public class BeeMX {
   public static List<SubProp> getGarbageCollectorInfo() {
     List<SubProp> lst = new ArrayList<SubProp>();
 
-    List<GarbageCollectorMXBean> mxbs = ManagementFactory
-        .getGarbageCollectorMXBeans();
+    List<GarbageCollectorMXBean> mxbs = ManagementFactory.getGarbageCollectorMXBeans();
 
     if (!BeeUtils.isEmpty(mxbs)) {
-      PropUtils
-          .addSub(lst, "Garbage Collectors", BeeUtils.bracket(mxbs.size()));
+      PropUtils.addSub(lst, "Garbage Collectors", BeeUtils.bracket(mxbs.size()));
 
       for (GarbageCollectorMXBean b : mxbs) {
         String nm = b.getName();
 
         PropUtils.addRoot(lst, nm, "Collection Count", b.getCollectionCount(),
             "Collection Time", b.getCollectionTime(), "Memory Pool Names",
-            transformMemoryPoolNames(b.getMemoryPoolNames()), "Is Valid",
-            b.isValid());
-      }
-    }
-
-    return lst;
-  }
-
-  public static List<SubProp> getMemoryManagerInfo() {
-    List<SubProp> lst = new ArrayList<SubProp>();
-
-    List<MemoryManagerMXBean> mxbs = ManagementFactory
-        .getMemoryManagerMXBeans();
-
-    if (!BeeUtils.isEmpty(mxbs)) {
-      PropUtils.addSub(lst, "Memory Managers", BeeUtils.bracket(mxbs.size()));
-
-      for (MemoryManagerMXBean b : mxbs) {
-        String nm = b.getName();
-
-        PropUtils.addRoot(lst, nm, "Memory Pool Names",
             transformMemoryPoolNames(b.getMemoryPoolNames()), "Is Valid",
             b.isValid());
       }
@@ -115,6 +91,26 @@ public class BeeMX {
     return lst;
   }
 
+  public static List<SubProp> getMemoryManagerInfo() {
+    List<SubProp> lst = new ArrayList<SubProp>();
+
+    List<MemoryManagerMXBean> mxbs = ManagementFactory.getMemoryManagerMXBeans();
+
+    if (!BeeUtils.isEmpty(mxbs)) {
+      PropUtils.addSub(lst, "Memory Managers", BeeUtils.bracket(mxbs.size()));
+
+      for (MemoryManagerMXBean b : mxbs) {
+        String nm = b.getName();
+
+        PropUtils.addRoot(lst, nm, "Memory Pool Names",
+            transformMemoryPoolNames(b.getMemoryPoolNames()), "Is Valid",
+            b.isValid());
+      }
+    }
+
+    return lst;
+  }
+
   public static List<SubProp> getMemoryPoolInfo() {
     List<SubProp> lst = new ArrayList<SubProp>();
 
@@ -134,19 +130,21 @@ public class BeeMX {
             "Is Usage Threshold Supported", b.isUsageThresholdSupported(),
             "Is Valid", b.isValid());
 
-        if (b.isCollectionUsageThresholdSupported())
+        if (b.isCollectionUsageThresholdSupported()) {
           PropUtils.addRoot(lst, root, "Collection Usage Threshold",
               b.getCollectionUsageThreshold(),
               "Collection Usage Threshold Count",
               b.getCollectionUsageThresholdCount(),
               "Is Collection Usage Threshold Exceeded",
               b.isCollectionUsageThresholdExceeded());
+        }
 
-        if (b.isUsageThresholdSupported())
+        if (b.isUsageThresholdSupported()) {
           PropUtils.addRoot(lst, root, "Usage Threshold",
               b.getUsageThreshold(), "Usage Threshold Count",
               b.getUsageThresholdCount(), "Is Usage Threshold Exceeded",
               b.isUsageThresholdExceeded());
+        }
 
         PropUtils.appendString(lst, "Collection Usage",
             getMemoryUsageInfo(b.getCollectionUsage()));
@@ -193,8 +191,9 @@ public class BeeMX {
       PropUtils.addSub(lst, root, "Input Arguments",
           BeeUtils.bracket(args.size()));
 
-      for (String s : args)
+      for (String s : args) {
         PropUtils.addSub(lst, root, "Input Argument", s);
+      }
     }
 
     Map<String, String> prp = mxb.getSystemProperties();
@@ -202,8 +201,65 @@ public class BeeMX {
       PropUtils.addSub(lst, root, "System Properties",
           BeeUtils.bracket(prp.size()));
 
-      for (Map.Entry<String, String> el : prp.entrySet())
+      for (Map.Entry<String, String> el : prp.entrySet()) {
         PropUtils.addSub(lst, "System Property", el.getKey(), el.getValue());
+      }
+    }
+
+    return lst;
+  }
+
+  public static List<SubProp> getThreadInfo(ThreadInfo ti, String msg) {
+    Assert.notNull(ti);
+    List<SubProp> lst = new ArrayList<SubProp>();
+
+    String root = BeeUtils.concat(1, "Thread Id", ti.getThreadId(), msg);
+
+    PropUtils.addRoot(lst, root, "Blocked Count", ti.getBlockedCount(),
+        "Blocked Time", ti.getBlockedTime(), "Lock Info",
+        transformLockInfo(ti.getLockInfo()), "Lock Name", ti.getLockName(),
+        "Lock Owner Id", ti.getLockOwnerId(), "Lock Owner Name",
+        ti.getLockOwnerName(), "Thread Name", ti.getThreadName(),
+        "Thread State", ti.getThreadState(), "Waited Count",
+        ti.getWaitedCount(), "Waited Time", ti.getWaitedTime(), "Is In Native",
+        ti.isInNative(), "Is Suspended", ti.isSuspended());
+
+    MonitorInfo[] monitors = ti.getLockedMonitors();
+    if (!BeeUtils.isEmpty(monitors)) {
+      if (monitors.length > 1) {
+        PropUtils.addSub(lst, root, "Locked Monitors",
+            BeeUtils.bracket(monitors.length));
+      }
+
+      for (MonitorInfo inf : monitors) {
+        PropUtils.addSub(lst, root, "Locked Monitor", transformMonitorInfo(inf));
+      }
+    }
+
+    LockInfo[] lckArr = ti.getLockedSynchronizers();
+    if (!BeeUtils.isEmpty(lckArr)) {
+      if (lckArr.length > 1) {
+        PropUtils.addSub(lst, root, "Locked Synchronizers",
+            BeeUtils.bracket(lckArr.length));
+      }
+
+      for (LockInfo inf : lckArr) {
+        PropUtils.addSub(lst, root, "Locked Synchronizer",
+            transformLockInfo(inf));
+      }
+    }
+
+    StackTraceElement[] stack = ti.getStackTrace();
+    if (!BeeUtils.isEmpty(stack)) {
+      if (stack.length > 1) {
+        PropUtils.addSub(lst, root, "Stack Trace",
+            BeeUtils.bracket(stack.length));
+      }
+
+      for (int i = 0; i < stack.length; i++) {
+        PropUtils.addSub(lst, root, "Stack Trace Element " + i,
+            BeeSystem.transformStackTraceElement(stack[i]));
+      }
     }
 
     return lst;
@@ -234,14 +290,18 @@ public class BeeMX {
         "Is Thread Cpu Time Supported", mxb.isThreadCpuTimeSupported());
 
     long[] idArr = mxb.findDeadlockedThreads();
-    if (!BeeUtils.isEmpty(idArr))
-      for (int i = 0; i < idArr.length; i++)
+    if (!BeeUtils.isEmpty(idArr)) {
+      for (int i = 0; i < idArr.length; i++) {
         PropUtils.addSub(lst, root, "Deadlocked Thread", idArr[i]);
+      }
+    }
 
     idArr = mxb.findMonitorDeadlockedThreads();
-    if (!BeeUtils.isEmpty(idArr))
-      for (int i = 0; i < idArr.length; i++)
+    if (!BeeUtils.isEmpty(idArr)) {
+      for (int i = 0; i < idArr.length; i++) {
         PropUtils.addSub(lst, root, "Monitor Deadlocked Thread", idArr[i]);
+      }
+    }
 
     ThreadInfo[] tiArr = mxb.dumpAllThreads(true, true);
     if (!BeeUtils.isEmpty(tiArr)) {
@@ -270,60 +330,10 @@ public class BeeMX {
     return lst;
   }
 
-  public static List<SubProp> getThreadInfo(ThreadInfo ti, String msg) {
-    Assert.notNull(ti);
-    List<SubProp> lst = new ArrayList<SubProp>();
-
-    String root = BeeUtils.concat(1, "Thread Id", ti.getThreadId(), msg);
-
-    PropUtils.addRoot(lst, root, "Blocked Count", ti.getBlockedCount(),
-        "Blocked Time", ti.getBlockedTime(), "Lock Info",
-        transformLockInfo(ti.getLockInfo()), "Lock Name", ti.getLockName(),
-        "Lock Owner Id", ti.getLockOwnerId(), "Lock Owner Name",
-        ti.getLockOwnerName(), "Thread Name", ti.getThreadName(),
-        "Thread State", ti.getThreadState(), "Waited Count",
-        ti.getWaitedCount(), "Waited Time", ti.getWaitedTime(), "Is In Native",
-        ti.isInNative(), "Is Suspended", ti.isSuspended());
-
-    MonitorInfo[] monitors = ti.getLockedMonitors();
-    if (!BeeUtils.isEmpty(monitors)) {
-      if (monitors.length > 1)
-        PropUtils.addSub(lst, root, "Locked Monitors",
-            BeeUtils.bracket(monitors.length));
-
-      for (MonitorInfo inf : monitors)
-        PropUtils
-            .addSub(lst, root, "Locked Monitor", transformMonitorInfo(inf));
-    }
-
-    LockInfo[] lckArr = ti.getLockedSynchronizers();
-    if (!BeeUtils.isEmpty(lckArr)) {
-      if (lckArr.length > 1)
-        PropUtils.addSub(lst, root, "Locked Synchronizers",
-            BeeUtils.bracket(lckArr.length));
-
-      for (LockInfo inf : lckArr)
-        PropUtils.addSub(lst, root, "Locked Synchronizer",
-            transformLockInfo(inf));
-    }
-
-    StackTraceElement[] stack = ti.getStackTrace();
-    if (!BeeUtils.isEmpty(stack)) {
-      if (stack.length > 1)
-        PropUtils.addSub(lst, root, "Stack Trace",
-            BeeUtils.bracket(stack.length));
-
-      for (int i = 0; i < stack.length; i++)
-        PropUtils.addSub(lst, root, "Stack Trace Element " + i,
-            BeeSystem.transformStackTraceElement(stack[i]));
-    }
-
-    return lst;
-  }
-
   private static List<StringProp> getMemoryUsageInfo(MemoryUsage mu) {
-    if (mu == null)
+    if (mu == null) {
       return null;
+    }
     List<StringProp> lst = new ArrayList<StringProp>();
 
     PropUtils.addString(lst, "Committed", mu.getCommitted(), "Init",
@@ -332,32 +342,36 @@ public class BeeMX {
     return lst;
   }
 
-  private static String transformMonitorInfo(MonitorInfo inf) {
-    if (inf == null)
-      return null;
-    else
-      return inf.toString();
-  }
-
   private static String transformLockInfo(LockInfo inf) {
-    if (inf == null)
+    if (inf == null) {
       return null;
-    else
+    } else {
       return inf.toString();
-  }
-
-  private static String transformMemoryPoolNames(String[] names) {
-    if (names == null)
-      return null;
-    else
-      return BeeUtils.transformArray(names);
+    }
   }
 
   private static String transformMemoryManagerNames(String[] names) {
-    if (names == null)
+    if (names == null) {
       return null;
-    else
+    } else {
       return BeeUtils.transformArray(names);
+    }
+  }
+
+  private static String transformMemoryPoolNames(String[] names) {
+    if (names == null) {
+      return null;
+    } else {
+      return BeeUtils.transformArray(names);
+    }
+  }
+
+  private static String transformMonitorInfo(MonitorInfo inf) {
+    if (inf == null) {
+      return null;
+    } else {
+      return inf.toString();
+    }
   }
 
 }

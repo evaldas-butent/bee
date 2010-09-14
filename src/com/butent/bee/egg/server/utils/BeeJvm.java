@@ -1,5 +1,11 @@
 package com.butent.bee.egg.server.utils;
 
+import com.butent.bee.egg.shared.Assert;
+import com.butent.bee.egg.shared.exceptions.BeeException;
+import com.butent.bee.egg.shared.utils.BeeUtils;
+import com.butent.bee.egg.shared.utils.LogUtils;
+import com.butent.bee.egg.shared.utils.StringProp;
+
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -13,12 +19,6 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-import com.butent.bee.egg.shared.Assert;
-import com.butent.bee.egg.shared.exceptions.BeeException;
-import com.butent.bee.egg.shared.utils.BeeUtils;
-import com.butent.bee.egg.shared.utils.LogUtils;
-import com.butent.bee.egg.shared.utils.StringProp;
-
 public class BeeJvm {
   private static Logger logger = Logger.getLogger(BeeJvm.class.getName());
 
@@ -28,9 +28,9 @@ public class BeeJvm {
   private static final Map<String, Class<?>> PRIMITIVES;
 
   private static final String CLASS_NAME_SEPARATOR = ".";
-  private static final String[] FIND_CLASS_DEFAULT_PACKAGES = { "java.lang",
-      "java.util", "java.io", "java.sql", "java.util.logging",
-      "javax.servlet.http", "javax.servlet", "javax.ejb", "java", "javax" };
+  private static final String[] FIND_CLASS_DEFAULT_PACKAGES = {
+      "java.lang", "java.util", "java.io", "java.sql", "java.util.logging",
+      "javax.servlet.http", "javax.servlet", "javax.ejb", "java", "javax"};
 
   static {
     PRIMITIVES = new HashMap<String, Class<?>>(9);
@@ -50,12 +50,13 @@ public class BeeJvm {
 
     try {
       fld = ClassLoader.class.getDeclaredField("classes");
-      if (fld.getType() == Vector.class)
+      if (fld.getType() == Vector.class) {
         fld.setAccessible(true);
-      else
+      } else {
         err = new BeeException(
             "Classloader.classes not of type java.util.Vector: "
                 + fld.getType().getName());
+      }
     } catch (Throwable t) {
       err = t;
       fld = null;
@@ -63,50 +64,6 @@ public class BeeJvm {
 
     CVF_FAILURE = err;
     CLASSES_VECTOR_FIELD = fld;
-  }
-
-  public static List<StringProp> getLoadedClasses() {
-    List<StringProp> lst = new ArrayList<StringProp>();
-
-    Set<ClassLoader> loaders = getClassLoaders();
-    if (BeeUtils.isEmpty(loaders))
-      return lst;
-
-    Class<?>[] classes;
-    String[] names;
-
-    int lc = loaders.size();
-    int li = 0;
-    int cc;
-
-    for (ClassLoader loader : loaders) {
-      li++;
-      if (loader == null)
-        continue;
-
-      classes = getClasses(loader);
-      if (BeeUtils.isEmpty(classes))
-        cc = 0;
-      else
-        cc = classes.length;
-
-      lst.add(new StringProp(loader.toString(), BeeUtils.concat(1,
-          BeeUtils.progress(li, lc), BeeUtils.bracket(cc))));
-
-      if (cc <= 0)
-        continue;
-
-      names = new String[cc];
-      for (int i = 0; i < cc; i++)
-        names[i] = classes[i].getName();
-
-      Arrays.sort(names);
-
-      for (int i = 0; i < cc; i++)
-        lst.add(new StringProp(BeeUtils.progress(i + 1, cc), names[i]));
-    }
-
-    return lst;
   }
 
   public static Set<Class<?>> findClass(String name, String... packageNames) {
@@ -149,31 +106,36 @@ public class BeeJvm {
       }
     }
 
-    if (exact == null && !nm.startsWith(CLASS_NAME_SEPARATOR))
+    if (exact == null && !nm.startsWith(CLASS_NAME_SEPARATOR)) {
       exact = forName(nm);
+    }
 
     if (exact == null && packageNames.length > 0) {
       String s;
-      if (nm.startsWith(CLASS_NAME_SEPARATOR))
+      if (nm.startsWith(CLASS_NAME_SEPARATOR)) {
         s = nm;
-      else
+      } else {
         s = CLASS_NAME_SEPARATOR + nm;
+      }
 
       for (String p : packageNames) {
-        if (p.trim().endsWith(CLASS_NAME_SEPARATOR))
+        if (p.trim().endsWith(CLASS_NAME_SEPARATOR)) {
           z = p.trim() + nm;
-        else
+        } else {
           z = p.trim() + s;
+        }
 
         exact = forName(z);
-        if (exact != null)
+        if (exact != null) {
           break;
+        }
       }
     }
 
     if (exact != null) {
-      if (found.size() > 0)
+      if (found.size() > 0) {
         found.clear();
+      }
       found.add(exact);
     }
 
@@ -184,16 +146,120 @@ public class BeeJvm {
     return findClass(name, FIND_CLASS_DEFAULT_PACKAGES);
   }
 
+  public static List<StringProp> getLoadedClasses() {
+    List<StringProp> lst = new ArrayList<StringProp>();
+
+    Set<ClassLoader> loaders = getClassLoaders();
+    if (BeeUtils.isEmpty(loaders)) {
+      return lst;
+    }
+
+    Class<?>[] classes;
+    String[] names;
+
+    int lc = loaders.size();
+    int li = 0;
+    int cc;
+
+    for (ClassLoader loader : loaders) {
+      li++;
+      if (loader == null) {
+        continue;
+      }
+
+      classes = getClasses(loader);
+      if (BeeUtils.isEmpty(classes)) {
+        cc = 0;
+      } else {
+        cc = classes.length;
+      }
+
+      lst.add(new StringProp(loader.toString(), BeeUtils.concat(1,
+          BeeUtils.progress(li, lc), BeeUtils.bracket(cc))));
+
+      if (cc <= 0) {
+        continue;
+      }
+
+      names = new String[cc];
+      for (int i = 0; i < cc; i++) {
+        names[i] = classes[i].getName();
+      }
+
+      Arrays.sort(names);
+
+      for (int i = 0; i < cc; i++) {
+        lst.add(new StringProp(BeeUtils.progress(i + 1, cc), names[i]));
+      }
+    }
+
+    return lst;
+  }
+
+  private static void addClassLoaders(Set<ClassLoader> lst, ClassLoader loader) {
+    if (lst == null || loader == null) {
+      return;
+    }
+
+    for (ClassLoader cl = loader; cl != null; cl = cl.getParent()) {
+      if (lst.contains(cl)) {
+        break;
+      }
+      lst.add(cl);
+    }
+  }
+
+  private static Class<?> forName(String name) {
+    Class<?> cls;
+
+    try {
+      cls = Class.forName(name);
+    } catch (ClassNotFoundException ex) {
+      cls = null;
+    }
+
+    return cls;
+  }
+
+  private static Set<Class<?>> getAllLoadedClasses() {
+    Set<Class<?>> lst = new HashSet<Class<?>>();
+
+    Set<ClassLoader> loaders = getClassLoaders();
+    if (BeeUtils.isEmpty(loaders)) {
+      return lst;
+    }
+
+    Class<?>[] classes;
+
+    for (ClassLoader loader : loaders) {
+      if (loader == null) {
+        continue;
+      }
+
+      classes = getClasses(loader);
+      if (BeeUtils.isEmpty(classes)) {
+        continue;
+      }
+
+      for (Class<?> cls : classes) {
+        lst.add(cls);
+      }
+    }
+
+    return lst;
+  }
+
   private static Class<?>[] getClasses(ClassLoader loader) {
-    if (loader == null)
+    if (loader == null) {
       return null;
+    }
 
     try {
       @SuppressWarnings("unchecked")
-      Vector<Class<?>> classes = (Vector<Class<?>>) CLASSES_VECTOR_FIELD
-          .get(loader);
-      if (classes == null)
+      Vector<Class<?>> classes = (Vector<Class<?>>) CLASSES_VECTOR_FIELD.get(loader);
+      if (classes == null) {
         return null;
+      }
 
       Class<?>[] arr;
 
@@ -217,53 +283,6 @@ public class BeeJvm {
     addClassLoaders(lst, Thread.currentThread().getContextClassLoader());
 
     return lst;
-  }
-
-  private static void addClassLoaders(Set<ClassLoader> lst, ClassLoader loader) {
-    if (lst == null || loader == null)
-      return;
-
-    for (ClassLoader cl = loader; cl != null; cl = cl.getParent()) {
-      if (lst.contains(cl))
-        break;
-      lst.add(cl);
-    }
-  }
-
-  private static Set<Class<?>> getAllLoadedClasses() {
-    Set<Class<?>> lst = new HashSet<Class<?>>();
-
-    Set<ClassLoader> loaders = getClassLoaders();
-    if (BeeUtils.isEmpty(loaders))
-      return lst;
-
-    Class<?>[] classes;
-
-    for (ClassLoader loader : loaders) {
-      if (loader == null)
-        continue;
-
-      classes = getClasses(loader);
-      if (BeeUtils.isEmpty(classes))
-        continue;
-
-      for (Class<?> cls : classes)
-        lst.add(cls);
-    }
-
-    return lst;
-  }
-
-  private static Class<?> forName(String name) {
-    Class<?> cls;
-
-    try {
-      cls = Class.forName(name);
-    } catch (ClassNotFoundException ex) {
-      cls = null;
-    }
-
-    return cls;
   }
 
 }

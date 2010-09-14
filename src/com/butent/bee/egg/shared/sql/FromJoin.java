@@ -1,9 +1,9 @@
 package com.butent.bee.egg.shared.sql;
 
-import java.util.List;
-
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.utils.BeeUtils;
+
+import java.util.List;
 
 public abstract class FromJoin extends FromSingle {
 
@@ -16,15 +16,15 @@ public abstract class FromJoin extends FromSingle {
     this.on = on;
   }
 
+  public FromJoin(String source, Condition on) {
+    this(source, null, on);
+  }
+
   public FromJoin(String source, String alias, Condition on) {
     super(source, alias);
 
     Assert.notNull(on);
     this.on = on;
-  }
-
-  public FromJoin(String source, Condition on) {
-    this(source, null, on);
   }
 
   @Override

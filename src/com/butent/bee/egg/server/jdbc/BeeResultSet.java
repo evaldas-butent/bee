@@ -1,14 +1,5 @@
 package com.butent.bee.egg.server.jdbc;
 
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
-import java.sql.SQLWarning;
-import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.logging.Logger;
-
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.Transformable;
@@ -19,49 +10,39 @@ import com.butent.bee.egg.shared.utils.PropUtils;
 import com.butent.bee.egg.shared.utils.StringProp;
 import com.butent.bee.egg.shared.utils.SubProp;
 
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.sql.SQLWarning;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Logger;
+
 public class BeeResultSet implements Transformable {
-  private static final Logger logger = Logger.getLogger(BeeResultSet.class
-      .getName());
-
-  private int concurrency = 0;
-  private String cursorName = null;
-  private int fetchDirection = 0;
-  private int fetchSize = BeeConst.SIZE_UNKNOWN;
-  private int holdability = 0;
-  private int type = 0;
-
-  private int columnCount = 0;
-  private BeeColumn[] columns = null;
-
-  private int maxFieldSize = BeeConst.SIZE_UNKNOWN;
-  private int maxRows = BeeConst.SIZE_UNKNOWN;
-  private int queryTimeout = BeeConst.TIME_UNKNOWN;
-  private boolean poolable = false;
-
-  private int state = BeeConst.STATE_UNKNOWN;
-  private List<Exception> errors = new ArrayList<Exception>();
+  private static final Logger logger = Logger.getLogger(BeeResultSet.class.getName());
 
   public static List<StringProp> getInfo(ResultSet rs) {
     Assert.notNull(rs);
     List<StringProp> lst = new ArrayList<StringProp>();
-    
+
     int z;
 
     try {
       z = rs.getType();
-      PropUtils.addString(lst,
-          "Type", BeeUtils.concat(1, z, JdbcUtils.rsTypeAsString(z)));
-      
+      PropUtils.addString(lst, "Type",
+          BeeUtils.concat(1, z, JdbcUtils.rsTypeAsString(z)));
+
       z = rs.getConcurrency();
-      PropUtils.addString(lst,
-          "Concurrency", BeeUtils.concat(1, z, JdbcUtils.concurrencyAsString(z)));
-      
+      PropUtils.addString(lst, "Concurrency",
+          BeeUtils.concat(1, z, JdbcUtils.concurrencyAsString(z)));
+
       PropUtils.addString(lst, "Holdability", JdbcUtils.getHoldabilityInfo(rs));
-            
+
       z = rs.getFetchDirection();
-      PropUtils.addString(lst,
-          "Fetch Direction", BeeUtils.concat(1, z, JdbcUtils.fetchDirectionAsString(z)));
-      
+      PropUtils.addString(lst, "Fetch Direction",
+          BeeUtils.concat(1, z, JdbcUtils.fetchDirectionAsString(z)));
+
       PropUtils.addString(lst, "Fetch Size", rs.getFetchSize());
       PropUtils.addString(lst, "Cursor Name", JdbcUtils.getCursorName(rs));
 
@@ -78,6 +59,24 @@ public class BeeResultSet implements Transformable {
 
     return lst;
   }
+  private int concurrency = 0;
+  private String cursorName = null;
+  private int fetchDirection = 0;
+  private int fetchSize = BeeConst.SIZE_UNKNOWN;
+  private int holdability = 0;
+
+  private int type = 0;
+  private int columnCount = 0;
+
+  private BeeColumn[] columns = null;
+  private int maxFieldSize = BeeConst.SIZE_UNKNOWN;
+  private int maxRows = BeeConst.SIZE_UNKNOWN;
+  private int queryTimeout = BeeConst.TIME_UNKNOWN;
+
+  private boolean poolable = false;
+  private int state = BeeConst.STATE_UNKNOWN;
+
+  private List<Exception> errors = new ArrayList<Exception>();
 
   public BeeResultSet() {
     super();
@@ -87,138 +86,84 @@ public class BeeResultSet implements Transformable {
     setRsInfo(rs);
   }
 
-  public int getConcurrency() {
-    return concurrency;
-  }
-
-  public void setConcurrency(int concurrency) {
-    this.concurrency = concurrency;
-  }
-
-  public String getCursorName() {
-    return cursorName;
-  }
-
-  public void setCursorName(String cursorName) {
-    this.cursorName = cursorName;
-  }
-
-  public int getFetchDirection() {
-    return fetchDirection;
-  }
-
-  public void setFetchDirection(int fetchDirection) {
-    this.fetchDirection = fetchDirection;
-  }
-
-  public int getFetchSize() {
-    return fetchSize;
-  }
-
-  public void setFetchSize(int fetchSize) {
-    this.fetchSize = fetchSize;
-  }
-
-  public int getHoldability() {
-    return holdability;
-  }
-
-  public void setHoldability(int holdability) {
-    this.holdability = holdability;
-  }
-
-  public int getType() {
-    return type;
-  }
-
-  public void setType(int type) {
-    this.type = type;
-  }
-
   public int getColumnCount() {
     return columnCount;
-  }
-
-  public void setColumnCount(int columnCount) {
-    this.columnCount = columnCount;
   }
 
   public BeeColumn[] getColumns() {
     return columns;
   }
 
-  public void setColumns(BeeColumn[] columns) {
-    this.columns = columns;
+  public int getConcurrency() {
+    return concurrency;
   }
 
-  public int getMaxFieldSize() {
-    return maxFieldSize;
-  }
-
-  public void setMaxFieldSize(int maxFieldSize) {
-    this.maxFieldSize = maxFieldSize;
-  }
-
-  public int getMaxRows() {
-    return maxRows;
-  }
-
-  public void setMaxRows(int maxRows) {
-    this.maxRows = maxRows;
-  }
-
-  public int getQueryTimeout() {
-    return queryTimeout;
-  }
-
-  public void setQueryTimeout(int queryTimeout) {
-    this.queryTimeout = queryTimeout;
-  }
-
-  public boolean isPoolable() {
-    return poolable;
-  }
-
-  public void setPoolable(boolean poolable) {
-    this.poolable = poolable;
+  public String getCursorName() {
+    return cursorName;
   }
 
   public List<Exception> getErrors() {
     return errors;
   }
 
-  public void setErrors(List<Exception> errors) {
-    this.errors = errors;
+  public int getFetchDirection() {
+    return fetchDirection;
   }
 
-  public int getState() {
-    return state;
-  }
+  public int getFetchDirectionQuietly(ResultSet rs) {
+    if (rs == null) {
+      noResultSet();
+      return BeeConst.INT_ERROR;
+    }
 
-  public void setState(int state) {
-    this.state = state;
-  }
-
-  public void setRsInfo(ResultSet rs) {
-    Assert.notNull(rs);
+    int z;
 
     try {
-      setConcurrency(rs.getConcurrency());
-      setCursorName(JdbcUtils.getCursorName(rs));
-      setFetchDirection(rs.getFetchDirection());
-      setFetchSize(rs.getFetchSize());
-      setHoldability(JdbcUtils.getHoldability(rs));
-      setType(rs.getType());
-
-      setMdInfo(rs.getMetaData());
-      setStmtInfo(rs.getStatement());
-
-      if (!hasErrors()) {
-        state = BeeConst.STATE_INITIALIZED;
-      }
+      z = rs.getFetchDirection();
     } catch (SQLException ex) {
       handleError(ex);
+      z = BeeConst.INT_ERROR;
     }
+
+    return z;
+  }
+
+  public int getFetchSize() {
+    return fetchSize;
+  }
+
+  public int getFetchSizeQuietly(ResultSet rs) {
+    if (rs == null) {
+      noResultSet();
+      return BeeConst.INT_ERROR;
+    }
+
+    int z;
+
+    try {
+      z = rs.getFetchSize();
+    } catch (SQLException ex) {
+      handleError(ex);
+      z = BeeConst.INT_ERROR;
+    }
+
+    return z;
+  }
+
+  public int getHoldability() {
+    return holdability;
+  }
+
+  public int getMaxFieldSize() {
+    return maxFieldSize;
+  }
+
+  public int getMaxRows() {
+    return maxRows;
+  }
+
+  public int getQueryTimeout() {
+    return queryTimeout;
   }
 
   public List<SubProp> getRsInfo() {
@@ -246,53 +191,139 @@ public class BeeResultSet implements Transformable {
 
     BeeColumn[] arr = getColumns();
 
-    if (!BeeUtils.isEmpty(arr))
-      for (BeeColumn col : arr)
+    if (!BeeUtils.isEmpty(arr)) {
+      for (BeeColumn col : arr) {
         PropUtils.appendString(lst, col.getName(), col.getColumnInfo());
+      }
+    }
 
     List<Exception> err = getErrors();
 
-    if (!BeeUtils.isEmpty(err))
-      for (Exception ex : err)
+    if (!BeeUtils.isEmpty(err)) {
+      for (Exception ex : err) {
         PropUtils.addSub(lst, "Error", null, ex.getMessage());
+      }
+    }
 
     return lst;
   }
 
-  public int getFetchDirectionQuietly(ResultSet rs) {
-    if (rs == null) {
-      noResultSet();
-      return BeeConst.INT_ERROR;
-    }
-
-    int z;
-
-    try {
-      z = rs.getFetchDirection();
-    } catch (SQLException ex) {
-      handleError(ex);
-      z = BeeConst.INT_ERROR;
-    }
-
-    return z;
+  public int getState() {
+    return state;
   }
 
-  public int getFetchSizeQuietly(ResultSet rs) {
-    if (rs == null) {
-      noResultSet();
-      return BeeConst.INT_ERROR;
-    }
+  public int getType() {
+    return type;
+  }
 
-    int z;
+  public boolean hasErrors() {
+    return !errors.isEmpty();
+  }
+
+  public boolean isPoolable() {
+    return poolable;
+  }
+
+  public void setColumnCount(int columnCount) {
+    this.columnCount = columnCount;
+  }
+
+  public void setColumns(BeeColumn[] columns) {
+    this.columns = columns;
+  }
+
+  public void setConcurrency(int concurrency) {
+    this.concurrency = concurrency;
+  }
+
+  public void setCursorName(String cursorName) {
+    this.cursorName = cursorName;
+  }
+
+  public void setErrors(List<Exception> errors) {
+    this.errors = errors;
+  }
+
+  public void setFetchDirection(int fetchDirection) {
+    this.fetchDirection = fetchDirection;
+  }
+
+  public void setFetchSize(int fetchSize) {
+    this.fetchSize = fetchSize;
+  }
+
+  public void setHoldability(int holdability) {
+    this.holdability = holdability;
+  }
+
+  public void setInitialized() {
+    if (!hasErrors()) {
+      addState(BeeConst.STATE_INITIALIZED);
+    }
+  }
+
+  public void setMaxFieldSize(int maxFieldSize) {
+    this.maxFieldSize = maxFieldSize;
+  }
+
+  public void setMaxRows(int maxRows) {
+    this.maxRows = maxRows;
+  }
+
+  public void setPoolable(boolean poolable) {
+    this.poolable = poolable;
+  }
+
+  public void setQueryTimeout(int queryTimeout) {
+    this.queryTimeout = queryTimeout;
+  }
+
+  public void setRsInfo(ResultSet rs) {
+    Assert.notNull(rs);
 
     try {
-      z = rs.getFetchSize();
+      setConcurrency(rs.getConcurrency());
+      setCursorName(JdbcUtils.getCursorName(rs));
+      setFetchDirection(rs.getFetchDirection());
+      setFetchSize(rs.getFetchSize());
+      setHoldability(JdbcUtils.getHoldability(rs));
+      setType(rs.getType());
+
+      setMdInfo(rs.getMetaData());
+      setStmtInfo(rs.getStatement());
+
+      if (!hasErrors()) {
+        state = BeeConst.STATE_INITIALIZED;
+      }
     } catch (SQLException ex) {
       handleError(ex);
-      z = BeeConst.INT_ERROR;
     }
+  }
 
-    return z;
+  public void setState(int state) {
+    this.state = state;
+  }
+
+  public void setType(int type) {
+    this.type = type;
+  }
+
+  @Override
+  public String toString() {
+    List<SubProp> lst = getRsInfo();
+    StringBuilder sb = new StringBuilder();
+
+    for (SubProp el : lst) {
+      if (sb.length() > 0) {
+        sb.append(BeeConst.DEFAULT_ROW_SEPARATOR);
+      }
+      sb.append(BeeUtils.concat(1, el.getName(), el.getSub(), el.getValue()));
+    }
+    return sb.toString();
+  }
+
+  public String transform() {
+    return toString();
   }
 
   public boolean updateFetchDirection(ResultSet rs, String s) {
@@ -300,8 +331,9 @@ public class BeeResultSet implements Transformable {
     Assert.notEmpty(s);
     Assert.state(validState());
 
-    if (BeeConst.isDefault(s))
+    if (BeeConst.isDefault(s)) {
       return true;
+    }
     int direction = JdbcUtils.fetchDirectionFromString(s);
     if (!JdbcUtils.validFetchDirection(direction)) {
       LogUtils.warning(logger, "unrecognized fetch direction", s);
@@ -315,8 +347,9 @@ public class BeeResultSet implements Transformable {
     Assert.notNull(rs);
     Assert.state(validState());
 
-    if (size == getFetchSize())
+    if (size == getFetchSize()) {
       return true;
+    }
     boolean ok;
 
     try {
@@ -342,36 +375,28 @@ public class BeeResultSet implements Transformable {
     return ok;
   }
 
-  public boolean hasErrors() {
-    return !errors.isEmpty();
+  private void addState(int st) {
+    this.state |= st;
   }
 
-  public void setInitialized() {
-    if (!hasErrors()) {
-      addState(BeeConst.STATE_INITIALIZED);
-    }
+  private void handleError(SQLException ex) {
+    errors.add(ex);
+    LogUtils.error(logger, ex);
+    addState(BeeConst.STATE_ERROR);
   }
 
-  @Override
-  public String toString() {
-    List<SubProp> lst = getRsInfo();
-    StringBuilder sb = new StringBuilder();
-
-    for (SubProp el : lst) {
-      if (sb.length() > 0)
-        sb.append(BeeConst.DEFAULT_ROW_SEPARATOR);
-      sb.append(BeeUtils.concat(1, el.getName(), el.getSub(), el.getValue()));
-    }
-    return sb.toString();
+  private boolean hasState(int st) {
+    return (state & st) != 0;
   }
 
-  public String transform() {
-    return toString();
+  private void noResultSet() {
+    handleError(new SQLException("result set not available"));
   }
 
   private void setMdInfo(ResultSetMetaData md) {
-    if (md == null)
+    if (md == null) {
       return;
+    }
 
     try {
       setColumnCount(md.getColumnCount());
@@ -401,8 +426,9 @@ public class BeeResultSet implements Transformable {
   }
 
   private void setStmtInfo(Statement stmt) {
-    if (stmt == null)
+    if (stmt == null) {
       return;
+    }
 
     try {
       setMaxFieldSize(stmt.getMaxFieldSize());
@@ -415,8 +441,9 @@ public class BeeResultSet implements Transformable {
   }
 
   private boolean updateFetchDirection(ResultSet rs, int direction) {
-    if (direction == getFetchDirection())
+    if (direction == getFetchDirection()) {
       return true;
+    }
     boolean ok;
 
     try {
@@ -431,35 +458,18 @@ public class BeeResultSet implements Transformable {
     return ok;
   }
 
-  private String valueAsString(int v) {
-    if (v == BeeConst.INDEX_UNKNOWN || v == BeeConst.SIZE_UNKNOWN
-        || v == BeeConst.TIME_UNKNOWN)
-      return BeeUtils.concat(1, v, BeeConst.UNKNOWN);
-    else
-      return Integer.toString(v);
-  }
-
-  private void handleError(SQLException ex) {
-    errors.add(ex);
-    LogUtils.error(logger, ex);
-    addState(BeeConst.STATE_ERROR);
-  }
-
-  private void noResultSet() {
-    handleError(new SQLException("result set not available"));
-  }
-
-  private void addState(int st) {
-    this.state |= st;
-  }
-
-  private boolean hasState(int st) {
-    return (state & st) != 0;
-  }
-
   private boolean validState() {
     return hasState(BeeConst.STATE_INITIALIZED)
         && !hasState(BeeConst.STATE_ERROR);
+  }
+
+  private String valueAsString(int v) {
+    if (v == BeeConst.INDEX_UNKNOWN || v == BeeConst.SIZE_UNKNOWN
+        || v == BeeConst.TIME_UNKNOWN) {
+      return BeeUtils.concat(1, v, BeeConst.UNKNOWN);
+    } else {
+      return Integer.toString(v);
+    }
   }
 
 }

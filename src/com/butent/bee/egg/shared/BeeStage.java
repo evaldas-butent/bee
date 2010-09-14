@@ -17,20 +17,20 @@ public class BeeStage implements HasService, HasStage {
     this.stage = stage;
   }
 
-  public String getStage() {
-    return stage;
-  }
-
-  public void setStage(String stg) {
-    this.stage = stg;
-  }
-
   public String getService() {
     return service;
   }
 
+  public String getStage() {
+    return stage;
+  }
+
   public void setService(String svc) {
     this.service = svc;
+  }
+
+  public void setStage(String stg) {
+    this.stage = stg;
   }
 
 }

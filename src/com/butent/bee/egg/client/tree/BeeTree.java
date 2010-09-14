@@ -1,8 +1,9 @@
 package com.butent.bee.egg.client.tree;
 
+import com.google.gwt.user.client.ui.Tree;
+
 import com.butent.bee.egg.client.utils.BeeDom;
 import com.butent.bee.egg.shared.HasId;
-import com.google.gwt.user.client.ui.Tree;
 
 public class BeeTree extends Tree implements HasId {
 
@@ -11,14 +12,18 @@ public class BeeTree extends Tree implements HasId {
     createId();
   }
 
+  public BeeTree(Resources resources) {
+    super(resources);
+    createId();
+  }
+
   public BeeTree(Resources resources, boolean useLeafImages) {
     super(resources, useLeafImages);
     createId();
   }
 
-  public BeeTree(Resources resources) {
-    super(resources);
-    createId();
+  public void createId() {
+    BeeDom.createId(this, "tree");
   }
 
   public String getId() {
@@ -27,10 +32,6 @@ public class BeeTree extends Tree implements HasId {
 
   public void setId(String id) {
     BeeDom.setId(this, id);
-  }
-
-  public void createId() {
-    BeeDom.createId(this, "tree");
   }
 
 }

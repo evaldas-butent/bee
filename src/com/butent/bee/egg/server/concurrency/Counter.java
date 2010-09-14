@@ -13,14 +13,14 @@ public class Counter implements Transformable {
     return counter;
   }
 
+  public synchronized int incCounter() {
+    return (++counter);
+  }
+
   public synchronized int setCounter(int c) {
     counter = c;
 
     return counter;
-  }
-
-  public synchronized int incCounter() {
-    return (++counter);
   }
 
   public String transform() {
