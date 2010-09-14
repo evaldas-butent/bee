@@ -7,6 +7,7 @@ import com.butent.bee.egg.client.communication.BeeCallback;
 import com.butent.bee.egg.client.communication.RpcInfo;
 import com.butent.bee.egg.client.communication.RpcList;
 import com.butent.bee.egg.client.communication.RpcUtils;
+import com.butent.bee.egg.client.ui.CompositeService;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.BeeService;
@@ -138,7 +139,7 @@ public class BeeRpc implements BeeModule {
     RpcInfo info = new RpcInfo(type, svc);
     int id = info.getId();
 
-    String qs = buildQuery(svc, getDsn());
+    String qs = buildQuery(CompositeService.extractService(svc), getDsn());
     String url = RpcUtils.addQueryString(rpcUrl, qs);
 
     RequestBuilder bld = new RequestBuilder(type, url);

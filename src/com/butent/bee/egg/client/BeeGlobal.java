@@ -7,6 +7,8 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.egg.client.dialog.BeeInputBox;
 import com.butent.bee.egg.client.dialog.BeeMessageBox;
 import com.butent.bee.egg.client.grid.BeeGrid;
+import com.butent.bee.egg.client.ui.CompositeService;
+import com.butent.bee.egg.client.ui.FormService;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.BeeField;
@@ -29,6 +31,9 @@ public class BeeGlobal implements BeeModule {
   private static final BeeGrid grids = new BeeGrid();
 
   private static final Map<String, BeeField> fields = new HashMap<String, BeeField>();
+
+  private static final Map<String, CompositeService> services = new HashMap<String, CompositeService>();
+  private static final Map<String, CompositeService> workingServices = new HashMap<String, CompositeService>();
 
   public static boolean closeDialog(GwtEvent<?> event) {
     if (event == null) {
@@ -100,6 +105,12 @@ public class BeeGlobal implements BeeModule {
     return getField(name).getWidth();
   }
 
+  public static CompositeService getService(String svcId) {
+    Assert.contains(workingServices, svcId);
+
+    return workingServices.get(svcId);
+  }
+
   public static void inputFields(BeeStage bst, String cap, String... flds) {
     inpBox.inputFields(bst, cap, flds);
   }
@@ -110,6 +121,13 @@ public class BeeGlobal implements BeeModule {
 
   public static boolean isField(String name) {
     return fields.containsKey(name);
+  }
+
+  public static void registerService(String svcId, String svc) {
+    Assert.contains(services, svc);
+
+    CompositeService service = services.get(svc);
+    workingServices.put(svcId, service.createInstance(svcId));
   }
 
   public static void setField(String name, BeeField fld) {
@@ -155,6 +173,10 @@ public class BeeGlobal implements BeeModule {
     msgBox.showGrid(cap, cols, data);
   }
 
+  public static void unregisterService(String svcId) {
+    workingServices.remove(svcId);
+  }
+
   public void end() {
   }
 
@@ -177,6 +199,7 @@ public class BeeGlobal implements BeeModule {
 
   public void init() {
     initFields();
+    initServices();
   }
 
   public void start() {
@@ -291,5 +314,9 @@ public class BeeGlobal implements BeeModule {
         BeeUtils.transform(MenuConst.DEFAULT_ROOT_LIMIT));
     createField(MenuConst.FIELD_ITEM_LIMIT, "Max  Items", BeeType.TYPE_INT,
         BeeUtils.transform(MenuConst.DEFAULT_ITEM_LIMIT));
+  }
+
+  private void initServices() {
+    services.put("comp_ui_form", new FormService());
   }
 }

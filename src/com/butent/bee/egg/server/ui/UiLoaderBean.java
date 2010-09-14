@@ -55,6 +55,7 @@ public class UiLoaderBean {
   private void formList(RequestInfo reqInfo, ResponseBuffer buff) {
     buff.addColumn(new BeeColumn("Form"));
     buff.add("testForm");
+    buff.add("slowForm");
     buff.add("unavailableForm");
   }
 

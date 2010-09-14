@@ -5,18 +5,14 @@ import com.google.gwt.http.client.Request;
 import com.google.gwt.http.client.RequestCallback;
 import com.google.gwt.http.client.RequestTimeoutException;
 import com.google.gwt.http.client.Response;
-import com.google.gwt.user.client.ui.Panel;
 
 import com.butent.bee.egg.client.BeeGlobal;
 import com.butent.bee.egg.client.BeeKeeper;
+import com.butent.bee.egg.client.ui.CompositeService;
 import com.butent.bee.egg.client.utils.BeeDuration;
 import com.butent.bee.egg.client.utils.BeeJs;
 import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.BeeService;
-import com.butent.bee.egg.shared.BeeStage;
-import com.butent.bee.egg.shared.BeeType;
-import com.butent.bee.egg.shared.BeeWidget;
-import com.butent.bee.egg.shared.ui.UiComponent;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
 public class BeeCallback implements RequestCallback {
@@ -151,7 +147,14 @@ public class BeeCallback implements RequestCallback {
       BeeKeeper.getLog().finish(dur, BeeUtils.addName("arr size", arr.length()));
     }
 
-    dispatchResponse(svc, cc, arr, debug);
+    String serviceId = CompositeService.extractServiceId(svc);
+
+    if (!BeeUtils.isEmpty(serviceId) && !debug) {
+      CompositeService service = BeeGlobal.getService(serviceId);
+      service.doService(arr, cc);
+    } else {
+      dispatchResponse(svc, cc, arr, debug);
+    }
 
     BeeKeeper.getLog().addSeparator();
   }
@@ -164,21 +167,8 @@ public class BeeCallback implements RequestCallback {
 
   private void dispatchResponse(String svc, int cc, JsArrayString arr,
       boolean debug) {
-    if ("rpc_ui_form_list".equals(svc)) {
-      String[] lst = new String[arr.length() - cc];
-      for (int i = cc; i < arr.length(); i++) {
-        lst[i - 1] = arr.get(i);
-      }
-      BeeGlobal.createField("form_name", "Form name", BeeType.TYPE_STRING,
-          lst[0], BeeWidget.LIST, lst);
 
-      BeeGlobal.inputFields(
-          new BeeStage("comp_ui_form", BeeStage.STAGE_CONFIRM), "Load form",
-          "form_name");
-    } else if ("rpc_ui_form".equals(svc) && !debug) {
-      UiComponent c = UiComponent.restore(arr.get(0));
-      BeeKeeper.getUi().updateActivePanel((Panel) c.createInstance());
-    } else if (BeeService.equals(svc, BeeService.SERVICE_GET_MENU)) {
+    if (BeeService.equals(svc, BeeService.SERVICE_GET_MENU)) {
       BeeKeeper.getMenu().loadCallBack(arr);
     } else if (cc > 0) {
       BeeKeeper.getUi().updateActivePanel(BeeGlobal.createGrid(cc, arr));

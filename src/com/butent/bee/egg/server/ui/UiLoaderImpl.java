@@ -42,6 +42,27 @@ public class UiLoaderImpl extends UiLoader {
         row.setProperties((String) cols[3]);
         res.add(row);
       }
+    } else if ("slowForm".equals(formName)) {
+      try {
+        Thread.sleep(10000);
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
+      List<Object[]> buff = new ArrayList<Object[]>();
+      buff.add(new Object[]{formName, "UiPanel", null, null});
+
+      buff.add(new Object[]{
+          "Button1", "UiButton", "",
+          "caption=Database Info;service=" + BeeService.SERVICE_DB_INFO});
+
+      for (Object[] cols : buff) {
+        UiRow row = new UiRow();
+        row.setId((String) cols[0]);
+        row.setClass((String) cols[1]);
+        row.setParent((String) cols[2]);
+        row.setProperties((String) cols[3]);
+        res.add(row);
+      }
     }
     return res;
   }

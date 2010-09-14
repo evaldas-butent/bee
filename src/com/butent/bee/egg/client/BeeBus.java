@@ -11,6 +11,7 @@ import com.butent.bee.egg.client.event.BeeChangeHandler;
 import com.butent.bee.egg.client.event.BeeClickHandler;
 import com.butent.bee.egg.client.event.BeeKeyPressHandler;
 import com.butent.bee.egg.client.event.BeeValueChangeHandler;
+import com.butent.bee.egg.client.ui.CompositeService;
 import com.butent.bee.egg.client.utils.BeeXml;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeService;
@@ -260,24 +261,15 @@ public class BeeBus implements BeeModule {
       } else {
         BeeGlobal.showError("Unknown composite service stage", svc, stg);
       }
-    } else if (svc.equals("comp_ui_form")) {
-      if (stg.equals(BeeStage.STAGE_GET_PARAMETERS)) {
-        BeeKeeper.getRpc().makeGetRequest("rpc_ui_form_list");
-        ok = true;
-      } else if (stg.equals(BeeStage.STAGE_CONFIRM)) {
-        String fName = BeeGlobal.getFieldValue("form_name");
+    } else if (svc.startsWith("comp_ui_")) {
+      String svcId = CompositeService.extractServiceId(svc);
 
-        if (BeeUtils.isEmpty(fName)) {
-          BeeGlobal.showError("Form name not specified");
-        } else {
-          BeeGlobal.closeDialog(event);
-          BeeKeeper.getRpc().makePostRequest("rpc_ui_form",
-              BeeXml.createString(BeeService.XML_TAG_DATA, "form_name", fName));
-          ok = true;
-        }
-      } else {
-        BeeGlobal.showError("Unknown composite service stage", svc, stg);
+      if (BeeUtils.isEmpty(svcId)) {
+        svcId = BeeUtils.createUniqueName("svc");
+        BeeGlobal.registerService(svcId, CompositeService.extractService(svc));
       }
+      CompositeService service = BeeGlobal.getService(svcId);
+      service.doService(event);
     } else {
       BeeGlobal.showError("Unknown composite service", svc, stg);
     }
