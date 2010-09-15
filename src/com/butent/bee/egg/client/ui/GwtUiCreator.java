@@ -163,7 +163,7 @@ public class GwtUiCreator implements UiCreator {
           Object cw = c.createInstance(this);
 
           if (cw instanceof BeeMenuBar) {
-            cc.addItem(new BeeMenuItem(txt, (BeeMenuBar) cw));
+            cc.addItem(txt, (BeeMenuBar) cw);
           } else {
             logger.severe("Class " + cw.getClass().getName()
                 + " cannot be added to " + cc.getClass().getName());
@@ -172,7 +172,7 @@ public class GwtUiCreator implements UiCreator {
           String svc = c.getProperty("service");
           String opt = c.getProperty("parameters");
 
-          cc.addItem(new BeeMenuItem(txt, new MenuCommand(svc, opt)));
+          cc.addItem(txt, new MenuCommand(svc, opt));
         }
         if (!BeeUtils.isEmpty(sep)) {
           cc.addSeparator(new BeeMenuItemSeparator());
