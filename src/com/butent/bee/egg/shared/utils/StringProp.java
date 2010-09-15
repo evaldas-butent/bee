@@ -1,6 +1,7 @@
 package com.butent.bee.egg.shared.utils;
 
 public class StringProp extends BeeProp<String> {
+  public static String[] HEADERS = new String[]{"Property", "Value"};
 
   public StringProp() {
     super();

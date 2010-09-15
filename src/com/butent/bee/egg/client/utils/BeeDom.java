@@ -2,11 +2,16 @@ package com.butent.bee.egg.client.utils;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
+import com.google.gwt.dom.client.ButtonElement;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.InputElement;
+import com.google.gwt.dom.client.LabelElement;
 import com.google.gwt.dom.client.Node;
 import com.google.gwt.dom.client.NodeList;
+import com.google.gwt.dom.client.SpanElement;
 import com.google.gwt.dom.client.Style;
+import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.UIObject;
@@ -51,6 +56,14 @@ public class BeeDom {
     }
   }
 
+  public static String DEFAULT_ID_PREFIX = "bee";
+
+  public static String BUTTON_ID_PREFIX = "b";
+  public static String HTML_ID_PREFIX = "h";
+  public static String LABEL_ID_PREFIX = "l";
+  public static String RADIO_ID_PREFIX = "r";
+  public static String TABLE_CELL_ID_PREFIX = "td";
+
   private static String TAG_INPUT = "input";
 
   private static String ATTRIBUTE_SERVICE = "data-svc";
@@ -58,11 +71,56 @@ public class BeeDom {
 
   private static String DEFAULT_NAME_PREFIX = "b";
 
-  private static String DEFAULT_ID_PREFIX = "b";
   private static String ID_SEPARATOR = "-";
   private static int ID_COUNTER = 0;
 
   private static int MAX_GENERATIONS = 100;
+
+  public static Element createButton(String text) {
+    return createButton(text, false, null);
+  }
+
+  public static Element createButton(String text, boolean asHtml, String id) {
+    Assert.notEmpty(text);
+
+    ButtonElement elem = Document.get().createPushButtonElement();
+    if (asHtml) {
+      elem.setInnerHTML(text);
+    } else {
+      elem.setInnerText(text);
+    }
+
+    String s;
+    if (BeeUtils.isEmpty(id)) {
+      s = createUniqueId(BUTTON_ID_PREFIX);
+    } else {
+      s = id.trim();
+    }
+    elem.setId(s);
+
+    return elem;
+  }
+
+  public static Element createHtml(String html) {
+    return createHtml(html, null);
+  }
+
+  public static Element createHtml(String html, String id) {
+    Assert.notEmpty(html);
+
+    SpanElement elem = Document.get().createSpanElement();
+    elem.setInnerHTML(html);
+
+    String s;
+    if (BeeUtils.isEmpty(id)) {
+      s = createUniqueId(HTML_ID_PREFIX);
+    } else {
+      s = id.trim();
+    }
+    elem.setId(s);
+
+    return elem;
+  }
 
   public static String createId(UIObject obj, String prefix) {
     Assert.notNull(obj);
@@ -72,6 +130,87 @@ public class BeeDom {
     obj.getElement().setId(id);
 
     return id;
+  }
+
+  public static Element createLabel(String text) {
+    return createLabel(text, null);
+  }
+
+  public static Element createLabel(String text, String id) {
+    Assert.notEmpty(text);
+
+    SpanElement elem = Document.get().createSpanElement();
+    elem.setInnerText(text);
+
+    String s;
+    if (BeeUtils.isEmpty(id)) {
+      s = createUniqueId(LABEL_ID_PREFIX);
+    } else {
+      s = id.trim();
+    }
+    elem.setId(s);
+
+    return elem;
+  }
+
+  public static Element createRadio(String name, String text) {
+    return createRadio(name, text, null);
+  }
+
+  public static Element createRadio(String name, String text, String id) {
+    Assert.notEmpty(name);
+    Assert.notEmpty(text);
+
+    SpanElement elem = Document.get().createSpanElement();
+    InputElement input = Document.get().createRadioInputElement(name);
+    LabelElement label = Document.get().createLabelElement();
+
+    label.setInnerText(text);
+
+    String s = createUniqueId("ri");
+    input.setId(s);
+    label.setHtmlFor(s);
+
+    elem.appendChild(input);
+    elem.appendChild(label);
+
+    if (BeeUtils.isEmpty(id)) {
+      s = createUniqueId(RADIO_ID_PREFIX);
+    } else {
+      s = id.trim();
+    }
+    elem.setId(s);
+
+    return elem;
+  }
+
+  public static Element createTableCell(String text) {
+    return createTableCell(text, false, null);
+  }
+
+  public static Element createTableCell(String text, boolean asHtml) {
+    return createTableCell(text, asHtml, null);
+  }
+
+  public static Element createTableCell(String text, boolean asHtml, String id) {
+    Assert.notEmpty(text);
+
+    TableCellElement elem = Document.get().createTDElement();
+    if (asHtml) {
+      elem.setInnerHTML(text);
+    } else {
+      elem.setInnerText(text);
+    }
+
+    String s;
+    if (BeeUtils.isEmpty(id)) {
+      s = createUniqueId(TABLE_CELL_ID_PREFIX);
+    } else {
+      s = id.trim();
+    }
+    elem.setId(s);
+
+    return elem;
   }
 
   public static String createUniqueId() {

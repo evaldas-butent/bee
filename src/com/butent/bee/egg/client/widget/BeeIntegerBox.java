@@ -4,8 +4,8 @@ import com.google.gwt.app.client.IntegerBox;
 import com.google.gwt.event.dom.client.KeyPressEvent;
 import com.google.gwt.user.client.ui.TextBoxBase;
 
-import com.butent.bee.egg.client.BeeBus;
 import com.butent.bee.egg.client.BeeGlobal;
+import com.butent.bee.egg.client.BeeKeeper;
 import com.butent.bee.egg.client.event.HasBeeKeyHandler;
 import com.butent.bee.egg.client.event.HasBeeValueChangeHandler;
 import com.butent.bee.egg.client.utils.BeeDom;
@@ -64,8 +64,8 @@ public class BeeIntegerBox extends IntegerBox implements HasId,
   }
 
   private void addDefaultHandlers() {
-    BeeBus.addKeyHandler(this);
-    BeeBus.addIntVch(this);
+    BeeKeeper.getBus().addKeyHandler(this);
+    BeeKeeper.getBus().addIntVch(this);
   }
 
 }

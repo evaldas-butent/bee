@@ -4,8 +4,8 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.InputElement;
 import com.google.gwt.dom.client.NodeList;
 
-import com.butent.bee.egg.client.BeeBus;
 import com.butent.bee.egg.client.BeeGlobal;
+import com.butent.bee.egg.client.BeeKeeper;
 import com.butent.bee.egg.client.BeeStyle;
 import com.butent.bee.egg.client.layout.BeeSpan;
 import com.butent.bee.egg.client.utils.BeeDom;
@@ -101,7 +101,7 @@ public class RadioGroup extends BeeSpan implements HasService {
       add(rb);
 
       rb.setTabIndex(idx);
-      BeeBus.addBoolVch(rb);
+      BeeKeeper.getBus().addBoolVch(rb);
 
       if (idx == value) {
         rb.setValue(true);

@@ -12,6 +12,7 @@ import com.butent.bee.egg.client.widget.BeeCheckBox;
 import com.butent.bee.egg.client.widget.BeeFileUpload;
 import com.butent.bee.egg.client.widget.BeeIntegerBox;
 import com.butent.bee.egg.client.widget.BeeListBox;
+import com.butent.bee.egg.client.widget.BeeSimpleCheckBox;
 import com.butent.bee.egg.client.widget.BeeTextBox;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeField;
@@ -73,7 +74,11 @@ public class BeeInputBox {
             ok = true;
             break;
           case BeeType.TYPE_BOOLEAN:
-            inp = new BeeCheckBox(new BeeName(name));
+            if (BeeUtils.isEmpty(z)) {
+              inp = new BeeSimpleCheckBox(name);
+            } else {
+              inp = new BeeCheckBox(new BeeName(name));
+            }
             ok = true;
             break;
           case BeeType.TYPE_INT:

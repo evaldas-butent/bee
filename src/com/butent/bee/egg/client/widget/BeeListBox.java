@@ -3,8 +3,8 @@ package com.butent.bee.egg.client.widget;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.ListBox;
 
-import com.butent.bee.egg.client.BeeBus;
 import com.butent.bee.egg.client.BeeGlobal;
+import com.butent.bee.egg.client.BeeKeeper;
 import com.butent.bee.egg.client.event.HasBeeChangeHandler;
 import com.butent.bee.egg.client.utils.BeeDom;
 import com.butent.bee.egg.shared.Assert;
@@ -101,7 +101,7 @@ public class BeeListBox extends ListBox implements HasId, HasBeeChangeHandler {
   }
 
   private void addDefaultHandlers() {
-    BeeBus.addVch(this);
+    BeeKeeper.getBus().addVch(this);
   }
 
   private int getIndex(String v) {

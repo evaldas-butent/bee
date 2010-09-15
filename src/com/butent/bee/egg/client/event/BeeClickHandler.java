@@ -14,6 +14,11 @@ public class BeeClickHandler implements ClickHandler {
 
   public void onClick(ClickEvent event) {
     Object source = event.getSource();
+    
+    if (source instanceof HasBeeClickHandler) {
+      ((HasBeeClickHandler) source).onBeeClick(event);
+      return;
+    }
 
     if (source instanceof HasCommand) {
       BeeCommand cmnd = ((HasCommand) source).getCommand();

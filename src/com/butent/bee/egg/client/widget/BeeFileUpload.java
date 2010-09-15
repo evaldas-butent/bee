@@ -3,8 +3,8 @@ package com.butent.bee.egg.client.widget;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.FileUpload;
 
-import com.butent.bee.egg.client.BeeBus;
 import com.butent.bee.egg.client.BeeGlobal;
+import com.butent.bee.egg.client.BeeKeeper;
 import com.butent.bee.egg.client.event.HasBeeChangeHandler;
 import com.butent.bee.egg.client.utils.BeeDom;
 import com.butent.bee.egg.shared.HasId;
@@ -59,7 +59,7 @@ public class BeeFileUpload extends FileUpload implements HasId,
   }
 
   private void addDefaultHandlers() {
-    BeeBus.addVch(this);
+    BeeKeeper.getBus().addVch(this);
   }
 
 }

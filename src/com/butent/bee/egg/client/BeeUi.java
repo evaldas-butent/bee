@@ -20,6 +20,7 @@ import com.butent.bee.egg.client.widget.BeeButton;
 import com.butent.bee.egg.client.widget.BeeCheckBox;
 import com.butent.bee.egg.client.widget.BeeIntegerBox;
 import com.butent.bee.egg.client.widget.BeeListBox;
+import com.butent.bee.egg.client.widget.BeeSimpleCheckBox;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.BeeName;
@@ -268,12 +269,15 @@ public class BeeUi implements BeeModule {
         fp.setText(i, 0, cap);
       }
       fp.setWidget(i, 1, new BeeListBox(fld));
+
+      fld = MenuConst.fieldMenuBarType(i);
+      fp.setWidget(i, 2, new BeeSimpleCheckBox(fld));
     }
 
-    fp.setWidget(0, 2, new BeeIntegerBox(MenuConst.FIELD_ROOT_LIMIT));
-    fp.setWidget(1, 2, new BeeIntegerBox(MenuConst.FIELD_ITEM_LIMIT));
+    fp.setWidget(0, 3, new BeeIntegerBox(MenuConst.FIELD_ROOT_LIMIT));
+    fp.setWidget(1, 3, new BeeIntegerBox(MenuConst.FIELD_ITEM_LIMIT));
 
-    fp.setWidget(r - 1, 2, new BeeButton("Refresh",
+    fp.setWidget(r - 1, 3, new BeeButton("Refresh",
         BeeService.SERVICE_REFRESH_MENU));
 
     fp.setWidget(r - 1, 3, new BeeButton("BEE", "comp_ui_menu", "stage_dummy"));

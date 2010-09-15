@@ -3,8 +3,8 @@ package com.butent.bee.egg.client.widget;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.CheckBox;
 
-import com.butent.bee.egg.client.BeeBus;
 import com.butent.bee.egg.client.BeeGlobal;
+import com.butent.bee.egg.client.BeeKeeper;
 import com.butent.bee.egg.client.BeeProperties;
 import com.butent.bee.egg.client.event.HasBeeValueChangeHandler;
 import com.butent.bee.egg.client.utils.BeeDom;
@@ -13,9 +13,6 @@ import com.butent.bee.egg.shared.HasId;
 import com.butent.bee.egg.shared.Pair;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
-/**
- *
- */
 public class BeeCheckBox extends CheckBox implements HasId,
     HasBeeValueChangeHandler<Boolean> {
   private String propKey = null;
@@ -137,7 +134,7 @@ public class BeeCheckBox extends CheckBox implements HasId,
   }
 
   private void addDefaultHandler() {
-    BeeBus.addBoolVch(this);
+    BeeKeeper.getBus().addBoolVch(this);
   }
 
   private void initField(String fld) {

@@ -5,8 +5,6 @@
   <inherits name="com.google.gwt.xml.XML"/>  
   <inherits name="com.google.gwt.app.App"/>  
   
-  <inherits name='com.google.gwt.user.theme.standard.Standard'/>
-
   <inherits name='com.google.gwt.logging.Logging'/>
 
   <set-property name='gwt.logging.enabled' value='TRUE'/>

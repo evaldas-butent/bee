@@ -272,7 +272,7 @@ public class BeeDataSource implements Transformable {
 
     PropUtils.addSub(lst, "Functions", null, BeeUtils.bracket(c));
 
-    if (BeeUtils.between(c, 1, 100)) {
+    if (BeeUtils.betweenInclusive(c, 1, 100)) {
       rs = dbMd.getFunctions(null, null, null);
       while (rs.next()) {
         k = rs.getString("FUNCTION_NAME");
@@ -295,7 +295,7 @@ public class BeeDataSource implements Transformable {
 
     PropUtils.addSub(lst, "Procedures", null, BeeUtils.bracket(c));
 
-    if (BeeUtils.between(c, 1, 100)) {
+    if (BeeUtils.betweenInclusive(c, 1, 100)) {
       rs = dbMd.getProcedures(null, null, null);
       while (rs.next()) {
         k = rs.getString("PROCEDURE_NAME");

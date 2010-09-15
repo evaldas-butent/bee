@@ -6,18 +6,19 @@ import com.butent.bee.egg.shared.exceptions.BeeRuntimeException;
 import com.butent.bee.egg.shared.exceptions.KeyNotFoundException;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
+import java.util.Collection;
 import java.util.Map;
 
 public class Assert {
   public static final String ASSERTION_FAILED = "[Assertion failed] - ";
 
-  public static void arrayLength(Object[] array, int min) {
-    arrayLength(array, min, -1);
+  public static void arrayLength(Object arr, int min) {
+    arrayLength(arr, min, -1);
   }
 
-  public static void arrayLength(Object[] array, int min, int max) {
-    notNull(array);
-    int len = array.length;
+  public static void arrayLength(Object arr, int min, int max) {
+    notNull(arr);
+    int len = BeeUtils.arrayLength(arr);
 
     if (min > 0 && len < min) {
       throw new BeeRuntimeException(ASSERTION_FAILED + "array length " + len
@@ -29,11 +30,69 @@ public class Assert {
     }
   }
 
+  public static void betweenExclusive(int x, int min, int max) {
+    if (!BeeUtils.betweenExclusive(x, min, max)) {
+      throw new BeeRuntimeException(ASSERTION_FAILED + "argument " + x
+          + " must be >= " + min + " and < " + max);
+    }
+  }
+
+  public static void betweenInclusive(int x, int min, int max) {
+    if (!BeeUtils.betweenInclusive(x, min, max)) {
+      throw new BeeRuntimeException(ASSERTION_FAILED + "argument " + x
+          + " must be >= " + min + " and <= " + max);
+    }
+  }
+
   public static <T> void contains(Map<T, ?> map, T key) {
     notNull(map);
     notNull(key);
     if (!map.containsKey(key)) {
       throw new KeyNotFoundException(key);
+    }
+  }
+
+  public static void isIndex(Collection<?> col, int idx) {
+    notNull(col);
+    nonNegative(idx);
+
+    int n = col.size();
+
+    if (n <= 0) {
+      throw new BeeRuntimeException(ASSERTION_FAILED + "index " + idx
+          + ", collection empty");
+    } else if (idx >= n) {
+      throw new BeeRuntimeException(ASSERTION_FAILED + "index " + idx
+          + " must be < " + n);
+    }
+  }
+
+  public static void isIndex(Collection<?> col, int idx, String msg) {
+    notNull(col);
+    if (idx < 0 || idx >= col.size()) {
+      throw new BeeRuntimeException(msg);
+    }
+  }
+
+  public static void isIndex(Object obj, int idx) {
+    notNull(obj);
+    nonNegative(idx);
+
+    int n = BeeUtils.length(obj);
+
+    if (n <= 0) {
+      throw new BeeRuntimeException(ASSERTION_FAILED + "index " + idx
+          + " references empty object");
+    } else if (idx >= n) {
+      throw new BeeRuntimeException(ASSERTION_FAILED + "index " + idx
+          + " must be < " + n);
+    }
+  }
+
+  public static void isIndex(Object obj, int idx, String msg) {
+    notNull(obj);
+    if (idx < 0 || idx >= BeeUtils.length(obj)) {
+      throw new BeeRuntimeException(msg);
     }
   }
 
@@ -48,7 +107,7 @@ public class Assert {
   }
 
   public static void isPositive(int x) {
-    isPositive(x, ASSERTION_FAILED + "argument must be positive");
+    isPositive(x, ASSERTION_FAILED + "(" + x + ") argument must be positive");
   }
 
   public static void isPositive(int x, String msg) {
@@ -72,6 +131,17 @@ public class Assert {
   public static void isTrue(boolean expression, String message) {
     if (!expression) {
       throw new BeeRuntimeException(message);
+    }
+  }
+
+  public static void nonNegative(int x) {
+    nonNegative(x, ASSERTION_FAILED + "(" + x
+        + ") argument must be non-negative");
+  }
+
+  public static void nonNegative(int x, String msg) {
+    if (x < 0) {
+      throw new BeeRuntimeException(msg);
     }
   }
 

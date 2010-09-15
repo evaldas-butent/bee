@@ -3,7 +3,7 @@ package com.butent.bee.egg.client.widget;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.Label;
 
-import com.butent.bee.egg.client.BeeBus;
+import com.butent.bee.egg.client.BeeKeeper;
 import com.butent.bee.egg.client.utils.BeeCommand;
 import com.butent.bee.egg.client.utils.BeeDom;
 import com.butent.bee.egg.client.utils.HasCommand;
@@ -37,7 +37,7 @@ public class BeeLabel extends Label implements HasId, HasCommand {
 
     if (cmnd != null) {
       setCommand(cmnd);
-      BeeBus.addClickHandler(this);
+      BeeKeeper.getBus().addClickHandler(this);
     }
   }
 
@@ -47,7 +47,7 @@ public class BeeLabel extends Label implements HasId, HasCommand {
   }
 
   public void createId() {
-    BeeDom.createId(this, "l");
+    BeeDom.createId(this, BeeDom.LABEL_ID_PREFIX);
   }
 
   public BeeCommand getCommand() {

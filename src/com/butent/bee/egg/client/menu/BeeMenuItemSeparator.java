@@ -8,24 +8,20 @@ import com.butent.bee.egg.client.utils.BeeDom;
 import com.butent.bee.egg.shared.HasId;
 
 public class BeeMenuItemSeparator extends UIObject implements HasId {
-
-  private static final String STYLENAME_DEFAULT = "gwt-MenuItemSeparator";
+  private static final String STYLENAME_DEFAULT = "bee-MenuItemSeparator";
 
   private BeeMenuBar parentMenu;
 
   public BeeMenuItemSeparator() {
-    setElement(DOM.createTD());
-    setStyleName(STYLENAME_DEFAULT);
+    Element elem = DOM.createDiv();
+    setElement(elem);
 
-    Element div = DOM.createDiv();
-    DOM.appendChild(getElement(), div);
-    setStyleName(div, "menuSeparatorInner");
-
+    setStyleName(elem, STYLENAME_DEFAULT);
     createId();
   }
 
   public void createId() {
-    BeeDom.createId(this, "separator");
+    BeeDom.createId(this, "sep");
   }
 
   public String getId() {

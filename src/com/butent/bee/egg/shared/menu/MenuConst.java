@@ -26,9 +26,9 @@ public class MenuConst {
   public static final String FIELD_ROOT_LIMIT = "menu_root_limit";
 
   public static final String FIELD_ITEM_LIMIT = "menu_item_limit";
-  public static int DEFAULT_ROOT_LIMIT = 7;
+  public static int DEFAULT_ROOT_LIMIT = 10;
+  public static int DEFAULT_ITEM_LIMIT = 20;
 
-  public static int DEFAULT_ITEM_LIMIT = 18;
   public static final String LAYOUT_MENU_HOR = "menu horizontal";
   public static final String LAYOUT_MENU_VERT = "menu vertical";
   public static final String LAYOUT_STACK = "stack panel";
@@ -41,16 +41,19 @@ public class MenuConst {
   public static final String LAYOUT_RADIO_HOR = "radio horizontal";
   public static final String LAYOUT_RADIO_VERT = "radio vertical";
   public static final String LAYOUT_BUTTONS_HOR = "buttons horizontal";
-
   public static final String LAYOUT_BUTTONS_VERT = "buttons vertical";
+
   public static String DEFAULT_ROOT_LAYOUT = LAYOUT_MENU_HOR;
-
   public static String DEFAULT_ITEM_LAYOUT = LAYOUT_MENU_VERT;
-  public static final int SEPARATOR_BEFORE = 1;
 
+  public static final int SEPARATOR_BEFORE = 1;
   public static final int SEPARATOR_AFTER = 2;
 
   public static MenuComparator MENU_COMPARATOR = new MenuComparator();
+
+  public static final String fieldMenuBarType(int idx) {
+    return "menu_bar_type_" + idx;
+  }
 
   public static final String fieldMenuLayout(int idx) {
     return "menu_layout_" + idx;

@@ -1,50 +1,39 @@
 package com.butent.bee.egg.client.menu;
 
-import com.google.gwt.user.client.DOM;
-import com.google.gwt.user.client.ui.HasHTML;
+import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.UIObject;
 
 import com.butent.bee.egg.client.utils.BeeDom;
+import com.butent.bee.egg.shared.BeeWidget;
 import com.butent.bee.egg.shared.HasId;
 
-public class BeeMenuItem extends UIObject implements HasHTML, HasId {
+public class BeeMenuItem extends UIObject implements HasId {
+  public static BeeWidget DEFAULT_WIDGET = BeeWidget.LABEL;
   private static final String DEPENDENT_STYLENAME_SELECTED_ITEM = "selected";
 
   private MenuCommand command;
   private BeeMenuBar parentMenu, subMenu;
+  
+  private BeeWidget widgetType;
 
-  public BeeMenuItem(String text, BeeMenuBar subMenu) {
-    this(text, false);
+  public BeeMenuItem(BeeMenuBar parent, String text, BeeMenuBar subMenu) {
+    init(parent, text, getDefaultWidget(parent));
     setSubMenu(subMenu);
   }
 
-  public BeeMenuItem(String text, boolean asHTML, BeeMenuBar subMenu) {
-    this(text, asHTML);
+  public BeeMenuItem(BeeMenuBar parent, String text, BeeWidget type, BeeMenuBar subMenu) {
+    init(parent, text, type);
     setSubMenu(subMenu);
   }
 
-  public BeeMenuItem(String text, boolean asHTML, MenuCommand cmd) {
-    this(text, asHTML);
+  public BeeMenuItem(BeeMenuBar parent, String text, BeeWidget type, MenuCommand cmd) {
+    init(parent, text, type);
     setCommand(cmd);
   }
 
-  public BeeMenuItem(String text, MenuCommand cmd) {
-    this(text, false);
+  public BeeMenuItem(BeeMenuBar parent, String text, MenuCommand cmd) {
+    init(parent, text, getDefaultWidget(parent));
     setCommand(cmd);
-  }
-
-  BeeMenuItem(String text, boolean asHTML) {
-    setElement(DOM.createTD());
-    setSelectionStyle(false);
-
-    if (asHTML) {
-      setHTML(text);
-    } else {
-      setText(text);
-    }
-    setStyleName("gwt-MenuItem");
-
-    createId();
   }
 
   public void createId() {
@@ -53,10 +42,6 @@ public class BeeMenuItem extends UIObject implements HasHTML, HasId {
 
   public MenuCommand getCommand() {
     return command;
-  }
-
-  public String getHTML() {
-    return DOM.getInnerHTML(getElement());
   }
 
   public String getId() {
@@ -71,16 +56,12 @@ public class BeeMenuItem extends UIObject implements HasHTML, HasId {
     return subMenu;
   }
 
-  public String getText() {
-    return DOM.getInnerText(getElement());
+  public BeeWidget getWidgetType() {
+    return widgetType;
   }
 
   public void setCommand(MenuCommand cmd) {
     command = cmd;
-  }
-
-  public void setHTML(String html) {
-    DOM.setInnerHTML(getElement(), html);
   }
 
   public void setId(String id) {
@@ -98,16 +79,8 @@ public class BeeMenuItem extends UIObject implements HasHTML, HasId {
     }
   }
 
-  public void setText(String text) {
-    DOM.setInnerText(getElement(), text);
-  }
-
-  @Override
-  protected void onEnsureDebugId(String baseID) {
-    super.onEnsureDebugId(baseID);
-    if (subMenu != null) {
-      subMenu.setMenuItemDebugIds(baseID);
-    }
+  public void setWidgetType(BeeWidget widgetType) {
+    this.widgetType = widgetType;
   }
 
   protected void setSelectionStyle(boolean selected) {
@@ -120,6 +93,47 @@ public class BeeMenuItem extends UIObject implements HasHTML, HasId {
 
   void setParentMenu(BeeMenuBar parentMenu) {
     this.parentMenu = parentMenu;
+  }
+
+  private BeeWidget getDefaultWidget(BeeMenuBar parent) {
+    BeeWidget w = null;
+    
+    if (parent != null) {
+      w = parent.getDefaultWidget();
+    }
+    if (w == null) {
+      w = DEFAULT_WIDGET;
+    }
+    
+    return w;
+  }
+  
+  private void init(BeeMenuBar parent, String text, BeeWidget type) {
+    Element elem;
+    
+    switch (type) {
+      case BUTTON :
+        elem = BeeDom.createButton(text).cast();
+        break;
+      case HTML :
+        elem = BeeDom.createHtml(text).cast();
+        break;
+      case RADIO :
+        elem = BeeDom.createRadio(parent.getName(), text).cast();
+        break;
+      default :
+        elem = BeeDom.createLabel(text).cast();
+    }
+    
+    setElement(elem);
+
+    setStyleName("bee-MenuItem");
+    setSelectionStyle(false);
+    
+    createId();
+    
+    setParentMenu(parent);
+    setWidgetType(type);
   }
 
 }

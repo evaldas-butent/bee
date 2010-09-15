@@ -63,8 +63,8 @@ public class BeeMessageBox {
           vp.add(new BeeLabel(iter.next()));
         }
       } else if (BeeUtils.isArray(x[i])) {
-        for (int j = 0; j < ((Object[]) x[i]).length; j++) {
-          vp.add(new BeeLabel(((Object[]) x[i])[j]));
+        for (int j = 0; j < BeeUtils.arrayLength(x[i]); j++) {
+          vp.add(new BeeLabel(BeeUtils.arrayGet(x[i], j)));
         }
       } else if (x[i] != null) {
         vp.add(new BeeLabel(x[i]));

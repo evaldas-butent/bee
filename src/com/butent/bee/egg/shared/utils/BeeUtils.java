@@ -59,6 +59,57 @@ public abstract class BeeUtils {
     return ok;
   }
 
+  public static Object arrayGet(Object arr, int idx) {
+    if (arr instanceof Object[]) {
+      return ((Object[]) arr)[idx];
+    } else if (arr instanceof boolean[]) {
+      return ((boolean[]) arr)[idx];
+    } else if (arr instanceof char[]) {
+      return ((char[]) arr)[idx];
+    } else if (arr instanceof byte[]) {
+      return ((byte[]) arr)[idx];
+    } else if (arr instanceof short[]) {
+      return ((short[]) arr)[idx];
+    } else if (arr instanceof int[]) {
+      return ((int[]) arr)[idx];
+    } else if (arr instanceof long[]) {
+      return ((long[]) arr)[idx];
+    } else if (arr instanceof float[]) {
+      return ((float[]) arr)[idx];
+    } else if (arr instanceof double[]) {
+      return ((double[]) arr)[idx];
+    } else {
+      return null;
+    }
+  }
+
+  public static int arrayLength(Object arr) {
+    int len;
+
+    if (arr instanceof Object[]) {
+      len = ((Object[]) arr).length;
+    } else if (arr instanceof boolean[]) {
+      len = ((boolean[]) arr).length;
+    } else if (arr instanceof char[]) {
+      len = ((char[]) arr).length;
+    } else if (arr instanceof byte[]) {
+      len = ((byte[]) arr).length;
+    } else if (arr instanceof short[]) {
+      len = ((short[]) arr).length;
+    } else if (arr instanceof int[]) {
+      len = ((int[]) arr).length;
+    } else if (arr instanceof long[]) {
+      len = ((long[]) arr).length;
+    } else if (arr instanceof float[]) {
+      len = ((float[]) arr).length;
+    } else if (arr instanceof double[]) {
+      len = ((double[]) arr).length;
+    } else {
+      len = 0;
+    }
+    return len;
+  }
+
   public static String[] beeDeserialize(String ser) {
     Assert.notEmpty(ser);
 
@@ -117,7 +168,11 @@ public abstract class BeeUtils {
     return sb.toString();
   }
 
-  public static boolean between(int x, int min, int max) {
+  public static boolean betweenExclusive(int x, int min, int max) {
+    return x >= min && x < max;
+  }
+
+  public static boolean betweenInclusive(int x, int min, int max) {
     return x >= min && x <= max;
   }
 
@@ -552,7 +607,7 @@ public abstract class BeeUtils {
   }
 
   public static boolean isArray(Object obj) {
-    return obj instanceof Object[];
+    return obj instanceof Object[] || isPrimitiveArray(obj);
   }
 
   public static boolean isBoolean(int x) {
@@ -613,7 +668,7 @@ public abstract class BeeUtils {
     } else if (x instanceof Map) {
       ok = ((Map<?, ?>) x).isEmpty();
     } else if (isArray(x)) {
-      ok = ((Object[]) x).length == 0;
+      ok = arrayLength(x) <= 0;
     } else if (x instanceof Enumeration) {
       ok = !((Enumeration<?>) x).hasMoreElements();
     } else {
@@ -684,6 +739,13 @@ public abstract class BeeUtils {
     } else {
       return false;
     }
+  }
+
+  public static boolean isPrimitiveArray(Object obj) {
+    return obj instanceof boolean[] || obj instanceof char[]
+        || obj instanceof byte[] || obj instanceof short[]
+        || obj instanceof int[] || obj instanceof long[]
+        || obj instanceof float[] || obj instanceof double[];
   }
 
   public static boolean isTrue(Object obj) {
@@ -777,7 +839,7 @@ public abstract class BeeUtils {
     } else if (x instanceof Map) {
       len = ((Map<?, ?>) x).size();
     } else if (isArray(x)) {
-      len = ((Object[]) x).length;
+      len = arrayLength(x);
     } else {
       len = 0;
     }
@@ -1096,10 +1158,10 @@ public abstract class BeeUtils {
       nextSep = new String[]{z};
     }
 
-    int r = ((Object[]) arr).length;
+    int r = arrayLength(arr);
 
     for (int i = 0; i < r; i++) {
-      el = ((Object[]) arr)[i];
+      el = arrayGet(arr, i);
       if (i > 0) {
         sb.append(z);
       }

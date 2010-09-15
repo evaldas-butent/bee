@@ -1,12 +1,15 @@
 package com.butent.bee.egg.client;
 
+import com.google.gwt.event.dom.client.BlurEvent;
 import com.google.gwt.event.dom.client.HasChangeHandlers;
 import com.google.gwt.event.dom.client.HasClickHandlers;
 import com.google.gwt.event.dom.client.HasKeyPressHandlers;
 import com.google.gwt.event.logical.shared.HasValueChangeHandlers;
 import com.google.gwt.event.shared.GwtEvent;
 import com.google.gwt.event.shared.HandlerManager;
+import com.google.gwt.user.client.ui.Widget;
 
+import com.butent.bee.egg.client.event.BeeBlurHandler;
 import com.butent.bee.egg.client.event.BeeChangeHandler;
 import com.butent.bee.egg.client.event.BeeClickHandler;
 import com.butent.bee.egg.client.event.BeeKeyPressHandler;
@@ -19,88 +22,60 @@ import com.butent.bee.egg.shared.BeeStage;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
 public class BeeBus implements BeeModule {
-  private static BeeClickHandler clickHandler = null;
+  private BeeClickHandler clickHandler = null;
+  private BeeKeyPressHandler keyHandler = null;
 
-  private static BeeValueChangeHandler<Boolean> boolVch = null;
+  private BeeValueChangeHandler<Boolean> boolVch = null;
+  private BeeValueChangeHandler<String> stringVch = null;
+  private BeeValueChangeHandler<Integer> intVch = null;
 
-  private static BeeValueChangeHandler<String> stringVch = null;
+  private BeeChangeHandler vch = null;
 
-  private static BeeValueChangeHandler<Integer> intVch = null;
+  private BeeBlurHandler blurHandler = null;
 
-  private static BeeChangeHandler vch = null;
-
-  private static BeeKeyPressHandler keyHandler = null;
-
-  public static void addBoolVch(HasValueChangeHandlers<Boolean> w) {
-    w.addValueChangeHandler(ensureBoolVch());
-  }
-
-  public static void addClickHandler(HasClickHandlers w) {
-    w.addClickHandler(ensureClickHandler());
-  }
-
-  public static void addIntVch(HasValueChangeHandlers<Integer> w) {
-    w.addValueChangeHandler(ensureIntVch());
-  }
-
-  public static void addKeyHandler(HasKeyPressHandlers w) {
-    w.addKeyPressHandler(ensureKeyHandler());
-  }
-
-  public static void addStringVch(HasValueChangeHandlers<String> w) {
-    w.addValueChangeHandler(ensureStringVch());
-  }
-
-  public static void addVch(HasChangeHandlers w) {
-    w.addChangeHandler(ensureVch());
-  }
-
-  private static BeeValueChangeHandler<Boolean> ensureBoolVch() {
-    if (boolVch == null) {
-      boolVch = new BeeValueChangeHandler<Boolean>();
-    }
-    return boolVch;
-  }
-
-  private static BeeClickHandler ensureClickHandler() {
-    if (clickHandler == null) {
-      clickHandler = new BeeClickHandler();
-    }
-    return clickHandler;
-  }
-
-  private static BeeValueChangeHandler<Integer> ensureIntVch() {
-    if (intVch == null) {
-      intVch = new BeeValueChangeHandler<Integer>();
-    }
-    return intVch;
-  }
-
-  private static BeeKeyPressHandler ensureKeyHandler() {
-    if (keyHandler == null) {
-      keyHandler = new BeeKeyPressHandler();
-    }
-    return keyHandler;
-  }
-
-  private static BeeValueChangeHandler<String> ensureStringVch() {
-    if (stringVch == null) {
-      stringVch = new BeeValueChangeHandler<String>();
-    }
-    return stringVch;
-  }
-
-  private static BeeChangeHandler ensureVch() {
-    if (vch == null) {
-      vch = new BeeChangeHandler();
-    }
-    return vch;
-  }
-
-  private final HandlerManager eventBus;
+  private HandlerManager eventBus;
 
   public BeeBus(HandlerManager bus) {
     this.eventBus = bus;
+  }
+
+  public void addBlurHandler(Widget w, boolean sink) {
+    Assert.notNull(w);
+    if (sink) {
+      w.addDomHandler(ensureBlurHandler(), BlurEvent.getType());
+    } else {
+      w.addHandler(ensureBlurHandler(), BlurEvent.getType());
+    }
+  }
+
+  public void addBoolVch(HasValueChangeHandlers<Boolean> w) {
+    Assert.notNull(w);
+    w.addValueChangeHandler(ensureBoolVch());
+  }
+
+  public void addClickHandler(HasClickHandlers w) {
+    Assert.notNull(w);
+    w.addClickHandler(ensureClickHandler());
+  }
+
+  public void addIntVch(HasValueChangeHandlers<Integer> w) {
+    Assert.notNull(w);
+    w.addValueChangeHandler(ensureIntVch());
+  }
+
+  public void addKeyHandler(HasKeyPressHandlers w) {
+    Assert.notNull(w);
+    w.addKeyPressHandler(ensureKeyHandler());
+  }
+
+  public void addStringVch(HasValueChangeHandlers<String> w) {
+    Assert.notNull(w);
+    w.addValueChangeHandler(ensureStringVch());
+  }
+
+  public void addVch(HasChangeHandlers w) {
+    Assert.notNull(w);
+    w.addChangeHandler(ensureVch());
   }
 
   public boolean dispatchService(String svc, String stg, GwtEvent<?> event) {
@@ -290,6 +265,55 @@ public class BeeBus implements BeeModule {
       BeeGlobal.showError("Unknown UI service", svc);
       return false;
     }
+  }
+
+  private BeeBlurHandler ensureBlurHandler() {
+    if (blurHandler == null) {
+      blurHandler = new BeeBlurHandler();
+    }
+    return blurHandler;
+  }
+
+  private BeeValueChangeHandler<Boolean> ensureBoolVch() {
+    if (boolVch == null) {
+      boolVch = new BeeValueChangeHandler<Boolean>();
+    }
+    return boolVch;
+  }
+
+  private BeeClickHandler ensureClickHandler() {
+    if (clickHandler == null) {
+      clickHandler = new BeeClickHandler();
+    }
+    return clickHandler;
+  }
+
+  private BeeValueChangeHandler<Integer> ensureIntVch() {
+    if (intVch == null) {
+      intVch = new BeeValueChangeHandler<Integer>();
+    }
+    return intVch;
+  }
+
+  private BeeKeyPressHandler ensureKeyHandler() {
+    if (keyHandler == null) {
+      keyHandler = new BeeKeyPressHandler();
+    }
+    return keyHandler;
+  }
+
+  private BeeValueChangeHandler<String> ensureStringVch() {
+    if (stringVch == null) {
+      stringVch = new BeeValueChangeHandler<String>();
+    }
+    return stringVch;
+  }
+
+  private BeeChangeHandler ensureVch() {
+    if (vch == null) {
+      vch = new BeeChangeHandler();
+    }
+    return vch;
   }
 
 }

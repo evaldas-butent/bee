@@ -1,5 +1,6 @@
 package com.butent.bee.egg.client.cli;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.dom.client.Element;
@@ -13,6 +14,8 @@ import com.butent.bee.egg.client.utils.BeeJs;
 import com.butent.bee.egg.client.widget.BeeTextBox;
 import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.utils.BeeUtils;
+import com.butent.bee.egg.shared.utils.PropUtils;
+import com.butent.bee.egg.shared.utils.StringProp;
 
 public class CliWidget extends BeeTextBox {
 
@@ -55,11 +58,21 @@ public class CliWidget extends BeeTextBox {
     } else if (BeeUtils.same(v, "menu")) {
       BeeKeeper.getMenu().showMenu();
 
+    } else if (BeeUtils.same(v, "gwt")) {
+      BeeGlobal.showGrid(v, StringProp.HEADERS, PropUtils.createStringArray(
+          "Host Page Base URL", GWT.getHostPageBaseURL(), "Module Base URL",
+          GWT.getModuleBaseURL(), "Module Name", GWT.getModuleName(),
+          "Permutation Strong Name", GWT.getPermutationStrongName(),
+          "Uncaught Exception Handler", GWT.getUncaughtExceptionHandler(),
+          "Unique Thread Id", GWT.getUniqueThreadId(), "Version",
+          GWT.getVersion(), "Is Client", GWT.isClient(), "Is Prod Mode",
+          GWT.isProdMode(), "Is Script", GWT.isScript()));
+
     } else if (c > 1) {
       if (BeeUtils.same(arr[0], "eval")) {
         String xpr = v.substring("eval".length()).trim();
         BeeGlobal.showDialog(xpr, BeeJs.evalToString(xpr));
-      
+
       } else if (BeeUtils.inListSame(arr[0], "p", "prop")) {
         JavaScriptObject obj = BeeJs.eval(arr[1]);
         if (obj == null) {

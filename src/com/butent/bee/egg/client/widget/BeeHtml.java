@@ -3,7 +3,7 @@ package com.butent.bee.egg.client.widget;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.HTML;
 
-import com.butent.bee.egg.client.BeeBus;
+import com.butent.bee.egg.client.BeeKeeper;
 import com.butent.bee.egg.client.utils.BeeCommand;
 import com.butent.bee.egg.client.utils.BeeDom;
 import com.butent.bee.egg.client.utils.HasCommand;
@@ -32,7 +32,7 @@ public class BeeHtml extends HTML implements HasId, HasCommand {
 
     if (cmnd != null) {
       setCommand(cmnd);
-      BeeBus.addClickHandler(this);
+      BeeKeeper.getBus().addClickHandler(this);
     }
   }
 
@@ -42,7 +42,7 @@ public class BeeHtml extends HTML implements HasId, HasCommand {
   }
 
   public void createId() {
-    BeeDom.createId(this, "html");
+    BeeDom.createId(this, BeeDom.HTML_ID_PREFIX);
   }
 
   public BeeCommand getCommand() {

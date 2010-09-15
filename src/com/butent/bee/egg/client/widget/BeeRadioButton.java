@@ -33,7 +33,7 @@ public class BeeRadioButton extends RadioButton implements HasId, HasService,
   }
 
   public void createId() {
-    BeeDom.createId(this, "r");
+    BeeDom.createId(this, BeeDom.RADIO_ID_PREFIX);
   }
 
   public BeeCommand getCommand() {

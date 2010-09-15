@@ -4,7 +4,7 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Button;
 
-import com.butent.bee.egg.client.BeeBus;
+import com.butent.bee.egg.client.BeeKeeper;
 import com.butent.bee.egg.client.utils.BeeCommand;
 import com.butent.bee.egg.client.utils.BeeDom;
 import com.butent.bee.egg.client.utils.HasCommand;
@@ -38,7 +38,7 @@ public class BeeButton extends Button implements HasId, HasService, HasStage,
 
     if (cmnd != null) {
       setCommand(cmnd);
-      BeeBus.addClickHandler(this);
+      BeeKeeper.getBus().addClickHandler(this);
     }
   }
 
@@ -56,7 +56,7 @@ public class BeeButton extends Button implements HasId, HasService, HasStage,
 
     if (!BeeUtils.isEmpty(svc)) {
       setService(svc);
-      BeeBus.addClickHandler(this);
+      BeeKeeper.getBus().addClickHandler(this);
     }
   }
 
@@ -69,7 +69,7 @@ public class BeeButton extends Button implements HasId, HasService, HasStage,
   }
 
   public void createId() {
-    BeeDom.createId(this, "b");
+    BeeDom.createId(this, BeeDom.BUTTON_ID_PREFIX);
   }
 
   public BeeCommand getCommand() {

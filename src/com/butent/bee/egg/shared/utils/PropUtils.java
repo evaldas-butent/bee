@@ -211,6 +211,11 @@ public abstract class PropUtils {
     }
   }
 
+  public static String[][] createStringArray(Object... obj) {
+    Assert.parameterCount(obj.length, 2);
+    return stringToArray(createStringProp(obj));
+  }
+
   public static List<StringProp> createStringProp(Object... obj) {
     List<StringProp> lst = new ArrayList<StringProp>();
 
