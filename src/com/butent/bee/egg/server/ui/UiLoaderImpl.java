@@ -37,7 +37,7 @@ public class UiLoaderImpl extends UiLoader {
       for (Object[] cols : buff) {
         UiRow row = new UiRow();
         row.setId((String) cols[0]);
-        row.setClass((String) cols[1]);
+        row.setClassName((String) cols[1]);
         row.setParent((String) cols[2]);
         row.setProperties((String) cols[3]);
         res.add(row);
@@ -58,7 +58,7 @@ public class UiLoaderImpl extends UiLoader {
       for (Object[] cols : buff) {
         UiRow row = new UiRow();
         row.setId((String) cols[0]);
-        row.setClass((String) cols[1]);
+        row.setClassName((String) cols[1]);
         row.setParent((String) cols[2]);
         row.setProperties((String) cols[3]);
         res.add(row);

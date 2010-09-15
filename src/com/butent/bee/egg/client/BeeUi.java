@@ -242,8 +242,7 @@ public class BeeUi implements BeeModule {
         BeeProperties.COMMUNICATION_METHOD));
     p.add(new BeeCheckBox(new BeeName(BeeGlobal.FIELD_DEBUG)));
 
-    p.add(new BeeButton("North land", "comp_ui_form",
-        BeeStage.STAGE_GET_PARAMETERS));
+    p.add(new BeeButton("North land", "comp_ui_form", "stage_dummy"));
 
     return p;
   }
@@ -276,6 +275,8 @@ public class BeeUi implements BeeModule {
 
     fp.setWidget(r - 1, 2, new BeeButton("Refresh",
         BeeService.SERVICE_REFRESH_MENU));
+
+    fp.setWidget(r - 1, 3, new BeeButton("BEE", "comp_ui_menu", "stage_dummy"));
 
     spl.addNorth(fp, 100);
 

@@ -35,7 +35,7 @@ public abstract class UiLoader {
       return properties;
     }
 
-    public void setClass(String className) {
+    public void setClassName(String className) {
       this.className = className;
     }
 

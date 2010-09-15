@@ -6,6 +6,7 @@ import com.butent.bee.egg.server.http.ResponseBuffer;
 import com.butent.bee.egg.server.utils.XmlUtils;
 import com.butent.bee.egg.shared.data.BeeColumn;
 import com.butent.bee.egg.shared.ui.UiComponent;
+import com.butent.bee.egg.shared.ui.UiLoader;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
 import java.util.Map;
@@ -29,8 +30,8 @@ public class UiLoaderBean {
       formInfo(reqInfo, buff);
     } else if (svc.equals("rpc_ui_form_list")) {
       formList(reqInfo, buff);
-    } else if (svc.equals("rpc_ui_grid")) {
-      gridInfo(reqInfo, buff);
+    } else if (svc.equals("rpc_ui_menu")) {
+      menuInfo(reqInfo, buff);
     } else {
       String msg = BeeUtils.concat(1, svc, "loader service not recognized");
       logger.warning(msg);
@@ -56,6 +57,7 @@ public class UiLoaderBean {
     buff.addColumn(new BeeColumn("Form"));
     buff.add("testForm");
     buff.add("slowForm");
+    buff.add("");
     buff.add("unavailableForm");
   }
 
@@ -75,7 +77,20 @@ public class UiLoaderBean {
     return fields.get(fieldName);
   }
 
-  private void gridInfo(RequestInfo reqInfo, ResponseBuffer buff) {
-    // TODO Auto-generated method stub
+  private void menuInfo(RequestInfo reqInfo, ResponseBuffer buff) {
+    String lRoot = getXmlField(reqInfo, buff, "root_layout");
+    String lItem = getXmlField(reqInfo, buff, "item_layout");
+
+    UiLoader loader = new UiMenuLoader();
+
+    UiComponent menu = loader.getFormContent("rootMenu", lRoot, lItem);
+
+    if (BeeUtils.isEmpty(menu)) {
+      String msg = "Error initializing root menu";
+      logger.warning(msg);
+      buff.add(msg);
+    } else {
+      buff.add(menu.serialize());
+    }
   }
 }

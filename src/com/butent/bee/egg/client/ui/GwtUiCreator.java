@@ -7,7 +7,11 @@ import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.egg.client.BeeBus;
+import com.butent.bee.egg.client.BeeKeeper;
+import com.butent.bee.egg.client.menu.BeeMenuBar;
+import com.butent.bee.egg.client.menu.BeeMenuItem;
+import com.butent.bee.egg.client.menu.BeeMenuItemSeparator;
+import com.butent.bee.egg.client.menu.MenuCommand;
 import com.butent.bee.egg.client.widget.BeeButton;
 import com.butent.bee.egg.client.widget.BeeLabel;
 import com.butent.bee.egg.client.widget.BeeTextBox;
@@ -17,6 +21,8 @@ import com.butent.bee.egg.shared.ui.UiCreator;
 import com.butent.bee.egg.shared.ui.UiField;
 import com.butent.bee.egg.shared.ui.UiHorizontalLayout;
 import com.butent.bee.egg.shared.ui.UiLabel;
+import com.butent.bee.egg.shared.ui.UiMenuHorizontal;
+import com.butent.bee.egg.shared.ui.UiMenuVertical;
 import com.butent.bee.egg.shared.ui.UiPanel;
 import com.butent.bee.egg.shared.ui.UiVerticalLayout;
 import com.butent.bee.egg.shared.ui.UiWindow;
@@ -37,7 +43,7 @@ public class GwtUiCreator implements UiCreator {
     String svc = button.getProperty("service");
     if (!BeeUtils.isEmpty(svc)) {
       b.setService(svc);
-      BeeBus.addClickHandler(b);
+      BeeKeeper.getBus().addClickHandler(b);
     }
 
     createChilds(b, button);
@@ -85,6 +91,24 @@ public class GwtUiCreator implements UiCreator {
   }
 
   @Override
+  public Object createMenuHorizontal(UiMenuHorizontal menuHorizontal) {
+    BeeMenuBar rw = new BeeMenuBar();
+
+    createMenuItems(rw, menuHorizontal);
+
+    return rw;
+  }
+
+  @Override
+  public Object createMenuVertical(UiMenuVertical menuVertical) {
+    BeeMenuBar rw = new BeeMenuBar(true);
+
+    createMenuItems(rw, menuVertical);
+
+    return rw;
+  }
+
+  @Override
   public Object createPanel(UiPanel panel) {
     Panel p = new FlowPanel();
     p.setTitle(panel.getId());
@@ -125,6 +149,34 @@ public class GwtUiCreator implements UiCreator {
       } else {
         logger.severe("Class " + cc.getClass().getName()
             + " does not support child objects");
+      }
+    }
+  }
+
+  private void createMenuItems(BeeMenuBar cc, UiComponent u) {
+    if (u.hasChilds()) {
+      for (UiComponent c : u.getChilds()) {
+        String txt = c.getProperty("text");
+        String sep = c.getProperty("separators");
+
+        if (c.hasChilds()) {
+          Object cw = c.createInstance(this);
+
+          if (cw instanceof BeeMenuBar) {
+            cc.addItem(new BeeMenuItem(txt, (BeeMenuBar) cw));
+          } else {
+            logger.severe("Class " + cw.getClass().getName()
+                + " cannot be added to " + cc.getClass().getName());
+          }
+        } else {
+          String svc = c.getProperty("service");
+          String opt = c.getProperty("parameters");
+
+          cc.addItem(new BeeMenuItem(txt, new MenuCommand(svc, opt)));
+        }
+        if (!BeeUtils.isEmpty(sep)) {
+          cc.addSeparator(new BeeMenuItemSeparator());
+        }
       }
     }
   }

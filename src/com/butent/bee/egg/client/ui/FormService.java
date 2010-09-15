@@ -41,13 +41,11 @@ public class FormService extends CompositeService {
   @Override
   public boolean doService(Object... params) {
     Assert.notNull(stage);
-    boolean ok = false;
+    boolean ok = true;
 
     switch (stage) {
       case REQUEST_FORM_LIST:
         BeeKeeper.getRpc().makeGetRequest(appendId("rpc_ui_form_list"));
-
-        ok = true;
         break;
 
       case CHOOSE_FORM:
@@ -63,8 +61,6 @@ public class FormService extends CompositeService {
 
         BeeGlobal.inputFields(new BeeStage(appendId("comp_ui_form"),
             BeeStage.STAGE_CONFIRM), "Load form", "form_name");
-
-        ok = true;
         break;
 
       case REQUEST_FORM:
@@ -74,12 +70,11 @@ public class FormService extends CompositeService {
 
         if (BeeUtils.isEmpty(fName)) {
           BeeGlobal.showError("Form name not specified");
+          ok = false;
         } else {
           BeeGlobal.closeDialog(event);
           BeeKeeper.getRpc().makePostRequest(appendId("rpc_ui_form"),
               BeeXml.createString(BeeService.XML_TAG_DATA, "form_name", fName));
-
-          ok = true;
         }
         break;
 
@@ -88,11 +83,12 @@ public class FormService extends CompositeService {
         UiComponent c = UiComponent.restore(fArr.get(0));
 
         BeeKeeper.getUi().updateActivePanel((Panel) c.createInstance());
-        ok = true;
         break;
 
       default:
         BeeGlobal.showError("Unhandled stage: " + stage);
+        BeeGlobal.unregisterService(serviceId);
+        ok = false;
         break;
     }
 

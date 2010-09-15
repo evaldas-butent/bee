@@ -9,6 +9,7 @@ import com.butent.bee.egg.client.dialog.BeeMessageBox;
 import com.butent.bee.egg.client.grid.BeeGrid;
 import com.butent.bee.egg.client.ui.CompositeService;
 import com.butent.bee.egg.client.ui.FormService;
+import com.butent.bee.egg.client.ui.MenuService;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.BeeField;
@@ -318,5 +319,6 @@ public class BeeGlobal implements BeeModule {
 
   private void initServices() {
     services.put("comp_ui_form", new FormService());
+    services.put("comp_ui_menu", new MenuService());
   }
 }

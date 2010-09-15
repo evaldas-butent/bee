@@ -10,6 +10,10 @@ public interface UiCreator {
 
   Object createLabel(UiLabel label);
 
+  Object createMenuHorizontal(UiMenuHorizontal uiMenuHorizontal);
+
+  Object createMenuVertical(UiMenuVertical uiMenuVertical);
+
   Object createPanel(UiPanel panel);
 
   Object createVerticalLayout(UiVerticalLayout beeVerticalLayout);
