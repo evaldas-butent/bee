@@ -2,7 +2,7 @@ package com.butent.bee.egg.client.dialog;
 
 import com.google.gwt.user.client.ui.DecoratedPopupPanel;
 
-import com.butent.bee.egg.client.utils.BeeDom;
+import com.butent.bee.egg.client.dom.DomUtils;
 import com.butent.bee.egg.shared.HasId;
 
 public class BeeDecoratedPopupPanel extends DecoratedPopupPanel implements
@@ -24,15 +24,15 @@ public class BeeDecoratedPopupPanel extends DecoratedPopupPanel implements
   }
 
   public void createId() {
-    BeeDom.createId(this, "decor");
+    DomUtils.createId(this, "decor");
   }
 
   public String getId() {
-    return BeeDom.getId(this);
+    return DomUtils.getId(this);
   }
 
   public void setId(String id) {
-    BeeDom.setId(this, id);
+    DomUtils.setId(this, id);
   }
 
 }

@@ -295,10 +295,11 @@ public class BeeGlobal implements BeeModule {
           MenuConst.isRootLevel(i) ? MenuConst.DEFAULT_ROOT_LAYOUT
               : MenuConst.DEFAULT_ITEM_LAYOUT, BeeWidget.LIST,
           MenuConst.LAYOUT_MENU_HOR, MenuConst.LAYOUT_MENU_VERT,
-          MenuConst.LAYOUT_STACK, MenuConst.LAYOUT_TREE,
+          MenuConst.LAYOUT_STACK, MenuConst.LAYOUT_TAB, MenuConst.LAYOUT_TREE,
           MenuConst.LAYOUT_CELL_TREE, MenuConst.LAYOUT_CELL_BROWSER,
-          MenuConst.LAYOUT_LIST, MenuConst.LAYOUT_CELL_LIST,
-          MenuConst.LAYOUT_TAB, MenuConst.LAYOUT_RADIO_HOR,
+          MenuConst.LAYOUT_LIST, MenuConst.LAYOUT_ORDERED_LIST,
+          MenuConst.LAYOUT_UNORDERED_LIST, MenuConst.LAYOUT_DEFINITION_LIST,
+          MenuConst.LAYOUT_CELL_LIST, MenuConst.LAYOUT_RADIO_HOR,
           MenuConst.LAYOUT_RADIO_VERT, MenuConst.LAYOUT_BUTTONS_HOR,
           MenuConst.LAYOUT_BUTTONS_VERT);
 

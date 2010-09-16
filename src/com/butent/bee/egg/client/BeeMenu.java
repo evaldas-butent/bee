@@ -18,6 +18,8 @@ import com.butent.bee.egg.client.tree.BeeTree;
 import com.butent.bee.egg.client.tree.BeeTreeItem;
 import com.butent.bee.egg.client.utils.BeeDuration;
 import com.butent.bee.egg.client.widget.BeeCellList;
+import com.butent.bee.egg.client.widget.BeeDefinitionList;
+import com.butent.bee.egg.client.widget.BeeHtmlList;
 import com.butent.bee.egg.client.widget.BeeListBox;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeService;
@@ -264,10 +266,7 @@ public class BeeMenu implements BeeModule {
     } else if (rw instanceof BeeTab) {
       if (cw != null) {
         ((BeeTab) rw).add(cw, txt);
-      }
-
-    } else if (rw instanceof BeeListBox) {
-      ((BeeListBox) rw).addItem(txt);
+      }  
 
     } else if (rw instanceof BeeTree) {
       BeeTreeItem it = new BeeTreeItem(txt);
@@ -275,6 +274,13 @@ public class BeeMenu implements BeeModule {
         it.addItem(cw);
       }
       ((BeeTree) rw).addItem(it);
+
+    } else if (rw instanceof BeeListBox) {
+    ((BeeListBox) rw).addItem(txt);
+    } else if (rw instanceof BeeHtmlList) {
+      ((BeeHtmlList) rw).addItem(txt);
+    } else if (rw instanceof BeeDefinitionList) {
+      ((BeeDefinitionList) rw).addItem(txt);
     }
   }
 
@@ -335,6 +341,8 @@ public class BeeMenu implements BeeModule {
 
     } else if (BeeUtils.same(layout, MenuConst.LAYOUT_STACK)) {
       w = new BeeStack(Unit.EM);
+    } else if (BeeUtils.same(layout, MenuConst.LAYOUT_TAB)) {
+      w = new BeeTab(20, Unit.PX);
 
     } else if (BeeUtils.same(layout, MenuConst.LAYOUT_TREE)) {
       w = new BeeTree();
@@ -349,11 +357,15 @@ public class BeeMenu implements BeeModule {
 
     } else if (BeeUtils.same(layout, MenuConst.LAYOUT_LIST)) {
       w = new BeeListBox();
+    } else if (BeeUtils.same(layout, MenuConst.LAYOUT_ORDERED_LIST)) {
+      w = new BeeHtmlList(true);
+    } else if (BeeUtils.same(layout, MenuConst.LAYOUT_UNORDERED_LIST)) {
+      w = new BeeHtmlList();
+    } else if (BeeUtils.same(layout, MenuConst.LAYOUT_DEFINITION_LIST)) {
+      w = new BeeDefinitionList();
+
     } else if (BeeUtils.same(layout, MenuConst.LAYOUT_CELL_LIST)) {
       w = new BeeCellList<MenuEntry>(new MenuCell());
-
-    } else if (BeeUtils.same(layout, MenuConst.LAYOUT_TAB)) {
-      w = new BeeTab(20, Unit.PX);
 
     } else if (BeeUtils.same(layout, MenuConst.LAYOUT_RADIO_HOR)) {
       w = new BeeMenuBar(false, barType, BeeWidget.RADIO);

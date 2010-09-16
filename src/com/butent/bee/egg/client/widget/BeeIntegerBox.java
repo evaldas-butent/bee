@@ -6,9 +6,9 @@ import com.google.gwt.user.client.ui.TextBoxBase;
 
 import com.butent.bee.egg.client.BeeGlobal;
 import com.butent.bee.egg.client.BeeKeeper;
+import com.butent.bee.egg.client.dom.DomUtils;
 import com.butent.bee.egg.client.event.HasBeeKeyHandler;
 import com.butent.bee.egg.client.event.HasBeeValueChangeHandler;
-import com.butent.bee.egg.client.utils.BeeDom;
 import com.butent.bee.egg.shared.HasId;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
@@ -32,7 +32,7 @@ public class BeeIntegerBox extends IntegerBox implements HasId,
   }
 
   public void createId() {
-    BeeDom.createId(this, "int");
+    DomUtils.createId(this, "int");
   }
 
   public String getFieldName() {
@@ -40,7 +40,7 @@ public class BeeIntegerBox extends IntegerBox implements HasId,
   }
 
   public String getId() {
-    return BeeDom.getId(this);
+    return DomUtils.getId(this);
   }
 
   public boolean onBeeKey(KeyPressEvent event) {
@@ -60,7 +60,7 @@ public class BeeIntegerBox extends IntegerBox implements HasId,
   }
 
   public void setId(String id) {
-    BeeDom.setId(this, id);
+    DomUtils.setId(this, id);
   }
 
   private void addDefaultHandlers() {

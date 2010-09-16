@@ -3,7 +3,7 @@ package com.butent.bee.egg.client.tree;
 import com.google.gwt.user.cellview.client.CellTree;
 import com.google.gwt.view.client.TreeViewModel;
 
-import com.butent.bee.egg.client.utils.BeeDom;
+import com.butent.bee.egg.client.dom.DomUtils;
 import com.butent.bee.egg.shared.HasId;
 
 public class BeeCellTree extends CellTree implements HasId {
@@ -20,15 +20,15 @@ public class BeeCellTree extends CellTree implements HasId {
   }
 
   public void createId() {
-    BeeDom.createId(this, "celltree");
+    DomUtils.createId(this, "celltree");
   }
 
   public String getId() {
-    return BeeDom.getId(this);
+    return DomUtils.getId(this);
   }
 
   public void setId(String id) {
-    BeeDom.setId(this, id);
+    DomUtils.setId(this, id);
   }
 
 }

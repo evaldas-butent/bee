@@ -5,9 +5,9 @@ import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.egg.client.BeeGlobal;
+import com.butent.bee.egg.client.dom.DomUtils;
 import com.butent.bee.egg.client.grid.BeeCellTable;
 import com.butent.bee.egg.client.layout.BeeVertical;
-import com.butent.bee.egg.client.utils.BeeDom;
 import com.butent.bee.egg.client.widget.BeeLabel;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.utils.BeeUtils;
@@ -21,7 +21,7 @@ public class BeeMessageBox {
     boolean ok = false;
 
     if (src instanceof Widget) {
-      PopupPanel p = BeeDom.parentPopup((Widget) src);
+      PopupPanel p = DomUtils.parentPopup((Widget) src);
 
       if (p != null) {
         p.hide();

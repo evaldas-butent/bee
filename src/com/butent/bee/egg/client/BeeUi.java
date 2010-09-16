@@ -9,13 +9,13 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.egg.client.cli.CliWidget;
 import com.butent.bee.egg.client.composite.ButtonGroup;
 import com.butent.bee.egg.client.composite.RadioGroup;
+import com.butent.bee.egg.client.dom.DomUtils;
 import com.butent.bee.egg.client.grid.BeeFlexTable;
 import com.butent.bee.egg.client.layout.BeeFlow;
 import com.butent.bee.egg.client.layout.BeeLayoutPanel;
 import com.butent.bee.egg.client.layout.BeeScroll;
 import com.butent.bee.egg.client.layout.BeeSplit;
 import com.butent.bee.egg.client.ui.GwtUiCreator;
-import com.butent.bee.egg.client.utils.BeeDom;
 import com.butent.bee.egg.client.widget.BeeButton;
 import com.butent.bee.egg.client.widget.BeeCheckBox;
 import com.butent.bee.egg.client.widget.BeeIntegerBox;
@@ -220,7 +220,7 @@ public class BeeUi implements BeeModule {
   private Widget initNorth() {
     BeeFlow p = new BeeFlow();
 
-    setElDsn(BeeDom.createUniqueName());
+    setElDsn(DomUtils.createUniqueName());
     p.add(new RadioGroup(getElDsn(), BeeConst.DS_TYPES));
 
     p.add(new ButtonGroup("Ping", BeeService.SERVICE_DB_PING, "Info",

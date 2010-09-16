@@ -3,7 +3,7 @@ package com.butent.bee.egg.client.menu;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.PopupPanel.PositionCallback;
 
-import com.butent.bee.egg.client.utils.BeeDom;
+import com.butent.bee.egg.client.dom.DomUtils;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
@@ -47,8 +47,8 @@ public class MenuPositionCallback implements PositionCallback {
       }
     }
 
-    x = BeeUtils.fitStart(x, offsetWidth, BeeDom.getClientWidth() - 10, 10);
-    y = BeeUtils.fitStart(y, offsetHeight, BeeDom.getClientHeight() - 10, 10);
+    x = BeeUtils.fitStart(x, offsetWidth, DomUtils.getClientWidth() - 10, 10);
+    y = BeeUtils.fitStart(y, offsetHeight, DomUtils.getClientHeight() - 10, 10);
 
     popup.setPopupPosition(x, y);
   }

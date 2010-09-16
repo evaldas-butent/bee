@@ -2,8 +2,8 @@ package com.butent.bee.egg.client.widget;
 
 import com.google.gwt.user.client.ui.RadioButton;
 
+import com.butent.bee.egg.client.dom.DomUtils;
 import com.butent.bee.egg.client.utils.BeeCommand;
-import com.butent.bee.egg.client.utils.BeeDom;
 import com.butent.bee.egg.client.utils.HasCommand;
 import com.butent.bee.egg.shared.HasId;
 import com.butent.bee.egg.shared.HasService;
@@ -33,7 +33,7 @@ public class BeeRadioButton extends RadioButton implements HasId, HasService,
   }
 
   public void createId() {
-    BeeDom.createId(this, BeeDom.RADIO_ID_PREFIX);
+    DomUtils.createId(this, DomUtils.RADIO_ID_PREFIX);
   }
 
   public BeeCommand getCommand() {
@@ -41,11 +41,11 @@ public class BeeRadioButton extends RadioButton implements HasId, HasService,
   }
 
   public String getId() {
-    return BeeDom.getId(this);
+    return DomUtils.getId(this);
   }
 
   public String getService() {
-    return BeeDom.getService(this);
+    return DomUtils.getService(this);
   }
 
   public void setCommand(BeeCommand command) {
@@ -53,11 +53,11 @@ public class BeeRadioButton extends RadioButton implements HasId, HasService,
   }
 
   public void setId(String id) {
-    BeeDom.setId(this, id);
+    DomUtils.setId(this, id);
   }
 
   public void setService(String svc) {
-    BeeDom.setService(this, svc);
+    DomUtils.setService(this, svc);
   }
 
 }

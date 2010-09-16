@@ -7,8 +7,8 @@ import com.google.gwt.dom.client.NodeList;
 import com.butent.bee.egg.client.BeeGlobal;
 import com.butent.bee.egg.client.BeeKeeper;
 import com.butent.bee.egg.client.BeeStyle;
+import com.butent.bee.egg.client.dom.DomUtils;
 import com.butent.bee.egg.client.layout.BeeSpan;
-import com.butent.bee.egg.client.utils.BeeDom;
 import com.butent.bee.egg.client.widget.BeeRadioButton;
 import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.BeeField;
@@ -24,7 +24,7 @@ public class RadioGroup extends BeeSpan implements HasService {
       return v;
     }
 
-    NodeList<Element> lst = BeeDom.getElementsByName(name);
+    NodeList<Element> lst = DomUtils.getElementsByName(name);
     if (lst.getLength() <= 0) {
       return v;
     }
@@ -34,7 +34,7 @@ public class RadioGroup extends BeeSpan implements HasService {
 
     for (int i = 0; i < lst.getLength(); i++) {
       el = lst.getItem(i);
-      if (!BeeDom.isInputElement(el)) {
+      if (!DomUtils.isInputElement(el)) {
         continue;
       }
       inp = InputElement.as(el);
@@ -77,15 +77,15 @@ public class RadioGroup extends BeeSpan implements HasService {
 
   @Override
   public void createId() {
-    BeeDom.createId(this, "rg");
+    DomUtils.createId(this, "rg");
   }
 
   public String getService() {
-    return BeeDom.getService(this);
+    return DomUtils.getService(this);
   }
 
   public void setService(String svc) {
-    BeeDom.setService(this, svc);
+    DomUtils.setService(this, svc);
   }
 
   private void addButtons(String name, int value, String... opt) {

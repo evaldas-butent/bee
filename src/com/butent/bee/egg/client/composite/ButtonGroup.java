@@ -1,7 +1,7 @@
 package com.butent.bee.egg.client.composite;
 
+import com.butent.bee.egg.client.dom.DomUtils;
 import com.butent.bee.egg.client.layout.BeeSpan;
-import com.butent.bee.egg.client.utils.BeeDom;
 import com.butent.bee.egg.client.widget.BeeButton;
 import com.butent.bee.egg.shared.BeeStage;
 import com.butent.bee.egg.shared.HasService;
@@ -50,23 +50,23 @@ public class ButtonGroup extends BeeSpan implements HasService, HasStage {
 
   @Override
   public void createId() {
-    BeeDom.createId(this, "bg");
+    DomUtils.createId(this, "bg");
   }
 
   public String getService() {
-    return BeeDom.getService(this);
+    return DomUtils.getService(this);
   }
 
   public String getStage() {
-    return BeeDom.getStage(this);
+    return DomUtils.getStage(this);
   }
 
   public void setService(String svc) {
-    BeeDom.setService(this, svc);
+    DomUtils.setService(this, svc);
   }
 
   public void setStage(String stg) {
-    BeeDom.setStage(this, stg);
+    DomUtils.setStage(this, stg);
   }
 
   private void add(BeeButton b) {

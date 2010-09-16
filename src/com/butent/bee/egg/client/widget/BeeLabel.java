@@ -4,8 +4,8 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.Label;
 
 import com.butent.bee.egg.client.BeeKeeper;
+import com.butent.bee.egg.client.dom.DomUtils;
 import com.butent.bee.egg.client.utils.BeeCommand;
-import com.butent.bee.egg.client.utils.BeeDom;
 import com.butent.bee.egg.client.utils.HasCommand;
 import com.butent.bee.egg.shared.HasId;
 import com.butent.bee.egg.shared.utils.BeeUtils;
@@ -47,7 +47,7 @@ public class BeeLabel extends Label implements HasId, HasCommand {
   }
 
   public void createId() {
-    BeeDom.createId(this, BeeDom.LABEL_ID_PREFIX);
+    DomUtils.createId(this, DomUtils.LABEL_ID_PREFIX);
   }
 
   public BeeCommand getCommand() {
@@ -55,7 +55,7 @@ public class BeeLabel extends Label implements HasId, HasCommand {
   }
 
   public String getId() {
-    return BeeDom.getId(this);
+    return DomUtils.getId(this);
   }
 
   public void setCommand(BeeCommand command) {
@@ -63,7 +63,7 @@ public class BeeLabel extends Label implements HasId, HasCommand {
   }
 
   public void setId(String id) {
-    BeeDom.setId(this, id);
+    DomUtils.setId(this, id);
   }
 
 }

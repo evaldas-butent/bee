@@ -19,11 +19,11 @@ import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.egg.client.BeeKeeper;
+import com.butent.bee.egg.client.dom.BeeImpl;
+import com.butent.bee.egg.client.dom.DomUtils;
 import com.butent.bee.egg.client.event.HasAfterAddHandler;
 import com.butent.bee.egg.client.event.HasBeeBlurHandler;
 import com.butent.bee.egg.client.layout.BeeLayoutPanel;
-import com.butent.bee.egg.client.utils.BeeDom;
-import com.butent.bee.egg.client.utils.BeeImpl;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeWidget;
 import com.butent.bee.egg.shared.HasId;
@@ -129,7 +129,7 @@ public class BeeMenuBar extends Widget implements HasAnimation, HasId,
   }
 
   public void createId() {
-    BeeDom.createId(this, "menubar");
+    DomUtils.createId(this, "menubar");
   }
 
   public void focus() {
@@ -149,7 +149,7 @@ public class BeeMenuBar extends Widget implements HasAnimation, HasId,
   }
 
   public String getId() {
-    return BeeDom.getId(this);
+    return DomUtils.getId(this);
   }
 
   public int getItemIndex(BeeMenuItem item) {
@@ -410,7 +410,7 @@ public class BeeMenuBar extends Widget implements HasAnimation, HasId,
   }
 
   public void setId(String id) {
-    BeeDom.setId(this, id);
+    DomUtils.setId(this, id);
   }
 
   public void setName(String name) {

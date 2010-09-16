@@ -1,4 +1,4 @@
-package com.butent.bee.egg.client.utils;
+package com.butent.bee.egg.client.dom;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
@@ -29,7 +29,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-public class BeeDom {
+public class DomUtils {
   static final class ElementAttribute extends JavaScriptObject implements
       Transformable {
     protected ElementAttribute() {
@@ -100,6 +100,23 @@ public class BeeDom {
 
     return elem;
   }
+
+  public static DdElement createDdElement() {
+    return (DdElement) createElement(DdElement.TAG);
+  }
+
+  public static DtElement createDtElement() {
+    return (DtElement) createElement(DtElement.TAG);
+  }
+  
+  public static Element createElement(String tag) {
+    Assert.notEmpty(tag);
+    return createElement(Document.get(), tag);
+  }
+
+  public static native Element createElement(Document doc, String tag) /*-{
+    return doc.createElement(tag);
+  }-*/;
 
   public static Element createHtml(String html) {
     return createHtml(html, null);

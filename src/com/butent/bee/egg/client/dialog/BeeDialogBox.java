@@ -2,7 +2,7 @@ package com.butent.bee.egg.client.dialog;
 
 import com.google.gwt.user.client.ui.DialogBox;
 
-import com.butent.bee.egg.client.utils.BeeDom;
+import com.butent.bee.egg.client.dom.DomUtils;
 import com.butent.bee.egg.shared.HasId;
 
 public class BeeDialogBox extends DialogBox implements HasId {
@@ -23,15 +23,15 @@ public class BeeDialogBox extends DialogBox implements HasId {
   }
 
   public void createId() {
-    BeeDom.createId(this, "dialog");
+    DomUtils.createId(this, "dialog");
   }
 
   public String getId() {
-    return BeeDom.getId(this);
+    return DomUtils.getId(this);
   }
 
   public void setId(String id) {
-    BeeDom.setId(this, id);
+    DomUtils.setId(this, id);
   }
 
 }

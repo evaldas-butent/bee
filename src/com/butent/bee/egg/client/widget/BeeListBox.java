@@ -5,8 +5,8 @@ import com.google.gwt.user.client.ui.ListBox;
 
 import com.butent.bee.egg.client.BeeGlobal;
 import com.butent.bee.egg.client.BeeKeeper;
+import com.butent.bee.egg.client.dom.DomUtils;
 import com.butent.bee.egg.client.event.HasBeeChangeHandler;
-import com.butent.bee.egg.client.utils.BeeDom;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.HasId;
 import com.butent.bee.egg.shared.utils.BeeUtils;
@@ -67,7 +67,7 @@ public class BeeListBox extends ListBox implements HasId, HasBeeChangeHandler {
   }
 
   public void createId() {
-    BeeDom.createId(this, "list");
+    DomUtils.createId(this, "list");
   }
 
   public String getFieldName() {
@@ -75,7 +75,7 @@ public class BeeListBox extends ListBox implements HasId, HasBeeChangeHandler {
   }
 
   public String getId() {
-    return BeeDom.getId(this);
+    return DomUtils.getId(this);
   }
 
   public boolean onChange() {
@@ -97,7 +97,7 @@ public class BeeListBox extends ListBox implements HasId, HasBeeChangeHandler {
   }
 
   public void setId(String id) {
-    BeeDom.setId(this, id);
+    DomUtils.setId(this, id);
   }
 
   private void addDefaultHandlers() {

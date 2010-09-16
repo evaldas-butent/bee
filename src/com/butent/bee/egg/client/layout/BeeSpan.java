@@ -5,7 +5,7 @@ import com.google.gwt.user.client.ui.ComplexPanel;
 import com.google.gwt.user.client.ui.InsertPanel;
 import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.egg.client.utils.BeeDom;
+import com.butent.bee.egg.client.dom.DomUtils;
 import com.butent.bee.egg.shared.HasId;
 
 public class BeeSpan extends ComplexPanel implements InsertPanel, HasId {
@@ -21,11 +21,11 @@ public class BeeSpan extends ComplexPanel implements InsertPanel, HasId {
   }
 
   public void createId() {
-    BeeDom.createId(this, "span");
+    DomUtils.createId(this, "span");
   }
 
   public String getId() {
-    return BeeDom.getId(this);
+    return DomUtils.getId(this);
   }
 
   public void insert(Widget w, int beforeIndex) {
@@ -33,7 +33,7 @@ public class BeeSpan extends ComplexPanel implements InsertPanel, HasId {
   }
 
   public void setId(String id) {
-    BeeDom.setId(this, id);
+    DomUtils.setId(this, id);
   }
 
 }

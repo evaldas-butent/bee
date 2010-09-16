@@ -2,7 +2,7 @@ package com.butent.bee.egg.client.grid;
 
 import com.google.gwt.user.cellview.client.CellTable;
 
-import com.butent.bee.egg.client.utils.BeeDom;
+import com.butent.bee.egg.client.dom.DomUtils;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.HasId;
 
@@ -26,11 +26,11 @@ public class BeeCellTable extends CellTable<Integer> implements HasId {
   }
 
   public void createId() {
-    BeeDom.createId(this, "celltable");
+    DomUtils.createId(this, "celltable");
   }
 
   public String getId() {
-    return BeeDom.getId(this);
+    return DomUtils.getId(this);
   }
 
   public void initData(int rows) {
@@ -45,7 +45,7 @@ public class BeeCellTable extends CellTable<Integer> implements HasId {
   }
 
   public void setId(String id) {
-    BeeDom.setId(this, id);
+    DomUtils.setId(this, id);
   }
 
 }

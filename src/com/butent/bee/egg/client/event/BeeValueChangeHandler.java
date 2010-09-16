@@ -6,8 +6,8 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.egg.client.BeeGlobal;
 import com.butent.bee.egg.client.BeeStyle;
+import com.butent.bee.egg.client.dom.DomUtils;
 import com.butent.bee.egg.client.utils.BeeCommand;
-import com.butent.bee.egg.client.utils.BeeDom;
 import com.butent.bee.egg.client.widget.BeeRadioButton;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
@@ -33,7 +33,7 @@ public class BeeValueChangeHandler<I> implements ValueChangeHandler<I> {
         cmnd.execute();
       }
 
-      List<Widget> sib = BeeDom.getSiblings((Widget) source);
+      List<Widget> sib = DomUtils.getSiblings((Widget) source);
       if (sib != null) {
         for (int i = 0; i < sib.size(); i++) {
           Widget w = sib.get(i);

@@ -33,13 +33,20 @@ public class MenuConst {
 
   public static final String LAYOUT_MENU_HOR = "menu horizontal";
   public static final String LAYOUT_MENU_VERT = "menu vertical";
+  
   public static final String LAYOUT_STACK = "stack panel";
+  public static final String LAYOUT_TAB = "tab panel";
+ 
   public static final String LAYOUT_TREE = "simple tree";
   public static final String LAYOUT_CELL_TREE = "cell tree";
   public static final String LAYOUT_CELL_BROWSER = "cell browser";
-  public static final String LAYOUT_LIST = "simple list";
+
+  public static final String LAYOUT_LIST = "option list";
+  public static final String LAYOUT_ORDERED_LIST = "ordered list";
+  public static final String LAYOUT_UNORDERED_LIST = "unordered list";
+  public static final String LAYOUT_DEFINITION_LIST = "defiition list";
   public static final String LAYOUT_CELL_LIST = "cell list";
-  public static final String LAYOUT_TAB = "tab panel";
+
   public static final String LAYOUT_RADIO_HOR = "radio horizontal";
   public static final String LAYOUT_RADIO_VERT = "radio vertical";
   public static final String LAYOUT_BUTTONS_HOR = "buttons horizontal";

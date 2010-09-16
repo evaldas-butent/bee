@@ -4,7 +4,7 @@ import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.UIObject;
 
-import com.butent.bee.egg.client.utils.BeeDom;
+import com.butent.bee.egg.client.dom.DomUtils;
 import com.butent.bee.egg.shared.HasId;
 
 public class BeeMenuItemSeparator extends UIObject implements HasId {
@@ -21,11 +21,11 @@ public class BeeMenuItemSeparator extends UIObject implements HasId {
   }
 
   public void createId() {
-    BeeDom.createId(this, "sep");
+    DomUtils.createId(this, "sep");
   }
 
   public String getId() {
-    return BeeDom.getId(this);
+    return DomUtils.getId(this);
   }
 
   public BeeMenuBar getParentMenu() {
@@ -33,7 +33,7 @@ public class BeeMenuItemSeparator extends UIObject implements HasId {
   }
 
   public void setId(String id) {
-    BeeDom.setId(this, id);
+    DomUtils.setId(this, id);
   }
 
   void setParentMenu(BeeMenuBar parentMenu) {

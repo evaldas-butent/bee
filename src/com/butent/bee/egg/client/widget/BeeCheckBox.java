@@ -6,8 +6,8 @@ import com.google.gwt.user.client.ui.CheckBox;
 import com.butent.bee.egg.client.BeeGlobal;
 import com.butent.bee.egg.client.BeeKeeper;
 import com.butent.bee.egg.client.BeeProperties;
+import com.butent.bee.egg.client.dom.DomUtils;
 import com.butent.bee.egg.client.event.HasBeeValueChangeHandler;
-import com.butent.bee.egg.client.utils.BeeDom;
 import com.butent.bee.egg.shared.BeeName;
 import com.butent.bee.egg.shared.HasId;
 import com.butent.bee.egg.shared.Pair;
@@ -82,7 +82,7 @@ public class BeeCheckBox extends CheckBox implements HasId,
   }
 
   public void createId() {
-    BeeDom.createId(this, "c");
+    DomUtils.createId(this, "c");
   }
 
   public String getCheckedCaption() {
@@ -94,7 +94,7 @@ public class BeeCheckBox extends CheckBox implements HasId,
   }
 
   public String getId() {
-    return BeeDom.getId(this);
+    return DomUtils.getId(this);
   }
 
   public String getPropKey() {
@@ -122,7 +122,7 @@ public class BeeCheckBox extends CheckBox implements HasId,
   }
 
   public void setId(String id) {
-    BeeDom.setId(this, id);
+    DomUtils.setId(this, id);
   }
 
   public void setPropKey(String propKey) {

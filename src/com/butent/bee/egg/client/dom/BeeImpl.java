@@ -1,4 +1,4 @@
-package com.butent.bee.egg.client.utils;
+package com.butent.bee.egg.client.dom;
 
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.user.client.Element;

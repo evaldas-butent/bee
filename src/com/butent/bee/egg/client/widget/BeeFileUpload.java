@@ -5,8 +5,8 @@ import com.google.gwt.user.client.ui.FileUpload;
 
 import com.butent.bee.egg.client.BeeGlobal;
 import com.butent.bee.egg.client.BeeKeeper;
+import com.butent.bee.egg.client.dom.DomUtils;
 import com.butent.bee.egg.client.event.HasBeeChangeHandler;
-import com.butent.bee.egg.client.utils.BeeDom;
 import com.butent.bee.egg.shared.HasId;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
@@ -32,7 +32,7 @@ public class BeeFileUpload extends FileUpload implements HasId,
   }
 
   public void createId() {
-    BeeDom.createId(this, "upload");
+    DomUtils.createId(this, "upload");
   }
 
   public String getFieldName() {
@@ -40,7 +40,7 @@ public class BeeFileUpload extends FileUpload implements HasId,
   }
 
   public String getId() {
-    return BeeDom.getId(this);
+    return DomUtils.getId(this);
   }
 
   public boolean onChange() {
@@ -55,7 +55,7 @@ public class BeeFileUpload extends FileUpload implements HasId,
   }
 
   public void setId(String id) {
-    BeeDom.setId(this, id);
+    DomUtils.setId(this, id);
   }
 
   private void addDefaultHandlers() {

@@ -3,7 +3,7 @@ package com.butent.bee.egg.client.menu;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.UIObject;
 
-import com.butent.bee.egg.client.utils.BeeDom;
+import com.butent.bee.egg.client.dom.DomUtils;
 import com.butent.bee.egg.shared.BeeWidget;
 import com.butent.bee.egg.shared.HasId;
 
@@ -37,7 +37,7 @@ public class BeeMenuItem extends UIObject implements HasId {
   }
 
   public void createId() {
-    BeeDom.createId(this, "menuitem");
+    DomUtils.createId(this, "menuitem");
   }
 
   public MenuCommand getCommand() {
@@ -45,7 +45,7 @@ public class BeeMenuItem extends UIObject implements HasId {
   }
 
   public String getId() {
-    return BeeDom.getId(this);
+    return DomUtils.getId(this);
   }
 
   public BeeMenuBar getParentMenu() {
@@ -65,7 +65,7 @@ public class BeeMenuItem extends UIObject implements HasId {
   }
 
   public void setId(String id) {
-    BeeDom.setId(this, id);
+    DomUtils.setId(this, id);
   }
 
   public void setSubMenu(BeeMenuBar subMenu) {
@@ -113,16 +113,16 @@ public class BeeMenuItem extends UIObject implements HasId {
     
     switch (type) {
       case BUTTON :
-        elem = BeeDom.createButton(text).cast();
+        elem = DomUtils.createButton(text).cast();
         break;
       case HTML :
-        elem = BeeDom.createHtml(text).cast();
+        elem = DomUtils.createHtml(text).cast();
         break;
       case RADIO :
-        elem = BeeDom.createRadio(parent.getName(), text).cast();
+        elem = DomUtils.createRadio(parent.getName(), text).cast();
         break;
       default :
-        elem = BeeDom.createLabel(text).cast();
+        elem = DomUtils.createLabel(text).cast();
     }
     
     setElement(elem);

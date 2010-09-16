@@ -5,8 +5,8 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Button;
 
 import com.butent.bee.egg.client.BeeKeeper;
+import com.butent.bee.egg.client.dom.DomUtils;
 import com.butent.bee.egg.client.utils.BeeCommand;
-import com.butent.bee.egg.client.utils.BeeDom;
 import com.butent.bee.egg.client.utils.HasCommand;
 import com.butent.bee.egg.shared.BeeStage;
 import com.butent.bee.egg.shared.HasId;
@@ -69,7 +69,7 @@ public class BeeButton extends Button implements HasId, HasService, HasStage,
   }
 
   public void createId() {
-    BeeDom.createId(this, BeeDom.BUTTON_ID_PREFIX);
+    DomUtils.createId(this, DomUtils.BUTTON_ID_PREFIX);
   }
 
   public BeeCommand getCommand() {
@@ -77,15 +77,15 @@ public class BeeButton extends Button implements HasId, HasService, HasStage,
   }
 
   public String getId() {
-    return BeeDom.getId(this);
+    return DomUtils.getId(this);
   }
 
   public String getService() {
-    return BeeDom.getService(this);
+    return DomUtils.getService(this);
   }
 
   public String getStage() {
-    return BeeDom.getStage(this);
+    return DomUtils.getStage(this);
   }
 
   public void setCommand(BeeCommand command) {
@@ -93,15 +93,15 @@ public class BeeButton extends Button implements HasId, HasService, HasStage,
   }
 
   public void setId(String id) {
-    BeeDom.setId(this, id);
+    DomUtils.setId(this, id);
   }
 
   public void setService(String svc) {
-    BeeDom.setService(this, svc);
+    DomUtils.setService(this, svc);
   }
 
   public void setStage(String stg) {
-    BeeDom.setStage(this, stg);
+    DomUtils.setStage(this, stg);
   }
 
 }

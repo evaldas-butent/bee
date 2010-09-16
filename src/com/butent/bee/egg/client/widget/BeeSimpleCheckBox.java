@@ -5,8 +5,8 @@ import com.google.gwt.user.client.ui.SimpleCheckBox;
 
 import com.butent.bee.egg.client.BeeGlobal;
 import com.butent.bee.egg.client.BeeKeeper;
+import com.butent.bee.egg.client.dom.DomUtils;
 import com.butent.bee.egg.client.event.HasBeeClickHandler;
-import com.butent.bee.egg.client.utils.BeeDom;
 import com.butent.bee.egg.shared.HasId;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
@@ -29,7 +29,7 @@ public class BeeSimpleCheckBox extends SimpleCheckBox implements HasId,
   }
 
   public void createId() {
-    BeeDom.createId(this, "sc");
+    DomUtils.createId(this, "sc");
   }
 
   public String getFieldName() {
@@ -37,7 +37,7 @@ public class BeeSimpleCheckBox extends SimpleCheckBox implements HasId,
   }
 
   public String getId() {
-    return BeeDom.getId(this);
+    return DomUtils.getId(this);
   }
 
   public boolean onBeeClick(ClickEvent event) {
@@ -50,7 +50,7 @@ public class BeeSimpleCheckBox extends SimpleCheckBox implements HasId,
   }
 
   public void setId(String id) {
-    BeeDom.setId(this, id);
+    DomUtils.setId(this, id);
   }
 
   private void addDefaultHandler() {

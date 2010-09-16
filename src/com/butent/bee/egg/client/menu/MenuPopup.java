@@ -6,7 +6,7 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Event.NativePreviewEvent;
 
 import com.butent.bee.egg.client.dialog.BeeDecoratedPopupPanel;
-import com.butent.bee.egg.client.utils.BeeDom;
+import com.butent.bee.egg.client.dom.DomUtils;
 
 public class MenuPopup extends BeeDecoratedPopupPanel {
   private BeeMenuBar parentMenu = null;
@@ -37,7 +37,7 @@ public class MenuPopup extends BeeDecoratedPopupPanel {
 
   @Override
   public void createId() {
-    BeeDom.createId(this, "menupopup");
+    DomUtils.createId(this, "menupopup");
   }
 
   public BeeMenuItem getParentItem() {

@@ -6,9 +6,9 @@ import com.google.gwt.user.client.ui.TextArea;
 
 import com.butent.bee.egg.client.BeeGlobal;
 import com.butent.bee.egg.client.BeeKeeper;
+import com.butent.bee.egg.client.dom.DomUtils;
 import com.butent.bee.egg.client.event.HasBeeKeyHandler;
 import com.butent.bee.egg.client.event.HasBeeValueChangeHandler;
-import com.butent.bee.egg.client.utils.BeeDom;
 import com.butent.bee.egg.shared.HasId;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
@@ -40,7 +40,7 @@ public class BeeTextArea extends TextArea implements HasId, HasBeeKeyHandler,
   }
 
   public void createId() {
-    BeeDom.createId(this, "area");
+    DomUtils.createId(this, "area");
   }
 
   public String getFieldName() {
@@ -48,7 +48,7 @@ public class BeeTextArea extends TextArea implements HasId, HasBeeKeyHandler,
   }
 
   public String getId() {
-    return BeeDom.getId(this);
+    return DomUtils.getId(this);
   }
 
   public boolean onBeeKey(KeyPressEvent event) {
@@ -68,7 +68,7 @@ public class BeeTextArea extends TextArea implements HasId, HasBeeKeyHandler,
   }
 
   public void setId(String id) {
-    BeeDom.setId(this, id);
+    DomUtils.setId(this, id);
   }
 
   private void addDefaultHandlers() {
