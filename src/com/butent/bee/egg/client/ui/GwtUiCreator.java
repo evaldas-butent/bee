@@ -1,5 +1,6 @@
 package com.butent.bee.egg.client.ui;
 
+import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.HorizontalPanel;
@@ -8,12 +9,15 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.egg.client.BeeKeeper;
+import com.butent.bee.egg.client.layout.BeeStack;
 import com.butent.bee.egg.client.menu.BeeMenuBar;
-import com.butent.bee.egg.client.menu.BeeMenuItem;
 import com.butent.bee.egg.client.menu.BeeMenuItemSeparator;
 import com.butent.bee.egg.client.menu.MenuCommand;
+import com.butent.bee.egg.client.tree.BeeTree;
+import com.butent.bee.egg.client.tree.BeeTreeItem;
 import com.butent.bee.egg.client.widget.BeeButton;
 import com.butent.bee.egg.client.widget.BeeLabel;
+import com.butent.bee.egg.client.widget.BeeListBox;
 import com.butent.bee.egg.client.widget.BeeTextBox;
 import com.butent.bee.egg.shared.ui.UiButton;
 import com.butent.bee.egg.shared.ui.UiComponent;
@@ -21,13 +25,17 @@ import com.butent.bee.egg.shared.ui.UiCreator;
 import com.butent.bee.egg.shared.ui.UiField;
 import com.butent.bee.egg.shared.ui.UiHorizontalLayout;
 import com.butent.bee.egg.shared.ui.UiLabel;
+import com.butent.bee.egg.shared.ui.UiListBox;
 import com.butent.bee.egg.shared.ui.UiMenuHorizontal;
 import com.butent.bee.egg.shared.ui.UiMenuVertical;
 import com.butent.bee.egg.shared.ui.UiPanel;
+import com.butent.bee.egg.shared.ui.UiStack;
+import com.butent.bee.egg.shared.ui.UiTree;
 import com.butent.bee.egg.shared.ui.UiVerticalLayout;
 import com.butent.bee.egg.shared.ui.UiWindow;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
+import java.util.Collection;
 import java.util.logging.Logger;
 
 public class GwtUiCreator implements UiCreator {
@@ -91,21 +99,39 @@ public class GwtUiCreator implements UiCreator {
   }
 
   @Override
+  public Object createListBox(UiListBox listBox) {
+    BeeListBox widget = new BeeListBox();
+    widget.setTitle(listBox.getId());
+
+    if (listBox.hasChilds()) {
+      for (UiComponent child : listBox.getChilds()) {
+        widget.addItem(child.getProperty("text"));
+      }
+    }
+    if (BeeUtils.isEmpty(listBox.getProperty("singleVisible"))) {
+      widget.setAllVisible();
+    }
+    return widget;
+  }
+
+  @Override
   public Object createMenuHorizontal(UiMenuHorizontal menuHorizontal) {
-    BeeMenuBar rw = new BeeMenuBar();
+    BeeMenuBar widget = new BeeMenuBar();
+    widget.setTitle(menuHorizontal.getId());
 
-    createMenuItems(rw, menuHorizontal);
+    createMenuItems(widget, menuHorizontal.getChilds());
 
-    return rw;
+    return widget;
   }
 
   @Override
   public Object createMenuVertical(UiMenuVertical menuVertical) {
-    BeeMenuBar rw = new BeeMenuBar(true);
+    BeeMenuBar widget = new BeeMenuBar(true);
+    widget.setTitle(menuVertical.getId());
 
-    createMenuItems(rw, menuVertical);
+    createMenuItems(widget, menuVertical.getChilds());
 
-    return rw;
+    return widget;
   }
 
   @Override
@@ -116,6 +142,51 @@ public class GwtUiCreator implements UiCreator {
     createChilds(p, panel);
 
     return p;
+  }
+
+  @Override
+  public Object createStack(UiStack stack) {
+    BeeStack widget = new BeeStack(Unit.EM);
+    widget.setTitle(stack.getId());
+
+    if (stack.hasChilds()) {
+      for (UiComponent child : stack.getChilds()) {
+        Object childWidget = child.createInstance(this);
+
+        if (childWidget instanceof Widget) {
+          widget.add((Widget) childWidget, child.getProperty("text"), 2);
+        } else {
+          logger.severe("Class " + childWidget.getClass().getName()
+              + " cannot be added to " + widget.getClass().getName());
+        }
+      }
+    }
+    return widget;
+  }
+
+  @Override
+  public Object createTree(UiTree tree) {
+    BeeTree widget = new BeeTree();
+    widget.setTitle(tree.getId());
+
+    if (tree.hasChilds()) {
+      for (UiComponent child : tree.getChilds()) {
+        BeeTreeItem item = new BeeTreeItem(child.getProperty("text"));
+
+        if (child.hasChilds()) {
+          Object childWidget = child.createInstance(this);
+
+          if (childWidget instanceof Widget) {
+            item.addItem((Widget) childWidget);
+          } else {
+            logger.severe("Class " + childWidget.getClass().getName()
+                + " cannot be added to " + widget.getClass().getName());
+          }
+        }
+        widget.addItem(item);
+      }
+    }
+    return widget;
   }
 
   @Override
@@ -153,29 +224,29 @@ public class GwtUiCreator implements UiCreator {
     }
   }
 
-  private void createMenuItems(BeeMenuBar cc, UiComponent u) {
-    if (u.hasChilds()) {
-      for (UiComponent c : u.getChilds()) {
-        String txt = c.getProperty("text");
-        String sep = c.getProperty("separators");
+  private void createMenuItems(BeeMenuBar menu, Collection<UiComponent> childs) {
+    if (!BeeUtils.isEmpty(childs)) {
+      for (UiComponent child : childs) {
+        String txt = child.getProperty("text");
+        String sep = child.getProperty("separators");
 
-        if (c.hasChilds()) {
-          Object cw = c.createInstance(this);
+        if (child.hasChilds()) {
+          Object childWidget = child.createInstance(this);
 
-          if (cw instanceof BeeMenuBar) {
-            cc.addItem(txt, (BeeMenuBar) cw);
+          if (childWidget instanceof BeeMenuBar) {
+            menu.addItem(txt, (BeeMenuBar) childWidget);
           } else {
-            logger.severe("Class " + cw.getClass().getName()
-                + " cannot be added to " + cc.getClass().getName());
+            logger.severe("Class " + childWidget.getClass().getName()
+                + " cannot be added to " + menu.getClass().getName());
           }
         } else {
-          String svc = c.getProperty("service");
-          String opt = c.getProperty("parameters");
+          String svc = child.getProperty("service");
+          String opt = child.getProperty("parameters");
 
-          cc.addItem(txt, new MenuCommand(svc, opt));
+          menu.addItem(txt, new MenuCommand(svc, opt));
         }
         if (!BeeUtils.isEmpty(sep)) {
-          cc.addSeparator(new BeeMenuItemSeparator());
+          menu.addSeparator(new BeeMenuItemSeparator());
         }
       }
     }

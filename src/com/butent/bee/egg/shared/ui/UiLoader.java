@@ -1,9 +1,11 @@
 package com.butent.bee.egg.shared.ui;
 
 import com.butent.bee.egg.shared.Assert;
+import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -13,10 +15,25 @@ import java.util.logging.Logger;
 
 public abstract class UiLoader {
 
-  protected class UiRow {
+  protected class UiRow implements Comparable<UiRow> {
     private String id, className, parent, properties;
+    private int order;
 
     public UiRow() {
+    }
+
+    @Override
+    public int compareTo(UiRow row) {
+      int z = BeeUtils.compare(getParent(), row.getParent());
+
+      if (z == BeeConst.COMPARE_EQUAL) {
+        z = BeeUtils.compare(getOrder(), row.getOrder());
+
+        if (z == BeeConst.COMPARE_EQUAL) {
+          z = BeeUtils.compare(getId(), row.getId());
+        }
+      }
+      return z;
     }
 
     public String getClassName() {
@@ -25,6 +42,10 @@ public abstract class UiLoader {
 
     public String getId() {
       return id;
+    }
+
+    public int getOrder() {
+      return order;
     }
 
     public String getParent() {
@@ -41,6 +62,10 @@ public abstract class UiLoader {
 
     public void setId(String id) {
       this.id = id;
+    }
+
+    public void setOrder(int order) {
+      this.order = order;
     }
 
     public void setParent(String parent) {
@@ -61,6 +86,8 @@ public abstract class UiLoader {
     List<UiRow> data = getFormData(formName, params);
 
     if (!BeeUtils.isEmpty(data)) {
+      Collections.sort(data);
+
       Map<String, List<UiRow>> rows = new LinkedHashMap<String, List<UiRow>>();
       Set<String> orphans = new HashSet<String>();
 

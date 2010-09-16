@@ -39,6 +39,12 @@ public abstract class UiComponent implements HasId, BeeSerializable {
       return new UiMenuHorizontal();
     } else if (getClassName(UiMenuVertical.class).equals(oClass)) {
       return new UiMenuVertical();
+    } else if (getClassName(UiListBox.class).equals(oClass)) {
+      return new UiListBox();
+    } else if (getClassName(UiStack.class).equals(oClass)) {
+      return new UiStack();
+    } else if (getClassName(UiTree.class).equals(oClass)) {
+      return new UiTree();
     }
 
     logger.severe("Unsupported class name: " + oClass);
