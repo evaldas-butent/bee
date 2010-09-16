@@ -4,6 +4,7 @@ import com.butent.bee.egg.server.data.DataServiceBean;
 import com.butent.bee.egg.server.http.RequestInfo;
 import com.butent.bee.egg.server.http.ResponseBuffer;
 import com.butent.bee.egg.server.ui.UiLoaderBean;
+import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.BeeService;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
@@ -34,10 +35,15 @@ public class DispatcherBean {
       dataBean.doService(svc, dsn, reqInfo, buff);
     } else if (BeeService.isSysService(svc)) {
       sysBean.doService(svc, reqInfo, buff);
-    } else if (BeeUtils.same(svc, BeeService.SERVICE_GET_MENU)) {
+
+    } else if (BeeService.equals(svc, BeeService.SERVICE_GET_MENU)) {
       menuBean.getMenu(buff);
+    } else if (BeeService.equals(svc, BeeService.SERVICE_WHERE_AM_I)) {
+      buff.addLine(buff.now(), BeeConst.whereAmI());
+
     } else if (svc.startsWith("rpc_ui_")) {
       uiBean.doService(svc, reqInfo, buff);
+
     } else {
       String msg = BeeUtils.concat(1, svc, "service type not recognized");
       logger.warning(msg);

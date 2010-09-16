@@ -23,9 +23,11 @@ public class MenuConst {
   }
 
   public static int MAX_MENU_DEPTH = 3;
-  public static final String FIELD_ROOT_LIMIT = "menu_root_limit";
+  public static int ROOT_MENU_INDEX = 0;
 
+  public static final String FIELD_ROOT_LIMIT = "menu_root_limit";
   public static final String FIELD_ITEM_LIMIT = "menu_item_limit";
+
   public static int DEFAULT_ROOT_LIMIT = 10;
   public static int DEFAULT_ITEM_LIMIT = 20;
 
@@ -59,6 +61,10 @@ public class MenuConst {
     return "menu_layout_" + idx;
   }
 
+  public static boolean isRootLevel(int idx) {
+    return idx == ROOT_MENU_INDEX;
+  }
+
   public static boolean isSeparatorAfter(int sep) {
     return (sep & SEPARATOR_AFTER) != 0;
   }
@@ -71,10 +77,10 @@ public class MenuConst {
     if (BeeUtils.isEmpty(layout)) {
       return false;
     }
-
     return BeeUtils.inListSame(layout, LAYOUT_MENU_HOR, LAYOUT_MENU_VERT,
         LAYOUT_STACK, LAYOUT_TREE, LAYOUT_CELL_TREE, LAYOUT_CELL_BROWSER,
         LAYOUT_LIST, LAYOUT_CELL_LIST, LAYOUT_TAB, LAYOUT_RADIO_HOR,
         LAYOUT_RADIO_VERT, LAYOUT_BUTTONS_HOR, LAYOUT_BUTTONS_VERT);
   }
+
 }

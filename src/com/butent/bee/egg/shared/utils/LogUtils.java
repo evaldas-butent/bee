@@ -1,9 +1,8 @@
 package com.butent.bee.egg.shared.utils;
 
-import com.google.gwt.core.client.GWT;
-
 import com.butent.bee.egg.client.BeeKeeper;
 import com.butent.bee.egg.shared.Assert;
+import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.BeeDate;
 
 import java.util.logging.Logger;
@@ -39,7 +38,7 @@ public class LogUtils {
 
   public static Logger getDefaultLogger() {
     if (defaultLogger == null) {
-      if (GWT.isClient()) {
+      if (BeeConst.isClient()) {
         setDefaultLogger(BeeKeeper.getLog().getLogger());
       } else {
         setDefaultLogger(Logger.getLogger(LogUtils.class.getName()));

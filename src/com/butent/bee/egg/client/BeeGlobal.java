@@ -289,17 +289,18 @@ public class BeeGlobal implements BeeModule {
     createField(FIELD_DEBUG, "Debug", BeeType.TYPE_BOOLEAN,
         BeeUtils.toString(false));
 
-    for (int i = 0; i < MenuConst.MAX_MENU_DEPTH; i++) {
-      createField(MenuConst.fieldMenuLayout(i), (i == 0) ? "Root" : "Items "
-          + BeeUtils.bracket(i), BeeType.TYPE_STRING, (i == 0)
-          ? MenuConst.DEFAULT_ROOT_LAYOUT : MenuConst.DEFAULT_ITEM_LAYOUT,
-          BeeWidget.LIST, MenuConst.LAYOUT_MENU_HOR,
-          MenuConst.LAYOUT_MENU_VERT, MenuConst.LAYOUT_STACK,
-          MenuConst.LAYOUT_TREE, MenuConst.LAYOUT_CELL_TREE,
-          MenuConst.LAYOUT_CELL_BROWSER, MenuConst.LAYOUT_LIST,
-          MenuConst.LAYOUT_CELL_LIST, MenuConst.LAYOUT_TAB,
-          MenuConst.LAYOUT_RADIO_HOR, MenuConst.LAYOUT_RADIO_VERT,
-          MenuConst.LAYOUT_BUTTONS_HOR, MenuConst.LAYOUT_BUTTONS_VERT);
+    for (int i = MenuConst.ROOT_MENU_INDEX; i < MenuConst.MAX_MENU_DEPTH; i++) {
+      createField(MenuConst.fieldMenuLayout(i), MenuConst.isRootLevel(i)
+          ? "Root" : "Items " + BeeUtils.bracket(i), BeeType.TYPE_STRING,
+          MenuConst.isRootLevel(i) ? MenuConst.DEFAULT_ROOT_LAYOUT
+              : MenuConst.DEFAULT_ITEM_LAYOUT, BeeWidget.LIST,
+          MenuConst.LAYOUT_MENU_HOR, MenuConst.LAYOUT_MENU_VERT,
+          MenuConst.LAYOUT_STACK, MenuConst.LAYOUT_TREE,
+          MenuConst.LAYOUT_CELL_TREE, MenuConst.LAYOUT_CELL_BROWSER,
+          MenuConst.LAYOUT_LIST, MenuConst.LAYOUT_CELL_LIST,
+          MenuConst.LAYOUT_TAB, MenuConst.LAYOUT_RADIO_HOR,
+          MenuConst.LAYOUT_RADIO_VERT, MenuConst.LAYOUT_BUTTONS_HOR,
+          MenuConst.LAYOUT_BUTTONS_VERT);
 
       createField(MenuConst.fieldMenuBarType(i), BeeConst.STRING_EMPTY,
           BeeType.TYPE_BOOLEAN, BeeUtils.toString(false));

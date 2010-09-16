@@ -13,6 +13,7 @@ import com.butent.bee.egg.client.communication.RpcList;
 import com.butent.bee.egg.client.utils.BeeJs;
 import com.butent.bee.egg.client.widget.BeeTextBox;
 import com.butent.bee.egg.shared.BeeConst;
+import com.butent.bee.egg.shared.BeeService;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 import com.butent.bee.egg.shared.utils.PropUtils;
 import com.butent.bee.egg.shared.utils.StringProp;
@@ -67,6 +68,10 @@ public class CliWidget extends BeeTextBox {
           "Unique Thread Id", GWT.getUniqueThreadId(), "Version",
           GWT.getVersion(), "Is Client", GWT.isClient(), "Is Prod Mode",
           GWT.isProdMode(), "Is Script", GWT.isScript()));
+    
+    } else if (BeeUtils.same(v, "?")) {
+      BeeKeeper.getLog().info(BeeConst.whereAmI());
+      BeeKeeper.getRpc().dispatchService(BeeService.SERVICE_WHERE_AM_I);
 
     } else if (c > 1) {
       if (BeeUtils.same(arr[0], "eval")) {

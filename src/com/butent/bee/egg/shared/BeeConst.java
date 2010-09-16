@@ -1,6 +1,6 @@
 package com.butent.bee.egg.shared;
 
-public abstract class BeeConst {
+public class BeeConst {
   public static final String MYSQL = "MySql";
   public static final String MSSQL = "MsSql";
   public static final String ORACLE = "Oracle";
@@ -94,6 +94,12 @@ public abstract class BeeConst {
   public static final Object[] EMPTY_OBJECT_ARRAY = new Object[0];
   public static final String[] EMPTY_STRING_ARRAY = new String[0];
   public static final int[] EMPTY_INT_ARRAY = new int[0];
+  
+  private static String home = SERVER;
+
+  public static boolean isClient() {
+    return home.equals(CLIENT);
+  }
 
   public static boolean isDefault(String s) {
     if (s == null) {
@@ -107,6 +113,18 @@ public abstract class BeeConst {
     return x == INT_ERROR;
   }
 
+  public static boolean isServer() {
+    return home.equals(SERVER);
+  }
+  
+  public static void setClient() {
+    home = CLIENT;
+  }
+
+  public static void setServer() {
+    home = SERVER;
+  }
+  
   public static boolean validDsType(String tp) {
     boolean ok = false;
 
@@ -122,6 +140,16 @@ public abstract class BeeConst {
     }
 
     return ok;
+  }
+
+  public static String whereAmI() {
+    if (isClient()) {
+      return CLIENT;
+    } else if (isServer()) {
+      return SERVER;
+    } else {
+      return UNKNOWN;
+    }
   }
 
 }

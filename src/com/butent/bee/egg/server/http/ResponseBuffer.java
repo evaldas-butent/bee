@@ -303,6 +303,10 @@ public class ResponseBuffer {
     return (separator != null && separator.length == 1 && separator[0] == BeeService.DEFAULT_INFORMATION_SEPARATOR);
   }
 
+  public String now() {
+    return new BeeDate().toLog();
+  }
+
   public void setBuffer(StringBuilder buffer) {
     this.buffer = buffer;
   }

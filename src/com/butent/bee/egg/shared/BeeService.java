@@ -34,6 +34,8 @@ public class BeeService {
 
   public static final String SERVICE_GET_MENU = RPC_SERVICE_PREFIX + "get_menu";
 
+  public static final String SERVICE_WHERE_AM_I = RPC_SERVICE_PREFIX + "where_am_i";
+
   public static final String SERVICE_CLOSE_DIALOG = UI_SERVICE_PREFIX
       + "close_dialog";
   public static final String SERVICE_CONFIRM_DIALOG = UI_SERVICE_PREFIX

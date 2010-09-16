@@ -170,13 +170,19 @@ public class BeeCallback implements RequestCallback {
 
     if (BeeService.equals(svc, BeeService.SERVICE_GET_MENU)) {
       BeeKeeper.getMenu().loadCallBack(arr);
+
     } else if (cc > 0) {
       BeeKeeper.getUi().updateActivePanel(BeeGlobal.createGrid(cc, arr));
+
     } else {
       for (int i = 0; i < arr.length(); i++) {
         if (!BeeUtils.isEmpty(arr.get(i))) {
           BeeKeeper.getLog().info(arr.get(i));
         }
+      }
+
+      if (BeeService.equals(svc, BeeService.SERVICE_WHERE_AM_I)) {
+        BeeKeeper.getLog().info(BeeConst.whereAmI());
       }
     }
   }

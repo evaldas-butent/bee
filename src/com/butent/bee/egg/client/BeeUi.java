@@ -261,7 +261,7 @@ public class BeeUi implements BeeModule {
     int r = MenuConst.MAX_MENU_DEPTH;
     String fld, cap;
 
-    for (int i = 0; i < r; i++) {
+    for (int i = MenuConst.ROOT_MENU_INDEX; i < r; i++) {
       fld = MenuConst.fieldMenuLayout(i);
       cap = BeeGlobal.getFieldCaption(fld);
 
@@ -274,13 +274,15 @@ public class BeeUi implements BeeModule {
       fp.setWidget(i, 2, new BeeSimpleCheckBox(fld));
     }
 
-    fp.setWidget(0, 3, new BeeIntegerBox(MenuConst.FIELD_ROOT_LIMIT));
-    fp.setWidget(1, 3, new BeeIntegerBox(MenuConst.FIELD_ITEM_LIMIT));
+    fp.setWidget(MenuConst.ROOT_MENU_INDEX, 3, new BeeIntegerBox(
+        MenuConst.FIELD_ROOT_LIMIT));
+    fp.setWidget(MenuConst.ROOT_MENU_INDEX + 1, 3, new BeeIntegerBox(
+        MenuConst.FIELD_ITEM_LIMIT));
 
     fp.setWidget(r - 1, 3, new BeeButton("Refresh",
         BeeService.SERVICE_REFRESH_MENU));
 
-    fp.setWidget(r - 1, 3, new BeeButton("BEE", "comp_ui_menu", "stage_dummy"));
+    fp.setWidget(r - 1, 4, new BeeButton("BEE", "comp_ui_menu", "stage_dummy"));
 
     spl.addNorth(fp, 100);
 

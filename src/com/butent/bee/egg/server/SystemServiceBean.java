@@ -29,17 +29,17 @@ public class SystemServiceBean {
     Assert.notEmpty(svc);
     Assert.notNull(buff);
 
-    if (svc.equals(BeeService.SERVICE_TEST_CONNECTION)) {
+    if (BeeService.equals(svc, BeeService.SERVICE_TEST_CONNECTION)) {
       connectionInfo(reqInfo, buff);
-    } else if (svc.equals(BeeService.SERVICE_SERVER_INFO)) {
+    } else if (BeeService.equals(svc, BeeService.SERVICE_SERVER_INFO)) {
       systemInfo(buff);
-    } else if (svc.equals(BeeService.SERVICE_VM_INFO)) {
+    } else if (BeeService.equals(svc, BeeService.SERVICE_VM_INFO)) {
       vmInfo(buff);
-    } else if (svc.equals(BeeService.SERVICE_LOADER_INFO)) {
+    } else if (BeeService.equals(svc, BeeService.SERVICE_LOADER_INFO)) {
       loaderInfo(buff);
-    } else if (svc.equals(BeeService.SERVICE_CLASS_INFO)) {
+    } else if (BeeService.equals(svc, BeeService.SERVICE_CLASS_INFO)) {
       classInfo(reqInfo, buff);
-    } else if (svc.equals(BeeService.SERVICE_XML_INFO)) {
+    } else if (BeeService.equals(svc, BeeService.SERVICE_XML_INFO)) {
       xmlInfo(reqInfo, buff);
     } else {
       String msg = BeeUtils.concat(1, svc, "system service not recognized");
