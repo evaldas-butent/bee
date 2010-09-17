@@ -9,6 +9,7 @@ import com.google.gwt.user.client.DOM;
 
 import com.butent.bee.egg.client.BeeGlobal;
 import com.butent.bee.egg.client.BeeKeeper;
+import com.butent.bee.egg.client.communication.ParameterList;
 import com.butent.bee.egg.client.communication.RpcList;
 import com.butent.bee.egg.client.utils.BeeJs;
 import com.butent.bee.egg.client.widget.BeeTextBox;
@@ -96,6 +97,7 @@ public class CliWidget extends BeeTextBox {
           BeeKeeper.getUi().showGrid(new String[]{"property", "type", "value"},
               prp);
         }
+
       } else if (BeeUtils.inListSame(arr[0], "f", "func")) {
         JavaScriptObject obj = BeeJs.eval(arr[1]);
         if (obj == null) {
@@ -115,6 +117,7 @@ public class CliWidget extends BeeTextBox {
         } else {
           BeeKeeper.getUi().showGrid(new String[]{"function"}, fnc);
         }
+
       } else if (BeeUtils.same(arr[0], "id")) {
         JavaScriptObject obj = DOM.getElementById(arr[1]);
         if (obj == null) {
@@ -133,6 +136,13 @@ public class CliWidget extends BeeTextBox {
           BeeKeeper.getUi().showGrid(new String[]{"property", "type", "value"},
               prp);
         }
+
+      } else if (BeeUtils.inListSame(arr[0], "file", "dir", "get")) {
+        ParameterList params = BeeKeeper.getRpc().createParameters(BeeService.SERVICE_GET_RESOURCE);
+        params.addHeaderItem(arr[0]);
+        params.addHeaderItem(arr[1]);
+
+        BeeKeeper.getRpc().makeGetRequest(params);
       }
 
     } else {

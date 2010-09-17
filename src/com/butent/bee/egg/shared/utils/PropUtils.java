@@ -210,6 +210,21 @@ public abstract class PropUtils {
       }
     }
   }
+  
+  public static List<StringProp> arrayToString(String prefix, String[] values) {
+    Assert.notEmpty(values);
+    List<StringProp> lst = new ArrayList<StringProp>();
+    
+    int n = values.length;
+    String name = BeeUtils.isEmpty(prefix) ? BeeConst.STRING_EMPTY :
+      prefix.trim() + BeeConst.STRING_SPACE;
+    
+    for (int i = 0; i < n; i++) {
+      addString(lst, name + BeeUtils.progress(i + 1, n), values[i]);
+    }
+    
+    return lst;
+  }
 
   public static String[][] createStringArray(Object... obj) {
     Assert.parameterCount(obj.length, 2);

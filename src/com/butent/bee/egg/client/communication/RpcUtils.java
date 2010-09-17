@@ -13,6 +13,7 @@ import com.butent.bee.egg.shared.utils.SubProp;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Map;
 
 public class RpcUtils {
   public static final String addQueryString(String url, String qs) {
@@ -24,12 +25,20 @@ public class RpcUtils {
       return url.trim() + BeeService.QUERY_STRING_SEPARATOR + qs.trim();
     }
   }
+  
+  public static String appendQueryParameters(String qs, Map<String, String> params) {
+    if (BeeUtils.isEmpty(params)) {
+      return qs;
+    }
+    
+    StringBuilder sb = new StringBuilder();
+    
+    return sb.toString();
+  }
 
   public static final String buildQueryString(String... x) {
     int c = x.length;
-    if (c < 2) {
-      return null;
-    }
+    Assert.parameterCount(c, 2);
 
     StringBuilder s = new StringBuilder();
 
@@ -50,7 +59,6 @@ public class RpcUtils {
 
   public static final Collection<StringProp> requestInfo(RequestBuilder rb) {
     Assert.notNull(rb);
-
     Collection<StringProp> prp = new ArrayList<StringProp>();
 
     PropUtils.addString(prp, "Url", rb.getUrl(), "Http Method",

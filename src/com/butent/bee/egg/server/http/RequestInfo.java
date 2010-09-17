@@ -1,5 +1,7 @@
 package com.butent.bee.egg.server.http;
 
+import com.butent.bee.egg.server.utils.XmlUtils;
+import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.BeeService;
 import com.butent.bee.egg.shared.Transformable;
@@ -173,6 +175,35 @@ public class RequestInfo implements Transformable {
 
   public String getOptions() {
     return options;
+  }
+
+  public String getParameter(int idx) {
+    return getParameter(BeeService.rpcParamName(idx));
+  }
+  
+  public String getParameter(String name) {
+    Assert.notEmpty(name);
+    String value = null;
+
+    if (!BeeUtils.isEmpty(getParams())) {
+      value = getParams().get(name);
+      if (!BeeUtils.isEmpty(value)) {
+        return value;
+      }
+    }
+
+    if (!BeeUtils.isEmpty(getHeaders())) {
+      value = getHeaders().get(name);
+      if (!BeeUtils.isEmpty(value)) {
+        return value;
+      }
+    }
+    
+    if (getContentLen() > 0) {
+      value = XmlUtils.getText(getContent(), name);
+    }
+    
+    return value;
   }
 
   public Map<String, String> getParams() {

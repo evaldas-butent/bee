@@ -28,6 +28,7 @@ public class BeeService {
   public static final String SERVICE_CLASS_INFO = SYS_SERVICE_PREFIX
       + "class_info";
   public static final String SERVICE_XML_INFO = SYS_SERVICE_PREFIX + "xml_info";
+  public static final String SERVICE_GET_RESOURCE = SYS_SERVICE_PREFIX + "get_resource";
 
   public static final String SERVICE_LOGIN = RPC_SERVICE_PREFIX + "login";
   public static final String SERVICE_LOGOUT = RPC_SERVICE_PREFIX + "logout";
@@ -60,10 +61,12 @@ public class BeeService {
   public static final String RPC_FIELD_SEP = RPC_FIELD_PREFIX + "sep";
   public static final String RPC_FIELD_OPT = RPC_FIELD_PREFIX + "opt";
   public static final String RPC_FIELD_CNT = RPC_FIELD_PREFIX + "cnt";
-  public static final String RPC_FIELD_COLS = RPC_FIELD_PREFIX + "cc";
-  public static final String RPC_FIELD_ROWS = RPC_FIELD_PREFIX + "rc";
-  public static final String RPC_FIELD_MSG_CNT = RPC_FIELD_PREFIX + "mc";
+  public static final String RPC_FIELD_COLS = RPC_FIELD_PREFIX + "c_c";
+  public static final String RPC_FIELD_ROWS = RPC_FIELD_PREFIX + "r_c";
+  public static final String RPC_FIELD_MSG_CNT = RPC_FIELD_PREFIX + "m_c";
   public static final String RPC_FIELD_MSG = RPC_FIELD_PREFIX + "msg";
+  public static final String RPC_FIELD_PAR_CNT = RPC_FIELD_PREFIX + "p_c";
+  public static final String RPC_FIELD_PAR = RPC_FIELD_PREFIX + "par";
 
   public static final String FIELD_CLASS_NAME = RPC_FIELD_PREFIX + "class_name";
   public static final String FIELD_PACKAGE_LIST = RPC_FIELD_PREFIX
@@ -161,4 +164,8 @@ public class BeeService {
     return RPC_FIELD_MSG + i;
   }
 
+  public static String rpcParamName(int i) {
+    return RPC_FIELD_PAR + i;
+  }
+  
 }

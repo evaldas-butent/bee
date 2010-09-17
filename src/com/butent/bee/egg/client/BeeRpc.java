@@ -4,10 +4,10 @@ import com.google.gwt.http.client.RequestBuilder;
 import com.google.gwt.http.client.RequestException;
 
 import com.butent.bee.egg.client.communication.BeeCallback;
+import com.butent.bee.egg.client.communication.ParameterList;
 import com.butent.bee.egg.client.communication.RpcInfo;
 import com.butent.bee.egg.client.communication.RpcList;
 import com.butent.bee.egg.client.communication.RpcUtils;
-import com.butent.bee.egg.client.ui.CompositeService;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.BeeService;
@@ -21,6 +21,11 @@ public class BeeRpc implements BeeModule {
 
   public BeeRpc(String url) {
     this.rpcUrl = url;
+  }
+  
+  public ParameterList createParameters(String svc) {
+    Assert.notEmpty(svc);
+    return new ParameterList(svc);
   }
 
   public boolean dispatchService(String svc) {
@@ -40,8 +45,20 @@ public class BeeRpc implements BeeModule {
     return callBack;
   }
 
+  public String getDsn() {
+    return BeeKeeper.getUi().getDsn();
+  }
+
   public String getName() {
     return getClass().getName();
+  }
+
+  public String getOptions() {
+    if (BeeGlobal.isDebug()) {
+      return BeeService.OPTION_DEBUG;
+    } else {
+      return BeeConst.STRING_EMPTY;
+    }
   }
 
   public int getPriority(int p) {
@@ -74,19 +91,35 @@ public class BeeRpc implements BeeModule {
   }
 
   public boolean makeGetRequest(String svc) {
-    return makeRequest(RequestBuilder.GET, svc, null, BeeConst.TIME_UNKNOWN);
+    return makeRequest(RequestBuilder.GET, createParameters(svc), null, BeeConst.TIME_UNKNOWN);
+  }
+
+  public boolean makeGetRequest(ParameterList params) {
+    return makeRequest(RequestBuilder.GET, params, null, BeeConst.TIME_UNKNOWN);
   }
 
   public boolean makeGetRequest(String svc, int timeout) {
-    return makeRequest(RequestBuilder.GET, svc, null, timeout);
+    return makeRequest(RequestBuilder.GET, createParameters(svc), null, timeout);
   }
 
+  public boolean makeGetRequest(ParameterList params, int timeout) {
+    return makeRequest(RequestBuilder.GET, params, null, timeout);
+  }
+  
   public boolean makePostRequest(String svc, String data) {
-    return makeRequest(RequestBuilder.POST, svc, data, BeeConst.TIME_UNKNOWN);
+    return makeRequest(RequestBuilder.POST, createParameters(svc), data, BeeConst.TIME_UNKNOWN);
+  }
+
+  public boolean makePostRequest(ParameterList params, String data) {
+    return makeRequest(RequestBuilder.POST, params, data, BeeConst.TIME_UNKNOWN);
   }
 
   public boolean makePostRequest(String svc, String data, int timeout) {
-    return makeRequest(RequestBuilder.POST, svc, data, timeout);
+    return makeRequest(RequestBuilder.POST, createParameters(svc), data, timeout);
+  }
+
+  public boolean makePostRequest(ParameterList params, String data, int timeout) {
+    return makeRequest(RequestBuilder.POST, params, data, timeout);
   }
 
   public void setCallBack(BeeCallback callBack) {
@@ -100,37 +133,12 @@ public class BeeRpc implements BeeModule {
   public void start() {
   }
 
-  private void buildHeaders(RequestBuilder bld, int id) {
-    if (id > 0) {
-      bld.setHeader(BeeService.RPC_FIELD_QID, BeeUtils.transform(id));
-    }
-
-    String opt = buildOptions();
-    if (!BeeUtils.isEmpty(opt)) {
-      bld.setHeader(BeeService.RPC_FIELD_OPT, opt);
-    }
-  }
-
-  private String buildOptions() {
-    if (BeeGlobal.isDebug()) {
-      return BeeService.OPTION_DEBUG;
-    } else {
-      return BeeConst.STRING_EMPTY;
-    }
-  }
-
-  private String buildQuery(String svc, String dsn) {
-    return RpcUtils.buildQueryString(BeeService.RPC_FIELD_QNM, svc,
-        BeeService.RPC_FIELD_DSN, dsn);
-  }
-
-  private String getDsn() {
-    return BeeKeeper.getUi().getDsn();
-  }
-
-  private boolean makeRequest(RequestBuilder.Method type, String svc,
-      String data, int timeout) {
+  private boolean makeRequest(RequestBuilder.Method type, 
+      ParameterList params, String data, int timeout) {
     Assert.notNull(type);
+    Assert.notNull(params);
+    
+    String svc = params.getService();
     Assert.notEmpty(svc);
 
     boolean ok = false;
@@ -139,7 +147,7 @@ public class BeeRpc implements BeeModule {
     RpcInfo info = new RpcInfo(type, svc);
     int id = info.getId();
 
-    String qs = buildQuery(CompositeService.extractService(svc), getDsn());
+    String qs = params.getQuery();
     String url = RpcUtils.addQueryString(rpcUrl, qs);
 
     RequestBuilder bld = new RequestBuilder(type, url);
@@ -147,29 +155,30 @@ public class BeeRpc implements BeeModule {
       bld.setTimeoutMillis(timeout);
       info.setTimeout(timeout);
     }
-    buildHeaders(bld, id);
 
+    bld.setHeader(BeeService.RPC_FIELD_QID, BeeUtils.transform(id));
+    params.getHeaders(bld);
+    
+    String z = BeeUtils.ifString(data, params.getData());
+    
     info.setReqMsg(qs);
-
     BeeKeeper.getLog().info("sending request", id, type.toString(), url);
 
-    if (!BeeUtils.isEmpty(data)) {
-      int size = data.length();
+    if (!BeeUtils.isEmpty(z)) {
+      int size = z.length();
       info.setReqSize(size);
 
       if (debug) {
-        BeeKeeper.getLog().info("sending data", BeeUtils.bracket(size), data);
+        BeeKeeper.getLog().info("sending data", BeeUtils.bracket(size), z);
       }
     }
 
     try {
-      bld.sendRequest(data, callBack);
-
+      bld.sendRequest(z, callBack);
       info.setState(BeeConst.STATE_OPEN);
       ok = true;
     } catch (RequestException ex) {
       info.endError(ex);
-
       BeeKeeper.getLog().severe("send request error", id, ex);
     }
 

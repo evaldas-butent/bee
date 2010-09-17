@@ -13,6 +13,8 @@ import com.butent.bee.egg.shared.utils.BeeUtils;
 import com.butent.bee.egg.shared.utils.PropUtils;
 import com.butent.bee.egg.shared.utils.SubProp;
 
+import java.io.File;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -41,6 +43,10 @@ public class SystemServiceBean {
       classInfo(reqInfo, buff);
     } else if (BeeService.equals(svc, BeeService.SERVICE_XML_INFO)) {
       xmlInfo(reqInfo, buff);
+
+    } else if (BeeService.equals(svc, BeeService.SERVICE_GET_RESOURCE)) {
+      getResource(reqInfo, buff);
+
     } else {
       String msg = BeeUtils.concat(1, svc, "system service not recognized");
       logger.warning(msg);
@@ -109,6 +115,45 @@ public class SystemServiceBean {
   private void connectionInfo(RequestInfo reqInfo, ResponseBuffer buff) {
     Assert.notNull(reqInfo);
     buff.addSub(reqInfo.getInfo());
+  }
+
+  private void getResource(RequestInfo reqInfo, ResponseBuffer buff) {
+    String name = reqInfo.getParameter(1);
+    if (BeeUtils.isEmpty(name)) {
+      buff.addSevere("Parameter", BeeService.rpcParamName(1), "not found");
+      return;
+    }
+
+    URL url = Thread.currentThread().getContextClassLoader().getResource(name);
+    if (url == null) {
+      buff.addWarning("resource", name, "not found");
+      return;
+    }
+
+    String opt = reqInfo.getParameter(1);
+
+    buff.addMessage(opt, url);
+    String path = url.getPath();
+
+    File fl = new File(path);
+
+    if (!fl.exists()) {
+      buff.addWarning("file", path, "does not exist");
+      return;
+    }
+
+    buff.addStringProp(FileUtils.getFileInfo(fl));
+
+    if (fl.isDirectory()) {
+      String arr[] = FileUtils.getFiles(fl);
+      int n = BeeUtils.length(arr);
+
+      if (n > 0) {
+        buff.addStringProp(PropUtils.arrayToString("file", arr));
+      } else {
+        buff.addWarning("no files found");
+      }
+    }
   }
 
   private void loaderInfo(ResponseBuffer buff) {

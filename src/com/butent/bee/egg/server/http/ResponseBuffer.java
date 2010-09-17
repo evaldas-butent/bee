@@ -131,6 +131,14 @@ public class ResponseBuffer {
     }
   }
 
+  public void addPropString(StringProp el) {
+    Assert.notEmpty(el);
+
+    add(el.getName());
+    add(el.getValue());
+    add(new BeeDate().toLog());
+  }
+
   public void addPropSub(SubProp el) {
     Assert.notEmpty(el);
 
@@ -149,40 +157,31 @@ public class ResponseBuffer {
     messages.add(new ResponseMessage(Level.SEVERE, obj));
   }
 
-  public void addStringProp(Collection<StringProp> lst, String... cap) {
-    Assert.notEmpty(lst);
-
+  public void addStringColumns(String... cap) {
     int c = cap.length;
     String nm;
 
-    int i = 0;
-    if (c > i && !BeeUtils.isEmpty(cap[i])) {
-      nm = cap[i].trim();
-    } else {
-      nm = "Name";
-    }
-    addColumn(new BeeColumn(nm));
+    for (int i = 0; i < StringProp.HEADER_COUNT + 1; i++) {
+      if (c > i && !BeeUtils.isEmpty(cap[i])) {
+        nm = cap[i].trim();
+      } else if (i < StringProp.HEADER_COUNT) {
+        nm = SubProp.COLUMN_HEADERS[i];
+      } else {
+        nm = "Date";
+      }
 
-    i++;
-    if (c > i && !BeeUtils.isEmpty(cap[i])) {
-      nm = cap[i].trim();
-    } else {
-      nm = "Value";
+      addColumn(new BeeColumn(nm));
     }
-    addColumn(new BeeColumn(nm));
+  }
 
-    i++;
-    if (c > i && !BeeUtils.isEmpty(cap[i])) {
-      nm = cap[i].trim();
-    } else {
-      nm = "Date";
+  public void addStringProp(Collection<StringProp> lst, String... cap) {
+    Assert.notEmpty(lst);
+    if (getColumnCount() == 0) {
+      addStringColumns(cap);
     }
-    addColumn(new BeeColumn(nm));
 
     for (StringProp el : lst) {
-      add(el.getName());
-      add(el.getValue());
-      add(new BeeDate().toLog());
+      addPropString(el);
     }
   }
 
