@@ -10,6 +10,7 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.egg.client.BeeKeeper;
 import com.butent.bee.egg.client.layout.BeeStack;
+import com.butent.bee.egg.client.layout.BeeTab;
 import com.butent.bee.egg.client.menu.BeeMenuBar;
 import com.butent.bee.egg.client.menu.BeeMenuItemSeparator;
 import com.butent.bee.egg.client.menu.MenuCommand;
@@ -30,6 +31,7 @@ import com.butent.bee.egg.shared.ui.UiMenuHorizontal;
 import com.butent.bee.egg.shared.ui.UiMenuVertical;
 import com.butent.bee.egg.shared.ui.UiPanel;
 import com.butent.bee.egg.shared.ui.UiStack;
+import com.butent.bee.egg.shared.ui.UiTab;
 import com.butent.bee.egg.shared.ui.UiTree;
 import com.butent.bee.egg.shared.ui.UiVerticalLayout;
 import com.butent.bee.egg.shared.ui.UiWindow;
@@ -45,7 +47,7 @@ public class GwtUiCreator implements UiCreator {
   @Override
   public Object createButton(UiButton button) {
     BeeButton b = new BeeButton();
-    b.setText(button.getProperty("caption"));
+    b.setText(button.getCaption());
     b.setTitle(button.getId());
 
     String svc = button.getProperty("service");
@@ -63,7 +65,7 @@ public class GwtUiCreator implements UiCreator {
   public Object createField(UiField field) {
     Panel p = new HorizontalPanel();
     BeeLabel l = new BeeLabel();
-    l.setText(field.getProperty("caption"));
+    l.setText(field.getCaption());
 
     BeeTextBox f = new BeeTextBox();
     f.setTitle(field.getId());
@@ -90,7 +92,7 @@ public class GwtUiCreator implements UiCreator {
   @Override
   public Object createLabel(UiLabel label) {
     BeeLabel l = new BeeLabel();
-    l.setText(label.getProperty("caption"));
+    l.setText(label.getCaption());
     l.setTitle(label.getId());
 
     createChilds(l, label);
@@ -105,7 +107,7 @@ public class GwtUiCreator implements UiCreator {
 
     if (listBox.hasChilds()) {
       for (UiComponent child : listBox.getChilds()) {
-        widget.addItem(child.getProperty("text"));
+        widget.addItem(child.getCaption());
       }
     }
     if (BeeUtils.isEmpty(listBox.getProperty("singleVisible"))) {
@@ -154,7 +156,27 @@ public class GwtUiCreator implements UiCreator {
         Object childWidget = child.createInstance(this);
 
         if (childWidget instanceof Widget) {
-          widget.add((Widget) childWidget, child.getProperty("text"), 2);
+          widget.add((Widget) childWidget, child.getCaption(), 2);
+        } else {
+          logger.severe("Class " + childWidget.getClass().getName()
+              + " cannot be added to " + widget.getClass().getName());
+        }
+      }
+    }
+    return widget;
+  }
+
+  @Override
+  public Object createTab(UiTab tab) {
+    BeeTab widget = new BeeTab(20, Unit.PX);
+    widget.setTitle(tab.getId());
+
+    if (tab.hasChilds()) {
+      for (UiComponent child : tab.getChilds()) {
+        Object childWidget = child.createInstance(this);
+
+        if (childWidget instanceof Widget) {
+          widget.add((Widget) childWidget, child.getCaption());
         } else {
           logger.severe("Class " + childWidget.getClass().getName()
               + " cannot be added to " + widget.getClass().getName());
@@ -171,7 +193,7 @@ public class GwtUiCreator implements UiCreator {
 
     if (tree.hasChilds()) {
       for (UiComponent child : tree.getChilds()) {
-        BeeTreeItem item = new BeeTreeItem(child.getProperty("text"));
+        BeeTreeItem item = new BeeTreeItem(child.getCaption());
 
         if (child.hasChilds()) {
           Object childWidget = child.createInstance(this);
@@ -227,7 +249,7 @@ public class GwtUiCreator implements UiCreator {
   private void createMenuItems(BeeMenuBar menu, Collection<UiComponent> childs) {
     if (!BeeUtils.isEmpty(childs)) {
       for (UiComponent child : childs) {
-        String txt = child.getProperty("text");
+        String txt = child.getCaption();
         String sep = child.getProperty("separators");
 
         if (child.hasChilds()) {

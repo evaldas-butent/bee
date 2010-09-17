@@ -86,14 +86,8 @@ public class MenuService extends CompositeService {
       l = "UiStack";
     } else if (BeeUtils.same(layout, MenuConst.LAYOUT_LIST)) {
       l = "UiListBox";
-    } else if (BeeUtils.same(layout, MenuConst.LAYOUT_CELL_LIST)) {
-      l = "UiCellList";
     } else if (BeeUtils.same(layout, MenuConst.LAYOUT_TREE)) {
       l = "UiTree";
-    } else if (BeeUtils.same(layout, MenuConst.LAYOUT_CELL_TREE)) {
-      l = "UiCellTree";
-    } else if (BeeUtils.same(layout, MenuConst.LAYOUT_CELL_BROWSER)) {
-      l = "UiCellBrowser";
     } else if (BeeUtils.same(layout, MenuConst.LAYOUT_TAB)) {
       l = "UiTab";
     }

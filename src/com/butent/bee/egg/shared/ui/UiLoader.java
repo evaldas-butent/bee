@@ -16,7 +16,8 @@ import java.util.logging.Logger;
 public abstract class UiLoader {
 
   protected class UiRow implements Comparable<UiRow> {
-    private String id, className, parent, properties;
+    private String id, className, caption, parent, properties;
+
     private int order;
 
     public UiRow() {
@@ -34,6 +35,10 @@ public abstract class UiLoader {
         }
       }
       return z;
+    }
+
+    public String getCaption() {
+      return caption;
     }
 
     public String getClassName() {
@@ -54,6 +59,10 @@ public abstract class UiLoader {
 
     public String getProperties() {
       return properties;
+    }
+
+    public void setCaption(String caption) {
+      this.caption = caption;
     }
 
     public void setClassName(String className) {
@@ -105,6 +114,7 @@ public abstract class UiLoader {
           root = UiComponent.createComponent(row.getClassName(), oId);
 
           if (!BeeUtils.isEmpty(root)) {
+            root.setCaption(row.getCaption());
             root.loadProperties(row.getProperties());
             continue;
           }
@@ -147,6 +157,7 @@ public abstract class UiLoader {
         UiComponent child = UiComponent.createComponent(row.getClassName(), oId);
 
         if (!BeeUtils.isEmpty(child)) {
+          child.setCaption(row.getCaption());
           child.loadProperties(row.getProperties());
           addChilds(child, rows, orphans);
           parent.addChild(child);

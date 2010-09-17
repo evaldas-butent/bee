@@ -20,6 +20,8 @@ public interface UiCreator {
 
   Object createStack(UiStack stack);
 
+  Object createTab(UiTab uiTab);
+
   Object createTree(UiTree tree);
 
   Object createVerticalLayout(UiVerticalLayout beeVerticalLayout);

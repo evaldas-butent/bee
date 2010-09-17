@@ -45,6 +45,8 @@ public abstract class UiComponent implements HasId, BeeSerializable {
       return new UiStack();
     } else if (getClassName(UiTree.class).equals(oClass)) {
       return new UiTree();
+    } else if (getClassName(UiTab.class).equals(oClass)) {
+      return new UiTab();
     }
 
     logger.severe("Unsupported class name: " + oClass);
@@ -80,9 +82,17 @@ public abstract class UiComponent implements HasId, BeeSerializable {
   }
 
   private String id;
+  private String caption;
+
   private UiComponent parent;
+
   private Map<String, String> properties = new HashMap<String, String>();
+
   private List<UiComponent> childs;
+
+  private enum SerializationMembers {
+    ID, CAPTION, PROPERTIES, CHILDS
+  };
 
   public void addChild(UiComponent child) {
     Assert.notEmpty(child);
@@ -123,25 +133,44 @@ public abstract class UiComponent implements HasId, BeeSerializable {
 
   @Override
   public void deserialize(String s) {
+    SerializationMembers[] members = SerializationMembers.values();
     String[] arr = BeeUtils.beeDeserialize(s);
-    Assert.arrayLength(arr, 3);
 
-    setId(arr[0]);
+    Assert.arrayLength(arr, members.length);
 
-    if (!BeeUtils.isEmpty(arr[1])) {
-      String[] props = BeeUtils.beeDeserialize(arr[1]);
-      for (int i = 0; i < Math.floor(props.length / 2); i++) {
-        int j = i * 2;
-        setProperty(props[j], props[j + 1]);
-      }
-    }
+    for (int i = 0; i < members.length; i++) {
+      SerializationMembers member = members[i];
+      String value = arr[i];
 
-    if (!BeeUtils.isEmpty(arr[2])) {
-      String[] chlds = BeeUtils.beeDeserialize(arr[2]);
+      switch (member) {
+        case ID:
+          setId(value);
+          break;
+        case CAPTION:
+          setCaption(value);
+          break;
+        case PROPERTIES:
+          if (!BeeUtils.isEmpty(value)) {
+            String[] props = BeeUtils.beeDeserialize(value);
+            for (int j = 0; j < Math.floor(props.length / 2); j++) {
+              int x = j * 2;
+              setProperty(props[x], props[x + 1]);
+            }
+          }
+          break;
+        case CHILDS:
+          if (!BeeUtils.isEmpty(value)) {
+            String[] chlds = BeeUtils.beeDeserialize(value);
 
-      for (String chld : chlds) {
-        UiComponent c = restore(chld);
-        addChild(c);
+            for (String chld : chlds) {
+              UiComponent c = restore(chld);
+              addChild(c);
+            }
+          }
+          break;
+        default:
+          logger.severe("Unhandled serialization member: " + member);
+          break;
       }
     }
   }
@@ -169,6 +198,10 @@ public abstract class UiComponent implements HasId, BeeSerializable {
       }
     }
     return child;
+  }
+
+  public String getCaption() {
+    return caption;
   }
 
   public Collection<UiComponent> getChilds() {
@@ -222,10 +255,34 @@ public abstract class UiComponent implements HasId, BeeSerializable {
   @Override
   public String serialize() {
     StringBuilder sb = new StringBuilder();
+    SerializationMembers[] members = SerializationMembers.values();
 
-    sb.append(BeeUtils.beeSerialize(id, properties, childs));
+    for (int i = 0; i < members.length; i++) {
+      SerializationMembers member = members[i];
 
+      switch (member) {
+        case ID:
+          sb.append(BeeUtils.beeSerialize(id));
+          break;
+        case CAPTION:
+          sb.append(BeeUtils.beeSerialize(caption));
+          break;
+        case PROPERTIES:
+          sb.append(BeeUtils.beeSerialize(properties));
+          break;
+        case CHILDS:
+          sb.append(BeeUtils.beeSerialize(childs));
+          break;
+        default:
+          logger.severe("Unhandled serialization member: " + member);
+          break;
+      }
+    }
     return BeeUtils.beeSerialize(getClassName(this.getClass()), sb);
+  }
+
+  public void setCaption(String caption) {
+    this.caption = caption;
   }
 
   @Override

@@ -59,6 +59,8 @@ public class UiMenuLoader extends UiLoader {
           row.setId(value);
         } else if (BeeUtils.same(name, "parent")) {
           row.setParent(value);
+        } else if (BeeUtils.same(name, "text")) {
+          row.setCaption(value);
         } else if (BeeUtils.same(name, "order")) {
           row.setOrder(BeeUtils.toInt(value));
         } else {
