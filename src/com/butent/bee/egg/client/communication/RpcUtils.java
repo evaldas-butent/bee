@@ -69,8 +69,7 @@ public class RpcUtils {
     return prp;
   }
 
-  public static final Collection<SubProp> responseInfo(Response resp,
-      String text) {
+  public static final Collection<SubProp> responseInfo(Response resp) {
     Assert.notNull(resp);
 
     Collection<SubProp> prp = new ArrayList<SubProp>();
@@ -88,11 +87,6 @@ public class RpcUtils {
       for (int i = 0; i < c; i++) {
         PropUtils.addSub(prp, "Header", h[i].getName(), h[i].getValue());
       }
-    }
-
-    if (!BeeUtils.isEmpty(text)) {
-      PropUtils.addSub(prp, "Text", BeeUtils.addName("Length", text.length()),
-          text);
     }
 
     return prp;

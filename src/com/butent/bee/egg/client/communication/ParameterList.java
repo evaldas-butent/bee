@@ -8,13 +8,15 @@ import com.butent.bee.egg.client.utils.BeeXml;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.BeeService;
+import com.butent.bee.egg.shared.Transformable;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @SuppressWarnings("serial")
-public class ParameterList extends ArrayList<RpcParameter> {
+public class ParameterList extends ArrayList<RpcParameter> implements
+    Transformable {
   private boolean ready = false;
   private List<RpcParameter> dataItems, headerItems, queryItems;
 
@@ -24,8 +26,8 @@ public class ParameterList extends ArrayList<RpcParameter> {
     super();
     this.service = svc;
 
-    addQueryItem(BeeService.RPC_FIELD_QNM, CompositeService.extractService(svc));
-    
+    addQueryItem(BeeService.RPC_FIELD_SVC, CompositeService.extractService(svc));
+
     String dsn = BeeKeeper.getRpc().getDsn();
     if (!BeeUtils.isEmpty(dsn)) {
       addQueryItem(BeeService.RPC_FIELD_DSN, dsn);
@@ -37,51 +39,93 @@ public class ParameterList extends ArrayList<RpcParameter> {
     }
   }
 
-  public void addDataItem(String value) {
-    addItem(new RpcParameter(RpcParameter.SECTION.DATA, value));
-  }
-
   public void addDataItem(Object value) {
     addItem(new RpcParameter(RpcParameter.SECTION.DATA, value));
   }
 
-  public void addDataItem(String name, String value) {
-    addItem(new RpcParameter(RpcParameter.SECTION.DATA, name, value));
+  public void addDataItem(String value) {
+    addItem(new RpcParameter(RpcParameter.SECTION.DATA, value));
   }
 
   public void addDataItem(String name, Object value) {
     addItem(new RpcParameter(RpcParameter.SECTION.DATA, name, value));
   }
 
-  public void addHeaderItem(String value) {
-    addItem(new RpcParameter(RpcParameter.SECTION.HEADER, value));
+  public void addDataItem(String name, String value) {
+    addItem(new RpcParameter(RpcParameter.SECTION.DATA, name, value));
   }
 
   public void addHeaderItem(Object value) {
     addItem(new RpcParameter(RpcParameter.SECTION.HEADER, value));
   }
 
-  public void addHeaderItem(String name, String value) {
-    addItem(new RpcParameter(RpcParameter.SECTION.HEADER, name, value));
+  public void addHeaderItem(String value) {
+    addItem(new RpcParameter(RpcParameter.SECTION.HEADER, value));
   }
 
   public void addHeaderItem(String name, Object value) {
     addItem(new RpcParameter(RpcParameter.SECTION.HEADER, name, value));
   }
 
-  public void addQueryItem(String value) {
-    addItem(new RpcParameter(RpcParameter.SECTION.QUERY, value));
+  public void addHeaderItem(String name, String value) {
+    addItem(new RpcParameter(RpcParameter.SECTION.HEADER, name, value));
+  }
+
+  public void addPositionalData(Object... values) {
+    Assert.parameterCount(values.length, 1);
+    for (Object v : values) {
+      addDataItem(v);
+    }
+  }
+
+  public void addPositionalData(String... values) {
+    Assert.parameterCount(values.length, 1);
+    for (Object v : values) {
+      addDataItem(v);
+    }
+  }
+
+  public void addPositionalHeader(Object... values) {
+    Assert.parameterCount(values.length, 1);
+    for (Object v : values) {
+      addHeaderItem(v);
+    }
+  }
+
+  public void addPositionalHeader(String... values) {
+    Assert.parameterCount(values.length, 1);
+    for (Object v : values) {
+      addHeaderItem(v);
+    }
+  }
+
+  public void addPositionalQuery(Object... values) {
+    Assert.parameterCount(values.length, 1);
+    for (Object v : values) {
+      addQueryItem(v);
+    }
+  }
+  
+  public void addPositionalQuery(String... values) {
+    Assert.parameterCount(values.length, 1);
+    for (Object v : values) {
+      addQueryItem(v);
+    }
   }
 
   public void addQueryItem(Object value) {
     addItem(new RpcParameter(RpcParameter.SECTION.QUERY, value));
   }
 
-  public void addQueryItem(String name, String value) {
-    addItem(new RpcParameter(RpcParameter.SECTION.QUERY, name, value));
+  public void addQueryItem(String value) {
+    addItem(new RpcParameter(RpcParameter.SECTION.QUERY, value));
   }
 
   public void addQueryItem(String name, Object value) {
+    addItem(new RpcParameter(RpcParameter.SECTION.QUERY, name, value));
+  }
+
+  public void addQueryItem(String name, String value) {
     addItem(new RpcParameter(RpcParameter.SECTION.QUERY, name, value));
   }
 
@@ -104,18 +148,48 @@ public class ParameterList extends ArrayList<RpcParameter> {
     return BeeXml.createString(BeeService.XML_TAG_DATA, nodes);
   }
 
-  public void getHeaders(RequestBuilder bld) {
+  public BeeService.DATA_TYPE getDataType() {
+    BeeService.DATA_TYPE dtp = BeeService.getDataType(getParameter(BeeService.RPC_FIELD_DTP));
+
+    if (dtp == null) {
+      prepare();
+      dtp = BeeUtils.isEmpty(dataItems) ? null : BeeService.DATA_TYPE.XML;
+    }
+
+    return dtp;
+  }
+
+  public void getHeaders(RequestBuilder bld, String... ignore) {
     Assert.notNull(bld);
     prepare();
     if (BeeUtils.isEmpty(headerItems)) {
       return;
     }
+    
+    int n = ignore.length;
 
     for (RpcParameter item : headerItems) {
       if (item.isReady()) {
+        if (n > 0 && BeeUtils.inListSame(item.getName(), ignore)) {
+          continue;
+        }
         bld.setHeader(item.getName(), item.getValue());
       }
     }
+  }
+
+  public String getParameter(String name) {
+    Assert.notEmpty(name);
+    String value = null;
+
+    for (RpcParameter item : this) {
+      if (BeeUtils.same(item.getName(), name)) {
+        value = item.getValue();
+        break;
+      }
+    }
+
+    return value;
   }
 
   public String getQuery() {
@@ -147,6 +221,10 @@ public class ParameterList extends ArrayList<RpcParameter> {
 
   public void setService(String service) {
     this.service = service;
+  }
+
+  public String transform() {
+    return BeeUtils.transformCollection(this, BeeConst.DEFAULT_LIST_SEPARATOR);
   }
 
   private void addItem(RpcParameter item) {

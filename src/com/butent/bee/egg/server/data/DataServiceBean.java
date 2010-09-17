@@ -11,7 +11,6 @@ import com.butent.bee.egg.server.jdbc.JdbcConst;
 import com.butent.bee.egg.server.jdbc.JdbcUtils;
 import com.butent.bee.egg.server.utils.BeeDataSource;
 import com.butent.bee.egg.server.utils.BeeSystem;
-import com.butent.bee.egg.server.utils.XmlUtils;
 import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.BeeDate;
 import com.butent.bee.egg.shared.BeeService;
@@ -85,17 +84,15 @@ public class DataServiceBean {
       ResponseBuffer buff) {
     BeeDate enter = new BeeDate();
 
-    String reqData = reqInfo.getContent();
-    if (BeeUtils.isEmpty(reqData)) {
-      buff.add("Request data not found");
+    Map<String, String> map = reqInfo.getFields();
+    if (BeeUtils.isEmpty(map)) {
+      buff.addSevere("Request data not found");
       return;
     }
 
-    Map<String, String> map = XmlUtils.getText(reqData);
-
     String sql = map.get(BeeService.FIELD_JDBC_QUERY);
     if (BeeUtils.isEmpty(sql)) {
-      buff.addLine("Parameter", BeeService.FIELD_JDBC_QUERY, "not found");
+      buff.addSevere("Parameter", BeeService.FIELD_JDBC_QUERY, "not found");
       return;
     }
 

@@ -3,6 +3,8 @@ package com.butent.bee.egg.shared;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
 public class BeeService {
+  public static enum DATA_TYPE { TEXT, XML, TABLE, IMAGE, RESOURCE, ZIP, MULTIPART, UNKNOWN }
+  
   public static final String RPC_SERVICE_PREFIX = "rpc_";
   public static final String UI_SERVICE_PREFIX = "ui_";
   public static final String COMPOSITE_SERVICE_PREFIX = "comp_";
@@ -55,8 +57,9 @@ public class BeeService {
 
   public static final String RPC_FIELD_PREFIX = "bee_";
 
-  public static final String RPC_FIELD_QNM = RPC_FIELD_PREFIX + "qnm";
+  public static final String RPC_FIELD_SVC = RPC_FIELD_PREFIX + "svc";
   public static final String RPC_FIELD_QID = RPC_FIELD_PREFIX + "qid";
+  public static final String RPC_FIELD_SID = RPC_FIELD_PREFIX + "sid";
   public static final String RPC_FIELD_DSN = RPC_FIELD_PREFIX + "dsn";
   public static final String RPC_FIELD_SEP = RPC_FIELD_PREFIX + "sep";
   public static final String RPC_FIELD_OPT = RPC_FIELD_PREFIX + "opt";
@@ -67,7 +70,8 @@ public class BeeService {
   public static final String RPC_FIELD_MSG = RPC_FIELD_PREFIX + "msg";
   public static final String RPC_FIELD_PAR_CNT = RPC_FIELD_PREFIX + "p_c";
   public static final String RPC_FIELD_PAR = RPC_FIELD_PREFIX + "par";
-
+  public static final String RPC_FIELD_DTP = RPC_FIELD_PREFIX + "dtp";
+  
   public static final String FIELD_CLASS_NAME = RPC_FIELD_PREFIX + "class_name";
   public static final String FIELD_PACKAGE_LIST = RPC_FIELD_PREFIX
       + "package_list";
@@ -121,6 +125,17 @@ public class BeeService {
   public static final String QUERY_STRING_VALUE_SEPARATOR = "=";
 
   public static final String OPTION_DEBUG = "debug";
+  
+  public static DATA_TYPE DEFAULT_REQUEST_DATA_TYPE = DATA_TYPE.XML;
+  public static DATA_TYPE DEFAULT_RESPONSE_DATA_TYPE = DATA_TYPE.TEXT;
+  
+  public static boolean equals(DATA_TYPE z1, DATA_TYPE z2) {
+    if (z1 == null || z2 == null) {
+      return false;
+    } else {
+      return z1 == z2;
+    }
+  }
 
   public static boolean equals(String s1, String s2) {
     if (BeeUtils.isEmpty(s1) || BeeUtils.isEmpty(s2)) {
@@ -128,6 +143,58 @@ public class BeeService {
     } else {
       return BeeUtils.same(s1, s2);
     }
+  }
+
+  public static String getCharacterEncoding(DATA_TYPE dataType) {
+    String ce;
+    
+    switch (dataType) {
+      case TABLE :
+      case TEXT :
+        ce = "utf-8";
+        break;
+      default :
+        ce = null;
+    }
+    
+    return ce;
+  }
+
+  public static String getContentType(DATA_TYPE dataType) {
+    String ct;
+    
+    switch (dataType) {
+      case TABLE :
+      case TEXT :
+        ct = "text/plain";
+        break;
+      case XML :
+        ct = "application/xml";
+        break;
+      case ZIP :
+        ct = "application/zip";
+        break;
+      default :
+        ct = null;
+    }
+    
+    return ct;
+  }
+  
+  public static DATA_TYPE getDataType(String s) {
+    DATA_TYPE dtp = null;
+    if (BeeUtils.isEmpty(s)) {
+      return dtp;
+    }
+    
+    for (DATA_TYPE z : DATA_TYPE.values()) {
+      if (BeeUtils.same(transform(z), s)) {
+        dtp = z;
+        break;
+      }
+    }
+    
+    return dtp;
   }
 
   public static boolean isCompositeService(String svc) {
@@ -160,12 +227,24 @@ public class BeeService {
     return svc.startsWith(UI_SERVICE_PREFIX);
   }
 
+  public static DATA_TYPE normalizeRequest(DATA_TYPE dtp) {
+    return (dtp == null) ? DEFAULT_REQUEST_DATA_TYPE : dtp;
+  }
+
+  public static DATA_TYPE normalizeResponse(DATA_TYPE dtp) {
+    return (dtp == null) ? DEFAULT_RESPONSE_DATA_TYPE : dtp;
+  }
+
   public static String rpcMessageName(int i) {
     return RPC_FIELD_MSG + i;
   }
 
   public static String rpcParamName(int i) {
     return RPC_FIELD_PAR + i;
+  }
+
+  public static String transform(DATA_TYPE dtp) {
+    return (dtp == null) ? BeeConst.STRING_EMPTY : dtp.name();
   }
   
 }

@@ -17,7 +17,6 @@ import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
@@ -55,24 +54,11 @@ public class SystemServiceBean {
   }
 
   private void classInfo(RequestInfo reqInfo, ResponseBuffer buff) {
-    String xml = reqInfo.getContent();
-    if (BeeUtils.isEmpty(xml)) {
-      buff.add("Request data not found");
-      return;
-    }
-
-    Map<String, String> fields = XmlUtils.getText(xml);
-    if (BeeUtils.isEmpty(fields)) {
-      buff.addLine("No elements with text found in", xml);
-      return;
-    }
-
-    String cnm = fields.get(BeeService.FIELD_CLASS_NAME);
-    String pck = fields.get(BeeService.FIELD_PACKAGE_LIST);
+    String cnm = reqInfo.getParameter(BeeService.FIELD_CLASS_NAME);
+    String pck = reqInfo.getParameter(BeeService.FIELD_PACKAGE_LIST);
 
     if (BeeUtils.isEmpty(cnm)) {
-      buff.addLine("Parameter", BeeService.FIELD_CLASS_NAME, "not found in",
-          xml);
+      buff.addSevere("Parameter", BeeService.FIELD_CLASS_NAME, "not found");
       return;
     }
 
@@ -84,7 +70,7 @@ public class SystemServiceBean {
     }
 
     if (BeeUtils.isEmpty(classes)) {
-      buff.addLine("Class not found", cnm, pck);
+      buff.addWarning("Class not found", cnm, pck);
       return;
     }
     int c = classes.size();
@@ -214,13 +200,7 @@ public class SystemServiceBean {
   }
 
   private void xmlInfo(RequestInfo reqInfo, ResponseBuffer buff) {
-    String reqData = reqInfo.getContent();
-    if (BeeUtils.isEmpty(reqData)) {
-      buff.add("Request data not found");
-      return;
-    }
-
-    String fileName = XmlUtils.getText(reqData, BeeService.FIELD_XML_FILE);
+    String fileName = reqInfo.getParameter(BeeService.FIELD_XML_FILE);
     if (BeeUtils.isEmpty(fileName)) {
       buff.addLine("Parameter", BeeService.FIELD_XML_FILE, "not found");
       return;

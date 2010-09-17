@@ -186,6 +186,25 @@ public abstract class BeeUtils {
     }
   }
 
+  public static String clip(String s, int n) {
+    Assert.isPositive(n);
+    if (isEmpty(s)) {
+      return BeeConst.STRING_EMPTY;
+    }
+    if (s.length() <= n) {
+      return s;
+    }
+
+    int len = s.trim().length();
+
+    if (len <= n) {
+      return s.trim();
+    } else {
+      return s.substring(0, n).trim() + BeeConst.ELLIPSIS
+          + bracket(progress(n, len));
+    }
+  }
+
   @SuppressWarnings("unchecked")
   public static <T> int compare(Comparable<T> x1, Comparable<T> x2) {
     if (isEmpty(x1)) {
@@ -661,8 +680,6 @@ public abstract class BeeUtils {
       ok = isZero(x);
     } else if (x instanceof Boolean) {
       ok = !(Boolean) x;
-    } else if (x instanceof Transformable) {
-      ok = ((Transformable) x).transform().isEmpty();
     } else if (x instanceof Collection) {
       ok = ((Collection<?>) x).isEmpty();
     } else if (x instanceof Map) {

@@ -39,7 +39,7 @@ public class BeeDuration {
     if (completed > 0) {
       return BeeJs.toSeconds(completed);
     } else {
-      return BeeConst.STRING_EMPTY;
+      return BeeConst.STRING_ZERO;
     }
   }
 
@@ -120,6 +120,11 @@ public class BeeDuration {
 
   public void setTimeout(int timeout) {
     this.timeout = timeout;
+  }
+
+  public String toLog() {
+    return BeeUtils.concat(1, getMessage(), getStartTime(),
+        BeeUtils.bracket(getCompletedTime()));
   }
 
   @Override

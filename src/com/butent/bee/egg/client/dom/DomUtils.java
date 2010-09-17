@@ -5,6 +5,7 @@ import com.google.gwt.core.client.JsArray;
 import com.google.gwt.dom.client.ButtonElement;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.EventTarget;
 import com.google.gwt.dom.client.InputElement;
 import com.google.gwt.dom.client.LabelElement;
 import com.google.gwt.dom.client.Node;
@@ -12,11 +13,13 @@ import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.dom.client.SpanElement;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.dom.client.TableCellElement;
+import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.Widget;
 
+import com.butent.bee.egg.client.BeeKeeper;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.Transformable;
@@ -109,14 +112,14 @@ public class DomUtils {
     return (DtElement) createElement(DtElement.TAG);
   }
   
+  public static native Element createElement(Document doc, String tag) /*-{
+    return doc.createElement(tag);
+  }-*/;
+
   public static Element createElement(String tag) {
     Assert.notEmpty(tag);
     return createElement(Document.get(), tag);
   }
-
-  public static native Element createElement(Document doc, String tag) /*-{
-    return doc.createElement(tag);
-  }-*/;
 
   public static Element createHtml(String html) {
     return createHtml(html, null);
@@ -336,6 +339,32 @@ public class DomUtils {
     return $doc.getElementsByName(name);
   }-*/;
 
+  public static List<StringProp> getEventInfo(Event ev) {
+    Assert.notNull(ev);
+    List<StringProp> lst = new ArrayList<StringProp>();
+    
+    PropUtils.addString(lst,
+        "Alt Key", ev.getAltKey(),
+        "Button", ev.getButton(),
+        "Char Code", ev.getCharCode(),
+        "Client X", ev.getClientX(),
+        "Client Y", ev.getClientY(),
+        "Ctrl Key", ev.getCtrlKey(),
+        "Current Event Target", transformEventTarget(ev.getCurrentEventTarget()),
+        "Key Code", ev.getKeyCode(),
+        "Meta Key", ev.getMetaKey(),
+        "Mouse Wheel Velocity Y", ev.getMouseWheelVelocityY(),
+        "Related Event Target", transformEventTarget(ev.getRelatedEventTarget()),
+        "Screen X", ev.getScreenX(),
+        "Screen Y", ev.getScreenY(),
+        "Shift Key", ev.getShiftKey(),
+        "String", ev.getString(),
+        "Type", ev.getType(),
+        "Type Int", ev.getTypeInt());
+  
+    return lst;
+  }
+
   public static String getId(UIObject obj) {
     Assert.notNull(obj);
     return obj.getElement().getId();
@@ -523,6 +552,17 @@ public class DomUtils {
     return el.getTagName().equalsIgnoreCase(TAG_INPUT);
   }
 
+  public static void logEvent(Event ev) {
+    Assert.notNull(ev);
+    List<StringProp> lst = getEventInfo(ev);
+    
+    for (StringProp el : lst) {
+      BeeKeeper.getLog().info(el.getName(), el.getValue());
+    }
+    
+    BeeKeeper.getLog().addSeparator();
+  }
+
   public static PopupPanel parentPopup(Widget w) {
     Assert.notNull(w);
 
@@ -587,6 +627,14 @@ public class DomUtils {
       return BeeConst.STRING_EMPTY;
     } else {
       return BeeUtils.concat(1, el.getTagName(), el.getId());
+    }
+  }
+
+  private static String transformEventTarget(EventTarget et) {
+    if (et == null) {
+      return BeeConst.STRING_EMPTY;
+    } else {
+      return transformElement(Element.as(et));
     }
   }
 

@@ -44,9 +44,9 @@ public class BeeLog implements BeeModule {
 
     dur.finish();
     if (obj.length > 0) {
-      info(dur, obj);
+      info(dur.toLog(), obj);
     } else {
-      info(dur.toString());
+      info(dur.toLog());
     }
   }
 

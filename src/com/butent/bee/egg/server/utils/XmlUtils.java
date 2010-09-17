@@ -252,6 +252,47 @@ public class XmlUtils {
     return lst;
   }
 
+  public static Map<String, String> getElements(String xml, String... ignore) {
+    Assert.notEmpty(xml);
+    Map<String, String> ret = new HashMap<String, String>();
+
+    Document doc = fromString(xml);
+    if (doc == null) {
+      return ret;
+    }
+
+    NodeList nodes = doc.getElementsByTagName(ALL_TAGS);
+    if (nodes == null) {
+      return ret;
+    }
+
+    Node nd;
+    Element el;
+    String tg, txt;
+    
+    int n = ignore.length;
+
+    for (int i = 0; i < nodes.getLength(); i++) {
+      nd = nodes.item(i);
+      if (!isElement(nd)) {
+        continue;
+      }
+      el = (Element) nd;
+
+      tg = el.getTagName();
+      if (n > 0 && BeeUtils.inListSame(tg, ignore)) {
+        continue;
+      }
+      
+      txt = el.getTextContent();
+      if (!BeeUtils.isEmpty(tg) && !BeeUtils.isEmpty(txt)) {
+        ret.put(tg, txt);
+      }
+    }
+
+    return ret;
+  }
+
   public static List<StringProp> getEntityInfo(Entity ent) {
     Assert.notNull(ent);
     List<StringProp> lst = new ArrayList<StringProp>();
@@ -377,42 +418,6 @@ public class XmlUtils {
     PropUtils.appendString(lst, "Document Element Node", getNodeInfo(el));
 
     return lst;
-  }
-
-  public static Map<String, String> getText(String xml) {
-    Assert.notEmpty(xml);
-    Map<String, String> ret = new HashMap<String, String>();
-
-    Document doc = fromString(xml);
-    if (doc == null) {
-      return ret;
-    }
-
-    NodeList nodes = doc.getElementsByTagName(ALL_TAGS);
-    if (nodes == null) {
-      return ret;
-    }
-
-    Node nd;
-    Element el;
-    String tg, txt;
-
-    for (int i = 0; i < nodes.getLength(); i++) {
-      nd = nodes.item(i);
-      if (!isElement(nd)) {
-        continue;
-      }
-      el = (Element) nd;
-
-      tg = el.getTagName();
-      txt = el.getTextContent();
-
-      if (!BeeUtils.isEmpty(tg) && !BeeUtils.isEmpty(txt)) {
-        ret.put(tg, txt);
-      }
-    }
-
-    return ret;
   }
 
   public static String getText(String xml, String tag) {

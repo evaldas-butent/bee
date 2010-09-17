@@ -2,7 +2,7 @@ package com.butent.bee.egg.client.widget;
 
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.user.client.Element;
-import com.google.gwt.user.client.ui.FocusWidget;
+import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.egg.client.dom.DomUtils;
 import com.butent.bee.egg.shared.Assert;
@@ -12,7 +12,7 @@ import com.butent.bee.egg.shared.utils.BeeUtils;
 import java.util.ArrayList;
 import java.util.List;
 
-public class BeeDefinitionList extends FocusWidget implements HasId {
+public class BeeDefinitionList extends Widget implements HasId {
   private static final int INSERT_AT_END = -1;
   private List<Element> items = new ArrayList<Element>();
 

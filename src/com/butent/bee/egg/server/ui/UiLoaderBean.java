@@ -69,7 +69,7 @@ public class UiLoaderBean {
       return null;
     }
 
-    Map<String, String> fields = XmlUtils.getText(xml);
+    Map<String, String> fields = XmlUtils.getElements(xml);
     if (BeeUtils.isEmpty(fields)) {
       buff.addLine("No elements with text found in", xml);
       return null;

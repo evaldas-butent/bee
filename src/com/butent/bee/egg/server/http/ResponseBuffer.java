@@ -22,6 +22,8 @@ public class ResponseBuffer {
   private int columnCount = 0;
 
   private List<ResponseMessage> messages = new ArrayList<ResponseMessage>();
+  
+  private BeeService.DATA_TYPE dataType;
 
   public ResponseBuffer() {
     setDefaultSeparator();
@@ -39,6 +41,10 @@ public class ResponseBuffer {
     }
   }
 
+  public ResponseBuffer(BeeService.DATA_TYPE dataType) {
+    this.dataType = dataType;
+  }
+  
   public void add(CharSequence s) {
     if (s != null && s.length() > 0) {
       checkSeparator(s);
@@ -270,6 +276,10 @@ public class ResponseBuffer {
     return count;
   }
 
+  public BeeService.DATA_TYPE getDataType() {
+    return dataType;
+  }
+
   public String getHexSeparator() {
     return BeeUtils.toHex(getSeparator());
   }
@@ -316,6 +326,10 @@ public class ResponseBuffer {
 
   public void setCount(int count) {
     this.count = count;
+  }
+
+  public void setDataType(BeeService.DATA_TYPE dataType) {
+    this.dataType = dataType;
   }
 
   public void setHexSeparator(String sep) {

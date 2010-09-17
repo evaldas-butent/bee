@@ -1,6 +1,7 @@
 package com.butent.bee.egg.client.logging;
 
 import com.google.gwt.dom.client.Document;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.HasWidgets;
 
 import com.butent.bee.egg.client.widget.BeeHtml;
@@ -16,6 +17,7 @@ public class LogWidgetHandler extends Handler {
   public static Formatter getDefaultFormatter() {
     return new LogFormatter();
   }
+
   public static Level getDefaultLevel() {
     return Level.ALL;
   }
@@ -71,7 +73,10 @@ public class LogWidgetHandler extends Handler {
 
     if (frmt instanceof LogFormatter
         && ((LogFormatter) frmt).isSeparator(record)) {
-      container.add(new BeeHtml(Document.get().createHRElement()));
+      Element elem = Document.get().createDivElement().cast();
+      elem.appendChild(Element.as(Document.get().createHRElement()));
+      container.add(new BeeHtml(elem));
+
       return;
     }
 

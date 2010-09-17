@@ -8,12 +8,14 @@ public class BeeExceptionHandler implements UncaughtExceptionHandler {
 
   @Override
   public void onUncaughtException(Throwable err) {
-    LogUtils.error(err, "Uncaught Exception");
+    LogUtils.error(err.fillInStackTrace(), "Uncaught Exception");
+    
     Throwable cause = err.getCause();
-    if (cause == null) {
-      cause = err;
+    int i = 0;
+    while (cause != null && i++ < 100) {
+      LogUtils.severe(cause);
+      cause = cause.getCause();
     }
-    LogUtils.severe(cause.fillInStackTrace());
   }
 
 }

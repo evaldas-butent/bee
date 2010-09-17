@@ -139,8 +139,7 @@ public class CliWidget extends BeeTextBox {
 
       } else if (BeeUtils.inListSame(arr[0], "file", "dir", "get")) {
         ParameterList params = BeeKeeper.getRpc().createParameters(BeeService.SERVICE_GET_RESOURCE);
-        params.addHeaderItem(arr[0]);
-        params.addHeaderItem(arr[1]);
+        params.addPositionalHeader(arr);
 
         BeeKeeper.getRpc().makeGetRequest(params);
       }

@@ -6,6 +6,7 @@ import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.BeeService;
 import com.butent.bee.egg.shared.Transformable;
 import com.butent.bee.egg.shared.utils.BeeUtils;
+import com.butent.bee.egg.shared.utils.LogUtils;
 import com.butent.bee.egg.shared.utils.PropUtils;
 import com.butent.bee.egg.shared.utils.SubProp;
 
@@ -16,6 +17,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
 
 import javax.servlet.AsyncContext;
 import javax.servlet.DispatcherType;
@@ -41,10 +43,13 @@ public class RequestInfo implements Transformable {
 
   private Map<String, String> headers = null;
   private Map<String, String> params = null;
+  private Map<String, String> fields = null;
 
   private int contentLen = -1;
   private String contentType = null;
   private String content = null;
+
+  private BeeService.DATA_TYPE dataType;
 
   private HttpServletRequest request = null;
 
@@ -77,6 +82,10 @@ public class RequestInfo implements Transformable {
       contentType = req.getContentType();
       content = HttpUtils.readContent(req);
     }
+
+    if (isXml()) {
+      fields = XmlUtils.getElements(content, BeeService.XML_TAG_DATA);
+    }
   }
 
   public String getContent() {
@@ -91,8 +100,20 @@ public class RequestInfo implements Transformable {
     return contentType;
   }
 
+  public BeeService.DATA_TYPE getDataType() {
+    return dataType;
+  }
+
   public String getDsn() {
     return dsn;
+  }
+
+  public Map<String, String> getFields() {
+    return fields;
+  }
+
+  public String getFieldssAsString() {
+    return BeeUtils.transformMap(fields);
   }
 
   public Map<String, String> getHeaders() {
@@ -180,7 +201,7 @@ public class RequestInfo implements Transformable {
   public String getParameter(int idx) {
     return getParameter(BeeService.rpcParamName(idx));
   }
-  
+
   public String getParameter(String name) {
     Assert.notEmpty(name);
     String value = null;
@@ -198,16 +219,20 @@ public class RequestInfo implements Transformable {
         return value;
       }
     }
-    
-    if (getContentLen() > 0) {
-      value = XmlUtils.getText(getContent(), name);
+
+    if (!BeeUtils.isEmpty(getFields())) {
+      value = getFields().get(name);
     }
-    
+
     return value;
   }
 
   public Map<String, String> getParams() {
     return params;
+  }
+
+  public String getParamsAsString() {
+    return BeeUtils.transformMap(params);
   }
 
   public String getQuery() {
@@ -230,6 +255,58 @@ public class RequestInfo implements Transformable {
     return BeeUtils.context(BeeService.OPTION_DEBUG, options);
   }
 
+  public boolean isXml() {
+    return getContentLen() > 0
+        && BeeService.equals(getDataType(), BeeService.DATA_TYPE.XML);
+  }
+
+  public void logFields(Logger logger) {
+    if (BeeUtils.isEmpty(getFields())) {
+      if (isXml()) {
+        LogUtils.warning(logger, "Fields not available");
+      }
+      return;
+    }
+
+    int n = getFields().size();
+    int i = 0;
+
+    for (Map.Entry<String, String> el : getFields().entrySet()) {
+      LogUtils.info(logger, "Field", BeeUtils.progress(++i, n), el.getKey(),
+          el.getValue());
+    }
+  }
+
+  public void logHeaders(Logger logger) {
+    if (BeeUtils.isEmpty(getHeaders())) {
+      LogUtils.warning(logger, "headers not available");
+      return;
+    }
+
+    int n = getHeaders().size();
+    int i = 0;
+
+    for (Map.Entry<String, String> el : getHeaders().entrySet()) {
+      LogUtils.info(logger, "Header", BeeUtils.progress(++i, n), el.getKey(),
+          el.getValue());
+    }
+  }
+
+  public void logParams(Logger logger) {
+    if (BeeUtils.isEmpty(getParams())) {
+      LogUtils.warning(logger, "Parameters not available");
+      return;
+    }
+
+    int n = getParams().size();
+    int i = 0;
+
+    for (Map.Entry<String, String> el : getParams().entrySet()) {
+      LogUtils.info(logger, "Parameter", BeeUtils.progress(++i, n),
+          el.getKey(), el.getValue());
+    }
+  }
+
   public void setContent(String content) {
     this.content = content;
   }
@@ -244,6 +321,10 @@ public class RequestInfo implements Transformable {
 
   public void setDsn(String dsn) {
     this.dsn = dsn;
+  }
+
+  public void setFields(Map<String, String> fields) {
+    this.fields = fields;
   }
 
   public void setHeaders(Map<String, String> headers) {
@@ -575,16 +656,18 @@ public class RequestInfo implements Transformable {
       return;
     }
 
-    if (nm.equalsIgnoreCase(BeeService.RPC_FIELD_QID)) {
+    if (BeeUtils.same(nm, BeeService.RPC_FIELD_QID)) {
       id = v;
-    } else if (nm.equalsIgnoreCase(BeeService.RPC_FIELD_QNM)) {
+    } else if (BeeUtils.same(nm, BeeService.RPC_FIELD_SVC)) {
       service = v;
-    } else if (nm.equalsIgnoreCase(BeeService.RPC_FIELD_DSN)) {
+    } else if (BeeUtils.same(nm, BeeService.RPC_FIELD_DSN)) {
       dsn = v;
-    } else if (nm.equalsIgnoreCase(BeeService.RPC_FIELD_SEP)) {
+    } else if (BeeUtils.same(nm, BeeService.RPC_FIELD_SEP)) {
       separator = v;
-    } else if (nm.equalsIgnoreCase(BeeService.RPC_FIELD_OPT)) {
+    } else if (BeeUtils.same(nm, BeeService.RPC_FIELD_OPT)) {
       options = v;
+    } else if (BeeUtils.same(nm, BeeService.RPC_FIELD_DTP)) {
+      dataType = BeeService.getDataType(v);
     }
   }
 

@@ -1,8 +1,9 @@
 package com.butent.bee.egg.client.communication;
 
+import com.butent.bee.egg.shared.Transformable;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
-public class RpcParameter {
+public class RpcParameter implements Transformable {
   public static enum SECTION {
     QUERY, HEADER, DATA
   }
@@ -85,6 +86,12 @@ public class RpcParameter {
 
   public void setValue(String value) {
     this.value = value;
+  }
+
+  public String transform() {
+    return BeeUtils.addName(
+        BeeUtils.concat(1, BeeUtils.bracket(getSection()), getName()),
+        getValue());
   }
 
 }

@@ -11,13 +11,14 @@ public class RpcList extends LinkedList<RpcInfo> {
   private static final int DEFAULT_CAPACITY = 1000;
 
   public static String[] DEFAULT_INFO_COLUMNS = new String[]{
-      RpcInfo.COL_ID, RpcInfo.COL_NAME, RpcInfo.COL_TYPE, RpcInfo.COL_STATE,
-      RpcInfo.COL_START, RpcInfo.COL_TIMEOUT, RpcInfo.COL_EXPIRES,
-      RpcInfo.COL_END, RpcInfo.COL_COMPLETED, RpcInfo.COL_REQ_MSG,
+      RpcInfo.COL_ID, RpcInfo.COL_SERVICE, RpcInfo.COL_METHOD,
+      RpcInfo.COL_STATE, RpcInfo.COL_START, RpcInfo.COL_TIMEOUT,
+      RpcInfo.COL_EXPIRES, RpcInfo.COL_END, RpcInfo.COL_COMPLETED,
+      RpcInfo.COL_REQ_PARAMS, RpcInfo.COL_REQ_TYPE, RpcInfo.COL_REQ_DATA,
       RpcInfo.COL_REQ_ROWS, RpcInfo.COL_REQ_COLS, RpcInfo.COL_REQ_SIZE,
-      RpcInfo.COL_REQ_INFO, RpcInfo.COL_RESP_MSG, RpcInfo.COL_RESP_ROWS,
-      RpcInfo.COL_RESP_COLS, RpcInfo.COL_RESP_SIZE, RpcInfo.COL_RESP_INFO,
-      RpcInfo.COL_ERR_MSG};
+      RpcInfo.COL_RESP_TYPE, RpcInfo.COL_RESP_DATA, RpcInfo.COL_RESP_ROWS,
+      RpcInfo.COL_RESP_COLS, RpcInfo.COL_RESP_SIZE, RpcInfo.COL_RESP_MSG_CNT,
+      RpcInfo.COL_RESP_MESSAGES, RpcInfo.COL_RESP_INFO, RpcInfo.COL_ERR_MSG};
 
   private int capacity = DEFAULT_CAPACITY;
 
@@ -34,43 +35,6 @@ public class RpcList extends LinkedList<RpcInfo> {
     if (el != null) {
       checkCapacity();
       add(el);
-    }
-  }
-
-  public int createInfo(String name, String msg) {
-    RpcInfo el = new RpcInfo(name, msg);
-    addInfo(el);
-
-    return el.getId();
-  }
-
-  public int endError(int id, Exception ex) {
-    RpcInfo el = locateInfo(id);
-
-    if (el == null) {
-      return BeeConst.TIME_UNKNOWN;
-    } else {
-      return el.endError(ex);
-    }
-  }
-
-  public int endMessage(int id, String msg) {
-    RpcInfo el = locateInfo(id);
-
-    if (el == null) {
-      return BeeConst.TIME_UNKNOWN;
-    } else {
-      return el.endMessage(msg);
-    }
-  }
-
-  public int endResult(int id, int rows, int cols) {
-    RpcInfo el = locateInfo(id);
-
-    if (el == null) {
-      return BeeConst.TIME_UNKNOWN;
-    } else {
-      return el.endResult(rows, cols);
     }
   }
 
@@ -133,12 +97,15 @@ public class RpcList extends LinkedList<RpcInfo> {
 
         if (BeeUtils.same(cols[j], RpcInfo.COL_ID)) {
           s = BeeUtils.transform(el.getId());
-        } else if (BeeUtils.same(cols[j], RpcInfo.COL_NAME)) {
-          s = el.getName();
-        } else if (BeeUtils.same(cols[j], RpcInfo.COL_TYPE)) {
-          s = el.getTypeString();
+        } else if (BeeUtils.same(cols[j], RpcInfo.COL_SERVICE)) {
+          s = el.getService();
+        } else if (BeeUtils.same(cols[j], RpcInfo.COL_STAGE)) {
+          s = el.getStage();
+        } else if (BeeUtils.same(cols[j], RpcInfo.COL_METHOD)) {
+          s = el.getMethodString();
         } else if (BeeUtils.same(cols[j], RpcInfo.COL_STATE)) {
           s = el.getStateString();
+
         } else if (BeeUtils.same(cols[j], RpcInfo.COL_START)) {
           s = el.getStartTime();
         } else if (BeeUtils.same(cols[j], RpcInfo.COL_TIMEOUT)) {
@@ -149,26 +116,41 @@ public class RpcList extends LinkedList<RpcInfo> {
           s = el.getEndTime();
         } else if (BeeUtils.same(cols[j], RpcInfo.COL_COMPLETED)) {
           s = el.getCompletedTime();
-        } else if (BeeUtils.same(cols[j], RpcInfo.COL_REQ_MSG)) {
-          s = el.getReqMsg();
+
+        } else if (BeeUtils.same(cols[j], RpcInfo.COL_REQ_PARAMS)) {
+          s = el.getReqParams().transform();
+        } else if (BeeUtils.same(cols[j], RpcInfo.COL_REQ_TYPE)) {
+          s = BeeUtils.transform(el.getReqType());
+        } else if (BeeUtils.same(cols[j], RpcInfo.COL_REQ_DATA)) {
+          s = el.getReqData();
+
         } else if (BeeUtils.same(cols[j], RpcInfo.COL_REQ_ROWS)) {
           s = el.getSizeString(el.getReqRows());
         } else if (BeeUtils.same(cols[j], RpcInfo.COL_REQ_COLS)) {
           s = el.getSizeString(el.getReqCols());
         } else if (BeeUtils.same(cols[j], RpcInfo.COL_REQ_SIZE)) {
           s = el.getSizeString(el.getReqSize());
-        } else if (BeeUtils.same(cols[j], RpcInfo.COL_REQ_INFO)) {
-          s = el.getReqInfoString();
-        } else if (BeeUtils.same(cols[j], RpcInfo.COL_RESP_MSG)) {
-          s = el.getRespMsg();
+
+        } else if (BeeUtils.same(cols[j], RpcInfo.COL_RESP_TYPE)) {
+          s = BeeUtils.transform(el.getRespType());
+        } else if (BeeUtils.same(cols[j], RpcInfo.COL_RESP_DATA)) {
+          s = el.getRespData();
+
         } else if (BeeUtils.same(cols[j], RpcInfo.COL_RESP_ROWS)) {
           s = el.getSizeString(el.getRespRows());
         } else if (BeeUtils.same(cols[j], RpcInfo.COL_RESP_COLS)) {
           s = el.getSizeString(el.getRespCols());
         } else if (BeeUtils.same(cols[j], RpcInfo.COL_RESP_SIZE)) {
           s = el.getSizeString(el.getRespSize());
+
+        } else if (BeeUtils.same(cols[j], RpcInfo.COL_RESP_MSG_CNT)) {
+          s = el.getSizeString(el.getRespMsgCnt());
+        } else if (BeeUtils.same(cols[j], RpcInfo.COL_RESP_MESSAGES)) {
+          s = BeeUtils.transformArray(el.getRespMessages());
+          
         } else if (BeeUtils.same(cols[j], RpcInfo.COL_RESP_INFO)) {
           s = el.getRespInfoString();
+
         } else if (BeeUtils.same(cols[j], RpcInfo.COL_ERR_MSG)) {
           s = el.getErrMsg();
         } else {

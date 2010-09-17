@@ -40,6 +40,8 @@ public class BeeServlet extends HttpServlet {
   }
 
   private void doService(HttpServletRequest req, HttpServletResponse resp) {
+    long start = System.currentTimeMillis();
+
     HttpSession session = req.getSession();
     String sid = session.getId();
 
@@ -55,13 +57,21 @@ public class BeeServlet extends HttpServlet {
     sep = reqInfo.getSeparator();
     opt = reqInfo.getOptions();
 
-    LogUtils.infoNow(logger, rid, "received request", meth, svc, dsn, sep, opt);
-    LogUtils.info(logger, rid, "received headers", reqInfo.getHeadersAsString());
+    boolean debug = reqInfo.isDebug();
+
+    LogUtils.infoNow(logger, rid, "request", meth, svc, dsn, opt);
+    if (debug) {
+      reqInfo.logParams(logger);
+      reqInfo.logFields(logger);
+      reqInfo.logHeaders(logger);
+    }
 
     if (reqInfo.getContentLen() > 0) {
-      LogUtils.info(logger, rid, "received content", reqInfo.getContentType(),
-          BeeUtils.bracket(reqInfo.getContentLen()),
-          BeeUtils.bracket(reqInfo.getContent().length()), reqInfo.getContent());
+      LogUtils.info(logger, rid, "content", reqInfo.getContentType(),
+          reqInfo.getDataType(), BeeUtils.bracket(reqInfo.getContentLen()));
+      if (debug) {
+        LogUtils.info(logger, reqInfo.getContent());
+      }
     }
 
     ResponseBuffer buff = new ResponseBuffer(sep);
@@ -75,10 +85,15 @@ public class BeeServlet extends HttpServlet {
       int cnt = buff.getCount();
       int cc = buff.getColumnCount();
 
-      LogUtils.infoNow(logger, rid, "sending response", meth, svc, dsn, cc,
-          cnt, respLen, mc);
+      BeeService.DATA_TYPE dtp = buff.getDataType();
+      if (dtp == null) {
+        dtp = (cc > 0) ? BeeService.DATA_TYPE.TABLE
+            : BeeService.DEFAULT_RESPONSE_DATA_TYPE;
+      }
 
+      resp.setHeader(BeeService.RPC_FIELD_SID, sid);
       resp.setHeader(BeeService.RPC_FIELD_QID, rid);
+
       if (!BeeUtils.isEmpty(sep) || !buff.isDefaultSeparator()) {
         resp.setHeader(BeeService.RPC_FIELD_SEP, buff.getHexSeparator());
       }
@@ -97,10 +112,17 @@ public class BeeServlet extends HttpServlet {
         }
       }
 
-      resp.setContentType("text/plain");
-      resp.setCharacterEncoding("utf-8");
+      resp.setHeader(BeeService.RPC_FIELD_DTP, BeeService.transform(dtp));
 
-      // resp.setContentLength(respLen);
+      String ct = BeeService.getContentType(dtp);
+      if (!BeeUtils.isEmpty(ct)) {
+        resp.setContentType(ct);
+      }
+
+      String ce = BeeService.getCharacterEncoding(dtp);
+      if (!BeeUtils.isEmpty(ce)) {
+        resp.setCharacterEncoding(ce);
+      }
 
       String s;
       if (respLen > 0) {
@@ -110,6 +132,9 @@ public class BeeServlet extends HttpServlet {
       } else {
         s = BeeConst.EMPTY;
       }
+
+      LogUtils.infoNow(logger, BeeUtils.elapsedSeconds(start), rid, "response",
+          dtp, cc, cnt, respLen, mc);
 
       try {
         ServletOutputStream out = resp.getOutputStream();

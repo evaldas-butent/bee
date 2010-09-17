@@ -6,18 +6,21 @@ import com.google.gwt.http.client.Response;
 
 import com.butent.bee.egg.client.utils.BeeDuration;
 import com.butent.bee.egg.shared.BeeConst;
+import com.butent.bee.egg.shared.BeeService;
 import com.butent.bee.egg.shared.utils.BeeUtils;
-import com.butent.bee.egg.shared.utils.StringProp;
 import com.butent.bee.egg.shared.utils.SubProp;
 
 import java.util.Collection;
 
 public class RpcInfo {
   private static int COUNTER = 0;
+ 
+  public static int MAX_DATA_LEN = 1024;
 
   public static final String COL_ID = "Id";
-  public static final String COL_NAME = "Name";
-  public static final String COL_TYPE = "Type";
+  public static final String COL_SERVICE = "Service";
+  public static final String COL_STAGE = "Stage";
+  public static final String COL_METHOD = "Method";
 
   public static final String COL_STATE = "State";
 
@@ -27,32 +30,40 @@ public class RpcInfo {
   public static final String COL_TIMEOUT = "Timeout";
   public static final String COL_EXPIRES = "Expires";
 
-  public static final String COL_REQ_MSG = "Request Msg";
+  public static final String COL_REQ_PARAMS = "Request Params";
+  public static final String COL_REQ_TYPE = "Request Type";
+  public static final String COL_REQ_DATA = "Request Data";
   public static final String COL_REQ_ROWS = "Request Rows";
   public static final String COL_REQ_COLS = "Request Columns";
   public static final String COL_REQ_SIZE = "Request Size";
-  public static final String COL_REQ_INFO = "Request Info";
 
-  public static final String COL_RESP_MSG = "Response Msg";
+  public static final String COL_RESP_TYPE = "Response Type";
+  public static final String COL_RESP_DATA = "Response Data";
   public static final String COL_RESP_ROWS = "Response Rows";
   public static final String COL_RESP_COLS = "Response Columns";
   public static final String COL_RESP_SIZE = "Response Size";
+
+  public static final String COL_RESP_MSG_CNT = "Response Msg Cnt";
+  public static final String COL_RESP_MESSAGES = "Response Messages";
+
   public static final String COL_RESP_INFO = "Response Info";
 
   public static final String COL_ERR_MSG = "Error Msg";
 
   private int id;
-  private String name = null;
-  private RequestBuilder.Method type = RequestBuilder.GET;
+  private String service = null;
+  private String stage = null;
+  private RequestBuilder.Method method = RequestBuilder.GET;
 
   private int state = BeeConst.STATE_UNKNOWN;
-  private final BeeDuration duration;
+  private BeeDuration duration = new BeeDuration();
 
   private RequestBuilder reqBuilder = null;
   private Request request = null;
-  private Collection<StringProp> reqInfo = null;
+  private ParameterList reqParams = null;
 
-  private String reqMsg = null;
+  private String reqData = null;
+  private BeeService.DATA_TYPE reqType = null;
   private int reqRows = BeeConst.SIZE_UNKNOWN;
   private int reqCols = BeeConst.SIZE_UNKNOWN;
   private int reqSize = BeeConst.SIZE_UNKNOWN;
@@ -60,85 +71,70 @@ public class RpcInfo {
   private Response response = null;
   private Collection<SubProp> respInfo = null;
 
-  private String respMsg = null;
+  private BeeService.DATA_TYPE respType = null;
+  private String respData = null;
   private int respRows = BeeConst.SIZE_UNKNOWN;
   private int respCols = BeeConst.SIZE_UNKNOWN;
   private int respSize = BeeConst.SIZE_UNKNOWN;
 
+  private int respMsgCnt = BeeConst.SIZE_UNKNOWN;
+  private String[] respMessages = null;
+
   private String errMsg = null;
 
-  public RpcInfo() {
+  public RpcInfo(RequestBuilder.Method method, String service, ParameterList params) {
+    this(method, service, params, null, null);
+  }
+
+  public RpcInfo(RequestBuilder.Method method, String service, ParameterList params,
+      BeeService.DATA_TYPE dtp, String data) {
     id = ++COUNTER;
     duration = new BeeDuration();
+
+    this.method = method;
+    this.service = service;
+    this.reqParams = params;
+    this.reqType = dtp;
+    this.reqData = data;
+  }
+  
+  protected RpcInfo() {
+  }
+  
+  public int end(BeeService.DATA_TYPE dtp, String data, int rows, int cols, int size,
+      int msgCnt, String[] messages) {
+    int r = done();
+    setState(BeeConst.STATE_CLOSED);
+    
+    setRespType(dtp);
+    setRespData(data);
+
+    if (rows != BeeConst.SIZE_UNKNOWN) {
+      setRespRows(rows);
+    }
+    if (cols != BeeConst.SIZE_UNKNOWN) {
+      setRespCols(cols);
+    }
+    if (size != BeeConst.SIZE_UNKNOWN) {
+      setRespSize(size);
+    }
+
+    if (msgCnt != BeeConst.SIZE_UNKNOWN) {
+      setRespMsgCnt(msgCnt);
+    }
+    setRespMessages(messages);
+    
+    return r;
   }
 
-  public RpcInfo(RequestBuilder.Method type) {
-    this();
-    this.type = type;
+  public void endError(Exception ex) {
+    endError(ex.toString());
   }
 
-  public RpcInfo(RequestBuilder.Method type, String name) {
-    this(name);
-    this.type = type;
-  }
-
-  public RpcInfo(RequestBuilder.Method type, String name, String reqMsg) {
-    this(type, name);
-    this.reqMsg = reqMsg;
-  }
-
-  public RpcInfo(String name) {
-    this();
-    this.name = name;
-  }
-
-  public RpcInfo(String name, String reqMsg) {
-    this(name);
-    this.reqMsg = reqMsg;
-  }
-
-  public int endColumns(int cols, int size) {
-    return end(BeeConst.STATE_CLOSED, null, BeeConst.SIZE_UNKNOWN, cols, size,
-        null);
-  }
-
-  public int endError(Exception ex) {
-    return end(BeeConst.STATE_ERROR, null, BeeConst.SIZE_UNKNOWN,
-        BeeConst.SIZE_UNKNOWN, BeeConst.SIZE_UNKNOWN, ex.toString());
-  }
-
-  public int endError(String msg) {
-    return end(BeeConst.STATE_ERROR, null, BeeConst.SIZE_UNKNOWN,
-        BeeConst.SIZE_UNKNOWN, BeeConst.SIZE_UNKNOWN, msg);
-  }
-
-  public int endMessage(String msg) {
-    return end(BeeConst.STATE_CLOSED, msg, BeeConst.SIZE_UNKNOWN,
-        BeeConst.SIZE_UNKNOWN, BeeConst.SIZE_UNKNOWN, null);
-  }
-
-  public int endMessage(String msg, int size) {
-    return end(BeeConst.STATE_CLOSED, msg, BeeConst.SIZE_UNKNOWN,
-        BeeConst.SIZE_UNKNOWN, size, null);
-  }
-
-  public int endResult(int rows, int cols) {
-    return end(BeeConst.STATE_CLOSED, null, rows, cols, BeeConst.SIZE_UNKNOWN,
-        null);
-  }
-
-  public int endResult(int rows, int cols, int size) {
-    return end(BeeConst.STATE_CLOSED, null, rows, cols, size, null);
-  }
-
-  public int endRows(int rows, int size) {
-    return end(BeeConst.STATE_CLOSED, null, rows, BeeConst.SIZE_UNKNOWN, size,
-        null);
-  }
-
-  public int endSize(int size) {
-    return end(BeeConst.STATE_CLOSED, null, BeeConst.SIZE_UNKNOWN,
-        BeeConst.SIZE_UNKNOWN, size, null);
+  public void endError(String msg) {
+    done();
+    setState(BeeConst.STATE_ERROR);
+    setErrMsg(msg);
   }
 
   public boolean filterState(int st) {
@@ -165,8 +161,16 @@ public class RpcInfo {
     return id;
   }
 
-  public String getName() {
-    return name;
+  public RequestBuilder.Method getMethod() {
+    return method;
+  }
+
+  public String getMethodString() {
+    if (getMethod() == null) {
+      return BeeConst.STRING_EMPTY;
+    } else {
+      return getMethod().toString();
+    }
   }
 
   public RequestBuilder getReqBuilder() {
@@ -177,17 +181,12 @@ public class RpcInfo {
     return reqCols;
   }
 
-  public Collection<StringProp> getReqInfo() {
-    return reqInfo;
+  public String getReqData() {
+    return reqData;
   }
 
-  public String getReqInfoString() {
-    return BeeUtils.transformCollection(getReqInfo(),
-        BeeConst.DEFAULT_ROW_SEPARATOR);
-  }
-
-  public String getReqMsg() {
-    return reqMsg;
+  public ParameterList getReqParams() {
+    return reqParams;
   }
 
   public int getReqRows() {
@@ -198,12 +197,20 @@ public class RpcInfo {
     return reqSize;
   }
 
+  public BeeService.DATA_TYPE getReqType() {
+    return reqType;
+  }
+
   public Request getRequest() {
     return request;
   }
 
   public int getRespCols() {
     return respCols;
+  }
+
+  public String getRespData() {
+    return respData;
   }
 
   public Collection<SubProp> getRespInfo() {
@@ -215,8 +222,12 @@ public class RpcInfo {
         BeeConst.DEFAULT_ROW_SEPARATOR);
   }
 
-  public String getRespMsg() {
-    return respMsg;
+  public String[] getRespMessages() {
+    return respMessages;
+  }
+
+  public int getRespMsgCnt() {
+    return respMsgCnt;
   }
 
   public Response getResponse() {
@@ -231,12 +242,24 @@ public class RpcInfo {
     return respSize;
   }
 
+  public BeeService.DATA_TYPE getRespType() {
+    return respType;
+  }
+
+  public String getService() {
+    return service;
+  }
+
   public String getSizeString(int z) {
     if (z != BeeConst.SIZE_UNKNOWN) {
       return BeeUtils.transform(z);
     } else {
       return BeeConst.STRING_EMPTY;
     }
+  }
+
+  public String getStage() {
+    return stage;
   }
 
   public String getStartTime() {
@@ -286,18 +309,6 @@ public class RpcInfo {
     return duration.getTimeoutAsTime();
   }
 
-  public RequestBuilder.Method getType() {
-    return type;
-  }
-
-  public String getTypeString() {
-    if (getType() == null) {
-      return BeeConst.STRING_EMPTY;
-    } else {
-      return getType().toString();
-    }
-  }
-
   public void setErrMsg(String errMsg) {
     this.errMsg = errMsg;
   }
@@ -306,8 +317,8 @@ public class RpcInfo {
     this.id = id;
   }
 
-  public void setName(String name) {
-    this.name = name;
+  public void setMethod(RequestBuilder.Method method) {
+    this.method = method;
   }
 
   public void setReqBuilder(RequestBuilder reqBuilder) {
@@ -318,12 +329,12 @@ public class RpcInfo {
     this.reqCols = reqCols;
   }
 
-  public void setReqInfo(Collection<StringProp> reqInfo) {
-    this.reqInfo = reqInfo;
+  public void setReqData(String reqData) {
+    this.reqData = reqData;
   }
 
-  public void setReqMsg(String reqMsg) {
-    this.reqMsg = reqMsg;
+  public void setReqParams(ParameterList reqParams) {
+    this.reqParams = reqParams;
   }
 
   public void setReqRows(int reqRows) {
@@ -334,6 +345,10 @@ public class RpcInfo {
     this.reqSize = reqSize;
   }
 
+  public void setReqType(BeeService.DATA_TYPE reqType) {
+    this.reqType = reqType;
+  }
+
   public void setRequest(Request request) {
     this.request = request;
   }
@@ -342,12 +357,20 @@ public class RpcInfo {
     this.respCols = respCols;
   }
 
+  public void setRespData(String respData) {
+    this.respData = BeeUtils.clip(respData, MAX_DATA_LEN);
+  }
+
   public void setRespInfo(Collection<SubProp> respInfo) {
     this.respInfo = respInfo;
   }
 
-  public void setRespMsg(String respMsg) {
-    this.respMsg = respMsg;
+  public void setRespMessages(String[] respMessages) {
+    this.respMessages = respMessages;
+  }
+
+  public void setRespMsgCnt(int respMsgCnt) {
+    this.respMsgCnt = respMsgCnt;
   }
 
   public void setResponse(Response response) {
@@ -362,6 +385,18 @@ public class RpcInfo {
     this.respSize = respSize;
   }
 
+  public void setRespType(BeeService.DATA_TYPE respType) {
+    this.respType = respType;
+  }
+
+  public void setService(String service) {
+    this.service = service;
+  }
+
+  public void setStage(String stage) {
+    this.stage = stage;
+  }
+
   public void setState(int state) {
     this.state = state;
   }
@@ -370,41 +405,8 @@ public class RpcInfo {
     duration.setTimeout(timeout);
   }
 
-  public void setType(RequestBuilder.Method type) {
-    this.type = type;
-  }
-
   private int done() {
     return duration.finish();
-  }
-
-  private int end(int st, String msg, int rows, int cols, int size, String err) {
-    int r = done();
-
-    if (st > 0) {
-      setState(st);
-    } else if (!BeeUtils.isEmpty(err)) {
-      setState(BeeConst.STATE_ERROR);
-    } else {
-      setState(BeeConst.STATE_CLOSED);
-    }
-
-    setRespMsg(msg);
-    if (rows != BeeConst.SIZE_UNKNOWN) {
-      setRespRows(rows);
-    }
-    if (cols != BeeConst.SIZE_UNKNOWN) {
-      setRespCols(cols);
-    }
-    if (size != BeeConst.SIZE_UNKNOWN) {
-      setRespSize(size);
-    }
-
-    if (!BeeUtils.isEmpty(err)) {
-      setErrMsg(err);
-    }
-
-    return r;
   }
 
 }

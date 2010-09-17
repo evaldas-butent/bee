@@ -96,9 +96,9 @@ public class LogUtils {
   }
 
   public static void stack(Logger logger, Throwable err) {
-    StackTraceElement[] arr = err.getStackTrace();
-    for (int i = 0; i < arr.length; i++) {
-      logger.info("[" + i + "] " + arr[i].toString());
+    int i = 0;
+    for (StackTraceElement el : err.getStackTrace()) {
+      logger.info("[" + ++i + "] " + el.toString());
     }
   }
 
