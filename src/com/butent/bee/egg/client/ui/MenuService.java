@@ -5,12 +5,17 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.egg.client.BeeGlobal;
 import com.butent.bee.egg.client.BeeKeeper;
+import com.butent.bee.egg.client.tree.BeeTree;
+import com.butent.bee.egg.client.tree.BeeTreeItem;
 import com.butent.bee.egg.client.utils.BeeXml;
+import com.butent.bee.egg.client.widget.BeeListBox;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeService;
 import com.butent.bee.egg.shared.menu.MenuConst;
 import com.butent.bee.egg.shared.ui.UiComponent;
 import com.butent.bee.egg.shared.utils.BeeUtils;
+
+import java.util.Map.Entry;
 
 public class MenuService extends CompositeService {
 
@@ -60,6 +65,7 @@ public class MenuService extends CompositeService {
         JsArrayString fArr = (JsArrayString) params[0];
         UiComponent c = UiComponent.restore(fArr.get(0));
 
+        showMenu(c);
         BeeKeeper.getUi().updateMenu((Widget) c.createInstance());
         break;
 
@@ -94,6 +100,34 @@ public class MenuService extends CompositeService {
     return l;
   }
 
+  private void fillBranch(BeeTreeItem item, UiComponent c) {
+    item.addItem("Class = " + c.getClass().getName());
+    item.addItem("Caption = " + c.getCaption());
+
+    if (!BeeUtils.isEmpty(c.getProperties())) {
+      BeeTreeItem prp = new BeeTreeItem("Properties");
+      BeeListBox lst = new BeeListBox();
+
+      for (Entry<String, String> entry : c.getProperties().entrySet()) {
+        lst.addItem(entry.getKey() + " = " + entry.getValue());
+      }
+      lst.setAllVisible();
+      prp.addItem(lst);
+      item.addItem(prp);
+    }
+
+    if (c.hasChilds()) {
+      BeeTreeItem cc = new BeeTreeItem("Childs");
+
+      for (UiComponent chld : c.getChilds()) {
+        BeeTreeItem itm = new BeeTreeItem(chld.getId());
+        fillBranch(itm, chld);
+        cc.addItem(itm);
+      }
+      item.addItem(cc);
+    }
+  }
+
   private void nextStage() {
     int x = 0;
 
@@ -106,5 +140,15 @@ public class MenuService extends CompositeService {
     } else {
       BeeGlobal.unregisterService(serviceId);
     }
+  }
+
+  private void showMenu(UiComponent c) {
+    BeeTree root = new BeeTree();
+    BeeTreeItem item = new BeeTreeItem(c.getId());
+    fillBranch(item, c);
+
+    root.addItem(item);
+
+    BeeKeeper.getUi().updateActivePanel(root);
   }
 }

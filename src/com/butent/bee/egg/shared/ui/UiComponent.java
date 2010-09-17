@@ -15,6 +15,10 @@ import java.util.logging.Logger;
 
 public abstract class UiComponent implements HasId, BeeSerializable {
 
+  private enum SerializationMembers {
+    ID, CAPTION, PROPERTIES, CHILDS
+  }
+
   private static Logger logger = Logger.getLogger(UiComponent.class.getName());
   private static UiCreator creator;
 
@@ -83,16 +87,9 @@ public abstract class UiComponent implements HasId, BeeSerializable {
 
   private String id;
   private String caption;
-
   private UiComponent parent;
-
   private Map<String, String> properties = new HashMap<String, String>();
-
   private List<UiComponent> childs;
-
-  private enum SerializationMembers {
-    ID, CAPTION, PROPERTIES, CHILDS
-  };
 
   public void addChild(UiComponent child) {
     Assert.notEmpty(child);
@@ -218,6 +215,10 @@ public abstract class UiComponent implements HasId, BeeSerializable {
 
   public UiComponent getParent() {
     return parent;
+  }
+
+  public Map<String, String> getProperties() {
+    return properties;
   }
 
   public String getProperty(String key) {
