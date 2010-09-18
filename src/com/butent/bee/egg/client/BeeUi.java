@@ -26,23 +26,17 @@ import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.BeeName;
 import com.butent.bee.egg.shared.BeeService;
 import com.butent.bee.egg.shared.BeeStage;
-import com.butent.bee.egg.shared.HasId;
 import com.butent.bee.egg.shared.Pair;
 import com.butent.bee.egg.shared.menu.MenuConst;
 import com.butent.bee.egg.shared.ui.UiComponent;
 import com.butent.bee.egg.shared.utils.BeeUtils;
-import com.butent.bee.egg.shared.utils.PropUtils;
-import com.butent.bee.egg.shared.utils.SubProp;
 
 import java.util.Date;
-import java.util.List;
 
 public class BeeUi implements BeeModule {
   private final HasWidgets rootUi;
 
-  private String screenId = null;
-  private String activeId = null;
-
+  private BeeSplit screenPanel = null;
   private Panel activePanel = null;
   private Panel menuPanel = null;
 
@@ -53,10 +47,6 @@ public class BeeUi implements BeeModule {
   }
 
   public void end() {
-  }
-
-  public String getActiveId() {
-    return activeId;
   }
 
   public Panel getActivePanel() {
@@ -97,15 +87,11 @@ public class BeeUi implements BeeModule {
     return rootUi;
   }
 
-  public String getScreenId() {
-    return screenId;
+  public BeeSplit getScreenPanel() {
+    return screenPanel;
   }
 
   public void init() {
-  }
-
-  public void setActiveId(String activeId) {
-    this.activeId = activeId;
   }
 
   public void setActivePanel(Panel activePanel) {
@@ -120,22 +106,13 @@ public class BeeUi implements BeeModule {
     this.menuPanel = menuPanel;
   }
 
-  public void setScreenId(String screenId) {
-    this.screenId = screenId;
+  public void setScreenPanel(BeeSplit screenPanel) {
+    this.screenPanel = screenPanel;
   }
 
-  public void showGrid(List<SubProp> lst) {
-    Assert.notEmpty(lst);
-
-    updateActivePanel(BeeGlobal.createSimpleGrid(SubProp.COLUMN_HEADERS,
-        PropUtils.subToArray(lst)));
-  }
-
-  public void showGrid(String[] cols, Object data) {
-    Assert.notEmpty(cols);
+  public void showGrid(Object data, String... cols) {
     Assert.notNull(data);
-
-    updateActivePanel(BeeGlobal.createSimpleGrid(cols, data));
+    updateActiveQuietly(BeeGlobal.simpleGrid(data, cols));
   }
 
   public void start() {
@@ -152,6 +129,12 @@ public class BeeUi implements BeeModule {
     }
   }
 
+  public void updateActiveQuietly(Widget w) {
+    if (w != null) {
+      updateActivePanel(w);
+    }
+  }
+
   public void updateMenu(Widget w) {
     Assert.notNull(w);
 
@@ -161,7 +144,7 @@ public class BeeUi implements BeeModule {
     p.clear();
     p.add(w);
   }
-
+  
   private void createUi() {
     Widget w;
     BeeSplit p = new BeeSplit();
@@ -186,21 +169,19 @@ public class BeeUi implements BeeModule {
       p.addEast(w, 200);
     }
 
-    w = initCenter();
-    if (w != null) {
-      setActiveWidget(w);
-      p.add(w);
+    Panel c = initCenter();
+    if (c != null) {
+      p.add(c);
+      setActivePanel(c);
     }
 
     rootUi.add(p);
 
-    setScreenId(p.getId());
+    setScreenPanel(p);
   }
 
-  private Widget initCenter() {
+  private Panel initCenter() {
     int r = DateTimeFormat.PredefinedFormat.values().length;
-
-    String[] cols = {"Format", "Value"};
     String[][] data = new String[r][2];
 
     int i = 0;
@@ -210,7 +191,7 @@ public class BeeUi implements BeeModule {
       i++;
     }
 
-    return new BeeScroll(BeeGlobal.createSimpleGrid(cols, data));
+    return new BeeScroll(BeeGlobal.simpleGrid(data, "Format", "Value"));
   }
 
   private Widget initEast() {
@@ -292,16 +273,6 @@ public class BeeUi implements BeeModule {
     setMenuPanel(mp);
 
     return spl;
-  }
-
-  private void setActiveWidget(Widget w) {
-    if (w instanceof Panel) {
-      setActivePanel((Panel) w);
-
-      if (w instanceof HasId) {
-        setActiveId(((HasId) w).getId());
-      }
-    }
   }
 
 }

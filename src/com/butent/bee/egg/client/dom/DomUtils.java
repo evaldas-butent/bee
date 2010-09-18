@@ -14,6 +14,7 @@ import com.google.gwt.dom.client.SpanElement;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.ui.DockLayoutPanel;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.UIObject;
@@ -310,6 +311,23 @@ public class DomUtils {
     return Document.get().getClientWidth();
   }
 
+  public static DockLayoutPanel.Direction getDirection(String s) {
+    Assert.notEmpty(s);
+    DockLayoutPanel.Direction dir = null;
+    
+    for (DockLayoutPanel.Direction z : DockLayoutPanel.Direction.values()) {
+      if (BeeUtils.same(z.name(), s)) {
+        dir = z;
+        break;
+      }
+      if (BeeUtils.startsSame(z.name(), s)) {
+        dir = (dir == null) ? z : null;
+      }
+    }
+    
+    return dir;
+  }
+  
   public static List<StringProp> getElementInfo(Element el) {
     Assert.notNull(el);
     List<StringProp> lst = new ArrayList<StringProp>();
@@ -525,6 +543,16 @@ public class DomUtils {
     return lst;
   }
 
+  public static int getWidgetCount(HasWidgets container) {
+    Assert.notNull(container);
+    int c = 0;
+    for (Iterator<Widget> it = container.iterator(); it.hasNext(); ) {
+      it.next();
+      c++;
+    }
+    return c;
+  }
+  
   public static List<SubProp> getWidgetExtendedInfo(Widget w, String prefix) {
     Assert.notNull(w);
     List<SubProp> lst = new ArrayList<SubProp>();
@@ -545,6 +573,14 @@ public class DomUtils {
         "Attached", w.isAttached());
 
     return lst;
+  }
+
+  public static boolean isDirection(String s) {
+    if (BeeUtils.isEmpty(s)) {
+      return false;
+    } else {
+      return getDirection(s) != null;
+    }
   }
 
   public static boolean isInputElement(Element el) {
@@ -645,5 +681,5 @@ public class DomUtils {
       return BeeUtils.concat(1, nd.getNodeName(), nd.getNodeValue());
     }
   }
-
+  
 }

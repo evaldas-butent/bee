@@ -36,11 +36,9 @@ public class BeeMessageBox {
     showInfo(x);
   }
 
-  public void showGrid(String cap, String[] cols, Object data) {
-    Assert.notEmpty(cols);
+  public void showGrid(String cap, Object data, String... cols) {
     Assert.notNull(data);
-
-    showInfo(cap, BeeGlobal.createSimpleGrid(cols, data));
+    showInfo(cap, BeeGlobal.simpleGrid(data, cols));
   }
 
   public void showInfo(Object... x) {

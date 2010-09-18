@@ -1,6 +1,5 @@
 package com.butent.bee.egg.client;
 
-import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.event.shared.GwtEvent;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -21,8 +20,10 @@ import com.butent.bee.egg.shared.menu.MenuConst;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class BeeGlobal implements BeeModule {
   public static final String FIELD_DEBUG = "debug";
@@ -58,14 +59,6 @@ public class BeeGlobal implements BeeModule {
     Assert.isTrue(BeeType.isValid(type));
 
     fields.put(name, new BeeField(caption, type, value, widget, items));
-  }
-
-  public static Widget createGrid(int c, JsArrayString data) {
-    return grids.createGrid(c, data);
-  }
-
-  public static Widget createSimpleGrid(String[] cols, Object data) {
-    return grids.simpleGrid(cols, data);
   }
 
   public static BeeField getField(String name) {
@@ -124,11 +117,19 @@ public class BeeGlobal implements BeeModule {
     return fields.containsKey(name);
   }
 
+  public static void modalGrid(String cap, Object data, String... cols) {
+    msgBox.showGrid(cap, data, cols);
+  }
+
   public static void registerService(String svcId, String svc) {
     Assert.contains(services, svc);
 
     CompositeService service = services.get(svc);
     workingServices.put(svcId, service.createInstance(svcId));
+  }
+
+  public static void sayHuh(Object... obj) {
+    msgBox.showInfo("Huh ?", obj);
   }
 
   public static void setField(String name, BeeField fld) {
@@ -166,12 +167,30 @@ public class BeeGlobal implements BeeModule {
     msgBox.showError(obj);
   }
 
-  public static void showFields() {
-    inputFields(null, "Fields", fields.keySet().toArray(new String[0]));
+  public static void showFields(String... context) {
+    int n = context.length;
+    Set<String> names = fields.keySet();
+    String[] arr;
+    
+    if (n > 0) {
+      Set<String> lst = new LinkedHashSet<String>();
+      for (String fld : context) {
+        lst.addAll(BeeUtils.getContext(fld, names));
+      }
+      arr = lst.toArray(BeeConst.EMPTY_STRING_ARRAY);
+    } else {
+      arr = names.toArray(BeeConst.EMPTY_STRING_ARRAY);
+    }
+    
+    if (BeeUtils.isEmpty(arr)) {
+      showError("no fields found", context);
+    } else {
+      inputFields(null, "Fields", arr);
+    }
   }
 
-  public static void showGrid(String cap, String[] cols, Object data) {
-    msgBox.showGrid(cap, cols, data);
+  public static Widget simpleGrid(Object data, String... columns) {
+    return grids.simpleGrid(data, (Object[]) columns);
   }
 
   public static void unregisterService(String svcId) {

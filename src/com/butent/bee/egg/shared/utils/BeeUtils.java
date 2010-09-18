@@ -83,6 +83,14 @@ public abstract class BeeUtils {
     }
   }
 
+  public static <T> T arrayGetQuietly(T[] arr, int idx) {
+    if (isIndex(arr, idx)) {
+      return arr[idx]; 
+    } else {
+      return null;
+    }
+  }
+  
   public static int arrayLength(Object arr) {
     int len;
 
@@ -335,6 +343,22 @@ public abstract class BeeUtils {
     }
   }
 
+  public static boolean context(CharSequence ctxt, Collection<? extends CharSequence> src) {
+    boolean ok = false;
+    if (isEmpty(ctxt)) {
+      return ok;
+    }
+
+    for (CharSequence el : src) {
+      if (context(ctxt, el)) {
+        ok = true;
+        break;
+      }
+    }
+    
+    return ok;
+  }
+
   public static String createUniqueName() {
     return createUniqueName(null);
   }
@@ -348,7 +372,7 @@ public abstract class BeeUtils {
       return pfx.trim() + NAME_COUNTER;
     }
   }
-
+  
   public static String[] deserializeValues(String ser) {
     Assert.notEmpty(ser);
 
@@ -485,6 +509,21 @@ public abstract class BeeUtils {
     }
   }
 
+  public static <T extends CharSequence> List<T> getContext(T ctxt, Collection<T> src) {
+    List<T> lst = new ArrayList<T>();
+    if (isEmpty(ctxt)) {
+      return lst;
+    }
+
+    for (T el : src) {
+      if (context(ctxt, el)) {
+        lst.add(el);
+      }
+    }
+    
+    return lst;
+  }
+
   public static <T> T getElement(T[] arr, int idx) {
     if (arr == null) {
       return null;
@@ -528,27 +567,12 @@ public abstract class BeeUtils {
     return Integer.toString(toInt(s) + 1);
   }
 
-  public static boolean inList(int x, int... lst) {
+  public static <T extends Comparable<T>> boolean inList(T x, T... lst) {
     Assert.parameterCount(lst.length + 1, 2);
     boolean ok = false;
 
     for (int i = 0; i < lst.length; i++) {
-      if (x == lst[i]) {
-        ok = true;
-        break;
-      }
-    }
-
-    return ok;
-  }
-
-  public static boolean inList(String x, String... lst) {
-    Assert.notEmpty(x);
-    Assert.parameterCount(lst.length + 1, 2);
-    boolean ok = false;
-
-    for (int i = 0; i < lst.length; i++) {
-      if (x.equals(lst[i])) {
+      if (x.compareTo(lst[i]) == 0) {
         ok = true;
         break;
       }
@@ -666,6 +690,22 @@ public abstract class BeeUtils {
     return ok;
   }
 
+  public static boolean isDouble(String s) {
+    if (isEmpty(s)) {
+      return false;
+    }
+    boolean ok;
+
+    try {
+      Double.parseDouble(s);
+      ok = true;
+    } catch (NumberFormatException ex) {
+      ok = false;
+    }
+
+    return ok;
+  }
+
   public static boolean isEmpty(Object x) {
     boolean ok;
 
@@ -694,7 +734,7 @@ public abstract class BeeUtils {
 
     return ok;
   }
-
+  
   public static boolean isEmpty(Object x, int... orType) {
     if (filterType(x, orType)) {
       return false;
@@ -723,6 +763,15 @@ public abstract class BeeUtils {
     }
 
     return ok;
+  }
+
+  public static boolean isIndex(Object obj, int idx) {
+    if (obj == null || idx < 0) {
+      return false;
+    } else {
+      int n = length(obj);
+      return (n > 0 && idx < n);
+    }
   }
 
   public static boolean isInt(String s) {
@@ -1072,6 +1121,20 @@ public abstract class BeeUtils {
     }
   }
 
+  public static double toDouble(String s) {
+    if (isEmpty(s)) {
+      return Double.NaN;
+    }
+    double d;
+
+    try {
+      d = Double.parseDouble(s.trim());
+    } catch (NumberFormatException ex) {
+      d = Double.NaN;
+    }
+    return d;
+  }
+
   public static String toHex(char c) {
     return padLeft(Integer.toHexString((int) c), 4, BeeConst.CHAR_ZERO);
   }
@@ -1107,7 +1170,7 @@ public abstract class BeeUtils {
     }
     return i;
   }
-
+  
   public static String toLeadingZeroes(int x, int n) {
     if (x >= 0 && n > 0) {
       return padLeft(((Integer) x).toString(), n, BeeConst.CHAR_ZERO);

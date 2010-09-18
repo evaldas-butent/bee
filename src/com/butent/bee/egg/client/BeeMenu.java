@@ -223,7 +223,7 @@ public class BeeMenu implements BeeModule {
       arr[i][j++] = BeeUtils.toString(entry.isVisible());
     }
 
-    BeeKeeper.getUi().updateActivePanel(BeeGlobal.createSimpleGrid(cols, arr));
+    BeeKeeper.getUi().updateActivePanel(BeeGlobal.simpleGrid(arr, cols));
   }
 
   public void start() {

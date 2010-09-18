@@ -4,6 +4,7 @@ import com.butent.bee.egg.server.utils.XmlUtils;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.BeeService;
+import com.butent.bee.egg.shared.HasExtendedInfo;
 import com.butent.bee.egg.shared.Transformable;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 import com.butent.bee.egg.shared.utils.LogUtils;
@@ -27,7 +28,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
-public class RequestInfo implements Transformable {
+public class RequestInfo implements HasExtendedInfo, Transformable {
   private static int COUNTER = 0;
 
   private String id = null;
@@ -128,12 +129,12 @@ public class RequestInfo implements Transformable {
     return id;
   }
 
-  public Collection<SubProp> getInfo() {
+  public List<SubProp> getInfo() {
     if (request == null) {
       return null;
     }
 
-    Collection<SubProp> reqInfo = new ArrayList<SubProp>();
+    List<SubProp> reqInfo = new ArrayList<SubProp>();
 
     if (request.isAsyncStarted()) {
       PropUtils.appendSub(reqInfo,
@@ -305,6 +306,17 @@ public class RequestInfo implements Transformable {
       LogUtils.info(logger, "Parameter", BeeUtils.progress(++i, n),
           el.getKey(), el.getValue());
     }
+  }
+  
+  public boolean parameterEquals(int idx, String value) {
+    Assert.notEmpty(value);
+    return BeeUtils.same(getParameter(idx), value);
+  }
+
+  public boolean parameterEquals(String name, String value) {
+    Assert.notEmpty(name);
+    Assert.notEmpty(value);
+    return BeeUtils.same(getParameter(name), value);
   }
 
   public void setContent(String content) {

@@ -56,6 +56,16 @@ public class BeeColumn implements Transformable, BeeSerializable {
     setName(name);
   }
 
+  public BeeColumn(String s, boolean serial) {
+    this();
+    
+    if (serial) {
+      deserialize(s);
+    } else {
+      setName(s);
+    }
+  }
+
   public void deserialize(String s) {
     Assert.notEmpty(s);
 

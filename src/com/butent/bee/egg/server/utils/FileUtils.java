@@ -2,6 +2,7 @@ package com.butent.bee.egg.server.utils;
 
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeConst;
+import com.butent.bee.egg.shared.BeeDate;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 import com.butent.bee.egg.shared.utils.LogUtils;
 import com.butent.bee.egg.shared.utils.PropUtils;
@@ -96,9 +97,8 @@ public class FileUtils {
         fl.getParent(), "Path", fl.getPath(), "Total Space",
         fl.getTotalSpace(), "Usable Space", fl.getUsableSpace(), "Absolute",
         fl.isAbsolute(), "Directory", fl.isDirectory(), "File", fl.isFile(),
-        "Hidden", fl.isHidden(), "Last Modified", fl.lastModified(), "Length",
+        "Hidden", fl.isHidden(), "Last Modified", new BeeDate(fl.lastModified()), "Length",
         fl.length(), "URI", fl.toURI());
-
     return lst;
   }
 

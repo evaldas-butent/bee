@@ -104,9 +104,14 @@ public class SystemServiceBean {
   }
 
   private void getResource(RequestInfo reqInfo, ResponseBuffer buff) {
+    if (reqInfo.parameterEquals(0, "fs")) {
+      buff.addStringProp(FileUtils.getRootsInfo());
+      return;
+    }
+
     String name = reqInfo.getParameter(1);
     if (BeeUtils.isEmpty(name)) {
-      buff.addSevere("Parameter", BeeService.rpcParamName(1), "not found");
+      buff.addSevere("resource name (parameter " + BeeService.rpcParamName(1) + ") not specified");
       return;
     }
 
@@ -116,9 +121,7 @@ public class SystemServiceBean {
       return;
     }
 
-    String opt = reqInfo.getParameter(1);
-
-    buff.addMessage(opt, url);
+    buff.addMessage(url);
     String path = url.getPath();
 
     File fl = new File(path);

@@ -1,15 +1,13 @@
 package com.butent.bee.egg.shared.data;
 
-public class StringData implements BeeView {
+public class StringData extends AbstractData {
   String[][] data;
 
-  public StringData() {
-    super();
-  }
-
   public StringData(String[][] data) {
-    this();
     this.data = data;
+
+    setRowCount(data.length);
+    setColumnCount(data[0].length);
   }
 
   public String[][] getData() {

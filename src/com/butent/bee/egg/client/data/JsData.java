@@ -2,15 +2,14 @@ package com.butent.bee.egg.client.data;
 
 import com.google.gwt.core.client.JsArrayString;
 
-import com.butent.bee.egg.shared.data.BeeView;
+import com.butent.bee.egg.shared.data.AbstractData;
 
-public class JsData implements BeeView {
-  JsArrayString data;
-  int columnCount;
-  int start;
+public class JsData extends AbstractData {
+  private JsArrayString data;
+  private int start = 0;
 
-  public JsData() {
-    super();
+  public JsData(JsArrayString data) {
+    this.data = data;
   }
 
   public JsData(JsArrayString data, int columnCount) {
@@ -18,14 +17,11 @@ public class JsData implements BeeView {
   }
 
   public JsData(JsArrayString data, int columnCount, int start) {
-    this();
     this.data = data;
-    this.columnCount = columnCount;
     this.start = start;
-  }
 
-  public int getColumnCount() {
-    return columnCount;
+    setRowCount((data.length() - start) / columnCount);
+    setColumnCount(columnCount);
   }
 
   public JsArrayString getData() {
@@ -38,11 +34,13 @@ public class JsData implements BeeView {
 
   @Override
   public String getValue(int row, int col) {
-    return data.get(start + row * columnCount + col);
+    return data.get(start + row * getColumnCount() + col);
   }
 
+  @Override
   public void setColumnCount(int columnCount) {
-    this.columnCount = columnCount;
+    super.setColumnCount(columnCount);
+    updateRowCount();
   }
 
   public void setData(JsArrayString data) {
@@ -51,6 +49,13 @@ public class JsData implements BeeView {
 
   public void setStart(int start) {
     this.start = start;
+    updateRowCount();
+  }
+
+  private void updateRowCount() {
+    if (getColumnCount() > 0) {
+      setRowCount((getData().length() - getStart()) / getColumnCount());
+    }
   }
 
 }

@@ -54,7 +54,7 @@ public class BeeDate extends Date {
   public int getYear() {
     return super.getYear() + 1900;
   }
-
+  
   public String toLog() {
     return BeeUtils.toLeadingZeroes(getHours(), 2) + ":"
         + BeeUtils.toLeadingZeroes(getMinutes(), 2) + ":"
@@ -64,11 +64,11 @@ public class BeeDate extends Date {
 
   @Override
   public String toString() {
-    return BeeUtils.toLeadingZeroes(getYear(), 4)
-        + BeeUtils.toLeadingZeroes(getMonth(), 2)
-        + BeeUtils.toLeadingZeroes(getDay(), 2)
-        + BeeUtils.toLeadingZeroes(getHours(), 2)
-        + BeeUtils.toLeadingZeroes(getMinutes(), 2)
+    return BeeUtils.toLeadingZeroes(getYear(), 4) + "."
+        + BeeUtils.toLeadingZeroes(getMonth(), 2) + "."
+        + BeeUtils.toLeadingZeroes(getDay(), 2) + " "
+        + BeeUtils.toLeadingZeroes(getHours(), 2) + ":"
+        + BeeUtils.toLeadingZeroes(getMinutes(), 2) + ":"
         + BeeUtils.toLeadingZeroes(getSeconds(), 2);
   }
 }

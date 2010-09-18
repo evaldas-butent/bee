@@ -9,11 +9,13 @@ import com.google.gwt.http.client.Response;
 
 import com.butent.bee.egg.client.BeeGlobal;
 import com.butent.bee.egg.client.BeeKeeper;
+import com.butent.bee.egg.client.data.ResponseData;
 import com.butent.bee.egg.client.ui.CompositeService;
 import com.butent.bee.egg.client.utils.BeeDuration;
 import com.butent.bee.egg.client.utils.BeeJs;
 import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.BeeService;
+import com.butent.bee.egg.shared.data.BeeView;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
 public class BeeCallback implements RequestCallback {
@@ -171,7 +173,8 @@ public class BeeCallback implements RequestCallback {
       BeeKeeper.getMenu().loadCallBack(arr);
 
     } else if (cc > 0) {
-      BeeKeeper.getUi().updateActivePanel(BeeGlobal.createGrid(cc, arr));
+      BeeView view = new ResponseData(arr, cc);
+      BeeKeeper.getUi().showGrid(view);
 
     } else {
       for (int i = 0; i < arr.length(); i++) {
