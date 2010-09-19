@@ -1,7 +1,7 @@
 package com.butent.bee.egg.client;
 
 public class BeeStyle implements BeeModule {
-  public static final String RADIO_BUTTON_SELECTED = "selectedRadio";
+  public static final String RADIO_BUTTON_SELECTED = "bee-selectedRadio";
 
   public void end() {
   }

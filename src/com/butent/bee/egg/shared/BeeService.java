@@ -212,6 +212,10 @@ public class BeeService {
     return svc.startsWith(DB_SERVICE_PREFIX);
   }
 
+  public static boolean isResource(DATA_TYPE dtp) {
+    return dtp == DATA_TYPE.RESOURCE;
+  }
+
   public static boolean isRpcService(String svc) {
     Assert.notEmpty(svc);
     return svc.startsWith(RPC_SERVICE_PREFIX);

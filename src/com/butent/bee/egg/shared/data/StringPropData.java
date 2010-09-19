@@ -34,4 +34,18 @@ public class StringPropData extends AbstractData {
     }
   }
 
+  @Override
+  public void setValue(int row, int col, String value) {
+    StringProp el = data.get(row);
+
+    switch (col) {
+      case 0:
+        el.setName(value);
+        break;
+      case 1:
+        el.setValue(value);
+        break;
+    }
+  }
+  
 }

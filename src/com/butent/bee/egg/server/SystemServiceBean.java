@@ -10,11 +10,13 @@ import com.butent.bee.egg.server.utils.FileUtils;
 import com.butent.bee.egg.server.utils.XmlUtils;
 import com.butent.bee.egg.shared.BeeService;
 import com.butent.bee.egg.shared.utils.BeeUtils;
+import com.butent.bee.egg.shared.utils.LogUtils;
 import com.butent.bee.egg.shared.utils.PropUtils;
 import com.butent.bee.egg.shared.utils.SubProp;
 
 import java.io.File;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -48,7 +50,7 @@ public class SystemServiceBean {
 
     } else {
       String msg = BeeUtils.concat(1, svc, "system service not recognized");
-      logger.warning(msg);
+      LogUtils.warning(logger, msg);
       buff.add(msg);
     }
   }
@@ -104,6 +106,10 @@ public class SystemServiceBean {
   }
 
   private void getResource(RequestInfo reqInfo, ResponseBuffer buff) {
+    if (reqInfo.parameterEquals(0, "cs")) {
+      buff.addSub(FileUtils.getCharsets());
+      return;
+    }
     if (reqInfo.parameterEquals(0, "fs")) {
       buff.addStringProp(FileUtils.getRootsInfo());
       return;
@@ -111,11 +117,12 @@ public class SystemServiceBean {
 
     String name = reqInfo.getParameter(1);
     if (BeeUtils.isEmpty(name)) {
-      buff.addSevere("resource name (parameter " + BeeService.rpcParamName(1) + ") not specified");
+      buff.addSevere("resource name (parameter " + BeeService.rpcParamName(1)
+          + ") not specified");
       return;
     }
 
-    URL url = Thread.currentThread().getContextClassLoader().getResource(name);
+    URL url = getClass().getResource(name);
     if (url == null) {
       buff.addWarning("resource", name, "not found");
       return;
@@ -129,6 +136,23 @@ public class SystemServiceBean {
     if (!fl.exists()) {
       buff.addWarning("file", path, "does not exist");
       return;
+    }
+
+    if (reqInfo.parameterEquals(0, "get")) {
+      if (!FileUtils.isInputFile(fl)) {
+        buff.addWarning("file", path, "is not a valid resource");
+      } else {
+        Charset cs = FileUtils.normalizeCharset(reqInfo.getParameter(2));
+        buff.addMessage("charset", cs);
+        String s = FileUtils.fileToString(fl, cs);
+
+        if (s == null || s.length() == 0) {
+          buff.addWarning("file", path, "no content found");
+        } else {
+          buff.addResource(s, BeeService.DATA_TYPE.RESOURCE);
+          return;
+        }
+      }
     }
 
     buff.addStringProp(FileUtils.getFileInfo(fl));

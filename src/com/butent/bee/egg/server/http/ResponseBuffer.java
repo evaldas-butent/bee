@@ -154,6 +154,12 @@ public class ResponseBuffer {
     add(el.getDate().toLog());
   }
 
+  public void addResource(String content, BeeService.DATA_TYPE type) {
+    Assert.notNull(content);
+    add(content);
+    setDataType(type);
+  }
+
   public void addSeparator() {
     buffer.append(separator);
     count++;

@@ -18,6 +18,16 @@ public abstract class BeeJs {
     }
   }-*/;
 
+  public static native int evalToInt(String xpr) /*-{
+    try {
+      var v = eval(xpr);
+      return parseInt(v) || 0;
+    }
+    catch (err) {
+      return 0;
+    }
+  }-*/;
+
   public static native String evalToString(String xpr) /*-{
     try {
     var z = eval(xpr);

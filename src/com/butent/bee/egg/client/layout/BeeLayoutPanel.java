@@ -14,6 +14,11 @@ public class BeeLayoutPanel extends LayoutPanel implements HasId {
     createId();
   }
 
+  public BeeLayoutPanel(Widget widget) {
+    this();
+    add(widget);
+  }
+  
   @Override
   public void add(Widget widget) {
     Widget w = widget;

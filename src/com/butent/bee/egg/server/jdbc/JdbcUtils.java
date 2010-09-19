@@ -20,7 +20,6 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.sql.DataSource;
@@ -69,10 +68,9 @@ public class JdbcUtils {
       try {
         con.close();
       } catch (SQLException ex) {
-        logger.log(Level.WARNING, "Could not close JDBC Connection", ex);
+        LogUtils.warning(logger, ex, "Could not close JDBC Connection");
       } catch (Exception ex) {
-        logger.log(Level.WARNING,
-            "Unexpected exception on closing JDBC Connection", ex);
+        LogUtils.warning(logger, ex, "Unexpected exception on closing JDBC Connection");
       }
     }
   }
@@ -82,10 +80,9 @@ public class JdbcUtils {
       try {
         rs.close();
       } catch (SQLException ex) {
-        logger.log(Level.WARNING, "Could not close JDBC ResultSet", ex);
+        LogUtils.warning(logger, ex, "Could not close JDBC ResultSet");
       } catch (Exception ex) {
-        logger.log(Level.WARNING,
-            "Unexpected exception on closing JDBC ResultSet", ex);
+        LogUtils.warning(logger, ex, "Unexpected exception on closing JDBC ResultSet");
       }
     }
   }
@@ -95,10 +92,9 @@ public class JdbcUtils {
       try {
         stmt.close();
       } catch (SQLException ex) {
-        logger.log(Level.WARNING, "Could not close JDBC Statement", ex);
+        LogUtils.warning(logger, ex, "Could not close JDBC Statement");
       } catch (Exception ex) {
-        logger.log(Level.WARNING,
-            "Unexpected exception on closing JDBC Statement", ex);
+        LogUtils.warning(logger, ex, "Unexpected exception on closing JDBC Statement");
       }
     }
   }

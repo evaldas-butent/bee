@@ -12,17 +12,17 @@ import java.util.List;
 public class BeeCellTable extends CellTable<Integer> implements HasId {
 
   public BeeCellTable() {
-    createId();
+    init();
   }
 
   public BeeCellTable(int pageSize) {
     super(pageSize);
-    createId();
+    init();
   }
 
   public BeeCellTable(int pageSize, Resources resources) {
     super(pageSize, resources);
-    createId();
+    init();
   }
 
   public void createId() {
@@ -46,6 +46,10 @@ public class BeeCellTable extends CellTable<Integer> implements HasId {
 
   public void setId(String id) {
     DomUtils.setId(this, id);
+  }
+  
+  private void init() {
+    createId();
   }
 
 }

@@ -24,8 +24,18 @@ import javax.ejb.Startup;
 @Startup
 @Lock(LockType.READ)
 public class MenuBean {
-  private static String NOT_AVAIL = "menu not available";
+  private static final String NOT_AVAIL = "menu not available";
+  
+  private static String resource = "menu.xml"; 
   private static Logger logger = Logger.getLogger(MenuBean.class.getName());
+  public static String getResource() {
+    return resource;
+  }
+
+  public static void setResource(String resource) {
+    MenuBean.resource = resource;
+  }
+
   private MenuEntry[] menu = null;
 
   public MenuEntry[] getMenu() {
@@ -80,8 +90,7 @@ public class MenuBean {
     long start = System.currentTimeMillis();
     boolean ok = false;
 
-    URL url = Thread.currentThread().getContextClassLoader().getResource(
-        fileName);
+    URL url = getClass().getResource(fileName);
     if (url == null) {
       LogUtils.warning(logger, "resource", fileName, "not found");
       return ok;
@@ -148,7 +157,7 @@ public class MenuBean {
       LogUtils.severe(logger, "no valid menu items", BeeUtils.bracket(r),
           "found in", url);
     } else {
-      LogUtils.info(logger, "loaded", r, "menu items from", url,
+      LogUtils.infoNow(logger, "loaded", r, "menu items from", url,
           BeeUtils.elapsedSeconds(start));
       if (cnt < r) {
         LogUtils.warning(logger, "only", cnt, "from", r, "menu items are valid");
@@ -177,7 +186,7 @@ public class MenuBean {
   @SuppressWarnings("unused")
   @PostConstruct
   private void init() {
-    loadXml("/com/butent/bee/egg/server/menu.xml");
+    loadXml(resource);
   }
 
   private boolean isParentVisible(MenuEntry entry) {

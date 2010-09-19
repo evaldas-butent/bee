@@ -14,6 +14,7 @@ import com.butent.bee.egg.client.ui.CompositeService;
 import com.butent.bee.egg.client.utils.BeeDuration;
 import com.butent.bee.egg.client.utils.BeeJs;
 import com.butent.bee.egg.shared.BeeConst;
+import com.butent.bee.egg.shared.BeeResource;
 import com.butent.bee.egg.shared.BeeService;
 import com.butent.bee.egg.shared.data.BeeView;
 import com.butent.bee.egg.shared.utils.BeeUtils;
@@ -106,16 +107,17 @@ public class BeeCallback implements RequestCallback {
     if (debug) {
       Header[] headers = resp.getHeaders();
       for (int i = 0; i < headers.length; i++) {
-        BeeKeeper.getLog().info("Header", i + 1, headers[i].getName(), headers[i].getValue());
+        BeeKeeper.getLog().info("Header", i + 1, headers[i].getName(),
+            headers[i].getValue());
       }
 
       if (info != null) {
         info.setRespInfo(RpcUtils.responseInfo(resp));
       }
     }
-    
+
     String[] messages = null;
-    
+
     if (mc > 0) {
       messages = new String[mc];
       for (int i = 0; i < mc; i++) {
@@ -124,7 +126,7 @@ public class BeeCallback implements RequestCallback {
 
       dispatchMessages(mc, messages);
     }
-    
+
     if (info != null) {
       info.end(dtp, txt, cnt, cc, len, mc, messages);
     }
@@ -138,7 +140,7 @@ public class BeeCallback implements RequestCallback {
       return;
     }
 
-    if (txt.indexOf(sep) < 0) {
+    if (txt.indexOf(sep) < 0 && !BeeService.isResource(dtp)) {
       BeeKeeper.getLog().info("text", txt);
       finalizeResponse();
       return;
@@ -155,7 +157,7 @@ public class BeeCallback implements RequestCallback {
       CompositeService service = BeeGlobal.getService(serviceId);
       service.doService(arr, cc);
     } else {
-      dispatchResponse(svc, cc, arr);
+      dispatchResponse(svc, dtp, cc, arr);
     }
 
     BeeKeeper.getLog().finish(dur);
@@ -168,13 +170,17 @@ public class BeeCallback implements RequestCallback {
     }
   }
 
-  private void dispatchResponse(String svc, int cc, JsArrayString arr) {
+  private void dispatchResponse(String svc, BeeService.DATA_TYPE dtp, int cc,
+      JsArrayString arr) {
     if (BeeService.equals(svc, BeeService.SERVICE_GET_MENU)) {
       BeeKeeper.getMenu().loadCallBack(arr);
 
     } else if (cc > 0) {
       BeeView view = new ResponseData(arr, cc);
       BeeKeeper.getUi().showGrid(view);
+
+    } else if (BeeService.isResource(dtp)) {
+      BeeKeeper.getUi().showResource(new BeeResource(arr.get(0), dtp));
 
     } else {
       for (int i = 0; i < arr.length(); i++) {
@@ -188,9 +194,9 @@ public class BeeCallback implements RequestCallback {
       }
     }
   }
-  
+
   private void finalizeResponse() {
     BeeKeeper.getLog().addSeparator();
   }
-  
+
 }

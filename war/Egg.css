@@ -3,12 +3,20 @@ body, table td, select {
   font-size: small;
 }
 
-.selectedRadio {
-  background: #FFCCFF;
+.bee-selectedRadio {
+  background: #9cc;
 }  
 
-.gwt-Tree {
+.bee-scroll {
   overflow: auto;
+}  
+
+button {
+  background: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#fcf), to(#ffc));
+}
+ 
+.gwt-Tree {
+  overflow: scroll;
 }
 
 .gwt-DialogBox .Caption {

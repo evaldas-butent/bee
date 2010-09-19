@@ -9,6 +9,7 @@ import com.butent.bee.egg.client.BeeKeeper;
 import com.butent.bee.egg.client.dom.DomUtils;
 import com.butent.bee.egg.client.event.HasBeeKeyHandler;
 import com.butent.bee.egg.client.event.HasBeeValueChangeHandler;
+import com.butent.bee.egg.shared.BeeResource;
 import com.butent.bee.egg.shared.HasId;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
@@ -16,17 +17,16 @@ public class BeeTextArea extends TextArea implements HasId, HasBeeKeyHandler,
     HasBeeValueChangeHandler<String> {
 
   private String fieldName = null;
+  private BeeResource resource = null;
 
   public BeeTextArea() {
     super();
-    createId();
-    addDefaultHandlers();
+    init();
   }
 
   public BeeTextArea(Element element) {
     super(element);
-    createId();
-    addDefaultHandlers();
+    init();
   }
 
   public BeeTextArea(String fieldName) {
@@ -39,6 +39,13 @@ public class BeeTextArea extends TextArea implements HasId, HasBeeKeyHandler,
     }
   }
 
+  public BeeTextArea(BeeResource resource) {
+    this();
+    this.resource = resource;
+    
+    setValue(resource.getContent());
+  }
+
   public void createId() {
     DomUtils.createId(this, "area");
   }
@@ -49,6 +56,10 @@ public class BeeTextArea extends TextArea implements HasId, HasBeeKeyHandler,
 
   public String getId() {
     return DomUtils.getId(this);
+  }
+
+  public BeeResource getResource() {
+    return resource;
   }
 
   public boolean onBeeKey(KeyPressEvent event) {
@@ -71,9 +82,18 @@ public class BeeTextArea extends TextArea implements HasId, HasBeeKeyHandler,
     DomUtils.setId(this, id);
   }
 
+  public void setResource(BeeResource resource) {
+    this.resource = resource;
+  }
+
   private void addDefaultHandlers() {
     BeeKeeper.getBus().addKeyHandler(this);
     BeeKeeper.getBus().addStringVch(this);
   }
 
+  private void init() {
+    createId();
+    addDefaultHandlers();
+  }
+  
 }

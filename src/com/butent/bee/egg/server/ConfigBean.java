@@ -1,12 +1,10 @@
 package com.butent.bee.egg.server;
 
-import com.butent.bee.egg.shared.utils.BeeUtils;
+import com.butent.bee.egg.shared.utils.LogUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Date;
 import java.util.Properties;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
@@ -19,7 +17,7 @@ import javax.ejb.Startup;
 @Startup
 @Lock(LockType.READ)
 public class ConfigBean {
-  private static final String PROPERTIES_FILE = "/com/butent/bee/egg/server/server.properties";
+  private static String resource = "server.properties";
 
   private static Logger logger = Logger.getLogger(ConfigBean.class.getName());
   private Properties properties = new Properties();
@@ -32,22 +30,19 @@ public class ConfigBean {
   @SuppressWarnings("unused")
   @PostConstruct
   private void init() {
-    InputStream inp = Thread.currentThread().getContextClassLoader().getResourceAsStream(
-        PROPERTIES_FILE);
+    InputStream inp = getClass().getResourceAsStream(resource);
 
     if (inp == null) {
-      logger.warning(BeeUtils.concat(1, PROPERTIES_FILE, "not found",
-          new Date()));
+      LogUtils.warning(logger, resource, "not found");
       return;
     }
 
     try {
       properties.load(inp);
       inp.close();
-      logger.info(BeeUtils.concat(1, properties.size(),
-          "properties loaded from", PROPERTIES_FILE));
+      LogUtils.infoNow(logger, properties.size(), "properties loaded from", resource);
     } catch (IOException ex) {
-      logger.log(Level.SEVERE, PROPERTIES_FILE, ex);
+      LogUtils.error(logger, ex, resource);
     }
   }
 

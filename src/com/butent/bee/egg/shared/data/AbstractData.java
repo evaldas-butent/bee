@@ -49,4 +49,6 @@ public abstract class AbstractData implements BeeView {
     this.rowCount = rowCount;
   }
 
+  public abstract void setValue(int row, int col, String value);
+  
 }

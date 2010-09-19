@@ -4,6 +4,7 @@ import com.butent.bee.egg.server.concurrency.Counter;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.utils.BeeUtils;
+import com.butent.bee.egg.shared.utils.LogUtils;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -137,7 +138,7 @@ public class HttpUtils {
 
       reader.close();
     } catch (IOException ex) {
-      logger.severe(ex.getMessage());
+      LogUtils.error(logger, ex);
     }
 
     return sb.toString();

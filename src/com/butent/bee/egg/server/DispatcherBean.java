@@ -7,6 +7,7 @@ import com.butent.bee.egg.server.ui.UiLoaderBean;
 import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.BeeService;
 import com.butent.bee.egg.shared.utils.BeeUtils;
+import com.butent.bee.egg.shared.utils.LogUtils;
 
 import java.util.logging.Logger;
 
@@ -46,7 +47,7 @@ public class DispatcherBean {
 
     } else {
       String msg = BeeUtils.concat(1, svc, "service type not recognized");
-      logger.warning(msg);
+      LogUtils.warning(logger, msg);
       buff.add(msg);
     }
   }

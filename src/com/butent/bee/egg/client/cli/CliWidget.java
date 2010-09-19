@@ -36,14 +36,16 @@ public class CliWidget extends BeeTextBox {
       Worker.clearLog();
     } else if (BeeUtils.inList(z, "center", "east", "north", "south", "screen", "west")) {
       Worker.doScreen(arr);
+    } else if (z.equals("charset")) {
+      Worker.getCharsets();
+    } else if (BeeUtils.inList(z, "dir", "file", "get")) {
+      Worker.getResource(arr);
     } else if (z.equals("eval")) {
       Worker.eval(v, arr);
     } else if (BeeUtils.inList(z, "f", "func")) {
       Worker.showFunctions(v, arr);
     } else if (z.equals("fields")) {
       Worker.showFields(arr);
-    } else if (BeeUtils.inList(z, "file", "dir", "get")) {
-      Worker.getResource(arr);
     } else if (z.equals("fs")) {
       Worker.getFs();
     } else if (z.equals("gwt")) {
@@ -58,6 +60,8 @@ public class CliWidget extends BeeTextBox {
       Worker.showRpc();
     } else if (z.equals("stack")) {
       Worker.showStack();
+    } else if (z.equals("style")) {
+      Worker.style(v, arr);
 
     } else {
       BeeGlobal.showDialog("wtf", v);

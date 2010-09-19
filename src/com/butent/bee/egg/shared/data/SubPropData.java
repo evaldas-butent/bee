@@ -1,6 +1,7 @@
 package com.butent.bee.egg.shared.data;
 
 import com.butent.bee.egg.shared.BeeConst;
+import com.butent.bee.egg.shared.BeeDate;
 import com.butent.bee.egg.shared.utils.SubProp;
 
 import java.util.List;
@@ -38,4 +39,24 @@ public class SubPropData extends AbstractData {
     }
   }
 
+  @Override
+  public void setValue(int row, int col, String value) {
+    SubProp el = data.get(row);
+
+    switch (col) {
+      case 0:
+        el.setName(value);
+        break;
+      case 1:
+        el.setSub(value);
+        break;
+      case 2:
+        el.setValue(value);
+        break;
+      case 4:
+        el.setDate(new BeeDate(BeeDate.parse(value)));
+        break;
+    }
+  }
+  
 }

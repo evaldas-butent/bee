@@ -23,4 +23,9 @@ public class StringData extends AbstractData {
     this.data = data;
   }
 
+  @Override
+  public void setValue(int row, int col, String value) {
+    data[row][col] = value;
+  }
+ 
 }

@@ -3,6 +3,10 @@ package com.butent.bee.egg.client.cli;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArrayString;
+import com.google.gwt.dom.client.Document;
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.NodeList;
+import com.google.gwt.dom.client.StyleInjector;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
 
@@ -10,6 +14,7 @@ import com.butent.bee.egg.client.BeeGlobal;
 import com.butent.bee.egg.client.BeeKeeper;
 import com.butent.bee.egg.client.communication.ParameterList;
 import com.butent.bee.egg.client.communication.RpcList;
+import com.butent.bee.egg.client.data.JsData;
 import com.butent.bee.egg.client.dom.DomUtils;
 import com.butent.bee.egg.client.layout.BeeSplit;
 import com.butent.bee.egg.client.utils.BeeJs;
@@ -17,8 +22,14 @@ import com.butent.bee.egg.client.utils.JreEmulation;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.BeeService;
+import com.butent.bee.egg.shared.data.DataUtils;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 import com.butent.bee.egg.shared.utils.PropUtils;
+import com.butent.bee.egg.shared.utils.StringProp;
+import com.butent.bee.egg.shared.utils.SubProp;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class Worker {
 
@@ -29,32 +40,32 @@ public class Worker {
   public static void doScreen(String arr[]) {
     BeeSplit screen = BeeKeeper.getUi().getScreenPanel();
     Assert.notNull(screen);
-    
+
     String p1 = BeeUtils.arrayGetQuietly(arr, 0);
     String p2 = BeeUtils.arrayGetQuietly(arr, 1);
-    
+
     if (BeeUtils.same(p1, "screen")) {
       BeeKeeper.getUi().showGrid(screen.getInfo());
       return;
     }
-    
+
     DockLayoutPanel.Direction dir = DomUtils.getDirection(p1);
     if (dir == null) {
       BeeGlobal.sayHuh(p1, p2);
       return;
     }
-    
+
     if (BeeUtils.isEmpty(p2)) {
       BeeKeeper.getUi().showGrid(screen.getDirectionInfo(dir));
       return;
     }
-    
+
     double size = BeeUtils.toDouble(p2);
     if (Double.isNaN(size)) {
       BeeGlobal.showError(p1, p2, "NaN");
       return;
     }
-    
+
     screen.setDirectionSize(dir, size);
   }
 
@@ -66,6 +77,14 @@ public class Worker {
     } else {
       BeeGlobal.showDialog(xpr, BeeJs.evalToString(xpr));
     }
+  }
+
+  public static void getCharsets() {
+    ParameterList params = BeeKeeper.getRpc().createParameters(
+        BeeService.SERVICE_GET_RESOURCE);
+    params.addPositionalHeader("cs");
+
+    BeeKeeper.getRpc().makeGetRequest(params);
   }
 
   public static void getFs() {
@@ -106,10 +125,17 @@ public class Worker {
 
     if (BeeJs.isEmpty(prp)) {
       BeeGlobal.showError(v, "properties not found");
-    } else if (prp.length() <= 20) {
-      BeeGlobal.modalGrid(v, prp, "property", "type", "value");
+      return;
+    }
+
+    JsData view = (JsData) DataUtils.createView(prp, "property", "type",
+        "value");
+    view.sort(0, true);
+
+    if (view.getRowCount() <= 20) {
+      BeeGlobal.modalGrid(v, view);
     } else {
-      BeeKeeper.getUi().showGrid(prp, "property", "type", "value");
+      BeeKeeper.getUi().showGrid(view);
     }
   }
 
@@ -138,24 +164,32 @@ public class Worker {
 
     if (BeeJs.isEmpty(fnc)) {
       BeeGlobal.showError(v, "functions not found");
-    } else if (fnc.length() <= 5) {
+      return;
+    }
+    if (fnc.length() <= 5) {
       BeeGlobal.showDialog(v, fnc.join());
-    } else if (BeeUtils.same(arr[0], "f") && fnc.length() < 30) {
-      BeeGlobal.modalGrid(v, fnc, "function");
+      return;
+    }
+
+    JsData view = (JsData) DataUtils.createView(fnc, "function");
+    view.sort(0, true);
+
+    if (BeeUtils.same(arr[0], "f") && view.getRowCount() <= 20) {
+      BeeGlobal.modalGrid(v, view);
     } else {
-      BeeKeeper.getUi().showGrid(fnc, "function");
+      BeeKeeper.getUi().showGrid(view);
     }
   }
 
   public static void showGwt() {
-    BeeGlobal.modalGrid("GWT", PropUtils.createStringProp(
-        "Host Page Base URL", GWT.getHostPageBaseURL(), "Module Base URL",
-        GWT.getModuleBaseURL(), "Module Name", GWT.getModuleName(),
-        "Permutation Strong Name", GWT.getPermutationStrongName(),
-        "Uncaught Exception Handler", GWT.getUncaughtExceptionHandler(),
-        "Unique Thread Id", GWT.getUniqueThreadId(), "Version",
-        GWT.getVersion(), "Is Client", GWT.isClient(), "Is Prod Mode",
-        GWT.isProdMode(), "Is Script", GWT.isScript()));
+    BeeGlobal.modalGrid("GWT", PropUtils.createStringProp("Host Page Base URL",
+        GWT.getHostPageBaseURL(), "Module Base URL", GWT.getModuleBaseURL(),
+        "Module Name", GWT.getModuleName(), "Permutation Strong Name",
+        GWT.getPermutationStrongName(), "Uncaught Exception Handler",
+        GWT.getUncaughtExceptionHandler(), "Unique Thread Id",
+        GWT.getUniqueThreadId(), "Version", GWT.getVersion(), "Is Client",
+        GWT.isClient(), "Is Prod Mode", GWT.isProdMode(), "Is Script",
+        GWT.isScript()));
   }
 
   public static void showMenu() {
@@ -179,10 +213,17 @@ public class Worker {
 
     if (BeeJs.isEmpty(prp)) {
       BeeGlobal.showError(v, "properties not found");
-    } else if (BeeUtils.same(arr[0], "p") && prp.length() < 30) {
-      BeeGlobal.modalGrid(v, prp, "property", "type", "value");
+      return;
+    }
+
+    JsData view = (JsData) DataUtils.createView(prp, "property", "type",
+        "value");
+    view.sort(0, true);
+
+    if (BeeUtils.same(arr[0], "p") && view.getRowCount() <= 20) {
+      BeeGlobal.modalGrid(v, view);
     } else {
-      BeeKeeper.getUi().showGrid(prp, "property", "type", "value");
+      BeeKeeper.getUi().showGrid(view);
     }
   }
 
@@ -191,15 +232,118 @@ public class Worker {
       BeeGlobal.showDialog("RpcList empty");
     } else {
       BeeKeeper.getUi().updateActivePanel(
-          BeeGlobal.simpleGrid(BeeKeeper.getRpc().getRpcList().getDefaultInfo(),
-          RpcList.DEFAULT_INFO_COLUMNS));
+          BeeGlobal.simpleGrid(
+              BeeKeeper.getRpc().getRpcList().getDefaultInfo(),
+              RpcList.DEFAULT_INFO_COLUMNS));
     }
   }
 
   public static void showStack() {
     BeeKeeper.getLog().stack();
   }
-  
+
+  public static void style(String v, String arr[]) {
+    if (BeeUtils.length(arr) < 2) {
+      NodeList<Element> nodes = Document.get().getElementsByTagName("style");
+      if (nodes == null || nodes.getLength() <= 0) {
+        BeeGlobal.showDialog("styles not available");
+        return;
+      }
+      int stCnt = nodes.getLength();
+
+      List<SubProp> lst = new ArrayList<SubProp>();
+      PropUtils.addSub(lst, "Styles", "count", stCnt);
+      
+      for (int i = 0; i < stCnt; i++) {
+        String ref = "$doc.getElementsByTagName('style').item(" + i + ").sheet.rules";
+        int len = BeeJs.evalToInt(ref + ".length");
+        PropUtils.addSub(lst, "Style " + BeeUtils.progress(i + 1, stCnt), "rules", len);
+        
+        for (int j = 0; j < len; j++) {
+          JavaScriptObject obj = BeeJs.eval(ref + "[" + j + "]");
+          if (obj == null) {
+            PropUtils.addSub(lst, "Rule", BeeUtils.progress(j + 1, len), "not available");
+            break;
+          }
+
+          JsArrayString prp = BeeJs.getProperties(obj, null);
+          for (int k = 0; k < prp.length() - 2; k += 3) {
+            PropUtils.addSub(lst, BeeUtils.concat(1, "Rule", 
+                BeeUtils.progress(j + 1, len), prp.get(k * 3)),
+                prp.get(k * 3 + 1), prp.get(k * 3 + 2));
+          }
+        }
+      }
+
+      BeeKeeper.getUi().showGrid(lst);
+      return;
+    }
+
+    if (!v.contains("{")) {
+      Element elem = Document.get().getElementById(arr[1]);
+      if (elem == null) {
+        BeeGlobal.showDialog("element id", arr[1], "not found");
+        return;
+      }
+
+      List<StringProp> lst = DomUtils.getStyleInfo(elem.getStyle());
+      if (BeeUtils.isEmpty(lst)) {
+        BeeGlobal.showDialog("element id", arr[1], "has no style");
+      } else {
+        BeeKeeper.getUi().showGrid(lst);
+      }
+      return;
+    }
+
+    boolean start = false;
+    boolean end = false;
+    boolean immediate = false;
+
+    StringBuilder sb = new StringBuilder();
+    boolean tg = false;
+
+    for (int i = 1; i < arr.length; i++) {
+      if (!tg) {
+        if (arr[i].contains("{")) {
+          tg = true;
+        } else {
+          if (BeeUtils.same(arr[i], "start")) {
+            start = true;
+            continue;
+          }
+          if (BeeUtils.same(arr[i], "end")) {
+            end = true;
+            continue;
+          }
+          if (arr[i].equals("+")) {
+            immediate = true;
+            continue;
+          }
+        }
+      }
+      if (sb.length() > 0) {
+        sb.append(" ");
+      }
+      sb.append(arr[i]);
+    }
+
+    String st = sb.toString();
+    if (!st.contains("{") || !st.contains("}")) {
+      BeeGlobal.showError("Nah pop no style, a strictly roots", v, st);
+      return;
+    }
+
+    BeeKeeper.getLog().info(st);
+
+    if (start) {
+      StyleInjector.injectAtStart(st, immediate);
+    } else if (end) {
+      StyleInjector.injectAtEnd(st, immediate);
+    } else {
+      StyleInjector.inject(st, immediate);
+    }
+  }
+
   public static void whereAmI() {
     BeeKeeper.getLog().info(BeeConst.whereAmI());
     BeeKeeper.getRpc().dispatchService(BeeService.SERVICE_WHERE_AM_I);

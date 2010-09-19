@@ -28,7 +28,7 @@ public class DataUtils {
       view = new JsData((JsArrayString) data);
     
     } else if (data instanceof List) {
-      Object el = ((List<?>) data).get(0);
+      Object el = BeeUtils.listGetQuietly((List<?>) data, 0);
       
       if (el instanceof SubProp) {
         view = new SubPropData((List<SubProp>) data);

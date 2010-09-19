@@ -3,6 +3,7 @@ package com.butent.bee.egg.server;
 import com.butent.bee.egg.server.utils.BeeDataSource;
 import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.utils.BeeUtils;
+import com.butent.bee.egg.shared.utils.LogUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,15 +41,15 @@ public class DataSourceBean {
         if (z.isOpen()) {
           try {
             z.close();
-            logger.info("closed " + z.getTp());
+            LogUtils.info(logger, "closed", z.getTp());
           } catch (Exception ex) {
-            logger.warning(ex.getMessage());
+            LogUtils.warning(logger, ex);
           }
         }
       }
     }
 
-    logger.info(BeeUtils.concat(1, getClass().getSimpleName(), "destroy end"));
+    LogUtils.infoNow(logger, getClass().getSimpleName(), "destroy end");
   }
 
   public BeeDataSource locateDs(String dsn) {
@@ -63,7 +64,7 @@ public class DataSourceBean {
     }
 
     if (z == null) {
-      logger.warning(BeeUtils.concat(1, "dsn", dsn, "not found"));
+      LogUtils.warning(logger, "dsn", dsn, "not found");
     }
 
     return z;
@@ -75,7 +76,7 @@ public class DataSourceBean {
     String dsn = config.getProperty(PROPERTY_DSN);
 
     if (BeeUtils.isEmpty(dsn)) {
-      logger.severe(BeeUtils.concat(1, "property", PROPERTY_DSN, "not found"));
+      LogUtils.severe(logger, "property", PROPERTY_DSN, "not found");
       return;
     }
 
@@ -99,7 +100,7 @@ public class DataSourceBean {
       }
 
       if (BeeUtils.isEmpty(tp)) {
-        logger.warning(BeeUtils.concat(1, "dsn", z, "not recognized"));
+        LogUtils.warning(logger, "dsn", z, "not recognized");
         continue;
       }
 
@@ -107,7 +108,7 @@ public class DataSourceBean {
         ds = (DataSource) InitialContext.doLookup("jdbc/" + nm);
         ok = true;
       } catch (NamingException ex) {
-        logger.severe(ex.getMessage());
+        LogUtils.error(logger, ex);
         ds = null;
         ok = false;
       }
@@ -117,8 +118,7 @@ public class DataSourceBean {
       }
     }
 
-    logger.info(BeeUtils.concat(1, getClass().getSimpleName(), bds.size(),
-        "data sources initialized"));
+    LogUtils.infoNow(logger, getClass().getSimpleName(), bds.size(), "data sources initialized");
   }
 
 }

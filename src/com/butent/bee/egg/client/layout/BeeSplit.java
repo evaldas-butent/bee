@@ -1,5 +1,6 @@
 package com.butent.bee.egg.client.layout;
 
+import com.google.gwt.dom.client.Style.Overflow;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.SplitLayoutPanel;
@@ -75,6 +76,14 @@ public class BeeSplit extends SplitLayoutPanel implements HasId, HasExtendedInfo
     return lst;
   }
 
+  @Override
+  public void insert(Widget child, Direction direction, double size, Widget before) {
+    super.insert(child, direction, size, before);
+    if (direction == Direction.CENTER) {
+      child.getElement().getParentElement().getStyle().setOverflow(Overflow.AUTO);
+    }
+  }
+  
   public void setDirectionSize(DockLayoutPanel.Direction direction, double size) {
     Assert.isTrue(validDirection(direction, false));
 
@@ -85,6 +94,7 @@ public class BeeSplit extends SplitLayoutPanel implements HasId, HasExtendedInfo
     }
     
     forceLayout();
+    animate(1000);
   }
   
   public boolean setDirectionSize(String s, double size) {
@@ -100,6 +110,17 @@ public class BeeSplit extends SplitLayoutPanel implements HasId, HasExtendedInfo
 
   public void setId(String id) {
     DomUtils.setId(this, id);
+  }
+  
+  public void updateCenter(Widget widget) {
+    Assert.notNull(widget);
+
+    Widget w = getCenter();
+    if (w != null) {
+      remove(w);
+    }
+    
+    add(widget);
   }
 
   public boolean validDirection(DockLayoutPanel.Direction direction,

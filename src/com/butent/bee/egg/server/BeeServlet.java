@@ -141,7 +141,7 @@ public class BeeServlet extends HttpServlet {
         out.print(s);
         out.flush();
       } catch (IOException ex) {
-        logger.severe(ex.getMessage());
+        LogUtils.error(logger, ex);
       }
     }
   }

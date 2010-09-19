@@ -3,7 +3,6 @@ package com.butent.bee.egg.client;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Panel;
-import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.egg.client.cli.CliWidget;
@@ -21,9 +20,11 @@ import com.butent.bee.egg.client.widget.BeeCheckBox;
 import com.butent.bee.egg.client.widget.BeeIntegerBox;
 import com.butent.bee.egg.client.widget.BeeListBox;
 import com.butent.bee.egg.client.widget.BeeSimpleCheckBox;
+import com.butent.bee.egg.client.widget.BeeTextArea;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.BeeName;
+import com.butent.bee.egg.shared.BeeResource;
 import com.butent.bee.egg.shared.BeeService;
 import com.butent.bee.egg.shared.BeeStage;
 import com.butent.bee.egg.shared.Pair;
@@ -115,6 +116,11 @@ public class BeeUi implements BeeModule {
     updateActiveQuietly(BeeGlobal.simpleGrid(data, cols));
   }
 
+  public void showResource(BeeResource resource) {
+    Assert.notNull(resource);
+    updateActivePanel(new BeeTextArea(resource));
+  }
+  
   public void start() {
     UiComponent.setCreator(new GwtUiCreator());
     createUi();
@@ -122,10 +128,14 @@ public class BeeUi implements BeeModule {
 
   public void updateActivePanel(Widget w) {
     Assert.notNull(w);
-
     Panel p = getActivePanel();
-    if (p instanceof SimplePanel) {
-      ((SimplePanel) p).setWidget(w);
+    
+    if (p == null) {
+      BeeSplit screen = getScreenPanel();
+      screen.updateCenter(w);
+    } else {
+      p.clear();
+      p.add(w);
     }
   }
 
@@ -156,7 +166,7 @@ public class BeeUi implements BeeModule {
 
     w = initSouth();
     if (w != null) {
-      p.addSouth(w, 28);
+      p.addSouth(w, 32);
     }
 
     w = initWest();
@@ -169,10 +179,9 @@ public class BeeUi implements BeeModule {
       p.addEast(w, 200);
     }
 
-    Panel c = initCenter();
-    if (c != null) {
-      p.add(c);
-      setActivePanel(c);
+    w = initCenter();
+    if (w != null) {
+      p.add(w);
     }
 
     rootUi.add(p);
@@ -180,7 +189,7 @@ public class BeeUi implements BeeModule {
     setScreenPanel(p);
   }
 
-  private Panel initCenter() {
+  private Widget initCenter() {
     int r = DateTimeFormat.PredefinedFormat.values().length;
     String[][] data = new String[r][2];
 
@@ -191,7 +200,7 @@ public class BeeUi implements BeeModule {
       i++;
     }
 
-    return new BeeScroll(BeeGlobal.simpleGrid(data, "Format", "Value"));
+    return BeeGlobal.simpleGrid(data, "Format", "Value");
   }
 
   private Widget initEast() {
@@ -230,7 +239,7 @@ public class BeeUi implements BeeModule {
   }
 
   private Widget initSouth() {
-    return new CliWidget();
+    return new BeeLayoutPanel(new CliWidget());
   }
 
   private Widget initWest() {

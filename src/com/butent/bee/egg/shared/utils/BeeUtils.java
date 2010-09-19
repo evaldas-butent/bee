@@ -90,7 +90,7 @@ public abstract class BeeUtils {
       return null;
     }
   }
-  
+
   public static int arrayLength(Object arr) {
     int len;
 
@@ -117,7 +117,7 @@ public abstract class BeeUtils {
     }
     return len;
   }
-
+  
   public static String[] beeDeserialize(String ser) {
     Assert.notEmpty(ser);
 
@@ -359,6 +359,22 @@ public abstract class BeeUtils {
     return ok;
   }
 
+  public static boolean context(CharSequence ctxt, String[] arr) {
+    boolean ok = false;
+    if (isEmpty(ctxt) || isEmpty(arr)) {
+      return ok;
+    }
+
+    for (String el : arr) {
+      if (context(ctxt, el)) {
+        ok = true;
+        break;
+      }
+    }
+    
+    return ok;
+  }
+
   public static String createUniqueName() {
     return createUniqueName(null);
   }
@@ -372,7 +388,7 @@ public abstract class BeeUtils {
       return pfx.trim() + NAME_COUNTER;
     }
   }
-  
+
   public static String[] deserializeValues(String ser) {
     Assert.notEmpty(ser);
 
@@ -406,7 +422,7 @@ public abstract class BeeUtils {
 
     return arr;
   }
-
+  
   public static String elapsedSeconds(long start) {
     return bracket(toSeconds(System.currentTimeMillis() - start));
   }
@@ -734,7 +750,7 @@ public abstract class BeeUtils {
 
     return ok;
   }
-  
+
   public static boolean isEmpty(Object x, int... orType) {
     if (filterType(x, orType)) {
       return false;
@@ -742,7 +758,7 @@ public abstract class BeeUtils {
       return isEmpty(x);
     }
   }
-
+  
   public static boolean isHexDigit(char c) {
     return (c >= '0' && c <= '9' || c >= 'a' && c <= 'f' || c >= 'A'
         && c <= 'F');
@@ -913,6 +929,14 @@ public abstract class BeeUtils {
     return len;
   }
 
+  public static <T> T listGetQuietly(List<? extends T> lst, int idx) {
+    if (isIndex(lst, idx)) {
+      return lst.get(idx); 
+    } else {
+      return null;
+    }
+  }
+
   public static <T extends Comparable<T>> T max(T... x) {
     int n = x.length;
     Assert.parameterCount(n, 2);
@@ -971,6 +995,20 @@ public abstract class BeeUtils {
     }
 
     return sep;
+  }
+
+  public static <T> T nvl(T... obj) {
+    Assert.parameterCount(obj.length, 2);
+    T z = null;
+    
+    for (T x : obj) {
+      if (x != null) {
+        z = x;
+        break;
+      }
+    }
+    
+    return z;
   }
 
   public static String padLeft(String s, int n, char z) {
@@ -1156,7 +1194,7 @@ public abstract class BeeUtils {
   public static int toInt(boolean b) {
     return b ? BeeConst.INT_TRUE : BeeConst.INT_FALSE;
   }
-
+  
   public static int toInt(String s) {
     if (isEmpty(s)) {
       return 0;
@@ -1170,7 +1208,7 @@ public abstract class BeeUtils {
     }
     return i;
   }
-  
+
   public static String toLeadingZeroes(int x, int n) {
     if (x >= 0 && n > 0) {
       return padLeft(((Integer) x).toString(), n, BeeConst.CHAR_ZERO);
@@ -1371,7 +1409,7 @@ public abstract class BeeUtils {
 
     return sb.toString();
   }
-
+  
   @SuppressWarnings("unchecked")
   public static <T> T zero(T x) {
     if (x == null) {
