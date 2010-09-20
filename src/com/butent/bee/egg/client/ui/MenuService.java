@@ -53,8 +53,9 @@ public class MenuService extends CompositeService {
         if (MenuConst.isValidLayout(rl) && MenuConst.isValidLayout(il)) {
           BeeKeeper.getRpc().makePostRequest(
               appendId("rpc_ui_menu"),
-              BeeXml.createString(BeeService.XML_TAG_DATA, "root_layout",
-                  getLayout(rl), "item_layout", getLayout(il)));
+              BeeXml.createString(BeeService.XML_TAG_DATA, "menu_name",
+                  "rootMenu", "root_layout", getLayout(rl), "item_layout",
+                  getLayout(il)));
         } else {
           BeeGlobal.showError("Menu layouts not valid", rl, il);
           ok = false;
@@ -83,23 +84,6 @@ public class MenuService extends CompositeService {
     return ok;
   }
 
-  private String getLayout(String layout) {
-    String l = "UiMenuHorizontal";
-
-    if (BeeUtils.same(layout, MenuConst.LAYOUT_MENU_VERT)) {
-      l = "UiMenuVertical";
-    } else if (BeeUtils.same(layout, MenuConst.LAYOUT_STACK)) {
-      l = "UiStack";
-    } else if (BeeUtils.same(layout, MenuConst.LAYOUT_LIST)) {
-      l = "UiListBox";
-    } else if (BeeUtils.same(layout, MenuConst.LAYOUT_TREE)) {
-      l = "UiTree";
-    } else if (BeeUtils.same(layout, MenuConst.LAYOUT_TAB)) {
-      l = "UiTab";
-    }
-    return l;
-  }
-
   private void fillBranch(BeeTreeItem item, UiComponent c) {
     item.addItem("Class = " + c.getClass().getName());
     item.addItem("Caption = " + c.getCaption());
@@ -126,6 +110,23 @@ public class MenuService extends CompositeService {
       }
       item.addItem(cc);
     }
+  }
+
+  private String getLayout(String layout) {
+    String l = "UiMenuHorizontal";
+
+    if (BeeUtils.same(layout, MenuConst.LAYOUT_MENU_VERT)) {
+      l = "UiMenuVertical";
+    } else if (BeeUtils.same(layout, MenuConst.LAYOUT_STACK)) {
+      l = "UiStack";
+    } else if (BeeUtils.same(layout, MenuConst.LAYOUT_LIST)) {
+      l = "UiListBox";
+    } else if (BeeUtils.same(layout, MenuConst.LAYOUT_TREE)) {
+      l = "UiTree";
+    } else if (BeeUtils.same(layout, MenuConst.LAYOUT_TAB)) {
+      l = "UiTab";
+    }
+    return l;
   }
 
   private void nextStage() {

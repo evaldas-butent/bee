@@ -19,7 +19,7 @@ public class FormService extends CompositeService {
 
   private enum Stages {
     REQUEST_FORM_LIST, CHOOSE_FORM, REQUEST_FORM, SHOW_FORM
-  };
+  }
 
   private Stages stage = null;
 

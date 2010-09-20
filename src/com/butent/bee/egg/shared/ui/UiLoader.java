@@ -88,62 +88,23 @@ public abstract class UiLoader {
 
   protected Logger logger = Logger.getLogger(this.getClass().getName());
 
-  public UiComponent getFormContent(String formName, Object... params) {
+  public UiComponent getForm(String formName, Object... params) {
     Assert.notEmpty(formName);
 
-    UiComponent root = null;
     List<UiRow> data = getFormData(formName, params);
+    return buildObject(formName, data);
+  }
 
-    if (!BeeUtils.isEmpty(data)) {
-      Collections.sort(data);
+  public UiComponent getMenu(String menuName, Object... params) {
+    Assert.notEmpty(menuName);
 
-      Map<String, List<UiRow>> rows = new LinkedHashMap<String, List<UiRow>>();
-      Set<String> orphans = new HashSet<String>();
-
-      for (UiRow row : data) {
-        String oId = row.getId();
-        String oParent = row.getParent();
-
-        if (orphans.contains(oId)) {
-          logger.warning("Dublicate object name: " + oId);
-          continue;
-        }
-        orphans.add(oId);
-
-        if (oId.equals(formName) && BeeUtils.isEmpty(root)) {
-          root = UiComponent.createComponent(row.getClassName(), oId);
-
-          if (!BeeUtils.isEmpty(root)) {
-            root.setCaption(row.getCaption());
-            root.loadProperties(row.getProperties());
-            continue;
-          }
-        }
-
-        if (BeeUtils.isEmpty(oParent)) {
-          oParent = formName;
-        }
-        if (!rows.containsKey(oParent)) {
-          rows.put(oParent, new ArrayList<UiRow>());
-        }
-        rows.get(oParent).add(row);
-      }
-
-      if (BeeUtils.isEmpty(root)) {
-        logger.severe("Missing root component: " + formName);
-      } else {
-        orphans.remove(formName);
-        addChilds(root, rows, orphans);
-
-        for (String orphan : orphans) {
-          logger.warning("Object is orphan: " + orphan);
-        }
-      }
-    }
-    return root;
+    List<UiRow> data = getMenuData(menuName, params);
+    return buildObject(menuName, data);
   }
 
   protected abstract List<UiRow> getFormData(String formName, Object... params);
+
+  protected abstract List<UiRow> getMenuData(String menuName, Object... params);
 
   private void addChilds(UiComponent parent, Map<String, List<UiRow>> rows,
       Set<String> orphans) {
@@ -164,5 +125,57 @@ public abstract class UiLoader {
         }
       }
     }
+  }
+
+  private UiComponent buildObject(String rootName, List<UiRow> data) {
+    UiComponent root = null;
+
+    if (!BeeUtils.isEmpty(data)) {
+      Collections.sort(data);
+
+      Map<String, List<UiRow>> rows = new LinkedHashMap<String, List<UiRow>>();
+      Set<String> orphans = new HashSet<String>();
+
+      for (UiRow row : data) {
+        String oId = row.getId();
+        String oParent = row.getParent();
+
+        if (orphans.contains(oId)) {
+          logger.warning("Dublicate object name: " + oId);
+          continue;
+        }
+        orphans.add(oId);
+
+        if (oId.equals(rootName) && BeeUtils.isEmpty(root)) {
+          root = UiComponent.createComponent(row.getClassName(), oId);
+
+          if (!BeeUtils.isEmpty(root)) {
+            root.setCaption(row.getCaption());
+            root.loadProperties(row.getProperties());
+            continue;
+          }
+        }
+
+        if (BeeUtils.isEmpty(oParent)) {
+          oParent = rootName;
+        }
+        if (!rows.containsKey(oParent)) {
+          rows.put(oParent, new ArrayList<UiRow>());
+        }
+        rows.get(oParent).add(row);
+      }
+
+      if (BeeUtils.isEmpty(root)) {
+        logger.severe("Missing root component: " + rootName);
+      } else {
+        orphans.remove(rootName);
+        addChilds(root, rows, orphans);
+
+        for (String orphan : orphans) {
+          logger.warning("Object is orphan: " + orphan);
+        }
+      }
+    }
+    return root;
   }
 }

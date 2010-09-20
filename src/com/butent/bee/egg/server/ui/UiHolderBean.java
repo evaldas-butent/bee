@@ -32,6 +32,12 @@ public class UiHolderBean {
     return formCache.get(root);
   }
 
+  public UiComponent getMenu(String root, Object... params) {
+    Assert.notEmpty(root);
+
+    return loader.getMenu(root, params);
+  }
+
   @Lock(LockType.WRITE)
   public void setLoader(UiLoader loader) {
     this.loader = loader;
@@ -45,7 +51,7 @@ public class UiHolderBean {
 
   @Lock(LockType.WRITE)
   private void loadForm(String root, Object... params) {
-    UiComponent form = loader.getFormContent(root, params);
+    UiComponent form = loader.getForm(root, params);
     formCache.put(root, form);
   }
 }

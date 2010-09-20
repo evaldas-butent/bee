@@ -6,7 +6,6 @@ import com.butent.bee.egg.server.http.ResponseBuffer;
 import com.butent.bee.egg.server.utils.XmlUtils;
 import com.butent.bee.egg.shared.data.BeeColumn;
 import com.butent.bee.egg.shared.ui.UiComponent;
-import com.butent.bee.egg.shared.ui.UiLoader;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
 import java.util.Map;
@@ -78,15 +77,15 @@ public class UiLoaderBean {
   }
 
   private void menuInfo(RequestInfo reqInfo, ResponseBuffer buff) {
+    String mName = getXmlField(reqInfo, buff, "menu_name");
     String lRoot = getXmlField(reqInfo, buff, "root_layout");
     String lItem = getXmlField(reqInfo, buff, "item_layout");
 
-    UiLoader loader = new UiMenuLoader();
-
-    UiComponent menu = loader.getFormContent("rootMenu", lRoot, lItem);
+    UiComponent menu = holder.getMenu(mName, lRoot, lItem,
+        "/com/butent/bee/egg/server/menu.xml");
 
     if (BeeUtils.isEmpty(menu)) {
-      String msg = "Error initializing root menu";
+      String msg = "Error initializing menu: " + mName;
       logger.warning(msg);
       buff.add(msg);
     } else {
