@@ -4,6 +4,7 @@ import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.google.gwt.user.client.ui.LayoutPanel;
 import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
@@ -224,7 +225,7 @@ public class GwtUiCreator implements UiCreator {
 
   @Override
   public Object createWindow(UiWindow window) {
-    Panel w = new FlowPanel();
+    Panel w = new LayoutPanel();
     w.setTitle(window.getId());
 
     createChilds(w, window);
@@ -232,15 +233,20 @@ public class GwtUiCreator implements UiCreator {
     return w;
   }
 
-  private void createChilds(Widget cc, UiComponent u) {
-    if (u.hasChilds()) {
-      if (cc instanceof HasWidgets) {
-        for (UiComponent c : u.getChilds()) {
-          Object o = c.createInstance(this);
-          ((HasWidgets) cc).add((Widget) o);
+  private void createChilds(Widget widget, UiComponent parent) {
+    if (parent.hasChilds()) {
+      if (widget instanceof HasWidgets) {
+        for (UiComponent child : parent.getChilds()) {
+          Object childWidget = child.createInstance(this);
+
+          ((HasWidgets) widget).add((Widget) childWidget);
+
+          if (widget instanceof LayoutPanel) {
+            setLayout((LayoutPanel) widget, (Widget) childWidget, child);
+          }
         }
       } else {
-        logger.severe("Class " + cc.getClass().getName()
+        logger.severe("Class " + widget.getClass().getName()
             + " does not support child objects");
       }
     }
@@ -270,6 +276,131 @@ public class GwtUiCreator implements UiCreator {
         if (!BeeUtils.isEmpty(sep)) {
           menu.addSeparator(new BeeMenuItemSeparator());
         }
+      }
+    }
+  }
+
+  private int getBottom(UiComponent u) {
+    String bottom = u.getProperty("bottom");
+    return getUnitValue(bottom);
+  }
+
+  private Unit getBottomUnit(UiComponent u) {
+    Unit bottomUnit = getUnit(u.getProperty("bottom"));
+    return bottomUnit;
+  }
+
+  private int getHeight(UiComponent u) {
+    String height = u.getProperty("height");
+    return getUnitValue(height);
+  }
+
+  private Unit getHeightUnit(UiComponent u) {
+    Unit heightUnit = getUnit(u.getProperty("height"));
+    return heightUnit;
+  }
+
+  private int getLeft(UiComponent u) {
+    String left = u.getProperty("left");
+    return getUnitValue(left);
+  }
+
+  private Unit getLeftUnit(UiComponent u) {
+    Unit leftUnit = getUnit(u.getProperty("left"));
+    return leftUnit;
+  }
+
+  private int getRight(UiComponent u) {
+    String right = u.getProperty("right");
+    return getUnitValue(right);
+  }
+
+  private Unit getRightUnit(UiComponent u) {
+    Unit rightUnit = getUnit(u.getProperty("right"));
+    return rightUnit;
+  }
+
+  private int getTop(UiComponent u) {
+    String top = u.getProperty("top");
+    return getUnitValue(top);
+  }
+
+  private Unit getTopUnit(UiComponent u) {
+    Unit topUnit = getUnit(u.getProperty("top"));
+    return topUnit;
+  }
+
+  private Unit getUnit(String measure) {
+    if (!BeeUtils.isEmpty(measure)) {
+      for (Unit unit : Unit.values()) {
+        if (measure.endsWith(unit.getType())) {
+          return unit;
+        }
+      }
+      logger.warning("Unknown measure unit: " + measure);
+    }
+    return Unit.PX;
+  }
+
+  private int getUnitValue(String measure) {
+    String value = "";
+
+    if (!BeeUtils.isEmpty(measure)) {
+      for (int i = 0; i < measure.length(); i++) {
+        char c = measure.charAt(i);
+
+        if (!Character.isDigit(c)) {
+          break;
+        }
+        value = value + c;
+      }
+    }
+    return BeeUtils.toInt(value);
+  }
+
+  private int getWidth(UiComponent u) {
+    String width = u.getProperty("width");
+    return getUnitValue(width);
+  }
+
+  private Unit getWidthUnit(UiComponent u) {
+    Unit widthUnit = getUnit(u.getProperty("width"));
+    return widthUnit;
+  }
+
+  private void setLayout(LayoutPanel widget, Widget childWidget,
+      UiComponent child) {
+    int left = getLeft(child);
+    int right = getRight(child);
+    int width = getWidth(child);
+
+    if (BeeUtils.isEmpty(width)) {
+      widget.setWidgetLeftRight(childWidget, left, getLeftUnit(child), right,
+          getRightUnit(child));
+    } else {
+      if (BeeUtils.isEmpty(right)) {
+        widget.setWidgetLeftWidth(childWidget, left, getLeftUnit(child), width,
+            getWidthUnit(child));
+      } else {
+        widget.setWidgetRightWidth(childWidget, right, getRightUnit(child),
+            width, getWidthUnit(child));
+      }
+    }
+
+    int top = getTop(child);
+    int bottom = getBottom(child);
+    int height = getHeight(child);
+
+    if (BeeUtils.isEmpty(height)) {
+      widget.setWidgetTopBottom(childWidget, top, getTopUnit(child), bottom,
+          getBottomUnit(child));
+    } else {
+      if (BeeUtils.isEmpty(bottom)) {
+        widget.setWidgetTopHeight(childWidget, top, getTopUnit(child), height,
+            getHeightUnit(child));
+      } else {
+        widget.setWidgetBottomHeight(childWidget, bottom, getBottomUnit(child),
+            height, getHeightUnit(child));
       }
     }
   }

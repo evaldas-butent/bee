@@ -22,7 +22,7 @@ public class UiLoaderImpl extends UiLoader {
 
     if ("testForm".equals(formName)) {
       List<Object[]> buff = new ArrayList<Object[]>();
-      buff.add(new Object[]{formName, "UiPanel", null, null, null});
+      buff.add(new Object[]{formName, "UiWindow", null, null, null});
 
       buff.add(new Object[]{"vLayout", "UiVerticalLayout", null, null, null});
       buff.add(new Object[]{
@@ -55,11 +55,15 @@ public class UiLoaderImpl extends UiLoader {
         e.printStackTrace();
       }
       List<Object[]> buff = new ArrayList<Object[]>();
-      buff.add(new Object[]{formName, "UiPanel", null, null, null});
+      buff.add(new Object[]{formName, "UiWindow", null, null, null});
 
       buff.add(new Object[]{
-          "Button1", "UiButton", null, "Database Info",
-          "service=" + BeeService.SERVICE_DB_INFO});
+          "Button1",
+          "UiButton",
+          null,
+          "Database Info",
+          "service=" + BeeService.SERVICE_DB_INFO
+              + ";left=50px;right=50%;height=33%"});
 
       for (Object[] cols : buff) {
         UiRow row = new UiRow();
