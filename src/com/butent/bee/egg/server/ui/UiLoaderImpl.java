@@ -63,7 +63,7 @@ public class UiLoaderImpl extends UiLoader {
           null,
           "Database Info",
           "service=" + BeeService.SERVICE_DB_INFO
-              + ";left=50px;right=50%;height=33%"});
+              + ";left=50px;right=50%;top=10;height=33%"});
 
       for (Object[] cols : buff) {
         UiRow row = new UiRow();

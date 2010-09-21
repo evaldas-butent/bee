@@ -332,28 +332,25 @@ public class GwtUiCreator implements UiCreator {
 
   private Unit getUnit(String measure) {
     if (!BeeUtils.isEmpty(measure)) {
-      for (Unit unit : Unit.values()) {
-        if (measure.endsWith(unit.getType())) {
-          return unit;
+      String value = measure.replaceFirst("^\\d+", "");
+
+      if (!BeeUtils.isEmpty(value)) {
+        for (Unit unit : Unit.values()) {
+          if (value.equals(unit.getType())) {
+            return unit;
+          }
         }
+        logger.warning("Unknown measure unit: " + measure);
       }
-      logger.warning("Unknown measure unit: " + measure);
     }
     return Unit.PX;
   }
 
   private int getUnitValue(String measure) {
-    String value = "";
+    String value = null;
 
     if (!BeeUtils.isEmpty(measure)) {
-      for (int i = 0; i < measure.length(); i++) {
-        char c = measure.charAt(i);
-
-        if (!Character.isDigit(c)) {
-          break;
-        }
-        value = value + c;
-      }
+      value = measure.replaceAll("\\D.*", "");
     }
     return BeeUtils.toInt(value);
   }
