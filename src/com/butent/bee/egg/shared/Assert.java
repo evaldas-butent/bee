@@ -199,4 +199,12 @@ public class Assert {
     }
   }
 
+  public static void untouchable() {
+    untouchable("can't touch this");
+  }
+
+  public static void untouchable(String message) {
+    throw new BeeRuntimeException(message);
+  }
+
 }

@@ -24,9 +24,15 @@ public class ResponseBuffer {
   private List<ResponseMessage> messages = new ArrayList<ResponseMessage>();
   
   private BeeService.DATA_TYPE dataType;
+  private String contentType = null;
+  private String characterEncoding = null;
 
   public ResponseBuffer() {
     setDefaultSeparator();
+  }
+
+  public ResponseBuffer(BeeService.DATA_TYPE dataType) {
+    this.dataType = dataType;
   }
 
   public ResponseBuffer(char sep) {
@@ -39,10 +45,6 @@ public class ResponseBuffer {
     } else {
       setDefaultSeparator();
     }
-  }
-
-  public ResponseBuffer(BeeService.DATA_TYPE dataType) {
-    this.dataType = dataType;
   }
   
   public void add(CharSequence s) {
@@ -274,8 +276,16 @@ public class ResponseBuffer {
     return buffer;
   }
 
+  public String getCharacterEncoding() {
+    return characterEncoding;
+  }
+
   public int getColumnCount() {
     return columnCount;
+  }
+
+  public String getContentType() {
+    return contentType;
   }
 
   public int getCount() {
@@ -326,8 +336,16 @@ public class ResponseBuffer {
     this.buffer = buffer;
   }
 
+  public void setCharacterEncoding(String characterEncoding) {
+    this.characterEncoding = characterEncoding;
+  }
+
   public void setColumnCount(int columnCount) {
     this.columnCount = columnCount;
+  }
+
+  public void setContentType(String contentType) {
+    this.contentType = contentType;
   }
 
   public void setCount(int count) {

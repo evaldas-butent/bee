@@ -40,7 +40,8 @@ public class BeeCellTable extends CellTable<Integer> implements HasId {
     for (int i = 0; i < rows; i++) {
       lst.add(i);
     }
-
+    
+    setRowCount(rows);
     setRowData(0, lst);
   }
 

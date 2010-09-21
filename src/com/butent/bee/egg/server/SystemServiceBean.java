@@ -148,8 +148,19 @@ public class SystemServiceBean {
 
         if (s == null || s.length() == 0) {
           buff.addWarning("file", path, "no content found");
+
         } else {
           buff.addResource(s, BeeService.DATA_TYPE.RESOURCE);
+
+          String ct = reqInfo.getParameter(3);
+          if (!BeeUtils.isEmpty(ct)) {
+            buff.setContentType(ct);
+          }
+          String ce = reqInfo.getParameter(4);
+          if (!BeeUtils.isEmpty(ce)) {
+            buff.setCharacterEncoding(ce);
+          }
+          
           return;
         }
       }

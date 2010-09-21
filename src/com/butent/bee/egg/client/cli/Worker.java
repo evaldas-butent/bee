@@ -8,7 +8,6 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.dom.client.StyleInjector;
 import com.google.gwt.user.client.DOM;
-import com.google.gwt.user.client.ui.DockLayoutPanel;
 
 import com.butent.bee.egg.client.BeeGlobal;
 import com.butent.bee.egg.client.BeeKeeper;
@@ -16,6 +15,7 @@ import com.butent.bee.egg.client.communication.ParameterList;
 import com.butent.bee.egg.client.communication.RpcList;
 import com.butent.bee.egg.client.data.JsData;
 import com.butent.bee.egg.client.dom.DomUtils;
+import com.butent.bee.egg.client.layout.BeeDirection;
 import com.butent.bee.egg.client.layout.BeeSplit;
 import com.butent.bee.egg.client.utils.BeeJs;
 import com.butent.bee.egg.client.utils.JreEmulation;
@@ -49,7 +49,7 @@ public class Worker {
       return;
     }
 
-    DockLayoutPanel.Direction dir = DomUtils.getDirection(p1);
+    BeeDirection dir = DomUtils.getDirection(p1);
     if (dir == null) {
       BeeGlobal.sayHuh(p1, p2);
       return;

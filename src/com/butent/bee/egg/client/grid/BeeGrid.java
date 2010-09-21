@@ -25,12 +25,12 @@ public class BeeGrid {
     }
 
     BeeCellTable table = new BeeCellTable(r);
-    table.initData(r);
     
     String[] arr = view.getColumnNames();
     for (int i = 0; i < c; i++) {
-      table.addColumn(new BeeTextColumn(view, i), arr[i]);
+      table.addColumn(new BeeTextColumn(view, i, 100), arr[i]);
     }
+    table.initData(r);
 
     return table;
   }

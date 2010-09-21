@@ -14,13 +14,13 @@ import com.google.gwt.dom.client.SpanElement;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.user.client.Event;
-import com.google.gwt.user.client.ui.DockLayoutPanel;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.egg.client.BeeKeeper;
+import com.butent.bee.egg.client.layout.BeeDirection;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.Transformable;
@@ -311,11 +311,11 @@ public class DomUtils {
     return Document.get().getClientWidth();
   }
 
-  public static DockLayoutPanel.Direction getDirection(String s) {
+  public static BeeDirection getDirection(String s) {
     Assert.notEmpty(s);
-    DockLayoutPanel.Direction dir = null;
+    BeeDirection dir = null;
     
-    for (DockLayoutPanel.Direction z : DockLayoutPanel.Direction.values()) {
+    for (BeeDirection z : BeeDirection.values()) {
       if (BeeUtils.same(z.name(), s)) {
         dir = z;
         break;

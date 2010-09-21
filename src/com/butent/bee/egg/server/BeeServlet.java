@@ -114,12 +114,14 @@ public class BeeServlet extends HttpServlet {
 
       resp.setHeader(BeeService.RPC_FIELD_DTP, BeeService.transform(dtp));
 
-      String ct = BeeService.getContentType(dtp);
+      String ct = BeeUtils.ifString(buff.getContentType(),
+          BeeService.getContentType(dtp));
       if (!BeeUtils.isEmpty(ct)) {
         resp.setContentType(ct);
       }
 
-      String ce = BeeService.getCharacterEncoding(dtp);
+      String ce = BeeUtils.ifString(buff.getCharacterEncoding(),
+          BeeService.getCharacterEncoding(dtp));
       if (!BeeUtils.isEmpty(ce)) {
         resp.setCharacterEncoding(ce);
       }
@@ -134,7 +136,7 @@ public class BeeServlet extends HttpServlet {
       }
 
       LogUtils.infoNow(logger, BeeUtils.elapsedSeconds(start), rid, "response",
-          dtp, cc, cnt, respLen, mc);
+          dtp, resp.getContentType(), cc, cnt, respLen, mc);
 
       try {
         ServletOutputStream out = resp.getOutputStream();

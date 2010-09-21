@@ -7,9 +7,15 @@ body, table td, select {
   background: #9cc;
 }  
 
-.bee-scroll {
-  overflow: auto;
-}  
+.bee-HSplitter {
+  background-color: #d0e4f6;
+  cursor: col-resize;
+}
+
+.bee-VSplitter {
+  background-color: #d0e4f6;
+  cursor: row-resize;
+}
 
 button {
   background: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#fcf), to(#ffc));
@@ -78,14 +84,4 @@ button {
 .gwt-TabLayoutPanel .gwt-TabLayoutPanelTab-selected {
   cursor: default;
   background: #92c1f0;
-}
-
-.gwt-SplitLayoutPanel-HDragger {
-  background-color: #d0e4f6;
-  cursor: col-resize;
-}
-
-.gwt-SplitLayoutPanel-VDragger {
-  background-color: #d0e4f6;
-  cursor: row-resize;
 }

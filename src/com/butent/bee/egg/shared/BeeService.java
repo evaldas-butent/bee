@@ -149,12 +149,8 @@ public class BeeService {
     String ce;
     
     switch (dataType) {
-      case TABLE :
-      case TEXT :
-        ce = "utf-8";
-        break;
       default :
-        ce = null;
+        ce = "utf-8";
     }
     
     return ce;
@@ -164,18 +160,14 @@ public class BeeService {
     String ct;
     
     switch (dataType) {
-      case TABLE :
-      case TEXT :
-        ct = "text/plain";
-        break;
       case XML :
-        ct = "application/xml";
+        ct = "text/xml";
         break;
       case ZIP :
         ct = "application/zip";
         break;
       default :
-        ct = null;
+        ct = "text/plain";
     }
     
     return ct;
