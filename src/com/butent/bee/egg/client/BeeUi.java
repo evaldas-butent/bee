@@ -8,6 +8,7 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.egg.client.cli.CliWidget;
 import com.butent.bee.egg.client.composite.ButtonGroup;
 import com.butent.bee.egg.client.composite.RadioGroup;
+import com.butent.bee.egg.client.composite.TextEditor;
 import com.butent.bee.egg.client.dom.DomUtils;
 import com.butent.bee.egg.client.grid.BeeFlexTable;
 import com.butent.bee.egg.client.layout.BeeFlow;
@@ -20,7 +21,6 @@ import com.butent.bee.egg.client.widget.BeeCheckBox;
 import com.butent.bee.egg.client.widget.BeeIntegerBox;
 import com.butent.bee.egg.client.widget.BeeListBox;
 import com.butent.bee.egg.client.widget.BeeSimpleCheckBox;
-import com.butent.bee.egg.client.widget.BeeTextArea;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.BeeName;
@@ -118,7 +118,7 @@ public class BeeUi implements BeeModule {
 
   public void showResource(BeeResource resource) {
     Assert.notNull(resource);
-    updateActivePanel(new BeeTextArea(resource));
+    updateActivePanel(new TextEditor(resource));
   }
   
   public void start() {

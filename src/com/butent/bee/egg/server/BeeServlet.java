@@ -3,6 +3,7 @@ package com.butent.bee.egg.server;
 import com.butent.bee.egg.server.http.RequestInfo;
 import com.butent.bee.egg.server.http.ResponseBuffer;
 import com.butent.bee.egg.shared.BeeConst;
+import com.butent.bee.egg.shared.BeeResource;
 import com.butent.bee.egg.shared.BeeService;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 import com.butent.bee.egg.shared.utils.LogUtils;
@@ -80,8 +81,9 @@ public class BeeServlet extends HttpServlet {
 
     int respLen = buff.getSize();
     int mc = buff.getMessageCount();
+    int pc = buff.getPartCount();
 
-    if (respLen > 0 || mc > 0) {
+    if (respLen > 0 || mc > 0 || pc > 0) {
       int cnt = buff.getCount();
       int cc = buff.getColumnCount();
 
@@ -112,7 +114,16 @@ public class BeeServlet extends HttpServlet {
         }
       }
 
+      if (pc > 0) {
+        resp.setIntHeader(BeeService.RPC_FIELD_PART_CNT, pc);
+      }
+      
       resp.setHeader(BeeService.RPC_FIELD_DTP, BeeService.transform(dtp));
+      
+      String uri = buff.getDataUri();
+      if (!BeeUtils.isEmpty(uri)) {
+        resp.setHeader(BeeService.RPC_FIELD_URI, uri);
+      }
 
       String ct = BeeUtils.ifString(buff.getContentType(),
           BeeService.getContentType(dtp));
@@ -129,6 +140,13 @@ public class BeeServlet extends HttpServlet {
       String s;
       if (respLen > 0) {
         s = buff.getString();
+      } else if (pc > 0) {
+        StringBuilder sb = new StringBuilder();
+        for (BeeResource br : buff.getParts()) {
+          sb.append(br.serialize());
+        }
+        s = sb.toString();
+
       } else if (mc > 0) {
         s = "Messages " + BeeUtils.bracket(mc);
       } else {

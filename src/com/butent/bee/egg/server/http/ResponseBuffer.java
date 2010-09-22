@@ -2,6 +2,7 @@ package com.butent.bee.egg.server.http;
 
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeDate;
+import com.butent.bee.egg.shared.BeeResource;
 import com.butent.bee.egg.shared.BeeService;
 import com.butent.bee.egg.shared.data.BeeColumn;
 import com.butent.bee.egg.shared.utils.BeeUtils;
@@ -22,11 +23,14 @@ public class ResponseBuffer {
   private int columnCount = 0;
 
   private List<ResponseMessage> messages = new ArrayList<ResponseMessage>();
+  private List<BeeResource> parts = new ArrayList<BeeResource>();
   
   private BeeService.DATA_TYPE dataType;
+  private String dataUri = null;
+  
   private String contentType = null;
   private String characterEncoding = null;
-
+  
   public ResponseBuffer() {
     setDefaultSeparator();
   }
@@ -139,6 +143,12 @@ public class ResponseBuffer {
     }
   }
 
+  public void addPart(String uri, String content, BeeService.DATA_TYPE type) {
+    Assert.notNull(content);
+    parts.add(new BeeResource(uri, content, type));
+    setDataType(BeeService.DATA_TYPE.MULTIPART);
+  }
+
   public void addPropString(StringProp el) {
     Assert.notEmpty(el);
 
@@ -156,9 +166,10 @@ public class ResponseBuffer {
     add(el.getDate().toLog());
   }
 
-  public void addResource(String content, BeeService.DATA_TYPE type) {
+  public void addResource(String uri, String content, BeeService.DATA_TYPE type) {
     Assert.notNull(content);
     add(content);
+    setDataUri(uri);
     setDataType(type);
   }
 
@@ -296,6 +307,10 @@ public class ResponseBuffer {
     return dataType;
   }
 
+  public String getDataUri() {
+    return dataUri;
+  }
+
   public String getHexSeparator() {
     return BeeUtils.toHex(getSeparator());
   }
@@ -310,6 +325,14 @@ public class ResponseBuffer {
 
   public List<ResponseMessage> getMessages() {
     return messages;
+  }
+
+  public int getPartCount() {
+    return parts.size();
+  }
+
+  public List<BeeResource> getParts() {
+    return parts;
   }
 
   public char[] getSeparator() {
@@ -356,6 +379,10 @@ public class ResponseBuffer {
     this.dataType = dataType;
   }
 
+  public void setDataUri(String dataUri) {
+    this.dataUri = dataUri;
+  }
+
   public void setHexSeparator(String sep) {
     if (BeeUtils.isHexString(sep)) {
       this.separator = BeeUtils.fromHex(sep);
@@ -364,6 +391,10 @@ public class ResponseBuffer {
 
   public void setMessages(List<ResponseMessage> messages) {
     this.messages = messages;
+  }
+
+  public void setParts(List<BeeResource> parts) {
+    this.parts = parts;
   }
 
   public void setSeparator(char[] separator) {

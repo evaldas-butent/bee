@@ -31,6 +31,7 @@ public class BeeService {
       + "class_info";
   public static final String SERVICE_XML_INFO = SYS_SERVICE_PREFIX + "xml_info";
   public static final String SERVICE_GET_RESOURCE = SYS_SERVICE_PREFIX + "get_resource";
+  public static final String SERVICE_SAVE_RESOURCE = SYS_SERVICE_PREFIX + "save_resource";
 
   public static final String SERVICE_LOGIN = RPC_SERVICE_PREFIX + "login";
   public static final String SERVICE_LOGOUT = RPC_SERVICE_PREFIX + "logout";
@@ -56,27 +57,37 @@ public class BeeService {
       + "get_data";
 
   public static final String RPC_FIELD_PREFIX = "bee_";
+  public static final String RPC_FIELD_SYS_PREFIX = RPC_FIELD_PREFIX + "sys_";
 
-  public static final String RPC_FIELD_SVC = RPC_FIELD_PREFIX + "svc";
-  public static final String RPC_FIELD_QID = RPC_FIELD_PREFIX + "qid";
-  public static final String RPC_FIELD_SID = RPC_FIELD_PREFIX + "sid";
-  public static final String RPC_FIELD_DSN = RPC_FIELD_PREFIX + "dsn";
-  public static final String RPC_FIELD_SEP = RPC_FIELD_PREFIX + "sep";
-  public static final String RPC_FIELD_OPT = RPC_FIELD_PREFIX + "opt";
-  public static final String RPC_FIELD_CNT = RPC_FIELD_PREFIX + "cnt";
-  public static final String RPC_FIELD_COLS = RPC_FIELD_PREFIX + "c_c";
-  public static final String RPC_FIELD_ROWS = RPC_FIELD_PREFIX + "r_c";
-  public static final String RPC_FIELD_MSG_CNT = RPC_FIELD_PREFIX + "m_c";
-  public static final String RPC_FIELD_MSG = RPC_FIELD_PREFIX + "msg";
-  public static final String RPC_FIELD_PAR_CNT = RPC_FIELD_PREFIX + "p_c";
-  public static final String RPC_FIELD_PAR = RPC_FIELD_PREFIX + "par";
-  public static final String RPC_FIELD_DTP = RPC_FIELD_PREFIX + "dtp";
+  public static final String RPC_FIELD_SVC = RPC_FIELD_SYS_PREFIX + "svc";
+  public static final String RPC_FIELD_QID = RPC_FIELD_SYS_PREFIX + "qid";
+  public static final String RPC_FIELD_SID = RPC_FIELD_SYS_PREFIX + "sid";
+  public static final String RPC_FIELD_DSN = RPC_FIELD_SYS_PREFIX + "dsn";
+  public static final String RPC_FIELD_SEP = RPC_FIELD_SYS_PREFIX + "sep";
+  public static final String RPC_FIELD_OPT = RPC_FIELD_SYS_PREFIX + "opt";
+
+  public static final String RPC_FIELD_CNT = RPC_FIELD_SYS_PREFIX + "cnt";
+  public static final String RPC_FIELD_COLS = RPC_FIELD_SYS_PREFIX + "c_c";
+  public static final String RPC_FIELD_ROWS = RPC_FIELD_SYS_PREFIX + "r_c";
+  public static final String RPC_FIELD_DTP = RPC_FIELD_SYS_PREFIX + "dtp";
+  public static final String RPC_FIELD_URI = RPC_FIELD_SYS_PREFIX + "uri";
+
+  public static final String RPC_FIELD_MSG_CNT = RPC_FIELD_SYS_PREFIX + "m_c";
+  public static final String RPC_FIELD_MSG = RPC_FIELD_SYS_PREFIX + "msg";
+  public static final String RPC_FIELD_PRM_CNT = RPC_FIELD_SYS_PREFIX + "p_c";
+  public static final String RPC_FIELD_PRM = RPC_FIELD_SYS_PREFIX + "prm";
+  public static final String RPC_FIELD_PART_CNT = RPC_FIELD_SYS_PREFIX + "x_c";
+  public static final String RPC_FIELD_PART = RPC_FIELD_SYS_PREFIX + "part";
   
   public static final String FIELD_CLASS_NAME = RPC_FIELD_PREFIX + "class_name";
   public static final String FIELD_PACKAGE_LIST = RPC_FIELD_PREFIX
       + "package_list";
   public static final String FIELD_FILE_NAME = RPC_FIELD_PREFIX + "file_name";
-  public static final String FIELD_XML_FILE = RPC_FIELD_PREFIX + "xml_file";
+
+  public static final String FIELD_XML_SOURCE = RPC_FIELD_PREFIX + "xml_source";
+  public static final String FIELD_XML_TRANSFORM = RPC_FIELD_PREFIX + "xml_transform";
+  public static final String FIELD_XML_TARGET = RPC_FIELD_PREFIX + "xml_target";
+  public static final String FIELD_XML_RETURN = RPC_FIELD_PREFIX + "xml_return";
 
   public static final String FIELD_JDBC_QUERY = RPC_FIELD_PREFIX + "jdbc_query";
   public static final String FIELD_CONNECTION_AUTO_COMMIT = RPC_FIELD_PREFIX
@@ -203,6 +214,11 @@ public class BeeService {
     Assert.notEmpty(svc);
     return svc.startsWith(DB_SERVICE_PREFIX);
   }
+  
+  public static boolean isReservedParameter(String name) {
+    Assert.notEmpty(name);
+    return BeeUtils.startsSame(name, RPC_FIELD_SYS_PREFIX);
+  }
 
   public static boolean isResource(DATA_TYPE dtp) {
     return dtp == DATA_TYPE.RESOURCE;
@@ -223,6 +239,11 @@ public class BeeService {
     return svc.startsWith(UI_SERVICE_PREFIX);
   }
 
+  public static boolean isValidParameter(String name) {
+    Assert.notEmpty(name);
+    return BeeUtils.isIdentifier(name) && !isReservedParameter(name);
+  }
+
   public static DATA_TYPE normalizeRequest(DATA_TYPE dtp) {
     return (dtp == null) ? DEFAULT_REQUEST_DATA_TYPE : dtp;
   }
@@ -236,9 +257,13 @@ public class BeeService {
   }
 
   public static String rpcParamName(int i) {
-    return RPC_FIELD_PAR + i;
+    return RPC_FIELD_PRM + i;
   }
 
+  public static String rpcPartName(int i) {
+    return RPC_FIELD_PART + i;
+  }
+  
   public static String transform(DATA_TYPE dtp) {
     return (dtp == null) ? BeeConst.STRING_EMPTY : dtp.name();
   }

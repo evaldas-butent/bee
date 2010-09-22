@@ -11,11 +11,14 @@ import com.butent.bee.egg.shared.utils.SubProp;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.io.Reader;
+import java.io.Writer;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,10 +26,25 @@ import java.util.SortedMap;
 import java.util.logging.Logger;
 
 public class FileUtils {
-  private static final int DEFAULT_BUFFER_SIZE = 4096;
-  private static final Charset DEFAULT_CHARSET = Charset.forName("UTF-8");
+  private static final Charset UTF_8 = Charset.forName("UTF-8");
+
+  private static int defaultBufferSize = 4096;
+  private static Charset defaultCharset = UTF_8;
+  private static char extensionSeparatorChar = '.';
+  private static String extensionSeparator = Character.toString(extensionSeparatorChar);
 
   private static Logger logger = Logger.getLogger(FileUtils.class.getName());
+
+  public static String addExtension(String name, String ext) {
+    Assert.notEmpty(name);
+    Assert.isTrue(isValidExtension(ext));
+
+    if (name.endsWith(extensionSeparator)) {
+      return name + ext;
+    } else {
+      return name + extensionSeparatorChar + ext;
+    }
+  }
 
   public static void closeQuietly(Reader rdr) {
     if (rdr == null) {
@@ -40,8 +58,31 @@ public class FileUtils {
     }
   }
 
+  public static void closeQuietly(Writer wrt) {
+    if (wrt == null) {
+      return;
+    }
+
+    try {
+      wrt.close();
+    } catch (IOException ex) {
+      LogUtils.severe(logger, ex);
+    }
+  }
+  
+  public static String defaultExtension(String name, String ext) {
+    Assert.notEmpty(name);
+    Assert.isTrue(isValidExtension(ext));
+
+    if (hasExtension(name)) {
+      return name;
+    } else {
+      return addExtension(name, ext);
+    }
+  }
+
   public static String fileToString(File fl) {
-    return fileToString(fl, DEFAULT_CHARSET);
+    return fileToString(fl, defaultCharset);
   }
 
   public static String fileToString(File fl, Charset cs) {
@@ -54,7 +95,7 @@ public class FileUtils {
     InputStreamReader fr = null;
     StringBuilder sb = new StringBuilder();
 
-    int size = DEFAULT_BUFFER_SIZE;
+    int size = defaultBufferSize;
     char[] arr = new char[size];
     int len;
 
@@ -76,13 +117,27 @@ public class FileUtils {
   }
 
   public static String fileToString(String fileName) {
-    return fileToString(fileName, DEFAULT_CHARSET);
+    return fileToString(fileName, defaultCharset);
   }
 
   public static String fileToString(String fileName, Charset cs) {
     Assert.notEmpty(fileName);
     File fl = new File(fileName.trim());
     return fileToString(fl, cs);
+  }
+
+  public static String forceExtension(String name, String ext) {
+    Assert.notEmpty(name);
+    Assert.isTrue(isValidExtension(ext));
+
+    String old = getExtension(name);
+    if (ext.equals(old)) {
+      return name;
+    } else if (BeeUtils.isEmpty(old)) {
+      return addExtension(name, ext);
+    } else {
+      return addExtension(removeExtension(name), ext);
+    }
   }
 
   public static String getCanonicalPath(File fl) {
@@ -120,6 +175,16 @@ public class FileUtils {
     }
 
     return lst;
+  }
+
+  public static String getExtension(String name) {
+    Assert.notEmpty(name);
+    String ext = BeeUtils.getSuffix(name, extensionSeparatorChar);
+    if (isValidExtension(ext)) {
+      return ext;
+    } else {
+      return BeeConst.STRING_EMPTY;
+    }
   }
 
   public static List<StringProp> getFileInfo(File fl) {
@@ -191,6 +256,15 @@ public class FileUtils {
     return lst;
   }
 
+  public static boolean hasExtension(String name) {
+    return !BeeUtils.isEmpty(getExtension(name));
+  }
+
+  public static boolean isFile(String name) {
+    Assert.notEmpty(name);
+    return new File(name).exists();
+  }
+
   public static boolean isInputFile(File fl) {
     if (fl == null) {
       return false;
@@ -206,9 +280,25 @@ public class FileUtils {
     return isInputFile(fl);
   }
 
+  public static boolean isValidExtension(String ext) {
+    if (BeeUtils.isEmpty(ext)) {
+      return false;
+    }
+    boolean ok = true;
+
+    for (int i = 0; i < ext.length(); i++) {
+      if (!Character.isLetterOrDigit(ext.charAt(i))) {
+        ok = false;
+        break;
+      }
+    }
+
+    return ok;
+  }
+
   public static Charset normalizeCharset(String name) {
     if (BeeUtils.isEmpty(name)) {
-      return DEFAULT_CHARSET;
+      return defaultCharset;
     }
     Charset cs = null;
 
@@ -219,7 +309,37 @@ public class FileUtils {
       cs = null;
     }
 
-    return BeeUtils.nvl(cs, DEFAULT_CHARSET);
+    return BeeUtils.nvl(cs, defaultCharset);
   }
 
+  public static String removeExtension(String name) {
+    Assert.notEmpty(name);
+    if (hasExtension(name)) {
+      return name.substring(0, name.lastIndexOf(extensionSeparatorChar));
+    } else {
+      return name;
+    }
+  }
+
+  public static void toFile(CharSequence src, File dst) {
+    toFile(src, dst, defaultCharset);
+  }
+  
+  public static void toFile(CharSequence src, File dst, Charset cs) {
+    Assert.notEmpty(src);
+    Assert.notNull(dst);
+
+    OutputStreamWriter fw = null;
+
+    try {
+      fw = new OutputStreamWriter(new FileOutputStream(dst), cs);
+      fw.append(src);
+      fw.flush();
+    } catch (IOException ex) {
+      LogUtils.error(logger, ex, dst.getAbsolutePath());
+    }
+
+    closeQuietly(fw);
+  }
+  
 }

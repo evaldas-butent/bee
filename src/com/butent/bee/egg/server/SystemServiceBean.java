@@ -111,6 +111,8 @@ public class SystemServiceBean {
       return;
     }
     if (reqInfo.parameterEquals(0, "fs")) {
+      buff.addStringProp(PropUtils.createStringProp("Path Separator",
+          File.pathSeparator, "Separator", File.separator));
       buff.addStringProp(FileUtils.getRootsInfo());
       return;
     }
@@ -122,14 +124,20 @@ public class SystemServiceBean {
       return;
     }
 
-    URL url = getClass().getResource(name);
-    if (url == null) {
-      buff.addWarning("resource", name, "not found");
-      return;
-    }
+    String path;
 
-    buff.addMessage(url);
-    String path = url.getPath();
+    if (FileUtils.isFile(name)) {
+      path = name;
+    } else {
+      URL url = getClass().getResource(name);
+      if (url == null) {
+        buff.addWarning("resource", name, "not found");
+        return;
+      }
+
+      buff.addMessage(url);
+      path = url.getPath();
+    }
 
     File fl = new File(path);
 
@@ -150,7 +158,8 @@ public class SystemServiceBean {
           buff.addWarning("file", path, "no content found");
 
         } else {
-          buff.addResource(s, BeeService.DATA_TYPE.RESOURCE);
+          buff.addResource(fl.getAbsolutePath(), s,
+              BeeService.DATA_TYPE.RESOURCE);
 
           String ct = reqInfo.getParameter(3);
           if (!BeeUtils.isEmpty(ct)) {
@@ -160,7 +169,7 @@ public class SystemServiceBean {
           if (!BeeUtils.isEmpty(ce)) {
             buff.setCharacterEncoding(ce);
           }
-          
+
           return;
         }
       }
@@ -213,6 +222,11 @@ public class SystemServiceBean {
     PropUtils.appendString(lst, "[xml] Document Builder",
         XmlUtils.getDomBuilderInfo());
 
+    PropUtils.appendString(lst, "[xslt] Transformer Factory",
+        XmlUtils.getXsltFactoryInfo());
+    PropUtils.appendString(lst, "[xslt] Output Keys",
+        XmlUtils.getOutputKeysInfo());
+
     buff.addSub(lst);
   }
 
@@ -238,23 +252,56 @@ public class SystemServiceBean {
   }
 
   private void xmlInfo(RequestInfo reqInfo, ResponseBuffer buff) {
-    String fileName = reqInfo.getParameter(BeeService.FIELD_XML_FILE);
-    if (BeeUtils.isEmpty(fileName)) {
-      buff.addLine("Parameter", BeeService.FIELD_XML_FILE, "not found");
+    String src = reqInfo.getParameter(BeeService.FIELD_XML_SOURCE);
+    String xsl = reqInfo.getParameter(BeeService.FIELD_XML_TRANSFORM);
+    String dst = reqInfo.getParameter(BeeService.FIELD_XML_TARGET);
+    String ret = reqInfo.getParameter(BeeService.FIELD_XML_RETURN);
+
+    if (BeeUtils.isEmpty(src)) {
+      buff.addSevere("Parameter", BeeService.FIELD_XML_SOURCE, "not found");
       return;
     }
 
-    if (!FileUtils.isInputFile(fileName)) {
-      buff.addLine(fileName, "is not a valid input file");
+    if (!FileUtils.isInputFile(src)) {
+      buff.addSevere(src, "is not a valid input file");
       return;
     }
 
-    List<SubProp> lst = XmlUtils.getFileInfo(fileName);
+    if (BeeUtils.isEmpty(xsl)) {
+      List<SubProp> lst = XmlUtils.getFileInfo(src);
+      if (BeeUtils.isEmpty(lst)) {
+        buff.addSevere(src, "cannot get xml info");
+      } else {
+        buff.addSub(lst);
+      }
+      return;
+    }
 
-    if (BeeUtils.isEmpty(lst)) {
-      buff.addLine(fileName, "cannot get xml info");
+    if (!FileUtils.isInputFile(xsl)) {
+      buff.addSevere(xsl, "is not a valid input file");
+      return;
+    }
+    if (BeeUtils.isEmpty(dst)) {
+      buff.addSevere("xslt target not specified");
+      return;
+    }
+
+    boolean ok = XmlUtils.xslTransform(src, xsl, dst);
+    if (!ok) {
+      buff.addSevere("xslt error");
+      return;
+    }
+
+    if (BeeUtils.same(ret, "properties")) {
+      List<SubProp> lst = XmlUtils.getFileInfo(dst);
+      if (BeeUtils.isEmpty(lst)) {
+        buff.addSevere(dst, "cannot get xml info");
+      } else {
+        buff.addSub(lst);
+      }
     } else {
-      buff.addSub(lst);
+      String z = FileUtils.fileToString(dst);
+      buff.addResource(dst, z, BeeService.DATA_TYPE.RESOURCE);
     }
   }
 

@@ -160,26 +160,31 @@ public class BeeBus implements BeeModule {
       } else {
         BeeGlobal.showError("Unknown composite service stage", svc, stg);
       }
+
     } else if (svc.equals(BeeService.SERVICE_GET_XML)) {
       if (stg.equals(BeeStage.STAGE_GET_PARAMETERS)) {
         BeeGlobal.inputFields(new BeeStage(BeeService.SERVICE_GET_XML,
-            BeeStage.STAGE_CONFIRM), "Xml Info", BeeService.FIELD_XML_FILE);
+            BeeStage.STAGE_CONFIRM), "Xml Info", BeeService.FIELD_XML_SOURCE,
+            BeeService.FIELD_XML_TRANSFORM, BeeService.FIELD_XML_TARGET,
+            BeeService.FIELD_XML_RETURN);
         ok = true;
       } else if (stg.equals(BeeStage.STAGE_CONFIRM)) {
-        String fnm = BeeGlobal.getFieldValue(BeeService.FIELD_XML_FILE);
-        if (BeeUtils.isEmpty(fnm)) {
-          BeeGlobal.showError("File name not specified");
+        String src = BeeGlobal.getFieldValue(BeeService.FIELD_XML_SOURCE);
+        if (BeeUtils.isEmpty(src)) {
+          BeeGlobal.showError("Source not specified");
         } else {
           BeeGlobal.closeDialog(event);
           BeeKeeper.getRpc().makePostRequest(
               BeeService.SERVICE_XML_INFO,
-              BeeXml.createString(BeeService.XML_TAG_DATA,
-                  BeeService.FIELD_XML_FILE, fnm));
+              BeeXml.fromFields(BeeService.XML_TAG_DATA, BeeService.FIELD_XML_SOURCE,
+                  BeeService.FIELD_XML_TRANSFORM, BeeService.FIELD_XML_TARGET,
+                  BeeService.FIELD_XML_RETURN));
           ok = true;
         }
       } else {
         BeeGlobal.showError("Unknown composite service stage", svc, stg);
       }
+
     } else if (svc.equals(BeeService.SERVICE_GET_DATA)) {
       if (stg.equals(BeeStage.STAGE_GET_PARAMETERS)) {
         BeeGlobal.inputFields(new BeeStage(BeeService.SERVICE_GET_DATA,
@@ -236,6 +241,7 @@ public class BeeBus implements BeeModule {
       } else {
         BeeGlobal.showError("Unknown composite service stage", svc, stg);
       }
+
     } else if (svc.startsWith("comp_ui_")) {
       String svcId = CompositeService.extractServiceId(svc);
 

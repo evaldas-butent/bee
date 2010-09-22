@@ -271,7 +271,7 @@ public class ParameterList extends ArrayList<RpcParameter> implements
 
     if (n > 0) {
       queryItems.add(new RpcParameter(RpcParameter.SECTION.QUERY,
-          BeeService.RPC_FIELD_PAR_CNT, n));
+          BeeService.RPC_FIELD_PRM_CNT, n));
     }
   }
 

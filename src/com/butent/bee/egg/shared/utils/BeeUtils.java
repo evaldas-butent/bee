@@ -5,6 +5,7 @@ import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.BeeDate;
 import com.butent.bee.egg.shared.BeeSerializable;
 import com.butent.bee.egg.shared.BeeType;
+import com.butent.bee.egg.shared.Pair;
 import com.butent.bee.egg.shared.Transformable;
 
 import java.math.BigDecimal;
@@ -85,7 +86,7 @@ public abstract class BeeUtils {
 
   public static <T> T arrayGetQuietly(T[] arr, int idx) {
     if (isIndex(arr, idx)) {
-      return arr[idx]; 
+      return arr[idx];
     } else {
       return null;
     }
@@ -117,7 +118,7 @@ public abstract class BeeUtils {
     }
     return len;
   }
-  
+
   public static String[] beeDeserialize(String ser) {
     Assert.notEmpty(ser);
 
@@ -343,7 +344,8 @@ public abstract class BeeUtils {
     }
   }
 
-  public static boolean context(CharSequence ctxt, Collection<? extends CharSequence> src) {
+  public static boolean context(CharSequence ctxt,
+      Collection<? extends CharSequence> src) {
     boolean ok = false;
     if (isEmpty(ctxt)) {
       return ok;
@@ -355,7 +357,7 @@ public abstract class BeeUtils {
         break;
       }
     }
-    
+
     return ok;
   }
 
@@ -371,7 +373,7 @@ public abstract class BeeUtils {
         break;
       }
     }
-    
+
     return ok;
   }
 
@@ -387,6 +389,27 @@ public abstract class BeeUtils {
     } else {
       return pfx.trim() + NAME_COUNTER;
     }
+  }
+
+  public static Pair<Integer, Integer> deserializeLength(String src, int start) {
+    Assert.notNull(src);
+    Assert.nonNegative(start);
+
+    int sLen = src.length();
+    Assert.isTrue(start < sLen);
+
+    int z = src.charAt(start) - BeeConst.CHAR_ZERO;
+    Assert.nonNegative(z);
+    
+    int x;
+    if (z == 0) {
+      x = 0;
+    } else {
+      Assert.isTrue(start + z < sLen);
+      x = Integer.parseInt(src.substring(start + 1, start + z + 1));
+    }
+
+    return new Pair<Integer, Integer>(x, z + 1);
   }
 
   public static String[] deserializeValues(String ser) {
@@ -422,7 +445,7 @@ public abstract class BeeUtils {
 
     return arr;
   }
-  
+
   public static String elapsedSeconds(long start) {
     return bracket(toSeconds(System.currentTimeMillis() - start));
   }
@@ -525,7 +548,8 @@ public abstract class BeeUtils {
     }
   }
 
-  public static <T extends CharSequence> List<T> getContext(T ctxt, Collection<T> src) {
+  public static <T extends CharSequence> List<T> getContext(T ctxt,
+      Collection<T> src) {
     List<T> lst = new ArrayList<T>();
     if (isEmpty(ctxt)) {
       return lst;
@@ -536,7 +560,7 @@ public abstract class BeeUtils {
         lst.add(el);
       }
     }
-    
+
     return lst;
   }
 
@@ -547,6 +571,34 @@ public abstract class BeeUtils {
       return arr[idx];
     } else {
       return null;
+    }
+  }
+
+  public static String getPrefix(String src, char sep) {
+    if (isEmpty(src)) {
+      return BeeConst.STRING_EMPTY;
+    }
+
+    int p = src.indexOf(sep);
+
+    if (p > 0) {
+      return src.substring(0, p).trim();
+    } else {
+      return BeeConst.STRING_EMPTY;
+    }
+  }
+
+  public static String getSuffix(String src, char sep) {
+    if (isEmpty(src)) {
+      return BeeConst.STRING_EMPTY;
+    }
+
+    int p = src.lastIndexOf(sep);
+
+    if (p >= 0 && p < src.length() - 1) {
+      return src.substring(p + 1).trim();
+    } else {
+      return BeeConst.STRING_EMPTY;
     }
   }
 
@@ -758,7 +810,7 @@ public abstract class BeeUtils {
       return isEmpty(x);
     }
   }
-  
+
   public static boolean isHexDigit(char c) {
     return (c >= '0' && c <= '9' || c >= 'a' && c <= 'f' || c >= 'A'
         && c <= 'F');
@@ -773,6 +825,27 @@ public abstract class BeeUtils {
 
     for (int i = 0; i < s.length(); i++) {
       if (!isHexDigit(s.charAt(i))) {
+        ok = false;
+        break;
+      }
+    }
+
+    return ok;
+  }
+
+  public static boolean isIdentifier(CharSequence name) {
+    if (isEmpty(name)) {
+      return false;
+    }
+    if (Character.isDigit(name.charAt(0))) {
+      return false;
+    }
+
+    boolean ok = true;
+    char c;
+    for (int i = 0; i < name.length(); i++) {
+      c = name.charAt(i);
+      if (c != BeeConst.CHAR_UNDER && !Character.isLetterOrDigit(c)) {
         ok = false;
         break;
       }
@@ -931,7 +1004,7 @@ public abstract class BeeUtils {
 
   public static <T> T listGetQuietly(List<? extends T> lst, int idx) {
     if (isIndex(lst, idx)) {
-      return lst.get(idx); 
+      return lst.get(idx);
     } else {
       return null;
     }
@@ -1000,14 +1073,14 @@ public abstract class BeeUtils {
   public static <T> T nvl(T... obj) {
     Assert.parameterCount(obj.length, 2);
     T z = null;
-    
+
     for (T x : obj) {
       if (x != null) {
         z = x;
         break;
       }
     }
-    
+
     return z;
   }
 
@@ -1055,6 +1128,21 @@ public abstract class BeeUtils {
     } else {
       String s = transform(obj);
       return s.length() + SERIALIZATION_SEPARATOR + s;
+    }
+  }
+
+  public static String serializeLength(int len) {
+    Assert.nonNegative(len);
+    if (len == 0) {
+      return BeeConst.STRING_ZERO;
+    } else {
+      String z = Integer.toString(len);
+
+      StringBuilder sb = new StringBuilder();
+      sb.append(BeeConst.CHAR_ZERO + z.length());
+      sb.append(z);
+
+      return sb.toString();
     }
   }
 
@@ -1194,7 +1282,7 @@ public abstract class BeeUtils {
   public static int toInt(boolean b) {
     return b ? BeeConst.INT_TRUE : BeeConst.INT_FALSE;
   }
-  
+
   public static int toInt(String s) {
     if (isEmpty(s)) {
       return 0;
@@ -1287,6 +1375,14 @@ public abstract class BeeUtils {
     }
 
     return sb.toString();
+  }
+
+  public static String transformClass(Object obj) {
+    if (obj == null) {
+      return BeeConst.NULL;
+    } else {
+      return obj.getClass().getName();
+    }
   }
 
   public static String transformCollection(Collection<?> lst, Object... sep) {
@@ -1409,7 +1505,7 @@ public abstract class BeeUtils {
 
     return sb.toString();
   }
-  
+
   @SuppressWarnings("unchecked")
   public static <T> T zero(T x) {
     if (x == null) {

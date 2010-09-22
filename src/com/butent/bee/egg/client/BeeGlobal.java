@@ -230,8 +230,20 @@ public class BeeGlobal implements BeeModule {
         BeeConst.STRING_EMPTY);
     createField(BeeService.FIELD_PACKAGE_LIST, "Default Packages",
         BeeType.TYPE_STRING, BeeConst.STRING_EMPTY);
-    createField(BeeService.FIELD_XML_FILE, "XML full path",
+
+    createField(BeeService.FIELD_XML_SOURCE, "source",
         BeeType.TYPE_STRING, BeeConst.STRING_EMPTY);
+    createField(BeeService.FIELD_XML_TRANSFORM, "transform",
+        BeeType.TYPE_STRING, BeeConst.STRING_EMPTY);
+    createField(BeeService.FIELD_XML_TARGET, "target",
+        BeeType.TYPE_STRING, BeeConst.STRING_EMPTY);
+    createField(BeeService.FIELD_XML_RETURN, "return",
+        BeeType.TYPE_STRING, "multi", BeeWidget.RADIO,
+        "multi", "xml", "properties");
+
+    setFieldWidth(BeeService.FIELD_XML_SOURCE, "300px");
+    setFieldWidth(BeeService.FIELD_XML_TRANSFORM, "300px");
+    setFieldWidth(BeeService.FIELD_XML_TARGET, "300px");
 
     createField(BeeService.FIELD_FILE_NAME, null, BeeType.TYPE_FILE,
         BeeConst.STRING_EMPTY);

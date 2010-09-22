@@ -71,6 +71,7 @@ public class BeeCallback implements RequestCallback {
     int len = txt.length();
 
     BeeService.DATA_TYPE dtp = BeeService.getDataType(resp.getHeader(BeeService.RPC_FIELD_DTP));
+    String uri = resp.getHeader(BeeService.RPC_FIELD_URI);
 
     int cnt = BeeUtils.toInt(resp.getHeader(BeeService.RPC_FIELD_CNT));
     int cc = BeeUtils.toInt(resp.getHeader(BeeService.RPC_FIELD_COLS));
@@ -82,6 +83,7 @@ public class BeeCallback implements RequestCallback {
           BeeUtils.addName(BeeService.RPC_FIELD_SVC, svc));
 
       BeeKeeper.getLog().info(BeeUtils.addName(BeeService.RPC_FIELD_DTP, dtp),
+          BeeUtils.addName(BeeService.RPC_FIELD_URI, uri),
           BeeUtils.addName("len", len),
           BeeUtils.addName(BeeService.RPC_FIELD_COLS, cc),
           BeeUtils.addName(BeeService.RPC_FIELD_MSG_CNT, mc),
@@ -157,7 +159,7 @@ public class BeeCallback implements RequestCallback {
       CompositeService service = BeeGlobal.getService(serviceId);
       service.doService(arr, cc);
     } else {
-      dispatchResponse(svc, dtp, cc, arr);
+      dispatchResponse(svc, dtp, uri, cc, arr);
     }
 
     BeeKeeper.getLog().finish(dur);
@@ -170,7 +172,7 @@ public class BeeCallback implements RequestCallback {
     }
   }
 
-  private void dispatchResponse(String svc, BeeService.DATA_TYPE dtp, int cc,
+  private void dispatchResponse(String svc, BeeService.DATA_TYPE dtp, String uri, int cc,
       JsArrayString arr) {
     if (BeeService.equals(svc, BeeService.SERVICE_GET_MENU)) {
       BeeKeeper.getMenu().loadCallBack(arr);
@@ -180,7 +182,7 @@ public class BeeCallback implements RequestCallback {
       BeeKeeper.getUi().showGrid(view);
 
     } else if (BeeService.isResource(dtp)) {
-      BeeKeeper.getUi().showResource(new BeeResource(arr.get(0), dtp));
+      BeeKeeper.getUi().showResource(new BeeResource(uri, arr.get(0), dtp));
 
     } else {
       for (int i = 0; i < arr.length(); i++) {

@@ -14,6 +14,7 @@ public class BeeConst {
   public static final String EMPTY = "(empty)";
   public static final String DEFAULT = "default";
   public static final String ERROR = "error";
+  public static final String NULL = "null";
 
   public static final String DEFAULT_LIST_SEPARATOR = ", ";
   public static final String DEFAULT_VALUE_SEPARATOR = "=";
@@ -40,6 +41,7 @@ public class BeeConst {
   public static final int INT_TRUE = 1;
 
   public static final char CHAR_SPACE = ' ';
+  public static final char CHAR_UNDER = '_';
   public static final char CHAR_ZERO = '0';
   public static final char CHAR_NINE = '9';
 

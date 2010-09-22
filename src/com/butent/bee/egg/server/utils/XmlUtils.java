@@ -43,15 +43,28 @@ import java.util.logging.Logger;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.TransformerFactoryConfigurationError;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
 
 public class XmlUtils {
+  public static String defaultXmlExtension = "xml";
+  public static String defaultXslExtension = "xsl";
+
   private static final String ALL_TAGS = "*";
   private static Logger logger = Logger.getLogger(XmlUtils.class.getName());
 
-  private static final DocumentBuilderFactory domFactory;
-  private static final DocumentBuilder domBuilder;
+  private static DocumentBuilderFactory domFactory;
+  private static DocumentBuilder domBuilder;
 
-  private static final Map<Short, String> nodeTypes = new HashMap<Short, String>();
+  private static TransformerFactory xsltFactory;
+
+  private static Map<Short, String> nodeTypes = new HashMap<Short, String>();
 
   static {
     nodeTypes.put(Node.ELEMENT_NODE, "Element");
@@ -78,8 +91,21 @@ public class XmlUtils {
       bld = null;
     }
 
+    if (dbf != null) {
+      dbf.setNamespaceAware(true);
+    }
+
     domFactory = dbf;
     domBuilder = bld;
+
+    TransformerFactory tf = null;
+
+    try {
+      tf = TransformerFactory.newInstance();
+    } catch (TransformerFactoryConfigurationError ex) {
+      LogUtils.error(logger, ex);
+    }
+    xsltFactory = tf;
   }
 
   public static StringProp[][] getAttributesFromFile(String fileName,
@@ -269,7 +295,7 @@ public class XmlUtils {
     Node nd;
     Element el;
     String tg, txt;
-    
+
     int n = ignore.length;
 
     for (int i = 0; i < nodes.getLength(); i++) {
@@ -283,7 +309,7 @@ public class XmlUtils {
       if (n > 0 && BeeUtils.inListSame(tg, ignore)) {
         continue;
       }
-      
+
       txt = el.getTextContent();
       if (!BeeUtils.isEmpty(tg) && !BeeUtils.isEmpty(txt)) {
         ret.put(tg, txt);
@@ -363,6 +389,20 @@ public class XmlUtils {
 
     PropUtils.addString(lst, "Public Id", nt.getPublicId(), "System Id",
         nt.getSystemId(), "To String", nt.toString());
+
+    return lst;
+  }
+
+  public static List<StringProp> getOutputKeysInfo() {
+    List<StringProp> lst = new ArrayList<StringProp>();
+
+    PropUtils.addString(lst, "CDATA SECTION ELEMENTS",
+        OutputKeys.CDATA_SECTION_ELEMENTS, "DOCTYPE PUBLIC",
+        OutputKeys.DOCTYPE_PUBLIC, "DOCTYPE SYSTEM", OutputKeys.DOCTYPE_SYSTEM,
+        "ENCODING", OutputKeys.ENCODING, "INDENT", OutputKeys.INDENT,
+        "MEDIA TYPE", OutputKeys.MEDIA_TYPE, "METHOD", OutputKeys.METHOD,
+        "OMIT XML DECLARATION", OutputKeys.OMIT_XML_DECLARATION, "STANDALONE",
+        OutputKeys.STANDALONE, "VERSION", OutputKeys.VERSION);
 
     return lst;
   }
@@ -534,6 +574,44 @@ public class XmlUtils {
     }
 
     return lst;
+  }
+
+  public static List<StringProp> getXsltFactoryInfo() {
+    List<StringProp> lst = new ArrayList<StringProp>();
+
+    if (xsltFactory == null) {
+      PropUtils.addString(lst, "Error instantiating factory",
+          TransformerFactory.class.getName());
+    } else {
+      PropUtils.addString(lst, "Class", BeeUtils.transformClass(xsltFactory),
+          "Error Listener",
+          BeeUtils.transformClass(xsltFactory.getErrorListener()),
+          "URI Resolver", BeeUtils.transformClass(xsltFactory.getURIResolver()));
+    }
+
+    return lst;
+  }
+
+  public static boolean xslTransform(String src, String xsl, String dst) {
+    boolean ok = true;
+
+    try {
+      Document document = fromFileName(src);
+
+      StreamSource stylesource = new StreamSource(xsl);
+      Transformer transformer = xsltFactory.newTransformer(stylesource);
+
+      DOMSource source = new DOMSource(document);
+      StreamResult result = new StreamResult(dst);
+
+      transformer.transform(source, result);
+
+    } catch (TransformerException ex) {
+      LogUtils.severe(logger, ex);
+      ok = false;
+    }
+
+    return ok;
   }
 
   private static boolean checkBuilder() {
