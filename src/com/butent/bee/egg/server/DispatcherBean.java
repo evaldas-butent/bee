@@ -3,7 +3,7 @@ package com.butent.bee.egg.server;
 import com.butent.bee.egg.server.data.DataServiceBean;
 import com.butent.bee.egg.server.http.RequestInfo;
 import com.butent.bee.egg.server.http.ResponseBuffer;
-import com.butent.bee.egg.server.ui.UiLoaderBean;
+import com.butent.bee.egg.server.ui.UiServiceBean;
 import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.BeeService;
 import com.butent.bee.egg.shared.utils.BeeUtils;
@@ -23,7 +23,7 @@ public class DispatcherBean {
   @EJB
   DataServiceBean dataBean;
   @EJB
-  UiLoaderBean uiBean;
+  UiServiceBean uiBean;
   @EJB
   MenuBean menuBean;
 

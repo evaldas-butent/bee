@@ -18,7 +18,7 @@ import javax.ejb.Singleton;
 public class UiHolderBean {
 
   @EJB
-  UiLoaderImpl loaderBean;
+  UiLoaderBean loaderBean;
 
   UiLoader loader;
   Map<String, UiComponent> formCache = new HashMap<String, UiComponent>();

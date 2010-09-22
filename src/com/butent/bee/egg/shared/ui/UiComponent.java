@@ -149,9 +149,8 @@ public abstract class UiComponent implements HasId, BeeSerializable {
         case PROPERTIES:
           if (!BeeUtils.isEmpty(value)) {
             String[] props = BeeUtils.beeDeserialize(value);
-            for (int j = 0; j < Math.floor(props.length / 2); j++) {
-              int x = j * 2;
-              setProperty(props[x], props[x + 1]);
+            for (int j = 0; j < props.length; j += 2) {
+              setProperty(props[j], props[j + 1]);
             }
           }
           break;
@@ -239,15 +238,14 @@ public abstract class UiComponent implements HasId, BeeSerializable {
   }
 
   public void loadProperties(String props) {
-    // TODO: reikia protingesnio varianto
     if (!BeeUtils.isEmpty(props)) {
-      String[] rows = props.split(";");
+      String[] rows = props.replaceAll("/[\r\n]+\\s*", "").split("[\r\n]+");
 
       for (String row : rows) {
-        String[] pair = row.split("=", 2);
+        String[] pair = row.split("[:=]", 2);
 
         if (pair.length == 2) {
-          properties.put(pair[0], pair[1]);
+          properties.put(pair[0].trim(), pair[1].trim());
         }
       }
     }

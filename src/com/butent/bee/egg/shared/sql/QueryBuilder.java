@@ -334,6 +334,7 @@ public class QueryBuilder {
     return this;
   }
 
+  // Getters ----------------------------------------------------------------
   public List<String> getFieldAliases() {
     List<String> fldList = new ArrayList<String>();
 
@@ -348,7 +349,6 @@ public class QueryBuilder {
     return fldList;
   }
 
-  // Getters ----------------------------------------------------------------
   public List<String> getFieldNames() {
     List<String> fldList = new ArrayList<String>();
 

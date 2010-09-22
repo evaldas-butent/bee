@@ -10,6 +10,7 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.egg.client.BeeKeeper;
+import com.butent.bee.egg.client.layout.BeeLayoutPanel;
 import com.butent.bee.egg.client.layout.BeeStack;
 import com.butent.bee.egg.client.layout.BeeTab;
 import com.butent.bee.egg.client.menu.BeeMenuBar;
@@ -225,7 +226,7 @@ public class GwtUiCreator implements UiCreator {
 
   @Override
   public Object createWindow(UiWindow window) {
-    Panel w = new LayoutPanel();
+    BeeLayoutPanel w = new BeeLayoutPanel();
     w.setTitle(window.getId());
 
     createChilds(w, window);
@@ -233,20 +234,20 @@ public class GwtUiCreator implements UiCreator {
     return w;
   }
 
-  private void createChilds(Widget widget, UiComponent parent) {
+  private void createChilds(Widget parentWidget, UiComponent parent) {
     if (parent.hasChilds()) {
-      if (widget instanceof HasWidgets) {
+      if (parentWidget instanceof HasWidgets) {
         for (UiComponent child : parent.getChilds()) {
-          Object childWidget = child.createInstance(this);
+          Widget childWidget = (Widget) child.createInstance(this);
 
-          ((HasWidgets) widget).add((Widget) childWidget);
+          ((HasWidgets) parentWidget).add(childWidget);
 
-          if (widget instanceof LayoutPanel) {
-            setLayout((LayoutPanel) widget, (Widget) childWidget, child);
+          if (parentWidget instanceof LayoutPanel) {
+            setLayout((LayoutPanel) parentWidget, childWidget, child);
           }
         }
       } else {
-        logger.severe("Class " + widget.getClass().getName()
+        logger.severe("Class " + parentWidget.getClass().getName()
             + " does not support child objects");
       }
     }
@@ -350,7 +351,7 @@ public class GwtUiCreator implements UiCreator {
     String value = null;
 
     if (!BeeUtils.isEmpty(measure)) {
-      value = measure.replaceAll("\\D.*", "");
+      value = measure.replaceFirst("\\D.*", "");
     }
     return BeeUtils.toInt(value);
   }
