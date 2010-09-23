@@ -23,6 +23,44 @@ public class MenuService extends CompositeService {
     REQUEST_MENU, SHOW_MENU
   };
 
+  public static Widget buidComponentTree(UiComponent c) {
+    BeeTree root = new BeeTree();
+    BeeTreeItem item = new BeeTreeItem(c.getId());
+    fillBranch(item, c);
+
+    root.addItem(item);
+
+    return root;
+  }
+
+  private static void fillBranch(BeeTreeItem item, UiComponent c) {
+    item.addItem("Class = " + c.getClass().getName());
+    item.addItem("Caption = " + c.getCaption());
+
+    if (!BeeUtils.isEmpty(c.getProperties())) {
+      BeeTreeItem prp = new BeeTreeItem("Properties");
+      BeeListBox lst = new BeeListBox();
+
+      for (Entry<String, String> entry : c.getProperties().entrySet()) {
+        lst.addItem(entry.getKey() + " = " + entry.getValue());
+      }
+      lst.setAllVisible();
+      prp.addItem(lst);
+      item.addItem(prp);
+    }
+
+    if (c.hasChilds()) {
+      BeeTreeItem cc = new BeeTreeItem("Childs");
+
+      for (UiComponent chld : c.getChilds()) {
+        BeeTreeItem itm = new BeeTreeItem(chld.getId());
+        fillBranch(itm, chld);
+        cc.addItem(itm);
+      }
+      item.addItem(cc);
+    }
+  }
+
   private Stages stage = null;
 
   public MenuService() {
@@ -84,34 +122,6 @@ public class MenuService extends CompositeService {
     return ok;
   }
 
-  private void fillBranch(BeeTreeItem item, UiComponent c) {
-    item.addItem("Class = " + c.getClass().getName());
-    item.addItem("Caption = " + c.getCaption());
-
-    if (!BeeUtils.isEmpty(c.getProperties())) {
-      BeeTreeItem prp = new BeeTreeItem("Properties");
-      BeeListBox lst = new BeeListBox();
-
-      for (Entry<String, String> entry : c.getProperties().entrySet()) {
-        lst.addItem(entry.getKey() + " = " + entry.getValue());
-      }
-      lst.setAllVisible();
-      prp.addItem(lst);
-      item.addItem(prp);
-    }
-
-    if (c.hasChilds()) {
-      BeeTreeItem cc = new BeeTreeItem("Childs");
-
-      for (UiComponent chld : c.getChilds()) {
-        BeeTreeItem itm = new BeeTreeItem(chld.getId());
-        fillBranch(itm, chld);
-        cc.addItem(itm);
-      }
-      item.addItem(cc);
-    }
-  }
-
   private String getLayout(String layout) {
     String l = "UiMenuHorizontal";
 
@@ -144,12 +154,7 @@ public class MenuService extends CompositeService {
   }
 
   private void showMenu(UiComponent c) {
-    BeeTree root = new BeeTree();
-    BeeTreeItem item = new BeeTreeItem(c.getId());
-    fillBranch(item, c);
-
-    root.addItem(item);
-
+    Widget root = buidComponentTree(c);
     BeeKeeper.getUi().updateActivePanel(root);
   }
 }

@@ -4,6 +4,8 @@ public interface UiCreator {
 
   Object createButton(UiButton button);
 
+  Object createCheckBox(UiCheckBox checkBox);
+
   Object createField(UiField field);
 
   Object createHorizontalLayout(UiHorizontalLayout horizontalLayout);
@@ -21,6 +23,8 @@ public interface UiCreator {
   Object createStack(UiStack stack);
 
   Object createTab(UiTab uiTab);
+
+  Object createTextArea(UiTextArea textArea);
 
   Object createTree(UiTree tree);
 

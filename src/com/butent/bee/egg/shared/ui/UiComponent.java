@@ -51,6 +51,10 @@ public abstract class UiComponent implements HasId, BeeSerializable {
       return new UiTree();
     } else if (getClassName(UiTab.class).equals(oClass)) {
       return new UiTab();
+    } else if (getClassName(UiCheckBox.class).equals(oClass)) {
+      return new UiCheckBox();
+    } else if (getClassName(UiTextArea.class).equals(oClass)) {
+      return new UiTextArea();
     }
 
     logger.severe("Unsupported class name: " + oClass);
@@ -239,7 +243,7 @@ public abstract class UiComponent implements HasId, BeeSerializable {
 
   public void loadProperties(String props) {
     if (!BeeUtils.isEmpty(props)) {
-      String[] rows = props.replaceAll("/[\r\n]+\\s*", "").split("[\r\n]+");
+      String[] rows = props.replaceAll("\\\\[\r\n]+\\s*", "").split("[\r\n]+");
 
       for (String row : rows) {
         String[] pair = row.split("[:=]", 2);

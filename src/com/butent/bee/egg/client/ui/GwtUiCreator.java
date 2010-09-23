@@ -19,10 +19,13 @@ import com.butent.bee.egg.client.menu.MenuCommand;
 import com.butent.bee.egg.client.tree.BeeTree;
 import com.butent.bee.egg.client.tree.BeeTreeItem;
 import com.butent.bee.egg.client.widget.BeeButton;
+import com.butent.bee.egg.client.widget.BeeCheckBox;
 import com.butent.bee.egg.client.widget.BeeLabel;
 import com.butent.bee.egg.client.widget.BeeListBox;
+import com.butent.bee.egg.client.widget.BeeTextArea;
 import com.butent.bee.egg.client.widget.BeeTextBox;
 import com.butent.bee.egg.shared.ui.UiButton;
+import com.butent.bee.egg.shared.ui.UiCheckBox;
 import com.butent.bee.egg.shared.ui.UiComponent;
 import com.butent.bee.egg.shared.ui.UiCreator;
 import com.butent.bee.egg.shared.ui.UiField;
@@ -34,6 +37,7 @@ import com.butent.bee.egg.shared.ui.UiMenuVertical;
 import com.butent.bee.egg.shared.ui.UiPanel;
 import com.butent.bee.egg.shared.ui.UiStack;
 import com.butent.bee.egg.shared.ui.UiTab;
+import com.butent.bee.egg.shared.ui.UiTextArea;
 import com.butent.bee.egg.shared.ui.UiTree;
 import com.butent.bee.egg.shared.ui.UiVerticalLayout;
 import com.butent.bee.egg.shared.ui.UiWindow;
@@ -64,20 +68,34 @@ public class GwtUiCreator implements UiCreator {
   }
 
   @Override
+  public Object createCheckBox(UiCheckBox checkBox) {
+    BeeCheckBox widget = new BeeCheckBox();
+    widget.setText(checkBox.getCaption());
+    widget.setTitle(checkBox.getId());
+
+    createChilds(widget, checkBox);
+
+    return widget;
+  }
+
+  @Override
   public Object createField(UiField field) {
-    Panel p = new HorizontalPanel();
-    BeeLabel l = new BeeLabel();
-    l.setText(field.getCaption());
+    BeeLayoutPanel widget = new BeeLayoutPanel();
+    BeeLabel label = new BeeLabel();
+    label.setText(field.getCaption());
 
-    BeeTextBox f = new BeeTextBox();
-    f.setTitle(field.getId());
+    BeeTextBox input = new BeeTextBox();
+    input.setTitle(field.getId());
 
-    p.add(l);
-    p.add(f);
+    widget.add(label);
+    widget.add(input);
 
-    createChilds(f, field);
+    int pos = getUnitValue(field.getProperty("parameters"));
 
-    return p;
+    widget.setWidgetLeftWidth(label, 0, getUnit(null), pos, getUnit(null));
+    widget.setWidgetLeftRight(input, pos, getUnit(null), 0, getUnit(null));
+
+    return widget;
   }
 
   @Override
@@ -185,6 +203,17 @@ public class GwtUiCreator implements UiCreator {
         }
       }
     }
+    return widget;
+  }
+
+  @Override
+  public Object createTextArea(UiTextArea textArea) {
+    BeeTextArea widget = new BeeTextArea();
+    widget.setText(textArea.getCaption());
+    widget.setTitle(textArea.getId());
+
+    createChilds(widget, textArea);
+
     return widget;
   }
 

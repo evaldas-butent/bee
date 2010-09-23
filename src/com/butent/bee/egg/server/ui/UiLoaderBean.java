@@ -84,8 +84,10 @@ public class UiLoaderBean extends UiLoader {
       }
     } else {
       QueryBuilder qb = new QueryBuilder();
-      qb.addFields("c", "control", "class", "parent", "caption", "order").addFrom(
-          "x_controls", "c").setWhere(
+      qb.addFields("c", "control", "class", "parent", "caption", "order",
+          "parameters", "top", "left", "width", "height", "dock_prnt",
+          "dock_left", "dock_top", "dock_right", "dock_bott", "dock_width",
+          "dock_hght").addFrom("x_controls", "c").setWhere(
           SqlUtils.equal("c", "form", "'" + formName + "'"));
       List<Object[]> data = qs.getQueryData(qb);
 
@@ -97,10 +99,71 @@ public class UiLoaderBean extends UiLoader {
       for (Object[] cols : data) {
         row = new UiRow();
         row.setId((String) cols[0]);
-        row.setClassName((String) cols[1]);
+        row.setClassName(getUiClass((String) cols[1]));
         row.setParent((String) cols[2]);
-        row.setCaption((String) cols[3]);
+        row.setCaption(BeeUtils.ifString(cols[3], "").replaceFirst("^[\"']", "").replaceFirst(
+            "[\"']$", "").replaceFirst("\\\\<", ""));
         row.setOrder((Integer) cols[4]);
+
+        StringBuilder props = new StringBuilder();
+        if (!BeeUtils.isEmpty(cols[5])) {
+          props.append("parameters=" + cols[5] + "\n");
+        }
+
+        String top = BeeUtils.isEmpty(cols[6]) ? ""
+            : BeeUtils.transform(cols[6]);
+        String left = BeeUtils.isEmpty(cols[7]) ? ""
+            : BeeUtils.transform(cols[7]);
+        String width = BeeUtils.isEmpty(cols[8]) ? ""
+            : BeeUtils.transform(cols[8]);
+        String height = BeeUtils.isEmpty(cols[9]) ? ""
+            : BeeUtils.transform(cols[9]);
+        String dock = BeeUtils.ifString(cols[10], "");
+        String dockLeft = BeeUtils.ifString(cols[11], left);
+        String dockTop = BeeUtils.ifString(cols[12], top);
+        String dockRight = BeeUtils.ifString(cols[13], "");
+        String dockBottom = BeeUtils.ifString(cols[14], "");
+        String dockWidth = BeeUtils.ifString(cols[15], "");
+        String dockHeight = BeeUtils.ifString(cols[16], "");
+
+        if (BeeUtils.isEmpty(dock)) {
+          props.append("top=" + top + "\n");
+          props.append("left=" + left + "\n");
+          props.append("width=" + width + "\n");
+          props.append("height=" + height + "\n");
+        } else {
+          if (BeeUtils.isEmpty(dockRight)) {
+            props.append("left=" + dockLeft + (dock.contains("l") ? "%" : "")
+                + "\n");
+
+            if (BeeUtils.isEmpty(dockWidth)) {
+              props.append("width=" + width + "\n");
+            } else {
+              props.append("right=" + dockWidth
+                  + (dock.contains("w") ? "%" : "") + "\n");
+            }
+          } else {
+            props.append("width=" + width + "\n");
+            props.append("right=" + dockRight + (dock.contains("r") ? "%" : "")
+                + "\n");
+          }
+          if (BeeUtils.isEmpty(dockBottom)) {
+            props.append("top=" + dockTop + (dock.contains("t") ? "%" : "")
+                + "\n");
+
+            if (BeeUtils.isEmpty(dockHeight)) {
+              props.append("height=" + height + "\n");
+            } else {
+              props.append("bottom=" + dockHeight
+                  + (dock.contains("h") ? "%" : "") + "\n");
+            }
+          } else {
+            props.append("height=" + height + "\n");
+            props.append("bottom=" + dockBottom
+                + (dock.contains("b") ? "%" : "") + "\n");
+          }
+        }
+        row.setProperties(props.toString());
         res.add(row);
       }
     }
@@ -172,5 +235,28 @@ public class UiLoaderBean extends UiLoader {
       res.add(row);
     }
     return res;
+  }
+
+  private String getUiClass(String cls) {
+    if (BeeUtils.inListSame(cls, "i_button", "c_close", "c_edit")) {
+      return "UiButton";
+    } else if ("i_combo".equals(cls)) {
+      return "UiListBox";
+    } else if (BeeUtils.inListSame(cls, "i_label", "c_say")) {
+      return "UiLabel";
+    } else if ("i_field".equals(cls)) {
+      return "UiField";
+    } else if ("i_frame".equals(cls)) {
+      return "UiTab";
+    } else if (BeeUtils.inListSame(cls, "i_page", "c_defer")) {
+      return "UiWindow";
+    } else if (BeeUtils.inListSame(cls, "i_check", "c_check")) {
+      return "UiCheckBox";
+    } else if (BeeUtils.inListSame(cls, "r_grid", "c_grid")) {
+      return "UiTextArea";
+    } else if (BeeUtils.inListSame(cls, "i_memo", "c_memo")) {
+      return "UiTextArea";
+    }
+    return cls;
   }
 }

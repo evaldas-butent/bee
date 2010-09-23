@@ -3,6 +3,7 @@ package com.butent.bee.egg.client.ui;
 import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.event.shared.GwtEvent;
 import com.google.gwt.user.client.ui.Panel;
+import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.egg.client.BeeGlobal;
 import com.butent.bee.egg.client.BeeKeeper;
@@ -82,6 +83,7 @@ public class FormService extends CompositeService {
         JsArrayString fArr = (JsArrayString) params[0];
         UiComponent c = UiComponent.restore(fArr.get(0));
 
+        showForm(c);
         BeeKeeper.getUi().updateActivePanel((Panel) c.createInstance());
         break;
 
@@ -110,5 +112,10 @@ public class FormService extends CompositeService {
     } else {
       BeeGlobal.unregisterService(serviceId);
     }
+  }
+
+  private void showForm(UiComponent c) {
+    Widget root = MenuService.buidComponentTree(c);
+    BeeKeeper.getUi().updateMenu(root);
   }
 }
