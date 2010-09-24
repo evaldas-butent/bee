@@ -34,6 +34,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -44,10 +45,13 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Result;
+import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.TransformerFactoryConfigurationError;
+import javax.xml.transform.dom.DOMResult;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
@@ -592,16 +596,13 @@ public class XmlUtils {
     return lst;
   }
 
-  public static boolean xslTransform(String src, String xsl, String dst) {
+  public static boolean saveNode(Node node, String dst) {
     boolean ok = true;
 
     try {
-      Document document = fromFileName(src);
+      Transformer transformer = xsltFactory.newTransformer();
 
-      StreamSource stylesource = new StreamSource(xsl);
-      Transformer transformer = xsltFactory.newTransformer(stylesource);
-
-      DOMSource source = new DOMSource(document);
+      DOMSource source = new DOMSource(node);
       StreamResult result = new StreamResult(dst);
 
       transformer.transform(source, result);
@@ -613,7 +614,64 @@ public class XmlUtils {
 
     return ok;
   }
+  
+  public static Document xsltToDom(String src, String xsl) {
+    Assert.notEmpty(src);
+    Assert.notEmpty(xsl);
 
+    StreamSource in = new StreamSource(src);
+    StreamSource tr = new StreamSource(xsl);
+    
+    DOMResult out = new DOMResult();
+    
+    if (doXslt(in, tr, out)) {
+      return (Document) out.getNode();
+    } else {
+      return null;
+    }
+  }
+
+  public static boolean xsltToFile(String src, String xsl, String dst) {
+    Assert.notEmpty(src);
+    Assert.notEmpty(xsl);
+    Assert.notEmpty(dst);
+
+    StreamSource in = new StreamSource(src);
+    StreamSource tr = new StreamSource(xsl);
+    StreamResult out = new StreamResult(dst);
+    
+    return doXslt(in, tr, out);
+  }
+  
+  public static List<SubProp> xsltToInfo(String src, String xsl) {
+    Assert.notEmpty(src);
+    Assert.notEmpty(xsl);
+
+    Document doc = xsltToDom(src, xsl);
+    if (doc == null) {
+      return PropUtils.EMPTY_PROP_SUB_LIST;
+    } else {
+      return getTreeInfo(doc, "0");
+    }
+  }
+  
+  public static String xsltToString(String src, String xsl) {
+    Assert.notEmpty(src);
+    Assert.notEmpty(xsl);
+
+    StreamSource in = new StreamSource(src);
+    StreamSource tr = new StreamSource(xsl);
+    
+    StringWriter wrt = new StringWriter();
+    StreamResult out = new StreamResult(wrt);
+    
+    if (doXslt(in, tr, out)) {
+      return wrt.getBuffer().toString();
+    } else {
+      return BeeConst.STRING_EMPTY;
+    }
+  }
+  
   private static boolean checkBuilder() {
     if (domBuilder == null) {
       LogUtils.severe(logger, "Document Builder not available");
@@ -655,6 +713,20 @@ public class XmlUtils {
     }
 
     return ret;
+  }
+
+  private static boolean doXslt(Source src, Source xsl, Result dst) {
+    boolean ok = true;
+
+    try {
+      Transformer transf = xsltFactory.newTransformer(xsl);
+      transf.transform(src, dst);
+    } catch (TransformerException ex) {
+      LogUtils.severe(logger, ex);
+      ok = false;
+    }
+
+    return ok;
   }
 
   private static Document fromFileName(String fileName) {

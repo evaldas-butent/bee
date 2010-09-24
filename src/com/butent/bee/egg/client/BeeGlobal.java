@@ -37,12 +37,20 @@ public class BeeGlobal implements BeeModule {
   private static final Map<String, CompositeService> services = new HashMap<String, CompositeService>();
   private static final Map<String, CompositeService> workingServices = new HashMap<String, CompositeService>();
 
+  public static void alert(Object... obj) {
+    msgBox.alert(obj);
+  }
+
   public static boolean closeDialog(GwtEvent<?> event) {
     if (event == null) {
       return false;
     } else {
       return msgBox.close(event.getSource());
     }
+  }
+
+  public static boolean confirm(Object... obj) {
+    return msgBox.confirm(obj);
   }
 
   public static void createField(String name, String caption, int type,
@@ -105,6 +113,10 @@ public class BeeGlobal implements BeeModule {
     return workingServices.get(svcId);
   }
 
+  public static void inform(Object... obj) {
+    msgBox.showInfo(obj);
+  }
+
   public static void inputFields(BeeStage bst, String cap, String... flds) {
     inpBox.inputFields(bst, cap, flds);
   }
@@ -150,7 +162,7 @@ public class BeeGlobal implements BeeModule {
   public static void setFieldWidth(String name, String width) {
     getField(name).setWidth(width);
   }
-
+  
   public static void showDialog(Object... obj) {
     msgBox.showInfo(obj);
   }
@@ -238,8 +250,8 @@ public class BeeGlobal implements BeeModule {
     createField(BeeService.FIELD_XML_TARGET, "target",
         BeeType.TYPE_STRING, BeeConst.STRING_EMPTY);
     createField(BeeService.FIELD_XML_RETURN, "return",
-        BeeType.TYPE_STRING, "multi", BeeWidget.RADIO,
-        "multi", "xml", "properties");
+        BeeType.TYPE_STRING, "all", BeeWidget.RADIO,
+        "all", "xsl", "source", "xml", "prop");
 
     setFieldWidth(BeeService.FIELD_XML_SOURCE, "300px");
     setFieldWidth(BeeService.FIELD_XML_TRANSFORM, "300px");

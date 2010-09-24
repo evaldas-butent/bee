@@ -72,10 +72,6 @@ public class BeeDefinitionList extends Widget implements HasId {
     insertItem(text, true, false, index);
   }
 
-  public void insertItem(String text, int index) {
-    insertItem(text, false, false, index);
-  }
-
   public void insertItem(String item, boolean definition, boolean asHtml, int index) {
     Element child;
 
@@ -104,6 +100,10 @@ public class BeeDefinitionList extends Widget implements HasId {
       getElement().insertBefore(getItem(index), child);
       items.add(index, child);
     }
+  }
+
+  public void insertItem(String text, int index) {
+    insertItem(text, false, false, index);
   }
 
   public void removeItem(int index) {

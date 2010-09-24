@@ -321,25 +321,28 @@ public class FileUtils {
     }
   }
 
-  public static void toFile(CharSequence src, File dst) {
-    toFile(src, dst, defaultCharset);
+  public static boolean toFile(CharSequence src, String dst) {
+    return toFile(src, dst, defaultCharset);
   }
   
-  public static void toFile(CharSequence src, File dst, Charset cs) {
+  public static boolean toFile(CharSequence src, String dst, Charset cs) {
     Assert.notEmpty(src);
-    Assert.notNull(dst);
+    Assert.notEmpty(dst);
 
     OutputStreamWriter fw = null;
+    boolean ok;
 
     try {
       fw = new OutputStreamWriter(new FileOutputStream(dst), cs);
       fw.append(src);
-      fw.flush();
+      ok = true;
     } catch (IOException ex) {
-      LogUtils.error(logger, ex, dst.getAbsolutePath());
+      LogUtils.error(logger, ex, dst);
+      ok = false;
     }
 
     closeQuietly(fw);
+    return ok;
   }
   
 }

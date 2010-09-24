@@ -10,6 +10,8 @@ import com.butent.bee.egg.shared.Transformable;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -20,7 +22,22 @@ import java.util.Map;
 
 public abstract class BeeUtils {
   private static final String SERIALIZATION_SEPARATOR = ";";
-  private static int NAME_COUNTER = 0;
+  private static final char[] HEX_CHARS = new char[]{
+      '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D',
+      'E', 'F'};
+  private static final MessageDigest MD5;
+
+  private static int nameCounter = 0;
+
+  static {
+    MessageDigest md;
+    try {
+      md = MessageDigest.getInstance("MD5");
+    } catch (NoSuchAlgorithmException ex) {
+      md = null;
+    }
+    MD5 = md;
+  }
 
   public static String addName(String nm, Object v) {
     if (isEmpty(v, BeeType.TYPE_NUMBER + BeeType.TYPE_BOOLEAN)) {
@@ -382,12 +399,12 @@ public abstract class BeeUtils {
   }
 
   public static String createUniqueName(String pfx) {
-    NAME_COUNTER++;
+    nameCounter++;
 
     if (pfx == null) {
-      return transform(NAME_COUNTER);
+      return transform(nameCounter);
     } else {
-      return pfx.trim() + NAME_COUNTER;
+      return pfx.trim() + nameCounter;
     }
   }
 
@@ -400,7 +417,7 @@ public abstract class BeeUtils {
 
     int z = src.charAt(start) - BeeConst.CHAR_ZERO;
     Assert.nonNegative(z);
-    
+
     int x;
     if (z == 0) {
       x = 0;
@@ -546,6 +563,23 @@ public abstract class BeeUtils {
 
       return arr;
     }
+  }
+
+  public static byte[] getBytes(String s) {
+    Assert.notNull(s);
+    int len = s.length();
+    Assert.isPositive(len);
+
+    byte[] arr = new byte[len * 2];
+    char c;
+
+    for (int i = 0; i < len; i++) {
+      c = s.charAt(i);
+      arr[i * 2] = (byte) (c >> 8);
+      arr[i * 2 + 1] = (byte) (c & 0xff);
+    }
+
+    return arr;
   }
 
   public static <T extends CharSequence> List<T> getContext(T ctxt,
@@ -880,8 +914,10 @@ public abstract class BeeUtils {
   }
 
   public static boolean isPositive(Object x) {
-    if (x instanceof Comparable) {
-      return isPositive((Comparable<?>) x);
+    if (x instanceof Integer) {
+      return (Integer) x > 0;
+    } else if (x instanceof Number) {
+      return Double.compare(((Number) x).doubleValue(), Double.valueOf(0.0d)) > 0;
     } else {
       return false;
     }
@@ -1024,6 +1060,16 @@ public abstract class BeeUtils {
     return z;
   }
 
+  public static String md5(String s) {
+    Assert.notNull(MD5);
+    Assert.notEmpty(s);
+
+    MD5.update(getBytes(s));
+    byte[] arr = MD5.digest();
+
+    return toHex(arr);
+  }
+
   public static <T extends Comparable<T>> T min(T... x) {
     int n = x.length;
     Assert.parameterCount(n, 2);
@@ -1047,8 +1093,7 @@ public abstract class BeeUtils {
       sep = space(((Number) x).intValue());
     } else if (x instanceof Character) {
       sep = new String(new char[]{(Character) x});
-    }
-    if (x instanceof CharSequence && length(x) > 0) {
+    } else if (x instanceof CharSequence && length(x) > 0) {
       sep = ((CharSequence) x).toString();
     } else {
       sep = BeeConst.DEFAULT_LIST_SEPARATOR;
@@ -1060,8 +1105,7 @@ public abstract class BeeUtils {
   public static String normSep(Object x, Object def) {
     String sep;
 
-    if (x instanceof CharSequence && length(x) > 0 || x instanceof Number
-        && isPositive(x) || x instanceof Character) {
+    if (x instanceof CharSequence && length(x) > 0 || isPositive(x) || x instanceof Character) {
       sep = normSep(x);
     } else {
       sep = normSep(def);
@@ -1139,7 +1183,7 @@ public abstract class BeeUtils {
       String z = Integer.toString(len);
 
       StringBuilder sb = new StringBuilder();
-      sb.append(BeeConst.CHAR_ZERO + z.length());
+      sb.append((char) (BeeConst.CHAR_ZERO + z.length()));
       sb.append(z);
 
       return sb.toString();
@@ -1261,8 +1305,20 @@ public abstract class BeeUtils {
     return d;
   }
 
+  public static String toHex(byte[] bytes) {
+    char[] arr = new char[bytes.length * 2];
+    int j = 0;
+
+    for (int i = 0; i < bytes.length; i++) {
+      arr[j++] = HEX_CHARS[(bytes[i] & 0xF0) >> 4];
+      arr[j++] = HEX_CHARS[bytes[i] & 0x0F];
+    }
+
+    return new String(arr);
+  }
+
   public static String toHex(char c) {
-    return padLeft(Integer.toHexString((int) c), 4, BeeConst.CHAR_ZERO);
+    return padLeft(Integer.toHexString(c), 4, BeeConst.CHAR_ZERO);
   }
 
   public static String toHex(char[] arr) {

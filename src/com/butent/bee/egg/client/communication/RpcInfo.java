@@ -14,7 +14,7 @@ import java.util.Collection;
 
 public class RpcInfo {
   private static int COUNTER = 0;
- 
+
   public static int MAX_DATA_LEN = 1024;
 
   public static final String COL_ID = "Id";
@@ -45,6 +45,9 @@ public class RpcInfo {
 
   public static final String COL_RESP_MSG_CNT = "Response Msg Cnt";
   public static final String COL_RESP_MESSAGES = "Response Messages";
+
+  public static final String COL_RESP_PART_CNT = "Response Part Cnt";
+  public static final String COL_RESP_PART_SIZES = "Response Part Sizes";
 
   public static final String COL_RESP_INFO = "Response Info";
 
@@ -79,15 +82,18 @@ public class RpcInfo {
 
   private int respMsgCnt = BeeConst.SIZE_UNKNOWN;
   private String[] respMessages = null;
+  private int respPartCnt = BeeConst.SIZE_UNKNOWN;
+  private int[] respPartSize = null;
 
   private String errMsg = null;
 
-  public RpcInfo(RequestBuilder.Method method, String service, ParameterList params) {
+  public RpcInfo(RequestBuilder.Method method, String service,
+      ParameterList params) {
     this(method, service, params, null, null);
   }
 
-  public RpcInfo(RequestBuilder.Method method, String service, ParameterList params,
-      BeeService.DATA_TYPE dtp, String data) {
+  public RpcInfo(RequestBuilder.Method method, String service,
+      ParameterList params, BeeService.DATA_TYPE dtp, String data) {
     id = ++COUNTER;
     duration = new BeeDuration();
 
@@ -97,33 +103,42 @@ public class RpcInfo {
     this.reqType = dtp;
     this.reqData = data;
   }
-  
+
   protected RpcInfo() {
   }
-  
-  public int end(BeeService.DATA_TYPE dtp, String data, int rows, int cols, int size,
-      int msgCnt, String[] messages) {
+
+  public int end(BeeService.DATA_TYPE dtp, String data, int size, int rows,
+      int cols, int msgCnt, String[] messages, int partCnt, int[] partSizes) {
     int r = done();
     setState(BeeConst.STATE_CLOSED);
-    
+
     setRespType(dtp);
     setRespData(data);
 
+    if (size != BeeConst.SIZE_UNKNOWN) {
+      setRespSize(size);
+    }
     if (rows != BeeConst.SIZE_UNKNOWN) {
       setRespRows(rows);
     }
     if (cols != BeeConst.SIZE_UNKNOWN) {
       setRespCols(cols);
     }
-    if (size != BeeConst.SIZE_UNKNOWN) {
-      setRespSize(size);
-    }
 
     if (msgCnt != BeeConst.SIZE_UNKNOWN) {
       setRespMsgCnt(msgCnt);
     }
-    setRespMessages(messages);
-    
+    if (messages != null) {
+      setRespMessages(messages);
+    }
+
+    if (partCnt != BeeConst.SIZE_UNKNOWN) {
+      setRespPartCnt(partCnt);
+    }
+    if (partSizes != null) {
+      setRespPartSize(partSizes);
+    }
+
     return r;
   }
 
@@ -232,6 +247,14 @@ public class RpcInfo {
 
   public Response getResponse() {
     return response;
+  }
+
+  public int getRespPartCnt() {
+    return respPartCnt;
+  }
+
+  public int[] getRespPartSize() {
+    return respPartSize;
   }
 
   public int getRespRows() {
@@ -375,6 +398,14 @@ public class RpcInfo {
 
   public void setResponse(Response response) {
     this.response = response;
+  }
+
+  public void setRespPartCnt(int respPartCnt) {
+    this.respPartCnt = respPartCnt;
+  }
+
+  public void setRespPartSize(int[] respPartSize) {
+    this.respPartSize = respPartSize;
   }
 
   public void setRespRows(int respRows) {

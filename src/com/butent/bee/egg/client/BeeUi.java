@@ -54,6 +54,26 @@ public class BeeUi implements BeeModule {
     return activePanel;
   }
 
+  public int getActivePanelHeight() {
+    Panel p = getActivePanel();
+    
+    if (p == null) {
+      return getScreenPanel().getCenterHeight();
+    } else {
+      return p.getOffsetHeight();
+    }
+  }
+
+  public int getActivePanelWidth() {
+    Panel p = getActivePanel();
+    
+    if (p == null) {
+      return getScreenPanel().getCenterWidth();
+    } else {
+      return p.getOffsetWidth();
+    }
+  }
+
   public String getDsn() {
     return BeeUtils.getElement(BeeConst.DS_TYPES,
         RadioGroup.getValue(getElDsn()));
@@ -110,22 +130,22 @@ public class BeeUi implements BeeModule {
   public void setScreenPanel(BeeSplit screenPanel) {
     this.screenPanel = screenPanel;
   }
-
+  
   public void showGrid(Object data, String... cols) {
     Assert.notNull(data);
     updateActiveQuietly(BeeGlobal.simpleGrid(data, cols));
   }
-
+  
   public void showResource(BeeResource resource) {
     Assert.notNull(resource);
     updateActivePanel(new TextEditor(resource));
   }
-  
+
   public void start() {
     UiComponent.setCreator(new GwtUiCreator());
     createUi();
   }
-
+  
   public void updateActivePanel(Widget w) {
     Assert.notNull(w);
     Panel p = getActivePanel();

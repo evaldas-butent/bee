@@ -3,6 +3,8 @@ package com.butent.bee.egg.client.widget;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 
+import com.butent.bee.egg.client.dom.DomUtils;
+
 public class BeeVSplitter extends BeeSplitter {
   public BeeVSplitter(Widget target, boolean reverse, int size) {
     super(target, reverse, size);
@@ -10,6 +12,11 @@ public class BeeVSplitter extends BeeSplitter {
     setStyleName("bee-VSplitter");
   }
 
+  @Override
+  public void createId() {
+    DomUtils.createId(this, "v-splitter");
+  }
+  
   @Override
   protected int getAbsolutePosition() {
     return getAbsoluteTop();

@@ -90,13 +90,17 @@ public class BeeRpc implements BeeModule {
   public void init() {
   }
 
-  public boolean makeGetRequest(String svc) {
-    return makeRequest(RequestBuilder.GET, createParameters(svc), null, null,
+  public boolean makeGetRequest(ParameterList params) {
+    return makeRequest(RequestBuilder.GET, params, null, null,
         BeeConst.TIME_UNKNOWN);
   }
 
-  public boolean makeGetRequest(ParameterList params) {
-    return makeRequest(RequestBuilder.GET, params, null, null,
+  public boolean makeGetRequest(ParameterList params, int timeout) {
+    return makeRequest(RequestBuilder.GET, params, null, null, timeout);
+  }
+
+  public boolean makeGetRequest(String svc) {
+    return makeRequest(RequestBuilder.GET, createParameters(svc), null, null,
         BeeConst.TIME_UNKNOWN);
   }
 
@@ -105,23 +109,20 @@ public class BeeRpc implements BeeModule {
         timeout);
   }
 
-  public boolean makeGetRequest(ParameterList params, int timeout) {
-    return makeRequest(RequestBuilder.GET, params, null, null, timeout);
+  public boolean makePostRequest(ParameterList params,
+      BeeService.DATA_TYPE dtp, String data) {
+    return makeRequest(RequestBuilder.POST, params, dtp, data,
+        BeeConst.TIME_UNKNOWN);
   }
 
-  public boolean makePostRequest(String svc, String data) {
-    return makeRequest(RequestBuilder.POST, createParameters(svc), null, data,
-        BeeConst.TIME_UNKNOWN);
+  public boolean makePostRequest(ParameterList params,
+      BeeService.DATA_TYPE dtp, String data, int timeout) {
+    return makeRequest(RequestBuilder.POST, params, dtp, data, timeout);
   }
 
   public boolean makePostRequest(ParameterList params, String data) {
     return makeRequest(RequestBuilder.POST, params, null, data,
         BeeConst.TIME_UNKNOWN);
-  }
-
-  public boolean makePostRequest(String svc, String data, int timeout) {
-    return makeRequest(RequestBuilder.POST, createParameters(svc), null, data,
-        timeout);
   }
 
   public boolean makePostRequest(ParameterList params, String data, int timeout) {
@@ -134,21 +135,20 @@ public class BeeRpc implements BeeModule {
         BeeConst.TIME_UNKNOWN);
   }
 
-  public boolean makePostRequest(ParameterList params,
-      BeeService.DATA_TYPE dtp, String data) {
-    return makeRequest(RequestBuilder.POST, params, dtp, data,
-        BeeConst.TIME_UNKNOWN);
-  }
-
   public boolean makePostRequest(String svc, BeeService.DATA_TYPE dtp,
       String data, int timeout) {
     return makeRequest(RequestBuilder.POST, createParameters(svc), dtp, data,
         timeout);
   }
 
-  public boolean makePostRequest(ParameterList params,
-      BeeService.DATA_TYPE dtp, String data, int timeout) {
-    return makeRequest(RequestBuilder.POST, params, dtp, data, timeout);
+  public boolean makePostRequest(String svc, String data) {
+    return makeRequest(RequestBuilder.POST, createParameters(svc), null, data,
+        BeeConst.TIME_UNKNOWN);
+  }
+
+  public boolean makePostRequest(String svc, String data, int timeout) {
+    return makeRequest(RequestBuilder.POST, createParameters(svc), null, data,
+        timeout);
   }
 
   public void setCallBack(BeeCallback callBack) {

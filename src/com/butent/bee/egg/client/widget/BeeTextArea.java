@@ -7,6 +7,7 @@ import com.google.gwt.user.client.ui.TextArea;
 import com.butent.bee.egg.client.BeeGlobal;
 import com.butent.bee.egg.client.BeeKeeper;
 import com.butent.bee.egg.client.dom.DomUtils;
+import com.butent.bee.egg.client.event.HasAfterSaveHandler;
 import com.butent.bee.egg.client.event.HasBeeKeyHandler;
 import com.butent.bee.egg.client.event.HasBeeValueChangeHandler;
 import com.butent.bee.egg.shared.BeeResource;
@@ -14,14 +15,25 @@ import com.butent.bee.egg.shared.HasId;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
 public class BeeTextArea extends TextArea implements HasId, HasBeeKeyHandler,
-    HasBeeValueChangeHandler<String> {
+    HasBeeValueChangeHandler<String>, HasAfterSaveHandler {
 
   private String fieldName = null;
   private BeeResource resource = null;
+  private String digest = null;
 
   public BeeTextArea() {
     super();
     init();
+  }
+
+  public BeeTextArea(BeeResource resource) {
+    this();
+    this.resource = resource;
+
+    setValue(resource.getContent());
+    if (resource.isReadOnly()) {
+      setReadOnly(true);
+    }
   }
 
   public BeeTextArea(Element element) {
@@ -39,15 +51,12 @@ public class BeeTextArea extends TextArea implements HasId, HasBeeKeyHandler,
     }
   }
 
-  public BeeTextArea(BeeResource resource) {
-    this();
-    this.resource = resource;
-    
-    setValue(resource.getContent());
-  }
-
   public void createId() {
     DomUtils.createId(this, "area");
+  }
+
+  public String getDigest() {
+    return digest;
   }
 
   public String getFieldName() {
@@ -62,6 +71,27 @@ public class BeeTextArea extends TextArea implements HasId, HasBeeKeyHandler,
     return resource;
   }
 
+  public boolean isValueChanged() {
+    String v = getValue();
+    String d = getDigest();
+
+    if (BeeUtils.isEmpty(v)) {
+      return !BeeUtils.isEmpty(d);
+    } else if (BeeUtils.isEmpty(d)) {
+      return true;
+    } else {
+      return !d.equals(BeeUtils.md5(v));
+    }
+  }
+ 
+  public void onAfterSave(String opt) {
+    if (BeeUtils.isEmpty(opt)) {
+      updateDigest();
+    } else {
+      setDigest(opt);
+    }
+  }
+
   public boolean onBeeKey(KeyPressEvent event) {
     return true;
   }
@@ -72,6 +102,10 @@ public class BeeTextArea extends TextArea implements HasId, HasBeeKeyHandler,
     }
 
     return true;
+  }
+
+  public void setDigest(String digest) {
+    this.digest = digest;
   }
 
   public void setFieldName(String fieldName) {
@@ -86,6 +120,26 @@ public class BeeTextArea extends TextArea implements HasId, HasBeeKeyHandler,
     this.resource = resource;
   }
 
+  @Override
+  public void setValue(String value) {
+    super.setValue(value);
+    updateDigest(value);
+  }
+
+  public String updateDigest() {
+    return updateDigest(getValue());
+  }
+
+  public String updateDigest(String value) {
+    if (BeeUtils.isEmpty(value)) {
+      setDigest(null);
+    } else {
+      setDigest(BeeUtils.md5(value));
+    }
+
+    return getDigest();
+  }
+
   private void addDefaultHandlers() {
     BeeKeeper.getBus().addKeyHandler(this);
     BeeKeeper.getBus().addStringVch(this);
@@ -95,5 +149,5 @@ public class BeeTextArea extends TextArea implements HasId, HasBeeKeyHandler,
     createId();
     addDefaultHandlers();
   }
-  
+
 }

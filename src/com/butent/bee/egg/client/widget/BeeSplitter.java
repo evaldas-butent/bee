@@ -30,6 +30,7 @@ public abstract class BeeSplitter extends Widget implements HasId, HasLayoutCall
     setElement(Document.get().createDivElement());
     sinkEvents(Event.ONMOUSEDOWN | Event.ONMOUSEUP | Event.ONMOUSEMOVE
         | Event.ONDBLCLICK);
+    createId();
   }
 
   public void createId() {

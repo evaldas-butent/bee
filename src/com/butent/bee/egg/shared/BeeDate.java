@@ -48,13 +48,13 @@ public class BeeDate extends Date {
   public int getSeconds() {
     return super.getSeconds();
   }
-
+  
   @SuppressWarnings("deprecation")
   @Override
   public int getYear() {
     return super.getYear() + 1900;
   }
-  
+
   public String toLog() {
     return BeeUtils.toLeadingZeroes(getHours(), 2) + ":"
         + BeeUtils.toLeadingZeroes(getMinutes(), 2) + ":"

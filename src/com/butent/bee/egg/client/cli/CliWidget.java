@@ -31,37 +31,37 @@ public class CliWidget extends BeeTextBox {
     String z = arr[0].toLowerCase();
     
     if (z.equals("?")) {
-      Worker.whereAmI();
+      CliWorker.whereAmI();
     } else if (z.equals("clear")) {
-      Worker.clearLog();
+      CliWorker.clearLog();
     } else if (BeeUtils.inList(z, "center", "east", "north", "south", "screen", "west")) {
-      Worker.doScreen(arr);
+      CliWorker.doScreen(arr);
     } else if (z.equals("charset")) {
-      Worker.getCharsets();
+      CliWorker.getCharsets();
     } else if (BeeUtils.inList(z, "dir", "file", "get")) {
-      Worker.getResource(arr);
+      CliWorker.getResource(arr);
     } else if (z.equals("eval")) {
-      Worker.eval(v, arr);
+      CliWorker.eval(v, arr);
     } else if (BeeUtils.inList(z, "f", "func")) {
-      Worker.showFunctions(v, arr);
+      CliWorker.showFunctions(v, arr);
     } else if (z.equals("fields")) {
-      Worker.showFields(arr);
+      CliWorker.showFields(arr);
     } else if (z.equals("fs")) {
-      Worker.getFs();
+      CliWorker.getFs();
     } else if (z.equals("gwt")) {
-      Worker.showGwt();
+      CliWorker.showGwt();
     } else if (z.equals("id")) {
-      Worker.showElement(v, arr);
+      CliWorker.showElement(v, arr);
     } else if (z.equals("menu")) {
-      Worker.showMenu();
+      CliWorker.showMenu();
     } else if (BeeUtils.inList(z, "p", "prop")) {
-      Worker.showProperties(v, arr);
+      CliWorker.showProperties(v, arr);
     } else if (z.equals("rpc")) {
-      Worker.showRpc();
+      CliWorker.showRpc();
     } else if (z.equals("stack")) {
-      Worker.showStack();
+      CliWorker.showStack();
     } else if (z.equals("style")) {
-      Worker.style(v, arr);
+      CliWorker.style(v, arr);
 
     } else {
       BeeGlobal.showDialog("wtf", v);

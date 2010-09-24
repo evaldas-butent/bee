@@ -26,7 +26,6 @@ public class ResponseBuffer {
   private List<BeeResource> parts = new ArrayList<BeeResource>();
   
   private BeeService.DATA_TYPE dataType;
-  private String dataUri = null;
   
   private String contentType = null;
   private String characterEncoding = null;
@@ -143,9 +142,17 @@ public class ResponseBuffer {
     }
   }
 
+  public void addPart(String uri, String content) {
+    addPart(uri, content, null, false);
+  }
+
   public void addPart(String uri, String content, BeeService.DATA_TYPE type) {
+    addPart(uri, content, type, false);
+  }
+
+  public void addPart(String uri, String content, BeeService.DATA_TYPE type, boolean readOnly) {
     Assert.notNull(content);
-    parts.add(new BeeResource(uri, content, type));
+    parts.add(new BeeResource(uri, content, type, readOnly));
     setDataType(BeeService.DATA_TYPE.MULTIPART);
   }
 
@@ -166,11 +173,27 @@ public class ResponseBuffer {
     add(el.getDate().toLog());
   }
 
+  public void addResource(String content) {
+    addResource(null, content, null, true);
+  }
+  
+  public void addResource(String content, BeeService.DATA_TYPE type) {
+    addResource(null, content, type, true);
+  }
+
+  public void addResource(String uri, String content) {
+    addResource(uri, content, null, false);
+  }
+  
   public void addResource(String uri, String content, BeeService.DATA_TYPE type) {
+    addResource(uri, content, type, false);
+  }
+  
+  public void addResource(String uri, String content, BeeService.DATA_TYPE type, boolean readOnly) {
     Assert.notNull(content);
-    add(content);
-    setDataUri(uri);
-    setDataType(type);
+    buffer.append(new BeeResource(uri, content, type, readOnly).serialize());
+    count++;
+    setDataType(BeeService.DATA_TYPE.RESOURCE);
   }
 
   public void addSeparator() {
@@ -307,10 +330,6 @@ public class ResponseBuffer {
     return dataType;
   }
 
-  public String getDataUri() {
-    return dataUri;
-  }
-
   public String getHexSeparator() {
     return BeeUtils.toHex(getSeparator());
   }
@@ -377,10 +396,6 @@ public class ResponseBuffer {
 
   public void setDataType(BeeService.DATA_TYPE dataType) {
     this.dataType = dataType;
-  }
-
-  public void setDataUri(String dataUri) {
-    this.dataUri = dataUri;
   }
 
   public void setHexSeparator(String sep) {

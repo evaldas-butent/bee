@@ -377,7 +377,7 @@ public class BeeConnection {
   public void setTypeMap(Map<String, Class<?>> typeMap) {
     this.typeMap = typeMap;
   }
-
+  
   public boolean updateAutoCommit(Connection conn, String s) {
     Assert.notNull(conn);
     Assert.notEmpty(s);

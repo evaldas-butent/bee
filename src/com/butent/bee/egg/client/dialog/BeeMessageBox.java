@@ -1,5 +1,6 @@
 package com.butent.bee.egg.client.dialog;
 
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.Widget;
@@ -10,12 +11,18 @@ import com.butent.bee.egg.client.grid.BeeCellTable;
 import com.butent.bee.egg.client.layout.BeeVertical;
 import com.butent.bee.egg.client.widget.BeeLabel;
 import com.butent.bee.egg.shared.Assert;
+import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
 import java.util.Collection;
 import java.util.Iterator;
 
 public class BeeMessageBox {
+
+  public void alert(Object... obj) {
+    Assert.parameterCount(obj.length, 1);
+    Window.alert(BeeUtils.concat(BeeConst.CHAR_EOL, obj));
+  }
 
   public boolean close(Object src) {
     boolean ok = false;
@@ -32,10 +39,15 @@ public class BeeMessageBox {
     return ok;
   }
 
+  public boolean confirm(Object... obj) {
+    Assert.parameterCount(obj.length, 1);
+    return Window.confirm(BeeUtils.concat(BeeConst.CHAR_EOL, obj));
+  }
+
   public void showError(Object... x) {
     showInfo(x);
   }
-
+  
   public void showGrid(String cap, Object data, String... cols) {
     Assert.notNull(data);
     showInfo(cap, BeeGlobal.simpleGrid(data, cols));
@@ -82,5 +94,5 @@ public class BeeMessageBox {
     box.center();
     b.setFocus(true);
   }
-
+  
 }

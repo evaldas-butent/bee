@@ -47,6 +47,8 @@ public class SystemServiceBean {
 
     } else if (BeeService.equals(svc, BeeService.SERVICE_GET_RESOURCE)) {
       getResource(reqInfo, buff);
+    } else if (BeeService.equals(svc, BeeService.SERVICE_SAVE_RESOURCE)) {
+      saveResource(reqInfo, buff);
 
     } else {
       String msg = BeeUtils.concat(1, svc, "system service not recognized");
@@ -197,6 +199,39 @@ public class SystemServiceBean {
     }
   }
 
+  private void saveResource(RequestInfo reqInfo, ResponseBuffer buff) {
+    String uri = reqInfo.getParameter(BeeService.RPC_FIELD_URI);
+    String md5 = reqInfo.getParameter(BeeService.RPC_FIELD_MD5);
+    
+    if (BeeUtils.isEmpty(uri)) {
+      buff.addSevere("URI not specified");
+      return;
+    }
+    
+    String content = reqInfo.getContent();
+    if (BeeUtils.isEmpty(content)) {
+      buff.addSevere("Content not found");
+      return;
+    }
+    
+    if (!BeeUtils.isEmpty(md5)) {
+      String z = BeeUtils.md5(content);
+      if (!md5.equals(z)) {
+        buff.addSevere("md5 does not match");
+        buff.addSevere("request", md5);
+        buff.addSevere("received", z);
+        return;
+      }
+    }
+    
+    boolean ok = FileUtils.toFile(content, uri);
+    if (ok) {
+      buff.addMessage(BeeUtils.bracket(content.length()), "saved to", uri);
+    } else {
+      buff.addSevere("error saving to", uri);
+    }
+  }
+
   private void systemInfo(ResponseBuffer buff) {
     List<SubProp> lst = new ArrayList<SubProp>();
 
@@ -252,57 +287,137 @@ public class SystemServiceBean {
   }
 
   private void xmlInfo(RequestInfo reqInfo, ResponseBuffer buff) {
-    String src = reqInfo.getParameter(BeeService.FIELD_XML_SOURCE);
-    String xsl = reqInfo.getParameter(BeeService.FIELD_XML_TRANSFORM);
-    String dst = reqInfo.getParameter(BeeService.FIELD_XML_TARGET);
+    String pSrc = reqInfo.getParameter(BeeService.FIELD_XML_SOURCE);
+    String pXsl = reqInfo.getParameter(BeeService.FIELD_XML_TRANSFORM);
+    String pDst = reqInfo.getParameter(BeeService.FIELD_XML_TARGET);
     String ret = reqInfo.getParameter(BeeService.FIELD_XML_RETURN);
 
-    if (BeeUtils.isEmpty(src)) {
+    if (BeeUtils.isEmpty(pSrc)) {
       buff.addSevere("Parameter", BeeService.FIELD_XML_SOURCE, "not found");
       return;
     }
-
+    
+    String src = FileUtils.defaultExtension(pSrc, XmlUtils.defaultXmlExtension);
     if (!FileUtils.isInputFile(src)) {
       buff.addSevere(src, "is not a valid input file");
       return;
     }
 
-    if (BeeUtils.isEmpty(xsl)) {
+    buff.addMessage(src);
+
+    if (BeeUtils.isEmpty(pXsl)) {
+      if (BeeUtils.context("xml", ret)) {
+        String z = FileUtils.fileToString(src);
+        if (BeeUtils.isEmpty(z)) {
+          buff.addSevere("cannot read file");
+        } else {
+          buff.addResource(src, z, BeeService.DATA_TYPE.XML);
+        }
+        return;
+      }
+
       List<SubProp> lst = XmlUtils.getFileInfo(src);
       if (BeeUtils.isEmpty(lst)) {
-        buff.addSevere(src, "cannot get xml info");
+        buff.addSevere("cannot get xml info");
       } else {
         buff.addSub(lst);
       }
       return;
     }
 
+    String xsl = FileUtils.defaultExtension(pXsl, XmlUtils.defaultXslExtension);
     if (!FileUtils.isInputFile(xsl)) {
       buff.addSevere(xsl, "is not a valid input file");
       return;
     }
-    if (BeeUtils.isEmpty(dst)) {
-      buff.addSevere("xslt target not specified");
-      return;
+    
+    String dst;
+    if (BeeUtils.isEmpty(pDst)) {
+      dst = null;
+    } else {
+      dst = FileUtils.defaultExtension(pDst, XmlUtils.defaultXmlExtension);
+      if (BeeUtils.inListSame(dst, src, xsl)) {
+        buff.addSevere(dst, "is not a valid target");
+        return;
+      }
+    }
+    
+    buff.addMessage(xsl);
+    
+    String target = null;
+    boolean ok = false;
+    
+    if (dst == null) {
+      if (BeeUtils.context("prop", ret)) {
+        List<SubProp> lst = XmlUtils.xsltToInfo(src, xsl);
+        if (BeeUtils.isEmpty(lst)) {
+          buff.addSevere("xslt error");
+        } else {
+          buff.addSub(lst);
+        }
+        return;
+      }
+      
+      target = XmlUtils.xsltToString(src, xsl);
+      ok = !BeeUtils.isEmpty(target);
+
+    } else {
+      buff.addMessage(dst);
+      
+      ok = XmlUtils.xsltToFile(src, xsl, dst);
+      if (ok) {
+        if (BeeUtils.context("prop", ret)) {
+          List<SubProp> lst = XmlUtils.getFileInfo(dst);
+          if (BeeUtils.isEmpty(lst)) {
+            buff.addSevere("cannot get target info");
+          } else {
+            buff.addSub(lst);
+          }
+          return;
+        }
+        
+        target = FileUtils.fileToString(dst);
+        ok = !BeeUtils.isEmpty(target);
+      }
     }
 
-    boolean ok = XmlUtils.xslTransform(src, xsl, dst);
     if (!ok) {
       buff.addSevere("xslt error");
       return;
     }
-
-    if (BeeUtils.same(ret, "properties")) {
-      List<SubProp> lst = XmlUtils.getFileInfo(dst);
-      if (BeeUtils.isEmpty(lst)) {
-        buff.addSevere(dst, "cannot get xml info");
-      } else {
-        buff.addSub(lst);
+    
+    String source = null;
+    String transf = null;
+    
+    if (BeeUtils.context("all", ret) || BeeUtils.context("source", ret)) {
+      source = FileUtils.fileToString(src);
+      if (BeeUtils.isEmpty(source)) {
+        buff.addSevere("cannot read source");
+        return;
       }
-    } else {
-      String z = FileUtils.fileToString(dst);
-      buff.addResource(dst, z, BeeService.DATA_TYPE.RESOURCE);
     }
-  }
 
+    if (BeeUtils.context("all", ret) || BeeUtils.context("xsl", ret)) {
+      transf = FileUtils.fileToString(xsl);
+      if (BeeUtils.isEmpty(transf)) {
+        buff.addSevere("cannot read xsl");
+        return;
+      }
+    }
+    
+    if (BeeUtils.allEmpty(source, transf)) {
+      buff.addResource(dst, target, BeeService.DATA_TYPE.XML);
+      return;
+    }
+    
+    if (!BeeUtils.isEmpty(source)) {
+      buff.addPart(src, source, BeeService.DATA_TYPE.XML);
+    }
+    if (!BeeUtils.isEmpty(transf)) {
+      buff.addPart(xsl, transf, BeeService.DATA_TYPE.XML);
+    }
+    
+    buff.addPart(dst, target, BeeService.DATA_TYPE.XML, dst == null);
+  }  
+  
 }

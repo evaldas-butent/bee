@@ -6,26 +6,77 @@ import com.butent.bee.egg.shared.utils.BeeUtils;
 public class BeeResource implements BeeSerializable {
   private String name = null;
   private String uri = null;
+  private boolean readOnly = false;
 
   private String content = null;
-  private BeeService.DATA_TYPE type;
+  private BeeService.DATA_TYPE type = null;
 
-  public BeeResource(String uri) {
-    this.uri = uri;
+  public BeeResource() {
+  }
+  
+  public BeeResource(String src) {
+    deserialize(src);
   }
 
   public BeeResource(String uri, DATA_TYPE type) {
-    this(uri, null, type);
+    this(uri, null, type, false);
+  }
+
+  public BeeResource(String uri, String content) {
+    this(uri, content, null, false);
+  }
+  
+  public BeeResource(String uri, String content, boolean readOnly) {
+    this(uri, content, null, readOnly);
   }
 
   public BeeResource(String uri, String content, DATA_TYPE type) {
+    this(uri, content, type, false);
+  }
+
+  public BeeResource(String uri, String content, DATA_TYPE type, boolean readOnly) {
     this.uri = uri;
     this.content = content;
     this.type = type;
+    this.readOnly = readOnly;
   }
-
-  public void deserialize(String s) {
-    Assert.notNull(s);
+  
+  public void deserialize(String src) {
+    Assert.notNull(src);
+    
+    Pair<Integer, Integer> scan;
+    int len, start = 0;
+    
+    for (int i = 0; i < 5; i++) {
+      scan = BeeUtils.deserializeLength(src, start);
+      len = scan.getA();
+      start += scan.getB();
+      
+      if (len <= 0) {
+        continue;
+      }
+      String v = src.substring(start, start + len);
+      
+      switch (i) {
+        case 0:
+          setName(v);
+          break;
+        case 1:
+          setUri(v);
+          break;
+        case 2:
+          setType(BeeService.getDataType(v));
+          break;
+        case 3:
+          setReadOnly(BeeUtils.toBoolean(v));
+          break;
+        case 4:
+          setContent(v);
+          break;
+      }
+      
+      start += len;
+    }
   }
 
   public String getContent() {
@@ -44,38 +95,44 @@ public class BeeResource implements BeeSerializable {
     return uri;
   }
 
+  public boolean isReadOnly() {
+    return readOnly;
+  }
+
   public String serialize() {
     int[] arr = new int[]{
         BeeUtils.length(name), BeeUtils.length(uri),
-        BeeUtils.length(BeeService.transform(type)), BeeUtils.length(content)};
-
-    StringBuilder head = new StringBuilder();
-    int tot = 0;
-
-    for (int i = 0; i < arr.length; i++) {
-      tot += arr[i];
-      head.append(BeeUtils.serializeLength(arr[i]));
-    }
-    
-    tot += head.length();
+        BeeUtils.length(BeeService.transform(type)),
+        BeeUtils.length(BeeUtils.toString(readOnly)),
+        BeeUtils.length(content)};
 
     StringBuilder sb = new StringBuilder();
-    sb.append(BeeUtils.serializeLength(tot));
-    sb.append(head);
-    
-    if (arr[0] > 0) {
-      sb.append(name);
+
+    for (int i = 0; i < arr.length; i++) {
+      sb.append(BeeUtils.serializeLength(arr[i]));
+      if (arr[i] <= 0) {
+        continue;
+      }
+
+      switch (i) {
+        case 0:
+          sb.append(name);
+          break;
+        case 1:
+          sb.append(uri);
+          break;
+        case 2:
+          sb.append(BeeService.transform(type));
+          break;
+        case 3:
+          sb.append(BeeUtils.toString(readOnly));
+          break;
+        case 4:
+          sb.append(content);
+          break;
+      }
     }
-    if (arr[1] > 0) {
-      sb.append(uri);
-    }
-    if (arr[2] > 0) {
-      sb.append(BeeService.transform(type));
-    }
-    if (arr[3] > 0) {
-      sb.append(content);
-    }
-    
+
     return sb.toString();
   }
 
@@ -85,6 +142,10 @@ public class BeeResource implements BeeSerializable {
 
   public void setName(String name) {
     this.name = name;
+  }
+
+  public void setReadOnly(boolean readOnly) {
+    this.readOnly = readOnly;
   }
 
   public void setType(BeeService.DATA_TYPE type) {

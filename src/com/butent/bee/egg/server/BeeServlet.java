@@ -114,17 +114,8 @@ public class BeeServlet extends HttpServlet {
         }
       }
 
-      if (pc > 0) {
-        resp.setIntHeader(BeeService.RPC_FIELD_PART_CNT, pc);
-      }
-      
       resp.setHeader(BeeService.RPC_FIELD_DTP, BeeService.transform(dtp));
       
-      String uri = buff.getDataUri();
-      if (!BeeUtils.isEmpty(uri)) {
-        resp.setHeader(BeeService.RPC_FIELD_URI, uri);
-      }
-
       String ct = BeeUtils.ifString(buff.getContentType(),
           BeeService.getContentType(dtp));
       if (!BeeUtils.isEmpty(ct)) {
@@ -140,11 +131,18 @@ public class BeeServlet extends HttpServlet {
       String s;
       if (respLen > 0) {
         s = buff.getString();
+
       } else if (pc > 0) {
+        resp.setIntHeader(BeeService.RPC_FIELD_PART_CNT, pc);
         StringBuilder sb = new StringBuilder();
+        int pn = 0;
+
         for (BeeResource br : buff.getParts()) {
-          sb.append(br.serialize());
+          String part = br.serialize();
+          sb.append(part);
+          resp.setIntHeader(BeeService.rpcPartName(pn++), part.length());
         }
+
         s = sb.toString();
 
       } else if (mc > 0) {
@@ -154,7 +152,7 @@ public class BeeServlet extends HttpServlet {
       }
 
       LogUtils.infoNow(logger, BeeUtils.elapsedSeconds(start), rid, "response",
-          dtp, resp.getContentType(), cc, cnt, respLen, mc);
+          dtp, resp.getContentType(), cnt, cc, mc, pc, s.length());
 
       try {
         ServletOutputStream out = resp.getOutputStream();

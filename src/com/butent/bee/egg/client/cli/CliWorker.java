@@ -31,7 +31,7 @@ import com.butent.bee.egg.shared.utils.SubProp;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Worker {
+public class CliWorker {
 
   public static void clearLog() {
     BeeKeeper.getLog().clear();

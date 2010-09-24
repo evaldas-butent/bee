@@ -81,10 +81,6 @@ public class BeeHtmlList extends Widget implements HasId {
     return getItem(index).getInnerText();
   }
 
-  public void insertItem(String item, int index) {
-    insertItem(item, false, index);
-  }
-
   public void insertItem(String item, boolean asHtml, int index) {
     LIElement child = Document.get().createLIElement();
     
@@ -106,6 +102,10 @@ public class BeeHtmlList extends Widget implements HasId {
       getElement().insertBefore(getItem(index), child);
       items.add(index, child);
     }
+  }
+
+  public void insertItem(String item, int index) {
+    insertItem(item, false, index);
   }
 
   public boolean isOrdered() {

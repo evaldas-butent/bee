@@ -98,6 +98,40 @@ public class BeeSplit extends ComplexPanel implements AnimatedLayout,
     onResize();
   }
 
+  public Widget getCenter() {
+    return center;
+  }
+
+  public int getCenterHeight() {
+    Widget c = getCenter();
+    if (c != null) {
+      return getWidgetHeight(c);
+    }
+    
+    int y = getOffsetHeight();
+    for (Widget w : getChildren()) {
+      if (!isSplitter(w) && isNorthSouth(w)) {
+        y -= getWidgetHeight(w);
+      }
+    }
+    return y;
+  }
+
+  public int getCenterWidth() {
+    Widget c = getCenter();
+    if (c != null) {
+      return getWidgetWidth(c);
+    }
+    
+    int x = getOffsetWidth();
+    for (Widget w : getChildren()) {
+      if (!isSplitter(w) && isWestEast(w)) {
+        x -= getWidgetWidth(w);
+      }
+    }
+    return x;
+  }
+
   public List<SubProp> getDirectionInfo(BeeDirection dir) {
     Assert.notNull(dir);
     List<SubProp> lst = new ArrayList<SubProp>();
@@ -116,7 +150,7 @@ public class BeeSplit extends ComplexPanel implements AnimatedLayout,
 
     return lst;
   }
-
+  
   public String getId() {
     return DomUtils.getId(this);
   }
@@ -141,7 +175,7 @@ public class BeeSplit extends ComplexPanel implements AnimatedLayout,
 
     return lst;
   }
-
+  
   public Element getWidgetContainerElement(Widget child) {
     assertIsChild(child);
     return ((BeeLayoutData) child.getLayoutData()).layer.getContainerElement();
@@ -153,6 +187,14 @@ public class BeeSplit extends ComplexPanel implements AnimatedLayout,
       return null;
     }
     return ((BeeLayoutData) child.getLayoutData()).direction;
+  }
+
+  public int getWidgetHeight(Widget child) {
+    return getWidgetContainerElement(child).getOffsetHeight();
+  }
+
+  public int getWidgetWidth(Widget child) {
+    return getWidgetContainerElement(child).getOffsetWidth();
   }
 
   public void insertEast(Widget widget, double size, Widget before) {
@@ -254,7 +296,7 @@ public class BeeSplit extends ComplexPanel implements AnimatedLayout,
 
     animate(0);
   }
-
+  
   public void updateCenter(Widget widget) {
     Assert.notNull(widget);
 
@@ -273,11 +315,7 @@ public class BeeSplit extends ComplexPanel implements AnimatedLayout,
     return BeeUtils.inList(direction, BeeDirection.EAST, BeeDirection.NORTH,
         BeeDirection.SOUTH, BeeDirection.WEST);
   }
-
-  protected Widget getCenter() {
-    return center;
-  }
-
+  
   protected Unit getUnit() {
     return unit;
   }
@@ -310,6 +348,8 @@ public class BeeSplit extends ComplexPanel implements AnimatedLayout,
     widget.setLayoutData(data);
 
     adopt(widget);
+
+    layer.getContainerElement().setId(DomUtils.createUniqueId("layer"));
 
     if (!isSplitter(widget)) {
       if (direction == BeeDirection.CENTER) {
@@ -400,12 +440,22 @@ public class BeeSplit extends ComplexPanel implements AnimatedLayout,
     PropUtils.addString(lst, "Class", JreEmulation.getSimpleName(w),
         "Absolute Left", w.getAbsoluteLeft(), "Absolute Top",
         w.getAbsoluteTop(), "Offset Height", w.getOffsetHeight(),
-        "Offset Width", w.getOffsetWidth(), "Style Name", w.getStyleName(),
+        "Offset Width", w.getOffsetWidth(),
+        "Style Name", w.getStyleName(),
         "Title", w.getTitle(), "Visible", w.isVisible());
 
     if (w instanceof HasWidgets) {
       PropUtils.addString(lst, "Children Count",
           DomUtils.getWidgetCount((HasWidgets) w));
+    }
+    
+    Element container = getWidgetContainerElement(w);
+    if (container != null) {
+      PropUtils.addString(lst,
+          "Container Offset Height", container.getOffsetHeight(),
+          "Container Offset Width", container.getOffsetWidth(),
+          "Container Client Height", container.getClientHeight(),
+          "Container Client Width", container.getClientWidth());
     }
 
     return lst;
@@ -450,8 +500,24 @@ public class BeeSplit extends ComplexPanel implements AnimatedLayout,
     insert(splitter, ld.direction, splitterSize, before);
   }
 
+  private boolean isNorthSouth(Widget w) {
+    if (w == null) {
+      return false;
+    }
+    BeeDirection dir = getWidgetDirection(w);
+    return dir == BeeDirection.NORTH || dir == BeeDirection.SOUTH;
+  }
+  
   private boolean isSplitter(Widget w) {
     return w instanceof BeeSplitter;
   }
 
+  private boolean isWestEast(Widget w) {
+    if (w == null) {
+      return false;
+    }
+    BeeDirection dir = getWidgetDirection(w);
+    return dir == BeeDirection.WEST || dir == BeeDirection.EAST;
+  }
+  
 }
