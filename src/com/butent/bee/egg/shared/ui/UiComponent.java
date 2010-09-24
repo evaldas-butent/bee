@@ -55,6 +55,10 @@ public abstract class UiComponent implements HasId, BeeSerializable {
       return new UiCheckBox();
     } else if (getClassName(UiTextArea.class).equals(oClass)) {
       return new UiTextArea();
+    } else if (getClassName(UiRadioButton.class).equals(oClass)) {
+      return new UiRadioButton();
+    } else if (getClassName(UiGrid.class).equals(oClass)) {
+      return new UiGrid();
     }
 
     logger.severe("Unsupported class name: " + oClass);

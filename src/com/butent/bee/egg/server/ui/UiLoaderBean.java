@@ -28,35 +28,7 @@ public class UiLoaderBean extends UiLoader {
   protected List<UiRow> getFormData(String formName, Object... params) {
     List<UiRow> res = new ArrayList<UiRow>();
 
-    if ("VALIUTOS".equals(formName)) {
-      List<Object[]> buff = new ArrayList<Object[]>();
-      buff.add(new Object[]{formName, "UiWindow", null, null, null});
-
-      buff.add(new Object[]{"vLayout", "UiVerticalLayout", null, null, null});
-      buff.add(new Object[]{
-          "Button1", "UiButton", "", "Database Tables",
-          "service=" + BeeService.SERVICE_DB_TABLES});
-      buff.add(new Object[]{"hLayout", "UiHorizontalLayout", "", null, null});
-      buff.add(new Object[]{"Label1", "UiLabel", "hLayout", "Tekstas 1", null});
-      buff.add(new Object[]{"Label2", "UiLabel", "Label1", null, null});
-      buff.add(new Object[]{"Field3", "UiField", "hLayout", "Laukas 3", null});
-      buff.add(new Object[]{"Field4", "UiField", "vLayout", "Laukas 4", null});
-      buff.add(new Object[]{"Label3", "UiLabel", "vLayout", "Tekstas 3", null});
-      buff.add(new Object[]{
-          "LookingForParents", "UiLabel", "unknownParent", null, null});
-      buff.add(new Object[]{"Label1", "UiLabel", "vLayout", null, null});
-      buff.add(new Object[]{"Unknown", "UiUnknown", "hLayout", null, null});
-
-      for (Object[] cols : buff) {
-        UiRow row = new UiRow();
-        row.setId((String) cols[0]);
-        row.setClassName((String) cols[1]);
-        row.setParent((String) cols[2]);
-        row.setCaption((String) cols[3]);
-        row.setProperties((String) cols[4]);
-        res.add(row);
-      }
-    } else if ("ANALIZE".equals(formName)) {
+    if ("ANALIZE".equals(formName)) {
       try {
         Thread.sleep(10000);
       } catch (InterruptedException e) {
@@ -70,8 +42,9 @@ public class UiLoaderBean extends UiLoader {
           "UiButton",
           null,
           "Database Info",
-          "service=" + BeeService.SERVICE_DB_INFO
-              + "\n left=50px\n right=50%\r top=10\r\n height=33%"});
+          "click_proc="
+              + BeeService.SERVICE_DB_INFO
+              + "\n left=50px\n right=50%\r top=10\r\n height=3\\\n           3%"});
 
       for (Object[] cols : buff) {
         UiRow row = new UiRow();
@@ -83,18 +56,65 @@ public class UiLoaderBean extends UiLoader {
         res.add(row);
       }
     } else {
-      QueryBuilder qb = new QueryBuilder();
-      qb.addFields("c", "control", "class", "parent", "caption", "order",
-          "parameters", "top", "left", "width", "height", "dock_prnt",
-          "dock_left", "dock_top", "dock_right", "dock_bott", "dock_width",
-          "dock_hght").addFrom("x_controls", "c").setWhere(
-          SqlUtils.equal("c", "form", "'" + formName + "'"));
-      List<Object[]> data = qs.getQueryData(qb);
-
       UiRow row = new UiRow();
       row.setId(formName);
       row.setClassName("UiWindow");
       res.add(row);
+
+      QueryBuilder qb = new QueryBuilder();
+      qb.addFields("f", "properties", "top", "left", "width", "height",
+          "dock_top", "dock_left", "dock_width", "dock_hght", "dock_right",
+          "dock_bott").addFrom("x_forms", "f").setWhere(
+          SqlUtils.equal("f", "form", "'" + formName + "'"));
+
+      List<Object[]> data = qs.getQueryData(qb);
+      Object[] col = data.get(0);
+
+      String top = BeeUtils.isEmpty(col[1]) ? "" : BeeUtils.transform(col[1]);
+      String left = BeeUtils.isEmpty(col[2]) ? "" : BeeUtils.transform(col[2]);
+      String width = BeeUtils.isEmpty(col[3]) ? "" : BeeUtils.transform(col[3]);
+      String height = BeeUtils.isEmpty(col[4]) ? ""
+          : BeeUtils.transform(col[4]);
+      String dockTop = BeeUtils.ifString(col[5], top);
+      String dockLeft = BeeUtils.ifString(col[6], left);
+      String dockWidth = BeeUtils.transform(col[7]);
+      String dockHeight = BeeUtils.transform(col[8]);
+      String dockRight = BeeUtils.ifString(col[9], dockWidth);
+      String dockBottom = BeeUtils.ifString(col[10], dockHeight);
+
+      StringBuilder props = new StringBuilder();
+
+      if (BeeUtils.isEmpty(dockRight)) {
+        props.append("width=" + width + "\n");
+      } else {
+        props.append("right=" + dockRight + "\n");
+      }
+      if (BeeUtils.isEmpty(dockBottom)) {
+        props.append("height=" + height + "\n");
+      } else {
+        props.append("bottom=" + dockBottom + "\n");
+      }
+      props.append("top=" + dockTop + "\n");
+      props.append("left=" + dockLeft + "\n");
+
+      if (!BeeUtils.isEmpty(col[0])) {
+        props.append(col[0] + "\n");
+      }
+      row = new UiRow();
+      row.setId("Container");
+      row.setClassName("UiWindow");
+      row.setParent(formName);
+      row.setProperties(props.toString());
+      res.add(row);
+
+      qb = new QueryBuilder();
+      qb.addFields("c", "control", "class", "parent", "caption", "order",
+          "parameters", "properties", "top", "left", "width", "height",
+          "dock_prnt", "dock_left", "dock_top", "dock_right", "dock_bott",
+          "dock_width", "dock_hght").addFrom("x_controls", "c").setWhere(
+          SqlUtils.equal("c", "form", "'" + formName + "'"));
+
+      data = qs.getQueryData(qb);
 
       for (Object[] cols : data) {
         row = new UiRow();
@@ -105,26 +125,33 @@ public class UiLoaderBean extends UiLoader {
             "[\"']$", "").replaceFirst("\\\\<", ""));
         row.setOrder((Integer) cols[4]);
 
-        StringBuilder props = new StringBuilder();
+        props = new StringBuilder();
         if (!BeeUtils.isEmpty(cols[5])) {
           props.append("parameters=" + cols[5] + "\n");
         }
+        if (!BeeUtils.isEmpty(cols[6])) {
+          props.append(cols[6] + "\n");
+        }
 
-        String top = BeeUtils.isEmpty(cols[6]) ? ""
-            : BeeUtils.transform(cols[6]);
-        String left = BeeUtils.isEmpty(cols[7]) ? ""
-            : BeeUtils.transform(cols[7]);
-        String width = BeeUtils.isEmpty(cols[8]) ? ""
-            : BeeUtils.transform(cols[8]);
-        String height = BeeUtils.isEmpty(cols[9]) ? ""
-            : BeeUtils.transform(cols[9]);
-        String dock = BeeUtils.ifString(cols[10], "");
-        String dockLeft = BeeUtils.ifString(cols[11], left);
-        String dockTop = BeeUtils.ifString(cols[12], top);
-        String dockRight = BeeUtils.ifString(cols[13], "");
-        String dockBottom = BeeUtils.ifString(cols[14], "");
-        String dockWidth = BeeUtils.ifString(cols[15], "");
-        String dockHeight = BeeUtils.ifString(cols[16], "");
+        top = BeeUtils.isEmpty(cols[7]) ? "" : BeeUtils.transform(cols[7]);
+        left = BeeUtils.isEmpty(cols[8]) ? "" : BeeUtils.transform(cols[8]);
+        width = BeeUtils.isEmpty(cols[9]) ? "" : BeeUtils.transform(cols[9]);
+        height = BeeUtils.isEmpty(cols[10]) ? "" : BeeUtils.transform(cols[10]);
+
+        String dock = BeeUtils.ifString(cols[11], "");
+
+        dockTop = BeeUtils.isEmpty(cols[13]) ? ""
+            : BeeUtils.transform(cols[13]) + (dock.contains("t") ? "%" : "");
+        dockLeft = BeeUtils.isEmpty(cols[12]) ? ""
+            : BeeUtils.transform(cols[12]) + (dock.contains("l") ? "%" : "");
+        dockWidth = BeeUtils.isEmpty(cols[16]) ? ""
+            : BeeUtils.transform(cols[16]) + (dock.contains("w") ? "%" : "");
+        dockHeight = BeeUtils.isEmpty(cols[17]) ? ""
+            : BeeUtils.transform(cols[17]) + (dock.contains("h") ? "%" : "");
+        dockRight = BeeUtils.isEmpty(cols[14]) ? dockWidth
+            : BeeUtils.transform(cols[14]) + (dock.contains("r") ? "%" : "");
+        dockBottom = BeeUtils.isEmpty(cols[15]) ? dockHeight
+            : BeeUtils.transform(cols[15]) + (dock.contains("b") ? "%" : "");
 
         if (BeeUtils.isEmpty(dock)) {
           props.append("top=" + top + "\n");
@@ -133,37 +160,40 @@ public class UiLoaderBean extends UiLoader {
           props.append("height=" + height + "\n");
         } else {
           if (BeeUtils.isEmpty(dockRight)) {
-            props.append("left=" + dockLeft + (dock.contains("l") ? "%" : "")
-                + "\n");
-
-            if (BeeUtils.isEmpty(dockWidth)) {
-              props.append("width=" + width + "\n");
-            } else {
-              props.append("right=" + dockWidth
-                  + (dock.contains("w") ? "%" : "") + "\n");
-            }
-          } else {
+            props.append("left=" + BeeUtils.ifString(dockLeft, left) + "\n");
             props.append("width=" + width + "\n");
-            props.append("right=" + dockRight + (dock.contains("r") ? "%" : "")
-                + "\n");
+          } else {
+            if (BeeUtils.isEmpty(dockLeft)) {
+              if (BeeUtils.isEmpty(dockWidth)) {
+                props.append("width=" + width + "\n");
+              } else {
+                props.append("left=" + left + "\n");
+              }
+            } else {
+              props.append("left=" + dockLeft + "\n");
+            }
+            props.append("right=" + dockRight + "\n");
           }
           if (BeeUtils.isEmpty(dockBottom)) {
-            props.append("top=" + dockTop + (dock.contains("t") ? "%" : "")
-                + "\n");
-
-            if (BeeUtils.isEmpty(dockHeight)) {
-              props.append("height=" + height + "\n");
-            } else {
-              props.append("bottom=" + dockHeight
-                  + (dock.contains("h") ? "%" : "") + "\n");
-            }
-          } else {
+            props.append("top=" + BeeUtils.ifString(dockTop, top) + "\n");
             props.append("height=" + height + "\n");
-            props.append("bottom=" + dockBottom
-                + (dock.contains("b") ? "%" : "") + "\n");
+          } else {
+            if (BeeUtils.isEmpty(dockTop)) {
+              if (BeeUtils.isEmpty(dockHeight)) {
+                props.append("height=" + height + "\n");
+              } else {
+                props.append("top=" + top + "\n");
+              }
+            } else {
+              props.append("top=" + dockTop + "\n");
+            }
+            props.append("bottom=" + dockBottom + "\n");
           }
         }
         row.setProperties(props.toString());
+        if (BeeUtils.isEmpty(row.getParent())) {
+          row.setParent("Container");
+        }
         res.add(row);
       }
     }
@@ -238,24 +268,29 @@ public class UiLoaderBean extends UiLoader {
   }
 
   private String getUiClass(String cls) {
-    if (BeeUtils.inListSame(cls, "i_button", "c_close", "c_edit")) {
+    if (BeeUtils.inListSame(cls, "i_button", "c_choice", "c_close", "c_edit",
+        "o_butt_gr", "i_butt_gr")) {
       return "UiButton";
     } else if ("i_combo".equals(cls)) {
       return "UiListBox";
     } else if (BeeUtils.inListSame(cls, "i_label", "c_say")) {
       return "UiLabel";
-    } else if ("i_field".equals(cls)) {
+    } else if (BeeUtils.inListSame(cls, "i_field", "c_field", "o_r_sub")) {
       return "UiField";
     } else if ("i_frame".equals(cls)) {
       return "UiTab";
-    } else if (BeeUtils.inListSame(cls, "i_page", "c_defer")) {
+    } else if (BeeUtils.inListSame(cls, "i_page", "c_defer", "o_list")) {
       return "UiWindow";
-    } else if (BeeUtils.inListSame(cls, "i_check", "c_check")) {
+    } else if (BeeUtils.inListSame(cls, "i_check", "c_check", "c_pazym",
+        "c_user")) {
       return "UiCheckBox";
     } else if (BeeUtils.inListSame(cls, "r_grid", "c_grid")) {
+      return "UiGrid";
+    } else if (BeeUtils.inListSame(cls, "i_memo", "c_memo", "o_r_list",
+        "o_f_list")) {
       return "UiTextArea";
-    } else if (BeeUtils.inListSame(cls, "i_memo", "c_memo")) {
-      return "UiTextArea";
+    } else if ("i_opt_gr".equals(cls)) {
+      return "UiRadioButton";
     }
     return cls;
   }

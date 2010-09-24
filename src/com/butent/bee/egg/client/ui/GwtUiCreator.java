@@ -9,10 +9,13 @@ import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
+import com.butent.bee.egg.client.BeeGlobal;
 import com.butent.bee.egg.client.BeeKeeper;
+import com.butent.bee.egg.client.layout.BeeHorizontal;
 import com.butent.bee.egg.client.layout.BeeLayoutPanel;
 import com.butent.bee.egg.client.layout.BeeStack;
 import com.butent.bee.egg.client.layout.BeeTab;
+import com.butent.bee.egg.client.layout.BeeVertical;
 import com.butent.bee.egg.client.menu.BeeMenuBar;
 import com.butent.bee.egg.client.menu.BeeMenuItemSeparator;
 import com.butent.bee.egg.client.menu.MenuCommand;
@@ -22,6 +25,7 @@ import com.butent.bee.egg.client.widget.BeeButton;
 import com.butent.bee.egg.client.widget.BeeCheckBox;
 import com.butent.bee.egg.client.widget.BeeLabel;
 import com.butent.bee.egg.client.widget.BeeListBox;
+import com.butent.bee.egg.client.widget.BeeRadioButton;
 import com.butent.bee.egg.client.widget.BeeTextArea;
 import com.butent.bee.egg.client.widget.BeeTextBox;
 import com.butent.bee.egg.shared.ui.UiButton;
@@ -29,12 +33,14 @@ import com.butent.bee.egg.shared.ui.UiCheckBox;
 import com.butent.bee.egg.shared.ui.UiComponent;
 import com.butent.bee.egg.shared.ui.UiCreator;
 import com.butent.bee.egg.shared.ui.UiField;
+import com.butent.bee.egg.shared.ui.UiGrid;
 import com.butent.bee.egg.shared.ui.UiHorizontalLayout;
 import com.butent.bee.egg.shared.ui.UiLabel;
 import com.butent.bee.egg.shared.ui.UiListBox;
 import com.butent.bee.egg.shared.ui.UiMenuHorizontal;
 import com.butent.bee.egg.shared.ui.UiMenuVertical;
 import com.butent.bee.egg.shared.ui.UiPanel;
+import com.butent.bee.egg.shared.ui.UiRadioButton;
 import com.butent.bee.egg.shared.ui.UiStack;
 import com.butent.bee.egg.shared.ui.UiTab;
 import com.butent.bee.egg.shared.ui.UiTextArea;
@@ -56,7 +62,7 @@ public class GwtUiCreator implements UiCreator {
     b.setText(button.getCaption());
     b.setTitle(button.getId());
 
-    String svc = button.getProperty("service");
+    String svc = button.getProperty("click_proc");
     if (!BeeUtils.isEmpty(svc)) {
       b.setService(svc);
       BeeKeeper.getBus().addClickHandler(b);
@@ -94,6 +100,23 @@ public class GwtUiCreator implements UiCreator {
 
     widget.setWidgetLeftWidth(label, 0, getUnit(null), pos, getUnit(null));
     widget.setWidgetLeftRight(input, pos, getUnit(null), 0, getUnit(null));
+
+    return widget;
+  }
+
+  @Override
+  public Object createGrid(UiGrid uiGrid) {
+    BeeVertical widget = new BeeVertical();
+    widget.setTitle(uiGrid.getId());
+
+    if (!BeeUtils.isEmpty(uiGrid.getCaption())) {
+      BeeLabel label = new BeeLabel();
+      label.setText(uiGrid.getCaption());
+      widget.add(label);
+    }
+
+    widget.add(BeeGlobal.simpleGrid(new String[][]{
+        new String[]{"aaa"}, new String[]{"bbb"}}, "pypas"));
 
     return widget;
   }
@@ -164,6 +187,24 @@ public class GwtUiCreator implements UiCreator {
     createChilds(p, panel);
 
     return p;
+  }
+
+  @Override
+  public Object createRadioButton(UiRadioButton radioButton) {
+    Panel widget = null;
+    if ("[H]".equals(radioButton.getProperty("opt_layout"))) {
+      widget = new BeeHorizontal();
+    } else {
+      widget = new BeeVertical();
+    }
+    String id = radioButton.getId();
+    widget.setTitle(id);
+
+    for (String r : BeeUtils.split(radioButton.getProperty("parameters"), ",")) {
+      widget.add(new BeeRadioButton(id,
+          r.replaceFirst("[\"'\\[]", "").replaceFirst("[|\"'\\]].*", "")));
+    }
+    return widget;
   }
 
   @Override

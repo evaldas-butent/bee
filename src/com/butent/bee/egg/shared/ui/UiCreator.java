@@ -8,6 +8,8 @@ public interface UiCreator {
 
   Object createField(UiField field);
 
+  Object createGrid(UiGrid uiGrid);
+
   Object createHorizontalLayout(UiHorizontalLayout horizontalLayout);
 
   Object createLabel(UiLabel label);
@@ -19,6 +21,8 @@ public interface UiCreator {
   Object createMenuVertical(UiMenuVertical uiMenuVertical);
 
   Object createPanel(UiPanel panel);
+
+  Object createRadioButton(UiRadioButton radioButton);
 
   Object createStack(UiStack stack);
 
