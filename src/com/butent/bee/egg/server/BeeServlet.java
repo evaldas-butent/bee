@@ -90,7 +90,7 @@ public class BeeServlet extends HttpServlet {
       BeeService.DATA_TYPE dtp = buff.getDataType();
       if (dtp == null) {
         dtp = (cc > 0) ? BeeService.DATA_TYPE.TABLE
-            : BeeService.DEFAULT_RESPONSE_DATA_TYPE;
+            : BeeService.defaultResponseDataType;
       }
 
       resp.setHeader(BeeService.RPC_FIELD_SID, sid);
@@ -110,7 +110,8 @@ public class BeeServlet extends HttpServlet {
       if (mc > 0) {
         resp.setIntHeader(BeeService.RPC_FIELD_MSG_CNT, mc);
         for (int i = 0; i < mc; i++) {
-          resp.setHeader(BeeService.rpcMessageName(i), buff.getMessage(i));
+          resp.setHeader(BeeService.rpcMessageName(i), 
+              BeeService.encodeMessage(buff.getMessage(i)));
         }
       }
 

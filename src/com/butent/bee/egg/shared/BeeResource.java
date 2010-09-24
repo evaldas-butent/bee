@@ -2,6 +2,7 @@ package com.butent.bee.egg.shared;
 
 import com.butent.bee.egg.shared.BeeService.DATA_TYPE;
 import com.butent.bee.egg.shared.utils.BeeUtils;
+import com.butent.bee.egg.shared.utils.Codec;
 
 public class BeeResource implements BeeSerializable {
   private String name = null;
@@ -48,7 +49,7 @@ public class BeeResource implements BeeSerializable {
     int len, start = 0;
     
     for (int i = 0; i < 5; i++) {
-      scan = BeeUtils.deserializeLength(src, start);
+      scan = Codec.deserializeLength(src, start);
       len = scan.getA();
       start += scan.getB();
       
@@ -109,7 +110,7 @@ public class BeeResource implements BeeSerializable {
     StringBuilder sb = new StringBuilder();
 
     for (int i = 0; i < arr.length; i++) {
-      sb.append(BeeUtils.serializeLength(arr[i]));
+      sb.append(Codec.serializeLength(arr[i]));
       if (arr[i] <= 0) {
         continue;
       }

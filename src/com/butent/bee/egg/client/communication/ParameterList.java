@@ -159,7 +159,7 @@ public class ParameterList extends ArrayList<RpcParameter> implements
     return dtp;
   }
 
-  public void getHeaders(RequestBuilder bld, String... ignore) {
+  public void getHeadersExcept(RequestBuilder bld, String... ignore) {
     Assert.notNull(bld);
     prepare();
     if (BeeUtils.isEmpty(headerItems)) {
@@ -217,6 +217,20 @@ public class ParameterList extends ArrayList<RpcParameter> implements
 
   public String getService() {
     return service;
+  }
+
+  public boolean hasParameter(String name) {
+    Assert.notEmpty(name);
+    boolean ok = false;
+
+    for (RpcParameter item : this) {
+      if (BeeUtils.same(item.getName(), name)) {
+        ok = true;
+        break;
+      }
+    }
+
+    return ok;
   }
 
   public void setService(String service) {

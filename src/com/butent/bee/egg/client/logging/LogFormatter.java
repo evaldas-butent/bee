@@ -20,7 +20,7 @@ public class LogFormatter extends Formatter {
       return LOG_SEPARATOR_MESSAGE;
     } else {
       return BeeUtils.concat(1, new BeeDate(record.getMillis()).toLog(),
-          record.getMessage());
+          BeeUtils.clip(record.getMessage(), 256));
     }
   }
 

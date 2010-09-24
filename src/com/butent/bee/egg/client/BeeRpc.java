@@ -201,11 +201,24 @@ public class BeeRpc implements BeeModule {
     }
 
     bld.setHeader(BeeService.RPC_FIELD_QID, BeeUtils.transform(id));
+    String ctp = null;
+
     if (dtp != null) {
       bld.setHeader(BeeService.RPC_FIELD_DTP, BeeService.transform(dtp));
+
+      String z = params.getParameter(BeeService.CONTENT_TYPE_HEADER);
+      if (BeeUtils.isEmpty(z)) {
+        ctp = BeeService.buildContentType(BeeService.getContentType(dtp),
+           BeeService.getCharacterEncoding(dtp));
+      } else {
+        ctp = z;
+      }
+
+      bld.setHeader(BeeService.CONTENT_TYPE_HEADER, ctp);
     }
 
-    params.getHeaders(bld, BeeService.RPC_FIELD_QID, BeeService.RPC_FIELD_DTP);
+    params.getHeadersExcept(bld, BeeService.RPC_FIELD_QID, BeeService.RPC_FIELD_DTP,
+        BeeService.CONTENT_TYPE_HEADER);
 
     if (debug) {
       BeeKeeper.getLog().info("request", id, meth.toString(), url);
@@ -217,9 +230,9 @@ public class BeeRpc implements BeeModule {
       int size = data.length();
       info.setReqSize(size);
 
+      BeeKeeper.getLog().info("sending data", BeeService.transform(dtp), ctp, BeeUtils.bracket(size));
       if (debug) {
-        BeeKeeper.getLog().info("sending data", BeeService.transform(dtp),
-            BeeUtils.bracket(size), data);
+        BeeKeeper.getLog().info(data);
       }
     }
 

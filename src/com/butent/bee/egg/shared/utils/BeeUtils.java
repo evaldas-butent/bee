@@ -5,13 +5,10 @@ import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.BeeDate;
 import com.butent.bee.egg.shared.BeeSerializable;
 import com.butent.bee.egg.shared.BeeType;
-import com.butent.bee.egg.shared.Pair;
 import com.butent.bee.egg.shared.Transformable;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -20,24 +17,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-public abstract class BeeUtils {
-  private static final String SERIALIZATION_SEPARATOR = ";";
-  private static final char[] HEX_CHARS = new char[]{
-      '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D',
-      'E', 'F'};
-  private static final MessageDigest MD5;
-
+public class BeeUtils {
   private static int nameCounter = 0;
-
-  static {
-    MessageDigest md;
-    try {
-      md = MessageDigest.getInstance("MD5");
-    } catch (NoSuchAlgorithmException ex) {
-      md = null;
-    }
-    MD5 = md;
-  }
 
   public static String addName(String nm, Object v) {
     if (isEmpty(v, BeeType.TYPE_NUMBER + BeeType.TYPE_BOOLEAN)) {
@@ -408,61 +389,6 @@ public abstract class BeeUtils {
     }
   }
 
-  public static Pair<Integer, Integer> deserializeLength(String src, int start) {
-    Assert.notNull(src);
-    Assert.nonNegative(start);
-
-    int sLen = src.length();
-    Assert.isTrue(start < sLen);
-
-    int z = src.charAt(start) - BeeConst.CHAR_ZERO;
-    Assert.nonNegative(z);
-
-    int x;
-    if (z == 0) {
-      x = 0;
-    } else {
-      Assert.isTrue(start + z < sLen);
-      x = Integer.parseInt(src.substring(start + 1, start + z + 1));
-    }
-
-    return new Pair<Integer, Integer>(x, z + 1);
-  }
-
-  public static String[] deserializeValues(String ser) {
-    Assert.notEmpty(ser);
-
-    int p1 = ser.indexOf(SERIALIZATION_SEPARATOR);
-    Assert.isPositive(p1);
-
-    int n = toInt(ser.substring(0, p1));
-    Assert.isPositive(n);
-
-    String[] arr = new String[n];
-    int p2, len;
-
-    for (int i = 0; i < n; i++) {
-      p2 = ser.indexOf(SERIALIZATION_SEPARATOR, p1 + 1);
-
-      if (p2 == p1 + 1) {
-        arr[i] = null;
-        p1 = p2;
-        continue;
-      }
-
-      len = toInt(ser.substring(p1 + 1, p2));
-      if (len > 0) {
-        arr[i] = ser.substring(p2 + 1, p2 + 1 + len);
-        p1 = p2 + len;
-      } else {
-        arr[i] = BeeConst.STRING_EMPTY;
-        p1 = p2;
-      }
-    }
-
-    return arr;
-  }
-
   public static String elapsedSeconds(long start) {
     return bracket(toSeconds(System.currentTimeMillis() - start));
   }
@@ -476,6 +402,13 @@ public abstract class BeeUtils {
     } else {
       return s1.trim().equals(s2.trim());
     }
+  }
+
+  public static int exp10(int z) {
+    Assert.nonNegative(z);
+    Double x = Math.pow(10, z);
+    Assert.isTrue(x < Integer.MAX_VALUE);
+    return x.intValue();
   }
 
   public static boolean filterType(Object x, int... types) {
@@ -563,23 +496,6 @@ public abstract class BeeUtils {
 
       return arr;
     }
-  }
-
-  public static byte[] getBytes(String s) {
-    Assert.notNull(s);
-    int len = s.length();
-    Assert.isPositive(len);
-
-    byte[] arr = new byte[len * 2];
-    char c;
-
-    for (int i = 0; i < len; i++) {
-      c = s.charAt(i);
-      arr[i * 2] = (byte) (c >> 8);
-      arr[i * 2 + 1] = (byte) (c & 0xff);
-    }
-
-    return arr;
   }
 
   public static <T extends CharSequence> List<T> getContext(T ctxt,
@@ -1060,16 +976,6 @@ public abstract class BeeUtils {
     return z;
   }
 
-  public static String md5(String s) {
-    Assert.notNull(MD5);
-    Assert.notEmpty(s);
-
-    MD5.update(getBytes(s));
-    byte[] arr = MD5.digest();
-
-    return toHex(arr);
-  }
-
   public static <T extends Comparable<T>> T min(T... x) {
     int n = x.length;
     Assert.parameterCount(n, 2);
@@ -1105,7 +1011,8 @@ public abstract class BeeUtils {
   public static String normSep(Object x, Object def) {
     String sep;
 
-    if (x instanceof CharSequence && length(x) > 0 || isPositive(x) || x instanceof Character) {
+    if (x instanceof CharSequence && length(x) > 0 || isPositive(x)
+        || x instanceof Character) {
       sep = normSep(x);
     } else {
       sep = normSep(def);
@@ -1145,14 +1052,46 @@ public abstract class BeeUtils {
         + Integer.toString(tot);
   }
 
-  public static String replicate(char z, int n) {
-    if (n > 0) {
-      char[] arr = new char[n];
-      Arrays.fill(arr, z);
-      return new String(arr);
+  public static int randomInt(int min, int max) {
+    Assert.isTrue(max > min + 1);
+
+    Double z = Math.ceil(Math.random() * (max - min));
+    return z.intValue();
+  }
+
+  public static String randomString(int minLen, int maxLen, char minChar,
+      char maxChar) {
+    int len;
+    int x = (minLen > 0) ? minLen : 1;
+    int y = (maxLen >= x) ? maxLen : x + 20;
+
+    if (x == y) {
+      len = minLen;
     } else {
-      return BeeConst.STRING_EMPTY;
+      len = randomInt(x, y + 1);
     }
+
+    x = minChar;
+    y = (maxChar >= x) ? maxChar : Math.min(x + 30, Character.MAX_VALUE);
+
+    if (x == y) {
+      return replicate(minChar, len);
+    }
+    
+    StringBuilder sb = new StringBuilder(len);
+    for (int i = 0; i < len; i++) {
+      sb.append((char) randomInt(x, y + 1));
+    }
+
+    return sb.toString();
+  }
+
+  public static String replicate(char z, int n) {
+    Assert.isPositive(n);
+
+    char[] arr = new char[n];
+    Arrays.fill(arr, z);
+    return new String(arr);
   }
 
   public static boolean same(String s1, String s2) {
@@ -1164,45 +1103,6 @@ public abstract class BeeUtils {
     } else {
       return s1.trim().equalsIgnoreCase(s2.trim());
     }
-  }
-
-  public static String serialize(Object obj) {
-    if (obj == null) {
-      return SERIALIZATION_SEPARATOR;
-    } else {
-      String s = transform(obj);
-      return s.length() + SERIALIZATION_SEPARATOR + s;
-    }
-  }
-
-  public static String serializeLength(int len) {
-    Assert.nonNegative(len);
-    if (len == 0) {
-      return BeeConst.STRING_ZERO;
-    } else {
-      String z = Integer.toString(len);
-
-      StringBuilder sb = new StringBuilder();
-      sb.append((char) (BeeConst.CHAR_ZERO + z.length()));
-      sb.append(z);
-
-      return sb.toString();
-    }
-  }
-
-  public static String serializeValues(Object... obj) {
-    int n = obj.length;
-    Assert.parameterCount(n, 1);
-
-    StringBuilder sb = new StringBuilder();
-    sb.append(n);
-    sb.append(SERIALIZATION_SEPARATOR);
-
-    for (int i = 0; i < n; i++) {
-      sb.append(serialize(obj[i]));
-    }
-
-    return sb.toString();
   }
 
   public static String space(int l) {
@@ -1303,36 +1203,6 @@ public abstract class BeeUtils {
       d = Double.NaN;
     }
     return d;
-  }
-
-  public static String toHex(byte[] bytes) {
-    char[] arr = new char[bytes.length * 2];
-    int j = 0;
-
-    for (int i = 0; i < bytes.length; i++) {
-      arr[j++] = HEX_CHARS[(bytes[i] & 0xF0) >> 4];
-      arr[j++] = HEX_CHARS[bytes[i] & 0x0F];
-    }
-
-    return new String(arr);
-  }
-
-  public static String toHex(char c) {
-    return padLeft(Integer.toHexString(c), 4, BeeConst.CHAR_ZERO);
-  }
-
-  public static String toHex(char[] arr) {
-    if (isEmpty(arr)) {
-      return null;
-    } else if (arr.length == 1) {
-      return toHex(arr[0]);
-    } else {
-      StringBuilder sb = new StringBuilder();
-      for (int i = 0; i < arr.length; i++) {
-        sb.append(toHex(arr[i]));
-      }
-      return sb.toString();
-    }
   }
 
   public static int toInt(boolean b) {

@@ -1,10 +1,13 @@
 package com.butent.bee.egg.shared;
 
 import com.butent.bee.egg.shared.utils.BeeUtils;
+import com.butent.bee.egg.shared.utils.Codec;
 
 public class BeeService {
-  public static enum DATA_TYPE { TEXT, XML, TABLE, IMAGE, RESOURCE, ZIP, MULTIPART, UNKNOWN }
-  
+  public static enum DATA_TYPE {
+    TEXT, XML, TABLE, IMAGE, RESOURCE, ZIP, MULTIPART, UNKNOWN
+  }
+
   public static final String RPC_SERVICE_PREFIX = "rpc_";
   public static final String UI_SERVICE_PREFIX = "ui_";
   public static final String COMPOSITE_SERVICE_PREFIX = "comp_";
@@ -30,15 +33,20 @@ public class BeeService {
   public static final String SERVICE_CLASS_INFO = SYS_SERVICE_PREFIX
       + "class_info";
   public static final String SERVICE_XML_INFO = SYS_SERVICE_PREFIX + "xml_info";
-  public static final String SERVICE_GET_RESOURCE = SYS_SERVICE_PREFIX + "get_resource";
-  public static final String SERVICE_SAVE_RESOURCE = SYS_SERVICE_PREFIX + "save_resource";
+  public static final String SERVICE_GET_RESOURCE = SYS_SERVICE_PREFIX
+      + "get_resource";
+  public static final String SERVICE_SAVE_RESOURCE = SYS_SERVICE_PREFIX
+      + "save_resource";
+  public static final String SERVICE_GET_DIGEST = SYS_SERVICE_PREFIX
+      + "get_digest";
 
   public static final String SERVICE_LOGIN = RPC_SERVICE_PREFIX + "login";
   public static final String SERVICE_LOGOUT = RPC_SERVICE_PREFIX + "logout";
 
   public static final String SERVICE_GET_MENU = RPC_SERVICE_PREFIX + "get_menu";
 
-  public static final String SERVICE_WHERE_AM_I = RPC_SERVICE_PREFIX + "where_am_i";
+  public static final String SERVICE_WHERE_AM_I = RPC_SERVICE_PREFIX
+      + "where_am_i";
 
   public static final String SERVICE_CLOSE_DIALOG = UI_SERVICE_PREFIX
       + "close_dialog";
@@ -79,14 +87,15 @@ public class BeeService {
   public static final String RPC_FIELD_PRM = RPC_FIELD_SYS_PREFIX + "prm";
   public static final String RPC_FIELD_PART_CNT = RPC_FIELD_SYS_PREFIX + "x_c";
   public static final String RPC_FIELD_PART = RPC_FIELD_SYS_PREFIX + "part";
-  
+
   public static final String FIELD_CLASS_NAME = RPC_FIELD_PREFIX + "class_name";
   public static final String FIELD_PACKAGE_LIST = RPC_FIELD_PREFIX
       + "package_list";
   public static final String FIELD_FILE_NAME = RPC_FIELD_PREFIX + "file_name";
 
   public static final String FIELD_XML_SOURCE = RPC_FIELD_PREFIX + "xml_source";
-  public static final String FIELD_XML_TRANSFORM = RPC_FIELD_PREFIX + "xml_transform";
+  public static final String FIELD_XML_TRANSFORM = RPC_FIELD_PREFIX
+      + "xml_transform";
   public static final String FIELD_XML_TARGET = RPC_FIELD_PREFIX + "xml_target";
   public static final String FIELD_XML_RETURN = RPC_FIELD_PREFIX + "xml_return";
 
@@ -137,10 +146,41 @@ public class BeeService {
   public static final String QUERY_STRING_VALUE_SEPARATOR = "=";
 
   public static final String OPTION_DEBUG = "debug";
-  
-  public static DATA_TYPE DEFAULT_REQUEST_DATA_TYPE = DATA_TYPE.XML;
-  public static DATA_TYPE DEFAULT_RESPONSE_DATA_TYPE = DATA_TYPE.TEXT;
-  
+
+  public static final String CONTENT_TYPE_HEADER = "content-type";
+
+  public static DATA_TYPE defaultRequestDataType = DATA_TYPE.XML;
+  public static DATA_TYPE defaultResponseDataType = DATA_TYPE.TEXT;
+
+  public static String buildContentType(String type) {
+    return buildContentType(type, getCharacterEncoding(getDataType(type)));
+  }
+
+  public static String buildContentType(String type, String encoding) {
+    Assert.notEmpty(type);
+    if (BeeUtils.isEmpty(encoding)) {
+      return type;
+    } else {
+      return type.trim() + ";charset=" + encoding.trim();
+    }
+  }
+
+  public static String decodeMessage(String msg) {
+    if (BeeUtils.isEmpty(msg)) {
+      return BeeConst.STRING_EMPTY;
+    } else {
+      return Codec.decodeBase64(msg);
+    }
+  }
+
+  public static String encodeMessage(String msg) {
+    if (BeeUtils.isEmpty(msg)) {
+      return BeeConst.STRING_EMPTY;
+    } else {
+      return Codec.encodeBase64(msg);
+    }
+  }
+
   public static boolean equals(DATA_TYPE z1, DATA_TYPE z2) {
     if (z1 == null || z2 == null) {
       return false;
@@ -159,45 +199,45 @@ public class BeeService {
 
   public static String getCharacterEncoding(DATA_TYPE dataType) {
     String ce;
-    
+
     switch (dataType) {
-      default :
+      default:
         ce = "utf-8";
     }
-    
+
     return ce;
   }
 
   public static String getContentType(DATA_TYPE dataType) {
     String ct;
-    
+
     switch (dataType) {
-      case XML :
+      case XML:
         ct = "text/xml";
         break;
-      case ZIP :
+      case ZIP:
         ct = "application/zip";
         break;
-      default :
+      default:
         ct = "text/plain";
     }
-    
+
     return ct;
   }
-  
+
   public static DATA_TYPE getDataType(String s) {
     DATA_TYPE dtp = null;
     if (BeeUtils.isEmpty(s)) {
       return dtp;
     }
-    
+
     for (DATA_TYPE z : DATA_TYPE.values()) {
       if (BeeUtils.same(transform(z), s)) {
         dtp = z;
         break;
       }
     }
-    
+
     return dtp;
   }
 
@@ -215,7 +255,7 @@ public class BeeService {
     Assert.notEmpty(svc);
     return svc.startsWith(DB_SERVICE_PREFIX);
   }
-  
+
   public static boolean isReservedParameter(String name) {
     Assert.notEmpty(name);
     return BeeUtils.startsSame(name, RPC_FIELD_SYS_PREFIX);
@@ -246,11 +286,11 @@ public class BeeService {
   }
 
   public static DATA_TYPE normalizeRequest(DATA_TYPE dtp) {
-    return (dtp == null) ? DEFAULT_REQUEST_DATA_TYPE : dtp;
+    return (dtp == null) ? defaultRequestDataType : dtp;
   }
 
   public static DATA_TYPE normalizeResponse(DATA_TYPE dtp) {
-    return (dtp == null) ? DEFAULT_RESPONSE_DATA_TYPE : dtp;
+    return (dtp == null) ? defaultResponseDataType : dtp;
   }
 
   public static String rpcMessageName(int i) {
@@ -264,9 +304,9 @@ public class BeeService {
   public static String rpcPartName(int i) {
     return RPC_FIELD_PART + i;
   }
-  
+
   public static String transform(DATA_TYPE dtp) {
     return (dtp == null) ? BeeConst.STRING_EMPTY : dtp.name();
   }
-  
+
 }

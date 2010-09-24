@@ -24,6 +24,7 @@ import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.BeeService;
 import com.butent.bee.egg.shared.data.DataUtils;
 import com.butent.bee.egg.shared.utils.BeeUtils;
+import com.butent.bee.egg.shared.utils.Codec;
 import com.butent.bee.egg.shared.utils.PropUtils;
 import com.butent.bee.egg.shared.utils.StringProp;
 import com.butent.bee.egg.shared.utils.SubProp;
@@ -35,6 +36,42 @@ public class CliWorker {
 
   public static void clearLog() {
     BeeKeeper.getLog().clear();
+  }
+
+  public static void digest(String v) {
+    String src = null;
+    int p = v.indexOf(BeeConst.CHAR_SPACE);
+
+    if (p > 0) {
+      String z = v.substring(p + 1).trim();
+
+      if (BeeUtils.isDigit(z)) {
+        int x = BeeUtils.toInt(z);
+        if (BeeUtils.betweenInclusive(x, 1, BeeUtils.exp10(6))) {
+          src = BeeUtils.randomString(x, x, BeeConst.CHAR_SPACE, '\u0800');
+        } else {
+          src = z;
+        }
+      } else if (z.length() > 0) {
+        src = z;
+      }
+    }
+    
+    if (src == null) {
+      src = BeeUtils.randomString(10, 20, BeeConst.CHAR_SPACE, '\u0400');
+    }
+    
+    if (src.length() > 100) {
+      BeeKeeper.getLog().info("Source length", src.length());
+    } else {
+      BeeKeeper.getLog().info(src);
+    }
+
+    BeeKeeper.getLog().info("js", BeeJs.md5(src));
+    BeeKeeper.getLog().info(BeeConst.CLIENT, Codec.md5(src));
+
+    BeeKeeper.getRpc().makePostRequest(BeeService.SERVICE_GET_DIGEST,
+        BeeService.DATA_TYPE.TEXT, src);
   }
 
   public static void doScreen(String arr[]) {
@@ -253,24 +290,28 @@ public class CliWorker {
 
       List<SubProp> lst = new ArrayList<SubProp>();
       PropUtils.addSub(lst, "Styles", "count", stCnt);
-      
+
       for (int i = 0; i < stCnt; i++) {
-        String ref = "$doc.getElementsByTagName('style').item(" + i + ").sheet.rules";
+        String ref = "$doc.getElementsByTagName('style').item(" + i
+            + ").sheet.rules";
         int len = BeeJs.evalToInt(ref + ".length");
-        PropUtils.addSub(lst, "Style " + BeeUtils.progress(i + 1, stCnt), "rules", len);
-        
+        PropUtils.addSub(lst, "Style " + BeeUtils.progress(i + 1, stCnt),
+            "rules", len);
+
         for (int j = 0; j < len; j++) {
           JavaScriptObject obj = BeeJs.eval(ref + "[" + j + "]");
           if (obj == null) {
-            PropUtils.addSub(lst, "Rule", BeeUtils.progress(j + 1, len), "not available");
+            PropUtils.addSub(lst, "Rule", BeeUtils.progress(j + 1, len),
+                "not available");
             break;
           }
 
           JsArrayString prp = BeeJs.getProperties(obj, null);
           for (int k = 0; k < prp.length() - 2; k += 3) {
-            PropUtils.addSub(lst, BeeUtils.concat(1, "Rule", 
-                BeeUtils.progress(j + 1, len), prp.get(k * 3)),
-                prp.get(k * 3 + 1), prp.get(k * 3 + 2));
+            PropUtils.addSub(
+                lst,
+                BeeUtils.concat(1, "Rule", BeeUtils.progress(j + 1, len),
+                    prp.get(k * 3)), prp.get(k * 3 + 1), prp.get(k * 3 + 2));
           }
         }
       }

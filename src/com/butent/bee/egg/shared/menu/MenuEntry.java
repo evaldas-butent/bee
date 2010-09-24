@@ -3,6 +3,7 @@ package com.butent.bee.egg.shared.menu;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeSerializable;
 import com.butent.bee.egg.shared.utils.BeeUtils;
+import com.butent.bee.egg.shared.utils.Codec;
 
 public class MenuEntry implements BeeSerializable {
   private String id = null;
@@ -29,7 +30,7 @@ public class MenuEntry implements BeeSerializable {
 
   public void deserialize(String s) {
     Assert.notEmpty(s);
-    String[] arr = BeeUtils.deserializeValues(s);
+    String[] arr = Codec.deserializeValues(s);
     Assert.arrayLength(arr, 11);
     int i = 0;
 
@@ -104,7 +105,7 @@ public class MenuEntry implements BeeSerializable {
   }
 
   public String serialize() {
-    return BeeUtils.serializeValues(id, parent, order, separators, text,
+    return Codec.serializeValues(id, parent, order, separators, text,
         service, parameters, type, style, keyName, visible);
   }
 

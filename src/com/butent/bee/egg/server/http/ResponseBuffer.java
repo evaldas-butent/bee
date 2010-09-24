@@ -6,6 +6,7 @@ import com.butent.bee.egg.shared.BeeResource;
 import com.butent.bee.egg.shared.BeeService;
 import com.butent.bee.egg.shared.data.BeeColumn;
 import com.butent.bee.egg.shared.utils.BeeUtils;
+import com.butent.bee.egg.shared.utils.Codec;
 import com.butent.bee.egg.shared.utils.StringProp;
 import com.butent.bee.egg.shared.utils.SubProp;
 
@@ -331,7 +332,7 @@ public class ResponseBuffer {
   }
 
   public String getHexSeparator() {
-    return BeeUtils.toHex(getSeparator());
+    return Codec.toHex(getSeparator());
   }
 
   public String getMessage(int i) {

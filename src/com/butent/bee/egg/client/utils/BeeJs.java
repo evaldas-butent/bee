@@ -163,6 +163,10 @@ public abstract class BeeJs {
     return s.match(/\S/) == null;
   }-*/;
 
+  public static native String md5(String src) /*-{
+    return $wnd.rstr2hex($wnd.rstr_md5($wnd.str2rstr_utf16be(src)));
+  }-*/;
+
   public static native String randomName(String pfx) /*-{
     if (pfx == null)
     return String(Math.random()).substr(2);

@@ -122,7 +122,7 @@ public class BeeCallback implements RequestCallback {
     if (mc > 0) {
       messages = new String[mc];
       for (int i = 0; i < mc; i++) {
-        messages[i] = resp.getHeader(BeeService.rpcMessageName(i));
+        messages[i] = BeeService.decodeMessage(resp.getHeader(BeeService.rpcMessageName(i)));
       }
       dispatchMessages(mc, messages);
     }

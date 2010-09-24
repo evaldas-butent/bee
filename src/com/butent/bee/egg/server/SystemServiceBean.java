@@ -8,8 +8,10 @@ import com.butent.bee.egg.server.utils.BeeMX;
 import com.butent.bee.egg.server.utils.BeeSystem;
 import com.butent.bee.egg.server.utils.FileUtils;
 import com.butent.bee.egg.server.utils.XmlUtils;
+import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.BeeService;
 import com.butent.bee.egg.shared.utils.BeeUtils;
+import com.butent.bee.egg.shared.utils.Codec;
 import com.butent.bee.egg.shared.utils.LogUtils;
 import com.butent.bee.egg.shared.utils.PropUtils;
 import com.butent.bee.egg.shared.utils.SubProp;
@@ -49,6 +51,9 @@ public class SystemServiceBean {
       getResource(reqInfo, buff);
     } else if (BeeService.equals(svc, BeeService.SERVICE_SAVE_RESOURCE)) {
       saveResource(reqInfo, buff);
+
+    } else if (BeeService.equals(svc, BeeService.SERVICE_GET_DIGEST)) {
+      getDigest(reqInfo, buff);
 
     } else {
       String msg = BeeUtils.concat(1, svc, "system service not recognized");
@@ -105,6 +110,20 @@ public class SystemServiceBean {
   private void connectionInfo(RequestInfo reqInfo, ResponseBuffer buff) {
     Assert.notNull(reqInfo);
     buff.addSub(reqInfo.getInfo());
+  }
+
+  private void getDigest(RequestInfo reqInfo, ResponseBuffer buff) {
+    String src = reqInfo.getContent();
+    if (BeeUtils.isEmpty(src)) {
+      buff.addSevere("Source not found");
+      return;
+    }
+
+    if (src.length() < 100) {
+      buff.addMessage(BeeConst.SERVER, src);
+    }
+    buff.addMessage(BeeConst.SERVER, "Source length", src.length());
+    buff.addMessage(BeeConst.SERVER, Codec.md5(src));
   }
 
   private void getResource(RequestInfo reqInfo, ResponseBuffer buff) {
@@ -200,33 +219,39 @@ public class SystemServiceBean {
   }
 
   private void saveResource(RequestInfo reqInfo, ResponseBuffer buff) {
+    long start = System.currentTimeMillis();
+
     String uri = reqInfo.getParameter(BeeService.RPC_FIELD_URI);
     String md5 = reqInfo.getParameter(BeeService.RPC_FIELD_MD5);
-    
+
     if (BeeUtils.isEmpty(uri)) {
       buff.addSevere("URI not specified");
       return;
     }
-    
+
+    buff.addMessage("uri", uri);
+
     String content = reqInfo.getContent();
     if (BeeUtils.isEmpty(content)) {
       buff.addSevere("Content not found");
       return;
     }
-    
-    if (!BeeUtils.isEmpty(md5)) {
-      String z = BeeUtils.md5(content);
-      if (!md5.equals(z)) {
+
+    if (BeeUtils.isEmpty(md5)) {
+      buff.addWarning("md5 not specified");
+    } else {
+      buff.addMessage("md5", md5);
+      String z = Codec.md5(content);
+      if (!BeeUtils.same(md5, z)) {
         buff.addSevere("md5 does not match");
-        buff.addSevere("request", md5);
         buff.addSevere("received", z);
         return;
       }
     }
-    
+
     boolean ok = FileUtils.toFile(content, uri);
     if (ok) {
-      buff.addMessage(BeeUtils.bracket(content.length()), "saved to", uri);
+      buff.addMessage("saved", content.length(), BeeUtils.elapsedSeconds(start));
     } else {
       buff.addSevere("error saving to", uri);
     }
@@ -296,7 +321,7 @@ public class SystemServiceBean {
       buff.addSevere("Parameter", BeeService.FIELD_XML_SOURCE, "not found");
       return;
     }
-    
+
     String src = FileUtils.defaultExtension(pSrc, XmlUtils.defaultXmlExtension);
     if (!FileUtils.isInputFile(src)) {
       buff.addSevere(src, "is not a valid input file");
@@ -330,7 +355,7 @@ public class SystemServiceBean {
       buff.addSevere(xsl, "is not a valid input file");
       return;
     }
-    
+
     String dst;
     if (BeeUtils.isEmpty(pDst)) {
       dst = null;
@@ -341,12 +366,12 @@ public class SystemServiceBean {
         return;
       }
     }
-    
+
     buff.addMessage(xsl);
-    
+
     String target = null;
     boolean ok = false;
-    
+
     if (dst == null) {
       if (BeeUtils.context("prop", ret)) {
         List<SubProp> lst = XmlUtils.xsltToInfo(src, xsl);
@@ -357,13 +382,13 @@ public class SystemServiceBean {
         }
         return;
       }
-      
+
       target = XmlUtils.xsltToString(src, xsl);
       ok = !BeeUtils.isEmpty(target);
 
     } else {
       buff.addMessage(dst);
-      
+
       ok = XmlUtils.xsltToFile(src, xsl, dst);
       if (ok) {
         if (BeeUtils.context("prop", ret)) {
@@ -375,7 +400,7 @@ public class SystemServiceBean {
           }
           return;
         }
-        
+
         target = FileUtils.fileToString(dst);
         ok = !BeeUtils.isEmpty(target);
       }
@@ -385,10 +410,10 @@ public class SystemServiceBean {
       buff.addSevere("xslt error");
       return;
     }
-    
+
     String source = null;
     String transf = null;
-    
+
     if (BeeUtils.context("all", ret) || BeeUtils.context("source", ret)) {
       source = FileUtils.fileToString(src);
       if (BeeUtils.isEmpty(source)) {
@@ -404,20 +429,20 @@ public class SystemServiceBean {
         return;
       }
     }
-    
+
     if (BeeUtils.allEmpty(source, transf)) {
       buff.addResource(dst, target, BeeService.DATA_TYPE.XML);
       return;
     }
-    
+
     if (!BeeUtils.isEmpty(source)) {
       buff.addPart(src, source, BeeService.DATA_TYPE.XML);
     }
     if (!BeeUtils.isEmpty(transf)) {
       buff.addPart(xsl, transf, BeeService.DATA_TYPE.XML);
     }
-    
+
     buff.addPart(dst, target, BeeService.DATA_TYPE.XML, dst == null);
-  }  
-  
+  }
+
 }

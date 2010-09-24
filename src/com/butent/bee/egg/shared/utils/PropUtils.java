@@ -280,7 +280,7 @@ public abstract class PropUtils {
       return v;
     } else if (v.trim().isEmpty()) {
       if (v.length() <= 10) {
-        return "[hex] " + BeeUtils.toHex(v.toCharArray());
+        return "[hex] " + Codec.toHex(v.toCharArray());
       } else {
         return "[whitespace] " + v.length();
       }
