@@ -38,6 +38,8 @@ public class CliWidget extends BeeTextBox {
       CliWorker.doScreen(arr);
     } else if (z.equals("charset")) {
       CliWorker.getCharsets();
+    } else if (z.equals("df")) {
+      CliWorker.showDateFormat();
     } else if (BeeUtils.inList(z, "dir", "file", "get")) {
       CliWorker.getResource(arr);
     } else if (z.equals("eval")) {

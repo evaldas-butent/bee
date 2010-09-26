@@ -2,8 +2,9 @@ package com.butent.bee.egg.client;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;
-import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.layout.client.Layout;
+import com.google.gwt.user.client.ui.HasHorizontalAlignment;
+import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.Widget;
@@ -14,12 +15,14 @@ import com.butent.bee.egg.client.composite.RadioGroup;
 import com.butent.bee.egg.client.composite.TextEditor;
 import com.butent.bee.egg.client.dom.DomUtils;
 import com.butent.bee.egg.client.grid.BeeFlexTable;
+import com.butent.bee.egg.client.layout.BeeDirection;
 import com.butent.bee.egg.client.layout.BeeFlow;
+import com.butent.bee.egg.client.layout.BeeHorizontal;
 import com.butent.bee.egg.client.layout.BeeLayoutPanel;
-import com.butent.bee.egg.client.layout.BeeScroll;
 import com.butent.bee.egg.client.layout.BeeSplit;
 import com.butent.bee.egg.client.resources.Images;
 import com.butent.bee.egg.client.ui.GwtUiCreator;
+import com.butent.bee.egg.client.utils.BeeCommand;
 import com.butent.bee.egg.client.widget.BeeButton;
 import com.butent.bee.egg.client.widget.BeeCheckBox;
 import com.butent.bee.egg.client.widget.BeeImage;
@@ -38,9 +41,32 @@ import com.butent.bee.egg.shared.menu.MenuConst;
 import com.butent.bee.egg.shared.ui.UiComponent;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
-import java.util.Date;
-
 public class BeeUi implements BeeModule {
+
+  private class SplitCommand extends BeeCommand {
+    BeeDirection direction = null;
+    boolean collapse = false;
+    
+    public SplitCommand(BeeDirection direction) {
+      super();
+      this.direction = direction;
+    }
+
+    public SplitCommand(boolean collapse) {
+      super();
+      this.collapse = collapse;
+    }
+
+    @Override
+    public void execute() {
+      if (collapse) {
+        closePanel();
+      } else {
+        createPanel(direction);
+      }
+    }
+  }
+  
   private final HasWidgets rootUi;
 
   private BeeSplit screenPanel = null;
@@ -123,8 +149,14 @@ public class BeeUi implements BeeModule {
   public void init() {
   }
 
-  public void setActivePanel(Panel activePanel) {
-    this.activePanel = activePanel;
+  public void setActivePanel(Panel p) {
+    if (activePanel != null) {
+      activePanel.getElement().getStyle().clearBackgroundColor();
+    }
+    activePanel = p;
+    if (p != null) {
+      p.getElement().getStyle().setBackgroundColor("Honeydew");
+    }
   }
 
   public void setElDsn(String elDsn) {
@@ -183,13 +215,72 @@ public class BeeUi implements BeeModule {
     p.add(w);
   }
   
+  private void closePanel() {
+    Panel p = getActivePanel();
+    if (p != null && p.getParent() instanceof HasWidgets) {
+      if (p.getParent() == getScreenPanel()) {
+        setActivePanel(null);
+      } else {
+        setActivePanel((Panel) p.getParent());
+      }
+      ((HasWidgets) p.getParent()).remove(p);
+    } else if (getScreenPanel().getCenter() != null) {
+      getScreenPanel().remove(getScreenPanel().getCenter());
+      setActivePanel(null);
+    }
+  }
+
+  @SuppressWarnings("incomplete-switch")
+  private void createPanel(BeeDirection direction) {
+    Assert.notNull(direction);
+    Assert.isTrue(direction != BeeDirection.CENTER);
+    
+    BeeSplit active = getScreenPanel();
+    while (active.getCenter() instanceof BeeSplit) {
+      active = (BeeSplit) active.getCenter();
+    }
+    
+    int w = active.getCenterWidth();
+    int h = active.getCenterHeight();
+    
+    Widget oldCenter = active.getCenter();
+    if (oldCenter == null) {
+      oldCenter = new BeeLayoutPanel();
+    } else {
+      active.remove(oldCenter);
+    }
+    
+    BeeSplit p = new BeeSplit();
+
+    switch (direction) {
+      case NORTH :
+        p.addSouth(oldCenter, h / 2);
+        break;
+      case SOUTH :
+        p.addNorth(oldCenter, h / 2);
+        break;
+      case EAST :
+        p.addWest(oldCenter, w / 2);
+        break;
+      case WEST:
+        p.addEast(oldCenter, w / 2);
+        break;
+    }
+    
+    BeeLayoutPanel z = new BeeLayoutPanel();
+    setActivePanel(z);
+    
+    p.add(z);
+    active.add(p);
+  }
+
   private void createUi() {
     Widget w;
     BeeSplit p = new BeeSplit();
 
     w = initNorth();
     if (w != null) {
-      p.addNorth(w, 40);
+      p.addNorth(w, 52);
     }
 
     w = initSouth();
@@ -218,28 +309,16 @@ public class BeeUi implements BeeModule {
   }
 
   private Widget initCenter() {
-    int r = DateTimeFormat.PredefinedFormat.values().length;
-    String[][] data = new String[r][2];
-
-    int i = 0;
-    for (DateTimeFormat.PredefinedFormat dtf : DateTimeFormat.PredefinedFormat.values()) {
-      data[i][0] = dtf.toString();
-      data[i][1] = DateTimeFormat.getFormat(dtf).format(new Date());
-      i++;
-    }
-
-    return BeeGlobal.simpleGrid(data, "Format", "Value");
+    return null;
   }
 
   private Widget initEast() {
-    return new BeeScroll(BeeKeeper.getLog().getArea());
+    return BeeKeeper.getLog().getArea();
   }
 
   private Widget initNorth() {
     BeeFlow p = new BeeFlow();
     
-    p.add(new BeeImage(images.bee()));
-
     setElDsn(DomUtils.createUniqueName());
     p.add(new RadioGroup(getElDsn(), BeeConst.DS_TYPES));
 
@@ -264,8 +343,18 @@ public class BeeUi implements BeeModule {
     p.add(new BeeCheckBox(new BeeName(BeeGlobal.FIELD_DEBUG)));
 
     p.add(new BeeButton("North land", "comp_ui_form", "stage_dummy"));
+    
+    BeeLayoutPanel blp = new BeeLayoutPanel();
+    blp.add(p);
 
-    return p;
+    BeeImage bee = new BeeImage(images.bee());
+    blp.add(bee);
+    
+    blp.setWidgetLeftRight(p, 1, Unit.EM, 100, Unit.PX);
+    blp.setWidgetTopBottom(p, 1, Unit.EM, 1, Unit.PX);
+    blp.setWidgetRightWidth(bee, 10, Unit.PX, 64, Unit.PX);
+    
+    return blp;
   }
 
   private Widget initSouth() {
@@ -273,14 +362,31 @@ public class BeeUi implements BeeModule {
 
     CliWidget cli = new CliWidget();
     p.add(cli);
+    
+    BeeHorizontal hor = new BeeHorizontal();
+    hor.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
+
+    hor.add(new BeeButton("N", new SplitCommand(BeeDirection.NORTH)));
+    hor.add(new BeeButton("S", new SplitCommand(BeeDirection.SOUTH)));
+    hor.add(new BeeButton("E", new SplitCommand(BeeDirection.EAST)));
+    hor.add(new BeeButton("W", new SplitCommand(BeeDirection.WEST)));
+
+    BeeImage close = new BeeImage(images.close(), new SplitCommand(true));
+    hor.add(close);
+    hor.setCellWidth(close, "32px");
+    hor.setCellHorizontalAlignment(close, HasHorizontalAlignment.ALIGN_RIGHT);
+    
+    p.add(hor);
+    
     BeeLabel ver = new BeeLabel("0.1.2");
     p.add(ver);
     
     p.setWidgetLeftWidth(cli, 1, Unit.EM, 50, Unit.PCT);
     p.setWidgetVerticalPosition(cli, Layout.Alignment.BEGIN);
     
-    p.setWidgetRightWidth(ver, 1, Unit.EM, 6, Unit.EM);
-    p.setWidgetVerticalPosition(ver, Layout.Alignment.END);
+    p.setWidgetLeftWidth(hor, 60, Unit.PCT, 200, Unit.PX);
+    
+    p.setWidgetRightWidth(ver, 1, Unit.EM, 5, Unit.EM);
     
     return p;
   }
@@ -326,5 +432,4 @@ public class BeeUi implements BeeModule {
 
     return spl;
   }
-
 }

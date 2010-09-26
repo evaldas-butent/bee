@@ -348,14 +348,24 @@ public class BeeSplit extends ComplexPanel implements AnimatedLayout,
     widget.setLayoutData(data);
 
     adopt(widget);
+    
+    String pfx;
+    if (isSplitter(widget)) {
+      pfx = (widget instanceof BeeHSplitter) ? "hor" : "vert";
+    } else {
+      pfx = BeeUtils.transform(direction).toLowerCase();
+    }
 
-    layer.getContainerElement().setId(DomUtils.createUniqueId("layer"));
+    layer.getContainerElement().setId(DomUtils.createUniqueId("layer-" + pfx));
 
     if (!isSplitter(widget)) {
-      if (direction == BeeDirection.CENTER) {
-        center = widget;
+      if (size > 60 || direction == BeeDirection.CENTER) {
         widget.getElement().getParentElement().getStyle().setOverflow(
             Overflow.AUTO);
+      }
+
+      if (direction == BeeDirection.CENTER) {
+        center = widget;
       } else {
         insertSplitter(widget, before);
       }

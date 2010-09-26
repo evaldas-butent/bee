@@ -7,6 +7,7 @@ import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.dom.client.StyleInjector;
+import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.client.DOM;
 
 import com.butent.bee.egg.client.BeeGlobal;
@@ -30,6 +31,7 @@ import com.butent.bee.egg.shared.utils.StringProp;
 import com.butent.bee.egg.shared.utils.SubProp;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class CliWorker {
@@ -154,6 +156,20 @@ public class CliWorker {
     params.addPositionalHeader(arr);
 
     BeeKeeper.getRpc().makeGetRequest(params);
+  }
+  
+  public static void showDateFormat() {
+    int r = DateTimeFormat.PredefinedFormat.values().length;
+    String[][] data = new String[r][2];
+
+    int i = 0;
+    for (DateTimeFormat.PredefinedFormat dtf : DateTimeFormat.PredefinedFormat.values()) {
+      data[i][0] = dtf.toString();
+      data[i][1] = DateTimeFormat.getFormat(dtf).format(new Date());
+      i++;
+    }
+    
+    BeeKeeper.getUi().showGrid(data, "Format", "Value");
   }
 
   public static void showElement(String v, String[] arr) {
