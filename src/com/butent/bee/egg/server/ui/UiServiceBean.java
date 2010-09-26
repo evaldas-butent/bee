@@ -121,8 +121,8 @@ public class UiServiceBean {
     }
   }
 
-  private synchronized String getXmlField(RequestInfo reqInfo,
-      ResponseBuffer buff, String fieldName) {
+  private String getXmlField(RequestInfo reqInfo, ResponseBuffer buff,
+      String fieldName) {
     String xml = reqInfo.getContent();
     if (BeeUtils.isEmpty(xml)) {
       buff.add("Request data not found");

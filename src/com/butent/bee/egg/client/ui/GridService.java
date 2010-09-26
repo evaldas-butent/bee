@@ -55,19 +55,7 @@ public class GridService extends CompositeService {
       case SHOW_GRID:
         JsArrayString arr = (JsArrayString) params[0];
         int cc = (Integer) params[1];
-        /*
-         * String[] columns = new String[15];
-         * 
-         * for (int i = 0; i < columns.length; i++) { columns[i] =
-         * BeeUtils.createUniqueName("Col"); }
-         * 
-         * String[][] data = new String[20][columns.length];
-         * 
-         * for (int i = 0; i < data.length; i++) { data[i][0] =
-         * String.valueOf(i); for (int j = 1; j < columns.length; j++) {
-         * data[i][j] = BeeConst.STRING_EMPTY; } }
-         * destination.add(BeeGlobal.simpleGrid(data, columns));
-         */
+
         BeeView view = new ResponseData(arr, cc);
         destination.add(BeeGlobal.simpleGrid(view));
         break;
