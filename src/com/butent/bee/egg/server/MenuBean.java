@@ -1,7 +1,9 @@
 package com.butent.bee.egg.server;
 
+import com.butent.bee.egg.server.http.RequestInfo;
 import com.butent.bee.egg.server.http.ResponseBuffer;
 import com.butent.bee.egg.server.utils.XmlUtils;
+import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.menu.MenuConst;
 import com.butent.bee.egg.shared.menu.MenuEntry;
 import com.butent.bee.egg.shared.utils.BeeUtils;
@@ -25,16 +27,10 @@ import javax.ejb.Startup;
 @Lock(LockType.READ)
 public class MenuBean {
   private static final String NOT_AVAIL = "menu not available";
-  
-  private static String resource = "menu.xml"; 
   private static Logger logger = Logger.getLogger(MenuBean.class.getName());
-  public static String getResource() {
-    return resource;
-  }
 
-  public static void setResource(String resource) {
-    MenuBean.resource = resource;
-  }
+  private String resource = "menu.xml";
+  private String transformation = "menu.xsl";
 
   private MenuEntry[] menu = null;
 
@@ -42,8 +38,19 @@ public class MenuBean {
     return menu;
   }
 
-  public void getMenu(ResponseBuffer buff) {
+  public void getMenu(RequestInfo reqInfo, ResponseBuffer buff) {
+    Assert.notNull(reqInfo);
     Assert.notNull(buff);
+
+    String mode = reqInfo.getParameter(0);
+
+    if (!BeeUtils.isEmpty(mode)) {
+      if (BeeUtils.inListSame(mode, BeeConst.STRING_MINUS, BeeConst.STRING_ZERO, BeeConst.STRING_FALSE)) {
+        reload(false);
+      } else {
+        reload();
+      }
+    }
 
     if (BeeUtils.isEmpty(getMenu())) {
       LogUtils.severe(logger, NOT_AVAIL);
@@ -85,18 +92,38 @@ public class MenuBean {
     }
   }
 
-  public boolean loadXml(String fileName) {
-    Assert.notEmpty(fileName);
+  public String getResource() {
+    return resource;
+  }
+
+  public String getTransformation() {
+    return transformation;
+  }
+
+  public boolean loadXml(String src, String xsl) {
+    Assert.notEmpty(src);
     long start = System.currentTimeMillis();
     boolean ok = false;
 
-    URL url = getClass().getResource(fileName);
-    if (url == null) {
-      LogUtils.warning(logger, "resource", fileName, "not found");
+    URL xmlUrl = getClass().getResource(src);
+    if (xmlUrl == null) {
+      LogUtils.warning(logger, "resource", src, "not found");
       return ok;
     }
+    String xmlPath = xmlUrl.getPath();
 
-    StringProp[][] arr = XmlUtils.getAttributesFromFile(url.getFile(), "menu");
+    String xslPath = null;
+    if (!BeeUtils.isEmpty(xsl)) {
+      URL xslUrl = getClass().getResource(xsl);
+      if (xslUrl == null) {
+        LogUtils.warning(logger, "transformation", xsl, "not found");
+      } else {
+        xslPath = xslUrl.getPath();
+      }
+    }
+
+    StringProp[][] arr = XmlUtils.getAttributesFromFile(xmlPath, xslPath,
+        "menu");
     if (arr == null) {
       return ok;
     }
@@ -155,10 +182,10 @@ public class MenuBean {
 
     if (cnt == 0) {
       LogUtils.severe(logger, "no valid menu items", BeeUtils.bracket(r),
-          "found in", url);
+          "found in", xmlPath, xslPath);
     } else {
-      LogUtils.infoNow(logger, "loaded", r, "menu items from", url,
-          BeeUtils.elapsedSeconds(start));
+      LogUtils.infoNow(logger, "loaded", r, "menu items from", xmlPath,
+          xslPath, BeeUtils.elapsedSeconds(start));
       if (cnt < r) {
         LogUtils.warning(logger, "only", cnt, "from", r, "menu items are valid");
       }
@@ -169,8 +196,36 @@ public class MenuBean {
     return ok;
   }
 
+  public void reload() {
+    reload(true);
+  }
+
+  public void reload(boolean withTransform) {
+    if (withTransform) {
+      loadXml(resource, transformation);
+    } else {
+      loadXml(resource, null);
+    }
+  }
+
+  public void reload(String src) {
+    loadXml(src, transformation);
+  }
+
+  public void reload(String src, String xsl) {
+    loadXml(src, xsl);
+  }
+
   public void setMenu(MenuEntry[] menu) {
     this.menu = menu;
+  }
+
+  public void setResource(String resource) {
+    this.resource = resource;
+  }
+
+  public void setTransformation(String transformation) {
+    this.transformation = transformation;
   }
 
   private MenuEntry getEntry(String id) {
@@ -186,7 +241,7 @@ public class MenuBean {
   @SuppressWarnings("unused")
   @PostConstruct
   private void init() {
-    loadXml(resource);
+    loadXml(resource, transformation);
   }
 
   private boolean isParentVisible(MenuEntry entry) {

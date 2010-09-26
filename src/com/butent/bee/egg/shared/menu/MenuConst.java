@@ -28,8 +28,8 @@ public class MenuConst {
   public static final String FIELD_ROOT_LIMIT = "menu_root_limit";
   public static final String FIELD_ITEM_LIMIT = "menu_item_limit";
 
-  public static int DEFAULT_ROOT_LIMIT = 10;
-  public static int DEFAULT_ITEM_LIMIT = 20;
+  public static int DEFAULT_ROOT_LIMIT = 0;
+  public static int DEFAULT_ITEM_LIMIT = 0;
 
   public static final String LAYOUT_MENU_HOR = "menu horizontal";
   public static final String LAYOUT_MENU_VERT = "menu vertical";

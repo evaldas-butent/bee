@@ -38,7 +38,7 @@ public class DispatcherBean {
       sysBean.doService(svc, reqInfo, buff);
 
     } else if (BeeService.equals(svc, BeeService.SERVICE_GET_MENU)) {
-      menuBean.getMenu(buff);
+      menuBean.getMenu(reqInfo, buff);
     } else if (BeeService.equals(svc, BeeService.SERVICE_WHERE_AM_I)) {
       buff.addLine(buff.now(), BeeConst.whereAmI());
 

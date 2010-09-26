@@ -74,6 +74,17 @@ public class CliWorker {
         BeeService.DATA_TYPE.TEXT, src);
   }
 
+  public static void doMenu(String[] arr) {
+    if (BeeUtils.length(arr) > 1) {
+      ParameterList params = BeeKeeper.getRpc().createParameters(
+          BeeService.SERVICE_GET_MENU);
+      params.addPositionalHeader(arr[1]);
+      BeeKeeper.getRpc().makeGetRequest(params);
+    } else {
+      BeeKeeper.getMenu().showMenu();
+    }
+  }
+
   public static void doScreen(String arr[]) {
     BeeSplit screen = BeeKeeper.getUi().getScreenPanel();
     Assert.notNull(screen);
@@ -227,10 +238,6 @@ public class CliWorker {
         GWT.getUniqueThreadId(), "Version", GWT.getVersion(), "Is Client",
         GWT.isClient(), "Is Prod Mode", GWT.isProdMode(), "Is Script",
         GWT.isScript()));
-  }
-
-  public static void showMenu() {
-    BeeKeeper.getMenu().showMenu();
   }
 
   public static void showProperties(String v, String[] arr) {

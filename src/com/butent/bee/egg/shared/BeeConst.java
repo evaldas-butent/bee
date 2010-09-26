@@ -33,6 +33,8 @@ public class BeeConst {
   public static final String STRING_OPEN_BRACKET = "[";
   public static final String STRING_CLOSE_BRACKET = "]";
   public static final String STRING_EOL = "\n";
+  public static final String STRING_MINUS = "-";
+  public static final String STRING_PLUS = "+";
 
   public static final String STRING_FALSE = Boolean.toString(false);
   public static final String STRING_TRUE = Boolean.toString(true);

@@ -252,6 +252,26 @@ public class RequestInfo implements HasExtendedInfo, Transformable {
     return service;
   }
 
+  public boolean hasParameter(int idx) {
+    return hasParameter(BeeService.rpcParamName(idx));
+  }
+
+  public boolean hasParameter(String name) {
+    Assert.notEmpty(name);
+
+    if (!BeeUtils.isEmpty(getParams()) && getParams().containsKey(name)) { 
+      return true;
+    }
+    if (!BeeUtils.isEmpty(getHeaders()) && getHeaders().containsKey(name)) {
+      return true;
+    }
+    if (!BeeUtils.isEmpty(getFields()) && getFields().containsKey(name)) {
+      return true;
+    }
+
+    return false;
+  }
+
   public boolean isDebug() {
     return BeeUtils.context(BeeService.OPTION_DEBUG, options);
   }

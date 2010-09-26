@@ -95,10 +95,6 @@ public class XmlUtils {
       bld = null;
     }
 
-    if (dbf != null) {
-      dbf.setNamespaceAware(true);
-    }
-
     domFactory = dbf;
     domBuilder = bld;
 
@@ -112,21 +108,30 @@ public class XmlUtils {
     xsltFactory = tf;
   }
 
-  public static StringProp[][] getAttributesFromFile(String fileName,
-      String tagName) {
-    Assert.notEmpty(fileName);
-    Assert.notEmpty(tagName);
+  public static StringProp[][] getAttributesFromFile(String src, String tag) {
+    return getAttributesFromFile(src, null, tag);
+  }
+  
+  public static StringProp[][] getAttributesFromFile(String src, String xsl, String tag) {
+    Assert.notEmpty(src);
+    Assert.notEmpty(tag);
 
-    Document doc = fromFileName(fileName);
+    Document doc = null;
+    if (BeeUtils.isEmpty(xsl)) {
+      doc = fromFileName(src);
+    } else {
+      doc = xsltToDom(src, xsl);
+    }
+    
     if (doc == null) {
-      LogUtils.warning(logger, fileName, "cannot parse xml");
+      LogUtils.warning(logger, src, xsl, "cannot parse xml");
       return null;
     }
 
-    NodeList lst = doc.getElementsByTagName(tagName);
+    NodeList lst = doc.getElementsByTagName(tag);
     int r = (lst == null) ? 0 : lst.getLength();
     if (r <= 0) {
-      LogUtils.warning(logger, "tag", tagName, "not found in", fileName);
+      LogUtils.warning(logger, "tag", tag, "not found in", src, xsl);
       return null;
     }
 
@@ -217,7 +222,9 @@ public class XmlUtils {
     }
 
     Element el = doc.getDocumentElement();
-    PropUtils.appendStringProp(lst, "Document Element", getElementInfo(el));
+    if (el != null) {
+      PropUtils.appendStringProp(lst, "Document Element", getElementInfo(el));
+    }
 
     return lst;
   }
@@ -622,10 +629,14 @@ public class XmlUtils {
     StreamSource in = new StreamSource(src);
     StreamSource tr = new StreamSource(xsl);
     
-    DOMResult out = new DOMResult();
+    Document doc = domBuilder.newDocument();
+    Element nd = doc.createElement(BeeUtils.createUniqueName("x2d"));
+    
+    DOMResult out = new DOMResult(nd);
     
     if (doXslt(in, tr, out)) {
-      return (Document) out.getNode();
+      doc.appendChild(nd);
+      return doc;
     } else {
       return null;
     }

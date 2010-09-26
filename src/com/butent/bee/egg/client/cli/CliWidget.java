@@ -53,7 +53,7 @@ public class CliWidget extends BeeTextBox {
     } else if (z.equals("id")) {
       CliWorker.showElement(v, arr);
     } else if (z.equals("menu")) {
-      CliWorker.showMenu();
+      CliWorker.doMenu(arr);
     } else if (z.equals("md5")) {
       CliWorker.digest(v);
     } else if (BeeUtils.inList(z, "p", "prop")) {
