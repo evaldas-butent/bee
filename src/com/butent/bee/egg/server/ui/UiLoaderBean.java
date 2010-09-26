@@ -64,7 +64,7 @@ public class UiLoaderBean extends UiLoader {
       QueryBuilder qb = new QueryBuilder();
       qb.addFields("f", "properties", "top", "left", "width", "height",
           "dock_top", "dock_left", "dock_width", "dock_hght", "dock_right",
-          "dock_bott").addFrom("x_forms", "f").setWhere(
+          "dock_bott").addFrom("forms", "f").setWhere(
           SqlUtils.equal("f", "form", "'" + formName + "'"));
 
       List<Object[]> data = qs.getQueryData(qb);
@@ -111,7 +111,7 @@ public class UiLoaderBean extends UiLoader {
       qb.addFields("c", "control", "class", "parent", "caption", "order",
           "parameters", "properties", "top", "left", "width", "height",
           "dock_prnt", "dock_left", "dock_top", "dock_right", "dock_bott",
-          "dock_width", "dock_hght").addFrom("x_controls", "c").setWhere(
+          "dock_width", "dock_hght").addFrom("controls", "c").setWhere(
           SqlUtils.equal("c", "form", "'" + formName + "'"));
 
       data = qs.getQueryData(qb);

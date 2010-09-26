@@ -21,7 +21,7 @@ public class MenuService extends CompositeService {
 
   private enum Stages {
     REQUEST_MENU, SHOW_MENU
-  };
+  }
 
   public static Widget buidComponentTree(UiComponent c) {
     BeeTree root = new BeeTree();

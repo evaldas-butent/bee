@@ -8,6 +8,7 @@ import com.butent.bee.egg.client.dialog.BeeMessageBox;
 import com.butent.bee.egg.client.grid.BeeGrid;
 import com.butent.bee.egg.client.ui.CompositeService;
 import com.butent.bee.egg.client.ui.FormService;
+import com.butent.bee.egg.client.ui.GridService;
 import com.butent.bee.egg.client.ui.MenuService;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeConst;
@@ -162,7 +163,7 @@ public class BeeGlobal implements BeeModule {
   public static void setFieldWidth(String name, String width) {
     getField(name).setWidth(width);
   }
-  
+
   public static void showDialog(Object... obj) {
     msgBox.showInfo(obj);
   }
@@ -183,7 +184,7 @@ public class BeeGlobal implements BeeModule {
     int n = context.length;
     Set<String> names = fields.keySet();
     String[] arr;
-    
+
     if (n > 0) {
       Set<String> lst = new LinkedHashSet<String>();
       for (String fld : context) {
@@ -193,7 +194,7 @@ public class BeeGlobal implements BeeModule {
     } else {
       arr = names.toArray(BeeConst.EMPTY_STRING_ARRAY);
     }
-    
+
     if (BeeUtils.isEmpty(arr)) {
       showError("no fields found", context);
     } else {
@@ -243,15 +244,14 @@ public class BeeGlobal implements BeeModule {
     createField(BeeService.FIELD_PACKAGE_LIST, "Default Packages",
         BeeType.TYPE_STRING, BeeConst.STRING_EMPTY);
 
-    createField(BeeService.FIELD_XML_SOURCE, "source",
-        BeeType.TYPE_STRING, BeeConst.STRING_EMPTY);
+    createField(BeeService.FIELD_XML_SOURCE, "source", BeeType.TYPE_STRING,
+        BeeConst.STRING_EMPTY);
     createField(BeeService.FIELD_XML_TRANSFORM, "transform",
         BeeType.TYPE_STRING, BeeConst.STRING_EMPTY);
-    createField(BeeService.FIELD_XML_TARGET, "target",
-        BeeType.TYPE_STRING, BeeConst.STRING_EMPTY);
-    createField(BeeService.FIELD_XML_RETURN, "return",
-        BeeType.TYPE_STRING, "all", BeeWidget.RADIO,
-        "all", "xsl", "source", "xml", "prop");
+    createField(BeeService.FIELD_XML_TARGET, "target", BeeType.TYPE_STRING,
+        BeeConst.STRING_EMPTY);
+    createField(BeeService.FIELD_XML_RETURN, "return", BeeType.TYPE_STRING,
+        "all", BeeWidget.RADIO, "all", "xsl", "source", "xml", "prop");
 
     setFieldWidth(BeeService.FIELD_XML_SOURCE, "300px");
     setFieldWidth(BeeService.FIELD_XML_TRANSFORM, "300px");
@@ -359,5 +359,6 @@ public class BeeGlobal implements BeeModule {
   private void initServices() {
     services.put("comp_ui_form", new FormService());
     services.put("comp_ui_menu", new MenuService());
+    services.put("comp_ui_grid", new GridService());
   }
 }

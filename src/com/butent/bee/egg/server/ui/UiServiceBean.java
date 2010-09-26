@@ -4,8 +4,10 @@ import com.butent.bee.egg.server.Assert;
 import com.butent.bee.egg.server.http.RequestInfo;
 import com.butent.bee.egg.server.http.ResponseBuffer;
 import com.butent.bee.egg.server.utils.XmlUtils;
+import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.data.BeeColumn;
 import com.butent.bee.egg.shared.sql.QueryBuilder;
+import com.butent.bee.egg.shared.sql.SqlUtils;
 import com.butent.bee.egg.shared.ui.UiComponent;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
@@ -35,10 +37,54 @@ public class UiServiceBean {
       formList(reqInfo, buff);
     } else if (svc.equals("rpc_ui_menu")) {
       menuInfo(reqInfo, buff);
+    } else if (svc.equals("rpc_ui_grid")) {
+      gridInfo(reqInfo, buff);
     } else {
       String msg = BeeUtils.concat(1, svc, "loader service not recognized");
       logger.warning(msg);
       buff.add(msg);
+    }
+  }
+
+  private void gridInfo(RequestInfo reqInfo, ResponseBuffer buff) {
+    String gName = getXmlField(reqInfo, buff, "grid_name");
+
+    SqlUtils.SQL_QUOTE = "`";
+
+    QueryBuilder qb = new QueryBuilder();
+    qb.addFields("g", "properties").addFrom("grids", "g").setWhere(
+        SqlUtils.equal("g", "table", gName));
+
+    List<Object[]> data = qs.getQueryData(qb);
+    String x = (String) data.get(0)[0];
+    String grd = gName;
+
+    if (!BeeUtils.isEmpty(x) && x.contains("parent_table")) {
+      grd = x.replaceFirst("(?s).*parent_table\\s*=\\s*[\\[\"']", "").replaceFirst(
+          "(?s)[\\]\"'].*$", "");
+      grd = "'" + grd + "'";
+    }
+
+    qb = new QueryBuilder();
+    qb.addFields("c", "field", "caption").addFrom("columns", "c").setWhere(
+        SqlUtils.equal("c", "table", grd)).addOrder(
+        SqlUtils.fields("c", "order"));
+
+    List<Object[]> cols = qs.getQueryData(qb);
+
+    if (BeeUtils.isEmpty(cols)) {
+      String msg = "Grid name not recognized: " + grd;
+      logger.warning(msg);
+      buff.add(msg);
+    } else {
+      for (Object[] col : cols) {
+        buff.addColumn(new BeeColumn(((String) col[1]).replaceAll("['\"]", "")));
+      }
+      for (int i = 0; i < 20; i++) {
+        for (int j = 0; j < cols.size(); j++) {
+          buff.add(j == 0 ? i + 1 : BeeConst.STRING_EMPTY);
+        }
+      }
     }
   }
 
@@ -58,7 +104,7 @@ public class UiServiceBean {
 
   private void formList(RequestInfo reqInfo, ResponseBuffer buff) {
     QueryBuilder qb = new QueryBuilder();
-    qb.addFields("f", "form").addFrom("x_forms", "f").addOrder("form");
+    qb.addFields("f", "form").addFrom("forms", "f").addOrder("form");
 
     List<Object[]> res = qs.getQueryData(qb);
     if (res == null) {
@@ -75,8 +121,8 @@ public class UiServiceBean {
     }
   }
 
-  private String getXmlField(RequestInfo reqInfo, ResponseBuffer buff,
-      String fieldName) {
+  private synchronized String getXmlField(RequestInfo reqInfo,
+      ResponseBuffer buff, String fieldName) {
     String xml = reqInfo.getContent();
     if (BeeUtils.isEmpty(xml)) {
       buff.add("Request data not found");

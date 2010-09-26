@@ -13,6 +13,7 @@ import com.butent.bee.egg.client.BeeGlobal;
 import com.butent.bee.egg.client.BeeKeeper;
 import com.butent.bee.egg.client.layout.BeeHorizontal;
 import com.butent.bee.egg.client.layout.BeeLayoutPanel;
+import com.butent.bee.egg.client.layout.BeeSplit;
 import com.butent.bee.egg.client.layout.BeeStack;
 import com.butent.bee.egg.client.layout.BeeTab;
 import com.butent.bee.egg.client.layout.BeeVertical;
@@ -106,17 +107,19 @@ public class GwtUiCreator implements UiCreator {
 
   @Override
   public Object createGrid(UiGrid uiGrid) {
-    BeeVertical widget = new BeeVertical();
+    BeeSplit widget = new BeeSplit();
     widget.setTitle(uiGrid.getId());
 
     if (!BeeUtils.isEmpty(uiGrid.getCaption())) {
       BeeLabel label = new BeeLabel();
       label.setText(uiGrid.getCaption());
-      widget.add(label);
+      widget.addNorth(label, 20);
     }
 
-    widget.add(BeeGlobal.simpleGrid(new String[][]{
-        new String[]{"aaa"}, new String[]{"bbb"}}, "pypas"));
+    String svcId = BeeUtils.createUniqueName("svc");
+    BeeGlobal.registerService(svcId, "comp_ui_grid");
+    CompositeService service = BeeGlobal.getService(svcId);
+    service.doService(widget, uiGrid.getProperty("parameters"));
 
     return widget;
   }
