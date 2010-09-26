@@ -1,6 +1,9 @@
 package com.butent.bee.egg.client;
 
+import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.i18n.client.DateTimeFormat;
+import com.google.gwt.layout.client.Layout;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.Widget;
@@ -15,10 +18,13 @@ import com.butent.bee.egg.client.layout.BeeFlow;
 import com.butent.bee.egg.client.layout.BeeLayoutPanel;
 import com.butent.bee.egg.client.layout.BeeScroll;
 import com.butent.bee.egg.client.layout.BeeSplit;
+import com.butent.bee.egg.client.resources.Images;
 import com.butent.bee.egg.client.ui.GwtUiCreator;
 import com.butent.bee.egg.client.widget.BeeButton;
 import com.butent.bee.egg.client.widget.BeeCheckBox;
+import com.butent.bee.egg.client.widget.BeeImage;
 import com.butent.bee.egg.client.widget.BeeIntegerBox;
+import com.butent.bee.egg.client.widget.BeeLabel;
 import com.butent.bee.egg.client.widget.BeeListBox;
 import com.butent.bee.egg.client.widget.BeeSimpleCheckBox;
 import com.butent.bee.egg.shared.Assert;
@@ -40,6 +46,8 @@ public class BeeUi implements BeeModule {
   private BeeSplit screenPanel = null;
   private Panel activePanel = null;
   private Panel menuPanel = null;
+  
+  private Images images = GWT.create(Images.class);
 
   private String elDsn = null;
 
@@ -229,6 +237,8 @@ public class BeeUi implements BeeModule {
 
   private Widget initNorth() {
     BeeFlow p = new BeeFlow();
+    
+    p.add(new BeeImage(images.bee()));
 
     setElDsn(DomUtils.createUniqueName());
     p.add(new RadioGroup(getElDsn(), BeeConst.DS_TYPES));
@@ -259,7 +269,20 @@ public class BeeUi implements BeeModule {
   }
 
   private Widget initSouth() {
-    return new BeeLayoutPanel(new CliWidget());
+    BeeLayoutPanel p = new BeeLayoutPanel();
+
+    CliWidget cli = new CliWidget();
+    p.add(cli);
+    BeeLabel ver = new BeeLabel("0.1.2");
+    p.add(ver);
+    
+    p.setWidgetLeftWidth(cli, 1, Unit.EM, 50, Unit.PCT);
+    p.setWidgetVerticalPosition(cli, Layout.Alignment.BEGIN);
+    
+    p.setWidgetRightWidth(ver, 1, Unit.EM, 6, Unit.EM);
+    p.setWidgetVerticalPosition(ver, Layout.Alignment.END);
+    
+    return p;
   }
 
   private Widget initWest() {
