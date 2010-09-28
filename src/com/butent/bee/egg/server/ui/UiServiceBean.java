@@ -46,6 +46,56 @@ public class UiServiceBean {
     }
   }
 
+  private void formInfo(RequestInfo reqInfo, ResponseBuffer buff) {
+    String fName = getXmlField(reqInfo, buff, "form_name");
+
+    UiComponent form = holder.getForm(fName);
+
+    if (BeeUtils.isEmpty(form)) {
+      String msg = "Form name not recognized: " + fName;
+      logger.warning(msg);
+      buff.add(msg);
+    } else {
+      buff.add(form.serialize());
+    }
+  }
+
+  @SuppressWarnings("unused")
+  private void formList(RequestInfo reqInfo, ResponseBuffer buff) {
+    QueryBuilder qb = new QueryBuilder();
+    qb.addFields("f", "form").addFrom("forms", "f").addOrder("form");
+
+    List<Object[]> res = qs.getQueryData(qb);
+    if (res == null) {
+      return;
+    }
+
+    for (String alias : qb.getFieldAliases()) {
+      buff.addColumn(new BeeColumn(alias));
+    }
+    for (Object[] row : res) {
+      for (Object cell : row) {
+        buff.add(cell);
+      }
+    }
+  }
+
+  private String getXmlField(RequestInfo reqInfo, ResponseBuffer buff,
+      String fieldName) {
+    String xml = reqInfo.getContent();
+    if (BeeUtils.isEmpty(xml)) {
+      buff.add("Request data not found");
+      return null;
+    }
+
+    Map<String, String> fields = XmlUtils.getElements(xml);
+    if (BeeUtils.isEmpty(fields)) {
+      buff.addLine("No elements with text found in", xml);
+      return null;
+    }
+    return fields.get(fieldName);
+  }
+
   private void gridInfo(RequestInfo reqInfo, ResponseBuffer buff) {
     String gName = getXmlField(reqInfo, buff, "grid_name");
 
@@ -86,55 +136,6 @@ public class UiServiceBean {
         }
       }
     }
-  }
-
-  private void formInfo(RequestInfo reqInfo, ResponseBuffer buff) {
-    String fName = getXmlField(reqInfo, buff, "form_name");
-
-    UiComponent form = holder.getForm(fName);
-
-    if (BeeUtils.isEmpty(form)) {
-      String msg = "Form name not recognized: " + fName;
-      logger.warning(msg);
-      buff.add(msg);
-    } else {
-      buff.add(form.serialize());
-    }
-  }
-
-  private void formList(RequestInfo reqInfo, ResponseBuffer buff) {
-    QueryBuilder qb = new QueryBuilder();
-    qb.addFields("f", "form").addFrom("forms", "f").addOrder("form");
-
-    List<Object[]> res = qs.getQueryData(qb);
-    if (res == null) {
-      return;
-    }
-
-    for (String alias : qb.getFieldAliases()) {
-      buff.addColumn(new BeeColumn(alias));
-    }
-    for (Object[] row : res) {
-      for (Object cell : row) {
-        buff.add(cell);
-      }
-    }
-  }
-
-  private String getXmlField(RequestInfo reqInfo, ResponseBuffer buff,
-      String fieldName) {
-    String xml = reqInfo.getContent();
-    if (BeeUtils.isEmpty(xml)) {
-      buff.add("Request data not found");
-      return null;
-    }
-
-    Map<String, String> fields = XmlUtils.getElements(xml);
-    if (BeeUtils.isEmpty(fields)) {
-      buff.addLine("No elements with text found in", xml);
-      return null;
-    }
-    return fields.get(fieldName);
   }
 
   private void menuInfo(RequestInfo reqInfo, ResponseBuffer buff) {

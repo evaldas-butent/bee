@@ -121,8 +121,8 @@ public class UiLoaderBean extends UiLoader {
         row.setId((String) cols[0]);
         row.setClassName(getUiClass((String) cols[1]));
         row.setParent((String) cols[2]);
-        row.setCaption(BeeUtils.ifString(cols[3], "").replaceFirst("^[\"']", "").replaceFirst(
-            "[\"']$", "").replaceFirst("\\\\<", ""));
+        row.setCaption(BeeUtils.ifString(cols[3], "").replaceAll("[\"']", "").replaceFirst(
+            "\\\\<", ""));
         row.setOrder((Integer) cols[4]);
 
         props = new StringBuilder();
@@ -269,7 +269,7 @@ public class UiLoaderBean extends UiLoader {
 
   private String getUiClass(String cls) {
     if (BeeUtils.inListSame(cls, "i_button", "c_choice", "c_close", "c_edit",
-        "o_butt_gr", "i_butt_gr")) {
+        "o_butt_gr", "i_butt_gr", "c_butt_gr")) {
       return "UiButton";
     } else if ("i_combo".equals(cls)) {
       return "UiListBox";

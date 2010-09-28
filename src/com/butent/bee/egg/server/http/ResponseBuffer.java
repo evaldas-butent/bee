@@ -25,12 +25,12 @@ public class ResponseBuffer {
 
   private List<ResponseMessage> messages = new ArrayList<ResponseMessage>();
   private List<BeeResource> parts = new ArrayList<BeeResource>();
-  
+
   private BeeService.DATA_TYPE dataType;
-  
+
   private String contentType = null;
   private String characterEncoding = null;
-  
+
   public ResponseBuffer() {
     setDefaultSeparator();
   }
@@ -50,7 +50,7 @@ public class ResponseBuffer {
       setDefaultSeparator();
     }
   }
-  
+
   public void add(CharSequence s) {
     if (s != null && s.length() > 0) {
       checkSeparator(s);
@@ -151,7 +151,9 @@ public class ResponseBuffer {
     addPart(uri, content, type, false);
   }
 
-  public void addPart(String uri, String content, BeeService.DATA_TYPE type, boolean readOnly) {
+  public void addPart(String uri, String content, BeeService.DATA_TYPE type,
+      boolean readOnly) {
+
     Assert.notNull(content);
     parts.add(new BeeResource(uri, content, type, readOnly));
     setDataType(BeeService.DATA_TYPE.MULTIPART);
@@ -177,7 +179,7 @@ public class ResponseBuffer {
   public void addResource(String content) {
     addResource(null, content, null, true);
   }
-  
+
   public void addResource(String content, BeeService.DATA_TYPE type) {
     addResource(null, content, type, true);
   }
@@ -185,12 +187,13 @@ public class ResponseBuffer {
   public void addResource(String uri, String content) {
     addResource(uri, content, null, false);
   }
-  
+
   public void addResource(String uri, String content, BeeService.DATA_TYPE type) {
     addResource(uri, content, type, false);
   }
-  
-  public void addResource(String uri, String content, BeeService.DATA_TYPE type, boolean readOnly) {
+
+  public void addResource(String uri, String content,
+      BeeService.DATA_TYPE type, boolean readOnly) {
     Assert.notNull(content);
     buffer.append(new BeeResource(uri, content, type, readOnly).serialize());
     count++;

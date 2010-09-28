@@ -97,7 +97,11 @@ public class GwtUiCreator implements UiCreator {
     widget.add(label);
     widget.add(input);
 
-    int pos = getUnitValue(field.getProperty("parameters"));
+    String prp = field.getProperty("parameters");
+    if (!BeeUtils.isEmpty(prp)) {
+      prp = prp.replaceFirst("[\\s,]+", "");
+    }
+    int pos = getUnitValue(prp);
 
     widget.setWidgetLeftWidth(label, 0, getUnit(null), pos, getUnit(null));
     widget.setWidgetLeftRight(input, pos, getUnit(null), 0, getUnit(null));

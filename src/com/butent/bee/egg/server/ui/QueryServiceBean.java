@@ -1,5 +1,7 @@
 package com.butent.bee.egg.server.ui;
 
+import com.butent.bee.egg.server.DataSourceBean;
+import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.sql.QueryBuilder;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 import com.butent.bee.egg.shared.utils.LogUtils;
@@ -12,27 +14,25 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
+import javax.ejb.EJB;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 import javax.sql.DataSource;
 
 @Stateless
 @LocalBean
 @TransactionAttribute(TransactionAttributeType.MANDATORY)
 public class QueryServiceBean {
+
   private static Logger logger = Logger.getLogger(QueryServiceBean.class.getName());
 
   // @PersistenceContext
   // EntityManager em;
-  DataSource ds;
-
-  public QueryServiceBean() throws NamingException {
-    ds = (DataSource) InitialContext.doLookup("jdbc/my");
-  }
+  DataSource ds = null;
+  @EJB
+  DataSourceBean dsb;
 
   public List<Object[]> getQueryData(QueryBuilder qb) {
     if (!BeeUtils.isEmpty(qb)) {
@@ -42,6 +42,9 @@ public class QueryServiceBean {
   }
 
   public List<Object[]> processSQL(String sql) {
+    if (ds == null) {
+      ds = dsb.locateDs(BeeConst.MYSQL).getDs();
+    }
     Connection con = null;
     Statement stmt = null;
     List<Object[]> result = new ArrayList<Object[]>();
