@@ -173,7 +173,7 @@ public class BeeUi implements BeeModule {
   
   public void showGrid(Object data, String... cols) {
     Assert.notNull(data);
-    updateActiveQuietly(BeeGlobal.simpleGrid(data, cols));
+    updateActiveQuietly(BeeGlobal.simpleGrid(data, cols), true);
   }
   
   public void showResource(BeeResource resource) {
@@ -185,23 +185,27 @@ public class BeeUi implements BeeModule {
     UiComponent.setCreator(new GwtUiCreator());
     createUi();
   }
-  
+
   public void updateActivePanel(Widget w) {
+    updateActivePanel(w, false);
+  }
+  
+  public void updateActivePanel(Widget w, boolean scroll) {
     Assert.notNull(w);
     Panel p = getActivePanel();
     
     if (p == null) {
       BeeSplit screen = getScreenPanel();
-      screen.updateCenter(w);
+      screen.updateCenter(w, scroll);
     } else {
       p.clear();
       p.add(w);
     }
   }
 
-  public void updateActiveQuietly(Widget w) {
+  public void updateActiveQuietly(Widget w, boolean scroll) {
     if (w != null) {
-      updateActivePanel(w);
+      updateActivePanel(w, scroll);
     }
   }
 
@@ -295,12 +299,12 @@ public class BeeUi implements BeeModule {
 
     w = initEast();
     if (w != null) {
-      p.addEast(w, 200);
+      p.addEast(w, 200, true);
     }
 
     w = initCenter();
     if (w != null) {
-      p.add(w);
+      p.add(w, true);
     }
 
     rootUi.add(p);

@@ -1,6 +1,7 @@
 package com.butent.bee.egg.client.widget;
 
 import com.google.gwt.dom.client.Document;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.DeferredCommand;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
@@ -13,17 +14,19 @@ import com.butent.bee.egg.shared.HasId;
 
 public abstract class BeeSplitter extends Widget implements HasId, HasLayoutCallback {
   private Widget target;
+  private Element targetContainer;
 
   private int offset;
   private boolean mouseDown;
   private BeeLayoutCommand layoutCommand;
 
-  private final boolean reverse;
+  private boolean reverse;
   private int size;
-  private int minSize;
+  private int minSize = 0;
 
-  public BeeSplitter(Widget target, boolean reverse, int size) {
+  public BeeSplitter(Widget target, Element targetContainer, boolean reverse, int size) {
     this.target = target;
+    this.targetContainer = targetContainer;
     this.reverse = reverse;
     this.size = size;
 
@@ -37,8 +40,24 @@ public abstract class BeeSplitter extends Widget implements HasId, HasLayoutCall
     DomUtils.createId(this, "splitter");
   }
 
+  public abstract int getAbsolutePosition();
+
+  public abstract int getEventPosition(Event event);
+
   public String getId() {
     return DomUtils.getId(this);
+  }
+
+  public BeeLayoutCommand getLayoutCommand() {
+    return layoutCommand;
+  }
+
+  public int getMinSize() {
+    return minSize;
+  }
+
+  public int getOffset() {
+    return offset;
   }
 
   public int getSize() {
@@ -47,6 +66,22 @@ public abstract class BeeSplitter extends Widget implements HasId, HasLayoutCall
 
   public Widget getTarget() {
     return target;
+  }
+
+  public Element getTargetContainer() {
+    return targetContainer;
+  }
+
+  public abstract int getTargetPosition();
+
+  public abstract int getTargetSize();
+
+  public boolean isMouseDown() {
+    return mouseDown;
+  }
+
+  public boolean isReverse() {
+    return reverse;
   }
 
   @Override
@@ -74,6 +109,7 @@ public abstract class BeeSplitter extends Widget implements HasId, HasLayoutCall
           } else {
             z = getEventPosition(event) - getTargetPosition() - offset;
           }
+
           setAssociatedWidgetSize(z);
           event.preventDefault();
         }
@@ -93,10 +129,26 @@ public abstract class BeeSplitter extends Widget implements HasId, HasLayoutCall
     DomUtils.setId(this, id);
   }
   
+  public void setLayoutCommand(BeeLayoutCommand layoutCommand) {
+    this.layoutCommand = layoutCommand;
+  }
+
   public void setMinSize(int minSize) {
     this.minSize = minSize;
     BeeLayoutData layout = (BeeLayoutData) target.getLayoutData();
     setAssociatedWidgetSize((int) layout.size);
+  }
+
+  public void setMouseDown(boolean mouseDown) {
+    this.mouseDown = mouseDown;
+  }
+
+  public void setOffset(int offset) {
+    this.offset = offset;
+  }
+
+  public void setReverse(boolean reverse) {
+    this.reverse = reverse;
   }
 
   public void setSize(int size) {
@@ -106,14 +158,6 @@ public abstract class BeeSplitter extends Widget implements HasId, HasLayoutCall
   public void setTarget(Widget target) {
     this.target = target;
   }
-
-  protected abstract int getAbsolutePosition();
-
-  protected abstract int getEventPosition(Event event);
-
-  protected abstract int getTargetPosition();
-
-  protected abstract int getTargetSize();
 
   private void setAssociatedWidgetSize(int size) {
     if (size < minSize) {

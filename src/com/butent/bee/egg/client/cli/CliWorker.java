@@ -58,11 +58,11 @@ public class CliWorker {
         src = z;
       }
     }
-    
+
     if (src == null) {
       src = BeeUtils.randomString(10, 20, BeeConst.CHAR_SPACE, '\u0400');
     }
-    
+
     if (src.length() > 100) {
       BeeKeeper.getLog().info("Source length", src.length());
     } else {
@@ -157,7 +157,7 @@ public class CliWorker {
 
     BeeKeeper.getRpc().makeGetRequest(params);
   }
-  
+
   public static void showDateFormat() {
     int r = DateTimeFormat.PredefinedFormat.values().length;
     String[][] data = new String[r][2];
@@ -168,7 +168,7 @@ public class CliWorker {
       data[i][1] = DateTimeFormat.getFormat(dtf).format(new Date());
       i++;
     }
-    
+
     BeeKeeper.getUi().showGrid(data, "Format", "Value");
   }
 
@@ -291,10 +291,9 @@ public class CliWorker {
     if (BeeKeeper.getRpc().getRpcList().isEmpty()) {
       BeeGlobal.showDialog("RpcList empty");
     } else {
-      BeeKeeper.getUi().updateActivePanel(
-          BeeGlobal.simpleGrid(
-              BeeKeeper.getRpc().getRpcList().getDefaultInfo(),
-              RpcList.DEFAULT_INFO_COLUMNS));
+      BeeKeeper.getUi().showGrid(
+          BeeKeeper.getRpc().getRpcList().getDefaultInfo(),
+          RpcList.DEFAULT_INFO_COLUMNS);
     }
   }
 

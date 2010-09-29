@@ -1,5 +1,6 @@
 package com.butent.bee.egg.client.widget;
 
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -7,8 +8,8 @@ import com.butent.bee.egg.client.dom.DomUtils;
 
 public class BeeHSplitter extends BeeSplitter {
 
-  public BeeHSplitter(Widget target, boolean reverse, int size) {
-    super(target, reverse, size);
+  public BeeHSplitter(Widget target, Element targetContainer, boolean reverse, int size) {
+    super(target, targetContainer, reverse, size);
     getElement().getStyle().setPropertyPx("width", size);
     setStyleName("bee-HSplitter");
   }
@@ -19,23 +20,23 @@ public class BeeHSplitter extends BeeSplitter {
   }
   
   @Override
-  protected int getAbsolutePosition() {
+  public int getAbsolutePosition() {
     return getAbsoluteLeft();
   }
 
   @Override
-  protected int getEventPosition(Event event) {
+  public int getEventPosition(Event event) {
     return event.getClientX();
   }
 
   @Override
-  protected int getTargetPosition() {
-    return getTarget().getAbsoluteLeft();
+  public int getTargetPosition() {
+    return getTargetContainer().getAbsoluteLeft();
   }
 
   @Override
-  protected int getTargetSize() {
-    return getTarget().getOffsetWidth();
+  public int getTargetSize() {
+    return getTargetContainer().getOffsetWidth();
   }
 
 }
