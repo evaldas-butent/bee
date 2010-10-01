@@ -1,0 +1,105 @@
+package com.butent.bee.egg.client.layout;
+
+import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.layout.client.Layout;
+import com.google.gwt.user.client.DeferredCommand;
+import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.HasWidgets;
+import com.google.gwt.user.client.ui.RequiresResize;
+import com.google.gwt.user.client.ui.Widget;
+
+import com.butent.bee.egg.client.BeeGlobal;
+import com.butent.bee.egg.client.dom.DomUtils;
+import com.butent.bee.egg.client.event.HasAfterAddHandler;
+import com.butent.bee.egg.client.utils.BeeCommand;
+import com.butent.bee.egg.client.widget.BeeLabel;
+import com.butent.bee.egg.shared.HasId;
+import com.butent.bee.egg.shared.utils.BeeUtils;
+
+public class BlankTile extends Composite implements HasAfterAddHandler, HasId,
+    RequiresResize {
+  private class UpdateCommand extends BeeCommand {
+    @Override
+    public void execute() {
+      updateCaption();
+    }
+  }
+
+  private BeeLabel caption = new BeeLabel();
+
+  public BlankTile() {
+    BeeLayoutPanel p = new BeeLayoutPanel();
+
+    p.add(caption);
+    p.setWidgetVerticalPosition(caption, Layout.Alignment.BEGIN);
+    p.setWidgetLeftRight(caption, 10, Unit.PX, 10, Unit.PX);
+
+    initWidget(p);
+    createId();
+  }
+
+  public void createId() {
+    DomUtils.createId(this, "blank");
+  }
+
+  public String getId() {
+    return DomUtils.getId(this);
+  }
+
+  public void onAfterAdd(HasWidgets parent) {
+    DeferredCommand.addCommand(new UpdateCommand());
+  }
+
+  public void onResize() {
+    updateCaption();
+  }
+
+  public void setId(String id) {
+    DomUtils.setId(this, id);
+  }
+
+  private void updateCaption() {
+    if (!(getParent() instanceof TilePanel)) {
+      return;
+    }
+    TilePanel t = (TilePanel) getParent();
+
+    if (!BeeGlobal.isDebug()) {
+      caption.setText(BeeUtils.concat(1, t.getWidgetWidth(this),
+          t.getWidgetHeight(this)));
+      return;
+    }
+
+    StringBuilder sb = new StringBuilder();
+    int c = 0;
+    Widget w = getParent();
+    Widget p = w.getParent();
+
+    while (p instanceof TilePanel) {
+      BeeDirection direction = ((TilePanel) p).getWidgetDirection(w);
+      switch (direction) {
+        case CENTER:
+          c++;
+          break;
+        default:
+          if (c > 0) {
+            sb.insert(0, c);
+          }
+          c = 0;
+          if (direction != null) {
+            sb.insert(0, direction.brief().toLowerCase());
+          }
+      }
+
+      w = p;
+      p = w.getParent();
+    }
+    if (c > 0) {
+      sb.insert(0, c);
+    }
+
+    caption.setText(BeeUtils.concat(1, t.getId(), sb, t.getWidgetWidth(this),
+        t.getWidgetHeight(this)));
+  }
+
+}

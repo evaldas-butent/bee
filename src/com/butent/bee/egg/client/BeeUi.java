@@ -20,6 +20,8 @@ import com.butent.bee.egg.client.layout.BeeFlow;
 import com.butent.bee.egg.client.layout.BeeHorizontal;
 import com.butent.bee.egg.client.layout.BeeLayoutPanel;
 import com.butent.bee.egg.client.layout.BeeSplit;
+import com.butent.bee.egg.client.layout.BlankTile;
+import com.butent.bee.egg.client.layout.TilePanel;
 import com.butent.bee.egg.client.resources.Images;
 import com.butent.bee.egg.client.ui.GwtUiCreator;
 import com.butent.bee.egg.client.utils.BeeCommand;
@@ -45,34 +47,36 @@ public class BeeUi implements BeeModule {
 
   private class SplitCommand extends BeeCommand {
     BeeDirection direction = null;
-    boolean collapse = false;
-    
+    boolean close = false;
+
     public SplitCommand(BeeDirection direction) {
       super();
       this.direction = direction;
     }
 
-    public SplitCommand(boolean collapse) {
+    public SplitCommand(boolean close) {
       super();
-      this.collapse = collapse;
+      this.close = close;
     }
 
     @Override
     public void execute() {
-      if (collapse) {
+      if (close) {
         closePanel();
       } else {
         createPanel(direction);
       }
     }
   }
-  
+
   private final HasWidgets rootUi;
+  
+  private int minTileSize = 20;
 
   private BeeSplit screenPanel = null;
-  private Panel activePanel = null;
+  private TilePanel activePanel = null;
   private Panel menuPanel = null;
-  
+
   private Images images = GWT.create(Images.class);
 
   private String elDsn = null;
@@ -81,31 +85,62 @@ public class BeeUi implements BeeModule {
     this.rootUi = root;
   }
 
+  public void activatePanel(TilePanel np) {
+    Assert.notNull(np);
+
+    TilePanel op = getActivePanel();
+    if (op == np) {
+      return;
+    }
+    
+    deactivatePanel();
+    
+    if (!isRootTile(np)) {
+      Widget w = np.getCenter();
+      
+      if (w instanceof BlankTile) {
+        w.addStyleName(BeeStyle.ACTIVE_BLANK);
+      } else if (w != null) {
+        np.getWidgetContainerElement(w).addClassName(BeeStyle.ACTIVE_CONTENT);
+      }
+    }
+
+    setActivePanel(np);
+  }
+
+  public void deactivatePanel() {
+    TilePanel op = getActivePanel();
+
+    if (op != null && !isRootTile(op)) {
+      Widget w = op.getCenter();
+      
+      if (w instanceof BlankTile) {
+        w.removeStyleName(BeeStyle.ACTIVE_BLANK);
+      } else if (w != null) {
+        op.getWidgetContainerElement(w).removeClassName(BeeStyle.ACTIVE_CONTENT);
+      }
+    }
+    
+    setActivePanel(null);
+  }
+
   public void end() {
   }
 
-  public Panel getActivePanel() {
+  public TilePanel getActivePanel() {
     return activePanel;
   }
 
   public int getActivePanelHeight() {
-    Panel p = getActivePanel();
-    
-    if (p == null) {
-      return getScreenPanel().getCenterHeight();
-    } else {
-      return p.getOffsetHeight();
-    }
+    TilePanel p = getActivePanel();
+    Assert.notNull(p);
+    return p.getOffsetHeight();
   }
 
   public int getActivePanelWidth() {
-    Panel p = getActivePanel();
-    
-    if (p == null) {
-      return getScreenPanel().getCenterWidth();
-    } else {
-      return p.getOffsetWidth();
-    }
+    TilePanel p = getActivePanel();
+    Assert.notNull(p);
+    return p.getOffsetWidth();
   }
 
   public String getDsn() {
@@ -119,6 +154,10 @@ public class BeeUi implements BeeModule {
 
   public Panel getMenuPanel() {
     return menuPanel;
+  }
+
+  public int getMinTileSize() {
+    return minTileSize;
   }
 
   public String getName() {
@@ -149,14 +188,8 @@ public class BeeUi implements BeeModule {
   public void init() {
   }
 
-  public void setActivePanel(Panel p) {
-    if (activePanel != null) {
-      activePanel.getElement().getStyle().clearBackgroundColor();
-    }
+  public void setActivePanel(TilePanel p) {
     activePanel = p;
-    if (p != null) {
-      p.getElement().getStyle().setBackgroundColor("Honeydew");
-    }
   }
 
   public void setElDsn(String elDsn) {
@@ -167,15 +200,19 @@ public class BeeUi implements BeeModule {
     this.menuPanel = menuPanel;
   }
 
+  public void setMinTileSize(int minTileSize) {
+    this.minTileSize = minTileSize;
+  }
+
   public void setScreenPanel(BeeSplit screenPanel) {
     this.screenPanel = screenPanel;
   }
-  
+
   public void showGrid(Object data, String... cols) {
     Assert.notNull(data);
     updateActiveQuietly(BeeGlobal.simpleGrid(data, cols), true);
   }
-  
+
   public void showResource(BeeResource resource) {
     Assert.notNull(resource);
     updateActivePanel(new TextEditor(resource));
@@ -189,18 +226,17 @@ public class BeeUi implements BeeModule {
   public void updateActivePanel(Widget w) {
     updateActivePanel(w, false);
   }
-  
+
   public void updateActivePanel(Widget w, boolean scroll) {
     Assert.notNull(w);
-    Panel p = getActivePanel();
     
-    if (p == null) {
-      BeeSplit screen = getScreenPanel();
-      screen.updateCenter(w, scroll);
-    } else {
-      p.clear();
-      p.add(w);
-    }
+    TilePanel p = getActivePanel();
+    Assert.notNull(p, "panel not available");
+    
+    deactivatePanel();
+    p.clear();
+    p.add(w, scroll);
+    activatePanel(p);
   }
 
   public void updateActiveQuietly(Widget w, boolean scroll) {
@@ -218,64 +254,75 @@ public class BeeUi implements BeeModule {
     p.clear();
     p.add(w);
   }
-  
+
   private void closePanel() {
-    Panel p = getActivePanel();
-    if (p != null && p.getParent() instanceof HasWidgets) {
-      if (p.getParent() == getScreenPanel()) {
-        setActivePanel(null);
-      } else {
-        setActivePanel((Panel) p.getParent());
-      }
-      ((HasWidgets) p.getParent()).remove(p);
-    } else if (getScreenPanel().getCenter() != null) {
-      getScreenPanel().remove(getScreenPanel().getCenter());
-      setActivePanel(null);
+    TilePanel op = getActivePanel();
+    Assert.notNull(op, "active panel not available");
+    
+    if (!(op.getCenter() instanceof BlankTile)) {
+      deactivatePanel();
+      op.clear();
+      op.add(new BlankTile());
+      activatePanel(op);
+      return;
     }
+
+    if (!(op.getParent() instanceof TilePanel)) {
+      return;
+    }
+    
+    TilePanel parent = (TilePanel) op.getParent();
+    TilePanel np = null;
+
+    for (TilePanel w : parent.getPanels()) {
+      if (w != op) {
+        np = w;
+        break;
+      }
+    }
+    
+    Assert.notNull(np, "sibling panel not found");
+
+    deactivatePanel();
+    
+    np.move(parent);
+    
+    while (parent.getCenter() instanceof TilePanel) {
+      parent = (TilePanel) parent.getCenter();
+    }
+
+    activatePanel(parent);
   }
 
-  @SuppressWarnings("incomplete-switch")
   private void createPanel(BeeDirection direction) {
-    Assert.notNull(direction);
-    Assert.isTrue(direction != BeeDirection.CENTER);
-    
-    BeeSplit active = getScreenPanel();
-    while (active.getCenter() instanceof BeeSplit) {
-      active = (BeeSplit) active.getCenter();
-    }
-    
-    int w = active.getCenterWidth();
-    int h = active.getCenterHeight();
-    
-    Widget oldCenter = active.getCenter();
-    if (oldCenter == null) {
-      oldCenter = new BeeLayoutPanel();
-    } else {
-      active.remove(oldCenter);
-    }
-    
-    BeeSplit p = new BeeSplit();
+    TilePanel p = getActivePanel();
+    Assert.notNull(p);
 
-    switch (direction) {
-      case NORTH :
-        p.addSouth(oldCenter, h / 2);
-        break;
-      case SOUTH :
-        p.addNorth(oldCenter, h / 2);
-        break;
-      case EAST :
-        p.addWest(oldCenter, w / 2);
-        break;
-      case WEST:
-        p.addEast(oldCenter, w / 2);
-        break;
+    int z = direction.isHorizontal() ? p.getCenterWidth() : p.getCenterHeight();
+    z = Math.round((z - p.getSplitterSize()) / 2);
+    if (z < getMinTileSize()) {
+      BeeGlobal.showError("no", z);
+      return;
     }
     
-    BeeLayoutPanel z = new BeeLayoutPanel();
-    setActivePanel(z);
-    
-    p.add(z);
-    active.add(p);
+    deactivatePanel();
+
+    TilePanel center = new TilePanel();
+    Widget w = p.getCenter();
+    if (w != null) {
+      boolean scroll = p.isWidgetScroll(w);
+      p.remove(w);
+      center.add(w, scroll);
+    }
+
+    TilePanel tp = new TilePanel();
+    BlankTile bt = new BlankTile();
+    tp.add(bt);
+
+    p.insert(tp, direction, z, null, false);
+    p.add(center);
+
+    activatePanel(tp);
   }
 
   private void createUi() {
@@ -313,7 +360,11 @@ public class BeeUi implements BeeModule {
   }
 
   private Widget initCenter() {
-    return null;
+    TilePanel p = new TilePanel();
+    p.add(new BlankTile());
+    
+    setActivePanel(p);
+    return p;
   }
 
   private Widget initEast() {
@@ -322,7 +373,7 @@ public class BeeUi implements BeeModule {
 
   private Widget initNorth() {
     BeeFlow p = new BeeFlow();
-    
+
     setElDsn(DomUtils.createUniqueName());
     p.add(new RadioGroup(getElDsn(), BeeConst.DS_TYPES));
 
@@ -347,17 +398,17 @@ public class BeeUi implements BeeModule {
     p.add(new BeeCheckBox(new BeeName(BeeGlobal.FIELD_DEBUG)));
 
     p.add(new BeeButton("North land", "comp_ui_form", "stage_dummy"));
-    
+
     BeeLayoutPanel blp = new BeeLayoutPanel();
     blp.add(p);
 
     BeeImage bee = new BeeImage(images.bee());
     blp.add(bee);
-    
+
     blp.setWidgetLeftRight(p, 1, Unit.EM, 100, Unit.PX);
     blp.setWidgetTopBottom(p, 1, Unit.EM, 1, Unit.PX);
     blp.setWidgetRightWidth(bee, 10, Unit.PX, 64, Unit.PX);
-    
+
     return blp;
   }
 
@@ -366,7 +417,7 @@ public class BeeUi implements BeeModule {
 
     CliWidget cli = new CliWidget();
     p.add(cli);
-    
+
     BeeHorizontal hor = new BeeHorizontal();
     hor.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
 
@@ -379,19 +430,19 @@ public class BeeUi implements BeeModule {
     hor.add(close);
     hor.setCellWidth(close, "32px");
     hor.setCellHorizontalAlignment(close, HasHorizontalAlignment.ALIGN_RIGHT);
-    
+
     p.add(hor);
-    
+
     BeeLabel ver = new BeeLabel("0.1.2");
     p.add(ver);
-    
+
     p.setWidgetLeftWidth(cli, 1, Unit.EM, 50, Unit.PCT);
     p.setWidgetVerticalPosition(cli, Layout.Alignment.BEGIN);
-    
+
     p.setWidgetLeftWidth(hor, 60, Unit.PCT, 200, Unit.PX);
-    
+
     p.setWidgetRightWidth(ver, 1, Unit.EM, 5, Unit.EM);
-    
+
     return p;
   }
 
@@ -436,4 +487,13 @@ public class BeeUi implements BeeModule {
 
     return spl;
   }
+  
+  private boolean isRootTile(TilePanel p) {
+    if (p == null) {
+      return false;
+    } else {
+      return !(p.getParent() instanceof TilePanel);
+    }
+  }
+  
 }

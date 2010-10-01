@@ -21,6 +21,7 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.egg.client.BeeKeeper;
 import com.butent.bee.egg.client.layout.BeeDirection;
+import com.butent.bee.egg.client.utils.JreEmulation;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.Transformable;
@@ -112,7 +113,7 @@ public class DomUtils {
   public static DtElement createDtElement() {
     return (DtElement) createElement(DtElement.TAG);
   }
-  
+
   public static native Element createElement(Document doc, String tag) /*-{
     return doc.createElement(tag);
   }-*/;
@@ -295,6 +296,21 @@ public class DomUtils {
     return lst;
   }
 
+  public static List<StringProp> getChildrenInfo(Widget w) {
+    Assert.notNull(w);
+    List<StringProp> lst = new ArrayList<StringProp>();
+
+    if (w instanceof HasWidgets) {
+      for (Iterator<Widget> it = ((HasWidgets) w).iterator(); it.hasNext();) {
+        Widget child = it.next();
+        PropUtils.addString(lst, JreEmulation.getSimpleName(child),
+            getId(child));
+      }
+    }
+
+    return lst;
+  }
+
   public static String getClassQuietly(Object obj) {
     if (obj == null) {
       return BeeConst.STRING_EMPTY;
@@ -314,7 +330,7 @@ public class DomUtils {
   public static BeeDirection getDirection(String s) {
     Assert.notEmpty(s);
     BeeDirection dir = null;
-    
+
     for (BeeDirection z : BeeDirection.values()) {
       if (BeeUtils.same(z.name(), s)) {
         dir = z;
@@ -324,10 +340,10 @@ public class DomUtils {
         dir = (dir == null) ? z : null;
       }
     }
-    
+
     return dir;
   }
-  
+
   public static List<StringProp> getElementInfo(Element el) {
     Assert.notNull(el);
     List<StringProp> lst = new ArrayList<StringProp>();
@@ -360,27 +376,32 @@ public class DomUtils {
   public static List<StringProp> getEventInfo(Event ev) {
     Assert.notNull(ev);
     List<StringProp> lst = new ArrayList<StringProp>();
-    
-    PropUtils.addString(lst,
-        "Alt Key", ev.getAltKey(),
-        "Button", ev.getButton(),
-        "Char Code", ev.getCharCode(),
-        "Client X", ev.getClientX(),
-        "Client Y", ev.getClientY(),
-        "Ctrl Key", ev.getCtrlKey(),
-        "Current Event Target", transformEventTarget(ev.getCurrentEventTarget()),
-        "Key Code", ev.getKeyCode(),
-        "Meta Key", ev.getMetaKey(),
-        "Mouse Wheel Velocity Y", ev.getMouseWheelVelocityY(),
-        "Related Event Target", transformEventTarget(ev.getRelatedEventTarget()),
-        "Screen X", ev.getScreenX(),
-        "Screen Y", ev.getScreenY(),
-        "Shift Key", ev.getShiftKey(),
-        "String", ev.getString(),
-        "Type", ev.getType(),
-        "Type Int", ev.getTypeInt());
-  
+
+    PropUtils.addString(lst, "Client X", ev.getClientX(), "Client Y",
+        ev.getClientY(), "Screen X", ev.getScreenX(), "Screen Y",
+        ev.getScreenY(), "Key Code", ev.getKeyCode(), "Char Code",
+        ev.getCharCode(), "Alt Key", ev.getAltKey(), "Shift Key",
+        ev.getShiftKey(), "Ctrl Key", ev.getCtrlKey(), "Meta Key",
+        ev.getMetaKey(), "Button", ev.getButton(), "Mouse Wheel Velocity Y",
+        ev.getMouseWheelVelocityY(), "Event Target",
+        transformEventTarget(ev.getEventTarget()), "Current Event Target",
+        transformEventTarget(ev.getCurrentEventTarget()),
+        "Related Event Target",
+        transformEventTarget(ev.getRelatedEventTarget()), "String",
+        ev.getString(), "Type", ev.getType(), "Type Int", ev.getTypeInt());
+
     return lst;
+  }
+
+  public static String getEventTargetId(Event ev) {
+    Assert.notNull(ev);
+    EventTarget target = ev.getEventTarget();
+
+    if (target == null) {
+      return null;
+    } else {
+      return getTargetId(target);
+    }
   }
 
   public static String getId(UIObject obj) {
@@ -450,6 +471,17 @@ public class DomUtils {
     return lst;
   }
 
+  public static List<StringProp> getPathInfo(Widget w) {
+    Assert.notNull(w);
+    List<StringProp> lst = new ArrayList<StringProp>();
+
+    for (Widget p = w; p != null; p = p.getParent()) {
+      PropUtils.addString(lst, JreEmulation.getSimpleName(p), getId(p));
+    }
+
+    return lst;
+  }
+
   public static String getService(Widget w) {
     return getAttribute(w, ATTRIBUTE_SERVICE);
   }
@@ -506,6 +538,11 @@ public class DomUtils {
     return w.getElement().getTabIndex();
   }
 
+  public static String getTargetId(EventTarget et) {
+    Assert.notNull(et);
+    return Element.as(et).getId();
+  }
+
   public static List<SubProp> getUIObjectExtendedInfo(UIObject obj,
       String prefix) {
     Assert.notNull(obj);
@@ -546,13 +583,13 @@ public class DomUtils {
   public static int getWidgetCount(HasWidgets container) {
     Assert.notNull(container);
     int c = 0;
-    for (Iterator<Widget> it = container.iterator(); it.hasNext(); ) {
+    for (Iterator<Widget> it = container.iterator(); it.hasNext();) {
       it.next();
       c++;
     }
     return c;
   }
-  
+
   public static List<SubProp> getWidgetExtendedInfo(Widget w, String prefix) {
     Assert.notNull(w);
     List<SubProp> lst = new ArrayList<SubProp>();
@@ -588,14 +625,38 @@ public class DomUtils {
     return el.getTagName().equalsIgnoreCase(TAG_INPUT);
   }
 
+  public static void logChildren(Widget w) {
+    Assert.notNull(w);
+    List<StringProp> lst = getChildrenInfo(w);
+
+    for (int i = 0; i < lst.size(); i++) {
+      BeeKeeper.getLog().info(BeeUtils.progress(i + 1, lst.size()),
+          lst.get(i).getName(), lst.get(i).getValue());
+    }
+
+    BeeKeeper.getLog().addSeparator();
+  }
+
   public static void logEvent(Event ev) {
     Assert.notNull(ev);
     List<StringProp> lst = getEventInfo(ev);
-    
+
     for (StringProp el : lst) {
       BeeKeeper.getLog().info(el.getName(), el.getValue());
     }
-    
+
+    BeeKeeper.getLog().addSeparator();
+  }
+
+  public static void logPath(Widget w) {
+    Assert.notNull(w);
+    List<StringProp> lst = getPathInfo(w);
+
+    for (int i = 0; i < lst.size(); i++) {
+      BeeKeeper.getLog().info(BeeUtils.progress(i + 1, lst.size()),
+          lst.get(i).getName(), lst.get(i).getValue());
+    }
+
     BeeKeeper.getLog().addSeparator();
   }
 
@@ -658,7 +719,7 @@ public class DomUtils {
     return idx;
   }
 
-  private static String transformElement(Element el) {
+  public static String transformElement(Element el) {
     if (el == null) {
       return BeeConst.STRING_EMPTY;
     } else {
@@ -681,5 +742,5 @@ public class DomUtils {
       return BeeUtils.concat(1, nd.getNodeName(), nd.getNodeValue());
     }
   }
-  
+
 }

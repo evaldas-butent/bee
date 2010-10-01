@@ -66,6 +66,8 @@ public class CliWidget extends BeeTextBox {
       CliWorker.showStack();
     } else if (z.equals("style")) {
       CliWorker.style(v, arr);
+    } else if (z.equals("tiles")) {
+      CliWorker.showTiles();
 
     } else {
       BeeGlobal.showDialog("wtf", v);

@@ -9,6 +9,7 @@ import com.butent.bee.egg.client.BeeGlobal;
 import com.butent.bee.egg.client.dom.DomUtils;
 import com.butent.bee.egg.client.grid.BeeCellTable;
 import com.butent.bee.egg.client.layout.BeeVertical;
+import com.butent.bee.egg.client.tree.BeeTree;
 import com.butent.bee.egg.client.widget.BeeLabel;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeConst;
@@ -62,10 +63,15 @@ public class BeeMessageBox {
     for (int i = 0; i < n; i++) {
       if (x[i] instanceof Widget) {
         vp.add((Widget) x[i]);
+
         if (x[i] instanceof BeeCellTable) {
           vp.setCellHeight((Widget) x[i], "200px");
           vp.setCellWidth((Widget) x[i], "400px");
+        } else if (x[i] instanceof BeeTree) {
+          vp.setCellHeight((Widget) x[i], "500px");
+          vp.setCellWidth((Widget) x[i], "400px");
         }
+
       } else if (x[i] instanceof String) {
         vp.add(new BeeLabel((String) x[i]));
       } else if (x[i] instanceof Collection) {

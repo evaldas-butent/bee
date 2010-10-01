@@ -91,13 +91,17 @@ public abstract class BeeSplitter extends Widget implements HasId, HasLayoutCall
         mouseDown = true;
         offset = getEventPosition(event) - getAbsolutePosition();
         Event.setCapture(getElement());
+        
         event.preventDefault();
+        event.stopPropagation();
         break;
 
       case Event.ONMOUSEUP:
         mouseDown = false;
         Event.releaseCapture(getElement());
+        
         event.preventDefault();
+        event.stopPropagation();
         break;
 
       case Event.ONMOUSEMOVE:
@@ -112,6 +116,7 @@ public abstract class BeeSplitter extends Widget implements HasId, HasLayoutCall
 
           setAssociatedWidgetSize(z);
           event.preventDefault();
+          event.stopPropagation();
         }
         break;
     }

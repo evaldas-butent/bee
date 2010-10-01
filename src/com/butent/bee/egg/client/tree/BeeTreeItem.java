@@ -4,7 +4,9 @@ import com.google.gwt.user.client.ui.TreeItem;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.egg.client.dom.DomUtils;
+import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.HasId;
+import com.butent.bee.egg.shared.utils.BeeUtils;
 
 public class BeeTreeItem extends TreeItem implements HasId {
 
@@ -20,6 +22,11 @@ public class BeeTreeItem extends TreeItem implements HasId {
     super(widget);
   }
 
+  public void addText(Object... obj) {
+    Assert.parameterCount(obj.length, 1);
+    addItem(BeeUtils.concat(1, obj));
+  }
+
   public void createId() {
     DomUtils.createId(this, "treeitem");
   }
@@ -31,5 +38,5 @@ public class BeeTreeItem extends TreeItem implements HasId {
   public void setId(String id) {
     DomUtils.setId(this, id);
   }
-
+  
 }

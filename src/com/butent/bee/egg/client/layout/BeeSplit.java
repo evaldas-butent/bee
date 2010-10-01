@@ -16,6 +16,8 @@ import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.user.client.ui.WidgetCollection;
 
 import com.butent.bee.egg.client.dom.DomUtils;
+import com.butent.bee.egg.client.event.HasAfterAddHandler;
+import com.butent.bee.egg.client.event.HasBeforeAddHandler;
 import com.butent.bee.egg.client.utils.JreEmulation;
 import com.butent.bee.egg.client.widget.BeeHSplitter;
 import com.butent.bee.egg.client.widget.BeeSplitter;
@@ -44,20 +46,34 @@ public class BeeSplit extends ComplexPanel implements AnimatedLayout,
     }
   }
 
+  private static int defaultSplitterSize = 8;
+
   private final Unit unit = Unit.PX;
   private Widget center;
   private final Layout layout;
   private final LayoutCommand layoutCmd;
-  private int splitterSize = 8;
+
+  private int splitterSize;
 
   public BeeSplit() {
+    this("bee-split");
+  }
+
+  public BeeSplit(String style) {
+    this(style, defaultSplitterSize);
+  }
+
+  public BeeSplit(String style, int splitterSize) {
     setElement(Document.get().createDivElement());
     layout = new Layout(getElement());
     layoutCmd = new DockAnimateCommand(layout);
-    setStyleName("bee-SplitPanel");
+
+    this.splitterSize = splitterSize;
+    setStyleName(style);
+
     createId();
   }
-
+  
   @Override
   public void add(Widget widget) {
     add(widget, false);
@@ -66,7 +82,7 @@ public class BeeSplit extends ComplexPanel implements AnimatedLayout,
   public void add(Widget widget, boolean scroll) {
     insert(widget, BeeDirection.CENTER, 0, null, scroll);
   }
-  
+
   public void addEast(Widget widget, double size) {
     addEast(widget, size, false);
   }
@@ -74,7 +90,7 @@ public class BeeSplit extends ComplexPanel implements AnimatedLayout,
   public void addEast(Widget widget, double size, boolean scroll) {
     insert(widget, BeeDirection.EAST, size, null, scroll);
   }
-  
+
   public void addNorth(Widget widget, double size) {
     addNorth(widget, size, false);
   }
@@ -82,7 +98,7 @@ public class BeeSplit extends ComplexPanel implements AnimatedLayout,
   public void addNorth(Widget widget, double size, boolean scroll) {
     insert(widget, BeeDirection.NORTH, size, null, scroll);
   }
-  
+
   public void addSouth(Widget widget, double size) {
     addSouth(widget, size, false);
   }
@@ -98,7 +114,7 @@ public class BeeSplit extends ComplexPanel implements AnimatedLayout,
   public void addWest(Widget widget, double size, boolean scroll) {
     insert(widget, BeeDirection.WEST, size, null, scroll);
   }
-  
+
   public void animate(int duration) {
     animate(duration, null);
   }
@@ -127,7 +143,7 @@ public class BeeSplit extends ComplexPanel implements AnimatedLayout,
     if (c != null) {
       return getWidgetHeight(c);
     }
-    
+
     int y = getOffsetHeight();
     for (Widget w : getChildren()) {
       if (!isSplitter(w) && isNorthSouth(w)) {
@@ -142,7 +158,7 @@ public class BeeSplit extends ComplexPanel implements AnimatedLayout,
     if (c != null) {
       return getWidgetWidth(c);
     }
-    
+
     int x = getOffsetWidth();
     for (Widget w : getChildren()) {
       if (!isSplitter(w) && isWestEast(w)) {
@@ -170,7 +186,7 @@ public class BeeSplit extends ComplexPanel implements AnimatedLayout,
 
     return lst;
   }
-  
+
   public String getId() {
     return DomUtils.getId(this);
   }
@@ -195,7 +211,11 @@ public class BeeSplit extends ComplexPanel implements AnimatedLayout,
 
     return lst;
   }
-  
+
+  public int getSplitterSize() {
+    return splitterSize;
+  }
+
   public Element getWidgetContainerElement(Widget child) {
     assertIsChild(child);
     return ((BeeLayoutData) child.getLayoutData()).layer.getContainerElement();
@@ -213,24 +233,104 @@ public class BeeSplit extends ComplexPanel implements AnimatedLayout,
     return getWidgetContainerElement(child).getOffsetHeight();
   }
 
+  public String getWidgetScroll(Widget child) {
+    return getWidgetContainerElement(child).getStyle().getOverflow();
+  }
+  
   public int getWidgetWidth(Widget child) {
     return getWidgetContainerElement(child).getOffsetWidth();
   }
 
-  public void insertEast(Widget widget, double size, Widget before, boolean scroll) {
+  public void insert(Widget child, BeeDirection direction, double size,
+      Widget before, boolean scroll) {
+    assertIsChild(before);
+
+    if (before == null) {
+      Assert.isTrue(center == null,
+          "No widget may be added after the CENTER widget");
+    } else {
+      Assert.isTrue(direction != BeeDirection.CENTER,
+          "A CENTER widget must always be added last");
+    }
+
+    Widget w = child;
+    if (w instanceof HasBeforeAddHandler) {
+      w = ((HasBeforeAddHandler) w).onBeforeAdd(this);
+    }
+
+    w.removeFromParent();
+
+    WidgetCollection children = getChildren();
+    if (before == null) {
+      children.add(w);
+    } else {
+      int index = children.indexOf(before);
+      children.insert(w, index);
+    }
+
+    Layer layer = layout.attachChild(w.getElement(),
+        (before != null) ? before.getElement() : null, w);
+    BeeLayoutData data = new BeeLayoutData(direction, size, layer);
+    w.setLayoutData(data);
+
+    adopt(w);
+
+    Element container = layer.getContainerElement();
+
+    String pfx;
+    if (isSplitter(w)) {
+      pfx = (w instanceof BeeHSplitter) ? "hor" : "vert";
+    } else {
+      pfx = BeeUtils.transform(direction).toLowerCase();
+    }
+
+    container.setId(DomUtils.createUniqueId("layer-" + pfx));
+
+    if (!isSplitter(w)) {
+      if (scroll) {
+        container.getStyle().setOverflow(Overflow.AUTO);
+      }
+
+      if (direction == BeeDirection.CENTER) {
+        center = w;
+      } else {
+        insertSplitter(w, container, before);
+      }
+    }
+
+    if (w instanceof HasAfterAddHandler) {
+      ((HasAfterAddHandler) w).onAfterAdd(this);
+    }
+
+    animate(0);
+  }
+  
+  public void insertEast(Widget widget, double size, Widget before,
+      boolean scroll) {
     insert(widget, BeeDirection.EAST, size, before, scroll);
   }
 
-  public void insertNorth(Widget widget, double size, Widget before, boolean scroll) {
+  public void insertNorth(Widget widget, double size, Widget before,
+      boolean scroll) {
     insert(widget, BeeDirection.NORTH, size, before, scroll);
   }
 
-  public void insertSouth(Widget widget, double size, Widget before, boolean scroll) {
+  public void insertSouth(Widget widget, double size, Widget before,
+      boolean scroll) {
     insert(widget, BeeDirection.SOUTH, size, before, scroll);
   }
 
-  public void insertWest(Widget widget, double size, Widget before, boolean scroll) {
+  public void insertWest(Widget widget, double size, Widget before,
+      boolean scroll) {
     insert(widget, BeeDirection.WEST, size, before, scroll);
+  }
+
+  public boolean isWidgetScroll(Widget child) {
+    if (child == null) {
+      return false;
+    }
+    return BeeUtils.inListSame(getWidgetScroll(child), Overflow.AUTO.getCssName(),
+        Overflow.SCROLL.getCssName());
   }
 
   public void onLayout() {
@@ -316,7 +416,7 @@ public class BeeSplit extends ComplexPanel implements AnimatedLayout,
 
     animate(0);
   }
-  
+
   public void updateCenter(Widget widget, boolean scroll) {
     Assert.notNull(widget);
 
@@ -335,64 +435,13 @@ public class BeeSplit extends ComplexPanel implements AnimatedLayout,
     return BeeUtils.inList(direction, BeeDirection.EAST, BeeDirection.NORTH,
         BeeDirection.SOUTH, BeeDirection.WEST);
   }
-  
+
   protected Unit getUnit() {
     return unit;
   }
 
-  protected void insert(Widget widget, BeeDirection direction, double size,
-      Widget before, boolean scroll) {
-    assertIsChild(before);
-
-    if (before == null) {
-      Assert.isTrue(center == null,
-          "No widget may be added after the CENTER widget");
-    } else {
-      Assert.isTrue(direction != BeeDirection.CENTER,
-          "A CENTER widget must always be added last");
-    }
-
-    widget.removeFromParent();
-
-    WidgetCollection children = getChildren();
-    if (before == null) {
-      children.add(widget);
-    } else {
-      int index = children.indexOf(before);
-      children.insert(widget, index);
-    }
-
-    Layer layer = layout.attachChild(widget.getElement(), (before != null)
-        ? before.getElement() : null, widget);
-    BeeLayoutData data = new BeeLayoutData(direction, size, layer);
-    widget.setLayoutData(data);
-
-    adopt(widget);
-    
-    Element container = layer.getContainerElement();
-    
-    String pfx;
-    if (isSplitter(widget)) {
-      pfx = (widget instanceof BeeHSplitter) ? "hor" : "vert";
-    } else {
-      pfx = BeeUtils.transform(direction).toLowerCase();
-    }
-
-    container.setId(DomUtils.createUniqueId("layer-" + pfx));
-
-    if (!isSplitter(widget)) {
-      if (scroll) {
-        container.getStyle().setOverflow(Overflow.AUTO);
-      }
-
-      if (direction == BeeDirection.CENTER) {
-        center = widget;
-      } else {
-        insertSplitter(widget, container, before);
-      }
-    }
-
-    animate(0);
+  protected boolean isSplitter(Widget w) {
+    return w instanceof BeeSplitter;
   }
 
   @Override
@@ -471,33 +520,29 @@ public class BeeSplit extends ComplexPanel implements AnimatedLayout,
     PropUtils.addString(lst, "Class", JreEmulation.getSimpleName(w),
         "Absolute Left", w.getAbsoluteLeft(), "Absolute Top",
         w.getAbsoluteTop(), "Offset Height", w.getOffsetHeight(),
-        "Offset Width", w.getOffsetWidth(),
-        "Style Name", w.getStyleName(),
+        "Offset Width", w.getOffsetWidth(), "Style Name", w.getStyleName(),
         "Title", w.getTitle(), "Visible", w.isVisible());
 
     if (w instanceof HasWidgets) {
       PropUtils.addString(lst, "Children Count",
           DomUtils.getWidgetCount((HasWidgets) w));
     }
-    
+
     Element container = getWidgetContainerElement(w);
     if (container != null) {
-      PropUtils.addString(lst,
-          "Container Offset Height", container.getOffsetHeight(),
-          "Container Offset Width", container.getOffsetWidth(),
-          "Container Client Height", container.getClientHeight(),
-          "Container Client Width", container.getClientWidth());
+      PropUtils.addString(lst, "Container Offset Height",
+          container.getOffsetHeight(), "Container Offset Width",
+          container.getOffsetWidth(), "Container Client Height",
+          container.getClientHeight(), "Container Client Width",
+          container.getClientWidth());
     }
-    
+
     if (isSplitter(w)) {
       BeeSplitter bspl = (BeeSplitter) w;
-      PropUtils.addString(lst,
-          "Reverse", bspl.isReverse(),
-          "Size", bspl.getSize(),
-          "Min Size", bspl.getMinSize(),
-          "Absolute Position", bspl.getAbsolutePosition(),
-          "Target Position", bspl.getTargetPosition(),
-          "Target Size", bspl.getTargetSize());
+      PropUtils.addString(lst, "Reverse", bspl.isReverse(), "Size",
+          bspl.getSize(), "Min Size", bspl.getMinSize(), "Absolute Position",
+          bspl.getAbsolutePosition(), "Target Position",
+          bspl.getTargetPosition(), "Target Size", bspl.getTargetSize());
     }
 
     return lst;
@@ -549,10 +594,6 @@ public class BeeSplit extends ComplexPanel implements AnimatedLayout,
     BeeDirection dir = getWidgetDirection(w);
     return dir == BeeDirection.NORTH || dir == BeeDirection.SOUTH;
   }
-  
-  private boolean isSplitter(Widget w) {
-    return w instanceof BeeSplitter;
-  }
 
   private boolean isWestEast(Widget w) {
     if (w == null) {
@@ -561,5 +602,5 @@ public class BeeSplit extends ComplexPanel implements AnimatedLayout,
     BeeDirection dir = getWidgetDirection(w);
     return dir == BeeDirection.WEST || dir == BeeDirection.EAST;
   }
-  
+
 }

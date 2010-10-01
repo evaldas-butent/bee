@@ -101,6 +101,7 @@ public class TextEditor extends Composite implements HasId {
 
     setTextArea(area);
     setUri(resource.getUri());
+    createId();
   }
 
   public void createId() {

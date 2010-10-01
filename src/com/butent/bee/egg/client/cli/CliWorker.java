@@ -9,6 +9,7 @@ import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.dom.client.StyleInjector;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.client.DOM;
+import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.egg.client.BeeGlobal;
 import com.butent.bee.egg.client.BeeKeeper;
@@ -18,6 +19,8 @@ import com.butent.bee.egg.client.data.JsData;
 import com.butent.bee.egg.client.dom.DomUtils;
 import com.butent.bee.egg.client.layout.BeeDirection;
 import com.butent.bee.egg.client.layout.BeeSplit;
+import com.butent.bee.egg.client.layout.TilePanel;
+import com.butent.bee.egg.client.tree.BeeTree;
 import com.butent.bee.egg.client.utils.BeeJs;
 import com.butent.bee.egg.client.utils.JreEmulation;
 import com.butent.bee.egg.shared.Assert;
@@ -299,6 +302,18 @@ public class CliWorker {
 
   public static void showStack() {
     BeeKeeper.getLog().stack();
+  }
+  
+  public static void showTiles() {
+    Widget tiles = BeeKeeper.getUi().getScreenPanel().getCenter();
+    if (!(tiles instanceof TilePanel)) {
+      BeeGlobal.showDialog("no tiles vailable");
+    }
+    
+    BeeTree tree = new BeeTree();
+    tree.addItem(((TilePanel) tiles).getTree(null, true));
+    
+    BeeGlobal.inform(tree);
   }
 
   public static void style(String v, String arr[]) {

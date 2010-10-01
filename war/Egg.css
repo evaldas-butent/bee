@@ -17,6 +17,15 @@ body, table td, select {
   cursor: row-resize;
 }
 
+.bee-activeBlank {
+  background: -webkit-gradient(radial, 90% 5%, 15, 10% 90%, 45, from(Azure), color-stop(0.5, Honeydew), to(LavenderBlush));
+}
+
+.bee-activeContent {
+  border: 3px solid red;
+  border-radius: 10px;
+}
+
 button {
   background: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#fcf), to(#ffc));
 }
