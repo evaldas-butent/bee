@@ -157,7 +157,7 @@
 	<menu id="histogram" parent="duom_menu" order="200" separators="*" text="Statistika" service="g_o_proc.histogram()" type="B" style="INFO" visible="true"/>
 	<menu id="graph" parent="duom_menu" order="210" text="Grafikas" service="g_o_outp.graph_table()" type="B" style="GRAPH" visible="true"/>
 	<menu id="free_values" parent="duom_menu" order="300" text="Nenaudojamos reikšmės" service="g_o_proc.free_values()" type="B" style="INFO" visible="true"/>
-	<menu id="related" parent="duom_menu" order="310" text="Susijæ dokumentai" service="g_o_proc.related()" type="B" style="INFO" keyname="ALT+F2" visible="true"/>
+	<menu id="related" parent="duom_menu" order="310" text="Susiję dokumentai" service="g_o_proc.related()" type="B" style="INFO" keyname="ALT+F2" visible="true"/>
 	<menu id="edit" parent="duom_menu" order="500" separators="*" text="Koreguoti" service="g_o_proc.edit_record()" type="B" style="INFO" keyname="ALT+F1" visible="true"/>
 	<menu id="deep" parent="duom_menu" order="510" text="Gilyn" service="g_o_evnt.do_event('deep')" type="B" style="INFO" keyname="F7" visible="true"/>
 	<menu id="balance" parent="duom_menu" order="700" text="Likutis" service="g_o_proc.balance()" type="B" style="INFO" keyname="F11" visible="true"/>

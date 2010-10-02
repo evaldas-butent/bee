@@ -4,7 +4,7 @@ body, table td, select {
 }
 
 .bee-selectedRadio {
-  background: #9cc;
+  text-transform: uppercase;
 }  
 
 .bee-HSplitter {
@@ -24,6 +24,45 @@ body, table td, select {
 .bee-activeContent {
   border: 3px solid red;
   border-radius: 10px;
+}
+
+.bee-MenuRoot-flow {
+  border: 2px solid green;
+}
+
+.bee-MenuRoot-table {
+  overflow: auto;
+}
+
+.bee-MenuPopup {
+  padding-right: 3px;
+  background: WhiteSmoke;
+  border: 1px solid LightGrey;
+  -webkit-box-shadow: 6px 6px 5px DarkGray;
+}
+
+.bee-MenuItem-label {
+  margin-left: 0.5em;
+}
+
+.bee-MenuItem-selected {
+  background: LightCyan;
+}
+
+.bee-MenuBar-horizontal table {
+  border-collapse: collapse;
+}  
+
+.bee-MenuBar-horizontal td {
+  border: 1px solid silver;
+  text-align: center;
+  vertical-align: middle;
+  padding: 1px;
+}
+
+.bee-MenuBar-vertical .bee-MenuItemSeparator {
+  height: 1px;
+  background: Silver;
 }
 
 button {

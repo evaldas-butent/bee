@@ -223,7 +223,7 @@ public class BeeMenu implements BeeModule {
       arr[i][j++] = BeeUtils.toString(entry.isVisible());
     }
 
-    BeeKeeper.getUi().updateActivePanel(BeeGlobal.simpleGrid(arr, cols));
+    BeeKeeper.getUi().showGrid(arr, cols);
   }
 
   public void start() {
@@ -296,11 +296,11 @@ public class BeeMenu implements BeeModule {
 
     String layout = getLayout(level);
     BeeMenuBar.BAR_TYPE rbt = getBarType(level);
+    boolean root = MenuConst.isRootLevel(level);
 
-    Widget rw = createWidget(layout, rbt, entries);
+    Widget rw = createWidget(layout, rbt, entries, root);
 
-    if (MenuConst.isRootLevel(level)
-        && BeeUtils.inListSame(layout, MenuConst.LAYOUT_CELL_TREE,
+    if (root && BeeUtils.inListSame(layout, MenuConst.LAYOUT_CELL_TREE,
             MenuConst.LAYOUT_CELL_BROWSER)) {
       return rw;
     }
@@ -331,13 +331,13 @@ public class BeeMenu implements BeeModule {
   }
 
   private Widget createWidget(String layout, BeeMenuBar.BAR_TYPE barType,
-      List<MenuEntry> entries) {
+      List<MenuEntry> entries, boolean root) {
     Widget w = null;
 
     if (BeeUtils.same(layout, MenuConst.LAYOUT_MENU_HOR)) {
-      w = new BeeMenuBar(false, barType);
+      w = new BeeMenuBar(root, false, barType);
     } else if (BeeUtils.same(layout, MenuConst.LAYOUT_MENU_VERT)) {
-      w = new BeeMenuBar(true, barType);
+      w = new BeeMenuBar(root, true, barType);
 
     } else if (BeeUtils.same(layout, MenuConst.LAYOUT_STACK)) {
       w = new BeeStack(Unit.EM);
@@ -368,17 +368,17 @@ public class BeeMenu implements BeeModule {
       w = new BeeCellList<MenuEntry>(new MenuCell());
 
     } else if (BeeUtils.same(layout, MenuConst.LAYOUT_RADIO_HOR)) {
-      w = new BeeMenuBar(false, barType, BeeWidget.RADIO);
+      w = new BeeMenuBar(root, false, barType, BeeWidget.RADIO);
     } else if (BeeUtils.same(layout, MenuConst.LAYOUT_RADIO_VERT)) {
-      w = new BeeMenuBar(true, barType, BeeWidget.RADIO);
+      w = new BeeMenuBar(root, true, barType, BeeWidget.RADIO);
 
     } else if (BeeUtils.same(layout, MenuConst.LAYOUT_BUTTONS_HOR)) {
-      w = new BeeMenuBar(false, barType, BeeWidget.BUTTON);
+      w = new BeeMenuBar(root, false, barType, BeeWidget.BUTTON);
     } else if (BeeUtils.same(layout, MenuConst.LAYOUT_BUTTONS_VERT)) {
-      w = new BeeMenuBar(true, barType, BeeWidget.BUTTON);
+      w = new BeeMenuBar(root, true, barType, BeeWidget.BUTTON);
 
     } else {
-      w = new BeeMenuBar();
+      w = new BeeMenuBar(root);
     }
 
     return w;

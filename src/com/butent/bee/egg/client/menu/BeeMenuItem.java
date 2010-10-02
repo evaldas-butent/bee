@@ -4,11 +4,14 @@ import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.UIObject;
 
 import com.butent.bee.egg.client.dom.DomUtils;
+import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.BeeWidget;
 import com.butent.bee.egg.shared.HasId;
 
 public class BeeMenuItem extends UIObject implements HasId {
-  public static BeeWidget DEFAULT_WIDGET = BeeWidget.LABEL;
+  public static BeeWidget defaultWidget = BeeWidget.LABEL;
+  
+  private static final String STYLENAME_DEFAULT = "bee-MenuItem";
   private static final String DEPENDENT_STYLENAME_SELECTED_ITEM = "selected";
 
   private MenuCommand command;
@@ -102,7 +105,7 @@ public class BeeMenuItem extends UIObject implements HasId {
       w = parent.getDefaultWidget();
     }
     if (w == null) {
-      w = DEFAULT_WIDGET;
+      w = defaultWidget;
     }
     
     return w;
@@ -110,6 +113,7 @@ public class BeeMenuItem extends UIObject implements HasId {
   
   private void init(BeeMenuBar parent, String text, BeeWidget type) {
     Element elem;
+    String s;
     
     switch (type) {
       case BUTTON :
@@ -122,12 +126,19 @@ public class BeeMenuItem extends UIObject implements HasId {
         elem = DomUtils.createRadio(parent.getName(), text).cast();
         break;
       default :
-        elem = DomUtils.createLabel(text).cast();
+        if (parent.isFlow()) {
+          s = text.trim() + BeeConst.STRING_SPACE;
+        } else {
+          s = text;
+        }
+        elem = DomUtils.createLabel(s).cast();
     }
     
     setElement(elem);
 
-    setStyleName("bee-MenuItem");
+    setStyleName(STYLENAME_DEFAULT);
+    addStyleDependentName(type.toString().toLowerCase());
+
     setSelectionStyle(false);
     
     createId();

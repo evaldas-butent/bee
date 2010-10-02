@@ -4,7 +4,6 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.event.dom.client.BlurEvent;
 import com.google.gwt.event.dom.client.KeyCodes;
-import com.google.gwt.i18n.client.LocaleInfo;
 import com.google.gwt.layout.client.Layout;
 import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.ImageResource;
@@ -43,6 +42,7 @@ public class BeeMenuBar extends Widget implements HasAnimation, HasId,
     ImageResource subMenuIcon();
   }
 
+  private static final String STYLENAME_ROOT = "bee-MenuRoot";
   private static final String STYLENAME_DEFAULT = "bee-MenuBar";
   private ArrayList<UIObject> allItems = new ArrayList<UIObject>();
 
@@ -60,44 +60,36 @@ public class BeeMenuBar extends Widget implements HasAnimation, HasId,
   private boolean vertical, autoOpen;
   private boolean focusOnHover = true;
 
-  private boolean rtl = LocaleInfo.getCurrentLocale().isRTL();
+  private boolean root = false;
 
   private BAR_TYPE barType = BAR_TYPE.TABLE;
-  private BeeWidget defaultWidget = BeeMenuItem.DEFAULT_WIDGET;
+  private BeeWidget defaultWidget = BeeMenuItem.defaultWidget;
   private String name = BeeUtils.createUniqueName("mb-");
 
   public BeeMenuBar() {
     this(false);
   }
 
-  public BeeMenuBar(boolean vertical) {
-    this(vertical, null, null);
+  public BeeMenuBar(boolean root) {
+    this(root, false);
   }
 
-  public BeeMenuBar(boolean vert, BAR_TYPE bt) {
-    this(vert, bt, null);
+  public BeeMenuBar(boolean root, boolean vert) {
+    this(root, vert, null);
   }
 
-  public BeeMenuBar(boolean vert, BAR_TYPE bt, BeeWidget defW) {
-    this(vert, bt, defW, GWT.<Resources> create(Resources.class));
+  public BeeMenuBar(boolean root, boolean vert, BAR_TYPE bt) {
+    this(root, vert, bt, null);
+  }
+  
+  public BeeMenuBar(boolean root, boolean vert, BAR_TYPE bt, BeeWidget defW) {
+    this(root, vert, bt, defW, GWT.<Resources> create(Resources.class));
   }
 
-  public BeeMenuBar(boolean vert, BAR_TYPE bt, BeeWidget defW,
+  public BeeMenuBar(boolean root, boolean vert, BAR_TYPE bt, BeeWidget defW,
       Resources resources) {
-    init(vert, bt, defW, AbstractImagePrototype.create(resources.subMenuIcon()));
+    init(root, vert, bt, defW, AbstractImagePrototype.create(resources.subMenuIcon()));
     createId();
-  }
-
-  public BeeMenuBar(boolean vert, BeeWidget defW) {
-    this(vert, null, defW);
-  }
-
-  public BeeMenuBar(boolean vertical, Resources resources) {
-    this(vertical, null, null, resources);
-  }
-
-  public BeeMenuBar(Resources resources) {
-    this(false, resources);
   }
 
   public BeeMenuItem addItem(BeeMenuItem item) {
@@ -164,43 +156,6 @@ public class BeeMenuBar extends Widget implements HasAnimation, HasId,
     return allItems.indexOf(item);
   }
 
-  public BeeMenuItem insertItem(BeeMenuItem item, int beforeIndex)
-      throws IndexOutOfBoundsException {
-    if (beforeIndex < 0 || beforeIndex > allItems.size()) {
-      throw new IndexOutOfBoundsException();
-    }
-
-    allItems.add(beforeIndex, item);
-    int itemsIndex = 0;
-    for (int i = 0; i < beforeIndex; i++) {
-      if (allItems.get(i) instanceof BeeMenuItem) {
-        itemsIndex++;
-      }
-    }
-    items.add(itemsIndex, item);
-
-    addItemElement(beforeIndex, item.getElement());
-    item.setParentMenu(this);
-    item.setSelectionStyle(false);
-    updateSubmenuIcon(item);
-    return item;
-  }
-
-  public BeeMenuItemSeparator insertSeparator(BeeMenuItemSeparator separator,
-      int beforeIndex) throws IndexOutOfBoundsException {
-    if (beforeIndex < 0 || beforeIndex > allItems.size()) {
-      throw new IndexOutOfBoundsException();
-    }
-
-    if (vertical) {
-      setItemColSpan(separator, 2);
-    }
-    addItemElement(beforeIndex, separator.getElement());
-    separator.setParentMenu(this);
-    allItems.add(beforeIndex, separator);
-    return separator;
-  }
-
   public BeeMenuItemSeparator insertSeparator(int beforeIndex) {
     return insertSeparator(new BeeMenuItemSeparator(), beforeIndex);
   }
@@ -209,8 +164,24 @@ public class BeeMenuBar extends Widget implements HasAnimation, HasId,
     return isAnimationEnabled;
   }
 
+  public boolean isFlow() {
+    return barType == BAR_TYPE.FLOW;
+  }
+
   public boolean isFocusOnHoverEnabled() {
     return focusOnHover;
+  }
+
+  public boolean isRoot() {
+    return root;
+  }
+
+  public boolean isTable() {
+    return barType == BAR_TYPE.TABLE;
+  }
+
+  public boolean isVertical() {
+    return vertical;
   }
 
   public void moveSelectionDown() {
@@ -252,10 +223,9 @@ public class BeeMenuBar extends Widget implements HasAnimation, HasId,
     }
   }
 
-  @Override
   public void onAfterAdd(HasWidgets parent) {
     if (parent instanceof BeeLayoutPanel) {
-      if (isFlow() || vertical) {
+      if (vertical) {
         ((BeeLayoutPanel) parent).setWidgetHorizontalPosition(this,
             Layout.Alignment.BEGIN);
       }
@@ -307,20 +277,12 @@ public class BeeMenuBar extends Widget implements HasAnimation, HasId,
 
         switch (keyCode) {
           case KeyCodes.KEY_LEFT:
-            if (rtl) {
-              moveToNextItem();
-            } else {
-              moveToPrevItem();
-            }
+            moveToPrevItem();
             eatEvent(event);
             break;
 
           case KeyCodes.KEY_RIGHT:
-            if (rtl) {
-              moveToPrevItem();
-            } else {
-              moveToNextItem();
-            }
+            moveToNextItem();
             eatEvent(event);
             break;
 
@@ -612,8 +574,9 @@ public class BeeMenuBar extends Widget implements HasAnimation, HasId,
     }
   }
 
-  private void init(boolean vert, BAR_TYPE bt, BeeWidget defW,
+  private void init(boolean root, boolean vert, BAR_TYPE bt, BeeWidget defW,
       AbstractImagePrototype subIcon) {
+    this.root = root;
     this.vertical = vert;
     if (bt != null) {
       this.barType = bt;
@@ -646,7 +609,7 @@ public class BeeMenuBar extends Widget implements HasAnimation, HasId,
     sinkEvents(Event.ONCLICK | Event.ONMOUSEOVER | Event.ONMOUSEOUT
         | Event.ONFOCUS | Event.ONKEYDOWN);
 
-    setStyleName(STYLENAME_DEFAULT);
+    setStyleName(root ? STYLENAME_ROOT : STYLENAME_DEFAULT);
     if (vertical) {
       addStyleDependentName("vertical");
     } else {
@@ -660,13 +623,36 @@ public class BeeMenuBar extends Widget implements HasAnimation, HasId,
 
     BeeKeeper.getBus().addBlurHandler(this, true);
   }
-  
-  private boolean isFlow() {
-    return barType == BAR_TYPE.FLOW;
+
+  private BeeMenuItem insertItem(BeeMenuItem item, int beforeIndex) {
+    allItems.add(beforeIndex, item);
+    int itemsIndex = 0;
+    for (int i = 0; i < beforeIndex; i++) {
+      if (allItems.get(i) instanceof BeeMenuItem) {
+        itemsIndex++;
+      }
+    }
+    items.add(itemsIndex, item);
+
+    addItemElement(beforeIndex, item.getElement());
+    item.setParentMenu(this);
+    item.setSelectionStyle(false);
+    updateSubmenuIcon(item);
+
+    return item;
   }
 
-  private boolean isTable() {
-    return barType == BAR_TYPE.TABLE;
+  private BeeMenuItemSeparator insertSeparator(BeeMenuItemSeparator separator,
+      int beforeIndex) {
+    if (vertical) {
+      setItemColSpan(separator, 2);
+    }
+
+    addItemElement(beforeIndex, separator.getElement());
+    separator.setParentMenu(this);
+    allItems.add(beforeIndex, separator);
+
+    return separator;
   }
 
   private void moveToNextItem() {
@@ -725,20 +711,14 @@ public class BeeMenuBar extends Widget implements HasAnimation, HasId,
       parentMenu.popup.setPreviewingAllNativeEvents(false);
     }
 
-    popup = new MenuPopup(this, item, true, false);
+    popup = new MenuPopup(this, item);
     popup.setAnimationEnabled(isAnimationEnabled);
-
-    popup.setStyleName(STYLENAME_DEFAULT + "Popup");
-    String primaryStyleName = getStylePrimaryName();
-    if (!STYLENAME_DEFAULT.equals(primaryStyleName)) {
-      popup.addStyleName(primaryStyleName + "Popup");
-    }
 
     shownChildMenu = item.getSubMenu();
     item.getSubMenu().parentMenu = this;
 
-    popup.setPopupPositionAndShow(new MenuPositionCallback(item.getElement(),
-        popup, vertical, rtl));
+    popup.setPopupPositionAndShow(new MenuPositionCallback(getElement(),
+        item.getElement(), popup, vertical, this.isFlow()));
   }
 
   private boolean selectFirstItemIfNoneSelected() {

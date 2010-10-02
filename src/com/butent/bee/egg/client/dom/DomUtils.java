@@ -155,13 +155,23 @@ public class DomUtils {
   }
 
   public static Element createLabel(String text) {
-    return createLabel(text, null);
+    return createLabel(text, null, false);
   }
 
-  public static Element createLabel(String text, String id) {
-    Assert.notEmpty(text);
+  public static Element createLabel(String text, boolean asDiv) {
+    return createLabel(text, null, asDiv);
+  }
 
-    SpanElement elem = Document.get().createSpanElement();
+  public static Element createLabel(String text, String id, boolean asDiv) {
+    Assert.notEmpty(text);
+    
+    Element elem;
+    if (asDiv) {
+      elem = Document.get().createDivElement();
+    } else {
+      elem = Document.get().createSpanElement();
+    }
+
     elem.setInnerText(text);
 
     String s;

@@ -9,17 +9,19 @@ import com.butent.bee.egg.shared.utils.BeeUtils;
 
 public class MenuPositionCallback implements PositionCallback {
   private Element parent = null;
+  private Element item = null;
   private MenuPopup popup = null;
 
   private boolean vertical = false;
-  private boolean rtl = false;
+  private boolean flow = false;
 
-  public MenuPositionCallback(Element parent, MenuPopup popup,
-      boolean vertical, boolean rtl) {
+  public MenuPositionCallback(Element parent, Element item, MenuPopup popup,
+      boolean vertical, boolean flow) {
     this.parent = parent;
+    this.item = item;
     this.popup = popup;
     this.vertical = vertical;
-    this.rtl = rtl;
+    this.flow = flow;
   }
 
   @Override
@@ -28,27 +30,20 @@ public class MenuPositionCallback implements PositionCallback {
     Assert.notNull(popup);
 
     int x, y;
-
-    if (rtl) {
-      if (vertical) {
-        x = parent.getAbsoluteLeft() - offsetWidth - 1;
-        y = parent.getAbsoluteTop();
-      } else {
-        x = parent.getAbsoluteLeft() + parent.getOffsetWidth() - offsetWidth;
-        y = parent.getAbsoluteTop() + parent.getOffsetHeight() + 1;
-      }
+    
+    if (flow) {
+      x = item.getAbsoluteLeft() + 20;
+      y = item.getAbsoluteTop() + item.getOffsetHeight() + 2;
+    } else if (vertical) {
+      x = parent.getAbsoluteLeft() + parent.getOffsetWidth() + 5;
+      y = item.getAbsoluteTop();
     } else {
-      if (vertical) {
-        x = parent.getAbsoluteLeft() + parent.getOffsetWidth() + 3;
-        y = parent.getAbsoluteTop();
-      } else {
-        x = parent.getAbsoluteLeft();
-        y = parent.getAbsoluteTop() + parent.getOffsetHeight() + 2;
-      }
+      x = item.getAbsoluteLeft();
+      y = parent.getAbsoluteTop() + parent.getOffsetHeight() + 2;
     }
 
-    x = BeeUtils.fitStart(x, offsetWidth, DomUtils.getClientWidth() - 10, 10);
-    y = BeeUtils.fitStart(y, offsetHeight, DomUtils.getClientHeight() - 10, 10);
+    x = BeeUtils.fitStart(x, offsetWidth, DomUtils.getClientWidth() - 20, 10);
+    y = BeeUtils.fitStart(y, offsetHeight, DomUtils.getClientHeight() - 20, 10);
 
     popup.setPopupPosition(x, y);
   }
