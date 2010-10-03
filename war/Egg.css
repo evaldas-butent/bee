@@ -26,27 +26,36 @@ body, table td, select {
   border-radius: 10px;
 }
 
+.bee-MenuRoot-table, .bee-MenuBar {
+  overflow: auto;
+}
+
 .bee-MenuRoot-flow {
   border: 2px solid green;
 }
 
-.bee-MenuRoot-table {
-  overflow: auto;
-}
-
 .bee-MenuPopup {
-  padding-right: 3px;
+  max-width: 95%;
   background: WhiteSmoke;
   border: 1px solid LightGrey;
   -webkit-box-shadow: 6px 6px 5px DarkGray;
 }
 
+.bee-MenuRoot-flow .bee-MenuItem-label {
+  display: inline-block;
+}
+
 .bee-MenuItem-label {
-  margin-left: 0.5em;
+  padding-left: 0.5em;
+  padding-right: 0.5em;
+}
+
+.bee-MenuItem:hover {
+  background: LightCyan;
 }
 
 .bee-MenuItem-selected {
-  background: LightCyan;
+  outline: red auto;
 }
 
 .bee-MenuBar-horizontal table {

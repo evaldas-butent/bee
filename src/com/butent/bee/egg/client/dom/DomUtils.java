@@ -61,6 +61,9 @@ public class DomUtils {
     }
   }
 
+  public static final String TAG_INPUT = "input";
+  public static final String TAG_LABEL = "label";
+
   public static String DEFAULT_ID_PREFIX = "bee";
 
   public static String BUTTON_ID_PREFIX = "b";
@@ -68,8 +71,6 @@ public class DomUtils {
   public static String LABEL_ID_PREFIX = "l";
   public static String RADIO_ID_PREFIX = "r";
   public static String TABLE_CELL_ID_PREFIX = "td";
-
-  private static String TAG_INPUT = "input";
 
   private static String ATTRIBUTE_SERVICE = "data-svc";
   private static String ATTRIBUTE_STAGE = "data-stg";
@@ -215,7 +216,7 @@ public class DomUtils {
 
     return elem;
   }
-
+  
   public static Element createTableCell(String text) {
     return createTableCell(text, false, null);
   }
@@ -631,8 +632,17 @@ public class DomUtils {
   }
 
   public static boolean isInputElement(Element el) {
-    Assert.notNull(el);
+    if (el == null) {
+      return false;
+    }
     return el.getTagName().equalsIgnoreCase(TAG_INPUT);
+  }
+
+  public static boolean isLabelElement(Element el) {
+    if (el == null) {
+      return false;
+    }
+    return el.getTagName().equalsIgnoreCase(TAG_LABEL);
   }
 
   public static void logChildren(Widget w) {
@@ -657,7 +667,7 @@ public class DomUtils {
 
     BeeKeeper.getLog().addSeparator();
   }
-
+  
   public static void logPath(Widget w) {
     Assert.notNull(w);
     List<StringProp> lst = getPathInfo(w);
@@ -705,6 +715,16 @@ public class DomUtils {
     return s;
   }
 
+  public static void setCheckValue(Element elem, boolean value) {
+    Assert.notNull(elem);
+    
+    NodeList<Element> lst = elem.getElementsByTagName(TAG_INPUT);
+    Assert.isTrue(lst.getLength() == 1, "input element not found");
+    
+    InputElement.as(lst.getItem(0)).setChecked(value);
+    InputElement.as(lst.getItem(0)).setDefaultChecked(value);
+  }
+
   public static String setId(UIObject obj, String id) {
     Assert.notNull(obj);
     Assert.notEmpty(id);
@@ -727,6 +747,19 @@ public class DomUtils {
     Assert.notNull(w);
     w.getElement().setTabIndex(idx);
     return idx;
+  }
+
+  public static void sinkChildEvents(Element parent, String childTag, int eventBits) {
+    Assert.notNull(parent);
+    Assert.notEmpty(childTag);
+    Assert.isTrue(eventBits != 0);
+    
+    NodeList<Element> lst = parent.getElementsByTagName(childTag);
+    Assert.isTrue(lst.getLength() > 0, childTag + " children not found");
+    
+    for (int i = 0; i < lst.getLength(); i++) {
+      Event.sinkEvents(lst.getItem(i), eventBits);
+    }
   }
 
   public static String transformElement(Element el) {

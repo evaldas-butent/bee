@@ -1,7 +1,6 @@
 package com.butent.bee.egg.client.menu;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.event.dom.client.BlurEvent;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.layout.client.Layout;
@@ -9,10 +8,10 @@ import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.resources.client.ImageResource.ImageOptions;
 import com.google.gwt.user.client.DOM;
+import com.google.gwt.user.client.DeferredCommand;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.AbstractImagePrototype;
-import com.google.gwt.user.client.ui.HasAnimation;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.Widget;
@@ -31,8 +30,8 @@ import com.butent.bee.egg.shared.utils.BeeUtils;
 import java.util.ArrayList;
 import java.util.List;
 
-public class BeeMenuBar extends Widget implements HasAnimation, HasId,
-    HasAfterAddHandler, HasBeeBlurHandler {
+public class BeeMenuBar extends Widget implements HasId, HasAfterAddHandler,
+    HasBeeBlurHandler {
   public static enum BAR_TYPE {
     TABLE, FLOW
   }
@@ -42,25 +41,23 @@ public class BeeMenuBar extends Widget implements HasAnimation, HasId,
     ImageResource subMenuIcon();
   }
 
-  private static final String STYLENAME_ROOT = "bee-MenuRoot";
   private static final String STYLENAME_DEFAULT = "bee-MenuBar";
-  private ArrayList<UIObject> allItems = new ArrayList<UIObject>();
+  private static final String STYLENAME_ROOT = "bee-MenuRoot";
 
-  private ArrayList<BeeMenuItem> items = new ArrayList<BeeMenuItem>();
+  private List<UIObject> allItems = new ArrayList<UIObject>();
+  private List<BeeMenuItem> items = new ArrayList<BeeMenuItem>();
 
   private Element body;
 
   private AbstractImagePrototype subMenuIcon = null;
-  private boolean isAnimationEnabled = false;
+
   private BeeMenuBar parentMenu;
   private MenuPopup popup;
   private BeeMenuItem selectedItem;
   private BeeMenuBar shownChildMenu;
 
-  private boolean vertical, autoOpen;
-  private boolean focusOnHover = true;
-
   private boolean root = false;
+  private boolean vertical;
 
   private BAR_TYPE barType = BAR_TYPE.TABLE;
   private BeeWidget defaultWidget = BeeMenuItem.defaultWidget;
@@ -81,14 +78,15 @@ public class BeeMenuBar extends Widget implements HasAnimation, HasId,
   public BeeMenuBar(boolean root, boolean vert, BAR_TYPE bt) {
     this(root, vert, bt, null);
   }
-  
+
   public BeeMenuBar(boolean root, boolean vert, BAR_TYPE bt, BeeWidget defW) {
     this(root, vert, bt, defW, GWT.<Resources> create(Resources.class));
   }
 
   public BeeMenuBar(boolean root, boolean vert, BAR_TYPE bt, BeeWidget defW,
       Resources resources) {
-    init(root, vert, bt, defW, AbstractImagePrototype.create(resources.subMenuIcon()));
+    init(root, vert, bt, defW,
+        AbstractImagePrototype.create(resources.subMenuIcon()));
     createId();
   }
 
@@ -120,20 +118,14 @@ public class BeeMenuBar extends Widget implements HasAnimation, HasId,
     return insertSeparator(separator, allItems.size());
   }
 
+  public void closePopup() {
+    if (popup != null) {
+      popup.hide();
+    }
+  }
+
   public void createId() {
     DomUtils.createId(this, "menubar");
-  }
-
-  public void focus() {
-    BeeImpl.focus(getElement());
-  }
-
-  public boolean getAutoOpen() {
-    return autoOpen;
-  }
-
-  public BAR_TYPE getBarType() {
-    return barType;
   }
 
   public BeeWidget getDefaultWidget() {
@@ -144,32 +136,12 @@ public class BeeMenuBar extends Widget implements HasAnimation, HasId,
     return DomUtils.getId(this);
   }
 
-  public int getItemIndex(BeeMenuItem item) {
-    return allItems.indexOf(item);
-  }
-
   public String getName() {
     return name;
   }
 
-  public int getSeparatorIndex(BeeMenuItemSeparator item) {
-    return allItems.indexOf(item);
-  }
-
-  public BeeMenuItemSeparator insertSeparator(int beforeIndex) {
-    return insertSeparator(new BeeMenuItemSeparator(), beforeIndex);
-  }
-
-  public boolean isAnimationEnabled() {
-    return isAnimationEnabled;
-  }
-
   public boolean isFlow() {
     return barType == BAR_TYPE.FLOW;
-  }
-
-  public boolean isFocusOnHoverEnabled() {
-    return focusOnHover;
   }
 
   public boolean isRoot() {
@@ -182,45 +154,6 @@ public class BeeMenuBar extends Widget implements HasAnimation, HasId,
 
   public boolean isVertical() {
     return vertical;
-  }
-
-  public void moveSelectionDown() {
-    if (selectFirstItemIfNoneSelected()) {
-      return;
-    }
-
-    if (vertical) {
-      selectNextItem();
-    } else {
-      if (selectedItem.getSubMenu() != null
-          && !selectedItem.getSubMenu().getItems().isEmpty()
-          && (shownChildMenu == null || shownChildMenu.getSelectedItem() == null)) {
-        if (shownChildMenu == null) {
-          doItemAction(selectedItem, false, true);
-        }
-        selectedItem.getSubMenu().focus();
-      } else if (parentMenu != null) {
-        if (parentMenu.vertical) {
-          parentMenu.selectNextItem();
-        } else {
-          parentMenu.moveSelectionDown();
-        }
-      }
-    }
-  }
-
-  public void moveSelectionUp() {
-    if (selectFirstItemIfNoneSelected()) {
-      return;
-    }
-
-    if ((shownChildMenu == null) && vertical) {
-      selectPrevItem();
-    } else if ((parentMenu != null) && parentMenu.vertical) {
-      parentMenu.selectPrevItem();
-    } else {
-      close(true);
-    }
   }
 
   public void onAfterAdd(HasWidgets parent) {
@@ -246,30 +179,28 @@ public class BeeMenuBar extends Widget implements HasAnimation, HasId,
 
   @Override
   public void onBrowserEvent(Event event) {
-    BeeMenuItem item = findItem(DOM.eventGetTarget(event));
+    Element target = DOM.eventGetTarget(event);
+    int type = DOM.eventGetType(event);
+    
+    BeeMenuItem item = findItem(target);
+    if (item == null && type != Event.ONKEYDOWN) {
+      super.onBrowserEvent(event);
+      return;
+    }
 
-    switch (DOM.eventGetType(event)) {
+    switch (type) {
       case Event.ONCLICK:
-        BeeImpl.focus(getElement());
-        if (item != null) {
-          doItemAction(item, true, true);
-        }
+        focus();
+        doItemAction(item, true);
+        eatEvent(event);
         break;
 
       case Event.ONMOUSEOVER:
-        if (item != null) {
-          itemOver(item, true);
-        }
+        itemOver(item);
         break;
 
       case Event.ONMOUSEOUT:
-        if (item != null) {
-          itemOver(null, true);
-        }
-        break;
-
-      case Event.ONFOCUS:
-        selectFirstItemIfNoneSelected();
+        itemOver(null);
         break;
 
       case Event.ONKEYDOWN:
@@ -277,25 +208,41 @@ public class BeeMenuBar extends Widget implements HasAnimation, HasId,
 
         switch (keyCode) {
           case KeyCodes.KEY_LEFT:
-            moveToPrevItem();
+            moveLeft();
             eatEvent(event);
             break;
 
           case KeyCodes.KEY_RIGHT:
-            moveToNextItem();
+            moveRight();
             eatEvent(event);
             break;
 
           case KeyCodes.KEY_UP:
-            moveSelectionUp();
+            moveUp();
             eatEvent(event);
             break;
 
           case KeyCodes.KEY_DOWN:
-            moveSelectionDown();
+            moveDown();
             eatEvent(event);
             break;
+          
+          case KeyCodes.KEY_HOME:
+          case KeyCodes.KEY_PAGEUP:
+            if (items.size() > 1) {
+              selectItem(0);
+              eatEvent(event);
+            }
+            break;
 
+          case KeyCodes.KEY_END:
+          case KeyCodes.KEY_PAGEDOWN:
+            if (items.size() > 1) {
+              selectItem(items.size() - 1);
+              eatEvent(event);
+            }
+            break;
+            
           case KeyCodes.KEY_ESCAPE:
             closeAllParentsAndChildren();
             eatEvent(event);
@@ -305,10 +252,20 @@ public class BeeMenuBar extends Widget implements HasAnimation, HasId,
             closeAllParentsAndChildren();
             break;
 
+          case KeyCodes.KEY_DELETE:
+          case KeyCodes.KEY_BACKSPACE:
+            if (parentMenu != null) {
+              parentMenu.focus();
+              parentMenu.closeChildMenu();
+              eatEvent(event);
+            }
+            break;
+            
           case KeyCodes.KEY_ENTER:
             if (!selectFirstItemIfNoneSelected()) {
-              doItemAction(selectedItem, true, true);
+              doItemAction(selectedItem, true);
               eatEvent(event);
+              activateSubMenu(shownChildMenu);
             }
             break;
         }
@@ -317,184 +274,31 @@ public class BeeMenuBar extends Widget implements HasAnimation, HasId,
     super.onBrowserEvent(event);
   }
 
-  public void selectItem(BeeMenuItem item) {
-    Assert.isTrue(item == null || item.getParentMenu() == this);
+  public void onShow() {
+    selectItem(null);
+  }
 
+  public void selectItem(BeeMenuItem item) {
     if (item == selectedItem) {
       return;
     }
 
     if (selectedItem != null) {
-      selectedItem.setSelectionStyle(false);
-
-      if (vertical) {
-        Element tr = DOM.getParent(selectedItem.getElement());
-        if (DOM.getChildCount(tr) == 2) {
-          Element td = DOM.getChild(tr, 1);
-          setStyleName(td, "subMenuIcon-selected", false);
-        }
-      }
+      selectedItem.setSelected(false);
     }
-
     if (item != null) {
-      item.setSelectionStyle(true);
-
-      if (vertical) {
-        Element tr = DOM.getParent(item.getElement());
-        if (DOM.getChildCount(tr) == 2) {
-          Element td = DOM.getChild(tr, 1);
-          setStyleName(td, "subMenuIcon-selected", true);
-        }
-      }
+      DOM.scrollIntoView(item.getElement());
+      item.setSelected(true);
     }
 
     selectedItem = item;
-  }
-
-  public void setAnimationEnabled(boolean enable) {
-    isAnimationEnabled = enable;
-  }
-
-  public void setAutoOpen(boolean autoOpen) {
-    this.autoOpen = autoOpen;
-  }
-
-  public void setBarType(BAR_TYPE barType) {
-    this.barType = barType;
-  }
-
-  public void setDefaultWidget(BeeWidget defaultWidget) {
-    this.defaultWidget = defaultWidget;
-  }
-
-  public void setFocusOnHoverEnabled(boolean enabled) {
-    focusOnHover = enabled;
   }
 
   public void setId(String id) {
     DomUtils.setId(this, id);
   }
 
-  public void setName(String name) {
-    this.name = name;
-  }
-
-  protected List<BeeMenuItem> getItems() {
-    return this.items;
-  }
-
-  protected BeeMenuItem getSelectedItem() {
-    return this.selectedItem;
-  }
-
-  @Override
-  protected void onDetach() {
-    if (popup != null) {
-      popup.hide();
-    }
-
-    super.onDetach();
-  }
-
-  @Override
-  protected void onEnsureDebugId(String baseID) {
-    super.onEnsureDebugId(baseID);
-    setMenuItemDebugIds(baseID);
-  }
-
-  protected void onShow() {
-    selectItem(null);
-  }
-
-  void closeAllParents() {
-    if (parentMenu != null) {
-      close(false);
-    } else {
-      selectItem(null);
-    }
-  }
-
-  void closeAllParentsAndChildren() {
-    closeAllParents();
-    if (parentMenu == null && popup != null) {
-      popup.hide();
-    }
-  }
-
-  void doItemAction(final BeeMenuItem item, boolean fireCommand, boolean focus) {
-    selectItem(item);
-
-    if (item != null) {
-      if (fireCommand && item.getCommand() != null) {
-        closeAllParents();
-
-        final MenuCommand cmd = item.getCommand();
-        Scheduler.get().scheduleFinally(new Scheduler.ScheduledCommand() {
-          public void execute() {
-            cmd.execute();
-          }
-        });
-
-        if (shownChildMenu != null) {
-          shownChildMenu.onHide(focus);
-          popup.hide();
-          shownChildMenu = null;
-          selectItem(null);
-        }
-      } else if (item.getSubMenu() != null) {
-        if (shownChildMenu == null) {
-          openPopup(item);
-        } else if (item.getSubMenu() != shownChildMenu) {
-          shownChildMenu.onHide(focus);
-          popup.hide();
-          openPopup(item);
-        } else if (fireCommand && !autoOpen) {
-          shownChildMenu.onHide(focus);
-          popup.hide();
-          shownChildMenu = null;
-          selectItem(item);
-        }
-      } else if (autoOpen && shownChildMenu != null) {
-        shownChildMenu.onHide(focus);
-        popup.hide();
-        shownChildMenu = null;
-      }
-    }
-  }
-
-  MenuPopup getPopup() {
-    return popup;
-  }
-
-  void itemOver(BeeMenuItem item, boolean focus) {
-    if (item == null) {
-      if ((selectedItem != null)
-          && (shownChildMenu == selectedItem.getSubMenu())) {
-        return;
-      }
-    }
-
-    selectItem(item);
-    if (focus && focusOnHover) {
-      focus();
-    }
-
-    if (item != null) {
-      if ((shownChildMenu != null) || (parentMenu != null) || autoOpen) {
-        doItemAction(item, false, focusOnHover);
-      }
-    }
-  }
-
-  void setMenuItemDebugIds(String baseID) {
-    int itemCount = 0;
-    for (BeeMenuItem item : items) {
-      item.ensureDebugId(baseID + "-item" + itemCount);
-      itemCount++;
-    }
-  }
-
-  void updateSubmenuIcon(BeeMenuItem item) {
+  public void updateSubmenuIcon(BeeMenuItem item) {
     if (!isTable()) {
       return;
     }
@@ -526,15 +330,42 @@ public class BeeMenuBar extends Widget implements HasAnimation, HasId,
     }
   }
 
+  @Override
+  protected void onDetach() {
+    closePopup();
+    super.onDetach();
+  }
+
+  private void activateSubMenu(BeeMenuBar sub) {
+    if (sub != null) {
+      sub.selectFirstItemIfNoneSelected();
+      sub.focus();
+    }
+  }
+
+  private void activateSubMenu(BeeMenuItem item) {
+    if (shownChildMenu == null) {
+      openPopup(item);
+    } else if (item.getSubMenu() != shownChildMenu) {
+      closeChildMenu();
+      openPopup(item);
+    }
+    
+    item.getSubMenu().selectFirstItemIfNoneSelected();
+    item.getSubMenu().focus();
+  }
+
   private void addItemElement(int beforeIndex, Element elem) {
     if (isFlow()) {
       DOM.insertChild(body, elem, beforeIndex);
+
     } else if (vertical) {
       Element tr = DOM.createTR();
       DOM.insertChild(body, tr, beforeIndex);
       Element td = DOM.createTD();
       DOM.appendChild(td, elem);
       DOM.appendChild(tr, td);
+
     } else {
       Element tr = DOM.getChild(body, 0);
       Element td = DOM.createTD();
@@ -543,27 +374,83 @@ public class BeeMenuBar extends Widget implements HasAnimation, HasId,
     }
   }
 
-  private void close(boolean focus) {
+  private void closeAllParents() {
     if (parentMenu != null) {
-      parentMenu.popup.hide(!focus);
-      if (focus) {
-        parentMenu.focus();
+      parentMenu.closePopup();
+      parentMenu.closeAllParents();
+    } else {
+      selectItem(null);
+    }
+  }
+  
+  private void closeAllParentsAndChildren() {
+    closeAllParents();
+    if (parentMenu == null) {
+      closePopup();
+    }
+  }
+
+  private void closeChildMenu() {
+    shownChildMenu.onHide();
+    closePopup();
+    shownChildMenu = null;
+  }
+
+  private void doItemAction(BeeMenuItem item, boolean fireCommand) {
+    selectItem(item);
+
+    if (item != null) {
+      if (fireCommand && item.getCommand() != null) {
+        closeAllParents();
+
+        DeferredCommand.addCommand(item.getCommand());
+
+        if (shownChildMenu != null) {
+          closeChildMenu();
+          selectItem(null);
+        }
+
+      } else if (item.getSubMenu() != null) {
+        if (shownChildMenu == null) {
+          openPopup(item);
+        } else if (item.getSubMenu() != shownChildMenu) {
+          closeChildMenu();
+          openPopup(item);
+        } else if (fireCommand) {
+          closeChildMenu();
+          selectItem(item);
+        }
+
+      } else if (shownChildMenu != null) {
+        closeChildMenu();
       }
     }
   }
 
   private void eatEvent(Event event) {
-    DOM.eventCancelBubble(event, true);
-    DOM.eventPreventDefault(event);
+    event.stopPropagation();
+    event.preventDefault();
   }
 
-  private BeeMenuItem findItem(Element hItem) {
+  private BeeMenuItem findItem(Element elem) {
+    if (elem == null || DomUtils.isLabelElement(elem)) {
+      return null;
+    }
+
     for (BeeMenuItem item : items) {
-      if (DOM.isOrHasChild(item.getElement(), hItem)) {
+      if (item.getElement() == elem) {
+        return item;
+      }
+      if (item.getElement() == elem.getParentElement()) {
         return item;
       }
     }
+
     return null;
+  }
+
+  private void focus() {
+    BeeImpl.focus(getElement());
   }
 
   private Element getItemContainerElement() {
@@ -571,6 +458,14 @@ public class BeeMenuBar extends Widget implements HasAnimation, HasId,
       return body;
     } else {
       return DOM.getChild(body, 0);
+    }
+  }
+
+  private boolean hasSubMenu(BeeMenuItem item) {
+    if (item == null) {
+      return false;
+    } else {
+      return item.getSubMenu() != null;
     }
   }
 
@@ -606,8 +501,10 @@ public class BeeMenuBar extends Widget implements HasAnimation, HasId,
     DOM.appendChild(outer, elem);
     setElement(outer);
 
-    sinkEvents(Event.ONCLICK | Event.ONMOUSEOVER | Event.ONMOUSEOUT
-        | Event.ONFOCUS | Event.ONKEYDOWN);
+    sinkEvents(Event.ONCLICK | Event.ONKEYDOWN);
+    if (!isFlow()) {
+      sinkEvents(Event.ONMOUSEOVER | Event.ONMOUSEOUT);
+    }
 
     setStyleName(root ? STYLENAME_ROOT : STYLENAME_DEFAULT);
     if (vertical) {
@@ -636,7 +533,7 @@ public class BeeMenuBar extends Widget implements HasAnimation, HasId,
 
     addItemElement(beforeIndex, item.getElement());
     item.setParentMenu(this);
-    item.setSelectionStyle(false);
+    item.setSelected(false);
     updateSubmenuIcon(item);
 
     return item;
@@ -655,70 +552,102 @@ public class BeeMenuBar extends Widget implements HasAnimation, HasId,
     return separator;
   }
 
-  private void moveToNextItem() {
-    if (selectFirstItemIfNoneSelected()) {
-      return;
+  private void itemOver(BeeMenuItem item) {
+    if (item == null) {
+      if ((selectedItem != null)
+          && (shownChildMenu == selectedItem.getSubMenu())) {
+        return;
+      }
     }
 
-    if (!vertical) {
-      selectNextItem();
-    } else {
-      if (selectedItem.getSubMenu() != null
-          && !selectedItem.getSubMenu().getItems().isEmpty()
-          && (shownChildMenu == null || shownChildMenu.getSelectedItem() == null)) {
-        if (shownChildMenu == null) {
-          doItemAction(selectedItem, false, true);
-        }
-        selectedItem.getSubMenu().focus();
-      } else if (parentMenu != null) {
-        if (!parentMenu.vertical) {
-          parentMenu.selectNextItem();
-        } else {
-          parentMenu.moveToNextItem();
-        }
+    selectItem(item);
+
+    if (item != null) {
+      focus();
+      if ((shownChildMenu != null) || (parentMenu != null)) {
+        doItemAction(item, false);
       }
     }
   }
 
-  private void moveToPrevItem() {
+  private void moveDown() {
+    if (selectFirstItemIfNoneSelected()) {
+      return;
+    }
+
+    if (vertical) {
+      selectNextItem();
+    } else if (hasSubMenu(selectedItem)) {
+      activateSubMenu(selectedItem);
+    } else if (parentMenu != null) {
+      parentMenu.moveDown();
+    }
+  }
+
+  private void moveLeft() {
     if (selectFirstItemIfNoneSelected()) {
       return;
     }
 
     if (!vertical) {
       selectPrevItem();
-    } else {
-      if ((parentMenu != null) && (!parentMenu.vertical)) {
-        parentMenu.selectPrevItem();
+    } else if (parentMenu != null) {
+      if (!parentMenu.vertical) {
+        parentMenu.moveLeft();
       } else {
-        close(true);
+        parentMenu.focus();
+        parentMenu.closeChildMenu();
       }
     }
   }
 
-  private void onHide(boolean focus) {
+  private void moveRight() {
+    if (selectFirstItemIfNoneSelected()) {
+      return;
+    }
+
+    if (!vertical) {
+      selectNextItem();
+    } else if (hasSubMenu(selectedItem)) {
+      activateSubMenu(selectedItem);
+    } else if (parentMenu != null) {
+      parentMenu.moveRight();
+    }
+  }
+
+  private void moveUp() {
+    if (selectFirstItemIfNoneSelected()) {
+      return;
+    }
+
+    if (vertical) {
+      selectPrevItem();
+    } else if (parentMenu != null) {
+      if (parentMenu.vertical) {
+        parentMenu.moveUp();
+      } else {
+        parentMenu.focus();
+      }
+      parentMenu.closeChildMenu();
+    }
+  }
+
+  private void onHide() {
     if (shownChildMenu != null) {
-      shownChildMenu.onHide(focus);
+      shownChildMenu.onHide();
       popup.hide();
-      if (focus) {
-        focus();
-      }
+      focus();
     }
   }
-
+  
   private void openPopup(BeeMenuItem item) {
-    if (parentMenu != null && parentMenu.popup != null) {
-      parentMenu.popup.setPreviewingAllNativeEvents(false);
-    }
-
     popup = new MenuPopup(this, item);
-    popup.setAnimationEnabled(isAnimationEnabled);
 
     shownChildMenu = item.getSubMenu();
     item.getSubMenu().parentMenu = this;
 
     popup.setPopupPositionAndShow(new MenuPositionCallback(getElement(),
-        item.getElement(), popup, vertical, this.isFlow()));
+        item.getElement(), popup, vertical));
   }
 
   private boolean selectFirstItemIfNoneSelected() {
@@ -732,47 +661,46 @@ public class BeeMenuBar extends Widget implements HasAnimation, HasId,
     return false;
   }
 
-  private void selectNextItem() {
-    if (selectedItem == null) {
+  private void selectItem(int index) {
+    Assert.isIndex(items, index);
+    if (selectedItem != null && index == items.indexOf(selectedItem)) {
       return;
     }
 
-    int index = items.indexOf(selectedItem);
-    Assert.isTrue(index != -1);
+    BeeMenuItem item = items.get(index);
 
-    BeeMenuItem itemToBeSelected;
-
-    if (index < items.size() - 1) {
-      itemToBeSelected = items.get(index + 1);
-    } else {
-      itemToBeSelected = items.get(0);
-    }
-
-    selectItem(itemToBeSelected);
-    if (shownChildMenu != null) {
-      doItemAction(itemToBeSelected, false, true);
-    }
+    doItemAction(item, false);
+    focus();
   }
-
-  private void selectPrevItem() {
-    if (selectedItem == null) {
+  
+  private void selectNextItem() {
+    if (selectedItem == null || items.size() <= 1) {
       return;
     }
 
     int index = items.indexOf(selectedItem);
-    Assert.isTrue(index != -1);
-
-    BeeMenuItem itemToBeSelected;
-    if (index > 0) {
-      itemToBeSelected = items.get(index - 1);
+    if (index < items.size() - 1) {
+      index++;
     } else {
-      itemToBeSelected = items.get(items.size() - 1);
+      index = 0;
     }
 
-    selectItem(itemToBeSelected);
-    if (shownChildMenu != null) {
-      doItemAction(itemToBeSelected, false, true);
+    selectItem(index);
+  }
+  
+  private void selectPrevItem() {
+    if (selectedItem == null || items.size() <= 1) {
+      return;
     }
+
+    int index = items.indexOf(selectedItem);
+    if (index > 0) {
+      index--;
+    } else {
+      index = items.size() - 1;
+    }
+
+    selectItem(index);
   }
 
   private void setItemColSpan(UIObject item, int colspan) {
@@ -780,5 +708,5 @@ public class BeeMenuBar extends Widget implements HasAnimation, HasId,
       DOM.setElementPropertyInt(item.getElement(), "colSpan", colspan);
     }
   }
-
+  
 }

@@ -4,7 +4,6 @@ import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.UIObject;
 
 import com.butent.bee.egg.client.dom.DomUtils;
-import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.BeeWidget;
 import com.butent.bee.egg.shared.HasId;
 
@@ -12,7 +11,7 @@ public class BeeMenuItem extends UIObject implements HasId {
   public static BeeWidget defaultWidget = BeeWidget.LABEL;
   
   private static final String STYLENAME_DEFAULT = "bee-MenuItem";
-  private static final String DEPENDENT_STYLENAME_SELECTED_ITEM = "selected";
+  private static final String STYLENAME_SELECTED = "selected";
 
   private MenuCommand command;
   private BeeMenuBar parentMenu, subMenu;
@@ -71,6 +70,22 @@ public class BeeMenuItem extends UIObject implements HasId {
     DomUtils.setId(this, id);
   }
 
+  public void setParentMenu(BeeMenuBar parentMenu) {
+    this.parentMenu = parentMenu;
+  }
+
+  public void setSelected(boolean selected) {
+    if (selected) {
+      addStyleDependentName(STYLENAME_SELECTED);
+    } else {
+      removeStyleDependentName(STYLENAME_SELECTED);
+    }
+    
+    if (getWidgetType() == BeeWidget.RADIO) {
+      DomUtils.setCheckValue(getElement(), selected);
+    }
+  }
+
   public void setSubMenu(BeeMenuBar subMenu) {
     this.subMenu = subMenu;
     if (this.parentMenu != null) {
@@ -84,18 +99,6 @@ public class BeeMenuItem extends UIObject implements HasId {
 
   public void setWidgetType(BeeWidget widgetType) {
     this.widgetType = widgetType;
-  }
-
-  protected void setSelectionStyle(boolean selected) {
-    if (selected) {
-      addStyleDependentName(DEPENDENT_STYLENAME_SELECTED_ITEM);
-    } else {
-      removeStyleDependentName(DEPENDENT_STYLENAME_SELECTED_ITEM);
-    }
-  }
-
-  void setParentMenu(BeeMenuBar parentMenu) {
-    this.parentMenu = parentMenu;
   }
 
   private BeeWidget getDefaultWidget(BeeMenuBar parent) {
@@ -113,7 +116,6 @@ public class BeeMenuItem extends UIObject implements HasId {
   
   private void init(BeeMenuBar parent, String text, BeeWidget type) {
     Element elem;
-    String s;
     
     switch (type) {
       case BUTTON :
@@ -126,21 +128,14 @@ public class BeeMenuItem extends UIObject implements HasId {
         elem = DomUtils.createRadio(parent.getName(), text).cast();
         break;
       default :
-        if (parent.isFlow()) {
-          s = text.trim() + BeeConst.STRING_SPACE;
-        } else {
-          s = text;
-        }
-        elem = DomUtils.createLabel(s).cast();
+        elem = DomUtils.createLabel(text).cast();
     }
     
     setElement(elem);
 
     setStyleName(STYLENAME_DEFAULT);
     addStyleDependentName(type.toString().toLowerCase());
-
-    setSelectionStyle(false);
-    
+   
     createId();
     
     setParentMenu(parent);
