@@ -111,8 +111,9 @@ public class XmlUtils {
   public static StringProp[][] getAttributesFromFile(String src, String tag) {
     return getAttributesFromFile(src, null, tag);
   }
-  
-  public static StringProp[][] getAttributesFromFile(String src, String xsl, String tag) {
+
+  public static StringProp[][] getAttributesFromFile(String src, String xsl,
+      String tag) {
     Assert.notEmpty(src);
     Assert.notEmpty(tag);
 
@@ -122,7 +123,7 @@ public class XmlUtils {
     } else {
       doc = xsltToDom(src, xsl);
     }
-    
+
     if (doc == null) {
       LogUtils.warning(logger, src, xsl, "cannot parse xml");
       return null;
@@ -621,19 +622,19 @@ public class XmlUtils {
 
     return ok;
   }
-  
+
   public static Document xsltToDom(String src, String xsl) {
     Assert.notEmpty(src);
     Assert.notEmpty(xsl);
 
     StreamSource in = new StreamSource(src);
     StreamSource tr = new StreamSource(xsl);
-    
+
     Document doc = domBuilder.newDocument();
     Element nd = doc.createElement(BeeUtils.createUniqueName("x2d"));
-    
+
     DOMResult out = new DOMResult(nd);
-    
+
     if (doXslt(in, tr, out)) {
       doc.appendChild(nd);
       return doc;
@@ -650,10 +651,10 @@ public class XmlUtils {
     StreamSource in = new StreamSource(src);
     StreamSource tr = new StreamSource(xsl);
     StreamResult out = new StreamResult(dst);
-    
+
     return doXslt(in, tr, out);
   }
-  
+
   public static List<SubProp> xsltToInfo(String src, String xsl) {
     Assert.notEmpty(src);
     Assert.notEmpty(xsl);
@@ -665,24 +666,24 @@ public class XmlUtils {
       return getTreeInfo(doc, "0");
     }
   }
-  
+
   public static String xsltToString(String src, String xsl) {
     Assert.notEmpty(src);
     Assert.notEmpty(xsl);
 
     StreamSource in = new StreamSource(src);
     StreamSource tr = new StreamSource(xsl);
-    
+
     StringWriter wrt = new StringWriter();
     StreamResult out = new StreamResult(wrt);
-    
+
     if (doXslt(in, tr, out)) {
       return wrt.getBuffer().toString();
     } else {
       return BeeConst.STRING_EMPTY;
     }
   }
-  
+
   private static boolean checkBuilder() {
     if (domBuilder == null) {
       LogUtils.severe(logger, "Document Builder not available");
@@ -692,7 +693,7 @@ public class XmlUtils {
     }
   }
 
-  private static Document createDocument(File fl) {
+  private static synchronized Document createDocument(File fl) {
     Document ret = null;
     if (!checkBuilder()) {
       return ret;
@@ -709,7 +710,7 @@ public class XmlUtils {
     return ret;
   }
 
-  private static Document createDocument(Reader rdr) {
+  private static synchronized Document createDocument(Reader rdr) {
     Document ret = null;
     if (!checkBuilder()) {
       return ret;
