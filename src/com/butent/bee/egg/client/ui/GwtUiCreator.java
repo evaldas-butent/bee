@@ -13,7 +13,7 @@ import com.butent.bee.egg.client.BeeGlobal;
 import com.butent.bee.egg.client.BeeKeeper;
 import com.butent.bee.egg.client.layout.BeeHorizontal;
 import com.butent.bee.egg.client.layout.BeeLayoutPanel;
-import com.butent.bee.egg.client.layout.BeeSplit;
+import com.butent.bee.egg.client.layout.BeeScroll;
 import com.butent.bee.egg.client.layout.BeeStack;
 import com.butent.bee.egg.client.layout.BeeTab;
 import com.butent.bee.egg.client.layout.BeeVertical;
@@ -111,19 +111,21 @@ public class GwtUiCreator implements UiCreator {
 
   @Override
   public Object createGrid(UiGrid uiGrid) {
-    BeeSplit widget = new BeeSplit();
+    BeeLayoutPanel widget = new BeeLayoutPanel();
     widget.setTitle(uiGrid.getId());
 
     if (!BeeUtils.isEmpty(uiGrid.getCaption())) {
       BeeLabel label = new BeeLabel();
       label.setText(uiGrid.getCaption());
-      widget.addNorth(label, 20);
+      widget.add(label);
     }
+    BeeScroll grid = new BeeScroll();
+    widget.add(grid);
 
     String svcId = BeeUtils.createUniqueName("svc");
     BeeGlobal.registerService(svcId, "comp_ui_grid");
     CompositeService service = BeeGlobal.getService(svcId);
-    service.doService(widget, uiGrid.getProperty("parameters"));
+    service.doService(grid, uiGrid.getProperty("parameters"));
 
     return widget;
   }
@@ -168,7 +170,8 @@ public class GwtUiCreator implements UiCreator {
 
   @Override
   public Object createMenuHorizontal(UiMenuHorizontal menuHorizontal) {
-    BeeMenuBar widget = new BeeMenuBar();
+    BeeMenuBar widget = new BeeMenuBar(
+        BeeUtils.isEmpty(menuHorizontal.getParent()));
     widget.setTitle(menuHorizontal.getId());
 
     createMenuItems(widget, menuHorizontal.getChilds());
@@ -178,7 +181,8 @@ public class GwtUiCreator implements UiCreator {
 
   @Override
   public Object createMenuVertical(UiMenuVertical menuVertical) {
-    BeeMenuBar widget = new BeeMenuBar(true);
+    BeeMenuBar widget = new BeeMenuBar(
+        BeeUtils.isEmpty(menuVertical.getParent()), true);
     widget.setTitle(menuVertical.getId());
 
     createMenuItems(widget, menuVertical.getChilds());
@@ -336,6 +340,9 @@ public class GwtUiCreator implements UiCreator {
         String txt = child.getCaption();
         String sep = child.getProperty("separators");
 
+        if (!BeeUtils.isEmpty(sep)) {
+          menu.addSeparator(new BeeMenuItemSeparator());
+        }
         if (child.hasChilds()) {
           Object childWidget = child.createInstance(this);
 
@@ -350,9 +357,6 @@ public class GwtUiCreator implements UiCreator {
           String opt = child.getProperty("parameters");
 
           menu.addItem(txt, new MenuCommand(svc, opt));
-        }
-        if (!BeeUtils.isEmpty(sep)) {
-          menu.addSeparator(new BeeMenuItemSeparator());
         }
       }
     }
