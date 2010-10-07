@@ -139,7 +139,7 @@ public class BeeService {
 
   public static final String XML_TAG_DATA = RPC_FIELD_PREFIX + "data";
 
-  public static final char DEFAULT_INFORMATION_SEPARATOR = Character.MIN_VALUE;
+  public static final char DEFAULT_INFORMATION_SEPARATOR = '\u001d';
 
   public static final String QUERY_STRING_SEPARATOR = "?";
   public static final String QUERY_STRING_PAIR_SEPARATOR = "&";
@@ -219,7 +219,7 @@ public class BeeService {
         ct = "application/zip";
         break;
       default:
-        ct = "text/plain";
+        ct = "application/octet-stream";
     }
 
     return ct;

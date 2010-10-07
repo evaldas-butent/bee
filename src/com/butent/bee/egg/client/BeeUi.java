@@ -6,7 +6,6 @@ import com.google.gwt.layout.client.Layout;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HasWidgets;
-import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.egg.client.cli.CliWidget;
@@ -75,7 +74,7 @@ public class BeeUi implements BeeModule {
 
   private BeeSplit screenPanel = null;
   private TilePanel activePanel = null;
-  private Panel menuPanel = null;
+  private BeeLayoutPanel menuPanel = null;
 
   private Images images = GWT.create(Images.class);
 
@@ -152,7 +151,7 @@ public class BeeUi implements BeeModule {
     return elDsn;
   }
 
-  public Panel getMenuPanel() {
+  public BeeLayoutPanel getMenuPanel() {
     return menuPanel;
   }
 
@@ -196,7 +195,7 @@ public class BeeUi implements BeeModule {
     this.elDsn = elDsn;
   }
 
-  public void setMenuPanel(Panel menuPanel) {
+  public void setMenuPanel(BeeLayoutPanel menuPanel) {
     this.menuPanel = menuPanel;
   }
 
@@ -248,7 +247,7 @@ public class BeeUi implements BeeModule {
   public void updateMenu(Widget w) {
     Assert.notNull(w);
 
-    Panel p = getMenuPanel();
+    BeeLayoutPanel p = getMenuPanel();
     Assert.notNull(p);
 
     p.clear();

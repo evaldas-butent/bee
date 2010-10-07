@@ -5,7 +5,6 @@ import com.google.gwt.core.client.JsArray;
 import com.google.gwt.dom.client.ButtonElement;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.EventTarget;
 import com.google.gwt.dom.client.InputElement;
 import com.google.gwt.dom.client.LabelElement;
 import com.google.gwt.dom.client.Node;
@@ -13,7 +12,6 @@ import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.dom.client.SpanElement;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.dom.client.TableCellElement;
-import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.UIObject;
@@ -145,14 +143,19 @@ public class DomUtils {
     return elem;
   }
 
-  public static String createId(UIObject obj, String prefix) {
-    Assert.notNull(obj);
+  public static String createId(Element elem, String prefix) {
+    Assert.notNull(elem);
     Assert.notEmpty(prefix);
 
     String id = createUniqueId(prefix);
-    obj.getElement().setId(id);
+    elem.setId(id);
 
     return id;
+  }
+
+  public static String createId(UIObject obj, String prefix) {
+    Assert.notNull(obj);
+    return createId(obj.getElement(), prefix);
   }
 
   public static Element createLabel(String text) {
@@ -269,7 +272,7 @@ public class DomUtils {
     }
 
     for (int i = 0; i < MAX_GENERATIONS; i++) {
-      lst.add(BeeUtils.concat(1, i, p.getClass().getName(),
+      lst.add(BeeUtils.concat(1, transformClass(p),
           p.getElement().getId(), p.getStyleName()));
 
       p = p.getParent();
@@ -320,14 +323,6 @@ public class DomUtils {
     }
 
     return lst;
-  }
-
-  public static String getClassQuietly(Object obj) {
-    if (obj == null) {
-      return BeeConst.STRING_EMPTY;
-    } else {
-      return obj.getClass().getName();
-    }
   }
 
   public static int getClientHeight() {
@@ -384,37 +379,6 @@ public class DomUtils {
     return $doc.getElementsByName(name);
   }-*/;
 
-  public static List<StringProp> getEventInfo(Event ev) {
-    Assert.notNull(ev);
-    List<StringProp> lst = new ArrayList<StringProp>();
-
-    PropUtils.addString(lst, "Client X", ev.getClientX(), "Client Y",
-        ev.getClientY(), "Screen X", ev.getScreenX(), "Screen Y",
-        ev.getScreenY(), "Key Code", ev.getKeyCode(), "Char Code",
-        ev.getCharCode(), "Alt Key", ev.getAltKey(), "Shift Key",
-        ev.getShiftKey(), "Ctrl Key", ev.getCtrlKey(), "Meta Key",
-        ev.getMetaKey(), "Button", ev.getButton(), "Mouse Wheel Velocity Y",
-        ev.getMouseWheelVelocityY(), "Event Target",
-        transformEventTarget(ev.getEventTarget()), "Current Event Target",
-        transformEventTarget(ev.getCurrentEventTarget()),
-        "Related Event Target",
-        transformEventTarget(ev.getRelatedEventTarget()), "String",
-        ev.getString(), "Type", ev.getType(), "Type Int", ev.getTypeInt());
-
-    return lst;
-  }
-
-  public static String getEventTargetId(Event ev) {
-    Assert.notNull(ev);
-    EventTarget target = ev.getEventTarget();
-
-    if (target == null) {
-      return null;
-    } else {
-      return getTargetId(target);
-    }
-  }
-
   public static String getId(UIObject obj) {
     Assert.notNull(obj);
     return obj.getElement().getId();
@@ -464,7 +428,7 @@ public class DomUtils {
   public static native JsArray<ElementAttribute> getNativeAttributes(Element el) /*-{
     return el.attributes;
   }-*/;
-
+  
   public static List<StringProp> getNodeInfo(Node nd) {
     Assert.notNull(nd);
     List<StringProp> lst = new ArrayList<StringProp>();
@@ -492,7 +456,7 @@ public class DomUtils {
 
     return lst;
   }
-
+  
   public static String getService(Widget w) {
     return getAttribute(w, ATTRIBUTE_SERVICE);
   }
@@ -549,9 +513,20 @@ public class DomUtils {
     return w.getElement().getTabIndex();
   }
 
-  public static String getTargetId(EventTarget et) {
-    Assert.notNull(et);
-    return Element.as(et).getId();
+  public static String getText(Element elem) {
+    if (elem == null) {
+      return BeeConst.STRING_EMPTY;
+    } else {
+      return elem.getInnerText();
+    }
+  }
+
+  public static String getText(UIObject obj) {
+    if (obj == null) {
+      return BeeConst.STRING_EMPTY;
+    } else {
+      return getText(obj.getElement());
+    }
   }
 
   public static List<SubProp> getUIObjectExtendedInfo(UIObject obj,
@@ -582,7 +557,7 @@ public class DomUtils {
     List<StringProp> lst = new ArrayList<StringProp>();
 
     PropUtils.addString(lst, "Absolute Left", obj.getAbsoluteLeft(),
-        "Absolute Top", obj.getAbsoluteTop(), "Class", getClassQuietly(obj),
+        "Absolute Top", obj.getAbsoluteTop(), "Class", transformClass(obj),
         "Offset Height", obj.getOffsetHeight(), "Offset Width",
         obj.getOffsetWidth(), "Style Name", obj.getStyleName(),
         "Style Primary Name", obj.getStylePrimaryName(), "Title",
@@ -616,8 +591,8 @@ public class DomUtils {
     Assert.notNull(w);
     List<StringProp> lst = new ArrayList<StringProp>();
 
-    PropUtils.addString(lst, "Class", getClassQuietly(w), "Layout Data",
-        w.getLayoutData(), "Parent", getClassQuietly(w.getParent()),
+    PropUtils.addString(lst, "Class", transformClass(w), "Layout Data",
+        w.getLayoutData(), "Parent", transformClass(w.getParent()),
         "Attached", w.isAttached());
 
     return lst;
@@ -657,17 +632,6 @@ public class DomUtils {
     BeeKeeper.getLog().addSeparator();
   }
 
-  public static void logEvent(Event ev) {
-    Assert.notNull(ev);
-    List<StringProp> lst = getEventInfo(ev);
-
-    for (StringProp el : lst) {
-      BeeKeeper.getLog().info(el.getName(), el.getValue());
-    }
-
-    BeeKeeper.getLog().addSeparator();
-  }
-  
   public static void logPath(Widget w) {
     Assert.notNull(w);
     List<StringProp> lst = getPathInfo(w);
@@ -749,16 +713,33 @@ public class DomUtils {
     return idx;
   }
 
-  public static void sinkChildEvents(Element parent, String childTag, int eventBits) {
-    Assert.notNull(parent);
-    Assert.notEmpty(childTag);
-    Assert.isTrue(eventBits != 0);
-    
-    NodeList<Element> lst = parent.getElementsByTagName(childTag);
-    Assert.isTrue(lst.getLength() > 0, childTag + " children not found");
-    
-    for (int i = 0; i < lst.getLength(); i++) {
-      Event.sinkEvents(lst.getItem(i), eventBits);
+  public static String transform(Object obj) {
+    if (obj == null) {
+      return BeeConst.STRING_EMPTY;
+    }
+
+    if (obj instanceof Element) {
+      return transformElement((Element) obj);
+    }
+    if (obj instanceof Node) {
+      return transformNode((Node) obj);
+    }
+
+    if (obj instanceof Widget) {
+      return transformWidget((Widget) obj);
+    }
+    if (obj instanceof UIObject) {
+      return transformUIObject((UIObject) obj);
+    }
+
+    return BeeUtils.transform(obj);
+  }
+
+  public static String transformClass(Object obj) {
+    if (obj == null) {
+      return BeeConst.STRING_EMPTY;
+    } else {
+      return JreEmulation.getSimpleName(obj);
     }
   }
 
@@ -766,15 +747,25 @@ public class DomUtils {
     if (el == null) {
       return BeeConst.STRING_EMPTY;
     } else {
-      return BeeUtils.concat(1, el.getTagName(), el.getId());
+      return BeeUtils.concat(1, el.getTagName(), el.getId(), el.getClassName());
     }
   }
 
-  private static String transformEventTarget(EventTarget et) {
-    if (et == null) {
+  public static String transformUIObject(UIObject obj) {
+    if (obj == null) {
       return BeeConst.STRING_EMPTY;
     } else {
-      return transformElement(Element.as(et));
+      return BeeUtils.concat(1, JreEmulation.getSimpleName(obj), obj.getElement().getId(),
+          obj.getStyleName());
+    }
+  }
+
+  public static String transformWidget(Widget w) {
+    if (w == null) {
+      return BeeConst.STRING_EMPTY;
+    } else {
+      return BeeUtils.concat(1, JreEmulation.getSimpleName(w), w.getElement().getId(),
+          w.getStyleName());
     }
   }
 
@@ -785,5 +776,5 @@ public class DomUtils {
       return BeeUtils.concat(1, nd.getNodeName(), nd.getNodeValue());
     }
   }
-
+  
 }

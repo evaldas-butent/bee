@@ -23,6 +23,11 @@ public class TilePanel extends BeeSplit {
     sinkEvents(Event.ONMOUSEDOWN);
   }
 
+  @Override
+  public void createId() {
+    DomUtils.createId(this, "tilepanel");
+  }
+
   public Widget getChildById(String id) {
     Widget child = null;
     if (BeeUtils.isEmpty(id)) {
@@ -93,6 +98,16 @@ public class TilePanel extends BeeSplit {
     return root;
   }
 
+  public boolean isLeaf() {
+    for (Widget w : getChildren()) {
+      if (w instanceof TilePanel) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+  
   public void move(TilePanel dst) {
     Assert.notNull(dst);
     
@@ -138,22 +153,12 @@ public class TilePanel extends BeeSplit {
   
   @Override
   public void onBrowserEvent(Event ev) {
-    if (ev.getTypeInt() == Event.ONMOUSEDOWN) {
-      if (ev.getShiftKey()) {
-        DomUtils.logPath(this);
-      }
-      if (ev.getCtrlKey()) {
-        DomUtils.logChildren(this);
-      }
-      if (ev.getAltKey()) {
-        DomUtils.logChildren(getParent());
-      }
-      
+    if (ev.getTypeInt() == Event.ONMOUSEDOWN && isLeaf()) {
       BeeKeeper.getUi().activatePanel(this);
-
-      ev.preventDefault();
       ev.stopPropagation();
     }
+    
+    super.onBrowserEvent(ev);
   }
   
   protected Widget locateChild(Element elem, boolean tiles, boolean splitters) {

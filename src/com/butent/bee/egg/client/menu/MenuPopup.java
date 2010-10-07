@@ -18,7 +18,6 @@ public class MenuPopup extends BeePopupPanel {
     this.parentItem = item;
 
     setWidget(parentItem.getSubMenu());
-    parentItem.getSubMenu().onShow();
   }
 
   @Override

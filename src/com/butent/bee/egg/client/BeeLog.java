@@ -79,10 +79,6 @@ public class BeeLog implements BeeModule {
     LogUtils.info(getLogger(), obj);
   }
 
-  public void info(String msg) {
-    LogUtils.info(getLogger(), msg);
-  }
-
   public void init() {
   }
 
