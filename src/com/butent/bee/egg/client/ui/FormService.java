@@ -84,7 +84,7 @@ public class FormService extends CompositeService {
         UiComponent c = UiComponent.restore(fArr.get(0));
 
         showForm(c);
-        BeeKeeper.getUi().updateActivePanel((Panel) c.createInstance());
+        BeeKeeper.getUi().updateActivePanel((Panel) c.createInstance(), true);
         break;
 
       default:
