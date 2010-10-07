@@ -79,10 +79,12 @@ public class BeeXml {
   }
 
   private static String transformDocument(Document doc, String prolog) {
-    if (BeeUtils.isEmpty(prolog)) {
-      return doc.toString();
+    String xml = doc.toString();
+
+    if (BeeUtils.isEmpty(prolog) || xml.matches("^<[?][xX][mM][lL].*")) {
+      return xml;
     } else {
-      return prolog + doc.toString();
+      return prolog + xml;
     }
   }
 
