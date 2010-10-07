@@ -25,14 +25,15 @@ public class RpcUtils {
       return url.trim() + BeeService.QUERY_STRING_SEPARATOR + qs.trim();
     }
   }
-  
-  public static String appendQueryParameters(String qs, Map<String, String> params) {
+
+  public static String appendQueryParameters(String qs,
+      Map<String, String> params) {
     if (BeeUtils.isEmpty(params)) {
       return qs;
     }
-    
+
     StringBuilder sb = new StringBuilder();
-    
+
     return sb.toString();
   }
 
@@ -85,7 +86,11 @@ public class RpcUtils {
           BeeUtils.addName("Length", resp.getHeadersAsString().length()));
 
       for (int i = 0; i < c; i++) {
-        PropUtils.addSub(prp, "Header", h[i].getName(), h[i].getValue());
+        if (BeeUtils.isEmpty(h[i])) {
+          PropUtils.addSub(prp, "Header", "Empty");
+        } else {
+          PropUtils.addSub(prp, "Header", h[i].getName(), h[i].getValue());
+        }
       }
     }
 
