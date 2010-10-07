@@ -109,8 +109,10 @@ public class BeeCallback implements RequestCallback {
     if (debug) {
       Header[] headers = resp.getHeaders();
       for (int i = 0; i < headers.length; i++) {
-        BeeKeeper.getLog().info("Header", i + 1, headers[i].getName(),
-            headers[i].getValue());
+        if (!BeeUtils.isEmpty(headers[i])) {
+          BeeKeeper.getLog().info("Header", i + 1, headers[i].getName(),
+              headers[i].getValue());
+        }
       }
 
       if (info != null) {
