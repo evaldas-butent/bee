@@ -110,13 +110,17 @@ public class BeeServlet extends HttpServlet {
       if (mc > 0) {
         resp.setIntHeader(BeeService.RPC_FIELD_MSG_CNT, mc);
         for (int i = 0; i < mc; i++) {
-          resp.setHeader(BeeService.rpcMessageName(i), 
+          resp.setHeader(BeeService.rpcMessageName(i),
               BeeService.encodeMessage(buff.getMessage(i)));
         }
       }
 
       resp.setHeader(BeeService.RPC_FIELD_DTP, BeeService.transform(dtp));
-      
+
+      resp.setHeader("Cache-Control", "no-cache");
+      resp.setHeader("Pragma", "no-cache");
+      resp.setHeader("Expires", "Thu, 01 Dec 1994 16:00:00 GMT");
+
       String ct = BeeUtils.ifString(buff.getContentType(),
           BeeService.getContentType(dtp));
       if (!BeeUtils.isEmpty(ct)) {
