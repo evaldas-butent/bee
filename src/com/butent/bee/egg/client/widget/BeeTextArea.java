@@ -1,7 +1,7 @@
 package com.butent.bee.egg.client.widget;
 
-import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.KeyPressEvent;
+import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.TextArea;
 
 import com.butent.bee.egg.client.BeeGlobal;
@@ -147,6 +147,7 @@ public class BeeTextArea extends TextArea implements HasId, HasBeeKeyHandler,
   }
 
   private void init() {
+    setStyleName("bee-TextArea");
     createId();
     addDefaultHandlers();
   }

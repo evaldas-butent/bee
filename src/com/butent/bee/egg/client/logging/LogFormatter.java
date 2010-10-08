@@ -10,14 +10,13 @@ import java.util.logging.LogRecord;
 public class LogFormatter extends Formatter {
   public static Level LOG_SEPARATOR_LEVEL = Level.FINE;
   public static String LOG_SEPARATOR_TAG = "-";
-  public static String LOG_SEPARATOR_MESSAGE = BeeUtils.replicate('-', 30);
 
   @Override
   public String format(LogRecord record) {
     if (record == null) {
       return null;
     } else if (isSeparator(record)) {
-      return LOG_SEPARATOR_MESSAGE;
+      return LOG_SEPARATOR_TAG;
     } else {
       return BeeUtils.concat(1, new BeeDate(record.getMillis()).toLog(),
           BeeUtils.clip(record.getMessage(), 256));

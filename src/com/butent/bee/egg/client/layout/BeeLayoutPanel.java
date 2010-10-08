@@ -28,6 +28,7 @@ public class BeeLayoutPanel extends LayoutPanel implements HasId {
 
     super.add(w);
     DomUtils.createId(getWidgetContainerElement(w), "container");
+    getWidgetContainerElement(w).setClassName("bee-LayoutContainer");
     
     if (w instanceof HasAfterAddHandler) {
       ((HasAfterAddHandler) w).onAfterAdd(this);

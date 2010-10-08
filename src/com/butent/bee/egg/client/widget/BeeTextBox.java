@@ -18,14 +18,12 @@ public class BeeTextBox extends TextBox implements HasId, HasBeeKeyHandler,
 
   public BeeTextBox() {
     super();
-    createId();
-    addDefaultHandlers();
+    init();
   }
 
   public BeeTextBox(Element element) {
     super(element);
-    createId();
-    addDefaultHandlers();
+    init();
   }
 
   public BeeTextBox(String fieldName) {
@@ -73,6 +71,12 @@ public class BeeTextBox extends TextBox implements HasId, HasBeeKeyHandler,
   private void addDefaultHandlers() {
     BeeKeeper.getBus().addKeyHandler(this);
     BeeKeeper.getBus().addStringVch(this);
+  }
+  
+  private void init() {
+    setStyleName("bee-TextBox");
+    createId();
+    addDefaultHandlers();
   }
 
 }

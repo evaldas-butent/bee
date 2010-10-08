@@ -40,6 +40,10 @@ public class BeeKeeper {
     return RPC;
   }
 
+  public static BeeStyle getStyle() {
+    return STYLE;
+  }
+
   public static BeeUi getUi() {
     return UI;
   }

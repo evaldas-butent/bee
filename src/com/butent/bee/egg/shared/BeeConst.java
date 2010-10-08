@@ -47,6 +47,7 @@ public class BeeConst {
   public static final char CHAR_UNDER = '_';
   public static final char CHAR_ZERO = '0';
   public static final char CHAR_NINE = '9';
+  public static final char CHAR_POINT = '.';
   public static final char CHAR_EOL = '\n';
 
   public static final int SIZE_UNKNOWN = -1;

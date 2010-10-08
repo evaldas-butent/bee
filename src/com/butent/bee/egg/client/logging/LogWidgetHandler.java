@@ -5,7 +5,6 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.HasWidgets;
 
 import com.butent.bee.egg.client.widget.BeeHtml;
-import com.butent.bee.egg.client.widget.BeeLabel;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
 import java.util.logging.Formatter;
@@ -74,8 +73,8 @@ public class LogWidgetHandler extends Handler {
     if (frmt instanceof LogFormatter
         && ((LogFormatter) frmt).isSeparator(record)) {
       Element elem = Document.get().createDivElement().cast();
-      elem.appendChild(Element.as(Document.get().createHRElement()));
       container.add(new BeeHtml(elem));
+      elem.setClassName("bee-LogSeparator");
 
       return;
     }
@@ -84,7 +83,11 @@ public class LogWidgetHandler extends Handler {
     if (!BeeUtils.isEmpty(msg)) {
       counter++;
     }
-    container.add(new BeeLabel(BeeUtils.concat(1, counter, msg)));
+
+    Element elem = Document.get().createDivElement().cast();
+    elem.setInnerText(BeeUtils.concat(1, counter, msg));
+    container.add(new BeeHtml(elem));
+    elem.setClassName("bee-LogRecord");
   }
 
   public void setDefaultFormatter() {

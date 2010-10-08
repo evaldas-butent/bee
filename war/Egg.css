@@ -77,7 +77,35 @@ body, table td, select {
 button {
   background: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#fcf), to(#ffc));
 }
- 
+
+.bee-LayoutContainer > .bee-TextArea {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -ms-box-sizing: border-box;
+}  
+
+.bee-LayoutContainer > .bee-TextBox {
+  width: 100%;
+  margin: 0;
+  box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -ms-box-sizing: border-box;
+}  
+
+.bee-LayoutContainer > .bee-Button {
+  width: 100%;
+}  
+
+.bee-LogSeparator {
+  height: 1px;
+  background: MidnightBlue;
+}
+
 .gwt-Tree {
   overflow: scroll;
 }

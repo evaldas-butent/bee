@@ -14,23 +14,22 @@ import com.butent.bee.egg.shared.HasService;
 import com.butent.bee.egg.shared.HasStage;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
-public class BeeButton extends Button implements HasId, HasService, HasStage,
-    HasCommand {
+public class BeeButton extends Button implements HasId, HasService, HasStage, HasCommand {
   private BeeCommand command = null;
 
   public BeeButton() {
     super();
-    createId();
+    init();
   }
 
   public BeeButton(Element element) {
     super(element);
-    createId();
+    init();
   }
 
   public BeeButton(String html) {
     super(html);
-    createId();
+    init();
   }
 
   public BeeButton(String html, BeeCommand cmnd) {
@@ -48,7 +47,7 @@ public class BeeButton extends Button implements HasId, HasService, HasStage,
 
   public BeeButton(String html, ClickHandler handler) {
     super(html, handler);
-    createId();
+    init();
   }
 
   public BeeButton(String html, String svc) {
@@ -104,4 +103,9 @@ public class BeeButton extends Button implements HasId, HasService, HasStage,
     DomUtils.setStage(this, stg);
   }
 
+  private void init() {
+    setStyleName("bee-Button");
+    createId();
+  }
+  
 }
