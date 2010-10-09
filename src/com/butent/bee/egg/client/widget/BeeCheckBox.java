@@ -23,7 +23,7 @@ public class BeeCheckBox extends CheckBox implements HasId,
 
   public BeeCheckBox() {
     super();
-    createId();
+    init();
   }
 
   public BeeCheckBox(BeeName nm) {
@@ -39,7 +39,7 @@ public class BeeCheckBox extends CheckBox implements HasId,
 
   public BeeCheckBox(Element elem) {
     super(elem);
-    createId();
+    init();
   }
 
   public BeeCheckBox(Pair<String, String> caption) {
@@ -66,12 +66,12 @@ public class BeeCheckBox extends CheckBox implements HasId,
 
   public BeeCheckBox(String label) {
     super(label);
-    createId();
+    init();
   }
 
   public BeeCheckBox(String label, boolean asHTML) {
     super(label, asHTML);
-    createId();
+    init();
   }
 
   public BeeCheckBox(String label, String property) {
@@ -135,6 +135,11 @@ public class BeeCheckBox extends CheckBox implements HasId,
 
   private void addDefaultHandler() {
     BeeKeeper.getBus().addBoolVch(this);
+  }
+  
+  private void init() {
+    createId();
+    setStyleName("bee-CheckBox");
   }
 
   private void initField(String fld) {

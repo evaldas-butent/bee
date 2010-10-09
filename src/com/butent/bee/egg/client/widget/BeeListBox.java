@@ -18,17 +18,17 @@ public class BeeListBox extends ListBox implements HasId, HasBeeChangeHandler {
 
   public BeeListBox() {
     super();
-    createId();
+    init();
   }
 
   public BeeListBox(boolean isMultipleSelect) {
     super(isMultipleSelect);
-    createId();
+    init();
   }
 
   public BeeListBox(Element element) {
     super(element);
-    createId();
+    init();
   }
 
   public BeeListBox(String fieldName) {
@@ -115,6 +115,11 @@ public class BeeListBox extends ListBox implements HasId, HasBeeChangeHandler {
     }
 
     return idx;
+  }
+
+  private void init() {
+    createId();
+    setStyleName("bee-ListBox");
   }
 
 }

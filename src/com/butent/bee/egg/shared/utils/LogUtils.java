@@ -5,6 +5,7 @@ import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.BeeDate;
 
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class LogUtils {
@@ -62,6 +63,13 @@ public class LogUtils {
   public static void infoNow(Logger logger, Object... obj) {
     Assert.notNull(logger);
     logger.info(BeeUtils.concat(1, now(), obj));
+  }
+
+  public static void log(Logger logger, Level level, Object... obj) {
+    Assert.notNull(logger);
+    Assert.notNull(level);
+    Assert.parameterCount(obj.length + 2, 3);
+    logger.log(level, BeeUtils.concat(1, obj));
   }
 
   public static String now() {

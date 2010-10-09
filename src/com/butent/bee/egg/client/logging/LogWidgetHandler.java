@@ -5,6 +5,7 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.HasWidgets;
 
 import com.butent.bee.egg.client.widget.BeeHtml;
+import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
 import java.util.logging.Formatter;
@@ -13,6 +14,9 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
 public class LogWidgetHandler extends Handler {
+  private static final String STYLENAME_DEFAULT = "bee-LogRecord";
+  private static final String STYLENAME_SEPARATOR = "bee-LogSeparator";
+
   public static Formatter getDefaultFormatter() {
     return new LogFormatter();
   }
@@ -74,7 +78,7 @@ public class LogWidgetHandler extends Handler {
         && ((LogFormatter) frmt).isSeparator(record)) {
       Element elem = Document.get().createDivElement().cast();
       container.add(new BeeHtml(elem));
-      elem.setClassName("bee-LogSeparator");
+      elem.setClassName(STYLENAME_SEPARATOR);
 
       return;
     }
@@ -87,7 +91,9 @@ public class LogWidgetHandler extends Handler {
     Element elem = Document.get().createDivElement().cast();
     elem.setInnerText(BeeUtils.concat(1, counter, msg));
     container.add(new BeeHtml(elem));
-    elem.setClassName("bee-LogRecord");
+    elem.setClassName(STYLENAME_DEFAULT);
+    elem.addClassName(STYLENAME_DEFAULT + BeeConst.STRING_MINUS
+        + record.getLevel().getName().toLowerCase());
   }
 
   public void setDefaultFormatter() {

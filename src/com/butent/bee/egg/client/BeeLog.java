@@ -1,7 +1,9 @@
 package com.butent.bee.egg.client;
 
 import com.google.gwt.user.client.ui.HasWidgets;
+import com.google.gwt.user.client.ui.Widget;
 
+import com.butent.bee.egg.client.layout.BeeSplit;
 import com.butent.bee.egg.client.logging.LogArea;
 import com.butent.bee.egg.client.logging.LogFormatter;
 import com.butent.bee.egg.client.logging.LogWidgetHandler;
@@ -16,6 +18,7 @@ import java.util.logging.Logger;
 public class BeeLog implements BeeModule {
   private Logger logger = null;
   private LogArea area = null;
+  private int hiddenSize = BeeConst.SIZE_UNKNOWN;
 
   public BeeLog() {
     super();
@@ -74,6 +77,24 @@ public class BeeLog implements BeeModule {
         return DO_NOT_CALL;
     }
   }
+  
+  public int getSize() {
+    int z = BeeConst.SIZE_UNKNOWN;
+    if (getArea() == null) {
+      return z;
+    }
+    
+    Widget parent = getArea().getParent();
+    if (parent instanceof BeeSplit) {
+      z = ((BeeSplit) parent).getWidgetSize(getArea());
+    }
+
+    return z;
+  }
+  
+  public void hide() {
+    resize(0);
+  }
 
   public void info(Object... obj) {
     LogUtils.info(getLogger(), obj);
@@ -82,6 +103,27 @@ public class BeeLog implements BeeModule {
   public void init() {
   }
 
+  public void log(Level level, Object... obj) {
+    LogUtils.log(getLogger(), level, obj);
+  }
+  
+  public void resize(int size) {
+    if (getArea() == null) {
+      return;
+    }
+    
+    Widget parent = getArea().getParent();
+    if (parent instanceof BeeSplit) {
+      if (size <= 0) {
+        hiddenSize = getSize(); 
+      } else {
+        hiddenSize = BeeConst.SIZE_UNKNOWN;
+      }
+
+      ((BeeSplit) parent).setWidgetSize(getArea(), size);
+    }
+  }
+  
   public void setArea(LogArea area) {
     this.area = area;
   }
@@ -96,6 +138,12 @@ public class BeeLog implements BeeModule {
 
   public void severe(Object... obj) {
     LogUtils.severe(getLogger(), obj);
+  }
+  
+  public void show() {
+    if (hiddenSize > 0) {
+      resize(hiddenSize);
+    }
   }
 
   public void stack() {

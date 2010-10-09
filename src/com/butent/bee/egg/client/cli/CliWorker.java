@@ -36,6 +36,7 @@ import com.butent.bee.egg.shared.utils.SubProp;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Level;
 
 public class CliWorker {
 
@@ -79,6 +80,31 @@ public class CliWorker {
         BeeService.DATA_TYPE.TEXT, src);
   }
 
+  public static void doLog(String arr[]) {
+    if (BeeUtils.length(arr) > 1) {
+      String z = arr[1];
+      
+      if (BeeUtils.inList(z, BeeConst.STRING_ZERO, BeeConst.STRING_MINUS)) {
+        BeeKeeper.getLog().hide();
+      } else if (BeeUtils.isDigit(z)) {
+        BeeKeeper.getLog().resize(BeeUtils.toInt(z));
+      } else if (BeeUtils.startsSame(z, "clear")) {
+        BeeKeeper.getLog().clear();
+      } else {
+        BeeKeeper.getLog().show();
+        BeeKeeper.getLog().info((Object[]) arr);
+      }
+      
+      return;
+    }
+
+    Level[] levels = new Level[] { Level.FINEST, Level.FINER, Level.FINE, Level.CONFIG,
+        Level.INFO, Level.WARNING, Level.SEVERE };
+    for (Level lvl : levels) {
+      BeeKeeper.getLog().log(lvl, lvl.getName().toLowerCase());
+    }
+  }
+  
   public static void doMenu(String[] arr) {
     if (BeeUtils.length(arr) > 1) {
       ParameterList params = BeeKeeper.getRpc().createParameters(

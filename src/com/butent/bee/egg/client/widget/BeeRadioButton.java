@@ -14,7 +14,7 @@ public class BeeRadioButton extends RadioButton implements HasId, HasService,
 
   public BeeRadioButton(String name) {
     super(name);
-    createId();
+    init();
   }
 
   public BeeRadioButton(String name, BeeCommand cmnd) {
@@ -24,12 +24,12 @@ public class BeeRadioButton extends RadioButton implements HasId, HasService,
 
   public BeeRadioButton(String name, String label) {
     super(name, label);
-    createId();
+    init();
   }
 
   public BeeRadioButton(String name, String label, boolean asHTML) {
     super(name, label, asHTML);
-    createId();
+    init();
   }
 
   public void createId() {
@@ -60,4 +60,9 @@ public class BeeRadioButton extends RadioButton implements HasId, HasService,
     DomUtils.setService(this, svc);
   }
 
+  private void init() {
+    createId();
+    setStyleName("bee-RadioButton");
+  }
+  
 }

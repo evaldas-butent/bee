@@ -15,37 +15,37 @@ public class BeeImage extends Image implements HasId, HasCommand {
 
   public BeeImage() {
     super();
-    createId();
+    init();
   }
 
   public BeeImage(Element element) {
     super(element);
-    createId();
+    init();
   }
 
   public BeeImage(ImageResource resource) {
     super(resource);
-    createId();
+    init();
   }
 
   public BeeImage(String url, int left, int top, int width, int height) {
     super(url, left, top, width, height);
-    createId();
+    init();
   }
 
   public BeeImage(String url) {
     super(url);
-    createId();
+    init();
   }
 
   public BeeImage(BeeCommand cmnd) {
     this();
-    init(cmnd);
+    initCommand(cmnd);
   }
 
   public BeeImage(ImageResource resource, BeeCommand cmnd) {
     this(resource);
-    init(cmnd);
+    initCommand(cmnd);
   }
   
   public void createId() {
@@ -68,7 +68,12 @@ public class BeeImage extends Image implements HasId, HasCommand {
     DomUtils.setId(this, id);
   }
   
-  private void init(BeeCommand cmnd) {
+  private void init() {
+    createId();
+    setStyleName("bee-Image");
+  }
+  
+  private void initCommand(BeeCommand cmnd) {
     if (cmnd != null) {
       setCommand(cmnd);
       BeeKeeper.getBus().addClickHandler(this);

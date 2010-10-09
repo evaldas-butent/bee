@@ -237,6 +237,13 @@ public class BeeSplit extends ComplexPanel implements AnimatedLayout,
     return getWidgetContainerElement(child).getStyle().getOverflow();
   }
   
+  public int getWidgetSize(Widget child) {
+    assertIsChild(child);
+    BeeLayoutData data = (BeeLayoutData) child.getLayoutData();
+
+    return (int) data.size;
+  }
+
   public int getWidgetWidth(Widget child) {
     return getWidgetContainerElement(child).getOffsetWidth();
   }
@@ -414,7 +421,7 @@ public class BeeSplit extends ComplexPanel implements AnimatedLayout,
 
     data.size = size;
 
-    animate(0);
+    forceLayout();
   }
 
   public void updateCenter(Widget widget, boolean scroll) {

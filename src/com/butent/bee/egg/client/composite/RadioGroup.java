@@ -6,7 +6,6 @@ import com.google.gwt.dom.client.NodeList;
 
 import com.butent.bee.egg.client.BeeGlobal;
 import com.butent.bee.egg.client.BeeKeeper;
-import com.butent.bee.egg.client.BeeStyle;
 import com.butent.bee.egg.client.dom.DomUtils;
 import com.butent.bee.egg.client.layout.BeeSpan;
 import com.butent.bee.egg.client.widget.BeeRadioButton;
@@ -105,7 +104,6 @@ public class RadioGroup extends BeeSpan implements HasService {
 
       if (idx == value) {
         rb.setValue(true);
-        rb.addStyleName(BeeStyle.RADIO_BUTTON_SELECTED);
       }
 
       idx++;

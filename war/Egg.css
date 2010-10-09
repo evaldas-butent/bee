@@ -1,9 +1,9 @@
-body, table td, select {
+body, select {
   font-family: Arial Unicode MS, Arial, sans-serif;
   font-size: small;
 }
 
-.bee-selectedRadio {
+.bee-RadioButton input:checked + label {
   text-transform: uppercase;
 }  
 
@@ -18,7 +18,9 @@ body, table td, select {
 }
 
 .bee-activeBlank {
+  background: azure;
   background: -webkit-gradient(radial, 90% 5%, 15, 10% 90%, 45, from(Azure), color-stop(0.5, Honeydew), to(LavenderBlush));
+  background: -moz-radial-gradient(left top, cover, snow, aquamarine);
 }
 
 .bee-activeContent {
@@ -38,7 +40,9 @@ body, table td, select {
   max-width: 95%;
   background: WhiteSmoke;
   border: 1px solid LightGrey;
+  box-shadow: 6px 6px 5px DarkGray;
   -webkit-box-shadow: 6px 6px 5px DarkGray;
+  -moz-box-shadow: 6px 6px 5px DarkGray;
 }
 
 .bee-MenuRoot-flow .bee-MenuItem-label {
@@ -55,7 +59,7 @@ body, table td, select {
 }
 
 .bee-MenuItem-selected {
-  outline: red auto;
+  outline: red auto 1px;
 }
 
 .bee-MenuBar-horizontal table {
@@ -74,8 +78,9 @@ body, table td, select {
   background: Silver;
 }
 
-button {
+.bee-Button {
   background: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#fcf), to(#ffc));
+  background: -moz-linear-gradient(top, yellow, greenyellow);
 }
 
 .bee-LayoutContainer > .bee-TextArea {
@@ -106,8 +111,12 @@ button {
   background: MidnightBlue;
 }
 
-.gwt-Tree {
-  overflow: scroll;
+.bee-LogRecord-severe {
+  color: red;
+}
+
+.bee-LogRecord-warning {
+  color: darkorange;
 }
 
 .gwt-DialogBox .Caption {

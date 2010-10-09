@@ -15,12 +15,12 @@ public class BeeLabel extends Label implements HasId, HasCommand {
 
   public BeeLabel() {
     super();
-    createId();
+    init();
   }
 
   public BeeLabel(Element element) {
     super(element);
-    createId();
+    init();
   }
 
   public BeeLabel(Object obj) {
@@ -29,7 +29,7 @@ public class BeeLabel extends Label implements HasId, HasCommand {
 
   public BeeLabel(String text) {
     super(text);
-    createId();
+    init();
   }
 
   public BeeLabel(String text, BeeCommand cmnd) {
@@ -43,7 +43,7 @@ public class BeeLabel extends Label implements HasId, HasCommand {
 
   public BeeLabel(String text, boolean wordWrap) {
     super(text, wordWrap);
-    createId();
+    init();
   }
 
   public void createId() {
@@ -64,6 +64,11 @@ public class BeeLabel extends Label implements HasId, HasCommand {
 
   public void setId(String id) {
     DomUtils.setId(this, id);
+  }
+
+  private void init() {
+    createId();
+    setStyleName("bee-Label");
   }
 
 }
