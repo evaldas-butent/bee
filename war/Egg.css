@@ -11,7 +11,6 @@ body, select {
   background-color: #d0e4f6;
   cursor: col-resize;
 }
-
 .bee-VSplitter {
   background-color: #d0e4f6;
   cursor: row-resize;
@@ -22,18 +21,35 @@ body, select {
   background: -webkit-gradient(radial, 90% 5%, 15, 10% 90%, 45, from(Azure), color-stop(0.5, Honeydew), to(LavenderBlush));
   background: -moz-radial-gradient(left top, cover, snow, aquamarine);
 }
-
 .bee-activeContent {
   border: 3px solid red;
   border-radius: 10px;
 }
 
-.bee-MenuRoot-table, .bee-MenuBar {
+.bee-MenuRoot, .bee-MenuBar {
   overflow: auto;
 }
 
 .bee-MenuRoot-flow {
   border: 2px solid green;
+}
+.bee-MenuRoot ol {
+  border: 4px groove LimeGreen;
+  margin: 0;
+  list-style-type: upper-roman;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  padding-right: 5px;
+}
+.bee-MenuRoot ul {
+  border: 4px ridge LimeGreen;
+  margin: 0;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  padding-right: 5px;
+}
+.bee-MenuRoot dl {
+  margin: 0;
 }
 
 .bee-MenuPopup {
@@ -54,10 +70,18 @@ body, select {
   padding-right: 0.5em;
 }
 
+.bee-MenuItem-dt {
+  padding-left: 0.5em;
+}
+.bee-MenuItem-dt:first-letter {
+  color: green;
+  font-size: medium;
+  font-weight: bold;  
+}
+
 .bee-MenuItem:hover {
   background: LightCyan;
 }
-
 .bee-MenuItem-selected {
   outline: red auto 1px;
 }
@@ -65,7 +89,6 @@ body, select {
 .bee-MenuBar-horizontal table {
   border-collapse: collapse;
 }  
-
 .bee-MenuBar-horizontal td {
   border: 1px solid silver;
   text-align: center;
@@ -76,6 +99,20 @@ body, select {
 .bee-MenuBar-vertical .bee-MenuItemSeparator {
   height: 1px;
   background: Silver;
+}
+
+.bee-MenuBar-level-1 ul {
+  list-style-type: circle;
+}
+.bee-MenuBar-level-2 ul {
+  list-style-type: square;
+}
+
+.bee-MenuBar-level-1 ol {
+  list-style-type: upper-alpha;
+}
+.bee-MenuBar-level-2 ol {
+  list-style-type: lower-greek;
 }
 
 .bee-Button {
@@ -119,6 +156,15 @@ body, select {
   color: darkorange;
 }
 
+.bee-Tree, .bee-CellTree {
+  overflow: auto;
+}  
+
+.gwt-SplitLayoutPanel-HDragger {
+  background: #f6cef5;
+  cursor: col-resize;
+}
+
 .gwt-DialogBox .Caption {
   background: #e3e8f3;
   padding: 4px 4px 4px 8px;
@@ -142,10 +188,8 @@ body, select {
 }
 
 .gwt-StackLayoutPanel .gwt-StackLayoutPanelHeader {
-  cursor: pointer;
   cursor: hand;
-  font-weight: bold;
-  padding: 3px;
+  padding-left: 5px;
   border: 1px solid #bbbbbb;
   border-bottom: 0px;
   background-color: #d3def6;
@@ -162,14 +206,13 @@ body, select {
   border-color: #92c1f0;
   border-style: solid;
   border-width: 3px 2px 2px;
-  overflow: hidden;
+  overflow: auto;
   padding: 6px;
 }
 .gwt-TabLayoutPanel .gwt-TabLayoutPanelTab {
   margin-left: 6px;
   padding: 3px 6px 3px 6px;
   cursor: pointer;
-  cursor: hand;
   color: black;
   font-weight: bold;
   text-align: center;

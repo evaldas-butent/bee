@@ -31,8 +31,14 @@ public class MenuPositionCallback implements PositionCallback {
     if (vertical) {
       x = parent.getAbsoluteLeft() + parent.getOffsetWidth() + 5;
       y = item.getAbsoluteTop();
+      if (y <= 0) {
+        y = parent.getAbsoluteTop();
+      }
     } else {
       x = item.getAbsoluteLeft();
+      if (x <= 0) {
+        x = parent.getAbsoluteLeft();
+      }
       y = parent.getAbsoluteTop() + parent.getOffsetHeight() + 2;
     }
 

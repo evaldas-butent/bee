@@ -12,7 +12,7 @@ public class MenuPopup extends BeePopupPanel {
   public MenuPopup(BeeMenuBar bar, BeeMenuItem item) {
     super(true, false);
     setStyleName(STYLENAME_DEFAULT);
-    addStyleDependentName(item.getSubMenu().getDefaultWidget().toString().toLowerCase());
+    addStyleDependentName(item.getSubMenu().getDefaultItemType().toString().toLowerCase());
 
     this.parentMenu = bar;
     this.parentItem = item;

@@ -22,6 +22,11 @@ public class BeeTreeItem extends TreeItem implements HasId {
     super(widget);
   }
 
+  public BeeTreeItem(String html, Object obj) {
+    this(html);
+    setUserObject(obj);
+  }
+  
   public void addText(Object... obj) {
     Assert.parameterCount(obj.length, 1);
     addItem(BeeUtils.concat(1, obj));
@@ -38,5 +43,5 @@ public class BeeTreeItem extends TreeItem implements HasId {
   public void setId(String id) {
     DomUtils.setId(this, id);
   }
-  
+
 }

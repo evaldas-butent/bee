@@ -13,12 +13,6 @@ public class BeeCellList<T> extends CellList<T> implements HasId {
     createId();
   }
 
-  public BeeCellList(Cell<T> cell,
-      com.google.gwt.user.cellview.client.CellList.Resources resources) {
-    super(cell, resources);
-    createId();
-  }
-
   public void createId() {
     DomUtils.createId(this, "celllist");
   }

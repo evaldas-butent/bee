@@ -44,8 +44,7 @@ public class MenuConst {
   public static final String LAYOUT_LIST = "option list";
   public static final String LAYOUT_ORDERED_LIST = "ordered list";
   public static final String LAYOUT_UNORDERED_LIST = "unordered list";
-  public static final String LAYOUT_DEFINITION_LIST = "defiition list";
-  public static final String LAYOUT_CELL_LIST = "cell list";
+  public static final String LAYOUT_DEFINITION_LIST = "definition list";
 
   public static final String LAYOUT_RADIO_HOR = "radio horizontal";
   public static final String LAYOUT_RADIO_VERT = "radio vertical";
@@ -86,8 +85,8 @@ public class MenuConst {
     }
     return BeeUtils.inListSame(layout, LAYOUT_MENU_HOR, LAYOUT_MENU_VERT,
         LAYOUT_STACK, LAYOUT_TREE, LAYOUT_CELL_TREE, LAYOUT_CELL_BROWSER,
-        LAYOUT_LIST, LAYOUT_CELL_LIST, LAYOUT_TAB, LAYOUT_RADIO_HOR,
-        LAYOUT_RADIO_VERT, LAYOUT_BUTTONS_HOR, LAYOUT_BUTTONS_VERT);
+        LAYOUT_LIST, LAYOUT_TAB, LAYOUT_RADIO_HOR, LAYOUT_RADIO_VERT,
+        LAYOUT_BUTTONS_HOR, LAYOUT_BUTTONS_VERT);
   }
 
 }

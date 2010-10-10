@@ -7,10 +7,11 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.egg.client.layout.BeeStack;
 import com.butent.bee.egg.client.layout.BeeTab;
 import com.butent.bee.egg.client.menu.BeeMenuBar;
+import com.butent.bee.egg.client.menu.BeeMenuItem;
 import com.butent.bee.egg.client.menu.BeeMenuItemSeparator;
-import com.butent.bee.egg.client.menu.MenuCell;
 import com.butent.bee.egg.client.menu.MenuCommand;
 import com.butent.bee.egg.client.menu.MenuDataProvider;
+import com.butent.bee.egg.client.menu.MenuSelectionHandler;
 import com.butent.bee.egg.client.menu.MenuTreeViewModel;
 import com.butent.bee.egg.client.tree.BeeCellBrowser;
 import com.butent.bee.egg.client.tree.BeeCellTree;
@@ -18,12 +19,8 @@ import com.butent.bee.egg.client.tree.BeeTree;
 import com.butent.bee.egg.client.tree.BeeTreeItem;
 import com.butent.bee.egg.client.utils.BeeDuration;
 import com.butent.bee.egg.client.widget.BeeCellList;
-import com.butent.bee.egg.client.widget.BeeDefinitionList;
-import com.butent.bee.egg.client.widget.BeeHtmlList;
-import com.butent.bee.egg.client.widget.BeeListBox;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeService;
-import com.butent.bee.egg.shared.BeeWidget;
 import com.butent.bee.egg.shared.menu.MenuConst;
 import com.butent.bee.egg.shared.menu.MenuEntry;
 import com.butent.bee.egg.shared.menu.MenuUtils;
@@ -37,8 +34,7 @@ public class BeeMenu implements BeeModule {
   private List<MenuEntry> items = null;
 
   private List<String> layouts = new ArrayList<String>();
-  private List<BeeMenuBar.BAR_TYPE> barTypes = new ArrayList<BeeMenuBar.BAR_TYPE>();
-
+  private boolean[] options = null;
   private int[] limits = null;
 
   public BeeMenu() {
@@ -49,7 +45,7 @@ public class BeeMenu implements BeeModule {
     Assert.state(validState());
 
     layouts.clear();
-    barTypes.clear();
+    options = new boolean[MenuConst.MAX_MENU_DEPTH];
 
     limits = new int[MenuConst.MAX_MENU_DEPTH];
     int rLim = BeeGlobal.getFieldInt(MenuConst.FIELD_ROOT_LIMIT);
@@ -57,9 +53,7 @@ public class BeeMenu implements BeeModule {
 
     for (int i = MenuConst.ROOT_MENU_INDEX; i < MenuConst.MAX_MENU_DEPTH; i++) {
       layouts.add(BeeGlobal.getFieldValue(MenuConst.fieldMenuLayout(i)));
-      barTypes.add(BeeGlobal.getFieldBoolean(MenuConst.fieldMenuBarType(i))
-          ? BeeMenuBar.BAR_TYPE.TABLE : BeeMenuBar.BAR_TYPE.FLOW);
-
+      options[i] = BeeGlobal.getFieldBoolean(MenuConst.fieldMenuBarType(i));
       limits[i] = MenuConst.isRootLevel(i) ? rLim : iLim;
     }
 
@@ -86,10 +80,6 @@ public class BeeMenu implements BeeModule {
   }
 
   public void end() {
-  }
-
-  public List<BeeMenuBar.BAR_TYPE> getBarTypes() {
-    return barTypes;
   }
 
   public List<MenuEntry> getItems() {
@@ -168,10 +158,6 @@ public class BeeMenu implements BeeModule {
     BeeKeeper.getRpc().dispatchService(BeeService.SERVICE_GET_MENU);
   }
 
-  public void setBarTypes(List<BeeMenuBar.BAR_TYPE> barTypes) {
-    this.barTypes = barTypes;
-  }
-
   public void setItems(List<MenuEntry> items) {
     this.items = items;
   }
@@ -235,7 +221,7 @@ public class BeeMenu implements BeeModule {
     return BeeUtils.allNotEmpty(getRoots(), getItems());
   }
 
-  private void addEntry(Widget rw, MenuEntry item, Widget cw) {
+  private void addEntry(Widget rw, int itemCnt, MenuEntry item, Widget cw) {
     String txt = item.getText();
     String svc = item.getService();
     String opt = item.getParameters();
@@ -261,7 +247,8 @@ public class BeeMenu implements BeeModule {
 
     } else if (rw instanceof BeeStack) {
       if (cw != null) {
-        ((BeeStack) rw).add(cw, txt, 2);
+        double header = BeeUtils.iif(itemCnt <= 10, 2.0, itemCnt >= 18, 1.2, (30.0 - itemCnt) / 10.0);
+        ((BeeStack) rw).add(cw, txt, header);
       }
     } else if (rw instanceof BeeTab) {
       if (cw != null) {
@@ -270,17 +257,14 @@ public class BeeMenu implements BeeModule {
 
     } else if (rw instanceof BeeTree) {
       BeeTreeItem it = new BeeTreeItem(txt);
-      if (cw != null) {
+     
+      if (cw == null) {
+        it.setUserObject(new MenuCommand(svc, opt));
+      } else {
         it.addItem(cw);
       }
-      ((BeeTree) rw).addItem(it);
 
-    } else if (rw instanceof BeeListBox) {
-    ((BeeListBox) rw).addItem(txt);
-    } else if (rw instanceof BeeHtmlList) {
-      ((BeeHtmlList) rw).addItem(txt);
-    } else if (rw instanceof BeeDefinitionList) {
-      ((BeeDefinitionList) rw).addItem(txt);
+      ((BeeTree) rw).addItem(it);
     }
   }
 
@@ -295,21 +279,17 @@ public class BeeMenu implements BeeModule {
     Assert.notEmpty(entries);
 
     String layout = getLayout(level);
-    BeeMenuBar.BAR_TYPE rbt = getBarType(level);
-    boolean root = MenuConst.isRootLevel(level);
+    boolean opt = getOption(level);
 
-    Widget rw = createWidget(layout, rbt, entries, root);
-
-    if (root && BeeUtils.inListSame(layout, MenuConst.LAYOUT_CELL_TREE,
-            MenuConst.LAYOUT_CELL_BROWSER)) {
-      return rw;
-    }
+    Widget rw = createWidget(layout, opt, entries, level);
 
     boolean lastLevel = (level >= MenuConst.MAX_MENU_DEPTH - 1);
     int limit = lastLevel ? getLimit(level) : getLimit(level + 1);
 
     List<MenuEntry> children = null;
     Widget cw = null;
+    
+    int cnt = entries.size();
 
     for (MenuEntry entry : entries) {
       if (!lastLevel) {
@@ -322,22 +302,21 @@ public class BeeMenu implements BeeModule {
         cw = createMenu(level + 1, children);
       }
 
-      addEntry(rw, entry, cw);
+      addEntry(rw, cnt, entry, cw);
     }
 
     prepareWidget(rw, entries);
 
     return rw;
   }
-
-  private Widget createWidget(String layout, BeeMenuBar.BAR_TYPE barType,
-      List<MenuEntry> entries, boolean root) {
+  
+  private Widget createWidget(String layout, boolean opt, List<MenuEntry> entries, int level) {
     Widget w = null;
 
     if (BeeUtils.same(layout, MenuConst.LAYOUT_MENU_HOR)) {
-      w = new BeeMenuBar(root, false, barType);
+      w = new BeeMenuBar(level, false, getBarType(opt), BeeMenuItem.ITEM_TYPE.LABEL, opt);
     } else if (BeeUtils.same(layout, MenuConst.LAYOUT_MENU_VERT)) {
-      w = new BeeMenuBar(root, true, barType);
+      w = new BeeMenuBar(level, true, getBarType(opt), BeeMenuItem.ITEM_TYPE.LABEL, opt);
 
     } else if (BeeUtils.same(layout, MenuConst.LAYOUT_STACK)) {
       w = new BeeStack(Unit.EM);
@@ -345,7 +324,7 @@ public class BeeMenu implements BeeModule {
       w = new BeeTab(20, Unit.PX);
 
     } else if (BeeUtils.same(layout, MenuConst.LAYOUT_TREE)) {
-      w = new BeeTree();
+      w = new BeeTree(new MenuSelectionHandler());
 
     } else if (BeeUtils.same(layout, MenuConst.LAYOUT_CELL_TREE)) {
       w = new BeeCellTree(new MenuTreeViewModel(new MenuDataProvider(entries),
@@ -356,37 +335,33 @@ public class BeeMenu implements BeeModule {
               getItemLimit())), null);
 
     } else if (BeeUtils.same(layout, MenuConst.LAYOUT_LIST)) {
-      w = new BeeListBox();
+      w = new BeeMenuBar(level, true, BeeMenuBar.BAR_TYPE.LIST, BeeMenuItem.ITEM_TYPE.OPTION, opt);
     } else if (BeeUtils.same(layout, MenuConst.LAYOUT_ORDERED_LIST)) {
-      w = new BeeHtmlList(true);
+      w = new BeeMenuBar(level, true, BeeMenuBar.BAR_TYPE.OLIST, BeeMenuItem.ITEM_TYPE.LI, opt);
     } else if (BeeUtils.same(layout, MenuConst.LAYOUT_UNORDERED_LIST)) {
-      w = new BeeHtmlList();
+      w = new BeeMenuBar(level, true, BeeMenuBar.BAR_TYPE.ULIST, BeeMenuItem.ITEM_TYPE.LI, opt);
     } else if (BeeUtils.same(layout, MenuConst.LAYOUT_DEFINITION_LIST)) {
-      w = new BeeDefinitionList();
-
-    } else if (BeeUtils.same(layout, MenuConst.LAYOUT_CELL_LIST)) {
-      w = new BeeCellList<MenuEntry>(new MenuCell());
+      w = new BeeMenuBar(level, true, BeeMenuBar.BAR_TYPE.DLIST, BeeMenuItem.ITEM_TYPE.DT, opt);
 
     } else if (BeeUtils.same(layout, MenuConst.LAYOUT_RADIO_HOR)) {
-      w = new BeeMenuBar(root, false, barType, BeeWidget.RADIO);
+      w = new BeeMenuBar(level, false, getBarType(opt), BeeMenuItem.ITEM_TYPE.RADIO, opt);
     } else if (BeeUtils.same(layout, MenuConst.LAYOUT_RADIO_VERT)) {
-      w = new BeeMenuBar(root, true, barType, BeeWidget.RADIO);
+      w = new BeeMenuBar(level, true, getBarType(opt), BeeMenuItem.ITEM_TYPE.RADIO, opt);
 
     } else if (BeeUtils.same(layout, MenuConst.LAYOUT_BUTTONS_HOR)) {
-      w = new BeeMenuBar(root, false, barType, BeeWidget.BUTTON);
+      w = new BeeMenuBar(level, false, getBarType(opt), BeeMenuItem.ITEM_TYPE.BUTTON, opt);
     } else if (BeeUtils.same(layout, MenuConst.LAYOUT_BUTTONS_VERT)) {
-      w = new BeeMenuBar(root, true, barType, BeeWidget.BUTTON);
+      w = new BeeMenuBar(level, true, getBarType(opt), BeeMenuItem.ITEM_TYPE.BUTTON, opt);
 
     } else {
-      w = new BeeMenuBar(root);
+      Assert.untouchable();
     }
 
     return w;
   }
 
-  private BeeMenuBar.BAR_TYPE getBarType(int idx) {
-    Assert.isIndex(getBarTypes(), idx);
-    return getBarTypes().get(idx);
+  private BeeMenuBar.BAR_TYPE getBarType(boolean opt) {
+    return opt ? BeeMenuBar.BAR_TYPE.TABLE : BeeMenuBar.BAR_TYPE.FLOW;
   }
 
   private int getItemCount() {
@@ -407,15 +382,19 @@ public class BeeMenu implements BeeModule {
     return limits[idx];
   }
 
+  private boolean getOption(int idx) {
+    Assert.isIndex(options, idx);
+    return options[idx];
+  }
+
   private int getRootCount() {
     return (getRoots() == null) ? 0 : getRoots().size();
   }
 
   @SuppressWarnings("unchecked")
   private void prepareWidget(Widget w, List<MenuEntry> entries) {
-    if (w instanceof BeeListBox) {
-      ((BeeListBox) w).setAllVisible();
-
+    if (w instanceof BeeMenuBar) {
+      ((BeeMenuBar) w).prepare();
     } else if (w instanceof BeeCellList) {
       int cnt = BeeUtils.length(entries);
       if (cnt > 0) {

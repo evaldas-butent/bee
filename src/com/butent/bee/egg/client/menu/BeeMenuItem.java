@@ -4,37 +4,42 @@ import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.UIObject;
 
 import com.butent.bee.egg.client.dom.DomUtils;
-import com.butent.bee.egg.shared.BeeWidget;
 import com.butent.bee.egg.shared.HasId;
 
 public class BeeMenuItem extends UIObject implements HasId {
-  public static BeeWidget defaultWidget = BeeWidget.LABEL;
-  
+  public static enum ITEM_TYPE {
+    LABEL, BUTTON, RADIO, HTML, OPTION, LI, DT, DD
+  }
+
+  public static ITEM_TYPE defaultType = ITEM_TYPE.LABEL;
+
   private static final String STYLENAME_DEFAULT = "bee-MenuItem";
   private static final String STYLENAME_SELECTED = "selected";
 
   private MenuCommand command;
   private BeeMenuBar parentMenu, subMenu;
-  
-  private BeeWidget widgetType;
+
+  private ITEM_TYPE itemType;
 
   public BeeMenuItem(BeeMenuBar parent, String text, BeeMenuBar subMenu) {
-    init(parent, text, getDefaultWidget(parent));
+    init(parent, text, getDefaultType(parent));
     setSubMenu(subMenu);
   }
 
-  public BeeMenuItem(BeeMenuBar parent, String text, BeeWidget type, BeeMenuBar subMenu) {
+  public BeeMenuItem(BeeMenuBar parent, String text, ITEM_TYPE type,
+      BeeMenuBar subMenu) {
     init(parent, text, type);
     setSubMenu(subMenu);
   }
 
-  public BeeMenuItem(BeeMenuBar parent, String text, BeeWidget type, MenuCommand cmd) {
+  public BeeMenuItem(BeeMenuBar parent, String text, ITEM_TYPE type,
+      MenuCommand cmd) {
     init(parent, text, type);
     setCommand(cmd);
   }
 
   public BeeMenuItem(BeeMenuBar parent, String text, MenuCommand cmd) {
-    init(parent, text, getDefaultWidget(parent));
+    init(parent, text, getDefaultType(parent));
     setCommand(cmd);
   }
 
@@ -50,6 +55,10 @@ public class BeeMenuItem extends UIObject implements HasId {
     return DomUtils.getId(this);
   }
 
+  public ITEM_TYPE getItemType() {
+    return itemType;
+  }
+
   public BeeMenuBar getParentMenu() {
     return parentMenu;
   }
@@ -58,16 +67,16 @@ public class BeeMenuItem extends UIObject implements HasId {
     return subMenu;
   }
 
-  public BeeWidget getWidgetType() {
-    return widgetType;
-  }
-
   public void setCommand(MenuCommand cmd) {
     command = cmd;
   }
 
   public void setId(String id) {
     DomUtils.setId(this, id);
+  }
+
+  public void setItemType(ITEM_TYPE it) {
+    this.itemType = it;
   }
 
   public void setParentMenu(BeeMenuBar parentMenu) {
@@ -80,9 +89,15 @@ public class BeeMenuItem extends UIObject implements HasId {
     } else {
       removeStyleDependentName(STYLENAME_SELECTED);
     }
-    
-    if (getWidgetType() == BeeWidget.RADIO) {
-      DomUtils.setCheckValue(getElement(), selected);
+
+    switch (getItemType()) {
+      case RADIO:
+        DomUtils.setCheckValue(getElement(), selected);
+        break;
+      case OPTION:
+        DomUtils.setSelected(getElement(), selected);
+        break;
+      default:
     }
   }
 
@@ -97,49 +112,57 @@ public class BeeMenuItem extends UIObject implements HasId {
     }
   }
 
-  public void setWidgetType(BeeWidget widgetType) {
-    this.widgetType = widgetType;
-  }
+  private ITEM_TYPE getDefaultType(BeeMenuBar parent) {
+    ITEM_TYPE w = null;
 
-  private BeeWidget getDefaultWidget(BeeMenuBar parent) {
-    BeeWidget w = null;
-    
     if (parent != null) {
-      w = parent.getDefaultWidget();
+      w = parent.getDefaultItemType();
     }
     if (w == null) {
-      w = defaultWidget;
+      w = defaultType;
     }
-    
+
     return w;
   }
-  
-  private void init(BeeMenuBar parent, String text, BeeWidget type) {
+
+  private void init(BeeMenuBar parent, String text, ITEM_TYPE type) {
     Element elem;
-    
+
     switch (type) {
-      case BUTTON :
-        elem = DomUtils.createButton(text).cast();
-        break;
-      case HTML :
+      case HTML:
         elem = DomUtils.createHtml(text).cast();
         break;
-      case RADIO :
+      case BUTTON:
+        elem = DomUtils.createButton(text).cast();
+        break;
+      case RADIO:
         elem = DomUtils.createRadio(parent.getName(), text).cast();
         break;
-      default :
+      case OPTION:
+        elem = DomUtils.createOption(text).cast();
+        break;
+      case LI:
+        elem = DomUtils.createListItem(text).cast();
+        break;
+      case DT:
+        elem = DomUtils.createDefinitionItem(true, text).cast();
+        break;
+      case DD:
+        elem = DomUtils.createDefinitionItem(false, text).cast();
+        break;
+      default:
         elem = DomUtils.createLabel(text).cast();
     }
-    
+
     setElement(elem);
 
     setStyleName(STYLENAME_DEFAULT);
     addStyleDependentName(type.toString().toLowerCase());
-   
+
     createId();
-    
+
     setParentMenu(parent);
-    setWidgetType(type);
+    setItemType(type);
   }
 
 }

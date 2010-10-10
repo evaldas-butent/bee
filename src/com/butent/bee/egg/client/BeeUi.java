@@ -432,7 +432,7 @@ public class BeeUi implements BeeModule {
 
     p.add(hor);
 
-    BeeLabel ver = new BeeLabel("0.1.3");
+    BeeLabel ver = new BeeLabel("0.1.4");
     p.add(ver);
 
     p.setWidgetLeftWidth(cli, 1, Unit.EM, 50, Unit.PCT);

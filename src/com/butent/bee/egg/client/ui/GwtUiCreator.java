@@ -171,7 +171,7 @@ public class GwtUiCreator implements UiCreator {
   @Override
   public Object createMenuHorizontal(UiMenuHorizontal menuHorizontal) {
     BeeMenuBar widget = new BeeMenuBar(
-        BeeUtils.isEmpty(menuHorizontal.getParent()));
+        BeeUtils.isEmpty(menuHorizontal.getParent()) ? 0 : 1);
     widget.setTitle(menuHorizontal.getId());
 
     createMenuItems(widget, menuHorizontal.getChilds());
@@ -182,7 +182,7 @@ public class GwtUiCreator implements UiCreator {
   @Override
   public Object createMenuVertical(UiMenuVertical menuVertical) {
     BeeMenuBar widget = new BeeMenuBar(
-        BeeUtils.isEmpty(menuVertical.getParent()), true);
+        BeeUtils.isEmpty(menuVertical.getParent()) ? 0 : 1, true);
     widget.setTitle(menuVertical.getId());
 
     createMenuItems(widget, menuVertical.getChilds());

@@ -6,9 +6,11 @@ import com.google.gwt.dom.client.ButtonElement;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.InputElement;
+import com.google.gwt.dom.client.LIElement;
 import com.google.gwt.dom.client.LabelElement;
 import com.google.gwt.dom.client.Node;
 import com.google.gwt.dom.client.NodeList;
+import com.google.gwt.dom.client.OptionElement;
 import com.google.gwt.dom.client.SpanElement;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.dom.client.TableCellElement;
@@ -67,7 +69,9 @@ public class DomUtils {
   public static String BUTTON_ID_PREFIX = "b";
   public static String HTML_ID_PREFIX = "h";
   public static String LABEL_ID_PREFIX = "l";
+  public static String LIST_ITEM_ID_PREFIX = "li";
   public static String RADIO_ID_PREFIX = "r";
+  public static String OPTION_ID_PREFIX = "opt";
   public static String TABLE_CELL_ID_PREFIX = "td";
 
   private static String ATTRIBUTE_SERVICE = "data-svc";
@@ -107,6 +111,41 @@ public class DomUtils {
 
   public static DdElement createDdElement() {
     return (DdElement) createElement(DdElement.TAG);
+  }
+
+  public static Element createDefinitionItem(boolean term, String text) {
+    return createDefinitionItem(term, text, false, null);
+  }
+
+  public static Element createDefinitionItem(boolean term, String text, boolean asHtml) {
+    return createDefinitionItem(term, text, asHtml, null);
+  }
+
+  public static Element createDefinitionItem(boolean term, String text, boolean asHtml, String id) {
+    Element elem;
+    if (term) {
+      elem = createElement(DtElement.TAG);
+    } else {
+      elem = createElement(DdElement.TAG);
+    }
+    
+    if (!BeeUtils.isEmpty(text)) {
+      if (asHtml) {
+        elem.setInnerHTML(text);
+      } else {
+        elem.setInnerText(text);
+      }
+    }
+
+    String s;
+    if (BeeUtils.isEmpty(id)) {
+      s = createUniqueId(elem.getTagName().toLowerCase());
+    } else {
+      s = id.trim();
+    }
+    elem.setId(s);
+
+    return elem;
   }
 
   public static DtElement createDtElement() {
@@ -189,6 +228,66 @@ public class DomUtils {
     return elem;
   }
 
+  public static Element createListItem(String text) {
+    return createListItem(text, false, null);
+  }
+
+  public static Element createListItem(String text, boolean asHtml) {
+    return createListItem(text, asHtml, null);
+  }
+
+  public static Element createListItem(String text, boolean asHtml, String id) {
+    LIElement elem = Document.get().createLIElement();
+    
+    if (!BeeUtils.isEmpty(text)) {
+      if (asHtml) {
+        elem.setInnerHTML(text);
+      } else {
+        elem.setInnerText(text);
+      }
+    }
+
+    String s;
+    if (BeeUtils.isEmpty(id)) {
+      s = createUniqueId(LIST_ITEM_ID_PREFIX);
+    } else {
+      s = id.trim();
+    }
+    elem.setId(s);
+
+    return elem;
+  }
+
+  public static Element createOption(String text) {
+    return createOption(text, false, null);
+  }
+
+  public static Element createOption(String text, boolean asHtml) {
+    return createOption(text, asHtml, null);
+  }
+
+  public static Element createOption(String text, boolean asHtml, String id) {
+    OptionElement elem = Document.get().createOptionElement();
+
+    if (!BeeUtils.isEmpty(text)) {
+      if (asHtml) {
+        elem.setInnerHTML(text);
+      } else {
+        elem.setInnerText(text);
+      }
+    }
+
+    String s;
+    if (BeeUtils.isEmpty(id)) {
+      s = createUniqueId(OPTION_ID_PREFIX);
+    } else {
+      s = id.trim();
+    }
+    elem.setId(s);
+
+    return elem;
+  }
+
   public static Element createRadio(String name, String text) {
     return createRadio(name, text, null);
   }
@@ -229,13 +328,14 @@ public class DomUtils {
   }
 
   public static Element createTableCell(String text, boolean asHtml, String id) {
-    Assert.notEmpty(text);
-
     TableCellElement elem = Document.get().createTDElement();
-    if (asHtml) {
-      elem.setInnerHTML(text);
-    } else {
-      elem.setInnerText(text);
+
+    if (!BeeUtils.isEmpty(text)) {
+      if (asHtml) {
+        elem.setInnerHTML(text);
+      } else {
+        elem.setInnerText(text);
+      }
     }
 
     String s;
@@ -697,6 +797,13 @@ public class DomUtils {
     obj.getElement().setId(s);
 
     return s;
+  }
+  
+  public static void setSelected(Element elem, boolean selected) {
+    Assert.notNull(elem);
+    
+    OptionElement.as(elem).setSelected(selected);
+    OptionElement.as(elem).setDefaultSelected(selected);
   }
 
   public static String setService(Widget w, String svc) {

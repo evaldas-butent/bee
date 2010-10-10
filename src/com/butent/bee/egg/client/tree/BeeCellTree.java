@@ -10,13 +10,13 @@ public class BeeCellTree extends CellTree implements HasId {
 
   public <T> BeeCellTree(TreeViewModel viewModel, T rootValue) {
     super(viewModel, rootValue);
-    createId();
+    init();
   }
 
   public <T> BeeCellTree(TreeViewModel viewModel, T rootValue,
       Resources resources) {
     super(viewModel, rootValue, resources);
-    createId();
+    init();
   }
 
   public void createId() {
@@ -29,6 +29,11 @@ public class BeeCellTree extends CellTree implements HasId {
 
   public void setId(String id) {
     DomUtils.setId(this, id);
+  }
+  
+  private void init() {
+    createId();
+    setStyleName("bee-CellTree");
   }
 
 }

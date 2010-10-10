@@ -7,7 +7,6 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.egg.client.dom.DomUtils;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.HasId;
-import com.butent.bee.egg.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -73,25 +72,10 @@ public class BeeDefinitionList extends Widget implements HasId {
   }
 
   public void insertItem(String item, boolean definition, boolean asHtml, int index) {
-    Element child;
-
-    if (definition) {
-      child = DomUtils.createDtElement().cast();
-    } else {
-      child = DomUtils.createDdElement().cast();
-    }
-    
-    if (!BeeUtils.isEmpty(item)) {
-      if (asHtml) {
-        child.setInnerHTML(item);
-      } else {
-        child.setInnerText(item);
-      }
-    }
-    
-    String tag = child.getTagName();
+    Element child = DomUtils.createDefinitionItem(definition, item, asHtml).cast();
+   
+    String tag = child.getTagName().toLowerCase();
     child.setClassName("bee-Definition-" + tag);
-    child.setId(DomUtils.createUniqueId(tag));
     
     if ((index < 0) || (index >= getItemCount())) {
       getElement().appendChild(child);
