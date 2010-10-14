@@ -1,8 +1,8 @@
 package com.butent.bee.egg.client.widget;
 
-import com.google.gwt.app.client.IntegerBox;
 import com.google.gwt.event.dom.client.KeyPressEvent;
-import com.google.gwt.user.client.ui.TextBoxBase;
+import com.google.gwt.user.client.ui.IntegerBox;
+import com.google.gwt.user.client.ui.ValueBoxBase;
 
 import com.butent.bee.egg.client.BeeGlobal;
 import com.butent.bee.egg.client.BeeKeeper;
@@ -27,7 +27,7 @@ public class BeeIntegerBox extends IntegerBox implements HasId,
     this.fieldName = fieldName;
 
     setWidth("6em");
-    setTextAlignment(TextBoxBase.ALIGN_RIGHT);
+    setAlignment(ValueBoxBase.TextAlignment.RIGHT);
     setValue(BeeGlobal.getFieldInt(fieldName));
   }
 

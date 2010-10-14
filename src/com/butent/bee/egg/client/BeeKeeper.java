@@ -1,6 +1,5 @@
 package com.butent.bee.egg.client;
 
-import com.google.gwt.event.shared.HandlerManager;
 import com.google.gwt.user.client.ui.HasWidgets;
 
 import com.butent.bee.egg.shared.utils.RowComparator;
@@ -50,9 +49,9 @@ public class BeeKeeper {
 
   private BeeModule[] modules;
 
-  public BeeKeeper(HasWidgets root, HandlerManager bus, String url) {
+  public BeeKeeper(HasWidgets root, String url) {
     UI = new BeeUi(root);
-    BUS = new BeeBus(bus);
+    BUS = new BeeBus();
     RPC = new BeeRpc(url);
 
     LOG = new BeeLog();

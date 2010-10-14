@@ -4,6 +4,7 @@ import com.google.gwt.cell.client.AbstractCell;
 import com.google.gwt.cell.client.ValueUpdater;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
+import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 
 import com.butent.bee.egg.shared.menu.MenuEntry;
 import com.butent.bee.egg.shared.utils.BeeUtils;
@@ -26,10 +27,11 @@ public class MenuCell extends AbstractCell<MenuEntry> {
     }
   }
 
+  
   @Override
-  public void render(MenuEntry value, Object key, StringBuilder sb) {
+  public void render(MenuEntry value, Object key, SafeHtmlBuilder sb) {
     if (value != null) {
-      sb.append(value.getText());
+      sb.appendEscaped(value.getText());
     }
   }
 

@@ -6,7 +6,7 @@ import com.google.gwt.event.dom.client.HasClickHandlers;
 import com.google.gwt.event.dom.client.HasKeyPressHandlers;
 import com.google.gwt.event.logical.shared.HasValueChangeHandlers;
 import com.google.gwt.event.shared.GwtEvent;
-import com.google.gwt.event.shared.HandlerManager;
+import com.google.gwt.event.shared.SimpleEventBus;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.egg.client.event.BeeBlurHandler;
@@ -33,10 +33,10 @@ public class BeeBus implements BeeModule {
 
   private BeeBlurHandler blurHandler = null;
 
-  private HandlerManager eventBus;
+  private SimpleEventBus eventBus;
 
-  public BeeBus(HandlerManager bus) {
-    this.eventBus = bus;
+  public BeeBus() {
+    this.eventBus = new SimpleEventBus();
   }
 
   public void addBlurHandler(Widget w, boolean sink) {
