@@ -82,7 +82,8 @@ public class BeeBus implements BeeModule {
     Assert.notEmpty(svc);
 
     if (BeeService.isRpcService(svc)) {
-      return BeeKeeper.getRpc().dispatchService(svc);
+      BeeKeeper.getRpc().dispatchService(svc);
+      return true;
     } else if (BeeService.isUiService(svc)) {
       return dispatchUiService(svc, event);
     } else if (BeeService.isCompositeService(svc)) {

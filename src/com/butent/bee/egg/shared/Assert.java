@@ -52,6 +52,16 @@ public class Assert {
     }
   }
 
+  public static void isEven(int x) {
+    isEven(x, ASSERTION_FAILED + "(" + x + ") argument must even");
+  }
+
+  public static void isEven(int x, String msg) {
+    if (x % 2 == 1) {
+      throw new BeeRuntimeException(msg);
+    }
+  }
+
   public static void isIndex(Collection<?> col, int idx) {
     notNull(col);
     nonNegative(idx);
@@ -106,6 +116,16 @@ public class Assert {
     }
   }
 
+  public static void isOdd(int x) {
+    isOdd(x, ASSERTION_FAILED + "(" + x + ") argument must odd");
+  }
+
+  public static void isOdd(int x, String msg) {
+    if (x % 2 == 0) {
+      throw new BeeRuntimeException(msg);
+    }
+  }
+  
   public static void isPositive(int x) {
     isPositive(x, ASSERTION_FAILED + "(" + x + ") argument must be positive");
   }

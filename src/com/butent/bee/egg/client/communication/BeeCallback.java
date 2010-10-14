@@ -146,6 +146,9 @@ public class BeeCallback implements RequestCallback {
         BeeKeeper.getLog().warning("response empty");
       }
 
+    } else if (BeeService.isInvocation(svc)) {
+      dispatchInvocation(info, txt, mc, messages);
+
     } else if (pc > 0) {
       dispatchParts(svc, pc, partSizes, txt);
 
@@ -174,6 +177,25 @@ public class BeeCallback implements RequestCallback {
 
     BeeKeeper.getLog().finish(dur);
     finalizeResponse();
+  }
+
+  private void dispatchInvocation(RpcInfo info, String txt, int mc, String[] messages) {
+    if (info == null) {
+      BeeKeeper.getLog().severe("rpc info not available");
+      return;
+    }
+    
+    String method = info.getParameter(BeeService.RPC_FIELD_METH);
+    if (BeeUtils.isEmpty(method)) {
+      BeeKeeper.getLog().severe("rpc parameter [method] not found");
+      return;
+    }
+    
+    if (BeeUtils.same(method, "stringInfo")) {
+      ResponseHandler.unicodeTest(info, txt, mc, messages);
+    } else {
+      BeeKeeper.getLog().warning("unknown invocation method", method);
+    }
   }
 
   private void dispatchMessages(int mc, String[] messages) {

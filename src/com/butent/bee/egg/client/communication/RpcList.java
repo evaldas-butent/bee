@@ -1,5 +1,6 @@
 package com.butent.bee.egg.client.communication;
 
+import com.butent.bee.egg.client.BeeKeeper;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.utils.BeeUtils;
@@ -19,7 +20,8 @@ public class RpcList extends LinkedList<RpcInfo> {
       RpcInfo.COL_RESP_TYPE, RpcInfo.COL_RESP_DATA, RpcInfo.COL_RESP_ROWS,
       RpcInfo.COL_RESP_COLS, RpcInfo.COL_RESP_SIZE, RpcInfo.COL_RESP_MSG_CNT,
       RpcInfo.COL_RESP_MESSAGES, RpcInfo.COL_RESP_PART_CNT,
-      RpcInfo.COL_RESP_PART_SIZES, RpcInfo.COL_RESP_INFO, RpcInfo.COL_ERR_MSG};
+      RpcInfo.COL_RESP_PART_SIZES, RpcInfo.COL_RESP_INFO, RpcInfo.COL_ERR_MSG,
+      RpcInfo.COL_USR_DATA};
 
   private int capacity = DEFAULT_CAPACITY;
 
@@ -153,12 +155,15 @@ public class RpcList extends LinkedList<RpcInfo> {
           s = el.getSizeString(el.getRespPartCnt());
         } else if (BeeUtils.same(cols[j], RpcInfo.COL_RESP_PART_SIZES)) {
           s = BeeUtils.transformArray(el.getRespPartSize());
-          
+
         } else if (BeeUtils.same(cols[j], RpcInfo.COL_RESP_INFO)) {
           s = el.getRespInfoString();
 
         } else if (BeeUtils.same(cols[j], RpcInfo.COL_ERR_MSG)) {
           s = el.getErrMsg();
+        } else if (BeeUtils.same(cols[j], RpcInfo.COL_USR_DATA)) {
+          s = BeeUtils.transformMap(el.getUserData());
+
         } else {
           s = BeeConst.STRING_EMPTY;
         }
@@ -177,6 +182,7 @@ public class RpcList extends LinkedList<RpcInfo> {
   public RpcInfo locateInfo(int id) {
     RpcInfo el = null;
     if (isEmpty()) {
+      BeeKeeper.getLog().warning("rpc list empty, id", id, "not found");
       return el;
     }
 
@@ -185,6 +191,10 @@ public class RpcList extends LinkedList<RpcInfo> {
         el = get(i);
         break;
       }
+    }
+
+    if (el == null) {
+      BeeKeeper.getLog().warning("rpc id", id, "not found");
     }
 
     return el;

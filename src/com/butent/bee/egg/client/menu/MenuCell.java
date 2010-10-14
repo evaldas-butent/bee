@@ -26,7 +26,6 @@ public class MenuCell extends AbstractCell<MenuEntry> {
       new MenuCommand(value.getService(), value.getParameters()).execute();
     }
   }
-
   
   @Override
   public void render(MenuEntry value, Object key, SafeHtmlBuilder sb) {

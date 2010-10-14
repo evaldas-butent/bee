@@ -1055,8 +1055,8 @@ public class BeeUtils {
   public static int randomInt(int min, int max) {
     Assert.isTrue(max > min + 1);
 
-    Double z = Math.ceil(Math.random() * (max - min));
-    return z.intValue();
+    Double z = Math.floor(Math.random() * (max - min));
+    return min + z.intValue();
   }
 
   public static String randomString(int minLen, int maxLen, char minChar,
@@ -1406,6 +1406,14 @@ public class BeeUtils {
     }
 
     return sb.toString();
+  }
+
+  public static String transformNoTrim(Object x) {
+    if (x instanceof String) {
+      return (String) x;
+    } else {
+      return transform(x);
+    }
   }
 
   public static String transformOptions(Object... opt) {

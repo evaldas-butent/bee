@@ -83,7 +83,7 @@ public class CliWorker {
   public static void doLog(String arr[]) {
     if (BeeUtils.length(arr) > 1) {
       String z = arr[1];
-      
+
       if (BeeUtils.inList(z, BeeConst.STRING_ZERO, BeeConst.STRING_MINUS)) {
         BeeKeeper.getLog().hide();
       } else if (BeeUtils.isDigit(z)) {
@@ -94,17 +94,18 @@ public class CliWorker {
         BeeKeeper.getLog().show();
         BeeKeeper.getLog().info((Object[]) arr);
       }
-      
+
       return;
     }
 
-    Level[] levels = new Level[] { Level.FINEST, Level.FINER, Level.FINE, Level.CONFIG,
-        Level.INFO, Level.WARNING, Level.SEVERE };
+    Level[] levels = new Level[]{
+        Level.FINEST, Level.FINER, Level.FINE, Level.CONFIG, Level.INFO,
+        Level.WARNING, Level.SEVERE};
     for (Level lvl : levels) {
       BeeKeeper.getLog().log(lvl, lvl.getName().toLowerCase());
     }
   }
-  
+
   public static void doMenu(String[] arr) {
     if (BeeUtils.length(arr) > 1) {
       ParameterList params = BeeKeeper.getRpc().createParameters(
@@ -329,16 +330,16 @@ public class CliWorker {
   public static void showStack() {
     BeeKeeper.getLog().stack();
   }
-  
+
   public static void showTiles() {
     Widget tiles = BeeKeeper.getUi().getScreenPanel().getCenter();
     if (!(tiles instanceof TilePanel)) {
       BeeGlobal.showDialog("no tiles vailable");
     }
-    
+
     BeeTree tree = new BeeTree();
     tree.addItem(((TilePanel) tiles).getTree(null, true));
-    
+
     BeeGlobal.inform(tree);
   }
 
@@ -446,6 +447,53 @@ public class CliWorker {
     } else {
       StyleInjector.inject(st, immediate);
     }
+  }
+
+  public static void unicode(String[] arr) {
+    StringBuilder sb = new StringBuilder();
+    int len = BeeUtils.length(arr);
+
+    if (len < 2 || len == 2 && BeeUtils.isDigit(BeeUtils.getElement(arr, 1))) {
+      int n = (len < 2) ? 10 : BeeUtils.min(BeeUtils.toInt(arr[1]), 100);
+      for (int i = 0; i < n; i++) {
+        sb.append((char) BeeUtils.randomInt(Character.MIN_VALUE,
+            Character.MAX_VALUE + 1));
+      }
+    } else {
+      for (int i = 1; i < len; i++) {
+        String s = arr[i];
+
+        if (s.length() > 1
+            && BeeUtils.inListIgnoreCase(s.substring(0, 1), "u", "x")
+            && BeeUtils.isHexString(s.substring(1))) {
+          sb.append(BeeUtils.fromHex(s.substring(1)));
+        } else if (s.length() > 2 && BeeUtils.startsSame(s, "0x")
+            && BeeUtils.isHexString(s.substring(2))) {
+          sb.append(BeeUtils.fromHex(s.substring(2)));
+
+        } else if (BeeUtils.isDigit(s)) {
+          int n = BeeUtils.toInt(s);
+          if (n > 0 && n < 128 && sb.length() > 0) {
+            for (int j = 0; j < n; j++) {
+              sb.append((char) (sb.charAt(sb.length() - 1) + 1));
+            }
+          } else {
+            sb.append((char) n);
+          }
+
+        } else {
+          sb.append(s);
+        }
+      }
+    }
+    
+    String s = sb.toString();
+    byte[] bytes = Codec.toBytes(s);
+
+    int id = BeeKeeper.getRpc().invoke("stringInfo", BeeService.DATA_TYPE.BINARY, s);
+    BeeKeeper.getRpc().addUserData(id, "length", s.length(), "data", s,
+        "adler32", Codec.adler32(bytes), "crc16", Codec.crc16(bytes),
+        "crc32", Codec.crc32(bytes), "crc32d", Codec.crc32Direct(bytes));
   }
 
   public static void whereAmI() {

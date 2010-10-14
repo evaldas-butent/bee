@@ -70,6 +70,8 @@ public class CliWidget extends BeeTextBox {
       CliWorker.style(v, arr);
     } else if (z.equals("tiles")) {
       CliWorker.showTiles();
+    } else if (z.equals("uc") || "unicode".startsWith(z)) {
+      CliWorker.unicode(arr);
 
     } else {
       BeeGlobal.showDialog("wtf", v);

@@ -5,7 +5,7 @@ import com.butent.bee.egg.shared.utils.Codec;
 
 public class BeeService {
   public static enum DATA_TYPE {
-    TEXT, XML, TABLE, IMAGE, RESOURCE, ZIP, MULTIPART, UNKNOWN
+    TEXT, XML, TABLE, IMAGE, RESOURCE, BINARY, ZIP, MULTIPART, UNKNOWN
   }
 
   public static final String RPC_SERVICE_PREFIX = "rpc_";
@@ -39,6 +39,7 @@ public class BeeService {
       + "save_resource";
   public static final String SERVICE_GET_DIGEST = SYS_SERVICE_PREFIX
       + "get_digest";
+  public static final String SERVICE_INVOKE = SYS_SERVICE_PREFIX + "invoke";
 
   public static final String SERVICE_LOGIN = RPC_SERVICE_PREFIX + "login";
   public static final String SERVICE_LOGOUT = RPC_SERVICE_PREFIX + "logout";
@@ -87,6 +88,8 @@ public class BeeService {
   public static final String RPC_FIELD_PRM = RPC_FIELD_SYS_PREFIX + "prm";
   public static final String RPC_FIELD_PART_CNT = RPC_FIELD_SYS_PREFIX + "x_c";
   public static final String RPC_FIELD_PART = RPC_FIELD_SYS_PREFIX + "part";
+
+  public static final String RPC_FIELD_METH = RPC_FIELD_SYS_PREFIX + "meth";
 
   public static final String FIELD_CLASS_NAME = RPC_FIELD_PREFIX + "class_name";
   public static final String FIELD_PACKAGE_LIST = RPC_FIELD_PREFIX
@@ -201,8 +204,12 @@ public class BeeService {
     String ce;
 
     switch (dataType) {
-      default:
+      case TEXT:
+      case XML:
         ce = "utf-8";
+        break;
+      default:
+        ce = null;
     }
 
     return ce;
@@ -212,6 +219,9 @@ public class BeeService {
     String ct;
 
     switch (dataType) {
+      case TEXT:
+        ct = "text/plain";
+        break;
       case XML:
         ct = "text/xml";
         break;
@@ -256,6 +266,10 @@ public class BeeService {
     return svc.startsWith(DB_SERVICE_PREFIX);
   }
 
+  public static boolean isInvocation(String svc) {
+    return BeeUtils.same(svc, SERVICE_INVOKE);
+  }
+  
   public static boolean isReservedParameter(String name) {
     Assert.notEmpty(name);
     return BeeUtils.startsSame(name, RPC_FIELD_SYS_PREFIX);

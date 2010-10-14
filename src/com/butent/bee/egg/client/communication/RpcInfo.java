@@ -4,13 +4,17 @@ import com.google.gwt.http.client.Request;
 import com.google.gwt.http.client.RequestBuilder;
 import com.google.gwt.http.client.Response;
 
+import com.butent.bee.egg.client.BeeKeeper;
 import com.butent.bee.egg.client.utils.BeeDuration;
+import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.BeeService;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 import com.butent.bee.egg.shared.utils.SubProp;
 
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 public class RpcInfo {
   private static int COUNTER = 0;
@@ -53,6 +57,8 @@ public class RpcInfo {
 
   public static final String COL_ERR_MSG = "Error Msg";
 
+  public static final String COL_USR_DATA = "User Data";
+
   private int id;
   private String service = null;
   private String stage = null;
@@ -86,6 +92,8 @@ public class RpcInfo {
   private int[] respPartSize = null;
 
   private String errMsg = null;
+  
+  private Map<String, String> userData = null;
 
   public RpcInfo(RequestBuilder.Method method, String service,
       ParameterList params) {
@@ -105,6 +113,24 @@ public class RpcInfo {
   }
 
   protected RpcInfo() {
+  }
+  
+  public void addUserData(Object... obj) {
+    Assert.parameterCount(obj.length, 2);
+    Assert.isEven(obj.length);
+    
+    if (userData == null) {
+      userData = new HashMap<String, String>();
+    }
+    
+    for (int i = 0; i < obj.length; i += 2) {
+      if (!(obj[i] instanceof String)) {
+        BeeKeeper.getLog().warning("parameter", i, "not a string");
+        continue;
+      }
+      
+      userData.put((String) obj[i], BeeUtils.transformNoTrim(obj[i + 1])); 
+    }
   }
 
   public int end(BeeService.DATA_TYPE dtp, String data, int size, int rows,
@@ -185,6 +211,16 @@ public class RpcInfo {
       return BeeConst.STRING_EMPTY;
     } else {
       return getMethod().toString();
+    }
+  }
+  
+  public String getParameter(String name) {
+    Assert.notEmpty(name);
+    
+    if (getReqParams() == null) {
+      return null;
+    } else {
+      return getReqParams().getParameter(name);
     }
   }
 
@@ -332,6 +368,10 @@ public class RpcInfo {
     return duration.getTimeoutAsTime();
   }
 
+  public Map<String, String> getUserData() {
+    return userData;
+  }
+
   public void setErrMsg(String errMsg) {
     this.errMsg = errMsg;
   }
@@ -436,8 +476,12 @@ public class RpcInfo {
     duration.setTimeout(timeout);
   }
 
+  public void setUserData(Map<String, String> userData) {
+    this.userData = userData;
+  }
+
   private int done() {
     return duration.finish();
   }
-
+  
 }

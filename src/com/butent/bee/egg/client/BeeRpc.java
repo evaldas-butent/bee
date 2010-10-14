@@ -13,6 +13,8 @@ import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.BeeService;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
+import java.util.Map;
+
 public class BeeRpc implements BeeModule {
   private final String rpcUrl;
 
@@ -22,13 +24,20 @@ public class BeeRpc implements BeeModule {
   public BeeRpc(String url) {
     this.rpcUrl = url;
   }
+  
+  public void addUserData(int id, Object... obj) {
+    RpcInfo info = getRpcInfo(id);
+    if (info != null) {
+      info.addUserData(obj);
+    }
+  }
 
   public ParameterList createParameters(String svc) {
     Assert.notEmpty(svc);
     return new ParameterList(svc);
   }
 
-  public boolean dispatchService(String svc) {
+  public int dispatchService(String svc) {
     boolean z = BeeProperties.getBooleanProperty(BeeProperties.COMMUNICATION_METHOD);
 
     if (z) {
@@ -87,66 +96,97 @@ public class BeeRpc implements BeeModule {
     return (info == null) ? BeeConst.STRING_EMPTY : info.getService();
   }
 
+  public Map<String, String> getUserData(int id) {
+    RpcInfo info = getRpcInfo(id);
+
+    if (info == null) {
+      return null;
+    } else {
+      return info.getUserData();
+    }
+  }
+  
   public void init() {
   }
 
-  public boolean makeGetRequest(ParameterList params) {
+  public int invoke(String method) {
+    return invoke(method, null, null);
+  }
+
+  public int invoke(String method, String data) {
+    return invoke(method, null, data);
+  }
+  
+  public int invoke(String method, BeeService.DATA_TYPE dtp, String data) {
+    Assert.notEmpty(method);
+
+    ParameterList params = createParameters(BeeService.SERVICE_INVOKE);
+    params.addQueryItem(BeeService.RPC_FIELD_METH, method);
+    
+    if (data == null) {
+      return makeGetRequest(params);
+    } else {
+      return makePostRequest(params, dtp, data);
+    }
+  }
+  
+  public int makeGetRequest(ParameterList params) {
     return makeRequest(RequestBuilder.GET, params, null, null,
         BeeConst.TIME_UNKNOWN);
   }
 
-  public boolean makeGetRequest(ParameterList params, int timeout) {
+  public int makeGetRequest(ParameterList params, int timeout) {
     return makeRequest(RequestBuilder.GET, params, null, null, timeout);
   }
 
-  public boolean makeGetRequest(String svc) {
+  public int makeGetRequest(String svc) {
     return makeRequest(RequestBuilder.GET, createParameters(svc), null, null,
         BeeConst.TIME_UNKNOWN);
   }
 
-  public boolean makeGetRequest(String svc, int timeout) {
+  public int makeGetRequest(String svc, int timeout) {
     return makeRequest(RequestBuilder.GET, createParameters(svc), null, null,
         timeout);
   }
 
-  public boolean makePostRequest(ParameterList params,
+  public int makePostRequest(ParameterList params,
       BeeService.DATA_TYPE dtp, String data) {
     return makeRequest(RequestBuilder.POST, params, dtp, data,
         BeeConst.TIME_UNKNOWN);
   }
 
-  public boolean makePostRequest(ParameterList params,
+  public int makePostRequest(ParameterList params,
       BeeService.DATA_TYPE dtp, String data, int timeout) {
     return makeRequest(RequestBuilder.POST, params, dtp, data, timeout);
   }
 
-  public boolean makePostRequest(ParameterList params, String data) {
+  public int makePostRequest(ParameterList params, String data) {
     return makeRequest(RequestBuilder.POST, params, null, data,
         BeeConst.TIME_UNKNOWN);
   }
 
-  public boolean makePostRequest(ParameterList params, String data, int timeout) {
+  public int makePostRequest(ParameterList params, String data, int timeout) {
     return makeRequest(RequestBuilder.POST, params, null, data, timeout);
   }
 
-  public boolean makePostRequest(String svc, BeeService.DATA_TYPE dtp,
+  public int makePostRequest(String svc, BeeService.DATA_TYPE dtp,
       String data) {
     return makeRequest(RequestBuilder.POST, createParameters(svc), dtp, data,
         BeeConst.TIME_UNKNOWN);
   }
 
-  public boolean makePostRequest(String svc, BeeService.DATA_TYPE dtp,
+  public int makePostRequest(String svc, BeeService.DATA_TYPE dtp,
       String data, int timeout) {
     return makeRequest(RequestBuilder.POST, createParameters(svc), dtp, data,
         timeout);
   }
 
-  public boolean makePostRequest(String svc, String data) {
+  public int makePostRequest(String svc, String data) {
     return makeRequest(RequestBuilder.POST, createParameters(svc), null, data,
         BeeConst.TIME_UNKNOWN);
   }
 
-  public boolean makePostRequest(String svc, String data, int timeout) {
+  public int makePostRequest(String svc, String data, int timeout) {
     return makeRequest(RequestBuilder.POST, createParameters(svc), null, data,
         timeout);
   }
@@ -162,7 +202,7 @@ public class BeeRpc implements BeeModule {
   public void start() {
   }
 
-  private boolean makeRequest(RequestBuilder.Method meth, ParameterList params,
+  private int makeRequest(RequestBuilder.Method meth, ParameterList params,
       BeeService.DATA_TYPE dataType, String reqData, int timeout) {
     Assert.notNull(meth);
     Assert.notNull(params);
@@ -170,7 +210,6 @@ public class BeeRpc implements BeeModule {
     String svc = params.getService();
     Assert.notEmpty(svc);
 
-    boolean ok = false;
     boolean debug = BeeGlobal.isDebug();
 
     BeeService.DATA_TYPE dtp = dataType;
@@ -239,7 +278,6 @@ public class BeeRpc implements BeeModule {
     try {
       bld.sendRequest(data, callBack);
       info.setState(BeeConst.STATE_OPEN);
-      ok = true;
     } catch (RequestException ex) {
       info.endError(ex);
       BeeKeeper.getLog().severe("send request error", id, ex);
@@ -247,7 +285,7 @@ public class BeeRpc implements BeeModule {
 
     rpcList.addInfo(info);
 
-    return ok;
+    return id;
   }
 
 }

@@ -6,7 +6,9 @@ import com.butent.bee.egg.server.utils.BeeClass;
 import com.butent.bee.egg.server.utils.BeeJvm;
 import com.butent.bee.egg.server.utils.BeeMX;
 import com.butent.bee.egg.server.utils.BeeSystem;
+import com.butent.bee.egg.server.utils.Checksum;
 import com.butent.bee.egg.server.utils.FileUtils;
+import com.butent.bee.egg.server.utils.Reflection;
 import com.butent.bee.egg.server.utils.XmlUtils;
 import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.BeeService;
@@ -55,6 +57,10 @@ public class SystemServiceBean {
     } else if (BeeService.equals(svc, BeeService.SERVICE_GET_DIGEST)) {
       getDigest(reqInfo, buff);
 
+    } else if (BeeService.equals(svc, BeeService.SERVICE_INVOKE)) {
+      Reflection.invoke(this, reqInfo.getParameter(BeeService.RPC_FIELD_METH), 
+          reqInfo, buff);
+      
     } else {
       String msg = BeeUtils.concat(1, svc, "system service not recognized");
       LogUtils.warning(logger, msg);
@@ -62,6 +68,27 @@ public class SystemServiceBean {
     }
   }
 
+  public void stringInfo(RequestInfo reqInfo, ResponseBuffer buff) {
+    String data = reqInfo.getContent();
+    if (BeeUtils.isEmpty(data)) {
+      buff.addSevere("Request data not found");
+      return;
+    }
+    
+    buff.addBinary(data);
+    
+    byte[] arr = Codec.toBytes(data); 
+    
+    buff.addMessage("length", data.length());
+    buff.addMessage("adler32.z", Checksum.adler32(arr));
+    buff.addMessage("crc32.z", Checksum.crc32(arr));
+
+    buff.addMessage("adler32", Codec.adler32(arr));
+    buff.addMessage("crc16", Codec.crc16(arr));
+    buff.addMessage("crc32", Codec.crc32(arr));
+    buff.addMessage("crc32d", Codec.crc32Direct(arr));
+  }
+ 
   private void classInfo(RequestInfo reqInfo, ResponseBuffer buff) {
     String cnm = reqInfo.getParameter(BeeService.FIELD_CLASS_NAME);
     String pck = reqInfo.getParameter(BeeService.FIELD_PACKAGE_LIST);

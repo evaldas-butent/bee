@@ -50,7 +50,7 @@ public class ResponseBuffer {
       setDefaultSeparator();
     }
   }
-
+  
   public void add(CharSequence s) {
     if (s != null && s.length() > 0) {
       checkSeparator(s);
@@ -82,6 +82,17 @@ public class ResponseBuffer {
         add(lst[i]);
       }
     }
+  }
+
+  public void addBinary(CharSequence s) {
+    if (s == null || s.length() <= 0) {
+      return;
+    }
+    
+    buffer.append(s);
+    count++;
+    
+    setDataType(BeeService.DATA_TYPE.BINARY);
   }
 
   public void addColumn(BeeColumn col) {
