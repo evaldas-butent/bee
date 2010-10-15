@@ -1,7 +1,6 @@
 package com.butent.bee.egg.shared;
 
 import com.butent.bee.egg.shared.utils.BeeUtils;
-import com.butent.bee.egg.shared.utils.Codec;
 
 public class BeeService {
   public static enum DATA_TYPE {
@@ -165,22 +164,6 @@ public class BeeService {
       return type;
     } else {
       return type.trim() + ";charset=" + encoding.trim();
-    }
-  }
-
-  public static String decodeMessage(String msg) {
-    if (BeeUtils.isEmpty(msg)) {
-      return BeeConst.STRING_EMPTY;
-    } else {
-      return Codec.decodeBase64(msg);
-    }
-  }
-
-  public static String encodeMessage(String msg) {
-    if (BeeUtils.isEmpty(msg)) {
-      return BeeConst.STRING_EMPTY;
-    } else {
-      return Codec.encodeBase64(msg);
     }
   }
 

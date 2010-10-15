@@ -1,7 +1,7 @@
 package com.butent.bee.egg.server.data;
 
+import com.butent.bee.egg.server.communication.ResponseBuffer;
 import com.butent.bee.egg.server.http.RequestInfo;
-import com.butent.bee.egg.server.http.ResponseBuffer;
 import com.butent.bee.egg.server.jdbc.JdbcException;
 import com.butent.bee.egg.server.utils.BeeDataSource;
 import com.butent.bee.egg.shared.Assert;
@@ -41,7 +41,7 @@ public class MetaDataBean {
     } else {
       String msg = BeeUtils.concat(1, svc, "meta data service not recognized");
       LogUtils.warning(logger, msg);
-      buff.add(msg);
+      buff.addWarning(msg);
     }
   }
 
@@ -53,7 +53,7 @@ public class MetaDataBean {
       prp = ds.getDbInfo();
     } catch (SQLException ex) {
       LogUtils.error(logger, ex);
-      buff.add(ex);
+      buff.addError(ex);
       ok = false;
     }
 

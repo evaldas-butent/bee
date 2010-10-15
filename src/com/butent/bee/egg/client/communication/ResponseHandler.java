@@ -6,6 +6,7 @@ import com.butent.bee.egg.client.layout.BeeSplit;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.BeeResource;
+import com.butent.bee.egg.shared.communication.ResponseMessage;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
 import java.util.Map;
@@ -48,7 +49,7 @@ public class ResponseHandler {
   }
 
   public static void unicodeTest(RpcInfo info, String respTxt, int mc,
-      String[] messages) {
+      ResponseMessage[] messages) {
     Assert.notNull(info);
     Assert.notEmpty(respTxt);
     Assert.isPositive(mc);
@@ -106,14 +107,14 @@ public class ResponseHandler {
     String k, v, z;
     
     for (int i = 0; i < mc; i++) {
-      arr = BeeUtils.split(messages[i], BeeConst.STRING_SPACE);
-      if (BeeUtils.length(arr) != 3) {
+      arr = BeeUtils.split(messages[i].getMessage(), BeeConst.STRING_SPACE);
+      if (BeeUtils.length(arr) != 2) {
         BeeKeeper.getLog().warning(BeeUtils.length(arr), messages[i]);
         continue;
       }
       
-      k = arr[1];
-      v = arr[2];
+      k = arr[0];
+      v = arr[1];
       
       if (reqData.containsKey(k)) {
         z = reqData.get(k);

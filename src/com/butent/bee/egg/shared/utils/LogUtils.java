@@ -64,6 +64,14 @@ public class LogUtils {
     Assert.notNull(logger);
     logger.info(BeeUtils.concat(1, now(), obj));
   }
+  
+  public static boolean isOff(Level level) {
+    if (level == null) {
+      return false;
+    } else {
+      return level == Level.OFF;
+    }
+  }
 
   public static void log(Logger logger, Level level, Object... obj) {
     Assert.notNull(logger);
@@ -107,6 +115,14 @@ public class LogUtils {
     int i = 0;
     for (StackTraceElement el : err.getStackTrace()) {
       logger.info("[" + ++i + "] " + el.toString());
+    }
+  }
+  
+  public static String transformLevel(Level level) {
+    if (level == null) {
+      return BeeConst.STRING_EMPTY;
+    } else {
+      return level.getName();
     }
   }
 

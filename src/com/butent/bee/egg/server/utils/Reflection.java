@@ -1,7 +1,7 @@
 package com.butent.bee.egg.server.utils;
 
+import com.butent.bee.egg.server.communication.ResponseBuffer;
 import com.butent.bee.egg.server.http.RequestInfo;
-import com.butent.bee.egg.server.http.ResponseBuffer;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 import com.butent.bee.egg.shared.utils.LogUtils;

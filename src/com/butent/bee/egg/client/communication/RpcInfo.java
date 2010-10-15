@@ -9,6 +9,7 @@ import com.butent.bee.egg.client.utils.BeeDuration;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.BeeService;
+import com.butent.bee.egg.shared.communication.ResponseMessage;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 import com.butent.bee.egg.shared.utils.SubProp;
 
@@ -87,7 +88,7 @@ public class RpcInfo {
   private int respSize = BeeConst.SIZE_UNKNOWN;
 
   private int respMsgCnt = BeeConst.SIZE_UNKNOWN;
-  private String[] respMessages = null;
+  private ResponseMessage[] respMessages = null;
   private int respPartCnt = BeeConst.SIZE_UNKNOWN;
   private int[] respPartSize = null;
 
@@ -134,7 +135,7 @@ public class RpcInfo {
   }
 
   public int end(BeeService.DATA_TYPE dtp, String data, int size, int rows,
-      int cols, int msgCnt, String[] messages, int partCnt, int[] partSizes) {
+      int cols, int msgCnt, ResponseMessage[] messages, int partCnt, int[] partSizes) {
     int r = done();
     setState(BeeConst.STATE_CLOSED);
 
@@ -273,7 +274,7 @@ public class RpcInfo {
         BeeConst.DEFAULT_ROW_SEPARATOR);
   }
 
-  public String[] getRespMessages() {
+  public ResponseMessage[] getRespMessages() {
     return respMessages;
   }
 
@@ -428,7 +429,7 @@ public class RpcInfo {
     this.respInfo = respInfo;
   }
 
-  public void setRespMessages(String[] respMessages) {
+  public void setRespMessages(ResponseMessage[] respMessages) {
     this.respMessages = respMessages;
   }
 

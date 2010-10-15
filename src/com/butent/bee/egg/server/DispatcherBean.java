@@ -1,8 +1,8 @@
 package com.butent.bee.egg.server;
 
+import com.butent.bee.egg.server.communication.ResponseBuffer;
 import com.butent.bee.egg.server.data.DataServiceBean;
 import com.butent.bee.egg.server.http.RequestInfo;
-import com.butent.bee.egg.server.http.ResponseBuffer;
 import com.butent.bee.egg.server.ui.UiServiceBean;
 import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.BeeService;
@@ -48,7 +48,7 @@ public class DispatcherBean {
     } else {
       String msg = BeeUtils.concat(1, svc, "service type not recognized");
       LogUtils.warning(logger, msg);
-      buff.add(msg);
+      buff.addWarning(msg);
     }
   }
 

@@ -1,6 +1,6 @@
 package com.butent.bee.egg.server.data;
 
-import com.butent.bee.egg.server.http.ResponseBuffer;
+import com.butent.bee.egg.server.communication.ResponseBuffer;
 import com.butent.bee.egg.server.jdbc.JdbcException;
 import com.butent.bee.egg.server.jdbc.JdbcUtils;
 import com.butent.bee.egg.shared.Assert;

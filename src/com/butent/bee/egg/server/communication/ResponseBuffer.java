@@ -1,9 +1,10 @@
-package com.butent.bee.egg.server.http;
+package com.butent.bee.egg.server.communication;
 
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeDate;
 import com.butent.bee.egg.shared.BeeResource;
 import com.butent.bee.egg.shared.BeeService;
+import com.butent.bee.egg.shared.communication.ResponseMessage;
 import com.butent.bee.egg.shared.data.BeeColumn;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 import com.butent.bee.egg.shared.utils.Codec;
@@ -126,32 +127,16 @@ public class ResponseBuffer {
     }
   }
 
-  public void addMessage(Level level, Object... obj) {
-    messages.add(new ResponseMessage(level, obj));
-  }
-
-  public void addMessage(Level level, String msg) {
-    messages.add(new ResponseMessage(level, msg));
-  }
-
   public void addMessage(Object... obj) {
-    messages.add(new ResponseMessage(obj));
+    messages.add(new ResponseMessage(BeeUtils.concat(1, obj)));
   }
 
-  public void addMessage(String msg) {
-    messages.add(new ResponseMessage(msg));
+  public void addNow(Object... obj) {
+    messages.add(new ResponseMessage(true, BeeUtils.concat(1, obj)));
   }
 
-  public void addMessages(Level level, String... msg) {
-    for (String s : msg) {
-      addMessage(level, s);
-    }
-  }
-
-  public void addMessages(String... msg) {
-    for (String s : msg) {
-      addMessage(s);
-    }
+  public void addOff(Object... obj) {
+    messages.add(new ResponseMessage(Level.OFF, BeeUtils.concat(1, obj)));
   }
 
   public void addPart(String uri, String content) {
@@ -217,7 +202,7 @@ public class ResponseBuffer {
   }
 
   public void addSevere(Object... obj) {
-    messages.add(new ResponseMessage(Level.SEVERE, obj));
+    messages.add(new ResponseMessage(Level.SEVERE, BeeUtils.concat(1, obj)));
   }
 
   public void addStringColumns(String... cap) {
@@ -272,7 +257,7 @@ public class ResponseBuffer {
   }
 
   public void addWarning(Object... obj) {
-    messages.add(new ResponseMessage(Level.WARNING, obj));
+    messages.add(new ResponseMessage(Level.WARNING, BeeUtils.concat(1, obj)));
   }
 
   public void addWarning(Throwable err) {
@@ -349,8 +334,8 @@ public class ResponseBuffer {
     return Codec.toHex(getSeparator());
   }
 
-  public String getMessage(int i) {
-    return messages.get(i).transform();
+  public ResponseMessage getMessage(int i) {
+    return messages.get(i);
   }
 
   public int getMessageCount() {

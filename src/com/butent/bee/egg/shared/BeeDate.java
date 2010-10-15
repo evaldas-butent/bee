@@ -1,64 +1,107 @@
 package com.butent.bee.egg.shared;
 
 import com.butent.bee.egg.shared.utils.BeeUtils;
+import com.butent.bee.egg.shared.utils.Grego;
 
-import java.util.Date;
-
-@SuppressWarnings("serial")
-public class BeeDate extends Date {
+public class BeeDate implements BeeSerializable {
+  private long time;
+  private int[] fields = null;
 
   public BeeDate() {
-    super();
+    this(System.currentTimeMillis());
   }
 
-  public BeeDate(long date) {
-    super(date);
+  public BeeDate(long time) {
+    this.time = time;
   }
 
-  @SuppressWarnings("deprecation")
-  @Override
-  public int getDay() {
-    return super.getDate();
+  public BeeDate(String time) {
+    this(Long.parseLong(time));
   }
 
-  @SuppressWarnings("deprecation")
-  @Override
-  public int getHours() {
-    return super.getHours();
+  public BeeDate(int year, int month, int dom) {
+    this(year, month, dom, 0, 0, 0, 0);
+  }
+
+  public BeeDate(int year, int month, int dom, int hour, int minute, int second, int millis) {
+    long z = Grego.fieldsToDay(year, month, dom);
+    z *= Grego.MILLIS_PER_DAY;
+    
+    if (hour != 0) {
+      z += hour * Grego.MILLIS_PER_HOUR;
+    }
+    if (minute != 0) {
+      z += minute * Grego.MILLIS_PER_MINUTE;
+    }
+    if (second != 0) {
+      z += second * Grego.MILLIS_PER_SECOND;
+    }
+    
+    this.time = z + millis;
+  }
+  
+  public void deserialize(String s) {
+    time = Long.parseLong(s);
+    fields = null;
+  }
+
+  public int getDom() {
+    ensureFields();
+    return fields[Grego.IDX_DOM];
+  }
+
+  public int getDow() {
+    ensureFields();
+    return fields[Grego.IDX_DOW];
+  }
+
+  public int getDoy() {
+    ensureFields();
+    return fields[Grego.IDX_DOY];
+  }
+  
+  public int getHour() {
+    ensureFields();
+    return fields[Grego.IDX_HOUR];
   }
 
   public int getMillis() {
-    return (int) (getTime() % 1000);
+    ensureFields();
+    return fields[Grego.IDX_MILLIS];
   }
 
-  @SuppressWarnings("deprecation")
-  @Override
-  public int getMinutes() {
-    return super.getMinutes();
+  public int getMinute() {
+    ensureFields();
+    return fields[Grego.IDX_MINUTE];
   }
 
-  @SuppressWarnings("deprecation")
-  @Override
   public int getMonth() {
-    return super.getMonth() + 1;
+    ensureFields();
+    return fields[Grego.IDX_MONTH];
   }
 
-  @SuppressWarnings("deprecation")
-  @Override
-  public int getSeconds() {
-    return super.getSeconds();
+  public int getSecond() {
+    ensureFields();
+    return fields[Grego.IDX_SECOND];
   }
   
-  @SuppressWarnings("deprecation")
-  @Override
+  public long getTime() {
+    return time;
+  }
+  
   public int getYear() {
-    return super.getYear() + 1900;
+    ensureFields();
+    return fields[Grego.IDX_YEAR];
+  }
+
+  public String serialize() {
+    return Long.toString(time);
   }
 
   public String toLog() {
-    return BeeUtils.toLeadingZeroes(getHours(), 2) + ":"
-        + BeeUtils.toLeadingZeroes(getMinutes(), 2) + ":"
-        + BeeUtils.toLeadingZeroes(getSeconds(), 2) + "."
+    return BeeUtils.toLeadingZeroes(getHour(), 2) + ":"
+        + BeeUtils.toLeadingZeroes(getMinute(), 2) + ":"
+        + BeeUtils.toLeadingZeroes(getSecond(), 2) + "."
         + BeeUtils.toLeadingZeroes(getMillis(), 3);
   }
 
@@ -66,9 +109,20 @@ public class BeeDate extends Date {
   public String toString() {
     return BeeUtils.toLeadingZeroes(getYear(), 4) + "."
         + BeeUtils.toLeadingZeroes(getMonth(), 2) + "."
-        + BeeUtils.toLeadingZeroes(getDay(), 2) + " "
-        + BeeUtils.toLeadingZeroes(getHours(), 2) + ":"
-        + BeeUtils.toLeadingZeroes(getMinutes(), 2) + ":"
-        + BeeUtils.toLeadingZeroes(getSeconds(), 2);
+        + BeeUtils.toLeadingZeroes(getDom(), 2) + " "
+        + BeeUtils.toLeadingZeroes(getHour(), 2) + ":"
+        + BeeUtils.toLeadingZeroes(getMinute(), 2) + ":"
+        + BeeUtils.toLeadingZeroes(getSecond(), 2);
   }
+ 
+  private void computeFields() {
+    fields = Grego.timeToFields(time);
+  }
+
+  private void ensureFields() {
+    if (fields == null) {
+      computeFields();
+    }
+  }
+
 }

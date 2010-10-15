@@ -1,7 +1,7 @@
 package com.butent.bee.egg.server;
 
+import com.butent.bee.egg.server.communication.ResponseBuffer;
 import com.butent.bee.egg.server.http.RequestInfo;
-import com.butent.bee.egg.server.http.ResponseBuffer;
 import com.butent.bee.egg.server.utils.BeeClass;
 import com.butent.bee.egg.server.utils.BeeJvm;
 import com.butent.bee.egg.server.utils.BeeMX;
@@ -64,7 +64,7 @@ public class SystemServiceBean {
     } else {
       String msg = BeeUtils.concat(1, svc, "system service not recognized");
       LogUtils.warning(logger, msg);
-      buff.add(msg);
+      buff.addWarning(msg);
     }
   }
 
@@ -79,14 +79,14 @@ public class SystemServiceBean {
     
     byte[] arr = Codec.toBytes(data); 
     
-    buff.addMessage("length", data.length());
-    buff.addMessage("adler32.z", Checksum.adler32(arr));
-    buff.addMessage("crc32.z", Checksum.crc32(arr));
+    buff.addOff("length", data.length());
+    buff.addOff("adler32.z", Checksum.adler32(arr));
+    buff.addOff("crc32.z", Checksum.crc32(arr));
 
-    buff.addMessage("adler32", Codec.adler32(arr));
-    buff.addMessage("crc16", Codec.crc16(arr));
-    buff.addMessage("crc32", Codec.crc32(arr));
-    buff.addMessage("crc32d", Codec.crc32Direct(arr));
+    buff.addOff("adler32", Codec.adler32(arr));
+    buff.addOff("crc16", Codec.crc16(arr));
+    buff.addOff("crc32", Codec.crc32(arr));
+    buff.addOff("crc32d", Codec.crc32Direct(arr));
   }
  
   private void classInfo(RequestInfo reqInfo, ResponseBuffer buff) {

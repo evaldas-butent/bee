@@ -25,6 +25,7 @@ import com.butent.bee.egg.client.utils.BeeJs;
 import com.butent.bee.egg.client.utils.JreEmulation;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeConst;
+import com.butent.bee.egg.shared.BeeDate;
 import com.butent.bee.egg.shared.BeeService;
 import com.butent.bee.egg.shared.data.DataUtils;
 import com.butent.bee.egg.shared.utils.BeeUtils;
@@ -186,6 +187,39 @@ public class CliWorker {
     params.addPositionalHeader(arr);
 
     BeeKeeper.getRpc().makeGetRequest(params);
+  }
+
+  public static void showDate(String[] arr) {
+    int len = BeeUtils.length(arr);
+    BeeDate date;
+
+    if (len == 2 && BeeUtils.isDigit(arr[1])) {
+      date = new BeeDate(arr[1]);
+
+    } else if (len >= 3) {
+      int[] fields = new int[7];
+      for (int i = 0; i < fields.length; i++) {
+        if (i < len - 1) {
+          fields[i] = BeeUtils.toInt(arr[i + 1]);
+        } else {
+          fields[i] = 0;
+        }
+      }
+      date = new BeeDate(fields[0], fields[1], fields[2], fields[3], fields[4], fields[5], fields[6]);
+
+    } else {
+      date = new BeeDate();
+    }
+
+    List<StringProp> lst = PropUtils.createStringProp("Time", date.getTime(),
+        "Year", date.getYear(), "Month", date.getMonth(), "Dom", date.getDom(),
+        "Dow", date.getDow(), "Doy", date.getDoy(), "Hour", date.getHour(),
+        "Minute", date.getMinute(), "Second", date.getSecond(), "Millis",
+        date.getMillis(), "Log", date.toLog(), "String", date.toString(),
+        "Date", new Date(date.getTime()).toString(),
+        "Tz Offset", BeeGlobal.getTzo());
+
+    BeeKeeper.getUi().showGrid(lst);
   }
 
   public static void showDateFormat() {
@@ -486,14 +520,15 @@ public class CliWorker {
         }
       }
     }
-    
+
     String s = sb.toString();
     byte[] bytes = Codec.toBytes(s);
 
-    int id = BeeKeeper.getRpc().invoke("stringInfo", BeeService.DATA_TYPE.BINARY, s);
+    int id = BeeKeeper.getRpc().invoke("stringInfo",
+        BeeService.DATA_TYPE.BINARY, s);
     BeeKeeper.getRpc().addUserData(id, "length", s.length(), "data", s,
-        "adler32", Codec.adler32(bytes), "crc16", Codec.crc16(bytes),
-        "crc32", Codec.crc32(bytes), "crc32d", Codec.crc32Direct(bytes));
+        "adler32", Codec.adler32(bytes), "crc16", Codec.crc16(bytes), "crc32",
+        Codec.crc32(bytes), "crc32d", Codec.crc32Direct(bytes));
   }
 
   public static void whereAmI() {

@@ -1,7 +1,7 @@
 package com.butent.bee.egg.server;
 
+import com.butent.bee.egg.server.communication.ResponseBuffer;
 import com.butent.bee.egg.server.http.RequestInfo;
-import com.butent.bee.egg.server.http.ResponseBuffer;
 import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.BeeResource;
 import com.butent.bee.egg.shared.BeeService;
@@ -111,7 +111,7 @@ public class BeeServlet extends HttpServlet {
         resp.setIntHeader(BeeService.RPC_FIELD_MSG_CNT, mc);
         for (int i = 0; i < mc; i++) {
           resp.setHeader(BeeService.rpcMessageName(i),
-              BeeService.encodeMessage(buff.getMessage(i)));
+              buff.getMessage(i).serialize());
         }
       }
 

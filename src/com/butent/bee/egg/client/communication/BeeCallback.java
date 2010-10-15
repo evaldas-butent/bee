@@ -14,10 +14,15 @@ import com.butent.bee.egg.client.ui.CompositeService;
 import com.butent.bee.egg.client.utils.BeeDuration;
 import com.butent.bee.egg.client.utils.BeeJs;
 import com.butent.bee.egg.shared.BeeConst;
+import com.butent.bee.egg.shared.BeeDate;
 import com.butent.bee.egg.shared.BeeResource;
 import com.butent.bee.egg.shared.BeeService;
+import com.butent.bee.egg.shared.communication.ResponseMessage;
 import com.butent.bee.egg.shared.data.BeeView;
 import com.butent.bee.egg.shared.utils.BeeUtils;
+import com.butent.bee.egg.shared.utils.LogUtils;
+
+import java.util.logging.Level;
 
 public class BeeCallback implements RequestCallback {
 
@@ -120,11 +125,11 @@ public class BeeCallback implements RequestCallback {
       }
     }
 
-    String[] messages = null;
+    ResponseMessage[] messages = null;
     if (mc > 0) {
-      messages = new String[mc];
+      messages = new ResponseMessage[mc];
       for (int i = 0; i < mc; i++) {
-        messages[i] = BeeService.decodeMessage(resp.getHeader(BeeService.rpcMessageName(i)));
+        messages[i] = new ResponseMessage(resp.getHeader(BeeService.rpcMessageName(i)), true);
       }
       dispatchMessages(mc, messages);
     }
@@ -179,7 +184,7 @@ public class BeeCallback implements RequestCallback {
     finalizeResponse();
   }
 
-  private void dispatchInvocation(RpcInfo info, String txt, int mc, String[] messages) {
+  private void dispatchInvocation(RpcInfo info, String txt, int mc, ResponseMessage[] messages) {
     if (info == null) {
       BeeKeeper.getLog().severe("rpc info not available");
       return;
@@ -198,9 +203,26 @@ public class BeeCallback implements RequestCallback {
     }
   }
 
-  private void dispatchMessages(int mc, String[] messages) {
+  private void dispatchMessages(int mc, ResponseMessage[] messages) {
     for (int i = 0; i < mc; i++) {
-      BeeKeeper.getLog().info(messages[i]);
+      Level level = messages[i].getLevel();
+      if (LogUtils.isOff(level)) {
+        continue;
+      }
+      
+      BeeDate date = messages[i].getDate();
+      String msg;
+      if (date == null) {
+        msg = messages[i].getMessage();
+      } else {
+        msg = BeeUtils.concat(1, date.toLog(), messages[i].getMessage());
+      }
+      
+      if (level == null) {
+        BeeKeeper.getLog().info(msg);
+      } else {
+        BeeKeeper.getLog().log(level, msg);
+      }
     }
   }
 

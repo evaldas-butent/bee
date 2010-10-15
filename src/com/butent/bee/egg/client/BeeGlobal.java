@@ -1,5 +1,6 @@
 package com.butent.bee.egg.client;
 
+import com.google.gwt.core.client.JsDate;
 import com.google.gwt.event.shared.GwtEvent;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -19,6 +20,7 @@ import com.butent.bee.egg.shared.BeeType;
 import com.butent.bee.egg.shared.BeeWidget;
 import com.butent.bee.egg.shared.menu.MenuConst;
 import com.butent.bee.egg.shared.utils.BeeUtils;
+import com.butent.bee.egg.shared.utils.Grego;
 
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -37,6 +39,8 @@ public class BeeGlobal implements BeeModule {
 
   private static final Map<String, CompositeService> services = new HashMap<String, CompositeService>();
   private static final Map<String, CompositeService> workingServices = new HashMap<String, CompositeService>();
+  
+  private static int tzo = -JsDate.create().getTimezoneOffset() * Grego.MILLIS_PER_MINUTE;
 
   public static void alert(Object... obj) {
     msgBox.alert(obj);
@@ -110,8 +114,11 @@ public class BeeGlobal implements BeeModule {
 
   public static CompositeService getService(String svcId) {
     Assert.contains(workingServices, svcId);
-
     return workingServices.get(svcId);
+  }
+
+  public static int getTzo() {
+    return tzo;
   }
 
   public static void inform(Object... obj) {

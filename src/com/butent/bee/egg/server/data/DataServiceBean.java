@@ -2,8 +2,8 @@ package com.butent.bee.egg.server.data;
 
 import com.butent.bee.egg.server.Assert;
 import com.butent.bee.egg.server.DataSourceBean;
+import com.butent.bee.egg.server.communication.ResponseBuffer;
 import com.butent.bee.egg.server.http.RequestInfo;
-import com.butent.bee.egg.server.http.ResponseBuffer;
 import com.butent.bee.egg.server.jdbc.BeeConnection;
 import com.butent.bee.egg.server.jdbc.BeeResultSet;
 import com.butent.bee.egg.server.jdbc.BeeStatement;
@@ -54,7 +54,7 @@ public class DataServiceBean {
     } else {
       String msg = BeeUtils.concat(1, svc, dsn, "data service not recognized");
       LogUtils.warning(logger, msg);
-      buff.add(msg);
+      buff.addWarning(msg);
     }
 
     ds.close();
@@ -62,18 +62,18 @@ public class DataServiceBean {
 
   private BeeDataSource checkDs(String dsn, ResponseBuffer buff) {
     if (BeeUtils.isEmpty(dsn)) {
-      buff.add("dsn not specified");
+      buff.addWarning("dsn not specified");
       return null;
     }
 
     BeeDataSource z = dsb.locateDs(dsn);
 
     if (z == null) {
-      buff.addLine(dsn, "not found");
+      buff.addSevere(dsn, "not found");
       return null;
     }
     if (!z.check()) {
-      buff.addLine("cannot open", dsn, z.getErrors());
+      buff.addSevere("cannot open", dsn, z.getErrors());
       return null;
     }
 

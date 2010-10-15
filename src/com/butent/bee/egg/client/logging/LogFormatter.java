@@ -1,6 +1,6 @@
 package com.butent.bee.egg.client.logging;
 
-import com.butent.bee.egg.shared.BeeDate;
+import com.butent.bee.egg.client.utils.BeeJs;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
 import java.util.logging.Formatter;
@@ -18,7 +18,7 @@ public class LogFormatter extends Formatter {
     } else if (isSeparator(record)) {
       return LOG_SEPARATOR_TAG;
     } else {
-      return BeeUtils.concat(1, new BeeDate(record.getMillis()).toLog(),
+      return BeeUtils.concat(1, BeeJs.toTime(record.getMillis()),
           BeeUtils.clip(record.getMessage(), 256));
     }
   }

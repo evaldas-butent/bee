@@ -2,6 +2,7 @@ package com.butent.bee.egg.shared.utils;
 
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeConst;
+import com.butent.bee.egg.shared.BeeSerializable;
 import com.butent.bee.egg.shared.Pair;
 
 import java.security.MessageDigest;
@@ -366,6 +367,29 @@ public class Codec {
     }
 
     return sb.toString();
+  }
+  
+  public static void serializeWithLength(StringBuilder sb, Object obj) {
+    Assert.notNull(sb);
+    if (obj == null) {
+      sb.append(BeeConst.CHAR_ZERO);
+      return;
+    }
+    
+    String v;
+    if (obj instanceof BeeSerializable) {
+      v = ((BeeSerializable) obj).serialize();
+    } else {
+      v = BeeUtils.transformNoTrim(obj);
+    }
+
+    int len = v.length();
+    if (len <= 0) {
+      sb.append(BeeConst.CHAR_ZERO);
+    } else {
+      sb.append(serializeLength(len));
+      sb.append(v);
+    }
   }
 
   public static String toBase64(byte[] data) {
