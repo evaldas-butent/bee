@@ -300,7 +300,7 @@ public class Codec {
     Assert.notNull(bytes);
     int len = bytes.length;
     Assert.isPositive(len);
-    Assert.isTrue(len % 2 == 0);
+    Assert.isEven(len);
 
     char[] chars = new char[len / 2];
     for (int i = 0; i < chars.length; i++) {

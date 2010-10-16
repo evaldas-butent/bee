@@ -49,7 +49,7 @@ public class DataServiceBean {
 
     if (BeeService.isDbMetaService(svc)) {
       mdb.doService(svc, ds, reqInfo, buff);
-    } else if (BeeService.equals(svc, BeeService.SERVICE_DB_JDBC)) {
+    } else if (BeeUtils.same(svc, BeeService.SERVICE_DB_JDBC)) {
       testJdbc(ds.getConn(), reqInfo, buff);
     } else {
       String msg = BeeUtils.concat(1, svc, dsn, "data service not recognized");

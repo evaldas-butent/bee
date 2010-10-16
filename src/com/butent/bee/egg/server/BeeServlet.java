@@ -5,6 +5,8 @@ import com.butent.bee.egg.server.http.RequestInfo;
 import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.BeeResource;
 import com.butent.bee.egg.shared.BeeService;
+import com.butent.bee.egg.shared.communication.CommUtils;
+import com.butent.bee.egg.shared.communication.ContentType;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 import com.butent.bee.egg.shared.utils.LogUtils;
 
@@ -68,8 +70,8 @@ public class BeeServlet extends HttpServlet {
     }
 
     if (reqInfo.getContentLen() > 0) {
-      LogUtils.info(logger, rid, "content", reqInfo.getContentType(),
-          reqInfo.getDataType(), BeeUtils.bracket(reqInfo.getContentLen()));
+      LogUtils.info(logger, rid, "content", reqInfo.getContentTypeHeader(),
+          reqInfo.getContentType(), BeeUtils.bracket(reqInfo.getContentLen()));
       if (debug) {
         LogUtils.info(logger, reqInfo.getContent());
       }
@@ -87,10 +89,9 @@ public class BeeServlet extends HttpServlet {
       int cnt = buff.getCount();
       int cc = buff.getColumnCount();
 
-      BeeService.DATA_TYPE dtp = buff.getDataType();
-      if (dtp == null) {
-        dtp = (cc > 0) ? BeeService.DATA_TYPE.TABLE
-            : BeeService.defaultResponseDataType;
+      ContentType ctp = buff.getContentType();
+      if (ctp == null) {
+        ctp = (cc > 0) ? ContentType.TABLE : CommUtils.defaultResponseContentType;
       }
 
       resp.setHeader(BeeService.RPC_FIELD_SID, sid);
@@ -110,32 +111,31 @@ public class BeeServlet extends HttpServlet {
       if (mc > 0) {
         resp.setIntHeader(BeeService.RPC_FIELD_MSG_CNT, mc);
         for (int i = 0; i < mc; i++) {
-          resp.setHeader(BeeService.rpcMessageName(i),
+          resp.setHeader(CommUtils.rpcMessageName(i),
               buff.getMessage(i).serialize());
         }
       }
 
-      resp.setHeader(BeeService.RPC_FIELD_DTP, BeeService.transform(dtp));
+      resp.setHeader(BeeService.RPC_FIELD_CTP, ctp.transform());
 
       resp.setHeader("Cache-Control", "no-cache");
       resp.setHeader("Pragma", "no-cache");
       resp.setHeader("Expires", "Thu, 01 Dec 1994 16:00:00 GMT");
 
-      String ct = BeeUtils.ifString(buff.getContentType(),
-          BeeService.getContentType(dtp));
-      if (!BeeUtils.isEmpty(ct)) {
-        resp.setContentType(ct);
+      String cth = BeeUtils.ifString(buff.getContentTypeHeader(), CommUtils.toHeader(ctp));
+      if (!BeeUtils.isEmpty(cth)) {
+        resp.setContentType(cth);
       }
 
       String ce = BeeUtils.ifString(buff.getCharacterEncoding(),
-          BeeService.getCharacterEncoding(dtp));
+          CommUtils.getCharacterEncoding(ctp));
       if (!BeeUtils.isEmpty(ce)) {
         resp.setCharacterEncoding(ce);
       }
 
       String s;
       if (respLen > 0) {
-        s = buff.getString();
+        s = CommUtils.prepareContent(ctp, buff.getString());
 
       } else if (pc > 0) {
         resp.setIntHeader(BeeService.RPC_FIELD_PART_CNT, pc);
@@ -145,7 +145,7 @@ public class BeeServlet extends HttpServlet {
         for (BeeResource br : buff.getParts()) {
           String part = br.serialize();
           sb.append(part);
-          resp.setIntHeader(BeeService.rpcPartName(pn++), part.length());
+          resp.setIntHeader(CommUtils.rpcPartName(pn++), part.length());
         }
 
         s = sb.toString();
@@ -157,7 +157,7 @@ public class BeeServlet extends HttpServlet {
       }
 
       LogUtils.infoNow(logger, BeeUtils.elapsedSeconds(start), rid, "response",
-          dtp, resp.getContentType(), cnt, cc, mc, pc, s.length());
+          ctp, resp.getContentType(), cnt, cc, mc, pc, s.length());
 
       try {
         ServletOutputStream out = resp.getOutputStream();

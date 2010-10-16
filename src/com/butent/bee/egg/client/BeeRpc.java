@@ -11,6 +11,8 @@ import com.butent.bee.egg.client.communication.RpcUtils;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.BeeService;
+import com.butent.bee.egg.shared.communication.CommUtils;
+import com.butent.bee.egg.shared.communication.ContentType;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
 import java.util.Map;
@@ -64,7 +66,7 @@ public class BeeRpc implements BeeModule {
 
   public String getOptions() {
     if (BeeGlobal.isDebug()) {
-      return BeeService.OPTION_DEBUG;
+      return CommUtils.OPTION_DEBUG;
     } else {
       return BeeConst.STRING_EMPTY;
     }
@@ -117,7 +119,7 @@ public class BeeRpc implements BeeModule {
     return invoke(method, null, data);
   }
   
-  public int invoke(String method, BeeService.DATA_TYPE dtp, String data) {
+  public int invoke(String method, ContentType ctp, String data) {
     Assert.notEmpty(method);
 
     ParameterList params = createParameters(BeeService.SERVICE_INVOKE);
@@ -126,7 +128,7 @@ public class BeeRpc implements BeeModule {
     if (data == null) {
       return makeGetRequest(params);
     } else {
-      return makePostRequest(params, dtp, data);
+      return makePostRequest(params, ctp, data);
     }
   }
   
@@ -149,15 +151,13 @@ public class BeeRpc implements BeeModule {
         timeout);
   }
 
-  public int makePostRequest(ParameterList params,
-      BeeService.DATA_TYPE dtp, String data) {
-    return makeRequest(RequestBuilder.POST, params, dtp, data,
+  public int makePostRequest(ParameterList params, ContentType ctp, String data) {
+    return makeRequest(RequestBuilder.POST, params, ctp, data,
         BeeConst.TIME_UNKNOWN);
   }
 
-  public int makePostRequest(ParameterList params,
-      BeeService.DATA_TYPE dtp, String data, int timeout) {
-    return makeRequest(RequestBuilder.POST, params, dtp, data, timeout);
+  public int makePostRequest(ParameterList params, ContentType ctp, String data, int timeout) {
+    return makeRequest(RequestBuilder.POST, params, ctp, data, timeout);
   }
 
   public int makePostRequest(ParameterList params, String data) {
@@ -169,15 +169,13 @@ public class BeeRpc implements BeeModule {
     return makeRequest(RequestBuilder.POST, params, null, data, timeout);
   }
 
-  public int makePostRequest(String svc, BeeService.DATA_TYPE dtp,
-      String data) {
-    return makeRequest(RequestBuilder.POST, createParameters(svc), dtp, data,
+  public int makePostRequest(String svc, ContentType ctp, String data) {
+    return makeRequest(RequestBuilder.POST, createParameters(svc), ctp, data,
         BeeConst.TIME_UNKNOWN);
   }
 
-  public int makePostRequest(String svc, BeeService.DATA_TYPE dtp,
-      String data, int timeout) {
-    return makeRequest(RequestBuilder.POST, createParameters(svc), dtp, data,
+  public int makePostRequest(String svc, ContentType ctp, String data, int timeout) {
+    return makeRequest(RequestBuilder.POST, createParameters(svc), ctp, data,
         timeout);
   }
 
@@ -203,7 +201,7 @@ public class BeeRpc implements BeeModule {
   }
 
   private int makeRequest(RequestBuilder.Method meth, ParameterList params,
-      BeeService.DATA_TYPE dataType, String reqData, int timeout) {
+      ContentType type, String reqData, int timeout) {
     Assert.notNull(meth);
     Assert.notNull(params);
 
@@ -212,7 +210,7 @@ public class BeeRpc implements BeeModule {
 
     boolean debug = BeeGlobal.isDebug();
 
-    BeeService.DATA_TYPE dtp = dataType;
+    ContentType ctp = type;
     String data;
     if (BeeUtils.isEmpty(reqData)) {
       data = params.getData();
@@ -222,12 +220,12 @@ public class BeeRpc implements BeeModule {
 
     if (BeeUtils.isEmpty(data)) {
       data = null;
-      dtp = null;
-    } else if (dtp == null) {
-      dtp = BeeService.normalizeRequest(params.getDataType());
+      ctp = null;
+    } else if (ctp == null) {
+      ctp = CommUtils.normalizeRequest(params.getContentType());
     }
 
-    RpcInfo info = new RpcInfo(meth, svc, params, dtp, data);
+    RpcInfo info = new RpcInfo(meth, svc, params, ctp, data);
     int id = info.getId();
 
     String qs = params.getQuery();
@@ -240,43 +238,46 @@ public class BeeRpc implements BeeModule {
     }
 
     bld.setHeader(BeeService.RPC_FIELD_QID, BeeUtils.transform(id));
-    String ctp = null;
+    String cth = null;
 
-    if (dtp != null) {
-      bld.setHeader(BeeService.RPC_FIELD_DTP, BeeService.transform(dtp));
+    if (ctp != null) {
+      bld.setHeader(BeeService.RPC_FIELD_CTP, ctp.transform());
 
-      String z = params.getParameter(BeeService.CONTENT_TYPE_HEADER);
+      String z = params.getParameter(CommUtils.CONTENT_TYPE_HEADER);
       if (BeeUtils.isEmpty(z)) {
-        ctp = BeeService.buildContentType(BeeService.getContentType(dtp),
-           BeeService.getCharacterEncoding(dtp));
+        cth = CommUtils.buildContentType(CommUtils.toHeader(ctp),
+            CommUtils.getCharacterEncoding(ctp));
       } else {
-        ctp = z;
+        cth = z;
       }
 
-      bld.setHeader(BeeService.CONTENT_TYPE_HEADER, ctp);
+      bld.setHeader(CommUtils.CONTENT_TYPE_HEADER, cth);
     }
 
-    params.getHeadersExcept(bld, BeeService.RPC_FIELD_QID, BeeService.RPC_FIELD_DTP,
-        BeeService.CONTENT_TYPE_HEADER);
+    params.getHeadersExcept(bld, BeeService.RPC_FIELD_QID, BeeService.RPC_FIELD_CTP,
+        CommUtils.CONTENT_TYPE_HEADER);
 
     if (debug) {
       BeeKeeper.getLog().info("request", id, meth.toString(), url);
     } else {
       BeeKeeper.getLog().info("request", id, svc);
     }
+    
+    String content = null;
 
     if (!BeeUtils.isEmpty(data)) {
-      int size = data.length();
+      content = CommUtils.prepareContent(ctp, data);
+      int size = content.length();
       info.setReqSize(size);
 
-      BeeKeeper.getLog().info("sending data", BeeService.transform(dtp), ctp, BeeUtils.bracket(size));
+      BeeKeeper.getLog().info("sending", BeeUtils.transform(ctp), cth, BeeUtils.bracket(size));
       if (debug) {
         BeeKeeper.getLog().info(data);
       }
     }
 
     try {
-      bld.sendRequest(data, callBack);
+      bld.sendRequest(content, callBack);
       info.setState(BeeConst.STATE_OPEN);
     } catch (RequestException ex) {
       info.endError(ex);

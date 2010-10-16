@@ -37,9 +37,9 @@ public class DispatcherBean {
     } else if (BeeService.isSysService(svc)) {
       sysBean.doService(svc, reqInfo, buff);
 
-    } else if (BeeService.equals(svc, BeeService.SERVICE_GET_MENU)) {
+    } else if (BeeUtils.same(svc, BeeService.SERVICE_GET_MENU)) {
       menuBean.getMenu(reqInfo, buff);
-    } else if (BeeService.equals(svc, BeeService.SERVICE_WHERE_AM_I)) {
+    } else if (BeeUtils.same(svc, BeeService.SERVICE_WHERE_AM_I)) {
       buff.addLine(buff.now(), BeeConst.whereAmI());
 
     } else if (svc.startsWith("rpc_ui_")) {

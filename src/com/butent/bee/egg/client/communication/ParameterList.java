@@ -9,6 +9,8 @@ import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.BeeService;
 import com.butent.bee.egg.shared.Transformable;
+import com.butent.bee.egg.shared.communication.CommUtils;
+import com.butent.bee.egg.shared.communication.ContentType;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
@@ -129,6 +131,17 @@ public class ParameterList extends ArrayList<RpcParameter> implements
     addItem(new RpcParameter(RpcParameter.SECTION.QUERY, name, value));
   }
 
+  public ContentType getContentType() {
+    ContentType ctp = CommUtils.getContentType(getParameter(BeeService.RPC_FIELD_CTP));
+
+    if (ctp == null) {
+      prepare();
+      ctp = BeeUtils.isEmpty(dataItems) ? null : ContentType.XML;
+    }
+
+    return ctp;
+  }
+
   public String getData() {
     prepare();
     if (BeeUtils.isEmpty(dataItems)) {
@@ -146,17 +159,6 @@ public class ParameterList extends ArrayList<RpcParameter> implements
     }
 
     return BeeXml.createString(BeeService.XML_TAG_DATA, nodes);
-  }
-
-  public BeeService.DATA_TYPE getDataType() {
-    BeeService.DATA_TYPE dtp = BeeService.getDataType(getParameter(BeeService.RPC_FIELD_DTP));
-
-    if (dtp == null) {
-      prepare();
-      dtp = BeeUtils.isEmpty(dataItems) ? null : BeeService.DATA_TYPE.XML;
-    }
-
-    return dtp;
   }
 
   public void getHeadersExcept(RequestBuilder bld, String... ignore) {
@@ -203,11 +205,11 @@ public class ParameterList extends ArrayList<RpcParameter> implements
     for (RpcParameter item : queryItems) {
       if (item.isReady()) {
         if (sb.length() > 0) {
-          sb.append(BeeService.QUERY_STRING_PAIR_SEPARATOR);
+          sb.append(CommUtils.QUERY_STRING_PAIR_SEPARATOR);
         }
 
         sb.append(item.getName().trim());
-        sb.append(BeeService.QUERY_STRING_VALUE_SEPARATOR);
+        sb.append(CommUtils.QUERY_STRING_VALUE_SEPARATOR);
         sb.append(item.getValue().trim());
       }
     }
@@ -266,7 +268,7 @@ public class ParameterList extends ArrayList<RpcParameter> implements
         continue;
       }
       if (!item.isNamed()) {
-        item.setName(BeeService.rpcParamName(n));
+        item.setName(CommUtils.rpcParamName(n));
         n++;
       }
 

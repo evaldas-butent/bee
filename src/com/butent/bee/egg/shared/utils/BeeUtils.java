@@ -1240,6 +1240,10 @@ public class BeeUtils {
     return b ? BeeConst.STRING_TRUE : BeeConst.STRING_FALSE;
   }
 
+  public static String toString(int x) {
+    return Integer.toString(x);
+  }
+  
   public static String transform(Object x) {
     String s;
 

@@ -5,7 +5,7 @@ import com.google.gwt.http.client.RequestBuilder;
 import com.google.gwt.http.client.Response;
 
 import com.butent.bee.egg.shared.Assert;
-import com.butent.bee.egg.shared.BeeService;
+import com.butent.bee.egg.shared.communication.CommUtils;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 import com.butent.bee.egg.shared.utils.PropUtils;
 import com.butent.bee.egg.shared.utils.StringProp;
@@ -22,7 +22,7 @@ public class RpcUtils {
     if (BeeUtils.isEmpty(qs)) {
       return url;
     } else {
-      return url.trim() + BeeService.QUERY_STRING_SEPARATOR + qs.trim();
+      return url.trim() + CommUtils.QUERY_STRING_SEPARATOR + qs.trim();
     }
   }
 
@@ -46,11 +46,11 @@ public class RpcUtils {
     for (int i = 0; i < c - 1; i += 2) {
       if (!BeeUtils.isEmpty(x[i]) && !BeeUtils.isEmpty(x[i + 1])) {
         if (s.length() > 0) {
-          s.append(BeeService.QUERY_STRING_PAIR_SEPARATOR);
+          s.append(CommUtils.QUERY_STRING_PAIR_SEPARATOR);
         }
 
         s.append(x[i].trim());
-        s.append(BeeService.QUERY_STRING_VALUE_SEPARATOR);
+        s.append(CommUtils.QUERY_STRING_VALUE_SEPARATOR);
         s.append(x[i + 1].trim());
       }
     }

@@ -3,7 +3,8 @@ package com.butent.bee.egg.server.communication;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeDate;
 import com.butent.bee.egg.shared.BeeResource;
-import com.butent.bee.egg.shared.BeeService;
+import com.butent.bee.egg.shared.communication.CommUtils;
+import com.butent.bee.egg.shared.communication.ContentType;
 import com.butent.bee.egg.shared.communication.ResponseMessage;
 import com.butent.bee.egg.shared.data.BeeColumn;
 import com.butent.bee.egg.shared.utils.BeeUtils;
@@ -27,21 +28,21 @@ public class ResponseBuffer {
   private List<ResponseMessage> messages = new ArrayList<ResponseMessage>();
   private List<BeeResource> parts = new ArrayList<BeeResource>();
 
-  private BeeService.DATA_TYPE dataType;
+  private ContentType contentType;
 
-  private String contentType = null;
+  private String contentTypeHeader = null;
   private String characterEncoding = null;
 
   public ResponseBuffer() {
     setDefaultSeparator();
   }
 
-  public ResponseBuffer(BeeService.DATA_TYPE dataType) {
-    this.dataType = dataType;
-  }
-
   public ResponseBuffer(char sep) {
     this.separator = new char[]{sep};
+  }
+
+  public ResponseBuffer(ContentType contentType) {
+    this.contentType = contentType;
   }
 
   public ResponseBuffer(String sep) {
@@ -93,7 +94,7 @@ public class ResponseBuffer {
     buffer.append(s);
     count++;
     
-    setDataType(BeeService.DATA_TYPE.BINARY);
+    setContentType(ContentType.BINARY);
   }
 
   public void addColumn(BeeColumn col) {
@@ -143,16 +144,14 @@ public class ResponseBuffer {
     addPart(uri, content, null, false);
   }
 
-  public void addPart(String uri, String content, BeeService.DATA_TYPE type) {
+  public void addPart(String uri, String content, ContentType type) {
     addPart(uri, content, type, false);
   }
 
-  public void addPart(String uri, String content, BeeService.DATA_TYPE type,
-      boolean readOnly) {
-
+  public void addPart(String uri, String content, ContentType type, boolean readOnly) {
     Assert.notNull(content);
     parts.add(new BeeResource(uri, content, type, readOnly));
-    setDataType(BeeService.DATA_TYPE.MULTIPART);
+    setContentType(ContentType.MULTIPART);
   }
 
   public void addPropString(StringProp el) {
@@ -176,7 +175,7 @@ public class ResponseBuffer {
     addResource(null, content, null, true);
   }
 
-  public void addResource(String content, BeeService.DATA_TYPE type) {
+  public void addResource(String content, ContentType type) {
     addResource(null, content, type, true);
   }
 
@@ -184,16 +183,15 @@ public class ResponseBuffer {
     addResource(uri, content, null, false);
   }
 
-  public void addResource(String uri, String content, BeeService.DATA_TYPE type) {
+  public void addResource(String uri, String content, ContentType type) {
     addResource(uri, content, type, false);
   }
 
-  public void addResource(String uri, String content,
-      BeeService.DATA_TYPE type, boolean readOnly) {
+  public void addResource(String uri, String content, ContentType type, boolean readOnly) {
     Assert.notNull(content);
     buffer.append(new BeeResource(uri, content, type, readOnly).serialize());
     count++;
-    setDataType(BeeService.DATA_TYPE.RESOURCE);
+    setContentType(ContentType.RESOURCE);
   }
 
   public void addSeparator() {
@@ -318,16 +316,16 @@ public class ResponseBuffer {
     return columnCount;
   }
 
-  public String getContentType() {
+  public ContentType getContentType() {
     return contentType;
+  }
+
+  public String getContentTypeHeader() {
+    return contentTypeHeader;
   }
 
   public int getCount() {
     return count;
-  }
-
-  public BeeService.DATA_TYPE getDataType() {
-    return dataType;
   }
 
   public String getHexSeparator() {
@@ -367,7 +365,7 @@ public class ResponseBuffer {
   }
 
   public boolean isDefaultSeparator() {
-    return (separator != null && separator.length == 1 && separator[0] == BeeService.DEFAULT_INFORMATION_SEPARATOR);
+    return (separator != null && separator.length == 1 && separator[0] == CommUtils.DEFAULT_INFORMATION_SEPARATOR);
   }
 
   public String now() {
@@ -386,16 +384,16 @@ public class ResponseBuffer {
     this.columnCount = columnCount;
   }
 
-  public void setContentType(String contentType) {
+  public void setContentType(ContentType contentType) {
     this.contentType = contentType;
+  }
+
+  public void setContentTypeHeader(String contentTypeHeader) {
+    this.contentTypeHeader = contentTypeHeader;
   }
 
   public void setCount(int count) {
     this.count = count;
-  }
-
-  public void setDataType(BeeService.DATA_TYPE dataType) {
-    this.dataType = dataType;
   }
 
   public void setHexSeparator(String sep) {
@@ -449,7 +447,7 @@ public class ResponseBuffer {
   }
 
   private void setDefaultSeparator() {
-    separator = new char[]{BeeService.DEFAULT_INFORMATION_SEPARATOR};
+    separator = new char[]{CommUtils.DEFAULT_INFORMATION_SEPARATOR};
   }
 
   private void updateSeparator(char[] newSep) {

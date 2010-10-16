@@ -27,6 +27,7 @@ import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.BeeDate;
 import com.butent.bee.egg.shared.BeeService;
+import com.butent.bee.egg.shared.communication.ContentType;
 import com.butent.bee.egg.shared.data.DataUtils;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 import com.butent.bee.egg.shared.utils.Codec;
@@ -78,7 +79,7 @@ public class CliWorker {
     BeeKeeper.getLog().info(BeeConst.CLIENT, Codec.md5(src));
 
     BeeKeeper.getRpc().makePostRequest(BeeService.SERVICE_GET_DIGEST,
-        BeeService.DATA_TYPE.TEXT, src);
+        ContentType.TEXT, src);
   }
 
   public static void doLog(String arr[]) {
@@ -524,8 +525,7 @@ public class CliWorker {
     String s = sb.toString();
     byte[] bytes = Codec.toBytes(s);
 
-    int id = BeeKeeper.getRpc().invoke("stringInfo",
-        BeeService.DATA_TYPE.BINARY, s);
+    int id = BeeKeeper.getRpc().invoke("stringInfo", ContentType.BINARY, s);
     BeeKeeper.getRpc().addUserData(id, "length", s.length(), "data", s,
         "adler32", Codec.adler32(bytes), "crc16", Codec.crc16(bytes), "crc32",
         Codec.crc32(bytes), "crc32d", Codec.crc32Direct(bytes));

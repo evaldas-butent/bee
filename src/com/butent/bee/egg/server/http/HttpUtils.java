@@ -4,6 +4,7 @@ import com.butent.bee.egg.server.concurrency.Counter;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.utils.BeeUtils;
+import com.butent.bee.egg.shared.utils.Codec;
 import com.butent.bee.egg.shared.utils.LogUtils;
 
 import java.io.BufferedReader;
@@ -13,6 +14,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 
+import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
 
 public class HttpUtils {
@@ -116,6 +118,37 @@ public class HttpUtils {
     }
   }
 
+  public static String readBinary(HttpServletRequest req, int len) {
+    Assert.notNull(req);
+    Assert.isPositive(len);
+    Assert.isEven(len);
+
+    byte[] arr = new byte[len];
+    boolean ok = true;
+    
+    try {
+      ServletInputStream stream = req.getInputStream();
+      int tot = stream.read(arr, 0, len);
+      Assert.isPositive(tot);
+    
+      while (tot < len) {
+        int cnt = stream.read(arr, tot, len - tot);
+        Assert.isPositive(cnt);
+        tot += cnt;
+      }
+      stream.close();
+    } catch (IOException ex) {
+      LogUtils.error(logger, ex);
+      ok = false;
+    }
+    
+    if (ok) {
+      return Codec.fromBytes(arr);
+    } else {
+      return null;
+    }
+  }
+
   public static String readContent(HttpServletRequest req) {
     Assert.notNull(req);
 
@@ -143,5 +176,5 @@ public class HttpUtils {
 
     return sb.toString();
   }
-
+  
 }

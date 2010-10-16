@@ -32,11 +32,11 @@ public class MetaDataBean {
     Assert.notNull(ds);
     Assert.notNull(buff);
 
-    if (BeeService.equals(svc, BeeService.SERVICE_DB_PING)) {
+    if (BeeUtils.same(svc, BeeService.SERVICE_DB_PING)) {
       ping(ds, buff);
-    } else if (BeeService.equals(svc, BeeService.SERVICE_DB_INFO)) {
+    } else if (BeeUtils.same(svc, BeeService.SERVICE_DB_INFO)) {
       dbInfo(ds, buff);
-    } else if (BeeService.equals(svc, BeeService.SERVICE_DB_TABLES)) {
+    } else if (BeeUtils.same(svc, BeeService.SERVICE_DB_TABLES)) {
       getTables(ds, reqInfo, buff);
     } else {
       String msg = BeeUtils.concat(1, svc, "meta data service not recognized");

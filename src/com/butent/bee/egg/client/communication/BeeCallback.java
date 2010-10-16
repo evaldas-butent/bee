@@ -17,6 +17,8 @@ import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.BeeDate;
 import com.butent.bee.egg.shared.BeeResource;
 import com.butent.bee.egg.shared.BeeService;
+import com.butent.bee.egg.shared.communication.CommUtils;
+import com.butent.bee.egg.shared.communication.ContentType;
 import com.butent.bee.egg.shared.communication.ResponseMessage;
 import com.butent.bee.egg.shared.data.BeeView;
 import com.butent.bee.egg.shared.utils.BeeUtils;
@@ -72,10 +74,10 @@ public class BeeCallback implements RequestCallback {
       return;
     }
 
-    String txt = resp.getText();
-    int len = txt.length();
+    ContentType ctp = CommUtils.getContentType(resp.getHeader(BeeService.RPC_FIELD_CTP));
 
-    BeeService.DATA_TYPE dtp = BeeService.getDataType(resp.getHeader(BeeService.RPC_FIELD_DTP));
+    String txt = CommUtils.getContent(ctp, resp.getText());
+    int len = txt.length();
 
     int cnt = BeeUtils.toInt(resp.getHeader(BeeService.RPC_FIELD_CNT));
     int cc = BeeUtils.toInt(resp.getHeader(BeeService.RPC_FIELD_COLS));
@@ -87,14 +89,14 @@ public class BeeCallback implements RequestCallback {
           BeeUtils.addName(BeeService.RPC_FIELD_QID, id),
           BeeUtils.addName(BeeService.RPC_FIELD_SVC, svc));
 
-      BeeKeeper.getLog().info(BeeUtils.addName(BeeService.RPC_FIELD_DTP, dtp),
+      BeeKeeper.getLog().info(BeeUtils.addName(BeeService.RPC_FIELD_CTP, ctp),
           BeeUtils.addName("len", len),
           BeeUtils.addName(BeeService.RPC_FIELD_CNT, cnt));
       BeeKeeper.getLog().info(BeeUtils.addName(BeeService.RPC_FIELD_COLS, cc),
           BeeUtils.addName(BeeService.RPC_FIELD_MSG_CNT, mc),
           BeeUtils.addName(BeeService.RPC_FIELD_PART_CNT, pc));
     } else {
-      BeeKeeper.getLog().info("response", id, svc, dtp, cnt, cc, mc, pc, len);
+      BeeKeeper.getLog().info("response", id, svc, ctp, cnt, cc, mc, pc, len);
     }
 
     String hSep = resp.getHeader(BeeService.RPC_FIELD_SEP);
@@ -104,7 +106,7 @@ public class BeeCallback implements RequestCallback {
       sep = new String(BeeUtils.fromHex(hSep));
       BeeKeeper.getLog().warning("response separator", BeeUtils.bracket(hSep));
     } else {
-      sep = Character.toString(BeeService.DEFAULT_INFORMATION_SEPARATOR);
+      sep = Character.toString(CommUtils.DEFAULT_INFORMATION_SEPARATOR);
       if (!BeeUtils.isEmpty(hSep)) {
         BeeKeeper.getLog().severe("wrong response separator",
             BeeUtils.bracket(hSep));
@@ -129,7 +131,7 @@ public class BeeCallback implements RequestCallback {
     if (mc > 0) {
       messages = new ResponseMessage[mc];
       for (int i = 0; i < mc; i++) {
-        messages[i] = new ResponseMessage(resp.getHeader(BeeService.rpcMessageName(i)), true);
+        messages[i] = new ResponseMessage(resp.getHeader(CommUtils.rpcMessageName(i)), true);
       }
       dispatchMessages(mc, messages);
     }
@@ -138,12 +140,12 @@ public class BeeCallback implements RequestCallback {
     if (pc > 0) {
       partSizes = new int[pc];
       for (int i = 0; i < pc; i++) {
-        partSizes[i] = BeeUtils.toInt(resp.getHeader(BeeService.rpcPartName(i)));
+        partSizes[i] = BeeUtils.toInt(resp.getHeader(CommUtils.rpcPartName(i)));
       }
     }
 
     if (info != null) {
-      info.end(dtp, txt, len, cnt, cc, mc, messages, pc, partSizes);
+      info.end(ctp, txt, len, cnt, cc, mc, messages, pc, partSizes);
     }
 
     if (len == 0) {
@@ -157,7 +159,7 @@ public class BeeCallback implements RequestCallback {
     } else if (pc > 0) {
       dispatchParts(svc, pc, partSizes, txt);
 
-    } else if (BeeService.isResource(dtp)) {
+    } else if (CommUtils.isResource(ctp)) {
       dispatchResource(txt);
 
     } else if (txt.indexOf(sep) < 0) {
@@ -227,7 +229,7 @@ public class BeeCallback implements RequestCallback {
   }
 
   private void dispatchParts(String svc, int pc, int[] sizes, String content) {
-    if (BeeService.equals(svc, BeeService.SERVICE_XML_INFO)) {
+    if (BeeUtils.same(svc, BeeService.SERVICE_XML_INFO)) {
       ResponseHandler.showXmlInfo(pc, sizes, content);
     } else {
       BeeKeeper.getLog().warning("unknown multipart response", svc);
@@ -239,7 +241,7 @@ public class BeeCallback implements RequestCallback {
   }
 
   private void dispatchResponse(String svc, int cc, JsArrayString arr) {
-    if (BeeService.equals(svc, BeeService.SERVICE_GET_MENU)) {
+    if (BeeUtils.same(svc, BeeService.SERVICE_GET_MENU)) {
       BeeKeeper.getMenu().loadCallBack(arr);
 
     } else if (cc > 0) {
@@ -253,7 +255,7 @@ public class BeeCallback implements RequestCallback {
         }
       }
 
-      if (BeeService.equals(svc, BeeService.SERVICE_WHERE_AM_I)) {
+      if (BeeUtils.same(svc, BeeService.SERVICE_WHERE_AM_I)) {
         BeeKeeper.getLog().info(BeeConst.whereAmI());
       }
     }

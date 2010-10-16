@@ -17,6 +17,7 @@ import com.butent.bee.egg.client.widget.BeeTextArea;
 import com.butent.bee.egg.shared.BeeResource;
 import com.butent.bee.egg.shared.BeeService;
 import com.butent.bee.egg.shared.HasId;
+import com.butent.bee.egg.shared.communication.ContentType;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
 public class TextEditor extends Composite implements HasId {
@@ -53,8 +54,7 @@ public class TextEditor extends Composite implements HasId {
       params.addHeaderItem(BeeService.RPC_FIELD_URI, path);
       params.addHeaderItem(BeeService.RPC_FIELD_MD5, digest);
 
-      BeeKeeper.getRpc().makePostRequest(params, BeeService.DATA_TYPE.RESOURCE,
-          v);
+      BeeKeeper.getRpc().makePostRequest(params, ContentType.RESOURCE, v);
       area.onAfterSave(digest);
 
       BeeGlobal.inform("Sent to", path, digest);

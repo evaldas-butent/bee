@@ -1,6 +1,7 @@
 package com.butent.bee.egg.shared;
 
-import com.butent.bee.egg.shared.BeeService.DATA_TYPE;
+import com.butent.bee.egg.shared.communication.CommUtils;
+import com.butent.bee.egg.shared.communication.ContentType;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 import com.butent.bee.egg.shared.utils.Codec;
 
@@ -10,7 +11,7 @@ public class BeeResource implements BeeSerializable {
   private boolean readOnly = false;
 
   private String content = null;
-  private BeeService.DATA_TYPE type = null;
+  private ContentType type = null;
 
   public BeeResource() {
   }
@@ -19,7 +20,7 @@ public class BeeResource implements BeeSerializable {
     deserialize(src);
   }
 
-  public BeeResource(String uri, DATA_TYPE type) {
+  public BeeResource(String uri, ContentType type) {
     this(uri, null, type, false);
   }
 
@@ -31,11 +32,11 @@ public class BeeResource implements BeeSerializable {
     this(uri, content, null, readOnly);
   }
 
-  public BeeResource(String uri, String content, DATA_TYPE type) {
+  public BeeResource(String uri, String content, ContentType type) {
     this(uri, content, type, false);
   }
 
-  public BeeResource(String uri, String content, DATA_TYPE type, boolean readOnly) {
+  public BeeResource(String uri, String content, ContentType type, boolean readOnly) {
     this.uri = uri;
     this.content = content;
     this.type = type;
@@ -66,7 +67,7 @@ public class BeeResource implements BeeSerializable {
           setUri(v);
           break;
         case 2:
-          setType(BeeService.getDataType(v));
+          setType(CommUtils.getContentType(v));
           break;
         case 3:
           setReadOnly(BeeUtils.toBoolean(v));
@@ -88,7 +89,7 @@ public class BeeResource implements BeeSerializable {
     return name;
   }
 
-  public BeeService.DATA_TYPE getType() {
+  public ContentType getType() {
     return type;
   }
 
@@ -103,7 +104,7 @@ public class BeeResource implements BeeSerializable {
   public String serialize() {
     int[] arr = new int[]{
         BeeUtils.length(name), BeeUtils.length(uri),
-        BeeUtils.length(BeeService.transform(type)),
+        BeeUtils.length(BeeUtils.transform(type)),
         BeeUtils.length(BeeUtils.toString(readOnly)),
         BeeUtils.length(content)};
 
@@ -123,7 +124,7 @@ public class BeeResource implements BeeSerializable {
           sb.append(uri);
           break;
         case 2:
-          sb.append(BeeService.transform(type));
+          sb.append(BeeUtils.transform(type));
           break;
         case 3:
           sb.append(BeeUtils.toString(readOnly));
@@ -149,7 +150,7 @@ public class BeeResource implements BeeSerializable {
     this.readOnly = readOnly;
   }
 
-  public void setType(BeeService.DATA_TYPE type) {
+  public void setType(ContentType type) {
     this.type = type;
   }
 

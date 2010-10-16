@@ -8,7 +8,7 @@ import com.butent.bee.egg.client.BeeKeeper;
 import com.butent.bee.egg.client.utils.BeeDuration;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeConst;
-import com.butent.bee.egg.shared.BeeService;
+import com.butent.bee.egg.shared.communication.ContentType;
 import com.butent.bee.egg.shared.communication.ResponseMessage;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 import com.butent.bee.egg.shared.utils.SubProp;
@@ -73,7 +73,7 @@ public class RpcInfo {
   private ParameterList reqParams = null;
 
   private String reqData = null;
-  private BeeService.DATA_TYPE reqType = null;
+  private ContentType reqType = null;
   private int reqRows = BeeConst.SIZE_UNKNOWN;
   private int reqCols = BeeConst.SIZE_UNKNOWN;
   private int reqSize = BeeConst.SIZE_UNKNOWN;
@@ -81,7 +81,7 @@ public class RpcInfo {
   private Response response = null;
   private Collection<SubProp> respInfo = null;
 
-  private BeeService.DATA_TYPE respType = null;
+  private ContentType respType = null;
   private String respData = null;
   private int respRows = BeeConst.SIZE_UNKNOWN;
   private int respCols = BeeConst.SIZE_UNKNOWN;
@@ -102,14 +102,14 @@ public class RpcInfo {
   }
 
   public RpcInfo(RequestBuilder.Method method, String service,
-      ParameterList params, BeeService.DATA_TYPE dtp, String data) {
+      ParameterList params, ContentType ctp, String data) {
     id = ++COUNTER;
     duration = new BeeDuration();
 
     this.method = method;
     this.service = service;
     this.reqParams = params;
-    this.reqType = dtp;
+    this.reqType = ctp;
     this.reqData = data;
   }
 
@@ -134,12 +134,12 @@ public class RpcInfo {
     }
   }
 
-  public int end(BeeService.DATA_TYPE dtp, String data, int size, int rows,
+  public int end(ContentType ctp, String data, int size, int rows,
       int cols, int msgCnt, ResponseMessage[] messages, int partCnt, int[] partSizes) {
     int r = done();
     setState(BeeConst.STATE_CLOSED);
 
-    setRespType(dtp);
+    setRespType(ctp);
     setRespData(data);
 
     if (size != BeeConst.SIZE_UNKNOWN) {
@@ -249,7 +249,7 @@ public class RpcInfo {
     return reqSize;
   }
 
-  public BeeService.DATA_TYPE getReqType() {
+  public ContentType getReqType() {
     return reqType;
   }
 
@@ -302,7 +302,7 @@ public class RpcInfo {
     return respSize;
   }
 
-  public BeeService.DATA_TYPE getRespType() {
+  public ContentType getRespType() {
     return respType;
   }
 
@@ -409,7 +409,7 @@ public class RpcInfo {
     this.reqSize = reqSize;
   }
 
-  public void setReqType(BeeService.DATA_TYPE reqType) {
+  public void setReqType(ContentType reqType) {
     this.reqType = reqType;
   }
 
@@ -457,7 +457,7 @@ public class RpcInfo {
     this.respSize = respSize;
   }
 
-  public void setRespType(BeeService.DATA_TYPE respType) {
+  public void setRespType(ContentType respType) {
     this.respType = respType;
   }
 

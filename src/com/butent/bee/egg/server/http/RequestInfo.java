@@ -6,6 +6,8 @@ import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.BeeService;
 import com.butent.bee.egg.shared.HasExtendedInfo;
 import com.butent.bee.egg.shared.Transformable;
+import com.butent.bee.egg.shared.communication.CommUtils;
+import com.butent.bee.egg.shared.communication.ContentType;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 import com.butent.bee.egg.shared.utils.LogUtils;
 import com.butent.bee.egg.shared.utils.PropUtils;
@@ -47,10 +49,10 @@ public class RequestInfo implements HasExtendedInfo, Transformable {
   private Map<String, String> fields = null;
 
   private int contentLen = -1;
-  private String contentType = null;
+  private String contentTypeHeader = null;
   private String content = null;
 
-  private BeeService.DATA_TYPE dataType;
+  private ContentType contentType;
 
   private HttpServletRequest request = null;
 
@@ -80,8 +82,8 @@ public class RequestInfo implements HasExtendedInfo, Transformable {
 
     contentLen = req.getContentLength();
     if (contentLen > 0) {
-      contentType = req.getContentType();
-      content = HttpUtils.readContent(req);
+      contentTypeHeader = req.getContentType();
+      content = CommUtils.getContent(getContentType(), HttpUtils.readContent(req));
     }
 
     if (isXml()) {
@@ -97,12 +99,12 @@ public class RequestInfo implements HasExtendedInfo, Transformable {
     return contentLen;
   }
 
-  public String getContentType() {
+  public ContentType getContentType() {
     return contentType;
   }
 
-  public BeeService.DATA_TYPE getDataType() {
-    return dataType;
+  public String getContentTypeHeader() {
+    return contentTypeHeader;
   }
 
   public String getDsn() {
@@ -200,7 +202,7 @@ public class RequestInfo implements HasExtendedInfo, Transformable {
   }
 
   public String getParameter(int idx) {
-    return getParameter(BeeService.rpcParamName(idx));
+    return getParameter(CommUtils.rpcParamName(idx));
   }
 
   public String getParameter(String name) {
@@ -253,7 +255,7 @@ public class RequestInfo implements HasExtendedInfo, Transformable {
   }
 
   public boolean hasParameter(int idx) {
-    return hasParameter(BeeService.rpcParamName(idx));
+    return hasParameter(CommUtils.rpcParamName(idx));
   }
 
   public boolean hasParameter(String name) {
@@ -273,12 +275,12 @@ public class RequestInfo implements HasExtendedInfo, Transformable {
   }
 
   public boolean isDebug() {
-    return BeeUtils.context(BeeService.OPTION_DEBUG, options);
+    return BeeUtils.context(CommUtils.OPTION_DEBUG, options);
   }
 
   public boolean isXml() {
     return getContentLen() > 0
-        && BeeService.equals(getDataType(), BeeService.DATA_TYPE.XML);
+        && CommUtils.equals(getContentType(), ContentType.XML);
   }
 
   public void logFields(Logger logger) {
@@ -347,8 +349,8 @@ public class RequestInfo implements HasExtendedInfo, Transformable {
     this.contentLen = contentLen;
   }
 
-  public void setContentType(String contentType) {
-    this.contentType = contentType;
+  public void setContentTypeHeader(String contentTypeHeader) {
+    this.contentTypeHeader = contentTypeHeader;
   }
 
   public void setDsn(String dsn) {
@@ -698,8 +700,8 @@ public class RequestInfo implements HasExtendedInfo, Transformable {
       separator = v;
     } else if (BeeUtils.same(nm, BeeService.RPC_FIELD_OPT)) {
       options = v;
-    } else if (BeeUtils.same(nm, BeeService.RPC_FIELD_DTP)) {
-      dataType = BeeService.getDataType(v);
+    } else if (BeeUtils.same(nm, BeeService.RPC_FIELD_CTP)) {
+      contentType = CommUtils.getContentType(v);
     }
   }
 

@@ -12,6 +12,8 @@ import com.butent.bee.egg.server.utils.Reflection;
 import com.butent.bee.egg.server.utils.XmlUtils;
 import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.BeeService;
+import com.butent.bee.egg.shared.communication.CommUtils;
+import com.butent.bee.egg.shared.communication.ContentType;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 import com.butent.bee.egg.shared.utils.Codec;
 import com.butent.bee.egg.shared.utils.LogUtils;
@@ -36,28 +38,28 @@ public class SystemServiceBean {
     Assert.notEmpty(svc);
     Assert.notNull(buff);
 
-    if (BeeService.equals(svc, BeeService.SERVICE_TEST_CONNECTION)) {
+    if (BeeUtils.same(svc, BeeService.SERVICE_TEST_CONNECTION)) {
       connectionInfo(reqInfo, buff);
-    } else if (BeeService.equals(svc, BeeService.SERVICE_SERVER_INFO)) {
+    } else if (BeeUtils.same(svc, BeeService.SERVICE_SERVER_INFO)) {
       systemInfo(buff);
-    } else if (BeeService.equals(svc, BeeService.SERVICE_VM_INFO)) {
+    } else if (BeeUtils.same(svc, BeeService.SERVICE_VM_INFO)) {
       vmInfo(buff);
-    } else if (BeeService.equals(svc, BeeService.SERVICE_LOADER_INFO)) {
+    } else if (BeeUtils.same(svc, BeeService.SERVICE_LOADER_INFO)) {
       loaderInfo(buff);
-    } else if (BeeService.equals(svc, BeeService.SERVICE_CLASS_INFO)) {
+    } else if (BeeUtils.same(svc, BeeService.SERVICE_CLASS_INFO)) {
       classInfo(reqInfo, buff);
-    } else if (BeeService.equals(svc, BeeService.SERVICE_XML_INFO)) {
+    } else if (BeeUtils.same(svc, BeeService.SERVICE_XML_INFO)) {
       xmlInfo(reqInfo, buff);
 
-    } else if (BeeService.equals(svc, BeeService.SERVICE_GET_RESOURCE)) {
+    } else if (BeeUtils.same(svc, BeeService.SERVICE_GET_RESOURCE)) {
       getResource(reqInfo, buff);
-    } else if (BeeService.equals(svc, BeeService.SERVICE_SAVE_RESOURCE)) {
+    } else if (BeeUtils.same(svc, BeeService.SERVICE_SAVE_RESOURCE)) {
       saveResource(reqInfo, buff);
 
-    } else if (BeeService.equals(svc, BeeService.SERVICE_GET_DIGEST)) {
+    } else if (BeeUtils.same(svc, BeeService.SERVICE_GET_DIGEST)) {
       getDigest(reqInfo, buff);
 
-    } else if (BeeService.equals(svc, BeeService.SERVICE_INVOKE)) {
+    } else if (BeeUtils.same(svc, BeeService.SERVICE_INVOKE)) {
       Reflection.invoke(this, reqInfo.getParameter(BeeService.RPC_FIELD_METH), 
           reqInfo, buff);
       
@@ -167,8 +169,7 @@ public class SystemServiceBean {
 
     String name = reqInfo.getParameter(1);
     if (BeeUtils.isEmpty(name)) {
-      buff.addSevere("resource name (parameter " + BeeService.rpcParamName(1)
-          + ") not specified");
+      buff.addSevere("resource name ( parameter", CommUtils.rpcParamName(1), ") not specified");
       return;
     }
 
@@ -206,12 +207,11 @@ public class SystemServiceBean {
           buff.addWarning("file", path, "no content found");
 
         } else {
-          buff.addResource(fl.getAbsolutePath(), s,
-              BeeService.DATA_TYPE.RESOURCE);
+          buff.addResource(fl.getAbsolutePath(), s, ContentType.RESOURCE);
 
           String ct = reqInfo.getParameter(3);
           if (!BeeUtils.isEmpty(ct)) {
-            buff.setContentType(ct);
+            buff.setContentTypeHeader(ct);
           }
           String ce = reqInfo.getParameter(4);
           if (!BeeUtils.isEmpty(ce)) {
@@ -363,7 +363,7 @@ public class SystemServiceBean {
         if (BeeUtils.isEmpty(z)) {
           buff.addSevere("cannot read file");
         } else {
-          buff.addResource(src, z, BeeService.DATA_TYPE.XML);
+          buff.addResource(src, z, ContentType.XML);
         }
         return;
       }
@@ -458,18 +458,18 @@ public class SystemServiceBean {
     }
 
     if (BeeUtils.allEmpty(source, transf)) {
-      buff.addResource(dst, target, BeeService.DATA_TYPE.XML);
+      buff.addResource(dst, target, ContentType.XML);
       return;
     }
 
     if (!BeeUtils.isEmpty(source)) {
-      buff.addPart(src, source, BeeService.DATA_TYPE.XML);
+      buff.addPart(src, source, ContentType.XML);
     }
     if (!BeeUtils.isEmpty(transf)) {
-      buff.addPart(xsl, transf, BeeService.DATA_TYPE.XML);
+      buff.addPart(xsl, transf, ContentType.XML);
     }
 
-    buff.addPart(dst, target, BeeService.DATA_TYPE.XML, dst == null);
+    buff.addPart(dst, target, ContentType.XML, dst == null);
   }
 
 }
