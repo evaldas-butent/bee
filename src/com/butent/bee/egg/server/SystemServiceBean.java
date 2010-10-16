@@ -72,7 +72,7 @@ public class SystemServiceBean {
 
   public void stringInfo(RequestInfo reqInfo, ResponseBuffer buff) {
     String data = reqInfo.getContent();
-    if (BeeUtils.isEmpty(data)) {
+    if (BeeUtils.length(data) <= 0) {
       buff.addSevere("Request data not found");
       return;
     }
@@ -143,7 +143,7 @@ public class SystemServiceBean {
 
   private void getDigest(RequestInfo reqInfo, ResponseBuffer buff) {
     String src = reqInfo.getContent();
-    if (BeeUtils.isEmpty(src)) {
+    if (BeeUtils.length(src) <= 0) {
       buff.addSevere("Source not found");
       return;
     }
@@ -209,9 +209,9 @@ public class SystemServiceBean {
         } else {
           buff.addResource(fl.getAbsolutePath(), s, ContentType.RESOURCE);
 
-          String ct = reqInfo.getParameter(3);
-          if (!BeeUtils.isEmpty(ct)) {
-            buff.setContentTypeHeader(ct);
+          String mt = reqInfo.getParameter(3);
+          if (!BeeUtils.isEmpty(mt)) {
+            buff.setMediaType(mt);
           }
           String ce = reqInfo.getParameter(4);
           if (!BeeUtils.isEmpty(ce)) {

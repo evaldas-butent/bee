@@ -4,6 +4,7 @@ import com.butent.bee.egg.client.BeeKeeper;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.utils.BeeUtils;
+import com.butent.bee.egg.shared.utils.Codec;
 
 import java.util.LinkedList;
 
@@ -121,11 +122,11 @@ public class RpcList extends LinkedList<RpcInfo> {
           s = el.getCompletedTime();
 
         } else if (BeeUtils.same(cols[j], RpcInfo.COL_REQ_PARAMS)) {
-          s = el.getReqParams().transform();
+          s = Codec.escapeUnicode(el.getReqParams().transform());
         } else if (BeeUtils.same(cols[j], RpcInfo.COL_REQ_TYPE)) {
           s = BeeUtils.transform(el.getReqType());
         } else if (BeeUtils.same(cols[j], RpcInfo.COL_REQ_DATA)) {
-          s = el.getReqData();
+          s = Codec.escapeUnicode(Codec.escapeHtml(el.getReqData()));
 
         } else if (BeeUtils.same(cols[j], RpcInfo.COL_REQ_ROWS)) {
           s = el.getSizeString(el.getReqRows());
@@ -137,7 +138,7 @@ public class RpcList extends LinkedList<RpcInfo> {
         } else if (BeeUtils.same(cols[j], RpcInfo.COL_RESP_TYPE)) {
           s = BeeUtils.transform(el.getRespType());
         } else if (BeeUtils.same(cols[j], RpcInfo.COL_RESP_DATA)) {
-          s = el.getRespData();
+          s = Codec.escapeUnicode(Codec.escapeHtml(el.getRespData()));
 
         } else if (BeeUtils.same(cols[j], RpcInfo.COL_RESP_ROWS)) {
           s = el.getSizeString(el.getRespRows());
@@ -149,7 +150,7 @@ public class RpcList extends LinkedList<RpcInfo> {
         } else if (BeeUtils.same(cols[j], RpcInfo.COL_RESP_MSG_CNT)) {
           s = el.getSizeString(el.getRespMsgCnt());
         } else if (BeeUtils.same(cols[j], RpcInfo.COL_RESP_MESSAGES)) {
-          s = BeeUtils.transformArray(el.getRespMessages());
+          s = Codec.escapeUnicode(BeeUtils.transformArray(el.getRespMessages()));
 
         } else if (BeeUtils.same(cols[j], RpcInfo.COL_RESP_PART_CNT)) {
           s = el.getSizeString(el.getRespPartCnt());
@@ -162,7 +163,7 @@ public class RpcList extends LinkedList<RpcInfo> {
         } else if (BeeUtils.same(cols[j], RpcInfo.COL_ERR_MSG)) {
           s = el.getErrMsg();
         } else if (BeeUtils.same(cols[j], RpcInfo.COL_USR_DATA)) {
-          s = BeeUtils.transformMap(el.getUserData());
+          s = Codec.escapeUnicode(BeeUtils.transformMap(el.getUserData()));
 
         } else {
           s = BeeConst.STRING_EMPTY;

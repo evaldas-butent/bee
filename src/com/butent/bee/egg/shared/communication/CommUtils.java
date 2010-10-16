@@ -73,6 +73,26 @@ public class CommUtils {
     return ctp;
   }
 
+  public static String getMediaType(ContentType ctp) {
+    String mt;
+
+    switch (ctp) {
+      case TEXT:
+        mt = "text/plain";
+        break;
+      case XML:
+        mt = "text/xml";
+        break;
+      case ZIP:
+        mt = "application/zip";
+        break;
+      default:
+        mt = "application/octet-stream";
+    }
+
+    return mt;
+  }
+
   public static boolean isBinary(ContentType ctp) {
     return ctp == ContentType.BINARY;
   }
@@ -81,11 +101,11 @@ public class CommUtils {
     Assert.notEmpty(name);
     return BeeUtils.startsSame(name, BeeService.RPC_FIELD_SYS_PREFIX);
   }
-
+  
   public static boolean isResource(ContentType ctp) {
     return ctp == ContentType.RESOURCE;
   }
-  
+
   public static boolean isValidParameter(String name) {
     Assert.notEmpty(name);
     return BeeUtils.isIdentifier(name) && !isReservedParameter(name);
@@ -98,7 +118,7 @@ public class CommUtils {
   public static ContentType normalizeResponse(ContentType ctp) {
     return (ctp == null) ? defaultResponseContentType : ctp;
   }
-
+  
   public static String prepareContent(ContentType type, String data) {
     if (isBinary(type) && BeeUtils.length(data) > 0) {
       return Codec.encodeBase64(data);
@@ -106,7 +126,7 @@ public class CommUtils {
       return data;
     }
   }
-  
+
   public static String rpcMessageName(int i) {
     return BeeService.RPC_FIELD_MSG + i;
   }
@@ -117,26 +137,6 @@ public class CommUtils {
 
   public static String rpcPartName(int i) {
     return BeeService.RPC_FIELD_PART + i;
-  }
-
-  public static String toHeader(ContentType ctp) {
-    String ct;
-
-    switch (ctp) {
-      case TEXT:
-        ct = "text/plain";
-        break;
-      case XML:
-        ct = "text/xml";
-        break;
-      case ZIP:
-        ct = "application/zip";
-        break;
-      default:
-        ct = "application/octet-stream";
-    }
-
-    return ct;
   }
   
 }

@@ -245,7 +245,7 @@ public class BeeRpc implements BeeModule {
 
       String z = params.getParameter(CommUtils.CONTENT_TYPE_HEADER);
       if (BeeUtils.isEmpty(z)) {
-        cth = CommUtils.buildContentType(CommUtils.toHeader(ctp),
+        cth = CommUtils.buildContentType(CommUtils.getMediaType(ctp),
             CommUtils.getCharacterEncoding(ctp));
       } else {
         cth = z;

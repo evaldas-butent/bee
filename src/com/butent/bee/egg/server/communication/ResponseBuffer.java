@@ -30,7 +30,7 @@ public class ResponseBuffer {
 
   private ContentType contentType;
 
-  private String contentTypeHeader = null;
+  private String mediaType = null;
   private String characterEncoding = null;
 
   public ResponseBuffer() {
@@ -320,16 +320,16 @@ public class ResponseBuffer {
     return contentType;
   }
 
-  public String getContentTypeHeader() {
-    return contentTypeHeader;
-  }
-
   public int getCount() {
     return count;
   }
 
   public String getHexSeparator() {
     return Codec.toHex(getSeparator());
+  }
+
+  public String getMediaType() {
+    return mediaType;
   }
 
   public ResponseMessage getMessage(int i) {
@@ -388,10 +388,6 @@ public class ResponseBuffer {
     this.contentType = contentType;
   }
 
-  public void setContentTypeHeader(String contentTypeHeader) {
-    this.contentTypeHeader = contentTypeHeader;
-  }
-
   public void setCount(int count) {
     this.count = count;
   }
@@ -400,6 +396,10 @@ public class ResponseBuffer {
     if (BeeUtils.isHexString(sep)) {
       this.separator = BeeUtils.fromHex(sep);
     }
+  }
+
+  public void setMediaType(String mediaType) {
+    this.mediaType = mediaType;
   }
 
   public void setMessages(List<ResponseMessage> messages) {

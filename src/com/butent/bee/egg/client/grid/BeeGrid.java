@@ -28,7 +28,7 @@ public class BeeGrid {
     
     String[] arr = view.getColumnNames();
     for (int i = 0; i < c; i++) {
-      table.addColumn(new BeeTextColumn(view, i, 100), arr[i]);
+      table.addColumn(new BeeTextColumn(view, i, 256), arr[i]);
     }
     table.initData(r);
 

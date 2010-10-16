@@ -1,5 +1,7 @@
 package com.butent.bee.egg.shared.utils;
 
+import com.google.gwt.safehtml.shared.SafeHtmlUtils;
+
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.BeeSerializable;
@@ -25,6 +27,7 @@ public class Codec {
       '4', '5', '6', '7', '8', '9', '$', '_'};
   private static final byte[] base64Values = new byte[128];
   private static final char base64Pad = '=';
+  private static int base64chunk = 1024;
 
   private static final int[] crc16Table = {
       0x0000, 0xC0C1, 0xC181, 0x0140, 0xC301, 0x03C0, 0x0280, 0xC241, 0xC601,
@@ -103,7 +106,7 @@ public class Codec {
       0xb40bbe37, 0xc30c8ea1, 0x5a05df1b, 0x2d02ef8d};
 
   private static final int adler32Base = 65521;
-  
+
   static {
     MessageDigest md;
     try {
@@ -119,10 +122,6 @@ public class Codec {
       base64Values[base64Chars[i]] = (byte) i;
     }
   }
-  
-  public static String adler32(String input) {
-    return adler32(toBytes(input));
-  }
 
   public static String adler32(byte[] arr) {
     int s1 = 1;
@@ -137,10 +136,10 @@ public class Codec {
     return Integer.toHexString(value);
   }
 
-  public static String crc16(String input) {
-    return crc16(toBytes(input));
+  public static String adler32(String input) {
+    return adler32(toBytes(input));
   }
-  
+
   public static String crc16(byte[] arr) {
     int crc = 0;
 
@@ -151,8 +150,8 @@ public class Codec {
     return Integer.toHexString(crc);
   }
 
-  public static String crc32(String input) {
-    return crc32(toBytes(input));
+  public static String crc16(String input) {
+    return crc16(toBytes(input));
   }
 
   public static String crc32(byte[] arr) {
@@ -166,8 +165,8 @@ public class Codec {
     return Integer.toHexString(crc);
   }
 
-  public static String crc32Direct(String input) {
-    return crc32Direct(toBytes(input));
+  public static String crc32(String input) {
+    return crc32(toBytes(input));
   }
 
   public static String crc32Direct(byte[] arr) {
@@ -191,8 +190,25 @@ public class Codec {
     return Integer.toHexString(crc);
   }
 
+  public static String crc32Direct(String input) {
+    return crc32Direct(toBytes(input));
+  }
+
   public static String decodeBase64(String s) {
-    return fromBytes(fromBase64(s));
+    if (base64chunk <= 0 || BeeUtils.length(s) <= base64chunk * 4) {
+      return fromBytes(fromBase64(s));
+    }
+
+    StringBuilder sb = new StringBuilder();
+    int len = s.length();
+    int chunk = base64chunk * 4;
+
+    for (int offset = 0; offset < len; offset += chunk) {
+      sb.append(fromBytes(fromBase64(s.substring(offset,
+          BeeUtils.min(offset + chunk, len)))));
+    }
+
+    return sb.toString();
   }
 
   public static Pair<Integer, Integer> deserializeLength(String src, int start) {
@@ -251,7 +267,66 @@ public class Codec {
   }
 
   public static String encodeBase64(String s) {
-    return toBase64(toBytes(s));
+    if (base64chunk <= 0 || BeeUtils.length(s) <= base64chunk * 3) {
+      return toBase64(toBytes(s));
+    }
+
+    StringBuilder sb = new StringBuilder();
+    int len = s.length();
+    int chunk = base64chunk * 3;
+
+    for (int offset = 0; offset < len; offset += chunk) {
+      sb.append(toBase64(toBytes(s.substring(offset,
+          BeeUtils.min(offset + chunk, len)))));
+    }
+
+    return sb.toString();
+  }
+
+  public static String escapeHtml(String src) {
+    if (BeeUtils.length(src) <= 0) {
+      return BeeConst.STRING_EMPTY;
+    } else {
+      return SafeHtmlUtils.htmlEscape(src);
+    }
+  }
+
+  public static String escapeUnicode(String src) {
+    int len = BeeUtils.length(src);
+    if (len <= 0) {
+      return BeeConst.STRING_EMPTY;
+    }
+
+    StringBuilder sb = new StringBuilder();
+    boolean tg = false;
+    char ch;
+
+    for (int i = 0; i < len; i++) {
+      ch = src.charAt(i);
+
+      if (isValidUnicodeChar(ch)) {
+        if (tg) {
+          sb.append(ch);
+        }
+      } else {
+        if (!tg) {
+          if (i > 0) {
+            sb.append(src.substring(0, i));
+          }
+          tg = true;
+        }
+
+        sb.append("&#x");
+        sb.append(Integer.toHexString(ch));
+        sb.append(";");
+      }
+    }
+
+    if (tg) {
+      return sb.toString();
+    } else {
+      return src;
+    }
   }
 
   public static byte[] fromBase64(String data) {
@@ -295,7 +370,7 @@ public class Codec {
 
     return bytes;
   }
-
+  
   public static String fromBytes(byte[] bytes) {
     Assert.notNull(bytes);
     int len = bytes.length;
@@ -308,6 +383,11 @@ public class Codec {
     }
 
     return new String(chars);
+  }
+
+  public static boolean isValidUnicodeChar(char ch) {
+    return ch >= '\u0020' && ch < '\u007f' || ch > '\u00a0' && ch <= '\u024f'
+        || ch >= '\u0400' && ch <= '\u04ff';
   }
 
   public static String md5(String s) {
@@ -368,14 +448,14 @@ public class Codec {
 
     return sb.toString();
   }
-  
+
   public static void serializeWithLength(StringBuilder sb, Object obj) {
     Assert.notNull(sb);
     if (obj == null) {
       sb.append(BeeConst.CHAR_ZERO);
       return;
     }
-    
+
     String v;
     if (obj instanceof BeeSerializable) {
       v = ((BeeSerializable) obj).serialize();

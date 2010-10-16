@@ -72,14 +72,14 @@ public class CliWorker {
     if (src.length() > 100) {
       BeeKeeper.getLog().info("Source length", src.length());
     } else {
-      BeeKeeper.getLog().info(src);
+      BeeKeeper.getLog().info(Codec.escapeUnicode(src));
     }
 
     BeeKeeper.getLog().info("js", BeeJs.md5(src));
     BeeKeeper.getLog().info(BeeConst.CLIENT, Codec.md5(src));
 
     BeeKeeper.getRpc().makePostRequest(BeeService.SERVICE_GET_DIGEST,
-        ContentType.TEXT, src);
+        ContentType.BINARY, src);
   }
 
   public static void doLog(String arr[]) {
@@ -489,11 +489,12 @@ public class CliWorker {
     int len = BeeUtils.length(arr);
 
     if (len < 2 || len == 2 && BeeUtils.isDigit(BeeUtils.getElement(arr, 1))) {
-      int n = (len < 2) ? 10 : BeeUtils.min(BeeUtils.toInt(arr[1]), 100);
+      int n = (len < 2) ? 10 : BeeUtils.toInt(arr[1]);
       for (int i = 0; i < n; i++) {
         sb.append((char) BeeUtils.randomInt(Character.MIN_VALUE,
             Character.MAX_VALUE + 1));
       }
+
     } else {
       for (int i = 1; i < len; i++) {
         String s = arr[i];
@@ -508,7 +509,7 @@ public class CliWorker {
 
         } else if (BeeUtils.isDigit(s)) {
           int n = BeeUtils.toInt(s);
-          if (n > 0 && n < 128 && sb.length() > 0) {
+          if (n > 0 && n < Character.MAX_VALUE && sb.length() > 0) {
             for (int j = 0; j < n; j++) {
               sb.append((char) (sb.charAt(sb.length() - 1) + 1));
             }

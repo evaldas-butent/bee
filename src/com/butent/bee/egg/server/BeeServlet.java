@@ -122,9 +122,9 @@ public class BeeServlet extends HttpServlet {
       resp.setHeader("Pragma", "no-cache");
       resp.setHeader("Expires", "Thu, 01 Dec 1994 16:00:00 GMT");
 
-      String cth = BeeUtils.ifString(buff.getContentTypeHeader(), CommUtils.toHeader(ctp));
-      if (!BeeUtils.isEmpty(cth)) {
-        resp.setContentType(cth);
+      String mt = BeeUtils.ifString(buff.getMediaType(), CommUtils.getMediaType(ctp));
+      if (!BeeUtils.isEmpty(mt)) {
+        resp.setContentType(mt);
       }
 
       String ce = BeeUtils.ifString(buff.getCharacterEncoding(),
