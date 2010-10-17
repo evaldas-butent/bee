@@ -79,6 +79,7 @@ public class BeeUi implements BeeModule {
   private Images images = GWT.create(Images.class);
 
   private String elDsn = null;
+  private String elGrd = null;
 
   public BeeUi(HasWidgets root) {
     this.rootUi = root;
@@ -142,6 +143,10 @@ public class BeeUi implements BeeModule {
     return p.getOffsetWidth();
   }
 
+  public int getDefaultGridType() {
+    return RadioGroup.getValue(getElGrd());
+  }
+
   public String getDsn() {
     return BeeUtils.getElement(BeeConst.DS_TYPES,
         RadioGroup.getValue(getElDsn()));
@@ -149,6 +154,10 @@ public class BeeUi implements BeeModule {
 
   public String getElDsn() {
     return elDsn;
+  }
+  
+  public String getElGrd() {
+    return elGrd;
   }
 
   public BeeLayoutPanel getMenuPanel() {
@@ -195,6 +204,10 @@ public class BeeUi implements BeeModule {
     this.elDsn = elDsn;
   }
 
+  public void setElGrd(String elGrd) {
+    this.elGrd = elGrd;
+  }
+  
   public void setMenuPanel(BeeLayoutPanel menuPanel) {
     this.menuPanel = menuPanel;
   }
@@ -209,7 +222,22 @@ public class BeeUi implements BeeModule {
 
   public void showGrid(Object data, String... cols) {
     Assert.notNull(data);
-    updateActiveQuietly(BeeGlobal.simpleGrid(data, cols), true);
+    Widget grd = null;
+    boolean addScroll = false;
+    
+    switch (getDefaultGridType()) {
+      case 1:
+        grd = BeeGlobal.scrollGrid(data, cols);
+        break;
+      case 2:
+        grd = BeeGlobal.pstGrid(data, cols);
+        break;
+      default:
+        grd = BeeGlobal.simpleGrid(data, cols);
+        addScroll = true;
+    }
+    
+    updateActiveQuietly(grd, addScroll);
   }
 
   public void showResource(BeeResource resource) {
@@ -398,6 +426,9 @@ public class BeeUi implements BeeModule {
 
     p.add(new BeeButton("North land", "comp_ui_form", "stage_dummy"));
 
+    setElGrd(DomUtils.createUniqueName());
+    p.add(new RadioGroup(getElGrd(), "cell", "st", "pst"));
+    
     BeeLayoutPanel blp = new BeeLayoutPanel();
     blp.add(p);
 
@@ -432,7 +463,7 @@ public class BeeUi implements BeeModule {
 
     p.add(hor);
 
-    BeeLabel ver = new BeeLabel("0.1.4");
+    BeeLabel ver = new BeeLabel("0.1.5");
     p.add(ver);
 
     p.setWidgetLeftWidth(cli, 1, Unit.EM, 50, Unit.PCT);

@@ -141,6 +141,10 @@ public class BeeGlobal implements BeeModule {
     msgBox.showGrid(cap, data, cols);
   }
 
+  public static Widget pstGrid(Object data, String... columns) {
+    return grids.pstGrid(data, (Object[]) columns);
+  }
+
   public static void registerService(String svcId, String svc) {
     Assert.contains(services, svc);
 
@@ -150,6 +154,10 @@ public class BeeGlobal implements BeeModule {
 
   public static void sayHuh(Object... obj) {
     msgBox.showInfo("Huh ?", obj);
+  }
+
+  public static Widget scrollGrid(Object data, String... columns) {
+    return grids.scrollGrid(data, (Object[]) columns);
   }
 
   public static void setField(String name, BeeField fld) {
