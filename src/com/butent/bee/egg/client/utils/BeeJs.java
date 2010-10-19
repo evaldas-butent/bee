@@ -20,11 +20,11 @@ public abstract class BeeJs {
 
   public static native int evalToInt(String xpr) /*-{
     try {
-      var v = eval(xpr);
-      return parseInt(v) || 0;
+    var v = eval(xpr);
+    return parseInt(v) || 0;
     }
     catch (err) {
-      return 0;
+    return 0;
     }
   }-*/;
 
@@ -165,6 +165,10 @@ public abstract class BeeJs {
 
   public static native String md5(String src) /*-{
     return $wnd.rstr2hex($wnd.rstr_md5($wnd.str2rstr_utf16be(src)));
+  }-*/;
+
+  public static native String md5fast(String src) /*-{
+    return $wnd.md5(src);
   }-*/;
 
   public static native String randomName(String pfx) /*-{

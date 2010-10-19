@@ -76,6 +76,7 @@ public class CliWorker {
     }
 
     BeeKeeper.getLog().info("js", BeeJs.md5(src));
+    BeeKeeper.getLog().info("js fast", BeeJs.md5fast(src));
     BeeKeeper.getLog().info(BeeConst.CLIENT, Codec.md5(src));
 
     BeeKeeper.getRpc().makePostRequest(BeeService.SERVICE_GET_DIGEST,
@@ -206,7 +207,8 @@ public class CliWorker {
           fields[i] = 0;
         }
       }
-      date = new BeeDate(fields[0], fields[1], fields[2], fields[3], fields[4], fields[5], fields[6]);
+      date = new BeeDate(fields[0], fields[1], fields[2], fields[3], fields[4],
+          fields[5], fields[6]);
 
     } else {
       date = new BeeDate();
@@ -217,8 +219,8 @@ public class CliWorker {
         "Dow", date.getDow(), "Doy", date.getDoy(), "Hour", date.getHour(),
         "Minute", date.getMinute(), "Second", date.getSecond(), "Millis",
         date.getMillis(), "Log", date.toLog(), "String", date.toString(),
-        "Date", new Date(date.getTime()).toString(),
-        "Tz Offset", BeeGlobal.getTzo());
+        "Date", new Date(date.getTime()).toString(), "Tz Offset",
+        BeeGlobal.getTzo());
 
     BeeKeeper.getUi().showGrid(lst);
   }

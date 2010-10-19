@@ -26,7 +26,7 @@ public class BeeRpc implements BeeModule {
   public BeeRpc(String url) {
     this.rpcUrl = url;
   }
-  
+
   public void addUserData(int id, Object... obj) {
     RpcInfo info = getRpcInfo(id);
     if (info != null) {
@@ -107,7 +107,7 @@ public class BeeRpc implements BeeModule {
       return info.getUserData();
     }
   }
-  
+
   public void init() {
   }
 
@@ -118,20 +118,20 @@ public class BeeRpc implements BeeModule {
   public int invoke(String method, String data) {
     return invoke(method, null, data);
   }
-  
+
   public int invoke(String method, ContentType ctp, String data) {
     Assert.notEmpty(method);
 
     ParameterList params = createParameters(BeeService.SERVICE_INVOKE);
     params.addQueryItem(BeeService.RPC_FIELD_METH, method);
-    
+
     if (data == null) {
       return makeGetRequest(params);
     } else {
       return makePostRequest(params, ctp, data);
     }
   }
-  
+
   public int makeGetRequest(ParameterList params) {
     return makeRequest(RequestBuilder.GET, params, null, null,
         BeeConst.TIME_UNKNOWN);
@@ -156,7 +156,8 @@ public class BeeRpc implements BeeModule {
         BeeConst.TIME_UNKNOWN);
   }
 
-  public int makePostRequest(ParameterList params, ContentType ctp, String data, int timeout) {
+  public int makePostRequest(ParameterList params, ContentType ctp,
+      String data, int timeout) {
     return makeRequest(RequestBuilder.POST, params, ctp, data, timeout);
   }
 
@@ -174,7 +175,8 @@ public class BeeRpc implements BeeModule {
         BeeConst.TIME_UNKNOWN);
   }
 
-  public int makePostRequest(String svc, ContentType ctp, String data, int timeout) {
+  public int makePostRequest(String svc, ContentType ctp, String data,
+      int timeout) {
     return makeRequest(RequestBuilder.POST, createParameters(svc), ctp, data,
         timeout);
   }
@@ -254,15 +256,15 @@ public class BeeRpc implements BeeModule {
       bld.setHeader(CommUtils.CONTENT_TYPE_HEADER, cth);
     }
 
-    params.getHeadersExcept(bld, BeeService.RPC_FIELD_QID, BeeService.RPC_FIELD_CTP,
-        CommUtils.CONTENT_TYPE_HEADER);
+    params.getHeadersExcept(bld, BeeService.RPC_FIELD_QID,
+        BeeService.RPC_FIELD_CTP, CommUtils.CONTENT_TYPE_HEADER);
 
     if (debug) {
       BeeKeeper.getLog().info("request", id, meth.toString(), url);
     } else {
       BeeKeeper.getLog().info("request", id, svc);
     }
-    
+
     String content = null;
 
     if (!BeeUtils.isEmpty(data)) {
@@ -270,7 +272,8 @@ public class BeeRpc implements BeeModule {
       int size = content.length();
       info.setReqSize(size);
 
-      BeeKeeper.getLog().info("sending", BeeUtils.transform(ctp), cth, BeeUtils.bracket(size));
+      BeeKeeper.getLog().info("sending", BeeUtils.transform(ctp), cth,
+          BeeUtils.bracket(size));
       if (debug) {
         BeeKeeper.getLog().info(data);
       }
