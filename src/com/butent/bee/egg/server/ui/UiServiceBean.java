@@ -60,7 +60,6 @@ public class UiServiceBean {
     }
   }
 
-  @SuppressWarnings("unused")
   private void formList(RequestInfo reqInfo, ResponseBuffer buff) {
     QueryBuilder qb = new QueryBuilder();
     qb.addFields("f", "form").addFrom("forms", "f").addOrder("form");

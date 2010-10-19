@@ -26,7 +26,7 @@ public class UiHolderBean {
   public UiComponent getForm(String root, Object... params) {
     Assert.notEmpty(root);
 
-    if (true || !formCache.containsKey(root)) {
+    if (!formCache.containsKey(root)) {
       loadForm(root, params);
     }
     return formCache.get(root);

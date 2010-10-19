@@ -14,7 +14,6 @@ public class SqlUtils {
   private static final String LIKE = " LIKE ";
   private static final String IN = " IN ";
 
-  // Builders -----------------------------------------------------------------
   public static Conditions and(Condition... conditions) {
     Conditions cb = new AndConditions();
     cb.add(conditions);
@@ -25,7 +24,6 @@ public class SqlUtils {
     return new ExpressionCondition(expr, LIKE, "%" + value + "%");
   }
 
-  // Expressions --------------------------------------------------------------
   public static Condition equal(String expr, Object value) {
     return new ExpressionCondition(expr, EQUAL, value);
   }
@@ -34,7 +32,6 @@ public class SqlUtils {
     return equal(fields(source, field), value);
   }
 
-  // Helpers ------------------------------------------------------------------
   public static String fields(String source, String... fields) {
     if (BeeUtils.isEmpty(source) || BeeUtils.isEmpty(fields)) {
       return null;
@@ -80,7 +77,6 @@ public class SqlUtils {
     return inList(fields(source, field), values);
   }
 
-  // Join's -------------------------------------------------------------------
   public static Condition join(String src1, String fld1, String src2,
       String fld2) {
     return new JoinCondition(fields(src1, fld1), EQUAL, fields(src2, fld2));
