@@ -1,6 +1,6 @@
 package com.butent.bee.egg.shared.sql;
 
-public class FromFull extends FromJoin {
+class FromFull extends FromJoin {
 
   public FromFull(QueryBuilder source, String alias, Condition on) {
     super(source, alias, on);

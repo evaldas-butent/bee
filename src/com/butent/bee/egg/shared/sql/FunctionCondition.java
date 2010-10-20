@@ -6,7 +6,7 @@ import com.butent.bee.egg.shared.utils.BeeUtils;
 import java.util.ArrayList;
 import java.util.List;
 
-public class FunctionCondition implements Condition {
+class FunctionCondition implements Condition {
   private String function;
   private String expression;
   private Object[] values;
@@ -21,7 +21,7 @@ public class FunctionCondition implements Condition {
   }
 
   @Override
-  public String getCondition(boolean queryMode) {
+  public String getCondition(SqlBuilder builder, boolean queryMode) {
     StringBuilder sb = new StringBuilder();
     sb.append(function).append("(").append(expression);
 

@@ -5,7 +5,7 @@ import java.util.List;
 public interface FromSource {
   String getAlias();
 
-  String getCondition(boolean queryMode);
+  String getCondition(SqlBuilder builder, boolean queryMode);
 
   String getJoinMode();
 

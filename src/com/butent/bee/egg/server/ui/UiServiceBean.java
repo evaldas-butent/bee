@@ -16,9 +16,11 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 import javax.ejb.EJB;
+import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
 
 @Stateless
+@LocalBean
 public class UiServiceBean {
   private static Logger logger = Logger.getLogger(UiServiceBean.class.getName());
 
@@ -62,7 +64,8 @@ public class UiServiceBean {
 
   private void formList(RequestInfo reqInfo, ResponseBuffer buff) {
     QueryBuilder qb = new QueryBuilder();
-    qb.addFields("f", "form").addFrom("forms", "f").addOrder("form");
+    qb.addFields("f", "form").addFrom("forms", "f").addOrder(
+        SqlUtils.fields("f", "form"));
 
     List<Object[]> res = qs.getQueryData(qb);
     if (res == null) {
@@ -97,8 +100,6 @@ public class UiServiceBean {
 
   private void gridInfo(RequestInfo reqInfo, ResponseBuffer buff) {
     String gName = getXmlField(reqInfo, buff, "grid_name");
-
-    SqlUtils.SQL_QUOTE = "`";
 
     QueryBuilder qb = new QueryBuilder();
     qb.addFields("g", "properties").addFrom("grids", "g").setWhere(

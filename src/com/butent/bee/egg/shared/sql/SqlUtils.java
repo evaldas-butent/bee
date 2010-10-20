@@ -4,15 +4,18 @@ import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
 public class SqlUtils {
-  public static String SQL_QUOTE = "";
+
+  static final String SQL_OPEN_QUOTE = "_OPEN_";
+  static final String SQL_CLOSE_QUOTE = "_CLOSE_";
+
   private static final String EQUAL = "=";
-  private static final String NOT_EQUAL = "<>";
-  private static final String MORE = ">";
-  private static final String MORE_EQUAL = ">=";
+  private static final String IN = " IN ";
   private static final String LESS = "<";
   private static final String LESS_EQUAL = "<=";
   private static final String LIKE = " LIKE ";
-  private static final String IN = " IN ";
+  private static final String MORE = ">";
+  private static final String MORE_EQUAL = ">=";
+  private static final String NOT_EQUAL = "<>";
 
   public static Conditions and(Condition... conditions) {
     Conditions cb = new AndConditions();
@@ -177,6 +180,6 @@ public class SqlUtils {
     if (BeeUtils.isEmpty(expr)) {
       return null;
     }
-    return SQL_QUOTE + expr.trim() + SQL_QUOTE;
+    return SQL_OPEN_QUOTE + expr.trim() + SQL_CLOSE_QUOTE;
   }
 }

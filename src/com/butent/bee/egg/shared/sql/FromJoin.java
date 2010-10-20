@@ -5,7 +5,7 @@ import com.butent.bee.egg.shared.utils.BeeUtils;
 
 import java.util.List;
 
-public abstract class FromJoin extends FromSingle {
+abstract class FromJoin extends FromSingle {
 
   private Condition on;
 
@@ -28,10 +28,11 @@ public abstract class FromJoin extends FromSingle {
   }
 
   @Override
-  public String getCondition(boolean queryMode) {
-    StringBuilder from = new StringBuilder(super.getCondition(queryMode));
+  public String getCondition(SqlBuilder builder, boolean queryMode) {
+    StringBuilder from = new StringBuilder(super.getCondition(builder,
+        queryMode));
 
-    from.append(" ON ").append(on.getCondition(queryMode));
+    from.append(" ON ").append(on.getCondition(builder, queryMode));
 
     return from.toString();
   }

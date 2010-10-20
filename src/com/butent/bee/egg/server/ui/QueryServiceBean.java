@@ -42,6 +42,8 @@ public class QueryServiceBean {
   }
 
   public List<Object[]> processSQL(String sql) {
+    LogUtils.info(logger, sql);
+
     if (ds == null) {
       ds = dsb.locateDs(BeeConst.MYSQL).getDs();
     }

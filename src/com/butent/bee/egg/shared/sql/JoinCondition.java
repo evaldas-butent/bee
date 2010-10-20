@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class JoinCondition implements Condition {
+class JoinCondition implements Condition {
   private String leftExpression;
   private String operator;
   private Object rightExpression;
@@ -38,12 +38,12 @@ public class JoinCondition implements Condition {
   }
 
   @Override
-  public String getCondition(boolean queryMode) {
+  public String getCondition(SqlBuilder builder, boolean queryMode) {
     String cond = leftExpression + operator;
     Object expr = rightExpression;
 
     if (expr instanceof QueryBuilder) {
-      expr = "(" + ((QueryBuilder) expr).getQuery(queryMode) + ")";
+      expr = "(" + ((QueryBuilder) expr).getQuery(builder, queryMode) + ")";
     }
     return cond + expr;
   }

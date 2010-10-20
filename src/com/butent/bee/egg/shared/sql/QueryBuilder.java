@@ -11,6 +11,16 @@ import java.util.Map;
 
 public class QueryBuilder {
 
+  private static SqlBuilder sqlBuilder;
+
+  static {
+    setSqlBuilder(new SqlBuilder());
+  }
+
+  public static void setSqlBuilder(SqlBuilder builder) {
+    sqlBuilder = builder;
+  }
+
   private List<Map<String, String>> fieldList = new ArrayList<Map<String, String>>();
   private List<FromSource> fromList = new ArrayList<FromSource>();
   private Condition whereClause;
@@ -292,18 +302,14 @@ public class QueryBuilder {
     return this;
   }
 
-  public QueryBuilder addOrder(String order, Boolean desc) {
-    Assert.notEmpty(order);
+  public QueryBuilder addOrderDesc(String... order) {
+    Assert.noNulls((Object[]) order);
 
-    Map<String, Object> fldMap = new HashMap<String, Object>(2);
-    fldMap.put("field", order);
-    fldMap.put("desc", !BeeUtils.isEmpty(desc));
-
-    if (BeeUtils.isEmpty(orderList)) {
-      orderList = new ArrayList<Map<String, Object>>();
+    for (String ord : order) {
+      if (!BeeUtils.isEmpty(ord)) {
+        addOrder(ord, true);
+      }
     }
-    orderList.add(fldMap);
-
     return this;
   }
 
@@ -356,6 +362,10 @@ public class QueryBuilder {
       fldList.add(fldMap.get("field"));
     }
     return fldList;
+  }
+
+  public List<Map<String, String>> getFields() {
+    return fieldList;
   }
 
   public List<FromSource> getFrom() {
@@ -412,73 +422,13 @@ public class QueryBuilder {
   }
 
   public String getQuery() {
-    return getQuery(queryConditionMode);
+    return getQuery(sqlBuilder, queryConditionMode);
   }
 
-  public String getQuery(boolean queryMode) {
-    Assert.state(!isEmpty(), "Empty instance");
+  public String getQuery(SqlBuilder builder, boolean queryMode) {
+    Assert.notEmpty(builder);
 
-    StringBuilder query = new StringBuilder("SELECT ");
-
-    for (int i = 0; i < fieldList.size(); i++) {
-      Map<String, String> fldMap = fieldList.get(i);
-
-      if (i > 0) {
-        query.append(", ");
-      }
-      String field = fldMap.get("field");
-      query.append(field);
-      String alias = fldMap.get("alias");
-
-      if (!BeeUtils.isEmpty(alias)) {
-        query.append(" AS ").append(alias);
-      }
-    }
-    query.append(" FROM ");
-
-    for (FromSource from : fromList) {
-      query.append(from.getJoinMode()).append(from.getCondition(queryMode));
-    }
-
-    if (!BeeUtils.isEmpty(whereClause)) {
-      query.append(" WHERE ").append(whereClause.getCondition(queryMode));
-    }
-
-    if (!BeeUtils.isEmpty(this.groupList)) {
-      query.append(" GROUP BY ");
-      for (int i = 0; i < groupList.size(); i++) {
-        String group = groupList.get(i);
-        if (i > 0) {
-          query.append(", ");
-        }
-        query.append(group);
-      }
-    }
-
-    if (!BeeUtils.isEmpty(this.orderList)) {
-      query.append(" ORDER BY ");
-      for (int i = 0; i < orderList.size(); i++) {
-        Map<String, Object> order = orderList.get(i);
-        if (i > 0) {
-          query.append(", ");
-        }
-        query.append(order.get("field"));
-        if ((Boolean) order.get("desc")) {
-          query.append(" DESC");
-        }
-      }
-    }
-
-    if (!BeeUtils.isEmpty(havingClause)) {
-      query.append(" HAVING ").append(havingClause.getCondition(queryMode));
-    }
-
-    if (!BeeUtils.isEmpty(this.unionList)) {
-      for (QueryBuilder union : unionList) {
-        query.append(unionMode).append(union.getQuery(queryMode));
-      }
-    }
-    return query.toString();
+    return builder.getQuery(this, queryMode);
   }
 
   public List<String> getSources(String source) {
@@ -503,6 +453,10 @@ public class QueryBuilder {
 
   public List<QueryBuilder> getUnion() {
     return unionList;
+  }
+
+  public String getUnionMode() {
+    return unionMode;
   }
 
   public Condition getWhere() {
@@ -571,6 +525,21 @@ public class QueryBuilder {
   // From -------------------------------------------------------------------
   private void addFrom(FromSource from) {
     fromList.add(from);
+  }
+
+  private QueryBuilder addOrder(String order, Boolean desc) {
+    Assert.notEmpty(order);
+
+    Map<String, Object> fldMap = new HashMap<String, Object>(2);
+    fldMap.put("field", order);
+    fldMap.put("desc", !BeeUtils.isEmpty(desc));
+
+    if (BeeUtils.isEmpty(orderList)) {
+      orderList = new ArrayList<Map<String, Object>>();
+    }
+    orderList.add(fldMap);
+
+    return this;
   }
 
   private Integer conditionParameters(List<Object> paramList, Integer index,

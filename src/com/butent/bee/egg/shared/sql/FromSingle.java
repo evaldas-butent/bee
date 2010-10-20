@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class FromSingle implements FromSource {
+class FromSingle implements FromSource {
 
   private Object source;
   private String alias;
@@ -39,11 +39,12 @@ public class FromSingle implements FromSource {
   }
 
   @Override
-  public String getCondition(boolean queryMode) {
+  public String getCondition(SqlBuilder builder, boolean queryMode) {
     StringBuilder from = new StringBuilder();
 
     if (source instanceof QueryBuilder) {
-      from.append("(" + ((QueryBuilder) source).getQuery(queryMode) + ")");
+      from.append("(" + ((QueryBuilder) source).getQuery(builder, queryMode)
+          + ")");
     } else {
       from.append(SqlUtils.sqlQuote((String) source));
     }

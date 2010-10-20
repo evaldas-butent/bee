@@ -19,7 +19,7 @@ public abstract class Conditions implements Condition {
 
   // Implementations ----------------------------------------------------------
   @Override
-  public String getCondition(boolean queryMode) {
+  public String getCondition(SqlBuilder builder, boolean queryMode) {
     StringBuilder clause = new StringBuilder();
     String join = joinMode();
 
@@ -28,7 +28,7 @@ public abstract class Conditions implements Condition {
       if (i > 0) {
         clause.append(join);
       }
-      clause.append(cond.getCondition(queryMode));
+      clause.append(cond.getCondition(builder, queryMode));
     }
     return clause.toString();
   }

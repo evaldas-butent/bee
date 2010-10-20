@@ -2,11 +2,11 @@ package com.butent.bee.egg.shared.sql;
 
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
-public class OrConditions extends Conditions {
+class OrConditions extends Conditions {
 
   @Override
-  public String getCondition(boolean queryMode) {
-    String cond = super.getCondition(queryMode);
+  public String getCondition(SqlBuilder builder, boolean queryMode) {
+    String cond = super.getCondition(builder, queryMode);
 
     if (!BeeUtils.isEmpty(cond)) {
       cond = "(" + cond + ")";
