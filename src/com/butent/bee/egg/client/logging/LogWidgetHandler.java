@@ -79,6 +79,7 @@ public class LogWidgetHandler extends Handler {
       Element elem = Document.get().createDivElement().cast();
       container.add(new BeeHtml(elem));
       elem.setClassName(STYLENAME_SEPARATOR);
+      elem.scrollIntoView();
 
       return;
     }

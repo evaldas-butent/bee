@@ -22,8 +22,8 @@ public class BeeLog implements BeeModule {
 
   public BeeLog() {
     super();
-
     setLogger(Logger.getLogger(BeeConst.STRING_EMPTY));
+
     setArea(new LogArea());
     addArea(getArea());
 

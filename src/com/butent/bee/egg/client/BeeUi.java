@@ -37,7 +37,6 @@ import com.butent.bee.egg.shared.BeeName;
 import com.butent.bee.egg.shared.BeeResource;
 import com.butent.bee.egg.shared.BeeService;
 import com.butent.bee.egg.shared.BeeStage;
-import com.butent.bee.egg.shared.Pair;
 import com.butent.bee.egg.shared.menu.MenuConst;
 import com.butent.bee.egg.shared.ui.UiComponent;
 import com.butent.bee.egg.shared.utils.BeeUtils;
@@ -368,12 +367,12 @@ public class BeeUi implements BeeModule {
 
     w = initWest();
     if (w != null) {
-      p.addWest(w, 400);
+      p.addWest(w, 200);
     }
 
     w = initEast();
     if (w != null) {
-      p.addEast(w, 200, true);
+      p.addEast(w, 256, true);
     }
 
     w = initCenter();
@@ -407,10 +406,6 @@ public class BeeUi implements BeeModule {
     p.add(new ButtonGroup("Ping", BeeService.SERVICE_DB_PING, "Info",
         BeeService.SERVICE_DB_INFO, "Tables", BeeService.SERVICE_DB_TABLES));
 
-    p.add(new ButtonGroup("Http", BeeService.SERVICE_TEST_CONNECTION, "Server",
-        BeeService.SERVICE_SERVER_INFO, "VM", BeeService.SERVICE_VM_INFO,
-        "Loaders", BeeService.SERVICE_LOADER_INFO));
-
     p.add(new BeeButton("Class", BeeService.SERVICE_GET_CLASS,
         BeeStage.STAGE_GET_PARAMETERS));
     p.add(new BeeButton("Xml", BeeService.SERVICE_GET_XML,
@@ -420,8 +415,6 @@ public class BeeUi implements BeeModule {
 
     p.add(new BeeButton("Login", BeeService.SERVICE_LOGIN));
 
-    p.add(new BeeCheckBox(new Pair<String, String>("Get", "Post"),
-        BeeProperties.COMMUNICATION_METHOD));
     p.add(new BeeCheckBox(new BeeName(BeeGlobal.FIELD_DEBUG)));
 
     p.add(new BeeButton("North land", "comp_ui_form", "stage_dummy"));
@@ -483,32 +476,23 @@ public class BeeUi implements BeeModule {
     fp.setCellSpacing(3);
 
     int r = MenuConst.MAX_MENU_DEPTH;
-    String fld, cap;
-
+    String fld;
+    
     for (int i = MenuConst.ROOT_MENU_INDEX; i < r; i++) {
       fld = MenuConst.fieldMenuLayout(i);
-      cap = BeeGlobal.getFieldCaption(fld);
-
-      if (!BeeUtils.isEmpty(cap)) {
-        fp.setText(i, 0, cap);
-      }
-      fp.setWidget(i, 1, new BeeListBox(fld));
+      fp.setWidget(i, 0, new BeeListBox(fld));
 
       fld = MenuConst.fieldMenuBarType(i);
-      fp.setWidget(i, 2, new BeeSimpleCheckBox(fld));
+      fp.setWidget(i, 1, new BeeSimpleCheckBox(fld));
     }
 
-    fp.setWidget(MenuConst.ROOT_MENU_INDEX, 3, new BeeIntegerBox(
-        MenuConst.FIELD_ROOT_LIMIT));
-    fp.setWidget(MenuConst.ROOT_MENU_INDEX + 1, 3, new BeeIntegerBox(
-        MenuConst.FIELD_ITEM_LIMIT));
+    fp.setWidget(r, 0, new BeeIntegerBox(MenuConst.FIELD_ROOT_LIMIT));
+    fp.setWidget(r, 1, new BeeIntegerBox(MenuConst.FIELD_ITEM_LIMIT));
 
-    fp.setWidget(r - 1, 3, new BeeButton("Refresh",
-        BeeService.SERVICE_REFRESH_MENU));
+    fp.setWidget(r + 1, 0, new BeeButton("Refresh", BeeService.SERVICE_REFRESH_MENU));
+    fp.setWidget(r + 1, 1, new BeeButton("BEE", "comp_ui_menu", "stage_dummy"));
 
-    fp.setWidget(r - 1, 4, new BeeButton("BEE", "comp_ui_menu", "stage_dummy"));
-
-    spl.addNorth(fp, 100);
+    spl.addNorth(fp, 180);
 
     BeeLayoutPanel mp = new BeeLayoutPanel();
     spl.add(mp);

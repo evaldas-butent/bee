@@ -7,8 +7,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class BeeProperties implements BeeModule {
-  public static final String COMMUNICATION_METHOD = "comm_method";
-
   private static Map<String, String> properties = new HashMap<String, String>();
 
   public static boolean getBooleanProperty(String key) {

@@ -4,6 +4,7 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.KeyPressEvent;
 
 import com.butent.bee.egg.client.BeeGlobal;
+import com.butent.bee.egg.client.BeeKeeper;
 import com.butent.bee.egg.client.widget.BeeTextBox;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeConst;
@@ -38,6 +39,8 @@ public class CliWidget extends BeeTextBox {
       CliWorker.doScreen(arr);
     } else if (z.equals("charset")) {
       CliWorker.getCharsets();
+    } else if (z.startsWith("conn") || z.equals("http")) {
+      BeeKeeper.getRpc().invoke("connectionInfo");
     } else if (z.equals("df")) {
       CliWorker.showDateFormat();
     } else if (z.equals("dt")) {
@@ -56,6 +59,8 @@ public class CliWidget extends BeeTextBox {
       CliWorker.showGwt();
     } else if (z.equals("id")) {
       CliWorker.showElement(v, arr);
+    } else if (z.equals("loaders")) {
+      BeeKeeper.getRpc().invoke("loaderInfo");
     } else if (z.equals("log")) {
       CliWorker.doLog(arr);
     } else if (z.equals("menu")) {
@@ -66,6 +71,8 @@ public class CliWidget extends BeeTextBox {
       CliWorker.showProperties(v, arr);
     } else if (z.equals("rpc")) {
       CliWorker.showRpc();
+    } else if (z.startsWith("serv") || z.startsWith("sys")) {
+      BeeKeeper.getRpc().invoke("systemInfo");
     } else if (z.equals("stack")) {
       CliWorker.showStack();
     } else if (z.equals("style")) {
@@ -74,6 +81,8 @@ public class CliWidget extends BeeTextBox {
       CliWorker.showTiles();
     } else if (z.equals("uc") || "unicode".startsWith(z)) {
       CliWorker.unicode(arr);
+    } else if (z.equals("vm")) {
+      BeeKeeper.getRpc().invoke("vmInfo");
 
     } else {
       BeeGlobal.showDialog("wtf", v);

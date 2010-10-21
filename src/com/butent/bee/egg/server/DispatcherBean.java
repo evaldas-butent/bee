@@ -4,6 +4,7 @@ import com.butent.bee.egg.server.communication.ResponseBuffer;
 import com.butent.bee.egg.server.data.DataServiceBean;
 import com.butent.bee.egg.server.http.RequestInfo;
 import com.butent.bee.egg.server.ui.UiServiceBean;
+import com.butent.bee.egg.server.utils.Reflection;
 import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.BeeService;
 import com.butent.bee.egg.shared.utils.BeeUtils;
@@ -26,6 +27,8 @@ public class DispatcherBean {
   UiServiceBean uiBean;
   @EJB
   MenuBean menuBean;
+  @EJB
+  Invocation invBean;
 
   public void doService(String svc, String dsn, RequestInfo reqInfo,
       ResponseBuffer buff) {
@@ -42,6 +45,10 @@ public class DispatcherBean {
     } else if (BeeUtils.same(svc, BeeService.SERVICE_WHERE_AM_I)) {
       buff.addLine(buff.now(), BeeConst.whereAmI());
 
+    } else if (BeeUtils.same(svc, BeeService.SERVICE_INVOKE)) {
+      Reflection.invoke(invBean, reqInfo.getParameter(BeeService.RPC_FIELD_METH), 
+          reqInfo, buff);
+      
     } else if (svc.startsWith("rpc_ui_")) {
       uiBean.doService(svc, reqInfo, buff);
 

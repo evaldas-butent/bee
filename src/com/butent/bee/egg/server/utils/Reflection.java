@@ -14,8 +14,11 @@ public class Reflection {
   private static Logger logger = Logger.getLogger(Reflection.class.getName());
   
   public static void invoke(Object obj, String methodName, RequestInfo req, ResponseBuffer resp) {
-    Assert.noNulls(obj, req, resp);
-    Assert.notEmpty(methodName);
+    Assert.notNull(obj);
+    if (BeeUtils.isEmpty(methodName)) {
+      resp.addSevere("method name not specified");
+      return;
+    }
     
     Method method = findMethod(obj.getClass(), methodName);
 
@@ -31,8 +34,21 @@ public class Reflection {
   }
 
   private static void doMethod(Object obj, Method method, RequestInfo req, ResponseBuffer resp) {
+    Class<?>[] parameterTypes = method.getParameterTypes();
+    boolean hasReq = BeeUtils.contains(RequestInfo.class, parameterTypes);
+    boolean hasResp = BeeUtils.contains(ResponseBuffer.class, parameterTypes);
+
     try {
-      method.invoke(obj, req, resp);
+      if (hasReq && hasResp) {
+        method.invoke(obj, req, resp);
+      } else if (hasReq) {
+        method.invoke(obj, req);
+      } else if (hasResp) {
+        method.invoke(obj, resp);
+      } else {
+        method.invoke(obj);
+      }
+
     } catch (IllegalArgumentException ex) {
       LogUtils.error(logger, ex, method);
     } catch (IllegalAccessException ex) {

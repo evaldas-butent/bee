@@ -298,39 +298,8 @@ public class BeeUtils {
     return s.toString();
   }
 
-  public static boolean contains(CharSequence src, char[] sep) {
-    boolean ok = false;
-    if (src == null || src.length() == 0 || sep == null || sep.length == 0) {
-      return ok;
-    }
-
-    int lenSrc = src.length();
-    int lenSep = sep.length;
-
-    if (lenSep == 1) {
-      for (int i = 0; i < lenSrc; i++) {
-        if (src.charAt(i) == sep[0]) {
-          ok = true;
-          break;
-        }
-      }
-    } else if (lenSrc >= lenSep) {
-      for (int i = 0; i <= lenSrc - lenSep; i++) {
-        for (int j = 0; j < lenSep; j++) {
-          if (src.charAt(i + j) == sep[j]) {
-            ok = true;
-          } else {
-            ok = false;
-            break;
-          }
-        }
-        if (ok) {
-          break;
-        }
-      }
-    }
-
-    return ok;
+  public static <T> boolean contains(T value, T[] arr) {
+    return indexOf(value, arr) >= 0;
   }
 
   public static boolean context(CharSequence ctxt, CharSequence src) {
@@ -583,6 +552,30 @@ public class BeeUtils {
 
   public static String increment(String s) {
     return Integer.toString(toInt(s) + 1);
+  }
+
+  @SuppressWarnings("unchecked")
+  public static <T> int indexOf(T value, T[] arr) {
+    int idx = -1;
+    int len = length(arr);
+    if (len <= 0) {
+      return idx;
+    }
+    
+    for (int i = 0; i < len; i++) {
+      if (value == arr[i]) {
+        idx = i;
+        break;
+      }
+      
+      if (value instanceof Comparable<?> && arr[i] != null 
+          && ((Comparable<T>) value).compareTo(arr[i]) == 0) {
+        idx = i;
+        break;
+      }
+    }
+    
+    return idx;
   }
 
   public static <T extends Comparable<T>> boolean inList(T x, T... lst) {

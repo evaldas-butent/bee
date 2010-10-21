@@ -4,11 +4,7 @@ import com.butent.bee.egg.server.communication.ResponseBuffer;
 import com.butent.bee.egg.server.http.RequestInfo;
 import com.butent.bee.egg.server.utils.BeeClass;
 import com.butent.bee.egg.server.utils.BeeJvm;
-import com.butent.bee.egg.server.utils.BeeMX;
-import com.butent.bee.egg.server.utils.BeeSystem;
-import com.butent.bee.egg.server.utils.Checksum;
 import com.butent.bee.egg.server.utils.FileUtils;
-import com.butent.bee.egg.server.utils.Reflection;
 import com.butent.bee.egg.server.utils.XmlUtils;
 import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.BeeService;
@@ -23,7 +19,6 @@ import com.butent.bee.egg.shared.utils.SubProp;
 import java.io.File;
 import java.net.URL;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -38,15 +33,7 @@ public class SystemServiceBean {
     Assert.notEmpty(svc);
     Assert.notNull(buff);
 
-    if (BeeUtils.same(svc, BeeService.SERVICE_TEST_CONNECTION)) {
-      connectionInfo(reqInfo, buff);
-    } else if (BeeUtils.same(svc, BeeService.SERVICE_SERVER_INFO)) {
-      systemInfo(buff);
-    } else if (BeeUtils.same(svc, BeeService.SERVICE_VM_INFO)) {
-      vmInfo(buff);
-    } else if (BeeUtils.same(svc, BeeService.SERVICE_LOADER_INFO)) {
-      loaderInfo(buff);
-    } else if (BeeUtils.same(svc, BeeService.SERVICE_CLASS_INFO)) {
+    if (BeeUtils.same(svc, BeeService.SERVICE_CLASS_INFO)) {
       classInfo(reqInfo, buff);
     } else if (BeeUtils.same(svc, BeeService.SERVICE_XML_INFO)) {
       xmlInfo(reqInfo, buff);
@@ -59,10 +46,6 @@ public class SystemServiceBean {
     } else if (BeeUtils.same(svc, BeeService.SERVICE_GET_DIGEST)) {
       getDigest(reqInfo, buff);
 
-    } else if (BeeUtils.same(svc, BeeService.SERVICE_INVOKE)) {
-      Reflection.invoke(this, reqInfo.getParameter(BeeService.RPC_FIELD_METH), 
-          reqInfo, buff);
-      
     } else {
       String msg = BeeUtils.concat(1, svc, "system service not recognized");
       LogUtils.warning(logger, msg);
@@ -70,27 +53,6 @@ public class SystemServiceBean {
     }
   }
 
-  public void stringInfo(RequestInfo reqInfo, ResponseBuffer buff) {
-    String data = reqInfo.getContent();
-    if (BeeUtils.length(data) <= 0) {
-      buff.addSevere("Request data not found");
-      return;
-    }
-    
-    buff.addBinary(data);
-    
-    byte[] arr = Codec.toBytes(data); 
-    
-    buff.addOff("length", data.length());
-    buff.addOff("adler32.z", Checksum.adler32(arr));
-    buff.addOff("crc32.z", Checksum.crc32(arr));
-
-    buff.addOff("adler32", Codec.adler32(arr));
-    buff.addOff("crc16", Codec.crc16(arr));
-    buff.addOff("crc32", Codec.crc32(arr));
-    buff.addOff("crc32d", Codec.crc32Direct(arr));
-  }
- 
   private void classInfo(RequestInfo reqInfo, ResponseBuffer buff) {
     String cnm = reqInfo.getParameter(BeeService.FIELD_CLASS_NAME);
     String pck = reqInfo.getParameter(BeeService.FIELD_PACKAGE_LIST);
@@ -134,11 +96,6 @@ public class SystemServiceBean {
       }
       buff.appendSub(BeeClass.getClassInfo(cls));
     }
-  }
-
-  private void connectionInfo(RequestInfo reqInfo, ResponseBuffer buff) {
-    Assert.notNull(reqInfo);
-    buff.addSub(reqInfo.getInfo());
   }
 
   private void getDigest(RequestInfo reqInfo, ResponseBuffer buff) {
@@ -237,14 +194,6 @@ public class SystemServiceBean {
     }
   }
 
-  private void loaderInfo(ResponseBuffer buff) {
-    if (BeeJvm.CVF_FAILURE == null) {
-      buff.addStringProp(BeeJvm.getLoadedClasses());
-    } else {
-      buff.add(BeeJvm.CVF_FAILURE);
-    }
-  }
-
   private void saveResource(RequestInfo reqInfo, ResponseBuffer buff) {
     long start = System.currentTimeMillis();
 
@@ -282,60 +231,6 @@ public class SystemServiceBean {
     } else {
       buff.addSevere("error saving to", uri);
     }
-  }
-
-  private void systemInfo(ResponseBuffer buff) {
-    List<SubProp> lst = new ArrayList<SubProp>();
-
-    lst.addAll(BeeSystem.getSysInfo());
-    PropUtils.appendString(lst, "Runtime", BeeSystem.getRuntimeInfo());
-
-    lst.addAll(BeeSystem.getPackagesInfo());
-
-    PropUtils.appendString(lst, "Thread Static",
-        BeeSystem.getThreadStaticInfo());
-
-    Thread ct = Thread.currentThread();
-    String root = "Current Thread";
-
-    PropUtils.appendString(lst, root, BeeSystem.getThreadInfo(ct));
-    PropUtils.appendString(lst, BeeUtils.concat(1, root, "Stack"),
-        BeeSystem.getThreadStackInfo(ct));
-
-    lst.addAll(BeeSystem.getThreadGroupInfo(ct.getThreadGroup(), true, true));
-
-    PropUtils.appendString(lst, "[xml] Document Builder Factory",
-        XmlUtils.getDomFactoryInfo());
-    PropUtils.appendString(lst, "[xml] Document Builder",
-        XmlUtils.getDomBuilderInfo());
-
-    PropUtils.appendString(lst, "[xslt] Transformer Factory",
-        XmlUtils.getXsltFactoryInfo());
-    PropUtils.appendString(lst, "[xslt] Output Keys",
-        XmlUtils.getOutputKeysInfo());
-
-    buff.addSub(lst);
-  }
-
-  private void vmInfo(ResponseBuffer buff) {
-    List<SubProp> lst = new ArrayList<SubProp>();
-
-    PropUtils.appendString(lst, "Class Loading", BeeMX.getClassLoadingInfo());
-    PropUtils.appendString(lst, "Compilation", BeeMX.getCompilationInfo());
-
-    lst.addAll(BeeMX.getGarbageCollectorInfo());
-
-    lst.addAll(BeeMX.getMemoryInfo());
-    lst.addAll(BeeMX.getMemoryManagerInfo());
-    lst.addAll(BeeMX.getMemoryPoolInfo());
-
-    PropUtils.appendString(lst, "Operating System",
-        BeeMX.getOperatingSystemInfo());
-    lst.addAll(BeeMX.getRuntimeInfo());
-
-    lst.addAll(BeeMX.getThreadsInfo());
-
-    buff.addSub(lst);
   }
 
   private void xmlInfo(RequestInfo reqInfo, ResponseBuffer buff) {

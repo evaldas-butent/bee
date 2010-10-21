@@ -96,6 +96,7 @@ public class CliWorker {
       } else {
         BeeKeeper.getLog().show();
         BeeKeeper.getLog().info((Object[]) arr);
+        BeeKeeper.getLog().addSeparator();
       }
 
       return;
@@ -107,6 +108,7 @@ public class CliWorker {
     for (Level lvl : levels) {
       BeeKeeper.getLog().log(lvl, lvl.getName().toLowerCase());
     }
+    BeeKeeper.getLog().addSeparator();
   }
 
   public static void doMenu(String[] arr) {
@@ -366,6 +368,7 @@ public class CliWorker {
 
   public static void showStack() {
     BeeKeeper.getLog().stack();
+    BeeKeeper.getLog().addSeparator();
   }
 
   public static void showTiles() {
@@ -476,6 +479,7 @@ public class CliWorker {
     }
 
     BeeKeeper.getLog().info(st);
+    BeeKeeper.getLog().addSeparator();
 
     if (start) {
       StyleInjector.injectAtStart(st, immediate);
@@ -536,6 +540,6 @@ public class CliWorker {
 
   public static void whereAmI() {
     BeeKeeper.getLog().info(BeeConst.whereAmI());
-    BeeKeeper.getRpc().dispatchService(BeeService.SERVICE_WHERE_AM_I);
+    BeeKeeper.getRpc().makeGetRequest(BeeService.SERVICE_WHERE_AM_I);
   }
 }

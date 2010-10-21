@@ -11,55 +11,35 @@ public class BeeService {
   public static final String DB_SERVICE_PREFIX = RPC_SERVICE_PREFIX + "db_";
   public static final String SERVICE_DB_JDBC = DB_SERVICE_PREFIX + "jdbc";
 
-  public static final String DB_META_SERVICE_PREFIX = DB_SERVICE_PREFIX
-      + "meta_";
+  public static final String DB_META_SERVICE_PREFIX = DB_SERVICE_PREFIX + "meta_";
   public static final String SERVICE_DB_PING = DB_META_SERVICE_PREFIX + "ping";
   public static final String SERVICE_DB_INFO = DB_META_SERVICE_PREFIX + "info";
-  public static final String SERVICE_DB_TABLES = DB_META_SERVICE_PREFIX
-      + "tables";
+  public static final String SERVICE_DB_TABLES = DB_META_SERVICE_PREFIX + "tables";
 
   public static final String SYS_SERVICE_PREFIX = RPC_SERVICE_PREFIX + "sys_";
-  public static final String SERVICE_TEST_CONNECTION = SYS_SERVICE_PREFIX
-      + "test_conn";
-  public static final String SERVICE_SERVER_INFO = SYS_SERVICE_PREFIX
-      + "server_info";
-  public static final String SERVICE_VM_INFO = SYS_SERVICE_PREFIX + "vm_info";
-  public static final String SERVICE_LOADER_INFO = SYS_SERVICE_PREFIX
-      + "loader_info";
-  public static final String SERVICE_CLASS_INFO = SYS_SERVICE_PREFIX
-      + "class_info";
+  public static final String SERVICE_CLASS_INFO = SYS_SERVICE_PREFIX + "class_info";
   public static final String SERVICE_XML_INFO = SYS_SERVICE_PREFIX + "xml_info";
-  public static final String SERVICE_GET_RESOURCE = SYS_SERVICE_PREFIX
-      + "get_resource";
-  public static final String SERVICE_SAVE_RESOURCE = SYS_SERVICE_PREFIX
-      + "save_resource";
-  public static final String SERVICE_GET_DIGEST = SYS_SERVICE_PREFIX
-      + "get_digest";
-  public static final String SERVICE_INVOKE = SYS_SERVICE_PREFIX + "invoke";
+  public static final String SERVICE_GET_RESOURCE = SYS_SERVICE_PREFIX + "get_resource";
+  public static final String SERVICE_SAVE_RESOURCE = SYS_SERVICE_PREFIX + "save_resource";
+  public static final String SERVICE_GET_DIGEST = SYS_SERVICE_PREFIX + "get_digest";
+
+  public static final String SERVICE_INVOKE = RPC_SERVICE_PREFIX + "invoke";
 
   public static final String SERVICE_LOGIN = RPC_SERVICE_PREFIX + "login";
   public static final String SERVICE_LOGOUT = RPC_SERVICE_PREFIX + "logout";
 
   public static final String SERVICE_GET_MENU = RPC_SERVICE_PREFIX + "get_menu";
 
-  public static final String SERVICE_WHERE_AM_I = RPC_SERVICE_PREFIX
-      + "where_am_i";
+  public static final String SERVICE_WHERE_AM_I = RPC_SERVICE_PREFIX + "where_am_i";
 
-  public static final String SERVICE_CLOSE_DIALOG = UI_SERVICE_PREFIX
-      + "close_dialog";
-  public static final String SERVICE_CONFIRM_DIALOG = UI_SERVICE_PREFIX
-      + "confirm_dialog";
-  public static final String SERVICE_CANCEL_DIALOG = UI_SERVICE_PREFIX
-      + "cancel_dialog";
-  public static final String SERVICE_REFRESH_MENU = UI_SERVICE_PREFIX
-      + "refresh_menu";
+  public static final String SERVICE_CLOSE_DIALOG = UI_SERVICE_PREFIX + "close_dialog";
+  public static final String SERVICE_CONFIRM_DIALOG = UI_SERVICE_PREFIX + "confirm_dialog";
+  public static final String SERVICE_CANCEL_DIALOG = UI_SERVICE_PREFIX + "cancel_dialog";
+  public static final String SERVICE_REFRESH_MENU = UI_SERVICE_PREFIX + "refresh_menu";
 
-  public static final String SERVICE_GET_CLASS = COMPOSITE_SERVICE_PREFIX
-      + "get_class";
-  public static final String SERVICE_GET_XML = COMPOSITE_SERVICE_PREFIX
-      + "get_xml";
-  public static final String SERVICE_GET_DATA = COMPOSITE_SERVICE_PREFIX
-      + "get_data";
+  public static final String SERVICE_GET_CLASS = COMPOSITE_SERVICE_PREFIX + "get_class";
+  public static final String SERVICE_GET_XML = COMPOSITE_SERVICE_PREFIX + "get_xml";
+  public static final String SERVICE_GET_DATA = COMPOSITE_SERVICE_PREFIX + "get_data";
 
   public static final String RPC_FIELD_PREFIX = "bee_";
   public static final String RPC_FIELD_SYS_PREFIX = RPC_FIELD_PREFIX + "sys_";

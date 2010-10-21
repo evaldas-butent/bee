@@ -155,7 +155,7 @@ public class BeeMenu implements BeeModule {
   }
 
   public void loadMenu() {
-    BeeKeeper.getRpc().dispatchService(BeeService.SERVICE_GET_MENU);
+    BeeKeeper.getRpc().makeGetRequest(BeeService.SERVICE_GET_MENU);
   }
 
   public void setItems(List<MenuEntry> items) {

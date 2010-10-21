@@ -154,7 +154,7 @@ public class BeeCallback implements RequestCallback {
       }
 
     } else if (BeeService.isInvocation(svc)) {
-      dispatchInvocation(info, txt, mc, messages);
+      dispatchInvocation(svc, info, txt, mc, messages, cc, cnt, sep);
 
     } else if (pc > 0) {
       dispatchParts(svc, pc, partSizes, txt);
@@ -167,10 +167,7 @@ public class BeeCallback implements RequestCallback {
 
     } else {
 
-      JsArrayString arr = BeeJs.split(txt, sep);
-      if (cnt > 0 && arr.length() > cnt) {
-        arr.setLength(cnt);
-      }
+      JsArrayString arr = splitResponse(txt, sep, cnt);
 
       String serviceId = CompositeService.extractServiceId(svc);
 
@@ -186,7 +183,8 @@ public class BeeCallback implements RequestCallback {
     finalizeResponse();
   }
 
-  private void dispatchInvocation(RpcInfo info, String txt, int mc, ResponseMessage[] messages) {
+  private void dispatchInvocation(String svc, RpcInfo info, String txt, 
+      int mc, ResponseMessage[] messages, int cc, int cnt, String sep) {
     if (info == null) {
       BeeKeeper.getLog().severe("rpc info not available");
       return;
@@ -200,6 +198,9 @@ public class BeeCallback implements RequestCallback {
     
     if (BeeUtils.same(method, "stringInfo")) {
       ResponseHandler.unicodeTest(info, txt, mc, messages);
+    } else if (cnt > 0) {
+      JsArrayString arr = splitResponse(txt, sep, cnt);
+      dispatchResponse(svc, cc, arr);
     } else {
       BeeKeeper.getLog().warning("unknown invocation method", method);
     }
@@ -263,6 +264,15 @@ public class BeeCallback implements RequestCallback {
 
   private void finalizeResponse() {
     BeeKeeper.getLog().addSeparator();
+  }
+  
+  private JsArrayString splitResponse(String txt, String sep, int cnt) {
+    JsArrayString arr = BeeJs.split(txt, sep);
+    if (cnt > 0 && arr.length() > cnt) {
+      arr.setLength(cnt);
+    }
+    
+    return arr;
   }
 
 }

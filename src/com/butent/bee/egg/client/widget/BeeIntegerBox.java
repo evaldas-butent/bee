@@ -26,7 +26,7 @@ public class BeeIntegerBox extends IntegerBox implements HasId,
     this();
     this.fieldName = fieldName;
 
-    setWidth("6em");
+    setWidth("3em");
     setAlignment(ValueBoxBase.TextAlignment.RIGHT);
     setValue(BeeGlobal.getFieldInt(fieldName));
   }

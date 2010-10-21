@@ -415,7 +415,7 @@ public class ResponseBuffer {
   }
 
   private void checkSeparator(CharSequence s) {
-    if (!BeeUtils.contains(s, separator)) {
+    if (!containsSeparator(s, separator)) {
       return;
     }
 
@@ -423,6 +423,41 @@ public class ResponseBuffer {
     updateSeparator(newSep);
   }
 
+  private boolean containsSeparator(CharSequence src, char[] sep) {
+    boolean ok = false;
+    if (src == null || src.length() == 0 || sep == null || sep.length == 0) {
+      return ok;
+    }
+
+    int lenSrc = src.length();
+    int lenSep = sep.length;
+
+    if (lenSep == 1) {
+      for (int i = 0; i < lenSrc; i++) {
+        if (src.charAt(i) == sep[0]) {
+          ok = true;
+          break;
+        }
+      }
+    } else if (lenSrc >= lenSep) {
+      for (int i = 0; i <= lenSrc - lenSep; i++) {
+        for (int j = 0; j < lenSep; j++) {
+          if (src.charAt(i + j) == sep[j]) {
+            ok = true;
+          } else {
+            ok = false;
+            break;
+          }
+        }
+        if (ok) {
+          break;
+        }
+      }
+    }
+
+    return ok;
+  }
+  
   private char[] nextSeparator(CharSequence s) {
     if (separator == null || separator.length == 0) {
       return null;
@@ -432,7 +467,7 @@ public class ResponseBuffer {
     char[] newSep = new char[n];
     System.arraycopy(separator, 0, newSep, 0, n);
 
-    while (BeeUtils.contains(buffer, newSep) || BeeUtils.contains(s, newSep)) {
+    while (containsSeparator(buffer, newSep) || containsSeparator(s, newSep)) {
       if (newSep[n - 1] < Character.MAX_VALUE) {
         newSep[n - 1]++;
       } else {

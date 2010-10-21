@@ -39,16 +39,6 @@ public class BeeRpc implements BeeModule {
     return new ParameterList(svc);
   }
 
-  public int dispatchService(String svc) {
-    boolean z = BeeProperties.getBooleanProperty(BeeProperties.COMMUNICATION_METHOD);
-
-    if (z) {
-      return makePostRequest(svc, "post");
-    } else {
-      return makeGetRequest(svc);
-    }
-  }
-
   public void end() {
   }
 
