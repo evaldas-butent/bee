@@ -73,6 +73,10 @@ public class LogUtils {
     }
   }
 
+  public static void log(Level level, Object... obj) {
+    log(getDefaultLogger(), level, obj);
+  }
+
   public static void log(Logger logger, Level level, Object... obj) {
     Assert.notNull(logger);
     Assert.notNull(level);

@@ -6,7 +6,7 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.egg.client.dialog.BeeInputBox;
 import com.butent.bee.egg.client.dialog.BeeMessageBox;
-import com.butent.bee.egg.client.grid.BeeGrid;
+import com.butent.bee.egg.client.grid.GridFactory;
 import com.butent.bee.egg.client.ui.CompositeService;
 import com.butent.bee.egg.client.ui.FormService;
 import com.butent.bee.egg.client.ui.GridService;
@@ -33,7 +33,7 @@ public class BeeGlobal implements BeeModule {
 
   private static final BeeMessageBox msgBox = new BeeMessageBox();
   private static final BeeInputBox inpBox = new BeeInputBox();
-  private static final BeeGrid grids = new BeeGrid();
+  private static final GridFactory grids = new GridFactory();
 
   private static final Map<String, BeeField> fields = new HashMap<String, BeeField>();
 

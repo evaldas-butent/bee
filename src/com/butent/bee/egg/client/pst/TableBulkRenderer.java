@@ -10,6 +10,7 @@ import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment.HorizontalAlignmentConstant;
 import com.google.gwt.user.client.ui.HasVerticalAlignment.VerticalAlignmentConstant;
 
+import com.butent.bee.egg.client.grid.BeeHtmlTable;
 import com.butent.bee.egg.client.pst.TableDefinition.AbstractCellView;
 import com.butent.bee.egg.client.pst.TableDefinition.AbstractRowView;
 import com.butent.bee.egg.client.pst.TableModelHelper.Request;
@@ -442,7 +443,7 @@ public abstract class TableBulkRenderer<RowType> implements
   /**
    * Table to be bulk rendered.
    */
-  private final HTMLTable table;
+  private final BeeHtmlTable table;
 
   /**
    * The definition of the columns.
@@ -456,7 +457,7 @@ public abstract class TableBulkRenderer<RowType> implements
    * @param tableDefinition the renderer that should be used during bulk
    *          rendering
    */
-  public TableBulkRenderer(HTMLTable table,
+  public TableBulkRenderer(BeeHtmlTable table,
       TableDefinition<RowType> tableDefinition) {
     this.table = table;
     this.tableDefinition = tableDefinition;
@@ -468,7 +469,7 @@ public abstract class TableBulkRenderer<RowType> implements
    * @param table the table to be bulk rendered
    * @param sourceTableDef the external source of the table definition
    */
-  public TableBulkRenderer(HTMLTable table,
+  public TableBulkRenderer(BeeHtmlTable table,
       HasTableDefinition<RowType> sourceTableDef) {
     this(table, sourceTableDef.getTableDefinition());
     this.source = sourceTableDef;
@@ -581,7 +582,7 @@ public abstract class TableBulkRenderer<RowType> implements
    * 
    * @returns the current html table.
    */
-  protected HTMLTable getTable() {
+  protected BeeHtmlTable getTable() {
     return table;
   }
 
@@ -651,17 +652,14 @@ public abstract class TableBulkRenderer<RowType> implements
   /**
    * Short term hack to get protected setBodyElement.
    */
-  private native void setBodyElement(HTMLTable table, Element newBody)
-  /*-{
-    table.@com.butent.bee.egg.client.pst.HTMLTable::setBodyElement(Lcom/google/gwt/user/client/Element;)(newBody);
-  }-*/;
+  private void setBodyElement(BeeHtmlTable table, Element newBody) {
+    table.setBodyElement(newBody);
+  }
 
   /**
    * Set a widget without clearing its contents.
    */
-  private native void setWidgetRaw(HTMLTable table, int row, int cell,
-      Widget widget)
-  /*-{
-    table.@com.butent.bee.egg.client.pst.HTMLTable::setWidgetRaw(IILcom/google/gwt/user/client/ui/Widget;)(row, cell, widget);
-  }-*/;
+  private void setWidgetRaw(BeeHtmlTable table, int row, int cell, Widget widget) {
+    table.setWidget(row, cell, widget);
+  }
 }

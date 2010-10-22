@@ -2,6 +2,7 @@ package com.butent.bee.egg.client;
 
 import com.google.gwt.core.client.GWT.UncaughtExceptionHandler;
 
+import com.butent.bee.egg.client.logging.LogFormatter;
 import com.butent.bee.egg.shared.utils.LogUtils;
 
 public class BeeExceptionHandler implements UncaughtExceptionHandler {
@@ -16,6 +17,8 @@ public class BeeExceptionHandler implements UncaughtExceptionHandler {
       LogUtils.severe(cause);
       cause = cause.getCause();
     }
+    
+    LogUtils.log(LogFormatter.LOG_SEPARATOR_LEVEL, LogFormatter.LOG_SEPARATOR_TAG);
   }
 
 }

@@ -11,9 +11,10 @@ import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment.HorizontalAlignmentConstant;
 import com.google.gwt.user.client.ui.HasVerticalAlignment.VerticalAlignmentConstant;
 
+import com.butent.bee.egg.client.grid.BeeFlexTable.BeeFlexCellFormatter;
+import com.butent.bee.egg.client.grid.BeeHtmlTable;
+import com.butent.bee.egg.client.grid.BeeHtmlTable.BeeCell;
 import com.butent.bee.egg.client.pst.CellEditor.CellEditInfo;
-import com.butent.bee.egg.client.pst.FlexTable.FlexCellFormatter;
-import com.butent.bee.egg.client.pst.HTMLTable.Cell;
 import com.butent.bee.egg.client.pst.SelectionGrid.SelectionPolicy;
 import com.butent.bee.egg.client.pst.SortableGrid.ColumnSorter;
 import com.butent.bee.egg.client.pst.SortableGrid.ColumnSorterCallback;
@@ -448,8 +449,8 @@ public class PagingScrollTable<RowType> extends AbstractScrollTable implements
     dataTable.addDomHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-        if (event.getSource() instanceof HTMLTable) {
-          Cell cell = ((HTMLTable) event.getSource()).getCellForEvent(event);
+        if (event.getSource() instanceof BeeHtmlTable) {
+          BeeCell cell = ((BeeHtmlTable) event.getSource()).getCellForEvent(event);
           if (cell != null) {
             editCell(cell.getRowIndex(), cell.getCellIndex());
           }
@@ -684,7 +685,7 @@ public class PagingScrollTable<RowType> extends AbstractScrollTable implements
         if (rowCount != dataTable.getRowCount()) {
           dataTable.resizeRows(rowCount);
         }
-        dataTable.clearAll();
+        dataTable.clear(true);
       }
 
       // Request the new data from the table model
@@ -948,24 +949,6 @@ public class PagingScrollTable<RowType> extends AbstractScrollTable implements
       return visibleColumns.get(colIndex);
     }
     return null;
-  }
-
-  /**
-   * @return the index of the first visible row
-   * @deprecated use {@link #getAbsoluteFirstRowIndex()} instead
-   */
-  @Deprecated
-  protected int getFirstRow() {
-    return getAbsoluteFirstRowIndex();
-  }
-
-  /**
-   * @return the index of the last visible row
-   * @deprecated use {@link #getAbsoluteLastRowIndex()} instead
-   */
-  @Deprecated
-  protected int getLastRow() {
-    return getAbsoluteLastRowIndex();
   }
 
   /**
@@ -1294,7 +1277,7 @@ public class PagingScrollTable<RowType> extends AbstractScrollTable implements
 
     // Generate the header table
     int columnCount = allInfos.size();
-    FlexCellFormatter formatter = table.getFlexCellFormatter();
+    BeeFlexCellFormatter formatter = table.getFlexCellFormatter();
     List<ColumnHeaderInfo> prevInfos = null;
     for (int col = 0; col < columnCount; col++) {
       List<ColumnHeaderInfo> infos = allInfos.get(col);

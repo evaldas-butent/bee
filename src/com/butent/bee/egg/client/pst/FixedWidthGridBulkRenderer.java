@@ -3,6 +3,8 @@ package com.butent.bee.egg.client.pst;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Element;
 
+import com.butent.bee.egg.client.grid.BeeHtmlTable;
+
 import java.util.Iterator;
 
 /**
@@ -42,10 +44,9 @@ public class FixedWidthGridBulkRenderer<RowType> extends
    * @param table the table
    * @return the new ghost row
    */
-  protected native Element getBulkLoadedGhostRow(HTMLTable table)
-  /*-{
-    return table.@com.butent.bee.egg.client.pst.HTMLTable::getBodyElement()(table).rows[0];
-  }-*/;
+  protected Element getBulkLoadedGhostRow(BeeHtmlTable table) {
+    return table.getRow(0);
+  }
 
   @Override
   protected void renderRows(Iterator<RowType> iterator,

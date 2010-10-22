@@ -1,227 +1,177 @@
 package com.butent.bee.egg.client.grid;
 
-import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.user.client.DOM;
+import com.google.gwt.user.client.Element;
 
-import com.butent.bee.egg.client.BeeKeeper;
-import com.butent.bee.egg.client.pst.AbstractColumnDefinition;
-import com.butent.bee.egg.client.pst.AbstractScrollTable.ColumnResizePolicy;
-import com.butent.bee.egg.client.pst.AbstractScrollTable.ResizePolicy;
-import com.butent.bee.egg.client.pst.CachedTableModel;
-import com.butent.bee.egg.client.pst.DefaultRowRenderer;
-import com.butent.bee.egg.client.pst.DefaultTableDefinition;
-import com.butent.bee.egg.client.pst.FixedWidthFlexTable;
-import com.butent.bee.egg.client.pst.FixedWidthGrid;
-import com.butent.bee.egg.client.pst.FixedWidthGridBulkRenderer;
-import com.butent.bee.egg.client.pst.MutableTableModel;
-import com.butent.bee.egg.client.pst.PagingScrollTable;
-import com.butent.bee.egg.client.pst.ScrollTable;
-import com.butent.bee.egg.client.pst.TableModel;
-import com.butent.bee.egg.client.pst.TableModelHelper.Request;
-import com.butent.bee.egg.client.pst.TableModelHelper.Response;
+import com.butent.bee.egg.client.dom.DomUtils;
 import com.butent.bee.egg.shared.Assert;
-import com.butent.bee.egg.shared.BeeConst;
-import com.butent.bee.egg.shared.data.BeeView;
-import com.butent.bee.egg.shared.data.DataUtils;
-import com.butent.bee.egg.shared.utils.BeeUtils;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
+public class BeeGrid extends BeeHtmlTable {
 
-public class BeeGrid {
+  private static native void addRows(Element table, int rows, int columns) /*-{
+     var td = $doc.createElement("td");
+     td.innerHTML = "&nbsp;";
+     var row = $doc.createElement("tr");
+     for(var cellNum = 0; cellNum < columns; cellNum++) {
+       var cell = td.cloneNode(true);
+       row.appendChild(cell);
+     }
+     table.appendChild(row);
+     for(var rowNum = 1; rowNum < rows; rowNum++) {  
+       table.appendChild(row.cloneNode(true));
+     }
+   }-*/;
 
-  private class PstColumnDefinition extends
-      AbstractColumnDefinition<Integer, String> {
-    private BeeView view;
-    private int idx;
-    private int maxDisplaySize;
+  protected int numColumns;
+  protected int numRows;
 
-    private PstColumnDefinition(BeeView view, int idx) {
-      this(view, idx, -1);
+  public BeeGrid() {
+    super();
+
+    setCellFormatter(new BeeCellFormatter());
+    setRowFormatter(new BeeRowFormatter());
+    setColumnFormatter(new BeeColumnFormatter());
+
+    setClearText("&nbsp;");
+  }
+
+  public BeeGrid(int rows, int columns) {
+    this();
+    resize(rows, columns);
+  }
+
+  @Override
+  public void createId() {
+    DomUtils.createId(this, "grid");
+  }
+
+  @Override
+  public int getCellCount(int row) {
+    return numColumns;
+  }
+
+  public int getColumnCount() {
+    return numColumns;
+  }
+
+  public int getNumColumns() {
+    return numColumns;
+  }
+
+  public int getNumRows() {
+    return numRows;
+  }
+
+  @Override
+  public int getRowCount() {
+    return numRows;
+  }
+
+  @Override
+  public int insertRow(int beforeRow) {
+    int index = super.insertRow(beforeRow);
+    numRows++;
+
+    for (int i = 0; i < numColumns; i++) {
+      insertCell(index, i);
     }
 
-    private PstColumnDefinition(BeeView view, int idx, int max) {
-      this.view = view;
-      this.idx = idx;
-      this.maxDisplaySize = max;
-    }
+    return index;
+  }
 
-    @Override
-    public String getCellValue(Integer rowValue) {
-      String v = view.getValue(rowValue, idx);
-      if (v == null) {
-        return BeeConst.STRING_EMPTY;
+  @Override
+  public void removeRow(int row) {
+    super.removeRow(row);
+    numRows--;
+  }
+
+  public void resize(int rows, int columns) {
+    resizeColumns(columns);
+    resizeRows(rows);
+  }
+
+  public void resizeColumns(int columns) {
+    if (numColumns == columns) {
+      return;
+    }
+    Assert.nonNegative(columns, "Cannot set number of columns to " + columns);
+
+    if (numColumns > columns) {
+      for (int i = 0; i < numRows; i++) {
+        for (int j = numColumns - 1; j >= columns; j--) {
+          removeCell(i, j);
+        }
       }
-      if (maxDisplaySize <= 0 || v.length() <= maxDisplaySize) {
-        return v;
-      }
-
-      return BeeUtils.clip(v, maxDisplaySize);
-    }
-
-    @Override
-    public void setCellValue(Integer rowValue, String cellValue) {
-      view.setValue(rowValue, idx, cellValue);
-    }
-  }
-
-  private class PstResponse extends Response<Integer> {
-    private Collection<Integer> rowValues = new ArrayList<Integer>();
-
-    private PstResponse(int start, int cnt, int tot) {
-      for (int i = start; i < start + cnt && i < tot; i++) {
-        this.rowValues.add(i);
-      }
-    }
-
-    @Override
-    public Iterator<Integer> getRowValues() {
-      return rowValues.iterator();
-    }
-  }
-
-  private class PstTableModel extends MutableTableModel<Integer> {
-    public void requestRows(Request request, TableModel.Callback<Integer> callback) {
-      int start = request.getStartRow();
-      int cnt = request.getNumRows();
-      
-      PstResponse resp = new PstResponse(start, cnt, getRowCount()); 
-      callback.onRowsReady(request, resp);
-    }
-
-    protected boolean onRowInserted(int beforeRow) {
-      return true;
-    }
-
-    protected boolean onRowRemoved(int row) {
-      return true;
-    }
-
-    protected boolean onSetRowValue(int row, Integer rowValue) {
-      return true;
-    }
-  }
-
-  public Widget pstGrid(Object data, Object... columns) {
-    Assert.notNull(data);
-
-    BeeView view = DataUtils.createView(data, columns);
-    Assert.notNull(view);
-
-    int c = view.getColumnCount();
-    Assert.isPositive(c);
-
-    int r = view.getRowCount();
-    if (r <= 0) {
-      BeeKeeper.getLog().warning("data view empty");
-      return null;
-    }
-
-    PstTableModel tableModel = new PstTableModel();
-    CachedTableModel<Integer> cachedTableModel = new CachedTableModel<Integer>(
-        tableModel);
-    cachedTableModel.setRowCount(r);
-
-    DefaultTableDefinition<Integer> tableDef = new DefaultTableDefinition<Integer>();
-    String[] rowColors = new String[] {"#ffffdd", "#eeeeee"};
-    tableDef.setRowRenderer(new DefaultRowRenderer<Integer>(rowColors));
-
-    String[] arr = view.getColumnNames();
-    for (int i = 0; i < c; i++) {
-      PstColumnDefinition colDef = new PstColumnDefinition(view, i, 512);
-      colDef.setHeader(0, arr[i]);
-      colDef.setFooter(0, "col " + i);
-
-      colDef.setMinimumColumnWidth(60);
-      colDef.setMaximumColumnWidth(200);
-
-      tableDef.addColumnDefinition(colDef);
-    }
-
-    PagingScrollTable<Integer> table = new PagingScrollTable<Integer>(
-        cachedTableModel, tableDef);
-    
-    FixedWidthGridBulkRenderer<Integer> bulkRenderer = new FixedWidthGridBulkRenderer<Integer>(
-        table.getDataTable(), table);
-    table.setBulkRenderer(bulkRenderer);
-
-    table.setCellPadding(3);
-    table.setCellSpacing(0);
-
-    table.setResizePolicy(ResizePolicy.UNCONSTRAINED);
-    table.setColumnResizePolicy(ColumnResizePolicy.SINGLE_CELL);
-    
-    table.setPageSize(r);
-    table.gotoFirstPage();
-
-    return table;
-  }
-
-  public Widget scrollGrid(Object data, Object... columns) {
-    Assert.notNull(data);
-
-    BeeView view = DataUtils.createView(data, columns);
-    Assert.notNull(view);
-
-    int c = view.getColumnCount();
-    Assert.isPositive(c);
-
-    int r = view.getRowCount();
-    if (r <= 0) {
-      BeeKeeper.getLog().warning("data view empty");
-      return null;
-    }
-
-    FixedWidthFlexTable headerTable = new FixedWidthFlexTable();
-    FixedWidthFlexTable footerTable = new FixedWidthFlexTable();
-    FixedWidthGrid dataTable = new FixedWidthGrid(r, c);
-
-    ScrollTable table = new ScrollTable(dataTable, headerTable);
-    table.setFooterTable(footerTable);
-
-    table.setCellPadding(3);
-    table.setCellSpacing(0);
-    table.setResizePolicy(ResizePolicy.FLOW);
-
-    String[] arr = view.getColumnNames();
-    for (int i = 0; i < c; i++) {
-      headerTable.setHTML(0, i, arr[i]);
-      footerTable.setHTML(0, i, "col " + i);
-    }
-
-    for (int i = 0; i < r; i++) {
-      for (int j = 0; j < c; j++) {
-        dataTable.setHTML(i, j, view.getValue(i, j));
+    } else {
+      for (int i = 0; i < numRows; i++) {
+        for (int j = numColumns; j < columns; j++) {
+          insertCell(i, j);
+        }
       }
     }
+    numColumns = columns;
 
-    return table;
+    getColumnFormatter().resizeColumnGroup(columns, false);
   }
 
-  public Widget simpleGrid(Object data, Object... columns) {
-    Assert.notNull(data);
-
-    BeeView view = DataUtils.createView(data, columns);
-    Assert.notNull(view);
-
-    int c = view.getColumnCount();
-    Assert.isPositive(c);
-
-    int r = view.getRowCount();
-    if (r <= 0) {
-      BeeKeeper.getLog().warning("data view empty");
-      return null;
+  public void resizeRows(int rows) {
+    if (numRows == rows) {
+      return;
     }
+    Assert.nonNegative(rows, "Cannot set number of rows to " + rows);
 
-    BeeCellTable table = new BeeCellTable(r);
-
-    String[] arr = view.getColumnNames();
-    for (int i = 0; i < c; i++) {
-      table.addColumn(new BeeTextColumn(view, i, 256), arr[i]);
+    if (numRows < rows) {
+      addRows(getBodyElement(), rows - numRows, numColumns);
+      numRows = rows;
+    } else {
+      while (numRows > rows) {
+        removeRow(numRows - 1);
+      }
     }
-    table.initData(r);
-
-    return table;
+  }
+  
+  public void setNumColumns(int numColumns) {
+    this.numColumns = numColumns;
   }
 
+  public void setNumRows(int numRows) {
+    this.numRows = numRows;
+  }
+
+  @Override
+  protected Element createCell() {
+    Element td = super.createCell();
+
+    DOM.setInnerHTML(td, "&nbsp;");
+    return td;
+  }
+
+  @Override
+  protected Element createRow() {
+    Element tr = super.createRow();
+    for (int i = 0; i < numColumns; i++) {
+      tr.appendChild(createCell());
+    }   
+    return tr;
+  }
+
+  @Override
+  protected void prepareCell(int row, int column) {
+    prepareRow(row);
+    Assert.nonNegative(column, "Cannot access a column with a negative index: " + column);
+    Assert.isTrue(column < numColumns, "Column index: " + column + ", Column size: " + numColumns);
+  }
+
+  @Override
+  protected void prepareColumn(int column) {
+    super.prepareColumn(column);
+    Assert.isTrue(column < numColumns, "Column index: " + column + ", Column size: " + numColumns);
+  }
+
+  @Override
+  protected void prepareRow(int row) {
+    Assert.nonNegative(row, "Cannot access a row with a negative index: " + row);
+    Assert.isTrue(row < numRows, "Row index: " + row + ", Row size: " + numRows);
+  }
+ 
 }

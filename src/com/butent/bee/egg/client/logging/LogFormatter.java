@@ -27,8 +27,7 @@ public class LogFormatter extends Formatter {
     if (record == null) {
       return false;
     } else {
-      return record.getLevel() == LOG_SEPARATOR_LEVEL
-          && LOG_SEPARATOR_TAG.equals(record.getMessage());
+      return LOG_SEPARATOR_TAG.equals(record.getMessage());
     }
   }
 

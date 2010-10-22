@@ -160,24 +160,24 @@ body, select {
   overflow: auto;
 }  
 
-.gwt-ScrollTable {
+.bee-ScrollTable {
   border-color: #aaa;
   border-style: solid;
   border-width: 1px 0px 1px 1px;
 }
 
-.gwt-ScrollTable .headerWrapper {
+.bee-ScrollTable .headerWrapper {
   background: activecaption;
 }
 
-.gwt-ScrollTable .footerWrapper {
+.bee-ScrollTable .footerWrapper {
   border-top: 1px solid #aaa;
   background: inactivecaption;
 }
 
-.gwt-ScrollTable .dataTable td,
-.gwt-ScrollTable .headerTable td,
-.gwt-ScrollTable .footerTable td {
+.bee-ScrollTable .dataTable td,
+.bee-ScrollTable .headerTable td,
+.bee-ScrollTable .footerTable td {
   border-color: #aaa;
   border-style: solid;
   border-width: 0px 1px 1px 0px;
@@ -185,22 +185,22 @@ body, select {
   overflow: hidden;
 }
 
-.gwt-ScrollTable .headerTable td,
-.gwt-ScrollTable .footerTable td {
+.bee-ScrollTable .headerTable td,
+.bee-ScrollTable .footerTable td {
   color: #fff;
 }
 	
-.gwt-ScrollTable .dataTable tr.highlighted {
+.bee-ScrollTable .dataTable tr.highlighted {
   background: #C3D9FF;
 }
 
-.gwt-ScrollTable .dataTable td.highlighted {
+.bee-ScrollTable .dataTable td.highlighted {
   background: #FFFFAA;
   cursor: hand;
   cursor: pointer;
 }
 
-.gwt-ScrollTable .dataTable tr.selected td {
+.bee-ScrollTable .dataTable tr.selected td {
   background: #7AA5D6;
 }
 
@@ -237,7 +237,6 @@ body, select {
   cursor: hand;
 }
 
-/** Applied to AbstractOptions */
 .AbstractOption-Label {
   font-weight: bold;
   text-align: right;

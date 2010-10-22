@@ -24,7 +24,7 @@ public class FixedWidthGrid extends SortableGrid {
     }
   }
 
-  public class FixedWidthGridColumnFormatter extends ColumnFormatter {
+  public class FixedWidthGridColumnFormatter extends BeeColumnFormatter {
     @Override
     public void setWidth(int column, String width) {
       throw new UnsupportedOperationException("setWidth is not supported.  "
@@ -129,6 +129,16 @@ public class FixedWidthGrid extends SortableGrid {
     } else {
       return colWidth.intValue();
     }
+  }
+
+  @Override
+  public int getDOMCellCount(int row) {
+    return super.getDOMCellCount(row + 1);
+  }
+
+  @Override
+  public int getDOMRowCount() {
+    return super.getDOMRowCount() - 1;
   }
 
   /**
@@ -272,16 +282,6 @@ public class FixedWidthGrid extends SortableGrid {
   public void setWidget(int row, int column, Widget widget) {
     super.setWidget(row, column, widget);
     clearIdealWidths();
-  }
-
-  @Override
-  protected int getDOMCellCount(int row) {
-    return super.getDOMCellCount(row + 1);
-  }
-
-  @Override
-  protected int getDOMRowCount() {
-    return super.getDOMRowCount() - 1;
   }
 
   protected FixedWidthGridCellFormatter getFixedWidthGridCellFormatter() {

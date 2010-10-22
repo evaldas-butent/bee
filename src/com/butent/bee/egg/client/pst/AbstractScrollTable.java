@@ -22,55 +22,13 @@ import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.Widget;
 
+import com.butent.bee.egg.client.grid.BeeHtmlTable.BeeCellFormatter;
 import com.butent.bee.egg.client.pst.ColumnResizer.ColumnWidthInfo;
-import com.butent.bee.egg.client.pst.HTMLTable.CellFormatter;
 import com.butent.bee.egg.client.pst.TableModelHelper.ColumnSortList;
 
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * <p>
- * A ScrollTable consists of a fixed header and footer (optional) that remain
- * visible and a scrollable body that contains the data.
- * </p>
- * 
- * <p>
- * In order for the columns in the header table and data table to line up, the
- * two table must have the same margin, padding, and border widths. You can use
- * CSS style sheets to manipulate the colors and styles of the cell's, but you
- * must keep the actual sizes consistent (especially with respect to the left
- * and right side of the cells).
- * </p>
- * 
- * <p>
- * NOTE: AbstractScrollTable does not resize correctly in older versions of
- * Mozilla (specifically, Linux hosted mode). In use, the PagingScrollTable will
- * expand horizontally, but it will not contract when you reduce the screen
- * size. However, the AbstractScrollTable resizes naturally (you can set width
- * in percentages) on all modern browsers including IE6+, FF2+, Safari2+,
- * Chrome, Opera 9.6.
- * </p>
- * 
- * <h3>CSS Style Rules</h3>
- * 
- * <dl>
- * <dt>.gwt-ScrollTable</dt>
- * <dd>applied to the entire widget</dd>
- * <dt>.gwt-ScrollTable .headerTable</dt>
- * <dd>applied to the header table</dd>
- * <dt>.gwt-ScrollTable .dataTable</dt>
- * <dd>applied to the data table</dd>
- * <dt>.gwt-ScrollTable .footerTable</dt>
- * <dd>applied to the footer table</dd>
- * <dt>.gwt-ScrollTable .headerWrapper</dt>
- * <dd>wrapper around the header table</dd>
- * <dt>.gwt-ScrollTable .dataWrapper</dt>
- * <dd>wrapper around the data table</dd>
- * <dt>.gwt-ScrollTable .footerWrapper</dt>
- * <dd>wrapper around the footer table</dd>
- * </dl>
- */
 public abstract class AbstractScrollTable extends ComplexPanel implements
     HasScrollHandlers, RequiresResize {
   /**
@@ -551,7 +509,7 @@ public abstract class AbstractScrollTable extends ComplexPanel implements
   /**
    * The default style name.
    */
-  public static final String DEFAULT_STYLE_NAME = "gwt-ScrollTable";
+  public static final String DEFAULT_STYLE_NAME = "bee-ScrollTable";
 
   /**
    * The resize policies related to user resizing.
@@ -887,7 +845,7 @@ public abstract class AbstractScrollTable extends ComplexPanel implements
           } else if (sortedCellIndex >= 0 && sortedRowIndex >= 0
               && headerTable.getRowCount() > sortedRowIndex
               && headerTable.getCellCount(sortedRowIndex) > sortedCellIndex) {
-            CellFormatter formatter = headerTable.getCellFormatter();
+            BeeCellFormatter formatter = headerTable.getCellFormatter();
             Element td = formatter.getElement(sortedRowIndex, sortedCellIndex);
             applySortedColumnIndicator(td, ascending);
           }

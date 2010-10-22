@@ -7,6 +7,8 @@ import com.google.gwt.dom.client.TableRowElement;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Element;
 
+import com.butent.bee.egg.client.grid.BeeHtmlTable;
+
 /**
  * Implementation class that handles common code shared between the
  * {@link FixedWidthGrid} and {@link FixedWidthFlexTable}.
@@ -31,12 +33,12 @@ class FixedWidthTableImpl {
    * Information used to calculate the ideal column widths of a table.
    */
   public static class IdealColumnWidthInfo {
-    private HTMLTable table;
+    private BeeHtmlTable table;
     private TableRowElement tr;
     private int columnCount;
     private int offset;
 
-    public IdealColumnWidthInfo(HTMLTable table, TableRowElement tr,
+    public IdealColumnWidthInfo(BeeHtmlTable table, TableRowElement tr,
         int columnCount, int offset) {
       this.table = table;
       this.tr = tr;
@@ -110,7 +112,7 @@ class FixedWidthTableImpl {
 
       // We need at least one cell to do any calculations
       int columnCount = info.columnCount;
-      HTMLTable table = info.table;
+      BeeHtmlTable table = info.table;
       if (!table.isAttached() || table.getRowCount() == 0 || columnCount < 1) {
         return new int[0];
       }
@@ -137,7 +139,7 @@ class FixedWidthTableImpl {
      * @return info used to calculate ideal column widths
      */
     public IdealColumnWidthInfo recalculateIdealColumnWidthsSetup(
-        HTMLTable table, int columnCount, int offset) {
+        BeeHtmlTable table, int columnCount, int offset) {
       // Switch to normal layout
       table.getElement().getStyle().setProperty("tableLayout", "");
 
@@ -175,88 +177,14 @@ class FixedWidthTableImpl {
      * @param width the width in pixels
      * @throws IndexOutOfBoundsException
      */
-    public void setColumnWidth(HTMLTable table, Element ghostRow, int column,
+    public void setColumnWidth(BeeHtmlTable table, Element ghostRow, int column,
         int width) {
       getGhostCell(ghostRow, column).getStyle().setPropertyPx("width", width);
     }
 
-    /**
-     * Get the body element of an {@link HTMLTable}.
-     * 
-     * @param table the table
-     * @return the body elements
-     */
-    private native Element getTableBody(HTMLTable table) /*-{
-      return table.@com.butent.bee.egg.client.pst.HTMLTable::getBodyElement()();
-    }-*/;
-  }
-
-  /**
-   * IE version of the implementation. IE sets the overall column width instead
-   * of the innerWidth, so we need to add the padding and spacing.
-   */
-  public static class ImplTrident extends Impl {
-    @Override
-    public void setColumnWidth(HTMLTable table, Element ghostRow, int column,
-        int width) {
-      width += 2 * table.getCellPadding() + table.getCellSpacing();
-      super.setColumnWidth(table, ghostRow, column, width);
+    private Element getTableBody(BeeHtmlTable table) {
+      return table.getBodyElement();
     }
   }
 
-  /**
-   * IE6 version of the implementation hides the ghost row using the display
-   * attribute.
-   */
-  public static class ImplIE6 extends ImplTrident {
-    @Override
-    public Element createGhostRow() {
-      Element ghostRow = super.createGhostRow();
-      ghostRow.getStyle().setProperty("display", "none");
-      return ghostRow;
-    }
-  }
-
-  /**
-   * IE8 version of the implementation.
-   */
-  public static class ImplIE8 extends ImplTrident {
-  }
-
-  /**
-   * Safari version of the implementation. Safari sets the overall column width
-   * instead of the innerWidth, so we need to add the padding and spacing.
-   */
-  public static class ImplSafari extends Impl {
-    @Override
-    public void setColumnWidth(HTMLTable table, Element ghostRow, int column,
-        int width) {
-      width += 2 * table.getCellPadding() + table.getCellSpacing();
-      super.setColumnWidth(table, ghostRow, column, width);
-    }
-  }
-
-  /**
-   * Opera version of the implementation refreshes the table display so the new
-   * column size takes effect. Without the display refresh, the column width
-   * doesn't update in the browser.
-   */
-  public static class ImplOpera extends Impl {
-    @Override
-    public void setColumnWidth(HTMLTable table, Element ghostRow, int column,
-        int width) {
-      super.setColumnWidth(table, ghostRow, column, width);
-      Element tableElem = table.getElement();
-      Element parentElem = DOM.getParent(tableElem);
-      int scrollLeft = 0;
-      if (parentElem != null) {
-        scrollLeft = parentElem.getScrollLeft();
-      }
-      tableElem.getStyle().setProperty("display", "none");
-      tableElem.getStyle().setProperty("display", "");
-      if (parentElem != null) {
-        parentElem.setScrollLeft(scrollLeft);
-      }
-    }
-  }
 }

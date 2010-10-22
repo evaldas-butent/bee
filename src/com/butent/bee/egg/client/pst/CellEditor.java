@@ -1,5 +1,7 @@
 package com.butent.bee.egg.client.pst;
 
+import com.butent.bee.egg.client.grid.BeeHtmlTable;
+
 /**
  * Cell editors provide a mechanism to edit cells.
  * 
@@ -46,7 +48,7 @@ public interface CellEditor<ColType> {
     /**
      * The table that triggered the editor.
      */
-    private HTMLTable table;
+    private BeeHtmlTable table;
 
     /**
      * Construct a new {@link CellEditInfo}.
@@ -55,7 +57,7 @@ public interface CellEditor<ColType> {
      * @param rowIndex the row index
      * @param cellIndex the cell index
      */
-    public CellEditInfo(HTMLTable table, int rowIndex, int cellIndex) {
+    public CellEditInfo(BeeHtmlTable table, int rowIndex, int cellIndex) {
       this.table = table;
       this.rowIndex = rowIndex;
       this.cellIndex = cellIndex;
@@ -78,7 +80,7 @@ public interface CellEditor<ColType> {
     /**
      * @return the table that opened the editor
      */
-    public HTMLTable getTable() {
+    public BeeHtmlTable getTable() {
       return table;
     }
   }

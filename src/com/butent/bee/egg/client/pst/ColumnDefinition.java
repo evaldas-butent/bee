@@ -43,57 +43,6 @@ public interface ColumnDefinition<RowType, ColType> {
   <P extends ColumnProperty> P getColumnProperty(ColumnProperty.Type<P> type);
 
   /**
-   * Get the maximum width of the column. A return value of -1 indicates that
-   * the column has no maximum width, but the consumer of the data may impose
-   * one anyway.
-   * 
-   * @return the maximum allowable width of the column
-   * @deprecated use {@link #getColumnProperty(ColumnProperty.Type)} with the
-   *             {@link com.google.gwt.gen2.table.client.property.MaximumWidthProperty}
-   *             instead
-   */
-  @Deprecated
-  int getMaximumColumnWidth();
-
-  /**
-   * Get the minimum width of the column. A return value of -1 indicates that
-   * the column has no minimum width, but the consumer of the data may impose
-   * one anyway.
-   * 
-   * @return the minimum allowable width of the column
-   * @deprecated use {@link #getColumnProperty(ColumnProperty.Type)} with the
-   *             {@link com.google.gwt.gen2.table.client.property.MinimumWidthProperty}
-   *             instead
-   */
-  @Deprecated
-  int getMinimumColumnWidth();
-
-  /**
-   * Returns the preferred width of the column in pixels. Views should respect
-   * the preferred column width and attempt to size the column to its preferred
-   * width. If the column must be resized, the preferred width should serve as a
-   * weight relative to the preferred widths of other ColumnDefinitions.
-   * 
-   * @return the preferred width of the column
-   * @deprecated use {@link #getColumnProperty(ColumnProperty.Type)} with the
-   *             {@link com.google.gwt.gen2.table.client.property.PreferredWidthProperty}
-   *             instead
-   */
-  @Deprecated
-  int getPreferredColumnWidth();
-
-  /**
-   * Returns true if the column is sortable, false if it is not.
-   * 
-   * @return true if the column is sortable, false if it is not sortable
-   * @deprecated use {@link #getColumnProperty(ColumnProperty.Type)} with the
-   *             {@link com.google.gwt.gen2.table.client.property.SortableProperty}
-   *             instead
-   */
-  @Deprecated
-  boolean isColumnSortable();
-
-  /**
    * Set the value of this column in the row value.
    * 
    * @param rowValue the value of the row

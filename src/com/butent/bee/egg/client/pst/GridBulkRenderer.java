@@ -1,5 +1,7 @@
 package com.butent.bee.egg.client.pst;
 
+import com.butent.bee.egg.client.grid.BeeGrid;
+
 /**
  * Allows bulk rendering of {@link Grid}s.
  * <p>
@@ -15,7 +17,7 @@ public class GridBulkRenderer<RowType> extends TableBulkRenderer<RowType> {
    * @param grid {@link Grid} to be be bulk rendered
    * @param tableDef the table definition that should be used during rendering
    */
-  public GridBulkRenderer(Grid grid, TableDefinition<RowType> tableDef) {
+  public GridBulkRenderer(BeeGrid grid, TableDefinition<RowType> tableDef) {
     super(grid, tableDef);
     init(grid);
   }
@@ -26,7 +28,7 @@ public class GridBulkRenderer<RowType> extends TableBulkRenderer<RowType> {
    * @param grid {@link Grid} to be be bulk rendered
    * @param sourceTableDef the external source of the table definition
    */
-  public GridBulkRenderer(Grid grid, HasTableDefinition<RowType> sourceTableDef) {
+  public GridBulkRenderer(BeeGrid grid, HasTableDefinition<RowType> sourceTableDef) {
     super(grid, sourceTableDef);
     init(grid);
   }
@@ -34,24 +36,21 @@ public class GridBulkRenderer<RowType> extends TableBulkRenderer<RowType> {
   @Override
   protected void renderRows(String rawHTMLTable) {
     super.renderRows(rawHTMLTable);
-    setGridDimensions((Grid) getTable());
+    setGridDimensions((BeeGrid) getTable());
   }
 
-  /**
-   * Short term hack to set protected row and columns.
-   */
-  native void setGridDimensions(Grid table) /*-{
-    var numRows =  table.@com.butent.bee.egg.client.pst.HTMLTable::getDOMRowCount()();
-    table.@com.butent.bee.egg.client.pst.Grid::numRows = numRows;
-    var cellCount = 0;
-    if (numRows > 0) {
-      cellCount =
-        table.@com.butent.bee.egg.client.pst.HTMLTable::getDOMCellCount(I)(0);
-    }
-    table.@com.butent.bee.egg.client.pst.Grid::numColumns = cellCount;
-  }-*/;
+  void setGridDimensions(BeeGrid table) {
+    int numRows = table.getDOMRowCount();
+    table.setNumRows(numRows);
 
-  private void init(Grid grid) {
+    int cellCount = 0;
+    if (numRows > 0) {
+      cellCount = table.getDOMCellCount(0);
+    }
+    table.setNumColumns(cellCount);
+  }
+
+  private void init(BeeGrid grid) {
     if (grid instanceof FixedWidthGrid
         && (!(this instanceof FixedWidthGridBulkRenderer))) {
       throw new UnsupportedOperationException(

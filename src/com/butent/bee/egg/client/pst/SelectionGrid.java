@@ -7,6 +7,7 @@ import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Window;
 
+import com.butent.bee.egg.client.grid.BeeGrid;
 import com.butent.bee.egg.client.pst.TableEvent.Row;
 
 import java.util.HashMap;
@@ -30,13 +31,13 @@ import java.util.TreeSet;
  * 
  * </ul>
  */
-public class SelectionGrid extends Grid implements HasRowHighlightHandlers,
+public class SelectionGrid extends BeeGrid implements HasRowHighlightHandlers,
     HasRowUnhighlightHandlers, HasCellHighlightHandlers,
     HasCellUnhighlightHandlers, HasRowSelectionHandlers {
   /**
    * This class contains methods used to format a table's cells.
    */
-  public class SelectionGridCellFormatter extends CellFormatter {
+  public class SelectionGridCellFormatter extends BeeCellFormatter {
     @Override
     protected Element getRawElement(int row, int column) {
       if (selectionPolicy.hasInputColumn()) {
@@ -49,7 +50,7 @@ public class SelectionGrid extends Grid implements HasRowHighlightHandlers,
   /**
    * This class contains methods used to format a table's rows.
    */
-  public class SelectionGridRowFormatter extends RowFormatter {
+  public class SelectionGridRowFormatter extends BeeRowFormatter {
     @Override
     protected Element getRawElement(int row) {
       return super.getRawElement(row);
@@ -203,6 +204,15 @@ public class SelectionGrid extends Grid implements HasRowHighlightHandlers,
    */
   public void deselectRow(int row) {
     deselectRow(row, true);
+  }
+
+  @Override
+  public int getDOMCellCount(int row) {
+    int count = super.getDOMCellCount(row);
+    if (getSelectionPolicy().hasInputColumn()) {
+      count--;
+    }
+    return count;
   }
 
   /**
@@ -376,7 +386,7 @@ public class SelectionGrid extends Grid implements HasRowHighlightHandlers,
     Set<Row> oldRowSet = getSelectedRowsSet();
 
     // Select all rows
-    RowFormatter rowFormatter = getRowFormatter();
+    BeeRowFormatter rowFormatter = getRowFormatter();
     int rowCount = getRowCount();
     for (int i = 0; i < rowCount; i++) {
       if (!selectedRows.containsKey(i)) {
@@ -450,6 +460,14 @@ public class SelectionGrid extends Grid implements HasRowHighlightHandlers,
       selectRow(row, formatter.getRawElement(row), false, false);
       lastSelectedRowIndex = row;
       fireRowSelectionEvent(oldRowList);
+    }
+  }
+
+  @Override
+  public void setBodyElement(Element element) {
+    super.setBodyElement(element);
+    if (!selectionEnabled) {
+      setSelectionEnabled(selectionEnabled);
     }
   }
 
@@ -615,15 +633,6 @@ public class SelectionGrid extends Grid implements HasRowHighlightHandlers,
     return index;
   }
 
-  @Override
-  protected int getDOMCellCount(int row) {
-    int count = super.getDOMCellCount(row);
-    if (getSelectionPolicy().hasInputColumn()) {
-      count--;
-    }
-    return count;
-  }
-
   /**
    * Get the html used to create the native input selection element.
    * 
@@ -753,14 +762,6 @@ public class SelectionGrid extends Grid implements HasRowHighlightHandlers,
     // Fire grid listeners
     if (fireEvent) {
       fireRowSelectionEvent(oldRowSet);
-    }
-  }
-
-  @Override
-  protected void setBodyElement(Element element) {
-    super.setBodyElement(element);
-    if (!selectionEnabled) {
-      setSelectionEnabled(selectionEnabled);
     }
   }
 
