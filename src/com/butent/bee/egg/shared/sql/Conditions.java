@@ -19,26 +19,25 @@ public abstract class Conditions implements Condition {
 
   // Implementations ----------------------------------------------------------
   @Override
-  public String getCondition(SqlBuilder builder, boolean queryMode) {
+  public String getCondition(SqlBuilder builder, boolean paramMode) {
     StringBuilder clause = new StringBuilder();
-    String join = joinMode();
 
     for (int i = 0; i < conditionList.size(); i++) {
       Condition cond = conditionList.get(i);
       if (i > 0) {
-        clause.append(join);
+        clause.append(joinMode());
       }
-      clause.append(cond.getCondition(builder, queryMode));
+      clause.append(cond.getCondition(builder, paramMode));
     }
     return clause.toString();
   }
 
   @Override
-  public List<Object> getQueryParameters() {
+  public List<Object> getParameters() {
     List<Object> param = null;
 
     for (Condition cond : conditionList) {
-      List<Object> cList = cond.getQueryParameters();
+      List<Object> cList = cond.getParameters();
 
       if (!BeeUtils.isEmpty(cList)) {
         if (!BeeUtils.isEmpty(cList)) {

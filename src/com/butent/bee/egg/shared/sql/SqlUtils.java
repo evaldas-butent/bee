@@ -53,13 +53,13 @@ public class SqlUtils {
     return sb.toString();
   }
 
-  public static Condition in(String src, String fld, QueryBuilder query) {
+  public static Condition in(String src, String fld, SqlSelect query) {
     return new JoinCondition(fields(src, fld), IN, query);
   }
 
   public static Condition in(String src, String fld, String dst, String dFld,
       Condition clause) {
-    QueryBuilder query = new QueryBuilder();
+    SqlSelect query = new SqlSelect();
     query.addDistinct(dst, dFld).addFrom(dst).setWhere(clause);
 
     return in(src, fld, query);

@@ -2,7 +2,7 @@ package com.butent.bee.egg.shared.sql;
 
 class FromList extends FromSingle {
 
-  public FromList(QueryBuilder source, String alias) {
+  public FromList(SqlSelect source, String alias) {
     super(source, alias);
   }
 

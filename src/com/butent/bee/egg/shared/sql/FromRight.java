@@ -2,7 +2,7 @@ package com.butent.bee.egg.shared.sql;
 
 class FromRight extends FromJoin {
 
-  public FromRight(QueryBuilder source, String alias, Condition on) {
+  public FromRight(SqlSelect source, String alias, Condition on) {
     super(source, alias, on);
   }
 

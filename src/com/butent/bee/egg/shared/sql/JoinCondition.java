@@ -12,7 +12,7 @@ class JoinCondition implements Condition {
   private String operator;
   private Object rightExpression;
 
-  public JoinCondition(String left, String op, QueryBuilder right) {
+  public JoinCondition(String left, String op, SqlSelect right) {
     this(left, op);
 
     Assert.notNull(right);
@@ -38,22 +38,24 @@ class JoinCondition implements Condition {
   }
 
   @Override
-  public String getCondition(SqlBuilder builder, boolean queryMode) {
+  public String getCondition(SqlBuilder builder, boolean paramMode) {
     String cond = leftExpression + operator;
     Object expr = rightExpression;
 
-    if (expr instanceof QueryBuilder) {
-      expr = "(" + ((QueryBuilder) expr).getQuery(builder, queryMode) + ")";
+    if (expr instanceof SqlSelect) {
+      expr = "(" + ((SqlSelect) expr).getQuery(builder, paramMode) + ")";
+    } else {
+      expr = BeeUtils.transform(expr);
     }
     return cond + expr;
   }
 
   @Override
-  public List<Object> getQueryParameters() {
+  public List<Object> getParameters() {
     List<Object> paramList = null;
 
-    if (rightExpression instanceof QueryBuilder) {
-      Map<Integer, Object> paramMap = ((QueryBuilder) rightExpression).getParameters(true);
+    if (rightExpression instanceof SqlSelect) {
+      Map<Integer, Object> paramMap = ((SqlSelect) rightExpression).getParameters();
 
       if (!BeeUtils.isEmpty(paramMap)) {
         paramList = new ArrayList<Object>(paramMap.size());

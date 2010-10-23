@@ -49,7 +49,7 @@ public class GridService extends CompositeService {
         BeeKeeper.getRpc().makePostRequest(
             appendId("rpc_ui_grid"),
             BeeXml.createString(BeeService.XML_TAG_DATA, "grid_name",
-                grd.replaceFirst("[,].*", "").replaceAll("[\\[\\]\"]", "'")));
+                grd.replaceFirst("['\\[\"](\\w+)['\\]\"][,].*", "$1")));
         break;
 
       case SHOW_GRID:

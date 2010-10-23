@@ -7,11 +7,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 class ExpressionCondition implements Condition {
-  private String expression;
+  private Object expression;
   private String operator;
   private Object value;
 
-  public ExpressionCondition(String expr, String op, Object val) {
+  public ExpressionCondition(Object expr, String op, Object val) {
     Assert.notEmpty(expr);
     Assert.notEmpty(op);
 
@@ -21,13 +21,22 @@ class ExpressionCondition implements Condition {
   }
 
   @Override
-  public String getCondition(SqlBuilder builder, boolean queryMode) {
-    return expression + operator
-        + (queryMode ? "?" : BeeUtils.transform(value));
+  public String getCondition(SqlBuilder builder, boolean paramMode) {
+    StringBuilder s = new StringBuilder();
+
+    if (expression instanceof Expression) {
+      s.append(((Expression) expression).getExpression(builder));
+    } else {
+      s.append(BeeUtils.transform(expression));
+    }
+
+    s.append(operator).append(paramMode ? "?" : builder.sqlTransform(value));
+
+    return s.toString();
   }
 
   @Override
-  public List<Object> getQueryParameters() {
+  public List<Object> getParameters() {
     List<Object> param = new ArrayList<Object>(1);
     param.add(value);
     return param;

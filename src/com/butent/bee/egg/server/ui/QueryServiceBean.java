@@ -1,9 +1,9 @@
 package com.butent.bee.egg.server.ui;
 
 import com.butent.bee.egg.server.DataSourceBean;
+import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeConst;
-import com.butent.bee.egg.shared.sql.QueryBuilder;
-import com.butent.bee.egg.shared.utils.BeeUtils;
+import com.butent.bee.egg.shared.sql.SqlSelect;
 import com.butent.bee.egg.shared.utils.LogUtils;
 
 import java.sql.Connection;
@@ -28,22 +28,18 @@ public class QueryServiceBean {
 
   private static Logger logger = Logger.getLogger(QueryServiceBean.class.getName());
 
-  // @PersistenceContext
-  // EntityManager em;
   DataSource ds = null;
   @EJB
   DataSourceBean dsb;
 
-  public List<Object[]> getQueryData(QueryBuilder qb) {
-    if (!BeeUtils.isEmpty(qb)) {
-      return processSQL(qb.getQuery());
-    }
-    return null;
+  public List<Object[]> getQueryData(SqlSelect ss) {
+    Assert.notNull(ss);
+    Assert.state(!ss.isEmpty());
+
+    return processSQL(ss.getQuery());
   }
 
   public List<Object[]> processSQL(String sql) {
-    LogUtils.info(logger, sql);
-
     if (ds == null) {
       ds = dsb.locateDs(BeeConst.MYSQL).getDs();
     }

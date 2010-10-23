@@ -1,6 +1,6 @@
 package com.butent.bee.egg.shared.sql;
 
-public class MySqlBuilder extends SqlBuilder {
+class MySqlBuilder extends SqlBuilder {
 
   @Override
   protected String parseQuotes(String query) {

@@ -2,7 +2,7 @@ package com.butent.bee.egg.shared.sql;
 
 class FromInner extends FromJoin {
 
-  public FromInner(QueryBuilder source, String alias, Condition on) {
+  public FromInner(SqlSelect source, String alias, Condition on) {
     super(source, alias, on);
   }
 

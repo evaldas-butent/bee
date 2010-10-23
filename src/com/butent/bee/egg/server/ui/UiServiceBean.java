@@ -6,7 +6,7 @@ import com.butent.bee.egg.server.http.RequestInfo;
 import com.butent.bee.egg.server.utils.XmlUtils;
 import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.data.BeeColumn;
-import com.butent.bee.egg.shared.sql.QueryBuilder;
+import com.butent.bee.egg.shared.sql.SqlSelect;
 import com.butent.bee.egg.shared.sql.SqlUtils;
 import com.butent.bee.egg.shared.ui.UiComponent;
 import com.butent.bee.egg.shared.utils.BeeUtils;
@@ -36,7 +36,7 @@ public class UiServiceBean {
     if (svc.equals("rpc_ui_form")) {
       formInfo(reqInfo, buff);
     } else if (svc.equals("rpc_ui_form_list")) {
-      formList(reqInfo, buff);
+      formList(buff);
     } else if (svc.equals("rpc_ui_menu")) {
       menuInfo(reqInfo, buff);
     } else if (svc.equals("rpc_ui_grid")) {
@@ -62,17 +62,17 @@ public class UiServiceBean {
     }
   }
 
-  private void formList(RequestInfo reqInfo, ResponseBuffer buff) {
-    QueryBuilder qb = new QueryBuilder();
-    qb.addFields("f", "form").addFrom("forms", "f").addOrder(
+  private void formList(ResponseBuffer buff) {
+    SqlSelect ss = new SqlSelect();
+    ss.addFields("f", "form").addFrom("forms", "f").addOrder(
         SqlUtils.fields("f", "form"));
 
-    List<Object[]> res = qs.getQueryData(qb);
+    List<Object[]> res = qs.getQueryData(ss);
     if (res == null) {
       return;
     }
 
-    for (String alias : qb.getFieldAliases()) {
+    for (String alias : ss.getFieldAliases()) {
       buff.addColumn(new BeeColumn(alias));
     }
     for (Object[] row : res) {
@@ -100,42 +100,45 @@ public class UiServiceBean {
 
   private void gridInfo(RequestInfo reqInfo, ResponseBuffer buff) {
     String gName = getXmlField(reqInfo, buff, "grid_name");
-
-    QueryBuilder qb = new QueryBuilder();
-    qb.addFields("g", "properties").addFrom("grids", "g").setWhere(
-        SqlUtils.equal("g", "table", gName));
-
-    List<Object[]> data = qs.getQueryData(qb);
-    String x = (String) data.get(0)[0];
     String grd = gName;
 
-    if (!BeeUtils.isEmpty(x) && x.contains("parent_table")) {
-      grd = x.replaceFirst("(?s).*parent_table\\s*=\\s*[\\[\"']", "").replaceFirst(
-          "(?s)[\\]\"'].*$", "");
-      grd = "'" + grd + "'";
-    }
+    SqlSelect ss = new SqlSelect();
+    ss.addFields("g", "properties").addFrom("grids", "g").setWhere(
+        SqlUtils.equal("g", "table", gName));
 
-    qb = new QueryBuilder();
-    qb.addFields("c", "field", "caption").addFrom("columns", "c").setWhere(
-        SqlUtils.equal("c", "table", grd)).addOrder(
-        SqlUtils.fields("c", "order"));
+    List<Object[]> data = qs.getQueryData(ss);
 
-    List<Object[]> cols = qs.getQueryData(qb);
+    if (!BeeUtils.isEmpty(data)) {
+      String x = (String) data.get(0)[0];
 
-    if (BeeUtils.isEmpty(cols)) {
-      String msg = "Grid name not recognized: " + grd;
-      logger.warning(msg);
-      buff.add(msg);
-    } else {
-      for (Object[] col : cols) {
-        buff.addColumn(new BeeColumn(((String) col[1]).replaceAll("['\"]", "")));
+      if (!BeeUtils.isEmpty(x) && x.contains("parent_table")) {
+        grd = x.replaceFirst(
+            "^((?s).)*parent_table\\s*=\\s*[\\[\"'](.+)[\\]\"']((?s).)*$", "$2");
       }
-      for (int i = 0; i < 20; i++) {
-        for (int j = 0; j < cols.size(); j++) {
-          buff.add(j == 0 ? i + 1 : BeeConst.STRING_EMPTY);
+
+      ss = new SqlSelect();
+      ss.addFields("c", "field", "caption").addFrom("columns", "c").setWhere(
+          SqlUtils.equal("c", "table", grd)).addOrder(
+          SqlUtils.fields("c", "order"));
+
+      List<Object[]> cols = qs.getQueryData(ss);
+
+      if (!BeeUtils.isEmpty(cols)) {
+        for (Object[] col : cols) {
+          buff.addColumn(new BeeColumn(
+              ((String) col[1]).replaceAll("['\"]", "")));
         }
+        for (int i = 0; i < 20; i++) {
+          for (int j = 0; j < cols.size(); j++) {
+            buff.add(j == 0 ? i + 1 : BeeConst.STRING_EMPTY);
+          }
+        }
+        return;
       }
     }
+    String msg = "Grid name not recognized: " + grd;
+    logger.warning(msg);
+    buff.add(msg);
   }
 
   private void menuInfo(RequestInfo reqInfo, ResponseBuffer buff) {

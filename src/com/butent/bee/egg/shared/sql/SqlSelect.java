@@ -9,17 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class QueryBuilder {
-
-  private static SqlBuilder sqlBuilder;
-
-  static {
-    setSqlBuilder(new SqlBuilder());
-  }
-
-  public static void setSqlBuilder(SqlBuilder builder) {
-    sqlBuilder = builder;
-  }
+public class SqlSelect extends SqlQuery {
 
   private List<Map<String, String>> fieldList = new ArrayList<Map<String, String>>();
   private List<FromSource> fromList = new ArrayList<FromSource>();
@@ -27,47 +17,46 @@ public class QueryBuilder {
   private List<String> groupList;
   private List<Map<String, Object>> orderList;
   private Condition havingClause;
-  private List<QueryBuilder> unionList;
+  private List<SqlSelect> unionList;
 
-  private boolean queryConditionMode;
   private String unionMode;
 
   // Constructors -----------------------------------------------------------
-  public QueryBuilder() {
-    setQueryConditionMode(false);
+  public SqlSelect() {
+    setParamMode(false);
     setUnionAllMode(true);
   }
 
-  public QueryBuilder(QueryBuilder qb) {
-    fieldList = new ArrayList<Map<String, String>>(qb.fieldList);
-    Collections.copy(fieldList, qb.fieldList);
+  public SqlSelect(SqlSelect ss) {
+    fieldList = new ArrayList<Map<String, String>>(ss.fieldList);
+    Collections.copy(fieldList, ss.fieldList);
 
-    fromList = new ArrayList<FromSource>(qb.fromList);
-    Collections.copy(fromList, qb.fromList);
+    fromList = new ArrayList<FromSource>(ss.fromList);
+    Collections.copy(fromList, ss.fromList);
 
-    if (!BeeUtils.isEmpty(qb.whereClause)) {
-      whereClause = qb.whereClause;
+    if (!BeeUtils.isEmpty(ss.whereClause)) {
+      whereClause = ss.whereClause;
     }
-    if (!BeeUtils.isEmpty(qb.groupList)) {
-      groupList = new ArrayList<String>(qb.groupList);
-      Collections.copy(groupList, qb.groupList);
+    if (!BeeUtils.isEmpty(ss.groupList)) {
+      groupList = new ArrayList<String>(ss.groupList);
+      Collections.copy(groupList, ss.groupList);
     }
-    if (!BeeUtils.isEmpty(qb.orderList)) {
-      orderList = new ArrayList<Map<String, Object>>(qb.orderList);
-      Collections.copy(orderList, qb.orderList);
+    if (!BeeUtils.isEmpty(ss.orderList)) {
+      orderList = new ArrayList<Map<String, Object>>(ss.orderList);
+      Collections.copy(orderList, ss.orderList);
     }
-    if (!BeeUtils.isEmpty(qb.havingClause)) {
-      havingClause = qb.havingClause;
+    if (!BeeUtils.isEmpty(ss.havingClause)) {
+      havingClause = ss.havingClause;
     }
-    if (!BeeUtils.isEmpty(qb.unionList)) {
-      unionList = new ArrayList<QueryBuilder>(qb.unionList);
-      Collections.copy(unionList, qb.unionList);
+    if (!BeeUtils.isEmpty(ss.unionList)) {
+      unionList = new ArrayList<SqlSelect>(ss.unionList);
+      Collections.copy(unionList, ss.unionList);
     }
-    queryConditionMode = qb.queryConditionMode;
-    unionMode = qb.unionMode;
+    setParamMode(ss.getParamMode());
+    unionMode = ss.unionMode;
   }
 
-  public QueryBuilder addAvg(String expr, String alias) {
+  public SqlSelect addAvg(String expr, String alias) {
     Assert.notEmpty(expr);
     Assert.notEmpty(alias);
 
@@ -75,11 +64,11 @@ public class QueryBuilder {
     return this;
   }
 
-  public QueryBuilder addAvg(String source, String field, String alias) {
+  public SqlSelect addAvg(String source, String field, String alias) {
     return addAvg(SqlUtils.fields(source, field), alias);
   }
 
-  public QueryBuilder addConstant(Object constant, String alias) {
+  public SqlSelect addConstant(Object constant, String alias) {
     Assert.notNull(constant);
     Assert.notEmpty(alias);
 
@@ -87,11 +76,11 @@ public class QueryBuilder {
     return this;
   }
 
-  public QueryBuilder addCount(String alias) {
+  public SqlSelect addCount(String alias) {
     return addCount(null, alias);
   }
 
-  public QueryBuilder addCount(String expr, String alias) {
+  public SqlSelect addCount(String expr, String alias) {
     Assert.notEmpty(alias);
 
     String xpr;
@@ -104,7 +93,7 @@ public class QueryBuilder {
     return this;
   }
 
-  public QueryBuilder addDistinct(String source, String field) {
+  public SqlSelect addDistinct(String source, String field) {
     Assert.notEmpty(source);
     Assert.notEmpty(field);
 
@@ -112,7 +101,7 @@ public class QueryBuilder {
     return this;
   }
 
-  public QueryBuilder addExpr(String expr, String alias) {
+  public SqlSelect addExpr(String expr, String alias) {
     Assert.notEmpty(expr);
     Assert.notEmpty(alias);
 
@@ -120,7 +109,7 @@ public class QueryBuilder {
     return this;
   }
 
-  public QueryBuilder addField(String source, String field, String alias) {
+  public SqlSelect addField(String source, String field, String alias) {
     Assert.notEmpty(source);
     Assert.notEmpty(field);
 
@@ -128,7 +117,7 @@ public class QueryBuilder {
     return this;
   }
 
-  public QueryBuilder addFields(String source, String... fields) {
+  public SqlSelect addFields(String source, String... fields) {
     Assert.notEmpty(source);
     Assert.noNulls((Object[]) fields);
 
@@ -141,7 +130,7 @@ public class QueryBuilder {
     return this;
   }
 
-  public QueryBuilder addFrom(QueryBuilder source, String alias) {
+  public SqlSelect addFrom(SqlSelect source, String alias) {
     if (BeeUtils.isEmpty(fromList)) {
       addFrom(new FromSingle(source, alias));
     } else {
@@ -150,12 +139,12 @@ public class QueryBuilder {
     return this;
   }
 
-  public QueryBuilder addFrom(String source) {
+  public SqlSelect addFrom(String source) {
     addFrom(source, null);
     return this;
   }
 
-  public QueryBuilder addFrom(String source, String alias) {
+  public SqlSelect addFrom(String source, String alias) {
     if (BeeUtils.isEmpty(fromList)) {
       addFrom(new FromSingle(source, alias));
     } else {
@@ -164,88 +153,84 @@ public class QueryBuilder {
     return this;
   }
 
-  public QueryBuilder addFromFull(QueryBuilder source, String alias,
-      Condition on) {
+  public SqlSelect addFromFull(SqlSelect source, String alias, Condition on) {
     Assert.notEmpty(fromList, "Wrong first FROM source");
 
     addFrom(new FromFull(source, alias, on));
     return this;
   }
 
-  public QueryBuilder addFromFull(String source, Condition on) {
+  public SqlSelect addFromFull(String source, Condition on) {
     Assert.notEmpty(fromList, "Wrong first FROM source");
 
     addFromFull(source, null, on);
     return this;
   }
 
-  public QueryBuilder addFromFull(String source, String alias, Condition on) {
+  public SqlSelect addFromFull(String source, String alias, Condition on) {
     Assert.notEmpty(fromList, "Wrong first FROM source");
 
     addFrom(new FromFull(source, alias, on));
     return this;
   }
 
-  public QueryBuilder addFromInner(QueryBuilder source, String alias,
-      Condition on) {
+  public SqlSelect addFromInner(SqlSelect source, String alias, Condition on) {
     Assert.notEmpty(fromList, "Wrong first FROM source");
 
     addFrom(new FromInner(source, alias, on));
     return this;
   }
 
-  public QueryBuilder addFromInner(String source, Condition on) {
+  public SqlSelect addFromInner(String source, Condition on) {
     Assert.notEmpty(fromList, "Wrong first FROM source");
 
     addFromInner(source, null, on);
     return this;
   }
 
-  public QueryBuilder addFromInner(String source, String alias, Condition on) {
+  public SqlSelect addFromInner(String source, String alias, Condition on) {
     Assert.notEmpty(fromList, "Wrong first FROM source");
 
     addFrom(new FromInner(source, alias, on));
     return this;
   }
 
-  public QueryBuilder addFromLeft(QueryBuilder source, String alias,
-      Condition on) {
+  public SqlSelect addFromLeft(SqlSelect source, String alias, Condition on) {
     Assert.notEmpty(fromList, "Wrong first FROM source");
 
     addFrom(new FromLeft(source, alias, on));
     return this;
   }
 
-  public QueryBuilder addFromLeft(String source, Condition on) {
+  public SqlSelect addFromLeft(String source, Condition on) {
     Assert.notEmpty(fromList, "Wrong first FROM source");
 
     addFromLeft(source, null, on);
     return this;
   }
 
-  public QueryBuilder addFromLeft(String source, String alias, Condition on) {
+  public SqlSelect addFromLeft(String source, String alias, Condition on) {
     Assert.notEmpty(fromList, "Wrong first FROM source");
 
     addFrom(new FromLeft(source, alias, on));
     return this;
   }
 
-  public QueryBuilder addFromRight(QueryBuilder source, String alias,
-      Condition on) {
+  public SqlSelect addFromRight(SqlSelect source, String alias, Condition on) {
     Assert.notEmpty(fromList, "Wrong first FROM source");
 
     addFrom(new FromRight(source, alias, on));
     return this;
   }
 
-  public QueryBuilder addFromRight(String source, Condition on) {
+  public SqlSelect addFromRight(String source, Condition on) {
     Assert.notEmpty(fromList, "Wrong first FROM source");
 
     addFromRight(source, null, on);
     return this;
   }
 
-  public QueryBuilder addFromRight(String source, String alias, Condition on) {
+  public SqlSelect addFromRight(String source, String alias, Condition on) {
     Assert.notEmpty(fromList, "Wrong first FROM source");
 
     addFrom(new FromRight(source, alias, on));
@@ -253,7 +238,7 @@ public class QueryBuilder {
   }
 
   // Group ------------------------------------------------------------------
-  public QueryBuilder addGroup(String... group) {
+  public SqlSelect addGroup(String... group) {
     Assert.noNulls((Object[]) group);
 
     if (BeeUtils.isEmpty(groupList)) {
@@ -267,7 +252,7 @@ public class QueryBuilder {
     return this;
   }
 
-  public QueryBuilder addMax(String expr, String alias) {
+  public SqlSelect addMax(String expr, String alias) {
     Assert.notEmpty(expr);
     Assert.notEmpty(alias);
 
@@ -275,11 +260,11 @@ public class QueryBuilder {
     return this;
   }
 
-  public QueryBuilder addMax(String source, String field, String alias) {
+  public SqlSelect addMax(String source, String field, String alias) {
     return addMax(SqlUtils.fields(source, field), alias);
   }
 
-  public QueryBuilder addMin(String expr, String alias) {
+  public SqlSelect addMin(String expr, String alias) {
     Assert.notEmpty(expr);
     Assert.notEmpty(alias);
 
@@ -287,11 +272,11 @@ public class QueryBuilder {
     return this;
   }
 
-  public QueryBuilder addMin(String source, String field, String alias) {
+  public SqlSelect addMin(String source, String field, String alias) {
     return addMin(SqlUtils.fields(source, field), alias);
   }
 
-  public QueryBuilder addOrder(String... order) {
+  public SqlSelect addOrder(String... order) {
     Assert.noNulls((Object[]) order);
 
     for (String ord : order) {
@@ -302,7 +287,7 @@ public class QueryBuilder {
     return this;
   }
 
-  public QueryBuilder addOrderDesc(String... order) {
+  public SqlSelect addOrderDesc(String... order) {
     Assert.noNulls((Object[]) order);
 
     for (String ord : order) {
@@ -313,7 +298,7 @@ public class QueryBuilder {
     return this;
   }
 
-  public QueryBuilder addSum(String expr, String alias) {
+  public SqlSelect addSum(String expr, String alias) {
     Assert.notEmpty(expr);
     Assert.notEmpty(alias);
 
@@ -321,18 +306,18 @@ public class QueryBuilder {
     return this;
   }
 
-  public QueryBuilder addSum(String source, String field, String alias) {
+  public SqlSelect addSum(String source, String field, String alias) {
     return addSum(SqlUtils.fields(source, field), alias);
   }
 
   // Union ------------------------------------------------------------------
-  public QueryBuilder addUnion(QueryBuilder... union) {
+  public SqlSelect addUnion(SqlSelect... union) {
     Assert.noNulls((Object[]) union);
 
     if (BeeUtils.isEmpty(unionList)) {
-      this.unionList = new ArrayList<QueryBuilder>();
+      this.unionList = new ArrayList<SqlSelect>();
     }
-    for (QueryBuilder un : union) {
+    for (SqlSelect un : union) {
       if (!un.isEmpty()) {
         this.unionList.add(un);
       }
@@ -384,32 +369,25 @@ public class QueryBuilder {
     return orderList;
   }
 
+  @Override
   public Map<Integer, Object> getParameters() {
-    return getParameters(queryConditionMode);
-  }
-
-  public Map<Integer, Object> getParameters(boolean queryMode) {
-    if (!queryMode) {
-      return null;
-    }
     Map<Integer, Object> params = new HashMap<Integer, Object>();
     Integer paramIndex = 0;
 
     for (FromSource from : fromList) {
-      paramIndex = conditionParameters(from.getQueryParameters(), paramIndex,
-          params);
+      paramIndex = conditionParameters(from.getParameters(), paramIndex, params);
     }
     if (!BeeUtils.isEmpty(whereClause)) {
-      paramIndex = conditionParameters(whereClause.getQueryParameters(),
-          paramIndex, params);
+      paramIndex = conditionParameters(whereClause.getParameters(), paramIndex,
+          params);
     }
     if (!BeeUtils.isEmpty(havingClause)) {
-      paramIndex = conditionParameters(havingClause.getQueryParameters(),
+      paramIndex = conditionParameters(havingClause.getParameters(),
           paramIndex, params);
     }
     if (!BeeUtils.isEmpty(unionList)) {
-      for (QueryBuilder union : unionList) {
-        Map<Integer, Object> paramMap = union.getParameters(true);
+      for (SqlSelect union : unionList) {
+        Map<Integer, Object> paramMap = union.getParameters();
 
         if (!BeeUtils.isEmpty(paramMap)) {
           for (int i = 0; i < paramMap.size(); i++) {
@@ -421,14 +399,11 @@ public class QueryBuilder {
     return params;
   }
 
-  public String getQuery() {
-    return getQuery(sqlBuilder, queryConditionMode);
-  }
-
-  public String getQuery(SqlBuilder builder, boolean queryMode) {
+  @Override
+  public String getQuery(SqlBuilder builder, boolean paramMode) {
     Assert.notEmpty(builder);
 
-    return builder.getQuery(this, queryMode);
+    return builder.getQuery(this, paramMode);
   }
 
   public List<String> getSources(String source) {
@@ -451,7 +426,7 @@ public class QueryBuilder {
     return lst;
   }
 
-  public List<QueryBuilder> getUnion() {
+  public List<SqlSelect> getUnion() {
     return unionList;
   }
 
@@ -463,18 +438,19 @@ public class QueryBuilder {
     return whereClause;
   }
 
+  @Override
   public boolean isEmpty() {
     return BeeUtils.isEmpty(fieldList) || BeeUtils.isEmpty(fromList);
   }
 
   // Fields -----------------------------------------------------------------
-  public QueryBuilder resetFields() {
+  public SqlSelect resetFields() {
     this.fieldList.clear();
     return this;
   }
 
   // Order ------------------------------------------------------------------
-  public QueryBuilder resetOrder() {
+  public SqlSelect resetOrder() {
     if (!BeeUtils.isEmpty(orderList)) {
       orderList.clear();
     }
@@ -482,27 +458,19 @@ public class QueryBuilder {
   }
 
   // Having -----------------------------------------------------------------
-  public QueryBuilder setHaving(Condition having) {
+  public SqlSelect setHaving(Condition having) {
     Assert.notEmpty(having);
 
     havingClause = having;
     return this;
   }
 
-  public void setQueryConditionMode(boolean mode) {
-    queryConditionMode = mode;
-  }
-
   public void setUnionAllMode(boolean allMode) {
-    if (allMode) {
-      unionMode = " UNION ALL ";
-    } else {
-      unionMode = " UNION ";
-    }
+    unionMode = allMode ? " UNION ALL " : " UNION ";
   }
 
   // Where ------------------------------------------------------------------
-  public QueryBuilder setWhere(Condition clause) {
+  public SqlSelect setWhere(Condition clause) {
     whereClause = clause;
     return this;
   }
@@ -527,7 +495,7 @@ public class QueryBuilder {
     fromList.add(from);
   }
 
-  private QueryBuilder addOrder(String order, Boolean desc) {
+  private SqlSelect addOrder(String order, Boolean desc) {
     Assert.notEmpty(order);
 
     Map<String, Object> fldMap = new HashMap<String, Object>(2);

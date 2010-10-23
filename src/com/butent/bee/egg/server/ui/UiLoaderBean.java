@@ -2,7 +2,7 @@ package com.butent.bee.egg.server.ui;
 
 import com.butent.bee.egg.server.utils.XmlUtils;
 import com.butent.bee.egg.shared.BeeService;
-import com.butent.bee.egg.shared.sql.QueryBuilder;
+import com.butent.bee.egg.shared.sql.SqlSelect;
 import com.butent.bee.egg.shared.sql.SqlUtils;
 import com.butent.bee.egg.shared.ui.UiLoader;
 import com.butent.bee.egg.shared.utils.BeeUtils;
@@ -61,13 +61,13 @@ public class UiLoaderBean extends UiLoader {
       row.setClassName("UiWindow");
       res.add(row);
 
-      QueryBuilder qb = new QueryBuilder();
-      qb.addFields("f", "properties", "top", "left", "width", "height",
+      SqlSelect ss = new SqlSelect();
+      ss.addFields("f", "properties", "top", "left", "width", "height",
           "dock_top", "dock_left", "dock_width", "dock_hght", "dock_right",
           "dock_bott").addFrom("forms", "f").setWhere(
-          SqlUtils.equal("f", "form", "'" + formName + "'"));
+          SqlUtils.equal("f", "form", formName));
 
-      List<Object[]> data = qs.getQueryData(qb);
+      List<Object[]> data = qs.getQueryData(ss);
       Object[] col = data.get(0);
 
       String top = BeeUtils.isEmpty(col[1]) ? "" : BeeUtils.transform(col[1]);
@@ -107,14 +107,14 @@ public class UiLoaderBean extends UiLoader {
       row.setProperties(props.toString());
       res.add(row);
 
-      qb = new QueryBuilder();
-      qb.addFields("c", "control", "class", "parent", "caption", "order",
+      ss = new SqlSelect();
+      ss.addFields("c", "control", "class", "parent", "caption", "order",
           "parameters", "properties", "top", "left", "width", "height",
           "dock_prnt", "dock_left", "dock_top", "dock_right", "dock_bott",
           "dock_width", "dock_hght").addFrom("controls", "c").setWhere(
-          SqlUtils.equal("c", "form", "'" + formName + "'"));
+          SqlUtils.equal("c", "form", formName));
 
-      data = qs.getQueryData(qb);
+      data = qs.getQueryData(ss);
 
       for (Object[] cols : data) {
         row = new UiRow();

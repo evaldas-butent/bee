@@ -12,7 +12,7 @@ class FromSingle implements FromSource {
   private Object source;
   private String alias;
 
-  public FromSingle(QueryBuilder source, String alias) {
+  public FromSingle(SqlSelect source, String alias) {
     Assert.notNull(source);
     Assert.state(!source.isEmpty(),
         "[Assertion failed] - QueryBuilder source must not be empty");
@@ -39,12 +39,11 @@ class FromSingle implements FromSource {
   }
 
   @Override
-  public String getCondition(SqlBuilder builder, boolean queryMode) {
+  public String getFrom(SqlBuilder builder, boolean paramMode) {
     StringBuilder from = new StringBuilder();
 
-    if (source instanceof QueryBuilder) {
-      from.append("(" + ((QueryBuilder) source).getQuery(builder, queryMode)
-          + ")");
+    if (source instanceof SqlSelect) {
+      from.append("(" + ((SqlSelect) source).getQuery(builder, paramMode) + ")");
     } else {
       from.append(SqlUtils.sqlQuote((String) source));
     }
@@ -61,11 +60,11 @@ class FromSingle implements FromSource {
   }
 
   @Override
-  public List<Object> getQueryParameters() {
+  public List<Object> getParameters() {
     List<Object> paramList = null;
 
-    if (source instanceof QueryBuilder) {
-      Map<Integer, Object> paramMap = ((QueryBuilder) source).getParameters(true);
+    if (source instanceof SqlSelect) {
+      Map<Integer, Object> paramMap = ((SqlSelect) source).getParameters();
 
       if (!BeeUtils.isEmpty(paramMap)) {
         paramList = new ArrayList<Object>(paramMap.size());

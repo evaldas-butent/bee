@@ -6,15 +6,39 @@ import com.butent.bee.egg.shared.utils.BeeUtils;
 import java.util.List;
 import java.util.Map;
 
-public class SqlBuilder {
+public abstract class SqlBuilder {
 
-  String getQuery(QueryBuilder qb, boolean queryMode) {
-    Assert.notEmpty(qb);
-    Assert.state(!qb.isEmpty(), "Empty instance");
+  protected abstract String parseQuotes(String query);
+
+  public String sqlTransform(Object x) {
+    String s = BeeUtils.transform(x);
+    s = "'" + s.replaceAll("'", "\\\\'") + "'";
+    return s;
+  }
+
+  String getDelete(SqlDelete sd, boolean paramMode) {
+    Assert.notNull(sd);
+    Assert.state(!sd.isEmpty());
+    // TODO Auto-generated method stub
+    Assert.noNulls(paramMode);
+    return null;
+  }
+
+  String getInsert(SqlInsert si, boolean paramMode) {
+    Assert.notNull(si);
+    Assert.state(!si.isEmpty());
+    // TODO Auto-generated method stub
+    Assert.noNulls(paramMode);
+    return null;
+  }
+
+  String getQuery(SqlSelect ss, boolean paramMode) {
+    Assert.notNull(ss);
+    Assert.state(!ss.isEmpty());
 
     StringBuilder query = new StringBuilder("SELECT ");
 
-    List<Map<String, String>> fieldList = qb.getFields();
+    List<Map<String, String>> fieldList = ss.getFields();
 
     for (int i = 0; i < fieldList.size(); i++) {
       Map<String, String> fldMap = fieldList.get(i);
@@ -32,20 +56,20 @@ public class SqlBuilder {
     }
     query.append(" FROM ");
 
-    List<FromSource> fromList = qb.getFrom();
+    List<FromSource> fromList = ss.getFrom();
 
     for (FromSource from : fromList) {
       query.append(from.getJoinMode()).append(
-          from.getCondition(this, queryMode));
+          from.getFrom(this, paramMode));
     }
 
-    Condition whereClause = qb.getWhere();
+    Condition whereClause = ss.getWhere();
 
     if (!BeeUtils.isEmpty(whereClause)) {
-      query.append(" WHERE ").append(whereClause.getCondition(this, queryMode));
+      query.append(" WHERE ").append(whereClause.getCondition(this, paramMode));
     }
 
-    List<String> groupList = qb.getGroupBy();
+    List<String> groupList = ss.getGroupBy();
 
     if (!BeeUtils.isEmpty(groupList)) {
       query.append(" GROUP BY ");
@@ -58,7 +82,7 @@ public class SqlBuilder {
       }
     }
 
-    List<Map<String, Object>> orderList = qb.getOrderBy();
+    List<Map<String, Object>> orderList = ss.getOrderBy();
 
     if (!BeeUtils.isEmpty(orderList)) {
       query.append(" ORDER BY ");
@@ -74,25 +98,28 @@ public class SqlBuilder {
       }
     }
 
-    Condition havingClause = qb.getHaving();
+    Condition havingClause = ss.getHaving();
 
     if (!BeeUtils.isEmpty(havingClause)) {
       query.append(" HAVING ").append(
-          havingClause.getCondition(this, queryMode));
+          havingClause.getCondition(this, paramMode));
     }
 
-    List<QueryBuilder> unionList = qb.getUnion();
+    List<SqlSelect> unionList = ss.getUnion();
 
     if (!BeeUtils.isEmpty(unionList)) {
-      for (QueryBuilder union : unionList) {
-        query.append(qb.getUnionMode()).append(union.getQuery(this, queryMode));
+      for (SqlSelect union : unionList) {
+        query.append(ss.getUnionMode()).append(union.getQuery(this, paramMode));
       }
     }
     return parseQuotes(query.toString());
   }
 
-  protected String parseQuotes(String query) {
-    return query.replaceAll(SqlUtils.SQL_OPEN_QUOTE + "|"
-        + SqlUtils.SQL_CLOSE_QUOTE, "");
+  String getUpdate(SqlUpdate su, boolean paramMode) {
+    Assert.notNull(su);
+    Assert.state(!su.isEmpty());
+    // TODO Auto-generated method stub
+    Assert.noNulls(paramMode);
+    return null;
   }
 }

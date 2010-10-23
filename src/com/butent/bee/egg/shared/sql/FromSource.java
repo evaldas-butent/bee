@@ -5,11 +5,11 @@ import java.util.List;
 public interface FromSource {
   String getAlias();
 
-  String getCondition(SqlBuilder builder, boolean queryMode);
+  String getFrom(SqlBuilder builder, boolean paramMode);
 
   String getJoinMode();
 
-  List<Object> getQueryParameters();
+  List<Object> getParameters();
 
   Object getSource();
 }

@@ -21,20 +21,20 @@ class FunctionCondition implements Condition {
   }
 
   @Override
-  public String getCondition(SqlBuilder builder, boolean queryMode) {
+  public String getCondition(SqlBuilder builder, boolean paramMode) {
     StringBuilder sb = new StringBuilder();
     sb.append(function).append("(").append(expression);
 
     if (!BeeUtils.isEmpty(values)) {
       for (Object val : values) {
-        sb.append(", ").append(queryMode ? "?" : BeeUtils.transform(val));
+        sb.append(", ").append(paramMode ? "?" : builder.sqlTransform(val));
       }
     }
     return sb.append(")").toString();
   }
 
   @Override
-  public List<Object> getQueryParameters() {
+  public List<Object> getParameters() {
     List<Object> param = null;
 
     if (!BeeUtils.isEmpty(values)) {
