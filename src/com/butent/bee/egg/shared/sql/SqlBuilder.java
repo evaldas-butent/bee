@@ -8,11 +8,14 @@ import java.util.Map;
 
 public abstract class SqlBuilder {
 
-  protected abstract String parseQuotes(String query);
+  protected abstract String sqlQuote(String value);
 
   public String sqlTransform(Object x) {
     String s = BeeUtils.transform(x);
-    s = "'" + s.replaceAll("'", "\\\\'") + "'";
+
+    if (x instanceof CharSequence) {
+      s = "'" + s.replaceAll("'", "\\\\'") + "'";
+    }
     return s;
   }
 
@@ -38,20 +41,21 @@ public abstract class SqlBuilder {
 
     StringBuilder query = new StringBuilder("SELECT ");
 
-    List<Map<String, String>> fieldList = ss.getFields();
+    List<Map<String, Object>> fieldList = ss.getFields();
 
     for (int i = 0; i < fieldList.size(); i++) {
-      Map<String, String> fldMap = fieldList.get(i);
+      Map<String, Object> fldMap = fieldList.get(i);
 
       if (i > 0) {
         query.append(", ");
       }
-      String field = fldMap.get("field");
-      query.append(field);
-      String alias = fldMap.get("alias");
+      Expression field = (Expression) fldMap.get("field");
+      query.append(field.getExpression(this, paramMode));
+
+      String alias = (String) fldMap.get("alias");
 
       if (!BeeUtils.isEmpty(alias)) {
-        query.append(" AS ").append(alias);
+        query.append(" AS ").append(sqlQuote(alias));
       }
     }
     query.append(" FROM ");
@@ -59,8 +63,7 @@ public abstract class SqlBuilder {
     List<FromSource> fromList = ss.getFrom();
 
     for (FromSource from : fromList) {
-      query.append(from.getJoinMode()).append(
-          from.getFrom(this, paramMode));
+      query.append(from.getJoinMode()).append(from.getFrom(this, paramMode));
     }
 
     Condition whereClause = ss.getWhere();
@@ -69,12 +72,13 @@ public abstract class SqlBuilder {
       query.append(" WHERE ").append(whereClause.getCondition(this, paramMode));
     }
 
-    List<String> groupList = ss.getGroupBy();
+    List<Expression> groupList = ss.getGroupBy();
 
     if (!BeeUtils.isEmpty(groupList)) {
       query.append(" GROUP BY ");
+
       for (int i = 0; i < groupList.size(); i++) {
-        String group = groupList.get(i);
+        String group = groupList.get(i).getExpression(this, paramMode);
         if (i > 0) {
           query.append(", ");
         }
@@ -86,6 +90,7 @@ public abstract class SqlBuilder {
 
     if (!BeeUtils.isEmpty(orderList)) {
       query.append(" ORDER BY ");
+
       for (int i = 0; i < orderList.size(); i++) {
         Map<String, Object> order = orderList.get(i);
         if (i > 0) {
@@ -112,7 +117,7 @@ public abstract class SqlBuilder {
         query.append(ss.getUnionMode()).append(union.getQuery(this, paramMode));
       }
     }
-    return parseQuotes(query.toString());
+    return query.toString();
   }
 
   String getUpdate(SqlUpdate su, boolean paramMode) {

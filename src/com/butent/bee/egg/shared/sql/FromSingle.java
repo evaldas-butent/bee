@@ -45,11 +45,11 @@ class FromSingle implements FromSource {
     if (source instanceof SqlSelect) {
       from.append("(" + ((SqlSelect) source).getQuery(builder, paramMode) + ")");
     } else {
-      from.append(SqlUtils.sqlQuote((String) source));
+      from.append(builder.sqlQuote((String) source));
     }
 
     if (!BeeUtils.isEmpty(alias)) {
-      from.append(" ").append(SqlUtils.sqlQuote(alias));
+      from.append(" ").append(builder.sqlQuote(alias));
     }
     return from.toString();
   }

@@ -8,12 +8,17 @@ import java.util.List;
 import java.util.Map;
 
 class JoinCondition implements Condition {
-  private String leftExpression;
-  private String operator;
-  private Object rightExpression;
 
-  public JoinCondition(String left, String op, SqlSelect right) {
-    this(left, op);
+  private final Expression leftExpression;
+  private final String operator;
+  private final Object rightExpression;
+
+  public JoinCondition(Expression left, String op, SqlSelect right) {
+    Assert.notEmpty(left);
+    Assert.notEmpty(op);
+
+    leftExpression = left;
+    operator = op;
 
     Assert.notNull(right);
     Assert.state(!right.isEmpty());
@@ -21,33 +26,28 @@ class JoinCondition implements Condition {
     rightExpression = right;
   }
 
-  public JoinCondition(String left, String op, String right) {
-    this(left, op);
+  public JoinCondition(Expression left, String op, Expression right) {
+    Assert.notEmpty(left);
+    Assert.notEmpty(op);
+
+    leftExpression = left;
+    operator = op;
 
     Assert.notEmpty(right);
 
     rightExpression = right;
   }
 
-  private JoinCondition(String left, String op) {
-    Assert.notEmpty(left);
-    Assert.notEmpty(op);
-
-    leftExpression = left;
-    operator = op;
-  }
-
   @Override
   public String getCondition(SqlBuilder builder, boolean paramMode) {
-    String cond = leftExpression + operator;
     Object expr = rightExpression;
 
     if (expr instanceof SqlSelect) {
       expr = "(" + ((SqlSelect) expr).getQuery(builder, paramMode) + ")";
     } else {
-      expr = BeeUtils.transform(expr);
+      expr = ((Expression) expr).getExpression(builder, paramMode);
     }
-    return cond + expr;
+    return leftExpression.getExpression(builder, false) + operator + expr;
   }
 
   @Override
@@ -64,6 +64,8 @@ class JoinCondition implements Condition {
           paramList.add(paramMap.get(i + 1));
         }
       }
+    } else {
+      paramList = ((Expression) rightExpression).getParameters();
     }
     return paramList;
   }

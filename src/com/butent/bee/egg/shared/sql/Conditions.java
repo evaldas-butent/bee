@@ -34,20 +34,20 @@ public abstract class Conditions implements Condition {
 
   @Override
   public List<Object> getParameters() {
-    List<Object> param = null;
+    List<Object> paramList = null;
 
     for (Condition cond : conditionList) {
       List<Object> cList = cond.getParameters();
 
       if (!BeeUtils.isEmpty(cList)) {
-        if (!BeeUtils.isEmpty(cList)) {
-          param = cList;
+        if (BeeUtils.isEmpty(paramList)) {
+          paramList = cList;
         } else {
-          param.addAll(cList);
+          paramList.addAll(cList);
         }
       }
     }
-    return param;
+    return paramList;
   }
 
   protected abstract String joinMode();

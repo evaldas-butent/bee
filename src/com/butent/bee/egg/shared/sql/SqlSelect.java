@@ -11,10 +11,10 @@ import java.util.Map;
 
 public class SqlSelect extends SqlQuery {
 
-  private List<Map<String, String>> fieldList = new ArrayList<Map<String, String>>();
+  private List<Map<String, Object>> fieldList = new ArrayList<Map<String, Object>>();
   private List<FromSource> fromList = new ArrayList<FromSource>();
   private Condition whereClause;
-  private List<String> groupList;
+  private List<Expression> groupList;
   private List<Map<String, Object>> orderList;
   private Condition havingClause;
   private List<SqlSelect> unionList;
@@ -28,7 +28,7 @@ public class SqlSelect extends SqlQuery {
   }
 
   public SqlSelect(SqlSelect ss) {
-    fieldList = new ArrayList<Map<String, String>>(ss.fieldList);
+    fieldList = new ArrayList<Map<String, Object>>(ss.fieldList);
     Collections.copy(fieldList, ss.fieldList);
 
     fromList = new ArrayList<FromSource>(ss.fromList);
@@ -38,7 +38,7 @@ public class SqlSelect extends SqlQuery {
       whereClause = ss.whereClause;
     }
     if (!BeeUtils.isEmpty(ss.groupList)) {
-      groupList = new ArrayList<String>(ss.groupList);
+      groupList = new ArrayList<Expression>(ss.groupList);
       Collections.copy(groupList, ss.groupList);
     }
     if (!BeeUtils.isEmpty(ss.orderList)) {
@@ -56,7 +56,7 @@ public class SqlSelect extends SqlQuery {
     unionMode = ss.unionMode;
   }
 
-  public SqlSelect addAvg(String expr, String alias) {
+  public SqlSelect addAvg(Expression expr, String alias) {
     Assert.notEmpty(expr);
     Assert.notEmpty(alias);
 
@@ -65,14 +65,14 @@ public class SqlSelect extends SqlQuery {
   }
 
   public SqlSelect addAvg(String source, String field, String alias) {
-    return addAvg(SqlUtils.fields(source, field), alias);
+    return addAvg(SqlUtils.field(source, field), alias);
   }
 
   public SqlSelect addConstant(Object constant, String alias) {
     Assert.notNull(constant);
     Assert.notEmpty(alias);
 
-    addField(constant.toString(), alias); // TODO: padaryti protingesni
+    addField(SqlUtils.constant(constant), alias);
     return this;
   }
 
@@ -89,7 +89,7 @@ public class SqlSelect extends SqlQuery {
     } else {
       xpr = expr.trim();
     }
-    addAggregate("COUNT", xpr, alias);
+    addAggregate("COUNT", new Expressions(xpr), alias);
     return this;
   }
 
@@ -97,7 +97,7 @@ public class SqlSelect extends SqlQuery {
     Assert.notEmpty(source);
     Assert.notEmpty(field);
 
-    addField("DISTINCT " + SqlUtils.fields(source, field), null);
+    addField(new Expressions("DISTINCT ", SqlUtils.field(source, field)), null);
     return this;
   }
 
@@ -105,7 +105,7 @@ public class SqlSelect extends SqlQuery {
     Assert.notEmpty(expr);
     Assert.notEmpty(alias);
 
-    addField(expr, alias);
+    addField(new Expressions(expr), alias);
     return this;
   }
 
@@ -113,7 +113,7 @@ public class SqlSelect extends SqlQuery {
     Assert.notEmpty(source);
     Assert.notEmpty(field);
 
-    addField(SqlUtils.fields(source, field), alias);
+    addField(SqlUtils.field(source, field), alias);
     return this;
   }
 
@@ -125,7 +125,7 @@ public class SqlSelect extends SqlQuery {
       if (BeeUtils.isEmpty(fld)) {
         continue;
       }
-      addField(SqlUtils.fields(source, fld), null);
+      addField(SqlUtils.field(source, fld), null);
     }
     return this;
   }
@@ -239,20 +239,30 @@ public class SqlSelect extends SqlQuery {
 
   // Group ------------------------------------------------------------------
   public SqlSelect addGroup(String... group) {
-    Assert.noNulls((Object[]) group);
+    Assert.arrayLength(group, 1);
 
     if (BeeUtils.isEmpty(groupList)) {
-      groupList = new ArrayList<String>();
+      groupList = new ArrayList<Expression>();
     }
     for (String grp : group) {
-      if (!BeeUtils.isEmpty(grp)) {
-        groupList.add(grp);
-      }
+      groupList.add(SqlUtils.field(grp));
     }
     return this;
   }
 
-  public SqlSelect addMax(String expr, String alias) {
+  public SqlSelect addGroup(FieldExpression... group) {
+    Assert.arrayLength(group, 1);
+
+    if (BeeUtils.isEmpty(groupList)) {
+      groupList = new ArrayList<Expression>();
+    }
+    for (Expression grp : group) {
+      groupList.add(grp);
+    }
+    return this;
+  }
+
+  public SqlSelect addMax(Expression expr, String alias) {
     Assert.notEmpty(expr);
     Assert.notEmpty(alias);
 
@@ -261,10 +271,10 @@ public class SqlSelect extends SqlQuery {
   }
 
   public SqlSelect addMax(String source, String field, String alias) {
-    return addMax(SqlUtils.fields(source, field), alias);
+    return addMax(SqlUtils.field(source, field), alias);
   }
 
-  public SqlSelect addMin(String expr, String alias) {
+  public SqlSelect addMin(Expression expr, String alias) {
     Assert.notEmpty(expr);
     Assert.notEmpty(alias);
 
@@ -273,7 +283,7 @@ public class SqlSelect extends SqlQuery {
   }
 
   public SqlSelect addMin(String source, String field, String alias) {
-    return addMin(SqlUtils.fields(source, field), alias);
+    return addMin(SqlUtils.field(source, field), alias);
   }
 
   public SqlSelect addOrder(String... order) {
@@ -298,7 +308,7 @@ public class SqlSelect extends SqlQuery {
     return this;
   }
 
-  public SqlSelect addSum(String expr, String alias) {
+  public SqlSelect addSum(Expression expr, String alias) {
     Assert.notEmpty(expr);
     Assert.notEmpty(alias);
 
@@ -307,7 +317,7 @@ public class SqlSelect extends SqlQuery {
   }
 
   public SqlSelect addSum(String source, String field, String alias) {
-    return addSum(SqlUtils.fields(source, field), alias);
+    return addSum(SqlUtils.field(source, field), alias);
   }
 
   // Union ------------------------------------------------------------------
@@ -329,27 +339,22 @@ public class SqlSelect extends SqlQuery {
   public List<String> getFieldAliases() {
     List<String> fldList = new ArrayList<String>();
 
-    for (Map<String, String> fldMap : fieldList) {
-      String als = fldMap.get("alias");
+    for (Map<String, Object> fldMap : fieldList) {
+      String als = (String) fldMap.get("alias");
 
       if (BeeUtils.isEmpty(als)) {
-        als = fldMap.get("field");
+        Object field = fldMap.get("field");
+
+        if (field instanceof FieldExpression) {
+          als = ((FieldExpression) field).getField();
+        }
       }
       fldList.add(als);
     }
     return fldList;
   }
 
-  public List<String> getFieldNames() {
-    List<String> fldList = new ArrayList<String>();
-
-    for (Map<String, String> fldMap : fieldList) {
-      fldList.add(fldMap.get("field"));
-    }
-    return fldList;
-  }
-
-  public List<Map<String, String>> getFields() {
+  public List<Map<String, Object>> getFields() {
     return fieldList;
   }
 
@@ -357,7 +362,7 @@ public class SqlSelect extends SqlQuery {
     return fromList;
   }
 
-  public List<String> getGroupBy() {
+  public List<Expression> getGroupBy() {
     return groupList;
   }
 
@@ -476,16 +481,16 @@ public class SqlSelect extends SqlQuery {
   }
 
   // Aggregates -------------------------------------------------------------
-  private void addAggregate(String fnc, String expr, String alias) {
-    addField(fnc + "(" + expr + ")", alias);
+  private void addAggregate(String fnc, Expression expr, String alias) {
+    addField(new Expressions(fnc, "(", expr, ")"), alias);
   }
 
-  private void addField(String expr, String alias) {
-    Map<String, String> fldMap = new HashMap<String, String>(2);
+  private void addField(Expression expr, String alias) {
+    Map<String, Object> fldMap = new HashMap<String, Object>(2);
     fldMap.put("field", expr);
 
     if (!BeeUtils.isEmpty(alias)) {
-      fldMap.put("alias", SqlUtils.sqlQuote(alias));
+      fldMap.put("alias", alias);
     }
     fieldList.add(fldMap);
   }
