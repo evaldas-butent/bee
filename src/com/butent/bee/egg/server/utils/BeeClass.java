@@ -56,8 +56,6 @@ public class BeeClass {
         cls.desiredAssertionStatus(), "Hash Code", cls.hashCode(), "To String",
         cls.toString());
 
-    // very long "Protection Domain", cls.getProtectionDomain(),
-
     Annotation[] annArr = getDeclaredAnnotations(cls);
     if (!BeeUtils.isEmpty(annArr)) {
       for (Annotation ann : annArr) {

@@ -5,22 +5,23 @@ import com.google.gwt.user.client.Element;
 
 import com.butent.bee.egg.client.dom.DomUtils;
 import com.butent.bee.egg.shared.Assert;
+import com.butent.bee.egg.shared.BeeConst;
 
 public class BeeGrid extends BeeHtmlTable {
 
   private static native void addRows(Element table, int rows, int columns) /*-{
-     var td = $doc.createElement("td");
-     td.innerHTML = "&nbsp;";
-     var row = $doc.createElement("tr");
-     for(var cellNum = 0; cellNum < columns; cellNum++) {
-       var cell = td.cloneNode(true);
-       row.appendChild(cell);
-     }
-     table.appendChild(row);
-     for(var rowNum = 1; rowNum < rows; rowNum++) {  
-       table.appendChild(row.cloneNode(true));
-     }
-   }-*/;
+    var td = $doc.createElement("td");
+    td.innerHTML = "&nbsp;";
+    var row = $doc.createElement("tr");
+    for(var cellNum = 0; cellNum < columns; cellNum++) {
+      var cell = td.cloneNode(true);
+      row.appendChild(cell);
+    }
+    table.appendChild(row);
+    for(var rowNum = 1; rowNum < rows; rowNum++) {  
+      table.appendChild(row.cloneNode(true));
+    }
+  }-*/;
 
   protected int numColumns;
   protected int numRows;
@@ -32,7 +33,7 @@ public class BeeGrid extends BeeHtmlTable {
     setRowFormatter(new BeeRowFormatter());
     setColumnFormatter(new BeeColumnFormatter());
 
-    setClearText("&nbsp;");
+    setClearText(BeeConst.HTML_NBSP);
   }
 
   public BeeGrid(int rows, int columns) {
@@ -129,7 +130,7 @@ public class BeeGrid extends BeeHtmlTable {
       }
     }
   }
-  
+
   public void setNumColumns(int numColumns) {
     this.numColumns = numColumns;
   }
@@ -142,7 +143,7 @@ public class BeeGrid extends BeeHtmlTable {
   protected Element createCell() {
     Element td = super.createCell();
 
-    DOM.setInnerHTML(td, "&nbsp;");
+    DOM.setInnerHTML(td, BeeConst.HTML_NBSP);
     return td;
   }
 
@@ -151,21 +152,24 @@ public class BeeGrid extends BeeHtmlTable {
     Element tr = super.createRow();
     for (int i = 0; i < numColumns; i++) {
       tr.appendChild(createCell());
-    }   
+    }
     return tr;
   }
 
   @Override
   protected void prepareCell(int row, int column) {
     prepareRow(row);
-    Assert.nonNegative(column, "Cannot access a column with a negative index: " + column);
-    Assert.isTrue(column < numColumns, "Column index: " + column + ", Column size: " + numColumns);
+    Assert.nonNegative(column, "Cannot access a column with a negative index: "
+        + column);
+    Assert.isTrue(column < numColumns, "Column index: " + column
+        + ", Column size: " + numColumns);
   }
 
   @Override
   protected void prepareColumn(int column) {
     super.prepareColumn(column);
-    Assert.isTrue(column < numColumns, "Column index: " + column + ", Column size: " + numColumns);
+    Assert.isTrue(column < numColumns, "Column index: " + column
+        + ", Column size: " + numColumns);
   }
 
   @Override
@@ -173,5 +177,5 @@ public class BeeGrid extends BeeHtmlTable {
     Assert.nonNegative(row, "Cannot access a row with a negative index: " + row);
     Assert.isTrue(row < numRows, "Row index: " + row + ", Row size: " + numRows);
   }
- 
+
 }

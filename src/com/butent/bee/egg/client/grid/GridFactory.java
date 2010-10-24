@@ -4,8 +4,6 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.egg.client.BeeKeeper;
 import com.butent.bee.egg.client.pst.AbstractColumnDefinition;
-import com.butent.bee.egg.client.pst.AbstractScrollTable.ColumnResizePolicy;
-import com.butent.bee.egg.client.pst.AbstractScrollTable.ResizePolicy;
 import com.butent.bee.egg.client.pst.CachedTableModel;
 import com.butent.bee.egg.client.pst.DefaultRowRenderer;
 import com.butent.bee.egg.client.pst.DefaultTableDefinition;
@@ -30,8 +28,7 @@ import java.util.Iterator;
 
 public class GridFactory {
 
-  private class PstColumnDefinition extends
-      AbstractColumnDefinition<Integer, String> {
+  private class PstColumnDefinition extends AbstractColumnDefinition<Integer, String> {
     private BeeView view;
     private int idx;
     private int maxDisplaySize;
@@ -118,9 +115,8 @@ public class GridFactory {
     }
 
     PstTableModel tableModel = new PstTableModel();
-    CachedTableModel<Integer> cachedTableModel = new CachedTableModel<Integer>(
-        tableModel);
-    cachedTableModel.setRowCount(r);
+    CachedTableModel<Integer> cachedModel = new CachedTableModel<Integer>(tableModel);
+    cachedModel.setRowCount(r);
 
     DefaultTableDefinition<Integer> tableDef = new DefaultTableDefinition<Integer>();
     String[] rowColors = new String[] {"#ffffdd", "#eeeeee"};
@@ -132,27 +128,14 @@ public class GridFactory {
       colDef.setHeader(0, arr[i]);
       colDef.setFooter(0, "col " + i);
 
-      colDef.setMinimumColumnWidth(60);
-      colDef.setMaximumColumnWidth(200);
-
       tableDef.addColumnDefinition(colDef);
     }
 
-    PagingScrollTable<Integer> table = new PagingScrollTable<Integer>(
-        cachedTableModel, tableDef);
+    PagingScrollTable<Integer> table = new PagingScrollTable<Integer>(cachedModel, tableDef);
     
-    FixedWidthGridBulkRenderer<Integer> bulkRenderer = new FixedWidthGridBulkRenderer<Integer>(
+    FixedWidthGridBulkRenderer<Integer> renderer = new FixedWidthGridBulkRenderer<Integer>(
         table.getDataTable(), table);
-    table.setBulkRenderer(bulkRenderer);
-
-    table.setCellPadding(3);
-    table.setCellSpacing(0);
-
-    table.setResizePolicy(ResizePolicy.UNCONSTRAINED);
-    table.setColumnResizePolicy(ColumnResizePolicy.SINGLE_CELL);
-    
-    table.setPageSize(r);
-    table.gotoFirstPage();
+    table.setBulkRenderer(renderer);
 
     return table;
   }
@@ -178,10 +161,6 @@ public class GridFactory {
 
     ScrollTable table = new ScrollTable(dataTable, headerTable);
     table.setFooterTable(footerTable);
-
-    table.setCellPadding(3);
-    table.setCellSpacing(0);
-    table.setResizePolicy(ResizePolicy.FLOW);
 
     String[] arr = view.getColumnNames();
     for (int i = 0; i < c; i++) {

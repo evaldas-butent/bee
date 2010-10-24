@@ -519,22 +519,6 @@ public class BeeDataSource implements Transformable {
     return isOpen();
   }
 
-  public String ping() {
-    String r = "sp_helpserver";
-    // select @@version
-    // select sysutcdatetime(), sysdatetime()
-    // select system_user
-
-    // select version(), user(), database()
-    // select utc_timestamp(), sysdate(), now()
-
-    // select * from v$version
-    // select user, sysdate from "adm_par"
-    // sys_context('userenv', 'current_schema'), sys_context('userenv', 'lang')
-
-    return r;
-  }
-
   public void setStatus(int st) {
     this.status = st;
   }

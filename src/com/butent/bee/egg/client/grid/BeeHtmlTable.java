@@ -2,6 +2,7 @@ package com.butent.bee.egg.client.grid;
 
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.TableCellElement;
+import com.google.gwt.dom.client.TableElement;
 import com.google.gwt.dom.client.TableRowElement;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -56,14 +57,12 @@ public abstract class BeeHtmlTable extends Panel implements HasClickHandlers,
 
   public class BeeCellFormatter {
     public void addStyleName(int row, int column, String styleName) {
-      prepareCell(row, column);
-      Element td = getCellElement(bodyElem, row, column);
-      UIObject.setStyleName(td, styleName, true);
+      UIObject.setStyleName(ensureElement(row, column), styleName, true);
     }
 
     public Element getElement(int row, int column) {
       checkCellBounds(row, column);
-      return getCellElement(bodyElem, row, column);
+      return getRawElement(row, column);
     }
 
     public String getStyleName(int row, int column) {
@@ -80,9 +79,7 @@ public abstract class BeeHtmlTable extends Panel implements HasClickHandlers,
     }
 
     public void removeStyleName(int row, int column, String styleName) {
-      checkCellBounds(row, column);
-      Element td = getCellElement(bodyElem, row, column);
-      UIObject.setStyleName(td, styleName, false);
+      UIObject.setStyleName(getElement(row, column), styleName, false);
     }
 
     public void setAlignment(int row, int column,
@@ -92,32 +89,23 @@ public abstract class BeeHtmlTable extends Panel implements HasClickHandlers,
     }
 
     public void setHeight(int row, int column, String height) {
-      prepareCell(row, column);
-      Element elem = getCellElement(bodyElem, row, column);
-      DOM.setElementProperty(elem, "height", height);
+      DOM.setElementProperty(ensureElement(row, column), "height", height);
     }
 
-    public void setHorizontalAlignment(int row, int column,
-        HorizontalAlignmentConstant align) {
-      prepareCell(row, column);
-      Element elem = getCellElement(bodyElem, row, column);
-      DOM.setElementProperty(elem, "align", align.getTextAlignString());
+    public void setHorizontalAlignment(int row, int column, HorizontalAlignmentConstant align) {
+      DOM.setElementProperty(ensureElement(row, column), "align", align.getTextAlignString());
     }
 
     public void setStyleName(int row, int column, String styleName) {
-      prepareCell(row, column);
-      UIObject.setStyleName(getCellElement(bodyElem, row, column), styleName);
+      UIObject.setStyleName(ensureElement(row, column), styleName);
     }
 
     public void setStylePrimaryName(int row, int column, String styleName) {
-      UIObject.setStylePrimaryName(getCellElement(bodyElem, row, column),
-          styleName);
+      UIObject.setStylePrimaryName(ensureElement(row, column), styleName);
     }
 
-    public void setVerticalAlignment(int row, int column,
-        VerticalAlignmentConstant align) {
-      prepareCell(row, column);
-      DOM.setStyleAttribute(getCellElement(bodyElem, row, column),
+    public void setVerticalAlignment(int row, int column, VerticalAlignmentConstant align) {
+      DOM.setStyleAttribute(ensureElement(row, column),
           "verticalAlign", align.getVerticalAlignString());
     }
 
@@ -127,20 +115,17 @@ public abstract class BeeHtmlTable extends Panel implements HasClickHandlers,
     }
 
     public void setWidth(int row, int column, String width) {
-      prepareCell(row, column);
-      DOM.setElementProperty(getCellElement(bodyElem, row, column), "width",
-          width);
+      DOM.setElementProperty(ensureElement(row, column), "width",  width);
     }
 
     public void setWordWrap(int row, int column, boolean wrap) {
-      prepareCell(row, column);
       String wrapValue = wrap ? "" : "nowrap";
-      DOM.setStyleAttribute(getElement(row, column), "whiteSpace", wrapValue);
+      DOM.setStyleAttribute(ensureElement(row, column), "whiteSpace", wrapValue);
     }
 
     protected Element ensureElement(int row, int column) {
       prepareCell(row, column);
-      return getCellElement(bodyElem, row, column);
+      return getRawElement(row, column);
     }
 
     protected String getAttr(int row, int column, String attr) {
@@ -221,9 +206,9 @@ public abstract class BeeHtmlTable extends Panel implements HasClickHandlers,
 
     private void prepareColumnGroup() {
       if (columnGroup == null) {
-        columnGroup = DOM.createElement("colgroup");
+        columnGroup = DOM.createColGroup();
         DOM.insertChild(tableElem, columnGroup, 0);
-        DOM.appendChild(columnGroup, DOM.createElement("col"));
+        DOM.appendChild(columnGroup, DOM.createCol());
       }
     }
   }
@@ -235,7 +220,7 @@ public abstract class BeeHtmlTable extends Panel implements HasClickHandlers,
 
     public Element getElement(int row) {
       checkRowBounds(row);
-      return getRow(bodyElem, row);
+      return getRawElement(row);
     }
 
     public String getStyleName(int row) {
@@ -362,11 +347,11 @@ public abstract class BeeHtmlTable extends Panel implements HasClickHandlers,
   }
 
   public int getCellPadding() {
-    return DOM.getElementPropertyInt(tableElem, "cellPadding");
+    return DomUtils.getCellPadding(tableElem);
   }
 
   public int getCellSpacing() {
-    return DOM.getElementPropertyInt(tableElem, "cellSpacing");
+    return DomUtils.getCellSpacing(tableElem);
   }
 
   public BeeColumnFormatter getColumnFormatter() {
@@ -384,7 +369,7 @@ public abstract class BeeHtmlTable extends Panel implements HasClickHandlers,
   public Element getEventTargetCell(Event event) {
     Element td = DOM.eventGetTarget(event);
     for (; td != null; td = DOM.getParent(td)) {
-      if (DOM.getElementProperty(td, "tagName").equalsIgnoreCase("td")) {
+      if (DomUtils.isTdElement(td)) {
         Element tr = DOM.getParent(td);
         Element body = DOM.getParent(tr);
         if (body == bodyElem) {
@@ -507,11 +492,11 @@ public abstract class BeeHtmlTable extends Panel implements HasClickHandlers,
   }
 
   public void setCellPadding(int padding) {
-    DOM.setElementPropertyInt(tableElem, "cellPadding", padding);
+    TableElement.as(tableElem).setCellPadding(padding);
   }
 
   public void setCellSpacing(int spacing) {
-    DOM.setElementPropertyInt(tableElem, "cellSpacing", spacing);
+    TableElement.as(tableElem).setCellSpacing(spacing);
   }
   
   public void setHTML(int row, int column, SafeHtml html) {
@@ -556,8 +541,7 @@ public abstract class BeeHtmlTable extends Panel implements HasClickHandlers,
 
   protected void checkCellBounds(int row, int column) {
     checkRowBounds(row);
-    Assert.nonNegative(column, "Column " + column + " must be non-negative: "
-        + column);
+    Assert.nonNegative(column, "Column " + column + " must be non-negative");
     int cellSize = getCellCount(row);
     Assert.isTrue(cellSize > column, "Column index: " + column
         + ", Column size: " + cellSize);
@@ -590,7 +574,7 @@ public abstract class BeeHtmlTable extends Panel implements HasClickHandlers,
   }-*/;
 
   protected int getRowIndex(Element rowElem) {
-    return DOM.getElementPropertyInt(rowElem, "rowIndex");
+    return TableRowElement.as(rowElem).getRowIndex();
   }
 
   protected Element insertCell(int row, int column) {
@@ -642,8 +626,7 @@ public abstract class BeeHtmlTable extends Panel implements HasClickHandlers,
   protected abstract void prepareCell(int row, int column);
 
   protected void prepareColumn(int column) {
-    Assert.nonNegative(column, "Cannot access a column with a negative index: "
-        + column);
+    Assert.nonNegative(column, "Cannot access a column with a negative index: " + column);
   }
 
   protected abstract void prepareRow(int row);

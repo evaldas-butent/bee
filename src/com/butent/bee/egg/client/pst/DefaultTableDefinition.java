@@ -1,96 +1,42 @@
 package com.butent.bee.egg.client.pst;
 
+import com.butent.bee.egg.shared.Assert;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-/**
- * A collection of {@link ColumnDefinition ColumnDefinitions} that define a
- * table.
- * 
- * @param <RowType> the type of the row values
- */
-public class DefaultTableDefinition<RowType> implements
-    TableDefinition<RowType> {
-  /**
-   * The default {@link RowRenderer} to use when the
-   * {@link DefaultTableDefinition} does not specify one.
-   */
-  @SuppressWarnings("rawtypes")
-  private static final RowRenderer DEFAULT_ROW_RENDERER = new DefaultRowRenderer();
+public class DefaultTableDefinition<RowType> implements TableDefinition<RowType> {
 
-  /**
-   * The ordered list of {@link ColumnDefinition ColumnDefinitions} used by this
-   * renderer.
-   */
   private List<ColumnDefinition<RowType, ?>> columnDefs;
-
-  /**
-   * A list of visible columns.
-   */
   private Set<ColumnDefinition<RowType, ?>> hiddenColumnDefs;
 
-  /**
-   * The renderer used to render rows.
-   */
-  @SuppressWarnings("unchecked")
-  private RowRenderer<RowType> rowRenderer = DEFAULT_ROW_RENDERER;
+  private RowRenderer<RowType> rowRenderer = new DefaultRowRenderer<RowType>();
 
-  /**
-   * Create a new {@link TableDefinition}.
-   */
   public DefaultTableDefinition() {
     this(new ArrayList<ColumnDefinition<RowType, ?>>());
   }
 
-  /**
-   * Create a new {@link TableDefinition} with a list of
-   * {@link ColumnDefinition ColumnDefinitions}.
-   * 
-   * @param columnDefs the {@link ColumnDefinition ColumnDefinitions} to render
-   */
   public DefaultTableDefinition(List<ColumnDefinition<RowType, ?>> columnDefs) {
     this.columnDefs = columnDefs;
     hiddenColumnDefs = new HashSet<ColumnDefinition<RowType, ?>>();
   }
 
-  /**
-   * Add a {@link ColumnDefinition}.
-   * 
-   * @param columnDef the {@link ColumnDefinition} to add
-   */
   public void addColumnDefinition(ColumnDefinition<RowType, ?> columnDef) {
     columnDefs.add(columnDef);
   }
 
-  /**
-   * Insert a {@link ColumnDefinition} at a specific index.
-   * 
-   * @param index the index to place the {@link ColumnDefinition}
-   * @param columnDef the {@link ColumnDefinition} to add
-   */
-  public void addColumnDefinition(int index,
-      ColumnDefinition<RowType, ?> columnDef) {
+  public void addColumnDefinition(int index, ColumnDefinition<RowType, ?> columnDef) {
     columnDefs.add(index, columnDef);
   }
 
-  /**
-   * Get the {@link ColumnDefinition} for a given column.
-   * 
-   * @param column the column index
-   * @return the {@link ColumnDefinition} for the column
-   * @throws IndexOutOfBoundsException if the column is not defined
-   */
-  public ColumnDefinition<RowType, ?> getColumnDefinition(int column)
-      throws IndexOutOfBoundsException {
+  public ColumnDefinition<RowType, ?> getColumnDefinition(int column) {
+    Assert.isIndex(columnDefs, column);
     return columnDefs.get(column);
   }
 
-  /**
-   * @return the number of {@link ColumnDefinition ColumnDefinitions}.
-   */
   public int getColumnDefinitionCount() {
     return columnDefs.size();
   }
@@ -109,21 +55,10 @@ public class DefaultTableDefinition<RowType> implements
     return visibleColumns;
   }
 
-  /**
-   * Check if a column is visible or not.
-   * 
-   * @param colDef the {@link ColumnDefinition}
-   * @return true if visible, false if hidden
-   */
   public boolean isColumnVisible(ColumnDefinition<RowType, ?> colDef) {
     return !hiddenColumnDefs.contains(colDef);
   }
 
-  /**
-   * Remove a {@link ColumnDefinition}.
-   * 
-   * @param columnDef the {@link ColumnDefinition} to remove
-   */
   public void removeColumnDefinition(ColumnDefinition<RowType, ?> columnDef) {
     columnDefs.remove(columnDef);
   }
@@ -134,14 +69,7 @@ public class DefaultTableDefinition<RowType> implements
     view.renderRowsImpl(startRowIndex, rowValues, rowRenderer, visibleColumns);
   }
 
-  /**
-   * Hide or show a column.
-   * 
-   * @param colDef the {@link ColumnDefinition}
-   * @param visible true to show it, false to hide
-   */
-  public void setColumnVisible(ColumnDefinition<RowType, ?> colDef,
-      boolean visible) {
+  public void setColumnVisible(ColumnDefinition<RowType, ?> colDef, boolean visible) {
     if (visible) {
       hiddenColumnDefs.remove(colDef);
     } else {
@@ -149,11 +77,8 @@ public class DefaultTableDefinition<RowType> implements
     }
   }
 
-  /**
-   * Set the {@link RowRenderer} used to render rows.
-   */
   public void setRowRenderer(RowRenderer<RowType> rowRenderer) {
-    assert rowRenderer != null : "rowRenderer cannot be null";
+    Assert.notNull(rowRenderer, "rowRenderer cannot be null");
     this.rowRenderer = rowRenderer;
   }
 }

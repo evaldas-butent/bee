@@ -21,6 +21,59 @@ public class BeeStyle implements BeeModule {
   public static final String STYLE_HEIGHT = "height";
   public static final String STYLE_BOTTOM = "bottom";
 
+  public static final String STYLE_BORDER_TOP = "borderTop";
+  public static final String STYLE_BORDER_BOTTOM = "borderBottom";
+
+  public static final String STYLE_TABLE_LAYOUT = "tableLayout";
+
+  public static final String VALUE_AUTO = "auto";
+  public static final String VALUE_FIXED = "fixed";
+
+  public void autoHeight(UIObject obj) {
+    Assert.notNull(obj);
+    autoHeight(obj.getElement());
+  }
+
+  public void autoHeight(Element el) {
+    Assert.notNull(el);
+    autoHeight(el.getStyle());
+  }
+
+  public void autoHeight(Style st) {
+    Assert.notNull(st);
+    st.setProperty(STYLE_HEIGHT, VALUE_AUTO);
+  }
+  
+  public void autoWidth(UIObject obj) {
+    Assert.notNull(obj);
+    autoWidth(obj.getElement());
+  }
+
+  public void autoWidth(Element el) {
+    Assert.notNull(el);
+    autoWidth(el.getStyle());
+  }
+
+  public void autoWidth(Style st) {
+    Assert.notNull(st);
+    st.setProperty(STYLE_WIDTH, VALUE_AUTO);
+  }
+
+  public void clearTableLayout(UIObject obj) {
+    Assert.notNull(obj);
+    clearTableLayout(obj.getElement());
+  }
+
+  public void clearTableLayout(Element el) {
+    Assert.notNull(el);
+    clearTableLayout(el.getStyle());
+  }
+
+  public void clearTableLayout(Style st) {
+    Assert.notNull(st);
+    st.clearProperty(STYLE_TABLE_LAYOUT);
+  }
+
   public void end() {
   }
 
@@ -70,6 +123,51 @@ public class BeeStyle implements BeeModule {
     st.setHeight(100, Unit.PCT);
   }
 
+  public void fixedTableLayout(UIObject obj) {
+    Assert.notNull(obj);
+    fixedTableLayout(obj.getElement());
+  }
+
+  public void fixedTableLayout(Element el) {
+    Assert.notNull(el);
+    fixedTableLayout(el.getStyle());
+  }
+
+  public void fixedTableLayout(Style st) {
+    Assert.notNull(st);
+    st.setProperty(STYLE_TABLE_LAYOUT, VALUE_FIXED);
+  }
+
+  public void fullHeight(UIObject obj) {
+    Assert.notNull(obj);
+    fullHeight(obj.getElement());
+  }
+
+  public void fullHeight(Element el) {
+    Assert.notNull(el);
+    fullHeight(el.getStyle());
+  }
+
+  public void fullHeight(Style st) {
+    Assert.notNull(st);
+    st.setHeight(100, Unit.PCT);
+  }
+
+  public void fullWidht(UIObject obj) {
+    Assert.notNull(obj);
+    fullWidht(obj.getElement());
+  }
+
+  public void fullWidht(Element el) {
+    Assert.notNull(el);
+    fullWidth(el.getStyle());
+  }
+
+  public void fullWidth(Style st) {
+    Assert.notNull(st);
+    st.setWidth(100, Unit.PCT);
+  }
+  
   public String getName() {
     return getClass().getName();
   }
@@ -90,7 +188,54 @@ public class BeeStyle implements BeeModule {
   public void init() {
   }
 
+  public void setBorderBottomWidth(UIObject obj, int px) {
+    Assert.notNull(obj);
+    setBorderBottomWidth(obj.getElement(), px);
+  }
+
+  public void setBorderBottomWidth(Element el, int px) {
+    Assert.notNull(el);
+    setBorderBottomWidth(el.getStyle(), px);
+  }
+
+  public void setBorderBottomWidth(Style st, int px) {
+    Assert.notNull(st);
+    Assert.nonNegative(px);
+    st.setPropertyPx(STYLE_BORDER_BOTTOM, px);
+  }
+
+  public void setBorderTopWidth(UIObject obj, int px) {
+    Assert.notNull(obj);
+    setBorderTopWidth(obj.getElement(), px);
+  }
+
+  public void setBorderTopWidth(Element el, int px) {
+    Assert.notNull(el);
+    setBorderTopWidth(el.getStyle(), px);
+  }
+
+  public void setBorderTopWidth(Style st, int px) {
+    Assert.notNull(st);
+    Assert.nonNegative(px);
+    st.setPropertyPx(STYLE_BORDER_TOP, px);
+  }
+
   public void start() {
+  }
+
+  public void zeroWidth(UIObject obj) {
+    Assert.notNull(obj);
+    zeroWidth(obj.getElement());
+  }
+
+  public void zeroWidth(Element el) {
+    Assert.notNull(el);
+    zeroWidth(el.getStyle());
+  }
+
+  public void zeroWidth(Style st) {
+    Assert.notNull(st);
+    st.setPropertyPx(STYLE_WIDTH, 0);
   }
 
   private boolean hasProperty(Style st, String name) {
@@ -126,5 +271,4 @@ public class BeeStyle implements BeeModule {
 
     return ok;
   }
-
 }

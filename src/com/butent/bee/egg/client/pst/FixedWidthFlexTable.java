@@ -1,11 +1,13 @@
 package com.butent.bee.egg.client.pst;
 
+import com.google.gwt.dom.client.Style.Overflow;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.Widget;
 
+import com.butent.bee.egg.client.BeeKeeper;
 import com.butent.bee.egg.client.grid.BeeFlexTable;
-import com.butent.bee.egg.client.pst.FixedWidthTableImpl.IdealColumnWidthInfo;
+import com.butent.bee.egg.client.pst.FixedWidthTable.IdealColumnWidthInfo;
 import com.butent.bee.egg.shared.Assert;
 
 import java.util.ArrayList;
@@ -47,8 +49,7 @@ public class FixedWidthFlexTable extends BeeFlexTable {
 
     @Override
     public void setWidth(int row, int column, String width) {
-      Assert.untouchable("setWidth is not supported.  "
-          + "Use ExtendedGrid.setColumnWidth(int, int) instead.");
+      Assert.unsupported("setWidth is not supported");
     }
 
     @Override
@@ -60,8 +61,7 @@ public class FixedWidthFlexTable extends BeeFlexTable {
   public class FixedWidthFlexColumnFormatter extends BeeColumnFormatter {
     @Override
     public void setWidth(int column, String width) {
-      Assert.untouchable("setWidth is not supported.  "
-          + "Use ExtendedGrid.setColumnWidth(int, int) instead.");
+      Assert.unsupported("setWidth is not supported");
     }
   }
 
@@ -90,14 +90,14 @@ public class FixedWidthFlexTable extends BeeFlexTable {
   public FixedWidthFlexTable() {
     super();
     Element tableElem = getElement();
-    DOM.setStyleAttribute(tableElem, "tableLayout", "fixed");
-    DOM.setStyleAttribute(tableElem, "width", "0px");
+    BeeKeeper.getStyle().fixedTableLayout(tableElem);
+    BeeKeeper.getStyle().zeroWidth(tableElem);
 
     setCellFormatter(new FixedWidthFlexCellFormatter());
     setColumnFormatter(new FixedWidthFlexColumnFormatter());
     setRowFormatter(new FixedWidthFlexRowFormatter());
 
-    ghostRow = FixedWidthTableImpl.get().createGhostRow();
+    ghostRow = FixedWidthTable.createGhostRow();
     DOM.insertChild(getBodyElement(), ghostRow, 0);
   }
 
@@ -142,7 +142,7 @@ public class FixedWidthFlexTable extends BeeFlexTable {
   public Element insertCell(int beforeRow, int beforeColumn) {
     clearIdealWidths();
     Element td = super.insertCell(beforeRow, beforeColumn);
-    DOM.setStyleAttribute(td, "overflow", "hidden");
+    td.getStyle().setOverflow(Overflow.HIDDEN);
     setNumColumnsPerRow(beforeRow, getNumColumnsPerRow(beforeRow) + 1);
     return td;
   }
@@ -269,7 +269,7 @@ public class FixedWidthFlexTable extends BeeFlexTable {
       return;
     }
 
-    FixedWidthTableImpl.get().setColumnWidth(this, ghostRow, column, width);
+    FixedWidthTable.setColumnWidth(ghostRow, column, width);
   }
 
   @Override
@@ -339,7 +339,7 @@ public class FixedWidthFlexTable extends BeeFlexTable {
 
       for (int cell = curNumCells; cell < column; cell++) {
         Element td = getCellFormatter().getElement(row, cell);
-        DOM.setStyleAttribute(td, "overflow", "hidden");
+        td.getStyle().setOverflow(Overflow.HIDDEN);
       }
     }
   }
@@ -365,18 +365,16 @@ public class FixedWidthFlexTable extends BeeFlexTable {
   }
 
   void recalculateIdealColumnWidthsImpl() {
-    idealWidths = FixedWidthTableImpl.get().recalculateIdealColumnWidths(
-        idealColumnWidthInfo);
+    idealWidths = FixedWidthTable.recalculateIdealColumnWidths(idealColumnWidthInfo);
   }
 
   void recalculateIdealColumnWidthsSetup() {
-    idealColumnWidthInfo = FixedWidthTableImpl.get().recalculateIdealColumnWidthsSetup(
+    idealColumnWidthInfo = FixedWidthTable.recalculateIdealColumnWidthsSetup(
         this, getColumnCount(), 0);
   }
 
   void recalculateIdealColumnWidthsTeardown() {
-    FixedWidthTableImpl.get().recalculateIdealColumnWidthsTeardown(
-        idealColumnWidthInfo);
+    FixedWidthTable.recalculateIdealColumnWidthsTeardown(idealColumnWidthInfo);
     idealColumnWidthInfo = null;
   }
 
@@ -448,16 +446,15 @@ public class FixedWidthFlexTable extends BeeFlexTable {
     if (maxRawColumnCount > curNumGhosts) {
       super.addCells(0, maxRawColumnCount - curNumGhosts);
       for (int i = curNumGhosts; i < maxRawColumnCount; i++) {
-        Element td = FixedWidthTableImpl.get().getGhostCell(ghostRow, i);
-        FixedWidthTableImpl.get().createGhostCell(td);
+        Element td = FixedWidthTable.getGhostCell(ghostRow, i);
+        FixedWidthTable.createGhostCell(td);
         setColumnWidth(i, getColumnWidth(i));
       }
 
     } else if (maxRawColumnCount < curNumGhosts) {
       int cellsToRemove = curNumGhosts - maxRawColumnCount;
       for (int i = 0; i < cellsToRemove; i++) {
-        DOM.removeChild(ghostRow, FixedWidthTableImpl.get().getGhostCell(
-            ghostRow, maxRawColumnCount));
+        DOM.removeChild(ghostRow, FixedWidthTable.getGhostCell(ghostRow, maxRawColumnCount));
       }
     }
   }

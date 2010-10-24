@@ -63,26 +63,35 @@ public class DomUtils {
 
   public static final String TAG_INPUT = "input";
   public static final String TAG_LABEL = "label";
+  public static final String TAG_TABLE = "table";
+  public static final String TAG_TD = "td";
+  public static final String TAG_TH = "th";
 
-  public static String DEFAULT_ID_PREFIX = "bee";
+  public static final String DEFAULT_ID_PREFIX = "bee";
 
-  public static String BUTTON_ID_PREFIX = "b";
-  public static String HTML_ID_PREFIX = "h";
-  public static String LABEL_ID_PREFIX = "l";
-  public static String LIST_ITEM_ID_PREFIX = "li";
-  public static String RADIO_ID_PREFIX = "r";
-  public static String OPTION_ID_PREFIX = "opt";
-  public static String TABLE_CELL_ID_PREFIX = "td";
+  public static final String BUTTON_ID_PREFIX = "bu";
+  public static final String HTML_ID_PREFIX = "html";
+  public static final String LABEL_ID_PREFIX = "lbl";
+  public static final String LIST_ITEM_ID_PREFIX = "li";
+  public static final String RADIO_ID_PREFIX = "rb";
+  public static final String OPTION_ID_PREFIX = "opt";
+  public static final String TABLE_CELL_ID_PREFIX = "td";
 
-  private static String ATTRIBUTE_SERVICE = "data-svc";
-  private static String ATTRIBUTE_STAGE = "data-stg";
+  private static final String ATTRIBUTE_SERVICE = "data-svc";
+  private static final String ATTRIBUTE_STAGE = "data-stg";
 
-  private static String DEFAULT_NAME_PREFIX = "b";
+  private static final String DEFAULT_NAME_PREFIX = "b";
 
-  private static String ID_SEPARATOR = "-";
-  private static int ID_COUNTER = 0;
+  private static final String ID_SEPARATOR = "-";
 
-  private static int MAX_GENERATIONS = 100;
+  private static final int MAX_GENERATIONS = 100;
+
+  private static final String CELL_PADDING = "cellPadding";
+  private static final String CELL_SPACING = "cellSpacing";
+  private static final String COL_SPAN = "colSpan";
+  private static final String ROW_SPAN = "rowSpan";
+  
+  private static int idCounter = 0;
 
   public static Element createButton(String text) {
     return createButton(text, false, null);
@@ -354,8 +363,8 @@ public class DomUtils {
   }
 
   public static String createUniqueId(String prefix) {
-    ID_COUNTER++;
-    return prefix.trim() + ID_SEPARATOR + ID_COUNTER;
+    idCounter++;
+    return prefix.trim() + ID_SEPARATOR + idCounter;
   }
 
   public static String createUniqueName() {
@@ -410,6 +419,22 @@ public class DomUtils {
     return lst;
   }
 
+  public static int getCellPadding(Element elem) {
+    if (isTableCellElement(elem)) {
+      return elem.getPropertyInt(CELL_PADDING);
+    } else {
+      return 0;
+    }
+  }
+
+  public static int getCellSpacing(Element elem) {
+    if (isTableCellElement(elem)) {
+      return elem.getPropertyInt(CELL_SPACING);
+    } else {
+      return 0;
+    }
+  }
+
   public static List<StringProp> getChildrenInfo(Widget w) {
     Assert.notNull(w);
     List<StringProp> lst = new ArrayList<StringProp>();
@@ -431,6 +456,14 @@ public class DomUtils {
 
   public static int getClientWidth() {
     return Document.get().getClientWidth();
+  }
+  
+  public static int getColSpan(Element elem) {
+    if (isTableCellElement(elem)) {
+      return elem.getPropertyInt(COL_SPAN);
+    } else {
+      return 0;
+    }
   }
 
   public static BeeDirection getDirection(String s) {
@@ -557,6 +590,14 @@ public class DomUtils {
     return lst;
   }
   
+  public static int getRowSpan(Element elem) {
+    if (isTableCellElement(elem)) {
+      return elem.getPropertyInt(ROW_SPAN);
+    } else {
+      return 0;
+    }
+  }
+
   public static String getService(Widget w) {
     return getAttribute(w, ATTRIBUTE_SERVICE);
   }
@@ -720,6 +761,31 @@ public class DomUtils {
     return el.getTagName().equalsIgnoreCase(TAG_LABEL);
   }
 
+  public static boolean isTableCellElement(Element el) {
+    return isTdElement(el) || isThElement(el);
+  }
+  
+  public static boolean isTableElement(Element el) {
+    if (el == null) {
+      return false;
+    }
+    return el.getTagName().equalsIgnoreCase(TAG_TABLE);
+  }
+
+  public static boolean isTdElement(Element el) {
+    if (el == null) {
+      return false;
+    }
+    return el.getTagName().equalsIgnoreCase(TAG_TD);
+  }
+
+  public static boolean isThElement(Element el) {
+    if (el == null) {
+      return false;
+    }
+    return el.getTagName().equalsIgnoreCase(TAG_TH);
+  }
+  
   public static void logChildren(Widget w) {
     Assert.notNull(w);
     List<StringProp> lst = getChildrenInfo(w);
@@ -789,6 +855,13 @@ public class DomUtils {
     InputElement.as(lst.getItem(0)).setDefaultChecked(value);
   }
 
+  public static void setColSpan(Element elem, int span) {
+    Assert.isTrue(isTableCellElement(elem), "not a table cell element");
+    Assert.isPositive(span);
+    
+    TableCellElement.as(elem).setColSpan(span);
+  }
+
   public static String setId(UIObject obj, String id) {
     Assert.notNull(obj);
     Assert.notEmpty(id);
@@ -799,6 +872,13 @@ public class DomUtils {
     return s;
   }
   
+  public static void setRowSpan(Element elem, int span) {
+    Assert.isTrue(isTableCellElement(elem), "not a table cell element");
+    Assert.isPositive(span);
+    
+    TableCellElement.as(elem).setRowSpan(span);
+  }
+
   public static void setSelected(Element elem, boolean selected) {
     Assert.notNull(elem);
     

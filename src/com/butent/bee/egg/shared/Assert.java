@@ -219,6 +219,14 @@ public class Assert {
     }
   }
 
+  public static void unsupported() {
+    unsupported("unsupported operation");
+  }
+  
+  public static void unsupported(String message) {
+    throw new BeeRuntimeException(message);
+  }
+
   public static void untouchable() {
     untouchable("can't touch this");
   }

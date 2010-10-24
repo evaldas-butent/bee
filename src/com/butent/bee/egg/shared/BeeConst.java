@@ -107,6 +107,8 @@ public class BeeConst {
   public static final String[] EMPTY_STRING_ARRAY = new String[0];
   public static final int[] EMPTY_INT_ARRAY = new int[0];
   
+  public static final String HTML_NBSP = "&nbsp;";
+
   private static String home = SERVER;
 
   public static boolean isClient() {

@@ -1,33 +1,14 @@
 package com.butent.bee.egg.client.pst;
 
 import com.butent.bee.egg.client.grid.BeeGrid;
+import com.butent.bee.egg.shared.Assert;
 
-/**
- * Allows bulk rendering of {@link Grid}s.
- * <p>
- * Must use the {@link Grid} in the overrides package.
- * </p>
- * 
- * @param <RowType> the data type of the row values
- */
 public class GridBulkRenderer<RowType> extends TableBulkRenderer<RowType> {
-  /**
-   * Construct a new {@link GridBulkRenderer}.
-   * 
-   * @param grid {@link Grid} to be be bulk rendered
-   * @param tableDef the table definition that should be used during rendering
-   */
   public GridBulkRenderer(BeeGrid grid, TableDefinition<RowType> tableDef) {
     super(grid, tableDef);
     init(grid);
   }
 
-  /**
-   * Construct a new {@link GridBulkRenderer}.
-   * 
-   * @param grid {@link Grid} to be be bulk rendered
-   * @param sourceTableDef the external source of the table definition
-   */
   public GridBulkRenderer(BeeGrid grid, HasTableDefinition<RowType> sourceTableDef) {
     super(grid, sourceTableDef);
     init(grid);
@@ -53,13 +34,11 @@ public class GridBulkRenderer<RowType> extends TableBulkRenderer<RowType> {
   private void init(BeeGrid grid) {
     if (grid instanceof FixedWidthGrid
         && (!(this instanceof FixedWidthGridBulkRenderer))) {
-      throw new UnsupportedOperationException(
-          "Must use a FixedWidthGridBulkLoader to bulk load a fixed grid");
+      Assert.unsupported("Must use a FixedWidthGridBulkLoader to bulk load a fixed grid");
     }
     if (grid instanceof SelectionGrid
         && (!(this instanceof SelectionGridBulkRenderer))) {
-      throw new UnsupportedOperationException(
-          "Must use a SelectionGridBulkLoader to bulk load a selection grid");
+      Assert.unsupported("Must use a SelectionGridBulkLoader to bulk load a selection grid");
     }
   }
 }

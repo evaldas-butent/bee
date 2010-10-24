@@ -1,6 +1,5 @@
 package com.butent.bee.egg.client.grid;
 
-import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Element;
 
 import com.butent.bee.egg.client.dom.DomUtils;
@@ -10,19 +9,19 @@ public class BeeFlexTable extends BeeHtmlTable {
 
   public class BeeFlexCellFormatter extends BeeCellFormatter {
     public int getColSpan(int row, int column) {
-      return DOM.getElementPropertyInt(getElement(row, column), "colSpan");
+      return DomUtils.getColSpan(getElement(row, column));
     }
 
     public int getRowSpan(int row, int column) {
-      return DOM.getElementPropertyInt(getElement(row, column), "rowSpan");
+      return DomUtils.getRowSpan(getElement(row, column));
     }
 
     public void setColSpan(int row, int column, int colSpan) {
-      DOM.setElementPropertyInt(ensureElement(row, column), "colSpan", colSpan);
+      DomUtils.setColSpan(ensureElement(row, column), colSpan);
     }
 
     public void setRowSpan(int row, int column, int rowSpan) {
-      DOM.setElementPropertyInt(ensureElement(row, column), "rowSpan", rowSpan);
+      DomUtils.setRowSpan(ensureElement(row, column), rowSpan);
     }
   }
 
