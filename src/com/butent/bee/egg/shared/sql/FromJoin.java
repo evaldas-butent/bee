@@ -7,20 +7,20 @@ import java.util.List;
 
 abstract class FromJoin extends FromSingle {
 
-  private Condition on;
+  private IsCondition on;
 
-  public FromJoin(SqlSelect source, String alias, Condition on) {
-    super(source, alias);
-
-    Assert.notNull(on);
-    this.on = on;
-  }
-
-  public FromJoin(String source, Condition on) {
+  public FromJoin(String source, IsCondition on) {
     this(source, null, on);
   }
 
-  public FromJoin(String source, String alias, Condition on) {
+  public FromJoin(String source, String alias, IsCondition on) {
+    super(source, alias);
+
+    Assert.notNull(on);
+    this.on = on;
+  }
+
+  public FromJoin(SqlSelect source, String alias, IsCondition on) {
     super(source, alias);
 
     Assert.notNull(on);
@@ -28,19 +28,9 @@ abstract class FromJoin extends FromSingle {
   }
 
   @Override
-  public String getFrom(SqlBuilder builder, boolean queryMode) {
-    StringBuilder from = new StringBuilder(super.getFrom(builder,
-        queryMode));
-
-    from.append(" ON ").append(on.getCondition(builder, queryMode));
-
-    return from.toString();
-  }
-
-  @Override
-  public List<Object> getParameters() {
-    List<Object> paramList = super.getParameters();
-    List<Object> qp = on.getParameters();
+  public List<Object> getSqlParams() {
+    List<Object> paramList = super.getSqlParams();
+    List<Object> qp = on.getSqlParams();
 
     if (!BeeUtils.isEmpty(qp)) {
       if (BeeUtils.isEmpty(paramList)) {
@@ -50,5 +40,15 @@ abstract class FromJoin extends FromSingle {
       }
     }
     return paramList;
+  }
+
+  @Override
+  public String getSqlString(SqlBuilder builder, boolean queryMode) {
+    StringBuilder from = new StringBuilder(super.getSqlString(builder,
+        queryMode));
+
+    from.append(" ON ").append(on.getSqlString(builder, queryMode));
+
+    return from.toString();
   }
 }

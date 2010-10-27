@@ -2,15 +2,15 @@ package com.butent.bee.egg.shared.sql;
 
 class FromFull extends FromJoin {
 
-  public FromFull(SqlSelect source, String alias, Condition on) {
-    super(source, alias, on);
-  }
-
-  public FromFull(String source, Condition on) {
+  public FromFull(String source, IsCondition on) {
     super(source, on);
   }
 
-  public FromFull(String source, String alias, Condition on) {
+  public FromFull(String source, String alias, IsCondition on) {
+    super(source, alias, on);
+  }
+
+  public FromFull(SqlSelect source, String alias, IsCondition on) {
     super(source, alias, on);
   }
 

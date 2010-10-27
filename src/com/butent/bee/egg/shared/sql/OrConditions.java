@@ -5,8 +5,8 @@ import com.butent.bee.egg.shared.utils.BeeUtils;
 class OrConditions extends Conditions {
 
   @Override
-  public String getCondition(SqlBuilder builder, boolean queryMode) {
-    String cond = super.getCondition(builder, queryMode);
+  public String getSqlString(SqlBuilder builder, boolean queryMode) {
+    String cond = super.getSqlString(builder, queryMode);
 
     if (!BeeUtils.isEmpty(cond)) {
       cond = "(" + cond + ")";

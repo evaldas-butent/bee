@@ -4,7 +4,6 @@ import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
 import java.util.List;
-import java.util.Map;
 
 public abstract class SqlBuilder {
 
@@ -22,16 +21,38 @@ public abstract class SqlBuilder {
   String getDelete(SqlDelete sd, boolean paramMode) {
     Assert.notNull(sd);
     Assert.state(!sd.isEmpty());
-    // TODO Auto-generated method stub
-    Assert.noNulls(paramMode);
-    return null;
+
+    StringBuilder query = new StringBuilder("DELETE ");
+
+    IsFrom target = sd.getTarget();
+
+    if (!BeeUtils.isEmpty(target)) {
+      query.append(" FROM ").append(target.getSqlString(this, paramMode));
+    }
+
+    List<IsFrom> fromList = sd.getFrom();
+
+    if (!BeeUtils.isEmpty(fromList)) {
+      query.append(" FROM ");
+
+      for (IsFrom from : fromList) {
+        query.append(from.getJoinMode()).append(
+            from.getSqlString(this, paramMode));
+      }
+    }
+
+    IsCondition whereClause = sd.getWhere();
+
+    if (!BeeUtils.isEmpty(whereClause)) {
+      query.append(" WHERE ").append(whereClause.getSqlString(this, paramMode));
+    }
+    return query.toString();
   }
 
   String getInsert(SqlInsert si, boolean paramMode) {
     Assert.notNull(si);
     Assert.state(!si.isEmpty());
     // TODO Auto-generated method stub
-    Assert.noNulls(paramMode);
     return null;
   }
 
@@ -41,44 +62,50 @@ public abstract class SqlBuilder {
 
     StringBuilder query = new StringBuilder("SELECT ");
 
-    List<Map<String, Object>> fieldList = ss.getFields();
+    List<Object[]> fieldList = ss.getFields();
 
-    for (int i = 0; i < fieldList.size(); i++) {
-      Map<String, Object> fldMap = fieldList.get(i);
+    if (!BeeUtils.isEmpty(fieldList)) {
+      for (int i = 0; i < fieldList.size(); i++) {
+        Object[] fldEntry = fieldList.get(i);
 
-      if (i > 0) {
-        query.append(", ");
-      }
-      Expression field = (Expression) fldMap.get("field");
-      query.append(field.getExpression(this, paramMode));
+        if (i > 0) {
+          query.append(", ");
+        }
+        IsExpression field = (IsExpression) fldEntry[SqlSelect.FIELD_EXPR];
+        query.append(field.getSqlString(this, paramMode));
 
-      String alias = (String) fldMap.get("alias");
+        String alias = (String) fldEntry[SqlSelect.FIELD_ALIAS];
 
-      if (!BeeUtils.isEmpty(alias)) {
-        query.append(" AS ").append(sqlQuote(alias));
+        if (!BeeUtils.isEmpty(alias)) {
+          query.append(" AS ").append(sqlQuote(alias));
+        }
       }
     }
-    query.append(" FROM ");
 
-    List<FromSource> fromList = ss.getFrom();
+    List<IsFrom> fromList = ss.getFrom();
 
-    for (FromSource from : fromList) {
-      query.append(from.getJoinMode()).append(from.getFrom(this, paramMode));
+    if (!BeeUtils.isEmpty(fromList)) {
+      query.append(" FROM ");
+
+      for (IsFrom from : fromList) {
+        query.append(from.getJoinMode()).append(
+            from.getSqlString(this, paramMode));
+      }
     }
 
-    Condition whereClause = ss.getWhere();
+    IsCondition whereClause = ss.getWhere();
 
     if (!BeeUtils.isEmpty(whereClause)) {
-      query.append(" WHERE ").append(whereClause.getCondition(this, paramMode));
+      query.append(" WHERE ").append(whereClause.getSqlString(this, paramMode));
     }
 
-    List<Expression> groupList = ss.getGroupBy();
+    List<IsExpression> groupList = ss.getGroupBy();
 
     if (!BeeUtils.isEmpty(groupList)) {
       query.append(" GROUP BY ");
 
       for (int i = 0; i < groupList.size(); i++) {
-        String group = groupList.get(i).getExpression(this, paramMode);
+        String group = groupList.get(i).getSqlString(this, paramMode);
         if (i > 0) {
           query.append(", ");
         }
@@ -86,35 +113,38 @@ public abstract class SqlBuilder {
       }
     }
 
-    List<Map<String, Object>> orderList = ss.getOrderBy();
+    List<Object[]> orderList = ss.getOrderBy();
 
     if (!BeeUtils.isEmpty(orderList)) {
       query.append(" ORDER BY ");
 
       for (int i = 0; i < orderList.size(); i++) {
-        Map<String, Object> order = orderList.get(i);
+        Object[] orderEntry = orderList.get(i);
         if (i > 0) {
           query.append(", ");
         }
-        query.append(order.get("field"));
-        if ((Boolean) order.get("desc")) {
+        IsExpression order = (IsExpression) orderEntry[SqlSelect.ORDER_EXPR];
+        query.append(order.getSqlString(this, paramMode));
+
+        if ((Boolean) orderEntry[SqlSelect.ORDER_DESC]) {
           query.append(" DESC");
         }
       }
     }
 
-    Condition havingClause = ss.getHaving();
+    IsCondition havingClause = ss.getHaving();
 
     if (!BeeUtils.isEmpty(havingClause)) {
       query.append(" HAVING ").append(
-          havingClause.getCondition(this, paramMode));
+          havingClause.getSqlString(this, paramMode));
     }
 
     List<SqlSelect> unionList = ss.getUnion();
 
     if (!BeeUtils.isEmpty(unionList)) {
       for (SqlSelect union : unionList) {
-        query.append(ss.getUnionMode()).append(union.getQuery(this, paramMode));
+        query.append(ss.getUnionMode()).append(
+            union.getSqlString(this, paramMode));
       }
     }
     return query.toString();
@@ -123,8 +153,50 @@ public abstract class SqlBuilder {
   String getUpdate(SqlUpdate su, boolean paramMode) {
     Assert.notNull(su);
     Assert.state(!su.isEmpty());
-    // TODO Auto-generated method stub
-    Assert.noNulls(paramMode);
-    return null;
+
+    StringBuilder query = new StringBuilder("UPDATE ");
+
+    IsFrom target = su.getTarget();
+
+    if (!BeeUtils.isEmpty(target)) {
+      query.append(target.getSqlString(this, paramMode));
+    }
+
+    List<IsExpression[]> fieldList = su.getFields();
+
+    if (!BeeUtils.isEmpty(fieldList)) {
+      query.append(" SET ");
+
+      for (int i = 0; i < fieldList.size(); i++) {
+        IsExpression[] fldEntry = fieldList.get(i);
+
+        if (i > 0) {
+          query.append(", ");
+        }
+        IsExpression field = fldEntry[SqlUpdate.FIELD];
+        query.append(field.getSqlString(this, paramMode));
+
+        IsExpression value = fldEntry[SqlUpdate.VALUE];
+        query.append(" = ").append(value.getSqlString(this, paramMode));
+      }
+    }
+
+    List<IsFrom> fromList = su.getFrom();
+
+    if (!BeeUtils.isEmpty(fromList)) {
+      query.append(" FROM ");
+
+      for (IsFrom from : fromList) {
+        query.append(from.getJoinMode()).append(
+            from.getSqlString(this, paramMode));
+      }
+    }
+
+    IsCondition whereClause = su.getWhere();
+
+    if (!BeeUtils.isEmpty(whereClause)) {
+      query.append(" WHERE ").append(whereClause.getSqlString(this, paramMode));
+    }
+    return query.toString();
   }
 }

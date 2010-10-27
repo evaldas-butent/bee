@@ -5,13 +5,13 @@ import com.butent.bee.egg.shared.utils.BeeUtils;
 
 import java.util.List;
 
-class FunctionCondition implements Condition {
+class FunctionCondition implements IsCondition {
 
   private final String function;
-  private final Expression expression;
-  private final Expression[] values;
+  private final IsExpression expression;
+  private final IsExpression[] values;
 
-  public FunctionCondition(String func, Expression expr, Expression... vals) {
+  public FunctionCondition(String func, IsExpression expr, IsExpression... vals) {
     Assert.notEmpty(func);
     Assert.notEmpty(expr);
     Assert.arrayLength(vals, 1);
@@ -22,24 +22,11 @@ class FunctionCondition implements Condition {
   }
 
   @Override
-  public String getCondition(SqlBuilder builder, boolean paramMode) {
-    StringBuilder sb = new StringBuilder();
-
-    sb.append(function).append("(").append(
-        expression.getExpression(builder, false));
-
-    for (Expression val : values) {
-      sb.append(", ").append(val.getExpression(builder, paramMode));
-    }
-    return sb.append(")").toString();
-  }
-
-  @Override
-  public List<Object> getParameters() {
+  public List<Object> getSqlParams() {
     List<Object> paramList = null;
 
-    for (Expression e : values) {
-      List<Object> eList = e.getParameters();
+    for (IsExpression e : values) {
+      List<Object> eList = e.getSqlParams();
 
       if (!BeeUtils.isEmpty(eList)) {
         if (BeeUtils.isEmpty(paramList)) {
@@ -50,5 +37,18 @@ class FunctionCondition implements Condition {
       }
     }
     return paramList;
+  }
+
+  @Override
+  public String getSqlString(SqlBuilder builder, boolean paramMode) {
+    StringBuilder sb = new StringBuilder();
+
+    sb.append(function).append("(").append(
+        expression.getSqlString(builder, false));
+
+    for (IsExpression val : values) {
+      sb.append(", ").append(val.getSqlString(builder, paramMode));
+    }
+    return sb.append(")").toString();
   }
 }

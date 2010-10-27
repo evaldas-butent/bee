@@ -1,19 +1,28 @@
 package com.butent.bee.egg.shared.sql;
 
 import com.butent.bee.egg.shared.Assert;
-import com.butent.bee.egg.shared.utils.BeeUtils;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
-class JoinCondition implements Condition {
+class JoinCondition implements IsCondition {
 
-  private final Expression leftExpression;
+  private final IsExpression leftExpression;
   private final String operator;
   private final Object rightExpression;
 
-  public JoinCondition(Expression left, String op, SqlSelect right) {
+  public JoinCondition(IsExpression left, String op, IsExpression right) {
+    Assert.notEmpty(left);
+    Assert.notEmpty(op);
+
+    leftExpression = left;
+    operator = op;
+
+    Assert.notEmpty(right);
+
+    rightExpression = right;
+  }
+
+  public JoinCondition(IsExpression left, String op, SqlSelect right) {
     Assert.notEmpty(left);
     Assert.notEmpty(op);
 
@@ -26,47 +35,18 @@ class JoinCondition implements Condition {
     rightExpression = right;
   }
 
-  public JoinCondition(Expression left, String op, Expression right) {
-    Assert.notEmpty(left);
-    Assert.notEmpty(op);
-
-    leftExpression = left;
-    operator = op;
-
-    Assert.notEmpty(right);
-
-    rightExpression = right;
+  @Override
+  public List<Object> getSqlParams() {
+    return ((IsSql) rightExpression).getSqlParams();
   }
 
   @Override
-  public String getCondition(SqlBuilder builder, boolean paramMode) {
-    Object expr = rightExpression;
-
-    if (expr instanceof SqlSelect) {
-      expr = "(" + ((SqlSelect) expr).getQuery(builder, paramMode) + ")";
-    } else {
-      expr = ((Expression) expr).getExpression(builder, paramMode);
-    }
-    return leftExpression.getExpression(builder, false) + operator + expr;
-  }
-
-  @Override
-  public List<Object> getParameters() {
-    List<Object> paramList = null;
+  public String getSqlString(SqlBuilder builder, boolean paramMode) {
+    String expr = ((IsSql) rightExpression).getSqlString(builder, paramMode);
 
     if (rightExpression instanceof SqlSelect) {
-      Map<Integer, Object> paramMap = ((SqlSelect) rightExpression).getParameters();
-
-      if (!BeeUtils.isEmpty(paramMap)) {
-        paramList = new ArrayList<Object>(paramMap.size());
-
-        for (int i = 0; i < paramMap.size(); i++) {
-          paramList.add(paramMap.get(i + 1));
-        }
-      }
-    } else {
-      paramList = ((Expression) rightExpression).getParameters();
+      expr = "(" + expr + ")";
     }
-    return paramList;
+    return leftExpression.getSqlString(builder, false) + operator + expr;
   }
 }

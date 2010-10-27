@@ -5,37 +5,24 @@ import com.butent.bee.egg.shared.utils.BeeUtils;
 
 import java.util.List;
 
-class Expressions implements Expression {
+class ComplexExpression implements IsExpression {
 
   private final Object[] content;
 
-  public Expressions(Object... expr) {
+  public ComplexExpression(Object... expr) {
     Assert.arrayLength(expr, 1);
     Assert.noNulls(expr);
 
     content = expr;
   }
 
-  public String getExpression(SqlBuilder builder, boolean paramMode) {
-    StringBuilder s = new StringBuilder();
-
-    for (Object o : content) {
-      if (o instanceof Expression) {
-        s.append(((Expression) o).getExpression(builder, paramMode));
-      } else {
-        s.append(BeeUtils.transform(o));
-      }
-    }
-    return s.toString();
-  }
-
   @Override
-  public List<Object> getParameters() {
+  public List<Object> getSqlParams() {
     List<Object> paramList = null;
 
     for (Object o : content) {
-      if (o instanceof Expression) {
-        List<Object> eList = ((Expression) o).getParameters();
+      if (o instanceof IsSql) {
+        List<Object> eList = ((IsSql) o).getSqlParams();
 
         if (!BeeUtils.isEmpty(eList)) {
           if (BeeUtils.isEmpty(paramList)) {
@@ -47,5 +34,19 @@ class Expressions implements Expression {
       }
     }
     return paramList;
+  }
+
+  @Override
+  public String getSqlString(SqlBuilder builder, boolean paramMode) {
+    StringBuilder s = new StringBuilder();
+
+    for (Object o : content) {
+      if (o instanceof IsSql) {
+        s.append(((IsSql) o).getSqlString(builder, paramMode));
+      } else {
+        s.append(BeeUtils.transform(o));
+      }
+    }
+    return s.toString();
   }
 }

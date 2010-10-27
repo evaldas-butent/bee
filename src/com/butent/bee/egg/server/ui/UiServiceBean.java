@@ -64,8 +64,7 @@ public class UiServiceBean {
 
   private void formList(ResponseBuffer buff) {
     SqlSelect ss = new SqlSelect();
-    ss.addFields("f", "form").addFrom("forms", "f").addOrder(
-        SqlUtils.field("f", "form"));
+    ss.addFields("f", "form").addFrom("forms", "f").addOrder("f", "form");
 
     List<Object[]> res = qs.getQueryData(ss);
     if (res == null) {
@@ -118,8 +117,7 @@ public class UiServiceBean {
 
       ss = new SqlSelect();
       ss.addFields("c", "field", "caption").addFrom("columns", "c").setWhere(
-          SqlUtils.equal("c", "table", grd)).addOrder(
-          SqlUtils.field("c", "order"));
+          SqlUtils.equal("c", "table", grd)).addOrder("c", "order");
 
       List<Object[]> cols = qs.getQueryData(ss);
 

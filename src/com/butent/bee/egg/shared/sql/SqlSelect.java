@@ -4,64 +4,34 @@ import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-public class SqlSelect extends SqlQuery {
+public class SqlSelect extends HasFrom<SqlSelect> {
 
-  private List<Map<String, Object>> fieldList = new ArrayList<Map<String, Object>>();
-  private List<FromSource> fromList = new ArrayList<FromSource>();
-  private Condition whereClause;
-  private List<Expression> groupList;
-  private List<Map<String, Object>> orderList;
-  private Condition havingClause;
+  static final int FIELD_EXPR = 0;
+  static final int FIELD_ALIAS = 1;
+  static final int ORDER_EXPR = 0;
+  static final int ORDER_DESC = 1;
+
+  private List<Object[]> fieldList = new ArrayList<Object[]>();
+  private IsCondition whereClause;
+  private List<IsExpression> groupList;
+  private List<Object[]> orderList;
+  private IsCondition havingClause;
   private List<SqlSelect> unionList;
 
   private String unionMode;
 
-  // Constructors -----------------------------------------------------------
   public SqlSelect() {
-    setParamMode(false);
     setUnionAllMode(true);
   }
 
-  public SqlSelect(SqlSelect ss) {
-    fieldList = new ArrayList<Map<String, Object>>(ss.fieldList);
-    Collections.copy(fieldList, ss.fieldList);
-
-    fromList = new ArrayList<FromSource>(ss.fromList);
-    Collections.copy(fromList, ss.fromList);
-
-    if (!BeeUtils.isEmpty(ss.whereClause)) {
-      whereClause = ss.whereClause;
-    }
-    if (!BeeUtils.isEmpty(ss.groupList)) {
-      groupList = new ArrayList<Expression>(ss.groupList);
-      Collections.copy(groupList, ss.groupList);
-    }
-    if (!BeeUtils.isEmpty(ss.orderList)) {
-      orderList = new ArrayList<Map<String, Object>>(ss.orderList);
-      Collections.copy(orderList, ss.orderList);
-    }
-    if (!BeeUtils.isEmpty(ss.havingClause)) {
-      havingClause = ss.havingClause;
-    }
-    if (!BeeUtils.isEmpty(ss.unionList)) {
-      unionList = new ArrayList<SqlSelect>(ss.unionList);
-      Collections.copy(unionList, ss.unionList);
-    }
-    setParamMode(ss.getParamMode());
-    unionMode = ss.unionMode;
-  }
-
-  public SqlSelect addAvg(Expression expr, String alias) {
+  public SqlSelect addAvg(IsExpression expr, String alias) {
     Assert.notEmpty(expr);
     Assert.notEmpty(alias);
 
     addAggregate("AVG", expr, alias);
-    return this;
+    return getReference();
   }
 
   public SqlSelect addAvg(String source, String field, String alias) {
@@ -73,7 +43,7 @@ public class SqlSelect extends SqlQuery {
     Assert.notEmpty(alias);
 
     addField(SqlUtils.constant(constant), alias);
-    return this;
+    return getReference();
   }
 
   public SqlSelect addCount(String alias) {
@@ -89,238 +59,97 @@ public class SqlSelect extends SqlQuery {
     } else {
       xpr = expr.trim();
     }
-    addAggregate("COUNT", new Expressions(xpr), alias);
-    return this;
+    addAggregate("COUNT", SqlUtils.expression(xpr), alias);
+    return getReference();
   }
 
   public SqlSelect addDistinct(String source, String field) {
-    Assert.notEmpty(source);
-    Assert.notEmpty(field);
+    addField(SqlUtils.expression("DISTINCT ", SqlUtils.field(source, field)),
+        null);
+    return getReference();
+  }
 
-    addField(new Expressions("DISTINCT ", SqlUtils.field(source, field)), null);
-    return this;
+  public SqlSelect addExpr(IsExpression expr, String alias) {
+    Assert.notEmpty(expr);
+    Assert.notEmpty(alias);
+
+    addField(expr, alias);
+    return getReference();
   }
 
   public SqlSelect addExpr(String expr, String alias) {
     Assert.notEmpty(expr);
     Assert.notEmpty(alias);
 
-    addField(new Expressions(expr), alias);
-    return this;
+    addField(SqlUtils.expression(expr), alias);
+    return getReference();
   }
 
   public SqlSelect addField(String source, String field, String alias) {
-    Assert.notEmpty(source);
-    Assert.notEmpty(field);
-
     addField(SqlUtils.field(source, field), alias);
-    return this;
+    return getReference();
   }
 
   public SqlSelect addFields(String source, String... fields) {
-    Assert.notEmpty(source);
-    Assert.noNulls((Object[]) fields);
+    Assert.arrayLength(fields, 1);
 
     for (String fld : fields) {
-      if (BeeUtils.isEmpty(fld)) {
-        continue;
-      }
       addField(SqlUtils.field(source, fld), null);
     }
-    return this;
+    return getReference();
   }
 
-  public SqlSelect addFrom(SqlSelect source, String alias) {
-    if (BeeUtils.isEmpty(fromList)) {
-      addFrom(new FromSingle(source, alias));
-    } else {
-      addFrom(new FromList(source, alias));
-    }
-    return this;
+  public SqlSelect addGroup(String source, String... fields) {
+    addGroup(SqlUtils.fields(source, fields));
+    return getReference();
   }
 
-  public SqlSelect addFrom(String source) {
-    addFrom(source, null);
-    return this;
-  }
-
-  public SqlSelect addFrom(String source, String alias) {
-    if (BeeUtils.isEmpty(fromList)) {
-      addFrom(new FromSingle(source, alias));
-    } else {
-      addFrom(new FromList(source, alias));
-    }
-    return this;
-  }
-
-  public SqlSelect addFromFull(SqlSelect source, String alias, Condition on) {
-    Assert.notEmpty(fromList, "Wrong first FROM source");
-
-    addFrom(new FromFull(source, alias, on));
-    return this;
-  }
-
-  public SqlSelect addFromFull(String source, Condition on) {
-    Assert.notEmpty(fromList, "Wrong first FROM source");
-
-    addFromFull(source, null, on);
-    return this;
-  }
-
-  public SqlSelect addFromFull(String source, String alias, Condition on) {
-    Assert.notEmpty(fromList, "Wrong first FROM source");
-
-    addFrom(new FromFull(source, alias, on));
-    return this;
-  }
-
-  public SqlSelect addFromInner(SqlSelect source, String alias, Condition on) {
-    Assert.notEmpty(fromList, "Wrong first FROM source");
-
-    addFrom(new FromInner(source, alias, on));
-    return this;
-  }
-
-  public SqlSelect addFromInner(String source, Condition on) {
-    Assert.notEmpty(fromList, "Wrong first FROM source");
-
-    addFromInner(source, null, on);
-    return this;
-  }
-
-  public SqlSelect addFromInner(String source, String alias, Condition on) {
-    Assert.notEmpty(fromList, "Wrong first FROM source");
-
-    addFrom(new FromInner(source, alias, on));
-    return this;
-  }
-
-  public SqlSelect addFromLeft(SqlSelect source, String alias, Condition on) {
-    Assert.notEmpty(fromList, "Wrong first FROM source");
-
-    addFrom(new FromLeft(source, alias, on));
-    return this;
-  }
-
-  public SqlSelect addFromLeft(String source, Condition on) {
-    Assert.notEmpty(fromList, "Wrong first FROM source");
-
-    addFromLeft(source, null, on);
-    return this;
-  }
-
-  public SqlSelect addFromLeft(String source, String alias, Condition on) {
-    Assert.notEmpty(fromList, "Wrong first FROM source");
-
-    addFrom(new FromLeft(source, alias, on));
-    return this;
-  }
-
-  public SqlSelect addFromRight(SqlSelect source, String alias, Condition on) {
-    Assert.notEmpty(fromList, "Wrong first FROM source");
-
-    addFrom(new FromRight(source, alias, on));
-    return this;
-  }
-
-  public SqlSelect addFromRight(String source, Condition on) {
-    Assert.notEmpty(fromList, "Wrong first FROM source");
-
-    addFromRight(source, null, on);
-    return this;
-  }
-
-  public SqlSelect addFromRight(String source, String alias, Condition on) {
-    Assert.notEmpty(fromList, "Wrong first FROM source");
-
-    addFrom(new FromRight(source, alias, on));
-    return this;
-  }
-
-  // Group ------------------------------------------------------------------
-  public SqlSelect addGroup(String... group) {
-    Assert.arrayLength(group, 1);
-
-    if (BeeUtils.isEmpty(groupList)) {
-      groupList = new ArrayList<Expression>();
-    }
-    for (String grp : group) {
-      groupList.add(SqlUtils.field(grp));
-    }
-    return this;
-  }
-
-  public SqlSelect addGroup(FieldExpression... group) {
-    Assert.arrayLength(group, 1);
-
-    if (BeeUtils.isEmpty(groupList)) {
-      groupList = new ArrayList<Expression>();
-    }
-    for (Expression grp : group) {
-      groupList.add(grp);
-    }
-    return this;
-  }
-
-  public SqlSelect addMax(Expression expr, String alias) {
+  public SqlSelect addMax(IsExpression expr, String alias) {
     Assert.notEmpty(expr);
     Assert.notEmpty(alias);
 
     addAggregate("MAX", expr, alias);
-    return this;
+    return getReference();
   }
 
   public SqlSelect addMax(String source, String field, String alias) {
     return addMax(SqlUtils.field(source, field), alias);
   }
 
-  public SqlSelect addMin(Expression expr, String alias) {
+  public SqlSelect addMin(IsExpression expr, String alias) {
     Assert.notEmpty(expr);
     Assert.notEmpty(alias);
 
     addAggregate("MIN", expr, alias);
-    return this;
+    return getReference();
   }
 
   public SqlSelect addMin(String source, String field, String alias) {
     return addMin(SqlUtils.field(source, field), alias);
   }
 
-  public SqlSelect addOrder(String... order) {
-    Assert.noNulls((Object[]) order);
-
-    for (String ord : order) {
-      if (!BeeUtils.isEmpty(ord)) {
-        addOrder(ord, false);
-      }
-    }
-    return this;
+  public SqlSelect addOrder(String source, String... order) {
+    addOrder(false, SqlUtils.fields(source, order));
+    return getReference();
   }
 
-  public SqlSelect addOrderDesc(String... order) {
-    Assert.noNulls((Object[]) order);
-
-    for (String ord : order) {
-      if (!BeeUtils.isEmpty(ord)) {
-        addOrder(ord, true);
-      }
-    }
-    return this;
+  public SqlSelect addOrderDesc(String source, String... order) {
+    addOrder(true, SqlUtils.fields(source, order));
+    return getReference();
   }
 
-  public SqlSelect addSum(Expression expr, String alias) {
+  public SqlSelect addSum(IsExpression expr, String alias) {
     Assert.notEmpty(expr);
     Assert.notEmpty(alias);
 
     addAggregate("SUM", expr, alias);
-    return this;
+    return getReference();
   }
 
   public SqlSelect addSum(String source, String field, String alias) {
     return addSum(SqlUtils.field(source, field), alias);
   }
 
-  // Union ------------------------------------------------------------------
   public SqlSelect addUnion(SqlSelect... union) {
     Assert.noNulls((Object[]) union);
 
@@ -332,18 +161,18 @@ public class SqlSelect extends SqlQuery {
         this.unionList.add(un);
       }
     }
-    return this;
+    return getReference();
   }
 
   // Getters ----------------------------------------------------------------
   public List<String> getFieldAliases() {
     List<String> fldList = new ArrayList<String>();
 
-    for (Map<String, Object> fldMap : fieldList) {
-      String als = (String) fldMap.get("alias");
+    for (Object[] fldEntry : fieldList) {
+      String als = (String) fldEntry[FIELD_ALIAS];
 
       if (BeeUtils.isEmpty(als)) {
-        Object field = fldMap.get("field");
+        Object field = fldEntry[FIELD_EXPR];
 
         if (field instanceof FieldExpression) {
           als = ((FieldExpression) field).getField();
@@ -354,61 +183,20 @@ public class SqlSelect extends SqlQuery {
     return fldList;
   }
 
-  public List<Map<String, Object>> getFields() {
+  public List<Object[]> getFields() {
     return fieldList;
   }
 
-  public List<FromSource> getFrom() {
-    return fromList;
-  }
-
-  public List<Expression> getGroupBy() {
+  public List<IsExpression> getGroupBy() {
     return groupList;
   }
 
-  public Condition getHaving() {
+  public IsCondition getHaving() {
     return havingClause;
   }
 
-  public List<Map<String, Object>> getOrderBy() {
+  public List<Object[]> getOrderBy() {
     return orderList;
-  }
-
-  @Override
-  public Map<Integer, Object> getParameters() {
-    Map<Integer, Object> params = new HashMap<Integer, Object>();
-    Integer paramIndex = 0;
-
-    for (FromSource from : fromList) {
-      paramIndex = conditionParameters(from.getParameters(), paramIndex, params);
-    }
-    if (!BeeUtils.isEmpty(whereClause)) {
-      paramIndex = conditionParameters(whereClause.getParameters(), paramIndex,
-          params);
-    }
-    if (!BeeUtils.isEmpty(havingClause)) {
-      paramIndex = conditionParameters(havingClause.getParameters(),
-          paramIndex, params);
-    }
-    if (!BeeUtils.isEmpty(unionList)) {
-      for (SqlSelect union : unionList) {
-        Map<Integer, Object> paramMap = union.getParameters();
-
-        if (!BeeUtils.isEmpty(paramMap)) {
-          for (int i = 0; i < paramMap.size(); i++) {
-            params.put(++paramIndex, paramMap.get(i + 1));
-          }
-        }
-      }
-    }
-    return params;
-  }
-
-  @Override
-  public String getQuery(SqlBuilder builder, boolean paramMode) {
-    Assert.notEmpty(builder);
-
-    return builder.getQuery(this, paramMode);
   }
 
   public List<String> getSources(String source) {
@@ -416,19 +204,68 @@ public class SqlSelect extends SqlQuery {
 
     List<String> lst = new ArrayList<String>();
 
-    for (FromSource from : this.fromList) {
-      Object src = from.getSource();
+    if (!BeeUtils.isEmpty(getFrom())) {
+      for (IsFrom from : getFrom()) {
+        Object src = from.getSource();
 
-      if (src instanceof String && source.equals(src)) {
-        String als = from.getAlias();
+        if (src instanceof String && source.equals(src)) {
+          String als = from.getAlias();
 
-        if (BeeUtils.isEmpty(als)) {
-          als = source;
+          if (BeeUtils.isEmpty(als)) {
+            als = source;
+          }
+          lst.add(als);
         }
-        lst.add(als);
       }
     }
     return lst;
+  }
+
+  @Override
+  public List<Object> getSqlParams() {
+    Assert.state(!isEmpty());
+
+    List<Object> paramList = null;
+
+    for (Object[] field : fieldList) {
+      IsExpression fld = (IsExpression) field[FIELD_EXPR];
+      addParams(paramList, fld.getSqlParams());
+    }
+    if (!BeeUtils.isEmpty(getFrom())) {
+      for (IsFrom from : getFrom()) {
+        addParams(paramList, from.getSqlParams());
+      }
+    }
+    if (!BeeUtils.isEmpty(whereClause)) {
+      addParams(paramList, whereClause.getSqlParams());
+    }
+    if (!BeeUtils.isEmpty(groupList)) {
+      for (IsExpression group : groupList) {
+        addParams(paramList, group.getSqlParams());
+      }
+    }
+    if (!BeeUtils.isEmpty(orderList)) {
+      for (Object[] order : orderList) {
+        IsExpression ord = (IsExpression) order[ORDER_EXPR];
+        addParams(paramList, ord.getSqlParams());
+      }
+    }
+    if (!BeeUtils.isEmpty(havingClause)) {
+      addParams(paramList, havingClause.getSqlParams());
+    }
+    if (!BeeUtils.isEmpty(unionList)) {
+      for (SqlSelect union : unionList) {
+        addParams(paramList, union.getSqlParams());
+      }
+    }
+    return paramList;
+  }
+
+  @Override
+  public String getSqlString(SqlBuilder builder, boolean paramMode) {
+    Assert.notEmpty(builder);
+
+    return builder.getQuery(this, paramMode);
   }
 
   public List<SqlSelect> getUnion() {
@@ -439,91 +276,87 @@ public class SqlSelect extends SqlQuery {
     return unionMode;
   }
 
-  public Condition getWhere() {
+  public IsCondition getWhere() {
     return whereClause;
   }
 
   @Override
   public boolean isEmpty() {
-    return BeeUtils.isEmpty(fieldList) || BeeUtils.isEmpty(fromList);
+    return BeeUtils.isEmpty(fieldList) || BeeUtils.isEmpty(getFrom());
   }
 
-  // Fields -----------------------------------------------------------------
   public SqlSelect resetFields() {
-    this.fieldList.clear();
-    return this;
+    fieldList.clear();
+    return getReference();
   }
 
-  // Order ------------------------------------------------------------------
   public SqlSelect resetOrder() {
     if (!BeeUtils.isEmpty(orderList)) {
       orderList.clear();
     }
-    return this;
+    return getReference();
   }
 
-  // Having -----------------------------------------------------------------
-  public SqlSelect setHaving(Condition having) {
-    Assert.notEmpty(having);
-
+  public SqlSelect setHaving(IsCondition having) {
     havingClause = having;
-    return this;
+    return getReference();
   }
 
   public void setUnionAllMode(boolean allMode) {
     unionMode = allMode ? " UNION ALL " : " UNION ";
   }
 
-  // Where ------------------------------------------------------------------
-  public SqlSelect setWhere(Condition clause) {
+  public SqlSelect setWhere(IsCondition clause) {
     whereClause = clause;
-    return this;
+    return getReference();
   }
 
-  // Aggregates -------------------------------------------------------------
-  private void addAggregate(String fnc, Expression expr, String alias) {
-    addField(new Expressions(fnc, "(", expr, ")"), alias);
+  @Override
+  protected SqlSelect getReference() {
+    return getReference();
   }
 
-  private void addField(Expression expr, String alias) {
-    Map<String, Object> fldMap = new HashMap<String, Object>(2);
-    fldMap.put("field", expr);
+  private void addAggregate(String fnc, IsExpression expr, String alias) {
+    addField(SqlUtils.expression(fnc, "(", expr, ")"), alias);
+  }
 
-    if (!BeeUtils.isEmpty(alias)) {
-      fldMap.put("alias", alias);
+  private void addField(IsExpression expr, String alias) {
+    Object[] fieldEntry = new Object[2];
+    fieldEntry[FIELD_EXPR] = expr;
+    fieldEntry[FIELD_ALIAS] = alias;
+
+    fieldList.add(fieldEntry);
+  }
+
+  private void addGroup(IsExpression... group) {
+    if (BeeUtils.isEmpty(groupList)) {
+      groupList = new ArrayList<IsExpression>();
     }
-    fieldList.add(fldMap);
-  }
-
-  // From -------------------------------------------------------------------
-  private void addFrom(FromSource from) {
-    fromList.add(from);
-  }
-
-  private SqlSelect addOrder(String order, Boolean desc) {
-    Assert.notEmpty(order);
-
-    Map<String, Object> fldMap = new HashMap<String, Object>(2);
-    fldMap.put("field", order);
-    fldMap.put("desc", !BeeUtils.isEmpty(desc));
-
-    if (BeeUtils.isEmpty(orderList)) {
-      orderList = new ArrayList<Map<String, Object>>();
+    for (IsExpression grp : group) {
+      groupList.add(grp);
     }
-    orderList.add(fldMap);
-
-    return this;
   }
 
-  private Integer conditionParameters(List<Object> paramList, Integer index,
-      Map<Integer, Object> params) {
-    Integer idx = index;
+  private void addOrder(Boolean desc, IsExpression... order) {
+    for (IsExpression ord : order) {
+      Object[] orderEntry = new Object[2];
+      orderEntry[ORDER_EXPR] = ord;
+      orderEntry[ORDER_DESC] = !BeeUtils.isEmpty(desc);
 
-    if (!BeeUtils.isEmpty(paramList)) {
-      for (Object prm : paramList) {
-        params.put(++idx, prm);
+      if (BeeUtils.isEmpty(orderList)) {
+        orderList = new ArrayList<Object[]>();
+      }
+      orderList.add(orderEntry);
+    }
+  }
+
+  private void addParams(List<Object> paramList, List<Object> params) {
+    if (!BeeUtils.isEmpty(params)) {
+      if (BeeUtils.isEmpty(paramList)) {
+        paramList = params;
+      } else {
+        paramList.addAll(params);
       }
     }
-    return idx;
   }
 }

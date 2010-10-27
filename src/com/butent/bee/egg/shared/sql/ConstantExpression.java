@@ -5,7 +5,7 @@ import com.butent.bee.egg.shared.Assert;
 import java.util.ArrayList;
 import java.util.List;
 
-class ConstantExpression implements Expression {
+class ConstantExpression implements IsExpression {
 
   private final Object value;
 
@@ -16,14 +16,14 @@ class ConstantExpression implements Expression {
   }
 
   @Override
-  public String getExpression(SqlBuilder builder, boolean paramMode) {
-    return paramMode ? "?" : builder.sqlTransform(value);
-  }
-
-  @Override
-  public List<Object> getParameters() {
+  public List<Object> getSqlParams() {
     List<Object> param = new ArrayList<Object>(1);
     param.add(value);
     return param;
+  }
+
+  @Override
+  public String getSqlString(SqlBuilder builder, boolean paramMode) {
+    return paramMode ? "?" : builder.sqlTransform(value);
   }
 }

@@ -1,27 +1,80 @@
 package com.butent.bee.egg.shared.sql;
 
 import com.butent.bee.egg.shared.Assert;
+import com.butent.bee.egg.shared.utils.BeeUtils;
 
-import java.util.Map;
+import java.util.List;
 
-public class SqlDelete extends SqlQuery {
+public class SqlDelete extends HasFrom<SqlDelete> {
 
-  @Override
-  public boolean isEmpty() {
-    // TODO Auto-generated method stub
-    return false;
+  private final IsFrom target;
+  private IsCondition whereClause;
+
+  public SqlDelete(String source) {
+    target = new FromSingle(source);
+  }
+
+  public SqlDelete(String source, String alias) {
+    target = new FromSingle(source, alias);
   }
 
   @Override
-  Map<Integer, Object> getParameters() {
-    // TODO Auto-generated method stub
-    return null;
+  public List<Object> getSqlParams() {
+    Assert.state(!isEmpty());
+
+    List<Object> paramList = null;
+
+    if (!BeeUtils.isEmpty(target)) {
+      addParams(paramList, target.getSqlParams());
+    }
+    if (!BeeUtils.isEmpty(getFrom())) {
+      for (IsFrom from : getFrom()) {
+        addParams(paramList, from.getSqlParams());
+      }
+    }
+    if (!BeeUtils.isEmpty(whereClause)) {
+      addParams(paramList, whereClause.getSqlParams());
+    }
+    return paramList;
   }
 
   @Override
-  String getQuery(SqlBuilder builder, boolean paramMode) {
+  public String getSqlString(SqlBuilder builder, boolean paramMode) {
     Assert.notEmpty(builder);
 
     return builder.getDelete(this, paramMode);
+  }
+
+  public IsFrom getTarget() {
+    return target;
+  }
+
+  public IsCondition getWhere() {
+    return whereClause;
+  }
+
+  @Override
+  public boolean isEmpty() {
+    return BeeUtils.isEmpty(target) || BeeUtils.isEmpty(whereClause);
+  }
+
+  public SqlDelete setWhere(IsCondition clause) {
+    whereClause = clause;
+    return getReference();
+  }
+
+  @Override
+  protected SqlDelete getReference() {
+    return this;
+  }
+
+  private void addParams(List<Object> paramList, List<Object> params) {
+    if (!BeeUtils.isEmpty(params)) {
+      if (BeeUtils.isEmpty(paramList)) {
+        paramList = params;
+      } else {
+        paramList.addAll(params);
+      }
+    }
   }
 }

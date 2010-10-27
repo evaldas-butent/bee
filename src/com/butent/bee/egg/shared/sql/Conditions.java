@@ -6,38 +6,23 @@ import com.butent.bee.egg.shared.utils.BeeUtils;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class Conditions implements Condition {
-  private List<Condition> conditionList = new ArrayList<Condition>();
+public abstract class Conditions implements IsCondition {
+  private List<IsCondition> conditionList = new ArrayList<IsCondition>();
 
-  public void add(Condition... conditions) {
+  public void add(IsCondition... conditions) {
     Assert.noNulls((Object[]) conditions);
 
-    for (Condition cond : conditions) {
+    for (IsCondition cond : conditions) {
       conditionList.add(cond);
     }
   }
 
-  // Implementations ----------------------------------------------------------
   @Override
-  public String getCondition(SqlBuilder builder, boolean paramMode) {
-    StringBuilder clause = new StringBuilder();
-
-    for (int i = 0; i < conditionList.size(); i++) {
-      Condition cond = conditionList.get(i);
-      if (i > 0) {
-        clause.append(joinMode());
-      }
-      clause.append(cond.getCondition(builder, paramMode));
-    }
-    return clause.toString();
-  }
-
-  @Override
-  public List<Object> getParameters() {
+  public List<Object> getSqlParams() {
     List<Object> paramList = null;
 
-    for (Condition cond : conditionList) {
-      List<Object> cList = cond.getParameters();
+    for (IsCondition cond : conditionList) {
+      List<Object> cList = cond.getSqlParams();
 
       if (!BeeUtils.isEmpty(cList)) {
         if (BeeUtils.isEmpty(paramList)) {
@@ -48,6 +33,20 @@ public abstract class Conditions implements Condition {
       }
     }
     return paramList;
+  }
+
+  @Override
+  public String getSqlString(SqlBuilder builder, boolean paramMode) {
+    StringBuilder clause = new StringBuilder();
+
+    for (int i = 0; i < conditionList.size(); i++) {
+      IsCondition cond = conditionList.get(i);
+      if (i > 0) {
+        clause.append(joinMode());
+      }
+      clause.append(cond.getSqlString(builder, paramMode));
+    }
+    return clause.toString();
   }
 
   protected abstract String joinMode();

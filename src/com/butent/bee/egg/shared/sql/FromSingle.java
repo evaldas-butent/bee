@@ -3,24 +3,12 @@ package com.butent.bee.egg.shared.sql;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
-class FromSingle implements FromSource {
+class FromSingle implements IsFrom {
 
   private Object source;
   private String alias;
-
-  public FromSingle(SqlSelect source, String alias) {
-    Assert.notNull(source);
-    Assert.state(!source.isEmpty(),
-        "[Assertion failed] - QueryBuilder source must not be empty");
-    Assert.notEmpty(alias);
-
-    this.source = source;
-    this.alias = alias;
-  }
 
   public FromSingle(String source) {
     this(source, null);
@@ -33,25 +21,18 @@ class FromSingle implements FromSource {
     this.alias = alias;
   }
 
-  @Override
-  public String getAlias() {
-    return alias;
+  public FromSingle(SqlSelect source, String alias) {
+    Assert.notNull(source);
+    Assert.state(!source.isEmpty());
+    Assert.notEmpty(alias);
+
+    this.source = source;
+    this.alias = alias;
   }
 
   @Override
-  public String getFrom(SqlBuilder builder, boolean paramMode) {
-    StringBuilder from = new StringBuilder();
-
-    if (source instanceof SqlSelect) {
-      from.append("(" + ((SqlSelect) source).getQuery(builder, paramMode) + ")");
-    } else {
-      from.append(builder.sqlQuote((String) source));
-    }
-
-    if (!BeeUtils.isEmpty(alias)) {
-      from.append(" ").append(builder.sqlQuote(alias));
-    }
-    return from.toString();
+  public String getAlias() {
+    return alias;
   }
 
   @Override
@@ -60,25 +41,34 @@ class FromSingle implements FromSource {
   }
 
   @Override
-  public List<Object> getParameters() {
+  public Object getSource() {
+    return source;
+  }
+
+  @Override
+  public List<Object> getSqlParams() {
     List<Object> paramList = null;
 
     if (source instanceof SqlSelect) {
-      Map<Integer, Object> paramMap = ((SqlSelect) source).getParameters();
-
-      if (!BeeUtils.isEmpty(paramMap)) {
-        paramList = new ArrayList<Object>(paramMap.size());
-
-        for (int i = 0; i < paramMap.size(); i++) {
-          paramList.add(paramMap.get(i + 1));
-        }
-      }
+      paramList = ((SqlSelect) source).getSqlParams();
     }
     return paramList;
   }
 
   @Override
-  public Object getSource() {
-    return source;
+  public String getSqlString(SqlBuilder builder, boolean paramMode) {
+    StringBuilder from = new StringBuilder();
+
+    if (source instanceof SqlSelect) {
+      from.append("(" + ((SqlSelect) source).getSqlString(builder, paramMode)
+          + ")");
+    } else {
+      from.append(builder.sqlQuote((String) source));
+    }
+
+    if (!BeeUtils.isEmpty(alias)) {
+      from.append(" ").append(builder.sqlQuote(alias));
+    }
+    return from.toString();
   }
 }

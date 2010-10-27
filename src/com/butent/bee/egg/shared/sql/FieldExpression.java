@@ -5,13 +5,9 @@ import com.butent.bee.egg.shared.utils.BeeUtils;
 
 import java.util.List;
 
-class FieldExpression implements Expression {
+class FieldExpression implements IsExpression {
 
   private final String source, field;
-
-  public FieldExpression(String field) {
-    this(null, field);
-  }
 
   public FieldExpression(String source, String field) {
     Assert.notEmpty(field);
@@ -21,18 +17,20 @@ class FieldExpression implements Expression {
   }
 
   @Override
-  public String getExpression(SqlBuilder builder, boolean paramMode) {
-    String s = builder.sqlQuote(field);
-
-    if (!BeeUtils.isEmpty(source)) {
-      s = builder.sqlQuote(source) + "." + s;
-    }
-    return s;
+  public List<Object> getSqlParams() {
+    return null;
   }
 
   @Override
-  public List<Object> getParameters() {
-    return null;
+  public String getSqlString(SqlBuilder builder, boolean paramMode) {
+    String s;
+
+    if (BeeUtils.isEmpty(source)) {
+      s = builder.sqlQuote(field);
+    } else {
+      s = builder.sqlQuote(source) + "." + builder.sqlQuote(field);
+    }
+    return s;
   }
 
   String getField() {
