@@ -13,7 +13,11 @@ import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.dom.client.OptionElement;
 import com.google.gwt.dom.client.SpanElement;
 import com.google.gwt.dom.client.Style;
+import com.google.gwt.dom.client.Style.Overflow;
+import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.dom.client.Style.Visibility;
 import com.google.gwt.dom.client.TableCellElement;
+import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.UIObject;
@@ -93,6 +97,9 @@ public class DomUtils {
   
   private static int idCounter = 0;
 
+  private static int scrollbarWidth = -1;
+  private static int scrollbarHeight = -1;
+  
   public static Element createButton(String text) {
     return createButton(text, false, null);
   }
@@ -420,7 +427,7 @@ public class DomUtils {
   }
 
   public static int getCellPadding(Element elem) {
-    if (isTableCellElement(elem)) {
+    if (isTableElement(elem)) {
       return elem.getPropertyInt(CELL_PADDING);
     } else {
       return 0;
@@ -428,7 +435,7 @@ public class DomUtils {
   }
 
   public static int getCellSpacing(Element elem) {
-    if (isTableCellElement(elem)) {
+    if (isTableElement(elem)) {
       return elem.getPropertyInt(CELL_SPACING);
     } else {
       return 0;
@@ -596,6 +603,20 @@ public class DomUtils {
     } else {
       return 0;
     }
+  }
+
+  public static int getScrollbarHeight() {
+    if (scrollbarHeight <= 0) {
+      calculateScrollbarSize();
+    }
+    return scrollbarHeight;
+  }
+
+  public static int getScrollbarWidth() {
+    if (scrollbarWidth <= 0) {
+      calculateScrollbarSize();
+    }
+    return scrollbarWidth;
   }
 
   public static String getService(Widget w) {
@@ -956,6 +977,30 @@ public class DomUtils {
     }
   }
 
+  private static void calculateScrollbarSize() {
+    Element elem = DOM.createDiv();
+    elem.getStyle().setVisibility(Visibility.HIDDEN);
+    elem.getStyle().setWidth(100, Unit.PX);
+    elem.getStyle().setHeight(100, Unit.PX);
+    elem.getStyle().setBorderWidth(0, Unit.PX);
+    elem.getStyle().setMargin(0, Unit.PX);
+    elem.getStyle().setOverflow(Overflow.SCROLL);
+    
+    Element body = Document.get().getBody();
+    body.appendChild(elem);
+
+    int w1 = elem.getOffsetWidth();
+    int h1 = elem.getOffsetHeight();
+
+    int w2 = elem.getClientWidth();
+    int h2 = elem.getClientHeight();
+
+    body.removeChild(elem);
+
+    scrollbarWidth = w1 - w2;
+    scrollbarHeight = h1 - h2;    
+  }
+
   private static String transformNode(Node nd) {
     if (nd == null) {
       return BeeConst.STRING_EMPTY;
@@ -963,5 +1008,4 @@ public class DomUtils {
       return BeeUtils.concat(1, nd.getNodeName(), nd.getNodeValue());
     }
   }
-  
 }

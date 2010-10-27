@@ -1,5 +1,6 @@
 package com.butent.bee.egg.client.pst;
 
+import com.butent.bee.egg.client.dom.DomUtils;
 import com.butent.bee.egg.client.pst.ColumnResizer.ColumnWidthInfo;
 
 import java.util.HashMap;
@@ -25,6 +26,10 @@ public class ScrollTable extends AbstractScrollTable {
     super(dataTable, headerTable, images);
   }
 
+  public void createId() {
+    DomUtils.createId(this, "st");
+  }
+  
   @Override
   public int getMaximumColumnWidth(int column) {
     return getColumnWidthInfo(column).getMaximumWidth();

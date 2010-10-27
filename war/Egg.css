@@ -167,12 +167,12 @@ body, select {
 }
 
 .bee-ScrollTable .headerWrapper {
-  background: activecaption;
+  background: #381C1B;
 }
 
 .bee-ScrollTable .footerWrapper {
   border-top: 1px solid #aaa;
-  background: inactivecaption;
+  background: #2C1514;
 }
 
 .bee-ScrollTable .dataTable td,
@@ -196,8 +196,6 @@ body, select {
 
 .bee-ScrollTable .dataTable td.highlighted {
   background: #FFFFAA;
-  cursor: hand;
-  cursor: pointer;
 }
 
 .bee-ScrollTable .dataTable tr.selected td {
@@ -211,15 +209,7 @@ body, select {
 }
 
 .gwt-PagingOptions .errorMessage {
-	color: red;
-}
-
-.pagingOptionsFirstPage,
-.pagingOptionsLastPage,
-.pagingOptionsNextPage,
-.pagingOptionsPrevPage {
-  cursor: hand;
-  cursor: pointer;
+  color: red;
 }
 
 .gwt-InlineCellEditor {
@@ -227,14 +217,6 @@ body, select {
   padding: 4px;
   background: white;
   overflow: auto;
-}
-.gwt-InlineCellEditor .accept {
-  cursor: pointer;
-  cursor: hand;
-}
-.gwt-InlineCellEditor .cancel {
-  cursor: pointer;
-  cursor: hand;
 }
 
 .AbstractOption-Label {

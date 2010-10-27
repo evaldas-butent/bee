@@ -5,6 +5,7 @@ import com.google.gwt.event.dom.client.KeyPressEvent;
 
 import com.butent.bee.egg.client.BeeGlobal;
 import com.butent.bee.egg.client.BeeKeeper;
+import com.butent.bee.egg.client.dom.DomUtils;
 import com.butent.bee.egg.client.widget.BeeTextBox;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeConst;
@@ -71,6 +72,10 @@ public class CliWidget extends BeeTextBox {
       CliWorker.showProperties(v, arr);
     } else if (z.equals("rpc")) {
       CliWorker.showRpc();
+    } else if (z.equals("sb")) {
+      BeeGlobal.showDialog("Scrollbar", 
+          BeeUtils.addName("width", DomUtils.getScrollbarWidth()),
+          BeeUtils.addName("height", DomUtils.getScrollbarHeight()));
     } else if (z.startsWith("serv") || z.startsWith("sys")) {
       BeeKeeper.getRpc().invoke("systemInfo");
     } else if (z.equals("stack")) {

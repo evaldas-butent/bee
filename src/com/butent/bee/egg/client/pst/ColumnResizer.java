@@ -1,5 +1,7 @@
 package com.butent.bee.egg.client.pst;
 
+import com.butent.bee.egg.shared.Assert;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -90,6 +92,8 @@ class ColumnResizer {
   }
 
   public int distributeWidth(List<ColumnWidthInfo> columns, int width) {
+    Assert.notNull(columns);
+
     for (ColumnWidthInfo info : columns) {
       int curWidth = info.getCurrentWidth();
       if (info.hasMinimumWidth() && curWidth < info.getMinimumWidth()) {

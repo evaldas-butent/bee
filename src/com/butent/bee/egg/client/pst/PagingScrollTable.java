@@ -14,6 +14,7 @@ import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment.HorizontalAlignmentConstant;
 import com.google.gwt.user.client.ui.HasVerticalAlignment.VerticalAlignmentConstant;
 
+import com.butent.bee.egg.client.dom.DomUtils;
 import com.butent.bee.egg.client.grid.BeeFlexTable.BeeFlexCellFormatter;
 import com.butent.bee.egg.client.grid.BeeHtmlTable;
 import com.butent.bee.egg.client.grid.BeeHtmlTable.BeeCell;
@@ -374,6 +375,10 @@ public class PagingScrollTable<RowType> extends AbstractScrollTable implements
     return addHandler(handler, PagingFailureEvent.getType());
   }
 
+  public void createId() {
+    DomUtils.createId(this, "pst");
+  }
+  
   public int getAbsoluteFirstRowIndex() {
     return currentPage * pageSize;
   }
