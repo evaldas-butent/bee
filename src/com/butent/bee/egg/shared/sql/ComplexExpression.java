@@ -22,15 +22,7 @@ class ComplexExpression implements IsExpression {
 
     for (Object o : content) {
       if (o instanceof IsSql) {
-        List<Object> eList = ((IsSql) o).getSqlParams();
-
-        if (!BeeUtils.isEmpty(eList)) {
-          if (BeeUtils.isEmpty(paramList)) {
-            paramList = eList;
-          } else {
-            paramList.addAll(eList);
-          }
-        }
+        SqlUtils.addParams(paramList, ((IsSql) o).getSqlParams());
       }
     }
     return paramList;

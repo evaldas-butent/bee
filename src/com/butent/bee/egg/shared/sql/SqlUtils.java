@@ -3,6 +3,8 @@ package com.butent.bee.egg.shared.sql;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
+import java.util.List;
+
 public class SqlUtils {
 
   private static final String EQUAL = "=";
@@ -13,6 +15,16 @@ public class SqlUtils {
   private static final String MORE = ">";
   private static final String MORE_EQUAL = ">=";
   private static final String NOT_EQUAL = "<>";
+
+  public static void addParams(List<Object> paramList, List<Object> params) {
+    if (!BeeUtils.isEmpty(params)) {
+      if (BeeUtils.isEmpty(paramList)) {
+        paramList = params;
+      } else {
+        paramList.addAll(params);
+      }
+    }
+  }
 
   public static IsCondition and(IsCondition... conditions) {
     Conditions cb = new AndConditions();

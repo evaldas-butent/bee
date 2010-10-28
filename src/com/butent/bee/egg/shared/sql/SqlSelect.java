@@ -13,7 +13,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
   static final int ORDER_EXPR = 0;
   static final int ORDER_DESC = 1;
 
-  private List<Object[]> fieldList = new ArrayList<Object[]>();
+  private List<Object[]> fieldList;
   private IsCondition whereClause;
   private List<IsExpression> groupList;
   private List<Object[]> orderList;
@@ -168,17 +168,19 @@ public class SqlSelect extends HasFrom<SqlSelect> {
   public List<String> getFieldAliases() {
     List<String> fldList = new ArrayList<String>();
 
-    for (Object[] fldEntry : fieldList) {
-      String als = (String) fldEntry[FIELD_ALIAS];
+    if (!BeeUtils.isEmpty(fieldList)) {
+      for (Object[] fldEntry : fieldList) {
+        String als = (String) fldEntry[FIELD_ALIAS];
 
-      if (BeeUtils.isEmpty(als)) {
-        Object field = fldEntry[FIELD_EXPR];
+        if (BeeUtils.isEmpty(als)) {
+          Object field = fldEntry[FIELD_EXPR];
 
-        if (field instanceof FieldExpression) {
-          als = ((FieldExpression) field).getField();
+          if (field instanceof FieldExpression) {
+            als = ((FieldExpression) field).getField();
+          }
         }
+        fldList.add(als);
       }
-      fldList.add(als);
     }
     return fldList;
   }
@@ -227,35 +229,37 @@ public class SqlSelect extends HasFrom<SqlSelect> {
 
     List<Object> paramList = null;
 
-    for (Object[] field : fieldList) {
-      IsExpression fld = (IsExpression) field[FIELD_EXPR];
-      addParams(paramList, fld.getSqlParams());
+    if (!BeeUtils.isEmpty(fieldList)) {
+      for (Object[] field : fieldList) {
+        IsExpression fld = (IsExpression) field[FIELD_EXPR];
+        SqlUtils.addParams(paramList, fld.getSqlParams());
+      }
     }
     if (!BeeUtils.isEmpty(getFrom())) {
       for (IsFrom from : getFrom()) {
-        addParams(paramList, from.getSqlParams());
+        SqlUtils.addParams(paramList, from.getSqlParams());
       }
     }
     if (!BeeUtils.isEmpty(whereClause)) {
-      addParams(paramList, whereClause.getSqlParams());
+      SqlUtils.addParams(paramList, whereClause.getSqlParams());
     }
     if (!BeeUtils.isEmpty(groupList)) {
       for (IsExpression group : groupList) {
-        addParams(paramList, group.getSqlParams());
+        SqlUtils.addParams(paramList, group.getSqlParams());
       }
     }
     if (!BeeUtils.isEmpty(orderList)) {
       for (Object[] order : orderList) {
         IsExpression ord = (IsExpression) order[ORDER_EXPR];
-        addParams(paramList, ord.getSqlParams());
+        SqlUtils.addParams(paramList, ord.getSqlParams());
       }
     }
     if (!BeeUtils.isEmpty(havingClause)) {
-      addParams(paramList, havingClause.getSqlParams());
+      SqlUtils.addParams(paramList, havingClause.getSqlParams());
     }
     if (!BeeUtils.isEmpty(unionList)) {
       for (SqlSelect union : unionList) {
-        addParams(paramList, union.getSqlParams());
+        SqlUtils.addParams(paramList, union.getSqlParams());
       }
     }
     return paramList;
@@ -286,7 +290,9 @@ public class SqlSelect extends HasFrom<SqlSelect> {
   }
 
   public SqlSelect resetFields() {
-    fieldList.clear();
+    if (!BeeUtils.isEmpty(fieldList)) {
+      fieldList.clear();
+    }
     return getReference();
   }
 
@@ -313,7 +319,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
 
   @Override
   protected SqlSelect getReference() {
-    return getReference();
+    return this;
   }
 
   private void addAggregate(String fnc, IsExpression expr, String alias) {
@@ -325,6 +331,9 @@ public class SqlSelect extends HasFrom<SqlSelect> {
     fieldEntry[FIELD_EXPR] = expr;
     fieldEntry[FIELD_ALIAS] = alias;
 
+    if (BeeUtils.isEmpty(fieldList)) {
+      fieldList = new ArrayList<Object[]>();
+    }
     fieldList.add(fieldEntry);
   }
 
@@ -347,16 +356,6 @@ public class SqlSelect extends HasFrom<SqlSelect> {
         orderList = new ArrayList<Object[]>();
       }
       orderList.add(orderEntry);
-    }
-  }
-
-  private void addParams(List<Object> paramList, List<Object> params) {
-    if (!BeeUtils.isEmpty(params)) {
-      if (BeeUtils.isEmpty(paramList)) {
-        paramList = params;
-      } else {
-        paramList.addAll(params);
-      }
     }
   }
 }

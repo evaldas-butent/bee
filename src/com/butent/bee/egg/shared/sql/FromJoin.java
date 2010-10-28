@@ -1,7 +1,6 @@
 package com.butent.bee.egg.shared.sql;
 
 import com.butent.bee.egg.shared.Assert;
-import com.butent.bee.egg.shared.utils.BeeUtils;
 
 import java.util.List;
 
@@ -30,15 +29,8 @@ abstract class FromJoin extends FromSingle {
   @Override
   public List<Object> getSqlParams() {
     List<Object> paramList = super.getSqlParams();
-    List<Object> qp = on.getSqlParams();
+    SqlUtils.addParams(paramList, on.getSqlParams());
 
-    if (!BeeUtils.isEmpty(qp)) {
-      if (BeeUtils.isEmpty(paramList)) {
-        paramList = qp;
-      } else {
-        paramList.addAll(qp);
-      }
-    }
     return paramList;
   }
 

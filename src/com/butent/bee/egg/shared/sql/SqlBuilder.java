@@ -52,8 +52,49 @@ public abstract class SqlBuilder {
   String getInsert(SqlInsert si, boolean paramMode) {
     Assert.notNull(si);
     Assert.state(!si.isEmpty());
-    // TODO Auto-generated method stub
-    return null;
+
+    StringBuilder query = new StringBuilder("INSERT INTO ");
+
+    IsFrom target = si.getTarget();
+
+    if (!BeeUtils.isEmpty(target)) {
+      query.append(target.getSqlString(this, paramMode));
+    }
+
+    List<IsExpression> fieldList = si.getFields();
+
+    if (!BeeUtils.isEmpty(fieldList)) {
+      query.append(" (");
+
+      for (int i = 0; i < fieldList.size(); i++) {
+        if (i > 0) {
+          query.append(", ");
+        }
+        IsExpression field = fieldList.get(i);
+        query.append(field.getSqlString(this, paramMode));
+      }
+      query.append(") ");
+
+      if (!BeeUtils.isEmpty(si.getValueQuery())) {
+        query.append(si.getValueQuery().getSqlString(this, paramMode));
+      } else {
+        List<IsExpression> valueList = si.getValues();
+
+        if (!BeeUtils.isEmpty(valueList)) {
+          query.append(" VALUES (");
+
+          for (int i = 0; i < valueList.size(); i++) {
+            if (i > 0) {
+              query.append(", ");
+            }
+            IsExpression value = valueList.get(i);
+            query.append(value.getSqlString(this, paramMode));
+          }
+          query.append(") ");
+        }
+      }
+    }
+    return query.toString();
   }
 
   String getQuery(SqlSelect ss, boolean paramMode) {

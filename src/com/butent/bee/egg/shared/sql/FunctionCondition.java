@@ -1,7 +1,6 @@
 package com.butent.bee.egg.shared.sql;
 
 import com.butent.bee.egg.shared.Assert;
-import com.butent.bee.egg.shared.utils.BeeUtils;
 
 import java.util.List;
 
@@ -25,16 +24,8 @@ class FunctionCondition implements IsCondition {
   public List<Object> getSqlParams() {
     List<Object> paramList = null;
 
-    for (IsExpression e : values) {
-      List<Object> eList = e.getSqlParams();
-
-      if (!BeeUtils.isEmpty(eList)) {
-        if (BeeUtils.isEmpty(paramList)) {
-          paramList = eList;
-        } else {
-          paramList.addAll(eList);
-        }
-      }
+    for (IsExpression value : values) {
+      SqlUtils.addParams(paramList, value.getSqlParams());
     }
     return paramList;
   }
@@ -46,8 +37,8 @@ class FunctionCondition implements IsCondition {
     sb.append(function).append("(").append(
         expression.getSqlString(builder, false));
 
-    for (IsExpression val : values) {
-      sb.append(", ").append(val.getSqlString(builder, paramMode));
+    for (IsExpression value : values) {
+      sb.append(", ").append(value.getSqlString(builder, paramMode));
     }
     return sb.append(")").toString();
   }

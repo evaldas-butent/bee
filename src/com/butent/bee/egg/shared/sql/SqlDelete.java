@@ -25,15 +25,15 @@ public class SqlDelete extends HasFrom<SqlDelete> {
     List<Object> paramList = null;
 
     if (!BeeUtils.isEmpty(target)) {
-      addParams(paramList, target.getSqlParams());
+      SqlUtils.addParams(paramList, target.getSqlParams());
     }
     if (!BeeUtils.isEmpty(getFrom())) {
       for (IsFrom from : getFrom()) {
-        addParams(paramList, from.getSqlParams());
+        SqlUtils.addParams(paramList, from.getSqlParams());
       }
     }
     if (!BeeUtils.isEmpty(whereClause)) {
-      addParams(paramList, whereClause.getSqlParams());
+      SqlUtils.addParams(paramList, whereClause.getSqlParams());
     }
     return paramList;
   }
@@ -66,15 +66,5 @@ public class SqlDelete extends HasFrom<SqlDelete> {
   @Override
   protected SqlDelete getReference() {
     return this;
-  }
-
-  private void addParams(List<Object> paramList, List<Object> params) {
-    if (!BeeUtils.isEmpty(params)) {
-      if (BeeUtils.isEmpty(paramList)) {
-        paramList = params;
-      } else {
-        paramList.addAll(params);
-      }
-    }
   }
 }

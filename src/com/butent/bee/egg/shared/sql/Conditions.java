@@ -1,7 +1,6 @@
 package com.butent.bee.egg.shared.sql;
 
 import com.butent.bee.egg.shared.Assert;
-import com.butent.bee.egg.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,15 +21,7 @@ public abstract class Conditions implements IsCondition {
     List<Object> paramList = null;
 
     for (IsCondition cond : conditionList) {
-      List<Object> cList = cond.getSqlParams();
-
-      if (!BeeUtils.isEmpty(cList)) {
-        if (BeeUtils.isEmpty(paramList)) {
-          paramList = cList;
-        } else {
-          paramList.addAll(cList);
-        }
-      }
+      SqlUtils.addParams(paramList, cond.getSqlParams());
     }
     return paramList;
   }

@@ -10,7 +10,7 @@ class ConstantExpression implements IsExpression {
   private final Object value;
 
   public ConstantExpression(Object value) {
-    Assert.notEmpty(value);
+    Assert.notNull(value);
 
     this.value = value;
   }

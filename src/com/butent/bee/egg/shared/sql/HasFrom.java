@@ -19,7 +19,7 @@ public abstract class HasFrom<T> extends SqlQuery<T> {
     if (BeeUtils.isEmpty(fromList)) {
       addFrom(new FromSingle(source, alias));
     } else {
-      addFrom(new FromList(source, alias));
+      addFromList(new FromList(source, alias));
     }
     return getReference();
   }
@@ -28,7 +28,7 @@ public abstract class HasFrom<T> extends SqlQuery<T> {
     if (BeeUtils.isEmpty(fromList)) {
       addFrom(new FromSingle(source, alias));
     } else {
-      addFrom(new FromList(source, alias));
+      addFromList(new FromList(source, alias));
     }
     return getReference();
   }
@@ -39,16 +39,12 @@ public abstract class HasFrom<T> extends SqlQuery<T> {
   }
 
   public T addFromFull(String source, String alias, IsCondition on) {
-    Assert.notEmpty(fromList, "Wrong first FROM source");
-
-    addFrom(new FromFull(source, alias, on));
+    addFromJoin(new FromFull(source, alias, on));
     return getReference();
   }
 
   public T addFromFull(SqlSelect source, String alias, IsCondition on) {
-    Assert.notEmpty(fromList, "Wrong first FROM source");
-
-    addFrom(new FromFull(source, alias, on));
+    addFromJoin(new FromFull(source, alias, on));
     return getReference();
   }
 
@@ -58,16 +54,12 @@ public abstract class HasFrom<T> extends SqlQuery<T> {
   }
 
   public T addFromInner(String source, String alias, IsCondition on) {
-    Assert.notEmpty(fromList, "Wrong first FROM source");
-
-    addFrom(new FromInner(source, alias, on));
+    addFromJoin(new FromInner(source, alias, on));
     return getReference();
   }
 
   public T addFromInner(SqlSelect source, String alias, IsCondition on) {
-    Assert.notEmpty(fromList, "Wrong first FROM source");
-
-    addFrom(new FromInner(source, alias, on));
+    addFromJoin(new FromInner(source, alias, on));
     return getReference();
   }
 
@@ -77,16 +69,12 @@ public abstract class HasFrom<T> extends SqlQuery<T> {
   }
 
   public T addFromLeft(String source, String alias, IsCondition on) {
-    Assert.notEmpty(fromList, "Wrong first FROM source");
-
-    addFrom(new FromLeft(source, alias, on));
+    addFromJoin(new FromLeft(source, alias, on));
     return getReference();
   }
 
   public T addFromLeft(SqlSelect source, String alias, IsCondition on) {
-    Assert.notEmpty(fromList, "Wrong first FROM source");
-
-    addFrom(new FromLeft(source, alias, on));
+    addFromJoin(new FromLeft(source, alias, on));
     return getReference();
   }
 
@@ -96,16 +84,12 @@ public abstract class HasFrom<T> extends SqlQuery<T> {
   }
 
   public T addFromRight(String source, String alias, IsCondition on) {
-    Assert.notEmpty(fromList, "Wrong first FROM source");
-
-    addFrom(new FromRight(source, alias, on));
+    addFromJoin(new FromRight(source, alias, on));
     return getReference();
   }
 
   public T addFromRight(SqlSelect source, String alias, IsCondition on) {
-    Assert.notEmpty(fromList, "Wrong first FROM source");
-
-    addFrom(new FromRight(source, alias, on));
+    addFromJoin(new FromRight(source, alias, on));
     return getReference();
   }
 
@@ -113,14 +97,28 @@ public abstract class HasFrom<T> extends SqlQuery<T> {
     return fromList;
   }
 
-  protected void setFrom(List<IsFrom> fromList) {
-    this.fromList = fromList;
-  }
-
   private void addFrom(IsFrom from) {
     if (BeeUtils.isEmpty(fromList)) {
       fromList = new ArrayList<IsFrom>();
     }
     fromList.add(from);
+  }
+
+  private void addFromJoin(FromJoin from) {
+    Assert.notEmpty(fromList, "First FROM source cannot be of type JOIN");
+
+    for (IsFrom f : fromList) {
+      Assert.state(!(f instanceof FromList),
+          "Cannot mix FROM sources with types JOIN and LIST");
+    }
+    addFrom(from);
+  }
+
+  private void addFromList(FromList from) {
+    for (IsFrom f : fromList) {
+      Assert.state(!(f instanceof FromJoin),
+          "Cannot mix FROM sources with types JOIN and LIST");
+    }
+    addFrom(from);
   }
 }
