@@ -122,10 +122,8 @@ public class GwtUiCreator implements UiCreator {
     BeeScroll grid = new BeeScroll();
     widget.add(grid);
 
-    String svcId = BeeUtils.createUniqueName("svc");
-    BeeGlobal.registerService(svcId, "comp_ui_grid");
-    CompositeService service = BeeGlobal.getService(svcId);
-    service.doService(grid, uiGrid.getProperty("parameters"));
+    BeeGlobal.doComposite("comp_ui_grid", grid,
+        uiGrid.getProperty("parameters"));
 
     return widget;
   }

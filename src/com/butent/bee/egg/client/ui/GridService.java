@@ -21,19 +21,9 @@ public class GridService extends CompositeService {
   private Stages stage = null;
   private Panel destination = null;
 
-  public GridService() {
-  }
-
   public GridService(String serviceId) {
     super(serviceId);
     nextStage();
-  }
-
-  @Override
-  public CompositeService createInstance(String serviceId) {
-    Assert.notEmpty(serviceId);
-
-    return new GridService(serviceId);
   }
 
   @Override

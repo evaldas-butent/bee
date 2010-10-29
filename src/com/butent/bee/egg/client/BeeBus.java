@@ -14,7 +14,6 @@ import com.butent.bee.egg.client.event.BeeChangeHandler;
 import com.butent.bee.egg.client.event.BeeClickHandler;
 import com.butent.bee.egg.client.event.BeeKeyPressHandler;
 import com.butent.bee.egg.client.event.BeeValueChangeHandler;
-import com.butent.bee.egg.client.ui.CompositeService;
 import com.butent.bee.egg.client.utils.BeeXml;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeService;
@@ -177,9 +176,9 @@ public class BeeBus implements BeeModule {
           BeeGlobal.closeDialog(event);
           BeeKeeper.getRpc().makePostRequest(
               BeeService.SERVICE_XML_INFO,
-              BeeXml.fromFields(BeeService.XML_TAG_DATA, BeeService.FIELD_XML_SOURCE,
-                  BeeService.FIELD_XML_TRANSFORM, BeeService.FIELD_XML_TARGET,
-                  BeeService.FIELD_XML_RETURN));
+              BeeXml.fromFields(BeeService.XML_TAG_DATA,
+                  BeeService.FIELD_XML_SOURCE, BeeService.FIELD_XML_TRANSFORM,
+                  BeeService.FIELD_XML_TARGET, BeeService.FIELD_XML_RETURN));
           ok = true;
         }
       } else {
@@ -244,14 +243,7 @@ public class BeeBus implements BeeModule {
       }
 
     } else if (svc.startsWith("comp_ui_")) {
-      String svcId = CompositeService.extractServiceId(svc);
-
-      if (BeeUtils.isEmpty(svcId)) {
-        svcId = BeeUtils.createUniqueName("svc");
-        BeeGlobal.registerService(svcId, CompositeService.extractService(svc));
-      }
-      CompositeService service = BeeGlobal.getService(svcId);
-      service.doService(event);
+      BeeGlobal.doComposite(svc, event);
     } else {
       BeeGlobal.showError("Unknown composite service", svc, stg);
     }

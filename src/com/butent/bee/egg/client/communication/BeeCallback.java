@@ -131,7 +131,8 @@ public class BeeCallback implements RequestCallback {
     if (mc > 0) {
       messages = new ResponseMessage[mc];
       for (int i = 0; i < mc; i++) {
-        messages[i] = new ResponseMessage(resp.getHeader(CommUtils.rpcMessageName(i)), true);
+        messages[i] = new ResponseMessage(
+            resp.getHeader(CommUtils.rpcMessageName(i)), true);
       }
       dispatchMessages(mc, messages);
     }
@@ -169,11 +170,8 @@ public class BeeCallback implements RequestCallback {
 
       JsArrayString arr = splitResponse(txt, sep, cnt);
 
-      String serviceId = CompositeService.extractServiceId(svc);
-
-      if (!BeeUtils.isEmpty(serviceId) && !debug) {
-        CompositeService service = BeeGlobal.getService(serviceId);
-        service.doService(arr, cc);
+      if (!BeeUtils.isEmpty(CompositeService.extractServiceId(svc)) && !debug) {
+        BeeGlobal.doComposite(svc, arr, cc);
       } else {
         dispatchResponse(svc, cc, arr);
       }
@@ -183,19 +181,19 @@ public class BeeCallback implements RequestCallback {
     finalizeResponse();
   }
 
-  private void dispatchInvocation(String svc, RpcInfo info, String txt, 
-      int mc, ResponseMessage[] messages, int cc, int cnt, String sep) {
+  private void dispatchInvocation(String svc, RpcInfo info, String txt, int mc,
+      ResponseMessage[] messages, int cc, int cnt, String sep) {
     if (info == null) {
       BeeKeeper.getLog().severe("rpc info not available");
       return;
     }
-    
+
     String method = info.getParameter(BeeService.RPC_FIELD_METH);
     if (BeeUtils.isEmpty(method)) {
       BeeKeeper.getLog().severe("rpc parameter [method] not found");
       return;
     }
-    
+
     if (BeeUtils.same(method, "stringInfo")) {
       ResponseHandler.unicodeTest(info, txt, mc, messages);
     } else if (cnt > 0) {
@@ -212,7 +210,7 @@ public class BeeCallback implements RequestCallback {
       if (LogUtils.isOff(level)) {
         continue;
       }
-      
+
       BeeDate date = messages[i].getDate();
       String msg;
       if (date == null) {
@@ -220,7 +218,7 @@ public class BeeCallback implements RequestCallback {
       } else {
         msg = BeeUtils.concat(1, date.toLog(), messages[i].getMessage());
       }
-      
+
       if (level == null) {
         BeeKeeper.getLog().info(msg);
       } else {
@@ -265,13 +263,13 @@ public class BeeCallback implements RequestCallback {
   private void finalizeResponse() {
     BeeKeeper.getLog().addSeparator();
   }
-  
+
   private JsArrayString splitResponse(String txt, String sep, int cnt) {
     JsArrayString arr = BeeJs.split(txt, sep);
     if (cnt > 0 && arr.length() > cnt) {
       arr.setLength(cnt);
     }
-    
+
     return arr;
   }
 

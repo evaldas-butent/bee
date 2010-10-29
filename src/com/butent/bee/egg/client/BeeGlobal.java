@@ -8,9 +8,6 @@ import com.butent.bee.egg.client.dialog.BeeInputBox;
 import com.butent.bee.egg.client.dialog.BeeMessageBox;
 import com.butent.bee.egg.client.grid.GridFactory;
 import com.butent.bee.egg.client.ui.CompositeService;
-import com.butent.bee.egg.client.ui.FormService;
-import com.butent.bee.egg.client.ui.GridService;
-import com.butent.bee.egg.client.ui.MenuService;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.BeeField;
@@ -38,9 +35,9 @@ public class BeeGlobal implements BeeModule {
   private static final Map<String, BeeField> fields = new HashMap<String, BeeField>();
 
   private static final Map<String, CompositeService> services = new HashMap<String, CompositeService>();
-  private static final Map<String, CompositeService> workingServices = new HashMap<String, CompositeService>();
-  
-  private static int tzo = -JsDate.create().getTimezoneOffset() * Grego.MILLIS_PER_MINUTE;
+
+  private static int tzo = -JsDate.create().getTimezoneOffset()
+      * Grego.MILLIS_PER_MINUTE;
 
   public static void alert(Object... obj) {
     msgBox.alert(obj);
@@ -72,6 +69,22 @@ public class BeeGlobal implements BeeModule {
     Assert.isTrue(BeeType.isValid(type));
 
     fields.put(name, new BeeField(caption, type, value, widget, items));
+  }
+
+  public static boolean doComposite(String svc, Object... parameters) {
+    boolean ok = false;
+    String svcId = CompositeService.extractServiceId(svc);
+
+    if (BeeUtils.isEmpty(svcId)) {
+      svcId = BeeUtils.createUniqueName("svc");
+      registerService(svcId, CompositeService.extractService(svc));
+    }
+    CompositeService service = getService(svcId);
+
+    if (!BeeUtils.isEmpty(service)) {
+      ok = service.doService(parameters);
+    }
+    return ok;
   }
 
   public static BeeField getField(String name) {
@@ -112,11 +125,6 @@ public class BeeGlobal implements BeeModule {
     return getField(name).getWidth();
   }
 
-  public static CompositeService getService(String svcId) {
-    Assert.contains(workingServices, svcId);
-    return workingServices.get(svcId);
-  }
-
   public static int getTzo() {
     return tzo;
   }
@@ -143,13 +151,6 @@ public class BeeGlobal implements BeeModule {
 
   public static Widget pstGrid(Object data, String... columns) {
     return grids.pstGrid(data, (Object[]) columns);
-  }
-
-  public static void registerService(String svcId, String svc) {
-    Assert.contains(services, svc);
-
-    CompositeService service = services.get(svc);
-    workingServices.put(svcId, service.createInstance(svcId));
   }
 
   public static void sayHuh(Object... obj) {
@@ -222,7 +223,16 @@ public class BeeGlobal implements BeeModule {
   }
 
   public static void unregisterService(String svcId) {
-    workingServices.remove(svcId);
+    services.remove(svcId);
+  }
+
+  private static CompositeService getService(String svcId) {
+    Assert.contains(services, svcId);
+    return services.get(svcId);
+  }
+
+  private static void registerService(String svcId, String svc) {
+    services.put(svcId, CompositeService.createService(svc, svcId));
   }
 
   public void end() {
@@ -247,7 +257,6 @@ public class BeeGlobal implements BeeModule {
 
   public void init() {
     initFields();
-    initServices();
   }
 
   public void start() {
@@ -378,11 +387,5 @@ public class BeeGlobal implements BeeModule {
         BeeUtils.transform(MenuConst.DEFAULT_ROOT_LIMIT));
     createField(MenuConst.FIELD_ITEM_LIMIT, "Max  Items", BeeType.TYPE_INT,
         BeeUtils.transform(MenuConst.DEFAULT_ITEM_LIMIT));
-  }
-
-  private void initServices() {
-    services.put("comp_ui_form", new FormService());
-    services.put("comp_ui_menu", new MenuService());
-    services.put("comp_ui_grid", new GridService());
   }
 }

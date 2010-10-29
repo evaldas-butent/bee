@@ -24,19 +24,9 @@ public class FormService extends CompositeService {
 
   private Stages stage = null;
 
-  public FormService() {
-  }
-
   public FormService(String serviceId) {
     super(serviceId);
     nextStage();
-  }
-
-  @Override
-  public CompositeService createInstance(String serviceId) {
-    Assert.notEmpty(serviceId);
-
-    return new FormService(serviceId);
   }
 
   @Override

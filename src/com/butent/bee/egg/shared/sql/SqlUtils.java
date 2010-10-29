@@ -16,7 +16,7 @@ public class SqlUtils {
   private static final String MORE_EQUAL = ">=";
   private static final String NOT_EQUAL = "<>";
 
-  public static void addParams(List<Object> paramList, List<Object> params) {
+  static void addParams(List<Object> paramList, List<Object> params) {
     if (!BeeUtils.isEmpty(params)) {
       if (BeeUtils.isEmpty(paramList)) {
         paramList = params;

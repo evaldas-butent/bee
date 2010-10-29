@@ -63,19 +63,9 @@ public class MenuService extends CompositeService {
 
   private Stages stage = null;
 
-  public MenuService() {
-  }
-
   public MenuService(String serviceId) {
     super(serviceId);
     nextStage();
-  }
-
-  @Override
-  public CompositeService createInstance(String serviceId) {
-    Assert.notEmpty(serviceId);
-
-    return new MenuService(serviceId);
   }
 
   @Override
