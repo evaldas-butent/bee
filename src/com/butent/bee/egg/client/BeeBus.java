@@ -14,6 +14,7 @@ import com.butent.bee.egg.client.event.BeeChangeHandler;
 import com.butent.bee.egg.client.event.BeeClickHandler;
 import com.butent.bee.egg.client.event.BeeKeyPressHandler;
 import com.butent.bee.egg.client.event.BeeValueChangeHandler;
+import com.butent.bee.egg.client.ui.CompositeService;
 import com.butent.bee.egg.client.utils.BeeXml;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeService;
@@ -241,9 +242,8 @@ public class BeeBus implements BeeModule {
       } else {
         BeeGlobal.showError("Unknown composite service stage", svc, stg);
       }
-
-    } else if (svc.startsWith("comp_ui_")) {
-      BeeGlobal.doComposite(svc, event);
+    } else if (CompositeService.isRegistered(svc)) {
+      CompositeService.doService(svc, event);
     } else {
       BeeGlobal.showError("Unknown composite service", svc, stg);
     }

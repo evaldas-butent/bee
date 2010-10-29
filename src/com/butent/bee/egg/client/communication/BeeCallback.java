@@ -170,8 +170,8 @@ public class BeeCallback implements RequestCallback {
 
       JsArrayString arr = splitResponse(txt, sep, cnt);
 
-      if (!BeeUtils.isEmpty(CompositeService.extractServiceId(svc)) && !debug) {
-        BeeGlobal.doComposite(svc, arr, cc);
+      if (CompositeService.isRegistered(svc)) {
+        CompositeService.doService(svc, arr, cc);
       } else {
         dispatchResponse(svc, cc, arr);
       }

@@ -1,54 +1,106 @@
 package com.butent.bee.egg.client.ui;
 
-import com.butent.bee.egg.client.BeeGlobal;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public abstract class CompositeService {
 
-  public static CompositeService createService(String service, String serviceId) {
-    CompositeService svc = null;
+  private static Map<String, CompositeService> registeredServices;
+  private static Map<String, CompositeService> pendingServices;
 
-    if (BeeUtils.same(service, "comp_ui_form")) {
-      svc = new FormService(serviceId);
-    } else if (BeeUtils.same(service, "comp_ui_grid")) {
-      svc = new GridService(serviceId);
-    } else if (BeeUtils.same(service, "comp_ui_menu")) {
-      svc = new MenuService(serviceId);
+  static {
+    registeredServices = new HashMap<String, CompositeService>();
+    pendingServices = new HashMap<String, CompositeService>();
+
+    registeredServices.put("comp_ui_form", new FormService());
+    registeredServices.put("comp_ui_grid", new GridService());
+    registeredServices.put("comp_ui_menu", new MenuService());
+  }
+
+  public static boolean doService(String svc, Object... parameters) {
+    Assert.notEmpty(svc);
+
+    CompositeService service = getService(svc);
+    return service.doStage(parameters);
+  }
+
+  public static boolean isRegistered(String svc) {
+    String serviceId = extractId(svc);
+
+    if (!BeeUtils.isEmpty(serviceId)) {
+      return pendingServices.containsKey(serviceId);
     } else {
-      BeeGlobal.showError("Unknown composite service", svc);
+      String service = normalizeService(svc);
+      return !BeeUtils.isEmpty(service)
+          && registeredServices.containsKey(service);
     }
+  }
 
+  public static String normalizeService(String svc) {
+    if (!BeeUtils.isEmpty(svc)) {
+      if (svc.indexOf(":") > 0) {
+        String[] arr = svc.split(":");
+        return arr[0];
+      }
+    }
     return svc;
   }
 
-  public static String extractService(String svc) {
-    if (svc.indexOf(":") > 0) {
-      String[] arr = svc.split(":");
-      return arr[0];
-    }
-    return svc;
+  private static CompositeService createService(String svc) {
+    Assert.contains(registeredServices, svc);
+
+    String serviceId = BeeUtils.createUniqueName("svc");
+    CompositeService service = registeredServices.get(svc).create(serviceId);
+
+    pendingServices.put(serviceId, service);
+
+    return service;
   }
 
-  public static String extractServiceId(String svc) {
+  private static String extractId(String svc) {
     if (svc.indexOf(":") > 0) {
-      String[] arr = svc.split(":");
+      String[] arr = svc.split(":", 2);
       return arr[1];
     }
     return "";
   }
 
-  protected String serviceId;
+  private static CompositeService getService(String svc) {
+    CompositeService service;
+    String svcId = extractId(svc);
 
-  public CompositeService(String serviceId) {
+    if (BeeUtils.isEmpty(svcId)) {
+      service = createService(normalizeService(svc));
+    } else {
+      Assert.contains(pendingServices, svcId);
+      service = pendingServices.get(svcId);
+    }
+    return service;
+  }
+
+  private String serviceId;
+
+  protected CompositeService() {
+  }
+
+  protected CompositeService(String serviceId) {
     Assert.notEmpty(serviceId);
 
     this.serviceId = serviceId;
   }
 
-  public abstract boolean doService(Object... params);
-
-  protected String appendId(String svc) {
+  protected String adoptService(String svc) {
     return svc + ":" + serviceId;
+  }
+
+  protected abstract CompositeService create(String svcId);
+
+  protected abstract boolean doStage(Object... params);
+
+  protected void unregister() {
+    pendingServices.remove(serviceId);
   }
 }

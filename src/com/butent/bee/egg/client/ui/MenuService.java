@@ -17,7 +17,7 @@ import com.butent.bee.egg.shared.utils.BeeUtils;
 
 import java.util.Map.Entry;
 
-public class MenuService extends CompositeService {
+class MenuService extends CompositeService {
 
   private enum Stages {
     REQUEST_MENU, SHOW_MENU
@@ -63,13 +63,21 @@ public class MenuService extends CompositeService {
 
   private Stages stage = null;
 
-  public MenuService(String serviceId) {
+  protected MenuService() {
+  }
+
+  protected MenuService(String serviceId) {
     super(serviceId);
     nextStage();
   }
 
   @Override
-  public boolean doService(Object... params) {
+  protected CompositeService create(String svcId) {
+    return new MenuService(svcId);
+  }
+
+  @Override
+  protected boolean doStage(Object... params) {
     Assert.notNull(stage);
     boolean ok = true;
 
@@ -80,7 +88,7 @@ public class MenuService extends CompositeService {
 
         if (MenuConst.isValidLayout(rl) && MenuConst.isValidLayout(il)) {
           BeeKeeper.getRpc().makePostRequest(
-              appendId("rpc_ui_menu"),
+              adoptService("rpc_ui_menu"),
               BeeXml.createString(BeeService.XML_TAG_DATA, "menu_name",
                   "rootMenu", "root_layout", getLayout(rl), "item_layout",
                   getLayout(il)));
@@ -107,7 +115,7 @@ public class MenuService extends CompositeService {
     if (ok) {
       nextStage();
     } else {
-      BeeGlobal.unregisterService(serviceId);
+      unregister();
     }
     return ok;
   }
@@ -139,7 +147,7 @@ public class MenuService extends CompositeService {
     if (x < Stages.values().length) {
       stage = Stages.values()[x];
     } else {
-      BeeGlobal.unregisterService(serviceId);
+      unregister();
     }
   }
 

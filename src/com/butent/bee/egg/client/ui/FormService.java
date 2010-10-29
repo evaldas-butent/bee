@@ -16,7 +16,7 @@ import com.butent.bee.egg.shared.BeeWidget;
 import com.butent.bee.egg.shared.ui.UiComponent;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
-public class FormService extends CompositeService {
+class FormService extends CompositeService {
 
   private enum Stages {
     REQUEST_FORM_LIST, CHOOSE_FORM, REQUEST_FORM, SHOW_FORM
@@ -24,19 +24,27 @@ public class FormService extends CompositeService {
 
   private Stages stage = null;
 
-  public FormService(String serviceId) {
+  protected FormService() {
+  }
+
+  protected FormService(String serviceId) {
     super(serviceId);
     nextStage();
   }
 
   @Override
-  public boolean doService(Object... params) {
+  protected CompositeService create(String svcId) {
+    return new FormService(svcId);
+  }
+
+  @Override
+  protected boolean doStage(Object... params) {
     Assert.notNull(stage);
     boolean ok = true;
 
     switch (stage) {
       case REQUEST_FORM_LIST:
-        BeeKeeper.getRpc().makeGetRequest(appendId("rpc_ui_form_list"));
+        BeeKeeper.getRpc().makeGetRequest(adoptService("rpc_ui_form_list"));
         break;
 
       case CHOOSE_FORM:
@@ -50,7 +58,7 @@ public class FormService extends CompositeService {
         BeeGlobal.createField("form_name", "Form name", BeeType.TYPE_STRING,
             lst[0], BeeWidget.LIST, lst);
 
-        BeeGlobal.inputFields(new BeeStage(appendId("comp_ui_form"),
+        BeeGlobal.inputFields(new BeeStage(adoptService("comp_ui_form"),
             BeeStage.STAGE_CONFIRM), "Load form", "form_name");
         break;
 
@@ -64,7 +72,7 @@ public class FormService extends CompositeService {
           ok = false;
         } else {
           BeeGlobal.closeDialog(event);
-          BeeKeeper.getRpc().makePostRequest(appendId("rpc_ui_form"),
+          BeeKeeper.getRpc().makePostRequest(adoptService("rpc_ui_form"),
               BeeXml.createString(BeeService.XML_TAG_DATA, "form_name", fName));
         }
         break;
@@ -79,7 +87,7 @@ public class FormService extends CompositeService {
 
       default:
         BeeGlobal.showError("Unhandled stage: " + stage);
-        BeeGlobal.unregisterService(serviceId);
+        unregister();
         ok = false;
         break;
     }
@@ -100,7 +108,7 @@ public class FormService extends CompositeService {
     if (x < Stages.values().length) {
       stage = Stages.values()[x];
     } else {
-      BeeGlobal.unregisterService(serviceId);
+      unregister();
     }
   }
 

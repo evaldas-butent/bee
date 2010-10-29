@@ -12,7 +12,7 @@ import com.butent.bee.egg.shared.BeeService;
 import com.butent.bee.egg.shared.data.BeeView;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
-public class GridService extends CompositeService {
+class GridService extends CompositeService {
 
   private enum Stages {
     REQUEST_GRID, SHOW_GRID
@@ -21,13 +21,21 @@ public class GridService extends CompositeService {
   private Stages stage = null;
   private Panel destination = null;
 
-  public GridService(String serviceId) {
+  protected GridService() {
+  }
+
+  protected GridService(String serviceId) {
     super(serviceId);
     nextStage();
   }
 
   @Override
-  public boolean doService(Object... params) {
+  protected CompositeService create(String svcId) {
+    return new GridService(svcId);
+  }
+
+  @Override
+  protected boolean doStage(Object... params) {
     Assert.notNull(stage);
     boolean ok = true;
 
@@ -37,7 +45,7 @@ public class GridService extends CompositeService {
         String grd = (String) params[1];
 
         BeeKeeper.getRpc().makePostRequest(
-            appendId("rpc_ui_grid"),
+            adoptService("rpc_ui_grid"),
             BeeXml.createString(BeeService.XML_TAG_DATA, "grid_name",
                 grd.replaceFirst("['\\[\"](\\w+)['\\]\"][,].*", "$1")));
         break;
@@ -59,7 +67,7 @@ public class GridService extends CompositeService {
     if (ok) {
       nextStage();
     } else {
-      BeeGlobal.unregisterService(serviceId);
+      unregister();
     }
     return ok;
   }
@@ -74,7 +82,7 @@ public class GridService extends CompositeService {
     if (x < Stages.values().length) {
       stage = Stages.values()[x];
     } else {
-      BeeGlobal.unregisterService(serviceId);
+      unregister();
     }
   }
 }

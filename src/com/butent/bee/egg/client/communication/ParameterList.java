@@ -28,7 +28,7 @@ public class ParameterList extends ArrayList<RpcParameter> implements
     super();
     this.service = svc;
 
-    addQueryItem(BeeService.RPC_FIELD_SVC, CompositeService.extractService(svc));
+    addQueryItem(BeeService.RPC_FIELD_SVC, CompositeService.normalizeService(svc));
 
     String dsn = BeeKeeper.getRpc().getDsn();
     if (!BeeUtils.isEmpty(dsn)) {

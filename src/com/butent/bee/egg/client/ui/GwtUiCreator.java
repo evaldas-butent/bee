@@ -9,7 +9,6 @@ import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.egg.client.BeeGlobal;
 import com.butent.bee.egg.client.BeeKeeper;
 import com.butent.bee.egg.client.layout.BeeHorizontal;
 import com.butent.bee.egg.client.layout.BeeLayoutPanel;
@@ -122,7 +121,7 @@ public class GwtUiCreator implements UiCreator {
     BeeScroll grid = new BeeScroll();
     widget.add(grid);
 
-    BeeGlobal.doComposite("comp_ui_grid", grid,
+    CompositeService.doService("comp_ui_grid", grid,
         uiGrid.getProperty("parameters"));
 
     return widget;

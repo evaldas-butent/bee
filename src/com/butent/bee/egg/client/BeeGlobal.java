@@ -7,7 +7,6 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.egg.client.dialog.BeeInputBox;
 import com.butent.bee.egg.client.dialog.BeeMessageBox;
 import com.butent.bee.egg.client.grid.GridFactory;
-import com.butent.bee.egg.client.ui.CompositeService;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.BeeField;
@@ -33,8 +32,6 @@ public class BeeGlobal implements BeeModule {
   private static final GridFactory grids = new GridFactory();
 
   private static final Map<String, BeeField> fields = new HashMap<String, BeeField>();
-
-  private static final Map<String, CompositeService> services = new HashMap<String, CompositeService>();
 
   private static int tzo = -JsDate.create().getTimezoneOffset()
       * Grego.MILLIS_PER_MINUTE;
@@ -69,22 +66,6 @@ public class BeeGlobal implements BeeModule {
     Assert.isTrue(BeeType.isValid(type));
 
     fields.put(name, new BeeField(caption, type, value, widget, items));
-  }
-
-  public static boolean doComposite(String svc, Object... parameters) {
-    boolean ok = false;
-    String svcId = CompositeService.extractServiceId(svc);
-
-    if (BeeUtils.isEmpty(svcId)) {
-      svcId = BeeUtils.createUniqueName("svc");
-      registerService(svcId, CompositeService.extractService(svc));
-    }
-    CompositeService service = getService(svcId);
-
-    if (!BeeUtils.isEmpty(service)) {
-      ok = service.doService(parameters);
-    }
-    return ok;
   }
 
   public static BeeField getField(String name) {
@@ -220,19 +201,6 @@ public class BeeGlobal implements BeeModule {
 
   public static Widget simpleGrid(Object data, String... columns) {
     return grids.simpleGrid(data, (Object[]) columns);
-  }
-
-  public static void unregisterService(String svcId) {
-    services.remove(svcId);
-  }
-
-  private static CompositeService getService(String svcId) {
-    Assert.contains(services, svcId);
-    return services.get(svcId);
-  }
-
-  private static void registerService(String svcId, String svc) {
-    services.put(svcId, CompositeService.createService(svc, svcId));
   }
 
   public void end() {
