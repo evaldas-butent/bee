@@ -6,6 +6,7 @@ import com.butent.bee.egg.server.http.RequestInfo;
 import com.butent.bee.egg.server.utils.XmlUtils;
 import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.data.BeeColumn;
+import com.butent.bee.egg.shared.sql.SqlInsert;
 import com.butent.bee.egg.shared.sql.SqlSelect;
 import com.butent.bee.egg.shared.sql.SqlUtils;
 import com.butent.bee.egg.shared.ui.UiComponent;
@@ -41,6 +42,8 @@ public class UiServiceBean {
       menuInfo(reqInfo, buff);
     } else if (svc.equals("rpc_ui_grid")) {
       gridInfo(reqInfo, buff);
+    } else if (svc.equals("rpc_ui_rebuild")) {
+      rebuildData(buff);
     } else {
       String msg = BeeUtils.concat(1, svc, "loader service not recognized");
       logger.warning(msg);
@@ -66,7 +69,7 @@ public class UiServiceBean {
     SqlSelect ss = new SqlSelect();
     ss.addFields("f", "form").addFrom("forms", "f").addOrder("f", "form");
 
-    List<Object[]> res = qs.getQueryData(ss);
+    List<Object[]> res = qs.getData(ss);
     if (res == null) {
       return;
     }
@@ -105,7 +108,7 @@ public class UiServiceBean {
     ss.addFields("g", "properties").addFrom("grids", "g").setWhere(
         SqlUtils.equal("g", "table", gName));
 
-    List<Object[]> data = qs.getQueryData(ss);
+    List<Object[]> data = qs.getData(ss);
 
     if (!BeeUtils.isEmpty(data)) {
       String x = (String) data.get(0)[0];
@@ -119,7 +122,7 @@ public class UiServiceBean {
       ss.addFields("c", "field", "caption").addFrom("columns", "c").setWhere(
           SqlUtils.equal("c", "table", grd)).addOrder("c", "order");
 
-      List<Object[]> cols = qs.getQueryData(ss);
+      List<Object[]> cols = qs.getData(ss);
 
       if (!BeeUtils.isEmpty(cols)) {
         for (Object[] col : cols) {
@@ -154,5 +157,29 @@ public class UiServiceBean {
     } else {
       buff.add(menu.serialize());
     }
+  }
+
+  private void rebuildData(ResponseBuffer buff) {
+    String tbl = "fw_tables";
+    buff.add("result: " + qs.processSql("drop table if exists " + tbl));
+
+    buff.add("result: "
+        + qs.processSql("create table " + tbl
+            + " (table_name varchar(30) not null unique"
+            + ", last_id bigint not null"
+            + ", version int not null, id bigint primary key)"));
+
+    SqlInsert si = new SqlInsert(tbl);
+    si.addField("table_name", "fw_tables").addField("last_id", 1).addField(
+        "version", 1).addField("id", 1);
+    buff.add("result: " + qs.processUpdate(si));
+
+    si = new SqlInsert(tbl);
+    si.addField("table_name", "countries").addField("last_id", 0);
+    buff.add("result: " + qs.insertData(si));
+
+    si = new SqlInsert(tbl);
+    si.addField("table_name", "cities").addField("last_id", 0);
+    buff.add("result: " + qs.insertData(si));
   }
 }

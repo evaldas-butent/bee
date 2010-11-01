@@ -29,14 +29,15 @@ public class CliWidget extends BeeTextBox {
     String v = getValue().trim();
     String[] arr = BeeUtils.split(v, BeeConst.STRING_SPACE);
     Assert.notEmpty(arr);
-    
+
     String z = arr[0].toLowerCase();
-    
+
     if (z.equals("?")) {
       CliWorker.whereAmI();
     } else if (z.equals("clear")) {
       CliWorker.clearLog();
-    } else if (BeeUtils.inList(z, "center", "east", "north", "south", "screen", "west")) {
+    } else if (BeeUtils.inList(z, "center", "east", "north", "south", "screen",
+        "west")) {
       CliWorker.doScreen(arr);
     } else if (z.equals("charset")) {
       CliWorker.getCharsets();
@@ -73,7 +74,7 @@ public class CliWidget extends BeeTextBox {
     } else if (z.equals("rpc")) {
       CliWorker.showRpc();
     } else if (z.equals("sb")) {
-      BeeGlobal.showDialog("Scrollbar", 
+      BeeGlobal.showDialog("Scrollbar",
           BeeUtils.addName("width", DomUtils.getScrollbarWidth()),
           BeeUtils.addName("height", DomUtils.getScrollbarHeight()));
     } else if (z.startsWith("serv") || z.startsWith("sys")) {
@@ -88,6 +89,9 @@ public class CliWidget extends BeeTextBox {
       CliWorker.unicode(arr);
     } else if (z.equals("vm")) {
       BeeKeeper.getRpc().invoke("vmInfo");
+
+    } else if (z.equals("rebuild")) {
+      BeeKeeper.getRpc().makeGetRequest("rpc_ui_rebuild");
 
     } else {
       BeeGlobal.showDialog("wtf", v);

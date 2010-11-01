@@ -67,7 +67,7 @@ public class UiLoaderBean extends UiLoader {
           "dock_bott").addFrom("forms", "f").setWhere(
           SqlUtils.equal("f", "form", formName));
 
-      List<Object[]> data = qs.getQueryData(ss);
+      List<Object[]> data = qs.getData(ss);
       Object[] col = data.get(0);
 
       String top = BeeUtils.isEmpty(col[1]) ? "" : BeeUtils.transform(col[1]);
@@ -114,7 +114,7 @@ public class UiLoaderBean extends UiLoader {
           "dock_width", "dock_hght").addFrom("controls", "c").setWhere(
           SqlUtils.equal("c", "form", formName));
 
-      data = qs.getQueryData(ss);
+      data = qs.getData(ss);
 
       for (Object[] cols : data) {
         row = new UiRow();

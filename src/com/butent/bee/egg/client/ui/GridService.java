@@ -55,7 +55,7 @@ class GridService extends CompositeService {
         int cc = (Integer) params[1];
 
         BeeView view = new ResponseData(arr, cc);
-        destination.add(BeeGlobal.simpleGrid(view));
+        destination.add(BeeGlobal.scrollGrid(view));
         break;
 
       default:

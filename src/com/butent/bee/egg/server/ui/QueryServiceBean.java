@@ -3,7 +3,10 @@ package com.butent.bee.egg.server.ui;
 import com.butent.bee.egg.server.DataSourceBean;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeConst;
+import com.butent.bee.egg.shared.sql.IsQuery;
+import com.butent.bee.egg.shared.sql.SqlInsert;
 import com.butent.bee.egg.shared.sql.SqlSelect;
+import com.butent.bee.egg.shared.utils.BeeUtils;
 import com.butent.bee.egg.shared.utils.LogUtils;
 
 import java.sql.Connection;
@@ -31,38 +34,74 @@ public class QueryServiceBean {
   DataSource ds = null;
   @EJB
   DataSourceBean dsb;
+  @EJB
+  IdGeneratorBean ig;
 
-  public List<Object[]> getQueryData(SqlSelect ss) {
+  @SuppressWarnings("unchecked")
+  public List<Object[]> getData(SqlSelect ss) {
     Assert.notNull(ss);
     Assert.state(!ss.isEmpty());
 
-    return processSQL(ss.getQuery());
+    return (List<Object[]>) processSql(ss.getQuery());
   }
 
-  public List<Object[]> processSQL(String sql) {
+  public long insertData(SqlInsert si) {
+    Assert.notNull(si);
+    Assert.state(!si.isEmpty());
+
+    long id = ig.getId((String) si.getTarget().getSource());
+
+    if (!BeeUtils.isEmpty(id)) {
+      si.addField("version", 1).addField("id", id);
+    }
+
+    int cnt = processUpdate(si);
+
+    if (BeeUtils.isEmpty(cnt)) {
+      return -1;
+    }
+    return id;
+  }
+
+  public Object processSql(String sql) {
     if (ds == null) {
       ds = dsb.locateDs(BeeConst.MYSQL).getDs();
     }
     Connection con = null;
     Statement stmt = null;
-    List<Object[]> result = new ArrayList<Object[]>();
+
+    LogUtils.info(logger, "SQL:", sql);
+
     try {
       con = ds.getConnection();
       stmt = con.createStatement();
 
-      ResultSet rs = stmt.executeQuery(sql);
-      int cols = rs.getMetaData().getColumnCount();
+      boolean isResultSet = stmt.execute(sql);
 
-      while (rs.next()) {
-        Object[] o = new Object[cols];
+      if (isResultSet) {
+        List<Object[]> result = new ArrayList<Object[]>();
 
-        for (int i = 0; i < cols; i++) {
-          o[i] = rs.getObject(i + 1);
+        ResultSet rs = stmt.getResultSet();
+        int cols = rs.getMetaData().getColumnCount();
+
+        while (rs.next()) {
+          Object[] o = new Object[cols];
+
+          for (int i = 0; i < cols; i++) {
+            o[i] = rs.getObject(i + 1);
+          }
+          result.add(o);
         }
-        result.add(o);
+        LogUtils.info(logger, "Retrieved rows:", result.size());
+        return result;
+
+      } else {
+        int result = stmt.getUpdateCount();
+
+        LogUtils.info(logger, "Affected rows:", result);
+        return result;
       }
-      LogUtils.info(logger, result.size(), sql);
-      return result;
+
     } catch (SQLException ex) {
       throw new RuntimeException("Cannot perform query: " + ex, ex);
     } finally {
@@ -74,6 +113,17 @@ public class QueryServiceBean {
       } catch (SQLException ex) {
         throw new RuntimeException("Cannot close connection: " + ex, ex);
       }
+    }
+  }
+
+  public int processUpdate(IsQuery query) {
+    Assert.notNull(query);
+    Assert.state(!query.isEmpty());
+
+    if (query instanceof SqlSelect) {
+      return -1;
+    } else {
+      return (Integer) processSql(query.getQuery());
     }
   }
 }

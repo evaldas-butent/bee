@@ -17,6 +17,10 @@ public class SqlInsert extends SqlQuery<SqlInsert> {
     target = new FromSingle(source);
   }
 
+  public SqlInsert addField(String field, Object value) {
+    return addField(field, SqlUtils.constant(value));
+  }
+
   public SqlInsert addField(String field, IsExpression value) {
     Assert.notEmpty(field);
     Assert.notEmpty(value);
