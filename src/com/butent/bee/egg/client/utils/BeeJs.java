@@ -5,6 +5,19 @@ import com.google.gwt.core.client.JsArrayString;
 
 public abstract class BeeJs {
 
+  public static native void clearProperty(JavaScriptObject obj, String p) /*-{
+    if (typeof(obj) != "object") {
+      return;
+    }
+    if (p == undefined || p == null || p == "") {
+      return;
+    }
+
+    if (typeof(obj[p]) != 'undefined') {
+      obj[p] = undefined; 
+    }
+  }-*/;
+
   public static native double currentTimeMillis() /*-{
     return (new Date()).getTime();
   }-*/;
@@ -44,7 +57,7 @@ public abstract class BeeJs {
     catch (err) {
     v = "ERROR " + String(err);
     }
-    s = s + p + '=' + v;
+    s = s + p + "=" + v;
     }
     return s;
     }
@@ -163,6 +176,23 @@ public abstract class BeeJs {
     return s.match(/\S/) == null;
   }-*/;
 
+  public static native boolean isFunction(JavaScriptObject obj, String p) /*-{
+    var ok;
+
+    try {
+      ok = typeof(obj[p]) == "function";
+    }
+    catch (err) {
+      ok = false;
+    }
+
+    return ok;
+  }-*/;
+
+  public static native boolean isIn(String p, JavaScriptObject obj) /*-{
+    return p in obj;
+  }-*/;
+  
   public static native String md5(String src) /*-{
     return $wnd.rstr2hex($wnd.rstr_md5($wnd.str2rstr_utf16be(src)));
   }-*/;
@@ -220,4 +250,8 @@ public abstract class BeeJs {
     return x.toString();
   }-*/;
 
+  public static native String transform(JavaScriptObject obj) /*-{
+    return String(obj);
+  }-*/;
+  
 }

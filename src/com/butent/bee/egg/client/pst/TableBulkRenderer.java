@@ -1,11 +1,11 @@
 package com.butent.bee.egg.client.pst;
 
 import com.google.gwt.core.client.Duration;
+import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.core.client.Scheduler.RepeatingCommand;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.user.client.DOM;
-import com.google.gwt.user.client.DeferredCommand;
 import com.google.gwt.user.client.Element;
-import com.google.gwt.user.client.IncrementalCommand;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment.HorizontalAlignmentConstant;
 import com.google.gwt.user.client.ui.HasVerticalAlignment.VerticalAlignmentConstant;
@@ -211,7 +211,7 @@ public abstract class TableBulkRenderer<RowType> implements HasTableDefinition<R
       rowIndex = startRowIndex;
       final int myStamp = ++bulkRenderer.requestStamp;
 
-      class RenderTableCommand implements IncrementalCommand {
+      class RenderTableCommand implements RepeatingCommand {
         public boolean execute() {
           if (myStamp != bulkRenderer.requestStamp) {
             return false;
@@ -253,7 +253,7 @@ public abstract class TableBulkRenderer<RowType> implements HasTableDefinition<R
 
       RenderTableCommand renderTable = new RenderTableCommand();
       if (renderTable.execute()) {
-        DeferredCommand.addCommand(renderTable);
+        Scheduler.get().scheduleIncremental(renderTable);
       }
     }
 

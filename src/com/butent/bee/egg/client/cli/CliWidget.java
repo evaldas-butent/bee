@@ -34,6 +34,10 @@ public class CliWidget extends BeeTextBox {
 
     if (z.equals("?")) {
       CliWorker.whereAmI();
+    } else if (z.equals("audio")) {
+      CliWorker.playAudio(arr);
+    } else if (z.equals("canvas")) {
+      CliWorker.showCanvas(arr);
     } else if (z.equals("clear")) {
       CliWorker.clearLog();
     } else if (BeeUtils.inList(z, "center", "east", "north", "south", "screen",
@@ -57,10 +61,16 @@ public class CliWidget extends BeeTextBox {
       CliWorker.showFields(arr);
     } else if (z.equals("fs")) {
       CliWorker.getFs();
+    } else if (z.equals("geo")) {
+      CliWorker.showGeo();
     } else if (z.equals("gwt")) {
       CliWorker.showGwt();
+    } else if (BeeUtils.inList(z, "h5", "html5", "supp", "support")) {
+      CliWorker.showSupport();
     } else if (z.equals("id")) {
       CliWorker.showElement(v, arr);
+    } else if (BeeUtils.inList(z, "inp", "input")) {
+      CliWorker.showInput();
     } else if (z.equals("loaders")) {
       BeeKeeper.getRpc().invoke("loaderInfo");
     } else if (z.equals("log")) {
@@ -83,10 +93,14 @@ public class CliWidget extends BeeTextBox {
       CliWorker.showStack();
     } else if (z.equals("style")) {
       CliWorker.style(v, arr);
+    } else if (z.equals("svg")) {
+      CliWorker.showSvg(arr);
     } else if (z.equals("tiles")) {
       CliWorker.showTiles();
     } else if (z.equals("uc") || "unicode".startsWith(z)) {
       CliWorker.unicode(arr);
+    } else if (z.equals("video")) {
+      CliWorker.playVideo(arr);
     } else if (z.equals("vm")) {
       BeeKeeper.getRpc().invoke("vmInfo");
 

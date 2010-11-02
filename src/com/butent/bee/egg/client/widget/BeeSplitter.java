@@ -1,8 +1,8 @@
 package com.butent.bee.egg.client.widget;
 
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.user.client.DeferredCommand;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -178,7 +178,7 @@ public abstract class BeeSplitter extends Widget implements HasId, HasLayoutCall
 
     if (layoutCommand == null) {
       layoutCommand = new BeeLayoutCommand(this);
-      DeferredCommand.addCommand(layoutCommand);
+      Scheduler.get().scheduleDeferred(layoutCommand);
     }
   }
 

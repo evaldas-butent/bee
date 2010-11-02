@@ -1,8 +1,8 @@
 package com.butent.bee.egg.client.layout;
 
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.layout.client.Layout;
-import com.google.gwt.user.client.DeferredCommand;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.RequiresResize;
@@ -47,7 +47,7 @@ public class BlankTile extends Composite implements HasAfterAddHandler, HasId,
   }
 
   public void onAfterAdd(HasWidgets parent) {
-    DeferredCommand.addCommand(new UpdateCommand());
+    Scheduler.get().scheduleDeferred(new UpdateCommand());
   }
 
   public void onResize() {

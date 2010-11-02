@@ -9,6 +9,7 @@ import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.dom.client.StyleInjector;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.client.DOM;
+import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.egg.client.BeeGlobal;
@@ -17,12 +18,20 @@ import com.butent.bee.egg.client.communication.ParameterList;
 import com.butent.bee.egg.client.communication.RpcList;
 import com.butent.bee.egg.client.data.JsData;
 import com.butent.bee.egg.client.dom.DomUtils;
+import com.butent.bee.egg.client.dom.Features;
+import com.butent.bee.egg.client.grid.BeeFlexTable;
 import com.butent.bee.egg.client.layout.BeeDirection;
+import com.butent.bee.egg.client.layout.BeeFlow;
 import com.butent.bee.egg.client.layout.BeeSplit;
 import com.butent.bee.egg.client.layout.TilePanel;
 import com.butent.bee.egg.client.tree.BeeTree;
 import com.butent.bee.egg.client.utils.BeeJs;
 import com.butent.bee.egg.client.utils.JreEmulation;
+import com.butent.bee.egg.client.widget.Audio;
+import com.butent.bee.egg.client.widget.BeeLabel;
+import com.butent.bee.egg.client.widget.Canvas;
+import com.butent.bee.egg.client.widget.Svg;
+import com.butent.bee.egg.client.widget.Video;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.BeeDate;
@@ -193,6 +202,57 @@ public class CliWorker {
     BeeKeeper.getRpc().makeGetRequest(params);
   }
 
+  public static void playAudio(String[] arr) {
+    if (!Features.supportsAudio()) {
+      BeeKeeper.getLog().severe("audio not supported");
+      return;
+    }
+    
+    String src = BeeUtils.arrayGetQuietly(arr, 1);
+    if (BeeUtils.isEmpty(src)) {
+      BeeKeeper.getLog().warning("source not specified");
+      return;
+    }
+    
+    Audio widget = new Audio();
+    widget.getElement().setAttribute("src", src);
+    widget.getElement().setAttribute("controls", "controls");
+    
+    BeeKeeper.getUi().updateActivePanel(widget, true);
+  }
+
+  public static void playVideo(String[] arr) {
+    if (!Features.supportsVideo()) {
+      BeeKeeper.getLog().severe("video not supported");
+      return;
+    }
+    
+    String src = BeeUtils.arrayGetQuietly(arr, 1);
+    if (BeeUtils.isEmpty(src)) {
+      src = "http://people.opera.com/shwetankd/webm/sunflower.webm";
+    }
+    
+    Video widget = new Video();
+    widget.getElement().setAttribute("src", src);
+    widget.getElement().setAttribute("controls", "controls");
+    
+    BeeKeeper.getUi().updateActivePanel(widget, true);
+  }
+
+  public static void showCanvas(String[] arr) {
+    if (!Features.supportsCanvas()) {
+      BeeKeeper.getLog().severe("canvas not supported");
+      return;
+    }
+    
+    Canvas widget = new Canvas();
+    BeeKeeper.getUi().updateActivePanel(widget);
+    
+    if (BeeUtils.arrayLength(arr) <= 1) {
+      sampleCanvas(widget.getElement());
+    }
+  }
+
   public static void showDate(String[] arr) {
     int len = BeeUtils.length(arr);
     BeeDate date;
@@ -314,6 +374,12 @@ public class CliWorker {
     }
   }
 
+  public static void showGeo() {
+    BeeLabel widget = new BeeLabel("Looking for location...");
+    getGeo(widget.getElement());
+    BeeKeeper.getUi().updateActivePanel(widget);
+  }
+
   public static void showGwt() {
     BeeGlobal.modalGrid("GWT", PropUtils.createStringProp("Host Page Base URL",
         GWT.getHostPageBaseURL(), "Module Base URL", GWT.getModuleBaseURL(),
@@ -323,6 +389,50 @@ public class CliWorker {
         GWT.getUniqueThreadId(), "Version", GWT.getVersion(), "Is Client",
         GWT.isClient(), "Is Prod Mode", GWT.isProdMode(), "Is Script",
         GWT.isScript()));
+  }
+
+  public static void showInput() {
+    BeeFlexTable table = new BeeFlexTable();
+    table.setCellSpacing(3);
+    
+    String[] types = new String[] {"search", "tel", "url", "email",
+        "datetime", "date", "month", "week", "time", "datetime-local",
+        "number", "range", "color"};
+    TextBox widget;
+    
+    int row = 0;
+    for (String type : types) {
+      table.setWidget(row, 0, new BeeLabel(type));
+      
+      if (Features.supportsInputType(type)) {
+        widget = new TextBox();
+        widget.getElement().setAttribute(DomUtils.ATTRIBUTE_TYPE, type);
+        
+        if (type.equals("search")) {
+          if (Features.supportsAttributePlaceholder()) {
+            widget.getElement().setAttribute("placeholder", "Search...");
+          }
+        } else if (type.equals("number")) {
+          widget.getElement().setAttribute("min", "0");
+          widget.getElement().setAttribute("max", "20");
+          widget.getElement().setAttribute("step", "2");
+          widget.getElement().setAttribute("value", "4");
+        } else if (type.equals("range")) {
+          widget.getElement().setAttribute("min", "0");
+          widget.getElement().setAttribute("max", "50");
+          widget.getElement().setAttribute("step", "5");
+          widget.getElement().setAttribute("value", "30");
+        }
+        
+        table.setWidget(row, 1, widget);
+      } else {
+        table.setWidget(row, 1, new BeeLabel("not supported"));
+      }
+      
+      row++;
+    }
+    
+    BeeKeeper.getUi().updateActivePanel(table, true);
   }
 
   public static void showProperties(String v, String[] arr) {
@@ -369,6 +479,26 @@ public class CliWorker {
   public static void showStack() {
     BeeKeeper.getLog().stack();
     BeeKeeper.getLog().addSeparator();
+  }
+
+  public static void showSupport() {
+    BeeKeeper.getUi().showGrid(Features.getInfo());
+  }
+
+  public static void showSvg(String[] arr) {
+    if (!Features.supportsSvgInline()) {
+      BeeKeeper.getLog().severe("svg not supported");
+      return;
+    }
+    
+    Svg widget = new Svg();
+    BeeFlow panel = new BeeFlow();
+    panel.add(widget);
+    BeeKeeper.getUi().updateActivePanel(panel);
+    
+    if (BeeUtils.arrayLength(arr) <= 1) {
+      sampleSvg(widget.getElement());
+    }
   }
 
   public static void showTiles() {
@@ -489,7 +619,7 @@ public class CliWorker {
       StyleInjector.inject(st, immediate);
     }
   }
-
+  
   public static void unicode(String[] arr) {
     StringBuilder sb = new StringBuilder();
     int len = BeeUtils.length(arr);
@@ -542,4 +672,35 @@ public class CliWorker {
     BeeKeeper.getLog().info(BeeConst.whereAmI());
     BeeKeeper.getRpc().makeGetRequest(BeeService.SERVICE_WHERE_AM_I);
   }
+
+  private static native void getGeo(Element element) /*-{
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(showPosition);
+    } else {
+      element.innerHTML = "no geolocation support";
+    }
+
+    function showPosition(position) {
+      var lat = position.coords.latitude;
+      var lng = position.coords.longitude;
+      element.innerHTML = "Lat = " + lat + ", Lng = " + lng;
+    }
+  }-*/;
+  
+  private static native void sampleCanvas(Element el) /*-{
+    var ctx = el.getContext("2d");
+    
+    for (var i = 0; i < 6; i++) {  
+      for (var j = 0; j < 6; j++) {  
+        ctx.fillStyle = 'rgb(' + Math.floor(255 - 42.5 * i) + ', ' + Math.floor(255 - 42.5 * j) + ', 0)';  
+        ctx.fillRect(j*25, i*25, 25, 25);  
+      }  
+    }
+  }-*/;
+  
+  private static void sampleSvg(Element el) {
+    el.setInnerHTML("<circle cx=\"100\" cy=\"75\" r=\"50\" fill=\"blue\" stroke=\"firebrick\" stroke-width=\"3\"></circle>"
+        + "<text x=\"60\" y=\"155\">Hello Svg</text>");
+  }
+
 }

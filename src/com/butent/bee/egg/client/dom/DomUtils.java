@@ -65,11 +65,17 @@ public class DomUtils {
     }
   }
 
+  public static final String TAG_AUDIO = "audio";
+  public static final String TAG_CANVAS = "canvas";
+  public static final String TAG_DIV = "div";
   public static final String TAG_INPUT = "input";
   public static final String TAG_LABEL = "label";
+  public static final String TAG_SPAN = "span";
+  public static final String TAG_SVG = "svg";
   public static final String TAG_TABLE = "table";
   public static final String TAG_TD = "td";
   public static final String TAG_TH = "th";
+  public static final String TAG_VIDEO = "video";
 
   public static final String DEFAULT_ID_PREFIX = "bee";
 
@@ -80,6 +86,8 @@ public class DomUtils {
   public static final String RADIO_ID_PREFIX = "rb";
   public static final String OPTION_ID_PREFIX = "opt";
   public static final String TABLE_CELL_ID_PREFIX = "td";
+
+  public static final String ATTRIBUTE_TYPE = "type";
 
   private static final String ATTRIBUTE_SERVICE = "data-svc";
   private static final String ATTRIBUTE_STAGE = "data-stg";
@@ -177,6 +185,16 @@ public class DomUtils {
     return createElement(Document.get(), tag);
   }
 
+  public static native Element createElementNs(Document doc, String ns, String tag) /*-{
+    return doc.createElementNS(ns, tag);
+  }-*/;
+
+  public static Element createElementNs(String ns, String tag) {
+    Assert.notEmpty(ns);
+    Assert.notEmpty(tag);
+    return createElementNs(Document.get(), ns, tag);
+  }
+  
   public static Element createHtml(String html) {
     return createHtml(html, null);
   }
@@ -564,6 +582,10 @@ public class DomUtils {
 
     return lst;
   }
+  
+  public static native String getNamespaceUri(Node nd) /*-{
+    return nd.namespaceURI;
+  }-*/;
 
   public static native JsArray<ElementAttribute> getNativeAttributes(Element el) /*-{
     return el.attributes;

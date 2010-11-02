@@ -1,6 +1,7 @@
 package com.butent.bee.egg.client.menu;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.SelectElement;
 import com.google.gwt.event.dom.client.BlurEvent;
@@ -12,7 +13,6 @@ import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.resources.client.ImageResource.ImageOptions;
 import com.google.gwt.user.client.DOM;
-import com.google.gwt.user.client.DeferredCommand;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.AbstractImagePrototype;
@@ -440,7 +440,7 @@ public class BeeMenuBar extends Widget implements HasId, HasAfterAddHandler,
 
   private void doCommand(BeeMenuItem item) {
     closeAll();
-    DeferredCommand.addCommand(item.getCommand());
+    Scheduler.get().scheduleDeferred(item.getCommand());
   }
   
   private void eatEvent(Event event) {
