@@ -126,6 +126,34 @@ public class QueryServiceBean {
     }
   }
 
+  public int setIsolationLevel(int level) {
+    if (!BeeUtils.isPositive(level)) {
+      return level;
+    }
+    ds = dsb.locateDs(SqlBuilderFactory.getEngine()).getDs();
+    Connection con = null;
+    int oldLevel = -1;
+
+    try {
+      con = ds.getConnection();
+
+      if (con.getMetaData().supportsTransactionIsolationLevel(level)) {
+        oldLevel = con.getTransactionIsolation();
+        con.setTransactionIsolation(level);
+      }
+    } catch (SQLException ex) {
+      throw new RuntimeException("Cannot perform query: " + ex, ex);
+    } finally {
+      try {
+        con.close();
+        con = null;
+      } catch (SQLException ex) {
+        throw new RuntimeException("Cannot close connection: " + ex, ex);
+      }
+    }
+    return oldLevel;
+  }
+
   @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
   public void switchEngine(String dsn) {
     String oldDsn = SqlBuilderFactory.getEngine();

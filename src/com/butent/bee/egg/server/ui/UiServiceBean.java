@@ -34,22 +34,29 @@ public class UiServiceBean {
     Assert.notEmpty(svc);
     Assert.notNull(buff);
 
-    qs.switchEngine(reqInfo.getDsn());
-
-    if (svc.equals("rpc_ui_form")) {
-      formInfo(reqInfo, buff);
-    } else if (svc.equals("rpc_ui_form_list")) {
-      formList(buff);
-    } else if (svc.equals("rpc_ui_menu")) {
-      menuInfo(reqInfo, buff);
-    } else if (svc.equals("rpc_ui_grid")) {
-      gridInfo(reqInfo, buff);
-    } else if (svc.equals("rpc_ui_rebuild")) {
-      rebuildData(buff);
-    } else {
-      String msg = BeeUtils.concat(1, svc, "loader service not recognized");
-      logger.warning(msg);
+    String dsn = reqInfo.getDsn();
+    if (BeeUtils.isEmpty(dsn)) {
+      String msg = "DSN not specified";
+      logger.severe(msg);
       buff.add(msg);
+    } else {
+      qs.switchEngine(dsn);
+
+      if (svc.equals("rpc_ui_form")) {
+        formInfo(reqInfo, buff);
+      } else if (svc.equals("rpc_ui_form_list")) {
+        formList(buff);
+      } else if (svc.equals("rpc_ui_menu")) {
+        menuInfo(reqInfo, buff);
+      } else if (svc.equals("rpc_ui_grid")) {
+        gridInfo(reqInfo, buff);
+      } else if (svc.equals("rpc_ui_rebuild")) {
+        rebuildData(buff);
+      } else {
+        String msg = BeeUtils.concat(1, svc, "loader service not recognized");
+        logger.warning(msg);
+        buff.add(msg);
+      }
     }
   }
 

@@ -6,6 +6,7 @@ import com.butent.bee.egg.shared.sql.SqlUpdate;
 import com.butent.bee.egg.shared.sql.SqlUtils;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
+import java.sql.Connection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,11 +17,12 @@ import javax.ejb.EJB;
 import javax.ejb.Lock;
 import javax.ejb.LockType;
 import javax.ejb.Singleton;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 
 @Singleton
 @Lock(LockType.WRITE)
-// TODO: BÛTINA KAÞKAIP NUSTATYTI
-// ds.getConnection().setTransactionIsolation(Connection.TRANSACTION_REPEATABLE_READ);
+@TransactionAttribute(TransactionAttributeType.MANDATORY)
 public class IdGeneratorBean {
 
   private static final String ID_TABLE = "fw_tables";
@@ -36,6 +38,8 @@ public class IdGeneratorBean {
 
   @PreDestroy
   public void destroy() {
+    int oldLevel = qs.setIsolationLevel(Connection.TRANSACTION_REPEATABLE_READ);
+
     for (Entry<String, long[]> entry : idCache.entrySet()) {
       String source = entry.getKey();
       IsCondition wh = SqlUtils.equal(ID_TABLE, "table_name", source);
@@ -59,6 +63,7 @@ public class IdGeneratorBean {
         qs.processUpdate(su);
       }
     }
+    qs.setIsolationLevel(oldLevel);
     idCache.clear();
   }
 
@@ -79,32 +84,32 @@ public class IdGeneratorBean {
   }
 
   private long[] prepareId(String source) {
+    int oldLevel = qs.setIsolationLevel(Connection.TRANSACTION_REPEATABLE_READ);
 
+    long[] ids = null;
     IsCondition wh = SqlUtils.equal(ID_TABLE, "table_name", source);
 
     SqlUpdate su = new SqlUpdate(ID_TABLE);
-    su.addField(
-        ID_FIELD,
+    su.addField(ID_FIELD,
         SqlUtils.expression(SqlUtils.field(ID_FIELD), "+",
             SqlUtils.constant(idChunk))).setWhere(wh);
 
     int cnt = qs.processUpdate(su);
 
-    if (BeeUtils.isEmpty(cnt)) {
-      return null;
+    if (!BeeUtils.isEmpty(cnt)) {
+      SqlSelect ss = new SqlSelect();
+      ss.addFields(ID_TABLE, ID_FIELD).addFrom(ID_TABLE).setWhere(wh);
+
+      List<Object[]> result = qs.getData(ss);
+      long lastId = (Long) result.get(0)[0];
+
+      ids = new long[2];
+      ids[NEXT_ID] = lastId - idChunk;
+      ids[LAST_ID] = lastId;
+
+      idCache.put(source, ids);
     }
-
-    SqlSelect ss = new SqlSelect();
-    ss.addFields(ID_TABLE, ID_FIELD).addFrom(ID_TABLE).setWhere(wh);
-
-    List<Object[]> result = qs.getData(ss);
-    long lastId = (Long) result.get(0)[0];
-
-    long[] ids = new long[2];
-    ids[NEXT_ID] = lastId - idChunk;
-    ids[LAST_ID] = lastId;
-
-    idCache.put(source, ids);
+    qs.setIsolationLevel(oldLevel);
 
     return ids;
   }
