@@ -23,6 +23,10 @@ public class SqlUpdate extends HasFrom<SqlUpdate> {
     target = new FromSingle(source, alias);
   }
 
+  public SqlUpdate addField(String field, Object value) {
+    return addField(field, SqlUtils.constant(value));
+  }
+
   public SqlUpdate addField(String field, IsExpression value) {
     IsExpression[] fieldEntry = new IsExpression[2];
     fieldEntry[FIELD] = SqlUtils.field(

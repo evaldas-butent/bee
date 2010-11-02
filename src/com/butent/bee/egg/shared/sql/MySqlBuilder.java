@@ -6,6 +6,6 @@ class MySqlBuilder extends SqlBuilder {
   protected String sqlQuote(String value) {
     String quote = "`";
 
-    return quote + value.replaceAll(quote, "\\\\" + quote) + quote;
+    return quote + value.replaceAll(quote, "\\" + quote) + quote;
   }
 }

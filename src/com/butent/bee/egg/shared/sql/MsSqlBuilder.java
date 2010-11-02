@@ -8,7 +8,12 @@ class MsSqlBuilder extends SqlBuilder {
     String closeQuote = "]";
 
     return openQuote
-        + value.replaceAll(openQuote, "\\\\" + openQuote).replaceAll(
-            closeQuote, "\\\\" + closeQuote) + closeQuote;
+        + value.replaceAll(escapeRegex(openQuote), "\\" + openQuote)
+          .replaceAll(escapeRegex(closeQuote), "\\" + closeQuote)
+        + closeQuote;
+  }
+
+  private String escapeRegex(String s) {
+    return "\\" + s;
   }
 }

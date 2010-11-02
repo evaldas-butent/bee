@@ -2,8 +2,8 @@ package com.butent.bee.egg.server.ui;
 
 import com.butent.bee.egg.server.DataSourceBean;
 import com.butent.bee.egg.shared.Assert;
-import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.sql.IsQuery;
+import com.butent.bee.egg.shared.sql.SqlBuilderFactory;
 import com.butent.bee.egg.shared.sql.SqlInsert;
 import com.butent.bee.egg.shared.sql.SqlSelect;
 import com.butent.bee.egg.shared.utils.BeeUtils;
@@ -64,9 +64,8 @@ public class QueryServiceBean {
   }
 
   public Object processSql(String sql) {
-    if (ds == null) {
-      ds = dsb.locateDs(BeeConst.MYSQL).getDs();
-    }
+    ds = dsb.locateDs(SqlBuilderFactory.getEngine()).getDs();
+
     Connection con = null;
     Statement stmt = null;
 
@@ -124,6 +123,16 @@ public class QueryServiceBean {
       return -1;
     } else {
       return (Integer) processSql(query.getQuery());
+    }
+  }
+
+  @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+  public void switchEngine(String dsn) {
+    String oldDsn = SqlBuilderFactory.getEngine();
+
+    if (!BeeUtils.same(oldDsn, dsn)) {
+      ig.destroy();
+      SqlBuilderFactory.setDefaultEngine(dsn);
     }
   }
 }

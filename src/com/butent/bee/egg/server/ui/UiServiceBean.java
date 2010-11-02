@@ -34,6 +34,8 @@ public class UiServiceBean {
     Assert.notEmpty(svc);
     Assert.notNull(buff);
 
+    qs.switchEngine(reqInfo.getDsn());
+
     if (svc.equals("rpc_ui_form")) {
       formInfo(reqInfo, buff);
     } else if (svc.equals("rpc_ui_form_list")) {
@@ -161,7 +163,7 @@ public class UiServiceBean {
 
   private void rebuildData(ResponseBuffer buff) {
     String tbl = "fw_tables";
-    buff.add("result: " + qs.processSql("drop table if exists " + tbl));
+    buff.add("result: " + qs.processSql("drop table " + tbl));
 
     buff.add("result: "
         + qs.processSql("create table " + tbl
@@ -175,7 +177,7 @@ public class UiServiceBean {
     buff.add("result: " + qs.processUpdate(si));
 
     si = new SqlInsert(tbl);
-    si.addField("table_name", "countries").addField("last_id", 0);
+    si.addField("table_name", "cou`ntr]ie[s").addField("last_id", 0);
     buff.add("result: " + qs.insertData(si));
 
     si = new SqlInsert(tbl);

@@ -9,7 +9,9 @@ import com.butent.bee.egg.shared.utils.BeeUtils;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
+import javax.annotation.PreDestroy;
 import javax.ejb.EJB;
 import javax.ejb.Lock;
 import javax.ejb.LockType;
@@ -17,8 +19,12 @@ import javax.ejb.Singleton;
 
 @Singleton
 @Lock(LockType.WRITE)
+// TODO: BÛTINA KAÞKAIP NUSTATYTI
+// ds.getConnection().setTransactionIsolation(Connection.TRANSACTION_REPEATABLE_READ);
 public class IdGeneratorBean {
 
+  private static final String ID_TABLE = "fw_tables";
+  private static final String ID_FIELD = "last_id";
   private static final int NEXT_ID = 0;
   private static final int LAST_ID = 1;
 
@@ -27,6 +33,34 @@ public class IdGeneratorBean {
 
   private int idChunk = 50;
   private Map<String, long[]> idCache = new HashMap<String, long[]>();
+
+  @PreDestroy
+  public void destroy() {
+    for (Entry<String, long[]> entry : idCache.entrySet()) {
+      String source = entry.getKey();
+      IsCondition wh = SqlUtils.equal(ID_TABLE, "table_name", source);
+
+      SqlSelect ss = new SqlSelect();
+      ss.addFields(ID_TABLE, ID_FIELD).addFrom(ID_TABLE).setWhere(wh);
+
+      List<Object[]> result = qs.getData(ss);
+      long lastId = (Long) result.get(0)[0];
+
+      if (entry.getValue()[LAST_ID] == lastId) {
+        ss = new SqlSelect();
+        ss.addMax(source, "id").addFrom(source);
+
+        result = qs.getData(ss);
+        lastId = (Long) result.get(0)[0];
+
+        SqlUpdate su = new SqlUpdate(ID_TABLE);
+        su.addField(ID_FIELD, lastId).setWhere(wh);
+
+        qs.processUpdate(su);
+      }
+    }
+    idCache.clear();
+  }
 
   public long getId(String source) {
     long newId = 0;
@@ -45,15 +79,13 @@ public class IdGeneratorBean {
   }
 
   private long[] prepareId(String source) {
-    String tbl = "fw_tables";
-    String fld = "last_id";
 
-    IsCondition wh = SqlUtils.equal(tbl, "table_name", source);
+    IsCondition wh = SqlUtils.equal(ID_TABLE, "table_name", source);
 
-    SqlUpdate su = new SqlUpdate(tbl);
+    SqlUpdate su = new SqlUpdate(ID_TABLE);
     su.addField(
-        fld,
-        SqlUtils.expression(SqlUtils.field(fld), "+",
+        ID_FIELD,
+        SqlUtils.expression(SqlUtils.field(ID_FIELD), "+",
             SqlUtils.constant(idChunk))).setWhere(wh);
 
     int cnt = qs.processUpdate(su);
@@ -63,7 +95,7 @@ public class IdGeneratorBean {
     }
 
     SqlSelect ss = new SqlSelect();
-    ss.addFields(tbl, fld).addFrom(tbl).setWhere(wh);
+    ss.addFields(ID_TABLE, ID_FIELD).addFrom(ID_TABLE).setWhere(wh);
 
     List<Object[]> result = qs.getData(ss);
     long lastId = (Long) result.get(0)[0];

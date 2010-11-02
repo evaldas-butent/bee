@@ -34,6 +34,10 @@ public class SqlSelect extends HasFrom<SqlSelect> {
     return getReference();
   }
 
+  public SqlSelect addAvg(String source, String field) {
+    return addAvg(SqlUtils.field(source, field), field);
+  }
+
   public SqlSelect addAvg(String source, String field, String alias) {
     return addAvg(SqlUtils.field(source, field), alias);
   }
@@ -112,6 +116,10 @@ public class SqlSelect extends HasFrom<SqlSelect> {
     return getReference();
   }
 
+  public SqlSelect addMax(String source, String field) {
+    return addMax(SqlUtils.field(source, field), field);
+  }
+
   public SqlSelect addMax(String source, String field, String alias) {
     return addMax(SqlUtils.field(source, field), alias);
   }
@@ -122,6 +130,10 @@ public class SqlSelect extends HasFrom<SqlSelect> {
 
     addAggregate("MIN", expr, alias);
     return getReference();
+  }
+
+  public SqlSelect addMin(String source, String field) {
+    return addMin(SqlUtils.field(source, field), field);
   }
 
   public SqlSelect addMin(String source, String field, String alias) {
@@ -144,6 +156,10 @@ public class SqlSelect extends HasFrom<SqlSelect> {
 
     addAggregate("SUM", expr, alias);
     return getReference();
+  }
+
+  public SqlSelect addSum(String source, String field) {
+    return addSum(SqlUtils.field(source, field), field);
   }
 
   public SqlSelect addSum(String source, String field, String alias) {
