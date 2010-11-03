@@ -1,7 +1,9 @@
 package com.butent.bee.egg.server.ui;
 
+import com.butent.bee.egg.server.data.QueryServiceBean;
 import com.butent.bee.egg.server.utils.XmlUtils;
 import com.butent.bee.egg.shared.BeeService;
+import com.butent.bee.egg.shared.data.BeeRowSet.BeeRow;
 import com.butent.bee.egg.shared.sql.SqlSelect;
 import com.butent.bee.egg.shared.sql.SqlUtils;
 import com.butent.bee.egg.shared.ui.UiLoader;
@@ -67,20 +69,20 @@ public class UiLoaderBean extends UiLoader {
           "dock_bott").addFrom("forms", "f").setWhere(
           SqlUtils.equal("f", "form", formName));
 
-      List<Object[]> data = qs.getData(ss);
-      Object[] col = data.get(0);
+      BeeRow data = qs.getSingleRow(ss);
 
-      String top = BeeUtils.isEmpty(col[1]) ? "" : BeeUtils.transform(col[1]);
-      String left = BeeUtils.isEmpty(col[2]) ? "" : BeeUtils.transform(col[2]);
-      String width = BeeUtils.isEmpty(col[3]) ? "" : BeeUtils.transform(col[3]);
-      String height = BeeUtils.isEmpty(col[4]) ? ""
-          : BeeUtils.transform(col[4]);
-      String dockTop = BeeUtils.ifString(col[5], top);
-      String dockLeft = BeeUtils.ifString(col[6], left);
-      String dockWidth = BeeUtils.transform(col[7]);
-      String dockHeight = BeeUtils.transform(col[8]);
-      String dockRight = BeeUtils.ifString(col[9], dockWidth);
-      String dockBottom = BeeUtils.ifString(col[10], dockHeight);
+      String top = data.getString("top");
+      String left = data.getString("left");
+      String width = data.getString("width");
+      String height = data.getString("height");
+      String dockTop = BeeUtils.ifString(data.getString("dock_top"), top);
+      String dockLeft = BeeUtils.ifString(data.getString("dock_left"), left);
+      String dockWidth = data.getString("dock_width");
+      String dockHeight = data.getString("dock_hght");
+      String dockRight = BeeUtils.ifString(data.getString("dock_right"),
+          dockWidth);
+      String dockBottom = BeeUtils.ifString(data.getString("dock_bott"),
+          dockHeight);
 
       StringBuilder props = new StringBuilder();
 
@@ -97,8 +99,9 @@ public class UiLoaderBean extends UiLoader {
       props.append("top=" + dockTop + "\n");
       props.append("left=" + dockLeft + "\n");
 
-      if (!BeeUtils.isEmpty(col[0])) {
-        props.append(col[0] + "\n");
+      String prp = data.getString("properties");
+      if (!BeeUtils.isEmpty(prp)) {
+        props.append(prp + "\n");
       }
       row = new UiRow();
       row.setId("Container");
@@ -114,44 +117,43 @@ public class UiLoaderBean extends UiLoader {
           "dock_width", "dock_hght").addFrom("controls", "c").setWhere(
           SqlUtils.equal("c", "form", formName));
 
-      data = qs.getData(ss);
-
-      for (Object[] cols : data) {
+      for (BeeRow cols : qs.getData(ss).getRows()) {
         row = new UiRow();
-        row.setId((String) cols[0]);
-        row.setClassName(getUiClass((String) cols[1]));
-        row.setParent((String) cols[2]);
-        row.setCaption(BeeUtils.ifString(cols[3], "").replaceAll("[\"']", "").replaceFirst(
-            "\\\\<", ""));
-        row.setOrder((Integer) cols[4]);
+        row.setId(cols.getString("control"));
+        row.setClassName(getUiClass(cols.getString("class")));
+        row.setParent(cols.getString("parent"));
+        row.setCaption(BeeUtils.ifString(cols.getString("caption"), "")
+            .replaceAll("[\"']", "").replaceFirst("\\\\<", ""));
+        row.setOrder(cols.getInt("order"));
 
         props = new StringBuilder();
-        if (!BeeUtils.isEmpty(cols[5])) {
-          props.append("parameters=" + cols[5] + "\n");
+        prp = cols.getString("parameters");
+        if (!BeeUtils.isEmpty(prp)) {
+          props.append("parameters=" + prp + "\n");
         }
-        if (!BeeUtils.isEmpty(cols[6])) {
-          props.append(cols[6] + "\n");
+        prp = cols.getString("properties");
+        if (!BeeUtils.isEmpty(prp)) {
+          props.append(prp + "\n");
         }
 
-        top = BeeUtils.isEmpty(cols[7]) ? "" : BeeUtils.transform(cols[7]);
-        left = BeeUtils.isEmpty(cols[8]) ? "" : BeeUtils.transform(cols[8]);
-        width = BeeUtils.isEmpty(cols[9]) ? "" : BeeUtils.transform(cols[9]);
-        height = BeeUtils.isEmpty(cols[10]) ? "" : BeeUtils.transform(cols[10]);
+        top = cols.getString("top");
+        left = cols.getString("left");
+        width = cols.getString("width");
+        height = cols.getString("height");
 
-        String dock = BeeUtils.ifString(cols[11], "");
+        String dock = BeeUtils.ifString(cols.getString("dock_prnt"), "");
 
-        dockTop = BeeUtils.isEmpty(cols[13]) ? ""
-            : BeeUtils.transform(cols[13]) + (dock.contains("t") ? "%" : "");
-        dockLeft = BeeUtils.isEmpty(cols[12]) ? ""
-            : BeeUtils.transform(cols[12]) + (dock.contains("l") ? "%" : "");
-        dockWidth = BeeUtils.isEmpty(cols[16]) ? ""
-            : BeeUtils.transform(cols[16]) + (dock.contains("w") ? "%" : "");
-        dockHeight = BeeUtils.isEmpty(cols[17]) ? ""
-            : BeeUtils.transform(cols[17]) + (dock.contains("h") ? "%" : "");
-        dockRight = BeeUtils.isEmpty(cols[14]) ? dockWidth
-            : BeeUtils.transform(cols[14]) + (dock.contains("r") ? "%" : "");
-        dockBottom = BeeUtils.isEmpty(cols[15]) ? dockHeight
-            : BeeUtils.transform(cols[15]) + (dock.contains("b") ? "%" : "");
+        dockTop = cols.getString("dock_top") + (dock.contains("t") ? "%" : "");
+        dockLeft = cols.getString("dock_left")
+            + (dock.contains("l") ? "%" : "");
+        dockWidth = cols.getString("dock_width")
+            + (dock.contains("w") ? "%" : "");
+        dockHeight = cols.getString("dock_hght")
+            + (dock.contains("h") ? "%" : "");
+        dockRight = BeeUtils.ifString(cols.getString("dock_right"), dockWidth)
+            + (dock.contains("r") ? "%" : "");
+        dockBottom = BeeUtils.ifString(cols.getString("dock_bott"), dockHeight)
+            + (dock.contains("b") ? "%" : "");
 
         if (BeeUtils.isEmpty(dock)) {
           props.append("top=" + top + "\n");

@@ -561,20 +561,20 @@ public class BeeUtils {
     if (len <= 0) {
       return idx;
     }
-    
+
     for (int i = 0; i < len; i++) {
       if (value == arr[i]) {
         idx = i;
         break;
       }
-      
-      if (value instanceof Comparable<?> && arr[i] != null 
+
+      if (value instanceof Comparable<?> && arr[i] != null
           && ((Comparable<T>) value).compareTo(arr[i]) == 0) {
         idx = i;
         break;
       }
     }
-    
+
     return idx;
   }
 
@@ -1070,7 +1070,7 @@ public class BeeUtils {
     if (x == y) {
       return replicate(minChar, len);
     }
-    
+
     StringBuilder sb = new StringBuilder(len);
     for (int i = 0; i < len; i++) {
       sb.append((char) randomInt(x, y + 1));
@@ -1224,6 +1224,20 @@ public class BeeUtils {
     }
   }
 
+  public static long toLong(String s) {
+    if (isEmpty(s)) {
+      return 0L;
+    }
+    long i;
+
+    try {
+      i = Long.parseLong(s.trim());
+    } catch (NumberFormatException ex) {
+      i = 0L;
+    }
+    return i;
+  }
+
   public static String toSeconds(long millis) {
     return Long.toString(millis / 1000) + BeeConst.STRING_POINT
         + toLeadingZeroes((int) (millis % 1000), 3);
@@ -1236,7 +1250,7 @@ public class BeeUtils {
   public static String toString(int x) {
     return Integer.toString(x);
   }
-  
+
   public static String transform(Object x) {
     String s;
 

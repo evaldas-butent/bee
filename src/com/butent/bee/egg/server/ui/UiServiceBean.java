@@ -2,17 +2,19 @@ package com.butent.bee.egg.server.ui;
 
 import com.butent.bee.egg.server.Assert;
 import com.butent.bee.egg.server.communication.ResponseBuffer;
+import com.butent.bee.egg.server.data.QueryServiceBean;
 import com.butent.bee.egg.server.http.RequestInfo;
 import com.butent.bee.egg.server.utils.XmlUtils;
 import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.data.BeeColumn;
+import com.butent.bee.egg.shared.data.BeeRowSet;
+import com.butent.bee.egg.shared.data.BeeRowSet.BeeRow;
 import com.butent.bee.egg.shared.sql.SqlInsert;
 import com.butent.bee.egg.shared.sql.SqlSelect;
 import com.butent.bee.egg.shared.sql.SqlUtils;
 import com.butent.bee.egg.shared.ui.UiComponent;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
-import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -78,17 +80,13 @@ public class UiServiceBean {
     SqlSelect ss = new SqlSelect();
     ss.addFields("f", "form").addFrom("forms", "f").addOrder("f", "form");
 
-    List<Object[]> res = qs.getData(ss);
-    if (res == null) {
-      return;
-    }
+    BeeRowSet res = qs.getData(ss);
 
-    for (String alias : ss.getFieldAliases()) {
-      buff.addColumn(new BeeColumn(alias));
-    }
-    for (Object[] row : res) {
-      for (Object cell : row) {
-        buff.add(cell);
+    buff.addColumns(res.getColumns());
+
+    for (BeeRow row : res.getRows()) {
+      for (int col = 0; col < res.getColumnCount(); col++) {
+        buff.add(row.getValue(col));
       }
     }
   }
@@ -117,34 +115,30 @@ public class UiServiceBean {
     ss.addFields("g", "properties").addFrom("grids", "g").setWhere(
         SqlUtils.equal("g", "table", gName));
 
-    List<Object[]> data = qs.getData(ss);
+    String x = qs.getSingleRow(ss).getString("properties");
 
-    if (!BeeUtils.isEmpty(data)) {
-      String x = (String) data.get(0)[0];
-
-      if (!BeeUtils.isEmpty(x) && x.contains("parent_table")) {
-        grd = x.replaceFirst(
+    if (!BeeUtils.isEmpty(x) && x.contains("parent_table")) {
+      grd = x.replaceFirst(
             "^((?s).)*parent_table\\s*=\\s*[\\[\"'](.+)[\\]\"']((?s).)*$", "$2");
-      }
+    }
 
-      ss = new SqlSelect();
-      ss.addFields("c", "field", "caption").addFrom("columns", "c").setWhere(
+    ss = new SqlSelect();
+    ss.addFields("c", "caption").addFrom("columns", "c").setWhere(
           SqlUtils.equal("c", "table", grd)).addOrder("c", "order");
 
-      List<Object[]> cols = qs.getData(ss);
+    BeeRowSet data = qs.getData(ss);
 
-      if (!BeeUtils.isEmpty(cols)) {
-        for (Object[] col : cols) {
-          buff.addColumn(new BeeColumn(
-              ((String) col[1]).replaceAll("['\"]", "")));
-        }
-        for (int i = 0; i < 20; i++) {
-          for (int j = 0; j < cols.size(); j++) {
-            buff.add(j == 0 ? i + 1 : BeeConst.STRING_EMPTY);
-          }
-        }
-        return;
+    if (!data.isEmpty()) {
+      for (BeeRow row : data.getRows()) {
+        buff.addColumn(
+            new BeeColumn(row.getString("caption").replaceAll("['\"]", "")));
       }
+      for (int i = 0; i < 20; i++) {
+        for (int j = 0; j < data.getRowCount(); j++) {
+          buff.add(j == 0 ? i + 1 : BeeConst.STRING_EMPTY);
+        }
+      }
+      return;
     }
     String msg = "Grid name not recognized: " + grd;
     logger.warning(msg);
@@ -181,7 +175,7 @@ public class UiServiceBean {
     SqlInsert si = new SqlInsert(tbl);
     si.addField("table_name", "fw_tables").addField("last_id", 1).addField(
         "version", 1).addField("id", 1);
-    buff.add("result: " + qs.processUpdate(si));
+    buff.add("result: " + qs.updateData(si));
 
     si = new SqlInsert(tbl);
     si.addField("table_name", "cou`ntr]ie[s").addField("last_id", 0);

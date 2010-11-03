@@ -1,7 +1,10 @@
-package com.butent.bee.egg.server.ui;
+package com.butent.bee.egg.server.data;
 
 import com.butent.bee.egg.server.DataSourceBean;
+import com.butent.bee.egg.server.jdbc.JdbcUtils;
 import com.butent.bee.egg.shared.Assert;
+import com.butent.bee.egg.shared.data.BeeRowSet;
+import com.butent.bee.egg.shared.data.BeeRowSet.BeeRow;
 import com.butent.bee.egg.shared.sql.IsQuery;
 import com.butent.bee.egg.shared.sql.SqlBuilderFactory;
 import com.butent.bee.egg.shared.sql.SqlInsert;
@@ -13,8 +16,6 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.logging.Logger;
 
 import javax.ejb.EJB;
@@ -37,12 +38,17 @@ public class QueryServiceBean {
   @EJB
   IdGeneratorBean ig;
 
-  @SuppressWarnings("unchecked")
-  public List<Object[]> getData(SqlSelect ss) {
+  public BeeRowSet getData(SqlSelect ss) {
     Assert.notNull(ss);
     Assert.state(!ss.isEmpty());
 
-    return (List<Object[]>) processSql(ss.getQuery());
+    return (BeeRowSet) processSql(ss.getQuery());
+  }
+
+  public BeeRow getSingleRow(SqlSelect ss) {
+    BeeRowSet rs = getData(ss);
+    Assert.isTrue(rs.getRowCount() == 1, "Result must contain exactly one row");
+    return rs.getRow(0);
   }
 
   public long insertData(SqlInsert si) {
@@ -55,7 +61,7 @@ public class QueryServiceBean {
       si.addField("version", 1).addField("id", id);
     }
 
-    int cnt = processUpdate(si);
+    int cnt = updateData(si);
 
     if (BeeUtils.isEmpty(cnt)) {
       return -1;
@@ -78,20 +84,20 @@ public class QueryServiceBean {
       boolean isResultSet = stmt.execute(sql);
 
       if (isResultSet) {
-        List<Object[]> result = new ArrayList<Object[]>();
-
         ResultSet rs = stmt.getResultSet();
-        int cols = rs.getMetaData().getColumnCount();
+
+        BeeRowSet result = new BeeRowSet(JdbcUtils.getColumns(rs));
+        int cols = result.getColumnCount();
 
         while (rs.next()) {
-          Object[] o = new Object[cols];
+          String[] row = new String[cols];
 
           for (int i = 0; i < cols; i++) {
-            o[i] = rs.getObject(i + 1);
+            row[i] = rs.getString(i + 1);
           }
-          result.add(o);
+          result.addRow(row);
         }
-        LogUtils.info(logger, "Retrieved rows:", result.size());
+        LogUtils.info(logger, "Retrieved rows:", result.getRowCount());
         return result;
 
       } else {
@@ -115,17 +121,6 @@ public class QueryServiceBean {
     }
   }
 
-  public int processUpdate(IsQuery query) {
-    Assert.notNull(query);
-    Assert.state(!query.isEmpty());
-
-    if (query instanceof SqlSelect) {
-      return -1;
-    } else {
-      return (Integer) processSql(query.getQuery());
-    }
-  }
-
   public int setIsolationLevel(int level) {
     if (!BeeUtils.isPositive(level)) {
       return level;
@@ -139,7 +134,10 @@ public class QueryServiceBean {
 
       if (con.getMetaData().supportsTransactionIsolationLevel(level)) {
         oldLevel = con.getTransactionIsolation();
-        con.setTransactionIsolation(level);
+
+        if (oldLevel != level) {
+          con.setTransactionIsolation(level);
+        }
       }
     } catch (SQLException ex) {
       throw new RuntimeException("Cannot perform query: " + ex, ex);
@@ -161,6 +159,17 @@ public class QueryServiceBean {
     if (!BeeUtils.same(oldDsn, dsn)) {
       ig.destroy();
       SqlBuilderFactory.setDefaultEngine(dsn);
+    }
+  }
+
+  public int updateData(IsQuery query) {
+    Assert.notNull(query);
+    Assert.state(!query.isEmpty());
+
+    if (query instanceof SqlSelect) {
+      return -1;
+    } else {
+      return (Integer) processSql(query.getQuery());
     }
   }
 }

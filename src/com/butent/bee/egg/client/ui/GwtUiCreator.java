@@ -12,10 +12,10 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.egg.client.BeeKeeper;
 import com.butent.bee.egg.client.layout.BeeHorizontal;
 import com.butent.bee.egg.client.layout.BeeLayoutPanel;
+import com.butent.bee.egg.client.layout.BeeSplit;
 import com.butent.bee.egg.client.layout.BeeStack;
 import com.butent.bee.egg.client.layout.BeeTab;
 import com.butent.bee.egg.client.layout.BeeVertical;
-import com.butent.bee.egg.client.layout.TilePanel;
 import com.butent.bee.egg.client.menu.BeeMenuBar;
 import com.butent.bee.egg.client.menu.BeeMenuItemSeparator;
 import com.butent.bee.egg.client.menu.MenuCommand;
@@ -110,7 +110,7 @@ public class GwtUiCreator implements UiCreator {
 
   @Override
   public Object createGrid(UiGrid uiGrid) {
-    TilePanel widget = new TilePanel();
+    BeeSplit widget = new BeeSplit();
     widget.setTitle(uiGrid.getId());
 
     if (!BeeUtils.isEmpty(uiGrid.getCaption())) {

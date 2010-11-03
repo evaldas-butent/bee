@@ -1,4 +1,4 @@
-package com.butent.bee.egg.server.ui;
+package com.butent.bee.egg.server.data;
 
 import com.butent.bee.egg.shared.sql.IsCondition;
 import com.butent.bee.egg.shared.sql.SqlSelect;
@@ -8,7 +8,6 @@ import com.butent.bee.egg.shared.utils.BeeUtils;
 
 import java.sql.Connection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -47,20 +46,18 @@ public class IdGeneratorBean {
       SqlSelect ss = new SqlSelect();
       ss.addFields(ID_TABLE, ID_FIELD).addFrom(ID_TABLE).setWhere(wh);
 
-      List<Object[]> result = qs.getData(ss);
-      long lastId = (Long) result.get(0)[0];
+      long lastId = qs.getSingleRow(ss).getLong(ID_FIELD);
 
       if (entry.getValue()[LAST_ID] == lastId) {
         ss = new SqlSelect();
         ss.addMax(source, "id").addFrom(source);
 
-        result = qs.getData(ss);
-        lastId = (Long) result.get(0)[0];
+        lastId = qs.getSingleRow(ss).getLong("id");
 
         SqlUpdate su = new SqlUpdate(ID_TABLE);
         su.addField(ID_FIELD, lastId).setWhere(wh);
 
-        qs.processUpdate(su);
+        qs.updateData(su);
       }
     }
     qs.setIsolationLevel(oldLevel);
@@ -94,14 +91,13 @@ public class IdGeneratorBean {
         SqlUtils.expression(SqlUtils.field(ID_FIELD), "+",
             SqlUtils.constant(idChunk))).setWhere(wh);
 
-    int cnt = qs.processUpdate(su);
+    int cnt = qs.updateData(su);
 
     if (!BeeUtils.isEmpty(cnt)) {
       SqlSelect ss = new SqlSelect();
       ss.addFields(ID_TABLE, ID_FIELD).addFrom(ID_TABLE).setWhere(wh);
 
-      List<Object[]> result = qs.getData(ss);
-      long lastId = (Long) result.get(0)[0];
+      long lastId = qs.getSingleRow(ss).getLong(ID_FIELD);
 
       ids = new long[2];
       ids[NEXT_ID] = lastId - idChunk;
