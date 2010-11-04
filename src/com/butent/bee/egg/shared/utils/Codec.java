@@ -9,6 +9,9 @@ import com.butent.bee.egg.shared.Pair;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Map;
 
 public class Codec {
   private static final String SERIALIZATION_SEPARATOR = ";";
@@ -138,6 +141,76 @@ public class Codec {
 
   public static String adler32(String input) {
     return adler32(toBytes(input));
+  }
+
+  public static String[] beeDeserialize(String ser) {
+    Assert.notEmpty(ser);
+
+    ArrayList<String> res = new ArrayList<String>();
+    int pos = 0;
+
+    while (pos < ser.length()) {
+      int n = BeeUtils.toInt(ser.substring(pos++, pos));
+      if (BeeUtils.isEmpty(n)) {
+        res.add(null);
+        continue;
+      }
+      int l = BeeUtils.toInt(ser.substring(pos, pos + n));
+      pos += n;
+      if (BeeUtils.isEmpty(l)) {
+        res.add(BeeConst.STRING_EMPTY);
+        continue;
+      }
+      res.add(ser.substring(pos, pos + l));
+      pos += l;
+    }
+    return res.toArray(new String[0]);
+  }
+
+  public static String beeSerialize(Object... obj) {
+    Assert.parameterCount(obj.length, 1);
+
+    StringBuilder sb = new StringBuilder();
+
+    for (Object o : obj) {
+      if (o == null) {
+        sb.append(0);
+
+      } else if (o instanceof BeeSerializable) {
+        String s = ((BeeSerializable) o).serialize();
+        sb.append(beeSerialize(s));
+
+      } else if (o instanceof Map) {
+        StringBuilder s = new StringBuilder();
+
+        for (Map.Entry<?, ?> ob : ((Map<?, ?>) o).entrySet()) {
+          s.append(beeSerialize(ob.getKey(), ob.getValue()));
+        }
+        sb.append(beeSerialize(s));
+
+      } else if (o instanceof Collection) {
+        StringBuilder s = new StringBuilder();
+
+        for (Object ob : (Collection<?>) o) {
+          s.append(beeSerialize(ob));
+        }
+        sb.append(beeSerialize(s));
+
+      } else if (BeeUtils.isArray(o)) {
+        StringBuilder s = new StringBuilder();
+
+        for (int i = 0; i < BeeUtils.arrayLength(o); i++) {
+          s.append(beeSerialize(BeeUtils.arrayGet(o, i)));
+        }
+        sb.append(beeSerialize(s));
+
+      } else {
+        String s = BeeUtils.transform(o);
+        String l = BeeUtils.transform(s.length());
+        sb.append(l.length() + l + s);
+      }
+    }
+    return sb.toString();
   }
 
   public static String crc16(byte[] arr) {
@@ -370,7 +443,7 @@ public class Codec {
 
     return bytes;
   }
-  
+
   public static String fromBytes(byte[] bytes) {
     Assert.notNull(bytes);
     int len = bytes.length;

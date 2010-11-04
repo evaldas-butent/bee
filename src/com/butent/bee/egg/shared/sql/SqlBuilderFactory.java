@@ -35,7 +35,7 @@ public class SqlBuilderFactory {
     return defaultEngine;
   }
 
-  public static void setDefaultEngine(String engine) {
+  public static synchronized void setDefaultEngine(String engine) {
     defaultEngine = engine;
     defaultBuilder = getBuilder(defaultEngine);
   }

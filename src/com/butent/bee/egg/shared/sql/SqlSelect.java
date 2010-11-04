@@ -95,7 +95,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
   }
 
   public SqlSelect addFields(String source, String... fields) {
-    Assert.arrayLength(fields, 1);
+    Assert.arrayLengthMin(fields, 1);
 
     for (String fld : fields) {
       addField(SqlUtils.field(source, fld), null);

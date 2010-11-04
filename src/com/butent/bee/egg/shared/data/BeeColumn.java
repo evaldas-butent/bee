@@ -18,33 +18,40 @@ public class BeeColumn implements Transformable, BeeSerializable {
   public static final int NULLABLE = 1;
   public static final int NULLABLE_UNKNOWN = 2;
 
-  private int idx = BeeConst.INDEX_UNKNOWN;
-  private String name = null;
+  public static BeeColumn restore(String s) {
+    BeeColumn c = new BeeColumn();
+    c.deserialize(s);
+    return c;
+  }
 
+  private int idx = BeeConst.INDEX_UNKNOWN;
+
+  private String name = null;
   private String schema = null;
   private String catalog = null;
-  private String table = null;
 
+  private String table = null;
   private String clazz = null;
   private int type = 0;
+
   private String typeName = null;
-
   private String label = null;
-  private int displaySize = BeeConst.SIZE_UNKNOWN;
 
+  private int displaySize = BeeConst.SIZE_UNKNOWN;
   private int precision = BeeConst.SIZE_UNKNOWN;
+
   private int scale = BeeConst.SIZE_UNKNOWN;
 
   private int nullable = NULLABLE_UNKNOWN;
-
   private boolean signed = false;
   private boolean autoIncrement = false;
   private boolean caseSensitive = false;
-  private boolean currency = false;
 
+  private boolean currency = false;
   private boolean definitelyWritable = false;
   private boolean readOnly = false;
   private boolean searchable = false;
+
   private boolean writable = false;
 
   public BeeColumn() {
@@ -54,16 +61,6 @@ public class BeeColumn implements Transformable, BeeSerializable {
   public BeeColumn(String name) {
     this();
     setName(name);
-  }
-
-  public BeeColumn(String s, boolean serial) {
-    this();
-    
-    if (serial) {
-      deserialize(s);
-    } else {
-      setName(s);
-    }
   }
 
   public void deserialize(String s) {

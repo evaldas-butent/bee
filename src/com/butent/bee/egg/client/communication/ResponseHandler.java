@@ -82,7 +82,7 @@ public class ResponseHandler {
       }
       return;
     }
-    
+
     if (reqLen <= 100) {
       StringBuilder sb = new StringBuilder();
       for (int i = 0; i < reqLen; i++) {
@@ -97,25 +97,25 @@ public class ResponseHandler {
         sb.append(BeeConst.CHAR_SPACE);
         sb.append(Integer.toHexString(reqTxt.charAt(i)));
       }
-      
+
       if (sb.length() > 0) {
         BeeKeeper.getLog().info(sb);
       }
     }
-    
+
     String[] arr;
     String k, v, z;
-    
+
     for (int i = 0; i < mc; i++) {
       arr = BeeUtils.split(messages[i].getMessage(), BeeConst.STRING_SPACE);
       if (BeeUtils.length(arr) != 2) {
         BeeKeeper.getLog().warning(BeeUtils.length(arr), messages[i]);
         continue;
       }
-      
+
       k = arr[0];
       v = arr[1];
-      
+
       if (reqData.containsKey(k)) {
         z = reqData.get(k);
       } else if (k.contains(BeeConst.STRING_POINT)) {
@@ -123,7 +123,7 @@ public class ResponseHandler {
       } else {
         z = BeeConst.STRING_EMPTY;
       }
-      
+
       if (v.equals(z)) {
         BeeKeeper.getLog().info(k, v);
       } else {

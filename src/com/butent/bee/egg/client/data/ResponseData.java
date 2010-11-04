@@ -15,9 +15,9 @@ public class ResponseData extends JsData {
 
     BeeColumn[] arr = new BeeColumn[columnCount];
     for (int i = 0; i < columnCount; i++) {
-      arr[i] = new BeeColumn(data.get(i), true);
+      arr[i] = BeeColumn.restore(data.get(i));
     }
-    
+
     setColumns(arr);
   }
 

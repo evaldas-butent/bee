@@ -37,7 +37,7 @@ public class SqlInsert extends SqlQuery<SqlInsert> {
   }
 
   public SqlInsert addFields(String... fields) {
-    Assert.arrayLength(fieldList, 1);
+    Assert.arrayLengthMin(fieldList, 1);
     Assert.state(BeeUtils.isEmpty(valueList));
 
     for (String fld : fields) {

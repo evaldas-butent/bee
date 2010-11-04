@@ -61,7 +61,7 @@ public class SqlUtils {
   }
 
   public static IsExpression[] fields(String source, String... fields) {
-    Assert.arrayLength(fields, 1);
+    Assert.arrayLengthMin(fields, 1);
 
     int len = BeeUtils.arrayLength(fields);
     IsExpression[] list = new IsExpression[len];
@@ -85,7 +85,7 @@ public class SqlUtils {
   }
 
   public static IsCondition inList(IsExpression expr, Object... values) {
-    Assert.arrayLength(values, 1);
+    Assert.arrayLengthMin(values, 1);
 
     Conditions cond = new OrConditions();
 
@@ -126,7 +126,7 @@ public class SqlUtils {
   }
 
   public static IsCondition joinMulti(String src1, String src2, String... flds) {
-    Assert.arrayLength(flds, 1);
+    Assert.arrayLengthMin(flds, 1);
 
     IsCondition cond = null;
 

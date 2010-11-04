@@ -12,8 +12,14 @@ import java.util.Map;
 public class Assert {
   public static final String ASSERTION_FAILED = "[Assertion failed] - ";
 
-  public static void arrayLength(Object arr, int min) {
-    arrayLength(arr, min, -1);
+  public static void arrayLength(Object arr, int size) {
+    notNull(arr);
+    int len = BeeUtils.arrayLength(arr);
+
+    if (size > 0 && len != size) {
+      throw new BeeRuntimeException(ASSERTION_FAILED + "array length " + len
+          + " must be equal to " + size);
+    }
   }
 
   public static void arrayLength(Object arr, int min, int max) {
@@ -28,6 +34,14 @@ public class Assert {
       throw new BeeRuntimeException(ASSERTION_FAILED + "array length " + len
           + " must be <= " + max);
     }
+  }
+
+  public static void arrayLengthMax(Object arr, int max) {
+    arrayLength(arr, -1, max);
+  }
+
+  public static void arrayLengthMin(Object arr, int min) {
+    arrayLength(arr, min, -1);
   }
 
   public static void betweenExclusive(int x, int min, int max) {
@@ -125,7 +139,7 @@ public class Assert {
       throw new BeeRuntimeException(msg);
     }
   }
-  
+
   public static void isPositive(int x) {
     isPositive(x, ASSERTION_FAILED + "(" + x + ") argument must be positive");
   }
@@ -222,7 +236,7 @@ public class Assert {
   public static void unsupported() {
     unsupported("unsupported operation");
   }
-  
+
   public static void unsupported(String message) {
     throw new BeeRuntimeException(message);
   }

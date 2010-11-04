@@ -10,7 +10,7 @@ class ComplexExpression implements IsExpression {
   private final Object[] content;
 
   public ComplexExpression(Object... expr) {
-    Assert.arrayLength(expr, 1);
+    Assert.arrayLengthMin(expr, 1);
     Assert.noNulls(expr);
 
     content = expr;

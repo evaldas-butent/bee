@@ -3,7 +3,6 @@ package com.butent.bee.egg.shared.utils;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.BeeDate;
-import com.butent.bee.egg.shared.BeeSerializable;
 import com.butent.bee.egg.shared.BeeType;
 import com.butent.bee.egg.shared.Transformable;
 
@@ -115,64 +114,6 @@ public class BeeUtils {
       len = 0;
     }
     return len;
-  }
-
-  public static String[] beeDeserialize(String ser) {
-    Assert.notEmpty(ser);
-
-    ArrayList<String> res = new ArrayList<String>();
-    int pos = 0;
-
-    while (pos < ser.length()) {
-      int n = toInt(ser.substring(pos++, pos));
-      if (BeeUtils.isEmpty(n)) {
-        res.add(null);
-        continue;
-      }
-      int l = toInt(ser.substring(pos, pos + n));
-      pos += n;
-      if (BeeUtils.isEmpty(l)) {
-        res.add(BeeConst.STRING_EMPTY);
-        continue;
-      }
-      res.add(ser.substring(pos, pos + l));
-      pos += l;
-    }
-    return res.toArray(new String[0]);
-  }
-
-  public static String beeSerialize(Object... obj) {
-    Assert.parameterCount(obj.length, 1);
-
-    StringBuilder sb = new StringBuilder();
-
-    for (Object o : obj) {
-      if (o == null) {
-        sb.append(0);
-      } else if (o instanceof BeeSerializable) {
-        String s = ((BeeSerializable) o).serialize();
-        sb.append(beeSerialize(s));
-      } else if (o instanceof Map) {
-        StringBuilder s = new StringBuilder();
-
-        for (Map.Entry<?, ?> ob : ((Map<?, ?>) o).entrySet()) {
-          s.append(beeSerialize(ob.getKey(), ob.getValue()));
-        }
-        sb.append(beeSerialize(s));
-      } else if (o instanceof Collection) {
-        StringBuilder s = new StringBuilder();
-
-        for (Iterator<?> it = ((Collection<?>) o).iterator(); it.hasNext();) {
-          s.append(beeSerialize(it.next()));
-        }
-        sb.append(beeSerialize(s));
-      } else {
-        String s = transform(o);
-        String l = transform(s.length());
-        sb.append(l.length() + l + s);
-      }
-    }
-    return sb.toString();
   }
 
   public static boolean betweenExclusive(int x, int min, int max) {
@@ -1196,6 +1137,20 @@ public class BeeUtils {
       d = Double.NaN;
     }
     return d;
+  }
+
+  public static float toFloat(String s) {
+    if (isEmpty(s)) {
+      return 0.0f;
+    }
+    float i;
+
+    try {
+      i = Float.parseFloat(s.trim());
+    } catch (NumberFormatException ex) {
+      i = 0.0f;
+    }
+    return i;
   }
 
   public static int toInt(boolean b) {
