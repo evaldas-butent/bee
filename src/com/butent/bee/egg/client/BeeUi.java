@@ -68,7 +68,7 @@ public class BeeUi implements BeeModule {
   }
 
   private final HasWidgets rootUi;
-  
+
   private int minTileSize = 20;
 
   private BeeSplit screenPanel = null;
@@ -91,12 +91,12 @@ public class BeeUi implements BeeModule {
     if (op == np) {
       return;
     }
-    
+
     deactivatePanel();
-    
+
     if (!isRootTile(np)) {
       Widget w = np.getCenter();
-      
+
       if (w instanceof BlankTile) {
         w.addStyleName(BeeStyle.ACTIVE_BLANK);
       } else if (w != null) {
@@ -112,14 +112,14 @@ public class BeeUi implements BeeModule {
 
     if (op != null && !isRootTile(op)) {
       Widget w = op.getCenter();
-      
+
       if (w instanceof BlankTile) {
         w.removeStyleName(BeeStyle.ACTIVE_BLANK);
       } else if (w != null) {
         op.getWidgetContainerElement(w).removeClassName(BeeStyle.ACTIVE_CONTENT);
       }
     }
-    
+
     setActivePanel(null);
   }
 
@@ -154,7 +154,7 @@ public class BeeUi implements BeeModule {
   public String getElDsn() {
     return elDsn;
   }
-  
+
   public String getElGrd() {
     return elGrd;
   }
@@ -206,7 +206,7 @@ public class BeeUi implements BeeModule {
   public void setElGrd(String elGrd) {
     this.elGrd = elGrd;
   }
-  
+
   public void setMenuPanel(BeeLayoutPanel menuPanel) {
     this.menuPanel = menuPanel;
   }
@@ -223,7 +223,7 @@ public class BeeUi implements BeeModule {
     Assert.notNull(data);
     Widget grd = null;
     boolean addScroll = false;
-    
+
     switch (getDefaultGridType()) {
       case 1:
         grd = BeeGlobal.scrollGrid(data, cols);
@@ -235,7 +235,7 @@ public class BeeUi implements BeeModule {
         grd = BeeGlobal.simpleGrid(data, cols);
         addScroll = true;
     }
-    
+
     updateActiveQuietly(grd, addScroll);
   }
 
@@ -255,10 +255,10 @@ public class BeeUi implements BeeModule {
 
   public void updateActivePanel(Widget w, boolean scroll) {
     Assert.notNull(w);
-    
+
     TilePanel p = getActivePanel();
     Assert.notNull(p, "panel not available");
-    
+
     deactivatePanel();
     p.clear();
     p.add(w, scroll);
@@ -284,7 +284,7 @@ public class BeeUi implements BeeModule {
   private void closePanel() {
     TilePanel op = getActivePanel();
     Assert.notNull(op, "active panel not available");
-    
+
     if (!(op.getCenter() instanceof BlankTile)) {
       deactivatePanel();
       op.clear();
@@ -296,7 +296,7 @@ public class BeeUi implements BeeModule {
     if (!(op.getParent() instanceof TilePanel)) {
       return;
     }
-    
+
     TilePanel parent = (TilePanel) op.getParent();
     TilePanel np = null;
 
@@ -306,13 +306,13 @@ public class BeeUi implements BeeModule {
         break;
       }
     }
-    
+
     Assert.notNull(np, "sibling panel not found");
 
     deactivatePanel();
-    
+
     np.move(parent);
-    
+
     while (parent.getCenter() instanceof TilePanel) {
       parent = (TilePanel) parent.getCenter();
     }
@@ -330,7 +330,7 @@ public class BeeUi implements BeeModule {
       BeeGlobal.showError("no", z);
       return;
     }
-    
+
     deactivatePanel();
 
     TilePanel center = new TilePanel();
@@ -388,7 +388,7 @@ public class BeeUi implements BeeModule {
   private Widget initCenter() {
     TilePanel p = new TilePanel();
     p.add(new BlankTile());
-    
+
     setActivePanel(p);
     return p;
   }
@@ -417,11 +417,12 @@ public class BeeUi implements BeeModule {
 
     p.add(new BeeCheckBox(new BeeName(BeeGlobal.FIELD_DEBUG)));
 
-    p.add(new BeeButton("North land", "comp_ui_form", "stage_dummy"));
+    p.add(new BeeButton("North land", "comp_ui_form", "dummy_stage"));
+    p.add(new BeeButton("RowSet", "comp_ui_rowset", "dummy_stage"));
 
     setElGrd(DomUtils.createUniqueName());
     p.add(new RadioGroup(getElGrd(), "cell", "st", "pst"));
-    
+
     BeeLayoutPanel blp = new BeeLayoutPanel();
     blp.add(p);
 
@@ -477,7 +478,7 @@ public class BeeUi implements BeeModule {
 
     int r = MenuConst.MAX_MENU_DEPTH;
     String fld;
-    
+
     for (int i = MenuConst.ROOT_MENU_INDEX; i < r; i++) {
       fld = MenuConst.fieldMenuLayout(i);
       fp.setWidget(i, 0, new BeeListBox(fld));
@@ -489,7 +490,8 @@ public class BeeUi implements BeeModule {
     fp.setWidget(r, 0, new BeeIntegerBox(MenuConst.FIELD_ROOT_LIMIT));
     fp.setWidget(r, 1, new BeeIntegerBox(MenuConst.FIELD_ITEM_LIMIT));
 
-    fp.setWidget(r + 1, 0, new BeeButton("Refresh", BeeService.SERVICE_REFRESH_MENU));
+    fp.setWidget(r + 1, 0, new BeeButton("Refresh",
+        BeeService.SERVICE_REFRESH_MENU));
     fp.setWidget(r + 1, 1, new BeeButton("BEE", "comp_ui_menu", "stage_dummy"));
 
     spl.addNorth(fp, 180);
@@ -501,7 +503,7 @@ public class BeeUi implements BeeModule {
 
     return spl;
   }
-  
+
   private boolean isRootTile(TilePanel p) {
     if (p == null) {
       return false;
@@ -509,5 +511,5 @@ public class BeeUi implements BeeModule {
       return !(p.getParent() instanceof TilePanel);
     }
   }
-  
+
 }

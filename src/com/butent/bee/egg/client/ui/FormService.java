@@ -41,6 +41,7 @@ class FormService extends CompositeService {
   protected boolean doStage(Object... params) {
     Assert.notNull(stage);
     boolean ok = true;
+    String fld = "form_name";
 
     switch (stage) {
       case REQUEST_FORM_LIST:
@@ -55,17 +56,19 @@ class FormService extends CompositeService {
         for (int i = cc; i < arr.length(); i++) {
           lst[i - 1] = arr.get(i);
         }
-        BeeGlobal.createField("form_name", "Form name", BeeType.TYPE_STRING,
-            lst[0], BeeWidget.LIST, lst);
+        if (!BeeGlobal.isField(fld)) {
+          BeeGlobal.createField(fld, "Form name", BeeType.TYPE_STRING,
+              lst[0], BeeWidget.LIST, lst);
+        }
 
         BeeGlobal.inputFields(new BeeStage(adoptService("comp_ui_form"),
-            BeeStage.STAGE_CONFIRM), "Load form", "form_name");
+            BeeStage.STAGE_CONFIRM), "Load form", fld);
         break;
 
       case REQUEST_FORM:
         GwtEvent<?> event = (GwtEvent<?>) params[0];
 
-        String fName = BeeGlobal.getFieldValue("form_name");
+        String fName = BeeGlobal.getFieldValue(fld);
 
         if (BeeUtils.isEmpty(fName)) {
           BeeGlobal.showError("Form name not specified");
@@ -73,7 +76,7 @@ class FormService extends CompositeService {
         } else {
           BeeGlobal.closeDialog(event);
           BeeKeeper.getRpc().makePostRequest(adoptService("rpc_ui_form"),
-              BeeXml.createString(BeeService.XML_TAG_DATA, "form_name", fName));
+              BeeXml.createString(BeeService.XML_TAG_DATA, fld, fName));
         }
         break;
 

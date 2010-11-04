@@ -18,6 +18,7 @@ public abstract class CompositeService {
     registeredServices.put("comp_ui_form", new FormService());
     registeredServices.put("comp_ui_grid", new GridService());
     registeredServices.put("comp_ui_menu", new MenuService());
+    registeredServices.put("comp_ui_rowset", new RowSetService());
   }
 
   public static boolean doService(String svc, Object... parameters) {

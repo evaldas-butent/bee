@@ -35,6 +35,10 @@ public class BeeRowSet implements BeeSerializable {
       return getBoolean(getColumnIndex(colName));
     }
 
+    public String[] getData() {
+      return data;
+    }
+
     public float getFloat(int col) {
       return BeeUtils.toFloat(getValue(col));
     }
@@ -75,7 +79,7 @@ public class BeeRowSet implements BeeSerializable {
 
     @Override
     public String serialize() {
-      return Codec.beeSerialize((Object) data);
+      return Codec.beeSerialize((Object[]) data);
     }
 
     private void setData(String[] row) {
@@ -158,6 +162,16 @@ public class BeeRowSet implements BeeSerializable {
 
   public BeeColumn[] getColumns() {
     return columns;
+  }
+
+  public String[][] getData() {
+    String[][] data = new String[getRowCount()][getColumnCount()];
+
+    for (int i = 0; i < getRowCount(); i++) {
+      BeeRow row = getRow(i);
+      data[i] = row.getData();
+    }
+    return data;
   }
 
   public BeeRow getRow(int row) {

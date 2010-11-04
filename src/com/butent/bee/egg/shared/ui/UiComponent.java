@@ -17,7 +17,7 @@ import java.util.logging.Logger;
 public abstract class UiComponent implements HasId, BeeSerializable {
 
   private enum SerializationMembers {
-    ID, CAPTION, PROPERTIES, CHILDS, PYP
+    ID, CAPTION, PROPERTIES, CHILDS
   }
 
   private static Logger logger = Logger.getLogger(UiComponent.class.getName());

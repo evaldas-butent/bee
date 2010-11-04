@@ -54,6 +54,10 @@ public class UiServiceBean {
         gridInfo(reqInfo, buff);
       } else if (svc.equals("rpc_ui_rebuild")) {
         rebuildData(buff);
+      } else if (svc.equals("rpc_ui_tables")) {
+        getTables(buff);
+      } else if (svc.equals("rpc_ui_table")) {
+        getTable(reqInfo, buff);
       } else {
         String msg = BeeUtils.concat(1, svc, "loader service not recognized");
         logger.warning(msg);
@@ -81,6 +85,29 @@ public class UiServiceBean {
     ss.addFields("f", "form").addFrom("forms", "f").addOrder("f", "form");
 
     BeeRowSet res = qs.getData(ss);
+
+    buff.addColumns(res.getColumns());
+
+    for (BeeRow row : res.getRows()) {
+      for (int col = 0; col < res.getColumnCount(); col++) {
+        buff.add(row.getValue(col));
+      }
+    }
+  }
+
+  private void getTable(RequestInfo reqInfo, ResponseBuffer buff) {
+    String tbl = getXmlField(reqInfo, buff, "table_name");
+
+    SqlSelect ss = new SqlSelect();
+    ss.addAllFields("t").addFrom(tbl, "t");
+
+    BeeRowSet res = qs.getData(ss);
+
+    buff.add(res.serialize());
+  }
+
+  private void getTables(ResponseBuffer buff) {
+    BeeRowSet res = (BeeRowSet) qs.processSql("show tables");
 
     buff.addColumns(res.getColumns());
 

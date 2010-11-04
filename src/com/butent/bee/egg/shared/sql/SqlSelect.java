@@ -26,6 +26,11 @@ public class SqlSelect extends HasFrom<SqlSelect> {
     setUnionAllMode(true);
   }
 
+  public SqlSelect addAllFields(String source) {
+    addField(SqlUtils.expression(SqlUtils.field(source), ".*"), null);
+    return getReference();
+  }
+
   public SqlSelect addAvg(IsExpression expr, String alias) {
     Assert.notEmpty(expr);
     Assert.notEmpty(alias);
