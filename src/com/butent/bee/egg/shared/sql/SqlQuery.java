@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public abstract class SqlQuery<T> implements IsQuery {
+abstract class SqlQuery<T> implements IsQuery {
 
   private boolean paramMode = false;
 

@@ -16,6 +16,9 @@ import com.butent.bee.egg.shared.BeeWidget;
 import com.butent.bee.egg.shared.ui.UiComponent;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
+import java.util.ArrayList;
+import java.util.List;
+
 class FormService extends CompositeService {
 
   private enum Stages {
@@ -52,14 +55,16 @@ class FormService extends CompositeService {
         JsArrayString arr = (JsArrayString) params[0];
         int cc = (Integer) params[1];
 
-        String[] lst = new String[arr.length() - cc];
+        List<String> lst = new ArrayList<String>(arr.length() - cc);
         for (int i = cc; i < arr.length(); i++) {
-          lst[i - 1] = arr.get(i);
+          lst.add(arr.get(i));
         }
         if (!BeeGlobal.isField(fld)) {
-          BeeGlobal.createField(fld, "Form name", BeeType.TYPE_STRING,
-              lst[0], BeeWidget.LIST, lst);
+          BeeGlobal.createField(fld, "Form name", BeeType.TYPE_STRING, null);
+          BeeGlobal.getField(fld).setWidget(BeeWidget.LIST);
         }
+        BeeGlobal.getField(fld).setItems(lst);
+        BeeGlobal.getField(fld).setValue(lst.get(0));
 
         BeeGlobal.inputFields(new BeeStage(adoptService("comp_ui_form"),
             BeeStage.STAGE_CONFIRM), "Load form", fld);

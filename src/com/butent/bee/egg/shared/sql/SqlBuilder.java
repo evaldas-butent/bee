@@ -7,16 +7,21 @@ import java.util.List;
 
 public abstract class SqlBuilder {
 
-  protected abstract String sqlQuote(String value);
+  public String getTables() {
+    Assert.unsupported();
+    return null;
+  }
 
   public String sqlTransform(Object x) {
     String s = BeeUtils.transform(x);
 
     if (x instanceof CharSequence) {
-      s = "'" + s.replaceAll("'", "\\\\'") + "'";
+      s = "'" + s.replaceAll("'", "''") + "'";
     }
     return s;
   }
+
+  protected abstract String sqlQuote(String value);
 
   String getDelete(SqlDelete sd, boolean paramMode) {
     Assert.notNull(sd);

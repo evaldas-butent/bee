@@ -11,10 +11,14 @@ import com.butent.bee.egg.shared.BeeService;
 import com.butent.bee.egg.shared.BeeStage;
 import com.butent.bee.egg.shared.BeeType;
 import com.butent.bee.egg.shared.BeeWidget;
+import com.butent.bee.egg.shared.data.BeeColumn;
 import com.butent.bee.egg.shared.data.BeeRowSet;
 import com.butent.bee.egg.shared.data.BeeView;
 import com.butent.bee.egg.shared.data.DataUtils;
 import com.butent.bee.egg.shared.utils.BeeUtils;
+
+import java.util.ArrayList;
+import java.util.List;
 
 class RowSetService extends CompositeService {
 
@@ -52,15 +56,16 @@ class RowSetService extends CompositeService {
         JsArrayString arr = (JsArrayString) params[0];
         int cc = (Integer) params[1];
 
-        String[] lst = new String[arr.length() - cc];
+        List<String> lst = new ArrayList<String>(arr.length() - cc);
         for (int i = cc; i < arr.length(); i++) {
-          lst[i - 1] = arr.get(i);
+          lst.add(arr.get(i));
         }
-
         if (!BeeGlobal.isField(fld)) {
-          BeeGlobal.createField(fld, "Table name", BeeType.TYPE_STRING,
-              lst[0], BeeWidget.LIST, lst);
+          BeeGlobal.createField(fld, "Table name", BeeType.TYPE_STRING, null);
+          BeeGlobal.getField(fld).setWidget(BeeWidget.LIST);
         }
+        BeeGlobal.getField(fld).setItems(lst);
+        BeeGlobal.getField(fld).setValue(lst.get(0));
 
         BeeGlobal.inputFields(new BeeStage(adoptService("comp_ui_rowset"),
             BeeStage.STAGE_CONFIRM), "Get table", fld);
@@ -87,10 +92,17 @@ class RowSetService extends CompositeService {
 
         BeeRowSet rs = BeeRowSet.restore(fArr.get(0));
 
-        BeeView view = DataUtils.createView(rs.getData(),
-            (Object[]) rs.getColumns());
-        BeeKeeper.getUi().showGrid(view);
+        for (BeeColumn col : rs.getColumns()) {
+          BeeKeeper.getLog().info(col.getColumnInfo());
+        }
 
+        if (rs.isEmpty()) {
+          BeeKeeper.getLog().warning("RowSet is empty");
+        } else {
+          BeeView view = DataUtils.createView(rs.getData(),
+              (Object[]) rs.getColumns());
+          BeeKeeper.getUi().showGrid(view);
+        }
         break;
 
       default:

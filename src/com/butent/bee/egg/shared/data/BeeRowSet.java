@@ -63,6 +63,25 @@ public class BeeRowSet implements BeeSerializable {
       return getLong(getColumnIndex(colName));
     }
 
+    public Object getOriginal(int col) {
+      int type = getColumn(col).getType();
+
+      switch (type) {
+        case 4: // java.sql.Types.INTEGER
+          return getInt(col);
+        case 6: // java.sql.Types.FLOAT
+        case 7: // java.sql.Types.REAL
+        case 8: // java.sql.Types.DOUBLE
+          return getFloat(col);
+        case 16: // java.sql.Types.BOOLEAN
+          return getBoolean(col);
+        case -5: // java.sql.Types.BIGINT
+          return getLong(col);
+        default:
+          return getValue(col);
+      }
+    }
+
     public String getString(int col) {
       return BeeUtils.ifString(getValue(col), BeeConst.STRING_EMPTY);
     }
@@ -156,6 +175,11 @@ public class BeeRowSet implements BeeSerializable {
     }
   }
 
+  public BeeColumn getColumn(int col) {
+    Assert.betweenExclusive(col, 0, getColumnCount());
+    return columns[col];
+  }
+
   public int getColumnCount() {
     return columns.length;
   }
@@ -165,9 +189,10 @@ public class BeeRowSet implements BeeSerializable {
   }
 
   public String[][] getData() {
-    String[][] data = new String[getRowCount()][getColumnCount()];
+    int rCnt = getRowCount();
+    String[][] data = new String[rCnt][getColumnCount()];
 
-    for (int i = 0; i < getRowCount(); i++) {
+    for (int i = 0; i < rCnt; i++) {
       BeeRow row = getRow(i);
       data[i] = row.getData();
     }
@@ -176,7 +201,6 @@ public class BeeRowSet implements BeeSerializable {
 
   public BeeRow getRow(int row) {
     Assert.betweenExclusive(row, 0, getRowCount());
-
     return rows.get(row);
   }
 

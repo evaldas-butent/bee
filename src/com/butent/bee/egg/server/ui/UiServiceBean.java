@@ -99,7 +99,8 @@ public class UiServiceBean {
     String tbl = getXmlField(reqInfo, buff, "table_name");
 
     SqlSelect ss = new SqlSelect();
-    ss.addAllFields("t").addFrom(tbl, "t");
+    ss.addAllFields("t").addExpr(SqlUtils.constant("bumbum"), "hmm").addFrom(
+        tbl, "t");
 
     BeeRowSet res = qs.getData(ss);
 
@@ -107,7 +108,7 @@ public class UiServiceBean {
   }
 
   private void getTables(ResponseBuffer buff) {
-    BeeRowSet res = (BeeRowSet) qs.processSql("show tables");
+    BeeRowSet res = qs.getTables();
 
     buff.addColumns(res.getColumns());
 
@@ -205,7 +206,7 @@ public class UiServiceBean {
     buff.add("result: " + qs.updateData(si));
 
     si = new SqlInsert(tbl);
-    si.addField("table_name", "cou`ntr]ie[s").addField("last_id", 0);
+    si.addField("table_name", "cou'nt''ries").addField("last_id", 0);
     buff.add("result: " + qs.insertData(si));
 
     si = new SqlInsert(tbl);

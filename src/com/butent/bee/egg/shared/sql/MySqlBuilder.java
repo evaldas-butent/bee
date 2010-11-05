@@ -3,9 +3,12 @@ package com.butent.bee.egg.shared.sql;
 class MySqlBuilder extends SqlBuilder {
 
   @Override
-  protected String sqlQuote(String value) {
-    String quote = "`";
+  public String getTables() {
+    return "show tables";
+  }
 
-    return quote + value.replaceAll(quote, "\\" + quote) + quote;
+  @Override
+  protected String sqlQuote(String value) {
+    return "`" + value + "`";
   }
 }

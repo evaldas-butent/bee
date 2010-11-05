@@ -6,6 +6,7 @@ import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.data.BeeRowSet;
 import com.butent.bee.egg.shared.data.BeeRowSet.BeeRow;
 import com.butent.bee.egg.shared.sql.IsQuery;
+import com.butent.bee.egg.shared.sql.SqlBuilder;
 import com.butent.bee.egg.shared.sql.SqlBuilderFactory;
 import com.butent.bee.egg.shared.sql.SqlInsert;
 import com.butent.bee.egg.shared.sql.SqlSelect;
@@ -51,6 +52,11 @@ public class QueryServiceBean {
     return rs.getRow(0);
   }
 
+  public BeeRowSet getTables() {
+    SqlBuilder builder = SqlBuilderFactory.getBuilder();
+    return (BeeRowSet) processSql(builder.getTables());
+  }
+
   public long insertData(SqlInsert si) {
     Assert.notNull(si);
     Assert.state(!si.isEmpty());
@@ -70,6 +76,8 @@ public class QueryServiceBean {
   }
 
   public Object processSql(String sql) {
+    Assert.notEmpty(sql);
+
     ds = dsb.locateDs(SqlBuilderFactory.getEngine()).getDs();
 
     Connection con = null;

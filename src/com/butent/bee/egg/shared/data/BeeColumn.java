@@ -5,18 +5,27 @@ import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.BeeSerializable;
 import com.butent.bee.egg.shared.Transformable;
 import com.butent.bee.egg.shared.utils.BeeUtils;
+import com.butent.bee.egg.shared.utils.Codec;
 import com.butent.bee.egg.shared.utils.PropUtils;
 import com.butent.bee.egg.shared.utils.StringProp;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 public class BeeColumn implements Transformable, BeeSerializable {
-  public static final String SERIALIZATION_SEPARATOR = ",";
 
+  private enum SerializationMembers {
+    NAME, TYPE, PRECISION, SCALE, NULLABLE, SCHEMA, CATALOG, TABLE, CLASS
+  }
+
+  public static final String SERIALIZATION_SEPARATOR = ",";
   public static final int NO_NULLS = 0;
   public static final int NULLABLE = 1;
+
   public static final int NULLABLE_UNKNOWN = 2;
+
+  private static Logger logger = Logger.getLogger(BeeRowSet.class.getName());
 
   public static BeeColumn restore(String s) {
     BeeColumn c = new BeeColumn();
@@ -64,18 +73,48 @@ public class BeeColumn implements Transformable, BeeSerializable {
   }
 
   public void deserialize(String s) {
-    Assert.notEmpty(s);
+    SerializationMembers[] members = SerializationMembers.values();
+    String[] arr = Codec.beeDeserialize(s);
 
-    String[] arr = s.split(SERIALIZATION_SEPARATOR);
-    Assert.arrayLength(arr, 5);
+    Assert.arrayLength(arr, members.length);
 
-    int i = 0;
+    for (int i = 0; i < members.length; i++) {
+      SerializationMembers member = members[i];
+      String value = arr[i];
 
-    setName(arr[i++]);
-    setType(BeeUtils.toInt(arr[i++]));
-    setPrecision(BeeUtils.toInt(arr[i++]));
-    setScale(BeeUtils.toInt(arr[i++]));
-    setNullable(BeeUtils.toInt(arr[i++]));
+      switch (member) {
+        case NAME:
+          setName(value);
+          break;
+        case TYPE:
+          setType(BeeUtils.toInt(value));
+          break;
+        case PRECISION:
+          setPrecision(BeeUtils.toInt(value));
+          break;
+        case SCALE:
+          setScale(BeeUtils.toInt(value));
+          break;
+        case NULLABLE:
+          setNullable(BeeUtils.toInt(value));
+          break;
+        case SCHEMA:
+          setSchema(value);
+          break;
+        case CATALOG:
+          setCatalog(value);
+          break;
+        case TABLE:
+          setTable(value);
+          break;
+        case CLASS:
+          setClazz(value);
+          break;
+        default:
+          logger.severe("Unhandled serialization member: " + member);
+          break;
+      }
+    }
   }
 
   public String getCatalog() {
@@ -197,9 +236,43 @@ public class BeeColumn implements Transformable, BeeSerializable {
   public String serialize() {
     Assert.state(validState());
 
-    return getName() + SERIALIZATION_SEPARATOR + getType()
-        + SERIALIZATION_SEPARATOR + getPrecision() + SERIALIZATION_SEPARATOR
-        + getScale() + SERIALIZATION_SEPARATOR + getNullable();
+    StringBuilder sb = new StringBuilder();
+
+    for (SerializationMembers member : SerializationMembers.values()) {
+      switch (member) {
+        case NAME:
+          sb.append(Codec.beeSerialize(getName()));
+          break;
+        case TYPE:
+          sb.append(Codec.beeSerialize(getType()));
+          break;
+        case PRECISION:
+          sb.append(Codec.beeSerialize(getPrecision()));
+          break;
+        case SCALE:
+          sb.append(Codec.beeSerialize(getScale()));
+          break;
+        case NULLABLE:
+          sb.append(Codec.beeSerialize(getNullable()));
+          break;
+        case SCHEMA:
+          sb.append(Codec.beeSerialize(getSchema()));
+          break;
+        case CATALOG:
+          sb.append(Codec.beeSerialize(getCatalog()));
+          break;
+        case TABLE:
+          sb.append(Codec.beeSerialize(getTable()));
+          break;
+        case CLASS:
+          sb.append(Codec.beeSerialize(getClazz()));
+          break;
+        default:
+          logger.severe("Unhandled serialization member: " + member);
+          break;
+      }
+    }
+    return sb.toString();
   }
 
   public void setAutoIncrement(boolean autoIncrement) {
