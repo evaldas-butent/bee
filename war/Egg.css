@@ -202,27 +202,21 @@ body, select {
   background: #7AA5D6;
 }
 
-.gwt-PagingOptions {
-  background: #e8eef7;
-  border: 1px solid #aaa;
-  border-top: none;
-}
-
-.gwt-PagingOptions .errorMessage {
-  color: red;
-}
-
-.gwt-InlineCellEditor {
-  border: 3px solid #7AA5D6;
-  padding: 4px;
-  background: white;
-  overflow: auto;
-}
-
-.AbstractOption-Label {
-  font-weight: bold;
+.bee-InputInteger {
   text-align: right;
 }
+
+.bee-Spinner {
+  text-align: right;
+}
+.bee-Spinner:hover {
+  background: LightCyan;
+}
+
+.bee-configPanel {
+  background: WhiteSmoke;
+  border: 1px solid LightGrey;
+}  
 
 .gwt-SplitLayoutPanel-HDragger {
   background: #f6cef5;

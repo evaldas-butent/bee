@@ -27,11 +27,13 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.egg.client.BeeKeeper;
 import com.butent.bee.egg.client.dom.DomUtils;
 import com.butent.bee.egg.client.grid.BeeHtmlTable.BeeCellFormatter;
-import com.butent.bee.egg.client.pst.ColumnResizer.ColumnWidthInfo;
+import com.butent.bee.egg.client.grid.ColumnWidthInfo;
+import com.butent.bee.egg.client.grid.ScrollTableConfig;
 import com.butent.bee.egg.client.pst.TableModelHelper.ColumnSortList;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.HasId;
+import com.butent.bee.egg.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -291,7 +293,6 @@ public abstract class AbstractScrollTable extends ComplexPanel implements
 
   private ScrollTableImages images;
 
-  private Element footerSpacer = null;
   private FixedWidthFlexTable footerTable = null;
   private Element footerWrapper = null;
 
@@ -313,8 +314,7 @@ public abstract class AbstractScrollTable extends ComplexPanel implements
 
   private Element sortedColumnWrapper = null;
 
-  public AbstractScrollTable(FixedWidthGrid dataTable,
-      FixedWidthFlexTable headerTable) {
+  public AbstractScrollTable(FixedWidthGrid dataTable, FixedWidthFlexTable headerTable) {
     this(dataTable, headerTable,
         (ScrollTableImages) GWT.create(ScrollTableImages.class));
   }
@@ -372,7 +372,7 @@ public abstract class AbstractScrollTable extends ComplexPanel implements
     DOM.setEventListener(dataWrapper, this);
     DOM.sinkEvents(dataWrapper, Event.ONSCROLL);
     DOM.setEventListener(headerWrapper, this);
-    DOM.sinkEvents(headerWrapper, Event.ONMOUSEMOVE | Event.ONMOUSEDOWN | Event.ONMOUSEUP | Event.ONCLICK);
+    DOM.sinkEvents(headerWrapper, Event.ONMOUSEMOVE | Event.ONMOUSEDOWN | Event.ONMOUSEUP);
 
     dataTable.addColumnSortHandler(new ColumnSortHandler() {
       public void onColumnSorted(ColumnSortEvent event) {
@@ -422,6 +422,22 @@ public abstract class AbstractScrollTable extends ComplexPanel implements
     scrollTables(false);
   }
 
+  public int getAvailableWidth() {
+    Element elem = absoluteElem;
+    int clientWidth = absoluteElem.getClientWidth();
+
+    while (clientWidth <= 0 && elem.getParentElement() != null) {
+      elem = elem.getParentElement().cast();
+      clientWidth = elem.getClientWidth();
+    }
+
+    if (scrollPolicy == ScrollPolicy.BOTH) {
+      int scrollbarWidth = DomUtils.getScrollbarWidth();
+      clientWidth -= scrollbarWidth + 1;
+    }
+    return Math.max(clientWidth, -1);
+  }
+
   public int getCellPadding() {
     return dataTable.getCellPadding();
   }
@@ -442,10 +458,6 @@ public abstract class AbstractScrollTable extends ComplexPanel implements
     return dataTable;
   }
 
-  public Element getFooterSpacer() {
-    return footerSpacer;
-  }
-
   public FixedWidthFlexTable getFooterTable() {
     return footerTable;
   }
@@ -457,51 +469,14 @@ public abstract class AbstractScrollTable extends ComplexPanel implements
   public FixedWidthFlexTable getHeaderTable() {
     return headerTable;
   }
-
+  
   public String getId() {
     return DomUtils.getId(this);
   }
-  
+
   public abstract int getMaximumColumnWidth(int column);
 
   public abstract int getMinimumColumnWidth(int column);
-
-  public int getMinimumOffsetWidth() {
-    if (!isAttached()) {
-      return -1;
-    }
-
-    TableWidthInfo redrawInfo = new TableWidthInfo(true);
-    maybeRecalculateIdealColumnWidths();
-    if (redrawInfo.availableWidth < 1) {
-      return -1;
-    }
-
-    int scrollWidth = 0;
-    int numColumns = 0;
-    {
-      int numHeaderCols = headerTable.getColumnCount() - getHeaderOffset();
-      int numDataCols = dataTable.getColumnCount();
-      int numFooterCols = (footerTable == null) ? -1
-          : footerTable.getColumnCount() - getHeaderOffset();
-      if (numHeaderCols >= numDataCols && numHeaderCols >= numFooterCols) {
-        numColumns = numHeaderCols;
-        scrollWidth = redrawInfo.headerTableWidth;
-      } else if (numFooterCols >= numDataCols && numFooterCols >= numHeaderCols) {
-        numColumns = numFooterCols;
-        scrollWidth = redrawInfo.footerTableWidth;
-      } else if (numDataCols > 0) {
-        numColumns = numDataCols;
-        scrollWidth = redrawInfo.dataTableWidth;
-      }
-    }
-    if (numColumns <= 0) {
-      return -1;
-    }
-
-    List<ColumnWidthInfo> colWidthInfos = getColumnWidthInfo(0, numColumns);
-    return -columnResizer.distributeWidth(colWidthInfos, -scrollWidth);
-  }
 
   public abstract int getPreferredColumnWidth(int column);
 
@@ -567,35 +542,24 @@ public abstract class AbstractScrollTable extends ComplexPanel implements
         }
         if (resizeWorker.isResizing()) {
           resizeWorker.stopResizing();
-        } else {
-          if (DOM.isOrHasChild(headerWrapper, target)) {
-            scrollTables(true);
-          } else {
-            scrollTables(false);
-          }
-
-          Element cellElem = headerTable.getEventTargetCell(event);
-          if (cellElem != null) {
-            if (sortPolicy == SortPolicy.DISABLED) {
-              return;
-            }
-
-            int colSpan = DomUtils.getColSpan(cellElem);
-            if (colSpan > 1 && getSortPolicy() != SortPolicy.MULTI_CELL) {
-              return;
-            }
-
-            sortedRowIndex = TableRowElement.as(DOM.getParent(cellElem)).getRowIndex() - 1;
-            sortedCellIndex = TableCellElement.as(cellElem).getCellIndex();
-            int column = headerTable.getColumnIndex(sortedRowIndex,
-                sortedCellIndex) - getHeaderOffset();
-            if (column >= 0 && isColumnSortable(column)) {
-              if (dataTable.getColumnCount() > column) {
-                dataTable.sortColumn(column);
-              }
-            }
-          }
+          return;
         }
+
+        Element cellElem = headerTable.getEventTargetCell(event);
+        int column = -1;
+        if (cellElem != null) {
+          int rowIdx = TableRowElement.as(cellElem.getParentElement()).getRowIndex() - 1;
+          int cellIdx = TableCellElement.as(cellElem).getCellIndex();
+          column = headerTable.getColumnIndex(rowIdx, cellIdx) - getHeaderOffset();
+        }
+        
+        if (BeeUtils.betweenExclusive(column, 0, dataTable.getColumnCount())) {
+          
+        } else {
+          ScrollTableConfig config = new ScrollTableConfig(this);
+          config.show();
+        }
+        
         break;
 
       case Event.ONMOUSEMOVE:
@@ -781,13 +745,11 @@ public abstract class AbstractScrollTable extends ComplexPanel implements
 
       if (footerWrapper == null) {
         footerWrapper = createWrapper("footerWrapper", "st-footer");
-        footerSpacer = createSpacer(footerTable);
         DOM.setEventListener(footerWrapper, this);
         DOM.sinkEvents(footerWrapper, Event.ONMOUSEUP);
       }
 
-      adoptTable(footerTable, footerWrapper,
-          absoluteElem.getChildNodes().getLength());
+      adoptTable(footerTable, footerWrapper, absoluteElem.getChildNodes().getLength());
     }
     redraw();
   }
@@ -947,17 +909,18 @@ public abstract class AbstractScrollTable extends ComplexPanel implements
     add(table, wrapper);
   }
 
-  private void applyNewColumnWidths(int startIndex,
-      List<ColumnWidthInfo> infos, boolean forced) {
+  private void applyNewColumnWidths(int startIndex, List<ColumnWidthInfo> infos, boolean forced) {
     if (infos == null) {
       return;
     }
 
     int offset = getHeaderOffset();
     int numColumns = infos.size();
+
     for (int i = 0; i < numColumns; i++) {
       ColumnWidthInfo info = infos.get(i);
       int newWidth = info.getNewWidth();
+
       if (forced || info.getCurrentWidth() != newWidth) {
         dataTable.setColumnWidth(startIndex + i, newWidth);
         headerTable.setColumnWidth(startIndex + i + offset, newWidth);
@@ -981,22 +944,6 @@ public abstract class AbstractScrollTable extends ComplexPanel implements
     dataWrapper.getStyle().setHeight(Math.max(sizes.dataTableHeight, 0), Unit.PX);
     dataWrapper.getStyle().setOverflow(Overflow.HIDDEN);
     dataWrapper.getStyle().setOverflow(Overflow.AUTO);
-  }
-
-  private int getAvailableWidth() {
-    Element elem = absoluteElem;
-    int clientWidth = absoluteElem.getClientWidth();
-
-    while (clientWidth <= 0 && elem.getParentElement() != null) {
-      elem = elem.getParentElement().cast();
-      clientWidth = elem.getClientWidth();
-    }
-
-    if (scrollPolicy == ScrollPolicy.BOTH) {
-      int scrollbarWidth = DomUtils.getScrollbarWidth();
-      clientWidth -= scrollbarWidth + 1;
-    }
-    return Math.max(clientWidth, -1);
   }
 
   private List<ColumnWidthInfo> getBoundedColumnWidths(boolean boundsOnly) {

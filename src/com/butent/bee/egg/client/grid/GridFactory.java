@@ -3,16 +3,16 @@ package com.butent.bee.egg.client.grid;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.egg.client.BeeKeeper;
-import com.butent.bee.egg.client.pst.AbstractColumnDefinition;
 import com.butent.bee.egg.client.pst.CachedTableModel;
+import com.butent.bee.egg.client.pst.ColumnDefinition;
 import com.butent.bee.egg.client.pst.DefaultRowRenderer;
-import com.butent.bee.egg.client.pst.DefaultTableDefinition;
 import com.butent.bee.egg.client.pst.FixedWidthFlexTable;
 import com.butent.bee.egg.client.pst.FixedWidthGrid;
 import com.butent.bee.egg.client.pst.FixedWidthGridBulkRenderer;
 import com.butent.bee.egg.client.pst.MutableTableModel;
 import com.butent.bee.egg.client.pst.PagingScrollTable;
 import com.butent.bee.egg.client.pst.ScrollTable;
+import com.butent.bee.egg.client.pst.TableDefinition;
 import com.butent.bee.egg.client.pst.TableModel;
 import com.butent.bee.egg.client.pst.TableModelHelper.Request;
 import com.butent.bee.egg.client.pst.TableModelHelper.Response;
@@ -28,7 +28,7 @@ import java.util.Iterator;
 
 public class GridFactory {
 
-  private class PstColumnDefinition extends AbstractColumnDefinition<Integer, String> {
+  private class PstColumnDefinition extends ColumnDefinition<Integer, String> {
     private BeeView view;
     private int idx;
     private int maxDisplaySize;
@@ -118,7 +118,7 @@ public class GridFactory {
     CachedTableModel<Integer> cachedModel = new CachedTableModel<Integer>(tableModel);
     cachedModel.setRowCount(r);
 
-    DefaultTableDefinition<Integer> tableDef = new DefaultTableDefinition<Integer>();
+    TableDefinition<Integer> tableDef = new TableDefinition<Integer>();
     String[] rowColors = new String[] {"#ffffdd", "#eeeeee"};
     tableDef.setRowRenderer(new DefaultRowRenderer<Integer>(rowColors));
 

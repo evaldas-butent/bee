@@ -11,8 +11,6 @@ import com.google.gwt.user.client.ui.HasHorizontalAlignment.HorizontalAlignmentC
 import com.google.gwt.user.client.ui.HasVerticalAlignment.VerticalAlignmentConstant;
 
 import com.butent.bee.egg.client.grid.BeeHtmlTable;
-import com.butent.bee.egg.client.pst.TableDefinition.AbstractCellView;
-import com.butent.bee.egg.client.pst.TableDefinition.AbstractRowView;
 import com.butent.bee.egg.client.pst.TableModelHelper.Request;
 import com.butent.bee.egg.client.pst.TableModelHelper.Response;
 

@@ -1,7 +1,5 @@
 package com.butent.bee.egg.client.pst;
 
-import com.butent.bee.egg.client.pst.TableDefinition.AbstractRowView;
-
 public class DefaultRowRenderer<RowType> implements RowRenderer<RowType> {
   private String[] rowColors;
 

@@ -12,6 +12,7 @@ import com.butent.bee.egg.shared.utils.BeeUtils;
 public class BeeStyle implements BeeModule {
   public static final String ACTIVE_BLANK = "bee-activeBlank";
   public static final String ACTIVE_CONTENT = "bee-activeContent";
+  public static final String CONFIG_PANEL = "bee-configPanel";
 
   public static final String STYLE_LEFT = "left";
   public static final String STYLE_WIDTH = "width";

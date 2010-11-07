@@ -27,10 +27,11 @@ import com.butent.bee.egg.client.utils.BeeCommand;
 import com.butent.bee.egg.client.widget.BeeButton;
 import com.butent.bee.egg.client.widget.BeeCheckBox;
 import com.butent.bee.egg.client.widget.BeeImage;
-import com.butent.bee.egg.client.widget.BeeIntegerBox;
 import com.butent.bee.egg.client.widget.BeeLabel;
 import com.butent.bee.egg.client.widget.BeeListBox;
 import com.butent.bee.egg.client.widget.BeeSimpleCheckBox;
+import com.butent.bee.egg.client.widget.Slider;
+import com.butent.bee.egg.client.widget.Spinner;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.BeeName;
@@ -457,7 +458,7 @@ public class BeeUi implements BeeModule {
 
     p.add(hor);
 
-    BeeLabel ver = new BeeLabel("0.1.7");
+    BeeLabel ver = new BeeLabel("0.1.8");
     p.add(ver);
 
     p.setWidgetLeftWidth(cli, 1, Unit.EM, 50, Unit.PCT);
@@ -487,11 +488,12 @@ public class BeeUi implements BeeModule {
       fp.setWidget(i, 1, new BeeSimpleCheckBox(fld));
     }
 
-    fp.setWidget(r, 0, new BeeIntegerBox(MenuConst.FIELD_ROOT_LIMIT));
-    fp.setWidget(r, 1, new BeeIntegerBox(MenuConst.FIELD_ITEM_LIMIT));
+    Spinner spinner = new Spinner(MenuConst.FIELD_ROOT_LIMIT, 0, 30, 3);
+    DomUtils.setWidth(spinner, 60);
+    fp.setWidget(r, 0, spinner);
+    fp.setWidget(r + 1, 0, new Slider(MenuConst.FIELD_ITEM_LIMIT, 0, 50, 5));
 
-    fp.setWidget(r + 1, 0, new BeeButton("Refresh",
-        BeeService.SERVICE_REFRESH_MENU));
+    fp.setWidget(r, 1, new BeeButton("Refresh", BeeService.SERVICE_REFRESH_MENU));
     fp.setWidget(r + 1, 1, new BeeButton("BEE", "comp_ui_menu", "stage_dummy"));
 
     spl.addNorth(fp, 180);

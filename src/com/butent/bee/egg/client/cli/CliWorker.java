@@ -411,6 +411,7 @@ public class CliWorker {
         if (type.equals("search")) {
           if (Features.supportsAttributePlaceholder()) {
             widget.getElement().setAttribute("placeholder", "Search...");
+            widget.getElement().setAttribute("results", "0");
           }
         } else if (type.equals("number")) {
           widget.getElement().setAttribute("min", "0");

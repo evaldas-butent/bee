@@ -38,6 +38,8 @@ public class BeeFlexTable extends BeeHtmlTable {
     setCellFormatter(new BeeFlexCellFormatter());
     setRowFormatter(new BeeRowFormatter());
     setColumnFormatter(new BeeColumnFormatter());
+    
+    setStyleName("bee-FlexTable");
   }
 
   public void addCell(int row) {

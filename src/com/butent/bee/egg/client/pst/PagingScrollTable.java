@@ -22,8 +22,6 @@ import com.butent.bee.egg.client.pst.CellEditor.CellEditInfo;
 import com.butent.bee.egg.client.pst.SelectionGrid.SelectionPolicy;
 import com.butent.bee.egg.client.pst.SortableGrid.ColumnSorter;
 import com.butent.bee.egg.client.pst.SortableGrid.ColumnSorterCallback;
-import com.butent.bee.egg.client.pst.TableDefinition.AbstractCellView;
-import com.butent.bee.egg.client.pst.TableDefinition.AbstractRowView;
 import com.butent.bee.egg.client.pst.TableEvent.Row;
 import com.butent.bee.egg.client.pst.TableModel.Callback;
 import com.butent.bee.egg.client.pst.TableModelHelper.ColumnSortList;

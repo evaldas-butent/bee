@@ -980,10 +980,40 @@ public class BeeUtils {
       return replicate(z, n - s.length()) + s;
     }
   }
-
+  
   public static String progress(int pos, int tot) {
     return Integer.toString(pos) + BeeConst.DEFAULT_PROGRESS_SEPARATOR
         + Integer.toString(tot);
+  }
+
+  public static String proper(String s, Object separators) {
+    if (isEmpty(s)) {
+      return BeeConst.STRING_EMPTY;
+    }
+    
+    int len = s.trim().length();
+    if (len <= 0) {
+      return BeeConst.STRING_EMPTY;
+    }
+    if (len == 1) {
+      return s.trim().toUpperCase();
+    }
+    
+    if (separators == null) {
+      return s.trim().substring(0, 1).toUpperCase() + s.trim().substring(1).toLowerCase();
+    }
+    
+    String[] arr = split(s.trim(), separators);
+    StringBuilder z = new StringBuilder();
+    
+    for (String x : arr) {
+      if (z.length() > 0) {
+        z.append(BeeConst.CHAR_SPACE);
+      }
+      z.append(proper(x, null));
+    }
+    
+    return z.toString();
   }
 
   public static int randomInt(int min, int max) {

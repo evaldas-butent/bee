@@ -28,16 +28,23 @@ public class BeeTextBox extends TextBox implements HasId, HasBeeKeyHandler,
 
   public BeeTextBox(String fieldName) {
     this();
-    this.fieldName = fieldName;
+    
+    if (!BeeUtils.isEmpty(fieldName)) {
+      this.fieldName = fieldName;
 
-    String v = BeeGlobal.getFieldValue(fieldName);
-    if (!BeeUtils.isEmpty(v)) {
-      setValue(v);
+      String v = BeeGlobal.getFieldValue(fieldName);
+      if (!BeeUtils.isEmpty(v)) {
+        setValue(v);
+      }
     }
   }
 
   public void createId() {
-    DomUtils.createId(this, "t");
+    DomUtils.createId(this, "txt");
+  }
+  
+  public String getDefaultStyleName() {
+    return "bee-TextBox";
   }
 
   public String getFieldName() {
@@ -74,7 +81,7 @@ public class BeeTextBox extends TextBox implements HasId, HasBeeKeyHandler,
   }
   
   private void init() {
-    setStyleName("bee-TextBox");
+    setStyleName(getDefaultStyleName());
     createId();
     addDefaultHandlers();
   }

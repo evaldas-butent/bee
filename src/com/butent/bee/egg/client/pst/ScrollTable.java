@@ -1,7 +1,7 @@
 package com.butent.bee.egg.client.pst;
 
 import com.butent.bee.egg.client.dom.DomUtils;
-import com.butent.bee.egg.client.pst.ColumnResizer.ColumnWidthInfo;
+import com.butent.bee.egg.client.grid.ColumnWidthInfo;
 
 import java.util.HashMap;
 import java.util.HashSet;

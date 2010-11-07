@@ -19,6 +19,11 @@ public class BeeSimpleCheckBox extends SimpleCheckBox implements HasId,
     createId();
   }
 
+  public BeeSimpleCheckBox(boolean value) {
+    this();
+    setChecked(value);
+  }
+  
   public BeeSimpleCheckBox(String fld) {
     this();
 

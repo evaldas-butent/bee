@@ -10,10 +10,10 @@ import com.butent.bee.egg.client.composite.RadioGroup;
 import com.butent.bee.egg.client.grid.BeeFlexTable;
 import com.butent.bee.egg.client.widget.BeeCheckBox;
 import com.butent.bee.egg.client.widget.BeeFileUpload;
-import com.butent.bee.egg.client.widget.BeeIntegerBox;
 import com.butent.bee.egg.client.widget.BeeListBox;
 import com.butent.bee.egg.client.widget.BeeSimpleCheckBox;
 import com.butent.bee.egg.client.widget.BeeTextBox;
+import com.butent.bee.egg.client.widget.InputInteger;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeField;
 import com.butent.bee.egg.shared.BeeName;
@@ -82,7 +82,7 @@ public class BeeInputBox {
             ok = true;
             break;
           case BeeType.TYPE_INT:
-            inp = new BeeIntegerBox(name);
+            inp = new InputInteger(name);
             ok = true;
             break;
           default:

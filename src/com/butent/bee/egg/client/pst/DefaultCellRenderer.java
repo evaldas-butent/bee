@@ -2,8 +2,6 @@ package com.butent.bee.egg.client.pst;
 
 import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.egg.client.pst.TableDefinition.AbstractCellView;
-
 public class DefaultCellRenderer<RowType, ColType> implements
     CellRenderer<RowType, ColType> {
 

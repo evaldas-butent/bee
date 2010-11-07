@@ -1,7 +1,6 @@
 package com.butent.bee.egg.client.pst;
 
 import com.butent.bee.egg.client.pst.SelectionGrid.SelectionPolicy;
-import com.butent.bee.egg.client.pst.TableDefinition.AbstractRowView;
 
 public class SelectionGridBulkRenderer<RowType> extends GridBulkRenderer<RowType> {
 

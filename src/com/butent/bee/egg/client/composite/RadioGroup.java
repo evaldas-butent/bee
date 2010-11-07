@@ -70,8 +70,24 @@ public class RadioGroup extends BeeSpan implements HasService {
   }
 
   public RadioGroup(String name, String... opt) {
+    this(name, -1, opt);
+  }
+
+  public RadioGroup(String name, int value, String... opt) {
     this();
-    addButtons(name, -1, opt);
+    addButtons(name, value, opt);
+  }
+  
+  public RadioGroup(String name, Enum<?> value, Enum<?>[] values) {
+    this();
+    
+    String[] opt = new String[values.length];
+    for (int i = 0; i < values.length; i++) {
+      opt[i] = BeeUtils.proper(values[i].name(), BeeConst.CHAR_UNDER);
+    }
+    
+    int z = (value == null) ? -1 : value.ordinal();
+    addButtons(name, z, opt);
   }
 
   @Override

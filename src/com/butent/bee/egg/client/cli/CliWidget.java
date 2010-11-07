@@ -111,7 +111,7 @@ public class CliWidget extends BeeTextBox {
       BeeGlobal.showDialog("wtf", v);
     }
 
-    return true;
+    return false;
   }
 
 }

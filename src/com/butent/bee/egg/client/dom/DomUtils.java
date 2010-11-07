@@ -88,6 +88,9 @@ public class DomUtils {
   public static final String TABLE_CELL_ID_PREFIX = "td";
 
   public static final String ATTRIBUTE_TYPE = "type";
+  public static final String ATTRIBUTE_MAX = "max";
+  public static final String ATTRIBUTE_MIN = "min";
+  public static final String ATTRIBUTE_STEP = "step";
 
   private static final String ATTRIBUTE_SERVICE = "data-svc";
   private static final String ATTRIBUTE_STAGE = "data-stg";
@@ -100,8 +103,10 @@ public class DomUtils {
 
   private static final String CELL_PADDING = "cellPadding";
   private static final String CELL_SPACING = "cellSpacing";
+  private static final String CHECKED = "checked";
   private static final String COL_SPAN = "colSpan";
   private static final String ROW_SPAN = "rowSpan";
+  private static final String VALUE = "value";
   
   private static int idCounter = 0;
 
@@ -583,6 +588,24 @@ public class DomUtils {
     return lst;
   }
   
+  public static InputElement getInputElement(Element elem) {
+    Assert.notNull(elem);
+    InputElement input;
+
+    if (isInputElement(elem)) {
+      input = elem.cast();
+    } else {
+      NodeList<Element> lst = elem.getElementsByTagName(TAG_INPUT);
+      if (lst.getLength() == 1) {
+        input = lst.getItem(0).cast();
+      } else {
+        input = null;
+      }
+    }
+    
+    return input;
+  }
+  
   public static native String getNamespaceUri(Node nd) /*-{
     return nd.namespaceURI;
   }-*/;
@@ -750,6 +773,23 @@ public class DomUtils {
     return lst;
   }
 
+  public static int getValueInt(String id) {
+    Assert.notEmpty(id);
+    Element elem = DOM.getElementById(id);
+    Assert.notNull(elem, "id " + id + " element not found");
+    return getValueInt(elem);
+  }
+  
+  public static int getValueInt(UIObject obj) {
+    Assert.notNull(obj);
+    return getValueInt(obj.getElement());
+  }
+  
+  public static int getValueInt(Element elem) {
+    Assert.notNull(elem);
+    return elem.getPropertyInt(VALUE);
+  }
+
   public static int getWidgetCount(HasWidgets container) {
     Assert.notNull(container);
     int c = 0;
@@ -780,6 +820,26 @@ public class DomUtils {
         "Attached", w.isAttached());
 
     return lst;
+  }
+
+  public static boolean isChecked(String id) {
+    Assert.notEmpty(id);
+    Element elem = DOM.getElementById(id);
+    Assert.notNull(elem, "id " + id + " element not found");
+    return isChecked(elem);
+  }
+  
+  public static boolean isChecked(UIObject obj) {
+    Assert.notNull(obj);
+    return isChecked(obj.getElement());
+  }
+
+  public static boolean isChecked(Element elem) {
+    Assert.notNull(elem);
+    InputElement input = getInputElement(elem);
+    Assert.notNull(input, "input element not found");
+
+    return input.getPropertyBoolean(CHECKED);
   }
 
   public static boolean isDirection(String s) {
@@ -878,24 +938,25 @@ public class DomUtils {
     w.getElement().removeAttribute(name);
   }
 
-  public static String setAttribute(Widget w, String name, String value) {
+  public static void setAttribute(Widget w, String name, int value) {
+    setAttribute(w, name, Integer.toString(value));
+  }
+  
+  public static void setAttribute(Widget w, String name, String value) {
     Assert.notNull(w);
     Assert.notEmpty(name);
     Assert.notEmpty(value);
 
-    String s = name.trim();
     w.getElement().setAttribute(name.trim().toLowerCase(), value.trim());
-    return s;
   }
 
   public static void setCheckValue(Element elem, boolean value) {
     Assert.notNull(elem);
-    
-    NodeList<Element> lst = elem.getElementsByTagName(TAG_INPUT);
-    Assert.isTrue(lst.getLength() == 1, "input element not found");
-    
-    InputElement.as(lst.getItem(0)).setChecked(value);
-    InputElement.as(lst.getItem(0)).setDefaultChecked(value);
+    InputElement input = getInputElement(elem);
+    Assert.notNull(input, "input element not found");
+
+    input.setChecked(value);
+    input.setDefaultChecked(value);
   }
 
   public static void setColSpan(Element elem, int span) {
@@ -904,15 +965,27 @@ public class DomUtils {
     
     TableCellElement.as(elem).setColSpan(span);
   }
+  
+  public static void setHeight(Widget w, int height) {
+    Assert.notNull(w);
+    Assert.nonNegative(height);
+    w.getElement().getStyle().setHeight(height, Unit.PX);
+  }
 
-  public static String setId(UIObject obj, String id) {
+  public static void setId(UIObject obj, String id) {
     Assert.notNull(obj);
     Assert.notEmpty(id);
 
     String s = id.trim();
     obj.getElement().setId(s);
+  }
+  
+  public static void setMax(Widget w, int max) {
+    setAttribute(w, ATTRIBUTE_MAX, max);
+  }
 
-    return s;
+  public static void setMin(Widget w, int min) {
+    setAttribute(w, ATTRIBUTE_MIN, min);
   }
   
   public static void setRowSpan(Element elem, int span) {
@@ -929,18 +1002,31 @@ public class DomUtils {
     OptionElement.as(elem).setDefaultSelected(selected);
   }
 
-  public static String setService(Widget w, String svc) {
-    return setAttribute(w, ATTRIBUTE_SERVICE, svc);
+  public static void setService(Widget w, String svc) {
+    setAttribute(w, ATTRIBUTE_SERVICE, svc);
   }
 
-  public static String setStage(Widget w, String stg) {
-    return setAttribute(w, ATTRIBUTE_STAGE, stg);
+  public static void setStage(Widget w, String stg) {
+    setAttribute(w, ATTRIBUTE_STAGE, stg);
   }
 
-  public static int setTabIndex(Widget w, int idx) {
+  public static void setStep(Widget w, int step) {
+    setAttribute(w, ATTRIBUTE_STEP, step);
+  }
+
+  public static void setTabIndex(Widget w, int idx) {
     Assert.notNull(w);
     w.getElement().setTabIndex(idx);
-    return idx;
+  }
+
+  public static void setType(Widget w, String type) {
+    setAttribute(w, ATTRIBUTE_TYPE, type);
+  }
+  
+  public static void setWidth(Widget w, int width) {
+    Assert.notNull(w);
+    Assert.nonNegative(width);
+    w.getElement().getStyle().setWidth(width, Unit.PX);
   }
 
   public static String transform(Object obj) {
