@@ -170,8 +170,15 @@ public class BeeCallback implements RequestCallback {
 
       JsArrayString arr = splitResponse(txt, sep, cnt);
 
+      ResponseCallback callback = null;
+      if (info != null) {
+        callback = info.getRespCallback();
+      }
+      
       if (CompositeService.isRegistered(svc)) {
         CompositeService.doService(svc, arr, cc);
+      } else if (callback != null) {
+        callback.onResponse(arr);
       } else {
         dispatchResponse(svc, cc, arr);
       }

@@ -40,8 +40,7 @@ public class CliWidget extends BeeTextBox {
       CliWorker.showCanvas(arr);
     } else if (z.equals("clear")) {
       CliWorker.clearLog();
-    } else if (BeeUtils.inList(z, "center", "east", "north", "south", "screen",
-        "west")) {
+    } else if (BeeUtils.inList(z, "center", "east", "north", "south", "screen", "west")) {
       CliWorker.doScreen(arr);
     } else if (z.equals("charset")) {
       CliWorker.getCharsets();
@@ -71,6 +70,8 @@ public class CliWidget extends BeeTextBox {
       CliWorker.showElement(v, arr);
     } else if (BeeUtils.inList(z, "inp", "input")) {
       CliWorker.showInput();
+    } else if (BeeUtils.inList(z, "keys", "pk")) {
+      CliWorker.getKeys(arr);
     } else if (z.equals("loaders")) {
       BeeKeeper.getRpc().invoke("loaderInfo");
     } else if (z.equals("log")) {
@@ -91,6 +92,8 @@ public class CliWidget extends BeeTextBox {
       BeeKeeper.getRpc().invoke("systemInfo");
     } else if (z.equals("stack")) {
       CliWorker.showStack();
+    } else if (z.startsWith("stor")) {
+      CliWorker.storage(arr);
     } else if (z.equals("style")) {
       CliWorker.style(v, arr);
     } else if (z.equals("svg")) {

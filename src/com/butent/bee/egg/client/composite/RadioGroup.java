@@ -6,6 +6,7 @@ import com.google.gwt.dom.client.NodeList;
 
 import com.butent.bee.egg.client.BeeGlobal;
 import com.butent.bee.egg.client.BeeKeeper;
+import com.butent.bee.egg.client.BeeStyle;
 import com.butent.bee.egg.client.dom.DomUtils;
 import com.butent.bee.egg.client.layout.BeeSpan;
 import com.butent.bee.egg.client.widget.BeeRadioButton;
@@ -52,6 +53,10 @@ public class RadioGroup extends BeeSpan implements HasService {
   }
 
   public RadioGroup(String fieldName) {
+    this(fieldName, false);
+  }
+  
+  public RadioGroup(String fieldName, boolean vertical) {
     this();
 
     BeeField fld = BeeGlobal.getField(fieldName);
@@ -66,19 +71,31 @@ public class RadioGroup extends BeeSpan implements HasService {
       value = opt.indexOf(v);
     }
 
-    addButtons(fieldName, value, opt.toArray(new String[0]));
+    addButtons(fieldName, vertical, value, opt.toArray(new String[0]));
   }
 
   public RadioGroup(String name, String... opt) {
-    this(name, -1, opt);
+    this(name, false, -1, opt);
   }
 
-  public RadioGroup(String name, int value, String... opt) {
-    this();
-    addButtons(name, value, opt);
+  public RadioGroup(String name, boolean vertical, String... opt) {
+    this(name, vertical, -1, opt);
   }
   
+  public RadioGroup(String name, int value, String... opt) {
+    this(name, false, value, opt);
+  }
+  
+  public RadioGroup(String name, boolean vertical, int value, String... opt) {
+    this();
+    addButtons(name, vertical, value, opt);
+  }
+
   public RadioGroup(String name, Enum<?> value, Enum<?>[] values) {
+    this(name, false, value, values);
+  }
+  
+  public RadioGroup(String name, boolean vertical, Enum<?> value, Enum<?>[] values) {
     this();
     
     String[] opt = new String[values.length];
@@ -87,12 +104,17 @@ public class RadioGroup extends BeeSpan implements HasService {
     }
     
     int z = (value == null) ? -1 : value.ordinal();
-    addButtons(name, z, opt);
+    addButtons(name, vertical, z, opt);
   }
 
   @Override
   public void createId() {
     DomUtils.createId(this, "rg");
+  }
+
+  @Override
+  public String getDefaultStyleName() {
+    return "bee-RadioGroup";
   }
 
   public String getService() {
@@ -103,7 +125,7 @@ public class RadioGroup extends BeeSpan implements HasService {
     DomUtils.setService(this, svc);
   }
 
-  private void addButtons(String name, int value, String... opt) {
+  private void addButtons(String name, boolean vertical, int value, String... opt) {
     BeeRadioButton rb;
     int idx = 0;
 
@@ -117,11 +139,12 @@ public class RadioGroup extends BeeSpan implements HasService {
 
       rb.setTabIndex(idx);
       BeeKeeper.getBus().addBoolVch(rb);
+      
+      rb.addStyleDependentName(vertical ? BeeStyle.NAME_VERTICAL : BeeStyle.NAME_HORIZONTAL);
 
       if (idx == value) {
         rb.setValue(true);
       }
-
       idx++;
     }
   }

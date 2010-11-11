@@ -8,8 +8,7 @@ import com.butent.bee.egg.client.utils.HasCommand;
 import com.butent.bee.egg.shared.HasId;
 import com.butent.bee.egg.shared.HasService;
 
-public class BeeRadioButton extends RadioButton implements HasId, HasService,
-    HasCommand {
+public class BeeRadioButton extends RadioButton implements HasId, HasService, HasCommand {
   private BeeCommand command = null;
 
   public BeeRadioButton(String name) {

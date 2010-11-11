@@ -4,8 +4,10 @@ import com.google.gwt.core.client.JsDate;
 import com.google.gwt.event.shared.GwtEvent;
 import com.google.gwt.user.client.ui.Widget;
 
+import com.butent.bee.egg.client.data.CacheUtils;
 import com.butent.bee.egg.client.dialog.BeeInputBox;
 import com.butent.bee.egg.client.dialog.BeeMessageBox;
+import com.butent.bee.egg.client.grid.CellType;
 import com.butent.bee.egg.client.grid.GridFactory;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeConst;
@@ -30,6 +32,7 @@ public class BeeGlobal implements BeeModule {
   private static final BeeMessageBox msgBox = new BeeMessageBox();
   private static final BeeInputBox inpBox = new BeeInputBox();
   private static final GridFactory grids = new GridFactory();
+  private static final CacheUtils cache = new CacheUtils();
 
   private static final Map<String, BeeField> fields = new HashMap<String, BeeField>();
 
@@ -38,6 +41,10 @@ public class BeeGlobal implements BeeModule {
 
   public static void alert(Object... obj) {
     msgBox.alert(obj);
+  }
+
+  public static Widget cellGrid(Object data, CellType cellType, String... columns) {
+    return grids.cellGrid(data, cellType, (Object[]) columns);
   }
 
   public static boolean closeDialog(GwtEvent<?> event) {
@@ -66,6 +73,10 @@ public class BeeGlobal implements BeeModule {
     Assert.isTrue(BeeType.isValid(type));
 
     fields.put(name, new BeeField(caption, type, value, widget, items));
+  }
+
+  public static CacheUtils getCache() {
+    return cache;
   }
 
   public static BeeField getField(String name) {
@@ -128,10 +139,6 @@ public class BeeGlobal implements BeeModule {
 
   public static void modalGrid(String cap, Object data, String... cols) {
     msgBox.showGrid(cap, data, cols);
-  }
-
-  public static Widget pstGrid(Object data, String... columns) {
-    return grids.pstGrid(data, (Object[]) columns);
   }
 
   public static void sayHuh(Object... obj) {

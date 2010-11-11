@@ -9,10 +9,8 @@ import com.butent.bee.egg.client.composite.RadioGroup;
 import com.butent.bee.egg.client.dialog.BeePopupPanel;
 import com.butent.bee.egg.client.dom.DomUtils;
 import com.butent.bee.egg.client.layout.BeeLayoutPanel;
-import com.butent.bee.egg.client.pst.AbstractScrollTable;
-import com.butent.bee.egg.client.pst.HasTableDefinition;
-import com.butent.bee.egg.client.pst.AbstractScrollTable.ResizePolicy;
-import com.butent.bee.egg.client.pst.PagingScrollTable;
+import com.butent.bee.egg.client.pst.ScrollTable.ResizePolicy;
+import com.butent.bee.egg.client.pst.ScrollTable;
 import com.butent.bee.egg.client.pst.SelectionGrid.SelectionPolicy;
 import com.butent.bee.egg.client.pst.TableDefinition;
 import com.butent.bee.egg.client.utils.BeeCommand;
@@ -90,8 +88,8 @@ public class ScrollTableConfig {
       boolean reload = setupGrid();
       reload |= setupColumns();
       
-      if (reload && scrollTable instanceof PagingScrollTable<?>) {
-        ((PagingScrollTable<?>) scrollTable).reloadPage();
+      if (reload) {
+        scrollTable.reloadPage();
       }
 
       if (BeeUtils.same(action, "fill")) {
@@ -114,7 +112,7 @@ public class ScrollTableConfig {
     }
   }
 
-  private AbstractScrollTable scrollTable;
+  private ScrollTable<?> scrollTable;
   private TableDefinition<?> tableDefinition;
  
   private int cellPadding;
@@ -135,8 +133,8 @@ public class ScrollTableConfig {
   
   private BeePopupPanel popup;
 
-  public ScrollTableConfig(AbstractScrollTable ast) {
-    init(ast);
+  public ScrollTableConfig(ScrollTable<?> st) {
+    init(st);
   }
   
   public void show() {
@@ -227,37 +225,29 @@ public class ScrollTableConfig {
     popup.setPopupPositionAndShow(new PopupPosition());
   }
   
-  private void init(AbstractScrollTable ast) {
-    Assert.notNull(ast);
-    scrollTable = ast;
+  private void init(ScrollTable<?> st) {
+    Assert.notNull(st);
+    scrollTable = st;
     
-    cellPadding = ast.getCellPadding();
-    cellSpacing = ast.getCellSpacing();
+    cellPadding = st.getCellPadding();
+    cellSpacing = st.getCellSpacing();
 
-    resizePolicy = ast.getResizePolicy();
-    selectionPolicy = ast.getDataTable().getSelectionPolicy();
+    resizePolicy = st.getResizePolicy();
+    selectionPolicy = st.getDataTable().getSelectionPolicy();
     
-    columnCount = ast.getDataTable().getColumnCount();
-    availableWidth = ast.getAvailableWidth();
-    dataWidth = ast.getDataTable().getElement().getScrollWidth();
+    columnCount = st.getDataTable().getColumnCount();
+    availableWidth = st.getAvailableWidth();
+    dataWidth = st.getDataTable().getElement().getScrollWidth();
     
     columnWidth = new ColumnWidthInfo[columnCount];
     columnVisible = new boolean[columnCount];
     
-    if (ast instanceof HasTableDefinition<?>) {
-      tableDefinition = ((HasTableDefinition<?>) ast).getTableDefinition();
-    } else {
-      tableDefinition = null;
-    }
+    tableDefinition = st.getTableDefinition();
     
     for (int i = 0; i < columnCount; i++) {
-      columnWidth[i] = new ColumnWidthInfo(ast.getMinimumColumnWidth(i),
-          ast.getMaximumColumnWidth(i), ast.getPreferredColumnWidth(i), ast.getColumnWidth(i));
-      if (tableDefinition == null) {
-        columnVisible[i] = true;
-      } else {
-        columnVisible[i] = tableDefinition.isColumnVisible(i);
-      }
+      columnWidth[i] = new ColumnWidthInfo(st.getMinimumColumnWidth(i),
+          st.getMaximumColumnWidth(i), st.getPreferredColumnWidth(i), st.getColumnWidth(i));
+      columnVisible[i] = tableDefinition.isColumnVisible(i);
     }
   }
   

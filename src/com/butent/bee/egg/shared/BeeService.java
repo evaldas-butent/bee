@@ -15,6 +15,8 @@ public class BeeService {
   public static final String SERVICE_DB_PING = DB_META_SERVICE_PREFIX + "ping";
   public static final String SERVICE_DB_INFO = DB_META_SERVICE_PREFIX + "info";
   public static final String SERVICE_DB_TABLES = DB_META_SERVICE_PREFIX + "tables";
+  public static final String SERVICE_DB_KEYS = DB_META_SERVICE_PREFIX + "keys";
+  public static final String SERVICE_DB_PRIMARY = DB_META_SERVICE_PREFIX + "primary";
 
   public static final String SYS_SERVICE_PREFIX = RPC_SERVICE_PREFIX + "sys_";
   public static final String SERVICE_CLASS_INFO = SYS_SERVICE_PREFIX + "class_info";

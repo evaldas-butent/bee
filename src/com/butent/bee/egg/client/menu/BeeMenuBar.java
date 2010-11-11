@@ -22,6 +22,7 @@ import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.egg.client.BeeKeeper;
+import com.butent.bee.egg.client.BeeStyle;
 import com.butent.bee.egg.client.dom.BeeImpl;
 import com.butent.bee.egg.client.dom.DomUtils;
 import com.butent.bee.egg.client.event.EventUtils;
@@ -550,9 +551,9 @@ public class BeeMenuBar extends Widget implements HasId, HasAfterAddHandler,
       addStyleDependentName("level-" + level);
     }
     if (vertical) {
-      addStyleDependentName("vertical");
+      addStyleDependentName(BeeStyle.NAME_VERTICAL);
     } else {
-      addStyleDependentName("horizontal");
+      addStyleDependentName(BeeStyle.NAME_HORIZONTAL);
     }
 
     addStyleDependentName(barType.toString().toLowerCase());

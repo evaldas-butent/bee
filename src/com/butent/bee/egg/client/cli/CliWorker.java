@@ -92,7 +92,7 @@ public class CliWorker {
         ContentType.BINARY, src);
   }
 
-  public static void doLog(String arr[]) {
+  public static void doLog(String[] arr) {
     if (BeeUtils.length(arr) > 1) {
       String z = arr[1];
 
@@ -131,7 +131,7 @@ public class CliWorker {
     }
   }
 
-  public static void doScreen(String arr[]) {
+  public static void doScreen(String[] arr) {
     BeeSplit screen = BeeKeeper.getUi().getScreenPanel();
     Assert.notNull(screen);
 
@@ -189,7 +189,22 @@ public class CliWorker {
     BeeKeeper.getRpc().makeGetRequest(params);
   }
 
-  public static void getResource(String arr[]) {
+  public static void getKeys(String[] arr) {
+    int parCnt = BeeUtils.length(arr) - 1;
+    if (parCnt <= 0) {
+      BeeGlobal.showError("getKeys", "table not specified");
+      return;
+    }
+    
+    ParameterList params = BeeKeeper.getRpc().createParameters(
+        BeeUtils.same(arr[0], "pk") ? BeeService.SERVICE_DB_PRIMARY : BeeService.SERVICE_DB_KEYS);
+    for (int i = 0; i < parCnt; i++) {
+      params.addPositionalHeader(arr[i + 1]);
+    }
+    BeeKeeper.getRpc().makeGetRequest(params);
+  }
+
+  public static void getResource(String[] arr) {
     if (BeeUtils.length(arr) < 2) {
       BeeGlobal.sayHuh(BeeUtils.transform(arr));
       return;
@@ -321,8 +336,7 @@ public class CliWorker {
       return;
     }
 
-    JsData view = (JsData) DataUtils.createView(prp, "property", "type",
-        "value");
+    JsData view = (JsData) DataUtils.createView(prp, "property", "type", "value");
     view.sort(0, true);
 
     if (view.getRowCount() <= 20) {
@@ -513,8 +527,50 @@ public class CliWorker {
 
     BeeGlobal.inform(tree);
   }
+  
+  public static void storage(String[] arr) {
+    int parCnt = BeeUtils.arrayLength(arr) - 1;
+    int len = BeeKeeper.getStorage().length();
+    
+    if (parCnt <= 1 && len <= 0) {
+      BeeGlobal.inform("Storage empty");
+      return;
+    }
+    
+    if (parCnt <= 0) {
+      BeeKeeper.getUi().showGrid(BeeKeeper.getStorage().getAll());
+      return;
+    }
+    
+    String key = arr[1];
+    
+    if (parCnt == 1) {
+      if (key.equals(BeeConst.STRING_MINUS)) {
+        BeeKeeper.getStorage().clear();
+        BeeGlobal.inform(BeeUtils.concat(1, len, "items cleared"));
+      } else {
+        String z = BeeKeeper.getStorage().getItem(key);
+        if (z == null) {
+          BeeGlobal.showError(key, "key not found");
+        } else {
+          BeeGlobal.inform(key, z);
+        }
+      }
+      return;
+    }
+    
+    String value = BeeUtils.join(arr, 1, 2);
+    
+    if (key.equals(BeeConst.STRING_MINUS)) {
+      BeeKeeper.getStorage().removeItem(value);
+      BeeGlobal.inform(value, "removed");
+    } else {
+      BeeKeeper.getStorage().setItem(key, value);
+      BeeGlobal.inform("Storage", BeeUtils.addName(key, value));
+    }
+  }
 
-  public static void style(String v, String arr[]) {
+  public static void style(String v, String[] arr) {
     if (BeeUtils.length(arr) < 2) {
       NodeList<Element> nodes = Document.get().getElementsByTagName("style");
       if (nodes == null || nodes.getLength() <= 0) {

@@ -7,6 +7,10 @@ body, select {
   text-transform: uppercase;
 }  
 
+.bee-RadioButton-vertical {
+  display: block;
+}  
+
 .bee-HSplitter {
   background-color: #d0e4f6;
   cursor: col-resize;

@@ -839,6 +839,36 @@ public class BeeUtils {
     return x == 0;
   }
 
+  public static String join(Object[] arr, Object separator) {
+    return join(arr, separator, -1, -1);
+  }
+  
+  public static String join(Object[] arr, Object separator, int fromIndex) {
+    return join(arr, separator, fromIndex, -1);
+  }
+  
+  public static String join(Object[] arr, Object separator, int fromIndex, int toIndex) {
+    int len = arrayLength(arr);
+    int fr = (fromIndex > 0) ? fromIndex : 0;
+    int to = (toIndex >= 0 && toIndex <= len) ? toIndex : len;
+
+    if (fr >= to) {
+      return BeeConst.STRING_EMPTY;
+    }
+
+    String sep = normSep(separator);
+    StringBuilder sb = new StringBuilder();
+
+    for (int i = fr; i < to; i++) {
+      if (sb.length() > 0) {
+        sb.append(sep);
+      }
+      sb.append(transform(arr[i]));
+    }
+
+    return sb.toString();
+  }
+  
   public static <T> List<T> join(List<? extends T>... src) {
     int n = src.length;
     Assert.parameterCount(n, 2);

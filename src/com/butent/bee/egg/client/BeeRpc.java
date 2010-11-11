@@ -5,6 +5,7 @@ import com.google.gwt.http.client.RequestException;
 
 import com.butent.bee.egg.client.communication.BeeCallback;
 import com.butent.bee.egg.client.communication.ParameterList;
+import com.butent.bee.egg.client.communication.ResponseCallback;
 import com.butent.bee.egg.client.communication.RpcInfo;
 import com.butent.bee.egg.client.communication.RpcList;
 import com.butent.bee.egg.client.communication.RpcUtils;
@@ -21,7 +22,7 @@ public class BeeRpc implements BeeModule {
   private final String rpcUrl;
 
   private RpcList rpcList = new RpcList();
-  private BeeCallback callBack = new BeeCallback();
+  private BeeCallback reqCallBack = new BeeCallback();
 
   public BeeRpc(String url) {
     this.rpcUrl = url;
@@ -40,10 +41,6 @@ public class BeeRpc implements BeeModule {
   }
 
   public void end() {
-  }
-
-  public BeeCallback getCallBack() {
-    return callBack;
   }
 
   public String getDsn() {
@@ -73,6 +70,10 @@ public class BeeRpc implements BeeModule {
       default:
         return DO_NOT_CALL;
     }
+  }
+
+  public BeeCallback getReqCallBack() {
+    return reqCallBack;
   }
 
   public RpcInfo getRpcInfo(int id) {
@@ -105,10 +106,6 @@ public class BeeRpc implements BeeModule {
     return invoke(method, null, null);
   }
 
-  public int invoke(String method, String data) {
-    return invoke(method, null, data);
-  }
-
   public int invoke(String method, ContentType ctp, String data) {
     Assert.notEmpty(method);
 
@@ -122,67 +119,92 @@ public class BeeRpc implements BeeModule {
     }
   }
 
-  public int makeGetRequest(ParameterList params) {
-    return makeRequest(RequestBuilder.GET, params, null, null,
-        BeeConst.TIME_UNKNOWN);
+  public int invoke(String method, String data) {
+    return invoke(method, null, data);
   }
 
-  public int makeGetRequest(ParameterList params, int timeout) {
-    return makeRequest(RequestBuilder.GET, params, null, null, timeout);
+  public int makeGetRequest(ParameterList params) {
+    return makeRequest(RequestBuilder.GET, params, null, null, null, BeeConst.TIME_UNKNOWN);
+  }
+
+  public int makeGetRequest(ParameterList params, ResponseCallback callback) {
+    return makeRequest(RequestBuilder.GET, params, null, null, callback, BeeConst.TIME_UNKNOWN);
+  }
+
+  public int makeGetRequest(ParameterList params, ResponseCallback callback, int timeout) {
+    return makeRequest(RequestBuilder.GET, params, null, null, callback, timeout);
   }
 
   public int makeGetRequest(String svc) {
-    return makeRequest(RequestBuilder.GET, createParameters(svc), null, null,
-        BeeConst.TIME_UNKNOWN);
+    return makeRequest(RequestBuilder.GET, createParameters(svc), null, null, null, BeeConst.TIME_UNKNOWN);
   }
 
-  public int makeGetRequest(String svc, int timeout) {
+  public int makeGetRequest(String svc, ResponseCallback callback) {
     return makeRequest(RequestBuilder.GET, createParameters(svc), null, null,
-        timeout);
+        callback, BeeConst.TIME_UNKNOWN);
+  }
+  
+  public int makeGetRequest(String svc, ResponseCallback callback, int timeout) {
+    return makeRequest(RequestBuilder.GET, createParameters(svc), null, null, callback, timeout);
   }
 
   public int makePostRequest(ParameterList params, ContentType ctp, String data) {
-    return makeRequest(RequestBuilder.POST, params, ctp, data,
-        BeeConst.TIME_UNKNOWN);
+    return makeRequest(RequestBuilder.POST, params, ctp, data, null, BeeConst.TIME_UNKNOWN);
   }
 
   public int makePostRequest(ParameterList params, ContentType ctp,
-      String data, int timeout) {
-    return makeRequest(RequestBuilder.POST, params, ctp, data, timeout);
+      String data, ResponseCallback callback) {
+    return makeRequest(RequestBuilder.POST, params, ctp, data, callback, BeeConst.TIME_UNKNOWN);
+  }
+
+  public int makePostRequest(ParameterList params, ContentType ctp,
+      String data, ResponseCallback callback, int timeout) {
+    return makeRequest(RequestBuilder.POST, params, ctp, data, callback, timeout);
   }
 
   public int makePostRequest(ParameterList params, String data) {
-    return makeRequest(RequestBuilder.POST, params, null, data,
-        BeeConst.TIME_UNKNOWN);
+    return makeRequest(RequestBuilder.POST, params, null, data, null, BeeConst.TIME_UNKNOWN);
   }
 
-  public int makePostRequest(ParameterList params, String data, int timeout) {
-    return makeRequest(RequestBuilder.POST, params, null, data, timeout);
+  public int makePostRequest(ParameterList params, String data, ResponseCallback callback) {
+    return makeRequest(RequestBuilder.POST, params, null, data, callback, BeeConst.TIME_UNKNOWN);
+  }
+
+  public int makePostRequest(ParameterList params, String data, ResponseCallback callback, int timeout) {
+    return makeRequest(RequestBuilder.POST, params, null, data, callback, timeout);
   }
 
   public int makePostRequest(String svc, ContentType ctp, String data) {
     return makeRequest(RequestBuilder.POST, createParameters(svc), ctp, data,
-        BeeConst.TIME_UNKNOWN);
+        null, BeeConst.TIME_UNKNOWN);
+  }
+
+  public int makePostRequest(String svc, ContentType ctp, String data, ResponseCallback callback) {
+    return makeRequest(RequestBuilder.POST, createParameters(svc), ctp, data,
+        callback, BeeConst.TIME_UNKNOWN);
   }
 
   public int makePostRequest(String svc, ContentType ctp, String data,
-      int timeout) {
-    return makeRequest(RequestBuilder.POST, createParameters(svc), ctp, data,
-        timeout);
+      ResponseCallback callback, int timeout) {
+    return makeRequest(RequestBuilder.POST, createParameters(svc), ctp, data, callback, timeout);
   }
 
   public int makePostRequest(String svc, String data) {
     return makeRequest(RequestBuilder.POST, createParameters(svc), null, data,
-        BeeConst.TIME_UNKNOWN);
+        null, BeeConst.TIME_UNKNOWN);
   }
 
-  public int makePostRequest(String svc, String data, int timeout) {
-    return makeRequest(RequestBuilder.POST, createParameters(svc), null, data,
-        timeout);
+  public int makePostRequest(String svc, String data, ResponseCallback callback) {
+    return makeRequest(RequestBuilder.POST, createParameters(svc), null, data, 
+        callback, BeeConst.TIME_UNKNOWN);
   }
 
-  public void setCallBack(BeeCallback callBack) {
-    this.callBack = callBack;
+  public int makePostRequest(String svc, String data, ResponseCallback callback, int timeout) {
+    return makeRequest(RequestBuilder.POST, createParameters(svc), null, data, callback, timeout);
+  }
+
+  public void setReqCallBack(BeeCallback reqCallBack) {
+    this.reqCallBack = reqCallBack;
   }
 
   public void setRpcList(RpcList rpcList) {
@@ -193,7 +215,7 @@ public class BeeRpc implements BeeModule {
   }
 
   private int makeRequest(RequestBuilder.Method meth, ParameterList params,
-      ContentType type, String reqData, int timeout) {
+      ContentType type, String reqData, ResponseCallback callback, int timeout) {
     Assert.notNull(meth);
     Assert.notNull(params);
 
@@ -217,7 +239,7 @@ public class BeeRpc implements BeeModule {
       ctp = CommUtils.normalizeRequest(params.getContentType());
     }
 
-    RpcInfo info = new RpcInfo(meth, svc, params, ctp, data);
+    RpcInfo info = new RpcInfo(meth, svc, params, ctp, data, callback);
     int id = info.getId();
 
     String qs = params.getQuery();
@@ -262,15 +284,14 @@ public class BeeRpc implements BeeModule {
       int size = content.length();
       info.setReqSize(size);
 
-      BeeKeeper.getLog().info("sending", BeeUtils.transform(ctp), cth,
-          BeeUtils.bracket(size));
+      BeeKeeper.getLog().info("sending", BeeUtils.transform(ctp), cth, BeeUtils.bracket(size));
       if (debug) {
         BeeKeeper.getLog().info(data);
       }
     }
 
     try {
-      bld.sendRequest(content, callBack);
+      bld.sendRequest(content, reqCallBack);
       info.setState(BeeConst.STATE_OPEN);
     } catch (RequestException ex) {
       info.endError(ex);

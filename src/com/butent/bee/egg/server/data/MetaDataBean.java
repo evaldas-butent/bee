@@ -26,8 +26,7 @@ public class MetaDataBean {
   @EJB
   ResultSetBean rsb;
 
-  public void doService(String svc, BeeDataSource ds, RequestInfo reqInfo,
-      ResponseBuffer buff) {
+  public void doService(String svc, BeeDataSource ds, RequestInfo reqInfo, ResponseBuffer buff) {
     Assert.notEmpty(svc);
     Assert.notNull(ds);
     Assert.notNull(buff);
@@ -38,6 +37,10 @@ public class MetaDataBean {
       dbInfo(ds, buff);
     } else if (BeeUtils.same(svc, BeeService.SERVICE_DB_TABLES)) {
       getTables(ds, reqInfo, buff);
+    } else if (BeeUtils.same(svc, BeeService.SERVICE_DB_KEYS)) {
+      getKeys(ds, reqInfo, buff, true);
+    } else if (BeeUtils.same(svc, BeeService.SERVICE_DB_PRIMARY)) {
+      getKeys(ds, reqInfo, buff, false);
     } else {
       String msg = BeeUtils.concat(1, svc, "meta data service not recognized");
       LogUtils.warning(logger, msg);
@@ -67,8 +70,33 @@ public class MetaDataBean {
     buff.addSub(prp);
   }
 
-  private void getTables(BeeDataSource ds, RequestInfo reqInfo,
-      ResponseBuffer buff) {
+  private void getKeys(BeeDataSource ds, RequestInfo reqInfo, ResponseBuffer buff, 
+      boolean result) {
+    String table = reqInfo.getParameter(0);
+    String catalog = reqInfo.getParameter(1);
+    String schema = reqInfo.getParameter(2);
+
+    try {
+      DatabaseMetaData md = ds.getDbMd();
+      ResultSet rs = md.getPrimaryKeys(catalog, schema, table);
+      
+      if (result) {
+        rsb.rsToResponse(rs, buff, reqInfo.isDebug());
+      } else {
+        while (rs.next()) {
+          buff.add(rs.getString("COLUMN_NAME"));
+        }
+      }
+
+      rs.close();
+    } catch (JdbcException ex) {
+      LogUtils.error(logger, ex);
+    } catch (SQLException ex) {
+      LogUtils.error(logger, ex);
+    }
+  }
+
+  private void getTables(BeeDataSource ds, RequestInfo reqInfo, ResponseBuffer buff) {
     try {
       DatabaseMetaData md = ds.getDbMd();
       ResultSet rs = md.getTables(null, null, null, null);

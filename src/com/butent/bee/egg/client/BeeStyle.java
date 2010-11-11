@@ -30,6 +30,9 @@ public class BeeStyle implements BeeModule {
   public static final String VALUE_AUTO = "auto";
   public static final String VALUE_FIXED = "fixed";
 
+  public static final String NAME_HORIZONTAL = "horizontal";
+  public static final String NAME_VERTICAL = "vertical";
+
   public void autoHeight(UIObject obj) {
     Assert.notNull(obj);
     autoHeight(obj.getElement());

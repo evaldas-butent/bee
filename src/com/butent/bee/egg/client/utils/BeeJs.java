@@ -18,6 +18,11 @@ public abstract class BeeJs {
     }
   }-*/;
 
+  public static native JsArrayString createArray(String src) /*-{
+    var arr = new Array(src);
+    return arr;
+  }-*/;
+
   public static native double currentTimeMillis() /*-{
     return (new Date()).getTime();
   }-*/;

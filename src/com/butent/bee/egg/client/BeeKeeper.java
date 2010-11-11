@@ -16,7 +16,7 @@ public class BeeKeeper {
   private static BeeScheduler SCHED;
   private static BeeUser USER;
   private static BeeGlobal GLOB;
-  private static BeeProperties PROP;
+  private static Storage STOR;
   private static BeeMenu MENU;
 
   public static BeeBus getBus() {
@@ -31,12 +31,12 @@ public class BeeKeeper {
     return MENU;
   }
 
-  public static BeeProperties getProp() {
-    return PROP;
-  }
-
   public static BeeRpc getRpc() {
     return RPC;
+  }
+
+  public static Storage getStorage() {
+    return STOR;
   }
 
   public static BeeStyle getStyle() {
@@ -59,15 +59,15 @@ public class BeeKeeper {
     SCHED = new BeeScheduler();
     USER = new BeeUser();
     GLOB = new BeeGlobal();
-    PROP = new BeeProperties();
+    STOR = new Storage();
     MENU = new BeeMenu();
 
     modules = new BeeModule[]{
-        UI, BUS, RPC, LOG, STYLE, SCHED, USER, GLOB, PROP, MENU};
+        UI, BUS, RPC, LOG, STYLE, SCHED, USER, GLOB, STOR, MENU};
   }
 
   public void end() {
-    BeeModule arr[] = orderModules(BeeModule.PRIORITY_END);
+    BeeModule[] arr = orderModules(BeeModule.PRIORITY_END);
     if (arr == null) {
       return;
     }
@@ -78,7 +78,7 @@ public class BeeKeeper {
   }
 
   public void init() {
-    BeeModule arr[] = orderModules(BeeModule.PRIORITY_INIT);
+    BeeModule[] arr = orderModules(BeeModule.PRIORITY_INIT);
     if (arr == null) {
       return;
     }
@@ -89,7 +89,7 @@ public class BeeKeeper {
   }
 
   public void start() {
-    BeeModule arr[] = orderModules(BeeModule.PRIORITY_START);
+    BeeModule[] arr = orderModules(BeeModule.PRIORITY_START);
     if (arr == null) {
       return;
     }

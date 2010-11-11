@@ -183,7 +183,7 @@ public class SystemServiceBean {
     buff.addStringProp(FileUtils.getFileInfo(fl));
 
     if (fl.isDirectory()) {
-      String arr[] = FileUtils.getFiles(fl);
+      String[] arr = FileUtils.getFiles(fl);
       int n = BeeUtils.length(arr);
 
       if (n > 0) {

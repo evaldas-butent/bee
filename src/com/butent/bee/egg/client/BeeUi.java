@@ -14,8 +14,8 @@ import com.butent.bee.egg.client.composite.RadioGroup;
 import com.butent.bee.egg.client.composite.TextEditor;
 import com.butent.bee.egg.client.dom.DomUtils;
 import com.butent.bee.egg.client.grid.BeeFlexTable;
+import com.butent.bee.egg.client.grid.CellType;
 import com.butent.bee.egg.client.layout.BeeDirection;
-import com.butent.bee.egg.client.layout.BeeFlow;
 import com.butent.bee.egg.client.layout.BeeHorizontal;
 import com.butent.bee.egg.client.layout.BeeLayoutPanel;
 import com.butent.bee.egg.client.layout.BeeSplit;
@@ -79,7 +79,8 @@ public class BeeUi implements BeeModule {
   private Images images = GWT.create(Images.class);
 
   private String elDsn = null;
-  private String elGrd = null;
+  private String elGrid = null;
+  private String elCell = null;
 
   public BeeUi(HasWidgets root) {
     this.rootUi = root;
@@ -143,8 +144,12 @@ public class BeeUi implements BeeModule {
     return p.getOffsetWidth();
   }
 
+  public CellType getDefaultCellType() {
+    return CellType.get(RadioGroup.getValue(getElCell()));
+  }
+
   public int getDefaultGridType() {
-    return RadioGroup.getValue(getElGrd());
+    return RadioGroup.getValue(getElGrid());
   }
 
   public String getDsn() {
@@ -152,12 +157,16 @@ public class BeeUi implements BeeModule {
         RadioGroup.getValue(getElDsn()));
   }
 
+  public String getElCell() {
+    return elCell;
+  }
+
   public String getElDsn() {
     return elDsn;
   }
 
-  public String getElGrd() {
-    return elGrd;
+  public String getElGrid() {
+    return elGrid;
   }
 
   public BeeLayoutPanel getMenuPanel() {
@@ -200,12 +209,16 @@ public class BeeUi implements BeeModule {
     activePanel = p;
   }
 
+  public void setElCell(String elCell) {
+    this.elCell = elCell;
+  }
+
   public void setElDsn(String elDsn) {
     this.elDsn = elDsn;
   }
 
-  public void setElGrd(String elGrd) {
-    this.elGrd = elGrd;
+  public void setElGrid(String elGrid) {
+    this.elGrid = elGrid;
   }
 
   public void setMenuPanel(BeeLayoutPanel menuPanel) {
@@ -230,7 +243,8 @@ public class BeeUi implements BeeModule {
         grd = BeeGlobal.scrollGrid(data, cols);
         break;
       case 2:
-        grd = BeeGlobal.pstGrid(data, cols);
+        grd = BeeGlobal.cellGrid(data, getDefaultCellType(), cols);
+        addScroll = true;
         break;
       default:
         grd = BeeGlobal.simpleGrid(data, cols);
@@ -358,7 +372,7 @@ public class BeeUi implements BeeModule {
 
     w = initNorth();
     if (w != null) {
-      p.addNorth(w, 52);
+      p.addNorth(w, 70);
     }
 
     w = initSouth();
@@ -399,10 +413,11 @@ public class BeeUi implements BeeModule {
   }
 
   private Widget initNorth() {
-    BeeFlow p = new BeeFlow();
+    BeeHorizontal p = new BeeHorizontal();
+    p.setSpacing(5);
 
     setElDsn(DomUtils.createUniqueName());
-    p.add(new RadioGroup(getElDsn(), BeeConst.DS_TYPES));
+    p.add(new RadioGroup(getElDsn(), 0, BeeConst.DS_TYPES));
 
     p.add(new ButtonGroup("Ping", BeeService.SERVICE_DB_PING, "Info",
         BeeService.SERVICE_DB_INFO, "Tables", BeeService.SERVICE_DB_TABLES));
@@ -421,8 +436,10 @@ public class BeeUi implements BeeModule {
     p.add(new BeeButton("North land", "comp_ui_form", "dummy_stage"));
     p.add(new BeeButton("RowSet", "comp_ui_rowset", "dummy_stage"));
 
-    setElGrd(DomUtils.createUniqueName());
-    p.add(new RadioGroup(getElGrd(), "cell", "st", "pst"));
+    setElGrid(DomUtils.createUniqueName());
+    p.add(new RadioGroup(getElGrid(), true, 2, "simple", "scroll", "cell"));
+    setElCell(DomUtils.createUniqueName());
+    p.add(new RadioGroup(getElCell(), true, CellType.TEXT_EDIT, CellType.values()));
 
     BeeLayoutPanel blp = new BeeLayoutPanel();
     blp.add(p);
@@ -431,7 +448,7 @@ public class BeeUi implements BeeModule {
     blp.add(bee);
 
     blp.setWidgetLeftRight(p, 1, Unit.EM, 100, Unit.PX);
-    blp.setWidgetTopBottom(p, 1, Unit.EM, 1, Unit.PX);
+    blp.setWidgetTopBottom(p, 4, Unit.PX, 0, Unit.PX);
     blp.setWidgetRightWidth(bee, 10, Unit.PX, 64, Unit.PX);
 
     return blp;

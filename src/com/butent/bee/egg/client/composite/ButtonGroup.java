@@ -53,6 +53,11 @@ public class ButtonGroup extends BeeSpan implements HasService, HasStage {
     DomUtils.createId(this, "bg");
   }
 
+  @Override
+  public String getDefaultStyleName() {
+    return "bee-ButtonGroup";
+  }
+
   public String getService() {
     return DomUtils.getService(this);
   }

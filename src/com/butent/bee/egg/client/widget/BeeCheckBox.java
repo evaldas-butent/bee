@@ -5,7 +5,6 @@ import com.google.gwt.user.client.ui.CheckBox;
 
 import com.butent.bee.egg.client.BeeGlobal;
 import com.butent.bee.egg.client.BeeKeeper;
-import com.butent.bee.egg.client.BeeProperties;
 import com.butent.bee.egg.client.dom.DomUtils;
 import com.butent.bee.egg.client.event.HasBeeValueChangeHandler;
 import com.butent.bee.egg.shared.BeeName;
@@ -52,18 +51,6 @@ public class BeeCheckBox extends CheckBox implements HasId,
     addDefaultHandler();
   }
 
-  public BeeCheckBox(Pair<String, String> caption, String property) {
-    this();
-
-    setUncheckedCaption(caption.getA());
-    setCheckedCaption(caption.getB());
-
-    initProperty(property);
-    setCaption();
-
-    addDefaultHandler();
-  }
-
   public BeeCheckBox(String label) {
     super(label);
     init();
@@ -72,13 +59,6 @@ public class BeeCheckBox extends CheckBox implements HasId,
   public BeeCheckBox(String label, boolean asHTML) {
     super(label, asHTML);
     init();
-  }
-
-  public BeeCheckBox(String label, String property) {
-    this(label);
-
-    initProperty(property);
-    addDefaultHandler();
   }
 
   public void createId() {
@@ -107,7 +87,6 @@ public class BeeCheckBox extends CheckBox implements HasId,
 
   public boolean onValueChange(Boolean v) {
     setCaption(v);
-    updateProperty(v);
     updateField(v);
 
     return true;
@@ -149,13 +128,6 @@ public class BeeCheckBox extends CheckBox implements HasId,
     }
   }
 
-  private void initProperty(String p) {
-    if (!BeeUtils.isEmpty(p)) {
-      setPropKey(p);
-      setValue(BeeProperties.getBooleanProperty(p));
-    }
-  }
-
   private void setCaption() {
     setCaption(getValue());
   }
@@ -175,13 +147,6 @@ public class BeeCheckBox extends CheckBox implements HasId,
   private void updateField(boolean v) {
     if (!BeeUtils.isEmpty(getFieldName())) {
       BeeGlobal.setFieldValue(getFieldName(), BeeUtils.toString(v));
-    }
-  }
-
-  private void updateProperty(boolean v) {
-    String p = getPropKey();
-    if (!BeeUtils.isEmpty(p)) {
-      BeeProperties.setProperty(p, BeeUtils.toString(v));
     }
   }
 

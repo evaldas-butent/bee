@@ -95,14 +95,10 @@ public class RpcInfo {
   private String errMsg = null;
   
   private Map<String, String> userData = null;
+  private ResponseCallback respCallback;
 
   public RpcInfo(RequestBuilder.Method method, String service,
-      ParameterList params) {
-    this(method, service, params, null, null);
-  }
-
-  public RpcInfo(RequestBuilder.Method method, String service,
-      ParameterList params, ContentType ctp, String data) {
+      ParameterList params, ContentType ctp, String data, ResponseCallback callback) {
     id = ++COUNTER;
     duration = new BeeDuration();
 
@@ -111,6 +107,7 @@ public class RpcInfo {
     this.reqParams = params;
     this.reqType = ctp;
     this.reqData = data;
+    this.respCallback = callback;
   }
 
   protected RpcInfo() {
@@ -255,6 +252,10 @@ public class RpcInfo {
 
   public Request getRequest() {
     return request;
+  }
+
+  public ResponseCallback getRespCallback() {
+    return respCallback;
   }
 
   public int getRespCols() {
@@ -415,6 +416,10 @@ public class RpcInfo {
 
   public void setRequest(Request request) {
     this.request = request;
+  }
+
+  public void setRespCallback(ResponseCallback respCallback) {
+    this.respCallback = respCallback;
   }
 
   public void setRespCols(int respCols) {

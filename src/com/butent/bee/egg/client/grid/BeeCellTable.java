@@ -1,6 +1,7 @@
 package com.butent.bee.egg.client.grid;
 
 import com.google.gwt.user.cellview.client.CellTable;
+import com.google.gwt.view.client.ProvidesKey;
 
 import com.butent.bee.egg.client.dom.DomUtils;
 import com.butent.bee.egg.shared.Assert;
@@ -17,6 +18,11 @@ public class BeeCellTable extends CellTable<Integer> implements HasId {
 
   public BeeCellTable(int pageSize) {
     super(pageSize);
+    init();
+  }
+
+  public BeeCellTable(int pageSize, ProvidesKey<Integer> keyProvider) {
+    super(pageSize, keyProvider);
     init();
   }
 
