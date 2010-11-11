@@ -24,9 +24,6 @@ public class SqlDelete extends HasFrom<SqlDelete> {
 
     List<Object> paramList = null;
 
-    if (!BeeUtils.isEmpty(target)) {
-      SqlUtils.addParams(paramList, target.getSqlParams());
-    }
     if (!BeeUtils.isEmpty(getFrom())) {
       for (IsFrom from : getFrom()) {
         SqlUtils.addParams(paramList, from.getSqlParams());

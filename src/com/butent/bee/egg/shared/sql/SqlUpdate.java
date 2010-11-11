@@ -8,8 +8,8 @@ import java.util.List;
 
 public class SqlUpdate extends HasFrom<SqlUpdate> {
 
-  static final int FIELD = 0;
-  static final int VALUE = 1;
+  static final int FIELD_INDEX = 0;
+  static final int VALUE_INDEX = 1;
 
   private final IsFrom target;
   private List<IsExpression[]> fieldList;
@@ -29,10 +29,10 @@ public class SqlUpdate extends HasFrom<SqlUpdate> {
 
   public SqlUpdate addField(String field, IsExpression value) {
     IsExpression[] fieldEntry = new IsExpression[2];
-    fieldEntry[FIELD] = SqlUtils.field(
+    fieldEntry[FIELD_INDEX] = SqlUtils.field(
         BeeUtils.ifString(target.getAlias(), (String) target.getSource()),
         field);
-    fieldEntry[VALUE] = value;
+    fieldEntry[VALUE_INDEX] = value;
 
     if (BeeUtils.isEmpty(fieldList)) {
       fieldList = new ArrayList<IsExpression[]>();
@@ -52,12 +52,9 @@ public class SqlUpdate extends HasFrom<SqlUpdate> {
 
     List<Object> paramList = null;
 
-    if (!BeeUtils.isEmpty(target)) {
-      SqlUtils.addParams(paramList, target.getSqlParams());
-    }
     if (!BeeUtils.isEmpty(fieldList)) {
       for (Object[] field : fieldList) {
-        IsExpression val = (IsExpression) field[VALUE];
+        IsExpression val = (IsExpression) field[VALUE_INDEX];
         SqlUtils.addParams(paramList, val.getSqlParams());
       }
     }

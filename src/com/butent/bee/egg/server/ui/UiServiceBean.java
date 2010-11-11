@@ -3,13 +3,13 @@ package com.butent.bee.egg.server.ui;
 import com.butent.bee.egg.server.Assert;
 import com.butent.bee.egg.server.communication.ResponseBuffer;
 import com.butent.bee.egg.server.data.QueryServiceBean;
+import com.butent.bee.egg.server.data.SystemBean;
 import com.butent.bee.egg.server.http.RequestInfo;
 import com.butent.bee.egg.server.utils.XmlUtils;
 import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.data.BeeColumn;
 import com.butent.bee.egg.shared.data.BeeRowSet;
 import com.butent.bee.egg.shared.data.BeeRowSet.BeeRow;
-import com.butent.bee.egg.shared.sql.SqlInsert;
 import com.butent.bee.egg.shared.sql.SqlSelect;
 import com.butent.bee.egg.shared.sql.SqlUtils;
 import com.butent.bee.egg.shared.ui.UiComponent;
@@ -31,6 +31,8 @@ public class UiServiceBean {
   UiHolderBean holder;
   @EJB
   QueryServiceBean qs;
+  @EJB
+  SystemBean sys;
 
   public void doService(String svc, RequestInfo reqInfo, ResponseBuffer buff) {
     Assert.notEmpty(svc);
@@ -54,6 +56,8 @@ public class UiServiceBean {
         gridInfo(reqInfo, buff);
       } else if (svc.equals("rpc_ui_rebuild")) {
         rebuildData(buff);
+      } else if (svc.equals("rpc_ui_sql")) {
+        doSql(reqInfo, buff);
       } else if (svc.equals("rpc_ui_tables")) {
         getTables(buff);
       } else if (svc.equals("rpc_ui_table")) {
@@ -63,6 +67,30 @@ public class UiServiceBean {
         logger.warning(msg);
         buff.add(msg);
       }
+    }
+  }
+
+  private void doSql(RequestInfo reqInfo, ResponseBuffer buff) {
+    String xml = reqInfo.getContent();
+    if (!BeeUtils.isEmpty(xml)) {
+      xml = xml.replaceFirst("^\\s*[Ss][Qq][Ll]\\s*", "");
+    }
+    if (BeeUtils.isEmpty(xml)) {
+      buff.add("SQL command not found");
+      return;
+    }
+    Object res = qs.processSql(xml);
+
+    if (res instanceof BeeRowSet) {
+      buff.addColumns(((BeeRowSet) res).getColumns());
+
+      for (BeeRow row : ((BeeRowSet) res).getRows()) {
+        for (int col = 0; col < ((BeeRowSet) res).getColumnCount(); col++) {
+          buff.add(row.getValue(col));
+        }
+      }
+    } else {
+      buff.add("Affected: " + res);
     }
   }
 
@@ -99,8 +127,7 @@ public class UiServiceBean {
     String tbl = getXmlField(reqInfo, buff, "table_name");
 
     SqlSelect ss = new SqlSelect();
-    ss.addAllFields("t").addExpr(SqlUtils.constant("bumbum"), "hmm").addFrom(
-        tbl, "t");
+    ss.addAllFields("t").addFrom(tbl, "t");
 
     BeeRowSet res = qs.getData(ss);
 
@@ -191,26 +218,6 @@ public class UiServiceBean {
   }
 
   private void rebuildData(ResponseBuffer buff) {
-    String tbl = "fw_tables";
-    buff.add("result: " + qs.processSql("drop table " + tbl));
-
-    buff.add("result: "
-        + qs.processSql("create table " + tbl
-            + " (table_name varchar(30) not null unique"
-            + ", last_id bigint not null"
-            + ", version int not null, id bigint primary key)"));
-
-    SqlInsert si = new SqlInsert(tbl);
-    si.addField("table_name", "fw_tables").addField("last_id", 1).addField(
-        "version", 1).addField("id", 1);
-    buff.add("result: " + qs.updateData(si));
-
-    si = new SqlInsert(tbl);
-    si.addField("table_name", "cou'nt''ries").addField("last_id", 0);
-    buff.add("result: " + qs.insertData(si));
-
-    si = new SqlInsert(tbl);
-    si.addField("table_name", "cities").addField("last_id", 0);
-    buff.add("result: " + qs.insertData(si));
+    sys.recreate(buff);
   }
 }

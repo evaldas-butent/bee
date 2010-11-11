@@ -2,9 +2,12 @@ package com.butent.bee.egg.client.ui;
 
 import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.event.shared.GwtEvent;
+import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.egg.client.BeeGlobal;
 import com.butent.bee.egg.client.BeeKeeper;
+import com.butent.bee.egg.client.tree.BeeTree;
+import com.butent.bee.egg.client.tree.BeeTreeItem;
 import com.butent.bee.egg.client.utils.BeeXml;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeService;
@@ -88,13 +91,10 @@ class RowSetService extends CompositeService {
 
       case SHOW_TABLE:
         JsArrayString fArr = (JsArrayString) params[0];
-        BeeKeeper.getLog().info("text", fArr.get(0));
 
         BeeRowSet rs = BeeRowSet.restore(fArr.get(0));
 
-        for (BeeColumn col : rs.getColumns()) {
-          BeeKeeper.getLog().info(col.getColumnInfo());
-        }
+        BeeKeeper.getUi().updateMenu(getTree(rs));
 
         if (rs.isEmpty()) {
           BeeKeeper.getLog().warning("RowSet is empty");
@@ -116,6 +116,39 @@ class RowSetService extends CompositeService {
       nextStage();
     }
     return ok;
+  }
+
+  private Widget getTree(BeeRowSet rs) {
+    BeeTree root = new BeeTree();
+    BeeTreeItem item = new BeeTreeItem("RowSet");
+    root.addItem(item);
+
+    item.addItem("Source: " + rs.getSource());
+
+    BeeTreeItem cols = new BeeTreeItem("Columns");
+    for (BeeColumn col : rs.getColumns()) {
+      BeeTreeItem c = new BeeTreeItem(col.getName());
+      c.addItem("Table: " + col.getTable());
+      c.addItem("Type: " + col.getType() + "-" + col.getTypeName());
+      c.addItem("Prec: " + col.getPrecision());
+      c.addItem("Scale: " + col.getScale());
+      c.addItem("Nullable: " + col.getNullable());
+      cols.addItem(c);
+    }
+    item.addItem(cols);
+
+    BeeTreeItem rows = new BeeTreeItem("Data");
+    for (int i = 0; i < rs.getRowCount(); i++) {
+      BeeTreeItem r = new BeeTreeItem("Row" + i);
+
+      for (int j = 0; j < rs.getColumnCount(); j++) {
+        r.addItem(rs.getColumn(j).getName() + ": " + rs.getRow(i).getValue(j));
+      }
+      rows.addItem(r);
+    }
+    item.addItem(rows);
+
+    return root;
   }
 
   private void nextStage() {

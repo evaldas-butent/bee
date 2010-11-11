@@ -1,6 +1,9 @@
 package com.butent.bee.egg.shared.sql;
 
 import com.butent.bee.egg.shared.Assert;
+import com.butent.bee.egg.shared.sql.BeeConstants.DataTypes;
+import com.butent.bee.egg.shared.sql.BeeConstants.Keywords;
+import com.butent.bee.egg.shared.sql.SqlCreate.SqlField;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
 import java.util.List;
@@ -8,8 +11,7 @@ import java.util.List;
 public abstract class SqlBuilder {
 
   public String getTables() {
-    Assert.unsupported();
-    return null;
+    return "SELECT table_name FROM information_schema.tables";
   }
 
   public String sqlTransform(Object x) {
@@ -21,7 +23,93 @@ public abstract class SqlBuilder {
     return s;
   }
 
+  protected String sqlFieldType(SqlField field) {
+    StringBuilder xpr = new StringBuilder();
+
+    xpr.append(sqlType(field.getType(), field.getPrecission(), field.getScale()));
+
+    Keywords[] prm = field.getParams();
+
+    if (!BeeUtils.isEmpty(prm)) {
+      for (Keywords p : prm) {
+        if (!BeeUtils.isEmpty(p)) {
+          xpr.append(" ").append(sqlKeyword(p));
+        }
+      }
+    }
+    return xpr.toString();
+  }
+
+  protected Object sqlKeyword(Keywords prm) {
+    switch (prm) {
+      case NOTNULL:
+        return "NOT NULL";
+      case PRIMARY:
+        return "PRIMARY KEY";
+      case UNIQUE:
+        return "UNIQUE";
+      default:
+        Assert.unsupported("Unsupported keyword: " + prm.name());
+        return null;
+    }
+  }
+
   protected abstract String sqlQuote(String value);
+
+  protected Object sqlType(DataTypes type, int precission, int scale) {
+    switch (type) {
+      case BOOLEAN:
+        return "BIT";
+      case INTEGER:
+        return "INTEGER";
+      case LONG:
+        return "BIGINT";
+      case DOUBLE:
+        return "DOUBLE";
+      case NUMERIC:
+        return "NUMERIC(" + precission + ", " + scale + ")";
+      case CHAR:
+        return "CHAR(" + precission + ")";
+      case STRING:
+        return "VARCHAR(" + precission + ")";
+      default:
+        Assert.unsupported("Unsupported data type: " + type.name());
+        return null;
+    }
+  }
+
+  String getCreate(SqlCreate sc, boolean paramMode) {
+    Assert.notNull(sc);
+    Assert.state(!sc.isEmpty());
+
+    StringBuilder query = new StringBuilder("CREATE TABLE ");
+
+    IsFrom target = sc.getTarget();
+
+    if (!BeeUtils.isEmpty(target)) {
+      query.append(target.getSqlString(this, paramMode));
+    }
+    List<SqlField> fieldList = sc.getFields();
+
+    if (!BeeUtils.isEmpty(fieldList)) {
+      query.append(" (");
+
+      for (int i = 0; i < fieldList.size(); i++) {
+        if (i > 0) {
+          query.append(", ");
+        }
+        SqlField field = fieldList.get(i);
+        query.append(field.getField().getSqlString(this, paramMode))
+          .append(" ").append(sqlFieldType(field));
+      }
+      query.append(")");
+
+    } else if (!BeeUtils.isEmpty(sc.getSource())) {
+      query.append(" AS ");
+      query.append(sc.getSource().getSqlString(this, paramMode));
+    }
+    return query.toString();
+  }
 
   String getDelete(SqlDelete sd, boolean paramMode) {
     Assert.notNull(sd);
@@ -86,7 +174,7 @@ public abstract class SqlBuilder {
         List<IsExpression> valueList = si.getValues();
 
         if (!BeeUtils.isEmpty(valueList)) {
-          query.append(" VALUES (");
+          query.append("VALUES (");
 
           for (int i = 0; i < valueList.size(); i++) {
             if (i > 0) {
@@ -95,7 +183,7 @@ public abstract class SqlBuilder {
             IsExpression value = valueList.get(i);
             query.append(value.getSqlString(this, paramMode));
           }
-          query.append(") ");
+          query.append(")");
         }
       }
     }
@@ -219,10 +307,10 @@ public abstract class SqlBuilder {
         if (i > 0) {
           query.append(", ");
         }
-        IsExpression field = fldEntry[SqlUpdate.FIELD];
+        IsExpression field = fldEntry[SqlUpdate.FIELD_INDEX];
         query.append(field.getSqlString(this, paramMode));
 
-        IsExpression value = fldEntry[SqlUpdate.VALUE];
+        IsExpression value = fldEntry[SqlUpdate.VALUE_INDEX];
         query.append(" = ").append(value.getSqlString(this, paramMode));
       }
     }

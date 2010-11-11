@@ -4,8 +4,9 @@ public class BeeConst {
   public static final String MYSQL = "MySql";
   public static final String MSSQL = "MsSql";
   public static final String ORACLE = "Oracle";
+  public static final String PGSQL = "PostgreSql";
 
-  public static final String[] DS_TYPES = {MYSQL, MSSQL, ORACLE};
+  public static final String[] DS_TYPES = {MYSQL, MSSQL, ORACLE, PGSQL};
 
   public static final String NO = "no";
   public static final String YES = "yes";
@@ -106,7 +107,7 @@ public class BeeConst {
   public static final Object[] EMPTY_OBJECT_ARRAY = new Object[0];
   public static final String[] EMPTY_STRING_ARRAY = new String[0];
   public static final int[] EMPTY_INT_ARRAY = new int[0];
-  
+
   public static final String HTML_NBSP = "&nbsp;";
 
   private static String home = SERVER;
@@ -130,7 +131,7 @@ public class BeeConst {
   public static boolean isServer() {
     return home.equals(SERVER);
   }
-  
+
   public static void setClient() {
     home = CLIENT;
   }
@@ -138,7 +139,7 @@ public class BeeConst {
   public static void setServer() {
     home = SERVER;
   }
-  
+
   public static boolean validDsType(String tp) {
     boolean ok = false;
 

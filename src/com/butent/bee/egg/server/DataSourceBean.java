@@ -95,6 +95,8 @@ public class DataSourceBean {
         tp = BeeConst.MSSQL;
       } else if (BeeUtils.context("or", nm)) {
         tp = BeeConst.ORACLE;
+      } else if (BeeUtils.context("pg", nm)) {
+        tp = BeeConst.PGSQL;
       } else {
         tp = null;
       }
@@ -118,7 +120,8 @@ public class DataSourceBean {
       }
     }
 
-    LogUtils.infoNow(logger, getClass().getSimpleName(), bds.size(), "data sources initialized");
+    LogUtils.infoNow(logger, getClass().getSimpleName(), bds.size(),
+        "data sources initialized");
   }
 
 }

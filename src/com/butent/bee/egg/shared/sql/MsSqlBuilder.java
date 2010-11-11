@@ -1,14 +1,21 @@
 package com.butent.bee.egg.shared.sql;
 
-class MsSqlBuilder extends SqlBuilder {
+import com.butent.bee.egg.shared.sql.BeeConstants.DataTypes;
 
-  @Override
-  public String getTables() {
-    return "select table_name from information_schema.tables";
-  }
+class MsSqlBuilder extends SqlBuilder {
 
   @Override
   protected String sqlQuote(String value) {
     return "[" + value + "]";
+  }
+
+  @Override
+  protected Object sqlType(DataTypes type, int precission, int scale) {
+    switch (type) {
+      case DOUBLE:
+        return "FLOAT";
+      default:
+        return super.sqlType(type, precission, scale);
+    }
   }
 }

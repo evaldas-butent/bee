@@ -7,7 +7,9 @@ import com.butent.bee.egg.shared.utils.BeeUtils;
 import com.butent.bee.egg.shared.utils.Codec;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Logger;
 
 public class BeeRowSet implements BeeSerializable {
@@ -108,7 +110,7 @@ public class BeeRowSet implements BeeSerializable {
   }
 
   private enum SerializationMembers {
-    COLUMNS, ROWS
+    SOURCE, COLUMNS, ROWS
   }
 
   private static Logger logger = Logger.getLogger(BeeRowSet.class.getName());
@@ -119,11 +121,13 @@ public class BeeRowSet implements BeeSerializable {
     return rs;
   }
 
+  private String source;
   private BeeColumn[] columns;
   private List<BeeRow> rows;
 
   public BeeRowSet(BeeColumn[] columns) {
     setColumns(columns);
+    detectSource();
   }
 
   private BeeRowSet() {
@@ -147,6 +151,10 @@ public class BeeRowSet implements BeeSerializable {
       String value = arr[i];
 
       switch (member) {
+        case SOURCE:
+          source = value;
+          break;
+
         case COLUMNS:
           String[] cArr = Codec.beeDeserialize(value);
           BeeColumn[] cols = new BeeColumn[cArr.length];
@@ -217,6 +225,10 @@ public class BeeRowSet implements BeeSerializable {
     return rows;
   }
 
+  public String getSource() {
+    return source;
+  }
+
   public boolean isEmpty() {
     return getRowCount() <= 0;
   }
@@ -227,6 +239,9 @@ public class BeeRowSet implements BeeSerializable {
 
     for (SerializationMembers member : SerializationMembers.values()) {
       switch (member) {
+        case SOURCE:
+          sb.append(Codec.beeSerialize(source));
+          break;
         case COLUMNS:
           sb.append(Codec.beeSerialize((Object) columns));
           break;
@@ -246,6 +261,21 @@ public class BeeRowSet implements BeeSerializable {
       rows = new ArrayList<BeeRow>();
     }
     rows.add(row);
+  }
+
+  private void detectSource() {
+    Set<String> src = new HashSet<String>();
+
+    for (int i = 0; i < getColumnCount(); i++) {
+      String tbl = columns[i].getTable();
+
+      if (!BeeUtils.isEmpty(tbl)) {
+        src.add(tbl);
+      }
+    }
+    if (!BeeUtils.isEmpty(src)) {
+      source = BeeUtils.transformCollection(src);
+    }
   }
 
   private int getColumnIndex(String colName) {

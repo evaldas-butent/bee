@@ -9,6 +9,7 @@ import com.butent.bee.egg.client.dom.DomUtils;
 import com.butent.bee.egg.client.widget.BeeTextBox;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeConst;
+import com.butent.bee.egg.shared.communication.ContentType;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
 public class CliWidget extends BeeTextBox {
@@ -40,7 +41,8 @@ public class CliWidget extends BeeTextBox {
       CliWorker.showCanvas(arr);
     } else if (z.equals("clear")) {
       CliWorker.clearLog();
-    } else if (BeeUtils.inList(z, "center", "east", "north", "south", "screen", "west")) {
+    } else if (BeeUtils.inList(z, "center", "east", "north", "south", "screen",
+        "west")) {
       CliWorker.doScreen(arr);
     } else if (z.equals("charset")) {
       CliWorker.getCharsets();
@@ -109,6 +111,8 @@ public class CliWidget extends BeeTextBox {
 
     } else if (z.equals("rebuild")) {
       BeeKeeper.getRpc().makeGetRequest("rpc_ui_rebuild");
+    } else if (z.equals("sql")) {
+      BeeKeeper.getRpc().makePostRequest("rpc_ui_sql", ContentType.BINARY, v);
 
     } else {
       BeeGlobal.showDialog("wtf", v);

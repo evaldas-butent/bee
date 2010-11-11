@@ -25,6 +25,8 @@ public class SqlBuilderFactory {
       builder = new MsSqlBuilder();
     } else if (BeeUtils.same(engine, BeeConst.ORACLE)) {
       builder = new OracleSqlBuilder();
+    } else if (BeeUtils.same(engine, BeeConst.PGSQL)) {
+      builder = new PostgreSqlBuilder();
     } else {
       builder = new GenericSqlBuilder();
     }

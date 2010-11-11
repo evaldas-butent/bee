@@ -14,7 +14,6 @@ import javax.ejb.LockType;
 import javax.ejb.Singleton;
 
 @Singleton
-@Lock(LockType.READ)
 public class UiHolderBean {
 
   @EJB
@@ -23,6 +22,7 @@ public class UiHolderBean {
   UiLoader loader;
   Map<String, UiComponent> formCache = new HashMap<String, UiComponent>();
 
+  @Lock(LockType.READ)
   public UiComponent getForm(String root, Object... params) {
     Assert.notEmpty(root);
 
@@ -32,13 +32,13 @@ public class UiHolderBean {
     return formCache.get(root);
   }
 
+  @Lock(LockType.READ)
   public UiComponent getMenu(String root, Object... params) {
     Assert.notEmpty(root);
 
     return loader.getMenu(root, params);
   }
 
-  @Lock(LockType.WRITE)
   public void setLoader(UiLoader loader) {
     this.loader = loader;
   }
@@ -49,7 +49,6 @@ public class UiHolderBean {
     setLoader(loaderBean);
   }
 
-  @Lock(LockType.WRITE)
   private void loadForm(String root, Object... params) {
     UiComponent form = loader.getForm(root, params);
     formCache.put(root, form);

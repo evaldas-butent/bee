@@ -38,6 +38,8 @@ public class QueryServiceBean {
   DataSourceBean dsb;
   @EJB
   IdGeneratorBean ig;
+  @EJB
+  SystemBean sys;
 
   public BeeRowSet getData(SqlSelect ss) {
     Assert.notNull(ss);
@@ -61,18 +63,39 @@ public class QueryServiceBean {
     Assert.notNull(si);
     Assert.state(!si.isEmpty());
 
-    long id = ig.getId((String) si.getTarget().getSource());
+    long id = 0;
+    String source = (String) si.getTarget().getSource();
 
-    if (!BeeUtils.isEmpty(id)) {
-      si.addField("version", 1).addField("id", id);
+    if (BeeUtils.isEmpty(si.getValueQuery()) && sys.beeTable(source)) {
+      String lockFld = sys.getLockName(source);
+
+      if (!si.hasField(lockFld)) {
+        si.addField(lockFld, 1);
+      }
+      String idFld = sys.getIdName(source);
+
+      if (!si.hasField(idFld)) {
+        id = ig.getId(source);
+        si.addField(idFld, id);
+      }
     }
-
-    int cnt = updateData(si);
-
-    if (BeeUtils.isEmpty(cnt)) {
-      return -1;
+    if (BeeUtils.isEmpty(updateData(si))) {
+      id = -1;
     }
     return id;
+  }
+
+  public boolean isTable(String table) {
+    BeeRowSet res = getTables();
+
+    if (!res.isEmpty()) {
+      for (BeeRow row : res.getRows()) {
+        if (BeeUtils.same(row.getValue(0), table)) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   public Object processSql(String sql) {
@@ -127,37 +150,6 @@ public class QueryServiceBean {
         throw new RuntimeException("Cannot close connection: " + ex, ex);
       }
     }
-  }
-
-  public int setIsolationLevel(int level) {
-    if (!BeeUtils.isPositive(level)) {
-      return level;
-    }
-    ds = dsb.locateDs(SqlBuilderFactory.getEngine()).getDs();
-    Connection con = null;
-    int oldLevel = -1;
-
-    try {
-      con = ds.getConnection();
-
-      if (con.getMetaData().supportsTransactionIsolationLevel(level)) {
-        oldLevel = con.getTransactionIsolation();
-
-        if (oldLevel != level) {
-          con.setTransactionIsolation(level);
-        }
-      }
-    } catch (SQLException ex) {
-      throw new RuntimeException("Cannot perform query: " + ex, ex);
-    } finally {
-      try {
-        con.close();
-        con = null;
-      } catch (SQLException ex) {
-        throw new RuntimeException("Cannot close connection: " + ex, ex);
-      }
-    }
-    return oldLevel;
   }
 
   @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)

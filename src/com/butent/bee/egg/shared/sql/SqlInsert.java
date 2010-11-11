@@ -4,12 +4,14 @@ import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 public class SqlInsert extends SqlQuery<SqlInsert> {
 
   private final IsFrom target;
-  private List<IsExpression> fieldList;
+  private Set<String> fieldList = new LinkedHashSet<String>();
   private List<IsExpression> valueList;
   private SqlSelect valueQuery;
 
@@ -17,13 +19,8 @@ public class SqlInsert extends SqlQuery<SqlInsert> {
     target = new FromSingle(source);
   }
 
-  public SqlInsert addField(String field, Object value) {
-    return addField(field, SqlUtils.constant(value));
-  }
-
   public SqlInsert addField(String field, IsExpression value) {
-    Assert.notEmpty(field);
-    Assert.notEmpty(value);
+    Assert.notNull(value);
     Assert.state(BeeUtils.isEmpty(valueQuery));
 
     addField(field);
@@ -36,8 +33,11 @@ public class SqlInsert extends SqlQuery<SqlInsert> {
     return getReference();
   }
 
+  public SqlInsert addField(String field, Object value) {
+    return addField(field, SqlUtils.constant(value));
+  }
+
   public SqlInsert addFields(String... fields) {
-    Assert.arrayLengthMin(fieldList, 1);
     Assert.state(BeeUtils.isEmpty(valueList));
 
     for (String fld : fields) {
@@ -47,7 +47,12 @@ public class SqlInsert extends SqlQuery<SqlInsert> {
   }
 
   public List<IsExpression> getFields() {
-    return fieldList;
+    List<IsExpression> fields = new ArrayList<IsExpression>();
+
+    for (String field : fieldList) {
+      fields.add(SqlUtils.field(field));
+    }
+    return fields;
   }
 
   @Override
@@ -56,14 +61,6 @@ public class SqlInsert extends SqlQuery<SqlInsert> {
 
     List<Object> paramList = null;
 
-    if (!BeeUtils.isEmpty(target)) {
-      SqlUtils.addParams(paramList, target.getSqlParams());
-    }
-    if (!BeeUtils.isEmpty(fieldList)) {
-      for (IsExpression field : fieldList) {
-        SqlUtils.addParams(paramList, field.getSqlParams());
-      }
-    }
     if (!BeeUtils.isEmpty(valueQuery)) {
       SqlUtils.addParams(paramList, valueQuery.getSqlParams());
 
@@ -79,7 +76,6 @@ public class SqlInsert extends SqlQuery<SqlInsert> {
   @Override
   public String getSqlString(SqlBuilder builder, boolean paramMode) {
     Assert.notEmpty(builder);
-
     return builder.getInsert(this, paramMode);
   }
 
@@ -93,6 +89,10 @@ public class SqlInsert extends SqlQuery<SqlInsert> {
 
   public List<IsExpression> getValues() {
     return valueList;
+  }
+
+  public boolean hasField(String field) {
+    return fieldList.contains(field);
   }
 
   @Override
@@ -117,9 +117,9 @@ public class SqlInsert extends SqlQuery<SqlInsert> {
   }
 
   private void addField(String field) {
-    if (BeeUtils.isEmpty(fieldList)) {
-      fieldList = new ArrayList<IsExpression>();
-    }
-    fieldList.add(SqlUtils.field(field));
+    Assert.notEmpty(field);
+    Assert.state(!fieldList.contains(field),
+        "Field " + field + " already exist");
+    fieldList.add(field);
   }
 }

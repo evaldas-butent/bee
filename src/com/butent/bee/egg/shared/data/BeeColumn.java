@@ -16,7 +16,7 @@ import java.util.logging.Logger;
 public class BeeColumn implements Transformable, BeeSerializable {
 
   private enum SerializationMembers {
-    NAME, TYPE, PRECISION, SCALE, NULLABLE, SCHEMA, CATALOG, TABLE, CLASS
+    NAME, TYPE, PRECISION, SCALE, ISNULL, SCHEMA, CATALOG, TABLE, TYPENAME
   }
 
   public static final String SERIALIZATION_SEPARATOR = ",";
@@ -95,7 +95,7 @@ public class BeeColumn implements Transformable, BeeSerializable {
         case SCALE:
           setScale(BeeUtils.toInt(value));
           break;
-        case NULLABLE:
+        case ISNULL:
           setNullable(BeeUtils.toInt(value));
           break;
         case SCHEMA:
@@ -107,8 +107,8 @@ public class BeeColumn implements Transformable, BeeSerializable {
         case TABLE:
           setTable(value);
           break;
-        case CLASS:
-          setClazz(value);
+        case TYPENAME:
+          setTypeName(value);
           break;
         default:
           logger.severe("Unhandled serialization member: " + member);
@@ -252,7 +252,7 @@ public class BeeColumn implements Transformable, BeeSerializable {
         case SCALE:
           sb.append(Codec.beeSerialize(getScale()));
           break;
-        case NULLABLE:
+        case ISNULL:
           sb.append(Codec.beeSerialize(getNullable()));
           break;
         case SCHEMA:
@@ -264,8 +264,8 @@ public class BeeColumn implements Transformable, BeeSerializable {
         case TABLE:
           sb.append(Codec.beeSerialize(getTable()));
           break;
-        case CLASS:
-          sb.append(Codec.beeSerialize(getClazz()));
+        case TYPENAME:
+          sb.append(Codec.beeSerialize(getTypeName()));
           break;
         default:
           logger.severe("Unhandled serialization member: " + member);
