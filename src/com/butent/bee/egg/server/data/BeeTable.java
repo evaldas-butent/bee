@@ -13,17 +13,17 @@ public class BeeTable {
   public class BeeStructure {
     private final String name;
     private final DataTypes type;
-    private final int precission;
+    private final int precision;
     private final int scale;
     private final boolean notNull;
     private final boolean unique;
 
     private BeeStructure(String name, DataTypes type,
-        int precission, int scale, boolean notNull, boolean unique) {
+        int precision, int scale, boolean notNull, boolean unique) {
 
       this.name = name;
       this.type = type;
-      this.precission = precission;
+      this.precision = precision;
       this.scale = scale;
       this.notNull = notNull;
       this.unique = unique;
@@ -33,8 +33,8 @@ public class BeeTable {
       return name;
     }
 
-    public int getPrecission() {
-      return precission;
+    public int getPrecision() {
+      return precision;
     }
 
     public int getScale() {
@@ -72,10 +72,10 @@ public class BeeTable {
   }
 
   public BeeTable addField(String name, DataTypes type,
-      int precission, int scale, boolean notNull, boolean unique) {
+      int precision, int scale, boolean notNull, boolean unique) {
 
     fields.put(name,
-        new BeeStructure(name, type, precission, scale, notNull, unique));
+        new BeeStructure(name, type, precision, scale, notNull, unique));
     return this;
   }
 

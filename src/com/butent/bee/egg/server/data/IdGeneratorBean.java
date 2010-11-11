@@ -82,7 +82,7 @@ public class IdGeneratorBean {
     int cnt = 0;
     IsCondition wh = SqlUtils.equal(ID_TABLE, ID_KEY, source);
 
-    if (!qs.isTable(ID_TABLE)) {
+    if (!qs.tableExists(ID_TABLE)) {
       SqlCreate sc = new SqlCreate(ID_TABLE);
       sc.addString(ID_KEY, 30, Keywords.NOTNULL, Keywords.UNIQUE)
         .addLong(ID_LAST, Keywords.NOTNULL);

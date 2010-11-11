@@ -33,7 +33,6 @@ public class QueryServiceBean {
 
   private static Logger logger = Logger.getLogger(QueryServiceBean.class.getName());
 
-  DataSource ds = null;
   @EJB
   DataSourceBean dsb;
   @EJB
@@ -52,11 +51,6 @@ public class QueryServiceBean {
     BeeRowSet rs = getData(ss);
     Assert.isTrue(rs.getRowCount() == 1, "Result must contain exactly one row");
     return rs.getRow(0);
-  }
-
-  public BeeRowSet getTables() {
-    SqlBuilder builder = SqlBuilderFactory.getBuilder();
-    return (BeeRowSet) processSql(builder.getTables());
   }
 
   public long insertData(SqlInsert si) {
@@ -85,23 +79,10 @@ public class QueryServiceBean {
     return id;
   }
 
-  public boolean isTable(String table) {
-    BeeRowSet res = getTables();
-
-    if (!res.isEmpty()) {
-      for (BeeRow row : res.getRows()) {
-        if (BeeUtils.same(row.getValue(0), table)) {
-          return true;
-        }
-      }
-    }
-    return false;
-  }
-
   public Object processSql(String sql) {
     Assert.notEmpty(sql);
 
-    ds = dsb.locateDs(SqlBuilderFactory.getEngine()).getDs();
+    DataSource ds = dsb.locateDs(SqlBuilderFactory.getEngine()).getDs();
 
     Connection con = null;
     Statement stmt = null;
@@ -160,6 +141,24 @@ public class QueryServiceBean {
       ig.destroy();
       SqlBuilderFactory.setDefaultEngine(dsn);
     }
+  }
+
+  public boolean tableExists(String table) {
+    BeeRowSet res = tableList();
+
+    if (!res.isEmpty()) {
+      for (BeeRow row : res.getRows()) {
+        if (BeeUtils.same(row.getValue(0), table)) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  public BeeRowSet tableList() {
+    SqlBuilder builder = SqlBuilderFactory.getBuilder();
+    return (BeeRowSet) processSql(builder.getTables());
   }
 
   public int updateData(IsQuery query) {

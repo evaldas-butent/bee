@@ -135,7 +135,7 @@ public class UiServiceBean {
   }
 
   private void getTables(ResponseBuffer buff) {
-    BeeRowSet res = qs.getTables();
+    BeeRowSet res = qs.tableList();
 
     buff.addColumns(res.getColumns());
 
