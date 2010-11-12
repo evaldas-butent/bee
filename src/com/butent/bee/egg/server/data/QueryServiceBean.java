@@ -60,17 +60,17 @@ public class QueryServiceBean {
     long id = 0;
     String source = (String) si.getTarget().getSource();
 
-    if (BeeUtils.isEmpty(si.getValueQuery()) && sys.beeTable(source)) {
+    if (BeeUtils.isEmpty(si.getSource()) && sys.beeTable(source)) {
       String lockFld = sys.getLockName(source);
 
       if (!si.hasField(lockFld)) {
-        si.addField(lockFld, 1);
+        si.addConstant(lockFld, 1);
       }
       String idFld = sys.getIdName(source);
 
       if (!si.hasField(idFld)) {
         id = ig.getId(source);
-        si.addField(idFld, id);
+        si.addConstant(idFld, id);
       }
     }
     if (BeeUtils.isEmpty(updateData(si))) {

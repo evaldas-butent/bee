@@ -21,7 +21,7 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 
 @Singleton
-@TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+@TransactionAttribute(TransactionAttributeType.MANDATORY)
 public class IdGeneratorBean {
 
   private static final String ID_TABLE = "bee_Sequence";
@@ -59,7 +59,7 @@ public class IdGeneratorBean {
         lastId = qs.getSingleRow(ss).getLong(idFld);
 
         SqlUpdate su = new SqlUpdate(ID_TABLE);
-        su.addField(ID_LAST, lastId).setWhere(wh);
+        su.addConstant(ID_LAST, lastId).setWhere(wh);
 
         qs.updateData(su);
       }
@@ -89,7 +89,7 @@ public class IdGeneratorBean {
       qs.updateData(sc);
     } else {
       SqlUpdate su = new SqlUpdate(ID_TABLE);
-      su.addField(ID_LAST,
+      su.addExpression(ID_LAST,
           SqlUtils.expression(SqlUtils.field(ID_LAST), "+",
               SqlUtils.constant(idChunk))).setWhere(wh);
       cnt = qs.updateData(su);
@@ -104,7 +104,7 @@ public class IdGeneratorBean {
       long lastId = qs.getSingleRow(ss).getLong(idFld);
 
       SqlInsert si = new SqlInsert(ID_TABLE);
-      si.addField(ID_KEY, source).addField(ID_LAST, lastId + idChunk);
+      si.addConstant(ID_KEY, source).addConstant(ID_LAST, lastId + idChunk);
       cnt = qs.updateData(si);
     }
     SqlSelect ss = new SqlSelect();

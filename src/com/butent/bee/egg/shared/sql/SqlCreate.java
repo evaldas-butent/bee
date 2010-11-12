@@ -11,24 +11,36 @@ import java.util.List;
 public class SqlCreate extends SqlQuery<SqlCreate> {
 
   public class SqlField {
-    String field;
-    DataTypes type;
-    int precission;
-    int scale;
-    Keywords[] params;
+    private final IsExpression name;
+    private final DataTypes type;
+    private final int precission;
+    private final int scale;
+    private final Keywords[] params;
 
-    private SqlField(String field, DataTypes type,
-        int precission, int scale, Keywords[] params) {
+    private SqlField(String name, DataTypes type,
+        int precission, int scale, Keywords... params) {
+      Assert.notEmpty(name);
+      Assert.notEmpty(type);
 
-      this.field = field;
+      this.name = SqlUtils.field(name);
       this.type = type;
       this.precission = precission;
       this.scale = scale;
-      this.params = params;
+
+      List<Keywords> prmList = new ArrayList<Keywords>();
+
+      if (!BeeUtils.isEmpty(params)) {
+        for (Keywords prm : params) {
+          if (!BeeUtils.isEmpty(prm)) {
+            prmList.add(prm);
+          }
+        }
+      }
+      this.params = prmList.toArray(new Keywords[0]);
     }
 
-    public IsExpression getField() {
-      return SqlUtils.field(field);
+    public IsExpression getName() {
+      return name;
     }
 
     public Keywords[] getParams() {
@@ -50,11 +62,10 @@ public class SqlCreate extends SqlQuery<SqlCreate> {
 
   private final IsFrom target;
   private List<SqlField> fieldList = new ArrayList<SqlField>();
-
   private SqlSelect source;
 
-  public SqlCreate(String source) {
-    target = new FromSingle(source);
+  public SqlCreate(String target) {
+    this.target = new FromSingle(target);
   }
 
   public SqlCreate addBoolean(String field, Keywords... params) {
@@ -75,7 +86,6 @@ public class SqlCreate extends SqlQuery<SqlCreate> {
 
   public SqlCreate addField(String field, DataTypes type,
       int precission, int scale, Keywords... params) {
-
     Assert.state(BeeUtils.isEmpty(source));
     Assert.notEmpty(field);
     Assert.state(!hasField(field), "Field " + field + " already exist");
@@ -137,7 +147,7 @@ public class SqlCreate extends SqlQuery<SqlCreate> {
 
   public boolean hasField(String field) {
     for (SqlField fld : fieldList) {
-      if (BeeUtils.same(fld.field, field)) {
+      if (BeeUtils.same(((FieldExpression) fld.getName()).getField(), field)) {
         return true;
       }
     }

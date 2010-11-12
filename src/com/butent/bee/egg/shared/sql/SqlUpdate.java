@@ -12,38 +12,34 @@ public class SqlUpdate extends HasFrom<SqlUpdate> {
   static final int VALUE_INDEX = 1;
 
   private final IsFrom target;
-  private List<IsExpression[]> fieldList;
+  private List<IsExpression[]> updates;
   private IsCondition whereClause;
 
-  public SqlUpdate(String source) {
-    target = new FromSingle(source);
+  public SqlUpdate(String target) {
+    this.target = new FromSingle(target);
   }
 
-  public SqlUpdate(String source, String alias) {
-    target = new FromSingle(source, alias);
+  public SqlUpdate(String target, String alias) {
+    this.target = new FromSingle(target, alias);
   }
 
-  public SqlUpdate addField(String field, Object value) {
-    return addField(field, SqlUtils.constant(value));
+  public SqlUpdate addConstant(String field, Object value) {
+    return addExpression(field, SqlUtils.constant(value));
   }
 
-  public SqlUpdate addField(String field, IsExpression value) {
-    IsExpression[] fieldEntry = new IsExpression[2];
-    fieldEntry[FIELD_INDEX] = SqlUtils.field(
+  public SqlUpdate addExpression(String field, IsExpression value) {
+    IsExpression[] updateEntry = new IsExpression[2];
+    updateEntry[FIELD_INDEX] = SqlUtils.field(
         BeeUtils.ifString(target.getAlias(), (String) target.getSource()),
         field);
-    fieldEntry[VALUE_INDEX] = value;
+    updateEntry[VALUE_INDEX] = value;
 
-    if (BeeUtils.isEmpty(fieldList)) {
-      fieldList = new ArrayList<IsExpression[]>();
+    if (BeeUtils.isEmpty(updates)) {
+      updates = new ArrayList<IsExpression[]>();
     }
-    fieldList.add(fieldEntry);
+    updates.add(updateEntry);
 
     return getReference();
-  }
-
-  public List<IsExpression[]> getFields() {
-    return fieldList;
   }
 
   @Override
@@ -52,11 +48,9 @@ public class SqlUpdate extends HasFrom<SqlUpdate> {
 
     List<Object> paramList = null;
 
-    if (!BeeUtils.isEmpty(fieldList)) {
-      for (Object[] field : fieldList) {
-        IsExpression val = (IsExpression) field[VALUE_INDEX];
-        SqlUtils.addParams(paramList, val.getSqlParams());
-      }
+    for (Object[] update : updates) {
+      IsExpression val = (IsExpression) update[VALUE_INDEX];
+      SqlUtils.addParams(paramList, val.getSqlParams());
     }
     if (!BeeUtils.isEmpty(getFrom())) {
       for (IsFrom from : getFrom()) {
@@ -72,12 +66,15 @@ public class SqlUpdate extends HasFrom<SqlUpdate> {
   @Override
   public String getSqlString(SqlBuilder builder, boolean paramMode) {
     Assert.notEmpty(builder);
-
     return builder.getUpdate(this, paramMode);
   }
 
   public IsFrom getTarget() {
     return target;
+  }
+
+  public List<IsExpression[]> getUpdates() {
+    return updates;
   }
 
   public IsCondition getWhere() {
@@ -86,7 +83,7 @@ public class SqlUpdate extends HasFrom<SqlUpdate> {
 
   @Override
   public boolean isEmpty() {
-    return BeeUtils.isEmpty(target) || BeeUtils.isEmpty(fieldList);
+    return BeeUtils.isEmpty(target) || BeeUtils.isEmpty(updates);
   }
 
   public SqlUpdate setWhere(IsCondition clause) {

@@ -1,14 +1,16 @@
 package com.butent.bee.egg.server.data;
 
 import com.butent.bee.egg.server.communication.ResponseBuffer;
+import com.butent.bee.egg.server.data.BeeTable.BeeKey;
 import com.butent.bee.egg.server.data.BeeTable.BeeStructure;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.sql.BeeConstants.DataTypes;
 import com.butent.bee.egg.shared.sql.BeeConstants.Keywords;
-import com.butent.bee.egg.shared.sql.SqlBuilderFactory;
 import com.butent.bee.egg.shared.sql.SqlCreate;
+import com.butent.bee.egg.shared.sql.SqlDrop;
+import com.butent.bee.egg.shared.sql.SqlIndex;
 import com.butent.bee.egg.shared.sql.SqlInsert;
-import com.butent.bee.egg.shared.sql.SqlUtils;
+import com.butent.bee.egg.shared.utils.BeeUtils;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -47,12 +49,13 @@ public class SystemBean {
   @Lock(LockType.WRITE)
   public void recreate(ResponseBuffer buff) {
     for (BeeTable tbl : dataCache.values()) {
-      if (qs.tableExists(tbl.getName())) {
-        qs.processSql("DROP TABLE "
-            + SqlUtils.field(tbl.getName()).getSqlString(
-                SqlBuilderFactory.getBuilder(), false));
+      String table = tbl.getName();
+
+      if (qs.tableExists(table)) {
+        SqlDrop sd = new SqlDrop(table);
+        qs.updateData(sd);
       }
-      SqlCreate sc = new SqlCreate(tbl.getName());
+      SqlCreate sc = new SqlCreate(table);
 
       for (BeeStructure field : tbl.getFields()) {
         sc.addField(field.getName(), field.getType(),
@@ -63,34 +66,43 @@ public class SystemBean {
       sc.addLong(tbl.getLockName(), Keywords.NOTNULL)
         .addLong(tbl.getIdName(), Keywords.NOTNULL, Keywords.PRIMARY);
 
-      buff.add("Create table " + tbl.getName() + ": " + qs.updateData(sc));
-    }
+      buff.add("Create table " + table + ": " + qs.updateData(sc));
 
+      for (BeeKey key : tbl.getKeys()) {
+        SqlIndex si = new SqlIndex(table, key.getName(), key.isUnique());
+        si.setColumns(key.getColumns());
+        qs.updateData(si);
+      }
+    }
+    createData();
+  }
+
+  private void createData() {
     BeeTable tables = dataCache.get("bee_Tables");
 
     for (BeeTable tbl : dataCache.values()) {
       SqlInsert si = new SqlInsert(tables.getName());
       Iterator<BeeStructure> it = tables.getFields().iterator();
 
-      si.addField(it.next().getName(), tbl.getName())
-        .addField(it.next().getName(), tbl.getLockName())
-        .addField(it.next().getName(), tbl.getIdName());
+      si.addConstant(it.next().getName(), tbl.getName())
+        .addConstant(it.next().getName(), tbl.getLockName())
+        .addConstant(it.next().getName(), tbl.getIdName());
 
       qs.insertData(si);
 
-      BeeTable fields = dataCache.get("bee_Fields");
+      BeeTable propert = dataCache.get("bee_Fields");
 
       for (BeeStructure fld : tbl.getFields()) {
-        si = new SqlInsert(fields.getName());
-        it = fields.getFields().iterator();
+        si = new SqlInsert(propert.getName());
+        it = propert.getFields().iterator();
 
-        si.addField(it.next().getName(), tbl.getName())
-          .addField(it.next().getName(), fld.getName())
-          .addField(it.next().getName(), fld.getType().name())
-          .addField(it.next().getName(), fld.getPrecision())
-          .addField(it.next().getName(), fld.getScale())
-          .addField(it.next().getName(), fld.isNotNull())
-          .addField(it.next().getName(), fld.isUnique());
+        si.addConstant(it.next().getName(), tbl.getName())
+          .addConstant(it.next().getName(), fld.getName())
+          .addConstant(it.next().getName(), fld.getType().name())
+          .addConstant(it.next().getName(), fld.getPrecision())
+          .addConstant(it.next().getName(), fld.getScale())
+          .addConstant(it.next().getName(), BeeUtils.toInt(fld.isNotNull()))
+          .addConstant(it.next().getName(), BeeUtils.toInt(fld.isUnique()));
 
         qs.insertData(si);
       }
@@ -125,7 +137,9 @@ public class SystemBean {
 
   private void initTables() {
     dataCache.put("bee_Tables", new BeeTable("bee_Tables", "TableID", "Locked"));
-    dataCache.put("bee_Fields", new BeeTable("bee_Fields", "FieldID", null));
+    dataCache.put("bee_Fields", new BeeTable("bee_Fields", "FieldID", null)
+      .addKey("FieldName")
+      .addUniqueKey("TableField", "TableName", "FieldName"));
     dataCache.put("Countries", new BeeTable("Countries", "CountryID", null));
     dataCache.put("Cities", new BeeTable("Cities", "CityID", null));
   }

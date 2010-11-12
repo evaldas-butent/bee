@@ -10,12 +10,12 @@ public class SqlDelete extends HasFrom<SqlDelete> {
   private final IsFrom target;
   private IsCondition whereClause;
 
-  public SqlDelete(String source) {
-    target = new FromSingle(source);
+  public SqlDelete(String target) {
+    this.target = new FromSingle(target);
   }
 
-  public SqlDelete(String source, String alias) {
-    target = new FromSingle(source, alias);
+  public SqlDelete(String target, String alias) {
+    this.target = new FromSingle(target, alias);
   }
 
   @Override
@@ -29,16 +29,14 @@ public class SqlDelete extends HasFrom<SqlDelete> {
         SqlUtils.addParams(paramList, from.getSqlParams());
       }
     }
-    if (!BeeUtils.isEmpty(whereClause)) {
-      SqlUtils.addParams(paramList, whereClause.getSqlParams());
-    }
+    SqlUtils.addParams(paramList, whereClause.getSqlParams());
+
     return paramList;
   }
 
   @Override
   public String getSqlString(SqlBuilder builder, boolean paramMode) {
     Assert.notEmpty(builder);
-
     return builder.getDelete(this, paramMode);
   }
 

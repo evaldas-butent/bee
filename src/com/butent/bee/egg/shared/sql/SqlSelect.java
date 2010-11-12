@@ -250,16 +250,12 @@ public class SqlSelect extends HasFrom<SqlSelect> {
 
     List<Object> paramList = null;
 
-    if (!BeeUtils.isEmpty(fieldList)) {
-      for (Object[] field : fieldList) {
-        IsExpression fld = (IsExpression) field[FIELD_EXPR];
-        SqlUtils.addParams(paramList, fld.getSqlParams());
-      }
+    for (Object[] field : fieldList) {
+      IsExpression fld = (IsExpression) field[FIELD_EXPR];
+      SqlUtils.addParams(paramList, fld.getSqlParams());
     }
-    if (!BeeUtils.isEmpty(getFrom())) {
-      for (IsFrom from : getFrom()) {
-        SqlUtils.addParams(paramList, from.getSqlParams());
-      }
+    for (IsFrom from : getFrom()) {
+      SqlUtils.addParams(paramList, from.getSqlParams());
     }
     if (!BeeUtils.isEmpty(whereClause)) {
       SqlUtils.addParams(paramList, whereClause.getSqlParams());
@@ -289,7 +285,6 @@ public class SqlSelect extends HasFrom<SqlSelect> {
   @Override
   public String getSqlString(SqlBuilder builder, boolean paramMode) {
     Assert.notEmpty(builder);
-
     return builder.getQuery(this, paramMode);
   }
 
