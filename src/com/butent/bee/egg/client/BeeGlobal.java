@@ -1,5 +1,6 @@
 package com.butent.bee.egg.client;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JsDate;
 import com.google.gwt.event.shared.GwtEvent;
 import com.google.gwt.user.client.ui.Widget;
@@ -9,6 +10,7 @@ import com.butent.bee.egg.client.dialog.BeeInputBox;
 import com.butent.bee.egg.client.dialog.BeeMessageBox;
 import com.butent.bee.egg.client.grid.CellType;
 import com.butent.bee.egg.client.grid.GridFactory;
+import com.butent.bee.egg.client.resources.Images;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.BeeField;
@@ -36,8 +38,9 @@ public class BeeGlobal implements BeeModule {
 
   private static final Map<String, BeeField> fields = new HashMap<String, BeeField>();
 
-  private static int tzo = -JsDate.create().getTimezoneOffset()
-      * Grego.MILLIS_PER_MINUTE;
+  private static int tzo = -JsDate.create().getTimezoneOffset() * Grego.MILLIS_PER_MINUTE;
+
+  private static Images images = GWT.create(Images.class);
 
   public static void alert(Object... obj) {
     msgBox.alert(obj);
@@ -115,6 +118,10 @@ public class BeeGlobal implements BeeModule {
 
   public static String getFieldWidth(String name) {
     return getField(name).getWidth();
+  }
+
+  public static Images getImages() {
+    return images;
   }
 
   public static int getTzo() {

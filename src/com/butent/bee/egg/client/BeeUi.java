@@ -1,6 +1,5 @@
 package com.butent.bee.egg.client;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.layout.client.Layout;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
@@ -21,7 +20,6 @@ import com.butent.bee.egg.client.layout.BeeLayoutPanel;
 import com.butent.bee.egg.client.layout.BeeSplit;
 import com.butent.bee.egg.client.layout.BlankTile;
 import com.butent.bee.egg.client.layout.TilePanel;
-import com.butent.bee.egg.client.resources.Images;
 import com.butent.bee.egg.client.ui.GwtUiCreator;
 import com.butent.bee.egg.client.utils.BeeCommand;
 import com.butent.bee.egg.client.widget.BeeButton;
@@ -75,8 +73,6 @@ public class BeeUi implements BeeModule {
   private BeeSplit screenPanel = null;
   private TilePanel activePanel = null;
   private BeeLayoutPanel menuPanel = null;
-
-  private Images images = GWT.create(Images.class);
 
   private String elDsn = null;
   private String elGrid = null;
@@ -444,7 +440,7 @@ public class BeeUi implements BeeModule {
     BeeLayoutPanel blp = new BeeLayoutPanel();
     blp.add(p);
 
-    BeeImage bee = new BeeImage(images.bee());
+    BeeImage bee = new BeeImage(BeeGlobal.getImages().bee());
     blp.add(bee);
 
     blp.setWidgetLeftRight(p, 1, Unit.EM, 100, Unit.PX);
@@ -468,7 +464,7 @@ public class BeeUi implements BeeModule {
     hor.add(new BeeButton("E", new SplitCommand(BeeDirection.EAST)));
     hor.add(new BeeButton("W", new SplitCommand(BeeDirection.WEST)));
 
-    BeeImage close = new BeeImage(images.close(), new SplitCommand(true));
+    BeeImage close = new BeeImage(BeeGlobal.getImages().close(), new SplitCommand(true));
     hor.add(close);
     hor.setCellWidth(close, "32px");
     hor.setCellHorizontalAlignment(close, HasHorizontalAlignment.ALIGN_RIGHT);
