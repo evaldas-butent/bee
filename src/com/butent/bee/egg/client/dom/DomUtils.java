@@ -24,7 +24,7 @@ import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.egg.client.BeeKeeper;
-import com.butent.bee.egg.client.layout.BeeDirection;
+import com.butent.bee.egg.client.layout.Direction;
 import com.butent.bee.egg.client.utils.JreEmulation;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeConst;
@@ -496,11 +496,11 @@ public class DomUtils {
     }
   }
 
-  public static BeeDirection getDirection(String s) {
+  public static Direction getDirection(String s) {
     Assert.notEmpty(s);
-    BeeDirection dir = null;
+    Direction dir = null;
 
-    for (BeeDirection z : BeeDirection.values()) {
+    for (Direction z : Direction.values()) {
       if (BeeUtils.same(z.name(), s)) {
         dir = z;
         break;
@@ -966,10 +966,15 @@ public class DomUtils {
     TableCellElement.as(elem).setColSpan(span);
   }
   
-  public static void setHeight(Widget w, int height) {
+  public static Widget setHeight(Widget w, int height) {
+    return setHeight(w, height, Unit.PX);
+  }
+
+  public static Widget setHeight(Widget w, int height, Unit unit) {
     Assert.notNull(w);
     Assert.nonNegative(height);
-    w.getElement().getStyle().setHeight(height, Unit.PX);
+    w.getElement().getStyle().setHeight(height, unit);
+    return w;
   }
 
   public static void setId(UIObject obj, String id) {
@@ -1023,12 +1028,17 @@ public class DomUtils {
     setAttribute(w, ATTRIBUTE_TYPE, type);
   }
   
-  public static void setWidth(Widget w, int width) {
-    Assert.notNull(w);
-    Assert.nonNegative(width);
-    w.getElement().getStyle().setWidth(width, Unit.PX);
+  public static Widget setWidth(Widget w, int width) {
+    return setWidth(w, width, Unit.PX);
   }
 
+  public static Widget setWidth(Widget w, int width, Unit unit) {
+    Assert.notNull(w);
+    Assert.nonNegative(width);
+    w.getElement().getStyle().setWidth(width, unit);
+    return w;
+  }
+  
   public static String transform(Object obj) {
     if (obj == null) {
       return BeeConst.STRING_EMPTY;

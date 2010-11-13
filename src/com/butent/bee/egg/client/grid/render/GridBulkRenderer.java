@@ -1,6 +1,6 @@
 package com.butent.bee.egg.client.grid.render;
 
-import com.butent.bee.egg.client.grid.BeeGrid;
+import com.butent.bee.egg.client.grid.GridTable;
 import com.butent.bee.egg.client.grid.FixedWidthGrid;
 import com.butent.bee.egg.client.grid.HasTableDefinition;
 import com.butent.bee.egg.client.grid.SelectionGrid;
@@ -8,12 +8,12 @@ import com.butent.bee.egg.client.grid.TableDefinition;
 import com.butent.bee.egg.shared.Assert;
 
 public class GridBulkRenderer<RowType> extends TableBulkRenderer<RowType> {
-  public GridBulkRenderer(BeeGrid grid, TableDefinition<RowType> tableDef) {
+  public GridBulkRenderer(GridTable grid, TableDefinition<RowType> tableDef) {
     super(grid, tableDef);
     init(grid);
   }
 
-  public GridBulkRenderer(BeeGrid grid, HasTableDefinition<RowType> sourceTableDef) {
+  public GridBulkRenderer(GridTable grid, HasTableDefinition<RowType> sourceTableDef) {
     super(grid, sourceTableDef);
     init(grid);
   }
@@ -21,10 +21,10 @@ public class GridBulkRenderer<RowType> extends TableBulkRenderer<RowType> {
   @Override
   protected void renderRows(String rawHTMLTable) {
     super.renderRows(rawHTMLTable);
-    setGridDimensions((BeeGrid) getTable());
+    setGridDimensions((GridTable) getTable());
   }
 
-  void setGridDimensions(BeeGrid table) {
+  void setGridDimensions(GridTable table) {
     int numRows = table.getDOMRowCount();
     table.setNumRows(numRows);
 
@@ -35,7 +35,7 @@ public class GridBulkRenderer<RowType> extends TableBulkRenderer<RowType> {
     table.setNumColumns(cellCount);
   }
 
-  private void init(BeeGrid grid) {
+  private void init(GridTable grid) {
     if (grid instanceof FixedWidthGrid
         && (!(this instanceof FixedWidthGridBulkRenderer))) {
       Assert.unsupported("Must use a FixedWidthGridBulkLoader to bulk load a fixed grid");

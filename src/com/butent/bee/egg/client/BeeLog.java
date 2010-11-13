@@ -3,7 +3,7 @@ package com.butent.bee.egg.client;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.egg.client.layout.BeeSplit;
+import com.butent.bee.egg.client.layout.Split;
 import com.butent.bee.egg.client.logging.LogArea;
 import com.butent.bee.egg.client.logging.LogFormatter;
 import com.butent.bee.egg.client.logging.LogWidgetHandler;
@@ -85,8 +85,8 @@ public class BeeLog implements BeeModule {
     }
     
     Widget parent = getArea().getParent();
-    if (parent instanceof BeeSplit) {
-      z = ((BeeSplit) parent).getWidgetSize(getArea());
+    if (parent instanceof Split) {
+      z = ((Split) parent).getWidgetSize(getArea());
     }
 
     return z;
@@ -113,14 +113,14 @@ public class BeeLog implements BeeModule {
     }
     
     Widget parent = getArea().getParent();
-    if (parent instanceof BeeSplit) {
+    if (parent instanceof Split) {
       if (size <= 0) {
         hiddenSize = getSize(); 
       } else {
         hiddenSize = BeeConst.SIZE_UNKNOWN;
       }
 
-      ((BeeSplit) parent).setWidgetSize(getArea(), size);
+      ((Split) parent).setWidgetSize(getArea(), size);
     }
   }
   

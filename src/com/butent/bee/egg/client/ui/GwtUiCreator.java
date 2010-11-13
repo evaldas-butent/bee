@@ -10,12 +10,12 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.egg.client.BeeKeeper;
-import com.butent.bee.egg.client.layout.BeeHorizontal;
+import com.butent.bee.egg.client.layout.Horizontal;
 import com.butent.bee.egg.client.layout.BeeLayoutPanel;
-import com.butent.bee.egg.client.layout.BeeSplit;
-import com.butent.bee.egg.client.layout.BeeStack;
-import com.butent.bee.egg.client.layout.BeeTab;
-import com.butent.bee.egg.client.layout.BeeVertical;
+import com.butent.bee.egg.client.layout.Split;
+import com.butent.bee.egg.client.layout.Stack;
+import com.butent.bee.egg.client.layout.Tab;
+import com.butent.bee.egg.client.layout.Vertical;
 import com.butent.bee.egg.client.menu.BeeMenuBar;
 import com.butent.bee.egg.client.menu.BeeMenuItemSeparator;
 import com.butent.bee.egg.client.menu.MenuCommand;
@@ -110,7 +110,7 @@ public class GwtUiCreator implements UiCreator {
 
   @Override
   public Object createGrid(UiGrid uiGrid) {
-    BeeSplit widget = new BeeSplit();
+    Split widget = new Split();
     widget.setTitle(uiGrid.getId());
 
     if (!BeeUtils.isEmpty(uiGrid.getCaption())) {
@@ -199,9 +199,9 @@ public class GwtUiCreator implements UiCreator {
   public Object createRadioButton(UiRadioButton radioButton) {
     Panel widget = null;
     if ("[H]".equals(radioButton.getProperty("opt_layout"))) {
-      widget = new BeeHorizontal();
+      widget = new Horizontal();
     } else {
-      widget = new BeeVertical();
+      widget = new Vertical();
     }
     String id = radioButton.getId();
     widget.setTitle(id);
@@ -215,7 +215,7 @@ public class GwtUiCreator implements UiCreator {
 
   @Override
   public Object createStack(UiStack stack) {
-    BeeStack widget = new BeeStack(Unit.EM);
+    Stack widget = new Stack(Unit.EM);
     widget.setTitle(stack.getId());
 
     if (stack.hasChilds()) {
@@ -235,7 +235,7 @@ public class GwtUiCreator implements UiCreator {
 
   @Override
   public Object createTab(UiTab tab) {
-    BeeTab widget = new BeeTab(20, Unit.PX);
+    Tab widget = new Tab(20, Unit.PX);
     widget.setTitle(tab.getId());
 
     if (tab.hasChilds()) {

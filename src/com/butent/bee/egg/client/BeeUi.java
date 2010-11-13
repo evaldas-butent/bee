@@ -12,12 +12,12 @@ import com.butent.bee.egg.client.composite.ButtonGroup;
 import com.butent.bee.egg.client.composite.RadioGroup;
 import com.butent.bee.egg.client.composite.TextEditor;
 import com.butent.bee.egg.client.dom.DomUtils;
-import com.butent.bee.egg.client.grid.BeeFlexTable;
+import com.butent.bee.egg.client.grid.FlexTable;
 import com.butent.bee.egg.client.grid.CellType;
-import com.butent.bee.egg.client.layout.BeeDirection;
-import com.butent.bee.egg.client.layout.BeeHorizontal;
+import com.butent.bee.egg.client.layout.Direction;
+import com.butent.bee.egg.client.layout.Horizontal;
 import com.butent.bee.egg.client.layout.BeeLayoutPanel;
-import com.butent.bee.egg.client.layout.BeeSplit;
+import com.butent.bee.egg.client.layout.Split;
 import com.butent.bee.egg.client.layout.BlankTile;
 import com.butent.bee.egg.client.layout.TilePanel;
 import com.butent.bee.egg.client.ui.GwtUiCreator;
@@ -43,10 +43,10 @@ import com.butent.bee.egg.shared.utils.BeeUtils;
 public class BeeUi implements BeeModule {
 
   private class SplitCommand extends BeeCommand {
-    BeeDirection direction = null;
+    Direction direction = null;
     boolean close = false;
 
-    public SplitCommand(BeeDirection direction) {
+    public SplitCommand(Direction direction) {
       super();
       this.direction = direction;
     }
@@ -70,7 +70,7 @@ public class BeeUi implements BeeModule {
 
   private int minTileSize = 20;
 
-  private BeeSplit screenPanel = null;
+  private Split screenPanel = null;
   private TilePanel activePanel = null;
   private BeeLayoutPanel menuPanel = null;
 
@@ -194,7 +194,7 @@ public class BeeUi implements BeeModule {
     return rootUi;
   }
 
-  public BeeSplit getScreenPanel() {
+  public Split getScreenPanel() {
     return screenPanel;
   }
 
@@ -225,7 +225,7 @@ public class BeeUi implements BeeModule {
     this.minTileSize = minTileSize;
   }
 
-  public void setScreenPanel(BeeSplit screenPanel) {
+  public void setScreenPanel(Split screenPanel) {
     this.screenPanel = screenPanel;
   }
 
@@ -331,7 +331,7 @@ public class BeeUi implements BeeModule {
     activatePanel(parent);
   }
 
-  private void createPanel(BeeDirection direction) {
+  private void createPanel(Direction direction) {
     TilePanel p = getActivePanel();
     Assert.notNull(p);
 
@@ -364,7 +364,7 @@ public class BeeUi implements BeeModule {
 
   private void createUi() {
     Widget w;
-    BeeSplit p = new BeeSplit();
+    Split p = new Split();
 
     w = initNorth();
     if (w != null) {
@@ -409,7 +409,7 @@ public class BeeUi implements BeeModule {
   }
 
   private Widget initNorth() {
-    BeeHorizontal p = new BeeHorizontal();
+    Horizontal p = new Horizontal();
     p.setSpacing(5);
 
     setElDsn(DomUtils.createUniqueName());
@@ -456,13 +456,13 @@ public class BeeUi implements BeeModule {
     CliWidget cli = new CliWidget();
     p.add(cli);
 
-    BeeHorizontal hor = new BeeHorizontal();
+    Horizontal hor = new Horizontal();
     hor.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
 
-    hor.add(new BeeButton("N", new SplitCommand(BeeDirection.NORTH)));
-    hor.add(new BeeButton("S", new SplitCommand(BeeDirection.SOUTH)));
-    hor.add(new BeeButton("E", new SplitCommand(BeeDirection.EAST)));
-    hor.add(new BeeButton("W", new SplitCommand(BeeDirection.WEST)));
+    hor.add(new BeeButton("N", new SplitCommand(Direction.NORTH)));
+    hor.add(new BeeButton("S", new SplitCommand(Direction.SOUTH)));
+    hor.add(new BeeButton("E", new SplitCommand(Direction.EAST)));
+    hor.add(new BeeButton("W", new SplitCommand(Direction.WEST)));
 
     BeeImage close = new BeeImage(BeeGlobal.getImages().close(), new SplitCommand(true));
     hor.add(close);
@@ -485,9 +485,9 @@ public class BeeUi implements BeeModule {
   }
 
   private Widget initWest() {
-    BeeSplit spl = new BeeSplit();
+    Split spl = new Split();
 
-    BeeFlexTable fp = new BeeFlexTable();
+    FlexTable fp = new FlexTable();
     fp.setCellSpacing(3);
 
     int r = MenuConst.MAX_MENU_DEPTH;

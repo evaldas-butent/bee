@@ -8,9 +8,9 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.egg.client.dom.DomUtils;
 import com.butent.bee.egg.shared.HasId;
 
-public class BeeSpan extends ComplexPanel implements InsertPanel, HasId {
+public class Span extends ComplexPanel implements InsertPanel, HasId {
 
-  public BeeSpan() {
+  public Span() {
     setElement(DOM.createSpan());
     createId();
     setStyleName(getDefaultStyleName());

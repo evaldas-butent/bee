@@ -30,14 +30,14 @@ import com.butent.bee.egg.shared.HasId;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-public abstract class BeeHtmlTable extends Panel implements HasClickHandlers,
+public abstract class HtmlTable extends Panel implements HasClickHandlers,
     HasDoubleClickHandlers, HasId {
 
-  public class BeeCell {
+  public class Cell {
     private final int rowIndex;
     private final int cellIndex;
 
-    protected BeeCell(int rowIndex, int cellIndex) {
+    protected Cell(int rowIndex, int cellIndex) {
       this.cellIndex = cellIndex;
       this.rowIndex = rowIndex;
     }
@@ -55,7 +55,7 @@ public abstract class BeeHtmlTable extends Panel implements HasClickHandlers,
     }
   }
 
-  public class BeeCellFormatter {
+  public class CellFormatter {
     public void addStyleName(int row, int column, String styleName) {
       UIObject.setStyleName(ensureElement(row, column), styleName, true);
     }
@@ -147,7 +147,7 @@ public abstract class BeeHtmlTable extends Panel implements HasClickHandlers,
     }-*/;
   }
 
-  public class BeeColumnFormatter {
+  public class ColumnFormatter {
     protected Element columnGroup;
 
     public void addStyleName(int col, String styleName) {
@@ -213,7 +213,7 @@ public abstract class BeeHtmlTable extends Panel implements HasClickHandlers,
     }
   }
 
-  public class BeeRowFormatter {
+  public class RowFormatter {
     public void addStyleName(int row, String styleName) {
       UIObject.setStyleName(ensureElement(row), styleName, true);
     }
@@ -280,15 +280,15 @@ public abstract class BeeHtmlTable extends Panel implements HasClickHandlers,
   private final Element tableElem;
   private Element bodyElem;
 
-  private BeeCellFormatter cellFormatter;
-  private BeeColumnFormatter columnFormatter;
-  private BeeRowFormatter rowFormatter;
+  private CellFormatter cellFormatter;
+  private ColumnFormatter columnFormatter;
+  private RowFormatter rowFormatter;
 
   private ElementMapperImpl<Widget> widgetMap = new ElementMapperImpl<Widget>();
 
   private String clearText = BeeConst.STRING_EMPTY;
   
-  public BeeHtmlTable() {
+  public HtmlTable() {
     tableElem = DOM.createTable();
     bodyElem = DOM.createTBody();
     DOM.appendChild(tableElem, bodyElem);
@@ -331,7 +331,7 @@ public abstract class BeeHtmlTable extends Panel implements HasClickHandlers,
 
   public abstract int getCellCount(int row);
 
-  public BeeCell getCellForEvent(ClickEvent event) {
+  public Cell getCellForEvent(ClickEvent event) {
     Element td = getEventTargetCell(Event.as(event.getNativeEvent()));
     if (td == null) {
       return null;
@@ -339,10 +339,10 @@ public abstract class BeeHtmlTable extends Panel implements HasClickHandlers,
 
     int row = TableRowElement.as(td.getParentElement()).getSectionRowIndex();
     int column = TableCellElement.as(td).getCellIndex();
-    return new BeeCell(row, column);
+    return new Cell(row, column);
   }
 
-  public BeeCellFormatter getCellFormatter() {
+  public CellFormatter getCellFormatter() {
     return cellFormatter;
   }
 
@@ -354,7 +354,7 @@ public abstract class BeeHtmlTable extends Panel implements HasClickHandlers,
     return DomUtils.getCellSpacing(tableElem);
   }
 
-  public BeeColumnFormatter getColumnFormatter() {
+  public ColumnFormatter getColumnFormatter() {
     return columnFormatter;
   }
 
@@ -397,7 +397,7 @@ public abstract class BeeHtmlTable extends Panel implements HasClickHandlers,
 
   public abstract int getRowCount();
 
-  public BeeRowFormatter getRowFormatter() {
+  public RowFormatter getRowFormatter() {
     return rowFormatter;
   }
 
@@ -646,7 +646,7 @@ public abstract class BeeHtmlTable extends Panel implements HasClickHandlers,
     DOM.removeChild(bodyElem, rowFormatter.getRawElement(row));
   }
 
-  protected void setCellFormatter(BeeCellFormatter cellFormatter) {
+  protected void setCellFormatter(CellFormatter cellFormatter) {
     this.cellFormatter = cellFormatter;
   }
   
@@ -654,7 +654,7 @@ public abstract class BeeHtmlTable extends Panel implements HasClickHandlers,
     this.clearText = clearText;
   }
 
-  protected void setColumnFormatter(BeeColumnFormatter formatter) {
+  protected void setColumnFormatter(ColumnFormatter formatter) {
     if (columnFormatter != null) {
       formatter.columnGroup = columnFormatter.columnGroup;
     }
@@ -662,7 +662,7 @@ public abstract class BeeHtmlTable extends Panel implements HasClickHandlers,
     columnFormatter.prepareColumnGroup();
   }
 
-  protected void setRowFormatter(BeeRowFormatter rowFormatter) {
+  protected void setRowFormatter(RowFormatter rowFormatter) {
     this.rowFormatter = rowFormatter;
   }
 

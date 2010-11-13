@@ -8,7 +8,7 @@ import com.butent.bee.egg.client.BeeGlobal;
 import com.butent.bee.egg.client.BeeKeeper;
 import com.butent.bee.egg.client.BeeStyle;
 import com.butent.bee.egg.client.dom.DomUtils;
-import com.butent.bee.egg.client.layout.BeeSpan;
+import com.butent.bee.egg.client.layout.Span;
 import com.butent.bee.egg.client.widget.BeeRadioButton;
 import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.BeeField;
@@ -17,7 +17,7 @@ import com.butent.bee.egg.shared.utils.BeeUtils;
 
 import java.util.List;
 
-public class RadioGroup extends BeeSpan implements HasService {
+public class RadioGroup extends Span implements HasService {
   public static int getValue(String name) {
     int v = BeeConst.SELECTION_UNKNOWN;
     if (BeeUtils.isEmpty(name)) {

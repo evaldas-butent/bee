@@ -5,10 +5,10 @@ import com.butent.bee.egg.client.utils.BeeCommand;
 import java.util.ArrayList;
 import java.util.List;
 
-public class BeeLayoutCommand extends BeeCommand {
+public class LayoutCommand extends BeeCommand {
   private List<HasLayoutCallback> layoutWidgets = new ArrayList<HasLayoutCallback>();
   
-  public BeeLayoutCommand(HasLayoutCallback... widgets) {
+  public LayoutCommand(HasLayoutCallback... widgets) {
     super();
     
     for (HasLayoutCallback w : widgets) {

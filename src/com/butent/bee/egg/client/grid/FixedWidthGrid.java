@@ -27,7 +27,7 @@ public class FixedWidthGrid extends SortableGrid {
     }
   }
 
-  public class FixedWidthGridColumnFormatter extends BeeColumnFormatter {
+  public class FixedWidthGridColumnFormatter extends ColumnFormatter {
     @Override
     public void setWidth(int column, String width) {
       Assert.unsupported("setWidth is not supported");

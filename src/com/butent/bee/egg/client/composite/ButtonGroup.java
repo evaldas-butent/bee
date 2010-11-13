@@ -1,7 +1,7 @@
 package com.butent.bee.egg.client.composite;
 
 import com.butent.bee.egg.client.dom.DomUtils;
-import com.butent.bee.egg.client.layout.BeeSpan;
+import com.butent.bee.egg.client.layout.Span;
 import com.butent.bee.egg.client.widget.BeeButton;
 import com.butent.bee.egg.shared.BeeStage;
 import com.butent.bee.egg.shared.HasService;
@@ -10,7 +10,7 @@ import com.butent.bee.egg.shared.HasStage;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ButtonGroup extends BeeSpan implements HasService, HasStage {
+public class ButtonGroup extends Span implements HasService, HasStage {
   private List<BeeButton> buttons = new ArrayList<BeeButton>();
 
   public ButtonGroup() {

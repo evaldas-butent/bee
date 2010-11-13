@@ -7,7 +7,7 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.egg.client.BeeGlobal;
 import com.butent.bee.egg.client.composite.ButtonGroup;
 import com.butent.bee.egg.client.composite.RadioGroup;
-import com.butent.bee.egg.client.grid.BeeFlexTable;
+import com.butent.bee.egg.client.grid.FlexTable;
 import com.butent.bee.egg.client.widget.BeeCheckBox;
 import com.butent.bee.egg.client.widget.BeeFileUpload;
 import com.butent.bee.egg.client.widget.BeeListBox;
@@ -27,7 +27,7 @@ public class BeeInputBox {
   public void inputFields(BeeStage bst, String cap, String... fieldNames) {
     Assert.parameterCount(fieldNames.length + 1, 2);
 
-    BeeFlexTable ft = new BeeFlexTable();
+    FlexTable ft = new FlexTable();
 
     BeeField fld;
     Widget inp = null;

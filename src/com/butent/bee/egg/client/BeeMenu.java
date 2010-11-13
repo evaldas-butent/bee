@@ -4,8 +4,8 @@ import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.egg.client.layout.BeeStack;
-import com.butent.bee.egg.client.layout.BeeTab;
+import com.butent.bee.egg.client.layout.Stack;
+import com.butent.bee.egg.client.layout.Tab;
 import com.butent.bee.egg.client.menu.BeeMenuBar;
 import com.butent.bee.egg.client.menu.BeeMenuItem;
 import com.butent.bee.egg.client.menu.BeeMenuItemSeparator;
@@ -245,15 +245,15 @@ public class BeeMenu implements BeeModule {
         mb.addSeparator(new BeeMenuItemSeparator());
       }
 
-    } else if (rw instanceof BeeStack) {
+    } else if (rw instanceof Stack) {
       if (cw != null) {
         double header = BeeUtils.iif(itemCnt <= 10, 2.0, itemCnt >= 18, 1.2,
             (30.0 - itemCnt) / 10.0);
-        ((BeeStack) rw).add(cw, txt, header);
+        ((Stack) rw).add(cw, txt, header);
       }
-    } else if (rw instanceof BeeTab) {
+    } else if (rw instanceof Tab) {
       if (cw != null) {
-        ((BeeTab) rw).add(cw, txt);
+        ((Tab) rw).add(cw, txt);
       }
 
     } else if (rw instanceof BeeTree) {
@@ -330,9 +330,9 @@ public class BeeMenu implements BeeModule {
           BeeMenuItem.ITEM_TYPE.LABEL, opt);
 
     } else if (BeeUtils.same(layout, MenuConst.LAYOUT_STACK)) {
-      w = new BeeStack(Unit.EM);
+      w = new Stack(Unit.EM);
     } else if (BeeUtils.same(layout, MenuConst.LAYOUT_TAB)) {
-      w = new BeeTab(20, Unit.PX);
+      w = new Tab(20, Unit.PX);
 
     } else if (BeeUtils.same(layout, MenuConst.LAYOUT_TREE)) {
       w = new BeeTree(new MenuSelectionHandler());

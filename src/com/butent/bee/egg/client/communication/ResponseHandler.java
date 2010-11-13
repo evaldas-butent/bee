@@ -2,7 +2,7 @@ package com.butent.bee.egg.client.communication;
 
 import com.butent.bee.egg.client.BeeKeeper;
 import com.butent.bee.egg.client.composite.TextEditor;
-import com.butent.bee.egg.client.layout.BeeSplit;
+import com.butent.bee.egg.client.layout.Split;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.BeeResource;
@@ -35,7 +35,7 @@ public class ResponseHandler {
 
     int h = BeeKeeper.getUi().getActivePanelHeight();
 
-    BeeSplit panel = new BeeSplit();
+    Split panel = new Split();
     panel.addNorth(new TextEditor(resources[0]), h / pc);
 
     if (pc == 2) {

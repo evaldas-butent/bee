@@ -1,18 +1,25 @@
 package com.butent.bee.egg.client.layout;
 
-import com.google.gwt.user.client.ui.VerticalPanel;
+import com.google.gwt.user.client.ui.ScrollPanel;
+import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.egg.client.dom.DomUtils;
 import com.butent.bee.egg.shared.HasId;
 
-public class BeeVertical extends VerticalPanel implements HasId {
+public class Scroll extends ScrollPanel implements HasId {
 
-  public BeeVertical() {
+  public Scroll() {
+    super();
+    createId();
+  }
+
+  public Scroll(Widget child) {
+    super(child);
     createId();
   }
 
   public void createId() {
-    DomUtils.createId(this, "vert");
+    DomUtils.createId(this, "scroll");
   }
 
   public String getId() {

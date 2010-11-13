@@ -126,10 +126,10 @@ public class GridFactory {
 
     BeeCellTable cellTable = new BeeCellTable(r, keyProvider);
 
-    BeeTextColumn column;
+    TextColumn column;
     String[] arr = view.getColumnNames();
     for (int i = 0; i < c; i++) {
-      column = new BeeTextColumn(createCell(cellType), view, i);
+      column = new TextColumn(createCell(cellType), view, i);
       if (cellType != null && cellType.isEditable()) {
         column.setFieldUpdater(new CellUpdater(view, i, keyProvider));
       }
@@ -200,7 +200,7 @@ public class GridFactory {
 
     String[] arr = view.getColumnNames();
     for (int i = 0; i < c; i++) {
-      table.addColumn(new BeeTextColumn(createCell(CellType.TEXT), view, i, 256), arr[i]);
+      table.addColumn(new TextColumn(createCell(CellType.TEXT), view, i, 256), arr[i]);
     }
     table.initData(r);
 

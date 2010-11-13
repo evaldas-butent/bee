@@ -13,12 +13,12 @@ import com.butent.bee.egg.client.BeeKeeper;
 public class FixedWidthTable {
 
   public static class IdealColumnWidthInfo {
-    private BeeHtmlTable table;
+    private HtmlTable table;
     private TableRowElement tr;
     private int columnCount;
     private int offset;
 
-    public IdealColumnWidthInfo(BeeHtmlTable table, TableRowElement tr,
+    public IdealColumnWidthInfo(HtmlTable table, TableRowElement tr,
         int columnCount, int offset) {
       this.table = table;
       this.tr = tr;
@@ -60,7 +60,7 @@ public class FixedWidthTable {
     }
 
     int columnCount = info.columnCount;
-    BeeHtmlTable table = info.table;
+    HtmlTable table = info.table;
     if (!table.isAttached() || table.getRowCount() == 0 || columnCount < 1) {
       return new int[0];
     }
@@ -78,7 +78,7 @@ public class FixedWidthTable {
   }
 
   public static IdealColumnWidthInfo recalculateIdealColumnWidthsSetup(
-      BeeHtmlTable table, int columnCount, int offset) {
+      HtmlTable table, int columnCount, int offset) {
     BeeKeeper.getStyle().clearTableLayout(table);
 
     TableRowElement tr = Document.get().createTRElement();
@@ -105,7 +105,7 @@ public class FixedWidthTable {
     getGhostCell(ghostRow, column).getStyle().setWidth(width, Unit.PX);
   }
 
-  private static Element getTableBody(BeeHtmlTable table) {
+  private static Element getTableBody(HtmlTable table) {
     return table.getBodyElement();
   }
 

@@ -17,7 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class TilePanel extends BeeSplit {
+public class TilePanel extends Split {
   public TilePanel() {
     super("bee-tile", 5);
     sinkEvents(Event.ONMOUSEDOWN);
@@ -127,7 +127,7 @@ public class TilePanel extends BeeSplit {
       return;
     }
     
-    BeeDirection[] directions = new BeeDirection[c];
+    Direction[] directions = new Direction[c];
     double[] sizes = new double[c];
     boolean[] scroll = new boolean[c];
 

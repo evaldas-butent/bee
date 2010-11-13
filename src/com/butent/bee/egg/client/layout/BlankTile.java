@@ -76,7 +76,7 @@ public class BlankTile extends Composite implements HasAfterAddHandler, HasId,
     Widget p = w.getParent();
 
     while (p instanceof TilePanel) {
-      BeeDirection direction = ((TilePanel) p).getWidgetDirection(w);
+      Direction direction = ((TilePanel) p).getWidgetDirection(w);
       switch (direction) {
         case CENTER:
           c++;

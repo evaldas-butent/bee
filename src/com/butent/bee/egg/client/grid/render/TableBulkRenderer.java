@@ -12,7 +12,7 @@ import com.google.gwt.user.client.ui.HasVerticalAlignment.VerticalAlignmentConst
 
 import com.butent.bee.egg.client.grid.AbstractCellView;
 import com.butent.bee.egg.client.grid.AbstractRowView;
-import com.butent.bee.egg.client.grid.BeeHtmlTable;
+import com.butent.bee.egg.client.grid.HtmlTable;
 import com.butent.bee.egg.client.grid.ColumnDefinition;
 import com.butent.bee.egg.client.grid.HasTableDefinition;
 import com.butent.bee.egg.client.grid.TableDefinition;
@@ -307,16 +307,16 @@ public abstract class TableBulkRenderer<RowType> implements HasTableDefinition<R
 
   private HasTableDefinition<RowType> source = null;
 
-  private final BeeHtmlTable table;
+  private final HtmlTable table;
 
   private TableDefinition<RowType> tableDefinition;
 
-  public TableBulkRenderer(BeeHtmlTable table, TableDefinition<RowType> tableDefinition) {
+  public TableBulkRenderer(HtmlTable table, TableDefinition<RowType> tableDefinition) {
     this.table = table;
     this.tableDefinition = tableDefinition;
   }
 
-  public TableBulkRenderer(BeeHtmlTable table, HasTableDefinition<RowType> sourceTableDef) {
+  public TableBulkRenderer(HtmlTable table, HasTableDefinition<RowType> sourceTableDef) {
     this(table, sourceTableDef.getTableDefinition());
     this.source = sourceTableDef;
   }
@@ -354,7 +354,7 @@ public abstract class TableBulkRenderer<RowType> implements HasTableDefinition<R
     return new BulkRowView<RowType>(cellView, this, options);
   }
 
-  protected BeeHtmlTable getTable() {
+  protected HtmlTable getTable() {
     return table;
   }
 
@@ -398,11 +398,11 @@ public abstract class TableBulkRenderer<RowType> implements HasTableDefinition<R
     return thatChild;
   }-*/;
 
-  private void setBodyElement(BeeHtmlTable table, Element newBody) {
+  private void setBodyElement(HtmlTable table, Element newBody) {
     table.setBodyElement(newBody);
   }
 
-  private void setWidgetRaw(BeeHtmlTable table, int row, int cell, Widget widget) {
+  private void setWidgetRaw(HtmlTable table, int row, int cell, Widget widget) {
     table.setWidget(row, cell, widget);
   }
 }

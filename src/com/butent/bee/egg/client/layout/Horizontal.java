@@ -1,25 +1,18 @@
 package com.butent.bee.egg.client.layout;
 
-import com.google.gwt.user.client.ui.FocusPanel;
-import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.user.client.ui.HorizontalPanel;
 
 import com.butent.bee.egg.client.dom.DomUtils;
 import com.butent.bee.egg.shared.HasId;
 
-public class BeeFocus extends FocusPanel implements HasId {
+public class Horizontal extends HorizontalPanel implements HasId {
 
-  public BeeFocus() {
-    super();
-    createId();
-  }
-
-  public BeeFocus(Widget child) {
-    super(child);
+  public Horizontal() {
     createId();
   }
 
   public void createId() {
-    DomUtils.createId(this, "focus");
+    DomUtils.createId(this, "hor");
   }
 
   public String getId() {

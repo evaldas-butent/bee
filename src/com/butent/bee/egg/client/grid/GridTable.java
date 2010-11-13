@@ -7,7 +7,7 @@ import com.butent.bee.egg.client.dom.DomUtils;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeConst;
 
-public class BeeGrid extends BeeHtmlTable {
+public class GridTable extends HtmlTable {
 
   private static native void addRows(Element table, int rows, int columns) /*-{
     var td = $doc.createElement("td");
@@ -26,17 +26,17 @@ public class BeeGrid extends BeeHtmlTable {
   protected int numColumns;
   protected int numRows;
 
-  public BeeGrid() {
+  public GridTable() {
     super();
 
-    setCellFormatter(new BeeCellFormatter());
-    setRowFormatter(new BeeRowFormatter());
-    setColumnFormatter(new BeeColumnFormatter());
+    setCellFormatter(new CellFormatter());
+    setRowFormatter(new RowFormatter());
+    setColumnFormatter(new ColumnFormatter());
 
     setClearText(BeeConst.HTML_NBSP);
   }
 
-  public BeeGrid(int rows, int columns) {
+  public GridTable(int rows, int columns) {
     this();
     resize(rows, columns);
   }

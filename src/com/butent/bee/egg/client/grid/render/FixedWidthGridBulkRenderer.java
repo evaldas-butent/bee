@@ -3,7 +3,7 @@ package com.butent.bee.egg.client.grid.render;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Element;
 
-import com.butent.bee.egg.client.grid.BeeHtmlTable;
+import com.butent.bee.egg.client.grid.HtmlTable;
 import com.butent.bee.egg.client.grid.FixedWidthGrid;
 import com.butent.bee.egg.client.grid.HasTableDefinition;
 import com.butent.bee.egg.client.grid.TableDefinition;
@@ -19,7 +19,7 @@ public class FixedWidthGridBulkRenderer<RowType> extends SelectionGridBulkRender
     super(grid, sourceTableDef);
   }
 
-  protected Element getBulkLoadedGhostRow(BeeHtmlTable table) {
+  protected Element getBulkLoadedGhostRow(HtmlTable table) {
     return table.getRow(0);
   }
 

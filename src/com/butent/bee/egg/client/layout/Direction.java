@@ -1,6 +1,6 @@
 package com.butent.bee.egg.client.layout;
 
-public enum BeeDirection {
+public enum Direction {
   NORTH, EAST, SOUTH, WEST, CENTER;
   
   public String brief() {

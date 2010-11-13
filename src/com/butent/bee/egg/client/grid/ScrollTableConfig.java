@@ -1,6 +1,5 @@
 package com.butent.bee.egg.client.grid;
 
-import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.client.ui.PopupPanel.PositionCallback;
 
 import com.butent.bee.egg.client.BeeKeeper;
@@ -10,7 +9,8 @@ import com.butent.bee.egg.client.dialog.BeePopupPanel;
 import com.butent.bee.egg.client.dom.DomUtils;
 import com.butent.bee.egg.client.grid.ScrollTable.ResizePolicy;
 import com.butent.bee.egg.client.grid.SelectionGrid.SelectionPolicy;
-import com.butent.bee.egg.client.layout.BeeLayoutPanel;
+import com.butent.bee.egg.client.layout.Absolute;
+import com.butent.bee.egg.client.layout.Scroll;
 import com.butent.bee.egg.client.utils.BeeCommand;
 import com.butent.bee.egg.client.widget.BeeButton;
 import com.butent.bee.egg.client.widget.BeeLabel;
@@ -138,7 +138,7 @@ public class ScrollTableConfig {
   public void show() {
     Assert.isPositive(columnCount);
 
-    BeeLayoutPanel lp = new BeeLayoutPanel();
+    Absolute panel = new Absolute();
     int xmrg = 8;
     int ymrg = 4;
     int x = xmrg;
@@ -146,29 +146,29 @@ public class ScrollTableConfig {
     int w = 500;
     int z;
     
-    lp.addLeftTop(new BeeLabel("Cell Padding"), x, y);
-    cpId = lp.addLeftWidthTop(new Spinner(cellPadding, 0, 20), x + 100, 52, y);
-    lp.addLeftTop(new BeeLabel("Cell Spacing"), x + 200, y);
-    csId = lp.addLeftWidthTop(new Spinner(cellSpacing, 0, 20), x + 300, 52, y);
+    panel.add(new BeeLabel("Cell Padding"), x, y);
+    cpId = panel.append(new Spinner(cellPadding, 0, 20), x + 100, y, 52);
+    panel.add(new BeeLabel("Cell Spacing"), x + 200, y);
+    csId = panel.append(new Spinner(cellSpacing, 0, 20), x + 300, y, 52);
     y += 36;
    
-    lp.addLeftTop(new BeeLabel("Grid Resize"), x, y);
+    panel.add(new BeeLabel("Grid Resize"), x, y);
     rpName = BeeUtils.createUniqueName("rp");
-    lp.addLeftTop(new RadioGroup(rpName, resizePolicy, ResizePolicy.values()), x + 100, y);
+    panel.add(new RadioGroup(rpName, resizePolicy, ResizePolicy.values()), x + 100, y);
     y += 30;
     
-    lp.addLeftTop(new BeeLabel("Row Selection"), x, y);
+    panel.add(new BeeLabel("Row Selection"), x, y);
     spName = BeeUtils.createUniqueName("sp");
-    lp.addLeftTop(new RadioGroup(spName, selectionPolicy, SelectionPolicy.values()), x + 100, y);
+    panel.add(new RadioGroup(spName, selectionPolicy, SelectionPolicy.values()), x + 100, y);
     y += 30 + ymrg;
     
-    lp.addLeftTop(new BeeLabel("Column Count"), x, y);
-    lp.addLeftTop(new BeeLabel(columnCount), x + 100, y);
-    lp.addLeftTop(new BeeLabel("Data Width  " + dataWidth), x + 200, y);
-    lp.addLeftTop(new BeeLabel("Available Width  " + availableWidth), x + 320, y);
+    panel.add(new BeeLabel("Column Count"), x, y);
+    panel.add(new BeeLabel(columnCount), x + 100, y);
+    panel.add(new BeeLabel("Data Width  " + dataWidth), x + 200, y);
+    panel.add(new BeeLabel("Available Width  " + availableWidth), x + 320, y);
     y += 30;
     
-    BeeLayoutPanel cp = new BeeLayoutPanel();
+    Absolute cp = new Absolute();
     int cx = xmrg;
     int cy = 0;
     
@@ -176,18 +176,18 @@ public class ScrollTableConfig {
     
     for (int i = 0; i < columnCount; i++) {
       cRef[i] = new ColumnRef();
-      cRef[i].setShow(cp.addLeftTop(new BeeSimpleCheckBox(columnVisible[i]), cx, cy));
-      cRef[i].setOrder(cp.addLeftWidthTop(new Spinner(i, 0, columnCount - 1), cx + 24, 48, cy));
-      cp.addLeftWidthTop(new BeeLabel(scrollTable.getHeaderTable().getText(0, i)), cx + 80, 116, cy);
+      cRef[i].setShow(cp.append(new BeeSimpleCheckBox(columnVisible[i]), cx, cy));
+      cRef[i].setOrder(cp.append(new Spinner(i, 0, columnCount - 1), cx + 24, cy, 48));
+      cp.append(new BeeLabel(scrollTable.getHeaderTable().getText(0, i)), cx + 80, cy, 116);
 
-      cRef[i].setCurrW(cp.addLeftWidthTop(new Spinner(columnWidth[i].getCurrentWidth(), 1, 500), 
-          cx + 200, 60, cy));
-      cRef[i].setMinW(cp.addLeftWidthTop(new Spinner(columnWidth[i].getMinimumWidth(), 1, 500), 
-          cx + 264, 60, cy));
-      cRef[i].setPrefW(cp.addLeftWidthTop(new Spinner(columnWidth[i].getPreferredWidth(), 1, 500), 
-          cx + 328, 60, cy));
-      cRef[i].setMaxW(cp.addLeftWidthTop(new Spinner(columnWidth[i].getMaximumWidth(), -1, 500), 
-          cx + 392, 60, cy));
+      cRef[i].setCurrW(cp.append(new Spinner(columnWidth[i].getCurrentWidth(), 1, 500),
+          cx + 200, cy, 60));
+      cRef[i].setMinW(cp.append(new Spinner(columnWidth[i].getMinimumWidth(), 1, 500), 
+          cx + 264, cy, 60));
+      cRef[i].setPrefW(cp.append(new Spinner(columnWidth[i].getPreferredWidth(), 1, 500), 
+          cx + 328, cy, 60));
+      cRef[i].setMaxW(cp.append(new Spinner(columnWidth[i].getMaximumWidth(), -1, 500), 
+          cx + 392, cy, 60));
       
       cy += 30;
     }
@@ -195,30 +195,34 @@ public class ScrollTableConfig {
     DomUtils.setWidth(cp, w - 20);
     DomUtils.setHeight(cp, cy);
     
-    z = BeeUtils.min(cy, 300);
-    
-    lp.add(cp, cy > 300);
-    lp.setWidgetLeftRight(cp, 0, Unit.PX, 0, Unit.PX);
-    lp.setWidgetTopHeight(cp, y, Unit.PX, z, Unit.PX);
-
-    y += z + ymrg;
+    z = 300;
+    if (cy > z) {
+      Scroll sp = new Scroll(cp);
+      panel.append(sp, 0, y, w);
+      DomUtils.setHeight(sp, z);
+      y += z;
+    } else {
+      panel.append(cp, 0, y, w);
+      y += cy;
+    }
+    y += ymrg;
     
     x = 50;
     z = (w - x * 2) / 5;
     
-    lp.addLeftWidthTop(new BeeButton("Apply", new ConfigCommand("apply")), x, z - 20, y);
-    lp.addLeftWidthTop(new BeeButton("Fill", new ConfigCommand("fill")), x += z, z - 20, y);
-    lp.addLeftWidthTop(new BeeButton("Redraw", new ConfigCommand("redraw")), x += z, z - 20, y);
-    lp.addLeftWidthTop(new BeeButton("Reset", new ConfigCommand("reset")), x += z, z - 20, y);
-    lp.addLeftWidthTop(new BeeButton("Cancel", new ConfigCommand("cancel")), x += z, z - 20, y);
+    panel.append(new BeeButton("Apply", new ConfigCommand("apply")), x, y, z - 20);
+    panel.append(new BeeButton("Fill", new ConfigCommand("fill")), x += z, y, z - 20);
+    panel.append(new BeeButton("Redraw", new ConfigCommand("redraw")), x += z, y, z - 20);
+    panel.append(new BeeButton("Reset", new ConfigCommand("reset")), x += z, y, z - 20);
+    panel.append(new BeeButton("Cancel", new ConfigCommand("cancel")), x += z, y, z - 20);
 
     y += 32;
     
-    DomUtils.setWidth(lp, w);
-    DomUtils.setHeight(lp, y);
+    DomUtils.setWidth(panel, w);
+    DomUtils.setHeight(panel, y);
     
     popup = new BeePopupPanel();
-    popup.setWidget(lp);
+    popup.setWidget(panel);
     popup.setStyleName(BeeStyle.CONFIG_PANEL);
     popup.setPopupPositionAndShow(new PopupPosition());
   }

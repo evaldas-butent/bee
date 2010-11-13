@@ -29,8 +29,8 @@ import com.butent.bee.egg.client.event.EventUtils;
 import com.butent.bee.egg.client.event.HasAfterAddHandler;
 import com.butent.bee.egg.client.event.HasBeeBlurHandler;
 import com.butent.bee.egg.client.layout.BeeLayoutPanel;
-import com.butent.bee.egg.client.layout.BeeStack;
-import com.butent.bee.egg.client.layout.BeeTab;
+import com.butent.bee.egg.client.layout.Stack;
+import com.butent.bee.egg.client.layout.Tab;
 import com.butent.bee.egg.client.menu.BeeMenuItem.ITEM_TYPE;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeConst;
@@ -174,7 +174,7 @@ public class BeeMenuBar extends Widget implements HasId, HasAfterAddHandler,
             Layout.Alignment.BEGIN);
       }
 
-    } else if (parent instanceof BeeStack || parent instanceof BeeTab) {
+    } else if (parent instanceof Stack || parent instanceof Tab) {
       setStylePrimaryName(STYLENAME_ROOT);
     }
   }

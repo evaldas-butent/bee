@@ -8,7 +8,7 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.egg.client.BeeGlobal;
 import com.butent.bee.egg.client.dom.DomUtils;
 import com.butent.bee.egg.client.grid.BeeCellTable;
-import com.butent.bee.egg.client.layout.BeeVertical;
+import com.butent.bee.egg.client.layout.Vertical;
 import com.butent.bee.egg.client.tree.BeeTree;
 import com.butent.bee.egg.client.widget.BeeLabel;
 import com.butent.bee.egg.shared.Assert;
@@ -58,7 +58,7 @@ public class BeeMessageBox {
     int n = x.length;
     Assert.parameterCount(n, 1);
 
-    BeeVertical vp = new BeeVertical();
+    Vertical vp = new Vertical();
 
     for (int i = 0; i < n; i++) {
       if (x[i] instanceof Widget) {

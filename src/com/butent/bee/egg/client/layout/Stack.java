@@ -9,9 +9,9 @@ import com.butent.bee.egg.client.event.HasAfterAddHandler;
 import com.butent.bee.egg.client.event.HasBeforeAddHandler;
 import com.butent.bee.egg.shared.HasId;
 
-public class BeeStack extends StackLayoutPanel implements HasId {
+public class Stack extends StackLayoutPanel implements HasId {
 
-  public BeeStack(Unit unit) {
+  public Stack(Unit unit) {
     super(unit);
     createId();
   }

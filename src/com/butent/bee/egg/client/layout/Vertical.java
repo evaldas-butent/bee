@@ -1,18 +1,18 @@
 package com.butent.bee.egg.client.layout;
 
-import com.google.gwt.user.client.ui.FlowPanel;
+import com.google.gwt.user.client.ui.VerticalPanel;
 
 import com.butent.bee.egg.client.dom.DomUtils;
 import com.butent.bee.egg.shared.HasId;
 
-public class BeeFlow extends FlowPanel implements HasId {
+public class Vertical extends VerticalPanel implements HasId {
 
-  public BeeFlow() {
+  public Vertical() {
     createId();
   }
 
   public void createId() {
-    DomUtils.createId(this, "flow");
+    DomUtils.createId(this, "vert");
   }
 
   public String getId() {

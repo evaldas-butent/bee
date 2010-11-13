@@ -14,8 +14,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class FixedWidthFlexTable extends BeeFlexTable {
-  public class FixedWidthFlexCellFormatter extends BeeFlexCellFormatter {
+public class FixedWidthFlexTable extends FlexTable {
+  public class FixedWidthFlexCellFormatter extends FlexCellFormatter {
     @Override
     public void setColSpan(int row, int column, int colSpan) {
       colSpan = Math.max(1, colSpan);
@@ -57,14 +57,14 @@ public class FixedWidthFlexTable extends BeeFlexTable {
     }
   }
 
-  public class FixedWidthFlexColumnFormatter extends BeeColumnFormatter {
+  public class FixedWidthFlexColumnFormatter extends ColumnFormatter {
     @Override
     public void setWidth(int column, String width) {
       Assert.unsupported("setWidth is not supported");
     }
   }
 
-  public class FixedWidthFlexRowFormatter extends BeeRowFormatter {
+  public class FixedWidthFlexRowFormatter extends RowFormatter {
     @Override
     protected Element getRawElement(int row) {
       return super.getRawElement(row + 1);
@@ -148,7 +148,7 @@ public class FixedWidthFlexTable extends BeeFlexTable {
 
   @Override
   public int insertRow(int beforeRow) {
-    BeeFlexCellFormatter formatter = getFlexCellFormatter();
+    FlexCellFormatter formatter = getFlexCellFormatter();
     int affectedColSpan = getNumColumnsPerRow(beforeRow);
     if (beforeRow != getRowCount()) {
       int numCellsInRow = getCellCount(beforeRow);
@@ -209,7 +209,7 @@ public class FixedWidthFlexTable extends BeeFlexTable {
 
   @Override
   public void removeRow(int row) {
-    BeeFlexCellFormatter formatter = getFlexCellFormatter();
+    FlexCellFormatter formatter = getFlexCellFormatter();
     int affectedColSpan = getNumColumnsPerRow(row);
     int numCellsInRow = getCellCount(row);
     for (int cell = 0; cell < numCellsInRow; cell++) {

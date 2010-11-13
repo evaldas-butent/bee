@@ -1,6 +1,6 @@
 package com.butent.bee.egg.client.grid.edit;
 
-import com.butent.bee.egg.client.grid.BeeHtmlTable;
+import com.butent.bee.egg.client.grid.HtmlTable;
 
 public interface CellEditor<ColType> {
   public static interface Callback<ColType> {
@@ -12,9 +12,9 @@ public interface CellEditor<ColType> {
     private int cellIndex;
     private int rowIndex;
 
-    private BeeHtmlTable table;
+    private HtmlTable table;
 
-    public CellEditInfo(BeeHtmlTable table, int rowIndex, int cellIndex) {
+    public CellEditInfo(HtmlTable table, int rowIndex, int cellIndex) {
       this.table = table;
       this.rowIndex = rowIndex;
       this.cellIndex = cellIndex;
@@ -28,7 +28,7 @@ public interface CellEditor<ColType> {
       return rowIndex;
     }
 
-    public BeeHtmlTable getTable() {
+    public HtmlTable getTable() {
       return table;
     }
   }

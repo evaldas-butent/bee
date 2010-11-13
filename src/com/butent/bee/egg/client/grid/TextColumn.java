@@ -7,16 +7,16 @@ import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.data.BeeView;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
-public class BeeTextColumn extends Column<Integer, String> {
+public class TextColumn extends Column<Integer, String> {
   private BeeView view;
   private int idx;
   private int maxDisplaySize;
 
-  public BeeTextColumn(Cell<String> cell, BeeView view, int idx) {
+  public TextColumn(Cell<String> cell, BeeView view, int idx) {
     this(cell, view, idx, -1);
   }
 
-  public BeeTextColumn(Cell<String> cell, BeeView view, int idx, int max) {
+  public TextColumn(Cell<String> cell, BeeView view, int idx, int max) {
     super(cell);
 
     this.view = view;

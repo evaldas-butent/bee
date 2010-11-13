@@ -33,9 +33,9 @@ import com.google.gwt.user.client.ui.HasVerticalAlignment.VerticalAlignmentConst
 import com.butent.bee.egg.client.BeeGlobal;
 import com.butent.bee.egg.client.BeeKeeper;
 import com.butent.bee.egg.client.dom.DomUtils;
-import com.butent.bee.egg.client.grid.BeeFlexTable.BeeFlexCellFormatter;
-import com.butent.bee.egg.client.grid.BeeHtmlTable.BeeCell;
-import com.butent.bee.egg.client.grid.BeeHtmlTable.BeeCellFormatter;
+import com.butent.bee.egg.client.grid.FlexTable.FlexCellFormatter;
+import com.butent.bee.egg.client.grid.HtmlTable.Cell;
+import com.butent.bee.egg.client.grid.HtmlTable.CellFormatter;
 import com.butent.bee.egg.client.grid.SelectionGrid.SelectionPolicy;
 import com.butent.bee.egg.client.grid.SortableGrid.ColumnSorter;
 import com.butent.bee.egg.client.grid.SortableGrid.ColumnSorterCallback;
@@ -438,7 +438,7 @@ public class ScrollTable<RowType> extends ComplexPanel implements
         } else if (sortedCellIndex >= 0 && sortedRowIndex >= 0
             && headerTable.getRowCount() > sortedRowIndex
             && headerTable.getCellCount(sortedRowIndex) > sortedCellIndex) {
-          BeeCellFormatter formatter = headerTable.getCellFormatter();
+          CellFormatter formatter = headerTable.getCellFormatter();
           Element td = formatter.getElement(sortedRowIndex, sortedCellIndex);
           applySortedColumnIndicator(td, ascending);
         }
@@ -729,8 +729,8 @@ public class ScrollTable<RowType> extends ComplexPanel implements
     dataTable.addDomHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-        if (event.getSource() instanceof BeeHtmlTable) {
-          BeeCell cell = ((BeeHtmlTable) event.getSource()).getCellForEvent(event);
+        if (event.getSource() instanceof HtmlTable) {
+          Cell cell = ((HtmlTable) event.getSource()).getCellForEvent(event);
           if (cell != null) {
             editCell(cell.getRowIndex(), cell.getCellIndex());
           }
@@ -2029,7 +2029,7 @@ public class ScrollTable<RowType> extends ComplexPanel implements
     }
 
     int columnCount = allInfos.size();
-    BeeFlexCellFormatter formatter = table.getFlexCellFormatter();
+    FlexCellFormatter formatter = table.getFlexCellFormatter();
     List<ColumnHeaderInfo> prevInfos = null;
 
     for (int col = 0; col < columnCount; col++) {

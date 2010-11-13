@@ -29,11 +29,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-public class SelectionGrid extends BeeGrid implements HasRowHighlightHandlers,
+public class SelectionGrid extends GridTable implements HasRowHighlightHandlers,
     HasRowUnhighlightHandlers, HasCellHighlightHandlers,
     HasCellUnhighlightHandlers, HasRowSelectionHandlers {
 
-  public class SelectionGridCellFormatter extends BeeCellFormatter {
+  public class SelectionGridCellFormatter extends CellFormatter {
     @Override
     protected Element getRawElement(int row, int column) {
       if (selectionPolicy.hasInputColumn()) {
@@ -43,7 +43,7 @@ public class SelectionGrid extends BeeGrid implements HasRowHighlightHandlers,
     }
   }
 
-  public class SelectionGridRowFormatter extends BeeRowFormatter {
+  public class SelectionGridRowFormatter extends RowFormatter {
     @Override
     protected Element getRawElement(int row) {
       return super.getRawElement(row);
@@ -276,7 +276,7 @@ public class SelectionGrid extends BeeGrid implements HasRowHighlightHandlers,
   public void selectAllRows() {
     Set<Row> oldRowSet = getSelectedRowsSet();
 
-    BeeRowFormatter rowFormatter = getRowFormatter();
+    RowFormatter rowFormatter = getRowFormatter();
     int rowCount = getRowCount();
     for (int i = 0; i < rowCount; i++) {
       if (!selectedRows.containsKey(i)) {

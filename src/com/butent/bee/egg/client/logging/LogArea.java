@@ -1,8 +1,8 @@
 package com.butent.bee.egg.client.logging;
 
-import com.butent.bee.egg.client.layout.BeeFlow;
+import com.butent.bee.egg.client.layout.Flow;
 
-public class LogArea extends BeeFlow {
+public class LogArea extends Flow {
 
   public LogArea() {
     super();

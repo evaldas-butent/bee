@@ -1,25 +1,20 @@
 package com.butent.bee.egg.client.layout;
 
-import com.google.gwt.user.client.ui.ScrollPanel;
-import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.user.client.ui.TabLayoutPanel;
 
 import com.butent.bee.egg.client.dom.DomUtils;
 import com.butent.bee.egg.shared.HasId;
 
-public class BeeScroll extends ScrollPanel implements HasId {
+public class Tab extends TabLayoutPanel implements HasId {
 
-  public BeeScroll() {
-    super();
-    createId();
-  }
-
-  public BeeScroll(Widget child) {
-    super(child);
+  public Tab(double barHeight, Unit barUnit) {
+    super(barHeight, barUnit);
     createId();
   }
 
   public void createId() {
-    DomUtils.createId(this, "scroll");
+    DomUtils.createId(this, "tab");
   }
 
   public String getId() {

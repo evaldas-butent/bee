@@ -5,9 +5,9 @@ import com.google.gwt.user.client.Element;
 import com.butent.bee.egg.client.dom.DomUtils;
 import com.butent.bee.egg.shared.Assert;
 
-public class BeeFlexTable extends BeeHtmlTable {
+public class FlexTable extends HtmlTable {
 
-  public class BeeFlexCellFormatter extends BeeCellFormatter {
+  public class FlexCellFormatter extends CellFormatter {
     public int getColSpan(int row, int column) {
       return DomUtils.getColSpan(getElement(row, column));
     }
@@ -33,11 +33,11 @@ public class BeeFlexTable extends BeeHtmlTable {
     }
   }-*/;
 
-  public BeeFlexTable() {
+  public FlexTable() {
     super();
-    setCellFormatter(new BeeFlexCellFormatter());
-    setRowFormatter(new BeeRowFormatter());
-    setColumnFormatter(new BeeColumnFormatter());
+    setCellFormatter(new FlexCellFormatter());
+    setRowFormatter(new RowFormatter());
+    setColumnFormatter(new ColumnFormatter());
     
     setStyleName("bee-FlexTable");
   }
@@ -62,8 +62,8 @@ public class BeeFlexTable extends BeeHtmlTable {
     return getRawColumnIndex(row, column);
   }
 
-  public BeeFlexCellFormatter getFlexCellFormatter() {
-    return (BeeFlexCellFormatter) getCellFormatter();
+  public FlexCellFormatter getFlexCellFormatter() {
+    return (FlexCellFormatter) getCellFormatter();
   }
 
   @Override
@@ -131,7 +131,7 @@ public class BeeFlexTable extends BeeHtmlTable {
   }
 
   private int getRawColumnIndex(int row, int column) {
-    BeeFlexCellFormatter formatter = getFlexCellFormatter();
+    FlexCellFormatter formatter = getFlexCellFormatter();
     int columnIndex = 0;
     for (int curCell = 0; curCell < column; curCell++) {
       columnIndex += formatter.getColSpan(row, curCell);

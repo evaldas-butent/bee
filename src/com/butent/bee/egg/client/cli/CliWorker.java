@@ -19,10 +19,10 @@ import com.butent.bee.egg.client.communication.RpcList;
 import com.butent.bee.egg.client.data.JsData;
 import com.butent.bee.egg.client.dom.DomUtils;
 import com.butent.bee.egg.client.dom.Features;
-import com.butent.bee.egg.client.grid.BeeFlexTable;
-import com.butent.bee.egg.client.layout.BeeDirection;
-import com.butent.bee.egg.client.layout.BeeFlow;
-import com.butent.bee.egg.client.layout.BeeSplit;
+import com.butent.bee.egg.client.grid.FlexTable;
+import com.butent.bee.egg.client.layout.Direction;
+import com.butent.bee.egg.client.layout.Flow;
+import com.butent.bee.egg.client.layout.Split;
 import com.butent.bee.egg.client.layout.TilePanel;
 import com.butent.bee.egg.client.tree.BeeTree;
 import com.butent.bee.egg.client.utils.BeeJs;
@@ -132,7 +132,7 @@ public class CliWorker {
   }
 
   public static void doScreen(String[] arr) {
-    BeeSplit screen = BeeKeeper.getUi().getScreenPanel();
+    Split screen = BeeKeeper.getUi().getScreenPanel();
     Assert.notNull(screen);
 
     String p1 = BeeUtils.arrayGetQuietly(arr, 0);
@@ -143,7 +143,7 @@ public class CliWorker {
       return;
     }
 
-    BeeDirection dir = DomUtils.getDirection(p1);
+    Direction dir = DomUtils.getDirection(p1);
     if (dir == null) {
       BeeGlobal.sayHuh(p1, p2);
       return;
@@ -406,7 +406,7 @@ public class CliWorker {
   }
 
   public static void showInput() {
-    BeeFlexTable table = new BeeFlexTable();
+    FlexTable table = new FlexTable();
     table.setCellSpacing(3);
     
     String[] types = new String[] {"search", "tel", "url", "email",
@@ -507,7 +507,7 @@ public class CliWorker {
     }
     
     Svg widget = new Svg();
-    BeeFlow panel = new BeeFlow();
+    Flow panel = new Flow();
     panel.add(widget);
     BeeKeeper.getUi().updateActivePanel(panel);
     

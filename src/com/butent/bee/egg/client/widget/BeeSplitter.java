@@ -7,8 +7,8 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.egg.client.dom.DomUtils;
-import com.butent.bee.egg.client.layout.BeeLayoutCommand;
-import com.butent.bee.egg.client.layout.BeeLayoutData;
+import com.butent.bee.egg.client.layout.LayoutCommand;
+import com.butent.bee.egg.client.layout.LayoutData;
 import com.butent.bee.egg.client.layout.HasLayoutCallback;
 import com.butent.bee.egg.shared.HasId;
 
@@ -18,7 +18,7 @@ public abstract class BeeSplitter extends Widget implements HasId, HasLayoutCall
 
   private int offset;
   private boolean mouseDown;
-  private BeeLayoutCommand layoutCommand;
+  private LayoutCommand layoutCommand;
 
   private boolean reverse;
   private int size;
@@ -48,7 +48,7 @@ public abstract class BeeSplitter extends Widget implements HasId, HasLayoutCall
     return DomUtils.getId(this);
   }
 
-  public BeeLayoutCommand getLayoutCommand() {
+  public LayoutCommand getLayoutCommand() {
     return layoutCommand;
   }
 
@@ -134,13 +134,13 @@ public abstract class BeeSplitter extends Widget implements HasId, HasLayoutCall
     DomUtils.setId(this, id);
   }
   
-  public void setLayoutCommand(BeeLayoutCommand layoutCommand) {
+  public void setLayoutCommand(LayoutCommand layoutCommand) {
     this.layoutCommand = layoutCommand;
   }
 
   public void setMinSize(int minSize) {
     this.minSize = minSize;
-    BeeLayoutData layout = (BeeLayoutData) target.getLayoutData();
+    LayoutData layout = (LayoutData) target.getLayoutData();
     setAssociatedWidgetSize((int) layout.size);
   }
 
@@ -169,7 +169,7 @@ public abstract class BeeSplitter extends Widget implements HasId, HasLayoutCall
       size = minSize;
     }
 
-    BeeLayoutData layout = (BeeLayoutData) target.getLayoutData();
+    LayoutData layout = (LayoutData) target.getLayoutData();
     if (size == layout.size) {
       return;
     }
@@ -177,7 +177,7 @@ public abstract class BeeSplitter extends Widget implements HasId, HasLayoutCall
     layout.size = size;
 
     if (layoutCommand == null) {
-      layoutCommand = new BeeLayoutCommand(this);
+      layoutCommand = new LayoutCommand(this);
       Scheduler.get().scheduleDeferred(layoutCommand);
     }
   }
