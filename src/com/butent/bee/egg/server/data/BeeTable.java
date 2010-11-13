@@ -2,6 +2,7 @@ package com.butent.bee.egg.server.data;
 
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.sql.BeeConstants.DataTypes;
+import com.butent.bee.egg.shared.sql.BeeConstants.Keywords;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
@@ -12,35 +13,80 @@ import java.util.Map;
 
 public class BeeTable {
 
+  public class BeeForeignKey {
+    private final String name;
+    private final String keyField;
+    private final String refTable;
+    private final String refField;
+    private final Keywords action;
+
+    private BeeForeignKey(String keyField,
+        String refTable, String refField, Keywords action) {
+      Assert.notEmpty(keyField);
+      Assert.notEmpty(refTable);
+      Assert.notEmpty(refField);
+
+      this.name = "FK_" + refTable + "_" + refField;
+      this.keyField = keyField;
+      this.refTable = refTable;
+      this.refField = refField;
+      this.action = action;
+    }
+
+    public Keywords getAction() {
+      return action;
+    }
+
+    public String getKeyField() {
+      return keyField;
+    }
+
+    public String getName() {
+      return name;
+    }
+
+    public String getRefField() {
+      return refField;
+    }
+
+    public String getRefTable() {
+      return refTable;
+    }
+
+    public String getTable() {
+      return BeeTable.this.getName();
+    }
+  }
+
   public class BeeKey {
     private final String name;
-    private final String[] columns;
+    private final String[] keyFields;
     private final boolean unique;
 
-    private BeeKey(String name, boolean unique, String... columns) {
+    private BeeKey(String name, boolean unique, String... keyFields) {
       Assert.notEmpty(name);
 
       this.name = name;
       this.unique = unique;
 
-      List<String> cols = new ArrayList<String>();
+      List<String> flds = new ArrayList<String>();
 
-      if (!BeeUtils.isEmpty(columns)) {
-        for (String col : columns) {
-          if (!BeeUtils.isEmpty(col)) {
-            cols.add(col);
+      if (!BeeUtils.isEmpty(keyFields)) {
+        for (String fld : keyFields) {
+          if (!BeeUtils.isEmpty(fld)) {
+            flds.add(fld);
           }
         }
       }
-      if (BeeUtils.isEmpty(cols)) {
-        this.columns = new String[]{name};
+      if (BeeUtils.isEmpty(flds)) {
+        this.keyFields = new String[]{name};
       } else {
-        this.columns = cols.toArray(new String[0]);
+        this.keyFields = flds.toArray(new String[0]);
       }
     }
 
-    public String[] getColumns() {
-      return columns;
+    public String[] getKeyFields() {
+      return keyFields;
     }
 
     public String getName() {
@@ -115,7 +161,7 @@ public class BeeTable {
 
   private Map<String, BeeStructure> fields = new LinkedHashMap<String, BeeStructure>();
   private List<BeeKey> keys = new ArrayList<BeeKey>();
-  private List<?> foreignKeys;
+  private List<BeeForeignKey> foreignKeys = new ArrayList<BeeForeignKey>();
 
   public BeeTable(String name, String idName, String lockName) {
     Assert.notEmpty(name);
@@ -132,18 +178,32 @@ public class BeeTable {
     return this;
   }
 
-  public BeeTable addKey(String keyName, String... keyColumns) {
-    keys.add(new BeeKey(keyName, false, keyColumns));
+  public BeeTable addForeignKey(String keyField,
+      String refTable, String refField, Keywords action) {
+    foreignKeys.add(new BeeForeignKey(keyField, refTable, refField, action));
     return this;
   }
 
-  public BeeTable addUniqueKey(String keyName, String... keyColumns) {
-    keys.add(new BeeKey(keyName, true, keyColumns));
+  public BeeTable addKey(String keyName, String... keyFields) {
+    keys.add(new BeeKey(keyName, false, keyFields));
     return this;
+  }
+
+  public BeeTable addUniqueKey(String keyName, String... keyFields) {
+    keys.add(new BeeKey(keyName, true, keyFields));
+    return this;
+  }
+
+  public BeeStructure getField(String field) {
+    return fields.get(field);
   }
 
   public Collection<BeeStructure> getFields() {
     return fields.values();
+  }
+
+  public Collection<BeeForeignKey> getForeignKeys() {
+    return foreignKeys;
   }
 
   public String getIdName() {

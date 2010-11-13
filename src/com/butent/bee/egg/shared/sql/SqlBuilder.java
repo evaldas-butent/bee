@@ -7,6 +7,7 @@ import com.butent.bee.egg.shared.sql.SqlCreate.SqlField;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
 import java.util.List;
+import java.util.Map;
 
 public abstract class SqlBuilder {
 
@@ -28,26 +29,36 @@ public abstract class SqlBuilder {
 
     xpr.append(sqlType(field.getType(), field.getPrecission(), field.getScale()));
 
-    Keywords[] prm = field.getParams();
+    Map<Keywords, Object[]> options = field.getOptions();
 
-    if (!BeeUtils.isEmpty(prm)) {
-      for (Keywords p : prm) {
-        xpr.append(" ").append(sqlKeyword(p));
+    if (!BeeUtils.isEmpty(options)) {
+      for (Keywords opt : options.keySet()) {
+        xpr.append(" ").append(sqlKeyword(opt, options.get(opt)));
       }
     }
     return xpr.toString();
   }
 
-  protected Object sqlKeyword(Keywords prm) {
-    switch (prm) {
+  protected String sqlKeyword(Keywords option, Object... params) {
+    switch (option) {
       case NOTNULL:
         return "NOT NULL";
-      case PRIMARY:
-        return "PRIMARY KEY";
       case UNIQUE:
         return "UNIQUE";
+      case PRIMARY:
+        return "PRIMARY KEY";
+      case REFERENCES:
+        return "REFERENCES "
+            + sqlQuote((String) params[0])
+            + " (" + sqlQuote((String) params[1]) + ")"
+            + (params[2] == null ? ""
+                : " ON DELETE " + sqlKeyword((Keywords) params[2]));
+      case CASCADE:
+        return "CASCADE";
+      case SETNULL:
+        return "SET NULL";
       default:
-        Assert.unsupported("Unsupported keyword: " + prm.name());
+        Assert.unsupported("Unsupported keyword: " + option.name());
         return null;
     }
   }

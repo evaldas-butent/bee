@@ -6,7 +6,7 @@ public final class BeeConstants {
     BOOLEAN, INTEGER, LONG, DOUBLE, NUMERIC, CHAR, STRING
   }
   public enum Keywords {
-    NOTNULL, UNIQUE, PRIMARY
+    NOTNULL, UNIQUE, PRIMARY, REFERENCES, CASCADE, SETNULL
   }
 
   public static final String BEE_TABLE = "bee_Tables";
