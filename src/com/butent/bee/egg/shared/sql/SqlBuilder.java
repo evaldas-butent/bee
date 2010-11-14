@@ -6,14 +6,10 @@ import com.butent.bee.egg.shared.sql.BeeConstants.Keywords;
 import com.butent.bee.egg.shared.sql.SqlCreate.SqlField;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public abstract class SqlBuilder {
-
-  public String getTables() {
-    return "SELECT table_name FROM information_schema.tables";
-  }
 
   public String sqlTransform(Object x) {
     String s = BeeUtils.transform(x);
@@ -24,41 +20,50 @@ public abstract class SqlBuilder {
     return s;
   }
 
-  protected String sqlFieldType(SqlField field) {
-    StringBuilder xpr = new StringBuilder();
-
-    xpr.append(sqlType(field.getType(), field.getPrecission(), field.getScale()));
-
-    Map<Keywords, Object[]> options = field.getOptions();
-
-    if (!BeeUtils.isEmpty(options)) {
-      for (Keywords opt : options.keySet()) {
-        xpr.append(" ").append(sqlKeyword(opt, options.get(opt)));
-      }
-    }
-    return xpr.toString();
-  }
-
   protected String sqlKeyword(Keywords option, Object... params) {
     switch (option) {
-      case NOTNULL:
+      case NOT_NULL:
         return "NOT NULL";
       case UNIQUE:
         return "UNIQUE";
       case PRIMARY:
         return "PRIMARY KEY";
       case REFERENCES:
-        return "REFERENCES "
-            + sqlQuote((String) params[0])
-            + " (" + sqlQuote((String) params[1]) + ")"
-            + (params[2] == null ? ""
-                : " ON DELETE " + sqlKeyword((Keywords) params[2]));
+        return "REFERENCES " + params[0] + " (" + params[1] + ")"
+            + (params[2] != null ? " ON DELETE " + sqlKeyword((Keywords) params[2]) : "");
       case CASCADE:
         return "CASCADE";
-      case SETNULL:
+      case SET_NULL:
         return "SET NULL";
+      case DROP_TABLE:
+        return "DROP TABLE " + params[0];
+      case CREATE_INDEX:
+        StringBuilder cmd = new StringBuilder("CREATE");
+
+        if (!BeeUtils.isEmpty(params[0])) {
+          cmd.append(" UNIQUE");
+        }
+        cmd.append(" INDEX ").append(params[2]).append(" ON ").append(params[1]).append(" (");
+
+        if (params.length > 3) {
+          for (int i = 3; i < params.length; i++) {
+            if (i > 3) {
+              cmd.append(", ");
+            }
+            cmd.append(params[i]);
+          }
+        } else {
+          cmd.append(params[2]);
+        }
+        cmd.append(")");
+
+        return cmd.toString();
+      case GET_TABLES:
+        return new SqlSelect()
+          .addFields("information_schema.tables", "table_name")
+          .addFrom("information_schema.tables").getQuery(this);
       default:
-        Assert.unsupported("Unsupported keyword: " + option.name());
+        Assert.unsupported("Unsupported keyword: " + option);
         return null;
     }
   }
@@ -87,6 +92,22 @@ public abstract class SqlBuilder {
     }
   }
 
+  String getCommand(SqlCommand sc, boolean paramMode) {
+    Assert.notNull(sc);
+    Assert.state(!sc.isEmpty());
+
+    List<Object> params = new ArrayList<Object>();
+
+    for (Object prm : sc.getParameters()) {
+      if (prm instanceof IsSql) {
+        params.add(((IsSql) prm).getSqlString(this, paramMode));
+      } else {
+        params.add(prm);
+      }
+    }
+    return sqlKeyword(sc.getCommand(), params.toArray());
+  }
+
   String getCreate(SqlCreate sc, boolean paramMode) {
     Assert.notNull(sc);
     Assert.state(!sc.isEmpty());
@@ -98,8 +119,7 @@ public abstract class SqlBuilder {
     List<SqlField> fieldList = sc.getFields();
 
     if (!BeeUtils.isEmpty(sc.getSource())) {
-      query.append(" AS ");
-      query.append(sc.getSource().getSqlString(this, paramMode));
+      query.append(" AS ").append(sc.getSource().getSqlString(this, paramMode));
     } else {
       query.append(" (");
 
@@ -109,7 +129,11 @@ public abstract class SqlBuilder {
         }
         SqlField field = fieldList.get(i);
         query.append(field.getName().getSqlString(this, paramMode))
-          .append(" ").append(sqlFieldType(field));
+          .append(" ").append(sqlType(field.getType(), field.getPrecission(), field.getScale()));
+
+        for (IsSql opt : field.getOptions()) {
+          query.append(" ").append(opt.getSqlString(this, paramMode));
+        }
       }
       query.append(")");
     }
@@ -135,44 +159,6 @@ public abstract class SqlBuilder {
       }
     }
     query.append(" WHERE ").append(sd.getWhere().getSqlString(this, paramMode));
-
-    return query.toString();
-  }
-
-  String getDrop(SqlDrop sd, boolean paramMode) {
-    Assert.notNull(sd);
-    Assert.state(!sd.isEmpty());
-
-    StringBuilder query = new StringBuilder("DROP TABLE ");
-
-    query.append(sd.getTarget().getSqlString(this, paramMode));
-
-    return query.toString();
-  }
-
-  String getIndex(SqlIndex si, boolean paramMode) {
-    Assert.notNull(si);
-    Assert.state(!si.isEmpty());
-
-    StringBuilder query = new StringBuilder("CREATE");
-
-    if (si.isUnique()) {
-      query.append(" UNIQUE");
-    }
-    query.append(" INDEX ");
-    query.append(si.getName().getSqlString(this, paramMode));
-    query.append(" ON ").append(si.getTarget().getSqlString(this, paramMode));
-    query.append(" (");
-
-    IsExpression[] cols = si.getColumns();
-
-    for (int i = 0; i < cols.length; i++) {
-      if (i > 0) {
-        query.append(", ");
-      }
-      query.append(cols[i].getSqlString(this, paramMode));
-    }
-    query.append(")");
 
     return query.toString();
   }

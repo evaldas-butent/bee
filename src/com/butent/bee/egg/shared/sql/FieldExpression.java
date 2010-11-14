@@ -23,14 +23,22 @@ class FieldExpression implements IsExpression {
 
   @Override
   public String getSqlString(SqlBuilder builder, boolean paramMode) {
-    String s;
+    StringBuilder s = new StringBuilder();
 
     if (BeeUtils.isEmpty(source)) {
-      s = builder.sqlQuote(field);
+      s.append(builder.sqlQuote(field));
     } else {
-      s = builder.sqlQuote(source) + "." + builder.sqlQuote(field);
+      String[] arr = ((String) source).split("\\.");
+
+      for (int i = 0; i < arr.length; i++) {
+        if (i > 0) {
+          s.append(".");
+        }
+        s.append(builder.sqlQuote(arr[i]));
+      }
+      s.append(".").append(builder.sqlQuote(field));
     }
-    return s;
+    return s.toString();
   }
 
   String getField() {

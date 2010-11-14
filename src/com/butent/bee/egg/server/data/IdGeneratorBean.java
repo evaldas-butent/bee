@@ -3,6 +3,7 @@ package com.butent.bee.egg.server.data;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.sql.BeeConstants.Keywords;
 import com.butent.bee.egg.shared.sql.IsCondition;
+import com.butent.bee.egg.shared.sql.SqlCommand;
 import com.butent.bee.egg.shared.sql.SqlCreate;
 import com.butent.bee.egg.shared.sql.SqlInsert;
 import com.butent.bee.egg.shared.sql.SqlSelect;
@@ -84,8 +85,8 @@ public class IdGeneratorBean {
 
     if (!qs.tableExists(ID_TABLE)) {
       SqlCreate sc = new SqlCreate(ID_TABLE);
-      sc.addString(ID_KEY, 30).addOption(ID_KEY, Keywords.PRIMARY);
-      sc.addLong(ID_LAST).addOption(ID_LAST, Keywords.NOTNULL);
+      sc.addString(ID_KEY, 30, new SqlCommand(Keywords.PRIMARY));
+      sc.addLong(ID_LAST, new SqlCommand(Keywords.NOT_NULL));
       qs.updateData(sc);
     } else {
       SqlUpdate su = new SqlUpdate(ID_TABLE);

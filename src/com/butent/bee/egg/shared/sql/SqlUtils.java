@@ -1,8 +1,10 @@
 package com.butent.bee.egg.shared.sql;
 
 import com.butent.bee.egg.shared.Assert;
+import com.butent.bee.egg.shared.sql.BeeConstants.Keywords;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class SqlUtils {
@@ -16,16 +18,6 @@ public class SqlUtils {
   private static final String MORE_EQUAL = ">=";
   private static final String NOT_EQUAL = "<>";
 
-  static void addParams(List<Object> paramList, List<Object> params) {
-    if (!BeeUtils.isEmpty(params)) {
-      if (BeeUtils.isEmpty(paramList)) {
-        paramList = params;
-      } else {
-        paramList.addAll(params);
-      }
-    }
-  }
-
   public static IsCondition and(IsCondition... conditions) {
     Conditions cb = new AndConditions();
     cb.add(conditions);
@@ -38,6 +30,18 @@ public class SqlUtils {
 
   public static IsCondition contains(IsExpression expr, Object value) {
     return new JoinCondition(expr, LIKE, constant("%" + value + "%"));
+  }
+
+  public static IsQuery createIndex(String table, String name, String... fields) {
+    return createIndex(false, table, name, fields);
+  }
+
+  public static IsQuery createUniqueIndex(String table, String name, String... fields) {
+    return createIndex(true, table, name, fields);
+  }
+
+  public static IsQuery dropTable(String table) {
+    return new SqlCommand(Keywords.DROP_TABLE, field(table));
   }
 
   public static IsCondition equal(IsExpression expr, Object value) {
@@ -70,6 +74,10 @@ public class SqlUtils {
       list[i] = new FieldExpression(source, fields[i]);
     }
     return list;
+  }
+
+  public static IsQuery getTables() {
+    return new SqlCommand(Keywords.GET_TABLES);
   }
 
   public static IsCondition in(String src, String fld, SqlSelect query) {
@@ -194,5 +202,27 @@ public class SqlUtils {
     Conditions cb = new OrConditions();
     cb.add(conditions);
     return cb;
+  }
+
+  static void addParams(List<Object> paramList, List<Object> params) {
+    if (!BeeUtils.isEmpty(params)) {
+      if (BeeUtils.isEmpty(paramList)) {
+        paramList = params;
+      } else {
+        paramList.addAll(params);
+      }
+    }
+  }
+
+  private static IsQuery createIndex(boolean unique, String table, String name, String... fields) {
+    List<Object> flds = new ArrayList<Object>();
+    flds.add(unique);
+    flds.add(table);
+    flds.add(name);
+
+    for (String fld : fields) {
+      flds.add(SqlUtils.field(fld));
+    }
+    return new SqlCommand(Keywords.CREATE_INDEX, flds.toArray());
   }
 }

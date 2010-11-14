@@ -1,12 +1,19 @@
 package com.butent.bee.egg.shared.sql;
 
 import com.butent.bee.egg.shared.sql.BeeConstants.DataTypes;
+import com.butent.bee.egg.shared.sql.BeeConstants.Keywords;
 
 class OracleSqlBuilder extends SqlBuilder {
 
-  @Override
-  public String getTables() {
-    return "select table_name from user_tables";
+  protected String sqlKeyword(Keywords option, Object... params) {
+    switch (option) {
+      case GET_TABLES:
+        return new SqlSelect()
+          .addFields("user_tables", "table_name")
+          .addFrom("user_tables").getQuery(this);
+      default:
+        return super.sqlKeyword(option, params);
+    }
   }
 
   @Override

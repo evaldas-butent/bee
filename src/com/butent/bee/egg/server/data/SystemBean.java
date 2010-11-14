@@ -4,15 +4,21 @@ import com.butent.bee.egg.server.communication.ResponseBuffer;
 import com.butent.bee.egg.server.data.BeeTable.BeeForeignKey;
 import com.butent.bee.egg.server.data.BeeTable.BeeKey;
 import com.butent.bee.egg.server.data.BeeTable.BeeStructure;
+import com.butent.bee.egg.server.utils.FileUtils;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.sql.BeeConstants.DataTypes;
 import com.butent.bee.egg.shared.sql.BeeConstants.Keywords;
+import com.butent.bee.egg.shared.sql.IsQuery;
+import com.butent.bee.egg.shared.sql.SqlCommand;
 import com.butent.bee.egg.shared.sql.SqlCreate;
-import com.butent.bee.egg.shared.sql.SqlDrop;
-import com.butent.bee.egg.shared.sql.SqlIndex;
 import com.butent.bee.egg.shared.sql.SqlInsert;
+import com.butent.bee.egg.shared.sql.SqlUtils;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
+import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -23,6 +29,13 @@ import javax.ejb.Lock;
 import javax.ejb.LockType;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 
 @Singleton
 @Startup
@@ -57,49 +70,115 @@ public class SystemBean {
       String table = tbl.getName();
 
       if (qs.tableExists(table)) {
-        SqlDrop sd = new SqlDrop(table);
-        qs.updateData(sd);
+        IsQuery drop = SqlUtils.dropTable(table);
+        qs.updateData(drop);
       }
       SqlCreate sc = new SqlCreate(table);
 
       for (BeeStructure field : tbl.getFields()) {
-        String fld = field.getName();
-
-        sc.addField(fld, field.getType(), field.getPrecision(),
-            field.getScale());
-
-        if (field.isNotNull()) {
-          sc.addOption(fld, Keywords.NOTNULL);
-        }
-        if (field.isUnique()) {
-          sc.addOption(fld, Keywords.UNIQUE);
-        }
+        sc.addField(field.getName(), field.getType(), field.getPrecision(), field.getScale(),
+            field.isNotNull() ? new SqlCommand(Keywords.NOT_NULL) : null,
+            field.isUnique() ? new SqlCommand(Keywords.UNIQUE) : null);
       }
       for (BeeForeignKey key : tbl.getForeignKeys()) {
-        String fld = key.getKeyField();
-        sc.addLong(fld);
-
-        if (key.getAction() == Keywords.CASCADE) {
-          sc.addOption(fld, Keywords.NOTNULL);
-        }
-        sc.addOption(fld, Keywords.REFERENCES,
-            key.getRefTable(), key.getRefField(), key.getAction());
+        sc.addLong(key.getKeyField(),
+            (key.getAction() == Keywords.CASCADE) ? new SqlCommand(Keywords.NOT_NULL) : null,
+            new SqlCommand(Keywords.REFERENCES, SqlUtils.field(key.getRefTable()),
+                SqlUtils.field(key.getRefField()), key.getAction()));
       }
-      String fld = tbl.getLockName();
-      sc.addLong(fld).addOption(fld, Keywords.NOTNULL);
-
-      fld = tbl.getIdName();
-      sc.addLong(fld).addOption(fld, Keywords.PRIMARY);
+      sc.addLong(tbl.getLockName(), new SqlCommand(Keywords.NOT_NULL));
+      sc.addLong(tbl.getIdName(), new SqlCommand(Keywords.PRIMARY));
 
       buff.add("Create table " + table + ": " + qs.updateData(sc));
 
       for (BeeKey key : tbl.getKeys()) {
-        SqlIndex si = new SqlIndex(table, key.getName(), key.isUnique());
-        si.setColumns(key.getKeyFields());
-        qs.updateData(si);
+        IsQuery index;
+
+        if (key.isUnique()) {
+          index = SqlUtils.createUniqueIndex(table, key.getName(), key.getKeyFields());
+        } else {
+          index = SqlUtils.createIndex(table, key.getName(), key.getKeyFields());
+        }
+        qs.updateData(index);
       }
     }
     createData();
+    buildXml("pypas.xml");
+  }
+
+  private void buildXml(String dst) {
+    DocumentBuilderFactory dbfac = DocumentBuilderFactory.newInstance();
+    DocumentBuilder docBuilder;
+    try {
+      docBuilder = dbfac.newDocumentBuilder();
+      Document doc = docBuilder.newDocument();
+
+      Element root = doc.createElement("BeeTables");
+      doc.appendChild(root);
+
+      for (BeeTable table : dataCache.values()) {
+        Element tbl = doc.createElement("BeeTable");
+        tbl.setAttribute("name", table.getName());
+        tbl.setAttribute("idName", table.getIdName());
+        tbl.setAttribute("lockName", table.getLockName());
+        root.appendChild(tbl);
+
+        Element fldRoot = doc.createElement("BeeFields");
+        tbl.appendChild(fldRoot);
+
+        for (BeeStructure field : table.getFields()) {
+          Element fld = doc.createElement("BeeField");
+          fld.setAttribute("name", field.getName());
+          fld.setAttribute("type", field.getType().toString());
+          fld.setAttribute("precision", BeeUtils.transform(field.getPrecision()));
+          fld.setAttribute("scale", BeeUtils.transform(field.getScale()));
+          fld.setAttribute("notNull", BeeUtils.transform(field.isNotNull()));
+          fld.setAttribute("unique", BeeUtils.transform(field.isUnique()));
+          fldRoot.appendChild(fld);
+        }
+        if (!BeeUtils.isEmpty(table.getForeignKeys())) {
+          Element foreignRoot = doc.createElement("BeeForeignKeys");
+          tbl.appendChild(foreignRoot);
+
+          for (BeeForeignKey key : table.getForeignKeys()) {
+            Element foreign = doc.createElement("BeeForeignKey");
+            foreign.setAttribute("name", key.getName());
+            foreign.setAttribute("keyField", key.getKeyField());
+            foreign.setAttribute("refTable", key.getRefTable());
+            foreign.setAttribute("refField", key.getRefField());
+
+            if (!BeeUtils.isEmpty(key.getAction())) {
+              foreign.setAttribute("actionOnDelete", key.getAction().toString());
+            }
+            foreignRoot.appendChild(foreign);
+          }
+        }
+        if (!BeeUtils.isEmpty(table.getForeignKeys())) {
+          Element keyRoot = doc.createElement("BeeKeys");
+          tbl.appendChild(keyRoot);
+
+          for (BeeKey key : table.getKeys()) {
+            Element index = doc.createElement("BeeKey");
+            index.setAttribute("name", key.getName());
+            index.setAttribute("fields", BeeUtils.transformArray(key.getKeyFields()));
+            index.setAttribute("unique", Boolean.toString(key.isUnique()));
+            keyRoot.appendChild(index);
+          }
+        }
+      }
+      TransformerFactory transfac = TransformerFactory.newInstance();
+      Transformer trans = transfac.newTransformer();
+      trans.setOutputProperty(OutputKeys.INDENT, "yes");
+
+      StringWriter sw = new StringWriter();
+      StreamResult result = new StreamResult(sw);
+      DOMSource source = new DOMSource(doc);
+      trans.transform(source, result);
+      FileUtils.toFile(sw.toString(), dst);
+
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
   }
 
   private void createData() {
@@ -166,8 +245,8 @@ public class SystemBean {
       .addKey("FieldName")
       .addUniqueKey("TableField", "TableID", "FieldName")
       .addForeignKey("TableID", "bee_Tables", "TableID", Keywords.CASCADE));
-    dataCache.put("Countries", new BeeTable("Countries", "CountryID", null));
     dataCache.put("Cities", new BeeTable("Cities", "CityID", null)
       .addForeignKey("CountryID", "Countries", "CountryID", null));
+    dataCache.put("Countries", new BeeTable("Countries", "CountryID", null));
   }
 }

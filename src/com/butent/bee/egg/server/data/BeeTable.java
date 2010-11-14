@@ -71,11 +71,9 @@ public class BeeTable {
 
       List<String> flds = new ArrayList<String>();
 
-      if (!BeeUtils.isEmpty(keyFields)) {
-        for (String fld : keyFields) {
-          if (!BeeUtils.isEmpty(fld)) {
-            flds.add(fld);
-          }
+      for (String fld : keyFields) {
+        if (!BeeUtils.isEmpty(fld)) {
+          flds.add(fld);
         }
       }
       if (BeeUtils.isEmpty(flds)) {

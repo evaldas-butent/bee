@@ -6,10 +6,10 @@ import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.data.BeeRowSet;
 import com.butent.bee.egg.shared.data.BeeRowSet.BeeRow;
 import com.butent.bee.egg.shared.sql.IsQuery;
-import com.butent.bee.egg.shared.sql.SqlBuilder;
 import com.butent.bee.egg.shared.sql.SqlBuilderFactory;
 import com.butent.bee.egg.shared.sql.SqlInsert;
 import com.butent.bee.egg.shared.sql.SqlSelect;
+import com.butent.bee.egg.shared.sql.SqlUtils;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 import com.butent.bee.egg.shared.utils.LogUtils;
 
@@ -157,8 +157,7 @@ public class QueryServiceBean {
   }
 
   public BeeRowSet tableList() {
-    SqlBuilder builder = SqlBuilderFactory.getBuilder();
-    return (BeeRowSet) processSql(builder.getTables());
+    return (BeeRowSet) processSql(SqlUtils.getTables().getQuery());
   }
 
   public int updateData(IsQuery query) {

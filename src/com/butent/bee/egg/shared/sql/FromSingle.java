@@ -60,8 +60,7 @@ class FromSingle implements IsFrom {
     StringBuilder from = new StringBuilder();
 
     if (source instanceof SqlSelect) {
-      from.append("(" + ((SqlSelect) source).getSqlString(builder, paramMode)
-          + ")");
+      from.append("(").append(((SqlSelect) source).getSqlString(builder, paramMode)).append(")");
     } else {
       String[] arr = ((String) source).split("\\.");
 
