@@ -28,7 +28,7 @@ class FieldExpression implements IsExpression {
     if (BeeUtils.isEmpty(source)) {
       s.append(builder.sqlQuote(field));
     } else {
-      String[] arr = ((String) source).split("\\.");
+      String[] arr = source.split("\\.");
 
       for (int i = 0; i < arr.length; i++) {
         if (i > 0) {

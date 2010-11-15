@@ -217,8 +217,8 @@ public class SqlUtils {
   private static IsQuery createIndex(boolean unique, String table, String name, String... fields) {
     List<Object> flds = new ArrayList<Object>();
     flds.add(unique);
-    flds.add(table);
-    flds.add(name);
+    flds.add(SqlUtils.field(table));
+    flds.add(SqlUtils.field(name));
 
     for (String fld : fields) {
       flds.add(SqlUtils.field(fld));

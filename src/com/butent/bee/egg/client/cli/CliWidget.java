@@ -110,7 +110,7 @@ public class CliWidget extends BeeTextBox {
       BeeKeeper.getRpc().invoke("vmInfo");
 
     } else if (z.equals("rebuild")) {
-      BeeKeeper.getRpc().makeGetRequest("rpc_ui_rebuild");
+      BeeKeeper.getRpc().makePostRequest("rpc_ui_rebuild", ContentType.BINARY, v);
     } else if (z.equals("sql")) {
       BeeKeeper.getRpc().makePostRequest("rpc_ui_sql", ContentType.BINARY, v);
 

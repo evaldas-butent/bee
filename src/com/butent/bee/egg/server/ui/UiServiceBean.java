@@ -55,7 +55,7 @@ public class UiServiceBean {
       } else if (svc.equals("rpc_ui_grid")) {
         gridInfo(reqInfo, buff);
       } else if (svc.equals("rpc_ui_rebuild")) {
-        rebuildData(buff);
+        rebuildData(reqInfo, buff);
       } else if (svc.equals("rpc_ui_sql")) {
         doSql(reqInfo, buff);
       } else if (svc.equals("rpc_ui_tables")) {
@@ -71,15 +71,18 @@ public class UiServiceBean {
   }
 
   private void doSql(RequestInfo reqInfo, ResponseBuffer buff) {
-    String xml = reqInfo.getContent();
-    if (!BeeUtils.isEmpty(xml)) {
-      xml = xml.replaceFirst("^\\s*[Ss][Qq][Ll]\\s*", "");
+    String sql = reqInfo.getContent();
+    String[] arr = sql.split(" ", 2);
+    if (arr.length > 1) {
+      sql = arr[1];
+    } else {
+      sql = null;
     }
-    if (BeeUtils.isEmpty(xml)) {
+    if (BeeUtils.isEmpty(sql)) {
       buff.add("SQL command not found");
       return;
     }
-    Object res = qs.processSql(xml);
+    Object res = qs.processSql(sql);
 
     if (res instanceof BeeRowSet) {
       buff.addColumns(((BeeRowSet) res).getColumns());
@@ -217,7 +220,22 @@ public class UiServiceBean {
     }
   }
 
-  private void rebuildData(ResponseBuffer buff) {
-    sys.recreate(buff);
+  private void rebuildData(RequestInfo reqInfo, ResponseBuffer buff) {
+    String cmd = reqInfo.getContent();
+    String[] arr = cmd.split(" ", 2);
+    if (arr.length > 1) {
+      cmd = arr[1];
+    }
+    if (BeeUtils.same(cmd, "structure")) {
+      sys.createStructure(buff);
+    } else if (BeeUtils.same(cmd, "keys")) {
+      sys.createKeys(buff);
+    } else if (BeeUtils.same(cmd, "xml")) {
+      sys.createXml(buff);
+    } else if (BeeUtils.same(cmd, "data")) {
+      sys.createData(buff);
+    } else {
+      sys.createAll(buff);
+    }
   }
 }

@@ -11,7 +11,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-public class BeeTable {
+class BeeTable {
 
   public class BeeForeignKey {
     private final String name;
@@ -20,8 +20,7 @@ public class BeeTable {
     private final String refField;
     private final Keywords action;
 
-    private BeeForeignKey(String keyField,
-        String refTable, String refField, Keywords action) {
+    private BeeForeignKey(String keyField, String refTable, String refField, Keywords action) {
       Assert.notEmpty(keyField);
       Assert.notEmpty(refTable);
       Assert.notEmpty(refField);
@@ -108,8 +107,8 @@ public class BeeTable {
     private final boolean notNull;
     private final boolean unique;
 
-    private BeeStructure(String name, DataTypes type,
-        int precision, int scale, boolean notNull, boolean unique) {
+    private BeeStructure(String name, DataTypes type, int precision, int scale,
+        boolean notNull, boolean unique) {
       Assert.notEmpty(name);
       Assert.notEmpty(type);
 

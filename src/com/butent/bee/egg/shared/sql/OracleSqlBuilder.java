@@ -9,8 +9,8 @@ class OracleSqlBuilder extends SqlBuilder {
     switch (option) {
       case GET_TABLES:
         return new SqlSelect()
-          .addFields("user_tables", "table_name")
-          .addFrom("user_tables").getQuery(this);
+          .addFields("USER_TABLES", "TABLE_NAME")
+          .addFrom("USER_TABLES").getQuery(this);
       default:
         return super.sqlKeyword(option, params);
     }

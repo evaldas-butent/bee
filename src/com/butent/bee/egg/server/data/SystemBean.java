@@ -19,8 +19,10 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import java.io.StringWriter;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
@@ -45,35 +47,81 @@ public class SystemBean {
   @EJB
   QueryServiceBean qs;
 
-  private Map<String, BeeTable> dataCache = new HashMap<String, BeeTable>();
+  private Map<String, BeeTable> dataCache = new LinkedHashMap<String, BeeTable>();
 
   public boolean beeTable(String source) {
     Assert.notEmpty(source);
     return dataCache.containsKey(source);
   }
 
-  public BeeStructure getField(String table, String field) {
-    return dataCache.get(table).getField(field);
-  }
-
-  public String getIdName(String table) {
-    return dataCache.get(table).getIdName();
-  }
-
-  public String getLockName(String table) {
-    return dataCache.get(table).getLockName();
+  @Lock(LockType.WRITE)
+  public void createAll(ResponseBuffer buff) {
+    createStructure(buff);
+    createKeys(buff);
+    createData(buff);
+    createXml(buff);
   }
 
   @Lock(LockType.WRITE)
-  public void recreate(ResponseBuffer buff) {
+  public void createData(ResponseBuffer buff) {
+    BeeTable tables = dataCache.get("bee_Tables");
+
+    for (BeeTable tbl : dataCache.values()) {
+      SqlInsert si = new SqlInsert(tables.getName());
+      Iterator<BeeStructure> it = tables.getFields().iterator();
+
+      si.addConstant(it.next().getName(), tbl.getName())
+        .addConstant(it.next().getName(), tbl.getLockName())
+        .addConstant(it.next().getName(), tbl.getIdName());
+
+      long tableId = qs.insertData(si);
+
+      BeeTable propert = dataCache.get("bee_Fields");
+
+      for (BeeStructure fld : tbl.getFields()) {
+        si = new SqlInsert(propert.getName());
+        it = propert.getFields().iterator();
+
+        si.addConstant(it.next().getName(), fld.getName())
+          .addConstant(it.next().getName(), fld.getType().name())
+          .addConstant(it.next().getName(), fld.getPrecision())
+          .addConstant(it.next().getName(), fld.getScale())
+          .addConstant(it.next().getName(), BeeUtils.toInt(fld.isNotNull()))
+          .addConstant(it.next().getName(), BeeUtils.toInt(fld.isUnique()));
+
+        si.addConstant("TableID", tableId);
+
+        qs.insertData(si);
+      }
+    }
+    buff.add("Recreate data OK");
+  }
+
+  @Lock(LockType.WRITE)
+  public void createKeys(ResponseBuffer buff) {
     for (BeeTable tbl : dataCache.values()) {
       String table = tbl.getName();
 
-      if (qs.tableExists(table)) {
-        IsQuery drop = SqlUtils.dropTable(table);
-        qs.updateData(drop);
+      for (BeeKey key : tbl.getKeys()) {
+        IsQuery index;
+
+        if (key.isUnique()) {
+          index = SqlUtils.createUniqueIndex(table, key.getName(), key.getKeyFields());
+        } else {
+          index = SqlUtils.createIndex(table, key.getName(), key.getKeyFields());
+        }
+        qs.updateData(index);
       }
-      SqlCreate sc = new SqlCreate(table);
+    }
+    buff.add("Recreate keys OK");
+  }
+
+  @Lock(LockType.WRITE)
+  public void createStructure(ResponseBuffer buff) {
+    dropStructure();
+
+    for (BeeTable tbl : dataCache.values()) {
+      SqlCreate sc = new SqlCreate(tbl.getName());
 
       for (BeeStructure field : tbl.getFields()) {
         sc.addField(field.getName(), field.getType(), field.getPrecision(), field.getScale(),
@@ -88,25 +136,13 @@ public class SystemBean {
       }
       sc.addLong(tbl.getLockName(), new SqlCommand(Keywords.NOT_NULL));
       sc.addLong(tbl.getIdName(), new SqlCommand(Keywords.PRIMARY));
-
-      buff.add("Create table " + table + ": " + qs.updateData(sc));
-
-      for (BeeKey key : tbl.getKeys()) {
-        IsQuery index;
-
-        if (key.isUnique()) {
-          index = SqlUtils.createUniqueIndex(table, key.getName(), key.getKeyFields());
-        } else {
-          index = SqlUtils.createIndex(table, key.getName(), key.getKeyFields());
-        }
-        qs.updateData(index);
-      }
+      qs.updateData(sc);
     }
-    createData();
-    buildXml("pypas.xml");
+    buff.add("Recreate structure OK");
   }
 
-  private void buildXml(String dst) {
+  @Lock(LockType.WRITE)
+  public void createXml(ResponseBuffer buff) {
     DocumentBuilderFactory dbfac = DocumentBuilderFactory.newInstance();
     DocumentBuilder docBuilder;
     try {
@@ -174,42 +210,37 @@ public class SystemBean {
       StreamResult result = new StreamResult(sw);
       DOMSource source = new DOMSource(doc);
       trans.transform(source, result);
-      FileUtils.toFile(sw.toString(), dst);
+      FileUtils.toFile(sw.toString(), "bee.xml");
 
     } catch (Exception e) {
       e.printStackTrace();
     }
+    buff.add("Recreate XML OK");
   }
 
-  private void createData() {
-    BeeTable tables = dataCache.get("bee_Tables");
+  public BeeStructure getField(String table, String field) {
+    return dataCache.get(table).getField(field);
+  }
 
+  public String getIdName(String table) {
+    return dataCache.get(table).getIdName();
+  }
+
+  public String getLockName(String table) {
+    return dataCache.get(table).getLockName();
+  }
+
+  private void dropStructure() {
+    List<BeeTable> cache = new ArrayList<BeeTable>();
     for (BeeTable tbl : dataCache.values()) {
-      SqlInsert si = new SqlInsert(tables.getName());
-      Iterator<BeeStructure> it = tables.getFields().iterator();
+      cache.add(tbl);
+    }
+    for (int i = cache.size() - 1; i >= 0; i--) {
+      String table = cache.get(i).getName();
 
-      si.addConstant(it.next().getName(), tbl.getName())
-        .addConstant(it.next().getName(), tbl.getLockName())
-        .addConstant(it.next().getName(), tbl.getIdName());
-
-      long tableId = qs.insertData(si);
-
-      BeeTable propert = dataCache.get("bee_Fields");
-
-      for (BeeStructure fld : tbl.getFields()) {
-        si = new SqlInsert(propert.getName());
-        it = propert.getFields().iterator();
-
-        si.addConstant(it.next().getName(), fld.getName())
-          .addConstant(it.next().getName(), fld.getType().name())
-          .addConstant(it.next().getName(), fld.getPrecision())
-          .addConstant(it.next().getName(), fld.getScale())
-          .addConstant(it.next().getName(), BeeUtils.toInt(fld.isNotNull()))
-          .addConstant(it.next().getName(), BeeUtils.toInt(fld.isUnique()));
-
-        si.addConstant("TableID", tableId);
-
-        qs.insertData(si);
+      if (qs.tableExists(table)) {
+        IsQuery drop = SqlUtils.dropTable(table);
+        qs.updateData(drop);
       }
     }
   }
@@ -224,8 +255,8 @@ public class SystemBean {
   private void initStructure() {
     dataCache.get("bee_Tables")
       .addField("TableName", DataTypes.STRING, 30, 0, true, true)
-      .addField("IdColumn", DataTypes.STRING, 30, 0, false, false)
-      .addField("LockColumn", DataTypes.STRING, 30, 0, false, false);
+      .addField("LockColumn", DataTypes.STRING, 30, 0, false, false)
+      .addField("IdColumn", DataTypes.STRING, 30, 0, false, false);
     dataCache.get("bee_Fields")
       .addField("FieldName", DataTypes.STRING, 30, 0, true, false)
       .addField("FieldType", DataTypes.STRING, 30, 0, false, false)
@@ -245,8 +276,8 @@ public class SystemBean {
       .addKey("FieldName")
       .addUniqueKey("TableField", "TableID", "FieldName")
       .addForeignKey("TableID", "bee_Tables", "TableID", Keywords.CASCADE));
+    dataCache.put("Countries", new BeeTable("Countries", "CountryID", null));
     dataCache.put("Cities", new BeeTable("Cities", "CityID", null)
       .addForeignKey("CountryID", "Countries", "CountryID", null));
-    dataCache.put("Countries", new BeeTable("Countries", "CountryID", null));
   }
 }
