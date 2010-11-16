@@ -32,8 +32,33 @@ public class SqlUtils {
     return new JoinCondition(expr, LIKE, constant("%" + value + "%"));
   }
 
+  public static IsQuery createForeignKey(String table, String name, String field,
+      String refTable, String refField, Keywords action) {
+
+    List<Object> params = new ArrayList<Object>();
+    params.add(name(field));
+    params.add(name(refTable));
+    params.add(name(refField));
+    params.add(action);
+
+    return createConstraint(table, name, Keywords.FOREIGN, params.toArray());
+  }
+
   public static IsQuery createIndex(String table, String name, String... fields) {
     return createIndex(false, table, name, fields);
+  }
+
+  public static IsQuery createPrimaryKey(String table, String name, String... fields) {
+    List<Object> params = new ArrayList<Object>();
+
+    if (BeeUtils.isEmpty(fields)) {
+      params.add(name(name));
+    } else {
+      for (String fld : fields) {
+        params.add(name(fld));
+      }
+    }
+    return createConstraint(table, name, Keywords.PRIMARY, params.toArray());
   }
 
   public static IsQuery createUniqueIndex(String table, String name, String... fields) {
@@ -41,7 +66,7 @@ public class SqlUtils {
   }
 
   public static IsQuery dropTable(String table) {
-    return new SqlCommand(Keywords.DROP_TABLE, field(table));
+    return new SqlCommand(Keywords.DROP_TABLE, name(table));
   }
 
   public static IsCondition equal(IsExpression expr, Object value) {
@@ -56,12 +81,10 @@ public class SqlUtils {
     return new ComplexExpression(expr);
   }
 
-  public static IsExpression field(String field) {
-    return new FieldExpression(null, field);
-  }
-
   public static IsExpression field(String source, String field) {
-    return new FieldExpression(source, field);
+    Assert.notEmpty(source);
+    Assert.notEmpty(field);
+    return name(BeeUtils.concat(".", source, field));
   }
 
   public static IsExpression[] fields(String source, String... fields) {
@@ -71,7 +94,7 @@ public class SqlUtils {
     IsExpression[] list = new IsExpression[len];
 
     for (int i = 0; i < len; i++) {
-      list[i] = new FieldExpression(source, fields[i]);
+      list[i] = field(source, fields[i]);
     }
     return list;
   }
@@ -190,6 +213,10 @@ public class SqlUtils {
     return moreEqual(field(source, field), value);
   }
 
+  public static IsExpression name(String name) {
+    return new NameExpression(name);
+  }
+
   public static IsCondition notEqual(IsExpression expr, Object value) {
     return new JoinCondition(expr, NOT_EQUAL, constant(value));
   }
@@ -214,14 +241,31 @@ public class SqlUtils {
     }
   }
 
+  private static IsQuery createConstraint(String table, String name, Keywords type,
+      Object... params) {
+    List<Object> flds = new ArrayList<Object>();
+    flds.add(name(table));
+    flds.add(name(name));
+    flds.add(type);
+
+    for (Object prm : params) {
+      flds.add(prm);
+    }
+    return new SqlCommand(Keywords.ADD_CONSTRAINT, flds.toArray());
+  }
+
   private static IsQuery createIndex(boolean unique, String table, String name, String... fields) {
     List<Object> flds = new ArrayList<Object>();
     flds.add(unique);
-    flds.add(SqlUtils.field(table));
-    flds.add(SqlUtils.field(name));
+    flds.add(name(table));
+    flds.add(name(name));
 
-    for (String fld : fields) {
-      flds.add(SqlUtils.field(fld));
+    if (BeeUtils.isEmpty(fields)) {
+      flds.add(name(name));
+    } else {
+      for (String fld : fields) {
+        flds.add(name(fld));
+      }
     }
     return new SqlCommand(Keywords.CREATE_INDEX, flds.toArray());
   }

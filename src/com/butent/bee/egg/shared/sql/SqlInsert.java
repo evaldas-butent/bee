@@ -50,7 +50,7 @@ public class SqlInsert extends SqlQuery<SqlInsert> {
     List<IsExpression> fields = new ArrayList<IsExpression>();
 
     for (String field : fieldList) {
-      fields.add(SqlUtils.field(field));
+      fields.add(SqlUtils.name(field));
     }
     return fields;
   }

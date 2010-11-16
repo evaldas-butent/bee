@@ -9,7 +9,6 @@ import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.sql.BeeConstants.DataTypes;
 import com.butent.bee.egg.shared.sql.BeeConstants.Keywords;
 import com.butent.bee.egg.shared.sql.IsQuery;
-import com.butent.bee.egg.shared.sql.SqlCommand;
 import com.butent.bee.egg.shared.sql.SqlCreate;
 import com.butent.bee.egg.shared.sql.SqlInsert;
 import com.butent.bee.egg.shared.sql.SqlUtils;
@@ -102,14 +101,27 @@ public class SystemBean {
     for (BeeTable tbl : dataCache.values()) {
       String table = tbl.getName();
 
-      for (BeeKey key : tbl.getKeys()) {
-        IsQuery index;
+      IsQuery index = SqlUtils.createPrimaryKey(table, "PK_" + tbl.getIdName(), tbl.getIdName());
+      qs.updateData(index);
 
+      for (BeeStructure field : tbl.getFields()) {
+        if (field.isUnique()) {
+          index = SqlUtils.createUniqueIndex(table, field.getName());
+          qs.updateData(index);
+        }
+      }
+      for (BeeKey key : tbl.getKeys()) {
         if (key.isUnique()) {
           index = SqlUtils.createUniqueIndex(table, key.getName(), key.getKeyFields());
         } else {
           index = SqlUtils.createIndex(table, key.getName(), key.getKeyFields());
         }
+        qs.updateData(index);
+      }
+
+      for (BeeForeignKey key : tbl.getForeignKeys()) {
+        index = SqlUtils.createForeignKey(table, key.getName(), key.getKeyField(),
+              key.getRefTable(), key.getRefField(), key.getAction());
         qs.updateData(index);
       }
     }
@@ -125,17 +137,14 @@ public class SystemBean {
 
       for (BeeStructure field : tbl.getFields()) {
         sc.addField(field.getName(), field.getType(), field.getPrecision(), field.getScale(),
-            field.isNotNull() ? new SqlCommand(Keywords.NOT_NULL) : null,
-            field.isUnique() ? new SqlCommand(Keywords.UNIQUE) : null);
+            field.isNotNull() ? Keywords.NOT_NULL : null);
       }
       for (BeeForeignKey key : tbl.getForeignKeys()) {
         sc.addLong(key.getKeyField(),
-            (key.getAction() == Keywords.CASCADE) ? new SqlCommand(Keywords.NOT_NULL) : null,
-            new SqlCommand(Keywords.REFERENCES, SqlUtils.field(key.getRefTable()),
-                SqlUtils.field(key.getRefField()), key.getAction()));
+            (key.getAction() == Keywords.CASCADE) ? Keywords.NOT_NULL : null);
       }
-      sc.addLong(tbl.getLockName(), new SqlCommand(Keywords.NOT_NULL));
-      sc.addLong(tbl.getIdName(), new SqlCommand(Keywords.PRIMARY));
+      sc.addLong(tbl.getLockName(), Keywords.NOT_NULL);
+      sc.addLong(tbl.getIdName(), Keywords.NOT_NULL);
       qs.updateData(sc);
     }
     buff.add("Recreate structure OK");

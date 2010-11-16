@@ -41,4 +41,9 @@ class ComplexExpression implements IsExpression {
     }
     return s.toString();
   }
+
+  @Override
+  public String getValue() {
+    return BeeUtils.join(content, 0);
+  }
 }

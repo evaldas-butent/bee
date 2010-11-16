@@ -62,18 +62,11 @@ class FromSingle implements IsFrom {
     if (source instanceof SqlSelect) {
       from.append("(").append(((SqlSelect) source).getSqlString(builder, paramMode)).append(")");
     } else {
-      String[] arr = ((String) source).split("\\.");
-
-      for (int i = 0; i < arr.length; i++) {
-        if (i > 0) {
-          from.append(".");
-        }
-        from.append(builder.sqlQuote(arr[i]));
-      }
+      from.append(SqlUtils.name((String) source).getSqlString(builder, paramMode));
     }
 
     if (!BeeUtils.isEmpty(alias)) {
-      from.append(" ").append(builder.sqlQuote(alias));
+      from.append(" ").append(SqlUtils.name(alias).getSqlString(builder, paramMode));
     }
     return from.toString();
   }

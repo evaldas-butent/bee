@@ -2,6 +2,7 @@ package com.butent.bee.egg.shared.sql;
 
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.sql.BeeConstants.DataTypes;
+import com.butent.bee.egg.shared.sql.BeeConstants.Keywords;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
@@ -10,36 +11,36 @@ import java.util.List;
 public class SqlCreate extends SqlQuery<SqlCreate> {
 
   public class SqlField {
-    private final IsExpression name;
+    private final String name;
     private final DataTypes type;
     private final int precission;
     private final int scale;
-    private final IsSql[] options;
+    private final Keywords[] options;
 
-    private SqlField(String name, DataTypes type, int precission, int scale, IsSql... options) {
+    private SqlField(String name, DataTypes type, int precission, int scale, Keywords... options) {
       Assert.notEmpty(name);
       Assert.notEmpty(type);
 
-      this.name = SqlUtils.field(name);
+      this.name = name;
       this.type = type;
       this.precission = precission;
       this.scale = scale;
 
-      List<IsSql> opts = new ArrayList<IsSql>();
+      List<Keywords> opts = new ArrayList<Keywords>();
 
-      for (IsSql opt : options) {
+      for (Keywords opt : options) {
         if (!BeeUtils.isEmpty(opt)) {
           opts.add(opt);
         }
       }
-      this.options = opts.toArray(new IsSql[0]);
+      this.options = opts.toArray(new Keywords[0]);
     }
 
     public IsExpression getName() {
-      return name;
+      return SqlUtils.name(name);
     }
 
-    public IsSql[] getOptions() {
+    public Keywords[] getOptions() {
       return options;
     }
 
@@ -64,23 +65,23 @@ public class SqlCreate extends SqlQuery<SqlCreate> {
     this.target = new FromSingle(target);
   }
 
-  public SqlCreate addBoolean(String field, IsSql... options) {
+  public SqlCreate addBoolean(String field, Keywords... options) {
     return addField(field, DataTypes.BOOLEAN, 0, 0, options);
   }
 
-  public SqlCreate addChar(String field, int precission, IsSql... options) {
+  public SqlCreate addChar(String field, int precission, Keywords... options) {
     Assert.nonNegative(precission);
     return addField(field, DataTypes.CHAR, precission, 0, options);
   }
 
-  public SqlCreate addDouble(String field, int precission, int scale, IsSql... options) {
+  public SqlCreate addDouble(String field, int precission, int scale, Keywords... options) {
     Assert.nonNegative(precission);
     Assert.nonNegative(scale);
     return addField(field, DataTypes.DOUBLE, precission, scale, options);
   }
 
   public SqlCreate addField(String field, DataTypes type, int precission, int scale,
-      IsSql... options) {
+      Keywords... options) {
     Assert.state(BeeUtils.isEmpty(source));
     Assert.notEmpty(field);
     Assert.state(!hasField(field), "Field " + field + " already exist");
@@ -90,28 +91,28 @@ public class SqlCreate extends SqlQuery<SqlCreate> {
     return getReference();
   }
 
-  public SqlCreate addInt(String field, IsSql... options) {
+  public SqlCreate addInt(String field, Keywords... options) {
     return addField(field, DataTypes.INTEGER, 0, 0, options);
   }
 
-  public SqlCreate addLong(String field, IsSql... options) {
+  public SqlCreate addLong(String field, Keywords... options) {
     return addField(field, DataTypes.LONG, 0, 0, options);
   }
 
-  public SqlCreate addNumeric(String field, int precission, int scale, IsSql... options) {
+  public SqlCreate addNumeric(String field, int precission, int scale, Keywords... options) {
     Assert.nonNegative(precission);
     Assert.nonNegative(scale);
     return addField(field, DataTypes.NUMERIC, precission, scale, options);
   }
 
-  public SqlCreate addString(String field, int precission, IsSql... options) {
+  public SqlCreate addString(String field, int precission, Keywords... options) {
     Assert.nonNegative(precission);
     return addField(field, DataTypes.STRING, precission, 0, options);
   }
 
   public SqlField getField(String field) {
     for (SqlField fld : fieldList) {
-      if (BeeUtils.same(((FieldExpression) fld.getName()).getField(), field)) {
+      if (BeeUtils.same(fld.name, field)) {
         return fld;
       }
     }

@@ -3,7 +3,7 @@ package com.butent.bee.egg.server.data;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.sql.BeeConstants.Keywords;
 import com.butent.bee.egg.shared.sql.IsCondition;
-import com.butent.bee.egg.shared.sql.SqlCommand;
+import com.butent.bee.egg.shared.sql.IsQuery;
 import com.butent.bee.egg.shared.sql.SqlCreate;
 import com.butent.bee.egg.shared.sql.SqlInsert;
 import com.butent.bee.egg.shared.sql.SqlSelect;
@@ -85,14 +85,17 @@ public class IdGeneratorBean {
 
     if (!qs.tableExists(ID_TABLE)) {
       SqlCreate sc = new SqlCreate(ID_TABLE);
-      sc.addString(ID_KEY, 30, new SqlCommand(Keywords.UNIQUE));
-      sc.addLong(ID_LAST, new SqlCommand(Keywords.NOT_NULL));
+      sc.addString(ID_KEY, 30, Keywords.NOT_NULL);
+      sc.addLong(ID_LAST, Keywords.NOT_NULL);
       qs.updateData(sc);
+
+      IsQuery index = SqlUtils.createUniqueIndex(ID_TABLE, ID_KEY);
+      qs.updateData(index);
     } else {
       SqlUpdate su = new SqlUpdate(ID_TABLE);
       su.addExpression(ID_LAST,
-          SqlUtils.expression(SqlUtils.field(ID_LAST), "+",
-              SqlUtils.constant(idChunk))).setWhere(wh);
+          SqlUtils.expression(SqlUtils.name(ID_LAST), "+", SqlUtils.constant(idChunk)))
+        .setWhere(wh);
       cnt = qs.updateData(su);
     }
 

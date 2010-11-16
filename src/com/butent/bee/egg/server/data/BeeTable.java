@@ -11,6 +11,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+@SuppressWarnings("hiding")
 class BeeTable {
 
   public class BeeForeignKey {
@@ -168,15 +169,14 @@ class BeeTable {
     this.lockName = BeeUtils.ifString(lockName, DEFAULT_LOCK_FIELD);
   }
 
-  public BeeTable addField(String name, DataTypes type,
-      int precision, int scale, boolean notNull, boolean unique) {
+  public BeeTable addField(String name, DataTypes type, int precision, int scale,
+      boolean notNull, boolean unique) {
     fields.put(name,
         new BeeStructure(name, type, precision, scale, notNull, unique));
     return this;
   }
 
-  public BeeTable addForeignKey(String keyField,
-      String refTable, String refField, Keywords action) {
+  public BeeTable addForeignKey(String keyField, String refTable, String refField, Keywords action) {
     foreignKeys.add(new BeeForeignKey(keyField, refTable, refField, action));
     return this;
   }

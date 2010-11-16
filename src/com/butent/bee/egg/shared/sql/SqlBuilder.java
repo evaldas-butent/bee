@@ -11,57 +11,69 @@ import java.util.List;
 
 public abstract class SqlBuilder {
 
-  public String sqlTransform(Object x) {
-    String s = BeeUtils.transform(x);
-
-    if (x instanceof CharSequence) {
-      s = "'" + s.replaceAll("'", "''") + "'";
-    }
-    return s;
-  }
-
   protected String sqlKeyword(Keywords option, Object... params) {
     switch (option) {
       case NOT_NULL:
         return "NOT NULL";
-      case UNIQUE:
-        return "UNIQUE";
-      case PRIMARY:
-        return "PRIMARY KEY";
-      case REFERENCES:
-        return "REFERENCES " + params[0] + " (" + params[1] + ")"
-            + (params[2] != null ? " ON DELETE " + sqlKeyword((Keywords) params[2]) : "");
-      case CASCADE:
-        return "CASCADE";
-      case SET_NULL:
-        return "SET NULL";
-      case DROP_TABLE:
-        return "DROP TABLE " + params[0];
+
       case CREATE_INDEX:
-        StringBuilder cmd = new StringBuilder("CREATE");
+        StringBuilder index = new StringBuilder("CREATE");
 
         if (!BeeUtils.isEmpty(params[0])) {
-          cmd.append(" UNIQUE");
+          index.append(" UNIQUE");
         }
-        cmd.append(" INDEX ").append(params[2]).append(" ON ").append(params[1]).append(" (");
+        index.append(" INDEX ")
+          .append(params[2])
+          .append(" ON ")
+          .append(params[1])
+          .append(" (").append(BeeUtils.join(params, ", ", 3)).append(")");
+        return index.toString();
 
-        if (params.length > 3) {
-          for (int i = 3; i < params.length; i++) {
-            if (i > 3) {
-              cmd.append(", ");
-            }
-            cmd.append(params[i]);
-          }
-        } else {
-          cmd.append(params[2]);
+      case ADD_CONSTRAINT:
+        StringBuilder cmd = new StringBuilder("ALTER TABLE ")
+          .append(params[0])
+          .append(" ADD CONSTRAINT ")
+          .append(params[1]);
+
+        Object[] prm = new Object[params.length - 3];
+        for (int i = 3; i < params.length; i++) {
+          prm[i - 3] = params[i];
         }
-        cmd.append(")");
-
+        cmd.append(sqlKeyword((Keywords) params[2], prm));
         return cmd.toString();
+
+      case PRIMARY:
+        StringBuilder primary = new StringBuilder(" PRIMARY KEY (")
+          .append(BeeUtils.join(params, ", ")).append(")");
+        return primary.toString();
+
+      case FOREIGN:
+        StringBuilder foreign = new StringBuilder(" FOREIGN KEY (")
+          .append(params[0])
+          .append(") REFERENCES ")
+          .append(params[1])
+          .append(" (").append(params[2]).append(")");
+
+        if (!BeeUtils.isEmpty(params[3])) {
+          foreign.append(" ON DELETE ")
+            .append(sqlKeyword((Keywords) params[3]));
+        }
+        return foreign.toString();
+
+      case CASCADE:
+        return "CASCADE";
+
+      case SET_NULL:
+        return "SET NULL";
+
+      case DROP_TABLE:
+        return "DROP TABLE " + params[0];
+
       case GET_TABLES:
         return new SqlSelect()
           .addFields("information_schema.tables", "table_name")
           .addFrom("information_schema.tables").getQuery(this);
+
       default:
         Assert.unsupported("Unsupported keyword: " + option);
         return null;
@@ -69,6 +81,15 @@ public abstract class SqlBuilder {
   }
 
   protected abstract String sqlQuote(String value);
+
+  protected String sqlTransform(Object x) {
+    String s = BeeUtils.transform(x);
+
+    if (x instanceof CharSequence) {
+      s = "'" + s.replaceAll("'", "''") + "'";
+    }
+    return s;
+  }
 
   protected Object sqlType(DataTypes type, int precission, int scale) {
     switch (type) {
@@ -131,8 +152,8 @@ public abstract class SqlBuilder {
         query.append(field.getName().getSqlString(this, paramMode))
           .append(" ").append(sqlType(field.getType(), field.getPrecission(), field.getScale()));
 
-        for (IsSql opt : field.getOptions()) {
-          query.append(" ").append(opt.getSqlString(this, paramMode));
+        for (Keywords opt : field.getOptions()) {
+          query.append(" ").append(sqlKeyword(opt));
         }
       }
       query.append(")");
@@ -211,20 +232,20 @@ public abstract class SqlBuilder {
 
     StringBuilder query = new StringBuilder("SELECT ");
 
-    List<Object[]> fieldList = ss.getFields();
+    List<IsExpression[]> fieldList = ss.getFields();
 
     for (int i = 0; i < fieldList.size(); i++) {
       if (i > 0) {
         query.append(", ");
       }
-      Object[] fldEntry = fieldList.get(i);
-      IsExpression field = (IsExpression) fldEntry[SqlSelect.FIELD_EXPR];
+      IsExpression[] fldEntry = fieldList.get(i);
+      IsExpression field = fldEntry[SqlSelect.FIELD_EXPR];
       query.append(field.getSqlString(this, paramMode));
 
-      String alias = (String) fldEntry[SqlSelect.FIELD_ALIAS];
+      IsExpression alias = fldEntry[SqlSelect.FIELD_ALIAS];
 
       if (!BeeUtils.isEmpty(alias)) {
-        query.append(" AS ").append(sqlQuote(alias));
+        query.append(" AS ").append(alias.getSqlString(this, paramMode));
       }
     }
     List<IsFrom> fromList = ss.getFrom();

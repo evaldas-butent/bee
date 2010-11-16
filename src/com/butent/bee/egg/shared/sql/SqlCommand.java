@@ -6,7 +6,7 @@ import com.butent.bee.egg.shared.utils.BeeUtils;
 
 import java.util.List;
 
-public class SqlCommand extends SqlQuery<SqlCommand> {
+class SqlCommand extends SqlQuery<SqlCommand> {
 
   private final Keywords command;
   private final Object[] parameters;

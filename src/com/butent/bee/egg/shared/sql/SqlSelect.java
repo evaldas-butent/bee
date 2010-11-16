@@ -13,7 +13,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
   static final int ORDER_EXPR = 0;
   static final int ORDER_DESC = 1;
 
-  private List<Object[]> fieldList;
+  private List<IsExpression[]> fieldList;
   private IsCondition whereClause;
   private List<IsExpression> groupList;
   private List<Object[]> orderList;
@@ -27,14 +27,12 @@ public class SqlSelect extends HasFrom<SqlSelect> {
   }
 
   public SqlSelect addAllFields(String source) {
-    addField(SqlUtils.expression(SqlUtils.field(source), ".*"), null);
+    Assert.notEmpty(source);
+    addField(SqlUtils.name(source + ".*"), null);
     return getReference();
   }
 
   public SqlSelect addAvg(IsExpression expr, String alias) {
-    Assert.notEmpty(expr);
-    Assert.notEmpty(alias);
-
     addAggregate("AVG", expr, alias);
     return getReference();
   }
@@ -48,10 +46,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
   }
 
   public SqlSelect addConstant(Object constant, String alias) {
-    Assert.notNull(constant);
-    Assert.notEmpty(alias);
-
-    addField(SqlUtils.constant(constant), alias);
+    addExpr(SqlUtils.constant(constant), alias);
     return getReference();
   }
 
@@ -60,8 +55,6 @@ public class SqlSelect extends HasFrom<SqlSelect> {
   }
 
   public SqlSelect addCount(String expr, String alias) {
-    Assert.notEmpty(alias);
-
     String xpr;
     if (BeeUtils.isEmpty(expr)) {
       xpr = "*";
@@ -73,8 +66,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
   }
 
   public SqlSelect addDistinct(String source, String field) {
-    addField(SqlUtils.expression("DISTINCT ", SqlUtils.field(source, field)),
-        null);
+    addField(SqlUtils.expression("DISTINCT ", SqlUtils.field(source, field)), null);
     return getReference();
   }
 
@@ -82,20 +74,17 @@ public class SqlSelect extends HasFrom<SqlSelect> {
     Assert.notEmpty(expr);
     Assert.notEmpty(alias);
 
-    addField(expr, alias);
+    addField(expr, SqlUtils.name(alias));
     return getReference();
   }
 
   public SqlSelect addExpr(String expr, String alias) {
-    Assert.notEmpty(expr);
-    Assert.notEmpty(alias);
-
-    addField(SqlUtils.expression(expr), alias);
+    addExpr(SqlUtils.expression(expr), alias);
     return getReference();
   }
 
   public SqlSelect addField(String source, String field, String alias) {
-    addField(SqlUtils.field(source, field), alias);
+    addExpr(SqlUtils.field(source, field), alias);
     return getReference();
   }
 
@@ -114,9 +103,6 @@ public class SqlSelect extends HasFrom<SqlSelect> {
   }
 
   public SqlSelect addMax(IsExpression expr, String alias) {
-    Assert.notEmpty(expr);
-    Assert.notEmpty(alias);
-
     addAggregate("MAX", expr, alias);
     return getReference();
   }
@@ -130,9 +116,6 @@ public class SqlSelect extends HasFrom<SqlSelect> {
   }
 
   public SqlSelect addMin(IsExpression expr, String alias) {
-    Assert.notEmpty(expr);
-    Assert.notEmpty(alias);
-
     addAggregate("MIN", expr, alias);
     return getReference();
   }
@@ -156,9 +139,6 @@ public class SqlSelect extends HasFrom<SqlSelect> {
   }
 
   public SqlSelect addSum(IsExpression expr, String alias) {
-    Assert.notEmpty(expr);
-    Assert.notEmpty(alias);
-
     addAggregate("SUM", expr, alias);
     return getReference();
   }
@@ -190,15 +170,11 @@ public class SqlSelect extends HasFrom<SqlSelect> {
     List<String> fldList = new ArrayList<String>();
 
     if (!BeeUtils.isEmpty(fieldList)) {
-      for (Object[] fldEntry : fieldList) {
-        String als = (String) fldEntry[FIELD_ALIAS];
+      for (IsExpression[] fldEntry : fieldList) {
+        String als = fldEntry[FIELD_ALIAS].getValue();
 
         if (BeeUtils.isEmpty(als)) {
-          Object field = fldEntry[FIELD_EXPR];
-
-          if (field instanceof FieldExpression) {
-            als = ((FieldExpression) field).getField();
-          }
+          als = fldEntry[FIELD_EXPR].getValue();
         }
         fldList.add(als);
       }
@@ -206,7 +182,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
     return fldList;
   }
 
-  public List<Object[]> getFields() {
+  public List<IsExpression[]> getFields() {
     return fieldList;
   }
 
@@ -250,9 +226,8 @@ public class SqlSelect extends HasFrom<SqlSelect> {
 
     List<Object> paramList = null;
 
-    for (Object[] field : fieldList) {
-      IsExpression fld = (IsExpression) field[FIELD_EXPR];
-      SqlUtils.addParams(paramList, fld.getSqlParams());
+    for (IsExpression[] field : fieldList) {
+      SqlUtils.addParams(paramList, field[FIELD_EXPR].getSqlParams());
     }
     for (IsFrom from : getFrom()) {
       SqlUtils.addParams(paramList, from.getSqlParams());
@@ -339,16 +314,17 @@ public class SqlSelect extends HasFrom<SqlSelect> {
   }
 
   private void addAggregate(String fnc, IsExpression expr, String alias) {
-    addField(SqlUtils.expression(fnc, "(", expr, ")"), alias);
+    Assert.notEmpty(expr);
+    addExpr(SqlUtils.expression(fnc, "(", expr, ")"), alias);
   }
 
-  private void addField(IsExpression expr, String alias) {
-    Object[] fieldEntry = new Object[2];
+  private void addField(IsExpression expr, IsExpression alias) {
+    IsExpression[] fieldEntry = new IsExpression[2];
     fieldEntry[FIELD_EXPR] = expr;
     fieldEntry[FIELD_ALIAS] = alias;
 
     if (BeeUtils.isEmpty(fieldList)) {
-      fieldList = new ArrayList<Object[]>();
+      fieldList = new ArrayList<IsExpression[]>();
     }
     fieldList.add(fieldEntry);
   }
