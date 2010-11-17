@@ -19,7 +19,6 @@ public class BeeColumn implements Transformable, BeeSerializable {
     NAME, TYPE, PRECISION, SCALE, ISNULL, SCHEMA, CATALOG, TABLE, TYPENAME
   }
 
-  public static final String SERIALIZATION_SEPARATOR = ",";
   public static final int NO_NULLS = 0;
   public static final int NULLABLE = 1;
 

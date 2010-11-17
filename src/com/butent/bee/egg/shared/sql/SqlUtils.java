@@ -107,8 +107,7 @@ public class SqlUtils {
     return new JoinCondition(field(src, fld), IN, query);
   }
 
-  public static IsCondition in(String src, String fld, String dst, String dFld,
-      IsCondition clause) {
+  public static IsCondition in(String src, String fld, String dst, String dFld, IsCondition clause) {
     SqlSelect query = new SqlSelect();
     query.addDistinct(dst, dFld).addFrom(dst).setWhere(clause);
 
@@ -126,33 +125,27 @@ public class SqlUtils {
     return cond;
   }
 
-  public static IsCondition inList(String source, String field,
-      Object... values) {
+  public static IsCondition inList(String source, String field, Object... values) {
     return inList(field(source, field), values);
   }
 
-  public static IsCondition join(String src1, String fld1, String src2,
-      String fld2) {
+  public static IsCondition join(String src1, String fld1, String src2, String fld2) {
     return new JoinCondition(field(src1, fld1), EQUAL, field(src2, fld2));
   }
 
-  public static IsCondition joinLess(String src1, String fld1, String src2,
-      String fld2) {
+  public static IsCondition joinLess(String src1, String fld1, String src2, String fld2) {
     return new JoinCondition(field(src1, fld1), LESS, field(src2, fld2));
   }
 
-  public static IsCondition joinLessEqual(String src1, String fld1,
-      String src2, String fld2) {
+  public static IsCondition joinLessEqual(String src1, String fld1, String src2, String fld2) {
     return new JoinCondition(field(src1, fld1), LESS_EQUAL, field(src2, fld2));
   }
 
-  public static IsCondition joinMore(String src1, String fld1, String src2,
-      String fld2) {
+  public static IsCondition joinMore(String src1, String fld1, String src2, String fld2) {
     return new JoinCondition(field(src1, fld1), MORE, field(src2, fld2));
   }
 
-  public static IsCondition joinMoreEqual(String src1, String fld1,
-      String src2, String fld2) {
+  public static IsCondition joinMoreEqual(String src1, String fld1, String src2, String fld2) {
     return new JoinCondition(field(src1, fld1), MORE_EQUAL, field(src2, fld2));
   }
 
@@ -176,8 +169,7 @@ public class SqlUtils {
     return cond;
   }
 
-  public static IsCondition joinNotEqual(String src1, String fld1, String src2,
-      String fld2) {
+  public static IsCondition joinNotEqual(String src1, String fld1, String src2, String fld2) {
     return new JoinCondition(field(src1, fld1), NOT_EQUAL, field(src2, fld2));
   }
 

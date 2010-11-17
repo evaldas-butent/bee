@@ -44,7 +44,18 @@ public class QueryServiceBean {
     Assert.notNull(ss);
     Assert.state(!ss.isEmpty());
 
-    return (BeeRowSet) processSql(ss.getQuery());
+    BeeRowSet res = (BeeRowSet) processSql(ss.getQuery());
+
+    String src = ss.getMainSource();
+    res.setSource(src);
+
+    if (sys.beeTable(src)) {
+      String als = ss.getMainAlias();
+      res.setIdField(ss.getFieldName(als, sys.getIdName(src)));
+      res.setLockField(ss.getFieldName(als, sys.getLockName(src)));
+    }
+
+    return res;
   }
 
   public BeeRow getSingleRow(SqlSelect ss) {

@@ -17,6 +17,7 @@ import com.butent.bee.egg.client.grid.render.DefaultRowRenderer;
 import com.butent.bee.egg.client.grid.render.FixedWidthGridBulkRenderer;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeConst;
+import com.butent.bee.egg.shared.data.BeeRowSet;
 import com.butent.bee.egg.shared.data.BeeView;
 import com.butent.bee.egg.shared.data.DataUtils;
 import com.butent.bee.egg.shared.utils.BeeUtils;
@@ -80,8 +81,8 @@ public class GridFactory {
     public void requestRows(Request request, TableModel.Callback<Integer> callback) {
       int start = request.getStartRow();
       int cnt = request.getNumRows();
-      
-      ScrollGridResponse resp = new ScrollGridResponse(start, cnt, getRowCount()); 
+
+      ScrollGridResponse resp = new ScrollGridResponse(start, cnt, getRowCount());
       callback.onRowsReady(request, resp);
     }
 
@@ -112,13 +113,14 @@ public class GridFactory {
       BeeKeeper.getLog().warning("data view empty");
       return null;
     }
-    
+
     String table = null;
     CellKeyProvider keyProvider = null;
-    if (BeeUtils.arrayLength(view.getColumns()) > 0) {
+
+    if (!(view instanceof BeeRowSet)) {
       table = view.getColumns()[0].getTable();
     }
-    
+
     if (!BeeUtils.isEmpty(table)) {
       keyProvider = new CellKeyProvider(view);
       BeeGlobal.getCache().getPrimaryKey(table, keyProvider);
@@ -131,7 +133,7 @@ public class GridFactory {
     for (int i = 0; i < c; i++) {
       column = new TextColumn(createCell(cellType), view, i);
       if (cellType != null && cellType.isEditable()) {
-        column.setFieldUpdater(new CellUpdater(view, i, keyProvider));
+        column.setFieldUpdater(new CellUpdater(view, i, keyProvider, cellTable));
       }
       cellTable.addColumn(column, arr[i]);
     }
@@ -160,7 +162,7 @@ public class GridFactory {
     cachedModel.setRowCount(r);
 
     TableDefinition<Integer> tableDef = new TableDefinition<Integer>();
-    String[] rowColors = new String[] {"#ffffdd", "#eeeeee"};
+    String[] rowColors = new String[]{"#ffffdd", "#eeeeee"};
     tableDef.setRowRenderer(new DefaultRowRenderer<Integer>(rowColors));
 
     String[] arr = view.getColumnNames();
@@ -173,7 +175,7 @@ public class GridFactory {
     }
 
     ScrollTable<Integer> table = new ScrollTable<Integer>(cachedModel, tableDef);
-    
+
     FixedWidthGridBulkRenderer<Integer> renderer = new FixedWidthGridBulkRenderer<Integer>(
         table.getDataTable(), table);
     table.setBulkRenderer(renderer);
@@ -209,7 +211,7 @@ public class GridFactory {
 
   private Cell<String> createCell(CellType type) {
     Cell<String> cell;
-    
+
     switch (type) {
       case TEXT_EDIT:
         cell = new EditTextCell();
@@ -220,8 +222,8 @@ public class GridFactory {
       default:
         cell = new TextCell();
     }
-    
+
     return cell;
   }
-  
+
 }

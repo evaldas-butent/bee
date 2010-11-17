@@ -2,6 +2,8 @@ package com.butent.bee.egg.server.ui;
 
 import com.butent.bee.egg.server.Assert;
 import com.butent.bee.egg.server.communication.ResponseBuffer;
+import com.butent.bee.egg.server.data.BeeTable.BeeForeignKey;
+import com.butent.bee.egg.server.data.BeeTable.BeeStructure;
 import com.butent.bee.egg.server.data.QueryServiceBean;
 import com.butent.bee.egg.server.data.SystemBean;
 import com.butent.bee.egg.server.http.RequestInfo;
@@ -132,20 +134,31 @@ public class UiServiceBean {
     SqlSelect ss = new SqlSelect();
     ss.addAllFields("t").addFrom(tbl, "t");
 
+    if (sys.beeTable(tbl)) {
+      for (BeeForeignKey foreign : sys.getForeignKeys(tbl)) {
+        String refTbl = foreign.getRefTable();
+
+        ss.addFromLeft(refTbl,
+            SqlUtils.join("t", foreign.getKeyField(), refTbl, foreign.getRefField()));
+
+        for (BeeStructure field : sys.getFields(refTbl)) {
+          if (field.isUnique()) {
+            ss.addFields(refTbl, field.getName());
+          }
+        }
+      }
+    }
+
     BeeRowSet res = qs.getData(ss);
 
     buff.add(res.serialize());
   }
 
   private void getTables(ResponseBuffer buff) {
-    BeeRowSet res = qs.tableList();
+    buff.addColumn(new BeeColumn("BeeTable"));
 
-    buff.addColumns(res.getColumns());
-
-    for (BeeRow row : res.getRows()) {
-      for (int col = 0; col < res.getColumnCount(); col++) {
-        buff.add(row.getValue(col));
-      }
+    for (String tbl : sys.getTables()) {
+      buff.add(tbl);
     }
   }
 

@@ -7,12 +7,13 @@ import com.butent.bee.egg.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 @SuppressWarnings("hiding")
-class BeeTable {
+public class BeeTable {
 
   public class BeeForeignKey {
     private final String name;
@@ -161,7 +162,7 @@ class BeeTable {
   private List<BeeKey> keys = new ArrayList<BeeKey>();
   private List<BeeForeignKey> foreignKeys = new ArrayList<BeeForeignKey>();
 
-  public BeeTable(String name, String idName, String lockName) {
+  BeeTable(String name, String idName, String lockName) {
     Assert.notEmpty(name);
 
     this.name = name;
@@ -169,38 +170,16 @@ class BeeTable {
     this.lockName = BeeUtils.ifString(lockName, DEFAULT_LOCK_FIELD);
   }
 
-  public BeeTable addField(String name, DataTypes type, int precision, int scale,
-      boolean notNull, boolean unique) {
-    fields.put(name,
-        new BeeStructure(name, type, precision, scale, notNull, unique));
-    return this;
-  }
-
-  public BeeTable addForeignKey(String keyField, String refTable, String refField, Keywords action) {
-    foreignKeys.add(new BeeForeignKey(keyField, refTable, refField, action));
-    return this;
-  }
-
-  public BeeTable addKey(String keyName, String... keyFields) {
-    keys.add(new BeeKey(keyName, false, keyFields));
-    return this;
-  }
-
-  public BeeTable addUniqueKey(String keyName, String... keyFields) {
-    keys.add(new BeeKey(keyName, true, keyFields));
-    return this;
-  }
-
   public BeeStructure getField(String field) {
     return fields.get(field);
   }
 
   public Collection<BeeStructure> getFields() {
-    return fields.values();
+    return Collections.unmodifiableCollection(fields.values());
   }
 
   public Collection<BeeForeignKey> getForeignKeys() {
-    return foreignKeys;
+    return Collections.unmodifiableCollection(foreignKeys);
   }
 
   public String getIdName() {
@@ -208,7 +187,7 @@ class BeeTable {
   }
 
   public Collection<BeeKey> getKeys() {
-    return keys;
+    return Collections.unmodifiableCollection(keys);
   }
 
   public String getLockName() {
@@ -217,5 +196,27 @@ class BeeTable {
 
   public String getName() {
     return name;
+  }
+
+  BeeTable addField(String name, DataTypes type, int precision, int scale,
+      boolean notNull, boolean unique) {
+    fields.put(name,
+        new BeeStructure(name, type, precision, scale, notNull, unique));
+    return this;
+  }
+
+  BeeTable addForeignKey(String keyField, String refTable, String refField, Keywords action) {
+    foreignKeys.add(new BeeForeignKey(keyField, refTable, refField, action));
+    return this;
+  }
+
+  BeeTable addKey(String keyName, String... keyFields) {
+    keys.add(new BeeKey(keyName, false, keyFields));
+    return this;
+  }
+
+  BeeTable addUniqueKey(String keyName, String... keyFields) {
+    keys.add(new BeeKey(keyName, true, keyFields));
+    return this;
   }
 }

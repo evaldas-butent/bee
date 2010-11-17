@@ -16,8 +16,6 @@ import com.butent.bee.egg.shared.BeeType;
 import com.butent.bee.egg.shared.BeeWidget;
 import com.butent.bee.egg.shared.data.BeeColumn;
 import com.butent.bee.egg.shared.data.BeeRowSet;
-import com.butent.bee.egg.shared.data.BeeView;
-import com.butent.bee.egg.shared.data.DataUtils;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
@@ -99,9 +97,7 @@ class RowSetService extends CompositeService {
         if (rs.isEmpty()) {
           BeeKeeper.getLog().warning("RowSet is empty");
         } else {
-          BeeView view = DataUtils.createView(rs.getData(),
-              (Object[]) rs.getColumns());
-          BeeKeeper.getUi().showGrid(view);
+          BeeKeeper.getUi().showGrid(rs);
         }
         break;
 
@@ -124,6 +120,8 @@ class RowSetService extends CompositeService {
     root.addItem(item);
 
     item.addItem("Source: " + rs.getSource());
+    item.addItem("IdField: " + rs.getIdField());
+    item.addItem("LockField: " + rs.getLockField());
 
     BeeTreeItem cols = new BeeTreeItem("Columns");
     for (BeeColumn col : rs.getColumns()) {

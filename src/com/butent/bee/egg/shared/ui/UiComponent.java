@@ -159,8 +159,10 @@ public abstract class UiComponent implements HasId, BeeSerializable {
           if (!BeeUtils.isEmpty(value)) {
             String[] props = Codec.beeDeserialize(value);
 
-            for (int j = 0; j < props.length; j += 2) {
-              setProperty(props[j], props[j + 1]);
+            if (BeeUtils.arrayLength(props) > 1) {
+              for (int j = 0; j < props.length; j += 2) {
+                setProperty(props[j], props[j + 1]);
+              }
             }
           }
           break;

@@ -7,15 +7,18 @@ import com.butent.bee.egg.shared.utils.BeeUtils;
 import com.butent.bee.egg.shared.utils.Codec;
 
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Logger;
 
-public class BeeRowSet implements BeeSerializable {
+public class BeeRowSet extends AbstractData implements BeeSerializable {
 
   public class BeeRow implements BeeSerializable {
+
     private String[] data;
+    private Map<Integer, String> shadow;
 
     private BeeRow() {
     }
@@ -26,7 +29,24 @@ public class BeeRowSet implements BeeSerializable {
 
     @Override
     public void deserialize(String s) {
-      setData(Codec.beeDeserialize(s));
+      String[] arr = Codec.beeDeserialize(s);
+      Assert.arrayLength(arr, 2);
+
+      if (!BeeUtils.isEmpty(arr[0])) {
+        setData(Codec.beeDeserialize(arr[0]));
+      }
+      if (!BeeUtils.isEmpty(arr[1])) {
+        String[] shArr = Codec.beeDeserialize(arr[1]);
+
+        if (BeeUtils.arrayLength(shArr) > 1) {
+          Map<Integer, String> shMap = new HashMap<Integer, String>();
+
+          for (int i = 0; i < shArr.length; i += 2) {
+            shMap.put(BeeUtils.toInt(shArr[i]), shArr[i + 1]);
+          }
+          setShadow(shMap);
+        }
+      }
     }
 
     public boolean getBoolean(int col) {
@@ -84,6 +104,10 @@ public class BeeRowSet implements BeeSerializable {
       }
     }
 
+    public Map<Integer, String> getShadow() {
+      return shadow;
+    }
+
     public String getString(int col) {
       return BeeUtils.ifString(getValue(col), BeeConst.STRING_EMPTY);
     }
@@ -100,17 +124,46 @@ public class BeeRowSet implements BeeSerializable {
 
     @Override
     public String serialize() {
-      return Codec.beeSerialize((Object[]) data);
+      StringBuilder sb = new StringBuilder();
+
+      sb.append(Codec.beeSerialize((Object) data));
+      sb.append(Codec.beeSerialize(shadow));
+
+      return sb.toString();
+    }
+
+    public void setValue(int col, String value) {
+      Assert.betweenExclusive(col, 0, getColumnCount());
+
+      String oldValue = data[col];
+
+      if (!BeeUtils.equalsTrim(oldValue, value)) {
+        if (BeeUtils.isEmpty(shadow)) {
+          shadow = new HashMap<Integer, String>();
+        }
+        if (!shadow.containsKey(col)) {
+          shadow.put(col, oldValue);
+        } else {
+          if (BeeUtils.equalsTrim(shadow.get(col), value)) {
+            shadow.remove(col);
+          }
+        }
+        data[col] = value;
+      }
     }
 
     private void setData(String[] row) {
       Assert.arrayLength(row, getColumnCount());
       data = row;
     }
+
+    private void setShadow(Map<Integer, String> shadow) {
+      this.shadow = shadow;
+    }
   }
 
   private enum SerializationMembers {
-    SOURCE, COLUMNS, ROWS
+    SOURCE, ID_FIELD, LOCK_FIELD, COLUMNS, ROWS
   }
 
   private static Logger logger = Logger.getLogger(BeeRowSet.class.getName());
@@ -122,12 +175,13 @@ public class BeeRowSet implements BeeSerializable {
   }
 
   private String source;
-  private BeeColumn[] columns;
+  private String idField;
+  private String lockField;
+
   private List<BeeRow> rows;
 
   public BeeRowSet(BeeColumn[] columns) {
     setColumns(columns);
-    detectSource();
   }
 
   private BeeRowSet() {
@@ -137,9 +191,15 @@ public class BeeRowSet implements BeeSerializable {
     addRow(new BeeRow(row));
   }
 
+  public void commit() {
+    for (BeeRow row : getRows()) {
+      row.setShadow(null);
+    }
+  }
+
   @Override
   public void deserialize(String s) {
-    Assert.isNull(columns);
+    Assert.isNull(getColumns());
 
     SerializationMembers[] members = SerializationMembers.values();
     String[] arr = Codec.beeDeserialize(s);
@@ -153,6 +213,14 @@ public class BeeRowSet implements BeeSerializable {
       switch (member) {
         case SOURCE:
           source = value;
+          break;
+
+        case ID_FIELD:
+          idField = value;
+          break;
+
+        case LOCK_FIELD:
+          lockField = value;
           break;
 
         case COLUMNS:
@@ -185,15 +253,7 @@ public class BeeRowSet implements BeeSerializable {
 
   public BeeColumn getColumn(int col) {
     Assert.betweenExclusive(col, 0, getColumnCount());
-    return columns[col];
-  }
-
-  public int getColumnCount() {
-    return columns.length;
-  }
-
-  public BeeColumn[] getColumns() {
-    return columns;
+    return getColumns()[col];
   }
 
   public String[][] getData() {
@@ -207,18 +267,17 @@ public class BeeRowSet implements BeeSerializable {
     return data;
   }
 
+  public String getIdField() {
+    return idField;
+  }
+
+  public String getLockField() {
+    return lockField;
+  }
+
   public BeeRow getRow(int row) {
     Assert.betweenExclusive(row, 0, getRowCount());
     return rows.get(row);
-  }
-
-  public int getRowCount() {
-    int cnt = 0;
-
-    if (!BeeUtils.isEmpty(rows)) {
-      cnt = rows.size();
-    }
-    return cnt;
   }
 
   public List<BeeRow> getRows() {
@@ -229,8 +288,41 @@ public class BeeRowSet implements BeeSerializable {
     return source;
   }
 
+  public BeeRowSet getUpdate() {
+    BeeRowSet updSet = new BeeRowSet(getColumns());
+    updSet.setSource(getSource());
+    updSet.setIdField(getIdField());
+    updSet.setLockField(getLockField());
+
+    for (BeeRow row : getRows()) {
+      if (!BeeUtils.isEmpty(row.getShadow())) {
+        updSet.addRow(row);
+      }
+    }
+    if (updSet.isEmpty()) {
+      return null;
+    }
+    return updSet;
+  }
+
+  @Override
+  public String getValue(int row, int col) {
+    return getRow(row).getValue(col);
+  }
+
   public boolean isEmpty() {
     return getRowCount() <= 0;
+  }
+
+  public void rollback() {
+    for (BeeRow row : getRows()) {
+      if (!BeeUtils.isEmpty(row.getShadow())) {
+        for (Entry<Integer, String> shadow : row.getShadow().entrySet()) {
+          row.setValue(shadow.getKey(), shadow.getValue());
+        }
+        row.setShadow(null);
+      }
+    }
   }
 
   @Override
@@ -242,8 +334,14 @@ public class BeeRowSet implements BeeSerializable {
         case SOURCE:
           sb.append(Codec.beeSerialize(source));
           break;
+        case ID_FIELD:
+          sb.append(Codec.beeSerialize(idField));
+          break;
+        case LOCK_FIELD:
+          sb.append(Codec.beeSerialize(lockField));
+          break;
         case COLUMNS:
-          sb.append(Codec.beeSerialize((Object) columns));
+          sb.append(Codec.beeSerialize((Object) getColumns()));
           break;
         case ROWS:
           sb.append(Codec.beeSerialize(rows));
@@ -256,39 +354,38 @@ public class BeeRowSet implements BeeSerializable {
     return sb.toString();
   }
 
+  public void setIdField(String fieldName) {
+    idField = fieldName;
+  }
+
+  public void setLockField(String fieldName) {
+    lockField = fieldName;
+  }
+
+  public void setSource(String src) {
+    source = src;
+  }
+
+  @Override
+  public void setValue(int row, int col, String value) {
+    BeeRow r = getRow(row);
+    r.setValue(col, value);
+  }
+
   private void addRow(BeeRow row) {
     if (BeeUtils.isEmpty(rows)) {
       rows = new ArrayList<BeeRow>();
     }
     rows.add(row);
-  }
-
-  private void detectSource() {
-    Set<String> src = new HashSet<String>();
-
-    for (int i = 0; i < getColumnCount(); i++) {
-      String tbl = columns[i].getTable();
-
-      if (!BeeUtils.isEmpty(tbl)) {
-        src.add(tbl);
-      }
-    }
-    if (!BeeUtils.isEmpty(src)) {
-      source = BeeUtils.transformCollection(src);
-    }
+    setRowCount(rows.size());
   }
 
   private int getColumnIndex(String colName) {
     for (int i = 0; i < getColumnCount(); i++) {
-      if (BeeUtils.same(colName, columns[i].getName())) {
+      if (BeeUtils.same(colName, getColumn(i).getName())) {
         return i;
       }
     }
     return -1;
-  }
-
-  private void setColumns(BeeColumn[] columns) {
-    Assert.notEmpty(columns);
-    this.columns = columns;
   }
 }

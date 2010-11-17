@@ -19,10 +19,13 @@ import org.w3c.dom.Element;
 
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
@@ -231,12 +234,28 @@ public class SystemBean {
     return dataCache.get(table).getField(field);
   }
 
+  public Collection<BeeStructure> getFields(String table) {
+    return dataCache.get(table).getFields();
+  }
+
+  public Collection<BeeForeignKey> getForeignKeys(String table) {
+    return dataCache.get(table).getForeignKeys();
+  }
+
   public String getIdName(String table) {
     return dataCache.get(table).getIdName();
   }
 
+  public Collection<BeeKey> getKeys(String table) {
+    return dataCache.get(table).getKeys();
+  }
+
   public String getLockName(String table) {
     return dataCache.get(table).getLockName();
+  }
+
+  public Set<String> getTables() {
+    return Collections.unmodifiableSet(dataCache.keySet());
   }
 
   private void dropStructure() {

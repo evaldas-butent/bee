@@ -5,7 +5,7 @@ import com.butent.bee.egg.shared.utils.BeeUtils;
 public abstract class AbstractData implements BeeView {
   private int columnCount = 0;
   private int rowCount = 0;
-  
+
   private BeeColumn[] columns = null;
 
   public int getColumnCount() {
@@ -43,6 +43,7 @@ public abstract class AbstractData implements BeeView {
 
   public void setColumns(BeeColumn[] columns) {
     this.columns = columns;
+    setColumnCount(columns.length);
   }
 
   public void setRowCount(int rowCount) {
@@ -50,5 +51,5 @@ public abstract class AbstractData implements BeeView {
   }
 
   public abstract void setValue(int row, int col, String value);
-  
+
 }
