@@ -15,13 +15,11 @@ public class CellUpdater implements FieldUpdater<Integer, String> {
   private BeeView view;
   private int column;
   private CellKeyProvider keyProvider;
-  private BeeCellTable table;
 
-  public CellUpdater(BeeView view, int column, CellKeyProvider keyProvider, BeeCellTable table) {
+  public CellUpdater(BeeView view, int column, CellKeyProvider keyProvider) {
     this.view = view;
     this.column = column;
     this.keyProvider = keyProvider;
-    this.table = table;
   }
 
   @Override
@@ -53,7 +51,7 @@ public class CellUpdater implements FieldUpdater<Integer, String> {
             } else {
               rs.rollback();
             }
-            table.redraw();
+            BeeKeeper.getUi().showGrid(view);
             BeeKeeper.getLog().info("Resposnse from update: ", updCount);
           }
         };

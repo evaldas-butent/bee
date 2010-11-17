@@ -330,7 +330,7 @@ public abstract class SqlBuilder {
       query.append(field.getSqlString(this, paramMode));
 
       IsExpression value = updateEntry[SqlUpdate.VALUE_INDEX];
-      query.append(" = ").append(value.getSqlString(this, paramMode));
+      query.append("=").append(value.getSqlString(this, paramMode));
     }
     List<IsFrom> fromList = su.getFrom();
 

@@ -13,6 +13,7 @@ import com.butent.bee.egg.shared.data.BeeColumn;
 import com.butent.bee.egg.shared.data.BeeRowSet;
 import com.butent.bee.egg.shared.data.BeeRowSet.BeeRow;
 import com.butent.bee.egg.shared.sql.SqlSelect;
+import com.butent.bee.egg.shared.sql.SqlUpdate;
 import com.butent.bee.egg.shared.sql.SqlUtils;
 import com.butent.bee.egg.shared.ui.UiComponent;
 import com.butent.bee.egg.shared.utils.BeeUtils;
@@ -64,12 +65,37 @@ public class UiServiceBean {
         getTables(buff);
       } else if (svc.equals("rpc_ui_table")) {
         getTable(reqInfo, buff);
+      } else if (svc.equals("rpc_ui_commit")) {
+        commitChanges(reqInfo, buff);
       } else {
         String msg = BeeUtils.concat(1, svc, "loader service not recognized");
         logger.warning(msg);
         buff.add(msg);
       }
     }
+  }
+
+  private void commitChanges(RequestInfo reqInfo, ResponseBuffer buff) {
+    BeeRowSet upd = BeeRowSet.restore(reqInfo.getContent());
+    String idField = upd.getIdField();
+    String lockField = upd.getLockField();
+    int c = 0;
+
+    SqlUpdate su = new SqlUpdate(upd.getSource(), "u");
+
+    for (BeeRow row : upd.getRows()) {
+      if (!BeeUtils.isEmpty(row.getShadow())) {
+        su.setWhere(SqlUtils.and(
+            SqlUtils.equal("u", idField, row.getLong(idField)),
+            SqlUtils.equal("u", lockField, row.getLong(lockField))));
+
+        for (Integer col : row.getShadow().keySet()) {
+          su.addConstant(upd.getColumn(col).getName(), row.getValue(col));
+        }
+      }
+      c += qs.updateData(su.addConstant(lockField, System.currentTimeMillis()));
+    }
+    buff.add(c);
   }
 
   private void doSql(RequestInfo reqInfo, ResponseBuffer buff) {

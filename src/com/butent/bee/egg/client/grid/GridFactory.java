@@ -133,7 +133,7 @@ public class GridFactory {
     for (int i = 0; i < c; i++) {
       column = new TextColumn(createCell(cellType), view, i);
       if (cellType != null && cellType.isEditable()) {
-        column.setFieldUpdater(new CellUpdater(view, i, keyProvider, cellTable));
+        column.setFieldUpdater(new CellUpdater(view, i, keyProvider));
       }
       cellTable.addColumn(column, arr[i]);
     }
