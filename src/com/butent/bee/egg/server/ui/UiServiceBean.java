@@ -12,6 +12,11 @@ import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.data.BeeColumn;
 import com.butent.bee.egg.shared.data.BeeRowSet;
 import com.butent.bee.egg.shared.data.BeeRowSet.BeeRow;
+import com.butent.bee.egg.shared.sql.Conditions;
+import com.butent.bee.egg.shared.sql.IsCondition;
+import com.butent.bee.egg.shared.sql.IsQuery;
+import com.butent.bee.egg.shared.sql.SqlDelete;
+import com.butent.bee.egg.shared.sql.SqlInsert;
 import com.butent.bee.egg.shared.sql.SqlSelect;
 import com.butent.bee.egg.shared.sql.SqlUpdate;
 import com.butent.bee.egg.shared.sql.SqlUtils;
@@ -77,25 +82,62 @@ public class UiServiceBean {
 
   private void commitChanges(RequestInfo reqInfo, ResponseBuffer buff) {
     BeeRowSet upd = BeeRowSet.restore(reqInfo.getContent());
-    String idField = upd.getIdField();
-    String lockField = upd.getLockField();
+    String tbl = upd.getSource();
+    String idName = upd.getIdName();
+    String lockName = upd.getLockName();
     int c = 0;
 
-    SqlUpdate su = new SqlUpdate(upd.getSource(), "u");
+    if (BeeUtils.isEmpty(idName)) {
+      buff.add(-1);
+      buff.add("ID column not found");
+      return;
+    }
 
     for (BeeRow row : upd.getRows()) {
-      if (!BeeUtils.isEmpty(row.getShadow())) {
-        su.setWhere(SqlUtils.and(
-            SqlUtils.equal("u", idField, row.getLong(idField)),
-            SqlUtils.equal("u", lockField, row.getLong(lockField))));
-
-        for (Integer col : row.getShadow().keySet()) {
-          su.addConstant(upd.getColumn(col).getName(), row.getValue(col));
-        }
+      Map<Integer, String> shadow = row.getShadow();
+      if (BeeUtils.isEmpty(shadow)) {
+        continue;
       }
-      c += qs.updateData(su.addConstant(lockField, System.currentTimeMillis()));
+      long id = row.getLong(idName);
+
+      if (id == 0) { // INSERT
+        if (!BeeUtils.isEmpty(lockName)) {
+          row.setValue(lockName, BeeUtils.transform(System.currentTimeMillis()));
+        }
+        SqlInsert si = new SqlInsert(tbl);
+
+        for (Integer col : shadow.keySet()) {
+          si.addConstant(upd.getColumnName(col), row.getOriginal(col));
+        }
+        id = qs.insertData(si);
+        if (id >= 0) {
+          c++;
+          row.setValue(idName, BeeUtils.transform(id));
+        }
+      } else {
+        IsCondition wh = SqlUtils.and(SqlUtils.equal(tbl, idName, id));
+        if (!BeeUtils.isEmpty(lockName)) {
+          ((Conditions) wh).add(SqlUtils.equal(tbl, lockName, row.getLong(lockName)));
+        }
+        IsQuery query;
+
+        if (shadow.containsKey(upd.getIdIndex())) { // DELETE
+          query = new SqlDelete(tbl).setWhere(wh);
+        } else { // UPDATE
+          query = new SqlUpdate(tbl).setWhere(wh);
+
+          if (!BeeUtils.isEmpty(lockName)) {
+            row.setValue(lockName, BeeUtils.transform(System.currentTimeMillis()));
+          }
+          for (Integer col : shadow.keySet()) {
+            ((SqlUpdate) query).addConstant(upd.getColumnName(col), row.getOriginal(col));
+          }
+        }
+        c += qs.updateData(query);
+      }
     }
     buff.add(c);
+    buff.add(upd.serialize());
   }
 
   private void doSql(RequestInfo reqInfo, ResponseBuffer buff) {

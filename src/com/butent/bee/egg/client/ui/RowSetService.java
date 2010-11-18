@@ -2,18 +2,24 @@ package com.butent.bee.egg.client.ui;
 
 import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.event.shared.GwtEvent;
+import com.google.gwt.user.client.ui.FlowPanel;
+import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.egg.client.BeeGlobal;
 import com.butent.bee.egg.client.BeeKeeper;
+import com.butent.bee.egg.client.layout.Vertical;
 import com.butent.bee.egg.client.tree.BeeTree;
 import com.butent.bee.egg.client.tree.BeeTreeItem;
 import com.butent.bee.egg.client.utils.BeeXml;
+import com.butent.bee.egg.client.widget.BeeButton;
+import com.butent.bee.egg.client.widget.BeeLabel;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeService;
 import com.butent.bee.egg.shared.BeeStage;
 import com.butent.bee.egg.shared.BeeType;
 import com.butent.bee.egg.shared.BeeWidget;
+import com.butent.bee.egg.shared.communication.ContentType;
 import com.butent.bee.egg.shared.data.BeeColumn;
 import com.butent.bee.egg.shared.data.BeeRowSet;
 import com.butent.bee.egg.shared.utils.BeeUtils;
@@ -24,17 +30,19 @@ import java.util.List;
 class RowSetService extends CompositeService {
 
   private enum Stages {
-    REQUEST_TABLE_LIST, CHOOSE_TABLE, REQUEST_TABLE, SHOW_TABLE
+    REQUEST_TABLE_LIST, CHOOSE_TABLE, REQUEST_TABLE, LOAD_TABLE, SHOW_TABLE,
+    MODIFY_TABLE, INSERT, SAVE, CANCEL, SAVE_RESPONSE
   }
 
   private Stages stage = null;
+  private BeeRowSet rs;
 
   protected RowSetService() {
   }
 
   protected RowSetService(String serviceId) {
     super(serviceId);
-    nextStage();
+    stage = Stages.REQUEST_TABLE_LIST;
   }
 
   @Override
@@ -50,6 +58,8 @@ class RowSetService extends CompositeService {
 
     switch (stage) {
       case REQUEST_TABLE_LIST:
+        stage = Stages.CHOOSE_TABLE;
+
         BeeKeeper.getRpc().makeGetRequest(adoptService("rpc_ui_tables"));
         break;
 
@@ -68,6 +78,8 @@ class RowSetService extends CompositeService {
         BeeGlobal.getField(fld).setItems(lst);
         BeeGlobal.getField(fld).setValue(lst.get(0));
 
+        stage = Stages.REQUEST_TABLE;
+
         BeeGlobal.inputFields(new BeeStage(adoptService("comp_ui_rowset"),
             BeeStage.STAGE_CONFIRM), "Get table", fld);
         break;
@@ -81,24 +93,93 @@ class RowSetService extends CompositeService {
           BeeGlobal.showError("Table name not specified");
           ok = false;
         } else {
+          stage = Stages.LOAD_TABLE;
+
           BeeGlobal.closeDialog(event);
           BeeKeeper.getRpc().makePostRequest(adoptService("rpc_ui_table"),
               BeeXml.createString(BeeService.XML_TAG_DATA, fld, fName));
         }
         break;
 
-      case SHOW_TABLE:
+      case LOAD_TABLE:
         JsArrayString fArr = (JsArrayString) params[0];
+        rs = BeeRowSet.restore(fArr.get(0));
 
-        BeeRowSet rs = BeeRowSet.restore(fArr.get(0));
+        stage = Stages.SHOW_TABLE;
 
+        CompositeService.doService(adoptService("comp_ui_rowset"));
+        break;
+
+      case SHOW_TABLE:
         BeeKeeper.getUi().updateMenu(getTree(rs));
 
         if (rs.isEmpty()) {
-          BeeKeeper.getLog().warning("RowSet is empty");
+          BeeKeeper.getUi().updateActivePanel(new BeeLabel("RowSet is empty"));
         } else {
           BeeKeeper.getUi().showGrid(rs);
         }
+        HasWidgets panel = BeeKeeper.getUi().getActivePanel();
+
+        stage = Stages.MODIFY_TABLE;
+
+        FlowPanel buttons = new FlowPanel();
+        buttons.add(new BeeButton("NEW", adoptService("comp_ui_rowset"), Stages.INSERT.name()));
+        buttons.add(new BeeButton("SAVE", adoptService("comp_ui_rowset"), Stages.SAVE.name()));
+        buttons.add(new BeeButton("CANCEL", adoptService("comp_ui_rowset"), Stages.CANCEL.name()));
+
+        Vertical root = new Vertical();
+        root.add(panel.iterator().next());
+        root.add(buttons);
+        BeeKeeper.getUi().updateActiveQuietly(root, true);
+        break;
+
+      case MODIFY_TABLE:
+        stage = Stages.valueOf((String) params[1]);
+        CompositeService.doService(adoptService("comp_ui_rowset"));
+        break;
+
+      case SAVE:
+        BeeRowSet upd = rs.prepareUpdate();
+
+        if (BeeUtils.isEmpty(upd)) {
+          stage = Stages.MODIFY_TABLE;
+          BeeKeeper.getLog().info("Nothing to update");
+        } else {
+          stage = Stages.SAVE_RESPONSE;
+          BeeKeeper.getRpc().makePostRequest(
+              adoptService("rpc_ui_commit"), ContentType.BINARY, upd.serialize());
+        }
+        break;
+
+      case SAVE_RESPONSE:
+        stage = Stages.SHOW_TABLE;
+
+        JsArrayString rArr = (JsArrayString) params[0];
+        Assert.notNull(rArr);
+        Assert.parameterCount(rArr.length(), 2);
+        int updCount = BeeUtils.toInt(rArr.get(0));
+
+        if (updCount < 0) {
+          rs.rollback();
+        } else {
+          BeeRowSet res = BeeRowSet.restore(rArr.get(1));
+          rs.commit();
+        }
+        BeeKeeper.getLog().info("Resposnse from update: ", updCount);
+
+        CompositeService.doService(adoptService("comp_ui_rowset"));
+        break;
+
+      case INSERT:
+        stage = Stages.SHOW_TABLE;
+        rs.addRow(new String[rs.getColumnCount()]);
+        CompositeService.doService(adoptService("comp_ui_rowset"));
+        break;
+
+      case CANCEL:
+        stage = Stages.SHOW_TABLE;
+        rs.rollback();
+        CompositeService.doService(adoptService("comp_ui_rowset"));
         break;
 
       default:
@@ -106,10 +187,6 @@ class RowSetService extends CompositeService {
         unregister();
         ok = false;
         break;
-    }
-
-    if (ok) {
-      nextStage();
     }
     return ok;
   }
@@ -120,8 +197,8 @@ class RowSetService extends CompositeService {
     root.addItem(item);
 
     item.addItem("Source: " + rs.getSource());
-    item.addItem("IdField: " + rs.getIdField());
-    item.addItem("LockField: " + rs.getLockField());
+    item.addItem("IdIndex: " + rs.getIdIndex());
+    item.addItem("LockIndex: " + rs.getLockIndex());
 
     BeeTreeItem cols = new BeeTreeItem("Columns");
     for (BeeColumn col : rs.getColumns()) {
@@ -140,26 +217,12 @@ class RowSetService extends CompositeService {
       BeeTreeItem r = new BeeTreeItem("Row" + i);
 
       for (int j = 0; j < rs.getColumnCount(); j++) {
-        r.addItem(rs.getColumn(j).getName() + ": " + rs.getRow(i).getValue(j));
+        r.addItem(rs.getColumnName(j) + ": " + rs.getValue(i, j));
       }
       rows.addItem(r);
     }
     item.addItem(rows);
 
     return root;
-  }
-
-  private void nextStage() {
-    int x = 0;
-
-    if (!BeeUtils.isEmpty(stage)) {
-      x = stage.ordinal() + 1;
-    }
-
-    if (x < Stages.values().length) {
-      stage = Stages.values()[x];
-    } else {
-      unregister();
-    }
   }
 }

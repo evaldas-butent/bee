@@ -17,6 +17,7 @@ public class BeeRowSet extends AbstractData implements BeeSerializable {
 
   public class BeeRow implements BeeSerializable {
 
+    private int id = 0;
     private String[] data;
     private Map<Integer, String> shadow;
 
@@ -24,19 +25,22 @@ public class BeeRowSet extends AbstractData implements BeeSerializable {
     }
 
     private BeeRow(String[] row) {
+      id = counter++;
       setData(row);
     }
 
     @Override
     public void deserialize(String s) {
       String[] arr = Codec.beeDeserialize(s);
-      Assert.arrayLength(arr, 2);
+      Assert.arrayLength(arr, 3);
 
-      if (!BeeUtils.isEmpty(arr[0])) {
-        setData(Codec.beeDeserialize(arr[0]));
-      }
+      id = BeeUtils.toInt(arr[0]);
+
       if (!BeeUtils.isEmpty(arr[1])) {
-        String[] shArr = Codec.beeDeserialize(arr[1]);
+        setData(Codec.beeDeserialize(arr[1]));
+      }
+      if (!BeeUtils.isEmpty(arr[2])) {
+        String[] shArr = Codec.beeDeserialize(arr[2]);
 
         if (BeeUtils.arrayLength(shArr) > 1) {
           Map<Integer, String> shMap = new HashMap<Integer, String>();
@@ -104,6 +108,10 @@ public class BeeRowSet extends AbstractData implements BeeSerializable {
       }
     }
 
+    public Object getOriginal(String colName) {
+      return getOriginal(getColumnIndex(colName));
+    }
+
     public Map<Integer, String> getShadow() {
       return shadow;
     }
@@ -118,14 +126,18 @@ public class BeeRowSet extends AbstractData implements BeeSerializable {
 
     public String getValue(int col) {
       Assert.betweenExclusive(col, 0, getColumnCount());
-
       return data[col];
+    }
+
+    public String getValue(String colName) {
+      return getValue(getColumnIndex(colName));
     }
 
     @Override
     public String serialize() {
       StringBuilder sb = new StringBuilder();
 
+      sb.append(Codec.beeSerialize(id));
       sb.append(Codec.beeSerialize((Object) data));
       sb.append(Codec.beeSerialize(shadow));
 
@@ -137,19 +149,23 @@ public class BeeRowSet extends AbstractData implements BeeSerializable {
 
       String oldValue = data[col];
 
-      if (!BeeUtils.equalsTrim(oldValue, value)) {
+      if (oldValue != value) {
         if (BeeUtils.isEmpty(shadow)) {
           shadow = new HashMap<Integer, String>();
         }
         if (!shadow.containsKey(col)) {
           shadow.put(col, oldValue);
         } else {
-          if (BeeUtils.equalsTrim(shadow.get(col), value)) {
+          if (shadow.get(col) == value) {
             shadow.remove(col);
           }
         }
         data[col] = value;
       }
+    }
+
+    public void setValue(String colName, String value) {
+      setValue(getColumnIndex(colName), value);
     }
 
     private void setData(String[] row) {
@@ -163,7 +179,7 @@ public class BeeRowSet extends AbstractData implements BeeSerializable {
   }
 
   private enum SerializationMembers {
-    SOURCE, ID_FIELD, LOCK_FIELD, COLUMNS, ROWS
+    COUNTER, SOURCE, ID_INDEX, LOCK_INDEX, COLUMNS, ROWS
   }
 
   private static Logger logger = Logger.getLogger(BeeRowSet.class.getName());
@@ -174,9 +190,11 @@ public class BeeRowSet extends AbstractData implements BeeSerializable {
     return rs;
   }
 
+  private int counter = 0;
+
   private String source;
-  private String idField;
-  private String lockField;
+  private int idIndex;
+  private int lockIndex;
 
   private List<BeeRow> rows;
 
@@ -211,16 +229,20 @@ public class BeeRowSet extends AbstractData implements BeeSerializable {
       String value = arr[i];
 
       switch (member) {
+        case COUNTER:
+          counter = BeeUtils.toInt(value);
+          break;
+
         case SOURCE:
           source = value;
           break;
 
-        case ID_FIELD:
-          idField = value;
+        case ID_INDEX:
+          idIndex = BeeUtils.toInt(value);
           break;
 
-        case LOCK_FIELD:
-          lockField = value;
+        case LOCK_INDEX:
+          lockIndex = BeeUtils.toInt(value);
           break;
 
         case COLUMNS:
@@ -256,6 +278,10 @@ public class BeeRowSet extends AbstractData implements BeeSerializable {
     return getColumns()[col];
   }
 
+  public String getColumnName(int col) {
+    return getColumn(col).getName();
+  }
+
   public String[][] getData() {
     int rCnt = getRowCount();
     String[][] data = new String[rCnt][getColumnCount()];
@@ -267,12 +293,20 @@ public class BeeRowSet extends AbstractData implements BeeSerializable {
     return data;
   }
 
-  public String getIdField() {
-    return idField;
+  public int getIdIndex() {
+    return idIndex;
   }
 
-  public String getLockField() {
-    return lockField;
+  public String getIdName() {
+    return getColumnName(idIndex);
+  }
+
+  public int getLockIndex() {
+    return lockIndex;
+  }
+
+  public String getLockName() {
+    return getColumnName(lockIndex);
   }
 
   public BeeRow getRow(int row) {
@@ -288,23 +322,6 @@ public class BeeRowSet extends AbstractData implements BeeSerializable {
     return source;
   }
 
-  public BeeRowSet getUpdate() {
-    BeeRowSet updSet = new BeeRowSet(getColumns());
-    updSet.setSource(getSource());
-    updSet.setIdField(getIdField());
-    updSet.setLockField(getLockField());
-
-    for (BeeRow row : getRows()) {
-      if (!BeeUtils.isEmpty(row.getShadow())) {
-        updSet.addRow(row);
-      }
-    }
-    if (updSet.isEmpty()) {
-      return null;
-    }
-    return updSet;
-  }
-
   @Override
   public String getValue(int row, int col) {
     return getRow(row).getValue(col);
@@ -314,11 +331,28 @@ public class BeeRowSet extends AbstractData implements BeeSerializable {
     return getRowCount() <= 0;
   }
 
+  public BeeRowSet prepareUpdate() {
+    BeeRowSet update = new BeeRowSet(getColumns());
+    update.setSource(getSource());
+    update.setIdIndex(getIdIndex());
+    update.setLockIndex(getLockIndex());
+
+    for (BeeRow row : getRows()) {
+      if (!BeeUtils.isEmpty(row.getShadow())) {
+        update.addRow(row);
+      }
+    }
+    if (update.isEmpty()) {
+      return null;
+    }
+    return update;
+  }
+
   public void rollback() {
     for (BeeRow row : getRows()) {
       if (!BeeUtils.isEmpty(row.getShadow())) {
         for (Entry<Integer, String> shadow : row.getShadow().entrySet()) {
-          row.setValue(shadow.getKey(), shadow.getValue());
+          row.setValue(shadow.getKey(), shadow.getValue()); // TODO Conflict
         }
         row.setShadow(null);
       }
@@ -331,14 +365,17 @@ public class BeeRowSet extends AbstractData implements BeeSerializable {
 
     for (SerializationMembers member : SerializationMembers.values()) {
       switch (member) {
+        case COUNTER:
+          sb.append(Codec.beeSerialize(counter));
+          break;
         case SOURCE:
           sb.append(Codec.beeSerialize(source));
           break;
-        case ID_FIELD:
-          sb.append(Codec.beeSerialize(idField));
+        case ID_INDEX:
+          sb.append(Codec.beeSerialize(idIndex));
           break;
-        case LOCK_FIELD:
-          sb.append(Codec.beeSerialize(lockField));
+        case LOCK_INDEX:
+          sb.append(Codec.beeSerialize(lockIndex));
           break;
         case COLUMNS:
           sb.append(Codec.beeSerialize((Object) getColumns()));
@@ -355,11 +392,11 @@ public class BeeRowSet extends AbstractData implements BeeSerializable {
   }
 
   public void setIdField(String fieldName) {
-    idField = fieldName;
+    setIdIndex(getColumnIndex(fieldName));
   }
 
   public void setLockField(String fieldName) {
-    lockField = fieldName;
+    setLockIndex(getColumnIndex(fieldName));
   }
 
   public void setSource(String src) {
@@ -382,10 +419,18 @@ public class BeeRowSet extends AbstractData implements BeeSerializable {
 
   private int getColumnIndex(String colName) {
     for (int i = 0; i < getColumnCount(); i++) {
-      if (BeeUtils.same(colName, getColumn(i).getName())) {
+      if (BeeUtils.same(colName, getColumnName(i))) {
         return i;
       }
     }
     return -1;
+  }
+
+  private void setIdIndex(int index) {
+    lockIndex = index;
+  }
+
+  private void setLockIndex(int index) {
+    idIndex = index;
   }
 }

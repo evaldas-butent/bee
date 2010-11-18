@@ -243,7 +243,7 @@ public class BeeBus implements BeeModule {
         BeeGlobal.showError("Unknown composite service stage", svc, stg);
       }
     } else if (CompositeService.isRegistered(svc)) {
-      CompositeService.doService(svc, event);
+      CompositeService.doService(svc, event, stg);
     } else {
       BeeGlobal.showError("Unknown composite service", svc, stg);
     }
