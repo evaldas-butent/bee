@@ -299,7 +299,7 @@ public class SystemBean {
   }
 
   private void initTables() {
-    dataCache.put("bee_Tables", new BeeTable("bee_Tables", "TableID", "Locked"));
+    dataCache.put("bee_Tables", new BeeTable("bee_Tables", "TableID", "LastLock"));
     dataCache.put("bee_Fields", new BeeTable("bee_Fields", "FieldID", null)
       .addKey("FieldName")
       .addUniqueKey("TableField", "TableID", "FieldName")

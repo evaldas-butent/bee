@@ -168,9 +168,14 @@ public class BeeRowSet extends AbstractData implements BeeSerializable {
       setValue(getColumnIndex(colName), value);
     }
 
+    private int getId() {
+      return id;
+    }
+
     private void setData(String[] row) {
       Assert.arrayLength(row, getColumnCount());
       data = row;
+      setShadow(null);
     }
 
     private void setShadow(Map<Integer, String> shadow) {
@@ -209,9 +214,21 @@ public class BeeRowSet extends AbstractData implements BeeSerializable {
     addRow(new BeeRow(row));
   }
 
-  public void commit() {
-    for (BeeRow row : getRows()) {
-      row.setShadow(null);
+  public void commit(BeeRowSet rs) {
+    if (!BeeUtils.isEmpty(rs)) {
+      for (BeeRow upd : rs.getRows()) {
+        BeeRow dst = findRow(upd.getId());
+
+        if (!BeeUtils.isEmpty(dst)) {
+          Object delete = upd.getShadow().get(getIdIndex());
+
+          if (!BeeUtils.isEmpty(delete)) {
+            removeRow(dst);
+          } else {
+            dst.setData(upd.getData());
+          }
+        }
+      }
     }
   }
 
@@ -417,6 +434,15 @@ public class BeeRowSet extends AbstractData implements BeeSerializable {
     setRowCount(rows.size());
   }
 
+  private BeeRow findRow(int id) {
+    for (BeeRow row : getRows()) {
+      if (row.getId() == id) {
+        return row;
+      }
+    }
+    return null;
+  }
+
   private int getColumnIndex(String colName) {
     for (int i = 0; i < getColumnCount(); i++) {
       if (BeeUtils.same(colName, getColumnName(i))) {
@@ -426,11 +452,16 @@ public class BeeRowSet extends AbstractData implements BeeSerializable {
     return -1;
   }
 
+  private void removeRow(BeeRow row) {
+    rows.remove(row);
+    setRowCount(rows.size());
+  }
+
   private void setIdIndex(int index) {
-    lockIndex = index;
+    idIndex = index;
   }
 
   private void setLockIndex(int index) {
-    idIndex = index;
+    lockIndex = index;
   }
 }

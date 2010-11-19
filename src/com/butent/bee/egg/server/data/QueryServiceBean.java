@@ -75,7 +75,7 @@ public class QueryServiceBean {
       String lockFld = sys.getLockName(source);
 
       if (!si.hasField(lockFld)) {
-        si.addConstant(lockFld, 1);
+        si.addConstant(lockFld, System.currentTimeMillis());
       }
       String idFld = sys.getIdName(source);
 

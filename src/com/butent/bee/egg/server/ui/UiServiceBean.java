@@ -26,13 +26,16 @@ import com.butent.bee.egg.shared.utils.BeeUtils;
 import java.util.Map;
 import java.util.logging.Logger;
 
+import javax.annotation.Resource;
 import javax.ejb.EJB;
+import javax.ejb.EJBContext;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
 
 @Stateless
 @LocalBean
 public class UiServiceBean {
+
   private static Logger logger = Logger.getLogger(UiServiceBean.class.getName());
 
   @EJB
@@ -41,6 +44,8 @@ public class UiServiceBean {
   QueryServiceBean qs;
   @EJB
   SystemBean sys;
+  @Resource
+  EJBContext ctx;
 
   public void doService(String svc, RequestInfo reqInfo, ResponseBuffer buff) {
     Assert.notEmpty(svc);
@@ -82,25 +87,42 @@ public class UiServiceBean {
 
   private void commitChanges(RequestInfo reqInfo, ResponseBuffer buff) {
     BeeRowSet upd = BeeRowSet.restore(reqInfo.getContent());
+
     String tbl = upd.getSource();
     String idName = upd.getIdName();
     String lockName = upd.getLockName();
     int c = 0;
+    String err = "";
 
     if (BeeUtils.isEmpty(idName)) {
-      buff.add(-1);
-      buff.add("ID column not found");
-      return;
+      err = "ID column not found";
     }
 
     for (BeeRow row : upd.getRows()) {
+      if (!BeeUtils.isEmpty(err)) {
+        break;
+      }
       Map<Integer, String> shadow = row.getShadow();
       if (BeeUtils.isEmpty(shadow)) {
         continue;
       }
       long id = row.getLong(idName);
+      String mode = "INSERT";
 
-      if (id == 0) { // INSERT
+      if (shadow.containsKey(upd.getIdIndex())) {
+        String tmpId = shadow.get(upd.getIdIndex());
+
+        if (!BeeUtils.isEmpty(tmpId)) {
+          id = Long.parseLong(tmpId);
+          mode = "DELETE";
+        }
+      } else {
+        if (!BeeUtils.isEmpty(row.getValue(idName))) {
+          mode = "UPDATE";
+        }
+      }
+
+      if (mode.equals("INSERT")) {
         if (!BeeUtils.isEmpty(lockName)) {
           row.setValue(lockName, BeeUtils.transform(System.currentTimeMillis()));
         }
@@ -110,9 +132,14 @@ public class UiServiceBean {
           si.addConstant(upd.getColumnName(col), row.getOriginal(col));
         }
         id = qs.insertData(si);
-        if (id >= 0) {
+
+        if (id < 0) {
+          err = "Error inserting data";
+        } else {
+          if (id > 0) {
+            row.setValue(idName, BeeUtils.transform(id));
+          }
           c++;
-          row.setValue(idName, BeeUtils.transform(id));
         }
       } else {
         IsCondition wh = SqlUtils.and(SqlUtils.equal(tbl, idName, id));
@@ -121,8 +148,9 @@ public class UiServiceBean {
         }
         IsQuery query;
 
-        if (shadow.containsKey(upd.getIdIndex())) { // DELETE
+        if (mode.equals("DELETE")) {
           query = new SqlDelete(tbl).setWhere(wh);
+
         } else { // UPDATE
           query = new SqlUpdate(tbl).setWhere(wh);
 
@@ -133,11 +161,29 @@ public class UiServiceBean {
             ((SqlUpdate) query).addConstant(upd.getColumnName(col), row.getOriginal(col));
           }
         }
-        c += qs.updateData(query);
+        int res = qs.updateData(query);
+
+        switch (res) {
+          case -1:
+            err = "Error updating data";
+            break;
+          case 0:
+            err = "Optimistic lock exception";
+            break;
+          default:
+            c += res;
+            break;
+        }
       }
     }
-    buff.add(c);
-    buff.add(upd.serialize());
+    if (BeeUtils.isEmpty(err)) {
+      buff.add(c);
+      buff.add(upd.serialize());
+    } else {
+      buff.add(-1);
+      buff.add(err);
+      ctx.setRollbackOnly();
+    }
   }
 
   private void doSql(RequestInfo reqInfo, ResponseBuffer buff) {

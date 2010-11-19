@@ -21,17 +21,14 @@ class GridService extends CompositeService {
   private Stages stage = null;
   private Panel destination = null;
 
-  protected GridService() {
-  }
-
-  protected GridService(String serviceId) {
+  protected GridService(String... serviceId) {
     super(serviceId);
     nextStage();
   }
 
   @Override
   protected CompositeService create(String svcId) {
-    return new GridService(svcId);
+    return new GridService(self(), svcId);
   }
 
   @Override

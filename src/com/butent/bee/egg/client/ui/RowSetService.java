@@ -8,6 +8,7 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.egg.client.BeeGlobal;
 import com.butent.bee.egg.client.BeeKeeper;
+import com.butent.bee.egg.client.communication.ResponseCallback;
 import com.butent.bee.egg.client.layout.Vertical;
 import com.butent.bee.egg.client.tree.BeeTree;
 import com.butent.bee.egg.client.tree.BeeTreeItem;
@@ -37,17 +38,14 @@ class RowSetService extends CompositeService {
   private Stages stage = null;
   private BeeRowSet rs;
 
-  protected RowSetService() {
-  }
-
-  protected RowSetService(String serviceId) {
+  protected RowSetService(String... serviceId) {
     super(serviceId);
     stage = Stages.REQUEST_TABLE_LIST;
   }
 
   @Override
   protected CompositeService create(String svcId) {
-    return new RowSetService(svcId);
+    return new RowSetService(self(), svcId);
   }
 
   @Override
@@ -80,8 +78,7 @@ class RowSetService extends CompositeService {
 
         stage = Stages.REQUEST_TABLE;
 
-        BeeGlobal.inputFields(new BeeStage(adoptService("comp_ui_rowset"),
-            BeeStage.STAGE_CONFIRM), "Get table", fld);
+        BeeGlobal.inputFields(new BeeStage(self(), BeeStage.STAGE_CONFIRM), "Get table", fld);
         break;
 
       case REQUEST_TABLE:
@@ -106,8 +103,7 @@ class RowSetService extends CompositeService {
         rs = BeeRowSet.restore(fArr.get(0));
 
         stage = Stages.SHOW_TABLE;
-
-        CompositeService.doService(adoptService("comp_ui_rowset"));
+        doSelf();
         break;
 
       case SHOW_TABLE:
@@ -123,9 +119,9 @@ class RowSetService extends CompositeService {
         stage = Stages.MODIFY_TABLE;
 
         FlowPanel buttons = new FlowPanel();
-        buttons.add(new BeeButton("NEW", adoptService("comp_ui_rowset"), Stages.INSERT.name()));
-        buttons.add(new BeeButton("SAVE", adoptService("comp_ui_rowset"), Stages.SAVE.name()));
-        buttons.add(new BeeButton("CANCEL", adoptService("comp_ui_rowset"), Stages.CANCEL.name()));
+        buttons.add(new BeeButton("NEW", self(), Stages.INSERT.name()));
+        buttons.add(new BeeButton("SAVE", self(), Stages.SAVE.name()));
+        buttons.add(new BeeButton("CANCEL", self(), Stages.CANCEL.name()));
 
         Vertical root = new Vertical();
         root.add(panel.iterator().next());
@@ -135,7 +131,7 @@ class RowSetService extends CompositeService {
 
       case MODIFY_TABLE:
         stage = Stages.valueOf((String) params[1]);
-        CompositeService.doService(adoptService("comp_ui_rowset"));
+        doSelf();
         break;
 
       case SAVE:
@@ -145,41 +141,40 @@ class RowSetService extends CompositeService {
           stage = Stages.MODIFY_TABLE;
           BeeKeeper.getLog().info("Nothing to update");
         } else {
-          stage = Stages.SAVE_RESPONSE;
-          BeeKeeper.getRpc().makePostRequest(
-              adoptService("rpc_ui_commit"), ContentType.BINARY, upd.serialize());
+          BeeKeeper.getRpc().makePostRequest("rpc_ui_commit", ContentType.BINARY, upd.serialize(),
+              new ResponseCallback() {
+                @Override
+                public void onResponse(JsArrayString rArr) {
+                  Assert.notNull(rArr);
+                  Assert.parameterCount(rArr.length(), 2);
+                  int updCount = BeeUtils.toInt(rArr.get(0));
+
+                  if (updCount < 0) {
+                    rs.rollback();
+                    BeeKeeper.getLog().severe("Resposnse error: ", rArr.get(1));
+                  } else {
+                    rs.commit(BeeRowSet.restore(rArr.get(1)));
+                    BeeKeeper.getLog().warning("Update count: ", updCount);
+                  }
+                  stage = Stages.SHOW_TABLE;
+                  doSelf();
+                }
+              });
         }
-        break;
-
-      case SAVE_RESPONSE:
-        stage = Stages.SHOW_TABLE;
-
-        JsArrayString rArr = (JsArrayString) params[0];
-        Assert.notNull(rArr);
-        Assert.parameterCount(rArr.length(), 2);
-        int updCount = BeeUtils.toInt(rArr.get(0));
-
-        if (updCount < 0) {
-          rs.rollback();
-        } else {
-          BeeRowSet res = BeeRowSet.restore(rArr.get(1));
-          rs.commit();
-        }
-        BeeKeeper.getLog().info("Resposnse from update: ", updCount);
-
-        CompositeService.doService(adoptService("comp_ui_rowset"));
         break;
 
       case INSERT:
-        stage = Stages.SHOW_TABLE;
         rs.addRow(new String[rs.getColumnCount()]);
-        CompositeService.doService(adoptService("comp_ui_rowset"));
+
+        stage = Stages.SHOW_TABLE;
+        doSelf();
         break;
 
       case CANCEL:
-        stage = Stages.SHOW_TABLE;
         rs.rollback();
-        CompositeService.doService(adoptService("comp_ui_rowset"));
+
+        stage = Stages.SHOW_TABLE;
+        doSelf();
         break;
 
       default:

@@ -12,13 +12,13 @@ import com.butent.bee.egg.client.composite.ButtonGroup;
 import com.butent.bee.egg.client.composite.RadioGroup;
 import com.butent.bee.egg.client.composite.TextEditor;
 import com.butent.bee.egg.client.dom.DomUtils;
-import com.butent.bee.egg.client.grid.FlexTable;
 import com.butent.bee.egg.client.grid.CellType;
+import com.butent.bee.egg.client.grid.FlexTable;
+import com.butent.bee.egg.client.layout.BeeLayoutPanel;
+import com.butent.bee.egg.client.layout.BlankTile;
 import com.butent.bee.egg.client.layout.Direction;
 import com.butent.bee.egg.client.layout.Horizontal;
-import com.butent.bee.egg.client.layout.BeeLayoutPanel;
 import com.butent.bee.egg.client.layout.Split;
-import com.butent.bee.egg.client.layout.BlankTile;
 import com.butent.bee.egg.client.layout.TilePanel;
 import com.butent.bee.egg.client.ui.GwtUiCreator;
 import com.butent.bee.egg.client.utils.BeeCommand;
@@ -430,7 +430,7 @@ public class BeeUi implements BeeModule {
     p.add(new BeeCheckBox(new BeeName(BeeGlobal.FIELD_DEBUG)));
 
     p.add(new BeeButton("North land", "comp_ui_form", "dummy_stage"));
-    p.add(new BeeButton("RowSet", "comp_ui_rowset", "dummy_stage"));
+    p.add(new BeeButton("CRUD", "comp_ui_rowset", "dummy_stage"));
 
     setElGrid(DomUtils.createUniqueName());
     p.add(new RadioGroup(getElGrid(), true, 2, "simple", "scroll", "cell"));

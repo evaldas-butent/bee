@@ -63,17 +63,14 @@ class MenuService extends CompositeService {
 
   private Stages stage = null;
 
-  protected MenuService() {
-  }
-
-  protected MenuService(String serviceId) {
+  protected MenuService(String... serviceId) {
     super(serviceId);
     nextStage();
   }
 
   @Override
   protected CompositeService create(String svcId) {
-    return new MenuService(svcId);
+    return new MenuService(self(), svcId);
   }
 
   @Override

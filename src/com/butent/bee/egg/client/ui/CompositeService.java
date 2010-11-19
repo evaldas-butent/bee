@@ -15,10 +15,10 @@ public abstract class CompositeService {
     registeredServices = new HashMap<String, CompositeService>();
     pendingServices = new HashMap<String, CompositeService>();
 
-    registeredServices.put("comp_ui_form", new FormService());
-    registeredServices.put("comp_ui_grid", new GridService());
-    registeredServices.put("comp_ui_menu", new MenuService());
-    registeredServices.put("comp_ui_rowset", new RowSetService());
+    registeredServices.put("comp_ui_form", new FormService("comp_ui_form"));
+    registeredServices.put("comp_ui_grid", new GridService("comp_ui_grid"));
+    registeredServices.put("comp_ui_menu", new MenuService("comp_ui_menu"));
+    registeredServices.put("comp_ui_rowset", new RowSetService("comp_ui_rowset"));
   }
 
   public static boolean doService(String svc, Object... parameters) {
@@ -63,8 +63,8 @@ public abstract class CompositeService {
 
   private static String extractId(String svc) {
     if (svc.indexOf(":") > 0) {
-      String[] arr = svc.split(":", 2);
-      return arr[1];
+      String[] arr = svc.split(":");
+      return arr[arr.length - 1];
     }
     return "";
   }
@@ -84,13 +84,10 @@ public abstract class CompositeService {
 
   private String serviceId;
 
-  protected CompositeService() {
-  }
-
-  protected CompositeService(String serviceId) {
-    Assert.notEmpty(serviceId);
-
-    this.serviceId = serviceId;
+  protected CompositeService(String... serviceId) {
+    Assert.arrayLengthMin(serviceId, 1);
+    Assert.noNulls((Object[]) serviceId);
+    this.serviceId = BeeUtils.concat(":", serviceId);
   }
 
   protected String adoptService(String svc) {
@@ -99,7 +96,15 @@ public abstract class CompositeService {
 
   protected abstract CompositeService create(String svcId);
 
+  protected boolean doSelf(Object... parameters) {
+    return CompositeService.doService(self(), parameters);
+  }
+
   protected abstract boolean doStage(Object... params);
+
+  protected String self() {
+    return serviceId;
+  }
 
   protected void unregister() {
     pendingServices.remove(serviceId);

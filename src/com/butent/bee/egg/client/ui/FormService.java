@@ -27,17 +27,14 @@ class FormService extends CompositeService {
 
   private Stages stage = null;
 
-  protected FormService() {
-  }
-
-  protected FormService(String serviceId) {
+  protected FormService(String... serviceId) {
     super(serviceId);
     nextStage();
   }
 
   @Override
   protected CompositeService create(String svcId) {
-    return new FormService(svcId);
+    return new FormService(self(), svcId);
   }
 
   @Override
@@ -66,8 +63,7 @@ class FormService extends CompositeService {
         BeeGlobal.getField(fld).setItems(lst);
         BeeGlobal.getField(fld).setValue(lst.get(0));
 
-        BeeGlobal.inputFields(new BeeStage(adoptService("comp_ui_form"),
-            BeeStage.STAGE_CONFIRM), "Load form", fld);
+        BeeGlobal.inputFields(new BeeStage(self(), BeeStage.STAGE_CONFIRM), "Load form", fld);
         break;
 
       case REQUEST_FORM:
