@@ -1,13 +1,16 @@
 package com.butent.bee.egg.client.event;
 
+import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.EventTarget;
+import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.event.logical.shared.CloseEvent;
 import com.google.gwt.user.client.Event;
 
 import com.butent.bee.egg.client.BeeKeeper;
 import com.butent.bee.egg.client.dom.DomUtils;
+import com.butent.bee.egg.client.dom.Features;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.utils.BeeUtils;
@@ -18,8 +21,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class EventUtils {
+  private static boolean dnd;
+  
+  private static JavaScriptObject onDnd;
+  
+  static {
+    dnd = Features.supportsDnd() && Features.supportsDndEvents();
+    if (dnd) {
+      initDnd();
+    }
+  }
 
-  public static List<StringProp> getEventInfo(Event ev) {
+  public static List<StringProp> getEventInfo(NativeEvent ev) {
     Assert.notNull(ev);
     List<StringProp> lst = new ArrayList<StringProp>();
 
@@ -34,12 +47,16 @@ public class EventUtils {
         transformEventTarget(ev.getCurrentEventTarget()),
         "Related Event Target",
         transformEventTarget(ev.getRelatedEventTarget()), "String",
-        ev.getString(), "Type", ev.getType(), "Type Int", ev.getTypeInt());
+        ev.getString(), "Type", ev.getType());
+    
+    if (ev instanceof Event) {
+      PropUtils.addString(lst, "Type Int", ((Event) ev).getTypeInt());
+    }
 
     return lst;
   }
 
-  public static String getEventTargetId(Event ev) {
+  public static String getEventTargetId(NativeEvent ev) {
     Assert.notNull(ev);
     EventTarget target = ev.getEventTarget();
 
@@ -72,11 +89,11 @@ public class EventUtils {
     BeeKeeper.getLog().info(transformCloseEvent(ev));
   }
   
-  public static void logEvent(Event ev) {
+  public static void logEvent(NativeEvent ev) {
     logEvent(ev, false);
   }
   
-  public static void logEvent(Event ev, boolean detailed) {
+  public static void logEvent(NativeEvent ev, boolean detailed) {
     Assert.notNull(ev);
     
     if (detailed) {
@@ -89,6 +106,42 @@ public class EventUtils {
     } else {
       BeeKeeper.getLog().info(transformEvent(ev));
     }
+  }
+  
+  public static boolean makeDndSource(Element elem, HasDragStartHandler handler) {
+    if (!dnd) {
+      return false;
+    }
+    Assert.notNull(elem);
+    Assert.notNull(handler);
+    
+    DomUtils.setDraggable(elem);
+    sinkDragStart(elem);
+
+    if (handler instanceof HasDragHandler) {
+      sinkDrag(elem);
+    }
+    if (handler instanceof HasDragEndHandler) {
+      sinkDragEnd(elem);
+    }
+    
+    return true;
+  }
+  
+  public static boolean makeDndTarget(Element elem, HasDropHandler handler) {
+    if (!dnd) {
+      return false;
+    }
+    
+    sinkDrop(elem);
+    sinkDragEnter(elem);
+    sinkDragOver(elem);
+    
+    if (handler instanceof HasDragLeaveHandler) {
+      sinkDragLeave(elem);
+    }
+    
+    return true;
   }
 
   public static void sinkChildEvents(Element parent, String childTag, int eventBits) {
@@ -113,7 +166,7 @@ public class EventUtils {
       "target", DomUtils.transform(ev.getTarget()), "auto", ev.isAutoClosed());
   }
   
-  public static String transformEvent(Event ev) {
+  public static String transformEvent(NativeEvent ev) {
     if (ev == null) {
       return BeeConst.STRING_EMPTY;
     }
@@ -176,7 +229,45 @@ public class EventUtils {
     
     return sb.toString();
   }
+  
+  private static void dispatchDnd(DndEvent evt) {
+    logEvent(evt);
+  }
+  
+  private static native void initDnd() /*-{
+    @com.butent.bee.egg.client.event.EventUtils::onDnd = $entry(function(evt) {
+      @com.butent.bee.egg.client.event.EventUtils::dispatchDnd(Lcom/butent/bee/egg/client/event/DndEvent;)(evt);
+    });
+  }-*/;
+  
+  private static native String sinkDrag(Element elem) /*-{
+    elem.ondrag = @com.butent.bee.egg.client.event.EventUtils::onDnd;
+  }-*/;
 
+  private static native String sinkDragEnd(Element elem) /*-{
+    elem.ondragend = @com.butent.bee.egg.client.event.EventUtils::onDnd;
+  }-*/;
+
+  private static native String sinkDragEnter(Element elem) /*-{
+    elem.ondragenter = @com.butent.bee.egg.client.event.EventUtils::onDnd;
+  }-*/;
+
+  private static native String sinkDragLeave(Element elem) /*-{
+    elem.ondragleave = @com.butent.bee.egg.client.event.EventUtils::onDnd;
+  }-*/;
+  
+  private static native String sinkDragOver(Element elem) /*-{
+    elem.ondragover = @com.butent.bee.egg.client.event.EventUtils::onDnd;
+  }-*/;
+
+  private static native String sinkDragStart(Element elem) /*-{
+    elem.ondragstart = @com.butent.bee.egg.client.event.EventUtils::onDnd;
+  }-*/;
+  
+  private static native String sinkDrop(Element elem) /*-{
+    elem.ondrop = @com.butent.bee.egg.client.event.EventUtils::onDnd;
+  }-*/;
+  
   private static String transformEventTarget(EventTarget et) {
     if (et == null) {
       return BeeConst.STRING_EMPTY;

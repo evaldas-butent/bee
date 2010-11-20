@@ -6,6 +6,8 @@ import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.egg.client.BeeKeeper;
+import com.butent.bee.egg.client.event.DndEvent;
+import com.butent.bee.egg.client.event.HasAllDndHandlers;
 import com.butent.bee.egg.client.grid.FixedWidthTable.IdealColumnWidthInfo;
 import com.butent.bee.egg.shared.Assert;
 
@@ -14,7 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class FixedWidthFlexTable extends FlexTable {
+public class FixedWidthFlexTable extends FlexTable implements HasAllDndHandlers {
   public class FixedWidthFlexCellFormatter extends FlexCellFormatter {
     @Override
     public void setColSpan(int row, int column, int colSpan) {
@@ -175,15 +177,34 @@ public class FixedWidthFlexTable extends FlexTable {
         if (affectedRow > beforeRow) {
           int colSpan = formatter.getColSpan(curRow, curCell);
           affectedColSpan -= colSpan;
-          setNumColumnsPerRow(beforeRow, getNumColumnsPerRow(beforeRow)
-              + colSpan);
-          setNumColumnsPerRow(affectedRow, getNumColumnsPerRow(affectedRow)
-              - colSpan);
+          setNumColumnsPerRow(beforeRow, getNumColumnsPerRow(beforeRow) + colSpan);
+          setNumColumnsPerRow(affectedRow, getNumColumnsPerRow(affectedRow) - colSpan);
         }
       }
     }
 
     return beforeRow;
+  }
+
+  public void onDrag(DndEvent event) {
+  }
+
+  public void onDragEnd(DndEvent event) {
+  }
+
+  public void onDragEnter(DndEvent event) {
+  }
+
+  public void onDragLeave(DndEvent event) {
+  }
+
+  public void onDragOver(DndEvent event) {
+  }
+
+  public void onDragStart(DndEvent event) {
+  }
+
+  public void onDrop(DndEvent event) {
   }
 
   @Override
@@ -233,8 +254,7 @@ public class FixedWidthFlexTable extends FlexTable {
         if (affectedRow >= row) {
           int colSpan = formatter.getColSpan(curRow, curCell);
           affectedColSpan -= colSpan;
-          setNumColumnsPerRow(affectedRow, getNumColumnsPerRow(affectedRow)
-              + colSpan);
+          setNumColumnsPerRow(affectedRow, getNumColumnsPerRow(affectedRow) + colSpan);
         }
       }
     }
@@ -431,8 +451,7 @@ public class FixedWidthFlexTable extends FlexTable {
         && (oldNumColumns == maxRawColumnCount) && oldNumColumnsRemoved) {
       maxRawColumnCount = 0;
       for (Integer curNumColumns : columnCountMap.keySet()) {
-        maxRawColumnCount = Math.max(maxRawColumnCount,
-            curNumColumns.intValue());
+        maxRawColumnCount = Math.max(maxRawColumnCount, curNumColumns.intValue());
       }
     }
 
@@ -457,4 +476,5 @@ public class FixedWidthFlexTable extends FlexTable {
       }
     }
   }
+
 }

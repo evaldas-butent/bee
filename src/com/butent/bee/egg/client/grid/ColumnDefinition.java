@@ -1,6 +1,5 @@
 package com.butent.bee.egg.client.grid;
 
-import com.butent.bee.egg.client.grid.edit.CellEditor;
 import com.butent.bee.egg.client.grid.property.ColumnProperty;
 import com.butent.bee.egg.client.grid.property.ColumnPropertyManager;
 import com.butent.bee.egg.client.grid.property.FooterProperty;
@@ -15,15 +14,9 @@ import com.butent.bee.egg.client.grid.render.DefaultCellRenderer;
 import com.butent.bee.egg.shared.Assert;
 
 public abstract class ColumnDefinition<RowType, ColType> {
-  private CellEditor<ColType> cellEditor = null;
-
   private CellRenderer<RowType, ColType> cellRenderer = new DefaultCellRenderer<RowType, ColType>();
 
   private ColumnPropertyManager properties = new ColumnPropertyManager();
-
-  public CellEditor<ColType> getCellEditor() {
-    return cellEditor;
-  }
 
   public CellRenderer<RowType, ColType> getCellRenderer() {
     return cellRenderer;
@@ -81,10 +74,6 @@ public abstract class ColumnDefinition<RowType, ColType> {
 
   public <P extends ColumnProperty> P removeColumnProperty(ColumnProperty.Type<P> type) {
     return properties.removeColumnProperty(type);
-  }
-
-  public void setCellEditor(CellEditor<ColType> cellEditor) {
-    this.cellEditor = cellEditor;
   }
 
   public void setCellRenderer(CellRenderer<RowType, ColType> cellRenderer) {

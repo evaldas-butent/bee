@@ -196,10 +196,10 @@ public abstract class TableBulkRenderer<RowType> implements HasTableDefinition<R
     }
 
     @Override
-    protected void renderRowImpl(int rowIndex, RowType rowValue,
+    protected void renderRowImpl(int rowIdx, RowType rowValue,
         RowRenderer<RowType> rowRenderer,
         List<ColumnDefinition<RowType, ?>> visibleColumns) {
-      super.renderRowImpl(rowIndex, rowValue, rowRenderer, visibleColumns);
+      super.renderRowImpl(rowIdx, rowValue, rowRenderer, visibleColumns);
       buffer.append("</tr>");
     }
 
@@ -325,9 +325,8 @@ public abstract class TableBulkRenderer<RowType> implements HasTableDefinition<R
     return (source == null) ? tableDefinition : source.getTableDefinition();
   }
 
-  public final void renderRows(Iterator<RowType> rows, RendererCallback callback) {
+  public final void renderRows(Iterator<RowType> rows) {
     RenderingOptions options = createRenderingOptions();
-    options.callback = callback;
     renderRows(rows, options);
   }
 
@@ -340,8 +339,7 @@ public abstract class TableBulkRenderer<RowType> implements HasTableDefinition<R
     renderRows(tableModel, options);
   }
 
-  public final void renderRows(MutableTableModel<RowType> tableModel,
-      RendererCallback callback) {
+  public final void renderRows(MutableTableModel<RowType> tableModel, RendererCallback callback) {
     renderRows(tableModel, 0, MutableTableModel.ALL_ROWS, callback);
   }
 
@@ -391,18 +389,18 @@ public abstract class TableBulkRenderer<RowType> implements HasTableDefinition<R
     return WRAPPER_DIV;
   }
 
-  private native Element replaceBodyElement(Element table, Element thatBody) /*-{
-    table.removeChild(table.tBodies[0]);
+  private native Element replaceBodyElement(Element tbl, Element thatBody) /*-{
+    tbl.removeChild(tbl.tBodies[0]);
     var thatChild = thatBody.tBodies[0];
-    table.appendChild(thatChild);
+    tbl.appendChild(thatChild);
     return thatChild;
   }-*/;
 
-  private void setBodyElement(HtmlTable table, Element newBody) {
-    table.setBodyElement(newBody);
+  private void setBodyElement(HtmlTable tbl, Element newBody) {
+    tbl.setBodyElement(newBody);
   }
 
-  private void setWidgetRaw(HtmlTable table, int row, int cell, Widget widget) {
-    table.setWidget(row, cell, widget);
+  private void setWidgetRaw(HtmlTable tbl, int row, int cell, Widget widget) {
+    tbl.setWidget(row, cell, widget);
   }
 }

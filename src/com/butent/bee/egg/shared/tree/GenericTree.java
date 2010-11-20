@@ -39,11 +39,11 @@ public class GenericTree<T> {
     return t;
   }
 
-  public void addLeaf(T parent, T leaf) {
-    if (locate.containsKey(parent)) {
-      locate.get(parent).addLeaf(leaf);
+  public void addLeaf(T prnt, T leaf) {
+    if (locate.containsKey(prnt)) {
+      locate.get(prnt).addLeaf(leaf);
     } else {
-      addLeaf(parent).addLeaf(leaf);
+      addLeaf(prnt).addLeaf(leaf);
     }
   }
 
@@ -59,9 +59,9 @@ public class GenericTree<T> {
     return leafs;
   }
 
-  public Collection<T> getSuccessors(T root) {
+  public Collection<T> getSuccessors(T node) {
     Collection<T> successors = new ArrayList<T>();
-    GenericTree<T> tree = getTree(root);
+    GenericTree<T> tree = getTree(node);
     if (null != tree) {
       for (GenericTree<T> leaf : tree.leafs) {
         successors.add(leaf.root);

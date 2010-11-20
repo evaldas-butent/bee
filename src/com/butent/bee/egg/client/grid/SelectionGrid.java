@@ -103,13 +103,11 @@ public class SelectionGrid extends GridTable implements HasRowHighlightHandlers,
     resize(rows, columns);
   }
 
-  public HandlerRegistration addCellHighlightHandler(
-      CellHighlightHandler handler) {
+  public HandlerRegistration addCellHighlightHandler(CellHighlightHandler handler) {
     return addHandler(handler, CellHighlightEvent.getType());
   }
 
-  public HandlerRegistration addCellUnhighlightHandler(
-      CellUnhighlightHandler handler) {
+  public HandlerRegistration addCellUnhighlightHandler(CellUnhighlightHandler handler) {
     return addHandler(handler, CellUnhighlightEvent.getType());
   }
 
@@ -121,8 +119,7 @@ public class SelectionGrid extends GridTable implements HasRowHighlightHandlers,
     return addHandler(handler, RowSelectionEvent.getType());
   }
 
-  public HandlerRegistration addRowUnhighlightHandler(
-      RowUnhighlightHandler handler) {
+  public HandlerRegistration addRowUnhighlightHandler(RowUnhighlightHandler handler) {
     return addHandler(handler, RowUnhighlightEvent.getType());
   }
 
@@ -143,8 +140,8 @@ public class SelectionGrid extends GridTable implements HasRowHighlightHandlers,
     return count;
   }
 
-  public String getInputHtml(SelectionPolicy selectionPolicy) {
-    String inputHtml = selectionPolicy.getInputHtml();
+  public String getInputHtml(SelectionPolicy sp) {
+    String inputHtml = sp.getInputHtml();
     if (inputHtml != null) {
       inputHtml = inputHtml.replace("%NAME%", "__beeSelectionGrid" + id);
     }
@@ -478,8 +475,7 @@ public class SelectionGrid extends GridTable implements HasRowHighlightHandlers,
 
     if (highlightedCellElem != null) {
       setStyleName(highlightedCellElem, styleHighlighted, false);
-      fireEvent(new CellUnhighlightEvent(highlightedRowIndex,
-          highlightedCellIndex));
+      fireEvent(new CellUnhighlightEvent(highlightedRowIndex, highlightedCellIndex));
       highlightedCellElem = null;
       highlightedCellIndex = -1;
 
@@ -494,8 +490,7 @@ public class SelectionGrid extends GridTable implements HasRowHighlightHandlers,
     if (cellElem != null) {
       setStyleName(cellElem, styleHighlighted, true);
       highlightedCellElem = cellElem;
-      highlightedCellIndex = DOM.getChildIndex(DOM.getParent(cellElem),
-          cellElem);
+      highlightedCellIndex = DOM.getChildIndex(DOM.getParent(cellElem), cellElem);
 
       if (highlightedRowElem == null) {
         setStyleName(rowElem, styleHighlighted, true);

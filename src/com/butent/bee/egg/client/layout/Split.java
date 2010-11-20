@@ -435,9 +435,9 @@ public class Split extends ComplexPanel implements AnimatedLayout,
     add(widget, scroll);
   }
 
-  public boolean validDirection(Direction direction, boolean center) {
+  public boolean validDirection(Direction direction, boolean allowCenter) {
     if (direction == Direction.CENTER) {
-      return center;
+      return allowCenter;
     }
     return BeeUtils.inList(direction, Direction.EAST, Direction.NORTH,
         Direction.SOUTH, Direction.WEST);

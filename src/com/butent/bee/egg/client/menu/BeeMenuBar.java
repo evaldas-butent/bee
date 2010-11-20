@@ -109,12 +109,12 @@ public class BeeMenuBar extends Widget implements HasId, HasAfterAddHandler,
     return insertItem(item, allItems.size());
   }
 
-  public BeeMenuItem addItem(String text, BeeMenuBar popup) {
-    return addItem(new BeeMenuItem(this, text, defaultItemType, popup));
+  public BeeMenuItem addItem(String text, BeeMenuBar mb) {
+    return addItem(new BeeMenuItem(this, text, defaultItemType, mb));
   }
 
-  public BeeMenuItem addItem(String text, ITEM_TYPE type, BeeMenuBar popup) {
-    return addItem(new BeeMenuItem(this, text, type, popup));
+  public BeeMenuItem addItem(String text, ITEM_TYPE type, BeeMenuBar mb) {
+    return addItem(new BeeMenuItem(this, text, type, mb));
   }
 
   public BeeMenuItem addItem(String text, ITEM_TYPE type, MenuCommand cmd) {
@@ -487,8 +487,8 @@ public class BeeMenuBar extends Widget implements HasId, HasAfterAddHandler,
     }
   }
 
-  private void init(int level, boolean vert, BAR_TYPE bt, ITEM_TYPE it, boolean hover) {
-    this.level = level;
+  private void init(int lvl, boolean vert, BAR_TYPE bt, ITEM_TYPE it, boolean hover) {
+    this.level = lvl;
     this.vertical = vert;
     if (bt != null) {
       this.barType = bt;
@@ -540,15 +540,14 @@ public class BeeMenuBar extends Widget implements HasId, HasAfterAddHandler,
     DOM.appendChild(outer, elem);
     setElement(outer);
 
-    sinkEvents(Event.ONCLICK | Event.ONKEYDOWN | Event.ONKEYPRESS
-        | Event.ONMOUSEWHEEL);
+    sinkEvents(Event.ONCLICK | Event.ONKEYDOWN | Event.ONKEYPRESS | Event.ONMOUSEWHEEL);
     if (hover) {
       sinkEvents(Event.ONMOUSEOVER | Event.ONMOUSEOUT);
     }
 
     setStyleName((level == 0) ? STYLENAME_ROOT : STYLENAME_DEFAULT);
     if (level > 0) {
-      addStyleDependentName("level-" + level);
+      addStyleDependentName("level-" + lvl);
     }
     if (vertical) {
       addStyleDependentName(BeeStyle.NAME_VERTICAL);

@@ -92,6 +92,8 @@ public class DomUtils {
   public static final String ATTRIBUTE_MIN = "min";
   public static final String ATTRIBUTE_STEP = "step";
 
+  public static final String ATTRIBUTE_DRAGGABLE = "draggable";
+
   private static final String ATTRIBUTE_SERVICE = "data-svc";
   private static final String ATTRIBUTE_STAGE = "data-stg";
 
@@ -107,6 +109,7 @@ public class DomUtils {
   private static final String COL_SPAN = "colSpan";
   private static final String ROW_SPAN = "rowSpan";
   private static final String VALUE = "value";
+  private static final String TRUE = "true";
   
   private static int idCounter = 0;
 
@@ -964,6 +967,16 @@ public class DomUtils {
     Assert.isPositive(span);
     
     TableCellElement.as(elem).setColSpan(span);
+  }
+
+  public static void setDraggable(UIObject obj) {
+    Assert.notNull(obj);
+    setDraggable(obj.getElement());
+  }
+
+  public static void setDraggable(Element elem) {
+    Assert.notNull(elem);
+    elem.setAttribute(ATTRIBUTE_DRAGGABLE, TRUE);
   }
   
   public static Widget setHeight(Widget w, int height) {

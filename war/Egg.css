@@ -222,6 +222,12 @@ body, select {
   border: 1px solid LightGrey;
 }  
 
+[draggable] {
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
 .gwt-SplitLayoutPanel-HDragger {
   background: #f6cef5;
   cursor: col-resize;

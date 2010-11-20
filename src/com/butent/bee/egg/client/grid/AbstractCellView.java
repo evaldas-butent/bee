@@ -39,10 +39,10 @@ public abstract class AbstractCellView<RowType> {
 
   public abstract void setWidget(Widget widget);
 
-  protected void renderCellImpl(int rowIndex, int cellIndex,
+  protected void renderCellImpl(int rowIdx, int cellIdx,
       RowType rowValue, ColumnDefinition<RowType, ?> columnDef) {
-    this.rowIndex = rowIndex;
-    this.cellIndex = cellIndex;
+    this.rowIndex = rowIdx;
+    this.cellIndex = cellIdx;
     renderRowValue(rowValue, columnDef);
   }
 

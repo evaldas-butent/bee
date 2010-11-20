@@ -25,10 +25,10 @@ public abstract class AbstractRowView<RowType> {
 
   public abstract void setStyleName(String stylename);
 
-  protected void renderRowImpl(int rowIndex, RowType rowValue,
+  protected void renderRowImpl(int rowIdx, RowType rowValue,
       RowRenderer<RowType> rowRenderer,
       List<ColumnDefinition<RowType, ?>> visibleColumns) {
-    this.rowIndex = rowIndex;
+    this.rowIndex = rowIdx;
     renderRowValue(rowValue, rowRenderer);
     int numColumns = visibleColumns.size();
     for (int i = 0; i < numColumns; i++) {
