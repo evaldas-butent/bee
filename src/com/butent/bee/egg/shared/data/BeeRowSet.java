@@ -354,9 +354,11 @@ public class BeeRowSet extends AbstractData implements BeeSerializable {
     update.setIdIndex(getIdIndex());
     update.setLockIndex(getLockIndex());
 
-    for (BeeRow row : getRows()) {
-      if (!BeeUtils.isEmpty(row.getShadow())) {
-        update.addRow(row);
+    if (!isEmpty()) {
+      for (BeeRow row : getRows()) {
+        if (!BeeUtils.isEmpty(row.getShadow())) {
+          update.addRow(row);
+        }
       }
     }
     if (update.isEmpty()) {
@@ -366,12 +368,14 @@ public class BeeRowSet extends AbstractData implements BeeSerializable {
   }
 
   public void rollback() {
-    for (BeeRow row : getRows()) {
-      if (!BeeUtils.isEmpty(row.getShadow())) {
-        for (Entry<Integer, String> shadow : row.getShadow().entrySet()) {
-          row.setValue(shadow.getKey(), shadow.getValue()); // TODO Conflict
+    if (!isEmpty()) {
+      for (BeeRow row : getRows()) {
+        if (!BeeUtils.isEmpty(row.getShadow())) {
+          for (Entry<Integer, String> shadow : row.getShadow().entrySet()) {
+            row.setValue(shadow.getKey(), shadow.getValue()); // TODO Conflict
+          }
+          row.setShadow(null);
         }
-        row.setShadow(null);
       }
     }
   }

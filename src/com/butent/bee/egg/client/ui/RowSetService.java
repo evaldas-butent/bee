@@ -138,7 +138,6 @@ class RowSetService extends CompositeService {
         BeeRowSet upd = rs.prepareUpdate();
 
         if (BeeUtils.isEmpty(upd)) {
-          stage = Stages.MODIFY_TABLE;
           BeeKeeper.getLog().info("Nothing to update");
         } else {
           BeeKeeper.getRpc().makePostRequest("rpc_ui_commit", ContentType.BINARY, upd.serialize(),
@@ -161,6 +160,7 @@ class RowSetService extends CompositeService {
                 }
               });
         }
+        stage = Stages.MODIFY_TABLE;
         break;
 
       case INSERT:
