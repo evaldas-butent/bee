@@ -69,6 +69,7 @@ public class BeeUi implements BeeModule {
   private final HasWidgets rootUi;
 
   private int minTileSize = 20;
+  private boolean temporaryDetach = false;
 
   private Split screenPanel = null;
   private TilePanel activePanel = null;
@@ -149,8 +150,7 @@ public class BeeUi implements BeeModule {
   }
 
   public String getDsn() {
-    return BeeUtils.getElement(BeeConst.DS_TYPES,
-        RadioGroup.getValue(getElDsn()));
+    return BeeUtils.getElement(BeeConst.DS_TYPES, RadioGroup.getValue(getElDsn()));
   }
 
   public String getElCell() {
@@ -201,6 +201,10 @@ public class BeeUi implements BeeModule {
   public void init() {
   }
 
+  public boolean isTemporaryDetach() {
+    return temporaryDetach;
+  }
+
   public void setActivePanel(TilePanel p) {
     activePanel = p;
   }
@@ -227,6 +231,10 @@ public class BeeUi implements BeeModule {
 
   public void setScreenPanel(Split screenPanel) {
     this.screenPanel = screenPanel;
+  }
+
+  public void setTemporaryDetach(boolean temporaryDetach) {
+    this.temporaryDetach = temporaryDetach;
   }
 
   public void showGrid(Object data, String... cols) {
@@ -321,8 +329,10 @@ public class BeeUi implements BeeModule {
     Assert.notNull(np, "sibling panel not found");
 
     deactivatePanel();
-
+    
+    setTemporaryDetach(true);
     np.move(parent);
+    setTemporaryDetach(false);
 
     while (parent.getCenter() instanceof TilePanel) {
       parent = (TilePanel) parent.getCenter();
@@ -348,8 +358,13 @@ public class BeeUi implements BeeModule {
     Widget w = p.getCenter();
     if (w != null) {
       boolean scroll = p.isWidgetScroll(w);
+      
+      setTemporaryDetach(true);
       p.remove(w);
+      setTemporaryDetach(false);
+
       center.add(w, scroll);
+      center.onLayout();
     }
 
     TilePanel tp = new TilePanel();
@@ -415,15 +430,13 @@ public class BeeUi implements BeeModule {
     setElDsn(DomUtils.createUniqueName());
     p.add(new RadioGroup(getElDsn(), 0, BeeConst.DS_TYPES));
 
-    p.add(new ButtonGroup("Ping", BeeService.SERVICE_DB_PING, "Info",
-        BeeService.SERVICE_DB_INFO, "Tables", BeeService.SERVICE_DB_TABLES));
+    p.add(new ButtonGroup("Ping", BeeService.SERVICE_DB_PING,
+        "Info", BeeService.SERVICE_DB_INFO,
+        "Tables", BeeService.SERVICE_DB_TABLES));
 
-    p.add(new BeeButton("Class", BeeService.SERVICE_GET_CLASS,
-        BeeStage.STAGE_GET_PARAMETERS));
-    p.add(new BeeButton("Xml", BeeService.SERVICE_GET_XML,
-        BeeStage.STAGE_GET_PARAMETERS));
-    p.add(new BeeButton("Jdbc", BeeService.SERVICE_GET_DATA,
-        BeeStage.STAGE_GET_PARAMETERS));
+    p.add(new BeeButton("Class", BeeService.SERVICE_GET_CLASS, BeeStage.STAGE_GET_PARAMETERS));
+    p.add(new BeeButton("Xml", BeeService.SERVICE_GET_XML, BeeStage.STAGE_GET_PARAMETERS));
+    p.add(new BeeButton("Jdbc", BeeService.SERVICE_GET_DATA, BeeStage.STAGE_GET_PARAMETERS));
 
     p.add(new BeeButton("Login", BeeService.SERVICE_LOGIN));
 
@@ -471,7 +484,7 @@ public class BeeUi implements BeeModule {
 
     p.add(hor);
 
-    BeeLabel ver = new BeeLabel("0.1.8");
+    BeeLabel ver = new BeeLabel("0.1.9");
     p.add(ver);
 
     p.setWidgetLeftWidth(cli, 1, Unit.EM, 50, Unit.PCT);

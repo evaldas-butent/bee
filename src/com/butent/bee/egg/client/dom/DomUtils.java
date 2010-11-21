@@ -649,6 +649,22 @@ public class DomUtils {
 
     return lst;
   }
+  
+  public static String getParentId(Element elem, boolean find) {
+    Assert.notNull(elem);
+    
+    Element parent = elem.getParentElement();
+    if (parent == null) {
+      return null;
+    }
+    
+    String id = parent.getId();
+    if (!find || !BeeUtils.isEmpty(id)) {
+      return id;
+    }
+    
+    return getParentId(parent, find);
+  }
 
   public static List<StringProp> getPathInfo(Widget w) {
     Assert.notNull(w);

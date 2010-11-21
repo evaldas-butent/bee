@@ -117,7 +117,7 @@ public class GridFactory {
     String table = null;
     CellKeyProvider keyProvider = null;
 
-    if (!(view instanceof BeeRowSet)) {
+    if (!(view instanceof BeeRowSet) && BeeUtils.arrayLength(view.getColumns()) > 0) {
       table = view.getColumns()[0].getTable();
     }
 

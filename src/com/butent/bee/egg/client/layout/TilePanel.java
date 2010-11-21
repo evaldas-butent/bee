@@ -145,10 +145,11 @@ public class TilePanel extends Split {
     for (int i = 0; i < c; i++) {
       dst.insert(lst.get(i), directions[i], sizes[i], null, scroll[i]);
     }
-
     if (centerWidget != null) {
       dst.add(centerWidget, centerScroll);
     }
+    
+    dst.onLayout();
   }
   
   @Override

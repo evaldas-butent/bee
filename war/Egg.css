@@ -133,7 +133,6 @@ body, select {
   -moz-box-sizing: border-box;
   -ms-box-sizing: border-box;
 }  
-
 .bee-LayoutContainer > .bee-TextBox {
   width: 100%;
   margin: 0;
@@ -142,7 +141,6 @@ body, select {
   -moz-box-sizing: border-box;
   -ms-box-sizing: border-box;
 }  
-
 .bee-LayoutContainer > .bee-Button {
   width: 100%;
 }  
@@ -155,7 +153,6 @@ body, select {
 .bee-LogRecord-severe {
   color: red;
 }
-
 .bee-LogRecord-warning {
   color: darkorange;
 }
@@ -218,7 +215,7 @@ body, select {
 }
 
 .bee-configPanel {
-  background: WhiteSmoke;
+  background: #ddd;
   border: 1px solid LightGrey;
 }  
 
@@ -226,6 +223,14 @@ body, select {
   -moz-user-select: none;
   -webkit-user-select: none;
   user-select: none;
+}
+.bee-dndSource {
+  color: black;
+  background: purple;
+}
+.bee-dndOver {
+  color: blue;
+  background: pink;
 }
 
 .gwt-SplitLayoutPanel-HDragger {

@@ -29,6 +29,7 @@ import com.google.gwt.user.client.ui.HasVerticalAlignment.VerticalAlignmentConst
 
 import com.butent.bee.egg.client.BeeGlobal;
 import com.butent.bee.egg.client.BeeKeeper;
+import com.butent.bee.egg.client.BeeStyle;
 import com.butent.bee.egg.client.dom.DomUtils;
 import com.butent.bee.egg.client.event.DndEvent;
 import com.butent.bee.egg.client.event.EventUtils;
@@ -244,38 +245,79 @@ public class ScrollTable<RowType> extends ComplexPanel implements
   }
   
   private class DndWorker implements HasAllDndHandlers {
+    private String sourceId;
+    private String parentId;
+    
     public boolean onDrag(DndEvent event) {
       return true;
     }
 
     public boolean onDragEnd(DndEvent event) {
-      EventUtils.logEvent(event);
+      event.getElement().removeClassName(BeeStyle.DND_SOURCE);
       return true;
     }
 
     public boolean onDragEnter(DndEvent event) {
-      EventUtils.logEvent(event);
+      Element elem = event.getElement();
+      if (isTarget(elem)) {
+        elem.addClassName(BeeStyle.DND_OVER);
+      }
       return true;
     }
 
     public boolean onDragLeave(DndEvent event) {
-      EventUtils.logEvent(event);
+      Element elem = event.getElement();
+      if (isTarget(elem)) {
+        elem.removeClassName(BeeStyle.DND_OVER);
+      }
       return true;
     }
 
     public boolean onDragOver(DndEvent event) {
-      EventUtils.logEvent(event);
-      return true;
+      event.setDropEffect(DndEvent.EFFECT_MOVE);
+      event.preventDefault();
+      return false;
     }
 
     public boolean onDragStart(DndEvent event) {
-      EventUtils.logEvent(event);
+      Element elem = event.getElement();
+      sourceId = elem.getId();
+      parentId = DomUtils.getParentId(elem, true);
+      
+      if (BeeUtils.isEmpty(sourceId) || BeeUtils.isEmpty(parentId)) {
+        event.preventDefault();
+      } else {
+        elem.addClassName(BeeStyle.DND_SOURCE);
+        event.setData(sourceId);
+        event.setEffectAllowed(DndEvent.EFFECT_MOVE);
+      }
+
       return true;
     }
 
     public boolean onDrop(DndEvent event) {
-      EventUtils.logEvent(event);
-      return true;
+      Element elem = event.getElement();
+      event.stopPropagation();
+      
+      if (isTarget(elem)) {
+        BeeKeeper.getLog().info("source", DOM.getElementById(sourceId).getInnerHTML(),
+            "target", event.getElement().getInnerHTML());
+        elem.removeClassName(BeeStyle.DND_OVER);
+      }
+      return false;
+    }
+    
+    private boolean isTarget(Element elem) {
+      if (elem == null) {
+        return false;
+      }
+
+      String id = elem.getId();
+      if (BeeUtils.isEmpty(id) || BeeUtils.same(id, sourceId)) {
+        return false;
+      }
+      
+      return BeeUtils.same(DomUtils.getParentId(elem, true), parentId);
     }
   }
 
@@ -1144,10 +1186,10 @@ public class ScrollTable<RowType> extends ComplexPanel implements
     redraw();
   }
 
-  public void recalculateIdealColumnWidths(ScrollTable<?> scrollTable) {
-    FixedWidthFlexTable ht = scrollTable.getHeaderTable();
-    FixedWidthFlexTable ft = scrollTable.getFooterTable();
-    FixedWidthGrid dt = scrollTable.getDataTable();
+  public void recalculateIdealColumnWidths() {
+    FixedWidthFlexTable ht = getHeaderTable();
+    FixedWidthFlexTable ft = getFooterTable();
+    FixedWidthGrid dt = getDataTable();
 
     dt.recalculateIdealColumnWidthsSetup();
     ht.recalculateIdealColumnWidthsSetup();
@@ -1204,17 +1246,17 @@ public class ScrollTable<RowType> extends ComplexPanel implements
     return false;
   }
 
-  public void repositionSpacer(ScrollTable<?> scrollTable, boolean force) {
-    if (!force && scrollTable.scrollPolicy != ScrollPolicy.BOTH) {
+  public void repositionSpacer(boolean force) {
+    if (!force && scrollPolicy != ScrollPolicy.BOTH) {
       return;
     }
 
-    Element wrapper = scrollTable.dataWrapper;
+    Element wrapper = dataWrapper;
     int spacerWidth = wrapper.getOffsetWidth() - dataWrapper.getClientWidth();
-    resizeSpacer(scrollTable.headerTable, spacerWidth);
+    resizeSpacer(headerTable, spacerWidth);
 
-    if (scrollTable.footerTable != null) {
-      resizeSpacer(scrollTable.footerTable, spacerWidth);
+    if (footerTable != null) {
+      resizeSpacer(footerTable, spacerWidth);
     }
   }
 
@@ -1281,7 +1323,7 @@ public class ScrollTable<RowType> extends ComplexPanel implements
       footerTable.setColumnWidth(column + offset, width);
     }
 
-    repositionSpacer(this, false);
+    repositionSpacer(false);
     resizeTablesVertically();
     scrollTables(false);
     return width;
@@ -1408,7 +1450,7 @@ public class ScrollTable<RowType> extends ComplexPanel implements
       dataWrapper.getStyle().setOverflow(Overflow.AUTO);
     }
 
-    repositionSpacer(this, true);
+    repositionSpacer(true);
     redraw();
   }
 
@@ -1545,7 +1587,9 @@ public class ScrollTable<RowType> extends ComplexPanel implements
 
   @Override
   protected void onUnload() {
-    EventUtils.removeDndHandler(dndWorker);
+    if (!BeeKeeper.getUi().isTemporaryDetach()) {
+      EventUtils.removeDndHandler(dndWorker);
+    }
     super.onUnload();
   }
 
@@ -1780,7 +1824,7 @@ public class ScrollTable<RowType> extends ComplexPanel implements
         }
       }
     }
-    repositionSpacer(this, false);
+    repositionSpacer(false);
   }
 
   private void applyTableWrapperSizes(TableHeightInfo sizes) {
@@ -1958,7 +2002,7 @@ public class ScrollTable<RowType> extends ComplexPanel implements
       return;
     }
 
-    recalculateIdealColumnWidths(this);
+    recalculateIdealColumnWidths();
   }
 
   private void prepareTable(Widget table, String cssName) {

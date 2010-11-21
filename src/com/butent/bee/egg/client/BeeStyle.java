@@ -13,6 +13,8 @@ public class BeeStyle implements BeeModule {
   public static final String ACTIVE_BLANK = "bee-activeBlank";
   public static final String ACTIVE_CONTENT = "bee-activeContent";
   public static final String CONFIG_PANEL = "bee-configPanel";
+  public static final String DND_SOURCE = "bee-dndSource";
+  public static final String DND_OVER = "bee-dndOver";
 
   public static final String STYLE_LEFT = "left";
   public static final String STYLE_WIDTH = "width";

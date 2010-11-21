@@ -324,7 +324,7 @@ public class CliWorker {
     if (BeeUtils.isEmpty(lst)) {
       BeeGlobal.showDialog("dnd mappings empty");
     } else if (lst.size() <= 30) {
-      BeeGlobal.modalGrid("Dnd", lst);
+      BeeGlobal.modalGrid(BeeUtils.concat(1, "Dnd", BeeUtils.bracket(lst.size())), lst);
     } else {
       BeeKeeper.getUi().showGrid(lst);
     }
