@@ -19,6 +19,7 @@ import com.butent.bee.egg.client.communication.RpcList;
 import com.butent.bee.egg.client.data.JsData;
 import com.butent.bee.egg.client.dom.DomUtils;
 import com.butent.bee.egg.client.dom.Features;
+import com.butent.bee.egg.client.event.EventUtils;
 import com.butent.bee.egg.client.grid.FlexTable;
 import com.butent.bee.egg.client.layout.Direction;
 import com.butent.bee.egg.client.layout.Flow;
@@ -122,8 +123,7 @@ public class CliWorker {
 
   public static void doMenu(String[] arr) {
     if (BeeUtils.length(arr) > 1) {
-      ParameterList params = BeeKeeper.getRpc().createParameters(
-          BeeService.SERVICE_GET_MENU);
+      ParameterList params = BeeKeeper.getRpc().createParameters(BeeService.SERVICE_GET_MENU);
       params.addPositionalHeader(arr[1]);
       BeeKeeper.getRpc().makeGetRequest(params);
     } else {
@@ -174,16 +174,14 @@ public class CliWorker {
   }
 
   public static void getCharsets() {
-    ParameterList params = BeeKeeper.getRpc().createParameters(
-        BeeService.SERVICE_GET_RESOURCE);
+    ParameterList params = BeeKeeper.getRpc().createParameters(BeeService.SERVICE_GET_RESOURCE);
     params.addPositionalHeader("cs");
 
     BeeKeeper.getRpc().makeGetRequest(params);
   }
 
   public static void getFs() {
-    ParameterList params = BeeKeeper.getRpc().createParameters(
-        BeeService.SERVICE_GET_RESOURCE);
+    ParameterList params = BeeKeeper.getRpc().createParameters(BeeService.SERVICE_GET_RESOURCE);
     params.addPositionalHeader("fs");
 
     BeeKeeper.getRpc().makeGetRequest(params);
@@ -314,6 +312,22 @@ public class CliWorker {
     }
 
     BeeKeeper.getUi().showGrid(data, "Format", "Value");
+  }
+
+  public static void showDnd() {
+    if (!EventUtils.supportsDnd()) {
+      BeeKeeper.getLog().warning("dnd not supported");
+      return;
+    }
+
+    List<StringProp> lst = EventUtils.showDnd();
+    if (BeeUtils.isEmpty(lst)) {
+      BeeGlobal.showDialog("dnd mappings empty");
+    } else if (lst.size() <= 30) {
+      BeeGlobal.modalGrid("Dnd", lst);
+    } else {
+      BeeKeeper.getUi().showGrid(lst);
+    }
   }
 
   public static void showElement(String v, String[] arr) {
@@ -470,8 +484,7 @@ public class CliWorker {
       return;
     }
 
-    JsData view = (JsData) DataUtils.createView(prp, "property", "type",
-        "value");
+    JsData view = (JsData) DataUtils.createView(prp, "property", "type", "value");
     view.sort(0, true);
 
     if (BeeUtils.same(arr[0], "p") && view.getRowCount() <= 20) {
@@ -485,8 +498,7 @@ public class CliWorker {
     if (BeeKeeper.getRpc().getRpcList().isEmpty()) {
       BeeGlobal.showDialog("RpcList empty");
     } else {
-      BeeKeeper.getUi().showGrid(
-          BeeKeeper.getRpc().getRpcList().getDefaultInfo(),
+      BeeKeeper.getUi().showGrid(BeeKeeper.getRpc().getRpcList().getDefaultInfo(),
           RpcList.DEFAULT_INFO_COLUMNS);
     }
   }

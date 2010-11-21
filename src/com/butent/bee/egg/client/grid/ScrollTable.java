@@ -1,6 +1,5 @@
 package com.butent.bee.egg.client.grid;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Style.Cursor;
 import com.google.gwt.dom.client.Style.Position;
@@ -31,7 +30,9 @@ import com.google.gwt.user.client.ui.HasVerticalAlignment.VerticalAlignmentConst
 import com.butent.bee.egg.client.BeeGlobal;
 import com.butent.bee.egg.client.BeeKeeper;
 import com.butent.bee.egg.client.dom.DomUtils;
+import com.butent.bee.egg.client.event.DndEvent;
 import com.butent.bee.egg.client.event.EventUtils;
+import com.butent.bee.egg.client.event.HasAllDndHandlers;
 import com.butent.bee.egg.client.grid.FlexTable.FlexCellFormatter;
 import com.butent.bee.egg.client.grid.HtmlTable.CellFormatter;
 import com.butent.bee.egg.client.grid.SelectionGrid.SelectionPolicy;
@@ -241,8 +242,44 @@ public class ScrollTable<RowType> extends ComplexPanel implements
       rowSpan++;
     }
   }
+  
+  private class DndWorker implements HasAllDndHandlers {
+    public boolean onDrag(DndEvent event) {
+      return true;
+    }
 
-  private static class MouseResizeWorker {
+    public boolean onDragEnd(DndEvent event) {
+      EventUtils.logEvent(event);
+      return true;
+    }
+
+    public boolean onDragEnter(DndEvent event) {
+      EventUtils.logEvent(event);
+      return true;
+    }
+
+    public boolean onDragLeave(DndEvent event) {
+      EventUtils.logEvent(event);
+      return true;
+    }
+
+    public boolean onDragOver(DndEvent event) {
+      EventUtils.logEvent(event);
+      return true;
+    }
+
+    public boolean onDragStart(DndEvent event) {
+      EventUtils.logEvent(event);
+      return true;
+    }
+
+    public boolean onDrop(DndEvent event) {
+      EventUtils.logEvent(event);
+      return true;
+    }
+  }
+
+  private class MouseResizeWorker {
     private class ResizeCommand implements Scheduler.ScheduledCommand {
       @Override
       public void execute() {
@@ -579,7 +616,8 @@ public class ScrollTable<RowType> extends ComplexPanel implements
 
   private int lastScrollLeft;
 
-  private MouseResizeWorker resizeWorker = GWT.create(MouseResizeWorker.class);
+  private MouseResizeWorker resizeWorker = new MouseResizeWorker();
+  private DndWorker dndWorker = new DndWorker();
 
   private ResizePolicy resizePolicy = ResizePolicy.FILL_WIDTH;
 
@@ -1498,9 +1536,17 @@ public class ScrollTable<RowType> extends ComplexPanel implements
     fireEvent(new PageLoadEvent(currentPage));
   }
 
+  @Override
   protected void onLoad() {
     gotoFirstPage();
     redraw();
+    super.onLoad();
+  }
+
+  @Override
+  protected void onUnload() {
+    EventUtils.removeDndHandler(dndWorker);
+    super.onUnload();
   }
 
   protected void refreshFooterTable() {
@@ -1972,8 +2018,8 @@ public class ScrollTable<RowType> extends ComplexPanel implements
         } else {
           table.setHTML(row, cell, header.toString());
           Element elem = formatter.getElement(row, cell);
-          EventUtils.makeDndSource(elem, table);
-          EventUtils.makeDndTarget(elem, table);
+          EventUtils.makeDndSource(elem, dndWorker);
+          EventUtils.makeDndTarget(elem, dndWorker);
         }
 
         if (rowSpan > 1) {

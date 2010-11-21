@@ -50,6 +50,8 @@ public class CliWidget extends BeeTextBox {
       BeeKeeper.getRpc().invoke("connectionInfo");
     } else if (z.equals("df")) {
       CliWorker.showDateFormat();
+    } else if (z.equals("dnd")) {
+      CliWorker.showDnd();
     } else if (z.equals("dt")) {
       CliWorker.showDate(arr);
     } else if (BeeUtils.inList(z, "dir", "file", "get")) {

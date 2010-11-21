@@ -72,8 +72,7 @@ public class TableDefinition<RowType> {
     columnDefs.remove(columnDef);
   }
 
-  public void renderRows(int startRowIndex, Iterator<RowType> rowValues,
-      AbstractRowView<RowType> view) {
+  public void renderRows(int startRowIndex, Iterator<RowType> rowValues, AbstractRowView<RowType> view) {
     List<ColumnDefinition<RowType, ?>> visibleColumns = getVisibleColumnDefinitions();
     view.renderRowsImpl(startRowIndex, rowValues, rowRenderer, visibleColumns);
   }

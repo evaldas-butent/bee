@@ -303,11 +303,18 @@ public class BeeUtils {
     return bracket(toSeconds(System.currentTimeMillis() - start));
   }
 
+  public static boolean equals(Object x, Object y) {
+    if (x == null) {
+      return y == null;
+    } else {
+      return x.equals(y);
+    }
+  }
+  
   public static boolean equalsTrim(String s1, String s2) {
     if (s1 == null) {
       return s2 == null;
-    }
-    if (s2 == null) {
+    } else if (s2 == null) {
       return isEmpty(s1);
     } else {
       return s1.trim().equals(s2.trim());
@@ -1078,6 +1085,22 @@ public class BeeUtils {
     }
 
     return sb.toString();
+  }
+  
+  public static <V> int removeValue(Map<?, V> map, V value) {
+    int c = 0;
+    if (length(map) <= 0) {
+      return c;
+    }
+    
+    for (Iterator<V> it = map.values().iterator(); it.hasNext(); ) {
+      if (equals(it.next(), value)) {
+        it.remove();
+        c++;
+      }
+    }
+    
+    return c;
   }
 
   public static String replicate(char z, int n) {

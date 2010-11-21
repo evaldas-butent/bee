@@ -404,6 +404,22 @@ public class DomUtils {
     return BeeUtils.createUniqueName(DEFAULT_NAME_PREFIX);
   }
 
+  public static String ensureId(Element elem, String prefix) {
+    Assert.notNull(elem);
+
+    String id = elem.getId();
+    if (BeeUtils.isEmpty(id)) {
+      id = createId(elem, BeeUtils.ifString(prefix, DEFAULT_ID_PREFIX));
+    }
+
+    return id;
+  }
+
+  public static String ensureId(UIObject obj, String prefix) {
+    Assert.notNull(obj);
+    return ensureId(obj.getElement(), prefix);
+  }
+
   public static List<String> getAncestry(Widget w) {
     Assert.notNull(w);
     List<String> lst = new ArrayList<String>();
