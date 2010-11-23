@@ -62,8 +62,7 @@ public class BeeGlobal implements BeeModule {
     return msgBox.confirm(obj);
   }
 
-  public static void createField(String name, String caption, int type,
-      String value) {
+  public static void createField(String name, String caption, int type, String value) {
     Assert.notEmpty(name);
     Assert.isTrue(BeeType.isValid(type));
 
@@ -102,6 +101,10 @@ public class BeeGlobal implements BeeModule {
 
   public static List<String> getFieldItems(String name) {
     return getField(name).getItems();
+  }
+
+  public static long getFieldLong(String name) {
+    return BeeUtils.toLong(getField(name).getValue());
   }
 
   public static int getFieldType(String name) {
@@ -163,7 +166,7 @@ public class BeeGlobal implements BeeModule {
     fields.put(name, fld);
   }
 
-  public static void setFieldValue(String name, Integer value) {
+  public static void setFieldValue(String name, long value) {
     getField(name).setValue(BeeUtils.transform(value));
   }
 
@@ -263,8 +266,7 @@ public class BeeGlobal implements BeeModule {
     setFieldWidth(BeeService.FIELD_XML_TRANSFORM, "300px");
     setFieldWidth(BeeService.FIELD_XML_TARGET, "300px");
 
-    createField(BeeService.FIELD_FILE_NAME, null, BeeType.TYPE_FILE,
-        BeeConst.STRING_EMPTY);
+    createField(BeeService.FIELD_FILE_NAME, null, BeeType.TYPE_FILE, BeeConst.STRING_EMPTY);
 
     createField(BeeService.FIELD_JDBC_QUERY, "Jdbc Query", BeeType.TYPE_STRING,
         BeeConst.STRING_EMPTY);
@@ -292,8 +294,7 @@ public class BeeGlobal implements BeeModule {
         BeeType.TYPE_STRING, BeeConst.STRING_EMPTY);
     createField(BeeService.FIELD_STATEMENT_ESCAPE_PROCESSING,
         "Escape Processing", BeeType.TYPE_STRING, BeeConst.DEFAULT,
-        BeeWidget.RADIO, BeeConst.DEFAULT, BeeConst.STRING_FALSE,
-        BeeConst.STRING_TRUE);
+        BeeWidget.RADIO, BeeConst.DEFAULT, BeeConst.STRING_FALSE, BeeConst.STRING_TRUE);
     createField(BeeService.FIELD_STATEMENT_FETCH_DIRECTION,
         "Statement fetch direction", BeeType.TYPE_STRING, BeeConst.DEFAULT,
         BeeWidget.RADIO, BeeConst.DEFAULT, BeeConst.FETCH_FORWARD,
@@ -335,8 +336,7 @@ public class BeeGlobal implements BeeModule {
         BeeConst.JDBC_RESULT_SET, BeeConst.JDBC_META_DATA,
         BeeConst.JDBC_ROW_COUNT, BeeConst.JDBC_COLUMNS);
 
-    createField(FIELD_DEBUG, "Debug", BeeType.TYPE_BOOLEAN,
-        BeeUtils.toString(false));
+    createField(FIELD_DEBUG, "Debug", BeeType.TYPE_BOOLEAN, BeeUtils.toString(false));
 
     for (int i = MenuConst.ROOT_MENU_INDEX; i < MenuConst.MAX_MENU_DEPTH; i++) {
       if (MenuConst.isRootLevel(i)) {

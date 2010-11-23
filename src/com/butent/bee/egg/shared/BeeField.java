@@ -5,7 +5,7 @@ import com.butent.bee.egg.shared.utils.BeeUtils;
 import java.util.ArrayList;
 import java.util.List;
 
-public class BeeField implements Transformable {
+public class BeeField implements HasLongValue, HasStringValue, Transformable {
   private String caption = null;
   private int type = BeeType.TYPE_UNKNOWN;
   private String value = null;
@@ -43,8 +43,7 @@ public class BeeField implements Transformable {
     this.widget = widget;
   }
 
-  public BeeField(String caption, int type, String value, BeeWidget widget,
-      String... items) {
+  public BeeField(String caption, int type, String value, BeeWidget widget, String... items) {
     this(caption, type, value, widget);
 
     this.items = new ArrayList<String>();
@@ -57,8 +56,20 @@ public class BeeField implements Transformable {
     return caption;
   }
 
+  public int getInt() {
+    return BeeUtils.toInt(getValue());
+  }
+
   public List<String> getItems() {
     return items;
+  }
+
+  public long getLong() {
+    return BeeUtils.toLong(getValue());
+  }
+
+  public String getString() {
+    return getValue();
   }
 
   public int getType() {
@@ -89,6 +100,14 @@ public class BeeField implements Transformable {
     this.type = type;
   }
 
+  public void setValue(int value) {
+    setValue(BeeUtils.toString(value));
+  }
+
+  public void setValue(long value) {
+    setValue(BeeUtils.toString(value));
+  }
+
   public void setValue(String value) {
     this.value = value;
   }
@@ -103,12 +122,10 @@ public class BeeField implements Transformable {
 
   @Override
   public String toString() {
-    return BeeUtils.transformOptions("caption", caption, "type", type, "value",
-        value);
+    return BeeUtils.transformOptions("caption", caption, "type", type, "value", value);
   }
 
   public String transform() {
     return toString();
   }
-
 }

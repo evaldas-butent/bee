@@ -1266,14 +1266,14 @@ public class BeeUtils {
     if (isEmpty(s)) {
       return 0L;
     }
-    long i;
+    long x;
 
     try {
-      i = Long.parseLong(s.trim());
+      x = Long.parseLong(s.trim());
     } catch (NumberFormatException ex) {
-      i = 0L;
+      x = 0L;
     }
-    return i;
+    return x;
   }
 
   public static String toSeconds(long millis) {
@@ -1289,6 +1289,10 @@ public class BeeUtils {
     return Integer.toString(x);
   }
 
+  public static String toString(long x) {
+    return Long.toString(x);
+  }
+  
   public static String transform(Object x) {
     String s;
 

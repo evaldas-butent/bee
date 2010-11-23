@@ -207,10 +207,10 @@ body, select {
   text-align: right;
 }
 
-.bee-Spinner {
+.bee-InputSpinner {
   text-align: right;
 }
-.bee-Spinner:hover {
+.bee-InputSpinner:hover {
   background: LightCyan;
 }
 
@@ -231,6 +231,13 @@ body, select {
 .bee-dndOver {
   color: blue;
   background: pink;
+}
+
+.bee-ValueSpinner .valueBox {
+  text-align: right;
+  margin: 0;
+  border: 1px solid #7F9DB9;
+  padding: 1px;
 }
 
 .gwt-SplitLayoutPanel-HDragger {

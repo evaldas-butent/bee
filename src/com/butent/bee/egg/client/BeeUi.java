@@ -11,6 +11,8 @@ import com.butent.bee.egg.client.cli.CliWidget;
 import com.butent.bee.egg.client.composite.ButtonGroup;
 import com.butent.bee.egg.client.composite.RadioGroup;
 import com.butent.bee.egg.client.composite.TextEditor;
+import com.butent.bee.egg.client.composite.ValueSpinner;
+import com.butent.bee.egg.client.composite.VolumeSlider;
 import com.butent.bee.egg.client.dom.DomUtils;
 import com.butent.bee.egg.client.grid.CellType;
 import com.butent.bee.egg.client.grid.FlexTable;
@@ -28,8 +30,6 @@ import com.butent.bee.egg.client.widget.BeeImage;
 import com.butent.bee.egg.client.widget.BeeLabel;
 import com.butent.bee.egg.client.widget.BeeListBox;
 import com.butent.bee.egg.client.widget.BeeSimpleCheckBox;
-import com.butent.bee.egg.client.widget.Slider;
-import com.butent.bee.egg.client.widget.Spinner;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.BeeName;
@@ -514,10 +514,12 @@ public class BeeUi implements BeeModule {
       fp.setWidget(i, 1, new BeeSimpleCheckBox(fld));
     }
 
-    Spinner spinner = new Spinner(MenuConst.FIELD_ROOT_LIMIT, 0, 30, 3);
+    ValueSpinner spinner = new ValueSpinner(BeeGlobal.getField(MenuConst.FIELD_ROOT_LIMIT),
+        0, 30, 3);
     DomUtils.setWidth(spinner, 60);
     fp.setWidget(r, 0, spinner);
-    fp.setWidget(r + 1, 0, new Slider(MenuConst.FIELD_ITEM_LIMIT, 0, 50, 5));
+    fp.setWidget(r + 1, 0, new VolumeSlider(BeeGlobal.getField(MenuConst.FIELD_ITEM_LIMIT),
+        0, 50, 5));
 
     fp.setWidget(r, 1, new BeeButton("Refresh", BeeService.SERVICE_REFRESH_MENU));
     fp.setWidget(r + 1, 1, new BeeButton("BEE", "comp_ui_menu", "stage_dummy"));

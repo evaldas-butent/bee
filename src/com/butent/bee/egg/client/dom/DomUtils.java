@@ -115,6 +115,11 @@ public class DomUtils {
 
   private static int scrollbarWidth = -1;
   private static int scrollbarHeight = -1;
+
+  private static int textBoxOffsetWidth = -1;
+  private static int textBoxOffsetHeight = -1;
+  private static int textBoxClientWidth = -1;
+  private static int textBoxClientHeight = -1;
   
   public static Element createButton(String text) {
     return createButton(text, false, null);
@@ -771,6 +776,34 @@ public class DomUtils {
     }
   }
 
+  public static int getTextBoxClientHeight() {
+    if (textBoxClientHeight <= 0) {
+      calculateTextBoxSize();
+    }
+    return textBoxClientHeight;
+  }
+
+  public static int getTextBoxClientWidth() {
+    if (textBoxClientWidth <= 0) {
+      calculateTextBoxSize();
+    }
+    return textBoxClientWidth;
+  }
+
+  public static int getTextBoxOffsetHeight() {
+    if (textBoxOffsetHeight <= 0) {
+      calculateTextBoxSize();
+    }
+    return textBoxOffsetHeight;
+  }
+
+  public static int getTextBoxOffsetWidth() {
+    if (textBoxOffsetWidth <= 0) {
+      calculateTextBoxSize();
+    }
+    return textBoxOffsetWidth;
+  }
+  
   public static List<SubProp> getUIObjectExtendedInfo(UIObject obj,
       String prefix) {
     Assert.notNull(obj);
@@ -1162,6 +1195,21 @@ public class DomUtils {
 
     scrollbarWidth = w1 - w2;
     scrollbarHeight = h1 - h2;    
+  }
+  
+  private static void calculateTextBoxSize() {
+    Element elem = DOM.createInputText();
+
+    Element body = Document.get().getBody();
+    body.appendChild(elem);
+
+    textBoxOffsetWidth = elem.getOffsetWidth();
+    textBoxOffsetHeight = elem.getOffsetHeight();
+
+    textBoxClientWidth = elem.getClientWidth();
+    textBoxClientHeight = elem.getClientHeight();
+
+    body.removeChild(elem);
   }
 
   private static String transformNode(Node nd) {

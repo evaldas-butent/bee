@@ -102,6 +102,12 @@ public class CliWidget extends BeeTextBox {
       CliWorker.style(v, arr);
     } else if (z.equals("svg")) {
       CliWorker.showSvg(arr);
+    } else if (z.equals("tb")) {
+      BeeGlobal.showDialog("TextBox",
+          BeeUtils.addName("client width", DomUtils.getTextBoxClientWidth()),
+          BeeUtils.addName("client height", DomUtils.getTextBoxClientHeight()),
+          BeeUtils.addName("offset width", DomUtils.getTextBoxOffsetWidth()),
+          BeeUtils.addName("offset height", DomUtils.getTextBoxOffsetHeight()));
     } else if (z.equals("tiles")) {
       CliWorker.showTiles();
     } else if (z.equals("uc") || "unicode".startsWith(z)) {

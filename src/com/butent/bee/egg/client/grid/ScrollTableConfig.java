@@ -5,6 +5,7 @@ import com.google.gwt.user.client.ui.PopupPanel.PositionCallback;
 import com.butent.bee.egg.client.BeeKeeper;
 import com.butent.bee.egg.client.BeeStyle;
 import com.butent.bee.egg.client.composite.RadioGroup;
+import com.butent.bee.egg.client.composite.ValueSpinner;
 import com.butent.bee.egg.client.dialog.BeePopupPanel;
 import com.butent.bee.egg.client.dom.DomUtils;
 import com.butent.bee.egg.client.grid.ScrollTable.ResizePolicy;
@@ -15,8 +16,8 @@ import com.butent.bee.egg.client.utils.BeeCommand;
 import com.butent.bee.egg.client.widget.BeeButton;
 import com.butent.bee.egg.client.widget.BeeLabel;
 import com.butent.bee.egg.client.widget.BeeSimpleCheckBox;
-import com.butent.bee.egg.client.widget.Spinner;
 import com.butent.bee.egg.shared.Assert;
+import com.butent.bee.egg.shared.IntValue;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
 import java.util.Collections;
@@ -147,9 +148,9 @@ public class ScrollTableConfig {
     int z;
     
     panel.add(new BeeLabel("Cell Padding"), x, y);
-    cpId = panel.append(new Spinner(cellPadding, 0, 20), x + 100, y, 52);
+    cpId = panel.append(new ValueSpinner(new IntValue(cellPadding), 0, 20), x + 100, y, 52);
     panel.add(new BeeLabel("Cell Spacing"), x + 200, y);
-    csId = panel.append(new Spinner(cellSpacing, 0, 20), x + 300, y, 52);
+    csId = panel.append(new ValueSpinner(new IntValue(cellSpacing), 0, 20), x + 300, y, 52);
     y += 36;
    
     panel.add(new BeeLabel("Grid Resize"), x, y);
@@ -177,17 +178,18 @@ public class ScrollTableConfig {
     for (int i = 0; i < columnCount; i++) {
       cRef[i] = new ColumnRef();
       cRef[i].setShow(cp.append(new BeeSimpleCheckBox(columnVisible[i]), cx, cy));
-      cRef[i].setOrder(cp.append(new Spinner(i, 0, columnCount - 1), cx + 24, cy, 48));
+      cRef[i].setOrder(cp.append(new ValueSpinner(new IntValue(i), 0, columnCount - 1), 
+          cx + 24, cy, 48));
       cp.append(new BeeLabel(scrollTable.getHeaderTable().getText(0, i)), cx + 80, cy, 116);
 
-      cRef[i].setCurrW(cp.append(new Spinner(columnWidth[i].getCurrentWidth(), 1, 500),
-          cx + 200, cy, 60));
-      cRef[i].setMinW(cp.append(new Spinner(columnWidth[i].getMinimumWidth(), 1, 500), 
-          cx + 264, cy, 60));
-      cRef[i].setPrefW(cp.append(new Spinner(columnWidth[i].getPreferredWidth(), 1, 500), 
-          cx + 328, cy, 60));
-      cRef[i].setMaxW(cp.append(new Spinner(columnWidth[i].getMaximumWidth(), -1, 500), 
-          cx + 392, cy, 60));
+      cRef[i].setCurrW(cp.append(new ValueSpinner(new IntValue(columnWidth[i].getCurrentWidth()),
+          1, 500), cx + 200, cy, 60));
+      cRef[i].setMinW(cp.append(new ValueSpinner(new IntValue(columnWidth[i].getMinimumWidth()),
+          1, 500), cx + 264, cy, 60));
+      cRef[i].setPrefW(cp.append(new ValueSpinner(new IntValue(columnWidth[i].getPreferredWidth()),
+          1, 500), cx + 328, cy, 60));
+      cRef[i].setMaxW(cp.append(new ValueSpinner(new IntValue(columnWidth[i].getMaximumWidth()),
+          -1, 500), cx + 392, cy, 60));
       
       cy += 30;
     }

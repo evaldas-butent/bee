@@ -159,12 +159,12 @@ public class BeeStyle implements BeeModule {
     st.setHeight(100, Unit.PCT);
   }
 
-  public void fullWidht(UIObject obj) {
+  public void fullWidth(UIObject obj) {
     Assert.notNull(obj);
-    fullWidht(obj.getElement());
+    fullWidth(obj.getElement());
   }
 
-  public void fullWidht(Element el) {
+  public void fullWidth(Element el) {
     Assert.notNull(el);
     fullWidth(el.getStyle());
   }
@@ -226,7 +226,37 @@ public class BeeStyle implements BeeModule {
     st.setPropertyPx(STYLE_BORDER_TOP, px);
   }
 
+  public void setLeft(UIObject obj, int px) {
+    Assert.notNull(obj);
+    setLeft(obj.getElement(), px);
+  }
+
+  public void setLeft(Element el, int px) {
+    Assert.notNull(el);
+    setLeft(el.getStyle(), px);
+  }
+
+  public void setLeft(Style st, int px) {
+    Assert.notNull(st);
+    st.setLeft(px, Unit.PX);
+  }
+
   public void start() {
+  }
+
+  public void zeroTop(UIObject obj) {
+    Assert.notNull(obj);
+    zeroTop(obj.getElement());
+  }
+
+  public void zeroTop(Element el) {
+    Assert.notNull(el);
+    zeroTop(el.getStyle());
+  }
+
+  public void zeroTop(Style st) {
+    Assert.notNull(st);
+    st.setPropertyPx(STYLE_TOP, 0);
   }
 
   public void zeroWidth(UIObject obj) {
