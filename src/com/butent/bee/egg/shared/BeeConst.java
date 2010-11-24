@@ -55,6 +55,8 @@ public class BeeConst {
   public static final char CHAR_GT = '>';
   public static final char CHAR_QUOT = '"';
   public static final char CHAR_APOS = '\'';
+  public static final char CHAR_MINUS = '-';
+  public static final char CHAR_PLUS = '+';
 
   public static final int SIZE_UNKNOWN = -1;
   public static final int TIME_UNKNOWN = -1;

@@ -66,6 +66,16 @@ public class Assert {
     }
   }
 
+  public static void hasLength(Object obj) {
+    hasLength(obj, ASSERTION_FAILED + "argument has zero length");
+  }
+  
+  public static void hasLength(Object obj, String msg) {
+    if (BeeUtils.length(obj) <= 0) {
+      throw new BeeRuntimeException(msg);
+    }
+  }
+
   public static void isEven(int x) {
     isEven(x, ASSERTION_FAILED + "(" + x + ") argument must even");
   }

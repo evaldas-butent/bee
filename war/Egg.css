@@ -239,6 +239,9 @@ body, select {
   border: 1px solid #7F9DB9;
   padding: 1px;
 }
+.bee-ValueSpinner .valueBox:hover {
+  background: LightCyan;
+}
 
 .gwt-SplitLayoutPanel-HDragger {
   background: #f6cef5;

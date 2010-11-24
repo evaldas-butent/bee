@@ -298,6 +298,30 @@ public class BeeUtils {
       return pfx.trim() + nameCounter;
     }
   }
+  
+  public static String delete(String src, int start, int end) {
+    if (src == null) {
+      return BeeConst.STRING_EMPTY;
+    }
+    int len = src.length();
+    if (len <= 0) {
+      return BeeConst.STRING_EMPTY;
+    }
+    if (start >= len || start >= end || end <= 0) {
+      return src;
+    }
+    
+    if (start <= 0 && end >= len) {
+      return BeeConst.STRING_EMPTY;
+    }
+    if (start <= 0) {
+      return src.substring(end);
+    }
+    if (end >= len) {
+      return src.substring(0, start);
+    }
+    return src.substring(0, start) + src.substring(end);
+  }
 
   public static String elapsedSeconds(long start) {
     return bracket(toSeconds(System.currentTimeMillis() - start));
@@ -574,6 +598,23 @@ public class BeeUtils {
 
     return ok;
   }
+  
+  public static String insert(String src, int pos, char c) {
+    Assert.notNull(src);
+    Assert.nonNegative(pos);
+    Assert.isTrue(pos <= src.length());
+
+    return new StringBuilder(src).insert(pos, c).toString();
+  }
+
+  public static String insert(String src, int pos, CharSequence cs) {
+    Assert.notNull(src);
+    Assert.nonNegative(pos);
+    Assert.isTrue(pos <= src.length());
+    Assert.hasLength(cs);
+
+    return new StringBuilder(src).insert(pos, cs).toString();
+  }
 
   public static boolean instanceOfDateTime(Object x) {
     if (x == null) {
@@ -624,6 +665,10 @@ public class BeeUtils {
           || same(s, BeeConst.STRING_FALSE) || same(s, BeeConst.NO);
     }
   }
+  
+  public static boolean isDigit(char c) {
+    return c >= BeeConst.CHAR_ZERO && c <= BeeConst.CHAR_NINE;
+  }
 
   public static boolean isDigit(CharSequence s) {
     if (s == null) {
@@ -636,16 +681,12 @@ public class BeeUtils {
     }
 
     boolean ok = true;
-    char c;
-
     for (int i = 0; i < len; i++) {
-      c = s.charAt(i);
-      if (c < BeeConst.CHAR_ZERO || c > BeeConst.CHAR_NINE) {
+      if (!isDigit(s.charAt(i))) {
         ok = false;
         break;
       }
     }
-
     return ok;
   }
 
@@ -1101,6 +1142,18 @@ public class BeeUtils {
     }
     
     return c;
+  }
+
+  public static String replace(String src, int start, int end, char c) {
+    return replace(src, start, end, String.valueOf(c));
+  }
+  
+  public static String replace(String src, int start, int end, String str) {
+    Assert.isIndex(src, start);
+    Assert.isIndex(src, end - 1);
+    Assert.notNull(str);
+    
+    return new StringBuilder(src).replace(start, end, str).toString();
   }
 
   public static String replicate(char z, int n) {

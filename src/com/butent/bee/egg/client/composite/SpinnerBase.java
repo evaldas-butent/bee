@@ -60,7 +60,7 @@ public class SpinnerBase {
         }
       }
       if (speed < 0 && step < maxStep) {
-        step += 1;
+        step++;
       }
     }
   };
@@ -230,6 +230,14 @@ public class SpinnerBase {
 
   public boolean isEnabled() {
     return enabled;
+  }
+  
+  public boolean isValid(long v) {
+    if (isConstrained()) {
+      return v >= getMin() && v <= getMax();
+    } else {
+      return true;
+    }
   }
 
   public void removeSpinnerListener(SpinnerListener listener) {

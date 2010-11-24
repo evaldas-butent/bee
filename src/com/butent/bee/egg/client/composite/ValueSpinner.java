@@ -1,13 +1,18 @@
 package com.butent.bee.egg.client.composite;
 
+import com.google.gwt.event.dom.client.KeyCodes;
+import com.google.gwt.event.dom.client.KeyDownEvent;
+import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.event.dom.client.KeyPressEvent;
 import com.google.gwt.event.dom.client.KeyPressHandler;
+import com.google.gwt.event.dom.client.MouseWheelEvent;
+import com.google.gwt.event.dom.client.MouseWheelHandler;
 import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.TextBox;
 
-import com.butent.bee.egg.client.BeeKeeper;
 import com.butent.bee.egg.client.dom.DomUtils;
 import com.butent.bee.egg.client.layout.Absolute;
+import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.HasIntValue;
 import com.butent.bee.egg.shared.HasLongValue;
 import com.butent.bee.egg.shared.utils.BeeUtils;
@@ -21,43 +26,114 @@ public class ValueSpinner extends Absolute implements RequiresResize {
 
   private SpinnerListener spinnerListener = new SpinnerListener() {
     public void onSpinning(long value) {
-      if (getSpinner() != null) {
-        getSpinner().setValue(value, false);
-      }
       valueBox.setText(formatValue(value));
       setSourceValue(value);
     }
   };
 
+  private KeyDownHandler keyDownHandler = new KeyDownHandler() {
+    public void onKeyDown(KeyDownEvent event) {
+      if (!isEnabled()) {
+        return;
+      }
+      
+      switch (event.getNativeKeyCode()) {
+        case KeyCodes.KEY_UP:
+          valueBox.cancelKey();
+          doStep(true);
+          break;
+        case KeyCodes.KEY_DOWN:
+          valueBox.cancelKey();
+          doStep(false);
+          break;
+        case KeyCodes.KEY_DELETE:
+        case KeyCodes.KEY_BACKSPACE:
+          valueBox.cancelKey();
+          
+          String oldText = valueBox.getText();
+          int pos = valueBox.getCursorPos();
+          int sel = valueBox.getSelectionLength();
+          int len = BeeUtils.length(oldText);
+          
+          String newText;
+          if (sel > 0) {
+            newText = BeeUtils.delete(oldText, pos, pos + sel);
+          } else if (event.getNativeKeyCode() == KeyCodes.KEY_BACKSPACE) {
+            newText = (pos > 0) ? BeeUtils.delete(oldText, pos - 1, pos) : oldText;
+          } else if (len > 0 && pos == len) {
+            newText = BeeUtils.left(oldText, len - 1);
+          } else if (len > 0) {
+            newText = BeeUtils.delete(oldText, pos, pos + 1);
+          } else {
+            newText = oldText;
+          }
+          
+          if (!BeeUtils.same(oldText, newText)) {
+            long value = BeeUtils.isEmpty(newText) ? spinner.getMin() : BeeUtils.toLong(newText);
+            updateValue(value);
+          }
+          break;
+      }
+    }
+  };
+  
   private KeyPressHandler keyPressHandler = new KeyPressHandler() {
     public void onKeyPress(KeyPressEvent event) {
-      int index = valueBox.getCursorPos();
-      String previousText = valueBox.getText();
-
-      String newText;
-      if (valueBox.getSelectionLength() > 0) {
-        newText = previousText.substring(0, valueBox.getCursorPos()) + event.getCharCode()
-            + previousText.substring(valueBox.getCursorPos()
-                + valueBox.getSelectionLength(), previousText.length());
-      } else {
-        newText = previousText.substring(0, index) + event.getCharCode()
-            + previousText.substring(index, previousText.length());
+      char charCode = event.getCharCode();
+      if (charCode <= BeeConst.CHAR_SPACE) {
+        return;
       }
 
       valueBox.cancelKey();
-      try {
-        long newValue = parseValue(newText);
-        if (spinner.isConstrained()
-            && (newValue > spinner.getMax() || newValue < spinner.getMin())) {
-          return;
+      if (!isEnabled()) {
+        return;
+      }
+      
+      if (!BeeUtils.isDigit(charCode)) {
+        switch (charCode) {
+          case BeeConst.CHAR_PLUS:
+            doStep(true);
+            break;
+          case BeeConst.CHAR_MINUS:  
+            doStep(false);
+            break;
         }
-        spinner.setValue(newValue, true);
-      } catch (Exception ex) {
-        BeeKeeper.getLog().warning(newText, ex);
+        return;
+      }
+
+      String oldText = valueBox.getText();
+      int pos = valueBox.getCursorPos();
+      int sel = valueBox.getSelectionLength();
+
+      int len = BeeUtils.length(oldText);
+      int maxLen = valueBox.getMaxLength();
+      
+      String newText;
+      if (sel > 0) {
+        newText = BeeUtils.replace(oldText, pos, pos + sel, charCode);
+      } else if (maxLen > 0 && maxLen <= len) {
+        int z = BeeUtils.min(pos, len - 1);
+        newText = BeeUtils.replace(oldText, z, z + 1, charCode);
+      } else {
+        newText = BeeUtils.insert(oldText, pos, charCode);
+      }
+
+      if (!BeeUtils.same(oldText, newText)) {
+        long value = BeeUtils.toLong(newText);
+        updateValue(value);
       }
     }
   };
 
+  private MouseWheelHandler mouseWheelHandler = new MouseWheelHandler() {
+    public void onMouseWheel(MouseWheelEvent event) {
+      int z = event.getNativeEvent().getMouseWheelVelocityY();
+      if (isEnabled() && z != 0) {
+        doStep(Integer.signum(z) < 0);
+      }
+    }
+  };
+  
   public ValueSpinner(HasIntValue source) {
     this(source, 0, 0, 1, 99, false);
   }
@@ -84,7 +160,12 @@ public class ValueSpinner extends Absolute implements RequiresResize {
     valueBox = new TextBox();
     DomUtils.createId(valueBox, "spin");
     valueBox.setStyleName("valueBox");
+    valueBox.addKeyDownHandler(keyDownHandler);
     valueBox.addKeyPressHandler(keyPressHandler);
+    valueBox.addMouseWheelHandler(mouseWheelHandler);
+    if (min >= 0 && max > min) {
+      valueBox.setMaxLength(BeeUtils.toString(max).length());
+    }
     add(valueBox);
 
     spinner = new SpinnerBase(spinnerListener, getSourceValue(), min, max, minStep, maxStep,
@@ -136,9 +217,30 @@ public class ValueSpinner extends Absolute implements RequiresResize {
     setPositions();
     super.onLoad();
   }
-
-  protected long parseValue(String value) {
-    return Long.valueOf(value);
+  
+  private void doStep(boolean incr) {
+    long v = parseValue();
+    
+    if (incr) {
+      if (v < spinner.getMin() || v >= spinner.getMax()) {
+        v = spinner.getMin();
+      } else {
+        v += spinner.getMinStep();
+        if (v > spinner.getMax()) {
+          v = spinner.getMax();
+        }
+      }
+    } else {
+      if (v <= spinner.getMin() || v > spinner.getMax()) {
+        v = spinner.getMax();
+      } else {
+        v -= spinner.getMinStep();
+        if (v < spinner.getMin()) {
+          v = spinner.getMin();
+        }
+      }
+    }
+    updateValue(v);
   }
 
   private long getSourceValue() {
@@ -150,7 +252,11 @@ public class ValueSpinner extends Absolute implements RequiresResize {
       return source.getInt();
     }
   }
-  
+
+  private long parseValue() {
+    return BeeUtils.toLong(valueBox.getText());
+  }
+
   private void setPositions() {
     int panelWidth = getElement().getClientWidth();
     int panelHeight = getElement().getClientHeight();
@@ -161,7 +267,7 @@ public class ValueSpinner extends Absolute implements RequiresResize {
     int incrHeight = spinner.getIncrementArrow().getHeight();
     int decrWidth = spinner.getDecrementArrow().getWidth();
     int decrHeight = spinner.getDecrementArrow().getHeight();
-    
+
     int w = BeeUtils.max(incrWidth, decrWidth);
     if (panelWidth < w * 2) {
       panelWidth = BeeUtils.max(w * 2, 60);
@@ -171,10 +277,10 @@ public class ValueSpinner extends Absolute implements RequiresResize {
     if (panelHeight != h) {
       DomUtils.setHeight(this, h);
     }
-    
+
     setWidgetPosition(valueBox, 0, 0);
     DomUtils.setWidth(valueBox, panelWidth - w - 5);
-    
+
     setWidgetPosition(spinner.getIncrementArrow(), panelWidth - w, 0);
     setWidgetPosition(spinner.getDecrementArrow(), panelWidth - w, h - decrHeight);
   }
@@ -184,6 +290,12 @@ public class ValueSpinner extends Absolute implements RequiresResize {
       ((HasLongValue) source).setValue(value);
     } else if (source != null) {
       source.setValue((int) value);
+    }
+  }
+  
+  private void updateValue(long value) {
+    if (spinner.isValid(value)) {
+      spinner.setValue(value, true);
     }
   }
 }
