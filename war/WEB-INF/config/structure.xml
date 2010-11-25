@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<BeeTables>
+  <BeeTable name="bee_Tables" lockName="LastLock" idName="TableID">
+    <BeeStructure>
+      <BeeField name="TableName" type="STRING" precision="30" notNull="true" unique="true" />
+      <BeeField name="LockColumn" type="STRING" precision="30" />
+      <BeeField name="IdColumn" type="STRING" precision="30" />
+    </BeeStructure>
+  </BeeTable>
+  <BeeTable name="bee_Fields" idName="FieldID">
+    <BeeStructure>
+      <BeeField name="FieldName" type="STRING" precision="30" notNull="true" />
+      <BeeField name="FieldType" type="STRING" precision="30" notNull="true" />
+      <BeeField name="Precision" type="INTEGER" />
+      <BeeField name="Scale" type="INTEGER" />
+      <BeeField name="NotNull" type="BOOLEAN" />
+      <BeeField name="Unique" type="BOOLEAN" />
+      <BeeField name="Table" type="LONG" notNull="true" relation="bee_Tables" actionOnDelete="CASCADE" />
+      <BeeKey name="FieldName" fields="FieldName" />
+      <BeeKey name="TableField" fields="Table, FieldName" unique="true" />
+    </BeeStructure>
+  </BeeTable>
+  <BeeTable name="Countries" idName="CountryID">
+    <BeeStructure>
+      <BeeField name="Country" type="STRING" precision="100" notNull="true" unique="true" />
+      <BeeField name="Area" type="NUMERIC" precision="10" scale="2" />
+      <BeeField name="Currency" type="STRING" precision="50" unique="true" />
+    </BeeStructure>
+    <BeeExtended>
+      <BeeField name="Language" type="STRING" precision="30" />
+      <BeeField name="Anthem" type="STRING" precision="30" unique="true" />
+      <BeeField name="Capital" type="LONG" relation="Cities" />
+      <BeeKey name="Language" fields="Language" />
+    </BeeExtended><!--
+    <BeeExtensions>
+      <BeeExtTables>
+        <BeeTable name="Nationalities" idName="NationalityID">
+          <BeeStructure>
+            <BeeField name="Nationality" type="STRING" precision="50" />
+            <BeeField name="Percent" type="NUMERIC" precision="4" scale="1" />
+            <BeeKey name="Nationality" fields="CountryID, Nationality" unique="true" />
+          </BeeStructure>
+        </BeeTable>
+        <BeeTable name="Codes" idName="CodeID">
+          <BeeStructure>
+            <BeeField name="Code" type="STRING" precision="10" unique="true" />
+          </BeeStructure>
+        </BeeTable>
+      </BeeExtTables>
+    </BeeExtensions>
+  --></BeeTable>
+  <BeeTable name="Cities" idName="CityID">
+    <BeeStructure>
+      <BeeField name="City" type="STRING" precision="100" notNull="true" unique="true" />
+      <BeeField name="Population" type="INTEGER" />
+      <BeeField name="Country" type="LONG" relation="Countries" />
+    </BeeStructure>
+  </BeeTable>
+</BeeTables>

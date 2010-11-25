@@ -27,7 +27,7 @@ public class BeeTable {
       Assert.notEmpty(refTable);
       Assert.notEmpty(refField);
 
-      this.name = "FK_" + refTable + "_" + refField;
+      this.name = FOREIGN_KEY_PREFIX + BeeUtils.concat("_", getTable(), keyField);
       this.keyField = keyField;
       this.refTable = refTable;
       this.refField = refField;
@@ -62,13 +62,15 @@ public class BeeTable {
   public class BeeKey {
     private final String name;
     private final String[] keyFields;
+    private final boolean primary;
     private final boolean unique;
 
-    private BeeKey(String name, boolean unique, String... keyFields) {
+    private BeeKey(String name, boolean primary, boolean unique, String... keyFields) {
       Assert.notEmpty(name);
 
-      this.name = name;
-      this.unique = unique;
+      this.name = primary ? PRIMARY_KEY_PREFIX + getTable() : name;
+      this.primary = primary;
+      this.unique = primary || unique;
 
       List<String> flds = new ArrayList<String>();
 
@@ -96,6 +98,10 @@ public class BeeTable {
       return BeeTable.this.getName();
     }
 
+    public boolean isPrimary() {
+      return primary;
+    }
+
     public boolean isUnique() {
       return unique;
     }
@@ -108,9 +114,10 @@ public class BeeTable {
     private final int scale;
     private final boolean notNull;
     private final boolean unique;
+    private final String relation;
 
     private BeeStructure(String name, DataTypes type, int precision, int scale,
-        boolean notNull, boolean unique) {
+        boolean notNull, boolean unique, String relation) {
       Assert.notEmpty(name);
       Assert.notEmpty(type);
 
@@ -120,6 +127,7 @@ public class BeeTable {
       this.scale = scale;
       this.notNull = notNull;
       this.unique = unique;
+      this.relation = relation;
     }
 
     public String getName() {
@@ -128,6 +136,10 @@ public class BeeTable {
 
     public int getPrecision() {
       return precision;
+    }
+
+    public String getRelation() {
+      return relation;
     }
 
     public int getScale() {
@@ -154,6 +166,10 @@ public class BeeTable {
   public static final String DEFAULT_ID_FIELD = "ID";
   public static final String DEFAULT_LOCK_FIELD = "Version";
 
+  public static final String PRIMARY_KEY_PREFIX = "PK_";
+  public static final String FOREIGN_KEY_PREFIX = "FK_";
+  public static final String EXT_TABLE_SUFFIX = "_EXT";
+
   private final String name;
   private final String idName;
   private final String lockName;
@@ -161,6 +177,7 @@ public class BeeTable {
   private Map<String, BeeStructure> fields = new LinkedHashMap<String, BeeStructure>();
   private List<BeeKey> keys = new ArrayList<BeeKey>();
   private List<BeeForeignKey> foreignKeys = new ArrayList<BeeForeignKey>();
+  private BeeTable extTable;
 
   BeeTable(String name, String idName, String lockName) {
     Assert.notEmpty(name);
@@ -168,6 +185,10 @@ public class BeeTable {
     this.name = name;
     this.idName = BeeUtils.ifString(idName, DEFAULT_ID_FIELD);
     this.lockName = BeeUtils.ifString(lockName, DEFAULT_LOCK_FIELD);
+  }
+
+  public BeeTable getExtTable() {
+    return extTable;
   }
 
   public BeeStructure getField(String field) {
@@ -198,10 +219,15 @@ public class BeeTable {
     return name;
   }
 
+  public boolean isEmpty() {
+    return BeeUtils.isEmpty(fields);
+  }
+
   BeeTable addField(String name, DataTypes type, int precision, int scale,
-      boolean notNull, boolean unique) {
+      boolean notNull, boolean unique, String relation) {
+
     fields.put(name,
-        new BeeStructure(name, type, precision, scale, notNull, unique));
+        new BeeStructure(name, type, precision, scale, notNull, unique, relation));
     return this;
   }
 
@@ -211,12 +237,21 @@ public class BeeTable {
   }
 
   BeeTable addKey(String keyName, String... keyFields) {
-    keys.add(new BeeKey(keyName, false, keyFields));
+    keys.add(new BeeKey(keyName, false, false, keyFields));
+    return this;
+  }
+
+  BeeTable addPrimaryKey(String keyName, String... keyFields) {
+    keys.add(new BeeKey(keyName, true, false, keyFields));
     return this;
   }
 
   BeeTable addUniqueKey(String keyName, String... keyFields) {
-    keys.add(new BeeKey(keyName, true, keyFields));
+    keys.add(new BeeKey(keyName, false, true, keyFields));
     return this;
+  }
+
+  void setExtTable(BeeTable extTable) {
+    this.extTable = extTable;
   }
 }

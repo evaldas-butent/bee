@@ -11,14 +11,14 @@ class PostgreSqlBuilder extends SqlBuilder {
   }
 
   @Override
-  protected Object sqlType(DataTypes type, int precission, int scale) {
+  protected Object sqlType(DataTypes type, int precision, int scale) {
     switch (type) {
       case BOOLEAN:
         return "TINYINT";
       case DOUBLE:
         return "DOUBLE PRECISION";
       default:
-        return super.sqlType(type, precission, scale);
+        return super.sqlType(type, precision, scale);
     }
   }
 }

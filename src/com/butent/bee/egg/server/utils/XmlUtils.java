@@ -108,6 +108,17 @@ public class XmlUtils {
     xsltFactory = tf;
   }
 
+  public static Document fromFileName(String fileName) {
+    File fl = new File(fileName);
+    if (!FileUtils.isInputFile(fl)) {
+      LogUtils.severe(logger, fileName, "not an input file");
+      return null;
+    }
+
+    Document doc = createDocument(fl);
+    return doc;
+  }
+
   public static StringProp[][] getAttributesFromFile(String src, String tag) {
     return getAttributesFromFile(src, null, tag);
   }
@@ -741,17 +752,6 @@ public class XmlUtils {
     return ok;
   }
 
-  private static Document fromFileName(String fileName) {
-    File fl = new File(fileName);
-    if (!FileUtils.isInputFile(fl)) {
-      LogUtils.severe(logger, fileName, "not an input file");
-      return null;
-    }
-
-    Document doc = createDocument(fl);
-    return doc;
-  }
-
   private static Document fromString(String xml) {
     Document doc = createDocument(new StringReader(xml));
     return doc;
@@ -841,5 +841,4 @@ public class XmlUtils {
       return BeeUtils.concat(1, ti.getTypeName(), ti.getTypeNamespace());
     }
   }
-
 }

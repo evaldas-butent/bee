@@ -69,6 +69,11 @@ class RowSetService extends CompositeService {
         for (int i = cc; i < arr.length(); i++) {
           lst.add(arr.get(i));
         }
+        if (BeeUtils.isEmpty(lst)) {
+          BeeGlobal.showError("NO TABLES");
+          unregister();
+          return false;
+        }
         if (!BeeGlobal.isField(fld)) {
           BeeGlobal.createField(fld, "Table name", BeeType.TYPE_STRING, null);
           BeeGlobal.getField(fld).setWidget(BeeWidget.LIST);

@@ -22,7 +22,7 @@ class OracleSqlBuilder extends SqlBuilder {
   }
 
   @Override
-  protected Object sqlType(DataTypes type, int precission, int scale) {
+  protected Object sqlType(DataTypes type, int precision, int scale) {
     switch (type) {
       case BOOLEAN:
         return "NUMERIC(1)";
@@ -33,9 +33,9 @@ class OracleSqlBuilder extends SqlBuilder {
       case DOUBLE:
         return "BINARY_DOUBLE";
       case STRING:
-        return "VARCHAR2(" + precission + ")";
+        return "VARCHAR2(" + precision + ")";
       default:
-        return super.sqlType(type, precission, scale);
+        return super.sqlType(type, precision, scale);
     }
   }
 }

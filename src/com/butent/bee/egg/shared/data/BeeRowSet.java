@@ -92,7 +92,7 @@ public class BeeRowSet extends AbstractData implements BeeSerializable {
     public Object getOriginal(int col) {
       int type = getColumn(col).getType();
 
-      switch (type) {
+      switch (type) { // TODO fix it
         case 4: // java.sql.Types.INTEGER
           return getInt(col);
         case 6: // java.sql.Types.FLOAT
@@ -372,7 +372,7 @@ public class BeeRowSet extends AbstractData implements BeeSerializable {
       for (BeeRow row : getRows()) {
         if (!BeeUtils.isEmpty(row.getShadow())) {
           for (Entry<Integer, String> shadow : row.getShadow().entrySet()) {
-            row.setValue(shadow.getKey(), shadow.getValue()); // TODO Conflict
+            row.setValue(shadow.getKey(), shadow.getValue());
           }
           row.setShadow(null);
         }

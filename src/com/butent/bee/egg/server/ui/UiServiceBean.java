@@ -249,7 +249,7 @@ public class UiServiceBean {
     ss.addAllFields("t").addFrom(tbl, "t");
 
     if (sys.beeTable(tbl)) {
-      for (BeeForeignKey foreign : sys.getForeignKeys(tbl)) {
+      for (BeeForeignKey foreign : sys.getTable(tbl).getForeignKeys()) {
         String refTbl = foreign.getRefTable();
 
         ss.addFromLeft(refTbl,
@@ -353,12 +353,10 @@ public class UiServiceBean {
     if (arr.length > 1) {
       cmd = arr[1];
     }
-    if (BeeUtils.same(cmd, "structure")) {
-      sys.createStructure(buff);
+    if (BeeUtils.same(cmd, "tables")) {
+      sys.rebuildTables(buff);
     } else if (BeeUtils.same(cmd, "keys")) {
-      sys.createKeys(buff);
-    } else if (BeeUtils.same(cmd, "xml")) {
-      sys.createXml(buff);
+      sys.rebuildKeys(buff);
     } else if (BeeUtils.same(cmd, "data")) {
       sys.createData(buff);
     } else {

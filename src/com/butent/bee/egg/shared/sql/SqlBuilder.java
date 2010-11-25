@@ -91,7 +91,7 @@ public abstract class SqlBuilder {
     return s;
   }
 
-  protected Object sqlType(DataTypes type, int precission, int scale) {
+  protected Object sqlType(DataTypes type, int precision, int scale) {
     switch (type) {
       case BOOLEAN:
         return "BIT";
@@ -102,11 +102,11 @@ public abstract class SqlBuilder {
       case DOUBLE:
         return "DOUBLE";
       case NUMERIC:
-        return "NUMERIC(" + precission + ", " + scale + ")";
+        return "NUMERIC(" + precision + ", " + scale + ")";
       case CHAR:
-        return "CHAR(" + precission + ")";
+        return "CHAR(" + precision + ")";
       case STRING:
-        return "VARCHAR(" + precission + ")";
+        return "VARCHAR(" + precision + ")";
       default:
         Assert.unsupported("Unsupported data type: " + type.name());
         return null;
