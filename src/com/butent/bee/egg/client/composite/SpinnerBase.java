@@ -196,6 +196,29 @@ public class SpinnerBase {
     return BeeGlobal.getImages().arrowUpPressed();
   }
 
+  public void doStep(long v, boolean incr) {
+    if (incr) {
+      if (v < getMin() || v >= getMax()) {
+        v = getMin();
+      } else {
+        v += getMinStep();
+        if (v > getMax()) {
+          v = getMax();
+        }
+      }
+    } else {
+      if (v <= getMin() || v > getMax()) {
+        v = getMax();
+      } else {
+        v -= getMinStep();
+        if (v < getMin()) {
+          v = getMin();
+        }
+      }
+    }
+    updateValue(v);
+  }
+  
   public BeeImage getDecrementArrow() {
     return decrementArrow;
   }
@@ -285,6 +308,12 @@ public class SpinnerBase {
     }
   }
 
+  public void updateValue(long v) {
+    if (isValid(v)) {
+      setValue(v, true);
+    }
+  }
+  
   protected void decrease() {
     value -= step;
     if (constrained && value < min) {

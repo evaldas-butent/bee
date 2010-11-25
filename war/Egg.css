@@ -236,11 +236,28 @@ body, select {
 .bee-ValueSpinner .valueBox {
   text-align: right;
   margin: 0;
-  border: 1px solid #7F9DB9;
+  border: 1px solid #7f9db9;
   padding: 1px;
 }
 .bee-ValueSpinner .valueBox:hover {
   background: LightCyan;
+}
+
+.bee-VolumeSlider {
+  border: 1px solid #7f9db9;
+}
+.bee-VolumeSlider:hover {
+  border: 1px dashed blue;
+}
+
+.bee-ProgressBar-shell {
+  background: Snow;
+}
+.bee-ProgressBar-bar {
+  background: SpringGreen;
+}
+.bee-ProgressBar-text {
+  color: blue;
 }
 
 .gwt-SplitLayoutPanel-HDragger {

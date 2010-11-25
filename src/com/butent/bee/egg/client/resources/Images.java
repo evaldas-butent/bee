@@ -65,4 +65,13 @@ public interface Images extends ClientBundle {
 
   @Source("descending.gif")
   ImageResource descending();
+
+  @Source("slider.gif")
+  ImageResource slider();
+
+  @Source("sliderDisabled.gif")
+  ImageResource sliderDisabled();
+
+  @Source("sliderSliding.gif")
+  ImageResource sliderSliding();
 }

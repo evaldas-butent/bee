@@ -1,6 +1,5 @@
-package com.butent.bee.egg.client.widget;
+package com.butent.bee.egg.client.composite;
 
-import com.google.gwt.dom.client.Style;
 import com.google.gwt.dom.client.Style.Display;
 import com.google.gwt.dom.client.Style.Position;
 import com.google.gwt.dom.client.Style.Unit;
@@ -12,10 +11,11 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.egg.client.BeeKeeper;
 import com.butent.bee.egg.client.dom.DomUtils;
 import com.butent.bee.egg.shared.HasId;
+import com.butent.bee.egg.shared.utils.BeeUtils;
 
 public class ProgressBar extends Widget implements HasId, RequiresResize {
-  public abstract static class TextFormatter {
-    protected abstract String getText(ProgressBar bar, double curProgress);
+  public static interface TextFormatter {
+    String getText(double curProgress);
   }
 
   private Element barElement;
@@ -27,6 +27,13 @@ public class ProgressBar extends Widget implements HasId, RequiresResize {
 
   private boolean textVisible = true;
   private TextFormatter textFormatter;
+  
+  private String styleNameShell = "bee-ProgressBar-shell";
+  private String styleNameBar = "bee-ProgressBar-bar";
+  private String styleNameText = "bee-ProgressBar-text";
+
+  private String styleNameFirstHalf = "firstHalf";
+  private String styleNameSecondHalf = "secondHalf";
 
   public ProgressBar() {
     this(0.0, 100.0, 0.0);
@@ -52,19 +59,23 @@ public class ProgressBar extends Widget implements HasId, RequiresResize {
     setTextFormatter(textFormatter);
 
     setElement(DOM.createDiv());
-    getElement().getStyle().setPosition(Style.Position.RELATIVE);
-    setStyleName("bee-ProgressBar-shell");
+    setStyleName(styleNameShell);
 
     barElement = DOM.createDiv();
-    DOM.appendChild(getElement(), barElement);
+    getElement().appendChild(barElement);
+
     BeeKeeper.getStyle().fullWidth(barElement);
-    barElement.setClassName("bee-ProgressBar-bar");
+    BeeKeeper.getStyle().fullHeight(barElement);
+    barElement.setClassName(styleNameBar);
+    DomUtils.createId(barElement, "bar");
 
     textElement = DOM.createDiv();
-    DOM.appendChild(getElement(), textElement);
-    textElement.getStyle().setPosition(Style.Position.ABSOLUTE);
+    getElement().appendChild(textElement);
+
+    textElement.getStyle().setPosition(Position.ABSOLUTE);
     BeeKeeper.getStyle().zeroTop(textElement);
-    textElement.setClassName("bee-ProgressBar-text");
+    textElement.setClassName(styleNameText);
+    DomUtils.createId(textElement, "text");
 
     setProgress(curProgress);
   }
@@ -107,17 +118,15 @@ public class ProgressBar extends Widget implements HasId, RequiresResize {
   }
 
   public void onResize() {
-    int width = getElement().getClientWidth();
-    if (textVisible) {
-      int textWidth = textElement.getOffsetWidth();
-      int left = (width / 2) - (textWidth / 2);
-      BeeKeeper.getStyle().setLeft(textElement, left);
-    }
+    redraw();
   }
 
   public void redraw() {
-    if (isAttached()) {
-      onResize();
+    if (isAttached() && textVisible) {
+      int width = getElement().getClientWidth();
+      int textWidth = textElement.getOffsetWidth();
+      int left = (width / 2) - (textWidth / 2);
+      BeeKeeper.getStyle().setLeft(textElement, left);
     }
   }
 
@@ -143,13 +152,24 @@ public class ProgressBar extends Widget implements HasId, RequiresResize {
     int percent = (int) (100 * getPercent());
     barElement.getStyle().setWidth(percent, Unit.PCT);
     textElement.setInnerHTML(generateText());
+    
+    String textClassName = textElement.getClassName();
 
     if (percent < 50) {
-      textElement.addClassName("firstHalf");
+      if (!BeeUtils.context(styleNameFirstHalf, textClassName)) {
+        BeeKeeper.getStyle().addStyleDependentName(textElement, styleNameFirstHalf);
+      }
+      if (BeeUtils.context(styleNameSecondHalf, textClassName)) {
+        BeeKeeper.getStyle().removeStyleDependentName(textElement, styleNameSecondHalf);
+      }
     } else {
-      textElement.addClassName("secondHalf");
+      if (BeeUtils.context(styleNameFirstHalf, textClassName)) {
+        BeeKeeper.getStyle().removeStyleDependentName(textElement, styleNameFirstHalf);
+      }
+      if (!BeeUtils.context(styleNameSecondHalf, textClassName)) {
+        BeeKeeper.getStyle().addStyleDependentName(textElement, styleNameSecondHalf);
+      }
     }
-
     redraw();
   }
 
@@ -169,9 +189,9 @@ public class ProgressBar extends Widget implements HasId, RequiresResize {
 
   protected String generateText() {
     if (textFormatter != null) {
-      return textFormatter.getText(this, curProgress);
+      return textFormatter.getText(curProgress);
     } else {
-      return (int) (100 * getPercent()) + "%";
+      return Double.toString(curProgress);
     }
   }
 
@@ -185,11 +205,10 @@ public class ProgressBar extends Widget implements HasId, RequiresResize {
 
   @Override
   protected void onLoad() {
-    getElement().getStyle().setPosition(Position.RELATIVE);
     redraw();
   }
 
-  protected void resetProgress() {
+  private void resetProgress() {
     setProgress(getProgress());
   }
 } 

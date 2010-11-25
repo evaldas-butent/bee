@@ -39,6 +39,12 @@ public class EventUtils {
       initDnd();
     }
   }
+  
+  public static void eatEvent(NativeEvent ev) {
+    Assert.notNull(ev);
+    ev.preventDefault();
+    ev.stopPropagation();
+  }
 
   public static List<StringProp> getEventInfo(NativeEvent ev) {
     Assert.notNull(ev);

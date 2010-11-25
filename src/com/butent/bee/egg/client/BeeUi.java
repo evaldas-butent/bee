@@ -518,8 +518,11 @@ public class BeeUi implements BeeModule {
         0, 30, 3);
     DomUtils.setWidth(spinner, 60);
     fp.setWidget(r, 0, spinner);
-    fp.setWidget(r + 1, 0, new VolumeSlider(BeeGlobal.getField(MenuConst.FIELD_ITEM_LIMIT),
-        0, 50, 5));
+
+    VolumeSlider slider = new VolumeSlider(BeeGlobal.getField(MenuConst.FIELD_ITEM_LIMIT),
+        0, 50, 5);
+    slider.setPixelSize(80, 20);
+    fp.setWidget(r + 1, 0, slider);
 
     fp.setWidget(r, 1, new BeeButton("Refresh", BeeService.SERVICE_REFRESH_MENU));
     fp.setWidget(r + 1, 1, new BeeButton("BEE", "comp_ui_menu", "stage_dummy"));

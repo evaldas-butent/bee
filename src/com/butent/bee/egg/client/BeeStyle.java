@@ -34,6 +34,13 @@ public class BeeStyle implements BeeModule {
 
   public static final String NAME_HORIZONTAL = "horizontal";
   public static final String NAME_VERTICAL = "vertical";
+  public static final String NAME_DISABLED = "disabled";  
+  public static final String NAME_ENABLED = "enabled";  
+  public static final String NAME_FOCUSED = "focused";  
+
+  public void addStyleDependentName(Element el, String styleSuffix) {
+    setStyleDependentName(el, styleSuffix, true);
+  }
 
   public void autoHeight(UIObject obj) {
     Assert.notNull(obj);
@@ -191,7 +198,25 @@ public class BeeStyle implements BeeModule {
     }
   }
 
+  public String getStylePrimaryName(Element el) {
+    Assert.notNull(el);
+    String className = el.getClassName();
+    if (BeeUtils.isEmpty(className)) {
+      return BeeConst.STRING_EMPTY;
+    }
+
+    int idx = className.indexOf(BeeConst.CHAR_SPACE);
+    if (idx >= 0) {
+      return className.substring(0, idx);
+    }
+    return className;
+  }
+  
   public void init() {
+  }
+
+  public void removeStyleDependentName(Element el, String styleSuffix) {
+    setStyleDependentName(el, styleSuffix, false);
   }
 
   public void setBorderBottomWidth(UIObject obj, int px) {
@@ -226,6 +251,21 @@ public class BeeStyle implements BeeModule {
     st.setPropertyPx(STYLE_BORDER_TOP, px);
   }
 
+  public void setHeight(UIObject obj, int px) {
+    Assert.notNull(obj);
+    setHeight(obj.getElement(), px);
+  }
+
+  public void setHeight(Element el, int px) {
+    Assert.notNull(el);
+    setHeight(el.getStyle(), px);
+  }
+
+  public void setHeight(Style st, int px) {
+    Assert.notNull(st);
+    st.setHeight(px, Unit.PX);
+  }
+
   public void setLeft(UIObject obj, int px) {
     Assert.notNull(obj);
     setLeft(obj.getElement(), px);
@@ -241,7 +281,73 @@ public class BeeStyle implements BeeModule {
     st.setLeft(px, Unit.PX);
   }
 
+  public void setStyleDependentName(Element el, String styleSuffix, boolean add) {
+    Assert.notNull(el);
+    Assert.notEmpty(styleSuffix);
+    
+    String primary = getStylePrimaryName(el);
+    Assert.notEmpty(primary, "element has no primary style");
+    
+    setStyleName(el, primary + BeeConst.CHAR_MINUS + styleSuffix.trim(), add);
+  }
+  
+  public void setStyleName(Element el, String st, boolean add) {
+    Assert.notNull(el);
+    Assert.notEmpty(st);
+
+    if (add) {
+      el.addClassName(st.trim());
+    } else {
+      el.removeClassName(st.trim());
+    }
+  }
+
+  public void setTop(UIObject obj, int px) {
+    Assert.notNull(obj);
+    setTop(obj.getElement(), px);
+  }
+
+  public void setTop(Element el, int px) {
+    Assert.notNull(el);
+    setTop(el.getStyle(), px);
+  }
+
+  public void setTop(Style st, int px) {
+    Assert.notNull(st);
+    st.setTop(px, Unit.PX);
+  }
+
+  public void setWidth(UIObject obj, int px) {
+    Assert.notNull(obj);
+    setWidth(obj.getElement(), px);
+  }
+
+  public void setWidth(Element el, int px) {
+    Assert.notNull(el);
+    setWidth(el.getStyle(), px);
+  }
+
+  public void setWidth(Style st, int px) {
+    Assert.notNull(st);
+    st.setWidth(px, Unit.PX);
+  }
+
   public void start() {
+  }
+
+  public void zeroLeft(UIObject obj) {
+    Assert.notNull(obj);
+    zeroLeft(obj.getElement());
+  }
+
+  public void zeroLeft(Element el) {
+    Assert.notNull(el);
+    zeroLeft(el.getStyle());
+  }
+
+  public void zeroLeft(Style st) {
+    Assert.notNull(st);
+    st.setPropertyPx(STYLE_LEFT, 0);
   }
 
   public void zeroTop(UIObject obj) {

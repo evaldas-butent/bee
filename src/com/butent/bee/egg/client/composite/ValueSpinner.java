@@ -70,7 +70,7 @@ public class ValueSpinner extends Absolute implements RequiresResize {
           
           if (!BeeUtils.same(oldText, newText)) {
             long value = BeeUtils.isEmpty(newText) ? spinner.getMin() : BeeUtils.toLong(newText);
-            updateValue(value);
+            spinner.updateValue(value);
           }
           break;
       }
@@ -120,7 +120,7 @@ public class ValueSpinner extends Absolute implements RequiresResize {
 
       if (!BeeUtils.same(oldText, newText)) {
         long value = BeeUtils.toLong(newText);
-        updateValue(value);
+        spinner.updateValue(value);
       }
     }
   };
@@ -129,7 +129,7 @@ public class ValueSpinner extends Absolute implements RequiresResize {
     public void onMouseWheel(MouseWheelEvent event) {
       int z = event.getNativeEvent().getMouseWheelVelocityY();
       if (isEnabled() && z != 0) {
-        doStep(Integer.signum(z) < 0);
+        doStep(z < 0);
       }
     }
   };
@@ -219,28 +219,7 @@ public class ValueSpinner extends Absolute implements RequiresResize {
   }
   
   private void doStep(boolean incr) {
-    long v = parseValue();
-    
-    if (incr) {
-      if (v < spinner.getMin() || v >= spinner.getMax()) {
-        v = spinner.getMin();
-      } else {
-        v += spinner.getMinStep();
-        if (v > spinner.getMax()) {
-          v = spinner.getMax();
-        }
-      }
-    } else {
-      if (v <= spinner.getMin() || v > spinner.getMax()) {
-        v = spinner.getMax();
-      } else {
-        v -= spinner.getMinStep();
-        if (v < spinner.getMin()) {
-          v = spinner.getMin();
-        }
-      }
-    }
-    updateValue(v);
+    spinner.doStep(parseValue(), incr);
   }
 
   private long getSourceValue() {
@@ -290,12 +269,6 @@ public class ValueSpinner extends Absolute implements RequiresResize {
       ((HasLongValue) source).setValue(value);
     } else if (source != null) {
       source.setValue((int) value);
-    }
-  }
-  
-  private void updateValue(long value) {
-    if (spinner.isValid(value)) {
-      spinner.setValue(value, true);
     }
   }
 }
