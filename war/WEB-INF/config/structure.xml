@@ -15,7 +15,7 @@
       <BeeField name="Scale" type="INTEGER" />
       <BeeField name="NotNull" type="BOOLEAN" />
       <BeeField name="Unique" type="BOOLEAN" />
-      <BeeField name="Table" type="LONG" notNull="true" relation="bee_Tables" actionOnDelete="CASCADE" />
+      <BeeField name="Table" type="LONG" notNull="true" relation="bee_Tables" cascade="true" />
       <BeeKey name="FieldName" fields="FieldName" />
       <BeeKey name="TableField" fields="Table, FieldName" unique="true" />
     </BeeStructure>
@@ -24,12 +24,13 @@
     <BeeStructure>
       <BeeField name="Country" type="STRING" precision="100" notNull="true" unique="true" />
       <BeeField name="Area" type="NUMERIC" precision="10" scale="2" />
+      <BeeField name="SeaPort" type="LONG" relation="Cities" />
       <BeeField name="Currency" type="STRING" precision="50" unique="true" />
     </BeeStructure>
     <BeeExtended>
       <BeeField name="Language" type="STRING" precision="30" />
       <BeeField name="Anthem" type="STRING" precision="30" unique="true" />
-      <BeeField name="Capital" type="LONG" relation="Cities" />
+      <BeeField name="Capital" type="LONG" relation="Cities" cascade="true" />
       <BeeKey name="Language" fields="Language" />
     </BeeExtended><!--
     <BeeExtensions>

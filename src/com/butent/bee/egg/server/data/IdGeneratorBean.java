@@ -1,6 +1,7 @@
 package com.butent.bee.egg.server.data;
 
 import com.butent.bee.egg.shared.Assert;
+import com.butent.bee.egg.shared.data.BeeRowSet;
 import com.butent.bee.egg.shared.sql.BeeConstants.Keywords;
 import com.butent.bee.egg.shared.sql.IsCondition;
 import com.butent.bee.egg.shared.sql.IsQuery;
@@ -49,20 +50,23 @@ public class IdGeneratorBean {
 
         SqlSelect ss = new SqlSelect();
         ss.addFields(ID_TABLE, ID_LAST).addFrom(ID_TABLE).setWhere(wh);
+        BeeRowSet rs = qs.getData(ss);
 
-        long lastId = qs.getSingleRow(ss).getLong(ID_LAST);
-        if (entry.getValue()[LAST_ID_INDEX] == lastId) {
-          String idFld = sys.getIdName(source);
+        if (rs.getRowCount() == 1) {
+          long lastId = rs.getRow(0).getLong(ID_LAST);
 
-          ss = new SqlSelect();
-          ss.addMax(source, idFld).addFrom(source);
+          if (entry.getValue()[LAST_ID_INDEX] == lastId) {
+            String idFld = sys.getIdName(source);
 
-          lastId = qs.getSingleRow(ss).getLong(idFld);
+            ss = new SqlSelect();
+            ss.addMax(source, idFld).addFrom(source);
 
-          SqlUpdate su = new SqlUpdate(ID_TABLE);
-          su.addConstant(ID_LAST, lastId).setWhere(wh);
+            lastId = qs.getSingleRow(ss).getLong(idFld);
 
-          qs.updateData(su);
+            SqlUpdate su = new SqlUpdate(ID_TABLE);
+            su.addConstant(ID_LAST, lastId).setWhere(wh);
+            qs.updateData(su);
+          }
         }
       }
     }

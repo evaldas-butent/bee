@@ -115,9 +115,10 @@ public class BeeTable {
     private final boolean notNull;
     private final boolean unique;
     private final String relation;
+    private final boolean cascade;
 
     private BeeStructure(String name, DataTypes type, int precision, int scale,
-        boolean notNull, boolean unique, String relation) {
+        boolean notNull, boolean unique, String relation, boolean cascade) {
       Assert.notEmpty(name);
       Assert.notEmpty(type);
 
@@ -128,6 +129,7 @@ public class BeeTable {
       this.notNull = notNull;
       this.unique = unique;
       this.relation = relation;
+      this.cascade = cascade;
     }
 
     public String getName() {
@@ -152,6 +154,10 @@ public class BeeTable {
 
     public DataTypes getType() {
       return type;
+    }
+
+    public boolean isCascade() {
+      return cascade;
     }
 
     public boolean isNotNull() {
@@ -224,10 +230,10 @@ public class BeeTable {
   }
 
   BeeTable addField(String name, DataTypes type, int precision, int scale,
-      boolean notNull, boolean unique, String relation) {
+      boolean notNull, boolean unique, String relation, boolean cascade) {
 
     fields.put(name,
-        new BeeStructure(name, type, precision, scale, notNull, unique, relation));
+        new BeeStructure(name, type, precision, scale, notNull, unique, relation, cascade));
     return this;
   }
 

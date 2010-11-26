@@ -640,7 +640,7 @@ public class JdbcUtils {
       col.setCatalog(rsmd.getCatalogName(idx));
       col.setTable(rsmd.getTableName(idx));
 
-      col.setName(rsmd.getColumnName(idx));
+      col.setName(rsmd.getColumnLabel(idx)); // TODO: ???
       col.setType(rsmd.getColumnType(idx));
       col.setTypeName(rsmd.getColumnTypeName(idx));
       col.setClazz(rsmd.getColumnClassName(idx));

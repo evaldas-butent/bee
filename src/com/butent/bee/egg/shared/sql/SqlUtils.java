@@ -65,6 +65,10 @@ public class SqlUtils {
     return createIndex(true, table, name, fields);
   }
 
+  public static IsQuery dropForeignKey(String table, String name) {
+    return new SqlCommand(Keywords.DROP_FOREIGN, name(table), name(name));
+  }
+
   public static IsQuery dropTable(String table) {
     return new SqlCommand(Keywords.DROP_TABLE, name(table));
   }

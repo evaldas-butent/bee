@@ -20,12 +20,10 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -146,7 +144,9 @@ public class SystemBean {
   public void rebuildKeys(ResponseBuffer buff) {
     for (BeeTable tbl : dataCache.values()) {
       createKeys(tbl);
-      // createKeys(tbl.getExtTable());
+    }
+    for (BeeTable tbl : dataCache.values()) {
+      createForeignKeys(tbl);
     }
     buff.add("Recreate keys OK");
   }
@@ -157,58 +157,18 @@ public class SystemBean {
 
     for (BeeTable tbl : dataCache.values()) {
       createTable(tbl);
-      // createTable(tbl.getExtTable());
     }
     buff.add("Recreate structure OK");
   }
 
-  private int addFieldsFromXml(BeeTable table, NodeList node) {
-    int c = 0;
-
-    if (!BeeUtils.isEmpty(node.getLength())) {
-      NodeList fields = ((Element) node.item(0)).getElementsByTagName("BeeField");
-      c = fields.getLength();
-
-      for (int i = 0; i < c; i++) {
-        Element field = (Element) fields.item(i);
-
-        String name = field.getAttribute("name");
-        boolean unique = BeeUtils.toBoolean(field.getAttribute("unique"));
-        String relTable = field.getAttribute("relation");
-
-        table.addField(name,
-            DataTypes.valueOf(field.getAttribute("type")),
-            BeeUtils.toInt(field.getAttribute("precision")),
-            BeeUtils.toInt(field.getAttribute("scale")),
-            BeeUtils.toBoolean(field.getAttribute("notNull")),
-            unique, relTable);
-
-        if (unique) {
-          table.addUniqueKey(name);
-        }
-        if (!BeeUtils.isEmpty(relTable)) {
-          String action = field.getAttribute("actionOnDelete");
-
-          table.addForeignKey(name, relTable, getIdName(relTable),
-              BeeUtils.isEmpty(action) ? null : Keywords.valueOf(action));
-        }
-      }
-      NodeList keys = ((Element) node.item(0)).getElementsByTagName("BeeKey");
-
-      for (int i = 0; i < keys.getLength(); i++) {
-        Element key = (Element) keys.item(i);
-
-        boolean unique = BeeUtils.toBoolean(key.getAttribute("unique"));
-        String[] flds = BeeUtils.split(key.getAttribute("fields"), ",");
-
-        if (unique) {
-          table.addUniqueKey(key.getAttribute("name"), flds);
-        } else {
-          table.addKey(key.getAttribute("name"), flds);
-        }
+  private void createForeignKeys(BeeTable table) {
+    if (!BeeUtils.isEmpty(table)) {
+      for (BeeForeignKey key : table.getForeignKeys()) {
+        IsQuery index = SqlUtils.createForeignKey(key.getTable(), key.getName(),
+            key.getKeyField(), key.getRefTable(), key.getRefField(), key.getAction());
+        qs.updateData(index);
       }
     }
-    return c;
   }
 
   private void createKeys(BeeTable table) {
@@ -224,11 +184,6 @@ public class SystemBean {
         } else {
           index = SqlUtils.createIndex(tbl, key.getName(), key.getKeyFields());
         }
-        qs.updateData(index);
-      }
-      for (BeeForeignKey key : table.getForeignKeys()) {
-        index = SqlUtils.createForeignKey(tbl, key.getName(),
-            key.getKeyField(), key.getRefTable(), key.getRefField(), key.getAction());
         qs.updateData(index);
       }
     }
@@ -249,15 +204,17 @@ public class SystemBean {
   }
 
   private void dropTables() {
-    List<BeeTable> cache = new ArrayList<BeeTable>();
     for (BeeTable tbl : dataCache.values()) {
-      cache.add(tbl);
+      if (qs.tableExists(tbl.getName())) {
+        for (BeeForeignKey fld : tbl.getForeignKeys()) {
+          IsQuery drop = SqlUtils.dropForeignKey(fld.getTable(), fld.getName());
+          qs.updateData(drop);
+        }
+      }
     }
-    for (int i = cache.size() - 1; i >= 0; i--) {
-      String table = cache.get(i).getName();
-
-      if (qs.tableExists(table)) {
-        IsQuery drop = SqlUtils.dropTable(table);
+    for (String tbl : getTables()) {
+      if (qs.tableExists(tbl)) {
+        IsQuery drop = SqlUtils.dropTable(tbl);
         qs.updateData(drop);
       }
     }
@@ -293,35 +250,23 @@ public class SystemBean {
       for (int i = 0; i < tables.getLength(); i++) {
         Element table = (Element) tables.item(i);
 
-        BeeTable tbl = new BeeTable(table.getAttribute("name"),
-            table.getAttribute("idName"), table.getAttribute("lockName"));
+        String name = table.getAttribute("name");
+        String idName = table.getAttribute("idName");
+        String lockName = table.getAttribute("lockName");
 
-        addFieldsFromXml(tbl, table.getElementsByTagName("BeeStructure"));
+        BeeTable tbl = new BeeTable(name, idName, lockName);
+        initStructure(tbl, table.getElementsByTagName("BeeStructure"));
 
         if (tbl.isEmpty()) {
-          LogUtils.warning(logger, "Table", tbl.getName(), "has no fields defined");
+          LogUtils.warning(logger, "Table", name, "has no fields defined");
         } else {
-          tbl.addPrimaryKey(tbl.getIdName());
           c++;
-          dataCache.put(tbl.getName(), tbl);
-        }
-      }
-      for (int i = 0; i < tables.getLength(); i++) {
-        Element table = (Element) tables.item(i);
+          dataCache.put(name, tbl);
 
-        String name = table.getAttribute("name");
-        BeeTable tbl = getTable(name);
-
-        if (!BeeUtils.isEmpty(tbl)) {
-          String idName = tbl.getIdName();
-
-          BeeTable extTbl = new BeeTable(name + BeeTable.EXT_TABLE_SUFFIX,
-              idName, tbl.getLockName());
-
-          addFieldsFromXml(extTbl, table.getElementsByTagName("BeeExtended"));
+          BeeTable extTbl = new BeeTable(name + BeeTable.EXT_TABLE_SUFFIX, idName, lockName);
+          initStructure(extTbl, table.getElementsByTagName("BeeExtended"));
 
           if (!extTbl.isEmpty()) {
-            extTbl.addPrimaryKey(idName);
             extTbl.addForeignKey(idName, name, idName, Keywords.CASCADE);
             tbl.setExtTable(extTbl);
             c++;
@@ -329,9 +274,69 @@ public class SystemBean {
           }
         }
       }
+      initRelations();
     } else {
       LogUtils.warning(logger, "Node <BeeTables> is not found");
     }
     LogUtils.infoNow(logger, "Loaded", c, "tables descriptions from", path + resource);
+  }
+
+  private void initRelations() {
+    for (BeeTable tbl : dataCache.values()) {
+      for (BeeStructure fld : tbl.getFields()) {
+        String relTable = fld.getRelation();
+
+        if (!BeeUtils.isEmpty(relTable)) {
+          tbl.addForeignKey(fld.getName(), relTable, getIdName(relTable),
+              fld.isCascade() ? (fld.isNotNull() ? Keywords.CASCADE : Keywords.SET_NULL) : null);
+        }
+      }
+    }
+  }
+
+  private int initStructure(BeeTable table, NodeList node) {
+    int c = 0;
+
+    if (!BeeUtils.isEmpty(node.getLength())) {
+      NodeList fields = ((Element) node.item(0)).getElementsByTagName("BeeField");
+      c = fields.getLength();
+
+      for (int i = 0; i < c; i++) {
+        Element field = (Element) fields.item(i);
+
+        String name = field.getAttribute("name");
+        boolean unique = BeeUtils.toBoolean(field.getAttribute("unique"));
+
+        table.addField(name,
+            DataTypes.valueOf(field.getAttribute("type")),
+            BeeUtils.toInt(field.getAttribute("precision")),
+            BeeUtils.toInt(field.getAttribute("scale")),
+            BeeUtils.toBoolean(field.getAttribute("notNull")),
+            unique, field.getAttribute("relation"),
+            BeeUtils.toBoolean(field.getAttribute("cascade")));
+
+        if (unique) {
+          table.addUniqueKey(name);
+        }
+      }
+      if (!table.isEmpty()) {
+        NodeList keys = ((Element) node.item(0)).getElementsByTagName("BeeKey");
+
+        for (int i = 0; i < keys.getLength(); i++) {
+          Element key = (Element) keys.item(i);
+
+          boolean unique = BeeUtils.toBoolean(key.getAttribute("unique"));
+          String[] flds = BeeUtils.split(key.getAttribute("fields"), ",");
+
+          if (unique) {
+            table.addUniqueKey(key.getAttribute("name"), flds);
+          } else {
+            table.addKey(key.getAttribute("name"), flds);
+          }
+        }
+        table.addPrimaryKey(table.getIdName());
+      }
+    }
+    return c;
   }
 }

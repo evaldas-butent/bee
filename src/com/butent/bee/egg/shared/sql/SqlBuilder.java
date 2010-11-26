@@ -66,13 +66,20 @@ public abstract class SqlBuilder {
       case SET_NULL:
         return "SET NULL";
 
-      case DROP_TABLE:
-        return "DROP TABLE " + params[0];
-
       case GET_TABLES:
         return new SqlSelect()
           .addFields("information_schema.tables", "table_name")
           .addFrom("information_schema.tables").getQuery(this);
+
+      case DROP_TABLE:
+        return "DROP TABLE " + params[0];
+
+      case DROP_FOREIGN:
+        StringBuilder drop = new StringBuilder("ALTER TABLE ")
+          .append(params[0])
+          .append(" DROP CONSTRAINT ")
+          .append(params[1]);
+        return drop.toString();
 
       default:
         Assert.unsupported("Unsupported keyword: " + option);

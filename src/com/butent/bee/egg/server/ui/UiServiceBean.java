@@ -2,7 +2,7 @@ package com.butent.bee.egg.server.ui;
 
 import com.butent.bee.egg.server.Assert;
 import com.butent.bee.egg.server.communication.ResponseBuffer;
-import com.butent.bee.egg.server.data.BeeTable.BeeForeignKey;
+import com.butent.bee.egg.server.data.BeeTable;
 import com.butent.bee.egg.server.data.BeeTable.BeeStructure;
 import com.butent.bee.egg.server.data.QueryServiceBean;
 import com.butent.bee.egg.server.data.SystemBean;
@@ -81,6 +81,26 @@ public class UiServiceBean {
         String msg = BeeUtils.concat(1, svc, "loader service not recognized");
         logger.warning(msg);
         buff.add(msg);
+      }
+    }
+  }
+
+  private void addRelation(SqlSelect ss, String tbl, BeeStructure fld) {
+    String relation = fld.getRelation();
+
+    if (!BeeUtils.isEmpty(relation)) {
+      String als = BeeUtils.randomString(3, 3, 'a', 'z');
+      BeeTable relTbl = sys.getTable(relation);
+      boolean addFrom = false;
+
+      for (BeeStructure relFld : relTbl.getFields()) {
+        if (relFld.isUnique()) {
+          addFrom = true;
+          ss.addField(als, relFld.getName(), fld.getName() + relFld.getName());
+        }
+      }
+      if (addFrom) {
+        ss.addFromLeft(relation, als, SqlUtils.join(tbl, fld.getName(), als, relTbl.getIdName()));
       }
     }
   }
@@ -243,24 +263,35 @@ public class UiServiceBean {
   }
 
   private void getTable(RequestInfo reqInfo, ResponseBuffer buff) {
-    String tbl = getXmlField(reqInfo, buff, "table_name");
+    String table = getXmlField(reqInfo, buff, "table_name");
+    String als = BeeUtils.randomString(3, 3, 'a', 'z');
 
     SqlSelect ss = new SqlSelect();
-    ss.addAllFields("t").addFrom(tbl, "t");
+    ss.addFrom(table, als);
 
-    if (sys.beeTable(tbl)) {
-      for (BeeForeignKey foreign : sys.getTable(tbl).getForeignKeys()) {
-        String refTbl = foreign.getRefTable();
+    if (sys.beeTable(table)) {
+      BeeTable tbl = sys.getTable(table);
 
-        ss.addFromLeft(refTbl,
-            SqlUtils.join("t", foreign.getKeyField(), refTbl, foreign.getRefField()));
+      for (BeeStructure fld : tbl.getFields()) {
+        ss.addFields(als, fld.getName());
+        addRelation(ss, als, fld);
+      }
+      ss.addFields(als, tbl.getLockName());
+      ss.addFields(als, tbl.getIdName());
 
-        for (BeeStructure field : sys.getFields(refTbl)) {
-          if (field.isUnique()) {
-            ss.addFields(refTbl, field.getName());
-          }
+      BeeTable extTbl = tbl.getExtTable();
+
+      if (!BeeUtils.isEmpty(extTbl)) {
+        String relation = extTbl.getName();
+        ss.addFromLeft(relation, SqlUtils.join(als, tbl.getIdName(), relation, extTbl.getIdName()));
+
+        for (BeeStructure extFld : extTbl.getFields()) {
+          ss.addFields(relation, extFld.getName());
+          addRelation(ss, relation, extFld);
         }
       }
+    } else {
+      ss.addAllFields(als);
     }
 
     BeeRowSet res = qs.getData(ss);
