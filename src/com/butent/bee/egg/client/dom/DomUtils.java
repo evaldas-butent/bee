@@ -70,6 +70,8 @@ public class DomUtils {
   public static final String TAG_DIV = "div";
   public static final String TAG_INPUT = "input";
   public static final String TAG_LABEL = "label";
+  public static final String TAG_METER = "meter";
+  public static final String TAG_PROGRESS = "progress";
   public static final String TAG_SPAN = "span";
   public static final String TAG_SVG = "svg";
   public static final String TAG_TABLE = "table";
@@ -87,29 +89,32 @@ public class DomUtils {
   public static final String OPTION_ID_PREFIX = "opt";
   public static final String TABLE_CELL_ID_PREFIX = "td";
 
-  public static final String ATTRIBUTE_TYPE = "type";
-  public static final String ATTRIBUTE_MAX = "max";
-  public static final String ATTRIBUTE_MIN = "min";
-  public static final String ATTRIBUTE_STEP = "step";
-
+  public static final String ATTRIBUTE_CELL_PADDING = "cellPadding";
+  public static final String ATTRIBUTE_CELL_SPACING = "cellSpacing";
+  public static final String ATTRIBUTE_CHECKED = "checked";
+  public static final String ATTRIBUTE_COL_SPAN = "colSpan";
   public static final String ATTRIBUTE_DRAGGABLE = "draggable";
+  public static final String ATTRIBUTE_HIGH = "high";
+  public static final String ATTRIBUTE_LOW = "low";
+  public static final String ATTRIBUTE_MIN = "min";
+  public static final String ATTRIBUTE_MAX = "max";
+  public static final String ATTRIBUTE_OPTIMUM = "optimum";
+  public static final String ATTRIBUTE_POSITION = "position";
+  public static final String ATTRIBUTE_ROW_SPAN = "rowSpan";
+  public static final String ATTRIBUTE_STEP = "step";
+  public static final String ATTRIBUTE_TYPE = "type";
+  public static final String ATTRIBUTE_VALUE = "value";
 
-  private static final String ATTRIBUTE_SERVICE = "data-svc";
-  private static final String ATTRIBUTE_STAGE = "data-stg";
+  public static final String ATTRIBUTE_SERVICE = "data-svc";
+  public static final String ATTRIBUTE_STAGE = "data-stg";
+
+  public static final String VALUE_TRUE = "true";
 
   private static final String DEFAULT_NAME_PREFIX = "b";
 
   private static final String ID_SEPARATOR = "-";
 
   private static final int MAX_GENERATIONS = 100;
-
-  private static final String CELL_PADDING = "cellPadding";
-  private static final String CELL_SPACING = "cellSpacing";
-  private static final String CHECKED = "checked";
-  private static final String COL_SPAN = "colSpan";
-  private static final String ROW_SPAN = "rowSpan";
-  private static final String VALUE = "value";
-  private static final String TRUE = "true";
   
   private static int idCounter = 0;
 
@@ -475,7 +480,7 @@ public class DomUtils {
 
   public static int getCellPadding(Element elem) {
     if (isTableElement(elem)) {
-      return elem.getPropertyInt(CELL_PADDING);
+      return elem.getPropertyInt(ATTRIBUTE_CELL_PADDING);
     } else {
       return 0;
     }
@@ -483,7 +488,7 @@ public class DomUtils {
 
   public static int getCellSpacing(Element elem) {
     if (isTableElement(elem)) {
-      return elem.getPropertyInt(CELL_SPACING);
+      return elem.getPropertyInt(ATTRIBUTE_CELL_SPACING);
     } else {
       return 0;
     }
@@ -514,7 +519,7 @@ public class DomUtils {
   
   public static int getColSpan(Element elem) {
     if (isTableCellElement(elem)) {
-      return elem.getPropertyInt(COL_SPAN);
+      return elem.getPropertyInt(ATTRIBUTE_COL_SPAN);
     } else {
       return 0;
     }
@@ -684,7 +689,7 @@ public class DomUtils {
   
   public static int getRowSpan(Element elem) {
     if (isTableCellElement(elem)) {
-      return elem.getPropertyInt(ROW_SPAN);
+      return elem.getPropertyInt(ATTRIBUTE_ROW_SPAN);
     } else {
       return 0;
     }
@@ -855,7 +860,7 @@ public class DomUtils {
   
   public static int getValueInt(Element elem) {
     Assert.notNull(elem);
-    return elem.getPropertyInt(VALUE);
+    return elem.getPropertyInt(ATTRIBUTE_VALUE);
   }
 
   public static int getWidgetCount(HasWidgets container) {
@@ -907,7 +912,7 @@ public class DomUtils {
     InputElement input = getInputElement(elem);
     Assert.notNull(input, "input element not found");
 
-    return input.getPropertyBoolean(CHECKED);
+    return input.getPropertyBoolean(ATTRIBUTE_CHECKED);
   }
 
   public static boolean isDirection(String s) {
@@ -1041,7 +1046,7 @@ public class DomUtils {
 
   public static void setDraggable(Element elem) {
     Assert.notNull(elem);
-    elem.setAttribute(ATTRIBUTE_DRAGGABLE, TRUE);
+    elem.setAttribute(ATTRIBUTE_DRAGGABLE, VALUE_TRUE);
   }
   
   public static Widget setHeight(Widget w, int height) {

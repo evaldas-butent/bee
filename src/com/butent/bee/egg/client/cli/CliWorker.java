@@ -9,6 +9,7 @@ import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.dom.client.StyleInjector;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.client.DOM;
+import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -22,6 +23,7 @@ import com.butent.bee.egg.client.dom.DomUtils;
 import com.butent.bee.egg.client.dom.Features;
 import com.butent.bee.egg.client.event.EventUtils;
 import com.butent.bee.egg.client.grid.FlexTable;
+import com.butent.bee.egg.client.layout.Absolute;
 import com.butent.bee.egg.client.layout.Direction;
 import com.butent.bee.egg.client.layout.Flow;
 import com.butent.bee.egg.client.layout.Split;
@@ -32,6 +34,8 @@ import com.butent.bee.egg.client.utils.JreEmulation;
 import com.butent.bee.egg.client.widget.Audio;
 import com.butent.bee.egg.client.widget.BeeLabel;
 import com.butent.bee.egg.client.widget.Canvas;
+import com.butent.bee.egg.client.widget.Meter;
+import com.butent.bee.egg.client.widget.Progress;
 import com.butent.bee.egg.client.widget.Svg;
 import com.butent.bee.egg.client.widget.Video;
 import com.butent.bee.egg.shared.Assert;
@@ -465,6 +469,161 @@ public class CliWorker {
     BeeKeeper.getUi().updateActivePanel(table, true);
   }
 
+  public static void showMeter(String[] arr) {
+    if (!Features.supportsElementMeter()) {
+      BeeGlobal.showError("meter element not supported");
+      return;
+    }
+
+    double min = 0;
+    double max = 100;
+    double value = 30;
+    double low = 20;
+    double high = 80;
+    double optimum = 50;
+    
+    String pars = "<>vlho";
+    int p = -1, j;
+    String s, z;
+    char c;
+    
+    for (int i = 1; i < arr.length; i++) {
+      s = arr[i].toLowerCase();
+      c = s.charAt(0);
+      j = pars.indexOf(c);
+      
+      if (j >= 0) {
+        z = s.substring(1);
+        p = j;
+      } else {
+        z = s;
+        p++;
+      }
+      
+      switch (p) {
+        case 0:
+          min = BeeUtils.toDouble(z);
+          break;
+        case 1:
+          max = BeeUtils.toDouble(z);
+          break;
+        case 2:
+          value = BeeUtils.toDouble(z);
+          break;
+        case 3:
+          low = BeeUtils.toDouble(z);
+          break;
+        case 4:
+          high = BeeUtils.toDouble(z);
+          break;
+        case 5:
+          optimum = BeeUtils.toDouble(z);
+          break;
+      }
+    }
+    
+    if (max <= min) {
+      max = min + 100;
+    }
+    value = BeeUtils.limit(value, min, max);
+    low = BeeUtils.limit(low, min, max);
+    high = BeeUtils.limit(high, low, max);
+    optimum = BeeUtils.limit(optimum, min, max);
+    
+    FlexTable table = new FlexTable();
+    table.setCellPadding(3);
+    table.setCellSpacing(3);
+    table.setBorderWidth(1);
+    
+    int r = 0;
+    table.setHTML(r, 0, "min");
+    table.setHTML(r, 1, BeeUtils.toString(min));
+    r++;
+    table.setHTML(r, 0, "max");
+    table.setHTML(r, 1, BeeUtils.toString(max));
+    r++;
+    table.setHTML(r, 0, "low");
+    table.setHTML(r, 1, BeeUtils.toString(low));
+    r++;
+    table.setHTML(r, 0, "high");
+    table.setHTML(r, 1, BeeUtils.toString(high));
+    r++;
+    table.setHTML(r, 0, "optimum");
+    table.setHTML(r, 1, BeeUtils.toString(optimum));
+
+    r++;
+    table.setHTML(r, 0, BeeUtils.toString(value));
+    table.setWidget(r, 1, new Meter(min, max, value, low, high, optimum));
+    
+    for (double i = min; i <= max; i += (max - min) / 10) {
+      r++;
+      table.setHTML(r, 0, BeeUtils.toString(i));
+      table.setWidget(r, 1, new Meter(min, max, i, low, high, optimum));
+    }
+    BeeKeeper.getUi().updateActivePanel(table, true);
+  }
+
+  public static void showProgress(String[] arr) {
+    if (!Features.supportsElementProgress()) {
+      BeeGlobal.showError("progress element not supported");
+      return;
+    }
+    
+    final int steps;
+    int millis = 250;
+    
+    double max = 100;
+    double value = 0;
+    
+    String s = BeeUtils.arrayGetQuietly(arr, 1);
+    if (BeeUtils.isDigit(s)) {
+      steps = BeeUtils.toInt(s);
+    } else {
+      steps = 100;
+    }
+    s = BeeUtils.arrayGetQuietly(arr, 2);
+    if (BeeUtils.isDigit(s)) {
+      millis = BeeUtils.toInt(s);
+    }
+    s = BeeUtils.arrayGetQuietly(arr, 3);
+    if (BeeUtils.isDigit(s)) {
+      max = BeeUtils.toDouble(s);
+    }
+    
+    Absolute panel = new Absolute();
+    panel.add(new BeeLabel("indeterminate"), 10, 8);
+    panel.add(new Progress(), 120, 10);
+
+    panel.add(new BeeLabel(BeeUtils.addName("steps", steps)), 10, 36);
+    panel.add(new BeeLabel(BeeUtils.addName("millis", millis)), 10, 53);
+    panel.add(new BeeLabel(BeeUtils.addName("max", max)), 10, 70);
+    
+    final Progress prg = new Progress(max, value);
+    panel.add(prg, 120, 40);
+    final BeeLabel lbl = new BeeLabel();
+    panel.add(lbl, 160, 70);
+    
+    Timer timer = new Timer() {
+      @Override
+      public void run() {
+        double v = prg.getValue();
+        double x = prg.getMax();
+
+        v += x / steps;
+        if (v > x) {
+          v = 0;
+        }
+        
+        prg.setValue(v);
+        lbl.setText(BeeUtils.concat(3, BeeUtils.round(v, 1), 
+            BeeUtils.round(prg.getPosition(), 3)));
+      }
+    };
+    timer.scheduleRepeating(millis);
+    
+    BeeKeeper.getUi().updateActivePanel(panel, true);
+  }
+  
   public static void showProperties(String v, String[] arr) {
     if (BeeUtils.length(arr) < 2) {
       BeeGlobal.sayHuh(v);

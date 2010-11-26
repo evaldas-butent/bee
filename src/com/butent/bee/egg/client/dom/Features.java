@@ -947,7 +947,7 @@ public class Features {
   }
 
   private static boolean testElementMeter() {
-    return BeeJs.isIn("value", DomUtils.createElement("meter"));
+    return BeeJs.isIn("value", DomUtils.createElement(DomUtils.TAG_METER));
   }
 
   private static boolean testElementOutput() {
@@ -955,7 +955,7 @@ public class Features {
   }
 
   private static boolean testElementProgress() {
-    return BeeJs.isIn("value", DomUtils.createElement("progress"));
+    return BeeJs.isIn("value", DomUtils.createElement(DomUtils.TAG_PROGRESS));
   }
 
   private static boolean testElementTime() {

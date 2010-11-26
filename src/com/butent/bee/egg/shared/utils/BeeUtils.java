@@ -977,6 +977,39 @@ public class BeeUtils {
 
     return len;
   }
+  
+  public static double limit(double x, double min, double max) {
+    if (!isDouble(x)) {
+      if (isDouble(min)) {
+        return min;
+      }
+      if (isDouble(max)) {
+        return max;
+      }
+      return x;
+    }
+    
+    double z;
+    if (isDouble(min) && isDouble(max)) {
+      z = Math.min(min, max);
+      if (x < z) {
+        return z;
+      }
+      z = Math.max(min, max);
+      if (x > z) {
+        return z;
+      }
+      return x;
+    }
+    
+    if (isDouble(min)) {
+      return Math.max(x, min);
+    }
+    if (isDouble(max)) {
+      return Math.min(x, max);
+    }
+    return x;
+  }
 
   public static <T> T listGetQuietly(List<? extends T> lst, int idx) {
     if (isIndex(lst, idx)) {

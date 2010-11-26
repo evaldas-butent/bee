@@ -82,10 +82,14 @@ public class CliWidget extends BeeTextBox {
       CliWorker.doLog(arr);
     } else if (z.equals("menu")) {
       CliWorker.doMenu(arr);
+    } else if (z.equals("meter")) {
+      CliWorker.showMeter(arr);
     } else if (z.equals("md5")) {
       CliWorker.digest(v);
     } else if (BeeUtils.inList(z, "p", "prop")) {
       CliWorker.showProperties(v, arr);
+    } else if (z.equals("progress")) {
+      CliWorker.showProgress(arr);
     } else if (z.equals("rpc")) {
       CliWorker.showRpc();
     } else if (z.equals("sb")) {
@@ -130,5 +134,4 @@ public class CliWidget extends BeeTextBox {
 
     return false;
   }
-
 }
