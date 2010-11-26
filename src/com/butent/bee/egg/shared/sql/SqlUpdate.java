@@ -29,9 +29,7 @@ public class SqlUpdate extends HasFrom<SqlUpdate> {
 
   public SqlUpdate addExpression(String field, IsExpression value) {
     IsExpression[] updateEntry = new IsExpression[2];
-    updateEntry[FIELD_INDEX] = SqlUtils.field(
-        BeeUtils.ifString(target.getAlias(), (String) target.getSource()),
-        field);
+    updateEntry[FIELD_INDEX] = SqlUtils.name(field);
     updateEntry[VALUE_INDEX] = value;
 
     if (BeeUtils.isEmpty(updates)) {

@@ -6,4 +6,9 @@ class MySqlBuilder extends SqlBuilder {
   protected String sqlQuote(String value) {
     return "`" + value + "`";
   }
+
+  @Override
+  String getCreate(SqlCreate sc, boolean paramMode) {
+    return super.getCreate(sc, paramMode) + " ENGINE=InnoDB";
+  }
 }

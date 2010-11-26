@@ -42,27 +42,28 @@ public class IdGeneratorBean {
 
   @PreDestroy
   public void destroy() {
-    for (Entry<String, long[]> entry : idCache.entrySet()) {
-      String source = entry.getKey();
-      IsCondition wh = SqlUtils.equal(ID_TABLE, ID_KEY, source);
+    if (qs.tableExists(ID_TABLE)) {
+      for (Entry<String, long[]> entry : idCache.entrySet()) {
+        String source = entry.getKey();
+        IsCondition wh = SqlUtils.equal(ID_TABLE, ID_KEY, source);
 
-      SqlSelect ss = new SqlSelect();
-      ss.addFields(ID_TABLE, ID_LAST).addFrom(ID_TABLE).setWhere(wh);
+        SqlSelect ss = new SqlSelect();
+        ss.addFields(ID_TABLE, ID_LAST).addFrom(ID_TABLE).setWhere(wh);
 
-      long lastId = qs.getSingleRow(ss).getLong(ID_LAST);
+        long lastId = qs.getSingleRow(ss).getLong(ID_LAST);
+        if (entry.getValue()[LAST_ID_INDEX] == lastId) {
+          String idFld = sys.getIdName(source);
 
-      if (entry.getValue()[LAST_ID_INDEX] == lastId) {
-        String idFld = sys.getIdName(source);
+          ss = new SqlSelect();
+          ss.addMax(source, idFld).addFrom(source);
 
-        ss = new SqlSelect();
-        ss.addMax(source, idFld).addFrom(source);
+          lastId = qs.getSingleRow(ss).getLong(idFld);
 
-        lastId = qs.getSingleRow(ss).getLong(idFld);
+          SqlUpdate su = new SqlUpdate(ID_TABLE);
+          su.addConstant(ID_LAST, lastId).setWhere(wh);
 
-        SqlUpdate su = new SqlUpdate(ID_TABLE);
-        su.addConstant(ID_LAST, lastId).setWhere(wh);
-
-        qs.updateData(su);
+          qs.updateData(su);
+        }
       }
     }
     idCache.clear();
@@ -89,7 +90,8 @@ public class IdGeneratorBean {
       sc.addLong(ID_LAST, Keywords.NOT_NULL);
       qs.updateData(sc);
 
-      IsQuery index = SqlUtils.createUniqueIndex(ID_TABLE, ID_KEY);
+      IsQuery index = SqlUtils.createPrimaryKey(ID_TABLE,
+          BeeTable.PRIMARY_KEY_PREFIX + ID_TABLE, ID_KEY);
       qs.updateData(index);
     } else {
       SqlUpdate su = new SqlUpdate(ID_TABLE);

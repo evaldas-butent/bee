@@ -14,7 +14,7 @@ class PostgreSqlBuilder extends SqlBuilder {
   protected Object sqlType(DataTypes type, int precision, int scale) {
     switch (type) {
       case BOOLEAN:
-        return "TINYINT";
+        return "NUMERIC(1)";
       case DOUBLE:
         return "DOUBLE PRECISION";
       default:
