@@ -16,6 +16,7 @@ import com.butent.bee.egg.client.BeeGlobal;
 import com.butent.bee.egg.client.BeeKeeper;
 import com.butent.bee.egg.client.communication.ParameterList;
 import com.butent.bee.egg.client.communication.RpcList;
+import com.butent.bee.egg.client.composite.SliderBar;
 import com.butent.bee.egg.client.data.JsData;
 import com.butent.bee.egg.client.dom.DomUtils;
 import com.butent.bee.egg.client.dom.Features;
@@ -501,6 +502,70 @@ public class CliWorker {
       BeeKeeper.getUi().showGrid(BeeKeeper.getRpc().getRpcList().getDefaultInfo(),
           RpcList.DEFAULT_INFO_COLUMNS);
     }
+  }
+  
+  public static void showSlider(String[] arr) {
+    double value = 0;
+    double min = 0;
+    double max = 100;
+    double step = 1;
+    int labels = 5;
+    int ticks = 10;
+    
+    String pars = "v<>slt";
+    int p = -1, j;
+    String s, z;
+    char c;
+    
+    for (int i = 1; i < arr.length; i++) {
+      s = arr[i].toLowerCase();
+      c = s.charAt(0);
+      j = pars.indexOf(c);
+      
+      if (j >= 0) {
+        z = s.substring(1);
+        p = j;
+      } else {
+        z = s;
+        p++;
+      }
+      
+      switch (p) {
+        case 0:
+          value = BeeUtils.toDouble(z);
+          break;
+        case 1:
+          min = BeeUtils.toDouble(z);
+          break;
+        case 2:
+          max = BeeUtils.toDouble(z);
+          break;
+        case 3:
+          step = BeeUtils.toDouble(z);
+          break;
+        case 4:
+          labels = BeeUtils.toInt(z);
+          break;
+        case 5:
+          ticks = BeeUtils.toInt(z);
+          break;
+      }
+    }
+    
+    if (max <= min) {
+      max = min + 100;
+    }
+    if (step <= 0 || step > (max - min) / 2) {
+      step = (max - min) / 10;
+    }
+    if (value < min) {
+      value = min;
+    }
+    if (value > max) {
+      value = max;
+    }
+    
+    BeeKeeper.getUi().updateActivePanel(new SliderBar(value, min, max, step, labels, ticks));
   }
 
   public static void showStack() {

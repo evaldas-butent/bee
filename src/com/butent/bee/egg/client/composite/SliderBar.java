@@ -1,31 +1,33 @@
 package com.butent.bee.egg.client.composite;
 
+import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Style.Display;
+import com.google.gwt.dom.client.Style.Position;
 import com.google.gwt.dom.client.Style.Visibility;
 import com.google.gwt.event.dom.client.KeyCodes;
-import com.google.gwt.event.logical.shared.ValueChangeEvent;
-import com.google.gwt.event.logical.shared.ValueChangeHandler;
-import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Timer;
-import com.google.gwt.user.client.ui.FocusPanel;
-import com.google.gwt.user.client.ui.HasValue;
 import com.google.gwt.user.client.ui.RequiresResize;
 
 import com.butent.bee.egg.client.BeeGlobal;
 import com.butent.bee.egg.client.BeeKeeper;
 import com.butent.bee.egg.client.BeeStyle;
+import com.butent.bee.egg.client.dom.DomUtils;
+import com.butent.bee.egg.client.layout.Focus;
 import com.butent.bee.egg.client.widget.BeeImage;
+import com.butent.bee.egg.shared.utils.BeeUtils;
+import com.butent.bee.egg.shared.utils.ValueUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class SliderBar extends FocusPanel implements RequiresResize, HasValue<Double> {
+public class SliderBar extends Focus implements RequiresResize {
   public static interface LabelFormatter {
-    String formatLabel(SliderBar slider, double value);
+    String formatLabel(double value);
   }
 
   private class KeyTimer extends Timer {
@@ -64,63 +66,71 @@ public class SliderBar extends FocusPanel implements RequiresResize, HasValue<Do
   private String styleNameLabel = "bee-SliderBar-label";
   private String styleNameTick = "bee-SliderBar-tick";
 
-  private String styleNameSliding = "sliding";  
+  private String styleNameSliding = "sliding";
+  
+  private Object source;
 
   private double curValue;
+  private double maxValue;
+  private double minValue;
+  private double stepSize;
 
   private BeeImage knobImage;
 
-  private KeyTimer keyTimer = new KeyTimer();
-
+  private int numLabels = 0;
   private List<Element> labelElements = new ArrayList<Element>();
-
   private LabelFormatter labelFormatter;
 
-  private Element lineElement;
-
-  private int lineLeftOffset = 0;
-
-  private double maxValue;
-  private double minValue;
-
-  private int numLabels = 0;
   private int numTicks = 0;
+  private List<Element> tickElements = new ArrayList<Element>();
+
+  private Element lineElement;
+  private int lineLeftOffset = 0;
 
   private boolean slidingKeyboard = false;
   private boolean slidingMouse = false;
 
   private boolean enabled = true;
 
-  private double stepSize;
+  private KeyTimer keyTimer = new KeyTimer();
 
-  private List<Element> tickElements = new ArrayList<Element>();
-
-  public SliderBar(double minValue, double maxValue) {
-    this(minValue, maxValue, null);
+  public SliderBar(Object src, double min, double max, double step) {
+    this(src, min, max, step, 0, 0);
   }
 
-  public SliderBar(double minValue, double maxValue, LabelFormatter labelFormatter) {
+  public SliderBar(Object src, double min, double max, double step, int labels, int ticks) {
     super();
-    this.minValue = minValue;
-    this.maxValue = maxValue;
-    setLabelFormatter(labelFormatter);
+    this.source = src;
+    this.curValue = ValueUtils.getDouble(src);
+
+    this.minValue = min;
+    this.maxValue = max;
+    this.stepSize = step;
+    
+    this.numLabels = labels;
+    this.numTicks = ticks;
 
     setStyleName(styleNameShell);
 
     lineElement = DOM.createDiv();
     getElement().appendChild(lineElement);
     lineElement.setClassName(styleNameLine);
+    DomUtils.createId(lineElement, "line");
+    lineElement.getStyle().setPosition(Position.ABSOLUTE);
 
     knobImage = new BeeImage(knobDefault());
     Element knobElement = knobImage.getElement();
     getElement().appendChild(knobElement);
     knobElement.setClassName(styleNameKnob);
+    DomUtils.createId(knobElement, "knob");
+    knobElement.getStyle().setPosition(Position.ABSOLUTE);
 
-    sinkEvents(Event.MOUSEEVENTS | Event.KEYEVENTS | Event.FOCUSEVENTS);
+    sinkEvents(Event.MOUSEEVENTS | Event.ONMOUSEWHEEL | Event.KEYEVENTS | Event.FOCUSEVENTS);
   }
 
-  public HandlerRegistration addValueChangeHandler(ValueChangeHandler<Double> handler) {
-    return addHandler(handler, ValueChangeEvent.getType());
+  @Override
+  public void createId() {
+    DomUtils.createId(this, "slider");
   }
 
   public double getCurrentValue() {
@@ -157,10 +167,6 @@ public class SliderBar extends FocusPanel implements RequiresResize, HasValue<Do
     } else {
       return maxValue - minValue;
     }
-  }
-
-  public Double getValue() {
-    return curValue;
   }
 
   public boolean isEnabled() {
@@ -286,27 +292,24 @@ public class SliderBar extends FocusPanel implements RequiresResize, HasValue<Do
   }
 
   public void onResize() {
-    int width = getElement().getClientWidth();
-    int lineWidth = lineElement.getOffsetWidth();
-    lineLeftOffset = (width / 2) - (lineWidth / 2);
-    BeeKeeper.getStyle().setLeft(lineElement, lineLeftOffset);
-
-    drawLabels();
-    drawTicks();
-    drawKnob();
+    redraw();
   }
 
   public void redraw() {
     if (isAttached()) {
-      onResize();
+      int width = getElement().getClientWidth();
+      int lineWidth = lineElement.getOffsetWidth();
+
+      lineLeftOffset = (width / 2) - (lineWidth / 2);
+      BeeKeeper.getStyle().setLeft(lineElement, lineLeftOffset);
+
+      drawLabels();
+      drawTicks();
+      drawKnob();
     }
   }
 
   public void setCurrentValue(double curValue) {
-    setCurrentValue(curValue, true);
-  }
-
-  public void setCurrentValue(double curValue, boolean fireEvent) {
     this.curValue = Math.max(minValue, Math.min(maxValue, curValue));
     double remainder = (this.curValue - minValue) % stepSize;
     this.curValue -= remainder;
@@ -317,9 +320,7 @@ public class SliderBar extends FocusPanel implements RequiresResize, HasValue<Do
 
     drawKnob();
     
-    if (fireEvent) {
-      ValueChangeEvent.fire(this, this.curValue);
-    }
+    source = ValueUtils.setDouble(source, this.curValue);
   }
 
   public void setEnabled(boolean enabled) {
@@ -365,14 +366,6 @@ public class SliderBar extends FocusPanel implements RequiresResize, HasValue<Do
     resetCurrentValue();
   }
 
-  public void setValue(Double value) {
-    setCurrentValue(value, false);
-  }
-
-  public void setValue(Double value, boolean fireEvent) {
-    setCurrentValue(value, fireEvent);
-  }
-
   public void shiftLeft(int numSteps) {
     setCurrentValue(getCurrentValue() - numSteps * stepSize);
   }
@@ -383,9 +376,9 @@ public class SliderBar extends FocusPanel implements RequiresResize, HasValue<Do
   
   protected String formatLabel(double value) {
     if (labelFormatter != null) {
-      return labelFormatter.formatLabel(this, value);
+      return labelFormatter.formatLabel(value);
     } else {
-      return (int) (10 * value) / 10.0 + "";
+      return BeeUtils.toString(BeeUtils.round(value, 1));
     }
   }
 
@@ -400,7 +393,13 @@ public class SliderBar extends FocusPanel implements RequiresResize, HasValue<Do
 
   @Override
   protected void onLoad() {
-    redraw();
+    Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+      @Override
+      public void execute() {
+        redraw();
+      }
+    });
+    super.onLoad();
   }
 
   private void drawKnob() {
@@ -411,6 +410,7 @@ public class SliderBar extends FocusPanel implements RequiresResize, HasValue<Do
     Element knobElement = knobImage.getElement();
     int lineWidth = lineElement.getOffsetWidth();
     int knobWidth = knobElement.getOffsetWidth();
+
     int knobLeftOffset = (int) (lineLeftOffset + (getKnobPercent() * lineWidth) - (knobWidth / 2));
     knobLeftOffset = Math.min(knobLeftOffset, lineLeftOffset + lineWidth - (knobWidth / 2) - 1);
     BeeKeeper.getStyle().setLeft(knobElement, knobLeftOffset);
@@ -420,15 +420,18 @@ public class SliderBar extends FocusPanel implements RequiresResize, HasValue<Do
     if (!isAttached()) {
       return;
     }
-
-    int lineWidth = lineElement.getOffsetWidth();
     if (numLabels > 0) {
+      int shellWidth = getElement().getClientWidth();
+      int lineWidth = lineElement.getOffsetWidth();
+      Element label;
+
       for (int i = 0; i <= numLabels; i++) {
-        Element label = null;
         if (i < labelElements.size()) {
           label = labelElements.get(i);
         } else {
           label = DOM.createDiv();
+          DomUtils.createId(label, "label");
+          label.getStyle().setPosition(Position.ABSOLUTE);
           label.getStyle().setDisplay(Display.NONE);
           label.setClassName(styleNameLabel);
           if (!enabled) {
@@ -444,11 +447,10 @@ public class SliderBar extends FocusPanel implements RequiresResize, HasValue<Do
         label.setInnerHTML(formatLabel(value));
 
         BeeKeeper.getStyle().zeroLeft(label);
-
         int labelWidth = label.getOffsetWidth();
         int labelLeftOffset = lineLeftOffset + (lineWidth * i / numLabels) - (labelWidth / 2);
-        labelLeftOffset = Math.min(labelLeftOffset, lineLeftOffset + lineWidth - labelWidth);
-        labelLeftOffset = Math.max(labelLeftOffset, lineLeftOffset);
+        labelLeftOffset = Math.min(labelLeftOffset, shellWidth - labelWidth - 1);
+        labelLeftOffset = Math.max(labelLeftOffset, 1);
         BeeKeeper.getStyle().setLeft(label, labelLeftOffset);
         label.getStyle().setVisibility(Visibility.VISIBLE);
       }
@@ -470,20 +472,24 @@ public class SliderBar extends FocusPanel implements RequiresResize, HasValue<Do
 
     int lineWidth = lineElement.getOffsetWidth();
     if (numTicks > 0) {
+      Element tick;
       for (int i = 0; i <= numTicks; i++) {
-        Element tick = null;
         if (i < tickElements.size()) {
           tick = tickElements.get(i);
         } else {
           tick = DOM.createDiv();
+          DomUtils.createId(tick, "tick");
+          tick.getStyle().setPosition(Position.ABSOLUTE);
           tick.getStyle().setDisplay(Display.NONE);
+          tick.setClassName(styleNameTick);
+
           getElement().appendChild(tick);
           tickElements.add(tick);
         }
-        tick.setClassName(styleNameTick);
         if (!enabled) {
           BeeKeeper.getStyle().addStyleDependentName(tick, BeeStyle.NAME_DISABLED);
         }
+
         tick.getStyle().setVisibility(Visibility.HIDDEN);
         tick.getStyle().clearDisplay();
         int tickWidth = tick.getOffsetWidth();
@@ -517,7 +523,7 @@ public class SliderBar extends FocusPanel implements RequiresResize, HasValue<Do
       int lineWidth = lineElement.getOffsetWidth();
       int lineLeft = lineElement.getAbsoluteLeft();
       double percent = (double) (x - lineLeft) / lineWidth * 1.0;
-      setCurrentValue(getTotalRange() * percent + minValue, true);
+      setCurrentValue(getTotalRange() * percent + minValue);
     }
   }
 

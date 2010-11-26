@@ -689,6 +689,10 @@ public class BeeUtils {
     }
     return ok;
   }
+  
+  public static boolean isDouble(double x) {
+    return !Double.isNaN(x) && !Double.isInfinite(x);
+  }
 
   public static boolean isDouble(String s) {
     if (isEmpty(s)) {
@@ -795,6 +799,10 @@ public class BeeUtils {
     }
   }
 
+  public static boolean isInt(double x) {
+    return isDouble(x) && x > Integer.MIN_VALUE && x < Integer.MAX_VALUE;
+  }
+  
   public static boolean isInt(String s) {
     if (isEmpty(s)) {
       return false;
@@ -811,11 +819,15 @@ public class BeeUtils {
     return ok;
   }
 
+  public static boolean isLong(double x) {
+    return isDouble(x) && x > Long.MIN_VALUE && x < Long.MAX_VALUE;
+  }
+
   public static boolean isPositive(Object x) {
     if (x instanceof Integer) {
       return (Integer) x > 0;
     } else if (x instanceof Number) {
-      return Double.compare(((Number) x).doubleValue(), Double.valueOf(0.0d)) > 0;
+      return Double.compare(((Number) x).doubleValue(), Double.valueOf(BeeConst.DOUBLE_ZERO)) > 0;
     } else {
       return false;
     }
@@ -846,7 +858,7 @@ public class BeeUtils {
       return false;
     }
   }
-
+  
   public static boolean isZero(BigDecimal x) {
     return x == BigDecimal.ZERO;
   }
@@ -860,11 +872,11 @@ public class BeeUtils {
   }
 
   public static boolean isZero(double x) {
-    return x == Double.valueOf(0.0d);
+    return x == Double.valueOf(BeeConst.DOUBLE_ZERO);
   }
 
   public static boolean isZero(float x) {
-    return x == Float.valueOf(0.0f);
+    return x == Float.valueOf(BeeConst.FLOAT_ZERO);
   }
 
   public static boolean isZero(int x) {
@@ -877,7 +889,7 @@ public class BeeUtils {
 
   public static boolean isZero(Object x) {
     if (x instanceof Number) {
-      return ((Number) x).doubleValue() == Double.valueOf(0.0d);
+      return ((Number) x).doubleValue() == Double.valueOf(BeeConst.DOUBLE_ZERO);
     } else {
       return false;
     }
@@ -1163,6 +1175,37 @@ public class BeeUtils {
     Arrays.fill(arr, z);
     return new String(arr);
   }
+  
+  public static double round(double x, int dec) {
+    Assert.isScale(dec);
+    if (Double.isInfinite(x) || Double.isNaN(x)) {
+      return BeeConst.DOUBLE_ZERO;
+    }
+
+    if (dec == 0) {
+      if (x > BeeConst.DOUBLE_ZERO) {
+        return Math.floor(x) + Math.round(x - Math.floor(x));
+      }
+      if (x < BeeConst.DOUBLE_ZERO) {
+        return Math.ceil(x) + Math.round(x - Math.ceil(x));
+      }
+      return BeeConst.DOUBLE_ZERO;
+    }
+
+    double z = Math.pow(10, dec);
+    double y = x * z;
+    if (isLong(y)) {
+      return Math.round(y) / z;
+    }
+    
+    if (x > BeeConst.DOUBLE_ZERO) {
+      return Math.floor(x) + round(x - Math.floor(x), dec);
+    }
+    if (x < BeeConst.DOUBLE_ZERO) {
+      return Math.ceil(x) + round(x - Math.ceil(x), dec);
+    }
+    return BeeConst.DOUBLE_ZERO;
+  }
 
   public static boolean same(String s1, String s2) {
     if (s1 == null) {
@@ -1263,28 +1306,28 @@ public class BeeUtils {
 
   public static double toDouble(String s) {
     if (isEmpty(s)) {
-      return Double.NaN;
+      return BeeConst.DOUBLE_ZERO;
     }
     double d;
 
     try {
       d = Double.parseDouble(s.trim());
     } catch (NumberFormatException ex) {
-      d = Double.NaN;
+      d = BeeConst.DOUBLE_ZERO;
     }
     return d;
   }
 
   public static float toFloat(String s) {
     if (isEmpty(s)) {
-      return 0.0f;
+      return BeeConst.FLOAT_ZERO;
     }
     float i;
 
     try {
       i = Float.parseFloat(s.trim());
     } catch (NumberFormatException ex) {
-      i = 0.0f;
+      i = BeeConst.FLOAT_ZERO;
     }
     return i;
   }
@@ -1336,6 +1379,10 @@ public class BeeUtils {
 
   public static String toString(boolean b) {
     return b ? BeeConst.STRING_TRUE : BeeConst.STRING_FALSE;
+  }
+
+  public static String toString(double x) {
+    return Double.toString(x);
   }
 
   public static String toString(int x) {
@@ -1563,12 +1610,11 @@ public class BeeUtils {
     } else if (x instanceof BigDecimal) {
       return (T) BigDecimal.ZERO;
     } else if (x instanceof Float) {
-      return (T) Float.valueOf(0.0f);
+      return (T) Float.valueOf(BeeConst.FLOAT_ZERO);
     } else if (x instanceof Double) {
-      return (T) Double.valueOf(0.0f);
+      return (T) Double.valueOf(BeeConst.DOUBLE_ZERO);
     } else {
       return (T) Integer.valueOf(0);
     }
   }
-
 }

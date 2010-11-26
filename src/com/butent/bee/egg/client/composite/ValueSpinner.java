@@ -13,16 +13,15 @@ import com.google.gwt.user.client.ui.TextBox;
 import com.butent.bee.egg.client.dom.DomUtils;
 import com.butent.bee.egg.client.layout.Absolute;
 import com.butent.bee.egg.shared.BeeConst;
-import com.butent.bee.egg.shared.HasIntValue;
-import com.butent.bee.egg.shared.HasLongValue;
 import com.butent.bee.egg.shared.utils.BeeUtils;
+import com.butent.bee.egg.shared.utils.ValueUtils;
 
 public class ValueSpinner extends Absolute implements RequiresResize {
   private static final String STYLENAME_DEFAULT = "bee-ValueSpinner";
 
   private SpinnerBase spinner;
   private TextBox valueBox;
-  private HasIntValue source;
+  private Object source;
 
   private SpinnerListener spinnerListener = new SpinnerListener() {
     public void onSpinning(long value) {
@@ -134,24 +133,23 @@ public class ValueSpinner extends Absolute implements RequiresResize {
     }
   };
   
-  public ValueSpinner(HasIntValue source) {
+  public ValueSpinner(Object source) {
     this(source, 0, 0, 1, 99, false);
   }
 
-  public ValueSpinner(HasIntValue source, int min, int max) {
+  public ValueSpinner(Object source, int min, int max) {
     this(source, min, max, 1, 99, true);
   }
 
-  public ValueSpinner(HasIntValue source, int min, int max, int step) {
+  public ValueSpinner(Object source, int min, int max, int step) {
     this(source, min, max, step, step, true);
   }
 
-  public ValueSpinner(HasIntValue source, int min, int max, int minStep, int maxStep) {
+  public ValueSpinner(Object source, int min, int max, int minStep, int maxStep) {
     this(source, min, max, minStep, maxStep, true);
   }
 
-  public ValueSpinner(HasIntValue source, int min, int max, int minStep, int maxStep,
-      boolean constrained) {
+  public ValueSpinner(Object source, int min, int max, int minStep, int maxStep, boolean constr) {
     super();
     setStylePrimaryName(STYLENAME_DEFAULT);
 
@@ -168,8 +166,8 @@ public class ValueSpinner extends Absolute implements RequiresResize {
     }
     add(valueBox);
 
-    spinner = new SpinnerBase(spinnerListener, getSourceValue(), min, max, minStep, maxStep,
-        constrained);
+    spinner = new SpinnerBase(spinnerListener, getSourceValue(), 
+        min, max, minStep, maxStep, constr);
     add(spinner.getIncrementArrow());
     add(spinner.getDecrementArrow());
   }
@@ -223,13 +221,7 @@ public class ValueSpinner extends Absolute implements RequiresResize {
   }
 
   private long getSourceValue() {
-    if (source == null) {
-      return 0;
-    } else if (source instanceof HasLongValue) {
-      return ((HasLongValue) source).getLong();
-    } else {
-      return source.getInt();
-    }
+    return ValueUtils.getLong(source);
   }
 
   private long parseValue() {
@@ -265,10 +257,6 @@ public class ValueSpinner extends Absolute implements RequiresResize {
   }
 
   private void setSourceValue(long value) {
-    if (source instanceof HasLongValue) {
-      ((HasLongValue) source).setValue(value);
-    } else if (source != null) {
-      source.setValue((int) value);
-    }
+    source = ValueUtils.setLong(source, value);
   }
 }

@@ -94,6 +94,8 @@ public class CliWidget extends BeeTextBox {
           BeeUtils.addName("height", DomUtils.getScrollbarHeight()));
     } else if (z.startsWith("serv") || z.startsWith("sys")) {
       BeeKeeper.getRpc().invoke("systemInfo");
+    } else if (z.equals("slider")) {
+      CliWorker.showSlider(arr);
     } else if (z.equals("stack")) {
       CliWorker.showStack();
     } else if (z.startsWith("stor")) {

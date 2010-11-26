@@ -5,7 +5,7 @@ import com.butent.bee.egg.shared.utils.BeeUtils;
 import java.util.ArrayList;
 import java.util.List;
 
-public class BeeField implements HasLongValue, HasStringValue, Transformable {
+public class BeeField implements HasDoubleValue, HasStringValue, Transformable {
   private String caption = null;
   private int type = BeeType.TYPE_UNKNOWN;
   private String value = null;
@@ -55,6 +55,10 @@ public class BeeField implements HasLongValue, HasStringValue, Transformable {
   public String getCaption() {
     return caption;
   }
+  
+  public double getDouble() {
+    return BeeUtils.toDouble(getValue());
+  }
 
   public int getInt() {
     return BeeUtils.toInt(getValue());
@@ -98,6 +102,10 @@ public class BeeField implements HasLongValue, HasStringValue, Transformable {
 
   public void setType(int type) {
     this.type = type;
+  }
+  
+  public void setValue(double value) {
+    setValue(BeeUtils.toString(value));
   }
 
   public void setValue(int value) {

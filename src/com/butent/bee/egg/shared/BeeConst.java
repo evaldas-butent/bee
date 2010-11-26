@@ -112,8 +112,12 @@ public class BeeConst {
 
   public static final String HTML_NBSP = "&nbsp;";
 
-  private static String home = SERVER;
+  public static final int MAX_SCALE = 20;
+  public static final double DOUBLE_ZERO = 0.0d; 
+  public static final float FLOAT_ZERO = 0.0f; 
 
+  private static String home = SERVER;
+  
   public static boolean isClient() {
     return home.equals(CLIENT);
   }

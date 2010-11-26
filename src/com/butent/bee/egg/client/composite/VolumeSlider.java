@@ -8,15 +8,14 @@ import com.butent.bee.egg.client.BeeGlobal;
 import com.butent.bee.egg.client.dom.DomUtils;
 import com.butent.bee.egg.client.event.EventUtils;
 import com.butent.bee.egg.client.layout.Absolute;
-import com.butent.bee.egg.shared.HasIntValue;
-import com.butent.bee.egg.shared.HasLongValue;
 import com.butent.bee.egg.shared.utils.BeeUtils;
+import com.butent.bee.egg.shared.utils.ValueUtils;
 
 public class VolumeSlider extends Absolute implements RequiresResize {
   private class VolumeSpinner extends SpinnerBase {
-    private VolumeSpinner(SpinnerListener spinner, long value, long min, long max, int minStep,
-        int maxStep, boolean constrained) {
-      super(spinner, value, min, max, minStep, maxStep, constrained);
+    private VolumeSpinner(SpinnerListener spinnerListener, long value, long min, long max,
+        int minStep, int maxStep, boolean constrained) {
+      super(spinnerListener, value, min, max, minStep, maxStep, constrained);
     }
 
     @Override
@@ -62,7 +61,7 @@ public class VolumeSlider extends Absolute implements RequiresResize {
 
   private VolumeSpinner spinner;
   private ProgressBar progressBar;
-  private HasIntValue source;
+  private Object source;
   
   private int spacing = 5;
   private int padding = 1;
@@ -70,34 +69,23 @@ public class VolumeSlider extends Absolute implements RequiresResize {
   private SpinnerListener listener = new SpinnerListener() {
     public void onSpinning(long value) {
       progressBar.setProgress(value);
-      if (source instanceof HasLongValue) {
-        ((HasLongValue) source).setValue(value);
-      } else if (source != null) {
-        source.setValue((int) value);
-      }
+      source = ValueUtils.setLong(source, value);
     }
   };
 
-  public VolumeSlider(HasIntValue source, long min, long max) {
+  public VolumeSlider(Object source, long min, long max) {
     this(source, min, max, 1, 5);
   }
 
-  public VolumeSlider(HasIntValue source, long min, long max, int step) {
+  public VolumeSlider(Object source, long min, long max, int step) {
     this(source, min, max, step, step);
   }
 
-  public VolumeSlider(HasIntValue source, long min, long max, int minStep, int maxStep) {
+  public VolumeSlider(Object source, long min, long max, int minStep, int maxStep) {
     setStyleName("bee-VolumeSlider");
-
-    long value;
-    if (source == null) {
-      value = 0;
-    } else if (source instanceof HasLongValue) {
-      value = ((HasLongValue) source).getLong();
-    } else {
-      value = source.getInt();
-    }
-
+    
+    this.source = source;
+    long value = ValueUtils.getLong(source);
     progressBar = new ProgressBar(min, max, value);
     spinner = new VolumeSpinner(listener, value, min, max, minStep, maxStep, true);
 

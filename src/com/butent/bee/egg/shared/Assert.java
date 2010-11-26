@@ -93,11 +93,9 @@ public class Assert {
     int n = col.size();
 
     if (n <= 0) {
-      throw new BeeRuntimeException(ASSERTION_FAILED + "index " + idx
-          + ", collection empty");
+      throw new BeeRuntimeException(ASSERTION_FAILED + "index " + idx + ", collection empty");
     } else if (idx >= n) {
-      throw new BeeRuntimeException(ASSERTION_FAILED + "index " + idx
-          + " must be < " + n);
+      throw new BeeRuntimeException(ASSERTION_FAILED + "index " + idx + " must be < " + n);
     }
   }
 
@@ -118,8 +116,7 @@ public class Assert {
       throw new BeeRuntimeException(ASSERTION_FAILED + "index " + idx
           + " references empty object");
     } else if (idx >= n) {
-      throw new BeeRuntimeException(ASSERTION_FAILED + "index " + idx
-          + " must be < " + n);
+      throw new BeeRuntimeException(ASSERTION_FAILED + "index " + idx + " must be < " + n);
     }
   }
 
@@ -160,11 +157,21 @@ public class Assert {
     }
   }
 
+  public static void isScale(int x) {
+    isPositive(x, ASSERTION_FAILED + "(" + x + ") scale must be >= 0 and <= "
+        + BeeConst.MAX_SCALE);
+  }
+  
+  public static void isScale(int x, String msg) {
+    if (x < 0 || x > BeeConst.MAX_SCALE) {
+      throw new BeeRuntimeException(msg);
+    }
+  }
+
   public static void isString(Object obj) {
     notNull(obj);
     if (!(obj instanceof String)) {
-      throw new ArgumentTypeException(obj.getClass().getName(),
-          String.class.getName());
+      throw new ArgumentTypeException(obj.getClass().getName(), String.class.getName());
     }
   }
 
@@ -179,8 +186,7 @@ public class Assert {
   }
 
   public static void nonNegative(int x) {
-    nonNegative(x, ASSERTION_FAILED + "(" + x
-        + ") argument must be non-negative");
+    nonNegative(x, ASSERTION_FAILED + "(" + x + ") argument must be non-negative");
   }
 
   public static void nonNegative(int x, String msg) {
@@ -192,8 +198,7 @@ public class Assert {
   public static void noNullElements(String message, Object... obj) {
     for (int i = 0; i < obj.length; i++) {
       if (obj[i] == null) {
-        throw new BeeRuntimeException(BeeUtils.concat(1, message,
-            BeeUtils.bracket(i)));
+        throw new BeeRuntimeException(BeeUtils.concat(1, message, BeeUtils.bracket(i)));
       }
     }
   }
@@ -213,8 +218,7 @@ public class Assert {
   }
 
   public static void notNull(Object object) {
-    notNull(object, ASSERTION_FAILED
-        + "this argument is required; it must not be null");
+    notNull(object, ASSERTION_FAILED + "this argument is required; it must not be null");
   }
 
   public static void notNull(Object object, String message) {
