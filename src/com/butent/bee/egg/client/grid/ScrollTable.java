@@ -1,6 +1,7 @@
 package com.butent.bee.egg.client.grid;
 
 import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Style.Cursor;
 import com.google.gwt.dom.client.Style.Position;
 import com.google.gwt.dom.client.TableCellElement;
@@ -92,10 +93,8 @@ import java.util.List;
 import java.util.Set;
 
 public class ScrollTable<RowType> extends ComplexPanel implements
-    HasId, HasScrollHandlers, HasTableDefinition<RowType>,
-    HasPageCountChangeHandlers,
-    HasPageLoadHandlers, HasPageChangeHandlers, HasPagingFailureHandlers,
-    RequiresResize {
+    HasId, HasScrollHandlers, HasTableDefinition<RowType>, HasPageCountChangeHandlers,
+    HasPageLoadHandlers, HasPageChangeHandlers, HasPagingFailureHandlers, RequiresResize {
 
   public static enum ColumnResizePolicy {
     DISABLED, SINGLE_CELL, MULTI_CELL
@@ -672,6 +671,13 @@ public class ScrollTable<RowType> extends ComplexPanel implements
   private int sortedRowIndex = -1;
 
   private Element sortedColumnWrapper = null;
+  
+  private ScheduledCommand redrawCommand = new ScheduledCommand() {
+    @Override
+    public void execute() {
+      redraw();
+    }
+  };
 
   @SuppressWarnings("unchecked")
   public ScrollTable(TableModel<RowType> tableModel,
@@ -1183,7 +1189,7 @@ public class ScrollTable<RowType> extends ComplexPanel implements
   }
 
   public void onResize() {
-    redraw();
+    Scheduler.get().scheduleDeferred(redrawCommand);
   }
 
   public void recalculateIdealColumnWidths() {

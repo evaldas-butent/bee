@@ -172,6 +172,10 @@ public class ValueSpinner extends Absolute implements RequiresResize {
     add(spinner.getDecrementArrow());
   }
 
+  public void addSpinnerListener(SpinnerListener listener) {
+    spinner.addSpinnerListener(listener);
+  }
+  
   @Override
   public void createId() {
     DomUtils.createId(this, "spin-container");
@@ -199,6 +203,10 @@ public class ValueSpinner extends Absolute implements RequiresResize {
 
   public void onResize() {
     setPositions();
+  }
+
+  public void removeSpinnerListener(SpinnerListener listener) {
+    spinner.removeSpinnerListener(listener);
   }
 
   public void setEnabled(boolean enabled) {

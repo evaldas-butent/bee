@@ -4,7 +4,6 @@ import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArrayString;
 
 public abstract class BeeJs {
-
   public static native void clearProperty(JavaScriptObject obj, String p) /*-{
     if (typeof(obj) != "object") {
       return;
@@ -13,8 +12,8 @@ public abstract class BeeJs {
       return;
     }
 
-    if (typeof(obj[p]) != 'undefined') {
-      obj[p] = undefined; 
+    if (typeof(obj[p]) != "undefined") {
+      obj[p] = undefined;
     }
   }-*/;
 
@@ -75,8 +74,7 @@ public abstract class BeeJs {
     }
   }-*/;
 
-  public static native JsArrayString getFunctions(JavaScriptObject obj,
-      String pattern) /*-{
+  public static native JsArrayString getFunctions(JavaScriptObject obj, String pattern) /*-{
     var arr = new Array();
     var i = 0;
     var v = null;
@@ -110,8 +108,7 @@ public abstract class BeeJs {
     return arr;
   }-*/;
 
-  public static native JsArrayString getProperties(JavaScriptObject obj,
-      String pattern) /*-{
+  public static native JsArrayString getProperties(JavaScriptObject obj, String pattern) /*-{
     var arr = new Array();
     var i = 0;
     var v = null;
@@ -162,6 +159,24 @@ public abstract class BeeJs {
     return typeof(obj);
   }-*/;
 
+  public static native boolean hasProperty(JavaScriptObject obj, String p) /*-{
+    var ok;
+
+    try {
+      if (p in obj) {
+        var tp = typeof(obj[p]);
+        ok = (tp != "function" && tp != "undefined");
+      } else {
+        ok = false;
+      }
+    }
+    catch (err) {
+      ok = false;
+    }
+
+    return ok;
+  }-*/;
+
   public static native boolean isEmpty(JavaScriptObject obj) /*-{
     if (obj == undefined || obj == null) {
     return true;
@@ -185,7 +200,7 @@ public abstract class BeeJs {
     var ok;
 
     try {
-      ok = typeof(obj[p]) == "function";
+      ok = (typeof(obj[p]) == "function");
     }
     catch (err) {
       ok = false;
@@ -197,7 +212,7 @@ public abstract class BeeJs {
   public static native boolean isIn(String p, JavaScriptObject obj) /*-{
     return p in obj;
   }-*/;
-  
+
   public static native String md5(String src) /*-{
     return $wnd.rstr2hex($wnd.rstr_md5($wnd.str2rstr_utf16be(src)));
   }-*/;
@@ -258,5 +273,4 @@ public abstract class BeeJs {
   public static native String transform(JavaScriptObject obj) /*-{
     return String(obj);
   }-*/;
-  
 }

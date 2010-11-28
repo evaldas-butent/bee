@@ -25,6 +25,7 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.egg.client.BeeKeeper;
 import com.butent.bee.egg.client.layout.Direction;
+import com.butent.bee.egg.client.utils.BeeJs;
 import com.butent.bee.egg.client.utils.JreEmulation;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeConst;
@@ -850,7 +851,27 @@ public class DomUtils {
     Assert.notEmpty(id);
     Element elem = DOM.getElementById(id);
     Assert.notNull(elem, "id " + id + " element not found");
-    return getValueInt(elem);
+    
+    if (BeeJs.hasProperty(elem, ATTRIBUTE_VALUE)) {
+      return getValueInt(elem);
+    }
+    
+    int value = 0;
+    boolean found = false;
+    
+    NodeList<Node> children = elem.getChildNodes();
+    int len = (children == null) ? 0 : children.getLength();
+    for (int i = 0; i < len; i++) {
+      Node nd = children.getItem(i);
+      if (Element.is(nd) && BeeJs.hasProperty(nd, ATTRIBUTE_VALUE)) {
+        value = getValueInt(Element.as(nd));
+        found = true;
+        break;
+      }
+    }
+
+    Assert.isTrue(found, "id " + id + " element has no value and no valuable children");
+    return value;
   }
   
   public static int getValueInt(UIObject obj) {
@@ -1105,6 +1126,14 @@ public class DomUtils {
   public static void setTabIndex(Widget w, int idx) {
     Assert.notNull(w);
     w.getElement().setTabIndex(idx);
+  }
+
+  public static void setText(String id, String text) {
+    Assert.notEmpty(id);
+    Element elem = DOM.getElementById(id);
+    Assert.notNull(elem, "id " + id + " element not found");
+
+    elem.setInnerText(text);
   }
 
   public static void setType(Widget w, String type) {

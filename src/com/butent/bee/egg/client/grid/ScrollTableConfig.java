@@ -5,6 +5,7 @@ import com.google.gwt.user.client.ui.PopupPanel.PositionCallback;
 import com.butent.bee.egg.client.BeeKeeper;
 import com.butent.bee.egg.client.BeeStyle;
 import com.butent.bee.egg.client.composite.RadioGroup;
+import com.butent.bee.egg.client.composite.SpinnerListener;
 import com.butent.bee.egg.client.composite.ValueSpinner;
 import com.butent.bee.egg.client.dialog.BeePopupPanel;
 import com.butent.bee.egg.client.dom.DomUtils;
@@ -25,13 +26,13 @@ public class ScrollTableConfig {
   private class ColumnRef {
     private String show;
     private String order;
-    private String currW;
+    private String curW;
     private String minW;
     private String prefW;
     private String maxW;
 
-    public String getCurrW() {
-      return currW;
+    public String getCurW() {
+      return curW;
     }
     public String getMaxW() {
       return maxW;
@@ -48,8 +49,8 @@ public class ScrollTableConfig {
     public String getShow() {
       return show;
     }
-    public void setCurrW(String currW) {
-      this.currW = currW;
+    public void setCurW(String curW) {
+      this.curW = curW;
     }
     public void setMaxW(String maxW) {
       this.maxW = maxW;
@@ -109,6 +110,46 @@ public class ScrollTableConfig {
       popup.setPopupPosition(x, y);
     }
   }
+  
+  private class WidthListener implements SpinnerListener {
+    private int src;
+    private String dst;
+
+    private WidthListener(int src, String dst) {
+      this.src = src;
+      this.dst = dst;
+    }
+
+    @Override
+    public void onSpinning(long value) {
+      int tot = 0, v;
+      String id = null;
+      
+      for (int i = 0; i < columnCount; i++) {
+        switch (src) {
+          case 0 :
+            id = cRef[i].getCurW();
+            break;
+          case 1 :
+            id = cRef[i].getMinW();
+            break;
+          case 2 :
+            id = cRef[i].getPrefW();
+            break;
+          case 3 :
+            id = cRef[i].getMaxW();
+            break;
+          default:
+            Assert.untouchable();
+        }
+        v = DomUtils.getValueInt(id);
+        if (v > 0) {
+          tot += v;
+        }
+      }
+      DomUtils.setText(dst, BeeUtils.toString(tot));
+    }
+  }
 
   private ScrollTable<?> scrollTable;
   private TableDefinition<?> tableDefinition;
@@ -127,6 +168,7 @@ public class ScrollTableConfig {
   private int dataWidth;
   
   private String cpId, csId, rpName, spName;
+  private String curTotId, minTotId, prefTotId, maxTotId;
   private ColumnRef[] cRef;
   
   private BeePopupPanel popup;
@@ -161,18 +203,31 @@ public class ScrollTableConfig {
     spName = BeeUtils.createUniqueName("sp");
     panel.add(new RadioGroup(spName, selectionPolicy, SelectionPolicy.values()), x + 100, y);
     y += 30 + ymrg;
+
+    int xCur = x + 200;
+    int xMin = xCur + 64;
+    int xPref = xMin + 64;
+    int xMax = xPref + 64;
     
-    panel.add(new BeeLabel("Column Count"), x, y);
-    panel.add(new BeeLabel(columnCount), x + 100, y);
-    panel.add(new BeeLabel("Data Width  " + dataWidth), x + 200, y);
-    panel.add(new BeeLabel("Available Width  " + availableWidth), x + 320, y);
+    panel.add(new BeeLabel("Count: " + columnCount + 
+        " Width: " + dataWidth + " / " + availableWidth), x, y);
+    curTotId = panel.append(new BeeLabel("cur"), xCur, y);
+    minTotId = panel.append(new BeeLabel("min"), xMin, y);
+    prefTotId = panel.append(new BeeLabel("pref"), xPref, y);
+    maxTotId = panel.append(new BeeLabel("tot"), xMax, y);
     y += 30;
     
     Absolute cp = new Absolute();
     int cx = xmrg;
     int cy = 0;
+    int ww = 60;
     
     cRef = new ColumnRef[columnCount];
+    ValueSpinner vs;
+    WidthListener curWidthListener = new WidthListener(0, curTotId);
+    WidthListener minWidthListener = new WidthListener(1, minTotId);
+    WidthListener prefWidthListener = new WidthListener(2, prefTotId);
+    WidthListener maxWidthListener = new WidthListener(3, maxTotId);
     
     for (int i = 0; i < columnCount; i++) {
       cRef[i] = new ColumnRef();
@@ -180,15 +235,22 @@ public class ScrollTableConfig {
       cRef[i].setOrder(cp.append(new ValueSpinner(i, 0, columnCount - 1), cx + 24, cy, 48));
       cp.append(new BeeLabel(scrollTable.getHeaderTable().getText(0, i)), cx + 80, cy, 116);
 
-      cRef[i].setCurrW(cp.append(new ValueSpinner(columnWidth[i].getCurrentWidth(),
-          1, 500), cx + 200, cy, 60));
-      cRef[i].setMinW(cp.append(new ValueSpinner(columnWidth[i].getMinimumWidth(),
-          1, 500), cx + 264, cy, 60));
-      cRef[i].setPrefW(cp.append(new ValueSpinner(columnWidth[i].getPreferredWidth(),
-          1, 500), cx + 328, cy, 60));
-      cRef[i].setMaxW(cp.append(new ValueSpinner(columnWidth[i].getMaximumWidth(),
-          -1, 500), cx + 392, cy, 60));
-      
+      vs = new ValueSpinner(columnWidth[i].getCurrentWidth(), 1, 500);
+      vs.addSpinnerListener(curWidthListener);
+      cRef[i].setCurW(cp.append(vs, xCur, cy, ww));
+
+      vs = new ValueSpinner(columnWidth[i].getMinimumWidth(), 1, 500);
+      vs.addSpinnerListener(minWidthListener);
+      cRef[i].setMinW(cp.append(vs, xMin, cy, ww));
+
+      vs = new ValueSpinner(columnWidth[i].getPreferredWidth(), 1, 500);
+      vs.addSpinnerListener(prefWidthListener);
+      cRef[i].setPrefW(cp.append(vs, xPref, cy, ww));
+
+      vs = new ValueSpinner(columnWidth[i].getMaximumWidth(), -1, 500);
+      vs.addSpinnerListener(maxWidthListener);
+      cRef[i].setMaxW(cp.append(vs, xMax, cy, ww));
+
       cy += 30;
     }
     
@@ -256,12 +318,12 @@ public class ScrollTableConfig {
   private boolean setupColumns() {
     boolean reload = false;
     boolean show;
-    int order, currW, minW, prefW, maxW; 
+    int order, curW, minW, prefW, maxW; 
     
     for (int i = 0; i < columnCount; i++) {
       show = DomUtils.isChecked(cRef[i].getShow());
       
-      currW = DomUtils.getValueInt(cRef[i].getCurrW());
+      curW = DomUtils.getValueInt(cRef[i].getCurW());
       minW = DomUtils.getValueInt(cRef[i].getMinW());
       prefW = DomUtils.getValueInt(cRef[i].getPrefW());
       maxW = DomUtils.getValueInt(cRef[i].getMaxW());
@@ -274,9 +336,9 @@ public class ScrollTableConfig {
         }
       }
       
-      if (currW > 0 && currW != columnWidth[i].getCurrentWidth()) {
-        BeeKeeper.getLog().info("col", i, "width", currW);
-        scrollTable.setColumnWidth(i, currW);
+      if (curW > 0 && curW != columnWidth[i].getCurrentWidth()) {
+        BeeKeeper.getLog().info("col", i, "width", curW);
+        scrollTable.setColumnWidth(i, curW);
       }
       
       if (minW > 0 && minW != columnWidth[i].getMinimumWidth()) {
@@ -350,5 +412,4 @@ public class ScrollTableConfig {
     
     return reload;
   }
-  
 }
