@@ -186,14 +186,14 @@ public class UiServiceBean {
       long id = row.getLong(idIndex);
 
       if (row.markedForDelete()) { // DELETE
+        SqlDelete sd = new SqlDelete(tbl.getName());
         IsCondition wh = SqlUtils.equal(tbl.getName(), tbl.getIdName(), id);
 
         if (lockIndex >= 0) {
           wh = SqlUtils.and(wh,
               SqlUtils.equal(tbl.getName(), tbl.getLockName(), row.getLong(lockIndex)));
         }
-        SqlDelete sd = new SqlDelete(tbl.getName()).setWhere(wh);
-        int res = qs.updateData(sd);
+        int res = qs.updateData(sd.setWhere(wh));
 
         if (res < 0) {
           err = "Error deleting data";
@@ -220,29 +220,28 @@ public class UiServiceBean {
         if (id < 0) {
           err = "Error inserting data";
           break;
-        } else {
-          c++;
-          row.setValue(idIndex, BeeUtils.transform(id));
+        }
+        c++;
+        row.setValue(idIndex, BeeUtils.transform(id));
 
-          if (!BeeUtils.isEmpty(extList)) {
-            si = new SqlInsert(extTbl.getName());
+        if (!BeeUtils.isEmpty(extList)) {
+          si = new SqlInsert(extTbl.getName());
 
-            for (Object[] entry : extList) {
-              si.addConstant((String) entry[0], entry[1]);
-            }
-            if (extLockIndex >= 0) {
-              long lock = System.currentTimeMillis();
-              si.addConstant(extTbl.getLockName(), lock);
-              row.setValue(extLockIndex, BeeUtils.transform(lock));
-            }
-            si.addConstant(extTbl.getIdName(), id);
-
-            if (qs.insertData(si) < 0) {
-              err = "Error inserting data";
-              break;
-            }
-            c++;
+          for (Object[] entry : extList) {
+            si.addConstant((String) entry[0], entry[1]);
           }
+          if (extLockIndex >= 0) {
+            long lock = System.currentTimeMillis();
+            si.addConstant(extTbl.getLockName(), lock);
+            row.setValue(extLockIndex, BeeUtils.transform(lock));
+          }
+          si.addConstant(extTbl.getIdName(), id);
+
+          if (qs.insertData(si) < 0) {
+            err = "Error inserting data";
+            break;
+          }
+          c++;
         }
 
       } else { // UPDATE
