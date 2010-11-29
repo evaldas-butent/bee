@@ -117,7 +117,7 @@ public class UiServiceBean {
     int extLockIndex = -1;
     String src = upd.getSource();
 
-    if (sys.isBeeTable(src)) {
+    if (sys.isTable(src)) {
       tbl = sys.getTable(src);
       extTbl = tbl.getExtTable();
 
@@ -396,7 +396,7 @@ public class UiServiceBean {
     SqlSelect ss = new SqlSelect();
     ss.addFrom(table, als);
 
-    if (sys.isBeeTable(table)) {
+    if (sys.isTable(table)) {
       BeeTable tbl = sys.getTable(table);
 
       for (BeeStructure fld : tbl.getFields()) {

@@ -15,6 +15,8 @@ class PostgreSqlBuilder extends SqlBuilder {
     switch (type) {
       case BOOLEAN:
         return "NUMERIC(1)";
+      case FLOAT:
+        return "REAL";
       case DOUBLE:
         return "DOUBLE PRECISION";
       default:

@@ -125,6 +125,8 @@ public abstract class SqlBuilder {
         return "INTEGER";
       case LONG:
         return "BIGINT";
+      case FLOAT:
+        return "FLOAT";
       case DOUBLE:
         return "DOUBLE";
       case NUMERIC:

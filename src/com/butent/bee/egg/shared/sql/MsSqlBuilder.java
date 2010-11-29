@@ -12,6 +12,8 @@ class MsSqlBuilder extends SqlBuilder {
   @Override
   protected Object sqlType(DataTypes type, int precision, int scale) {
     switch (type) {
+      case FLOAT:
+        return "REAL";
       case DOUBLE:
         return "FLOAT";
       default:

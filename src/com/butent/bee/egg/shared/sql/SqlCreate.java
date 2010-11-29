@@ -70,7 +70,7 @@ public class SqlCreate extends SqlQuery<SqlCreate> {
   }
 
   public SqlCreate addChar(String field, int precission, Keywords... options) {
-    Assert.nonNegative(precission);
+    Assert.isPositive(precission);
     return addField(field, DataTypes.CHAR, precission, 0, options);
   }
 
@@ -91,6 +91,12 @@ public class SqlCreate extends SqlQuery<SqlCreate> {
     return getReference();
   }
 
+  public SqlCreate addFloat(String field, int precission, int scale, Keywords... options) {
+    Assert.nonNegative(precission);
+    Assert.nonNegative(scale);
+    return addField(field, DataTypes.FLOAT, precission, scale, options);
+  }
+
   public SqlCreate addInt(String field, Keywords... options) {
     return addField(field, DataTypes.INTEGER, 0, 0, options);
   }
@@ -100,13 +106,13 @@ public class SqlCreate extends SqlQuery<SqlCreate> {
   }
 
   public SqlCreate addNumeric(String field, int precission, int scale, Keywords... options) {
-    Assert.nonNegative(precission);
+    Assert.isPositive(precission);
     Assert.nonNegative(scale);
     return addField(field, DataTypes.NUMERIC, precission, scale, options);
   }
 
   public SqlCreate addString(String field, int precission, Keywords... options) {
-    Assert.nonNegative(precission);
+    Assert.isPositive(precission);
     return addField(field, DataTypes.STRING, precission, 0, options);
   }
 

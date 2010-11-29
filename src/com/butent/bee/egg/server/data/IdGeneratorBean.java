@@ -74,7 +74,7 @@ public class IdGeneratorBean {
   }
 
   public long getId(String source) {
-    Assert.state(sys.isBeeTable(source));
+    Assert.state(sys.isTable(source));
 
     long[] ids = idCache.get(source);
 

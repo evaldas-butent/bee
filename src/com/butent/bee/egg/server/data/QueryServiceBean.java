@@ -89,7 +89,7 @@ public class QueryServiceBean {
         }
         String source = (String) from.getSource();
 
-        if (sys.isBeeTable(source)) {
+        if (sys.isTable(source)) {
           if (BeeUtils.isEmpty(mainSource)) {
             mainSource = source;
 
@@ -155,7 +155,7 @@ public class QueryServiceBean {
     long id = 0;
     String source = (String) si.getTarget().getSource();
 
-    if (BeeUtils.isEmpty(si.getSource()) && sys.isBeeTable(source)) {
+    if (BeeUtils.isEmpty(si.getSource()) && sys.isTable(source)) {
       String lockFld = sys.getLockName(source);
 
       if (!si.hasField(lockFld)) {

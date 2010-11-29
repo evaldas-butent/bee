@@ -148,12 +148,12 @@ public class SystemBean {
     return Collections.unmodifiableSet(dataCache.keySet());
   }
 
-  public boolean isBeeTable(String source) {
-    return !BeeUtils.isEmpty(source) && getTableNames().contains(source);
-  }
-
   public boolean isField(String table, String field) {
     return dataCache.get(table).isField(field);
+  }
+
+  public boolean isTable(String source) {
+    return !BeeUtils.isEmpty(source) && getTableNames().contains(source);
   }
 
   @Lock(LockType.WRITE)
@@ -220,12 +220,6 @@ public class SystemBean {
   }
 
   private void dropTables() {
-    Set<String> dbTables = qs.dbTables(null);
-
-    if (BeeUtils.isEmpty(dbTables)) {
-      return;
-    }
-
     for (String tbl : getTableNames()) {
       Set<String> dbForeignKeys = qs.dbForeignKeys(tbl);
 
@@ -237,7 +231,7 @@ public class SystemBean {
       }
     }
     for (String tbl : getTableNames()) {
-      if (dbTables.contains(tbl)) {
+      if (qs.isDbTable(tbl)) {
         IsQuery drop = SqlUtils.dropTable(tbl);
         qs.updateData(drop);
       }

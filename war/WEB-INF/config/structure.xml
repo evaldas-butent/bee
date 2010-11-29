@@ -57,5 +57,15 @@
       <BeeField name="Population" type="INTEGER" />
       <BeeField name="Country" type="LONG" relation="Countries" />
     </BeeStructure>
+    <BeeExtended>
+      <BeeField name="Boolean" type="BOOLEAN" />
+      <BeeField name="Integer" type="INTEGER" />
+      <BeeField name="Long" type="LONG" />
+      <BeeField name="Float" type="FLOAT" />
+      <BeeField name="Double" type="DOUBLE" />
+      <BeeField name="Numeric" type="NUMERIC" precision="10" scale="2" />
+      <BeeField name="Char" type="CHAR" precision="10" />
+      <BeeField name="String" type="STRING" precision="10" />
+    </BeeExtended>
   </BeeTable>
 </BeeTables>

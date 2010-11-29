@@ -27,7 +27,7 @@ public class BeeTable {
       Assert.notEmpty(refTable);
       Assert.notEmpty(refField);
 
-      this.name = FOREIGN_KEY_PREFIX + BeeUtils.concat("_", getTable(), keyField);
+      this.name = FOREIGN_KEY_PREFIX + BeeUtils.concat("_", getTable(), foreignKeyCounter++);
       this.keyField = keyField;
       this.refTable = refTable;
       this.refField = refField;
@@ -179,6 +179,7 @@ public class BeeTable {
   private final String name;
   private final String idName;
   private final String lockName;
+  private int foreignKeyCounter = 0;
 
   private Map<String, BeeStructure> fields = new LinkedHashMap<String, BeeStructure>();
   private List<BeeKey> keys = new ArrayList<BeeKey>();

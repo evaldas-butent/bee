@@ -6,6 +6,7 @@ import com.butent.bee.egg.shared.BeeSerializable;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 import com.butent.bee.egg.shared.utils.Codec;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -67,6 +68,14 @@ public class BeeRowSet extends AbstractData implements BeeSerializable {
       return data;
     }
 
+    public double getDouble(int col) {
+      return BeeUtils.toDouble(getValue(col));
+    }
+
+    public double getDouble(String colName) {
+      return getDouble(getColumnIndex(colName));
+    }
+
     public float getFloat(int col) {
       return BeeUtils.toFloat(getValue(col));
     }
@@ -95,20 +104,35 @@ public class BeeRowSet extends AbstractData implements BeeSerializable {
       return getLong(getColumnIndex(colName));
     }
 
+    public BigDecimal getNumber(int col) {
+      return new BigDecimal(getValue(col));
+    }
+
+    public BigDecimal getNumber(String colName) {
+      return getNumber(getColumnIndex(colName));
+    }
+
     public Object getOriginal(int col) {
       int type = getColumn(col).getType();
 
-      switch (type) { // TODO fix it
+      switch (type) {
+        case 2: // java.sql.Types.NUMERIC // TODO Kaip su Oracle, PgSql?
+        case 3: // java.sql.Types.DECIMAL
+          return getNumber(col);
         case 4: // java.sql.Types.INTEGER
           return getInt(col);
-        case 6: // java.sql.Types.FLOAT
-        case 7: // java.sql.Types.REAL
-        case 8: // java.sql.Types.DOUBLE
-          return getFloat(col);
-        case 16: // java.sql.Types.BOOLEAN
-          return getBoolean(col);
         case -5: // java.sql.Types.BIGINT
           return getLong(col);
+        case 6: // java.sql.Types.FLOAT
+        case 7: // java.sql.Types.REAL
+        case 100: // oracle.sql.Types.BINARY_FLOAT
+          return getFloat(col);
+        case 8: // java.sql.Types.DOUBLE
+        case 101: // oracle.sql.Types.BINARY_DOUBLE
+          return getDouble(col);
+        case -7: // java.sql.Types.BIT
+        case 16: // java.sql.Types.BOOLEAN
+          return getBoolean(col);
         default:
           return getValue(col);
       }
