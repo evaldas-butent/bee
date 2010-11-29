@@ -166,29 +166,6 @@ public class SqlSelect extends HasFrom<SqlSelect> {
   }
 
   // Getters ----------------------------------------------------------------
-  public String getFieldName(String src, String fld) {
-    Assert.notEmpty(src);
-    Assert.notEmpty(fld);
-    Assert.state(!isEmpty());
-
-    for (IsExpression[] field : getFields()) {
-      String xpr = field[FIELD_EXPR].getValue();
-
-      if (BeeUtils.same(xpr, src + ".*")) {
-        return fld;
-
-      } else if (BeeUtils.same(xpr, src + "." + fld)) {
-        IsExpression als = field[FIELD_ALIAS];
-
-        if (!BeeUtils.isEmpty(als)) {
-          return als.getValue();
-        }
-        return fld;
-      }
-    }
-    return null;
-  }
-
   public List<IsExpression[]> getFields() {
     return fieldList;
   }
@@ -201,53 +178,8 @@ public class SqlSelect extends HasFrom<SqlSelect> {
     return havingClause;
   }
 
-  public String getMainAlias() {
-    Assert.state(!isEmpty());
-
-    IsFrom from = getFrom().get(0);
-    Object src = from.getSource();
-
-    if (src instanceof String) {
-      return BeeUtils.ifString(from.getAlias(), (String) src);
-    }
-    return null;
-  }
-
-  public String getMainSource() {
-    Assert.state(!isEmpty());
-
-    Object src = getFrom().get(0).getSource();
-
-    if (src instanceof String) {
-      return (String) src;
-    }
-    return null;
-  }
-
   public List<Object[]> getOrderBy() {
     return orderList;
-  }
-
-  public List<String> getSources(String source) {
-    Assert.notEmpty(source);
-
-    List<String> lst = new ArrayList<String>();
-
-    if (!BeeUtils.isEmpty(getFrom())) {
-      for (IsFrom from : getFrom()) {
-        Object src = from.getSource();
-
-        if (src instanceof String && source.equals(src)) {
-          String als = from.getAlias();
-
-          if (BeeUtils.isEmpty(als)) {
-            als = source;
-          }
-          lst.add(als);
-        }
-      }
-    }
-    return lst;
   }
 
   @Override

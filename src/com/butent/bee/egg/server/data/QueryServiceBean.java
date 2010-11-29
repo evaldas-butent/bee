@@ -3,8 +3,11 @@ package com.butent.bee.egg.server.data;
 import com.butent.bee.egg.server.DataSourceBean;
 import com.butent.bee.egg.server.jdbc.JdbcUtils;
 import com.butent.bee.egg.shared.Assert;
+import com.butent.bee.egg.shared.data.BeeColumn;
 import com.butent.bee.egg.shared.data.BeeRowSet;
 import com.butent.bee.egg.shared.data.BeeRowSet.BeeRow;
+import com.butent.bee.egg.shared.sql.IsExpression;
+import com.butent.bee.egg.shared.sql.IsFrom;
 import com.butent.bee.egg.shared.sql.IsQuery;
 import com.butent.bee.egg.shared.sql.SqlBuilderFactory;
 import com.butent.bee.egg.shared.sql.SqlInsert;
@@ -17,6 +20,8 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.logging.Logger;
 
 import javax.ejb.EJB;
@@ -40,21 +45,100 @@ public class QueryServiceBean {
   @EJB
   SystemBean sys;
 
+  public Set<String> dbForeignKeys(String table) {
+    BeeRowSet res = (BeeRowSet) processSql(SqlUtils.dbForeignKeys(table).getQuery());
+
+    if (res.isEmpty()) {
+      return null;
+    }
+    Set<String> dbforeignKeys = new HashSet<String>();
+
+    for (BeeRow row : res.getRows()) {
+      dbforeignKeys.add(row.getValue(0));
+    }
+    return dbforeignKeys;
+  }
+
+  public Set<String> dbTables(String table) {
+    BeeRowSet res = (BeeRowSet) processSql(SqlUtils.dbTables(table).getQuery());
+
+    if (res.isEmpty()) {
+      return null;
+    }
+    Set<String> dbTables = new HashSet<String>();
+
+    for (BeeRow row : res.getRows()) {
+      dbTables.add(row.getValue(0));
+    }
+    return dbTables;
+  }
+
   public BeeRowSet getData(SqlSelect ss) {
     Assert.notNull(ss);
     Assert.state(!ss.isEmpty());
 
     BeeRowSet res = (BeeRowSet) processSql(ss.getQuery());
 
-    String src = ss.getMainSource();
-    res.setSource(src);
+    if (BeeUtils.isEmpty(ss.getUnion())) {
+      String mainSource = null;
+      String mainExt = null;
 
-    if (sys.beeTable(src)) {
-      String als = ss.getMainAlias();
-      res.setIdField(ss.getFieldName(als, sys.getIdName(src)));
-      res.setLockField(ss.getFieldName(als, sys.getLockName(src)));
+      for (IsFrom from : ss.getFrom()) {
+        if (!(from.getSource() instanceof String)) {
+          continue;
+        }
+        String source = (String) from.getSource();
+
+        if (sys.isBeeTable(source)) {
+          if (BeeUtils.isEmpty(mainSource)) {
+            mainSource = source;
+
+            if (!BeeUtils.isEmpty(sys.getExtTable(mainSource))) {
+              mainExt = sys.getExtTable(mainSource).getName();
+            }
+          } else if (BeeUtils.isEmpty(mainExt)) {
+            break;
+          } else if (!BeeUtils.same(source, mainExt)) {
+            continue;
+          } else {
+            mainExt = null;
+          }
+          Set<String> fieldList = sys.getFieldNames(source);
+          fieldList.add(sys.getIdName(source));
+          fieldList.add(sys.getLockName(source));
+          String alias = from.getAlias();
+
+          for (IsExpression[] pair : ss.getFields()) {
+            String xpr = pair[0].getValue();
+            IsExpression als = pair[1];
+
+            int idx = xpr.lastIndexOf(".");
+            if (idx <= 0) {
+              continue;
+            }
+            String tbl = BeeUtils.left(xpr, idx);
+            String fld = xpr.substring(idx + 1);
+
+            if (BeeUtils.same(tbl, BeeUtils.ifString(alias, source))) {
+              if (BeeUtils.same(fld, "*")) {
+                for (String field : fieldList) {
+                  BeeColumn col = res.getColumn(field);
+                  col.setFieldSource(mainSource);
+                  col.setFieldName(field);
+                }
+              } else {
+                if (fieldList.contains(fld)) {
+                  BeeColumn col = res.getColumn(BeeUtils.isEmpty(als) ? fld : als.getValue());
+                  col.setFieldSource(mainSource);
+                  col.setFieldName(fld);
+                }
+              }
+            }
+          }
+        }
+      }
+      res.setSource(mainSource);
     }
-
     return res;
   }
 
@@ -71,7 +155,7 @@ public class QueryServiceBean {
     long id = 0;
     String source = (String) si.getTarget().getSource();
 
-    if (BeeUtils.isEmpty(si.getSource()) && sys.beeTable(source)) {
+    if (BeeUtils.isEmpty(si.getSource()) && sys.isBeeTable(source)) {
       String lockFld = sys.getLockName(source);
 
       if (!si.hasField(lockFld)) {
@@ -88,6 +172,11 @@ public class QueryServiceBean {
       id = -1;
     }
     return id;
+  }
+
+  public boolean isDbTable(String table) {
+    Assert.notEmpty(table);
+    return !BeeUtils.isEmpty(dbTables(table));
   }
 
   public Object processSql(String sql) {
@@ -152,23 +241,6 @@ public class QueryServiceBean {
       ig.destroy();
       SqlBuilderFactory.setDefaultEngine(dsn);
     }
-  }
-
-  public boolean tableExists(String table) {
-    BeeRowSet res = tableList();
-
-    if (!res.isEmpty()) {
-      for (BeeRow row : res.getRows()) {
-        if (BeeUtils.same(row.getValue(0), table)) {
-          return true;
-        }
-      }
-    }
-    return false;
-  }
-
-  public BeeRowSet tableList() {
-    return (BeeRowSet) processSql(SqlUtils.getTables().getQuery());
   }
 
   public int updateData(IsQuery query) {

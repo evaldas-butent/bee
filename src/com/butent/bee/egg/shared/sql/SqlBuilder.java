@@ -42,12 +42,12 @@ public abstract class SqlBuilder {
         cmd.append(sqlKeyword((Keywords) params[2], prm));
         return cmd.toString();
 
-      case PRIMARY:
+      case PRIMARYKEY:
         StringBuilder primary = new StringBuilder(" PRIMARY KEY (")
           .append(BeeUtils.join(params, ", ")).append(")");
         return primary.toString();
 
-      case FOREIGN:
+      case FOREIGNKEY:
         StringBuilder foreign = new StringBuilder(" FOREIGN KEY (")
           .append(params[0])
           .append(") REFERENCES ")
@@ -66,15 +66,34 @@ public abstract class SqlBuilder {
       case SET_NULL:
         return "SET NULL";
 
-      case GET_TABLES:
+      case DB_TABLES:
+        IsCondition tableWh = null;
+
+        if (!BeeUtils.isEmpty(params[0])) {
+          tableWh = SqlUtils.equal("t", "table_name", params[0]);
+        }
         return new SqlSelect()
-          .addFields("information_schema.tables", "table_name")
-          .addFrom("information_schema.tables").getQuery(this);
+          .addFields("t", "table_name")
+          .addFrom("information_schema.tables", "t")
+          .setWhere(tableWh)
+          .getQuery(this);
+
+      case DB_FOREIGNKEYS:
+        IsCondition foreignWh = SqlUtils.equal("c", "constraint_type", "FOREIGN KEY");
+
+        if (!BeeUtils.isEmpty(params[0])) {
+          foreignWh = SqlUtils.and(foreignWh, SqlUtils.equal("c", "table_name", params[0]));
+        }
+        return new SqlSelect()
+          .addFields("c", "constraint_name")
+          .addFrom("information_schema.table_constraints", "c")
+          .setWhere(foreignWh)
+          .getQuery(this);
 
       case DROP_TABLE:
         return "DROP TABLE " + params[0];
 
-      case DROP_FOREIGN:
+      case DROP_FOREIGNKEY:
         StringBuilder drop = new StringBuilder("ALTER TABLE ")
           .append(params[0])
           .append(" DROP CONSTRAINT ")

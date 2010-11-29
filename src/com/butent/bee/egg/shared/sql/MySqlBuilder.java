@@ -7,7 +7,7 @@ class MySqlBuilder extends SqlBuilder {
   @Override
   protected String sqlKeyword(Keywords option, Object... params) {
     switch (option) {
-      case DROP_FOREIGN:
+      case DROP_FOREIGNKEY:
         StringBuilder drop = new StringBuilder("ALTER TABLE ")
           .append(params[0])
           .append(" DROP FOREIGN KEY ")

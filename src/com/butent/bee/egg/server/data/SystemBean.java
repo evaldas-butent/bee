@@ -5,7 +5,6 @@ import com.butent.bee.egg.server.data.BeeTable.BeeForeignKey;
 import com.butent.bee.egg.server.data.BeeTable.BeeKey;
 import com.butent.bee.egg.server.data.BeeTable.BeeStructure;
 import com.butent.bee.egg.server.utils.XmlUtils;
-import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.sql.BeeConstants.DataTypes;
 import com.butent.bee.egg.shared.sql.BeeConstants.Keywords;
 import com.butent.bee.egg.shared.sql.IsQuery;
@@ -22,6 +21,7 @@ import org.w3c.dom.NodeList;
 import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -46,11 +46,6 @@ public class SystemBean {
   QueryServiceBean qs;
 
   private Map<String, BeeTable> dataCache = new LinkedHashMap<String, BeeTable>();
-
-  public boolean beeTable(String source) {
-    Assert.notEmpty(source);
-    return dataCache.containsKey(source);
-  }
 
   @Lock(LockType.WRITE)
   public void createAll(ResponseBuffer buff) {
@@ -112,8 +107,21 @@ public class SystemBean {
     return null;
   }
 
+  public BeeTable getExtTable(String table) {
+    return dataCache.get(table).getExtTable();
+  }
+
   public BeeStructure getField(String table, String field) {
     return dataCache.get(table).getField(field);
+  }
+
+  public Set<String> getFieldNames(String table) {
+    Set<String> names = new HashSet<String>();
+
+    for (BeeStructure field : getFields(table)) {
+      names.add(field.getName());
+    }
+    return names;
   }
 
   public Collection<BeeStructure> getFields(String table) {
@@ -136,8 +144,16 @@ public class SystemBean {
     return dataCache.get(tbl);
   }
 
-  public Set<String> getTables() {
+  public Set<String> getTableNames() {
     return Collections.unmodifiableSet(dataCache.keySet());
+  }
+
+  public boolean isBeeTable(String source) {
+    return !BeeUtils.isEmpty(source) && getTableNames().contains(source);
+  }
+
+  public boolean isField(String table, String field) {
+    return dataCache.get(table).isField(field);
   }
 
   @Lock(LockType.WRITE)
@@ -204,16 +220,24 @@ public class SystemBean {
   }
 
   private void dropTables() {
-    for (BeeTable tbl : dataCache.values()) {
-      if (qs.tableExists(tbl.getName())) {
-        for (BeeForeignKey fld : tbl.getForeignKeys()) {
-          IsQuery drop = SqlUtils.dropForeignKey(fld.getTable(), fld.getName());
+    Set<String> dbTables = qs.dbTables(null);
+
+    if (BeeUtils.isEmpty(dbTables)) {
+      return;
+    }
+
+    for (String tbl : getTableNames()) {
+      Set<String> dbForeignKeys = qs.dbForeignKeys(tbl);
+
+      if (!BeeUtils.isEmpty(dbForeignKeys)) {
+        for (String key : dbForeignKeys) {
+          IsQuery drop = SqlUtils.dropForeignKey(tbl, key);
           qs.updateData(drop);
         }
       }
     }
-    for (String tbl : getTables()) {
-      if (qs.tableExists(tbl)) {
+    for (String tbl : getTableNames()) {
+      if (dbTables.contains(tbl)) {
         IsQuery drop = SqlUtils.dropTable(tbl);
         qs.updateData(drop);
       }
@@ -263,11 +287,12 @@ public class SystemBean {
           c++;
           dataCache.put(name, tbl);
 
-          BeeTable extTbl = new BeeTable(name + BeeTable.EXT_TABLE_SUFFIX, idName, lockName);
+          BeeTable extTbl = new BeeTable(name + BeeTable.EXT_TABLE_SUFFIX,
+              name + tbl.getIdName(), name + tbl.getLockName());
           initStructure(extTbl, table.getElementsByTagName("BeeExtended"));
 
           if (!extTbl.isEmpty()) {
-            extTbl.addForeignKey(idName, name, idName, Keywords.CASCADE);
+            extTbl.addForeignKey(extTbl.getIdName(), name, tbl.getIdName(), Keywords.CASCADE);
             tbl.setExtTable(extTbl);
             c++;
             dataCache.put(extTbl.getName(), extTbl);

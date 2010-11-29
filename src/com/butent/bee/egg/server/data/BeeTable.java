@@ -229,6 +229,10 @@ public class BeeTable {
     return BeeUtils.isEmpty(fields);
   }
 
+  public boolean isField(String field) {
+    return fields.containsKey(field);
+  }
+
   BeeTable addField(String name, DataTypes type, int precision, int scale,
       boolean notNull, boolean unique, String relation, boolean cascade) {
 

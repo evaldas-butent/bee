@@ -140,7 +140,7 @@ class RowSetService extends CompositeService {
         break;
 
       case SAVE:
-        BeeRowSet upd = rs.prepareUpdate();
+        BeeRowSet upd = rs.getChanges();
 
         if (BeeUtils.isEmpty(upd)) {
           BeeKeeper.getLog().info("Nothing to update");
@@ -169,7 +169,7 @@ class RowSetService extends CompositeService {
         break;
 
       case INSERT:
-        rs.addRow(new String[rs.getColumnCount()]);
+        rs.addRow(new String[rs.getColumnCount()]).markForInsert();
 
         stage = Stages.SHOW_TABLE;
         doSelf();
@@ -195,15 +195,13 @@ class RowSetService extends CompositeService {
     BeeTree root = new BeeTree();
     BeeTreeItem item = new BeeTreeItem("RowSet");
     root.addItem(item);
-
     item.addItem("Source: " + rs.getSource());
-    item.addItem("IdIndex: " + rs.getIdIndex());
-    item.addItem("LockIndex: " + rs.getLockIndex());
 
     BeeTreeItem cols = new BeeTreeItem("Columns");
     for (BeeColumn col : rs.getColumns()) {
       BeeTreeItem c = new BeeTreeItem(col.getName());
-      c.addItem("Table: " + col.getTable());
+      c.addItem("Source: " + col.getFieldSource());
+      c.addItem("Field: " + col.getFieldName());
       c.addItem("Type: " + col.getType() + "-" + col.getTypeName());
       c.addItem("Prec: " + col.getPrecision());
       c.addItem("Scale: " + col.getScale());

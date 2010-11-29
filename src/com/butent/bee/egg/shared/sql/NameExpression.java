@@ -5,7 +5,7 @@ import com.butent.bee.egg.shared.utils.BeeUtils;
 
 import java.util.List;
 
-public class NameExpression implements IsExpression {
+class NameExpression implements IsExpression {
 
   private final String name;
 

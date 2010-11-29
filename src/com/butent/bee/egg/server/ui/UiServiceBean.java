@@ -12,9 +12,7 @@ import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.data.BeeColumn;
 import com.butent.bee.egg.shared.data.BeeRowSet;
 import com.butent.bee.egg.shared.data.BeeRowSet.BeeRow;
-import com.butent.bee.egg.shared.sql.Conditions;
 import com.butent.bee.egg.shared.sql.IsCondition;
-import com.butent.bee.egg.shared.sql.IsQuery;
 import com.butent.bee.egg.shared.sql.SqlDelete;
 import com.butent.bee.egg.shared.sql.SqlInsert;
 import com.butent.bee.egg.shared.sql.SqlSelect;
@@ -23,6 +21,8 @@ import com.butent.bee.egg.shared.sql.SqlUtils;
 import com.butent.bee.egg.shared.ui.UiComponent;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -107,92 +107,219 @@ public class UiServiceBean {
 
   private void commitChanges(RequestInfo reqInfo, ResponseBuffer buff) {
     BeeRowSet upd = BeeRowSet.restore(reqInfo.getContent());
-
-    String tbl = upd.getSource();
-    String idName = upd.getIdName();
-    String lockName = upd.getLockName();
     int c = 0;
     String err = "";
 
-    if (BeeUtils.isEmpty(idName)) {
-      err = "ID column not found";
-    }
+    BeeTable tbl = null;
+    BeeTable extTbl = null;
+    int idIndex = -1;
+    int lockIndex = -1;
+    int extLockIndex = -1;
+    String src = upd.getSource();
 
+    if (sys.isBeeTable(src)) {
+      tbl = sys.getTable(src);
+      extTbl = tbl.getExtTable();
+
+      for (int i = 0; i < upd.getColumns().length; i++) {
+        BeeColumn column = upd.getColumns()[i];
+
+        if (BeeUtils.same(column.getFieldSource(), tbl.getName())) {
+          String name = column.getFieldName();
+
+          if (BeeUtils.same(name, tbl.getIdName())) {
+            idIndex = i;
+            continue;
+          }
+          if (BeeUtils.same(name, tbl.getLockName())) {
+            lockIndex = i;
+            continue;
+          }
+          if (!BeeUtils.isEmpty(extTbl) && BeeUtils.same(name, extTbl.getLockName())) {
+            extLockIndex = i;
+            continue;
+          }
+        }
+      }
+      if (idIndex < 0) {
+        err = "Cannot update table " + tbl.getName() + " (Unknown ID index).";
+      }
+    } else {
+      err = "Cannot update table (Not a base table " + src + ").";
+    }
     for (BeeRow row : upd.getRows()) {
       if (!BeeUtils.isEmpty(err)) {
         break;
       }
-      Map<Integer, String> shadow = row.getShadow();
-      if (BeeUtils.isEmpty(shadow)) {
-        continue;
+      List<Object[]> baseList = new ArrayList<Object[]>();
+      List<Object[]> extList = new ArrayList<Object[]>();
+
+      if (!BeeUtils.isEmpty(row.getShadow())) {
+        for (Integer col : row.getShadow().keySet()) {
+          BeeColumn column = upd.getColumn(col);
+          String fld = column.getFieldName();
+
+          if (BeeUtils.isEmpty(fld)) {
+            err = "Cannot update column " + upd.getColumnName(col) + " (Unknown source).";
+            break;
+          }
+          if (!BeeUtils.same(column.getFieldSource(), src)) {
+            err = "Cannot update column (Wrong source " + column.getFieldSource() + ").";
+            break;
+          }
+          Object[] entry = new Object[]{fld, row.getOriginal(col)};
+
+          if (tbl.isField(fld)) {
+            baseList.add(entry);
+          } else if (!BeeUtils.isEmpty(extTbl) && extTbl.isField(fld)) {
+            extList.add(entry);
+          } else {
+            err = "Cannot update column " + upd.getColumnName(col) + " (Unknown field: " + fld
+                + ").";
+            break;
+          }
+        }
+        if (!BeeUtils.isEmpty(err)) {
+          break;
+        }
       }
-      long id = row.getLong(idName);
-      String mode = "INSERT";
+      long id = row.getLong(idIndex);
 
-      if (shadow.containsKey(upd.getIdIndex())) {
-        String tmpId = shadow.get(upd.getIdIndex());
+      if (row.markedForDelete()) { // DELETE
+        IsCondition wh = SqlUtils.equal(tbl.getName(), tbl.getIdName(), id);
 
-        if (!BeeUtils.isEmpty(tmpId)) {
-          id = Long.parseLong(tmpId);
-          mode = "DELETE";
+        if (lockIndex >= 0) {
+          wh = SqlUtils.and(wh,
+              SqlUtils.equal(tbl.getName(), tbl.getLockName(), row.getLong(lockIndex)));
         }
-      } else {
-        if (!BeeUtils.isEmpty(row.getValue(idName))) {
-          mode = "UPDATE";
-        }
-      }
+        SqlDelete sd = new SqlDelete(tbl.getName()).setWhere(wh);
+        int res = qs.updateData(sd);
 
-      if (mode.equals("INSERT")) {
-        if (!BeeUtils.isEmpty(lockName)) {
-          row.setValue(lockName, BeeUtils.transform(System.currentTimeMillis()));
+        if (res < 0) {
+          err = "Error deleting data";
+          break;
+        } else if (res == 0) {
+          err = "Optimistic lock exception";
+          break;
         }
-        SqlInsert si = new SqlInsert(tbl);
+        c += res;
 
-        for (Integer col : shadow.keySet()) {
-          si.addConstant(upd.getColumnName(col), row.getOriginal(col));
+      } else if (row.markedForInsert()) { // INSERT
+        SqlInsert si = new SqlInsert(tbl.getName());
+
+        for (Object[] entry : baseList) {
+          si.addConstant((String) entry[0], entry[1]);
+        }
+        if (lockIndex >= 0) {
+          long lock = System.currentTimeMillis();
+          si.addConstant(tbl.getLockName(), lock);
+          row.setValue(lockIndex, BeeUtils.transform(lock));
         }
         id = qs.insertData(si);
 
         if (id < 0) {
           err = "Error inserting data";
+          break;
         } else {
-          if (id > 0) {
-            row.setValue(idName, BeeUtils.transform(id));
-          }
           c++;
-        }
-      } else {
-        IsCondition wh = SqlUtils.and(SqlUtils.equal(tbl, idName, id));
-        if (!BeeUtils.isEmpty(lockName)) {
-          ((Conditions) wh).add(SqlUtils.equal(tbl, lockName, row.getLong(lockName)));
-        }
-        IsQuery query;
+          row.setValue(idIndex, BeeUtils.transform(id));
 
-        if (mode.equals("DELETE")) {
-          query = new SqlDelete(tbl).setWhere(wh);
+          if (!BeeUtils.isEmpty(extList)) {
+            si = new SqlInsert(extTbl.getName());
 
-        } else { // UPDATE
-          query = new SqlUpdate(tbl).setWhere(wh);
+            for (Object[] entry : extList) {
+              si.addConstant((String) entry[0], entry[1]);
+            }
+            if (extLockIndex >= 0) {
+              long lock = System.currentTimeMillis();
+              si.addConstant(extTbl.getLockName(), lock);
+              row.setValue(extLockIndex, BeeUtils.transform(lock));
+            }
+            si.addConstant(extTbl.getIdName(), id);
 
-          if (!BeeUtils.isEmpty(lockName)) {
-            row.setValue(lockName, BeeUtils.transform(System.currentTimeMillis()));
+            if (qs.insertData(si) < 0) {
+              err = "Error inserting data";
+              break;
+            }
+            c++;
           }
-          for (Integer col : shadow.keySet()) {
-            ((SqlUpdate) query).addConstant(upd.getColumnName(col), row.getOriginal(col));
-          }
         }
-        int res = qs.updateData(query);
 
-        switch (res) {
-          case -1:
+      } else { // UPDATE
+        if (!BeeUtils.isEmpty(baseList)) {
+          SqlUpdate su = new SqlUpdate(tbl.getName());
+
+          for (Object[] entry : baseList) {
+            su.addConstant((String) entry[0], entry[1]);
+          }
+          IsCondition wh = SqlUtils.equal(tbl.getName(), tbl.getIdName(), id);
+
+          if (lockIndex >= 0) {
+            wh = SqlUtils.and(wh,
+                SqlUtils.equal(tbl.getName(), tbl.getLockName(), row.getLong(lockIndex)));
+
+            long lock = System.currentTimeMillis();
+            su.addConstant(tbl.getLockName(), lock);
+            row.setValue(lockIndex, BeeUtils.transform(lock));
+          }
+          int res = qs.updateData(su.setWhere(wh));
+
+          if (res < 0) {
             err = "Error updating data";
             break;
-          case 0:
+          } else if (res == 0) {
             err = "Optimistic lock exception";
             break;
-          default:
-            c += res;
+          }
+          c += res;
+        }
+        if (!BeeUtils.isEmpty(extList)) {
+          if (extLockIndex < 0 || !BeeUtils.isEmpty(row.getLong(extLockIndex))) {
+            SqlUpdate su = new SqlUpdate(extTbl.getName());
+
+            for (Object[] entry : extList) {
+              su.addConstant((String) entry[0], entry[1]);
+            }
+            IsCondition wh = SqlUtils.equal(extTbl.getName(), extTbl.getIdName(), id);
+
+            if (extLockIndex >= 0) {
+              wh = SqlUtils.and(wh,
+                  SqlUtils.equal(extTbl.getName(), extTbl.getLockName(), row.getLong(extLockIndex)));
+
+              long lock = System.currentTimeMillis();
+              su.addConstant(extTbl.getLockName(), lock);
+              row.setValue(extLockIndex, BeeUtils.transform(lock));
+            }
+            int res = qs.updateData(su.setWhere(wh));
+
+            if (res < 0) {
+              err = "Error updating data";
+              break;
+            } else if (res == 0 && extLockIndex >= 0) {
+              err = "Optimistic lock exception";
+              break;
+            } else if (res > 0) {
+              c += res;
+              continue;
+            }
+          }
+          SqlInsert si = new SqlInsert(extTbl.getName());
+
+          for (Object[] entry : extList) {
+            si.addConstant((String) entry[0], entry[1]);
+          }
+          if (extLockIndex >= 0) {
+            long lock = System.currentTimeMillis();
+            si.addConstant(extTbl.getLockName(), lock);
+            row.setValue(extLockIndex, BeeUtils.transform(lock));
+          }
+          si.addConstant(extTbl.getIdName(), id);
+
+          if (qs.insertData(si) < 0) {
+            err = "Error inserting data";
             break;
+          }
+          c++;
         }
       }
     }
@@ -269,26 +396,26 @@ public class UiServiceBean {
     SqlSelect ss = new SqlSelect();
     ss.addFrom(table, als);
 
-    if (sys.beeTable(table)) {
+    if (sys.isBeeTable(table)) {
       BeeTable tbl = sys.getTable(table);
 
       for (BeeStructure fld : tbl.getFields()) {
         ss.addFields(als, fld.getName());
         addRelation(ss, als, fld);
       }
-      ss.addFields(als, tbl.getLockName());
-      ss.addFields(als, tbl.getIdName());
+      ss.addFields(als, tbl.getLockName(), tbl.getIdName());
 
       BeeTable extTbl = tbl.getExtTable();
 
       if (!BeeUtils.isEmpty(extTbl)) {
-        String relation = extTbl.getName();
-        ss.addFromLeft(relation, SqlUtils.join(als, tbl.getIdName(), relation, extTbl.getIdName()));
+        String extName = extTbl.getName();
+        ss.addFromLeft(extName, SqlUtils.join(als, tbl.getIdName(), extName, extTbl.getIdName()));
 
         for (BeeStructure extFld : extTbl.getFields()) {
-          ss.addFields(relation, extFld.getName());
-          addRelation(ss, relation, extFld);
+          ss.addFields(extName, extFld.getName());
+          addRelation(ss, extName, extFld);
         }
+        ss.addFields(extName, extTbl.getLockName());
       }
     } else {
       ss.addAllFields(als);
@@ -302,7 +429,7 @@ public class UiServiceBean {
   private void getTables(ResponseBuffer buff) {
     buff.addColumn(new BeeColumn("BeeTable"));
 
-    for (String tbl : sys.getTables()) {
+    for (String tbl : sys.getTableNames()) {
       buff.add(tbl);
     }
   }

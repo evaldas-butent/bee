@@ -7,7 +7,7 @@ class OracleSqlBuilder extends SqlBuilder {
 
   protected String sqlKeyword(Keywords option, Object... params) {
     switch (option) {
-      case GET_TABLES:
+      case DB_TABLES:
         return new SqlSelect()
           .addFields("USER_TABLES", "TABLE_NAME")
           .addFrom("USER_TABLES").getQuery(this);

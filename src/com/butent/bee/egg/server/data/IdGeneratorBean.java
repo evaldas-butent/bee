@@ -43,7 +43,7 @@ public class IdGeneratorBean {
 
   @PreDestroy
   public void destroy() {
-    if (qs.tableExists(ID_TABLE)) {
+    if (qs.isDbTable(ID_TABLE)) {
       for (Entry<String, long[]> entry : idCache.entrySet()) {
         String source = entry.getKey();
         IsCondition wh = SqlUtils.equal(ID_TABLE, ID_KEY, source);
@@ -74,7 +74,7 @@ public class IdGeneratorBean {
   }
 
   public long getId(String source) {
-    Assert.state(sys.beeTable(source));
+    Assert.state(sys.isBeeTable(source));
 
     long[] ids = idCache.get(source);
 
@@ -88,7 +88,7 @@ public class IdGeneratorBean {
     int cnt = 0;
     IsCondition wh = SqlUtils.equal(ID_TABLE, ID_KEY, source);
 
-    if (!qs.tableExists(ID_TABLE)) {
+    if (!qs.isDbTable(ID_TABLE)) {
       SqlCreate sc = new SqlCreate(ID_TABLE);
       sc.addString(ID_KEY, 30, Keywords.NOT_NULL);
       sc.addLong(ID_LAST, Keywords.NOT_NULL);

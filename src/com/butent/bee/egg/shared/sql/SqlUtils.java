@@ -41,7 +41,7 @@ public class SqlUtils {
     params.add(name(refField));
     params.add(action);
 
-    return createConstraint(table, name, Keywords.FOREIGN, params.toArray());
+    return createConstraint(table, name, Keywords.FOREIGNKEY, params.toArray());
   }
 
   public static IsQuery createIndex(String table, String name, String... fields) {
@@ -58,15 +58,23 @@ public class SqlUtils {
         params.add(name(fld));
       }
     }
-    return createConstraint(table, name, Keywords.PRIMARY, params.toArray());
+    return createConstraint(table, name, Keywords.PRIMARYKEY, params.toArray());
   }
 
   public static IsQuery createUniqueIndex(String table, String name, String... fields) {
     return createIndex(true, table, name, fields);
   }
 
+  public static IsQuery dbForeignKeys(String table) {
+    return new SqlCommand(Keywords.DB_FOREIGNKEYS, table);
+  }
+
+  public static IsQuery dbTables(String table) {
+    return new SqlCommand(Keywords.DB_TABLES, table);
+  }
+
   public static IsQuery dropForeignKey(String table, String name) {
-    return new SqlCommand(Keywords.DROP_FOREIGN, name(table), name(name));
+    return new SqlCommand(Keywords.DROP_FOREIGNKEY, name(table), name(name));
   }
 
   public static IsQuery dropTable(String table) {
@@ -101,10 +109,6 @@ public class SqlUtils {
       list[i] = field(source, fields[i]);
     }
     return list;
-  }
-
-  public static IsQuery getTables() {
-    return new SqlCommand(Keywords.GET_TABLES);
   }
 
   public static IsCondition in(String src, String fld, SqlSelect query) {

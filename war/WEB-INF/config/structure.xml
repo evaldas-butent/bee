@@ -25,6 +25,7 @@
       <BeeField name="Country" type="STRING" precision="100" notNull="true" unique="true" />
       <BeeField name="Area" type="NUMERIC" precision="10" scale="2" />
       <BeeField name="SeaPort" type="LONG" relation="Cities" />
+      <BeeField name="Neighbour" type="LONG" relation="Countries" />
       <BeeField name="Currency" type="STRING" precision="50" unique="true" />
     </BeeStructure>
     <BeeExtended>
