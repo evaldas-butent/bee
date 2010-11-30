@@ -18,12 +18,13 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
-import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -39,6 +40,9 @@ import javax.ejb.Startup;
 @Startup
 @Lock(LockType.READ)
 public class SystemBean {
+  private static final Class<?> CLASS = SystemBean.class;
+  public static final String RESOURCE_PATH = CLASS.getResource(CLASS.getSimpleName() + ".class").getPath()
+    .replace(CLASS.getName().replace('.', '/') + ".class", "../config/");
 
   private static Logger logger = Logger.getLogger(SystemBean.class.getName());
 
@@ -241,76 +245,58 @@ public class SystemBean {
   @SuppressWarnings("unused")
   @PostConstruct
   private void init() {
-    initData();
+    initTables();
   }
 
   @Lock(LockType.WRITE)
-  private void initData() {
-    String path = getClass().getResource("/../classes").toString().replaceFirst("classes/$", "");
-    String resource = "config/structure.xml";
+  private void initExtensions() {
+    String resource = RESOURCE_PATH + "extensions.xml";
 
-    URL xmlUrl = getClass().getResource("/../" + resource);
+    List<BeeTable> extensions = loadTables(resource);
 
-    if (xmlUrl == null) {
-      LogUtils.warning(logger, "Resource", path + resource, "not found");
+    if (BeeUtils.isEmpty(extensions)) {
+      LogUtils.warning(logger, resource, "Nothing to load");
       return;
     }
-    Document xml = XmlUtils.fromFileName(xmlUrl.getPath());
-    if (BeeUtils.isEmpty(xml)) {
-      return;
-    }
-    int c = 0;
-    NodeList root = xml.getElementsByTagName("BeeTables");
+    for (BeeTable extension : extensions) {
+      BeeTable table = getTable(extension.getName());
 
-    if (!BeeUtils.isEmpty(root.getLength())) {
-      NodeList tables = ((Element) root.item(0)).getElementsByTagName("BeeTable");
-
-      for (int i = 0; i < tables.getLength(); i++) {
-        Element table = (Element) tables.item(i);
-
-        String name = table.getAttribute("name");
-        String idName = table.getAttribute("idName");
-        String lockName = table.getAttribute("lockName");
-
-        BeeTable tbl = new BeeTable(name, idName, lockName);
-        initStructure(tbl, table.getElementsByTagName("BeeStructure"));
-
-        if (tbl.isEmpty()) {
-          LogUtils.warning(logger, "Table", name, "has no fields defined");
+      if (BeeUtils.isEmpty(table)) {
+        if (extension.isEmpty()) {
+          LogUtils.warning(logger, resource, "Table", extension.getName(), "has no fields defined");
         } else {
-          c++;
-          dataCache.put(name, tbl);
+          dataCache.put(extension.getName(), extension);
+        }
+      } else {
+        if (!extension.isEmpty()) {
+          LogUtils.warning(logger, resource, "Table", extension.getName(),
+              "allows no structure modifications");
+        } else {
+          for (BeeKey key : extension.getKeys()) {
+            table.addKey(key);
+          }
+          BeeTable extTbl = table.getExtTable();
+          BeeTable extExt = extension.getExtTable();
 
-          BeeTable extTbl = new BeeTable(name + BeeTable.EXT_TABLE_SUFFIX,
-              name + tbl.getIdName(), name + tbl.getLockName());
-          initStructure(extTbl, table.getElementsByTagName("BeeExtended"));
-
-          if (!extTbl.isEmpty()) {
-            extTbl.addForeignKey(extTbl.getIdName(), name, tbl.getIdName(), Keywords.CASCADE);
-            tbl.setExtTable(extTbl);
-            c++;
-            dataCache.put(extTbl.getName(), extTbl);
+          if (!BeeUtils.isEmpty(extExt)) {
+            if (BeeUtils.isEmpty(extTbl)) {
+              table.setExtTable(extExt);
+            } else {
+              for (BeeStructure fld : extExt.getFields()) {
+                // extTbl.addField(fld);
+              }
+              for (BeeKey key : extExt.getKeys()) {
+                extTbl.addKey(key);
+              }
+              for (BeeForeignKey key : extExt.getForeignKeys()) {
+                // extTbl.addForeignKey(key);
+              }
+            }
           }
         }
       }
-      initRelations();
-    } else {
-      LogUtils.warning(logger, "Node <BeeTables> is not found");
     }
-    LogUtils.infoNow(logger, "Loaded", c, "tables descriptions from", path + resource);
-  }
-
-  private void initRelations() {
-    for (BeeTable tbl : dataCache.values()) {
-      for (BeeStructure fld : tbl.getFields()) {
-        String relTable = fld.getRelation();
-
-        if (!BeeUtils.isEmpty(relTable)) {
-          tbl.addForeignKey(fld.getName(), relTable, getIdName(relTable),
-              fld.isCascade() ? (fld.isNotNull() ? Keywords.CASCADE : Keywords.SET_NULL) : null);
-        }
-      }
-    }
+    LogUtils.infoNow(logger, "Loaded", extensions.size(), "tables descriptions from", resource);
   }
 
   private int initStructure(BeeTable table, NodeList node) {
@@ -338,24 +324,95 @@ public class SystemBean {
           table.addUniqueKey(name);
         }
       }
-      if (!table.isEmpty()) {
-        NodeList keys = ((Element) node.item(0)).getElementsByTagName("BeeKey");
+      NodeList keys = ((Element) node.item(0)).getElementsByTagName("BeeKey");
 
-        for (int i = 0; i < keys.getLength(); i++) {
-          Element key = (Element) keys.item(i);
+      for (int i = 0; i < keys.getLength(); i++) {
+        Element key = (Element) keys.item(i);
 
-          boolean unique = BeeUtils.toBoolean(key.getAttribute("unique"));
-          String[] flds = BeeUtils.split(key.getAttribute("fields"), ",");
+        boolean unique = BeeUtils.toBoolean(key.getAttribute("unique"));
+        String[] flds = BeeUtils.split(key.getAttribute("fields"), ",");
 
-          if (unique) {
-            table.addUniqueKey(key.getAttribute("name"), flds);
-          } else {
-            table.addKey(key.getAttribute("name"), flds);
-          }
+        if (unique) {
+          table.addUniqueKey(key.getAttribute("name"), flds);
+        } else {
+          table.addKey(key.getAttribute("name"), flds);
         }
-        table.addPrimaryKey(table.getIdName());
       }
+      table.addPrimaryKey(table.getIdName());
     }
     return c;
+  }
+
+  @Lock(LockType.WRITE)
+  private void initTables() {
+    String resource = RESOURCE_PATH + "structure.xml";
+
+    List<BeeTable> tables = loadTables(resource);
+
+    if (BeeUtils.isEmpty(tables)) {
+      LogUtils.warning(logger, resource, "Nothing to load");
+      return;
+    }
+    dataCache.clear();
+
+    for (BeeTable table : tables) {
+      if (table.isEmpty()) {
+        LogUtils.warning(logger, resource, "Table", table.getName(), "has no fields defined");
+      } else {
+        dataCache.put(table.getName(), table);
+      }
+    }
+    LogUtils.infoNow(logger, "Loaded", dataCache.size(), "tables descriptions from", resource);
+  }
+
+  @Lock(LockType.WRITE)
+  private List<BeeTable> loadTables(String resource) {
+    Document xml = XmlUtils.fromFileName(resource);
+    if (BeeUtils.isEmpty(xml)) {
+      return null;
+    }
+    List<BeeTable> data = new ArrayList<BeeTable>();
+    NodeList root = xml.getElementsByTagName("BeeTables");
+
+    if (!BeeUtils.isEmpty(root.getLength())) {
+      NodeList tables = ((Element) root.item(0)).getElementsByTagName("BeeTable");
+
+      for (int i = 0; i < tables.getLength(); i++) {
+        Element table = (Element) tables.item(i);
+
+        String name = table.getAttribute("name");
+        String idName = table.getAttribute("idName");
+        String lockName = table.getAttribute("lockName");
+
+        BeeTable tbl = new BeeTable(name, idName, lockName);
+        initStructure(tbl, table.getElementsByTagName("BeeStructure"));
+
+        data.add(tbl);
+
+        BeeTable extTbl = new BeeTable(name + BeeTable.EXT_TABLE_SUFFIX,
+              name + tbl.getIdName(), name + tbl.getLockName());
+        initStructure(extTbl, table.getElementsByTagName("BeeExtended"));
+
+        if (!extTbl.isEmpty()) {
+          extTbl.addForeignKey(extTbl.getIdName(), name, tbl.getIdName(), Keywords.CASCADE);
+          tbl.setExtTable(extTbl);
+
+          data.add(extTbl);
+        }
+      }
+      for (BeeTable tbl : data) {
+        for (BeeStructure fld : tbl.getFields()) {
+          String relTable = fld.getRelation();
+
+          if (!BeeUtils.isEmpty(relTable)) {
+            tbl.addForeignKey(fld.getName(), relTable, getIdName(relTable),
+                fld.isCascade() ? (fld.isNotNull() ? Keywords.CASCADE : Keywords.SET_NULL) : null);
+          }
+        }
+      }
+    } else {
+      LogUtils.warning(logger, resource, "Node <BeeTables> is not found");
+    }
+    return data;
   }
 }

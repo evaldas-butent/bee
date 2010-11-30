@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<BeeTables>
+  <BeeTable name="Nationalities" idName="NationalityID">
+    <BeeStructure>
+      <BeeField name="Nationality" type="STRING" precision="50" />
+      <BeeField name="Percent" type="NUMERIC" precision="4" scale="1" />
+      <BeeField name="Country" type="LONG" notNull="true" relation="Countries" cascade="true" />
+      <BeeKey name="Nationality" fields="Country, Nationality" unique="true" />
+    </BeeStructure>
+  </BeeTable>
+  <BeeTable name="Codes" idName="CodeID">
+    <BeeStructure>
+      <BeeField name="Code" type="STRING" precision="10" unique="true" />
+      <BeeField name="Name" type="STRING" precision="10" />
+    </BeeStructure>
+  </BeeTable>
+  <BeeTable name="Cities" idName="CityID">
+    <BeeStructure>
+      <BeeField name="IsCapital" type="BOOLEAN" />
+    </BeeStructure>
+  </BeeTable>
+  <BeeTable name="Continents" idName="ContinentID">
+    <BeeExtended>
+      <BeeField name="Continent" type="STRING" precission="30" unique="true" />
+    </BeeExtended>
+  </BeeTable>
+</BeeTables>

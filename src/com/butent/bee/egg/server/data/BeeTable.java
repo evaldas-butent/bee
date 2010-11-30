@@ -68,7 +68,7 @@ public class BeeTable {
     private BeeKey(String name, boolean primary, boolean unique, String... keyFields) {
       Assert.notEmpty(name);
 
-      this.name = primary ? PRIMARY_KEY_PREFIX + getTable() : name;
+      this.name = name;
       this.primary = primary;
       this.unique = primary || unique;
 
@@ -237,6 +237,7 @@ public class BeeTable {
   BeeTable addField(String name, DataTypes type, int precision, int scale,
       boolean notNull, boolean unique, String relation, boolean cascade) {
 
+    Assert.state(!isField(name), "Dublicate field name: " + getName() + " " + name);
     fields.put(name,
         new BeeStructure(name, type, precision, scale, notNull, unique, relation, cascade));
     return this;
@@ -247,18 +248,29 @@ public class BeeTable {
     return this;
   }
 
+  void addKey(BeeKey key) {
+    String keyName = key.getName();
+
+    for (BeeKey k : keys) {
+      Assert.state(!BeeUtils.same(k.getName(), keyName),
+          "Dublicate key name: " + getName() + " " + keyName);
+    }
+    keys.add(key);
+  }
+
   BeeTable addKey(String keyName, String... keyFields) {
-    keys.add(new BeeKey(keyName, false, false, keyFields));
+    addKey(new BeeKey(keyName, false, false, keyFields));
     return this;
   }
 
-  BeeTable addPrimaryKey(String keyName, String... keyFields) {
-    keys.add(new BeeKey(keyName, true, false, keyFields));
+  BeeTable addPrimaryKey(String keyField) {
+    Assert.notEmpty(keyField);
+    addKey(new BeeKey(PRIMARY_KEY_PREFIX + getName(), true, false, keyField));
     return this;
   }
 
   BeeTable addUniqueKey(String keyName, String... keyFields) {
-    keys.add(new BeeKey(keyName, false, true, keyFields));
+    addKey(new BeeKey(keyName, false, true, keyFields));
     return this;
   }
 

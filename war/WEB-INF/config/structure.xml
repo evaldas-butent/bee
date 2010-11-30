@@ -33,24 +33,8 @@
       <BeeField name="Anthem" type="STRING" precision="30" unique="true" />
       <BeeField name="Capital" type="LONG" relation="Cities" cascade="true" />
       <BeeKey name="Language" fields="Language" />
-    </BeeExtended><!--
-    <BeeExtensions>
-      <BeeExtTables>
-        <BeeTable name="Nationalities" idName="NationalityID">
-          <BeeStructure>
-            <BeeField name="Nationality" type="STRING" precision="50" />
-            <BeeField name="Percent" type="NUMERIC" precision="4" scale="1" />
-            <BeeKey name="Nationality" fields="CountryID, Nationality" unique="true" />
-          </BeeStructure>
-        </BeeTable>
-        <BeeTable name="Codes" idName="CodeID">
-          <BeeStructure>
-            <BeeField name="Code" type="STRING" precision="10" unique="true" />
-          </BeeStructure>
-        </BeeTable>
-      </BeeExtTables>
-    </BeeExtensions>
-  --></BeeTable>
+    </BeeExtended>
+  </BeeTable>
   <BeeTable name="Cities" idName="CityID">
     <BeeStructure>
       <BeeField name="City" type="STRING" precision="100" notNull="true" unique="true" />
