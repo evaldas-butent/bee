@@ -185,6 +185,7 @@ public class BeeTable {
   private List<BeeKey> keys = new ArrayList<BeeKey>();
   private List<BeeForeignKey> foreignKeys = new ArrayList<BeeForeignKey>();
   private BeeTable extTable;
+  private boolean custom = false;
 
   BeeTable(String name, String idName, String lockName) {
     Assert.notEmpty(name);
@@ -226,6 +227,10 @@ public class BeeTable {
     return name;
   }
 
+  public boolean isCustom() {
+    return custom;
+  }
+
   public boolean isEmpty() {
     return BeeUtils.isEmpty(fields);
   }
@@ -234,21 +239,33 @@ public class BeeTable {
     return fields.containsKey(field);
   }
 
+  void addField(BeeStructure field) {
+    Assert.notEmpty(field);
+    String fieldName = field.getName();
+
+    Assert.state(!isField(fieldName), "Dublicate field name: " + getName() + " " + fieldName);
+    fields.put(fieldName, field);
+  }
+
   BeeTable addField(String name, DataTypes type, int precision, int scale,
       boolean notNull, boolean unique, String relation, boolean cascade) {
 
-    Assert.state(!isField(name), "Dublicate field name: " + getName() + " " + name);
-    fields.put(name,
-        new BeeStructure(name, type, precision, scale, notNull, unique, relation, cascade));
+    addField(new BeeStructure(name, type, precision, scale, notNull, unique, relation, cascade));
     return this;
   }
 
+  void addForeignKey(BeeForeignKey key) {
+    Assert.notEmpty(key);
+    foreignKeys.add(key);
+  }
+
   BeeTable addForeignKey(String keyField, String refTable, String refField, Keywords action) {
-    foreignKeys.add(new BeeForeignKey(keyField, refTable, refField, action));
+    addForeignKey(new BeeForeignKey(keyField, refTable, refField, action));
     return this;
   }
 
   void addKey(BeeKey key) {
+    Assert.notEmpty(key);
     String keyName = key.getName();
 
     for (BeeKey k : keys) {
@@ -272,6 +289,10 @@ public class BeeTable {
   BeeTable addUniqueKey(String keyName, String... keyFields) {
     addKey(new BeeKey(keyName, false, true, keyFields));
     return this;
+  }
+
+  void setCustom(boolean custom) {
+    this.custom = custom;
   }
 
   void setExtTable(BeeTable extTable) {

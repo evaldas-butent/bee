@@ -261,10 +261,11 @@ public class SystemBean {
     for (BeeTable extension : extensions) {
       BeeTable table = getTable(extension.getName());
 
-      if (BeeUtils.isEmpty(table)) {
+      if (BeeUtils.isEmpty(table) || table.isCustom()) {
         if (extension.isEmpty()) {
           LogUtils.warning(logger, resource, "Table", extension.getName(), "has no fields defined");
         } else {
+          extension.setCustom(true);
           dataCache.put(extension.getName(), extension);
         }
       } else {
@@ -283,13 +284,13 @@ public class SystemBean {
               table.setExtTable(extExt);
             } else {
               for (BeeStructure fld : extExt.getFields()) {
-                // extTbl.addField(fld);
+                extTbl.addField(fld);
               }
               for (BeeKey key : extExt.getKeys()) {
                 extTbl.addKey(key);
               }
               for (BeeForeignKey key : extExt.getForeignKeys()) {
-                // extTbl.addForeignKey(key);
+                extTbl.addForeignKey(key);
               }
             }
           }
