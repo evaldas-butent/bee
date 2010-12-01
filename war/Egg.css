@@ -239,9 +239,6 @@ body, select {
   border: 1px solid #7f9db9;
   padding: 1px;
 }
-.bee-ValueSpinner .valueBox:hover {
-  background: LightCyan;
-}
 
 .bee-VolumeSlider {
   border: 1px solid #7f9db9;

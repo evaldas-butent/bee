@@ -3,7 +3,9 @@ package com.butent.bee.egg.client.grid.property;
 import java.util.HashMap;
 import java.util.Map;
 
-class HeaderPropertyBase extends ColumnProperty {
+public class HeaderPropertyBase implements ColumnProperty {
+  public static final int DEFAULT_ROW = 0;
+
   private int headerCount;
   private Map<Integer, Object> headers = new HashMap<Integer, Object>();
   private boolean isDynamic;

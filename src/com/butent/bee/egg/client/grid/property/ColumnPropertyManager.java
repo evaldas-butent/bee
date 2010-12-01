@@ -1,42 +1,35 @@
 package com.butent.bee.egg.client.grid.property;
 
-import com.butent.bee.egg.client.grid.property.ColumnProperty.Type;
 import com.butent.bee.egg.shared.Assert;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class ColumnPropertyManager {
-  private Map<Type<?>, ColumnProperty> properties = new HashMap<Type<?>, ColumnProperty>();
-
-  public <P extends ColumnProperty> P getColumnProperty(ColumnProperty.Type<P> type) {
-    return getColumnProperty(type, true);
-  }
+  private Map<String, ColumnProperty> properties = new HashMap<String, ColumnProperty>();
 
   @SuppressWarnings("unchecked")
-  public <P extends ColumnProperty> P getColumnProperty(
-      ColumnProperty.Type<P> type, boolean useDefault) {
-    Object property = properties.get(type);
-    if (property == null && useDefault) {
-      return type.getDefault();
-    }
-    return (P) property;
-  }
-
-  @SuppressWarnings("unchecked")
-  public <P extends ColumnProperty> P removeColumnProperty(ColumnProperty.Type<P> type) {
-    Object property = properties.remove(type);
+  public <P extends ColumnProperty> P getColumnProperty(String name) {
+    ColumnProperty property = properties.get(name);
     if (property == null) {
       return null;
     }
     return (P) property;
   }
 
-  public <P extends ColumnProperty> void setColumnProperty(
-      ColumnProperty.Type<P> type, P property) {
-    Assert.notNull(type, "Cannot add a property with a null type");
+  @SuppressWarnings("unchecked")
+  public <P extends ColumnProperty> P removeColumnProperty(String name) {
+    ColumnProperty property = properties.remove(name);
+    if (property == null) {
+      return null;
+    }
+    return (P) property;
+  }
+
+  public <P extends ColumnProperty> void setColumnProperty(String name, P property) {
+    Assert.notEmpty(name, "Cannot add a property with no name");
     Assert.notNull(property, "Cannot add a null property");
     
-    properties.put(type, property);
+    properties.put(name, property);
   }
 }

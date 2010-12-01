@@ -244,7 +244,7 @@ public class BeeUi implements BeeModule {
 
     switch (getDefaultGridType()) {
       case 1:
-        grd = BeeGlobal.scrollGrid(data, cols);
+        grd = BeeGlobal.scrollGrid(getActivePanelWidth(), data, cols);
         break;
       case 2:
         grd = BeeGlobal.cellGrid(data, getDefaultCellType(), cols);

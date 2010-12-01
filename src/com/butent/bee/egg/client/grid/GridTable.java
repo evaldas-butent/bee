@@ -142,7 +142,6 @@ public class GridTable extends HtmlTable {
   @Override
   protected Element createCell() {
     Element td = super.createCell();
-
     DOM.setInnerHTML(td, BeeConst.HTML_NBSP);
     return td;
   }
@@ -159,8 +158,7 @@ public class GridTable extends HtmlTable {
   @Override
   protected void prepareCell(int row, int column) {
     prepareRow(row);
-    Assert.nonNegative(column, "Cannot access a column with a negative index: "
-        + column);
+    Assert.nonNegative(column, "Cannot access a column with a negative index: " + column);
     Assert.isTrue(column < numColumns, "Column index: " + column
         + ", Column size: " + numColumns);
   }
@@ -177,5 +175,4 @@ public class GridTable extends HtmlTable {
     Assert.nonNegative(row, "Cannot access a row with a negative index: " + row);
     Assert.isTrue(row < numRows, "Row index: " + row + ", Row size: " + numRows);
   }
-
 }

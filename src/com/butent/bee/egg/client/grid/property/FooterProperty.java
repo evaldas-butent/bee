@@ -1,17 +1,7 @@
 package com.butent.bee.egg.client.grid.property;
 
 public class FooterProperty extends HeaderPropertyBase {
-  public static final Type<FooterProperty> TYPE = new Type<FooterProperty>() {
-    private FooterProperty instance;
-
-    @Override
-    public FooterProperty getDefault() {
-      if (instance == null) {
-        instance = new FooterProperty();
-      }
-      return instance;
-    }
-  };
+  public static final String NAME = "footer";
 
   public Object getFooter(int row) {
     return super.getHeader(row);

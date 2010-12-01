@@ -94,8 +94,7 @@ public class SelectionGrid extends GridTable implements HasRowHighlightHandlers,
     setCellFormatter(new SelectionGridCellFormatter());
     setRowFormatter(new SelectionGridRowFormatter());
 
-    sinkEvents(Event.ONMOUSEOVER | Event.ONMOUSEOUT | Event.ONMOUSEDOWN
-        | Event.ONCLICK);
+    sinkEvents(Event.ONMOUSEOVER | Event.ONMOUSEOUT | Event.ONMOUSEDOWN | Event.ONCLICK);
   }
 
   public SelectionGrid(int rows, int columns) {
@@ -204,8 +203,7 @@ public class SelectionGrid extends GridTable implements HasRowHighlightHandlers,
           int rowHeight = highlightedRowElem.getOffsetHeight();
           int rowBottom = rowTop + rowHeight;
           int rowRight = rowLeft + rowWidth;
-          if (clientX > rowLeft && clientX < rowRight && clientY > rowTop
-              && clientY < rowBottom) {
+          if (clientX > rowLeft && clientX < rowRight && clientY > rowTop && clientY < rowBottom) {
             return;
           }
 
@@ -227,8 +225,7 @@ public class SelectionGrid extends GridTable implements HasRowHighlightHandlers,
 
         if (selectionPolicy == SelectionPolicy.MULTI_ROW) {
           boolean shiftKey = DOM.eventGetShiftKey(event);
-          boolean ctrlKey = DOM.eventGetCtrlKey(event)
-              || DOM.eventGetMetaKey(event);
+          boolean ctrlKey = DOM.eventGetCtrlKey(event) || DOM.eventGetMetaKey(event);
 
           if (ctrlKey || shiftKey) {
             event.preventDefault();
@@ -236,7 +233,8 @@ public class SelectionGrid extends GridTable implements HasRowHighlightHandlers,
 
           selectRow(targetRowIndex, ctrlKey, shiftKey);
         } else if (selectionPolicy == SelectionPolicy.ONE_ROW
-            || (selectionPolicy == SelectionPolicy.RADIO && targetCell == targetRow.getFirstChild())) {
+            || (selectionPolicy == SelectionPolicy.RADIO
+                && targetCell == targetRow.getFirstChild())) {
           selectRow(-1, targetRow, true, true);
           lastSelectedRowIndex = targetRowIndex;
         }
@@ -540,5 +538,4 @@ public class SelectionGrid extends GridTable implements HasRowHighlightHandlers,
   protected void setInputSelected(Element td, boolean selected) {
     ((InputElement) td.getFirstChild()).setChecked(selected);
   }
-
 }

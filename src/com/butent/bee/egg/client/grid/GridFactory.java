@@ -8,6 +8,7 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.egg.client.BeeGlobal;
 import com.butent.bee.egg.client.BeeKeeper;
+import com.butent.bee.egg.client.dom.DomUtils;
 import com.butent.bee.egg.client.grid.model.CachedTableModel;
 import com.butent.bee.egg.client.grid.model.MutableTableModel;
 import com.butent.bee.egg.client.grid.model.TableModel;
@@ -41,6 +42,8 @@ public class GridFactory {
       this.view = view;
       this.idx = idx;
       this.maxDisplaySize = max;
+      
+      setColumnId(idx);
     }
 
     @Override
@@ -142,7 +145,7 @@ public class GridFactory {
     return cellTable;
   }
 
-  public Widget scrollGrid(Object data, Object... columns) {
+  public Widget scrollGrid(int width, Object data, Object... columns) {
     Assert.notNull(data);
 
     BeeView view = DataUtils.createView(data, columns);
@@ -168,16 +171,20 @@ public class GridFactory {
     String[] arr = view.getColumnNames();
     for (int i = 0; i < c; i++) {
       ScrollGridColumnDefinition colDef = new ScrollGridColumnDefinition(view, i, 512);
-      colDef.setHeader(0, arr[i]);
-      colDef.setFooter(0, "col " + i);
+      colDef.setHeader(arr[i]);
+      colDef.setFooter("col " + i);
 
       tableDef.addColumnDefinition(colDef);
     }
 
     ScrollTable<Integer> table = new ScrollTable<Integer>(cachedModel, tableDef);
+    if (width > c) {
+      int w = (width - DomUtils.getScrollbarWidth() - 2) / c;
+      table.setDefaultColumnWidth(BeeUtils.limit(w, 60, 300));
+    }
 
-    FixedWidthGridBulkRenderer<Integer> renderer = new FixedWidthGridBulkRenderer<Integer>(
-        table.getDataTable(), table);
+    FixedWidthGridBulkRenderer<Integer> renderer = 
+      new FixedWidthGridBulkRenderer<Integer>(table.getDataTable(), table);
     table.setBulkRenderer(renderer);
 
     return table;

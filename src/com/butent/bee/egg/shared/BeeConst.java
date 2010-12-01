@@ -31,8 +31,11 @@ public class BeeConst {
   public static final String STRING_ZERO = "0";
   public static final String STRING_COMMA = ",";
   public static final String STRING_POINT = ".";
-  public static final String STRING_OPEN_BRACKET = "[";
-  public static final String STRING_CLOSE_BRACKET = "]";
+  public static final String STRING_LEFT_BRACKET = "[";
+  public static final String STRING_RIGHT_BRACKET = "]";
+  public static final String STRING_LEFT_PARENTHESIS = "(";
+  public static final String STRING_RIGHT_PARENTHESIS = ")";
+  public static final String STRING_EQ = "=";
   public static final String STRING_EOL = "\n";
   public static final String STRING_MINUS = "-";
   public static final String STRING_PLUS = "+";
@@ -50,6 +53,7 @@ public class BeeConst {
   public static final char CHAR_NINE = '9';
   public static final char CHAR_POINT = '.';
   public static final char CHAR_EOL = '\n';
+  public static final char CHAR_EQ = '=';
   public static final char CHAR_AMP = '&';
   public static final char CHAR_LT = '<';
   public static final char CHAR_GT = '>';

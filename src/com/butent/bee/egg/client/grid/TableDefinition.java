@@ -46,12 +46,17 @@ public class TableDefinition<RowType> {
     return columnDefs;
   }
 
+  public int getColumnId(int column) {
+    return getColumnDefinition(column).getColumnId();
+  }
+
   public RowRenderer<RowType> getRowRenderer() {
     return rowRenderer;
   }
 
   public List<ColumnDefinition<RowType, ?>> getVisibleColumnDefinitions() {
-    List<ColumnDefinition<RowType, ?>> visibleColumns = new ArrayList<ColumnDefinition<RowType, ?>>();
+    List<ColumnDefinition<RowType, ?>> visibleColumns = 
+      new ArrayList<ColumnDefinition<RowType, ?>>();
     for (ColumnDefinition<RowType, ?> columnDef : columnDefs) {
       if (isColumnVisible(columnDef)) {
         visibleColumns.add(columnDef);
@@ -93,5 +98,4 @@ public class TableDefinition<RowType> {
     Assert.notNull(rowRenderer, "rowRenderer cannot be null");
     this.rowRenderer = rowRenderer;
   }
-
 }

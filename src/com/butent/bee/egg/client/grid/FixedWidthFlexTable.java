@@ -71,8 +71,7 @@ public class FixedWidthFlexTable extends FlexTable {
     }
   }
 
-  public static final int DEFAULT_COLUMN_WIDTH = 80;
-
+  private int defaultColumnWidth;
   private Map<Integer, Integer> colWidths = new HashMap<Integer, Integer>();
 
   private List<Integer> columnsPerRow = new ArrayList<Integer>();
@@ -86,8 +85,9 @@ public class FixedWidthFlexTable extends FlexTable {
   private int[] idealWidths;
   private IdealColumnWidthInfo idealColumnWidthInfo;
 
-  public FixedWidthFlexTable() {
+  public FixedWidthFlexTable(int defColWidth) {
     super();
+    setDefaultColumnWidth(defColWidth);
     Element tableElem = getElement();
     BeeKeeper.getStyle().fixedTableLayout(tableElem);
     BeeKeeper.getStyle().zeroWidth(tableElem);
@@ -111,12 +111,15 @@ public class FixedWidthFlexTable extends FlexTable {
   }
 
   public int getColumnWidth(int column) {
-    Object colWidth = colWidths.get(new Integer(column));
+    Integer colWidth = colWidths.get(new Integer(column));
     if (colWidth == null) {
-      return DEFAULT_COLUMN_WIDTH;
-    } else {
-      return ((Integer) colWidth).intValue();
+      return defaultColumnWidth;
     }
+    return colWidth;
+  }
+
+  public int getDefaultColumnWidth() {
+    return defaultColumnWidth;
   }
 
   @Override
@@ -256,8 +259,8 @@ public class FixedWidthFlexTable extends FlexTable {
 
   public void setColumnWidth(int column, int width) {
     Assert.nonNegative(column,  "Cannot access a column with a negative index: " + column);
+    Assert.isPositive(width, "column width must be positive");
 
-    width = Math.max(1, width);
     colWidths.put(new Integer(column), new Integer(width));
 
     int numGhosts = getGhostColumnCount();
@@ -266,6 +269,10 @@ public class FixedWidthFlexTable extends FlexTable {
     }
 
     FixedWidthTable.setColumnWidth(ghostRow, column, width);
+  }
+
+  public void setDefaultColumnWidth(int defaultColumnWidth) {
+    this.defaultColumnWidth = defaultColumnWidth;
   }
 
   @Override
@@ -453,5 +460,4 @@ public class FixedWidthFlexTable extends FlexTable {
       }
     }
   }
-
 }

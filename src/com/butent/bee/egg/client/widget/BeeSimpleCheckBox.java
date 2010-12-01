@@ -10,13 +10,12 @@ import com.butent.bee.egg.client.event.HasBeeClickHandler;
 import com.butent.bee.egg.shared.HasId;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
-public class BeeSimpleCheckBox extends SimpleCheckBox implements HasId,
-    HasBeeClickHandler {
+public class BeeSimpleCheckBox extends SimpleCheckBox implements HasId, HasBeeClickHandler {
   private String fieldName = null;
 
   public BeeSimpleCheckBox() {
     super();
-    createId();
+    init();
   }
 
   public BeeSimpleCheckBox(boolean value) {
@@ -62,6 +61,11 @@ public class BeeSimpleCheckBox extends SimpleCheckBox implements HasId,
     BeeKeeper.getBus().addClickHandler(this);
   }
 
+  private void init() {
+    createId();
+    setStyleName("bee-SimpleCheckBox");
+  }
+
   private void initField(String fld) {
     if (!BeeUtils.isEmpty(fld)) {
       setFieldName(fld);
@@ -74,5 +78,4 @@ public class BeeSimpleCheckBox extends SimpleCheckBox implements HasId,
       BeeGlobal.setFieldValue(getFieldName(), BeeUtils.toString(v));
     }
   }
-
 }

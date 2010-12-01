@@ -1,17 +1,7 @@
 package com.butent.bee.egg.client.grid.property;
 
-public class PreferredWidthProperty extends ColumnProperty {
-  public static final Type<PreferredWidthProperty> TYPE = new Type<PreferredWidthProperty>() {
-    private PreferredWidthProperty instance;
-
-    @Override
-    public PreferredWidthProperty getDefault() {
-      if (instance == null) {
-        instance = new PreferredWidthProperty(80);
-      }
-      return instance;
-    }
-  };
+public class PreferredWidthProperty implements ColumnProperty {
+  public static final String NAME = "pref";
 
   private int preferredWidth;
 

@@ -130,7 +130,7 @@ public class BeeUtils {
     if (s.isEmpty()) {
       return BeeConst.STRING_EMPTY;
     } else {
-      return BeeConst.STRING_OPEN_BRACKET + s + BeeConst.STRING_CLOSE_BRACKET;
+      return BeeConst.STRING_LEFT_BRACKET + s + BeeConst.STRING_RIGHT_BRACKET;
     }
   }
 
@@ -978,6 +978,18 @@ public class BeeUtils {
     return len;
   }
   
+  public static int limit(int x, int min, int max) {
+    int z = Math.min(min, max);
+    if (x < z) {
+      return z;
+    }
+    z = Math.max(min, max);
+    if (x > z) {
+      return z;
+    }
+    return x;
+  }
+
   public static double limit(double x, double min, double max) {
     if (!isDouble(x)) {
       if (isDouble(min)) {
@@ -1101,6 +1113,16 @@ public class BeeUtils {
       return s;
     } else {
       return replicate(z, n - s.length()) + s;
+    }
+  }
+  
+  public static String parenthesize(Object x) {
+    String s = transform(x);
+
+    if (s.isEmpty()) {
+      return BeeConst.STRING_EMPTY;
+    } else {
+      return BeeConst.STRING_LEFT_PARENTHESIS + s + BeeConst.STRING_RIGHT_PARENTHESIS;
     }
   }
   

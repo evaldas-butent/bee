@@ -103,7 +103,8 @@ public abstract class TableBulkRenderer<RowType> implements HasTableDefinition<R
     }
 
     @Override
-    protected <ColType> void renderRowValue(RowType rowValue, ColumnDefinition<RowType, ColType> columnDef) {
+    protected <ColType> void renderRowValue(RowType rowValue, 
+        ColumnDefinition<RowType, ColType> columnDef) {
       curCellHtml = null;
       curCellWidget = null;
       curCellStyleName = null;
@@ -125,8 +126,7 @@ public abstract class TableBulkRenderer<RowType> implements HasTableDefinition<R
         buffer.append("\"");
       }
       if (curCellVerticalAlign != null) {
-        curCellStyles.put("verticalAlign",
-            curCellVerticalAlign.getVerticalAlignString());
+        curCellStyles.put("verticalAlign", curCellVerticalAlign.getVerticalAlignString());
       }
       if (curCellStyleName != null) {
         buffer.append(" class=\"");
@@ -197,15 +197,13 @@ public abstract class TableBulkRenderer<RowType> implements HasTableDefinition<R
 
     @Override
     protected void renderRowImpl(int rowIdx, RowType rowValue,
-        RowRenderer<RowType> rowRenderer,
-        List<ColumnDefinition<RowType, ?>> visibleColumns) {
+        RowRenderer<RowType> rowRenderer, List<ColumnDefinition<RowType, ?>> visibleColumns) {
       super.renderRowImpl(rowIdx, rowValue, rowRenderer, visibleColumns);
       buffer.append("</tr>");
     }
 
     @Override
-    protected void renderRowsImpl(int startRowIndex,
-        final Iterator<RowType> rowValues,
+    protected void renderRowsImpl(int startRowIndex, final Iterator<RowType> rowValues,
         final RowRenderer<RowType> rowRenderer,
         final List<ColumnDefinition<RowType, ?>> visibleColumns) {
       buffer.append("<table><tbody>");
@@ -245,8 +243,8 @@ public abstract class TableBulkRenderer<RowType> implements HasTableDefinition<R
           bulkRenderer.renderRows(buffer.toString());
 
           for (DelayedWidget dw : cellView.delayedWidgets) {
-            bulkRenderer.setWidgetRaw(bulkRenderer.getTable(), dw.rowIndex,
-                dw.cellIndex, dw.widget);
+            bulkRenderer.setWidgetRaw(bulkRenderer.getTable(),
+                dw.rowIndex, dw.cellIndex, dw.widget);
           }
 
           if (options.callback != null) {
@@ -371,8 +369,7 @@ public abstract class TableBulkRenderer<RowType> implements HasTableDefinition<R
       }
     };
 
-    tableModel.requestRows(new Request(options.startRow, options.numRows),
-        requestCallback);
+    tableModel.requestRows(new Request(options.startRow, options.numRows), requestCallback);
   }
 
   protected void renderRows(String rawHTMLTable) {

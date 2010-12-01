@@ -1,17 +1,7 @@
 package com.butent.bee.egg.client.grid.property;
 
-public class TruncationProperty extends ColumnProperty {
-  public static final Type<TruncationProperty> TYPE = new Type<TruncationProperty>() {
-    private TruncationProperty instance;
-
-    @Override
-    public TruncationProperty getDefault() {
-      if (instance == null) {
-        instance = new TruncationProperty(true);
-      }
-      return instance;
-    }
-  };
+public class TruncationProperty implements ColumnProperty {
+  public static final String NAME = "trunc";
 
   private boolean isTruncatable;
   private boolean isFooterTruncatable;

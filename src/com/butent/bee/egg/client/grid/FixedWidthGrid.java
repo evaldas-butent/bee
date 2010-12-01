@@ -41,9 +41,8 @@ public class FixedWidthGrid extends SortableGrid {
     }
   }
 
-  public static final int DEFAULT_COLUMN_WIDTH = 80;
-  public static final int MIN_COLUMN_WIDTH = 1;
-
+  private int inputColumnWidth = 30;
+  private int defaultColumnWidth;
   private Map<Integer, Integer> colWidths = new HashMap<Integer, Integer>();
 
   private Element ghostRow = null;
@@ -51,8 +50,9 @@ public class FixedWidthGrid extends SortableGrid {
   private int[] idealWidths;
   private IdealColumnWidthInfo idealColumnWidthInfo;
 
-  public FixedWidthGrid() {
+  public FixedWidthGrid(int defColWidth) {
     super();
+    setDefaultColumnWidth(defColWidth);
     setClearText(BeeConst.HTML_NBSP);
 
     Element tableElem = getElement();
@@ -69,11 +69,6 @@ public class FixedWidthGrid extends SortableGrid {
     sinkEvents(Event.ONMOUSEOVER | Event.ONMOUSEDOWN | Event.ONCLICK);
   }
 
-  public FixedWidthGrid(int rows, int columns) {
-    this();
-    resize(rows, columns);
-  }
-
   @Override
   public void clear() {
     super.clear();
@@ -83,10 +78,13 @@ public class FixedWidthGrid extends SortableGrid {
   public int getColumnWidth(int column) {
     Integer colWidth = colWidths.get(new Integer(column));
     if (colWidth == null) {
-      return DEFAULT_COLUMN_WIDTH;
-    } else {
-      return colWidth.intValue();
+      return getDefaultColumnWidth();
     }
+    return colWidth;
+  }
+
+  public int getDefaultColumnWidth() {
+    return defaultColumnWidth;
   }
 
   @Override
@@ -109,6 +107,10 @@ public class FixedWidthGrid extends SortableGrid {
       return idealWidths[column];
     }
     return -1;
+  }
+
+  public int getInputColumnWidth() {
+    return inputColumnWidth;
   }
 
   @Override
@@ -165,14 +167,17 @@ public class FixedWidthGrid extends SortableGrid {
 
   public void setColumnWidth(int column, int width) {
     Assert.nonNegative(column, "Cannot access a column with a negative index: " + column);
+    Assert.isPositive(width, "column width must be positive");
 
-    width = Math.max(MIN_COLUMN_WIDTH, width);
     colWidths.put(new Integer(column), new Integer(width));
-
     if (column >= numColumns) {
       return;
     }
     setColumnWidthImpl(column, width);
+  }
+
+  public void setDefaultColumnWidth(int defaultColumnWidth) {
+    this.defaultColumnWidth = defaultColumnWidth;
   }
 
   public void setGhostRow(Element ghostRow) {
@@ -185,17 +190,19 @@ public class FixedWidthGrid extends SortableGrid {
     clearIdealWidths();
   }
 
+  public void setInputColumnWidth(int inputColumnWidth) {
+    this.inputColumnWidth = inputColumnWidth;
+  }
+
   @Override
   public void setSelectionPolicy(SelectionPolicy selectionPolicy) {
-    if (selectionPolicy.hasInputColumn()
-        && !getSelectionPolicy().hasInputColumn()) {
+    if (selectionPolicy.hasInputColumn() && !getSelectionPolicy().hasInputColumn()) {
       Element tr = getGhostRow();
       Element td = FixedWidthTable.createGhostCell(null);
       tr.insertBefore(td, tr.getFirstChildElement());
       super.setSelectionPolicy(selectionPolicy);
       setColumnWidthImpl(-1, getInputColumnWidth());
-    } else if (!selectionPolicy.hasInputColumn()
-        && getSelectionPolicy().hasInputColumn()) {
+    } else if (!selectionPolicy.hasInputColumn() && getSelectionPolicy().hasInputColumn()) {
       Element tr = getGhostRow();
       tr.removeChild(tr.getFirstChildElement());
       super.setSelectionPolicy(selectionPolicy);
@@ -243,10 +250,6 @@ public class FixedWidthGrid extends SortableGrid {
 
   protected int getGhostColumnCount() {
     return super.getDOMCellCount(0);
-  }
-
-  protected int getInputColumnWidth() {
-    return 30;
   }
 
   @Override
@@ -338,5 +341,4 @@ public class FixedWidthGrid extends SortableGrid {
     }
     FixedWidthTable.setColumnWidth(ghostRow, column, width);
   }
-
 }

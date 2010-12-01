@@ -1,5 +1,8 @@
 package com.butent.bee.egg.client.composite;
 
+import com.google.gwt.event.dom.client.BlurEvent;
+import com.google.gwt.event.dom.client.FocusEvent;
+import com.google.gwt.event.dom.client.HandlesAllFocusEvents;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.dom.client.KeyDownHandler;
@@ -22,6 +25,7 @@ public class ValueSpinner extends Absolute implements RequiresResize {
   private SpinnerBase spinner;
   private TextBox valueBox;
   private Object source;
+  private boolean focus = false;
 
   private SpinnerListener spinnerListener = new SpinnerListener() {
     public void onSpinning(long value) {
@@ -127,9 +131,19 @@ public class ValueSpinner extends Absolute implements RequiresResize {
   private MouseWheelHandler mouseWheelHandler = new MouseWheelHandler() {
     public void onMouseWheel(MouseWheelEvent event) {
       int z = event.getNativeEvent().getMouseWheelVelocityY();
-      if (isEnabled() && z != 0) {
+      if (focus && isEnabled() && z != 0) {
         doStep(z < 0);
       }
+    }
+  };
+  
+  private HandlesAllFocusEvents focusHandler = new HandlesAllFocusEvents() {
+    public void onBlur(BlurEvent event) {
+      focus = false;
+    }
+    
+    public void onFocus(FocusEvent event) {
+      focus = true;
     }
   };
   
@@ -161,6 +175,8 @@ public class ValueSpinner extends Absolute implements RequiresResize {
     valueBox.addKeyDownHandler(keyDownHandler);
     valueBox.addKeyPressHandler(keyPressHandler);
     valueBox.addMouseWheelHandler(mouseWheelHandler);
+    valueBox.addFocusHandler(focusHandler);
+    valueBox.addBlurHandler(focusHandler);
     if (min >= 0 && max > min) {
       valueBox.setMaxLength(BeeUtils.toString(max).length());
     }

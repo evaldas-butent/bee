@@ -156,7 +156,11 @@ public class BeeGlobal implements BeeModule {
   }
 
   public static Widget scrollGrid(Object data, String... columns) {
-    return grids.scrollGrid(data, (Object[]) columns);
+    return scrollGrid(-1, data, columns);
+  }
+
+  public static Widget scrollGrid(int width, Object data, String... columns) {
+    return grids.scrollGrid(width, data, (Object[]) columns);
   }
 
   public static void setField(String name, BeeField fld) {

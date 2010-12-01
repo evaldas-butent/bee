@@ -86,6 +86,13 @@ public class EventUtils {
     return Element.as(et).getId();
   }
 
+  public static boolean hasModifierKey(NativeEvent ev) {
+    if (ev == null) {
+      return false;
+    }
+    return ev.getShiftKey() || ev.getCtrlKey() || ev.getAltKey() || ev.getMetaKey();
+  }
+
   public static boolean isKeyEvent(int type) {
     return (type & Event.KEYEVENTS) != 0;
   }
@@ -97,7 +104,7 @@ public class EventUtils {
       return isKeyEvent(ev.getTypeInt());
     }
   }
-
+  
   public static void logCloseEvent(CloseEvent<?> ev) {
     Assert.notNull(ev);
     BeeKeeper.getLog().info(transformCloseEvent(ev));

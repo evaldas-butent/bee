@@ -36,7 +36,7 @@ public class BeeStyle implements BeeModule {
   public static final String NAME_VERTICAL = "vertical";
   public static final String NAME_DISABLED = "disabled";  
   public static final String NAME_ENABLED = "enabled";  
-  public static final String NAME_FOCUSED = "focused";  
+  public static final String NAME_FOCUSED = "focused";
 
   public void addStyleDependentName(Element el, String styleSuffix) {
     setStyleDependentName(el, styleSuffix, true);

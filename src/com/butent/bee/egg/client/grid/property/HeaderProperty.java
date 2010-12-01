@@ -1,17 +1,7 @@
 package com.butent.bee.egg.client.grid.property;
 
 public class HeaderProperty extends HeaderPropertyBase {
-  public static final Type<HeaderProperty> TYPE = new Type<HeaderProperty>() {
-    private HeaderProperty instance;
-
-    @Override
-    public HeaderProperty getDefault() {
-      if (instance == null) {
-        instance = new HeaderProperty();
-      }
-      return instance;
-    }
-  };
+  public static final String NAME = "header";
 
   @Override
   public Object getHeader(int row) {

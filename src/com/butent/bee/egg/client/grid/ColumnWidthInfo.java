@@ -49,11 +49,11 @@ public class ColumnWidthInfo {
   }
 
   public boolean hasMaximumWidth() {
-    return maxWidth >= 0;
+    return maxWidth > 0;
   }
 
   public boolean hasMinimumWidth() {
-    return minWidth >= 0;
+    return minWidth > 0;
   }
 
   public void setCurrentWidth(int curWidth) {
