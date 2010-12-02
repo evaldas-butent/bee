@@ -25,6 +25,11 @@ class MySqlBuilder extends SqlBuilder {
 
   @Override
   String getCreate(SqlCreate sc, boolean paramMode) {
-    return super.getCreate(sc, paramMode) + " ENGINE=InnoDB";
+    String sql = super.getCreate(sc, paramMode);
+
+    if (!sql.contains(" AS SELECT ")) {
+      sql += " ENGINE=InnoDB";
+    }
+    return sql;
   }
 }

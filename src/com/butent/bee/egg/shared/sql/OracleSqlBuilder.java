@@ -20,6 +20,13 @@ class OracleSqlBuilder extends SqlBuilder {
           .setWhere(tableWh)
           .getQuery(this);
 
+      case DB_FIELDS:
+        return new SqlSelect()
+          .addFields("f", "COLUMN_NAME")
+          .addFrom("USER_TAB_COLUMNS", "f")
+          .setWhere(SqlUtils.equal("f", "TABLE_NAME", params[0]))
+          .getQuery(this);
+
       case DB_FOREIGNKEYS:
         IsCondition foreignWh = SqlUtils.equal("c", "CONSTRAINT_TYPE", "R");
 

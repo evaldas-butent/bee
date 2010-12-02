@@ -177,15 +177,16 @@ public class BeeTable {
   public static final String EXT_TABLE_SUFFIX = "_EXT";
 
   private final String name;
-  private final String idName;
-  private final String lockName;
+  private String idName;
+  private String lockName;
   private int foreignKeyCounter = 0;
 
   private Map<String, BeeStructure> fields = new LinkedHashMap<String, BeeStructure>();
   private List<BeeKey> keys = new ArrayList<BeeKey>();
   private List<BeeForeignKey> foreignKeys = new ArrayList<BeeForeignKey>();
-  private BeeTable extTable;
   private boolean custom = false;
+  private BeeTable extTable;
+  private BeeTable owner;
 
   BeeTable(String name, String idName, String lockName) {
     Assert.notEmpty(name);
@@ -225,6 +226,10 @@ public class BeeTable {
 
   public String getName() {
     return name;
+  }
+
+  public BeeTable getOwner() {
+    return owner;
   }
 
   public boolean isCustom() {
@@ -297,5 +302,11 @@ public class BeeTable {
 
   void setExtTable(BeeTable extTable) {
     this.extTable = extTable;
+
+    if (!BeeUtils.isEmpty(extTable)) {
+      extTable.idName = getName() + getIdName();
+      extTable.lockName = getName() + getLockName();
+      extTable.owner = this;
+    }
   }
 }

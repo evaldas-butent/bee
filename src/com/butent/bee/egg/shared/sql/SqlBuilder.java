@@ -78,6 +78,13 @@ public abstract class SqlBuilder {
           .setWhere(tableWh)
           .getQuery(this);
 
+      case DB_FIELDS:
+        return new SqlSelect()
+          .addFields("f", "column_name")
+          .addFrom("information_schema.columns", "f")
+          .setWhere(SqlUtils.equal("f", "table_name", params[0]))
+          .getQuery(this);
+
       case DB_FOREIGNKEYS:
         IsCondition foreignWh = SqlUtils.equal("c", "constraint_type", "FOREIGN KEY");
 
@@ -178,7 +185,7 @@ public abstract class SqlBuilder {
         }
         SqlField field = fieldList.get(i);
         query.append(field.getName().getSqlString(this, paramMode))
-          .append(" ").append(sqlType(field.getType(), field.getPrecission(), field.getScale()));
+          .append(" ").append(sqlType(field.getType(), field.getPrecision(), field.getScale()));
 
         for (Keywords opt : field.getOptions()) {
           query.append(" ").append(sqlKeyword(opt));

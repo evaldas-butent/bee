@@ -1,26 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <BeeTables>
-  <BeeTable name="bee_Tables" lockName="LastLock" idName="TableID">
-    <BeeStructure>
-      <BeeField name="TableName" type="STRING" precision="30" notNull="true" unique="true" />
-      <BeeField name="LockColumn" type="STRING" precision="30" />
-      <BeeField name="IdColumn" type="STRING" precision="30" />
-    </BeeStructure>
-  </BeeTable>
-  <BeeTable name="bee_Fields" idName="FieldID">
-    <BeeStructure>
-      <BeeField name="FieldName" type="STRING" precision="30" notNull="true" />
-      <BeeField name="FieldType" type="STRING" precision="30" notNull="true" />
-      <BeeField name="Precision" type="INTEGER" />
-      <BeeField name="Scale" type="INTEGER" />
-      <BeeField name="NotNull" type="BOOLEAN" />
-      <BeeField name="Unique" type="BOOLEAN" />
-      <BeeField name="Table" type="LONG" notNull="true" relation="bee_Tables" cascade="true" />
-      <BeeKey name="FieldName" fields="FieldName" />
-      <BeeKey name="TableField" fields="Table, FieldName" unique="true" />
-    </BeeStructure>
-  </BeeTable>
-  <BeeTable name="Countries" idName="CountryID">
+  <BeeTable name="Countries" idName="CountryID" lockName="LastLock">
     <BeeStructure>
       <BeeField name="Country" type="STRING" precision="100" notNull="true" unique="true" />
       <BeeField name="Area" type="NUMERIC" precision="10" scale="2" />
@@ -29,9 +9,7 @@
       <BeeField name="Currency" type="STRING" precision="50" unique="true" />
     </BeeStructure>
     <BeeExtended>
-      <BeeField name="Language" type="STRING" precision="30" />
-      <BeeField name="Anthem" type="STRING" precision="30" unique="true" />
-      <BeeField name="Capital" type="LONG" relation="Cities" cascade="true" />
+      <BeeField name="Language" type="STRING" precision="10" />
       <BeeKey name="Language" fields="Language" />
     </BeeExtended>
   </BeeTable>
@@ -41,15 +19,5 @@
       <BeeField name="Population" type="INTEGER" />
       <BeeField name="Country" type="LONG" relation="Countries" />
     </BeeStructure>
-    <BeeExtended>
-      <BeeField name="Boolean" type="BOOLEAN" />
-      <BeeField name="Integer" type="INTEGER" />
-      <BeeField name="Long" type="LONG" />
-      <BeeField name="Float" type="FLOAT" />
-      <BeeField name="Double" type="DOUBLE" />
-      <BeeField name="Numeric" type="NUMERIC" precision="10" scale="2" />
-      <BeeField name="Char" type="CHAR" precision="10" />
-      <BeeField name="String" type="STRING" precision="10" />
-    </BeeExtended>
   </BeeTable>
 </BeeTables>

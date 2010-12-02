@@ -14,14 +14,30 @@
       <BeeField name="Name" type="STRING" precision="10" />
     </BeeStructure>
   </BeeTable>
-  <BeeTable name="Cities" idName="CityID">
-    <BeeStructure>
-      <BeeField name="IsCapital" type="BOOLEAN" />
-    </BeeStructure>
+  <BeeTable name="Countries">
+    <BeeExtended>
+      <BeeField name="Language" type="STRING" precision="30" />
+      <BeeField name="Anthem" type="STRING" precision="30" unique="true" />
+      <BeeField name="Capital" type="LONG" relation="Cities" cascade="true" />
+      <BeeField name="Continent" type="LONG" relation="Continents" cascade="true" />
+      <BeeKey name="Language" fields="Language" />
+    </BeeExtended>
+  </BeeTable>
+  <BeeTable name="Cities">
+    <BeeExtended>
+      <BeeField name="Boolean" type="BOOLEAN" />
+      <BeeField name="Integer" type="INTEGER" />
+      <BeeField name="Long" type="LONG" />
+      <BeeField name="Float" type="FLOAT" />
+      <BeeField name="Double" type="DOUBLE" />
+      <BeeField name="Numeric" type="NUMERIC" precision="10" scale="2" />
+      <BeeField name="Char" type="CHAR" precision="10" />
+      <BeeField name="String" type="STRING" precision="10" />
+    </BeeExtended>
   </BeeTable>
   <BeeTable name="Continents" idName="ContinentID">
-    <BeeExtended>
-      <BeeField name="Continent" type="STRING" precission="30" unique="true" />
-    </BeeExtended>
+    <BeeStructure>
+      <BeeField name="Continent" type="STRING" precision="30" unique="true" />
+    </BeeStructure>
   </BeeTable>
 </BeeTables>

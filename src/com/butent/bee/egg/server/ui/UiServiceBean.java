@@ -510,14 +510,18 @@ public class UiServiceBean {
     if (arr.length > 1) {
       cmd = arr[1];
     }
-    if (BeeUtils.same(cmd, "tables")) {
+    if (BeeUtils.same(cmd, "all")) {
       sys.rebuildTables(buff);
-    } else if (BeeUtils.same(cmd, "keys")) {
-      sys.rebuildKeys(buff);
-    } else if (BeeUtils.same(cmd, "data")) {
-      sys.createData(buff);
+    } else if (BeeUtils.same(cmd, "ext")) {
+      sys.initExtensions();
+      buff.add("Extensions OK");
     } else {
-      sys.createAll(buff);
+      if (sys.isTable(cmd)) {
+        sys.rebuildTable(sys.getTable(cmd));
+        buff.add("Rebuild " + cmd + " OK");
+      } else {
+        buff.add("ERROR: unknown table " + cmd);
+      }
     }
   }
 }

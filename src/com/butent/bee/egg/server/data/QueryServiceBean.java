@@ -45,30 +45,38 @@ public class QueryServiceBean {
   @EJB
   SystemBean sys;
 
+  public Set<String> dbFields(String table) {
+    Set<String> dbFields = new HashSet<String>();
+    BeeRowSet res = (BeeRowSet) processSql(SqlUtils.dbFields(table).getQuery());
+
+    if (!res.isEmpty()) {
+      for (BeeRow row : res.getRows()) {
+        dbFields.add(row.getValue(0));
+      }
+    }
+    return dbFields;
+  }
+
   public Set<String> dbForeignKeys(String table) {
+    Set<String> dbforeignKeys = new HashSet<String>();
     BeeRowSet res = (BeeRowSet) processSql(SqlUtils.dbForeignKeys(table).getQuery());
 
-    if (res.isEmpty()) {
-      return null;
-    }
-    Set<String> dbforeignKeys = new HashSet<String>();
-
-    for (BeeRow row : res.getRows()) {
-      dbforeignKeys.add(row.getValue(0));
+    if (!res.isEmpty()) {
+      for (BeeRow row : res.getRows()) {
+        dbforeignKeys.add(row.getValue(0));
+      }
     }
     return dbforeignKeys;
   }
 
   public Set<String> dbTables(String table) {
+    Set<String> dbTables = new HashSet<String>();
     BeeRowSet res = (BeeRowSet) processSql(SqlUtils.dbTables(table).getQuery());
 
-    if (res.isEmpty()) {
-      return null;
-    }
-    Set<String> dbTables = new HashSet<String>();
-
-    for (BeeRow row : res.getRows()) {
-      dbTables.add(row.getValue(0));
+    if (!res.isEmpty()) {
+      for (BeeRow row : res.getRows()) {
+        dbTables.add(row.getValue(0));
+      }
     }
     return dbTables;
   }
