@@ -163,7 +163,7 @@ public class SystemBean {
     return !BeeUtils.isEmpty(source) && getTableNames().contains(source);
   }
 
-  public void rebuildTable(BeeTable table) {
+  public void rebuildTable(BeeTable table, boolean rebuildForeign) {
     if (!BeeUtils.isEmpty(table)) {
       String name = table.getName();
       List<BeeForeignKey> fk = new ArrayList<BeeForeignKey>();
@@ -196,16 +196,16 @@ public class SystemBean {
       if (qs.isDbTable(name)) {
         Collection<String> fields = qs.dbFields(name);
 
-        for (String fld : getFieldNames(name)) {
-          if (fields.contains(fld)) {
-            fldList.add(fld);
+        for (BeeStructure fld : table.getFields()) {
+          if (fields.contains(fld.getName())) {
+            fldList.add(fld.getName());
           }
         }
-        if (fields.contains(getLockName(name))) {
-          fldList.add(getLockName(name));
+        if (fields.contains(table.getLockName())) {
+          fldList.add(table.getLockName());
         }
-        if (fields.contains(getIdName(name))) {
-          fldList.add(getIdName(name));
+        if (fields.contains(table.getIdName())) {
+          fldList.add(table.getIdName());
         }
         if (!BeeUtils.isEmpty(fldList)) {
           qs.updateData(new SqlCreate(als).setSource(
@@ -223,11 +223,14 @@ public class SystemBean {
         qs.updateData(SqlUtils.dropTable(als));
       }
       createKeys(table);
-      createForeignKeys(table);
 
-      for (BeeForeignKey key : fk) {
-        qs.updateData(SqlUtils.createForeignKey(key.getTable(), key.getName(),
-            key.getKeyField(), key.getRefTable(), key.getRefField(), key.getAction()));
+      if (rebuildForeign) {
+        createForeignKeys(table);
+
+        for (BeeForeignKey key : fk) {
+          qs.updateData(SqlUtils.createForeignKey(key.getTable(), key.getName(),
+              key.getKeyField(), key.getRefTable(), key.getRefField(), key.getAction()));
+        }
       }
     }
   }
@@ -235,8 +238,12 @@ public class SystemBean {
   @Lock(LockType.WRITE)
   public void rebuildTables(ResponseBuffer buff) {
     for (BeeTable tbl : dataCache.values()) {
-      rebuildTable(tbl);
-      rebuildTable(tbl.getExtTable());
+      rebuildTable(tbl, false);
+      rebuildTable(tbl.getExtTable(), false);
+    }
+    for (BeeTable tbl : dataCache.values()) {
+      createForeignKeys(tbl);
+      createForeignKeys(tbl.getExtTable());
     }
     buff.add("Recreate structure OK");
   }
@@ -270,7 +277,7 @@ public class SystemBean {
 
   private void createTable(BeeTable table) {
     if (!BeeUtils.isEmpty(table)) {
-      SqlCreate sc = new SqlCreate(table.getName());
+      SqlCreate sc = new SqlCreate(table.getName(), false);
 
       for (BeeStructure field : table.getFields()) {
         sc.addField(field.getName(), field.getType(), field.getPrecision(), field.getScale(),

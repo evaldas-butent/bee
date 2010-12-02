@@ -168,7 +168,11 @@ public abstract class SqlBuilder {
     Assert.notNull(sc);
     Assert.state(!sc.isEmpty());
 
-    StringBuilder query = new StringBuilder("CREATE TABLE ");
+    StringBuilder query = new StringBuilder("CREATE");
+    if (sc.isTemporary()) {
+      query.append(" TEMPORARY");
+    }
+    query.append(" TABLE ");
 
     query.append(sc.getTarget().getSqlString(this, paramMode));
 

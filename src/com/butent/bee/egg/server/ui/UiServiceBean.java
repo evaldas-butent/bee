@@ -517,7 +517,7 @@ public class UiServiceBean {
       buff.add("Extensions OK");
     } else {
       if (sys.isTable(cmd)) {
-        sys.rebuildTable(sys.getTable(cmd));
+        sys.rebuildTable(sys.getTable(cmd), true);
         buff.add("Rebuild " + cmd + " OK");
       } else {
         buff.add("ERROR: unknown table " + cmd);

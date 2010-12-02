@@ -58,11 +58,18 @@ public class SqlCreate extends SqlQuery<SqlCreate> {
   }
 
   private final IsFrom target;
+  private final boolean temporary;
   private List<SqlField> fieldList = new ArrayList<SqlField>();
+
   private SqlSelect source;
 
   public SqlCreate(String target) {
+    this(target, true);
+  }
+
+  public SqlCreate(String target, boolean temporary) {
     this.target = new FromSingle(target);
+    this.temporary = temporary;
   }
 
   public SqlCreate addBoolean(String field, Keywords... options) {
@@ -163,6 +170,10 @@ public class SqlCreate extends SqlQuery<SqlCreate> {
   public boolean isEmpty() {
     return BeeUtils.isEmpty(target) ||
         (BeeUtils.isEmpty(fieldList) && BeeUtils.isEmpty(source));
+  }
+
+  public boolean isTemporary() {
+    return temporary;
   }
 
   public SqlCreate setSource(SqlSelect query) {

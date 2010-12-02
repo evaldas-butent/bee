@@ -1,6 +1,7 @@
 package com.butent.bee.egg.shared.sql;
 
 import com.butent.bee.egg.shared.sql.BeeConstants.Keywords;
+import com.butent.bee.egg.shared.utils.BeeUtils;
 
 class MySqlBuilder extends SqlBuilder {
 
@@ -27,7 +28,7 @@ class MySqlBuilder extends SqlBuilder {
   String getCreate(SqlCreate sc, boolean paramMode) {
     String sql = super.getCreate(sc, paramMode);
 
-    if (!sql.contains(" AS SELECT ")) {
+    if (BeeUtils.isEmpty(sc.getSource())) {
       sql += " ENGINE=InnoDB";
     }
     return sql;
