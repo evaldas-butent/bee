@@ -434,5 +434,4 @@ public class EventUtils {
       return DomUtils.transformElement(Element.as(et));
     }
   }
-
 }

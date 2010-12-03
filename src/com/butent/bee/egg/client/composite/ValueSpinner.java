@@ -229,6 +229,10 @@ public class ValueSpinner extends Absolute implements RequiresResize {
     spinner.setEnabled(enabled);
     valueBox.setEnabled(enabled);
   }
+  
+  public void updateValue(long value) {
+    spinner.updateValue(value);
+  }
 
   protected String formatValue(long value) {
     return String.valueOf(value);

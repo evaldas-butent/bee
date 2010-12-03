@@ -10,16 +10,14 @@ import com.google.gwt.user.client.Element;
 
 import com.butent.bee.egg.client.BeeKeeper;
 
-public class FixedWidthTable {
-
+public class GridUtils {
   public static class IdealColumnWidthInfo {
     private HtmlTable table;
     private TableRowElement tr;
     private int columnCount;
     private int offset;
 
-    public IdealColumnWidthInfo(HtmlTable table, TableRowElement tr,
-        int columnCount, int offset) {
+    public IdealColumnWidthInfo(HtmlTable table, TableRowElement tr, int columnCount, int offset) {
       this.table = table;
       this.tr = tr;
       this.columnCount = columnCount;
@@ -108,5 +106,4 @@ public class FixedWidthTable {
   private static Element getTableBody(HtmlTable table) {
     return table.getBodyElement();
   }
-
 }

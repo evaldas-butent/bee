@@ -144,8 +144,7 @@ class ColumnResizer {
     return width;
   }
 
-  private double getTargetDiff(List<ColumnWidthInfo> columns,
-      int syncedColumns, int width) {
+  private double getTargetDiff(List<ColumnWidthInfo> columns, int syncedColumns, int width) {
     if (syncedColumns < columns.size()) {
       return columns.get(syncedColumns).getPercentageDifference();
     } else {

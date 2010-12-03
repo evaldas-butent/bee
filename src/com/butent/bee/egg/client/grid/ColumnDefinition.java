@@ -14,11 +14,18 @@ import com.butent.bee.egg.client.grid.render.CellRenderer;
 import com.butent.bee.egg.client.grid.render.DefaultCellRenderer;
 import com.butent.bee.egg.shared.Assert;
 
-public abstract class ColumnDefinition<RowType, ColType> {
+public abstract class ColumnDefinition<RowType, ColType> 
+    implements Comparable<ColumnDefinition<?, ?>> {
   private CellRenderer<RowType, ColType> cellRenderer = new DefaultCellRenderer<RowType, ColType>();
 
   private ColumnPropertyManager properties = new ColumnPropertyManager();
+
   private int columnId;
+  private int columnOrder;
+
+  public int compareTo(ColumnDefinition<?, ?> o) {
+    return ((Integer) getColumnOrder()).compareTo(o.getColumnOrder());
+  }
 
   public CellRenderer<RowType, ColType> getCellRenderer() {
     return cellRenderer;
@@ -30,6 +37,10 @@ public abstract class ColumnDefinition<RowType, ColType> {
     return columnId;
   }
 
+  public int getColumnOrder() {
+    return columnOrder;
+  }
+
   public <P extends ColumnProperty> P getColumnProperty(String name) {
     return properties.getColumnProperty(name);
   }
@@ -37,7 +48,7 @@ public abstract class ColumnDefinition<RowType, ColType> {
   public Object getFooter() {
     return getFooter(HeaderPropertyBase.DEFAULT_ROW);
   }
-
+  
   public Object getFooter(int row) {
     FooterProperty prop = getColumnProperty(FooterProperty.NAME);
     if (prop == null) {
@@ -45,7 +56,7 @@ public abstract class ColumnDefinition<RowType, ColType> {
     }
     return prop.getFooter(row);
   }
-  
+
   public int getFooterCount() {
     FooterProperty prop = getColumnProperty(FooterProperty.NAME);
     if (prop == null) {
@@ -53,11 +64,11 @@ public abstract class ColumnDefinition<RowType, ColType> {
     }
     return prop.getFooterCount();
   }
-
+  
   public Object getHeader() {
     return getHeader(HeaderPropertyBase.DEFAULT_ROW);
   }
-  
+
   public Object getHeader(int row) {
     HeaderProperty prop = getColumnProperty(HeaderProperty.NAME);
     if (prop == null) {
@@ -161,6 +172,10 @@ public abstract class ColumnDefinition<RowType, ColType> {
     this.columnId = columnId;
   }
 
+  public void setColumnOrder(int columnOrder) {
+    this.columnOrder = columnOrder;
+  }
+
   public <P extends ColumnProperty> void setColumnProperty(String name, P property) {
     properties.setColumnProperty(name, property);
   }
@@ -168,7 +183,7 @@ public abstract class ColumnDefinition<RowType, ColType> {
   public void setColumnSortable(boolean sortable) {
     setColumnProperty(SortableProperty.NAME, new SortableProperty(sortable));
   }
-
+  
   public void setColumnTruncatable(boolean truncatable) {
     TruncationProperty prop = properties.getColumnProperty(TruncationProperty.NAME);
     if (prop == null) {
@@ -178,7 +193,7 @@ public abstract class ColumnDefinition<RowType, ColType> {
       prop.setColumnTruncatable(truncatable);
     }
   }
-  
+
   public void setFooter(int row, Object footer) {
     FooterProperty prop = properties.getColumnProperty(FooterProperty.NAME);
     if (prop == null) {
@@ -209,7 +224,7 @@ public abstract class ColumnDefinition<RowType, ColType> {
     }
     prop.setFooterTruncatable(truncatable);
   }
-
+  
   public void setHeader(int row, Object header) {
     HeaderProperty prop = properties.getColumnProperty(HeaderProperty.NAME);
     if (prop == null) {
@@ -218,7 +233,7 @@ public abstract class ColumnDefinition<RowType, ColType> {
     }
     prop.setHeader(row, header);
   }
-  
+
   public void setHeader(Object header) {
     setHeader(HeaderPropertyBase.DEFAULT_ROW, header);
   }

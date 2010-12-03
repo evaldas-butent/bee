@@ -40,7 +40,7 @@ public class RadioGroup extends Span implements HasService {
       inp = InputElement.as(el);
 
       if (inp.isChecked()) {
-        v = inp.getTabIndex();
+        v = BeeUtils.toInt(inp.getValue());
         break;
       }
     }
@@ -137,7 +137,7 @@ public class RadioGroup extends Span implements HasService {
       rb = new BeeRadioButton(name, s);
       add(rb);
 
-      rb.setTabIndex(idx);
+      rb.setFormValue(BeeUtils.toString(idx));
       BeeKeeper.getBus().addBoolVch(rb);
       
       rb.addStyleDependentName(vertical ? BeeStyle.NAME_VERTICAL : BeeStyle.NAME_HORIZONTAL);
@@ -148,5 +148,4 @@ public class RadioGroup extends Span implements HasService {
       idx++;
     }
   }
-
 }

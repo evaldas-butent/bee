@@ -6,24 +6,28 @@ import com.butent.bee.egg.client.dom.DomUtils;
 import com.butent.bee.egg.shared.HasId;
 
 public class BeePopupPanel extends PopupPanel implements HasId {
-
   public BeePopupPanel() {
     super(true);
-    createId();
+    init();
   }
 
   public BeePopupPanel(boolean autoHide) {
     super(autoHide);
-    createId();
+    init();
   }
 
   public BeePopupPanel(boolean autoHide, boolean modal) {
     super(autoHide, modal);
-    createId();
+    init();
   }
 
   public void createId() {
     DomUtils.createId(this, "popup");
+  }
+  
+  public void enableGlass() {
+    setGlassStyleName("bee-PopupGlass");
+    setGlassEnabled(true);
   }
 
   public String getId() {
@@ -33,5 +37,9 @@ public class BeePopupPanel extends PopupPanel implements HasId {
   public void setId(String id) {
     DomUtils.setId(this, id);
   }
-
+  
+  private void init() {
+    createId();
+    setStyleName("bee-PopupPanel");
+  }
 }

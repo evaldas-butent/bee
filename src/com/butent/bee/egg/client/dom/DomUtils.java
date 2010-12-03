@@ -18,6 +18,7 @@ import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.dom.client.Style.Visibility;
 import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.user.client.DOM;
+import com.google.gwt.user.client.ui.HasOneWidget;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.UIObject;
@@ -882,6 +883,42 @@ public class DomUtils {
   public static int getValueInt(Element elem) {
     Assert.notNull(elem);
     return elem.getPropertyInt(ATTRIBUTE_VALUE);
+  }
+  
+  public static Widget getWidget(Widget root, String id) {
+    Assert.notNull(root);
+    Assert.notEmpty(id);
+    
+    return getWidget(root, DOM.getElementById(id));
+  }
+  
+  public static Widget getWidget(Widget root, Element elem) {
+    if (root == null || elem == null) {
+      return null;
+    }
+    
+    if (root.getElement() == elem) {
+      return root;
+    }
+    if (!root.getElement().isOrHasChild(elem)) {
+      return null;
+    }
+    if (root instanceof HasOneWidget) {
+      return getWidget(((HasOneWidget) root).getWidget(), elem);
+    }
+    
+    Widget ret = null; 
+    if (root instanceof HasWidgets) {
+      Widget found;
+      for (Iterator<Widget> it = ((HasWidgets) root).iterator(); it.hasNext(); ) {
+        found = getWidget(it.next(), elem);
+        if (found != null) {
+          ret = found;
+          break;
+        }
+      }
+    }
+    return ret;
   }
 
   public static int getWidgetCount(HasWidgets container) {

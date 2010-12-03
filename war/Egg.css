@@ -225,7 +225,7 @@ body, select {
   user-select: none;
 }
 .bee-dndSource {
-  color: black;
+  color: white;
   background: purple;
 }
 .bee-dndOver {
@@ -295,6 +295,18 @@ body, select {
   cursor: default;
 }
 
+.bee-PopupPanel {
+  border: 3px solid activeborder;
+  border-radius: 12px;
+  padding: 5px;
+  background: #eee;
+}
+.bee-PopupGlass {
+  background-color: #000;
+  opacity: 0.3;
+  filter: alpha(opacity=30);
+}
+
 .gwt-SplitLayoutPanel-HDragger {
   background: #f6cef5;
   cursor: col-resize;
@@ -310,12 +322,6 @@ body, select {
 .gwt-DialogBox .dialogContent {
   border: 1px solid #bbbbbb;
   background: #CCFFCC;
-}
-
-.gwt-PopupPanel {
-  border: 3px solid #C3D9FF;
-  padding: 3px;
-  background: #CCFFFF;
 }
 
 .gwt-StackLayoutPanel {

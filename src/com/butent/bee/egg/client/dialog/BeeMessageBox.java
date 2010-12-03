@@ -100,5 +100,4 @@ public class BeeMessageBox {
     box.center();
     b.setFocus(true);
   }
-  
 }

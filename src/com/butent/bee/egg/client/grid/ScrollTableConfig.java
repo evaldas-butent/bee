@@ -2,16 +2,25 @@ package com.butent.bee.egg.client.grid;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.logical.shared.CloseEvent;
+import com.google.gwt.event.logical.shared.CloseHandler;
+import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
+import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.PopupPanel.PositionCallback;
+import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.egg.client.BeeGlobal;
+import com.butent.bee.egg.client.BeeKeeper;
 import com.butent.bee.egg.client.BeeStyle;
 import com.butent.bee.egg.client.composite.RadioGroup;
 import com.butent.bee.egg.client.composite.SpinnerListener;
 import com.butent.bee.egg.client.composite.ValueSpinner;
 import com.butent.bee.egg.client.dialog.BeePopupPanel;
 import com.butent.bee.egg.client.dom.DomUtils;
+import com.butent.bee.egg.client.event.DndEvent;
+import com.butent.bee.egg.client.event.EventUtils;
+import com.butent.bee.egg.client.event.HasAllDndHandlers;
 import com.butent.bee.egg.client.grid.ScrollTable.ResizePolicy;
 import com.butent.bee.egg.client.grid.SelectionGrid.SelectionPolicy;
 import com.butent.bee.egg.client.layout.Absolute;
@@ -24,17 +33,27 @@ import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
-import java.util.Collections;
+import java.util.Arrays;
 
 public class ScrollTableConfig {
   private class ColumnRef {
     private String show;
     private String order;
+    private String cap;
     private String curW;
     private String minW;
     private String prefW;
     private String maxW;
-
+    
+    private int row;
+    
+    private ColumnRef(int row) {
+      this.row = row;
+    }
+    
+    public String getCap() {
+      return cap;
+    }
     public String getCurW() {
       return curW;
     }
@@ -50,8 +69,15 @@ public class ScrollTableConfig {
     public String getPrefW() {
       return prefW;
     }
+    public int getRow() {
+      return row;
+    }
     public String getShow() {
       return show;
+    }
+
+    public void setCap(String cap) {
+      this.cap = cap;
     }
     public void setCurW(String curW) {
       this.curW = curW;
@@ -67,6 +93,9 @@ public class ScrollTableConfig {
     }
     public void setPrefW(String prefW) {
       this.prefW = prefW;
+    }
+    public void setRow(int row) {
+      this.row = row;
     }
     public void setShow(String show) {
       this.show = show;
@@ -91,22 +120,128 @@ public class ScrollTableConfig {
         return;
       }
       
-      boolean reload = setupGrid();
-      reload |= setupColumns();
+      boolean reload = setupColumns();
+      reload |= setupGrid();
       
       if (reload) {
+        scrollTable.setHeadersObsolete(true);
         scrollTable.reloadPage();
       }
 
       if (BeeUtils.same(action, "fill")) {
         scrollTable.fillWidth();
       } else if (BeeUtils.same(action, "redraw")) {
-        scrollTable.redraw();
+        scrollTable.scheduleRedraw();
       } else if (BeeUtils.same(action, "reset")) {
         scrollTable.resetColumnWidths();
       }
       
       popup.hide();
+    }
+  }
+
+  private class DndHandler implements HasAllDndHandlers {
+    private String sourceId = null;
+    private String targetId = null;
+    private Scroll panel = null;
+    private int top = -1;
+    private int height = -1;
+    private int bottom = -1;
+    private int maxScroll = -1;
+    
+    public boolean onDrag(DndEvent event) {
+      if (panel == null || maxScroll <= 0) {
+        return true;
+      }
+      int y = event.getClientY();
+      int pos = panel.getScrollPosition();
+
+      if (y < top && pos > 0) {
+        panel.setScrollPosition(Math.max(pos + y - top, 0));
+      } else if (y > bottom && pos < maxScroll) {
+        panel.setScrollPosition(Math.min(pos + y - bottom, maxScroll));
+      }
+      return true;
+    }
+
+    public boolean onDragEnd(DndEvent event) {
+      event.getElement().removeClassName(BeeStyle.DND_SOURCE);
+      if (!BeeUtils.isEmpty(sourceId) && !BeeUtils.isEmpty(targetId)
+          && !BeeUtils.same(sourceId, targetId)) {
+        moveColumn(sourceId, targetId);
+      }
+      return true;
+    }
+
+    public boolean onDragEnter(DndEvent event) {
+      Element elem = event.getElement();
+      if (isTarget(elem)) {
+        elem.addClassName(BeeStyle.DND_OVER);
+      }
+      return true;
+    }
+
+    public boolean onDragLeave(DndEvent event) {
+      Element elem = event.getElement();
+      if (isTarget(elem)) {
+        elem.removeClassName(BeeStyle.DND_OVER);
+      }
+      return true;
+    }
+
+    public boolean onDragOver(DndEvent event) {
+      event.setDropEffect(DndEvent.EFFECT_MOVE);
+      event.preventDefault();
+      return false;
+    }
+
+    public boolean onDragStart(DndEvent event) {
+      Element elem = event.getElement();
+      sourceId = elem.getId();
+      targetId = null;
+      
+      if (panel != null) {
+        top = panel.getAbsoluteTop();
+        height = panel.getElement().getClientHeight();
+        bottom = top + height;
+        maxScroll = panel.getElement().getScrollHeight() - height;
+      }
+      
+      elem.addClassName(BeeStyle.DND_SOURCE);
+      event.setData(sourceId);
+      event.setEffectAllowed(DndEvent.EFFECT_MOVE);
+
+      return true;
+    }
+
+    public boolean onDrop(DndEvent event) {
+      Element elem = event.getElement();
+      event.stopPropagation();
+
+      if (isTarget(elem)) {
+        elem.removeClassName(BeeStyle.DND_OVER);
+        targetId = elem.getId();
+      }
+      return false;
+    }
+
+    private boolean isTarget(Element elem) {
+      if (elem == null) {
+        return false;
+      }
+
+      String id = elem.getId();
+      return !BeeUtils.isEmpty(id) && !BeeUtils.same(id, sourceId);
+    }
+    
+    private void setPanel(Scroll panel) {
+      this.panel = panel;
+    }
+  }
+  
+  private class PopupCloseHandler implements CloseHandler<PopupPanel> {
+    public void onClose(CloseEvent<PopupPanel> event) {
+      EventUtils.removeDndHandler(dndHandler);
     }
   }
   
@@ -118,6 +253,20 @@ public class ScrollTableConfig {
       x = BeeUtils.fitStart(x, offsetWidth, DomUtils.getClientWidth() - 10, 0);
       y = BeeUtils.fitStart(y, offsetHeight, DomUtils.getClientHeight() - 10, 0);
       popup.setPopupPosition(x, y);
+    }
+  }
+  
+  private class VisibilityHandler implements ClickHandler {
+    public void onClick(ClickEvent event) {
+      if (event.getSource() instanceof BeeSimpleCheckBox) {
+        if (((BeeSimpleCheckBox) event.getSource()).isChecked()) {
+          visibleCount++;
+        } else {
+          visibleCount--;
+        }
+        DomUtils.setText(cntId, getCounts());
+      }
+      totalWidths();
     }
   }
   
@@ -163,20 +312,6 @@ public class ScrollTableConfig {
       DomUtils.setText(dst, BeeUtils.toString(tot));
     }
   }
-  
-  private class VisibilityHandler implements ClickHandler {
-    public void onClick(ClickEvent event) {
-      if (event.getSource() instanceof BeeSimpleCheckBox) {
-        if (((BeeSimpleCheckBox) event.getSource()).isChecked()) {
-          visibleCount++;
-        } else {
-          visibleCount--;
-        }
-        DomUtils.setText(cntId, getCounts());
-      }
-      totalWidths();
-    }
-  }
 
   private ScrollTable<?> scrollTable;
   private TableDefinition<?> tableDefinition;
@@ -199,8 +334,12 @@ public class ScrollTableConfig {
   private ColumnRef[] cRef;
 
   private WidthListener curWidthListener, minWidthListener, prefWidthListener, maxWidthListener;
+  private DndHandler dndHandler = new DndHandler();
   
   private BeePopupPanel popup;
+  
+  private int colInfoTop = 0;
+  private int colInfoHeight = 30;
 
   public ScrollTableConfig(ScrollTable<?> st) {
     init(st);
@@ -252,7 +391,7 @@ public class ScrollTableConfig {
     
     Absolute cp = new Absolute();
     int cx = xmrg;
-    int cy = 0;
+    int cy = colInfoTop;
     ww = 60;
     
     cRef = new ColumnRef[columnCount];
@@ -265,13 +404,17 @@ public class ScrollTableConfig {
     VisibilityHandler vh = new VisibilityHandler();
     
     for (int i = 0; i < columnCount; i++) {
-      cRef[i] = new ColumnRef();
+      cRef[i] = new ColumnRef(i);
       BeeSimpleCheckBox scb = new BeeSimpleCheckBox(columnVisible[i]);
       scb.addClickHandler(vh);
       cRef[i].setShow(cp.append(scb, cx, cy));
 
       cRef[i].setOrder(cp.append(new ValueSpinner(i, 0, columnCount - 1), cx + 24, cy, 48));
-      cp.append(new BeeLabel(scrollTable.getColumnCaption(i, false)), cx + 80, cy, 116);
+
+      BeeLabel cap = new BeeLabel(scrollTable.getColumnCaption(i, false));
+      EventUtils.makeDndSource(cap.getElement(), dndHandler);
+      EventUtils.makeDndTarget(cap.getElement(), dndHandler);
+      cRef[i].setCap(cp.append(cap, cx + 80, cy, 116));
 
       vs = new ValueSpinner(columnWidth[i].getCurrentWidth(), 1, 500);
       vs.addSpinnerListener(curWidthListener);
@@ -289,18 +432,19 @@ public class ScrollTableConfig {
       vs.addSpinnerListener(maxWidthListener);
       cRef[i].setMaxW(cp.append(vs, xMax, cy, ww));
 
-      cy += 30;
+      cy += colInfoHeight;
     }
     
     DomUtils.setWidth(cp, w - 20);
     DomUtils.setHeight(cp, cy);
     
-    z = 300;
+    z = colInfoTop + colInfoHeight * 10;
     if (cy > z) {
       Scroll sp = new Scroll(cp);
       panel.append(sp, 0, y, w);
       DomUtils.setHeight(sp, z);
       y += z;
+      dndHandler.setPanel(sp);
     } else {
       panel.append(cp, 0, y, w);
       y += cy;
@@ -321,9 +465,12 @@ public class ScrollTableConfig {
     DomUtils.setWidth(panel, w);
     DomUtils.setHeight(panel, y);
     
-    popup = new BeePopupPanel();
+    popup = new BeePopupPanel(true, true);
     popup.setWidget(panel);
     popup.setStyleName(BeeStyle.CONFIG_PANEL);
+    popup.enableGlass();
+    
+    popup.addCloseHandler(new PopupCloseHandler());
     popup.setPopupPositionAndShow(new PopupPosition());
     
     totalWidths();
@@ -335,6 +482,10 @@ public class ScrollTableConfig {
           columnCount - visibleCount, BeeConst.CHAR_EQ, columnCount);
     }
     return BeeUtils.toString(columnCount);
+  }
+  
+  private int getTop(int row) {
+    return colInfoTop + colInfoHeight * row;
   }
   
   private void init(ScrollTable<?> st) {
@@ -369,10 +520,111 @@ public class ScrollTableConfig {
     return DomUtils.isChecked(cRef[column].getShow());
   }
   
+  private void moveColumn(String srcId, String dstId) {
+    Assert.notEmpty(srcId);
+    Assert.notEmpty(dstId);
+    int fr = -1;
+    int to = -1;
+    
+    for (int i = 0; i < columnCount; i++) {
+      String capId = cRef[i].getCap();
+      if (BeeUtils.same(capId, srcId)) {
+        fr = cRef[i].getRow();
+      } else if (BeeUtils.same(capId, dstId)) {
+        to = cRef[i].getRow();
+      }
+    }
+    Assert.betweenExclusive(fr, 0, columnCount);
+    Assert.betweenExclusive(to, 0, columnCount);
+    Assert.isTrue(fr != to);
+    
+    int min = Math.min(fr, to);
+    int max = Math.max(fr, to);
+    int oldRow, newRow;
+
+    for (int i = 0; i < columnCount; i++) {
+      oldRow = cRef[i].getRow();
+      if (oldRow < min || oldRow > max) {
+        continue;
+      }
+      
+      newRow = (oldRow == fr) ? to : (fr < to) ? oldRow - 1 : oldRow + 1;
+      setRowTop(i, getTop(newRow));
+      cRef[i].setRow(newRow);
+      
+      Widget widget = DomUtils.getWidget(popup, cRef[i].getOrder());
+      if (widget instanceof ValueSpinner) {
+        ((ValueSpinner) widget).updateValue(newRow);
+      }
+    }
+  }
+  
+  private boolean orderColumns() {
+    boolean order = false;
+    if (columnCount <= 1) {
+      return order;
+    }
+    int[] arr = new int[columnCount];
+    Arrays.fill(arr, -1);
+    int z;
+
+    for (int i = 0; i < columnCount; i++) {
+      z = DomUtils.getValueInt(cRef[i].getOrder());
+      if (z >= 0 && z < columnCount && arr[z] < 0) {
+        arr[z] = i;
+      }
+    }
+    
+    for (int i = 0; i < columnCount; i++) {
+      if (BeeUtils.contains(i, arr)) {
+        continue;
+      }
+
+      z = BeeUtils.limit(DomUtils.getValueInt(cRef[i].getOrder()), 0, columnCount - 1);
+      for (int j = 0; j < columnCount; j++) {
+        if (arr[z] < 0) {
+          arr[z] = i;
+          break;
+        }
+        z++;
+        if (z >= columnCount) {
+          z = 0;
+        }
+      }
+    }
+    
+    for (int i = 0; i < columnCount; i++) {
+      if (arr[i] != i) {
+        order = true;
+        break;
+      }
+    }
+    if (!order) {
+      return order;
+    }
+    
+    for (int i = 0; i < columnCount; i++) {
+      tableDefinition.getColumnDefinition(arr[i]).setColumnOrder(i);
+    }
+    tableDefinition.orderColumnDefs();
+    
+    return order;
+  }
+
+  private void setRowTop(int row, int top) {
+    BeeKeeper.getStyle().setTop(cRef[row].getShow(), top); 
+    BeeKeeper.getStyle().setTop(cRef[row].getOrder(), top); 
+    BeeKeeper.getStyle().setTop(cRef[row].getCap(), top); 
+    BeeKeeper.getStyle().setTop(cRef[row].getCurW(), top); 
+    BeeKeeper.getStyle().setTop(cRef[row].getMinW(), top); 
+    BeeKeeper.getStyle().setTop(cRef[row].getPrefW(), top); 
+    BeeKeeper.getStyle().setTop(cRef[row].getMaxW(), top); 
+  }
+  
   private boolean setupColumns() {
     boolean reload = false;
     boolean show;
-    int order, curW, minW, prefW, maxW; 
+    int curW, minW, prefW, maxW; 
     
     for (int i = 0; i < columnCount; i++) {
       show = isVisible(i);
@@ -402,13 +654,8 @@ public class ScrollTableConfig {
       }
     }
     
-    for (int i = 0; i < columnCount; i++) {
-      order = DomUtils.getValueInt(cRef[i].getOrder());
-      
-      if (order != i && order >= 0 && order < columnCount) {
-        Collections.swap(tableDefinition.getColumnDefs(), i, order);
-        reload = true;
-      }
+    if (orderColumns()) {
+      reload = true;
     }
     
     return reload;
@@ -425,19 +672,22 @@ public class ScrollTableConfig {
     
     if (padding != cellPadding && padding >= 0) {
       scrollTable.setCellPadding(padding);
+      reload = true;
     }
     if (spacing != cellSpacing && spacing >= 0) {
       scrollTable.setCellSpacing(spacing);
+      reload = true;
     }
     
-    if (resize != resizePolicy.ordinal() && resize >= 0 && resize < ResizePolicy.values().length) {
+    if (resize != resizePolicy.ordinal() 
+        && resize >= 0 && resize < ResizePolicy.values().length) {
       ResizePolicy rp = ResizePolicy.values()[resize];
       scrollTable.setResizePolicy(rp);
     }
-    if (select != selectionPolicy.ordinal() && select >= 0 && select < SelectionPolicy.values().length) {
+    if (select != selectionPolicy.ordinal() 
+        && select >= 0 && select < SelectionPolicy.values().length) {
       SelectionPolicy sp = SelectionPolicy.values()[select];
       scrollTable.getDataTable().setSelectionPolicy(sp);
-      scrollTable.setHeadersObsolete(true);
       reload = true;
     }
     
@@ -456,7 +706,6 @@ public class ScrollTableConfig {
     if (!ok) {
       BeeGlobal.showError("Invisible Pink Unicorns are beings of great spiritual power");
     }
-    
     return ok;
   }
 }

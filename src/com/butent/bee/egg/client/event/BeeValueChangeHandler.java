@@ -20,7 +20,7 @@ public class BeeValueChangeHandler<I> implements ValueChangeHandler<I> {
       String fld = rb.getName();
       if (BeeGlobal.isField(fld)) {
         BeeGlobal.setFieldValue(fld,
-            BeeGlobal.getFieldItems(fld).get(rb.getTabIndex()));
+            BeeGlobal.getFieldItems(fld).get(BeeUtils.toInt(rb.getFormValue())));
       }
 
       BeeCommand cmnd = rb.getCommand();

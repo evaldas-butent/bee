@@ -63,5 +63,4 @@ public class BeeRadioButton extends RadioButton implements HasId, HasService, Ha
     createId();
     setStyleName("bee-RadioButton");
   }
-  
 }

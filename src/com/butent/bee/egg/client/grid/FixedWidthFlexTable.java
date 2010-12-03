@@ -6,7 +6,7 @@ import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.egg.client.BeeKeeper;
-import com.butent.bee.egg.client.grid.FixedWidthTable.IdealColumnWidthInfo;
+import com.butent.bee.egg.client.grid.GridUtils.IdealColumnWidthInfo;
 import com.butent.bee.egg.shared.Assert;
 
 import java.util.ArrayList;
@@ -96,7 +96,7 @@ public class FixedWidthFlexTable extends FlexTable {
     setColumnFormatter(new FixedWidthFlexColumnFormatter());
     setRowFormatter(new FixedWidthFlexRowFormatter());
 
-    ghostRow = FixedWidthTable.createGhostRow();
+    ghostRow = GridUtils.createGhostRow();
     DOM.insertChild(getBodyElement(), ghostRow, 0);
   }
 
@@ -268,7 +268,7 @@ public class FixedWidthFlexTable extends FlexTable {
       return;
     }
 
-    FixedWidthTable.setColumnWidth(ghostRow, column, width);
+    GridUtils.setColumnWidth(ghostRow, column, width);
   }
 
   public void setDefaultColumnWidth(int defaultColumnWidth) {
@@ -368,16 +368,16 @@ public class FixedWidthFlexTable extends FlexTable {
   }
 
   void recalculateIdealColumnWidthsImpl() {
-    idealWidths = FixedWidthTable.recalculateIdealColumnWidths(idealColumnWidthInfo);
+    idealWidths = GridUtils.recalculateIdealColumnWidths(idealColumnWidthInfo);
   }
 
   void recalculateIdealColumnWidthsSetup() {
-    idealColumnWidthInfo = FixedWidthTable.recalculateIdealColumnWidthsSetup(
+    idealColumnWidthInfo = GridUtils.recalculateIdealColumnWidthsSetup(
         this, getColumnCount(), 0);
   }
 
   void recalculateIdealColumnWidthsTeardown() {
-    FixedWidthTable.recalculateIdealColumnWidthsTeardown(idealColumnWidthInfo);
+    GridUtils.recalculateIdealColumnWidthsTeardown(idealColumnWidthInfo);
     idealColumnWidthInfo = null;
   }
 
@@ -448,15 +448,15 @@ public class FixedWidthFlexTable extends FlexTable {
     if (maxRawColumnCount > curNumGhosts) {
       super.addCells(0, maxRawColumnCount - curNumGhosts);
       for (int i = curNumGhosts; i < maxRawColumnCount; i++) {
-        Element td = FixedWidthTable.getGhostCell(ghostRow, i);
-        FixedWidthTable.createGhostCell(td);
+        Element td = GridUtils.getGhostCell(ghostRow, i);
+        GridUtils.createGhostCell(td);
         setColumnWidth(i, getColumnWidth(i));
       }
 
     } else if (maxRawColumnCount < curNumGhosts) {
       int cellsToRemove = curNumGhosts - maxRawColumnCount;
       for (int i = 0; i < cellsToRemove; i++) {
-        DOM.removeChild(ghostRow, FixedWidthTable.getGhostCell(ghostRow, maxRawColumnCount));
+        DOM.removeChild(ghostRow, GridUtils.getGhostCell(ghostRow, maxRawColumnCount));
       }
     }
   }

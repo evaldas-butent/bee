@@ -2,6 +2,7 @@ package com.butent.bee.egg.client;
 
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.UIObject;
 
@@ -181,6 +182,13 @@ public class BeeStyle implements BeeModule {
     st.setWidth(100, Unit.PCT);
   }
   
+  public Element getElement(String id) {
+    Assert.notEmpty(id);
+    Element el = DOM.getElementById(id);
+    Assert.notNull(el, "id " + id + " element not found");
+    return el;
+  }
+  
   public String getName() {
     return getClass().getName();
   }
@@ -211,6 +219,25 @@ public class BeeStyle implements BeeModule {
     }
     return className;
   }
+
+  public int getTop(String id) {
+    return getTop(getElement(id));
+  }
+
+  public int getTop(UIObject obj) {
+    Assert.notNull(obj);
+    return getTop(obj.getElement());
+  }
+
+  public int getTop(Element el) {
+    Assert.notNull(el);
+    return getTop(el.getStyle());
+  }
+
+  public int getTop(Style st) {
+    Assert.notNull(st);
+    return BeeUtils.val(st.getTop());
+  }
   
   public void init() {
   }
@@ -220,7 +247,6 @@ public class BeeStyle implements BeeModule {
   }
 
   public void setBorderBottomWidth(UIObject obj, int px) {
-    Assert.notNull(obj);
     setBorderBottomWidth(obj.getElement(), px);
   }
 
@@ -300,6 +326,10 @@ public class BeeStyle implements BeeModule {
     } else {
       el.removeClassName(st.trim());
     }
+  }
+
+  public void setTop(String id, int px) {
+    setTop(getElement(id), px);
   }
 
   public void setTop(UIObject obj, int px) {
@@ -400,8 +430,7 @@ public class BeeStyle implements BeeModule {
     for (int i = 1; i < s.trim().length(); i++) {
       char z = s.trim().charAt(i);
 
-      if (z == BeeConst.CHAR_ZERO || z == BeeConst.CHAR_SPACE
-          || z == BeeConst.CHAR_POINT) {
+      if (z == BeeConst.CHAR_ZERO || z == BeeConst.CHAR_SPACE || z == BeeConst.CHAR_POINT) {
         continue;
       } else {
         if (Character.isDigit(z)) {

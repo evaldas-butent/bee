@@ -39,7 +39,6 @@ public class BeeUtils {
         break;
       }
     }
-
     return ok;
   }
 
@@ -53,7 +52,6 @@ public class BeeUtils {
         break;
       }
     }
-
     return ok;
   }
 
@@ -148,8 +146,7 @@ public class BeeUtils {
     if (len <= n) {
       return s.trim();
     } else {
-      return s.substring(0, n).trim() + BeeConst.ELLIPSIS
-          + bracket(progress(n, len));
+      return s.substring(0, n).trim() + BeeConst.ELLIPSIS + bracket(progress(n, len));
     }
   }
 
@@ -239,6 +236,10 @@ public class BeeUtils {
     return s.toString();
   }
 
+  public static boolean contains(int value, int[] arr) {
+    return indexOf(value, arr) >= 0;
+  }
+
   public static <T> boolean contains(T value, T[] arr) {
     return indexOf(value, arr) >= 0;
   }
@@ -247,13 +248,11 @@ public class BeeUtils {
     if (ctxt == null || src == null || ctxt.length() == 0 || src.length() == 0) {
       return false;
     } else {
-      return src.toString().toLowerCase().contains(
-          ctxt.toString().toLowerCase());
+      return src.toString().toLowerCase().contains(ctxt.toString().toLowerCase());
     }
   }
 
-  public static boolean context(CharSequence ctxt,
-      Collection<? extends CharSequence> src) {
+  public static boolean context(CharSequence ctxt, Collection<? extends CharSequence> src) {
     boolean ok = false;
     if (isEmpty(ctxt)) {
       return ok;
@@ -265,7 +264,6 @@ public class BeeUtils {
         break;
       }
     }
-
     return ok;
   }
 
@@ -281,7 +279,6 @@ public class BeeUtils {
         break;
       }
     }
-
     return ok;
   }
 
@@ -387,7 +384,6 @@ public class BeeUtils {
         break;
       }
     }
-
     return ok;
   }
 
@@ -434,13 +430,11 @@ public class BeeUtils {
 
         arr[i] = (char) Integer.parseInt(u, 16);
       }
-
       return arr;
     }
   }
 
-  public static <T extends CharSequence> List<T> getContext(T ctxt,
-      Collection<T> src) {
+  public static <T extends CharSequence> List<T> getContext(T ctxt, Collection<T> src) {
     List<T> lst = new ArrayList<T>();
     if (isEmpty(ctxt)) {
       return lst;
@@ -451,7 +445,6 @@ public class BeeUtils {
         lst.add(el);
       }
     }
-
     return lst;
   }
 
@@ -479,6 +472,20 @@ public class BeeUtils {
     }
   }
 
+  public static String getPrefix(String src, String sep) {
+    if (isEmpty(src) || length(sep) <= 0) {
+      return BeeConst.STRING_EMPTY;
+    }
+
+    int p = src.indexOf(sep);
+
+    if (p > 0) {
+      return src.substring(0, p).trim();
+    } else {
+      return BeeConst.STRING_EMPTY;
+    }
+  }
+  
   public static String getSuffix(String src, char sep) {
     if (isEmpty(src)) {
       return BeeConst.STRING_EMPTY;
@@ -488,6 +495,20 @@ public class BeeUtils {
 
     if (p >= 0 && p < src.length() - 1) {
       return src.substring(p + 1).trim();
+    } else {
+      return BeeConst.STRING_EMPTY;
+    }
+  }
+
+  public static String getSuffix(String src, String sep) {
+    if (isEmpty(src) || length(sep) <= 0) {
+      return BeeConst.STRING_EMPTY;
+    }
+
+    int p = src.lastIndexOf(sep);
+
+    if (p >= 0 && p < src.length() - sep.length()) {
+      return src.substring(p + sep.length()).trim();
     } else {
       return BeeConst.STRING_EMPTY;
     }
@@ -514,7 +535,6 @@ public class BeeUtils {
         break;
       }
     }
-
     return z;
   }
 
@@ -524,6 +544,25 @@ public class BeeUtils {
 
   public static String increment(String s) {
     return Integer.toString(toInt(s) + 1);
+  }
+
+  public static int indexOf(int value, int[] arr) {
+    int idx = -1;
+    if (arr == null) {
+      return idx;
+    }
+    int len = arr.length;
+    if (len <= 0) {
+      return idx;
+    }
+
+    for (int i = 0; i < len; i++) {
+      if (arr[i] == value) {
+        idx = i;
+        break;
+      }
+    }
+    return idx;
   }
 
   @SuppressWarnings("unchecked")
@@ -546,7 +585,6 @@ public class BeeUtils {
         break;
       }
     }
-
     return idx;
   }
 
@@ -575,7 +613,6 @@ public class BeeUtils {
         break;
       }
     }
-
     return ok;
   }
 
@@ -595,7 +632,6 @@ public class BeeUtils {
         break;
       }
     }
-
     return ok;
   }
   
@@ -706,7 +742,6 @@ public class BeeUtils {
     } catch (NumberFormatException ex) {
       ok = false;
     }
-
     return ok;
   }
 
@@ -735,7 +770,6 @@ public class BeeUtils {
     } else {
       ok = false;
     }
-
     return ok;
   }
 
@@ -765,7 +799,6 @@ public class BeeUtils {
         break;
       }
     }
-
     return ok;
   }
 
@@ -786,7 +819,6 @@ public class BeeUtils {
         break;
       }
     }
-
     return ok;
   }
 
@@ -815,7 +847,6 @@ public class BeeUtils {
     } catch (NumberFormatException ex) {
       ok = false;
     }
-
     return ok;
   }
 
@@ -925,7 +956,6 @@ public class BeeUtils {
       }
       sb.append(transform(arr[i]));
     }
-
     return sb.toString();
   }
   
@@ -940,7 +970,6 @@ public class BeeUtils {
         dst.addAll(lst);
       }
     }
-
     return dst;
   }
 
@@ -974,7 +1003,6 @@ public class BeeUtils {
     } else {
       len = 0;
     }
-
     return len;
   }
   
@@ -1041,7 +1069,6 @@ public class BeeUtils {
         z = x[i];
       }
     }
-
     return z;
   }
 
@@ -1055,7 +1082,6 @@ public class BeeUtils {
         z = x[i];
       }
     }
-
     return z;
   }
 
@@ -1073,7 +1099,6 @@ public class BeeUtils {
     } else {
       sep = BeeConst.DEFAULT_LIST_SEPARATOR;
     }
-
     return sep;
   }
 
@@ -1100,7 +1125,6 @@ public class BeeUtils {
         break;
       }
     }
-
     return z;
   }
 
@@ -1157,7 +1181,6 @@ public class BeeUtils {
       }
       z.append(proper(x, null));
     }
-    
     return z.toString();
   }
 
@@ -1191,7 +1214,6 @@ public class BeeUtils {
     for (int i = 0; i < len; i++) {
       sb.append((char) randomInt(x, y + 1));
     }
-
     return sb.toString();
   }
   
@@ -1207,7 +1229,6 @@ public class BeeUtils {
         c++;
       }
     }
-    
     return c;
   }
 
@@ -1329,7 +1350,6 @@ public class BeeUtils {
     if (match) {
       lst.add(str.substring(start, i).trim());
     }
-
     return lst.toArray(new String[lst.size()]);
   }
 
@@ -1460,7 +1480,6 @@ public class BeeUtils {
     } else {
       s = x.toString();
     }
-
     return s;
   }
 
@@ -1507,7 +1526,6 @@ public class BeeUtils {
       }
       sb.append(transform(el, nextSep));
     }
-
     return sb.toString();
   }
 
@@ -1547,7 +1565,6 @@ public class BeeUtils {
       }
       sb.append(transform(el, nextSep));
     }
-
     return sb.toString();
   }
 
@@ -1578,7 +1595,6 @@ public class BeeUtils {
       }
       sb.append(transform(el, nextSep));
     }
-
     return sb.toString();
   }
 
@@ -1612,7 +1628,6 @@ public class BeeUtils {
       }
       sb.append(addName(transform(key), transform(value, nextSep)));
     }
-
     return sb.toString();
   }
 
@@ -1644,8 +1659,42 @@ public class BeeUtils {
         }
       }
     }
-
     return sb.toString();
+  }
+  
+  public static int val(String s) {
+    if (s == null) {
+      return 0;
+    }
+    int len = s.length();
+    if (len <= 0) {
+      return 0;
+    }
+    
+    int start = 0;
+    while (start < len && s.charAt(start) <= BeeConst.CHAR_SPACE) {
+      start++;
+    }
+    if (start >= len) {
+      return 0;
+    }
+
+    int end = start;
+    if (s.charAt(start) == BeeConst.CHAR_MINUS) {
+      if (len <= start + 1 || !isDigit(s.charAt(start + 1))) {
+        return 0;
+      }
+      end++;
+    }
+    
+    while (end < len && isDigit(s.charAt(end))) {
+      end++;
+    }
+    if (end <= start) {
+      return 0;
+    }
+    
+    return toInt(s.substring(start, end));
   }
 
   @SuppressWarnings("unchecked")

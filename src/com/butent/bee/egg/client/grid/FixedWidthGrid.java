@@ -7,7 +7,7 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.egg.client.BeeKeeper;
-import com.butent.bee.egg.client.grid.FixedWidthTable.IdealColumnWidthInfo;
+import com.butent.bee.egg.client.grid.GridUtils.IdealColumnWidthInfo;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeConst;
 
@@ -63,7 +63,7 @@ public class FixedWidthGrid extends SortableGrid {
     setCellFormatter(new FixedWidthGridCellFormatter());
     setColumnFormatter(new FixedWidthGridColumnFormatter());
 
-    ghostRow = FixedWidthTable.createGhostRow();
+    ghostRow = GridUtils.createGhostRow();
     DOM.insertChild(getBodyElement(), ghostRow, 0);
 
     sinkEvents(Event.ONMOUSEOVER | Event.ONMOUSEDOWN | Event.ONCLICK);
@@ -198,7 +198,7 @@ public class FixedWidthGrid extends SortableGrid {
   public void setSelectionPolicy(SelectionPolicy selectionPolicy) {
     if (selectionPolicy.hasInputColumn() && !getSelectionPolicy().hasInputColumn()) {
       Element tr = getGhostRow();
-      Element td = FixedWidthTable.createGhostCell(null);
+      Element td = GridUtils.createGhostCell(null);
       tr.insertBefore(td, tr.getFirstChildElement());
       super.setSelectionPolicy(selectionPolicy);
       setColumnWidthImpl(-1, getInputColumnWidth());
@@ -227,7 +227,7 @@ public class FixedWidthGrid extends SortableGrid {
     int numGhosts = getGhostColumnCount();
     if (numColumns > numGhosts) {
       for (int i = numGhosts; i < numColumns; i++) {
-        Element td = FixedWidthTable.createGhostCell(null);
+        Element td = GridUtils.createGhostCell(null);
         DOM.appendChild(ghostRow, td);
         setColumnWidth(i, getColumnWidth(i));
       }
@@ -305,7 +305,7 @@ public class FixedWidthGrid extends SortableGrid {
   }
 
   void recalculateIdealColumnWidthsImpl() {
-    idealWidths = FixedWidthTable.recalculateIdealColumnWidths(idealColumnWidthInfo);
+    idealWidths = GridUtils.recalculateIdealColumnWidths(idealColumnWidthInfo);
   }
 
   void recalculateIdealColumnWidthsSetup() {
@@ -313,12 +313,12 @@ public class FixedWidthGrid extends SortableGrid {
     if (getSelectionPolicy().hasInputColumn()) {
       offset++;
     }
-    idealColumnWidthInfo = FixedWidthTable.recalculateIdealColumnWidthsSetup(
-        this, getColumnCount(), offset);
+    idealColumnWidthInfo = GridUtils.recalculateIdealColumnWidthsSetup(this,
+        getColumnCount(), offset);
   }
 
   void recalculateIdealColumnWidthsTeardown() {
-    FixedWidthTable.recalculateIdealColumnWidthsTeardown(idealColumnWidthInfo);
+    GridUtils.recalculateIdealColumnWidthsTeardown(idealColumnWidthInfo);
     idealColumnWidthInfo = null;
   }
 
@@ -326,7 +326,7 @@ public class FixedWidthGrid extends SortableGrid {
     if (getSelectionPolicy().hasInputColumn()) {
       column++;
     }
-    return FixedWidthTable.getGhostCell(ghostRow, column);
+    return GridUtils.getGhostCell(ghostRow, column);
   }
 
   private void maybeRecalculateIdealColumnWidths() {
@@ -339,6 +339,6 @@ public class FixedWidthGrid extends SortableGrid {
     if (getSelectionPolicy().hasInputColumn()) {
       column++;
     }
-    FixedWidthTable.setColumnWidth(ghostRow, column, width);
+    GridUtils.setColumnWidth(ghostRow, column, width);
   }
 }

@@ -44,6 +44,7 @@ public class GridFactory {
       this.maxDisplaySize = max;
       
       setColumnId(idx);
+      setColumnOrder(idx);
     }
 
     @Override
@@ -182,6 +183,7 @@ public class GridFactory {
       int w = (width - DomUtils.getScrollbarWidth() - 2) / c;
       table.setDefaultColumnWidth(BeeUtils.limit(w, 60, 300));
     }
+    table.createFooterTable();
 
     FixedWidthGridBulkRenderer<Integer> renderer = 
       new FixedWidthGridBulkRenderer<Integer>(table.getDataTable(), table);
@@ -232,5 +234,4 @@ public class GridFactory {
 
     return cell;
   }
-
 }
