@@ -144,25 +144,13 @@ public class FixedWidthGrid extends SortableGrid {
   @Override
   public void setCellPadding(int padding) {
     super.setCellPadding(padding);
-
-    for (Map.Entry<Integer, Integer> entry : colWidths.entrySet()) {
-      setColumnWidth(entry.getKey(), entry.getValue());
-    }
-    if (getSelectionPolicy().hasInputColumn()) {
-      setColumnWidthImpl(-1, getInputColumnWidth());
-    }
+    resetColumnWidhts();
   }
 
   @Override
   public void setCellSpacing(int spacing) {
     super.setCellSpacing(spacing);
-
-    for (Map.Entry<Integer, Integer> entry : colWidths.entrySet()) {
-      setColumnWidth(entry.getKey(), entry.getValue());
-    }
-    if (getSelectionPolicy().hasInputColumn()) {
-      setColumnWidthImpl(-1, getInputColumnWidth());
-    }
+    resetColumnWidhts();
   }
 
   public void setColumnWidth(int column, int width) {
@@ -313,6 +301,7 @@ public class FixedWidthGrid extends SortableGrid {
     if (getSelectionPolicy().hasInputColumn()) {
       offset++;
     }
+    clearColumnWidhts();
     idealColumnWidthInfo = GridUtils.recalculateIdealColumnWidthsSetup(this,
         getColumnCount(), offset);
   }
@@ -320,8 +309,17 @@ public class FixedWidthGrid extends SortableGrid {
   void recalculateIdealColumnWidthsTeardown() {
     GridUtils.recalculateIdealColumnWidthsTeardown(idealColumnWidthInfo);
     idealColumnWidthInfo = null;
+    resetColumnWidhts();
   }
 
+  private void clearColumnWidhts() {
+    for (int column : colWidths.keySet()) {
+      if (column < numColumns) {
+        setColumnWidthImpl(column, 0);
+      }
+    }
+  }
+  
   private Element getGhostCellElement(int column) {
     if (getSelectionPolicy().hasInputColumn()) {
       column++;
@@ -334,11 +332,24 @@ public class FixedWidthGrid extends SortableGrid {
       recalculateIdealColumnWidths();
     }
   }
+  
+  private void resetColumnWidhts() {
+    for (Map.Entry<Integer, Integer> entry : colWidths.entrySet()) {
+      setColumnWidth(entry.getKey(), entry.getValue());
+    }
+    if (getSelectionPolicy().hasInputColumn()) {
+      setColumnWidthImpl(-1, getInputColumnWidth());
+    }
+  }
 
   private void setColumnWidthImpl(int column, int width) {
     if (getSelectionPolicy().hasInputColumn()) {
       column++;
     }
-    GridUtils.setColumnWidth(ghostRow, column, width);
+    if (width > 0) {
+      GridUtils.setColumnWidth(ghostRow, column, width);
+    } else {
+      GridUtils.clearColumnWidth(ghostRow, column);
+    }
   }
 }

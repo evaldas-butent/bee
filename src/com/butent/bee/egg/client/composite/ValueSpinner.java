@@ -1,5 +1,7 @@
 package com.butent.bee.egg.client.composite;
 
+import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.event.dom.client.BlurEvent;
 import com.google.gwt.event.dom.client.FocusEvent;
 import com.google.gwt.event.dom.client.HandlesAllFocusEvents;
@@ -146,6 +148,12 @@ public class ValueSpinner extends Absolute implements RequiresResize {
       focus = true;
     }
   };
+
+  private ScheduledCommand layoutCommand = new ScheduledCommand() {
+    public void execute() {
+      setPositions();
+    }
+  };
   
   public ValueSpinner(Object source) {
     this(source, 0, 0, 1, 99, false);
@@ -218,7 +226,7 @@ public class ValueSpinner extends Absolute implements RequiresResize {
   }
 
   public void onResize() {
-    setPositions();
+    Scheduler.get().scheduleDeferred(layoutCommand);
   }
 
   public void removeSpinnerListener(SpinnerListener listener) {
@@ -240,8 +248,8 @@ public class ValueSpinner extends Absolute implements RequiresResize {
 
   @Override
   protected void onLoad() {
-    setPositions();
     super.onLoad();
+    Scheduler.get().scheduleDeferred(layoutCommand);
   }
   
   private void doStep(boolean incr) {

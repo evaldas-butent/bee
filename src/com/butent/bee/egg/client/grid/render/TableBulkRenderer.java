@@ -1,8 +1,5 @@
 package com.butent.bee.egg.client.grid.render;
 
-import com.google.gwt.core.client.Duration;
-import com.google.gwt.core.client.Scheduler;
-import com.google.gwt.core.client.Scheduler.RepeatingCommand;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Element;
@@ -11,21 +8,18 @@ import com.google.gwt.user.client.ui.HasHorizontalAlignment.HorizontalAlignmentC
 import com.google.gwt.user.client.ui.HasVerticalAlignment.VerticalAlignmentConstant;
 
 import com.butent.bee.egg.client.grid.AbstractCellView;
-import com.butent.bee.egg.client.grid.AbstractRowView;
+import com.butent.bee.egg.client.grid.RowView;
 import com.butent.bee.egg.client.grid.HtmlTable;
 import com.butent.bee.egg.client.grid.ColumnDefinition;
 import com.butent.bee.egg.client.grid.HasTableDefinition;
 import com.butent.bee.egg.client.grid.TableDefinition;
-import com.butent.bee.egg.client.grid.model.MutableTableModel;
 import com.butent.bee.egg.client.grid.model.TableModel;
 import com.butent.bee.egg.client.grid.model.TableModelHelper.Request;
 import com.butent.bee.egg.client.grid.model.TableModelHelper.Response;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 public abstract class TableBulkRenderer<RowType> implements HasTableDefinition<RowType> {
 
@@ -46,12 +40,10 @@ public abstract class TableBulkRenderer<RowType> implements HasTableDefinition<R
 
     private Element htmlCleaner = Document.get().createDivElement().cast();
 
-    private HorizontalAlignmentConstant curCellHorizontalAlign = null;
     private String curCellHtml = null;
     private Widget curCellWidget = null;
 
-    private Map<String, String> curCellStyles = new HashMap<String, String>();
-    private String curCellStyleName = null;
+    private HorizontalAlignmentConstant curCellHorizontalAlign = null;
     private VerticalAlignmentConstant curCellVerticalAlign = null;
 
     private List<DelayedWidget> delayedWidgets = new ArrayList<DelayedWidget>();
@@ -69,16 +61,6 @@ public abstract class TableBulkRenderer<RowType> implements HasTableDefinition<R
     public void setHTML(String html) {
       curCellWidget = null;
       curCellHtml = html;
-    }
-
-    @Override
-    public void setStyleAttribute(String attr, String value) {
-      curCellStyles.put(attr, value);
-    }
-
-    @Override
-    public void setStyleName(String stylename) {
-      curCellStyleName = stylename;
     }
 
     @Override
@@ -107,10 +89,8 @@ public abstract class TableBulkRenderer<RowType> implements HasTableDefinition<R
         ColumnDefinition<RowType, ColType> columnDef) {
       curCellHtml = null;
       curCellWidget = null;
-      curCellStyleName = null;
       curCellHorizontalAlign = null;
       curCellVerticalAlign = null;
-      curCellStyles.clear();
       super.renderRowValue(rowValue, columnDef);
 
       if (curCellWidget != null) {
@@ -126,22 +106,9 @@ public abstract class TableBulkRenderer<RowType> implements HasTableDefinition<R
         buffer.append("\"");
       }
       if (curCellVerticalAlign != null) {
-        curCellStyles.put("verticalAlign", curCellVerticalAlign.getVerticalAlignString());
-      }
-      if (curCellStyleName != null) {
-        buffer.append(" class=\"");
-        buffer.append(curCellStyleName);
-        buffer.append("\"");
-      }
-      if (curCellStyles.size() > 0) {
-        buffer.append(" style=\"");
-        for (Map.Entry<String, String> entry : curCellStyles.entrySet()) {
-          buffer.append(entry.getKey());
-          buffer.append(":");
-          buffer.append(entry.getValue());
-          buffer.append(";");
-        }
-        buffer.append("\"");
+        buffer.append(" style=\"verticalAlign:");
+        buffer.append(curCellVerticalAlign.getVerticalAlignString());
+        buffer.append(";\"");
       }
       buffer.append(">");
 
@@ -157,14 +124,11 @@ public abstract class TableBulkRenderer<RowType> implements HasTableDefinition<R
     }
   }
 
-  protected static class BulkRowView<RowType> extends AbstractRowView<RowType> {
+  protected static class BulkRowView<RowType> extends RowView<RowType> {
     private StringBuffer buffer;
 
     private TableBulkRenderer<RowType> bulkRenderer;
     private BulkCellView<RowType> cellView;
-
-    private Map<String, String> curRowStyles = new HashMap<String, String>();
-    private String curRowStyleName = null;
 
     private RenderingOptions options;
 
@@ -181,30 +145,20 @@ public abstract class TableBulkRenderer<RowType> implements HasTableDefinition<R
       cellView.buffer = buffer;
     }
 
-    @Override
-    public void setStyleAttribute(String attr, String value) {
-      curRowStyles.put(attr, value);
-    }
-
-    @Override
-    public void setStyleName(String stylename) {
-      curRowStyleName = stylename;
-    }
-
     protected StringBuffer getStringBuffer() {
       return buffer;
     }
 
     @Override
     protected void renderRowImpl(int rowIdx, RowType rowValue,
-        RowRenderer<RowType> rowRenderer, List<ColumnDefinition<RowType, ?>> visibleColumns) {
-      super.renderRowImpl(rowIdx, rowValue, rowRenderer, visibleColumns);
+        List<ColumnDefinition<RowType, ?>> visibleColumns) {
+      buffer.append("<tr>");
+      super.renderRowImpl(rowIdx, rowValue, visibleColumns);
       buffer.append("</tr>");
     }
 
     @Override
     protected void renderRowsImpl(int startRowIndex, final Iterator<RowType> rowValues,
-        final RowRenderer<RowType> rowRenderer,
         final List<ColumnDefinition<RowType, ?>> visibleColumns) {
       buffer.append("<table><tbody>");
       if (options.headerRow != null) {
@@ -212,96 +166,39 @@ public abstract class TableBulkRenderer<RowType> implements HasTableDefinition<R
       }
 
       rowIndex = startRowIndex;
-      final int myStamp = ++bulkRenderer.requestStamp;
-
-      class RenderTableCommand implements RepeatingCommand {
-        public boolean execute() {
-          if (myStamp != bulkRenderer.requestStamp) {
-            return false;
-          }
-          int checkRow = ROWS_PER_TIME_CHECK;
-          double endSlice = Duration.currentTimeMillis() + TIME_SLICE;
-
-          while (rowValues.hasNext()) {
-            if (options.syncCall == false && --checkRow == 0) {
-              checkRow = ROWS_PER_TIME_CHECK;
-              double time = Duration.currentTimeMillis();
-              if (time > endSlice) {
-                return true;
-              }
-            }
-
-            renderRowImpl(rowIndex, rowValues.next(), rowRenderer, visibleColumns);
-            rowIndex++;
-          }
-
-          if (options.footerRow != null) {
-            buffer.append(options.footerRow);
-          }
-
-          buffer.append("</tbody></table>");
-          bulkRenderer.renderRows(buffer.toString());
-
-          for (DelayedWidget dw : cellView.delayedWidgets) {
-            bulkRenderer.setWidgetRaw(bulkRenderer.getTable(),
-                dw.rowIndex, dw.cellIndex, dw.widget);
-          }
-
-          if (options.callback != null) {
-            options.callback.onRendered();
-          }
-          return false;
-        }
+      while (rowValues.hasNext()) {
+        renderRowImpl(rowIndex, rowValues.next(), visibleColumns);
+        rowIndex++;
       }
 
-      RenderTableCommand renderTable = new RenderTableCommand();
-      if (renderTable.execute()) {
-        Scheduler.get().scheduleIncremental(renderTable);
+      if (options.footerRow != null) {
+        buffer.append(options.footerRow);
       }
-    }
 
-    @Override
-    protected void renderRowValue(RowType rowValue, RowRenderer<RowType> rowRenderer) {
-      curRowStyleName = null;
-      curRowStyles.clear();
-      super.renderRowValue(rowValue, rowRenderer);
+      buffer.append("</tbody></table>");
+      bulkRenderer.renderRows(buffer.toString());
 
-      buffer.append("<tr");
-      if (curRowStyleName != null) {
-        buffer.append(" class=\"");
-        buffer.append(curRowStyleName);
-        buffer.append("\"");
+      for (DelayedWidget dw : cellView.delayedWidgets) {
+        bulkRenderer.setWidgetRaw(bulkRenderer.getTable(),
+            dw.rowIndex, dw.cellIndex, dw.widget);
       }
-      if (curRowStyles.size() > 0) {
-        buffer.append(" style=\"");
-        for (Map.Entry<String, String> entry : curRowStyles.entrySet()) {
-          buffer.append(entry.getKey());
-          buffer.append(":");
-          buffer.append(entry.getValue());
-          buffer.append(";");
-        }
-        buffer.append("\"");
+
+      if (options.callback != null) {
+        options.callback.onRendered();
       }
-      buffer.append(">");
     }
   }
 
   protected static class RenderingOptions {
     public int startRow = 0;
-    public int numRows = MutableTableModel.ALL_ROWS;
+    public int numRows = TableModel.ALL_ROWS;
     public boolean syncCall = false;
     public String headerRow = null;
     public String footerRow = null;
     public RendererCallback callback = null;
   }
 
-  public static int TIME_SLICE = 1000;
-
-  public static int ROWS_PER_TIME_CHECK = 10;
-
   private static Element WRAPPER_DIV;
-
-  private int requestStamp = 0;
 
   private HasTableDefinition<RowType> source = null;
 
@@ -328,7 +225,7 @@ public abstract class TableBulkRenderer<RowType> implements HasTableDefinition<R
     renderRows(rows, options);
   }
 
-  public final void renderRows(MutableTableModel<RowType> tableModel,
+  public final void renderRows(TableModel<RowType> tableModel,
       int startRow, int numRows, RendererCallback callback) {
     RenderingOptions options = createRenderingOptions();
     options.startRow = startRow;
@@ -337,15 +234,15 @@ public abstract class TableBulkRenderer<RowType> implements HasTableDefinition<R
     renderRows(tableModel, options);
   }
 
-  public final void renderRows(MutableTableModel<RowType> tableModel, RendererCallback callback) {
-    renderRows(tableModel, 0, MutableTableModel.ALL_ROWS, callback);
+  public final void renderRows(TableModel<RowType> tableModel, RendererCallback callback) {
+    renderRows(tableModel, 0, TableModel.ALL_ROWS, callback);
   }
 
   protected RenderingOptions createRenderingOptions() {
     return new RenderingOptions();
   }
 
-  protected AbstractRowView<RowType> createRowView(final RenderingOptions options) {
+  protected RowView<RowType> createRowView(final RenderingOptions options) {
     BulkCellView<RowType> cellView = new BulkCellView<RowType>(this);
     return new BulkRowView<RowType>(cellView, this, options);
   }

@@ -1,6 +1,6 @@
 package com.butent.bee.egg.client.grid.render;
 
-import com.butent.bee.egg.client.grid.AbstractRowView;
+import com.butent.bee.egg.client.grid.RowView;
 import com.butent.bee.egg.client.grid.ColumnDefinition;
 import com.butent.bee.egg.client.grid.HasTableDefinition;
 import com.butent.bee.egg.client.grid.SelectionGrid;
@@ -18,9 +18,11 @@ public class SelectionGridBulkRenderer<RowType> extends GridBulkRenderer<RowType
     }
 
     @Override
-    protected <ColType> void renderRowValue(RowType rowValue, ColumnDefinition<RowType, ColType> columnDef) {
+    protected <ColType> void renderRowValue(RowType rowValue, 
+        ColumnDefinition<RowType, ColType> columnDef) {
       if (getCellIndex() == 0) {
-        SelectionPolicy selectionPolicy = ((SelectionGrid) bulkRenderer.getTable()).getSelectionPolicy();
+        SelectionPolicy selectionPolicy = 
+          ((SelectionGrid) bulkRenderer.getTable()).getSelectionPolicy();
         if (selectionPolicy.hasInputColumn()) {
           getStringBuffer().append("<td align='CENTER'>");
           getStringBuffer().append(
@@ -42,7 +44,7 @@ public class SelectionGridBulkRenderer<RowType> extends GridBulkRenderer<RowType
   }
 
   @Override
-  protected AbstractRowView<RowType> createRowView(final RenderingOptions options) {
+  protected RowView<RowType> createRowView(final RenderingOptions options) {
     BulkCellView<RowType> cellView = new SelectionBulkCellView<RowType>(this);
     return new BulkRowView<RowType>(cellView, this, options);
   }

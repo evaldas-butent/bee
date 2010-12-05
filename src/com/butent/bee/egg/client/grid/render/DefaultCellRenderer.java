@@ -16,8 +16,7 @@ public class DefaultCellRenderer<RowType, ColType> implements CellRenderer<RowTy
     this.asHtml = asHtml;
   }
 
-  public void renderRowValue(RowType rowValue,
-      ColumnDefinition<RowType, ColType> columnDef,
+  public void renderRowValue(RowType rowValue, ColumnDefinition<RowType, ColType> columnDef,
       AbstractCellView<RowType> view) {
     Object cellValue = columnDef.getCellValue(rowValue);
     if (cellValue == null) {

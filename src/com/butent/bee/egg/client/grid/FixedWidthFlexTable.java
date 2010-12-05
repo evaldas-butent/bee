@@ -243,18 +243,13 @@ public class FixedWidthFlexTable extends FlexTable {
   @Override
   public void setCellPadding(int padding) {
     super.setCellPadding(padding);
-    for (Map.Entry<Integer, Integer> entry : colWidths.entrySet()) {
-      setColumnWidth(entry.getKey(), entry.getValue());
-    }
+    resetColumnWidhts();
   }
 
   @Override
   public void setCellSpacing(int spacing) {
     super.setCellSpacing(spacing);
-
-    for (Map.Entry<Integer, Integer> entry : colWidths.entrySet()) {
-      setColumnWidth(entry.getKey(), entry.getValue());
-    }
+    resetColumnWidhts();
   }
 
   public void setColumnWidth(int column, int width) {
@@ -372,6 +367,7 @@ public class FixedWidthFlexTable extends FlexTable {
   }
 
   void recalculateIdealColumnWidthsSetup() {
+    clearColumnWidhts();
     idealColumnWidthInfo = GridUtils.recalculateIdealColumnWidthsSetup(
         this, getColumnCount(), 0);
   }
@@ -379,8 +375,17 @@ public class FixedWidthFlexTable extends FlexTable {
   void recalculateIdealColumnWidthsTeardown() {
     GridUtils.recalculateIdealColumnWidthsTeardown(idealColumnWidthInfo);
     idealColumnWidthInfo = null;
+    resetColumnWidhts();
   }
 
+  private void clearColumnWidhts() {
+    for (int column : colWidths.keySet()) {
+      if (column < getGhostColumnCount()) {
+        GridUtils.clearColumnWidth(ghostRow, column);
+      }
+    }
+  }
+  
   private int getNumColumnsPerRow(int row) {
     if (columnsPerRow.size() <= row) {
       return 0;
@@ -392,6 +397,12 @@ public class FixedWidthFlexTable extends FlexTable {
   private void maybeRecalculateIdealColumnWidths() {
     if (idealWidths == null) {
       recalculateIdealColumnWidths();
+    }
+  }
+
+  private void resetColumnWidhts() {
+    for (Map.Entry<Integer, Integer> entry : colWidths.entrySet()) {
+      setColumnWidth(entry.getKey(), entry.getValue());
     }
   }
 

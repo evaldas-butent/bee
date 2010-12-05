@@ -170,7 +170,6 @@ body, select {
 .bee-ScrollTable .headerWrapper {
   background: #381C1B;
 }
-
 .bee-ScrollTable .footerWrapper {
   border-top: 1px solid #aaa;
   background: #2C1514;
@@ -188,17 +187,22 @@ body, select {
 
 .bee-ScrollTable .headerTable td,
 .bee-ScrollTable .footerTable td {
-  color: #fff;
+  color: white;
+}
+
+.bee-ScrollTable .dataTable tr:nth-child(odd) {
+  background: #ffffdd;
+}
+.bee-ScrollTable .dataTable tr:nth-child(even) {
+  background: #eeeeee;
 }
 	
-.bee-ScrollTable .dataTable tr.highlighted {
+.bee-ScrollTable .dataTable tr:hover {
   background: #C3D9FF;
 }
-
-.bee-ScrollTable .dataTable td.highlighted {
+.bee-ScrollTable .dataTable td:hover {
   background: #FFFFAA;
 }
-
 .bee-ScrollTable .dataTable tr.selected td {
   background: #7AA5D6;
 }

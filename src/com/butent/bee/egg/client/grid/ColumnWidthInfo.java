@@ -3,32 +3,49 @@ package com.butent.bee.egg.client.grid;
 public class ColumnWidthInfo {
   private int minWidth;
   private int maxWidth;
-  private int preferredWidth;
+  private int prefWidth;
   private int curWidth;
+  
+  private int dataWidth;
+  private int headerWidth;
+  private int footerWidth;
 
   private int newWidth = 0;
-
   private int requiredWidth;
 
-  public ColumnWidthInfo(int minWidth, int maxWidth, int preferredWidth, int curWidth) {
+  public ColumnWidthInfo(int minWidth, int maxWidth, int prefWidth,
+      int curWidth, int dataWidth, int headerWidth, int footerWidth) {
     this.minWidth = minWidth;
     this.maxWidth = maxWidth;
-    this.preferredWidth = preferredWidth;
+    this.prefWidth = prefWidth;
+
     this.curWidth = curWidth;
+    this.dataWidth = dataWidth;
+    this.headerWidth = headerWidth;
+    this.footerWidth = footerWidth;
   }
 
-  public int getCurrentWidth() {
+  public int getCurWidth() {
     return curWidth;
   }
 
-  public int getMaximumWidth() {
-    if (hasMaximumWidth()) {
-      return Math.max(maxWidth, minWidth);
-    }
+  public int getDataWidth() {
+    return dataWidth;
+  }
+
+  public int getFooterWidth() {
+    return footerWidth;
+  }
+
+  public int getHeaderWidth() {
+    return headerWidth;
+  }
+
+  public int getMaxWidth() {
     return maxWidth;
   }
 
-  public int getMinimumWidth() {
+  public int getMinWidth() {
     return minWidth;
   }
 
@@ -37,34 +54,46 @@ public class ColumnWidthInfo {
   }
 
   public double getPercentageDifference() {
-    return (newWidth - preferredWidth) / (double) preferredWidth;
+    return (newWidth - prefWidth) / (double) prefWidth;
   }
 
-  public int getPreferredWidth() {
-    return preferredWidth;
+  public int getPrefWidth() {
+    return prefWidth;
   }
 
   public int getRequiredWidth() {
     return requiredWidth;
   }
 
-  public boolean hasMaximumWidth() {
+  public boolean hasMaxWidth() {
     return maxWidth > 0;
   }
 
-  public boolean hasMinimumWidth() {
+  public boolean hasMinWidth() {
     return minWidth > 0;
   }
 
-  public void setCurrentWidth(int curWidth) {
+  public void setCurWidth(int curWidth) {
     this.curWidth = curWidth;
   }
 
-  public void setMaximumWidth(int maxWidth) {
+  public void setDataWidth(int dataWidth) {
+    this.dataWidth = dataWidth;
+  }
+
+  public void setFooterWidth(int footerWidth) {
+    this.footerWidth = footerWidth;
+  }
+
+  public void setHeaderWidth(int headerWidth) {
+    this.headerWidth = headerWidth;
+  }
+
+  public void setMaxWidth(int maxWidth) {
     this.maxWidth = maxWidth;
   }
 
-  public void setMinimumWidth(int minWidth) {
+  public void setMinWidth(int minWidth) {
     this.minWidth = minWidth;
   }
 
@@ -72,8 +101,8 @@ public class ColumnWidthInfo {
     this.newWidth = newWidth;
   }
 
-  public void setPreferredWidth(int preferredWidth) {
-    this.preferredWidth = preferredWidth;
+  public void setPrefWidth(int prefWidth) {
+    this.prefWidth = prefWidth;
   }
 
   public void setRequiredWidth(int requiredWidth) {

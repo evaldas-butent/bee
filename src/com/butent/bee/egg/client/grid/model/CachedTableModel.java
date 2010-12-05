@@ -8,7 +8,7 @@ import com.butent.bee.egg.shared.Assert;
 import java.util.HashMap;
 import java.util.Iterator;
 
-public class CachedTableModel<RowType> extends MutableTableModel<RowType> {
+public class CachedTableModel<RowType> extends TableModel<RowType> {
 
   private class CacheCallback implements Callback<RowType> {
     private Callback<RowType> actualCallback;
@@ -55,8 +55,7 @@ public class CachedTableModel<RowType> extends MutableTableModel<RowType> {
     }
 
     public boolean hasNext() {
-      return curRow < lastRow
-          && rowValuesMap.containsKey(new Integer(curRow + 1));
+      return curRow < lastRow && rowValuesMap.containsKey(new Integer(curRow + 1));
     }
 
     public RowType next() {
@@ -80,7 +79,6 @@ public class CachedTableModel<RowType> extends MutableTableModel<RowType> {
       it = new CacheIterator(firstRow, lastRow);
     }
 
-    @Override
     public Iterator<RowType> getRowValues() {
       return it;
     }
@@ -93,9 +91,9 @@ public class CachedTableModel<RowType> extends MutableTableModel<RowType> {
 
   private HashMap<Integer, RowType> rowValuesMap = new HashMap<Integer, RowType>();
 
-  private MutableTableModel<RowType> tableModel;
+  private TableModel<RowType> tableModel;
 
-  public CachedTableModel(MutableTableModel<RowType> tableModel) {
+  public CachedTableModel(TableModel<RowType> tableModel) {
     this.tableModel = tableModel;
   }
 
@@ -191,23 +189,5 @@ public class CachedTableModel<RowType> extends MutableTableModel<RowType> {
   public void setRowCount(int rowCount) {
     tableModel.setRowCount(rowCount);
     super.setRowCount(rowCount);
-  }
-
-  @Override
-  protected boolean onRowInserted(int beforeRow) {
-    clearCache();
-    return tableModel.onRowInserted(beforeRow);
-  }
-
-  @Override
-  protected boolean onRowRemoved(int row) {
-    clearCache();
-    return tableModel.onRowRemoved(row);
-  }
-
-  @Override
-  protected boolean onSetRowValue(int row, RowType rowValue) {
-    rowValuesMap.put(new Integer(row), rowValue);
-    return tableModel.onSetRowValue(row, rowValue);
   }
 }

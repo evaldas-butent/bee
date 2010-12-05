@@ -55,5 +55,4 @@ public abstract class TableModel<RowType> implements HasRowCountChangeHandlers {
   protected final SimpleEventBus getHandlerManager() {
     return handlers;
   }
-
 }

@@ -5,23 +5,10 @@ import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Event;
-import com.google.gwt.user.client.Window;
 
-import com.butent.bee.egg.client.grid.event.CellHighlightEvent;
-import com.butent.bee.egg.client.grid.event.CellHighlightHandler;
-import com.butent.bee.egg.client.grid.event.CellUnhighlightEvent;
-import com.butent.bee.egg.client.grid.event.CellUnhighlightHandler;
-import com.butent.bee.egg.client.grid.event.HasCellHighlightHandlers;
-import com.butent.bee.egg.client.grid.event.HasCellUnhighlightHandlers;
-import com.butent.bee.egg.client.grid.event.HasRowHighlightHandlers;
 import com.butent.bee.egg.client.grid.event.HasRowSelectionHandlers;
-import com.butent.bee.egg.client.grid.event.HasRowUnhighlightHandlers;
-import com.butent.bee.egg.client.grid.event.RowHighlightEvent;
-import com.butent.bee.egg.client.grid.event.RowHighlightHandler;
 import com.butent.bee.egg.client.grid.event.RowSelectionEvent;
 import com.butent.bee.egg.client.grid.event.RowSelectionHandler;
-import com.butent.bee.egg.client.grid.event.RowUnhighlightEvent;
-import com.butent.bee.egg.client.grid.event.RowUnhighlightHandler;
 import com.butent.bee.egg.client.grid.event.TableEvent.Row;
 
 import java.util.HashMap;
@@ -29,9 +16,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-public class SelectionGrid extends GridTable implements HasRowHighlightHandlers,
-    HasRowUnhighlightHandlers, HasCellHighlightHandlers,
-    HasCellUnhighlightHandlers, HasRowSelectionHandlers {
+public class SelectionGrid extends GridTable implements HasRowSelectionHandlers {
 
   public class SelectionGridCellFormatter extends CellFormatter {
     @Override
@@ -72,13 +57,6 @@ public class SelectionGrid extends GridTable implements HasRowHighlightHandlers,
   private static int uniqueID = 0;
   
   private static String styleSelected = "selected"; 
-  private static String styleHighlighted = "highlighted"; 
-
-  private Element highlightedCellElem = null;
-  private int highlightedCellIndex = -1;
-
-  private Element highlightedRowElem = null;
-  private int highlightedRowIndex = -1;
 
   private int id;
 
@@ -94,7 +72,7 @@ public class SelectionGrid extends GridTable implements HasRowHighlightHandlers,
     setCellFormatter(new SelectionGridCellFormatter());
     setRowFormatter(new SelectionGridRowFormatter());
 
-    sinkEvents(Event.ONMOUSEOVER | Event.ONMOUSEOUT | Event.ONMOUSEDOWN | Event.ONCLICK);
+    sinkEvents(Event.ONMOUSEDOWN | Event.ONCLICK);
   }
 
   public SelectionGrid(int rows, int columns) {
@@ -102,24 +80,8 @@ public class SelectionGrid extends GridTable implements HasRowHighlightHandlers,
     resize(rows, columns);
   }
 
-  public HandlerRegistration addCellHighlightHandler(CellHighlightHandler handler) {
-    return addHandler(handler, CellHighlightEvent.getType());
-  }
-
-  public HandlerRegistration addCellUnhighlightHandler(CellUnhighlightHandler handler) {
-    return addHandler(handler, CellUnhighlightEvent.getType());
-  }
-
-  public HandlerRegistration addRowHighlightHandler(RowHighlightHandler handler) {
-    return addHandler(handler, RowHighlightEvent.getType());
-  }
-
   public HandlerRegistration addRowSelectionHandler(RowSelectionHandler handler) {
     return addHandler(handler, RowSelectionEvent.getType());
-  }
-
-  public HandlerRegistration addRowUnhighlightHandler(RowUnhighlightHandler handler) {
-    return addHandler(handler, RowUnhighlightEvent.getType());
   }
 
   public void deselectAllRows() {
@@ -184,33 +146,6 @@ public class SelectionGrid extends GridTable implements HasRowHighlightHandlers,
     Element targetCell = null;
 
     switch (DOM.eventGetType(event)) {
-      case Event.ONMOUSEOVER:
-        Element cellElem = getEventTargetCell(event);
-        if (cellElem != null) {
-          highlightCell(cellElem);
-        }
-        break;
-
-      case Event.ONMOUSEOUT:
-        Element toElem = DOM.eventGetToElement(event);
-        if (highlightedRowElem != null
-            && (toElem == null || !highlightedRowElem.isOrHasChild(toElem))) {
-          int clientX = event.getClientX() + Window.getScrollLeft();
-          int clientY = event.getClientY() + Window.getScrollTop();
-          int rowLeft = highlightedRowElem.getAbsoluteLeft();
-          int rowTop = highlightedRowElem.getAbsoluteTop();
-          int rowWidth = highlightedRowElem.getOffsetWidth();
-          int rowHeight = highlightedRowElem.getOffsetHeight();
-          int rowBottom = rowTop + rowHeight;
-          int rowRight = rowLeft + rowWidth;
-          if (clientX > rowLeft && clientX < rowRight && clientY > rowTop && clientY < rowBottom) {
-            return;
-          }
-
-          highlightCell(null);
-        }
-        break;
-
       case Event.ONMOUSEDOWN: {
         if (!selectionEnabled) {
           return;
@@ -459,46 +394,6 @@ public class SelectionGrid extends GridTable implements HasRowHighlightHandlers,
       rowSet.add(new Row(rowIndex.intValue()));
     }
     return rowSet;
-  }
-
-  protected void highlightCell(Element cellElem) {
-    if (cellElem == highlightedCellElem) {
-      return;
-    }
-
-    Element rowElem = null;
-    if (cellElem != null) {
-      rowElem = DOM.getParent(cellElem);
-    }
-
-    if (highlightedCellElem != null) {
-      setStyleName(highlightedCellElem, styleHighlighted, false);
-      fireEvent(new CellUnhighlightEvent(highlightedRowIndex, highlightedCellIndex));
-      highlightedCellElem = null;
-      highlightedCellIndex = -1;
-
-      if (rowElem != highlightedRowElem) {
-        setStyleName(highlightedRowElem, styleHighlighted, false);
-        fireEvent(new RowUnhighlightEvent(highlightedRowIndex));
-        highlightedRowElem = null;
-        highlightedRowIndex = -1;
-      }
-    }
-
-    if (cellElem != null) {
-      setStyleName(cellElem, styleHighlighted, true);
-      highlightedCellElem = cellElem;
-      highlightedCellIndex = DOM.getChildIndex(DOM.getParent(cellElem), cellElem);
-
-      if (highlightedRowElem == null) {
-        setStyleName(rowElem, styleHighlighted, true);
-        highlightedRowElem = rowElem;
-        highlightedRowIndex = getRowIndex(highlightedRowElem);
-        fireEvent(new RowHighlightEvent(highlightedRowIndex));
-      }
-
-      fireEvent(new CellHighlightEvent(highlightedRowIndex, highlightedCellIndex));
-    }
   }
 
   protected void selectRow(int row, Element rowElem, boolean unselectAll, boolean fireEvent) {

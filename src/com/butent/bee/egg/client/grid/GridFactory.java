@@ -10,11 +10,9 @@ import com.butent.bee.egg.client.BeeGlobal;
 import com.butent.bee.egg.client.BeeKeeper;
 import com.butent.bee.egg.client.dom.DomUtils;
 import com.butent.bee.egg.client.grid.model.CachedTableModel;
-import com.butent.bee.egg.client.grid.model.MutableTableModel;
 import com.butent.bee.egg.client.grid.model.TableModel;
 import com.butent.bee.egg.client.grid.model.TableModelHelper.Request;
 import com.butent.bee.egg.client.grid.model.TableModelHelper.Response;
-import com.butent.bee.egg.client.grid.render.DefaultRowRenderer;
 import com.butent.bee.egg.client.grid.render.FixedWidthGridBulkRenderer;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeConst;
@@ -81,25 +79,13 @@ public class GridFactory {
     }
   }
 
-  private class ScrollGridTableModel extends MutableTableModel<Integer> {
+  private class ScrollGridTableModel extends TableModel<Integer> {
     public void requestRows(Request request, TableModel.Callback<Integer> callback) {
       int start = request.getStartRow();
       int cnt = request.getNumRows();
 
       ScrollGridResponse resp = new ScrollGridResponse(start, cnt, getRowCount());
       callback.onRowsReady(request, resp);
-    }
-
-    protected boolean onRowInserted(int beforeRow) {
-      return true;
-    }
-
-    protected boolean onRowRemoved(int row) {
-      return true;
-    }
-
-    protected boolean onSetRowValue(int row, Integer rowValue) {
-      return true;
     }
   }
 
@@ -166,8 +152,6 @@ public class GridFactory {
     cachedModel.setRowCount(r);
 
     TableDefinition<Integer> tableDef = new TableDefinition<Integer>();
-    String[] rowColors = new String[]{"#ffffdd", "#eeeeee"};
-    tableDef.setRowRenderer(new DefaultRowRenderer<Integer>(rowColors));
 
     String[] arr = view.getColumnNames();
     for (int i = 0; i < c; i++) {

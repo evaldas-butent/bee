@@ -29,10 +29,6 @@ public abstract class AbstractCellView<RowType> {
 
   public abstract void setHTML(String html);
 
-  public abstract void setStyleAttribute(String attr, String value);
-
-  public abstract void setStyleName(String stylename);
-
   public abstract void setText(String text);
 
   public abstract void setVerticalAlignment(VerticalAlignmentConstant align);

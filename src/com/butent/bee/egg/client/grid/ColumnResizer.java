@@ -14,13 +14,13 @@ class ColumnResizer {
     Assert.notNull(columns);
 
     for (ColumnWidthInfo info : columns) {
-      int curWidth = info.getCurrentWidth();
-      if (info.hasMinimumWidth() && curWidth < info.getMinimumWidth()) {
-        curWidth = info.getMinimumWidth();
-      } else if (info.hasMaximumWidth() && curWidth > info.getMaximumWidth()) {
-        curWidth = info.getMaximumWidth();
+      int curWidth = info.getCurWidth();
+      if (info.hasMinWidth() && curWidth < info.getMinWidth()) {
+        curWidth = info.getMinWidth();
+      } else if (info.hasMaxWidth() && curWidth > info.getMaxWidth()) {
+        curWidth = info.getMaxWidth();
       }
-      width -= (curWidth - info.getCurrentWidth());
+      width -= (curWidth - info.getCurWidth());
       info.setNewWidth(curWidth);
     }
 
@@ -77,18 +77,18 @@ class ColumnResizer {
       int totalRequired = 0;
       for (int curIndex = 0; curIndex < syncedColumns; curIndex++) {
         ColumnWidthInfo curInfo = columns.get(curIndex);
-        int preferredWidth = curInfo.getPreferredWidth();
+        int preferredWidth = curInfo.getPrefWidth();
         int newWidth = (int) (targetDiff * preferredWidth) + preferredWidth;
 
         if (growing) {
-          newWidth = Math.max(newWidth, curInfo.getCurrentWidth());
-          if (curInfo.hasMaximumWidth()) {
-            newWidth = Math.min(newWidth, curInfo.getMaximumWidth());
+          newWidth = Math.max(newWidth, curInfo.getCurWidth());
+          if (curInfo.hasMaxWidth()) {
+            newWidth = Math.min(newWidth, curInfo.getMaxWidth());
           }
         } else {
-          newWidth = Math.min(newWidth, curInfo.getCurrentWidth());
-          if (curInfo.hasMinimumWidth()) {
-            newWidth = Math.max(newWidth, curInfo.getMinimumWidth());
+          newWidth = Math.min(newWidth, curInfo.getCurWidth());
+          if (curInfo.hasMinWidth()) {
+            newWidth = Math.max(newWidth, curInfo.getMinWidth());
           }
         }
 
@@ -122,10 +122,10 @@ class ColumnResizer {
         width -= required;
 
         boolean maxedOut = false;
-        if (growing && curInfo.hasMaximumWidth()) {
-          maxedOut = (curInfo.getNewWidth() >= curInfo.getMaximumWidth());
-        } else if (!growing && curInfo.hasMinimumWidth()) {
-          maxedOut = (curInfo.getNewWidth() <= curInfo.getMinimumWidth());
+        if (growing && curInfo.hasMaxWidth()) {
+          maxedOut = (curInfo.getNewWidth() >= curInfo.getMaxWidth());
+        } else if (!growing && curInfo.hasMinWidth()) {
+          maxedOut = (curInfo.getNewWidth() <= curInfo.getMinWidth());
         }
         if (maxedOut) {
           columns.remove(curIndex);
@@ -152,7 +152,7 @@ class ColumnResizer {
       int totalPreferredWidth = 0;
       for (ColumnWidthInfo info : columns) {
         totalNewWidth += info.getNewWidth();
-        totalPreferredWidth += info.getPreferredWidth();
+        totalPreferredWidth += info.getPrefWidth();
       }
       return (totalNewWidth - totalPreferredWidth) / (double) totalPreferredWidth;
     }

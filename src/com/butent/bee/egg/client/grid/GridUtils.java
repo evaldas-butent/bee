@@ -9,6 +9,7 @@ import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Element;
 
 import com.butent.bee.egg.client.BeeKeeper;
+import com.butent.bee.egg.shared.Assert;
 
 public class GridUtils {
   public static class IdealColumnWidthInfo {
@@ -23,6 +24,10 @@ public class GridUtils {
       this.columnCount = columnCount;
       this.offset = offset;
     }
+  }
+
+  public static void clearColumnWidth(Element ghostRow, int column) {
+    getGhostCell(ghostRow, column).getStyle().clearWidth();
   }
 
   public static Element createGhostCell(Element td) {
@@ -49,7 +54,10 @@ public class GridUtils {
   }
 
   public static Element getGhostCell(Element ghostRow, int column) {
-    return DOM.getChild(ghostRow, column);
+    Assert.notNull(ghostRow, "ghost row cannot be null");
+    Element cell = DOM.getChild(ghostRow, column);
+    Assert.notNull(cell, "ghost cell not found for column " + column);
+    return cell;
   }
 
   public static int[] recalculateIdealColumnWidths(IdealColumnWidthInfo info) {

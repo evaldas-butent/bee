@@ -1,7 +1,5 @@
 package com.butent.bee.egg.client.grid;
 
-import com.butent.bee.egg.client.grid.render.DefaultRowRenderer;
-import com.butent.bee.egg.client.grid.render.RowRenderer;
 import com.butent.bee.egg.shared.Assert;
 
 import java.util.ArrayList;
@@ -14,8 +12,6 @@ import java.util.Set;
 public class TableDefinition<RowType> {
   private List<ColumnDefinition<RowType, ?>> columnDefs;
   private Set<ColumnDefinition<RowType, ?>> hiddenColumnDefs;
-
-  private RowRenderer<RowType> rowRenderer = new DefaultRowRenderer<RowType>();
 
   public TableDefinition() {
     this(new ArrayList<ColumnDefinition<RowType, ?>>());
@@ -49,10 +45,6 @@ public class TableDefinition<RowType> {
 
   public int getColumnId(int column) {
     return getColumnDefinition(column).getColumnId();
-  }
-
-  public RowRenderer<RowType> getRowRenderer() {
-    return rowRenderer;
   }
 
   public List<ColumnDefinition<RowType, ?>> getVisibleColumnDefinitions() {
@@ -120,9 +112,9 @@ public class TableDefinition<RowType> {
     columnDefs.remove(columnDef);
   }
 
-  public void renderRows(int startRowIndex, Iterator<RowType> rowValues, AbstractRowView<RowType> view) {
+  public void renderRows(int startRowIndex, Iterator<RowType> rowValues, RowView<RowType> view) {
     List<ColumnDefinition<RowType, ?>> visibleColumns = getVisibleColumnDefinitions();
-    view.renderRowsImpl(startRowIndex, rowValues, rowRenderer, visibleColumns);
+    view.renderRowsImpl(startRowIndex, rowValues, visibleColumns);
   }
 
   public void setColumnDefs(List<ColumnDefinition<RowType, ?>> columnDefs) {
@@ -139,10 +131,5 @@ public class TableDefinition<RowType> {
     } else {
       hiddenColumnDefs.add(colDef);
     }
-  }
-
-  public void setRowRenderer(RowRenderer<RowType> rowRenderer) {
-    Assert.notNull(rowRenderer, "rowRenderer cannot be null");
-    this.rowRenderer = rowRenderer;
   }
 }
