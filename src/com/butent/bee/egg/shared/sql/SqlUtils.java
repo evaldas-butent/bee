@@ -65,10 +65,6 @@ public class SqlUtils {
     return createIndex(true, table, name, fields);
   }
 
-  public static IsQuery dbFields(String table) {
-    return new SqlCommand(Keywords.DB_FIELDS, table);
-  }
-
   public static IsQuery dbForeignKeys(String table) {
     return new SqlCommand(Keywords.DB_FOREIGNKEYS, table);
   }
@@ -233,6 +229,26 @@ public class SqlUtils {
     Conditions cb = new OrConditions();
     cb.add(conditions);
     return cb;
+  }
+
+  public static IsCondition sqlFalse() {
+    return equal(constant(1), 0);
+  }
+
+  public static IsCondition sqlTrue() {
+    return equal(constant(1), 1);
+  }
+
+  public static String temporaryName() {
+    String tmp = "tmp_" + BeeUtils.randomString(3, 3, 'a', 'z');
+    return temporaryName(tmp);
+  }
+
+  public static String temporaryName(String tmp) {
+    if (BeeUtils.isEmpty(tmp)) {
+      return temporaryName();
+    }
+    return new SqlCommand(Keywords.TEMPORARY_NAME, tmp).getQuery();
   }
 
   static void addParams(List<Object> paramList, List<Object> params) {

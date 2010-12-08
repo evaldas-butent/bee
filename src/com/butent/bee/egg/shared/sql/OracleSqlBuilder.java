@@ -20,13 +20,6 @@ class OracleSqlBuilder extends SqlBuilder {
           .setWhere(tableWh)
           .getQuery(this);
 
-      case DB_FIELDS:
-        return new SqlSelect()
-          .addFields("f", "COLUMN_NAME")
-          .addFrom("USER_TAB_COLUMNS", "f")
-          .setWhere(SqlUtils.equal("f", "TABLE_NAME", params[0]))
-          .getQuery(this);
-
       case DB_FOREIGNKEYS:
         IsCondition foreignWh = SqlUtils.equal("c", "CONSTRAINT_TYPE", "R");
 
@@ -38,6 +31,10 @@ class OracleSqlBuilder extends SqlBuilder {
           .addFrom("USER_CONSTRAINTS", "c")
           .setWhere(foreignWh)
           .getQuery(this);
+
+      case TEMPORARY:
+        return "";
+
       default:
         return super.sqlKeyword(option, params);
     }
@@ -62,7 +59,7 @@ class OracleSqlBuilder extends SqlBuilder {
       case DOUBLE:
         return "BINARY_DOUBLE";
       case STRING:
-        return "VARCHAR2(" + precision + ")";
+        return "NVARCHAR2(" + precision + ")";
       default:
         return super.sqlType(type, precision, scale);
     }

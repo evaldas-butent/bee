@@ -1,30 +1,36 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<BeeTables>
+<BeeTables xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee structure.xsd">
+
   <BeeTable name="Nationalities" idName="NationalityID">
-    <BeeStructure>
-      <BeeField name="Nationality" type="STRING" precision="50" />
+    <BeeFields>
+      <BeeField name="Nationality" type="STRING" precision="50" notNull="true" />
       <BeeField name="Percent" type="NUMERIC" precision="4" scale="1" />
       <BeeField name="Country" type="LONG" notNull="true" relation="Countries" cascade="true" />
+    </BeeFields>
+    <BeeKeys>
       <BeeKey name="Nationality" fields="Country, Nationality" unique="true" />
-    </BeeStructure>
+    </BeeKeys>
   </BeeTable>
   <BeeTable name="Codes" idName="CodeID">
-    <BeeStructure>
-      <BeeField name="Code" type="STRING" precision="10" unique="true" />
+    <BeeFields>
+      <BeeField name="Code" type="STRING" precision="10" notNull="true" unique="true" />
       <BeeField name="Name" type="STRING" precision="10" />
-    </BeeStructure>
+    </BeeFields>
   </BeeTable>
   <BeeTable name="Countries">
-    <BeeExtended>
+    <BeeFields>
       <BeeField name="Language" type="STRING" precision="30" />
       <BeeField name="Anthem" type="STRING" precision="30" unique="true" />
       <BeeField name="Capital" type="LONG" relation="Cities" cascade="true" />
-      <BeeField name="Continent" type="LONG" relation="Continents" cascade="true" />
+      <BeeField name="Continent" type="LONG" relation="Continents" />
+    </BeeFields>
+    <BeeKeys>
       <BeeKey name="Language" fields="Language" />
-    </BeeExtended>
+    </BeeKeys>
   </BeeTable>
-  <BeeTable name="Cities">
-    <BeeExtended>
+  <BeeTable name="DataTypes">
+    <BeeFields>
       <BeeField name="Boolean" type="BOOLEAN" />
       <BeeField name="Integer" type="INTEGER" />
       <BeeField name="Long" type="LONG" />
@@ -33,11 +39,11 @@
       <BeeField name="Numeric" type="NUMERIC" precision="10" scale="2" />
       <BeeField name="Char" type="CHAR" precision="10" />
       <BeeField name="String" type="STRING" precision="10" />
-    </BeeExtended>
+    </BeeFields>
   </BeeTable>
   <BeeTable name="Continents" idName="ContinentID">
-    <BeeStructure>
-      <BeeField name="Continent" type="STRING" precision="30" unique="true" />
-    </BeeStructure>
+    <BeeFields>
+      <BeeField name="Continent" type="STRING" precision="30" notNull="true" unique="true" />
+    </BeeFields>
   </BeeTable>
 </BeeTables>

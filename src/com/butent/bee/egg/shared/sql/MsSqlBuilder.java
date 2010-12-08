@@ -2,9 +2,24 @@ package com.butent.bee.egg.shared.sql;
 
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.sql.BeeConstants.DataTypes;
+import com.butent.bee.egg.shared.sql.BeeConstants.Keywords;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
 class MsSqlBuilder extends SqlBuilder {
+
+  @Override
+  protected String sqlKeyword(Keywords option, Object... params) {
+    switch (option) {
+      case TEMPORARY:
+        return "";
+
+      case TEMPORARY_NAME:
+        return "#" + params[0];
+
+      default:
+        return super.sqlKeyword(option, params);
+    }
+  }
 
   @Override
   protected String sqlQuote(String value) {

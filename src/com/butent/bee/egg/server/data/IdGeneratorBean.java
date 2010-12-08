@@ -4,7 +4,6 @@ import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.data.BeeRowSet;
 import com.butent.bee.egg.shared.sql.BeeConstants.Keywords;
 import com.butent.bee.egg.shared.sql.IsCondition;
-import com.butent.bee.egg.shared.sql.IsQuery;
 import com.butent.bee.egg.shared.sql.SqlCreate;
 import com.butent.bee.egg.shared.sql.SqlInsert;
 import com.butent.bee.egg.shared.sql.SqlSelect;
@@ -93,10 +92,7 @@ public class IdGeneratorBean {
       sc.addString(ID_KEY, 30, Keywords.NOT_NULL);
       sc.addLong(ID_LAST, Keywords.NOT_NULL);
       qs.updateData(sc);
-
-      IsQuery index = SqlUtils.createPrimaryKey(ID_TABLE,
-          BeeTable.PRIMARY_KEY_PREFIX + ID_TABLE, ID_KEY);
-      qs.updateData(index);
+      qs.updateData(SqlUtils.createUniqueIndex(ID_TABLE, ID_KEY));
     } else {
       SqlUpdate su = new SqlUpdate(ID_TABLE);
       su.addExpression(ID_LAST,

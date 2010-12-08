@@ -1,23 +1,49 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<BeeTables>
+<BeeTables xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee structure.xsd">
+  
+  <BeeTable name="Users" idName="UserID">
+    <BeeFields>
+      <BeeField name="Login" type="STRING" precision="30" notNull="true" unique="true" />
+      <BeeField name="Password" type="STRING" precision="30" />
+    </BeeFields>
+  </BeeTable>
+  <BeeTable name="Roles" idName="RoleID">
+    <BeeFields>
+      <BeeField name="Role" type="STRING" precision="30" notNull="true" unique="true" />
+    </BeeFields>
+  </BeeTable>
+  <BeeTable name="UserRoles" idName="UserRoleID">
+    <BeeFields>
+      <BeeField name="User" type="LONG" notNull="true" relation="Users" cascade="true" />
+      <BeeField name="Role" type="LONG" notNull="true" relation="Roles" cascade="true" />
+    </BeeFields>
+    <BeeKeys>
+      <BeeKey name="UserRole" fields="User, Role" unique="true" />
+    </BeeKeys>
+  </BeeTable>
   <BeeTable name="Countries" idName="CountryID" lockName="LastLock">
-    <BeeStructure>
+    <BeeFields>
       <BeeField name="Country" type="STRING" precision="100" notNull="true" unique="true" />
       <BeeField name="Area" type="NUMERIC" precision="10" scale="2" />
       <BeeField name="SeaPort" type="LONG" relation="Cities" />
       <BeeField name="Neighbour" type="LONG" relation="Countries" />
       <BeeField name="Currency" type="STRING" precision="50" unique="true" />
-    </BeeStructure>
-    <BeeExtended>
-      <BeeField name="Language" type="STRING" precision="10" />
-      <BeeKey name="Language" fields="Language" />
-    </BeeExtended>
+    </BeeFields>
+    <BeeKeys>
+      <BeeKey name="SeaPort" />
+    </BeeKeys>
   </BeeTable>
   <BeeTable name="Cities" idName="CityID">
-    <BeeStructure>
+    <BeeFields>
       <BeeField name="City" type="STRING" precision="100" notNull="true" unique="true" />
       <BeeField name="Population" type="INTEGER" />
       <BeeField name="Country" type="LONG" relation="Countries" />
-    </BeeStructure>
+    </BeeFields>
+    <BeeStates>
+      <BeeState name="Hidden" roleMode="true" userMode="true" />
+      <BeeState name="Unmarked" userMode="true" />
+      <BeeState name="Unused" />
+    </BeeStates>
   </BeeTable>
 </BeeTables>

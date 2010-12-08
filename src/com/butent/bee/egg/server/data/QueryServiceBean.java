@@ -1,6 +1,7 @@
 package com.butent.bee.egg.server.data;
 
 import com.butent.bee.egg.server.DataSourceBean;
+import com.butent.bee.egg.server.data.BeeTable.BeeStructure;
 import com.butent.bee.egg.server.jdbc.JdbcUtils;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.data.BeeColumn;
@@ -47,12 +48,11 @@ public class QueryServiceBean {
 
   public Set<String> dbFields(String table) {
     Set<String> dbFields = new HashSet<String>();
-    BeeRowSet res = (BeeRowSet) processSql(SqlUtils.dbFields(table).getQuery());
+    BeeRowSet res = getData(new SqlSelect()
+      .addAllFields(table).addFrom(table).setWhere(SqlUtils.sqlFalse()));
 
-    if (!res.isEmpty()) {
-      for (BeeRow row : res.getRows()) {
-        dbFields.add(row.getValue(0));
-      }
+    for (String column : res.getColumnNames()) {
+      dbFields.add(column);
     }
     return dbFields;
   }
@@ -89,7 +89,7 @@ public class QueryServiceBean {
 
     if (BeeUtils.isEmpty(ss.getUnion())) {
       String mainSource = null;
-      String mainExt = null;
+      BeeTable table = null;
 
       for (IsFrom from : ss.getFrom()) {
         if (!(from.getSource() instanceof String)) {
@@ -97,53 +97,49 @@ public class QueryServiceBean {
         }
         String source = (String) from.getSource();
 
-        if (sys.isTable(source)) {
-          if (BeeUtils.isEmpty(mainSource)) {
-            mainSource = source;
+        if (BeeUtils.isEmpty(mainSource) && sys.isTable(source)) {
+          mainSource = source;
+          table = sys.getTable(mainSource);
+        } else if (BeeUtils.isEmpty(table)) {
+          break;
+        } else if (!BeeUtils.same(source, table.getName())) {
+          continue;
+        }
+        Set<String> fieldList = new HashSet<String>();
+        for (BeeStructure fld : table.getFields()) {
+          fieldList.add(fld.getName());
+        }
+        fieldList.add(table.getIdName());
+        fieldList.add(table.getLockName());
 
-            if (!BeeUtils.isEmpty(sys.getExtTable(mainSource))) {
-              mainExt = sys.getExtTable(mainSource).getName();
-            }
-          } else if (BeeUtils.isEmpty(mainExt)) {
-            break;
-          } else if (!BeeUtils.same(source, mainExt)) {
+        for (IsExpression[] pair : ss.getFields()) {
+          String xpr = pair[0].getValue();
+          IsExpression als = pair[1];
+
+          int idx = xpr.lastIndexOf(".");
+          if (idx <= 0) {
             continue;
-          } else {
-            mainExt = null;
           }
-          Set<String> fieldList = sys.getFieldNames(source);
-          fieldList.add(sys.getIdName(source));
-          fieldList.add(sys.getLockName(source));
-          String alias = from.getAlias();
+          String tbl = BeeUtils.left(xpr, idx);
+          String fld = xpr.substring(idx + 1);
 
-          for (IsExpression[] pair : ss.getFields()) {
-            String xpr = pair[0].getValue();
-            IsExpression als = pair[1];
-
-            int idx = xpr.lastIndexOf(".");
-            if (idx <= 0) {
-              continue;
-            }
-            String tbl = BeeUtils.left(xpr, idx);
-            String fld = xpr.substring(idx + 1);
-
-            if (BeeUtils.same(tbl, BeeUtils.ifString(alias, source))) {
-              if (BeeUtils.same(fld, "*")) {
-                for (String field : fieldList) {
-                  BeeColumn col = res.getColumn(field);
-                  col.setFieldSource(mainSource);
-                  col.setFieldName(field);
-                }
-              } else {
-                if (fieldList.contains(fld)) {
-                  BeeColumn col = res.getColumn(BeeUtils.isEmpty(als) ? fld : als.getValue());
-                  col.setFieldSource(mainSource);
-                  col.setFieldName(fld);
-                }
+          if (BeeUtils.same(tbl, BeeUtils.ifString(from.getAlias(), source))) {
+            if (BeeUtils.same(fld, "*")) {
+              for (String field : fieldList) {
+                BeeColumn col = res.getColumn(field);
+                col.setFieldSource(mainSource);
+                col.setFieldName(field);
+              }
+            } else {
+              if (fieldList.contains(fld)) {
+                BeeColumn col = res.getColumn(BeeUtils.isEmpty(als) ? fld : als.getValue());
+                col.setFieldSource(mainSource);
+                col.setFieldName(fld);
               }
             }
           }
         }
+        table = table.getExtTable();
       }
       res.setSource(mainSource);
     }
@@ -235,7 +231,7 @@ public class QueryServiceBean {
         con.close();
         con = null;
         stmt = null;
-      } catch (SQLException ex) {
+      } catch (Exception ex) {
         throw new RuntimeException("Cannot close connection: " + ex, ex);
       }
     }

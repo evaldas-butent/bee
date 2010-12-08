@@ -29,6 +29,6 @@ class ConstantExpression implements IsExpression {
 
   @Override
   public String getValue() {
-    return BeeUtils.transform(constant);
+    return BeeUtils.transformNoTrim(constant);
   }
 }

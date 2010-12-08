@@ -205,7 +205,7 @@ public class Codec {
         sb.append(beeSerialize(s));
 
       } else {
-        String s = BeeUtils.transform(o);
+        String s = BeeUtils.transformNoTrim(o);
         String l = BeeUtils.transform(s.length());
         sb.append(l.length() + l + s);
       }

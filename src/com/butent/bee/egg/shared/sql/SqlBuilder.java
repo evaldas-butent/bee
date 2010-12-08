@@ -78,13 +78,6 @@ public abstract class SqlBuilder {
           .setWhere(tableWh)
           .getQuery(this);
 
-      case DB_FIELDS:
-        return new SqlSelect()
-          .addFields("f", "column_name")
-          .addFrom("information_schema.columns", "f")
-          .setWhere(SqlUtils.equal("f", "table_name", params[0]))
-          .getQuery(this);
-
       case DB_FOREIGNKEYS:
         IsCondition foreignWh = SqlUtils.equal("c", "constraint_type", "FOREIGN KEY");
 
@@ -107,6 +100,12 @@ public abstract class SqlBuilder {
           .append(params[1]);
         return drop.toString();
 
+      case TEMPORARY:
+        return " TEMPORARY";
+
+      case TEMPORARY_NAME:
+        return (String) params[0];
+
       default:
         Assert.unsupported("Unsupported keyword: " + option);
         return null;
@@ -116,7 +115,7 @@ public abstract class SqlBuilder {
   protected abstract String sqlQuote(String value);
 
   protected String sqlTransform(Object x) {
-    String s = BeeUtils.transform(x);
+    String s = BeeUtils.transformNoTrim(x);
 
     if (x instanceof CharSequence) {
       s = "'" + s.replaceAll("'", "''") + "'";
@@ -169,8 +168,9 @@ public abstract class SqlBuilder {
     Assert.state(!sc.isEmpty());
 
     StringBuilder query = new StringBuilder("CREATE");
+
     if (sc.isTemporary()) {
-      query.append(" TEMPORARY");
+      query.append(sqlKeyword(Keywords.TEMPORARY));
     }
     query.append(" TABLE ");
 

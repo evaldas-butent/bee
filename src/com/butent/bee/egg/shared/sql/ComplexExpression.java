@@ -36,7 +36,7 @@ class ComplexExpression implements IsExpression {
       if (o instanceof IsSql) {
         s.append(((IsSql) o).getSqlString(builder, paramMode));
       } else {
-        s.append(BeeUtils.transform(o));
+        s.append(BeeUtils.transformNoTrim(o));
       }
     }
     return s.toString();

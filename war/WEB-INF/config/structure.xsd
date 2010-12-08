@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.butent.com/bee"
+  xmlns:bee="http://www.butent.com/bee" elementFormDefault="qualified">
+
+  <xs:element name="BeeTables">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="BeeTable" type="bee:table" minOccurs="1" maxOccurs="unbounded" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:complexType name="table">
+    <xs:sequence>
+      <xs:element name="BeeFields" type="bee:fields" minOccurs="1" maxOccurs="1" />
+      <xs:element name="BeeKeys" type="bee:keys" minOccurs="0" maxOccurs="1" />
+      <xs:element name="BeeStates" type="bee:states" minOccurs="0" maxOccurs="1" />
+    </xs:sequence>
+    <xs:attribute name="name" type="xs:string" use="required" />
+    <xs:attribute name="idName" type="xs:string" default="ID" />
+    <xs:attribute name="lockName" type="xs:string" default="Version" />
+  </xs:complexType>
+
+  <xs:complexType name="fields">
+    <xs:sequence>
+      <xs:element name="BeeField" type="bee:fieldType" maxOccurs="unbounded" />
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="keys">
+    <xs:sequence>
+      <xs:element name="BeeKey" type="bee:keyType" maxOccurs="unbounded" />
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="states">
+    <xs:sequence>
+      <xs:element name="BeeState" type="bee:stateType" maxOccurs="unbounded" />
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="fieldType">
+    <xs:attribute name="name" type="xs:string" use="required" />
+    <xs:attribute name="type" type="bee:dataType" use="required" />
+    <xs:attribute name="precision" type="xs:integer" />
+    <xs:attribute name="scale" type="xs:byte" />
+    <xs:attribute name="notNull" type="xs:boolean" />
+    <xs:attribute name="unique" type="xs:boolean" />
+    <xs:attribute name="relation" type="xs:string" />
+    <xs:attribute name="cascade" type="xs:boolean" />
+  </xs:complexType>
+
+  <xs:complexType name="keyType">
+    <xs:attribute name="name" type="xs:string" use="required" />
+    <xs:attribute name="fields" type="xs:string" />
+    <xs:attribute name="unique" type="xs:boolean" />
+  </xs:complexType>
+
+  <xs:complexType name="stateType">
+    <xs:attribute name="name" type="xs:string" use="required" />
+    <xs:attribute name="roleMode" type="xs:boolean" />
+    <xs:attribute name="userMode" type="xs:boolean" />
+    <xs:attribute name="forced" type="xs:boolean" />
+  </xs:complexType>
+
+  <xs:simpleType name="dataType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="BOOLEAN" />
+      <xs:enumeration value="INTEGER" />
+      <xs:enumeration value="LONG" />
+      <xs:enumeration value="FLOAT" />
+      <xs:enumeration value="DOUBLE" />
+      <xs:enumeration value="NUMERIC" />
+      <xs:enumeration value="CHAR" />
+      <xs:enumeration value="STRING" />
+    </xs:restriction>
+  </xs:simpleType>
+</xs:schema>
