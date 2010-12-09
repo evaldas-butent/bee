@@ -3,7 +3,7 @@ package com.butent.bee.egg.client.widget;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.ListBox;
 
-import com.butent.bee.egg.client.BeeGlobal;
+import com.butent.bee.egg.client.Global;
 import com.butent.bee.egg.client.BeeKeeper;
 import com.butent.bee.egg.client.dom.DomUtils;
 import com.butent.bee.egg.client.event.HasBeeChangeHandler;
@@ -34,10 +34,10 @@ public class BeeListBox extends ListBox implements HasId, HasBeeChangeHandler {
   public BeeListBox(String fieldName) {
     this();
     this.fieldName = fieldName;
-    addItems(BeeGlobal.getFieldItems(fieldName));
+    addItems(Global.getFieldItems(fieldName));
     addDefaultHandlers();
 
-    String v = BeeGlobal.getFieldValue(fieldName);
+    String v = Global.getFieldValue(fieldName);
     if (!BeeUtils.isEmpty(v)) {
       setSelectedIndex(getIndex(v));
     }
@@ -80,7 +80,7 @@ public class BeeListBox extends ListBox implements HasId, HasBeeChangeHandler {
 
   public boolean onChange() {
     if (!BeeUtils.isEmpty(getFieldName())) {
-      BeeGlobal.setFieldValue(getFieldName(), getValue(getSelectedIndex()));
+      Global.setFieldValue(getFieldName(), getValue(getSelectedIndex()));
     }
     return true;
   }

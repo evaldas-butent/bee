@@ -6,10 +6,10 @@ import com.butent.bee.egg.client.dom.DomUtils;
 public class MenuPopup extends BeePopupPanel {
   private static final String STYLENAME_DEFAULT = "bee-MenuPopup";
 
-  private BeeMenuBar parentMenu = null;
-  private BeeMenuItem parentItem = null;
+  private MenuBar parentMenu = null;
+  private MenuItem parentItem = null;
 
-  public MenuPopup(BeeMenuBar bar, BeeMenuItem item) {
+  public MenuPopup(MenuBar bar, MenuItem item) {
     super(true, false);
     setStyleName(STYLENAME_DEFAULT);
     addStyleDependentName(item.getSubMenu().getDefaultItemType().toString().toLowerCase());
@@ -25,19 +25,19 @@ public class MenuPopup extends BeePopupPanel {
     DomUtils.createId(this, "menupopup");
   }
 
-  public BeeMenuItem getParentItem() {
+  public MenuItem getParentItem() {
     return parentItem;
   }
 
-  public BeeMenuBar getParentMenu() {
+  public MenuBar getParentMenu() {
     return parentMenu;
   }
 
-  public void setParentItem(BeeMenuItem parentItem) {
+  public void setParentItem(MenuItem parentItem) {
     this.parentItem = parentItem;
   }
 
-  public void setParentMenu(BeeMenuBar parentMenu) {
+  public void setParentMenu(MenuBar parentMenu) {
     this.parentMenu = parentMenu;
   }
 

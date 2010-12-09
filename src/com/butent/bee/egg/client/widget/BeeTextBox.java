@@ -4,7 +4,7 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.KeyPressEvent;
 import com.google.gwt.user.client.ui.TextBox;
 
-import com.butent.bee.egg.client.BeeGlobal;
+import com.butent.bee.egg.client.Global;
 import com.butent.bee.egg.client.BeeKeeper;
 import com.butent.bee.egg.client.dom.DomUtils;
 import com.butent.bee.egg.client.event.HasBeeKeyHandler;
@@ -32,7 +32,7 @@ public class BeeTextBox extends TextBox implements HasId, HasBeeKeyHandler,
     if (!BeeUtils.isEmpty(fieldName)) {
       this.fieldName = fieldName;
 
-      String v = BeeGlobal.getFieldValue(fieldName);
+      String v = Global.getFieldValue(fieldName);
       if (!BeeUtils.isEmpty(v)) {
         setValue(v);
       }
@@ -61,7 +61,7 @@ public class BeeTextBox extends TextBox implements HasId, HasBeeKeyHandler,
 
   public boolean onValueChange(String value) {
     if (!BeeUtils.isEmpty(getFieldName())) {
-      BeeGlobal.setFieldValue(getFieldName(), value);
+      Global.setFieldValue(getFieldName(), value);
     }
 
     return true;

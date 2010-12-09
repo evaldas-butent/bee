@@ -4,14 +4,14 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.InputElement;
 import com.google.gwt.dom.client.NodeList;
 
-import com.butent.bee.egg.client.BeeGlobal;
+import com.butent.bee.egg.client.Global;
 import com.butent.bee.egg.client.BeeKeeper;
 import com.butent.bee.egg.client.BeeStyle;
 import com.butent.bee.egg.client.dom.DomUtils;
 import com.butent.bee.egg.client.layout.Span;
 import com.butent.bee.egg.client.widget.BeeRadioButton;
 import com.butent.bee.egg.shared.BeeConst;
-import com.butent.bee.egg.shared.BeeField;
+import com.butent.bee.egg.shared.Variable;
 import com.butent.bee.egg.shared.HasService;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
@@ -59,7 +59,7 @@ public class RadioGroup extends Span implements HasService {
   public RadioGroup(String fieldName, boolean vertical) {
     this();
 
-    BeeField fld = BeeGlobal.getField(fieldName);
+    Variable fld = Global.getField(fieldName);
     String v = fld.getValue();
     List<String> opt = fld.getItems();
 

@@ -9,8 +9,8 @@ import com.butent.bee.egg.shared.communication.ResponseMessage;
 import com.butent.bee.egg.shared.data.BeeColumn;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 import com.butent.bee.egg.shared.utils.Codec;
-import com.butent.bee.egg.shared.utils.StringProp;
-import com.butent.bee.egg.shared.utils.SubProp;
+import com.butent.bee.egg.shared.utils.Property;
+import com.butent.bee.egg.shared.utils.ExtendedProperty;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -122,6 +122,38 @@ public class ResponseBuffer {
     }
   }
 
+  public void addExtended(ExtendedProperty el) {
+    Assert.notEmpty(el);
+
+    add(el.getName());
+    add(el.getSub());
+    add(el.getValue());
+    add(el.getDate().toLog());
+  }
+
+  public void addExtendedProperties(Collection<ExtendedProperty> lst, String... cap) {
+    Assert.notEmpty(lst);
+    addExtendedPropertiesColumns(cap);
+
+    for (ExtendedProperty el : lst) {
+      addExtended(el);
+    }
+  }
+
+  public void addExtendedPropertiesColumns(String... cap) {
+    int c = cap.length;
+    String nm;
+
+    for (int i = 0; i < ExtendedProperty.COLUMN_COUNT; i++) {
+      if (c > i && !BeeUtils.isEmpty(cap[i])) {
+        nm = cap[i].trim();
+      } else {
+        nm = ExtendedProperty.COLUMN_HEADERS[i];
+      }
+      addColumn(new BeeColumn(nm));
+    }
+  }
+
   public void addLine(Object... obj) {
     if (obj.length > 0) {
       add(BeeUtils.concat(1, obj));
@@ -154,21 +186,40 @@ public class ResponseBuffer {
     setContentType(ContentType.MULTIPART);
   }
 
-  public void addPropString(StringProp el) {
+  public void addProperties(Collection<Property> lst, String... cap) {
+    Assert.notEmpty(lst);
+    if (getColumnCount() == 0) {
+      addPropertiesColumns(cap);
+    }
+
+    for (Property el : lst) {
+      addProperty(el);
+    }
+  }
+
+  public void addPropertiesColumns(String... cap) {
+    int c = cap.length;
+    String nm;
+
+    for (int i = 0; i < Property.HEADER_COUNT + 1; i++) {
+      if (c > i && !BeeUtils.isEmpty(cap[i])) {
+        nm = cap[i].trim();
+      } else if (i < Property.HEADER_COUNT) {
+        nm = ExtendedProperty.COLUMN_HEADERS[i];
+      } else {
+        nm = "Date";
+      }
+
+      addColumn(new BeeColumn(nm));
+    }
+  }
+
+  public void addProperty(Property el) {
     Assert.notEmpty(el);
 
     add(el.getName());
     add(el.getValue());
     add(new BeeDate().toLog());
-  }
-
-  public void addPropSub(SubProp el) {
-    Assert.notEmpty(el);
-
-    add(el.getName());
-    add(el.getSub());
-    add(el.getValue());
-    add(el.getDate().toLog());
   }
 
   public void addResource(String content) {
@@ -203,57 +254,6 @@ public class ResponseBuffer {
     messages.add(new ResponseMessage(Level.SEVERE, BeeUtils.concat(1, obj)));
   }
 
-  public void addStringColumns(String... cap) {
-    int c = cap.length;
-    String nm;
-
-    for (int i = 0; i < StringProp.HEADER_COUNT + 1; i++) {
-      if (c > i && !BeeUtils.isEmpty(cap[i])) {
-        nm = cap[i].trim();
-      } else if (i < StringProp.HEADER_COUNT) {
-        nm = SubProp.COLUMN_HEADERS[i];
-      } else {
-        nm = "Date";
-      }
-
-      addColumn(new BeeColumn(nm));
-    }
-  }
-
-  public void addStringProp(Collection<StringProp> lst, String... cap) {
-    Assert.notEmpty(lst);
-    if (getColumnCount() == 0) {
-      addStringColumns(cap);
-    }
-
-    for (StringProp el : lst) {
-      addPropString(el);
-    }
-  }
-
-  public void addSub(Collection<SubProp> lst, String... cap) {
-    Assert.notEmpty(lst);
-    addSubColumns(cap);
-
-    for (SubProp el : lst) {
-      addPropSub(el);
-    }
-  }
-
-  public void addSubColumns(String... cap) {
-    int c = cap.length;
-    String nm;
-
-    for (int i = 0; i < SubProp.COLUMN_COUNT; i++) {
-      if (c > i && !BeeUtils.isEmpty(cap[i])) {
-        nm = cap[i].trim();
-      } else {
-        nm = SubProp.COLUMN_HEADERS[i];
-      }
-      addColumn(new BeeColumn(nm));
-    }
-  }
-
   public void addWarning(Object... obj) {
     messages.add(new ResponseMessage(Level.WARNING, BeeUtils.concat(1, obj)));
   }
@@ -268,22 +268,22 @@ public class ResponseBuffer {
     }
   }
 
-  public void appendStringProp(String root, Collection<StringProp> lst) {
+  public void appendExtended(Collection<ExtendedProperty> lst) {
+    Assert.notEmpty(lst);
+    for (ExtendedProperty el : lst) {
+      addExtended(el);
+    }
+  }
+
+  public void appendProperties(String root, Collection<Property> lst) {
     Assert.notEmpty(root);
     Assert.notEmpty(lst);
 
-    for (StringProp el : lst) {
+    for (Property el : lst) {
       add(root);
       add(el.getName());
       add(el.getValue());
       add(new BeeDate().toLog());
-    }
-  }
-
-  public void appendSub(Collection<SubProp> lst) {
-    Assert.notEmpty(lst);
-    for (SubProp el : lst) {
-      addPropSub(el);
     }
   }
 

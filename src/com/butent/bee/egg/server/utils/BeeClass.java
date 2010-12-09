@@ -2,8 +2,8 @@ package com.butent.bee.egg.server.utils;
 
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.utils.BeeUtils;
-import com.butent.bee.egg.shared.utils.PropUtils;
-import com.butent.bee.egg.shared.utils.SubProp;
+import com.butent.bee.egg.shared.utils.PropertyUtils;
+import com.butent.bee.egg.shared.utils.ExtendedProperty;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
@@ -26,12 +26,12 @@ public class BeeClass {
     return cls.getClasses();
   }
 
-  public static <T> List<SubProp> getClassInfo(Class<T> cls) {
+  public static <T> List<ExtendedProperty> getClassInfo(Class<T> cls) {
     Assert.notNull(cls);
 
-    List<SubProp> lst = new ArrayList<SubProp>();
+    List<ExtendedProperty> lst = new ArrayList<ExtendedProperty>();
 
-    PropUtils.addPropSub(lst, false, "Package",
+    PropertyUtils.addProperties(lst, false, "Package",
         transformPackage(cls.getPackage()), "Name", cls.getName(),
         "Simple Name", cls.getSimpleName(), "Canonical Name",
         cls.getCanonicalName(), "Component Type",
@@ -43,10 +43,10 @@ public class BeeClass {
         "Superclass", transformClass(cls.getSuperclass()),
         "Generic Superclass", cls.getGenericSuperclass());
 
-    PropUtils.addSub(lst, "Modifiers", cls.getModifiers(),
+    PropertyUtils.addExtended(lst, "Modifiers", cls.getModifiers(),
         Modifier.toString(cls.getModifiers()));
 
-    PropUtils.addPropSub(lst, false, "Is Annotation", cls.isAnnotation(),
+    PropertyUtils.addProperties(lst, false, "Is Annotation", cls.isAnnotation(),
         "Is Anonymous Class", cls.isAnonymousClass(), "Is Array",
         cls.isArray(), "Is Enum", cls.isEnum(), "Is Interface",
         cls.isInterface(), "Is Local Class", cls.isLocalClass(),
@@ -59,106 +59,105 @@ public class BeeClass {
     Annotation[] annArr = getDeclaredAnnotations(cls);
     if (!BeeUtils.isEmpty(annArr)) {
       for (Annotation ann : annArr) {
-        PropUtils.addSub(lst, "Declared Annotation", transformAnnotation(ann));
+        PropertyUtils.addExtended(lst, "Declared Annotation", transformAnnotation(ann));
       }
     }
 
     annArr = getAnnotations(cls);
     if (!BeeUtils.isEmpty(annArr)) {
       for (Annotation ann : annArr) {
-        PropUtils.addSub(lst, "Annotation", transformAnnotation(ann));
+        PropertyUtils.addExtended(lst, "Annotation", transformAnnotation(ann));
       }
     }
 
     Class<?>[] clArr = getDeclaredClasses(cls);
     if (!BeeUtils.isEmpty(clArr)) {
       for (Class<?> z : clArr) {
-        PropUtils.addSub(lst, "Declared Class", transformClass(z));
+        PropertyUtils.addExtended(lst, "Declared Class", transformClass(z));
       }
     }
 
     clArr = getClasses(cls);
     if (!BeeUtils.isEmpty(clArr)) {
       for (Class<?> z : clArr) {
-        PropUtils.addSub(lst, "Class", transformClass(z));
+        PropertyUtils.addExtended(lst, "Class", transformClass(z));
       }
     }
 
     Constructor<?>[] constrArr = getDeclaredConstructors(cls);
     if (!BeeUtils.isEmpty(constrArr)) {
       for (Constructor<?> constr : constrArr) {
-        PropUtils.addSub(lst, "Declared Constructor",
-            transformConstructor(constr));
+        PropertyUtils.addExtended(lst, "Declared Constructor", transformConstructor(constr));
       }
     }
 
     constrArr = getConstructors(cls);
     if (!BeeUtils.isEmpty(constrArr)) {
       for (Constructor<?> constr : constrArr) {
-        PropUtils.addSub(lst, "Constructor", transformConstructor(constr));
+        PropertyUtils.addExtended(lst, "Constructor", transformConstructor(constr));
       }
     }
 
     Method[] methArr = getDeclaredMethods(cls);
     if (!BeeUtils.isEmpty(methArr)) {
       for (Method meth : methArr) {
-        PropUtils.addSub(lst, "Declared Method", transformMethod(meth));
+        PropertyUtils.addExtended(lst, "Declared Method", transformMethod(meth));
       }
     }
 
     methArr = getMethods(cls);
     if (!BeeUtils.isEmpty(methArr)) {
       for (Method meth : methArr) {
-        PropUtils.addSub(lst, "Method", transformMethod(meth));
+        PropertyUtils.addExtended(lst, "Method", transformMethod(meth));
       }
     }
 
     Field[] fldArr = getDeclaredFields(cls);
     if (!BeeUtils.isEmpty(fldArr)) {
       for (Field fld : fldArr) {
-        PropUtils.addSub(lst, "Declared Field", transformField(fld));
+        PropertyUtils.addExtended(lst, "Declared Field", transformField(fld));
       }
     }
 
     fldArr = getDeclaredFields(cls);
     if (!BeeUtils.isEmpty(fldArr)) {
       for (Field fld : fldArr) {
-        PropUtils.addSub(lst, "Field", transformField(fld));
+        PropertyUtils.addExtended(lst, "Field", transformField(fld));
       }
     }
 
     T[] enumArr = getEnumConstants(cls);
     if (!BeeUtils.isEmpty(enumArr)) {
       for (T en : enumArr) {
-        PropUtils.addSub(lst, "Enum Constant", en);
+        PropertyUtils.addExtended(lst, "Enum Constant", en);
       }
     }
 
     Type[] tpArr = getGenericInterfaces(cls);
     if (!BeeUtils.isEmpty(tpArr)) {
       for (Type tp : tpArr) {
-        PropUtils.addSub(lst, "Generic Interface", tp);
+        PropertyUtils.addExtended(lst, "Generic Interface", tp);
       }
     }
 
     clArr = getInterfaces(cls);
     if (!BeeUtils.isEmpty(clArr)) {
       for (Class<?> z : clArr) {
-        PropUtils.addSub(lst, "Interface", transformClass(z));
+        PropertyUtils.addExtended(lst, "Interface", transformClass(z));
       }
     }
 
     Object[] objArr = getSigners(cls);
     if (!BeeUtils.isEmpty(objArr)) {
       for (Object obj : objArr) {
-        PropUtils.addSub(lst, "Signer", obj);
+        PropertyUtils.addExtended(lst, "Signer", obj);
       }
     }
 
     TypeVariable<Class<T>>[] tpParArr = getTypeParameters(cls);
     if (!BeeUtils.isEmpty(tpParArr)) {
       for (TypeVariable<Class<T>> tpPar : tpParArr) {
-        PropUtils.addSub(lst, "Type Parameter", tpPar.getGenericDeclaration(),
+        PropertyUtils.addExtended(lst, "Type Parameter", tpPar.getGenericDeclaration(),
             tpPar.getName());
       }
     }

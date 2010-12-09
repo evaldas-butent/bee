@@ -493,10 +493,10 @@ public class DataServiceBean {
       buff.addLine("memory", BeeUtils.addName("executeQuery", memQ1 - memQ2),
           BeeUtils.addName(ret, memC1 - memC2));
     } else if (BeeConst.JDBC_META_DATA.equals(ret)) {
-      buff.addSubColumns();
-      buff.appendStringProp("Connection", BeeConnection.getInfo(conn));
-      buff.appendStringProp("Statement", BeeStatement.getInfo(stmt));
-      buff.appendStringProp("Result Set", BeeResultSet.getInfo(rs));
+      buff.addExtendedPropertiesColumns();
+      buff.appendProperties("Connection", BeeConnection.getInfo(conn));
+      buff.appendProperties("Statement", BeeStatement.getInfo(stmt));
+      buff.appendProperties("Result Set", BeeResultSet.getInfo(rs));
     } else {
       rsb.rsToResponse(rs, buff, debug);
     }

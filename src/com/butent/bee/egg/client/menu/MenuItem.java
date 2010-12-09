@@ -6,7 +6,7 @@ import com.google.gwt.user.client.ui.UIObject;
 import com.butent.bee.egg.client.dom.DomUtils;
 import com.butent.bee.egg.shared.HasId;
 
-public class BeeMenuItem extends UIObject implements HasId {
+public class MenuItem extends UIObject implements HasId {
   public static enum ITEM_TYPE {
     LABEL, BUTTON, RADIO, HTML, OPTION, LI, DT, DD
   }
@@ -17,28 +17,28 @@ public class BeeMenuItem extends UIObject implements HasId {
   private static final String STYLENAME_SELECTED = "selected";
 
   private MenuCommand command;
-  private BeeMenuBar parentMenu, subMenu;
+  private MenuBar parentMenu, subMenu;
 
   private ITEM_TYPE itemType;
 
-  public BeeMenuItem(BeeMenuBar parent, String text, BeeMenuBar subMenu) {
+  public MenuItem(MenuBar parent, String text, MenuBar subMenu) {
     init(parent, text, getDefaultType(parent));
     setSubMenu(subMenu);
   }
 
-  public BeeMenuItem(BeeMenuBar parent, String text, ITEM_TYPE type,
-      BeeMenuBar subMenu) {
+  public MenuItem(MenuBar parent, String text, ITEM_TYPE type,
+      MenuBar subMenu) {
     init(parent, text, type);
     setSubMenu(subMenu);
   }
 
-  public BeeMenuItem(BeeMenuBar parent, String text, ITEM_TYPE type,
+  public MenuItem(MenuBar parent, String text, ITEM_TYPE type,
       MenuCommand cmd) {
     init(parent, text, type);
     setCommand(cmd);
   }
 
-  public BeeMenuItem(BeeMenuBar parent, String text, MenuCommand cmd) {
+  public MenuItem(MenuBar parent, String text, MenuCommand cmd) {
     init(parent, text, getDefaultType(parent));
     setCommand(cmd);
   }
@@ -59,11 +59,11 @@ public class BeeMenuItem extends UIObject implements HasId {
     return itemType;
   }
 
-  public BeeMenuBar getParentMenu() {
+  public MenuBar getParentMenu() {
     return parentMenu;
   }
 
-  public BeeMenuBar getSubMenu() {
+  public MenuBar getSubMenu() {
     return subMenu;
   }
 
@@ -79,7 +79,7 @@ public class BeeMenuItem extends UIObject implements HasId {
     this.itemType = it;
   }
 
-  public void setParentMenu(BeeMenuBar parentMenu) {
+  public void setParentMenu(MenuBar parentMenu) {
     this.parentMenu = parentMenu;
   }
 
@@ -101,7 +101,7 @@ public class BeeMenuItem extends UIObject implements HasId {
     }
   }
 
-  public void setSubMenu(BeeMenuBar subMenu) {
+  public void setSubMenu(MenuBar subMenu) {
     this.subMenu = subMenu;
     if (this.parentMenu != null) {
       this.parentMenu.updateSubmenuIcon(this);
@@ -112,7 +112,7 @@ public class BeeMenuItem extends UIObject implements HasId {
     }
   }
 
-  private ITEM_TYPE getDefaultType(BeeMenuBar parent) {
+  private ITEM_TYPE getDefaultType(MenuBar parent) {
     ITEM_TYPE w = null;
 
     if (parent != null) {
@@ -125,7 +125,7 @@ public class BeeMenuItem extends UIObject implements HasId {
     return w;
   }
 
-  private void init(BeeMenuBar parent, String text, ITEM_TYPE type) {
+  private void init(MenuBar parent, String text, ITEM_TYPE type) {
     Element elem;
 
     switch (type) {

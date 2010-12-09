@@ -69,10 +69,6 @@ public class ScrollTable<RowType> extends ComplexPanel implements
     HasId, HasScrollHandlers, HasTableDefinition<RowType>, HasPageCountChangeHandlers,
     HasPageChangeHandlers, HasPagingFailureHandlers, RequiresResize {
 
-  public static enum ColumnResizePolicy {
-    DISABLED, SINGLE_CELL, MULTI_CELL
-  }
-
   public static enum ResizePolicy {
     UNCONSTRAINED(false, false), FLOW(false, true), FIXED_WIDTH(true, true),
         FILL_WIDTH(true, true);
@@ -308,15 +304,7 @@ public class ScrollTable<RowType> extends ComplexPanel implements
     }
 
     public boolean setCurrentCell(Event event) {
-      Element cell = null;
-      if (table.columnResizePolicy == ColumnResizePolicy.MULTI_CELL) {
-        cell = table.headerTable.getEventTargetCell(event);
-      } else if (table.columnResizePolicy == ColumnResizePolicy.SINGLE_CELL) {
-        cell = table.headerTable.getEventTargetCell(event);
-        if (cell != null && DomUtils.getColSpan(cell) > 1) {
-          cell = null;
-        }
-      }
+      Element cell = table.headerTable.getEventTargetCell(event);
 
       int clientX = event.getClientX();
       if (cell != null) {
@@ -412,14 +400,14 @@ public class ScrollTable<RowType> extends ComplexPanel implements
         mouseXLast = mouseXCurrent;
 
         int totalDelta = mouseXCurrent - mouseXStart;
-        totalDelta -= table.columnResizer.distributeWidth(curCells, totalDelta);
+        totalDelta -= GridUtils.distributeWidth(curCells, totalDelta);
 
         if (table.resizePolicy.isSacrificial()) {
-          int remaining = table.columnResizer.distributeWidth(sacrificeCells, -totalDelta);
+          int remaining = GridUtils.distributeWidth(sacrificeCells, -totalDelta);
 
           if (remaining != 0 && table.resizePolicy.isFixedWidth()) {
             totalDelta += remaining;
-            table.columnResizer.distributeWidth(curCells, totalDelta);
+            GridUtils.distributeWidth(curCells, totalDelta);
           }
 
           table.applyNewColumnWidths(sacrificeCellIndex, sacrificeCells, true);
@@ -444,25 +432,6 @@ public class ScrollTable<RowType> extends ComplexPanel implements
         footerTableHeight = footerTable.getOffsetHeight();
       }
       dataTableHeight = totalHeight - headerTableHeight - footerTableHeight;
-    }
-  }
-
-  private class TableWidthInfo {
-    private int headerTableWidth;
-    private int dataTableWidth;
-    private int footerTableWidth;
-    private int availableWidth;
-
-    public TableWidthInfo() {
-      availableWidth = getAvailableWidth();
-      headerTableWidth = getTableWidth(headerTable);
-      dataTableWidth = dataTable.getElement().getScrollWidth();
-      if (dataTableWidth <= 0) {
-        dataTableWidth = availableWidth;
-      }
-      if (footerTable != null) {
-        footerTableWidth = getTableWidth(footerTable);
-      }
     }
   }
 
@@ -521,9 +490,6 @@ public class ScrollTable<RowType> extends ComplexPanel implements
 
   private List<ColumnDefinition<RowType, ?>> visibleColumns =
       new ArrayList<ColumnDefinition<RowType, ?>>();
-
-  private ColumnResizer columnResizer = new ColumnResizer();
-  private ColumnResizePolicy columnResizePolicy = ColumnResizePolicy.MULTI_CELL;
 
   private Element absoluteElem;
 
@@ -697,7 +663,7 @@ public class ScrollTable<RowType> extends ComplexPanel implements
     int scrollbarWidth = DomUtils.getScrollbarWidth();
     clientWidth -= scrollbarWidth + 1;
 
-    return Math.max(clientWidth, -1);
+    return clientWidth;
   }
 
   public int getCellPadding() {
@@ -712,10 +678,6 @@ public class ScrollTable<RowType> extends ComplexPanel implements
     ColumnDefinition<RowType, ?> colDef = getColumnDefinition(column, visible);
     Object header = (colDef == null) ? null : colDef.getHeader();
     return BeeUtils.isEmpty(header) ? "Column " + column : BeeUtils.transform(header);
-  }
-
-  public ColumnResizePolicy getColumnResizePolicy() {
-    return columnResizePolicy;
   }
 
   public int getColumnWidth(int column) {
@@ -754,6 +716,10 @@ public class ScrollTable<RowType> extends ComplexPanel implements
 
   public FixedWidthGrid getDataTable() {
     return dataTable;
+  }
+  
+  public int getDataTableWidth() {
+    return dataTable.getElement().getScrollWidth();
   }
 
   public int getDefaultColumnWidth() {
@@ -842,11 +808,6 @@ public class ScrollTable<RowType> extends ComplexPanel implements
 
   public TableModel<RowType> getTableModel() {
     return tableModel;
-  }
-
-  public int getTableWidth(FixedWidthFlexTable table) {
-    int scrollWidth = table.getElement().getScrollWidth();
-    return scrollWidth;
   }
 
   public int getVisibleColumnIndex(int colId) {
@@ -1047,7 +1008,7 @@ public class ScrollTable<RowType> extends ComplexPanel implements
       return;
     }
 
-    List<ColumnWidthInfo> colWidths = null;
+    List<ColumnWidthInfo> colWidths;
     if (resizePolicy == ResizePolicy.FILL_WIDTH) {
       colWidths = getFillColumnWidths();
     } else {
@@ -1102,10 +1063,6 @@ public class ScrollTable<RowType> extends ComplexPanel implements
     }
   }
 
-  public void setColumnResizePolicy(ColumnResizePolicy columnResizePolicy) {
-    this.columnResizePolicy = columnResizePolicy;
-  }
-
   public void setColumnWidth(int column, int width) {
     int offset = getHeaderOffset();
     dataTable.setColumnWidth(column, width);
@@ -1114,6 +1071,7 @@ public class ScrollTable<RowType> extends ComplexPanel implements
       footerTable.setColumnWidth(column + offset, width);
     }
 
+    repositionSpacer();
     resizeTablesVertically();
     doScroll();
   }
@@ -1486,6 +1444,7 @@ public class ScrollTable<RowType> extends ComplexPanel implements
         }
       }
     }
+    repositionSpacer();
   }
 
   private void applyTableWrapperSizes(TableHeightInfo sizes) {
@@ -1532,8 +1491,8 @@ public class ScrollTable<RowType> extends ComplexPanel implements
         info.setCurWidth(0);
       }
     }
-    columnResizer.distributeWidth(colWidthInfos, totalWidth);
-
+    
+    GridUtils.distributeWidth(colWidthInfos, totalWidth);
     return colWidthInfos;
   }
 
@@ -1591,46 +1550,19 @@ public class ScrollTable<RowType> extends ComplexPanel implements
       return null;
     }
 
-    TableWidthInfo info = new TableWidthInfo();
-    int clientWidth = info.availableWidth;
-    if (clientWidth <= 0) {
+    int width = getAvailableWidth();
+    if (width <= 0) {
       return null;
     }
+    int diff = width - getDataTableWidth();
 
-    int diff = 0;
-    int numColumns = 0;
-    {
-      int numHeaderCols = 0;
-      int numDataCols = 0;
-      int numFooterCols = 0;
-      if (info.headerTableWidth > 0) {
-        numHeaderCols = headerTable.getColumnCount() - getHeaderOffset();
-      }
-      if (info.dataTableWidth > 0) {
-        numDataCols = dataTable.getColumnCount();
-      }
-      if (footerTable != null && info.footerTableWidth > 0) {
-        numFooterCols = footerTable.getColumnCount() - getHeaderOffset();
-      }
-
-      if (numHeaderCols >= numDataCols && numHeaderCols >= numFooterCols) {
-        numColumns = numHeaderCols;
-        diff = clientWidth - info.headerTableWidth;
-      } else if (numFooterCols >= numDataCols && numFooterCols >= numHeaderCols) {
-        numColumns = numFooterCols;
-        diff = clientWidth - info.footerTableWidth;
-      } else if (numDataCols > 0) {
-        numColumns = numDataCols;
-        diff = clientWidth - info.dataTableWidth;
-      }
-    }
+    int numColumns = dataTable.getColumnCount();
     if (numColumns <= 0) {
       return null;
     }
 
     List<ColumnWidthInfo> colWidthInfos = getColumnWidthInfo(0, numColumns);
-    columnResizer.distributeWidth(colWidthInfos, diff);
-
+    GridUtils.distributeWidth(colWidthInfos, diff);
     return colWidthInfos;
   }
 
@@ -1661,6 +1593,10 @@ public class ScrollTable<RowType> extends ComplexPanel implements
       selectAllWidget = new BeeSimpleCheckBox();
     }
     return selectAllWidget;
+  }
+
+  private int getSpacerWidth(FixedWidthFlexTable table) {
+    return BeeUtils.val(table.getElement().getStyle().getPaddingRight());
   }
 
   private TableHeightInfo getTableWrapperSizes() {
@@ -1789,6 +1725,22 @@ public class ScrollTable<RowType> extends ComplexPanel implements
       }
     };
     tableDefinition.renderRows(rowIndex, singleIterator, rowView);
+  }
+
+  private void repositionSpacer() {
+    Element wrapper = dataWrapper;
+    int spacerWidth = wrapper.getOffsetWidth() - dataWrapper.getClientWidth();
+    resizeSpacer(headerTable, spacerWidth);
+
+    if (footerTable != null) {
+      resizeSpacer(footerTable, spacerWidth);
+    }
+  }
+
+  private void resizeSpacer(FixedWidthFlexTable table, int spacerWidth) {
+    if (spacerWidth >= 0 && spacerWidth != getSpacerWidth(table)) {
+      table.getElement().getStyle().setPaddingRight(spacerWidth, Unit.PX);
+    }
   }
 
   private void setFooterTable(FixedWidthFlexTable footerTable) {

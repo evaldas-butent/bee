@@ -7,7 +7,6 @@ import com.google.gwt.user.client.ui.RootLayoutPanel;
 import com.butent.bee.egg.shared.BeeConst;
 
 public class Egg implements EntryPoint {
-
   public void onModuleLoad() {
     BeeConst.setClient();
 
@@ -20,5 +19,4 @@ public class Egg implements EntryPoint {
       GWT.setUncaughtExceptionHandler(new BeeExceptionHandler());
     }
   }
-
 }

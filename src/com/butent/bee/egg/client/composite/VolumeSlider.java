@@ -4,7 +4,7 @@ import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.RequiresResize;
 
-import com.butent.bee.egg.client.BeeGlobal;
+import com.butent.bee.egg.client.Global;
 import com.butent.bee.egg.client.dom.DomUtils;
 import com.butent.bee.egg.client.event.EventUtils;
 import com.butent.bee.egg.client.layout.Absolute;
@@ -20,42 +20,42 @@ public class VolumeSlider extends Absolute implements RequiresResize {
 
     @Override
     public ImageResource arrowDown() {
-      return BeeGlobal.getImages().arrowLeft();
+      return Global.getImages().arrowLeft();
     }
 
     @Override
     public ImageResource arrowDownDisabled() {
-      return BeeGlobal.getImages().arrowLeftDisabled();
+      return Global.getImages().arrowLeftDisabled();
     }
 
     @Override
     public ImageResource arrowDownHover() {
-      return BeeGlobal.getImages().arrowLeftHover();
+      return Global.getImages().arrowLeftHover();
     }
 
     @Override
     public ImageResource arrowDownPressed() {
-      return BeeGlobal.getImages().arrowLeftPressed();
+      return Global.getImages().arrowLeftPressed();
     }
 
     @Override
     public ImageResource arrowUp() {
-      return BeeGlobal.getImages().arrowRight();
+      return Global.getImages().arrowRight();
     }
 
     @Override
     public ImageResource arrowUpDisabled() {
-      return BeeGlobal.getImages().arrowRightDisabled();
+      return Global.getImages().arrowRightDisabled();
     }
 
     @Override
     public ImageResource arrowUpHover() {
-      return BeeGlobal.getImages().arrowRightHover();
+      return Global.getImages().arrowRightHover();
     }
 
     @Override
     public ImageResource arrowUpPressed() {
-      return BeeGlobal.getImages().arrowRightPressed();
+      return Global.getImages().arrowRightPressed();
     }
   }
 

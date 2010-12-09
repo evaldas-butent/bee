@@ -5,8 +5,8 @@ import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.data.BeeColumn;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 import com.butent.bee.egg.shared.utils.LogUtils;
-import com.butent.bee.egg.shared.utils.PropUtils;
-import com.butent.bee.egg.shared.utils.StringProp;
+import com.butent.bee.egg.shared.utils.PropertyUtils;
+import com.butent.bee.egg.shared.utils.Property;
 
 import java.lang.reflect.Field;
 import java.sql.Connection;
@@ -367,7 +367,7 @@ public class JdbcUtils {
     return v;
   }
 
-  public static List<StringProp> getRs(ResultSet rs) {
+  public static List<Property> getRs(ResultSet rs) {
     if (rs == null) {
       return null;
     }
@@ -377,20 +377,20 @@ public class JdbcUtils {
       return null;
     }
 
-    List<StringProp> lst = new ArrayList<StringProp>();
+    List<Property> lst = new ArrayList<Property>();
     int r = 0;
 
     try {
       while (rs.next()) {
         r++;
-        PropUtils.addString(lst, JdbcConst.ROW_ID, r);
+        PropertyUtils.addProperty(lst, JdbcConst.ROW_ID, r);
 
         for (String nm : cols) {
-          PropUtils.addString(lst, nm, rs.getString(nm));
+          PropertyUtils.addProperty(lst, nm, rs.getString(nm));
         }
       }
     } catch (SQLException ex) {
-      PropUtils.addString(lst, "Error", ex.getMessage());
+      PropertyUtils.addProperty(lst, "Error", ex.getMessage());
     }
 
     return lst;

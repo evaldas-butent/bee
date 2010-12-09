@@ -10,7 +10,7 @@ import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
-public class BeeStyle implements BeeModule {
+public class BeeStyle implements Module {
   public static final String ACTIVE_BLANK = "bee-activeBlank";
   public static final String ACTIVE_CONTENT = "bee-activeContent";
   public static final String CONFIG_PANEL = "bee-configPanel";

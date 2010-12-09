@@ -3,7 +3,7 @@ package com.butent.bee.egg.client.widget;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.CheckBox;
 
-import com.butent.bee.egg.client.BeeGlobal;
+import com.butent.bee.egg.client.Global;
 import com.butent.bee.egg.client.BeeKeeper;
 import com.butent.bee.egg.client.dom.DomUtils;
 import com.butent.bee.egg.client.event.HasBeeValueChangeHandler;
@@ -30,7 +30,7 @@ public class BeeCheckBox extends CheckBox implements HasId,
 
     String fld = nm.getName();
     if (!BeeUtils.isEmpty(fld)) {
-      setText(BeeGlobal.getFieldCaption(fld));
+      setText(Global.getFieldCaption(fld));
       initField(fld);
       addDefaultHandler();
     }
@@ -124,7 +124,7 @@ public class BeeCheckBox extends CheckBox implements HasId,
   private void initField(String fld) {
     if (!BeeUtils.isEmpty(fld)) {
       setFieldName(fld);
-      setValue(BeeUtils.toBoolean(BeeGlobal.getFieldValue(fld)));
+      setValue(BeeUtils.toBoolean(Global.getFieldValue(fld)));
     }
   }
 
@@ -146,7 +146,7 @@ public class BeeCheckBox extends CheckBox implements HasId,
 
   private void updateField(boolean v) {
     if (!BeeUtils.isEmpty(getFieldName())) {
-      BeeGlobal.setFieldValue(getFieldName(), BeeUtils.toString(v));
+      Global.setFieldValue(getFieldName(), BeeUtils.toString(v));
     }
   }
 

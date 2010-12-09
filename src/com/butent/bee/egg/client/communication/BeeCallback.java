@@ -7,7 +7,7 @@ import com.google.gwt.http.client.RequestCallback;
 import com.google.gwt.http.client.RequestTimeoutException;
 import com.google.gwt.http.client.Response;
 
-import com.butent.bee.egg.client.BeeGlobal;
+import com.butent.bee.egg.client.Global;
 import com.butent.bee.egg.client.BeeKeeper;
 import com.butent.bee.egg.client.data.ResponseData;
 import com.butent.bee.egg.client.ui.CompositeService;
@@ -40,7 +40,7 @@ public class BeeCallback implements RequestCallback {
     BeeDuration dur = new BeeDuration("response");
 
     int statusCode = resp.getStatusCode();
-    boolean debug = BeeGlobal.isDebug();
+    boolean debug = Global.isDebug();
 
     int id = BeeUtils.toInt(resp.getHeader(BeeService.RPC_FIELD_QID));
     RpcInfo info = BeeKeeper.getRpc().getRpcInfo(id);

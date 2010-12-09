@@ -3,34 +3,24 @@ package com.butent.bee.egg.shared.utils;
 import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.BeeDate;
 
-public class SubProp extends StringProp {
-  public static String[] COLUMN_HEADERS = new String[]{
-      "Name", "Sub", "Value", "Date"};
+public class ExtendedProperty extends Property {
+  public static String[] COLUMN_HEADERS = new String[]{"Name", "Sub", "Value", "Date"};
   public static int COLUMN_COUNT = COLUMN_HEADERS.length;
 
   private String sub;
   private BeeDate date = new BeeDate();
 
-  public SubProp() {
-    super();
-  }
-
-  public SubProp(String name) {
-    super(name);
-    this.sub = BeeConst.STRING_EMPTY;
-  }
-
-  public SubProp(String name, String value) {
+  public ExtendedProperty(String name, String value) {
     super(name, value);
     this.sub = BeeConst.STRING_EMPTY;
   }
 
-  public SubProp(String name, String sub, String value) {
+  public ExtendedProperty(String name, String sub, String value) {
     super(name, value);
     this.sub = sub;
   }
 
-  public SubProp(SubProp sp) {
+  public ExtendedProperty(ExtendedProperty sp) {
     this(sp.getName(), sp.getSub(), sp.getValue());
   }
 
@@ -60,5 +50,4 @@ public class SubProp extends StringProp {
   public String transform() {
     return toString();
   }
-
 }

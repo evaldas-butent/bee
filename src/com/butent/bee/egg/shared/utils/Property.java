@@ -3,25 +3,19 @@ package com.butent.bee.egg.shared.utils;
 import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.Transformable;
 
-public class BeeProp<T> implements Comparable<BeeProp<T>>, Transformable {
+public class Property implements Comparable<Property>, Transformable {
+  public static String[] HEADERS = new String[]{"Property", "Value"};
+  public static int HEADER_COUNT = HEADERS.length;
+
   private String name;
-  private T value;
+  private String value;
 
-  public BeeProp() {
-    this.name = null;
-    this.value = null;
-  }
-
-  public BeeProp(String name) {
-    this.name = name;
-  }
-
-  public BeeProp(String name, T value) {
+  public Property(String name, String value) {
     this.name = name;
     this.value = value;
   }
 
-  public int compareTo(BeeProp<T> oth) {
+  public int compareTo(Property oth) {
     if (name == null) {
       if (oth.name == null) {
         return 0;
@@ -39,7 +33,7 @@ public class BeeProp<T> implements Comparable<BeeProp<T>>, Transformable {
     return name;
   }
 
-  public T getValue() {
+  public String getValue() {
     return value;
   }
 
@@ -47,17 +41,16 @@ public class BeeProp<T> implements Comparable<BeeProp<T>>, Transformable {
     this.name = name;
   }
 
-  public void setValue(T value) {
+  public void setValue(String value) {
     this.value = value;
   }
 
   @Override
   public String toString() {
-    return name + BeeConst.DEFAULT_VALUE_SEPARATOR + BeeUtils.transform(value);
+    return name + BeeConst.DEFAULT_VALUE_SEPARATOR + value;
   }
 
   public String transform() {
     return toString();
   }
-
 }

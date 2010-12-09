@@ -12,7 +12,7 @@ import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.egg.client.BeeGlobal;
+import com.butent.bee.egg.client.Global;
 import com.butent.bee.egg.client.widget.BeeImage;
 
 import java.util.ArrayList;
@@ -165,35 +165,35 @@ public class SpinnerBase {
   }
   
   public ImageResource arrowDown() {
-    return BeeGlobal.getImages().arrowDown();
+    return Global.getImages().arrowDown();
   }
 
   public ImageResource arrowDownDisabled() {
-    return BeeGlobal.getImages().arrowDownDisabled();
+    return Global.getImages().arrowDownDisabled();
   }
 
   public ImageResource arrowDownHover() {
-    return BeeGlobal.getImages().arrowDownHover();
+    return Global.getImages().arrowDownHover();
   }
   
   public ImageResource arrowDownPressed() {
-    return BeeGlobal.getImages().arrowDownPressed();
+    return Global.getImages().arrowDownPressed();
   }
   
   public ImageResource arrowUp() {
-    return BeeGlobal.getImages().arrowUp();
+    return Global.getImages().arrowUp();
   }
   
   public ImageResource arrowUpDisabled() {
-    return BeeGlobal.getImages().arrowUpDisabled();
+    return Global.getImages().arrowUpDisabled();
   }
 
   public ImageResource arrowUpHover() {
-    return BeeGlobal.getImages().arrowUpHover();
+    return Global.getImages().arrowUpHover();
   }
   
   public ImageResource arrowUpPressed() {
-    return BeeGlobal.getImages().arrowUpPressed();
+    return Global.getImages().arrowUpPressed();
   }
 
   public void doStep(long v, boolean incr) {

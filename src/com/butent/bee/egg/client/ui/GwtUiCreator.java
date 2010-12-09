@@ -16,8 +16,8 @@ import com.butent.bee.egg.client.layout.Split;
 import com.butent.bee.egg.client.layout.Stack;
 import com.butent.bee.egg.client.layout.Tab;
 import com.butent.bee.egg.client.layout.Vertical;
-import com.butent.bee.egg.client.menu.BeeMenuBar;
-import com.butent.bee.egg.client.menu.BeeMenuItemSeparator;
+import com.butent.bee.egg.client.menu.MenuBar;
+import com.butent.bee.egg.client.menu.MenuSeparator;
 import com.butent.bee.egg.client.menu.MenuCommand;
 import com.butent.bee.egg.client.tree.BeeTree;
 import com.butent.bee.egg.client.tree.BeeTreeItem;
@@ -165,7 +165,7 @@ public class GwtUiCreator implements UiCreator {
 
   @Override
   public Object createMenuHorizontal(UiMenuHorizontal menuHorizontal) {
-    BeeMenuBar widget = new BeeMenuBar(
+    MenuBar widget = new MenuBar(
         BeeUtils.isEmpty(menuHorizontal.getParent()) ? 0 : 1);
     widget.setTitle(menuHorizontal.getId());
 
@@ -176,7 +176,7 @@ public class GwtUiCreator implements UiCreator {
 
   @Override
   public Object createMenuVertical(UiMenuVertical menuVertical) {
-    BeeMenuBar widget = new BeeMenuBar(
+    MenuBar widget = new MenuBar(
         BeeUtils.isEmpty(menuVertical.getParent()) ? 0 : 1, true);
     widget.setTitle(menuVertical.getId());
 
@@ -329,20 +329,20 @@ public class GwtUiCreator implements UiCreator {
     }
   }
 
-  private void createMenuItems(BeeMenuBar menu, Collection<UiComponent> childs) {
+  private void createMenuItems(MenuBar menu, Collection<UiComponent> childs) {
     if (!BeeUtils.isEmpty(childs)) {
       for (UiComponent child : childs) {
         String txt = child.getCaption();
         String sep = child.getProperty("separators");
 
         if (!BeeUtils.isEmpty(sep)) {
-          menu.addSeparator(new BeeMenuItemSeparator());
+          menu.addSeparator(new MenuSeparator());
         }
         if (child.hasChilds()) {
           Object childWidget = child.createInstance(this);
 
-          if (childWidget instanceof BeeMenuBar) {
-            menu.addItem(txt, (BeeMenuBar) childWidget);
+          if (childWidget instanceof MenuBar) {
+            menu.addItem(txt, (MenuBar) childWidget);
           } else {
             logger.severe("Class " + childWidget.getClass().getName()
                 + " cannot be added to " + menu.getClass().getName());

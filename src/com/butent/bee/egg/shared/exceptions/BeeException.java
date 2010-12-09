@@ -18,5 +18,4 @@ public class BeeException extends Exception {
   public BeeException(Throwable cause) {
     super(cause);
   }
-
 }

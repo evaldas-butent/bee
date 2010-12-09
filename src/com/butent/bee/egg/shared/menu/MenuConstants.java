@@ -5,7 +5,7 @@ import com.butent.bee.egg.shared.utils.BeeUtils;
 
 import java.util.Comparator;
 
-public class MenuConst {
+public class MenuConstants {
   private static class MenuComparator implements Comparator<MenuEntry> {
     public int compare(MenuEntry m1, MenuEntry m2) {
       int z = BeeUtils.compare(m1.getParent(), m2.getParent());

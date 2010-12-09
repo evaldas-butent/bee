@@ -4,8 +4,8 @@ import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 import com.butent.bee.egg.shared.utils.LogUtils;
-import com.butent.bee.egg.shared.utils.PropUtils;
-import com.butent.bee.egg.shared.utils.StringProp;
+import com.butent.bee.egg.shared.utils.PropertyUtils;
+import com.butent.bee.egg.shared.utils.Property;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -21,38 +21,37 @@ import java.util.logging.Logger;
 public class BeeConnection {
   private static final Logger logger = Logger.getLogger(BeeConnection.class.getName());
 
-  public static List<StringProp> getInfo(Connection conn) {
+  public static List<Property> getInfo(Connection conn) {
     Assert.notNull(conn);
-    List<StringProp> lst = new ArrayList<StringProp>();
+    List<Property> lst = new ArrayList<Property>();
 
     int z;
 
     try {
-      PropUtils.addString(lst, "Auto Commit", conn.getAutoCommit(), "Catalog",
-          conn.getCatalog());
+      PropertyUtils.addProperties(lst, "Auto Commit", conn.getAutoCommit(),
+          "Catalog", conn.getCatalog());
 
       z = conn.getHoldability();
-      PropUtils.addString(lst, "Holdability",
+      PropertyUtils.addProperty(lst, "Holdability",
           BeeUtils.concat(1, z, JdbcUtils.holdabilityAsString(z)));
 
       z = conn.getTransactionIsolation();
-      PropUtils.addString(lst, "Transaction Isolation",
+      PropertyUtils.addProperty(lst, "Transaction Isolation",
           BeeUtils.concat(1, z, JdbcUtils.transactionIsolationAsString(z)));
 
-      PropUtils.addString(lst, "Read Only", conn.isReadOnly());
+      PropertyUtils.addProperty(lst, "Read Only", conn.isReadOnly());
 
       Properties prp = conn.getClientInfo();
       if (!BeeUtils.isEmpty(prp)) {
         for (String p : prp.stringPropertyNames()) {
-          PropUtils.addString(lst, "Client Info",
-              BeeUtils.addName(p, prp.getProperty(p)));
+          PropertyUtils.addProperty(lst, "Client Info", BeeUtils.addName(p, prp.getProperty(p)));
         }
       }
 
       Map<String, Class<?>> tm = conn.getTypeMap();
       if (!BeeUtils.isEmpty(tm)) {
         for (Map.Entry<String, Class<?>> me : tm.entrySet()) {
-          PropUtils.addString(lst, "Type Map",
+          PropertyUtils.addProperty(lst, "Type Map",
               BeeUtils.addName(me.getKey(), me.getValue().toString()));
         }
       }
@@ -61,7 +60,7 @@ public class BeeConnection {
       if (warn != null) {
         List<String> wLst = JdbcUtils.unchain(warn);
         for (String w : wLst) {
-          PropUtils.addString(lst, "Warning", w);
+          PropertyUtils.addProperty(lst, "Warning", w);
         }
       }
     } catch (SQLException ex) {

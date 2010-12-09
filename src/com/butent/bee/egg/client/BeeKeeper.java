@@ -8,18 +8,18 @@ import java.util.Arrays;
 
 public class BeeKeeper {
   private static BeeUi UI;
-  private static BeeRpc RPC;
-  private static BeeBus BUS;
+  private static RpcFactory RPC;
+  private static EventManager BUS;
 
   private static BeeLog LOG;
   private static BeeStyle STYLE;
   private static BeeScheduler SCHED;
   private static BeeUser USER;
-  private static BeeGlobal GLOB;
+  private static Global GLOB;
   private static Storage STOR;
-  private static BeeMenu MENU;
+  private static MenuManager MENU;
 
-  public static BeeBus getBus() {
+  public static EventManager getBus() {
     return BUS;
   }
 
@@ -27,11 +27,11 @@ public class BeeKeeper {
     return LOG;
   }
 
-  public static BeeMenu getMenu() {
+  public static MenuManager getMenu() {
     return MENU;
   }
 
-  public static BeeRpc getRpc() {
+  public static RpcFactory getRpc() {
     return RPC;
   }
 
@@ -47,59 +47,59 @@ public class BeeKeeper {
     return UI;
   }
 
-  private BeeModule[] modules;
+  private Module[] modules;
 
   public BeeKeeper(HasWidgets root, String url) {
     UI = new BeeUi(root);
-    BUS = new BeeBus();
-    RPC = new BeeRpc(url);
+    BUS = new EventManager();
+    RPC = new RpcFactory(url);
 
     LOG = new BeeLog();
     STYLE = new BeeStyle();
     SCHED = new BeeScheduler();
     USER = new BeeUser();
-    GLOB = new BeeGlobal();
+    GLOB = new Global();
     STOR = new Storage();
-    MENU = new BeeMenu();
+    MENU = new MenuManager();
 
-    modules = new BeeModule[]{
+    modules = new Module[]{
         UI, BUS, RPC, LOG, STYLE, SCHED, USER, GLOB, STOR, MENU};
   }
 
   public void end() {
-    BeeModule[] arr = orderModules(BeeModule.PRIORITY_END);
+    Module[] arr = orderModules(Module.PRIORITY_END);
     if (arr == null) {
       return;
     }
 
-    for (BeeModule mdl : arr) {
+    for (Module mdl : arr) {
       mdl.end();
     }
   }
 
   public void init() {
-    BeeModule[] arr = orderModules(BeeModule.PRIORITY_INIT);
+    Module[] arr = orderModules(Module.PRIORITY_INIT);
     if (arr == null) {
       return;
     }
 
-    for (BeeModule mdl : arr) {
+    for (Module mdl : arr) {
       mdl.init();
     }
   }
 
   public void start() {
-    BeeModule[] arr = orderModules(BeeModule.PRIORITY_START);
+    Module[] arr = orderModules(Module.PRIORITY_START);
     if (arr == null) {
       return;
     }
 
-    for (BeeModule mdl : arr) {
+    for (Module mdl : arr) {
       mdl.start();
     }
   }
 
-  private BeeModule[] orderModules(int p) {
+  private Module[] orderModules(int p) {
     int c = modules.length;
     if (c <= 0) {
       return null;
@@ -115,7 +115,7 @@ public class BeeKeeper {
       z = modules[i].getPriority(p);
       arr[i][1] = z;
 
-      if (z != BeeModule.DO_NOT_CALL) {
+      if (z != Module.DO_NOT_CALL) {
         r++;
       }
     }
@@ -126,12 +126,12 @@ public class BeeKeeper {
 
     Arrays.sort(arr, new RowComparator(1));
 
-    BeeModule[] ord = new BeeModule[r];
+    Module[] ord = new Module[r];
     r = 0;
 
     for (int i = 0; i < c; i++) {
-      if ((Integer) arr[i][1] != BeeModule.DO_NOT_CALL) {
-        ord[r] = (BeeModule) arr[i][0];
+      if ((Integer) arr[i][1] != Module.DO_NOT_CALL) {
+        ord[r] = (Module) arr[i][0];
         r++;
       }
     }

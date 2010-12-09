@@ -10,8 +10,8 @@ import com.butent.bee.egg.shared.communication.CommUtils;
 import com.butent.bee.egg.shared.communication.ContentType;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 import com.butent.bee.egg.shared.utils.LogUtils;
-import com.butent.bee.egg.shared.utils.PropUtils;
-import com.butent.bee.egg.shared.utils.SubProp;
+import com.butent.bee.egg.shared.utils.PropertyUtils;
+import com.butent.bee.egg.shared.utils.ExtendedProperty;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -131,42 +131,41 @@ public class RequestInfo implements HasExtendedInfo, Transformable {
     return id;
   }
 
-  public List<SubProp> getInfo() {
+  public List<ExtendedProperty> getInfo() {
     if (request == null) {
       return null;
     }
 
-    List<SubProp> reqInfo = new ArrayList<SubProp>();
+    List<ExtendedProperty> reqInfo = new ArrayList<ExtendedProperty>();
 
     if (request.isAsyncStarted()) {
-      PropUtils.appendSub(reqInfo,
-          getAsyncContextInfo(request.getAsyncContext()));
+      PropertyUtils.appendExtended(reqInfo, getAsyncContextInfo(request.getAsyncContext()));
     }
 
-    PropUtils.appendSub(reqInfo, getAttributeInfo(request));
+    PropertyUtils.appendExtended(reqInfo, getAttributeInfo(request));
 
-    PropUtils.addPropSub(reqInfo, false, "Auth Type", request.getAuthType(),
+    PropertyUtils.addProperties(reqInfo, false, "Auth Type", request.getAuthType(),
         "Character Encoding", request.getCharacterEncoding(), "Content Length",
         request.getContentLength(), "Content Type", request.getContentType(),
         "Context Path", request.getContextPath());
 
-    PropUtils.appendSub(reqInfo, getCookieInfo(request));
+    PropertyUtils.appendExtended(reqInfo, getCookieInfo(request));
 
     DispatcherType dt = request.getDispatcherType();
     if (dt != null) {
-      PropUtils.addSub(reqInfo, "Dispatcher Type", null, dt.toString());
+      PropertyUtils.addExtended(reqInfo, "Dispatcher Type", null, dt.toString());
     }
 
-    PropUtils.appendSub(reqInfo, getHeaderInfo(request));
-    PropUtils.appendSub(reqInfo, getLocaleInfo(request));
+    PropertyUtils.appendExtended(reqInfo, getHeaderInfo(request));
+    PropertyUtils.appendExtended(reqInfo, getLocaleInfo(request));
 
-    PropUtils.addPropSub(reqInfo, false, "Local Addr", request.getLocalAddr(),
+    PropertyUtils.addProperties(reqInfo, false, "Local Addr", request.getLocalAddr(),
         "Local Name", request.getLocalName(), "Local Port",
         request.getLocalPort(), "Method", request.getMethod());
 
-    PropUtils.appendSub(reqInfo, getParameterInfo(request));
+    PropertyUtils.appendExtended(reqInfo, getParameterInfo(request));
 
-    PropUtils.addPropSub(reqInfo, false, "Path Info", request.getPathInfo(),
+    PropertyUtils.addProperties(reqInfo, false, "Path Info", request.getPathInfo(),
         "Path Translated", request.getPathTranslated(), "Protocol",
         request.getProtocol(), "Query String", request.getQueryString(),
         "Remote Addr", request.getRemoteAddr(), "Remote Host",
@@ -178,11 +177,10 @@ public class RequestInfo implements HasExtendedInfo, Transformable {
         "Server Port", request.getServerPort(), "Servlet Path",
         request.getServletPath());
 
-    PropUtils.appendSub(reqInfo,
-        getServletContextInfo(request.getServletContext()));
-    PropUtils.appendSub(reqInfo, getSessionInfo(request.getSession(false)));
+    PropertyUtils.appendExtended(reqInfo, getServletContextInfo(request.getServletContext()));
+    PropertyUtils.appendExtended(reqInfo, getSessionInfo(request.getSession(false)));
 
-    PropUtils.addPropSub(reqInfo, false, "is Async Started",
+    PropertyUtils.addProperties(reqInfo, false, "is Async Started",
         request.isAsyncStarted(), "is Async Supported",
         request.isAsyncSupported(), "is Requested Session Id From Cookie",
         request.isRequestedSessionIdFromCookie(),
@@ -409,21 +407,21 @@ public class RequestInfo implements HasExtendedInfo, Transformable {
     return toString();
   }
 
-  private Collection<SubProp> getAsyncContextInfo(AsyncContext ac) {
+  private Collection<ExtendedProperty> getAsyncContextInfo(AsyncContext ac) {
     if (ac == null) {
       return null;
     }
 
-    Collection<SubProp> info = new ArrayList<SubProp>();
+    Collection<ExtendedProperty> info = new ArrayList<ExtendedProperty>();
     String root = "Async Context";
 
-    PropUtils.addPropSub(info, true, root, "Timeout", ac.getTimeout(), root,
+    PropertyUtils.addProperties(info, true, root, "Timeout", ac.getTimeout(), root,
         "Has Original Request And Response", ac.hasOriginalRequestAndResponse());
 
     return info;
   }
 
-  private Collection<SubProp> getAttributeInfo(HttpServletRequest req) {
+  private Collection<ExtendedProperty> getAttributeInfo(HttpServletRequest req) {
     if (req == null) {
       return null;
     }
@@ -433,19 +431,19 @@ public class RequestInfo implements HasExtendedInfo, Transformable {
       return null;
     }
 
-    Collection<SubProp> info = new ArrayList<SubProp>();
+    Collection<ExtendedProperty> info = new ArrayList<ExtendedProperty>();
     String root = "Attribute";
     String nm;
 
     while (lst.hasMoreElements()) {
       nm = lst.nextElement();
-      PropUtils.addSub(info, root, nm, req.getAttribute(nm));
+      PropertyUtils.addExtended(info, root, nm, req.getAttribute(nm));
     }
 
     return info;
   }
 
-  private Collection<SubProp> getCookieInfo(HttpServletRequest req) {
+  private Collection<ExtendedProperty> getCookieInfo(HttpServletRequest req) {
     if (req == null) {
       return null;
     }
@@ -455,8 +453,8 @@ public class RequestInfo implements HasExtendedInfo, Transformable {
       return null;
     }
 
-    Collection<SubProp> info = new ArrayList<SubProp>();
-    PropUtils.addSub(info, "Cookies", "cnt", arr.length);
+    Collection<ExtendedProperty> info = new ArrayList<ExtendedProperty>();
+    PropertyUtils.addExtended(info, "Cookies", "cnt", arr.length);
 
     String nm;
 
@@ -466,7 +464,7 @@ public class RequestInfo implements HasExtendedInfo, Transformable {
         continue;
       }
 
-      PropUtils.addPropSub(info, true, nm, "Value", coo.getValue(), nm,
+      PropertyUtils.addProperties(info, true, nm, "Value", coo.getValue(), nm,
           "Comment", coo.getComment(), nm, "Domain", coo.getDomain(), nm,
           "Max Age", coo.getMaxAge(), nm, "Path", coo.getPath(), nm, "Secure",
           coo.getSecure(), nm, "Version", coo.getVersion(), nm, "Http Only",
@@ -476,7 +474,7 @@ public class RequestInfo implements HasExtendedInfo, Transformable {
     return info;
   }
 
-  private Collection<SubProp> getHeaderInfo(HttpServletRequest req) {
+  private Collection<ExtendedProperty> getHeaderInfo(HttpServletRequest req) {
     if (req == null) {
       return null;
     }
@@ -486,7 +484,7 @@ public class RequestInfo implements HasExtendedInfo, Transformable {
       return null;
     }
 
-    Collection<SubProp> info = new ArrayList<SubProp>();
+    Collection<ExtendedProperty> info = new ArrayList<ExtendedProperty>();
     String root = "Header";
     String nm, v;
 
@@ -501,13 +499,12 @@ public class RequestInfo implements HasExtendedInfo, Transformable {
         continue;
       }
 
-      PropUtils.addSub(info, root, nm, v);
+      PropertyUtils.addExtended(info, root, nm, v);
     }
-
     return info;
   }
 
-  private Collection<SubProp> getLocaleInfo(HttpServletRequest req) {
+  private Collection<ExtendedProperty> getLocaleInfo(HttpServletRequest req) {
     if (req == null) {
       return null;
     }
@@ -531,14 +528,14 @@ public class RequestInfo implements HasExtendedInfo, Transformable {
       return null;
     }
 
-    Collection<SubProp> info = new ArrayList<SubProp>();
+    Collection<ExtendedProperty> info = new ArrayList<ExtendedProperty>();
     String root;
 
     for (int i = 0; i < lst.size(); i++) {
       loc = lst.get(i);
       root = "Locale " + i;
 
-      PropUtils.addPropSub(info, true, root, "Country", loc.getCountry(), root,
+      PropertyUtils.addProperties(info, true, root, "Country", loc.getCountry(), root,
           "Display Country", loc.getDisplayCountry(), root,
           "Display Country loc", loc.getDisplayCountry(loc), root,
           "Display Language", loc.getDisplayLanguage(), root,
@@ -555,7 +552,7 @@ public class RequestInfo implements HasExtendedInfo, Transformable {
     return info;
   }
 
-  private Collection<SubProp> getParameterInfo(HttpServletRequest req) {
+  private Collection<ExtendedProperty> getParameterInfo(HttpServletRequest req) {
     if (req == null) {
       return null;
     }
@@ -565,7 +562,7 @@ public class RequestInfo implements HasExtendedInfo, Transformable {
       return null;
     }
 
-    Collection<SubProp> info = new ArrayList<SubProp>();
+    Collection<ExtendedProperty> info = new ArrayList<ExtendedProperty>();
     String root = "Parameter";
     String nm, v;
 
@@ -576,18 +573,17 @@ public class RequestInfo implements HasExtendedInfo, Transformable {
         continue;
       }
 
-      PropUtils.addSub(info, root, nm, v);
+      PropertyUtils.addExtended(info, root, nm, v);
     }
-
     return info;
   }
 
-  private Collection<SubProp> getServletContextInfo(ServletContext sc) {
+  private Collection<ExtendedProperty> getServletContextInfo(ServletContext sc) {
     if (sc == null) {
       return null;
     }
 
-    Collection<SubProp> info = new ArrayList<SubProp>();
+    Collection<ExtendedProperty> info = new ArrayList<ExtendedProperty>();
     String root = "Servlet Context";
     String nm, v;
     int c;
@@ -613,35 +609,34 @@ public class RequestInfo implements HasExtendedInfo, Transformable {
 
           if (c > 1) {
             for (int i = 0; i < c; i++) {
-              PropUtils.addSub(info, root + " attribute " + nm,
+              PropertyUtils.addExtended(info, root + " attribute " + nm,
                   BeeUtils.transform(i), arr[i]);
             }
             continue;
           }
         }
 
-        PropUtils.addSub(info, root + " attribute " + nm, null, v);
+        PropertyUtils.addExtended(info, root + " attribute " + nm, null, v);
       }
     }
 
-    PropUtils.addSub(info, root, "Context Path", sc.getContextPath());
+    PropertyUtils.addExtended(info, root, "Context Path", sc.getContextPath());
 
     Set<SessionTrackingMode> trackMd = sc.getDefaultSessionTrackingModes();
     if (!BeeUtils.isEmpty(trackMd)) {
       for (SessionTrackingMode md : trackMd) {
-        PropUtils.addSub(info, root, "Default Session Tracking Mode", md.name());
+        PropertyUtils.addExtended(info, root, "Default Session Tracking Mode", md.name());
       }
     }
 
     trackMd = sc.getEffectiveSessionTrackingModes();
     if (!BeeUtils.isEmpty(trackMd)) {
       for (SessionTrackingMode md : trackMd) {
-        PropUtils.addSub(info, root, "Effective Session Tracking Mode",
-            md.name());
+        PropertyUtils.addExtended(info, root, "Effective Session Tracking Mode", md.name());
       }
     }
 
-    PropUtils.addPropSub(info, true, root, "Effective Major Version",
+    PropertyUtils.addProperties(info, true, root, "Effective Major Version",
         sc.getEffectiveMajorVersion(), root, "Effective Minor Version",
         sc.getEffectiveMinorVersion(), root, "Major Version",
         sc.getMajorVersion(), root, "Minor Version", sc.getMinorVersion(),
@@ -652,20 +647,19 @@ public class RequestInfo implements HasExtendedInfo, Transformable {
     if (!BeeUtils.isEmpty(lst)) {
       while (lst.hasMoreElements()) {
         nm = lst.nextElement();
-        PropUtils.addSub(info, root + " init parameter", nm,
-            sc.getInitParameter(nm));
+        PropertyUtils.addExtended(info, root + " init parameter", nm, sc.getInitParameter(nm));
       }
     }
 
     return info;
   }
 
-  private Collection<SubProp> getSessionInfo(HttpSession hs) {
+  private Collection<ExtendedProperty> getSessionInfo(HttpSession hs) {
     if (hs == null) {
       return null;
     }
 
-    Collection<SubProp> info = new ArrayList<SubProp>();
+    Collection<ExtendedProperty> info = new ArrayList<ExtendedProperty>();
     String root = "Session";
     String nm;
 
@@ -673,11 +667,11 @@ public class RequestInfo implements HasExtendedInfo, Transformable {
     if (!BeeUtils.isEmpty(lst)) {
       while (lst.hasMoreElements()) {
         nm = lst.nextElement();
-        PropUtils.addSub(info, root + " attribute", nm, hs.getAttribute(nm));
+        PropertyUtils.addExtended(info, root + " attribute", nm, hs.getAttribute(nm));
       }
     }
 
-    PropUtils.addPropSub(info, true, root, "Id", hs.getId(), root,
+    PropertyUtils.addProperties(info, true, root, "Id", hs.getId(), root,
         "Creation Time", hs.getCreationTime(), root, "Last Accessed Time",
         hs.getLastAccessedTime(), root, "Max Inactive Interval",
         hs.getMaxInactiveInterval(), root, "Is New", hs.isNew());

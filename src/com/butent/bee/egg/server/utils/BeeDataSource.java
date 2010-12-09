@@ -7,8 +7,8 @@ import com.butent.bee.egg.server.jdbc.JdbcUtils;
 import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.Transformable;
 import com.butent.bee.egg.shared.utils.BeeUtils;
-import com.butent.bee.egg.shared.utils.PropUtils;
-import com.butent.bee.egg.shared.utils.SubProp;
+import com.butent.bee.egg.shared.utils.PropertyUtils;
+import com.butent.bee.egg.shared.utils.ExtendedProperty;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -64,7 +64,7 @@ public class BeeDataSource implements Transformable {
     return conn;
   }
 
-  public List<SubProp> getDbInfo() throws SQLException {
+  public List<ExtendedProperty> getDbInfo() throws SQLException {
     ResultSet rs, z;
     String nm, k, v, s;
     int c;
@@ -79,17 +79,17 @@ public class BeeDataSource implements Transformable {
       return null;
     }
 
-    List<SubProp> lst = new ArrayList<SubProp>();
+    List<ExtendedProperty> lst = new ArrayList<ExtendedProperty>();
 
-    PropUtils.addPropSub(lst, false, "DB Name", dbMd.getDatabaseProductName(),
+    PropertyUtils.addProperties(lst, false, "DB Name", dbMd.getDatabaseProductName(),
         "DB Version", dbMd.getDatabaseProductVersion(), "Driver Name",
         dbMd.getDriverName(), "Driver Version", dbMd.getDriverVersion(),
         "JDBC Major Version", dbMd.getJDBCMajorVersion(), "JDBC Minor Version",
         dbMd.getJDBCMinorVersion(), "URL", dbMd.getURL());
 
-    PropUtils.appendString(lst, "Connection", BeeConnection.getInfo(conn));
+    PropertyUtils.appendChildrenToExtended(lst, "Connection", BeeConnection.getInfo(conn));
 
-    PropUtils.addPropSub(lst, false, "User", dbMd.getUserName(),
+    PropertyUtils.addProperties(lst, false, "User", dbMd.getUserName(),
         "Catalog Term", dbMd.getCatalogTerm(), "Catalog Separator",
         dbMd.getCatalogSeparator(), "Schema Term", dbMd.getSchemaTerm(),
         "Procedure Term", dbMd.getProcedureTerm(), "Extra Name Characters",
@@ -115,7 +115,7 @@ public class BeeDataSource implements Transformable {
         dbMd.getMaxCharLiteralLength(), "Max Connections",
         dbMd.getMaxConnections(), "Max Statements", dbMd.getMaxStatements());
 
-    PropUtils.addPropSub(
+    PropertyUtils.addProperties(
         lst,
         false,
         "Default Transaction Isolation",
@@ -123,18 +123,18 @@ public class BeeDataSource implements Transformable {
         "Result Set Holdability",
         JdbcUtils.holdabilityAsString(dbMd.getResultSetHoldability()));
 
-    PropUtils.addSplit(lst, "SQL Keywords", null, dbMd.getSQLKeywords(),
+    PropertyUtils.addSplit(lst, "SQL Keywords", null, dbMd.getSQLKeywords(),
         BeeConst.STRING_COMMA);
-    PropUtils.addSplit(lst, "System Functions", null,
+    PropertyUtils.addSplit(lst, "System Functions", null,
         dbMd.getSystemFunctions(), BeeConst.STRING_COMMA);
-    PropUtils.addSplit(lst, "Numeric Functions", null,
+    PropertyUtils.addSplit(lst, "Numeric Functions", null,
         dbMd.getNumericFunctions(), BeeConst.STRING_COMMA);
-    PropUtils.addSplit(lst, "String Functions", null,
+    PropertyUtils.addSplit(lst, "String Functions", null,
         dbMd.getStringFunctions(), BeeConst.STRING_COMMA);
-    PropUtils.addSplit(lst, "Time Date Functions", null,
+    PropertyUtils.addSplit(lst, "Time Date Functions", null,
         dbMd.getTimeDateFunctions(), BeeConst.STRING_COMMA);
 
-    PropUtils.addPropSub(lst, false, "All Procedures Are Callable",
+    PropertyUtils.addProperties(lst, false, "All Procedures Are Callable",
         dbMd.allProceduresAreCallable(), "All Tables Are Selectable",
         dbMd.allTablesAreSelectable(),
         "Auto Commit Failure Closes All Result Sets",
@@ -261,8 +261,7 @@ public class BeeDataSource implements Transformable {
           BeeUtils.addName("Default", rs.getString("DEFAULT_VALUE")),
           rs.getString("DESCRIPTION"));
 
-      PropUtils.addSub(lst, "Client Property", k,
-          BeeUtils.ifString(v, "(empty)"));
+      PropertyUtils.addExtended(lst, "Client Property", k, BeeUtils.ifString(v, "(empty)"));
     }
     rs.close();
 
@@ -270,7 +269,7 @@ public class BeeDataSource implements Transformable {
     c = JdbcUtils.getSize(rs);
     rs.close();
 
-    PropUtils.addSub(lst, "Functions", null, BeeUtils.bracket(c));
+    PropertyUtils.addExtended(lst, "Functions", null, BeeUtils.bracket(c));
 
     if (BeeUtils.betweenInclusive(c, 1, 100)) {
       rs = dbMd.getFunctions(null, null, null);
@@ -284,7 +283,7 @@ public class BeeDataSource implements Transformable {
             BeeUtils.addName("Cat", rs.getString("FUNCTION_CAT")),
             BeeUtils.addName("Schem", rs.getString("FUNCTION_SCHEM")));
 
-        PropUtils.addSub(lst, "Function", k, BeeUtils.ifString(v, k));
+        PropertyUtils.addExtended(lst, "Function", k, BeeUtils.ifString(v, k));
       }
       rs.close();
     }
@@ -293,7 +292,7 @@ public class BeeDataSource implements Transformable {
     c = JdbcUtils.getSize(rs);
     rs.close();
 
-    PropUtils.addSub(lst, "Procedures", null, BeeUtils.bracket(c));
+    PropertyUtils.addExtended(lst, "Procedures", null, BeeUtils.bracket(c));
 
     if (BeeUtils.betweenInclusive(c, 1, 100)) {
       rs = dbMd.getProcedures(null, null, null);
@@ -307,7 +306,7 @@ public class BeeDataSource implements Transformable {
             BeeUtils.addName("Cat", rs.getString("PROCEDURE_CAT")),
             BeeUtils.addName("Schem", rs.getString("PROCEDURE_SCHEM")));
 
-        PropUtils.addSub(lst, "Procedure", k, BeeUtils.ifString(v, k));
+        PropertyUtils.addExtended(lst, "Procedure", k, BeeUtils.ifString(v, k));
       }
       rs.close();
     }
@@ -323,7 +322,7 @@ public class BeeDataSource implements Transformable {
       c = JdbcUtils.getSize(z);
       z.close();
 
-      PropUtils.addSub(lst, "Catalog", k, c);
+      PropertyUtils.addExtended(lst, "Catalog", k, c);
     }
     rs.close();
 
@@ -349,7 +348,7 @@ public class BeeDataSource implements Transformable {
         ok = false;
       }
 
-      PropUtils.addSub(lst, "Schema",
+      PropertyUtils.addExtended(lst, "Schema",
           k + (s == null ? "" : " Catalog " + s.trim()), v);
     }
     rs.close();
@@ -357,15 +356,15 @@ public class BeeDataSource implements Transformable {
     if (!ok) {
       rs = dbMd.getSchemas();
 
-      List<SubProp> rsInf = new BeeResultSet(rs).getRsInfo();
+      List<ExtendedProperty> rsInf = new BeeResultSet(rs).getRsInfo();
       if (!BeeUtils.isEmpty(rsInf)) {
-        for (SubProp el : rsInf) {
-          PropUtils.addSub(lst, BeeUtils.concat(1, "getSchemas", el.getName()),
+        for (ExtendedProperty el : rsInf) {
+          PropertyUtils.addExtended(lst, BeeUtils.concat(1, "getSchemas", el.getName()),
               el.getSub(), el.getValue());
         }
       }
 
-      PropUtils.appendString(lst, "getSchemas Data", JdbcUtils.getRs(rs));
+      PropertyUtils.appendChildrenToExtended(lst, "getSchemas Data", JdbcUtils.getRs(rs));
 
       rs.close();
     }
@@ -381,7 +380,7 @@ public class BeeDataSource implements Transformable {
       c = JdbcUtils.getSize(z);
       z.close();
 
-      PropUtils.addSub(lst, "Table Type", k, c);
+      PropertyUtils.addExtended(lst, "Table Type", k, c);
     }
     rs.close();
 
@@ -398,15 +397,15 @@ public class BeeDataSource implements Transformable {
 
       v = BeeUtils.concat(1, BeeUtils.addName("sql.Type", c),
           JdbcUtils.getJdbcTypeName(c));
-      PropUtils.addSub(lst, nm, k, v);
+      PropertyUtils.addExtended(lst, nm, k, v);
 
-      PropUtils.addSub(lst, nm, k,
+      PropertyUtils.addExtended(lst, nm, k,
           BeeUtils.addName("Precision", rs.getInt("PRECISION")));
-      PropUtils.addSub(lst, nm, k,
+      PropertyUtils.addExtended(lst, nm, k,
           BeeUtils.addName("Prefix", rs.getString("LITERAL_PREFIX")));
-      PropUtils.addSub(lst, nm, k,
+      PropertyUtils.addExtended(lst, nm, k,
           BeeUtils.addName("Suffix", rs.getString("LITERAL_SUFFIX")));
-      PropUtils.addSub(lst, nm, k,
+      PropertyUtils.addExtended(lst, nm, k,
           BeeUtils.addName("Create", rs.getString("CREATE_PARAMS")));
 
       switch (rs.getInt("NULLABLE")) {
@@ -421,9 +420,9 @@ public class BeeDataSource implements Transformable {
         default:
           s = null;
       }
-      PropUtils.addSub(lst, nm, k, BeeUtils.addName("Nullable", s));
+      PropertyUtils.addExtended(lst, nm, k, BeeUtils.addName("Nullable", s));
 
-      PropUtils.addSub(lst, nm, k, BeeUtils.addName("Case sensitive",
+      PropertyUtils.addExtended(lst, nm, k, BeeUtils.addName("Case sensitive",
           rs.getBoolean("CASE_SENSITIVE") ? BeeConst.YES : BeeConst.NO));
 
       switch (rs.getInt("SEARCHABLE")) {
@@ -446,25 +445,21 @@ public class BeeDataSource implements Transformable {
         default:
           s = null;
       }
-      PropUtils.addSub(lst, nm, k, BeeUtils.addName("Searchable", s));
+      PropertyUtils.addExtended(lst, nm, k, BeeUtils.addName("Searchable", s));
 
-      PropUtils.addSub(lst, nm, k,
+      PropertyUtils.addExtended(lst, nm, k,
           BeeUtils.addName("Unsigned", rs.getBoolean("UNSIGNED_ATTRIBUTE")));
-      PropUtils.addSub(
-          lst,
-          nm,
-          k,
-          BeeUtils.addName("Fixed prec scale",
-              rs.getBoolean("FIXED_PREC_SCALE")));
-      PropUtils.addSub(lst, nm, k,
+      PropertyUtils.addExtended(lst, nm, k,
+          BeeUtils.addName("Fixed prec scale", rs.getBoolean("FIXED_PREC_SCALE")));
+      PropertyUtils.addExtended(lst, nm, k,
           BeeUtils.addName("Auto increment", rs.getBoolean("AUTO_INCREMENT")));
-      PropUtils.addSub(lst, nm, k,
+      PropertyUtils.addExtended(lst, nm, k,
           BeeUtils.addName("Local name", rs.getString("LOCAL_TYPE_NAME")));
-      PropUtils.addSub(lst, nm, k,
+      PropertyUtils.addExtended(lst, nm, k,
           BeeUtils.addName("Min scale", rs.getShort("MINIMUM_SCALE")));
-      PropUtils.addSub(lst, nm, k,
+      PropertyUtils.addExtended(lst, nm, k,
           BeeUtils.addName("Max scale", rs.getShort("MAXIMUM_SCALE")));
-      PropUtils.addSub(lst, nm, k,
+      PropertyUtils.addExtended(lst, nm, k,
           BeeUtils.addName("Num prec radix", rs.getInt("NUM_PREC_RADIX")));
     }
     rs.close();

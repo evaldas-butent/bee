@@ -6,19 +6,19 @@ import com.google.gwt.event.shared.GwtEvent;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.egg.client.data.CacheUtils;
-import com.butent.bee.egg.client.dialog.BeeInputBox;
-import com.butent.bee.egg.client.dialog.BeeMessageBox;
+import com.butent.bee.egg.client.dialog.InputBox;
+import com.butent.bee.egg.client.dialog.MessageBox;
 import com.butent.bee.egg.client.grid.CellType;
 import com.butent.bee.egg.client.grid.GridFactory;
 import com.butent.bee.egg.client.resources.Images;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeConst;
-import com.butent.bee.egg.shared.BeeField;
+import com.butent.bee.egg.shared.Variable;
 import com.butent.bee.egg.shared.BeeService;
 import com.butent.bee.egg.shared.BeeStage;
 import com.butent.bee.egg.shared.BeeType;
 import com.butent.bee.egg.shared.BeeWidget;
-import com.butent.bee.egg.shared.menu.MenuConst;
+import com.butent.bee.egg.shared.menu.MenuConstants;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 import com.butent.bee.egg.shared.utils.Grego;
 
@@ -28,15 +28,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class BeeGlobal implements BeeModule {
+public class Global implements Module {
   public static final String FIELD_DEBUG = "debug";
 
-  private static final BeeMessageBox msgBox = new BeeMessageBox();
-  private static final BeeInputBox inpBox = new BeeInputBox();
+  private static final MessageBox msgBox = new MessageBox();
+  private static final InputBox inpBox = new InputBox();
   private static final GridFactory grids = new GridFactory();
   private static final CacheUtils cache = new CacheUtils();
 
-  private static final Map<String, BeeField> fields = new HashMap<String, BeeField>();
+  private static final Map<String, Variable> fields = new HashMap<String, Variable>();
 
   private static int tzo = -JsDate.create().getTimezoneOffset() * Grego.MILLIS_PER_MINUTE;
 
@@ -66,7 +66,7 @@ public class BeeGlobal implements BeeModule {
     Assert.notEmpty(name);
     Assert.isTrue(BeeType.isValid(type));
 
-    fields.put(name, new BeeField(caption, type, value));
+    fields.put(name, new Variable(caption, type, value));
   }
 
   public static void createField(String name, String caption, int type,
@@ -74,14 +74,14 @@ public class BeeGlobal implements BeeModule {
     Assert.notEmpty(name);
     Assert.isTrue(BeeType.isValid(type));
 
-    fields.put(name, new BeeField(caption, type, value, widget, items));
+    fields.put(name, new Variable(caption, type, value, widget, items));
   }
 
   public static CacheUtils getCache() {
     return cache;
   }
 
-  public static BeeField getField(String name) {
+  public static Variable getField(String name) {
     Assert.contains(fields, name);
 
     return fields.get(name);
@@ -163,7 +163,7 @@ public class BeeGlobal implements BeeModule {
     return grids.scrollGrid(width, data, (Object[]) columns);
   }
 
-  public static void setField(String name, BeeField fld) {
+  public static void setField(String name, Variable fld) {
     Assert.notEmpty(name);
     Assert.notNull(fld);
 
@@ -342,36 +342,36 @@ public class BeeGlobal implements BeeModule {
 
     createField(FIELD_DEBUG, "Debug", BeeType.TYPE_BOOLEAN, BeeUtils.toString(false));
 
-    for (int i = MenuConst.ROOT_MENU_INDEX; i < MenuConst.MAX_MENU_DEPTH; i++) {
-      if (MenuConst.isRootLevel(i)) {
-        createField(MenuConst.fieldMenuLayout(i), "Root", BeeType.TYPE_STRING,
-            MenuConst.DEFAULT_ROOT_LAYOUT, BeeWidget.LIST,
-            MenuConst.LAYOUT_MENU_HOR, MenuConst.LAYOUT_MENU_VERT,
-            MenuConst.LAYOUT_STACK, MenuConst.LAYOUT_TAB,
-            MenuConst.LAYOUT_TREE, MenuConst.LAYOUT_CELL_TREE,
-            MenuConst.LAYOUT_CELL_BROWSER, MenuConst.LAYOUT_LIST,
-            MenuConst.LAYOUT_ORDERED_LIST, MenuConst.LAYOUT_UNORDERED_LIST,
-            MenuConst.LAYOUT_DEFINITION_LIST, MenuConst.LAYOUT_RADIO_HOR,
-            MenuConst.LAYOUT_RADIO_VERT, MenuConst.LAYOUT_BUTTONS_HOR,
-            MenuConst.LAYOUT_BUTTONS_VERT);
+    for (int i = MenuConstants.ROOT_MENU_INDEX; i < MenuConstants.MAX_MENU_DEPTH; i++) {
+      if (MenuConstants.isRootLevel(i)) {
+        createField(MenuConstants.fieldMenuLayout(i), "Root", BeeType.TYPE_STRING,
+            MenuConstants.DEFAULT_ROOT_LAYOUT, BeeWidget.LIST,
+            MenuConstants.LAYOUT_MENU_HOR, MenuConstants.LAYOUT_MENU_VERT,
+            MenuConstants.LAYOUT_STACK, MenuConstants.LAYOUT_TAB,
+            MenuConstants.LAYOUT_TREE, MenuConstants.LAYOUT_CELL_TREE,
+            MenuConstants.LAYOUT_CELL_BROWSER, MenuConstants.LAYOUT_LIST,
+            MenuConstants.LAYOUT_ORDERED_LIST, MenuConstants.LAYOUT_UNORDERED_LIST,
+            MenuConstants.LAYOUT_DEFINITION_LIST, MenuConstants.LAYOUT_RADIO_HOR,
+            MenuConstants.LAYOUT_RADIO_VERT, MenuConstants.LAYOUT_BUTTONS_HOR,
+            MenuConstants.LAYOUT_BUTTONS_VERT);
       } else {
-        createField(MenuConst.fieldMenuLayout(i), "Items " + i,
-            BeeType.TYPE_STRING, MenuConst.DEFAULT_ITEM_LAYOUT, BeeWidget.LIST,
-            MenuConst.LAYOUT_MENU_HOR, MenuConst.LAYOUT_MENU_VERT,
-            MenuConst.LAYOUT_TREE, MenuConst.LAYOUT_LIST,
-            MenuConst.LAYOUT_ORDERED_LIST, MenuConst.LAYOUT_UNORDERED_LIST,
-            MenuConst.LAYOUT_DEFINITION_LIST, MenuConst.LAYOUT_RADIO_HOR,
-            MenuConst.LAYOUT_RADIO_VERT, MenuConst.LAYOUT_BUTTONS_HOR,
-            MenuConst.LAYOUT_BUTTONS_VERT);
+        createField(MenuConstants.fieldMenuLayout(i), "Items " + i,
+            BeeType.TYPE_STRING, MenuConstants.DEFAULT_ITEM_LAYOUT, BeeWidget.LIST,
+            MenuConstants.LAYOUT_MENU_HOR, MenuConstants.LAYOUT_MENU_VERT,
+            MenuConstants.LAYOUT_TREE, MenuConstants.LAYOUT_LIST,
+            MenuConstants.LAYOUT_ORDERED_LIST, MenuConstants.LAYOUT_UNORDERED_LIST,
+            MenuConstants.LAYOUT_DEFINITION_LIST, MenuConstants.LAYOUT_RADIO_HOR,
+            MenuConstants.LAYOUT_RADIO_VERT, MenuConstants.LAYOUT_BUTTONS_HOR,
+            MenuConstants.LAYOUT_BUTTONS_VERT);
       }
 
-      createField(MenuConst.fieldMenuBarType(i), BeeConst.STRING_EMPTY,
+      createField(MenuConstants.fieldMenuBarType(i), BeeConst.STRING_EMPTY,
           BeeType.TYPE_BOOLEAN, BeeUtils.toString(false));
     }
 
-    createField(MenuConst.FIELD_ROOT_LIMIT, "Max  Roots", BeeType.TYPE_INT,
-        BeeUtils.transform(MenuConst.DEFAULT_ROOT_LIMIT));
-    createField(MenuConst.FIELD_ITEM_LIMIT, "Max  Items", BeeType.TYPE_INT,
-        BeeUtils.transform(MenuConst.DEFAULT_ITEM_LIMIT));
+    createField(MenuConstants.FIELD_ROOT_LIMIT, "Max  Roots", BeeType.TYPE_INT,
+        BeeUtils.transform(MenuConstants.DEFAULT_ROOT_LIMIT));
+    createField(MenuConstants.FIELD_ITEM_LIMIT, "Max  Items", BeeType.TYPE_INT,
+        BeeUtils.transform(MenuConstants.DEFAULT_ITEM_LIMIT));
   }
 }

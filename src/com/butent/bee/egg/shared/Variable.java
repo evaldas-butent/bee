@@ -5,7 +5,7 @@ import com.butent.bee.egg.shared.utils.BeeUtils;
 import java.util.ArrayList;
 import java.util.List;
 
-public class BeeField implements HasDoubleValue, HasStringValue, Transformable {
+public class Variable implements HasDoubleValue, HasStringValue, Transformable {
   private String caption = null;
   private int type = BeeType.TYPE_UNKNOWN;
   private String value = null;
@@ -15,35 +15,35 @@ public class BeeField implements HasDoubleValue, HasStringValue, Transformable {
 
   private String width = null;
 
-  public BeeField() {
+  public Variable() {
     super();
   }
 
-  public BeeField(int type) {
+  public Variable(int type) {
     this(null, type, null);
   }
 
-  public BeeField(int type, String value) {
+  public Variable(int type, String value) {
     this(null, type, value);
   }
 
-  public BeeField(String caption, int type) {
+  public Variable(String caption, int type) {
     this(caption, type, null);
   }
 
-  public BeeField(String caption, int type, String value) {
+  public Variable(String caption, int type, String value) {
     this();
     this.caption = caption;
     this.type = type;
     this.value = value;
   }
 
-  public BeeField(String caption, int type, String value, BeeWidget widget) {
+  public Variable(String caption, int type, String value, BeeWidget widget) {
     this(caption, type, value);
     this.widget = widget;
   }
 
-  public BeeField(String caption, int type, String value, BeeWidget widget, String... items) {
+  public Variable(String caption, int type, String value, BeeWidget widget, String... items) {
     this(caption, type, value, widget);
 
     this.items = new ArrayList<String>();

@@ -6,8 +6,6 @@ import com.butent.bee.egg.client.logging.LogFormatter;
 import com.butent.bee.egg.shared.utils.LogUtils;
 
 public class BeeExceptionHandler implements UncaughtExceptionHandler {
-
-  @Override
   public void onUncaughtException(Throwable err) {
     LogUtils.error(err.fillInStackTrace(), "Uncaught Exception");
     
@@ -20,5 +18,4 @@ public class BeeExceptionHandler implements UncaughtExceptionHandler {
     
     LogUtils.log(LogFormatter.LOG_SEPARATOR_LEVEL, LogFormatter.LOG_SEPARATOR_TAG);
   }
-
 }

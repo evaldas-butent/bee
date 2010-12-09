@@ -3,14 +3,14 @@ package com.butent.bee.egg.client;
 import com.butent.bee.egg.client.dom.Features;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.utils.BeeUtils;
-import com.butent.bee.egg.shared.utils.StringProp;
+import com.butent.bee.egg.shared.utils.Property;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class Storage implements BeeModule {
+public class Storage implements Module {
   private Map<String, String> items = new HashMap<String, String>();
   private boolean localStorage;
 
@@ -29,14 +29,14 @@ public class Storage implements BeeModule {
   public void end() {
   }
 
-  public List<StringProp> getAll() {
-    List<StringProp> lst = new ArrayList<StringProp>();
+  public List<Property> getAll() {
+    List<Property> lst = new ArrayList<Property>();
     int len = length();
     String z;
 
     for (int i = 0; i < len; i++) {
       z = key(i);
-      lst.add(new StringProp(z, getItem(z)));
+      lst.add(new Property(z, getItem(z)));
     }
     
     return lst;

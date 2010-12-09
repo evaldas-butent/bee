@@ -9,8 +9,8 @@ import com.butent.bee.egg.server.utils.Checksum;
 import com.butent.bee.egg.server.utils.XmlUtils;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 import com.butent.bee.egg.shared.utils.Codec;
-import com.butent.bee.egg.shared.utils.PropUtils;
-import com.butent.bee.egg.shared.utils.SubProp;
+import com.butent.bee.egg.shared.utils.PropertyUtils;
+import com.butent.bee.egg.shared.utils.ExtendedProperty;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,12 +22,12 @@ public class Invocation {
   
   public void connectionInfo(RequestInfo reqInfo, ResponseBuffer buff) {
     Assert.notNull(reqInfo);
-    buff.addSub(reqInfo.getInfo());
+    buff.addExtendedProperties(reqInfo.getInfo());
   }
 
   public void loaderInfo(ResponseBuffer buff) {
     if (BeeJvm.CVF_FAILURE == null) {
-      buff.addStringProp(BeeJvm.getLoadedClasses());
+      buff.addProperties(BeeJvm.getLoadedClasses());
     } else {
       buff.add(BeeJvm.CVF_FAILURE);
     }
@@ -55,43 +55,42 @@ public class Invocation {
   }
 
   public void systemInfo(ResponseBuffer buff) {
-    List<SubProp> lst = new ArrayList<SubProp>();
+    List<ExtendedProperty> lst = new ArrayList<ExtendedProperty>();
 
     lst.addAll(BeeSystem.getSysInfo());
-    PropUtils.appendString(lst, "Runtime", BeeSystem.getRuntimeInfo());
+    PropertyUtils.appendChildrenToExtended(lst, "Runtime", BeeSystem.getRuntimeInfo());
 
     lst.addAll(BeeSystem.getPackagesInfo());
 
-    PropUtils.appendString(lst, "Thread Static",
-        BeeSystem.getThreadStaticInfo());
+    PropertyUtils.appendChildrenToExtended(lst, "Thread Static", BeeSystem.getThreadStaticInfo());
 
     Thread ct = Thread.currentThread();
     String root = "Current Thread";
 
-    PropUtils.appendString(lst, root, BeeSystem.getThreadInfo(ct));
-    PropUtils.appendString(lst, BeeUtils.concat(1, root, "Stack"),
+    PropertyUtils.appendChildrenToExtended(lst, root, BeeSystem.getThreadInfo(ct));
+    PropertyUtils.appendChildrenToExtended(lst, BeeUtils.concat(1, root, "Stack"),
         BeeSystem.getThreadStackInfo(ct));
 
     lst.addAll(BeeSystem.getThreadGroupInfo(ct.getThreadGroup(), true, true));
 
-    PropUtils.appendString(lst, "[xml] Document Builder Factory",
+    PropertyUtils.appendChildrenToExtended(lst, "[xml] Document Builder Factory",
         XmlUtils.getDomFactoryInfo());
-    PropUtils.appendString(lst, "[xml] Document Builder",
+    PropertyUtils.appendChildrenToExtended(lst, "[xml] Document Builder",
         XmlUtils.getDomBuilderInfo());
 
-    PropUtils.appendString(lst, "[xslt] Transformer Factory",
+    PropertyUtils.appendChildrenToExtended(lst, "[xslt] Transformer Factory",
         XmlUtils.getXsltFactoryInfo());
-    PropUtils.appendString(lst, "[xslt] Output Keys",
+    PropertyUtils.appendChildrenToExtended(lst, "[xslt] Output Keys",
         XmlUtils.getOutputKeysInfo());
 
-    buff.addSub(lst);
+    buff.addExtendedProperties(lst);
   }
 
   public void vmInfo(ResponseBuffer buff) {
-    List<SubProp> lst = new ArrayList<SubProp>();
+    List<ExtendedProperty> lst = new ArrayList<ExtendedProperty>();
 
-    PropUtils.appendString(lst, "Class Loading", BeeMX.getClassLoadingInfo());
-    PropUtils.appendString(lst, "Compilation", BeeMX.getCompilationInfo());
+    PropertyUtils.appendChildrenToExtended(lst, "Class Loading", BeeMX.getClassLoadingInfo());
+    PropertyUtils.appendChildrenToExtended(lst, "Compilation", BeeMX.getCompilationInfo());
 
     lst.addAll(BeeMX.getGarbageCollectorInfo());
 
@@ -99,13 +98,11 @@ public class Invocation {
     lst.addAll(BeeMX.getMemoryManagerInfo());
     lst.addAll(BeeMX.getMemoryPoolInfo());
 
-    PropUtils.appendString(lst, "Operating System",
-        BeeMX.getOperatingSystemInfo());
+    PropertyUtils.appendChildrenToExtended(lst, "Operating System", BeeMX.getOperatingSystemInfo());
     lst.addAll(BeeMX.getRuntimeInfo());
 
     lst.addAll(BeeMX.getThreadsInfo());
 
-    buff.addSub(lst);
+    buff.addExtendedProperties(lst);
   }
- 
 }

@@ -10,7 +10,7 @@ import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.PopupPanel.PositionCallback;
 import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.egg.client.BeeGlobal;
+import com.butent.bee.egg.client.Global;
 import com.butent.bee.egg.client.BeeKeeper;
 import com.butent.bee.egg.client.BeeStyle;
 import com.butent.bee.egg.client.composite.RadioGroup;
@@ -780,7 +780,7 @@ public class ScrollTableConfig {
   private boolean validate() {
     boolean ok = visibleCount > 0;
     if (!ok) {
-      BeeGlobal.showError("Invisible Pink Unicorns are beings of great spiritual power");
+      Global.showError("Invisible Pink Unicorns are beings of great spiritual power");
     }
     return ok;
   }

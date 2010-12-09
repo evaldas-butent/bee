@@ -6,7 +6,7 @@ import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.egg.client.BeeGlobal;
+import com.butent.bee.egg.client.Global;
 import com.butent.bee.egg.client.BeeKeeper;
 import com.butent.bee.egg.client.communication.ResponseCallback;
 import com.butent.bee.egg.client.layout.Vertical;
@@ -70,34 +70,34 @@ class RowSetService extends CompositeService {
           lst.add(arr.get(i));
         }
         if (BeeUtils.isEmpty(lst)) {
-          BeeGlobal.showError("NO TABLES");
+          Global.showError("NO TABLES");
           unregister();
           return false;
         }
-        if (!BeeGlobal.isField(fld)) {
-          BeeGlobal.createField(fld, "Table name", BeeType.TYPE_STRING, null);
-          BeeGlobal.getField(fld).setWidget(BeeWidget.LIST);
+        if (!Global.isField(fld)) {
+          Global.createField(fld, "Table name", BeeType.TYPE_STRING, null);
+          Global.getField(fld).setWidget(BeeWidget.LIST);
         }
-        BeeGlobal.getField(fld).setItems(lst);
-        BeeGlobal.getField(fld).setValue(lst.get(0));
+        Global.getField(fld).setItems(lst);
+        Global.getField(fld).setValue(lst.get(0));
 
         stage = Stages.REQUEST_TABLE;
 
-        BeeGlobal.inputFields(new BeeStage(self(), BeeStage.STAGE_CONFIRM), "Get table", fld);
+        Global.inputFields(new BeeStage(self(), BeeStage.STAGE_CONFIRM), "Get table", fld);
         break;
 
       case REQUEST_TABLE:
         GwtEvent<?> event = (GwtEvent<?>) params[0];
 
-        String fName = BeeGlobal.getFieldValue(fld);
+        String fName = Global.getFieldValue(fld);
 
         if (BeeUtils.isEmpty(fName)) {
-          BeeGlobal.showError("Table name not specified");
+          Global.showError("Table name not specified");
           ok = false;
         } else {
           stage = Stages.LOAD_TABLE;
 
-          BeeGlobal.closeDialog(event);
+          Global.closeDialog(event);
           BeeKeeper.getRpc().makePostRequest(adoptService("rpc_ui_table"),
               BeeXml.createString(BeeService.XML_TAG_DATA, fld, fName));
         }
@@ -183,7 +183,7 @@ class RowSetService extends CompositeService {
         break;
 
       default:
-        BeeGlobal.showError("Unhandled stage: " + stage);
+        Global.showError("Unhandled stage: " + stage);
         unregister();
         ok = false;
         break;

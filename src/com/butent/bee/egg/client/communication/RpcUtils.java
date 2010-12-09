@@ -7,9 +7,9 @@ import com.google.gwt.http.client.Response;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.communication.CommUtils;
 import com.butent.bee.egg.shared.utils.BeeUtils;
-import com.butent.bee.egg.shared.utils.PropUtils;
-import com.butent.bee.egg.shared.utils.StringProp;
-import com.butent.bee.egg.shared.utils.SubProp;
+import com.butent.bee.egg.shared.utils.PropertyUtils;
+import com.butent.bee.egg.shared.utils.Property;
+import com.butent.bee.egg.shared.utils.ExtendedProperty;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -58,11 +58,11 @@ public class RpcUtils {
     return s.toString();
   }
 
-  public static final Collection<StringProp> requestInfo(RequestBuilder rb) {
+  public static final Collection<Property> requestInfo(RequestBuilder rb) {
     Assert.notNull(rb);
-    Collection<StringProp> prp = new ArrayList<StringProp>();
+    Collection<Property> prp = new ArrayList<Property>();
 
-    PropUtils.addString(prp, "Url", rb.getUrl(), "Http Method",
+    PropertyUtils.addProperties(prp, "Url", rb.getUrl(), "Http Method",
         rb.getHTTPMethod(), "Request Data", rb.getRequestData(), "Password",
         rb.getPassword(), "User", rb.getUser(), "Timeout",
         rb.getTimeoutMillis());
@@ -70,31 +70,30 @@ public class RpcUtils {
     return prp;
   }
 
-  public static final Collection<SubProp> responseInfo(Response resp) {
+  public static final Collection<ExtendedProperty> responseInfo(Response resp) {
     Assert.notNull(resp);
 
-    Collection<SubProp> prp = new ArrayList<SubProp>();
+    Collection<ExtendedProperty> prp = new ArrayList<ExtendedProperty>();
 
-    PropUtils.addSub(prp, "Status",
+    PropertyUtils.addExtended(prp, "Status",
         BeeUtils.addName("Code", resp.getStatusCode()), resp.getStatusText());
 
     Header[] h = resp.getHeaders();
     int c = h.length;
 
     if (c > 0) {
-      PropUtils.addSub(prp, "Headers", BeeUtils.addName("Cnt", c),
+      PropertyUtils.addExtended(prp, "Headers", BeeUtils.addName("Cnt", c),
           BeeUtils.addName("Length", resp.getHeadersAsString().length()));
 
       for (int i = 0; i < c; i++) {
         if (BeeUtils.isEmpty(h[i])) {
-          PropUtils.addSub(prp, "Header", "Empty");
+          PropertyUtils.addExtended(prp, "Header", "Empty");
         } else {
-          PropUtils.addSub(prp, "Header", h[i].getName(), h[i].getValue());
+          PropertyUtils.addExtended(prp, "Header", h[i].getName(), h[i].getValue());
         }
       }
     }
 
     return prp;
   }
-
 }

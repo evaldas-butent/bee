@@ -1,6 +1,6 @@
 package com.butent.bee.egg.client;
 
-public class BeeUser implements BeeModule {
+public class BeeUser implements Module {
 
   public void end() {
   }

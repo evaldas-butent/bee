@@ -9,8 +9,8 @@ import com.butent.bee.egg.client.utils.BeeJs;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.utils.BeeUtils;
-import com.butent.bee.egg.shared.utils.PropUtils;
-import com.butent.bee.egg.shared.utils.StringProp;
+import com.butent.bee.egg.shared.utils.PropertyUtils;
+import com.butent.bee.egg.shared.utils.Property;
 
 import java.util.List;
 
@@ -140,8 +140,8 @@ public class Features {
     return audioWav;
   }
 
-  public static List<StringProp> getInfo() {
-    List<StringProp> lst = PropUtils.createStringProp(
+  public static List<Property> getInfo() {
+    List<Property> lst = PropertyUtils.createProperties(
         "Application Cache", supportsApplicationCache(),
 
         "Attribute Autocomplete", supportsAttributeAutocomplete(),
@@ -1186,5 +1186,4 @@ public class Features {
   private static native boolean testXhrUploadProgress() /*-{
     return "upload" in new XMLHttpRequest;
   }-*/;
-
 }

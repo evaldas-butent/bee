@@ -15,8 +15,8 @@ import com.butent.bee.egg.client.event.DndEvent.TYPE;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.utils.BeeUtils;
-import com.butent.bee.egg.shared.utils.PropUtils;
-import com.butent.bee.egg.shared.utils.StringProp;
+import com.butent.bee.egg.shared.utils.PropertyUtils;
+import com.butent.bee.egg.shared.utils.Property;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -46,11 +46,11 @@ public class EventUtils {
     ev.stopPropagation();
   }
 
-  public static List<StringProp> getEventInfo(NativeEvent ev) {
+  public static List<Property> getEventInfo(NativeEvent ev) {
     Assert.notNull(ev);
-    List<StringProp> lst = new ArrayList<StringProp>();
+    List<Property> lst = new ArrayList<Property>();
 
-    PropUtils.addString(lst, "Client X", ev.getClientX(), "Client Y",
+    PropertyUtils.addProperties(lst, "Client X", ev.getClientX(), "Client Y",
         ev.getClientY(), "Screen X", ev.getScreenX(), "Screen Y",
         ev.getScreenY(), "Key Code", ev.getKeyCode(), "Char Code",
         ev.getCharCode(), "Alt Key", ev.getAltKey(), "Shift Key",
@@ -64,7 +64,7 @@ public class EventUtils {
         ev.getString(), "Type", ev.getType());
 
     if (ev instanceof Event) {
-      PropUtils.addString(lst, "Type Int", ((Event) ev).getTypeInt());
+      PropertyUtils.addProperty(lst, "Type Int", ((Event) ev).getTypeInt());
     }
 
     return lst;
@@ -118,8 +118,8 @@ public class EventUtils {
     Assert.notNull(ev);
 
     if (detailed) {
-      List<StringProp> lst = getEventInfo(ev);
-      for (StringProp el : lst) {
+      List<Property> lst = getEventInfo(ev);
+      for (Property el : lst) {
         BeeKeeper.getLog().info(el.getName(), el.getValue());
       }
 
@@ -198,15 +198,15 @@ public class EventUtils {
     BeeUtils.removeValue(dndTargets, handler);
   }
   
-  public static List<StringProp> showDnd() {
-    List<StringProp> lst = new ArrayList<StringProp>();
+  public static List<Property> showDnd() {
+    List<Property> lst = new ArrayList<Property>();
     
     for (String id : dndSources.keySet()) {
-      lst.add(new StringProp(id, dndTargets.containsKey(id) ? "S+T" : "S"));
+      lst.add(new Property(id, dndTargets.containsKey(id) ? "S+T" : "S"));
     }
     for (String id : dndTargets.keySet()) {
       if (!dndSources.containsKey(id)) {
-        lst.add(new StringProp(id, "T"));
+        lst.add(new Property(id, "T"));
       }
     }
     

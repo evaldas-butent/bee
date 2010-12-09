@@ -8,7 +8,7 @@ import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeService;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 import com.butent.bee.egg.shared.utils.LogUtils;
-import com.butent.bee.egg.shared.utils.SubProp;
+import com.butent.bee.egg.shared.utils.ExtendedProperty;
 
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
@@ -49,7 +49,7 @@ public class MetaDataBean {
   }
 
   private void dbInfo(BeeDataSource ds, ResponseBuffer buff) {
-    List<SubProp> prp = null;
+    List<ExtendedProperty> prp = null;
     boolean ok = true;
 
     try {
@@ -67,7 +67,7 @@ public class MetaDataBean {
       return;
     }
 
-    buff.addSub(prp);
+    buff.addExtendedProperties(prp);
   }
 
   private void getKeys(BeeDataSource ds, RequestInfo reqInfo, ResponseBuffer buff, 

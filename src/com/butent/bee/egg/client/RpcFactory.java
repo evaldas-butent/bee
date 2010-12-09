@@ -18,13 +18,13 @@ import com.butent.bee.egg.shared.utils.BeeUtils;
 
 import java.util.Map;
 
-public class BeeRpc implements BeeModule {
+public class RpcFactory implements Module {
   private final String rpcUrl;
 
   private RpcList rpcList = new RpcList();
   private BeeCallback reqCallBack = new BeeCallback();
 
-  public BeeRpc(String url) {
+  public RpcFactory(String url) {
     this.rpcUrl = url;
   }
 
@@ -52,7 +52,7 @@ public class BeeRpc implements BeeModule {
   }
 
   public String getOptions() {
-    if (BeeGlobal.isDebug()) {
+    if (Global.isDebug()) {
       return CommUtils.OPTION_DEBUG;
     } else {
       return BeeConst.STRING_EMPTY;
@@ -222,7 +222,7 @@ public class BeeRpc implements BeeModule {
     String svc = params.getService();
     Assert.notEmpty(svc);
 
-    boolean debug = BeeGlobal.isDebug();
+    boolean debug = Global.isDebug();
 
     ContentType ctp = type;
     String data;

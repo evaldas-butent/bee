@@ -36,11 +36,11 @@ import com.butent.bee.egg.shared.BeeName;
 import com.butent.bee.egg.shared.BeeResource;
 import com.butent.bee.egg.shared.BeeService;
 import com.butent.bee.egg.shared.BeeStage;
-import com.butent.bee.egg.shared.menu.MenuConst;
+import com.butent.bee.egg.shared.menu.MenuConstants;
 import com.butent.bee.egg.shared.ui.UiComponent;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
-public class BeeUi implements BeeModule {
+public class BeeUi implements Module {
 
   private class SplitCommand extends BeeCommand {
     Direction direction = null;
@@ -244,14 +244,14 @@ public class BeeUi implements BeeModule {
 
     switch (getDefaultGridType()) {
       case 1:
-        grd = BeeGlobal.scrollGrid(getActivePanelWidth(), data, cols);
+        grd = Global.scrollGrid(getActivePanelWidth(), data, cols);
         break;
       case 2:
-        grd = BeeGlobal.cellGrid(data, getDefaultCellType(), cols);
+        grd = Global.cellGrid(data, getDefaultCellType(), cols);
         addScroll = true;
         break;
       default:
-        grd = BeeGlobal.simpleGrid(data, cols);
+        grd = Global.simpleGrid(data, cols);
         addScroll = true;
     }
 
@@ -348,7 +348,7 @@ public class BeeUi implements BeeModule {
     int z = direction.isHorizontal() ? p.getCenterWidth() : p.getCenterHeight();
     z = Math.round((z - p.getSplitterSize()) / 2);
     if (z < getMinTileSize()) {
-      BeeGlobal.showError("no", z);
+      Global.showError("no", z);
       return;
     }
 
@@ -440,7 +440,7 @@ public class BeeUi implements BeeModule {
 
     p.add(new BeeButton("Login", BeeService.SERVICE_LOGIN));
 
-    p.add(new BeeCheckBox(new BeeName(BeeGlobal.FIELD_DEBUG)));
+    p.add(new BeeCheckBox(new BeeName(Global.FIELD_DEBUG)));
 
     p.add(new BeeButton("North land", "comp_ui_form", "dummy_stage"));
     p.add(new BeeButton("CRUD", "comp_ui_rowset", "dummy_stage"));
@@ -453,7 +453,7 @@ public class BeeUi implements BeeModule {
     BeeLayoutPanel blp = new BeeLayoutPanel();
     blp.add(p);
 
-    BeeImage bee = new BeeImage(BeeGlobal.getImages().bee());
+    BeeImage bee = new BeeImage(Global.getImages().bee());
     blp.add(bee);
 
     blp.setWidgetLeftRight(p, 1, Unit.EM, 100, Unit.PX);
@@ -477,7 +477,7 @@ public class BeeUi implements BeeModule {
     hor.add(new BeeButton("E", new SplitCommand(Direction.EAST)));
     hor.add(new BeeButton("W", new SplitCommand(Direction.WEST)));
 
-    BeeImage close = new BeeImage(BeeGlobal.getImages().close(), new SplitCommand(true));
+    BeeImage close = new BeeImage(Global.getImages().close(), new SplitCommand(true));
     hor.add(close);
     hor.setCellWidth(close, "32px");
     hor.setCellHorizontalAlignment(close, HasHorizontalAlignment.ALIGN_RIGHT);
@@ -503,23 +503,23 @@ public class BeeUi implements BeeModule {
     FlexTable fp = new FlexTable();
     fp.setCellSpacing(3);
 
-    int r = MenuConst.MAX_MENU_DEPTH;
+    int r = MenuConstants.MAX_MENU_DEPTH;
     String fld;
 
-    for (int i = MenuConst.ROOT_MENU_INDEX; i < r; i++) {
-      fld = MenuConst.fieldMenuLayout(i);
+    for (int i = MenuConstants.ROOT_MENU_INDEX; i < r; i++) {
+      fld = MenuConstants.fieldMenuLayout(i);
       fp.setWidget(i, 0, new BeeListBox(fld));
 
-      fld = MenuConst.fieldMenuBarType(i);
+      fld = MenuConstants.fieldMenuBarType(i);
       fp.setWidget(i, 1, new BeeSimpleCheckBox(fld));
     }
 
-    ValueSpinner spinner = new ValueSpinner(BeeGlobal.getField(MenuConst.FIELD_ROOT_LIMIT),
+    ValueSpinner spinner = new ValueSpinner(Global.getField(MenuConstants.FIELD_ROOT_LIMIT),
         0, 30, 3);
     DomUtils.setWidth(spinner, 60);
     fp.setWidget(r, 0, spinner);
 
-    VolumeSlider slider = new VolumeSlider(BeeGlobal.getField(MenuConst.FIELD_ITEM_LIMIT),
+    VolumeSlider slider = new VolumeSlider(Global.getField(MenuConstants.FIELD_ITEM_LIMIT),
         0, 50, 5);
     slider.setPixelSize(80, 20);
     fp.setWidget(r + 1, 0, slider);

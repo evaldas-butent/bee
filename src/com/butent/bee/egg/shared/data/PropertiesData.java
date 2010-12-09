@@ -1,28 +1,28 @@
 package com.butent.bee.egg.shared.data;
 
 import com.butent.bee.egg.shared.BeeConst;
-import com.butent.bee.egg.shared.utils.StringProp;
+import com.butent.bee.egg.shared.utils.Property;
 
 import java.util.List;
 
-public class StringPropData extends AbstractData {
-  private List<StringProp> data;
+public class PropertiesData extends AbstractData {
+  private List<Property> data;
 
-  public StringPropData(List<StringProp> data) {
+  public PropertiesData(List<Property> data) {
     this.data = data;
 
     setRowCount(data.size());
-    setColumnCount(StringProp.HEADER_COUNT);
+    setColumnCount(Property.HEADER_COUNT);
   }
 
   @Override
   public String[] getColumnNames() {
-    return StringProp.HEADERS;
+    return Property.HEADERS;
   }
 
   @Override
   public String getValue(int row, int col) {
-    StringProp el = data.get(row);
+    Property el = data.get(row);
 
     switch (col) {
       case 0:
@@ -36,7 +36,7 @@ public class StringPropData extends AbstractData {
 
   @Override
   public void setValue(int row, int col, String value) {
-    StringProp el = data.get(row);
+    Property el = data.get(row);
 
     switch (col) {
       case 0:

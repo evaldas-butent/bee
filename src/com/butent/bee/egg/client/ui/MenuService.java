@@ -3,7 +3,7 @@ package com.butent.bee.egg.client.ui;
 import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.egg.client.BeeGlobal;
+import com.butent.bee.egg.client.Global;
 import com.butent.bee.egg.client.BeeKeeper;
 import com.butent.bee.egg.client.tree.BeeTree;
 import com.butent.bee.egg.client.tree.BeeTreeItem;
@@ -11,7 +11,7 @@ import com.butent.bee.egg.client.utils.BeeXml;
 import com.butent.bee.egg.client.widget.BeeListBox;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeService;
-import com.butent.bee.egg.shared.menu.MenuConst;
+import com.butent.bee.egg.shared.menu.MenuConstants;
 import com.butent.bee.egg.shared.ui.UiComponent;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
@@ -80,17 +80,17 @@ class MenuService extends CompositeService {
 
     switch (stage) {
       case REQUEST_MENU:
-        String rl = BeeGlobal.getFieldValue(MenuConst.fieldMenuLayout(0));
-        String il = BeeGlobal.getFieldValue(MenuConst.fieldMenuLayout(1));
+        String rl = Global.getFieldValue(MenuConstants.fieldMenuLayout(0));
+        String il = Global.getFieldValue(MenuConstants.fieldMenuLayout(1));
 
-        if (MenuConst.isValidLayout(rl) && MenuConst.isValidLayout(il)) {
+        if (MenuConstants.isValidLayout(rl) && MenuConstants.isValidLayout(il)) {
           BeeKeeper.getRpc().makePostRequest(
               adoptService("rpc_ui_menu"),
               BeeXml.createString(BeeService.XML_TAG_DATA, "menu_name",
                   "rootMenu", "root_layout", getLayout(rl), "item_layout",
                   getLayout(il)));
         } else {
-          BeeGlobal.showError("Menu layouts not valid", rl, il);
+          Global.showError("Menu layouts not valid", rl, il);
           ok = false;
         }
         break;
@@ -104,7 +104,7 @@ class MenuService extends CompositeService {
         break;
 
       default:
-        BeeGlobal.showError("Unhandled stage: " + stage);
+        Global.showError("Unhandled stage: " + stage);
         ok = false;
         break;
     }
@@ -120,15 +120,15 @@ class MenuService extends CompositeService {
   private String getLayout(String layout) {
     String l = "UiMenuHorizontal";
 
-    if (BeeUtils.same(layout, MenuConst.LAYOUT_MENU_VERT)) {
+    if (BeeUtils.same(layout, MenuConstants.LAYOUT_MENU_VERT)) {
       l = "UiMenuVertical";
-    } else if (BeeUtils.same(layout, MenuConst.LAYOUT_STACK)) {
+    } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_STACK)) {
       l = "UiStack";
-    } else if (BeeUtils.same(layout, MenuConst.LAYOUT_LIST)) {
+    } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_LIST)) {
       l = "UiListBox";
-    } else if (BeeUtils.same(layout, MenuConst.LAYOUT_TREE)) {
+    } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_TREE)) {
       l = "UiTree";
-    } else if (BeeUtils.same(layout, MenuConst.LAYOUT_TAB)) {
+    } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_TAB)) {
       l = "UiTab";
     }
     return l;

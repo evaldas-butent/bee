@@ -5,9 +5,9 @@ import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.BeeDate;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 import com.butent.bee.egg.shared.utils.LogUtils;
-import com.butent.bee.egg.shared.utils.PropUtils;
-import com.butent.bee.egg.shared.utils.StringProp;
-import com.butent.bee.egg.shared.utils.SubProp;
+import com.butent.bee.egg.shared.utils.PropertyUtils;
+import com.butent.bee.egg.shared.utils.Property;
+import com.butent.bee.egg.shared.utils.ExtendedProperty;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -154,26 +154,24 @@ public class FileUtils {
     return path;
   }
 
-  public static List<SubProp> getCharsets() {
-    List<SubProp> lst = new ArrayList<SubProp>();
-    PropUtils.addSub(lst, "Default Charset", Charset.defaultCharset());
+  public static List<ExtendedProperty> getCharsets() {
+    List<ExtendedProperty> lst = new ArrayList<ExtendedProperty>();
+    PropertyUtils.addExtended(lst, "Default Charset", Charset.defaultCharset());
 
     SortedMap<String, Charset> charsets = Charset.availableCharsets();
-    PropUtils.addSub(lst, "Available Charsets", "Cnt", charsets.size());
+    PropertyUtils.addExtended(lst, "Available Charsets", "Cnt", charsets.size());
 
     int i = 0;
     for (String key : charsets.keySet()) {
       i++;
       Charset cs = charsets.get(key);
 
-      PropUtils.addRoot(lst,
+      PropertyUtils.addChildren(lst,
           BeeUtils.concat(1, BeeUtils.progress(i, charsets.size()), key),
-          "Name", cs.name(), "Aliases",
-          BeeUtils.transformCollection(cs.aliases()), "Can Encode",
-          cs.canEncode(), "Display Name", cs.displayName(), "Registered",
-          cs.isRegistered());
+          "Name", cs.name(), "Aliases", BeeUtils.transformCollection(cs.aliases()),
+          "Can Encode", cs.canEncode(), "Display Name", cs.displayName(),
+          "Registered", cs.isRegistered());
     }
-
     return lst;
   }
 
@@ -187,16 +185,16 @@ public class FileUtils {
     }
   }
 
-  public static List<StringProp> getFileInfo(File fl) {
+  public static List<Property> getFileInfo(File fl) {
     Assert.notNull(fl);
 
-    List<StringProp> lst = new ArrayList<StringProp>();
+    List<Property> lst = new ArrayList<Property>();
     if (!fl.exists()) {
-      PropUtils.addString(lst, "Exists", false);
+      PropertyUtils.addProperty(lst, "Exists", false);
       return lst;
     }
 
-    PropUtils.addString(lst, "Can Execute", fl.canExecute(), "Can Read",
+    PropertyUtils.addProperties(lst, "Can Execute", fl.canExecute(), "Can Read",
         fl.canRead(), "CanWrite", fl.canWrite(), "Absolute Path",
         fl.getAbsolutePath(), "Canonical Path", getCanonicalPath(fl),
         "Free Space", fl.getFreeSpace(), "Name", fl.getName(), "Parent",
@@ -238,18 +236,18 @@ public class FileUtils {
     return (filter == null) ? dir.list() : dir.list(filter);
   }
 
-  public static List<StringProp> getRootsInfo() {
-    List<StringProp> lst = new ArrayList<StringProp>();
+  public static List<Property> getRootsInfo() {
+    List<Property> lst = new ArrayList<Property>();
 
     File[] roots = File.listRoots();
     int n = BeeUtils.length(roots);
     if (n <= 0) {
-      PropUtils.addString(lst, "Roots", BeeUtils.bracket(n));
+      PropertyUtils.addProperty(lst, "Roots", BeeUtils.bracket(n));
       return lst;
     }
 
     for (int i = 0; i < n; i++) {
-      PropUtils.addString(lst, "Root", BeeUtils.progress(i + 1, n));
+      PropertyUtils.addProperty(lst, "Root", BeeUtils.progress(i + 1, n));
       lst.addAll(getFileInfo(roots[i]));
     }
 

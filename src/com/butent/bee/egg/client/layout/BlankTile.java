@@ -8,7 +8,7 @@ import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.egg.client.BeeGlobal;
+import com.butent.bee.egg.client.Global;
 import com.butent.bee.egg.client.dom.DomUtils;
 import com.butent.bee.egg.client.event.HasAfterAddHandler;
 import com.butent.bee.egg.client.utils.BeeCommand;
@@ -64,7 +64,7 @@ public class BlankTile extends Composite implements HasAfterAddHandler, HasId,
     }
     TilePanel t = (TilePanel) getParent();
 
-    if (!BeeGlobal.isDebug()) {
+    if (!Global.isDebug()) {
       caption.setText(BeeUtils.concat(1, t.getWidgetWidth(this),
           t.getWidgetHeight(this)));
       return;

@@ -4,8 +4,8 @@ import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 import com.butent.bee.egg.shared.utils.LogUtils;
-import com.butent.bee.egg.shared.utils.PropUtils;
-import com.butent.bee.egg.shared.utils.StringProp;
+import com.butent.bee.egg.shared.utils.PropertyUtils;
+import com.butent.bee.egg.shared.utils.Property;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -18,32 +18,32 @@ import java.util.logging.Logger;
 public class BeeStatement {
   private static final Logger logger = Logger.getLogger(BeeStatement.class.getName());
 
-  public static List<StringProp> getInfo(Statement stmt) {
+  public static List<Property> getInfo(Statement stmt) {
     Assert.notNull(stmt);
-    List<StringProp> lst = new ArrayList<StringProp>();
+    List<Property> lst = new ArrayList<Property>();
 
     int z;
 
     try {
       z = stmt.getFetchDirection();
-      PropUtils.addString(lst, "Fetch Direction",
+      PropertyUtils.addProperty(lst, "Fetch Direction",
           BeeUtils.concat(1, z, JdbcUtils.fetchDirectionAsString(z)));
 
-      PropUtils.addString(lst, "Fetch Size", stmt.getFetchSize());
+      PropertyUtils.addProperty(lst, "Fetch Size", stmt.getFetchSize());
 
       z = stmt.getResultSetType();
-      PropUtils.addString(lst, "Result Set Type",
+      PropertyUtils.addProperty(lst, "Result Set Type",
           BeeUtils.concat(1, z, JdbcUtils.rsTypeAsString(z)));
 
       z = stmt.getResultSetConcurrency();
-      PropUtils.addString(lst, "Concurrency",
+      PropertyUtils.addProperty(lst, "Concurrency",
           BeeUtils.concat(1, z, JdbcUtils.concurrencyAsString(z)));
 
       z = stmt.getResultSetHoldability();
-      PropUtils.addString(lst, "Holdability",
+      PropertyUtils.addProperty(lst, "Holdability",
           BeeUtils.concat(1, z, JdbcUtils.holdabilityAsString(z)));
 
-      PropUtils.addString(lst, "Max Field Size", stmt.getMaxFieldSize(),
+      PropertyUtils.addProperties(lst, "Max Field Size", stmt.getMaxFieldSize(),
           "Max Rows", stmt.getMaxRows(), "Query Timeout",
           stmt.getQueryTimeout(), "Closed", stmt.isClosed(), "Poolable",
           stmt.isPoolable());
@@ -52,7 +52,7 @@ public class BeeStatement {
       if (warn != null) {
         List<String> wLst = JdbcUtils.unchain(warn);
         for (String w : wLst) {
-          PropUtils.addString(lst, "Warning", w);
+          PropertyUtils.addProperty(lst, "Warning", w);
         }
       }
     } catch (SQLException ex) {

@@ -5,7 +5,7 @@ import com.google.gwt.xml.client.Element;
 import com.google.gwt.xml.client.Text;
 import com.google.gwt.xml.client.XMLParser;
 
-import com.butent.bee.egg.client.BeeGlobal;
+import com.butent.bee.egg.client.Global;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.utils.BeeUtils;
@@ -32,7 +32,7 @@ public class BeeXml {
     Object[] nodes = new Object[fields.length * 2];
     for (int i = 0; i < fields.length; i++) {
       nodes[i * 2] = fields[i];
-      nodes[i * 2 + 1] = BeeGlobal.getFieldValue(fields[i]);
+      nodes[i * 2 + 1] = Global.getFieldValue(fields[i]);
     }
 
     return transformDocument(createDoc(rootName, nodes));

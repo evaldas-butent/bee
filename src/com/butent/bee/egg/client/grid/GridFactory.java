@@ -6,7 +6,7 @@ import com.google.gwt.cell.client.TextCell;
 import com.google.gwt.cell.client.TextInputCell;
 import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.egg.client.BeeGlobal;
+import com.butent.bee.egg.client.Global;
 import com.butent.bee.egg.client.BeeKeeper;
 import com.butent.bee.egg.client.dom.DomUtils;
 import com.butent.bee.egg.client.grid.model.CachedTableModel;
@@ -113,7 +113,7 @@ public class GridFactory {
 
     if (!BeeUtils.isEmpty(table)) {
       keyProvider = new CellKeyProvider(view);
-      BeeGlobal.getCache().getPrimaryKey(table, keyProvider);
+      Global.getCache().getPrimaryKey(table, keyProvider);
     }
 
     BeeCellTable cellTable = new BeeCellTable(r, keyProvider);

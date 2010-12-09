@@ -1,10 +1,10 @@
 package com.butent.bee.egg.shared;
 
-import com.butent.bee.egg.shared.utils.SubProp;
+import com.butent.bee.egg.shared.utils.ExtendedProperty;
 
 import java.util.List;
 
 public interface HasExtendedInfo {
-  List<SubProp> getInfo();
+  List<ExtendedProperty> getInfo();
 
 }

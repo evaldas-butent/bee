@@ -2,28 +2,28 @@ package com.butent.bee.egg.shared.data;
 
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeConst;
-import com.butent.bee.egg.shared.utils.SubProp;
+import com.butent.bee.egg.shared.utils.ExtendedProperty;
 
 import java.util.List;
 
-public class SubPropData extends AbstractData {
-  private List<SubProp> data;
+public class ExtendedPropertiesData extends AbstractData {
+  private List<ExtendedProperty> data;
 
-  public SubPropData(List<SubProp> data) {
+  public ExtendedPropertiesData(List<ExtendedProperty> data) {
     this.data = data;
 
     setRowCount(data.size());
-    setColumnCount(SubProp.COLUMN_COUNT);
+    setColumnCount(ExtendedProperty.COLUMN_COUNT);
   }
 
   @Override
   public String[] getColumnNames() {
-    return SubProp.COLUMN_HEADERS;
+    return ExtendedProperty.COLUMN_HEADERS;
   }
 
   @Override
   public String getValue(int row, int col) {
-    SubProp el = data.get(row);
+    ExtendedProperty el = data.get(row);
 
     switch (col) {
       case 0:
@@ -41,7 +41,7 @@ public class SubPropData extends AbstractData {
 
   @Override
   public void setValue(int row, int col, String value) {
-    SubProp el = data.get(row);
+    ExtendedProperty el = data.get(row);
 
     switch (col) {
       case 0:

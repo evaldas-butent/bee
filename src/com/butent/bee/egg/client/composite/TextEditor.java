@@ -4,7 +4,7 @@ import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.layout.client.Layout;
 import com.google.gwt.user.client.ui.Composite;
 
-import com.butent.bee.egg.client.BeeGlobal;
+import com.butent.bee.egg.client.Global;
 import com.butent.bee.egg.client.BeeKeeper;
 import com.butent.bee.egg.client.communication.ParameterList;
 import com.butent.bee.egg.client.dom.DomUtils;
@@ -27,24 +27,24 @@ public class TextEditor extends Composite implements HasId {
     public void execute() {
       BeeTextArea area = getTextArea();
       if (!area.isValueChanged()) {
-        BeeGlobal.inform("Value has not changed", area.getDigest());
+        Global.inform("Value has not changed", area.getDigest());
         return;
       }
 
       String v = area.getValue();
       if (BeeUtils.isEmpty(v)) {
-        BeeGlobal.inform("Value is empty, not saved");
+        Global.inform("Value is empty, not saved");
         return;
       }
 
       String path = getUri();
       if (BeeUtils.isEmpty(path)) {
-        BeeGlobal.showError("Unknown URI");
+        Global.showError("Unknown URI");
         return;
       }
 
       int len = v.length();
-      if (!BeeGlobal.confirm("Save " + BeeUtils.bracket(len), path)) {
+      if (!Global.confirm("Save " + BeeUtils.bracket(len), path)) {
         return;
       }
       
@@ -57,7 +57,7 @@ public class TextEditor extends Composite implements HasId {
       BeeKeeper.getRpc().makePostRequest(params, ContentType.RESOURCE, v);
       area.onAfterSave(digest);
 
-      BeeGlobal.inform("Sent to", path, digest);
+      Global.inform("Sent to", path, digest);
     }
   }
 

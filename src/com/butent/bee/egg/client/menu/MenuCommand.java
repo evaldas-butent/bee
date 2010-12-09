@@ -1,6 +1,6 @@
 package com.butent.bee.egg.client.menu;
 
-import com.butent.bee.egg.client.BeeGlobal;
+import com.butent.bee.egg.client.Global;
 import com.butent.bee.egg.client.utils.BeeCommand;
 
 public class MenuCommand extends BeeCommand {
@@ -19,7 +19,7 @@ public class MenuCommand extends BeeCommand {
 
   @Override
   public void execute() {
-    BeeGlobal.showDialog(getService(), getParameters());
+    Global.showDialog(getService(), getParameters());
   }
 
 }

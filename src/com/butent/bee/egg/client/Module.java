@@ -1,6 +1,6 @@
 package com.butent.bee.egg.client;
 
-public interface BeeModule {
+public interface Module {
   int PRIORITY_INIT = 1;
   int PRIORITY_START = 2;
   int PRIORITY_END = 3;

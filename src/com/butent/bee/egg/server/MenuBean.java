@@ -4,11 +4,11 @@ import com.butent.bee.egg.server.communication.ResponseBuffer;
 import com.butent.bee.egg.server.http.RequestInfo;
 import com.butent.bee.egg.server.utils.XmlUtils;
 import com.butent.bee.egg.shared.BeeConst;
-import com.butent.bee.egg.shared.menu.MenuConst;
+import com.butent.bee.egg.shared.menu.MenuConstants;
 import com.butent.bee.egg.shared.menu.MenuEntry;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 import com.butent.bee.egg.shared.utils.LogUtils;
-import com.butent.bee.egg.shared.utils.StringProp;
+import com.butent.bee.egg.shared.utils.Property;
 
 import java.net.URL;
 import java.util.ArrayList;
@@ -84,7 +84,7 @@ public class MenuBean {
     }
 
     if (lst.size() > 1) {
-      Collections.sort(lst, MenuConst.MENU_COMPARATOR);
+      Collections.sort(lst, MenuConstants.MENU_COMPARATOR);
     }
 
     for (MenuEntry entry : lst) {
@@ -122,7 +122,7 @@ public class MenuBean {
       }
     }
 
-    StringProp[][] arr = XmlUtils.getAttributesFromFile(xmlPath, xslPath,
+    Property[][] arr = XmlUtils.getAttributesFromFile(xmlPath, xslPath,
         "menu");
     if (arr == null) {
       return ok;
@@ -142,7 +142,7 @@ public class MenuBean {
         continue;
       }
 
-      for (StringProp attr : arr[i]) {
+      for (Property attr : arr[i]) {
         name = attr.getName();
         value = attr.getValue();
 
@@ -157,7 +157,7 @@ public class MenuBean {
         } else if (BeeUtils.same(name, "order")) {
           menu[i].setOrder(BeeUtils.toInt(value));
         } else if (BeeUtils.same(name, "separators")) {
-          menu[i].setSeparators(MenuConst.SEPARATOR_BEFORE);
+          menu[i].setSeparators(MenuConstants.SEPARATOR_BEFORE);
         } else if (BeeUtils.same(name, "text")) {
           menu[i].setText(value);
         } else if (BeeUtils.same(name, "service")) {

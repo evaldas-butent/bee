@@ -5,9 +5,7 @@ import com.google.gwt.user.client.ui.DecoratedPopupPanel;
 import com.butent.bee.egg.client.dom.DomUtils;
 import com.butent.bee.egg.shared.HasId;
 
-public class BeeDecoratedPopupPanel extends DecoratedPopupPanel implements
-    HasId {
-
+public class BeeDecoratedPopupPanel extends DecoratedPopupPanel implements HasId {
   public BeeDecoratedPopupPanel() {
     super();
     createId();
@@ -34,5 +32,4 @@ public class BeeDecoratedPopupPanel extends DecoratedPopupPanel implements
   public void setId(String id) {
     DomUtils.setId(this, id);
   }
-
 }

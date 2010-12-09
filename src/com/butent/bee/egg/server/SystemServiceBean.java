@@ -13,8 +13,8 @@ import com.butent.bee.egg.shared.communication.ContentType;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 import com.butent.bee.egg.shared.utils.Codec;
 import com.butent.bee.egg.shared.utils.LogUtils;
-import com.butent.bee.egg.shared.utils.PropUtils;
-import com.butent.bee.egg.shared.utils.SubProp;
+import com.butent.bee.egg.shared.utils.PropertyUtils;
+import com.butent.bee.egg.shared.utils.ExtendedProperty;
 
 import java.io.File;
 import java.net.URL;
@@ -75,15 +75,14 @@ public class SystemServiceBean {
     }
     int c = classes.size();
 
-    buff.addSubColumns();
-    buff.addPropSub(new SubProp(cnm, pck, BeeUtils.bracket(c)));
+    buff.addExtendedPropertiesColumns();
+    buff.addExtended(new ExtendedProperty(cnm, pck, BeeUtils.bracket(c)));
 
     int i = 0;
     if (c > 1) {
       for (Class<?> cls : classes) {
         i++;
-        buff.addPropSub(new SubProp(cls.getName(), null,
-            BeeUtils.progress(i, c)));
+        buff.addExtended(new ExtendedProperty(cls.getName(), null, BeeUtils.progress(i, c)));
       }
     }
 
@@ -91,10 +90,9 @@ public class SystemServiceBean {
     for (Class<?> cls : classes) {
       i++;
       if (c > 1) {
-        buff.addPropSub(new SubProp(cls.getName(), null,
-            BeeUtils.progress(i, c)));
+        buff.addExtended(new ExtendedProperty(cls.getName(), null, BeeUtils.progress(i, c)));
       }
-      buff.appendSub(BeeClass.getClassInfo(cls));
+      buff.appendExtended(BeeClass.getClassInfo(cls));
     }
   }
 
@@ -114,13 +112,13 @@ public class SystemServiceBean {
 
   private void getResource(RequestInfo reqInfo, ResponseBuffer buff) {
     if (reqInfo.parameterEquals(0, "cs")) {
-      buff.addSub(FileUtils.getCharsets());
+      buff.addExtendedProperties(FileUtils.getCharsets());
       return;
     }
     if (reqInfo.parameterEquals(0, "fs")) {
-      buff.addStringProp(PropUtils.createStringProp("Path Separator",
+      buff.addProperties(PropertyUtils.createProperties("Path Separator",
           File.pathSeparator, "Separator", File.separator));
-      buff.addStringProp(FileUtils.getRootsInfo());
+      buff.addProperties(FileUtils.getRootsInfo());
       return;
     }
 
@@ -180,14 +178,14 @@ public class SystemServiceBean {
       }
     }
 
-    buff.addStringProp(FileUtils.getFileInfo(fl));
+    buff.addProperties(FileUtils.getFileInfo(fl));
 
     if (fl.isDirectory()) {
       String[] arr = FileUtils.getFiles(fl);
       int n = BeeUtils.length(arr);
 
       if (n > 0) {
-        buff.addStringProp(PropUtils.arrayToString("file", arr));
+        buff.addProperties(PropertyUtils.createProperties("file", arr));
       } else {
         buff.addWarning("no files found");
       }
@@ -263,11 +261,11 @@ public class SystemServiceBean {
         return;
       }
 
-      List<SubProp> lst = XmlUtils.getFileInfo(src);
+      List<ExtendedProperty> lst = XmlUtils.getFileInfo(src);
       if (BeeUtils.isEmpty(lst)) {
         buff.addSevere("cannot get xml info");
       } else {
-        buff.addSub(lst);
+        buff.addExtendedProperties(lst);
       }
       return;
     }
@@ -296,11 +294,11 @@ public class SystemServiceBean {
 
     if (dst == null) {
       if (BeeUtils.context("prop", ret)) {
-        List<SubProp> lst = XmlUtils.xsltToInfo(src, xsl);
+        List<ExtendedProperty> lst = XmlUtils.xsltToInfo(src, xsl);
         if (BeeUtils.isEmpty(lst)) {
           buff.addSevere("xslt error");
         } else {
-          buff.addSub(lst);
+          buff.addExtendedProperties(lst);
         }
         return;
       }
@@ -314,11 +312,11 @@ public class SystemServiceBean {
       ok = XmlUtils.xsltToFile(src, xsl, dst);
       if (ok) {
         if (BeeUtils.context("prop", ret)) {
-          List<SubProp> lst = XmlUtils.getFileInfo(dst);
+          List<ExtendedProperty> lst = XmlUtils.getFileInfo(dst);
           if (BeeUtils.isEmpty(lst)) {
             buff.addSevere("cannot get target info");
           } else {
-            buff.addSub(lst);
+            buff.addExtendedProperties(lst);
           }
           return;
         }
@@ -366,5 +364,4 @@ public class SystemServiceBean {
 
     buff.addPart(dst, target, ContentType.XML, dst == null);
   }
-
 }

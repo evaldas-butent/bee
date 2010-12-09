@@ -4,7 +4,7 @@ import com.google.gwt.user.client.ui.FocusWidget;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.egg.client.BeeGlobal;
+import com.butent.bee.egg.client.Global;
 import com.butent.bee.egg.client.composite.ButtonGroup;
 import com.butent.bee.egg.client.composite.RadioGroup;
 import com.butent.bee.egg.client.grid.FlexTable;
@@ -15,7 +15,7 @@ import com.butent.bee.egg.client.widget.BeeSimpleCheckBox;
 import com.butent.bee.egg.client.widget.BeeTextBox;
 import com.butent.bee.egg.client.widget.InputInteger;
 import com.butent.bee.egg.shared.Assert;
-import com.butent.bee.egg.shared.BeeField;
+import com.butent.bee.egg.shared.Variable;
 import com.butent.bee.egg.shared.BeeName;
 import com.butent.bee.egg.shared.BeeService;
 import com.butent.bee.egg.shared.BeeStage;
@@ -23,13 +23,13 @@ import com.butent.bee.egg.shared.BeeType;
 import com.butent.bee.egg.shared.BeeWidget;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
-public class BeeInputBox {
+public class InputBox {
   public void inputFields(BeeStage bst, String cap, String... fieldNames) {
     Assert.parameterCount(fieldNames.length + 1, 2);
 
     FlexTable ft = new FlexTable();
 
-    BeeField fld;
+    Variable fld;
     Widget inp = null;
     String z, w;
     int tp;
@@ -40,7 +40,7 @@ public class BeeInputBox {
     boolean ok;
 
     for (String name : fieldNames) {
-      fld = BeeGlobal.getField(name);
+      fld = Global.getField(name);
 
       tp = fld.getType();
       bw = fld.getWidget();

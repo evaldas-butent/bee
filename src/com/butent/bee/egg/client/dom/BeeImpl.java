@@ -21,5 +21,4 @@ public class BeeImpl {
     Assert.notNull(elem);
     elem.focus();
   }
-
 }

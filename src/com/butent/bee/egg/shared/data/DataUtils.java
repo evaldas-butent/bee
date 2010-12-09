@@ -5,8 +5,8 @@ import com.google.gwt.core.client.JsArrayString;
 import com.butent.bee.egg.client.data.JsData;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.utils.BeeUtils;
-import com.butent.bee.egg.shared.utils.StringProp;
-import com.butent.bee.egg.shared.utils.SubProp;
+import com.butent.bee.egg.shared.utils.Property;
+import com.butent.bee.egg.shared.utils.ExtendedProperty;
 
 import java.util.List;
 
@@ -30,10 +30,10 @@ public class DataUtils {
     } else if (data instanceof List) {
       Object el = BeeUtils.listGetQuietly((List<?>) data, 0);
       
-      if (el instanceof SubProp) {
-        view = new SubPropData((List<SubProp>) data);
-      } else if (el instanceof StringProp) {
-        view = new StringPropData((List<StringProp>) data);
+      if (el instanceof ExtendedProperty) {
+        view = new ExtendedPropertiesData((List<ExtendedProperty>) data);
+      } else if (el instanceof Property) {
+        view = new PropertiesData((List<Property>) data);
       }
     }
     

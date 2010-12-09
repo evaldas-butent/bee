@@ -6,9 +6,9 @@ import com.butent.bee.egg.shared.Transformable;
 import com.butent.bee.egg.shared.data.BeeColumn;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 import com.butent.bee.egg.shared.utils.LogUtils;
-import com.butent.bee.egg.shared.utils.PropUtils;
-import com.butent.bee.egg.shared.utils.StringProp;
-import com.butent.bee.egg.shared.utils.SubProp;
+import com.butent.bee.egg.shared.utils.PropertyUtils;
+import com.butent.bee.egg.shared.utils.Property;
+import com.butent.bee.egg.shared.utils.ExtendedProperty;
 
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -22,35 +22,34 @@ import java.util.logging.Logger;
 public class BeeResultSet implements Transformable {
   private static final Logger logger = Logger.getLogger(BeeResultSet.class.getName());
 
-  public static List<StringProp> getInfo(ResultSet rs) {
+  public static List<Property> getInfo(ResultSet rs) {
     Assert.notNull(rs);
-    List<StringProp> lst = new ArrayList<StringProp>();
+    List<Property> lst = new ArrayList<Property>();
 
     int z;
 
     try {
       z = rs.getType();
-      PropUtils.addString(lst, "Type",
-          BeeUtils.concat(1, z, JdbcUtils.rsTypeAsString(z)));
+      PropertyUtils.addProperty(lst, "Type", BeeUtils.concat(1, z, JdbcUtils.rsTypeAsString(z)));
 
       z = rs.getConcurrency();
-      PropUtils.addString(lst, "Concurrency",
+      PropertyUtils.addProperty(lst, "Concurrency",
           BeeUtils.concat(1, z, JdbcUtils.concurrencyAsString(z)));
 
-      PropUtils.addString(lst, "Holdability", JdbcUtils.getHoldabilityInfo(rs));
+      PropertyUtils.addProperty(lst, "Holdability", JdbcUtils.getHoldabilityInfo(rs));
 
       z = rs.getFetchDirection();
-      PropUtils.addString(lst, "Fetch Direction",
+      PropertyUtils.addProperty(lst, "Fetch Direction",
           BeeUtils.concat(1, z, JdbcUtils.fetchDirectionAsString(z)));
 
-      PropUtils.addString(lst, "Fetch Size", rs.getFetchSize());
-      PropUtils.addString(lst, "Cursor Name", JdbcUtils.getCursorName(rs));
+      PropertyUtils.addProperty(lst, "Fetch Size", rs.getFetchSize());
+      PropertyUtils.addProperty(lst, "Cursor Name", JdbcUtils.getCursorName(rs));
 
       SQLWarning warn = rs.getWarnings();
       if (warn != null) {
         List<String> wLst = JdbcUtils.unchain(warn);
         for (String w : wLst) {
-          PropUtils.addString(lst, "Warning", w);
+          PropertyUtils.addProperty(lst, "Warning", w);
         }
       }
     } catch (SQLException ex) {
@@ -166,10 +165,10 @@ public class BeeResultSet implements Transformable {
     return queryTimeout;
   }
 
-  public List<SubProp> getRsInfo() {
-    List<SubProp> lst = new ArrayList<SubProp>();
+  public List<ExtendedProperty> getRsInfo() {
+    List<ExtendedProperty> lst = new ArrayList<ExtendedProperty>();
 
-    PropUtils.addPropSub(
+    PropertyUtils.addProperties(
         lst,
         false,
         "type",
@@ -193,7 +192,7 @@ public class BeeResultSet implements Transformable {
 
     if (!BeeUtils.isEmpty(arr)) {
       for (BeeColumn col : arr) {
-        PropUtils.appendString(lst, col.getName(), col.getColumnInfo());
+        PropertyUtils.appendChildrenToExtended(lst, col.getName(), col.getColumnInfo());
       }
     }
 
@@ -201,10 +200,9 @@ public class BeeResultSet implements Transformable {
 
     if (!BeeUtils.isEmpty(err)) {
       for (Exception ex : err) {
-        PropUtils.addSub(lst, "Error", null, ex.getMessage());
+        PropertyUtils.addExtended(lst, "Error", null, ex.getMessage());
       }
     }
-
     return lst;
   }
 
@@ -310,10 +308,10 @@ public class BeeResultSet implements Transformable {
 
   @Override
   public String toString() {
-    List<SubProp> lst = getRsInfo();
+    List<ExtendedProperty> lst = getRsInfo();
     StringBuilder sb = new StringBuilder();
 
-    for (SubProp el : lst) {
+    for (ExtendedProperty el : lst) {
       if (sb.length() > 0) {
         sb.append(BeeConst.DEFAULT_ROW_SEPARATOR);
       }
@@ -471,5 +469,4 @@ public class BeeResultSet implements Transformable {
       return Integer.toString(v);
     }
   }
-
 }

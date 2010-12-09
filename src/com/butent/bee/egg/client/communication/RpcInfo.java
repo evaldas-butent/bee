@@ -11,7 +11,7 @@ import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.communication.ContentType;
 import com.butent.bee.egg.shared.communication.ResponseMessage;
 import com.butent.bee.egg.shared.utils.BeeUtils;
-import com.butent.bee.egg.shared.utils.SubProp;
+import com.butent.bee.egg.shared.utils.ExtendedProperty;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -79,7 +79,7 @@ public class RpcInfo {
   private int reqSize = BeeConst.SIZE_UNKNOWN;
 
   private Response response = null;
-  private Collection<SubProp> respInfo = null;
+  private Collection<ExtendedProperty> respInfo = null;
 
   private ContentType respType = null;
   private String respData = null;
@@ -266,7 +266,7 @@ public class RpcInfo {
     return respData;
   }
 
-  public Collection<SubProp> getRespInfo() {
+  public Collection<ExtendedProperty> getRespInfo() {
     return respInfo;
   }
 
@@ -430,7 +430,7 @@ public class RpcInfo {
     this.respData = BeeUtils.clip(respData, MAX_DATA_LEN);
   }
 
-  public void setRespInfo(Collection<SubProp> respInfo) {
+  public void setRespInfo(Collection<ExtendedProperty> respInfo) {
     this.respInfo = respInfo;
   }
 

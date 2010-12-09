@@ -3,7 +3,7 @@ package com.butent.bee.egg.client.ui;
 import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.user.client.ui.Panel;
 
-import com.butent.bee.egg.client.BeeGlobal;
+import com.butent.bee.egg.client.Global;
 import com.butent.bee.egg.client.BeeKeeper;
 import com.butent.bee.egg.client.data.ResponseData;
 import com.butent.bee.egg.client.utils.BeeXml;
@@ -52,11 +52,11 @@ class GridService extends CompositeService {
         int cc = (Integer) params[1];
 
         BeeView view = new ResponseData(arr, cc);
-        destination.add(BeeGlobal.scrollGrid(view));
+        destination.add(Global.scrollGrid(view));
         break;
 
       default:
-        BeeGlobal.showError("Unhandled stage: " + stage);
+        Global.showError("Unhandled stage: " + stage);
         ok = false;
         break;
     }

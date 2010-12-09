@@ -5,7 +5,7 @@ import com.google.gwt.event.shared.GwtEvent;
 import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.egg.client.BeeGlobal;
+import com.butent.bee.egg.client.Global;
 import com.butent.bee.egg.client.BeeKeeper;
 import com.butent.bee.egg.client.utils.BeeXml;
 import com.butent.bee.egg.shared.Assert;
@@ -56,26 +56,26 @@ class FormService extends CompositeService {
         for (int i = cc; i < arr.length(); i++) {
           lst.add(arr.get(i));
         }
-        if (!BeeGlobal.isField(fld)) {
-          BeeGlobal.createField(fld, "Form name", BeeType.TYPE_STRING, null);
-          BeeGlobal.getField(fld).setWidget(BeeWidget.LIST);
+        if (!Global.isField(fld)) {
+          Global.createField(fld, "Form name", BeeType.TYPE_STRING, null);
+          Global.getField(fld).setWidget(BeeWidget.LIST);
         }
-        BeeGlobal.getField(fld).setItems(lst);
-        BeeGlobal.getField(fld).setValue(lst.get(0));
+        Global.getField(fld).setItems(lst);
+        Global.getField(fld).setValue(lst.get(0));
 
-        BeeGlobal.inputFields(new BeeStage(self(), BeeStage.STAGE_CONFIRM), "Load form", fld);
+        Global.inputFields(new BeeStage(self(), BeeStage.STAGE_CONFIRM), "Load form", fld);
         break;
 
       case REQUEST_FORM:
         GwtEvent<?> event = (GwtEvent<?>) params[0];
 
-        String fName = BeeGlobal.getFieldValue(fld);
+        String fName = Global.getFieldValue(fld);
 
         if (BeeUtils.isEmpty(fName)) {
-          BeeGlobal.showError("Form name not specified");
+          Global.showError("Form name not specified");
           ok = false;
         } else {
-          BeeGlobal.closeDialog(event);
+          Global.closeDialog(event);
           BeeKeeper.getRpc().makePostRequest(adoptService("rpc_ui_form"),
               BeeXml.createString(BeeService.XML_TAG_DATA, fld, fName));
         }
@@ -90,7 +90,7 @@ class FormService extends CompositeService {
         break;
 
       default:
-        BeeGlobal.showError("Unhandled stage: " + stage);
+        Global.showError("Unhandled stage: " + stage);
         unregister();
         ok = false;
         break;

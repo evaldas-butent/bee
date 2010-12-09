@@ -7,33 +7,33 @@ import com.butent.bee.egg.client.widget.BeeButton;
 import com.butent.bee.egg.shared.BeeService;
 import com.butent.bee.egg.shared.BeeStage;
 
-public class BeeCloseButton extends BeeButton {
+public class CloseButton extends BeeButton {
 
-  public BeeCloseButton() {
+  public CloseButton() {
     super("Close", BeeService.SERVICE_CLOSE_DIALOG);
   }
 
-  public BeeCloseButton(Element element) {
+  public CloseButton(Element element) {
     super(element);
   }
 
-  public BeeCloseButton(String html) {
+  public CloseButton(String html) {
     super(html, BeeService.SERVICE_CLOSE_DIALOG);
   }
 
-  public BeeCloseButton(String html, BeeStage bst) {
+  public CloseButton(String html, BeeStage bst) {
     super(html, bst);
   }
 
-  public BeeCloseButton(String html, ClickHandler handler) {
+  public CloseButton(String html, ClickHandler handler) {
     super(html, handler);
   }
 
-  public BeeCloseButton(String html, String svc) {
+  public CloseButton(String html, String svc) {
     super(html, svc);
   }
 
-  public BeeCloseButton(String html, String svc, String stg) {
+  public CloseButton(String html, String svc, String stg) {
     super(html, svc, stg);
   }
 

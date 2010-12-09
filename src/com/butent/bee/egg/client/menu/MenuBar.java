@@ -31,7 +31,7 @@ import com.butent.bee.egg.client.event.HasBeeBlurHandler;
 import com.butent.bee.egg.client.layout.BeeLayoutPanel;
 import com.butent.bee.egg.client.layout.Stack;
 import com.butent.bee.egg.client.layout.Tab;
-import com.butent.bee.egg.client.menu.BeeMenuItem.ITEM_TYPE;
+import com.butent.bee.egg.client.menu.MenuItem.ITEM_TYPE;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.HasId;
@@ -40,7 +40,7 @@ import com.butent.bee.egg.shared.utils.BeeUtils;
 import java.util.ArrayList;
 import java.util.List;
 
-public class BeeMenuBar extends Widget implements HasId, HasAfterAddHandler,
+public class MenuBar extends Widget implements HasId, HasAfterAddHandler,
     HasBeeBlurHandler, CloseHandler<PopupPanel> {
   public static enum BAR_TYPE {
     TABLE, FLOW, LIST, OLIST, ULIST, DLIST
@@ -62,74 +62,74 @@ public class BeeMenuBar extends Widget implements HasId, HasAfterAddHandler,
   }
   
   private List<UIObject> allItems = new ArrayList<UIObject>();
-  private List<BeeMenuItem> items = new ArrayList<BeeMenuItem>();
+  private List<MenuItem> items = new ArrayList<MenuItem>();
 
   private Element body;
 
-  private BeeMenuBar parentMenu;
+  private MenuBar parentMenu;
   private MenuPopup popup;
-  private BeeMenuItem selectedItem;
-  private BeeMenuBar childMenu;
+  private MenuItem selectedItem;
+  private MenuBar childMenu;
 
   private int level;
   private boolean vertical;
 
   private BAR_TYPE barType = BAR_TYPE.TABLE;
-  private ITEM_TYPE defaultItemType = BeeMenuItem.defaultType;
+  private ITEM_TYPE defaultItemType = MenuItem.defaultType;
   private String name = BeeUtils.createUniqueName("mb-");
   
   private boolean hoverEnabled = true;
   
-  public BeeMenuBar() {
+  public MenuBar() {
     this(0);
   }
 
-  public BeeMenuBar(int level) {
+  public MenuBar(int level) {
     this(level, false);
   }
 
-  public BeeMenuBar(int level, boolean vert) {
+  public MenuBar(int level, boolean vert) {
     this(level, vert, null);
   }
 
-  public BeeMenuBar(int level, boolean vert, BAR_TYPE bt) {
+  public MenuBar(int level, boolean vert, BAR_TYPE bt) {
     this(level, vert, bt, null);
   }
 
-  public BeeMenuBar(int level, boolean vert, BAR_TYPE bt, ITEM_TYPE it) {
+  public MenuBar(int level, boolean vert, BAR_TYPE bt, ITEM_TYPE it) {
     this(level, vert, bt, it, false);
   }
 
-  public BeeMenuBar(int level, boolean vert, BAR_TYPE bt, ITEM_TYPE it, boolean hover) {
+  public MenuBar(int level, boolean vert, BAR_TYPE bt, ITEM_TYPE it, boolean hover) {
     init(level, vert, bt, it, hover);
     createId();
   }
 
-  public BeeMenuItem addItem(BeeMenuItem item) {
+  public MenuItem addItem(MenuItem item) {
     return insertItem(item, allItems.size());
   }
 
-  public BeeMenuItem addItem(String text, BeeMenuBar mb) {
-    return addItem(new BeeMenuItem(this, text, defaultItemType, mb));
+  public MenuItem addItem(String text, MenuBar mb) {
+    return addItem(new MenuItem(this, text, defaultItemType, mb));
   }
 
-  public BeeMenuItem addItem(String text, ITEM_TYPE type, BeeMenuBar mb) {
-    return addItem(new BeeMenuItem(this, text, type, mb));
+  public MenuItem addItem(String text, ITEM_TYPE type, MenuBar mb) {
+    return addItem(new MenuItem(this, text, type, mb));
   }
 
-  public BeeMenuItem addItem(String text, ITEM_TYPE type, MenuCommand cmd) {
-    return addItem(new BeeMenuItem(this, text, type, cmd));
+  public MenuItem addItem(String text, ITEM_TYPE type, MenuCommand cmd) {
+    return addItem(new MenuItem(this, text, type, cmd));
   }
 
-  public BeeMenuItem addItem(String text, MenuCommand cmd) {
-    return addItem(new BeeMenuItem(this, text, defaultItemType, cmd));
+  public MenuItem addItem(String text, MenuCommand cmd) {
+    return addItem(new MenuItem(this, text, defaultItemType, cmd));
   }
 
-  public BeeMenuItemSeparator addSeparator() {
-    return addSeparator(new BeeMenuItemSeparator());
+  public MenuSeparator addSeparator() {
+    return addSeparator(new MenuSeparator());
   }
 
-  public BeeMenuItemSeparator addSeparator(BeeMenuItemSeparator separator) {
+  public MenuSeparator addSeparator(MenuSeparator separator) {
     return insertSeparator(separator, allItems.size());
   }
 
@@ -198,7 +198,7 @@ public class BeeMenuBar extends Widget implements HasId, HasAfterAddHandler,
       hoverEnabled = true;
     }
 
-    BeeMenuItem item = findItem(target);
+    MenuItem item = findItem(target);
     if (item == null && !EventUtils.isKeyEvent(type)
         && type != Event.ONMOUSEWHEEL) {
       super.onBrowserEvent(event);
@@ -342,7 +342,7 @@ public class BeeMenuBar extends Widget implements HasId, HasAfterAddHandler,
     DomUtils.setId(this, id);
   }
 
-  public void updateSubmenuIcon(BeeMenuItem item) {
+  public void updateSubmenuIcon(MenuItem item) {
     if (barType != BAR_TYPE.TABLE) {
       return;
     }
@@ -358,7 +358,7 @@ public class BeeMenuBar extends Widget implements HasId, HasAfterAddHandler,
     Element container = getItemContainerElement();
     Element tr = DOM.getChild(container, idx);
     int tdCount = DOM.getChildCount(tr);
-    BeeMenuBar submenu = item.getSubMenu();
+    MenuBar submenu = item.getSubMenu();
     if (submenu == null) {
       if (tdCount == 2) {
         DOM.removeChild(tr, DOM.getChild(tr, 1));
@@ -380,11 +380,11 @@ public class BeeMenuBar extends Widget implements HasId, HasAfterAddHandler,
     super.onDetach();
   }
 
-  private void activateSubMenu(BeeMenuItem item) {
+  private void activateSubMenu(MenuItem item) {
     activateSubMenu(item, false);
   }
 
-  private void activateSubMenu(BeeMenuItem item, boolean end) {
+  private void activateSubMenu(MenuItem item, boolean end) {
     if (!hasSubMenu(item)) {
       return;
     }
@@ -439,7 +439,7 @@ public class BeeMenuBar extends Widget implements HasId, HasAfterAddHandler,
     childMenu = null;
   }
 
-  private void doCommand(BeeMenuItem item) {
+  private void doCommand(MenuItem item) {
     closeAll();
     Scheduler.get().scheduleDeferred(item.getCommand());
   }
@@ -449,8 +449,8 @@ public class BeeMenuBar extends Widget implements HasId, HasAfterAddHandler,
     event.preventDefault();
   }
 
-  private BeeMenuItem findItem(Element elem) {
-    for (BeeMenuItem item : items) {
+  private MenuItem findItem(Element elem) {
+    for (MenuItem item : items) {
       if (DOM.isOrHasChild(item.getElement(), elem)) {
         return item;
       }
@@ -471,7 +471,7 @@ public class BeeMenuBar extends Widget implements HasId, HasAfterAddHandler,
     }
   }
 
-  private boolean hasCommand(BeeMenuItem item) {
+  private boolean hasCommand(MenuItem item) {
     if (item == null) {
       return false;
     } else {
@@ -479,7 +479,7 @@ public class BeeMenuBar extends Widget implements HasId, HasAfterAddHandler,
     }
   }
 
-  private boolean hasSubMenu(BeeMenuItem item) {
+  private boolean hasSubMenu(MenuItem item) {
     if (item == null) {
       return false;
     } else {
@@ -563,11 +563,11 @@ public class BeeMenuBar extends Widget implements HasId, HasAfterAddHandler,
     BeeKeeper.getBus().addBlurHandler(this, true);
   }
 
-  private BeeMenuItem insertItem(BeeMenuItem item, int beforeIndex) {
+  private MenuItem insertItem(MenuItem item, int beforeIndex) {
     allItems.add(beforeIndex, item);
     int itemsIndex = 0;
     for (int i = 0; i < beforeIndex; i++) {
-      if (allItems.get(i) instanceof BeeMenuItem) {
+      if (allItems.get(i) instanceof MenuItem) {
         itemsIndex++;
       }
     }
@@ -581,7 +581,7 @@ public class BeeMenuBar extends Widget implements HasId, HasAfterAddHandler,
     return item;
   }
 
-  private BeeMenuItemSeparator insertSeparator(BeeMenuItemSeparator separator,
+  private MenuSeparator insertSeparator(MenuSeparator separator,
       int beforeIndex) {
     if (vertical) {
       setItemColSpan(separator, 2);
@@ -594,7 +594,7 @@ public class BeeMenuBar extends Widget implements HasId, HasAfterAddHandler,
     return separator;
   }
 
-  private void itemOver(BeeMenuItem item) {
+  private void itemOver(MenuItem item) {
     if (item == null && childMenu != null) {
       return;
     }
@@ -712,7 +712,7 @@ public class BeeMenuBar extends Widget implements HasId, HasAfterAddHandler,
     }
   }
 
-  private void openPopup(BeeMenuItem item) {
+  private void openPopup(MenuItem item) {
     popup = new MenuPopup(this, item);
 
     childMenu = item.getSubMenu();
@@ -725,7 +725,7 @@ public class BeeMenuBar extends Widget implements HasId, HasAfterAddHandler,
         item.getElement(), popup, vertical));
   }
 
-  private void openSubMenu(BeeMenuItem item) {
+  private void openSubMenu(MenuItem item) {
     if (childMenu == null) {
       openPopup(item);
     } else if (item.getSubMenu() != childMenu) {
@@ -737,7 +737,7 @@ public class BeeMenuBar extends Widget implements HasId, HasAfterAddHandler,
   private boolean selectFirstItemIfNoneSelected() {
     if (selectedItem == null) {
       if (items.size() > 0) {
-        BeeMenuItem item = items.get(0);
+        MenuItem item = items.get(0);
         selectItem(item);
       }
       return true;
@@ -745,7 +745,7 @@ public class BeeMenuBar extends Widget implements HasId, HasAfterAddHandler,
     return false;
   }
 
-  private void selectItem(BeeMenuItem item) {
+  private void selectItem(MenuItem item) {
     if (item == selectedItem) {
       return;
     }
@@ -771,7 +771,7 @@ public class BeeMenuBar extends Widget implements HasId, HasAfterAddHandler,
       return;
     }
 
-    BeeMenuItem item = items.get(index);
+    MenuItem item = items.get(index);
     selectItem(item);
     
     if (hasSubMenu(item)) {
@@ -782,7 +782,7 @@ public class BeeMenuBar extends Widget implements HasId, HasAfterAddHandler,
   private boolean selectLastItemIfNoneSelected() {
     if (selectedItem == null) {
       if (items.size() > 0) {
-        BeeMenuItem item = items.get(items.size() - 1);
+        MenuItem item = items.get(items.size() - 1);
         selectItem(item);
       }
       return true;

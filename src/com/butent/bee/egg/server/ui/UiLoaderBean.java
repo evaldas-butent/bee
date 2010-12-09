@@ -9,7 +9,7 @@ import com.butent.bee.egg.shared.sql.SqlUtils;
 import com.butent.bee.egg.shared.ui.UiLoader;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 import com.butent.bee.egg.shared.utils.LogUtils;
-import com.butent.bee.egg.shared.utils.StringProp;
+import com.butent.bee.egg.shared.utils.Property;
 
 import java.net.URL;
 import java.util.ArrayList;
@@ -215,7 +215,7 @@ public class UiLoaderBean extends UiLoader {
       return null;
     }
 
-    StringProp[][] arr = XmlUtils.getAttributesFromFile(url.getFile(), "menu");
+    Property[][] arr = XmlUtils.getAttributesFromFile(url.getFile(), "menu");
     if (arr == null) {
       return null;
     }
@@ -238,7 +238,7 @@ public class UiLoaderBean extends UiLoader {
 
       StringBuilder props = new StringBuilder();
 
-      for (StringProp attr : arr[i]) {
+      for (Property attr : arr[i]) {
         String name = attr.getName();
         String value = attr.getValue();
 

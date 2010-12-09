@@ -8,7 +8,7 @@ import com.butent.bee.egg.client.widget.BeeLabel;
 
 import java.util.Date;
 
-public class BeeScheduler implements BeeModule {
+public class BeeScheduler implements Module {
 
   class ClockTimer extends Timer {
     @Override

@@ -3,7 +3,7 @@ package com.butent.bee.egg.client.cli;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.KeyPressEvent;
 
-import com.butent.bee.egg.client.BeeGlobal;
+import com.butent.bee.egg.client.Global;
 import com.butent.bee.egg.client.BeeKeeper;
 import com.butent.bee.egg.client.dom.DomUtils;
 import com.butent.bee.egg.client.widget.BeeTextBox;
@@ -93,7 +93,7 @@ public class CliWidget extends BeeTextBox {
     } else if (z.equals("rpc")) {
       CliWorker.showRpc();
     } else if (z.equals("sb")) {
-      BeeGlobal.showDialog("Scrollbar",
+      Global.showDialog("Scrollbar",
           BeeUtils.addName("width", DomUtils.getScrollbarWidth()),
           BeeUtils.addName("height", DomUtils.getScrollbarHeight()));
     } else if (z.startsWith("serv") || z.startsWith("sys")) {
@@ -109,7 +109,7 @@ public class CliWidget extends BeeTextBox {
     } else if (z.equals("svg")) {
       CliWorker.showSvg(arr);
     } else if (z.equals("tb")) {
-      BeeGlobal.showDialog("TextBox",
+      Global.showDialog("TextBox",
           BeeUtils.addName("client width", DomUtils.getTextBoxClientWidth()),
           BeeUtils.addName("client height", DomUtils.getTextBoxClientHeight()),
           BeeUtils.addName("offset width", DomUtils.getTextBoxOffsetWidth()),
@@ -129,7 +129,7 @@ public class CliWidget extends BeeTextBox {
       BeeKeeper.getRpc().makePostRequest("rpc_ui_sql", ContentType.BINARY, v);
 
     } else {
-      BeeGlobal.showDialog("wtf", v);
+      Global.showDialog("wtf", v);
     }
 
     return false;

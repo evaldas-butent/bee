@@ -3,7 +3,7 @@ package com.butent.bee.egg.client.widget;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.user.client.ui.SimpleCheckBox;
 
-import com.butent.bee.egg.client.BeeGlobal;
+import com.butent.bee.egg.client.Global;
 import com.butent.bee.egg.client.BeeKeeper;
 import com.butent.bee.egg.client.dom.DomUtils;
 import com.butent.bee.egg.client.event.HasBeeClickHandler;
@@ -69,13 +69,13 @@ public class BeeSimpleCheckBox extends SimpleCheckBox implements HasId, HasBeeCl
   private void initField(String fld) {
     if (!BeeUtils.isEmpty(fld)) {
       setFieldName(fld);
-      setChecked(BeeUtils.toBoolean(BeeGlobal.getFieldValue(fld)));
+      setChecked(BeeUtils.toBoolean(Global.getFieldValue(fld)));
     }
   }
 
   private void updateField(boolean v) {
     if (!BeeUtils.isEmpty(getFieldName())) {
-      BeeGlobal.setFieldValue(getFieldName(), BeeUtils.toString(v));
+      Global.setFieldValue(getFieldName(), BeeUtils.toString(v));
     }
   }
 }

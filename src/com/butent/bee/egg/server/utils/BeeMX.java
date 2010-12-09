@@ -2,9 +2,9 @@ package com.butent.bee.egg.server.utils;
 
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.utils.BeeUtils;
-import com.butent.bee.egg.shared.utils.PropUtils;
-import com.butent.bee.egg.shared.utils.StringProp;
-import com.butent.bee.egg.shared.utils.SubProp;
+import com.butent.bee.egg.shared.utils.PropertyUtils;
+import com.butent.bee.egg.shared.utils.Property;
+import com.butent.bee.egg.shared.utils.ExtendedProperty;
 
 import java.lang.management.ClassLoadingMXBean;
 import java.lang.management.CompilationMXBean;
@@ -26,12 +26,12 @@ import java.util.List;
 import java.util.Map;
 
 public class BeeMX {
-  public static List<StringProp> getClassLoadingInfo() {
-    List<StringProp> lst = new ArrayList<StringProp>();
+  public static List<Property> getClassLoadingInfo() {
+    List<Property> lst = new ArrayList<Property>();
 
     ClassLoadingMXBean mxb = ManagementFactory.getClassLoadingMXBean();
 
-    PropUtils.addString(lst, "Loaded Class Count", mxb.getLoadedClassCount(),
+    PropertyUtils.addProperties(lst, "Loaded Class Count", mxb.getLoadedClassCount(),
         "Total Loaded Class Count", mxb.getTotalLoadedClassCount(),
         "Unloaded Class Count", mxb.getUnloadedClassCount(), "Is Verbose",
         mxb.isVerbose());
@@ -39,12 +39,12 @@ public class BeeMX {
     return lst;
   }
 
-  public static List<StringProp> getCompilationInfo() {
-    List<StringProp> lst = new ArrayList<StringProp>();
+  public static List<Property> getCompilationInfo() {
+    List<Property> lst = new ArrayList<Property>();
 
     CompilationMXBean mxb = ManagementFactory.getCompilationMXBean();
 
-    PropUtils.addString(lst, "Name", mxb.getName(), "Total Compilation Time",
+    PropertyUtils.addProperties(lst, "Name", mxb.getName(), "Total Compilation Time",
         mxb.getTotalCompilationTime(),
         "Is Compilation Time Monitoring Supported",
         mxb.isCompilationTimeMonitoringSupported());
@@ -52,117 +52,111 @@ public class BeeMX {
     return lst;
   }
 
-  public static List<SubProp> getGarbageCollectorInfo() {
-    List<SubProp> lst = new ArrayList<SubProp>();
+  public static List<ExtendedProperty> getGarbageCollectorInfo() {
+    List<ExtendedProperty> lst = new ArrayList<ExtendedProperty>();
 
     List<GarbageCollectorMXBean> mxbs = ManagementFactory.getGarbageCollectorMXBeans();
 
     if (!BeeUtils.isEmpty(mxbs)) {
-      PropUtils.addSub(lst, "Garbage Collectors", BeeUtils.bracket(mxbs.size()));
+      PropertyUtils.addExtended(lst, "Garbage Collectors", BeeUtils.bracket(mxbs.size()));
 
       for (GarbageCollectorMXBean b : mxbs) {
         String nm = b.getName();
 
-        PropUtils.addRoot(lst, nm, "Collection Count", b.getCollectionCount(),
-            "Collection Time", b.getCollectionTime(), "Memory Pool Names",
-            transformMemoryPoolNames(b.getMemoryPoolNames()), "Is Valid",
-            b.isValid());
+        PropertyUtils.addChildren(lst, nm, "Collection Count", b.getCollectionCount(),
+            "Collection Time", b.getCollectionTime(),
+            "Memory Pool Names", transformMemoryPoolNames(b.getMemoryPoolNames()),
+            "Is Valid", b.isValid());
       }
     }
-
     return lst;
   }
 
-  public static List<SubProp> getMemoryInfo() {
-    List<SubProp> lst = new ArrayList<SubProp>();
+  public static List<ExtendedProperty> getMemoryInfo() {
+    List<ExtendedProperty> lst = new ArrayList<ExtendedProperty>();
 
     MemoryMXBean mxb = ManagementFactory.getMemoryMXBean();
     String nm = "Memory";
 
-    PropUtils.addPropSub(lst, true, nm, "Object Pending Finalization Count",
+    PropertyUtils.addProperties(lst, true, nm, "Object Pending Finalization Count",
         mxb.getObjectPendingFinalizationCount(), nm, "Is Verbose",
         mxb.isVerbose());
 
-    PropUtils.appendString(lst, "Heap Memory Usage",
+    PropertyUtils.appendChildrenToExtended(lst, "Heap Memory Usage",
         getMemoryUsageInfo(mxb.getHeapMemoryUsage()));
-    PropUtils.appendString(lst, "Non Heap Memory Usage",
+    PropertyUtils.appendChildrenToExtended(lst, "Non Heap Memory Usage",
         getMemoryUsageInfo(mxb.getNonHeapMemoryUsage()));
 
     return lst;
   }
 
-  public static List<SubProp> getMemoryManagerInfo() {
-    List<SubProp> lst = new ArrayList<SubProp>();
+  public static List<ExtendedProperty> getMemoryManagerInfo() {
+    List<ExtendedProperty> lst = new ArrayList<ExtendedProperty>();
 
     List<MemoryManagerMXBean> mxbs = ManagementFactory.getMemoryManagerMXBeans();
 
     if (!BeeUtils.isEmpty(mxbs)) {
-      PropUtils.addSub(lst, "Memory Managers", BeeUtils.bracket(mxbs.size()));
+      PropertyUtils.addExtended(lst, "Memory Managers", BeeUtils.bracket(mxbs.size()));
 
       for (MemoryManagerMXBean b : mxbs) {
         String nm = b.getName();
 
-        PropUtils.addRoot(lst, nm, "Memory Pool Names",
-            transformMemoryPoolNames(b.getMemoryPoolNames()), "Is Valid",
-            b.isValid());
+        PropertyUtils.addChildren(lst, nm,
+            "Memory Pool Names", transformMemoryPoolNames(b.getMemoryPoolNames()),
+            "Is Valid", b.isValid());
       }
     }
-
     return lst;
   }
 
-  public static List<SubProp> getMemoryPoolInfo() {
-    List<SubProp> lst = new ArrayList<SubProp>();
+  public static List<ExtendedProperty> getMemoryPoolInfo() {
+    List<ExtendedProperty> lst = new ArrayList<ExtendedProperty>();
 
     List<MemoryPoolMXBean> mxbs = ManagementFactory.getMemoryPoolMXBeans();
 
     if (!BeeUtils.isEmpty(mxbs)) {
-      PropUtils.addSub(lst, "Memory Pools", BeeUtils.bracket(mxbs.size()));
+      PropertyUtils.addExtended(lst, "Memory Pools", BeeUtils.bracket(mxbs.size()));
 
       for (MemoryPoolMXBean b : mxbs) {
         String root = b.getName();
 
-        PropUtils.addRoot(lst, root, "Type", b.getType(),
-            "Memory Manager Names",
-            transformMemoryManagerNames(b.getMemoryManagerNames()),
-            "Is Collection Usage Threshold Supported",
-            b.isCollectionUsageThresholdSupported(),
+        PropertyUtils.addChildren(lst, root, "Type", b.getType(),
+            "Memory Manager Names", transformMemoryManagerNames(b.getMemoryManagerNames()),
+            "Is Collection Usage Threshold Supported", b.isCollectionUsageThresholdSupported(),
             "Is Usage Threshold Supported", b.isUsageThresholdSupported(),
             "Is Valid", b.isValid());
 
         if (b.isCollectionUsageThresholdSupported()) {
-          PropUtils.addRoot(lst, root, "Collection Usage Threshold",
-              b.getCollectionUsageThreshold(),
-              "Collection Usage Threshold Count",
-              b.getCollectionUsageThresholdCount(),
-              "Is Collection Usage Threshold Exceeded",
-              b.isCollectionUsageThresholdExceeded());
+          PropertyUtils.addChildren(lst, root,
+              "Collection Usage Threshold", b.getCollectionUsageThreshold(),
+              "Collection Usage Threshold Count", b.getCollectionUsageThresholdCount(),
+              "Is Collection Usage Threshold Exceeded", b.isCollectionUsageThresholdExceeded());
         }
 
         if (b.isUsageThresholdSupported()) {
-          PropUtils.addRoot(lst, root, "Usage Threshold",
-              b.getUsageThreshold(), "Usage Threshold Count",
-              b.getUsageThresholdCount(), "Is Usage Threshold Exceeded",
-              b.isUsageThresholdExceeded());
+          PropertyUtils.addChildren(lst, root,
+              "Usage Threshold", b.getUsageThreshold(),
+              "Usage Threshold Count", b.getUsageThresholdCount(),
+              "Is Usage Threshold Exceeded", b.isUsageThresholdExceeded());
         }
 
-        PropUtils.appendString(lst, "Collection Usage",
+        PropertyUtils.appendChildrenToExtended(lst, "Collection Usage",
             getMemoryUsageInfo(b.getCollectionUsage()));
-        PropUtils.appendString(lst, "Peak Usage",
+        PropertyUtils.appendChildrenToExtended(lst, "Peak Usage",
             getMemoryUsageInfo(b.getPeakUsage()));
-        PropUtils.appendString(lst, "Usage", getMemoryUsageInfo(b.getUsage()));
+        PropertyUtils.appendChildrenToExtended(lst, "Usage", getMemoryUsageInfo(b.getUsage()));
       }
     }
 
     return lst;
   }
 
-  public static List<StringProp> getOperatingSystemInfo() {
-    List<StringProp> lst = new ArrayList<StringProp>();
+  public static List<Property> getOperatingSystemInfo() {
+    List<Property> lst = new ArrayList<Property>();
 
     OperatingSystemMXBean mxb = ManagementFactory.getOperatingSystemMXBean();
 
-    PropUtils.addString(lst, "Name", mxb.getName(), "Version",
+    PropertyUtils.addProperties(lst, "Name", mxb.getName(), "Version",
         mxb.getVersion(), "Arch", mxb.getArch(), "Available Processors",
         mxb.getAvailableProcessors(), "System Load Average",
         mxb.getSystemLoadAverage());
@@ -170,94 +164,86 @@ public class BeeMX {
     return lst;
   }
 
-  public static List<SubProp> getRuntimeInfo() {
-    List<SubProp> lst = new ArrayList<SubProp>();
+  public static List<ExtendedProperty> getRuntimeInfo() {
+    List<ExtendedProperty> lst = new ArrayList<ExtendedProperty>();
 
     RuntimeMXBean mxb = ManagementFactory.getRuntimeMXBean();
     String root = "Runtime";
 
-    PropUtils.addRoot(lst, root, "Boot Class Path", mxb.getBootClassPath(),
+    PropertyUtils.addChildren(lst, root, "Boot Class Path", mxb.getBootClassPath(),
         "Class Path", mxb.getClassPath(), "Library Path", mxb.getLibraryPath(),
-        "Management Spec Version", mxb.getManagementSpecVersion(), "Name",
-        mxb.getName(), "Spec Name", mxb.getSpecName(), "Spec Vendor",
-        mxb.getSpecVendor(), "Spec Version", mxb.getSpecVersion(),
-        "Start Time", new Date(mxb.getStartTime()), "Uptime", mxb.getUptime(),
-        "Vm Name", mxb.getVmName(), "Vm Vendor", mxb.getVmVendor(),
-        "Vm Version", mxb.getVmVersion(), "Is Boot Class Path Supported",
-        mxb.isBootClassPathSupported());
+        "Management Spec Version", mxb.getManagementSpecVersion(), "Name", mxb.getName(),
+        "Spec Name", mxb.getSpecName(), "Spec Vendor", mxb.getSpecVendor(),
+        "Spec Version", mxb.getSpecVersion(), "Start Time", new Date(mxb.getStartTime()),
+        "Uptime", mxb.getUptime(), "Vm Name", mxb.getVmName(), "Vm Vendor", mxb.getVmVendor(),
+        "Vm Version", mxb.getVmVersion(),
+        "Is Boot Class Path Supported", mxb.isBootClassPathSupported());
 
     List<String> args = mxb.getInputArguments();
     if (!BeeUtils.isEmpty(args)) {
-      PropUtils.addSub(lst, root, "Input Arguments",
-          BeeUtils.bracket(args.size()));
+      PropertyUtils.addExtended(lst, root, "Input Arguments", BeeUtils.bracket(args.size()));
 
       for (String s : args) {
-        PropUtils.addSub(lst, root, "Input Argument", s);
+        PropertyUtils.addExtended(lst, root, "Input Argument", s);
       }
     }
 
     Map<String, String> prp = mxb.getSystemProperties();
     if (!BeeUtils.isEmpty(prp)) {
-      PropUtils.addSub(lst, root, "System Properties",
-          BeeUtils.bracket(prp.size()));
+      PropertyUtils.addExtended(lst, root, "System Properties", BeeUtils.bracket(prp.size()));
 
       for (Map.Entry<String, String> el : prp.entrySet()) {
-        PropUtils.addSub(lst, "System Property", el.getKey(), el.getValue());
+        PropertyUtils.addExtended(lst, "System Property", el.getKey(), el.getValue());
       }
     }
-
     return lst;
   }
 
-  public static List<SubProp> getThreadInfo(ThreadInfo ti, String msg) {
+  public static List<ExtendedProperty> getThreadInfo(ThreadInfo ti, String msg) {
     Assert.notNull(ti);
-    List<SubProp> lst = new ArrayList<SubProp>();
+    List<ExtendedProperty> lst = new ArrayList<ExtendedProperty>();
 
     String root = BeeUtils.concat(1, "Thread Id", ti.getThreadId(), msg);
 
-    PropUtils.addRoot(lst, root, "Blocked Count", ti.getBlockedCount(),
-        "Blocked Time", ti.getBlockedTime(), "Lock Info",
-        transformLockInfo(ti.getLockInfo()), "Lock Name", ti.getLockName(),
-        "Lock Owner Id", ti.getLockOwnerId(), "Lock Owner Name",
-        ti.getLockOwnerName(), "Thread Name", ti.getThreadName(),
-        "Thread State", ti.getThreadState(), "Waited Count",
-        ti.getWaitedCount(), "Waited Time", ti.getWaitedTime(), "Is In Native",
-        ti.isInNative(), "Is Suspended", ti.isSuspended());
+    PropertyUtils.addChildren(lst, root, "Blocked Count", ti.getBlockedCount(),
+        "Blocked Time", ti.getBlockedTime(), "Lock Info", transformLockInfo(ti.getLockInfo()),
+        "Lock Name", ti.getLockName(), "Lock Owner Id", ti.getLockOwnerId(),
+        "Lock Owner Name", ti.getLockOwnerName(), "Thread Name", ti.getThreadName(),
+        "Thread State", ti.getThreadState(), "Waited Count", ti.getWaitedCount(),
+        "Waited Time", ti.getWaitedTime(), "Is In Native", ti.isInNative(),
+        "Is Suspended", ti.isSuspended());
 
     MonitorInfo[] monitors = ti.getLockedMonitors();
     if (!BeeUtils.isEmpty(monitors)) {
       if (monitors.length > 1) {
-        PropUtils.addSub(lst, root, "Locked Monitors",
-            BeeUtils.bracket(monitors.length));
+        PropertyUtils.addExtended(lst, root, "Locked Monitors", BeeUtils.bracket(monitors.length));
       }
 
       for (MonitorInfo inf : monitors) {
-        PropUtils.addSub(lst, root, "Locked Monitor", transformMonitorInfo(inf));
+        PropertyUtils.addExtended(lst, root, "Locked Monitor", transformMonitorInfo(inf));
       }
     }
 
     LockInfo[] lckArr = ti.getLockedSynchronizers();
     if (!BeeUtils.isEmpty(lckArr)) {
       if (lckArr.length > 1) {
-        PropUtils.addSub(lst, root, "Locked Synchronizers",
+        PropertyUtils.addExtended(lst, root, "Locked Synchronizers",
             BeeUtils.bracket(lckArr.length));
       }
 
       for (LockInfo inf : lckArr) {
-        PropUtils.addSub(lst, root, "Locked Synchronizer",
-            transformLockInfo(inf));
+        PropertyUtils.addExtended(lst, root, "Locked Synchronizer", transformLockInfo(inf));
       }
     }
 
     StackTraceElement[] stack = ti.getStackTrace();
     if (!BeeUtils.isEmpty(stack)) {
       if (stack.length > 1) {
-        PropUtils.addSub(lst, root, "Stack Trace",
-            BeeUtils.bracket(stack.length));
+        PropertyUtils.addExtended(lst, root, "Stack Trace", BeeUtils.bracket(stack.length));
       }
 
       for (int i = 0; i < stack.length; i++) {
-        PropUtils.addSub(lst, root, "Stack Trace Element " + i,
+        PropertyUtils.addExtended(lst, root, "Stack Trace Element " + i,
             BeeSystem.transformStackTraceElement(stack[i]));
       }
     }
@@ -265,41 +251,37 @@ public class BeeMX {
     return lst;
   }
 
-  public static List<SubProp> getThreadsInfo() {
-    List<SubProp> lst = new ArrayList<SubProp>();
+  public static List<ExtendedProperty> getThreadsInfo() {
+    List<ExtendedProperty> lst = new ArrayList<ExtendedProperty>();
 
     ThreadMXBean mxb = ManagementFactory.getThreadMXBean();
     String root = "Threads";
 
-    PropUtils.addRoot(lst, root, "Current Thread Cpu Time",
-        mxb.getCurrentThreadCpuTime(), "Current Thread User Time",
-        mxb.getCurrentThreadUserTime(), "Daemon Thread Count",
-        mxb.getDaemonThreadCount(), "Peak Thread Count",
-        mxb.getPeakThreadCount(), "Thread Count", mxb.getThreadCount(),
+    PropertyUtils.addChildren(lst, root,
+        "Current Thread Cpu Time", mxb.getCurrentThreadCpuTime(),
+        "Current Thread User Time", mxb.getCurrentThreadUserTime(),
+        "Daemon Thread Count", mxb.getDaemonThreadCount(),
+        "Peak Thread Count", mxb.getPeakThreadCount(), "Thread Count", mxb.getThreadCount(),
         "Total Started Thread Count", mxb.getTotalStartedThreadCount(),
-        "Is Current Thread Cpu Time Supported",
-        mxb.isCurrentThreadCpuTimeSupported(),
-        "Is Object Monitor Usage Supported",
-        mxb.isObjectMonitorUsageSupported(), "Is Synchronizer Usage Supported",
-        mxb.isSynchronizerUsageSupported(),
-        "Is Thread Contention Monitoring Enabled",
-        mxb.isThreadContentionMonitoringEnabled(),
-        "Is Thread Contention Monitoring Supported",
-        mxb.isThreadContentionMonitoringSupported(),
+        "Is Current Thread Cpu Time Supported", mxb.isCurrentThreadCpuTimeSupported(),
+        "Is Object Monitor Usage Supported", mxb.isObjectMonitorUsageSupported(),
+        "Is Synchronizer Usage Supported", mxb.isSynchronizerUsageSupported(),
+        "Is Thread Contention Monitoring Enabled", mxb.isThreadContentionMonitoringEnabled(),
+        "Is Thread Contention Monitoring Supported", mxb.isThreadContentionMonitoringSupported(),
         "Is Thread Cpu Time Enabled", mxb.isThreadCpuTimeEnabled(),
         "Is Thread Cpu Time Supported", mxb.isThreadCpuTimeSupported());
 
     long[] idArr = mxb.findDeadlockedThreads();
     if (!BeeUtils.isEmpty(idArr)) {
       for (int i = 0; i < idArr.length; i++) {
-        PropUtils.addSub(lst, root, "Deadlocked Thread", idArr[i]);
+        PropertyUtils.addExtended(lst, root, "Deadlocked Thread", idArr[i]);
       }
     }
 
     idArr = mxb.findMonitorDeadlockedThreads();
     if (!BeeUtils.isEmpty(idArr)) {
       for (int i = 0; i < idArr.length; i++) {
-        PropUtils.addSub(lst, root, "Monitor Deadlocked Thread", idArr[i]);
+        PropertyUtils.addExtended(lst, root, "Monitor Deadlocked Thread", idArr[i]);
       }
     }
 
@@ -311,12 +293,10 @@ public class BeeMX {
           ti = tiArr[i];
           long id = ti.getThreadId();
 
-          PropUtils.addRoot(
-              lst,
-              BeeUtils.concat(1, "Thread Id", id,
-                  BeeUtils.progress(i + 1, tiArr.length)), "Thread Cpu Time",
-              mxb.getThreadCpuTime(id), "Thread User Time",
-              mxb.getThreadUserTime(id));
+          PropertyUtils.addChildren(lst,
+              BeeUtils.concat(1, "Thread Id", id, BeeUtils.progress(i + 1, tiArr.length)),
+              "Thread Cpu Time", mxb.getThreadCpuTime(id),
+              "Thread User Time", mxb.getThreadUserTime(id));
         }
       }
 
@@ -330,13 +310,13 @@ public class BeeMX {
     return lst;
   }
 
-  private static List<StringProp> getMemoryUsageInfo(MemoryUsage mu) {
+  private static List<Property> getMemoryUsageInfo(MemoryUsage mu) {
     if (mu == null) {
       return null;
     }
-    List<StringProp> lst = new ArrayList<StringProp>();
+    List<Property> lst = new ArrayList<Property>();
 
-    PropUtils.addString(lst, "Committed", mu.getCommitted(), "Init",
+    PropertyUtils.addProperties(lst, "Committed", mu.getCommitted(), "Init",
         mu.getInit(), "Max", mu.getMax(), "Used", mu.getUsed());
 
     return lst;

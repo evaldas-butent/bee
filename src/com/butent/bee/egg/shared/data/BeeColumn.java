@@ -6,8 +6,8 @@ import com.butent.bee.egg.shared.BeeSerializable;
 import com.butent.bee.egg.shared.Transformable;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 import com.butent.bee.egg.shared.utils.Codec;
-import com.butent.bee.egg.shared.utils.PropUtils;
-import com.butent.bee.egg.shared.utils.StringProp;
+import com.butent.bee.egg.shared.utils.PropertyUtils;
+import com.butent.bee.egg.shared.utils.Property;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -124,10 +124,10 @@ public class BeeColumn implements Transformable, BeeSerializable {
     return clazz;
   }
 
-  public List<StringProp> getColumnInfo() {
-    List<StringProp> lst = new ArrayList<StringProp>();
+  public List<Property> getColumnInfo() {
+    List<Property> lst = new ArrayList<Property>();
 
-    PropUtils.addString(lst, "index", valueAsString(getIdx()), "name",
+    PropertyUtils.addProperties(lst, "index", valueAsString(getIdx()), "name",
         getName(), "schema", getSchema(), "catalog", getCatalog(), "table",
         getTable(), "class", getClazz(), "type", getType(), "type name",
         getTypeName(), "label", getLabel(), "display size",

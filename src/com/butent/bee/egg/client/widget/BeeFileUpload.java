@@ -3,7 +3,7 @@ package com.butent.bee.egg.client.widget;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.FileUpload;
 
-import com.butent.bee.egg.client.BeeGlobal;
+import com.butent.bee.egg.client.Global;
 import com.butent.bee.egg.client.BeeKeeper;
 import com.butent.bee.egg.client.dom.DomUtils;
 import com.butent.bee.egg.client.event.HasBeeChangeHandler;
@@ -45,7 +45,7 @@ public class BeeFileUpload extends FileUpload implements HasId,
 
   public boolean onChange() {
     if (!BeeUtils.isEmpty(getFieldName())) {
-      BeeGlobal.setFieldValue(getFieldName(), getFilename());
+      Global.setFieldValue(getFieldName(), getFilename());
     }
     return true;
   }

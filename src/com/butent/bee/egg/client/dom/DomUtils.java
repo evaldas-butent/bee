@@ -32,9 +32,9 @@ import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.Transformable;
 import com.butent.bee.egg.shared.utils.BeeUtils;
-import com.butent.bee.egg.shared.utils.PropUtils;
-import com.butent.bee.egg.shared.utils.StringProp;
-import com.butent.bee.egg.shared.utils.SubProp;
+import com.butent.bee.egg.shared.utils.PropertyUtils;
+import com.butent.bee.egg.shared.utils.Property;
+import com.butent.bee.egg.shared.utils.ExtendedProperty;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -461,7 +461,7 @@ public class DomUtils {
     return w.getElement().getAttribute(name);
   }
 
-  public static List<StringProp> getAttributes(Element el) {
+  public static List<Property> getAttributes(Element el) {
     Assert.notNull(el);
 
     JsArray<ElementAttribute> arr = getNativeAttributes(el);
@@ -469,12 +469,12 @@ public class DomUtils {
       return null;
     }
 
-    List<StringProp> lst = new ArrayList<StringProp>();
+    List<Property> lst = new ArrayList<Property>();
     ElementAttribute attr;
 
     for (int i = 0; i < arr.length(); i++) {
       attr = arr.get(i);
-      lst.add(new StringProp(attr.getName(), attr.getValue()));
+      lst.add(new Property(attr.getName(), attr.getValue()));
     }
 
     return lst;
@@ -496,15 +496,14 @@ public class DomUtils {
     }
   }
 
-  public static List<StringProp> getChildrenInfo(Widget w) {
+  public static List<Property> getChildrenInfo(Widget w) {
     Assert.notNull(w);
-    List<StringProp> lst = new ArrayList<StringProp>();
+    List<Property> lst = new ArrayList<Property>();
 
     if (w instanceof HasWidgets) {
       for (Iterator<Widget> it = ((HasWidgets) w).iterator(); it.hasNext();) {
         Widget child = it.next();
-        PropUtils.addString(lst, JreEmulation.getSimpleName(child),
-            getId(child));
+        PropertyUtils.addProperty(lst, JreEmulation.getSimpleName(child), getId(child));
       }
     }
 
@@ -544,11 +543,11 @@ public class DomUtils {
     return dir;
   }
 
-  public static List<StringProp> getElementInfo(Element el) {
+  public static List<Property> getElementInfo(Element el) {
     Assert.notNull(el);
-    List<StringProp> lst = new ArrayList<StringProp>();
+    List<Property> lst = new ArrayList<Property>();
 
-    PropUtils.addString(lst, "Absolute Bottom", el.getAbsoluteBottom(),
+    PropertyUtils.addProperties(lst, "Absolute Bottom", el.getAbsoluteBottom(),
         "Absolute Left", el.getAbsoluteLeft(), "Absolute Right",
         el.getAbsoluteRight(), "Absolute Top", el.getAbsoluteTop(),
         "Class Name", el.getClassName(), "Client Height", el.getClientHeight(),
@@ -578,25 +577,25 @@ public class DomUtils {
     return obj.getElement().getId();
   }
 
-  public static List<SubProp> getInfo(Object obj, String prefix, int depth) {
+  public static List<ExtendedProperty> getInfo(Object obj, String prefix, int depth) {
     Assert.notNull(obj);
-    List<SubProp> lst = new ArrayList<SubProp>();
+    List<ExtendedProperty> lst = new ArrayList<ExtendedProperty>();
 
     if (obj instanceof Element) {
-      PropUtils.appendString(lst, BeeUtils.concat(1, prefix, "Element"),
+      PropertyUtils.appendChildrenToExtended(lst, BeeUtils.concat(1, prefix, "Element"),
           getElementInfo((Element) obj));
     }
     if (obj instanceof Node) {
-      PropUtils.appendString(lst, BeeUtils.concat(1, prefix, "Node"),
+      PropertyUtils.appendChildrenToExtended(lst, BeeUtils.concat(1, prefix, "Node"),
           getNodeInfo((Node) obj));
     }
 
     if (obj instanceof Widget) {
-      PropUtils.appendString(lst, BeeUtils.concat(1, prefix, "Widget"),
+      PropertyUtils.appendChildrenToExtended(lst, BeeUtils.concat(1, prefix, "Widget"),
           getWidgetInfo((Widget) obj));
     }
     if (obj instanceof UIObject) {
-      PropUtils.appendSub(lst, getUIObjectExtendedInfo((UIObject) obj, prefix));
+      PropertyUtils.appendExtended(lst, getUIObjectExtendedInfo((UIObject) obj, prefix));
     }
 
     if (obj instanceof HasWidgets && depth > 0) {
@@ -609,7 +608,7 @@ public class DomUtils {
         p = BeeUtils.concat(BeeConst.DEFAULT_PROPERTY_SEPARATOR, prefix, i++);
 
         if (depth == 1) {
-          PropUtils.appendSub(lst, getWidgetExtendedInfo(w, p));
+          PropertyUtils.appendExtended(lst, getWidgetExtendedInfo(w, p));
         } else {
           getInfo(w, p, depth--);
         }
@@ -645,11 +644,11 @@ public class DomUtils {
     return el.attributes;
   }-*/;
   
-  public static List<StringProp> getNodeInfo(Node nd) {
+  public static List<Property> getNodeInfo(Node nd) {
     Assert.notNull(nd);
-    List<StringProp> lst = new ArrayList<StringProp>();
+    List<Property> lst = new ArrayList<Property>();
 
-    PropUtils.addString(lst, "Child Count", nd.getChildCount(), "First Child",
+    PropertyUtils.addProperties(lst, "Child Count", nd.getChildCount(), "First Child",
         transformNode(nd.getFirstChild()), "Last Child",
         transformNode(nd.getLastChild()), "Next Sibling",
         transformNode(nd.getNextSibling()), "Node Name", nd.getNodeName(),
@@ -678,14 +677,13 @@ public class DomUtils {
     return getParentId(parent, find);
   }
 
-  public static List<StringProp> getPathInfo(Widget w) {
+  public static List<Property> getPathInfo(Widget w) {
     Assert.notNull(w);
-    List<StringProp> lst = new ArrayList<StringProp>();
+    List<Property> lst = new ArrayList<Property>();
 
     for (Widget p = w; p != null; p = p.getParent()) {
-      PropUtils.addString(lst, JreEmulation.getSimpleName(p), getId(p));
+      PropertyUtils.addProperty(lst, JreEmulation.getSimpleName(p), getId(p));
     }
-
     return lst;
   }
   
@@ -736,11 +734,11 @@ public class DomUtils {
     return getAttribute(w, ATTRIBUTE_STAGE);
   }
 
-  public static List<StringProp> getStyleInfo(Style st) {
+  public static List<Property> getStyleInfo(Style st) {
     Assert.notNull(st);
-    List<StringProp> lst = new ArrayList<StringProp>();
+    List<Property> lst = new ArrayList<Property>();
 
-    PropUtils.addString(lst, "Background Color", st.getBackgroundColor(),
+    PropertyUtils.addProperties(lst, "Background Color", st.getBackgroundColor(),
         "Background Image", st.getBackgroundImage(), "Border Color",
         st.getBorderColor(), "Border Style", st.getBorderStyle(),
         "Border Width", st.getBorderWidth(), "Bottom", st.getBottom(), "Color",
@@ -811,34 +809,34 @@ public class DomUtils {
     return textBoxOffsetWidth;
   }
   
-  public static List<SubProp> getUIObjectExtendedInfo(UIObject obj,
+  public static List<ExtendedProperty> getUIObjectExtendedInfo(UIObject obj,
       String prefix) {
     Assert.notNull(obj);
-    List<SubProp> lst = new ArrayList<SubProp>();
+    List<ExtendedProperty> lst = new ArrayList<ExtendedProperty>();
 
-    PropUtils.appendString(lst, BeeUtils.concat(1, prefix, "UI Object"),
+    PropertyUtils.appendChildrenToExtended(lst, BeeUtils.concat(1, prefix, "UI Object"),
         getUIObjectInfo(obj));
 
     Element el = obj.getElement();
-    PropUtils.appendString(lst, BeeUtils.concat(1, prefix, "Element"),
+    PropertyUtils.appendChildrenToExtended(lst, BeeUtils.concat(1, prefix, "Element"),
         getElementInfo(el));
 
     Style st = el.getStyle();
     if (st != null) {
-      PropUtils.appendString(lst, BeeUtils.concat(1, prefix, "Style"),
+      PropertyUtils.appendChildrenToExtended(lst, BeeUtils.concat(1, prefix, "Style"),
           getStyleInfo(st));
     }
-    PropUtils.appendString(lst, BeeUtils.concat(1, prefix, "Node"),
+    PropertyUtils.appendChildrenToExtended(lst, BeeUtils.concat(1, prefix, "Node"),
         getNodeInfo(el));
 
     return lst;
   }
 
-  public static List<StringProp> getUIObjectInfo(UIObject obj) {
+  public static List<Property> getUIObjectInfo(UIObject obj) {
     Assert.notNull(obj);
-    List<StringProp> lst = new ArrayList<StringProp>();
+    List<Property> lst = new ArrayList<Property>();
 
-    PropUtils.addString(lst, "Absolute Left", obj.getAbsoluteLeft(),
+    PropertyUtils.addProperties(lst, "Absolute Left", obj.getAbsoluteLeft(),
         "Absolute Top", obj.getAbsoluteTop(), "Class", transformClass(obj),
         "Offset Height", obj.getOffsetHeight(), "Offset Width",
         obj.getOffsetWidth(), "Style Name", obj.getStyleName(),
@@ -931,22 +929,22 @@ public class DomUtils {
     return c;
   }
 
-  public static List<SubProp> getWidgetExtendedInfo(Widget w, String prefix) {
+  public static List<ExtendedProperty> getWidgetExtendedInfo(Widget w, String prefix) {
     Assert.notNull(w);
-    List<SubProp> lst = new ArrayList<SubProp>();
+    List<ExtendedProperty> lst = new ArrayList<ExtendedProperty>();
 
-    PropUtils.appendString(lst, BeeUtils.concat(1, prefix, "Widget"),
+    PropertyUtils.appendChildrenToExtended(lst, BeeUtils.concat(1, prefix, "Widget"),
         getWidgetInfo(w));
-    PropUtils.appendSub(lst, getUIObjectExtendedInfo(w, prefix));
+    PropertyUtils.appendExtended(lst, getUIObjectExtendedInfo(w, prefix));
 
     return lst;
   }
 
-  public static List<StringProp> getWidgetInfo(Widget w) {
+  public static List<Property> getWidgetInfo(Widget w) {
     Assert.notNull(w);
-    List<StringProp> lst = new ArrayList<StringProp>();
+    List<Property> lst = new ArrayList<Property>();
 
-    PropUtils.addString(lst, "Class", transformClass(w), "Layout Data",
+    PropertyUtils.addProperties(lst, "Class", transformClass(w), "Layout Data",
         w.getLayoutData(), "Parent", transformClass(w.getParent()),
         "Attached", w.isAttached());
 
@@ -1022,7 +1020,7 @@ public class DomUtils {
   
   public static void logChildren(Widget w) {
     Assert.notNull(w);
-    List<StringProp> lst = getChildrenInfo(w);
+    List<Property> lst = getChildrenInfo(w);
 
     for (int i = 0; i < lst.size(); i++) {
       BeeKeeper.getLog().info(BeeUtils.progress(i + 1, lst.size()),
@@ -1034,7 +1032,7 @@ public class DomUtils {
 
   public static void logPath(Widget w) {
     Assert.notNull(w);
-    List<StringProp> lst = getPathInfo(w);
+    List<Property> lst = getPathInfo(w);
 
     for (int i = 0; i < lst.size(); i++) {
       BeeKeeper.getLog().info(BeeUtils.progress(i + 1, lst.size()),

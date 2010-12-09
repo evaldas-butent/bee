@@ -15,7 +15,7 @@ import com.butent.bee.egg.shared.utils.LogUtils;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class BeeLog implements BeeModule {
+public class BeeLog implements Module {
   private Logger logger = null;
   private LogArea area = null;
   private int hiddenSize = BeeConst.SIZE_UNKNOWN;

@@ -21,7 +21,7 @@ import com.butent.bee.egg.shared.BeeService;
 import com.butent.bee.egg.shared.BeeStage;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
-public class BeeBus implements BeeModule {
+public class EventManager implements Module {
   private BeeClickHandler clickHandler = null;
   private BeeKeyPressHandler keyHandler = null;
 
@@ -35,7 +35,7 @@ public class BeeBus implements BeeModule {
 
   private SimpleEventBus eventBus;
 
-  public BeeBus() {
+  public EventManager() {
     this.eventBus = new SimpleEventBus();
   }
 
@@ -89,7 +89,7 @@ public class BeeBus implements BeeModule {
     } else if (BeeService.isCompositeService(svc)) {
       return dispatchCompositeService(svc, stg, event);
     } else {
-      BeeGlobal.showError("Unknown service type", svc);
+      Global.showError("Unknown service type", svc);
       return false;
     }
   }
@@ -137,20 +137,20 @@ public class BeeBus implements BeeModule {
 
     if (svc.equals(BeeService.SERVICE_GET_CLASS)) {
       if (stg.equals(BeeStage.STAGE_GET_PARAMETERS)) {
-        BeeGlobal.inputFields(new BeeStage(BeeService.SERVICE_GET_CLASS,
+        Global.inputFields(new BeeStage(BeeService.SERVICE_GET_CLASS,
             BeeStage.STAGE_CONFIRM), "Class Info", BeeService.FIELD_CLASS_NAME,
             BeeService.FIELD_PACKAGE_LIST);
         ok = true;
       } else if (stg.equals(BeeStage.STAGE_CONFIRM)) {
-        String cls = BeeGlobal.getFieldValue(BeeService.FIELD_CLASS_NAME);
-        String pck = BeeGlobal.getFieldValue(BeeService.FIELD_PACKAGE_LIST);
+        String cls = Global.getFieldValue(BeeService.FIELD_CLASS_NAME);
+        String pck = Global.getFieldValue(BeeService.FIELD_PACKAGE_LIST);
 
         if (BeeUtils.isEmpty(cls)) {
-          BeeGlobal.showError("Class name not specified");
+          Global.showError("Class name not specified");
         } else if (cls.trim().length() < 2) {
-          BeeGlobal.showError("Class name", cls, "too short");
+          Global.showError("Class name", cls, "too short");
         } else {
-          BeeGlobal.closeDialog(event);
+          Global.closeDialog(event);
           BeeKeeper.getRpc().makePostRequest(
               BeeService.SERVICE_CLASS_INFO,
               BeeXml.createString(BeeService.XML_TAG_DATA,
@@ -159,22 +159,22 @@ public class BeeBus implements BeeModule {
           ok = true;
         }
       } else {
-        BeeGlobal.showError("Unknown composite service stage", svc, stg);
+        Global.showError("Unknown composite service stage", svc, stg);
       }
 
     } else if (svc.equals(BeeService.SERVICE_GET_XML)) {
       if (stg.equals(BeeStage.STAGE_GET_PARAMETERS)) {
-        BeeGlobal.inputFields(new BeeStage(BeeService.SERVICE_GET_XML,
+        Global.inputFields(new BeeStage(BeeService.SERVICE_GET_XML,
             BeeStage.STAGE_CONFIRM), "Xml Info", BeeService.FIELD_XML_SOURCE,
             BeeService.FIELD_XML_TRANSFORM, BeeService.FIELD_XML_TARGET,
             BeeService.FIELD_XML_RETURN);
         ok = true;
       } else if (stg.equals(BeeStage.STAGE_CONFIRM)) {
-        String src = BeeGlobal.getFieldValue(BeeService.FIELD_XML_SOURCE);
+        String src = Global.getFieldValue(BeeService.FIELD_XML_SOURCE);
         if (BeeUtils.isEmpty(src)) {
-          BeeGlobal.showError("Source not specified");
+          Global.showError("Source not specified");
         } else {
-          BeeGlobal.closeDialog(event);
+          Global.closeDialog(event);
           BeeKeeper.getRpc().makePostRequest(
               BeeService.SERVICE_XML_INFO,
               BeeXml.fromFields(BeeService.XML_TAG_DATA,
@@ -183,12 +183,12 @@ public class BeeBus implements BeeModule {
           ok = true;
         }
       } else {
-        BeeGlobal.showError("Unknown composite service stage", svc, stg);
+        Global.showError("Unknown composite service stage", svc, stg);
       }
 
     } else if (svc.equals(BeeService.SERVICE_GET_DATA)) {
       if (stg.equals(BeeStage.STAGE_GET_PARAMETERS)) {
-        BeeGlobal.inputFields(new BeeStage(BeeService.SERVICE_GET_DATA,
+        Global.inputFields(new BeeStage(BeeService.SERVICE_GET_DATA,
             BeeStage.STAGE_CONFIRM), "Jdbc Test", BeeService.FIELD_JDBC_QUERY,
             BeeService.FIELD_CONNECTION_AUTO_COMMIT,
             BeeService.FIELD_CONNECTION_HOLDABILITY,
@@ -210,11 +210,11 @@ public class BeeBus implements BeeModule {
             BeeService.FIELD_JDBC_RETURN);
         ok = true;
       } else if (stg.equals(BeeStage.STAGE_CONFIRM)) {
-        String sql = BeeGlobal.getFieldValue(BeeService.FIELD_JDBC_QUERY);
+        String sql = Global.getFieldValue(BeeService.FIELD_JDBC_QUERY);
         if (BeeUtils.isEmpty(sql)) {
-          BeeGlobal.showError("Query not specified");
+          Global.showError("Query not specified");
         } else {
-          BeeGlobal.closeDialog(event);
+          Global.closeDialog(event);
           BeeKeeper.getRpc().makePostRequest(
               BeeService.SERVICE_DB_JDBC,
               BeeXml.fromFields(BeeService.XML_TAG_DATA,
@@ -240,12 +240,12 @@ public class BeeBus implements BeeModule {
           ok = true;
         }
       } else {
-        BeeGlobal.showError("Unknown composite service stage", svc, stg);
+        Global.showError("Unknown composite service stage", svc, stg);
       }
     } else if (CompositeService.isRegistered(svc)) {
       CompositeService.doService(svc, event, stg);
     } else {
-      BeeGlobal.showError("Unknown composite service", svc, stg);
+      Global.showError("Unknown composite service", svc, stg);
     }
 
     return ok;
@@ -253,15 +253,15 @@ public class BeeBus implements BeeModule {
 
   private boolean dispatchUiService(String svc, GwtEvent<?> event) {
     if (svc.equals(BeeService.SERVICE_CLOSE_DIALOG)) {
-      return BeeGlobal.closeDialog(event);
+      return Global.closeDialog(event);
     } else if (svc.equals(BeeService.SERVICE_CONFIRM_DIALOG)) {
-      return BeeGlobal.closeDialog(event);
+      return Global.closeDialog(event);
     } else if (svc.equals(BeeService.SERVICE_CANCEL_DIALOG)) {
-      return BeeGlobal.closeDialog(event);
+      return Global.closeDialog(event);
     } else if (svc.equals(BeeService.SERVICE_REFRESH_MENU)) {
       return BeeKeeper.getMenu().drawMenu();
     } else {
-      BeeGlobal.showError("Unknown UI service", svc);
+      Global.showError("Unknown UI service", svc);
       return false;
     }
   }
@@ -314,5 +314,4 @@ public class BeeBus implements BeeModule {
     }
     return vch;
   }
-
 }

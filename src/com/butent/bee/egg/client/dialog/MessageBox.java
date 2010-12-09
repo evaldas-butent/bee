@@ -5,7 +5,7 @@ import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.egg.client.BeeGlobal;
+import com.butent.bee.egg.client.Global;
 import com.butent.bee.egg.client.dom.DomUtils;
 import com.butent.bee.egg.client.grid.BeeCellTable;
 import com.butent.bee.egg.client.layout.Vertical;
@@ -18,7 +18,7 @@ import com.butent.bee.egg.shared.utils.BeeUtils;
 import java.util.Collection;
 import java.util.Iterator;
 
-public class BeeMessageBox {
+public class MessageBox {
 
   public void alert(Object... obj) {
     Assert.parameterCount(obj.length, 1);
@@ -51,7 +51,7 @@ public class BeeMessageBox {
   
   public void showGrid(String cap, Object data, String... cols) {
     Assert.notNull(data);
-    showInfo(cap, BeeGlobal.simpleGrid(data, cols));
+    showInfo(cap, Global.simpleGrid(data, cols));
   }
 
   public void showInfo(Object... x) {
@@ -87,7 +87,7 @@ public class BeeMessageBox {
       }
     }
 
-    BeeCloseButton b = new BeeCloseButton("ok");
+    CloseButton b = new CloseButton("ok");
 
     vp.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
     vp.add(b);

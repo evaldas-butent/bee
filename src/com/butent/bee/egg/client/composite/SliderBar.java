@@ -13,7 +13,7 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.RequiresResize;
 
-import com.butent.bee.egg.client.BeeGlobal;
+import com.butent.bee.egg.client.Global;
 import com.butent.bee.egg.client.BeeKeeper;
 import com.butent.bee.egg.client.BeeStyle;
 import com.butent.bee.egg.client.dom.DomUtils;
@@ -174,15 +174,15 @@ public class SliderBar extends Focus implements RequiresResize {
   }
 
   public ImageResource knobDefault() {
-    return BeeGlobal.getImages().slider();
+    return Global.getImages().slider();
   }
 
   public ImageResource knobDisabled() {
-    return BeeGlobal.getImages().sliderDisabled();
+    return Global.getImages().sliderDisabled();
   }
   
   public ImageResource knobSliding() {
-    return BeeGlobal.getImages().sliderSliding();
+    return Global.getImages().sliderSliding();
   }
   
   @Override

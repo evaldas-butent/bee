@@ -4,7 +4,7 @@ import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.exceptions.BeeException;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 import com.butent.bee.egg.shared.utils.LogUtils;
-import com.butent.bee.egg.shared.utils.StringProp;
+import com.butent.bee.egg.shared.utils.Property;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -146,8 +146,8 @@ public class BeeJvm {
     return findClass(name, FIND_CLASS_DEFAULT_PACKAGES);
   }
 
-  public static List<StringProp> getLoadedClasses() {
-    List<StringProp> lst = new ArrayList<StringProp>();
+  public static List<Property> getLoadedClasses() {
+    List<Property> lst = new ArrayList<Property>();
 
     Set<ClassLoader> loaders = getClassLoaders();
     if (BeeUtils.isEmpty(loaders)) {
@@ -174,7 +174,7 @@ public class BeeJvm {
         cc = classes.length;
       }
 
-      lst.add(new StringProp(loader.toString(), BeeUtils.concat(1,
+      lst.add(new Property(loader.toString(), BeeUtils.concat(1,
           BeeUtils.progress(li, lc), BeeUtils.bracket(cc))));
 
       if (cc <= 0) {
@@ -189,7 +189,7 @@ public class BeeJvm {
       Arrays.sort(names);
 
       for (int i = 0; i < cc; i++) {
-        lst.add(new StringProp(BeeUtils.progress(i + 1, cc), names[i]));
+        lst.add(new Property(BeeUtils.progress(i + 1, cc), names[i]));
       }
     }
 
