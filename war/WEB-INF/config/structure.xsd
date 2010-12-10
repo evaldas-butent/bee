@@ -12,8 +12,10 @@
 
   <xs:complexType name="table">
     <xs:sequence>
-      <xs:element name="BeeFields" type="bee:fields" minOccurs="1" maxOccurs="1" />
-      <xs:element name="BeeKeys" type="bee:keys" minOccurs="0" maxOccurs="1" />
+      <xs:choice>
+        <xs:element name="BeeFields" type="bee:fields" minOccurs="0" maxOccurs="1" />
+        <xs:element name="BeeExtended" type="bee:fields" minOccurs="0" maxOccurs="1" />
+      </xs:choice>
       <xs:element name="BeeStates" type="bee:states" minOccurs="0" maxOccurs="1" />
     </xs:sequence>
     <xs:attribute name="name" type="xs:string" use="required" />
@@ -23,13 +25,8 @@
 
   <xs:complexType name="fields">
     <xs:sequence>
-      <xs:element name="BeeField" type="bee:fieldType" maxOccurs="unbounded" />
-    </xs:sequence>
-  </xs:complexType>
-
-  <xs:complexType name="keys">
-    <xs:sequence>
-      <xs:element name="BeeKey" type="bee:keyType" maxOccurs="unbounded" />
+      <xs:element name="BeeField" type="bee:fieldType" minOccurs="0" maxOccurs="unbounded" />
+      <xs:element name="BeeKey" type="bee:keyType" minOccurs="0" maxOccurs="unbounded" />
     </xs:sequence>
   </xs:complexType>
 
@@ -51,13 +48,25 @@
   </xs:complexType>
 
   <xs:complexType name="keyType">
+    <xs:sequence>
+      <xs:element name="BeeKeyField" minOccurs="0" maxOccurs="unbounded">
+        <xs:complexType>
+          <xs:attribute name="name" type="xs:string" use="required" />
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
     <xs:attribute name="name" type="xs:string" use="required" />
-    <xs:attribute name="fields" type="xs:string" />
     <xs:attribute name="unique" type="xs:boolean" />
   </xs:complexType>
 
   <xs:complexType name="stateType">
-    <xs:attribute name="name" type="xs:string" use="required" />
+    <xs:attribute name="name" use="required">
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:maxLength value="10" />
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
     <xs:attribute name="roleMode" type="xs:boolean" />
     <xs:attribute name="userMode" type="xs:boolean" />
     <xs:attribute name="forced" type="xs:boolean" />

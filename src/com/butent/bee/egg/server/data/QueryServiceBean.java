@@ -1,7 +1,7 @@
 package com.butent.bee.egg.server.data;
 
 import com.butent.bee.egg.server.DataSourceBean;
-import com.butent.bee.egg.server.data.BeeTable.BeeStructure;
+import com.butent.bee.egg.server.data.BeeTable.BeeField;
 import com.butent.bee.egg.server.jdbc.JdbcUtils;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.data.BeeColumn;
@@ -21,6 +21,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -46,7 +47,7 @@ public class QueryServiceBean {
   @EJB
   SystemBean sys;
 
-  public Set<String> dbFields(String table) {
+  public Collection<String> dbFields(String table) {
     Set<String> dbFields = new HashSet<String>();
     BeeRowSet res = getData(new SqlSelect()
       .addAllFields(table).addFrom(table).setWhere(SqlUtils.sqlFalse()));
@@ -57,7 +58,7 @@ public class QueryServiceBean {
     return dbFields;
   }
 
-  public Set<String> dbForeignKeys(String table) {
+  public Collection<String> dbForeignKeys(String table) {
     Set<String> dbforeignKeys = new HashSet<String>();
     BeeRowSet res = (BeeRowSet) processSql(SqlUtils.dbForeignKeys(table).getQuery());
 
@@ -69,7 +70,7 @@ public class QueryServiceBean {
     return dbforeignKeys;
   }
 
-  public Set<String> dbTables(String table) {
+  public Collection<String> dbTables(String table) {
     Set<String> dbTables = new HashSet<String>();
     BeeRowSet res = (BeeRowSet) processSql(SqlUtils.dbTables(table).getQuery());
 
@@ -88,6 +89,7 @@ public class QueryServiceBean {
     BeeRowSet res = (BeeRowSet) processSql(ss.getQuery());
 
     if (BeeUtils.isEmpty(ss.getUnion())) {
+      // TODO: Iðkelti kitur
       String mainSource = null;
       BeeTable table = null;
 
@@ -106,7 +108,7 @@ public class QueryServiceBean {
           continue;
         }
         Set<String> fieldList = new HashSet<String>();
-        for (BeeStructure fld : table.getFields()) {
+        for (BeeField fld : table.getFields()) {
           fieldList.add(fld.getName());
         }
         fieldList.add(table.getIdName());

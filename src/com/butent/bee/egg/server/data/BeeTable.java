@@ -15,135 +15,7 @@ import java.util.Map;
 @SuppressWarnings("hiding")
 public class BeeTable {
 
-  public class BeeForeignKey {
-    private final String name;
-    private final String keyField;
-    private final String refTable;
-    private final String refField;
-    private final Keywords action;
-
-    private BeeForeignKey(String keyField, String refTable, String refField, Keywords action) {
-      Assert.notEmpty(keyField);
-      Assert.notEmpty(refTable);
-      Assert.notEmpty(refField);
-
-      this.name = FOREIGN_KEY_PREFIX + BeeUtils.concat("_", getTable(), foreignKeyCounter++);
-      this.keyField = keyField;
-      this.refTable = refTable;
-      this.refField = refField;
-      this.action = action;
-    }
-
-    public Keywords getAction() {
-      return action;
-    }
-
-    public String getKeyField() {
-      return keyField;
-    }
-
-    public String getName() {
-      return name;
-    }
-
-    public String getRefField() {
-      return refField;
-    }
-
-    public String getRefTable() {
-      return refTable;
-    }
-
-    public String getTable() {
-      return BeeTable.this.getName();
-    }
-  }
-
-  public class BeeKey {
-    private final String name;
-    private final String[] keyFields;
-    private final boolean primary;
-    private final boolean unique;
-
-    private BeeKey(String name, boolean primary, boolean unique, String... keyFields) {
-      Assert.notEmpty(name);
-
-      this.name = name;
-      this.primary = primary;
-      this.unique = primary || unique;
-
-      List<String> flds = new ArrayList<String>();
-
-      for (String fld : keyFields) {
-        if (!BeeUtils.isEmpty(fld)) {
-          flds.add(fld);
-        }
-      }
-      if (BeeUtils.isEmpty(flds)) {
-        this.keyFields = new String[]{name};
-      } else {
-        this.keyFields = flds.toArray(new String[0]);
-      }
-    }
-
-    public String[] getKeyFields() {
-      return keyFields;
-    }
-
-    public String getName() {
-      return name;
-    }
-
-    public String getTable() {
-      return BeeTable.this.getName();
-    }
-
-    public boolean isPrimary() {
-      return primary;
-    }
-
-    public boolean isUnique() {
-      return unique;
-    }
-  }
-
-  public class BeeState {
-    private final String name;
-    private final boolean userMode;
-    private final boolean roleMode;
-    private final boolean forced;
-
-    private BeeState(String name, boolean userMode, boolean roleMode, boolean forced) {
-      Assert.notEmpty(name);
-
-      this.name = name;
-      this.userMode = userMode;
-      this.roleMode = roleMode;
-      this.forced = forced;
-    }
-
-    public String getName() {
-      return name;
-    }
-
-    public String getTable() {
-      return BeeTable.this.getName();
-    }
-
-    public boolean isForced() {
-      return forced;
-    }
-
-    public boolean isRoleMode() {
-      return roleMode;
-    }
-
-    public boolean isUserMode() {
-      return userMode;
-    }
-  }
-
-  public class BeeStructure {
+  public class BeeField {
     private final String name;
     private final DataTypes type;
     private final int precision;
@@ -153,7 +25,7 @@ public class BeeTable {
     private final String relation;
     private final boolean cascade;
 
-    private BeeStructure(String name, DataTypes type, int precision, int scale,
+    private BeeField(String name, DataTypes type, int precision, int scale,
         boolean notNull, boolean unique, String relation, boolean cascade) {
       Assert.notEmpty(name);
       Assert.notEmpty(type);
@@ -205,6 +77,140 @@ public class BeeTable {
     }
   }
 
+  public class BeeForeignKey {
+    private final String name;
+    private final String keyField;
+    private final String refTable;
+    private final String refField;
+    private final Keywords action;
+
+    private BeeForeignKey(String keyField, String refTable, String refField, Keywords action) {
+      Assert.notEmpty(keyField);
+      Assert.notEmpty(refTable);
+      Assert.notEmpty(refField);
+
+      this.name = FOREIGN_KEY_PREFIX + BeeUtils.concat("_", getTable(), foreignKeyCounter++);
+      this.keyField = keyField;
+      this.refTable = refTable;
+      this.refField = refField;
+      this.action = action;
+    }
+
+    public Keywords getAction() {
+      return action;
+    }
+
+    public String getKeyField() {
+      return keyField;
+    }
+
+    public String getName() {
+      return name;
+    }
+
+    public String getRefField() {
+      return refField;
+    }
+
+    public String getRefTable() {
+      return refTable;
+    }
+
+    public String getTable() {
+      return BeeTable.this.getName();
+    }
+  }
+
+  public class BeeKey {
+    private final String name;
+    private final String[] keyFields;
+    private final boolean unique;
+    private final boolean primary;
+
+    private BeeKey(String name, boolean unique, String... keyFields) {
+      Assert.notEmpty(name);
+
+      this.name = name;
+      this.primary = BeeUtils.same(name, primaryKeyName());
+      this.unique = primary || unique;
+
+      List<String> flds = new ArrayList<String>();
+
+      for (String fld : keyFields) {
+        if (!BeeUtils.isEmpty(fld)) {
+          flds.add(fld);
+        }
+      }
+      if (BeeUtils.isEmpty(flds)) {
+        this.keyFields = new String[]{name};
+      } else {
+        this.keyFields = flds.toArray(new String[0]);
+      }
+    }
+
+    public String[] getKeyFields() {
+      return keyFields;
+    }
+
+    public String getName() {
+      return name;
+    }
+
+    public String getTable() {
+      return BeeTable.this.getName();
+    }
+
+    public boolean isPrimary() {
+      return primary;
+    }
+
+    public boolean isUnique() {
+      return unique;
+    }
+  }
+
+  public class BeeState {
+    private final int id;
+    private final String name;
+    private final boolean userMode;
+    private final boolean roleMode;
+    private final boolean forced;
+
+    private BeeState(String name, boolean userMode, boolean roleMode, boolean forced) {
+      Assert.notEmpty(name);
+
+      this.id = stateCounter++;
+      this.name = name;
+      this.userMode = userMode;
+      this.roleMode = roleMode;
+      this.forced = forced;
+    }
+
+    public int getId() {
+      return id;
+    }
+
+    public String getName() {
+      return name;
+    }
+
+    public String getTable() {
+      return BeeTable.this.getName();
+    }
+
+    public boolean hasRoleMode() {
+      return roleMode;
+    }
+
+    public boolean hasUserMode() {
+      return userMode;
+    }
+
+    public boolean isForced() {
+      return forced;
+    }
+  }
+
   private static final String DEFAULT_ID_FIELD = "ID";
   private static final String DEFAULT_LOCK_FIELD = "Version";
 
@@ -218,15 +224,15 @@ public class BeeTable {
   private String idName;
   private String lockName;
   private int foreignKeyCounter = 0;
+  private int stateCounter = 0;
 
-  private Map<String, BeeStructure> fields = new LinkedHashMap<String, BeeStructure>();
+  private Map<String, BeeField> fields = new LinkedHashMap<String, BeeField>();
   private List<BeeKey> keys = new ArrayList<BeeKey>();
   private List<BeeForeignKey> foreignKeys = new ArrayList<BeeForeignKey>();
-  private List<BeeState> states = new ArrayList<BeeState>();
+  private Map<String, BeeState> states = new LinkedHashMap<String, BeeState>();
   private boolean custom = false;
   private BeeTable extTable;
   private BeeTable stateTable;
-  private BeeTable owner;
 
   BeeTable(String name, String idName, String lockName) {
     Assert.notEmpty(name);
@@ -236,20 +242,32 @@ public class BeeTable {
     this.lockName = BeeUtils.ifString(lockName, DEFAULT_LOCK_FIELD);
   }
 
-  public BeeTable getExtTable() {
-    return extTable;
+  public Collection<BeeField> getAllFields() {
+    List<BeeField> flds = new ArrayList<BeeTable.BeeField>();
+    flds.addAll(getFields());
+    flds.addAll(getExtFields());
+    return flds;
   }
 
-  public BeeStructure getField(String field) {
+  public BeeField getField(String field) {
     return fields.get(field);
   }
 
-  public Collection<BeeStructure> getFields() {
+  public Collection<BeeField> getFields() {
     return Collections.unmodifiableCollection(fields.values());
   }
 
   public Collection<BeeForeignKey> getForeignKeys() {
-    return Collections.unmodifiableCollection(foreignKeys);
+    List<BeeForeignKey> fKeys = new ArrayList<BeeForeignKey>();
+    fKeys.addAll(foreignKeys);
+
+    if (hasExtFields()) {
+      fKeys.addAll(getExtTable().getForeignKeys());
+    }
+    if (hasStates()) {
+      fKeys.addAll(getStateTable().getForeignKeys());
+    }
+    return fKeys;
   }
 
   public String getIdName() {
@@ -268,19 +286,28 @@ public class BeeTable {
     return name;
   }
 
-  public BeeTable getOwner() {
-    return owner;
-  }
-
   public Collection<BeeState> getStates() {
-    return Collections.unmodifiableCollection(states);
+    return Collections.unmodifiableCollection(states.values());
   }
 
-  public String getStateTable() {
-    if (BeeUtils.isEmpty(getStates())) {
-      return null;
-    }
-    return getName() + STATE_TABLE_SUFFIX;
+  public boolean hasExtFields() {
+    return !BeeUtils.isEmpty(getExtFields());
+  }
+
+  public boolean hasField(String field) {
+    return fields.containsKey(field);
+  }
+
+  public boolean hasFields() {
+    return !BeeUtils.isEmpty(getFields());
+  }
+
+  public boolean hasState(String state) {
+    return states.containsKey(state);
+  }
+
+  public boolean hasStates() {
+    return !BeeUtils.isEmpty(getStates());
   }
 
   public boolean isCustom() {
@@ -288,76 +315,46 @@ public class BeeTable {
   }
 
   public boolean isEmpty() {
-    return BeeUtils.isEmpty(fields);
+    return !hasFields() && !hasExtFields();
   }
 
-  public boolean isField(String field) {
-    return fields.containsKey(field);
+  BeeTable addExtField(String name, DataTypes type, int precision, int scale,
+      boolean notNull, boolean unique, String relation, boolean cascade) {
+
+    Assert.state(!hasField(name), "Dublicate field name: " + getName() + " " + name);
+    createExtTable();
+    extTable.addField(name, type, precision, scale, notNull, unique, relation, cascade);
+    if (unique) {
+      extTable.addUniqueKey(name);
+    }
+    return this;
+  }
+
+  BeeTable addExtKey(String keyName, boolean unique, String... keyFields) {
+    createExtTable();
+    extTable.addKey(keyName, unique, keyFields);
+    return this;
   }
 
   BeeTable addField(String name, DataTypes type, int precision, int scale,
       boolean notNull, boolean unique, String relation, boolean cascade) {
 
-    addField(new BeeStructure(name, type, precision, scale, notNull, unique, relation, cascade));
+    BeeField field = new BeeField(name, type, precision, scale, notNull, unique, relation, cascade);
+    String fieldName = field.getName();
+
+    Assert.state(!hasField(fieldName), "Dublicate field name: " + getName() + " " + fieldName);
+    fields.put(fieldName, field);
     return this;
   }
 
   BeeTable addForeignKey(String keyField, String refTable, String refField, Keywords action) {
-    addForeignKey(new BeeForeignKey(keyField, refTable, refField, action));
-    return this;
-  }
-
-  BeeTable addKey(String keyName, String... keyFields) {
-    addKey(new BeeKey(keyName, false, false, keyFields));
-    return this;
-  }
-
-  BeeTable addPrimaryKey(String keyField) {
-    Assert.notEmpty(keyField);
-    addKey(new BeeKey(PRIMARY_KEY_PREFIX + getName(), true, false, keyField));
-    return this;
-  }
-
-  BeeTable addState(String name, boolean userMode, boolean roleMode, boolean forced) {
-    addState(new BeeState(name, userMode, roleMode, forced));
-    return this;
-  }
-
-  BeeTable addUniqueKey(String keyName, String... keyFields) {
-    addKey(new BeeKey(keyName, false, true, keyFields));
-    return this;
-  }
-
-  void setCustom(boolean custom) {
-    this.custom = custom;
-  }
-
-  void setExtTable(BeeTable extTable) {
-    this.extTable = extTable;
-
-    if (!BeeUtils.isEmpty(extTable)) {
-      extTable.name = getName() + EXT_TABLE_SUFFIX;
-      extTable.idName = getName() + getIdName();
-      extTable.lockName = getName() + getLockName();
-      extTable.owner = this;
-    }
-  }
-
-  private void addField(BeeStructure field) {
-    Assert.notEmpty(field);
-    String fieldName = field.getName();
-
-    Assert.state(!isField(fieldName), "Dublicate field name: " + getName() + " " + fieldName);
-    fields.put(fieldName, field);
-  }
-
-  private void addForeignKey(BeeForeignKey key) {
-    Assert.notEmpty(key);
+    BeeForeignKey key = new BeeForeignKey(keyField, refTable, refField, action);
     foreignKeys.add(key);
+    return this;
   }
 
-  private void addKey(BeeKey key) {
-    Assert.notEmpty(key);
+  BeeTable addKey(String name, boolean unique, String... keyFields) {
+    BeeKey key = new BeeKey(name, unique, keyFields);
     String keyName = key.getName();
 
     for (BeeKey k : keys) {
@@ -365,10 +362,96 @@ public class BeeTable {
           "Dublicate key name: " + getName() + " " + keyName);
     }
     keys.add(key);
+    return this;
   }
 
-  private void addState(BeeState state) {
-    Assert.notEmpty(state);
-    states.add(state);
+  BeeTable addPrimaryKey(String keyField) {
+    Assert.notEmpty(keyField);
+    addUniqueKey(primaryKeyName(), keyField);
+    return this;
+  }
+
+  BeeTable addState(String name, boolean userMode, boolean roleMode, boolean forced) {
+    BeeState state = new BeeState(name, userMode, roleMode, forced);
+    String stateName = state.getName();
+
+    Assert.state(!hasState(stateName), "Dublicate state name: " + getName() + " " + stateName);
+    states.put(stateName, state);
+
+    createStateTable();
+    int stateId = state.getId();
+
+    if (state.hasUserMode()) {
+      stateTable.addField("State" + stateId + "UserMask",
+          DataTypes.LONG, 0, 0, false, false, null, false);
+    }
+    if (state.hasRoleMode()) {
+      stateTable.addField("State" + stateId + "RoleMask",
+          DataTypes.LONG, 0, 0, false, false, null, false);
+    }
+    return this;
+  }
+
+  BeeTable addUniqueKey(String keyName, String... keyFields) {
+    addKey(keyName, true, keyFields);
+    return this;
+  }
+
+  Collection<BeeField> getExtFields() {
+    if (!BeeUtils.isEmpty(getExtTable())) {
+      return getExtTable().getFields();
+    }
+    return new ArrayList<BeeField>();
+  }
+
+  Collection<BeeKey> getExtKeys() {
+    if (!BeeUtils.isEmpty(getExtTable())) {
+      return getExtTable().getKeys();
+    }
+    return new ArrayList<BeeKey>();
+  }
+
+  String getExtName() {
+    if (!BeeUtils.isEmpty(getExtTable())) {
+      return getExtTable().getName();
+    }
+    return null;
+  }
+
+  BeeTable getExtTable() {
+    return extTable;
+  }
+
+  BeeTable getStateTable() {
+    return stateTable;
+  }
+
+  void setCustom(boolean custom) {
+    this.custom = custom;
+  }
+
+  private void createExtTable() {
+    if (BeeUtils.isEmpty(extTable)) {
+      extTable = new BeeTable(
+          getName() + EXT_TABLE_SUFFIX,
+          getName() + getIdName(),
+          getName() + getLockName())
+        .addForeignKey(extTable.getIdName(), getName(), getIdName(), Keywords.CASCADE);
+    }
+  }
+
+  private void createStateTable() {
+    if (BeeUtils.isEmpty(stateTable)) {
+      stateTable = new BeeTable(
+          getName() + STATE_TABLE_SUFFIX,
+          getName() + getIdName(),
+          getName() + getLockName())
+        .addField("StateMask", DataTypes.LONG, 0, 0, true, false, null, false)
+        .addForeignKey(stateTable.getIdName(), getName(), getIdName(), Keywords.CASCADE);
+    }
+  }
+
+  private String primaryKeyName() {
+    return PRIMARY_KEY_PREFIX + getName();
   }
 }

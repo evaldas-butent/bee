@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <BeeTables xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.butent.com/bee structure.xsd">
-  
+
   <BeeTable name="Users" idName="UserID">
     <BeeFields>
       <BeeField name="Login" type="STRING" precision="30" notNull="true" unique="true" />
@@ -17,10 +17,11 @@
     <BeeFields>
       <BeeField name="User" type="LONG" notNull="true" relation="Users" cascade="true" />
       <BeeField name="Role" type="LONG" notNull="true" relation="Roles" cascade="true" />
+      <BeeKey name="UserRole" unique="true">
+        <BeeKeyField name="User" />
+        <BeeKeyField name="Role" />
+      </BeeKey>
     </BeeFields>
-    <BeeKeys>
-      <BeeKey name="UserRole" fields="User, Role" unique="true" />
-    </BeeKeys>
   </BeeTable>
   <BeeTable name="Countries" idName="CountryID" lockName="LastLock">
     <BeeFields>
@@ -29,10 +30,8 @@
       <BeeField name="SeaPort" type="LONG" relation="Cities" />
       <BeeField name="Neighbour" type="LONG" relation="Countries" />
       <BeeField name="Currency" type="STRING" precision="50" unique="true" />
-    </BeeFields>
-    <BeeKeys>
       <BeeKey name="SeaPort" />
-    </BeeKeys>
+    </BeeFields>
   </BeeTable>
   <BeeTable name="Cities" idName="CityID">
     <BeeFields>

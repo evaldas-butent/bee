@@ -3,7 +3,7 @@ package com.butent.bee.egg.server.ui;
 import com.butent.bee.egg.server.Assert;
 import com.butent.bee.egg.server.communication.ResponseBuffer;
 import com.butent.bee.egg.server.data.BeeTable;
-import com.butent.bee.egg.server.data.BeeTable.BeeStructure;
+import com.butent.bee.egg.server.data.BeeTable.BeeField;
 import com.butent.bee.egg.server.data.QueryServiceBean;
 import com.butent.bee.egg.server.data.SystemBean;
 import com.butent.bee.egg.server.http.RequestInfo;
@@ -85,22 +85,22 @@ public class UiServiceBean {
     }
   }
 
-  private void addRelation(SqlSelect ss, String tbl, BeeStructure fld) {
+  private void addRelation(SqlSelect ss, String tableAlias, BeeField fld) {
     String relation = fld.getRelation();
 
     if (!BeeUtils.isEmpty(relation)) {
-      String als = BeeUtils.randomString(3, 3, 'a', 'z');
-      BeeTable relTbl = sys.getTable(relation);
+      String fieldAlias = BeeUtils.randomString(3, 3, 'a', 'z');
       boolean addFrom = false;
 
-      for (BeeStructure relFld : relTbl.getFields()) {
+      for (BeeField relFld : sys.getFields(relation)) {
         if (relFld.isUnique()) {
           addFrom = true;
-          ss.addField(als, relFld.getName(), fld.getName() + relFld.getName());
+          ss.addField(fieldAlias, relFld.getName(), fld.getName() + relFld.getName());
         }
       }
       if (addFrom) {
-        ss.addFromLeft(relation, als, SqlUtils.join(tbl, fld.getName(), als, relTbl.getIdName()));
+        ss.addFromLeft(relation, fieldAlias,
+            SqlUtils.join(tableAlias, fld.getName(), fieldAlias, sys.getIdName(relation)));
       }
     }
   }
@@ -169,9 +169,9 @@ public class UiServiceBean {
           }
           Object[] entry = new Object[]{fld, row.getOriginal(col)};
 
-          if (tbl.isField(fld)) {
+          if (tbl.hasField(fld)) {
             baseList.add(entry);
-          } else if (!BeeUtils.isEmpty(extTbl) && extTbl.isField(fld)) {
+          } else if (!BeeUtils.isEmpty(extTbl) && extTbl.hasField(fld)) {
             extList.add(entry);
           } else {
             err = "Cannot update column " + upd.getColumnName(col) + " (Unknown field: " + fld
@@ -390,34 +390,29 @@ public class UiServiceBean {
 
   private void getTable(RequestInfo reqInfo, ResponseBuffer buff) {
     String table = getXmlField(reqInfo, buff, "table_name");
-    String als = BeeUtils.randomString(3, 3, 'a', 'z');
+    String tableAlias = BeeUtils.randomString(3, 3, 'a', 'z');
 
     SqlSelect ss = new SqlSelect();
-    ss.addFrom(table, als);
+    ss.addFrom(table, tableAlias);
 
     if (sys.isTable(table)) {
-      BeeTable tbl = sys.getTable(table);
-
-      for (BeeStructure fld : tbl.getFields()) {
-        ss.addFields(als, fld.getName());
-        addRelation(ss, als, fld);
+      for (BeeField fld : sys.getFields(table)) {
+        ss.addFields(tableAlias, fld.getName());
+        addRelation(ss, tableAlias, fld);
       }
-      ss.addFields(als, tbl.getLockName(), tbl.getIdName());
+      ss.addFields(tableAlias, sys.getLockName(table), sys.getIdName(table));
 
-      BeeTable extTbl = tbl.getExtTable();
+      String extAlias = sys.addExtJoin(ss, table, tableAlias);
 
-      if (!BeeUtils.isEmpty(extTbl)) {
-        String extName = extTbl.getName();
-        ss.addFromLeft(extName, SqlUtils.join(als, tbl.getIdName(), extName, extTbl.getIdName()));
-
-        for (BeeStructure extFld : extTbl.getFields()) {
-          ss.addFields(extName, extFld.getName());
-          addRelation(ss, extName, extFld);
+      if (!BeeUtils.isEmpty(extAlias)) {
+        for (BeeField extFld : sys.getExtFields(table)) {
+          ss.addFields(extAlias, extFld.getName());
+          addRelation(ss, extAlias, extFld);
         }
-        ss.addFields(extName, extTbl.getLockName());
+        ss.addFields(extAlias, sys.getExtLockName(table));
       }
     } else {
-      ss.addAllFields(als);
+      ss.addAllFields(tableAlias);
     }
 
     BeeRowSet res = qs.getData(ss);
