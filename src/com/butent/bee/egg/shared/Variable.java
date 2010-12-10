@@ -5,7 +5,7 @@ import com.butent.bee.egg.shared.utils.BeeUtils;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Variable implements HasDoubleValue, HasStringValue, Transformable {
+public class Variable implements HasBooleanValue, HasDoubleValue, HasStringValue, Transformable {
   private String caption = null;
   private int type = BeeType.TYPE_UNKNOWN;
   private String value = null;
@@ -50,6 +50,10 @@ public class Variable implements HasDoubleValue, HasStringValue, Transformable {
     for (int i = 0; i < items.length; i++) {
       this.items.add(items[i]);
     }
+  }
+
+  public boolean getBoolean() {
+    return BeeUtils.toBoolean(getValue());
   }
 
   public String getCaption() {
@@ -104,6 +108,10 @@ public class Variable implements HasDoubleValue, HasStringValue, Transformable {
     this.type = type;
   }
   
+  public void setValue(Boolean value) {
+    setValue(BeeUtils.toString(value));
+  }
+
   public void setValue(double value) {
     setValue(BeeUtils.toString(value));
   }

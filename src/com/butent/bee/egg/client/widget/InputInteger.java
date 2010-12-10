@@ -3,6 +3,7 @@ package com.butent.bee.egg.client.widget;
 import com.google.gwt.dom.client.Element;
 
 import com.butent.bee.egg.client.dom.DomUtils;
+import com.butent.bee.egg.shared.HasStringValue;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
 public class InputInteger extends BeeTextBox {
@@ -20,8 +21,8 @@ public class InputInteger extends BeeTextBox {
     setValue(value);
   }
 
-  public InputInteger(String fieldName) {
-    super(fieldName);
+  public InputInteger(HasStringValue source) {
+    super(source);
   }
 
   public InputInteger(int value, String type, int min, int max) {
@@ -33,12 +34,12 @@ public class InputInteger extends BeeTextBox {
     initAttributes(type, min, max, step);
   }
 
-  public InputInteger(String fieldName, String type, int min, int max) {
-    this(fieldName, type, min, max, 1);
+  public InputInteger(HasStringValue source, String type, int min, int max) {
+    this(source, type, min, max, 1);
   }
   
-  public InputInteger(String fieldName, String type, int min, int max, int step) {
-    this(fieldName);
+  public InputInteger(HasStringValue source, String type, int min, int max, int step) {
+    this(source);
     initAttributes(type, min, max, step);
   }
 
@@ -68,5 +69,4 @@ public class InputInteger extends BeeTextBox {
       DomUtils.setStep(this, step);
     }
   }
-
 }

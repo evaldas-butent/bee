@@ -22,6 +22,7 @@ import com.butent.bee.egg.shared.menu.MenuConstants;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 import com.butent.bee.egg.shared.utils.Grego;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -29,14 +30,14 @@ import java.util.Map;
 import java.util.Set;
 
 public class Global implements Module {
-  public static final String FIELD_DEBUG = "debug";
+  public static final String VAR_DEBUG = "debug";
 
   private static final MessageBox msgBox = new MessageBox();
   private static final InputBox inpBox = new InputBox();
   private static final GridFactory grids = new GridFactory();
   private static final CacheUtils cache = new CacheUtils();
 
-  private static final Map<String, Variable> fields = new HashMap<String, Variable>();
+  private static final Map<String, Variable> vars = new HashMap<String, Variable>();
 
   private static int tzo = -JsDate.create().getTimezoneOffset() * Grego.MILLIS_PER_MINUTE;
 
@@ -62,65 +63,27 @@ public class Global implements Module {
     return msgBox.confirm(obj);
   }
 
-  public static void createField(String name, String caption, int type, String value) {
+  public static void createVar(String name, String caption) {
+    createVar(name, caption, BeeType.TYPE_STRING, BeeConst.STRING_EMPTY);
+  }
+  
+  public static void createVar(String name, String caption, int type, String value) {
     Assert.notEmpty(name);
     Assert.isTrue(BeeType.isValid(type));
 
-    fields.put(name, new Variable(caption, type, value));
+    vars.put(name, new Variable(caption, type, value));
   }
 
-  public static void createField(String name, String caption, int type,
-      String value, BeeWidget widget, String... items) {
+  public static void createVar(String name, String caption, int type, String value,
+      BeeWidget widget, String... items) {
     Assert.notEmpty(name);
     Assert.isTrue(BeeType.isValid(type));
 
-    fields.put(name, new Variable(caption, type, value, widget, items));
+    vars.put(name, new Variable(caption, type, value, widget, items));
   }
 
   public static CacheUtils getCache() {
     return cache;
-  }
-
-  public static Variable getField(String name) {
-    Assert.contains(fields, name);
-
-    return fields.get(name);
-  }
-
-  public static boolean getFieldBoolean(String name) {
-    return BeeUtils.toBoolean(getField(name).getValue());
-  }
-
-  public static String getFieldCaption(String name) {
-    return getField(name).getCaption();
-  }
-
-  public static int getFieldInt(String name) {
-    return BeeUtils.toInt(getField(name).getValue());
-  }
-
-  public static List<String> getFieldItems(String name) {
-    return getField(name).getItems();
-  }
-
-  public static long getFieldLong(String name) {
-    return BeeUtils.toLong(getField(name).getValue());
-  }
-
-  public static int getFieldType(String name) {
-    return getField(name).getType();
-  }
-
-  public static String getFieldValue(String name) {
-    return getField(name).getValue();
-  }
-
-  public static BeeWidget getFieldWidget(String name) {
-    return getField(name).getWidget();
-  }
-
-  public static String getFieldWidth(String name) {
-    return getField(name).getWidth();
   }
 
   public static Images getImages() {
@@ -131,20 +94,76 @@ public class Global implements Module {
     return tzo;
   }
 
+  public static Variable getVar(String name) {
+    Assert.contains(vars, name);
+    return vars.get(name);
+  }
+
+  public static boolean getVarBoolean(String name) {
+    return getVar(name).getBoolean();
+  }
+
+  public static String getVarCaption(String name) {
+    return getVar(name).getCaption();
+  }
+
+  public static int getVarInt(String name) {
+    return getVar(name).getInt();
+  }
+  
+  public static List<String> getVarItems(String name) {
+    return getVar(name).getItems();
+  }
+
+  public static long getVarLong(String name) {
+    return getVar(name).getLong();
+  }
+
+  public static String getVarName(Variable var) {
+    Assert.notNull(var);
+    return BeeUtils.getKey(vars, var);
+  }
+
+  public static int getVarType(String name) {
+    return getVar(name).getType();
+  }
+
+  public static String getVarValue(String name) {
+    return getVar(name).getValue();
+  }
+
+  public static BeeWidget getVarWidget(String name) {
+    return getVar(name).getWidget();
+  }
+
+  public static String getVarWidth(String name) {
+    return getVar(name).getWidth();
+  }
+
   public static void inform(Object... obj) {
     msgBox.showInfo(obj);
   }
 
-  public static void inputFields(BeeStage bst, String cap, String... flds) {
-    inpBox.inputFields(bst, cap, flds);
+  public static void inputVars(BeeStage bst, String cap, String... names) {
+    List<Variable> lst = new ArrayList<Variable>();
+    for (String name : names) {
+      if (vars.containsKey(name)) {
+        lst.add(vars.get(name));
+      }
+    }
+    inputVars(bst, cap, lst.toArray(new Variable[0]));
+  }
+
+  public static void inputVars(BeeStage bst, String cap, Variable... variables) {
+    inpBox.inputVars(bst, cap, variables);
   }
 
   public static boolean isDebug() {
-    return getFieldBoolean(FIELD_DEBUG);
+    return getVarBoolean(VAR_DEBUG);
   }
 
-  public static boolean isField(String name) {
-    return fields.containsKey(name);
+  public static boolean isVar(String name) {
+    return vars.containsKey(name);
   }
 
   public static void modalGrid(String cap, Object data, String... cols) {
@@ -155,31 +174,39 @@ public class Global implements Module {
     msgBox.showInfo("Huh ?", obj);
   }
 
-  public static Widget scrollGrid(Object data, String... columns) {
-    return scrollGrid(-1, data, columns);
-  }
-
   public static Widget scrollGrid(int width, Object data, String... columns) {
     return grids.scrollGrid(width, data, (Object[]) columns);
   }
 
-  public static void setField(String name, Variable fld) {
+  public static Widget scrollGrid(Object data, String... columns) {
+    return scrollGrid(-1, data, columns);
+  }
+
+  public static void setVar(String name, Variable var) {
     Assert.notEmpty(name);
-    Assert.notNull(fld);
+    Assert.notNull(var);
 
-    fields.put(name, fld);
+    vars.put(name, var);
   }
 
-  public static void setFieldValue(String name, long value) {
-    getField(name).setValue(BeeUtils.transform(value));
+  public static void setVarValue(String name, boolean value) {
+    getVar(name).setValue(value);
   }
 
-  public static void setFieldValue(String name, String value) {
-    getField(name).setValue(value);
+  public static void setVarValue(String name, int value) {
+    getVar(name).setValue(value);
   }
 
-  public static void setFieldWidth(String name, String width) {
-    getField(name).setWidth(width);
+  public static void setVarValue(String name, long value) {
+    getVar(name).setValue(value);
+  }
+
+  public static void setVarValue(String name, String value) {
+    getVar(name).setValue(value);
+  }
+
+  public static void setVarWidth(String name, String width) {
+    getVar(name).setWidth(width);
   }
 
   public static void showDialog(Object... obj) {
@@ -198,25 +225,25 @@ public class Global implements Module {
     msgBox.showError(obj);
   }
 
-  public static void showFields(String... context) {
+  public static void showVars(String... context) {
     int n = context.length;
-    Set<String> names = fields.keySet();
-    String[] arr;
+    Variable[] arr;
 
     if (n > 0) {
+      Set<String> names = vars.keySet();
       Set<String> lst = new LinkedHashSet<String>();
-      for (String fld : context) {
-        lst.addAll(BeeUtils.getContext(fld, names));
+      for (String z : context) {
+        lst.addAll(BeeUtils.getContext(z, names));
       }
-      arr = lst.toArray(BeeConst.EMPTY_STRING_ARRAY);
+      arr = lst.toArray(new Variable[0]);
     } else {
-      arr = names.toArray(BeeConst.EMPTY_STRING_ARRAY);
+      arr = vars.values().toArray(new Variable[0]);
     }
 
     if (BeeUtils.isEmpty(arr)) {
-      showError("no fields found", context);
+      showError("no variables found", context);
     } else {
-      inputFields(null, "Fields", arr);
+      inputVars(null, "Variables", arr);
     }
   }
 
@@ -245,106 +272,85 @@ public class Global implements Module {
   }
 
   public void init() {
-    initFields();
+    initVars();
   }
 
   public void start() {
   }
 
-  private void initFields() {
-    createField(BeeService.FIELD_CLASS_NAME, "Class name", BeeType.TYPE_STRING,
-        BeeConst.STRING_EMPTY);
-    createField(BeeService.FIELD_PACKAGE_LIST, "Default Packages",
-        BeeType.TYPE_STRING, BeeConst.STRING_EMPTY);
+  private void initVars() {
+    createVar(BeeService.VAR_CLASS_NAME, "Class name");
+    createVar(BeeService.VAR_PACKAGE_LIST, "Default Packages");
 
-    createField(BeeService.FIELD_XML_SOURCE, "source", BeeType.TYPE_STRING,
-        BeeConst.STRING_EMPTY);
-    createField(BeeService.FIELD_XML_TRANSFORM, "transform",
-        BeeType.TYPE_STRING, BeeConst.STRING_EMPTY);
-    createField(BeeService.FIELD_XML_TARGET, "target", BeeType.TYPE_STRING,
-        BeeConst.STRING_EMPTY);
-    createField(BeeService.FIELD_XML_RETURN, "return", BeeType.TYPE_STRING,
+    createVar(BeeService.VAR_XML_SOURCE, "source");
+    createVar(BeeService.VAR_XML_TRANSFORM, "transform");
+    createVar(BeeService.VAR_XML_TARGET, "target");
+    createVar(BeeService.VAR_XML_RETURN, "return", BeeType.TYPE_STRING,
         "all", BeeWidget.RADIO, "all", "xsl", "source", "xml", "prop");
 
-    setFieldWidth(BeeService.FIELD_XML_SOURCE, "300px");
-    setFieldWidth(BeeService.FIELD_XML_TRANSFORM, "300px");
-    setFieldWidth(BeeService.FIELD_XML_TARGET, "300px");
+    setVarWidth(BeeService.VAR_XML_SOURCE, "300px");
+    setVarWidth(BeeService.VAR_XML_TRANSFORM, "300px");
+    setVarWidth(BeeService.VAR_XML_TARGET, "300px");
 
-    createField(BeeService.FIELD_FILE_NAME, null, BeeType.TYPE_FILE, BeeConst.STRING_EMPTY);
+    createVar(BeeService.VAR_FILE_NAME, null, BeeType.TYPE_FILE, BeeConst.STRING_EMPTY);
 
-    createField(BeeService.FIELD_JDBC_QUERY, "Jdbc Query", BeeType.TYPE_STRING,
-        BeeConst.STRING_EMPTY);
-    setFieldWidth(BeeService.FIELD_JDBC_QUERY, "500px");
+    createVar(BeeService.VAR_JDBC_QUERY, "Jdbc Query");
+    setVarWidth(BeeService.VAR_JDBC_QUERY, "500px");
 
-    createField(BeeService.FIELD_CONNECTION_AUTO_COMMIT,
+    createVar(BeeService.VAR_CONNECTION_AUTO_COMMIT,
         "Connection auto commit", BeeType.TYPE_STRING, BeeConst.DEFAULT,
-        BeeWidget.RADIO, BeeConst.DEFAULT, BeeConst.STRING_FALSE,
-        BeeConst.STRING_TRUE);
-    createField(BeeService.FIELD_CONNECTION_READ_ONLY, "Connection read only",
+        BeeWidget.RADIO, BeeConst.DEFAULT, BeeConst.STRING_FALSE, BeeConst.STRING_TRUE);
+    createVar(BeeService.VAR_CONNECTION_READ_ONLY, "Connection read only",
         BeeType.TYPE_STRING, BeeConst.DEFAULT, BeeWidget.RADIO,
         BeeConst.DEFAULT, BeeConst.STRING_FALSE, BeeConst.STRING_TRUE);
-    createField(BeeService.FIELD_CONNECTION_HOLDABILITY,
-        "Connection holdability", BeeType.TYPE_STRING, BeeConst.DEFAULT,
-        BeeWidget.RADIO, BeeConst.DEFAULT, BeeConst.HOLD_CURSORS_OVER_COMMIT,
-        BeeConst.CLOSE_CURSORS_AT_COMMIT);
-    createField(BeeService.FIELD_CONNECTION_TRANSACTION_ISOLATION,
+    createVar(BeeService.VAR_CONNECTION_HOLDABILITY, "Connection holdability",
+        BeeType.TYPE_STRING, BeeConst.DEFAULT, BeeWidget.RADIO, BeeConst.DEFAULT,
+        BeeConst.HOLD_CURSORS_OVER_COMMIT, BeeConst.CLOSE_CURSORS_AT_COMMIT);
+    createVar(BeeService.VAR_CONNECTION_TRANSACTION_ISOLATION,
         "Transaction isolation", BeeType.TYPE_STRING, BeeConst.DEFAULT,
         BeeWidget.LIST, BeeConst.DEFAULT, BeeConst.TRANSACTION_NONE,
-        BeeConst.TRANSACTION_READ_COMMITTED,
-        BeeConst.TRANSACTION_READ_UNCOMMITTED,
+        BeeConst.TRANSACTION_READ_COMMITTED, BeeConst.TRANSACTION_READ_UNCOMMITTED,
         BeeConst.TRANSACTION_REPEATABLE_READ, BeeConst.TRANSACTION_SERIALIZABLE);
 
-    createField(BeeService.FIELD_STATEMENT_CURSOR_NAME, "Cursor name",
-        BeeType.TYPE_STRING, BeeConst.STRING_EMPTY);
-    createField(BeeService.FIELD_STATEMENT_ESCAPE_PROCESSING,
+    createVar(BeeService.VAR_STATEMENT_CURSOR_NAME, "Cursor name");
+    createVar(BeeService.VAR_STATEMENT_ESCAPE_PROCESSING,
         "Escape Processing", BeeType.TYPE_STRING, BeeConst.DEFAULT,
         BeeWidget.RADIO, BeeConst.DEFAULT, BeeConst.STRING_FALSE, BeeConst.STRING_TRUE);
-    createField(BeeService.FIELD_STATEMENT_FETCH_DIRECTION,
-        "Statement fetch direction", BeeType.TYPE_STRING, BeeConst.DEFAULT,
-        BeeWidget.RADIO, BeeConst.DEFAULT, BeeConst.FETCH_FORWARD,
-        BeeConst.FETCH_REVERSE, BeeConst.FETCH_UNKNOWN);
-    createField(BeeService.FIELD_STATEMENT_FETCH_SIZE, "Statement fetch size",
-        BeeType.TYPE_STRING, BeeConst.STRING_EMPTY);
-    createField(BeeService.FIELD_STATEMENT_MAX_FIELD_SIZE,
-        "Statement max field size", BeeType.TYPE_STRING, BeeConst.STRING_EMPTY);
-    createField(BeeService.FIELD_STATEMENT_MAX_ROWS, "Statement max rows",
-        BeeType.TYPE_STRING, BeeConst.STRING_EMPTY);
-    createField(BeeService.FIELD_STATEMENT_POOLABLE, "Poolable",
-        BeeType.TYPE_STRING, BeeConst.DEFAULT, BeeWidget.RADIO,
-        BeeConst.DEFAULT, BeeConst.STRING_FALSE, BeeConst.STRING_TRUE);
-    createField(BeeService.FIELD_STATEMENT_QUERY_TIMEOUT, "Query timeout",
-        BeeType.TYPE_STRING, BeeConst.STRING_EMPTY);
+    createVar(BeeService.VAR_STATEMENT_FETCH_DIRECTION, "Statement fetch direction",
+        BeeType.TYPE_STRING, BeeConst.DEFAULT, BeeWidget.RADIO, BeeConst.DEFAULT,
+        BeeConst.FETCH_FORWARD, BeeConst.FETCH_REVERSE, BeeConst.FETCH_UNKNOWN);
+    createVar(BeeService.VAR_STATEMENT_FETCH_SIZE, "Statement fetch size");
+    createVar(BeeService.VAR_STATEMENT_MAX_FIELD_SIZE, "Statement max field size");
+    createVar(BeeService.VAR_STATEMENT_MAX_ROWS, "Statement max rows");
+    createVar(BeeService.VAR_STATEMENT_POOLABLE, "Poolable", BeeType.TYPE_STRING,
+        BeeConst.DEFAULT, BeeWidget.RADIO, BeeConst.DEFAULT, BeeConst.STRING_FALSE,
+        BeeConst.STRING_TRUE);
+    createVar(BeeService.VAR_STATEMENT_QUERY_TIMEOUT, "Query timeout");
 
-    createField(BeeService.FIELD_STATEMENT_RS_TYPE, "Statement rs type",
-        BeeType.TYPE_STRING, BeeConst.DEFAULT, BeeWidget.RADIO,
-        BeeConst.DEFAULT, BeeConst.TYPE_FORWARD_ONLY,
+    createVar(BeeService.VAR_STATEMENT_RS_TYPE, "Statement rs type", BeeType.TYPE_STRING,
+        BeeConst.DEFAULT, BeeWidget.RADIO, BeeConst.DEFAULT, BeeConst.TYPE_FORWARD_ONLY,
         BeeConst.TYPE_SCROLL_INSENSITIVE, BeeConst.TYPE_SCROLL_SENSITIVE);
-    createField(BeeService.FIELD_STATEMENT_RS_CONCURRENCY,
-        "Statement rs concurrency", BeeType.TYPE_STRING, BeeConst.DEFAULT,
-        BeeWidget.RADIO, BeeConst.DEFAULT, BeeConst.CONCUR_READ_ONLY,
-        BeeConst.CONCUR_UPDATABLE);
-    createField(BeeService.FIELD_STATEMENT_RS_HOLDABILITY,
-        "Statement rs holdability", BeeType.TYPE_STRING, BeeConst.DEFAULT,
-        BeeWidget.RADIO, BeeConst.DEFAULT, BeeConst.HOLD_CURSORS_OVER_COMMIT,
-        BeeConst.CLOSE_CURSORS_AT_COMMIT);
+    createVar(BeeService.VAR_STATEMENT_RS_CONCURRENCY, "Statement rs concurrency",
+        BeeType.TYPE_STRING, BeeConst.DEFAULT, BeeWidget.RADIO, BeeConst.DEFAULT,
+        BeeConst.CONCUR_READ_ONLY, BeeConst.CONCUR_UPDATABLE);
+    createVar(BeeService.VAR_STATEMENT_RS_HOLDABILITY, "Statement rs holdability",
+        BeeType.TYPE_STRING, BeeConst.DEFAULT, BeeWidget.RADIO, BeeConst.DEFAULT,
+        BeeConst.HOLD_CURSORS_OVER_COMMIT, BeeConst.CLOSE_CURSORS_AT_COMMIT);
 
-    createField(BeeService.FIELD_RESULT_SET_FETCH_DIRECTION,
-        "Rs fetch direction", BeeType.TYPE_STRING, BeeConst.DEFAULT,
-        BeeWidget.RADIO, BeeConst.DEFAULT, BeeConst.FETCH_FORWARD,
-        BeeConst.FETCH_REVERSE, BeeConst.FETCH_UNKNOWN);
-    createField(BeeService.FIELD_RESULT_SET_FETCH_SIZE, "Rs fetch size",
-        BeeType.TYPE_STRING, BeeConst.STRING_EMPTY);
+    createVar(BeeService.VAR_RESULT_SET_FETCH_DIRECTION, "Rs fetch direction",
+        BeeType.TYPE_STRING, BeeConst.DEFAULT, BeeWidget.RADIO, BeeConst.DEFAULT,
+        BeeConst.FETCH_FORWARD, BeeConst.FETCH_REVERSE, BeeConst.FETCH_UNKNOWN);
+    createVar(BeeService.VAR_RESULT_SET_FETCH_SIZE, "Rs fetch size");
 
-    createField(BeeService.FIELD_JDBC_RETURN, "Jdbc return",
-        BeeType.TYPE_STRING, BeeConst.JDBC_RESULT_SET, BeeWidget.RADIO,
-        BeeConst.JDBC_RESULT_SET, BeeConst.JDBC_META_DATA,
-        BeeConst.JDBC_ROW_COUNT, BeeConst.JDBC_COLUMNS);
+    createVar(BeeService.VAR_JDBC_RETURN, "Jdbc return", BeeType.TYPE_STRING,
+        BeeConst.JDBC_RESULT_SET, BeeWidget.RADIO, BeeConst.JDBC_RESULT_SET,
+        BeeConst.JDBC_META_DATA, BeeConst.JDBC_ROW_COUNT, BeeConst.JDBC_COLUMNS);
 
-    createField(FIELD_DEBUG, "Debug", BeeType.TYPE_BOOLEAN, BeeUtils.toString(false));
+    createVar(VAR_DEBUG, "Debug", BeeType.TYPE_BOOLEAN, BeeUtils.toString(false));
 
     for (int i = MenuConstants.ROOT_MENU_INDEX; i < MenuConstants.MAX_MENU_DEPTH; i++) {
       if (MenuConstants.isRootLevel(i)) {
-        createField(MenuConstants.fieldMenuLayout(i), "Root", BeeType.TYPE_STRING,
+        createVar(MenuConstants.varMenuLayout(i), "Root", BeeType.TYPE_STRING,
             MenuConstants.DEFAULT_ROOT_LAYOUT, BeeWidget.LIST,
             MenuConstants.LAYOUT_MENU_HOR, MenuConstants.LAYOUT_MENU_VERT,
             MenuConstants.LAYOUT_STACK, MenuConstants.LAYOUT_TAB,
@@ -355,7 +361,7 @@ public class Global implements Module {
             MenuConstants.LAYOUT_RADIO_VERT, MenuConstants.LAYOUT_BUTTONS_HOR,
             MenuConstants.LAYOUT_BUTTONS_VERT);
       } else {
-        createField(MenuConstants.fieldMenuLayout(i), "Items " + i,
+        createVar(MenuConstants.varMenuLayout(i), "Items " + i,
             BeeType.TYPE_STRING, MenuConstants.DEFAULT_ITEM_LAYOUT, BeeWidget.LIST,
             MenuConstants.LAYOUT_MENU_HOR, MenuConstants.LAYOUT_MENU_VERT,
             MenuConstants.LAYOUT_TREE, MenuConstants.LAYOUT_LIST,
@@ -365,13 +371,13 @@ public class Global implements Module {
             MenuConstants.LAYOUT_BUTTONS_VERT);
       }
 
-      createField(MenuConstants.fieldMenuBarType(i), BeeConst.STRING_EMPTY,
+      createVar(MenuConstants.varMenuBarType(i), BeeConst.STRING_EMPTY,
           BeeType.TYPE_BOOLEAN, BeeUtils.toString(false));
     }
 
-    createField(MenuConstants.FIELD_ROOT_LIMIT, "Max  Roots", BeeType.TYPE_INT,
+    createVar(MenuConstants.VAR_ROOT_LIMIT, "Max  Roots", BeeType.TYPE_INT,
         BeeUtils.transform(MenuConstants.DEFAULT_ROOT_LIMIT));
-    createField(MenuConstants.FIELD_ITEM_LIMIT, "Max  Items", BeeType.TYPE_INT,
+    createVar(MenuConstants.VAR_ITEM_LIMIT, "Max  Items", BeeType.TYPE_INT,
         BeeUtils.transform(MenuConstants.DEFAULT_ITEM_LIMIT));
   }
 }

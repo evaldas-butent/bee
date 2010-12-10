@@ -3,15 +3,14 @@ package com.butent.bee.egg.client.widget;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.user.client.ui.SimpleCheckBox;
 
-import com.butent.bee.egg.client.Global;
 import com.butent.bee.egg.client.BeeKeeper;
 import com.butent.bee.egg.client.dom.DomUtils;
 import com.butent.bee.egg.client.event.HasBeeClickHandler;
+import com.butent.bee.egg.shared.HasBooleanValue;
 import com.butent.bee.egg.shared.HasId;
-import com.butent.bee.egg.shared.utils.BeeUtils;
 
 public class BeeSimpleCheckBox extends SimpleCheckBox implements HasId, HasBeeClickHandler {
-  private String fieldName = null;
+  private HasBooleanValue source = null;
 
   public BeeSimpleCheckBox() {
     super();
@@ -23,11 +22,10 @@ public class BeeSimpleCheckBox extends SimpleCheckBox implements HasId, HasBeeCl
     setChecked(value);
   }
   
-  public BeeSimpleCheckBox(String fld) {
+  public BeeSimpleCheckBox(HasBooleanValue source) {
     this();
-
-    if (!BeeUtils.isEmpty(fld)) {
-      initField(fld);
+    if (source != null) {
+      initSource(source);
       addDefaultHandler();
     }
   }
@@ -36,25 +34,25 @@ public class BeeSimpleCheckBox extends SimpleCheckBox implements HasId, HasBeeCl
     DomUtils.createId(this, "sc");
   }
 
-  public String getFieldName() {
-    return fieldName;
-  }
-
   public String getId() {
     return DomUtils.getId(this);
   }
 
-  public boolean onBeeClick(ClickEvent event) {
-    updateField(isChecked());
-    return true;
+  public HasBooleanValue getSource() {
+    return source;
   }
 
-  public void setFieldName(String fieldName) {
-    this.fieldName = fieldName;
+  public boolean onBeeClick(ClickEvent event) {
+    updateSource(isChecked());
+    return true;
   }
 
   public void setId(String id) {
     DomUtils.setId(this, id);
+  }
+
+  public void setSource(HasBooleanValue source) {
+    this.source = source;
   }
 
   private void addDefaultHandler() {
@@ -66,16 +64,16 @@ public class BeeSimpleCheckBox extends SimpleCheckBox implements HasId, HasBeeCl
     setStyleName("bee-SimpleCheckBox");
   }
 
-  private void initField(String fld) {
-    if (!BeeUtils.isEmpty(fld)) {
-      setFieldName(fld);
-      setChecked(BeeUtils.toBoolean(Global.getFieldValue(fld)));
+  private void initSource(HasBooleanValue src) {
+    if (src != null) {
+      setSource(src);
+      setChecked(src.getBoolean());
     }
   }
 
-  private void updateField(boolean v) {
-    if (!BeeUtils.isEmpty(getFieldName())) {
-      Global.setFieldValue(getFieldName(), BeeUtils.toString(v));
+  private void updateSource(boolean v) {
+    if (getSource() != null) {
+      source.setValue(v);
     }
   }
 }

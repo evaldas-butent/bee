@@ -364,14 +364,6 @@ public class CliWorker {
     }
   }
 
-  public static void showFields(String[] arr) {
-    if (BeeUtils.length(arr) > 1) {
-      Global.showFields(JreEmulation.copyOfRange(arr, 1, arr.length));
-    } else {
-      Global.showFields();
-    }
-  }
-
   public static void showFunctions(String v, String[] arr) {
     if (BeeUtils.length(arr) < 2) {
       Global.sayHuh(v);
@@ -625,7 +617,7 @@ public class CliWorker {
     
     BeeKeeper.getUi().updateActivePanel(panel, true);
   }
-  
+
   public static void showProperties(String v, String[] arr) {
     if (BeeUtils.length(arr) < 2) {
       Global.sayHuh(v);
@@ -655,7 +647,7 @@ public class CliWorker {
       BeeKeeper.getUi().showGrid(view);
     }
   }
-
+  
   public static void showRpc() {
     if (BeeKeeper.getRpc().getRpcList().isEmpty()) {
       Global.showDialog("RpcList empty");
@@ -664,7 +656,7 @@ public class CliWorker {
           RpcList.DEFAULT_INFO_COLUMNS);
     }
   }
-  
+
   public static void showSlider(String[] arr) {
     double value = 0;
     double min = 0;
@@ -728,7 +720,7 @@ public class CliWorker {
     
     BeeKeeper.getUi().updateActivePanel(new SliderBar(value, min, max, step, labels, ticks));
   }
-
+  
   public static void showStack() {
     BeeKeeper.getLog().stack();
     BeeKeeper.getLog().addSeparator();
@@ -764,6 +756,14 @@ public class CliWorker {
     tree.addItem(((TilePanel) tiles).getTree(null, true));
 
     Global.inform(tree);
+  }
+
+  public static void showVars(String[] arr) {
+    if (BeeUtils.length(arr) > 1) {
+      Global.showVars(JreEmulation.copyOfRange(arr, 1, arr.length));
+    } else {
+      Global.showVars();
+    }
   }
   
   public static void storage(String[] arr) {
@@ -911,7 +911,7 @@ public class CliWorker {
       StyleInjector.inject(st, immediate);
     }
   }
-  
+ 
   public static void unicode(String[] arr) {
     StringBuilder sb = new StringBuilder();
     int len = BeeUtils.length(arr);

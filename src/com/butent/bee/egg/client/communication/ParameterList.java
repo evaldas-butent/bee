@@ -28,16 +28,16 @@ public class ParameterList extends ArrayList<RpcParameter> implements
     super();
     this.service = svc;
 
-    addQueryItem(BeeService.RPC_FIELD_SVC, CompositeService.normalizeService(svc));
+    addQueryItem(BeeService.RPC_VAR_SVC, CompositeService.normalizeService(svc));
 
     String dsn = BeeKeeper.getRpc().getDsn();
     if (!BeeUtils.isEmpty(dsn)) {
-      addQueryItem(BeeService.RPC_FIELD_DSN, dsn);
+      addQueryItem(BeeService.RPC_VAR_DSN, dsn);
     }
 
     String opt = BeeKeeper.getRpc().getOptions();
     if (!BeeUtils.isEmpty(opt)) {
-      addHeaderItem(BeeService.RPC_FIELD_OPT, opt);
+      addHeaderItem(BeeService.RPC_VAR_OPT, opt);
     }
   }
 
@@ -132,7 +132,7 @@ public class ParameterList extends ArrayList<RpcParameter> implements
   }
 
   public ContentType getContentType() {
-    ContentType ctp = CommUtils.getContentType(getParameter(BeeService.RPC_FIELD_CTP));
+    ContentType ctp = CommUtils.getContentType(getParameter(BeeService.RPC_VAR_CTP));
 
     if (ctp == null) {
       prepare();
@@ -286,9 +286,7 @@ public class ParameterList extends ArrayList<RpcParameter> implements
     }
 
     if (n > 0) {
-      queryItems.add(new RpcParameter(RpcParameter.SECTION.QUERY,
-          BeeService.RPC_FIELD_PRM_CNT, n));
+      queryItems.add(new RpcParameter(RpcParameter.SECTION.QUERY, BeeService.RPC_VAR_PRM_CNT, n));
     }
   }
-
 }

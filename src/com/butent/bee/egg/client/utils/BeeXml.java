@@ -25,14 +25,14 @@ public class BeeXml {
     return transformDocument(createDoc(rootName, nodes));
   }
 
-  public static String fromFields(String rootName, String... fields) {
+  public static String fromVars(String rootName, String... names) {
     Assert.notEmpty(rootName);
-    Assert.parameterCount(fields.length + 1, 2);
+    Assert.parameterCount(names.length + 1, 2);
 
-    Object[] nodes = new Object[fields.length * 2];
-    for (int i = 0; i < fields.length; i++) {
-      nodes[i * 2] = fields[i];
-      nodes[i * 2 + 1] = Global.getFieldValue(fields[i]);
+    Object[] nodes = new Object[names.length * 2];
+    for (int i = 0; i < names.length; i++) {
+      nodes[i * 2] = names[i];
+      nodes[i * 2 + 1] = Global.getVarValue(names[i]);
     }
 
     return transformDocument(createDoc(rootName, nodes));
@@ -97,5 +97,4 @@ public class BeeXml {
       return BeeUtils.transform(obj);
     }
   }
-
 }

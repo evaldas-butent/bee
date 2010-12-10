@@ -137,13 +137,12 @@ public class EventManager implements Module {
 
     if (svc.equals(BeeService.SERVICE_GET_CLASS)) {
       if (stg.equals(BeeStage.STAGE_GET_PARAMETERS)) {
-        Global.inputFields(new BeeStage(BeeService.SERVICE_GET_CLASS,
-            BeeStage.STAGE_CONFIRM), "Class Info", BeeService.FIELD_CLASS_NAME,
-            BeeService.FIELD_PACKAGE_LIST);
+        Global.inputVars(new BeeStage(BeeService.SERVICE_GET_CLASS, BeeStage.STAGE_CONFIRM),
+            "Class Info", BeeService.VAR_CLASS_NAME, BeeService.VAR_PACKAGE_LIST);
         ok = true;
       } else if (stg.equals(BeeStage.STAGE_CONFIRM)) {
-        String cls = Global.getFieldValue(BeeService.FIELD_CLASS_NAME);
-        String pck = Global.getFieldValue(BeeService.FIELD_PACKAGE_LIST);
+        String cls = Global.getVarValue(BeeService.VAR_CLASS_NAME);
+        String pck = Global.getVarValue(BeeService.VAR_PACKAGE_LIST);
 
         if (BeeUtils.isEmpty(cls)) {
           Global.showError("Class name not specified");
@@ -151,11 +150,9 @@ public class EventManager implements Module {
           Global.showError("Class name", cls, "too short");
         } else {
           Global.closeDialog(event);
-          BeeKeeper.getRpc().makePostRequest(
-              BeeService.SERVICE_CLASS_INFO,
+          BeeKeeper.getRpc().makePostRequest(BeeService.SERVICE_CLASS_INFO,
               BeeXml.createString(BeeService.XML_TAG_DATA,
-                  BeeService.FIELD_CLASS_NAME, cls,
-                  BeeService.FIELD_PACKAGE_LIST, pck));
+                  BeeService.VAR_CLASS_NAME, cls, BeeService.VAR_PACKAGE_LIST, pck));
           ok = true;
         }
       } else {
@@ -164,22 +161,22 @@ public class EventManager implements Module {
 
     } else if (svc.equals(BeeService.SERVICE_GET_XML)) {
       if (stg.equals(BeeStage.STAGE_GET_PARAMETERS)) {
-        Global.inputFields(new BeeStage(BeeService.SERVICE_GET_XML,
-            BeeStage.STAGE_CONFIRM), "Xml Info", BeeService.FIELD_XML_SOURCE,
-            BeeService.FIELD_XML_TRANSFORM, BeeService.FIELD_XML_TARGET,
-            BeeService.FIELD_XML_RETURN);
+        Global.inputVars(new BeeStage(BeeService.SERVICE_GET_XML,
+            BeeStage.STAGE_CONFIRM), "Xml Info", BeeService.VAR_XML_SOURCE,
+            BeeService.VAR_XML_TRANSFORM, BeeService.VAR_XML_TARGET,
+            BeeService.VAR_XML_RETURN);
         ok = true;
       } else if (stg.equals(BeeStage.STAGE_CONFIRM)) {
-        String src = Global.getFieldValue(BeeService.FIELD_XML_SOURCE);
+        String src = Global.getVarValue(BeeService.VAR_XML_SOURCE);
         if (BeeUtils.isEmpty(src)) {
           Global.showError("Source not specified");
         } else {
           Global.closeDialog(event);
           BeeKeeper.getRpc().makePostRequest(
               BeeService.SERVICE_XML_INFO,
-              BeeXml.fromFields(BeeService.XML_TAG_DATA,
-                  BeeService.FIELD_XML_SOURCE, BeeService.FIELD_XML_TRANSFORM,
-                  BeeService.FIELD_XML_TARGET, BeeService.FIELD_XML_RETURN));
+              BeeXml.fromVars(BeeService.XML_TAG_DATA,
+                  BeeService.VAR_XML_SOURCE, BeeService.VAR_XML_TRANSFORM,
+                  BeeService.VAR_XML_TARGET, BeeService.VAR_XML_RETURN));
           ok = true;
         }
       } else {
@@ -188,55 +185,55 @@ public class EventManager implements Module {
 
     } else if (svc.equals(BeeService.SERVICE_GET_DATA)) {
       if (stg.equals(BeeStage.STAGE_GET_PARAMETERS)) {
-        Global.inputFields(new BeeStage(BeeService.SERVICE_GET_DATA,
-            BeeStage.STAGE_CONFIRM), "Jdbc Test", BeeService.FIELD_JDBC_QUERY,
-            BeeService.FIELD_CONNECTION_AUTO_COMMIT,
-            BeeService.FIELD_CONNECTION_HOLDABILITY,
-            BeeService.FIELD_CONNECTION_READ_ONLY,
-            BeeService.FIELD_CONNECTION_TRANSACTION_ISOLATION,
-            BeeService.FIELD_STATEMENT_CURSOR_NAME,
-            BeeService.FIELD_STATEMENT_ESCAPE_PROCESSING,
-            BeeService.FIELD_STATEMENT_FETCH_DIRECTION,
-            BeeService.FIELD_STATEMENT_FETCH_SIZE,
-            BeeService.FIELD_STATEMENT_MAX_FIELD_SIZE,
-            BeeService.FIELD_STATEMENT_MAX_ROWS,
-            BeeService.FIELD_STATEMENT_POOLABLE,
-            BeeService.FIELD_STATEMENT_QUERY_TIMEOUT,
-            BeeService.FIELD_STATEMENT_RS_TYPE,
-            BeeService.FIELD_STATEMENT_RS_CONCURRENCY,
-            BeeService.FIELD_STATEMENT_RS_HOLDABILITY,
-            BeeService.FIELD_RESULT_SET_FETCH_DIRECTION,
-            BeeService.FIELD_RESULT_SET_FETCH_SIZE,
-            BeeService.FIELD_JDBC_RETURN);
+        Global.inputVars(new BeeStage(BeeService.SERVICE_GET_DATA,
+            BeeStage.STAGE_CONFIRM), "Jdbc Test", BeeService.VAR_JDBC_QUERY,
+            BeeService.VAR_CONNECTION_AUTO_COMMIT,
+            BeeService.VAR_CONNECTION_HOLDABILITY,
+            BeeService.VAR_CONNECTION_READ_ONLY,
+            BeeService.VAR_CONNECTION_TRANSACTION_ISOLATION,
+            BeeService.VAR_STATEMENT_CURSOR_NAME,
+            BeeService.VAR_STATEMENT_ESCAPE_PROCESSING,
+            BeeService.VAR_STATEMENT_FETCH_DIRECTION,
+            BeeService.VAR_STATEMENT_FETCH_SIZE,
+            BeeService.VAR_STATEMENT_MAX_FIELD_SIZE,
+            BeeService.VAR_STATEMENT_MAX_ROWS,
+            BeeService.VAR_STATEMENT_POOLABLE,
+            BeeService.VAR_STATEMENT_QUERY_TIMEOUT,
+            BeeService.VAR_STATEMENT_RS_TYPE,
+            BeeService.VAR_STATEMENT_RS_CONCURRENCY,
+            BeeService.VAR_STATEMENT_RS_HOLDABILITY,
+            BeeService.VAR_RESULT_SET_FETCH_DIRECTION,
+            BeeService.VAR_RESULT_SET_FETCH_SIZE,
+            BeeService.VAR_JDBC_RETURN);
         ok = true;
       } else if (stg.equals(BeeStage.STAGE_CONFIRM)) {
-        String sql = Global.getFieldValue(BeeService.FIELD_JDBC_QUERY);
+        String sql = Global.getVarValue(BeeService.VAR_JDBC_QUERY);
         if (BeeUtils.isEmpty(sql)) {
           Global.showError("Query not specified");
         } else {
           Global.closeDialog(event);
           BeeKeeper.getRpc().makePostRequest(
               BeeService.SERVICE_DB_JDBC,
-              BeeXml.fromFields(BeeService.XML_TAG_DATA,
-                  BeeService.FIELD_JDBC_QUERY,
-                  BeeService.FIELD_CONNECTION_AUTO_COMMIT,
-                  BeeService.FIELD_CONNECTION_HOLDABILITY,
-                  BeeService.FIELD_CONNECTION_READ_ONLY,
-                  BeeService.FIELD_CONNECTION_TRANSACTION_ISOLATION,
-                  BeeService.FIELD_STATEMENT_CURSOR_NAME,
-                  BeeService.FIELD_STATEMENT_ESCAPE_PROCESSING,
-                  BeeService.FIELD_STATEMENT_FETCH_DIRECTION,
-                  BeeService.FIELD_STATEMENT_FETCH_SIZE,
-                  BeeService.FIELD_STATEMENT_MAX_FIELD_SIZE,
-                  BeeService.FIELD_STATEMENT_MAX_ROWS,
-                  BeeService.FIELD_STATEMENT_POOLABLE,
-                  BeeService.FIELD_STATEMENT_QUERY_TIMEOUT,
-                  BeeService.FIELD_STATEMENT_RS_TYPE,
-                  BeeService.FIELD_STATEMENT_RS_CONCURRENCY,
-                  BeeService.FIELD_STATEMENT_RS_HOLDABILITY,
-                  BeeService.FIELD_RESULT_SET_FETCH_DIRECTION,
-                  BeeService.FIELD_RESULT_SET_FETCH_SIZE,
-                  BeeService.FIELD_JDBC_RETURN));
+              BeeXml.fromVars(BeeService.XML_TAG_DATA,
+                  BeeService.VAR_JDBC_QUERY,
+                  BeeService.VAR_CONNECTION_AUTO_COMMIT,
+                  BeeService.VAR_CONNECTION_HOLDABILITY,
+                  BeeService.VAR_CONNECTION_READ_ONLY,
+                  BeeService.VAR_CONNECTION_TRANSACTION_ISOLATION,
+                  BeeService.VAR_STATEMENT_CURSOR_NAME,
+                  BeeService.VAR_STATEMENT_ESCAPE_PROCESSING,
+                  BeeService.VAR_STATEMENT_FETCH_DIRECTION,
+                  BeeService.VAR_STATEMENT_FETCH_SIZE,
+                  BeeService.VAR_STATEMENT_MAX_FIELD_SIZE,
+                  BeeService.VAR_STATEMENT_MAX_ROWS,
+                  BeeService.VAR_STATEMENT_POOLABLE,
+                  BeeService.VAR_STATEMENT_QUERY_TIMEOUT,
+                  BeeService.VAR_STATEMENT_RS_TYPE,
+                  BeeService.VAR_STATEMENT_RS_CONCURRENCY,
+                  BeeService.VAR_STATEMENT_RS_HOLDABILITY,
+                  BeeService.VAR_RESULT_SET_FETCH_DIRECTION,
+                  BeeService.VAR_RESULT_SET_FETCH_SIZE,
+                  BeeService.VAR_JDBC_RETURN));
           ok = true;
         }
       } else {

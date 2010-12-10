@@ -4,7 +4,6 @@ import com.google.gwt.event.dom.client.KeyPressEvent;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.TextArea;
 
-import com.butent.bee.egg.client.Global;
 import com.butent.bee.egg.client.BeeKeeper;
 import com.butent.bee.egg.client.dom.DomUtils;
 import com.butent.bee.egg.client.event.HasAfterSaveHandler;
@@ -13,12 +12,12 @@ import com.butent.bee.egg.client.event.HasBeeValueChangeHandler;
 import com.butent.bee.egg.client.utils.BeeJs;
 import com.butent.bee.egg.shared.BeeResource;
 import com.butent.bee.egg.shared.HasId;
+import com.butent.bee.egg.shared.HasStringValue;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
 public class BeeTextArea extends TextArea implements HasId, HasBeeKeyHandler,
     HasBeeValueChangeHandler<String>, HasAfterSaveHandler {
-
-  private String fieldName = null;
+  private HasStringValue source = null;
   private BeeResource resource = null;
   private String digest = null;
 
@@ -42,11 +41,11 @@ public class BeeTextArea extends TextArea implements HasId, HasBeeKeyHandler,
     init();
   }
 
-  public BeeTextArea(String fieldName) {
+  public BeeTextArea(HasStringValue source) {
     this();
-    this.fieldName = fieldName;
+    setSource(source);
 
-    String v = Global.getFieldValue(fieldName);
+    String v = source.getString();
     if (!BeeUtils.isEmpty(v)) {
       setValue(v);
     }
@@ -60,16 +59,16 @@ public class BeeTextArea extends TextArea implements HasId, HasBeeKeyHandler,
     return digest;
   }
 
-  public String getFieldName() {
-    return fieldName;
-  }
-
   public String getId() {
     return DomUtils.getId(this);
   }
 
   public BeeResource getResource() {
     return resource;
+  }
+
+  public HasStringValue getSource() {
+    return source;
   }
 
   public boolean isValueChanged() {
@@ -98,8 +97,8 @@ public class BeeTextArea extends TextArea implements HasId, HasBeeKeyHandler,
   }
 
   public boolean onValueChange(String value) {
-    if (!BeeUtils.isEmpty(getFieldName())) {
-      Global.setFieldValue(getFieldName(), value);
+    if (getSource() != null) {
+      getSource().setValue(value);
     }
 
     return true;
@@ -109,16 +108,16 @@ public class BeeTextArea extends TextArea implements HasId, HasBeeKeyHandler,
     this.digest = digest;
   }
 
-  public void setFieldName(String fieldName) {
-    this.fieldName = fieldName;
-  }
-
   public void setId(String id) {
     DomUtils.setId(this, id);
   }
 
   public void setResource(BeeResource resource) {
     this.resource = resource;
+  }
+
+  public void setSource(HasStringValue source) {
+    this.source = source;
   }
 
   @Override
@@ -151,5 +150,4 @@ public class BeeTextArea extends TextArea implements HasId, HasBeeKeyHandler,
     createId();
     addDefaultHandlers();
   }
-
 }

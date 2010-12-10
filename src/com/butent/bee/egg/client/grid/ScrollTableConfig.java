@@ -335,7 +335,7 @@ public class ScrollTableConfig {
   private SelectionPolicy selectionPolicy;
 
   private int columnCount, visibleCount;
-  private ColumnWidthInfo[] columnWidth;
+  private ColumnWidth[] columnWidth;
   private boolean[] columnVisible;
 
   private int availableWidth;
@@ -558,7 +558,7 @@ public class ScrollTableConfig {
     availableWidth = st.getAvailableWidth();
     dataWidth = st.getDataTable().getElement().getScrollWidth();
     
-    columnWidth = new ColumnWidthInfo[columnCount];
+    columnWidth = new ColumnWidth[columnCount];
     columnVisible = new boolean[columnCount];
     
     st.recalculateIdealColumnWidths();

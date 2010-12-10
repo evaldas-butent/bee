@@ -65,7 +65,7 @@ public class BeeServlet extends HttpServlet {
     LogUtils.infoNow(logger, rid, "request", meth, svc, dsn, opt);
     if (debug) {
       reqInfo.logParams(logger);
-      reqInfo.logFields(logger);
+      reqInfo.logVars(logger);
       reqInfo.logHeaders(logger);
     }
 
@@ -94,29 +94,28 @@ public class BeeServlet extends HttpServlet {
         ctp = (cc > 0) ? ContentType.TABLE : CommUtils.defaultResponseContentType;
       }
 
-      resp.setHeader(BeeService.RPC_FIELD_SID, sid);
-      resp.setHeader(BeeService.RPC_FIELD_QID, rid);
+      resp.setHeader(BeeService.RPC_VAR_SID, sid);
+      resp.setHeader(BeeService.RPC_VAR_QID, rid);
 
       if (!BeeUtils.isEmpty(sep) || !buff.isDefaultSeparator()) {
-        resp.setHeader(BeeService.RPC_FIELD_SEP, buff.getHexSeparator());
+        resp.setHeader(BeeService.RPC_VAR_SEP, buff.getHexSeparator());
       }
 
       if (cnt > 0) {
-        resp.setIntHeader(BeeService.RPC_FIELD_CNT, cnt);
+        resp.setIntHeader(BeeService.RPC_VAR_CNT, cnt);
       }
       if (cc > 0) {
-        resp.setIntHeader(BeeService.RPC_FIELD_COLS, cc);
+        resp.setIntHeader(BeeService.RPC_VAR_COLS, cc);
       }
 
       if (mc > 0) {
-        resp.setIntHeader(BeeService.RPC_FIELD_MSG_CNT, mc);
+        resp.setIntHeader(BeeService.RPC_VAR_MSG_CNT, mc);
         for (int i = 0; i < mc; i++) {
-          resp.setHeader(CommUtils.rpcMessageName(i),
-              buff.getMessage(i).serialize());
+          resp.setHeader(CommUtils.rpcMessageName(i), buff.getMessage(i).serialize());
         }
       }
 
-      resp.setHeader(BeeService.RPC_FIELD_CTP, ctp.transform());
+      resp.setHeader(BeeService.RPC_VAR_CTP, ctp.transform());
 
       resp.setHeader("Cache-Control", "no-cache");
       resp.setHeader("Pragma", "no-cache");
@@ -138,7 +137,7 @@ public class BeeServlet extends HttpServlet {
         s = CommUtils.prepareContent(ctp, buff.getString());
 
       } else if (pc > 0) {
-        resp.setIntHeader(BeeService.RPC_FIELD_PART_CNT, pc);
+        resp.setIntHeader(BeeService.RPC_VAR_PART_CNT, pc);
         StringBuilder sb = new StringBuilder();
         int pn = 0;
 
@@ -168,5 +167,4 @@ public class BeeServlet extends HttpServlet {
       }
     }
   }
-
 }

@@ -4,9 +4,9 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.InputElement;
 import com.google.gwt.dom.client.NodeList;
 
-import com.butent.bee.egg.client.Global;
 import com.butent.bee.egg.client.BeeKeeper;
 import com.butent.bee.egg.client.BeeStyle;
+import com.butent.bee.egg.client.Global;
 import com.butent.bee.egg.client.dom.DomUtils;
 import com.butent.bee.egg.client.layout.Span;
 import com.butent.bee.egg.client.widget.BeeRadioButton;
@@ -44,7 +44,6 @@ public class RadioGroup extends Span implements HasService {
         break;
       }
     }
-
     return v;
   }
 
@@ -52,26 +51,25 @@ public class RadioGroup extends Span implements HasService {
     super();
   }
 
-  public RadioGroup(String fieldName) {
-    this(fieldName, false);
+  public RadioGroup(Variable var) {
+    this(var, false);
   }
   
-  public RadioGroup(String fieldName, boolean vertical) {
+  public RadioGroup(Variable var, boolean vertical) {
     this();
 
-    Variable fld = Global.getField(fieldName);
-    String v = fld.getValue();
-    List<String> opt = fld.getItems();
+    String z = var.getValue();
+    List<String> opt = var.getItems();
 
     int value;
 
-    if (BeeUtils.isEmpty(v)) {
+    if (BeeUtils.isEmpty(z)) {
       value = -1;
     } else {
-      value = opt.indexOf(v);
+      value = opt.indexOf(z);
     }
 
-    addButtons(fieldName, vertical, value, opt.toArray(new String[0]));
+    addButtons(Global.getVarName(var), vertical, value, opt.toArray(new String[0]));
   }
 
   public RadioGroup(String name, String... opt) {

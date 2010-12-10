@@ -32,7 +32,6 @@ import com.butent.bee.egg.client.widget.BeeListBox;
 import com.butent.bee.egg.client.widget.BeeSimpleCheckBox;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeConst;
-import com.butent.bee.egg.shared.BeeName;
 import com.butent.bee.egg.shared.BeeResource;
 import com.butent.bee.egg.shared.BeeService;
 import com.butent.bee.egg.shared.BeeStage;
@@ -440,7 +439,7 @@ public class BeeUi implements Module {
 
     p.add(new BeeButton("Login", BeeService.SERVICE_LOGIN));
 
-    p.add(new BeeCheckBox(new BeeName(Global.FIELD_DEBUG)));
+    p.add(new BeeCheckBox(Global.getVar(Global.VAR_DEBUG)));
 
     p.add(new BeeButton("North land", "comp_ui_form", "dummy_stage"));
     p.add(new BeeButton("CRUD", "comp_ui_rowset", "dummy_stage"));
@@ -504,23 +503,21 @@ public class BeeUi implements Module {
     fp.setCellSpacing(3);
 
     int r = MenuConstants.MAX_MENU_DEPTH;
-    String fld;
+    String name;
 
     for (int i = MenuConstants.ROOT_MENU_INDEX; i < r; i++) {
-      fld = MenuConstants.fieldMenuLayout(i);
-      fp.setWidget(i, 0, new BeeListBox(fld));
+      name = MenuConstants.varMenuLayout(i);
+      fp.setWidget(i, 0, new BeeListBox(Global.getVar(name)));
 
-      fld = MenuConstants.fieldMenuBarType(i);
-      fp.setWidget(i, 1, new BeeSimpleCheckBox(fld));
+      name = MenuConstants.varMenuBarType(i);
+      fp.setWidget(i, 1, new BeeSimpleCheckBox(Global.getVar(name)));
     }
 
-    ValueSpinner spinner = new ValueSpinner(Global.getField(MenuConstants.FIELD_ROOT_LIMIT),
-        0, 30, 3);
+    ValueSpinner spinner = new ValueSpinner(Global.getVar(MenuConstants.VAR_ROOT_LIMIT), 0, 30, 3);
     DomUtils.setWidth(spinner, 60);
     fp.setWidget(r, 0, spinner);
 
-    VolumeSlider slider = new VolumeSlider(Global.getField(MenuConstants.FIELD_ITEM_LIMIT),
-        0, 50, 5);
+    VolumeSlider slider = new VolumeSlider(Global.getVar(MenuConstants.VAR_ITEM_LIMIT), 0, 50, 5);
     slider.setPixelSize(80, 20);
     fp.setWidget(r + 1, 0, slider);
 

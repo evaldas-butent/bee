@@ -4,17 +4,17 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.KeyPressEvent;
 import com.google.gwt.user.client.ui.TextBox;
 
-import com.butent.bee.egg.client.Global;
 import com.butent.bee.egg.client.BeeKeeper;
 import com.butent.bee.egg.client.dom.DomUtils;
 import com.butent.bee.egg.client.event.HasBeeKeyHandler;
 import com.butent.bee.egg.client.event.HasBeeValueChangeHandler;
 import com.butent.bee.egg.shared.HasId;
+import com.butent.bee.egg.shared.HasStringValue;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
 public class BeeTextBox extends TextBox implements HasId, HasBeeKeyHandler,
     HasBeeValueChangeHandler<String> {
-  private String fieldName = null;
+  private HasStringValue source = null;
 
   public BeeTextBox() {
     super();
@@ -26,13 +26,12 @@ public class BeeTextBox extends TextBox implements HasId, HasBeeKeyHandler,
     init();
   }
 
-  public BeeTextBox(String fieldName) {
+  public BeeTextBox(HasStringValue source) {
     this();
     
-    if (!BeeUtils.isEmpty(fieldName)) {
-      this.fieldName = fieldName;
-
-      String v = Global.getFieldValue(fieldName);
+    if (source != null) {
+      setSource(source);
+      String v = source.getString();
       if (!BeeUtils.isEmpty(v)) {
         setValue(v);
       }
@@ -47,12 +46,12 @@ public class BeeTextBox extends TextBox implements HasId, HasBeeKeyHandler,
     return "bee-TextBox";
   }
 
-  public String getFieldName() {
-    return fieldName;
-  }
-
   public String getId() {
     return DomUtils.getId(this);
+  }
+
+  public HasStringValue getSource() {
+    return source;
   }
 
   public boolean onBeeKey(KeyPressEvent event) {
@@ -60,19 +59,18 @@ public class BeeTextBox extends TextBox implements HasId, HasBeeKeyHandler,
   }
 
   public boolean onValueChange(String value) {
-    if (!BeeUtils.isEmpty(getFieldName())) {
-      Global.setFieldValue(getFieldName(), value);
+    if (source != null) {
+      source.setValue(value);
     }
-
     return true;
-  }
-
-  public void setFieldName(String fieldName) {
-    this.fieldName = fieldName;
   }
 
   public void setId(String id) {
     DomUtils.setId(this, id);
+  }
+
+  public void setSource(HasStringValue source) {
+    this.source = source;
   }
 
   private void addDefaultHandlers() {
@@ -85,5 +83,4 @@ public class BeeTextBox extends TextBox implements HasId, HasBeeKeyHandler,
     createId();
     addDefaultHandlers();
   }
-
 }

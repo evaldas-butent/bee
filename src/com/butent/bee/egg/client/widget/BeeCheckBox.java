@@ -3,19 +3,17 @@ package com.butent.bee.egg.client.widget;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.CheckBox;
 
-import com.butent.bee.egg.client.Global;
 import com.butent.bee.egg.client.BeeKeeper;
 import com.butent.bee.egg.client.dom.DomUtils;
 import com.butent.bee.egg.client.event.HasBeeValueChangeHandler;
-import com.butent.bee.egg.shared.BeeName;
+import com.butent.bee.egg.shared.HasBooleanValue;
 import com.butent.bee.egg.shared.HasId;
 import com.butent.bee.egg.shared.Pair;
+import com.butent.bee.egg.shared.Variable;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
-public class BeeCheckBox extends CheckBox implements HasId,
-    HasBeeValueChangeHandler<Boolean> {
-  private String propKey = null;
-  private String fieldName = null;
+public class BeeCheckBox extends CheckBox implements HasId, HasBeeValueChangeHandler<Boolean> {
+  private HasBooleanValue source = null;
 
   private String checkedCaption = null;
   private String uncheckedCaption = null;
@@ -25,22 +23,21 @@ public class BeeCheckBox extends CheckBox implements HasId,
     init();
   }
 
-  public BeeCheckBox(BeeName nm) {
-    this();
-
-    String fld = nm.getName();
-    if (!BeeUtils.isEmpty(fld)) {
-      setText(Global.getFieldCaption(fld));
-      initField(fld);
-      addDefaultHandler();
-    }
-  }
-
   public BeeCheckBox(Element elem) {
     super(elem);
     init();
   }
 
+  public BeeCheckBox(HasBooleanValue source, String label) {
+    this();
+    initSource(source);
+    addDefaultHandler();
+
+    if (!BeeUtils.isEmpty(label)) {
+      setText(label);
+    }
+  }
+  
   public BeeCheckBox(Pair<String, String> caption) {
     this();
 
@@ -61,6 +58,14 @@ public class BeeCheckBox extends CheckBox implements HasId,
     init();
   }
 
+  public BeeCheckBox(Variable source) {
+    this();
+    initSource(source);
+    addDefaultHandler();
+
+    setText(source.getCaption());
+  }
+
   public void createId() {
     DomUtils.createId(this, "c");
   }
@@ -69,16 +74,12 @@ public class BeeCheckBox extends CheckBox implements HasId,
     return checkedCaption;
   }
 
-  public String getFieldName() {
-    return fieldName;
-  }
-
   public String getId() {
     return DomUtils.getId(this);
   }
 
-  public String getPropKey() {
-    return propKey;
+  public HasBooleanValue getSource() {
+    return source;
   }
 
   public String getUncheckedCaption() {
@@ -87,7 +88,7 @@ public class BeeCheckBox extends CheckBox implements HasId,
 
   public boolean onValueChange(Boolean v) {
     setCaption(v);
-    updateField(v);
+    updateSource(v);
 
     return true;
   }
@@ -96,16 +97,12 @@ public class BeeCheckBox extends CheckBox implements HasId,
     this.checkedCaption = checkedCaption;
   }
 
-  public void setFieldName(String fieldName) {
-    this.fieldName = fieldName;
-  }
-
   public void setId(String id) {
     DomUtils.setId(this, id);
   }
 
-  public void setPropKey(String propKey) {
-    this.propKey = propKey;
+  public void setSource(HasBooleanValue source) {
+    this.source = source;
   }
 
   public void setUncheckedCaption(String uncheckedCaption) {
@@ -121,10 +118,10 @@ public class BeeCheckBox extends CheckBox implements HasId,
     setStyleName("bee-CheckBox");
   }
 
-  private void initField(String fld) {
-    if (!BeeUtils.isEmpty(fld)) {
-      setFieldName(fld);
-      setValue(BeeUtils.toBoolean(Global.getFieldValue(fld)));
+  private void initSource(HasBooleanValue src) {
+    if (src != null) {
+      setSource(src);
+      setValue(src.getBoolean());
     }
   }
 
@@ -144,10 +141,9 @@ public class BeeCheckBox extends CheckBox implements HasId,
     }
   }
 
-  private void updateField(boolean v) {
-    if (!BeeUtils.isEmpty(getFieldName())) {
-      Global.setFieldValue(getFieldName(), BeeUtils.toString(v));
+  private void updateSource(boolean v) {
+    if (source != null) {
+      source.setValue(v);
     }
   }
-
 }

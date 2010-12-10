@@ -3,63 +3,63 @@ package com.butent.bee.egg.client.widget;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.FileUpload;
 
-import com.butent.bee.egg.client.Global;
 import com.butent.bee.egg.client.BeeKeeper;
 import com.butent.bee.egg.client.dom.DomUtils;
 import com.butent.bee.egg.client.event.HasBeeChangeHandler;
 import com.butent.bee.egg.shared.HasId;
-import com.butent.bee.egg.shared.utils.BeeUtils;
+import com.butent.bee.egg.shared.HasStringValue;
 
-public class BeeFileUpload extends FileUpload implements HasId,
-    HasBeeChangeHandler {
-  private String fieldName = null;
+public class BeeFileUpload extends FileUpload implements HasId, HasBeeChangeHandler {
+  private HasStringValue source = null;
 
   public BeeFileUpload() {
     super();
-    createId();
-    addDefaultHandlers();
+    init();
   }
 
   public BeeFileUpload(Element element) {
     super(element);
-    createId();
-    addDefaultHandlers();
+    init();
   }
 
-  public BeeFileUpload(String fieldName) {
+  public BeeFileUpload(HasStringValue source) {
     this();
-    this.fieldName = fieldName;
+    this.source = source;
   }
 
   public void createId() {
     DomUtils.createId(this, "upload");
   }
 
-  public String getFieldName() {
-    return fieldName;
-  }
-
   public String getId() {
     return DomUtils.getId(this);
   }
 
-  public boolean onChange() {
-    if (!BeeUtils.isEmpty(getFieldName())) {
-      Global.setFieldValue(getFieldName(), getFilename());
-    }
-    return true;
+  public HasStringValue getSource() {
+    return source;
   }
 
-  public void setFieldName(String fieldName) {
-    this.fieldName = fieldName;
+  public boolean onChange() {
+    if (getSource() != null) {
+      getSource().setValue(getFilename());
+    }
+    return true;
   }
 
   public void setId(String id) {
     DomUtils.setId(this, id);
   }
 
+  public void setSource(HasStringValue source) {
+    this.source = source;
+  }
+  
   private void addDefaultHandlers() {
     BeeKeeper.getBus().addVch(this);
   }
 
+  private void init() {
+    createId();
+    addDefaultHandlers();
+  }
 }

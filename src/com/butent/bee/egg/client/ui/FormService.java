@@ -56,20 +56,20 @@ class FormService extends CompositeService {
         for (int i = cc; i < arr.length(); i++) {
           lst.add(arr.get(i));
         }
-        if (!Global.isField(fld)) {
-          Global.createField(fld, "Form name", BeeType.TYPE_STRING, null);
-          Global.getField(fld).setWidget(BeeWidget.LIST);
+        if (!Global.isVar(fld)) {
+          Global.createVar(fld, "Form name", BeeType.TYPE_STRING, null);
+          Global.getVar(fld).setWidget(BeeWidget.LIST);
         }
-        Global.getField(fld).setItems(lst);
-        Global.getField(fld).setValue(lst.get(0));
+        Global.getVar(fld).setItems(lst);
+        Global.getVar(fld).setValue(lst.get(0));
 
-        Global.inputFields(new BeeStage(self(), BeeStage.STAGE_CONFIRM), "Load form", fld);
+        Global.inputVars(new BeeStage(self(), BeeStage.STAGE_CONFIRM), "Load form", fld);
         break;
 
       case REQUEST_FORM:
         GwtEvent<?> event = (GwtEvent<?>) params[0];
 
-        String fName = Global.getFieldValue(fld);
+        String fName = Global.getVarValue(fld);
 
         if (BeeUtils.isEmpty(fName)) {
           Global.showError("Form name not specified");

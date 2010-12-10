@@ -274,7 +274,7 @@ public class ScrollTable<RowType> extends ComplexPanel implements
     private static final int RESIZE_CURSOR_WIDTH = 15;
 
     private Element curCell = null;
-    private List<ColumnWidthInfo> curCells = new ArrayList<ColumnWidthInfo>();
+    private List<ColumnWidth> curCells = new ArrayList<ColumnWidth>();
     private int curCellIndex = 0;
 
     private int mouseXCurrent = 0;
@@ -284,7 +284,7 @@ public class ScrollTable<RowType> extends ComplexPanel implements
     private boolean resizing = false;
 
     private int sacrificeCellIndex = -1;
-    private List<ColumnWidthInfo> sacrificeCells = new ArrayList<ColumnWidthInfo>();
+    private List<ColumnWidth> sacrificeCells = new ArrayList<ColumnWidth>();
 
     private ScrollTable<?> table = null;
 
@@ -331,7 +331,7 @@ public class ScrollTable<RowType> extends ComplexPanel implements
           boolean resizable = false;
           int colSpan = DomUtils.getColSpan(cell);
           curCells = table.getColumnWidthInfo(curCellIndex, colSpan);
-          for (ColumnWidthInfo info : curCells) {
+          for (ColumnWidth info : curCells) {
             if (!info.hasMaxWidth() || !info.hasMinWidth()
                 || info.getMaxWidth() != info.getMinWidth()) {
               resizable = true;
@@ -640,7 +640,7 @@ public class ScrollTable<RowType> extends ComplexPanel implements
   }
 
   public void fillWidth() {
-    List<ColumnWidthInfo> colWidths = getFillColumnWidths();
+    List<ColumnWidth> colWidths = getFillColumnWidths();
     applyNewColumnWidths(0, colWidths, false);
     doScroll();
   }
@@ -684,7 +684,7 @@ public class ScrollTable<RowType> extends ComplexPanel implements
     return dataTable.getColumnWidth(column);
   }
 
-  public ColumnWidthInfo getColumnWidthInfo(int column, boolean visible) {
+  public ColumnWidth getColumnWidthInfo(int column, boolean visible) {
     if (visible) {
       return getColumnWidthInfo(column);
     }
@@ -706,7 +706,7 @@ public class ScrollTable<RowType> extends ComplexPanel implements
       footerWidth = 0;
     }
 
-    return new ColumnWidthInfo(minWidth, maxWidth, prefWidth,
+    return new ColumnWidth(minWidth, maxWidth, prefWidth,
         curWidth, dataWidth, headerWidth, footerWidth);
   }
 
@@ -1008,7 +1008,7 @@ public class ScrollTable<RowType> extends ComplexPanel implements
       return;
     }
 
-    List<ColumnWidthInfo> colWidths;
+    List<ColumnWidth> colWidths;
     if (resizePolicy == ResizePolicy.FILL_WIDTH) {
       colWidths = getFillColumnWidths();
     } else {
@@ -1424,16 +1424,16 @@ public class ScrollTable<RowType> extends ComplexPanel implements
     add(table, wrapper);
   }
 
-  private void applyNewColumnWidths(int startIndex, List<ColumnWidthInfo> infos, boolean forced) {
-    if (infos == null) {
+  private void applyNewColumnWidths(int startIndex, List<ColumnWidth> widths, boolean forced) {
+    if (widths == null) {
       return;
     }
 
     int offset = getHeaderOffset();
-    int numColumns = infos.size();
+    int numColumns = widths.size();
 
     for (int i = 0; i < numColumns; i++) {
-      ColumnWidthInfo info = infos.get(i);
+      ColumnWidth info = widths.get(i);
       int newWidth = info.getNewWidth();
 
       if (forced || info.getCurWidth() != newWidth) {
@@ -1476,27 +1476,27 @@ public class ScrollTable<RowType> extends ComplexPanel implements
         + BeeUtils.toString(colId);
   }
 
-  private List<ColumnWidthInfo> getBoundedColumnWidths(boolean boundsOnly) {
+  private List<ColumnWidth> getBoundedColumnWidths(boolean boundsOnly) {
     if (!isAttached()) {
       return null;
     }
 
     int numColumns = dataTable.getColumnCount();
     int totalWidth = 0;
-    List<ColumnWidthInfo> colWidthInfos = getColumnWidthInfo(0, numColumns);
+    List<ColumnWidth> colWidths = getColumnWidthInfo(0, numColumns);
 
     if (!boundsOnly) {
-      for (ColumnWidthInfo info : colWidthInfos) {
+      for (ColumnWidth info : colWidths) {
         totalWidth += info.getCurWidth();
         info.setCurWidth(0);
       }
     }
     
-    GridUtils.distributeWidth(colWidthInfos, totalWidth);
-    return colWidthInfos;
+    GridUtils.distributeWidth(colWidths, totalWidth);
+    return colWidths;
   }
 
-  private ColumnWidthInfo getColumnWidthInfo(int column) {
+  private ColumnWidth getColumnWidthInfo(int column) {
     boolean visible = true;
     int minWidth = getMinimumColumnWidth(column, visible);
     int maxWidth = getMaximumColumnWidth(column, visible);
@@ -1533,19 +1533,19 @@ public class ScrollTable<RowType> extends ComplexPanel implements
       minWidth = Math.max(minWidth, w);
     }
 
-    return new ColumnWidthInfo(minWidth, maxWidth, prefWidth, 
+    return new ColumnWidth(minWidth, maxWidth, prefWidth, 
         curWidth, dataWidth, headerWidth, footerWidth);
   }
 
-  private List<ColumnWidthInfo> getColumnWidthInfo(int column, int numColumns) {
-    List<ColumnWidthInfo> infos = new ArrayList<ColumnWidthInfo>();
+  private List<ColumnWidth> getColumnWidthInfo(int column, int numColumns) {
+    List<ColumnWidth> infos = new ArrayList<ColumnWidth>();
     for (int i = 0; i < numColumns; i++) {
       infos.add(getColumnWidthInfo(column + i));
     }
     return infos;
   }
 
-  private List<ColumnWidthInfo> getFillColumnWidths() {
+  private List<ColumnWidth> getFillColumnWidths() {
     if (!isAttached()) {
       return null;
     }
@@ -1561,7 +1561,7 @@ public class ScrollTable<RowType> extends ComplexPanel implements
       return null;
     }
 
-    List<ColumnWidthInfo> colWidthInfos = getColumnWidthInfo(0, numColumns);
+    List<ColumnWidth> colWidthInfos = getColumnWidthInfo(0, numColumns);
     GridUtils.distributeWidth(colWidthInfos, diff);
     return colWidthInfos;
   }

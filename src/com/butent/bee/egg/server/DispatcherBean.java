@@ -46,8 +46,7 @@ public class DispatcherBean {
       buff.addLine(buff.now(), BeeConst.whereAmI());
 
     } else if (BeeUtils.same(svc, BeeService.SERVICE_INVOKE)) {
-      Reflection.invoke(invBean, reqInfo.getParameter(BeeService.RPC_FIELD_METH), 
-          reqInfo, buff);
+      Reflection.invoke(invBean, reqInfo.getParameter(BeeService.RPC_VAR_METH), reqInfo, buff);
       
     } else if (svc.startsWith("rpc_ui_")) {
       uiBean.doService(svc, reqInfo, buff);
@@ -58,5 +57,4 @@ public class DispatcherBean {
       buff.addWarning(msg);
     }
   }
-
 }

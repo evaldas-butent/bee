@@ -1,6 +1,6 @@
 package com.butent.bee.egg.client.grid;
 
-public class ColumnWidthInfo {
+public class ColumnWidth {
   private int minWidth;
   private int maxWidth;
   private int prefWidth;
@@ -13,7 +13,7 @@ public class ColumnWidthInfo {
   private int newWidth = 0;
   private int requiredWidth;
 
-  public ColumnWidthInfo(int minWidth, int maxWidth, int prefWidth,
+  public ColumnWidth(int minWidth, int maxWidth, int prefWidth,
       int curWidth, int dataWidth, int headerWidth, int footerWidth) {
     this.minWidth = minWidth;
     this.maxWidth = maxWidth;
@@ -31,6 +31,10 @@ public class ColumnWidthInfo {
 
   public int getDataWidth() {
     return dataWidth;
+  }
+
+  public double getDifference() {
+    return (prefWidth > 0) ? (newWidth - prefWidth) / (double) prefWidth : 0;
   }
 
   public int getFooterWidth() {
@@ -51,10 +55,6 @@ public class ColumnWidthInfo {
 
   public int getNewWidth() {
     return newWidth;
-  }
-
-  public double getPercentageDifference() {
-    return (newWidth - prefWidth) / (double) prefWidth;
   }
 
   public int getPrefWidth() {

@@ -157,5 +157,4 @@ public class BeeResource implements BeeSerializable {
   public void setUri(String uri) {
     this.uri = uri;
   }
-
 }

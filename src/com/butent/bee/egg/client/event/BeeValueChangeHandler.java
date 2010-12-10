@@ -17,17 +17,15 @@ public class BeeValueChangeHandler<I> implements ValueChangeHandler<I> {
     if (source instanceof BeeRadioButton && BeeUtils.isTrue(value)) {
       BeeRadioButton rb = (BeeRadioButton) source;
 
-      String fld = rb.getName();
-      if (Global.isField(fld)) {
-        Global.setFieldValue(fld,
-            Global.getFieldItems(fld).get(BeeUtils.toInt(rb.getFormValue())));
+      String name = rb.getName();
+      if (Global.isVar(name)) {
+        Global.setVarValue(name, Global.getVarItems(name).get(BeeUtils.toInt(rb.getFormValue())));
       }
 
       BeeCommand cmnd = rb.getCommand();
       if (cmnd != null) {
         cmnd.execute();
       }
-
       return;
     }
 
@@ -41,5 +39,4 @@ public class BeeValueChangeHandler<I> implements ValueChangeHandler<I> {
   private HasBeeValueChangeHandler<I> extracted(Object source) {
     return ((HasBeeValueChangeHandler<I>) source);
   }
-
 }

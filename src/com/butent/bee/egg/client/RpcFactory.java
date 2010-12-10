@@ -110,7 +110,7 @@ public class RpcFactory implements Module {
     Assert.notEmpty(method);
 
     ParameterList params = createParameters(BeeService.SERVICE_INVOKE);
-    params.addQueryItem(BeeService.RPC_FIELD_METH, method);
+    params.addQueryItem(BeeService.RPC_VAR_METH, method);
 
     if (data == null) {
       return makeGetRequest(params);
@@ -251,11 +251,11 @@ public class RpcFactory implements Module {
       info.setTimeout(timeout);
     }
 
-    bld.setHeader(BeeService.RPC_FIELD_QID, BeeUtils.transform(id));
+    bld.setHeader(BeeService.RPC_VAR_QID, BeeUtils.transform(id));
     String cth = null;
 
     if (ctp != null) {
-      bld.setHeader(BeeService.RPC_FIELD_CTP, ctp.transform());
+      bld.setHeader(BeeService.RPC_VAR_CTP, ctp.transform());
 
       String z = params.getParameter(CommUtils.CONTENT_TYPE_HEADER);
       if (BeeUtils.isEmpty(z)) {
@@ -268,8 +268,8 @@ public class RpcFactory implements Module {
       bld.setHeader(CommUtils.CONTENT_TYPE_HEADER, cth);
     }
 
-    params.getHeadersExcept(bld, BeeService.RPC_FIELD_QID,
-        BeeService.RPC_FIELD_CTP, CommUtils.CONTENT_TYPE_HEADER);
+    params.getHeadersExcept(bld, BeeService.RPC_VAR_QID,
+        BeeService.RPC_VAR_CTP, CommUtils.CONTENT_TYPE_HEADER);
 
     if (debug) {
       BeeKeeper.getLog().info("request", id, meth.toString(), url);

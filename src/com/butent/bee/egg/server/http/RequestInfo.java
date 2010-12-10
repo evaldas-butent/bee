@@ -46,7 +46,7 @@ public class RequestInfo implements HasExtendedInfo, Transformable {
 
   private Map<String, String> headers = null;
   private Map<String, String> params = null;
-  private Map<String, String> fields = null;
+  private Map<String, String> vars = null;
 
   private int contentLen = -1;
   private String contentTypeHeader = null;
@@ -87,7 +87,7 @@ public class RequestInfo implements HasExtendedInfo, Transformable {
     }
 
     if (isXml()) {
-      fields = XmlUtils.getElements(content, BeeService.XML_TAG_DATA);
+      vars = XmlUtils.getElements(content, BeeService.XML_TAG_DATA);
     }
   }
 
@@ -109,14 +109,6 @@ public class RequestInfo implements HasExtendedInfo, Transformable {
 
   public String getDsn() {
     return dsn;
-  }
-
-  public Map<String, String> getFields() {
-    return fields;
-  }
-
-  public String getFieldssAsString() {
-    return BeeUtils.transformMap(fields);
   }
 
   public Map<String, String> getHeaders() {
@@ -221,8 +213,8 @@ public class RequestInfo implements HasExtendedInfo, Transformable {
       }
     }
 
-    if (!BeeUtils.isEmpty(getFields())) {
-      value = getFields().get(name);
+    if (!BeeUtils.isEmpty(getVars())) {
+      value = getVars().get(name);
     }
 
     return value;
@@ -252,6 +244,14 @@ public class RequestInfo implements HasExtendedInfo, Transformable {
     return service;
   }
 
+  public Map<String, String> getVars() {
+    return vars;
+  }
+
+  public String getVarsAsString() {
+    return BeeUtils.transformMap(vars);
+  }
+
   public boolean hasParameter(int idx) {
     return hasParameter(CommUtils.rpcParamName(idx));
   }
@@ -265,7 +265,7 @@ public class RequestInfo implements HasExtendedInfo, Transformable {
     if (!BeeUtils.isEmpty(getHeaders()) && getHeaders().containsKey(name)) {
       return true;
     }
-    if (!BeeUtils.isEmpty(getFields()) && getFields().containsKey(name)) {
+    if (!BeeUtils.isEmpty(getVars()) && getVars().containsKey(name)) {
       return true;
     }
 
@@ -277,25 +277,7 @@ public class RequestInfo implements HasExtendedInfo, Transformable {
   }
 
   public boolean isXml() {
-    return getContentLen() > 0
-        && CommUtils.equals(getContentType(), ContentType.XML);
-  }
-
-  public void logFields(Logger logger) {
-    if (BeeUtils.isEmpty(getFields())) {
-      if (isXml()) {
-        LogUtils.warning(logger, "Fields not available");
-      }
-      return;
-    }
-
-    int n = getFields().size();
-    int i = 0;
-
-    for (Map.Entry<String, String> el : getFields().entrySet()) {
-      LogUtils.info(logger, "Field", BeeUtils.progress(++i, n), el.getKey(),
-          el.getValue());
-    }
+    return getContentLen() > 0 && CommUtils.equals(getContentType(), ContentType.XML);
   }
 
   public void logHeaders(Logger logger) {
@@ -308,8 +290,7 @@ public class RequestInfo implements HasExtendedInfo, Transformable {
     int i = 0;
 
     for (Map.Entry<String, String> el : getHeaders().entrySet()) {
-      LogUtils.info(logger, "Header", BeeUtils.progress(++i, n), el.getKey(),
-          el.getValue());
+      LogUtils.info(logger, "Header", BeeUtils.progress(++i, n), el.getKey(), el.getValue());
     }
   }
 
@@ -323,8 +304,23 @@ public class RequestInfo implements HasExtendedInfo, Transformable {
     int i = 0;
 
     for (Map.Entry<String, String> el : getParams().entrySet()) {
-      LogUtils.info(logger, "Parameter", BeeUtils.progress(++i, n),
-          el.getKey(), el.getValue());
+      LogUtils.info(logger, "Parameter", BeeUtils.progress(++i, n), el.getKey(), el.getValue());
+    }
+  }
+
+  public void logVars(Logger logger) {
+    if (BeeUtils.isEmpty(getVars())) {
+      if (isXml()) {
+        LogUtils.warning(logger, "Vars not available");
+      }
+      return;
+    }
+
+    int n = getVars().size();
+    int i = 0;
+
+    for (Map.Entry<String, String> el : getVars().entrySet()) {
+      LogUtils.info(logger, "Var", BeeUtils.progress(++i, n), el.getKey(), el.getValue());
     }
   }
   
@@ -353,10 +349,6 @@ public class RequestInfo implements HasExtendedInfo, Transformable {
 
   public void setDsn(String dsn) {
     this.dsn = dsn;
-  }
-
-  public void setFields(Map<String, String> fields) {
-    this.fields = fields;
   }
 
   public void setHeaders(Map<String, String> headers) {
@@ -395,12 +387,15 @@ public class RequestInfo implements HasExtendedInfo, Transformable {
     this.service = svc;
   }
 
+  public void setVars(Map<String, String> vars) {
+    this.vars = vars;
+  }
+
   @Override
   public String toString() {
     return BeeUtils.concat(BeeConst.DEFAULT_ROW_SEPARATOR,
-        BeeUtils.transformOptions("counter", COUNTER, "method", method, "id",
-            id, "service", service, "dsn", dsn, "sep", separator, "opt",
-            options), headers, params);
+        BeeUtils.transformOptions("counter", COUNTER, "method", method, "id", id,
+            "service", service, "dsn", dsn, "sep", separator, "opt", options), headers, params);
   }
 
   public String transform() {
@@ -464,13 +459,12 @@ public class RequestInfo implements HasExtendedInfo, Transformable {
         continue;
       }
 
-      PropertyUtils.addProperties(info, true, nm, "Value", coo.getValue(), nm,
-          "Comment", coo.getComment(), nm, "Domain", coo.getDomain(), nm,
-          "Max Age", coo.getMaxAge(), nm, "Path", coo.getPath(), nm, "Secure",
-          coo.getSecure(), nm, "Version", coo.getVersion(), nm, "Http Only",
-          coo.isHttpOnly());
+      PropertyUtils.addProperties(info, true, nm, "Value", coo.getValue(),
+          nm, "Comment", coo.getComment(), nm, "Domain", coo.getDomain(),
+          nm, "Max Age", coo.getMaxAge(), nm, "Path", coo.getPath(),
+          nm, "Secure", coo.getSecure(), nm, "Version", coo.getVersion(),
+          nm, "Http Only", coo.isHttpOnly());
     }
-
     return info;
   }
 
@@ -535,20 +529,20 @@ public class RequestInfo implements HasExtendedInfo, Transformable {
       loc = lst.get(i);
       root = "Locale " + i;
 
-      PropertyUtils.addProperties(info, true, root, "Country", loc.getCountry(), root,
-          "Display Country", loc.getDisplayCountry(), root,
-          "Display Country loc", loc.getDisplayCountry(loc), root,
-          "Display Language", loc.getDisplayLanguage(), root,
-          "Display Language loc", loc.getDisplayLanguage(loc), root,
-          "Display Name", loc.getDisplayName(), root, "Display Name loc",
-          loc.getDisplayName(loc), root, "Display Variant",
-          loc.getDisplayVariant(), root, "Display Variant loc",
-          loc.getDisplayVariant(loc), root, "ISO3 Country",
-          loc.getISO3Country(), root, "ISO3 Language", loc.getISO3Language(),
-          root, "Language", loc.getLanguage(), root, "Variant",
-          loc.getVariant());
+      PropertyUtils.addProperties(info, true, root, "Country", loc.getCountry(),
+          root, "Display Country", loc.getDisplayCountry(),
+          root, "Display Country loc", loc.getDisplayCountry(loc),
+          root, "Display Language", loc.getDisplayLanguage(),
+          root, "Display Language loc", loc.getDisplayLanguage(loc),
+          root, "Display Name", loc.getDisplayName(),
+          root, "Display Name loc", loc.getDisplayName(loc),
+          root, "Display Variant", loc.getDisplayVariant(),
+          root, "Display Variant loc", loc.getDisplayVariant(loc),
+          root, "ISO3 Country", loc.getISO3Country(),
+          root, "ISO3 Language", loc.getISO3Language(),
+          root, "Language", loc.getLanguage(),
+          root, "Variant", loc.getVariant());
     }
-
     return info;
   }
 
@@ -615,7 +609,6 @@ public class RequestInfo implements HasExtendedInfo, Transformable {
             continue;
           }
         }
-
         PropertyUtils.addExtended(info, root + " attribute " + nm, null, v);
       }
     }
@@ -636,12 +629,13 @@ public class RequestInfo implements HasExtendedInfo, Transformable {
       }
     }
 
-    PropertyUtils.addProperties(info, true, root, "Effective Major Version",
-        sc.getEffectiveMajorVersion(), root, "Effective Minor Version",
-        sc.getEffectiveMinorVersion(), root, "Major Version",
-        sc.getMajorVersion(), root, "Minor Version", sc.getMinorVersion(),
-        root, "Server Info", sc.getServerInfo(), root, "Servlet Context Name",
-        sc.getServletContextName());
+    PropertyUtils.addProperties(info, true,
+        root, "Effective Major Version", sc.getEffectiveMajorVersion(),
+        root, "Effective Minor Version", sc.getEffectiveMinorVersion(),
+        root, "Major Version", sc.getMajorVersion(),
+        root, "Minor Version", sc.getMinorVersion(),
+        root, "Server Info", sc.getServerInfo(),
+        root, "Servlet Context Name", sc.getServletContextName());
 
     lst = sc.getInitParameterNames();
     if (!BeeUtils.isEmpty(lst)) {
@@ -671,10 +665,11 @@ public class RequestInfo implements HasExtendedInfo, Transformable {
       }
     }
 
-    PropertyUtils.addProperties(info, true, root, "Id", hs.getId(), root,
-        "Creation Time", hs.getCreationTime(), root, "Last Accessed Time",
-        hs.getLastAccessedTime(), root, "Max Inactive Interval",
-        hs.getMaxInactiveInterval(), root, "Is New", hs.isNew());
+    PropertyUtils.addProperties(info, true, root, "Id", hs.getId(),
+        root, "Creation Time", hs.getCreationTime(),
+        root, "Last Accessed Time", hs.getLastAccessedTime(),
+        root, "Max Inactive Interval", hs.getMaxInactiveInterval(),
+        root, "Is New", hs.isNew());
 
     return info;
   }
@@ -684,17 +679,17 @@ public class RequestInfo implements HasExtendedInfo, Transformable {
       return;
     }
 
-    if (BeeUtils.same(nm, BeeService.RPC_FIELD_QID)) {
+    if (BeeUtils.same(nm, BeeService.RPC_VAR_QID)) {
       id = v;
-    } else if (BeeUtils.same(nm, BeeService.RPC_FIELD_SVC)) {
+    } else if (BeeUtils.same(nm, BeeService.RPC_VAR_SVC)) {
       service = v;
-    } else if (BeeUtils.same(nm, BeeService.RPC_FIELD_DSN)) {
+    } else if (BeeUtils.same(nm, BeeService.RPC_VAR_DSN)) {
       dsn = v;
-    } else if (BeeUtils.same(nm, BeeService.RPC_FIELD_SEP)) {
+    } else if (BeeUtils.same(nm, BeeService.RPC_VAR_SEP)) {
       separator = v;
-    } else if (BeeUtils.same(nm, BeeService.RPC_FIELD_OPT)) {
+    } else if (BeeUtils.same(nm, BeeService.RPC_VAR_OPT)) {
       options = v;
-    } else if (BeeUtils.same(nm, BeeService.RPC_FIELD_CTP)) {
+    } else if (BeeUtils.same(nm, BeeService.RPC_VAR_CTP)) {
       contentType = CommUtils.getContentType(v);
     }
   }
@@ -710,5 +705,4 @@ public class RequestInfo implements HasExtendedInfo, Transformable {
       return null;
     }
   }
-
 }

@@ -457,6 +457,17 @@ public class BeeUtils {
       return null;
     }
   }
+  
+  public static <K, V> K getKey(Map<K, V> map, V value) {
+    K key = null;
+    for (Map.Entry<K, V> entry : map.entrySet()) {
+      if (equals(entry.getValue(), value)) {
+        key = entry.getKey();
+        break;
+      }
+    }
+    return key;
+  }
 
   public static String getPrefix(String src, char sep) {
     if (isEmpty(src)) {

@@ -80,19 +80,18 @@ public class DataServiceBean {
     return z;
   }
 
-  private void testJdbc(Connection conn, RequestInfo reqInfo,
-      ResponseBuffer buff) {
+  private void testJdbc(Connection conn, RequestInfo reqInfo, ResponseBuffer buff) {
     BeeDate enter = new BeeDate();
 
-    Map<String, String> map = reqInfo.getFields();
+    Map<String, String> map = reqInfo.getVars();
     if (BeeUtils.isEmpty(map)) {
       buff.addSevere("Request data not found");
       return;
     }
 
-    String sql = map.get(BeeService.FIELD_JDBC_QUERY);
+    String sql = map.get(BeeService.VAR_JDBC_QUERY);
     if (BeeUtils.isEmpty(sql)) {
-      buff.addSevere("Parameter", BeeService.FIELD_JDBC_QUERY, "not found");
+      buff.addSevere("Parameter", BeeService.VAR_JDBC_QUERY, "not found");
       return;
     }
 
@@ -102,27 +101,27 @@ public class DataServiceBean {
       }
     }
 
-    String cAc = map.get(BeeService.FIELD_CONNECTION_AUTO_COMMIT);
-    String cHo = map.get(BeeService.FIELD_CONNECTION_HOLDABILITY);
-    String cRo = map.get(BeeService.FIELD_CONNECTION_READ_ONLY);
-    String cTi = map.get(BeeService.FIELD_CONNECTION_TRANSACTION_ISOLATION);
+    String cAc = map.get(BeeService.VAR_CONNECTION_AUTO_COMMIT);
+    String cHo = map.get(BeeService.VAR_CONNECTION_HOLDABILITY);
+    String cRo = map.get(BeeService.VAR_CONNECTION_READ_ONLY);
+    String cTi = map.get(BeeService.VAR_CONNECTION_TRANSACTION_ISOLATION);
 
-    String sCn = map.get(BeeService.FIELD_STATEMENT_CURSOR_NAME);
-    String sEp = map.get(BeeService.FIELD_STATEMENT_ESCAPE_PROCESSING);
-    String sFd = map.get(BeeService.FIELD_STATEMENT_FETCH_DIRECTION);
-    String sFs = map.get(BeeService.FIELD_STATEMENT_FETCH_SIZE);
-    String sMf = map.get(BeeService.FIELD_STATEMENT_MAX_FIELD_SIZE);
-    String sMr = map.get(BeeService.FIELD_STATEMENT_MAX_ROWS);
-    String sPo = map.get(BeeService.FIELD_STATEMENT_POOLABLE);
-    String sQt = map.get(BeeService.FIELD_STATEMENT_QUERY_TIMEOUT);
-    String sRc = map.get(BeeService.FIELD_STATEMENT_RS_CONCURRENCY);
-    String sRh = map.get(BeeService.FIELD_STATEMENT_RS_HOLDABILITY);
-    String sRt = map.get(BeeService.FIELD_STATEMENT_RS_TYPE);
+    String sCn = map.get(BeeService.VAR_STATEMENT_CURSOR_NAME);
+    String sEp = map.get(BeeService.VAR_STATEMENT_ESCAPE_PROCESSING);
+    String sFd = map.get(BeeService.VAR_STATEMENT_FETCH_DIRECTION);
+    String sFs = map.get(BeeService.VAR_STATEMENT_FETCH_SIZE);
+    String sMf = map.get(BeeService.VAR_STATEMENT_MAX_FIELD_SIZE);
+    String sMr = map.get(BeeService.VAR_STATEMENT_MAX_ROWS);
+    String sPo = map.get(BeeService.VAR_STATEMENT_POOLABLE);
+    String sQt = map.get(BeeService.VAR_STATEMENT_QUERY_TIMEOUT);
+    String sRc = map.get(BeeService.VAR_STATEMENT_RS_CONCURRENCY);
+    String sRh = map.get(BeeService.VAR_STATEMENT_RS_HOLDABILITY);
+    String sRt = map.get(BeeService.VAR_STATEMENT_RS_TYPE);
 
-    String rFd = map.get(BeeService.FIELD_RESULT_SET_FETCH_DIRECTION);
-    String rFs = map.get(BeeService.FIELD_RESULT_SET_FETCH_SIZE);
+    String rFd = map.get(BeeService.VAR_RESULT_SET_FETCH_DIRECTION);
+    String rFs = map.get(BeeService.VAR_RESULT_SET_FETCH_SIZE);
 
-    String ret = map.get(BeeService.FIELD_JDBC_RETURN);
+    String ret = map.get(BeeService.VAR_JDBC_RETURN);
     boolean debug = reqInfo.isDebug();
 
     String before = "before:";
@@ -144,8 +143,7 @@ public class DataServiceBean {
         return;
       }
 
-      buff.addMessage("Connection Auto Commit:", cAc, before, vb, after,
-          BeeUtils.toBoolean(v2));
+      buff.addMessage("Connection Auto Commit:", cAc, before, vb, after, BeeUtils.toBoolean(v2));
     }
 
     if (!BeeUtils.isEmpty(cHo)) {
@@ -191,8 +189,7 @@ public class DataServiceBean {
         return;
       }
 
-      buff.addMessage("Connection Read Only:", cRo, before, vb, after,
-          BeeUtils.toBoolean(v2));
+      buff.addMessage("Connection Read Only:", cRo, before, vb, after, BeeUtils.toBoolean(v2));
     }
 
     Statement stmt = bc.createStatement(conn, sRt, sRc, sRh);
@@ -218,8 +215,7 @@ public class DataServiceBean {
       buff.addMessage("Statement parameters:", sRt, sRc, sRh);
       buff.addMessage("Statement created:", bs.getResultSetType(),
           JdbcUtils.rsTypeAsString(bs.getResultSetType()), bs.getConcurrency(),
-          JdbcUtils.concurrencyAsString(bs.getConcurrency()),
-          bs.getHoldability(),
+          JdbcUtils.concurrencyAsString(bs.getConcurrency()), bs.getHoldability(),
           JdbcUtils.holdabilityAsString(bs.getHoldability()));
     }
 
@@ -236,8 +232,7 @@ public class DataServiceBean {
         }
 
       } else {
-        buff.addMessage(Level.WARNING, "Cursor name:", sCn,
-            JdbcConst.FEATURE_NOT_SUPPORTED);
+        buff.addMessage(Level.WARNING, "Cursor name:", sCn, JdbcConst.FEATURE_NOT_SUPPORTED);
       }
     }
 
@@ -266,8 +261,7 @@ public class DataServiceBean {
       }
 
       buff.addMessage("Statement Fetch Direction:", sFd, before, v1,
-          JdbcUtils.fetchDirectionAsString(v1), after, v2,
-          JdbcUtils.fetchDirectionAsString(v2));
+          JdbcUtils.fetchDirectionAsString(v1), after, v2, JdbcUtils.fetchDirectionAsString(v2));
     }
 
     if (!BeeUtils.isEmpty(sFs)) {
@@ -277,8 +271,7 @@ public class DataServiceBean {
       } else if (BeeUtils.isInt(sFs)) {
         vu = BeeUtils.toInt(sFs);
       } else {
-        buff.addMessage(Level.WARNING, "Statement Fetch Size:", sFs,
-            "not an integer");
+        buff.addMessage(Level.WARNING, "Statement Fetch Size:", sFs, "not an integer");
         vu = BeeConst.INT_ERROR;
         ok = false;
       }
@@ -305,8 +298,7 @@ public class DataServiceBean {
         vu = BeeUtils.toInt(sMf);
         ok = true;
       } else {
-        buff.addMessage(Level.WARNING, "Statement Max Field Size:", sMf,
-            "not an integer");
+        buff.addMessage(Level.WARNING, "Statement Max Field Size:", sMf, "not an integer");
         vu = BeeConst.INT_ERROR;
         ok = false;
       }
@@ -333,8 +325,7 @@ public class DataServiceBean {
         vu = BeeUtils.toInt(sMr);
         ok = true;
       } else {
-        buff.addMessage(Level.WARNING, "Statement Max Rows:", sMr,
-            "not an integer");
+        buff.addMessage(Level.WARNING, "Statement Max Rows:", sMr, "not an integer");
         vu = BeeConst.INT_ERROR;
         ok = false;
       }
@@ -361,8 +352,7 @@ public class DataServiceBean {
         vu = BeeUtils.toInt(sQt);
         ok = true;
       } else {
-        buff.addMessage(Level.WARNING, "Statement Query Timeout:", sQt,
-            "not an integer");
+        buff.addMessage(Level.WARNING, "Statement Query Timeout:", sQt, "not an integer");
         vu = BeeConst.INT_ERROR;
         ok = false;
       }
@@ -396,8 +386,7 @@ public class DataServiceBean {
         return;
       }
 
-      buff.addMessage("Statement Poolable:", sPo, before, vb, after,
-          BeeUtils.toBoolean(v2));
+      buff.addMessage("Statement Poolable:", sPo, before, vb, after, BeeUtils.toBoolean(v2));
     }
 
     long memQ1 = BeeSystem.freeMemory();
@@ -437,8 +426,7 @@ public class DataServiceBean {
       }
 
       buff.addMessage("Result Set Fetch Direction:", rFd, before, v1,
-          JdbcUtils.fetchDirectionAsString(v1), after, v2,
-          JdbcUtils.fetchDirectionAsString(v2));
+          JdbcUtils.fetchDirectionAsString(v1), after, v2, JdbcUtils.fetchDirectionAsString(v2));
     }
 
     if (!BeeUtils.isEmpty(rFs)) {
@@ -448,8 +436,7 @@ public class DataServiceBean {
       } else if (BeeUtils.isInt(rFs)) {
         vu = BeeUtils.toInt(rFs);
       } else {
-        buff.addMessage(Level.WARNING, "Result Set Fetch Size:", rFs,
-            "not an integer");
+        buff.addMessage(Level.WARNING, "Result Set Fetch Size:", rFs, "not an integer");
         vu = BeeConst.INT_ERROR;
         ok = false;
       }
@@ -485,9 +472,7 @@ public class DataServiceBean {
       BeeDate end = new BeeDate();
 
       buff.addLine(enter.toLog(), start.toLog(), end.toLog());
-      buff.addLine(
-          ret,
-          rc,
+      buff.addLine(ret, rc,
           BeeUtils.bracket(BeeUtils.toSeconds(end.getTime() - start.getTime())),
           "type", JdbcUtils.getTypeInfo(rs));
       buff.addLine("memory", BeeUtils.addName("executeQuery", memQ1 - memQ2),

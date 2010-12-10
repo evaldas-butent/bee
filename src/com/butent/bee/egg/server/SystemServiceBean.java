@@ -54,11 +54,11 @@ public class SystemServiceBean {
   }
 
   private void classInfo(RequestInfo reqInfo, ResponseBuffer buff) {
-    String cnm = reqInfo.getParameter(BeeService.FIELD_CLASS_NAME);
-    String pck = reqInfo.getParameter(BeeService.FIELD_PACKAGE_LIST);
+    String cnm = reqInfo.getParameter(BeeService.VAR_CLASS_NAME);
+    String pck = reqInfo.getParameter(BeeService.VAR_PACKAGE_LIST);
 
     if (BeeUtils.isEmpty(cnm)) {
-      buff.addSevere("Parameter", BeeService.FIELD_CLASS_NAME, "not found");
+      buff.addSevere("Parameter", BeeService.VAR_CLASS_NAME, "not found");
       return;
     }
 
@@ -195,8 +195,8 @@ public class SystemServiceBean {
   private void saveResource(RequestInfo reqInfo, ResponseBuffer buff) {
     long start = System.currentTimeMillis();
 
-    String uri = reqInfo.getParameter(BeeService.RPC_FIELD_URI);
-    String md5 = reqInfo.getParameter(BeeService.RPC_FIELD_MD5);
+    String uri = reqInfo.getParameter(BeeService.RPC_VAR_URI);
+    String md5 = reqInfo.getParameter(BeeService.RPC_VAR_MD5);
 
     if (BeeUtils.isEmpty(uri)) {
       buff.addSevere("URI not specified");
@@ -232,13 +232,13 @@ public class SystemServiceBean {
   }
 
   private void xmlInfo(RequestInfo reqInfo, ResponseBuffer buff) {
-    String pSrc = reqInfo.getParameter(BeeService.FIELD_XML_SOURCE);
-    String pXsl = reqInfo.getParameter(BeeService.FIELD_XML_TRANSFORM);
-    String pDst = reqInfo.getParameter(BeeService.FIELD_XML_TARGET);
-    String ret = reqInfo.getParameter(BeeService.FIELD_XML_RETURN);
+    String pSrc = reqInfo.getParameter(BeeService.VAR_XML_SOURCE);
+    String pXsl = reqInfo.getParameter(BeeService.VAR_XML_TRANSFORM);
+    String pDst = reqInfo.getParameter(BeeService.VAR_XML_TARGET);
+    String ret = reqInfo.getParameter(BeeService.VAR_XML_RETURN);
 
     if (BeeUtils.isEmpty(pSrc)) {
-      buff.addSevere("Parameter", BeeService.FIELD_XML_SOURCE, "not found");
+      buff.addSevere("Parameter", BeeService.VAR_XML_SOURCE, "not found");
       return;
     }
 

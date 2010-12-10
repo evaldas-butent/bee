@@ -51,8 +51,8 @@ public class TextEditor extends Composite implements HasId {
       String digest = BeeJs.md5(v);
 
       ParameterList params = new ParameterList(BeeService.SERVICE_SAVE_RESOURCE);
-      params.addHeaderItem(BeeService.RPC_FIELD_URI, path);
-      params.addHeaderItem(BeeService.RPC_FIELD_MD5, digest);
+      params.addHeaderItem(BeeService.RPC_VAR_URI, path);
+      params.addHeaderItem(BeeService.RPC_VAR_MD5, digest);
 
       BeeKeeper.getRpc().makePostRequest(params, ContentType.RESOURCE, v);
       area.onAfterSave(digest);

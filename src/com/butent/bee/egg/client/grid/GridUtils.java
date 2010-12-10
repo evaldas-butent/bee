@@ -31,6 +31,34 @@ public class GridUtils {
     }
   }
 
+  private static Comparator<ColumnWidth> growComparator = new Comparator<ColumnWidth>() {
+    public int compare(ColumnWidth o1, ColumnWidth o2) {
+      double diff1 = o1.getDifference();
+      double diff2 = o2.getDifference();
+      if (diff1 < diff2) {
+        return -1;
+      } else if (diff1 == diff2) {
+        return 0;
+      } else {
+        return 1;
+      }
+    }
+  };
+  
+  private static Comparator<ColumnWidth> shrinkComparator = new Comparator<ColumnWidth>() {
+    public int compare(ColumnWidth o1, ColumnWidth o2) {
+      double diff1 = o1.getDifference();
+      double diff2 = o2.getDifference();
+      if (diff1 > diff2) {
+        return -1;
+      } else if (diff1 == diff2) {
+        return 0;
+      } else {
+        return 1;
+      }
+    }
+  };
+
   public static void clearColumnWidth(Element ghostRow, int column) {
     getGhostCell(ghostRow, column).getStyle().clearWidth();
   }
@@ -58,10 +86,10 @@ public class GridUtils {
     return ghostRow;
   }
 
-  public static int distributeWidth(List<ColumnWidthInfo> columns, int width) {
+  public static int distributeWidth(List<ColumnWidth> columns, int width) {
     Assert.notNull(columns);
 
-    for (ColumnWidthInfo info : columns) {
+    for (ColumnWidth info : columns) {
       int curWidth = info.getCurWidth();
       if (info.hasMinWidth() && curWidth < info.getMinWidth()) {
         curWidth = info.getMinWidth();
@@ -76,42 +104,15 @@ public class GridUtils {
       return 0;
     }
 
-    List<ColumnWidthInfo> orderedColumns = new ArrayList<ColumnWidthInfo>(columns);
+    List<ColumnWidth> orderedColumns = new ArrayList<ColumnWidth>(columns);
 
     if (width > 0) {
-      Comparator<ColumnWidthInfo> comparator = new Comparator<ColumnWidthInfo>() {
-        public int compare(ColumnWidthInfo o1, ColumnWidthInfo o2) {
-          double diff1 = o1.getPercentageDifference();
-          double diff2 = o2.getPercentageDifference();
-          if (diff1 < diff2) {
-            return -1;
-          } else if (diff1 == diff2) {
-            return 0;
-          } else {
-            return 1;
-          }
-        }
-      };
-      Collections.sort(orderedColumns, comparator);
-
+      Collections.sort(orderedColumns, growComparator);
     } else if (width < 0) {
-      Comparator<ColumnWidthInfo> comparator = new Comparator<ColumnWidthInfo>() {
-        public int compare(ColumnWidthInfo o1, ColumnWidthInfo o2) {
-          double diff1 = o1.getPercentageDifference();
-          double diff2 = o2.getPercentageDifference();
-          if (diff1 > diff2) {
-            return -1;
-          } else if (diff1 == diff2) {
-            return 0;
-          } else {
-            return 1;
-          }
-        }
-      };
-      Collections.sort(orderedColumns, comparator);
+      Collections.sort(orderedColumns, shrinkComparator);
     }
 
-    return distributeWidthImpl(orderedColumns, width);
+    return distributeOrderedWidth(orderedColumns, width);
   }
 
   public static Element getGhostCell(Element ghostRow, int column) {
@@ -172,7 +173,7 @@ public class GridUtils {
     getGhostCell(ghostRow, column).getStyle().setWidth(width, Unit.PX);
   }
 
-  private static int distributeWidthImpl(List<ColumnWidthInfo> columns, int width) {
+  private static int distributeOrderedWidth(List<ColumnWidth> columns, int width) {
     boolean growing = (width > 0);
     boolean fullySynced = false;
     int syncedColumns = 1;
@@ -182,7 +183,7 @@ public class GridUtils {
 
       int totalRequired = 0;
       for (int curIndex = 0; curIndex < syncedColumns; curIndex++) {
-        ColumnWidthInfo curInfo = columns.get(curIndex);
+        ColumnWidth curInfo = columns.get(curIndex);
         int preferredWidth = curInfo.getPrefWidth();
         int newWidth = (int) (targetDiff * preferredWidth) + preferredWidth;
 
@@ -202,13 +203,13 @@ public class GridUtils {
         totalRequired += curInfo.getRequiredWidth();
       }
 
-      double percentAvailable = 1.0;
+      double diffAvailable = 1.0;
       if (totalRequired != 0) {
-        percentAvailable = Math.min(1.0, width / (double) totalRequired);
+        diffAvailable = Math.min(1.0, width / (double) totalRequired);
       }
       for (int curIndex = 0; curIndex < syncedColumns; curIndex++) {
-        ColumnWidthInfo curInfo = columns.get(curIndex);
-        int required = (int) (percentAvailable * curInfo.getRequiredWidth());
+        ColumnWidth curInfo = columns.get(curIndex);
+        int required = (int) (diffAvailable * curInfo.getRequiredWidth());
 
         if (fullySynced) {
           if (growing) {
@@ -246,7 +247,6 @@ public class GridUtils {
         fullySynced = true;
       }
     }
-
     return width;
   }
 
@@ -254,17 +254,17 @@ public class GridUtils {
     return table.getBodyElement();
   }
   
-  private static double getTargetDiff(List<ColumnWidthInfo> columns, int syncedColumns, int width) {
+  private static double getTargetDiff(List<ColumnWidth> columns, int syncedColumns, int width) {
     if (syncedColumns < columns.size()) {
-      return columns.get(syncedColumns).getPercentageDifference();
+      return columns.get(syncedColumns).getDifference();
     } else {
-      int totalNewWidth = width;
-      int totalPreferredWidth = 0;
-      for (ColumnWidthInfo info : columns) {
-        totalNewWidth += info.getNewWidth();
-        totalPreferredWidth += info.getPrefWidth();
+      int totalNew = width;
+      int totalPref = 0;
+      for (ColumnWidth info : columns) {
+        totalNew += info.getNewWidth();
+        totalPref += info.getPrefWidth();
       }
-      return (totalNewWidth - totalPreferredWidth) / (double) totalPreferredWidth;
+      return (totalNew - totalPref) / (double) totalPref;
     }
   }
 }

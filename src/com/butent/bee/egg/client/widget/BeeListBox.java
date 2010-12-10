@@ -3,18 +3,19 @@ package com.butent.bee.egg.client.widget;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.ListBox;
 
-import com.butent.bee.egg.client.Global;
 import com.butent.bee.egg.client.BeeKeeper;
 import com.butent.bee.egg.client.dom.DomUtils;
 import com.butent.bee.egg.client.event.HasBeeChangeHandler;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.HasId;
+import com.butent.bee.egg.shared.HasStringValue;
+import com.butent.bee.egg.shared.Variable;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
 import java.util.List;
 
 public class BeeListBox extends ListBox implements HasId, HasBeeChangeHandler {
-  private String fieldName = null;
+  private HasStringValue source = null;
 
   public BeeListBox() {
     super();
@@ -31,28 +32,25 @@ public class BeeListBox extends ListBox implements HasId, HasBeeChangeHandler {
     init();
   }
 
-  public BeeListBox(String fieldName) {
+  public BeeListBox(HasStringValue source) {
     this();
-    this.fieldName = fieldName;
-    addItems(Global.getFieldItems(fieldName));
+    this.source = source;
     addDefaultHandlers();
-
-    String v = Global.getFieldValue(fieldName);
-    if (!BeeUtils.isEmpty(v)) {
-      setSelectedIndex(getIndex(v));
+    
+    if (source instanceof Variable) {
+      initVar((Variable) source);
     }
   }
 
-  public BeeListBox(String fieldName, boolean allVisible) {
-    this(fieldName);
-
+  public BeeListBox(HasStringValue source, boolean allVisible) {
+    this(source);
     if (allVisible) {
       setAllVisible();
     }
   }
 
-  public BeeListBox(String fieldName, int cnt) {
-    this(fieldName);
+  public BeeListBox(HasStringValue source, int cnt) {
+    this(source);
     if (cnt > 0) {
       setVisibleItemCount(cnt);
     }
@@ -70,17 +68,17 @@ public class BeeListBox extends ListBox implements HasId, HasBeeChangeHandler {
     DomUtils.createId(this, "list");
   }
 
-  public String getFieldName() {
-    return fieldName;
-  }
-
   public String getId() {
     return DomUtils.getId(this);
   }
 
+  public HasStringValue getSource() {
+    return source;
+  }
+
   public boolean onChange() {
-    if (!BeeUtils.isEmpty(getFieldName())) {
-      Global.setFieldValue(getFieldName(), getValue(getSelectedIndex()));
+    if (getSource() != null) {
+      getSource().setValue(getValue(getSelectedIndex()));
     }
     return true;
   }
@@ -92,12 +90,12 @@ public class BeeListBox extends ListBox implements HasId, HasBeeChangeHandler {
     }
   }
 
-  public void setFieldName(String fieldName) {
-    this.fieldName = fieldName;
-  }
-
   public void setId(String id) {
     DomUtils.setId(this, id);
+  }
+
+  public void setSource(HasStringValue source) {
+    this.source = source;
   }
 
   private void addDefaultHandlers() {
@@ -113,7 +111,6 @@ public class BeeListBox extends ListBox implements HasId, HasBeeChangeHandler {
         break;
       }
     }
-
     return idx;
   }
 
@@ -121,5 +118,13 @@ public class BeeListBox extends ListBox implements HasId, HasBeeChangeHandler {
     createId();
     setStyleName("bee-ListBox");
   }
+  
+  private void initVar(Variable var) {
+    addItems(var.getItems());
 
+    String v = var.getValue();
+    if (!BeeUtils.isEmpty(v)) {
+      setSelectedIndex(getIndex(v));
+    }
+  }
 }

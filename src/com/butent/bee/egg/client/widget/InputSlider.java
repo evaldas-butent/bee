@@ -1,6 +1,7 @@
 package com.butent.bee.egg.client.widget;
 
 import com.butent.bee.egg.client.dom.DomUtils;
+import com.butent.bee.egg.shared.HasStringValue;
 
 public class InputSlider extends InputInteger {
   private static String inputType = "range";
@@ -13,12 +14,12 @@ public class InputSlider extends InputInteger {
     super(value, inputType, min, max);
   }
 
-  public InputSlider(String fieldName, int min, int max) {
-    super(fieldName, inputType, min, max);
+  public InputSlider(HasStringValue source, int min, int max) {
+    super(source, inputType, min, max);
   }
 
-  public InputSlider(String fieldName, int min, int max, int step) {
-    super(fieldName, inputType, min, max, step);
+  public InputSlider(HasStringValue source, int min, int max, int step) {
+    super(source, inputType, min, max, step);
   }
 
   @Override

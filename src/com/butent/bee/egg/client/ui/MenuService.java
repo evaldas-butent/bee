@@ -80,15 +80,13 @@ class MenuService extends CompositeService {
 
     switch (stage) {
       case REQUEST_MENU:
-        String rl = Global.getFieldValue(MenuConstants.fieldMenuLayout(0));
-        String il = Global.getFieldValue(MenuConstants.fieldMenuLayout(1));
+        String rl = Global.getVarValue(MenuConstants.varMenuLayout(0));
+        String il = Global.getVarValue(MenuConstants.varMenuLayout(1));
 
         if (MenuConstants.isValidLayout(rl) && MenuConstants.isValidLayout(il)) {
-          BeeKeeper.getRpc().makePostRequest(
-              adoptService("rpc_ui_menu"),
-              BeeXml.createString(BeeService.XML_TAG_DATA, "menu_name",
-                  "rootMenu", "root_layout", getLayout(rl), "item_layout",
-                  getLayout(il)));
+          BeeKeeper.getRpc().makePostRequest(adoptService("rpc_ui_menu"),
+              BeeXml.createString(BeeService.XML_TAG_DATA, "menu_name", "rootMenu", "root_layout",
+                  getLayout(rl), "item_layout", getLayout(il)));
         } else {
           Global.showError("Menu layouts not valid", rl, il);
           ok = false;

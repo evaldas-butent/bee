@@ -99,7 +99,7 @@ public class CommUtils {
 
   public static boolean isReservedParameter(String name) {
     Assert.notEmpty(name);
-    return BeeUtils.startsSame(name, BeeService.RPC_FIELD_SYS_PREFIX);
+    return BeeUtils.startsSame(name, BeeService.RPC_VAR_SYS_PREFIX);
   }
   
   public static boolean isResource(ContentType ctp) {
@@ -128,15 +128,14 @@ public class CommUtils {
   }
 
   public static String rpcMessageName(int i) {
-    return BeeService.RPC_FIELD_MSG + i;
+    return BeeService.RPC_VAR_MSG + i;
   }
 
   public static String rpcParamName(int i) {
-    return BeeService.RPC_FIELD_PRM + i;
+    return BeeService.RPC_VAR_PRM + i;
   }
 
   public static String rpcPartName(int i) {
-    return BeeService.RPC_FIELD_PART + i;
+    return BeeService.RPC_VAR_PART + i;
   }
-  
 }

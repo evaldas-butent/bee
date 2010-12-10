@@ -60,8 +60,6 @@ public class CliWidget extends BeeTextBox {
       CliWorker.eval(v, arr);
     } else if (BeeUtils.inList(z, "f", "func")) {
       CliWorker.showFunctions(v, arr);
-    } else if (z.equals("fields")) {
-      CliWorker.showFields(arr);
     } else if (z.equals("fs")) {
       CliWorker.getFs();
     } else if (z.equals("geo")) {
@@ -118,6 +116,8 @@ public class CliWidget extends BeeTextBox {
       CliWorker.showTiles();
     } else if (z.equals("uc") || "unicode".startsWith(z)) {
       CliWorker.unicode(arr);
+    } else if (z.equals("vars")) {
+      CliWorker.showVars(arr);
     } else if (z.equals("video")) {
       CliWorker.playVideo(arr);
     } else if (z.equals("vm")) {

@@ -48,12 +48,12 @@ public class MenuManager implements Module {
     options = new boolean[MenuConstants.MAX_MENU_DEPTH];
 
     limits = new int[MenuConstants.MAX_MENU_DEPTH];
-    int rLim = Global.getFieldInt(MenuConstants.FIELD_ROOT_LIMIT);
-    int iLim = Global.getFieldInt(MenuConstants.FIELD_ITEM_LIMIT);
+    int rLim = Global.getVarInt(MenuConstants.VAR_ROOT_LIMIT);
+    int iLim = Global.getVarInt(MenuConstants.VAR_ITEM_LIMIT);
 
     for (int i = MenuConstants.ROOT_MENU_INDEX; i < MenuConstants.MAX_MENU_DEPTH; i++) {
-      layouts.add(Global.getFieldValue(MenuConstants.fieldMenuLayout(i)));
-      options[i] = Global.getFieldBoolean(MenuConstants.fieldMenuBarType(i));
+      layouts.add(Global.getVarValue(MenuConstants.varMenuLayout(i)));
+      options[i] = Global.getVarBoolean(MenuConstants.varMenuBarType(i));
       limits[i] = MenuConstants.isRootLevel(i) ? rLim : iLim;
     }
 

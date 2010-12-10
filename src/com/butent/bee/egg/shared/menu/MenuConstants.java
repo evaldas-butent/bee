@@ -12,12 +12,10 @@ public class MenuConstants {
 
       if (z == BeeConst.COMPARE_EQUAL) {
         z = BeeUtils.compare(m1.getOrder(), m2.getOrder());
-
         if (z == BeeConst.COMPARE_EQUAL) {
           z = BeeUtils.compare(m1.getId(), m2.getId());
         }
       }
-
       return z;
     }
   }
@@ -25,8 +23,8 @@ public class MenuConstants {
   public static int MAX_MENU_DEPTH = 3;
   public static int ROOT_MENU_INDEX = 0;
 
-  public static final String FIELD_ROOT_LIMIT = "menu_root_limit";
-  public static final String FIELD_ITEM_LIMIT = "menu_item_limit";
+  public static final String VAR_ROOT_LIMIT = "menu_root_limit";
+  public static final String VAR_ITEM_LIMIT = "menu_item_limit";
 
   public static int DEFAULT_ROOT_LIMIT = 0;
   public static int DEFAULT_ITEM_LIMIT = 0;
@@ -59,14 +57,6 @@ public class MenuConstants {
 
   public static MenuComparator MENU_COMPARATOR = new MenuComparator();
 
-  public static final String fieldMenuBarType(int idx) {
-    return "menu_bar_type_" + idx;
-  }
-
-  public static final String fieldMenuLayout(int idx) {
-    return "menu_layout_" + idx;
-  }
-
   public static boolean isRootLevel(int idx) {
     return idx == ROOT_MENU_INDEX;
   }
@@ -89,4 +79,11 @@ public class MenuConstants {
         LAYOUT_BUTTONS_HOR, LAYOUT_BUTTONS_VERT);
   }
 
+  public static final String varMenuBarType(int idx) {
+    return "menu_bar_type_" + idx;
+  }
+
+  public static final String varMenuLayout(int idx) {
+    return "menu_layout_" + idx;
+  }
 }

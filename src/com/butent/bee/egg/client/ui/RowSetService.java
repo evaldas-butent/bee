@@ -74,22 +74,22 @@ class RowSetService extends CompositeService {
           unregister();
           return false;
         }
-        if (!Global.isField(fld)) {
-          Global.createField(fld, "Table name", BeeType.TYPE_STRING, null);
-          Global.getField(fld).setWidget(BeeWidget.LIST);
+        if (!Global.isVar(fld)) {
+          Global.createVar(fld, "Table name", BeeType.TYPE_STRING, null);
+          Global.getVar(fld).setWidget(BeeWidget.LIST);
         }
-        Global.getField(fld).setItems(lst);
-        Global.getField(fld).setValue(lst.get(0));
+        Global.getVar(fld).setItems(lst);
+        Global.getVar(fld).setValue(lst.get(0));
 
         stage = Stages.REQUEST_TABLE;
 
-        Global.inputFields(new BeeStage(self(), BeeStage.STAGE_CONFIRM), "Get table", fld);
+        Global.inputVars(new BeeStage(self(), BeeStage.STAGE_CONFIRM), "Get table", fld);
         break;
 
       case REQUEST_TABLE:
         GwtEvent<?> event = (GwtEvent<?>) params[0];
 
-        String fName = Global.getFieldValue(fld);
+        String fName = Global.getVarValue(fld);
 
         if (BeeUtils.isEmpty(fName)) {
           Global.showError("Table name not specified");
