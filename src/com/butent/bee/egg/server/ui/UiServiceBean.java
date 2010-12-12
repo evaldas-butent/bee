@@ -3,7 +3,6 @@ package com.butent.bee.egg.server.ui;
 import com.butent.bee.egg.server.Assert;
 import com.butent.bee.egg.server.communication.ResponseBuffer;
 import com.butent.bee.egg.server.data.BeeTable;
-import com.butent.bee.egg.server.data.BeeTable.BeeField;
 import com.butent.bee.egg.server.data.QueryServiceBean;
 import com.butent.bee.egg.server.data.SystemBean;
 import com.butent.bee.egg.server.http.RequestInfo;
@@ -81,26 +80,6 @@ public class UiServiceBean {
         String msg = BeeUtils.concat(1, svc, "loader service not recognized");
         logger.warning(msg);
         buff.add(msg);
-      }
-    }
-  }
-
-  private void addRelation(SqlSelect ss, String tableAlias, BeeField fld) {
-    String relation = fld.getRelation();
-
-    if (!BeeUtils.isEmpty(relation)) {
-      String fieldAlias = BeeUtils.randomString(3, 3, 'a', 'z');
-      boolean addFrom = false;
-
-      for (BeeField relFld : sys.getFields(relation)) {
-        if (relFld.isUnique()) {
-          addFrom = true;
-          ss.addField(fieldAlias, relFld.getName(), fld.getName() + relFld.getName());
-        }
-      }
-      if (addFrom) {
-        ss.addFromLeft(relation, fieldAlias,
-            SqlUtils.join(tableAlias, fld.getName(), fieldAlias, sys.getIdName(relation)));
       }
     }
   }
@@ -390,33 +369,7 @@ public class UiServiceBean {
 
   private void getTable(RequestInfo reqInfo, ResponseBuffer buff) {
     String table = getXmlField(reqInfo, buff, "table_name");
-    String tableAlias = BeeUtils.randomString(3, 3, 'a', 'z');
-
-    SqlSelect ss = new SqlSelect();
-    ss.addFrom(table, tableAlias);
-
-    if (sys.isTable(table)) {
-      for (BeeField fld : sys.getFields(table)) {
-        ss.addFields(tableAlias, fld.getName());
-        addRelation(ss, tableAlias, fld);
-      }
-      ss.addFields(tableAlias, sys.getLockName(table), sys.getIdName(table));
-
-      String extAlias = sys.addExtJoin(ss, table, tableAlias);
-
-      if (!BeeUtils.isEmpty(extAlias)) {
-        for (BeeField extFld : sys.getExtFields(table)) {
-          ss.addFields(extAlias, extFld.getName());
-          addRelation(ss, extAlias, extFld);
-        }
-        ss.addFields(extAlias, sys.getExtLockName(table));
-      }
-    } else {
-      ss.addAllFields(tableAlias);
-    }
-
-    BeeRowSet res = qs.getData(ss);
-
+    BeeRowSet res = sys.getView(table);
     buff.add(res.serialize());
   }
 
@@ -512,7 +465,7 @@ public class UiServiceBean {
       buff.add("Extensions OK");
     } else {
       if (sys.isTable(cmd)) {
-        sys.rebuildTable(sys.getTable(cmd), true);
+        sys.rebuildTable(cmd, true);
         buff.add("Rebuild " + cmd + " OK");
       } else {
         buff.add("ERROR: unknown table " + cmd);

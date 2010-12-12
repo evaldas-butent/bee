@@ -70,7 +70,8 @@ public abstract class SqlBuilder {
         IsCondition tableWh = null;
 
         if (!BeeUtils.isEmpty(params[0])) {
-          tableWh = SqlUtils.equal("t", "table_name", params[0]);
+          tableWh = SqlUtils.and(SqlUtils.equal("t", "table_name", params[0]),
+              SqlUtils.equal("t", "table_type", "BASE TABLE"));
         }
         return new SqlSelect()
           .addFields("t", "table_name")

@@ -8,8 +8,11 @@ import com.butent.bee.egg.server.data.BeeTable.BeeState;
 import com.butent.bee.egg.server.utils.FileUtils;
 import com.butent.bee.egg.server.utils.XmlUtils;
 import com.butent.bee.egg.shared.Assert;
+import com.butent.bee.egg.shared.data.BeeRowSet;
+import com.butent.bee.egg.shared.data.BeeRowSet.BeeRow;
 import com.butent.bee.egg.shared.sql.BeeConstants.DataTypes;
 import com.butent.bee.egg.shared.sql.BeeConstants.Keywords;
+import com.butent.bee.egg.shared.sql.HasFrom;
 import com.butent.bee.egg.shared.sql.IsQuery;
 import com.butent.bee.egg.shared.sql.SqlCreate;
 import com.butent.bee.egg.shared.sql.SqlInsert;
@@ -62,17 +65,23 @@ public class SystemBean {
 
   private Map<String, BeeTable> dataCache = new HashMap<String, BeeTable>();
 
-  public String addExtJoin(SqlSelect ss, String table, String alias) {
-    BeeTable extTable = getExtTable(table);
+  public String addExtJoin(HasFrom<?> query, String table, String alias) {
+    String extTable = getExtName(table);
 
-    if (!BeeUtils.isEmpty(extTable)) {
-      String tableAlias = BeeUtils.ifString(alias, table);
-      String extAlias = BeeUtils.randomString(3, 3, 'a', 'z');
-
-      ss.addFromLeft(extTable.getName(), extAlias,
-          SqlUtils.join(tableAlias, getIdName(table), extAlias, extTable.getIdName()));
+    if (BeeUtils.isEmpty(extTable)) {
+      return null;
     }
-    return null;
+    String extAlias = extTable;
+
+    if (BeeUtils.isEmpty(alias) || BeeUtils.same(alias, table)) {
+      query.addFromLeft(extTable,
+          SqlUtils.join(table, getIdName(table), extTable, getExtIdName(table)));
+    } else {
+      extAlias = SqlUtils.uniqueName();
+      query.addFromLeft(extTable, extAlias,
+          SqlUtils.join(alias, getIdName(table), extAlias, getExtIdName(table)));
+    }
+    return extAlias;
   }
 
   public String backupTable(String name) {
@@ -89,7 +98,7 @@ public class SystemBean {
   }
 
   public BeeField getExtField(String table, String extField) {
-    BeeTable extTable = getTable(table).getExtTable();
+    BeeTable extTable = getExtTable(table);
 
     if (!BeeUtils.isEmpty(extTable)) {
       return extTable.getField(extField);
@@ -98,15 +107,48 @@ public class SystemBean {
   }
 
   public Collection<BeeField> getExtFields(String table) {
-    return getTable(table).getExtFields();
+    BeeTable extTable = getExtTable(table);
+
+    if (!BeeUtils.isEmpty(extTable)) {
+      return extTable.getFields();
+    }
+    return new ArrayList<BeeField>();
+  }
+
+  public String getExtIdName(String table) {
+    BeeTable extTable = getExtTable(table);
+
+    if (!BeeUtils.isEmpty(extTable)) {
+      return extTable.getIdName();
+    }
+    return null;
+  }
+
+  public String getExtLockName(String table) {
+    BeeTable extTable = getExtTable(table);
+
+    if (!BeeUtils.isEmpty(extTable)) {
+      return extTable.getLockName();
+    }
+    return null;
   }
 
   public String getExtName(String table) {
-    return getTable(table).getExtName();
+    BeeTable extTable = getExtTable(table);
+
+    if (!BeeUtils.isEmpty(extTable)) {
+      return extTable.getName();
+    }
+    return null;
   }
 
-  public BeeField getField(String table, String field) {
-    return getTable(table).getField(field);
+  public BeeField getField(String tbl, String fld) {
+    BeeField field = getTable(tbl).getField(fld);
+
+    if (BeeUtils.isEmpty(field)) {
+      field = getExtField(tbl, fld);
+    }
+    return field;
   }
 
   public Collection<String> getFieldNames(String table) {
@@ -132,6 +174,27 @@ public class SystemBean {
 
   public Collection<String> getTableNames() {
     return Collections.unmodifiableCollection(dataCache.keySet());
+  }
+
+  public BeeRowSet getView(String viewSource) {
+    Assert.notEmpty(viewSource);
+    List<String> viewFields = null;
+
+    BeeRowSet rs = qs.getData(new SqlSelect()
+      .addFields("Views", "Field")
+      .addFrom("Views")
+      .setWhere(SqlUtils.equal("Views", "View", viewSource)));
+
+    if (rs.isEmpty()) {
+      viewFields = getViewFields(viewSource, null);
+    } else {
+      viewFields = new ArrayList<String>(rs.getRowCount());
+
+      for (BeeRow row : rs.getRows()) {
+        viewFields.add(row.getString("Field"));
+      }
+    }
+    return getViewData(viewSource, viewFields);
   }
 
   public boolean hasField(String table, String field) {
@@ -161,7 +224,7 @@ public class SystemBean {
           LogUtils.warning(logger, resource, "Table", extName, "has no fields defined");
           continue;
         }
-        extension.setCustom(true);
+        extension.makeCustom();
         dataCache.put(extName, extension);
         cTbl++;
       } else {
@@ -194,49 +257,16 @@ public class SystemBean {
     for (BeeTable extension : upd) {
       initConstraints(extension);
     }
-    LogUtils.infoNow(logger, "Loaded", cTbl, "new tables and", cFld,
-        "new fields descriptions from", resource);
+    LogUtils.infoNow(logger, "Loaded", cTbl, "new tables,", cFld,
+        "new fields,", cKey, "new keys", cStt, "new states descriptions from", resource);
   }
 
   public boolean isTable(String source) {
     return !BeeUtils.isEmpty(source) && getTableNames().contains(source);
   }
 
-  public void rebuildTable(BeeTable table, boolean rebuildForeign) {
-    if (!BeeUtils.isEmpty(table)) {
-      String tblName = table.getName();
-      List<BeeForeignKey> fKeys = new ArrayList<BeeForeignKey>();
-
-      for (BeeTable tbl : getTables()) {
-        if (BeeUtils.same(tbl.getName(), tblName)) {
-          rebuildTable(table.getExtTable(), false);
-          rebuildTable(table.getStateTable(), false);
-        } else {
-          for (BeeForeignKey key : tbl.getForeignKeys()) {
-            if (BeeUtils.same(key.getRefTable(), tblName)) {
-              if (qs.dbForeignKeys(key.getTable()).contains(key.getName())) {
-                qs.updateData(SqlUtils.dropForeignKey(key.getTable(), key.getName()));
-              }
-              fKeys.add(key);
-            }
-          }
-        }
-      }
-      String tmp = null;
-
-      if (qs.isDbTable(tblName)) {
-        tmp = backupTable(tblName);
-        qs.updateData(SqlUtils.dropTable(tblName));
-      }
-      createTable(table);
-      restoreTable(tblName, tmp);
-      createKeys(table);
-
-      if (rebuildForeign) {
-        createForeignKeys(table.getForeignKeys());
-        createForeignKeys(fKeys);
-      }
-    }
+  public void rebuildTable(String table, boolean rebuildForeign) {
+    rebuildTable(getTable(table), rebuildForeign);
   }
 
   @Lock(LockType.WRITE)
@@ -323,6 +353,88 @@ public class SystemBean {
       sc.addLong(table.getIdName(), Keywords.NOT_NULL);
       qs.updateData(sc);
     }
+  }
+
+  private BeeRowSet getViewData(String viewSource, List<String> viewFields) {
+    Assert.notEmpty(viewFields);
+    LogUtils.warning(logger, viewFields);
+
+    Map<String, String[]> sources = new HashMap<String, String[]>();
+    sources.put(null, new String[]{viewSource, viewSource, null});
+
+    SqlSelect ss = new SqlSelect().addFrom(viewSource);
+
+    for (String fldExpr : viewFields) {
+      String xpr = null;
+      String fld = null;
+      String dst = null;
+      String src = sources.get(xpr)[0];
+      String als = sources.get(xpr)[1];
+      boolean isError = false;
+
+      for (String ff : fldExpr.split(":")) {
+        if (!BeeUtils.isEmpty(dst)) {
+          xpr = BeeUtils.concat(":", xpr, fld);
+
+          if (!sources.containsKey(xpr)) {
+            String tmpAls = SqlUtils.uniqueName();
+            sources.put(xpr, new String[]{dst, tmpAls, null});
+            LogUtils.warning(logger, xpr, (Object[]) sources.get(xpr));
+            ss.addFromLeft(dst, tmpAls, SqlUtils.join(als, fld, tmpAls, getIdName(dst)));
+          }
+          src = sources.get(xpr)[0];
+          als = sources.get(xpr)[1];
+        }
+        fld = ff;
+        BeeField field = getField(src, fld);
+        if (BeeUtils.isEmpty(field)) {
+          isError = true;
+          break;
+        }
+        if (!BeeUtils.same(field.getTable(), src)) {
+          if (BeeUtils.isEmpty(sources.get(xpr)[2])) {
+            sources.get(xpr)[2] = addExtJoin(ss, src, als);
+            LogUtils.warning(logger, xpr, (Object[]) sources.get(xpr));
+
+            if (BeeUtils.isEmpty(xpr)) {
+              ss.addFields(sources.get(xpr)[2], getExtLockName(viewSource));
+            }
+          }
+          als = sources.get(xpr)[2];
+        }
+        dst = field.getRelation();
+      }
+      if (isError) {
+        LogUtils.warning(logger, "Unknown field name:", fld, src, xpr);
+        continue;
+      }
+      if (BeeUtils.isEmpty(xpr)) {
+        ss.addFields(als, fld);
+      } else {
+        ss.addField(als, fld, xpr.replace(":", "") + fld);
+      }
+    }
+    ss.addFields(viewSource, getLockName(viewSource), getIdName(viewSource));
+    return qs.getData(ss);
+  }
+
+  private List<String> getViewFields(String table, String field) {
+    List<String> fieldList = new ArrayList<String>();
+
+    if (!isTable(table)) {
+      return fieldList;
+    }
+    for (BeeField fld : getTable(table).getAllFields()) {
+      if (BeeUtils.isEmpty(field) || fld.isUnique()) {
+        String fldName = BeeUtils.concat(":", field, fld.getName());
+        fieldList.add(fldName);
+
+        if (!BeeUtils.isEmpty(fld.getRelation()) && !fldName.contains(fld.getName() + ":")) {
+          fieldList.addAll(getViewFields(fld.getRelation(), fldName));
+        }
+      }
+    }
+    return fieldList;
   }
 
   @SuppressWarnings("unused")
@@ -439,8 +551,25 @@ public class SystemBean {
               , BeeUtils.toBoolean(field.getAttribute("cascade")));
 
           if (unique) {
-            tbl.addUniqueKey(fldName);
+            tbl.addKey(fldName, true);
           }
+        }
+        NodeList keys = ((Element) nodeRoot.item(0)).getElementsByTagName("BeeKey");
+
+        for (int j = 0; j < keys.getLength(); j++) {
+          Element key = (Element) keys.item(j);
+
+          NodeList keyFlds = key.getElementsByTagName("BeeKeyField");
+          int len = keyFlds.getLength();
+          String[] flds = new String[len];
+
+          if (len > 0) {
+            for (int l = 0; l < len; l++) {
+              flds[l] = ((Element) keyFlds.item(l)).getAttribute("name");
+            }
+          }
+          tbl.addKey(key.getAttribute("name"),
+                BeeUtils.toBoolean(key.getAttribute("unique")), flds);
         }
       }
       nodeRoot = table.getElementsByTagName("BeeExtended");
@@ -463,13 +592,9 @@ public class SystemBean {
               , BeeUtils.toBoolean(field.getAttribute("cascade")));
 
           if (unique) {
-            tbl.addUniqueKey(fldName);
+            tbl.addExtKey(fldName, true);
           }
         }
-      }
-      nodeRoot = table.getElementsByTagName("BeeKeys");
-
-      if (nodeRoot.getLength() > 0) {
         NodeList keys = ((Element) nodeRoot.item(0)).getElementsByTagName("BeeKey");
 
         for (int j = 0; j < keys.getLength(); j++) {
@@ -484,8 +609,8 @@ public class SystemBean {
               flds[l] = ((Element) keyFlds.item(l)).getAttribute("name");
             }
           }
-          tbl.addKey(key.getAttribute("name"),
-              BeeUtils.toBoolean(key.getAttribute("unique")), flds);
+          tbl.addExtKey(key.getAttribute("name"),
+                BeeUtils.toBoolean(key.getAttribute("unique")), flds);
         }
       }
       nodeRoot = table.getElementsByTagName("BeeStates");
@@ -505,5 +630,42 @@ public class SystemBean {
       data.add(tbl);
     }
     return data;
+  }
+
+  private void rebuildTable(BeeTable table, boolean rebuildForeign) {
+    if (!BeeUtils.isEmpty(table)) {
+      String tblName = table.getName();
+      List<BeeForeignKey> fKeys = new ArrayList<BeeForeignKey>();
+
+      for (BeeTable tbl : getTables()) {
+        if (BeeUtils.same(tbl.getName(), tblName)) {
+          rebuildTable(table.getExtTable(), false);
+          rebuildTable(table.getStateTable(), false);
+        } else {
+          for (BeeForeignKey key : tbl.getForeignKeys()) {
+            if (BeeUtils.same(key.getRefTable(), tblName)) {
+              if (qs.dbForeignKeys(key.getTable()).contains(key.getName())) {
+                qs.updateData(SqlUtils.dropForeignKey(key.getTable(), key.getName()));
+              }
+              fKeys.add(key);
+            }
+          }
+        }
+      }
+      String tmp = null;
+
+      if (qs.isDbTable(tblName)) {
+        tmp = backupTable(tblName);
+        qs.updateData(SqlUtils.dropTable(tblName));
+      }
+      createTable(table);
+      restoreTable(tblName, tmp);
+      createKeys(table);
+
+      if (rebuildForeign) {
+        createForeignKeys(table.getForeignKeys());
+        createForeignKeys(fKeys);
+      }
+    }
   }
 }

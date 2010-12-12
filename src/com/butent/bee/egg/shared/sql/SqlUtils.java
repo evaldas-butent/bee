@@ -240,7 +240,7 @@ public class SqlUtils {
   }
 
   public static String temporaryName() {
-    String tmp = "tmp_" + BeeUtils.randomString(3, 3, 'a', 'z');
+    String tmp = "tmp_" + uniqueName();
     return temporaryName(tmp);
   }
 
@@ -249,6 +249,10 @@ public class SqlUtils {
       return temporaryName();
     }
     return new SqlCommand(Keywords.TEMPORARY_NAME, tmp).getQuery();
+  }
+
+  public static String uniqueName() {
+    return BeeUtils.randomString(3, 3, 'a', 'z');
   }
 
   static void addParams(List<Object> paramList, List<Object> params) {

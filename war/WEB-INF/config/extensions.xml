@@ -22,15 +22,15 @@
   <BeeTable name="Countries">
     <BeeExtended>
       <BeeField name="Language" type="STRING" precision="30" />
-      <BeeField name="Anthem" type="STRING" precision="30" unique="true" />
-      <BeeField name="Capital" type="LONG" relation="Cities" cascade="true" />
+      <BeeField name="Anthem" type="STRING" precision="30" />
+      <BeeField name="Capital" type="LONG" relation="Cities" cascade="true" unique="true" />
       <BeeField name="Continent" type="LONG" relation="Continents" />
       <BeeKey name="Language" />
-      <BeeKey name="Capital" unique="true">
+      <!--<BeeKey name="Capital" unique="true">
         <BeeKeyField name="Continent" />
         <BeeKeyField name="Capital" />
       </BeeKey>
-    </BeeExtended>
+    --></BeeExtended>
   </BeeTable>
   <BeeTable name="DataTypes">
     <BeeFields>

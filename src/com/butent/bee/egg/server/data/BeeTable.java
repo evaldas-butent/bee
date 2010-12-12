@@ -324,9 +324,6 @@ public class BeeTable {
     Assert.state(!hasField(name), "Dublicate field name: " + getName() + " " + name);
     createExtTable();
     extTable.addField(name, type, precision, scale, notNull, unique, relation, cascade);
-    if (unique) {
-      extTable.addUniqueKey(name);
-    }
     return this;
   }
 
@@ -367,7 +364,7 @@ public class BeeTable {
 
   BeeTable addPrimaryKey(String keyField) {
     Assert.notEmpty(keyField);
-    addUniqueKey(primaryKeyName(), keyField);
+    addKey(primaryKeyName(), true, keyField);
     return this;
   }
 
@@ -392,11 +389,6 @@ public class BeeTable {
     return this;
   }
 
-  BeeTable addUniqueKey(String keyName, String... keyFields) {
-    addKey(keyName, true, keyFields);
-    return this;
-  }
-
   Collection<BeeField> getExtFields() {
     if (!BeeUtils.isEmpty(getExtTable())) {
       return getExtTable().getFields();
@@ -411,13 +403,6 @@ public class BeeTable {
     return new ArrayList<BeeKey>();
   }
 
-  String getExtName() {
-    if (!BeeUtils.isEmpty(getExtTable())) {
-      return getExtTable().getName();
-    }
-    return null;
-  }
-
   BeeTable getExtTable() {
     return extTable;
   }
@@ -426,8 +411,8 @@ public class BeeTable {
     return stateTable;
   }
 
-  void setCustom(boolean custom) {
-    this.custom = custom;
+  void makeCustom() {
+    this.custom = true;
   }
 
   private void createExtTable() {
@@ -435,8 +420,8 @@ public class BeeTable {
       extTable = new BeeTable(
           getName() + EXT_TABLE_SUFFIX,
           getName() + getIdName(),
-          getName() + getLockName())
-        .addForeignKey(extTable.getIdName(), getName(), getIdName(), Keywords.CASCADE);
+          getName() + getLockName());
+      extTable.addForeignKey(extTable.getIdName(), getName(), getIdName(), Keywords.CASCADE);
     }
   }
 
@@ -445,8 +430,8 @@ public class BeeTable {
       stateTable = new BeeTable(
           getName() + STATE_TABLE_SUFFIX,
           getName() + getIdName(),
-          getName() + getLockName())
-        .addField("StateMask", DataTypes.LONG, 0, 0, true, false, null, false)
+          getName() + getLockName());
+      stateTable.addField("StateMask", DataTypes.LONG, 0, 0, true, false, null, false)
         .addForeignKey(stateTable.getIdName(), getName(), getIdName(), Keywords.CASCADE);
     }
   }

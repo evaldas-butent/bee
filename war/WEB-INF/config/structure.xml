@@ -23,21 +23,32 @@
       </BeeKey>
     </BeeFields>
   </BeeTable>
+  <BeeTable name="Views" idName="ViewID">
+    <BeeFields>
+      <BeeField name="View" type="STRING" precision="10" notNull="true" />
+      <BeeField name="Field" type="STRING" precision="100" notNull="true" />
+      <BeeKey name="View" />
+      <BeeKey name="Field" unique="true">
+        <BeeKeyField name="View" />
+        <BeeKeyField name="Field" />
+      </BeeKey>
+    </BeeFields>
+  </BeeTable>
   <BeeTable name="Countries" idName="CountryID" lockName="LastLock">
     <BeeFields>
       <BeeField name="Country" type="STRING" precision="100" notNull="true" unique="true" />
       <BeeField name="Area" type="NUMERIC" precision="10" scale="2" />
-      <BeeField name="SeaPort" type="LONG" relation="Cities" />
-      <BeeField name="Neighbour" type="LONG" relation="Countries" />
+      <BeeField name="SeaPort" type="LONG" relation="Cities" unique="true" />
+      <BeeField name="Neighbour" type="LONG" relation="Countries" unique="true" />
       <BeeField name="Currency" type="STRING" precision="50" unique="true" />
-      <BeeKey name="SeaPort" />
+      <!--<BeeKey name="SeaPort" /> -->
     </BeeFields>
   </BeeTable>
   <BeeTable name="Cities" idName="CityID">
     <BeeFields>
       <BeeField name="City" type="STRING" precision="100" notNull="true" unique="true" />
       <BeeField name="Population" type="INTEGER" />
-      <BeeField name="Country" type="LONG" relation="Countries" />
+      <BeeField name="Country" type="LONG" relation="Countries" unique="true" />
     </BeeFields>
     <BeeStates>
       <BeeState name="Hidden" roleMode="true" userMode="true" />

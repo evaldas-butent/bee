@@ -251,7 +251,7 @@ public class BeeRowSet extends AbstractData implements BeeSerializable {
 
   private List<BeeRow> rows;
 
-  public BeeRowSet(BeeColumn[] columns) {
+  public BeeRowSet(BeeColumn... columns) {
     setColumns(columns);
   }
 

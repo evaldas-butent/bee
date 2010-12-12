@@ -88,7 +88,7 @@ public class QueryServiceBean {
 
     BeeRowSet res = (BeeRowSet) processSql(ss.getQuery());
 
-    if (BeeUtils.isEmpty(ss.getUnion())) {
+    if (false && BeeUtils.isEmpty(ss.getUnion())) {
       // TODO: Iðkelti kitur
       String mainSource = null;
       BeeTable table = null;
