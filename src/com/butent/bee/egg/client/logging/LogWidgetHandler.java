@@ -4,7 +4,7 @@ import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.HasWidgets;
 
-import com.butent.bee.egg.client.widget.BeeHtml;
+import com.butent.bee.egg.client.widget.Html;
 import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
@@ -77,7 +77,7 @@ public class LogWidgetHandler extends Handler {
     if (frmt instanceof LogFormatter
         && ((LogFormatter) frmt).isSeparator(record)) {
       Element elem = Document.get().createDivElement().cast();
-      container.add(new BeeHtml(elem));
+      container.add(new Html(elem));
       elem.setClassName(STYLENAME_SEPARATOR);
       elem.scrollIntoView();
 
@@ -91,7 +91,7 @@ public class LogWidgetHandler extends Handler {
 
     Element elem = Document.get().createDivElement().cast();
     elem.setInnerText(BeeUtils.concat(1, counter, msg));
-    container.add(new BeeHtml(elem));
+    container.add(new Html(elem));
     elem.setClassName(STYLENAME_DEFAULT);
     elem.addClassName(STYLENAME_DEFAULT + BeeConst.STRING_MINUS
         + record.getLevel().getName().toLowerCase());

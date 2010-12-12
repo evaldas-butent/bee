@@ -1,5 +1,7 @@
 package com.butent.bee.egg.client.grid;
 
+import com.butent.bee.egg.shared.BeeConst;
+
 public class ColumnWidth {
   private int minWidth;
   private int maxWidth;
@@ -10,8 +12,9 @@ public class ColumnWidth {
   private int headerWidth;
   private int footerWidth;
 
-  private int newWidth = 0;
+  private int newWidth;
   private int requiredWidth;
+  private int distrWidth = 0;
 
   public ColumnWidth(int minWidth, int maxWidth, int prefWidth,
       int curWidth, int dataWidth, int headerWidth, int footerWidth) {
@@ -34,7 +37,12 @@ public class ColumnWidth {
   }
 
   public double getDifference() {
-    return (prefWidth > 0) ? (newWidth - prefWidth) / (double) prefWidth : 0;
+    int target = getTargetWidth();
+    return (target > 0) ? (newWidth - target) / (double) target : BeeConst.DOUBLE_ZERO;
+  }
+
+  public int getDistrWidth() {
+    return distrWidth;
   }
 
   public int getFooterWidth() {
@@ -64,6 +72,10 @@ public class ColumnWidth {
   public int getRequiredWidth() {
     return requiredWidth;
   }
+  
+  public int getTargetWidth() {
+    return (distrWidth > 0) ? distrWidth : prefWidth;
+  }
 
   public boolean hasMaxWidth() {
     return maxWidth > 0;
@@ -72,13 +84,29 @@ public class ColumnWidth {
   public boolean hasMinWidth() {
     return minWidth > 0;
   }
+  
+  public int limit(int width) {
+    int z = (width > 0) ? width : 0;
 
+    if (hasMinWidth() && z < getMinWidth()) {
+      z = getMinWidth();
+    }
+    if (hasMaxWidth() && z > getMaxWidth()) {
+      z = getMaxWidth();
+    }
+    return z;
+  }
+  
   public void setCurWidth(int curWidth) {
     this.curWidth = curWidth;
   }
 
   public void setDataWidth(int dataWidth) {
     this.dataWidth = dataWidth;
+  }
+
+  public void setDistrWidth(int distrWidth) {
+    this.distrWidth = distrWidth;
   }
 
   public void setFooterWidth(int footerWidth) {

@@ -864,6 +864,13 @@ public class BeeUtils {
   public static boolean isLong(double x) {
     return isDouble(x) && x > Long.MIN_VALUE && x < Long.MAX_VALUE;
   }
+  
+  public static boolean isOrdinal(Class<?> clazz, int idx) {
+    if (clazz == null || !clazz.isEnum() || idx < 0) {
+      return false;
+    }
+    return idx < arrayLength(clazz.getEnumConstants());
+  }
 
   public static boolean isPositive(Object x) {
     if (x instanceof Integer) {

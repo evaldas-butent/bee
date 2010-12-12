@@ -9,25 +9,25 @@ import com.butent.bee.egg.client.utils.BeeCommand;
 import com.butent.bee.egg.client.utils.HasCommand;
 import com.butent.bee.egg.shared.HasId;
 
-public class BeeHtml extends HTML implements HasId, HasCommand {
+public class Html extends HTML implements HasId, HasCommand {
   private BeeCommand command = null;
 
-  public BeeHtml() {
+  public Html() {
     super();
     createId();
   }
 
-  public BeeHtml(Element element) {
+  public Html(Element element) {
     super(element);
     createId();
   }
 
-  public BeeHtml(String html) {
+  public Html(String html) {
     super(html);
     createId();
   }
 
-  public BeeHtml(String html, BeeCommand cmnd) {
+  public Html(String html, BeeCommand cmnd) {
     this(html);
 
     if (cmnd != null) {
@@ -36,7 +36,7 @@ public class BeeHtml extends HTML implements HasId, HasCommand {
     }
   }
 
-  public BeeHtml(String html, boolean wordWrap) {
+  public Html(String html, boolean wordWrap) {
     super(html, wordWrap);
     createId();
   }

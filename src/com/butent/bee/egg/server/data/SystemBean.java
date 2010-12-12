@@ -312,7 +312,7 @@ public class SystemBean {
     return getTable(table).getExtTable();
   }
 
-  BeeTable getTable(String table) {
+  public BeeTable getTable(String table) {
     Assert.state(isTable(table), "Not a base table: " + table);
     return dataCache.get(table);
   }

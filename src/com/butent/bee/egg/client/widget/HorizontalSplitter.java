@@ -6,9 +6,9 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.egg.client.dom.DomUtils;
 
-public class BeeHSplitter extends BeeSplitter {
+public class HorizontalSplitter extends Splitter {
 
-  public BeeHSplitter(Widget target, Element targetContainer, boolean reverse, int size) {
+  public HorizontalSplitter(Widget target, Element targetContainer, boolean reverse, int size) {
     super(target, targetContainer, reverse, size);
     getElement().getStyle().setPropertyPx("width", size);
     setStyleName("bee-HSplitter");

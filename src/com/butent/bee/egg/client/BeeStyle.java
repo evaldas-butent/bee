@@ -39,6 +39,8 @@ public class BeeStyle implements Module {
   public static final String NAME_ENABLED = "enabled";  
   public static final String NAME_FOCUSED = "focused";
 
+  public static final String NAME_UNSELECTABLE = "unselectable";
+
   public void addStyleDependentName(Element el, String styleSuffix) {
     setStyleDependentName(el, styleSuffix, true);
   }

@@ -3,6 +3,17 @@ body, select {
   font-size: small;
 }
 
+[draggable] {
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.unselectable {
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
 .bee-RadioButton input:checked + label {
   text-transform: uppercase;
 }  
@@ -223,11 +234,6 @@ body, select {
   border: 1px solid LightGrey;
 }  
 
-[draggable] {
-  -moz-user-select: none;
-  -webkit-user-select: none;
-  user-select: none;
-}
 .bee-dndSource {
   color: white;
   background: purple;

@@ -19,9 +19,9 @@ import com.butent.bee.egg.client.dom.DomUtils;
 import com.butent.bee.egg.client.event.HasAfterAddHandler;
 import com.butent.bee.egg.client.event.HasBeforeAddHandler;
 import com.butent.bee.egg.client.utils.JreEmulation;
-import com.butent.bee.egg.client.widget.BeeHSplitter;
-import com.butent.bee.egg.client.widget.BeeSplitter;
-import com.butent.bee.egg.client.widget.BeeVSplitter;
+import com.butent.bee.egg.client.widget.HorizontalSplitter;
+import com.butent.bee.egg.client.widget.Splitter;
+import com.butent.bee.egg.client.widget.VerticalSplitter;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.HasExtendedInfo;
 import com.butent.bee.egg.shared.HasId;
@@ -283,7 +283,7 @@ public class Split extends ComplexPanel implements AnimatedLayout,
 
     String pfx;
     if (isSplitter(w)) {
-      pfx = (w instanceof BeeHSplitter) ? "hor" : "vert";
+      pfx = (w instanceof HorizontalSplitter) ? "hor" : "vert";
     } else {
       pfx = BeeUtils.transform(direction).toLowerCase();
     }
@@ -353,7 +353,7 @@ public class Split extends ComplexPanel implements AnimatedLayout,
   public boolean remove(Widget w) {
     Assert.notNull(w);
 
-    BeeSplitter splitter = null;
+    Splitter splitter = null;
     if (!isSplitter(w)) {
       splitter = getAssociatedSplitter(w);
     }
@@ -402,7 +402,7 @@ public class Split extends ComplexPanel implements AnimatedLayout,
 
   public void setWidgetMinSize(Widget child, int minSize) {
     assertIsChild(child);
-    BeeSplitter splitter = getAssociatedSplitter(child);
+    Splitter splitter = getAssociatedSplitter(child);
 
     if (splitter != null) {
       splitter.setMinSize(minSize);
@@ -445,7 +445,7 @@ public class Split extends ComplexPanel implements AnimatedLayout,
   }
 
   protected boolean isSplitter(Widget w) {
-    return w instanceof BeeSplitter;
+    return w instanceof Splitter;
   }
 
   @Override
@@ -503,12 +503,12 @@ public class Split extends ComplexPanel implements AnimatedLayout,
     }
   }
 
-  private BeeSplitter getAssociatedSplitter(Widget child) {
+  private Splitter getAssociatedSplitter(Widget child) {
     int idx = getWidgetIndex(child);
     if (idx > -1 && idx < getWidgetCount() - 1) {
       Widget splitter = getWidget(idx + 1);
       if (isSplitter(splitter)) {
-        return (BeeSplitter) splitter;
+        return (Splitter) splitter;
       }
     }
     return null;
@@ -540,7 +540,7 @@ public class Split extends ComplexPanel implements AnimatedLayout,
     }
 
     if (isSplitter(w)) {
-      BeeSplitter bspl = (BeeSplitter) w;
+      Splitter bspl = (Splitter) w;
       PropertyUtils.addProperties(lst, "Reverse", bspl.isReverse(), "Size", bspl.getSize(),
           "Min Size", bspl.getMinSize(), "Absolute Position", bspl.getAbsolutePosition(),
           "Target Position", bspl.getTargetPosition(), "Target Size", bspl.getTargetSize());
@@ -565,20 +565,20 @@ public class Split extends ComplexPanel implements AnimatedLayout,
         "Can't add a splitter before any children");
 
     LayoutData ld = (LayoutData) widget.getLayoutData();
-    BeeSplitter splitter = null;
+    Splitter splitter = null;
 
     switch (ld.direction) {
       case WEST:
-        splitter = new BeeHSplitter(widget, container, false, splitterSize);
+        splitter = new HorizontalSplitter(widget, container, false, splitterSize);
         break;
       case EAST:
-        splitter = new BeeHSplitter(widget, container, true, splitterSize);
+        splitter = new HorizontalSplitter(widget, container, true, splitterSize);
         break;
       case NORTH:
-        splitter = new BeeVSplitter(widget, container, false, splitterSize);
+        splitter = new VerticalSplitter(widget, container, false, splitterSize);
         break;
       case SOUTH:
-        splitter = new BeeVSplitter(widget, container, true, splitterSize);
+        splitter = new VerticalSplitter(widget, container, true, splitterSize);
         break;
       default:
         Assert.untouchable();

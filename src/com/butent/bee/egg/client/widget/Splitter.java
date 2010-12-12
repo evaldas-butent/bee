@@ -12,7 +12,7 @@ import com.butent.bee.egg.client.layout.LayoutData;
 import com.butent.bee.egg.client.layout.HasLayoutCallback;
 import com.butent.bee.egg.shared.HasId;
 
-public abstract class BeeSplitter extends Widget implements HasId, HasLayoutCallback {
+public abstract class Splitter extends Widget implements HasId, HasLayoutCallback {
   private Widget target;
   private Element targetContainer;
 
@@ -24,7 +24,7 @@ public abstract class BeeSplitter extends Widget implements HasId, HasLayoutCall
   private int size;
   private int minSize = 0;
 
-  public BeeSplitter(Widget target, Element targetContainer, boolean reverse, int size) {
+  public Splitter(Widget target, Element targetContainer, boolean reverse, int size) {
     this.target = target;
     this.targetContainer = targetContainer;
     this.reverse = reverse;

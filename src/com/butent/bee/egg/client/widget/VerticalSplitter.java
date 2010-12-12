@@ -6,8 +6,8 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.egg.client.dom.DomUtils;
 
-public class BeeVSplitter extends BeeSplitter {
-  public BeeVSplitter(Widget target, Element targetContainer, boolean reverse, int size) {
+public class VerticalSplitter extends Splitter {
+  public VerticalSplitter(Widget target, Element targetContainer, boolean reverse, int size) {
     super(target, targetContainer, reverse, size);
     getElement().getStyle().setPropertyPx("height", size);
     setStyleName("bee-VSplitter");

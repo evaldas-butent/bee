@@ -1,7 +1,7 @@
 package com.butent.bee.egg.client.widget;
 
 import com.google.gwt.dom.client.Document;
-import com.google.gwt.dom.client.LIElement;
+import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.egg.client.dom.DomUtils;
@@ -11,53 +11,49 @@ import com.butent.bee.egg.shared.HasId;
 import java.util.ArrayList;
 import java.util.List;
 
-public class BeeHtmlList extends Widget implements HasId {
+public class DefinitionList extends Widget implements HasId {
   private static final int INSERT_AT_END = -1;
-  private boolean ordered = false;
-  
-  private List<LIElement> items = new ArrayList<LIElement>();
+  private List<Element> items = new ArrayList<Element>();
 
-  public BeeHtmlList() {
-    this(false);
-  }
-
-  public BeeHtmlList(boolean ordered) {
-    if (ordered) {
-      setElement(Document.get().createOLElement());
-    } else {
-      setElement(Document.get().createULElement());
-    }
-
-    setStyleName("bee-HtmlList");
+  public DefinitionList() {
+    setElement(Document.get().createDLElement());
+    setStyleName("bee-DefinitionList");
+    
     createId();
-
-    this.ordered = ordered;
   }
 
-  public void addItem(String item) {
-    addItem(item, false);
+  public void addDefinition(String text) {
+    addDefinition(text, false);
   }
 
-  public void addItem(String item, boolean asHtml) {
-    insertItem(item, asHtml, INSERT_AT_END);
+  public void addDefinition(String text, boolean asHtml) {
+    insertItem(text, true, asHtml, INSERT_AT_END);
+  }
+
+  public void addItem(String text) {
+    addItem(text, false);
+  }
+
+  public void addItem(String text, boolean asHtml) {
+    insertItem(text, false, asHtml, INSERT_AT_END);
   }
 
   public void clear() {
-    for (LIElement item : items) {
+    for (Element item : items) {
       getElement().removeChild(item);
     }
     items.clear();
   }
 
   public void createId() {
-    DomUtils.createId(this, "list");
+    DomUtils.createId(this, "d-list");
   }
 
   public String getId() {
     return DomUtils.getId(this);
   }
 
-  public LIElement getItem(int index) {
+  public Element getItem(int index) {
     checkIndex(index);
     return items.get(index);
   }
@@ -71,9 +67,15 @@ public class BeeHtmlList extends Widget implements HasId {
     return getItem(index).getInnerText();
   }
 
-  public void insertItem(String item, boolean asHtml, int index) {
-    LIElement child = DomUtils.createListItem(item, asHtml).cast();
-    child.setClassName("bee-HtmlListItem");
+  public void insertDefinition(String text, int index) {
+    insertItem(text, true, false, index);
+  }
+
+  public void insertItem(String item, boolean definition, boolean asHtml, int index) {
+    Element child = DomUtils.createDefinitionItem(definition, item, asHtml).cast();
+   
+    String tag = child.getTagName().toLowerCase();
+    child.setClassName("bee-Definition-" + tag);
     
     if ((index < 0) || (index >= getItemCount())) {
       getElement().appendChild(child);
@@ -84,12 +86,8 @@ public class BeeHtmlList extends Widget implements HasId {
     }
   }
 
-  public void insertItem(String item, int index) {
-    insertItem(item, false, index);
-  }
-
-  public boolean isOrdered() {
-    return ordered;
+  public void insertItem(String text, int index) {
+    insertItem(text, false, false, index);
   }
 
   public void removeItem(int index) {
@@ -120,5 +118,5 @@ public class BeeHtmlList extends Widget implements HasId {
   private void checkIndex(int index) {
     Assert.isIndex(items, index);
   }
-  
+
 }

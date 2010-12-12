@@ -25,6 +25,7 @@ import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.egg.client.BeeKeeper;
+import com.butent.bee.egg.client.BeeStyle;
 import com.butent.bee.egg.client.layout.Direction;
 import com.butent.bee.egg.client.utils.BeeJs;
 import com.butent.bee.egg.client.utils.JreEmulation;
@@ -442,15 +443,13 @@ public class DomUtils {
     }
 
     for (int i = 0; i < MAX_GENERATIONS; i++) {
-      lst.add(BeeUtils.concat(1, transformClass(p),
-          p.getElement().getId(), p.getStyleName()));
+      lst.add(BeeUtils.concat(1, transformClass(p), p.getElement().getId(), p.getStyleName()));
 
       p = p.getParent();
       if (p == null) {
         break;
       }
     }
-
     return lst;
   }
 
@@ -739,23 +738,23 @@ public class DomUtils {
     List<Property> lst = new ArrayList<Property>();
 
     PropertyUtils.addProperties(lst, "Background Color", st.getBackgroundColor(),
-        "Background Image", st.getBackgroundImage(), "Border Color",
-        st.getBorderColor(), "Border Style", st.getBorderStyle(),
-        "Border Width", st.getBorderWidth(), "Bottom", st.getBottom(), "Color",
-        st.getColor(), "Cursor", st.getCursor(), "Display", st.getDisplay(),
+        "Background Image", st.getBackgroundImage(), 
+        "Border Color", st.getBorderColor(), "Border Style", st.getBorderStyle(),
+        "Border Width", st.getBorderWidth(), "Bottom", st.getBottom(),
+        "Color", st.getColor(), "Cursor", st.getCursor(), "Display", st.getDisplay(),
         "Font Size", st.getFontSize(), "Font Style", st.getFontStyle(),
-        "Font Weight", st.getFontWeight(), "Height", st.getHeight(), "Left",
-        st.getLeft(), "List Style Type", st.getListStyleType(), "Margin",
-        st.getMargin(), "Margin Bottom", st.getMarginBottom(), "Margin Left",
-        st.getMarginLeft(), "Margin Right", st.getMarginRight(), "Margin Top",
-        st.getMarginTop(), "Opacity", st.getOpacity(), "Overflow",
-        st.getOverflow(), "Padding", st.getPadding(), "Padding Bottom",
-        st.getPaddingBottom(), "Padding Left", st.getPaddingLeft(),
-        "Padding Right", st.getPaddingRight(), "Padding Top",
-        st.getPaddingTop(), "Position", st.getPosition(), "Right",
-        st.getRight(), "Text Decoration", st.getTextDecoration(), "Top",
-        st.getTop(), "Vertical Align", st.getVerticalAlign(), "Visibility",
-        st.getVisibility(), "Width", st.getWidth(), "Z Index", st.getZIndex());
+        "Font Weight", st.getFontWeight(), "Height", st.getHeight(),
+        "Left", st.getLeft(), "List Style Type", st.getListStyleType(),
+        "Margin", st.getMargin(), "Margin Bottom", st.getMarginBottom(),
+        "Margin Left", st.getMarginLeft(), "Margin Right", st.getMarginRight(),
+        "Margin Top", st.getMarginTop(), "Opacity", st.getOpacity(),
+        "Overflow", st.getOverflow(), "Padding", st.getPadding(),
+        "Padding Bottom", st.getPaddingBottom(), "Padding Left", st.getPaddingLeft(),
+        "Padding Right", st.getPaddingRight(), "Padding Top", st.getPaddingTop(),
+        "Position", st.getPosition(), "Right", st.getRight(),
+        "Text Decoration", st.getTextDecoration(), "Top", st.getTop(),
+        "Vertical Align", st.getVerticalAlign(), "Visibility", st.getVisibility(),
+        "Width", st.getWidth(), "Z Index", st.getZIndex());
 
     return lst;
   }
@@ -838,10 +837,9 @@ public class DomUtils {
 
     PropertyUtils.addProperties(lst, "Absolute Left", obj.getAbsoluteLeft(),
         "Absolute Top", obj.getAbsoluteTop(), "Class", transformClass(obj),
-        "Offset Height", obj.getOffsetHeight(), "Offset Width",
-        obj.getOffsetWidth(), "Style Name", obj.getStyleName(),
-        "Style Primary Name", obj.getStylePrimaryName(), "Title",
-        obj.getTitle(), "Visible", obj.isVisible());
+        "Offset Height", obj.getOffsetHeight(), "Offset Width", obj.getOffsetWidth(),
+        "Style Name", obj.getStyleName(), "Style Primary Name", obj.getStylePrimaryName(),
+        "Title", obj.getTitle(), "Visible", obj.isVisible());
 
     return lst;
   }
@@ -1058,6 +1056,40 @@ public class DomUtils {
     }
 
     return null;
+  }
+  
+  public static void preventChildSelection(Element elem, boolean recurse, String... tags) {
+    Assert.notNull(elem);
+    NodeList<Node> children = elem.getChildNodes();
+    if (children == null) {
+      return;
+    }
+    int tagCnt = tags.length;
+    Element child;
+    
+    for (int i = 0; i < children.getLength(); i++) {
+      if (!Element.is(children.getItem(i))) {
+        continue;
+      }
+      child = Element.as(children.getItem(i));
+      if (tagCnt <= 0 || BeeUtils.inListSame(child.getTagName(), tags)) {
+        preventSelection(child);
+      }
+      
+      if (recurse) {
+        preventChildSelection(child, recurse, tags);
+      }
+    }
+  }
+
+  public static void preventSelection(UIObject obj) {
+    Assert.notNull(obj);
+    preventSelection(obj.getElement());
+  }
+  
+  public static void preventSelection(Element elem) {
+    Assert.notNull(elem);
+    elem.addClassName(BeeStyle.NAME_UNSELECTABLE);
   }
 
   public static void removeAttribute(Widget w, String name) {

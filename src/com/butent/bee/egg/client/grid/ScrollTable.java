@@ -70,7 +70,7 @@ public class ScrollTable<RowType> extends ComplexPanel implements
     HasPageChangeHandlers, HasPagingFailureHandlers, RequiresResize {
 
   public static enum ResizePolicy {
-    UNCONSTRAINED(false, false), FLOW(false, true), FIXED_WIDTH(true, true),
+    UNCONSTRAINED(false, false), FLOW(false, true), FIXED_WIDTH(true, false),
         FILL_WIDTH(true, true);
 
     private boolean isSacrificial;
@@ -81,11 +81,11 @@ public class ScrollTable<RowType> extends ComplexPanel implements
       this.isSacrificial = isSacrificial;
     }
 
-    private boolean isFixedWidth() {
+    public boolean isFixedWidth() {
       return isFixedWidth;
     }
 
-    private boolean isSacrificial() {
+    public boolean isSacrificial() {
       return isSacrificial;
     }
   }
@@ -332,8 +332,7 @@ public class ScrollTable<RowType> extends ComplexPanel implements
           int colSpan = DomUtils.getColSpan(cell);
           curCells = table.getColumnWidthInfo(curCellIndex, colSpan);
           for (ColumnWidth info : curCells) {
-            if (!info.hasMaxWidth() || !info.hasMinWidth()
-                || info.getMaxWidth() != info.getMinWidth()) {
+            if (info.getMaxWidth() != info.getMinWidth()) {
               resizable = true;
             }
           }
@@ -979,6 +978,36 @@ public class ScrollTable<RowType> extends ComplexPanel implements
     scheduleRedraw();
   }
 
+  public void recalculateColumnWidths(boolean current, boolean fill) {
+    if (!isAttached()) {
+      return;
+    }
+
+    int width = fill ? getAvailableWidth() : getDataTableWidth();
+    if (getDataTable().getSelectionPolicy().hasInputColumn()) {
+      width -= getDataTable().getInputColumnWidth();
+    }
+    int cnt = dataTable.getColumnCount();
+    if (cnt <= 0 || width < cnt) {
+      return;
+    }
+    List<ColumnWidth> colWidths = getColumnWidthInfo(0, cnt);
+
+    for (ColumnWidth info : colWidths) {
+      int w = info.limit(current ? info.getCurWidth() : info.getPrefWidth());
+      info.setDistrWidth(w);
+      info.setCurWidth(0);
+    }
+    
+    GridUtils.distributeWidth(colWidths, width);
+    applyNewColumnWidths(0, colWidths, false);
+
+    for (ColumnWidth info : colWidths) {
+      info.setDistrWidth(0);
+    }
+    doScroll();
+  }
+
   public void recalculateIdealColumnWidths() {
     FixedWidthFlexTable ht = getHeaderTable();
     FixedWidthFlexTable ft = getFooterTable();
@@ -1032,11 +1061,6 @@ public class ScrollTable<RowType> extends ComplexPanel implements
   public boolean remove(Widget child) {
     Assert.unsupported("This panel does not support remove()");
     return false;
-  }
-
-  public void resetColumnWidths() {
-    applyNewColumnWidths(0, getBoundedColumnWidths(false), false);
-    doScroll();
   }
 
   public void scheduleRedraw() {

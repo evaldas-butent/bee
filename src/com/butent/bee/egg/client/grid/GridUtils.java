@@ -10,6 +10,7 @@ import com.google.gwt.user.client.Element;
 
 import com.butent.bee.egg.client.BeeKeeper;
 import com.butent.bee.egg.shared.Assert;
+import com.butent.bee.egg.shared.BeeConst;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -99,16 +100,14 @@ public class GridUtils {
       width -= (curWidth - info.getCurWidth());
       info.setNewWidth(curWidth);
     }
-
     if (width == 0) {
       return 0;
     }
 
     List<ColumnWidth> orderedColumns = new ArrayList<ColumnWidth>(columns);
-
     if (width > 0) {
       Collections.sort(orderedColumns, growComparator);
-    } else if (width < 0) {
+    } else {
       Collections.sort(orderedColumns, shrinkComparator);
     }
 
@@ -184,8 +183,8 @@ public class GridUtils {
       int totalRequired = 0;
       for (int curIndex = 0; curIndex < syncedColumns; curIndex++) {
         ColumnWidth curInfo = columns.get(curIndex);
-        int preferredWidth = curInfo.getPrefWidth();
-        int newWidth = (int) (targetDiff * preferredWidth) + preferredWidth;
+        int target = curInfo.getTargetWidth();
+        int newWidth = (int) (targetDiff * target) + target;
 
         if (growing) {
           newWidth = Math.max(newWidth, curInfo.getCurWidth());
@@ -259,12 +258,15 @@ public class GridUtils {
       return columns.get(syncedColumns).getDifference();
     } else {
       int totalNew = width;
-      int totalPref = 0;
+      int totalTarget = 0;
       for (ColumnWidth info : columns) {
         totalNew += info.getNewWidth();
-        totalPref += info.getPrefWidth();
+        totalTarget += info.getTargetWidth();
       }
-      return (totalNew - totalPref) / (double) totalPref;
+      if (totalTarget == 0) {
+        return BeeConst.DOUBLE_ZERO;
+      }
+      return (totalNew - totalTarget) / (double) totalTarget;
     }
   }
 }

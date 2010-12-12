@@ -412,7 +412,7 @@ public class BeeTable {
     return this;
   }
 
-  BeeTable getExtTable() {
+  public BeeTable getExtTable() {
     return extTable;
   }
 

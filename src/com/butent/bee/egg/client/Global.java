@@ -227,15 +227,21 @@ public class Global implements Module {
 
   public static void showVars(String... context) {
     int n = context.length;
-    Variable[] arr;
+    Variable[] arr = null;
 
     if (n > 0) {
       Set<String> names = vars.keySet();
-      Set<String> lst = new LinkedHashSet<String>();
+      Set<String> keys = new LinkedHashSet<String>();
       for (String z : context) {
-        lst.addAll(BeeUtils.getContext(z, names));
+        keys.addAll(BeeUtils.getContext(z, names));
       }
-      arr = lst.toArray(new Variable[0]);
+      if (keys.size() > 0) {
+        arr = new Variable[keys.size()];
+        int idx = 0;
+        for (String key : keys) {
+          arr[idx++] = vars.get(key);
+        }
+      }
     } else {
       arr = vars.values().toArray(new Variable[0]);
     }
