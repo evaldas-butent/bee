@@ -7,10 +7,7 @@
       <BeeField name="Nationality" type="STRING" precision="50" notNull="true" />
       <BeeField name="Percent" type="NUMERIC" precision="4" scale="1" />
       <BeeField name="Country" type="LONG" notNull="true" relation="Countries" cascade="true" />
-      <BeeKey name="Nationality" unique="true">
-        <BeeKeyField name="Country" />
-        <BeeKeyField name="Nationality" />
-      </BeeKey>
+      <BeeKey fields="Country, Nationality" unique="true" />
     </BeeFields>
   </BeeTable>
   <BeeTable name="Codes" idName="CodeID">
@@ -25,12 +22,9 @@
       <BeeField name="Anthem" type="STRING" precision="30" />
       <BeeField name="Capital" type="LONG" relation="Cities" cascade="true" unique="true" />
       <BeeField name="Continent" type="LONG" relation="Continents" />
-      <BeeKey name="Language" />
-      <!--<BeeKey name="Capital" unique="true">
-        <BeeKeyField name="Continent" />
-        <BeeKeyField name="Capital" />
-      </BeeKey>
-    --></BeeExtended>
+      <BeeKey fields="Language" />
+      <!--<BeeKey fields="Continent, Capital" unique="true" />-->
+    </BeeExtended>
   </BeeTable>
   <BeeTable name="DataTypes">
     <BeeFields>

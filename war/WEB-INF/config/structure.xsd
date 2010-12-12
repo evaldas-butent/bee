@@ -48,14 +48,7 @@
   </xs:complexType>
 
   <xs:complexType name="keyType">
-    <xs:sequence>
-      <xs:element name="BeeKeyField" minOccurs="0" maxOccurs="unbounded">
-        <xs:complexType>
-          <xs:attribute name="name" type="xs:string" use="required" />
-        </xs:complexType>
-      </xs:element>
-    </xs:sequence>
-    <xs:attribute name="name" type="xs:string" use="required" />
+    <xs:attribute name="fields" type="xs:string" use="required" />
     <xs:attribute name="unique" type="xs:boolean" />
   </xs:complexType>
 

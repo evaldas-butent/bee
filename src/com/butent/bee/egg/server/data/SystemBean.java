@@ -8,11 +8,13 @@ import com.butent.bee.egg.server.data.BeeTable.BeeState;
 import com.butent.bee.egg.server.utils.FileUtils;
 import com.butent.bee.egg.server.utils.XmlUtils;
 import com.butent.bee.egg.shared.Assert;
+import com.butent.bee.egg.shared.data.BeeColumn;
 import com.butent.bee.egg.shared.data.BeeRowSet;
 import com.butent.bee.egg.shared.data.BeeRowSet.BeeRow;
 import com.butent.bee.egg.shared.sql.BeeConstants.DataTypes;
 import com.butent.bee.egg.shared.sql.BeeConstants.Keywords;
 import com.butent.bee.egg.shared.sql.HasFrom;
+import com.butent.bee.egg.shared.sql.IsExpression;
 import com.butent.bee.egg.shared.sql.IsQuery;
 import com.butent.bee.egg.shared.sql.SqlCreate;
 import com.butent.bee.egg.shared.sql.SqlInsert;
@@ -227,6 +229,7 @@ public class SystemBean {
         extension.makeCustom();
         dataCache.put(extName, extension);
         cTbl++;
+        upd.add(extension);
       } else {
         BeeTable table = getTable(extName);
 
@@ -234,7 +237,7 @@ public class SystemBean {
           LogUtils.warning(logger, resource, "Table", extName, "can't define base fields");
         }
         for (BeeKey key : extension.getKeys()) {
-          table.addKey(key.getName(), key.isUnique(), key.getKeyFields());
+          table.addKey(key.isUnique(), key.getKeyFields());
           cKey++;
         }
         for (BeeField fld : extension.getExtFields()) {
@@ -243,7 +246,7 @@ public class SystemBean {
           cFld++;
         }
         for (BeeKey key : extension.getExtKeys()) {
-          table.addExtKey(key.getName(), key.isUnique(), key.getKeyFields());
+          table.addExtKey(key.isUnique(), key.getKeyFields());
           cKey++;
         }
         for (BeeState state : extension.getStates()) {
@@ -251,8 +254,9 @@ public class SystemBean {
               state.isForced());
           cStt++;
         }
+        upd.add(table.getExtTable());
+        upd.add(table.getStateTable());
       }
-      upd.add(extension);
     }
     for (BeeTable extension : upd) {
       initConstraints(extension);
@@ -415,7 +419,28 @@ public class SystemBean {
       }
     }
     ss.addFields(viewSource, getLockName(viewSource), getIdName(viewSource));
-    return qs.getData(ss);
+    BeeRowSet res = qs.getData(ss);
+
+    for (IsExpression[] pair : ss.getFields()) {
+      String xpr = pair[0].getValue();
+      IsExpression als = pair[1];
+
+      int idx = xpr.lastIndexOf(".");
+      if (idx <= 0) {
+        continue;
+      }
+      String tbl = BeeUtils.left(xpr, idx);
+      String fld = xpr.substring(idx + 1);
+
+      if (BeeUtils.inListSame(tbl, viewSource, getExtName(viewSource))) {
+        BeeColumn col = res.getColumn(BeeUtils.isEmpty(als) ? fld : als.getValue());
+        col.setFieldSource(viewSource);
+        col.setFieldName(fld);
+      }
+    }
+    res.setSource(viewSource);
+
+    return res;
   }
 
   private List<String> getViewFields(String table, String field) {
@@ -551,7 +576,7 @@ public class SystemBean {
               , BeeUtils.toBoolean(field.getAttribute("cascade")));
 
           if (unique) {
-            tbl.addKey(fldName, true);
+            tbl.addKey(true, fldName);
           }
         }
         NodeList keys = ((Element) nodeRoot.item(0)).getElementsByTagName("BeeKey");
@@ -559,17 +584,8 @@ public class SystemBean {
         for (int j = 0; j < keys.getLength(); j++) {
           Element key = (Element) keys.item(j);
 
-          NodeList keyFlds = key.getElementsByTagName("BeeKeyField");
-          int len = keyFlds.getLength();
-          String[] flds = new String[len];
-
-          if (len > 0) {
-            for (int l = 0; l < len; l++) {
-              flds[l] = ((Element) keyFlds.item(l)).getAttribute("name");
-            }
-          }
-          tbl.addKey(key.getAttribute("name"),
-                BeeUtils.toBoolean(key.getAttribute("unique")), flds);
+          tbl.addKey(BeeUtils.toBoolean(key.getAttribute("unique")),
+              key.getAttribute("fields").split(","));
         }
       }
       nodeRoot = table.getElementsByTagName("BeeExtended");
@@ -592,7 +608,7 @@ public class SystemBean {
               , BeeUtils.toBoolean(field.getAttribute("cascade")));
 
           if (unique) {
-            tbl.addExtKey(fldName, true);
+            tbl.addExtKey(true, fldName);
           }
         }
         NodeList keys = ((Element) nodeRoot.item(0)).getElementsByTagName("BeeKey");
@@ -600,17 +616,8 @@ public class SystemBean {
         for (int j = 0; j < keys.getLength(); j++) {
           Element key = (Element) keys.item(j);
 
-          NodeList keyFlds = key.getElementsByTagName("BeeKeyField");
-          int len = keyFlds.getLength();
-          String[] flds = new String[len];
-
-          if (len > 0) {
-            for (int l = 0; l < len; l++) {
-              flds[l] = ((Element) keyFlds.item(l)).getAttribute("name");
-            }
-          }
-          tbl.addExtKey(key.getAttribute("name"),
-                BeeUtils.toBoolean(key.getAttribute("unique")), flds);
+          tbl.addExtKey(BeeUtils.toBoolean(key.getAttribute("unique")),
+              key.getAttribute("fields").split(","));
         }
       }
       nodeRoot = table.getElementsByTagName("BeeStates");

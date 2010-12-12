@@ -123,29 +123,37 @@ public class BeeTable {
 
   public class BeeKey {
     private final String name;
+    private final KeyTypes keyType;
     private final String[] keyFields;
-    private final boolean unique;
-    private final boolean primary;
 
-    private BeeKey(String name, boolean unique, String... keyFields) {
-      Assert.notEmpty(name);
+    private BeeKey(KeyTypes keyType, String... keyFields) {
+      Assert.notEmpty(keyFields);
+      String[] flds = new String[keyFields.length];
 
-      this.name = name;
-      this.primary = BeeUtils.same(name, primaryKeyName());
-      this.unique = primary || unique;
-
-      List<String> flds = new ArrayList<String>();
-
-      for (String fld : keyFields) {
-        if (!BeeUtils.isEmpty(fld)) {
-          flds.add(fld);
-        }
+      for (int i = 0; i < keyFields.length; i++) {
+        String fld = keyFields[i];
+        Assert.notEmpty(fld);
+        flds[i] = fld.trim();
       }
-      if (BeeUtils.isEmpty(flds)) {
-        this.keyFields = new String[]{name};
-      } else {
-        this.keyFields = flds.toArray(new String[0]);
+      String keyName = null;
+
+      switch (keyType) {
+        case PRIMARY:
+          keyName = PRIMARY_KEY_PREFIX + getTable();
+          break;
+        case UNIQUE:
+          keyName = UNIQUE_KEY_PREFIX + BeeUtils.concat("_", getTable(), keyCounter++);
+          break;
+        case INDEX:
+          keyName = INDEX_KEY_PREFIX + BeeUtils.concat("_", getTable(), keyCounter++);
+          break;
+        default:
+          Assert.untouchable();
+          break;
       }
+      this.name = keyName;
+      this.keyType = keyType;
+      this.keyFields = flds;
     }
 
     public String[] getKeyFields() {
@@ -161,11 +169,11 @@ public class BeeTable {
     }
 
     public boolean isPrimary() {
-      return primary;
+      return keyType.equals(KeyTypes.PRIMARY);
     }
 
     public boolean isUnique() {
-      return unique;
+      return keyType.equals(KeyTypes.UNIQUE);
     }
   }
 
@@ -211,10 +219,16 @@ public class BeeTable {
     }
   }
 
+  private enum KeyTypes {
+    PRIMARY, UNIQUE, INDEX
+  }
+
   private static final String DEFAULT_ID_FIELD = "ID";
   private static final String DEFAULT_LOCK_FIELD = "Version";
 
   private static final String PRIMARY_KEY_PREFIX = "PK_";
+  private static final String UNIQUE_KEY_PREFIX = "UK_";
+  private static final String INDEX_KEY_PREFIX = "IK_";
   private static final String FOREIGN_KEY_PREFIX = "FK_";
 
   private static final String EXT_TABLE_SUFFIX = "_EXT";
@@ -223,6 +237,7 @@ public class BeeTable {
   private String name;
   private String idName;
   private String lockName;
+  private int keyCounter = 0;
   private int foreignKeyCounter = 0;
   private int stateCounter = 0;
 
@@ -247,6 +262,20 @@ public class BeeTable {
     flds.addAll(getFields());
     flds.addAll(getExtFields());
     return flds;
+  }
+
+  public Collection<BeeField> getExtFields() {
+    if (!BeeUtils.isEmpty(getExtTable())) {
+      return getExtTable().getFields();
+    }
+    return new ArrayList<BeeField>();
+  }
+
+  public Collection<BeeKey> getExtKeys() {
+    if (!BeeUtils.isEmpty(getExtTable())) {
+      return getExtTable().getKeys();
+    }
+    return new ArrayList<BeeKey>();
   }
 
   public BeeField getField(String field) {
@@ -327,9 +356,9 @@ public class BeeTable {
     return this;
   }
 
-  BeeTable addExtKey(String keyName, boolean unique, String... keyFields) {
+  BeeTable addExtKey(boolean unique, String... keyFields) {
     createExtTable();
-    extTable.addKey(keyName, unique, keyFields);
+    extTable.addKey(unique, keyFields);
     return this;
   }
 
@@ -350,21 +379,15 @@ public class BeeTable {
     return this;
   }
 
-  BeeTable addKey(String name, boolean unique, String... keyFields) {
-    BeeKey key = new BeeKey(name, unique, keyFields);
-    String keyName = key.getName();
-
-    for (BeeKey k : keys) {
-      Assert.state(!BeeUtils.same(k.getName(), keyName),
-          "Dublicate key name: " + getName() + " " + keyName);
-    }
+  BeeTable addKey(boolean unique, String... keyFields) {
+    BeeKey key = new BeeKey(unique ? KeyTypes.UNIQUE : KeyTypes.INDEX, keyFields);
     keys.add(key);
     return this;
   }
 
-  BeeTable addPrimaryKey(String keyField) {
-    Assert.notEmpty(keyField);
-    addKey(primaryKeyName(), true, keyField);
+  BeeTable addPrimaryKey(String... keyFields) {
+    BeeKey key = new BeeKey(KeyTypes.PRIMARY, keyFields);
+    keys.add(key);
     return this;
   }
 
@@ -387,20 +410,6 @@ public class BeeTable {
           DataTypes.LONG, 0, 0, false, false, null, false);
     }
     return this;
-  }
-
-  Collection<BeeField> getExtFields() {
-    if (!BeeUtils.isEmpty(getExtTable())) {
-      return getExtTable().getFields();
-    }
-    return new ArrayList<BeeField>();
-  }
-
-  Collection<BeeKey> getExtKeys() {
-    if (!BeeUtils.isEmpty(getExtTable())) {
-      return getExtTable().getKeys();
-    }
-    return new ArrayList<BeeKey>();
   }
 
   BeeTable getExtTable() {
@@ -434,9 +443,5 @@ public class BeeTable {
       stateTable.addField("StateMask", DataTypes.LONG, 0, 0, true, false, null, false)
         .addForeignKey(stateTable.getIdName(), getName(), getIdName(), Keywords.CASCADE);
     }
-  }
-
-  private String primaryKeyName() {
-    return PRIMARY_KEY_PREFIX + getName();
   }
 }

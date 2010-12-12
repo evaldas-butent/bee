@@ -17,21 +17,15 @@
     <BeeFields>
       <BeeField name="User" type="LONG" notNull="true" relation="Users" cascade="true" />
       <BeeField name="Role" type="LONG" notNull="true" relation="Roles" cascade="true" />
-      <BeeKey name="UserRole" unique="true">
-        <BeeKeyField name="User" />
-        <BeeKeyField name="Role" />
-      </BeeKey>
+      <BeeKey fields="User, Role" unique="true" />
     </BeeFields>
   </BeeTable>
   <BeeTable name="Views" idName="ViewID">
     <BeeFields>
       <BeeField name="View" type="STRING" precision="10" notNull="true" />
       <BeeField name="Field" type="STRING" precision="100" notNull="true" />
-      <BeeKey name="View" />
-      <BeeKey name="Field" unique="true">
-        <BeeKeyField name="View" />
-        <BeeKeyField name="Field" />
-      </BeeKey>
+      <BeeKey fields="View" />
+      <BeeKey fields="View, Field" unique="true" />
     </BeeFields>
   </BeeTable>
   <BeeTable name="Countries" idName="CountryID" lockName="LastLock">
