@@ -2,7 +2,7 @@ package com.butent.bee.egg.shared.data;
 
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
-public abstract class AbstractData implements BeeView {
+public abstract class AbstractData implements HasTabularData {
   private int columnCount = 0;
   private int rowCount = 0;
 

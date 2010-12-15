@@ -4,19 +4,19 @@ import com.google.gwt.cell.client.Cell;
 import com.google.gwt.user.cellview.client.Column;
 
 import com.butent.bee.egg.shared.BeeConst;
-import com.butent.bee.egg.shared.data.BeeView;
+import com.butent.bee.egg.shared.data.HasTabularData;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
 public class TextColumn extends Column<Integer, String> {
-  private BeeView view;
+  private HasTabularData view;
   private int idx;
   private int maxDisplaySize;
 
-  public TextColumn(Cell<String> cell, BeeView view, int idx) {
+  public TextColumn(Cell<String> cell, HasTabularData view, int idx) {
     this(cell, view, idx, -1);
   }
 
-  public TextColumn(Cell<String> cell, BeeView view, int idx, int max) {
+  public TextColumn(Cell<String> cell, HasTabularData view, int idx, int max) {
     super(cell);
 
     this.view = view;
@@ -45,7 +45,7 @@ public class TextColumn extends Column<Integer, String> {
     return BeeUtils.clip(v, maxDisplaySize);
   }
 
-  public BeeView getView() {
+  public HasTabularData getView() {
     return view;
   }
 
@@ -57,7 +57,7 @@ public class TextColumn extends Column<Integer, String> {
     this.maxDisplaySize = maxDisplaySize;
   }
 
-  public void setView(BeeView view) {
+  public void setView(HasTabularData view) {
     this.view = view;
   }
 }

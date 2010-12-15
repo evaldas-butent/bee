@@ -5,15 +5,15 @@ import com.google.gwt.view.client.ProvidesKey;
 
 import com.butent.bee.egg.client.communication.ResponseCallback;
 import com.butent.bee.egg.shared.Assert;
-import com.butent.bee.egg.shared.data.BeeView;
+import com.butent.bee.egg.shared.data.HasTabularData;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
 public class CellKeyProvider implements ProvidesKey<Integer>, ResponseCallback {
-  private BeeView view;
+  private HasTabularData view;
   private int keyColumn = -1;
   private String keyName = null;
 
-  public CellKeyProvider(BeeView view) {
+  public CellKeyProvider(HasTabularData view) {
     this.view = view;
   }
 

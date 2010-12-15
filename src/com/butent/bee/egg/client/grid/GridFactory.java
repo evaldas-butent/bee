@@ -17,7 +17,7 @@ import com.butent.bee.egg.client.grid.render.FixedWidthGridBulkRenderer;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.data.BeeRowSet;
-import com.butent.bee.egg.shared.data.BeeView;
+import com.butent.bee.egg.shared.data.HasTabularData;
 import com.butent.bee.egg.shared.data.DataUtils;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
@@ -28,15 +28,15 @@ import java.util.Iterator;
 public class GridFactory {
 
   private class ScrollGridColumnDefinition extends ColumnDefinition<Integer, String> {
-    private BeeView view;
+    private HasTabularData view;
     private int idx;
     private int maxDisplaySize;
 
-    private ScrollGridColumnDefinition(BeeView view, int idx) {
+    private ScrollGridColumnDefinition(HasTabularData view, int idx) {
       this(view, idx, -1);
     }
 
-    private ScrollGridColumnDefinition(BeeView view, int idx, int max) {
+    private ScrollGridColumnDefinition(HasTabularData view, int idx, int max) {
       this.view = view;
       this.idx = idx;
       this.maxDisplaySize = max;
@@ -92,7 +92,7 @@ public class GridFactory {
   public Widget cellGrid(Object data, CellType cellType, Object... columns) {
     Assert.notNull(data);
 
-    BeeView view = DataUtils.createView(data, columns);
+    HasTabularData view = DataUtils.createView(data, columns);
     Assert.notNull(view);
 
     int c = view.getColumnCount();
@@ -135,7 +135,7 @@ public class GridFactory {
   public Widget scrollGrid(int width, Object data, Object... columns) {
     Assert.notNull(data);
 
-    BeeView view = DataUtils.createView(data, columns);
+    HasTabularData view = DataUtils.createView(data, columns);
     Assert.notNull(view);
 
     int c = view.getColumnCount();
@@ -179,7 +179,7 @@ public class GridFactory {
   public Widget simpleGrid(Object data, Object... columns) {
     Assert.notNull(data);
 
-    BeeView view = DataUtils.createView(data, columns);
+    HasTabularData view = DataUtils.createView(data, columns);
     Assert.notNull(view);
 
     int c = view.getColumnCount();

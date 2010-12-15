@@ -13,14 +13,14 @@ import java.util.List;
 public class DataUtils {
   
   @SuppressWarnings("unchecked")
-  public static BeeView createView(Object data, Object... columns) {
+  public static HasTabularData createView(Object data, Object... columns) {
     Assert.notNull(data);
     int c = columns.length;
     
-    BeeView view = null;
+    HasTabularData view = null;
     
-    if (data instanceof BeeView) {
-      view = (BeeView) data;
+    if (data instanceof HasTabularData) {
+      view = (HasTabularData) data;
     
     }  else if (data instanceof String[][]) {
       view = new StringData((String[][]) data);

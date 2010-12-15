@@ -20,7 +20,7 @@ import com.butent.bee.egg.shared.BeeService;
 import com.butent.bee.egg.shared.communication.CommUtils;
 import com.butent.bee.egg.shared.communication.ContentType;
 import com.butent.bee.egg.shared.communication.ResponseMessage;
-import com.butent.bee.egg.shared.data.BeeView;
+import com.butent.bee.egg.shared.data.HasTabularData;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 import com.butent.bee.egg.shared.utils.LogUtils;
 
@@ -251,7 +251,7 @@ public class BeeCallback implements RequestCallback {
       BeeKeeper.getMenu().loadCallBack(arr);
 
     } else if (cc > 0) {
-      BeeView view = new ResponseData(arr, cc);
+      HasTabularData view = new ResponseData(arr, cc);
       BeeKeeper.getUi().showGrid(view);
 
     } else {

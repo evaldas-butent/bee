@@ -9,7 +9,7 @@ import com.butent.bee.egg.client.data.ResponseData;
 import com.butent.bee.egg.client.utils.BeeXml;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeService;
-import com.butent.bee.egg.shared.data.BeeView;
+import com.butent.bee.egg.shared.data.HasTabularData;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
 class GridService extends CompositeService {
@@ -51,7 +51,7 @@ class GridService extends CompositeService {
         JsArrayString arr = (JsArrayString) params[0];
         int cc = (Integer) params[1];
 
-        BeeView view = new ResponseData(arr, cc);
+        HasTabularData view = new ResponseData(arr, cc);
         destination.add(Global.scrollGrid(view));
         break;
 

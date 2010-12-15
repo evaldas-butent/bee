@@ -4,14 +4,14 @@ import com.google.gwt.cell.client.FieldUpdater;
 
 import com.butent.bee.egg.client.BeeKeeper;
 import com.butent.bee.egg.shared.data.BeeRowSet;
-import com.butent.bee.egg.shared.data.BeeView;
+import com.butent.bee.egg.shared.data.HasTabularData;
 
 public class CellUpdater implements FieldUpdater<Integer, String> {
-  private BeeView view;
+  private HasTabularData view;
   private int column;
   private CellKeyProvider keyProvider;
 
-  public CellUpdater(BeeView view, int column, CellKeyProvider keyProvider) {
+  public CellUpdater(HasTabularData view, int column, CellKeyProvider keyProvider) {
     this.view = view;
     this.column = column;
     this.keyProvider = keyProvider;

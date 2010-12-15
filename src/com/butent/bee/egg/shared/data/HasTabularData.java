@@ -1,6 +1,6 @@
 package com.butent.bee.egg.shared.data;
 
-public interface BeeView {
+public interface HasTabularData {
   int getColumnCount();
   String[] getColumnNames();
   BeeColumn[] getColumns();
