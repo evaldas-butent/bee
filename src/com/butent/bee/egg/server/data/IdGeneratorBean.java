@@ -41,8 +41,9 @@ public class IdGeneratorBean {
   private Map<String, long[]> idCache = new HashMap<String, long[]>();
 
   @PreDestroy
+  @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
   public void destroy() {
-    if (qs.isDbTable(ID_TABLE)) {
+    if (qs.isDbTable(sys.getDbName(), sys.getDbSchema(), ID_TABLE)) {
       for (Entry<String, long[]> entry : idCache.entrySet()) {
         String source = entry.getKey();
         IsCondition wh = SqlUtils.equal(ID_TABLE, ID_KEY, source);
@@ -87,7 +88,7 @@ public class IdGeneratorBean {
     int cnt = 0;
     IsCondition wh = SqlUtils.equal(ID_TABLE, ID_KEY, source);
 
-    if (!qs.isDbTable(ID_TABLE)) {
+    if (!qs.isDbTable(sys.getDbName(), sys.getDbSchema(), ID_TABLE)) {
       SqlCreate sc = new SqlCreate(ID_TABLE, false);
       sc.addString(ID_KEY, 30, Keywords.NOT_NULL);
       sc.addLong(ID_LAST, Keywords.NOT_NULL);

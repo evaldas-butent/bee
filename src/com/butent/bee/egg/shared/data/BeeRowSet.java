@@ -235,7 +235,7 @@ public class BeeRowSet extends AbstractData implements BeeSerializable {
   }
 
   private enum SerializationMembers {
-    COUNTER, SOURCE, COLUMNS, ROWS
+    COUNTER, VIEW, COLUMNS, ROWS
   }
 
   private static Logger logger = Logger.getLogger(BeeRowSet.class.getName());
@@ -247,7 +247,7 @@ public class BeeRowSet extends AbstractData implements BeeSerializable {
   }
 
   private int counter = 0;
-  private String source;
+  private String viewName;
 
   private List<BeeRow> rows;
 
@@ -299,8 +299,8 @@ public class BeeRowSet extends AbstractData implements BeeSerializable {
           counter = BeeUtils.toInt(value);
           break;
 
-        case SOURCE:
-          setSource(value);
+        case VIEW:
+          setViewName(value);
           break;
 
         case COLUMNS:
@@ -333,7 +333,7 @@ public class BeeRowSet extends AbstractData implements BeeSerializable {
 
   public BeeRowSet getChanges() {
     BeeRowSet update = new BeeRowSet(getColumns());
-    update.setSource(getSource());
+    update.setViewName(getViewName());
 
     if (!isEmpty()) {
       for (BeeRow row : getRows()) {
@@ -381,13 +381,13 @@ public class BeeRowSet extends AbstractData implements BeeSerializable {
     return rows;
   }
 
-  public String getSource() {
-    return source;
-  }
-
   @Override
   public String getValue(int row, int col) {
     return getRow(row).getValue(col);
+  }
+
+  public String getViewName() {
+    return viewName;
   }
 
   public boolean isEmpty() {
@@ -421,8 +421,8 @@ public class BeeRowSet extends AbstractData implements BeeSerializable {
           sb.append(Codec.beeSerialize(counter));
           break;
 
-        case SOURCE:
-          sb.append(Codec.beeSerialize(getSource()));
+        case VIEW:
+          sb.append(Codec.beeSerialize(getViewName()));
           break;
 
         case COLUMNS:
@@ -441,14 +441,14 @@ public class BeeRowSet extends AbstractData implements BeeSerializable {
     return sb.toString();
   }
 
-  public void setSource(String source) {
-    this.source = source;
-  }
-
   @Override
   public void setValue(int row, int col, String value) {
     BeeRow r = getRow(row);
     r.setValue(col, value);
+  }
+
+  public void setViewName(String viewName) {
+    this.viewName = viewName;
   }
 
   private void addRow(BeeRow row) {

@@ -10,6 +10,12 @@ class MsSqlBuilder extends SqlBuilder {
   @Override
   protected String sqlKeyword(Keywords option, Object... params) {
     switch (option) {
+      case DB_NAME:
+        return "SELECT db_name() as dbName";
+
+      case DB_SCHEMA:
+        return "SELECT schema_name() as dbSchema";
+
       case TEMPORARY:
         return "";
 

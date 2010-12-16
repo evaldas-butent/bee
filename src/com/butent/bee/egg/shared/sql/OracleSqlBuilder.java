@@ -8,15 +8,26 @@ class OracleSqlBuilder extends SqlBuilder {
 
   protected String sqlKeyword(Keywords option, Object... params) {
     switch (option) {
+      case DB_SCHEMA:
+        return "SELECT sys_context('USERENV', 'CURRENT_SCHEMA') as dbSchema FROM dual";
+
       case DB_TABLES:
         IsCondition tableWh = null;
 
-        if (!BeeUtils.isEmpty(params[0])) {
-          tableWh = SqlUtils.equal("t", "TABLE_NAME", params[0]);
+        for (int i = 1; i < 3; i++) {
+          if (!BeeUtils.isEmpty(params[i])) {
+            IsCondition tmpWh = SqlUtils.equal("t", i == 1 ? "OWNER" : "TABLE_NAME", params[i]);
+
+            if (BeeUtils.isEmpty(tableWh)) {
+              tableWh = tmpWh;
+            } else {
+              tableWh = SqlUtils.and(tableWh, tmpWh);
+            }
+          }
         }
         return new SqlSelect()
           .addFields("t", "TABLE_NAME")
-          .addFrom("USER_TABLES", "t")
+          .addFrom("ALL_TABLES", "t")
           .setWhere(tableWh)
           .getQuery(this);
 

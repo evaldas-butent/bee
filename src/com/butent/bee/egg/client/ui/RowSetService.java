@@ -6,8 +6,8 @@ import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.egg.client.Global;
 import com.butent.bee.egg.client.BeeKeeper;
+import com.butent.bee.egg.client.Global;
 import com.butent.bee.egg.client.communication.ResponseCallback;
 import com.butent.bee.egg.client.layout.Vertical;
 import com.butent.bee.egg.client.tree.BeeTree;
@@ -195,13 +195,11 @@ class RowSetService extends CompositeService {
     BeeTree root = new BeeTree();
     BeeTreeItem item = new BeeTreeItem("RowSet");
     root.addItem(item);
-    item.addItem("Source: " + rs.getSource());
+    item.addItem("ViewName: " + rs.getViewName());
 
     BeeTreeItem cols = new BeeTreeItem("Columns");
     for (BeeColumn col : rs.getColumns()) {
       BeeTreeItem c = new BeeTreeItem(col.getName());
-      c.addItem("Source: " + col.getFieldSource());
-      c.addItem("Field: " + col.getFieldName());
       c.addItem("Type: " + col.getType() + "-" + col.getTypeName());
       c.addItem("Prec: " + col.getPrecision());
       c.addItem("Scale: " + col.getScale());

@@ -8,6 +8,9 @@ class MySqlBuilder extends SqlBuilder {
   @Override
   protected String sqlKeyword(Keywords option, Object... params) {
     switch (option) {
+      case DB_SCHEMA:
+        return "SELECT schema() as dbSchema";
+
       case DROP_FOREIGNKEY:
         StringBuilder drop = new StringBuilder("ALTER TABLE ")
           .append(params[0])

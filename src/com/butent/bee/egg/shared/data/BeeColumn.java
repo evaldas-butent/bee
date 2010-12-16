@@ -6,8 +6,8 @@ import com.butent.bee.egg.shared.BeeSerializable;
 import com.butent.bee.egg.shared.Transformable;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 import com.butent.bee.egg.shared.utils.Codec;
-import com.butent.bee.egg.shared.utils.PropertyUtils;
 import com.butent.bee.egg.shared.utils.Property;
+import com.butent.bee.egg.shared.utils.PropertyUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,7 +16,7 @@ import java.util.logging.Logger;
 public class BeeColumn implements Transformable, BeeSerializable {
 
   private enum SerializationMembers {
-    NAME, TYPE, PRECISION, SCALE, ISNULL, FIELDSOURCE, FIELDNAME, TYPENAME
+    NAME, TYPE, PRECISION, SCALE, ISNULL, TYPENAME
   }
 
   public static final int NO_NULLS = 0;
@@ -33,9 +33,6 @@ public class BeeColumn implements Transformable, BeeSerializable {
   }
 
   private int idx = BeeConst.INDEX_UNKNOWN;
-
-  private String fieldSource = null;
-  private String fieldName = null;
 
   private String name = null;
   private String schema = null;
@@ -100,12 +97,6 @@ public class BeeColumn implements Transformable, BeeSerializable {
         case ISNULL:
           setNullable(BeeUtils.toInt(value));
           break;
-        case FIELDSOURCE:
-          setFieldSource(value);
-          break;
-        case FIELDNAME:
-          setFieldName(value);
-          break;
         case TYPENAME:
           setTypeName(value);
           break;
@@ -145,14 +136,6 @@ public class BeeColumn implements Transformable, BeeSerializable {
 
   public int getDisplaySize() {
     return displaySize;
-  }
-
-  public String getFieldName() {
-    return fieldName;
-  }
-
-  public String getFieldSource() {
-    return fieldSource;
   }
 
   public int getIdx() {
@@ -262,12 +245,6 @@ public class BeeColumn implements Transformable, BeeSerializable {
         case ISNULL:
           sb.append(Codec.beeSerialize(getNullable()));
           break;
-        case FIELDSOURCE:
-          sb.append(Codec.beeSerialize(getFieldSource()));
-          break;
-        case FIELDNAME:
-          sb.append(Codec.beeSerialize(getFieldName()));
-          break;
         case TYPENAME:
           sb.append(Codec.beeSerialize(getTypeName()));
           break;
@@ -305,14 +282,6 @@ public class BeeColumn implements Transformable, BeeSerializable {
 
   public void setDisplaySize(int displaySize) {
     this.displaySize = displaySize;
-  }
-
-  public void setFieldName(String fieldName) {
-    this.fieldName = fieldName;
-  }
-
-  public void setFieldSource(String fieldSource) {
-    this.fieldSource = fieldSource;
   }
 
   public void setIdx(int idx) {

@@ -18,7 +18,7 @@ public class SqlUtils {
   private static final String MORE_EQUAL = ">=";
   private static final String NOT_EQUAL = "<>";
 
-  public static IsCondition and(IsCondition... conditions) {
+  public static Conditions and(IsCondition... conditions) {
     Conditions cb = new AndConditions();
     cb.add(conditions);
     return cb;
@@ -69,8 +69,16 @@ public class SqlUtils {
     return new SqlCommand(Keywords.DB_FOREIGNKEYS, table);
   }
 
-  public static IsQuery dbTables(String table) {
-    return new SqlCommand(Keywords.DB_TABLES, table);
+  public static IsQuery dbName() {
+    return new SqlCommand(Keywords.DB_NAME);
+  }
+
+  public static IsQuery dbSchema() {
+    return new SqlCommand(Keywords.DB_SCHEMA);
+  }
+
+  public static IsQuery dbTables(String dbName, String dbSchema, String table) {
+    return new SqlCommand(Keywords.DB_TABLES, dbName, dbSchema, table);
   }
 
   public static IsQuery dropForeignKey(String table, String name) {
@@ -225,7 +233,7 @@ public class SqlUtils {
     return notEqual(field(source, field), value);
   }
 
-  public static IsCondition or(IsCondition... conditions) {
+  public static Conditions or(IsCondition... conditions) {
     Conditions cb = new OrConditions();
     cb.add(conditions);
     return cb;

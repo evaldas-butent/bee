@@ -66,12 +66,26 @@ public abstract class SqlBuilder {
       case SET_NULL:
         return "SET NULL";
 
+      case DB_NAME:
+        return "";
+
+      case DB_SCHEMA:
+        return "";
+
       case DB_TABLES:
         IsCondition tableWh = null;
 
-        if (!BeeUtils.isEmpty(params[0])) {
-          tableWh = SqlUtils.and(SqlUtils.equal("t", "table_name", params[0]),
-              SqlUtils.equal("t", "table_type", "BASE TABLE"));
+        for (int i = 0; i < 3; i++) {
+          if (!BeeUtils.isEmpty(params[i])) {
+            IsCondition tmpWh = SqlUtils.equal("t",
+                i == 0 ? "table_catalog" : (i == 1 ? "table_schema" : "table_name"), params[i]);
+
+            if (BeeUtils.isEmpty(tableWh)) {
+              tableWh = tmpWh;
+            } else {
+              tableWh = SqlUtils.and(tableWh, tmpWh);
+            }
+          }
         }
         return new SqlSelect()
           .addFields("t", "table_name")
