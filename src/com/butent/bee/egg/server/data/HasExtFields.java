@@ -16,7 +16,7 @@ public interface HasExtFields {
 
   BeeKey addExtKey(boolean unique, String... keyFields);
 
-  String appendExtJoin(HasFrom<?> query, String tblAlias);
+  String appendExtJoin(HasFrom<?> query, String tblAlias, BeeField field);
 
   String appendExtLockName(SqlSelect ss, String tblAlias);
 

@@ -70,10 +70,6 @@ public class SystemBean {
   private Map<String, BeeTable> dataCache = new HashMap<String, BeeTable>();
   private Map<String, BeeView> viewCache = new HashMap<String, BeeView>();
 
-  public String addExtJoin(HasFrom<?> query, String tblName, String tblAlias) {
-    return getTable(tblName).appendExtJoin(query, tblAlias);
-  }
-
   public String backupTable(String name) {
     String tmp = null;
     int rc = qs.getSingleRow(new SqlSelect().addCount(name).addFrom(name)).getInt(0);
@@ -422,6 +418,11 @@ public class SystemBean {
     return exists;
   }
 
+  public String joinExtField(HasFrom<?> query, String fld, String tbl, String tblAlias) {
+    BeeTable table = getTable(tbl);
+    return table.appendExtJoin(query, tblAlias, table.getField(fld));
+  }
+
   public void rebuildTable(String table) {
     rebuildTable(getTable(table), true);
   }
@@ -568,8 +569,9 @@ public class SystemBean {
     if (!isTable(viewSource)) {
       return null;
     }
-    Map<String, String[]> sources = new HashMap<String, String[]>();
-    sources.put("", new String[]{viewSource, viewSource, null});
+    Map<String, Map<String, String>> sources = new HashMap<String, Map<String, String>>();
+    sources.put("", new HashMap<String, String>());
+    sources.get("").put(viewSource, viewSource);
 
     SqlSelect ss = new SqlSelect().addFrom(viewSource);
 
@@ -577,8 +579,8 @@ public class SystemBean {
       String xpr = "";
       String fld = null;
       String dst = null;
-      String src = sources.get(xpr)[0];
-      String als = sources.get(xpr)[1];
+      String src = viewSource;
+      String als = sources.get(xpr).get(viewSource);
       boolean isError = false;
 
       for (String ff : fldExpr.getValue().split(BeeView.JOIN_MASK)) {
@@ -587,27 +589,33 @@ public class SystemBean {
 
           if (!sources.containsKey(xpr)) {
             String tmpAls = SqlUtils.uniqueName();
-            sources.put(xpr, new String[]{dst, tmpAls, null});
+            Map<String, String> tmpMap = new HashMap<String, String>();
+            tmpMap.put(dst, tmpAls);
+            sources.put(xpr, tmpMap);
             ss.addFromLeft(dst, tmpAls, SqlUtils.join(als, fld, tmpAls, getIdName(dst)));
           }
-          src = sources.get(xpr)[0];
-          als = sources.get(xpr)[1];
+          src = dst;
+          als = sources.get(xpr).get(dst);
         }
         fld = ff;
         BeeField field = getField(src, fld);
+
         if (BeeUtils.isEmpty(field)) {
           isError = true;
           break;
         }
         if (field.isExtended()) {
-          if (BeeUtils.isEmpty(sources.get(xpr)[2])) {
-            sources.get(xpr)[2] = addExtJoin(ss, src, als);
+          String extAls = sources.get(xpr).get(fld);
+
+          if (BeeUtils.isEmpty(extAls)) {
+            extAls = joinExtField(ss, fld, src, als);
+            sources.get(xpr).put(fld, extAls);
 
             if (BeeUtils.isEmpty(xpr)) {
-              getTable(viewSource).appendExtLockName(ss, sources.get(xpr)[2]);
+              // TODO getTable(viewSource).appendExtLockName(ss, extAls);
             }
           }
-          als = sources.get(xpr)[2];
+          als = sources.get(xpr).get(fld);
         }
         dst = field.getRelation();
       }

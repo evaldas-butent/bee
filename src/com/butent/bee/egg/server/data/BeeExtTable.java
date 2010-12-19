@@ -4,6 +4,8 @@ import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.sql.BeeConstants.DataTypes;
 import com.butent.bee.egg.shared.sql.BeeConstants.Keywords;
 import com.butent.bee.egg.shared.sql.HasFrom;
+import com.butent.bee.egg.shared.sql.IsFrom;
+import com.butent.bee.egg.shared.sql.SqlBuilderFactory;
 import com.butent.bee.egg.shared.sql.SqlSelect;
 import com.butent.bee.egg.shared.sql.SqlUtils;
 import com.butent.bee.egg.shared.utils.BeeUtils;
@@ -39,21 +41,33 @@ public class BeeExtTable extends BeeTable {
   }
 
   @Override
-  public String appendExtJoin(HasFrom<?> query, String tblAlias) {
+  public String appendExtJoin(HasFrom<?> query, String tblAlias, BeeField field) {
     String extAlias = null;
 
     if (!BeeUtils.isEmpty(extTable)) {
       String tblName = getName();
       String idName = getIdName();
+      String alias = BeeUtils.ifString(tblAlias, tblName);
       String extName = extTable.getName();
       String extIdName = extTable.getIdName();
 
-      if (BeeUtils.isEmpty(tblAlias) || BeeUtils.same(tblAlias, tblName)) {
-        extAlias = extName;
-        query.addFromLeft(extName, SqlUtils.join(tblName, idName, extName, extIdName));
-      } else {
-        extAlias = SqlUtils.uniqueName();
-        query.addFromLeft(extName, extAlias, SqlUtils.join(tblAlias, idName, extAlias, extIdName));
+      for (IsFrom from : query.getFrom()) {
+        Object src = from.getSource();
+
+        if (src instanceof String && BeeUtils.same((String) src, extName)) {
+          if (from.getSqlString(SqlBuilderFactory.getBuilder(), false).contains(alias)) {
+            extAlias = BeeUtils.ifString(from.getAlias(), extName);
+            break;
+          }
+        }
+      }
+      if (BeeUtils.isEmpty(extAlias)) {
+        if (BeeUtils.same(alias, tblName)) {
+          extAlias = extName;
+        } else {
+          extAlias = SqlUtils.uniqueName();
+        }
+        query.addFromLeft(extName, extAlias, SqlUtils.join(alias, idName, extAlias, extIdName));
       }
     }
     return extAlias;
