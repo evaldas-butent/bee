@@ -4,8 +4,10 @@ import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.sql.BeeConstants.DataTypes;
 import com.butent.bee.egg.shared.sql.BeeConstants.Keywords;
 import com.butent.bee.egg.shared.sql.HasFrom;
+import com.butent.bee.egg.shared.sql.IsExpression;
 import com.butent.bee.egg.shared.sql.IsFrom;
 import com.butent.bee.egg.shared.sql.SqlBuilderFactory;
+import com.butent.bee.egg.shared.sql.SqlCreate;
 import com.butent.bee.egg.shared.sql.SqlSelect;
 import com.butent.bee.egg.shared.sql.SqlUtils;
 import com.butent.bee.egg.shared.utils.BeeUtils;
@@ -41,7 +43,30 @@ public class BeeExtTable extends BeeTable {
   }
 
   @Override
-  public String appendExtJoin(HasFrom<?> query, String tblAlias, BeeField field) {
+  public SqlCreate extCreateTable(SqlCreate query, BeeField field) {
+    SqlCreate sc = null;
+
+    if (!BeeUtils.isEmpty(extTable)) {
+      if (BeeUtils.isEmpty(query)) {
+        sc = new SqlCreate(extTable.getName(), false);
+      } else {
+        sc = query;
+      }
+      sc.addField(field.getName(), field.getType(), field.getPrecision(), field.getScale(),
+          field.isNotNull() ? Keywords.NOT_NULL : null);
+
+      if (!sc.hasField(extTable.getLockName())) {
+        sc.addLong(extTable.getLockName(), Keywords.NOT_NULL);
+      }
+      if (!sc.hasField(extTable.getIdName())) {
+        sc.addLong(extTable.getIdName(), Keywords.NOT_NULL);
+      }
+    }
+    return sc;
+  }
+
+  @Override
+  public String extJoinField(HasFrom<?> query, String tblAlias, BeeField field) {
     String extAlias = null;
 
     if (!BeeUtils.isEmpty(extTable)) {
@@ -73,12 +98,27 @@ public class BeeExtTable extends BeeTable {
     return extAlias;
   }
 
-  public String appendExtLockName(SqlSelect ss, String tblAlias) {
+  public String extLockName(SqlSelect ss, String tblAlias) {
     String fldName = null;
 
     if (!BeeUtils.isEmpty(extTable)) {
+      String alias = BeeUtils.ifString(tblAlias, getName());
       fldName = extTable.getLockName();
-      ss.addFields(tblAlias, fldName);
+      String xpr = SqlUtils.field(alias, fldName).getValue();
+      boolean exists = false;
+
+      for (IsExpression[] fldExpr : ss.getFields()) {
+        if (BeeUtils.same(fldExpr[0].getValue(), xpr)) {
+          if (!BeeUtils.isEmpty(fldExpr[1])) {
+            fldName = fldExpr[1].getValue();
+          }
+          exists = true;
+          break;
+        }
+      }
+      if (!exists) {
+        ss.addFields(alias, fldName);
+      }
     }
     return fldName;
   }
