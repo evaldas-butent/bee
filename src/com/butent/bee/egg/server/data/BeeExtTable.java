@@ -4,11 +4,9 @@ import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.sql.BeeConstants.DataTypes;
 import com.butent.bee.egg.shared.sql.BeeConstants.Keywords;
 import com.butent.bee.egg.shared.sql.HasFrom;
-import com.butent.bee.egg.shared.sql.IsExpression;
 import com.butent.bee.egg.shared.sql.IsFrom;
 import com.butent.bee.egg.shared.sql.SqlBuilderFactory;
 import com.butent.bee.egg.shared.sql.SqlCreate;
-import com.butent.bee.egg.shared.sql.SqlSelect;
 import com.butent.bee.egg.shared.sql.SqlUtils;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
@@ -96,31 +94,6 @@ public class BeeExtTable extends BeeTable {
       }
     }
     return extAlias;
-  }
-
-  public String extLockName(SqlSelect ss, String tblAlias) {
-    String fldName = null;
-
-    if (!BeeUtils.isEmpty(extTable)) {
-      String alias = BeeUtils.ifString(tblAlias, getName());
-      fldName = extTable.getLockName();
-      String xpr = SqlUtils.field(alias, fldName).getValue();
-      boolean exists = false;
-
-      for (IsExpression[] fldExpr : ss.getFields()) {
-        if (BeeUtils.same(fldExpr[0].getValue(), xpr)) {
-          if (!BeeUtils.isEmpty(fldExpr[1])) {
-            fldName = fldExpr[1].getValue();
-          }
-          exists = true;
-          break;
-        }
-      }
-      if (!exists) {
-        ss.addFields(alias, fldName);
-      }
-    }
-    return fldName;
   }
 
   @Override

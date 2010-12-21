@@ -33,9 +33,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
@@ -88,11 +90,9 @@ public class SystemBean {
     int c = 0;
     int idIndex = -1;
     int lockIndex = -1;
-    int extLockIndex = -1;
 
     BeeTable tbl = null;
     String tblName = null;
-    BeeTable extTbl = null;
 
     BeeView view = getView(upd.getViewName());
     Map<Integer, BeeField> fields = new HashMap<Integer, BeeField>();
@@ -188,41 +188,18 @@ public class SystemBean {
         row.setValue(idIndex, BeeUtils.transform(id));
 
         if (!BeeUtils.isEmpty(extList)) {
-          Map<String, IsQuery> queries = new HashMap<String, IsQuery>();
+          int res = commitExtChanges(tbl, id, extList, false);
 
-          for (Object[] entry : extList) {
-            String fldName = (String) entry[0];
-            BeeField field = tbl.getField(fldName);
-
-            IsQuery query = tbl.extInsertField(queries.get(fldName), field, id, entry[1]);
-
-            if (!BeeUtils.isEmpty(query)) {
-              queries.put(fldName, query);
-            }
-          }
-
-          si = new SqlInsert(extTbl.getName());
-
-          for (Object[] entry : extList) {
-            si.addConstant((String) entry[0], entry[1]);
-          }
-          if (extLockIndex >= 0) {
-            long lock = System.currentTimeMillis();
-            si.addConstant(extTbl.getLockName(), lock);
-            row.setValue(extLockIndex, BeeUtils.transform(lock));
-          }
-          si.addConstant(extTbl.getIdName(), id);
-
-          if (qs.insertData(si) < 0) {
+          if (res < 0) {
             err = "Error inserting data";
             break;
           }
-          c++;
+          c += res;
         }
 
       } else { // UPDATE
         if (!BeeUtils.isEmpty(baseList)) {
-          SqlUpdate su = new SqlUpdate(tbl.getName());
+          SqlUpdate su = new SqlUpdate(tblName);
 
           for (Object[] entry : baseList) {
             su.addConstant((String) entry[0], entry[1]);
@@ -244,52 +221,13 @@ public class SystemBean {
           c += res;
         }
         if (!BeeUtils.isEmpty(extList)) {
-          if (extLockIndex < 0 || !BeeUtils.isEmpty(row.getLong(extLockIndex))) {
-            SqlUpdate su = new SqlUpdate(extTbl.getName());
+          int res = commitExtChanges(tbl, id, extList, true);
 
-            for (Object[] entry : extList) {
-              su.addConstant((String) entry[0], entry[1]);
-            }
-            wh = SqlUtils.equal(extTbl.getName(), extTbl.getIdName(), id);
-
-            if (extLockIndex >= 0) {
-              wh = SqlUtils.and(wh,
-                  SqlUtils.equal(extTbl.getName(), extTbl.getLockName(), row.getLong(extLockIndex)));
-
-              long lock = System.currentTimeMillis();
-              su.addConstant(extTbl.getLockName(), lock);
-              row.setValue(extLockIndex, BeeUtils.transform(lock));
-            }
-            int res = qs.updateData(su.setWhere(wh));
-
-            if (res < 0) {
-              err = "Error updating data";
-              break;
-            } else if (res == 0 && extLockIndex >= 0) {
-              err = "Optimistic lock exception";
-              break;
-            } else if (res > 0) {
-              c += res;
-              continue;
-            }
-          }
-          SqlInsert si = new SqlInsert(extTbl.getName());
-
-          for (Object[] entry : extList) {
-            si.addConstant((String) entry[0], entry[1]);
-          }
-          if (extLockIndex >= 0) {
-            long lock = System.currentTimeMillis();
-            si.addConstant(extTbl.getLockName(), lock);
-            row.setValue(extLockIndex, BeeUtils.transform(lock));
-          }
-          si.addConstant(extTbl.getIdName(), id);
-
-          if (qs.insertData(si) < 0) {
-            err = "Error inserting data";
+          if (res < 0) {
+            err = "Error updating data";
             break;
           }
-          c++;
+          c += res;
         }
       }
     }
@@ -302,6 +240,38 @@ public class SystemBean {
       return false;
     }
     return true;
+  }
+
+  public int commitExtChanges(BeeTable tbl, long id, List<Object[]> extList, boolean updateMode) {
+    int c = 0;
+    Map<String, Set<IsQuery>> queryMap = new HashMap<String, Set<IsQuery>>();
+
+    for (Object[] entry : extList) {
+      BeeField field = tbl.getField((String) entry[0]);
+      String extName = field.getTable();
+      Set<IsQuery> queries = queryMap.get(extName);
+
+      IsQuery query = updateMode
+          ? tbl.extUpdateField(queries, id, field, entry[1])
+          : tbl.extInsertField(queries, id, field, entry[1]);
+
+      if (!BeeUtils.isEmpty(query)) {
+        if (BeeUtils.isEmpty(queries)) {
+          queries = new HashSet<IsQuery>();
+          queryMap.put(extName, queries);
+        }
+        queries.add(query);
+      }
+    }
+    for (Set<IsQuery> queries : queryMap.values()) {
+      for (IsQuery query : queries) {
+        if (qs.updateData(query) < 0) {
+          return -1;
+        }
+        c++;
+      }
+    }
+    return c;
   }
 
   public String getDbName() {
@@ -657,10 +627,6 @@ public class SystemBean {
           if (!aliases.containsKey(fld)) {
             String extAls = joinExtField(ss, fld, src, als);
             aliases.put(fld, extAls);
-
-            if (BeeUtils.isEmpty(xpr)) {
-              getTable(viewSource).extLockName(ss, extAls);
-            }
           }
           als = aliases.get(fld);
         }
