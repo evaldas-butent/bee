@@ -242,6 +242,9 @@ public class UiServiceBean {
     } else if (BeeUtils.same(cmd, "ext")) {
       sys.initExtensions();
       buff.add("Extensions OK");
+    } else if (BeeUtils.same(cmd, "views")) {
+      sys.initViews();
+      buff.add("Views OK");
     } else {
       if (sys.isTable(cmd)) {
         sys.rebuildTable(cmd);

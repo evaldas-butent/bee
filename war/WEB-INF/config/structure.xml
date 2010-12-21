@@ -20,16 +20,6 @@
       <BeeKey fields="User, Role" unique="true" />
     </BeeFields>
   </BeeTable>
-  <BeeTable name="Views" idName="ViewID">
-    <BeeFields>
-      <BeeField name="Name" type="STRING" precision="10" notNull="true" />
-      <BeeField name="Source" type="STRING" precision="30" notNull="true" />
-      <BeeField name="Field" type="STRING" precision="100" notNull="true" />
-      <BeeField name="Alias" type="STRING" precision="30" />
-      <BeeKey fields="Name" />
-      <BeeKey fields="Name, Field" unique="true" />
-    </BeeFields>
-  </BeeTable>
   <BeeTable name="Countries" idName="CountryID" lockName="LastLock">
     <BeeFields>
       <BeeField name="Name" type="STRING" precision="100" notNull="true" unique="true" />

@@ -13,18 +13,34 @@ public class BeeView {
 
   private final String name;
   private final String source;
+  private final boolean readOnly;
   private Map<String, String> fields = new LinkedHashMap<String, String>();
 
-  BeeView(String name, String source) {
+  BeeView(String name, String source, boolean readOnly) {
     Assert.notEmpty(name);
     Assert.notEmpty(source);
 
     this.name = name;
     this.source = source;
+    this.readOnly = readOnly;
   }
 
   public Map<String, String> getFields() {
     return Collections.unmodifiableMap(fields);
+  }
+
+  public int getIdIndex() {
+    if (isReadOnly()) {
+      return -1;
+    }
+    return getFields().size() + 1;
+  }
+
+  public int getLockIndex() {
+    if (isReadOnly()) {
+      return -1;
+    }
+    return getFields().size();
   }
 
   public String getName() {
@@ -39,9 +55,13 @@ public class BeeView {
     return BeeUtils.isEmpty(getFields());
   }
 
-  void addField(String fld, String als) {
-    if (!BeeUtils.isEmpty(fld)) {
-      fields.put(BeeUtils.ifString(als, fld.replaceAll(JOIN_MASK, "")), fld);
-    }
+  public boolean isReadOnly() {
+    return readOnly;
+  }
+
+  void addField(String als, String xpr) {
+    Assert.notEmpty(als);
+    Assert.notEmpty(xpr);
+    fields.put(als, xpr);
   }
 }

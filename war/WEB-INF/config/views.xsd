@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.butent.com/bee"
+  xmlns:bee="http://www.butent.com/bee" elementFormDefault="qualified">
+
+  <xs:element name="BeeViews">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="BeeView" type="bee:view" minOccurs="1" maxOccurs="unbounded" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:complexType name="view">
+    <xs:sequence>
+      <xs:element name="BeeColumns" type="bee:columns" minOccurs="0" maxOccurs="1" />
+    </xs:sequence>
+    <xs:attribute name="name" type="xs:string" use="required" />
+    <xs:attribute name="source" type="xs:string" use="required" />
+    <xs:attribute name="readOnly" type="xs:boolean" />
+  </xs:complexType>
+
+  <xs:complexType name="columns">
+    <xs:sequence>
+      <xs:element name="BeeColumn" type="bee:columnType" maxOccurs="unbounded" />
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="columnType">
+    <xs:attribute name="name" use="required">
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:maxLength value="30" />
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="expression" type="xs:string" use="required" />
+  </xs:complexType>
+</xs:schema>
