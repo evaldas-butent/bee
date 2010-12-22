@@ -5,8 +5,11 @@ import com.butent.bee.egg.shared.sql.BeeConstants.DataTypes;
 import com.butent.bee.egg.shared.sql.BeeConstants.Keywords;
 import com.butent.bee.egg.shared.sql.HasFrom;
 import com.butent.bee.egg.shared.sql.IsFrom;
+import com.butent.bee.egg.shared.sql.IsQuery;
 import com.butent.bee.egg.shared.sql.SqlBuilderFactory;
 import com.butent.bee.egg.shared.sql.SqlCreate;
+import com.butent.bee.egg.shared.sql.SqlInsert;
+import com.butent.bee.egg.shared.sql.SqlUpdate;
 import com.butent.bee.egg.shared.sql.SqlUtils;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
@@ -46,21 +49,33 @@ public class BeeExtTable extends BeeTable {
 
     if (!BeeUtils.isEmpty(extTable)) {
       if (BeeUtils.isEmpty(query)) {
-        sc = new SqlCreate(extTable.getName(), false);
+        sc = new SqlCreate(extTable.getName(), false)
+          .addLong(extTable.getIdName(), Keywords.NOT_NULL)
+          .addLong(extTable.getLockName(), Keywords.NOT_NULL);
       } else {
         sc = query;
       }
       sc.addField(field.getName(), field.getType(), field.getPrecision(), field.getScale(),
           field.isNotNull() ? Keywords.NOT_NULL : null);
-
-      if (!sc.hasField(extTable.getLockName())) {
-        sc.addLong(extTable.getLockName(), Keywords.NOT_NULL);
-      }
-      if (!sc.hasField(extTable.getIdName())) {
-        sc.addLong(extTable.getIdName(), Keywords.NOT_NULL);
-      }
     }
     return sc;
+  }
+
+  @Override
+  public IsQuery extInsertField(IsQuery query, long rootId, BeeField field, Object newValue) {
+    SqlInsert si = null;
+
+    if (!BeeUtils.isEmpty(extTable)) {
+      if (BeeUtils.isEmpty(query)) {
+        si = new SqlInsert(extTable.getName())
+          .addConstant(extTable.getLockName(), System.currentTimeMillis())
+          .addConstant(extTable.getIdName(), rootId);
+      } else {
+        si = (SqlInsert) query;
+      }
+      si.addConstant(field.getName(), newValue);
+    }
+    return si;
   }
 
   @Override
@@ -94,6 +109,23 @@ public class BeeExtTable extends BeeTable {
       }
     }
     return extAlias;
+  }
+
+  @Override
+  public IsQuery extUpdateField(IsQuery query, long rootId, BeeField field, Object newValue) {
+    SqlUpdate su = null;
+
+    if (!BeeUtils.isEmpty(extTable)) {
+      if (BeeUtils.isEmpty(query)) {
+        su = new SqlUpdate(extTable.getName())
+          .addConstant(extTable.getLockName(), System.currentTimeMillis())
+          .setWhere(SqlUtils.equal(extTable.getName(), extTable.getIdName(), rootId));
+      } else {
+        su = (SqlUpdate) query;
+      }
+      su.addConstant(field.getName(), newValue);
+    }
+    return su;
   }
 
   @Override

@@ -42,4 +42,9 @@
       <BeeField name="Name" type="STRING" precision="30" notNull="true" unique="true" />
     </BeeFields>
   </BeeTable>
+  <BeeTable name="Cities">
+    <BeeExtended>
+      <BeeField name="PostIndex" type="STRING" precision="10" unique="true" />
+    </BeeExtended>
+  </BeeTable>
 </BeeTables>

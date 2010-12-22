@@ -4,6 +4,7 @@ import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.sql.BeeConstants.DataTypes;
 import com.butent.bee.egg.shared.sql.BeeConstants.Keywords;
 import com.butent.bee.egg.shared.utils.BeeUtils;
+import com.butent.bee.egg.shared.utils.Codec;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -107,7 +108,7 @@ public abstract class BeeTable implements HasExtFields {
       Assert.notEmpty(keyField);
       Assert.notEmpty(refTable);
 
-      this.name = FOREIGN_KEY_PREFIX + BeeUtils.concat("_", getTable(), foreignKeyCounter++);
+      this.name = FOREIGN_KEY_PREFIX + Codec.crc32(getTable() + keyField);
       this.keyField = keyField;
       this.refTable = refTable;
       this.action = action;
@@ -144,23 +145,25 @@ public abstract class BeeTable implements HasExtFields {
     private BeeKey(KeyTypes keyType, String... keyFields) {
       Assert.notEmpty(keyFields);
       String[] flds = new String[keyFields.length];
+      String keyName = getTable();
 
       for (int i = 0; i < keyFields.length; i++) {
         String fld = keyFields[i];
         Assert.notEmpty(fld);
         flds[i] = fld.trim();
+        keyName += flds[i];
       }
-      String keyName = null;
+      keyName = Codec.crc32(keyName);
 
       switch (keyType) {
         case PRIMARY:
-          keyName = PRIMARY_KEY_PREFIX + getTable();
+          keyName = PRIMARY_KEY_PREFIX + keyName;
           break;
         case UNIQUE:
-          keyName = UNIQUE_KEY_PREFIX + BeeUtils.concat("_", getTable(), keyCounter++);
+          keyName = UNIQUE_KEY_PREFIX + keyName;
           break;
         case INDEX:
-          keyName = INDEX_KEY_PREFIX + BeeUtils.concat("_", getTable(), keyCounter++);
+          keyName = INDEX_KEY_PREFIX + keyName;
           break;
         default:
           Assert.untouchable();
@@ -278,8 +281,6 @@ public abstract class BeeTable implements HasExtFields {
   private final String name;
   private final String idName;
   private final String lockName;
-  private int keyCounter = 0;
-  private int foreignKeyCounter = 0;
   private int stateCounter = 0;
 
   private Map<String, BeeField> fields = new LinkedHashMap<String, BeeField>();
@@ -455,7 +456,7 @@ public abstract class BeeTable implements HasExtFields {
     states.put(stateName, state);
 
     BeeTable stateTbl = createStateTable();
-    int stateId = state.getId();
+    int stateId = state.getId(); // TODO reikia átraukti á XML'à
 
     if (state.hasUserMode()) {
       stateTbl.addField("State" + stateId + "UserMask",

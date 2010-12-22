@@ -33,11 +33,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
@@ -85,16 +83,16 @@ public class SystemBean {
     return tmp;
   }
 
-  public boolean commitChanges(BeeRowSet upd, ResponseBuffer buff) {
+  public boolean commitChanges(BeeRowSet changes, ResponseBuffer buff) {
     String err = "";
     int c = 0;
     int idIndex = -1;
     int lockIndex = -1;
 
-    BeeTable tbl = null;
+    BeeTable table = null;
     String tblName = null;
 
-    BeeView view = getView(upd.getViewName());
+    BeeView view = getView(changes.getViewName());
     Map<Integer, BeeField> fields = new HashMap<Integer, BeeField>();
 
     if (!BeeUtils.isEmpty(view)) {
@@ -103,7 +101,7 @@ public class SystemBean {
       lockIndex = view.getLockIndex();
     }
     if (isTable(tblName)) {
-      tbl = getTable(tblName);
+      table = getTable(tblName);
 
       if (idIndex < 0) {
         err = "Cannot update table " + tblName + " (Unknown ID index).";
@@ -111,7 +109,7 @@ public class SystemBean {
         int i = 0;
 
         for (String fld : view.getFields().values()) {
-          BeeField field = tbl.getField(fld);
+          BeeField field = table.getField(fld);
 
           if (!BeeUtils.isEmpty(field)) {
             fields.put(i, field);
@@ -122,27 +120,28 @@ public class SystemBean {
     } else {
       err = "Cannot update table (Unknown source " + tblName + ").";
     }
-    for (BeeRow row : upd.getRows()) {
+    for (BeeRow row : changes.getRows()) {
       if (!BeeUtils.isEmpty(err)) {
         break;
       }
-      List<Object[]> baseList = new ArrayList<Object[]>();
-      List<Object[]> extList = new ArrayList<Object[]>();
+      List<Object[]> baseUpdate = new ArrayList<Object[]>();
+      List<Object[]> extUpdate = new ArrayList<Object[]>();
 
       if (!BeeUtils.isEmpty(row.getShadow())) {
         for (Integer col : row.getShadow().keySet()) {
           BeeField field = fields.get(col);
 
           if (BeeUtils.isEmpty(field)) {
-            err = "Cannot update column " + upd.getColumnName(col) + " (Unknown source).";
+            err = "Cannot update column " + changes.getColumnName(col) + " (Unknown source).";
             break;
           }
-          Object[] entry = new Object[]{field.getName(), row.getOriginal(col)};
+          Object[] entry = new Object[]{
+              field.getName(), row.getOriginal(col), row.getShadow().get(col)};
 
           if (field.isExtended()) {
-            extList.add(entry);
+            extUpdate.add(entry);
           } else {
-            baseList.add(entry);
+            baseUpdate.add(entry);
           }
         }
         if (!BeeUtils.isEmpty(err)) {
@@ -150,32 +149,31 @@ public class SystemBean {
         }
       }
       long id = row.getLong(idIndex);
-      IsCondition wh = SqlUtils.equal(tblName, tbl.getIdName(), id);
+      IsCondition idWh = SqlUtils.equal(tblName, table.getIdName(), id);
+      IsCondition wh = idWh;
 
       if (lockIndex >= 0) {
-        wh = SqlUtils.and(wh, SqlUtils.equal(tblName, tbl.getLockName(), row.getLong(lockIndex)));
+        wh = SqlUtils.and(wh, SqlUtils.equal(tblName, table.getLockName(), row.getLong(lockIndex)));
       }
       if (row.markedForDelete()) { // DELETE
         int res = qs.updateData(new SqlDelete(tblName).setWhere(wh));
 
-        if (res < 0) {
-          err = "Error deleting data";
-          break;
-        } else if (res == 0) {
-          err = "Optimistic lock exception";
+        if (res > 0) {
+          c += res;
+        } else {
+          err = (res < 0) ? "Error deleting data" : "Optimistic lock exception";
           break;
         }
-        c += res;
 
       } else if (row.markedForInsert()) { // INSERT
         SqlInsert si = new SqlInsert(tblName);
 
-        for (Object[] entry : baseList) {
+        for (Object[] entry : baseUpdate) {
           si.addConstant((String) entry[0], entry[1]);
         }
         if (lockIndex >= 0) {
           long lock = System.currentTimeMillis();
-          si.addConstant(tbl.getLockName(), lock);
+          si.addConstant(table.getLockName(), lock);
           row.setValue(lockIndex, BeeUtils.transform(lock));
         }
         id = qs.insertData(si);
@@ -187,44 +185,69 @@ public class SystemBean {
         c++;
         row.setValue(idIndex, BeeUtils.transform(id));
 
-        if (!BeeUtils.isEmpty(extList)) {
-          int res = commitExtChanges(tbl, id, extList, false);
+        if (!BeeUtils.isEmpty(extUpdate)) {
+          int res = commitExtChanges(table, id, extUpdate, false);
 
           if (res < 0) {
-            err = "Error inserting data";
+            err = "Error inserting extended fields";
             break;
           }
           c += res;
         }
 
       } else { // UPDATE
-        if (!BeeUtils.isEmpty(baseList)) {
+        if (!BeeUtils.isEmpty(baseUpdate)) {
           SqlUpdate su = new SqlUpdate(tblName);
 
-          for (Object[] entry : baseList) {
+          for (Object[] entry : baseUpdate) {
             su.addConstant((String) entry[0], entry[1]);
           }
           if (lockIndex >= 0) {
             long lock = System.currentTimeMillis();
-            su.addConstant(tbl.getLockName(), lock);
+            su.addConstant(table.getLockName(), lock);
             row.setValue(lockIndex, BeeUtils.transform(lock));
           }
           int res = qs.updateData(su.setWhere(wh));
 
-          if (res < 0) {
-            err = "Error updating data";
-            break;
-          } else if (res == 0) {
-            err = "Optimistic lock exception";
+          if (res == 0) { // Optimistic lock exception
+            SqlSelect ss = new SqlSelect()
+              .addFrom(tblName)
+              .setWhere(idWh);
+
+            for (Object[] entry : baseUpdate) {
+              ss.addFields(tblName, (String) entry[0]);
+            }
+            BeeRowSet rs = qs.getData(ss);
+
+            if (!rs.isEmpty()) {
+              BeeRow r = rs.getRow(0);
+              boolean collision = false;
+
+              for (Object[] entry : baseUpdate) {
+                if (!BeeUtils.equals(
+                    BeeUtils.transformNoTrim(r.getOriginal((String) entry[0])),
+                    BeeUtils.transformNoTrim(entry[2]))) {
+                  collision = true;
+                  break;
+                }
+              }
+              if (!collision) {
+                res = qs.updateData(su.setWhere(idWh));
+              }
+            }
+          }
+          if (res > 0) {
+            c += res;
+          } else {
+            err = (res < 0) ? "Error updating data" : "Optimistic lock exception";
             break;
           }
-          c += res;
         }
-        if (!BeeUtils.isEmpty(extList)) {
-          int res = commitExtChanges(tbl, id, extList, true);
+        if (!BeeUtils.isEmpty(extUpdate)) {
+          int res = commitExtChanges(table, id, extUpdate, true);
 
           if (res < 0) {
-            err = "Error updating data";
+            err = "Error updating extended fields";
             break;
           }
           c += res;
@@ -233,7 +256,7 @@ public class SystemBean {
     }
     if (BeeUtils.isEmpty(err)) {
       buff.add(c);
-      buff.add(upd.serialize());
+      buff.add(changes.serialize());
     } else {
       buff.add(-1);
       buff.add(err);
@@ -242,33 +265,51 @@ public class SystemBean {
     return true;
   }
 
-  public int commitExtChanges(BeeTable tbl, long id, List<Object[]> extList, boolean updateMode) {
+  public int commitExtChanges(BeeTable table, long id, List<Object[]> extUpdate, boolean updateMode) {
     int c = 0;
-    Map<String, Set<IsQuery>> queryMap = new HashMap<String, Set<IsQuery>>();
+    Map<String, List<IsQuery[]>> queryMap = new HashMap<String, List<IsQuery[]>>();
 
-    for (Object[] entry : extList) {
-      BeeField field = tbl.getField((String) entry[0]);
+    for (Object[] entry : extUpdate) {
+      BeeField field = table.getField((String) entry[0]);
       String extName = field.getTable();
-      Set<IsQuery> queries = queryMap.get(extName);
 
-      IsQuery query = updateMode
-          ? tbl.extUpdateField(queries, id, field, entry[1])
-          : tbl.extInsertField(queries, id, field, entry[1]);
+      if (!queryMap.containsKey(extName)) {
+        List<IsQuery[]> queries = new ArrayList<IsQuery[]>();
+        queryMap.put(extName, queries);
+      }
+      List<IsQuery[]> queries = queryMap.get(extName);
+      IsQuery[] arr = new IsQuery[2];
+      IsQuery mainQuery = null;
 
-      if (!BeeUtils.isEmpty(query)) {
-        if (BeeUtils.isEmpty(queries)) {
-          queries = new HashSet<IsQuery>();
-          queryMap.put(extName, queries);
-        }
-        queries.add(query);
+      if (!BeeUtils.isEmpty(queries)) {
+        mainQuery = queries.get(0)[0];
+        arr[1] = queries.get(0)[1];
+      }
+      arr[0] = table.extInsertField(mainQuery, id, field, entry[1]);
+
+      if (arr[0] != mainQuery) {
+        queries.add(arr);
+      }
+      if (updateMode) {
+        arr[1] = table.extUpdateField(arr[1], id, field, entry[1]);
       }
     }
-    for (Set<IsQuery> queries : queryMap.values()) {
-      for (IsQuery query : queries) {
-        if (qs.updateData(query) < 0) {
+    for (List<IsQuery[]> queries : queryMap.values()) {
+      for (IsQuery[] query : queries) {
+        int res = 0;
+        IsQuery insQuery = query[0];
+        IsQuery updQuery = query[1];
+
+        if (!BeeUtils.isEmpty(updQuery)) {
+          res = qs.updateData(updQuery);
+        }
+        if (res == 0) {
+          res = qs.updateData(insQuery);
+        }
+        if (res < 0) {
           return -1;
         }
-        c++;
+        c += res;
       }
     }
     return c;
@@ -342,18 +383,18 @@ public class SystemBean {
     int cUpd = 0;
 
     for (BeeTable extension : extensions) {
-      String extName = extension.getName();
+      String tblName = extension.getName();
 
-      if (!isRegisteredTable(extName) || getRegisteredTable(extName).isCustom()) {
+      if (!isRegisteredTable(tblName) || getRegisteredTable(tblName).isCustom()) {
         if (extension.isEmpty()) {
-          LogUtils.warning(logger, resource, "Table", extName, "has no fields defined");
+          LogUtils.warning(logger, resource, "Table", tblName, "has no fields defined");
           continue;
         }
         extension.setCustom();
         registerTable(extension);
         cNew++;
       } else {
-        BeeTable table = getRegisteredTable(extName);
+        BeeTable table = getRegisteredTable(tblName);
 
         if (table.applyChanges(extension) > 0) {
           cUpd++;

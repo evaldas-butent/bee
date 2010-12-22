@@ -113,9 +113,10 @@ public class BeeRowSet extends AbstractData implements BeeSerializable {
     }
 
     public Object getOriginal(int col) {
-      int type = getColumn(col).getType();
-
-      switch (type) {
+      if (getValue(col) == null) {
+        return null;
+      }
+      switch (getColumn(col).getType()) {
         case 2: // java.sql.Types.NUMERIC // TODO Kaip su Oracle, PgSql?
         case 3: // java.sql.Types.DECIMAL
           return getNumber(col);
@@ -134,7 +135,7 @@ public class BeeRowSet extends AbstractData implements BeeSerializable {
         case 16: // java.sql.Types.BOOLEAN
           return getBoolean(col);
         default:
-          return getValue(col);
+          return getString(col);
       }
     }
 

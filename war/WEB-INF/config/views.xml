@@ -2,7 +2,7 @@
 <BeeViews xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.butent.com/bee views.xsd">
 
-  <BeeView name="Nationalities" source="Nationalities" readOnly="false" >
+  <BeeView name="Nationalities" source="Nationalities" readOnly="true" >
     <BeeColumns>
       <BeeColumn name="Name" expression="Name" />
       <BeeColumn name="Percent" expression="Percent" />

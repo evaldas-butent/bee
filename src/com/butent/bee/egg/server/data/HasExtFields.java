@@ -5,6 +5,7 @@ import com.butent.bee.egg.server.data.BeeTable.BeeForeignKey;
 import com.butent.bee.egg.server.data.BeeTable.BeeKey;
 import com.butent.bee.egg.shared.sql.BeeConstants.DataTypes;
 import com.butent.bee.egg.shared.sql.HasFrom;
+import com.butent.bee.egg.shared.sql.IsQuery;
 import com.butent.bee.egg.shared.sql.SqlCreate;
 
 import java.util.Collection;
@@ -18,7 +19,11 @@ public interface HasExtFields {
 
   SqlCreate extCreateTable(SqlCreate query, BeeField field);
 
+  IsQuery extInsertField(IsQuery query, long rootId, BeeField field, Object newValue);
+
   String extJoinField(HasFrom<?> query, String tblAlias, BeeField field);
+
+  IsQuery extUpdateField(IsQuery query, long rootId, BeeField field, Object newValue);
 
   BeeField getExtField(String fldName);
 
