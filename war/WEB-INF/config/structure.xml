@@ -36,9 +36,9 @@
       <BeeField name="Country" type="LONG" relation="Countries" />
     </BeeFields>
     <BeeStates>
-      <BeeState name="Hidden" roleMode="true" userMode="true" />
-      <BeeState name="Unmarked" userMode="true" />
-      <BeeState name="Unused" />
+      <BeeState name="Hidden" id="1" roleMode="true" userMode="true" />
+      <BeeState name="Unmarked" id="2" userMode="true" />
+      <BeeState name="Unused" id="3" />
     </BeeStates>
   </BeeTable>
 </BeeTables>

@@ -77,14 +77,8 @@ public abstract class SqlBuilder {
 
         for (int i = 0; i < 3; i++) {
           if (!BeeUtils.isEmpty(params[i])) {
-            IsCondition tmpWh = SqlUtils.equal("t",
-                i == 0 ? "table_catalog" : (i == 1 ? "table_schema" : "table_name"), params[i]);
-
-            if (BeeUtils.isEmpty(tableWh)) {
-              tableWh = tmpWh;
-            } else {
-              tableWh = SqlUtils.and(tableWh, tmpWh);
-            }
+            tableWh = SqlUtils.and(tableWh, SqlUtils.equal("t",
+                i == 0 ? "table_catalog" : (i == 1 ? "table_schema" : "table_name"), params[i]));
           }
         }
         return new SqlSelect()
@@ -94,14 +88,26 @@ public abstract class SqlBuilder {
           .getQuery(this);
 
       case DB_FOREIGNKEYS:
-        IsCondition foreignWh = SqlUtils.equal("c", "constraint_type", "FOREIGN KEY");
+        IsCondition foreignWh = null;
 
-        if (!BeeUtils.isEmpty(params[0])) {
-          foreignWh = SqlUtils.and(foreignWh, SqlUtils.equal("c", "table_name", params[0]));
+        for (int i = 0; i < 3; i++) {
+          if (!BeeUtils.isEmpty(params[i])) {
+            foreignWh = SqlUtils.and(foreignWh, SqlUtils.equal("t",
+                i == 0 ? "table_catalog" : (i == 1 ? "table_schema" : "table_name"), params[i]));
+          }
+        }
+        if (!BeeUtils.isEmpty(params[3])) {
+          foreignWh = SqlUtils.and(foreignWh, SqlUtils.equal("r", "table_name", params[3]));
         }
         return new SqlSelect()
-          .addFields("c", "constraint_name")
-          .addFrom("information_schema.table_constraints", "c")
+          .addField("c", "constraint_name", "Name")
+          .addField("t", "table_name", "TblName")
+          .addField("r", "table_name", "RefTblName")
+          .addFrom("information_schema.referential_constraints", "c")
+          .addFromInner("information_schema.table_constraints", "t",
+              SqlUtils.joinMulti("c", "t", "constraint_name"))
+          .addFromInner("information_schema.table_constraints", "r",
+              SqlUtils.join("c", "unique_constraint_name", "r", "constraint_name"))
           .setWhere(foreignWh)
           .getQuery(this);
 
@@ -233,8 +239,11 @@ public abstract class SqlBuilder {
             from.getSqlString(this, paramMode));
       }
     }
-    query.append(" WHERE ").append(sd.getWhere().getSqlString(this, paramMode));
+    String wh = sd.getWhere().getSqlString(this, paramMode);
 
+    if (!BeeUtils.isEmpty(wh)) {
+      query.append(" WHERE ").append(wh);
+    }
     return query.toString();
   }
 
@@ -313,7 +322,11 @@ public abstract class SqlBuilder {
     IsCondition whereClause = ss.getWhere();
 
     if (!BeeUtils.isEmpty(whereClause)) {
-      query.append(" WHERE ").append(whereClause.getSqlString(this, paramMode));
+      String wh = whereClause.getSqlString(this, paramMode);
+
+      if (!BeeUtils.isEmpty(wh)) {
+        query.append(" WHERE ").append(wh);
+      }
     }
     List<IsExpression> groupList = ss.getGroupBy();
 
@@ -399,7 +412,11 @@ public abstract class SqlBuilder {
     IsCondition whereClause = su.getWhere();
 
     if (!BeeUtils.isEmpty(whereClause)) {
-      query.append(" WHERE ").append(whereClause.getSqlString(this, paramMode));
+      String wh = whereClause.getSqlString(this, paramMode);
+
+      if (!BeeUtils.isEmpty(wh)) {
+        query.append(" WHERE ").append(wh);
+      }
     }
     return query.toString();
   }

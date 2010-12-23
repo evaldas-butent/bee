@@ -65,8 +65,8 @@ public class SqlUtils {
     return createIndex(true, table, name, fields);
   }
 
-  public static IsQuery dbForeignKeys(String table) {
-    return new SqlCommand(Keywords.DB_FOREIGNKEYS, table);
+  public static IsQuery dbForeignKeys(String dbName, String dbSchema, String table, String refTable) {
+    return new SqlCommand(Keywords.DB_FOREIGNKEYS, dbName, dbSchema, table, refTable);
   }
 
   public static IsQuery dbName() {

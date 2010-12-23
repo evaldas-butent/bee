@@ -453,8 +453,8 @@ public class SystemBean {
     return table.extJoinField(query, tblAlias, table.getField(fld));
   }
 
-  public void rebuildTable(String table) {
-    rebuildTable(getTable(table), true);
+  public void rebuildTable(String tableName) {
+    rebuildTable(getTable(tableName), qs.isDbTable(getDbName(), getDbSchema(), tableName));
   }
 
   @Lock(LockType.WRITE)
@@ -824,6 +824,7 @@ public class SystemBean {
           Element state = (Element) states.item(j);
 
           tbl.addState(state.getAttribute("name")
+              , BeeUtils.toInt(state.getAttribute("id"))
               , BeeUtils.toBoolean(state.getAttribute("userMode"))
               , BeeUtils.toBoolean(state.getAttribute("roleMode"))
               , BeeUtils.toBoolean(state.getAttribute("forced")));
@@ -869,23 +870,27 @@ public class SystemBean {
   private void rebuildTable(BeeTable table, boolean exists) {
     if (!BeeUtils.isEmpty(table)) {
       String tblName = table.getName();
+
+      if (exists) {
+        for (String[] fKeys : qs.dbForeignKeys(getDbName(), getDbSchema(), null, tblName)) {
+          String fk = fKeys[0];
+          String tbl = fKeys[1];
+          qs.updateData(SqlUtils.dropForeignKey(tbl, fk));
+
+          if (isTable(tbl)) {
+            getTable(tbl).activate();
+          }
+        }
+      }
       List<BeeForeignKey> fKeys = new ArrayList<BeeForeignKey>();
 
       for (BeeTable tbl : getTables()) {
+        if (BeeUtils.same(tbl.getName(), tblName)) {
+          continue;
+        }
         for (BeeForeignKey key : tbl.getForeignKeys()) {
-          if (BeeUtils.same(key.getRefTable(), tblName)) {
-            String keyOwner = key.getTable();
-
-            if (BeeUtils.same(keyOwner, tblName)) {
-              continue;
-            }
-            if (exists && qs.dbForeignKeys(keyOwner).contains(key.getName())) {
-              qs.updateData(SqlUtils.dropForeignKey(keyOwner, key.getName()));
-              tbl.activate();
-            }
-            if (!BeeUtils.same(tbl.getName(), tblName) && tbl.isActive()) {
-              fKeys.add(key);
-            }
+          if (BeeUtils.same(key.getRefTable(), tblName) && tbl.isActive()) {
+            fKeys.add(key);
           }
         }
       }

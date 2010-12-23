@@ -16,13 +16,8 @@ class OracleSqlBuilder extends SqlBuilder {
 
         for (int i = 1; i < 3; i++) {
           if (!BeeUtils.isEmpty(params[i])) {
-            IsCondition tmpWh = SqlUtils.equal("t", i == 1 ? "OWNER" : "TABLE_NAME", params[i]);
-
-            if (BeeUtils.isEmpty(tableWh)) {
-              tableWh = tmpWh;
-            } else {
-              tableWh = SqlUtils.and(tableWh, tmpWh);
-            }
+            tableWh = SqlUtils.and(tableWh,
+                SqlUtils.equal("t", i == 1 ? "OWNER" : "TABLE_NAME", params[i]));
           }
         }
         return new SqlSelect()
@@ -34,12 +29,22 @@ class OracleSqlBuilder extends SqlBuilder {
       case DB_FOREIGNKEYS:
         IsCondition foreignWh = SqlUtils.equal("c", "CONSTRAINT_TYPE", "R");
 
-        if (!BeeUtils.isEmpty(params[0])) {
-          foreignWh = SqlUtils.and(foreignWh, SqlUtils.equal("c", "TABLE_NAME", params[0]));
+        for (int i = 1; i < 3; i++) {
+          if (!BeeUtils.isEmpty(params[i])) {
+            foreignWh = SqlUtils.and(foreignWh,
+                SqlUtils.equal("c", i == 1 ? "OWNER" : "TABLE_NAME", params[i]));
+          }
+        }
+        if (!BeeUtils.isEmpty(params[3])) {
+          foreignWh = SqlUtils.and(foreignWh, SqlUtils.equal("r", "TABLE_NAME", params[3]));
         }
         return new SqlSelect()
-          .addFields("c", "CONSTRAINT_NAME")
-          .addFrom("USER_CONSTRAINTS", "c")
+          .addField("c", "CONSTRAINT_NAME", "Name")
+          .addField("c", "TABLE_NAME", "TableName")
+          .addField("r", "TABLE_NAME", "RefTableName")
+          .addFrom("ALL_CONSTRAINTS", "c")
+          .addFromInner("ALL_CONSTRAINTS", "r",
+              SqlUtils.join("c", "R_CONSTRAINT_NAME", "r", "CONSTRAINT_NAME"))
           .setWhere(foreignWh)
           .getQuery(this);
 

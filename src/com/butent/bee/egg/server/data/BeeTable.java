@@ -214,17 +214,18 @@ public abstract class BeeTable implements HasExtFields {
   }
 
   public class BeeState {
-    private final int id;
     private boolean custom = false;
     private final String name;
+    private final int id;
     private final boolean userMode;
     private final boolean roleMode;
     private final boolean forced;
 
-    private BeeState(String name, boolean userMode, boolean roleMode, boolean forced) {
+    private BeeState(String name, int id, boolean userMode, boolean roleMode, boolean forced) {
       Assert.notEmpty(name);
+      Assert.betweenInclusive(id, 1, 64);
 
-      this.id = stateCounter++;
+      this.id = id;
       this.name = name;
       this.userMode = userMode;
       this.roleMode = roleMode;
@@ -281,7 +282,6 @@ public abstract class BeeTable implements HasExtFields {
   private final String name;
   private final String idName;
   private final String lockName;
-  private int stateCounter = 0;
 
   private Map<String, BeeField> fields = new LinkedHashMap<String, BeeField>();
   private List<BeeKey> keys = new ArrayList<BeeKey>();
@@ -448,15 +448,18 @@ public abstract class BeeTable implements HasExtFields {
     return key;
   }
 
-  BeeState addState(String name, boolean userMode, boolean roleMode, boolean forced) {
-    BeeState state = new BeeState(name, userMode, roleMode, forced);
+  BeeState addState(String name, int id, boolean userMode, boolean roleMode, boolean forced) {
+    BeeState state = new BeeState(name, id, userMode, roleMode, forced);
     String stateName = state.getName();
+    int stateId = state.getId();
 
+    for (BeeState st : getStates()) {
+      Assert.state(st.getId() != stateId, "Dublicate state ID: " + getName() + " " + stateId);
+    }
     Assert.state(!hasState(stateName), "Dublicate state name: " + getName() + " " + stateName);
     states.put(stateName, state);
 
     BeeTable stateTbl = createStateTable();
-    int stateId = state.getId(); // TODO reikia átraukti á XML'à
 
     if (state.hasUserMode()) {
       stateTbl.addField("State" + stateId + "UserMask",
@@ -508,7 +511,8 @@ public abstract class BeeTable implements HasExtFields {
       }
     }
     for (BeeState state : extension.getStates()) {
-      addState(state.getName(), state.hasUserMode(), state.hasRoleMode(), state.isForced())
+      addState(state.getName(), state.getId(),
+          state.hasUserMode(), state.hasRoleMode(), state.isForced())
         .setCustom();
       cnt++;
     }

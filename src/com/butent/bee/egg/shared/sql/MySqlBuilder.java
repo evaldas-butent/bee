@@ -17,6 +17,41 @@ class MySqlBuilder extends SqlBuilder {
           .append(" DROP FOREIGN KEY ")
           .append(params[1]);
         return drop.toString();
+
+      case DB_TABLES:
+        String sql = "SHOW TABLES";
+
+        if (!BeeUtils.isEmpty(params[1])) {
+          sql += " IN " + params[1];
+        }
+        if (!BeeUtils.isEmpty(params[2])) {
+          sql += " LIKE '" + params[2] + "'";
+        }
+        return sql;
+
+      case DB_FOREIGNKEYS:
+        IsCondition foreignWh = null;
+
+        for (int i = 0; i < 3; i++) {
+          if (!BeeUtils.isEmpty(params[i])) {
+            foreignWh = SqlUtils.and(foreignWh, SqlUtils.equal("t",
+                i == 0 ? "table_catalog" : (i == 1 ? "table_schema" : "table_name"), params[i]));
+          }
+        }
+        if (!BeeUtils.isEmpty(params[3])) {
+          foreignWh = SqlUtils.and(foreignWh,
+              SqlUtils.equal("c", "referenced_table_name", params[3]));
+        }
+        return new SqlSelect()
+          .addField("c", "constraint_name", "Name")
+          .addField("t", "table_name", "TblName")
+          .addField("c", "referenced_table_name", "RefTblName")
+          .addFrom("information_schema.referential_constraints", "c")
+          .addFromInner("information_schema.table_constraints", "t",
+              SqlUtils.joinMulti("c", "t", "constraint_name"))
+          .setWhere(foreignWh)
+          .getQuery(this);
+
       default:
         return super.sqlKeyword(option, params);
     }

@@ -17,8 +17,10 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
 
@@ -54,13 +56,15 @@ public class QueryServiceBean {
     return dbFields;
   }
 
-  public Collection<String> dbForeignKeys(String table) {
-    Set<String> dbforeignKeys = new HashSet<String>();
-    BeeRowSet res = (BeeRowSet) processSql(SqlUtils.dbForeignKeys(table).getQuery());
+  public Collection<String[]> dbForeignKeys(String dbName, String dbSchema, String table,
+      String refTable) {
+    List<String[]> dbforeignKeys = new ArrayList<String[]>();
+    BeeRowSet res = (BeeRowSet) processSql(SqlUtils.dbForeignKeys(dbName, dbSchema, table, refTable)
+        .getQuery());
 
     if (!res.isEmpty()) {
       for (BeeRow row : res.getRows()) {
-        dbforeignKeys.add(row.getValue(0));
+        dbforeignKeys.add(new String[]{row.getValue(0), row.getValue(1), row.getValue(2)});
       }
     }
     return dbforeignKeys;
