@@ -10,7 +10,7 @@
   <set-property name='gwt.logging.developmentModeHandler' value='DISABLED'/>
   <set-property name='gwt.logging.firebugHandler' value='DISABLED'/>
   <set-property name='gwt.logging.systemHandler' value='DISABLED'/>
-  <set-property name="gwt.logging.hasWidgetsHandler" value='DISABLED'/>
+  <set-property name='gwt.logging.hasWidgetsHandler' value='DISABLED'/>
 
   <set-property name='user.agent' value='safari'/>
 

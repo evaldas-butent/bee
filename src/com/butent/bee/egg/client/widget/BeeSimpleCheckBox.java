@@ -19,7 +19,7 @@ public class BeeSimpleCheckBox extends SimpleCheckBox implements HasId, HasBeeCl
 
   public BeeSimpleCheckBox(boolean value) {
     this();
-    setChecked(value);
+    setValue(value);
   }
   
   public BeeSimpleCheckBox(HasBooleanValue source) {
@@ -43,7 +43,7 @@ public class BeeSimpleCheckBox extends SimpleCheckBox implements HasId, HasBeeCl
   }
 
   public boolean onBeeClick(ClickEvent event) {
-    updateSource(isChecked());
+    updateSource(getValue());
     return true;
   }
 
@@ -67,7 +67,7 @@ public class BeeSimpleCheckBox extends SimpleCheckBox implements HasId, HasBeeCl
   private void initSource(HasBooleanValue src) {
     if (src != null) {
       setSource(src);
-      setChecked(src.getBoolean());
+      setValue(src.getBoolean());
     }
   }
 

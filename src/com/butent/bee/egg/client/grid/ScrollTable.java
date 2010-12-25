@@ -950,7 +950,7 @@ public class ScrollTable<RowType> extends ComplexPanel implements
         }
 
         if (selectAllWidget != null && selectAllWidget.getElement().isOrHasChild(target)) {
-          if (selectAllWidget.isChecked()) {
+          if (selectAllWidget.getValue()) {
             getDataTable().deselectAllRows();
           } else {
             getDataTable().selectAllRows();
@@ -1711,7 +1711,7 @@ public class ScrollTable<RowType> extends ComplexPanel implements
       BeeSimpleCheckBox box = null;
       if (isHeader && getDataTable().getSelectionPolicy() == SelectionPolicy.CHECKBOX) {
         box = getSelectAllWidget();
-        box.setChecked(false);
+        box.setValue(false);
       }
 
       table.insertCell(0, 0);

@@ -323,7 +323,7 @@ public class ScrollTableConfig {
   private class VisibilityHandler implements ClickHandler {
     public void onClick(ClickEvent event) {
       if (event.getSource() instanceof BeeSimpleCheckBox) {
-        if (((BeeSimpleCheckBox) event.getSource()).isChecked()) {
+        if (((BeeSimpleCheckBox) event.getSource()).getValue()) {
           visibleCount++;
         } else {
           visibleCount--;

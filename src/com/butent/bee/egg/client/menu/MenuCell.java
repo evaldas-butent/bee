@@ -15,20 +15,19 @@ public class MenuCell extends AbstractCell<MenuEntry> {
   public MenuCell() {
     super(events);
   }
-
+  
   @Override
-  public void onBrowserEvent(Element parent, MenuEntry value, Object key,
-      NativeEvent event, ValueUpdater<MenuEntry> valueUpdater) {
-    super.onBrowserEvent(parent, value, key, event, valueUpdater);
-
+  public void onBrowserEvent(Context context, Element parent, MenuEntry value, NativeEvent event,
+      ValueUpdater<MenuEntry> valueUpdater) {
+    super.onBrowserEvent(context, parent, value, event, valueUpdater);
     if (value != null && !BeeUtils.isEmpty(value.getService())
         && isSelectionEvent(event.getType())) {
       new MenuCommand(value.getService(), value.getParameters()).execute();
     }
   }
-  
+
   @Override
-  public void render(MenuEntry value, Object key, SafeHtmlBuilder sb) {
+  public void render(Context context, MenuEntry value, SafeHtmlBuilder sb) {
     if (value != null) {
       sb.appendEscaped(value.getText());
     }
@@ -43,8 +42,6 @@ public class MenuCell extends AbstractCell<MenuEntry> {
         break;
       }
     }
-
     return ok;
   }
-
 }
