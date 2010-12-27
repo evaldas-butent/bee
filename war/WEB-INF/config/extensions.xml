@@ -46,5 +46,9 @@
     <BeeExtended>
       <BeeField name="PostIndex" type="STRING" precision="10" unique="true" />
     </BeeExtended>
+    <BeeStates>
+      <BeeState name="pyp" id="4" />
+      <BeeState name="pop" id="5" />
+    </BeeStates>
   </BeeTable>
 </BeeTables>

@@ -3,6 +3,14 @@ package com.butent.bee.egg.server.data;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.sql.BeeConstants.DataTypes;
 import com.butent.bee.egg.shared.sql.BeeConstants.Keywords;
+import com.butent.bee.egg.shared.sql.HasFrom;
+import com.butent.bee.egg.shared.sql.IsFrom;
+import com.butent.bee.egg.shared.sql.IsQuery;
+import com.butent.bee.egg.shared.sql.SqlBuilderFactory;
+import com.butent.bee.egg.shared.sql.SqlCreate;
+import com.butent.bee.egg.shared.sql.SqlInsert;
+import com.butent.bee.egg.shared.sql.SqlUpdate;
+import com.butent.bee.egg.shared.sql.SqlUtils;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 import com.butent.bee.egg.shared.utils.Codec;
 
@@ -14,7 +22,7 @@ import java.util.List;
 import java.util.Map;
 
 @SuppressWarnings("hiding")
-public abstract class BeeTable implements HasExtFields {
+class BeeTable implements HasExtFields, HasStates {
 
   public class BeeField {
     private boolean custom = false;
@@ -60,7 +68,7 @@ public abstract class BeeTable implements HasExtFields {
     }
 
     public String getTable() {
-      return BeeTable.this.getName();
+      return isExtended() ? getExtName() : BeeTable.this.getName();
     }
 
     public DataTypes getType() {
@@ -87,18 +95,20 @@ public abstract class BeeTable implements HasExtFields {
       return unique;
     }
 
-    protected BeeField setCustom() {
-      this.custom = true;
+    BeeField setExtended(boolean extended) {
+      this.extended = extended;
       return this;
     }
 
-    protected BeeField setExtended() {
-      this.extended = true;
+    private BeeField setCustom() {
+      this.custom = true;
       return this;
     }
   }
 
   public class BeeForeignKey {
+    private boolean custom = false;
+    private boolean extended = false;
     private final String name;
     private final String keyField;
     private final String refTable;
@@ -131,7 +141,25 @@ public abstract class BeeTable implements HasExtFields {
     }
 
     public String getTable() {
-      return BeeTable.this.getName();
+      return isExtended() ? getExtName() : BeeTable.this.getName();
+    }
+
+    public boolean isCustom() {
+      return custom;
+    }
+
+    public boolean isExtended() {
+      return extended;
+    }
+
+    BeeForeignKey setExtended(boolean extended) {
+      this.extended = extended;
+      return this;
+    }
+
+    private BeeForeignKey setCustom() {
+      this.custom = true;
+      return this;
     }
   }
 
@@ -183,7 +211,7 @@ public abstract class BeeTable implements HasExtFields {
     }
 
     public String getTable() {
-      return BeeTable.this.getName();
+      return isExtended() ? getExtName() : BeeTable.this.getName();
     }
 
     public boolean isCustom() {
@@ -202,13 +230,13 @@ public abstract class BeeTable implements HasExtFields {
       return keyType.equals(KeyTypes.UNIQUE);
     }
 
-    protected BeeKey setCustom() {
-      this.custom = true;
+    BeeKey setExtended(boolean extended) {
+      this.extended = extended;
       return this;
     }
 
-    protected BeeKey setExtended() {
-      this.extended = true;
+    private BeeKey setCustom() {
+      this.custom = true;
       return this;
     }
   }
@@ -265,8 +293,124 @@ public abstract class BeeTable implements HasExtFields {
     }
   }
 
+  private class ExtSingleTable implements HasExtFields {
+
+    private static final String EXT_TABLE_SUFFIX = "_EXT";
+
+    private final String extIdName = getName() + getIdName();
+    private final String extLockName = getName() + getLockName();
+
+    @Override
+    public SqlCreate createExtTable(SqlCreate query, BeeField field) {
+      SqlCreate sc = null;
+
+      if (BeeUtils.isEmpty(query)) {
+        sc = new SqlCreate(getExtName(), false)
+            .addLong(extIdName, Keywords.NOT_NULL)
+            .addLong(extLockName, Keywords.NOT_NULL);
+
+        addForeignKey(extIdName, getName(), Keywords.CASCADE)
+          .setExtended(true).setCustom();
+      } else {
+        sc = query;
+      }
+      sc.addField(field.getName(), field.getType(), field.getPrecision(), field.getScale(),
+            field.isNotNull() ? Keywords.NOT_NULL : null);
+
+      return sc;
+    }
+
+    @Override
+    public String getExtName() {
+      return getName() + EXT_TABLE_SUFFIX;
+    }
+
+    @Override
+    public IsQuery insertExtField(IsQuery query, long rootId, BeeField field, Object newValue) {
+      SqlInsert si = null;
+
+      if (BeeUtils.isEmpty(query)) {
+        si = new SqlInsert(getExtName())
+            .addConstant(extLockName, System.currentTimeMillis())
+            .addConstant(extIdName, rootId);
+      } else {
+        si = (SqlInsert) query;
+      }
+      si.addConstant(field.getName(), newValue);
+
+      return si;
+    }
+
+    @Override
+    public String joinExtField(HasFrom<?> query, String tblAlias, BeeField field) {
+      String extAlias = null;
+
+      String tblName = getName();
+      String idField = getIdName();
+      String alias = BeeUtils.ifString(tblAlias, tblName);
+      String extName = getExtName();
+
+      for (IsFrom from : query.getFrom()) {
+        Object src = from.getSource();
+
+        if (src instanceof String && BeeUtils.same((String) src, extName)) {
+          if (from.getSqlString(SqlBuilderFactory.getBuilder(), false).contains(alias)) {
+            extAlias = BeeUtils.ifString(from.getAlias(), extName);
+            break;
+          }
+        }
+      }
+      if (BeeUtils.isEmpty(extAlias)) {
+        if (BeeUtils.same(alias, tblName)) {
+          extAlias = extName;
+        } else {
+          extAlias = SqlUtils.uniqueName();
+        }
+        query.addFromLeft(extName, extAlias, SqlUtils.join(alias, idField, extAlias, extIdName));
+      }
+      return extAlias;
+    }
+
+    @Override
+    public IsQuery updateExtField(IsQuery query, long rootId, BeeField field, Object newValue) {
+      SqlUpdate su = null;
+
+      if (BeeUtils.isEmpty(query)) {
+        su = new SqlUpdate(getExtName())
+            .addConstant(extLockName, System.currentTimeMillis())
+            .setWhere(SqlUtils.equal(getExtName(), extIdName, rootId));
+      } else {
+        su = (SqlUpdate) query;
+      }
+      su.addConstant(field.getName(), newValue);
+
+      return su;
+    }
+  }
+
   private enum KeyTypes {
     PRIMARY, UNIQUE, INDEX
+  }
+
+  private class StateSingleTable implements HasStates {
+
+    private static final String STATE_TABLE_SUFFIX = "_STATE";
+
+    private BeeTable stateTable;
+
+    private BeeTable createStateTable() {
+      if (BeeUtils.isEmpty(stateTable)) {
+        String tblName = getName();
+
+        stateTable = new BeeTable(
+            tblName + STATE_TABLE_SUFFIX,
+            tblName + getIdName(),
+            tblName + getLockName());
+        stateTable.addField("StateMask", DataTypes.LONG, 0, 0, true, false, null, false);
+        stateTable.addForeignKey(stateTable.getIdName(), tblName, Keywords.CASCADE);
+      }
+      return stateTable;
+    }
   }
 
   private static final String DEFAULT_ID_FIELD = "ID";
@@ -277,18 +421,17 @@ public abstract class BeeTable implements HasExtFields {
   private static final String INDEX_KEY_PREFIX = "IK_";
   private static final String FOREIGN_KEY_PREFIX = "FK_";
 
-  private static final String STATE_TABLE_SUFFIX = "_STATE";
-
   private final String name;
   private final String idName;
   private final String lockName;
 
   private Map<String, BeeField> fields = new LinkedHashMap<String, BeeField>();
-  private List<BeeKey> keys = new ArrayList<BeeKey>();
-  private List<BeeForeignKey> foreignKeys = new ArrayList<BeeForeignKey>();
+  private Map<String, BeeForeignKey> foreignKeys = new LinkedHashMap<String, BeeForeignKey>();
+  private Map<String, BeeKey> keys = new LinkedHashMap<String, BeeKey>();
   private Map<String, BeeState> states = new LinkedHashMap<String, BeeState>();
 
-  private BeeTable stateTable;
+  private final HasExtFields extSource;
+  private HasStates stateSource = new StateSingleTable();
 
   private boolean active = false;
   private boolean custom = false;
@@ -300,30 +443,32 @@ public abstract class BeeTable implements HasExtFields {
     this.idName = BeeUtils.ifString(idName, DEFAULT_ID_FIELD);
     this.lockName = BeeUtils.ifString(lockName, DEFAULT_LOCK_FIELD);
 
-    keys.add(new BeeKey(KeyTypes.PRIMARY, getIdName()));
+    this.extSource = new ExtSingleTable();
+
+    BeeKey key = new BeeKey(KeyTypes.PRIMARY, getIdName());
+    keys.put(key.getName(), key);
+  }
+
+  @Override
+  public SqlCreate createExtTable(SqlCreate query, BeeField field) {
+    return extSource.createExtTable(query, field);
+  }
+
+  @Override
+  public String getExtName() {
+    return extSource.getExtName();
   }
 
   public BeeField getField(String fldName) {
-    BeeField field = fields.get(fldName);
-
-    if (BeeUtils.isEmpty(field)) {
-      field = getExtField(fldName);
-    }
-    return field;
+    return fields.get(fldName);
   }
 
   public Collection<BeeField> getFields() {
-    List<BeeField> fldList = new ArrayList<BeeField>();
-    fldList.addAll(fields.values());
-    fldList.addAll(getExtFields());
-    return fldList;
+    return Collections.unmodifiableCollection(fields.values());
   }
 
   public Collection<BeeForeignKey> getForeignKeys() {
-    List<BeeForeignKey> fKeyList = new ArrayList<BeeForeignKey>();
-    fKeyList.addAll(foreignKeys);
-    fKeyList.addAll(getExtForeignKeys());
-    return fKeyList;
+    return Collections.unmodifiableCollection(foreignKeys.values());
   }
 
   public String getIdName() {
@@ -331,10 +476,7 @@ public abstract class BeeTable implements HasExtFields {
   }
 
   public Collection<BeeKey> getKeys() {
-    List<BeeKey> keyList = new ArrayList<BeeKey>();
-    keyList.addAll(keys);
-    keyList.addAll(getExtKeys());
-    return keyList;
+    return Collections.unmodifiableCollection(keys.values());
   }
 
   public String getLockName() {
@@ -356,6 +498,10 @@ public abstract class BeeTable implements HasExtFields {
     return name;
   }
 
+  public BeeState getState(String stateName) {
+    return states.get(stateName);
+  }
+
   public Collection<BeeState> getStates() {
     return Collections.unmodifiableCollection(states.values());
   }
@@ -368,12 +514,17 @@ public abstract class BeeTable implements HasExtFields {
     return !BeeUtils.isEmpty(getFields());
   }
 
-  public boolean hasState(String state) {
-    return states.containsKey(state);
+  public boolean hasState(String stateName) {
+    return !BeeUtils.isEmpty(getState(stateName));
   }
 
   public boolean hasStates() {
     return !BeeUtils.isEmpty(getStates());
+  }
+
+  @Override
+  public IsQuery insertExtField(IsQuery query, long rootId, BeeField field, Object newValue) {
+    return extSource.insertExtField(query, rootId, field, newValue);
   }
 
   public boolean isActive() {
@@ -388,31 +539,14 @@ public abstract class BeeTable implements HasExtFields {
     return !hasFields();
   }
 
-  protected boolean dropField(BeeField field) {
-    String fldName = field.getName();
-    boolean ok = fields.containsKey(fldName);
-
-    if (ok) {
-      for (BeeForeignKey fKey : getForeignKeys()) {
-        if (BeeUtils.same(fKey.getKeyField(), fldName)) {
-          foreignKeys.remove(fKey);
-          break;
-        }
-      }
-      fields.remove(fldName);
-    } else {
-      ok = removeExtField(field);
-    }
-    return ok;
+  @Override
+  public String joinExtField(HasFrom<?> query, String tblAlias, BeeField field) {
+    return extSource.joinExtField(query, tblAlias, field);
   }
 
-  protected boolean dropKey(BeeKey key) {
-    boolean ok = keys.remove(key);
-
-    if (!ok) {
-      ok = removeExtKey(key);
-    }
-    return ok;
+  @Override
+  public IsQuery updateExtField(IsQuery query, long rootId, BeeField field, Object newValue) {
+    return extSource.updateExtField(query, rootId, field, newValue);
   }
 
   void activate() {
@@ -428,23 +562,22 @@ public abstract class BeeTable implements HasExtFields {
     Assert.state(!hasField(fieldName), "Dublicate field name: " + getName() + " " + fieldName);
     fields.put(fieldName, field);
 
-    if (!BeeUtils.isEmpty(relation)) {
-      addForeignKey(name, relation,
-          cascade ? (notNull ? Keywords.CASCADE : Keywords.SET_NULL) : null);
-    }
-
     return field;
   }
 
   BeeForeignKey addForeignKey(String keyField, String refTable, Keywords action) {
-    BeeForeignKey key = new BeeForeignKey(keyField, refTable, action);
-    foreignKeys.add(key);
-    return key;
+    BeeForeignKey fKey = new BeeForeignKey(keyField, refTable, action);
+    foreignKeys.put(fKey.getName(), fKey);
+    return fKey;
   }
 
   BeeKey addKey(boolean unique, String... keyFields) {
     BeeKey key = new BeeKey(unique ? KeyTypes.UNIQUE : KeyTypes.INDEX, keyFields);
-    keys.add(key);
+    String keyName = key.getName();
+
+    Assert.state(!keys.containsKey(keyName), "Dublicate key name: " + getName() + " " + keyName);
+    keys.put(keyName, key);
+
     return key;
   }
 
@@ -459,16 +592,6 @@ public abstract class BeeTable implements HasExtFields {
     Assert.state(!hasState(stateName), "Dublicate state name: " + getName() + " " + stateName);
     states.put(stateName, state);
 
-    BeeTable stateTbl = createStateTable();
-
-    if (state.hasUserMode()) {
-      stateTbl.addField("State" + stateId + "UserMask",
-          DataTypes.LONG, 0, 0, false, false, null, false);
-    }
-    if (state.hasRoleMode()) {
-      stateTbl.addField("State" + stateId + "RoleMask",
-          DataTypes.LONG, 0, 0, false, false, null, false);
-    }
     return state;
   }
 
@@ -477,36 +600,31 @@ public abstract class BeeTable implements HasExtFields {
     int cnt = 0;
 
     for (BeeField fld : extension.getFields()) {
-      BeeField f;
-      String fName = fld.getName();
-      DataTypes type = fld.getType();
-      int prec = fld.getPrecision();
-      int scale = fld.getScale();
-      boolean notNull = fld.isNotNull();
-      boolean unique = fld.isUnique();
       String relation = fld.getRelation();
       boolean cascade = fld.isCascade();
 
-      if (fld.isExtended()) {
-        f = addExtField(fName, type, prec, scale, notNull, unique, relation, cascade);
-      } else {
-        f = addField(fName, type, prec, scale, notNull, unique, relation, cascade);
-      }
-      f.setCustom();
+      addField(fld.getName()
+          , fld.getType()
+          , fld.getPrecision()
+          , fld.getScale()
+          , fld.isNotNull()
+          , fld.isUnique()
+          , relation, cascade)
+        .setExtended(fld.isExtended())
+        .setCustom();
+      cnt++;
+    }
+    for (BeeForeignKey fKey : extension.getForeignKeys()) {
+      addForeignKey(fKey.getKeyField(), fKey.getRefTable(), fKey.getAction())
+        .setExtended(fKey.isExtended())
+        .setCustom();
       cnt++;
     }
     for (BeeKey key : extension.getKeys()) {
       if (!key.isPrimary()) {
-        BeeKey k;
-        boolean unique = key.isUnique();
-        String[] keyFlds = key.getKeyFields();
-
-        if (key.isExtended()) {
-          k = addExtKey(unique, keyFlds);
-        } else {
-          k = addKey(unique, keyFlds);
-        }
-        k.setCustom();
+        addKey(key.isUnique(), key.getKeyFields())
+          .setExtended(key.isExtended())
+          .setCustom();
         cnt++;
       }
     }
@@ -519,47 +637,30 @@ public abstract class BeeTable implements HasExtFields {
     return cnt;
   }
 
-  BeeTable getStateTable() {
-    return stateTable;
-  }
-
   void setCustom() {
     this.custom = true;
   }
 
-  private BeeTable createStateTable() {
-    if (BeeUtils.isEmpty(stateTable)) {
-      String tblName = getName();
-
-      stateTable = new BeeExtTable(
-          tblName + STATE_TABLE_SUFFIX,
-          tblName + getIdName(),
-          tblName + getLockName());
-      stateTable.addField("StateMask", DataTypes.LONG, 0, 0, true, false, null, false);
-      stateTable.addForeignKey(stateTable.getIdName(), tblName, Keywords.CASCADE);
-    }
-    return stateTable;
-  }
-
   private void dropCustom() {
-    for (BeeField fld : getFields()) {
-      if (fld.isCustom()) {
-        dropField(fld);
+    for (BeeField field : new ArrayList<BeeField>(getFields())) {
+      if (field.isCustom()) {
+        fields.remove(field.getName());
       }
     }
-    for (BeeKey key : getKeys()) {
+    for (BeeKey key : new ArrayList<BeeKey>(getKeys())) {
       if (key.isCustom()) {
-        dropKey(key);
+        keys.remove(key.getName());
       }
     }
-    for (BeeState state : getStates()) {
+    for (BeeForeignKey fKey : new ArrayList<BeeForeignKey>(getForeignKeys())) {
+      if (fKey.isCustom()) {
+        foreignKeys.remove(fKey.getName());
+      }
+    }
+    for (BeeState state : new ArrayList<BeeState>(getStates())) {
       if (state.isCustom()) {
-        dropState(state);
+        states.remove(state.getName());
       }
     }
-  }
-
-  private void dropState(BeeState state) {
-    states.remove(state.getName());
   }
 }

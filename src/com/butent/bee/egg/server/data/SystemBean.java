@@ -285,13 +285,13 @@ public class SystemBean {
         mainQuery = queries.get(0)[0];
         arr[1] = queries.get(0)[1];
       }
-      arr[0] = table.extInsertField(mainQuery, id, field, entry[1]);
+      arr[0] = table.insertExtField(mainQuery, id, field, entry[1]);
 
       if (arr[0] != mainQuery) {
         queries.add(arr);
       }
       if (updateMode) {
-        arr[1] = table.extUpdateField(arr[1], id, field, entry[1]);
+        arr[1] = table.updateExtField(arr[1], id, field, entry[1]);
       }
     }
     for (List<IsQuery[]> queries : queryMap.values()) {
@@ -323,18 +323,8 @@ public class SystemBean {
     return dbSchema;
   }
 
-  public Collection<BeeField> getExtFields(String tbl) {
-    return getTable(tbl).getExtFields();
-  }
-
   public BeeField getField(String tbl, String fld) {
-    BeeTable table = getTable(tbl);
-    BeeField field = table.getField(fld);
-
-    if (BeeUtils.isEmpty(field)) {
-      field = table.getExtField(fld);
-    }
-    return field;
+    return getTable(tbl).getField(fld);
   }
 
   public Collection<BeeField> getFields(String table) {
@@ -450,7 +440,7 @@ public class SystemBean {
 
   public String joinExtField(HasFrom<?> query, String fld, String tbl, String tblAlias) {
     BeeTable table = getTable(tbl);
-    return table.extJoinField(query, tblAlias, table.getField(fld));
+    return table.joinExtField(query, tblAlias, table.getField(fld));
   }
 
   public void rebuildTable(String tableName) {
@@ -492,11 +482,10 @@ public class SystemBean {
   @Lock(LockType.WRITE)
   private void createForeignKeys(Collection<BeeForeignKey> fKeys) {
     for (BeeForeignKey fKey : fKeys) {
-      String tblName = fKey.getTable();
       String refTblName = fKey.getRefTable();
 
       if (isActive(refTblName)) {
-        qs.updateData(SqlUtils.createForeignKey(tblName, fKey.getName(),
+        qs.updateData(SqlUtils.createForeignKey(fKey.getTable(), fKey.getName(),
             fKey.getKeyField(), refTblName, getIdName(refTblName), fKey.getAction()));
       }
     }
@@ -533,7 +522,7 @@ public class SystemBean {
         String tblName = field.getTable();
 
         if (field.isExtended()) {
-          SqlCreate sc = table.extCreateTable(tables.get(tblName), field);
+          SqlCreate sc = table.createExtTable(tables.get(tblName), field);
 
           if (!BeeUtils.isEmpty(sc)) {
             tables.put(tblName, sc);
@@ -764,7 +753,7 @@ public class SystemBean {
     for (int i = 0; i < tables.getLength(); i++) {
       Element table = (Element) tables.item(i);
 
-      BeeTable tbl = new BeeExtTable(table.getAttribute("name")
+      BeeTable tbl = new BeeTable(table.getAttribute("name")
           , table.getAttribute("idName")
           , table.getAttribute("lockName"));
 
@@ -779,24 +768,26 @@ public class SystemBean {
             Element field = (Element) fields.item(j);
 
             String fldName = field.getAttribute("name");
-            DataTypes type = DataTypes.valueOf(field.getAttribute("type"));
-            int prec = BeeUtils.toInt(field.getAttribute("precision"));
-            int scale = BeeUtils.toInt(field.getAttribute("scale"));
             boolean notNull = BeeUtils.toBoolean(field.getAttribute("notNull"));
             boolean unique = BeeUtils.toBoolean(field.getAttribute("unique"));
             String relation = field.getAttribute("relation");
             boolean cascade = BeeUtils.toBoolean(field.getAttribute("cascade"));
 
-            if (extMode) {
-              tbl.addExtField(fldName, type, prec, scale, notNull, unique, relation, cascade);
-              if (unique) {
-                tbl.addExtKey(true, fldName);
-              }
-            } else {
-              tbl.addField(fldName, type, prec, scale, notNull, unique, relation, cascade);
-              if (unique) {
-                tbl.addKey(true, fldName);
-              }
+            tbl.addField(fldName
+                , DataTypes.valueOf(field.getAttribute("type"))
+                , BeeUtils.toInt(field.getAttribute("precision"))
+                , BeeUtils.toInt(field.getAttribute("scale"))
+                , notNull, unique, relation, cascade)
+              .setExtended(extMode);
+
+            if (!BeeUtils.isEmpty(relation)) {
+              tbl.addForeignKey(fldName, relation,
+                    cascade ? (notNull ? Keywords.CASCADE : Keywords.SET_NULL) : null)
+                .setExtended(extMode);
+            }
+            if (unique) {
+              tbl.addKey(true, fldName)
+                .setExtended(extMode);
             }
           }
           NodeList keys = ((Element) nodeRoot.item(0)).getElementsByTagName("BeeKey");
@@ -804,14 +795,9 @@ public class SystemBean {
           for (int j = 0; j < keys.getLength(); j++) {
             Element key = (Element) keys.item(j);
 
-            boolean unique = BeeUtils.toBoolean(key.getAttribute("unique"));
-            String[] flds = key.getAttribute("fields").split(",");
-
-            if (extMode) {
-              tbl.addExtKey(unique, flds);
-            } else {
-              tbl.addKey(unique, flds);
-            }
+            tbl.addKey(BeeUtils.toBoolean(key.getAttribute("unique"))
+                , key.getAttribute("fields").split(","))
+              .setExtended(extMode);
           }
         }
       }
@@ -888,9 +874,9 @@ public class SystemBean {
         if (BeeUtils.same(tbl.getName(), tblName)) {
           continue;
         }
-        for (BeeForeignKey key : tbl.getForeignKeys()) {
-          if (BeeUtils.same(key.getRefTable(), tblName) && tbl.isActive()) {
-            fKeys.add(key);
+        for (BeeForeignKey fKey : tbl.getForeignKeys()) {
+          if (BeeUtils.same(fKey.getRefTable(), tblName) && tbl.isActive()) {
+            fKeys.add(fKey);
           }
         }
       }
