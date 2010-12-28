@@ -55,6 +55,34 @@ public class BeeUtils {
     return ok;
   }
 
+  public static StringBuilder append(StringBuilder bld, Object[] arr, Object sep) {
+    if (arr != null && arr.length > 0) {
+      String z = normSep(sep);
+      bld.append(arr[0]);
+
+      for (int i = 1; i < arr.length; i++) {
+        bld.append(z);
+        bld.append(arr[i]);
+      }
+    }
+    return bld;
+  }
+
+  public static StringBuilder append(StringBuilder bld, Iterable<?> iterable, Object sep) {
+    if (iterable != null) {
+      String z = normSep(sep);
+      Iterator<?> it = iterable.iterator();
+
+      while (it.hasNext()) {
+        bld.append(it.next());
+        if (it.hasNext()) {
+          bld.append(z);
+        }
+      }
+    }
+    return bld;
+  }   
+
   public static Object arrayGet(Object arr, int idx) {
     if (arr instanceof Object[]) {
       return ((Object[]) arr)[idx];
@@ -1123,8 +1151,7 @@ public class BeeUtils {
   public static String normSep(Object x, Object def) {
     String sep;
 
-    if (x instanceof CharSequence && length(x) > 0 || isPositive(x)
-        || x instanceof Character) {
+    if (x instanceof CharSequence && length(x) > 0 || isPositive(x) || x instanceof Character) {
       sep = normSep(x);
     } else {
       sep = normSep(def);
@@ -1169,8 +1196,7 @@ public class BeeUtils {
   }
   
   public static String progress(int pos, int tot) {
-    return Integer.toString(pos) + BeeConst.DEFAULT_PROGRESS_SEPARATOR
-        + Integer.toString(tot);
+    return Integer.toString(pos) + BeeConst.DEFAULT_PROGRESS_SEPARATOR + Integer.toString(tot);
   }
 
   public static String proper(String s, Object separators) {
@@ -1262,6 +1288,36 @@ public class BeeUtils {
     return new StringBuilder(src).replace(start, end, str).toString();
   }
 
+  public static String replace(String text, String search, String replacement) {
+    return replace(text, search, replacement, -1);
+  }
+
+  public static String replace(String text, String search, String replacement, int max) {
+    if (isEmpty(text) || isEmpty(search) || replacement == null || max == 0) {
+      return text;
+    }
+    int start = 0;
+    int end = text.indexOf(search, start);
+    if (end < 0) {
+      return text;
+    }
+
+    int len = search.length();
+    StringBuilder sb = new StringBuilder();
+
+    while (end >= 0) {
+      sb.append(text.substring(start, end)).append(replacement);
+      start = end + len;
+      if (--max == 0) {
+        break;
+      }
+      end = text.indexOf(search, start);
+    }
+    sb.append(text.substring(start));
+
+    return sb.toString();
+  }
+  
   public static String replicate(char z, int n) {
     Assert.isPositive(n);
 

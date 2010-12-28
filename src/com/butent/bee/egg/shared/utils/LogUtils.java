@@ -107,10 +107,6 @@ public class LogUtils {
     }
   }
 
-  public static void severe(Object... obj) {
-    severe(getDefaultLogger(), obj);
-  }
-
   public static void severe(Throwable err, Object... obj) {
     severe(getDefaultLogger(), err, obj);
   }
@@ -153,5 +149,4 @@ public class LogUtils {
   private static String transformError(Throwable err) {
     return err.toString();
   }
-
 }
