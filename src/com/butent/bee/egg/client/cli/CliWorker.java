@@ -15,6 +15,9 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.egg.client.Global;
 import com.butent.bee.egg.client.BeeKeeper;
+import com.butent.bee.egg.client.ajaxloader.AjaxKeyRepository;
+import com.butent.bee.egg.client.ajaxloader.AjaxLoader;
+import com.butent.bee.egg.client.ajaxloader.ClientLocation;
 import com.butent.bee.egg.client.communication.ParameterList;
 import com.butent.bee.egg.client.communication.RpcList;
 import com.butent.bee.egg.client.composite.SliderBar;
@@ -30,6 +33,7 @@ import com.butent.bee.egg.client.layout.Split;
 import com.butent.bee.egg.client.layout.TilePanel;
 import com.butent.bee.egg.client.tree.BeeTree;
 import com.butent.bee.egg.client.utils.BeeJs;
+import com.butent.bee.egg.client.utils.Browser;
 import com.butent.bee.egg.client.utils.JreEmulation;
 import com.butent.bee.egg.client.widget.Audio;
 import com.butent.bee.egg.client.widget.BeeLabel;
@@ -53,6 +57,7 @@ import com.butent.bee.egg.shared.utils.ExtendedProperty;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 
 public class CliWorker {
@@ -94,8 +99,31 @@ public class CliWorker {
     BeeKeeper.getLog().info("js fast", BeeJs.md5fast(src));
     BeeKeeper.getLog().info(BeeConst.CLIENT, Codec.md5(src));
 
-    BeeKeeper.getRpc().makePostRequest(BeeService.SERVICE_GET_DIGEST,
-        ContentType.BINARY, src);
+    BeeKeeper.getRpc().makePostRequest(BeeService.SERVICE_GET_DIGEST, ContentType.BINARY, src);
+  }
+  
+  public static void doAjaxKeys(String[] arr) {
+    if (BeeUtils.length(arr) == 3) {
+      String loc = arr[1];
+      String key = arr[2];
+      
+      if (Global.confirm("add api key", loc, key)) {
+        AjaxKeyRepository.putKey(loc, key);
+      }
+    }
+    
+    Map<String, String> keyMap = AjaxKeyRepository.getKeys();
+    if (BeeUtils.isEmpty(keyMap)) {
+      BeeKeeper.getLog().warning("api key repository is empty");
+      return;
+    }
+    
+    List<Property> lst = new ArrayList<Property>();
+    for (Map.Entry<String, String> entry : keyMap.entrySet()) {
+      lst.add(new Property(entry.getKey(), entry.getValue()));
+    }
+    
+    BeeKeeper.getUi().showGrid(lst, "Location", "Api Key");
   }
 
   public static void doLog(String[] arr) {
@@ -198,7 +226,7 @@ public class CliWorker {
       Global.showError("getKeys", "table not specified");
       return;
     }
-    
+
     ParameterList params = BeeKeeper.getRpc().createParameters(
         BeeUtils.same(arr[0], "pk") ? BeeService.SERVICE_DB_PRIMARY : BeeService.SERVICE_DB_KEYS);
     for (int i = 0; i < parCnt; i++) {
@@ -225,17 +253,17 @@ public class CliWorker {
       BeeKeeper.getLog().severe("audio not supported");
       return;
     }
-    
+
     String src = BeeUtils.arrayGetQuietly(arr, 1);
     if (BeeUtils.isEmpty(src)) {
       BeeKeeper.getLog().warning("source not specified");
       return;
     }
-    
+
     Audio widget = new Audio();
     widget.getElement().setAttribute("src", src);
     widget.getElement().setAttribute("controls", "controls");
-    
+
     BeeKeeper.getUi().updateActivePanel(widget, true);
   }
 
@@ -244,17 +272,62 @@ public class CliWorker {
       BeeKeeper.getLog().severe("video not supported");
       return;
     }
-    
+
     String src = BeeUtils.arrayGetQuietly(arr, 1);
     if (BeeUtils.isEmpty(src)) {
       src = "http://people.opera.com/shwetankd/webm/sunflower.webm";
     }
-    
+
     Video widget = new Video();
     widget.getElement().setAttribute("src", src);
     widget.getElement().setAttribute("controls", "controls");
-    
+
     BeeKeeper.getUi().updateActivePanel(widget, true);
+  }
+
+  public static void showBrowser(String[] arr) {
+    boolean wnd = false;
+    boolean loc = false;
+    boolean nav = false;
+    boolean scr = false;
+
+    for (int i = 1; i < BeeUtils.length(arr); i++) {
+      switch (arr[i].toLowerCase().charAt(0)) {
+        case 'w':
+          wnd = true;
+          break;
+        case 'l':
+          loc = true;
+          break;
+        case 'n':
+          nav = true;
+          break;
+        case 's':
+          scr = true;
+          break;
+      }
+    }
+
+    if (!wnd && !loc && !nav && !scr) {
+      wnd = loc = nav = scr = true;
+    }
+
+    List<ExtendedProperty> info = new ArrayList<ExtendedProperty>();
+
+    if (wnd) {
+      PropertyUtils.appendChildrenToExtended(info, "Window", Browser.getWindowInfo());
+    }
+    if (loc) {
+      PropertyUtils.appendChildrenToExtended(info, "Location", Browser.getLocationInfo());
+    }
+    if (nav) {
+      PropertyUtils.appendChildrenToExtended(info, "Navigator", Browser.getNavigatorInfo());
+    }
+    if (scr) {
+      PropertyUtils.appendChildrenToExtended(info, "Screen", Browser.getScreenInfo());
+    }
+
+    BeeKeeper.getUi().showGrid(info);
   }
 
   public static void showCanvas(String[] arr) {
@@ -262,13 +335,29 @@ public class CliWorker {
       BeeKeeper.getLog().severe("canvas not supported");
       return;
     }
-    
+
     Canvas widget = new Canvas();
     BeeKeeper.getUi().updateActivePanel(widget);
-    
+
     if (BeeUtils.arrayLength(arr) <= 1) {
       sampleCanvas(widget.getElement());
     }
+  }
+
+  public static void showClientLocation() {
+    AjaxLoader.load(new Runnable() {
+      public void run() {
+        ClientLocation location = AjaxLoader.getClientLocation();
+
+        BeeKeeper.getUi().showGrid(PropertyUtils.createProperties(
+            "City", location.getCity(),
+            "Country", location.getCountry(),
+            "Country Code", location.getCountryCode(),
+            "Latitude", location.getLatitude(),
+            "Longitude", location.getLongitude(),
+            "Region", location.getRegion()));
+      }
+    });
   }
 
   public static void showDate(String[] arr) {
@@ -421,20 +510,20 @@ public class CliWorker {
   public static void showInput() {
     FlexTable table = new FlexTable();
     table.setCellSpacing(3);
-    
-    String[] types = new String[] {"search", "tel", "url", "email",
+
+    String[] types = new String[]{"search", "tel", "url", "email",
         "datetime", "date", "month", "week", "time", "datetime-local",
         "number", "range", "color"};
     TextBox widget;
-    
+
     int row = 0;
     for (String type : types) {
       table.setWidget(row, 0, new BeeLabel(type));
-      
+
       if (Features.supportsInputType(type)) {
         widget = new TextBox();
         widget.getElement().setAttribute(DomUtils.ATTRIBUTE_TYPE, type);
-        
+
         if (type.equals("search")) {
           if (Features.supportsAttributePlaceholder()) {
             widget.getElement().setAttribute("placeholder", "Search...");
@@ -451,15 +540,15 @@ public class CliWorker {
           widget.getElement().setAttribute("step", "5");
           widget.getElement().setAttribute("value", "30");
         }
-        
+
         table.setWidget(row, 1, widget);
       } else {
         table.setWidget(row, 1, new BeeLabel("not supported"));
       }
-      
+
       row++;
     }
-    
+
     BeeKeeper.getUi().updateActivePanel(table, true);
   }
 
@@ -475,17 +564,17 @@ public class CliWorker {
     double low = 20;
     double high = 80;
     double optimum = 50;
-    
+
     String pars = "<>vlho";
     int p = -1, j;
     String s, z;
     char c;
-    
+
     for (int i = 1; i < arr.length; i++) {
       s = arr[i].toLowerCase();
       c = s.charAt(0);
       j = pars.indexOf(c);
-      
+
       if (j >= 0) {
         z = s.substring(1);
         p = j;
@@ -493,7 +582,7 @@ public class CliWorker {
         z = s;
         p++;
       }
-      
+
       switch (p) {
         case 0:
           min = BeeUtils.toDouble(z);
@@ -515,7 +604,7 @@ public class CliWorker {
           break;
       }
     }
-    
+
     if (max <= min) {
       max = min + 100;
     }
@@ -523,12 +612,12 @@ public class CliWorker {
     low = BeeUtils.limit(low, min, max);
     high = BeeUtils.limit(high, low, max);
     optimum = BeeUtils.limit(optimum, min, max);
-    
+
     FlexTable table = new FlexTable();
     table.setCellPadding(3);
     table.setCellSpacing(3);
     table.setBorderWidth(1);
-    
+
     int r = 0;
     table.setHTML(r, 0, "min");
     table.setHTML(r, 1, BeeUtils.toString(min));
@@ -548,7 +637,7 @@ public class CliWorker {
     r++;
     table.setHTML(r, 0, BeeUtils.toString(value));
     table.setWidget(r, 1, new Meter(min, max, value, low, high, optimum));
-    
+
     for (double i = min; i <= max; i += (max - min) / 10) {
       r++;
       table.setHTML(r, 0, BeeUtils.toString(i));
@@ -562,13 +651,13 @@ public class CliWorker {
       Global.showError("progress element not supported");
       return;
     }
-    
+
     final int steps;
     int millis = 250;
-    
+
     double max = 100;
     double value = 0;
-    
+
     String s = BeeUtils.arrayGetQuietly(arr, 1);
     if (BeeUtils.isDigit(s)) {
       steps = BeeUtils.toInt(s);
@@ -583,7 +672,7 @@ public class CliWorker {
     if (BeeUtils.isDigit(s)) {
       max = BeeUtils.toDouble(s);
     }
-    
+
     Absolute panel = new Absolute();
     panel.add(new BeeLabel("indeterminate"), 10, 8);
     panel.add(new Progress(), 120, 10);
@@ -591,12 +680,12 @@ public class CliWorker {
     panel.add(new BeeLabel(BeeUtils.addName("steps", steps)), 10, 36);
     panel.add(new BeeLabel(BeeUtils.addName("millis", millis)), 10, 53);
     panel.add(new BeeLabel(BeeUtils.addName("max", max)), 10, 70);
-    
+
     final Progress prg = new Progress(max, value);
     panel.add(prg, 120, 40);
     final BeeLabel lbl = new BeeLabel();
     panel.add(lbl, 160, 70);
-    
+
     Timer timer = new Timer() {
       @Override
       public void run() {
@@ -607,14 +696,14 @@ public class CliWorker {
         if (v > x) {
           v = 0;
         }
-        
+
         prg.setValue(v);
-        lbl.setText(BeeUtils.concat(3, BeeUtils.round(v, 1), 
+        lbl.setText(BeeUtils.concat(3, BeeUtils.round(v, 1),
             BeeUtils.round(prg.getPosition(), 3)));
       }
     };
     timer.scheduleRepeating(millis);
-    
+
     BeeKeeper.getUi().updateActivePanel(panel, true);
   }
 
@@ -647,7 +736,7 @@ public class CliWorker {
       BeeKeeper.getUi().showGrid(view);
     }
   }
-  
+
   public static void showRpc() {
     if (BeeKeeper.getRpc().getRpcList().isEmpty()) {
       Global.showDialog("RpcList empty");
@@ -664,17 +753,17 @@ public class CliWorker {
     double step = 1;
     int labels = 5;
     int ticks = 10;
-    
+
     String pars = "v<>slt";
     int p = -1, j;
     String s, z;
     char c;
-    
+
     for (int i = 1; i < arr.length; i++) {
       s = arr[i].toLowerCase();
       c = s.charAt(0);
       j = pars.indexOf(c);
-      
+
       if (j >= 0) {
         z = s.substring(1);
         p = j;
@@ -682,7 +771,7 @@ public class CliWorker {
         z = s;
         p++;
       }
-      
+
       switch (p) {
         case 0:
           value = BeeUtils.toDouble(z);
@@ -704,7 +793,7 @@ public class CliWorker {
           break;
       }
     }
-    
+
     if (max <= min) {
       max = min + 100;
     }
@@ -717,10 +806,10 @@ public class CliWorker {
     if (value > max) {
       value = max;
     }
-    
+
     BeeKeeper.getUi().updateActivePanel(new SliderBar(value, min, max, step, labels, ticks));
   }
-  
+
   public static void showStack() {
     BeeKeeper.getLog().stack();
     BeeKeeper.getLog().addSeparator();
@@ -735,12 +824,12 @@ public class CliWorker {
       BeeKeeper.getLog().severe("svg not supported");
       return;
     }
-    
+
     Svg widget = new Svg();
     Flow panel = new Flow();
     panel.add(widget);
     BeeKeeper.getUi().updateActivePanel(panel);
-    
+
     if (BeeUtils.arrayLength(arr) <= 1) {
       sampleSvg(widget.getElement());
     }
@@ -765,23 +854,23 @@ public class CliWorker {
       Global.showVars();
     }
   }
-  
+
   public static void storage(String[] arr) {
     int parCnt = BeeUtils.arrayLength(arr) - 1;
     int len = BeeKeeper.getStorage().length();
-    
+
     if (parCnt <= 1 && len <= 0) {
       Global.inform("Storage empty");
       return;
     }
-    
+
     if (parCnt <= 0) {
       BeeKeeper.getUi().showGrid(BeeKeeper.getStorage().getAll());
       return;
     }
-    
+
     String key = arr[1];
-    
+
     if (parCnt == 1) {
       if (key.equals(BeeConst.STRING_MINUS)) {
         BeeKeeper.getStorage().clear();
@@ -796,9 +885,9 @@ public class CliWorker {
       }
       return;
     }
-    
+
     String value = BeeUtils.join(arr, 1, 2);
-    
+
     if (key.equals(BeeConst.STRING_MINUS)) {
       BeeKeeper.getStorage().removeItem(value);
       Global.inform(value, "removed");
@@ -911,7 +1000,7 @@ public class CliWorker {
       StyleInjector.inject(st, immediate);
     }
   }
- 
+
   public static void unicode(String[] arr) {
     StringBuilder sb = new StringBuilder();
     int len = BeeUtils.length(arr);
@@ -978,10 +1067,10 @@ public class CliWorker {
       element.innerHTML = "Lat = " + lat + ", Lng = " + lng;
     }
   }-*/;
-  
+
   private static native void sampleCanvas(Element el) /*-{
     var ctx = el.getContext("2d");
-    
+
     for (var i = 0; i < 6; i++) {  
       for (var j = 0; j < 6; j++) {  
         ctx.fillStyle = 'rgb(' + Math.floor(255 - 42.5 * i) + ', ' + Math.floor(255 - 42.5 * j) + ', 0)';  
@@ -989,7 +1078,7 @@ public class CliWorker {
       }  
     }
   }-*/;
-  
+
   private static void sampleSvg(Element el) {
     el.setInnerHTML("<circle cx=\"100\" cy=\"75\" r=\"50\" fill=\"blue\" stroke=\"firebrick\" stroke-width=\"3\"></circle>"
         + "<text x=\"60\" y=\"155\">Hello Svg</text>");

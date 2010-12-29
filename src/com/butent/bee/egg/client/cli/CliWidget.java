@@ -35,17 +35,22 @@ public class CliWidget extends BeeTextBox {
 
     if (z.equals("?")) {
       CliWorker.whereAmI();
+    } else if (z.startsWith("ajaxk") || z.startsWith("apik") || z.startsWith("gook")) {
+      CliWorker.doAjaxKeys(arr);
     } else if (z.equals("audio")) {
       CliWorker.playAudio(arr);
+    } else if (z.equals("browser") || z.startsWith("wind")) {
+      CliWorker.showBrowser(arr);
     } else if (z.equals("canvas")) {
       CliWorker.showCanvas(arr);
-    } else if (z.equals("clear")) {
-      CliWorker.clearLog();
-    } else if (BeeUtils.inList(z, "center", "east", "north", "south", "screen",
-        "west")) {
+    } else if (BeeUtils.inList(z, "center", "east", "north", "south", "screen", "west")) {
       CliWorker.doScreen(arr);
     } else if (z.equals("charset")) {
       CliWorker.getCharsets();
+    } else if (z.equals("clear")) {
+      CliWorker.clearLog();
+    } else if (z.startsWith("client")) {
+      CliWorker.showClientLocation();
     } else if (z.startsWith("conn") || z.equals("http")) {
       BeeKeeper.getRpc().invoke("connectionInfo");
     } else if (z.equals("df")) {

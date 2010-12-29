@@ -1,25 +1,34 @@
 package com.butent.bee.egg.client.ajaxloader;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Window.Location;
 
-public class AjaxKeyRepository {
-  private static AjaxKeyConstants keys = GWT.create(AjaxKeyConstants.class);
+import java.util.HashMap;
+import java.util.Map;
 
+public class AjaxKeyRepository {
+  private static Map<String, String> keys = new HashMap<String, String>();
+  
+  static {
+    keys.put("localhost:8080",
+        "ABQIAAAAG8LzhtshQCjpSshU_uJjmxTwM0brOpm-All5BF6PoaKBxRWWERTZER2lJ4GnsG8nvhKLOQ20degaEQ");
+    keys.put("127.0.0.1:8080",
+        "ABQIAAAAG8LzhtshQCjpSshU_uJjmxTBfUk9TZrBRaIteybtnU2KziHEpRQvhPNTjo7DMczjrRD3yBPRJ_BSQQ");
+  }
+  
   public static String getKey() {
-    return keys.ajaxKeys().get(Location.getHost());
+    return keys.get(Location.getHost());
   }
 
   public static String getKey(String location) {
-    return keys.ajaxKeys().get(location);
+    return keys.get(location);
+  }
+
+  public static Map<String, String> getKeys() {
+    return keys;
   }
 
   public static void putKey(String location, String ajaxApiKey) {
-    keys.ajaxKeys().put(location, ajaxApiKey);
-  }
-
-  public static void setKeys(AjaxKeyConstants keys) {
-    AjaxKeyRepository.keys = keys;
+    keys.put(location, ajaxApiKey);
   }
 
   private AjaxKeyRepository() {

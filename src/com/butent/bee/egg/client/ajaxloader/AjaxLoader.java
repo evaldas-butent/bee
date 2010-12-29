@@ -59,7 +59,7 @@ public class AjaxLoader {
   static Vector<Runnable> queuedApiLoads = new Vector<Runnable>();
 
   public static ClientLocation getClientLocation() {
-    if (!injectJsapi(null, null)) {
+    if (!loaded) {
       return null;
     }
     return nativeGetClientLocation();
@@ -89,12 +89,22 @@ public class AjaxLoader {
     }
     initialized = true;
   }
+  
+  public static void load(Runnable onLoad) {
+    Assert.notNull(onLoad);
+
+    if (loaded) {
+      onLoad.run();
+    } else {
+      queuedApiLoads.add(onLoad);
+      init();
+    }
+  }
 
   public static void loadApi(final String api, final String version,
       Runnable onLoad, AjaxLoaderOptions settings) {
-
-    init();
     Assert.notNull(onLoad);
+    init();
 
     if (settings == null) {
       settings = AjaxLoaderOptions.newInstance();
