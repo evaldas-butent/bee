@@ -68,9 +68,15 @@
         </xs:restriction>
       </xs:simpleType>
     </xs:attribute>
-    <xs:attribute name="roleMode" type="xs:boolean" />
-    <xs:attribute name="userMode" type="xs:boolean" />
-    <xs:attribute name="forced" type="xs:boolean" />
+    <xs:attribute name="mode">
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="ROLE" />
+          <xs:enumeration value="USER" />
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="unchecked" type="xs:boolean" />
   </xs:complexType>
 
   <xs:simpleType name="dataType">

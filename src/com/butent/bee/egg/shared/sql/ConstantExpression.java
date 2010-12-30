@@ -1,6 +1,5 @@
 package com.butent.bee.egg.shared.sql;
 
-import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
@@ -11,7 +10,6 @@ class ConstantExpression implements IsExpression {
   private final Object constant;
 
   public ConstantExpression(Object value) {
-    Assert.notNull(value);
     this.constant = value;
   }
 

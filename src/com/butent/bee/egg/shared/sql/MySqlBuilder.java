@@ -48,7 +48,7 @@ class MySqlBuilder extends SqlBuilder {
           .addField("c", "referenced_table_name", "RefTblName")
           .addFrom("information_schema.referential_constraints", "c")
           .addFromInner("information_schema.table_constraints", "t",
-              SqlUtils.joinMulti("c", "t", "constraint_name"))
+              SqlUtils.joinUsing("c", "t", "constraint_name"))
           .setWhere(foreignWh)
           .getQuery(this);
 

@@ -4,11 +4,14 @@ import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.sql.BeeConstants.DataTypes;
 import com.butent.bee.egg.shared.sql.BeeConstants.Keywords;
 import com.butent.bee.egg.shared.sql.HasFrom;
+import com.butent.bee.egg.shared.sql.IsCondition;
 import com.butent.bee.egg.shared.sql.IsFrom;
 import com.butent.bee.egg.shared.sql.IsQuery;
+import com.butent.bee.egg.shared.sql.SqlBuilder;
 import com.butent.bee.egg.shared.sql.SqlBuilderFactory;
 import com.butent.bee.egg.shared.sql.SqlCreate;
 import com.butent.bee.egg.shared.sql.SqlInsert;
+import com.butent.bee.egg.shared.sql.SqlSelect;
 import com.butent.bee.egg.shared.sql.SqlUpdate;
 import com.butent.bee.egg.shared.sql.SqlUtils;
 import com.butent.bee.egg.shared.utils.BeeUtils;
@@ -17,9 +20,11 @@ import com.butent.bee.egg.shared.utils.Codec;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 @SuppressWarnings("hiding")
 class BeeTable implements HasExtFields, HasStates {
@@ -68,7 +73,7 @@ class BeeTable implements HasExtFields, HasStates {
     }
 
     public String getTable() {
-      return isExtended() ? getExtName() : BeeTable.this.getName();
+      return isExtended() ? getExtTable(getName()) : BeeTable.this.getName();
     }
 
     public DataTypes getType() {
@@ -141,7 +146,7 @@ class BeeTable implements HasExtFields, HasStates {
     }
 
     public String getTable() {
-      return isExtended() ? getExtName() : BeeTable.this.getName();
+      return isExtended() ? getExtTable(getKeyField()) : BeeTable.this.getName();
     }
 
     public boolean isCustom() {
@@ -211,7 +216,7 @@ class BeeTable implements HasExtFields, HasStates {
     }
 
     public String getTable() {
-      return isExtended() ? getExtName() : BeeTable.this.getName();
+      return isExtended() ? getExtTable(getKeyFields()[0]) : BeeTable.this.getName();
     }
 
     public boolean isCustom() {
@@ -242,26 +247,32 @@ class BeeTable implements HasExtFields, HasStates {
   }
 
   public class BeeState {
+    private static final String USER_MODE = "USER";
+    private static final String ROLE_MODE = "ROLE";
+
     private boolean custom = false;
     private final String name;
     private final int id;
-    private final boolean userMode;
-    private final boolean roleMode;
-    private final boolean forced;
+    private final String mode;
+    private final boolean unchecked;
+    private Boolean active = null;
 
-    private BeeState(String name, int id, boolean userMode, boolean roleMode, boolean forced) {
+    private BeeState(String name, int id, String mode, boolean unchecked) {
       Assert.notEmpty(name);
       Assert.betweenInclusive(id, 1, 64);
 
       this.id = id;
       this.name = name;
-      this.userMode = userMode;
-      this.roleMode = roleMode;
-      this.forced = forced;
+      this.mode = mode;
+      this.unchecked = unchecked;
     }
 
     public int getId() {
       return id;
+    }
+
+    public String getMode() {
+      return mode;
     }
 
     public String getName() {
@@ -272,20 +283,32 @@ class BeeTable implements HasExtFields, HasStates {
       return BeeTable.this.getName();
     }
 
-    public boolean hasRoleMode() {
-      return roleMode;
-    }
-
-    public boolean hasUserMode() {
-      return userMode;
+    public boolean isActive() {
+      return !BeeUtils.isEmpty(active);
     }
 
     public boolean isCustom() {
       return custom;
     }
 
-    public boolean isForced() {
-      return forced;
+    public boolean isInitialized() {
+      return active != null;
+    }
+
+    public boolean isUnchecked() {
+      return unchecked;
+    }
+
+    public boolean supportsRoles() {
+      return BeeUtils.isEmpty(mode) || BeeUtils.same(mode, ROLE_MODE);
+    }
+
+    public boolean supportsUsers() {
+      return BeeUtils.isEmpty(mode) || BeeUtils.same(mode, USER_MODE);
+    }
+
+    void initialize(boolean active) {
+      this.active = active;
     }
 
     private void setCustom() {
@@ -295,8 +318,6 @@ class BeeTable implements HasExtFields, HasStates {
 
   private class ExtSingleTable implements HasExtFields {
 
-    private static final String EXT_TABLE_SUFFIX = "_EXT";
-
     private final String extIdName = getName() + getIdName();
     private final String extLockName = getName() + getLockName();
 
@@ -305,7 +326,7 @@ class BeeTable implements HasExtFields, HasStates {
       SqlCreate sc = null;
 
       if (BeeUtils.isEmpty(query)) {
-        sc = new SqlCreate(getExtName(), false)
+        sc = new SqlCreate(getExtTable(field.getName()), false)
             .addLong(extIdName, Keywords.NOT_NULL)
             .addLong(extLockName, Keywords.NOT_NULL);
 
@@ -321,8 +342,9 @@ class BeeTable implements HasExtFields, HasStates {
     }
 
     @Override
-    public String getExtName() {
-      return getName() + EXT_TABLE_SUFFIX;
+    public String getExtTable(String fldName) {
+      Assert.notEmpty(fldName);
+      return getName() + "_EXT";
     }
 
     @Override
@@ -330,7 +352,7 @@ class BeeTable implements HasExtFields, HasStates {
       SqlInsert si = null;
 
       if (BeeUtils.isEmpty(query)) {
-        si = new SqlInsert(getExtName())
+        si = new SqlInsert(getExtTable(field.getName()))
             .addConstant(extLockName, System.currentTimeMillis())
             .addConstant(extIdName, rootId);
       } else {
@@ -346,27 +368,31 @@ class BeeTable implements HasExtFields, HasStates {
       String extAlias = null;
 
       String tblName = getName();
-      String idField = getIdName();
       String alias = BeeUtils.ifString(tblAlias, tblName);
-      String extName = getExtName();
+      String extTable = getExtTable(field.getName());
 
       for (IsFrom from : query.getFrom()) {
         Object src = from.getSource();
 
-        if (src instanceof String && BeeUtils.same((String) src, extName)) {
-          if (from.getSqlString(SqlBuilderFactory.getBuilder(), false).contains(alias)) {
-            extAlias = BeeUtils.ifString(from.getAlias(), extName);
+        if (src instanceof String && BeeUtils.same((String) src, extTable)) {
+          SqlBuilder builder = SqlBuilderFactory.getBuilder();
+          String strFrom = from.getSqlString(builder, false);
+          String strAlias = SqlUtils.field(alias, getIdName()).getSqlString(builder, false);
+
+          if (strFrom.contains(strAlias)) {
+            extAlias = BeeUtils.ifString(from.getAlias(), extTable);
             break;
           }
         }
       }
       if (BeeUtils.isEmpty(extAlias)) {
         if (BeeUtils.same(alias, tblName)) {
-          extAlias = extName;
+          extAlias = extTable;
         } else {
           extAlias = SqlUtils.uniqueName();
         }
-        query.addFromLeft(extName, extAlias, SqlUtils.join(alias, idField, extAlias, extIdName));
+        query.addFromLeft(extTable, extAlias,
+            SqlUtils.join(alias, getIdName(), extAlias, extIdName));
       }
       return extAlias;
     }
@@ -376,9 +402,9 @@ class BeeTable implements HasExtFields, HasStates {
       SqlUpdate su = null;
 
       if (BeeUtils.isEmpty(query)) {
-        su = new SqlUpdate(getExtName())
+        su = new SqlUpdate(getExtTable(field.getName()))
             .addConstant(extLockName, System.currentTimeMillis())
-            .setWhere(SqlUtils.equal(getExtName(), extIdName, rootId));
+            .setWhere(SqlUtils.equal(getExtTable(field.getName()), extIdName, rootId));
       } else {
         su = (SqlUpdate) query;
       }
@@ -394,22 +420,101 @@ class BeeTable implements HasExtFields, HasStates {
 
   private class StateSingleTable implements HasStates {
 
-    private static final String STATE_TABLE_SUFFIX = "_STATE";
+    @Override
+    public void checkState(SqlSelect query, String tblAlias, BeeState state, int user, int... roles) {
+      String stateAlias = joinState(query, tblAlias, state);
+      IsCondition wh = state.isUnchecked() ? SqlUtils.sqlFalse() : null;
 
-    private BeeTable stateTable;
+      if (!BeeUtils.isEmpty(stateAlias)) {
+        long bitOn = 1;
+        int bitCount = 64;
 
-    private BeeTable createStateTable() {
-      if (BeeUtils.isEmpty(stateTable)) {
-        String tblName = getName();
+        if (state.supportsUsers()) {
+          int pos = (user - 1);
+          String colName = "State" + state.getId() + "User" + (int) Math.floor(pos / bitCount);
+          pos = pos % bitCount;
+          long userMask = bitOn << pos;
 
-        stateTable = new BeeTable(
-            tblName + STATE_TABLE_SUFFIX,
-            tblName + getIdName(),
-            tblName + getLockName());
-        stateTable.addField("StateMask", DataTypes.LONG, 0, 0, true, false, null, false);
-        stateTable.addForeignKey(stateTable.getIdName(), tblName, Keywords.CASCADE);
+          if (state.isUnchecked()) {
+            wh = SqlUtils.and(SqlUtils.isNotNull(stateAlias, colName),
+                SqlUtils.notEqual(SqlUtils.bitAnd(stateAlias, colName, userMask), 0));
+          } else {
+            wh = SqlUtils.or(SqlUtils.isNull(stateAlias, colName),
+                SqlUtils.equal(SqlUtils.bitAnd(stateAlias, colName, userMask), 0));
+          }
+        }
+        if (state.supportsRoles()) {
+          Map<String, Long> roleMasks = new HashMap<String, Long>();
+
+          for (int role : roles) {
+            int pos = (role - 1);
+            String colName = "State" + state.getId() + "Role" + (int) Math.floor(pos / bitCount);
+            pos = pos % bitCount;
+            long mask = 0;
+
+            if (roleMasks.containsKey(colName)) {
+              mask = roleMasks.get(colName);
+            }
+            roleMasks.put(colName, mask | (bitOn << pos));
+          }
+          for (Entry<String, Long> entry : roleMasks.entrySet()) {
+            if (state.isUnchecked()) {
+              wh = SqlUtils.or(wh,
+                  SqlUtils.and(SqlUtils.isNotNull(stateAlias, entry.getKey()),
+                      SqlUtils.notEqual(
+                          SqlUtils.bitAnd(stateAlias, entry.getKey(), entry.getValue()), 0)));
+            } else {
+              wh = SqlUtils.and(wh,
+                  SqlUtils.or(SqlUtils.isNull(stateAlias, entry.getKey()),
+                      SqlUtils.equal(
+                          SqlUtils.bitAnd(stateAlias, entry.getKey(), entry.getValue()), 0)));
+            }
+          }
+        }
       }
-      return stateTable;
+      query.setWhere(SqlUtils.and(query.getWhere(), wh));
+    }
+
+    @Override
+    public String getStateTable(String stateName) {
+      Assert.notEmpty(stateName);
+      return getName() + "_STATE";
+    }
+
+    @Override
+    public String joinState(HasFrom<?> query, String tblAlias, BeeState state) {
+      String stateAlias = null;
+
+      if (state.isActive()) {
+        String tblName = getName();
+        String alias = BeeUtils.ifString(tblAlias, tblName);
+        String stateTable = getStateTable(state.getName());
+
+        for (IsFrom from : query.getFrom()) {
+          Object src = from.getSource();
+
+          if (src instanceof String && BeeUtils.same((String) src, stateTable)) {
+            SqlBuilder builder = SqlBuilderFactory.getBuilder();
+            String strFrom = from.getSqlString(builder, false);
+            String strAlias = SqlUtils.field(alias, getIdName()).getSqlString(builder, false);
+
+            if (strFrom.contains(strAlias)) {
+              stateAlias = BeeUtils.ifString(from.getAlias(), stateTable);
+              break;
+            }
+          }
+        }
+        if (BeeUtils.isEmpty(stateAlias)) {
+          if (BeeUtils.same(alias, tblName)) {
+            stateAlias = stateTable;
+          } else {
+            stateAlias = SqlUtils.uniqueName();
+          }
+          query.addFromLeft(stateTable, stateAlias,
+              SqlUtils.joinUsing(alias, stateAlias, getIdName()));
+        }
+      }
+      return stateAlias;
     }
   }
 
@@ -431,7 +536,7 @@ class BeeTable implements HasExtFields, HasStates {
   private Map<String, BeeState> states = new LinkedHashMap<String, BeeState>();
 
   private final HasExtFields extSource;
-  private HasStates stateSource = new StateSingleTable();
+  private HasStates stateSource;
 
   private boolean active = false;
   private boolean custom = false;
@@ -444,9 +549,15 @@ class BeeTable implements HasExtFields, HasStates {
     this.lockName = BeeUtils.ifString(lockName, DEFAULT_LOCK_FIELD);
 
     this.extSource = new ExtSingleTable();
+    this.stateSource = new StateSingleTable();
 
     BeeKey key = new BeeKey(KeyTypes.PRIMARY, getIdName());
     keys.put(key.getName(), key);
+  }
+
+  @Override
+  public void checkState(SqlSelect query, String tblAlias, BeeState state, int user, int... roles) {
+    stateSource.checkState(query, tblAlias, state, user, roles);
   }
 
   @Override
@@ -455,8 +566,8 @@ class BeeTable implements HasExtFields, HasStates {
   }
 
   @Override
-  public String getExtName() {
-    return extSource.getExtName();
+  public String getExtTable(String fldName) {
+    return extSource.getExtTable(fldName);
   }
 
   public BeeField getField(String fldName) {
@@ -506,6 +617,11 @@ class BeeTable implements HasExtFields, HasStates {
     return Collections.unmodifiableCollection(states.values());
   }
 
+  @Override
+  public String getStateTable(String stateName) {
+    return stateSource.getStateTable(stateName);
+  }
+
   public boolean hasField(String fldName) {
     return !BeeUtils.isEmpty(getField(fldName));
   }
@@ -545,6 +661,11 @@ class BeeTable implements HasExtFields, HasStates {
   }
 
   @Override
+  public String joinState(HasFrom<?> query, String tblAlias, BeeState state) {
+    return stateSource.joinState(query, tblAlias, state);
+  }
+
+  @Override
   public IsQuery updateExtField(IsQuery query, long rootId, BeeField field, Object newValue) {
     return extSource.updateExtField(query, rootId, field, newValue);
   }
@@ -581,8 +702,8 @@ class BeeTable implements HasExtFields, HasStates {
     return key;
   }
 
-  BeeState addState(String name, int id, boolean userMode, boolean roleMode, boolean forced) {
-    BeeState state = new BeeState(name, id, userMode, roleMode, forced);
+  BeeState addState(String name, int id, String mode, boolean unchecked) {
+    BeeState state = new BeeState(name, id, mode, unchecked);
     String stateName = state.getName();
     int stateId = state.getId();
 
@@ -629,8 +750,7 @@ class BeeTable implements HasExtFields, HasStates {
       }
     }
     for (BeeState state : extension.getStates()) {
-      addState(state.getName(), state.getId(),
-          state.hasUserMode(), state.hasRoleMode(), state.isForced())
+      addState(state.getName(), state.getId(), state.getMode(), state.isUnchecked())
         .setCustom();
       cnt++;
     }

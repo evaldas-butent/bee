@@ -51,17 +51,11 @@ public class SqlSelect extends HasFrom<SqlSelect> {
   }
 
   public SqlSelect addCount(String alias) {
-    return addCount(null, alias);
+    return addCount(SqlUtils.expression("*"), alias);
   }
 
-  public SqlSelect addCount(String expr, String alias) {
-    String xpr;
-    if (BeeUtils.isEmpty(expr)) {
-      xpr = "*";
-    } else {
-      xpr = expr.trim();
-    }
-    addAggregate("COUNT", SqlUtils.expression(xpr), alias);
+  public SqlSelect addCount(IsExpression expr, String alias) {
+    addAggregate("COUNT", expr, alias);
     return getReference();
   }
 

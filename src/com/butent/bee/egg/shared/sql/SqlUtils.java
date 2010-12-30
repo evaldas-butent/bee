@@ -10,18 +10,27 @@ import java.util.List;
 public class SqlUtils {
 
   private static final String EQUAL = "=";
-  private static final String IN = " IN ";
   private static final String LESS = "<";
   private static final String LESS_EQUAL = "<=";
-  private static final String LIKE = " LIKE ";
   private static final String MORE = ">";
   private static final String MORE_EQUAL = ">=";
   private static final String NOT_EQUAL = "<>";
+  private static final String LIKE = " LIKE ";
+  private static final String IN = " IN ";
+  private static final String IS = " IS ";
 
   public static Conditions and(IsCondition... conditions) {
     Conditions cb = new AndConditions();
     cb.add(conditions);
     return cb;
+  }
+
+  public static IsExpression bitAnd(IsExpression expr, long value) {
+    return expression(new SqlCommand(Keywords.BITAND, expr, value));
+  }
+
+  public static IsExpression bitAnd(String source, String field, long value) {
+    return bitAnd(field(source, field), value);
   }
 
   public static IsExpression constant(Object constant) {
@@ -145,6 +154,22 @@ public class SqlUtils {
     return inList(field(source, field), values);
   }
 
+  public static IsCondition isNotNull(IsExpression expr) {
+    return new JoinCondition(expr, IS, expression("NOT NULL"));
+  }
+
+  public static IsCondition isNotNull(String src, String fld) {
+    return isNotNull(field(src, fld));
+  }
+
+  public static IsCondition isNull(IsExpression expr) {
+    return new JoinCondition(expr, IS, expression("NULL"));
+  }
+
+  public static IsCondition isNull(String src, String fld) {
+    return isNull(field(src, fld));
+  }
+
   public static IsCondition join(String src1, String fld1, String src2, String fld2) {
     return new JoinCondition(field(src1, fld1), EQUAL, field(src2, fld2));
   }
@@ -165,7 +190,11 @@ public class SqlUtils {
     return new JoinCondition(field(src1, fld1), MORE_EQUAL, field(src2, fld2));
   }
 
-  public static IsCondition joinMulti(String src1, String src2, String... flds) {
+  public static IsCondition joinNotEqual(String src1, String fld1, String src2, String fld2) {
+    return new JoinCondition(field(src1, fld1), NOT_EQUAL, field(src2, fld2));
+  }
+
+  public static IsCondition joinUsing(String src1, String src2, String... flds) {
     Assert.arrayLengthMin(flds, 1);
 
     IsCondition cond = null;
@@ -183,10 +212,6 @@ public class SqlUtils {
       cond = join(src1, fld, src2, fld);
     }
     return cond;
-  }
-
-  public static IsCondition joinNotEqual(String src1, String fld1, String src2, String fld2) {
-    return new JoinCondition(field(src1, fld1), NOT_EQUAL, field(src2, fld2));
   }
 
   public static IsCondition less(IsExpression expr, Object value) {
@@ -237,6 +262,10 @@ public class SqlUtils {
     Conditions cb = new OrConditions();
     cb.add(conditions);
     return cb;
+  }
+
+  public static IsExpression sqlCase(IsCondition cond, Object ifTrue, Object ifFalse) {
+    return expression(new SqlCommand(Keywords.CASE, cond, ifTrue, ifFalse));
   }
 
   public static IsCondition sqlFalse() {

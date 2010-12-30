@@ -105,7 +105,7 @@ public abstract class SqlBuilder {
           .addField("r", "table_name", "RefTblName")
           .addFrom("information_schema.referential_constraints", "c")
           .addFromInner("information_schema.table_constraints", "t",
-              SqlUtils.joinMulti("c", "t", "constraint_name"))
+              SqlUtils.joinUsing("c", "t", "constraint_name"))
           .addFromInner("information_schema.table_constraints", "r",
               SqlUtils.join("c", "unique_constraint_name", "r", "constraint_name"))
           .setWhere(foreignWh)
@@ -126,6 +126,9 @@ public abstract class SqlBuilder {
 
       case TEMPORARY_NAME:
         return (String) params[0];
+
+      case BITAND:
+        return "(" + params[0] + "&" + params[1] + ")";
 
       default:
         Assert.unsupported("Unsupported keyword: " + option);

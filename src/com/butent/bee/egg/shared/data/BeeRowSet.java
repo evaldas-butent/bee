@@ -197,6 +197,11 @@ public class BeeRowSet extends AbstractData implements BeeSerializable {
       return sb.toString();
     }
 
+    public void setData(String[] row) {
+      Assert.arrayLength(row, getColumnCount());
+      data = row;
+    }
+
     public void setValue(int col, String value) {
       Assert.betweenExclusive(col, 0, getColumnCount());
 
@@ -223,11 +228,6 @@ public class BeeRowSet extends AbstractData implements BeeSerializable {
 
     public void setValue(String colName, String value) {
       setValue(getColumnIndex(colName), value);
-    }
-
-    private void setData(String[] row) {
-      Assert.arrayLength(row, getColumnCount());
-      data = row;
     }
 
     private void setShadow(Map<Integer, String> shadow) {
@@ -397,7 +397,7 @@ public class BeeRowSet extends AbstractData implements BeeSerializable {
 
   public void rollback() {
     if (!isEmpty()) {
-      for (BeeRow row : getRows()) {
+      for (BeeRow row : new ArrayList<BeeRow>(getRows())) {
         if (row.markedForInsert()) {
           removeRow(row);
         } else {

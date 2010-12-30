@@ -9,7 +9,7 @@ public interface HasExtFields {
 
   SqlCreate createExtTable(SqlCreate query, BeeField field);
 
-  String getExtName();
+  String getExtTable(String fldName);
 
   IsQuery insertExtField(IsQuery query, long rootId, BeeField field, Object newValue);
 

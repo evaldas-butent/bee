@@ -9,7 +9,7 @@ import java.util.List;
 class SqlCommand extends SqlQuery<SqlCommand> {
 
   private final Keywords command;
-  private final Object[] parameters;
+  private final Object[] parameters; // TODO: parametrai kaip Map
 
   public SqlCommand(Keywords command, Object... parameters) {
     Assert.notEmpty(command);
