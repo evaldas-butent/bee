@@ -20,6 +20,10 @@ public class AxisOptions extends AbstractDrawOptions {
     this.baselineColor = baselineColor;
   }-*/;
 
+  public final native void setDirection(int direction) /*-{
+    this.direction = direction;
+  }-*/;
+
   public final native void setIsLogScale(boolean isLogScale) /*-{
     this.logScale = isLogScale;
   }-*/;

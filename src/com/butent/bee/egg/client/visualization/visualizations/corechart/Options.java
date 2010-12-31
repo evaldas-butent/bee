@@ -20,6 +20,10 @@ public class Options extends AbstractDrawOptions {
     this.backgroundColor = color;
   }-*/;
 
+  public final native void setChartArea(ChartArea area) /*-{
+    this.chartArea = area;
+  }-*/;
+
   public final native void setColors(JsArrayString colors) /*-{
     this.colors = colors;
   }-*/;

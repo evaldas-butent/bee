@@ -101,6 +101,10 @@ public class AjaxLoader {
     }
   }
 
+  public static void loadApi(String api, String version, Runnable onLoad) {
+    loadApi(api, version, onLoad, null);
+  }
+
   public static void loadApi(final String api, final String version,
       Runnable onLoad, AjaxLoaderOptions settings) {
     Assert.notNull(onLoad);

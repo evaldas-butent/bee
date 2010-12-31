@@ -15,7 +15,9 @@ import com.butent.bee.egg.client.visualization.events.SelectHandler;
 import com.butent.bee.egg.client.visualization.visualizations.Visualization;
 
 public abstract class CoreChart extends Visualization<Options> implements Selectable {
-  public enum Type { AREA, LINE, SCATTER, BARS, COLUMNS, PIE, NONE }
+  public enum Type {
+    AREA, LINE, SCATTER, BARS, COLUMNS, PIE, NONE
+  }
 
   public static final String PACKAGE = "corechart";
 
@@ -57,6 +59,6 @@ public abstract class CoreChart extends Visualization<Options> implements Select
 
   @Override
   protected native JavaScriptObject createJso(Element parent) /*-{
-   return new $wnd.google.visualization.CoreChart(parent);
+    return new $wnd.google.visualization.CoreChart(parent);
   }-*/;
 }

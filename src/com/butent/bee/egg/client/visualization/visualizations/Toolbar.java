@@ -63,7 +63,7 @@ public class Toolbar extends Widget {
     super();
     div = Document.get().createDivElement();
     setElement(div);
-    setStyleName("gwt-viz-container");
+    setStyleName("viz-toolbar");
     components = createComponents();
   }
 

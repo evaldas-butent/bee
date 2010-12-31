@@ -28,7 +28,7 @@ public abstract class Visualization<OptionsType extends AbstractDrawOptions> ext
     Element div = DOM.createDiv();
     jso = createJso(div);
     setElement(div);
-    setStyleName("gwt-viz-container");
+    setStyleName("viz-container");
   }
 
   public Visualization(AbstractDataTable data, OptionsType options) {

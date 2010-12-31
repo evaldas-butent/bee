@@ -170,7 +170,7 @@ body, select {
 
 .bee-Tree, .bee-CellTree {
   overflow: auto;
-}  
+}
 
 .bee-ScrollTable {
   border-color: #aaa;
@@ -209,13 +209,13 @@ body, select {
 }
 	
 .bee-ScrollTable .dataTable tr:hover {
-  background: #C3D9FF;
+  background: #c3d9ff;
 }
 .bee-ScrollTable .dataTable td:hover {
-  background: #FFFFAA;
+  background: #ffffaa;
 }
 .bee-ScrollTable .dataTable tr.selected td {
-  background: #7AA5D6;
+  background: #7aa5d6;
 }
 
 .bee-InputInteger {
@@ -315,6 +315,10 @@ body, select {
   background-color: #000;
   opacity: 0.3;
   filter: alpha(opacity=30);
+}
+
+.gwt-TreeItem-selected {
+  background-color: #ffffaa;
 }
 
 .gwt-SplitLayoutPanel-HDragger {

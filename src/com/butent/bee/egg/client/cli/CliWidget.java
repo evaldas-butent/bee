@@ -6,6 +6,7 @@ import com.google.gwt.event.dom.client.KeyPressEvent;
 import com.butent.bee.egg.client.Global;
 import com.butent.bee.egg.client.BeeKeeper;
 import com.butent.bee.egg.client.dom.DomUtils;
+import com.butent.bee.egg.client.visualization.showcase.Showcase;
 import com.butent.bee.egg.client.widget.BeeTextBox;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeConst;
@@ -125,6 +126,8 @@ public class CliWidget extends BeeTextBox {
       CliWorker.showVars(arr);
     } else if (z.equals("video")) {
       CliWorker.playVideo(arr);
+    } else if (z.startsWith("viz")) {
+      Showcase.open();
     } else if (z.equals("vm")) {
       BeeKeeper.getRpc().invoke("vmInfo");
 

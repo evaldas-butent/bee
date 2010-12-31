@@ -34,5 +34,4 @@ public class BeeTree extends Tree implements HasId {
     createId();
     setStyleName("bee-Tree");
   }
-
 }

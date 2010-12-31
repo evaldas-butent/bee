@@ -7,14 +7,12 @@ import com.butent.bee.egg.client.dom.DomUtils;
 import com.butent.bee.egg.shared.HasId;
 
 public class BeeCellTree extends CellTree implements HasId {
-
   public <T> BeeCellTree(TreeViewModel viewModel, T rootValue) {
     super(viewModel, rootValue);
     init();
   }
 
-  public <T> BeeCellTree(TreeViewModel viewModel, T rootValue,
-      Resources resources) {
+  public <T> BeeCellTree(TreeViewModel viewModel, T rootValue, Resources resources) {
     super(viewModel, rootValue, resources);
     init();
   }
@@ -35,5 +33,4 @@ public class BeeCellTree extends CellTree implements HasId {
     createId();
     setStyleName("bee-CellTree");
   }
-
 }

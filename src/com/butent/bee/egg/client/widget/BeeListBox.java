@@ -71,6 +71,19 @@ public class BeeListBox extends ListBox implements HasId, HasBeeChangeHandler {
   public String getId() {
     return DomUtils.getId(this);
   }
+  
+  public int getIndex(String text) {
+    Assert.notNull(text);
+    int index = -1;
+    
+    for (int i = 0; i < getItemCount(); i++) {
+      if (BeeUtils.same(getValue(i), text)) {
+        index = i;
+        break;
+      }
+    }
+    return index;
+  }
 
   public HasStringValue getSource() {
     return source;
@@ -100,18 +113,6 @@ public class BeeListBox extends ListBox implements HasId, HasBeeChangeHandler {
 
   private void addDefaultHandlers() {
     BeeKeeper.getBus().addVch(this);
-  }
-
-  private int getIndex(String v) {
-    int idx = -1;
-
-    for (int i = 0; i < getItemCount(); i++) {
-      if (getValue(i).equals(v)) {
-        idx = i;
-        break;
-      }
-    }
-    return idx;
   }
 
   private void init() {

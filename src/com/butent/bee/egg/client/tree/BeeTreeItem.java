@@ -9,7 +9,6 @@ import com.butent.bee.egg.shared.HasId;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
 public class BeeTreeItem extends TreeItem implements HasId {
-
   public BeeTreeItem() {
     super();
   }
@@ -43,5 +42,4 @@ public class BeeTreeItem extends TreeItem implements HasId {
   public void setId(String id) {
     DomUtils.setId(this, id);
   }
-
 }
