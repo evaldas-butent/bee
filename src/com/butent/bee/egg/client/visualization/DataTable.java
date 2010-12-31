@@ -5,6 +5,7 @@ import com.google.gwt.core.client.JsArrayInteger;
 
 import com.butent.bee.egg.client.ajaxloader.ArrayHelper;
 import com.butent.bee.egg.client.ajaxloader.Properties;
+import com.butent.bee.egg.shared.BeeDate;
 
 import java.util.Date;
 
@@ -126,6 +127,18 @@ public class DataTable extends AbstractDataTable {
   public final native void setColumnLabel(int columnIndex, String label) /*-{
     this.setColumnLabel(columnIndex, label);
   }-*/;
+
+  public final void setDate(int rowIndex, int columnIndex, BeeDate date) {
+    if (date == null) {
+      setValueNull(rowIndex, columnIndex);
+    } else {
+      setValueDate(rowIndex, columnIndex, date.getTime());
+    }
+  }
+
+  public final void setDate(int rowIndex, int columnIndex, double time) {
+    setValueDate(rowIndex, columnIndex, time);
+  }
 
   public final native void setFormattedValue(int rowIndex, int columnIndex, String value) /*-{
     this.setFormattedValue(rowIndex, columnIndex, value);

@@ -5,12 +5,15 @@ import com.google.gwt.core.client.JsArray;
 import com.google.gwt.dom.client.ButtonElement;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.HeadElement;
 import com.google.gwt.dom.client.InputElement;
 import com.google.gwt.dom.client.LIElement;
 import com.google.gwt.dom.client.LabelElement;
+import com.google.gwt.dom.client.LinkElement;
 import com.google.gwt.dom.client.Node;
 import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.dom.client.OptionElement;
+import com.google.gwt.dom.client.ScriptElement;
 import com.google.gwt.dom.client.SpanElement;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.dom.client.Style.Overflow;
@@ -42,8 +45,7 @@ import java.util.Iterator;
 import java.util.List;
 
 public class DomUtils {
-  static final class ElementAttribute extends JavaScriptObject implements
-      Transformable {
+  static final class ElementAttribute extends JavaScriptObject implements Transformable {
     protected ElementAttribute() {
     }
 
@@ -71,6 +73,7 @@ public class DomUtils {
   public static final String TAG_AUDIO = "audio";
   public static final String TAG_CANVAS = "canvas";
   public static final String TAG_DIV = "div";
+  public static final String TAG_HEAD = "head";
   public static final String TAG_INPUT = "input";
   public static final String TAG_LABEL = "label";
   public static final String TAG_METER = "meter";
@@ -571,6 +574,14 @@ public class DomUtils {
     return $doc.getElementsByName(name);
   }-*/;
 
+  public static HeadElement getHead() {
+    NodeList<Element> nodes = Document.get().getElementsByTagName(TAG_HEAD);
+    if (nodes != null && nodes.getLength() > 0) {
+      return HeadElement.as(nodes.getItem(0));
+    }
+    return null;
+  }
+
   public static String getId(UIObject obj) {
     Assert.notNull(obj);
     return obj.getElement().getId();
@@ -948,6 +959,27 @@ public class DomUtils {
 
     return lst;
   }
+  
+  public static void injectExternalScript(String src) {
+    Assert.notEmpty(src);
+    Document doc = Document.get();
+    ScriptElement script = doc.createScriptElement();
+    script.setType("text/javascript");
+    script.setSrc(src);
+    doc.getBody().appendChild(script);
+  }
+
+  public static void injectExternalStyle(String css) {
+    Assert.notEmpty(css);
+    HeadElement head = getHead();
+    Assert.notNull(head, "<head> element not found");
+
+    LinkElement link = Document.get().createLinkElement();
+    link.setType("text/css");
+    link.setRel("stylesheet");
+    link.setHref(css);
+    head.appendChild(link);
+  }
 
   public static boolean isChecked(String id) {
     Assert.notEmpty(id);
@@ -976,7 +1008,7 @@ public class DomUtils {
       return getDirection(s) != null;
     }
   }
-
+  
   public static boolean isInputElement(Element el) {
     if (el == null) {
       return false;

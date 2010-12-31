@@ -1,6 +1,7 @@
 package com.butent.bee.egg.client.visualization.showcase;
 
 import com.butent.bee.egg.client.BeeKeeper;
+import com.butent.bee.egg.client.dom.DomUtils;
 import com.butent.bee.egg.client.visualization.DataTable;
 import com.butent.bee.egg.client.visualization.VisualizationUtils;
 import com.butent.bee.egg.client.visualization.AbstractDataTable.ColumnType;
@@ -22,16 +23,21 @@ import com.butent.bee.egg.client.visualization.visualizations.corechart.CoreChar
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
 public class Showcase {
+  private static boolean pomInjected = false;
+  private static boolean pomLoaded = false;
+  
   public static void open() {
     BeeKeeper.getLog().info("loading api");
     final long start = System.currentTimeMillis();
+    
+    injectPom();
     
     VisualizationUtils.loadVisualizationApi(new Runnable() {
       public void run() {
         BeeKeeper.getLog().info(BeeUtils.elapsedSeconds(start), "api loaded");
         LeftTabPanel panel = new LeftTabPanel();
 
-///        panel.add(new AnnotatedDemo(), "AnnotatedTimeLine");
+        panel.add(new AnnotatedDemo(), "AnnotatedTimeLine");
         panel.add(new AreaDemo(), "AreaChart");
         panel.add(new ImageAreaDemo(), "AreaChart (Image)");
         panel.add(new BarDemo(), "BarChart");
@@ -43,16 +49,17 @@ public class Showcase {
         panel.add(new LineDemo(), "LineChart");
         panel.add(new ImageLineDemo(), "LineChart (Image)");
         panel.add(new MapDemo(), "Map");
-///        panel.add(new MoneyDemo(), "MoneyChart");
-///        panel.add(new MotionDemo(), "MotionChart");
+        if (isPomLoaded()) {
+          panel.add(new MoneyDemo(), "MoneyChart");
+        }
+        panel.add(new MotionDemo(), "MotionChart");
         panel.add(new OrgDemo(), "OrgChart");
         panel.add(new PieDemo(), "PieChart");
         panel.add(new ImagePieDemo(), "PieChart (Image)");
-///        panel.add(new ImageDemo(), "RadarChart (Image)");
+        panel.add(new ImageDemo(), "RadarChart (Image)");
         panel.add(new ScatterDemo(), "ScatterChart");
         panel.add(new SparklineDemo(), "Sparkline (Image)");
         panel.add(new TableDemo(), "Table");
-///        panel.add(new ToolbarDemo(), "Toolbar");
         
         panel.init("AreaChart");
         BeeKeeper.getUi().updateActivePanel(panel);
@@ -104,5 +111,27 @@ public class Showcase {
       data.setValue(i, 1, BeeUtils.randomInt(min, max));
     }
     return data;
+  }
+  
+  private static native boolean checkPom() /*-{
+    if ($wnd['PilesOfMoney']) {
+      return true;
+    }
+    return false;
+  }-*/;
+  
+  private static void injectPom() {
+    if (!pomInjected) {
+      DomUtils.injectExternalScript("http://visapi-gadgets.googlecode.com/svn/trunk/pilesofmoney/pom.js");
+      DomUtils.injectExternalStyle("http://visapi-gadgets.googlecode.com/svn/trunk/pilesofmoney/pom.css");
+      pomInjected = true;
+    }
+  }
+
+  private static boolean isPomLoaded() {
+    if (!pomLoaded) {
+      pomLoaded = checkPom();
+    }
+    return pomLoaded;
   }
 }

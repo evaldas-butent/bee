@@ -17,6 +17,7 @@ public class ImageDemo implements LeftTabPanel.WidgetProvider {
     options.set("chg", "25.0,25.0,4.0,4.0");
     options.set("chm", "B,FF000080,0,1.0,5.0|B,FF990080,1,1.0,5.0");
     options.set("chls", "2,1,0|2,5,5");
+    options.setSize(300, 300);
 
     DataTable dataTable = DataTable.create();
     dataTable.addColumn(ColumnType.STRING);
