@@ -2,8 +2,9 @@ package com.butent.bee.egg.client.utils;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArrayString;
+import com.google.gwt.json.client.JSONObject;
 
-public abstract class BeeJs {
+public abstract class JsUtils {
   public static native void clearProperty(JavaScriptObject obj, String p) /*-{
     if (typeof(obj) != "object") {
       return;
@@ -242,6 +243,13 @@ public abstract class BeeJs {
   public static native int toInt(double from) /*-{
     return from;
   }-*/;
+  
+  public static String toJson(JavaScriptObject obj) {
+    if (obj == null) {
+      return null;
+    }
+    return new JSONObject(obj).toString();
+  }
 
   public static native String toSeconds(int millis) /*-{
     if (millis >= 0) {
@@ -252,8 +260,7 @@ public abstract class BeeJs {
     return "";
   }-*/;
 
-  public static native String toTime(double millis)
-  /*-{
+  public static native String toTime(double millis) /*-{
     if (millis > 0) {
     var d = new Date(millis);
     return d.toLocaleTimeString() + (d.getMilliseconds() / 1000).toString().substr(1);

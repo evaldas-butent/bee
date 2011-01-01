@@ -15,7 +15,7 @@ import java.lang.reflect.TypeVariable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class BeeClass {
+public class ClassUtils {
   public static Annotation[] getAnnotations(Class<?> cls) {
     Assert.notNull(cls);
     return cls.getAnnotations();

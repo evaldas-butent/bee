@@ -2,8 +2,8 @@ package com.butent.bee.egg.server;
 
 import com.butent.bee.egg.server.communication.ResponseBuffer;
 import com.butent.bee.egg.server.http.RequestInfo;
-import com.butent.bee.egg.server.utils.BeeJvm;
-import com.butent.bee.egg.server.utils.BeeMX;
+import com.butent.bee.egg.server.utils.JvmUtils;
+import com.butent.bee.egg.server.utils.MxUtils;
 import com.butent.bee.egg.server.utils.BeeSystem;
 import com.butent.bee.egg.server.utils.Checksum;
 import com.butent.bee.egg.server.utils.XmlUtils;
@@ -26,10 +26,10 @@ public class Invocation {
   }
 
   public void loaderInfo(ResponseBuffer buff) {
-    if (BeeJvm.CVF_FAILURE == null) {
-      buff.addProperties(BeeJvm.getLoadedClasses());
+    if (JvmUtils.CVF_FAILURE == null) {
+      buff.addProperties(JvmUtils.getLoadedClasses());
     } else {
-      buff.add(BeeJvm.CVF_FAILURE);
+      buff.add(JvmUtils.CVF_FAILURE);
     }
   }
 
@@ -89,19 +89,19 @@ public class Invocation {
   public void vmInfo(ResponseBuffer buff) {
     List<ExtendedProperty> lst = new ArrayList<ExtendedProperty>();
 
-    PropertyUtils.appendChildrenToExtended(lst, "Class Loading", BeeMX.getClassLoadingInfo());
-    PropertyUtils.appendChildrenToExtended(lst, "Compilation", BeeMX.getCompilationInfo());
+    PropertyUtils.appendChildrenToExtended(lst, "Class Loading", MxUtils.getClassLoadingInfo());
+    PropertyUtils.appendChildrenToExtended(lst, "Compilation", MxUtils.getCompilationInfo());
 
-    lst.addAll(BeeMX.getGarbageCollectorInfo());
+    lst.addAll(MxUtils.getGarbageCollectorInfo());
 
-    lst.addAll(BeeMX.getMemoryInfo());
-    lst.addAll(BeeMX.getMemoryManagerInfo());
-    lst.addAll(BeeMX.getMemoryPoolInfo());
+    lst.addAll(MxUtils.getMemoryInfo());
+    lst.addAll(MxUtils.getMemoryManagerInfo());
+    lst.addAll(MxUtils.getMemoryPoolInfo());
 
-    PropertyUtils.appendChildrenToExtended(lst, "Operating System", BeeMX.getOperatingSystemInfo());
-    lst.addAll(BeeMX.getRuntimeInfo());
+    PropertyUtils.appendChildrenToExtended(lst, "Operating System", MxUtils.getOperatingSystemInfo());
+    lst.addAll(MxUtils.getRuntimeInfo());
 
-    lst.addAll(BeeMX.getThreadsInfo());
+    lst.addAll(MxUtils.getThreadsInfo());
 
     buff.addExtendedProperties(lst);
   }

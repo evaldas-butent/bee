@@ -32,7 +32,7 @@ import com.butent.bee.egg.client.layout.Flow;
 import com.butent.bee.egg.client.layout.Split;
 import com.butent.bee.egg.client.layout.TilePanel;
 import com.butent.bee.egg.client.tree.BeeTree;
-import com.butent.bee.egg.client.utils.BeeJs;
+import com.butent.bee.egg.client.utils.JsUtils;
 import com.butent.bee.egg.client.utils.Browser;
 import com.butent.bee.egg.client.utils.JreEmulation;
 import com.butent.bee.egg.client.widget.Audio;
@@ -95,8 +95,8 @@ public class CliWorker {
       BeeKeeper.getLog().info(Codec.escapeUnicode(src));
     }
 
-    BeeKeeper.getLog().info("js", BeeJs.md5(src));
-    BeeKeeper.getLog().info("js fast", BeeJs.md5fast(src));
+    BeeKeeper.getLog().info("js", JsUtils.md5(src));
+    BeeKeeper.getLog().info("js fast", JsUtils.md5fast(src));
     BeeKeeper.getLog().info(BeeConst.CLIENT, Codec.md5(src));
 
     BeeKeeper.getRpc().makePostRequest(BeeService.SERVICE_GET_DIGEST, ContentType.BINARY, src);
@@ -202,7 +202,7 @@ public class CliWorker {
     if (BeeUtils.isEmpty(xpr)) {
       Global.sayHuh(v);
     } else {
-      Global.showDialog(xpr, BeeJs.evalToString(xpr));
+      Global.showDialog(xpr, JsUtils.evalToString(xpr));
     }
   }
 
@@ -436,9 +436,9 @@ public class CliWorker {
     }
 
     String patt = BeeUtils.arrayGetQuietly(arr, 2);
-    JsArrayString prp = BeeJs.getProperties(obj, patt);
+    JsArrayString prp = JsUtils.getProperties(obj, patt);
 
-    if (BeeJs.isEmpty(prp)) {
+    if (JsUtils.isEmpty(prp)) {
       Global.showError(v, "properties not found");
       return;
     }
@@ -459,16 +459,16 @@ public class CliWorker {
       return;
     }
 
-    JavaScriptObject obj = BeeJs.eval(arr[1]);
+    JavaScriptObject obj = JsUtils.eval(arr[1]);
     if (obj == null) {
       Global.showError(arr[1], "not a js object");
       return;
     }
 
     String patt = BeeUtils.arrayGetQuietly(arr, 2);
-    JsArrayString fnc = BeeJs.getFunctions(obj, patt);
+    JsArrayString fnc = JsUtils.getFunctions(obj, patt);
 
-    if (BeeJs.isEmpty(fnc)) {
+    if (JsUtils.isEmpty(fnc)) {
       Global.showError(v, "functions not found");
       return;
     }
@@ -713,16 +713,16 @@ public class CliWorker {
       return;
     }
 
-    JavaScriptObject obj = BeeJs.eval(arr[1]);
+    JavaScriptObject obj = JsUtils.eval(arr[1]);
     if (obj == null) {
       Global.showError(arr[1], "not a js object");
       return;
     }
 
     String patt = BeeUtils.arrayGetQuietly(arr, 2);
-    JsArrayString prp = BeeJs.getProperties(obj, patt);
+    JsArrayString prp = JsUtils.getProperties(obj, patt);
 
-    if (BeeJs.isEmpty(prp)) {
+    if (JsUtils.isEmpty(prp)) {
       Global.showError(v, "properties not found");
       return;
     }
@@ -911,18 +911,18 @@ public class CliWorker {
 
       for (int i = 0; i < stCnt; i++) {
         String ref = "$doc.getElementsByTagName('style').item(" + i + ").sheet.rules";
-        int len = BeeJs.evalToInt(ref + ".length");
+        int len = JsUtils.evalToInt(ref + ".length");
         PropertyUtils.addExtended(lst, "Style " + BeeUtils.progress(i + 1, stCnt),
             "rules", len);
 
         for (int j = 0; j < len; j++) {
-          JavaScriptObject obj = BeeJs.eval(ref + "[" + j + "]");
+          JavaScriptObject obj = JsUtils.eval(ref + "[" + j + "]");
           if (obj == null) {
             PropertyUtils.addExtended(lst, "Rule", BeeUtils.progress(j + 1, len), "not available");
             break;
           }
 
-          JsArrayString prp = BeeJs.getProperties(obj, null);
+          JsArrayString prp = JsUtils.getProperties(obj, null);
           for (int k = 0; k < prp.length() - 2; k += 3) {
             PropertyUtils.addExtended(lst,
                 BeeUtils.concat(1, "Rule", BeeUtils.progress(j + 1, len),

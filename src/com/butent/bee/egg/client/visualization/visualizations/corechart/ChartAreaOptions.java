@@ -4,12 +4,12 @@ import com.google.gwt.core.client.JavaScriptObject;
 
 import com.butent.bee.egg.client.visualization.AbstractDrawOptions;
 
-public class ChartArea extends AbstractDrawOptions {
-  public static ChartArea create() {
+public class ChartAreaOptions extends AbstractDrawOptions {
+  public static ChartAreaOptions create() {
     return JavaScriptObject.createObject().cast();
   }
 
-  protected ChartArea() {
+  protected ChartAreaOptions() {
   }
 
   public final native void setHeight(int height) /*-{

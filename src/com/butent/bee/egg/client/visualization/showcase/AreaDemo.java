@@ -6,7 +6,7 @@ import com.butent.bee.egg.client.layout.Vertical;
 import com.butent.bee.egg.client.visualization.DataTable;
 import com.butent.bee.egg.client.visualization.visualizations.corechart.AreaChart;
 import com.butent.bee.egg.client.visualization.visualizations.corechart.AxisOptions;
-import com.butent.bee.egg.client.visualization.visualizations.corechart.ChartArea;
+import com.butent.bee.egg.client.visualization.visualizations.corechart.ChartAreaOptions;
 import com.butent.bee.egg.client.visualization.visualizations.corechart.Options;
 import com.butent.bee.egg.client.widget.BeeLabel;
 
@@ -17,10 +17,10 @@ public class AreaDemo implements LeftTabPanel.WidgetProvider {
     options.setTitle("Įmonės veikla");
     options.setWidth(400);
     
-    ChartArea area = ChartArea.create();
-    area.setLeft(50);
-    area.setWidthPct(60);
-    options.setChartArea(area);
+    ChartAreaOptions areaOptions = ChartAreaOptions.create();
+    areaOptions.setLeft(50);
+    areaOptions.setWidthPct(60);
+    options.setChartAreaOptions(areaOptions);
     
     AxisOptions vAxisOptions = AxisOptions.create();
     vAxisOptions.setMinValue(0);

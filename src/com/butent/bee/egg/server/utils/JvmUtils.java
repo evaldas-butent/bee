@@ -19,8 +19,8 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-public class BeeJvm {
-  private static Logger logger = Logger.getLogger(BeeJvm.class.getName());
+public class JvmUtils {
+  private static Logger logger = Logger.getLogger(JvmUtils.class.getName());
 
   public static Throwable CVF_FAILURE = null;
   private static final Field CLASSES_VECTOR_FIELD;

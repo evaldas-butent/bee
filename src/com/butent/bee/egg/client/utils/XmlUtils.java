@@ -10,7 +10,7 @@ import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
-public class BeeXml {
+public class XmlUtils {
   public static String createSimple(String rootName, Object... nodes) {
     Assert.notEmpty(rootName);
     Assert.parameterCount(nodes.length + 1, 3);

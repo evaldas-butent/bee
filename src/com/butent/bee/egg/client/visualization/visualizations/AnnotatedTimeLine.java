@@ -320,8 +320,7 @@ public class AnnotatedTimeLine extends Visualization<AnnotatedTimeLine.Options> 
     return [dates['start'], dates['end']];
   }-*/;
 
-  private native void hideDataColumns(JavaScriptObject jso,
-      JsArrayInteger columnIndexes) /*-{
+  private native void hideDataColumns(JavaScriptObject jso, JsArrayInteger columnIndexes) /*-{
     jso.hideDataColumns(columnIndexes);
   }-*/;
 
@@ -331,8 +330,7 @@ public class AnnotatedTimeLine extends Visualization<AnnotatedTimeLine.Options> 
         new $wnd.Date(endTime));
   }-*/;
 
-  private native void showDataColumns(JavaScriptObject jso,
-      JsArrayInteger columnIndexes) /*-{
+  private native void showDataColumns(JavaScriptObject jso, JsArrayInteger columnIndexes) /*-{
     jso.showDataColumns(columnIndexes);
   }-*/;
 }

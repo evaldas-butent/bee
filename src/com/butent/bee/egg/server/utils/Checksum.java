@@ -45,5 +45,4 @@ public class Checksum {
     
     return Integer.toHexString((int) value);
   }
-  
 }

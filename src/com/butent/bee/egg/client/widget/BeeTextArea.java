@@ -9,7 +9,7 @@ import com.butent.bee.egg.client.dom.DomUtils;
 import com.butent.bee.egg.client.event.HasAfterSaveHandler;
 import com.butent.bee.egg.client.event.HasBeeKeyHandler;
 import com.butent.bee.egg.client.event.HasBeeValueChangeHandler;
-import com.butent.bee.egg.client.utils.BeeJs;
+import com.butent.bee.egg.client.utils.JsUtils;
 import com.butent.bee.egg.shared.BeeResource;
 import com.butent.bee.egg.shared.HasId;
 import com.butent.bee.egg.shared.HasStringValue;
@@ -80,7 +80,7 @@ public class BeeTextArea extends TextArea implements HasId, HasBeeKeyHandler,
     } else if (BeeUtils.isEmpty(d)) {
       return true;
     } else {
-      return !d.equals(BeeJs.md5(v));
+      return !d.equals(JsUtils.md5(v));
     }
   }
  
@@ -134,7 +134,7 @@ public class BeeTextArea extends TextArea implements HasId, HasBeeKeyHandler,
     if (BeeUtils.isEmpty(value)) {
       setDigest(null);
     } else {
-      setDigest(BeeJs.md5(value));
+      setDigest(JsUtils.md5(value));
     }
 
     return getDigest();

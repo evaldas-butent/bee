@@ -10,7 +10,7 @@ import com.butent.bee.egg.client.communication.ParameterList;
 import com.butent.bee.egg.client.dom.DomUtils;
 import com.butent.bee.egg.client.layout.BeeLayoutPanel;
 import com.butent.bee.egg.client.utils.BeeCommand;
-import com.butent.bee.egg.client.utils.BeeJs;
+import com.butent.bee.egg.client.utils.JsUtils;
 import com.butent.bee.egg.client.widget.BeeButton;
 import com.butent.bee.egg.client.widget.BeeLabel;
 import com.butent.bee.egg.client.widget.BeeTextArea;
@@ -48,7 +48,7 @@ public class TextEditor extends Composite implements HasId {
         return;
       }
       
-      String digest = BeeJs.md5(v);
+      String digest = JsUtils.md5(v);
 
       ParameterList params = new ParameterList(BeeService.SERVICE_SAVE_RESOURCE);
       params.addHeaderItem(BeeService.RPC_VAR_URI, path);

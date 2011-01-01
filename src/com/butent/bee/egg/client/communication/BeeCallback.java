@@ -12,7 +12,7 @@ import com.butent.bee.egg.client.BeeKeeper;
 import com.butent.bee.egg.client.data.ResponseData;
 import com.butent.bee.egg.client.ui.CompositeService;
 import com.butent.bee.egg.client.utils.BeeDuration;
-import com.butent.bee.egg.client.utils.BeeJs;
+import com.butent.bee.egg.client.utils.JsUtils;
 import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.BeeDate;
 import com.butent.bee.egg.shared.BeeResource;
@@ -272,7 +272,7 @@ public class BeeCallback implements RequestCallback {
   }
 
   private JsArrayString splitResponse(String txt, String sep, int cnt) {
-    JsArrayString arr = BeeJs.split(txt, sep);
+    JsArrayString arr = JsUtils.split(txt, sep);
     if (cnt > 0 && arr.length() > cnt) {
       arr.setLength(cnt);
     }

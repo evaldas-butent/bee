@@ -13,7 +13,7 @@ public class BeeDuration {
   private String message = null;
 
   public BeeDuration() {
-    start = BeeJs.currentTimeMillis();
+    start = JsUtils.currentTimeMillis();
   }
 
   public BeeDuration(int timeout) {
@@ -37,7 +37,7 @@ public class BeeDuration {
 
   public String getCompletedTime() {
     if (completed > 0) {
-      return BeeJs.toSeconds(completed);
+      return JsUtils.toSeconds(completed);
     } else {
       return BeeConst.STRING_ZERO;
     }
@@ -49,7 +49,7 @@ public class BeeDuration {
 
   public String getEndTime() {
     if (isFinished()) {
-      return BeeJs.toTime(getEnd());
+      return JsUtils.toTime(getEnd());
     } else {
       return BeeConst.STRING_EMPTY;
     }
@@ -57,7 +57,7 @@ public class BeeDuration {
 
   public String getExpireTime() {
     if (isPending() && timeout > 0) {
-      return BeeJs.toTime(getStart() + timeout);
+      return JsUtils.toTime(getStart() + timeout);
     } else {
       return BeeConst.STRING_EMPTY;
     }
@@ -72,7 +72,7 @@ public class BeeDuration {
   }
 
   public String getStartTime() {
-    return BeeJs.toTime(getStart());
+    return JsUtils.toTime(getStart());
   }
 
   public int getTimeout() {
@@ -81,7 +81,7 @@ public class BeeDuration {
 
   public String getTimeoutAsTime() {
     if (isPending() && timeout > 0) {
-      return BeeJs.toSeconds(timeout);
+      return JsUtils.toSeconds(timeout);
     } else {
       return BeeConst.STRING_EMPTY;
     }
@@ -102,7 +102,7 @@ public class BeeDuration {
 
     setMessage(msg);
 
-    start = BeeJs.currentTimeMillis();
+    start = JsUtils.currentTimeMillis();
   }
 
   public void setCompleted(int completed) {
@@ -110,8 +110,8 @@ public class BeeDuration {
   }
 
   public void setEndMillis() {
-    end = BeeJs.currentTimeMillis();
-    completed = BeeJs.toInt(end - getStart());
+    end = JsUtils.currentTimeMillis();
+    completed = JsUtils.toInt(end - getStart());
   }
 
   public void setMessage(String message) {

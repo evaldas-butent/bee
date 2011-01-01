@@ -25,7 +25,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-public class BeeMX {
+public class MxUtils {
   public static List<Property> getClassLoadingInfo() {
     List<Property> lst = new ArrayList<Property>();
 

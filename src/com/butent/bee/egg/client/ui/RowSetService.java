@@ -12,7 +12,7 @@ import com.butent.bee.egg.client.communication.ResponseCallback;
 import com.butent.bee.egg.client.layout.Vertical;
 import com.butent.bee.egg.client.tree.BeeTree;
 import com.butent.bee.egg.client.tree.BeeTreeItem;
-import com.butent.bee.egg.client.utils.BeeXml;
+import com.butent.bee.egg.client.utils.XmlUtils;
 import com.butent.bee.egg.client.widget.BeeButton;
 import com.butent.bee.egg.client.widget.BeeLabel;
 import com.butent.bee.egg.shared.Assert;
@@ -99,7 +99,7 @@ class RowSetService extends CompositeService {
 
           Global.closeDialog(event);
           BeeKeeper.getRpc().makePostRequest(adoptService("rpc_ui_table"),
-              BeeXml.createString(BeeService.XML_TAG_DATA, fld, fName));
+              XmlUtils.createString(BeeService.XML_TAG_DATA, fld, fName));
         }
         break;
 

@@ -2,8 +2,8 @@ package com.butent.bee.egg.server;
 
 import com.butent.bee.egg.server.communication.ResponseBuffer;
 import com.butent.bee.egg.server.http.RequestInfo;
-import com.butent.bee.egg.server.utils.BeeClass;
-import com.butent.bee.egg.server.utils.BeeJvm;
+import com.butent.bee.egg.server.utils.ClassUtils;
+import com.butent.bee.egg.server.utils.JvmUtils;
 import com.butent.bee.egg.server.utils.FileUtils;
 import com.butent.bee.egg.server.utils.XmlUtils;
 import com.butent.bee.egg.shared.BeeConst;
@@ -64,9 +64,9 @@ public class SystemServiceBean {
 
     Set<Class<?>> classes;
     if (BeeUtils.isEmpty(pck)) {
-      classes = BeeJvm.findClassWithDefaultPackages(cnm);
+      classes = JvmUtils.findClassWithDefaultPackages(cnm);
     } else {
-      classes = BeeJvm.findClass(cnm, pck.split(","));
+      classes = JvmUtils.findClass(cnm, pck.split(","));
     }
 
     if (BeeUtils.isEmpty(classes)) {
@@ -92,7 +92,7 @@ public class SystemServiceBean {
       if (c > 1) {
         buff.addExtended(new ExtendedProperty(cls.getName(), null, BeeUtils.progress(i, c)));
       }
-      buff.appendExtended(BeeClass.getClassInfo(cls));
+      buff.appendExtended(ClassUtils.getClassInfo(cls));
     }
   }
 

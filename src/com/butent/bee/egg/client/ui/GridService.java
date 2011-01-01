@@ -6,7 +6,7 @@ import com.google.gwt.user.client.ui.Panel;
 import com.butent.bee.egg.client.Global;
 import com.butent.bee.egg.client.BeeKeeper;
 import com.butent.bee.egg.client.data.ResponseData;
-import com.butent.bee.egg.client.utils.BeeXml;
+import com.butent.bee.egg.client.utils.XmlUtils;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeService;
 import com.butent.bee.egg.shared.data.HasTabularData;
@@ -43,7 +43,7 @@ class GridService extends CompositeService {
 
         BeeKeeper.getRpc().makePostRequest(
             adoptService("rpc_ui_grid"),
-            BeeXml.createString(BeeService.XML_TAG_DATA, "grid_name",
+            XmlUtils.createString(BeeService.XML_TAG_DATA, "grid_name",
                 grd.replaceFirst("['\\[\"](\\w+)['\\]\"][,].*", "$1")));
         break;
 

@@ -30,7 +30,7 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.egg.client.BeeKeeper;
 import com.butent.bee.egg.client.BeeStyle;
 import com.butent.bee.egg.client.layout.Direction;
-import com.butent.bee.egg.client.utils.BeeJs;
+import com.butent.bee.egg.client.utils.JsUtils;
 import com.butent.bee.egg.client.utils.JreEmulation;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeConst;
@@ -860,7 +860,7 @@ public class DomUtils {
     Element elem = DOM.getElementById(id);
     Assert.notNull(elem, "id " + id + " element not found");
     
-    if (BeeJs.hasProperty(elem, ATTRIBUTE_VALUE)) {
+    if (JsUtils.hasProperty(elem, ATTRIBUTE_VALUE)) {
       return getValueInt(elem);
     }
     
@@ -871,7 +871,7 @@ public class DomUtils {
     int len = (children == null) ? 0 : children.getLength();
     for (int i = 0; i < len; i++) {
       Node nd = children.getItem(i);
-      if (Element.is(nd) && BeeJs.hasProperty(nd, ATTRIBUTE_VALUE)) {
+      if (Element.is(nd) && JsUtils.hasProperty(nd, ATTRIBUTE_VALUE)) {
         value = getValueInt(Element.as(nd));
         found = true;
         break;

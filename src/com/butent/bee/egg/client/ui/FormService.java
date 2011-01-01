@@ -7,7 +7,7 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.egg.client.Global;
 import com.butent.bee.egg.client.BeeKeeper;
-import com.butent.bee.egg.client.utils.BeeXml;
+import com.butent.bee.egg.client.utils.XmlUtils;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeService;
 import com.butent.bee.egg.shared.BeeStage;
@@ -77,7 +77,7 @@ class FormService extends CompositeService {
         } else {
           Global.closeDialog(event);
           BeeKeeper.getRpc().makePostRequest(adoptService("rpc_ui_form"),
-              BeeXml.createString(BeeService.XML_TAG_DATA, fld, fName));
+              XmlUtils.createString(BeeService.XML_TAG_DATA, fld, fName));
         }
         break;
 

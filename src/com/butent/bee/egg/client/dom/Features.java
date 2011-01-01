@@ -5,7 +5,7 @@ import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Node;
 
-import com.butent.bee.egg.client.utils.BeeJs;
+import com.butent.bee.egg.client.utils.JsUtils;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.utils.BeeUtils;
@@ -299,13 +299,13 @@ public class Features {
     }
     String event = eventName.startsWith("on") ? eventName : "on" + eventName;
 
-    boolean ok = BeeJs.isIn(event, element);
+    boolean ok = JsUtils.isIn(event, element);
 
     if (!ok) {
       element.setAttribute(eventName, BeeConst.STRING_EMPTY);
-      ok = BeeJs.isFunction(element, event);
+      ok = JsUtils.isFunction(element, event);
 
-      BeeJs.clearProperty(element, event);
+      JsUtils.clearProperty(element, event);
       element.removeAttribute(eventName);
     }
 
@@ -840,7 +840,7 @@ public class Features {
     if (element == null) {
       ok = false;
     } else {
-      ok = BeeJs.isFunction(element, "canPlayType");
+      ok = JsUtils.isFunction(element, "canPlayType");
       element = null;
     }
 
@@ -913,12 +913,12 @@ public class Features {
   }-*/;
 
   private static boolean testContentEditable() {
-    return BeeJs.isIn("isContentEditable",
+    return JsUtils.isIn("isContentEditable",
         DomUtils.createElement(DomUtils.TAG_SPAN));
   }
 
   private static boolean testDnd() {
-    return BeeJs.isIn("draggable", DomUtils.createElement(DomUtils.TAG_SPAN));
+    return JsUtils.isIn("draggable", DomUtils.createElement(DomUtils.TAG_SPAN));
   }
 
   private static boolean testDndEvents() {
@@ -931,35 +931,35 @@ public class Features {
   }
 
   private static boolean testElementCommand() {
-    return BeeJs.isIn("type", DomUtils.createElement("command"));
+    return JsUtils.isIn("type", DomUtils.createElement("command"));
   }
 
   private static boolean testElementDataList() {
-    return BeeJs.isIn("options", DomUtils.createElement("datalist"));
+    return JsUtils.isIn("options", DomUtils.createElement("datalist"));
   }
 
   private static boolean testElementDetails() {
-    return BeeJs.isIn("open", DomUtils.createElement("details"));
+    return JsUtils.isIn("open", DomUtils.createElement("details"));
   }
 
   private static boolean testElementDevice() {
-    return BeeJs.isIn("type", DomUtils.createElement("device"));
+    return JsUtils.isIn("type", DomUtils.createElement("device"));
   }
 
   private static boolean testElementMeter() {
-    return BeeJs.isIn("value", DomUtils.createElement(DomUtils.TAG_METER));
+    return JsUtils.isIn("value", DomUtils.createElement(DomUtils.TAG_METER));
   }
 
   private static boolean testElementOutput() {
-    return BeeJs.isIn("value", DomUtils.createElement("output"));
+    return JsUtils.isIn("value", DomUtils.createElement("output"));
   }
 
   private static boolean testElementProgress() {
-    return BeeJs.isIn("value", DomUtils.createElement(DomUtils.TAG_PROGRESS));
+    return JsUtils.isIn("value", DomUtils.createElement(DomUtils.TAG_PROGRESS));
   }
 
   private static boolean testElementTime() {
-    return BeeJs.isIn("valueAsDate", DomUtils.createElement("time"));
+    return JsUtils.isIn("valueAsDate", DomUtils.createElement("time"));
   }
 
   private static native boolean testFileApi() /*-{
@@ -976,7 +976,7 @@ public class Features {
 
   private static boolean testInputAttribute(String attr) {
     Element element = DomUtils.createElement(DomUtils.TAG_INPUT);
-    return BeeJs.isIn(attr, element);
+    return JsUtils.isIn(attr, element);
   }
 
   private static boolean testInputColor() {
@@ -1071,12 +1071,12 @@ public class Features {
       return false;
     }
 
-    return BeeUtils.context("svg", BeeJs.transform(element));
+    return BeeUtils.context("svg", JsUtils.transform(element));
   }
 
   private static boolean testSvg() {
     Element element = DomUtils.createElementNs(nsSvg, "svg");
-    return BeeJs.isFunction(element, "createSVGRect");
+    return JsUtils.isFunction(element, "createSVGRect");
   }
 
   private static boolean testSvgClipPaths() {
@@ -1085,7 +1085,7 @@ public class Features {
       return false;
     }
 
-    return BeeUtils.context("svg", BeeJs.transform(element));
+    return BeeUtils.context("svg", JsUtils.transform(element));
   }
 
   private static boolean testSvgInline() {
@@ -1108,11 +1108,11 @@ public class Features {
 
   private static boolean testVideo() {
     Element element = DomUtils.createElement(DomUtils.TAG_VIDEO);
-    return BeeJs.isFunction(element, "canPlayType");
+    return JsUtils.isFunction(element, "canPlayType");
   }
 
   private static boolean testVideoCaptions() {
-    return BeeJs.isIn("src", DomUtils.createElement("track"));
+    return JsUtils.isIn("src", DomUtils.createElement("track"));
   }
 
   private static String testVideoH264() {
@@ -1127,7 +1127,7 @@ public class Features {
   }
 
   private static boolean testVideoPoster() {
-    return BeeJs.isIn("poster", DomUtils.createElement(DomUtils.TAG_VIDEO));
+    return JsUtils.isIn("poster", DomUtils.createElement(DomUtils.TAG_VIDEO));
   }
 
   private static String testVideoTheora() {

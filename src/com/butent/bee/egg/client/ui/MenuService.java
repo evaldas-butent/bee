@@ -7,7 +7,7 @@ import com.butent.bee.egg.client.Global;
 import com.butent.bee.egg.client.BeeKeeper;
 import com.butent.bee.egg.client.tree.BeeTree;
 import com.butent.bee.egg.client.tree.BeeTreeItem;
-import com.butent.bee.egg.client.utils.BeeXml;
+import com.butent.bee.egg.client.utils.XmlUtils;
 import com.butent.bee.egg.client.widget.BeeListBox;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeService;
@@ -85,7 +85,7 @@ class MenuService extends CompositeService {
 
         if (MenuConstants.isValidLayout(rl) && MenuConstants.isValidLayout(il)) {
           BeeKeeper.getRpc().makePostRequest(adoptService("rpc_ui_menu"),
-              BeeXml.createString(BeeService.XML_TAG_DATA, "menu_name", "rootMenu", "root_layout",
+              XmlUtils.createString(BeeService.XML_TAG_DATA, "menu_name", "rootMenu", "root_layout",
                   getLayout(rl), "item_layout", getLayout(il)));
         } else {
           Global.showError("Menu layouts not valid", rl, il);

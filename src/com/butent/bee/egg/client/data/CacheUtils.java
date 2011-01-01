@@ -5,7 +5,7 @@ import com.google.gwt.core.client.JsArrayString;
 import com.butent.bee.egg.client.BeeKeeper;
 import com.butent.bee.egg.client.communication.ParameterList;
 import com.butent.bee.egg.client.communication.ResponseCallback;
-import com.butent.bee.egg.client.utils.BeeJs;
+import com.butent.bee.egg.client.utils.JsUtils;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.BeeService;
@@ -43,7 +43,7 @@ public class CacheUtils {
     
     String value = BeeKeeper.getStorage().getItem(pkName(table));
     if (!BeeUtils.isEmpty(value)) {
-      callback.onResponse(BeeJs.createArray(value));
+      callback.onResponse(JsUtils.createArray(value));
       return;
     }
     

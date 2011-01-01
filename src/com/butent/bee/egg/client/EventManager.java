@@ -15,7 +15,7 @@ import com.butent.bee.egg.client.event.BeeClickHandler;
 import com.butent.bee.egg.client.event.BeeKeyPressHandler;
 import com.butent.bee.egg.client.event.BeeValueChangeHandler;
 import com.butent.bee.egg.client.ui.CompositeService;
-import com.butent.bee.egg.client.utils.BeeXml;
+import com.butent.bee.egg.client.utils.XmlUtils;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeService;
 import com.butent.bee.egg.shared.BeeStage;
@@ -151,7 +151,7 @@ public class EventManager implements Module {
         } else {
           Global.closeDialog(event);
           BeeKeeper.getRpc().makePostRequest(BeeService.SERVICE_CLASS_INFO,
-              BeeXml.createString(BeeService.XML_TAG_DATA,
+              XmlUtils.createString(BeeService.XML_TAG_DATA,
                   BeeService.VAR_CLASS_NAME, cls, BeeService.VAR_PACKAGE_LIST, pck));
           ok = true;
         }
@@ -174,7 +174,7 @@ public class EventManager implements Module {
           Global.closeDialog(event);
           BeeKeeper.getRpc().makePostRequest(
               BeeService.SERVICE_XML_INFO,
-              BeeXml.fromVars(BeeService.XML_TAG_DATA,
+              XmlUtils.fromVars(BeeService.XML_TAG_DATA,
                   BeeService.VAR_XML_SOURCE, BeeService.VAR_XML_TRANSFORM,
                   BeeService.VAR_XML_TARGET, BeeService.VAR_XML_RETURN));
           ok = true;
@@ -214,7 +214,7 @@ public class EventManager implements Module {
           Global.closeDialog(event);
           BeeKeeper.getRpc().makePostRequest(
               BeeService.SERVICE_DB_JDBC,
-              BeeXml.fromVars(BeeService.XML_TAG_DATA,
+              XmlUtils.fromVars(BeeService.XML_TAG_DATA,
                   BeeService.VAR_JDBC_QUERY,
                   BeeService.VAR_CONNECTION_AUTO_COMMIT,
                   BeeService.VAR_CONNECTION_HOLDABILITY,

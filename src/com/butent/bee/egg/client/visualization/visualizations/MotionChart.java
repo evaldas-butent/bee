@@ -103,4 +103,11 @@ public class MotionChart extends Visualization<MotionChart.Options> {
   protected native JavaScriptObject createJso(Element parent) /*-{
     return new $wnd.google.visualization.MotionChart(parent);
   }-*/;
+
+  @Override
+  protected void onLoad() {
+    super.onLoad();
+    setDataTable(null);
+    setOptions(null);
+  }
 }

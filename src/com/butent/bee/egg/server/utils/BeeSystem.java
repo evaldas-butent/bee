@@ -48,14 +48,14 @@ public class BeeSystem {
     Annotation[] arr = p.getDeclaredAnnotations();
     if (!BeeUtils.isEmpty(arr)) {
       for (Annotation ann : arr) {
-        PropertyUtils.addProperty(lst, "Declared Annotation", BeeClass.transformAnnotation(ann));
+        PropertyUtils.addProperty(lst, "Declared Annotation", ClassUtils.transformAnnotation(ann));
       }
     }
 
     arr = p.getAnnotations();
     if (!BeeUtils.isEmpty(arr)) {
       for (Annotation ann : arr) {
-        PropertyUtils.addProperty(lst, "Annotation",  BeeClass.transformAnnotation(ann));
+        PropertyUtils.addProperty(lst, "Annotation",  ClassUtils.transformAnnotation(ann));
       }
     }
 

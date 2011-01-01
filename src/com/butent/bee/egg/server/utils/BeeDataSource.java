@@ -115,9 +115,7 @@ public class BeeDataSource implements Transformable {
         dbMd.getMaxCharLiteralLength(), "Max Connections",
         dbMd.getMaxConnections(), "Max Statements", dbMd.getMaxStatements());
 
-    PropertyUtils.addProperties(
-        lst,
-        false,
+    PropertyUtils.addProperties(lst, false,
         "Default Transaction Isolation",
         JdbcUtils.transactionIsolationAsString(dbMd.getDefaultTransactionIsolation()),
         "Result Set Holdability",
@@ -134,9 +132,9 @@ public class BeeDataSource implements Transformable {
     PropertyUtils.addSplit(lst, "Time Date Functions", null,
         dbMd.getTimeDateFunctions(), BeeConst.STRING_COMMA);
 
-    PropertyUtils.addProperties(lst, false, "All Procedures Are Callable",
-        dbMd.allProceduresAreCallable(), "All Tables Are Selectable",
-        dbMd.allTablesAreSelectable(),
+    PropertyUtils.addProperties(lst, false, 
+        "All Procedures Are Callable", dbMd.allProceduresAreCallable(),
+        "All Tables Are Selectable",  dbMd.allTablesAreSelectable(),
         "Auto Commit Failure Closes All Result Sets",
         dbMd.autoCommitFailureClosesAllResultSets(),
         "Data Definition Causes Transaction Commit",
@@ -144,108 +142,85 @@ public class BeeDataSource implements Transformable {
         "Data Definition Ignored In Transactions",
         dbMd.dataDefinitionIgnoredInTransactions(),
         "Max Row Size Include Blobs", dbMd.doesMaxRowSizeIncludeBlobs(),
-        "Catalog At Start", dbMd.isCatalogAtStart(), "Read Only",
-        dbMd.isReadOnly(), "Locators Update Copy", dbMd.locatorsUpdateCopy(),
+        "Catalog At Start", dbMd.isCatalogAtStart(),
+        "Read Only", dbMd.isReadOnly(),
+        "Locators Update Copy", dbMd.locatorsUpdateCopy(),
         "Null Plus Non Null Is Null", dbMd.nullPlusNonNullIsNull(),
         "Nulls Are Sorted At End", dbMd.nullsAreSortedAtEnd(),
         "Nulls Are Sorted At Start", dbMd.nullsAreSortedAtStart(),
         "Nulls Are Sorted High", dbMd.nullsAreSortedHigh(),
         "Nulls Are Sorted Low", dbMd.nullsAreSortedLow(),
         "Stores Lower Case Identifiers", dbMd.storesLowerCaseIdentifiers(),
-        "Stores Lower Case Quoted Identifiers",
-        dbMd.storesLowerCaseQuotedIdentifiers(),
+        "Stores Lower Case Quoted Identifiers", dbMd.storesLowerCaseQuotedIdentifiers(),
         "Stores Mixed Case Identifiers", dbMd.storesMixedCaseIdentifiers(),
-        "Stores Mixed Case Quoted Identifiers",
-        dbMd.storesMixedCaseQuotedIdentifiers(),
+        "Stores Mixed Case Quoted Identifiers", dbMd.storesMixedCaseQuotedIdentifiers(),
         "Stores Upper Case Identifiers", dbMd.storesUpperCaseIdentifiers(),
-        "Stores Upper Case Quoted Identifiers",
-        dbMd.storesUpperCaseQuotedIdentifiers(),
-        "Supports Alter Table With Add Column",
-        dbMd.supportsAlterTableWithAddColumn(),
-        "Supports Alter Table With Drop Column",
-        dbMd.supportsAlterTableWithDropColumn(),
+        "Stores Upper Case Quoted Identifiers", dbMd.storesUpperCaseQuotedIdentifiers(),
+        "Supports Alter Table With Add Column", dbMd.supportsAlterTableWithAddColumn(),
+        "Supports Alter Table With Drop Column", dbMd.supportsAlterTableWithDropColumn(),
         "Supports ANSI92 Entry Level SQL", dbMd.supportsANSI92EntryLevelSQL(),
         "Supports ANSI92 Full SQL", dbMd.supportsANSI92FullSQL(),
-        "Supports ANSI92 Intermediate SQL",
-        dbMd.supportsANSI92IntermediateSQL(), "Supports Batch Updates",
-        dbMd.supportsBatchUpdates(), "Supports Catalogs In Data Manipulation",
-        dbMd.supportsCatalogsInDataManipulation(),
-        "Supports Catalogs In Index Definitions",
-        dbMd.supportsCatalogsInIndexDefinitions(),
-        "Supports Catalogs In PrivilegeDefinitions",
-        dbMd.supportsCatalogsInPrivilegeDefinitions(),
-        "Supports Catalogs In ProcedureCalls",
-        dbMd.supportsCatalogsInProcedureCalls(),
-        "Supports Catalogs In TableDefinitions",
-        dbMd.supportsCatalogsInTableDefinitions(), "Supports Column Aliasing",
-        dbMd.supportsColumnAliasing(), "Supports JDBC Convert",
-        dbMd.supportsConvert(), "Supports Core SQL Grammar",
-        dbMd.supportsCoreSQLGrammar(), "Supports Correlated Subqueries",
-        dbMd.supportsCorrelatedSubqueries(),
+        "Supports ANSI92 Intermediate SQL", dbMd.supportsANSI92IntermediateSQL(),
+        "Supports Batch Updates", dbMd.supportsBatchUpdates(),
+        "Supports Catalogs In Data Manipulation", dbMd.supportsCatalogsInDataManipulation(),
+        "Supports Catalogs In Index Definitions", dbMd.supportsCatalogsInIndexDefinitions(),
+        "Supports Catalogs In PrivilegeDefinitions", dbMd.supportsCatalogsInPrivilegeDefinitions(),
+        "Supports Catalogs In ProcedureCalls", dbMd.supportsCatalogsInProcedureCalls(),
+        "Supports Catalogs In TableDefinitions", dbMd.supportsCatalogsInTableDefinitions(),
+        "Supports Column Aliasing", dbMd.supportsColumnAliasing(),
+        "Supports JDBC Convert", dbMd.supportsConvert(),
+        "Supports Core SQL Grammar", dbMd.supportsCoreSQLGrammar(),
+        "Supports Correlated Subqueries", dbMd.supportsCorrelatedSubqueries(),
         "Supports Data Definition And Data Manipulation Transactions",
         dbMd.supportsDataDefinitionAndDataManipulationTransactions(),
         "Supports Data Manipulation Transactions Only",
         dbMd.supportsDataManipulationTransactionsOnly(),
         "Supports Different Table Correlation Names",
         dbMd.supportsDifferentTableCorrelationNames(),
-        "Supports Expressions In Order By",
-        dbMd.supportsExpressionsInOrderBy(), "Supports Extended SQL Grammar",
-        dbMd.supportsExtendedSQLGrammar(), "Supports Full Outer Joins",
-        dbMd.supportsFullOuterJoins(), "Supports Get Generated Keys",
-        dbMd.supportsGetGeneratedKeys(), "Supports Group By",
-        dbMd.supportsGroupBy(), "Supports Group By Beyond Select",
-        dbMd.supportsGroupByBeyondSelect(), "Supports Group By Unrelated",
-        dbMd.supportsGroupByUnrelated(),
-        "Supports Integrity Enhancement Facility",
-        dbMd.supportsIntegrityEnhancementFacility(),
+        "Supports Expressions In Order By", dbMd.supportsExpressionsInOrderBy(),
+        "Supports Extended SQL Grammar", dbMd.supportsExtendedSQLGrammar(),
+        "Supports Full Outer Joins", dbMd.supportsFullOuterJoins(),
+        "Supports Get Generated Keys", dbMd.supportsGetGeneratedKeys(),
+        "Supports Group By", dbMd.supportsGroupBy(),
+        "Supports Group By Beyond Select", dbMd.supportsGroupByBeyondSelect(),
+        "Supports Group By Unrelated", dbMd.supportsGroupByUnrelated(),
+        "Supports Integrity Enhancement Facility", dbMd.supportsIntegrityEnhancementFacility(),
         "Supports Like Escape Clause", dbMd.supportsLikeEscapeClause(),
         "Supports Limited Outer Joins", dbMd.supportsLimitedOuterJoins(),
         "Supports Minimum SQL Grammar", dbMd.supportsMinimumSQLGrammar(),
         "Supports Mixed Case Identifiers", dbMd.supportsMixedCaseIdentifiers(),
-        "Supports Mixed Case Quoted Identifiers",
-        dbMd.supportsMixedCaseQuotedIdentifiers(),
+        "Supports Mixed Case Quoted Identifiers", dbMd.supportsMixedCaseQuotedIdentifiers(),
         "Supports Multiple Open Results", dbMd.supportsMultipleOpenResults(),
         "Supports Multiple Result Sets", dbMd.supportsMultipleResultSets(),
         "Supports Multiple Transactions", dbMd.supportsMultipleTransactions(),
         "Supports Named Parameters", dbMd.supportsNamedParameters(),
         "Supports Non Nullable Columns", dbMd.supportsNonNullableColumns(),
-        "Supports Open Cursors Across Commit",
-        dbMd.supportsOpenCursorsAcrossCommit(),
-        "Supports Open Cursors Across Rollback",
-        dbMd.supportsOpenCursorsAcrossRollback(),
-        "Supports Open Statements Across Commit",
-        dbMd.supportsOpenStatementsAcrossCommit(),
-        "Supports Open Statements Across Rollback",
-        dbMd.supportsOpenStatementsAcrossRollback(),
+        "Supports Open Cursors Across Commit", dbMd.supportsOpenCursorsAcrossCommit(),
+        "Supports Open Cursors Across Rollback", dbMd.supportsOpenCursorsAcrossRollback(),
+        "Supports Open Statements Across Commit", dbMd.supportsOpenStatementsAcrossCommit(),
+        "Supports Open Statements Across Rollback", dbMd.supportsOpenStatementsAcrossRollback(),
         "Supports Order By Unrelated", dbMd.supportsOrderByUnrelated(),
         "Supports Outer Joins", dbMd.supportsOuterJoins(),
         "Supports Positioned Delete", dbMd.supportsPositionedDelete(),
         "Supports Positioned Update", dbMd.supportsPositionedUpdate(),
         "Supports Savepoints", dbMd.supportsSavepoints(),
-        "Supports Schemas In Data Manipulation",
-        dbMd.supportsSchemasInDataManipulation(),
-        "Supports Schemas In Index Definitions",
-        dbMd.supportsSchemasInIndexDefinitions(),
-        "Supports Schemas In Privilege Definitions",
-        dbMd.supportsSchemasInPrivilegeDefinitions(),
-        "Supports Schemas In Procedure Calls",
-        dbMd.supportsSchemasInProcedureCalls(),
-        "Supports Schemas In Table Definitions",
-        dbMd.supportsSchemasInTableDefinitions(), "Supports Select For Update",
-        dbMd.supportsSelectForUpdate(), "Supports Statement Pooling",
-        dbMd.supportsStatementPooling(),
+        "Supports Schemas In Data Manipulation", dbMd.supportsSchemasInDataManipulation(),
+        "Supports Schemas In Index Definitions", dbMd.supportsSchemasInIndexDefinitions(),
+        "Supports Schemas In Privilege Definitions", dbMd.supportsSchemasInPrivilegeDefinitions(),
+        "Supports Schemas In Procedure Calls", dbMd.supportsSchemasInProcedureCalls(),
+        "Supports Schemas In Table Definitions", dbMd.supportsSchemasInTableDefinitions(),
+        "Supports Select For Update", dbMd.supportsSelectForUpdate(),
+        "Supports Statement Pooling", dbMd.supportsStatementPooling(),
         "Supports Stored Functions Using Call Syntax",
         dbMd.supportsStoredFunctionsUsingCallSyntax(),
         "Supports Stored Procedures", dbMd.supportsStoredProcedures(),
-        "Supports Subqueries In Comparisons",
-        dbMd.supportsSubqueriesInComparisons(),
+        "Supports Subqueries In Comparisons", dbMd.supportsSubqueriesInComparisons(),
         "Supports Subqueries In Exists", dbMd.supportsSubqueriesInExists(),
         "Supports Subqueries In Ins", dbMd.supportsSubqueriesInIns(),
-        "Supports Subqueries In Quantifieds",
-        dbMd.supportsSubqueriesInQuantifieds(),
-        "Supports Table Correlation Names",
-        dbMd.supportsTableCorrelationNames(), "Supports Transactions",
-        dbMd.supportsTransactions(), "Supports Union", dbMd.supportsUnion(),
+        "Supports Subqueries In Quantifieds", dbMd.supportsSubqueriesInQuantifieds(),
+        "Supports Table Correlation Names", dbMd.supportsTableCorrelationNames(),
+        "Supports Transactions", dbMd.supportsTransactions(),
+        "Supports Union", dbMd.supportsUnion(),
         "Supports Union All", dbMd.supportsUnionAll(),
         "Uses Local File Per Table", dbMd.usesLocalFilePerTable(),
         "Uses Local Files", dbMd.usesLocalFiles());
@@ -258,9 +233,7 @@ public class BeeDataSource implements Transformable {
       }
 
       v = BeeUtils.concat(null, BeeUtils.addName("Max", rs.getInt("MAX_LEN")),
-          BeeUtils.addName("Default", rs.getString("DEFAULT_VALUE")),
-          rs.getString("DESCRIPTION"));
-
+          BeeUtils.addName("Default", rs.getString("DEFAULT_VALUE")), rs.getString("DESCRIPTION"));
       PropertyUtils.addExtended(lst, "Client Property", k, BeeUtils.ifString(v, "(empty)"));
     }
     rs.close();
@@ -279,10 +252,8 @@ public class BeeDataSource implements Transformable {
           continue;
         }
 
-        v = BeeUtils.concat(null,
-            BeeUtils.addName("Cat", rs.getString("FUNCTION_CAT")),
+        v = BeeUtils.concat(null, BeeUtils.addName("Cat", rs.getString("FUNCTION_CAT")),
             BeeUtils.addName("Schem", rs.getString("FUNCTION_SCHEM")));
-
         PropertyUtils.addExtended(lst, "Function", k, BeeUtils.ifString(v, k));
       }
       rs.close();
@@ -302,10 +273,8 @@ public class BeeDataSource implements Transformable {
           continue;
         }
 
-        v = BeeUtils.concat(null,
-            BeeUtils.addName("Cat", rs.getString("PROCEDURE_CAT")),
+        v = BeeUtils.concat(null, BeeUtils.addName("Cat", rs.getString("PROCEDURE_CAT")),
             BeeUtils.addName("Schem", rs.getString("PROCEDURE_SCHEM")));
-
         PropertyUtils.addExtended(lst, "Procedure", k, BeeUtils.ifString(v, k));
       }
       rs.close();
@@ -363,9 +332,7 @@ public class BeeDataSource implements Transformable {
               el.getSub(), el.getValue());
         }
       }
-
       PropertyUtils.appendChildrenToExtended(lst, "getSchemas Data", JdbcUtils.getRs(rs));
-
       rs.close();
     }
 
@@ -394,9 +361,7 @@ public class BeeDataSource implements Transformable {
       }
 
       c = rs.getInt("DATA_TYPE");
-
-      v = BeeUtils.concat(1, BeeUtils.addName("sql.Type", c),
-          JdbcUtils.getJdbcTypeName(c));
+      v = BeeUtils.concat(1, BeeUtils.addName("sql.Type", c), JdbcUtils.getJdbcTypeName(c));
       PropertyUtils.addExtended(lst, nm, k, v);
 
       PropertyUtils.addExtended(lst, nm, k,
@@ -533,5 +498,4 @@ public class BeeDataSource implements Transformable {
       setStatus(STATUS_ERROR);
     }
   }
-
 }

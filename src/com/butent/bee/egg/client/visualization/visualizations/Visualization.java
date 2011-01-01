@@ -5,21 +5,14 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.ui.Widget;
 
+import com.butent.bee.egg.client.dom.DomUtils;
 import com.butent.bee.egg.client.visualization.AbstractDataTable;
 import com.butent.bee.egg.client.visualization.AbstractDrawOptions;
+import com.butent.bee.egg.shared.Assert;
+import com.butent.bee.egg.shared.HasId;
 
-public abstract class Visualization<OptionsType extends AbstractDrawOptions> extends Widget {
-  public static Element createDiv(int width, int height) {
-    Element result = DOM.createDiv();
-    setSize(result, width, height);
-    return result;
-  }
-
-  public static void setSize(Element div, int width, int height) {
-    div.getStyle().setPropertyPx("width", width);
-    div.getStyle().setPropertyPx("height", height);
-  }
-
+public abstract class Visualization<OptionsType extends AbstractDrawOptions> extends Widget
+    implements HasId {
   private AbstractDataTable dataTable;
   private OptionsType options;
   private JavaScriptObject jso;
@@ -29,12 +22,17 @@ public abstract class Visualization<OptionsType extends AbstractDrawOptions> ext
     jso = createJso(div);
     setElement(div);
     setStyleName("viz-container");
+    createId();
   }
 
   public Visualization(AbstractDataTable data, OptionsType options) {
     this();
     this.options = options;
     this.dataTable = data;
+  }
+
+  public void createId() {
+    DomUtils.createId(this, "viz");
   }
 
   public final native void draw(AbstractDataTable data) /*-{
@@ -45,18 +43,63 @@ public abstract class Visualization<OptionsType extends AbstractDrawOptions> ext
     this.@com.butent.bee.egg.client.visualization.visualizations.Visualization::jso.draw(data, opt);
   }-*/;
 
+  public AbstractDataTable getDataTable() {
+    return dataTable;
+  }
+
+  public String getId() {
+    return DomUtils.getId(this);
+  }
+
   public JavaScriptObject getJso() {
     return jso;
   }
 
+  public OptionsType getOptions() {
+    return options;
+  }
+  
+  public void refresh() {
+    draw();
+  }
+
+  public void setDataTable(AbstractDataTable dataTable) {
+    this.dataTable = dataTable;
+  }
+
+  public void setId(String id) {
+    DomUtils.setId(this, id);
+  }
+
+  public void setOptions(OptionsType options) {
+    this.options = options;
+  }
+
+  public void updateDataTable(AbstractDataTable table) {
+    Assert.notNull(table);
+    setDataTable(table);
+    draw();
+  }
+
+  public void updateOptions(OptionsType opt) {
+    setOptions(opt);
+    draw();
+  }
+  
   protected abstract JavaScriptObject createJso(Element div);
 
   @Override
   protected void onLoad() {
-    if (dataTable != null && options != null) {
-      draw(dataTable, options);
-      dataTable = null;
-      options = null;
+    draw();
+  }
+
+  private void draw() {
+    if (dataTable != null) {
+      if (options == null) {
+        draw(dataTable);
+      } else {
+        draw(dataTable, options);
+      }
     }
   }
 }

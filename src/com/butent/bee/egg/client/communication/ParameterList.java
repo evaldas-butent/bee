@@ -4,7 +4,7 @@ import com.google.gwt.http.client.RequestBuilder;
 
 import com.butent.bee.egg.client.BeeKeeper;
 import com.butent.bee.egg.client.ui.CompositeService;
-import com.butent.bee.egg.client.utils.BeeXml;
+import com.butent.bee.egg.client.utils.XmlUtils;
 import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeConst;
 import com.butent.bee.egg.shared.BeeService;
@@ -158,7 +158,7 @@ public class ParameterList extends ArrayList<RpcParameter> implements
       nodes[i * 2 + 1] = item.getValue();
     }
 
-    return BeeXml.createString(BeeService.XML_TAG_DATA, nodes);
+    return XmlUtils.createString(BeeService.XML_TAG_DATA, nodes);
   }
 
   public void getHeadersExcept(RequestBuilder bld, String... ignore) {
