@@ -76,7 +76,7 @@
         </xs:restriction>
       </xs:simpleType>
     </xs:attribute>
-    <xs:attribute name="unchecked" type="xs:boolean" />
+    <xs:attribute name="checked" type="xs:boolean" />
   </xs:complexType>
 
   <xs:simpleType name="dataType">

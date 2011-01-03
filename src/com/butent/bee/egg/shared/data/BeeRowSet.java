@@ -250,7 +250,7 @@ public class BeeRowSet extends AbstractData implements BeeSerializable {
   private int counter = 0;
   private String viewName;
 
-  private List<BeeRow> rows;
+  private List<BeeRow> rows = new ArrayList<BeeRow>();
 
   public BeeRowSet(BeeColumn... columns) {
     setColumns(columns);
@@ -453,9 +453,6 @@ public class BeeRowSet extends AbstractData implements BeeSerializable {
   }
 
   private void addRow(BeeRow row) {
-    if (BeeUtils.isEmpty(rows)) {
-      rows = new ArrayList<BeeRow>();
-    }
     rows.add(row);
     setRowCount(rows.size());
   }

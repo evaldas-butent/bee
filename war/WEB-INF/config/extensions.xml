@@ -24,6 +24,9 @@
       <BeeField name="Continent" type="LONG" relation="Continents" />
       <BeeKey fields="Language, Capital" unique="true" />
     </BeeExtended>
+    <BeeStates>
+      <BeeState name="Visible" id="1" checked="false" />
+    </BeeStates>
   </BeeTable>
   <BeeTable name="DataTypes">
     <BeeFields>

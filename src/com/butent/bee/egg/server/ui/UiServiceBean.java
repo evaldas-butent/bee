@@ -149,7 +149,7 @@ public class UiServiceBean {
 
   private void getTable(RequestInfo reqInfo, ResponseBuffer buff) {
     String table = getXmlField(reqInfo, buff, "table_name");
-    BeeRowSet res = sys.editStateRoles(table, "Visible");
+    BeeRowSet res = sys.editStateRoles(null, "Visible");
     // BeeRowSet res = sys.getViewData(table);
     buff.add(res.serialize());
   }
@@ -248,6 +248,24 @@ public class UiServiceBean {
     } else if (BeeUtils.same(cmd, "views")) {
       sys.initViews();
       buff.add("Views OK");
+
+    } else if (BeeUtils.startsSame(cmd, "roles")) {
+      String[] xArr = cmd.split(" ", 5);
+      String tbl = xArr[1];
+      long id = BeeUtils.toLong(xArr[2]);
+      String state = xArr[3];
+      int[] roles = null;
+
+      if (xArr.length > 4) {
+        String[] rArr = xArr[4].split(" ");
+        roles = new int[rArr.length];
+
+        for (int i = 0; i < rArr.length; i++) {
+          roles[i] = BeeUtils.toInt(rArr[i]);
+        }
+      }
+      sys.setState(tbl, id, state, roles);
+      buff.add("Toggle OK");
 
     } else {
       if (sys.isTable(cmd)) {

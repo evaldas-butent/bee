@@ -254,17 +254,17 @@ class BeeTable implements HasExtFields, HasStates {
     private final String name;
     private final int id;
     private final String mode;
-    private final boolean unchecked;
+    private final boolean checked;
     private Boolean active = null;
 
-    private BeeState(String name, int id, String mode, boolean unchecked) {
+    private BeeState(String name, int id, String mode, boolean checked) {
       Assert.notEmpty(name);
       Assert.betweenInclusive(id, 1, 64);
 
       this.id = id;
       this.name = name;
       this.mode = mode;
-      this.unchecked = unchecked;
+      this.checked = checked;
     }
 
     public int getId() {
@@ -287,16 +287,16 @@ class BeeTable implements HasExtFields, HasStates {
       return !BeeUtils.isEmpty(active);
     }
 
+    public boolean isChecked() {
+      return checked;
+    }
+
     public boolean isCustom() {
       return custom;
     }
 
     public boolean isInitialized() {
       return active != null;
-    }
-
-    public boolean isUnchecked() {
-      return unchecked;
     }
 
     public boolean supportsRoles() {
@@ -423,7 +423,7 @@ class BeeTable implements HasExtFields, HasStates {
     @Override
     public void checkState(SqlSelect query, String tblAlias, BeeState state, int user, int... roles) {
       String stateAlias = joinState(query, tblAlias, state);
-      IsCondition wh = state.isUnchecked() ? SqlUtils.sqlFalse() : null;
+      IsCondition wh = state.isChecked() ? SqlUtils.sqlFalse() : null;
 
       if (!BeeUtils.isEmpty(stateAlias)) {
         long bitOn = 1;
@@ -435,7 +435,7 @@ class BeeTable implements HasExtFields, HasStates {
           pos = pos % bitCount;
           long userMask = bitOn << pos;
 
-          if (state.isUnchecked()) {
+          if (state.isChecked()) {
             wh = SqlUtils.and(SqlUtils.isNotNull(stateAlias, colName),
                 SqlUtils.notEqual(SqlUtils.bitAnd(stateAlias, colName, userMask), 0));
           } else {
@@ -458,7 +458,7 @@ class BeeTable implements HasExtFields, HasStates {
             roleMasks.put(colName, mask | (bitOn << pos));
           }
           for (Entry<String, Long> entry : roleMasks.entrySet()) {
-            if (state.isUnchecked()) {
+            if (state.isChecked()) {
               wh = SqlUtils.or(wh,
                   SqlUtils.and(SqlUtils.isNotNull(stateAlias, entry.getKey()),
                       SqlUtils.notEqual(
@@ -750,7 +750,7 @@ class BeeTable implements HasExtFields, HasStates {
       }
     }
     for (BeeState state : extension.getStates()) {
-      addState(state.getName(), state.getId(), state.getMode(), state.isUnchecked())
+      addState(state.getName(), state.getId(), state.getMode(), state.isChecked())
         .setCustom();
       cnt++;
     }

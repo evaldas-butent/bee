@@ -35,6 +35,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -87,20 +88,16 @@ public class SystemBean {
 
   public void checkStates(SqlSelect query, String tbl, String tblAlias, String... states) {
     Assert.notNull(query);
-    BeeTable table = getTable(tbl);
     int userId = getUserId();
     int[] userRoles = getUserRoles(userId);
 
     for (String stateName : states) {
-      BeeState state = table.getState(stateName);
+      BeeState state = getState(tbl, stateName);
 
       if (BeeUtils.isEmpty(state)) {
         LogUtils.warning(logger, "State not registered:", tbl, stateName);
       } else {
-        if (!state.isInitialized()) {
-          state.initialize(qs.isDbTable(getDbName(), getDbSchema(), table.getStateTable(stateName)));
-        }
-        table.checkState(query, tblAlias, state, userId, userRoles);
+        getTable(tbl).checkState(query, tblAlias, state, userId, userRoles);
       }
     }
   }
@@ -339,56 +336,76 @@ public class SystemBean {
   }
 
   public BeeRowSet editStateRoles(String tblName, String stateName) {
-    BeeTable table = getTable(tblName);
-    BeeState state = table.getState(stateName);
+    boolean allMode = BeeUtils.isEmpty(tblName);
+    List<BeeState> states = new ArrayList<BeeState>();
 
-    if (BeeUtils.isEmpty(state) || !state.supportsRoles()) {
-      return null;
-    }
-    SqlSelect ss = new SqlSelect()
-      .addConstant(tblName, "Table")
-      .addCount("TotalRows")
-      .addFrom(tblName);
+    if (allMode) {
+      for (BeeTable table : getTables()) {
+        BeeState state = table.getState(stateName);
 
-    String als = joinState(ss, tblName, null, stateName);
-
-    BeeTable roles = getTable("Roles");
-
-    BeeRowSet rs = qs.getData(
-        new SqlSelect()
-          .addFields("r", "Name", roles.getIdName())
-          .addFrom(roles.getName(), "r")
-          .addOrder("r", "Name"));
-
-    for (BeeRow row : rs.getRows()) {
-      int roleId = row.getInt(roles.getIdName());
-      String colName = "Checked" + roleId + row.getValue("Name");
-
-      if (BeeUtils.isEmpty(als)) {
-        if (state.isUnchecked()) {
-          ss.addConstant(0, colName);
-        } else {
-          ss.addCount(colName);
+        if (!BeeUtils.isEmpty(state) && state.supportsRoles()) {
+          states.add(state);
         }
-      } else {
-        long bitOn = 1;
-        int bitCount = 64;
-        int pos = (roleId - 1);
-        String col = "State" + state.getId() + "Role" + (int) Math.floor(pos / bitCount);
-        pos = pos % bitCount;
-        long mask = (bitOn << pos);
-
-        IsExpression expr;
-
-        expr = SqlUtils.sqlCase(
-            SqlUtils.or(SqlUtils.isNull(als, col)
-                , SqlUtils.equal(SqlUtils.bitAnd(als, col, mask), 0)),
-            BeeUtils.toInt(!state.isUnchecked()), BeeUtils.toInt(state.isUnchecked()));
-
-        ss.addSum(expr, colName);
+      }
+    } else {
+      BeeState state = getTable(tblName).getState(stateName);
+      if (!BeeUtils.isEmpty(state) && state.supportsRoles()) {
+        states.add(state);
       }
     }
-    return qs.getData(ss);
+    SqlSelect union = null;
+
+    for (BeeState state : states) {
+      String tbl = state.getTable();
+      SqlSelect ss = null;
+
+      if (allMode) {
+        ss = new SqlSelect()
+          .addConstant(tbl, "Table")
+          .addCount("TotalRows")
+          .addFrom(tbl);
+      } else {
+        ss = getViewQuery(getView(tbl), null);
+      }
+      String als = joinState(ss, tbl, null, state.getName());
+
+      for (Entry<Integer, String> role : getRoles(null).entrySet()) {
+        int roleId = role.getKey();
+        String colName = state.getName() + roleId + role.getValue();
+
+        if (BeeUtils.isEmpty(als)) {
+          if (allMode && state.isChecked()) {
+            ss.addCount(colName);
+          } else {
+            ss.addConstant(BeeUtils.toInt(state.isChecked()), colName);
+          }
+        } else {
+          long bitOn = 1;
+          int bitCount = 64;
+          int pos = (roleId - 1);
+          String col = "State" + state.getId() + "Role" + (int) Math.floor(pos / bitCount);
+          pos = pos % bitCount;
+          long mask = (bitOn << pos);
+
+          IsExpression expr = SqlUtils.sqlCase(
+              SqlUtils.or(SqlUtils.isNull(als, col)
+                  , SqlUtils.equal(SqlUtils.bitAnd(als, col, mask), 0)),
+              BeeUtils.toInt(state.isChecked()), BeeUtils.toInt(!state.isChecked()));
+
+          if (allMode) {
+            ss.addSum(expr, colName);
+          } else {
+            ss.addExpr(expr, colName);
+          }
+        }
+      }
+      if (BeeUtils.isEmpty(union)) {
+        union = ss;
+      } else {
+        union.addUnion(ss);
+      }
+    }
+    return qs.getData(union);
   }
 
   public String getDbName() {
@@ -415,6 +432,40 @@ public class SystemBean {
     return getTable(table).getLockName();
   }
 
+  public Map<Integer, String> getRoles(Integer userId) {
+    String idName = getIdName("Roles");
+
+    SqlSelect ss = new SqlSelect()
+      .addFields("r", idName, "Name")
+      .addFrom("Roles", "r")
+      .addOrder("r", "Name");
+
+    if (!BeeUtils.isEmpty(userId)) {
+      ss.addFromInner("UserRoles", "u", SqlUtils.join("r", idName, "u", "Role"))
+        .setWhere(SqlUtils.equal("u", "User", userId));
+    }
+    Map<Integer, String> roles = new LinkedHashMap<Integer, String>();
+
+    for (BeeRow role : qs.getData(ss).getRows()) {
+      roles.put(role.getInt(idName), role.getString("Name"));
+    }
+    return roles;
+  }
+
+  public BeeState getState(String tbl, String stateName) {
+    BeeTable table = getTable(tbl);
+    BeeState state = table.getState(stateName);
+
+    if (!BeeUtils.isEmpty(state) && !state.isInitialized()) {
+      state.initialize(qs.isDbTable(getDbName(), getDbSchema(), table.getStateTable(stateName)));
+    }
+    return state;
+  }
+
+  public Collection<BeeState> getStates(String table) {
+    return getTable(table).getStates();
+  }
+
   public Collection<String> getTableNames() {
     return Collections.unmodifiableCollection(dataCache.keySet());
   }
@@ -426,18 +477,13 @@ public class SystemBean {
   public int[] getUserRoles(int userId) {
     Assert.notEmpty(userId);
 
-    BeeRowSet rs = qs.getData(new SqlSelect()
-      .addFields("r", "Role")
-      .addFrom("UserRoles", "r")
-      .setWhere(SqlUtils.equal("r", "User", userId)));
+    Collection<Integer> rs = getRoles(userId).keySet();
+    int[] roles = new int[rs.size()];
+    int i = 0;
 
-    int cnt = rs.getRowCount();
-    int[] roles = new int[cnt];
-
-    for (int i = 0; i < cnt; i++) {
-      roles[i] = rs.getRow(i).getInt("Role");
+    for (int role : rs) {
+      roles[i++] = role;
     }
-
     return roles;
   }
 
@@ -550,23 +596,25 @@ public class SystemBean {
     BeeTable table = getTable(tbl);
     BeeField field = table.getField(fld);
 
-    if (BeeUtils.isEmpty(field) || !field.isExtended()) {
+    if (BeeUtils.isEmpty(field)) {
       LogUtils.warning(logger, "Not an extended field:", tbl, fld);
       return null;
     }
-    return table.joinExtField(query, tblAlias, field);
+    if (field.isExtended()) {
+      return table.joinExtField(query, tblAlias, field);
+    }
+    return BeeUtils.ifString(tblAlias, tbl);
   }
 
   public String joinState(HasFrom<?> query, String tbl, String tblAlias, String stateName) {
     Assert.notNull(query);
-    BeeTable table = getTable(tbl);
-    BeeState state = table.getState(stateName);
+    BeeState state = getState(tbl, stateName);
 
     if (BeeUtils.isEmpty(state)) {
       LogUtils.warning(logger, "State not registered:", tbl, stateName);
       return null;
     }
-    return table.joinState(query, tblAlias, state);
+    return getTable(tbl).joinState(query, tblAlias, state);
   }
 
   public void rebuildTable(String tableName) {
@@ -603,6 +651,53 @@ public class SystemBean {
       qs.updateData(SqlUtils.dropTable(tmp));
     }
     return rc;
+  }
+
+  public void setState(String tbl, long id, String stateName, int... roles) {
+    BeeTable table = getTable(tbl);
+    BeeState state = table.getState(stateName);
+    Map<String, Long> roleMasks = new HashMap<String, Long>();
+
+    for (int role : getRoles(null).keySet()) {
+      long bitOn = 1;
+      int bitCount = 64;
+      int pos = (role - 1);
+      String colName = "State" + state.getId() + "Role" + (int) Math.floor(pos / bitCount);
+      pos = pos % bitCount;
+      long mask = 0;
+
+      if (roleMasks.containsKey(colName)) {
+        mask = roleMasks.get(colName);
+      }
+      for (int roleOn : roles) {
+        if (role == roleOn) {
+          mask = mask | (bitOn << pos);
+          break;
+        }
+      }
+      roleMasks.put(colName, mask);
+    }
+    if (state.isChecked()) {
+      for (String col : roleMasks.keySet()) {
+        roleMasks.put(col, ~roleMasks.get(col));
+      }
+    }
+    String stateTable = table.getStateTable(stateName);
+    SqlUpdate su = new SqlUpdate(stateTable)
+      .setWhere(SqlUtils.equal(stateTable, table.getIdName(), id));
+
+    for (Entry<String, Long> entry : roleMasks.entrySet()) {
+      su.addConstant(entry.getKey(), entry.getValue());
+    }
+    if (qs.updateData(su) == 0) {
+      SqlInsert si = new SqlInsert(stateTable)
+        .addConstant(table.getIdName(), id);
+
+      for (Entry<String, Long> entry : roleMasks.entrySet()) {
+        si.addConstant(entry.getKey(), entry.getValue());
+      }
+      qs.updateData(si);
+    }
   }
 
   @Lock(LockType.WRITE)
@@ -734,6 +829,16 @@ public class SystemBean {
   }
 
   private BeeRowSet getViewData(BeeView view, IsCondition wh) {
+    SqlSelect ss = getViewQuery(view, wh);
+    checkStates(ss, view.getSource(), null, "Visible", "Unused");
+
+    BeeRowSet res = qs.getData(ss);
+    res.setViewName(view.getName());
+
+    return res;
+  }
+
+  private SqlSelect getViewQuery(BeeView view, IsCondition wh) {
     if (BeeUtils.isEmpty(view) || view.isEmpty()) {
       return null;
     }
@@ -798,13 +903,7 @@ public class SystemBean {
       ss.addFields(viewSource, getLockName(viewSource), getIdName(viewSource));
     }
     ss.setWhere(wh);
-
-    checkStates(ss, viewSource, aliases.get(viewSource), "Visible", "Unused");
-
-    BeeRowSet res = qs.getData(ss);
-    res.setViewName(view.getName());
-
-    return res;
+    return ss;
   }
 
   private Document getXmlResource(String resource, String resourceSchema) {
@@ -941,7 +1040,7 @@ public class SystemBean {
           tbl.addState(state.getAttribute("name")
               , BeeUtils.toInt(state.getAttribute("id"))
               , state.getAttribute("mode")
-              , BeeUtils.toBoolean(state.getAttribute("unchecked")));
+              , BeeUtils.toBoolean(state.getAttribute("checked")));
         }
       }
       data.add(tbl);
