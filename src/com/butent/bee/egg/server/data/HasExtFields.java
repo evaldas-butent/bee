@@ -2,8 +2,9 @@ package com.butent.bee.egg.server.data;
 
 import com.butent.bee.egg.server.data.BeeTable.BeeField;
 import com.butent.bee.egg.shared.sql.HasFrom;
-import com.butent.bee.egg.shared.sql.IsQuery;
 import com.butent.bee.egg.shared.sql.SqlCreate;
+import com.butent.bee.egg.shared.sql.SqlInsert;
+import com.butent.bee.egg.shared.sql.SqlUpdate;
 
 public interface HasExtFields {
 
@@ -11,9 +12,9 @@ public interface HasExtFields {
 
   String getExtTable(String fldName);
 
-  IsQuery insertExtField(IsQuery query, long rootId, BeeField field, Object newValue);
+  SqlInsert insertExtField(SqlInsert query, long rootId, BeeField field, Object newValue);
 
   String joinExtField(HasFrom<?> query, String tblAlias, BeeField field);
 
-  IsQuery updateExtField(IsQuery query, long rootId, BeeField field, Object newValue);
+  SqlUpdate updateExtField(SqlUpdate query, long rootId, BeeField field, Object newValue);
 }

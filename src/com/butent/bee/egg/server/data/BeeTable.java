@@ -6,7 +6,6 @@ import com.butent.bee.egg.shared.sql.BeeConstants.Keywords;
 import com.butent.bee.egg.shared.sql.HasFrom;
 import com.butent.bee.egg.shared.sql.IsCondition;
 import com.butent.bee.egg.shared.sql.IsFrom;
-import com.butent.bee.egg.shared.sql.IsQuery;
 import com.butent.bee.egg.shared.sql.SqlBuilder;
 import com.butent.bee.egg.shared.sql.SqlBuilderFactory;
 import com.butent.bee.egg.shared.sql.SqlCreate;
@@ -348,7 +347,7 @@ class BeeTable implements HasExtFields, HasStates {
     }
 
     @Override
-    public IsQuery insertExtField(IsQuery query, long rootId, BeeField field, Object newValue) {
+    public SqlInsert insertExtField(SqlInsert query, long rootId, BeeField field, Object newValue) {
       SqlInsert si = null;
 
       if (BeeUtils.isEmpty(query)) {
@@ -356,7 +355,7 @@ class BeeTable implements HasExtFields, HasStates {
             .addConstant(extLockName, System.currentTimeMillis())
             .addConstant(extIdName, rootId);
       } else {
-        si = (SqlInsert) query;
+        si = query;
       }
       si.addConstant(field.getName(), newValue);
 
@@ -398,7 +397,7 @@ class BeeTable implements HasExtFields, HasStates {
     }
 
     @Override
-    public IsQuery updateExtField(IsQuery query, long rootId, BeeField field, Object newValue) {
+    public SqlUpdate updateExtField(SqlUpdate query, long rootId, BeeField field, Object newValue) {
       SqlUpdate su = null;
 
       if (BeeUtils.isEmpty(query)) {
@@ -406,7 +405,7 @@ class BeeTable implements HasExtFields, HasStates {
             .addConstant(extLockName, System.currentTimeMillis())
             .setWhere(SqlUtils.equal(getExtTable(field.getName()), extIdName, rootId));
       } else {
-        su = (SqlUpdate) query;
+        su = query;
       }
       su.addConstant(field.getName(), newValue);
 
@@ -421,64 +420,62 @@ class BeeTable implements HasExtFields, HasStates {
   private class StateSingleTable implements HasStates {
 
     @Override
-    public void checkState(SqlSelect query, String tblAlias, BeeState state, int user, int... roles) {
-      String stateAlias = joinState(query, tblAlias, state);
-      IsCondition wh = state.isChecked() ? SqlUtils.sqlFalse() : null;
-
-      if (!BeeUtils.isEmpty(stateAlias)) {
-        long bitOn = 1;
-        int bitCount = 64;
-
-        if (state.supportsUsers()) {
-          int pos = (user - 1);
-          String colName = "State" + state.getId() + "User" + (int) Math.floor(pos / bitCount);
-          pos = pos % bitCount;
-          long userMask = bitOn << pos;
-
-          if (state.isChecked()) {
-            wh = SqlUtils.and(SqlUtils.isNotNull(stateAlias, colName),
-                SqlUtils.notEqual(SqlUtils.bitAnd(stateAlias, colName, userMask), 0));
-          } else {
-            wh = SqlUtils.or(SqlUtils.isNull(stateAlias, colName),
-                SqlUtils.equal(SqlUtils.bitAnd(stateAlias, colName, userMask), 0));
-          }
-        }
-        if (state.supportsRoles()) {
-          Map<String, Long> roleMasks = new HashMap<String, Long>();
-
-          for (int role : roles) {
-            int pos = (role - 1);
-            String colName = "State" + state.getId() + "Role" + (int) Math.floor(pos / bitCount);
-            pos = pos % bitCount;
-            long mask = 0;
-
-            if (roleMasks.containsKey(colName)) {
-              mask = roleMasks.get(colName);
-            }
-            roleMasks.put(colName, mask | (bitOn << pos));
-          }
-          for (Entry<String, Long> entry : roleMasks.entrySet()) {
-            if (state.isChecked()) {
-              wh = SqlUtils.or(wh,
-                  SqlUtils.and(SqlUtils.isNotNull(stateAlias, entry.getKey()),
-                      SqlUtils.notEqual(
-                          SqlUtils.bitAnd(stateAlias, entry.getKey(), entry.getValue()), 0)));
-            } else {
-              wh = SqlUtils.and(wh,
-                  SqlUtils.or(SqlUtils.isNull(stateAlias, entry.getKey()),
-                      SqlUtils.equal(
-                          SqlUtils.bitAnd(stateAlias, entry.getKey(), entry.getValue()), 0)));
-            }
-          }
-        }
+    public IsCondition checkState(String stateAlias, BeeState state, boolean mdRole, int... bits) {
+      IsCondition wh = null;
+      Map<Integer, Boolean> bitMap = new HashMap<Integer, Boolean>();
+      for (int bit : bits) {
+        bitMap.put(bit, true);
       }
-      query.setWhere(SqlUtils.and(query.getWhere(), wh));
+      Map<String, Long> bitMasks = getMasks(state, mdRole, bitMap);
+
+      for (String fld : bitMasks.keySet()) {
+        wh = SqlUtils.and(wh,
+              SqlUtils.or(SqlUtils.isNull(stateAlias, fld),
+                  SqlUtils.equal(SqlUtils.bitAnd(stateAlias, fld, bitMasks.get(fld)), 0)));
+      }
+      return wh;
+    }
+
+    @Override
+    public SqlCreate createStateTable(BeeState state) {
+      SqlCreate sc = null;
+
+      if (state.isActive()) {
+        return sc;
+      }
+      sc = new SqlCreate(getStateTable(state.getName()), false)
+            .addLong(getIdName(), Keywords.NOT_NULL);
+
+      addForeignKey(getIdName(), getName(), Keywords.CASCADE);
+
+      for (BeeState s : getStates()) {
+        sc.addLong("State" + s.getId() + "Role");
+      }
+      return sc;
     }
 
     @Override
     public String getStateTable(String stateName) {
       Assert.notEmpty(stateName);
       return getName() + "_STATE";
+    }
+
+    @Override
+    public SqlInsert insertState(long id, BeeState state, boolean mdRole, Map<Integer, Boolean> bits) {
+      if (!(mdRole && state.supportsRoles() || state.supportsUsers())) {
+        return null;
+      }
+      Map<String, Long> bitMasks = getMasks(state, mdRole, bits);
+
+      String stateTable = getStateTable(state.getName());
+
+      SqlInsert si = new SqlInsert(stateTable)
+        .addConstant(getIdName(), id);
+
+      for (Entry<String, Long> entry : bitMasks.entrySet()) {
+        si.addConstant(entry.getKey(), entry.getValue());
+      }
+      return si;
     }
 
     @Override
@@ -515,6 +512,71 @@ class BeeTable implements HasExtFields, HasStates {
         }
       }
       return stateAlias;
+    }
+
+    @Override
+    public SqlUpdate updateState(long id, BeeState state, boolean mdRole, Map<Integer, Boolean> bits) {
+      if (!(mdRole && state.supportsRoles() || state.supportsUsers())) {
+        return null;
+      }
+      Map<String, Long> bitMasks = getMasks(state, mdRole, bits);
+
+      String stateTable = getStateTable(state.getName());
+
+      SqlUpdate su = new SqlUpdate(stateTable)
+        .setWhere(SqlUtils.equal(stateTable, getIdName(), id));
+
+      for (Entry<String, Long> entry : bitMasks.entrySet()) {
+        su.addConstant(entry.getKey(), entry.getValue());
+      }
+      return su;
+    }
+
+    @Override
+    public void verifyState(SqlSelect query, String tblAlias, BeeState state,
+        int user, int... roles) {
+      String stateAlias = joinState(query, tblAlias, state);
+      IsCondition wh = null;
+
+      if (!BeeUtils.isEmpty(stateAlias)) {
+        if (state.supportsUsers()) {
+          wh = checkState(stateAlias, state, false, user);
+        }
+        if (state.supportsRoles()) {
+          wh = SqlUtils.or(wh, checkState(stateAlias, state, true, roles));
+        }
+      } else if (state.isChecked()) {
+        wh = SqlUtils.sqlFalse();
+      }
+      query.setWhere(SqlUtils.and(query.getWhere(), wh));
+    }
+
+    private Map<String, Long> getMasks(BeeState state, boolean mdRole, Map<Integer, Boolean> bits) {
+      Map<String, Long> bitMasks = new HashMap<String, Long>();
+
+      for (int bit : bits.keySet()) {
+        long bitOn = 1;
+        int bitCount = 64;
+        int pos = (bit - 1);
+        String colName = "State" + state.getId() + (mdRole ? "Role" : "User")
+            + (int) Math.floor(pos / bitCount);
+        pos = pos % bitCount;
+        long mask = 0;
+
+        if (bitMasks.containsKey(colName)) {
+          mask = bitMasks.get(colName);
+        }
+        if (bits.get(bit)) {
+          mask = mask | (bitOn << pos);
+        }
+        bitMasks.put(colName, mask);
+      }
+      if (state.isChecked()) {
+        for (String fld : bitMasks.keySet()) {
+          bitMasks.put(fld, ~bitMasks.get(fld));
+        }
+      }
+      return bitMasks;
     }
   }
 
@@ -556,8 +618,8 @@ class BeeTable implements HasExtFields, HasStates {
   }
 
   @Override
-  public void checkState(SqlSelect query, String tblAlias, BeeState state, int user, int... roles) {
-    stateSource.checkState(query, tblAlias, state, user, roles);
+  public IsCondition checkState(String stateAlias, BeeState state, boolean mdRole, int... bits) {
+    return stateSource.checkState(stateAlias, state, mdRole, bits);
   }
 
   @Override
@@ -639,8 +701,13 @@ class BeeTable implements HasExtFields, HasStates {
   }
 
   @Override
-  public IsQuery insertExtField(IsQuery query, long rootId, BeeField field, Object newValue) {
+  public SqlInsert insertExtField(SqlInsert query, long rootId, BeeField field, Object newValue) {
     return extSource.insertExtField(query, rootId, field, newValue);
+  }
+
+  @Override
+  public SqlInsert insertState(long id, BeeState state, boolean mdRole, Map<Integer, Boolean> bits) {
+    return stateSource.insertState(id, state, mdRole, bits);
   }
 
   public boolean isActive() {
@@ -666,8 +733,18 @@ class BeeTable implements HasExtFields, HasStates {
   }
 
   @Override
-  public IsQuery updateExtField(IsQuery query, long rootId, BeeField field, Object newValue) {
+  public SqlUpdate updateExtField(SqlUpdate query, long rootId, BeeField field, Object newValue) {
     return extSource.updateExtField(query, rootId, field, newValue);
+  }
+
+  @Override
+  public SqlUpdate updateState(long id, BeeState state, boolean mdRole, Map<Integer, Boolean> bits) {
+    return stateSource.updateState(id, state, mdRole, bits);
+  }
+
+  @Override
+  public void verifyState(SqlSelect query, String tblAlias, BeeState state, int user, int... roles) {
+    stateSource.verifyState(query, tblAlias, state, user, roles);
   }
 
   void activate() {

@@ -35,6 +35,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -84,22 +85,6 @@ public class SystemBean {
         .setSource(new SqlSelect().addAllFields(name).addFrom(name)));
     }
     return tmp;
-  }
-
-  public void checkStates(SqlSelect query, String tbl, String tblAlias, String... states) {
-    Assert.notNull(query);
-    int userId = getUserId();
-    int[] userRoles = getUserRoles(userId);
-
-    for (String stateName : states) {
-      BeeState state = getState(tbl, stateName);
-
-      if (BeeUtils.isEmpty(state)) {
-        LogUtils.warning(logger, "State not registered:", tbl, stateName);
-      } else {
-        getTable(tbl).checkState(query, tblAlias, state, userId, userRoles);
-      }
-    }
   }
 
   public boolean commitChanges(BeeRowSet changes, ResponseBuffer buff) {
@@ -305,13 +290,13 @@ public class SystemBean {
         mainQuery = queries.get(0)[0];
         arr[1] = queries.get(0)[1];
       }
-      arr[0] = table.insertExtField(mainQuery, id, field, entry[1]);
+      arr[0] = table.insertExtField((SqlInsert) mainQuery, id, field, entry[1]);
 
       if (arr[0] != mainQuery) {
         queries.add(arr);
       }
       if (updateMode) {
-        arr[1] = table.updateExtField(arr[1], id, field, entry[1]);
+        arr[1] = table.updateExtField((SqlUpdate) arr[1], id, field, entry[1]);
       }
     }
     for (List<IsQuery[]> queries : queryMap.values()) {
@@ -341,14 +326,14 @@ public class SystemBean {
 
     if (allMode) {
       for (BeeTable table : getTables()) {
-        BeeState state = table.getState(stateName);
+        BeeState state = getState(table.getName(), stateName);
 
         if (!BeeUtils.isEmpty(state) && state.supportsRoles()) {
           states.add(state);
         }
       }
     } else {
-      BeeState state = getTable(tblName).getState(stateName);
+      BeeState state = getState(tblName, stateName);
       if (!BeeUtils.isEmpty(state) && state.supportsRoles()) {
         states.add(state);
       }
@@ -367,29 +352,21 @@ public class SystemBean {
       } else {
         ss = getViewQuery(getView(tbl), null);
       }
-      String als = joinState(ss, tbl, null, state.getName());
+      String stateAlias = joinState(ss, tbl, null, state.getName());
 
       for (Entry<Integer, String> role : getRoles(null).entrySet()) {
         int roleId = role.getKey();
         String colName = state.getName() + roleId + role.getValue();
 
-        if (BeeUtils.isEmpty(als)) {
+        if (BeeUtils.isEmpty(stateAlias)) {
           if (allMode && state.isChecked()) {
             ss.addCount(colName);
           } else {
             ss.addConstant(BeeUtils.toInt(state.isChecked()), colName);
           }
         } else {
-          long bitOn = 1;
-          int bitCount = 64;
-          int pos = (roleId - 1);
-          String col = "State" + state.getId() + "Role" + (int) Math.floor(pos / bitCount);
-          pos = pos % bitCount;
-          long mask = (bitOn << pos);
-
           IsExpression expr = SqlUtils.sqlCase(
-              SqlUtils.or(SqlUtils.isNull(als, col)
-                  , SqlUtils.equal(SqlUtils.bitAnd(als, col, mask), 0)),
+              getTable(tbl).checkState(stateAlias, state, true, roleId),
               BeeUtils.toInt(state.isChecked()), BeeUtils.toInt(!state.isChecked()));
 
           if (allMode) {
@@ -653,50 +630,54 @@ public class SystemBean {
     return rc;
   }
 
-  public void setState(String tbl, long id, String stateName, int... roles) {
+  public void setState(String tbl, long id, String stateName, boolean mdRole, int... bits) {
+    BeeState state = getState(tbl, stateName);
     BeeTable table = getTable(tbl);
-    BeeState state = table.getState(stateName);
-    Map<String, Long> roleMasks = new HashMap<String, Long>();
 
-    for (int role : getRoles(null).keySet()) {
-      long bitOn = 1;
-      int bitCount = 64;
-      int pos = (role - 1);
-      String colName = "State" + state.getId() + "Role" + (int) Math.floor(pos / bitCount);
-      pos = pos % bitCount;
-      long mask = 0;
+    if (BeeUtils.isEmpty(state)) {
+      LogUtils.warning(logger, "State not registered:", tbl, stateName);
+    } else {
+      if (!state.isActive()) {
+        SqlCreate sc = table.createStateTable(state);
 
-      if (roleMasks.containsKey(colName)) {
-        mask = roleMasks.get(colName);
-      }
-      for (int roleOn : roles) {
-        if (role == roleOn) {
-          mask = mask | (bitOn << pos);
-          break;
+        if (!BeeUtils.isEmpty(sc)) {
+          state.initialize(qs.updateData(sc) >= 0);
         }
       }
-      roleMasks.put(colName, mask);
-    }
-    if (state.isChecked()) {
-      for (String col : roleMasks.keySet()) {
-        roleMasks.put(col, ~roleMasks.get(col));
+      Collection<Integer> bitSet = null;
+
+      if (mdRole) {
+        bitSet = getRoles(null).keySet();
+      } else {
+        bitSet = new HashSet<Integer>(); // TODO getUsers()
+      }
+      Map<Integer, Boolean> bitMap = new HashMap<Integer, Boolean>();
+
+      for (int bit : bitSet) {
+        bitMap.put(bit, BeeUtils.contains(bit, bits));
+      }
+      SqlUpdate su = table.updateState(id, state, mdRole, bitMap);
+
+      if (!BeeUtils.isEmpty(su) && qs.updateData(su) == 0) {
+        SqlInsert si = table.insertState(id, state, mdRole, bitMap);
+        qs.updateData(si);
       }
     }
-    String stateTable = table.getStateTable(stateName);
-    SqlUpdate su = new SqlUpdate(stateTable)
-      .setWhere(SqlUtils.equal(stateTable, table.getIdName(), id));
+  }
 
-    for (Entry<String, Long> entry : roleMasks.entrySet()) {
-      su.addConstant(entry.getKey(), entry.getValue());
-    }
-    if (qs.updateData(su) == 0) {
-      SqlInsert si = new SqlInsert(stateTable)
-        .addConstant(table.getIdName(), id);
+  public void verifyStates(SqlSelect query, String tbl, String tblAlias,
+      int userId, String... states) {
+    Assert.notNull(query);
+    Assert.notEmpty(userId);
 
-      for (Entry<String, Long> entry : roleMasks.entrySet()) {
-        si.addConstant(entry.getKey(), entry.getValue());
+    for (String stateName : states) {
+      BeeState state = getState(tbl, stateName);
+
+      if (BeeUtils.isEmpty(state)) {
+        LogUtils.warning(logger, "State not registered:", tbl, stateName);
+      } else {
+        getTable(tbl).verifyState(query, tblAlias, state, userId, getUserRoles(userId));
       }
-      qs.updateData(si);
     }
   }
 
@@ -830,7 +811,7 @@ public class SystemBean {
 
   private BeeRowSet getViewData(BeeView view, IsCondition wh) {
     SqlSelect ss = getViewQuery(view, wh);
-    checkStates(ss, view.getSource(), null, "Visible", "Unused");
+    verifyStates(ss, view.getSource(), null, getUserId(), "Visible", "Unused");
 
     BeeRowSet res = qs.getData(ss);
     res.setViewName(view.getName());

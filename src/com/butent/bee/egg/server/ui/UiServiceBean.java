@@ -264,7 +264,7 @@ public class UiServiceBean {
           roles[i] = BeeUtils.toInt(rArr[i]);
         }
       }
-      sys.setState(tbl, id, state, roles);
+      sys.setState(tbl, id, state, true, roles);
       buff.add("Toggle OK");
 
     } else {
