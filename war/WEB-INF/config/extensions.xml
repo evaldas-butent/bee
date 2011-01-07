@@ -25,7 +25,7 @@
       <BeeKey fields="Language, Capital" unique="true" />
     </BeeExtended>
     <BeeStates>
-      <BeeState name="Visible" id="1" checked="false" />
+      <BeeState name="Visible" id="1" mode="ROLE" checked="true" />
     </BeeStates>
   </BeeTable>
   <BeeTable name="DataTypes">
@@ -50,6 +50,7 @@
       <BeeField name="PostIndex" type="STRING" precision="10" unique="true" />
     </BeeExtended>
     <BeeStates>
+      <BeeState name="Visible" id="1" mode="ROLE" checked="false" />
       <BeeState name="pyp" id="4" />
       <BeeState name="pop" id="5" />
     </BeeStates>

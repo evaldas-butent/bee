@@ -30,12 +30,13 @@ public abstract class Conditions implements IsCondition {
   public String getSqlString(SqlBuilder builder, boolean paramMode) {
     StringBuilder clause = new StringBuilder();
 
-    for (int i = 0; i < conditionList.size(); i++) {
-      IsCondition cond = conditionList.get(i);
-      if (i > 0) {
+    for (IsCondition cond : conditionList) {
+      String expr = cond.getSqlString(builder, paramMode);
+
+      if (!BeeUtils.isEmpty(expr) && clause.length() > 0) {
         clause.append(joinMode());
       }
-      clause.append(cond.getSqlString(builder, paramMode));
+      clause.append(expr);
     }
     return clause.toString();
   }

@@ -130,6 +130,16 @@ public abstract class SqlBuilder {
       case BITAND:
         return "(" + params[0] + "&" + params[1] + ")";
 
+      case IF:
+        StringBuilder sqlIf = new StringBuilder("CASE WHEN ")
+          .append(params[0])
+          .append(" THEN ")
+          .append(params[1])
+          .append(" ELSE ")
+          .append(params[2])
+          .append(" END");
+        return sqlIf.toString();
+
       default:
         Assert.unsupported("Unsupported keyword: " + option);
         return null;

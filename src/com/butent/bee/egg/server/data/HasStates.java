@@ -8,13 +8,17 @@ import com.butent.bee.egg.shared.sql.SqlInsert;
 import com.butent.bee.egg.shared.sql.SqlSelect;
 import com.butent.bee.egg.shared.sql.SqlUpdate;
 
+import java.util.Collection;
 import java.util.Map;
 
 public interface HasStates {
 
-  SqlCreate createStateTable(BeeState state);
+  SqlCreate createStateTable(SqlCreate query, BeeState state,
+      Collection<Integer> users, Collection<Integer> roles);
 
   IsCondition checkState(String stateAlias, BeeState state, boolean mdRole, int... bits);
+
+  String getStateField(String stateName);
 
   String getStateTable(String stateName);
 

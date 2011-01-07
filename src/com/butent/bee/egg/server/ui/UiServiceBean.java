@@ -17,7 +17,9 @@ import com.butent.bee.egg.shared.sql.SqlUtils;
 import com.butent.bee.egg.shared.ui.UiComponent;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 
 import javax.annotation.Resource;
@@ -75,6 +77,10 @@ public class UiServiceBean {
         getTables(buff);
       } else if (svc.equals("rpc_ui_table")) {
         getTable(reqInfo, buff);
+      } else if (svc.equals("rpc_ui_states")) {
+        getStates(reqInfo, buff);
+      } else if (svc.equals("rpc_ui_statetable")) {
+        getStateTable(reqInfo, buff);
       } else if (svc.equals("rpc_ui_commit")) {
         commitChanges(reqInfo, buff);
       } else {
@@ -119,7 +125,7 @@ public class UiServiceBean {
   }
 
   private void formInfo(RequestInfo reqInfo, ResponseBuffer buff) {
-    String fName = getXmlField(reqInfo, buff, "form_name");
+    String fName = getXmlField(reqInfo, "form_name");
 
     UiComponent form = holder.getForm(fName);
 
@@ -147,10 +153,34 @@ public class UiServiceBean {
     }
   }
 
+  private void getStates(RequestInfo reqInfo, ResponseBuffer buff) {
+    String table = getXmlField(reqInfo, "table_name");
+    Set<String> states = new HashSet<String>();
+
+    for (String tbl : sys.getTableNames()) {
+      if (BeeUtils.isEmpty(table) || BeeUtils.same(tbl, table)) {
+        for (String state : sys.getTableStates(tbl)) {
+          states.add(state);
+        }
+      }
+    }
+    buff.addColumn(new BeeColumn("BeeStates"));
+    for (String state : states) {
+      buff.add(state);
+    }
+  }
+
+  private void getStateTable(RequestInfo reqInfo, ResponseBuffer buff) {
+    String table = getXmlField(reqInfo, "table_name");
+    String states = getXmlField(reqInfo, "table_states");
+    BeeRowSet res = sys.editStateRoles(table, states);
+    buff.add(res.serialize());
+  }
+
   private void getTable(RequestInfo reqInfo, ResponseBuffer buff) {
-    String table = getXmlField(reqInfo, buff, "table_name");
-    BeeRowSet res = sys.editStateRoles(null, "Visible");
-    // BeeRowSet res = sys.getViewData(table);
+    String table = getXmlField(reqInfo, "table_name");
+    String states = getXmlField(reqInfo, "table_states");
+    BeeRowSet res = sys.getViewData(table, states);
     buff.add(res.serialize());
   }
 
@@ -162,24 +192,23 @@ public class UiServiceBean {
     }
   }
 
-  private String getXmlField(RequestInfo reqInfo, ResponseBuffer buff,
-      String fieldName) {
+  private String getXmlField(RequestInfo reqInfo, String fieldName) {
     String xml = reqInfo.getContent();
     if (BeeUtils.isEmpty(xml)) {
-      buff.add("Request data not found");
+      logger.warning("Request data not found");
       return null;
     }
 
     Map<String, String> fields = XmlUtils.getElements(xml);
     if (BeeUtils.isEmpty(fields)) {
-      buff.addLine("No elements with text found in", xml);
+      logger.warning("No elements with text found");
       return null;
     }
     return fields.get(fieldName);
   }
 
   private void gridInfo(RequestInfo reqInfo, ResponseBuffer buff) {
-    String gName = getXmlField(reqInfo, buff, "grid_name");
+    String gName = getXmlField(reqInfo, "grid_name");
     String grd = gName;
 
     SqlSelect ss = new SqlSelect();
@@ -216,9 +245,9 @@ public class UiServiceBean {
   }
 
   private void menuInfo(RequestInfo reqInfo, ResponseBuffer buff) {
-    String mName = getXmlField(reqInfo, buff, "menu_name");
-    String lRoot = getXmlField(reqInfo, buff, "root_layout");
-    String lItem = getXmlField(reqInfo, buff, "item_layout");
+    String mName = getXmlField(reqInfo, "menu_name");
+    String lRoot = getXmlField(reqInfo, "root_layout");
+    String lItem = getXmlField(reqInfo, "item_layout");
 
     UiComponent menu = holder.getMenu(mName, lRoot, lItem,
         "/com/butent/bee/egg/server/menu.xml");

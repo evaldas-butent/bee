@@ -264,12 +264,12 @@ public class SqlUtils {
     return cb;
   }
 
-  public static IsExpression sqlCase(IsCondition cond, Object ifTrue, Object ifFalse) {
-    return expression(new SqlCommand(Keywords.CASE, cond, ifTrue, ifFalse));
-  }
-
   public static IsCondition sqlFalse() {
     return equal(constant(1), 0);
+  }
+
+  public static IsExpression sqlIf(IsCondition cond, Object ifTrue, Object ifFalse) {
+    return expression(new SqlCommand(Keywords.IF, cond, ifTrue, ifFalse));
   }
 
   public static IsCondition sqlTrue() {

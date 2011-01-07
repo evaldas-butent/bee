@@ -328,7 +328,7 @@ public class BeeUi implements Module {
     Assert.notNull(np, "sibling panel not found");
 
     deactivatePanel();
-    
+
     setTemporaryDetach(true);
     np.move(parent);
     setTemporaryDetach(false);
@@ -357,7 +357,7 @@ public class BeeUi implements Module {
     Widget w = p.getCenter();
     if (w != null) {
       boolean scroll = p.isWidgetScroll(w);
-      
+
       setTemporaryDetach(true);
       p.remove(w);
       setTemporaryDetach(false);

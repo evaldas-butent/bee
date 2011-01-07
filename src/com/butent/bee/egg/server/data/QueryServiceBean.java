@@ -19,9 +19,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.logging.Logger;
 
 import javax.ejb.EJB;
@@ -45,15 +43,11 @@ public class QueryServiceBean {
   @EJB
   SystemBean sys;
 
-  public Collection<String> dbFields(String table) {
-    Set<String> dbFields = new HashSet<String>();
+  public String[] dbFields(String table) {
     BeeRowSet res = getData(new SqlSelect()
       .addAllFields(table).addFrom(table).setWhere(SqlUtils.sqlFalse()));
 
-    for (String column : res.getColumnNames()) {
-      dbFields.add(column);
-    }
-    return dbFields;
+    return res.getColumnNames();
   }
 
   public Collection<String[]> dbForeignKeys(String dbName, String dbSchema, String table,
@@ -88,13 +82,15 @@ public class QueryServiceBean {
     return "";
   }
 
-  public Collection<String> dbTables(String dbName, String dbSchema, String table) {
-    Set<String> dbTables = new HashSet<String>();
+  public String[] dbTables(String dbName, String dbSchema, String table) {
     BeeRowSet res = (BeeRowSet) processSql(SqlUtils.dbTables(dbName, dbSchema, table).getQuery());
+    String[] dbTables = new String[res.getRowCount()];
 
     if (!res.isEmpty()) {
+      int i = 0;
+
       for (BeeRow row : res.getRows()) {
-        dbTables.add(row.getValue(0));
+        dbTables[i++] = row.getValue(0);
       }
     }
     return dbTables;

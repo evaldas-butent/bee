@@ -51,6 +51,9 @@ class OracleSqlBuilder extends SqlBuilder {
       case TEMPORARY:
         return "";
 
+      case BITAND:
+        return "BITAND(" + params[0] + "," + params[1] + ")";
+
       default:
         return super.sqlKeyword(option, params);
     }
