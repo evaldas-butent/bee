@@ -6,12 +6,13 @@ import com.butent.bee.egg.shared.sql.BeeConstants.Keywords;
 import com.butent.bee.egg.shared.sql.SqlCreate.SqlField;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public abstract class SqlBuilder {
 
-  protected String sqlKeyword(Keywords option, Object... params) {
+  protected String sqlKeyword(Keywords option, Map<String, Object> params) {
     switch (option) {
       case NOT_NULL:
         return "NOT NULL";
@@ -19,44 +20,39 @@ public abstract class SqlBuilder {
       case CREATE_INDEX:
         StringBuilder index = new StringBuilder("CREATE");
 
-        if (!BeeUtils.isEmpty(params[0])) {
+        if (!BeeUtils.isEmpty(params.get("unique"))) {
           index.append(" UNIQUE");
         }
         index.append(" INDEX ")
-          .append(params[2])
+          .append(params.get("name"))
           .append(" ON ")
-          .append(params[1])
-          .append(" (").append(BeeUtils.join(params, ", ", 3)).append(")");
+          .append(params.get("table"))
+          .append(" (").append(params.get("fields")).append(")");
         return index.toString();
 
       case ADD_CONSTRAINT:
         StringBuilder cmd = new StringBuilder("ALTER TABLE ")
-          .append(params[0])
+          .append(params.get("table"))
           .append(" ADD CONSTRAINT ")
-          .append(params[1]);
-
-        Object[] prm = new Object[params.length - 3];
-        for (int i = 3; i < params.length; i++) {
-          prm[i - 3] = params[i];
-        }
-        cmd.append(sqlKeyword((Keywords) params[2], prm));
+          .append(params.get("name"))
+          .append(sqlKeyword((Keywords) params.get("type"), params));
         return cmd.toString();
 
       case PRIMARYKEY:
         StringBuilder primary = new StringBuilder(" PRIMARY KEY (")
-          .append(BeeUtils.join(params, ", ")).append(")");
+          .append(params.get("fields")).append(")");
         return primary.toString();
 
       case FOREIGNKEY:
         StringBuilder foreign = new StringBuilder(" FOREIGN KEY (")
-          .append(params[0])
+          .append(params.get("field"))
           .append(") REFERENCES ")
-          .append(params[1])
-          .append(" (").append(params[2]).append(")");
+          .append(params.get("refTable"))
+          .append(" (").append(params.get("refField")).append(")");
 
-        if (!BeeUtils.isEmpty(params[3])) {
+        if (!BeeUtils.isEmpty(params.get("action"))) {
           foreign.append(" ON DELETE ")
-            .append(sqlKeyword((Keywords) params[3]));
+            .append(sqlKeyword((Keywords) params.get("action"), null));
         }
         return foreign.toString();
 
@@ -75,11 +71,16 @@ public abstract class SqlBuilder {
       case DB_TABLES:
         IsCondition tableWh = null;
 
-        for (int i = 0; i < 3; i++) {
-          if (!BeeUtils.isEmpty(params[i])) {
-            tableWh = SqlUtils.and(tableWh, SqlUtils.equal("t",
-                i == 0 ? "table_catalog" : (i == 1 ? "table_schema" : "table_name"), params[i]));
-          }
+        if (!BeeUtils.isEmpty(params.get("dbName"))) {
+          tableWh = SqlUtils.equal("t", "table_catalog", params.get("dbName"));
+        }
+        if (!BeeUtils.isEmpty(params.get("dbSchema"))) {
+          tableWh = SqlUtils.and(tableWh,
+              SqlUtils.equal("t", "table_schema", params.get("dbSchema")));
+        }
+        if (!BeeUtils.isEmpty(params.get("table"))) {
+          tableWh = SqlUtils.and(tableWh,
+              SqlUtils.equal("t", "table_name", params.get("table")));
         }
         return new SqlSelect()
           .addFields("t", "table_name")
@@ -90,14 +91,20 @@ public abstract class SqlBuilder {
       case DB_FOREIGNKEYS:
         IsCondition foreignWh = null;
 
-        for (int i = 0; i < 3; i++) {
-          if (!BeeUtils.isEmpty(params[i])) {
-            foreignWh = SqlUtils.and(foreignWh, SqlUtils.equal("t",
-                i == 0 ? "table_catalog" : (i == 1 ? "table_schema" : "table_name"), params[i]));
-          }
+        if (!BeeUtils.isEmpty(params.get("dbName"))) {
+          foreignWh = SqlUtils.equal("t", "table_catalog", params.get("dbName"));
         }
-        if (!BeeUtils.isEmpty(params[3])) {
-          foreignWh = SqlUtils.and(foreignWh, SqlUtils.equal("r", "table_name", params[3]));
+        if (!BeeUtils.isEmpty(params.get("dbSchema"))) {
+          foreignWh = SqlUtils.and(foreignWh,
+              SqlUtils.equal("t", "table_schema", params.get("dbSchema")));
+        }
+        if (!BeeUtils.isEmpty(params.get("table"))) {
+          foreignWh = SqlUtils.and(foreignWh,
+              SqlUtils.equal("t", "table_name", params.get("table")));
+        }
+        if (!BeeUtils.isEmpty(params.get("refTable"))) {
+          foreignWh = SqlUtils.and(foreignWh,
+              SqlUtils.equal("r", "table_name", params.get("refTable")));
         }
         return new SqlSelect()
           .addField("c", "constraint_name", "Name")
@@ -112,31 +119,31 @@ public abstract class SqlBuilder {
           .getQuery(this);
 
       case DROP_TABLE:
-        return "DROP TABLE " + params[0];
+        return "DROP TABLE " + params.get("table");
 
       case DROP_FOREIGNKEY:
         StringBuilder drop = new StringBuilder("ALTER TABLE ")
-          .append(params[0])
+          .append(params.get("table"))
           .append(" DROP CONSTRAINT ")
-          .append(params[1]);
+          .append(params.get("name"));
         return drop.toString();
 
       case TEMPORARY:
         return " TEMPORARY";
 
       case TEMPORARY_NAME:
-        return (String) params[0];
+        return (String) params.get("name");
 
       case BITAND:
-        return "(" + params[0] + "&" + params[1] + ")";
+        return "(" + params.get("expression") + "&" + params.get("value") + ")";
 
       case IF:
         StringBuilder sqlIf = new StringBuilder("CASE WHEN ")
-          .append(params[0])
+          .append(params.get("condition"))
           .append(" THEN ")
-          .append(params[1])
+          .append(params.get("ifTrue"))
           .append(" ELSE ")
-          .append(params[2])
+          .append(params.get("ifFalse"))
           .append(" END");
         return sqlIf.toString();
 
@@ -185,16 +192,20 @@ public abstract class SqlBuilder {
     Assert.notNull(sc);
     Assert.state(!sc.isEmpty());
 
-    List<Object> params = new ArrayList<Object>();
+    Map<String, Object> params = new HashMap<String, Object>();
+    Map<String, Object> paramMap = sc.getParameters();
 
-    for (Object prm : sc.getParameters()) {
-      if (prm instanceof IsSql) {
-        params.add(((IsSql) prm).getSqlString(this, paramMode));
-      } else {
-        params.add(prm);
+    if (!BeeUtils.isEmpty(paramMap)) {
+      for (String prm : paramMap.keySet()) {
+        Object value = paramMap.get(prm);
+
+        if (value instanceof IsSql) {
+          value = ((IsSql) value).getSqlString(this, paramMode);
+        }
+        params.put(prm, value);
       }
     }
-    return sqlKeyword(sc.getCommand(), params.toArray());
+    return sqlKeyword(sc.getCommand(), params);
   }
 
   String getCreate(SqlCreate sc, boolean paramMode) {
@@ -204,7 +215,7 @@ public abstract class SqlBuilder {
     StringBuilder query = new StringBuilder("CREATE");
 
     if (sc.isTemporary()) {
-      query.append(sqlKeyword(Keywords.TEMPORARY));
+      query.append(sqlKeyword(Keywords.TEMPORARY, null));
     }
     query.append(" TABLE ");
 
@@ -226,7 +237,7 @@ public abstract class SqlBuilder {
           .append(" ").append(sqlType(field.getType(), field.getPrecision(), field.getScale()));
 
         for (Keywords opt : field.getOptions()) {
-          query.append(" ").append(sqlKeyword(opt));
+          query.append(" ").append(sqlKeyword(opt, null));
         }
       }
       query.append(")");
@@ -308,6 +319,9 @@ public abstract class SqlBuilder {
 
     StringBuilder query = new StringBuilder("SELECT ");
 
+    if (ss.isDistinctMode()) {
+      query.append("DISTINCT ");
+    }
     List<IsExpression[]> fieldList = ss.getFields();
 
     for (int i = 0; i < fieldList.size(); i++) {
@@ -354,24 +368,6 @@ public abstract class SqlBuilder {
         query.append(group);
       }
     }
-    List<Object[]> orderList = ss.getOrderBy();
-
-    if (!BeeUtils.isEmpty(orderList)) {
-      query.append(" ORDER BY ");
-
-      for (int i = 0; i < orderList.size(); i++) {
-        if (i > 0) {
-          query.append(", ");
-        }
-        Object[] orderEntry = orderList.get(i);
-        IsExpression order = (IsExpression) orderEntry[SqlSelect.ORDER_EXPR];
-        query.append(order.getSqlString(this, paramMode));
-
-        if ((Boolean) orderEntry[SqlSelect.ORDER_DESC]) {
-          query.append(" DESC");
-        }
-      }
-    }
     IsCondition havingClause = ss.getHaving();
 
     if (!BeeUtils.isEmpty(havingClause)) {
@@ -382,8 +378,26 @@ public abstract class SqlBuilder {
 
     if (!BeeUtils.isEmpty(unionList)) {
       for (SqlSelect union : unionList) {
-        query.append(ss.getUnionMode())
-          .append(union.getSqlString(this, paramMode));
+        query.append(ss.isUnionAllMode() ? " UNION ALL " : " UNION ")
+          .append("(").append(union.getSqlString(this, paramMode)).append(")");
+      }
+    }
+    List<String[]> orderList = ss.getOrderBy();
+
+    if (!BeeUtils.isEmpty(orderList)) {
+      query.append(" ORDER BY ");
+
+      for (int i = 0; i < orderList.size(); i++) {
+        if (i > 0) {
+          query.append(", ");
+        }
+        String[] orderEntry = orderList.get(i);
+        IsExpression order = BeeUtils.isEmpty(ss.getUnion())
+            ? SqlUtils.field(orderEntry[SqlSelect.ORDER_SRC], orderEntry[SqlSelect.ORDER_FLD])
+            : SqlUtils.name(orderEntry[SqlSelect.ORDER_FLD]);
+
+        query.append(order.getSqlString(this, paramMode))
+          .append(orderEntry[SqlSelect.ORDER_DESC]);
       }
     }
     return query.toString();

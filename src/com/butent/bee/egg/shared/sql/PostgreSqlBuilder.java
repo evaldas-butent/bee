@@ -2,11 +2,14 @@ package com.butent.bee.egg.shared.sql;
 
 import com.butent.bee.egg.shared.sql.BeeConstants.DataTypes;
 import com.butent.bee.egg.shared.sql.BeeConstants.Keywords;
+import com.butent.bee.egg.shared.utils.BeeUtils;
+
+import java.util.Map;
 
 class PostgreSqlBuilder extends SqlBuilder {
 
   @Override
-  protected String sqlKeyword(Keywords option, Object... params) {
+  protected String sqlKeyword(Keywords option, Map<String, Object> params) {
     switch (option) {
       case DB_NAME:
         return "SELECT current_database() as dbName";
@@ -37,5 +40,20 @@ class PostgreSqlBuilder extends SqlBuilder {
       default:
         return super.sqlType(type, precision, scale);
     }
+  }
+
+  @Override
+  String getQuery(SqlSelect ss, boolean paramMode) {
+    int limit = ss.getLimit();
+    int offset = ss.getOffset();
+    String sql = super.getQuery(ss, paramMode);
+
+    if (BeeUtils.isPositive(limit)) {
+      sql += " LIMIT " + limit;
+    }
+    if (BeeUtils.isPositive(offset)) {
+      sql += " OFFSET " + offset;
+    }
+    return sql;
   }
 }

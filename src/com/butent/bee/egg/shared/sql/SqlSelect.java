@@ -10,21 +10,22 @@ public class SqlSelect extends HasFrom<SqlSelect> {
 
   static final int FIELD_EXPR = 0;
   static final int FIELD_ALIAS = 1;
-  static final int ORDER_EXPR = 0;
-  static final int ORDER_DESC = 1;
+
+  static final int ORDER_SRC = 0;
+  static final int ORDER_FLD = 1;
+  static final int ORDER_DESC = 2;
 
   private List<IsExpression[]> fieldList;
   private IsCondition whereClause;
   private List<IsExpression> groupList;
-  private List<Object[]> orderList;
+  private List<String[]> orderList;
   private IsCondition havingClause;
   private List<SqlSelect> unionList;
 
-  private String unionMode;
-
-  public SqlSelect() {
-    setUnionAllMode(true);
-  }
+  private boolean distinctMode = false;
+  private boolean unionAllMode = false;
+  private int limit = 0;
+  private int offset = 0;
 
   public SqlSelect addAllFields(String source) {
     Assert.notEmpty(source);
@@ -50,18 +51,13 @@ public class SqlSelect extends HasFrom<SqlSelect> {
     return getReference();
   }
 
-  public SqlSelect addCount(String alias) {
-    return addCount(SqlUtils.expression("*"), alias);
-  }
-
   public SqlSelect addCount(IsExpression expr, String alias) {
     addAggregate("COUNT", expr, alias);
     return getReference();
   }
 
-  public SqlSelect addDistinct(String source, String field) {
-    addField(SqlUtils.expression("DISTINCT ", SqlUtils.field(source, field)), null);
-    return getReference();
+  public SqlSelect addCount(String alias) {
+    return addCount(SqlUtils.expression("*"), alias);
   }
 
   public SqlSelect addExpr(IsExpression expr, String alias) {
@@ -123,12 +119,12 @@ public class SqlSelect extends HasFrom<SqlSelect> {
   }
 
   public SqlSelect addOrder(String source, String... order) {
-    addOrder(false, SqlUtils.fields(source, order));
+    addOrder(false, source, order);
     return getReference();
   }
 
   public SqlSelect addOrderDesc(String source, String... order) {
-    addOrder(true, SqlUtils.fields(source, order));
+    addOrder(true, source, order);
     return getReference();
   }
 
@@ -172,7 +168,15 @@ public class SqlSelect extends HasFrom<SqlSelect> {
     return havingClause;
   }
 
-  public List<Object[]> getOrderBy() {
+  public int getLimit() {
+    return limit;
+  }
+
+  public int getOffset() {
+    return offset;
+  }
+
+  public List<String[]> getOrderBy() {
     return orderList;
   }
 
@@ -198,7 +202,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
     }
     if (!BeeUtils.isEmpty(orderList)) {
       for (Object[] order : orderList) {
-        IsExpression ord = (IsExpression) order[ORDER_EXPR];
+        IsExpression ord = (IsExpression) order[ORDER_FLD];
         SqlUtils.addParams(paramList, ord.getSqlParams());
       }
     }
@@ -223,17 +227,21 @@ public class SqlSelect extends HasFrom<SqlSelect> {
     return unionList;
   }
 
-  public String getUnionMode() {
-    return unionMode;
-  }
-
   public IsCondition getWhere() {
     return whereClause;
+  }
+
+  public boolean isDistinctMode() {
+    return distinctMode;
   }
 
   @Override
   public boolean isEmpty() {
     return BeeUtils.isEmpty(fieldList) || BeeUtils.isEmpty(getFrom());
+  }
+
+  public boolean isUnionAllMode() {
+    return unionAllMode;
   }
 
   public SqlSelect resetFields() {
@@ -250,13 +258,31 @@ public class SqlSelect extends HasFrom<SqlSelect> {
     return getReference();
   }
 
+  public SqlSelect setDistinctMode(boolean distinct) {
+    this.distinctMode = distinct;
+    return getReference();
+  }
+
   public SqlSelect setHaving(IsCondition having) {
     havingClause = having;
     return getReference();
   }
 
-  public void setUnionAllMode(boolean allMode) {
-    unionMode = allMode ? " UNION ALL " : " UNION ";
+  public SqlSelect setLimit(int limit) {
+    Assert.nonNegative(limit);
+    this.limit = limit;
+    return getReference();
+  }
+
+  public SqlSelect setOffset(int offset) {
+    Assert.nonNegative(offset);
+    this.offset = offset;
+    return getReference();
+  }
+
+  public SqlSelect setUnionAllMode(boolean unionAll) {
+    unionAllMode = unionAll;
+    return getReference();
   }
 
   public SqlSelect setWhere(IsCondition clause) {
@@ -294,14 +320,17 @@ public class SqlSelect extends HasFrom<SqlSelect> {
     }
   }
 
-  private void addOrder(Boolean desc, IsExpression... order) {
-    for (IsExpression ord : order) {
-      Object[] orderEntry = new Object[2];
-      orderEntry[ORDER_EXPR] = ord;
-      orderEntry[ORDER_DESC] = !BeeUtils.isEmpty(desc);
+  private void addOrder(Boolean desc, String source, String... fields) {
+    Assert.notEmpty(source);
+
+    for (String ord : fields) {
+      String[] orderEntry = new String[3];
+      orderEntry[ORDER_SRC] = source;
+      orderEntry[ORDER_FLD] = ord;
+      orderEntry[ORDER_DESC] = BeeUtils.isEmpty(desc) ? "" : " DESC";
 
       if (BeeUtils.isEmpty(orderList)) {
-        orderList = new ArrayList<Object[]>();
+        orderList = new ArrayList<String[]>();
       }
       orderList.add(orderEntry);
     }

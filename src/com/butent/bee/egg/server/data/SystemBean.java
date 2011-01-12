@@ -213,7 +213,7 @@ public class SystemBean {
           int res = qs.updateData(su.setWhere(wh));
 
           if (res == 0) { // Optimistic lock exception
-            BeeRowSet rs = getViewData(view, idWh);
+            BeeRowSet rs = getViewData(view, idWh, 0, 0);
 
             if (!rs.isEmpty()) {
               BeeRow r = rs.getRow(0);
@@ -383,8 +383,8 @@ public class SystemBean {
     }
     if (BeeUtils.isEmpty(union)) {
       union = new SqlSelect()
-        .addMax(SqlUtils.constant("State \"" + stateName + "\" does not supports roles"), "Error")
-        .addFrom("bee_Sequence");
+        .addMax(SqlUtils.constant("State \"" + stateName + "\" does not support roles"), "Error")
+        .addFrom("Roles");
     }
     return qs.getData(union);
   }
@@ -483,8 +483,8 @@ public class SystemBean {
     return users;
   }
 
-  public BeeRowSet getViewData(String viewName, String states) {
-    return getViewData(getView(viewName), null,
+  public BeeRowSet getViewData(String viewName, int limit, int offset, String states) {
+    return getViewData(getView(viewName), null, limit, offset,
         BeeUtils.isEmpty(states) ? null : states.split(" "));
   }
 
@@ -674,6 +674,9 @@ public class SystemBean {
 
     if (BeeUtils.isEmpty(state)) {
       LogUtils.warning(logger, "State not registered:", tbl, stateName);
+    } else if (mdRole ? !state.supportsRoles() : !state.supportsUsers()) {
+      LogUtils.warning(logger, "State does not support " + (mdRole ? "Roles" : "Users") + " mode:",
+          tbl, stateName);
     } else {
       if (!state.isActive()) {
         state.setActive(true);
@@ -866,8 +869,11 @@ public class SystemBean {
     return view;
   }
 
-  private BeeRowSet getViewData(BeeView view, IsCondition wh, String... states) {
-    SqlSelect ss = getViewQuery(view, wh);
+  private BeeRowSet getViewData(BeeView view, IsCondition wh, int limit, int offset,
+      String... states) {
+    SqlSelect ss = getViewQuery(view, wh)
+      .setLimit(limit)
+      .setOffset(offset);
 
     if (!BeeUtils.isEmpty(states)) {
       verifyStates(ss, view.getSource(), null, getUserId(), states);

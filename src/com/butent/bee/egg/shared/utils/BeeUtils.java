@@ -81,7 +81,7 @@ public class BeeUtils {
       }
     }
     return bld;
-  }   
+  }
 
   public static Object arrayGet(Object arr, int idx) {
     if (arr instanceof Object[]) {
@@ -264,6 +264,26 @@ public class BeeUtils {
     return s.toString();
   }
 
+  public static String concatNoTrim(Object... x) {
+    int c = x.length;
+
+    if (c <= 1) {
+      return BeeConst.STRING_EMPTY;
+    }
+    StringBuilder s = new StringBuilder();
+    String sep = normSep(x[0]);
+
+    for (int i = 1; i < c; i++) {
+      if (!isEmpty(x[i], BeeType.TYPE_NUMBER)) {
+        if (s.length() > 0) {
+          s.append(sep);
+        }
+        s.append(transformNoTrim(x[i]));
+      }
+    }
+    return s.toString();
+  }
+
   public static boolean contains(int value, int[] arr) {
     return indexOf(value, arr) >= 0;
   }
@@ -323,7 +343,7 @@ public class BeeUtils {
       return pfx.trim() + nameCounter;
     }
   }
-  
+
   public static String delete(String src, int start, int end) {
     if (src == null) {
       return BeeConst.STRING_EMPTY;
@@ -335,7 +355,7 @@ public class BeeUtils {
     if (start >= len || start >= end || end <= 0) {
       return src;
     }
-    
+
     if (start <= 0 && end >= len) {
       return BeeConst.STRING_EMPTY;
     }
@@ -359,7 +379,7 @@ public class BeeUtils {
       return x.equals(y);
     }
   }
-  
+
   public static boolean equalsTrim(String s1, String s2) {
     if (s1 == null) {
       return s2 == null;
@@ -485,7 +505,7 @@ public class BeeUtils {
       return null;
     }
   }
-  
+
   public static <K, V> K getKey(Map<K, V> map, V value) {
     K key = null;
     for (Map.Entry<K, V> entry : map.entrySet()) {
@@ -524,7 +544,7 @@ public class BeeUtils {
       return BeeConst.STRING_EMPTY;
     }
   }
-  
+
   public static String getSuffix(String src, char sep) {
     if (isEmpty(src)) {
       return BeeConst.STRING_EMPTY;
@@ -673,7 +693,7 @@ public class BeeUtils {
     }
     return ok;
   }
-  
+
   public static String insert(String src, int pos, char c) {
     Assert.notNull(src);
     Assert.nonNegative(pos);
@@ -740,7 +760,7 @@ public class BeeUtils {
           || same(s, BeeConst.STRING_FALSE) || same(s, BeeConst.NO);
     }
   }
-  
+
   public static boolean isDigit(char c) {
     return c >= BeeConst.CHAR_ZERO && c <= BeeConst.CHAR_NINE;
   }
@@ -764,7 +784,7 @@ public class BeeUtils {
     }
     return ok;
   }
-  
+
   public static boolean isDouble(double x) {
     return !Double.isNaN(x) && !Double.isInfinite(x);
   }
@@ -873,7 +893,7 @@ public class BeeUtils {
   public static boolean isInt(double x) {
     return isDouble(x) && x > Integer.MIN_VALUE && x < Integer.MAX_VALUE;
   }
-  
+
   public static boolean isInt(String s) {
     if (isEmpty(s)) {
       return false;
@@ -892,7 +912,7 @@ public class BeeUtils {
   public static boolean isLong(double x) {
     return isDouble(x) && x > Long.MIN_VALUE && x < Long.MAX_VALUE;
   }
-  
+
   public static boolean isOrdinal(Class<?> clazz, int idx) {
     if (clazz == null || !clazz.isEnum() || idx < 0) {
       return false;
@@ -935,7 +955,7 @@ public class BeeUtils {
       return false;
     }
   }
-  
+
   public static boolean isZero(BigDecimal x) {
     return x == BigDecimal.ZERO;
   }
@@ -979,11 +999,11 @@ public class BeeUtils {
   public static String join(Object[] arr, Object separator) {
     return join(arr, separator, -1, -1);
   }
-  
+
   public static String join(Object[] arr, Object separator, int fromIndex) {
     return join(arr, separator, fromIndex, -1);
   }
-  
+
   public static String join(Object[] arr, Object separator, int fromIndex, int toIndex) {
     int len = arrayLength(arr);
     int fr = (fromIndex > 0) ? fromIndex : 0;
@@ -1004,7 +1024,7 @@ public class BeeUtils {
     }
     return sb.toString();
   }
-  
+
   public static <T> List<T> join(List<? extends T>... src) {
     int n = src.length;
     Assert.parameterCount(n, 2);
@@ -1051,7 +1071,7 @@ public class BeeUtils {
     }
     return len;
   }
-  
+
   public static int limit(int x, int min, int max) {
     int z = Math.min(min, max);
     if (x < z) {
@@ -1074,7 +1094,7 @@ public class BeeUtils {
       }
       return x;
     }
-    
+
     double z;
     if (isDouble(min) && isDouble(max)) {
       z = Math.min(min, max);
@@ -1087,7 +1107,7 @@ public class BeeUtils {
       }
       return x;
     }
-    
+
     if (isDouble(min)) {
       return Math.max(x, min);
     }
@@ -1184,7 +1204,7 @@ public class BeeUtils {
       return replicate(z, n - s.length()) + s;
     }
   }
-  
+
   public static String parenthesize(Object x) {
     String s = transform(x);
 
@@ -1194,7 +1214,7 @@ public class BeeUtils {
       return BeeConst.STRING_LEFT_PARENTHESIS + s + BeeConst.STRING_RIGHT_PARENTHESIS;
     }
   }
-  
+
   public static String progress(int pos, int tot) {
     return Integer.toString(pos) + BeeConst.DEFAULT_PROGRESS_SEPARATOR + Integer.toString(tot);
   }
@@ -1203,7 +1223,7 @@ public class BeeUtils {
     if (isEmpty(s)) {
       return BeeConst.STRING_EMPTY;
     }
-    
+
     int len = s.trim().length();
     if (len <= 0) {
       return BeeConst.STRING_EMPTY;
@@ -1211,14 +1231,14 @@ public class BeeUtils {
     if (len == 1) {
       return s.trim().toUpperCase();
     }
-    
+
     if (separators == null) {
       return s.trim().substring(0, 1).toUpperCase() + s.trim().substring(1).toLowerCase();
     }
-    
+
     String[] arr = split(s.trim(), separators);
     StringBuilder z = new StringBuilder();
-    
+
     for (String x : arr) {
       if (z.length() > 0) {
         z.append(BeeConst.CHAR_SPACE);
@@ -1260,14 +1280,14 @@ public class BeeUtils {
     }
     return sb.toString();
   }
-  
+
   public static <V> int removeValue(Map<?, V> map, V value) {
     int c = 0;
     if (length(map) <= 0) {
       return c;
     }
-    
-    for (Iterator<V> it = map.values().iterator(); it.hasNext(); ) {
+
+    for (Iterator<V> it = map.values().iterator(); it.hasNext();) {
       if (equals(it.next(), value)) {
         it.remove();
         c++;
@@ -1279,12 +1299,12 @@ public class BeeUtils {
   public static String replace(String src, int start, int end, char c) {
     return replace(src, start, end, String.valueOf(c));
   }
-  
+
   public static String replace(String src, int start, int end, String str) {
     Assert.isIndex(src, start);
     Assert.isIndex(src, end - 1);
     Assert.notNull(str);
-    
+
     return new StringBuilder(src).replace(start, end, str).toString();
   }
 
@@ -1317,7 +1337,7 @@ public class BeeUtils {
 
     return sb.toString();
   }
-  
+
   public static String replicate(char z, int n) {
     Assert.isPositive(n);
 
@@ -1325,7 +1345,7 @@ public class BeeUtils {
     Arrays.fill(arr, z);
     return new String(arr);
   }
-  
+
   public static double round(double x, int dec) {
     Assert.isScale(dec);
     if (Double.isInfinite(x) || Double.isNaN(x)) {
@@ -1347,7 +1367,7 @@ public class BeeUtils {
     if (isLong(y)) {
       return Math.round(y) / z;
     }
-    
+
     if (x > BeeConst.DOUBLE_ZERO) {
       return Math.floor(x) + round(x - Math.floor(x), dec);
     }
@@ -1541,7 +1561,7 @@ public class BeeUtils {
   public static String toString(long x) {
     return Long.toString(x);
   }
-  
+
   public static String transform(Object x) {
     String s;
 
@@ -1735,7 +1755,7 @@ public class BeeUtils {
     }
     return sb.toString();
   }
-  
+
   public static int val(String s) {
     if (s == null) {
       return 0;
@@ -1744,7 +1764,7 @@ public class BeeUtils {
     if (len <= 0) {
       return 0;
     }
-    
+
     int start = 0;
     while (start < len && s.charAt(start) <= BeeConst.CHAR_SPACE) {
       start++;
@@ -1760,14 +1780,14 @@ public class BeeUtils {
       }
       end++;
     }
-    
+
     while (end < len && isDigit(s.charAt(end))) {
       end++;
     }
     if (end <= start) {
       return 0;
     }
-    
+
     return toInt(s.substring(start, end));
   }
 

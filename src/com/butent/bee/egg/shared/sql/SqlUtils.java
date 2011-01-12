@@ -5,7 +5,9 @@ import com.butent.bee.egg.shared.sql.BeeConstants.Keywords;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class SqlUtils {
 
@@ -26,7 +28,11 @@ public class SqlUtils {
   }
 
   public static IsExpression bitAnd(IsExpression expr, long value) {
-    return expression(new SqlCommand(Keywords.BITAND, expr, value));
+    Map<String, Object> params = new HashMap<String, Object>();
+    params.put("expression", expr);
+    params.put("value", value);
+
+    return expression(new SqlCommand(Keywords.BITAND, params));
   }
 
   public static IsExpression bitAnd(String source, String field, long value) {
@@ -44,13 +50,16 @@ public class SqlUtils {
   public static IsQuery createForeignKey(String table, String name, String field,
       String refTable, String refField, Keywords action) {
 
-    List<Object> params = new ArrayList<Object>();
-    params.add(name(field));
-    params.add(name(refTable));
-    params.add(name(refField));
-    params.add(action);
+    Map<String, Object> params = new HashMap<String, Object>();
+    params.put("table", name(table));
+    params.put("name", name(name));
+    params.put("type", Keywords.FOREIGNKEY);
+    params.put("field", name(field));
+    params.put("refTable", name(refTable));
+    params.put("refField", name(refField));
+    params.put("action", action);
 
-    return createConstraint(table, name, Keywords.FOREIGNKEY, params.toArray());
+    return new SqlCommand(Keywords.ADD_CONSTRAINT, params);
   }
 
   public static IsQuery createIndex(String table, String name, String... fields) {
@@ -58,16 +67,24 @@ public class SqlUtils {
   }
 
   public static IsQuery createPrimaryKey(String table, String name, String... fields) {
-    List<Object> params = new ArrayList<Object>();
+    Map<String, Object> params = new HashMap<String, Object>();
+    params.put("table", name(table));
+    params.put("name", name(name));
+    params.put("type", Keywords.PRIMARYKEY);
 
     if (BeeUtils.isEmpty(fields)) {
-      params.add(name(name));
+      params.put("fields", name(name));
     } else {
+      List<IsExpression> flds = new ArrayList<IsExpression>();
       for (String fld : fields) {
-        params.add(name(fld));
+        if (!BeeUtils.isEmpty(flds)) {
+          flds.add(expression(", "));
+        }
+        flds.add(name(fld));
       }
+      params.put("fields", expression(flds.toArray()));
     }
-    return createConstraint(table, name, Keywords.PRIMARYKEY, params.toArray());
+    return new SqlCommand(Keywords.ADD_CONSTRAINT, params);
   }
 
   public static IsQuery createUniqueIndex(String table, String name, String... fields) {
@@ -75,27 +92,45 @@ public class SqlUtils {
   }
 
   public static IsQuery dbForeignKeys(String dbName, String dbSchema, String table, String refTable) {
-    return new SqlCommand(Keywords.DB_FOREIGNKEYS, dbName, dbSchema, table, refTable);
+    Map<String, Object> params = new HashMap<String, Object>();
+    params.put("dbName", dbName);
+    params.put("dbSchema", dbSchema);
+    params.put("table", table);
+    params.put("refTable", refTable);
+
+    return new SqlCommand(Keywords.DB_FOREIGNKEYS, params);
   }
 
   public static IsQuery dbName() {
-    return new SqlCommand(Keywords.DB_NAME);
+    return new SqlCommand(Keywords.DB_NAME, null);
   }
 
   public static IsQuery dbSchema() {
-    return new SqlCommand(Keywords.DB_SCHEMA);
+    return new SqlCommand(Keywords.DB_SCHEMA, null);
   }
 
   public static IsQuery dbTables(String dbName, String dbSchema, String table) {
-    return new SqlCommand(Keywords.DB_TABLES, dbName, dbSchema, table);
+    Map<String, Object> params = new HashMap<String, Object>();
+    params.put("dbName", dbName);
+    params.put("dbSchema", dbSchema);
+    params.put("table", table);
+
+    return new SqlCommand(Keywords.DB_TABLES, params);
   }
 
   public static IsQuery dropForeignKey(String table, String name) {
-    return new SqlCommand(Keywords.DROP_FOREIGNKEY, name(table), name(name));
+    Map<String, Object> params = new HashMap<String, Object>();
+    params.put("table", name(table));
+    params.put("name", name(name));
+
+    return new SqlCommand(Keywords.DROP_FOREIGNKEY, params);
   }
 
   public static IsQuery dropTable(String table) {
-    return new SqlCommand(Keywords.DROP_TABLE, name(table));
+    Map<String, Object> params = new HashMap<String, Object>();
+    params.put("table", name(table));
+
+    return new SqlCommand(Keywords.DROP_TABLE, params);
   }
 
   public static IsCondition equal(IsExpression expr, Object value) {
@@ -133,8 +168,11 @@ public class SqlUtils {
   }
 
   public static IsCondition in(String src, String fld, String dst, String dFld, IsCondition clause) {
-    SqlSelect query = new SqlSelect();
-    query.addDistinct(dst, dFld).addFrom(dst).setWhere(clause);
+    SqlSelect query = new SqlSelect()
+      .setDistinctMode(true)
+      .addFields(dst, dFld)
+      .addFrom(dst)
+      .setWhere(clause);
 
     return in(src, fld, query);
   }
@@ -269,7 +307,11 @@ public class SqlUtils {
   }
 
   public static IsExpression sqlIf(IsCondition cond, Object ifTrue, Object ifFalse) {
-    return expression(new SqlCommand(Keywords.IF, cond, ifTrue, ifFalse));
+    Map<String, Object> params = new HashMap<String, Object>();
+    params.put("condition", cond);
+    params.put("ifTrue", ifTrue);
+    params.put("ifFalse", ifFalse);
+    return expression(new SqlCommand(Keywords.IF, params));
   }
 
   public static IsCondition sqlTrue() {
@@ -285,7 +327,10 @@ public class SqlUtils {
     if (BeeUtils.isEmpty(tmp)) {
       return temporaryName();
     }
-    return new SqlCommand(Keywords.TEMPORARY_NAME, tmp).getQuery();
+    Map<String, Object> params = new HashMap<String, Object>();
+    params.put("name", tmp);
+
+    return new SqlCommand(Keywords.TEMPORARY_NAME, params).getQuery();
   }
 
   public static String uniqueName() {
@@ -302,32 +347,24 @@ public class SqlUtils {
     }
   }
 
-  private static IsQuery createConstraint(String table, String name, Keywords type,
-      Object... params) {
-    List<Object> flds = new ArrayList<Object>();
-    flds.add(name(table));
-    flds.add(name(name));
-    flds.add(type);
-
-    for (Object prm : params) {
-      flds.add(prm);
-    }
-    return new SqlCommand(Keywords.ADD_CONSTRAINT, flds.toArray());
-  }
-
   private static IsQuery createIndex(boolean unique, String table, String name, String... fields) {
-    List<Object> flds = new ArrayList<Object>();
-    flds.add(unique);
-    flds.add(name(table));
-    flds.add(name(name));
+    Map<String, Object> params = new HashMap<String, Object>();
+    params.put("unique", unique);
+    params.put("table", name(table));
+    params.put("name", name(name));
 
     if (BeeUtils.isEmpty(fields)) {
-      flds.add(name(name));
+      params.put("fields", name(name));
     } else {
+      List<IsExpression> flds = new ArrayList<IsExpression>();
       for (String fld : fields) {
+        if (!BeeUtils.isEmpty(flds)) {
+          flds.add(expression(", "));
+        }
         flds.add(name(fld));
       }
+      params.put("fields", expression(flds.toArray()));
     }
-    return new SqlCommand(Keywords.CREATE_INDEX, flds.toArray());
+    return new SqlCommand(Keywords.CREATE_INDEX, params);
   }
 }

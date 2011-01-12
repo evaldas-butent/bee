@@ -3,44 +3,51 @@ package com.butent.bee.egg.shared.sql;
 import com.butent.bee.egg.shared.sql.BeeConstants.Keywords;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
+import java.util.Map;
+
 class MySqlBuilder extends SqlBuilder {
 
   @Override
-  protected String sqlKeyword(Keywords option, Object... params) {
+  protected String sqlKeyword(Keywords option, Map<String, Object> params) {
     switch (option) {
       case DB_SCHEMA:
         return "SELECT schema() as dbSchema";
 
       case DROP_FOREIGNKEY:
         StringBuilder drop = new StringBuilder("ALTER TABLE ")
-          .append(params[0])
+          .append(params.get("table"))
           .append(" DROP FOREIGN KEY ")
-          .append(params[1]);
+          .append(params.get("name"));
         return drop.toString();
 
       case DB_TABLES:
         String sql = "SHOW TABLES";
 
-        if (!BeeUtils.isEmpty(params[1])) {
-          sql += " IN " + params[1];
+        if (!BeeUtils.isEmpty(params.get("dbSchema"))) {
+          sql += " IN " + params.get("dbSchema");
         }
-        if (!BeeUtils.isEmpty(params[2])) {
-          sql += " LIKE '" + params[2] + "'";
+        if (!BeeUtils.isEmpty(params.get("table"))) {
+          sql += " LIKE " + sqlTransform(params.get("table"));
         }
         return sql;
 
       case DB_FOREIGNKEYS:
         IsCondition foreignWh = null;
 
-        for (int i = 0; i < 3; i++) {
-          if (!BeeUtils.isEmpty(params[i])) {
-            foreignWh = SqlUtils.and(foreignWh, SqlUtils.equal("t",
-                i == 0 ? "table_catalog" : (i == 1 ? "table_schema" : "table_name"), params[i]));
-          }
+        if (!BeeUtils.isEmpty(params.get("dbName"))) {
+          foreignWh = SqlUtils.equal("t", "table_catalog", params.get("dbName"));
         }
-        if (!BeeUtils.isEmpty(params[3])) {
+        if (!BeeUtils.isEmpty(params.get("dbSchema"))) {
           foreignWh = SqlUtils.and(foreignWh,
-              SqlUtils.equal("c", "referenced_table_name", params[3]));
+              SqlUtils.equal("t", "table_schema", params.get("dbSchema")));
+        }
+        if (!BeeUtils.isEmpty(params.get("table"))) {
+          foreignWh = SqlUtils.and(foreignWh,
+              SqlUtils.equal("t", "table_name", params.get("table")));
+        }
+        if (!BeeUtils.isEmpty(params.get("refTable"))) {
+          foreignWh = SqlUtils.and(foreignWh,
+              SqlUtils.equal("c", "referenced_table_name", params.get("refTable")));
         }
         return new SqlSelect()
           .addField("c", "constraint_name", "Name")
@@ -68,6 +75,23 @@ class MySqlBuilder extends SqlBuilder {
 
     if (BeeUtils.isEmpty(sc.getSource())) {
       sql += " ENGINE=InnoDB";
+    }
+    return sql;
+  }
+
+  @Override
+  String getQuery(SqlSelect ss, boolean paramMode) {
+    int limit = ss.getLimit();
+    int offset = ss.getOffset();
+    String sql = super.getQuery(ss, paramMode);
+
+    if (BeeUtils.isPositive(limit)) {
+      sql += " LIMIT " + limit;
+    } else if (BeeUtils.isPositive(offset)) {
+      sql += " LIMIT " + (int) 1e9; // TODO Dummy MySql
+    }
+    if (BeeUtils.isPositive(offset)) {
+      sql += " OFFSET " + offset;
     }
     return sql;
   }

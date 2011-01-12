@@ -37,6 +37,8 @@ class RowSetService extends CompositeService {
   }
 
   private String tbl = "table_name";
+  private String limit = "table_limit";
+  private String offset = "table_offset";
   private String stt = "table_states";
 
   private Stages stage = null;
@@ -64,6 +66,12 @@ class RowSetService extends CompositeService {
     if (!Global.isVar(tbl)) {
       Global.createVar(tbl, "Choose table", BeeType.TYPE_STRING, null, BeeWidget.LIST);
     }
+    if (!Global.isVar(limit)) {
+      Global.createVar(limit, "Limit", BeeType.TYPE_INT, null, BeeWidget.TEXT);
+    }
+    if (!Global.isVar(offset)) {
+      Global.createVar(offset, "Offset", BeeType.TYPE_INT, null, BeeWidget.TEXT);
+    }
     if (!Global.isVar(stt)) {
       Global.createVar(stt, "Choose state", BeeType.TYPE_STRING, null, BeeWidget.LIST);
     }
@@ -89,14 +97,15 @@ class RowSetService extends CompositeService {
         }
         Global.getVar(tbl).setItems(lst);
         Global.getVar(tbl).setValue(lst.get(0));
-        Global.inputVars(new BeeStage(self(), Stages.REQUEST_TABLE.name()), "ALL TABLES", tbl);
+
+        Global.inputVars(new BeeStage(self(), Stages.REQUEST_TABLE.name()), "ALL TABLES",
+            tbl, limit, offset);
         break;
 
       case REQUEST_TABLE:
         GwtEvent<?> event = (GwtEvent<?>) params[0];
 
         String table = Global.getVarValue(tbl);
-        String states = Global.getVarValue(stt);
 
         if (BeeUtils.isEmpty(table)) {
           Global.showError("Table name not specified");
@@ -106,7 +115,11 @@ class RowSetService extends CompositeService {
 
           Global.closeDialog(event);
           BeeKeeper.getRpc().makePostRequest(adoptService("rpc_ui_table"),
-              XmlUtils.createString(BeeService.XML_TAG_DATA, tbl, table, stt, states));
+              XmlUtils.createString(BeeService.XML_TAG_DATA
+                  , tbl, table
+                  , limit, Global.getVarValue(limit)
+                  , offset, Global.getVarValue(offset)
+                  , stt, Global.getVarValue(stt)));
         }
         Global.getVar(tbl).setValue("");
         Global.getVar(stt).setValue("");
@@ -261,8 +274,7 @@ class RowSetService extends CompositeService {
       case REQUEST_STATETABLE:
         event = (GwtEvent<?>) params[0];
 
-        table = Global.getVarValue(tbl);
-        states = Global.getVarValue(stt);
+        String states = Global.getVarValue(stt);
 
         if (BeeUtils.isEmpty(states)) {
           Global.showError("State name not specified");
@@ -272,7 +284,9 @@ class RowSetService extends CompositeService {
 
           Global.closeDialog(event);
           BeeKeeper.getRpc().makePostRequest(adoptService("rpc_ui_statetable"),
-              XmlUtils.createString(BeeService.XML_TAG_DATA, tbl, table, stt, states));
+              XmlUtils.createString(BeeService.XML_TAG_DATA
+                  , tbl, Global.getVarValue(tbl)
+                  , stt, states));
         }
         Global.getVar(tbl).setValue("");
         Global.getVar(stt).setValue("");

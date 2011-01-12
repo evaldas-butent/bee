@@ -179,8 +179,10 @@ public class UiServiceBean {
 
   private void getTable(RequestInfo reqInfo, ResponseBuffer buff) {
     String table = getXmlField(reqInfo, "table_name");
+    int limit = BeeUtils.toInt(getXmlField(reqInfo, "table_limit"));
+    int offset = BeeUtils.toInt(getXmlField(reqInfo, "table_offset"));
     String states = getXmlField(reqInfo, "table_states");
-    BeeRowSet res = sys.getViewData(table, states);
+    BeeRowSet res = sys.getViewData(table, limit, offset, states);
     buff.add(res.serialize());
   }
 
