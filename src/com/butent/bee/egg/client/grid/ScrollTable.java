@@ -755,26 +755,6 @@ public class ScrollTable<RowType> extends ComplexPanel implements
     return idx;
   }
 
-  public void load() {
-    loading = true;
-
-    FixedWidthGrid data = getDataTable();
-    data.deselectAllRows();
-
-    if (bulkRenderer == null) {
-      int rowCount = getAbsoluteLastRowIndex() - getAbsoluteFirstRowIndex() + 1;
-      if (rowCount != data.getRowCount()) {
-        data.resizeRows(rowCount);
-      }
-      data.clear(true);
-    }
-
-    int firstRow = getAbsoluteFirstRowIndex();
-    int lastRow = tableModel.getRowCount();
-    lastRequest = new Request(firstRow, lastRow, data.getColumnSortList());
-    tableModel.requestRows(lastRequest, loadCallback);
-  }
-
   public boolean isColumnSortable(int column, boolean visible) {
     ColumnDefinition<RowType, ?> colDef = getColumnDefinition(column, visible);
     if (colDef == null) {
@@ -813,6 +793,26 @@ public class ScrollTable<RowType> extends ComplexPanel implements
 
   public boolean isLoading() {
     return loading;
+  }
+
+  public void load() {
+    loading = true;
+
+    FixedWidthGrid data = getDataTable();
+    data.deselectAllRows();
+
+    if (bulkRenderer == null) {
+      int rowCount = getAbsoluteLastRowIndex() - getAbsoluteFirstRowIndex() + 1;
+      if (rowCount != data.getRowCount()) {
+        data.resizeRows(rowCount);
+      }
+      data.clear(true);
+    }
+
+    int firstRow = getAbsoluteFirstRowIndex();
+    int lastRow = tableModel.getRowCount();
+    lastRequest = new Request(firstRow, lastRow, data.getColumnSortList());
+    tableModel.requestRows(lastRequest, loadCallback);
   }
 
   @Override

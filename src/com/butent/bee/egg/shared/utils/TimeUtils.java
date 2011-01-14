@@ -4,27 +4,27 @@ import com.butent.bee.egg.shared.Assert;
 import com.butent.bee.egg.shared.BeeDate;
 
 public class TimeUtils {
-  public final static int ERA = 0;
+  public static final int ERA = 0;
 
-  public final static int YEAR = 1;
-  public final static int MONTH = 2;
-  public final static int WEEK_OF_YEAR = 3;
-  public final static int WEEK_OF_MONTH = 4;
-  public final static int DATE = 5;
-  public final static int DAY_OF_MONTH = 5;
-  public final static int DAY_OF_YEAR = 6;
-  public final static int DAY_OF_WEEK = 7;
-  public final static int DAY_OF_WEEK_IN_MONTH = 8;
+  public static final int YEAR = 1;
+  public static final int MONTH = 2;
+  public static final int WEEK_OF_YEAR = 3;
+  public static final int WEEK_OF_MONTH = 4;
+  public static final int DATE = 5;
+  public static final int DAY_OF_MONTH = 5;
+  public static final int DAY_OF_YEAR = 6;
+  public static final int DAY_OF_WEEK = 7;
+  public static final int DAY_OF_WEEK_IN_MONTH = 8;
 
-  public final static int AM_PM = 9;
-  public final static int HOUR = 10;
-  public final static int HOUR_OF_DAY = 11;
-  public final static int MINUTE = 12;
-  public final static int SECOND = 13;
-  public final static int MILLISECOND = 14;
+  public static final int AM_PM = 9;
+  public static final int HOUR = 10;
+  public static final int HOUR_OF_DAY = 11;
+  public static final int MINUTE = 12;
+  public static final int SECOND = 13;
+  public static final int MILLISECOND = 14;
 
-  public final static int ZONE_OFFSET = 15;
-  public final static int DST_OFFSET = 16;
+  public static final int ZONE_OFFSET = 15;
+  public static final int DST_OFFSET = 16;
 
   public static final int YEAR_WOY = 17;
 
@@ -35,20 +35,20 @@ public class TimeUtils {
 
   public static final int MILLISECONDS_IN_DAY = 21;
 
-  private static final String[] FIELD_NAME = {
-      "ERA", "YEAR", "MONTH", "WEEK_OF_YEAR", "WEEK_OF_MONTH",
-      "DAY_OF_MONTH", "DAY_OF_YEAR", "DAY_OF_WEEK",
-      "DAY_OF_WEEK_IN_MONTH", "AM_PM", "HOUR", "HOUR_OF_DAY",
-      "MINUTE", "SECOND", "MILLISECOND", "ZONE_OFFSET",
-      "DST_OFFSET", "YEAR_WOY", "DOW_LOCAL", "EXTENDED_YEAR",
-      "JULIAN_DAY", "MILLISECONDS_IN_DAY",
-  };
-
   public static final int MILLIS_PER_SECOND = 1000;
   public static final int MILLIS_PER_MINUTE = 60 * MILLIS_PER_SECOND;
   public static final int MILLIS_PER_HOUR = 60 * MILLIS_PER_MINUTE;
   public static final int MILLIS_PER_DAY = 24 * MILLIS_PER_HOUR;
   public static final int MILLIS_PER_WEEK = 7 * MILLIS_PER_DAY;
+
+  private static final String[] FIELD_NAME = {
+    "ERA", "YEAR", "MONTH", "WEEK_OF_YEAR", "WEEK_OF_MONTH",
+    "DAY_OF_MONTH", "DAY_OF_YEAR", "DAY_OF_WEEK",
+    "DAY_OF_WEEK_IN_MONTH", "AM_PM", "HOUR", "HOUR_OF_DAY",
+    "MINUTE", "SECOND", "MILLISECOND", "ZONE_OFFSET",
+    "DST_OFFSET", "YEAR_WOY", "DOW_LOCAL", "EXTENDED_YEAR",
+    "JULIAN_DAY", "MILLISECONDS_IN_DAY",
+  };
 
   public static void add(BeeDate date, int field, int amount) {
     Assert.notNull(date);
