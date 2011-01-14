@@ -1,17 +1,14 @@
 package com.butent.bee.egg.server.datasource.query.scalarfunction;
 
 import com.butent.bee.egg.server.datasource.base.InvalidQueryException;
-import com.butent.bee.egg.server.datasource.datatable.value.DateTimeValue;
-import com.butent.bee.egg.server.datasource.datatable.value.DateValue;
-import com.butent.bee.egg.server.datasource.datatable.value.NumberValue;
-import com.butent.bee.egg.server.datasource.datatable.value.Value;
-import com.butent.bee.egg.server.datasource.datatable.value.ValueType;
 import com.butent.bee.egg.shared.Assert;
+import com.butent.bee.egg.shared.BeeDate;
+import com.butent.bee.egg.shared.data.value.DateTimeValue;
+import com.butent.bee.egg.shared.data.value.DateValue;
+import com.butent.bee.egg.shared.data.value.NumberValue;
+import com.butent.bee.egg.shared.data.value.Value;
+import com.butent.bee.egg.shared.data.value.ValueType;
 
-import com.ibm.icu.util.GregorianCalendar;
-import com.ibm.icu.util.TimeZone;
-
-import java.util.Date;
 import java.util.List;
 
 public class ToDate implements ScalarFunction {
@@ -27,8 +24,6 @@ public class ToDate implements ScalarFunction {
 
   public Value evaluate(List<Value> values) {
     Value value = values.get(0);
-    Date date;
-    GregorianCalendar gc = new GregorianCalendar(TimeZone.getTimeZone("GMT"));
 
     if (value.isNull()) {
       return DateValue.getNullValue();
@@ -39,13 +34,10 @@ public class ToDate implements ScalarFunction {
         dateValue = (DateValue) value;
         break;
       case DATETIME:
-        dateValue = new DateValue((GregorianCalendar)
-            (((DateTimeValue) value).getObjectToFormat()));
+        dateValue = new DateValue(((DateTimeValue) value).getObjectToFormat());
         break;
       case NUMBER:
-        date = new Date((long) ((NumberValue) value).getValue());
-        gc.setTime(date);
-        dateValue = new DateValue(gc);
+        dateValue = new DateValue(new BeeDate((long) ((NumberValue) value).getValue()));
         break;
       default:
         Assert.untouchable("Value type was not found: " + value.getType());

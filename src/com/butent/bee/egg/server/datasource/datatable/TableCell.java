@@ -2,12 +2,12 @@ package com.butent.bee.egg.server.datasource.datatable;
 
 import com.google.common.collect.Maps;
 
-import com.butent.bee.egg.server.datasource.datatable.value.BooleanValue;
-import com.butent.bee.egg.server.datasource.datatable.value.NumberValue;
-import com.butent.bee.egg.server.datasource.datatable.value.TextValue;
-import com.butent.bee.egg.server.datasource.datatable.value.Value;
-import com.butent.bee.egg.server.datasource.datatable.value.ValueType;
-import com.ibm.icu.util.ULocale;
+import com.butent.bee.egg.shared.Assert;
+import com.butent.bee.egg.shared.data.value.BooleanValue;
+import com.butent.bee.egg.shared.data.value.NumberValue;
+import com.butent.bee.egg.shared.data.value.TextValue;
+import com.butent.bee.egg.shared.data.value.Value;
+import com.butent.bee.egg.shared.data.value.ValueType;
 
 import java.util.Collections;
 import java.util.Comparator;
@@ -15,10 +15,9 @@ import java.util.Map;
 
 public class TableCell {
 
-  public static Comparator<TableCell> getLocalizedComparator(final ULocale ulocale) {
+  public static Comparator<TableCell> getComparator() {
     return new Comparator<TableCell>() {
-      private Comparator<TextValue> textValueComparator =
-          TextValue.getTextLocalizedComparator(ulocale);
+      private Comparator<TextValue> textComparator = TextValue.getTextComparator();
 
       @Override
       public int compare(TableCell cell1, TableCell cell2) {
@@ -26,18 +25,16 @@ public class TableCell {
           return 0;
         }
         if (cell1.getType() == ValueType.TEXT) {
-          return textValueComparator.compare((TextValue) cell1.value,
-              (TextValue) cell2.value);
+          return textComparator.compare((TextValue) cell1.value, (TextValue) cell2.value);
         } else {
           return cell1.getValue().compareTo(cell2.getValue());
         }
       }
     };
   }
+
   private Value value;
-
   private String formattedValue = null;
-
   private Map<String, String> customProperties = null;
 
   public TableCell(boolean value) {
@@ -85,11 +82,9 @@ public class TableCell {
   }
 
   public String getCustomProperty(String key) {
+    Assert.notEmpty(key);
     if (customProperties == null) {
       return null;
-    }
-    if (key == null) {
-      throw new RuntimeException("Null keys are not allowed.");
     }
     return customProperties.get(key);
   }
@@ -111,11 +106,10 @@ public class TableCell {
   }
 
   public void setCustomProperty(String propertyKey, String propertyValue) {
+    Assert.notEmpty(propertyKey);
+    Assert.notNull(propertyValue);
     if (customProperties == null) {
       customProperties = Maps.newHashMap();
-    }
-    if ((propertyKey == null) || (propertyValue == null)) {
-      throw new RuntimeException("Null keys/values are not allowed.");
     }
     customProperties.put(propertyKey, propertyValue);
   }

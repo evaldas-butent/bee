@@ -5,7 +5,7 @@ import com.google.common.collect.Lists;
 import com.butent.bee.egg.server.datasource.base.InvalidQueryException;
 import com.butent.bee.egg.server.datasource.base.MessagesEnum;
 import com.butent.bee.egg.server.datasource.datatable.DataTable;
-import com.butent.bee.egg.server.datasource.datatable.value.ValueType;
+import com.butent.bee.egg.shared.data.value.ValueType;
 
 import com.ibm.icu.util.ULocale;
 

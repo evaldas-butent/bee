@@ -1,13 +1,12 @@
 package com.butent.bee.egg.server.datasource.query.engine;
 
 import com.butent.bee.egg.server.datasource.datatable.TableRow;
-import com.butent.bee.egg.server.datasource.datatable.value.Value;
 import com.butent.bee.egg.server.datasource.query.AbstractColumn;
 import com.butent.bee.egg.server.datasource.query.ColumnLookup;
 import com.butent.bee.egg.server.datasource.query.ColumnSort;
 import com.butent.bee.egg.server.datasource.query.QuerySort;
 import com.butent.bee.egg.server.datasource.query.SortOrder;
-import com.ibm.icu.util.ULocale;
+import com.butent.bee.egg.shared.data.value.Value;
 
 import java.util.Comparator;
 import java.util.List;
@@ -20,8 +19,8 @@ class TableRowComparator implements Comparator<TableRow> {
 
   private ColumnLookup columnLookup;
 
-  public TableRowComparator(QuerySort sort, ULocale locale, ColumnLookup lookup) {
-    valueComparator = Value.getLocalizedComparator(locale);
+  public TableRowComparator(QuerySort sort, ColumnLookup lookup) {
+    valueComparator = Value.getComparator();
     columnLookup = lookup;
     List<ColumnSort> columns = sort.getSortColumns();
     sortColumns = new AbstractColumn[columns.size()];

@@ -16,8 +16,7 @@ public class CachedTableModel<RowType> extends TableModel<RowType> {
     private Request actualRequest;
     private int actualStartRow;
 
-    public CacheCallback(Request request, Callback<RowType> callback,
-        int startRow, int numRows) {
+    public CacheCallback(Request request, Callback<RowType> callback, int startRow, int numRows) {
       actualRequest = request;
       actualCallback = callback;
       actualStartRow = startRow;

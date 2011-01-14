@@ -1,11 +1,10 @@
-package com.butent.bee.egg.server.datasource.datatable.value;
+package com.butent.bee.egg.shared.data.value;
 
-import com.ibm.icu.util.Calendar;
-import com.ibm.icu.util.GregorianCalendar;
-import com.ibm.icu.util.TimeZone;
+import com.butent.bee.egg.shared.Assert;
+import com.butent.bee.egg.shared.BeeDate;
+import com.butent.bee.egg.shared.utils.BeeUtils;
 
 public class DateValue extends Value {
-
   private static final DateValue NULL_VALUE = new DateValue();
 
   public static DateValue getNullValue() {
@@ -17,25 +16,18 @@ public class DateValue extends Value {
   private int dayOfMonth;
   private Integer hashCode = null;
 
-  public DateValue(GregorianCalendar calendar) {
-    if (!calendar.getTimeZone().equals(TimeZone.getTimeZone("GMT"))) {
-      throw new IllegalArgumentException(
-           "Can't create DateValue from GregorianCalendar that is not GMT.");
-    }
-    this.year = calendar.get(GregorianCalendar.YEAR);
-    this.month = calendar.get(GregorianCalendar.MONTH);
-    this.dayOfMonth = calendar.get(GregorianCalendar.DAY_OF_MONTH);
+  public DateValue(BeeDate date) {
+    this.year = date.getYear();
+    this.month = date.getMonth();
+    this.dayOfMonth = date.getDom();
   }
 
   public DateValue(int year, int month, int dayOfMonth) {
-    GregorianCalendar calendar = new GregorianCalendar(year, month, dayOfMonth);
+    BeeDate date = new BeeDate(year, month, dayOfMonth);
+    Assert.isTrue(date.getYear() == year && date.getMonth() == month
+        && date.getDom() == dayOfMonth, "Invalid date (yyyy-MM-dd): "
+        + year + '-' + month + '-' + dayOfMonth);
 
-    if ((calendar.get(GregorianCalendar.YEAR) != year)
-        || (calendar.get(GregorianCalendar.MONTH) != month)
-        || (calendar.get(GregorianCalendar.DAY_OF_MONTH) != dayOfMonth)) {
-      throw new IllegalArgumentException("Invalid java date (yyyy-MM-dd): "
-          + year + '-' + month + '-' + dayOfMonth);
-    }
     this.year = year;
     this.month = month;
     this.dayOfMonth = dayOfMonth;
@@ -76,27 +68,21 @@ public class DateValue extends Value {
   }
 
   public int getDayOfMonth() {
-    if (isNull()) {
-      throw new NullValueException("This object is null");
-    }
+    Assert.isTrue(!isNull());
     return dayOfMonth;
   }
 
   public int getMonth() {
-    if (isNull()) {
-      throw new NullValueException("This object is null");
-    }
+    Assert.isTrue(!isNull());
     return month;
   }
 
   @Override
-  public Calendar getObjectToFormat() {
+  public BeeDate getObjectToFormat() {
     if (isNull()) {
       return null;
     }
-    GregorianCalendar cal = new GregorianCalendar(year, month, dayOfMonth);
-    cal.setTimeZone(TimeZone.getTimeZone("GMT"));
-    return cal;
+    return new BeeDate(year, month, dayOfMonth);
   }
 
   @Override
@@ -105,9 +91,7 @@ public class DateValue extends Value {
   }
 
   public int getYear() {
-    if (isNull()) {
-      throw new NullValueException("This object is null");
-    }
+    Assert.isTrue(!isNull());
     return year;
   }
 
@@ -134,11 +118,12 @@ public class DateValue extends Value {
     if (this == NULL_VALUE) {
       return "null";
     }
-    return String.format("%1$d-%2$02d-%3$02d", year, month + 1, dayOfMonth);
+    return BeeUtils.toString(year) + "-" + 
+        BeeUtils.toLeadingZeroes(month, 2) + "-" + BeeUtils.toLeadingZeroes(dayOfMonth, 2);
   }
 
   @Override
   protected String innerToQueryString() {
-    return "DATE '" + year + "-" + (month + 1) + "-" + dayOfMonth + "'";
+    return "DATE '" + year + "-" + month + "-" + dayOfMonth + "'";
   }
 }

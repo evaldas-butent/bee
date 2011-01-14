@@ -3,15 +3,14 @@ package com.butent.bee.egg.server.datasource.query.scalarfunction;
 import com.google.common.collect.Maps;
 
 import com.butent.bee.egg.server.datasource.base.InvalidQueryException;
-import com.butent.bee.egg.server.datasource.datatable.value.DateTimeValue;
-import com.butent.bee.egg.server.datasource.datatable.value.DateValue;
-import com.butent.bee.egg.server.datasource.datatable.value.NumberValue;
-import com.butent.bee.egg.server.datasource.datatable.value.TimeOfDayValue;
-import com.butent.bee.egg.server.datasource.datatable.value.Value;
-import com.butent.bee.egg.server.datasource.datatable.value.ValueType;
 import com.butent.bee.egg.shared.Assert;
-
-import com.ibm.icu.util.GregorianCalendar;
+import com.butent.bee.egg.shared.BeeDate;
+import com.butent.bee.egg.shared.data.value.DateTimeValue;
+import com.butent.bee.egg.shared.data.value.DateValue;
+import com.butent.bee.egg.shared.data.value.NumberValue;
+import com.butent.bee.egg.shared.data.value.TimeOfDayValue;
+import com.butent.bee.egg.shared.data.value.Value;
+import com.butent.bee.egg.shared.data.value.ValueType;
 
 import java.util.List;
 import java.util.Map;
@@ -137,9 +136,9 @@ public class TimeComponentExtractor implements ScalarFunction {
         break;
       case WEEK:
       case DAY_OF_WEEK:
-        GregorianCalendar calendar = (GregorianCalendar) ((valueType == ValueType.DATE) ?
-            ((DateValue) value).getObjectToFormat() : ((DateTimeValue) value).getObjectToFormat());
-        component = calendar.get(GregorianCalendar.DAY_OF_WEEK);
+        BeeDate date = (valueType == ValueType.DATE) ?
+            ((DateValue) value).getObjectToFormat() : ((DateTimeValue) value).getObjectToFormat();
+        component = date.getDow();
         break;
       default:
         Assert.untouchable("An invalid time component.");

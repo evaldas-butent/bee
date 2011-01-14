@@ -1,4 +1,4 @@
-package com.butent.bee.egg.server.datasource.datatable.value;
+package com.butent.bee.egg.shared.data.value;
 
 public class NumberValue extends Value {
   private static final NumberValue NULL_VALUE = new NumberValue(-9999);

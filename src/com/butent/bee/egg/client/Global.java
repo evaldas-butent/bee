@@ -20,7 +20,7 @@ import com.butent.bee.egg.shared.BeeType;
 import com.butent.bee.egg.shared.BeeWidget;
 import com.butent.bee.egg.shared.menu.MenuConstants;
 import com.butent.bee.egg.shared.utils.BeeUtils;
-import com.butent.bee.egg.shared.utils.Grego;
+import com.butent.bee.egg.shared.utils.TimeUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -39,7 +39,7 @@ public class Global implements Module {
 
   private static final Map<String, Variable> vars = new HashMap<String, Variable>();
 
-  private static int tzo = -JsDate.create().getTimezoneOffset() * Grego.MILLIS_PER_MINUTE;
+  private static int tzo = -JsDate.create().getTimezoneOffset() * TimeUtils.MILLIS_PER_MINUTE;
 
   private static Images images = GWT.create(Images.class);
 

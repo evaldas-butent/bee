@@ -4,7 +4,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
-import com.butent.bee.egg.server.datasource.datatable.value.Value;
+import com.butent.bee.egg.shared.Assert;
+import com.butent.bee.egg.shared.data.value.Value;
 
 import java.util.Collections;
 import java.util.List;
@@ -69,21 +70,18 @@ public class TableRow {
   }
 
   public String getCustomProperty(String key) {
+    Assert.notEmpty(key);
     if (customProperties == null) {
       return null;
-    }
-    if (key == null) {
-      throw new RuntimeException("Null keys are not allowed.");
     }
     return customProperties.get(key);
   }
 
   public void setCustomProperty(String propertyKey, String propertyValue) {
+    Assert.notEmpty(propertyKey);
+    Assert.notNull(propertyValue);
     if (customProperties == null) {
       customProperties = Maps.newHashMap();
-    }
-    if ((propertyKey == null) || (propertyValue == null)) {
-      throw new RuntimeException("Null keys/values are not allowed.");
     }
     customProperties.put(propertyKey, propertyValue);
   }

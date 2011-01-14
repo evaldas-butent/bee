@@ -5,7 +5,7 @@ import com.google.gwt.core.client.JavaScriptObject;
 
 import java.util.Date;
 
-public abstract class Properties extends JavaScriptObject {
+public class Properties extends JavaScriptObject {
   @SuppressWarnings("serial")
   public static class TypeException extends Exception {
     private TypeException(String key, String expected, String actual) {

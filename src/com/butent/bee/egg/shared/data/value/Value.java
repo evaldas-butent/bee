@@ -1,15 +1,14 @@
-package com.butent.bee.egg.server.datasource.datatable.value;
+package com.butent.bee.egg.shared.data.value;
 
-import com.ibm.icu.util.ULocale;
+import com.butent.bee.egg.shared.Assert;
 
 import java.util.Comparator;
 
 public abstract class Value implements Comparable<Value> {
 
-  public static Comparator<Value> getLocalizedComparator(final ULocale ulocale) {
+  public static Comparator<Value> getComparator() {
     return new Comparator<Value>() {
-      private Comparator<TextValue> textValueComparator =
-          TextValue.getTextLocalizedComparator(ulocale);
+      private Comparator<TextValue> textComparator = TextValue.getTextComparator();
 
       @Override
       public int compare(Value value1, Value value2) {
@@ -17,8 +16,7 @@ public abstract class Value implements Comparable<Value> {
           return 0;
         }
         if (value1.getType() == ValueType.TEXT) {
-          return textValueComparator.compare((TextValue) value1,
-              (TextValue) value2);
+          return textComparator.compare((TextValue) value1, (TextValue) value2);
         } else {
           return value1.compareTo(value2);
         }
@@ -62,9 +60,7 @@ public abstract class Value implements Comparable<Value> {
   public abstract boolean isNull();
 
   public final String toQueryString() {
-    if (isNull()) {
-      throw new RuntimeException("Cannot run toQueryString() on a null value.");
-    }
+    Assert.isTrue(!isNull(), "Cannot run toQueryString() on a null value.");
     return innerToQueryString();
   }
 

@@ -1,11 +1,6 @@
 package com.butent.bee.egg.shared.utils;
 
 public class Grego {
-  public static final int MILLIS_PER_SECOND = 1000;
-  public static final int MILLIS_PER_MINUTE = 60 * MILLIS_PER_SECOND;
-  public static final int MILLIS_PER_HOUR = 60 * MILLIS_PER_MINUTE;
-  public static final int MILLIS_PER_DAY = 24 * MILLIS_PER_HOUR;
-  
   public static final int IDX_YEAR = 0;
   public static final int IDX_MONTH = 1;
   public static final int IDX_DOM = 2;
@@ -108,20 +103,19 @@ public class Grego {
   public static int[] timeToFields(long time) {
     long[] remainder = new long[1];
 
-    long day = floorDivide(time, MILLIS_PER_DAY, remainder);
+    long day = floorDivide(time, TimeUtils.MILLIS_PER_DAY, remainder);
     int[] fields = dayToFields(day);
     
-    fields[IDX_HOUR] = (int) floorDivide(remainder[0], MILLIS_PER_HOUR, remainder);
-    fields[IDX_MINUTE] = (int) floorDivide(remainder[0], MILLIS_PER_MINUTE, remainder);
-    fields[IDX_SECOND] = (int) floorDivide(remainder[0], MILLIS_PER_SECOND, remainder);
+    fields[IDX_HOUR] = (int) floorDivide(remainder[0], TimeUtils.MILLIS_PER_HOUR, remainder);
+    fields[IDX_MINUTE] = (int) floorDivide(remainder[0], TimeUtils.MILLIS_PER_MINUTE, remainder);
+    fields[IDX_SECOND] = (int) floorDivide(remainder[0], TimeUtils.MILLIS_PER_SECOND, remainder);
     fields[IDX_MILLIS] = (int) remainder[0];
 
     return fields;
   }
 
   private static int floorDivide(int numerator, int denominator) {
-    return (numerator >= 0) ? numerator / denominator
-        : ((numerator + 1) / denominator) - 1;
+    return (numerator >= 0) ? numerator / denominator : ((numerator + 1) / denominator) - 1;
   }
 
   private static long floorDivide(long numerator, long denominator, long[] remainder) {
@@ -134,5 +128,4 @@ public class Grego {
 
     return quotient;
   }
-
 }

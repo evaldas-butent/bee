@@ -1,4 +1,4 @@
-package com.butent.bee.egg.server.datasource.datatable.value;
+package com.butent.bee.egg.shared.data.value;
 
 public class BooleanValue extends Value {
 

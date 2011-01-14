@@ -30,8 +30,7 @@ public class BeeCallback implements RequestCallback {
 
   @Override
   public void onError(Request req, Throwable ex) {
-    String msg = (ex instanceof RequestTimeoutException) ? "request timeout"
-        : "request failure";
+    String msg = (ex instanceof RequestTimeoutException) ? "request timeout" : "request failure";
     BeeKeeper.getLog().severe(msg, ex);
   }
 
@@ -63,8 +62,7 @@ public class BeeCallback implements RequestCallback {
         BeeKeeper.getLog().severe(msg);
       }
 
-      msg = BeeUtils.concat(1, BeeUtils.bracket(statusCode),
-          resp.getStatusText());
+      msg = BeeUtils.concat(1, BeeUtils.bracket(statusCode), resp.getStatusText());
       BeeKeeper.getLog().severe("response status", msg);
 
       if (info != null) {
@@ -85,13 +83,11 @@ public class BeeCallback implements RequestCallback {
     int pc = BeeUtils.toInt(resp.getHeader(BeeService.RPC_VAR_PART_CNT));
 
     if (debug) {
-      BeeKeeper.getLog().finish(dur,
-          BeeUtils.addName(BeeService.RPC_VAR_QID, id),
+      BeeKeeper.getLog().finish(dur, BeeUtils.addName(BeeService.RPC_VAR_QID, id),
           BeeUtils.addName(BeeService.RPC_VAR_SVC, svc));
 
       BeeKeeper.getLog().info(BeeUtils.addName(BeeService.RPC_VAR_CTP, ctp),
-          BeeUtils.addName("len", len),
-          BeeUtils.addName(BeeService.RPC_VAR_CNT, cnt));
+          BeeUtils.addName("len", len), BeeUtils.addName(BeeService.RPC_VAR_CNT, cnt));
       BeeKeeper.getLog().info(BeeUtils.addName(BeeService.RPC_VAR_COLS, cc),
           BeeUtils.addName(BeeService.RPC_VAR_MSG_CNT, mc),
           BeeUtils.addName(BeeService.RPC_VAR_PART_CNT, pc));
@@ -108,8 +104,7 @@ public class BeeCallback implements RequestCallback {
     } else {
       sep = Character.toString(CommUtils.DEFAULT_INFORMATION_SEPARATOR);
       if (!BeeUtils.isEmpty(hSep)) {
-        BeeKeeper.getLog().severe("wrong response separator",
-            BeeUtils.bracket(hSep));
+        BeeKeeper.getLog().severe("wrong response separator", BeeUtils.bracket(hSep));
       }
     }
 
@@ -117,11 +112,9 @@ public class BeeCallback implements RequestCallback {
       Header[] headers = resp.getHeaders();
       for (int i = 0; i < headers.length; i++) {
         if (!BeeUtils.isEmpty(headers[i])) {
-          BeeKeeper.getLog().info("Header", i + 1, headers[i].getName(),
-              headers[i].getValue());
+          BeeKeeper.getLog().info("Header", i + 1, headers[i].getName(), headers[i].getValue());
         }
       }
-
       if (info != null) {
         info.setRespInfo(RpcUtils.responseInfo(resp));
       }
@@ -131,8 +124,7 @@ public class BeeCallback implements RequestCallback {
     if (mc > 0) {
       messages = new ResponseMessage[mc];
       for (int i = 0; i < mc; i++) {
-        messages[i] = new ResponseMessage(
-            resp.getHeader(CommUtils.rpcMessageName(i)), true);
+        messages[i] = new ResponseMessage(resp.getHeader(CommUtils.rpcMessageName(i)), true);
       }
       dispatchMessages(mc, messages);
     }
@@ -276,8 +268,6 @@ public class BeeCallback implements RequestCallback {
     if (cnt > 0 && arr.length() > cnt) {
       arr.setLength(cnt);
     }
-
     return arr;
   }
-
 }

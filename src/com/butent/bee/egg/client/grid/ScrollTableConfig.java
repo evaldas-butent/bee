@@ -174,7 +174,7 @@ public class ScrollTableConfig {
       reload |= setupColumns();
       if (reload) {
         scrollTable.setHeadersObsolete(true);
-        scrollTable.reloadPage();
+        scrollTable.reload();
       }
       
       switch (action) {

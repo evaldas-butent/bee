@@ -1,10 +1,9 @@
-package com.butent.bee.egg.server.datasource.datatable.value;
+package com.butent.bee.egg.shared.data.value;
 
 import com.google.common.collect.Maps;
 
-import com.butent.bee.egg.server.datasource.base.TypeMismatchException;
-
-import com.ibm.icu.util.GregorianCalendar;
+import com.butent.bee.egg.shared.Assert;
+import com.butent.bee.egg.shared.BeeDate;
 
 import java.util.Map;
 
@@ -35,7 +34,7 @@ public enum ValueType {
     this.typeCode = typeCode;
   }
 
-  public Value createValue(Object value) throws TypeMismatchException {
+  public Value createValue(Object value) {
     Value ret = null;
 
     if (value == null) {
@@ -46,18 +45,15 @@ public enum ValueType {
         ret = new NumberValue(((Number) value).doubleValue());
     } else if ((this == BOOLEAN) && (value instanceof Boolean)) {
         ret = ((Boolean) value).booleanValue() ? BooleanValue.TRUE : BooleanValue.FALSE;
-    } else if ((this == DATE) && (value instanceof GregorianCalendar)) {
-        ret = new DateValue((GregorianCalendar) value);
-    } else if ((this == DATETIME) && (value instanceof GregorianCalendar)) {
-        ret = new DateTimeValue((GregorianCalendar) value);
-    } else if ((this == TIMEOFDAY) && (value instanceof GregorianCalendar)) {
-        ret = new TimeOfDayValue((GregorianCalendar) value);
+    } else if ((this == DATE) && (value instanceof BeeDate)) {
+        ret = new DateValue((BeeDate) value);
+    } else if ((this == DATETIME) && (value instanceof BeeDate)) {
+        ret = new DateTimeValue((BeeDate) value);
+    } else if ((this == TIMEOFDAY) && (value instanceof BeeDate)) {
+        ret = new TimeOfDayValue((BeeDate) value);
     }
-
-    if (ret == null) {
-      throw new TypeMismatchException("Value type mismatch.");
-    }
-
+    
+    Assert.notNull(ret, "Value type mismatch.");
     return ret;
   }
 

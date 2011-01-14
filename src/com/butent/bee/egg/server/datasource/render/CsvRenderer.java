@@ -6,7 +6,7 @@ import com.butent.bee.egg.server.datasource.datatable.DataTable;
 import com.butent.bee.egg.server.datasource.datatable.TableCell;
 import com.butent.bee.egg.server.datasource.datatable.TableRow;
 import com.butent.bee.egg.server.datasource.datatable.ValueFormatter;
-import com.butent.bee.egg.server.datasource.datatable.value.ValueType;
+import com.butent.bee.egg.shared.data.value.ValueType;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
 import com.ibm.icu.util.ULocale;

@@ -1,12 +1,10 @@
 package com.butent.bee.egg.server.datasource.query.scalarfunction;
 
 import com.butent.bee.egg.server.datasource.base.InvalidQueryException;
-import com.butent.bee.egg.server.datasource.datatable.value.DateTimeValue;
-import com.butent.bee.egg.server.datasource.datatable.value.Value;
-import com.butent.bee.egg.server.datasource.datatable.value.ValueType;
-
-import com.ibm.icu.util.GregorianCalendar;
-import com.ibm.icu.util.TimeZone;
+import com.butent.bee.egg.shared.BeeDate;
+import com.butent.bee.egg.shared.data.value.DateTimeValue;
+import com.butent.bee.egg.shared.data.value.Value;
+import com.butent.bee.egg.shared.data.value.ValueType;
 
 import java.util.List;
 
@@ -22,7 +20,7 @@ public class CurrentDateTime implements ScalarFunction {
   }
 
   public Value evaluate(List<Value> values) {
-    return new DateTimeValue(new GregorianCalendar(TimeZone.getTimeZone("GMT")));
+    return new DateTimeValue(new BeeDate());
   }
 
   public String getFunctionName() {
@@ -37,8 +35,7 @@ public class CurrentDateTime implements ScalarFunction {
     return FUNCTION_NAME + "()"; 
   }
   
-  public void validateParameters(List<ValueType> types)
-      throws InvalidQueryException {
+  public void validateParameters(List<ValueType> types) throws InvalidQueryException {
     if (types.size() != 0) {
       throw new InvalidQueryException("The " + FUNCTION_NAME + " function should not get "
           + "any parameters");

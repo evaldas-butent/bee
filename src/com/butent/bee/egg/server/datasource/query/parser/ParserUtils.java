@@ -1,9 +1,9 @@
 package com.butent.bee.egg.server.datasource.query.parser;
 
 import com.butent.bee.egg.server.datasource.base.InvalidQueryException;
-import com.butent.bee.egg.server.datasource.datatable.value.DateTimeValue;
-import com.butent.bee.egg.server.datasource.datatable.value.DateValue;
-import com.butent.bee.egg.server.datasource.datatable.value.TimeOfDayValue;
+import com.butent.bee.egg.shared.data.value.DateTimeValue;
+import com.butent.bee.egg.shared.data.value.DateValue;
+import com.butent.bee.egg.shared.data.value.TimeOfDayValue;
 import com.butent.bee.egg.shared.utils.LogUtils;
 
 import java.util.logging.Logger;

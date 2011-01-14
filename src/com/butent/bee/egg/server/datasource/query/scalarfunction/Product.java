@@ -1,9 +1,9 @@
 package com.butent.bee.egg.server.datasource.query.scalarfunction;
 
 import com.butent.bee.egg.server.datasource.base.InvalidQueryException;
-import com.butent.bee.egg.server.datasource.datatable.value.NumberValue;
-import com.butent.bee.egg.server.datasource.datatable.value.Value;
-import com.butent.bee.egg.server.datasource.datatable.value.ValueType;
+import com.butent.bee.egg.shared.data.value.NumberValue;
+import com.butent.bee.egg.shared.data.value.Value;
+import com.butent.bee.egg.shared.data.value.ValueType;
 
 import java.util.List;
 

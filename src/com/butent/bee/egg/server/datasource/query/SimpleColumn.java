@@ -3,7 +3,7 @@ package com.butent.bee.egg.server.datasource.query;
 import com.google.common.collect.Lists;
 
 import com.butent.bee.egg.server.datasource.datatable.DataTable;
-import com.butent.bee.egg.server.datasource.datatable.value.ValueType;
+import com.butent.bee.egg.shared.data.value.ValueType;
 
 import java.util.List;
 

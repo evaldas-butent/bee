@@ -1,8 +1,8 @@
-package com.butent.bee.egg.server.datasource.datatable.value;
+package com.butent.bee.egg.shared.data.value;
 
-import com.ibm.icu.util.Calendar;
-import com.ibm.icu.util.GregorianCalendar;
-import com.ibm.icu.util.TimeZone;
+import com.butent.bee.egg.shared.Assert;
+import com.butent.bee.egg.shared.BeeDate;
+import com.butent.bee.egg.shared.utils.BeeUtils;
 
 public class TimeOfDayValue extends Value {
 
@@ -19,15 +19,11 @@ public class TimeOfDayValue extends Value {
 
   private Integer hashCode = null;
 
-  public TimeOfDayValue(GregorianCalendar calendar) {
-    if (!calendar.getTimeZone().equals(TimeZone.getTimeZone("GMT"))) {
-      throw new IllegalArgumentException(
-          "Can't create TimeOfDayValue from GregorianCalendar that is not GMT.");
-    }
-    this.hours = calendar.get(GregorianCalendar.HOUR_OF_DAY);
-    this.minutes = calendar.get(GregorianCalendar.MINUTE);
-    this.seconds = calendar.get(GregorianCalendar.SECOND);
-    this.milliseconds = calendar.get(GregorianCalendar.MILLISECOND);
+  public TimeOfDayValue(BeeDate date) {
+    this.hours = date.getHour();
+    this.minutes = date.getMinute();
+    this.seconds = date.getSecond();
+    this.milliseconds = date.getMillis();
   }
 
   public TimeOfDayValue(int hours, int minutes, int seconds) {
@@ -35,18 +31,10 @@ public class TimeOfDayValue extends Value {
   }
 
   public TimeOfDayValue(int hours, int minutes, int seconds, int milliseconds) {
-    if ((hours >= 24) || (hours < 0)) {
-      throw new IllegalArgumentException("This hours value is invalid: " + hours);
-    }
-    if ((minutes >= 60) || (minutes < 0)) {
-      throw new IllegalArgumentException("This minutes value is invalid: " + minutes);
-    }
-    if ((seconds >= 60) || (seconds < 0)) {
-      throw new IllegalArgumentException("This seconds value is invalid: " + seconds);
-    }
-    if ((milliseconds >= 1000) || (milliseconds < 0)) {
-      throw new IllegalArgumentException("This milliseconds value is invalid: " + milliseconds);
-    }
+    Assert.betweenExclusive(hours, 0, 24);
+    Assert.betweenExclusive(minutes, 0, 60);
+    Assert.betweenExclusive(seconds, 0, 60);
+    Assert.betweenExclusive(milliseconds, 0, 1000);
 
     this.hours = hours;
     this.minutes = minutes;
@@ -94,49 +82,30 @@ public class TimeOfDayValue extends Value {
   }
 
   public int getHours() {
-    if (isNull()) {
-      throw new NullValueException("This object is null");
-    }
+    Assert.isTrue(!isNull());
     return hours;
   }
 
   public int getMilliseconds() {
-    if (isNull()) {
-      throw new NullValueException("This object is null");
-    }
+    Assert.isTrue(!isNull());
     return milliseconds;
   }
 
   public int getMinutes() {
-    if (isNull()) {
-      throw new NullValueException("This object is null");
-    }
+    Assert.isTrue(!isNull());
     return minutes;
   }
 
   @Override
-  public Calendar getObjectToFormat() {
+  public BeeDate getObjectToFormat() {
     if (isNull()) {
       return null;
     }
-
-    Calendar cal = new GregorianCalendar(TimeZone.getTimeZone("GMT"));
-    cal.set(Calendar.YEAR, 1899);
-    cal.set(Calendar.MONTH, Calendar.DECEMBER);
-    cal.set(Calendar.DAY_OF_MONTH, 30);
-
-    cal.set(Calendar.HOUR_OF_DAY, hours);
-    cal.set(Calendar.MINUTE, minutes);
-    cal.set(Calendar.SECOND, seconds);
-    cal.set(Calendar.MILLISECOND, milliseconds);
-
-    return cal;
+    return new BeeDate(2011, 1, 1, hours, minutes, seconds, milliseconds);
   }
 
   public int getSeconds() {
-    if (isNull()) {
-      throw new NullValueException("This object is null");
-    }
+    Assert.isTrue(!isNull());
     return seconds;
   }
 
@@ -169,10 +138,11 @@ public class TimeOfDayValue extends Value {
     if (this == NULL_VALUE) {
       return "null";
     }
-   String result = String.format("%1$02d:%2$02d:%3$02d", hours, minutes,
-       seconds);
+    String result = BeeUtils.toLeadingZeroes(hours, 2) + ":"
+        + BeeUtils.toLeadingZeroes(minutes, 2) + ":"
+        + BeeUtils.toLeadingZeroes(seconds, 2);
     if (milliseconds > 0) {
-      result += "." + String.format("%1$3d", milliseconds);
+      result += "." + BeeUtils.toLeadingZeroes(milliseconds, 3);
     }
     return result;
   }

@@ -1,7 +1,6 @@
-package com.butent.bee.egg.server.datasource.datatable.value;
+package com.butent.bee.egg.shared.data.value;
 
-import com.ibm.icu.text.Collator;
-import com.ibm.icu.util.ULocale;
+import com.butent.bee.egg.shared.Assert;
 
 import java.util.Comparator;
 
@@ -13,16 +12,15 @@ public class TextValue extends Value {
     return NULL_VALUE;
   }
 
-  public static Comparator<TextValue> getTextLocalizedComparator(final ULocale ulocale) {
+  public static Comparator<TextValue> getTextComparator() {
     return new Comparator<TextValue>() {
-      Collator collator = Collator.getInstance(ulocale);
 
       @Override
       public int compare(TextValue tv1, TextValue tv2) {
         if (tv1 == tv2) {
           return 0;
         }
-        return collator.compare(tv1.value, tv2.value);
+        return tv1.compareTo(tv2);
       }
     };
   }
@@ -30,9 +28,7 @@ public class TextValue extends Value {
   private String value;
 
   public TextValue(String value) {
-    if (value == null) {
-      throw new NullPointerException("Cannot create a text value from null.");
-    }
+    Assert.notNull(value, "Cannot create a text value from null.");
     this.value = value;
   }
 

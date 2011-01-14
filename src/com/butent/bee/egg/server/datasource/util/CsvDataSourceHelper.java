@@ -9,9 +9,9 @@ import com.butent.bee.egg.server.datasource.datatable.ColumnDescription;
 import com.butent.bee.egg.server.datasource.datatable.DataTable;
 import com.butent.bee.egg.server.datasource.datatable.TableRow;
 import com.butent.bee.egg.server.datasource.datatable.ValueFormatter;
-import com.butent.bee.egg.server.datasource.datatable.value.Value;
-import com.butent.bee.egg.server.datasource.datatable.value.ValueType;
 import com.butent.bee.egg.shared.Assert;
+import com.butent.bee.egg.shared.data.value.Value;
+import com.butent.bee.egg.shared.data.value.ValueType;
 
 import com.ibm.icu.util.ULocale;
 

@@ -2,8 +2,11 @@ package com.butent.bee.egg.shared;
 
 import com.butent.bee.egg.shared.utils.BeeUtils;
 import com.butent.bee.egg.shared.utils.Grego;
+import com.butent.bee.egg.shared.utils.TimeUtils;
 
-public class BeeDate implements BeeSerializable {
+import java.util.Date;
+
+public class BeeDate implements BeeSerializable, Comparable<BeeDate> {
   private long time;
   private int[] fields = null;
 
@@ -19,27 +22,41 @@ public class BeeDate implements BeeSerializable {
     this(Long.parseLong(time));
   }
 
+  public BeeDate(Date date) {
+    this(date.getTime());
+  }
+  
   public BeeDate(int year, int month, int dom) {
     this(year, month, dom, 0, 0, 0, 0);
   }
 
+  public BeeDate(int year, int month, int dom, int hour, int minute, int second) {
+    this(year, month, dom, hour, minute, second, 0);
+  }
+  
   public BeeDate(int year, int month, int dom, int hour, int minute, int second, int millis) {
     long z = Grego.fieldsToDay(year, month, dom);
-    z *= Grego.MILLIS_PER_DAY;
+    z *= TimeUtils.MILLIS_PER_DAY;
     
     if (hour != 0) {
-      z += hour * Grego.MILLIS_PER_HOUR;
+      z += hour * TimeUtils.MILLIS_PER_HOUR;
     }
     if (minute != 0) {
-      z += minute * Grego.MILLIS_PER_MINUTE;
+      z += minute * TimeUtils.MILLIS_PER_MINUTE;
     }
     if (second != 0) {
-      z += second * Grego.MILLIS_PER_SECOND;
+      z += second * TimeUtils.MILLIS_PER_SECOND;
     }
     
     this.time = z + millis;
   }
   
+  public int compareTo(BeeDate other) {
+    long thisVal = getTime();
+    long anotherVal = other.getTime();
+    return (thisVal < anotherVal ? -1 : (thisVal == anotherVal ? 0 : 1));
+  }
+
   public void deserialize(String s) {
     time = Long.parseLong(s);
     fields = null;
@@ -98,6 +115,11 @@ public class BeeDate implements BeeSerializable {
     return Long.toString(time);
   }
 
+  public void setTime(long time) {
+    this.time = time;
+    this.fields = null;
+  }
+
   public String toLog() {
     return BeeUtils.toLeadingZeroes(getHour(), 2) + ":"
         + BeeUtils.toLeadingZeroes(getMinute(), 2) + ":"
@@ -124,5 +146,4 @@ public class BeeDate implements BeeSerializable {
       computeFields();
     }
   }
-
 }

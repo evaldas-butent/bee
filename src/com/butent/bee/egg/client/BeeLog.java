@@ -31,8 +31,7 @@ public class BeeLog implements Module {
   }
 
   public void addSeparator() {
-    getLogger().log(LogFormatter.LOG_SEPARATOR_LEVEL,
-        LogFormatter.LOG_SEPARATOR_TAG);
+    getLogger().log(LogFormatter.LOG_SEPARATOR_LEVEL, LogFormatter.LOG_SEPARATOR_TAG);
   }
 
   public void clear() {
@@ -164,5 +163,4 @@ public class BeeLog implements Module {
       getLogger().addHandler(new LogWidgetHandler(p));
     }
   }
-
 }

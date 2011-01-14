@@ -3,7 +3,7 @@ package com.butent.bee.egg.server.datasource.query.engine;
 import com.google.common.collect.Sets;
 
 import com.butent.bee.egg.server.datasource.datatable.DataTable;
-import com.butent.bee.egg.server.datasource.datatable.value.Value;
+import com.butent.bee.egg.shared.data.value.Value;
 
 import java.util.Map;
 import java.util.Set;

@@ -1,10 +1,6 @@
 package com.butent.bee.egg.server.datasource.query.parser;
 
 import com.butent.bee.egg.server.datasource.base.InvalidQueryException;
-import com.butent.bee.egg.server.datasource.datatable.value.BooleanValue;
-import com.butent.bee.egg.server.datasource.datatable.value.NumberValue;
-import com.butent.bee.egg.server.datasource.datatable.value.TextValue;
-import com.butent.bee.egg.server.datasource.datatable.value.Value;
 import com.butent.bee.egg.server.datasource.query.AbstractColumn;
 import com.butent.bee.egg.server.datasource.query.AggregationColumn;
 import com.butent.bee.egg.server.datasource.query.AggregationType;
@@ -39,6 +35,10 @@ import com.butent.bee.egg.server.datasource.query.scalarfunction.Sum;
 import com.butent.bee.egg.server.datasource.query.scalarfunction.ToDate;
 import com.butent.bee.egg.server.datasource.query.scalarfunction.TimeComponentExtractor;
 import com.butent.bee.egg.server.datasource.query.scalarfunction.Upper;
+import com.butent.bee.egg.shared.data.value.BooleanValue;
+import com.butent.bee.egg.shared.data.value.NumberValue;
+import com.butent.bee.egg.shared.data.value.TextValue;
+import com.butent.bee.egg.shared.data.value.Value;
 
 import java.io.BufferedReader;
 import java.io.InputStream;

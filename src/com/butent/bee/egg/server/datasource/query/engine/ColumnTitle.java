@@ -2,11 +2,11 @@ package com.butent.bee.egg.server.datasource.query.engine;
 
 import com.butent.bee.egg.server.datasource.datatable.ColumnDescription;
 import com.butent.bee.egg.server.datasource.datatable.DataTable;
-import com.butent.bee.egg.server.datasource.datatable.value.Value;
-import com.butent.bee.egg.server.datasource.datatable.value.ValueType;
 import com.butent.bee.egg.server.datasource.query.AggregationColumn;
 import com.butent.bee.egg.server.datasource.query.AggregationType;
 import com.butent.bee.egg.shared.Assert;
+import com.butent.bee.egg.shared.data.value.Value;
+import com.butent.bee.egg.shared.data.value.ValueType;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
 import java.util.List;

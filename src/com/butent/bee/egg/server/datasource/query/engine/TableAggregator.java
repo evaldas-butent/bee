@@ -4,8 +4,8 @@ import com.google.common.collect.Maps;
 
 import com.butent.bee.egg.server.datasource.datatable.DataTable;
 import com.butent.bee.egg.server.datasource.datatable.TableRow;
-import com.butent.bee.egg.server.datasource.datatable.value.Value;
 import com.butent.bee.egg.server.datasource.query.AggregationType;
+import com.butent.bee.egg.shared.data.value.Value;
 
 import java.util.List;
 import java.util.Map;

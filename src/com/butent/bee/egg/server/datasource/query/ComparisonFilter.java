@@ -1,7 +1,7 @@
 package com.butent.bee.egg.server.datasource.query;
 
-import com.butent.bee.egg.server.datasource.datatable.value.Value;
 import com.butent.bee.egg.shared.Assert;
+import com.butent.bee.egg.shared.data.value.Value;
 
 import java.util.StringTokenizer;
 import java.util.regex.Pattern;

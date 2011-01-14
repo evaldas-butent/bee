@@ -11,16 +11,15 @@ import com.butent.bee.egg.server.datasource.datatable.ColumnDescription;
 import com.butent.bee.egg.server.datasource.datatable.DataTable;
 import com.butent.bee.egg.server.datasource.datatable.TableCell;
 import com.butent.bee.egg.server.datasource.datatable.TableRow;
-import com.butent.bee.egg.server.datasource.datatable.value.BooleanValue;
-import com.butent.bee.egg.server.datasource.datatable.value.DateTimeValue;
-import com.butent.bee.egg.server.datasource.datatable.value.DateValue;
-import com.butent.bee.egg.server.datasource.datatable.value.NumberValue;
-import com.butent.bee.egg.server.datasource.datatable.value.TimeOfDayValue;
-import com.butent.bee.egg.server.datasource.datatable.value.Value;
-import com.butent.bee.egg.server.datasource.datatable.value.ValueType;
+import com.butent.bee.egg.shared.BeeDate;
+import com.butent.bee.egg.shared.data.value.BooleanValue;
+import com.butent.bee.egg.shared.data.value.DateTimeValue;
+import com.butent.bee.egg.shared.data.value.DateValue;
+import com.butent.bee.egg.shared.data.value.NumberValue;
+import com.butent.bee.egg.shared.data.value.TimeOfDayValue;
+import com.butent.bee.egg.shared.data.value.Value;
+import com.butent.bee.egg.shared.data.value.ValueType;
 import com.butent.bee.egg.shared.utils.BeeUtils;
-
-import com.ibm.icu.util.GregorianCalendar;
 
 import java.util.List;
 import java.util.Map;
@@ -32,7 +31,6 @@ public class JsonRenderer {
     Value value = cell.getValue();
     ValueType type = cell.getType();
     StringBuilder valueJson = new StringBuilder();
-    GregorianCalendar calendar;
     String escapedFormattedString = "";
     boolean isJsonNull = false;
 
@@ -72,17 +70,14 @@ public class JsonRenderer {
           valueJson.append("]");
           break;
         case DATETIME:
-          calendar = ((DateTimeValue) value).getCalendar();
+          BeeDate date = ((DateTimeValue) value).getDateTime();
           valueJson.append("new Date(");
-          valueJson.append(calendar.get(GregorianCalendar.YEAR)).append(",");
-          valueJson.append(calendar.get(GregorianCalendar.MONTH)).append(",");
-          valueJson.append(calendar.get(GregorianCalendar.DAY_OF_MONTH));
-          valueJson.append(",");
-          valueJson.append(calendar.get(GregorianCalendar.HOUR_OF_DAY));
-          valueJson.append(",");
-          valueJson.append(calendar.get(GregorianCalendar.MINUTE)).append(",");
-          valueJson.append(calendar.get(GregorianCalendar.SECOND));
-          valueJson.append(")");
+          valueJson.append(date.getYear()).append(",");
+          valueJson.append(date.getMonth() - 1).append(",");
+          valueJson.append(date.getDom()).append(",");
+          valueJson.append(date.getHour()).append(",");
+          valueJson.append(date.getMinute()).append(",");
+          valueJson.append(date.getSecond()).append(")");
           break;
         default:
           throw new IllegalArgumentException("Illegal value Type " + type);

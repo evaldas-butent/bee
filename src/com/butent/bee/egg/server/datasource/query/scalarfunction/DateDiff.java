@@ -1,16 +1,14 @@
 package com.butent.bee.egg.server.datasource.query.scalarfunction;
 
 import com.butent.bee.egg.server.datasource.base.InvalidQueryException;
-import com.butent.bee.egg.server.datasource.datatable.value.DateTimeValue;
-import com.butent.bee.egg.server.datasource.datatable.value.DateValue;
-import com.butent.bee.egg.server.datasource.datatable.value.NumberValue;
-import com.butent.bee.egg.server.datasource.datatable.value.Value;
-import com.butent.bee.egg.server.datasource.datatable.value.ValueType;
-import com.ibm.icu.util.Calendar;
-import com.ibm.icu.util.GregorianCalendar;
-import com.ibm.icu.util.TimeZone;
+import com.butent.bee.egg.shared.BeeDate;
+import com.butent.bee.egg.shared.data.value.DateTimeValue;
+import com.butent.bee.egg.shared.data.value.DateValue;
+import com.butent.bee.egg.shared.data.value.NumberValue;
+import com.butent.bee.egg.shared.data.value.Value;
+import com.butent.bee.egg.shared.data.value.ValueType;
+import com.butent.bee.egg.shared.utils.TimeUtils;
 
-import java.util.Date;
 import java.util.List;
 
 public class DateDiff implements ScalarFunction {
@@ -31,12 +29,10 @@ public class DateDiff implements ScalarFunction {
     if (firstValue.isNull() || secondValue.isNull()) {
       return NumberValue.getNullValue();
     }
-    Date firstDate = getDateFromValue(firstValue);
-    Date secondDate = getDateFromValue(secondValue);
+    BeeDate firstDate = getDateFromValue(firstValue);
+    BeeDate secondDate = getDateFromValue(secondValue);
 
-    GregorianCalendar calendar = new GregorianCalendar(TimeZone.getTimeZone("GMT"));
-    calendar.setTime(secondDate);
-    return new NumberValue(calendar.fieldDifference(firstDate, Calendar.DATE));
+    return new NumberValue(TimeUtils.dateDiff(secondDate, firstDate));
   }
 
   public String getFunctionName() {
@@ -63,14 +59,12 @@ public class DateDiff implements ScalarFunction {
     }
   }
 
-  private Date getDateFromValue(Value value) {
-    Calendar calendar;
+  private BeeDate getDateFromValue(Value value) {
     if (value.getType() == ValueType.DATE) {
-      calendar = ((DateValue) value).getObjectToFormat();
+      return ((DateValue) value).getObjectToFormat();
     } else {
-      calendar = ((DateTimeValue) value).getObjectToFormat();
+      return ((DateTimeValue) value).getObjectToFormat();
     }
-    return calendar.getTime();
   }
   
   private boolean isDateOrDateTimeValue(ValueType type) {

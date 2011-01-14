@@ -5,20 +5,20 @@ import com.google.common.collect.Maps;
 import com.butent.bee.egg.server.datasource.base.BooleanFormat;
 import com.butent.bee.egg.server.datasource.base.LocaleUtil;
 import com.butent.bee.egg.server.datasource.base.TextFormat;
-import com.butent.bee.egg.server.datasource.datatable.value.BooleanValue;
-import com.butent.bee.egg.server.datasource.datatable.value.DateTimeValue;
-import com.butent.bee.egg.server.datasource.datatable.value.DateValue;
-import com.butent.bee.egg.server.datasource.datatable.value.NumberValue;
-import com.butent.bee.egg.server.datasource.datatable.value.TextValue;
-import com.butent.bee.egg.server.datasource.datatable.value.TimeOfDayValue;
-import com.butent.bee.egg.server.datasource.datatable.value.Value;
-import com.butent.bee.egg.server.datasource.datatable.value.ValueType;
+import com.butent.bee.egg.shared.BeeDate;
+import com.butent.bee.egg.shared.data.value.BooleanValue;
+import com.butent.bee.egg.shared.data.value.DateTimeValue;
+import com.butent.bee.egg.shared.data.value.DateValue;
+import com.butent.bee.egg.shared.data.value.NumberValue;
+import com.butent.bee.egg.shared.data.value.TextValue;
+import com.butent.bee.egg.shared.data.value.TimeOfDayValue;
+import com.butent.bee.egg.shared.data.value.Value;
+import com.butent.bee.egg.shared.data.value.ValueType;
 import com.ibm.icu.text.DecimalFormat;
 import com.ibm.icu.text.DecimalFormatSymbols;
 import com.ibm.icu.text.NumberFormat;
 import com.ibm.icu.text.SimpleDateFormat;
 import com.ibm.icu.text.UFormat;
-import com.ibm.icu.util.GregorianCalendar;
 import com.ibm.icu.util.TimeZone;
 import com.ibm.icu.util.ULocale;
 
@@ -195,16 +195,12 @@ public class ValueFormatter {
 
   private DateValue parseDate(String val) throws ParseException {
     Date date = ((SimpleDateFormat) uFormat).parse(val);
-    GregorianCalendar gc = new GregorianCalendar(TimeZone.getTimeZone("GMT"));
-    gc.setTime(date);
-    return new DateValue(gc);
+    return new DateValue(new BeeDate(date));
   }
 
   private DateTimeValue parseDateTime(String val) throws ParseException {
     Date date = ((SimpleDateFormat) uFormat).parse(val);
-    GregorianCalendar gc = new GregorianCalendar(TimeZone.getTimeZone("GMT"));
-    gc.setTime(date);
-    return new DateTimeValue(gc);
+    return new DateTimeValue(new BeeDate(date));
   }
 
   private NumberValue parseNumber(String val) throws ParseException {
@@ -214,8 +210,6 @@ public class ValueFormatter {
 
   private TimeOfDayValue parseTimeOfDay(String val) throws ParseException {
     Date date = ((SimpleDateFormat) uFormat).parse(val);
-    GregorianCalendar gc = new GregorianCalendar(TimeZone.getTimeZone("GMT"));
-    gc.setTime(date);
-    return new TimeOfDayValue(gc);
+    return new TimeOfDayValue(new BeeDate(date));
   }
 }

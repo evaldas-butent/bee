@@ -32,17 +32,6 @@ import com.butent.bee.egg.client.event.EventUtils;
 import com.butent.bee.egg.client.event.HasAllDndHandlers;
 import com.butent.bee.egg.client.grid.FlexTable.FlexCellFormatter;
 import com.butent.bee.egg.client.grid.SelectionGrid.SelectionPolicy;
-import com.butent.bee.egg.client.grid.event.HasPageChangeHandlers;
-import com.butent.bee.egg.client.grid.event.HasPageCountChangeHandlers;
-import com.butent.bee.egg.client.grid.event.HasPagingFailureHandlers;
-import com.butent.bee.egg.client.grid.event.PageChangeEvent;
-import com.butent.bee.egg.client.grid.event.PageChangeHandler;
-import com.butent.bee.egg.client.grid.event.PageCountChangeEvent;
-import com.butent.bee.egg.client.grid.event.PageCountChangeHandler;
-import com.butent.bee.egg.client.grid.event.PagingFailureEvent;
-import com.butent.bee.egg.client.grid.event.PagingFailureHandler;
-import com.butent.bee.egg.client.grid.event.RowCountChangeEvent;
-import com.butent.bee.egg.client.grid.event.RowCountChangeHandler;
 import com.butent.bee.egg.client.grid.event.RowSelectionEvent;
 import com.butent.bee.egg.client.grid.event.RowSelectionHandler;
 import com.butent.bee.egg.client.grid.event.TableEvent.Row;
@@ -66,8 +55,7 @@ import java.util.List;
 import java.util.Set;
 
 public class ScrollTable<RowType> extends ComplexPanel implements
-    HasId, HasScrollHandlers, HasTableDefinition<RowType>, HasPageCountChangeHandlers,
-    HasPageChangeHandlers, HasPagingFailureHandlers, RequiresResize {
+    HasId, HasScrollHandlers, HasTableDefinition<RowType>, RequiresResize {
 
   public static enum ResizePolicy {
     UNCONSTRAINED(false, false), FLOW(false, true), FIXED_WIDTH(true, false),
@@ -189,7 +177,7 @@ public class ScrollTable<RowType> extends ComplexPanel implements
         int dstId = BeeUtils.toInt(BeeUtils.getSuffix(targetId, columnIdSeparator));
         
         tableDefinition.moveColumnDef(srcId, dstId);
-        reloadPage();
+        reload();
       }
       
       return true;
@@ -473,14 +461,9 @@ public class ScrollTable<RowType> extends ComplexPanel implements
   private FixedWidthGridBulkRenderer<RowType> bulkRenderer = null;
   private TableModel<RowType> tableModel;
 
-  private int currentPage = -1;
-  private int oldPageCount;
-  private int pageSize = 0;
-
-  private boolean isPageLoading;
+  private boolean loading;
   private Request lastRequest = null;
 
-  private boolean isCrossPageSelectionEnabled;
   private Set<RowType> selectedRowValues = new HashSet<RowType>();
   private BeeSimpleCheckBox selectAllWidget;
 
@@ -515,10 +498,10 @@ public class ScrollTable<RowType> extends ComplexPanel implements
 
   private String columnIdSeparator = "_";
 
-  private Callback<RowType> pagingCallback = new Callback<RowType>() {
+  private Callback<RowType> loadCallback = new Callback<RowType>() {
     public void onFailure(Throwable caught) {
-      isPageLoading = false;
-      fireEvent(new PagingFailureEvent(caught));
+      loading = false;
+      BeeKeeper.getLog().severe("Loading Failure", caught);
     }
 
     public void onRowsReady(Request request, Response<RowType> response) {
@@ -585,21 +568,10 @@ public class ScrollTable<RowType> extends ComplexPanel implements
     this.tableModel = tableModel;
     setTableDefinition(tableDefinition);
     refreshVisibleColumnDefinitions();
-    oldPageCount = getPageCount();
-
-    tableModel.addRowCountChangeHandler(new RowCountChangeHandler() {
-      public void onRowCountChange(RowCountChangeEvent event) {
-        int pageCount = getPageCount();
-        if (pageCount != oldPageCount) {
-          fireEvent(new PageCountChangeEvent(oldPageCount, pageCount));
-          oldPageCount = pageCount;
-        }
-      }
-    });
 
     dataTable.addRowSelectionHandler(new RowSelectionHandler() {
       public void onRowSelection(RowSelectionEvent event) {
-        if (isPageLoading) {
+        if (isLoading()) {
           return;
         }
         Set<Row> deselected = event.getDeselectedRows();
@@ -612,18 +584,6 @@ public class ScrollTable<RowType> extends ComplexPanel implements
         }
       }
     });
-  }
-
-  public HandlerRegistration addPageChangeHandler(PageChangeHandler handler) {
-    return addHandler(handler, PageChangeEvent.getType());
-  }
-
-  public HandlerRegistration addPageCountChangeHandler(PageCountChangeHandler handler) {
-    return addHandler(handler, PageCountChangeEvent.getType());
-  }
-
-  public HandlerRegistration addPagingFailureHandler(PagingFailureHandler handler) {
-    return addHandler(handler, PagingFailureEvent.getType());
   }
 
   public HandlerRegistration addScrollHandler(ScrollHandler handler) {
@@ -645,16 +605,11 @@ public class ScrollTable<RowType> extends ComplexPanel implements
   }
 
   public int getAbsoluteFirstRowIndex() {
-    return currentPage * pageSize;
+    return 0;
   }
 
   public int getAbsoluteLastRowIndex() {
-    if (tableModel.getRowCount() < 0) {
-      return (currentPage + 1) * pageSize - 1;
-    } else if (pageSize == 0) {
-      return tableModel.getRowCount() - 1;
-    }
-    return Math.min(tableModel.getRowCount(), (currentPage + 1) * pageSize) - 1;
+    return tableModel.getRowCount() - 1;
   }
 
   public int getAvailableWidth() {
@@ -709,10 +664,6 @@ public class ScrollTable<RowType> extends ComplexPanel implements
         curWidth, dataWidth, headerWidth, footerWidth);
   }
 
-  public int getCurrentPage() {
-    return currentPage;
-  }
-
   public FixedWidthGrid getDataTable() {
     return dataTable;
   }
@@ -762,22 +713,6 @@ public class ScrollTable<RowType> extends ComplexPanel implements
     return Math.max(minColumnWidth, minWidth);
   }
 
-  public int getPageCount() {
-    if (pageSize < 1) {
-      return 1;
-    } else {
-      int numDataRows = tableModel.getRowCount();
-      if (numDataRows < 0) {
-        return -1;
-      }
-      return (int) Math.ceil(numDataRows / (pageSize + 0.0));
-    }
-  }
-
-  public int getPageSize() {
-    return pageSize;
-  }
-
   public int getPreferredColumnWidth(int column, boolean visible) {
     ColumnDefinition<RowType, ?> colDef = getColumnDefinition(column, visible);
     if (colDef == null) {
@@ -820,57 +755,24 @@ public class ScrollTable<RowType> extends ComplexPanel implements
     return idx;
   }
 
-  public void gotoFirstPage() {
-    gotoPage(0, false);
-  }
+  public void load() {
+    loading = true;
 
-  public void gotoLastPage() {
-    if (getPageCount() >= 0) {
-      gotoPage(getPageCount(), false);
-    }
-  }
+    FixedWidthGrid data = getDataTable();
+    data.deselectAllRows();
 
-  public void gotoNextPage() {
-    gotoPage(currentPage + 1, false);
-  }
-
-  public void gotoPage(int page, boolean forced) {
-    int oldPage = currentPage;
-    int numPages = getPageCount();
-    if (numPages >= 0) {
-      currentPage = Math.max(0, Math.min(page, numPages - 1));
-    } else {
-      currentPage = page;
-    }
-
-    if (currentPage != oldPage || forced) {
-      isPageLoading = true;
-
-      FixedWidthGrid data = getDataTable();
-      data.deselectAllRows();
-      if (!isCrossPageSelectionEnabled) {
-        selectedRowValues = new HashSet<RowType>();
+    if (bulkRenderer == null) {
+      int rowCount = getAbsoluteLastRowIndex() - getAbsoluteFirstRowIndex() + 1;
+      if (rowCount != data.getRowCount()) {
+        data.resizeRows(rowCount);
       }
-
-      fireEvent(new PageChangeEvent(oldPage, currentPage));
-
-      if (bulkRenderer == null) {
-        int rowCount = getAbsoluteLastRowIndex() - getAbsoluteFirstRowIndex() + 1;
-        if (rowCount != data.getRowCount()) {
-          data.resizeRows(rowCount);
-        }
-        data.clear(true);
-      }
-
-      int firstRow = getAbsoluteFirstRowIndex();
-      int lastRow = pageSize == 0 ? tableModel.getRowCount() : pageSize;
-      lastRequest = new Request(firstRow, lastRow, data.getColumnSortList());
-      tableModel.requestRows(lastRequest, pagingCallback);
+      data.clear(true);
     }
-  }
 
-  public void gotoPreviousPage() {
-    gotoPage(currentPage - 1, false);
+    int firstRow = getAbsoluteFirstRowIndex();
+    int lastRow = tableModel.getRowCount();
+    lastRequest = new Request(firstRow, lastRow, data.getColumnSortList());
+    tableModel.requestRows(lastRequest, loadCallback);
   }
 
   public boolean isColumnSortable(int column, boolean visible) {
@@ -887,10 +789,6 @@ public class ScrollTable<RowType> extends ComplexPanel implements
       return true;
     }
     return colDef.isColumnTruncatable(true);
-  }
-
-  public boolean isCrossPageSelectionEnabled() {
-    return isCrossPageSelectionEnabled;
   }
 
   public boolean isFooterColumnTruncatable(int column, boolean visible) {
@@ -913,8 +811,8 @@ public class ScrollTable<RowType> extends ComplexPanel implements
     return headersObsolete;
   }
 
-  public boolean isPageLoading() {
-    return isPageLoading;
+  public boolean isLoading() {
+    return loading;
   }
 
   @Override
@@ -1049,12 +947,8 @@ public class ScrollTable<RowType> extends ComplexPanel implements
     doScroll();
   }
 
-  public void reloadPage() {
-    if (currentPage >= 0) {
-      gotoPage(currentPage, true);
-    } else {
-      gotoPage(0, true);
-    }
+  public void reload() {
+    load();
   }
 
   @Override
@@ -1100,20 +994,6 @@ public class ScrollTable<RowType> extends ComplexPanel implements
     doScroll();
   }
 
-  public void setCrossPageSelectionEnabled(boolean enabled) {
-    if (isCrossPageSelectionEnabled != enabled) {
-      this.isCrossPageSelectionEnabled = enabled;
-
-      if (!enabled) {
-        selectedRowValues = new HashSet<RowType>();
-        Set<Integer> selectedRows = getDataTable().getSelectedRows();
-        for (Integer selectedRow : selectedRows) {
-          selectedRowValues.add(getRowValue(selectedRow));
-        }
-      }
-    }
-  }
-
   public void setDefaultColumnWidth(int defaultColumnWidth) {
     this.defaultColumnWidth = defaultColumnWidth;
 
@@ -1146,21 +1026,6 @@ public class ScrollTable<RowType> extends ComplexPanel implements
 
   public void setMinColumnWidth(int minColumnWidth) {
     this.minColumnWidth = minColumnWidth;
-  }
-
-  public void setPageSize(int pageSize) {
-    pageSize = Math.max(0, pageSize);
-    this.pageSize = pageSize;
-
-    int pageCount = getPageCount();
-    if (pageCount != oldPageCount) {
-      fireEvent(new PageCountChangeEvent(oldPageCount, pageCount));
-      oldPageCount = pageCount;
-    }
-
-    if (currentPage >= 0) {
-      gotoPage(currentPage, true);
-    }
   }
 
   public void setResizePolicy(ResizePolicy resizePolicy) {
@@ -1221,21 +1086,6 @@ public class ScrollTable<RowType> extends ComplexPanel implements
     return visibleColumns;
   }
 
-  protected void insertAbsoluteRow(int beforeRow) {
-    int lastRow = getAbsoluteLastRowIndex() + 1;
-    if (beforeRow <= lastRow) {
-      int firstRow = getAbsoluteFirstRowIndex();
-      if (beforeRow >= firstRow) {
-        getDataTable().insertRow(beforeRow - firstRow);
-      } else {
-        getDataTable().insertRow(0);
-      }
-      if (getDataTable().getRowCount() > pageSize) {
-        getDataTable().removeRow(pageSize);
-      }
-    }
-  }
-
   protected void onDataTableRendered() {
     if (headersObsolete) {
       EventUtils.removeDndHandler(dndWorker);
@@ -1257,7 +1107,7 @@ public class ScrollTable<RowType> extends ComplexPanel implements
 
     data.clearIdealWidths();
     redraw();
-    isPageLoading = false;
+    loading = false;
   }
 
   @Override
@@ -1267,7 +1117,7 @@ public class ScrollTable<RowType> extends ComplexPanel implements
     Scheduler.get().scheduleDeferred(new ScheduledCommand() {
       @Override
       public void execute() {
-        gotoFirstPage();
+        load();
       }
     });
   }

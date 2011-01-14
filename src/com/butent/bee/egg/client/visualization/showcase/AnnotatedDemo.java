@@ -11,7 +11,7 @@ import com.butent.bee.egg.client.visualization.visualizations.AnnotatedTimeLine.
 import com.butent.bee.egg.client.widget.BeeLabel;
 import com.butent.bee.egg.shared.BeeDate;
 import com.butent.bee.egg.shared.utils.BeeUtils;
-import com.butent.bee.egg.shared.utils.Grego;
+import com.butent.bee.egg.shared.utils.TimeUtils;
 
 public class AnnotatedDemo implements LeftTabPanel.WidgetProvider {
   private AnnotatedTimeLine chart;
@@ -38,10 +38,10 @@ public class AnnotatedDemo implements LeftTabPanel.WidgetProvider {
     
     BeeDate now = new BeeDate();
     double start = new BeeDate(now.getYear(), now.getMonth(), now.getDom()).getTime();
-    start -= Double.valueOf(Grego.MILLIS_PER_DAY) * (rows + 1);
+    start -= Double.valueOf(TimeUtils.MILLIS_PER_DAY) * (rows + 1);
     
     for (int i = 0; i < rows; i++) {
-      data.setDate(i, 0, start += Grego.MILLIS_PER_DAY);
+      data.setDate(i, 0, start += TimeUtils.MILLIS_PER_DAY);
       int x = BeeUtils.randomInt(0, 300);
       int y = BeeUtils.randomInt(100, 200);
       data.setValue(i, 1, x);

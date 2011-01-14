@@ -9,14 +9,6 @@ import com.butent.bee.egg.server.datasource.datatable.ColumnDescription;
 import com.butent.bee.egg.server.datasource.datatable.DataTable;
 import com.butent.bee.egg.server.datasource.datatable.TableCell;
 import com.butent.bee.egg.server.datasource.datatable.TableRow;
-import com.butent.bee.egg.server.datasource.datatable.value.BooleanValue;
-import com.butent.bee.egg.server.datasource.datatable.value.DateTimeValue;
-import com.butent.bee.egg.server.datasource.datatable.value.DateValue;
-import com.butent.bee.egg.server.datasource.datatable.value.NumberValue;
-import com.butent.bee.egg.server.datasource.datatable.value.TextValue;
-import com.butent.bee.egg.server.datasource.datatable.value.TimeOfDayValue;
-import com.butent.bee.egg.server.datasource.datatable.value.Value;
-import com.butent.bee.egg.server.datasource.datatable.value.ValueType;
 import com.butent.bee.egg.server.datasource.query.AbstractColumn;
 import com.butent.bee.egg.server.datasource.query.AggregationColumn;
 import com.butent.bee.egg.server.datasource.query.AggregationType;
@@ -35,12 +27,16 @@ import com.butent.bee.egg.server.datasource.query.QuerySort;
 import com.butent.bee.egg.server.datasource.query.SimpleColumn;
 import com.butent.bee.egg.server.datasource.query.SortOrder;
 import com.butent.bee.egg.shared.Assert;
+import com.butent.bee.egg.shared.data.value.BooleanValue;
+import com.butent.bee.egg.shared.data.value.DateTimeValue;
+import com.butent.bee.egg.shared.data.value.DateValue;
+import com.butent.bee.egg.shared.data.value.NumberValue;
+import com.butent.bee.egg.shared.data.value.TextValue;
+import com.butent.bee.egg.shared.data.value.TimeOfDayValue;
+import com.butent.bee.egg.shared.data.value.Value;
+import com.butent.bee.egg.shared.data.value.ValueType;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 import com.butent.bee.egg.shared.utils.LogUtils;
-
-import com.ibm.icu.util.Calendar;
-import com.ibm.icu.util.GregorianCalendar;
-import com.ibm.icu.util.TimeZone;
 
 import java.sql.Connection;
 import java.sql.Date;
@@ -245,30 +241,21 @@ public class SqlDataSourceHelper {
       case DATE:
         Date date = rs.getDate(column);
         if (date != null) {
-          GregorianCalendar gc = new GregorianCalendar(TimeZone.getTimeZone("GMT"));
-          gc.set(date.getYear() + 1900, date.getMonth(), date.getDate());
-          value = new DateValue(gc);
+          value = new DateValue(date.getYear() + 1900, date.getMonth() + 1, date.getDate());
         }
         break;
       case DATETIME:
         Timestamp timestamp = rs.getTimestamp(column);
         if (timestamp != null) {
-          GregorianCalendar gc = new GregorianCalendar(TimeZone.getTimeZone("GMT"));
-          gc.set(timestamp.getYear() + 1900, timestamp.getMonth(),
-                 timestamp.getDate(), timestamp.getHours(), timestamp.getMinutes(),
-                 timestamp.getSeconds());
-          gc.set(Calendar.MILLISECOND, timestamp.getNanos() / 1000000);
-          value = new DateTimeValue(gc);
+          value = new DateTimeValue(timestamp.getYear() + 1900, timestamp.getMonth() + 1, 
+              timestamp.getDate(), timestamp.getHours(), timestamp.getMinutes(),
+              timestamp.getSeconds(), timestamp.getNanos() / 1000000);
         }
         break;
       case TIMEOFDAY:
         Time time = rs.getTime(column);
         if (time != null) {
-          GregorianCalendar gc = new GregorianCalendar(TimeZone.getTimeZone("GMT"));
-          gc.set(1970, Calendar.JANUARY, 1, time.getHours(), time.getMinutes(),
-                 time.getSeconds());
-          gc.set(GregorianCalendar.MILLISECOND, 0);
-          value = new TimeOfDayValue(gc);
+          value = new TimeOfDayValue(time.getHours(), time.getMinutes(), time.getSeconds());
         }
         break;
       default:

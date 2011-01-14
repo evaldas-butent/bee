@@ -2,7 +2,8 @@ package com.butent.bee.egg.server.datasource.datatable;
 
 import com.google.common.collect.Maps;
 
-import com.butent.bee.egg.server.datasource.datatable.value.ValueType;
+import com.butent.bee.egg.shared.Assert;
+import com.butent.bee.egg.shared.data.value.ValueType;
 
 import java.util.Collections;
 import java.util.Map;
@@ -44,11 +45,9 @@ public class ColumnDescription {
   }
 
   public String getCustomProperty(String key) {
+    Assert.notEmpty(key);
     if (customProperties == null) {
       return null;
-    }
-    if (key == null) {
-      throw new RuntimeException("Null keys are not allowed.");
     }
     return customProperties.get(key);
   }
@@ -70,11 +69,10 @@ public class ColumnDescription {
   }
 
   public void setCustomProperty(String propertyKey, String propertyValue) {
+    Assert.notEmpty(propertyKey);
+    Assert.notNull(propertyValue);
     if (customProperties == null) {
       customProperties = Maps.newHashMap();
-    }
-    if ((propertyKey == null) || (propertyValue == null)) {
-      throw new RuntimeException("Null keys/values are not allowed.");
     }
     customProperties.put(propertyKey, propertyValue);
   }

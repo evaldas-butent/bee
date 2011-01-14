@@ -42,7 +42,8 @@ public abstract class AbstractCellView<RowType> {
     renderRowValue(rowValue, columnDef);
   }
 
-  protected <ColType> void renderRowValue(RowType rowValue, ColumnDefinition<RowType, ColType> columnDef) {
+  protected <ColType> void renderRowValue(RowType rowValue,
+      ColumnDefinition<RowType, ColType> columnDef) {
     columnDef.getCellRenderer().renderRowValue(rowValue, columnDef, this);
   }
 }

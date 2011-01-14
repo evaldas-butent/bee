@@ -12,7 +12,6 @@ import com.butent.bee.egg.server.datasource.datatable.DataTable;
 import com.butent.bee.egg.server.datasource.datatable.TableCell;
 import com.butent.bee.egg.server.datasource.datatable.TableRow;
 import com.butent.bee.egg.server.datasource.datatable.ValueFormatter;
-import com.butent.bee.egg.server.datasource.datatable.value.Value;
 import com.butent.bee.egg.server.datasource.query.AbstractColumn;
 import com.butent.bee.egg.server.datasource.query.AggregationColumn;
 import com.butent.bee.egg.server.datasource.query.ColumnLookup;
@@ -29,6 +28,7 @@ import com.butent.bee.egg.server.datasource.query.QuerySort;
 import com.butent.bee.egg.server.datasource.query.ScalarFunctionColumn;
 import com.butent.bee.egg.server.datasource.query.SimpleColumn;
 import com.butent.bee.egg.shared.Assert;
+import com.butent.bee.egg.shared.data.value.Value;
 
 import com.ibm.icu.util.ULocale;
 
@@ -56,7 +56,7 @@ public final class QueryEngine {
     try {
       table = performFilter(table, query);
       table = performGroupingAndPivoting(table, query, columnIndices, columnLookups);
-      table = performSort(table, query, locale);
+      table = performSort(table, query);
       table = performSkipping(table, query);
       table = performPagination(table, query);
 
@@ -469,13 +469,13 @@ public final class QueryEngine {
     return newTable;
   }
 
-  private static DataTable performSort(DataTable table, Query query, ULocale locale) {
+  private static DataTable performSort(DataTable table, Query query) {
     if (!query.hasSort()) {
       return table;
     }
     QuerySort sortBy = query.getSort();
     DataTableColumnLookup columnLookup = new DataTableColumnLookup(table);
-    TableRowComparator comparator = new TableRowComparator(sortBy, locale, columnLookup);
+    TableRowComparator comparator = new TableRowComparator(sortBy, columnLookup);
     Collections.sort(table.getRows(), comparator);
     return table;
   }
