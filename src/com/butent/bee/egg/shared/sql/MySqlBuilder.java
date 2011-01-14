@@ -14,40 +14,37 @@ class MySqlBuilder extends SqlBuilder {
         return "SELECT schema() as dbSchema";
 
       case DROP_FOREIGNKEY:
-        StringBuilder drop = new StringBuilder("ALTER TABLE ")
-          .append(params.get("table"))
-          .append(" DROP FOREIGN KEY ")
-          .append(params.get("name"));
-        return drop.toString();
+        return BeeUtils.concat(1,
+            "ALTER TABLE", params.get("table"),
+            "DROP FOREIGN KEY", params.get("name"));
 
       case DB_TABLES:
-        String sql = "SHOW TABLES";
-
-        if (!BeeUtils.isEmpty(params.get("dbSchema"))) {
-          sql += " IN " + params.get("dbSchema");
-        }
-        if (!BeeUtils.isEmpty(params.get("table"))) {
-          sql += " LIKE " + sqlTransform(params.get("table"));
-        }
+        String sql = BeeUtils.concat(" IN ", "SHOW TABLES", params.get("dbSchema"));
+        sql = BeeUtils.concat(" LIKE ", sql, sqlTransform(params.get("table")));
         return sql;
 
       case DB_FOREIGNKEYS:
-        IsCondition foreignWh = null;
+        IsCondition wh = null;
 
-        if (!BeeUtils.isEmpty(params.get("dbName"))) {
-          foreignWh = SqlUtils.equal("t", "table_catalog", params.get("dbName"));
+        Object prm = params.get("dbName");
+        if (!BeeUtils.isEmpty(prm)) {
+          wh = SqlUtils.and(wh,
+              SqlUtils.equal("c", "constraint_catalog", prm),
+              SqlUtils.equal("t", "table_catalog", prm));
         }
-        if (!BeeUtils.isEmpty(params.get("dbSchema"))) {
-          foreignWh = SqlUtils.and(foreignWh,
-              SqlUtils.equal("t", "table_schema", params.get("dbSchema")));
+        prm = params.get("dbSchema");
+        if (!BeeUtils.isEmpty(prm)) {
+          wh = SqlUtils.and(wh,
+              SqlUtils.equal("c", "constraint_schema", prm),
+              SqlUtils.equal("t", "table_schema", prm));
         }
-        if (!BeeUtils.isEmpty(params.get("table"))) {
-          foreignWh = SqlUtils.and(foreignWh,
-              SqlUtils.equal("t", "table_name", params.get("table")));
+        prm = params.get("table");
+        if (!BeeUtils.isEmpty(prm)) {
+          wh = SqlUtils.and(wh, SqlUtils.equal("t", "table_name", prm));
         }
-        if (!BeeUtils.isEmpty(params.get("refTable"))) {
-          foreignWh = SqlUtils.and(foreignWh,
-              SqlUtils.equal("c", "referenced_table_name", params.get("refTable")));
+        prm = params.get("refTable");
+        if (!BeeUtils.isEmpty(prm)) {
+          wh = SqlUtils.and(wh, SqlUtils.equal("c", "referenced_table_name", prm));
         }
         return new SqlSelect()
           .addField("c", "constraint_name", "Name")
@@ -56,7 +53,7 @@ class MySqlBuilder extends SqlBuilder {
           .addFrom("information_schema.referential_constraints", "c")
           .addFromInner("information_schema.table_constraints", "t",
               SqlUtils.joinUsing("c", "t", "constraint_name"))
-          .setWhere(foreignWh)
+          .setWhere(wh)
           .getQuery(this);
 
       default:
@@ -88,7 +85,7 @@ class MySqlBuilder extends SqlBuilder {
     if (BeeUtils.isPositive(limit)) {
       sql += " LIMIT " + limit;
     } else if (BeeUtils.isPositive(offset)) {
-      sql += " LIMIT " + (int) 1e9; // TODO Dummy MySql
+      sql += " LIMIT " + (int) 1e9;
     }
     if (BeeUtils.isPositive(offset)) {
       sql += " OFFSET " + offset;

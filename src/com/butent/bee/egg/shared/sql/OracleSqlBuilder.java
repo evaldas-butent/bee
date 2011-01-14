@@ -14,35 +14,38 @@ class OracleSqlBuilder extends SqlBuilder {
         return "SELECT sys_context('USERENV', 'CURRENT_SCHEMA') as dbSchema FROM dual";
 
       case DB_TABLES:
-        IsCondition tableWh = null;
+        IsCondition wh = null;
 
-        if (!BeeUtils.isEmpty(params.get("dbSchema"))) {
-          tableWh = SqlUtils.equal("t", "OWNER", params.get("dbSchema"));
+        Object prm = params.get("dbSchema");
+        if (!BeeUtils.isEmpty(prm)) {
+          wh = SqlUtils.equal("t", "OWNER", prm);
         }
-        if (!BeeUtils.isEmpty(params.get("table"))) {
-          tableWh = SqlUtils.and(tableWh,
-              SqlUtils.equal("t", "TABLE_NAME", params.get("table")));
+        prm = params.get("table");
+        if (!BeeUtils.isEmpty(prm)) {
+          wh = SqlUtils.and(wh, SqlUtils.equal("t", "TABLE_NAME", prm));
         }
         return new SqlSelect()
           .addFields("t", "TABLE_NAME")
           .addFrom("ALL_TABLES", "t")
-          .setWhere(tableWh)
+          .setWhere(wh)
           .getQuery(this);
 
       case DB_FOREIGNKEYS:
-        IsCondition foreignWh = SqlUtils.equal("c", "CONSTRAINT_TYPE", "R");
+        wh = SqlUtils.equal("c", "CONSTRAINT_TYPE", "R");
 
-        if (!BeeUtils.isEmpty(params.get("dbSchema"))) {
-          foreignWh = SqlUtils.and(foreignWh,
-              SqlUtils.equal("c", "OWNER", params.get("dbSchema")));
+        prm = params.get("dbSchema");
+        if (!BeeUtils.isEmpty(prm)) {
+          wh = SqlUtils.and(wh,
+              SqlUtils.equal("c", "OWNER", prm),
+              SqlUtils.equal("r", "OWNER", prm));
         }
-        if (!BeeUtils.isEmpty(params.get("table"))) {
-          foreignWh = SqlUtils.and(foreignWh,
-              SqlUtils.equal("c", "TABLE_NAME", params.get("table")));
+        prm = params.get("table");
+        if (!BeeUtils.isEmpty(prm)) {
+          wh = SqlUtils.and(wh, SqlUtils.equal("c", "TABLE_NAME", prm));
         }
-        if (!BeeUtils.isEmpty(params.get("refTable"))) {
-          foreignWh = SqlUtils.and(foreignWh,
-              SqlUtils.equal("r", "TABLE_NAME", params.get("refTable")));
+        prm = params.get("refTable");
+        if (!BeeUtils.isEmpty(prm)) {
+          wh = SqlUtils.and(wh, SqlUtils.equal("r", "TABLE_NAME", prm));
         }
         return new SqlSelect()
           .addField("c", "CONSTRAINT_NAME", "Name")
@@ -51,14 +54,14 @@ class OracleSqlBuilder extends SqlBuilder {
           .addFrom("ALL_CONSTRAINTS", "c")
           .addFromInner("ALL_CONSTRAINTS", "r",
               SqlUtils.join("c", "R_CONSTRAINT_NAME", "r", "CONSTRAINT_NAME"))
-          .setWhere(foreignWh)
+          .setWhere(wh)
           .getQuery(this);
 
       case TEMPORARY:
         return "";
 
       case BITAND:
-        return "BITAND(" + params.get("expression") + "," + params.get("value") + ")";
+        return "BITAND(" + params.get("expression") + ", " + params.get("value") + ")";
 
       default:
         return super.sqlKeyword(option, params);
@@ -102,23 +105,24 @@ class OracleSqlBuilder extends SqlBuilder {
     String idAlias = sqlQuote(SqlUtils.uniqueName());
     String queryAlias = sqlQuote(SqlUtils.uniqueName());
 
-    sql = BeeUtils.concatNoTrim(0
-        , "ROWNUM AS ", idAlias, ", ", queryAlias, ".*"
-        , " FROM (", sql, ") ", queryAlias);
+    sql = BeeUtils.concat(1,
+        "ROWNUM AS", idAlias + ",", queryAlias + ".*",
+        "FROM", BeeUtils.parenthesize(sql), queryAlias);
 
     if (BeeUtils.isPositive(limit)) {
-      sql = BeeUtils.concatNoTrim(0
-          , "/*+ FIRST_ROWS(", offset + limit, ") */ ", sql
-          , " WHERE ROWNUM<=", offset + limit);
+      sql = BeeUtils.concat(1,
+          "/*+ FIRST_ROWS" + BeeUtils.parenthesize(offset + limit), "*/", sql,
+          "WHERE ROWNUM <=", offset + limit);
     }
     sql = "SELECT " + sql;
 
     if (BeeUtils.isPositive(offset)) {
       queryAlias = sqlQuote(SqlUtils.uniqueName());
 
-      sql = BeeUtils.concatNoTrim(0
-          , "SELECT ", queryAlias, ".* FROM (", sql, ") ", queryAlias
-          , " WHERE ", queryAlias, ".", idAlias, ">", offset);
+      sql = BeeUtils.concat(1,
+          "SELECT", queryAlias + ".*",
+          "FROM", BeeUtils.parenthesize(sql), queryAlias,
+          "WHERE", queryAlias + "." + idAlias, ">", offset);
     }
     return sql;
   }

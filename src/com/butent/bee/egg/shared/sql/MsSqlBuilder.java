@@ -67,15 +67,13 @@ class MsSqlBuilder extends SqlBuilder {
     if (BeeUtils.allEmpty(limit, offset)) {
       return sql;
     }
-    String select = "SELECT " + (ss.isDistinctMode() ? "DISTINCT " : "");
-    sql = sql.substring(select.length());
     String top = "";
     String numbering = "";
     String idAlias = "";
     boolean hasUnion = !BeeUtils.isEmpty(ss.getUnion());
 
     if (BeeUtils.isPositive(limit)) {
-      top = BeeUtils.concatNoTrim(0, "TOP ", (offset + limit) + " ");
+      top = BeeUtils.concat(1, "TOP", offset + limit);
     }
     if (BeeUtils.isPositive(offset)) {
       String order = "ORDER BY (SELECT 0)";
@@ -86,22 +84,27 @@ class MsSqlBuilder extends SqlBuilder {
         sql = sql.substring(0, idx);
       }
       idAlias = sqlQuote(SqlUtils.uniqueName());
-      numbering = BeeUtils.concatNoTrim(0, "ROW_NUMBER() OVER (", order, ") AS ", idAlias, ", ");
+      numbering = BeeUtils.concat(1,
+          "ROW_NUMBER() OVER", BeeUtils.parenthesize(order), "AS", idAlias + ",");
     }
     if (hasUnion) {
       String queryAlias = sqlQuote(SqlUtils.uniqueName());
 
-      sql = BeeUtils.concatNoTrim(0,
-          "SELECT ", top, numbering, queryAlias, ".* FROM (", select, sql, ") ", queryAlias);
+      sql = BeeUtils.concat(1,
+          "SELECT", top, numbering, queryAlias + ".*",
+          "FROM", BeeUtils.parenthesize(sql), queryAlias);
     } else {
-      sql = BeeUtils.concatNoTrim(0, select, top, numbering, sql);
+      String select = "SELECT " + (ss.isDistinctMode() ? "DISTINCT " : "");
+      sql = BeeUtils.concat(1,
+          select, top, numbering, sql.substring(select.length()));
     }
     if (!BeeUtils.isEmpty(idAlias)) {
       String queryAlias = sqlQuote(SqlUtils.uniqueName());
 
-      sql = BeeUtils.concatNoTrim(0
-          , "SELECT ", queryAlias, ".* FROM (", sql, ") ", queryAlias
-          , " WHERE ", queryAlias, ".", idAlias, ">", offset);
+      sql = BeeUtils.concat(1,
+          "SELECT", queryAlias + ".*",
+          "FROM", BeeUtils.parenthesize(sql), queryAlias,
+          "WHERE", queryAlias + "." + idAlias, ">", offset);
     }
     return sql;
   }

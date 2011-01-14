@@ -264,26 +264,6 @@ public class BeeUtils {
     return s.toString();
   }
 
-  public static String concatNoTrim(Object... x) {
-    int c = x.length;
-
-    if (c <= 1) {
-      return BeeConst.STRING_EMPTY;
-    }
-    StringBuilder s = new StringBuilder();
-    String sep = normSep(x[0]);
-
-    for (int i = 1; i < c; i++) {
-      if (!isEmpty(x[i], BeeType.TYPE_NUMBER)) {
-        if (s.length() > 0) {
-          s.append(sep);
-        }
-        s.append(transformNoTrim(x[i]));
-      }
-    }
-    return s.toString();
-  }
-
   public static boolean contains(int value, int[] arr) {
     return indexOf(value, arr) >= 0;
   }

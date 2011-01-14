@@ -24,8 +24,7 @@ class PostgreSqlBuilder extends SqlBuilder {
 
   @Override
   protected String sqlQuote(String value) {
-    String quote = "\"";
-    return quote + value + quote;
+    return "\"" + value + "\"";
   }
 
   @Override
