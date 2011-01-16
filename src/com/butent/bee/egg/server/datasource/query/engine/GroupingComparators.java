@@ -2,7 +2,7 @@ package com.butent.bee.egg.server.datasource.query.engine;
 
 import com.google.common.collect.Ordering;
 
-import com.butent.bee.egg.server.datasource.query.AggregationColumn;
+import com.butent.bee.egg.shared.data.column.AggregationColumn;
 import com.butent.bee.egg.shared.data.value.Value;
 
 import java.util.Comparator;

@@ -1,7 +1,7 @@
 package com.butent.bee.egg.server.datasource.query.engine;
 
-import com.butent.bee.egg.server.datasource.query.AggregationType;
 import com.butent.bee.egg.shared.Assert;
+import com.butent.bee.egg.shared.data.Aggregation;
 import com.butent.bee.egg.shared.data.value.NumberValue;
 import com.butent.bee.egg.shared.data.value.Value;
 import com.butent.bee.egg.shared.data.value.ValueType;
@@ -36,7 +36,7 @@ class ValueAggregator {
     }
   }
 
-  public Value getValue(AggregationType type) {
+  public Value getValue(Aggregation type) {
     Value v;
     switch (type) {
       case AVG:

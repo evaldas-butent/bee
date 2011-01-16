@@ -27,5 +27,4 @@ public class Pair<A, B> implements Transformable {
   public String transform() {
     return toString();
   }
-
 }

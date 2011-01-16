@@ -78,7 +78,7 @@ public class DateValue extends Value {
   }
 
   @Override
-  public BeeDate getObjectToFormat() {
+  public BeeDate getObjectValue() {
     if (isNull()) {
       return null;
     }

@@ -3,6 +3,11 @@ package com.butent.bee.egg.server.datasource.query;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
+import com.butent.bee.egg.shared.data.column.AbstractColumn;
+import com.butent.bee.egg.shared.data.column.AggregationColumn;
+import com.butent.bee.egg.shared.data.column.ScalarFunctionColumn;
+import com.butent.bee.egg.shared.data.column.SimpleColumn;
+
 import java.util.List;
 
 public class QuerySelection {

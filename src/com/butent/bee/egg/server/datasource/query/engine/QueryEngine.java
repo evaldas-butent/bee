@@ -4,30 +4,33 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
-import com.butent.bee.egg.server.datasource.base.ReasonType;
-import com.butent.bee.egg.server.datasource.base.TypeMismatchException;
-import com.butent.bee.egg.server.datasource.base.Warning;
-import com.butent.bee.egg.server.datasource.datatable.ColumnDescription;
-import com.butent.bee.egg.server.datasource.datatable.DataTable;
-import com.butent.bee.egg.server.datasource.datatable.TableCell;
-import com.butent.bee.egg.server.datasource.datatable.TableRow;
-import com.butent.bee.egg.server.datasource.datatable.ValueFormatter;
-import com.butent.bee.egg.server.datasource.query.AbstractColumn;
-import com.butent.bee.egg.server.datasource.query.AggregationColumn;
-import com.butent.bee.egg.server.datasource.query.ColumnLookup;
-import com.butent.bee.egg.server.datasource.query.DataTableColumnLookup;
 import com.butent.bee.egg.server.datasource.query.GenericColumnLookup;
 import com.butent.bee.egg.server.datasource.query.Query;
-import com.butent.bee.egg.server.datasource.query.QueryFilter;
 import com.butent.bee.egg.server.datasource.query.QueryFormat;
 import com.butent.bee.egg.server.datasource.query.QueryGroup;
 import com.butent.bee.egg.server.datasource.query.QueryLabels;
 import com.butent.bee.egg.server.datasource.query.QueryPivot;
 import com.butent.bee.egg.server.datasource.query.QuerySelection;
 import com.butent.bee.egg.server.datasource.query.QuerySort;
-import com.butent.bee.egg.server.datasource.query.ScalarFunctionColumn;
-import com.butent.bee.egg.server.datasource.query.SimpleColumn;
+import com.butent.bee.egg.server.datasource.util.ValueFormatter;
 import com.butent.bee.egg.shared.Assert;
+import com.butent.bee.egg.shared.data.DataTable;
+import com.butent.bee.egg.shared.data.IsCell;
+import com.butent.bee.egg.shared.data.IsColumn;
+import com.butent.bee.egg.shared.data.IsRow;
+import com.butent.bee.egg.shared.data.Reasons;
+import com.butent.bee.egg.shared.data.TableCell;
+import com.butent.bee.egg.shared.data.TableColumn;
+import com.butent.bee.egg.shared.data.TableRow;
+import com.butent.bee.egg.shared.data.TypeMismatchException;
+import com.butent.bee.egg.shared.data.DataWarning;
+import com.butent.bee.egg.shared.data.column.AbstractColumn;
+import com.butent.bee.egg.shared.data.column.AggregationColumn;
+import com.butent.bee.egg.shared.data.column.ColumnLookup;
+import com.butent.bee.egg.shared.data.column.DataTableColumnLookup;
+import com.butent.bee.egg.shared.data.column.ScalarFunctionColumn;
+import com.butent.bee.egg.shared.data.column.SimpleColumn;
+import com.butent.bee.egg.shared.data.filter.RowFilter;
 import com.butent.bee.egg.shared.data.value.Value;
 
 import com.ibm.icu.util.ULocale;
@@ -46,9 +49,9 @@ public final class QueryEngine {
 
   public static DataTable executeQuery(Query query, DataTable table, ULocale locale) {
     ColumnIndices columnIndices = new ColumnIndices();
-    List<ColumnDescription> columnsDescription = table.getColumnDescriptions();
-    for (int i = 0; i < columnsDescription.size(); i++) {
-      columnIndices.put(new SimpleColumn(columnsDescription.get(i).getId()), i);
+    List<IsColumn> columns = table.getColumns();
+    for (int i = 0; i < columns.size(); i++) {
+      columnIndices.put(new SimpleColumn(columns.get(i).getId()), i);
     }
 
     TreeMap<List<Value>, ColumnLookup> columnLookups =
@@ -78,7 +81,7 @@ public final class QueryEngine {
       DataTable original, List<ScalarFunctionColumnTitle> scalarFunctionColumnTitles) {
     DataTable result = new DataTable();
     for (String groupById : groupByColumnIds) {
-      result.addColumn(original.getColumnDescription(groupById));
+      result.addColumn(original.getColumn(groupById));
     }
     for (ColumnTitle colTitle : columnTitles) {
       result.addColumn(colTitle.createColumnDescription(original));
@@ -96,9 +99,9 @@ public final class QueryEngine {
       return table;
     }
 
-    List<TableRow> newRowList = Lists.newArrayList();
-    QueryFilter filter = query.getFilter();
-    for (TableRow inputRow : table.getRows()) {
+    List<IsRow> newRowList = Lists.newArrayList();
+    RowFilter filter = query.getFilter();
+    for (IsRow inputRow : table.getRows()) {
       if (filter.isMatch(table, inputRow)) {
         newRowList.add(inputRow);
       }
@@ -114,32 +117,32 @@ public final class QueryEngine {
     }
 
     QueryFormat queryFormat = query.getUserFormatOptions();
-    List<ColumnDescription> columnDescriptions = table.getColumnDescriptions();
+    List<IsColumn> columns = table.getColumns();
     Map<Integer, ValueFormatter> indexToFormatter = Maps.newHashMap();
     for (AbstractColumn col : queryFormat.getColumns()) {
       String pattern = queryFormat.getPattern(col);
       List<Integer> indices = columnIndices.getColumnIndices(col);
       boolean allSucceeded = true;
       for (int i : indices) {
-        ColumnDescription colDesc = columnDescriptions.get(i);
-        ValueFormatter f = ValueFormatter.createFromPattern(colDesc.getType(), pattern, locale);
+        IsColumn c = columns.get(i);
+        ValueFormatter f = ValueFormatter.createFromPattern(c.getType(), pattern, locale);
         if (f == null) {
           allSucceeded = false;
         } else {
           indexToFormatter.put(i, f);
-          table.getColumnDescription(i).setPattern(pattern);
+          table.getColumn(i).setPattern(pattern);
         }
       }
       if (!allSucceeded) {
-        Warning warning = new Warning(ReasonType.ILLEGAL_FORMATTING_PATTERNS,
+        DataWarning warning = new DataWarning(Reasons.ILLEGAL_FORMATTING_PATTERNS,
             "Illegal formatting pattern: " + pattern + " requested on column: " + col.getId());
         table.addWarning(warning);
       }
     }
 
-    for (TableRow row : table.getRows()) {
+    for (IsRow row : table.getRows()) {
       for (int col : indexToFormatter.keySet()) {
-        TableCell cell = row.getCell(col);
+        IsCell cell = row.getCell(col);
         Value value = cell.getValue();
         ValueFormatter formatter = indexToFormatter.get(col);
         String formattedValue = formatter.format(value);
@@ -196,22 +199,21 @@ public final class QueryEngine {
       groupAndPivotScalarFunctionColumns.addAll(pivot.getScalarFunctionColumns());
     }
 
-    List<ColumnDescription> newColumnDescriptions = Lists.newArrayList();
-    newColumnDescriptions.addAll(table.getColumnDescriptions());
+    List<IsColumn> newColumns = Lists.newArrayList();
+    newColumns.addAll(table.getColumns());
 
     for (ScalarFunctionColumn column : groupAndPivotScalarFunctionColumns) {
-      newColumnDescriptions.add(new ColumnDescription(column.getId(),
-          column.getValueType(table),
+      newColumns.add(new TableColumn(column.getId(), column.getValueType(table),
           ScalarFunctionColumnTitle.getColumnDescriptionLabel(table, column)));
     }
 
     DataTable tempTable = new DataTable();
-    tempTable.addColumns(newColumnDescriptions);
+    tempTable.addColumns(newColumns);
 
     DataTableColumnLookup lookup = new DataTableColumnLookup(table);
-    for (TableRow sourceRow : table.getRows()) {
-      TableRow newRow = new TableRow();
-      for (TableCell sourceCell : sourceRow.getCells()) {
+    for (IsRow sourceRow : table.getRows()) {
+      IsRow newRow = new TableRow();
+      for (IsCell sourceCell : sourceRow.getCells()) {
         newRow.addCell(sourceCell);
       }
       for (ScalarFunctionColumn column : groupAndPivotScalarFunctionColumns) {
@@ -268,7 +270,7 @@ public final class QueryEngine {
     }
 
     DataTable result = createDataTable(groupByIds, columnTitles, table, scalarFunctionColumnTitles);
-    List<ColumnDescription> colDescs = result.getColumnDescriptions();
+    List<IsColumn> cols = result.getColumns();
 
     columnIndices.clear();
     int columnIndex = 0;
@@ -310,7 +312,7 @@ public final class QueryEngine {
       for (ColumnTitle colTitle : columnTitles) {
         TableCell cell = rowData.get(colTitle);
         curRow.addCell((cell != null) ? cell : new TableCell(
-            Value.getNullValueFromValueType(colDescs.get(i + rowTitle.values.size()).getType())));
+            Value.getNullValueFromValueType(cols.get(i + rowTitle.values.size()).getType())));
         i++;
       }
       for (ScalarFunctionColumnTitle columnTitle : scalarFunctionColumnTitles) {
@@ -343,21 +345,21 @@ public final class QueryEngine {
 
     QueryLabels labels = query.getLabels();
 
-    List<ColumnDescription> columnDescriptions = table.getColumnDescriptions();
+    List<IsColumn> columns = table.getColumns();
 
     for (AbstractColumn column : labels.getColumns()) {
       String label = labels.getLabel(column);
       List<Integer> indices = columnIndices.getColumnIndices(column);
       if (indices.size() == 1) {
-        columnDescriptions.get(indices.get(0)).setLabel(label);
+        columns.get(indices.get(0)).setLabel(label);
       } else {
         String columnId = column.getId();
         for (int i : indices) {
-          ColumnDescription colDesc = columnDescriptions.get(i);
-          String colDescId = colDesc.getId();
+          IsColumn col = columns.get(i);
+          String colDescId = col.getId();
           String specificLabel =
               colDescId.substring(0, colDescId.length() - columnId.length()) + label;
-          columnDescriptions.get(i).setLabel(specificLabel);
+          columns.get(i).setLabel(specificLabel);
         }
       }
     }
@@ -376,13 +378,13 @@ public final class QueryEngine {
     int fromIndex = Math.max(0, rowOffset);
     int toIndex = (rowLimit == -1) ? numRows : Math.min(numRows, rowOffset + rowLimit);
 
-    List<TableRow> relevantRows = table.getRows().subList(fromIndex, toIndex);
+    List<IsRow> relevantRows = table.getRows().subList(fromIndex, toIndex);
     DataTable newTable = new DataTable();
-    newTable.addColumns(table.getColumnDescriptions());
+    newTable.addColumns(table.getColumns());
     newTable.addRows(relevantRows);
 
     if (toIndex < numRows) {
-      Warning warning = new Warning(ReasonType.DATA_TRUNCATED, "Data has been truncated due to user"
+      DataWarning warning = new DataWarning(Reasons.DATA_TRUNCATED, "Data has been truncated due to user"
           + "request (LIMIT in query)");
       newTable.addWarning(warning);
     }
@@ -401,21 +403,20 @@ public final class QueryEngine {
     List<AbstractColumn> selectedColumns = query.getSelection().getColumns();
     List<Integer> selectedIndices = Lists.newArrayList();
 
-    List<ColumnDescription> oldColumnDescriptions = table.getColumnDescriptions();
-    List<ColumnDescription> newColumnDescriptions = Lists.newArrayList();
+    List<IsColumn> oldColumns = table.getColumns();
+    List<IsColumn> newColumns = Lists.newArrayList();
     ColumnIndices newColumnIndices = new ColumnIndices();
     int currIndex = 0;
     for (AbstractColumn col : selectedColumns) {
       List<Integer> colIndices = columnIndices.getColumnIndices(col);
       selectedIndices.addAll(colIndices);
       if (colIndices.size() == 0) {
-        newColumnDescriptions.add(new ColumnDescription(col.getId(),
-            col.getValueType(table),
+        newColumns.add(new TableColumn(col.getId(), col.getValueType(table),
             ScalarFunctionColumnTitle.getColumnDescriptionLabel(table, col)));
         newColumnIndices.put(col, currIndex++);
       } else {
         for (int colIndex : colIndices) {
-          newColumnDescriptions.add(oldColumnDescriptions.get(colIndex));
+          newColumns.add(oldColumns.get(colIndex));
           newColumnIndices.put(col, currIndex++);
         }
       }
@@ -424,10 +425,10 @@ public final class QueryEngine {
     columnIndicesReference.set(columnIndices);
 
     DataTable result = new DataTable();
-    result.addColumns(newColumnDescriptions);
+    result.addColumns(newColumns);
 
-    for (TableRow sourceRow : table.getRows()) {
-      TableRow newRow = new TableRow();
+    for (IsRow sourceRow : table.getRows()) {
+      IsRow newRow = new TableRow();
       for (AbstractColumn col : selectedColumns) {
         boolean wasFound = false;
         Set<List<Value>> pivotValuesSet = columnLookups.keySet();
@@ -457,13 +458,13 @@ public final class QueryEngine {
     }
 
     int numRows = table.getNumberOfRows();
-    List<TableRow> relevantRows = new ArrayList<TableRow>();
+    List<IsRow> relevantRows = new ArrayList<IsRow>();
     for (int rowIndex = 0; rowIndex < numRows; rowIndex += rowSkipping) {
       relevantRows.add(table.getRows().get(rowIndex));
     }
     
     DataTable newTable = new DataTable();
-    newTable.addColumns(table.getColumnDescriptions());
+    newTable.addColumns(table.getColumns());
     newTable.addRows(relevantRows);
     
     return newTable;

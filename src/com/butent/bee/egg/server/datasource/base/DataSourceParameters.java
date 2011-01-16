@@ -1,6 +1,8 @@
 package com.butent.bee.egg.server.datasource.base;
 
 import com.butent.bee.egg.shared.Assert;
+import com.butent.bee.egg.shared.data.DataException;
+import com.butent.bee.egg.shared.data.Reasons;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 import com.butent.bee.egg.shared.utils.LogUtils;
 
@@ -22,7 +24,7 @@ public class DataSourceParameters {
     DataSourceParameters dsParams = null;
     try {
       dsParams = new DataSourceParameters(null);
-    } catch (DataSourceException e) {
+    } catch (DataException e) {
       Assert.untouchable();
     }
     return dsParams;
@@ -35,7 +37,7 @@ public class DataSourceParameters {
 
   private String outFileName = "data.csv";
 
-  public DataSourceParameters(String tqxValue) throws DataSourceException {
+  public DataSourceParameters(String tqxValue) throws DataException {
     if (BeeUtils.isEmpty(tqxValue)) {
       return;
     }
@@ -48,7 +50,7 @@ public class DataSourceParameters {
       String[] nameValuePair = part.split(":");
       if (nameValuePair.length != 2) {
         LogUtils.severe(logger, "Invalid name-value pair: " + part);
-        throw new DataSourceException(ReasonType.INVALID_REQUEST,
+        throw new DataException(Reasons.INVALID_REQUEST,
             DEFAULT_ERROR_MSG + "(malformed)");
       }
 

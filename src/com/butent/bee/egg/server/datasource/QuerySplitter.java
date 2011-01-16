@@ -2,19 +2,19 @@ package com.butent.bee.egg.server.datasource;
 
 import com.google.common.collect.Lists;
 
-import com.butent.bee.egg.server.datasource.base.DataSourceException;
-import com.butent.bee.egg.server.datasource.base.InvalidQueryException;
-import com.butent.bee.egg.server.datasource.base.ReasonType;
-import com.butent.bee.egg.server.datasource.query.AbstractColumn;
-import com.butent.bee.egg.server.datasource.query.AggregationColumn;
-import com.butent.bee.egg.server.datasource.query.AggregationType;
 import com.butent.bee.egg.server.datasource.query.Query;
 import com.butent.bee.egg.server.datasource.query.QueryFormat;
 import com.butent.bee.egg.server.datasource.query.QueryGroup;
 import com.butent.bee.egg.server.datasource.query.QueryLabels;
 import com.butent.bee.egg.server.datasource.query.QuerySelection;
-import com.butent.bee.egg.server.datasource.query.SimpleColumn;
 import com.butent.bee.egg.shared.Assert;
+import com.butent.bee.egg.shared.data.Aggregation;
+import com.butent.bee.egg.shared.data.DataException;
+import com.butent.bee.egg.shared.data.InvalidQueryException;
+import com.butent.bee.egg.shared.data.Reasons;
+import com.butent.bee.egg.shared.data.column.AbstractColumn;
+import com.butent.bee.egg.shared.data.column.AggregationColumn;
+import com.butent.bee.egg.shared.data.column.SimpleColumn;
 import com.butent.bee.egg.shared.utils.LogUtils;
 
 import java.util.List;
@@ -24,7 +24,7 @@ public final class QuerySplitter {
   private static final Logger logger = Logger.getLogger(QuerySplitter.class.getName());
 
   public static QueryPair splitQuery(Query query, Capabilities capabilities)
-      throws DataSourceException {
+      throws DataException {
     switch (capabilities) {
       case ALL:
         return splitAll(query);
@@ -38,7 +38,7 @@ public final class QuerySplitter {
         return splitSelect(query);
     }
     LogUtils.severe(logger, "Capabilities not supported.");
-    throw new DataSourceException(ReasonType.NOT_SUPPORTED, "Capabilities not supported.");
+    throw new DataException(Reasons.NOT_SUPPORTED, "Capabilities not supported.");
   }
 
   private static QueryPair splitAll(Query query) {
@@ -164,7 +164,7 @@ public final class QuerySplitter {
         } else { 
           String id = column.getId();
           completionSelection.addColumn(
-              new AggregationColumn(new SimpleColumn(id), AggregationType.MIN));
+              new AggregationColumn(new SimpleColumn(id), Aggregation.MIN));
         }
       }
 

@@ -2,9 +2,9 @@ package com.butent.bee.egg.server.datasource.query.engine;
 
 import com.google.common.collect.Maps;
 
-import com.butent.bee.egg.server.datasource.datatable.DataTable;
-import com.butent.bee.egg.server.datasource.datatable.TableRow;
-import com.butent.bee.egg.server.datasource.query.AggregationType;
+import com.butent.bee.egg.shared.data.Aggregation;
+import com.butent.bee.egg.shared.data.IsRow;
+import com.butent.bee.egg.shared.data.IsTable;
 import com.butent.bee.egg.shared.data.value.Value;
 
 import java.util.List;
@@ -17,21 +17,20 @@ public class TableAggregator {
   private AggregationTree tree;
 
   public TableAggregator(List<String> groupByColumns, Set<String> aggregateColumns,
-      DataTable table) {
+      IsTable table) {
 
     this.groupByColumns = groupByColumns;
     this.aggregateColumns = aggregateColumns;
 
     tree = new AggregationTree(aggregateColumns, table);
 
-    for (TableRow row : table.getRows()) {
+    for (IsRow row : table.getRows()) {
       tree.aggregate(getRowPath(row, table, groupByColumns.size() - 1), 
           getValuesToAggregate(row, table));
     }
   }
 
-  public Value getAggregationValue(AggregationPath path, String columnId,
-      AggregationType type) {
+  public Value getAggregationValue(AggregationPath path, String columnId, Aggregation type) {
     return tree.getNode(path).getAggregationValue(columnId, type);
   }
 
@@ -39,7 +38,7 @@ public class TableAggregator {
     return tree.getPathsToLeaves();
   }
 
-  public AggregationPath getRowPath(TableRow row, DataTable table, int depth) {
+  public AggregationPath getRowPath(IsRow row, IsTable table, int depth) {
     AggregationPath result = new AggregationPath();
     for (int i = 0; i <= depth; i++) {
       String columnId = groupByColumns.get(i);
@@ -49,7 +48,7 @@ public class TableAggregator {
     return result;
   }
 
-  private Map<String, Value> getValuesToAggregate(TableRow row, DataTable table) {
+  private Map<String, Value> getValuesToAggregate(IsRow row, IsTable table) {
     Map<String, Value> result = Maps.newHashMap();
     for (String columnId : aggregateColumns) {
       Value curValue = row.getCell(table.getColumnIndex(columnId)).getValue();

@@ -3,12 +3,15 @@ package com.butent.bee.egg.server.datasource.query;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
-import com.butent.bee.egg.server.datasource.base.InvalidQueryException;
-import com.butent.bee.egg.server.datasource.base.MessagesEnum;
+import com.butent.bee.egg.shared.data.InvalidQueryException;
+import com.butent.bee.egg.shared.data.Messages;
+import com.butent.bee.egg.shared.data.column.AbstractColumn;
+import com.butent.bee.egg.shared.data.column.AggregationColumn;
+import com.butent.bee.egg.shared.data.column.ScalarFunctionColumn;
+import com.butent.bee.egg.shared.data.column.SimpleColumn;
+import com.butent.bee.egg.shared.data.filter.RowFilter;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 import com.butent.bee.egg.shared.utils.LogUtils;
-
-import com.ibm.icu.util.ULocale;
 
 import java.util.List;
 import java.util.Set;
@@ -42,16 +45,14 @@ public class Query {
   }
 
   private static <T> void checkForDuplicates(List<T>
-      selectionColumns, String clauseName, ULocale userLocale) throws InvalidQueryException {
+      selectionColumns, String clauseName) throws InvalidQueryException {
     for (int i = 0; i < selectionColumns.size(); i++) {
       T col = selectionColumns.get(i);
       for (int j = i + 1; j < selectionColumns.size(); j++) {
         if (col.equals(selectionColumns.get(j))) {
-          String[] args = {col.toString(), clauseName};
-          String messageToLogAndUser = MessagesEnum.COLUMN_ONLY_ONCE.getMessageWithArgs(userLocale,
-              args);
-          LogUtils.severe(logger, messageToLogAndUser);
-          throw new InvalidQueryException(messageToLogAndUser);
+          String message = Messages.COLUMN_ONLY_ONCE.getMessage(col.toString(), clauseName);
+          LogUtils.severe(logger, message);
+          throw new InvalidQueryException(message);
         }
       }
     }
@@ -61,7 +62,7 @@ public class Query {
 
   protected QuerySelection selection = null;
 
-  private QueryFilter filter = null;
+  private RowFilter filter = null;
 
   private QueryGroup group = null;
 
@@ -78,8 +79,6 @@ public class Query {
   private QueryLabels labels = null;
 
   private QueryFormat userFormatOptions = null;
-
-  private ULocale localeForUserMessages = null;
 
   public Query() {
   }
@@ -281,7 +280,7 @@ public class Query {
     return mentionedScalarFunctionColumns;
   }
 
-  public QueryFilter getFilter() {
+  public RowFilter getFilter() {
     return filter;
   }
 
@@ -393,7 +392,7 @@ public class Query {
             && !hasUserFormatOptions() && !hasLabels() && !hasOptions());
   }
 
-  public void setFilter(QueryFilter filter) {
+  public void setFilter(RowFilter filter) {
     this.filter = filter;
   }
 
@@ -403,10 +402,6 @@ public class Query {
 
   public void setLabels(QueryLabels labels) {
     this.labels = labels;
-  }
-
-  public void setLocaleForUserMessages(ULocale localeForUserMessges) {
-    this.localeForUserMessages = localeForUserMessges;
   }
 
   public void setOptions(QueryOptions options) {
@@ -419,29 +414,27 @@ public class Query {
 
   public void setRowLimit(int rowLimit) throws InvalidQueryException {
     if (rowLimit < -1) {
-      String messageToLogAndUser = "Invalid value for row limit: " + rowLimit;
-      LogUtils.severe(logger, messageToLogAndUser);
-      throw new InvalidQueryException(messageToLogAndUser);
+      String message = "Invalid value for row limit: " + rowLimit;
+      LogUtils.severe(logger, message);
+      throw new InvalidQueryException(message);
     }
     this.rowLimit = rowLimit;
   }
 
   public void setRowOffset(int rowOffset) throws InvalidQueryException {
     if (rowOffset < 0) {
-      String messageToLogAndUser = MessagesEnum.INVALID_OFFSET.getMessageWithArgs(
-          localeForUserMessages, Integer.toString(rowOffset));
-      LogUtils.severe(logger, messageToLogAndUser);
-      throw new InvalidQueryException(messageToLogAndUser);
+      String message = Messages.INVALID_OFFSET.getMessage(rowOffset);
+      LogUtils.severe(logger, message);
+      throw new InvalidQueryException(message);
     }
     this.rowOffset = rowOffset;
   }
 
   public void setRowSkipping(int rowSkipping) throws InvalidQueryException {
     if (rowSkipping < 0) {
-      String messageToLogAndUser = MessagesEnum.INVALID_SKIPPING.getMessageWithArgs(
-          localeForUserMessages, Integer.toString(rowSkipping));
-      LogUtils.severe(logger, messageToLogAndUser);
-      throw new InvalidQueryException(messageToLogAndUser);
+      String message = Messages.INVALID_SKIPPING.getMessage(rowSkipping);
+      LogUtils.severe(logger, message);
+      throw new InvalidQueryException(message);
     }
     this.rowSkipping = rowSkipping;
   }
@@ -522,38 +515,36 @@ public class Query {
         ? sort.getAggregationColumns()
         : Lists.<AggregationColumn> newArrayList();
 
-    checkForDuplicates(selectionColumns, "SELECT", localeForUserMessages);
-    checkForDuplicates(sortColumns, "ORDER BY", localeForUserMessages);
-    checkForDuplicates(groupColumnIds, "GROUP BY", localeForUserMessages);
-    checkForDuplicates(pivotColumnIds, "PIVOT", localeForUserMessages);
+    checkForDuplicates(selectionColumns, "SELECT");
+    checkForDuplicates(sortColumns, "ORDER BY");
+    checkForDuplicates(groupColumnIds, "GROUP BY");
+    checkForDuplicates(pivotColumnIds, "PIVOT");
 
     if (hasGroup()) {
       for (AbstractColumn column : group.getColumns()) {
         if (!column.getAllAggregationColumns().isEmpty()) {
-          String messageToLogAndUser = MessagesEnum.CANNOT_BE_IN_GROUP_BY.getMessageWithArgs(
-              localeForUserMessages, column.toQueryString());
-          LogUtils.severe(logger, messageToLogAndUser);
-          throw new InvalidQueryException(messageToLogAndUser);
+          String message = Messages.CANNOT_BE_IN_GROUP_BY.getMessage(column.toQueryString());
+          LogUtils.severe(logger, message);
+          throw new InvalidQueryException(message);
         }
       }
     }
     if (hasPivot()) {
       for (AbstractColumn column : pivot.getColumns()) {
         if (!column.getAllAggregationColumns().isEmpty()) {
-          String messageToLogAndUser = MessagesEnum.CANNOT_BE_IN_PIVOT.getMessageWithArgs(
-              localeForUserMessages, column.toQueryString());
-          LogUtils.severe(logger, messageToLogAndUser);
-          throw new InvalidQueryException(messageToLogAndUser);
+          String message = Messages.CANNOT_BE_IN_PIVOT.getMessage(column.toQueryString());
+          LogUtils.severe(logger, message);
+          throw new InvalidQueryException(message);
         }
       }
     }
     if (hasFilter()) {
       List<AggregationColumn> filterAggregations = filter.getAggregationColumns();
       if (!filterAggregations.isEmpty()) {
-        String messageToLogAndUser = MessagesEnum.CANNOT_BE_IN_WHERE.getMessageWithArgs(
-            localeForUserMessages, filterAggregations.get(0).toQueryString());
-        LogUtils.severe(logger, messageToLogAndUser);
-        throw new InvalidQueryException(messageToLogAndUser);
+        String message =
+            Messages.CANNOT_BE_IN_WHERE.getMessage(filterAggregations.get(0).toQueryString());
+        LogUtils.severe(logger, message);
+        throw new InvalidQueryException(message);
       }
     }
 
@@ -561,10 +552,9 @@ public class Query {
       String id = column1.getColumnId();
       for (AggregationColumn column2 : selectionAggregated) {
         if (id.equals(column2.getAggregatedColumn().getId())) {
-          String messageToLogAndUser = MessagesEnum.SELECT_WITH_AND_WITHOUT_AGG.getMessageWithArgs(
-              localeForUserMessages, id);
-          LogUtils.severe(logger, messageToLogAndUser);
-          throw new InvalidQueryException(messageToLogAndUser);
+          String message = Messages.SELECT_WITH_AND_WITHOUT_AGG.getMessage(id);
+          LogUtils.severe(logger, message);
+          throw new InvalidQueryException(message);
         }
       }
     }
@@ -579,32 +569,29 @@ public class Query {
       for (AggregationColumn column : selectionAggregated) {
         String id = column.getAggregatedColumn().getId();
         if (groupColumnIds.contains(id)) {
-          String messageToLogAndUser = MessagesEnum.COL_AGG_NOT_IN_SELECT.getMessageWithArgs(
-              localeForUserMessages, id);
-          LogUtils.severe(logger, messageToLogAndUser);
-          throw new InvalidQueryException(messageToLogAndUser);
+          String message = Messages.COL_AGG_NOT_IN_SELECT.getMessage(id);
+          LogUtils.severe(logger, message);
+          throw new InvalidQueryException(message);
         }
       }
     }
 
     if (hasGroup() && selectionAggregated.isEmpty()) {
-      String messageToLogAndUser = MessagesEnum.CANNOT_GROUP_WITHOUT_AGG.getMessage(
-          localeForUserMessages);
-      LogUtils.severe(logger, messageToLogAndUser);
-      throw new InvalidQueryException(messageToLogAndUser);
+      String message = Messages.CANNOT_GROUP_WITHOUT_AGG.getMessage();
+      LogUtils.severe(logger, message);
+      throw new InvalidQueryException(message);
     }
     if (hasPivot() && selectionAggregated.isEmpty()) {
-      String messageToLogAndUser = MessagesEnum.CANNOT_PIVOT_WITHOUT_AGG.getMessage(
-          localeForUserMessages);
-      LogUtils.severe(logger, messageToLogAndUser);
-      throw new InvalidQueryException(messageToLogAndUser);
+      String message = Messages.CANNOT_PIVOT_WITHOUT_AGG.getMessage();
+      LogUtils.severe(logger, message);
+      throw new InvalidQueryException(message);
     }
 
     if (hasSort() && !selectionAggregated.isEmpty()) {
       for (AbstractColumn column : sort.getColumns()) {
-        String messageToLogAndUser = MessagesEnum.COL_IN_ORDER_MUST_BE_IN_SELECT.getMessageWithArgs(
-            localeForUserMessages, column.toQueryString());
-        checkColumnInList(selection.getColumns(), column, messageToLogAndUser);
+        String message =
+            Messages.COL_IN_ORDER_MUST_BE_IN_SELECT.getMessage(column.toQueryString());
+        checkColumnInList(selection.getColumns(), column, message);
       }
     }
 
@@ -612,10 +599,9 @@ public class Query {
       for (AggregationColumn column : selectionAggregated) {
         String id = column.getAggregatedColumn().getId();
         if (pivotColumnIds.contains(id)) {
-          String messageToLogAndUser = MessagesEnum.AGG_IN_SELECT_NO_PIVOT.getMessageWithArgs(
-              localeForUserMessages, id);
-          LogUtils.severe(logger, messageToLogAndUser);
-          throw new InvalidQueryException(messageToLogAndUser);
+          String message = Messages.AGG_IN_SELECT_NO_PIVOT.getMessage(id);
+          LogUtils.severe(logger, message);
+          throw new InvalidQueryException(message);
         }
       }
     }
@@ -623,26 +609,25 @@ public class Query {
     if (hasGroup() && hasPivot()) {
       for (String id : groupColumnIds) {
         if (pivotColumnIds.contains(id)) {
-          String messageToLogAndUser = MessagesEnum.NO_COL_IN_GROUP_AND_PIVOT.getMessageWithArgs(
-              localeForUserMessages, id);
-          LogUtils.severe(logger, messageToLogAndUser);
-          throw new InvalidQueryException(messageToLogAndUser);
+          String message = Messages.NO_COL_IN_GROUP_AND_PIVOT.getMessage(id);
+          LogUtils.severe(logger, message);
+          throw new InvalidQueryException(message);
         }
       }
     }
 
     if (hasPivot() && !sortAggregated.isEmpty()) {
       AggregationColumn column = sortAggregated.get(0);
-      String messageToLogAndUser = MessagesEnum.NO_AGG_IN_ORDER_WHEN_PIVOT.getMessageWithArgs(
-          localeForUserMessages, column.getAggregatedColumn().getId());
-      LogUtils.severe(logger, messageToLogAndUser);
-      throw new InvalidQueryException(messageToLogAndUser);
+      String message =
+          Messages.NO_AGG_IN_ORDER_WHEN_PIVOT.getMessage(column.getAggregatedColumn().getId());
+      LogUtils.severe(logger, message);
+      throw new InvalidQueryException(message);
     }
 
     for (AggregationColumn column : sortAggregated) {
-      String messageToLogAndUser = MessagesEnum.AGG_IN_ORDER_NOT_IN_SELECT.getMessageWithArgs(
-          localeForUserMessages, column.toQueryString());
-      checkColumnInList(selectionAggregated, column, messageToLogAndUser);
+      String message =
+          Messages.AGG_IN_ORDER_NOT_IN_SELECT.getMessage(column.toQueryString());
+      checkColumnInList(selectionAggregated, column, message);
     }
 
     Set<AbstractColumn> labelColumns = (hasLabels()
@@ -653,35 +638,33 @@ public class Query {
     if (hasSelection()) {
       for (AbstractColumn col : labelColumns) {
         if (!selectionColumns.contains(col)) {
-          String messageToLogAndUser = MessagesEnum.LABEL_COL_NOT_IN_SELECT.getMessageWithArgs(
-              localeForUserMessages, col.toQueryString());
-          LogUtils.severe(logger, messageToLogAndUser);
-          throw new InvalidQueryException(messageToLogAndUser);
+          String message = Messages.LABEL_COL_NOT_IN_SELECT.getMessage(col.toQueryString());
+          LogUtils.severe(logger, message);
+          throw new InvalidQueryException(message);
         }
       }
       for (AbstractColumn col : formatColumns) {
         if (!selectionColumns.contains(col)) {
-          String messageToLogAndUser = MessagesEnum.FORMAT_COL_NOT_IN_SELECT.getMessageWithArgs(
-              localeForUserMessages, col.toQueryString());
-          LogUtils.severe(logger, messageToLogAndUser);
-          throw new InvalidQueryException(messageToLogAndUser);
+          String message = Messages.FORMAT_COL_NOT_IN_SELECT.getMessage(col.toQueryString());
+          LogUtils.severe(logger, message);
+          throw new InvalidQueryException(message);
         }
       }
     }
   }
 
   private void checkColumnInList(List<? extends AbstractColumn> columns,
-      AbstractColumn column, String messageToLogAndUser) throws InvalidQueryException {
+      AbstractColumn column, String message) throws InvalidQueryException {
     if (columns.contains(column)) {
       return;
     } else if (column instanceof ScalarFunctionColumn) {
       List<AbstractColumn> innerColumns = ((ScalarFunctionColumn) column).getColumns();
       for (AbstractColumn innerColumn : innerColumns) {
-        checkColumnInList(columns, innerColumn, messageToLogAndUser);
+        checkColumnInList(columns, innerColumn, message);
       }
     } else {
-      LogUtils.severe(logger, messageToLogAndUser);
-      throw new InvalidQueryException(messageToLogAndUser);
+      LogUtils.severe(logger, message);
+      throw new InvalidQueryException(message);
     }
   }
 
@@ -689,10 +672,9 @@ public class Query {
       AbstractColumn col) throws InvalidQueryException {
     if (col instanceof SimpleColumn) {
       if (!groupColumns.contains(col)) {
-        String messageToLogAndUser = MessagesEnum.ADD_COL_TO_GROUP_BY_OR_AGG.getMessageWithArgs(
-            localeForUserMessages, col.getId());
-        LogUtils.severe(logger, messageToLogAndUser);
-        throw new InvalidQueryException(messageToLogAndUser);
+        String message = Messages.ADD_COL_TO_GROUP_BY_OR_AGG.getMessage(col.getId());
+        LogUtils.severe(logger, message);
+        throw new InvalidQueryException(message);
       }
     } else if (col instanceof ScalarFunctionColumn) {
       if (!groupColumns.contains(col)) {

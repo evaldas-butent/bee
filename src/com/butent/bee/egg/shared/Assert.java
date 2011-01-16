@@ -86,6 +86,16 @@ public class Assert {
     }
   }
 
+  public static void isFalse(boolean expression) {
+    isFalse(expression, ASSERTION_FAILED + "this expression must be false");
+  }
+
+  public static void isFalse(boolean expression, String message) {
+    if (expression) {
+      throw new BeeRuntimeException(message);
+    }
+  }
+
   public static void isIndex(Collection<?> col, int idx) {
     notNull(col);
     nonNegative(idx);

@@ -1,15 +1,18 @@
 package com.butent.bee.egg.server.datasource.base;
 
+import com.butent.bee.egg.shared.data.DataException;
+import com.butent.bee.egg.shared.data.Reasons;
+
 public class ResponseStatus {
   public static final String SIGN_IN_MESSAGE_KEY = "SIGN_IN";
 
-  public static ResponseStatus createResponseStatus(DataSourceException dse) {
+  public static ResponseStatus createResponseStatus(DataException dse) {
     return new ResponseStatus(StatusType.ERROR, dse.getReasonType(), dse.getMessageToUser());
   }
   public static ResponseStatus getModifiedResponseStatus(ResponseStatus responseStatus) {
     String signInString = LocaleUtil.getLocalizedMessageFromBundle(
         "com.google.visualization.datasource.base.ErrorMessages", SIGN_IN_MESSAGE_KEY, null);
-    if (responseStatus.getReasonType() == ReasonType.USER_NOT_AUTHENTICATED) {
+    if (responseStatus.getReasonType() == Reasons.USER_NOT_AUTHENTICATED) {
       String msg = responseStatus.getDescription();
       if (!msg.contains(" ") && (msg.startsWith("http://") || msg.startsWith("https://"))) {
         StringBuilder sb = new StringBuilder("<a target=\"_blank\" href=\"")
@@ -24,7 +27,7 @@ public class ResponseStatus {
   }
   private StatusType statusType;
 
-  private ReasonType reasonType;
+  private Reasons reasonType;
 
   private String description;
 
@@ -32,7 +35,7 @@ public class ResponseStatus {
     this(statusType, null, null);
   }
 
-  public ResponseStatus(StatusType statusType, ReasonType reasonType, String description) {
+  public ResponseStatus(StatusType statusType, Reasons reasonType, String description) {
     this.statusType = statusType;
     this.reasonType = reasonType;
     this.description = description;
@@ -42,7 +45,7 @@ public class ResponseStatus {
     return description;
   }
 
-  public ReasonType getReasonType() {
+  public Reasons getReasonType() {
     return reasonType;
   }
 

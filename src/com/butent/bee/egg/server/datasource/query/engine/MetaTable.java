@@ -2,7 +2,7 @@ package com.butent.bee.egg.server.datasource.query.engine;
 
 import com.google.common.collect.Maps;
 
-import com.butent.bee.egg.server.datasource.datatable.TableCell;
+import com.butent.bee.egg.shared.data.TableCell;
 
 import java.util.Map;
 

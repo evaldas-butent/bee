@@ -2,8 +2,8 @@ package com.butent.bee.egg.server.datasource.query.engine;
 
 import com.google.common.collect.Maps;
 
-import com.butent.bee.egg.server.datasource.datatable.DataTable;
-import com.butent.bee.egg.server.datasource.query.AggregationType;
+import com.butent.bee.egg.shared.data.Aggregation;
+import com.butent.bee.egg.shared.data.IsTable;
 import com.butent.bee.egg.shared.data.value.Value;
 
 import java.util.Map;
@@ -17,14 +17,13 @@ public class AggregationNode {
   private Map<String, ValueAggregator> columnAggregators = Maps.newHashMap();
   private Map<Value, AggregationNode> children = Maps.newHashMap();
 
-  public AggregationNode(Set<String> columnsToAggregate, DataTable table) {
+  public AggregationNode(Set<String> columnsToAggregate, IsTable table) {
     for (String columnId : columnsToAggregate) {
-      columnAggregators.put(columnId, new ValueAggregator(
-          table.getColumnDescription(columnId).getType()));
+      columnAggregators.put(columnId, new ValueAggregator(table.getColumn(columnId).getType()));
     }
   }
 
-  public void addChild(Value key, Set<String> columnsToAggregate, DataTable table) {
+  public void addChild(Value key, Set<String> columnsToAggregate, IsTable table) {
     if (children.containsKey(key)) {
       throw new IllegalArgumentException("A child with key: " + key + " already exists.");
     }
@@ -44,7 +43,7 @@ public class AggregationNode {
     return children.containsKey(v);
   }
 
-  public Value getAggregationValue(String columnId, AggregationType type) {
+  public Value getAggregationValue(String columnId, Aggregation type) {
     ValueAggregator valuesAggregator = columnAggregators.get(columnId);
     if (valuesAggregator == null) {
       throw new IllegalArgumentException("Column " + columnId + " is not aggregated");

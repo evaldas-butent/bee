@@ -483,7 +483,7 @@ public class BeeUi implements Module {
 
     p.add(hor);
 
-    BeeLabel ver = new BeeLabel("0.2.2");
+    BeeLabel ver = new BeeLabel("0.2.3");
     p.add(ver);
 
     p.setWidgetLeftWidth(cli, 1, Unit.EM, 50, Unit.PCT);
@@ -541,5 +541,4 @@ public class BeeUi implements Module {
       return !(p.getParent() instanceof TilePanel);
     }
   }
-
 }

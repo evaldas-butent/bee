@@ -1,10 +1,11 @@
 package com.butent.bee.egg.server.datasource.query.engine;
 
-import com.butent.bee.egg.server.datasource.datatable.ColumnDescription;
-import com.butent.bee.egg.server.datasource.datatable.DataTable;
-import com.butent.bee.egg.server.datasource.query.AggregationColumn;
-import com.butent.bee.egg.server.datasource.query.AggregationType;
 import com.butent.bee.egg.shared.Assert;
+import com.butent.bee.egg.shared.data.Aggregation;
+import com.butent.bee.egg.shared.data.IsColumn;
+import com.butent.bee.egg.shared.data.IsTable;
+import com.butent.bee.egg.shared.data.TableColumn;
+import com.butent.bee.egg.shared.data.column.AggregationColumn;
 import com.butent.bee.egg.shared.data.value.Value;
 import com.butent.bee.egg.shared.data.value.ValueType;
 import com.butent.bee.egg.shared.utils.BeeUtils;
@@ -27,10 +28,9 @@ class ColumnTitle {
     this.isMultiAggregationQuery = isMultiAggregationQuery;
   }
 
-  public ColumnDescription createColumnDescription(DataTable originalTable) {
-    ColumnDescription colDesc = originalTable.getColumnDescription(
-        aggregation.getAggregatedColumn().getId());
-    return createAggregationColumnDescription(colDesc);
+  public IsColumn createColumnDescription(IsTable originalTable) {
+    IsColumn col = originalTable.getColumn(aggregation.getAggregatedColumn().getId());
+    return createAggregationColumnDescription(col);
   }
 
   @Override
@@ -57,9 +57,8 @@ class ColumnTitle {
     return hash;
   }
 
-  ColumnDescription createAggregationColumnDescription(
-      ColumnDescription originalColumnDescription) {
-    AggregationType aggregationType = aggregation.getAggregationType();
+  IsColumn createAggregationColumnDescription(IsColumn originalColumnDescription) {
+    Aggregation aggregationType = aggregation.getAggregationType();
     String columnId = createIdPivotPrefix() + aggregation.getId();
     ValueType type = originalColumnDescription.getType();
     String aggregationLabelPart = aggregation.getAggregationType().getCode()
@@ -76,18 +75,18 @@ class ColumnTitle {
       label = aggregationLabelPart;
     }
 
-    ColumnDescription result;
+    TableColumn result;
     if (canUseSameTypeForAggregation(type, aggregationType)) {
-      result = new ColumnDescription(columnId, type, label);
+      result = new TableColumn(columnId, type, label);
     } else {
-      result = new ColumnDescription(columnId, ValueType.NUMBER, label);
+      result = new TableColumn(columnId, ValueType.NUMBER, label);
     }
 
     return result;
   }
 
   private boolean canUseSameTypeForAggregation(ValueType valueType,
-      AggregationType aggregationType) {
+      Aggregation aggregationType) {
     boolean ans;
     if (valueType == ValueType.NUMBER) {
       ans = true;

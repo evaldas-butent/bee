@@ -2,14 +2,16 @@ package com.butent.bee.egg.server.datasource.util;
 
 import com.google.common.collect.Lists;
 
-import com.butent.bee.egg.server.datasource.base.DataSourceException;
-import com.butent.bee.egg.server.datasource.base.ReasonType;
-import com.butent.bee.egg.server.datasource.base.TypeMismatchException;
-import com.butent.bee.egg.server.datasource.datatable.ColumnDescription;
-import com.butent.bee.egg.server.datasource.datatable.DataTable;
-import com.butent.bee.egg.server.datasource.datatable.TableRow;
-import com.butent.bee.egg.server.datasource.datatable.ValueFormatter;
 import com.butent.bee.egg.shared.Assert;
+import com.butent.bee.egg.shared.data.DataException;
+import com.butent.bee.egg.shared.data.DataTable;
+import com.butent.bee.egg.shared.data.IsColumn;
+import com.butent.bee.egg.shared.data.IsRow;
+import com.butent.bee.egg.shared.data.IsTable;
+import com.butent.bee.egg.shared.data.Reasons;
+import com.butent.bee.egg.shared.data.TableColumn;
+import com.butent.bee.egg.shared.data.TableRow;
+import com.butent.bee.egg.shared.data.TypeMismatchException;
 import com.butent.bee.egg.shared.data.value.Value;
 import com.butent.bee.egg.shared.data.value.ValueType;
 
@@ -31,40 +33,38 @@ import au.com.bytecode.opencsv.CSVReader;
 
 public class CsvDataSourceHelper {
 
-  public static Reader getCsvFileReader(String file) throws DataSourceException {
+  public static Reader getCsvFileReader(String file) throws DataException {
     Reader reader = null;
     try {
       reader = new BufferedReader(new FileReader(file));
     } catch (FileNotFoundException e) {
-      throw new DataSourceException(ReasonType.INVALID_REQUEST,
+      throw new DataException(Reasons.INVALID_REQUEST,
           "Couldn't read csv file from: " + file);
     }
     return reader;
   }
 
-  public static Reader getCsvUrlReader(String url) throws DataSourceException {
+  public static Reader getCsvUrlReader(String url) throws DataException {
     Reader reader;
     try {
       reader = new BufferedReader(new InputStreamReader(new URL(url).openStream(), "UTF-8"));
     } catch (MalformedURLException e) {
-      throw new DataSourceException(ReasonType.INVALID_REQUEST, "url is malformed: " + url);
+      throw new DataException(Reasons.INVALID_REQUEST, "url is malformed: " + url);
     } catch (IOException e) {
-      throw new DataSourceException(ReasonType.INVALID_REQUEST,
+      throw new DataException(Reasons.INVALID_REQUEST,
           "Couldn't read csv file from url: " + url);
     }
     return reader;
   }
 
-  public static DataTable read(Reader reader, List<ColumnDescription> columnDescriptions,
-      Boolean headerRow)
-      throws IOException, CsvDataSourceException {
-    return read(reader, columnDescriptions, headerRow, null);
+  public static IsTable read(Reader reader, List<IsColumn> columns,
+      Boolean headerRow) throws IOException, CsvDataSourceException {
+    return read(reader, columns, headerRow, null);
   }
 
-  public static DataTable read(Reader reader, List<ColumnDescription> columnDescriptions,
-      Boolean headerRow, ULocale locale)
-      throws IOException, CsvDataSourceException {
-    DataTable dataTable = new DataTable();
+  public static IsTable read(Reader reader, List<IsColumn> columns,
+      Boolean headerRow, ULocale locale) throws IOException, CsvDataSourceException {
+    IsTable dataTable = new DataTable();
 
     if (reader == null) {
       return dataTable;
@@ -81,65 +81,60 @@ public class CsvDataSourceHelper {
         continue;
       }
 
-      if ((columnDescriptions != null) && (line.length != columnDescriptions.size())) {
-        throw new CsvDataSourceException(ReasonType.INTERNAL_ERROR,
+      if ((columns != null) && (line.length != columns.size())) {
+        throw new CsvDataSourceException(Reasons.INTERNAL_ERROR,
             "Wrong number of columns in the data.");
       }
       if (firstLine) {
-        if (columnDescriptions == null) {
-          columnDescriptions = Lists.newArrayList();
+        if (columns == null) {
+          columns = Lists.newArrayList();
         }
 
-        List<ColumnDescription> tempColumnDescriptions = new ArrayList<ColumnDescription>();
+        List<IsColumn> tempColumns = new ArrayList<IsColumn>();
 
         for (int i = 0; i < line.length; i++) {
-          ColumnDescription tempColumnDescription =
-              (columnDescriptions.isEmpty() || columnDescriptions.get(i) == null)
-              ? null : columnDescriptions.get(i);
+          IsColumn tempCol = (columns.isEmpty() || columns.get(i) == null)
+              ? null : columns.get(i);
 
-          String id =
-              ((tempColumnDescription == null) || (tempColumnDescription.getId() == null))
-              ? "Col" + (i) : tempColumnDescription.getId();
-          ValueType type =
-              ((tempColumnDescription == null) || (tempColumnDescription.getType() == null))
-              ? ValueType.TEXT : tempColumnDescription.getType();
-          String label =
-              ((tempColumnDescription == null) || (tempColumnDescription.getLabel() == null))
-              ? "Column" + i : tempColumnDescription.getLabel();
-          String pattern =
-              ((tempColumnDescription == null) || (tempColumnDescription.getPattern() == null))
-              ? "" : tempColumnDescription.getPattern();
+          String id = ((tempCol == null) || (tempCol.getId() == null))
+              ? "Col" + (i) : tempCol.getId();
+          ValueType type = ((tempCol == null) || (tempCol.getType() == null))
+              ? ValueType.TEXT : tempCol.getType();
+          String label = ((tempCol == null) || (tempCol.getLabel() == null))
+              ? "Column" + i : tempCol.getLabel();
+          String pattern = ((tempCol == null) || (tempCol.getPattern() == null))
+              ? "" : tempCol.getPattern();
 
-          tempColumnDescription = new ColumnDescription(id, type, label);
-          tempColumnDescription.setPattern(pattern);
-          tempColumnDescriptions.add(tempColumnDescription);
+          tempCol = new TableColumn(id, type, label);
+          tempCol.setPattern(pattern);
+          tempColumns.add(tempCol);
         }
 
         if (headerRow) {
           for (int i = 0; i < line.length; i++) {
             String string = line[i];
             if (string == null) {
-              tempColumnDescriptions.get(i).setLabel("");
+              tempColumns.get(i).setLabel("");
             } else {
-              tempColumnDescriptions.get(i).setLabel(line[i].trim());
+              tempColumns.get(i).setLabel(line[i].trim());
             }
           }
         }
 
-        columnDescriptions = tempColumnDescriptions;
+        columns = tempColumns;
         dataTable = new DataTable();
-        dataTable.addColumns(columnDescriptions);
+        dataTable.addColumns(columns);
       }
       if (!(firstLine && headerRow)) {
-        TableRow tableRow = new TableRow();
+        IsRow row = new TableRow();
         for (int i = 0; i < line.length; i++) {
-          ColumnDescription columnDescription = columnDescriptions.get(i);
-          ValueType valueType = columnDescription.getType();
+          IsColumn col = columns.get(i);
+          ValueType valueType = col.getType();
           String string = line[i];
           if (string != null) {
             string = string.trim();
           }
-          String pattern = columnDescription.getPattern();
+          String pattern = col.getPattern();
           ValueFormatter valueFormatter;
           if (pattern == null || pattern.equals("")) {
             valueFormatter = defaultFormatters.get(valueType);
@@ -148,10 +143,10 @@ public class CsvDataSourceHelper {
           }
           Value value = valueFormatter.parse(string);
           
-          tableRow.addCell(value);
+          row.addCell(value);
         }
         try {
-          dataTable.addRow(tableRow);
+          dataTable.addRow(row);
         } catch (TypeMismatchException e) {
           Assert.untouchable();
         }

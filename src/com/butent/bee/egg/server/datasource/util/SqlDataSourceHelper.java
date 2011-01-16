@@ -2,31 +2,33 @@ package com.butent.bee.egg.server.datasource.util;
 
 import com.google.common.collect.Lists;
 
-import com.butent.bee.egg.server.datasource.base.DataSourceException;
-import com.butent.bee.egg.server.datasource.base.ReasonType;
-import com.butent.bee.egg.server.datasource.base.TypeMismatchException;
-import com.butent.bee.egg.server.datasource.datatable.ColumnDescription;
-import com.butent.bee.egg.server.datasource.datatable.DataTable;
-import com.butent.bee.egg.server.datasource.datatable.TableCell;
-import com.butent.bee.egg.server.datasource.datatable.TableRow;
-import com.butent.bee.egg.server.datasource.query.AbstractColumn;
-import com.butent.bee.egg.server.datasource.query.AggregationColumn;
-import com.butent.bee.egg.server.datasource.query.AggregationType;
-import com.butent.bee.egg.server.datasource.query.ColumnColumnFilter;
-import com.butent.bee.egg.server.datasource.query.ColumnIsNullFilter;
-import com.butent.bee.egg.server.datasource.query.ColumnSort;
-import com.butent.bee.egg.server.datasource.query.ColumnValueFilter;
-import com.butent.bee.egg.server.datasource.query.ComparisonFilter;
-import com.butent.bee.egg.server.datasource.query.CompoundFilter;
-import com.butent.bee.egg.server.datasource.query.NegationFilter;
 import com.butent.bee.egg.server.datasource.query.Query;
-import com.butent.bee.egg.server.datasource.query.QueryFilter;
 import com.butent.bee.egg.server.datasource.query.QueryGroup;
 import com.butent.bee.egg.server.datasource.query.QuerySelection;
 import com.butent.bee.egg.server.datasource.query.QuerySort;
-import com.butent.bee.egg.server.datasource.query.SimpleColumn;
-import com.butent.bee.egg.server.datasource.query.SortOrder;
 import com.butent.bee.egg.shared.Assert;
+import com.butent.bee.egg.shared.data.Aggregation;
+import com.butent.bee.egg.shared.data.SortInfo;
+import com.butent.bee.egg.shared.data.DataException;
+import com.butent.bee.egg.shared.data.DataTable;
+import com.butent.bee.egg.shared.data.IsColumn;
+import com.butent.bee.egg.shared.data.IsTable;
+import com.butent.bee.egg.shared.data.Reasons;
+import com.butent.bee.egg.shared.data.SortOrder;
+import com.butent.bee.egg.shared.data.TableCell;
+import com.butent.bee.egg.shared.data.TableColumn;
+import com.butent.bee.egg.shared.data.TableRow;
+import com.butent.bee.egg.shared.data.TypeMismatchException;
+import com.butent.bee.egg.shared.data.column.AbstractColumn;
+import com.butent.bee.egg.shared.data.column.AggregationColumn;
+import com.butent.bee.egg.shared.data.column.SimpleColumn;
+import com.butent.bee.egg.shared.data.filter.ColumnColumnFilter;
+import com.butent.bee.egg.shared.data.filter.ColumnIsNullFilter;
+import com.butent.bee.egg.shared.data.filter.ColumnValueFilter;
+import com.butent.bee.egg.shared.data.filter.ComparisonFilter;
+import com.butent.bee.egg.shared.data.filter.CompoundFilter;
+import com.butent.bee.egg.shared.data.filter.NegationFilter;
+import com.butent.bee.egg.shared.data.filter.RowFilter;
 import com.butent.bee.egg.shared.data.value.BooleanValue;
 import com.butent.bee.egg.shared.data.value.DateTimeValue;
 import com.butent.bee.egg.shared.data.value.DateValue;
@@ -54,8 +56,8 @@ import java.util.logging.Logger;
 public class SqlDataSourceHelper {
   private static final Logger logger = Logger.getLogger(SqlDataSourceHelper.class.getName());
 
-  public static DataTable executeQuery(Query query, SqlDatabaseDescription databaseDescription)
-      throws DataSourceException {
+  public static IsTable executeQuery(Query query, SqlDatabaseDescription databaseDescription)
+      throws DataException {
     Connection con = getDatabaseConnection(databaseDescription);
     String tableName = databaseDescription.getTableName();
 
@@ -70,14 +72,14 @@ public class SqlDataSourceHelper {
       stmt = con.createStatement();
       ResultSet rs = stmt.executeQuery(queryStringBuilder.toString());
 
-      DataTable table = buildColumns(rs, columnIdsList);
+      IsTable table = buildColumns(rs, columnIdsList);
 
       buildRows(table, rs);
       return table;
     } catch (SQLException e) {
       String messageToUser = "Failed to execute SQL query. mySQL error message:"
           + " " + e.getMessage();
-      throw new DataSourceException(ReasonType.INTERNAL_ERROR, messageToUser);
+      throw new DataException(Reasons.INTERNAL_ERROR, messageToUser);
     } finally {
       if (stmt != null) {
         try {
@@ -95,10 +97,10 @@ public class SqlDataSourceHelper {
   }
 
   static void appendFromClause(StringBuilder queryStringBuilder, String tableName)
-      throws DataSourceException {
+      throws DataException {
     if (BeeUtils.isEmpty(tableName)) {
       LogUtils.severe(logger, "No table name provided.");
-      throw new DataSourceException(ReasonType.OTHER, "No table name provided.");
+      throw new DataException(Reasons.OTHER, "No table name provided.");
     }
     queryStringBuilder.append("FROM ");
     queryStringBuilder.append(tableName);
@@ -136,10 +138,10 @@ public class SqlDataSourceHelper {
     }
     queryStringBuilder.append("ORDER BY ");
     QuerySort querySort = query.getSort();
-    List<ColumnSort> sortColumns = querySort.getSortColumns();
+    List<SortInfo> sortColumns = querySort.getSortColumns();
     int numOfSortColumns = sortColumns.size();
     for (int col = 0; col < numOfSortColumns; col++) {
-      ColumnSort columnSort = sortColumns.get(col);
+      SortInfo columnSort = sortColumns.get(col);
       queryStringBuilder.append(getColumnId(columnSort.getColumn()));
       if (columnSort.getOrder() == SortOrder.DESCENDING) {
         queryStringBuilder.append(" DESC");
@@ -173,33 +175,33 @@ public class SqlDataSourceHelper {
 
   static void appendWhereClause(Query query, StringBuilder queryStringBuilder) {
     if (query.hasFilter()) {
-      QueryFilter queryFilter = query.getFilter();
+      RowFilter queryFilter = query.getFilter();
       queryStringBuilder.append("WHERE ")
           .append(buildWhereClauseRecursively(queryFilter)).append(" ");
     }
   }
 
-  static DataTable buildColumns(ResultSet rs, List<String> columnIdsList) throws SQLException {
-    DataTable result = new DataTable();
+  static IsTable buildColumns(ResultSet rs, List<String> columnIdsList) throws SQLException {
+    IsTable result = new DataTable();
     ResultSetMetaData metaData = rs.getMetaData();
     int numOfCols = metaData.getColumnCount();
 
     for (int i = 1; i <= numOfCols; i++) {
       String id = (columnIdsList == null) ? metaData.getColumnLabel(i) : columnIdsList.get(i - 1);
-      ColumnDescription columnDescription = new ColumnDescription(id,
+      TableColumn columnDescription = new TableColumn(id,
           sqlTypeToValueType(metaData.getColumnType(i)), metaData.getColumnLabel(i));
       result.addColumn(columnDescription);
     }
     return result;
   }
 
-  static void buildRows(DataTable dataTable, ResultSet rs) throws SQLException {
-    List<ColumnDescription> columnsDescriptionList = dataTable.getColumnDescriptions();
+  static void buildRows(IsTable dataTable, ResultSet rs) throws SQLException {
+    List<IsColumn> columns = dataTable.getColumns();
     int numOfCols = dataTable.getNumberOfColumns();
 
     ValueType[] columnsTypeArray = new ValueType[numOfCols];
     for (int c = 0; c < numOfCols; c++) {
-      columnsTypeArray[c] = columnsDescriptionList.get(c).getType();
+      columnsTypeArray[c] = columns.get(c).getType();
     }
 
     while (rs.next()) {
@@ -216,7 +218,7 @@ public class SqlDataSourceHelper {
   }
 
   private static void buildSqlQuery(Query query, StringBuilder queryStringBuilder, String tableName)
-      throws DataSourceException {
+      throws DataException {
     appendSelectClause(query, queryStringBuilder);
     appendFromClause(queryStringBuilder, tableName);
     appendWhereClause(query, queryStringBuilder);
@@ -276,7 +278,7 @@ public class SqlDataSourceHelper {
   }
 
   private static void buildWhereClauseForIsNullFilter(StringBuilder whereClause,
-      QueryFilter queryFilter) {
+      RowFilter queryFilter) {
     ColumnIsNullFilter filter = (ColumnIsNullFilter) queryFilter;
 
     whereClause.append("(").append(getColumnId(filter.getColumn())).append(" IS NULL)");
@@ -330,7 +332,7 @@ public class SqlDataSourceHelper {
     return clause;
   }
 
-  private static StringBuilder buildWhereClauseRecursively(QueryFilter queryFilter) {
+  private static StringBuilder buildWhereClauseRecursively(RowFilter queryFilter) {
     StringBuilder whereClause = new StringBuilder();
 
     if (queryFilter instanceof ColumnIsNullFilter) {
@@ -354,7 +356,7 @@ public class SqlDataSourceHelper {
         }
       } else {
         List<String> filterComponents = Lists.newArrayList();
-        for (QueryFilter filter : compoundFilter.getSubFilters()) {
+        for (RowFilter filter : compoundFilter.getSubFilters()) {
           filterComponents.add(buildWhereClauseRecursively(filter).toString());
         }
         String logicalOperator = getSqlLogicalOperator(compoundFilter.getOperator());
@@ -366,7 +368,7 @@ public class SqlDataSourceHelper {
   }
 
   private static void buildWhereCluaseForComparisonFilter(
-      StringBuilder whereClause, QueryFilter queryFilter) {
+      StringBuilder whereClause, RowFilter queryFilter) {
     StringBuilder first = new StringBuilder();
     StringBuilder second = new StringBuilder();
 
@@ -390,7 +392,7 @@ public class SqlDataSourceHelper {
         first, second, ((ComparisonFilter) queryFilter).getOperator()));
   }
 
-  private static String getAggregationFunction(AggregationType type) {
+  private static String getAggregationFunction(Aggregation type) {
     return type.getCode();
   }
 
@@ -416,7 +418,7 @@ public class SqlDataSourceHelper {
   }
 
   private static Connection getDatabaseConnection(
-      SqlDatabaseDescription databaseDescription) throws DataSourceException {
+      SqlDatabaseDescription databaseDescription) throws DataException {
     Connection con;
     String userName = databaseDescription.getUser();
     String password = databaseDescription.getPassword();
@@ -425,7 +427,7 @@ public class SqlDataSourceHelper {
       con = DriverManager.getConnection(url, userName, password);
     } catch (SQLException e) {
       LogUtils.severe(logger, e, "Failed to connect to database server.");
-      throw new DataSourceException(ReasonType.INTERNAL_ERROR,
+      throw new DataException(Reasons.INTERNAL_ERROR,
           "Failed to connect to database server.");
     }
     return con;

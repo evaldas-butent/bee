@@ -39,7 +39,7 @@ public class BooleanValue extends Value {
   }
 
   @Override
-  public Boolean getObjectToFormat() {
+  public Boolean getObjectValue() {
     if (isNull()) {
       return null;
     }

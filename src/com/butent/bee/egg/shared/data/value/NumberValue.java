@@ -29,7 +29,7 @@ public class NumberValue extends Value {
   }
 
   @Override
-  public Number getObjectToFormat() {
+  public Number getObjectValue() {
     if (isNull()) {
       return null;
     }

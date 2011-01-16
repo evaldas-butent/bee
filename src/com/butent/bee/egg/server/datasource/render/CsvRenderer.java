@@ -1,11 +1,11 @@
 package com.butent.bee.egg.server.datasource.render;
 
 import com.butent.bee.egg.server.datasource.base.ResponseStatus;
-import com.butent.bee.egg.server.datasource.datatable.ColumnDescription;
-import com.butent.bee.egg.server.datasource.datatable.DataTable;
-import com.butent.bee.egg.server.datasource.datatable.TableCell;
-import com.butent.bee.egg.server.datasource.datatable.TableRow;
-import com.butent.bee.egg.server.datasource.datatable.ValueFormatter;
+import com.butent.bee.egg.server.datasource.util.ValueFormatter;
+import com.butent.bee.egg.shared.data.IsCell;
+import com.butent.bee.egg.shared.data.IsColumn;
+import com.butent.bee.egg.shared.data.IsRow;
+import com.butent.bee.egg.shared.data.IsTable;
 import com.butent.bee.egg.shared.data.value.ValueType;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
@@ -18,24 +18,24 @@ public class CsvRenderer {
 
   public static String renderCsvError(ResponseStatus responseStatus) {
     StringBuilder sb = new StringBuilder();
-    sb.append("Error: ").append(responseStatus.getReasonType().getMessageForReasonType(null));
+    sb.append("Error: ").append(responseStatus.getReasonType().getMessageForReasonType());
     sb.append(". ").append(responseStatus.getDescription());
     return escapeString(sb.toString());
   }
 
-  public static CharSequence renderDataTable(DataTable dataTable, ULocale locale,
+  public static CharSequence renderDataTable(IsTable dataTable, ULocale locale,
       String separator) {
     if (separator == null) {
       separator = ",";
     }
 
-    if (dataTable.getColumnDescriptions().isEmpty()) {
+    if (dataTable.getColumns().isEmpty()) {
       return "";
     }
 
     StringBuilder sb = new StringBuilder();
-    List<ColumnDescription> columns = dataTable.getColumnDescriptions();
-    for (ColumnDescription column : columns) {
+    List<IsColumn> columns = dataTable.getColumns();
+    for (IsColumn column : columns) {
       sb.append(escapeString(column.getLabel())).append(separator);
     }
 
@@ -44,10 +44,10 @@ public class CsvRenderer {
     int length = sb.length();
     sb.replace(length - 1, length, "\n");
 
-    List<TableRow> rows = dataTable.getRows();
-    for (TableRow row : rows) {
-      List<TableCell> cells = row.getCells();
-      for (TableCell cell : cells) {
+    List<IsRow> rows = dataTable.getRows();
+    for (IsRow row : rows) {
+      List<IsCell> cells = row.getCells();
+      for (IsCell cell : cells) {
         String formattedValue = cell.getFormattedValue();
         if (formattedValue == null) {
           formattedValue = formatters.get(cell.getType()).format(cell.getValue());

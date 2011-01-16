@@ -3,7 +3,7 @@ package com.butent.bee.egg.server.datasource.query.engine;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
 
-import com.butent.bee.egg.server.datasource.query.AbstractColumn;
+import com.butent.bee.egg.shared.data.column.AbstractColumn;
 
 import java.util.List;
 

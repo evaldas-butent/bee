@@ -1,12 +1,10 @@
 package com.butent.bee.egg.server.datasource.query.parser;
 
-import com.butent.bee.egg.server.datasource.base.InvalidQueryException;
-import com.butent.bee.egg.server.datasource.base.MessagesEnum;
 import com.butent.bee.egg.server.datasource.query.Query;
+import com.butent.bee.egg.shared.data.InvalidQueryException;
+import com.butent.bee.egg.shared.data.Messages;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 import com.butent.bee.egg.shared.utils.LogUtils;
-
-import com.ibm.icu.util.ULocale;
 
 import java.util.logging.Logger;
 
@@ -24,10 +22,6 @@ public class QueryBuilder {
   }
 
   public Query parseQuery(String tqValue) throws InvalidQueryException {
-    return parseQuery(tqValue, null);
-  }
-  
-  public Query parseQuery(String tqValue, ULocale ulocale) throws InvalidQueryException {
     Query query;
     if (BeeUtils.isEmpty(tqValue)) {
       query = new Query();
@@ -37,10 +31,8 @@ public class QueryBuilder {
       } catch (ParseException ex) {
         String messageToUserAndLog = ex.getMessage();
         LogUtils.severe(logger, "Parsing error: " + messageToUserAndLog);
-        throw new InvalidQueryException(MessagesEnum.PARSE_ERROR.getMessageWithArgs(ulocale, 
-            messageToUserAndLog));
+        throw new InvalidQueryException(Messages.PARSE_ERROR.getMessage(messageToUserAndLog));
       }
-      query.setLocaleForUserMessages(ulocale);
       query.validate();
     }
     return query;

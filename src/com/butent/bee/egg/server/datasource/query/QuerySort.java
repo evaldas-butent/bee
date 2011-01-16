@@ -3,22 +3,27 @@ package com.butent.bee.egg.server.datasource.query;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
+import com.butent.bee.egg.shared.data.SortInfo;
+import com.butent.bee.egg.shared.data.SortOrder;
+import com.butent.bee.egg.shared.data.column.AbstractColumn;
+import com.butent.bee.egg.shared.data.column.AggregationColumn;
+import com.butent.bee.egg.shared.data.column.ScalarFunctionColumn;
 import com.butent.bee.egg.shared.utils.BeeUtils;
 
 import java.util.List;
 
 public class QuerySort {
-  private List<ColumnSort> sortColumns;
+  private List<SortInfo> sortColumns;
 
   public QuerySort() {
     sortColumns = Lists.newArrayList();
   }
 
   public void addSort(AbstractColumn column, SortOrder order) {
-    addSort(new ColumnSort(column, order));
+    addSort(new SortInfo(column, order));
   }
 
-  public void addSort(ColumnSort columnSort) {
+  public void addSort(SortInfo columnSort) {
     sortColumns.add(columnSort);
   }
 
@@ -46,7 +51,7 @@ public class QuerySort {
 
   public List<AggregationColumn> getAggregationColumns() {
     List<AggregationColumn> result = Lists.newArrayList();
-    for (ColumnSort columnSort : sortColumns) {
+    for (SortInfo columnSort : sortColumns) {
       AbstractColumn col = columnSort.getColumn();
       for (AggregationColumn innerCol : col.getAllAggregationColumns()) {
         if (!result.contains(innerCol)) {
@@ -59,7 +64,7 @@ public class QuerySort {
 
   public List<AbstractColumn> getColumns() {
     List<AbstractColumn> result = Lists.newArrayListWithExpectedSize(sortColumns.size());
-    for (ColumnSort columnSort : sortColumns) {
+    for (SortInfo columnSort : sortColumns) {
       result.add(columnSort.getColumn());
     }
     return result;
@@ -67,7 +72,7 @@ public class QuerySort {
 
   public List<ScalarFunctionColumn> getScalarFunctionColumns() {
     List<ScalarFunctionColumn> result = Lists.newArrayList();
-    for (ColumnSort columnSort : sortColumns) {
+    for (SortInfo columnSort : sortColumns) {
       AbstractColumn col = columnSort.getColumn();
       for (ScalarFunctionColumn innerCol : col.getAllScalarFunctionColumns()) {
         if (!result.contains(innerCol)) {
@@ -78,7 +83,7 @@ public class QuerySort {
     return result;
   }
 
-  public List<ColumnSort> getSortColumns() {
+  public List<SortInfo> getSortColumns() {
     return ImmutableList.copyOf(sortColumns);
   }
 
@@ -97,7 +102,7 @@ public class QuerySort {
   public String toQueryString() {
     StringBuilder builder = new StringBuilder();
     List<String> stringList = Lists.newArrayList();
-    for (ColumnSort colSort : sortColumns) {
+    for (SortInfo colSort : sortColumns) {
       stringList.add(colSort.toQueryString());
     }
     BeeUtils.append(builder, stringList, ", ");

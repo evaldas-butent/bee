@@ -8,18 +8,19 @@ public abstract class Value implements Comparable<Value> {
 
   public static Comparator<Value> getComparator() {
     return new Comparator<Value>() {
-      private Comparator<TextValue> textComparator = TextValue.getTextComparator();
 
       @Override
       public int compare(Value value1, Value value2) {
         if (value1 == value2) {
           return 0;
         }
-        if (value1.getType() == ValueType.TEXT) {
-          return textComparator.compare((TextValue) value1, (TextValue) value2);
-        } else {
-          return value1.compareTo(value2);
+        if (value1 == null) {
+          return -1;
         }
+        if (value2 == null) {
+          return 1;
+        }
+        return value1.compareTo(value2);
       }
     };
   }
@@ -50,7 +51,7 @@ public abstract class Value implements Comparable<Value> {
     return (this.compareTo((Value) o) == 0);
   }
 
-  public abstract Object getObjectToFormat();
+  public abstract Object getObjectValue();
 
   public abstract ValueType getType();
 

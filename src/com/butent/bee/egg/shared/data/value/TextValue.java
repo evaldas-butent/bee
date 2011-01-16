@@ -2,27 +2,12 @@ package com.butent.bee.egg.shared.data.value;
 
 import com.butent.bee.egg.shared.Assert;
 
-import java.util.Comparator;
-
 public class TextValue extends Value {
 
   private static final TextValue NULL_VALUE = new TextValue("");
 
   public static TextValue getNullValue() {
     return NULL_VALUE;
-  }
-
-  public static Comparator<TextValue> getTextComparator() {
-    return new Comparator<TextValue>() {
-
-      @Override
-      public int compare(TextValue tv1, TextValue tv2) {
-        if (tv1 == tv2) {
-          return 0;
-        }
-        return tv1.compareTo(tv2);
-      }
-    };
   }
 
   private String value;
@@ -41,7 +26,7 @@ public class TextValue extends Value {
   }
 
   @Override
-  public String getObjectToFormat() {
+  public String getObjectValue() {
     return value;
   }
 

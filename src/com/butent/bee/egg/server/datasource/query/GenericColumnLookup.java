@@ -2,6 +2,9 @@ package com.butent.bee.egg.server.datasource.query;
 
 import com.google.common.collect.Maps;
 
+import com.butent.bee.egg.shared.data.column.AbstractColumn;
+import com.butent.bee.egg.shared.data.column.ColumnLookup;
+
 import java.util.Map;
 
 public class GenericColumnLookup implements ColumnLookup {

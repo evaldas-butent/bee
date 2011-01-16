@@ -3,15 +3,16 @@ package com.butent.bee.egg.server.datasource.render;
 import com.google.common.collect.Lists;
 
 import com.butent.bee.egg.server.datasource.base.DataSourceParameters;
-import com.butent.bee.egg.server.datasource.base.ReasonType;
 import com.butent.bee.egg.server.datasource.base.ResponseStatus;
 import com.butent.bee.egg.server.datasource.base.StatusType;
-import com.butent.bee.egg.server.datasource.base.Warning;
-import com.butent.bee.egg.server.datasource.datatable.ColumnDescription;
-import com.butent.bee.egg.server.datasource.datatable.DataTable;
-import com.butent.bee.egg.server.datasource.datatable.TableCell;
-import com.butent.bee.egg.server.datasource.datatable.TableRow;
 import com.butent.bee.egg.shared.BeeDate;
+import com.butent.bee.egg.shared.data.CustomProperties;
+import com.butent.bee.egg.shared.data.IsCell;
+import com.butent.bee.egg.shared.data.IsColumn;
+import com.butent.bee.egg.shared.data.IsRow;
+import com.butent.bee.egg.shared.data.IsTable;
+import com.butent.bee.egg.shared.data.Reasons;
+import com.butent.bee.egg.shared.data.DataWarning;
 import com.butent.bee.egg.shared.data.value.BooleanValue;
 import com.butent.bee.egg.shared.data.value.DateTimeValue;
 import com.butent.bee.egg.shared.data.value.DateValue;
@@ -26,7 +27,7 @@ import java.util.Map;
 
 public class JsonRenderer {
 
-  public static StringBuilder appendCellJson(TableCell cell, 
+  public static StringBuilder appendCellJson(IsCell cell,
       StringBuilder sb, boolean includeFormatting, boolean isLastColumn) {
     Value value = cell.getValue();
     ValueType type = cell.getType();
@@ -98,55 +99,54 @@ public class JsonRenderer {
       if ((includeFormatting) && (!escapedFormattedString.equals(""))) {
         sb.append(",f:'").append(escapedFormattedString).append("'");
       }
-      String customPropertiesString = getPropertiesMapString(cell.getCustomProperties());
-      if (customPropertiesString != null) {
-        sb.append(",p:").append(customPropertiesString);
+      String propertiesString = getPropertiesMapString(cell.getProperties());
+      if (propertiesString != null) {
+        sb.append(",p:").append(propertiesString);
       }
       sb.append("}");
     }
     return sb;
   }
 
-  public static StringBuilder appendColumnDescriptionJson(ColumnDescription col,
-      StringBuilder sb) {
+  public static StringBuilder appendColumnDescriptionJson(IsColumn col, StringBuilder sb) {
     sb.append("{");
     sb.append("id:'").append(EscapeUtil.jsonEscape(col.getId())).append("',");
     sb.append("label:'").append(EscapeUtil.jsonEscape(col.getLabel())).append("',");
     sb.append("type:'").append(col.getType().getTypeCodeLowerCase()).append("',");
     sb.append("pattern:'").append(EscapeUtil.jsonEscape(col.getPattern())).append("'");
 
-    String customPropertiesString = getPropertiesMapString(col.getCustomProperties());
-    if (customPropertiesString != null) {
-      sb.append(",p:").append(customPropertiesString);
+    String propertiesString = getPropertiesMapString(col.getProperties());
+    if (propertiesString != null) {
+      sb.append(",p:").append(propertiesString);
     }
 
     sb.append("}");
     return sb;
   }
 
-  public static String getSignature(DataTable data) {
+  public static String getSignature(IsTable data) {
     String tableAsString = renderDataTable(data, true, false).toString();
     long longHashCode = tableAsString.hashCode();
     return String.valueOf(Math.abs(longHashCode));
   }
 
-  public static CharSequence renderDataTable(DataTable dataTable, boolean includeValues, 
+  public static CharSequence renderDataTable(IsTable dataTable, boolean includeValues,
       boolean includeFormatting) {
-    if (dataTable.getColumnDescriptions().isEmpty()) {
+    if (dataTable.getColumns().isEmpty()) {
       return "";
     }
 
-    List<ColumnDescription> columnDescriptions = dataTable.getColumnDescriptions();
+    List<IsColumn> columns = dataTable.getColumns();
 
     StringBuilder sb = new StringBuilder();
     sb.append("{");
     sb.append("cols:[");
 
-    ColumnDescription col;
-    for (int colId = 0; colId < columnDescriptions.size(); colId++) {
-      col = columnDescriptions.get(colId);
+    IsColumn col;
+    for (int colId = 0; colId < columns.size(); colId++) {
+      col = columns.get(colId);
       appendColumnDescriptionJson(col, sb);
-      if (colId != (columnDescriptions.size() - 1)) {
+      if (colId != (columns.size() - 1)) {
         sb.append(",");
       }
     }
@@ -154,12 +154,12 @@ public class JsonRenderer {
 
     if (includeValues) {
       sb.append(",rows:[");
-      List<TableCell> cells;
-      TableCell cell;
+      List<IsCell> cells;
+      IsCell cell;
 
-      List<TableRow> rows = dataTable.getRows();
+      List<IsRow> rows = dataTable.getRows();
       for (int rowId = 0; rowId < rows.size(); rowId++) {
-        TableRow tableRow = rows.get(rowId);
+        IsRow tableRow = rows.get(rowId);
         cells = tableRow.getCells();
         sb.append("{c:[");
         for (int cellId = 0; cellId < cells.size(); cellId++) {
@@ -173,9 +173,9 @@ public class JsonRenderer {
         }
         sb.append("]");
 
-        String customPropertiesString = getPropertiesMapString(tableRow.getCustomProperties());
-        if (customPropertiesString != null) {
-          sb.append(",p:").append(customPropertiesString);
+        String propertiesString = getPropertiesMapString(tableRow.getProperties());
+        if (propertiesString != null) {
+          sb.append(",p:").append(propertiesString);
         }
 
         sb.append("}");
@@ -187,9 +187,9 @@ public class JsonRenderer {
       sb.append("]");
     }
 
-    String customPropertiesString = getPropertiesMapString(dataTable.getCustomProperties());
-    if (customPropertiesString != null) {
-      sb.append(",p:").append(customPropertiesString);
+    String propertiesString = getPropertiesMapString(dataTable.getTableProperties());
+    if (propertiesString != null) {
+      sb.append(",p:").append(propertiesString);
     }
 
     sb.append("}");
@@ -197,7 +197,7 @@ public class JsonRenderer {
   }
 
   public static CharSequence renderJsonResponse(DataSourceParameters dsParams,
-      ResponseStatus responseStatus, DataTable data, boolean isJsonp) {
+      ResponseStatus responseStatus, IsTable data, boolean isJsonp) {
     StringBuilder sb = new StringBuilder();
     if (isJsonp) {
       sb.append(dsParams.getResponseHandler()).append("(");
@@ -213,7 +213,7 @@ public class JsonRenderer {
     if (responseStatus == null) {
       if (!BeeUtils.isEmpty(previousSignature) && (data != null)
           && (JsonRenderer.getSignature(data).equals(previousSignature))) {
-        responseStatus = new ResponseStatus(StatusType.ERROR, ReasonType.NOT_MODIFIED, null);
+        responseStatus = new ResponseStatus(StatusType.ERROR, Reasons.NOT_MODIFIED, null);
       } else {
         responseStatus = new ResponseStatus(StatusType.OK, null, null);
       }
@@ -224,10 +224,10 @@ public class JsonRenderer {
 
     if (statusType != StatusType.OK) {
       if (statusType == StatusType.WARNING) {
-        List<Warning> warnings = data.getWarnings();
+        List<DataWarning> warnings = data.getWarnings();
         List<String> warningJsonStrings = Lists.newArrayList();
         if (warnings != null) {
-          for (Warning warning : warnings) {
+          for (DataWarning warning : warnings) {
             warningJsonStrings.add(getFaultString(warning.getReasonType(), warning.getMessage()));
           }
         }
@@ -239,26 +239,26 @@ public class JsonRenderer {
         sb.append("]");
       }
     }
-    
+
     if ((statusType != StatusType.ERROR) && (data != null)) {
       sb.append(",sig:'").append(JsonRenderer.getSignature(data)).append("'");
       sb.append(",table:").append(JsonRenderer.renderDataTable(data, true, true));
     }
-    
+
     sb.append("}");
     if (isJsonp) {
       sb.append(");");
     }
-    
+
     return sb.toString();
   }
 
-  private static String getFaultString(ReasonType reasonType, String description) {
+  private static String getFaultString(Reasons reasonType, String description) {
     List<String> objectParts = Lists.newArrayList();
     if (reasonType != null) {
       objectParts.add("reason:'" + reasonType.lowerCaseString() + "'");
-      objectParts.add("message:'" + EscapeUtil.jsonEscape(
-              reasonType.getMessageForReasonType(null)) + "'");
+      objectParts.add("message:'" + EscapeUtil.jsonEscape(reasonType.getMessageForReasonType())
+          + "'");
     }
 
     if (description != null) {
@@ -267,14 +267,14 @@ public class JsonRenderer {
     return BeeUtils.append(new StringBuilder("{"), objectParts, ",").append("}").toString();
   }
 
-  private static String getPropertiesMapString(Map<String, String> propertiesMap) {
+  private static String getPropertiesMapString(CustomProperties propertiesMap) {
     String customPropertiesString = null;
     if ((propertiesMap != null) && (!propertiesMap.isEmpty())) {
       List<String> customPropertiesStrings = Lists.newArrayList();
-      for (Map.Entry<String, String> entry : propertiesMap.entrySet()) {
+      for (Map.Entry<String, Object> entry : propertiesMap.entrySet()) {
         customPropertiesStrings.add("'"
             + EscapeUtil.jsonEscape(entry.getKey()) + "':'"
-            + EscapeUtil.jsonEscape(entry.getValue()) + "'");
+            + EscapeUtil.jsonEscape(BeeUtils.transform(entry.getValue())) + "'");
       }
       customPropertiesString = BeeUtils.append(new StringBuilder("{"),
           customPropertiesStrings, ",").append("}").toString();

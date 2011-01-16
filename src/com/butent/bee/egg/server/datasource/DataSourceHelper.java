@@ -1,24 +1,25 @@
 package com.butent.bee.egg.server.datasource;
 
-import com.butent.bee.egg.server.datasource.base.DataSourceException;
 import com.butent.bee.egg.server.datasource.base.DataSourceParameters;
-import com.butent.bee.egg.server.datasource.base.InvalidQueryException;
 import com.butent.bee.egg.server.datasource.base.LocaleUtil;
-import com.butent.bee.egg.server.datasource.base.MessagesEnum;
 import com.butent.bee.egg.server.datasource.base.OutputType;
-import com.butent.bee.egg.server.datasource.base.ReasonType;
 import com.butent.bee.egg.server.datasource.base.ResponseStatus;
 import com.butent.bee.egg.server.datasource.base.StatusType;
-import com.butent.bee.egg.server.datasource.datatable.DataTable;
-import com.butent.bee.egg.server.datasource.query.AggregationColumn;
 import com.butent.bee.egg.server.datasource.query.Query;
-import com.butent.bee.egg.server.datasource.query.ScalarFunctionColumn;
 import com.butent.bee.egg.server.datasource.query.engine.QueryEngine;
 import com.butent.bee.egg.server.datasource.query.parser.QueryBuilder;
 import com.butent.bee.egg.server.datasource.render.CsvRenderer;
 import com.butent.bee.egg.server.datasource.render.HtmlRenderer;
 import com.butent.bee.egg.server.datasource.render.JsonRenderer;
 import com.butent.bee.egg.shared.Assert;
+import com.butent.bee.egg.shared.data.DataException;
+import com.butent.bee.egg.shared.data.DataTable;
+import com.butent.bee.egg.shared.data.InvalidQueryException;
+import com.butent.bee.egg.shared.data.IsTable;
+import com.butent.bee.egg.shared.data.Messages;
+import com.butent.bee.egg.shared.data.Reasons;
+import com.butent.bee.egg.shared.data.column.AggregationColumn;
+import com.butent.bee.egg.shared.data.column.ScalarFunctionColumn;
 import com.butent.bee.egg.shared.utils.LogUtils;
 import com.ibm.icu.util.ULocale;
 
@@ -36,12 +37,10 @@ public class DataSourceHelper {
 
   static final String LOCALE_REQUEST_PARAMETER = "hl";
 
-  public static DataTable applyQuery(Query query, DataTable dataTable, ULocale locale)
-      throws InvalidQueryException, DataSourceException {
-    dataTable.setLocaleForUserMessages(locale);
+  public static IsTable applyQuery(Query query, DataTable dataTable, ULocale locale)
+      throws InvalidQueryException, DataException {
     validateQueryAgainstColumnStructure(query, dataTable);
     dataTable = QueryEngine.executeQuery(query, dataTable, locale);
-    dataTable.setLocaleForUserMessages(locale);
     return dataTable;
   }
 
@@ -65,11 +64,11 @@ public class DataSourceHelper {
 
       DataTable dataTable = dtGenerator.generateDataTable(query.getDataSourceQuery(), req);
 
-      DataTable newDataTable = DataSourceHelper.applyQuery(query.getCompletionQuery(), dataTable,
+      IsTable newDataTable = DataSourceHelper.applyQuery(query.getCompletionQuery(), dataTable,
           dsRequest.getUserLocale());
 
       setServletResponse(newDataTable, dsRequest, resp);
-    } catch (DataSourceException e) {
+    } catch (DataException e) {
       if (dsRequest != null) {
         setServletErrorResponse(e, dsRequest, resp);
       } else {
@@ -77,7 +76,7 @@ public class DataSourceHelper {
       }
     } catch (RuntimeException e) {
       LogUtils.severe(logger, e, "A runtime exception has occured");
-      ResponseStatus status = new ResponseStatus(StatusType.ERROR, ReasonType.INTERNAL_ERROR,
+      ResponseStatus status = new ResponseStatus(StatusType.ERROR, Reasons.INTERNAL_ERROR,
           e.getMessage());
       if (dsRequest == null) {
         dsRequest = DataSourceRequest.getDefaultDataSourceRequest(req);
@@ -86,7 +85,7 @@ public class DataSourceHelper {
     }
   }
 
-  public static String generateErrorResponse(DataSourceException dse, DataSourceRequest dsReq) {
+  public static String generateErrorResponse(DataException dse, DataSourceRequest dsReq) {
     ResponseStatus responseStatus = ResponseStatus.createResponseStatus(dse);
     responseStatus = ResponseStatus.getModifiedResponseStatus(responseStatus);
     return generateErrorResponse(responseStatus, dsReq);
@@ -117,7 +116,7 @@ public class DataSourceHelper {
     return response.toString();
   }
 
-  public static String generateResponse(DataTable dataTable, DataSourceRequest dataSourceRequest) {
+  public static String generateResponse(IsTable dataTable, DataSourceRequest dataSourceRequest) {
     CharSequence response;
     ResponseStatus responseStatus = null;
     if (!dataTable.getWarnings().isEmpty()) {
@@ -161,24 +160,19 @@ public class DataSourceHelper {
   }
 
   public static Query parseQuery(String queryString) throws InvalidQueryException {
-    return parseQuery(queryString, null);
-  }
-
-  public static Query parseQuery(String queryString, ULocale userLocale) 
-      throws InvalidQueryException {
     QueryBuilder queryBuilder = QueryBuilder.getInstance();
-    Query query = queryBuilder.parseQuery(queryString, userLocale);
+    Query query = queryBuilder.parseQuery(queryString);
 
     return query;
   }
 
-  public static void setServletErrorResponse(DataSourceException dataSourceException,
+  public static void setServletErrorResponse(DataException dataSourceException,
       DataSourceRequest dataSourceRequest, HttpServletResponse res) throws IOException {
     String responseMessage = generateErrorResponse(dataSourceException, dataSourceRequest);
     setServletResponse(responseMessage, dataSourceRequest, res);
   }
 
-  public static void setServletErrorResponse(DataSourceException dataSourceException,
+  public static void setServletErrorResponse(DataException dataSourceException,
       HttpServletRequest req, HttpServletResponse res) throws IOException {
     DataSourceRequest dataSourceRequest = DataSourceRequest.getDefaultDataSourceRequest(req);
     setServletErrorResponse(dataSourceException, dataSourceRequest, res);
@@ -190,7 +184,7 @@ public class DataSourceHelper {
     setServletResponse(responseMessage, dataSourceRequest, res);
   }
 
-  public static void setServletResponse(DataTable dataTable, DataSourceRequest dataSourceRequest,
+  public static void setServletResponse(IsTable dataTable, DataSourceRequest dataSourceRequest,
       HttpServletResponse res) throws IOException {
     String responseMessage = generateResponse(dataTable, dataSourceRequest);
     setServletResponse(responseMessage, dataSourceRequest, res);
@@ -203,7 +197,7 @@ public class DataSourceHelper {
   }
 
   public static QueryPair splitQuery(Query query, Capabilities capabilities)
-      throws DataSourceException {
+      throws DataException {
     return QuerySplitter.splitQuery(query, capabilities);
   }
 
@@ -212,8 +206,7 @@ public class DataSourceHelper {
     Set<String> mentionedColumnIds = query.getAllColumnIds();
     for (String columnId : mentionedColumnIds) {
       if (!dataTable.containsColumn(columnId)) {
-        String messageToLogAndUser = MessagesEnum.NO_COLUMN.getMessageWithArgs(
-            dataTable.getLocaleForUserMessages(), columnId);
+        String messageToLogAndUser = Messages.NO_COLUMN.getMessage(columnId);
         LogUtils.severe(logger, messageToLogAndUser);
         throw new InvalidQueryException(messageToLogAndUser);
       }
@@ -236,11 +229,11 @@ public class DataSourceHelper {
     }
   }
 
-  public static void verifyAccessApproved(DataSourceRequest req) throws DataSourceException {
+  public static void verifyAccessApproved(DataSourceRequest req) throws DataException {
     OutputType outType = req.getDataSourceParameters().getOutputType();
     if (outType != OutputType.CSV && outType != OutputType.TSV_EXCEL
         && outType != OutputType.HTML && !req.isSameOrigin()) {
-      throw new DataSourceException(ReasonType.ACCESS_DENIED,
+      throw new DataException(Reasons.ACCESS_DENIED,
           "Unauthorized request. Cross domain requests are not supported.");
     }
   }

@@ -1,10 +1,10 @@
 package com.butent.bee.egg.server.datasource;
 
-import com.butent.bee.egg.server.datasource.base.DataSourceException;
 import com.butent.bee.egg.server.datasource.base.DataSourceParameters;
-import com.butent.bee.egg.server.datasource.base.InvalidQueryException;
 import com.butent.bee.egg.server.datasource.base.OutputType;
 import com.butent.bee.egg.server.datasource.query.Query;
+import com.butent.bee.egg.shared.data.DataException;
+import com.butent.bee.egg.shared.data.InvalidQueryException;
 import com.ibm.icu.util.ULocale;
 
 import javax.servlet.http.HttpServletRequest;
@@ -25,7 +25,7 @@ public class DataSourceRequest {
     dataSourceRequest.sameOrigin = determineSameOrigin(req);
     try {
       dataSourceRequest.createDataSourceParametersFromRequest(req);
-    } catch (DataSourceException e) {
+    } catch (DataException e) {
       if (dataSourceRequest.dsParams == null) {
         dataSourceRequest.dsParams = DataSourceParameters.getDefaultDataSourceParameters();
       }
@@ -49,7 +49,7 @@ public class DataSourceRequest {
 
   private boolean sameOrigin;
   
-  public DataSourceRequest(HttpServletRequest req) throws DataSourceException {
+  public DataSourceRequest(HttpServletRequest req) throws DataException {
     inferLocaleFromRequest(req);
     sameOrigin = determineSameOrigin(req);
     createDataSourceParametersFromRequest(req);
@@ -86,7 +86,7 @@ public class DataSourceRequest {
   }
 
   private void createDataSourceParametersFromRequest(HttpServletRequest req)
-      throws DataSourceException {
+      throws DataException {
     String dataSourceParamsString = req.getParameter(DATASOURCE_REQUEST_PARAMETER);
 
     dsParams = new DataSourceParameters(dataSourceParamsString);

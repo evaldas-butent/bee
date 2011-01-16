@@ -1,10 +1,11 @@
 package com.butent.bee.egg.server.datasource.query.engine;
 
-import com.butent.bee.egg.server.datasource.datatable.ColumnDescription;
-import com.butent.bee.egg.server.datasource.datatable.DataTable;
-import com.butent.bee.egg.server.datasource.query.AbstractColumn;
-import com.butent.bee.egg.server.datasource.query.AggregationColumn;
-import com.butent.bee.egg.server.datasource.query.ScalarFunctionColumn;
+import com.butent.bee.egg.shared.data.DataTable;
+import com.butent.bee.egg.shared.data.IsTable;
+import com.butent.bee.egg.shared.data.TableColumn;
+import com.butent.bee.egg.shared.data.column.AbstractColumn;
+import com.butent.bee.egg.shared.data.column.AggregationColumn;
+import com.butent.bee.egg.shared.data.column.ScalarFunctionColumn;
 import com.butent.bee.egg.shared.data.value.Value;
 import com.butent.bee.egg.shared.data.value.ValueType;
 import com.butent.bee.egg.shared.utils.BeeUtils;
@@ -15,15 +16,15 @@ class ScalarFunctionColumnTitle {
   public static final String PIVOT_COLUMNS_SEPARATOR = ",";
   public static final String PIVOT_SCALAR_FUNCTION_SEPARATOR = " ";
 
-  public static String getColumnDescriptionLabel(DataTable originalTable, AbstractColumn column) {
+  public static String getColumnDescriptionLabel(IsTable originalTable, AbstractColumn column) {
     StringBuilder label = new StringBuilder();
     if (originalTable.containsColumn(column.getId())) {
-      label.append(originalTable.getColumnDescription(column.getId()).getLabel());
+      label.append(originalTable.getColumn(column.getId()).getLabel());
     } else {
       if (column instanceof AggregationColumn) {
         AggregationColumn aggColumn = (AggregationColumn) column;
         label.append(aggColumn.getAggregationType().getCode()).append(" ").append(
-            originalTable.getColumnDescription(aggColumn.getAggregatedColumn().getId()).getLabel());
+            originalTable.getColumn(aggColumn.getAggregatedColumn().getId()).getLabel());
       } else {
         ScalarFunctionColumn scalarFunctionColumn = (ScalarFunctionColumn) column;
         List<AbstractColumn> columns = scalarFunctionColumn.getColumns();
@@ -46,12 +47,12 @@ class ScalarFunctionColumnTitle {
     this.scalarFunctionColumn = column;
   }
 
-  public ColumnDescription createColumnDescription(DataTable originalTable) {
+  public TableColumn createColumnDescription(DataTable originalTable) {
     String columnId = createIdPivotPrefix() + scalarFunctionColumn.getId();
     ValueType type = scalarFunctionColumn.getValueType(originalTable);
     String label = createLabelPivotPart() + " " +
         getColumnDescriptionLabel(originalTable, scalarFunctionColumn);
-    ColumnDescription result = new ColumnDescription(columnId, type, label);
+    TableColumn result = new TableColumn(columnId, type, label);
 
     return result;
   }

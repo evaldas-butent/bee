@@ -1,17 +1,6 @@
 package com.butent.bee.egg.server.datasource.query.parser;
 
-import com.butent.bee.egg.server.datasource.base.InvalidQueryException;
-import com.butent.bee.egg.server.datasource.query.AbstractColumn;
-import com.butent.bee.egg.server.datasource.query.AggregationColumn;
-import com.butent.bee.egg.server.datasource.query.AggregationType;
-import com.butent.bee.egg.server.datasource.query.ColumnColumnFilter;
-import com.butent.bee.egg.server.datasource.query.ColumnIsNullFilter;
-import com.butent.bee.egg.server.datasource.query.ColumnValueFilter;
-import com.butent.bee.egg.server.datasource.query.ComparisonFilter;
-import com.butent.bee.egg.server.datasource.query.CompoundFilter;
-import com.butent.bee.egg.server.datasource.query.NegationFilter;
 import com.butent.bee.egg.server.datasource.query.Query;
-import com.butent.bee.egg.server.datasource.query.QueryFilter;
 import com.butent.bee.egg.server.datasource.query.QueryFormat;
 import com.butent.bee.egg.server.datasource.query.QueryGroup;
 import com.butent.bee.egg.server.datasource.query.QueryLabels;
@@ -19,22 +8,33 @@ import com.butent.bee.egg.server.datasource.query.QueryOptions;
 import com.butent.bee.egg.server.datasource.query.QueryPivot;
 import com.butent.bee.egg.server.datasource.query.QuerySelection;
 import com.butent.bee.egg.server.datasource.query.QuerySort;
-import com.butent.bee.egg.server.datasource.query.ScalarFunctionColumn;
-import com.butent.bee.egg.server.datasource.query.SortOrder;
-import com.butent.bee.egg.server.datasource.query.SimpleColumn;
-import com.butent.bee.egg.server.datasource.query.scalarfunction.Constant;
-import com.butent.bee.egg.server.datasource.query.scalarfunction.CurrentDateTime;
-import com.butent.bee.egg.server.datasource.query.scalarfunction.DateDiff;
-import com.butent.bee.egg.server.datasource.query.scalarfunction.Difference;
-import com.butent.bee.egg.server.datasource.query.scalarfunction.Lower;
-import com.butent.bee.egg.server.datasource.query.scalarfunction.Modulo;
-import com.butent.bee.egg.server.datasource.query.scalarfunction.Product;
-import com.butent.bee.egg.server.datasource.query.scalarfunction.Quotient;
-import com.butent.bee.egg.server.datasource.query.scalarfunction.ScalarFunction;
-import com.butent.bee.egg.server.datasource.query.scalarfunction.Sum;
-import com.butent.bee.egg.server.datasource.query.scalarfunction.ToDate;
-import com.butent.bee.egg.server.datasource.query.scalarfunction.TimeComponentExtractor;
-import com.butent.bee.egg.server.datasource.query.scalarfunction.Upper;
+import com.butent.bee.egg.shared.data.Aggregation;
+import com.butent.bee.egg.shared.data.InvalidQueryException;
+import com.butent.bee.egg.shared.data.SortOrder;
+import com.butent.bee.egg.shared.data.column.AbstractColumn;
+import com.butent.bee.egg.shared.data.column.AggregationColumn;
+import com.butent.bee.egg.shared.data.column.ScalarFunctionColumn;
+import com.butent.bee.egg.shared.data.column.SimpleColumn;
+import com.butent.bee.egg.shared.data.filter.ColumnColumnFilter;
+import com.butent.bee.egg.shared.data.filter.ColumnIsNullFilter;
+import com.butent.bee.egg.shared.data.filter.ColumnValueFilter;
+import com.butent.bee.egg.shared.data.filter.ComparisonFilter;
+import com.butent.bee.egg.shared.data.filter.CompoundFilter;
+import com.butent.bee.egg.shared.data.filter.NegationFilter;
+import com.butent.bee.egg.shared.data.filter.RowFilter;
+import com.butent.bee.egg.shared.data.function.Constant;
+import com.butent.bee.egg.shared.data.function.CurrentDateTime;
+import com.butent.bee.egg.shared.data.function.DateDiff;
+import com.butent.bee.egg.shared.data.function.Difference;
+import com.butent.bee.egg.shared.data.function.Lower;
+import com.butent.bee.egg.shared.data.function.Modulo;
+import com.butent.bee.egg.shared.data.function.Product;
+import com.butent.bee.egg.shared.data.function.Quotient;
+import com.butent.bee.egg.shared.data.function.ScalarFunction;
+import com.butent.bee.egg.shared.data.function.Sum;
+import com.butent.bee.egg.shared.data.function.TimeComponentExtractor;
+import com.butent.bee.egg.shared.data.function.ToDate;
+import com.butent.bee.egg.shared.data.function.Upper;
 import com.butent.bee.egg.shared.data.value.BooleanValue;
 import com.butent.bee.egg.shared.data.value.NumberValue;
 import com.butent.bee.egg.shared.data.value.TextValue;
@@ -252,28 +252,28 @@ public class QueryParser implements QueryParserConstants {
     return result;
   }
 
-  public final AggregationType aggregationFunction() throws ParseException {
-    AggregationType result = null;
+  public final Aggregation aggregationFunction() throws ParseException {
+    Aggregation result = null;
     switch ((jjNtk == -1) ? jjNtk() : jjNtk) {
       case KW_MIN:
         jjConsumeToken(KW_MIN);
-        result = AggregationType.MIN;
+        result = Aggregation.MIN;
         break;
       case KW_MAX:
         jjConsumeToken(KW_MAX);
-        result = AggregationType.MAX;
+        result = Aggregation.MAX;
         break;
       case KW_COUNT:
         jjConsumeToken(KW_COUNT);
-        result = AggregationType.COUNT;
+        result = Aggregation.COUNT;
         break;
       case KW_AVG:
         jjConsumeToken(KW_AVG);
-        result = AggregationType.AVG;
+        result = Aggregation.AVG;
         break;
       case KW_SUM:
         jjConsumeToken(KW_SUM);
-        result = AggregationType.SUM;
+        result = Aggregation.SUM;
         break;
       default:
         jjLa1[39] = jjGen;
@@ -291,7 +291,7 @@ public class QueryParser implements QueryParserConstants {
 
   public final AbstractColumn atomicAbstractColumnDescriptor() throws ParseException,
       InvalidQueryException {
-    AggregationType aggregationType;
+    Aggregation aggregationType;
     ScalarFunction scalarFunction;
     String columnId;
     AbstractColumn column;
@@ -819,8 +819,8 @@ public class QueryParser implements QueryParserConstants {
     return val;
   }
 
-  public final QueryFilter logicalExpression() throws ParseException, InvalidQueryException {
-    QueryFilter filter;
+  public final RowFilter logicalExpression() throws ParseException, InvalidQueryException {
+    RowFilter filter;
     filter = possibleOrExpression();
     return filter;
   }
@@ -995,9 +995,9 @@ public class QueryParser implements QueryParserConstants {
     query.setPivot(pivot);
   }
 
-  public final QueryFilter possibleAndExpression() throws ParseException, InvalidQueryException {
-    ArrayList<QueryFilter> subFilters = new ArrayList<QueryFilter>();
-    QueryFilter filter;
+  public final RowFilter possibleAndExpression() throws ParseException, InvalidQueryException {
+    ArrayList<RowFilter> subFilters = new ArrayList<RowFilter>();
+    RowFilter filter;
     filter = possibleNotExpression();
     subFilters.add(filter);
     label_9 : while (true) {
@@ -1068,9 +1068,9 @@ public class QueryParser implements QueryParserConstants {
     return column;
   }
 
-  public final QueryFilter possibleNotExpression() throws ParseException, InvalidQueryException {
-    QueryFilter subFilter;
-    QueryFilter filter;
+  public final RowFilter possibleNotExpression() throws ParseException, InvalidQueryException {
+    RowFilter subFilter;
+    RowFilter filter;
     switch ((jjNtk == -1) ? jjNtk() : jjNtk) {
       case KW_NOT:
         jjConsumeToken(KW_NOT);
@@ -1130,9 +1130,9 @@ public class QueryParser implements QueryParserConstants {
     return filter;
   }
 
-  public final QueryFilter possibleOrExpression() throws ParseException, InvalidQueryException {
-    ArrayList<QueryFilter> subFilters = new ArrayList<QueryFilter>();
-    QueryFilter filter;
+  public final RowFilter possibleOrExpression() throws ParseException, InvalidQueryException {
+    ArrayList<RowFilter> subFilters = new ArrayList<RowFilter>();
+    RowFilter filter;
     filter = possibleAndExpression();
     subFilters.add(filter);
     label_8 : while (true) {
@@ -1194,8 +1194,8 @@ public class QueryParser implements QueryParserConstants {
     return column;
   }
 
-  public final QueryFilter primaryExpression() throws ParseException, InvalidQueryException {
-    QueryFilter filter;
+  public final RowFilter primaryExpression() throws ParseException, InvalidQueryException {
+    RowFilter filter;
     if (jj21(2147483647)) {
       filter = primitiveFilter();
     } else {
@@ -1214,8 +1214,8 @@ public class QueryParser implements QueryParserConstants {
     return filter;
   }
 
-  public final QueryFilter primitiveFilter() throws ParseException, InvalidQueryException {
-    QueryFilter filter;
+  public final RowFilter primitiveFilter() throws ParseException, InvalidQueryException {
+    RowFilter filter;
     AbstractColumn col1;
     AbstractColumn col2;
     ComparisonFilter.Operator op;
@@ -1701,7 +1701,7 @@ public class QueryParser implements QueryParserConstants {
   }
 
   public final void whereClause(Query query) throws ParseException, InvalidQueryException {
-    QueryFilter filter;
+    RowFilter filter;
     jjConsumeToken(KW_WHERE);
     filter = logicalExpression();
     query.setFilter(filter);

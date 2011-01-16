@@ -97,7 +97,7 @@ public class TimeOfDayValue extends Value {
   }
 
   @Override
-  public BeeDate getObjectToFormat() {
+  public BeeDate getObjectValue() {
     if (isNull()) {
       return null;
     }

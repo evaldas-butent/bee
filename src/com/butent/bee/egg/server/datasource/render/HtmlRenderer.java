@@ -1,14 +1,14 @@
 package com.butent.bee.egg.server.datasource.render;
 
-import com.butent.bee.egg.server.datasource.base.ReasonType;
 import com.butent.bee.egg.server.datasource.base.ResponseStatus;
 import com.butent.bee.egg.server.datasource.base.StatusType;
-import com.butent.bee.egg.server.datasource.base.Warning;
-import com.butent.bee.egg.server.datasource.datatable.ColumnDescription;
-import com.butent.bee.egg.server.datasource.datatable.DataTable;
-import com.butent.bee.egg.server.datasource.datatable.TableCell;
-import com.butent.bee.egg.server.datasource.datatable.TableRow;
-import com.butent.bee.egg.server.datasource.datatable.ValueFormatter;
+import com.butent.bee.egg.server.datasource.util.ValueFormatter;
+import com.butent.bee.egg.shared.data.IsCell;
+import com.butent.bee.egg.shared.data.IsColumn;
+import com.butent.bee.egg.shared.data.IsRow;
+import com.butent.bee.egg.shared.data.IsTable;
+import com.butent.bee.egg.shared.data.Reasons;
+import com.butent.bee.egg.shared.data.DataWarning;
 import com.butent.bee.egg.shared.data.value.BooleanValue;
 import com.butent.bee.egg.shared.data.value.ValueType;
 import com.butent.bee.egg.shared.utils.BeeUtils;
@@ -46,7 +46,7 @@ public class HtmlRenderer {
 
   private static final Logger logger = Logger.getLogger(HtmlRenderer.class.getName());
 
-  public static CharSequence renderDataTable(DataTable dataTable, ULocale locale) {
+  public static CharSequence renderDataTable(IsTable dataTable, ULocale locale) {
     Document document = createDocument();
     Element bodyElement = appendHeadAndBody(document);
 
@@ -56,28 +56,28 @@ public class HtmlRenderer {
     tableElement.setAttribute("cellpadding", "2");
     tableElement.setAttribute("cellspacing", "0");
 
-    List<ColumnDescription> columnDescriptions = dataTable.getColumnDescriptions();
+    List<IsColumn> columns = dataTable.getColumns();
     Element trElement = document.createElement("tr");
     trElement.setAttribute("style", "font-weight: bold; background-color: #aaa;");
-    for (ColumnDescription columnDescription : columnDescriptions) {
+    for (IsColumn column : columns) {
       Element tdElement = document.createElement("td");
-      tdElement.setTextContent(columnDescription.getLabel());
+      tdElement.setTextContent(column.getLabel());
       trElement.appendChild(tdElement);
     }
     tableElement.appendChild(trElement);
 
     Map<ValueType, ValueFormatter> formatters = ValueFormatter.createDefaultFormatters(locale);
     int rowCount = 0;
-    for (TableRow row : dataTable.getRows()) {
+    for (IsRow row : dataTable.getRows()) {
       rowCount++;
       trElement = document.createElement("tr");
       String backgroundColor = (rowCount % 2 != 0) ? "#f0f0f0" : "#ffffff";
       trElement.setAttribute("style", "background-color: " + backgroundColor);
 
-      List<TableCell> cells = row.getCells();
+      List<IsCell> cells = row.getCells();
       for (int c = 0; c < cells.size(); c++) {
-        ValueType valueType = columnDescriptions.get(c).getType();
-        TableCell cell = cells.get(c);
+        ValueType valueType = columns.get(c).getType();
+        IsCell cell = cells.get(c);
         String cellFormattedText = cell.getFormattedValue();
         if (cellFormattedText == null) {
           cellFormattedText = formatters.get(cell.getType()).format(cell.getValue());
@@ -115,7 +115,7 @@ public class HtmlRenderer {
     }
     bodyElement.appendChild(tableElement);
 
-    for (Warning warning : dataTable.getWarnings()) {
+    for (DataWarning warning : dataTable.getWarnings()) {
       bodyElement.appendChild(document.createElement("br"));
       bodyElement.appendChild(document.createElement("br"));
       Element messageElement = document.createElement("div");
@@ -129,7 +129,7 @@ public class HtmlRenderer {
 
   public static CharSequence renderHtmlError(ResponseStatus responseStatus) {
     StatusType status = responseStatus.getStatusType();
-    ReasonType reason = responseStatus.getReasonType();
+    Reasons reason = responseStatus.getReasonType();
     String detailedMessage = responseStatus.getDescription();
 
     Document document = createDocument();
@@ -145,7 +145,7 @@ public class HtmlRenderer {
     }
 
     if (reason != null) {
-      String text = "Reason: " + reason.getMessageForReasonType(null);
+      String text = "Reason: " + reason.getMessageForReasonType();
       appendSimpleText(document, bodyElement, text);
     }
 

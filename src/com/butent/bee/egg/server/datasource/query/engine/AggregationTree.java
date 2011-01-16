@@ -2,7 +2,7 @@ package com.butent.bee.egg.server.datasource.query.engine;
 
 import com.google.common.collect.Sets;
 
-import com.butent.bee.egg.server.datasource.datatable.DataTable;
+import com.butent.bee.egg.shared.data.IsTable;
 import com.butent.bee.egg.shared.data.value.Value;
 
 import java.util.Map;
@@ -22,9 +22,9 @@ public class AggregationTree {
   private AggregationNode root;
   private Set<String> columnsToAggregate;
 
-  private DataTable table;
+  private IsTable table;
 
-  public AggregationTree(Set<String> columnsToAggregate, DataTable table) {
+  public AggregationTree(Set<String> columnsToAggregate, IsTable table) {
     this.columnsToAggregate = columnsToAggregate;
     this.table = table;
     root = new AggregationNode(columnsToAggregate, table);
