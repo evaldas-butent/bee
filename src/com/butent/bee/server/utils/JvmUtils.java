@@ -1,0 +1,288 @@
+package com.butent.bee.server.utils;
+
+import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.exceptions.BeeException;
+import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.LogUtils;
+import com.butent.bee.shared.utils.Property;
+
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Vector;
+import java.util.logging.Logger;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
+
+public class JvmUtils {
+  private static Logger logger = Logger.getLogger(JvmUtils.class.getName());
+
+  public static Throwable CVF_FAILURE = null;
+  private static final Field CLASSES_VECTOR_FIELD;
+
+  private static final Map<String, Class<?>> PRIMITIVES;
+
+  private static final String CLASS_NAME_SEPARATOR = ".";
+  private static final String[] FIND_CLASS_DEFAULT_PACKAGES = {
+      "java.lang", "java.util", "java.io", "java.sql", "java.util.logging",
+      "javax.servlet.http", "javax.servlet", "javax.ejb", "java", "javax"};
+
+  static {
+    PRIMITIVES = new HashMap<String, Class<?>>(9);
+
+    PRIMITIVES.put("boolean", boolean.class);
+    PRIMITIVES.put("char", char.class);
+    PRIMITIVES.put("byte", byte.class);
+    PRIMITIVES.put("short", short.class);
+    PRIMITIVES.put("int", int.class);
+    PRIMITIVES.put("long", long.class);
+    PRIMITIVES.put("float", float.class);
+    PRIMITIVES.put("double", double.class);
+    PRIMITIVES.put("void", void.class);
+
+    Throwable err = null;
+    Field fld = null;
+
+    try {
+      fld = ClassLoader.class.getDeclaredField("classes");
+      if (fld.getType() == Vector.class) {
+        fld.setAccessible(true);
+      } else {
+        err = new BeeException(
+            "Classloader.classes not of type java.util.Vector: "
+                + fld.getType().getName());
+      }
+    } catch (Throwable t) {
+      err = t;
+      fld = null;
+    }
+
+    CVF_FAILURE = err;
+    CLASSES_VECTOR_FIELD = fld;
+  }
+
+  public static Set<Class<?>> findClass(String name, String... packageNames) {
+    Assert.notEmpty(name);
+    String nm = name.trim();
+
+    Set<Class<?>> found = new HashSet<Class<?>>();
+    Class<?> exact = null;
+
+    if (PRIMITIVES.containsKey(nm)) {
+      found.add(PRIMITIVES.get(nm));
+      return found;
+    }
+
+    Set<Class<?>> loaded = getAllLoadedClasses();
+    String z;
+
+    if (loaded.size() > 0) {
+      Pattern p = null;
+      boolean rx = false;
+
+      try {
+        p = Pattern.compile(nm, Pattern.CASE_INSENSITIVE);
+        rx = true;
+      } catch (PatternSyntaxException ex) {
+        LogUtils.warning(logger, ex, nm);
+      }
+
+      for (Class<?> cls : loaded) {
+        z = cls.getName();
+
+        if (z.equalsIgnoreCase(nm)) {
+          exact = cls;
+          break;
+        } else if (BeeUtils.context(nm, z)) {
+          found.add(cls);
+        } else if (rx && p.matcher(z).matches()) {
+          found.add(cls);
+        }
+      }
+    }
+
+    if (exact == null && !nm.startsWith(CLASS_NAME_SEPARATOR)) {
+      exact = forName(nm);
+    }
+
+    if (exact == null && packageNames.length > 0) {
+      String s;
+      if (nm.startsWith(CLASS_NAME_SEPARATOR)) {
+        s = nm;
+      } else {
+        s = CLASS_NAME_SEPARATOR + nm;
+      }
+
+      for (String p : packageNames) {
+        if (p.trim().endsWith(CLASS_NAME_SEPARATOR)) {
+          z = p.trim() + nm;
+        } else {
+          z = p.trim() + s;
+        }
+
+        exact = forName(z);
+        if (exact != null) {
+          break;
+        }
+      }
+    }
+
+    if (exact != null) {
+      if (found.size() > 0) {
+        found.clear();
+      }
+      found.add(exact);
+    }
+
+    return found;
+  }
+
+  public static Set<Class<?>> findClassWithDefaultPackages(String name) {
+    return findClass(name, FIND_CLASS_DEFAULT_PACKAGES);
+  }
+
+  public static List<Property> getLoadedClasses() {
+    List<Property> lst = new ArrayList<Property>();
+
+    Set<ClassLoader> loaders = getClassLoaders();
+    if (BeeUtils.isEmpty(loaders)) {
+      return lst;
+    }
+
+    Class<?>[] classes;
+    String[] names;
+
+    int lc = loaders.size();
+    int li = 0;
+    int cc;
+
+    for (ClassLoader loader : loaders) {
+      li++;
+      if (loader == null) {
+        continue;
+      }
+
+      classes = getClasses(loader);
+      if (BeeUtils.isEmpty(classes)) {
+        cc = 0;
+      } else {
+        cc = classes.length;
+      }
+
+      lst.add(new Property(loader.toString(), BeeUtils.concat(1,
+          BeeUtils.progress(li, lc), BeeUtils.bracket(cc))));
+
+      if (cc <= 0) {
+        continue;
+      }
+
+      names = new String[cc];
+      for (int i = 0; i < cc; i++) {
+        names[i] = classes[i].getName();
+      }
+
+      Arrays.sort(names);
+
+      for (int i = 0; i < cc; i++) {
+        lst.add(new Property(BeeUtils.progress(i + 1, cc), names[i]));
+      }
+    }
+
+    return lst;
+  }
+
+  private static void addClassLoaders(Set<ClassLoader> lst, ClassLoader loader) {
+    if (lst == null || loader == null) {
+      return;
+    }
+
+    for (ClassLoader cl = loader; cl != null; cl = cl.getParent()) {
+      if (lst.contains(cl)) {
+        break;
+      }
+      lst.add(cl);
+    }
+  }
+
+  private static Class<?> forName(String name) {
+    Class<?> cls;
+
+    try {
+      cls = Class.forName(name);
+    } catch (ClassNotFoundException ex) {
+      cls = null;
+    }
+
+    return cls;
+  }
+
+  private static Set<Class<?>> getAllLoadedClasses() {
+    Set<Class<?>> lst = new HashSet<Class<?>>();
+
+    Set<ClassLoader> loaders = getClassLoaders();
+    if (BeeUtils.isEmpty(loaders)) {
+      return lst;
+    }
+
+    Class<?>[] classes;
+
+    for (ClassLoader loader : loaders) {
+      if (loader == null) {
+        continue;
+      }
+
+      classes = getClasses(loader);
+      if (BeeUtils.isEmpty(classes)) {
+        continue;
+      }
+
+      for (Class<?> cls : classes) {
+        lst.add(cls);
+      }
+    }
+
+    return lst;
+  }
+
+  private static Class<?>[] getClasses(ClassLoader loader) {
+    if (loader == null) {
+      return null;
+    }
+
+    try {
+      @SuppressWarnings("unchecked")
+      Vector<Class<?>> classes = (Vector<Class<?>>) CLASSES_VECTOR_FIELD.get(loader);
+      if (classes == null) {
+        return null;
+      }
+
+      Class<?>[] arr;
+
+      synchronized (classes) {
+        arr = new Class<?>[classes.size()];
+        classes.toArray(arr);
+      }
+
+      return arr;
+    } catch (IllegalAccessException ex) {
+      CVF_FAILURE = ex;
+      return null;
+    }
+  }
+
+  private static Set<ClassLoader> getClassLoaders() {
+    Set<ClassLoader> lst = new HashSet<ClassLoader>();
+
+    addClassLoaders(lst, int.class.getClassLoader());
+    addClassLoaders(lst, ClassLoader.getSystemClassLoader());
+    addClassLoaders(lst, Thread.currentThread().getContextClassLoader());
+
+    return lst;
+  }
+
+}

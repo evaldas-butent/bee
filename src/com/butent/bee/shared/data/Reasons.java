@@ -1,0 +1,48 @@
+package com.butent.bee.shared.data;
+
+import com.google.common.collect.Maps;
+
+import java.util.Map;
+
+public enum Reasons {
+  ACCESS_DENIED,
+  USER_NOT_AUTHENTICATED,
+  UNSUPPORTED_QUERY_OPERATION,
+  INVALID_QUERY,
+  INVALID_REQUEST,
+  INTERNAL_ERROR,
+  NOT_SUPPORTED,
+  DATA_TRUNCATED,
+  NOT_MODIFIED,
+  TIMEOUT,
+  ILLEGAL_FORMATTING_PATTERNS,
+  OTHER;
+
+  private static final Map<Reasons, String>
+      REASON_TYPE_TO_MESSAGE = Maps.newEnumMap(Reasons.class);
+
+  static {
+    REASON_TYPE_TO_MESSAGE.put(Reasons.ACCESS_DENIED, "ACCESS_DENIED");
+    REASON_TYPE_TO_MESSAGE.put(Reasons.USER_NOT_AUTHENTICATED, "USER_NOT_AUTHENTICATED");
+    REASON_TYPE_TO_MESSAGE.put(Reasons.UNSUPPORTED_QUERY_OPERATION,
+        "UNSUPPORTED_QUERY_OPERATION");
+    REASON_TYPE_TO_MESSAGE.put(Reasons.INVALID_QUERY, "INVALID_QUERY");
+    REASON_TYPE_TO_MESSAGE.put(Reasons.INVALID_REQUEST, "INVALID_REQUEST");
+    REASON_TYPE_TO_MESSAGE.put(Reasons.INTERNAL_ERROR, "INTERNAL_ERROR");
+    REASON_TYPE_TO_MESSAGE.put(Reasons.NOT_SUPPORTED, "NOT_SUPPORTED");
+    REASON_TYPE_TO_MESSAGE.put(Reasons.DATA_TRUNCATED, "DATA_TRUNCATED");
+    REASON_TYPE_TO_MESSAGE.put(Reasons.NOT_MODIFIED, "NOT_MODIFIED");
+    REASON_TYPE_TO_MESSAGE.put(Reasons.TIMEOUT, "TIMEOUT");
+    REASON_TYPE_TO_MESSAGE.put(Reasons.ILLEGAL_FORMATTING_PATTERNS,
+        "ILLEGAL_FORMATTING_PATTERNS");
+    REASON_TYPE_TO_MESSAGE.put(Reasons.OTHER, "OTHER");
+  }
+
+  public String getMessageForReasonType() {
+    return REASON_TYPE_TO_MESSAGE.get(this);
+  }
+  
+  public String lowerCaseString() {
+    return this.toString().toLowerCase();
+  }  
+}
