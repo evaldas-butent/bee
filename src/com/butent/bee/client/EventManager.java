@@ -239,8 +239,37 @@ public class EventManager implements Module {
       } else {
         Global.showError("Unknown composite service stage", svc, stg);
       }
+
+    } else if (svc.equals(BeeService.SERVICE_GET_LOGIN)) {
+      if (stg.equals(BeeStage.STAGE_GET_PARAMETERS)) {
+        Global.inputVars(new BeeStage(BeeService.SERVICE_GET_LOGIN, BeeStage.STAGE_CONFIRM),
+              "Login", BeeService.VAR_LOGIN, BeeService.VAR_PASSWORD);
+        ok = true;
+
+      } else if (stg.equals(BeeStage.STAGE_CONFIRM)) {
+        String usr = Global.getVarValue(BeeService.VAR_LOGIN);
+        String pwd = Global.getVarValue(BeeService.VAR_PASSWORD);
+
+        if (BeeUtils.isEmpty(usr)) {
+          Global.showError("Login name not specified");
+        } else if (BeeUtils.isEmpty(pwd)) {
+          Global.showError("Password not specified");
+        } else {
+          Global.setVarValue(BeeService.VAR_LOGIN, "");
+          Global.setVarValue(BeeService.VAR_PASSWORD, "");
+          Global.closeDialog(event);
+          BeeKeeper.getRpc().makePostRequest(BeeService.SERVICE_LOGIN,
+              XmlUtils.createString(BeeService.XML_TAG_DATA,
+                    BeeService.VAR_LOGIN, usr, BeeService.VAR_PASSWORD, pwd));
+          ok = true;
+        }
+      } else {
+        Global.showError("Unknown composite service stage", svc, stg);
+      }
+
     } else if (CompositeService.isRegistered(svc)) {
       CompositeService.doService(svc, event, stg);
+
     } else {
       Global.showError("Unknown composite service", svc, stg);
     }

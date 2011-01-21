@@ -2,6 +2,7 @@ package com.butent.bee.server;
 
 import com.butent.bee.server.communication.ResponseBuffer;
 import com.butent.bee.server.data.DataServiceBean;
+import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.ui.UiServiceBean;
 import com.butent.bee.server.utils.Reflection;
@@ -29,11 +30,15 @@ public class DispatcherBean {
   MenuBean menuBean;
   @EJB
   Invocation invBean;
+  @EJB
+  UserServiceBean usr;
 
   public void doService(String svc, String dsn, RequestInfo reqInfo,
       ResponseBuffer buff) {
     Assert.notEmpty(svc);
     Assert.notNull(buff);
+
+    LogUtils.warning(logger, "USERIS:", usr.getCurrentUser());
 
     if (BeeService.isDbService(svc)) {
       dataBean.doService(svc, dsn, reqInfo, buff);
@@ -47,7 +52,7 @@ public class DispatcherBean {
 
     } else if (BeeUtils.same(svc, BeeService.SERVICE_INVOKE)) {
       Reflection.invoke(invBean, reqInfo.getParameter(BeeService.RPC_VAR_METH), reqInfo, buff);
-      
+
     } else if (svc.startsWith("rpc_ui_")) {
       uiBean.doService(svc, reqInfo, buff);
 

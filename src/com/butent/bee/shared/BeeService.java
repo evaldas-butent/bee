@@ -26,6 +26,7 @@ public class BeeService {
 
   public static final String SERVICE_INVOKE = RPC_SERVICE_PREFIX + "invoke";
 
+  public static final String SERVICE_GET_LOGIN = COMPOSITE_SERVICE_PREFIX + "get_login";
   public static final String SERVICE_LOGIN = RPC_SERVICE_PREFIX + "login";
   public static final String SERVICE_LOGOUT = RPC_SERVICE_PREFIX + "logout";
 
@@ -67,6 +68,9 @@ public class BeeService {
   public static final String RPC_VAR_PART = RPC_VAR_SYS_PREFIX + "part";
 
   public static final String RPC_VAR_METH = RPC_VAR_SYS_PREFIX + "meth";
+
+  public static final String VAR_LOGIN = RPC_VAR_PREFIX + "login";
+  public static final String VAR_PASSWORD = RPC_VAR_PREFIX + "password";
 
   public static final String VAR_CLASS_NAME = RPC_VAR_PREFIX + "class_name";
   public static final String VAR_PACKAGE_LIST = RPC_VAR_PREFIX + "package_list";
@@ -117,7 +121,7 @@ public class BeeService {
   public static boolean isInvocation(String svc) {
     return BeeUtils.same(svc, SERVICE_INVOKE);
   }
-  
+
   public static boolean isRpcService(String svc) {
     Assert.notEmpty(svc);
     return svc.startsWith(RPC_SERVICE_PREFIX);

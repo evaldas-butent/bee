@@ -11,11 +11,11 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.LogUtils;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.logging.Logger;
 
 import javax.ejb.EJB;
 import javax.servlet.ServletException;
-import javax.servlet.ServletOutputStream;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -79,7 +79,36 @@ public class BeeServlet extends HttpServlet {
 
     ResponseBuffer buff = new ResponseBuffer(sep);
 
-    dispatcher.doService(svc, dsn, reqInfo, buff);
+    String user = req.getRemoteUser();
+
+    if (BeeUtils.same(svc, BeeService.SERVICE_LOGIN)) {
+      if (BeeUtils.isEmpty(user)) {
+        try {
+          // req.authenticate(resp);
+          req.login(reqInfo.getParameter(BeeService.VAR_LOGIN),
+              reqInfo.getParameter(BeeService.VAR_PASSWORD));
+          buff.addWarning("Login successful");
+        } catch (ServletException e) {
+          buff.addSevere(e.getMessage());
+        }
+      } else {
+        buff.addWarning("Already logged in as:", user);
+      }
+
+    } else if (BeeUtils.isEmpty(user)) {
+      buff.addWarning("Not logged in");
+
+    } else if (BeeUtils.same(svc, BeeService.SERVICE_LOGOUT)) {
+      try {
+        req.logout();
+        buff.addWarning("User logged out:", user);
+      } catch (ServletException e) {
+        buff.addSevere(e.getMessage());
+      }
+
+    } else {
+      dispatcher.doService(svc, dsn, reqInfo, buff);
+    }
 
     int respLen = buff.getSize();
     int mc = buff.getMessageCount();
@@ -159,7 +188,8 @@ public class BeeServlet extends HttpServlet {
           ctp, resp.getContentType(), cnt, cc, mc, pc, s.length());
 
       try {
-        ServletOutputStream out = resp.getOutputStream();
+        PrintWriter out = resp.getWriter();
+        // ServletOutputStream out = resp.getOutputStream();
         out.print(s);
         out.flush();
       } catch (IOException ex) {

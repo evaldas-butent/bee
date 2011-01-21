@@ -437,7 +437,8 @@ public class BeeUi implements Module {
     p.add(new BeeButton("Xml", BeeService.SERVICE_GET_XML, BeeStage.STAGE_GET_PARAMETERS));
     p.add(new BeeButton("Jdbc", BeeService.SERVICE_GET_DATA, BeeStage.STAGE_GET_PARAMETERS));
 
-    p.add(new BeeButton("Login", BeeService.SERVICE_LOGIN));
+    p.add(new BeeButton("Login", BeeService.SERVICE_GET_LOGIN, BeeStage.STAGE_GET_PARAMETERS));
+    p.add(new BeeButton("Logout", BeeService.SERVICE_LOGOUT));
 
     p.add(new BeeCheckBox(Global.getVar(Global.VAR_DEBUG)));
 

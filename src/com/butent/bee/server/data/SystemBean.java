@@ -10,6 +10,8 @@ import com.butent.bee.server.utils.XmlUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.BeeRowSet.BeeRow;
+import com.butent.bee.shared.sql.BeeConstants.DataTypes;
+import com.butent.bee.shared.sql.BeeConstants.Keywords;
 import com.butent.bee.shared.sql.HasFrom;
 import com.butent.bee.shared.sql.IsCondition;
 import com.butent.bee.shared.sql.IsExpression;
@@ -20,8 +22,6 @@ import com.butent.bee.shared.sql.SqlInsert;
 import com.butent.bee.shared.sql.SqlSelect;
 import com.butent.bee.shared.sql.SqlUpdate;
 import com.butent.bee.shared.sql.SqlUtils;
-import com.butent.bee.shared.sql.BeeConstants.DataTypes;
-import com.butent.bee.shared.sql.BeeConstants.Keywords;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.LogUtils;
 
@@ -35,7 +35,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -67,6 +66,8 @@ public class SystemBean {
 
   @EJB
   QueryServiceBean qs;
+  @EJB
+  UserServiceBean usr;
 
   private String dbName;
   private String dbSchema;
@@ -338,7 +339,7 @@ public class SystemBean {
       }
     }
     SqlSelect union = null;
-    Map<Integer, String> roles = getRoles(null);
+    Map<Integer, String> roles = usr.getRoles();
 
     for (BeeState state : states) {
       String tbl = state.getOwner();
@@ -405,26 +406,6 @@ public class SystemBean {
     return getTable(table).getLockName();
   }
 
-  public Map<Integer, String> getRoles(Integer userId) {
-    String idName = getIdName("Roles");
-
-    SqlSelect ss = new SqlSelect()
-      .addFields("r", idName, "Name")
-      .addFrom("Roles", "r")
-      .addOrder("r", "Name");
-
-    if (!BeeUtils.isEmpty(userId)) {
-      ss.addFromInner("UserRoles", "u", SqlUtils.join("r", idName, "u", "Role"))
-        .setWhere(SqlUtils.equal("u", "User", userId));
-    }
-    Map<Integer, String> roles = new LinkedHashMap<Integer, String>();
-
-    for (BeeRow role : qs.getData(ss).getRows()) {
-      roles.put(role.getInt(idName), role.getString("Name"));
-    }
-    return roles;
-  }
-
   public Collection<String> getTableFields(String table) {
     List<String> fields = new ArrayList<String>();
 
@@ -445,42 +426,6 @@ public class SystemBean {
       states.add(state.getName());
     }
     return states;
-  }
-
-  public int getUserId() {
-    return 3;
-  }
-
-  public int[] getUserRoles(int userId) {
-    Assert.notEmpty(userId);
-
-    Collection<Integer> rs = getRoles(userId).keySet();
-    int[] roles = new int[rs.size()];
-    int i = 0;
-
-    for (int role : rs) {
-      roles[i++] = role;
-    }
-    return roles;
-  }
-
-  public Map<Integer, String> getUsers(Integer userId) {
-    String idName = getIdName("Users");
-
-    SqlSelect ss = new SqlSelect()
-      .addFields("u", idName, "Login")
-      .addFrom("Users", "u")
-      .addOrder("u", "Login");
-
-    if (!BeeUtils.isEmpty(userId)) {
-      ss.setWhere(SqlUtils.equal("u", idName, userId));
-    }
-    Map<Integer, String> users = new LinkedHashMap<Integer, String>();
-
-    for (BeeRow user : qs.getData(ss).getRows()) {
-      users.put(user.getInt(idName), user.getString("Login"));
-    }
-    return users;
   }
 
   public BeeRowSet getViewData(String viewName, int limit, int offset, String states) {
@@ -685,9 +630,9 @@ public class SystemBean {
       Collection<Integer> bitSet = null;
 
       if (mdRole) {
-        bitSet = getRoles(null).keySet();
+        bitSet = usr.getRoles().keySet();
       } else {
-        bitSet = getUsers(null).keySet();
+        bitSet = usr.getUsers().keySet();
       }
       Map<Integer, Boolean> bitMap = new HashMap<Integer, Boolean>();
 
@@ -708,7 +653,7 @@ public class SystemBean {
     Assert.notNull(query);
     Assert.notEmpty(userId);
 
-    int[] userRoles = getUserRoles(userId);
+    int[] userRoles = usr.getUserRoles(userId);
 
     for (String stateName : states) {
       BeeState state = getState(tbl, stateName);
@@ -780,7 +725,7 @@ public class SystemBean {
           String tblName = state.getTable();
 
           SqlCreate sc = table.createStateTable(newTables.get(tblName), state,
-              getUsers(null).keySet(), getRoles(null).keySet());
+              usr.getUsers().keySet(), usr.getRoles().keySet());
 
           if (!BeeUtils.isEmpty(sc)) {
             newTables.put(tblName, sc);
@@ -876,7 +821,7 @@ public class SystemBean {
       .setOffset(offset);
 
     if (!BeeUtils.isEmpty(states)) {
-      verifyStates(ss, view.getSource(), null, getUserId(), states);
+      verifyStates(ss, view.getSource(), null, usr.getCurrentUserId(), states);
     }
     BeeRowSet res = qs.getData(ss);
     res.setViewName(view.getName());

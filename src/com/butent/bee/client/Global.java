@@ -66,7 +66,7 @@ public class Global implements Module {
   public static void createVar(String name, String caption) {
     createVar(name, caption, BeeType.TYPE_STRING, BeeConst.STRING_EMPTY);
   }
-  
+
   public static void createVar(String name, String caption, int type, String value) {
     Assert.notEmpty(name);
     Assert.isTrue(BeeType.isValid(type));
@@ -110,7 +110,7 @@ public class Global implements Module {
   public static int getVarInt(String name) {
     return getVar(name).getInt();
   }
-  
+
   public static List<String> getVarItems(String name) {
     return getVar(name).getItems();
   }
@@ -287,6 +287,9 @@ public class Global implements Module {
   private void initVars() {
     createVar(BeeService.VAR_CLASS_NAME, "Class name");
     createVar(BeeService.VAR_PACKAGE_LIST, "Default Packages");
+
+    createVar(BeeService.VAR_LOGIN, "Login");
+    createVar(BeeService.VAR_PASSWORD, "Password");
 
     createVar(BeeService.VAR_XML_SOURCE, "source");
     createVar(BeeService.VAR_XML_TRANSFORM, "transform");
