@@ -7,10 +7,8 @@ import com.butent.bee.server.datasource.query.QueryLabels;
 import com.butent.bee.server.datasource.query.QueryOptions;
 import com.butent.bee.server.datasource.query.QueryPivot;
 import com.butent.bee.server.datasource.query.QuerySelection;
-import com.butent.bee.server.datasource.query.QuerySort;
 import com.butent.bee.shared.data.Aggregation;
 import com.butent.bee.shared.data.InvalidQueryException;
-import com.butent.bee.shared.data.SortOrder;
 import com.butent.bee.shared.data.column.AbstractColumn;
 import com.butent.bee.shared.data.column.AggregationColumn;
 import com.butent.bee.shared.data.column.ScalarFunctionColumn;
@@ -35,6 +33,8 @@ import com.butent.bee.shared.data.function.Sum;
 import com.butent.bee.shared.data.function.TimeComponentExtractor;
 import com.butent.bee.shared.data.function.ToDate;
 import com.butent.bee.shared.data.function.Upper;
+import com.butent.bee.shared.data.sort.SortQuery;
+import com.butent.bee.shared.data.sort.SortOrder;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.value.NumberValue;
 import com.butent.bee.shared.data.value.TextValue;
@@ -950,7 +950,7 @@ public class QueryParser implements QueryParserConstants {
   }
 
   public final void orderByClause(Query query) throws ParseException, InvalidQueryException {
-    QuerySort sort = new QuerySort();
+    SortQuery sort = new SortQuery();
     AbstractColumn column;
     SortOrder order;
     jjConsumeToken(KW_ORDER);

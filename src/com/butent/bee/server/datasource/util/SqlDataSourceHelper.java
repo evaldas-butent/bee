@@ -5,7 +5,6 @@ import com.google.common.collect.Lists;
 import com.butent.bee.server.datasource.query.Query;
 import com.butent.bee.server.datasource.query.QueryGroup;
 import com.butent.bee.server.datasource.query.QuerySelection;
-import com.butent.bee.server.datasource.query.QuerySort;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.Aggregation;
 import com.butent.bee.shared.data.DataException;
@@ -13,12 +12,9 @@ import com.butent.bee.shared.data.DataTable;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsTable;
 import com.butent.bee.shared.data.Reasons;
-import com.butent.bee.shared.data.SortInfo;
-import com.butent.bee.shared.data.SortOrder;
 import com.butent.bee.shared.data.TableCell;
 import com.butent.bee.shared.data.TableColumn;
 import com.butent.bee.shared.data.TableRow;
-import com.butent.bee.shared.data.TypeMismatchException;
 import com.butent.bee.shared.data.column.AbstractColumn;
 import com.butent.bee.shared.data.column.AggregationColumn;
 import com.butent.bee.shared.data.column.SimpleColumn;
@@ -29,6 +25,9 @@ import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.NegationFilter;
 import com.butent.bee.shared.data.filter.RowFilter;
+import com.butent.bee.shared.data.sort.SortQuery;
+import com.butent.bee.shared.data.sort.SortColumn;
+import com.butent.bee.shared.data.sort.SortOrder;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.value.DateTimeValue;
 import com.butent.bee.shared.data.value.DateValue;
@@ -137,11 +136,11 @@ public class SqlDataSourceHelper {
       return;
     }
     queryStringBuilder.append("ORDER BY ");
-    QuerySort querySort = query.getSort();
-    List<SortInfo> sortColumns = querySort.getSortColumns();
+    SortQuery querySort = query.getSort();
+    List<SortColumn> sortColumns = querySort.getSortColumns();
     int numOfSortColumns = sortColumns.size();
     for (int col = 0; col < numOfSortColumns; col++) {
-      SortInfo columnSort = sortColumns.get(col);
+      SortColumn columnSort = sortColumns.get(col);
       queryStringBuilder.append(getColumnId(columnSort.getColumn()));
       if (columnSort.getOrder() == SortOrder.DESCENDING) {
         queryStringBuilder.append(" DESC");
@@ -209,11 +208,7 @@ public class SqlDataSourceHelper {
       for (int c = 0; c < numOfCols; c++) {
         tableRow.addCell(buildTableCell(rs, columnsTypeArray[c], c));
       }
-      try {
-        dataTable.addRow(tableRow);
-      } catch (TypeMismatchException e) {
-        Assert.untouchable();
-      }
+      dataTable.addRow(tableRow);
     }
   }
 

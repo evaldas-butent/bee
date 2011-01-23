@@ -1,12 +1,16 @@
-package com.butent.bee.shared.data;
+package com.butent.bee.shared.data.sort;
 
 import com.butent.bee.shared.data.column.AbstractColumn;
 
-public class SortInfo {
+public class SortColumn {
   private AbstractColumn column;
   private SortOrder order;
 
-  public SortInfo(AbstractColumn column, SortOrder order) {
+  public SortColumn(AbstractColumn column) {
+    this(column, SortOrder.ASCENDING);
+  }
+
+  public SortColumn(AbstractColumn column, SortOrder order) {
     this.column = column;
     this.order = order;
   }

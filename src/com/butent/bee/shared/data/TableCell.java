@@ -57,6 +57,12 @@ public class TableCell implements IsCell {
     this.value = value;
     this.formattedValue = formattedValue;
   }
+
+  public TableCell(Value value, String formattedValue, CustomProperties properties) {
+    this.value = value;
+    this.formattedValue = formattedValue;
+    this.properties = properties;
+  }
   
   public void clearFormattedValue() {
     setFormattedValue(null);

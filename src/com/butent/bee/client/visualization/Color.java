@@ -9,6 +9,14 @@ public class Color extends Properties {
     return JavaScriptObject.createObject().cast();
   }
 
+  public static Color create(String fill, String stroke, int strokeSize) {
+    Color result = create();
+    result.setFill(fill);
+    result.setStroke(stroke);
+    result.setStrokeSize(strokeSize);
+    return result;
+  }
+
   protected Color() {
   }
 

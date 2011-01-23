@@ -1,7 +1,4 @@
-package com.butent.bee.shared.utils;
-
-import java.util.Enumeration;
-import java.util.NoSuchElementException;
+package java.util;
 
 public class StringTokenizer implements Enumeration<Object> {
   private int currentPosition;
@@ -171,7 +168,7 @@ public class StringTokenizer implements Enumeration<Object> {
      */
 
     currentPosition = (newPosition >= 0 && !delimsChanged) ?
-        newPosition : skipDelimiters(currentPosition);
+          newPosition : skipDelimiters(currentPosition);
 
     /* Reset these anyway */
     delimsChanged = false;

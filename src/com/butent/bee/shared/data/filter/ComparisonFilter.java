@@ -2,7 +2,8 @@ package com.butent.bee.shared.data.filter;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.value.Value;
-import com.butent.bee.shared.utils.StringTokenizer;
+
+import java.util.StringTokenizer;
 
 public abstract class ComparisonFilter extends RowFilter {
   public static enum Operator {

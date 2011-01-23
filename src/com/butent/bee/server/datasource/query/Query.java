@@ -10,6 +10,7 @@ import com.butent.bee.shared.data.column.AggregationColumn;
 import com.butent.bee.shared.data.column.ScalarFunctionColumn;
 import com.butent.bee.shared.data.column.SimpleColumn;
 import com.butent.bee.shared.data.filter.RowFilter;
+import com.butent.bee.shared.data.sort.SortQuery;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.LogUtils;
 
@@ -58,7 +59,7 @@ public class Query {
     }
   }
 
-  private QuerySort sort = null;
+  private SortQuery sort = null;
 
   protected QuerySelection selection = null;
 
@@ -316,7 +317,7 @@ public class Query {
     return selection;
   }
 
-  public QuerySort getSort() {
+  public SortQuery getSort() {
     return sort;
   }
 
@@ -443,7 +444,7 @@ public class Query {
     this.selection = selection;
   }
 
-  public void setSort(QuerySort sort) {
+  public void setSort(SortQuery sort) {
     this.sort = sort;
   }
 

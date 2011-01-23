@@ -11,9 +11,7 @@ import com.butent.bee.server.datasource.query.QueryGroup;
 import com.butent.bee.server.datasource.query.QueryLabels;
 import com.butent.bee.server.datasource.query.QueryPivot;
 import com.butent.bee.server.datasource.query.QuerySelection;
-import com.butent.bee.server.datasource.query.QuerySort;
 import com.butent.bee.server.datasource.util.ValueFormatter;
-import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.DataTable;
 import com.butent.bee.shared.data.DataWarning;
 import com.butent.bee.shared.data.IsCell;
@@ -23,7 +21,6 @@ import com.butent.bee.shared.data.Reasons;
 import com.butent.bee.shared.data.TableCell;
 import com.butent.bee.shared.data.TableColumn;
 import com.butent.bee.shared.data.TableRow;
-import com.butent.bee.shared.data.TypeMismatchException;
 import com.butent.bee.shared.data.column.AbstractColumn;
 import com.butent.bee.shared.data.column.AggregationColumn;
 import com.butent.bee.shared.data.column.ColumnLookup;
@@ -31,6 +28,8 @@ import com.butent.bee.shared.data.column.DataTableColumnLookup;
 import com.butent.bee.shared.data.column.ScalarFunctionColumn;
 import com.butent.bee.shared.data.column.SimpleColumn;
 import com.butent.bee.shared.data.filter.RowFilter;
+import com.butent.bee.shared.data.sort.SortQuery;
+import com.butent.bee.shared.data.sort.TableRowComparator;
 import com.butent.bee.shared.data.value.Value;
 
 import com.ibm.icu.util.ULocale;
@@ -56,23 +55,21 @@ public final class QueryEngine {
 
     TreeMap<List<Value>, ColumnLookup> columnLookups =
         new TreeMap<List<Value>, ColumnLookup>(GroupingComparators.VALUE_LIST_COMPARATOR);
-    try {
-      table = performFilter(table, query);
-      table = performGroupingAndPivoting(table, query, columnIndices, columnLookups);
-      table = performSort(table, query);
-      table = performSkipping(table, query);
-      table = performPagination(table, query);
 
-      AtomicReference<ColumnIndices> columnIndicesReference =
+    table = performFilter(table, query);
+    table = performGroupingAndPivoting(table, query, columnIndices, columnLookups);
+    table = performSort(table, query);
+    table = performSkipping(table, query);
+    table = performPagination(table, query);
+
+    AtomicReference<ColumnIndices> columnIndicesReference =
         new AtomicReference<ColumnIndices>(columnIndices);
-      table = performSelection(table, query, columnIndicesReference, columnLookups);
-      columnIndices = columnIndicesReference.get();
+    table = performSelection(table, query, columnIndicesReference, columnLookups);
+    columnIndices = columnIndicesReference.get();
 
-      table = performLabels(table, query, columnIndices);
-      table = performFormatting(table, query, columnIndices, locale);
-    } catch (TypeMismatchException e) {
-      Assert.untouchable();
-    }
+    table = performLabels(table, query, columnIndices);
+    table = performFormatting(table, query, columnIndices, locale);
+
     return table;
   }
 
@@ -93,8 +90,7 @@ public final class QueryEngine {
     return result;
   }
 
-  private static DataTable performFilter(DataTable table, Query query)
-      throws TypeMismatchException {
+  private static DataTable performFilter(DataTable table, Query query) {
     if (!query.hasFilter()) {
       return table;
     }
@@ -153,8 +149,7 @@ public final class QueryEngine {
   }
 
   private static DataTable performGroupingAndPivoting(DataTable table, Query query,
-      ColumnIndices columnIndices, TreeMap<List<Value>, ColumnLookup> columnLookups)
-      throws TypeMismatchException {
+      ColumnIndices columnIndices, TreeMap<List<Value>, ColumnLookup> columnLookups) {
     if (!queryHasAggregation(query) || (table.getNumberOfRows() == 0)) {
       return table;
     }
@@ -177,15 +172,15 @@ public final class QueryEngine {
 
     List<AggregationColumn> tmpColumnAggregations = selection.getAggregationColumns();
     List<ScalarFunctionColumn> selectedScalarFunctionColumns = selection.getScalarFunctionColumns();
-    
+
     List<AggregationColumn> columnAggregations =
-      Lists.newArrayListWithExpectedSize(tmpColumnAggregations.size());
+        Lists.newArrayListWithExpectedSize(tmpColumnAggregations.size());
     for (AggregationColumn aggCol : tmpColumnAggregations) {
       if (!columnAggregations.contains(aggCol)) {
         columnAggregations.add(aggCol);
       }
     }
-    
+
     List<String> aggregationIds = Lists.newArrayList();
     for (AggregationColumn col : columnAggregations) {
       aggregationIds.add(col.getAggregatedColumn().getId());
@@ -219,11 +214,7 @@ public final class QueryEngine {
       for (ScalarFunctionColumn column : groupAndPivotScalarFunctionColumns) {
         newRow.addCell(new TableCell(column.getValue(lookup, sourceRow)));
       }
-      try {
-        tempTable.addRow(newRow);
-      } catch (TypeMismatchException e) {
-        Assert.untouchable();
-      }
+      tempTable.addRow(newRow);
     }
     table = tempTable;
 
@@ -366,8 +357,7 @@ public final class QueryEngine {
     return table;
   }
 
-  private static DataTable performPagination(DataTable table, Query query)
-      throws TypeMismatchException {
+  private static DataTable performPagination(DataTable table, Query query) {
     int rowOffset = query.getRowOffset();
     int rowLimit = query.getRowLimit();
 
@@ -384,8 +374,8 @@ public final class QueryEngine {
     newTable.addRows(relevantRows);
 
     if (toIndex < numRows) {
-      DataWarning warning = new DataWarning(Reasons.DATA_TRUNCATED, "Data has been truncated due to user"
-          + "request (LIMIT in query)");
+      DataWarning warning = new DataWarning(Reasons.DATA_TRUNCATED,
+          "Data has been truncated due to user request (LIMIT in query)");
       newTable.addWarning(warning);
     }
     return newTable;
@@ -393,7 +383,7 @@ public final class QueryEngine {
 
   private static DataTable performSelection(DataTable table, Query query,
       AtomicReference<ColumnIndices> columnIndicesReference,
-      Map<List<Value>, ColumnLookup> columnLookups) throws TypeMismatchException {
+      Map<List<Value>, ColumnLookup> columnLookups) {
     if (!query.hasSelection()) {
       return table;
     }
@@ -449,10 +439,9 @@ public final class QueryEngine {
     return result;
   }
 
-  private static DataTable performSkipping(DataTable table, Query query)
-      throws TypeMismatchException {
+  private static DataTable performSkipping(DataTable table, Query query) {
     int rowSkipping = query.getRowSkipping();
-    
+
     if (rowSkipping <= 1) {
       return table;
     }
@@ -462,11 +451,11 @@ public final class QueryEngine {
     for (int rowIndex = 0; rowIndex < numRows; rowIndex += rowSkipping) {
       relevantRows.add(table.getRows().get(rowIndex));
     }
-    
+
     DataTable newTable = new DataTable();
     newTable.addColumns(table.getColumns());
     newTable.addRows(relevantRows);
-    
+
     return newTable;
   }
 
@@ -474,7 +463,7 @@ public final class QueryEngine {
     if (!query.hasSort()) {
       return table;
     }
-    QuerySort sortBy = query.getSort();
+    SortQuery sortBy = query.getSort();
     DataTableColumnLookup columnLookup = new DataTableColumnLookup(table);
     TableRowComparator comparator = new TableRowComparator(sortBy, columnLookup);
     Collections.sort(table.getRows(), comparator);
@@ -482,8 +471,7 @@ public final class QueryEngine {
   }
 
   private static boolean queryHasAggregation(Query query) {
-    return (query.hasSelection()
-        && !query.getSelection().getAggregationColumns().isEmpty());
+    return (query.hasSelection() && !query.getSelection().getAggregationColumns().isEmpty());
   }
 
   private QueryEngine() {

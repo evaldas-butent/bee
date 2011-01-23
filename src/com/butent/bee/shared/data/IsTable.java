@@ -1,13 +1,13 @@
 package com.butent.bee.shared.data;
 
-import com.butent.bee.shared.data.filter.RowFilter;
+import com.butent.bee.shared.data.sort.SortInfo;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.value.ValueType;
 
 import java.util.Collection;
 import java.util.List;
 
-public interface IsTable {
+public interface IsTable extends IsData {
   int addColumn(IsColumn column);
 
   int addColumn(ValueType type);
@@ -17,10 +17,10 @@ public interface IsTable {
   int addColumns(Collection<IsColumn> columnsToAdd);
 
   int addRow();
-  int addRow(IsRow row) throws TypeMismatchException;
-  int addRow(Object... cells) throws TypeMismatchException;
+  int addRow(IsRow row);
+  int addRow(Object... cells);
 
-  int addRows(Collection<IsRow> rowsToAdd) throws TypeMismatchException;
+  int addRows(Collection<IsRow> rowsToAdd);
   int addRows(int rowCount);
 
   void addWarning(DataWarning warning);
@@ -32,65 +32,29 @@ public interface IsTable {
 
   boolean containsColumn(String columnId);
 
-  void fromJson(String data, double version);
+  IsData fromJson(String data);
+  IsData fromJson(String data, double version);
 
   IsCell getCell(int rowIndex, int colIndex);
 
   IsColumn getColumn(int colIndex);
   IsColumn getColumn(String columnId);
 
-  String getColumnId(int colIndex);
-
-  int getColumnIndex(String columnId);
-
-  String getColumnLabel(int colIndex);
-  String getColumnPattern(int colIndex);
-
-  CustomProperties getColumnProperties(int colIndex);
-  Object getColumnProperty(int colIndex, String name);
-
-  Range getColumnRange(int colIndex);
-
   List<IsColumn> getColumns();
-
-  ValueType getColumnType(int colIndex);
-
-  List<Value> getDistinctValues(int colIndex);
-
-  int[] getFilteredRows(RowFilter... filters);
-
-  String getFormattedValue(int rowIndex, int colIndex);
-
-  int getNumberOfColumns();
-  int getNumberOfRows();
-
-  CustomProperties getProperties(int rowIndex, int colIndex);
-  Object getProperty(int rowIndex, int colIndex, String name);
 
   IsRow getRow(int rowIndex);
 
-  CustomProperties getRowProperties(int rowIndex);
-  Object getRowProperty(int rowIndex, String name);
-
   List<IsRow> getRows();
-
-  int[] getSortedRows(int... colIndexes);
-  int[] getSortedRows(SortInfo... sortColumns);
-
-  CustomProperties getTableProperties();
-  Object getTableProperty(String key);
-
-  Value getValue(int rowIndex, int colIndex);
 
   List<DataWarning> getWarnings();
 
   void insertColumn(int colIndex, IsColumn column);
 
-  void insertColumn(int colIndex, String type);
-  void insertColumn(int colIndex, String type, String label);
-  void insertColumn(int colIndex, String type, String label, String id);
+  void insertColumn(int colIndex, ValueType type);
+  void insertColumn(int colIndex, ValueType type, String label);
+  void insertColumn(int colIndex, ValueType type, String label, String id);
 
-  void insertRows(int rowIndex, Collection<IsRow> rowsToAdd) throws TypeMismatchException;
+  void insertRows(int rowIndex, Collection<IsRow> rowsToAdd);
   void insertRows(int rowIndex, int rowCount);
 
   void removeColumn(int colIndex);
@@ -134,7 +98,7 @@ public interface IsTable {
   void setRowProperties(int rowIndex, CustomProperties properties);
   void setRowProperty(int rowIndex, String name, Object value);  
 
-  void setRows(Collection<IsRow> rows) throws TypeMismatchException;
+  void setRows(Collection<IsRow> rows);
 
   void setTableProperties(CustomProperties properterties);
   void setTableProperty(String propertyKey, Object propertyValue);
@@ -146,7 +110,5 @@ public interface IsTable {
   void setValue(int rowIndex, int colIndex, Value value);
 
   void sort(int... colIndexes);
-  void sort(SortInfo... sortColumns);
-
-  String toJson();
+  void sort(SortInfo... sortInfo);
 }

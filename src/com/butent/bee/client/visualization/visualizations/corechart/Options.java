@@ -5,6 +5,8 @@ import com.google.gwt.core.client.JsArrayString;
 
 import com.butent.bee.client.ajaxloader.ArrayHelper;
 import com.butent.bee.client.visualization.AbstractDrawOptions;
+import com.butent.bee.client.visualization.ChartArea;
+import com.butent.bee.client.visualization.Color;
 import com.butent.bee.client.visualization.LegendPosition;
 import com.butent.bee.client.visualization.visualizations.corechart.CoreChart.Type;
 
@@ -16,10 +18,22 @@ public class Options extends AbstractDrawOptions {
   protected Options() {
   }
 
+  public final native void setAxisTitlesPosition(String position) /*-{
+    this.axisTitlesPosition = position;
+  }-*/;
+
   public final native void setBackgroundColor(String color) /*-{
     this.backgroundColor = color;
   }-*/;
 
+  public final native void setBackgroundColor(Color color) /*-{
+    this.backgroundColor = color;
+  }-*/;
+  
+  public final native void setChartArea(ChartArea chartArea) /*-{
+    this.chartArea = chartArea;
+  }-*/;
+  
   public final native void setChartAreaOptions(ChartAreaOptions options) /*-{
     this.chartArea = options;
   }-*/;
@@ -44,6 +58,10 @@ public class Options extends AbstractDrawOptions {
     this.fontSize = fontSize;
   }-*/;
 
+  public final native void setGridlineColor(String color) /*-{
+    this.gridlineColor = color;
+  }-*/;
+  
   public final native void setHAxisOptions(AxisOptions options) /*-{
     this.hAxis = options;
   }-*/;

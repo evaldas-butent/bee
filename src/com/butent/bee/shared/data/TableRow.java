@@ -1,6 +1,5 @@
 package com.butent.bee.shared.data;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
 import com.butent.bee.shared.Assert;
@@ -24,16 +23,21 @@ public class TableRow implements IsRow {
     addCell(new TableCell(value));
   }
 
-  public void addCell(String value) {
-    addCell(new TableCell(value));
-  }
-
   public void addCell(IsCell cell) {
     cells.add(cell);
   }
 
+  public void addCell(String value) {
+    addCell(new TableCell(value));
+  }
+
   public void addCell(Value value) {
     addCell(new TableCell(value));
+  }
+
+  public void clearCell(int index) {
+    assertIndex(index);
+    cells.set(index, null);
   }
 
   @Override
@@ -53,7 +57,7 @@ public class TableRow implements IsRow {
   }
 
   public List<IsCell> getCells() {
-    return ImmutableList.copyOf(cells);
+    return cells;
   }
 
   public CustomProperties getProperties() {
@@ -66,6 +70,21 @@ public class TableRow implements IsRow {
       return null;
     }
     return properties.get(key);
+  }
+
+  public void insertCell(int index, IsCell cell) {
+    assertIndex(index);
+    cells.add(index, cell);
+  }
+
+  public void removeCell(int index) {
+    assertIndex(index);
+    cells.remove(index);
+  }
+
+  public void setCell(int index, IsCell cell) {
+    assertIndex(index);
+    cells.set(index, cell);
   }
 
   public void setCells(List<IsCell> cells) {
@@ -83,5 +102,9 @@ public class TableRow implements IsRow {
       properties = CustomProperties.create();
     }
     properties.put(propertyKey, propertyValue);
+  }
+
+  private void assertIndex(int index) {
+    Assert.isIndex(cells, index);
   }
 }

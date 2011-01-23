@@ -1,9 +1,6 @@
-package com.butent.bee.server.datasource.query.engine;
+package com.butent.bee.shared.data.sort;
 
-import com.butent.bee.server.datasource.query.QuerySort;
 import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.data.SortInfo;
-import com.butent.bee.shared.data.SortOrder;
 import com.butent.bee.shared.data.column.AbstractColumn;
 import com.butent.bee.shared.data.column.ColumnLookup;
 import com.butent.bee.shared.data.value.Value;
@@ -11,7 +8,7 @@ import com.butent.bee.shared.data.value.Value;
 import java.util.Comparator;
 import java.util.List;
 
-class TableRowComparator implements Comparator<IsRow> {
+public class TableRowComparator implements Comparator<IsRow> {
   private AbstractColumn[] sortColumns;
   private SortOrder[] sortColumnOrder;
 
@@ -19,14 +16,14 @@ class TableRowComparator implements Comparator<IsRow> {
 
   private ColumnLookup columnLookup;
 
-  public TableRowComparator(QuerySort sort, ColumnLookup lookup) {
+  public TableRowComparator(SortQuery sort, ColumnLookup lookup) {
     valueComparator = Value.getComparator();
     columnLookup = lookup;
-    List<SortInfo> columns = sort.getSortColumns();
+    List<SortColumn> columns = sort.getSortColumns();
     sortColumns = new AbstractColumn[columns.size()];
     sortColumnOrder = new SortOrder[columns.size()];
     for (int i = 0; i < columns.size(); i++) {
-      SortInfo columnSort = columns.get(i);
+      SortColumn columnSort = columns.get(i);
       sortColumns[i] = columnSort.getColumn();
       sortColumnOrder[i] = columnSort.getOrder();
     }

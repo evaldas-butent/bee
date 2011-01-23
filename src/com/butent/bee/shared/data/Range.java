@@ -5,6 +5,11 @@ import com.butent.bee.shared.data.value.Value;
 public class Range {
   private Value min = null;
   private Value max = null;
+  
+  public Range(Value min, Value max) {
+    this.min = min;
+    this.max = max;
+  }
 
   public Value getMax() {
     return max;

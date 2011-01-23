@@ -36,6 +36,10 @@ public class AxisOptions extends AbstractDrawOptions {
     this.minValue = min;
   }-*/;
 
+  public final native void setTextPosition(String position) /*-{
+    this.textPosition = position;
+  }-*/;
+
   public final native void setTextStyle(TextStyle style) /*-{
     this.textStyle = style;
   }-*/;

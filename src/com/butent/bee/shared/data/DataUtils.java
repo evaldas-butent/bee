@@ -56,5 +56,16 @@ public class DataUtils {
 
     return view;
   }
-    
+  
+  public static String defaultColumnId(int index) {
+    if (BeeUtils.betweenExclusive(index, 0, 1000)) {
+      return "col" + BeeUtils.toLeadingZeroes(index, 3);
+    } else {
+      return "col" + index;  
+    }
+  }
+
+  public static String defaultColumnLabel(int index) {
+    return "Column " + index;  
+  }
 }

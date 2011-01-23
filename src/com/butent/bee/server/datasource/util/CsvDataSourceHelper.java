@@ -2,7 +2,6 @@ package com.butent.bee.server.datasource.util;
 
 import com.google.common.collect.Lists;
 
-import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.DataException;
 import com.butent.bee.shared.data.DataTable;
 import com.butent.bee.shared.data.IsColumn;
@@ -11,7 +10,6 @@ import com.butent.bee.shared.data.IsTable;
 import com.butent.bee.shared.data.Reasons;
 import com.butent.bee.shared.data.TableColumn;
 import com.butent.bee.shared.data.TableRow;
-import com.butent.bee.shared.data.TypeMismatchException;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.value.ValueType;
 
@@ -145,11 +143,7 @@ public class CsvDataSourceHelper {
           
           row.addCell(value);
         }
-        try {
-          dataTable.addRow(row);
-        } catch (TypeMismatchException e) {
-          Assert.untouchable();
-        }
+        dataTable.addRow(row);
       }
 
       firstLine = false;

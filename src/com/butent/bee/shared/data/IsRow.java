@@ -4,23 +4,23 @@ import com.butent.bee.shared.data.value.Value;
 
 import java.util.List;
 
-public interface IsRow {
+public interface IsRow extends HasCustomProperties {
   void addCell(boolean value);
   void addCell(double value);
   void addCell(String value);
   void addCell(IsCell cell);
   void addCell(Value value);
+
+  void clearCell(int index);
   
   IsRow clone();
 
   IsCell getCell(int index);
   List<IsCell> getCells();
 
-  CustomProperties getProperties();
-  Object getProperty(String key);
-
+  void insertCell(int index, IsCell cell);
+  void removeCell(int index);
+  
+  void setCell(int index, IsCell cell);
   void setCells(List<IsCell> cells);
-
-  void setProperties(CustomProperties properties);
-  void setProperty(String propertyKey, Object propertyValue);
 }

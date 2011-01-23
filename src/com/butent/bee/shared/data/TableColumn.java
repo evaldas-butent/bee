@@ -10,14 +10,17 @@ public class TableColumn implements IsColumn {
   private String pattern;
   private CustomProperties properties = null;
 
+  public TableColumn(String id, ValueType type) {
+    this(id, type, null);
+  }
+  
   public TableColumn(String id, ValueType type, String label) {
     this.id = id;
     this.type = type;
     this.label = label;
-    this.pattern = "";
+    this.pattern = null;
   }
 
-  @Override
   public TableColumn clone() {
     TableColumn result = new TableColumn(id, type, label);
     result.setPattern(pattern);
