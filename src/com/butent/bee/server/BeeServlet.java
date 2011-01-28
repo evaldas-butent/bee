@@ -84,7 +84,6 @@ public class BeeServlet extends HttpServlet {
     if (BeeUtils.same(svc, BeeService.SERVICE_LOGIN)) {
       if (BeeUtils.isEmpty(user)) {
         try {
-          // req.authenticate(resp);
           req.login(reqInfo.getParameter(BeeService.VAR_LOGIN),
               reqInfo.getParameter(BeeService.VAR_PASSWORD));
           buff.addWarning("Login successful");

@@ -2,18 +2,20 @@ package com.butent.bee.server.data;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.sql.BeeConstants.Keywords;
 import com.butent.bee.shared.sql.IsCondition;
 import com.butent.bee.shared.sql.SqlCreate;
 import com.butent.bee.shared.sql.SqlInsert;
 import com.butent.bee.shared.sql.SqlSelect;
 import com.butent.bee.shared.sql.SqlUpdate;
 import com.butent.bee.shared.sql.SqlUtils;
-import com.butent.bee.shared.sql.BeeConstants.Keywords;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.LogUtils;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.logging.Logger;
 
 import javax.annotation.PreDestroy;
 import javax.ejb.EJB;
@@ -22,8 +24,11 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 
 @Singleton
-@TransactionAttribute(TransactionAttributeType.MANDATORY)
+// TODO: waiting for JBoss bugfix http://community.jboss.org/thread/161844
+// @TransactionAttribute(TransactionAttributeType.MANDATORY)
 public class IdGeneratorBean {
+
+  private static Logger logger = Logger.getLogger(IdGeneratorBean.class.getName());
 
   private static final String ID_TABLE = "bee_Sequence";
   private static final String ID_KEY = "SequenceName";
@@ -71,6 +76,7 @@ public class IdGeneratorBean {
       }
     }
     idCache.clear();
+    LogUtils.infoNow(logger, getClass().getSimpleName(), "destroy end");
   }
 
   public long getId(String source) {

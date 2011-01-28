@@ -654,7 +654,7 @@ public class JdbcUtils {
       col.setLabel(rsmd.getColumnLabel(idx));
 
       col.setAutoIncrement(rsmd.isAutoIncrement(idx));
-      col.setCaseSensitive(rsmd.isCaseSensitive(idx));
+// TODO keistas Mysql JDBC bugas      col.setCaseSensitive(rsmd.isCaseSensitive(idx));
       col.setCurrency(rsmd.isCurrency(idx));
       col.setSigned(rsmd.isSigned(idx));
 

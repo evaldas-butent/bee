@@ -143,7 +143,7 @@ public class QueryServiceBean {
 
   public Object processSql(String sql) {
     Assert.notEmpty(sql);
-
+    
     DataSource ds = dsb.locateDs(SqlBuilderFactory.getEngine()).getDs();
 
     Connection con = null;

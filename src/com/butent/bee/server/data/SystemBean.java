@@ -480,7 +480,7 @@ public class SystemBean {
     String[] dbTables = qs.dbTables(dbName, dbSchema, null);
 
     for (BeeTable table : getTables()) {
-      table.setActive(BeeUtils.inListSame(table.getName(), dbTables));
+      table.setActive(!BeeUtils.isEmpty(dbTables) && BeeUtils.inListSame(table.getName(), dbTables));
 
       Map<String, String[]> stateTables = new HashMap<String, String[]>();
 
@@ -488,7 +488,7 @@ public class SystemBean {
         String tblName = state.getTable();
         boolean active = false;
 
-        if (BeeUtils.inListSame(tblName, dbTables)) {
+        if (!BeeUtils.isEmpty(dbTables) && BeeUtils.inListSame(tblName, dbTables)) {
           if (!stateTables.containsKey(tblName)) {
             stateTables.put(tblName, qs.dbFields(tblName));
           }
