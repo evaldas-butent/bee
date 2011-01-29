@@ -74,9 +74,9 @@ public class BeeUi implements Module {
   private TilePanel activePanel = null;
   private BeeLayoutPanel menuPanel = null;
 
-  private String elDsn = null;
-  private String elGrid = null;
-  private String elCell = null;
+  private final String elDsn = "el-data-source";
+  private final String elGrid = "el-grid-type";
+  private final String elCell = "el-cell-type";
 
   public BeeUi(HasWidgets root) {
     this.rootUi = root;
@@ -206,18 +206,6 @@ public class BeeUi implements Module {
 
   public void setActivePanel(TilePanel p) {
     activePanel = p;
-  }
-
-  public void setElCell(String elCell) {
-    this.elCell = elCell;
-  }
-
-  public void setElDsn(String elDsn) {
-    this.elDsn = elDsn;
-  }
-
-  public void setElGrid(String elGrid) {
-    this.elGrid = elGrid;
   }
 
   public void setMenuPanel(BeeLayoutPanel menuPanel) {
@@ -426,8 +414,8 @@ public class BeeUi implements Module {
     Horizontal p = new Horizontal();
     p.setSpacing(5);
 
-    setElDsn(DomUtils.createUniqueName());
-    p.add(new RadioGroup(getElDsn(), 0, BeeConst.DS_TYPES));
+    p.add(new RadioGroup(getElDsn(), BeeKeeper.getStorage().checkInt(getElDsn(), 0),
+        BeeConst.DS_TYPES));
 
     p.add(new ButtonGroup("Ping", BeeService.SERVICE_DB_PING,
         "Info", BeeService.SERVICE_DB_INFO,
@@ -445,10 +433,10 @@ public class BeeUi implements Module {
     p.add(new BeeButton("North land", "comp_ui_form", "dummy_stage"));
     p.add(new BeeButton("CRUD", "comp_ui_rowset", "dummy_stage"));
 
-    setElGrid(DomUtils.createUniqueName());
-    p.add(new RadioGroup(getElGrid(), true, 2, "simple", "scroll", "cell"));
-    setElCell(DomUtils.createUniqueName());
-    p.add(new RadioGroup(getElCell(), true, CellType.TEXT_EDIT, CellType.values()));
+    p.add(new RadioGroup(getElGrid(), true, BeeKeeper.getStorage().checkInt(getElGrid(), 2),
+        "simple", "scroll", "cell"));
+    p.add(new RadioGroup(getElCell(), true, BeeKeeper.getStorage().checkEnum(getElCell(),
+        CellType.TEXT_EDIT), CellType.values()));
 
     BeeLayoutPanel blp = new BeeLayoutPanel();
     blp.add(p);

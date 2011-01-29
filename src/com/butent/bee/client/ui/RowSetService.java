@@ -64,16 +64,16 @@ class RowSetService extends CompositeService {
     boolean ok = true;
 
     if (!Global.isVar(tbl)) {
-      Global.createVar(tbl, "Choose table", BeeType.TYPE_STRING, null, BeeWidget.LIST);
+      Global.createVar(tbl, "Choose table", BeeType.STRING, null, BeeWidget.LIST);
     }
     if (!Global.isVar(limit)) {
-      Global.createVar(limit, "Limit", BeeType.TYPE_INT, null, BeeWidget.TEXT);
+      Global.createVar(limit, "Limit", BeeType.INT, null, BeeWidget.TEXT);
     }
     if (!Global.isVar(offset)) {
-      Global.createVar(offset, "Offset", BeeType.TYPE_INT, null, BeeWidget.TEXT);
+      Global.createVar(offset, "Offset", BeeType.INT, null, BeeWidget.TEXT);
     }
     if (!Global.isVar(stt)) {
-      Global.createVar(stt, "Choose state", BeeType.TYPE_STRING, null, BeeWidget.LIST);
+      Global.createVar(stt, "Choose state", BeeType.STRING, null, BeeWidget.LIST);
     }
     switch (stage) {
       case REQUEST_TABLE_LIST:

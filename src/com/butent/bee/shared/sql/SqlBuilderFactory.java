@@ -8,10 +8,6 @@ public class SqlBuilderFactory {
   private static String defaultEngine;
   private static SqlBuilder defaultBuilder;
 
-  static {
-    setDefaultEngine(BeeConst.MYSQL);
-  }
-
   public static SqlBuilder getBuilder() {
     return defaultBuilder;
   }

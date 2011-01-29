@@ -3,6 +3,7 @@ package com.butent.bee.server;
 import com.butent.bee.server.communication.ResponseBuffer;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.utils.XmlUtils;
+import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.menu.MenuConstants;
 import com.butent.bee.shared.menu.MenuEntry;
@@ -10,7 +11,6 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.LogUtils;
 import com.butent.bee.shared.utils.Property;
 
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -25,9 +25,9 @@ import javax.ejb.Startup;
 @Singleton
 @Startup
 @Lock(LockType.READ)
-public class MenuBean {
+public class MenuProvider {
   private static final String NOT_AVAIL = "menu not available";
-  private static Logger logger = Logger.getLogger(MenuBean.class.getName());
+  private static Logger logger = Logger.getLogger(MenuProvider.class.getName());
 
   private String resource = "menu.xml";
   private String transformation = "menu.xsl";
@@ -45,7 +45,8 @@ public class MenuBean {
     String mode = reqInfo.getParameter(0);
 
     if (!BeeUtils.isEmpty(mode)) {
-      if (BeeUtils.inListSame(mode, BeeConst.STRING_MINUS, BeeConst.STRING_ZERO, BeeConst.STRING_FALSE)) {
+      if (BeeUtils.inListSame(mode, BeeConst.STRING_MINUS, BeeConst.STRING_ZERO,
+          BeeConst.STRING_FALSE)) {
         reload(false);
       } else {
         reload();
@@ -86,7 +87,6 @@ public class MenuBean {
     if (lst.size() > 1) {
       Collections.sort(lst, MenuConstants.MENU_COMPARATOR);
     }
-
     for (MenuEntry entry : lst) {
       buff.add(entry.serialize());
     }
@@ -105,25 +105,17 @@ public class MenuBean {
     long start = System.currentTimeMillis();
     boolean ok = false;
 
-    URL xmlUrl = getClass().getResource(src);
-    if (xmlUrl == null) {
-      LogUtils.warning(logger, "resource", src, "not found");
+    String xmlPath = Config.getPath(src);
+    if (xmlPath == null) {
       return ok;
     }
-    String xmlPath = xmlUrl.getPath();
 
     String xslPath = null;
     if (!BeeUtils.isEmpty(xsl)) {
-      URL xslUrl = getClass().getResource(xsl);
-      if (xslUrl == null) {
-        LogUtils.warning(logger, "transformation", xsl, "not found");
-      } else {
-        xslPath = xslUrl.getPath();
-      }
+      xslPath = Config.getPath(xsl);
     }
 
-    Property[][] arr = XmlUtils.getAttributesFromFile(xmlPath, xslPath,
-        "menu");
+    Property[][] arr = XmlUtils.getAttributesFromFile(xmlPath, xslPath, "menu");
     if (arr == null) {
       return ok;
     }
@@ -234,7 +226,6 @@ public class MenuBean {
         return entry;
       }
     }
-
     return null;
   }
 
@@ -261,5 +252,4 @@ public class MenuBean {
   private boolean isVisible(String id) {
     return getEntry(id).isVisible();
   }
-
 }

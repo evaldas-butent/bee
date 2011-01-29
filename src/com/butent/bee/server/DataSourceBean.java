@@ -1,6 +1,7 @@
 package com.butent.bee.server;
 
 import com.butent.bee.server.utils.BeeDataSource;
+import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.LogUtils;
@@ -11,8 +12,6 @@ import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
-import javax.ejb.DependsOn;
-import javax.ejb.EJB;
 import javax.ejb.Lock;
 import javax.ejb.LockType;
 import javax.ejb.Singleton;
@@ -23,14 +22,10 @@ import javax.sql.DataSource;
 
 @Singleton
 @Startup
-@DependsOn("ConfigBean")
 @Lock(LockType.READ)
 public class DataSourceBean {
   private static final String PROPERTY_DSN = "DataSourceName";
   private static Logger logger = Logger.getLogger(DataSourceBean.class.getName());
-
-  @EJB
-  ConfigBean config;
 
   private List<BeeDataSource> bds = new ArrayList<BeeDataSource>();
 
@@ -48,8 +43,6 @@ public class DataSourceBean {
         }
       }
     }
-
-    LogUtils.infoNow(logger, getClass().getSimpleName(), "destroy end");
   }
 
   public BeeDataSource locateDs(String dsn) {
@@ -66,15 +59,13 @@ public class DataSourceBean {
     if (z == null) {
       LogUtils.warning(logger, "dsn", dsn, "not found");
     }
-
     return z;
   }
 
   @SuppressWarnings("unused")
   @PostConstruct
   private void init() {
-    String dsn = config.getProperty(PROPERTY_DSN);
-
+    String dsn = Config.getProperty(PROPERTY_DSN);
     if (BeeUtils.isEmpty(dsn)) {
       LogUtils.severe(logger, "property", PROPERTY_DSN, "not found");
       return;
@@ -88,19 +79,7 @@ public class DataSourceBean {
 
     for (String z : arr) {
       nm = z.trim();
-
-      if (BeeUtils.context("my", nm)) {
-        tp = BeeConst.MYSQL;
-      } else if (BeeUtils.context("ms", nm)) {
-        tp = BeeConst.MSSQL;
-      } else if (BeeUtils.context("or", nm)) {
-        tp = BeeConst.ORACLE;
-      } else if (BeeUtils.context("pg", nm)) {
-        tp = BeeConst.PGSQL;
-      } else {
-        tp = null;
-      }
-
+      tp = BeeConst.getDsType(nm);
       if (BeeUtils.isEmpty(tp)) {
         LogUtils.warning(logger, "dsn", z, "not recognized");
         continue;
@@ -124,9 +103,5 @@ public class DataSourceBean {
         bds.add(new BeeDataSource(tp, ds));
       }
     }
-
-    LogUtils.infoNow(logger, getClass().getSimpleName(), bds.size(),
-        "data sources initialized");
   }
-
 }

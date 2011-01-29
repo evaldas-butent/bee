@@ -6,6 +6,7 @@ import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.ui.UiServiceBean;
 import com.butent.bee.server.utils.Reflection;
+import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeService;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -27,14 +28,13 @@ public class DispatcherBean {
   @EJB
   UiServiceBean uiBean;
   @EJB
-  MenuBean menuBean;
+  MenuProvider menu;
   @EJB
   Invocation invBean;
   @EJB
   UserServiceBean usr;
 
-  public void doService(String svc, String dsn, RequestInfo reqInfo,
-      ResponseBuffer buff) {
+  public void doService(String svc, String dsn, RequestInfo reqInfo, ResponseBuffer buff) {
     Assert.notEmpty(svc);
     Assert.notNull(buff);
 
@@ -46,7 +46,7 @@ public class DispatcherBean {
       sysBean.doService(svc, reqInfo, buff);
 
     } else if (BeeUtils.same(svc, BeeService.SERVICE_GET_MENU)) {
-      menuBean.getMenu(reqInfo, buff);
+      menu.getMenu(reqInfo, buff);
     } else if (BeeUtils.same(svc, BeeService.SERVICE_WHERE_AM_I)) {
       buff.addLine(buff.now(), BeeConst.whereAmI());
 

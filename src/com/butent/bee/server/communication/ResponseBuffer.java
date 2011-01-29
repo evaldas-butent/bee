@@ -205,7 +205,7 @@ public class ResponseBuffer {
       if (c > i && !BeeUtils.isEmpty(cap[i])) {
         nm = cap[i].trim();
       } else if (i < Property.HEADER_COUNT) {
-        nm = ExtendedProperty.COLUMN_HEADERS[i];
+        nm = Property.HEADERS[i];
       } else {
         nm = "Date";
       }

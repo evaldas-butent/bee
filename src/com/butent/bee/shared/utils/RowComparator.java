@@ -9,25 +9,25 @@ public class RowComparator implements Comparator<Object[]> {
 
   private int[] cols;
   private boolean[] asc;
-  private int[] types;
+  private BeeType[] types;
 
   public RowComparator() {
-    this(0, true, BeeType.TYPE_UNKNOWN);
+    this(0, true, BeeType.UNKNOWN);
   }
 
   public RowComparator(boolean up) {
-    this(0, up, BeeType.TYPE_UNKNOWN);
+    this(0, up, BeeType.UNKNOWN);
   }
 
   public RowComparator(int col) {
-    this(col, true, BeeType.TYPE_UNKNOWN);
+    this(col, true, BeeType.UNKNOWN);
   }
 
   public RowComparator(int col, boolean up) {
-    this(col, up, BeeType.TYPE_UNKNOWN);
+    this(col, up, BeeType.UNKNOWN);
   }
 
-  public RowComparator(int col, boolean up, int tp) {
+  public RowComparator(int col, boolean up, BeeType tp) {
     this.cnt = 1;
 
     this.cols = new int[1];
@@ -41,30 +41,30 @@ public class RowComparator implements Comparator<Object[]> {
       this.asc[0] = !up;
     }
 
-    this.types = new int[]{tp};
+    this.types = new BeeType[]{tp};
   }
 
-  public RowComparator(int col, int tp) {
+  public RowComparator(int col, BeeType tp) {
     this(col, true, tp);
   }
 
   public RowComparator(int[] col) {
-    this(col, new boolean[]{true}, new int[]{BeeType.TYPE_UNKNOWN});
+    this(col, new boolean[]{true}, new BeeType[]{BeeType.UNKNOWN});
   }
 
   public RowComparator(int[] col, boolean up) {
-    this(col, new boolean[]{up}, new int[]{BeeType.TYPE_UNKNOWN});
+    this(col, new boolean[]{up}, new BeeType[]{BeeType.UNKNOWN});
   }
 
-  public RowComparator(int[] col, boolean up, int[] tp) {
+  public RowComparator(int[] col, boolean up, BeeType[] tp) {
     this(col, new boolean[]{up}, tp);
   }
 
-  public RowComparator(int[] col, boolean[] up, int tp) {
-    this(col, up, new int[]{tp});
+  public RowComparator(int[] col, boolean[] up, BeeType tp) {
+    this(col, up, new BeeType[]{tp});
   }
 
-  public RowComparator(int[] col, boolean[] up, int[] tp) {
+  public RowComparator(int[] col, boolean[] up, BeeType[] tp) {
     int c = col.length;
 
     if (c > 0) {
@@ -72,10 +72,10 @@ public class RowComparator implements Comparator<Object[]> {
 
       this.cols = new int[c];
       this.asc = new boolean[c];
-      this.types = new int[c];
+      this.types = new BeeType[c];
 
       boolean y = (up != null && up.length > 0) ? up[0] : true;
-      int z = (tp != null && tp.length > 0) ? tp[0] : BeeType.TYPE_UNKNOWN;
+      BeeType z = (tp != null && tp.length > 0) ? tp[0] : BeeType.UNKNOWN;
 
       for (int i = 0; i < c; i++) {
         if (i > 0) {
@@ -100,11 +100,11 @@ public class RowComparator implements Comparator<Object[]> {
     }
   }
 
-  public RowComparator(int[] col, int tp) {
-    this(col, new boolean[]{true}, new int[]{tp});
+  public RowComparator(int[] col, BeeType tp) {
+    this(col, new boolean[]{true}, new BeeType[]{tp});
   }
 
-  public RowComparator(int[] col, int tp[]) {
+  public RowComparator(int[] col, BeeType tp[]) {
     this(col, new boolean[]{true}, tp);
   }
 
@@ -113,7 +113,8 @@ public class RowComparator implements Comparator<Object[]> {
       return 0;
     }
 
-    int j, tp;
+    int j;
+    BeeType tp;
     int v = 0;
 
     for (int i = 0; i < cnt; i++) {
@@ -125,11 +126,11 @@ public class RowComparator implements Comparator<Object[]> {
       tp = types[i];
 
       switch (tp) {
-        case BeeType.TYPE_STRING: {
+        case STRING: {
           v = BeeUtils.compare((String) o1[j], (String) o2[j]);
           break;
         }
-        case BeeType.TYPE_INT: {
+        case INT: {
           v = BeeUtils.compare((Integer) o1[j], (Integer) o2[j]);
           break;
         }
@@ -141,8 +142,6 @@ public class RowComparator implements Comparator<Object[]> {
         return asc[i] ? v : -v;
       }
     }
-
     return v;
   }
-
 }

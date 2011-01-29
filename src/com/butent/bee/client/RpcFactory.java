@@ -136,14 +136,15 @@ public class RpcFactory implements Module {
   }
 
   public int makeGetRequest(String svc) {
-    return makeRequest(RequestBuilder.GET, createParameters(svc), null, null, null, BeeConst.TIME_UNKNOWN);
+    return makeRequest(RequestBuilder.GET, createParameters(svc), null, null, null,
+        BeeConst.TIME_UNKNOWN);
   }
 
   public int makeGetRequest(String svc, ResponseCallback callback) {
     return makeRequest(RequestBuilder.GET, createParameters(svc), null, null,
         callback, BeeConst.TIME_UNKNOWN);
   }
-  
+
   public int makeGetRequest(String svc, ResponseCallback callback, int timeout) {
     return makeRequest(RequestBuilder.GET, createParameters(svc), null, null, callback, timeout);
   }
@@ -170,7 +171,8 @@ public class RpcFactory implements Module {
     return makeRequest(RequestBuilder.POST, params, null, data, callback, BeeConst.TIME_UNKNOWN);
   }
 
-  public int makePostRequest(ParameterList params, String data, ResponseCallback callback, int timeout) {
+  public int makePostRequest(ParameterList params, String data, ResponseCallback callback,
+      int timeout) {
     return makeRequest(RequestBuilder.POST, params, null, data, callback, timeout);
   }
 
@@ -195,7 +197,7 @@ public class RpcFactory implements Module {
   }
 
   public int makePostRequest(String svc, String data, ResponseCallback callback) {
-    return makeRequest(RequestBuilder.POST, createParameters(svc), null, data, 
+    return makeRequest(RequestBuilder.POST, createParameters(svc), null, data,
         callback, BeeConst.TIME_UNKNOWN);
   }
 
@@ -264,7 +266,6 @@ public class RpcFactory implements Module {
       } else {
         cth = z;
       }
-
       bld.setHeader(CommUtils.CONTENT_TYPE_HEADER, cth);
     }
 
@@ -299,8 +300,6 @@ public class RpcFactory implements Module {
     }
 
     rpcList.addInfo(info);
-
     return id;
   }
-
 }

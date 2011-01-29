@@ -57,7 +57,7 @@ class FormService extends CompositeService {
           lst.add(arr.get(i));
         }
         if (!Global.isVar(fld)) {
-          Global.createVar(fld, "Form name", BeeType.TYPE_STRING, null);
+          Global.createVar(fld, "Form name", BeeType.STRING, null);
           Global.getVar(fld).setWidget(BeeWidget.LIST);
         }
         Global.getVar(fld).setItems(lst);

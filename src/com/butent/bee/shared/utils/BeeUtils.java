@@ -1,5 +1,7 @@
 package com.butent.bee.shared.utils;
 
+import com.google.common.collect.Sets;
+
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeDate;
@@ -11,16 +13,18 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class BeeUtils {
   private static int nameCounter = 0;
 
   public static String addName(String nm, Object v) {
-    if (isEmpty(v, BeeType.TYPE_NUMBER + BeeType.TYPE_BOOLEAN)) {
+    if (isEmpty(v, EnumSet.of(BeeType.NUMBER, BeeType.BOOLEAN))) {
       return BeeConst.STRING_EMPTY;
     } else if (isEmpty(nm)) {
       return transform(v);
@@ -253,7 +257,7 @@ public class BeeUtils {
     String sep = normSep(x[0]);
 
     for (int i = 1; i < c; i++) {
-      if (!isEmpty(x[i], BeeType.TYPE_NUMBER)) {
+      if (!isEmpty(x[i], EnumSet.of(BeeType.NUMBER))) {
         if (s.length() > 0) {
           s.append(sep);
         }
@@ -270,6 +274,36 @@ public class BeeUtils {
 
   public static <T> boolean contains(T value, T[] arr) {
     return indexOf(value, arr) >= 0;
+  }
+  
+  public static <T> boolean containsAny(Collection<T> c1, Collection <T> c2) {
+    boolean ok = false;
+    
+    int n1 = length(c1);
+    if (n1 <= 0) {
+      return ok;
+    }
+    int n2 = length(c2);
+    if (n2 <= 0) {
+      return ok;
+    }
+    
+    if (n1 <= n2) {
+      for (T el : c1) {
+        if (c2.contains(el)) {
+          ok = true;
+          break;
+        }
+      }
+    } else {
+      for (T el : c2) {
+        if (c1.contains(el)) {
+          ok = true;
+          break;
+        }
+      }
+    }
+    return ok;
   }
 
   public static boolean context(CharSequence ctxt, CharSequence src) {
@@ -377,42 +411,35 @@ public class BeeUtils {
     return x.intValue();
   }
 
-  public static boolean filterType(Object x, int... types) {
-    boolean ok = false;
-    if (x == null || types.length <= 0) {
-      return ok;
-    }
+  public static boolean filterType(Object x, Set<BeeType> types) {
+    Assert.notEmpty(types);
 
-    int tp;
-
-    if (x instanceof Boolean) {
-      tp = BeeType.TYPE_BOOLEAN;
+    Set<BeeType> tp = Sets.newHashSet();
+    
+    if (x == null) {
+      tp.add(BeeType.NULL);
+    } else if (x instanceof Boolean) {
+      tp.add(BeeType.BOOLEAN);
     } else if (instanceOfStringType(x)) {
-      tp = BeeType.TYPE_STRING;
+      tp.add(BeeType.STRING);
     } else if (x instanceof Character) {
-      tp = BeeType.TYPE_CHAR;
+      tp.add(BeeType.CHAR);
     } else if (x instanceof Number) {
-      tp = BeeType.TYPE_NUMBER;
+      tp.add(BeeType.NUMBER);
       if (instanceOfIntegerType(x)) {
-        tp += BeeType.TYPE_INT;
+        tp.add(BeeType.INT);
       }
       if (instanceOfFloatingPoint(x)) {
-        tp += BeeType.TYPE_FLOAT;
-        tp += BeeType.TYPE_DOUBLE;
+        tp.add(BeeType.FLOAT);
+        tp.add(BeeType.DOUBLE);
       }
     } else if (instanceOfDateTime(x)) {
-      tp = BeeType.TYPE_DATE;
+      tp.add(BeeType.DATE);
     } else {
-      tp = BeeType.TYPE_UNKNOWN;
+      tp.add(BeeType.UNKNOWN);
     }
-
-    for (int i = 0; i < types.length; i++) {
-      if ((tp & types[i]) != 0) {
-        ok = true;
-        break;
-      }
-    }
-    return ok;
+    
+    return containsAny(types, tp);
   }
 
   public static int fitStart(int start, int len, int end) {
@@ -628,7 +655,6 @@ public class BeeUtils {
   }
 
   public static <T extends Comparable<T>> boolean inList(T x, T... lst) {
-    Assert.parameterCount(lst.length + 1, 2);
     boolean ok = false;
 
     for (int i = 0; i < lst.length; i++) {
@@ -643,7 +669,6 @@ public class BeeUtils {
 
   public static boolean inListIgnoreCase(String x, String... lst) {
     Assert.notEmpty(x);
-    Assert.parameterCount(lst.length + 1, 2);
     boolean ok = false;
 
     for (int i = 0; i < lst.length; i++) {
@@ -657,7 +682,6 @@ public class BeeUtils {
 
   public static boolean inListSame(String x, String... lst) {
     Assert.notEmpty(x);
-    Assert.parameterCount(lst.length + 1, 2);
     boolean ok = false;
 
     String z = x.trim().toLowerCase();
@@ -812,7 +836,7 @@ public class BeeUtils {
     return ok;
   }
 
-  public static boolean isEmpty(Object x, int... orType) {
+  public static boolean isEmpty(Object x, Set<BeeType> orType) {
     if (filterType(x, orType)) {
       return false;
     } else {
@@ -1434,8 +1458,7 @@ public class BeeUtils {
 
     int len = Math.min(s1.trim().length(), s2.trim().length());
     if (len > 0) {
-      return s1.trim().substring(0, len).equalsIgnoreCase(
-          s2.trim().substring(0, len));
+      return s1.trim().substring(0, len).equalsIgnoreCase(s2.trim().substring(0, len));
     } else {
       return false;
     }

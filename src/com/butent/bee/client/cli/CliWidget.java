@@ -52,6 +52,8 @@ public class CliWidget extends BeeTextBox {
       CliWorker.clearLog();
     } else if (z.startsWith("client")) {
       CliWorker.showClientLocation();
+    } else if (z.startsWith("conf")) {
+      BeeKeeper.getRpc().invoke("configInfo");
     } else if (z.startsWith("conn") || z.equals("http")) {
       BeeKeeper.getRpc().invoke("connectionInfo");
     } else if (z.equals("df")) {

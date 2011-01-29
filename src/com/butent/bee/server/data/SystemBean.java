@@ -1,5 +1,6 @@
 package com.butent.bee.server.data;
 
+import com.butent.bee.server.Config;
 import com.butent.bee.server.communication.ResponseBuffer;
 import com.butent.bee.server.data.BeeTable.BeeField;
 import com.butent.bee.server.data.BeeTable.BeeForeignKey;
@@ -8,6 +9,7 @@ import com.butent.bee.server.data.BeeTable.BeeState;
 import com.butent.bee.server.utils.FileUtils;
 import com.butent.bee.server.utils.XmlUtils;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.BeeRowSet.BeeRow;
 import com.butent.bee.shared.sql.BeeConstants.DataTypes;
@@ -16,6 +18,7 @@ import com.butent.bee.shared.sql.HasFrom;
 import com.butent.bee.shared.sql.IsCondition;
 import com.butent.bee.shared.sql.IsExpression;
 import com.butent.bee.shared.sql.IsQuery;
+import com.butent.bee.shared.sql.SqlBuilderFactory;
 import com.butent.bee.shared.sql.SqlCreate;
 import com.butent.bee.shared.sql.SqlDelete;
 import com.butent.bee.shared.sql.SqlInsert;
@@ -439,6 +442,9 @@ public class SystemBean {
 
   @PostConstruct
   public void init() {
+    String engine = BeeUtils.ifString(Config.getProperty("DefaultEngine"), BeeConst.MYSQL);
+    SqlBuilderFactory.setDefaultEngine(BeeConst.getDsType(engine));
+    
     dbName = qs.dbName();
     dbSchema = qs.dbSchema();
     initTables();

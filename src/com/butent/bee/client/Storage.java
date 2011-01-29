@@ -17,6 +17,31 @@ public class Storage implements Module {
   public Storage() {
     localStorage = Features.supportsLocalStorage();
   }
+  
+  public Enum<?> checkEnum(String key, Enum<?> def) {
+    Assert.notNull(def);
+    String v = getItem(key);
+    if (BeeUtils.isDigit(v)) {
+      Enum<?>[] arr = def.getClass().getEnumConstants();
+      int idx = BeeUtils.toInt(v);
+      if (BeeUtils.isIndex(arr, idx)) {
+        return arr[idx];
+      }
+    }
+    
+    setItem(key, BeeUtils.transform(def.ordinal()));
+    return def;
+  }
+
+  public int checkInt(String key, int def) {
+    String v = getItem(key);
+    if (BeeUtils.isDigit(v)) {
+      return BeeUtils.toInt(v);
+    }
+    
+    setItem(key, BeeUtils.transform(def));
+    return def;
+  }
 
   public void clear() {
     if (localStorage) {
@@ -83,6 +108,13 @@ public class Storage implements Module {
     }
   }
 
+  public boolean hasItem(String key) {
+    if (BeeUtils.isEmpty(key)) {
+      return false;
+    }
+    return getItem(key) != null;
+  }
+
   public void init() {
   }
 
@@ -126,12 +158,10 @@ public class Storage implements Module {
 
   public void setItem(String key, Object value) {
     Assert.notEmpty(key);
-    String v = BeeUtils.transform(value);
-
     if (localStorage) {
       lsSetItem(key, value);
     } else {
-      items.put(key, v);
+      items.put(key, BeeUtils.transform(value));
     }
   }
   
@@ -165,5 +195,4 @@ public class Storage implements Module {
   private boolean validIndex(int index) {
     return index >= 0 && index < length();
   }
-  
 }

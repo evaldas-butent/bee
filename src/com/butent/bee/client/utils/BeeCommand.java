@@ -38,5 +38,4 @@ public abstract class BeeCommand implements Command {
   public void setService(String service) {
     this.service = service;
   }
-
 }

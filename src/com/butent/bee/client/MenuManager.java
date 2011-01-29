@@ -17,6 +17,7 @@ import com.butent.bee.client.tree.BeeCellBrowser;
 import com.butent.bee.client.tree.BeeCellTree;
 import com.butent.bee.client.tree.BeeTree;
 import com.butent.bee.client.tree.BeeTreeItem;
+import com.butent.bee.client.utils.BeeCommand;
 import com.butent.bee.client.utils.BeeDuration;
 import com.butent.bee.client.widget.BeeCellList;
 import com.butent.bee.shared.Assert;
@@ -30,8 +31,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MenuManager implements Module {
+  private class DrawCommand extends BeeCommand {
+    @Override
+    public void execute() {
+      drawMenu();
+    }
+  }
+
   private List<MenuEntry> roots = null;
   private List<MenuEntry> items = null;
+  
+  private boolean loaded = false;
+  private BeeCommand onLoad = null;
 
   private List<String> layouts = new ArrayList<String>();
   private boolean[] options = null;
@@ -42,6 +53,11 @@ public class MenuManager implements Module {
   }
 
   public boolean drawMenu() {
+    if (!isLoaded()) {
+      setOnLoad(new DrawCommand());
+      loadMenu();
+      return false;
+    }
     Assert.state(validState());
 
     layouts.clear();
@@ -64,7 +80,6 @@ public class MenuManager implements Module {
     }
 
     Widget w = createMenu(0, MenuUtils.limitEntries(getRoots(), rLim), null);
-
     if (debug) {
       BeeKeeper.getLog().finish(dur);
     }
@@ -94,6 +109,10 @@ public class MenuManager implements Module {
     return getClass().getName();
   }
 
+  public BeeCommand getOnLoad() {
+    return onLoad;
+  }
+
   public int getPriority(int p) {
     switch (p) {
       case PRIORITY_INIT:
@@ -118,6 +137,10 @@ public class MenuManager implements Module {
   public void init() {
   }
 
+  public boolean isLoaded() {
+    return loaded;
+  }
+
   public void loadCallBack(JsArrayString arr) {
     Assert.notNull(arr);
     int n = arr.length();
@@ -136,8 +159,7 @@ public class MenuManager implements Module {
       entry.deserialize(arr.get(i));
 
       if (!entry.isValid()) {
-        BeeKeeper.getLog().severe("invalid menu entry", BeeUtils.bracket(i),
-            arr.get(i));
+        BeeKeeper.getLog().severe("invalid menu entry", BeeUtils.bracket(i), arr.get(i));
         break;
       }
 
@@ -149,9 +171,13 @@ public class MenuManager implements Module {
         ic++;
       }
     }
-
-    BeeKeeper.getLog().finish(dur, BeeUtils.addName("roots", rc),
-        BeeUtils.addName("items", ic));
+    BeeKeeper.getLog().finish(dur, BeeUtils.addName("roots", rc), BeeUtils.addName("items", ic));
+    
+    setLoaded(true);
+    if (getOnLoad() != null) {
+      getOnLoad().execute();
+      setOnLoad(null);
+    }
   }
 
   public void loadMenu() {
@@ -164,6 +190,14 @@ public class MenuManager implements Module {
 
   public void setLayouts(List<String> layouts) {
     this.layouts = layouts;
+  }
+
+  public void setLoaded(boolean loaded) {
+    this.loaded = loaded;
+  }
+
+  public void setOnLoad(BeeCommand onLoad) {
+    this.onLoad = onLoad;
   }
 
   public void setRoots(List<MenuEntry> roots) {
@@ -193,7 +227,6 @@ public class MenuManager implements Module {
       } else {
         entry = getItems().get(i - rc);
       }
-
       j = 0;
 
       arr[i][j++] = entry.getId();
@@ -208,13 +241,11 @@ public class MenuManager implements Module {
       arr[i][j++] = entry.getKeyName();
       arr[i][j++] = BeeUtils.toString(entry.isVisible());
     }
-
     BeeKeeper.getUi().showGrid(arr, cols);
   }
 
   public void start() {
     clear();
-    loadMenu();
   }
 
   public boolean validState() {
@@ -275,8 +306,7 @@ public class MenuManager implements Module {
   }
 
   private Widget createMenu(int level, List<MenuEntry> entries, Widget parent) {
-    Assert.betweenExclusive(level, MenuConstants.ROOT_MENU_INDEX,
-        MenuConstants.MAX_MENU_DEPTH);
+    Assert.betweenExclusive(level, MenuConstants.ROOT_MENU_INDEX, MenuConstants.MAX_MENU_DEPTH);
     Assert.notEmpty(entries);
 
     String layout = getLayout(level);
@@ -284,11 +314,11 @@ public class MenuManager implements Module {
 
     if (parent instanceof MenuBar) {
       int lvl = level - 1;
-      while (lvl >= MenuConstants.ROOT_MENU_INDEX && BeeUtils.same(layout, MenuConstants.LAYOUT_TREE)) {
+      while (lvl >= MenuConstants.ROOT_MENU_INDEX
+          && BeeUtils.same(layout, MenuConstants.LAYOUT_TREE)) {
         layout = getLayout(lvl--);
       }
     }
-
     Widget rw = createWidget(layout, opt, entries, level);
 
     boolean lastLevel = (level >= MenuConstants.MAX_MENU_DEPTH - 1);
@@ -314,20 +344,16 @@ public class MenuManager implements Module {
     }
 
     prepareWidget(rw, entries);
-
     return rw;
   }
 
-  private Widget createWidget(String layout, boolean opt,
-      List<MenuEntry> entries, int level) {
+  private Widget createWidget(String layout, boolean opt, List<MenuEntry> entries, int level) {
     Widget w = null;
 
     if (BeeUtils.same(layout, MenuConstants.LAYOUT_MENU_HOR)) {
-      w = new MenuBar(level, false, getBarType(opt),
-          MenuItem.ITEM_TYPE.LABEL, opt);
+      w = new MenuBar(level, false, getBarType(opt), MenuItem.ITEM_TYPE.LABEL, opt);
     } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_MENU_VERT)) {
-      w = new MenuBar(level, true, getBarType(opt),
-          MenuItem.ITEM_TYPE.LABEL, opt);
+      w = new MenuBar(level, true, getBarType(opt), MenuItem.ITEM_TYPE.LABEL, opt);
 
     } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_STACK)) {
       w = new Stack(Unit.EM);
@@ -341,36 +367,27 @@ public class MenuManager implements Module {
       w = new BeeCellTree(new MenuTreeViewModel(new MenuDataProvider(entries),
           new MenuDataProvider(getItems(), getItemLimit())), null);
     } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_CELL_BROWSER)) {
-      w = new BeeCellBrowser(new MenuTreeViewModel(
-          new MenuDataProvider(entries), new MenuDataProvider(getItems(),
-              getItemLimit())), null);
+      w = new BeeCellBrowser(new MenuTreeViewModel(new MenuDataProvider(entries),
+          new MenuDataProvider(getItems(), getItemLimit())), null);
 
     } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_LIST)) {
-      w = new MenuBar(level, true, MenuBar.BAR_TYPE.LIST,
-          MenuItem.ITEM_TYPE.OPTION, opt);
+      w = new MenuBar(level, true, MenuBar.BAR_TYPE.LIST, MenuItem.ITEM_TYPE.OPTION, opt);
     } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_ORDERED_LIST)) {
-      w = new MenuBar(level, true, MenuBar.BAR_TYPE.OLIST,
-          MenuItem.ITEM_TYPE.LI, opt);
+      w = new MenuBar(level, true, MenuBar.BAR_TYPE.OLIST, MenuItem.ITEM_TYPE.LI, opt);
     } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_UNORDERED_LIST)) {
-      w = new MenuBar(level, true, MenuBar.BAR_TYPE.ULIST,
-          MenuItem.ITEM_TYPE.LI, opt);
+      w = new MenuBar(level, true, MenuBar.BAR_TYPE.ULIST, MenuItem.ITEM_TYPE.LI, opt);
     } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_DEFINITION_LIST)) {
-      w = new MenuBar(level, true, MenuBar.BAR_TYPE.DLIST,
-          MenuItem.ITEM_TYPE.DT, opt);
+      w = new MenuBar(level, true, MenuBar.BAR_TYPE.DLIST, MenuItem.ITEM_TYPE.DT, opt);
 
     } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_RADIO_HOR)) {
-      w = new MenuBar(level, false, getBarType(opt),
-          MenuItem.ITEM_TYPE.RADIO, opt);
+      w = new MenuBar(level, false, getBarType(opt), MenuItem.ITEM_TYPE.RADIO, opt);
     } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_RADIO_VERT)) {
-      w = new MenuBar(level, true, getBarType(opt),
-          MenuItem.ITEM_TYPE.RADIO, opt);
+      w = new MenuBar(level, true, getBarType(opt), MenuItem.ITEM_TYPE.RADIO, opt);
 
     } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_BUTTONS_HOR)) {
-      w = new MenuBar(level, false, getBarType(opt),
-          MenuItem.ITEM_TYPE.BUTTON, opt);
+      w = new MenuBar(level, false, getBarType(opt), MenuItem.ITEM_TYPE.BUTTON, opt);
     } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_BUTTONS_VERT)) {
-      w = new MenuBar(level, true, getBarType(opt),
-          MenuItem.ITEM_TYPE.BUTTON, opt);
+      w = new MenuBar(level, true, getBarType(opt), MenuItem.ITEM_TYPE.BUTTON, opt);
 
     } else {
       Assert.untouchable();
@@ -422,5 +439,4 @@ public class MenuManager implements Module {
       }
     }
   }
-
 }

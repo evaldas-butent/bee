@@ -16,7 +16,7 @@ public class ArgumentCountException extends BeeRuntimeException {
   }
 
   public ArgumentCountException(int cnt, int min, int max) {
-    super("Count: " + cnt + "Min: " + min + ", Max: " + max);
+    super("Count: " + cnt + " Min: " + min + ", Max: " + max);
 
     this.cnt = cnt;
     this.min = min;

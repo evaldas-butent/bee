@@ -2,11 +2,12 @@ package com.butent.bee.server;
 
 import com.butent.bee.server.communication.ResponseBuffer;
 import com.butent.bee.server.http.RequestInfo;
-import com.butent.bee.server.utils.BeeSystem;
+import com.butent.bee.server.utils.SystemInfo;
 import com.butent.bee.server.utils.Checksum;
 import com.butent.bee.server.utils.JvmUtils;
 import com.butent.bee.server.utils.MxUtils;
 import com.butent.bee.server.utils.XmlUtils;
+import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.ExtendedProperty;
@@ -19,7 +20,11 @@ import javax.ejb.Stateless;
 
 @Stateless
 public class Invocation {
-  
+
+  public void configInfo(ResponseBuffer buff) {
+    buff.addProperties(Config.getInfo());
+  }
+
   public void connectionInfo(RequestInfo reqInfo, ResponseBuffer buff) {
     Assert.notNull(reqInfo);
     buff.addExtendedProperties(reqInfo.getInfo());
@@ -39,11 +44,11 @@ public class Invocation {
       buff.addSevere("Request data not found");
       return;
     }
-    
+
     buff.addBinary(data);
-    
-    byte[] arr = Codec.toBytes(data); 
-    
+
+    byte[] arr = Codec.toBytes(data);
+
     buff.addOff("length", data.length());
     buff.addOff("adler32.z", Checksum.adler32(arr));
     buff.addOff("crc32.z", Checksum.crc32(arr));
@@ -57,21 +62,21 @@ public class Invocation {
   public void systemInfo(ResponseBuffer buff) {
     List<ExtendedProperty> lst = new ArrayList<ExtendedProperty>();
 
-    lst.addAll(BeeSystem.getSysInfo());
-    PropertyUtils.appendChildrenToExtended(lst, "Runtime", BeeSystem.getRuntimeInfo());
+    lst.addAll(SystemInfo.getSysInfo());
+    PropertyUtils.appendChildrenToExtended(lst, "Runtime", SystemInfo.getRuntimeInfo());
 
-    lst.addAll(BeeSystem.getPackagesInfo());
+    lst.addAll(SystemInfo.getPackagesInfo());
 
-    PropertyUtils.appendChildrenToExtended(lst, "Thread Static", BeeSystem.getThreadStaticInfo());
+    PropertyUtils.appendChildrenToExtended(lst, "Thread Static", SystemInfo.getThreadStaticInfo());
 
     Thread ct = Thread.currentThread();
     String root = "Current Thread";
 
-    PropertyUtils.appendChildrenToExtended(lst, root, BeeSystem.getThreadInfo(ct));
+    PropertyUtils.appendChildrenToExtended(lst, root, SystemInfo.getThreadInfo(ct));
     PropertyUtils.appendChildrenToExtended(lst, BeeUtils.concat(1, root, "Stack"),
-        BeeSystem.getThreadStackInfo(ct));
+        SystemInfo.getThreadStackInfo(ct));
 
-    lst.addAll(BeeSystem.getThreadGroupInfo(ct.getThreadGroup(), true, true));
+    lst.addAll(SystemInfo.getThreadGroupInfo(ct.getThreadGroup(), true, true));
 
     PropertyUtils.appendChildrenToExtended(lst, "[xml] Document Builder Factory",
         XmlUtils.getDomFactoryInfo());
@@ -98,7 +103,8 @@ public class Invocation {
     lst.addAll(MxUtils.getMemoryManagerInfo());
     lst.addAll(MxUtils.getMemoryPoolInfo());
 
-    PropertyUtils.appendChildrenToExtended(lst, "Operating System", MxUtils.getOperatingSystemInfo());
+    PropertyUtils.appendChildrenToExtended(lst, "Operating System",
+        MxUtils.getOperatingSystemInfo());
     lst.addAll(MxUtils.getRuntimeInfo());
 
     lst.addAll(MxUtils.getThreadsInfo());

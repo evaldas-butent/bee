@@ -64,20 +64,20 @@ public class Global implements Module {
   }
 
   public static void createVar(String name, String caption) {
-    createVar(name, caption, BeeType.TYPE_STRING, BeeConst.STRING_EMPTY);
+    createVar(name, caption, BeeType.STRING, BeeConst.STRING_EMPTY);
   }
 
-  public static void createVar(String name, String caption, int type, String value) {
+  public static void createVar(String name, String caption, BeeType type, String value) {
     Assert.notEmpty(name);
-    Assert.isTrue(BeeType.isValid(type));
+    Assert.notNull(type);
 
     vars.put(name, new Variable(caption, type, value));
   }
 
-  public static void createVar(String name, String caption, int type, String value,
+  public static void createVar(String name, String caption, BeeType type, String value,
       BeeWidget widget, String... items) {
     Assert.notEmpty(name);
-    Assert.isTrue(BeeType.isValid(type));
+    Assert.notNull(type);
 
     vars.put(name, new Variable(caption, type, value, widget, items));
   }
@@ -124,7 +124,7 @@ public class Global implements Module {
     return BeeUtils.getKey(vars, var);
   }
 
-  public static int getVarType(String name) {
+  public static BeeType getVarType(String name) {
     return getVar(name).getType();
   }
 
@@ -294,72 +294,72 @@ public class Global implements Module {
     createVar(BeeService.VAR_XML_SOURCE, "source");
     createVar(BeeService.VAR_XML_TRANSFORM, "transform");
     createVar(BeeService.VAR_XML_TARGET, "target");
-    createVar(BeeService.VAR_XML_RETURN, "return", BeeType.TYPE_STRING,
+    createVar(BeeService.VAR_XML_RETURN, "return", BeeType.STRING,
         "all", BeeWidget.RADIO, "all", "xsl", "source", "xml", "prop");
 
     setVarWidth(BeeService.VAR_XML_SOURCE, "300px");
     setVarWidth(BeeService.VAR_XML_TRANSFORM, "300px");
     setVarWidth(BeeService.VAR_XML_TARGET, "300px");
 
-    createVar(BeeService.VAR_FILE_NAME, null, BeeType.TYPE_FILE, BeeConst.STRING_EMPTY);
+    createVar(BeeService.VAR_FILE_NAME, null, BeeType.FILE, BeeConst.STRING_EMPTY);
 
     createVar(BeeService.VAR_JDBC_QUERY, "Jdbc Query");
     setVarWidth(BeeService.VAR_JDBC_QUERY, "500px");
 
     createVar(BeeService.VAR_CONNECTION_AUTO_COMMIT,
-        "Connection auto commit", BeeType.TYPE_STRING, BeeConst.DEFAULT,
+        "Connection auto commit", BeeType.STRING, BeeConst.DEFAULT,
         BeeWidget.RADIO, BeeConst.DEFAULT, BeeConst.STRING_FALSE, BeeConst.STRING_TRUE);
     createVar(BeeService.VAR_CONNECTION_READ_ONLY, "Connection read only",
-        BeeType.TYPE_STRING, BeeConst.DEFAULT, BeeWidget.RADIO,
+        BeeType.STRING, BeeConst.DEFAULT, BeeWidget.RADIO,
         BeeConst.DEFAULT, BeeConst.STRING_FALSE, BeeConst.STRING_TRUE);
     createVar(BeeService.VAR_CONNECTION_HOLDABILITY, "Connection holdability",
-        BeeType.TYPE_STRING, BeeConst.DEFAULT, BeeWidget.RADIO, BeeConst.DEFAULT,
+        BeeType.STRING, BeeConst.DEFAULT, BeeWidget.RADIO, BeeConst.DEFAULT,
         BeeConst.HOLD_CURSORS_OVER_COMMIT, BeeConst.CLOSE_CURSORS_AT_COMMIT);
     createVar(BeeService.VAR_CONNECTION_TRANSACTION_ISOLATION,
-        "Transaction isolation", BeeType.TYPE_STRING, BeeConst.DEFAULT,
+        "Transaction isolation", BeeType.STRING, BeeConst.DEFAULT,
         BeeWidget.LIST, BeeConst.DEFAULT, BeeConst.TRANSACTION_NONE,
         BeeConst.TRANSACTION_READ_COMMITTED, BeeConst.TRANSACTION_READ_UNCOMMITTED,
         BeeConst.TRANSACTION_REPEATABLE_READ, BeeConst.TRANSACTION_SERIALIZABLE);
 
     createVar(BeeService.VAR_STATEMENT_CURSOR_NAME, "Cursor name");
     createVar(BeeService.VAR_STATEMENT_ESCAPE_PROCESSING,
-        "Escape Processing", BeeType.TYPE_STRING, BeeConst.DEFAULT,
+        "Escape Processing", BeeType.STRING, BeeConst.DEFAULT,
         BeeWidget.RADIO, BeeConst.DEFAULT, BeeConst.STRING_FALSE, BeeConst.STRING_TRUE);
     createVar(BeeService.VAR_STATEMENT_FETCH_DIRECTION, "Statement fetch direction",
-        BeeType.TYPE_STRING, BeeConst.DEFAULT, BeeWidget.RADIO, BeeConst.DEFAULT,
+        BeeType.STRING, BeeConst.DEFAULT, BeeWidget.RADIO, BeeConst.DEFAULT,
         BeeConst.FETCH_FORWARD, BeeConst.FETCH_REVERSE, BeeConst.FETCH_UNKNOWN);
     createVar(BeeService.VAR_STATEMENT_FETCH_SIZE, "Statement fetch size");
     createVar(BeeService.VAR_STATEMENT_MAX_FIELD_SIZE, "Statement max field size");
     createVar(BeeService.VAR_STATEMENT_MAX_ROWS, "Statement max rows");
-    createVar(BeeService.VAR_STATEMENT_POOLABLE, "Poolable", BeeType.TYPE_STRING,
+    createVar(BeeService.VAR_STATEMENT_POOLABLE, "Poolable", BeeType.STRING,
         BeeConst.DEFAULT, BeeWidget.RADIO, BeeConst.DEFAULT, BeeConst.STRING_FALSE,
         BeeConst.STRING_TRUE);
     createVar(BeeService.VAR_STATEMENT_QUERY_TIMEOUT, "Query timeout");
 
-    createVar(BeeService.VAR_STATEMENT_RS_TYPE, "Statement rs type", BeeType.TYPE_STRING,
+    createVar(BeeService.VAR_STATEMENT_RS_TYPE, "Statement rs type", BeeType.STRING,
         BeeConst.DEFAULT, BeeWidget.RADIO, BeeConst.DEFAULT, BeeConst.TYPE_FORWARD_ONLY,
         BeeConst.TYPE_SCROLL_INSENSITIVE, BeeConst.TYPE_SCROLL_SENSITIVE);
     createVar(BeeService.VAR_STATEMENT_RS_CONCURRENCY, "Statement rs concurrency",
-        BeeType.TYPE_STRING, BeeConst.DEFAULT, BeeWidget.RADIO, BeeConst.DEFAULT,
+        BeeType.STRING, BeeConst.DEFAULT, BeeWidget.RADIO, BeeConst.DEFAULT,
         BeeConst.CONCUR_READ_ONLY, BeeConst.CONCUR_UPDATABLE);
     createVar(BeeService.VAR_STATEMENT_RS_HOLDABILITY, "Statement rs holdability",
-        BeeType.TYPE_STRING, BeeConst.DEFAULT, BeeWidget.RADIO, BeeConst.DEFAULT,
+        BeeType.STRING, BeeConst.DEFAULT, BeeWidget.RADIO, BeeConst.DEFAULT,
         BeeConst.HOLD_CURSORS_OVER_COMMIT, BeeConst.CLOSE_CURSORS_AT_COMMIT);
 
     createVar(BeeService.VAR_RESULT_SET_FETCH_DIRECTION, "Rs fetch direction",
-        BeeType.TYPE_STRING, BeeConst.DEFAULT, BeeWidget.RADIO, BeeConst.DEFAULT,
+        BeeType.STRING, BeeConst.DEFAULT, BeeWidget.RADIO, BeeConst.DEFAULT,
         BeeConst.FETCH_FORWARD, BeeConst.FETCH_REVERSE, BeeConst.FETCH_UNKNOWN);
     createVar(BeeService.VAR_RESULT_SET_FETCH_SIZE, "Rs fetch size");
 
-    createVar(BeeService.VAR_JDBC_RETURN, "Jdbc return", BeeType.TYPE_STRING,
+    createVar(BeeService.VAR_JDBC_RETURN, "Jdbc return", BeeType.STRING,
         BeeConst.JDBC_RESULT_SET, BeeWidget.RADIO, BeeConst.JDBC_RESULT_SET,
         BeeConst.JDBC_META_DATA, BeeConst.JDBC_ROW_COUNT, BeeConst.JDBC_COLUMNS);
 
-    createVar(VAR_DEBUG, "Debug", BeeType.TYPE_BOOLEAN, BeeUtils.toString(false));
+    createVar(VAR_DEBUG, "Debug", BeeType.BOOLEAN, BeeUtils.toString(false));
 
     for (int i = MenuConstants.ROOT_MENU_INDEX; i < MenuConstants.MAX_MENU_DEPTH; i++) {
       if (MenuConstants.isRootLevel(i)) {
-        createVar(MenuConstants.varMenuLayout(i), "Root", BeeType.TYPE_STRING,
+        createVar(MenuConstants.varMenuLayout(i), "Root", BeeType.STRING,
             MenuConstants.DEFAULT_ROOT_LAYOUT, BeeWidget.LIST,
             MenuConstants.LAYOUT_MENU_HOR, MenuConstants.LAYOUT_MENU_VERT,
             MenuConstants.LAYOUT_STACK, MenuConstants.LAYOUT_TAB,
@@ -371,7 +371,7 @@ public class Global implements Module {
             MenuConstants.LAYOUT_BUTTONS_VERT);
       } else {
         createVar(MenuConstants.varMenuLayout(i), "Items " + i,
-            BeeType.TYPE_STRING, MenuConstants.DEFAULT_ITEM_LAYOUT, BeeWidget.LIST,
+            BeeType.STRING, MenuConstants.DEFAULT_ITEM_LAYOUT, BeeWidget.LIST,
             MenuConstants.LAYOUT_MENU_HOR, MenuConstants.LAYOUT_MENU_VERT,
             MenuConstants.LAYOUT_TREE, MenuConstants.LAYOUT_LIST,
             MenuConstants.LAYOUT_ORDERED_LIST, MenuConstants.LAYOUT_UNORDERED_LIST,
@@ -381,12 +381,12 @@ public class Global implements Module {
       }
 
       createVar(MenuConstants.varMenuBarType(i), BeeConst.STRING_EMPTY,
-          BeeType.TYPE_BOOLEAN, BeeUtils.toString(false));
+          BeeType.BOOLEAN, BeeUtils.toString(false));
     }
 
-    createVar(MenuConstants.VAR_ROOT_LIMIT, "Max  Roots", BeeType.TYPE_INT,
+    createVar(MenuConstants.VAR_ROOT_LIMIT, "Max  Roots", BeeType.INT,
         BeeUtils.transform(MenuConstants.DEFAULT_ROOT_LIMIT));
-    createVar(MenuConstants.VAR_ITEM_LIMIT, "Max  Items", BeeType.TYPE_INT,
+    createVar(MenuConstants.VAR_ITEM_LIMIT, "Max  Items", BeeType.INT,
         BeeUtils.transform(MenuConstants.DEFAULT_ITEM_LIMIT));
   }
 }

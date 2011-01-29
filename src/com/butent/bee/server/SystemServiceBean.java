@@ -6,6 +6,7 @@ import com.butent.bee.server.utils.ClassUtils;
 import com.butent.bee.server.utils.FileUtils;
 import com.butent.bee.server.utils.JvmUtils;
 import com.butent.bee.server.utils.XmlUtils;
+import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeService;
 import com.butent.bee.shared.communication.CommUtils;

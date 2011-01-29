@@ -122,6 +122,40 @@ public class BeeConst {
 
   private static String home = SERVER;
   
+  public static String getDsType(String dsn) {
+    if (dsn == null) {
+      return null;
+    }
+    
+    String name = dsn.trim().toLowerCase();
+    if (name.isEmpty()) {
+      return null;
+    }
+    char c = name.charAt(0);
+    String tp;
+    
+    if (name.indexOf("my") == 0) {
+      tp = MYSQL;
+    } else if (c == 'm' && !name.contains("my")) {
+      tp = MSSQL;
+    } else if (c == 'o') {
+      tp = ORACLE;
+    } else if (c == 'p') {
+      tp = PGSQL;
+    } else if (name.contains("my")) {
+      tp = MYSQL;
+    } else if (name.contains("ms") || name.contains("micros")) {
+      tp = BeeConst.MSSQL;
+    } else if (name.contains("or")) {
+      tp = BeeConst.ORACLE;
+    } else if (name.contains("pg") || name.contains("postg")) {
+      tp = BeeConst.PGSQL;
+    } else {
+      tp = null;
+    }
+    return tp;
+  }
+  
   public static boolean isClient() {
     return home.equals(CLIENT);
   }
@@ -152,7 +186,6 @@ public class BeeConst {
 
   public static boolean validDsType(String tp) {
     boolean ok = false;
-
     if (tp == null || tp.isEmpty()) {
       return ok;
     }
@@ -163,7 +196,6 @@ public class BeeConst {
         break;
       }
     }
-
     return ok;
   }
 
@@ -176,5 +208,4 @@ public class BeeConst {
       return UNKNOWN;
     }
   }
-
 }

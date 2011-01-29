@@ -81,39 +81,46 @@ public class BeeDataSource implements Transformable {
 
     List<ExtendedProperty> lst = new ArrayList<ExtendedProperty>();
 
-    PropertyUtils.addProperties(lst, false, "DB Name", dbMd.getDatabaseProductName(),
-        "DB Version", dbMd.getDatabaseProductVersion(), "Driver Name",
-        dbMd.getDriverName(), "Driver Version", dbMd.getDriverVersion(),
-        "JDBC Major Version", dbMd.getJDBCMajorVersion(), "JDBC Minor Version",
-        dbMd.getJDBCMinorVersion(), "URL", dbMd.getURL());
+    PropertyUtils.addProperties(lst, false,
+        "DB Name", dbMd.getDatabaseProductName(),
+        "DB Version", dbMd.getDatabaseProductVersion(),
+        "Driver Name", dbMd.getDriverName(),
+        "Driver Version", dbMd.getDriverVersion(),
+        "JDBC Major Version", dbMd.getJDBCMajorVersion(),
+        "JDBC Minor Version", dbMd.getJDBCMinorVersion(),
+        "URL", dbMd.getURL());
 
     PropertyUtils.appendChildrenToExtended(lst, "Connection", BeeConnection.getInfo(conn));
 
-    PropertyUtils.addProperties(lst, false, "User", dbMd.getUserName(),
-        "Catalog Term", dbMd.getCatalogTerm(), "Catalog Separator",
-        dbMd.getCatalogSeparator(), "Schema Term", dbMd.getSchemaTerm(),
-        "Procedure Term", dbMd.getProcedureTerm(), "Extra Name Characters",
-        dbMd.getExtraNameCharacters(), "Identifier Quote",
-        dbMd.getIdentifierQuoteString(), "Search String Escape",
-        dbMd.getSearchStringEscape(), "Max Catalog Name",
-        dbMd.getMaxCatalogNameLength(), "Max Schema Name",
-        dbMd.getMaxSchemaNameLength(), "Max Table Name",
-        dbMd.getMaxTableNameLength(), "Max Cursor Name",
-        dbMd.getMaxCursorNameLength(), "Max Column Name",
-        dbMd.getMaxColumnNameLength(), "Max Procedure Name",
-        dbMd.getMaxProcedureNameLength(), "Max User Name",
-        dbMd.getMaxUserNameLength(), "Max Columns In Table",
-        dbMd.getMaxColumnsInTable(), "Max Row Size", dbMd.getMaxRowSize(),
+    PropertyUtils.addProperties(lst, false,
+        "User", dbMd.getUserName(),
+        "Catalog Term", dbMd.getCatalogTerm(),
+        "Catalog Separator", dbMd.getCatalogSeparator(),
+        "Schema Term", dbMd.getSchemaTerm(),
+        "Procedure Term", dbMd.getProcedureTerm(),
+        "Extra Name Characters", dbMd.getExtraNameCharacters(),
+        "Identifier Quote", dbMd.getIdentifierQuoteString(),
+        "Search String Escape", dbMd.getSearchStringEscape(),
+        "Max Catalog Name", dbMd.getMaxCatalogNameLength(),
+        "Max Schema Name", dbMd.getMaxSchemaNameLength(),
+        "Max Table Name", dbMd.getMaxTableNameLength(),
+        "Max Cursor Name", dbMd.getMaxCursorNameLength(),
+        "Max Column Name", dbMd.getMaxColumnNameLength(),
+        "Max Procedure Name", dbMd.getMaxProcedureNameLength(),
+        "Max User Name", dbMd.getMaxUserNameLength(),
+        "Max Columns In Table", dbMd.getMaxColumnsInTable(),
+        "Max Row Size", dbMd.getMaxRowSize(),
         "Max Columns In Index", dbMd.getMaxColumnsInIndex(),
-        "Max Index Length", dbMd.getMaxIndexLength(), "Max Statement Length",
-        dbMd.getMaxStatementLength(), "Max Tables In Select",
-        dbMd.getMaxTablesInSelect(), "Max Columns In Select",
-        dbMd.getMaxColumnsInSelect(), "Max Columns In GroupBy",
-        dbMd.getMaxColumnsInGroupBy(), "Max Columns In Order By",
-        dbMd.getMaxColumnsInOrderBy(), "Max Binary Literal",
-        dbMd.getMaxBinaryLiteralLength(), "Max Char Literal",
-        dbMd.getMaxCharLiteralLength(), "Max Connections",
-        dbMd.getMaxConnections(), "Max Statements", dbMd.getMaxStatements());
+        "Max Index Length", dbMd.getMaxIndexLength(),
+        "Max Statement Length", dbMd.getMaxStatementLength(),
+        "Max Tables In Select", dbMd.getMaxTablesInSelect(),
+        "Max Columns In Select", dbMd.getMaxColumnsInSelect(),
+        "Max Columns In GroupBy", dbMd.getMaxColumnsInGroupBy(),
+        "Max Columns In Order By", dbMd.getMaxColumnsInOrderBy(),
+        "Max Binary Literal", dbMd.getMaxBinaryLiteralLength(),
+        "Max Char Literal", dbMd.getMaxCharLiteralLength(),
+        "Max Connections", dbMd.getMaxConnections(),
+        "Max Statements", dbMd.getMaxStatements());
 
     PropertyUtils.addProperties(lst, false,
         "Default Transaction Isolation",
@@ -121,8 +128,8 @@ public class BeeDataSource implements Transformable {
         "Result Set Holdability",
         JdbcUtils.holdabilityAsString(dbMd.getResultSetHoldability()));
 
-    PropertyUtils.addSplit(lst, "SQL Keywords", null, dbMd.getSQLKeywords(),
-        BeeConst.STRING_COMMA);
+    PropertyUtils.addSplit(lst, "SQL Keywords", null,
+        dbMd.getSQLKeywords(), BeeConst.STRING_COMMA);
     PropertyUtils.addSplit(lst, "System Functions", null,
         dbMd.getSystemFunctions(), BeeConst.STRING_COMMA);
     PropertyUtils.addSplit(lst, "Numeric Functions", null,
@@ -135,12 +142,9 @@ public class BeeDataSource implements Transformable {
     PropertyUtils.addProperties(lst, false, 
         "All Procedures Are Callable", dbMd.allProceduresAreCallable(),
         "All Tables Are Selectable",  dbMd.allTablesAreSelectable(),
-        "Auto Commit Failure Closes All Result Sets",
-        dbMd.autoCommitFailureClosesAllResultSets(),
-        "Data Definition Causes Transaction Commit",
-        dbMd.dataDefinitionCausesTransactionCommit(),
-        "Data Definition Ignored In Transactions",
-        dbMd.dataDefinitionIgnoredInTransactions(),
+        "Auto Commit Failure Closes All Result Sets", dbMd.autoCommitFailureClosesAllResultSets(),
+        "Data Definition Causes Transaction Commit", dbMd.dataDefinitionCausesTransactionCommit(),
+        "Data Definition Ignored In Transactions", dbMd.dataDefinitionIgnoredInTransactions(),
         "Max Row Size Include Blobs", dbMd.doesMaxRowSizeIncludeBlobs(),
         "Catalog At Start", dbMd.isCatalogAtStart(),
         "Read Only", dbMd.isReadOnly(),
@@ -237,12 +241,18 @@ public class BeeDataSource implements Transformable {
       PropertyUtils.addExtended(lst, "Client Property", k, BeeUtils.ifString(v, "(empty)"));
     }
     rs.close();
+    
+    try {
+      rs = dbMd.getFunctions(null, null, null);
+      c = JdbcUtils.getSize(rs);
+      rs.close();
+      s = BeeUtils.bracket(c);
+    } catch (SQLException ex) {
+      c = 0;
+      s = ex.getMessage();
+    }
 
-    rs = dbMd.getFunctions(null, null, null);
-    c = JdbcUtils.getSize(rs);
-    rs.close();
-
-    PropertyUtils.addExtended(lst, "Functions", null, BeeUtils.bracket(c));
+    PropertyUtils.addExtended(lst, "Functions", null, s);
 
     if (BeeUtils.betweenInclusive(c, 1, 100)) {
       rs = dbMd.getFunctions(null, null, null);
@@ -258,12 +268,17 @@ public class BeeDataSource implements Transformable {
       }
       rs.close();
     }
+    
+    try {
+      rs = dbMd.getProcedures(null, null, null);
+      c = JdbcUtils.getSize(rs);
+      rs.close();
+    } catch (SQLException ex) {
+      c = 0;
+      s = ex.getMessage();
+    }
 
-    rs = dbMd.getProcedures(null, null, null);
-    c = JdbcUtils.getSize(rs);
-    rs.close();
-
-    PropertyUtils.addExtended(lst, "Procedures", null, BeeUtils.bracket(c));
+    PropertyUtils.addExtended(lst, "Procedures", null, s);
 
     if (BeeUtils.betweenInclusive(c, 1, 100)) {
       rs = dbMd.getProcedures(null, null, null);

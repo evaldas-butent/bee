@@ -13,6 +13,7 @@ import com.butent.bee.shared.utils.ExtendedProperty;
 import com.butent.bee.shared.utils.LogUtils;
 import com.butent.bee.shared.utils.PropertyUtils;
 
+import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
@@ -136,9 +137,11 @@ public class RequestInfo implements HasExtendedInfo, Transformable {
 
     PropertyUtils.appendExtended(reqInfo, getAttributeInfo(request));
 
-    PropertyUtils.addProperties(reqInfo, false, "Auth Type", request.getAuthType(),
-        "Character Encoding", request.getCharacterEncoding(), "Content Length",
-        request.getContentLength(), "Content Type", request.getContentType(),
+    PropertyUtils.addProperties(reqInfo, false,
+        "Auth Type", request.getAuthType(),
+        "Character Encoding", request.getCharacterEncoding(),
+        "Content Length", request.getContentLength(),
+        "Content Type", request.getContentType(),
         "Context Path", request.getContextPath());
 
     PropertyUtils.appendExtended(reqInfo, getCookieInfo(request));
@@ -151,34 +154,47 @@ public class RequestInfo implements HasExtendedInfo, Transformable {
     PropertyUtils.appendExtended(reqInfo, getHeaderInfo(request));
     PropertyUtils.appendExtended(reqInfo, getLocaleInfo(request));
 
-    PropertyUtils.addProperties(reqInfo, false, "Local Addr", request.getLocalAddr(),
-        "Local Name", request.getLocalName(), "Local Port",
-        request.getLocalPort(), "Method", request.getMethod());
+    PropertyUtils.addProperties(reqInfo, false,
+        "Local Addr", request.getLocalAddr(),
+        "Local Name", request.getLocalName(),
+        "Local Port", request.getLocalPort(),
+        "Method", request.getMethod());
 
     PropertyUtils.appendExtended(reqInfo, getParameterInfo(request));
 
-    PropertyUtils.addProperties(reqInfo, false, "Path Info", request.getPathInfo(),
-        "Path Translated", request.getPathTranslated(), "Protocol",
-        request.getProtocol(), "Query String", request.getQueryString(),
-        "Remote Addr", request.getRemoteAddr(), "Remote Host",
-        request.getRemoteHost(), "Remote Port", request.getRemotePort(),
-        "Remote User", request.getRemoteUser(), "Requested Session Id",
-        request.getRequestedSessionId(), "Request URI",
-        request.getRequestURI(), "Request URL", request.getRequestURL(),
-        "Scheme", request.getScheme(), "Server Name", request.getServerName(),
-        "Server Port", request.getServerPort(), "Servlet Path",
-        request.getServletPath());
+    PropertyUtils.addProperties(reqInfo, false,
+        "Path Info", request.getPathInfo(),
+        "Path Translated", request.getPathTranslated(),
+        "Protocol", request.getProtocol(),
+        "Query String", request.getQueryString(),
+        "Remote Addr", request.getRemoteAddr(),
+        "Remote Host", request.getRemoteHost(),
+        "Remote Port", request.getRemotePort(),
+        "Remote User", request.getRemoteUser(),
+        "Requested Session Id", request.getRequestedSessionId(),
+        "Request URI", request.getRequestURI(),
+        "Request URL", request.getRequestURL(),
+        "Scheme", request.getScheme(),
+        "Server Name", request.getServerName(),
+        "Server Port", request.getServerPort(),
+        "Servlet Path", request.getServletPath());
 
     PropertyUtils.appendExtended(reqInfo, getServletContextInfo(request.getServletContext()));
     PropertyUtils.appendExtended(reqInfo, getSessionInfo(request.getSession(false)));
+    
+    Principal principal = request.getUserPrincipal();
+    if (principal != null) {
+      PropertyUtils.addChildren(reqInfo, "User Principal",
+          "Name", principal.getName(), "String", principal.toString());
+    }
 
-    PropertyUtils.addProperties(reqInfo, false, "is Async Started",
-        request.isAsyncStarted(), "is Async Supported",
-        request.isAsyncSupported(), "is Requested Session Id From Cookie",
-        request.isRequestedSessionIdFromCookie(),
-        "is Requested Session Id From URL",
-        request.isRequestedSessionIdFromURL(), "is Requested Session Id Valid",
-        request.isRequestedSessionIdValid(), "is Secure", request.isSecure());
+    PropertyUtils.addProperties(reqInfo, false,
+        "is Async Started", request.isAsyncStarted(),
+        "is Async Supported", request.isAsyncSupported(),
+        "is Requested Session Id From Cookie", request.isRequestedSessionIdFromCookie(),
+        "is Requested Session Id From URL", request.isRequestedSessionIdFromURL(),
+        "is Requested Session Id Valid", request.isRequestedSessionIdValid(),
+        "is Secure", request.isSecure());
 
     return reqInfo;
   }
@@ -410,8 +426,8 @@ public class RequestInfo implements HasExtendedInfo, Transformable {
     Collection<ExtendedProperty> info = new ArrayList<ExtendedProperty>();
     String root = "Async Context";
 
-    PropertyUtils.addProperties(info, true, root, "Timeout", ac.getTimeout(), root,
-        "Has Original Request And Response", ac.hasOriginalRequestAndResponse());
+    PropertyUtils.addProperties(info, true, root, "Timeout", ac.getTimeout(),
+        root, "Has Original Request And Response", ac.hasOriginalRequestAndResponse());
 
     return info;
   }

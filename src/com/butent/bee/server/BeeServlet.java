@@ -94,7 +94,7 @@ public class BeeServlet extends HttpServlet {
         buff.addWarning("Already logged in as:", user);
       }
 
-    } else if (BeeUtils.isEmpty(user)) {
+    } else if (BeeUtils.isEmpty(user) && BeeUtils.isEmpty(Config.getProperty("UserName"))) {
       buff.addWarning("Not logged in");
 
     } else if (BeeUtils.same(svc, BeeService.SERVICE_LOGOUT)) {
@@ -174,7 +174,6 @@ public class BeeServlet extends HttpServlet {
           sb.append(part);
           resp.setIntHeader(CommUtils.rpcPartName(pn++), part.length());
         }
-
         s = sb.toString();
 
       } else if (mc > 0) {

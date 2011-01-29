@@ -47,12 +47,10 @@ public class HttpUtils {
         continue;
       }
 
-      v = BeeUtils.ifString(BeeUtils.transformEnumeration(req.getHeaders(nm)),
-          req.getHeader(nm));
+      v = BeeUtils.ifString(BeeUtils.transformEnumeration(req.getHeaders(nm)), req.getHeader(nm));
       if (BeeUtils.isEmpty(v)) {
         continue;
       }
-
       headers.put(nm, v);
     }
 
@@ -108,7 +106,6 @@ public class HttpUtils {
         params.put(nm, v[i]);
       }
     }
-
     return params;
   }
 
@@ -176,5 +173,4 @@ public class HttpUtils {
 
     return sb.toString();
   }
-  
 }

@@ -29,7 +29,7 @@ public class InputBox {
 
     Widget inp = null;
     String z, w;
-    int tp;
+    BeeType tp;
     BeeWidget bw;
 
     int r = 0;
@@ -41,7 +41,7 @@ public class InputBox {
       bw = var.getWidget();
 
       z = var.getCaption();
-      if (!BeeUtils.isEmpty(z) && tp != BeeType.TYPE_BOOLEAN) {
+      if (!BeeUtils.isEmpty(z) && tp != BeeType.BOOLEAN) {
         ft.setText(r, 0, z);
       }
 
@@ -64,11 +64,11 @@ public class InputBox {
         }
       } else {
         switch (tp) {
-          case BeeType.TYPE_FILE:
+          case FILE:
             inp = new BeeFileUpload(var);
             ok = true;
             break;
-          case BeeType.TYPE_BOOLEAN:
+          case BOOLEAN:
             if (BeeUtils.isEmpty(z)) {
               inp = new BeeSimpleCheckBox(var);
             } else {
@@ -76,7 +76,7 @@ public class InputBox {
             }
             ok = true;
             break;
-          case BeeType.TYPE_INT:
+          case INT:
             inp = new InputInteger(var);
             ok = true;
             break;

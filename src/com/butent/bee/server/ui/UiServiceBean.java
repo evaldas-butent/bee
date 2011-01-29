@@ -1,11 +1,11 @@
 package com.butent.bee.server.ui;
 
-import com.butent.bee.server.Assert;
 import com.butent.bee.server.communication.ResponseBuffer;
 import com.butent.bee.server.data.IdGeneratorBean;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.http.RequestInfo;
+import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;

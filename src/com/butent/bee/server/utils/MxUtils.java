@@ -244,7 +244,7 @@ public class MxUtils {
 
       for (int i = 0; i < stack.length; i++) {
         PropertyUtils.addExtended(lst, root, "Stack Trace Element " + i,
-            BeeSystem.transformStackTraceElement(stack[i]));
+            SystemInfo.transformStackTraceElement(stack[i]));
       }
     }
 

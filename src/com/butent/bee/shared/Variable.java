@@ -7,7 +7,7 @@ import java.util.List;
 
 public class Variable implements HasBooleanValue, HasDoubleValue, HasStringValue, Transformable {
   private String caption = null;
-  private int type = BeeType.TYPE_UNKNOWN;
+  private BeeType type;
   private String value = null;
 
   private BeeWidget widget = null;
@@ -16,34 +16,33 @@ public class Variable implements HasBooleanValue, HasDoubleValue, HasStringValue
   private String width = null;
 
   public Variable() {
-    super();
+    type = BeeType.UNKNOWN;
   }
 
-  public Variable(int type) {
+  public Variable(BeeType type) {
     this(null, type, null);
   }
 
-  public Variable(int type, String value) {
+  public Variable(BeeType type, String value) {
     this(null, type, value);
   }
 
-  public Variable(String caption, int type) {
+  public Variable(String caption, BeeType type) {
     this(caption, type, null);
   }
 
-  public Variable(String caption, int type, String value) {
-    this();
+  public Variable(String caption, BeeType type, String value) {
     this.caption = caption;
     this.type = type;
     this.value = value;
   }
 
-  public Variable(String caption, int type, String value, BeeWidget widget) {
+  public Variable(String caption, BeeType type, String value, BeeWidget widget) {
     this(caption, type, value);
     this.widget = widget;
   }
 
-  public Variable(String caption, int type, String value, BeeWidget widget, String... items) {
+  public Variable(String caption, BeeType type, String value, BeeWidget widget, String... items) {
     this(caption, type, value, widget);
 
     this.items = new ArrayList<String>();
@@ -80,7 +79,7 @@ public class Variable implements HasBooleanValue, HasDoubleValue, HasStringValue
     return getValue();
   }
 
-  public int getType() {
+  public BeeType getType() {
     return type;
   }
 
@@ -104,7 +103,7 @@ public class Variable implements HasBooleanValue, HasDoubleValue, HasStringValue
     this.items = items;
   }
 
-  public void setType(int type) {
+  public void setType(BeeType type) {
     this.type = type;
   }
   

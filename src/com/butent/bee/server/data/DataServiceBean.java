@@ -1,6 +1,5 @@
 package com.butent.bee.server.data;
 
-import com.butent.bee.server.Assert;
 import com.butent.bee.server.DataSourceBean;
 import com.butent.bee.server.communication.ResponseBuffer;
 import com.butent.bee.server.http.RequestInfo;
@@ -10,7 +9,8 @@ import com.butent.bee.server.jdbc.BeeStatement;
 import com.butent.bee.server.jdbc.JdbcConst;
 import com.butent.bee.server.jdbc.JdbcUtils;
 import com.butent.bee.server.utils.BeeDataSource;
-import com.butent.bee.server.utils.BeeSystem;
+import com.butent.bee.server.utils.SystemInfo;
+import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeDate;
 import com.butent.bee.shared.BeeService;
@@ -38,8 +38,7 @@ public class DataServiceBean {
   @EJB
   ResultSetBean rsb;
 
-  public void doService(String svc, String dsn, RequestInfo reqInfo,
-      ResponseBuffer buff) {
+  public void doService(String svc, String dsn, RequestInfo reqInfo, ResponseBuffer buff) {
     Assert.notEmpty(svc);
 
     BeeDataSource ds = checkDs(dsn, buff);
@@ -389,9 +388,9 @@ public class DataServiceBean {
       buff.addMessage("Statement Poolable:", sPo, before, vb, after, BeeUtils.toBoolean(v2));
     }
 
-    long memQ1 = BeeSystem.freeMemory();
+    long memQ1 = SystemInfo.freeMemory();
     ResultSet rs = bs.executeQuery(stmt, sql);
-    long memQ2 = BeeSystem.freeMemory();
+    long memQ2 = SystemInfo.freeMemory();
 
     if (bs.hasErrors() || rs == null) {
       bc.revert(conn);
@@ -466,9 +465,9 @@ public class DataServiceBean {
       rsb.rsMdToResponse(rs, buff, debug);
     } else if (BeeConst.JDBC_ROW_COUNT.equals(ret)) {
       BeeDate start = new BeeDate();
-      long memC1 = BeeSystem.freeMemory();
+      long memC1 = SystemInfo.freeMemory();
       int rc = JdbcUtils.getSize(rs);
-      long memC2 = BeeSystem.freeMemory();
+      long memC2 = SystemInfo.freeMemory();
       BeeDate end = new BeeDate();
 
       buff.addLine(enter.toLog(), start.toLog(), end.toLog());
