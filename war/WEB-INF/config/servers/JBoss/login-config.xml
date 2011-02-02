@@ -1,5 +1,5 @@
 <policy>
-  <application-policy>
+  <application-policy name="DBPolicy">
     <authentication>
       <login-module code="org.jboss.security.auth.spi.DatabaseServerLoginModule" flag="required">
         <module-option name="dsJndiName">java:/jdbc/my</module-option>

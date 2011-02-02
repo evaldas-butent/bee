@@ -59,11 +59,8 @@ import javax.xml.validation.Validator;
 @Startup
 @Lock(LockType.READ)
 public class SystemBean {
-  private static final Class<?> CLASS = SystemBean.class;
-  public static final String RESOURCE_PATH = CLASS.getResource(CLASS.getSimpleName() + ".class").getPath()
-    .replace(CLASS.getName().replace('.', '/') + ".class", "../config/");
-  public static final String STRUCTURE_SCHEMA = RESOURCE_PATH + "structure.xsd";
-  public static final String VIEW_SCHEMA = RESOURCE_PATH + "views.xsd";
+  public static final String STRUCTURE_SCHEMA = "structure.xsd";
+  public static final String VIEW_SCHEMA = "views.xsd";
 
   private static Logger logger = Logger.getLogger(SystemBean.class.getName());
 
@@ -444,19 +441,14 @@ public class SystemBean {
   public void init() {
     String engine = BeeUtils.ifString(Config.getProperty("DefaultEngine"), BeeConst.MYSQL);
     SqlBuilderFactory.setDefaultEngine(BeeConst.getDsType(engine));
-    
-    dbName = qs.dbName();
-    dbSchema = qs.dbSchema();
-    initTables();
-    initViews();
-    initExtensions();
+    initObjects();
   }
 
   @Lock(LockType.WRITE)
   public void initExtensions() {
-    String resource = RESOURCE_PATH + "extensions.xml";
+    String resource = Config.getPath("extensions.xml");
 
-    List<BeeTable> extensions = loadTables(resource, STRUCTURE_SCHEMA);
+    List<BeeTable> extensions = loadTables(resource, Config.getPath(STRUCTURE_SCHEMA));
 
     if (BeeUtils.isEmpty(extensions)) {
       return;
@@ -486,7 +478,7 @@ public class SystemBean {
     String[] dbTables = qs.dbTables(dbName, dbSchema, null);
 
     for (BeeTable table : getTables()) {
-      table.setActive(!BeeUtils.isEmpty(dbTables) && BeeUtils.inListSame(table.getName(), dbTables));
+      table.setActive(BeeUtils.inListSame(table.getName(), dbTables));
 
       Map<String, String[]> stateTables = new HashMap<String, String[]>();
 
@@ -494,7 +486,7 @@ public class SystemBean {
         String tblName = state.getTable();
         boolean active = false;
 
-        if (!BeeUtils.isEmpty(dbTables) && BeeUtils.inListSame(tblName, dbTables)) {
+        if (BeeUtils.inListSame(tblName, dbTables)) {
           if (!stateTables.containsKey(tblName)) {
             stateTables.put(tblName, qs.dbFields(tblName));
           }
@@ -514,11 +506,19 @@ public class SystemBean {
         "existing tables descriptions from", resource);
   }
 
+  public void initObjects() {
+    dbName = qs.dbName();
+    dbSchema = qs.dbSchema();
+    initTables();
+    initViews();
+    initExtensions();
+  }
+
   @Lock(LockType.WRITE)
   public void initViews() {
-    String resource = RESOURCE_PATH + "views.xml";
+    String resource = Config.getPath("views.xml");
 
-    List<BeeView> views = loadViews(resource, VIEW_SCHEMA);
+    List<BeeView> views = loadViews(resource, Config.getPath(VIEW_SCHEMA));
 
     if (BeeUtils.isEmpty(views)) {
       LogUtils.warning(logger, resource, "No views defined");
@@ -928,9 +928,9 @@ public class SystemBean {
 
   @Lock(LockType.WRITE)
   private void initTables() {
-    String resource = RESOURCE_PATH + "structure.xml";
+    String resource = Config.getPath("structure.xml");
 
-    List<BeeTable> tables = loadTables(resource, STRUCTURE_SCHEMA);
+    List<BeeTable> tables = loadTables(resource, Config.getPath(STRUCTURE_SCHEMA));
 
     if (BeeUtils.isEmpty(tables)) {
       LogUtils.warning(logger, resource, "Nothing to load");

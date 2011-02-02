@@ -71,6 +71,7 @@ public class BeeService {
 
   public static final String VAR_LOGIN = RPC_VAR_PREFIX + "login";
   public static final String VAR_PASSWORD = RPC_VAR_PREFIX + "password";
+  public static final String VAR_USER_SIGN = RPC_VAR_PREFIX + "user_sign";
 
   public static final String VAR_CLASS_NAME = RPC_VAR_PREFIX + "class_name";
   public static final String VAR_PACKAGE_LIST = RPC_VAR_PREFIX + "package_list";

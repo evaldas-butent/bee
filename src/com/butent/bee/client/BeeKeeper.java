@@ -47,6 +47,10 @@ public class BeeKeeper {
     return UI;
   }
 
+  public static BeeUser getUser() {
+    return USER;
+  }
+
   private Module[] modules;
 
   public BeeKeeper(HasWidgets root, String url) {

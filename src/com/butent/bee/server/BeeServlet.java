@@ -45,9 +45,6 @@ public class BeeServlet extends HttpServlet {
   private void doService(HttpServletRequest req, HttpServletResponse resp) {
     long start = System.currentTimeMillis();
 
-    HttpSession session = req.getSession();
-    String sid = session.getId();
-
     RequestInfo reqInfo = new RequestInfo(req);
 
     String meth, rid, svc, dsn, sep, opt;
@@ -78,35 +75,16 @@ public class BeeServlet extends HttpServlet {
     }
 
     ResponseBuffer buff = new ResponseBuffer(sep);
+    String sid = null;
 
-    String user = req.getRemoteUser();
+    if (isAuthorized(req, reqInfo, resp, buff)) {
+      sid = req.getSession(false).getId();
 
-    if (BeeUtils.same(svc, BeeService.SERVICE_LOGIN)) {
-      if (BeeUtils.isEmpty(user)) {
-        try {
-          req.login(reqInfo.getParameter(BeeService.VAR_LOGIN),
-              reqInfo.getParameter(BeeService.VAR_PASSWORD));
-          buff.addWarning("Login successful");
-        } catch (ServletException e) {
-          buff.addSevere(e.getMessage());
-        }
-      } else {
-        buff.addWarning("Already logged in as:", user);
+      if (!BeeUtils.same(svc, BeeService.SERVICE_LOGIN)) {
+        dispatcher.doService(svc, dsn, reqInfo, buff);
       }
-
-    } else if (BeeUtils.isEmpty(user) && BeeUtils.isEmpty(Config.getProperty("UserName"))) {
-      buff.addWarning("Not logged in");
-
-    } else if (BeeUtils.same(svc, BeeService.SERVICE_LOGOUT)) {
-      try {
-        req.logout();
-        buff.addWarning("User logged out:", user);
-      } catch (ServletException e) {
-        buff.addSevere(e.getMessage());
-      }
-
     } else {
-      dispatcher.doService(svc, dsn, reqInfo, buff);
+      buff.addWarning("Not logged in");
     }
 
     int respLen = buff.getSize();
@@ -187,12 +165,58 @@ public class BeeServlet extends HttpServlet {
 
       try {
         PrintWriter out = resp.getWriter();
-        // ServletOutputStream out = resp.getOutputStream();
         out.print(s);
         out.flush();
       } catch (IOException ex) {
         LogUtils.error(logger, ex);
       }
     }
+  }
+
+  private boolean isAuthorized(HttpServletRequest req, RequestInfo reqInfo,
+      HttpServletResponse resp, ResponseBuffer buff) {
+
+    HttpSession session = req.getSession(false);
+    String svc = reqInfo.getService();
+    boolean loggedIn = !BeeUtils.isEmpty(session);
+    boolean doLogout = loggedIn
+        && (BeeUtils.inListSame(svc, BeeService.SERVICE_LOGIN, BeeService.SERVICE_LOGOUT)
+        || !BeeUtils.same(session.getId(), reqInfo.getParameter(BeeService.RPC_VAR_SID)));
+
+    if (doLogout) {
+      try {
+        req.logout();
+        dispatcher.doLogout((String) session.getAttribute(BeeService.VAR_USER_SIGN));
+        session.invalidate();
+        loggedIn = false;
+        buff.addWarning("Logout successful");
+
+      } catch (ServletException e) {
+        buff.addSevere(e.getMessage());
+      }
+    }
+
+    if (!loggedIn && !BeeUtils.same(svc, BeeService.SERVICE_LOGOUT)) {
+      String usr = BeeUtils.ifString(reqInfo.getParameter(BeeService.VAR_LOGIN),
+          Config.getProperty("DefaultUser"));
+      String pwd = BeeUtils.ifString(reqInfo.getParameter(BeeService.VAR_PASSWORD),
+          Config.getProperty("DefaultPassword"));
+
+      if (BeeUtils.allNotEmpty(usr, pwd)) {
+        try {
+          req.login(usr, pwd);
+          usr = dispatcher.doLogin();
+          session = req.getSession(true);
+          session.setAttribute(BeeService.VAR_USER_SIGN, usr);
+          resp.setHeader(BeeService.VAR_USER_SIGN, usr);
+          loggedIn = true;
+          buff.addWarning("Login successful");
+
+        } catch (ServletException e) {
+          buff.addSevere(e.getMessage());
+        }
+      }
+    }
+    return loggedIn;
   }
 }

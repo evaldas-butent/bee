@@ -41,6 +41,15 @@ public class BeeCallback implements RequestCallback {
     int statusCode = resp.getStatusCode();
     boolean debug = Global.isDebug();
 
+    String sid = resp.getHeader(BeeService.RPC_VAR_SID);
+    String usr = resp.getHeader(BeeService.VAR_USER_SIGN);
+    BeeKeeper.getUser().setSessionId(sid);
+
+    if (BeeUtils.isEmpty(sid) || !BeeUtils.isEmpty(usr)) {
+      BeeKeeper.getUser().setUserSign(usr);
+      BeeKeeper.getUi().updateSignature();
+    }
+
     int id = BeeUtils.toInt(resp.getHeader(BeeService.RPC_VAR_QID));
     RpcInfo info = BeeKeeper.getRpc().getRpcInfo(id);
     String svc = (info == null) ? BeeConst.STRING_EMPTY : info.getService();
@@ -166,7 +175,7 @@ public class BeeCallback implements RequestCallback {
       if (info != null) {
         callback = info.getRespCallback();
       }
-      
+
       if (CompositeService.isRegistered(svc)) {
         CompositeService.doService(svc, arr, cc);
       } else if (callback != null) {

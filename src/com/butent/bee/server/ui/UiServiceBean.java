@@ -56,7 +56,7 @@ public class UiServiceBean {
       if (!BeeUtils.same(SqlBuilderFactory.getEngine(), dsn)) {
         ig.destroy();
         SqlBuilderFactory.setDefaultEngine(dsn);
-        sys.init();
+        sys.initObjects();
       }
 
       if (svc.equals("rpc_ui_form")) {

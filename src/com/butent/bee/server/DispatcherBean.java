@@ -32,13 +32,22 @@ public class DispatcherBean {
   @EJB
   Invocation invBean;
   @EJB
-  UserServiceBean usr;
+  UserServiceBean usrBean;
+
+  public String doLogin() {
+    String usr = usrBean.getUserSign();
+
+    LogUtils.infoNow(logger, "User logged in:", usr);
+    return usr;
+  }
+
+  public void doLogout(String usr) {
+    LogUtils.infoNow(logger, "User logged out:", usr);
+  }
 
   public void doService(String svc, String dsn, RequestInfo reqInfo, ResponseBuffer buff) {
     Assert.notEmpty(svc);
     Assert.notNull(buff);
-
-    LogUtils.warning(logger, "USERIS:", usr.getCurrentUser());
 
     if (BeeService.isDbService(svc)) {
       dataBean.doService(svc, dsn, reqInfo, buff);

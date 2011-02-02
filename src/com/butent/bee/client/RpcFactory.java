@@ -253,6 +253,10 @@ public class RpcFactory implements Module {
       info.setTimeout(timeout);
     }
 
+    String sid = BeeKeeper.getUser().getSessionId();
+    if (!BeeUtils.isEmpty(sid)) {
+      bld.setHeader(BeeService.RPC_VAR_SID, sid);
+    }
     bld.setHeader(BeeService.RPC_VAR_QID, BeeUtils.transform(id));
     String cth = null;
 

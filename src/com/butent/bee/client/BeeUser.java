@@ -2,6 +2,9 @@ package com.butent.bee.client;
 
 public class BeeUser implements Module {
 
+  private String sessionId = null;
+  private String userSign = null;
+
   public void end() {
   }
 
@@ -22,7 +25,23 @@ public class BeeUser implements Module {
     }
   }
 
+  public String getSessionId() {
+    return sessionId;
+  }
+
+  public String getUserSign() {
+    return userSign;
+  }
+
   public void init() {
+  }
+
+  public void setSessionId(String sessionId) {
+    this.sessionId = sessionId;
+  }
+
+  public void setUserSign(String userSign) {
+    this.userSign = userSign;
   }
 
   public void start() {

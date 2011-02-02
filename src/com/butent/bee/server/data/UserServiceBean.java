@@ -4,6 +4,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.BeeRowSet.BeeRow;
 import com.butent.bee.shared.sql.SqlSelect;
 import com.butent.bee.shared.sql.SqlUtils;
+import com.butent.bee.shared.utils.BeeUtils;
 
 import java.security.Principal;
 import java.util.LinkedHashMap;
@@ -96,5 +97,18 @@ public class UserServiceBean {
       users.put(user.getInt(idName), user.getString("Login"));
     }
     return users;
+  }
+
+  public String getUserSign() {
+    String user = getCurrentUser();
+
+    BeeRow row = qs.getSingleRow(new SqlSelect()
+      .addFields("u", "FirstName", "LastName", "Position")
+      .addFrom(USER_TABLE, "u")
+      .setWhere(SqlUtils.equal("u", "Login", user)));
+
+    return BeeUtils.concat(1, row.getString("Position"),
+        BeeUtils.ifString(
+            BeeUtils.concat(1, row.getString("FirstName"), row.getString("LastName")), user));
   }
 }

@@ -73,6 +73,7 @@ public class BeeUi implements Module {
   private Split screenPanel = null;
   private TilePanel activePanel = null;
   private BeeLayoutPanel menuPanel = null;
+  private BeeLayoutPanel signature = null;
 
   private final String elDsn = "el-data-source";
   private final String elGrid = "el-grid-type";
@@ -287,6 +288,18 @@ public class BeeUi implements Module {
     p.add(w);
   }
 
+  public void updateSignature() {
+    signature.clear();
+    String usr = BeeKeeper.getUser().getUserSign();
+
+    if (!BeeUtils.isEmpty(usr)) {
+      usr = BeeUtils.concat(1, "User:", usr);
+    } else {
+      usr = "Not logged in";
+    }
+    signature.add(new BeeLabel(usr));
+  }
+
   private void closePanel() {
     TilePanel op = getActivePanel();
     Assert.notNull(op, "active panel not available");
@@ -481,6 +494,11 @@ public class BeeUi implements Module {
     p.setWidgetLeftWidth(hor, 60, Unit.PCT, 200, Unit.PX);
 
     p.setWidgetRightWidth(ver, 1, Unit.EM, 5, Unit.EM);
+
+    signature = new BeeLayoutPanel();
+    p.add(signature);
+    p.setWidgetLeftRight(signature, 74, Unit.PCT, 6, Unit.EM);
+    updateSignature();
 
     return p;
   }
