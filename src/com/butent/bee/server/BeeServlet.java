@@ -8,6 +8,7 @@ import com.butent.bee.shared.BeeService;
 import com.butent.bee.shared.communication.CommUtils;
 import com.butent.bee.shared.communication.ContentType;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.LogUtils;
 
 import java.io.IOException;
@@ -208,7 +209,7 @@ public class BeeServlet extends HttpServlet {
           usr = dispatcher.doLogin();
           session = req.getSession(true);
           session.setAttribute(BeeService.VAR_USER_SIGN, usr);
-          resp.setHeader(BeeService.VAR_USER_SIGN, usr);
+          resp.setHeader(BeeService.VAR_USER_SIGN, Codec.encodeBase64(usr));
           loggedIn = true;
           buff.addWarning("Login successful");
 

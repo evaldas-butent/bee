@@ -22,6 +22,7 @@ import com.butent.bee.shared.communication.ContentType;
 import com.butent.bee.shared.communication.ResponseMessage;
 import com.butent.bee.shared.data.HasTabularData;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.LogUtils;
 
 import java.util.logging.Level;
@@ -46,6 +47,9 @@ public class BeeCallback implements RequestCallback {
     BeeKeeper.getUser().setSessionId(sid);
 
     if (BeeUtils.isEmpty(sid) || !BeeUtils.isEmpty(usr)) {
+      if (!BeeUtils.isEmpty(usr)) {
+        usr = Codec.decodeBase64(usr);
+      }
       BeeKeeper.getUser().setUserSign(usr);
       BeeKeeper.getUi().updateSignature();
     }
