@@ -4,6 +4,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.sql.BeeConstants.Keywords;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -25,6 +26,31 @@ class SqlCommand extends SqlQuery<SqlCommand> {
 
   public Map<String, Object> getParameters() {
     return parameters;
+  }
+
+  @Override
+  public Collection<String> getSources() {
+    Collection<String> sources = null;
+
+    if (!BeeUtils.isEmpty(parameters)) {
+      for (Object prm : parameters.values()) {
+        Collection<String> value = null;
+
+        if (prm instanceof IsFrom) {
+          value = ((IsFrom) prm).getSources();
+        } else if (prm instanceof IsQuery) {
+          value = ((IsQuery) prm).getSources();
+        } else {
+          continue;
+        }
+        if (BeeUtils.isEmpty(sources)) {
+          sources = value;
+        } else {
+          sources.addAll(value);
+        }
+      }
+    }
+    return sources;
   }
 
   @Override

@@ -214,8 +214,8 @@ public abstract class SqlBuilder {
 
     List<SqlField> fieldList = sc.getFields();
 
-    if (!BeeUtils.isEmpty(sc.getSource())) {
-      query.append(" AS ").append(sc.getSource().getSqlString(this, paramMode));
+    if (!BeeUtils.isEmpty(sc.getDataSource())) {
+      query.append(" AS ").append(sc.getDataSource().getSqlString(this, paramMode));
     } else {
       query.append(" (");
 
@@ -250,8 +250,7 @@ public abstract class SqlBuilder {
       query.append(" FROM ");
 
       for (IsFrom from : fromList) {
-        query.append(from.getJoinMode()).append(
-            from.getSqlString(this, paramMode));
+        query.append(from.getJoinMode()).append(from.getSqlString(this, paramMode));
       }
     }
     String wh = sd.getWhere().getSqlString(this, paramMode);
@@ -283,8 +282,8 @@ public abstract class SqlBuilder {
     }
     query.append(") ");
 
-    if (!BeeUtils.isEmpty(si.getSource())) {
-      query.append(si.getSource().getSqlString(this, paramMode));
+    if (!BeeUtils.isEmpty(si.getDataSource())) {
+      query.append(si.getDataSource().getSqlString(this, paramMode));
     } else {
       List<IsExpression> valueList = si.getValues();
 
@@ -334,8 +333,7 @@ public abstract class SqlBuilder {
     query.append(" FROM ");
 
     for (IsFrom from : fromList) {
-      query.append(from.getJoinMode())
-        .append(from.getSqlString(this, paramMode));
+      query.append(from.getJoinMode()).append(from.getSqlString(this, paramMode));
     }
     IsCondition whereClause = ss.getWhere();
 
@@ -423,8 +421,7 @@ public abstract class SqlBuilder {
       query.append(" FROM ");
 
       for (IsFrom from : fromList) {
-        query.append(from.getJoinMode())
-          .append(from.getSqlString(this, paramMode));
+        query.append(from.getJoinMode()).append(from.getSqlString(this, paramMode));
       }
     }
     IsCondition whereClause = su.getWhere();

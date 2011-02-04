@@ -2,6 +2,8 @@ package com.butent.bee.server;
 
 import com.butent.bee.server.communication.ResponseBuffer;
 import com.butent.bee.server.data.DataServiceBean;
+import com.butent.bee.server.data.IdGeneratorBean;
+import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.ui.UiServiceBean;
@@ -9,6 +11,7 @@ import com.butent.bee.server.utils.Reflection;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeService;
+import com.butent.bee.shared.sql.SqlBuilderFactory;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.LogUtils;
 
@@ -33,11 +36,21 @@ public class DispatcherBean {
   Invocation invBean;
   @EJB
   UserServiceBean usrBean;
+  @EJB
+  IdGeneratorBean ig;
+  @EJB
+  SystemBean sys;
 
-  public String doLogin() {
+  public String doLogin(String dsn) {
+    if (!BeeUtils.same(SqlBuilderFactory.getEngine(), BeeConst.getDsType(dsn))) {
+      ig.destroy();
+      sys.initDatabase(dsn);
+    }
     String usr = usrBean.getUserSign();
 
-    LogUtils.infoNow(logger, "User logged in:", usr);
+    if (!BeeUtils.isEmpty(usr)) {
+      LogUtils.infoNow(logger, "User logged in:", usr);
+    }
     return usr;
   }
 

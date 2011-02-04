@@ -3,6 +3,7 @@ package com.butent.bee.shared.sql;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.Collection;
 import java.util.List;
 
 public class SqlDelete extends HasFrom<SqlDelete> {
@@ -16,6 +17,18 @@ public class SqlDelete extends HasFrom<SqlDelete> {
 
   public SqlDelete(String target, String alias) {
     this.target = new FromSingle(target, alias);
+  }
+
+  @Override
+  public Collection<String> getSources() {
+    Collection<String> sources = getTarget().getSources();
+
+    Collection<String> src = super.getSources();
+
+    if (!BeeUtils.isEmpty(src)) {
+      sources.addAll(src);
+    }
+    return sources;
   }
 
   @Override

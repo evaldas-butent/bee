@@ -2,6 +2,12 @@
 <BeeTables xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.butent.com/bee structure.xsd">
 
+  <BeeTable name="Sequences" idName="SequenceID">
+    <BeeFields>
+      <BeeField name="Name" type="STRING" precision="30" notNull="true" unique="true" />
+      <BeeField name="LastValue" type="LONG" notNull="true" />
+    </BeeFields>
+  </BeeTable>
   <BeeTable name="Users" idName="UserID">
     <BeeFields>
       <BeeField name="Login" type="STRING" precision="30" notNull="true" unique="true" />

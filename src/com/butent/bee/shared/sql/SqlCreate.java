@@ -6,6 +6,7 @@ import com.butent.bee.shared.sql.BeeConstants.Keywords;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 public class SqlCreate extends SqlQuery<SqlCreate> {
@@ -61,7 +62,7 @@ public class SqlCreate extends SqlQuery<SqlCreate> {
   private final boolean temporary;
   private List<SqlField> fieldList = new ArrayList<SqlField>();
 
-  private SqlSelect source;
+  private SqlSelect dataSource;
 
   public SqlCreate(String target) {
     this(target, true);
@@ -89,7 +90,7 @@ public class SqlCreate extends SqlQuery<SqlCreate> {
 
   public SqlCreate addField(String field, DataTypes type, int precision, int scale,
       Keywords... options) {
-    Assert.state(BeeUtils.isEmpty(source));
+    Assert.state(BeeUtils.isEmpty(dataSource));
     Assert.notEmpty(field);
     Assert.state(!hasField(field), "Field " + field + " already exist");
 
@@ -123,6 +124,10 @@ public class SqlCreate extends SqlQuery<SqlCreate> {
     return addField(field, DataTypes.STRING, precision, 0, options);
   }
 
+  public SqlSelect getDataSource() {
+    return dataSource;
+  }
+
   public SqlField getField(String field) {
     for (SqlField fld : fieldList) {
       if (BeeUtils.same(fld.name, field)) {
@@ -136,8 +141,14 @@ public class SqlCreate extends SqlQuery<SqlCreate> {
     return fieldList;
   }
 
-  public SqlSelect getSource() {
-    return source;
+  @Override
+  public Collection<String> getSources() {
+    Collection<String> sources = null;
+
+    if (!BeeUtils.isEmpty(dataSource)) {
+      sources = dataSource.getSources();
+    }
+    return sources;
   }
 
   @Override
@@ -146,8 +157,8 @@ public class SqlCreate extends SqlQuery<SqlCreate> {
 
     List<Object> paramList = null;
 
-    if (!BeeUtils.isEmpty(source)) {
-      SqlUtils.addParams(paramList, source.getSqlParams());
+    if (!BeeUtils.isEmpty(dataSource)) {
+      SqlUtils.addParams(paramList, dataSource.getSqlParams());
     }
     return paramList;
   }
@@ -169,19 +180,19 @@ public class SqlCreate extends SqlQuery<SqlCreate> {
   @Override
   public boolean isEmpty() {
     return BeeUtils.isEmpty(target) ||
-        (BeeUtils.isEmpty(fieldList) && BeeUtils.isEmpty(source));
+        (BeeUtils.isEmpty(fieldList) && BeeUtils.isEmpty(dataSource));
   }
 
   public boolean isTemporary() {
     return temporary;
   }
 
-  public SqlCreate setSource(SqlSelect query) {
+  public SqlCreate setDataSource(SqlSelect query) {
     Assert.notNull(query);
     Assert.state(!query.isEmpty());
     Assert.state(BeeUtils.isEmpty(fieldList));
 
-    source = query;
+    dataSource = query;
 
     return getReference();
   }

@@ -70,7 +70,7 @@ class MySqlBuilder extends SqlBuilder {
   String getCreate(SqlCreate sc, boolean paramMode) {
     String sql = super.getCreate(sc, paramMode);
 
-    if (BeeUtils.isEmpty(sc.getSource())) {
+    if (BeeUtils.isEmpty(sc.getDataSource())) {
       sql += " ENGINE=InnoDB";
     }
     return sql;

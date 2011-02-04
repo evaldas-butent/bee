@@ -1,5 +1,6 @@
 package com.butent.bee.shared.sql;
 
+import java.util.Collection;
 import java.util.Map;
 
 public interface IsQuery extends IsSql {
@@ -11,6 +12,8 @@ public interface IsQuery extends IsSql {
   String getQuery(SqlBuilder builder);
 
   Map<Integer, Object> getQueryParams();
+
+  Collection<String> getSources();
 
   boolean isEmpty();
 

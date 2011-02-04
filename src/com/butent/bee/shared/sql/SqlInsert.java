@@ -4,6 +4,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -13,7 +14,7 @@ public class SqlInsert extends SqlQuery<SqlInsert> {
   private final IsFrom target;
   private Set<String> fieldList = new LinkedHashSet<String>();
   private List<IsExpression> valueList;
-  private SqlSelect source;
+  private SqlSelect dataSource;
 
   public SqlInsert(String target) {
     this.target = new FromSingle(target);
@@ -25,7 +26,7 @@ public class SqlInsert extends SqlQuery<SqlInsert> {
 
   public SqlInsert addExpression(String field, IsExpression value) {
     Assert.notNull(value);
-    Assert.state(BeeUtils.isEmpty(source));
+    Assert.state(BeeUtils.isEmpty(dataSource));
 
     addField(field);
 
@@ -46,6 +47,10 @@ public class SqlInsert extends SqlQuery<SqlInsert> {
     return getReference();
   }
 
+  public SqlSelect getDataSource() {
+    return dataSource;
+  }
+
   public List<IsExpression> getFields() {
     List<IsExpression> fields = new ArrayList<IsExpression>();
 
@@ -55,8 +60,18 @@ public class SqlInsert extends SqlQuery<SqlInsert> {
     return fields;
   }
 
-  public SqlSelect getSource() {
-    return source;
+  @Override
+  public Collection<String> getSources() {
+    Collection<String> sources = getTarget().getSources();
+
+    if (!BeeUtils.isEmpty(dataSource)) {
+      Collection<String> src = dataSource.getSources();
+
+      if (!BeeUtils.isEmpty(src)) {
+        sources.addAll(src);
+      }
+    }
+    return sources;
   }
 
   @Override
@@ -65,8 +80,8 @@ public class SqlInsert extends SqlQuery<SqlInsert> {
 
     List<Object> paramList = null;
 
-    if (!BeeUtils.isEmpty(source)) {
-      SqlUtils.addParams(paramList, source.getSqlParams());
+    if (!BeeUtils.isEmpty(dataSource)) {
+      SqlUtils.addParams(paramList, dataSource.getSqlParams());
     } else {
       for (IsExpression value : valueList) {
         SqlUtils.addParams(paramList, value.getSqlParams());
@@ -96,15 +111,15 @@ public class SqlInsert extends SqlQuery<SqlInsert> {
   @Override
   public boolean isEmpty() {
     return BeeUtils.isEmpty(target) || BeeUtils.isEmpty(fieldList)
-        || (BeeUtils.isEmpty(valueList) && BeeUtils.isEmpty(source));
+        || (BeeUtils.isEmpty(valueList) && BeeUtils.isEmpty(dataSource));
   }
 
-  public SqlInsert setSource(SqlSelect query) {
+  public SqlInsert setDataSource(SqlSelect query) {
     Assert.notNull(query);
     Assert.state(!query.isEmpty());
     Assert.state(BeeUtils.isEmpty(valueList));
 
-    source = query;
+    dataSource = query;
 
     return getReference();
   }

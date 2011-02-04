@@ -100,8 +100,9 @@ public class QueryServiceBean {
     Assert.notNull(ss);
     Assert.state(!ss.isEmpty());
 
-    BeeRowSet res = (BeeRowSet) processSql(ss.getQuery());
-    return res;
+    activateTables(ss);
+
+    return (BeeRowSet) processSql(ss.getQuery());
   }
 
   public BeeRow getSingleRow(SqlSelect ss) {
@@ -117,7 +118,7 @@ public class QueryServiceBean {
     long id = 0;
     String source = (String) si.getTarget().getSource();
 
-    if (BeeUtils.isEmpty(si.getSource()) && sys.isTable(source)) {
+    if (BeeUtils.isEmpty(si.getDataSource()) && sys.isTable(source)) {
       String lockFld = sys.getLockName(source);
 
       if (!si.hasField(lockFld)) {
@@ -143,7 +144,7 @@ public class QueryServiceBean {
 
   public Object processSql(String sql) {
     Assert.notEmpty(sql);
-    
+
     DataSource ds = dsb.locateDs(SqlBuilderFactory.getEngine()).getDs();
 
     Connection con = null;
@@ -202,7 +203,21 @@ public class QueryServiceBean {
     if (query instanceof SqlSelect) {
       return -1;
     } else {
+      activateTables(query);
+
       return (Integer) processSql(query.getQuery());
+    }
+  }
+
+  private void activateTables(IsQuery query) {
+    Collection<String> sources = query.getSources();
+
+    if (!BeeUtils.isEmpty(sources)) {
+      for (String source : query.getSources()) {
+        if (sys.isTable(source)) {
+          sys.activateTable(source);
+        }
+      }
     }
   }
 }

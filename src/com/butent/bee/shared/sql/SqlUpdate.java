@@ -4,6 +4,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 public class SqlUpdate extends HasFrom<SqlUpdate> {
@@ -38,6 +39,18 @@ public class SqlUpdate extends HasFrom<SqlUpdate> {
     updates.add(updateEntry);
 
     return getReference();
+  }
+
+  @Override
+  public Collection<String> getSources() {
+    Collection<String> sources = getTarget().getSources();
+
+    Collection<String> src = super.getSources();
+
+    if (!BeeUtils.isEmpty(src)) {
+      sources.addAll(src);
+    }
+    return sources;
   }
 
   @Override

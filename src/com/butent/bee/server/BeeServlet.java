@@ -206,13 +206,23 @@ public class BeeServlet extends HttpServlet {
       if (BeeUtils.allNotEmpty(usr, pwd)) {
         try {
           req.login(usr, pwd);
-          usr = dispatcher.doLogin();
-          session = req.getSession(true);
-          session.setAttribute(BeeService.VAR_USER_SIGN, usr);
-          resp.setHeader(BeeService.VAR_USER_SIGN, Codec.encodeBase64(usr));
-          loggedIn = true;
-          buff.addWarning("Login successful");
+          usr = dispatcher.doLogin(reqInfo.getDsn());
 
+          if (BeeUtils.isEmpty(usr)) {
+            buff.addSevere("User not authorized:", req.getRemoteUser());
+            req.logout();
+            session = req.getSession(false);
+
+            if (!BeeUtils.isEmpty(session)) {
+              session.invalidate();
+            }
+          } else {
+            session = req.getSession(true);
+            session.setAttribute(BeeService.VAR_USER_SIGN, usr);
+            resp.setHeader(BeeService.VAR_USER_SIGN, Codec.encodeBase64(usr));
+            loggedIn = true;
+            buff.addWarning("Login successful");
+          }
         } catch (ServletException e) {
           buff.addSevere(e.getMessage());
         }

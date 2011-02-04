@@ -3,6 +3,8 @@ package com.butent.bee.shared.sql;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 
 class FromSingle implements IsFrom {
@@ -43,6 +45,19 @@ class FromSingle implements IsFrom {
   @Override
   public Object getSource() {
     return source;
+  }
+
+  @Override
+  public Collection<String> getSources() {
+    Collection<String> sources = null;
+
+    if (source instanceof SqlSelect) {
+      sources = ((SqlSelect) source).getSources();
+    } else {
+      sources = new HashSet<String>();
+      sources.add((String) source);
+    }
+    return sources;
   }
 
   @Override

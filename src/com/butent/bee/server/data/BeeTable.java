@@ -1,6 +1,8 @@
 package com.butent.bee.server.data;
 
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.sql.BeeConstants.DataTypes;
+import com.butent.bee.shared.sql.BeeConstants.Keywords;
 import com.butent.bee.shared.sql.HasFrom;
 import com.butent.bee.shared.sql.IsCondition;
 import com.butent.bee.shared.sql.IsFrom;
@@ -11,8 +13,6 @@ import com.butent.bee.shared.sql.SqlInsert;
 import com.butent.bee.shared.sql.SqlSelect;
 import com.butent.bee.shared.sql.SqlUpdate;
 import com.butent.bee.shared.sql.SqlUtils;
-import com.butent.bee.shared.sql.BeeConstants.DataTypes;
-import com.butent.bee.shared.sql.BeeConstants.Keywords;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 

@@ -1,6 +1,7 @@
 package com.butent.bee.server.data;
 
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.BeeRowSet.BeeRow;
 import com.butent.bee.shared.sql.SqlSelect;
 import com.butent.bee.shared.sql.SqlUtils;
@@ -44,8 +45,8 @@ public class UserServiceBean {
     String idName = sys.getIdName(USER_TABLE);
     String user = getCurrentUser();
 
-    return qs.getSingleRow(new SqlSelect()
-      .addFields("u", idName)
+    return qs.getSingleRow(new SqlSelect() // TODO neveiks su neegzistuojan‹iu useriu
+    .addFields("u", idName)
       .addFrom(USER_TABLE, "u")
       .setWhere(SqlUtils.equal("u", "Login", user))).getInt(0);
   }
@@ -102,13 +103,24 @@ public class UserServiceBean {
   public String getUserSign() {
     String user = getCurrentUser();
 
-    BeeRow row = qs.getSingleRow(new SqlSelect()
+    BeeRowSet rs = qs.getData(new SqlSelect()
       .addFields("u", "FirstName", "LastName", "Position")
       .addFrom(USER_TABLE, "u")
       .setWhere(SqlUtils.equal("u", "Login", user)));
 
-    return BeeUtils.concat(1, row.getString("Position"),
-        BeeUtils.ifString(
-            BeeUtils.concat(1, row.getString("FirstName"), row.getString("LastName")), user));
+    String sign = null;
+
+    if (rs.getRowCount() == 1) {
+      BeeRow row = rs.getRow(0);
+      sign = BeeUtils.concat(1, row.getString("Position"),
+          BeeUtils.ifString(
+              BeeUtils.concat(1, row.getString("FirstName"), row.getString("LastName")), user));
+
+    } else if (BeeUtils.isEmpty(qs.getSingleRow(
+        new SqlSelect().addCount(USER_TABLE).addFrom(USER_TABLE))
+        .getInt(0))) {
+      sign = user;
+    }
+    return sign;
   }
 }

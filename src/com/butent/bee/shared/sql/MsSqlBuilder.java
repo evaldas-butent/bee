@@ -48,13 +48,13 @@ class MsSqlBuilder extends SqlBuilder {
 
   @Override
   String getCreate(SqlCreate sc, boolean paramMode) {
-    if (BeeUtils.isEmpty(sc.getSource())) {
+    if (BeeUtils.isEmpty(sc.getDataSource())) {
       return super.getCreate(sc, paramMode);
     }
     Assert.notNull(sc);
     Assert.state(!sc.isEmpty());
 
-    return sc.getSource().getSqlString(this, paramMode).replace(" FROM ",
+    return sc.getDataSource().getSqlString(this, paramMode).replace(" FROM ",
         " INTO " + sc.getTarget().getSqlString(this, paramMode) + " FROM ");
   }
 

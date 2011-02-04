@@ -4,6 +4,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 public class SqlSelect extends HasFrom<SqlSelect> {
@@ -178,6 +179,20 @@ public class SqlSelect extends HasFrom<SqlSelect> {
 
   public List<String[]> getOrderBy() {
     return orderList;
+  }
+
+  @Override
+  public Collection<String> getSources() {
+    Assert.state(!isEmpty());
+
+    Collection<String> sources = super.getSources();
+
+    if (!BeeUtils.isEmpty(unionList)) {
+      for (SqlSelect union : unionList) {
+        sources.addAll(union.getSources());
+      }
+    }
+    return sources;
   }
 
   @Override

@@ -4,6 +4,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 public abstract class HasFrom<T> extends SqlQuery<T> {
@@ -95,6 +96,22 @@ public abstract class HasFrom<T> extends SqlQuery<T> {
 
   public List<IsFrom> getFrom() {
     return fromList;
+  }
+
+  @Override
+  public Collection<String> getSources() {
+    Collection<String> sources = null;
+
+    if (!BeeUtils.isEmpty(fromList)) {
+      for (IsFrom from : fromList) {
+        if (BeeUtils.isEmpty(sources)) {
+          sources = from.getSources();
+        } else {
+          sources.addAll(from.getSources());
+        }
+      }
+    }
+    return sources;
   }
 
   private void addFrom(IsFrom from) {
