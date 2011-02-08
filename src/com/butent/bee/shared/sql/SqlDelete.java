@@ -21,12 +21,10 @@ public class SqlDelete extends HasFrom<SqlDelete> {
 
   @Override
   public Collection<String> getSources() {
-    Collection<String> sources = getTarget().getSources();
+    Collection<String> sources = SqlUtils.addCollection(target.getSources(), super.getSources());
 
-    Collection<String> src = super.getSources();
-
-    if (!BeeUtils.isEmpty(src)) {
-      sources.addAll(src);
+    if (!BeeUtils.isEmpty(whereClause)) {
+      sources = SqlUtils.addCollection(sources, whereClause.getSources());
     }
     return sources;
   }
@@ -39,10 +37,10 @@ public class SqlDelete extends HasFrom<SqlDelete> {
 
     if (!BeeUtils.isEmpty(getFrom())) {
       for (IsFrom from : getFrom()) {
-        SqlUtils.addParams(paramList, from.getSqlParams());
+        paramList = (List<Object>) SqlUtils.addCollection(paramList, from.getSqlParams());
       }
     }
-    SqlUtils.addParams(paramList, whereClause.getSqlParams());
+    paramList = (List<Object>) SqlUtils.addCollection(paramList, whereClause.getSqlParams());
 
     return paramList;
   }

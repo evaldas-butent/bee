@@ -43,12 +43,10 @@ public class SqlUpdate extends HasFrom<SqlUpdate> {
 
   @Override
   public Collection<String> getSources() {
-    Collection<String> sources = getTarget().getSources();
+    Collection<String> sources = SqlUtils.addCollection(target.getSources(), super.getSources());
 
-    Collection<String> src = super.getSources();
-
-    if (!BeeUtils.isEmpty(src)) {
-      sources.addAll(src);
+    if (!BeeUtils.isEmpty(whereClause)) {
+      sources = SqlUtils.addCollection(sources, whereClause.getSources());
     }
     return sources;
   }
@@ -61,15 +59,15 @@ public class SqlUpdate extends HasFrom<SqlUpdate> {
 
     for (Object[] update : updates) {
       IsExpression val = (IsExpression) update[VALUE_INDEX];
-      SqlUtils.addParams(paramList, val.getSqlParams());
+      paramList = (List<Object>) SqlUtils.addCollection(paramList, val.getSqlParams());
     }
     if (!BeeUtils.isEmpty(getFrom())) {
       for (IsFrom from : getFrom()) {
-        SqlUtils.addParams(paramList, from.getSqlParams());
+        paramList = (List<Object>) SqlUtils.addCollection(paramList, from.getSqlParams());
       }
     }
     if (!BeeUtils.isEmpty(whereClause)) {
-      SqlUtils.addParams(paramList, whereClause.getSqlParams());
+      paramList = (List<Object>) SqlUtils.addCollection(paramList, whereClause.getSqlParams());
     }
     return paramList;
   }

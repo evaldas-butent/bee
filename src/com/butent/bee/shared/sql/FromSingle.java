@@ -1,10 +1,11 @@
 package com.butent.bee.shared.sql;
 
+import com.google.common.collect.Sets;
+
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 
 class FromSingle implements IsFrom {
@@ -51,11 +52,12 @@ class FromSingle implements IsFrom {
   public Collection<String> getSources() {
     Collection<String> sources = null;
 
-    if (source instanceof SqlSelect) {
-      sources = ((SqlSelect) source).getSources();
+    if (source instanceof HasSource) {
+      sources = ((HasSource) source).getSources();
+    } else if (source instanceof String) {
+      sources = Sets.newHashSet((String) source);
     } else {
-      sources = new HashSet<String>();
-      sources.add((String) source);
+      Assert.untouchable();
     }
     return sources;
   }

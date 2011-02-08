@@ -34,19 +34,8 @@ class SqlCommand extends SqlQuery<SqlCommand> {
 
     if (!BeeUtils.isEmpty(parameters)) {
       for (Object prm : parameters.values()) {
-        Collection<String> value = null;
-
-        if (prm instanceof IsFrom) {
-          value = ((IsFrom) prm).getSources();
-        } else if (prm instanceof IsQuery) {
-          value = ((IsQuery) prm).getSources();
-        } else {
-          continue;
-        }
-        if (BeeUtils.isEmpty(sources)) {
-          sources = value;
-        } else {
-          sources.addAll(value);
+        if (prm instanceof HasSource) {
+          sources = SqlUtils.addCollection(sources, ((HasSource) prm).getSources());
         }
       }
     }

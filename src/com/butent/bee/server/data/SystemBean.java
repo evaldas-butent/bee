@@ -1,5 +1,7 @@
 package com.butent.bee.server.data;
 
+import com.google.common.collect.Maps;
+
 import com.butent.bee.server.Config;
 import com.butent.bee.server.communication.ResponseBuffer;
 import com.butent.bee.server.data.BeeTable.BeeField;
@@ -71,8 +73,8 @@ public class SystemBean {
 
   private String dbName;
   private String dbSchema;
-  private Map<String, BeeTable> dataCache = new HashMap<String, BeeTable>();
-  private Map<String, BeeView> viewCache = new HashMap<String, BeeView>();
+  private Map<String, BeeTable> dataCache = Maps.newHashMap();
+  private Map<String, BeeView> viewCache = Maps.newHashMap();
 
   public void activateTable(String tableName) {
     BeeTable table = getTable(tableName);
@@ -109,7 +111,7 @@ public class SystemBean {
     String tblName = null;
 
     BeeView view = getView(changes.getViewName());
-    Map<Integer, BeeField> fields = new HashMap<Integer, BeeField>();
+    Map<Integer, BeeField> fields = Maps.newHashMap();
 
     if (!BeeUtils.isEmpty(view)) {
       tblName = view.getSource();
@@ -271,13 +273,17 @@ public class SystemBean {
         }
       }
     }
-    if (BeeUtils.isEmpty(err)) {
-      buff.add(c);
-      buff.add(changes.serialize());
-    } else {
+    if (!BeeUtils.isEmpty(err)) {
       buff.add(-1);
       buff.add(err);
       return false;
+    }
+    buff.add(c);
+    buff.add(changes.serialize());
+
+    if (BeeUtils.inList(tblName, UserServiceBean.USER_TABLE, UserServiceBean.ROLE_TABLE,
+        UserServiceBean.USER_ROLES_TABLE)) {
+      usr.invalidateCache();
     }
     return true;
   }
@@ -484,6 +490,7 @@ public class SystemBean {
         state.setActive(active);
       }
     }
+    usr.invalidateCache();
   }
 
   @Lock(LockType.WRITE)

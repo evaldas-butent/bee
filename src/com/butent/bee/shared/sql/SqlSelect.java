@@ -187,9 +187,15 @@ public class SqlSelect extends HasFrom<SqlSelect> {
 
     Collection<String> sources = super.getSources();
 
+    if (!BeeUtils.isEmpty(whereClause)) {
+      sources = SqlUtils.addCollection(sources, whereClause.getSources());
+    }
+    if (!BeeUtils.isEmpty(havingClause)) {
+      sources = SqlUtils.addCollection(sources, havingClause.getSources());
+    }
     if (!BeeUtils.isEmpty(unionList)) {
       for (SqlSelect union : unionList) {
-        sources.addAll(union.getSources());
+        sources = SqlUtils.addCollection(sources, union.getSources());
       }
     }
     return sources;
@@ -202,31 +208,31 @@ public class SqlSelect extends HasFrom<SqlSelect> {
     List<Object> paramList = null;
 
     for (IsExpression[] field : fieldList) {
-      SqlUtils.addParams(paramList, field[FIELD_EXPR].getSqlParams());
+      paramList = (List<Object>) SqlUtils.addCollection(paramList, field[FIELD_EXPR].getSqlParams());
     }
     for (IsFrom from : getFrom()) {
-      SqlUtils.addParams(paramList, from.getSqlParams());
+      paramList = (List<Object>) SqlUtils.addCollection(paramList, from.getSqlParams());
     }
     if (!BeeUtils.isEmpty(whereClause)) {
-      SqlUtils.addParams(paramList, whereClause.getSqlParams());
+      paramList = (List<Object>) SqlUtils.addCollection(paramList, whereClause.getSqlParams());
     }
     if (!BeeUtils.isEmpty(groupList)) {
       for (IsExpression group : groupList) {
-        SqlUtils.addParams(paramList, group.getSqlParams());
+        paramList = (List<Object>) SqlUtils.addCollection(paramList, group.getSqlParams());
       }
     }
     if (!BeeUtils.isEmpty(orderList)) {
       for (Object[] order : orderList) {
         IsExpression ord = (IsExpression) order[ORDER_FLD];
-        SqlUtils.addParams(paramList, ord.getSqlParams());
+        paramList = (List<Object>) SqlUtils.addCollection(paramList, ord.getSqlParams());
       }
     }
     if (!BeeUtils.isEmpty(havingClause)) {
-      SqlUtils.addParams(paramList, havingClause.getSqlParams());
+      paramList = (List<Object>) SqlUtils.addCollection(paramList, havingClause.getSqlParams());
     }
     if (!BeeUtils.isEmpty(unionList)) {
       for (SqlSelect union : unionList) {
-        SqlUtils.addParams(paramList, union.getSqlParams());
+        paramList = (List<Object>) SqlUtils.addCollection(paramList, union.getSqlParams());
       }
     }
     return paramList;

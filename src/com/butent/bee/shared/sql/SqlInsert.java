@@ -62,14 +62,10 @@ public class SqlInsert extends SqlQuery<SqlInsert> {
 
   @Override
   public Collection<String> getSources() {
-    Collection<String> sources = getTarget().getSources();
+    Collection<String> sources = target.getSources();
 
     if (!BeeUtils.isEmpty(dataSource)) {
-      Collection<String> src = dataSource.getSources();
-
-      if (!BeeUtils.isEmpty(src)) {
-        sources.addAll(src);
-      }
+      sources = SqlUtils.addCollection(sources, dataSource.getSources());
     }
     return sources;
   }
@@ -81,10 +77,10 @@ public class SqlInsert extends SqlQuery<SqlInsert> {
     List<Object> paramList = null;
 
     if (!BeeUtils.isEmpty(dataSource)) {
-      SqlUtils.addParams(paramList, dataSource.getSqlParams());
+      paramList = (List<Object>) SqlUtils.addCollection(paramList, dataSource.getSqlParams());
     } else {
       for (IsExpression value : valueList) {
-        SqlUtils.addParams(paramList, value.getSqlParams());
+        paramList = (List<Object>) SqlUtils.addCollection(paramList, value.getSqlParams());
       }
     }
     return paramList;

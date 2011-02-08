@@ -1,14 +1,10 @@
 package com.butent.bee.shared.sql;
 
-import java.util.Collection;
-
-public interface IsFrom extends IsSql {
+public interface IsFrom extends IsSql, HasSource {
 
   String getAlias();
 
   String getJoinMode();
 
   Object getSource();
-
-  Collection<String> getSources();
 }

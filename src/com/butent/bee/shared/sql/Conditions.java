@@ -3,6 +3,7 @@ package com.butent.bee.shared.sql;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 public abstract class Conditions implements IsCondition {
@@ -17,11 +18,21 @@ public abstract class Conditions implements IsCondition {
   }
 
   @Override
+  public Collection<String> getSources() {
+    Collection<String> sources = null;
+
+    for (IsCondition condition : conditionList) {
+      sources = SqlUtils.addCollection(sources, condition.getSources());
+    }
+    return sources;
+  }
+
+  @Override
   public List<Object> getSqlParams() {
     List<Object> paramList = null;
 
     for (IsCondition cond : conditionList) {
-      SqlUtils.addParams(paramList, cond.getSqlParams());
+      paramList = (List<Object>) SqlUtils.addCollection(paramList, cond.getSqlParams());
     }
     return paramList;
   }

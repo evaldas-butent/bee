@@ -104,11 +104,7 @@ public abstract class HasFrom<T> extends SqlQuery<T> {
 
     if (!BeeUtils.isEmpty(fromList)) {
       for (IsFrom from : fromList) {
-        if (BeeUtils.isEmpty(sources)) {
-          sources = from.getSources();
-        } else {
-          sources.addAll(from.getSources());
-        }
+        sources = SqlUtils.addCollection(sources, from.getSources());
       }
     }
     return sources;

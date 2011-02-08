@@ -2,6 +2,7 @@ package com.butent.bee.shared.sql;
 
 import com.butent.bee.shared.Assert;
 
+import java.util.Collection;
 import java.util.List;
 
 class JoinCondition implements IsCondition {
@@ -33,6 +34,16 @@ class JoinCondition implements IsCondition {
     Assert.state(!right.isEmpty());
 
     rightExpression = right;
+  }
+
+  @Override
+  public Collection<String> getSources() {
+    Collection<String> sources = null;
+
+    if (rightExpression instanceof HasSource) {
+      sources = ((HasSource) rightExpression).getSources();
+    }
+    return sources;
   }
 
   @Override

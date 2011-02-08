@@ -2,11 +2,12 @@ package com.butent.bee.shared.sql;
 
 import com.butent.bee.shared.Assert;
 
+import java.util.Collection;
 import java.util.List;
 
 abstract class FromJoin extends FromSingle {
 
-  private IsCondition on;
+  private final IsCondition on;
 
   public FromJoin(String source, IsCondition on) {
     this(source, null, on);
@@ -27,11 +28,13 @@ abstract class FromJoin extends FromSingle {
   }
 
   @Override
-  public List<Object> getSqlParams() {
-    List<Object> paramList = super.getSqlParams();
-    SqlUtils.addParams(paramList, on.getSqlParams());
+  public Collection<String> getSources() {
+    return SqlUtils.addCollection(super.getSources(), on.getSources());
+  }
 
-    return paramList;
+  @Override
+  public List<Object> getSqlParams() {
+    return (List<Object>) SqlUtils.addCollection(super.getSqlParams(), on.getSqlParams());
   }
 
   @Override

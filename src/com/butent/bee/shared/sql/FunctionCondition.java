@@ -2,6 +2,7 @@ package com.butent.bee.shared.sql;
 
 import com.butent.bee.shared.Assert;
 
+import java.util.Collection;
 import java.util.List;
 
 class FunctionCondition implements IsCondition {
@@ -21,11 +22,16 @@ class FunctionCondition implements IsCondition {
   }
 
   @Override
+  public Collection<String> getSources() {
+    return null;
+  }
+
+  @Override
   public List<Object> getSqlParams() {
     List<Object> paramList = null;
 
     for (IsExpression value : values) {
-      SqlUtils.addParams(paramList, value.getSqlParams());
+      paramList = (List<Object>) SqlUtils.addCollection(paramList, value.getSqlParams());
     }
     return paramList;
   }

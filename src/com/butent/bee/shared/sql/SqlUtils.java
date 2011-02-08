@@ -5,6 +5,7 @@ import com.butent.bee.shared.sql.BeeConstants.Keywords;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -337,14 +338,15 @@ public class SqlUtils {
     return BeeUtils.randomString(3, 3, 'a', 'z');
   }
 
-  static void addParams(List<Object> paramList, List<Object> params) {
-    if (!BeeUtils.isEmpty(params)) {
-      if (BeeUtils.isEmpty(paramList)) {
-        paramList = params;
+  static <T> Collection<T> addCollection(Collection<T> destination, Collection<T> source) {
+    if (!BeeUtils.isEmpty(source)) {
+      if (BeeUtils.isEmpty(destination)) {
+        destination = source;
       } else {
-        paramList.addAll(params);
+        destination.addAll(source);
       }
     }
+    return destination;
   }
 
   private static IsQuery createIndex(boolean unique, String table, String name, String... fields) {

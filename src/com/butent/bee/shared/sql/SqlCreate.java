@@ -158,7 +158,7 @@ public class SqlCreate extends SqlQuery<SqlCreate> {
     List<Object> paramList = null;
 
     if (!BeeUtils.isEmpty(dataSource)) {
-      SqlUtils.addParams(paramList, dataSource.getSqlParams());
+      paramList = dataSource.getSqlParams();
     }
     return paramList;
   }

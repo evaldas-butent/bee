@@ -1,15 +1,20 @@
 package com.butent.bee.server.data;
 
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Multimap;
+import com.google.common.primitives.Ints;
+
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.BeeRowSet.BeeRow;
 import com.butent.bee.shared.sql.SqlSelect;
 import com.butent.bee.shared.sql.SqlUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.security.Principal;
-import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 import javax.annotation.Resource;
@@ -23,9 +28,9 @@ import javax.ejb.Singleton;
 @Lock(LockType.READ)
 public class UserServiceBean {
 
-  private static final String USER_TABLE = "Users";
-  private static final String ROLE_TABLE = "Roles";
-  private static final String USER_ROLES_TABLE = "UserRoles";
+  public static final String USER_TABLE = "Users";
+  public static final String ROLE_TABLE = "Roles";
+  public static final String USER_ROLES_TABLE = "UserRoles";
 
   @Resource
   EJBContext ctx;
@@ -34,93 +39,101 @@ public class UserServiceBean {
   @EJB
   QueryServiceBean qs;
 
+  private BiMap<Integer, String> userCache = HashBiMap.create();
+  private BiMap<Integer, String> roleCache = HashBiMap.create();
+  private Multimap<Integer, Integer> userRolesCache = HashMultimap.create();
+  private Map<Integer, String> userInfoCache = Maps.newHashMap();
+
+  private boolean cacheUpToDate = false;
+
   public String getCurrentUser() {
     Principal p = ctx.getCallerPrincipal();
     Assert.notEmpty(p);
 
-    return p.getName();
+    return p.getName().toLowerCase();
   }
 
   public int getCurrentUserId() {
-    String idName = sys.getIdName(USER_TABLE);
+    initUsers();
     String user = getCurrentUser();
+    Assert.contains(userCache.inverse(), user);
 
-    return qs.getSingleRow(new SqlSelect() // TODO neveiks su neegzistuojan‹iu useriu
-    .addFields("u", idName)
-      .addFrom(USER_TABLE, "u")
-      .setWhere(SqlUtils.equal("u", "Login", user))).getInt(0);
+    return userCache.inverse().get(user);
   }
 
   public Map<Integer, String> getRoles() {
-    String idName = sys.getIdName(ROLE_TABLE);
-
-    SqlSelect ss = new SqlSelect()
-      .addFields("r", idName, "Name")
-      .addFrom(ROLE_TABLE, "r")
-      .addOrder("r", "Name");
-
-    Map<Integer, String> roles = new LinkedHashMap<Integer, String>();
-
-    for (BeeRow role : qs.getData(ss).getRows()) {
-      roles.put(role.getInt(idName), role.getString("Name"));
-    }
-    return roles;
+    initUsers();
+    return ImmutableMap.copyOf(roleCache);
   }
 
   public int[] getUserRoles(int userId) {
+    initUsers();
     Assert.notEmpty(userId);
-
-    SqlSelect ss = new SqlSelect()
-      .addFields("r", "Role")
-      .addFrom(USER_ROLES_TABLE, "r")
-      .setWhere(SqlUtils.equal("r", "User", userId));
-
-    List<BeeRow> rows = qs.getData(ss).getRows();
-    int[] roles = new int[rows.size()];
-
-    for (int i = 0; i < rows.size(); i++) {
-      roles[i] = rows.get(i).getInt(0);
-    }
-    return roles;
+    Assert.contains(userCache, userId);
+    return Ints.toArray(userRolesCache.get(userId));
   }
 
   public Map<Integer, String> getUsers() {
-    String idName = sys.getIdName(USER_TABLE);
-
-    SqlSelect ss = new SqlSelect()
-      .addFields("u", idName, "Login")
-      .addFrom(USER_TABLE, "u")
-      .addOrder("u", "Login");
-
-    Map<Integer, String> users = new LinkedHashMap<Integer, String>();
-
-    for (BeeRow user : qs.getData(ss).getRows()) {
-      users.put(user.getInt(idName), user.getString("Login"));
-    }
-    return users;
+    initUsers();
+    return ImmutableMap.copyOf(userCache);
   }
 
   public String getUserSign() {
+    initUsers();
     String user = getCurrentUser();
-
-    BeeRowSet rs = qs.getData(new SqlSelect()
-      .addFields("u", "FirstName", "LastName", "Position")
-      .addFrom(USER_TABLE, "u")
-      .setWhere(SqlUtils.equal("u", "Login", user)));
-
     String sign = null;
 
-    if (rs.getRowCount() == 1) {
-      BeeRow row = rs.getRow(0);
-      sign = BeeUtils.concat(1, row.getString("Position"),
-          BeeUtils.ifString(
-              BeeUtils.concat(1, row.getString("FirstName"), row.getString("LastName")), user));
-
-    } else if (BeeUtils.isEmpty(qs.getSingleRow(
-        new SqlSelect().addCount(USER_TABLE).addFrom(USER_TABLE))
-        .getInt(0))) {
+    if (userCache.containsValue(user)) {
+      sign = userInfoCache.get(userCache.inverse().get(user));
+    } else if (BeeUtils.isEmpty(userCache)) {
       sign = user;
     }
     return sign;
+  }
+
+  @Lock(LockType.WRITE)
+  public void invalidateCache() {
+    cacheUpToDate = false;
+  }
+
+  @Lock(LockType.WRITE)
+  private void initUsers() {
+    if (cacheUpToDate) {
+      return;
+    }
+    userCache.clear();
+    roleCache.clear();
+    userRolesCache.clear();
+    userInfoCache.clear();
+
+    String userIdName = sys.getIdName(USER_TABLE);
+    String roleIdName = sys.getIdName(ROLE_TABLE);
+
+    SqlSelect ss = new SqlSelect()
+      .addFields("r", "Name", roleIdName)
+      .addFrom(ROLE_TABLE, "r");
+
+    for (BeeRow role : qs.getData(ss).getRows()) {
+      roleCache.put(role.getInt(roleIdName), role.getString("Name"));
+    }
+
+    ss = new SqlSelect()
+      .addFields("u", "Login", userIdName, "FirstName", "LastName", "Position")
+      .addFields("r", "Role")
+      .addFrom(USER_TABLE, "u")
+      .addFromLeft(USER_ROLES_TABLE, "r", SqlUtils.join("u", userIdName, "r", "User"));
+
+    for (BeeRow user : qs.getData(ss).getRows()) {
+      int userId = user.getInt(userIdName);
+
+      userCache.put(userId, user.getString("Login").toLowerCase());
+      userRolesCache.put(userId, user.getInt("Role"));
+      userInfoCache.put(userId,
+          BeeUtils.concat(1, user.getString("Position"),
+              BeeUtils.concat(1,
+                  BeeUtils.ifString(user.getString("FirstName"), user.getString("Login")),
+                  user.getString("LastName"))));
+    }
+    cacheUpToDate = true;
   }
 }

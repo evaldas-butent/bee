@@ -11,7 +11,7 @@
   <BeeTable name="Users" idName="UserID">
     <BeeFields>
       <BeeField name="Login" type="STRING" precision="30" notNull="true" unique="true" />
-      <BeeField name="Password" type="STRING" precision="30" />
+      <BeeField name="Password" type="STRING" precision="64" />
       <BeeField name="FirstName" type="STRING" precision="30" />
       <BeeField name="LastName" type="STRING" precision="30" />
       <BeeField name="Position" type="STRING" precision="50" />
