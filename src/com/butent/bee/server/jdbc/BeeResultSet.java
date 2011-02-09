@@ -27,7 +27,6 @@ public class BeeResultSet implements Transformable {
     List<Property> lst = new ArrayList<Property>();
 
     int z;
-
     try {
       z = rs.getType();
       PropertyUtils.addProperty(lst, "Type", BeeUtils.concat(1, z, JdbcUtils.rsTypeAsString(z)));
@@ -55,7 +54,6 @@ public class BeeResultSet implements Transformable {
     } catch (SQLException ex) {
       LogUtils.warning(logger, ex);
     }
-
     return lst;
   }
   private int concurrency = 0;
@@ -116,14 +114,12 @@ public class BeeResultSet implements Transformable {
     }
 
     int z;
-
     try {
       z = rs.getFetchDirection();
     } catch (SQLException ex) {
       handleError(ex);
       z = BeeConst.INT_ERROR;
     }
-
     return z;
   }
 
@@ -168,36 +164,30 @@ public class BeeResultSet implements Transformable {
   public List<ExtendedProperty> getRsInfo() {
     List<ExtendedProperty> lst = new ArrayList<ExtendedProperty>();
 
-    PropertyUtils.addProperties(
-        lst,
-        false,
-        "type",
-        BeeUtils.concat(1, getType(), JdbcUtils.rsTypeAsString(getType())),
-        "fetch direction",
-        BeeUtils.concat(1, getFetchDirection(),
+    PropertyUtils.addProperties(lst, false,
+        "type", BeeUtils.concat(1, getType(), JdbcUtils.rsTypeAsString(getType())),
+        "fetch direction", BeeUtils.concat(1, getFetchDirection(),
             JdbcUtils.fetchDirectionAsString(getFetchDirection())),
-        "concurrency",
-        BeeUtils.concat(1, getConcurrency(),
+        "concurrency", BeeUtils.concat(1, getConcurrency(),
             JdbcUtils.concurrencyAsString(getConcurrency())),
-        "holdability",
-        BeeUtils.concat(1, getHoldability(),
-            JdbcUtils.holdabilityAsString(getHoldability())), "cursor name",
-        getCursorName(), "fetch size", valueAsString(getFetchSize()),
-        "max field size", valueAsString(getMaxFieldSize()), "max rows",
-        valueAsString(getMaxRows()), "query timeout",
-        valueAsString(getQueryTimeout()), "poolable", isPoolable(),
+        "holdability", BeeUtils.concat(1, getHoldability(),
+            JdbcUtils.holdabilityAsString(getHoldability())),
+        "cursor name", getCursorName(),
+        "fetch size", valueAsString(getFetchSize()),
+        "max field size", valueAsString(getMaxFieldSize()),
+        "max rows", valueAsString(getMaxRows()),
+        "query timeout", valueAsString(getQueryTimeout()),
+        "poolable", isPoolable(),
         "column count", valueAsString(getColumnCount()));
 
     BeeColumn[] arr = getColumns();
-
     if (!BeeUtils.isEmpty(arr)) {
       for (BeeColumn col : arr) {
-        PropertyUtils.appendChildrenToExtended(lst, col.getName(), col.getColumnInfo());
+        PropertyUtils.appendChildrenToExtended(lst, col.getName(), col.getInfo());
       }
     }
 
     List<Exception> err = getErrors();
-
     if (!BeeUtils.isEmpty(err)) {
       for (Exception ex : err) {
         PropertyUtils.addExtended(lst, "Error", null, ex.getMessage());
@@ -357,8 +347,7 @@ public class BeeResultSet implements Transformable {
         addState(BeeConst.STATE_CHANGED);
         ok = true;
       } else {
-        LogUtils.warning(logger, "fetch size not updated:", "expected", size,
-            "getFetchSize", z);
+        LogUtils.warning(logger, "fetch size not updated:", "expected", size, "getFetchSize", z);
         ok = false;
       }
     } catch (SQLException ex) {
@@ -369,7 +358,6 @@ public class BeeResultSet implements Transformable {
       }
       ok = false;
     }
-
     return ok;
   }
 
@@ -401,24 +389,17 @@ public class BeeResultSet implements Transformable {
     } catch (SQLException ex) {
       handleError(ex);
       setColumnCount(BeeConst.SIZE_UNKNOWN);
-
       return;
     }
 
     int c = getColumnCount();
-
     if (c > 0) {
       BeeColumn[] arr = new BeeColumn[c];
 
       for (int i = 0; i < c; i++) {
         arr[i] = new BeeColumn();
-        try {
-          JdbcUtils.setColumnInfo(md, i + 1, arr[i]);
-        } catch (JdbcException ex) {
-          handleError(ex);
-        }
+        JdbcUtils.setColumnInfo(md, i + 1, arr[i]);
       }
-
       setColumns(arr);
     }
   }
@@ -457,13 +438,11 @@ public class BeeResultSet implements Transformable {
   }
 
   private boolean validState() {
-    return hasState(BeeConst.STATE_INITIALIZED)
-        && !hasState(BeeConst.STATE_ERROR);
+    return hasState(BeeConst.STATE_INITIALIZED) && !hasState(BeeConst.STATE_ERROR);
   }
 
   private String valueAsString(int v) {
-    if (v == BeeConst.INDEX_UNKNOWN || v == BeeConst.SIZE_UNKNOWN
-        || v == BeeConst.TIME_UNKNOWN) {
+    if (v == BeeConst.INDEX_UNKNOWN || v == BeeConst.SIZE_UNKNOWN || v == BeeConst.TIME_UNKNOWN) {
       return BeeUtils.concat(1, v, BeeConst.UNKNOWN);
     } else {
       return Integer.toString(v);

@@ -1,10 +1,12 @@
 package com.butent.bee.shared.data.value;
 
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.Transformable;
+import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Comparator;
 
-public abstract class Value implements Comparable<Value> {
+public abstract class Value implements Comparable<Value>, Transformable {
 
   public static Comparator<Value> getComparator() {
     return new Comparator<Value>() {
@@ -51,7 +53,47 @@ public abstract class Value implements Comparable<Value> {
     return (this.compareTo((Value) o) == 0);
   }
 
+  public Boolean getBoolean() {
+    if (isNull()) {
+      return null;
+    }
+    switch (getType()) {
+      case BOOLEAN :
+        return (Boolean) getObjectValue();
+      case NUMBER :
+        return !BeeUtils.isZero(getObjectValue());
+      case TEXT :
+        return BeeUtils.toBoolean((String) getObjectValue());
+      default:
+        return null;
+    }
+  }
+  
+  public Number getNumber() {
+    if (isNull()) {
+      return null;
+    }
+    switch (getType()) {
+      case NUMBER :
+        return (Number) getObjectValue();
+      case TEXT :
+        return BeeUtils.toDouble((String) getObjectValue());
+      default:
+        return null;
+    }
+  }
+
   public abstract Object getObjectValue();
+  
+  public String getString() {
+    if (isNull()) {
+      return null;
+    }
+    if (getType().equals(ValueType.TEXT)) {
+      return (String) getObjectValue();
+    }
+    return transform();
+  }
 
   public abstract ValueType getType();
 
@@ -63,6 +105,10 @@ public abstract class Value implements Comparable<Value> {
   public final String toQueryString() {
     Assert.isTrue(!isNull(), "Cannot run toQueryString() on a null value.");
     return innerToQueryString();
+  }
+
+  public String transform() {
+    return toString();
   }
 
   protected abstract String innerToQueryString();

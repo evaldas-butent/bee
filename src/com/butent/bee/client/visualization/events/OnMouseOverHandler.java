@@ -26,8 +26,8 @@ public abstract class OnMouseOverHandler extends Handler {
 
   @Override
   protected void onEvent(Properties properties) throws TypeException {
-    int row = properties.getNumber("row").intValue();
-    int column = properties.getNumber("column").intValue();
+    int row = properties.getInt("row");
+    int column = properties.getInt("column");
     onMouseOverEvent(new OnMouseOverEvent(row, column));
   }
 }

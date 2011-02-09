@@ -3,6 +3,7 @@ package com.butent.bee.server.jdbc;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.LogUtils;
 import com.butent.bee.shared.utils.Property;
@@ -17,6 +18,7 @@ import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.sql.SQLWarning;
 import java.sql.Statement;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -27,8 +29,7 @@ import javax.sql.DataSource;
 public class JdbcUtils {
   private static final Logger logger = Logger.getLogger(JdbcUtils.class.getName());
 
-  public static void applyFetchSize(Statement stmt, int rows)
-      throws JdbcException {
+  public static void applyFetchSize(Statement stmt, int rows) throws JdbcException {
     Assert.notNull(stmt);
     Assert.isPositive(rows);
 
@@ -39,8 +40,7 @@ public class JdbcUtils {
     }
   }
 
-  public static void applyMaxRows(Statement stmt, int rows)
-      throws JdbcException {
+  public static void applyMaxRows(Statement stmt, int rows) throws JdbcException {
     Assert.notNull(stmt);
     Assert.isPositive(rows);
 
@@ -51,8 +51,7 @@ public class JdbcUtils {
     }
   }
 
-  public static void applyTimeout(Statement stmt, int timeout)
-      throws JdbcException {
+  public static void applyTimeout(Statement stmt, int timeout) throws JdbcException {
     Assert.notNull(stmt);
     Assert.isPositive(timeout);
 
@@ -121,7 +120,6 @@ public class JdbcUtils {
     } else {
       z = JdbcConst.UNKNOWN_CONCURRENCY;
     }
-
     return z;
   }
 
@@ -151,7 +149,6 @@ public class JdbcUtils {
     } else {
       z = JdbcConst.UNKNOWN_FETCH_DIRECTION;
     }
-
     return z;
   }
 
@@ -182,9 +179,8 @@ public class JdbcUtils {
     }
   }
 
-  public static int getColumnCount(Object obj) throws JdbcException {
+  public static int getColumnCount(Object obj) {
     Assert.notNull(obj);
-
     int c = BeeConst.SIZE_UNKNOWN;
 
     try {
@@ -196,9 +192,8 @@ public class JdbcUtils {
         c = ((BeeResultSet) obj).getColumnCount();
       }
     } catch (SQLException ex) {
-      throw new JdbcException(ex);
+      LogUtils.severe(logger, ex);
     }
-
     return c;
   }
 
@@ -219,7 +214,6 @@ public class JdbcUtils {
     } catch (SQLException ex) {
       throw new JdbcException(ex);
     }
-
     return arr;
   }
 
@@ -234,7 +228,6 @@ public class JdbcUtils {
     } catch (SQLException ex) {
       throw new JdbcException(ex);
     }
-
     return con;
   }
 
@@ -247,7 +240,6 @@ public class JdbcUtils {
     } catch (SQLException ex) {
       throw new JdbcException(ex);
     }
-
     return conn;
   }
 
@@ -267,7 +259,6 @@ public class JdbcUtils {
       LogUtils.warning(logger, ex);
       crs = BeeConst.ERROR;
     }
-
     return crs;
   }
 
@@ -284,7 +275,6 @@ public class JdbcUtils {
       LogUtils.warning(logger, ex);
       z = BeeConst.INT_ERROR;
     }
-
     return z;
   }
 
@@ -301,7 +291,6 @@ public class JdbcUtils {
       LogUtils.warning(logger, ex);
       info = ex.toString();
     }
-
     return info;
   }
 
@@ -321,7 +310,6 @@ public class JdbcUtils {
         name = ex.getMessage();
       }
     }
-
     return name;
   }
 
@@ -334,7 +322,6 @@ public class JdbcUtils {
     } catch (SQLException ex) {
       throw new JdbcException(ex);
     }
-
     return mr;
   }
 
@@ -347,23 +334,19 @@ public class JdbcUtils {
     } catch (SQLException ex) {
       throw new JdbcException(ex);
     }
-
     return rs;
   }
 
-  public static String getResultSetValue(ResultSet rs, int idx)
-      throws JdbcException {
+  public static String getResultSetValue(ResultSet rs, int idx) throws JdbcException {
     Assert.notNull(rs);
     Assert.isPositive(idx);
 
-    String v = null;
-
+    String v;
     try {
       v = rs.getString(idx);
     } catch (SQLException ex) {
       throw new JdbcException(ex);
     }
-
     return v;
   }
 
@@ -392,7 +375,6 @@ public class JdbcUtils {
     } catch (SQLException ex) {
       PropertyUtils.addProperty(lst, "Error", ex.getMessage());
     }
-
     return lst;
   }
 
@@ -413,7 +395,6 @@ public class JdbcUtils {
     } catch (SQLException ex) {
       c = BeeConst.SIZE_UNKNOWN;
     }
-
     return c;
   }
 
@@ -430,7 +411,6 @@ public class JdbcUtils {
       LogUtils.warning(logger, ex);
       info = ex.toString();
     }
-
     return info;
   }
 
@@ -443,7 +423,6 @@ public class JdbcUtils {
     } catch (SQLException ex) {
       throw new JdbcException(ex);
     }
-
     return cnt;
   }
 
@@ -464,7 +443,6 @@ public class JdbcUtils {
     } else {
       lst = unchain(warn);
     }
-
     return lst;
   }
 
@@ -485,7 +463,6 @@ public class JdbcUtils {
     } else {
       lst = unchain(warn);
     }
-
     return lst;
   }
 
@@ -506,7 +483,6 @@ public class JdbcUtils {
     } else {
       lst = unchain(warn);
     }
-
     return lst;
   }
 
@@ -540,27 +516,7 @@ public class JdbcUtils {
     } else {
       z = JdbcConst.UNKNOWN_HOLDABILITY;
     }
-
     return z;
-  }
-
-  public static String lookupColumnName(ResultSetMetaData rsmd, int idx)
-      throws JdbcException {
-    Assert.notNull(rsmd);
-    Assert.isPositive(idx);
-
-    String name = null;
-
-    try {
-      name = rsmd.getColumnLabel(idx);
-      if (BeeUtils.isEmpty(name)) {
-        name = rsmd.getColumnName(idx);
-      }
-    } catch (SQLException ex) {
-      throw new JdbcException(ex);
-    }
-
-    return name;
   }
 
   public static String requiredSingleResult(ResultSet rs) throws JdbcException {
@@ -587,7 +543,6 @@ public class JdbcUtils {
     } else if (size > 1) {
       throw new JdbcException(JdbcConst.rsRows(size));
     }
-
     return v;
   }
 
@@ -617,12 +572,10 @@ public class JdbcUtils {
     } else {
       z = JdbcConst.UNKNOWN_RESULT_SET_TYPE;
     }
-
     return z;
   }
 
-  public static boolean setColumnInfo(ResultSetMetaData rsmd, int idx,
-      BeeColumn col) throws JdbcException {
+  public static boolean setColumnInfo(ResultSetMetaData rsmd, int idx, BeeColumn col) {
     Assert.notNull(rsmd);
     Assert.isPositive(idx);
     Assert.notNull(col);
@@ -634,14 +587,20 @@ public class JdbcUtils {
     boolean ok = false;
 
     try {
-      col.setIdx(idx);
-
+      col.setIndex(idx);
+      String name = rsmd.getColumnName(idx);
+      String label = rsmd.getColumnLabel(idx);
+      col.setId(BeeUtils.ifString(label, name));
+      col.setName(name);
+      col.setLabel(label);
+      
       col.setSchema(rsmd.getSchemaName(idx));
       col.setCatalog(rsmd.getCatalogName(idx));
       col.setTable(rsmd.getTableName(idx));
-
-      col.setName(rsmd.getColumnLabel(idx)); // TODO: ???
-      col.setType(rsmd.getColumnType(idx));
+      
+      int sqlType = rsmd.getColumnType(idx);
+      col.setSqlType(sqlType);
+      col.setType(sqlTypeToValueType(sqlType));
       col.setTypeName(rsmd.getColumnTypeName(idx));
       col.setClazz(rsmd.getColumnClassName(idx));
 
@@ -651,10 +610,9 @@ public class JdbcUtils {
       col.setNullable(rsmd.isNullable(idx));
 
       col.setDisplaySize(rsmd.getColumnDisplaySize(idx));
-      col.setLabel(rsmd.getColumnLabel(idx));
 
       col.setAutoIncrement(rsmd.isAutoIncrement(idx));
-// TODO keistas Mysql JDBC bugas      col.setCaseSensitive(rsmd.isCaseSensitive(idx));
+      col.setCaseSensitive(rsmd.isCaseSensitive(idx));
       col.setCurrency(rsmd.isCurrency(idx));
       col.setSigned(rsmd.isSigned(idx));
 
@@ -665,28 +623,63 @@ public class JdbcUtils {
 
       ok = true;
     } catch (SQLException ex) {
-      throw new JdbcException(ex);
+      LogUtils.severe(logger, ex);
+      col.setProperty(ex.getClass().getSimpleName(), ex.getMessage());
     }
-
     return ok;
   }
 
-  public static boolean supportsBatchUpdates(Connection con)
-      throws JdbcException {
+  public static ValueType sqlTypeToValueType(int sqlType) {
+    ValueType valueType;
+    
+    switch (sqlType) {
+      case Types.BOOLEAN:
+      case Types.BIT: {
+        valueType = ValueType.BOOLEAN;
+        break;
+      }
+      case Types.CHAR:
+      case Types.VARCHAR:
+        valueType = ValueType.TEXT;
+        break;
+      case Types.INTEGER:
+      case Types.SMALLINT:
+      case Types.BIGINT:
+      case Types.TINYINT:
+      case Types.REAL:
+      case Types.NUMERIC:
+      case Types.DOUBLE:
+      case Types.FLOAT:
+      case Types.DECIMAL:
+        valueType = ValueType.NUMBER;
+        break;
+      case Types.DATE:
+        valueType = ValueType.DATE;
+        break;
+      case Types.TIME:
+        valueType = ValueType.TIMEOFDAY;
+        break;
+      case Types.TIMESTAMP:
+        valueType = ValueType.DATETIME;
+        break;
+      default:
+        valueType = ValueType.TEXT;
+    }
+    return valueType;
+  }
+
+  public static boolean supportsBatchUpdates(Connection con) throws JdbcException {
     Assert.notNull(con);
 
-    boolean ok = false;
-
+    boolean ok;
     try {
       DatabaseMetaData dbmd = con.getMetaData();
       ok = dbmd.supportsBatchUpdates();
     } catch (SQLException ex) {
       throw new JdbcException(ex);
     } catch (AbstractMethodError err) {
-      throw new JdbcException(
-          "JDBC driver does not support 'supportsBatchUpdates' method", err);
+      throw new JdbcException("JDBC driver does not support 'supportsBatchUpdates' method", err);
     }
-
     return ok;
   }
 
@@ -700,7 +693,6 @@ public class JdbcUtils {
       LogUtils.warning(logger, ex);
       ok = false;
     }
-
     return ok;
   }
 
@@ -738,14 +730,12 @@ public class JdbcUtils {
     } else {
       z = JdbcConst.UNKNOWN_TRANSACTION_ISOLATION;
     }
-
     return z;
   }
 
   public static String transform(SQLException ex) {
     Assert.notNull(ex);
-    return BeeUtils.concat(1, ex.getSQLState(), ex.getErrorCode(),
-        ex.toString());
+    return BeeUtils.concat(1, ex.getSQLState(), ex.getErrorCode(), ex.toString());
   }
 
   public static List<String> unchain(SQLException x) {
@@ -757,7 +747,6 @@ public class JdbcUtils {
       lst.add(transform(ex));
       ex = ex.getNextException();
     }
-
     return lst;
   }
 
@@ -770,12 +759,10 @@ public class JdbcUtils {
       lst.add(transform(ex));
       ex = ex.getNextWarning();
     }
-
     return lst;
   }
 
-  public static boolean validColumnIdx(ResultSetMetaData rsmd, int idx)
-      throws JdbcException {
+  public static boolean validColumnIdx(ResultSetMetaData rsmd, int idx) {
     if (rsmd == null) {
       return false;
     } else {
@@ -788,8 +775,7 @@ public class JdbcUtils {
   }
 
   public static boolean validConcurrency(String s) {
-    return BeeUtils.inListSame(s, BeeConst.CONCUR_READ_ONLY,
-        BeeConst.CONCUR_UPDATABLE);
+    return BeeUtils.inListSame(s, BeeConst.CONCUR_READ_ONLY, BeeConst.CONCUR_UPDATABLE);
   }
 
   public static boolean validFetchDirection(int z) {
@@ -803,8 +789,7 @@ public class JdbcUtils {
   }
 
   public static boolean validHoldability(int z) {
-    return z == ResultSet.CLOSE_CURSORS_AT_COMMIT
-        || z == ResultSet.HOLD_CURSORS_OVER_COMMIT;
+    return z == ResultSet.CLOSE_CURSORS_AT_COMMIT || z == ResultSet.HOLD_CURSORS_OVER_COMMIT;
   }
 
   public static boolean validHoldability(String s) {
@@ -833,9 +818,7 @@ public class JdbcUtils {
 
   public static boolean validTransactionIsolation(String s) {
     return BeeUtils.inListSame(s, BeeConst.TRANSACTION_NONE,
-        BeeConst.TRANSACTION_READ_COMMITTED,
-        BeeConst.TRANSACTION_READ_UNCOMMITTED,
+        BeeConst.TRANSACTION_READ_COMMITTED, BeeConst.TRANSACTION_READ_UNCOMMITTED,
         BeeConst.TRANSACTION_REPEATABLE_READ, BeeConst.TRANSACTION_SERIALIZABLE);
   }
-
 }

@@ -3,6 +3,7 @@ package com.butent.bee.server.utils;
 import com.butent.bee.server.communication.ResponseBuffer;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.LogUtils;
 
@@ -35,8 +36,8 @@ public class Reflection {
 
   private static void doMethod(Object obj, Method method, RequestInfo req, ResponseBuffer resp) {
     Class<?>[] parameterTypes = method.getParameterTypes();
-    boolean hasReq = BeeUtils.contains(RequestInfo.class, parameterTypes);
-    boolean hasResp = BeeUtils.contains(ResponseBuffer.class, parameterTypes);
+    boolean hasReq = ArrayUtils.contains(RequestInfo.class, parameterTypes);
+    boolean hasResp = ArrayUtils.contains(ResponseBuffer.class, parameterTypes);
 
     try {
       if (hasReq && hasResp) {

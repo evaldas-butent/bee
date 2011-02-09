@@ -22,9 +22,9 @@ public class AggregationTree {
   private AggregationNode root;
   private Set<String> columnsToAggregate;
 
-  private IsTable table;
+  private IsTable<?, ?> table;
 
-  public AggregationTree(Set<String> columnsToAggregate, IsTable table) {
+  public AggregationTree(Set<String> columnsToAggregate, IsTable<?, ?> table) {
     this.columnsToAggregate = columnsToAggregate;
     this.table = table;
     root = new AggregationNode(columnsToAggregate, table);

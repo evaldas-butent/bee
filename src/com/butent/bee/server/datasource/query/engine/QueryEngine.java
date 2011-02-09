@@ -12,14 +12,13 @@ import com.butent.bee.server.datasource.query.QueryLabels;
 import com.butent.bee.server.datasource.query.QueryPivot;
 import com.butent.bee.server.datasource.query.QuerySelection;
 import com.butent.bee.server.datasource.util.ValueFormatter;
-import com.butent.bee.shared.data.DataTable;
 import com.butent.bee.shared.data.DataWarning;
 import com.butent.bee.shared.data.IsCell;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.IsTable;
 import com.butent.bee.shared.data.Reasons;
 import com.butent.bee.shared.data.TableCell;
-import com.butent.bee.shared.data.TableColumn;
 import com.butent.bee.shared.data.TableRow;
 import com.butent.bee.shared.data.column.AbstractColumn;
 import com.butent.bee.shared.data.column.AggregationColumn;
@@ -46,9 +45,10 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public final class QueryEngine {
 
-  public static DataTable executeQuery(Query query, DataTable table, ULocale locale) {
+  public static <R extends IsRow, C extends IsColumn> IsTable<R, C> executeQuery(Query query,
+      IsTable<R, C> table, ULocale locale) {
     ColumnIndices columnIndices = new ColumnIndices();
-    List<IsColumn> columns = table.getColumns();
+    List<C> columns = table.getColumns();
     for (int i = 0; i < columns.size(); i++) {
       columnIndices.put(new SimpleColumn(columns.get(i).getId()), i);
     }
@@ -73,10 +73,10 @@ public final class QueryEngine {
     return table;
   }
 
-  private static DataTable createDataTable(
+  private static <R extends IsRow, C extends IsColumn> IsTable<R, C> createDataTable(
       List<String> groupByColumnIds, SortedSet<ColumnTitle> columnTitles,
-      DataTable original, List<ScalarFunctionColumnTitle> scalarFunctionColumnTitles) {
-    DataTable result = new DataTable();
+      IsTable<R, C> original, List<ScalarFunctionColumnTitle> scalarFunctionColumnTitles) {
+    IsTable<R, C> result = original.create();
     for (String groupById : groupByColumnIds) {
       result.addColumn(original.getColumn(groupById));
     }
@@ -90,14 +90,15 @@ public final class QueryEngine {
     return result;
   }
 
-  private static DataTable performFilter(DataTable table, Query query) {
+  private static <R extends IsRow, C extends IsColumn> IsTable<R, C> performFilter(
+      IsTable<R, C> table, Query query) {
     if (!query.hasFilter()) {
       return table;
     }
 
-    List<IsRow> newRowList = Lists.newArrayList();
+    List<R> newRowList = Lists.newArrayList();
     RowFilter filter = query.getFilter();
-    for (IsRow inputRow : table.getRows()) {
+    for (R inputRow : table.getRows()) {
       if (filter.isMatch(table, inputRow)) {
         newRowList.add(inputRow);
       }
@@ -106,14 +107,14 @@ public final class QueryEngine {
     return table;
   }
 
-  private static DataTable performFormatting(DataTable table, Query query,
-      ColumnIndices columnIndices, ULocale locale) {
+  private static <R extends IsRow, C extends IsColumn> IsTable<R, C> performFormatting(
+      IsTable<R, C> table, Query query, ColumnIndices columnIndices, ULocale locale) {
     if (!query.hasUserFormatOptions()) {
       return table;
     }
 
     QueryFormat queryFormat = query.getUserFormatOptions();
-    List<IsColumn> columns = table.getColumns();
+    List<C> columns = table.getColumns();
     Map<Integer, ValueFormatter> indexToFormatter = Maps.newHashMap();
     for (AbstractColumn col : queryFormat.getColumns()) {
       String pattern = queryFormat.getPattern(col);
@@ -148,8 +149,9 @@ public final class QueryEngine {
     return table;
   }
 
-  private static DataTable performGroupingAndPivoting(DataTable table, Query query,
-      ColumnIndices columnIndices, TreeMap<List<Value>, ColumnLookup> columnLookups) {
+  private static <R extends IsRow, C extends IsColumn> IsTable<R, C> performGroupingAndPivoting(
+      IsTable<R, C> table, Query query, ColumnIndices columnIndices, TreeMap<List<Value>,
+      ColumnLookup> columnLookups) {
     if (!queryHasAggregation(query) || (table.getNumberOfRows() == 0)) {
       return table;
     }
@@ -194,20 +196,20 @@ public final class QueryEngine {
       groupAndPivotScalarFunctionColumns.addAll(pivot.getScalarFunctionColumns());
     }
 
-    List<IsColumn> newColumns = Lists.newArrayList();
+    List<C> newColumns = Lists.newArrayList();
     newColumns.addAll(table.getColumns());
 
     for (ScalarFunctionColumn column : groupAndPivotScalarFunctionColumns) {
-      newColumns.add(new TableColumn(column.getId(), column.getValueType(table),
-          ScalarFunctionColumnTitle.getColumnDescriptionLabel(table, column)));
+      newColumns.add(table.createColumn(column.getValueType(table),
+          ScalarFunctionColumnTitle.getColumnDescriptionLabel(table, column), column.getId()));
     }
 
-    DataTable tempTable = new DataTable();
+    IsTable<R, C> tempTable = table.create();
     tempTable.addColumns(newColumns);
 
     DataTableColumnLookup lookup = new DataTableColumnLookup(table);
-    for (IsRow sourceRow : table.getRows()) {
-      IsRow newRow = new TableRow();
+    for (R sourceRow : table.getRows()) {
+      R newRow = table.createRow();
       for (IsCell sourceCell : sourceRow.getCells()) {
         newRow.addCell(sourceCell);
       }
@@ -260,8 +262,9 @@ public final class QueryEngine {
       }
     }
 
-    DataTable result = createDataTable(groupByIds, columnTitles, table, scalarFunctionColumnTitles);
-    List<IsColumn> cols = result.getColumns();
+    IsTable<R, C> result = createDataTable(groupByIds, columnTitles, table,
+        scalarFunctionColumnTitles);
+    List<C> cols = result.getColumns();
 
     columnIndices.clear();
     int columnIndex = 0;
@@ -294,7 +297,7 @@ public final class QueryEngine {
     }
 
     for (RowTitle rowTitle : rowTitles) {
-      TableRow curRow = new TableRow();
+      IsRow curRow = new TableRow();
       for (Value v : rowTitle.values) {
         curRow.addCell(new TableCell(v));
       }
@@ -327,16 +330,15 @@ public final class QueryEngine {
     return result;
   }
 
-  private static DataTable performLabels(DataTable table, Query query,
-      ColumnIndices columnIndices) {
-
+  private static <R extends IsRow, C extends IsColumn> IsTable<R, C> performLabels(
+      IsTable<R, C> table, Query query, ColumnIndices columnIndices) {
     if (!query.hasLabels()) {
       return table;
     }
 
     QueryLabels labels = query.getLabels();
 
-    List<IsColumn> columns = table.getColumns();
+    List<C> columns = table.getColumns();
 
     for (AbstractColumn column : labels.getColumns()) {
       String label = labels.getLabel(column);
@@ -357,19 +359,20 @@ public final class QueryEngine {
     return table;
   }
 
-  private static DataTable performPagination(DataTable table, Query query) {
+  private static <R extends IsRow, C extends IsColumn> IsTable<R, C> performPagination(
+      IsTable<R, C> table, Query query) {
     int rowOffset = query.getRowOffset();
     int rowLimit = query.getRowLimit();
 
-    if (((rowLimit == -1) || (table.getRows().size() <= rowLimit)) && (rowOffset == 0)) {
+    if (((rowLimit == -1) || (table.getRows().length() <= rowLimit)) && (rowOffset == 0)) {
       return table;
     }
     int numRows = table.getNumberOfRows();
     int fromIndex = Math.max(0, rowOffset);
     int toIndex = (rowLimit == -1) ? numRows : Math.min(numRows, rowOffset + rowLimit);
 
-    List<IsRow> relevantRows = table.getRows().subList(fromIndex, toIndex);
-    DataTable newTable = new DataTable();
+    List<R> relevantRows = table.getRows().getList().subList(fromIndex, toIndex);
+    IsTable<R, C> newTable = table.create();
     newTable.addColumns(table.getColumns());
     newTable.addRows(relevantRows);
 
@@ -381,8 +384,8 @@ public final class QueryEngine {
     return newTable;
   }
 
-  private static DataTable performSelection(DataTable table, Query query,
-      AtomicReference<ColumnIndices> columnIndicesReference,
+  private static <R extends IsRow, C extends IsColumn> IsTable<R, C> performSelection(
+      IsTable<R, C> table, Query query, AtomicReference<ColumnIndices> columnIndicesReference,
       Map<List<Value>, ColumnLookup> columnLookups) {
     if (!query.hasSelection()) {
       return table;
@@ -393,16 +396,16 @@ public final class QueryEngine {
     List<AbstractColumn> selectedColumns = query.getSelection().getColumns();
     List<Integer> selectedIndices = Lists.newArrayList();
 
-    List<IsColumn> oldColumns = table.getColumns();
-    List<IsColumn> newColumns = Lists.newArrayList();
+    List<C> oldColumns = table.getColumns();
+    List<C> newColumns = Lists.newArrayList();
     ColumnIndices newColumnIndices = new ColumnIndices();
     int currIndex = 0;
     for (AbstractColumn col : selectedColumns) {
       List<Integer> colIndices = columnIndices.getColumnIndices(col);
       selectedIndices.addAll(colIndices);
       if (colIndices.size() == 0) {
-        newColumns.add(new TableColumn(col.getId(), col.getValueType(table),
-            ScalarFunctionColumnTitle.getColumnDescriptionLabel(table, col)));
+        newColumns.add(table.createColumn(col.getValueType(table), 
+            ScalarFunctionColumnTitle.getColumnDescriptionLabel(table, col), col.getId()));
         newColumnIndices.put(col, currIndex++);
       } else {
         for (int colIndex : colIndices) {
@@ -414,7 +417,7 @@ public final class QueryEngine {
     columnIndices = newColumnIndices;
     columnIndicesReference.set(columnIndices);
 
-    DataTable result = new DataTable();
+    IsTable<R, C> result = table.create();
     result.addColumns(newColumns);
 
     for (IsRow sourceRow : table.getRows()) {
@@ -439,7 +442,8 @@ public final class QueryEngine {
     return result;
   }
 
-  private static DataTable performSkipping(DataTable table, Query query) {
+  private static <R extends IsRow, C extends IsColumn> IsTable<R, C> performSkipping(
+      IsTable<R, C> table, Query query) {
     int rowSkipping = query.getRowSkipping();
 
     if (rowSkipping <= 1) {
@@ -447,26 +451,27 @@ public final class QueryEngine {
     }
 
     int numRows = table.getNumberOfRows();
-    List<IsRow> relevantRows = new ArrayList<IsRow>();
+    List<R> relevantRows = new ArrayList<R>();
     for (int rowIndex = 0; rowIndex < numRows; rowIndex += rowSkipping) {
       relevantRows.add(table.getRows().get(rowIndex));
     }
 
-    DataTable newTable = new DataTable();
+    IsTable<R, C> newTable = table.create();
     newTable.addColumns(table.getColumns());
     newTable.addRows(relevantRows);
 
     return newTable;
   }
 
-  private static DataTable performSort(DataTable table, Query query) {
+  private static <R extends IsRow, C extends IsColumn> IsTable<R, C> performSort(
+      IsTable<R, C> table, Query query) {
     if (!query.hasSort()) {
       return table;
     }
     SortQuery sortBy = query.getSort();
     DataTableColumnLookup columnLookup = new DataTableColumnLookup(table);
     TableRowComparator comparator = new TableRowComparator(sortBy, columnLookup);
-    Collections.sort(table.getRows(), comparator);
+    Collections.sort(table.getRows().getList(), comparator);
     return table;
   }
 

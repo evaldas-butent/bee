@@ -4,28 +4,23 @@ import com.google.gwt.cell.client.FieldUpdater;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.shared.data.BeeRowSet;
-import com.butent.bee.shared.data.HasTabularData;
+import com.butent.bee.shared.data.IsTable;
 
 public class CellUpdater implements FieldUpdater<Integer, String> {
-  private HasTabularData view;
+  private IsTable<?, ?> view;
   private int column;
-  private CellKeyProvider keyProvider;
 
-  public CellUpdater(HasTabularData view, int column, CellKeyProvider keyProvider) {
+  public CellUpdater(IsTable<?, ?> view, int column) {
     this.view = view;
     this.column = column;
-    this.keyProvider = keyProvider;
   }
 
   @Override
   public void update(int index, Integer object, String value) {
-    if (keyProvider != null) {
-      BeeKeeper.getLog().info(keyProvider.getKeyName(), keyProvider.getKey(object));
-    }
-    BeeKeeper.getLog().info(object, view.getColumnNames()[column], value);
+    BeeKeeper.getLog().info(object, view.getColumnLabel(column), value);
 
     if (view instanceof BeeRowSet) {
-      view.setValue(object, column, value);
+      view.getRow(object).setValue(column, value);
     }
   }
 }

@@ -4,21 +4,13 @@ import com.google.gwt.core.client.JsArrayString;
 
 import com.butent.bee.shared.data.BeeColumn;
 
-public class ResponseData extends JsData {
+public class ResponseData extends JsData<BeeColumn> {
 
-  public ResponseData(JsArrayString data, int columnCount) {
-    this(data, columnCount, columnCount);
+  public ResponseData(JsArrayString data, BeeColumn... columns) {
+    super(data, columns.length, columns);
   }
 
-  public ResponseData(JsArrayString data, int columnCount, int start) {
-    super(data, columnCount, start);
-
-    BeeColumn[] arr = new BeeColumn[columnCount];
-    for (int i = 0; i < columnCount; i++) {
-      arr[i] = BeeColumn.restore(data.get(i));
-    }
-
-    setColumns(arr);
+  public ResponseData(JsArrayString data, int start, BeeColumn... columns) {
+    super(data, start, columns);
   }
-
 }

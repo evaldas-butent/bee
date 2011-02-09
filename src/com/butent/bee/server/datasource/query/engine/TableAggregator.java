@@ -17,7 +17,7 @@ public class TableAggregator {
   private AggregationTree tree;
 
   public TableAggregator(List<String> groupByColumns, Set<String> aggregateColumns,
-      IsTable table) {
+      IsTable<?, ?> table) {
 
     this.groupByColumns = groupByColumns;
     this.aggregateColumns = aggregateColumns;
@@ -38,7 +38,7 @@ public class TableAggregator {
     return tree.getPathsToLeaves();
   }
 
-  public AggregationPath getRowPath(IsRow row, IsTable table, int depth) {
+  public AggregationPath getRowPath(IsRow row, IsTable<?, ?> table, int depth) {
     AggregationPath result = new AggregationPath();
     for (int i = 0; i <= depth; i++) {
       String columnId = groupByColumns.get(i);
@@ -48,7 +48,7 @@ public class TableAggregator {
     return result;
   }
 
-  private Map<String, Value> getValuesToAggregate(IsRow row, IsTable table) {
+  private Map<String, Value> getValuesToAggregate(IsRow row, IsTable<?, ?> table) {
     Map<String, Value> result = Maps.newHashMap();
     for (String columnId : aggregateColumns) {
       Value curValue = row.getCell(table.getColumnIndex(columnId)).getValue();

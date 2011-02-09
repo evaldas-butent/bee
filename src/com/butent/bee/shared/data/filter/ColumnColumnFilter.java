@@ -96,7 +96,7 @@ public class ColumnColumnFilter extends ComparisonFilter {
   }
 
   @Override
-  public boolean isMatch(IsTable table, IsRow row) {
+  public boolean isMatch(IsTable<?, ?> table, IsRow row) {
     DataTableColumnLookup lookup = new DataTableColumnLookup(table);
     Value firstValue = firstColumn.getValue(lookup, row);
     Value secondValue = secondColumn.getValue(lookup, row);

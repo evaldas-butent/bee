@@ -1,6 +1,7 @@
 package com.butent.bee.shared.sql;
 
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
@@ -44,6 +45,6 @@ class ComplexExpression implements IsExpression {
 
   @Override
   public String getValue() {
-    return BeeUtils.join(content, 0);
+    return ArrayUtils.join(content, 0);
   }
 }

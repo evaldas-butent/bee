@@ -6,7 +6,6 @@ import com.butent.bee.server.jdbc.JdbcUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeDate;
 import com.butent.bee.shared.data.BeeColumn;
-import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.LogUtils;
 
 import java.sql.ResultSet;
@@ -22,10 +21,10 @@ public class ResultSetBean {
 
   static {
     String[] arr = new String[]{
-        "index", "name", "schema", "catalog", "table", "class", "type",
-        "type name", "label", "display size", "precision", "scale", "nullable",
-        "signed", "auto increment", "case sensitive", "currency", "searchable",
-        "read only", "writable", "definitely writable"};
+        "index", "id", "name", "label", "schema", "catalog", "table", "class", "sql type",
+        "type name", "type", "precision", "scale", "nullable", "pattern", "display size", "signed",
+        "auto increment", "case sensitive", "currency", "searchable", "read only", "writable",
+        "definitely writable", "properties"};
 
     metaCols = new BeeColumn[arr.length];
     for (int i = 0; i < arr.length; i++) {
@@ -62,17 +61,14 @@ public class ResultSetBean {
     }
 
     BeeColumn z;
-
     for (int i = 0; i < c; i++) {
       z = cols[i];
 
-      buff.add(z.getIdx(), z.getName(), z.getSchema(), z.getCatalog(),
-          z.getTable(), z.getClazz(), z.getType(), z.getTypeName(),
-          z.getLabel(), z.getDisplaySize(), z.getPrecision(), z.getScale(),
-          BeeUtils.concat(1, z.getNullable(), z.nullableAsString()),
-          z.isSigned(), z.isAutoIncrement(), z.isCaseSensitive(),
-          z.isCurrency(), z.isSearchable(), z.isReadOnly(), z.isWritable(),
-          z.isDefinitelyWritable());
+      buff.add(z.getIndex(), z.getId(), z.getName(), z.getLabel(), z.getSchema(), z.getCatalog(),
+          z.getTable(), z.getClazz(), z.getSqlType(), z.getTypeName(), z.getType(),
+          z.getPrecision(), z.getScale(), z.getNullable(), z.getPattern(), z.getDisplaySize(),
+          z.isSigned(), z.isAutoIncrement(), z.isCaseSensitive(), z.isCurrency(), z.isSearchable(),
+          z.isReadOnly(), z.isWritable(), z.isDefinitelyWritable(), z.getProperties());
 
       if (debug) {
         buff.add(new BeeDate().toLog());
@@ -112,7 +108,7 @@ public class ResultSetBean {
     try {
       while (rs.next()) {
         for (int i = 0; i < c; i++) {
-          buff.add(rs.getString(cols[i].getIdx()));
+          buff.add(rs.getString(cols[i].getIndex()));
         }
         if (debug) {
           buff.add(new BeeDate().toLog());

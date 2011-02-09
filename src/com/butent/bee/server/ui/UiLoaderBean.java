@@ -3,7 +3,8 @@ package com.butent.bee.server.ui;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.utils.XmlUtils;
 import com.butent.bee.shared.BeeService;
-import com.butent.bee.shared.data.BeeRowSet.BeeRow;
+import com.butent.bee.shared.data.BeeRow;
+import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.sql.SqlSelect;
 import com.butent.bee.shared.sql.SqlUtils;
 import com.butent.bee.shared.ui.UiLoader;
@@ -14,6 +15,7 @@ import com.butent.bee.shared.utils.Property;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
@@ -69,20 +71,18 @@ public class UiLoaderBean extends UiLoader {
           "dock_bott").addFrom("forms", "f").setWhere(
           SqlUtils.equal("f", "form", formName));
 
-      BeeRow data = qs.getSingleRow(ss);
+      Map<String, String> data = qs.getRowValues(ss);
 
-      String top = data.getString("top");
-      String left = data.getString("left");
-      String width = data.getString("width");
-      String height = data.getString("height");
-      String dockTop = BeeUtils.ifString(data.getString("dock_top"), top);
-      String dockLeft = BeeUtils.ifString(data.getString("dock_left"), left);
-      String dockWidth = data.getString("dock_width");
-      String dockHeight = data.getString("dock_hght");
-      String dockRight = BeeUtils.ifString(data.getString("dock_right"),
-          dockWidth);
-      String dockBottom = BeeUtils.ifString(data.getString("dock_bott"),
-          dockHeight);
+      String top = data.get("top");
+      String left = data.get("left");
+      String width = data.get("width");
+      String height = data.get("height");
+      String dockTop = BeeUtils.ifString(data.get("dock_top"), top);
+      String dockLeft = BeeUtils.ifString(data.get("dock_left"), left);
+      String dockWidth = data.get("dock_width");
+      String dockHeight = data.get("dock_hght");
+      String dockRight = BeeUtils.ifString(data.get("dock_right"), dockWidth);
+      String dockBottom = BeeUtils.ifString(data.get("dock_bott"), dockHeight);
 
       StringBuilder props = new StringBuilder();
 
@@ -99,7 +99,7 @@ public class UiLoaderBean extends UiLoader {
       props.append("top=" + dockTop + "\n");
       props.append("left=" + dockLeft + "\n");
 
-      String prp = data.getString("properties");
+      String prp = data.get("properties");
       if (!BeeUtils.isEmpty(prp)) {
         props.append(prp + "\n");
       }
@@ -116,43 +116,41 @@ public class UiLoaderBean extends UiLoader {
           "dock_prnt", "dock_left", "dock_top", "dock_right", "dock_bott",
           "dock_width", "dock_hght").addFrom("controls", "c").setWhere(
           SqlUtils.equal("c", "form", formName));
-
-      for (BeeRow cols : qs.getData(ss).getRows()) {
+      
+      BeeRowSet brs = qs.getData(ss);
+      for (BeeRow cols : brs.getRows()) {
         row = new UiRow();
-        row.setId(cols.getString("control"));
-        row.setClassName(getUiClass(cols.getString("class")));
-        row.setParent(cols.getString("parent"));
-        row.setCaption(BeeUtils.ifString(cols.getString("caption"), "")
+        row.setId(brs.getString(cols, "control"));
+        row.setClassName(getUiClass(brs.getString(cols, "class")));
+        row.setParent(brs.getString(cols, "parent"));
+        row.setCaption(BeeUtils.ifString(brs.getString(cols, "caption"), "")
             .replaceAll("[\"']", "").replaceFirst("\\\\<", ""));
-        row.setOrder(cols.getInt("order"));
+        row.setOrder(brs.getInt(cols, "order"));
 
         props = new StringBuilder();
-        prp = cols.getString("parameters");
+        prp = brs.getString(cols, "parameters");
         if (!BeeUtils.isEmpty(prp)) {
           props.append("parameters=" + prp + "\n");
         }
-        prp = cols.getString("properties");
+        prp = brs.getString(cols, "properties");
         if (!BeeUtils.isEmpty(prp)) {
           props.append(prp + "\n");
         }
 
-        top = cols.getString("top");
-        left = cols.getString("left");
-        width = cols.getString("width");
-        height = cols.getString("height");
+        top = brs.getString(cols, "top");
+        left = brs.getString(cols, "left");
+        width = brs.getString(cols, "width");
+        height = brs.getString(cols, "height");
 
-        String dock = BeeUtils.ifString(cols.getString("dock_prnt"), "");
+        String dock = BeeUtils.ifString(brs.getString(cols, "dock_prnt"), "");
 
-        dockTop = cols.getString("dock_top") + (dock.contains("t") ? "%" : "");
-        dockLeft = cols.getString("dock_left")
-            + (dock.contains("l") ? "%" : "");
-        dockWidth = cols.getString("dock_width")
-            + (dock.contains("w") ? "%" : "");
-        dockHeight = cols.getString("dock_hght")
-            + (dock.contains("h") ? "%" : "");
-        dockRight = BeeUtils.ifString(cols.getString("dock_right"), dockWidth)
+        dockTop = brs.getString(cols, "dock_top") + (dock.contains("t") ? "%" : "");
+        dockLeft = brs.getString(cols, "dock_left") + (dock.contains("l") ? "%" : "");
+        dockWidth = brs.getString(cols, "dock_width") + (dock.contains("w") ? "%" : "");
+        dockHeight = brs.getString(cols, "dock_hght") + (dock.contains("h") ? "%" : "");
+        dockRight = BeeUtils.ifString(brs.getString(cols, "dock_right"), dockWidth)
             + (dock.contains("r") ? "%" : "");
-        dockBottom = BeeUtils.ifString(cols.getString("dock_bott"), dockHeight)
+        dockBottom = BeeUtils.ifString(brs.getString(cols, "dock_bott"), dockHeight)
             + (dock.contains("b") ? "%" : "");
 
         if (BeeUtils.isEmpty(dock)) {

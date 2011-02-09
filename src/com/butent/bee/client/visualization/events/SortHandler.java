@@ -27,7 +27,7 @@ public abstract class SortHandler extends Handler {
   @Override
   protected void onEvent(Properties event) throws TypeException {
     boolean ascending = event.getBoolean("ascending");
-    int column = event.getNumber("column").intValue();
+    int column = event.getInt("column");
     onSort(new SortEvent(ascending, column));
   }
 }

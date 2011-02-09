@@ -2,10 +2,10 @@ package com.butent.bee.shared.data.column;
 
 import com.google.common.collect.Lists;
 
-import com.butent.bee.shared.data.DataTable;
 import com.butent.bee.shared.data.InvalidQueryException;
 import com.butent.bee.shared.data.IsCell;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.IsTable;
 import com.butent.bee.shared.data.TableCell;
 import com.butent.bee.shared.data.function.ScalarFunction;
 import com.butent.bee.shared.data.value.Value;
@@ -104,7 +104,7 @@ public class ScalarFunctionColumn extends AbstractColumn {
   }
 
   @Override
-  public ValueType getValueType(DataTable dataTable) {
+  public ValueType getValueType(IsTable<?, ?> dataTable) {
     if (dataTable.containsColumn(this.getId())) {
       return dataTable.getColumn(this.getId()).getType();
     }
@@ -145,7 +145,7 @@ public class ScalarFunctionColumn extends AbstractColumn {
   }
 
   @Override
-  public void validateColumn(DataTable dataTable) throws InvalidQueryException {
+  public void validateColumn(IsTable<?, ?> dataTable) throws InvalidQueryException {
     List<ValueType> types = Lists.newArrayListWithCapacity(columns.size());
     for (AbstractColumn column : columns) {
       column.validateColumn(dataTable);

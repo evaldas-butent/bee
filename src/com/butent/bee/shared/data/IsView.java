@@ -24,5 +24,5 @@ public interface IsView extends IsData {
   void setRows(int min, int max);
   void setRows(int... rowIndexes);
   
-  IsTable toDataTable();
+  IsTable<?, ?> toDataTable();
 }

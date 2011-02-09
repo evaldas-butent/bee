@@ -40,6 +40,11 @@ public class Properties extends JavaScriptObject {
   public final Date getDate(String key) throws JavaScriptException, TypeException {
     return JsDate.toJava((JsDate) getObject(key));
   }
+  
+  public final int getInt(String key) throws TypeException {
+    Double n = getNumber(key);
+    return (n == null) ? -1 : n.intValue();
+  }
 
   public final Double getNumber(String key) throws TypeException {
     if (containsKey(key)) {

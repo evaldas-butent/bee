@@ -15,7 +15,7 @@ public abstract class RowFilter {
 
   public abstract List<ScalarFunctionColumn> getScalarFunctionColumns();
   
-  public abstract boolean isMatch(IsTable table, IsRow row);
+  public abstract boolean isMatch(IsTable<?, ?> table, IsRow row);
 
   public abstract String toQueryString();
 }

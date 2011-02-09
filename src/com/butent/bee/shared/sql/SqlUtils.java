@@ -2,6 +2,7 @@ package com.butent.bee.shared.sql;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.sql.BeeConstants.Keywords;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
@@ -155,7 +156,7 @@ public class SqlUtils {
   public static IsExpression[] fields(String source, String... fields) {
     Assert.arrayLengthMin(fields, 1);
 
-    int len = BeeUtils.arrayLength(fields);
+    int len = ArrayUtils.length(fields);
     IsExpression[] list = new IsExpression[len];
 
     for (int i = 0; i < len; i++) {

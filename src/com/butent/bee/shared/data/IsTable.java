@@ -1,5 +1,6 @@
 package com.butent.bee.shared.data;
 
+import com.butent.bee.shared.Sequence;
 import com.butent.bee.shared.data.sort.SortInfo;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.value.ValueType;
@@ -7,20 +8,20 @@ import com.butent.bee.shared.data.value.ValueType;
 import java.util.Collection;
 import java.util.List;
 
-public interface IsTable extends IsData {
-  int addColumn(IsColumn column);
+public interface IsTable<RowType extends IsRow, ColType extends IsColumn> extends IsData {
+  int addColumn(ColType column);
 
   int addColumn(ValueType type);
   int addColumn(ValueType type, String label);
   int addColumn(ValueType type, String label, String id);
 
-  int addColumns(Collection<IsColumn> columnsToAdd);
+  int addColumns(Collection<ColType> columnsToAdd);
 
   int addRow();
-  int addRow(IsRow row);
+  int addRow(RowType row);
   int addRow(Object... cells);
 
-  int addRows(Collection<IsRow> rowsToAdd);
+  int addRows(Collection<RowType> rowsToAdd);
   int addRows(int rowCount);
 
   void addWarning(DataWarning warning);
@@ -28,33 +29,36 @@ public interface IsTable extends IsData {
   void clearCell(int rowIndex, int colIndex);
   void clearValue(int rowIndex, int colIndex);
 
-  IsTable clone();
+  IsTable<RowType, ColType> clone();
 
   boolean containsColumn(String columnId);
 
+  IsTable<RowType, ColType> create();
+  ColType createColumn(ValueType type, String label, String id);
+  RowType createRow();
+  
   IsData fromJson(String data);
   IsData fromJson(String data, double version);
 
   IsCell getCell(int rowIndex, int colIndex);
 
-  IsColumn getColumn(int colIndex);
-  IsColumn getColumn(String columnId);
+  ColType getColumn(int colIndex);
+  ColType getColumn(String columnId);
 
-  List<IsColumn> getColumns();
+  List<ColType> getColumns();
 
-  IsRow getRow(int rowIndex);
-
-  List<IsRow> getRows();
+  RowType getRow(int rowIndex);
+  Sequence<RowType> getRows();
 
   List<DataWarning> getWarnings();
 
-  void insertColumn(int colIndex, IsColumn column);
+  void insertColumn(int colIndex, ColType column);
 
   void insertColumn(int colIndex, ValueType type);
   void insertColumn(int colIndex, ValueType type, String label);
   void insertColumn(int colIndex, ValueType type, String label, String id);
 
-  void insertRows(int rowIndex, Collection<IsRow> rowsToAdd);
+  void insertRows(int rowIndex, Collection<RowType> rowsToAdd);
   void insertRows(int rowIndex, int rowCount);
 
   void removeColumn(int colIndex);
@@ -89,6 +93,8 @@ public interface IsTable extends IsData {
   
   void setColumnProperties(int colIndex, CustomProperties properties);
   void setColumnProperty(int colIndex, String name, Object value);
+  
+  void setColumns(List<ColType> columns);
 
   void setFormattedValue(int rowIndex, int colIndex, String formattedValue);  
 
@@ -98,7 +104,7 @@ public interface IsTable extends IsData {
   void setRowProperties(int rowIndex, CustomProperties properties);
   void setRowProperty(int rowIndex, String name, Object value);  
 
-  void setRows(Collection<IsRow> rows);
+  void setRows(Collection<RowType> rows);
 
   void setTableProperties(CustomProperties properterties);
   void setTableProperty(String propertyKey, Object propertyValue);

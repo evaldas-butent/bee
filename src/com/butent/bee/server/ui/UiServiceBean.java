@@ -8,8 +8,9 @@ import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
-import com.butent.bee.shared.data.BeeRowSet.BeeRow;
+import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.sql.SqlBuilderFactory;
 import com.butent.bee.shared.sql.SqlSelect;
 import com.butent.bee.shared.sql.SqlUtils;
@@ -109,11 +110,11 @@ public class UiServiceBean {
     Object res = qs.processSql(sql);
 
     if (res instanceof BeeRowSet) {
-      buff.addColumns(((BeeRowSet) res).getColumns());
+      buff.addColumns(((BeeRowSet) res).getColumnArray());
 
-      for (BeeRow row : ((BeeRowSet) res).getRows()) {
-        for (int col = 0; col < ((BeeRowSet) res).getColumnCount(); col++) {
-          buff.add(row.getValue(col));
+      for (IsRow row : ((BeeRowSet) res).getRows()) {
+        for (int col = 0; col < ((BeeRowSet) res).getNumberOfColumns(); col++) {
+          buff.add(row.getString(col));
         }
       }
     } else {
@@ -141,11 +142,11 @@ public class UiServiceBean {
 
     BeeRowSet res = qs.getData(ss);
 
-    buff.addColumns(res.getColumns());
+    buff.addColumns(res.getColumnArray());
 
-    for (BeeRow row : res.getRows()) {
-      for (int col = 0; col < res.getColumnCount(); col++) {
-        buff.add(row.getValue(col));
+    for (IsRow row : res.getRows()) {
+      for (int col = 0; col < res.getNumberOfColumns(); col++) {
+        buff.add(row.getString(col));
       }
     }
   }
@@ -199,7 +200,7 @@ public class UiServiceBean {
     ss.addFields("g", "properties").addFrom("grids", "g").setWhere(
         SqlUtils.equal("g", "table", gName));
 
-    String x = qs.getSingleRow(ss).getString("properties");
+    String x = qs.getString(ss, "properties");
 
     if (!BeeUtils.isEmpty(x) && x.contains("parent_table")) {
       grd = x.replaceFirst("^((?s).)*parent_table\\s*=\\s*[\\[\"'](.+)[\\]\"']((?s).)*$", "$2");
@@ -214,10 +215,10 @@ public class UiServiceBean {
     if (!data.isEmpty()) {
       for (BeeRow row : data.getRows()) {
         buff.addColumn(
-            new BeeColumn(row.getString("caption").replaceAll("['\"]", "")));
+            new BeeColumn(data.getString(row, "caption").replaceAll("['\"]", "")));
       }
       for (int i = 0; i < 20; i++) {
-        for (int j = 0; j < data.getRowCount(); j++) {
+        for (int j = 0; j < data.getNumberOfRows(); j++) {
           buff.add(j == 0 ? i + 1 : BeeConst.STRING_EMPTY);
         }
       }

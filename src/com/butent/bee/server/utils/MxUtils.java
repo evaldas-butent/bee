@@ -1,6 +1,7 @@
 package com.butent.bee.server.utils;
 
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.ExtendedProperty;
 import com.butent.bee.shared.utils.Property;
@@ -334,7 +335,7 @@ public class MxUtils {
     if (names == null) {
       return null;
     } else {
-      return BeeUtils.transformArray(names);
+      return ArrayUtils.transform(names);
     }
   }
 
@@ -342,7 +343,7 @@ public class MxUtils {
     if (names == null) {
       return null;
     } else {
-      return BeeUtils.transformArray(names);
+      return ArrayUtils.transform(names);
     }
   }
 

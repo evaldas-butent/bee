@@ -3,8 +3,8 @@ package com.butent.bee.shared.data.column;
 import com.google.common.collect.Lists;
 
 import com.butent.bee.shared.data.Aggregation;
-import com.butent.bee.shared.data.DataTable;
 import com.butent.bee.shared.data.InvalidQueryException;
+import com.butent.bee.shared.data.IsTable;
 import com.butent.bee.shared.data.Messages;
 import com.butent.bee.shared.data.value.ValueType;
 
@@ -66,24 +66,28 @@ public class AggregationColumn extends AbstractColumn {
   }
 
   @Override
-  public ValueType getValueType(DataTable dataTable) {
+  public ValueType getValueType(IsTable<?, ?> dataTable) {
     ValueType valueType;
     ValueType originalValueType = dataTable.getColumn(aggregatedColumn.getId()).getType();
     switch (aggregationType) {
       case COUNT:
         valueType = ValueType.NUMBER;
         break;
-      case AVG: case SUM: case MAX: case MIN:
-      valueType = originalValueType;
-      break;
-      default: throw new RuntimeException(Messages.INVALID_AGG_TYPE.getMessage(aggregationType));
+      case AVG:
+      case SUM:
+      case MAX:
+      case MIN:
+        valueType = originalValueType;
+        break;
+      default:
+        throw new RuntimeException(Messages.INVALID_AGG_TYPE.getMessage(aggregationType));
     }
     return valueType;
   }
 
   @Override
   public int hashCode() {
-    int hash  = 1279;
+    int hash = 1279;
     hash = (hash * 17) + aggregatedColumn.hashCode();
     hash = (hash * 17) + aggregationType.hashCode();
     return hash;
@@ -101,16 +105,21 @@ public class AggregationColumn extends AbstractColumn {
   }
 
   @Override
-  public void validateColumn(DataTable dataTable) throws InvalidQueryException {
+  public void validateColumn(IsTable<?, ?> dataTable) throws InvalidQueryException {
     ValueType valueType = dataTable.getColumn(aggregatedColumn.getId()).getType();
     switch (aggregationType) {
-      case COUNT: case MAX: case MIN: break;
-      case AVG: case SUM:
-      if (valueType != ValueType.NUMBER) {
-        throw new InvalidQueryException(Messages.AVG_SUM_ONLY_NUMERIC.getMessage());
-      }
-      break;
-      default: throw new RuntimeException(Messages.INVALID_AGG_TYPE.getMessage(aggregationType));
+      case COUNT:
+      case MAX:
+      case MIN:
+        break;
+      case AVG:
+      case SUM:
+        if (valueType != ValueType.NUMBER) {
+          throw new InvalidQueryException(Messages.AVG_SUM_ONLY_NUMERIC.getMessage());
+        }
+        break;
+      default:
+        throw new RuntimeException(Messages.INVALID_AGG_TYPE.getMessage(aggregationType));
     }
   }
 }

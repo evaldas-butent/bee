@@ -98,7 +98,7 @@ public class CompoundFilter extends RowFilter {
   }
 
   @Override
-  public boolean isMatch(IsTable table, IsRow row) {
+  public boolean isMatch(IsTable<?, ?> table, IsRow row) {
     if (subFilters.isEmpty()) {
       throw new RuntimeException("Compound filter with empty subFilters list");
     }

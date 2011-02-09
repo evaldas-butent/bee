@@ -50,7 +50,7 @@ public class GeoDemo implements LeftTabPanel.WidgetProvider {
     dataTable.setValue(6, 3, "Tauragė");
     dataTable.setValue(7, 0, 55.983333);
     dataTable.setValue(7, 1, 22.25);
-    dataTable.setValue(7, 3, "Tel�?iai");
+    dataTable.setValue(7, 3, "Telšiai");
     dataTable.setValue(8, 0, 55.5);
     dataTable.setValue(8, 1, 25.6);
     dataTable.setValue(8, 3, "Utena");

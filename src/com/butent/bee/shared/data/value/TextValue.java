@@ -1,7 +1,5 @@
 package com.butent.bee.shared.data.value;
 
-import com.butent.bee.shared.Assert;
-
 public class TextValue extends Value {
 
   private static final TextValue NULL_VALUE = new TextValue("");
@@ -13,8 +11,7 @@ public class TextValue extends Value {
   private String value;
 
   public TextValue(String value) {
-    Assert.notNull(value, "Cannot create a text value from null.");
-    this.value = value;
+    this.value = (value == null) ? NULL_VALUE.getValue() : value;
   }
 
   @Override

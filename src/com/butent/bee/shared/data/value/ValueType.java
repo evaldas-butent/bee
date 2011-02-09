@@ -7,25 +7,23 @@ import com.butent.bee.shared.BeeDate;
 
 import java.util.Map;
 
-public enum ValueType {
-  BOOLEAN("BOOLEAN"),
-  NUMBER("NUMBER"),
-  TEXT("STRING"),
-  DATE("DATE"),
-  TIMEOFDAY("TIMEOFDAY"),
-  DATETIME("DATETIME");
+public enum ValueType { BOOLEAN("boolean"), NUMBER("number"), TEXT("string"),
+  DATE("date"), TIMEOFDAY("timeofday"), DATETIME("datetime");
 
   private static Map<String, ValueType> typeCodeToValueType;
 
   static {
     typeCodeToValueType = Maps.newHashMap();
     for (ValueType type : ValueType.values()) {
-      typeCodeToValueType.put(type.typeCode, type);
+      typeCodeToValueType.put(type.typeCode.trim().toLowerCase(), type);
     }
   }
 
-  static ValueType getByTypeCode(String string) {
-    return typeCodeToValueType.get(string);
+  public static ValueType getByTypeCode(String code) {
+    if (code == null || code.isEmpty()) {
+      return null;
+    }
+    return typeCodeToValueType.get(code.trim().toLowerCase());
   }
 
   private String typeCode;
@@ -57,11 +55,7 @@ public enum ValueType {
     return ret;
   }
 
-  public String getTypeCodeLowerCase() {
-    return typeCode.toLowerCase();
-  }
-
-  String getTypeCode() {
+  public String getTypeCode() {
     return typeCode;
   }
 }

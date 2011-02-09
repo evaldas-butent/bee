@@ -2,14 +2,11 @@ package com.butent.bee.server.datasource.util;
 
 import com.google.common.collect.Lists;
 
+import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.data.BeeRow;
+import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataException;
-import com.butent.bee.shared.data.DataTable;
-import com.butent.bee.shared.data.IsColumn;
-import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.data.IsTable;
 import com.butent.bee.shared.data.Reasons;
-import com.butent.bee.shared.data.TableColumn;
-import com.butent.bee.shared.data.TableRow;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.value.ValueType;
 
@@ -55,15 +52,14 @@ public class CsvDataSourceHelper {
     return reader;
   }
 
-  public static IsTable read(Reader reader, List<IsColumn> columns,
+  public static BeeRowSet read(Reader reader, List<BeeColumn> columns,
       Boolean headerRow) throws IOException, CsvDataSourceException {
     return read(reader, columns, headerRow, null);
   }
 
-  public static IsTable read(Reader reader, List<IsColumn> columns,
+  public static BeeRowSet read(Reader reader, List<BeeColumn> columns,
       Boolean headerRow, ULocale locale) throws IOException, CsvDataSourceException {
-    IsTable dataTable = new DataTable();
-
+    BeeRowSet dataTable = new BeeRowSet();
     if (reader == null) {
       return dataTable;
     }
@@ -88,11 +84,10 @@ public class CsvDataSourceHelper {
           columns = Lists.newArrayList();
         }
 
-        List<IsColumn> tempColumns = new ArrayList<IsColumn>();
+        List<BeeColumn> tempColumns = new ArrayList<BeeColumn>();
 
         for (int i = 0; i < line.length; i++) {
-          IsColumn tempCol = (columns.isEmpty() || columns.get(i) == null)
-              ? null : columns.get(i);
+          BeeColumn tempCol = (columns.isEmpty() || columns.get(i) == null) ? null : columns.get(i);
 
           String id = ((tempCol == null) || (tempCol.getId() == null))
               ? "Col" + (i) : tempCol.getId();
@@ -103,7 +98,7 @@ public class CsvDataSourceHelper {
           String pattern = ((tempCol == null) || (tempCol.getPattern() == null))
               ? "" : tempCol.getPattern();
 
-          tempCol = new TableColumn(id, type, label);
+          tempCol = new BeeColumn(type, label, id);
           tempCol.setPattern(pattern);
           tempColumns.add(tempCol);
         }
@@ -120,13 +115,13 @@ public class CsvDataSourceHelper {
         }
 
         columns = tempColumns;
-        dataTable = new DataTable();
+        dataTable = new BeeRowSet();
         dataTable.addColumns(columns);
       }
       if (!(firstLine && headerRow)) {
-        IsRow row = new TableRow();
+        BeeRow row = dataTable.createRow(line.length);
         for (int i = 0; i < line.length; i++) {
-          IsColumn col = columns.get(i);
+          BeeColumn col = columns.get(i);
           ValueType valueType = col.getType();
           String string = line[i];
           if (string != null) {

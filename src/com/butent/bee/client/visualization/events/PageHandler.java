@@ -20,6 +20,6 @@ public abstract class PageHandler extends Handler {
 
   @Override
   protected void onEvent(Properties properties) throws TypeException {
-    onPage(new PageEvent(properties.getNumber("page").intValue()));
+    onPage(new PageEvent(properties.getInt("page")));
   }
 }

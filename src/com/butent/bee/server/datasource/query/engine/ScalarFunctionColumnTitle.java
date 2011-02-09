@@ -1,8 +1,7 @@
 package com.butent.bee.server.datasource.query.engine;
 
-import com.butent.bee.shared.data.DataTable;
+import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsTable;
-import com.butent.bee.shared.data.TableColumn;
 import com.butent.bee.shared.data.column.AbstractColumn;
 import com.butent.bee.shared.data.column.AggregationColumn;
 import com.butent.bee.shared.data.column.ScalarFunctionColumn;
@@ -16,7 +15,8 @@ class ScalarFunctionColumnTitle {
   public static final String PIVOT_COLUMNS_SEPARATOR = ",";
   public static final String PIVOT_SCALAR_FUNCTION_SEPARATOR = " ";
 
-  public static String getColumnDescriptionLabel(IsTable originalTable, AbstractColumn column) {
+  public static String getColumnDescriptionLabel(IsTable<?, ?> originalTable,
+      AbstractColumn column) {
     StringBuilder label = new StringBuilder();
     if (originalTable.containsColumn(column.getId())) {
       label.append(originalTable.getColumn(column.getId()).getLabel());
@@ -47,12 +47,12 @@ class ScalarFunctionColumnTitle {
     this.scalarFunctionColumn = column;
   }
 
-  public TableColumn createColumnDescription(DataTable originalTable) {
+  public <C extends IsColumn> C createColumnDescription(IsTable<?, C> originalTable) {
     String columnId = createIdPivotPrefix() + scalarFunctionColumn.getId();
     ValueType type = scalarFunctionColumn.getValueType(originalTable);
     String label = createLabelPivotPart() + " " +
         getColumnDescriptionLabel(originalTable, scalarFunctionColumn);
-    TableColumn result = new TableColumn(columnId, type, label);
+    C result = originalTable.createColumn(type, label, columnId);
 
     return result;
   }

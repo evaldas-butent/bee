@@ -17,13 +17,13 @@ public class AggregationNode {
   private Map<String, ValueAggregator> columnAggregators = Maps.newHashMap();
   private Map<Value, AggregationNode> children = Maps.newHashMap();
 
-  public AggregationNode(Set<String> columnsToAggregate, IsTable table) {
+  public AggregationNode(Set<String> columnsToAggregate, IsTable<?, ?> table) {
     for (String columnId : columnsToAggregate) {
       columnAggregators.put(columnId, new ValueAggregator(table.getColumn(columnId).getType()));
     }
   }
 
-  public void addChild(Value key, Set<String> columnsToAggregate, IsTable table) {
+  public void addChild(Value key, Set<String> columnsToAggregate, IsTable<?, ?> table) {
     if (children.containsKey(key)) {
       throw new IllegalArgumentException("A child with key: " + key + " already exists.");
     }

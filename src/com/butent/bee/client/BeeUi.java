@@ -37,6 +37,7 @@ import com.butent.bee.shared.BeeService;
 import com.butent.bee.shared.BeeStage;
 import com.butent.bee.shared.menu.MenuConstants;
 import com.butent.bee.shared.ui.UiComponent;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 public class BeeUi implements Module {
@@ -150,7 +151,7 @@ public class BeeUi implements Module {
   }
 
   public String getDsn() {
-    return BeeUtils.getElement(BeeConst.DS_TYPES, RadioGroup.getValue(getElDsn()));
+    return ArrayUtils.getQuietly(BeeConst.DS_TYPES, RadioGroup.getValue(getElDsn()));
   }
 
   public String getElCell() {

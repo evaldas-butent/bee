@@ -23,8 +23,8 @@ public class CsvRenderer {
     return escapeString(sb.toString());
   }
 
-  public static CharSequence renderDataTable(IsTable dataTable, ULocale locale,
-      String separator) {
+  public static <R extends IsRow, C extends IsColumn> CharSequence renderDataTable(
+      IsTable<R, C> dataTable, ULocale locale, String separator) {
     if (separator == null) {
       separator = ",";
     }
@@ -34,8 +34,8 @@ public class CsvRenderer {
     }
 
     StringBuilder sb = new StringBuilder();
-    List<IsColumn> columns = dataTable.getColumns();
-    for (IsColumn column : columns) {
+    List<C> columns = dataTable.getColumns();
+    for (C column : columns) {
       sb.append(escapeString(column.getLabel())).append(separator);
     }
 
@@ -44,8 +44,7 @@ public class CsvRenderer {
     int length = sb.length();
     sb.replace(length - 1, length, "\n");
 
-    List<IsRow> rows = dataTable.getRows();
-    for (IsRow row : rows) {
+    for (R row : dataTable.getRows()) {
       List<IsCell> cells = row.getCells();
       for (IsCell cell : cells) {
         String formattedValue = cell.getFormattedValue();

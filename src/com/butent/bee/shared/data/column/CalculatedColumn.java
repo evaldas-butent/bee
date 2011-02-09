@@ -7,13 +7,8 @@ import com.butent.bee.shared.data.value.ValueType;
 public class CalculatedColumn extends TableColumn {
   private Calculation calc; 
 
-  private CalculatedColumn(String id, ValueType type, Calculation calc) {
-    super(id, type);
-    setCalc(calc);
-  }
-
-  public CalculatedColumn(String id, ValueType type, String label, Calculation calc) {
-    super(id, type, label);
+  public CalculatedColumn(ValueType type, String label, String id, Calculation calc) {
+    super(type, label, id);
     setCalc(calc);
   }
 

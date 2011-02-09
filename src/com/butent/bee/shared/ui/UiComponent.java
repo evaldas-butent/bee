@@ -3,6 +3,7 @@ package com.butent.bee.shared.ui;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.HasId;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -159,7 +160,7 @@ public abstract class UiComponent implements HasId, BeeSerializable {
           if (!BeeUtils.isEmpty(value)) {
             String[] props = Codec.beeDeserialize(value);
 
-            if (BeeUtils.arrayLength(props) > 1) {
+            if (ArrayUtils.length(props) > 1) {
               for (int j = 0; j < props.length; j += 2) {
                 setProperty(props[j], props[j + 1]);
               }

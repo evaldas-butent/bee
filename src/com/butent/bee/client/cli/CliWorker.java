@@ -33,7 +33,6 @@ import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.layout.TilePanel;
 import com.butent.bee.client.tree.BeeTree;
 import com.butent.bee.client.utils.Browser;
-import com.butent.bee.client.utils.JreEmulation;
 import com.butent.bee.client.utils.JsUtils;
 import com.butent.bee.client.widget.Audio;
 import com.butent.bee.client.widget.BeeLabel;
@@ -48,6 +47,7 @@ import com.butent.bee.shared.BeeDate;
 import com.butent.bee.shared.BeeService;
 import com.butent.bee.shared.communication.ContentType;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.ExtendedProperty;
@@ -168,8 +168,8 @@ public class CliWorker {
     Split screen = BeeKeeper.getUi().getScreenPanel();
     Assert.notNull(screen);
 
-    String p1 = BeeUtils.arrayGetQuietly(arr, 0);
-    String p2 = BeeUtils.arrayGetQuietly(arr, 1);
+    String p1 = ArrayUtils.getQuietly(arr, 0);
+    String p2 = ArrayUtils.getQuietly(arr, 1);
 
     if (BeeUtils.same(p1, "screen")) {
       BeeKeeper.getUi().showGrid(screen.getInfo());
@@ -254,7 +254,7 @@ public class CliWorker {
       return;
     }
 
-    String src = BeeUtils.arrayGetQuietly(arr, 1);
+    String src = ArrayUtils.getQuietly(arr, 1);
     if (BeeUtils.isEmpty(src)) {
       BeeKeeper.getLog().warning("source not specified");
       return;
@@ -273,7 +273,7 @@ public class CliWorker {
       return;
     }
 
-    String src = BeeUtils.arrayGetQuietly(arr, 1);
+    String src = ArrayUtils.getQuietly(arr, 1);
     if (BeeUtils.isEmpty(src)) {
       src = "http://people.opera.com/shwetankd/webm/sunflower.webm";
     }
@@ -339,7 +339,7 @@ public class CliWorker {
     Canvas widget = new Canvas();
     BeeKeeper.getUi().updateActivePanel(widget);
 
-    if (BeeUtils.arrayLength(arr) <= 1) {
+    if (ArrayUtils.length(arr) <= 1) {
       sampleCanvas(widget.getElement());
     }
   }
@@ -435,7 +435,7 @@ public class CliWorker {
       return;
     }
 
-    String patt = BeeUtils.arrayGetQuietly(arr, 2);
+    String patt = ArrayUtils.getQuietly(arr, 2);
     JsArrayString prp = JsUtils.getProperties(obj, patt);
 
     if (JsUtils.isEmpty(prp)) {
@@ -443,13 +443,13 @@ public class CliWorker {
       return;
     }
 
-    JsData view = (JsData) DataUtils.createView(prp, "property", "type", "value");
-    view.sort(0, true);
+    JsData<?> table = (JsData<?>) DataUtils.createTable(prp, "property", "type", "value");
+    table.sort(0);
 
-    if (view.getRowCount() <= 20) {
-      Global.modalGrid(v, view);
+    if (table.getNumberOfRows() <= 20) {
+      Global.modalGrid(v, table);
     } else {
-      BeeKeeper.getUi().showGrid(view);
+      BeeKeeper.getUi().showGrid(table);
     }
   }
 
@@ -465,7 +465,7 @@ public class CliWorker {
       return;
     }
 
-    String patt = BeeUtils.arrayGetQuietly(arr, 2);
+    String patt = ArrayUtils.getQuietly(arr, 2);
     JsArrayString fnc = JsUtils.getFunctions(obj, patt);
 
     if (JsUtils.isEmpty(fnc)) {
@@ -477,13 +477,13 @@ public class CliWorker {
       return;
     }
 
-    JsData view = (JsData) DataUtils.createView(fnc, "function");
-    view.sort(0, true);
+    JsData<?> table = (JsData<?>) DataUtils.createTable(fnc, "function");
+    table.sort(0);
 
-    if (BeeUtils.same(arr[0], "f") && view.getRowCount() <= 20) {
-      Global.modalGrid(v, view);
+    if (BeeUtils.same(arr[0], "f") && table.getNumberOfRows() <= 20) {
+      Global.modalGrid(v, table);
     } else {
-      BeeKeeper.getUi().showGrid(view);
+      BeeKeeper.getUi().showGrid(table);
     }
   }
 
@@ -658,17 +658,17 @@ public class CliWorker {
     double max = 100;
     double value = 0;
 
-    String s = BeeUtils.arrayGetQuietly(arr, 1);
+    String s = ArrayUtils.getQuietly(arr, 1);
     if (BeeUtils.isDigit(s)) {
       steps = BeeUtils.toInt(s);
     } else {
       steps = 100;
     }
-    s = BeeUtils.arrayGetQuietly(arr, 2);
+    s = ArrayUtils.getQuietly(arr, 2);
     if (BeeUtils.isDigit(s)) {
       millis = BeeUtils.toInt(s);
     }
-    s = BeeUtils.arrayGetQuietly(arr, 3);
+    s = ArrayUtils.getQuietly(arr, 3);
     if (BeeUtils.isDigit(s)) {
       max = BeeUtils.toDouble(s);
     }
@@ -719,7 +719,7 @@ public class CliWorker {
       return;
     }
 
-    String patt = BeeUtils.arrayGetQuietly(arr, 2);
+    String patt = ArrayUtils.getQuietly(arr, 2);
     JsArrayString prp = JsUtils.getProperties(obj, patt);
 
     if (JsUtils.isEmpty(prp)) {
@@ -727,13 +727,13 @@ public class CliWorker {
       return;
     }
 
-    JsData view = (JsData) DataUtils.createView(prp, "property", "type", "value");
-    view.sort(0, true);
+    JsData<?> table = (JsData<?>) DataUtils.createTable(prp, "property", "type", "value");
+    table.sort(0);
 
-    if (BeeUtils.same(arr[0], "p") && view.getRowCount() <= 20) {
-      Global.modalGrid(v, view);
+    if (BeeUtils.same(arr[0], "p") && table.getNumberOfRows() <= 20) {
+      Global.modalGrid(v, table);
     } else {
-      BeeKeeper.getUi().showGrid(view);
+      BeeKeeper.getUi().showGrid(table);
     }
   }
 
@@ -830,7 +830,7 @@ public class CliWorker {
     panel.add(widget);
     BeeKeeper.getUi().updateActivePanel(panel);
 
-    if (BeeUtils.arrayLength(arr) <= 1) {
+    if (ArrayUtils.length(arr) <= 1) {
       sampleSvg(widget.getElement());
     }
   }
@@ -849,14 +849,14 @@ public class CliWorker {
 
   public static void showVars(String[] arr) {
     if (BeeUtils.length(arr) > 1) {
-      Global.showVars(JreEmulation.copyOfRange(arr, 1, arr.length));
+      Global.showVars(ArrayUtils.copyOfRange(arr, 1, arr.length));
     } else {
       Global.showVars();
     }
   }
 
   public static void storage(String[] arr) {
-    int parCnt = BeeUtils.arrayLength(arr) - 1;
+    int parCnt = ArrayUtils.length(arr) - 1;
     int len = BeeKeeper.getStorage().length();
 
     if (parCnt <= 1 && len <= 0) {
@@ -886,7 +886,7 @@ public class CliWorker {
       return;
     }
 
-    String value = BeeUtils.join(arr, 1, 2);
+    String value = ArrayUtils.join(arr, 1, 2);
 
     if (key.equals(BeeConst.STRING_MINUS)) {
       BeeKeeper.getStorage().removeItem(value);
@@ -1005,7 +1005,7 @@ public class CliWorker {
     StringBuilder sb = new StringBuilder();
     int len = BeeUtils.length(arr);
 
-    if (len < 2 || len == 2 && BeeUtils.isDigit(BeeUtils.getElement(arr, 1))) {
+    if (len < 2 || len == 2 && BeeUtils.isDigit(ArrayUtils.getQuietly(arr, 1))) {
       int n = (len < 2) ? 10 : BeeUtils.toInt(arr[1]);
       for (int i = 0; i < n; i++) {
         sb.append((char) BeeUtils.randomInt(Character.MIN_VALUE,

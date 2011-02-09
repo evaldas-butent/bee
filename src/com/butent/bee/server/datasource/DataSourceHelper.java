@@ -13,7 +13,6 @@ import com.butent.bee.server.datasource.render.HtmlRenderer;
 import com.butent.bee.server.datasource.render.JsonRenderer;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.DataException;
-import com.butent.bee.shared.data.DataTable;
 import com.butent.bee.shared.data.InvalidQueryException;
 import com.butent.bee.shared.data.IsTable;
 import com.butent.bee.shared.data.Messages;
@@ -37,7 +36,7 @@ public class DataSourceHelper {
 
   static final String LOCALE_REQUEST_PARAMETER = "hl";
 
-  public static IsTable applyQuery(Query query, DataTable dataTable, ULocale locale)
+  public static IsTable<?, ?> applyQuery(Query query, IsTable<?, ?> dataTable, ULocale locale)
       throws InvalidQueryException, DataException {
     validateQueryAgainstColumnStructure(query, dataTable);
     dataTable = QueryEngine.executeQuery(query, dataTable, locale);
@@ -62,9 +61,9 @@ public class DataSourceHelper {
       QueryPair query = DataSourceHelper.splitQuery(dsRequest.getQuery(),
           dtGenerator.getCapabilities());
 
-      DataTable dataTable = dtGenerator.generateDataTable(query.getDataSourceQuery(), req);
+      IsTable<?, ?> dataTable = dtGenerator.generateDataTable(query.getDataSourceQuery(), req);
 
-      IsTable newDataTable = DataSourceHelper.applyQuery(query.getCompletionQuery(), dataTable,
+      IsTable<?, ?> newDataTable = DataSourceHelper.applyQuery(query.getCompletionQuery(), dataTable,
           dsRequest.getUserLocale());
 
       setServletResponse(newDataTable, dsRequest, resp);
@@ -116,7 +115,8 @@ public class DataSourceHelper {
     return response.toString();
   }
 
-  public static String generateResponse(IsTable dataTable, DataSourceRequest dataSourceRequest) {
+  public static String generateResponse(IsTable<?, ?> dataTable,
+      DataSourceRequest dataSourceRequest) {
     CharSequence response;
     ResponseStatus responseStatus = null;
     if (!dataTable.getWarnings().isEmpty()) {
@@ -184,12 +184,12 @@ public class DataSourceHelper {
     setServletResponse(responseMessage, dataSourceRequest, res);
   }
 
-  public static void setServletResponse(IsTable dataTable, DataSourceRequest dataSourceRequest,
+  public static void setServletResponse(IsTable<?, ?> dataTable, DataSourceRequest dataSourceRequest,
       HttpServletResponse res) throws IOException {
     String responseMessage = generateResponse(dataTable, dataSourceRequest);
     setServletResponse(responseMessage, dataSourceRequest, res);
   }
-  
+
   public static void setServletResponse(String responseMessage,
       DataSourceRequest dataSourceRequest, HttpServletResponse res) throws IOException {
     DataSourceParameters dataSourceParameters = dataSourceRequest.getDataSourceParameters();
@@ -201,7 +201,7 @@ public class DataSourceHelper {
     return QuerySplitter.splitQuery(query, capabilities);
   }
 
-  public static void validateQueryAgainstColumnStructure(Query query, DataTable dataTable)
+  public static void validateQueryAgainstColumnStructure(Query query, IsTable<?, ?> dataTable)
       throws InvalidQueryException {
     Set<String> mentionedColumnIds = query.getAllColumnIds();
     for (String columnId : mentionedColumnIds) {

@@ -65,7 +65,7 @@ public class NegationFilter extends RowFilter {
   }
 
   @Override
-  public boolean isMatch(IsTable table, IsRow row) {
+  public boolean isMatch(IsTable<?, ?> table, IsRow row) {
     return !subFilter.isMatch(table, row);
   }
 

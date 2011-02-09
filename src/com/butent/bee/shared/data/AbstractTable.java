@@ -1,11 +1,11 @@
 package com.butent.bee.shared.data;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.primitives.Ints;
 
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.filter.RowFilter;
 import com.butent.bee.shared.data.sort.SortInfo;
 import com.butent.bee.shared.data.value.BooleanValue;
@@ -19,12 +19,12 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
-public class DataTable implements IsTable {
+public abstract class AbstractTable<RowType extends IsRow, ColType extends IsColumn> implements
+    IsTable<RowType, ColType> {
 
-  private class IndexOrdering implements Comparator<Integer> {
+  protected class IndexOrdering implements Comparator<Integer> {
     private RowOrdering rowOrdering;
 
     private IndexOrdering(RowOrdering rowOrdering) {
@@ -36,11 +36,11 @@ public class DataTable implements IsTable {
     }
   }
 
-  private class RowOrdering implements Comparator<IsRow> {
+  protected class RowOrdering implements Comparator<RowType> {
     private List<SortInfo> orderBy = Lists.newArrayList();
     private Comparator<Value> comparator = Value.getComparator();
 
-    private RowOrdering(SortInfo... sortInfo) {
+    RowOrdering(SortInfo... sortInfo) {
       Assert.parameterCount(sortInfo.length, 1);
 
       for (int i = 0; i < sortInfo.length; i++) {
@@ -52,7 +52,7 @@ public class DataTable implements IsTable {
       }
     }
 
-    public int compare(IsRow row1, IsRow row2) {
+    public int compare(RowType row1, RowType row2) {
       for (int i = 0; i < orderBy.size(); i++) {
         int col = orderBy.get(i).getIndex();
         int z = comparator.compare(row1.getCell(col).getValue(), row2.getCell(col).getValue());
@@ -75,24 +75,37 @@ public class DataTable implements IsTable {
     }
   }
 
-  private List<IsColumn> columns;
-  private Map<String, Integer> columnIndexById;
-
-  private List<IsRow> rows;
+  private List<ColType> columns = Lists.newArrayList();
 
   private CustomProperties properties = null;
-  private List<DataWarning> warnings;
+  private List<DataWarning> warnings = Lists.newArrayList();
 
-  public DataTable() {
-    columns = Lists.newArrayList();
-    columnIndexById = Maps.newHashMap();
-    rows = Lists.newArrayList();
-    warnings = Lists.newArrayList();
+  public AbstractTable() {
+  }
+  
+  protected AbstractTable(ColType... columns) {
+    for (ColType column : columns) {
+      addColumn(column);
+    }
   }
 
-  public int addColumn(IsColumn column) {
+  protected AbstractTable(String... columnLabels) {
+    for (String label : columnLabels) {
+      addColumn(ValueType.TEXT, label);
+    }
+  }
+  
+  public int addColumn(ColType column) {
     assertNewColumnId(column.getId());
-    return addColumnImpl(column);
+    columns.add(column);
+
+    if (getNumberOfRows() > 0) {
+      Value nullValue = Value.getNullValueFromValueType(column.getType());
+      for (RowType row : getRows()) {
+        row.addCell(new TableCell(nullValue));
+      }
+    }
+    return columns.size() - 1;
   }
 
   public int addColumn(ValueType type) {
@@ -104,29 +117,25 @@ public class DataTable implements IsTable {
   }
 
   public int addColumn(ValueType type, String label, String id) {
-    return addColumn(new TableColumn(id, type, label));
+    return addColumn(createColumn(type, label, id));
   }
 
-  public int addColumns(Collection<IsColumn> columnsToAdd) {
+  public int addColumns(Collection<ColType> columnsToAdd) {
     Assert.hasLength(columnsToAdd);
-    int lastIndex = -1;
-    for (IsColumn column : columnsToAdd) {
+    int lastIndex = BeeConst.INDEX_UNKNOWN;
+    for (ColType column : columnsToAdd) {
       lastIndex = addColumn(column);
     }
     return lastIndex;
   }
 
   public int addRow() {
-    return addRowImpl(createRow());
-  }
-
-  public int addRow(IsRow row) {
-    return addRowImpl(cloneRow(row));
+    return addRow(fillRow(createRow()));
   }
 
   public int addRow(Object... cells) {
     Assert.parameterCount(cells.length, 1, getNumberOfColumns());
-    IsRow row = new TableRow();
+    RowType row = createRow();
 
     for (int i = 0; i < getNumberOfColumns(); i++) {
       ValueType type = getColumnType(i);
@@ -148,10 +157,15 @@ public class DataTable implements IsTable {
     return addRow(row);
   }
 
-  public int addRows(Collection<IsRow> rowsToAdd) {
+  public int addRow(RowType row) {
+    getRows().add(row);
+    return getNumberOfRows() - 1;
+  }
+  
+  public int addRows(Collection<RowType> rowsToAdd) {
     Assert.hasLength(rowsToAdd);
-    int lastIndex = -1;
-    for (IsRow row : rowsToAdd) {
+    int lastIndex = BeeConst.INDEX_UNKNOWN;
+    for (RowType row : rowsToAdd) {
       lastIndex = addRow(row);
     }
     return lastIndex;
@@ -159,7 +173,7 @@ public class DataTable implements IsTable {
 
   public int addRows(int rowCount) {
     Assert.isPositive(rowCount);
-    int lastIndex = -1;
+    int lastIndex = BeeConst.INDEX_UNKNOWN;
     for (int i = 0; i < rowCount; i++) {
       lastIndex = addRow();
     }
@@ -182,27 +196,8 @@ public class DataTable implements IsTable {
   }
 
   @Override
-  public IsTable clone() {
-    DataTable result = new DataTable();
-
-    for (IsColumn column : getColumns()) {
-      result.addColumn(column.clone());
-    }
-    for (IsRow row : getRows()) {
-      result.addRow(row.clone());
-    }
-
-    if (properties != null) {
-      result.properties = properties.clone();
-    }
-    result.warnings = Lists.newArrayList();
-    for (DataWarning warning : getWarnings()) {
-      result.warnings.add(warning);
-    }
-
-    return result;
-  }
-
+  public abstract IsTable<RowType, ColType> clone();
+  
   public boolean containsAllColumnIds(Collection<String> colIds) {
     for (String id : colIds) {
       if (!containsColumn(id)) {
@@ -213,8 +208,14 @@ public class DataTable implements IsTable {
   }
 
   public boolean containsColumn(String columnId) {
-    return columnIndexById.containsKey(columnId);
+    return getColumnIndex(columnId) >= 0;
   }
+
+  public abstract IsTable<RowType, ColType> create();
+
+  public abstract ColType createColumn(ValueType type, String label, String id);
+
+  public abstract RowType createRow();
 
   public IsData fromJson(String data) {
     // TODO Auto-generated method stub
@@ -226,16 +227,20 @@ public class DataTable implements IsTable {
     return null;
   }
 
+  public Boolean getBoolean(int rowIndex, int colIndex) {
+    return getRow(rowIndex).getBoolean(colIndex);
+  }
+
   public IsCell getCell(int rowIndex, int colIndex) {
     return getRow(rowIndex).getCell(colIndex);
   }
 
-  public IsColumn getColumn(int colIndex) {
+  public ColType getColumn(int colIndex) {
     assertColumnIndex(colIndex);
-    return getColumnImpl(colIndex);
+    return columns.get(colIndex);
   }
 
-  public IsColumn getColumn(String columnId) {
+  public ColType getColumn(String columnId) {
     return getColumn(getColumnIndex(columnId));
   }
 
@@ -243,7 +248,7 @@ public class DataTable implements IsTable {
     assertColumnIndex(colIndex);
     List<IsCell> colCells = Lists.newArrayListWithCapacity(getNumberOfRows());
 
-    for (IsRow row : getRows()) {
+    for (RowType row : getRows()) {
       colCells.add(row.getCell(colIndex));
     }
     return colCells;
@@ -258,7 +263,19 @@ public class DataTable implements IsTable {
   }
 
   public int getColumnIndex(String columnId) {
-    return columnIndexById.get(columnId);
+    if (!BeeUtils.isEmpty(columnId)) {
+      for (int i = 0; i < getNumberOfColumns(); i++) {
+        if (BeeUtils.same(getColumnId(i), columnId)) {
+          return i;
+        }
+      }
+      for (int i = 0; i < getNumberOfColumns(); i++) {
+        if (BeeUtils.same(getColumnLabel(i), columnId)) {
+          return i;
+        }
+      }
+    }
+    return BeeConst.INDEX_UNKNOWN;
   }
 
   public String getColumnLabel(int colIndex) {
@@ -308,7 +325,7 @@ public class DataTable implements IsTable {
     return new Range(min, max);
   }
 
-  public List<IsColumn> getColumns() {
+  public List<ColType> getColumns() {
     return columns;
   }
 
@@ -320,7 +337,7 @@ public class DataTable implements IsTable {
     assertColumnIndex(colIndex);
     List<Value> values = Lists.newArrayListWithCapacity(getNumberOfRows());
 
-    for (IsRow row : getRows()) {
+    for (RowType row : getRows()) {
       values.add(row.getCell(colIndex).getValue());
     }
     return values;
@@ -329,7 +346,7 @@ public class DataTable implements IsTable {
   public List<Value> getDistinctValues(int colIndex) {
     assertColumnIndex(colIndex);
     Set<Value> values = Sets.newTreeSet();
-    for (IsRow row : getRows()) {
+    for (RowType row : getRows()) {
       values.add(row.getCell(colIndex).getValue());
     }
     return Lists.newArrayList(values);
@@ -345,7 +362,7 @@ public class DataTable implements IsTable {
     boolean ok;
 
     for (int i = 0; i < getNumberOfRows(); i++) {
-      IsRow row = getRow(i);
+      RowType row = getRow(i);
       ok = true;
       for (RowFilter filter : filters) {
         if (!filter.isMatch(this, row)) {
@@ -364,13 +381,15 @@ public class DataTable implements IsTable {
     return getCell(rowIndex, colIndex).getFormattedValue();
   }
 
+  public Number getNumber(int rowIndex, int colIndex) {
+    return getRow(rowIndex).getNumber(colIndex);
+  }
+
   public int getNumberOfColumns() {
     return columns.size();
   }
 
-  public int getNumberOfRows() {
-    return rows.size();
-  }
+  public abstract int getNumberOfRows();
 
   public CustomProperties getProperties(int rowIndex, int colIndex) {
     return getCell(rowIndex, colIndex).getProperties();
@@ -380,10 +399,7 @@ public class DataTable implements IsTable {
     return getCell(rowIndex, colIndex).getProperty(name);
   }
 
-  public IsRow getRow(int rowIndex) {
-    assertRowIndex(rowIndex);
-    return getRowImpl(rowIndex);
-  }
+  public abstract RowType getRow(int rowIndex);
 
   public CustomProperties getRowProperties(int rowIndex) {
     return getRow(rowIndex).getProperties();
@@ -391,10 +407,6 @@ public class DataTable implements IsTable {
 
   public Object getRowProperty(int rowIndex, String name) {
     return getRow(rowIndex).getProperty(name);
-  }
-
-  public List<IsRow> getRows() {
-    return rows;
   }
 
   public int[] getSortedRows(int... colIndexes) {
@@ -424,6 +436,10 @@ public class DataTable implements IsTable {
     return Ints.toArray(rowIndexes);
   }
 
+  public String getString(int rowIndex, int colIndex) {
+    return getRow(rowIndex).getString(colIndex);
+  }
+
   public CustomProperties getTableProperties() {
     return properties;
   }
@@ -444,10 +460,17 @@ public class DataTable implements IsTable {
     return warnings;
   }
 
-  public void insertColumn(int colIndex, IsColumn column) {
+  public void insertColumn(int colIndex, ColType column) {
     assertColumnIndex(colIndex);
     assertNewColumnId(column.getId());
-    insertColumnImpl(colIndex, column);
+    
+    columns.add(colIndex, column);
+    if (getNumberOfRows() > 0) {
+      Value nullValue = Value.getNullValueFromValueType(column.getType());
+      for (RowType row : getRows()) {
+        row.insertCell(colIndex, new TableCell(nullValue));
+      }
+    }
   }
 
   public void insertColumn(int colIndex, ValueType type) {
@@ -459,14 +482,14 @@ public class DataTable implements IsTable {
   }
 
   public void insertColumn(int colIndex, ValueType type, String label, String id) {
-    insertColumn(colIndex, new TableColumn(id, type, label));
+    insertColumn(colIndex, createColumn(type, label, id));
   }
 
-  public void insertRows(int rowIndex, Collection<IsRow> rowsToAdd) {
+  public void insertRows(int rowIndex, Collection<RowType> rowsToAdd) {
     assertRowIndex(rowIndex);
     int idx = rowIndex;
-    for (IsRow row : rowsToAdd) {
-      insertRowImpl(idx++, row);
+    for (RowType row : rowsToAdd) {
+      insertRow(idx++, row);
     }
   }
 
@@ -475,26 +498,15 @@ public class DataTable implements IsTable {
     Assert.isPositive(rowCount);
 
     for (int i = 0; i < rowCount; i++) {
-      insertRowImpl(rowIndex + i, createRow());
+      insertRow(rowIndex + i, fillRow(createRow()));
     }
   }
 
   public void removeColumn(int colIndex) {
     assertColumnIndex(colIndex);
-    removeColumnImpl(colIndex);
-  }
-
-  public void removeColumnImpl(int colIndex) {
-    columnIndexById.remove(columns.get(colIndex).getId());
-    for (Map.Entry<String, Integer> entry : columnIndexById.entrySet()) {
-      int idx = entry.getValue();
-      if (idx > colIndex) {
-        entry.setValue(idx - 1);
-      }
-    }
     columns.remove(colIndex);
 
-    for (IsRow row : rows) {
+    for (RowType row : getRows()) {
       row.removeCell(colIndex);
     }
   }
@@ -508,17 +520,14 @@ public class DataTable implements IsTable {
     }
   }
 
-  public void removeRow(int rowIndex) {
-    assertRowIndex(rowIndex);
-    removeRowImpl(rowIndex);
-  }
+  public abstract void removeRow(int rowIndex);
 
   public void removeRows(int rowIndex, int rowCount) {
     assertRowIndex(rowIndex);
     Assert.betweenInclusive(rowCount, 1, getNumberOfRows() - rowIndex);
 
     for (int i = 0; i < rowCount; i++) {
-      removeRowImpl(rowIndex);
+      removeRow(rowIndex);
     }
   }
 
@@ -590,6 +599,10 @@ public class DataTable implements IsTable {
     getColumn(colIndex).setProperty(name, value);
   }
 
+  public void setColumns(List<ColType> columns) {
+    this.columns = columns;
+  }
+
   public void setFormattedValue(int rowIndex, int colIndex, String formattedValue) {
     getCell(rowIndex, colIndex).setFormattedValue(formattedValue);
   }
@@ -610,7 +623,7 @@ public class DataTable implements IsTable {
     getRow(rowIndex).setProperty(name, value);
   }
 
-  public void setRows(Collection<IsRow> rows) {
+  public void setRows(Collection<RowType> rows) {
     clearRows();
     addRows(rows);
   }
@@ -641,10 +654,7 @@ public class DataTable implements IsTable {
   }
 
   public void setValue(int rowIndex, int colIndex, Value value) {
-    IsCell cell = getCell(rowIndex, colIndex);
-    cell.setValue(value);
-    cell.clearFormattedValue();
-    cell.clearProperties();
+    getRow(rowIndex).setValue(colIndex, value);
   }
 
   public void sort(int... colIndexes) {
@@ -655,11 +665,7 @@ public class DataTable implements IsTable {
     sort(sortInfo);
   }
 
-  public void sort(SortInfo... sortInfo) {
-    if (getNumberOfRows() > 1) {
-      Collections.sort(rows, new RowOrdering(sortInfo));
-    }
-  }
+  public abstract void sort(SortInfo... sortInfo);
 
   public String toJson() {
     // TODO Auto-generated method stub
@@ -671,11 +677,11 @@ public class DataTable implements IsTable {
     StringBuilder sb = new StringBuilder();
 
     for (int rowIndex = 0; rowIndex < getNumberOfRows(); rowIndex++) {
-      IsRow tableRow = getRowImpl(rowIndex);
-      for (int cellIndex = 0; cellIndex < tableRow.getCells().size(); cellIndex++) {
-        IsCell tableCell = tableRow.getCells().get(cellIndex);
+      RowType row = getRow(rowIndex);
+      for (int cellIndex = 0; cellIndex < row.getCells().size(); cellIndex++) {
+        IsCell tableCell = row.getCells().get(cellIndex);
         sb.append(tableCell.toString());
-        if (cellIndex < tableRow.getCells().size() - 1) {
+        if (cellIndex < row.getCells().size() - 1) {
           sb.append(",");
         }
       }
@@ -687,104 +693,51 @@ public class DataTable implements IsTable {
     return sb.toString();
   }
 
-  private int addColumnImpl(IsColumn column) {
-    columnIndexById.put(column.getId(), columns.size());
-    columns.add(column);
-
-    Value nullValue = Value.getNullValueFromValueType(column.getType());
-    for (IsRow row : rows) {
-      row.addCell(new TableCell(nullValue));
-    }
-
-    return columns.size() - 1;
-  }
-
-  private int addRowImpl(IsRow row) {
-    rows.add(row);
-    return rows.size() - 1;
-  }
-
-  private void assertColumnIndex(int colIndex) {
+  protected void assertColumnIndex(int colIndex) {
     Assert.isIndex(columns, colIndex);
   }
 
+  protected abstract void assertRowIndex(int rowIndex);
+
+  protected abstract void clearRows();
+
+  protected void cloneColumns(IsTable<RowType, ColType> cloneTable) {
+    cloneTable.setColumns(getColumns());
+  }
+  
+  protected void cloneTableDescription(IsTable<RowType, ColType> cloneTable) {
+    cloneColumns(cloneTable);
+    cloneProperties(cloneTable);
+    cloneWarnings(cloneTable);
+  }
+  
+  protected abstract void insertRow(int rowIndex, RowType row);
+
   private void assertNewColumnId(String columnId) {
     Assert.notEmpty(columnId);
-    Assert.isFalse(columnIndexById.containsKey(columnId),
-        "Column Id [" + columnId + "] already in table description");
+    Assert.isFalse(containsColumn(columnId));
   }
 
-  private void assertRowIndex(int rowIndex) {
-    Assert.isIndex(rows, rowIndex);
+  private void cloneProperties(IsTable<RowType, ColType> cloneTable) {
+    if (getTableProperties() != null) {
+      cloneTable.setTableProperties(getTableProperties().clone());
+    }
   }
 
-  private void clearRows() {
-    rows.clear();
-  }
-
-  private IsRow cloneRow(IsRow source) {
-    List<IsCell> cells = source.getCells();
-    Assert.isTrue(cells.size() <= columns.size(),
-        "Row has too many cells. Should be at most of size: " + columns.size());
-    IsRow row = new TableRow();
-
-    for (int i = 0; i < cells.size(); i++) {
-      Assert.isTrue(cells.get(i).getType().equals(columns.get(i).getType()),
-          BeeUtils.concat(1, "Cell type", cells.get(i).getType(), "does not match column type",
-              columns.get(i).getType(), "at index:", i));
+  private void cloneWarnings(IsTable<RowType, ColType> cloneTable) {
+    for (DataWarning warning : getWarnings()) {
+      cloneTable.getWarnings().add(warning);
     }
-    for (int i = cells.size(); i < columns.size(); i++) {
-      row.addCell(createCell(i));
-    }
-
-    CustomProperties props = source.getProperties();
-    if (props != null) {
-      row.setProperties(props);
-    }
-    return row;
   }
 
   private IsCell createCell(int colIndex) {
     return new TableCell(Value.getNullValueFromValueType(columns.get(colIndex).getType()));
   }
 
-  private IsRow createRow() {
-    IsRow row = new TableRow();
-    for (int i = 0; i < columns.size(); i++) {
+  private RowType fillRow(RowType row) {
+    for (int i = row.getNumberOfCells(); i < columns.size(); i++) {
       row.addCell(createCell(i));
     }
     return row;
-  }
-
-  private IsColumn getColumnImpl(int colIndex) {
-    return columns.get(colIndex);
-  }
-
-  private IsRow getRowImpl(int rowIndex) {
-    return rows.get(rowIndex);
-  }
-
-  private void insertColumnImpl(int colIndex, IsColumn column) {
-    for (Map.Entry<String, Integer> entry : columnIndexById.entrySet()) {
-      int idx = entry.getValue();
-      if (idx >= colIndex) {
-        entry.setValue(idx + 1);
-      }
-    }
-    columnIndexById.put(column.getId(), colIndex);
-    columns.add(colIndex, column);
-
-    Value nullValue = Value.getNullValueFromValueType(column.getType());
-    for (IsRow row : rows) {
-      row.insertCell(colIndex, new TableCell(nullValue));
-    }
-  }
-
-  private void insertRowImpl(int rowIndex, IsRow row) {
-    rows.add(rowIndex, row);
-  }
-
-  private void removeRowImpl(int rowIndex) {
-    rows.remove(rowIndex);
   }
 }

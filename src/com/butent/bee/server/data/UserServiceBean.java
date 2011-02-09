@@ -9,7 +9,8 @@ import com.google.common.collect.Multimap;
 import com.google.common.primitives.Ints;
 
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.data.BeeRowSet.BeeRow;
+import com.butent.bee.shared.data.BeeRow;
+import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.sql.SqlSelect;
 import com.butent.bee.shared.sql.SqlUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -112,9 +113,10 @@ public class UserServiceBean {
     SqlSelect ss = new SqlSelect()
       .addFields("r", "Name", roleIdName)
       .addFrom(ROLE_TABLE, "r");
-
-    for (BeeRow role : qs.getData(ss).getRows()) {
-      roleCache.put(role.getInt(roleIdName), role.getString("Name"));
+    
+    BeeRowSet brs = qs.getData(ss);
+    for (BeeRow role : brs.getRows()) {
+      roleCache.put(brs.getInt(role, roleIdName), brs.getString(role, "Name"));
     }
 
     ss = new SqlSelect()
@@ -122,17 +124,18 @@ public class UserServiceBean {
       .addFields("r", "Role")
       .addFrom(USER_TABLE, "u")
       .addFromLeft(USER_ROLES_TABLE, "r", SqlUtils.join("u", userIdName, "r", "User"));
+    
+    brs = qs.getData(ss);
+    for (BeeRow user : brs.getRows()) {
+      int userId = brs.getInt(user, userIdName);
 
-    for (BeeRow user : qs.getData(ss).getRows()) {
-      int userId = user.getInt(userIdName);
-
-      userCache.put(userId, user.getString("Login").toLowerCase());
-      userRolesCache.put(userId, user.getInt("Role"));
+      userCache.put(userId, brs.getString(user, "Login").toLowerCase());
+      userRolesCache.put(userId, brs.getInt(user, "Role"));
       userInfoCache.put(userId,
-          BeeUtils.concat(1, user.getString("Position"),
+          BeeUtils.concat(1, brs.getString(user, "Position"),
               BeeUtils.concat(1,
-                  BeeUtils.ifString(user.getString("FirstName"), user.getString("Login")),
-                  user.getString("LastName"))));
+                  BeeUtils.ifString(brs.getString(user, "FirstName"), brs.getString(user, "Login")),
+                  brs.getString(user, "LastName"))));
     }
     cacheUpToDate = true;
   }

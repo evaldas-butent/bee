@@ -47,8 +47,8 @@ public class Global implements Module {
     msgBox.alert(obj);
   }
 
-  public static Widget cellGrid(Object data, CellType cellType, String... columns) {
-    return grids.cellGrid(data, cellType, (Object[]) columns);
+  public static Widget cellGrid(Object data, CellType cellType, String... columnLabels) {
+    return grids.cellGrid(data, cellType, columnLabels);
   }
 
   public static boolean closeDialog(GwtEvent<?> event) {
@@ -174,8 +174,8 @@ public class Global implements Module {
     msgBox.showInfo("Huh ?", obj);
   }
 
-  public static Widget scrollGrid(int width, Object data, String... columns) {
-    return grids.scrollGrid(width, data, (Object[]) columns);
+  public static Widget scrollGrid(int width, Object data, String... columnLabels) {
+    return grids.scrollGrid(width, data, columnLabels);
   }
 
   public static Widget scrollGrid(Object data, String... columns) {
@@ -253,8 +253,8 @@ public class Global implements Module {
     }
   }
 
-  public static Widget simpleGrid(Object data, String... columns) {
-    return grids.simpleGrid(data, (Object[]) columns);
+  public static Widget simpleGrid(Object data, String... columnLabels) {
+    return grids.simpleGrid(data, columnLabels);
   }
 
   public void end() {

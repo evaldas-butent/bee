@@ -1,10 +1,13 @@
 package com.butent.bee.server.data;
 
+import com.google.common.collect.Maps;
+
 import com.butent.bee.server.DataSourceBean;
 import com.butent.bee.server.jdbc.JdbcUtils;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
-import com.butent.bee.shared.data.BeeRowSet.BeeRow;
+import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.sql.IsQuery;
 import com.butent.bee.shared.sql.SqlBuilderFactory;
 import com.butent.bee.shared.sql.SqlInsert;
@@ -20,6 +23,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import javax.ejb.EJB;
@@ -47,7 +51,7 @@ public class QueryServiceBean {
     BeeRowSet res = getData(new SqlSelect()
       .addAllFields(table).addFrom(table).setWhere(SqlUtils.sqlFalse()));
 
-    return res.getColumnNames();
+    return res.getColumnLabels();
   }
 
   public Collection<String[]> dbForeignKeys(String dbName, String dbSchema, String table,
@@ -57,8 +61,8 @@ public class QueryServiceBean {
         .getQuery());
 
     if (!res.isEmpty()) {
-      for (BeeRow row : res.getRows()) {
-        dbforeignKeys.add(new String[]{row.getValue(0), row.getValue(1), row.getValue(2)});
+      for (IsRow row : res.getRows()) {
+        dbforeignKeys.add(new String[]{row.getString(0), row.getString(1), row.getString(2)});
       }
     }
     return dbforeignKeys;
@@ -84,13 +88,13 @@ public class QueryServiceBean {
 
   public String[] dbTables(String dbName, String dbSchema, String table) {
     BeeRowSet res = (BeeRowSet) processSql(SqlUtils.dbTables(dbName, dbSchema, table).getQuery());
-    String[] dbTables = new String[res.getRowCount()];
+    String[] dbTables = new String[res.getNumberOfRows()];
 
     if (!res.isEmpty()) {
       int i = 0;
 
-      for (BeeRow row : res.getRows()) {
-        dbTables[i++] = row.getValue(0);
+      for (IsRow row : res.getRows()) {
+        dbTables[i++] = row.getString(0);
       }
     }
     return dbTables;
@@ -105,12 +109,35 @@ public class QueryServiceBean {
     return (BeeRowSet) processSql(ss.getQuery());
   }
 
+  public long getLong(SqlSelect ss, String columnId) {
+    BeeRowSet rs = getData(ss);
+    Assert.isTrue(rs.getNumberOfRows() == 1, "Result must contain exactly one row");
+    return rs.getLong(rs.getRow(0), columnId);
+  }
+
+  public Map<String, String> getRowValues(SqlSelect ss) {
+    BeeRowSet rs = getData(ss);
+    Assert.isTrue(rs.getNumberOfRows() == 1, "Result must contain exactly one row");
+    Map<String, String> values = Maps.newHashMap();
+    BeeRow row = rs.getRow(0);
+    for (int i = 0; i < rs.getNumberOfColumns(); i++) {
+      values.put(rs.getColumnId(i).toLowerCase(), row.getString(i));
+    }
+    return values;
+  }
+
   public BeeRow getSingleRow(SqlSelect ss) {
     BeeRowSet rs = getData(ss);
-    Assert.isTrue(rs.getRowCount() == 1, "Result must contain exactly one row");
+    Assert.isTrue(rs.getNumberOfRows() == 1, "Result must contain exactly one row");
     return rs.getRow(0);
   }
 
+  public String getString(SqlSelect ss, String columnId) {
+    BeeRowSet rs = getData(ss);
+    Assert.isTrue(rs.getNumberOfRows() == 1, "Result must contain exactly one row");
+    return rs.getString(rs.getRow(0), columnId);
+  }
+  
   public long insertData(SqlInsert si) {
     Assert.notNull(si);
     Assert.state(!si.isEmpty());
@@ -162,7 +189,7 @@ public class QueryServiceBean {
         ResultSet rs = stmt.getResultSet();
 
         BeeRowSet result = new BeeRowSet(JdbcUtils.getColumns(rs));
-        int cols = result.getColumnCount();
+        int cols = result.getNumberOfColumns();
 
         while (rs.next()) {
           String[] row = new String[cols];
@@ -172,7 +199,7 @@ public class QueryServiceBean {
           }
           result.addRow(row);
         }
-        LogUtils.info(logger, "Retrieved rows:", result.getRowCount());
+        LogUtils.info(logger, "Retrieved rows:", result.getNumberOfRows());
         return result;
 
       } else {

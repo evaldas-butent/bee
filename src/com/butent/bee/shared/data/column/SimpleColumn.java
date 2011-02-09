@@ -2,7 +2,7 @@ package com.butent.bee.shared.data.column;
 
 import com.google.common.collect.Lists;
 
-import com.butent.bee.shared.data.DataTable;
+import com.butent.bee.shared.data.IsTable;
 import com.butent.bee.shared.data.value.ValueType;
 
 import java.util.List;
@@ -53,7 +53,7 @@ public class SimpleColumn extends AbstractColumn {
   }
 
   @Override
-  public ValueType getValueType(DataTable dataTable) {
+  public ValueType getValueType(IsTable<?, ?> dataTable) {
     return dataTable.getColumn(columnId).getType();
   }
 
@@ -78,6 +78,6 @@ public class SimpleColumn extends AbstractColumn {
   }
 
   @Override
-  public void validateColumn(DataTable dataTable) {
+  public void validateColumn(IsTable<?, ?> dataTable) {
   }
 }

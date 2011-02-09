@@ -14,13 +14,29 @@ public interface IsRow extends HasCustomProperties {
   void clearCell(int index);
   
   IsRow clone();
+  
+  Boolean getBoolean(int index);
 
   IsCell getCell(int index);
   List<IsCell> getCells();
+  
+  Number getNumber(int index);
+  
+  int getNumberOfCells();
+  
+  String getString(int index);
 
+  Value getValue(int index);
+  
   void insertCell(int index, IsCell cell);
   void removeCell(int index);
   
   void setCell(int index, IsCell cell);
   void setCells(List<IsCell> cells);
+
+  void setValue(int index, boolean value);
+  void setValue(int index, double value);
+  void setValue(int index, String value);
+ 
+  void setValue(int index, Value value);
 }

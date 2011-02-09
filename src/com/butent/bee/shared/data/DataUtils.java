@@ -13,48 +13,28 @@ import java.util.List;
 public class DataUtils {
   
   @SuppressWarnings("unchecked")
-  public static HasTabularData createView(Object data, Object... columns) {
+  public static IsTable<?, ?> createTable(Object data, String... columnLabels) {
     Assert.notNull(data);
-    int c = columns.length;
+    IsTable<?, ?> table = null;
     
-    HasTabularData view = null;
-    
-    if (data instanceof HasTabularData) {
-      view = (HasTabularData) data;
-    
-    }  else if (data instanceof String[][]) {
-      view = new StringData((String[][]) data);
+    if (data instanceof IsTable) {
+      table = (IsTable<?, ?>) data;
+    } else if (data instanceof String[][]) {
+      table = new StringMatrix<TableColumn>((String[][]) data, columnLabels);
     } else if (data instanceof JsArrayString) {
-      view = new JsData((JsArrayString) data);
-    
+      table = new JsData<TableColumn>((JsArrayString) data, columnLabels);
     } else if (data instanceof List) {
       Object el = BeeUtils.listGetQuietly((List<?>) data, 0);
       
       if (el instanceof ExtendedProperty) {
-        view = new ExtendedPropertiesData((List<ExtendedProperty>) data);
+        table = new ExtendedPropertiesData((List<ExtendedProperty>) data, columnLabels);
       } else if (el instanceof Property) {
-        view = new PropertiesData((List<Property>) data);
+        table = new PropertiesData((List<Property>) data, columnLabels);
       }
     }
     
-    Assert.notNull(view);
-    
-    if (c > 0) {
-      BeeColumn[] arr = new BeeColumn[c];
-      
-      for (int i = 0; i < c; i++) {
-        if (columns[i] instanceof BeeColumn) {
-          arr[i] = (BeeColumn) columns[i];
-        } else {
-          arr[i] = new BeeColumn(BeeUtils.ifString(columns[i], BeeUtils.transform(i + 1)));
-        }
-      }
-      
-      view.setColumns(arr);
-      view.setColumnCount(c);
-    }
-
-    return view;
+    Assert.notNull(table);
+    return table;
   }
   
   public static String defaultColumnId(int index) {

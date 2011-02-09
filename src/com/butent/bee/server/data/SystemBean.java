@@ -15,8 +15,8 @@ import com.butent.bee.server.utils.FileUtils;
 import com.butent.bee.server.utils.XmlUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
-import com.butent.bee.shared.data.BeeRowSet.BeeRow;
 import com.butent.bee.shared.sql.BeeConstants.DataTypes;
 import com.butent.bee.shared.sql.BeeConstants.Keywords;
 import com.butent.bee.shared.sql.HasFrom;
@@ -30,6 +30,7 @@ import com.butent.bee.shared.sql.SqlInsert;
 import com.butent.bee.shared.sql.SqlSelect;
 import com.butent.bee.shared.sql.SqlUpdate;
 import com.butent.bee.shared.sql.SqlUtils;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.LogUtils;
 
@@ -151,11 +152,11 @@ public class SystemBean {
           BeeField field = fields.get(col);
 
           if (BeeUtils.isEmpty(field)) {
-            err = "Cannot update column " + changes.getColumnName(col) + " (Unknown source).";
+            err = "Cannot update column " + changes.getColumnLabel(col) + " (Unknown source).";
             break;
           }
           Object[] entry = new Object[]{
-              field.getName(), row.getOriginal(col), row.getShadow().get(col)};
+              field.getName(), changes.getOriginal(row, col), row.getShadow().get(col)};
 
           if (field.isExtended()) {
             extUpdate.add(entry);
@@ -239,18 +240,18 @@ public class SystemBean {
                 String colName = (String) entry[0];
 
                 if (!BeeUtils.equals(
-                    BeeUtils.transformNoTrim(r.getOriginal(colName)),
+                    BeeUtils.transformNoTrim(rs.getOriginal(r, colName)),
                     BeeUtils.transformNoTrim(entry[2]))) {
                   collision = true;
                   break;
                 }
-                r.setValue(colName, row.getValue(colName));
+                rs.setValue(r, colName, changes.getString(row, colName));
               }
               if (!collision) {
                 if (lockIndex >= 0) {
                   r.setValue(lockIndex, row.getValue(lockIndex));
                 }
-                row.setData(r.getData());
+                row.setValues(r.getValues());
 
                 res = qs.updateData(su.setWhere(idWh));
               }
@@ -648,7 +649,7 @@ public class SystemBean {
       Map<Integer, Boolean> bitMap = new HashMap<Integer, Boolean>();
 
       for (int bit : bitSet) {
-        bitMap.put(bit, BeeUtils.contains(bit, bits));
+        bitMap.put(bit, ArrayUtils.contains(bit, bits));
       }
       SqlUpdate su = table.updateState(id, state, mdRole, bitMap);
 

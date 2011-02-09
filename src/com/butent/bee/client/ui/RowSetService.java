@@ -185,7 +185,7 @@ class RowSetService extends CompositeService {
         break;
 
       case INSERT:
-        rs.addRow(new String[rs.getColumnCount()]).markForInsert();
+        rs.addEmptyRow(true);
 
         stage = Stages.SHOW_TABLE;
         doSelf();
@@ -301,16 +301,16 @@ class RowSetService extends CompositeService {
     return ok;
   }
 
-  private Widget getTree(BeeRowSet rs) {
+  private Widget getTree(BeeRowSet brs) {
     BeeTree root = new BeeTree();
     BeeTreeItem item = new BeeTreeItem("RowSet");
     root.addItem(item);
-    item.addItem("ViewName: " + rs.getViewName());
+    item.addItem("ViewName: " + brs.getViewName());
 
     BeeTreeItem cols = new BeeTreeItem("Columns");
-    for (BeeColumn col : rs.getColumns()) {
+    for (BeeColumn col : brs.getColumnArray()) {
       BeeTreeItem c = new BeeTreeItem(col.getName());
-      c.addItem("Type: " + col.getType() + "-" + col.getTypeName());
+      c.addItem("Type: " + col.getSqlType() + "-" + col.getType());
       c.addItem("Prec: " + col.getPrecision());
       c.addItem("Scale: " + col.getScale());
       c.addItem("Nullable: " + col.getNullable());
@@ -319,11 +319,11 @@ class RowSetService extends CompositeService {
     item.addItem(cols);
 
     BeeTreeItem rows = new BeeTreeItem("Data");
-    for (int i = 0; i < rs.getRowCount(); i++) {
+    for (int i = 0; i < brs.getNumberOfRows(); i++) {
       BeeTreeItem r = new BeeTreeItem("Row" + i);
 
-      for (int j = 0; j < rs.getColumnCount(); j++) {
-        r.addItem(rs.getColumnName(j) + ": " + rs.getValue(i, j));
+      for (int j = 0; j < brs.getNumberOfColumns(); j++) {
+        r.addItem(brs.getColumnLabel(j) + ": " + brs.getString(i, j));
       }
       rows.addItem(r);
     }

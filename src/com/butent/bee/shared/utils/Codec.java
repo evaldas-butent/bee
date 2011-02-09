@@ -196,11 +196,11 @@ public class Codec {
         }
         sb.append(beeSerialize(s));
 
-      } else if (BeeUtils.isArray(o)) {
+      } else if (ArrayUtils.isArray(o)) {
         StringBuilder s = new StringBuilder();
 
-        for (int i = 0; i < BeeUtils.arrayLength(o); i++) {
-          s.append(beeSerialize(BeeUtils.arrayGet(o, i)));
+        for (int i = 0; i < ArrayUtils.length(o); i++) {
+          s.append(beeSerialize(ArrayUtils.get(o, i)));
         }
         sb.append(beeSerialize(s));
 

@@ -33,6 +33,7 @@ import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.client.widget.BeeSimpleCheckBox;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Arrays;
@@ -793,7 +794,7 @@ public class ScrollTableConfig {
     }
     
     for (int i = 0; i < columnCount; i++) {
-      if (BeeUtils.contains(i, arr)) {
+      if (ArrayUtils.contains(i, arr)) {
         continue;
       }
 

@@ -4,6 +4,7 @@ import com.butent.bee.shared.exceptions.ArgumentCountException;
 import com.butent.bee.shared.exceptions.ArgumentTypeException;
 import com.butent.bee.shared.exceptions.BeeRuntimeException;
 import com.butent.bee.shared.exceptions.KeyNotFoundException;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
@@ -14,7 +15,7 @@ public class Assert {
 
   public static void arrayLength(Object arr, int size) {
     notNull(arr);
-    int len = BeeUtils.arrayLength(arr);
+    int len = ArrayUtils.length(arr);
 
     if (size > 0 && len != size) {
       throw new BeeRuntimeException(ASSERTION_FAILED + "array length " + len
@@ -24,7 +25,7 @@ public class Assert {
 
   public static void arrayLength(Object arr, int min, int max) {
     notNull(arr);
-    int len = BeeUtils.arrayLength(arr);
+    int len = ArrayUtils.length(arr);
 
     if (min > 0 && len < min) {
       throw new BeeRuntimeException(ASSERTION_FAILED + "array length " + len

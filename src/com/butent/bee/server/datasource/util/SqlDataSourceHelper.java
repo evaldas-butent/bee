@@ -5,16 +5,17 @@ import com.google.common.collect.Lists;
 import com.butent.bee.server.datasource.query.Query;
 import com.butent.bee.server.datasource.query.QueryGroup;
 import com.butent.bee.server.datasource.query.QuerySelection;
+import com.butent.bee.server.jdbc.JdbcUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.Aggregation;
+import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataException;
-import com.butent.bee.shared.data.DataTable;
 import com.butent.bee.shared.data.IsColumn;
+import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.IsTable;
 import com.butent.bee.shared.data.Reasons;
 import com.butent.bee.shared.data.TableCell;
-import com.butent.bee.shared.data.TableColumn;
-import com.butent.bee.shared.data.TableRow;
 import com.butent.bee.shared.data.column.AbstractColumn;
 import com.butent.bee.shared.data.column.AggregationColumn;
 import com.butent.bee.shared.data.column.SimpleColumn;
@@ -48,14 +49,13 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Time;
 import java.sql.Timestamp;
-import java.sql.Types;
 import java.util.List;
 import java.util.logging.Logger;
 
 public class SqlDataSourceHelper {
   private static final Logger logger = Logger.getLogger(SqlDataSourceHelper.class.getName());
 
-  public static IsTable executeQuery(Query query, SqlDatabaseDescription databaseDescription)
+  public static IsTable<?, ?> executeQuery(Query query, SqlDatabaseDescription databaseDescription)
       throws DataException {
     Connection con = getDatabaseConnection(databaseDescription);
     String tableName = databaseDescription.getTableName();
@@ -71,7 +71,7 @@ public class SqlDataSourceHelper {
       stmt = con.createStatement();
       ResultSet rs = stmt.executeQuery(queryStringBuilder.toString());
 
-      IsTable table = buildColumns(rs, columnIdsList);
+      IsTable<?, ?> table = buildColumns(rs, columnIdsList);
 
       buildRows(table, rs);
       return table;
@@ -180,22 +180,28 @@ public class SqlDataSourceHelper {
     }
   }
 
-  static IsTable buildColumns(ResultSet rs, List<String> columnIdsList) throws SQLException {
-    IsTable result = new DataTable();
+  static BeeRowSet buildColumns(ResultSet rs, List<String> columnIdsList) throws SQLException {
+    BeeRowSet result = new BeeRowSet();
     ResultSetMetaData metaData = rs.getMetaData();
     int numOfCols = metaData.getColumnCount();
 
     for (int i = 1; i <= numOfCols; i++) {
-      String id = (columnIdsList == null) ? metaData.getColumnLabel(i) : columnIdsList.get(i - 1);
-      TableColumn columnDescription = new TableColumn(id,
-          sqlTypeToValueType(metaData.getColumnType(i)), metaData.getColumnLabel(i));
-      result.addColumn(columnDescription);
+      BeeColumn column = new BeeColumn();
+      JdbcUtils.setColumnInfo(metaData, i, column);
+      if (columnIdsList != null) {
+        String id = columnIdsList.get(i - 1);
+        if (!BeeUtils.isEmpty(id)) {
+          column.setId(id);
+        }
+      }
+      result.addColumn(column);
     }
     return result;
   }
 
-  static void buildRows(IsTable dataTable, ResultSet rs) throws SQLException {
-    List<IsColumn> columns = dataTable.getColumns();
+  static <R extends IsRow, C extends IsColumn> void buildRows(IsTable<R, C> dataTable, ResultSet rs)
+      throws SQLException {
+    List<C> columns = dataTable.getColumns();
     int numOfCols = dataTable.getNumberOfColumns();
 
     ValueType[] columnsTypeArray = new ValueType[numOfCols];
@@ -204,11 +210,11 @@ public class SqlDataSourceHelper {
     }
 
     while (rs.next()) {
-      TableRow tableRow = new TableRow();
+      R row = dataTable.createRow();
       for (int c = 0; c < numOfCols; c++) {
-        tableRow.addCell(buildTableCell(rs, columnsTypeArray[c], c));
+        row.addCell(buildTableCell(rs, columnsTypeArray[c], c));
       }
-      dataTable.addRow(tableRow);
+      dataTable.addRow(row);
     }
   }
 
@@ -244,7 +250,7 @@ public class SqlDataSourceHelper {
       case DATETIME:
         Timestamp timestamp = rs.getTimestamp(column);
         if (timestamp != null) {
-          value = new DateTimeValue(timestamp.getYear() + 1900, timestamp.getMonth() + 1, 
+          value = new DateTimeValue(timestamp.getYear() + 1900, timestamp.getMonth() + 1,
               timestamp.getDate(), timestamp.getHours(), timestamp.getMinutes(),
               timestamp.getSeconds(), timestamp.getNanos() / 1000000);
         }
@@ -398,8 +404,8 @@ public class SqlDataSourceHelper {
       columnId.append("`").append(abstractColumn.getId()).append("`");
     } else {
       AggregationColumn aggregationColumn = (AggregationColumn) abstractColumn;
-      columnId.append(getAggregationFunction(aggregationColumn.getAggregationType())).append("(`").append(
-          aggregationColumn.getAggregatedColumn()).append("`)");
+      columnId.append(getAggregationFunction(aggregationColumn.getAggregationType())).append("(`")
+        .append(aggregationColumn.getAggregatedColumn()).append("`)");
     }
     return columnId;
   }
@@ -442,45 +448,6 @@ public class SqlDataSourceHelper {
         stringOperator = null;
     }
     return stringOperator;
-  }
-
-  private static ValueType sqlTypeToValueType(int sqlType) {
-    ValueType valueType;
-    switch (sqlType) {
-      case Types.BOOLEAN:
-      case Types.BIT: {
-        valueType = ValueType.BOOLEAN;
-        break;
-      }
-      case Types.CHAR:
-      case Types.VARCHAR:
-        valueType = ValueType.TEXT;
-        break;
-      case Types.INTEGER:
-      case Types.SMALLINT:
-      case Types.BIGINT:
-      case Types.TINYINT:
-      case Types.REAL:
-      case Types.NUMERIC:
-      case Types.DOUBLE:
-      case Types.FLOAT:
-      case Types.DECIMAL:
-        valueType = ValueType.NUMBER;
-        break;
-      case Types.DATE:
-        valueType = ValueType.DATE;
-        break;
-      case Types.TIME:
-        valueType = ValueType.TIMEOFDAY;
-        break;
-      case Types.TIMESTAMP:
-        valueType = ValueType.DATETIME;
-        break;
-      default:
-        valueType = ValueType.TEXT;
-        break;
-    }
-    return valueType;
   }
 
   private SqlDataSourceHelper() {

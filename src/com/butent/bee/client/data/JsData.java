@@ -2,95 +2,41 @@ package com.butent.bee.client.data;
 
 import com.google.gwt.core.client.JsArrayString;
 
+import com.butent.bee.client.utils.JsUtils;
+import com.butent.bee.shared.ArraySequence;
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.data.AbstractData;
-import com.butent.bee.shared.utils.RowComparator;
+import com.butent.bee.shared.data.IsColumn;
+import com.butent.bee.shared.data.StringMatrix;
+import com.butent.bee.shared.data.StringRow;
 
-import java.util.Arrays;
+public class JsData<ColType extends IsColumn> extends StringMatrix<ColType> {
 
-public class JsData extends AbstractData {
-  private JsArrayString data;
-  private int start = 0;
-
-  public JsData(JsArrayString data) {
-    this.data = data;
+  public JsData(JsArrayString data, ColType... columns) {
+    this(data, 0, columns);
   }
 
-  public JsData(JsArrayString data, int columnCount) {
-    this(data, columnCount, 0);
-  }
-
-  public JsData(JsArrayString data, int columnCount, int start) {
-    this.data = data;
-    this.start = start;
-
-    setRowCount((data.length() - start) / columnCount);
-    setColumnCount(columnCount);
-  }
-
-  public JsArrayString getData() {
-    return data;
-  }
-
-  public int getStart() {
-    return start;
-  }
-
-  @Override
-  public String getValue(int row, int col) {
-    return data.get(start + row * getColumnCount() + col);
-  }
-
-  @Override
-  public void setColumnCount(int columnCount) {
-    super.setColumnCount(columnCount);
-    updateRowCount();
-  }
-
-  public void setData(JsArrayString data) {
-    this.data = data;
-  }
-
-  public void setStart(int start) {
-    this.start = start;
-    updateRowCount();
-  }
-
-  @Override
-  public void setValue(int row, int col, String value) {
-    data.set(start + row * getColumnCount() + col, value);
+  public JsData(JsArrayString data, String... columnLabels) {
+    this(data, 0, columnLabels);
   }
   
-  public void sort(int col, boolean up) {
-    int r = getRowCount();
-    if (r <= 1) {
-      return;
-    }
-    
-    int c = getColumnCount();
-    Assert.isPositive(c);
-    Assert.betweenExclusive(col, 0, c);
-    
-    String[][] arr = new String[r][c];
-    for (int i = 0; i < r; i++) {
-      for (int j = 0; j < c; j++) {
-        arr[i][j] = getValue(i, j);
-      }
-    }
-
-    Arrays.sort(arr, new RowComparator(col, up));
-    
-    for (int i = 0; i < r; i++) {
-      for (int j = 0; j < c; j++) {
-        setValue(i, j, arr[i][j]);
-      }
-    }
+  public JsData(JsArrayString data, int start, ColType... columns) {
+    super(columns);
+    initData(data, start, columns.length);
   }
 
-  private void updateRowCount() {
-    if (getColumnCount() > 0) {
-      setRowCount((getData().length() - getStart()) / getColumnCount());
+  public JsData(JsArrayString data, int start, String... columnLabels) {
+    super(columnLabels);
+    initData(data, start, columnLabels.length);
+  }
+  
+  private void initData(JsArrayString data, int start, int rowSize) {
+    Assert.isPositive(rowSize);
+    int rc = (data.length() - start) / rowSize;
+
+    setRows(new ArraySequence<StringRow>(new StringRow[rc]));
+    for (int i = 0; i < rc; i++) {
+      getRows().set(i, new StringRow(new JsStringSequence(JsUtils.slice(data, 
+          start + i * rowSize, start + (i + 1) * rowSize))));
     }
   }
-
 }

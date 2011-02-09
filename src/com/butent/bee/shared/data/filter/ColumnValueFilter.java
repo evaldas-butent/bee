@@ -100,7 +100,7 @@ public class ColumnValueFilter extends ComparisonFilter {
   }
 
   @Override
-  public boolean isMatch(IsTable table, IsRow row) {
+  public boolean isMatch(IsTable<?, ?> table, IsRow row) {
     DataTableColumnLookup lookup = new DataTableColumnLookup(table);
     Value columnValue = column.getValue(lookup, row);
     return isComparisonOrderReversed ? isOperatorMatch(value, columnValue) :

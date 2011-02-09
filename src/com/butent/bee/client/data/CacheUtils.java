@@ -70,5 +70,4 @@ public class CacheUtils {
   private String pkName(String table) {
     return primaryKeyPrefix + table.trim().toLowerCase();
   }
-
 }

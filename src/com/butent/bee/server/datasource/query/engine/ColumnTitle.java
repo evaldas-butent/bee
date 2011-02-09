@@ -4,7 +4,6 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.Aggregation;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsTable;
-import com.butent.bee.shared.data.TableColumn;
 import com.butent.bee.shared.data.column.AggregationColumn;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.value.ValueType;
@@ -28,9 +27,9 @@ class ColumnTitle {
     this.isMultiAggregationQuery = isMultiAggregationQuery;
   }
 
-  public IsColumn createColumnDescription(IsTable originalTable) {
-    IsColumn col = originalTable.getColumn(aggregation.getAggregatedColumn().getId());
-    return createAggregationColumnDescription(col);
+  public <C extends IsColumn> C createColumnDescription(IsTable<?, C> originalTable) {
+    C col = originalTable.getColumn(aggregation.getAggregatedColumn().getId());
+    return createAggregationColumnDescription(originalTable, col);
   }
 
   @Override
@@ -57,7 +56,8 @@ class ColumnTitle {
     return hash;
   }
 
-  IsColumn createAggregationColumnDescription(IsColumn originalColumnDescription) {
+  <C extends IsColumn> C createAggregationColumnDescription(IsTable<?, C> originalTable,
+      C originalColumnDescription) {
     Aggregation aggregationType = aggregation.getAggregationType();
     String columnId = createIdPivotPrefix() + aggregation.getId();
     ValueType type = originalColumnDescription.getType();
@@ -75,18 +75,16 @@ class ColumnTitle {
       label = aggregationLabelPart;
     }
 
-    TableColumn result;
+    C result;
     if (canUseSameTypeForAggregation(type, aggregationType)) {
-      result = new TableColumn(columnId, type, label);
+      result = originalTable.createColumn(type, label, columnId);
     } else {
-      result = new TableColumn(columnId, ValueType.NUMBER, label);
+      result = originalTable.createColumn(ValueType.NUMBER, label, columnId);
     }
-
     return result;
   }
 
-  private boolean canUseSameTypeForAggregation(ValueType valueType,
-      Aggregation aggregationType) {
+  private boolean canUseSameTypeForAggregation(ValueType valueType, Aggregation aggregationType) {
     boolean ans;
     if (valueType == ValueType.NUMBER) {
       ans = true;

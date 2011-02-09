@@ -1,61 +1,52 @@
 package com.butent.bee.shared.data;
 
-import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.utils.ExtendedProperty;
 
 import java.util.List;
 
-public class ExtendedPropertiesData extends AbstractData {
-  private List<ExtendedProperty> data;
-
-  public ExtendedPropertiesData(List<ExtendedProperty> data) {
-    this.data = data;
-
-    setRowCount(data.size());
-    setColumnCount(ExtendedProperty.COLUMN_COUNT);
+public class ExtendedPropertiesData extends RowList<TableRow, TableColumn> {
+  
+  private ExtendedPropertiesData() {
+    super();
   }
 
-  @Override
-  public String[] getColumnNames() {
-    return ExtendedProperty.COLUMN_HEADERS;
-  }
+  public ExtendedPropertiesData(List<ExtendedProperty> data, String... columnLabels) {
+    super();
 
-  @Override
-  public String getValue(int row, int col) {
-    ExtendedProperty el = data.get(row);
-
-    switch (col) {
-      case 0:
-        return el.getName();
-      case 1:
-        return el.getSub();
-      case 2:
-        return el.getValue();
-      case 3:
-        return el.getDate().toLog();
-      default:
-        return BeeConst.ERROR;
+    int pc = columnLabels.length;
+    String label;
+    for (int i = 0; i < ExtendedProperty.COLUMN_COUNT; i++) {
+      label = (pc > 0 && i < pc) ? columnLabels[i] : ExtendedProperty.COLUMN_HEADERS[i];
+      addColumn(ValueType.TEXT, label);
+    }
+    
+    for (ExtendedProperty property : data) {
+      addRow(property.getName(), property.getSub(), property.getValue(),
+          property.getDate().toLog());
     }
   }
 
   @Override
-  public void setValue(int row, int col, String value) {
-    ExtendedProperty el = data.get(row);
-
-    switch (col) {
-      case 0:
-        el.setName(value);
-        break;
-      case 1:
-        el.setSub(value);
-        break;
-      case 2:
-        el.setValue(value);
-        break;
-      default:
-        Assert.untouchable();
-    }
+  public ExtendedPropertiesData clone() {
+    ExtendedPropertiesData result = new ExtendedPropertiesData();
+    cloneTableDescription(result);
+    result.setRows(getRows());
+    return result;
   }
   
+  @Override
+  public ExtendedPropertiesData create() {
+    return new ExtendedPropertiesData();
+  }
+
+  @Override
+  public TableColumn createColumn(ValueType type, String label, String id) {
+    return new TableColumn(type, label, id);
+  }
+
+  @Override
+  public TableRow createRow() {
+    return new TableRow();
+  }
 }

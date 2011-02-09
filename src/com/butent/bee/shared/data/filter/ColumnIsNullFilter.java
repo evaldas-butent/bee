@@ -69,7 +69,7 @@ public class ColumnIsNullFilter extends RowFilter {
   }
 
   @Override
-  public boolean isMatch(IsTable table, IsRow row) {
+  public boolean isMatch(IsTable<?, ?> table, IsRow row) {
     DataTableColumnLookup lookup = new DataTableColumnLookup(table);
     return column.getValue(lookup, row).isNull();
   }

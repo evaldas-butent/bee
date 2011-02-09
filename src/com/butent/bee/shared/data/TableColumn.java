@@ -1,28 +1,37 @@
 package com.butent.bee.shared.data;
 
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.HasInfo;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.utils.Property;
+import com.butent.bee.shared.utils.PropertyUtils;
 
-public class TableColumn implements IsColumn {
-  private String id;
+import java.util.List;
+
+public class TableColumn implements HasInfo, IsColumn {
   private ValueType type;
   private String label;
+  private String id;
   private String pattern;
   private CustomProperties properties = null;
+  
+  public TableColumn(ValueType type) {
+    this(type, null, null);
+  }
 
-  public TableColumn(String id, ValueType type) {
-    this(id, type, null);
+  public TableColumn(ValueType type, String label) {
+    this(type, label, null);
   }
   
-  public TableColumn(String id, ValueType type, String label) {
-    this.id = id;
+  public TableColumn(ValueType type, String label, String id) {
     this.type = type;
     this.label = label;
+    this.id = id;
     this.pattern = null;
   }
-
+  
   public TableColumn clone() {
-    TableColumn result = new TableColumn(id, type, label);
+    TableColumn result = new TableColumn(type, label, id);
     result.setPattern(pattern);
     if (properties != null) {
       result.properties = properties.clone();
@@ -32,6 +41,15 @@ public class TableColumn implements IsColumn {
 
   public String getId() {
     return id;
+  }
+
+  public List<Property> getInfo() {
+    List<Property> lst = PropertyUtils.createProperties("Id", getId(), "Type", getType(),
+        "Label", getLabel(), "Pattern", getPattern());
+    if (getProperties() != null) {
+      lst.addAll(getProperties().getInfo());
+    }
+    return lst;
   }
 
   public String getLabel() {

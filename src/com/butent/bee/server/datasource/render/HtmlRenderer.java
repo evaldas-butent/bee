@@ -46,7 +46,7 @@ public class HtmlRenderer {
 
   private static final Logger logger = Logger.getLogger(HtmlRenderer.class.getName());
 
-  public static CharSequence renderDataTable(IsTable dataTable, ULocale locale) {
+  public static <C extends IsColumn> CharSequence renderDataTable(IsTable<?, C> dataTable, ULocale locale) {
     Document document = createDocument();
     Element bodyElement = appendHeadAndBody(document);
 
@@ -56,10 +56,10 @@ public class HtmlRenderer {
     tableElement.setAttribute("cellpadding", "2");
     tableElement.setAttribute("cellspacing", "0");
 
-    List<IsColumn> columns = dataTable.getColumns();
+    List<C> columns = dataTable.getColumns();
     Element trElement = document.createElement("tr");
     trElement.setAttribute("style", "font-weight: bold; background-color: #aaa;");
-    for (IsColumn column : columns) {
+    for (C column : columns) {
       Element tdElement = document.createElement("td");
       tdElement.setTextContent(column.getLabel());
       trElement.appendChild(tdElement);

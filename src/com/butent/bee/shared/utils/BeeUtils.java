@@ -6,6 +6,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeDate;
 import com.butent.bee.shared.BeeType;
+import com.butent.bee.shared.HasLength;
 import com.butent.bee.shared.Transformable;
 
 import java.math.BigDecimal;
@@ -85,65 +86,6 @@ public class BeeUtils {
       }
     }
     return bld;
-  }
-
-  public static Object arrayGet(Object arr, int idx) {
-    if (arr instanceof Object[]) {
-      return ((Object[]) arr)[idx];
-    } else if (arr instanceof boolean[]) {
-      return ((boolean[]) arr)[idx];
-    } else if (arr instanceof char[]) {
-      return ((char[]) arr)[idx];
-    } else if (arr instanceof byte[]) {
-      return ((byte[]) arr)[idx];
-    } else if (arr instanceof short[]) {
-      return ((short[]) arr)[idx];
-    } else if (arr instanceof int[]) {
-      return ((int[]) arr)[idx];
-    } else if (arr instanceof long[]) {
-      return ((long[]) arr)[idx];
-    } else if (arr instanceof float[]) {
-      return ((float[]) arr)[idx];
-    } else if (arr instanceof double[]) {
-      return ((double[]) arr)[idx];
-    } else {
-      return null;
-    }
-  }
-
-  public static <T> T arrayGetQuietly(T[] arr, int idx) {
-    if (isIndex(arr, idx)) {
-      return arr[idx];
-    } else {
-      return null;
-    }
-  }
-
-  public static int arrayLength(Object arr) {
-    int len;
-
-    if (arr instanceof Object[]) {
-      len = ((Object[]) arr).length;
-    } else if (arr instanceof boolean[]) {
-      len = ((boolean[]) arr).length;
-    } else if (arr instanceof char[]) {
-      len = ((char[]) arr).length;
-    } else if (arr instanceof byte[]) {
-      len = ((byte[]) arr).length;
-    } else if (arr instanceof short[]) {
-      len = ((short[]) arr).length;
-    } else if (arr instanceof int[]) {
-      len = ((int[]) arr).length;
-    } else if (arr instanceof long[]) {
-      len = ((long[]) arr).length;
-    } else if (arr instanceof float[]) {
-      len = ((float[]) arr).length;
-    } else if (arr instanceof double[]) {
-      len = ((double[]) arr).length;
-    } else {
-      len = 0;
-    }
-    return len;
   }
 
   public static boolean betweenExclusive(int x, int min, int max) {
@@ -268,14 +210,6 @@ public class BeeUtils {
     return s.toString();
   }
 
-  public static boolean contains(int value, int[] arr) {
-    return indexOf(value, arr) >= 0;
-  }
-
-  public static <T> boolean contains(T value, T[] arr) {
-    return indexOf(value, arr) >= 0;
-  }
-  
   public static <T> boolean containsAny(Collection<T> c1, Collection <T> c2) {
     boolean ok = false;
     
@@ -321,21 +255,6 @@ public class BeeUtils {
     }
 
     for (CharSequence el : src) {
-      if (context(ctxt, el)) {
-        ok = true;
-        break;
-      }
-    }
-    return ok;
-  }
-
-  public static boolean context(CharSequence ctxt, String[] arr) {
-    boolean ok = false;
-    if (isEmpty(ctxt) || isEmpty(arr)) {
-      return ok;
-    }
-
-    for (String el : arr) {
       if (context(ctxt, el)) {
         ok = true;
         break;
@@ -396,7 +315,7 @@ public class BeeUtils {
 
   public static boolean equalsTrim(String s1, String s2) {
     if (s1 == null) {
-      return s2 == null;
+      return isEmpty(s2);
     } else if (s2 == null) {
       return isEmpty(s1);
     } else {
@@ -503,16 +422,6 @@ public class BeeUtils {
     return lst;
   }
 
-  public static <T> T getElement(T[] arr, int idx) {
-    if (arr == null) {
-      return null;
-    } else if (idx >= 0 && idx < arr.length) {
-      return arr[idx];
-    } else {
-      return null;
-    }
-  }
-
   public static <K, V> K getKey(Map<K, V> map, V value) {
     K key = null;
     for (Map.Entry<K, V> entry : map.entrySet()) {
@@ -612,48 +521,6 @@ public class BeeUtils {
     return Integer.toString(toInt(s) + 1);
   }
 
-  public static int indexOf(int value, int[] arr) {
-    int idx = -1;
-    if (arr == null) {
-      return idx;
-    }
-    int len = arr.length;
-    if (len <= 0) {
-      return idx;
-    }
-
-    for (int i = 0; i < len; i++) {
-      if (arr[i] == value) {
-        idx = i;
-        break;
-      }
-    }
-    return idx;
-  }
-
-  @SuppressWarnings("unchecked")
-  public static <T> int indexOf(T value, T[] arr) {
-    int idx = -1;
-    int len = length(arr);
-    if (len <= 0) {
-      return idx;
-    }
-
-    for (int i = 0; i < len; i++) {
-      if (value == arr[i]) {
-        idx = i;
-        break;
-      }
-
-      if (value instanceof Comparable<?> && arr[i] != null
-          && ((Comparable<T>) value).compareTo(arr[i]) == 0) {
-        idx = i;
-        break;
-      }
-    }
-    return idx;
-  }
-
   public static <T extends Comparable<T>> boolean inList(T x, T... lst) {
     boolean ok = false;
 
@@ -748,10 +615,6 @@ public class BeeUtils {
     }
   }
 
-  public static boolean isArray(Object obj) {
-    return obj instanceof Object[] || isPrimitiveArray(obj);
-  }
-
   public static boolean isBoolean(int x) {
     return x == BeeConst.INT_TRUE || x == BeeConst.INT_FALSE;
   }
@@ -826,8 +689,8 @@ public class BeeUtils {
       ok = ((Collection<?>) x).isEmpty();
     } else if (x instanceof Map) {
       ok = ((Map<?, ?>) x).isEmpty();
-    } else if (isArray(x)) {
-      ok = arrayLength(x) <= 0;
+    } else if (ArrayUtils.isArray(x)) {
+      ok = ArrayUtils.length(x) <= 0;
     } else if (x instanceof Enumeration) {
       ok = !((Enumeration<?>) x).hasMoreElements();
     } else {
@@ -921,7 +784,7 @@ public class BeeUtils {
     if (clazz == null || !clazz.isEnum() || idx < 0) {
       return false;
     }
-    return idx < arrayLength(clazz.getEnumConstants());
+    return idx < ArrayUtils.length(clazz.getEnumConstants());
   }
 
   public static boolean isPositive(Object x) {
@@ -941,13 +804,6 @@ public class BeeUtils {
     } else {
       return false;
     }
-  }
-
-  public static boolean isPrimitiveArray(Object obj) {
-    return obj instanceof boolean[] || obj instanceof char[]
-        || obj instanceof byte[] || obj instanceof short[]
-        || obj instanceof int[] || obj instanceof long[]
-        || obj instanceof float[] || obj instanceof double[];
   }
 
   public static boolean isTrue(Object obj) {
@@ -1000,35 +856,6 @@ public class BeeUtils {
     return x == 0;
   }
 
-  public static String join(Object[] arr, Object separator) {
-    return join(arr, separator, -1, -1);
-  }
-
-  public static String join(Object[] arr, Object separator, int fromIndex) {
-    return join(arr, separator, fromIndex, -1);
-  }
-
-  public static String join(Object[] arr, Object separator, int fromIndex, int toIndex) {
-    int len = arrayLength(arr);
-    int fr = (fromIndex > 0) ? fromIndex : 0;
-    int to = (toIndex >= 0 && toIndex <= len) ? toIndex : len;
-
-    if (fr >= to) {
-      return BeeConst.STRING_EMPTY;
-    }
-
-    String sep = normSep(separator);
-    StringBuilder sb = new StringBuilder();
-
-    for (int i = fr; i < to; i++) {
-      if (sb.length() > 0) {
-        sb.append(sep);
-      }
-      sb.append(transform(arr[i]));
-    }
-    return sb.toString();
-  }
-
   public static <T> List<T> join(List<? extends T>... src) {
     int n = src.length;
     Assert.parameterCount(n, 2);
@@ -1068,8 +895,10 @@ public class BeeUtils {
       len = ((Collection<?>) x).size();
     } else if (x instanceof Map) {
       len = ((Map<?, ?>) x).size();
-    } else if (isArray(x)) {
-      len = arrayLength(x);
+    } else if (x instanceof HasLength) {
+      len = ((HasLength) x).length();
+    } else if (ArrayUtils.isArray(x)) {
+      len = ArrayUtils.length(x);
     } else {
       len = 0;
     }
@@ -1585,45 +1414,13 @@ public class BeeUtils {
       return transformCollection((Collection<?>) x, sep);
     } else if (x instanceof Map) {
       return transformMap((Map<?, ?>) x, sep);
-    } else if (isArray(x)) {
-      return transformArray(x, sep);
+    } else if (ArrayUtils.isArray(x)) {
+      return ArrayUtils.transform(x, sep);
     } else if (x instanceof Enumeration) {
       return transformEnumeration((Enumeration<?>) x, sep);
     } else {
       return transform(x);
     }
-  }
-
-  public static String transformArray(Object arr, Object... sep) {
-    if (isEmpty(arr)) {
-      return BeeConst.STRING_EMPTY;
-    }
-    int cSep = sep.length;
-    String z = cSep > 0 ? normSep(sep[0]) : BeeConst.DEFAULT_LIST_SEPARATOR;
-
-    StringBuilder sb = new StringBuilder();
-    Object el;
-    Object[] nextSep;
-
-    if (cSep > 1) {
-      nextSep = new Object[cSep - 1];
-      for (int i = 0; i < cSep - 1; i++) {
-        nextSep[i] = sep[i + 1];
-      }
-    } else {
-      nextSep = new String[]{z};
-    }
-
-    int r = arrayLength(arr);
-
-    for (int i = 0; i < r; i++) {
-      el = arrayGet(arr, i);
-      if (i > 0) {
-        sb.append(z);
-      }
-      sb.append(transform(el, nextSep));
-    }
-    return sb.toString();
   }
 
   public static String transformClass(Object obj) {
@@ -1634,8 +1431,8 @@ public class BeeUtils {
     }
   }
 
-  public static String transformCollection(Collection<?> lst, Object... sep) {
-    if (isEmpty(lst)) {
+  public static String transformCollection(Collection<?> col, Object... sep) {
+    if (isEmpty(col)) {
       return BeeConst.STRING_EMPTY;
     }
 
@@ -1655,7 +1452,7 @@ public class BeeUtils {
       nextSep = new String[]{z};
     }
 
-    for (Iterator<?> it = lst.iterator(); it.hasNext();) {
+    for (Iterator<?> it = col.iterator(); it.hasNext();) {
       el = it.next();
       if (sb.length() > 0) {
         sb.append(z);
@@ -1665,8 +1462,8 @@ public class BeeUtils {
     return sb.toString();
   }
 
-  public static String transformEnumeration(Enumeration<?> lst, Object... sep) {
-    if (isEmpty(lst)) {
+  public static String transformEnumeration(Enumeration<?> src, Object... sep) {
+    if (isEmpty(src)) {
       return BeeConst.STRING_EMPTY;
     }
     int cSep = sep.length;
@@ -1685,8 +1482,8 @@ public class BeeUtils {
       nextSep = new String[]{z};
     }
 
-    while (lst.hasMoreElements()) {
-      el = lst.nextElement();
+    while (src.hasMoreElements()) {
+      el = src.nextElement();
       if (sb.length() > 0) {
         sb.append(z);
       }
@@ -1695,8 +1492,8 @@ public class BeeUtils {
     return sb.toString();
   }
 
-  public static String transformMap(Map<?, ?> lst, Object... sep) {
-    if (isEmpty(lst)) {
+  public static String transformMap(Map<?, ?> map, Object... sep) {
+    if (isEmpty(map)) {
       return BeeConst.STRING_EMPTY;
     }
     int cSep = sep.length;
@@ -1716,7 +1513,7 @@ public class BeeUtils {
       nextSep = new String[]{z};
     }
 
-    for (Map.Entry<?, ?> el : lst.entrySet()) {
+    for (Map.Entry<?, ?> el : map.entrySet()) {
       key = el.getKey();
       value = el.getValue();
 

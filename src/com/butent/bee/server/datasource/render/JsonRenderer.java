@@ -112,7 +112,7 @@ public class JsonRenderer {
     sb.append("{");
     sb.append("id:'").append(EscapeUtil.jsonEscape(col.getId())).append("',");
     sb.append("label:'").append(EscapeUtil.jsonEscape(col.getLabel())).append("',");
-    sb.append("type:'").append(col.getType().getTypeCodeLowerCase()).append("',");
+    sb.append("type:'").append(col.getType().getTypeCode().toLowerCase()).append("',");
     sb.append("pattern:'").append(EscapeUtil.jsonEscape(col.getPattern())).append("'");
 
     String propertiesString = getPropertiesMapString(col.getProperties());
@@ -124,19 +124,19 @@ public class JsonRenderer {
     return sb;
   }
 
-  public static String getSignature(IsTable data) {
+  public static String getSignature(IsTable<?, ?> data) {
     String tableAsString = renderDataTable(data, true, false).toString();
     long longHashCode = tableAsString.hashCode();
     return String.valueOf(Math.abs(longHashCode));
   }
 
-  public static CharSequence renderDataTable(IsTable dataTable, boolean includeValues,
-      boolean includeFormatting) {
+  public static <R extends IsRow, C extends IsColumn> CharSequence renderDataTable(
+      IsTable<R, C> dataTable, boolean includeValues, boolean includeFormatting) {
     if (dataTable.getColumns().isEmpty()) {
       return "";
     }
 
-    List<IsColumn> columns = dataTable.getColumns();
+    List<C> columns = dataTable.getColumns();
 
     StringBuilder sb = new StringBuilder();
     sb.append("{");
@@ -157,10 +157,10 @@ public class JsonRenderer {
       List<IsCell> cells;
       IsCell cell;
 
-      List<IsRow> rows = dataTable.getRows();
+      List<R> rows = dataTable.getRows().getList();
       for (int rowId = 0; rowId < rows.size(); rowId++) {
-        IsRow tableRow = rows.get(rowId);
-        cells = tableRow.getCells();
+        R row = rows.get(rowId);
+        cells = row.getCells();
         sb.append("{c:[");
         for (int cellId = 0; cellId < cells.size(); cellId++) {
           cell = cells.get(cellId);
@@ -173,7 +173,7 @@ public class JsonRenderer {
         }
         sb.append("]");
 
-        String propertiesString = getPropertiesMapString(tableRow.getProperties());
+        String propertiesString = getPropertiesMapString(row.getProperties());
         if (propertiesString != null) {
           sb.append(",p:").append(propertiesString);
         }
@@ -197,7 +197,7 @@ public class JsonRenderer {
   }
 
   public static CharSequence renderJsonResponse(DataSourceParameters dsParams,
-      ResponseStatus responseStatus, IsTable data, boolean isJsonp) {
+      ResponseStatus responseStatus, IsTable<?, ?> data, boolean isJsonp) {
     StringBuilder sb = new StringBuilder();
     if (isJsonp) {
       sb.append(dsParams.getResponseHandler()).append("(");

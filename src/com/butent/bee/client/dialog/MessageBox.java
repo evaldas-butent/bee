@@ -13,6 +13,7 @@ import com.butent.bee.client.tree.BeeTree;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
@@ -78,9 +79,9 @@ public class MessageBox {
         for (Iterator<?> iter = ((Collection<?>) x[i]).iterator(); iter.hasNext();) {
           vp.add(new BeeLabel(iter.next()));
         }
-      } else if (BeeUtils.isArray(x[i])) {
-        for (int j = 0; j < BeeUtils.arrayLength(x[i]); j++) {
-          vp.add(new BeeLabel(BeeUtils.arrayGet(x[i], j)));
+      } else if (ArrayUtils.isArray(x[i])) {
+        for (int j = 0; j < ArrayUtils.length(x[i]); j++) {
+          vp.add(new BeeLabel(ArrayUtils.get(x[i], j)));
         }
       } else if (x[i] != null) {
         vp.add(new BeeLabel(x[i]));

@@ -8,6 +8,8 @@ import com.butent.bee.shared.data.value.ValueType;
 import java.util.List;
 
 public interface IsData {
+  Boolean getBoolean(int rowIndex, int colIndex);
+
   String getColumnId(int colIndex);
   int getColumnIndex(String columnId);
 
@@ -26,6 +28,8 @@ public interface IsData {
 
   String getFormattedValue(int rowIndex, int colIndex);
 
+  Number getNumber(int rowIndex, int colIndex);
+  
   int getNumberOfColumns();
   int getNumberOfRows();
 
@@ -38,6 +42,8 @@ public interface IsData {
   int[] getSortedRows(int... colIndexes);
   int[] getSortedRows(SortInfo... sortInfo);
 
+  String getString(int rowIndex, int colIndex);
+  
   CustomProperties getTableProperties();
   Object getTableProperty(String key);
   

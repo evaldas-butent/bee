@@ -3,6 +3,7 @@ package com.butent.bee.client.communication;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -150,12 +151,12 @@ public class RpcList extends LinkedList<RpcInfo> {
         } else if (BeeUtils.same(cols[j], RpcInfo.COL_RESP_MSG_CNT)) {
           s = el.getSizeString(el.getRespMsgCnt());
         } else if (BeeUtils.same(cols[j], RpcInfo.COL_RESP_MESSAGES)) {
-          s = Codec.escapeUnicode(BeeUtils.transformArray(el.getRespMessages()));
+          s = Codec.escapeUnicode(ArrayUtils.transform(el.getRespMessages()));
 
         } else if (BeeUtils.same(cols[j], RpcInfo.COL_RESP_PART_CNT)) {
           s = el.getSizeString(el.getRespPartCnt());
         } else if (BeeUtils.same(cols[j], RpcInfo.COL_RESP_PART_SIZES)) {
-          s = BeeUtils.transformArray(el.getRespPartSize());
+          s = ArrayUtils.transform(el.getRespPartSize());
 
         } else if (BeeUtils.same(cols[j], RpcInfo.COL_RESP_INFO)) {
           s = el.getRespInfoString();
