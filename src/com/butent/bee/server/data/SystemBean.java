@@ -1,5 +1,8 @@
 package com.butent.bee.server.data;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 import com.butent.bee.server.Config;
@@ -36,9 +39,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -142,8 +143,8 @@ public class SystemBean {
       if (!BeeUtils.isEmpty(err)) {
         break;
       }
-      List<Object[]> baseUpdate = new ArrayList<Object[]>();
-      List<Object[]> extUpdate = new ArrayList<Object[]>();
+      List<Object[]> baseUpdate = Lists.newArrayList();
+      List<Object[]> extUpdate = Lists.newArrayList();
 
       if (!BeeUtils.isEmpty(row.getShadow())) {
         for (Integer col : row.getShadow().keySet()) {
@@ -290,14 +291,14 @@ public class SystemBean {
 
   public int commitExtChanges(BeeTable table, long id, List<Object[]> extUpdate, boolean updateMode) {
     int c = 0;
-    Map<String, List<IsQuery[]>> queryMap = new HashMap<String, List<IsQuery[]>>();
+    Map<String, List<IsQuery[]>> queryMap = Maps.newHashMap();
 
     for (Object[] entry : extUpdate) {
       BeeField field = table.getField((String) entry[0]);
       String extName = field.getTable();
 
       if (!queryMap.containsKey(extName)) {
-        List<IsQuery[]> queries = new ArrayList<IsQuery[]>();
+        List<IsQuery[]> queries = Lists.newArrayList();
         queryMap.put(extName, queries);
       }
       List<IsQuery[]> queries = queryMap.get(extName);
@@ -340,7 +341,7 @@ public class SystemBean {
 
   public BeeRowSet editStateRoles(String tblName, String stateName) {
     boolean allMode = BeeUtils.isEmpty(tblName);
-    List<BeeState> states = new ArrayList<BeeState>();
+    Collection<BeeState> states = Lists.newArrayList();
 
     if (allMode) {
       for (BeeTable table : getTables()) {
@@ -425,7 +426,7 @@ public class SystemBean {
   }
 
   public Collection<String> getTableFields(String table) {
-    List<String> fields = new ArrayList<String>();
+    Collection<String> fields = Lists.newArrayList();
 
     for (BeeField field : getTable(table).getFields()) {
       fields.add(field.getName());
@@ -434,11 +435,11 @@ public class SystemBean {
   }
 
   public Collection<String> getTableNames() {
-    return Collections.unmodifiableCollection(dataCache.keySet());
+    return ImmutableSet.copyOf(dataCache.keySet());
   }
 
   public Collection<String> getTableStates(String table) {
-    List<String> states = new ArrayList<String>();
+    Collection<String> states = Lists.newArrayList();
 
     for (BeeState state : getTable(table).getStates()) {
       states.add(state.getName());
@@ -497,7 +498,7 @@ public class SystemBean {
   public void initExtensions() {
     String resource = Config.getPath("extensions.xml");
 
-    List<BeeTable> extensions = loadTables(resource, Config.getPath(STRUCTURE_SCHEMA));
+    Collection<BeeTable> extensions = loadTables(resource, Config.getPath(STRUCTURE_SCHEMA));
 
     if (BeeUtils.isEmpty(extensions)) {
       return;
@@ -530,7 +531,7 @@ public class SystemBean {
   public void initViews() {
     String resource = Config.getPath("views.xml");
 
-    List<BeeView> views = loadViews(resource, Config.getPath(VIEW_SCHEMA));
+    Collection<BeeView> views = loadViews(resource, Config.getPath(VIEW_SCHEMA));
 
     if (BeeUtils.isEmpty(views)) {
       LogUtils.warning(logger, resource, "No views defined");
@@ -604,7 +605,7 @@ public class SystemBean {
 
     if (!BeeUtils.isEmpty(tmp)) {
       String[] tmpFields = qs.dbFields(tmp);
-      List<String> fldList = new ArrayList<String>();
+      Collection<String> fldList = Lists.newArrayList();
 
       for (String fld : qs.dbFields(tbl)) {
         if (BeeUtils.inListSame(fld, tmpFields)) {
@@ -663,8 +664,6 @@ public class SystemBean {
     Assert.notNull(query);
     Assert.notEmpty(userId);
 
-    int[] userRoles = usr.getUserRoles(userId);
-
     for (String stateName : states) {
       BeeTable table = getTable(tbl);
       BeeState state = table.getState(stateName);
@@ -672,7 +671,7 @@ public class SystemBean {
       if (BeeUtils.isEmpty(state)) {
         LogUtils.warning(logger, "State not registered:", tbl, stateName);
       } else {
-        table.verifyState(query, tblAlias, state, userId, userRoles);
+        table.verifyState(query, tblAlias, state, userId, usr.getUserRoles(userId));
       }
     }
   }
@@ -795,7 +794,7 @@ public class SystemBean {
   }
 
   private Collection<BeeTable> getTables() {
-    return Collections.unmodifiableCollection(dataCache.values());
+    return ImmutableList.copyOf(dataCache.values());
   }
 
   private BeeView getView(String viewName) {
@@ -919,7 +918,7 @@ public class SystemBean {
   private void initTables() {
     String resource = Config.getPath("structure.xml");
 
-    List<BeeTable> tables = loadTables(resource, Config.getPath(STRUCTURE_SCHEMA));
+    Collection<BeeTable> tables = loadTables(resource, Config.getPath(STRUCTURE_SCHEMA));
 
     if (BeeUtils.isEmpty(tables)) {
       LogUtils.warning(logger, resource, "Nothing to load");
@@ -943,12 +942,12 @@ public class SystemBean {
   }
 
   @Lock(LockType.WRITE)
-  private List<BeeTable> loadTables(String resource, String schema) {
+  private Collection<BeeTable> loadTables(String resource, String schema) {
     Document xml = getXmlResource(resource, schema);
     if (BeeUtils.isEmpty(xml)) {
       return null;
     }
-    List<BeeTable> data = new ArrayList<BeeTable>();
+    Collection<BeeTable> data = Lists.newArrayList();
     Element root = xml.getDocumentElement();
     NodeList tables = root.getElementsByTagName("BeeTable");
 
@@ -1023,12 +1022,12 @@ public class SystemBean {
   }
 
   @Lock(LockType.WRITE)
-  private List<BeeView> loadViews(String resource, String schema) {
+  private Collection<BeeView> loadViews(String resource, String schema) {
     Document xml = getXmlResource(resource, schema);
     if (BeeUtils.isEmpty(xml)) {
       return null;
     }
-    List<BeeView> data = new ArrayList<BeeView>();
+    Collection<BeeView> data = Lists.newArrayList();
     Element root = xml.getDocumentElement();
     NodeList views = root.getElementsByTagName("BeeView");
 
@@ -1066,7 +1065,7 @@ public class SystemBean {
           qs.updateData(SqlUtils.dropForeignKey(tbl, fk));
         }
       }
-      List<BeeForeignKey> fKeys = new ArrayList<BeeForeignKey>();
+      Collection<BeeForeignKey> fKeys = Lists.newArrayList();
 
       for (BeeTable tbl : getTables()) {
         if (BeeUtils.same(tbl.getName(), tblName)) {

@@ -256,6 +256,7 @@ public class UiServiceBean {
 
     } else if (BeeUtils.same(cmd, "ext")) {
       sys.initExtensions();
+      sys.initDatabase(SqlBuilderFactory.getEngine());
       buff.add("Extensions OK");
 
     } else if (BeeUtils.same(cmd, "views")) {

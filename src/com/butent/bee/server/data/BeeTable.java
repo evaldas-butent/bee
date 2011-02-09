@@ -1,5 +1,10 @@
 package com.butent.bee.server.data;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
+
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.sql.BeeConstants.DataTypes;
 import com.butent.bee.shared.sql.BeeConstants.Keywords;
@@ -16,15 +21,8 @@ import com.butent.bee.shared.sql.SqlUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
 @SuppressWarnings("hiding")
@@ -422,30 +420,39 @@ class BeeTable implements HasExtFields, HasStates {
     }
   }
 
-  private class StateSingleTable implements HasStates {
+  private class StateSingleTable<T extends Number> implements HasStates {
 
-    private static final int BIT_COUNT = 64;
+    private final int bitCount;
+
+    public StateSingleTable(int size) {
+      Assert.isPositive(size);
+      bitCount = size;
+    }
 
     @Override
     public IsCondition checkState(String stateAlias, BeeState state, boolean mdRole, int... bits) {
       IsCondition wh = null;
-      Map<Integer, Boolean> bitMap = new HashMap<Integer, Boolean>();
+      Map<Integer, Boolean> bitMap = Maps.newHashMap();
       for (int bit : bits) {
         bitMap.put(bit, true);
       }
-      Map<String, Long> bitMasks = getMasks(getStateField(state.getName()), mdRole, bitMap);
+      Map<String, T> bitMasks = getMasks(getStateField(state.getName()), mdRole, bitMap);
 
-      for (String fld : bitMasks.keySet()) {
-        long mask = bitMasks.get(fld);
+      if (BeeUtils.isEmpty(bitMasks)) {
+        wh = SqlUtils.sqlFalse();
+      } else {
+        for (String fld : bitMasks.keySet()) {
+          T mask = bitMasks.get(fld);
 
-        if (state.isChecked()) {
-          wh = SqlUtils.and(wh,
-              SqlUtils.or(SqlUtils.isNull(stateAlias, fld),
-                  SqlUtils.notEqual(SqlUtils.bitAnd(stateAlias, fld, mask), mask)));
-        } else {
-          wh = SqlUtils.or(wh,
-              SqlUtils.and(SqlUtils.isNotNull(stateAlias, fld),
-                  SqlUtils.notEqual(SqlUtils.bitAnd(stateAlias, fld, mask), 0)));
+          if (state.isChecked()) {
+            wh = SqlUtils.and(wh,
+                SqlUtils.or(SqlUtils.isNull(stateAlias, fld),
+                    SqlUtils.notEqual(SqlUtils.bitAnd(stateAlias, fld, mask), mask)));
+          } else {
+            wh = SqlUtils.or(wh,
+                SqlUtils.and(SqlUtils.isNotNull(stateAlias, fld),
+                    SqlUtils.notEqual(SqlUtils.bitAnd(stateAlias, fld, mask), 0)));
+          }
         }
       }
       return wh;
@@ -467,21 +474,25 @@ class BeeTable implements HasExtFields, HasStates {
       } else {
         sc = query;
       }
-      Set<String> cols = new HashSet<String>();
+      Set<String> cols = Sets.newHashSet();
       String stateField = getStateField(state.getName());
 
       if (state.supportsUsers()) {
         for (int user : users) {
-          cols.add(stateField + "User" + (int) Math.floor((user - 1) / BIT_COUNT));
+          cols.add(stateField + "Users" + (int) Math.floor((user - 1) / bitCount));
         }
       }
       if (state.supportsRoles()) {
         for (int role : roles) {
-          cols.add(stateField + "Role" + (int) Math.floor((role - 1) / BIT_COUNT));
+          cols.add(stateField + "Roles" + (int) Math.floor((role - 1) / bitCount));
         }
       }
       for (String col : cols) {
-        sc.addLong(col);
+        if (bitCount <= Integer.SIZE) {
+          sc.addInt(col);
+        } else {
+          sc.addLong(col);
+        }
       }
       return sc;
     }
@@ -503,15 +514,15 @@ class BeeTable implements HasExtFields, HasStates {
       if (!(mdRole && state.supportsRoles() || state.supportsUsers())) {
         return null;
       }
-      Map<String, Long> bitMasks = getMasks(getStateField(state.getName()), mdRole, bits);
+      Map<String, T> bitMasks = getMasks(getStateField(state.getName()), mdRole, bits);
 
       String stateTable = getStateTable(state.getName());
 
       SqlInsert si = new SqlInsert(stateTable)
         .addConstant(getIdName(), id);
 
-      for (Entry<String, Long> entry : bitMasks.entrySet()) {
-        si.addConstant(entry.getKey(), entry.getValue());
+      for (String bitFld : bitMasks.keySet()) {
+        si.addConstant(bitFld, bitMasks.get(bitFld));
       }
       return si;
     }
@@ -557,15 +568,15 @@ class BeeTable implements HasExtFields, HasStates {
       if (!(mdRole && state.supportsRoles() || state.supportsUsers())) {
         return null;
       }
-      Map<String, Long> bitMasks = getMasks(getStateField(state.getName()), mdRole, bits);
+      Map<String, T> bitMasks = getMasks(getStateField(state.getName()), mdRole, bits);
 
       String stateTable = getStateTable(state.getName());
 
       SqlUpdate su = new SqlUpdate(stateTable)
         .setWhere(SqlUtils.equal(stateTable, getIdName(), id));
 
-      for (Entry<String, Long> entry : bitMasks.entrySet()) {
-        su.addConstant(entry.getKey(), entry.getValue());
+      for (String bitFld : bitMasks.keySet()) {
+        su.addConstant(bitFld, bitMasks.get(bitFld));
       }
       return su;
     }
@@ -595,23 +606,26 @@ class BeeTable implements HasExtFields, HasStates {
       query.setWhere(SqlUtils.and(query.getWhere(), wh));
     }
 
-    private Map<String, Long> getMasks(String stateFld, boolean mdRole, Map<Integer, Boolean> bits) {
-      Map<String, Long> bitMasks = new HashMap<String, Long>();
+    @SuppressWarnings("unchecked")
+    private Map<String, T> getMasks(String stateFld, boolean mdRole, Map<Integer, Boolean> bits) {
+      Map<String, T> bitMasks = Maps.newHashMap();
 
       for (int bit : bits.keySet()) {
-        long bitOn = 1;
+        if (BeeUtils.isEmpty(bit)) {
+          continue;
+        }
         int pos = (bit - 1);
-        String colName = stateFld + (mdRole ? "Role" : "User") + (int) Math.floor(pos / BIT_COUNT);
-        pos = pos % BIT_COUNT;
-        long mask = 0;
+        String colName = stateFld + (mdRole ? "Roles" : "Users") + (int) Math.floor(pos / bitCount);
+        pos = pos % bitCount;
+        Long mask = 0L;
 
         if (bitMasks.containsKey(colName)) {
-          mask = bitMasks.get(colName);
+          mask = bitMasks.get(colName).longValue();
         }
         if (bits.get(bit)) {
-          mask = mask | (bitOn << pos);
+          mask = mask | (1L << pos);
         }
-        bitMasks.put(colName, mask);
+        bitMasks.put(colName, (T) mask);
       }
       return bitMasks;
     }
@@ -633,10 +647,10 @@ class BeeTable implements HasExtFields, HasStates {
   private final String idName;
   private final String lockName;
 
-  private Map<String, BeeField> fields = new LinkedHashMap<String, BeeField>();
-  private Map<String, BeeForeignKey> foreignKeys = new LinkedHashMap<String, BeeForeignKey>();
-  private Map<String, BeeKey> keys = new LinkedHashMap<String, BeeKey>();
-  private Map<String, BeeState> states = new LinkedHashMap<String, BeeState>();
+  private Map<String, BeeField> fields = Maps.newLinkedHashMap();
+  private Map<String, BeeForeignKey> foreignKeys = Maps.newLinkedHashMap();
+  private Map<String, BeeKey> keys = Maps.newLinkedHashMap();
+  private Map<String, BeeState> states = Maps.newLinkedHashMap();
 
   private final HasExtFields extSource;
   private HasStates stateSource;
@@ -652,7 +666,7 @@ class BeeTable implements HasExtFields, HasStates {
     this.lockName = BeeUtils.ifString(lockName, DEFAULT_LOCK_FIELD);
 
     this.extSource = new ExtSingleTable();
-    this.stateSource = new StateSingleTable();
+    this.stateSource = new StateSingleTable<Long>(Long.SIZE);
 
     BeeKey key = new BeeKey(KeyTypes.PRIMARY, getName(), getIdName());
     keys.put(key.getName(), key);
@@ -684,11 +698,11 @@ class BeeTable implements HasExtFields, HasStates {
   }
 
   public Collection<BeeField> getFields() {
-    return Collections.unmodifiableCollection(fields.values());
+    return ImmutableList.copyOf(fields.values());
   }
 
   public Collection<BeeForeignKey> getForeignKeys() {
-    return Collections.unmodifiableCollection(foreignKeys.values());
+    return ImmutableList.copyOf(foreignKeys.values());
   }
 
   public String getIdName() {
@@ -696,7 +710,7 @@ class BeeTable implements HasExtFields, HasStates {
   }
 
   public Collection<BeeKey> getKeys() {
-    return Collections.unmodifiableCollection(keys.values());
+    return ImmutableList.copyOf(keys.values());
   }
 
   public String getLockName() {
@@ -704,7 +718,7 @@ class BeeTable implements HasExtFields, HasStates {
   }
 
   public Collection<BeeField> getMainFields() {
-    List<BeeField> flds = new ArrayList<BeeField>();
+    Collection<BeeField> flds = Lists.newArrayList();
 
     for (BeeField field : getFields()) {
       if (field.isUnique()) {
@@ -728,7 +742,7 @@ class BeeTable implements HasExtFields, HasStates {
   }
 
   public Collection<BeeState> getStates() {
-    return Collections.unmodifiableCollection(states.values());
+    return ImmutableList.copyOf(states.values());
   }
 
   @Override
@@ -885,22 +899,22 @@ class BeeTable implements HasExtFields, HasStates {
   }
 
   private void dropCustom() {
-    for (BeeField field : new ArrayList<BeeField>(getFields())) {
+    for (BeeField field : Lists.newArrayList(getFields())) {
       if (field.isCustom()) {
         fields.remove(field.getName());
       }
     }
-    for (BeeKey key : new ArrayList<BeeKey>(getKeys())) {
+    for (BeeKey key : Lists.newArrayList(getKeys())) {
       if (key.isCustom()) {
         keys.remove(key.getName());
       }
     }
-    for (BeeForeignKey fKey : new ArrayList<BeeForeignKey>(getForeignKeys())) {
+    for (BeeForeignKey fKey : Lists.newArrayList(getForeignKeys())) {
       if (fKey.isCustom()) {
         foreignKeys.remove(fKey.getName());
       }
     }
-    for (BeeState state : new ArrayList<BeeState>(getStates())) {
+    for (BeeState state : Lists.newArrayList(getStates())) {
       if (state.isCustom()) {
         states.remove(state.getName());
       }

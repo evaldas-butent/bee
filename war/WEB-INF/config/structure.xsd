@@ -60,14 +60,7 @@
         </xs:restriction>
       </xs:simpleType>
     </xs:attribute>
-    <xs:attribute name="id" use="required">
-      <xs:simpleType>
-        <xs:restriction base="xs:byte">
-          <xs:minInclusive value="1" />
-          <xs:maxInclusive value="64" />
-        </xs:restriction>
-      </xs:simpleType>
-    </xs:attribute>
+    <xs:attribute name="id" type="xs:byte" use="required" />
     <xs:attribute name="mode">
       <xs:simpleType>
         <xs:restriction base="xs:string">

@@ -28,7 +28,7 @@ public class SqlUtils {
     return cb;
   }
 
-  public static IsExpression bitAnd(IsExpression expr, long value) {
+  public static <T> IsExpression bitAnd(IsExpression expr, T value) {
     Map<String, Object> params = new HashMap<String, Object>();
     params.put("expression", expr);
     params.put("value", value);
@@ -36,7 +36,7 @@ public class SqlUtils {
     return expression(new SqlCommand(Keywords.BITAND, params));
   }
 
-  public static IsExpression bitAnd(String source, String field, long value) {
+  public static <T> IsExpression bitAnd(String source, String field, T value) {
     return bitAnd(field(source, field), value);
   }
 
