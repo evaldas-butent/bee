@@ -1,15 +1,17 @@
 package com.butent.bee.client.grid;
 
-import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment.HorizontalAlignmentConstant;
 import com.google.gwt.user.client.ui.HasVerticalAlignment.VerticalAlignmentConstant;
+import com.google.gwt.user.client.ui.Widget;
 
-public abstract class AbstractCellView<RowType> {
+import com.butent.bee.shared.data.IsRow;
+
+public abstract class AbstractCellView {
   private int cellIndex = 0;
   private int rowIndex = 0;
-  private HasTableDefinition<RowType> source;
+  private HasTableDefinition source;
 
-  public AbstractCellView(HasTableDefinition<RowType> sourceTableDef) {
+  public AbstractCellView(HasTableDefinition sourceTableDef) {
     this.source = sourceTableDef;
   }
 
@@ -21,7 +23,7 @@ public abstract class AbstractCellView<RowType> {
     return rowIndex;
   }
 
-  public HasTableDefinition<RowType> getSourceTableDefinition() {
+  public HasTableDefinition getSourceTableDefinition() {
     return source;
   }
 
@@ -35,15 +37,14 @@ public abstract class AbstractCellView<RowType> {
 
   public abstract void setWidget(Widget widget);
 
-  protected void renderCellImpl(int rowIdx, int cellIdx,
-      RowType rowValue, ColumnDefinition<RowType, ?> columnDef) {
+  protected void renderCellImpl(int rowIdx, int cellIdx, IsRow rowValue,
+      ColumnDefinition columnDef) {
     this.rowIndex = rowIdx;
     this.cellIndex = cellIdx;
     renderRowValue(rowValue, columnDef);
   }
 
-  protected <ColType> void renderRowValue(RowType rowValue,
-      ColumnDefinition<RowType, ColType> columnDef) {
+  protected void renderRowValue(IsRow rowValue, ColumnDefinition columnDef) {
     columnDef.getCellRenderer().renderRowValue(rowValue, columnDef, this);
   }
 }

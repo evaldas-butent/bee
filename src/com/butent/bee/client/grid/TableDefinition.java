@@ -1,6 +1,7 @@
 package com.butent.bee.client.grid;
 
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.data.IsRow;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -9,28 +10,28 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-public class TableDefinition<RowType> {
-  private List<ColumnDefinition<RowType, ?>> columnDefs;
-  private Set<ColumnDefinition<RowType, ?>> hiddenColumnDefs;
+public class TableDefinition {
+  private List<ColumnDefinition> columnDefs;
+  private Set<ColumnDefinition> hiddenColumnDefs;
 
   public TableDefinition() {
-    this(new ArrayList<ColumnDefinition<RowType, ?>>());
+    this(new ArrayList<ColumnDefinition>());
   }
 
-  public TableDefinition(List<ColumnDefinition<RowType, ?>> columnDefs) {
+  public TableDefinition(List<ColumnDefinition> columnDefs) {
     this.columnDefs = columnDefs;
-    hiddenColumnDefs = new HashSet<ColumnDefinition<RowType, ?>>();
+    hiddenColumnDefs = new HashSet<ColumnDefinition>();
   }
 
-  public void addColumnDefinition(ColumnDefinition<RowType, ?> columnDef) {
+  public void addColumnDefinition(ColumnDefinition columnDef) {
     columnDefs.add(columnDef);
   }
 
-  public void addColumnDefinition(int index, ColumnDefinition<RowType, ?> columnDef) {
+  public void addColumnDefinition(int index, ColumnDefinition columnDef) {
     columnDefs.add(index, columnDef);
   }
 
-  public ColumnDefinition<RowType, ?> getColumnDefinition(int column) {
+  public ColumnDefinition getColumnDefinition(int column) {
     Assert.isIndex(columnDefs, column);
     return columnDefs.get(column);
   }
@@ -39,7 +40,7 @@ public class TableDefinition<RowType> {
     return columnDefs.size();
   }
 
-  public List<ColumnDefinition<RowType, ?>> getColumnDefs() {
+  public List<ColumnDefinition> getColumnDefs() {
     return columnDefs;
   }
 
@@ -47,10 +48,9 @@ public class TableDefinition<RowType> {
     return getColumnDefinition(column).getColumnId();
   }
 
-  public List<ColumnDefinition<RowType, ?>> getVisibleColumnDefinitions() {
-    List<ColumnDefinition<RowType, ?>> visibleColumns = 
-      new ArrayList<ColumnDefinition<RowType, ?>>();
-    for (ColumnDefinition<RowType, ?> columnDef : columnDefs) {
+  public List<ColumnDefinition> getVisibleColumnDefinitions() {
+    List<ColumnDefinition> visibleColumns = new ArrayList<ColumnDefinition>();
+    for (ColumnDefinition columnDef : columnDefs) {
       if (isColumnVisible(columnDef)) {
         visibleColumns.add(columnDef);
       }
@@ -62,7 +62,7 @@ public class TableDefinition<RowType> {
     return isColumnVisible(getColumnDefinition(column));
   }
 
-  public boolean isColumnVisible(ColumnDefinition<RowType, ?> colDef) {
+  public boolean isColumnVisible(ColumnDefinition colDef) {
     return !hiddenColumnDefs.contains(colDef);
   }
   
@@ -108,16 +108,16 @@ public class TableDefinition<RowType> {
     Collections.sort(columnDefs);
   }
 
-  public void removeColumnDefinition(ColumnDefinition<RowType, ?> columnDef) {
+  public void removeColumnDefinition(ColumnDefinition columnDef) {
     columnDefs.remove(columnDef);
   }
 
-  public void renderRows(int startRowIndex, Iterator<RowType> rowValues, RowView<RowType> view) {
-    List<ColumnDefinition<RowType, ?>> visibleColumns = getVisibleColumnDefinitions();
+  public void renderRows(int startRowIndex, Iterator<IsRow> rowValues, RowView view) {
+    List<ColumnDefinition> visibleColumns = getVisibleColumnDefinitions();
     view.renderRowsImpl(startRowIndex, rowValues, visibleColumns);
   }
 
-  public void setColumnDefs(List<ColumnDefinition<RowType, ?>> columnDefs) {
+  public void setColumnDefs(List<ColumnDefinition> columnDefs) {
     this.columnDefs = columnDefs;
   }
 
@@ -125,7 +125,7 @@ public class TableDefinition<RowType> {
     setColumnVisible(getColumnDefinition(column), visible);
   }
 
-  public void setColumnVisible(ColumnDefinition<RowType, ?> colDef, boolean visible) {
+  public void setColumnVisible(ColumnDefinition colDef, boolean visible) {
     if (visible) {
       hiddenColumnDefs.remove(colDef);
     } else {

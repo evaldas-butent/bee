@@ -6,20 +6,20 @@ import com.butent.bee.client.grid.RowView;
 import com.butent.bee.client.grid.SelectionGrid;
 import com.butent.bee.client.grid.TableDefinition;
 import com.butent.bee.client.grid.SelectionGrid.SelectionPolicy;
+import com.butent.bee.shared.data.IsRow;
 
-public class SelectionGridBulkRenderer<RowType> extends GridBulkRenderer<RowType> {
+public class SelectionGridBulkRenderer extends GridBulkRenderer {
 
-  protected static class SelectionBulkCellView<RowType> extends BulkCellView<RowType> {
-    private TableBulkRenderer<RowType> bulkRenderer = null;
+  protected static class SelectionBulkCellView extends BulkCellView {
+    private TableBulkRenderer bulkRenderer = null;
 
-    public SelectionBulkCellView(TableBulkRenderer<RowType> bulkRenderer) {
+    public SelectionBulkCellView(TableBulkRenderer bulkRenderer) {
       super(bulkRenderer);
       this.bulkRenderer = bulkRenderer;
     }
 
     @Override
-    protected <ColType> void renderRowValue(RowType rowValue, 
-        ColumnDefinition<RowType, ColType> columnDef) {
+    protected void renderRowValue(IsRow rowValue, ColumnDefinition columnDef) {
       if (getCellIndex() == 0) {
         SelectionPolicy selectionPolicy = 
           ((SelectionGrid) bulkRenderer.getTable()).getSelectionPolicy();
@@ -35,17 +35,17 @@ public class SelectionGridBulkRenderer<RowType> extends GridBulkRenderer<RowType
     }
   }
 
-  public SelectionGridBulkRenderer(SelectionGrid grid, TableDefinition<RowType> tableDef) {
+  public SelectionGridBulkRenderer(SelectionGrid grid, TableDefinition tableDef) {
     super(grid, tableDef);
   }
 
-  public SelectionGridBulkRenderer(SelectionGrid grid, HasTableDefinition<RowType> sourceTableDef) {
+  public SelectionGridBulkRenderer(SelectionGrid grid, HasTableDefinition sourceTableDef) {
     super(grid, sourceTableDef);
   }
 
   @Override
-  protected RowView<RowType> createRowView(final RenderingOptions options) {
-    BulkCellView<RowType> cellView = new SelectionBulkCellView<RowType>(this);
-    return new BulkRowView<RowType>(cellView, this, options);
+  protected RowView createRowView(final RenderingOptions options) {
+    BulkCellView cellView = new SelectionBulkCellView(this);
+    return new BulkRowView(cellView, this, options);
   }
 }

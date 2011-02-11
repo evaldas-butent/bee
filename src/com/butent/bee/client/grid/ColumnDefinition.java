@@ -13,25 +13,25 @@ import com.butent.bee.client.grid.property.TruncationProperty;
 import com.butent.bee.client.grid.render.CellRenderer;
 import com.butent.bee.client.grid.render.DefaultCellRenderer;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.data.IsRow;
 
-public abstract class ColumnDefinition<RowType, ColType> 
-    implements Comparable<ColumnDefinition<?, ?>> {
-  private CellRenderer<RowType, ColType> cellRenderer = new DefaultCellRenderer<RowType, ColType>();
+public abstract class ColumnDefinition implements Comparable<ColumnDefinition> {
+  private CellRenderer cellRenderer = new DefaultCellRenderer();
 
   private ColumnPropertyManager properties = new ColumnPropertyManager();
 
   private int columnId;
   private int columnOrder;
 
-  public int compareTo(ColumnDefinition<?, ?> o) {
+  public int compareTo(ColumnDefinition o) {
     return ((Integer) getColumnOrder()).compareTo(o.getColumnOrder());
   }
 
-  public CellRenderer<RowType, ColType> getCellRenderer() {
+  public CellRenderer getCellRenderer() {
     return cellRenderer;
   }
 
-  public abstract ColType getCellValue(RowType rowValue);
+  public abstract Object getCellValue(IsRow rowValue);
 
   public int getColumnId() {
     return columnId;
@@ -161,12 +161,12 @@ public abstract class ColumnDefinition<RowType, ColType>
     return properties.removeColumnProperty(name);
   }
 
-  public void setCellRenderer(CellRenderer<RowType, ColType> cellRenderer) {
+  public void setCellRenderer(CellRenderer cellRenderer) {
     Assert.notNull(cellRenderer, "cellRenderer cannot be null");
     this.cellRenderer = cellRenderer;
   }
 
-  public abstract void setCellValue(RowType rowValue, ColType cellValue);
+  public abstract void setCellValue(IsRow rowValue, Object cellValue);
 
   public void setColumnId(int columnId) {
     this.columnId = columnId;

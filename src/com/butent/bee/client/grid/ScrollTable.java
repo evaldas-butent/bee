@@ -46,6 +46,7 @@ import com.butent.bee.client.widget.BeeSimpleCheckBox;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasId;
+import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
@@ -54,8 +55,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-public class ScrollTable<RowType> extends ComplexPanel implements
-    HasId, HasScrollHandlers, HasTableDefinition<RowType>, RequiresResize {
+public class ScrollTable extends ComplexPanel implements
+    HasId, HasScrollHandlers, HasTableDefinition, RequiresResize {
 
   public static enum ResizePolicy {
     UNCONSTRAINED(false, false), FLOW(false, true), FIXED_WIDTH(true, false),
@@ -78,10 +79,10 @@ public class ScrollTable<RowType> extends ComplexPanel implements
     }
   }
 
-  protected static class ScrollTableCellView<RowType> extends AbstractCellView<RowType> {
-    private ScrollTable<RowType> table;
+  protected static class ScrollTableCellView extends AbstractCellView {
+    private ScrollTable table;
 
-    public ScrollTableCellView(ScrollTable<RowType> table) {
+    public ScrollTableCellView(ScrollTable table) {
       super(table);
       this.table = table;
     }
@@ -274,7 +275,7 @@ public class ScrollTable<RowType> extends ComplexPanel implements
     private int sacrificeCellIndex = -1;
     private List<ColumnWidth> sacrificeCells = new ArrayList<ColumnWidth>();
 
-    private ScrollTable<?> table = null;
+    private ScrollTable table = null;
 
     private ResizeCommand command = new ResizeCommand();
 
@@ -338,7 +339,7 @@ public class ScrollTable<RowType> extends ComplexPanel implements
       return false;
     }
 
-    public void setScrollTable(ScrollTable<?> table) {
+    public void setScrollTable(ScrollTable table) {
       this.table = table;
     }
 
@@ -422,12 +423,12 @@ public class ScrollTable<RowType> extends ComplexPanel implements
     }
   }
 
-  private class VisibleRowsIterator implements Iterator<RowType> {
-    private Iterator<RowType> rows;
+  private class VisibleRowsIterator implements Iterator<IsRow> {
+    private Iterator<IsRow> rows;
     private int curRow;
     private int lastVisibleRow;
 
-    public VisibleRowsIterator(Iterator<RowType> rows, int firstRow,
+    public VisibleRowsIterator(Iterator<IsRow> rows, int firstRow,
         int firstVisibleRow, int lastVisibleRow) {
       this.curRow = firstRow;
       this.lastVisibleRow = lastVisibleRow;
@@ -443,7 +444,7 @@ public class ScrollTable<RowType> extends ComplexPanel implements
       return (curRow <= lastVisibleRow && rows.hasNext());
     }
 
-    public RowType next() {
+    public IsRow next() {
       if (!hasNext()) {
         Assert.untouchable("no such element");
       }
@@ -457,21 +458,20 @@ public class ScrollTable<RowType> extends ComplexPanel implements
 
   public static final String DEFAULT_STYLE_NAME = "bee-ScrollTable";
 
-  private TableDefinition<RowType> tableDefinition = null;
-  private FixedWidthGridBulkRenderer<RowType> bulkRenderer = null;
-  private TableModel<RowType> tableModel;
+  private TableDefinition tableDefinition = null;
+  private FixedWidthGridBulkRenderer bulkRenderer = null;
+  private TableModel tableModel;
 
   private boolean loading;
   private Request lastRequest = null;
 
-  private Set<RowType> selectedRowValues = new HashSet<RowType>();
+  private Set<IsRow> selectedRowValues = new HashSet<IsRow>();
   private BeeSimpleCheckBox selectAllWidget;
 
-  private List<RowType> rowValues = new ArrayList<RowType>();
-  private RowView<RowType> rowView = new RowView<RowType>(new ScrollTableCellView<RowType>(this));
+  private List<IsRow> rowValues = new ArrayList<IsRow>();
+  private RowView rowView = new RowView(new ScrollTableCellView(this));
 
-  private List<ColumnDefinition<RowType, ?>> visibleColumns =
-      new ArrayList<ColumnDefinition<RowType, ?>>();
+  private List<ColumnDefinition> visibleColumns = new ArrayList<ColumnDefinition>();
 
   private Element absoluteElem;
 
@@ -498,13 +498,13 @@ public class ScrollTable<RowType> extends ComplexPanel implements
 
   private String columnIdSeparator = "_";
 
-  private Callback<RowType> loadCallback = new Callback<RowType>() {
+  private Callback loadCallback = new Callback() {
     public void onFailure(Throwable caught) {
       loading = false;
       BeeKeeper.getLog().severe("Loading Failure", caught);
     }
 
-    public void onRowsReady(Request request, Response<RowType> response) {
+    public void onRowsReady(Request request, Response response) {
       if (lastRequest == request) {
         setData(request.getStartRow(), response.getRowValues());
         lastRequest = null;
@@ -519,7 +519,7 @@ public class ScrollTable<RowType> extends ComplexPanel implements
     }
   };
 
-  public ScrollTable(TableModel<RowType> tableModel, TableDefinition<RowType> tableDefinition) {
+  public ScrollTable(TableModel tableModel, TableDefinition tableDefinition) {
     super();
     this.dataTable = new FixedWidthGrid(defaultColumnWidth);
     this.headerTable = new FixedWidthFlexTable(defaultColumnWidth);
@@ -629,7 +629,7 @@ public class ScrollTable<RowType> extends ComplexPanel implements
   }
 
   public String getColumnCaption(int column, boolean visible) {
-    ColumnDefinition<RowType, ?> colDef = getColumnDefinition(column, visible);
+    ColumnDefinition colDef = getColumnDefinition(column, visible);
     Object header = (colDef == null) ? null : colDef.getHeader();
     return BeeUtils.isEmpty(header) ? "Column " + column : BeeUtils.transform(header);
   }
@@ -693,7 +693,7 @@ public class ScrollTable<RowType> extends ComplexPanel implements
   }
 
   public int getMaximumColumnWidth(int column, boolean visible) {
-    ColumnDefinition<RowType, ?> colDef = getColumnDefinition(column, visible);
+    ColumnDefinition colDef = getColumnDefinition(column, visible);
     if (colDef == null) {
       return maxColumnWidth;
     }
@@ -705,7 +705,7 @@ public class ScrollTable<RowType> extends ComplexPanel implements
   }
 
   public int getMinimumColumnWidth(int column, boolean visible) {
-    ColumnDefinition<RowType, ?> colDef = getColumnDefinition(column, visible);
+    ColumnDefinition colDef = getColumnDefinition(column, visible);
     if (colDef == null) {
       return minColumnWidth;
     }
@@ -714,7 +714,7 @@ public class ScrollTable<RowType> extends ComplexPanel implements
   }
 
   public int getPreferredColumnWidth(int column, boolean visible) {
-    ColumnDefinition<RowType, ?> colDef = getColumnDefinition(column, visible);
+    ColumnDefinition colDef = getColumnDefinition(column, visible);
     if (colDef == null) {
       return getDefaultColumnWidth();
     }
@@ -725,22 +725,22 @@ public class ScrollTable<RowType> extends ComplexPanel implements
     return resizePolicy;
   }
 
-  public RowType getRowValue(int row) {
+  public IsRow getRowValue(int row) {
     if (rowValues.size() <= row) {
       return null;
     }
     return rowValues.get(row);
   }
 
-  public Set<RowType> getSelectedRowValues() {
+  public Set<IsRow> getSelectedRowValues() {
     return selectedRowValues;
   }
 
-  public TableDefinition<RowType> getTableDefinition() {
+  public TableDefinition getTableDefinition() {
     return tableDefinition;
   }
 
-  public TableModel<RowType> getTableModel() {
+  public TableModel getTableModel() {
     return tableModel;
   }
 
@@ -756,7 +756,7 @@ public class ScrollTable<RowType> extends ComplexPanel implements
   }
 
   public boolean isColumnSortable(int column, boolean visible) {
-    ColumnDefinition<RowType, ?> colDef = getColumnDefinition(column, visible);
+    ColumnDefinition colDef = getColumnDefinition(column, visible);
     if (colDef == null) {
       return true;
     }
@@ -764,7 +764,7 @@ public class ScrollTable<RowType> extends ComplexPanel implements
   }
 
   public boolean isColumnTruncatable(int column, boolean visible) {
-    ColumnDefinition<RowType, ?> colDef = getColumnDefinition(column, visible);
+    ColumnDefinition colDef = getColumnDefinition(column, visible);
     if (colDef == null) {
       return true;
     }
@@ -772,7 +772,7 @@ public class ScrollTable<RowType> extends ComplexPanel implements
   }
 
   public boolean isFooterColumnTruncatable(int column, boolean visible) {
-    ColumnDefinition<RowType, ?> colDef = getColumnDefinition(column, visible);
+    ColumnDefinition colDef = getColumnDefinition(column, visible);
     if (colDef == null) {
       return true;
     }
@@ -780,7 +780,7 @@ public class ScrollTable<RowType> extends ComplexPanel implements
   }
 
   public boolean isHeaderColumnTruncatable(int column, boolean visible) {
-    ColumnDefinition<RowType, ?> colDef = getColumnDefinition(column, visible);
+    ColumnDefinition colDef = getColumnDefinition(column, visible);
     if (colDef == null) {
       return true;
     }
@@ -961,7 +961,7 @@ public class ScrollTable<RowType> extends ComplexPanel implements
     Scheduler.get().scheduleDeferred(redrawCommand);
   }
   
-  public void setBulkRenderer(FixedWidthGridBulkRenderer<RowType> bulkRenderer) {
+  public void setBulkRenderer(FixedWidthGridBulkRenderer bulkRenderer) {
     this.bulkRenderer = bulkRenderer;
   }
 
@@ -1032,7 +1032,7 @@ public class ScrollTable<RowType> extends ComplexPanel implements
     this.resizePolicy = resizePolicy;
   }
 
-  public void setRowValue(int row, RowType value) {
+  public void setRowValue(int row, IsRow value) {
     for (int i = rowValues.size(); i <= row; i++) {
       rowValues.add(null);
     }
@@ -1041,7 +1041,7 @@ public class ScrollTable<RowType> extends ComplexPanel implements
     refreshRow(row);
   }
 
-  public void setTableDefinition(TableDefinition<RowType> tableDefinition) {
+  public void setTableDefinition(TableDefinition tableDefinition) {
     Assert.notNull(tableDefinition, "tableDefinition cannot be null");
     this.tableDefinition = tableDefinition;
   }
@@ -1063,7 +1063,7 @@ public class ScrollTable<RowType> extends ComplexPanel implements
     return wrapper;
   }
 
-  protected ColumnDefinition<RowType, ?> getColumnDefinition(int colIndex, boolean visible) {
+  protected ColumnDefinition getColumnDefinition(int colIndex, boolean visible) {
     if (visible) {
       if (colIndex < visibleColumns.size()) {
         return visibleColumns.get(colIndex);
@@ -1078,11 +1078,11 @@ public class ScrollTable<RowType> extends ComplexPanel implements
     return dataWrapper;
   }
 
-  protected List<RowType> getRowValues() {
+  protected List<IsRow> getRowValues() {
     return rowValues;
   }
 
-  protected List<ColumnDefinition<RowType, ?>> getVisibleColumnDefinitions() {
+  protected List<ColumnDefinition> getVisibleColumnDefinitions() {
     return visibleColumns;
   }
 
@@ -1140,7 +1140,7 @@ public class ScrollTable<RowType> extends ComplexPanel implements
     int maxFooterCount = 0;
 
     for (int col = 0; col < columnCount; col++) {
-      ColumnDefinition<RowType, ?> colDef = visibleColumns.get(col);
+      ColumnDefinition colDef = visibleColumns.get(col);
       FooterProperty prop = colDef.getColumnProperty(FooterProperty.NAME);
       if (prop == null) {
         footerCounts[col] = 0;
@@ -1188,7 +1188,7 @@ public class ScrollTable<RowType> extends ComplexPanel implements
     int maxHeaderCount = 0;
 
     for (int col = 0; col < columnCount; col++) {
-      ColumnDefinition<RowType, ?> colDef = visibleColumns.get(col);
+      ColumnDefinition colDef = visibleColumns.get(col);
       HeaderProperty prop = colDef.getColumnProperty(HeaderProperty.NAME);
       if (prop == null) {
         headerCounts[col] = 0;
@@ -1226,13 +1226,13 @@ public class ScrollTable<RowType> extends ComplexPanel implements
   }
 
   protected void refreshVisibleColumnDefinitions() {
-    List<ColumnDefinition<RowType, ?>> colDefs = new ArrayList<ColumnDefinition<RowType, ?>>(
+    List<ColumnDefinition> colDefs = new ArrayList<ColumnDefinition>(
         tableDefinition.getVisibleColumnDefinitions());
     if (!colDefs.equals(visibleColumns)) {
       visibleColumns = colDefs;
       headersObsolete = true;
     } else {
-      for (ColumnDefinition<RowType, ?> colDef : colDefs) {
+      for (ColumnDefinition colDef : colDefs) {
         if (colDef.isHeaderDynamic(false) || colDef.isFooterDynamic(false)) {
           headersObsolete = true;
           return;
@@ -1258,14 +1258,14 @@ public class ScrollTable<RowType> extends ComplexPanel implements
     dataWrapper.getStyle().setWidth(100, Unit.PCT);
   }
 
-  protected void setData(int firstRow, Iterator<RowType> rows) {
+  protected void setData(int firstRow, Iterator<IsRow> rows) {
     getDataTable().deselectAllRows();
-    rowValues = new ArrayList<RowType>();
+    rowValues = new ArrayList<IsRow>();
 
     if (rows != null && rows.hasNext()) {
       int firstVisibleRow = getAbsoluteFirstRowIndex();
       int lastVisibleRow = getAbsoluteLastRowIndex();
-      Iterator<RowType> visibleIter = new VisibleRowsIterator(rows, firstRow,
+      Iterator<IsRow> visibleIter = new VisibleRowsIterator(rows, firstRow,
           firstVisibleRow, lastVisibleRow);
 
       while (visibleIter.hasNext()) {
@@ -1578,15 +1578,15 @@ public class ScrollTable<RowType> extends ComplexPanel implements
   }
 
   private void refreshRow(int rowIndex) {
-    final RowType rowValue = getRowValue(rowIndex);
-    Iterator<RowType> singleIterator = new Iterator<RowType>() {
+    final IsRow rowValue = getRowValue(rowIndex);
+    Iterator<IsRow> singleIterator = new Iterator<IsRow>() {
       private boolean nextCalled = false;
 
       public boolean hasNext() {
         return !nextCalled;
       }
 
-      public RowType next() {
+      public IsRow next() {
         if (!hasNext()) {
           Assert.untouchable("no such element");
         }

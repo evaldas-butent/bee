@@ -1,9 +1,9 @@
 package com.butent.bee.client.grid.model;
 
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.data.IsRow;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
@@ -34,8 +34,7 @@ public final class TableModelHelper {
       if (csi == null) {
         return false;
       }
-      return getColumn() == csi.getColumn()
-          && isAscending() == csi.isAscending();
+      return getColumn() == csi.getColumn() && isAscending() == csi.isAscending();
     }
 
     public int getColumn() {
@@ -195,25 +194,8 @@ public final class TableModelHelper {
     }
   }
 
-  public abstract static class Response<RowType> {
-    public abstract Iterator<RowType> getRowValues();
-  }
-
-  public static class SerializableResponse<RowType> extends Response<RowType> {
-    private Collection<RowType> rowValues;
-
-    public SerializableResponse() {
-      this(null);
-    }
-
-    public SerializableResponse(Collection<RowType> rowValues) {
-      this.rowValues = rowValues;
-    }
-
-    @Override
-    public Iterator<RowType> getRowValues() {
-      return rowValues.iterator();
-    }
+  public abstract static class Response {
+    public abstract Iterator<IsRow> getRowValues();
   }
 
   private static class ImmutableIterator<E> implements Iterator<E> {

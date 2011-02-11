@@ -24,5 +24,4 @@ public class BeeCellList<T> extends CellList<T> implements HasId {
   public void setId(String id) {
     DomUtils.setId(this, id);
   }
-
 }

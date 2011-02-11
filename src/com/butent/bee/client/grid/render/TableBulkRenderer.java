@@ -16,12 +16,13 @@ import com.butent.bee.client.grid.TableDefinition;
 import com.butent.bee.client.grid.model.TableModel;
 import com.butent.bee.client.grid.model.TableModelHelper.Request;
 import com.butent.bee.client.grid.model.TableModelHelper.Response;
+import com.butent.bee.shared.data.IsRow;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-public abstract class TableBulkRenderer<RowType> implements HasTableDefinition<RowType> {
+public abstract class TableBulkRenderer implements HasTableDefinition {
 
   private static class DelayedWidget {
     public int cellIndex;
@@ -35,7 +36,7 @@ public abstract class TableBulkRenderer<RowType> implements HasTableDefinition<R
     }
   }
 
-  protected static class BulkCellView<RowType> extends AbstractCellView<RowType> {
+  protected static class BulkCellView extends AbstractCellView {
     private StringBuffer buffer = null;
 
     private Element htmlCleaner = Document.get().createDivElement().cast();
@@ -48,7 +49,7 @@ public abstract class TableBulkRenderer<RowType> implements HasTableDefinition<R
 
     private List<DelayedWidget> delayedWidgets = new ArrayList<DelayedWidget>();
 
-    public BulkCellView(TableBulkRenderer<RowType> bulkRenderer) {
+    public BulkCellView(TableBulkRenderer bulkRenderer) {
       super((bulkRenderer.source == null) ? bulkRenderer : bulkRenderer.source);
     }
 
@@ -85,8 +86,7 @@ public abstract class TableBulkRenderer<RowType> implements HasTableDefinition<R
     }
 
     @Override
-    protected <ColType> void renderRowValue(RowType rowValue, 
-        ColumnDefinition<RowType, ColType> columnDef) {
+    protected  void renderRowValue(IsRow rowValue, ColumnDefinition columnDef) {
       curCellHtml = null;
       curCellWidget = null;
       curCellHorizontalAlign = null;
@@ -124,18 +124,18 @@ public abstract class TableBulkRenderer<RowType> implements HasTableDefinition<R
     }
   }
 
-  protected static class BulkRowView<RowType> extends RowView<RowType> {
+  protected static class BulkRowView extends RowView {
     private StringBuffer buffer;
 
-    private TableBulkRenderer<RowType> bulkRenderer;
-    private BulkCellView<RowType> cellView;
+    private TableBulkRenderer bulkRenderer;
+    private BulkCellView cellView;
 
     private RenderingOptions options;
 
     private int rowIndex = 0;
 
-    public BulkRowView(BulkCellView<RowType> cellView,
-        TableBulkRenderer<RowType> bulkRenderer, RenderingOptions options) {
+    public BulkRowView(BulkCellView cellView, TableBulkRenderer bulkRenderer,
+        RenderingOptions options) {
       super(cellView);
       this.bulkRenderer = bulkRenderer;
       this.cellView = cellView;
@@ -150,16 +150,16 @@ public abstract class TableBulkRenderer<RowType> implements HasTableDefinition<R
     }
 
     @Override
-    protected void renderRowImpl(int rowIdx, RowType rowValue,
-        List<ColumnDefinition<RowType, ?>> visibleColumns) {
+    protected void renderRowImpl(int rowIdx, IsRow rowValue,
+        List<ColumnDefinition> visibleColumns) {
       buffer.append("<tr>");
       super.renderRowImpl(rowIdx, rowValue, visibleColumns);
       buffer.append("</tr>");
     }
 
     @Override
-    protected void renderRowsImpl(int startRowIndex, final Iterator<RowType> rowValues,
-        final List<ColumnDefinition<RowType, ?>> visibleColumns) {
+    protected void renderRowsImpl(int startRowIndex, final Iterator<IsRow> rowValues,
+        final List<ColumnDefinition> visibleColumns) {
       buffer.append("<table><tbody>");
       if (options.headerRow != null) {
         buffer.append(options.headerRow);
@@ -200,32 +200,32 @@ public abstract class TableBulkRenderer<RowType> implements HasTableDefinition<R
 
   private static Element WRAPPER_DIV;
 
-  private HasTableDefinition<RowType> source = null;
+  private HasTableDefinition source = null;
 
   private final HtmlTable table;
 
-  private TableDefinition<RowType> tableDefinition;
+  private TableDefinition tableDefinition;
 
-  public TableBulkRenderer(HtmlTable table, TableDefinition<RowType> tableDefinition) {
+  public TableBulkRenderer(HtmlTable table, TableDefinition tableDefinition) {
     this.table = table;
     this.tableDefinition = tableDefinition;
   }
 
-  public TableBulkRenderer(HtmlTable table, HasTableDefinition<RowType> sourceTableDef) {
+  public TableBulkRenderer(HtmlTable table, HasTableDefinition sourceTableDef) {
     this(table, sourceTableDef.getTableDefinition());
     this.source = sourceTableDef;
   }
 
-  public TableDefinition<RowType> getTableDefinition() {
+  public TableDefinition getTableDefinition() {
     return (source == null) ? tableDefinition : source.getTableDefinition();
   }
 
-  public final void renderRows(Iterator<RowType> rows) {
+  public final void renderRows(Iterator<IsRow> rows) {
     RenderingOptions options = createRenderingOptions();
     renderRows(rows, options);
   }
 
-  public final void renderRows(TableModel<RowType> tableModel,
+  public final void renderRows(TableModel tableModel,
       int startRow, int numRows, RendererCallback callback) {
     RenderingOptions options = createRenderingOptions();
     options.startRow = startRow;
@@ -234,7 +234,7 @@ public abstract class TableBulkRenderer<RowType> implements HasTableDefinition<R
     renderRows(tableModel, options);
   }
 
-  public final void renderRows(TableModel<RowType> tableModel, RendererCallback callback) {
+  public final void renderRows(TableModel tableModel, RendererCallback callback) {
     renderRows(tableModel, 0, TableModel.ALL_ROWS, callback);
   }
 
@@ -242,26 +242,26 @@ public abstract class TableBulkRenderer<RowType> implements HasTableDefinition<R
     return new RenderingOptions();
   }
 
-  protected RowView<RowType> createRowView(final RenderingOptions options) {
-    BulkCellView<RowType> cellView = new BulkCellView<RowType>(this);
-    return new BulkRowView<RowType>(cellView, this, options);
+  protected RowView createRowView(final RenderingOptions options) {
+    BulkCellView cellView = new BulkCellView(this);
+    return new BulkRowView(cellView, this, options);
   }
 
   protected HtmlTable getTable() {
     return table;
   }
 
-  protected void renderRows(final Iterator<RowType> rows, final RenderingOptions options) {
+  protected void renderRows(final Iterator<IsRow> rows, final RenderingOptions options) {
     getTableDefinition().renderRows(0, rows, createRowView(options));
   }
 
-  protected final void renderRows(TableModel<RowType> tableModel, final RenderingOptions options) {
-    TableModel.Callback<RowType> requestCallback = new TableModel.Callback<RowType>() {
+  protected final void renderRows(TableModel tableModel, final RenderingOptions options) {
+    TableModel.Callback requestCallback = new TableModel.Callback() {
       public void onFailure(Throwable caught) {
       }
 
-      public void onRowsReady(Request request, final Response<RowType> response) {
-        final Iterator<RowType> rows = response.getRowValues();
+      public void onRowsReady(Request request, final Response response) {
+        final Iterator<IsRow> rows = response.getRowValues();
         renderRows(rows, options);
       }
     };

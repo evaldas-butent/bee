@@ -6,11 +6,10 @@ import com.google.gwt.view.client.ProvidesKey;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.HasId;
+import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.IsTable;
 
-import java.util.ArrayList;
-import java.util.List;
-
-public class BeeCellTable extends CellTable<Integer> implements HasId {
+public class BeeCellTable extends CellTable<IsRow> implements HasId {
 
   public BeeCellTable() {
     init();
@@ -21,13 +20,8 @@ public class BeeCellTable extends CellTable<Integer> implements HasId {
     init();
   }
 
-  public BeeCellTable(int pageSize, ProvidesKey<Integer> keyProvider) {
+  public BeeCellTable(int pageSize, ProvidesKey<IsRow> keyProvider) {
     super(pageSize, keyProvider);
-    init();
-  }
-
-  public BeeCellTable(int pageSize, Resources resources) {
-    super(pageSize, resources);
     init();
   }
 
@@ -39,16 +33,11 @@ public class BeeCellTable extends CellTable<Integer> implements HasId {
     return DomUtils.getId(this);
   }
 
-  public void initData(int rows) {
-    Assert.isPositive(rows);
+  public void initData(IsTable<?, ?> data) {
+    Assert.notNull(data);
 
-    List<Integer> lst = new ArrayList<Integer>(rows);
-    for (int i = 0; i < rows; i++) {
-      lst.add(i);
-    }
-    
-    setRowCount(rows);
-    setRowData(0, lst);
+    setRowCount(data.getNumberOfRows());
+    setRowData(0, data.getRows().getList());
   }
 
   public void setId(String id) {
@@ -58,5 +47,4 @@ public class BeeCellTable extends CellTable<Integer> implements HasId {
   private void init() {
     createId();
   }
-
 }

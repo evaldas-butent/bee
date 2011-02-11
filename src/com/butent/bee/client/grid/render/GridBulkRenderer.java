@@ -7,13 +7,13 @@ import com.butent.bee.client.grid.SelectionGrid;
 import com.butent.bee.client.grid.TableDefinition;
 import com.butent.bee.shared.Assert;
 
-public class GridBulkRenderer<RowType> extends TableBulkRenderer<RowType> {
-  public GridBulkRenderer(GridTable grid, TableDefinition<RowType> tableDef) {
+public class GridBulkRenderer extends TableBulkRenderer {
+  public GridBulkRenderer(GridTable grid, TableDefinition tableDef) {
     super(grid, tableDef);
     init(grid);
   }
 
-  public GridBulkRenderer(GridTable grid, HasTableDefinition<RowType> sourceTableDef) {
+  public GridBulkRenderer(GridTable grid, HasTableDefinition sourceTableDef) {
     super(grid, sourceTableDef);
     init(grid);
   }

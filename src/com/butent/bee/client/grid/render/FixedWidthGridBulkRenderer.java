@@ -7,15 +7,16 @@ import com.butent.bee.client.grid.FixedWidthGrid;
 import com.butent.bee.client.grid.HasTableDefinition;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.grid.TableDefinition;
+import com.butent.bee.shared.data.IsRow;
 
 import java.util.Iterator;
 
-public class FixedWidthGridBulkRenderer<RowType> extends SelectionGridBulkRenderer<RowType> {
-  public FixedWidthGridBulkRenderer(FixedWidthGrid grid, TableDefinition<RowType> tableDef) {
+public class FixedWidthGridBulkRenderer extends SelectionGridBulkRenderer {
+  public FixedWidthGridBulkRenderer(FixedWidthGrid grid, TableDefinition tableDef) {
     super(grid, tableDef);
   }
 
-  public FixedWidthGridBulkRenderer(FixedWidthGrid grid, HasTableDefinition<RowType> sourceTableDef) {
+  public FixedWidthGridBulkRenderer(FixedWidthGrid grid, HasTableDefinition sourceTableDef) {
     super(grid, sourceTableDef);
   }
 
@@ -24,7 +25,7 @@ public class FixedWidthGridBulkRenderer<RowType> extends SelectionGridBulkRender
   }
 
   @Override
-  protected void renderRows(Iterator<RowType> iterator, final RenderingOptions options) {
+  protected void renderRows(Iterator<IsRow> iterator, final RenderingOptions options) {
     FixedWidthGrid table = (FixedWidthGrid) super.getTable();
     options.headerRow = DOM.toString(table.getGhostRow());
     super.renderRows(iterator, options);

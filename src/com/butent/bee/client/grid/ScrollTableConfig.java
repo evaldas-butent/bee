@@ -493,8 +493,8 @@ public class ScrollTableConfig {
   
   private enum Action { APPLY, DISTR_CUR, DISTR_PREF, FILL_CUR, FILL_PREF, CANCEL }
 
-  private ScrollTable<?> scrollTable;
-  private TableDefinition<?> tableDefinition;
+  private ScrollTable scrollTable;
+  private TableDefinition tableDefinition;
  
   private int cellPadding;
   private int cellSpacing;
@@ -524,7 +524,7 @@ public class ScrollTableConfig {
   
   private boolean updCur, updMin, updPref, updMax;
 
-  public ScrollTableConfig(ScrollTable<?> st) {
+  public ScrollTableConfig(ScrollTable st) {
     init(st);
   }
   
@@ -704,7 +704,7 @@ public class ScrollTableConfig {
     return colInfoTop + colInfoHeight * row;
   }
   
-  private void init(ScrollTable<?> st) {
+  private void init(ScrollTable st) {
     Assert.notNull(st);
     scrollTable = st;
     tableDefinition = st.getTableDefinition();

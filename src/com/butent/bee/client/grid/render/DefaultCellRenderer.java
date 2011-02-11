@@ -4,8 +4,9 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.grid.AbstractCellView;
 import com.butent.bee.client.grid.ColumnDefinition;
+import com.butent.bee.shared.data.IsRow;
 
-public class DefaultCellRenderer<RowType, ColType> implements CellRenderer<RowType, ColType> {
+public class DefaultCellRenderer implements CellRenderer {
 
   private boolean asHtml;
 
@@ -16,8 +17,8 @@ public class DefaultCellRenderer<RowType, ColType> implements CellRenderer<RowTy
     this.asHtml = asHtml;
   }
 
-  public void renderRowValue(RowType rowValue, ColumnDefinition<RowType, ColType> columnDef,
-      AbstractCellView<RowType> view) {
+  public void renderRowValue(IsRow rowValue, ColumnDefinition columnDef,
+      AbstractCellView view) {
     Object cellValue = columnDef.getCellValue(rowValue);
     if (cellValue == null) {
       view.setText("");

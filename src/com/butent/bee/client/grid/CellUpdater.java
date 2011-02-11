@@ -2,25 +2,20 @@ package com.butent.bee.client.grid;
 
 import com.google.gwt.cell.client.FieldUpdater;
 
-import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.shared.data.BeeRowSet;
-import com.butent.bee.shared.data.IsTable;
+import com.butent.bee.shared.data.BeeRow;
+import com.butent.bee.shared.data.IsRow;
 
-public class CellUpdater implements FieldUpdater<Integer, String> {
-  private IsTable<?, ?> view;
+public class CellUpdater implements FieldUpdater<IsRow, String> {
   private int column;
 
-  public CellUpdater(IsTable<?, ?> view, int column) {
-    this.view = view;
+  public CellUpdater(int column) {
     this.column = column;
   }
 
   @Override
-  public void update(int index, Integer object, String value) {
-    BeeKeeper.getLog().info(object, view.getColumnLabel(column), value);
-
-    if (view instanceof BeeRowSet) {
-      view.getRow(object).setValue(column, value);
+  public void update(int index, IsRow object, String value) {
+    if (object instanceof BeeRow) {
+      ((BeeRow) object).setValue(column, value);
     }
   }
 }

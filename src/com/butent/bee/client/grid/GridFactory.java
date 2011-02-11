@@ -16,6 +16,7 @@ import com.butent.bee.client.grid.render.FixedWidthGridBulkRenderer;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.IsTable;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -25,17 +26,15 @@ import java.util.Iterator;
 
 public class GridFactory {
 
-  private class ScrollGridColumnDefinition extends ColumnDefinition<Integer, String> {
-    private IsTable<?, ?> view;
+  private class ScrollGridColumnDefinition extends ColumnDefinition {
     private int idx;
     private int maxDisplaySize;
 
-    private ScrollGridColumnDefinition(IsTable<?, ?> view, int idx) {
-      this(view, idx, -1);
+    private ScrollGridColumnDefinition(int idx) {
+      this(idx, -1);
     }
 
-    private ScrollGridColumnDefinition(IsTable<?, ?> view, int idx, int max) {
-      this.view = view;
+    private ScrollGridColumnDefinition(int idx, int max) {
       this.idx = idx;
       this.maxDisplaySize = max;
       
@@ -44,8 +43,8 @@ public class GridFactory {
     }
 
     @Override
-    public String getCellValue(Integer rowValue) {
-      String v = view.getString(rowValue, idx);
+    public String getCellValue(IsRow rowValue) {
+      String v = rowValue.getString(idx);
       if (v == null) {
         return BeeConst.STRING_EMPTY;
       }
@@ -57,32 +56,39 @@ public class GridFactory {
     }
 
     @Override
-    public void setCellValue(Integer rowValue, String cellValue) {
-      view.setValue(rowValue, idx, cellValue);
+    public void setCellValue(IsRow rowValue, Object cellValue) {
+      rowValue.setValue(idx, BeeUtils.transform(cellValue));
     }
   }
 
-  private class ScrollGridResponse extends Response<Integer> {
-    private Collection<Integer> rowValues = new ArrayList<Integer>();
+  private class ScrollGridResponse extends Response {
+    private Collection<IsRow> rowValues = new ArrayList<IsRow>();
 
-    private ScrollGridResponse(int start, int cnt, int tot) {
+    private ScrollGridResponse(IsTable<?, ?> data, int start, int cnt, int tot) {
       for (int i = start; i < start + cnt && i < tot; i++) {
-        this.rowValues.add(i);
+        this.rowValues.add(data.getRow(i));
       }
     }
 
     @Override
-    public Iterator<Integer> getRowValues() {
+    public Iterator<IsRow> getRowValues() {
       return rowValues.iterator();
     }
   }
 
-  private class ScrollGridTableModel extends TableModel<Integer> {
-    public void requestRows(Request request, TableModel.Callback<Integer> callback) {
+  private class ScrollGridTableModel extends TableModel {
+    private IsTable<?, ?> data;
+    
+    private ScrollGridTableModel(IsTable<?, ?> data) {
+      super();
+      this.data = data;
+    }
+
+    public void requestRows(Request request, Callback callback) {
       int start = request.getStartRow();
       int cnt = request.getNumRows();
 
-      ScrollGridResponse resp = new ScrollGridResponse(start, cnt, getRowCount());
+      ScrollGridResponse resp = new ScrollGridResponse(data, start, cnt, data.getNumberOfRows());
       callback.onRowsReady(request, resp);
     }
   }
@@ -106,13 +112,13 @@ public class GridFactory {
 
     TextColumn column;
     for (int i = 0; i < c; i++) {
-      column = new TextColumn(createCell(cellType), table, i);
+      column = new TextColumn(createCell(cellType), i);
       if (cellType != null && cellType.isEditable()) {
-        column.setFieldUpdater(new CellUpdater(table, i));
+        column.setFieldUpdater(new CellUpdater(i));
       }
       cellTable.addColumn(column, table.getColumnLabel(i));
     }
-    cellTable.initData(r);
+    cellTable.initData(table);
 
     return cellTable;
   }
@@ -132,29 +138,29 @@ public class GridFactory {
       return null;
     }
 
-    ScrollGridTableModel tableModel = new ScrollGridTableModel();
-    CachedTableModel<Integer> cachedModel = new CachedTableModel<Integer>(tableModel);
+    ScrollGridTableModel tableModel = new ScrollGridTableModel(view);
+    CachedTableModel cachedModel = new CachedTableModel(tableModel);
     cachedModel.setRowCount(r);
 
-    TableDefinition<Integer> tableDef = new TableDefinition<Integer>();
+    TableDefinition tableDef = new TableDefinition();
 
     for (int i = 0; i < c; i++) {
-      ScrollGridColumnDefinition colDef = new ScrollGridColumnDefinition(view, i, 512);
+      ScrollGridColumnDefinition colDef = new ScrollGridColumnDefinition(i, 512);
       colDef.setHeader(view.getColumnLabel(i));
       colDef.setFooter("col " + i);
 
       tableDef.addColumnDefinition(colDef);
     }
 
-    ScrollTable<Integer> table = new ScrollTable<Integer>(cachedModel, tableDef);
+    ScrollTable table = new ScrollTable(cachedModel, tableDef);
     if (width > c) {
       int w = (width - DomUtils.getScrollbarWidth() - 2) / c;
       table.setDefaultColumnWidth(BeeUtils.limit(w, 60, 300));
     }
     table.createFooterTable();
 
-    FixedWidthGridBulkRenderer<Integer> renderer = 
-      new FixedWidthGridBulkRenderer<Integer>(table.getDataTable(), table);
+    FixedWidthGridBulkRenderer renderer = 
+      new FixedWidthGridBulkRenderer(table.getDataTable(), table);
     table.setBulkRenderer(renderer);
 
     return table;
@@ -178,10 +184,10 @@ public class GridFactory {
     BeeCellTable table = new BeeCellTable(r);
 
     for (int i = 0; i < c; i++) {
-      table.addColumn(new TextColumn(createCell(CellType.TEXT), view, i, 256),
+      table.addColumn(new TextColumn(createCell(CellType.TEXT), i, 256),
           view.getColumnLabel(i));
     }
-    table.initData(r);
+    table.initData(view);
 
     return table;
   }

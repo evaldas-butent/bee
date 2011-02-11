@@ -11,11 +11,11 @@ import com.butent.bee.client.grid.event.RowCountChangeHandler;
 import com.butent.bee.client.grid.model.TableModelHelper.Request;
 import com.butent.bee.client.grid.model.TableModelHelper.Response;
 
-public abstract class TableModel<RowType> implements HasRowCountChangeHandlers {
+public abstract class TableModel implements HasRowCountChangeHandlers {
 
-  public static interface Callback<RowType> {
+  public static interface Callback {
     void onFailure(Throwable caught);
-    void onRowsReady(Request request, Response<RowType> response);
+    void onRowsReady(Request request, Response response);
   }
 
   public static final int ALL_ROWS = -1;
@@ -37,7 +37,7 @@ public abstract class TableModel<RowType> implements HasRowCountChangeHandlers {
     return rowCount;
   }
 
-  public abstract void requestRows(Request request, Callback<RowType> callback);
+  public abstract void requestRows(Request request, Callback callback);
 
   public void setRowCount(int rowCount) {
     if (this.rowCount != rowCount) {

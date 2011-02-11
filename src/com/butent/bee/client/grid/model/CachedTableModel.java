@@ -4,19 +4,20 @@ import com.butent.bee.client.grid.model.TableModelHelper.ColumnSortList;
 import com.butent.bee.client.grid.model.TableModelHelper.Request;
 import com.butent.bee.client.grid.model.TableModelHelper.Response;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.data.IsRow;
 
 import java.util.HashMap;
 import java.util.Iterator;
 
-public class CachedTableModel<RowType> extends TableModel<RowType> {
+public class CachedTableModel extends TableModel {
 
-  private class CacheCallback implements Callback<RowType> {
-    private Callback<RowType> actualCallback;
+  private class CacheCallback implements Callback {
+    private Callback actualCallback;
     private int actualNumRows;
     private Request actualRequest;
     private int actualStartRow;
 
-    public CacheCallback(Request request, Callback<RowType> callback, int startRow, int numRows) {
+    public CacheCallback(Request request, Callback callback, int startRow, int numRows) {
       actualRequest = request;
       actualCallback = callback;
       actualStartRow = startRow;
@@ -27,9 +28,9 @@ public class CachedTableModel<RowType> extends TableModel<RowType> {
       actualCallback.onFailure(caught);
     }
 
-    public void onRowsReady(Request request, Response<RowType> response) {
+    public void onRowsReady(Request request, Response response) {
       if (response != null) {
-        Iterator<RowType> rowValues = response.getRowValues();
+        Iterator<IsRow> rowValues = response.getRowValues();
         if (rowValues != null) {
           int curRow = request.getStartRow();
           while (rowValues.hasNext()) {
@@ -44,7 +45,7 @@ public class CachedTableModel<RowType> extends TableModel<RowType> {
     }
   }
 
-  private class CacheIterator implements Iterator<RowType> {
+  private class CacheIterator implements Iterator<IsRow> {
     int curRow;
     int lastRow;
 
@@ -57,7 +58,7 @@ public class CachedTableModel<RowType> extends TableModel<RowType> {
       return curRow < lastRow && rowValuesMap.containsKey(new Integer(curRow + 1));
     }
 
-    public RowType next() {
+    public IsRow next() {
       if (!hasNext()) {
         Assert.unsupported();
       }
@@ -71,14 +72,14 @@ public class CachedTableModel<RowType> extends TableModel<RowType> {
     }
   }
 
-  private class CacheResponse extends Response<RowType> {
+  private class CacheResponse extends Response {
     private CacheIterator it;
 
     public CacheResponse(int firstRow, int lastRow) {
       it = new CacheIterator(firstRow, lastRow);
     }
 
-    public Iterator<RowType> getRowValues() {
+    public Iterator<IsRow> getRowValues() {
       return it;
     }
   }
@@ -88,11 +89,11 @@ public class CachedTableModel<RowType> extends TableModel<RowType> {
   private int postCacheRows = 0;
   private int preCacheRows = 0;
 
-  private HashMap<Integer, RowType> rowValuesMap = new HashMap<Integer, RowType>();
+  private HashMap<Integer, IsRow> rowValuesMap = new HashMap<Integer, IsRow>();
 
-  private TableModel<RowType> tableModel;
+  private TableModel tableModel;
 
-  public CachedTableModel(TableModel<RowType> tableModel) {
+  public CachedTableModel(TableModel tableModel) {
     this.tableModel = tableModel;
   }
 
@@ -114,7 +115,7 @@ public class CachedTableModel<RowType> extends TableModel<RowType> {
   }
 
   @Override
-  public void requestRows(Request request, Callback<RowType> callback) {
+  public void requestRows(Request request, Callback callback) {
     ColumnSortList sortList = request.getColumnSortList();
     if (sortList == null) {
       if (lastSortList != null) {
