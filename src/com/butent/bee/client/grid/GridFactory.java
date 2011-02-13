@@ -108,7 +108,7 @@ public class GridFactory {
       return null;
     }
 
-    BeeCellTable cellTable = new BeeCellTable(r);
+    BeeCellTable grid = new BeeCellTable(r);
 
     TextColumn column;
     for (int i = 0; i < c; i++) {
@@ -116,29 +116,29 @@ public class GridFactory {
       if (cellType != null && cellType.isEditable()) {
         column.setFieldUpdater(new CellUpdater(i));
       }
-      cellTable.addColumn(column, table.getColumnLabel(i));
+      grid.addColumn(column, table.getColumnLabel(i));
     }
-    cellTable.initData(table);
+    grid.initData(table);
 
-    return cellTable;
+    return grid;
   }
 
   public Widget scrollGrid(int width, Object data, String... columnLabels) {
     Assert.notNull(data);
 
-    IsTable<?, ?> view = DataUtils.createTable(data, columnLabels);
-    Assert.notNull(view);
+    IsTable<?, ?> table = DataUtils.createTable(data, columnLabels);
+    Assert.notNull(table);
 
-    int c = view.getNumberOfColumns();
+    int c = table.getNumberOfColumns();
     Assert.isPositive(c);
 
-    int r = view.getNumberOfRows();
+    int r = table.getNumberOfRows();
     if (r <= 0) {
       BeeKeeper.getLog().warning("data table empty");
       return null;
     }
 
-    ScrollGridTableModel tableModel = new ScrollGridTableModel(view);
+    ScrollGridTableModel tableModel = new ScrollGridTableModel(table);
     CachedTableModel cachedModel = new CachedTableModel(tableModel);
     cachedModel.setRowCount(r);
 
@@ -146,50 +146,48 @@ public class GridFactory {
 
     for (int i = 0; i < c; i++) {
       ScrollGridColumnDefinition colDef = new ScrollGridColumnDefinition(i, 512);
-      colDef.setHeader(view.getColumnLabel(i));
+      colDef.setHeader(table.getColumnLabel(i));
       colDef.setFooter("col " + i);
 
       tableDef.addColumnDefinition(colDef);
     }
 
-    ScrollTable table = new ScrollTable(cachedModel, tableDef);
+    ScrollTable grid = new ScrollTable(cachedModel, tableDef);
     if (width > c) {
       int w = (width - DomUtils.getScrollbarWidth() - 2) / c;
-      table.setDefaultColumnWidth(BeeUtils.limit(w, 60, 300));
+      grid.setDefaultColumnWidth(BeeUtils.limit(w, 60, 300));
     }
-    table.createFooterTable();
+    grid.createFooterTable();
 
     FixedWidthGridBulkRenderer renderer = 
-      new FixedWidthGridBulkRenderer(table.getDataTable(), table);
-    table.setBulkRenderer(renderer);
+      new FixedWidthGridBulkRenderer(grid.getDataTable(), grid);
+    grid.setBulkRenderer(renderer);
 
-    return table;
+    return grid;
   }
 
   public Widget simpleGrid(Object data, String... columnLabels) {
     Assert.notNull(data);
 
-    IsTable<?, ?> view = DataUtils.createTable(data, columnLabels);
-    Assert.notNull(view);
+    IsTable<?, ?> table = DataUtils.createTable(data, columnLabels);
+    Assert.notNull(table);
 
-    int c = view.getNumberOfColumns();
+    int c = table.getNumberOfColumns();
     Assert.isPositive(c);
 
-    int r = view.getNumberOfRows();
+    int r = table.getNumberOfRows();
     if (r <= 0) {
       BeeKeeper.getLog().warning("data table empty");
       return null;
     }
 
-    BeeCellTable table = new BeeCellTable(r);
-
+    BeeCellTable grid = new BeeCellTable(r);
     for (int i = 0; i < c; i++) {
-      table.addColumn(new TextColumn(createCell(CellType.TEXT), i, 256),
-          view.getColumnLabel(i));
+      grid.addColumn(new TextColumn(createCell(CellType.TEXT), i, 256), table.getColumnLabel(i));
     }
-    table.initData(view);
+    grid.initData(table);
 
-    return table;
+    return grid;
   }
 
   private Cell<String> createCell(CellType type) {

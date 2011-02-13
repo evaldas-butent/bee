@@ -31,8 +31,7 @@ public abstract class Splitter extends Widget implements HasId, HasLayoutCallbac
     this.size = size;
 
     setElement(Document.get().createDivElement());
-    sinkEvents(Event.ONMOUSEDOWN | Event.ONMOUSEUP | Event.ONMOUSEMOVE
-        | Event.ONDBLCLICK);
+    sinkEvents(Event.ONMOUSEDOWN | Event.ONMOUSEUP | Event.ONMOUSEMOVE | Event.ONDBLCLICK);
     createId();
   }
 
@@ -108,8 +107,7 @@ public abstract class Splitter extends Widget implements HasId, HasLayoutCallbac
         if (mouseDown) {
           int z;
           if (reverse) {
-            z = getTargetPosition() + getTargetSize()
-                - getEventPosition(event) - offset;
+            z = getTargetPosition() + getTargetSize() - getEventPosition(event) - offset;
           } else {
             z = getEventPosition(event) - getTargetPosition() - offset;
           }
@@ -173,7 +171,6 @@ public abstract class Splitter extends Widget implements HasId, HasLayoutCallbac
     if (size == layout.size) {
       return;
     }
-
     layout.size = size;
 
     if (layoutCommand == null) {
@@ -181,5 +178,4 @@ public abstract class Splitter extends Widget implements HasId, HasLayoutCallbac
       Scheduler.get().scheduleDeferred(layoutCommand);
     }
   }
-
 }

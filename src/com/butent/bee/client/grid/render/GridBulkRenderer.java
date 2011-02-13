@@ -36,12 +36,10 @@ public class GridBulkRenderer extends TableBulkRenderer {
   }
 
   private void init(GridTable grid) {
-    if (grid instanceof FixedWidthGrid
-        && (!(this instanceof FixedWidthGridBulkRenderer))) {
+    if (grid instanceof FixedWidthGrid && (!(this instanceof FixedWidthGridBulkRenderer))) {
       Assert.unsupported("Must use a FixedWidthGridBulkLoader to bulk load a fixed grid");
     }
-    if (grid instanceof SelectionGrid
-        && (!(this instanceof SelectionGridBulkRenderer))) {
+    if (grid instanceof SelectionGrid && (!(this instanceof SelectionGridBulkRenderer))) {
       Assert.unsupported("Must use a SelectionGridBulkLoader to bulk load a selection grid");
     }
   }

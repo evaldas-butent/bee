@@ -194,6 +194,7 @@
         <module name="MethodParamPad"/>
         <module name="NoWhitespaceBefore">
             <property name="severity" value="error"/>
+            <property name="tokens" value="SEMI,POST_DEC,POST_INC"/>
         </module>
         <module name="NoWhitespaceBefore">
             <property name="severity" value="error"/>

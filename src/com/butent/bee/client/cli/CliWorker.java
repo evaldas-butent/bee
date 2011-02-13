@@ -8,6 +8,8 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.dom.client.StyleInjector;
 import com.google.gwt.i18n.client.DateTimeFormat;
+import com.google.gwt.media.client.Audio;
+import com.google.gwt.media.client.Video;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.TextBox;
@@ -34,13 +36,10 @@ import com.butent.bee.client.layout.TilePanel;
 import com.butent.bee.client.tree.BeeTree;
 import com.butent.bee.client.utils.Browser;
 import com.butent.bee.client.utils.JsUtils;
-import com.butent.bee.client.widget.Audio;
 import com.butent.bee.client.widget.BeeLabel;
-import com.butent.bee.client.widget.Canvas;
 import com.butent.bee.client.widget.Meter;
 import com.butent.bee.client.widget.Progress;
 import com.butent.bee.client.widget.Svg;
-import com.butent.bee.client.widget.Video;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeDate;
@@ -101,28 +100,28 @@ public class CliWorker {
 
     BeeKeeper.getRpc().makePostRequest(BeeService.SERVICE_GET_DIGEST, ContentType.BINARY, src);
   }
-  
+
   public static void doAjaxKeys(String[] arr) {
     if (BeeUtils.length(arr) == 3) {
       String loc = arr[1];
       String key = arr[2];
-      
+
       if (Global.confirm("add api key", loc, key)) {
         AjaxKeyRepository.putKey(loc, key);
       }
     }
-    
+
     Map<String, String> keyMap = AjaxKeyRepository.getKeys();
     if (BeeUtils.isEmpty(keyMap)) {
       BeeKeeper.getLog().warning("api key repository is empty");
       return;
     }
-    
+
     List<Property> lst = new ArrayList<Property>();
     for (Map.Entry<String, String> entry : keyMap.entrySet()) {
       lst.add(new Property(entry.getKey(), entry.getValue()));
     }
-    
+
     BeeKeeper.getUi().showGrid(lst, "Location", "Api Key");
   }
 
@@ -145,8 +144,7 @@ public class CliWorker {
       return;
     }
 
-    Level[] levels = new Level[]{
-        Level.FINEST, Level.FINER, Level.FINE, Level.CONFIG, Level.INFO,
+    Level[] levels = new Level[]{Level.FINEST, Level.FINER, Level.FINE, Level.CONFIG, Level.INFO,
         Level.WARNING, Level.SEVERE};
     for (Level lvl : levels) {
       BeeKeeper.getLog().log(lvl, lvl.getName().toLowerCase());
@@ -241,34 +239,33 @@ public class CliWorker {
       return;
     }
 
-    ParameterList params = BeeKeeper.getRpc().createParameters(
-        BeeService.SERVICE_GET_RESOURCE);
+    ParameterList params = BeeKeeper.getRpc().createParameters(BeeService.SERVICE_GET_RESOURCE);
     params.addPositionalHeader(arr);
 
     BeeKeeper.getRpc().makeGetRequest(params);
   }
 
   public static void playAudio(String[] arr) {
-    if (!Features.supportsAudio()) {
-      BeeKeeper.getLog().severe("audio not supported");
-      return;
-    }
-
     String src = ArrayUtils.getQuietly(arr, 1);
     if (BeeUtils.isEmpty(src)) {
       BeeKeeper.getLog().warning("source not specified");
       return;
     }
 
-    Audio widget = new Audio();
-    widget.getElement().setAttribute("src", src);
-    widget.getElement().setAttribute("controls", "controls");
+    Audio widget = Audio.createIfSupported();
+    if (widget == null) {
+      BeeKeeper.getLog().severe("audio not supported");
+      return;
+    }
+
+    widget.getAudioElement().setSrc(src);
+    widget.getAudioElement().setControls(true);
 
     BeeKeeper.getUi().updateActivePanel(widget, true);
   }
 
   public static void playVideo(String[] arr) {
-    if (!Features.supportsVideo()) {
+    if (!Video.isSupported()) {
       BeeKeeper.getLog().severe("video not supported");
       return;
     }
@@ -278,9 +275,8 @@ public class CliWorker {
       src = "http://people.opera.com/shwetankd/webm/sunflower.webm";
     }
 
-    Video widget = new Video();
-    widget.getElement().setAttribute("src", src);
-    widget.getElement().setAttribute("controls", "controls");
+    Video widget = new Video(src);
+    widget.getVideoElement().setControls(true);
 
     BeeKeeper.getUi().updateActivePanel(widget, true);
   }
@@ -330,32 +326,16 @@ public class CliWorker {
     BeeKeeper.getUi().showGrid(info);
   }
 
-  public static void showCanvas(String[] arr) {
-    if (!Features.supportsCanvas()) {
-      BeeKeeper.getLog().severe("canvas not supported");
-      return;
-    }
-
-    Canvas widget = new Canvas();
-    BeeKeeper.getUi().updateActivePanel(widget);
-
-    if (ArrayUtils.length(arr) <= 1) {
-      sampleCanvas(widget.getElement());
-    }
-  }
-
   public static void showClientLocation() {
     AjaxLoader.load(new Runnable() {
       public void run() {
         ClientLocation location = AjaxLoader.getClientLocation();
 
-        BeeKeeper.getUi().showGrid(PropertyUtils.createProperties(
-            "City", location.getCity(),
-            "Country", location.getCountry(),
-            "Country Code", location.getCountryCode(),
-            "Latitude", location.getLatitude(),
-            "Longitude", location.getLongitude(),
-            "Region", location.getRegion()));
+        BeeKeeper.getUi().showGrid(
+            PropertyUtils.createProperties("City", location.getCity(),
+                "Country", location.getCountry(), "Country Code", location.getCountryCode(),
+                "Latitude", location.getLatitude(), "Longitude", location.getLongitude(),
+                "Region", location.getRegion()));
       }
     });
   }
@@ -376,8 +356,8 @@ public class CliWorker {
           fields[i] = 0;
         }
       }
-      date = new BeeDate(fields[0], fields[1], fields[2], fields[3], fields[4],
-          fields[5], fields[6]);
+      date = new BeeDate(fields[0], fields[1], fields[2], fields[3], fields[4], fields[5],
+          fields[6]);
 
     } else {
       date = new BeeDate();
@@ -494,26 +474,26 @@ public class CliWorker {
   }
 
   public static void showGwt() {
-    Global.modalGrid("GWT", PropertyUtils.createProperties(
-        "Host Page Base URL", GWT.getHostPageBaseURL(),
-        "Module Base URL", GWT.getModuleBaseURL(),
-        "Module Name", GWT.getModuleName(),
-        "Permutation Strong Name", GWT.getPermutationStrongName(),
-        "Uncaught Exception Handler", GWT.getUncaughtExceptionHandler(),
-        "Unique Thread Id", GWT.getUniqueThreadId(),
-        "Version", GWT.getVersion(),
-        "Is Client", GWT.isClient(),
-        "Is Prod Mode", GWT.isProdMode(),
-        "Is Script", GWT.isScript()));
+    Global.modalGrid("GWT",
+        PropertyUtils.createProperties("Host Page Base URL", GWT.getHostPageBaseURL(),
+            "Module Base URL", GWT.getModuleBaseURL(),
+            "Module Name", GWT.getModuleName(),
+            "Permutation Strong Name", GWT.getPermutationStrongName(),
+            "Uncaught Exception Handler", GWT.getUncaughtExceptionHandler(),
+            "Unique Thread Id", GWT.getUniqueThreadId(),
+            "Version", GWT.getVersion(),
+            "Is Client", GWT.isClient(),
+            "Is Prod Mode", GWT.isProdMode(),
+            "Is Script", GWT.isScript()));
   }
 
   public static void showInput() {
     FlexTable table = new FlexTable();
     table.setCellSpacing(3);
 
-    String[] types = new String[]{"search", "tel", "url", "email",
-        "datetime", "date", "month", "week", "time", "datetime-local",
-        "number", "range", "color"};
+    String[] types = new String[]{
+        "search", "tel", "url", "email", "datetime", "date", "month", "week", "time",
+        "datetime-local", "number", "range", "color"};
     TextBox widget;
 
     int row = 0;
@@ -698,8 +678,7 @@ public class CliWorker {
         }
 
         prg.setValue(v);
-        lbl.setText(BeeUtils.concat(3, BeeUtils.round(v, 1),
-            BeeUtils.round(prg.getPosition(), 3)));
+        lbl.setText(BeeUtils.concat(3, BeeUtils.round(v, 1), BeeUtils.round(prg.getPosition(), 3)));
       }
     };
     timer.scheduleRepeating(millis);
@@ -912,8 +891,7 @@ public class CliWorker {
       for (int i = 0; i < stCnt; i++) {
         String ref = "$doc.getElementsByTagName('style').item(" + i + ").sheet.rules";
         int len = JsUtils.evalToInt(ref + ".length");
-        PropertyUtils.addExtended(lst, "Style " + BeeUtils.progress(i + 1, stCnt),
-            "rules", len);
+        PropertyUtils.addExtended(lst, "Style " + BeeUtils.progress(i + 1, stCnt), "rules", len);
 
         for (int j = 0; j < len; j++) {
           JavaScriptObject obj = JsUtils.eval(ref + "[" + j + "]");
@@ -925,8 +903,8 @@ public class CliWorker {
           JsArrayString prp = JsUtils.getProperties(obj, null);
           for (int k = 0; k < prp.length() - 2; k += 3) {
             PropertyUtils.addExtended(lst,
-                BeeUtils.concat(1, "Rule", BeeUtils.progress(j + 1, len),
-                    prp.get(k * 3)), prp.get(k * 3 + 1), prp.get(k * 3 + 2));
+                BeeUtils.concat(1, "Rule", BeeUtils.progress(j + 1, len), prp.get(k * 3)),
+                prp.get(k * 3 + 1), prp.get(k * 3 + 2));
           }
         }
       }
@@ -1008,16 +986,14 @@ public class CliWorker {
     if (len < 2 || len == 2 && BeeUtils.isDigit(ArrayUtils.getQuietly(arr, 1))) {
       int n = (len < 2) ? 10 : BeeUtils.toInt(arr[1]);
       for (int i = 0; i < n; i++) {
-        sb.append((char) BeeUtils.randomInt(Character.MIN_VALUE,
-            Character.MAX_VALUE + 1));
+        sb.append((char) BeeUtils.randomInt(Character.MIN_VALUE, Character.MAX_VALUE + 1));
       }
 
     } else {
       for (int i = 1; i < len; i++) {
         String s = arr[i];
 
-        if (s.length() > 1
-            && BeeUtils.inListIgnoreCase(s.substring(0, 1), "u", "x")
+        if (s.length() > 1 && BeeUtils.inListIgnoreCase(s.substring(0, 1), "u", "x")
             && BeeUtils.isHexString(s.substring(1))) {
           sb.append(BeeUtils.fromHex(s.substring(1)));
         } else if (s.length() > 2 && BeeUtils.startsSame(s, "0x")
@@ -1045,8 +1021,8 @@ public class CliWorker {
 
     int id = BeeKeeper.getRpc().invoke("stringInfo", ContentType.BINARY, s);
     BeeKeeper.getRpc().addUserData(id, "length", s.length(), "data", s,
-        "adler32", Codec.adler32(bytes), "crc16", Codec.crc16(bytes), "crc32",
-        Codec.crc32(bytes), "crc32d", Codec.crc32Direct(bytes));
+        "adler32", Codec.adler32(bytes), "crc16", Codec.crc16(bytes),
+        "crc32", Codec.crc32(bytes), "crc32d", Codec.crc32Direct(bytes));
   }
 
   public static void whereAmI() {
@@ -1071,16 +1047,17 @@ public class CliWorker {
   private static native void sampleCanvas(Element el) /*-{
     var ctx = el.getContext("2d");
 
-    for (var i = 0; i < 6; i++) {  
-      for (var j = 0; j < 6; j++) {  
-        ctx.fillStyle = 'rgb(' + Math.floor(255 - 42.5 * i) + ', ' + Math.floor(255 - 42.5 * j) + ', 0)';  
-        ctx.fillRect(j*25, i*25, 25, 25);  
-      }  
+    for ( var i = 0; i < 6; i++) {
+      for ( var j = 0; j < 6; j++) {
+        ctx.fillStyle = 'rgb(' + Math.floor(255 - 42.5 * i) + ', ' + Math.floor(255 - 42.5 * j)
+            + ', 0)';
+        ctx.fillRect(j * 25, i * 25, 25, 25);
+      }
     }
   }-*/;
 
   private static void sampleSvg(Element el) {
-    el.setInnerHTML("<circle cx=\"100\" cy=\"75\" r=\"50\" fill=\"blue\" stroke=\"firebrick\" stroke-width=\"3\"></circle>"
-        + "<text x=\"60\" y=\"155\">Hello Svg</text>");
+    el.setInnerHTML("<circle cx=\"100\" cy=\"75\" r=\"50\" fill=\"blue\" stroke=\"firebrick\" "
+        + "stroke-width=\"3\"></circle><text x=\"60\" y=\"155\">Hello Svg</text>");
   }
 }

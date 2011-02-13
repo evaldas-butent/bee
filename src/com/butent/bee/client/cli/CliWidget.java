@@ -5,6 +5,7 @@ import com.google.gwt.event.dom.client.KeyPressEvent;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
+import com.butent.bee.client.canvas.CanvasDemo;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.visualization.showcase.Showcase;
 import com.butent.bee.client.widget.BeeTextBox;
@@ -43,7 +44,7 @@ public class CliWidget extends BeeTextBox {
     } else if (z.equals("browser") || z.startsWith("wind")) {
       CliWorker.showBrowser(arr);
     } else if (z.equals("canvas")) {
-      CliWorker.showCanvas(arr);
+      new CanvasDemo().start();
     } else if (BeeUtils.inList(z, "center", "east", "north", "south", "screen", "west")) {
       CliWorker.doScreen(arr);
     } else if (z.equals("charset")) {

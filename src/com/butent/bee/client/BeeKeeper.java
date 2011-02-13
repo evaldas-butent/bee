@@ -66,8 +66,7 @@ public class BeeKeeper {
     STOR = new Storage();
     MENU = new MenuManager();
 
-    modules = new Module[]{
-        UI, BUS, RPC, LOG, STYLE, SCHED, USER, GLOB, STOR, MENU};
+    modules = new Module[]{UI, BUS, RPC, LOG, STYLE, SCHED, USER, GLOB, STOR, MENU};
   }
 
   public void end() {
@@ -75,7 +74,6 @@ public class BeeKeeper {
     if (arr == null) {
       return;
     }
-
     for (Module mdl : arr) {
       mdl.end();
     }
@@ -86,7 +84,6 @@ public class BeeKeeper {
     if (arr == null) {
       return;
     }
-
     for (Module mdl : arr) {
       mdl.init();
     }
@@ -97,7 +94,6 @@ public class BeeKeeper {
     if (arr == null) {
       return;
     }
-
     for (Module mdl : arr) {
       mdl.start();
     }
@@ -123,13 +119,11 @@ public class BeeKeeper {
         r++;
       }
     }
-
     if (r <= 0) {
       return null;
     }
 
     Arrays.sort(arr, new RowComparator(1));
-
     Module[] ord = new Module[r];
     r = 0;
 
@@ -139,8 +133,6 @@ public class BeeKeeper {
         r++;
       }
     }
-
     return ord;
   }
-
 }
