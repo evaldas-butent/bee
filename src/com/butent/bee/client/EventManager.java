@@ -268,7 +268,7 @@ public class EventManager implements Module {
       }
 
     } else if (CompositeService.isRegistered(svc)) {
-      CompositeService.doService(svc, event, stg);
+      CompositeService.doService(svc, stg, event);
 
     } else {
       Global.showError("Unknown composite service", svc, stg);

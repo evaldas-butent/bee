@@ -3,72 +3,81 @@ package com.butent.bee.client.ui;
 import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.event.shared.GwtEvent;
 import com.google.gwt.user.client.ui.Panel;
-import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
+import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.utils.XmlUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeService;
 import com.butent.bee.shared.BeeStage;
 import com.butent.bee.shared.BeeType;
 import com.butent.bee.shared.BeeWidget;
+import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.ui.UiComponent;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 
-class FormService extends CompositeService {
+public class FormService extends CompositeService {
 
-  private enum Stages {
-    REQUEST_FORM_LIST, CHOOSE_FORM, REQUEST_FORM, SHOW_FORM
+  public enum Stages {
+    CHOOSE_FORM, SHOW_FORM
   }
 
-  private Stages stage = null;
+  public static final String NAME = PREFIX + "form";
 
   protected FormService(String... serviceId) {
     super(serviceId);
-    nextStage();
   }
 
   @Override
   protected CompositeService create(String svcId) {
-    return new FormService(self(), svcId);
+    return new FormService(NAME, svcId);
   }
 
   @Override
-  protected boolean doStage(Object... params) {
-    Assert.notNull(stage);
+  protected boolean doStage(String stg, Object... params) {
+    Stages stage = Stages.valueOf(stg);
     boolean ok = true;
-    String fld = "form_name";
+    final String fld = "form_name";
 
     switch (stage) {
-      case REQUEST_FORM_LIST:
-        BeeKeeper.getRpc().makeGetRequest(adoptService("rpc_ui_form_list"));
-        break;
-
       case CHOOSE_FORM:
-        JsArrayString arr = (JsArrayString) params[0];
-        int cc = (Integer) params[1];
+        BeeKeeper.getRpc().makeGetRequest("rpc_ui_form_list",
+            new ResponseCallback() {
+              @Override
+              public void onResponse(JsArrayString arr) {
+                Assert.notNull(arr);
+                Assert.parameterCount(arr.length(), 1);
 
-        List<String> lst = new ArrayList<String>(arr.length() - cc);
-        for (int i = cc; i < arr.length(); i++) {
-          lst.add(arr.get(i));
-        }
-        if (!Global.isVar(fld)) {
-          Global.createVar(fld, "Form name", BeeType.STRING, null);
-          Global.getVar(fld).setWidget(BeeWidget.LIST);
-        }
-        Global.getVar(fld).setItems(lst);
-        Global.getVar(fld).setValue(lst.get(0));
+                BeeRowSet res = BeeRowSet.restore(arr.get(0));
+                int rc = res.getNumberOfRows();
 
-        Global.inputVars(new BeeStage(self(), BeeStage.STAGE_CONFIRM), "Load form", fld);
+                List<String> lst = new ArrayList<String>(rc);
+                for (int i = 0; i < rc; i++) {
+                  lst.add(res.getString(i, 0));
+                }
+                if (BeeUtils.isEmpty(lst)) {
+                  Global.showError("NO FORMS");
+                  destroy();
+                } else {
+                  if (!Global.isVar(fld)) {
+                    Global.createVar(fld, "Form name", BeeType.STRING, null);
+                    Global.getVar(fld).setWidget(BeeWidget.LIST);
+                  }
+                  Global.getVar(fld).setItems(lst);
+                  Global.getVar(fld).setValue(lst.get(0));
+
+                  Global.inputVars(new BeeStage(self(), Stages.SHOW_FORM.name()), "Load form", fld);
+                }
+              }
+            });
         break;
 
-      case REQUEST_FORM:
+      case SHOW_FORM:
         GwtEvent<?> event = (GwtEvent<?>) params[0];
-
         String fName = Global.getVarValue(fld);
 
         if (BeeUtils.isEmpty(fName)) {
@@ -76,48 +85,37 @@ class FormService extends CompositeService {
           ok = false;
         } else {
           Global.closeDialog(event);
-          BeeKeeper.getRpc().makePostRequest(adoptService("rpc_ui_form"),
-              XmlUtils.createString(BeeService.XML_TAG_DATA, fld, fName));
+          BeeKeeper.getRpc().makePostRequest("rpc_ui_form",
+              XmlUtils.createString(BeeService.XML_TAG_DATA, fld, fName),
+              new ResponseCallback() {
+                @Override
+                public void onResponse(JsArrayString arr) {
+                  Assert.notNull(arr);
+                  Assert.parameterCount(arr.length(), 1);
+                  String data = arr.get(0);
+
+                  if (!BeeUtils.isEmpty(data)) {
+                    UiComponent c = UiComponent.restore(data);
+                    BeeKeeper.getUi().updateMenu(MenuService.buidComponentTree(c));
+                    BeeKeeper.getUi().updateActivePanel((Panel) c.createInstance(), true);
+                  }
+                }
+              });
+          destroy();
         }
-        break;
-
-      case SHOW_FORM:
-        JsArrayString fArr = (JsArrayString) params[0];
-        UiComponent c = UiComponent.restore(fArr.get(0));
-
-        showForm(c);
-        BeeKeeper.getUi().updateActivePanel((Panel) c.createInstance(), true);
         break;
 
       default:
         Global.showError("Unhandled stage: " + stage);
-        unregister();
+        destroy();
         ok = false;
         break;
-    }
-
-    if (ok) {
-      nextStage();
     }
     return ok;
   }
 
-  private void nextStage() {
-    int x = 0;
-
-    if (!BeeUtils.isEmpty(stage)) {
-      x = stage.ordinal() + 1;
-    }
-
-    if (x < Stages.values().length) {
-      stage = Stages.values()[x];
-    } else {
-      unregister();
-    }
-  }
-
-  private void showForm(UiComponent c) {
-    Widget root = MenuService.buidComponentTree(c);
-    BeeKeeper.getUi().updateMenu(root);
+  @Override
+  protected String getName() {
+    return NAME;
   }
 }

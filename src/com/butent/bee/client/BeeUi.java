@@ -22,7 +22,10 @@ import com.butent.bee.client.layout.Direction;
 import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.layout.TilePanel;
+import com.butent.bee.client.ui.FormService;
 import com.butent.bee.client.ui.GwtUiCreator;
+import com.butent.bee.client.ui.MenuService;
+import com.butent.bee.client.ui.RowSetService;
 import com.butent.bee.client.utils.BeeCommand;
 import com.butent.bee.client.widget.BeeButton;
 import com.butent.bee.client.widget.BeeCheckBox;
@@ -444,8 +447,8 @@ public class BeeUi implements Module {
 
     p.add(new BeeCheckBox(Global.getVar(Global.VAR_DEBUG)));
 
-    p.add(new BeeButton("North land", "comp_ui_form", "dummy_stage"));
-    p.add(new BeeButton("CRUD", "comp_ui_rowset", "dummy_stage"));
+    p.add(new BeeButton("North land", FormService.NAME, FormService.Stages.CHOOSE_FORM.name()));
+    p.add(new BeeButton("CRUD", RowSetService.NAME, RowSetService.Stages.CHOOSE_TABLE.name()));
 
     p.add(new RadioGroup(getElGrid(), true, BeeKeeper.getStorage().checkInt(getElGrid(), 2),
         "simple", "scroll", "cell"));
@@ -530,7 +533,7 @@ public class BeeUi implements Module {
     fp.setWidget(r + 1, 0, slider);
 
     fp.setWidget(r, 1, new BeeButton("Refresh", BeeService.SERVICE_REFRESH_MENU));
-    fp.setWidget(r + 1, 1, new BeeButton("BEE", "comp_ui_menu", "stage_dummy"));
+    fp.setWidget(r + 1, 1, new BeeButton("BEE", MenuService.NAME, "stage_dummy"));
 
     spl.addNorth(fp, 180);
 

@@ -1,5 +1,8 @@
 package com.butent.bee.shared.sql;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
+
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.sql.BeeConstants.Keywords;
 import com.butent.bee.shared.utils.ArrayUtils;
@@ -7,7 +10,6 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -30,10 +32,7 @@ public class SqlUtils {
   }
 
   public static <T> IsExpression bitAnd(IsExpression expr, T value) {
-    Map<String, Object> params = new HashMap<String, Object>();
-    params.put("expression", expr);
-    params.put("value", value);
-
+    Map<String, Object> params = ImmutableMap.of("expression", expr, "value", value);
     return expression(new SqlCommand(Keywords.BITAND, params));
   }
 
@@ -52,7 +51,7 @@ public class SqlUtils {
   public static IsQuery createForeignKey(String table, String name, String field,
       String refTable, String refField, Keywords action) {
 
-    Map<String, Object> params = new HashMap<String, Object>();
+    Map<String, Object> params = Maps.newHashMap();
     params.put("table", name(table));
     params.put("name", name(name));
     params.put("type", Keywords.FOREIGNKEY);
@@ -69,7 +68,7 @@ public class SqlUtils {
   }
 
   public static IsQuery createPrimaryKey(String table, String name, String... fields) {
-    Map<String, Object> params = new HashMap<String, Object>();
+    Map<String, Object> params = Maps.newHashMap();
     params.put("table", name(table));
     params.put("name", name(name));
     params.put("type", Keywords.PRIMARYKEY);
@@ -94,11 +93,8 @@ public class SqlUtils {
   }
 
   public static IsQuery dbForeignKeys(String dbName, String dbSchema, String table, String refTable) {
-    Map<String, Object> params = new HashMap<String, Object>();
-    params.put("dbName", dbName);
-    params.put("dbSchema", dbSchema);
-    params.put("table", table);
-    params.put("refTable", refTable);
+    Map<String, Object> params = ImmutableMap.of("dbName", (Object) dbName, "dbSchema", dbSchema,
+        "table", table, "refTable", refTable);
 
     return new SqlCommand(Keywords.DB_FOREIGNKEYS, params);
   }
@@ -112,26 +108,19 @@ public class SqlUtils {
   }
 
   public static IsQuery dbTables(String dbName, String dbSchema, String table) {
-    Map<String, Object> params = new HashMap<String, Object>();
-    params.put("dbName", dbName);
-    params.put("dbSchema", dbSchema);
-    params.put("table", table);
+    Map<String, Object> params = ImmutableMap.of("dbName", (Object) dbName, "dbSchema", dbSchema,
+        "table", table);
 
     return new SqlCommand(Keywords.DB_TABLES, params);
   }
 
   public static IsQuery dropForeignKey(String table, String name) {
-    Map<String, Object> params = new HashMap<String, Object>();
-    params.put("table", name(table));
-    params.put("name", name(name));
-
+    Map<String, Object> params = ImmutableMap.of("table", (Object) name(table), "name", name(name));
     return new SqlCommand(Keywords.DROP_FOREIGNKEY, params);
   }
 
   public static IsQuery dropTable(String table) {
-    Map<String, Object> params = new HashMap<String, Object>();
-    params.put("table", name(table));
-
+    Map<String, Object> params = ImmutableMap.of("table", (Object) name(table));
     return new SqlCommand(Keywords.DROP_TABLE, params);
   }
 
@@ -309,10 +298,8 @@ public class SqlUtils {
   }
 
   public static IsExpression sqlIf(IsCondition cond, Object ifTrue, Object ifFalse) {
-    Map<String, Object> params = new HashMap<String, Object>();
-    params.put("condition", cond);
-    params.put("ifTrue", ifTrue);
-    params.put("ifFalse", ifFalse);
+    Map<String, Object> params = ImmutableMap.of("condition", cond,
+        "ifTrue", ifTrue, "ifFalse", ifFalse);
     return expression(new SqlCommand(Keywords.IF, params));
   }
 
@@ -329,9 +316,7 @@ public class SqlUtils {
     if (BeeUtils.isEmpty(tmp)) {
       return temporaryName();
     }
-    Map<String, Object> params = new HashMap<String, Object>();
-    params.put("name", tmp);
-
+    Map<String, Object> params = ImmutableMap.of("name", (Object) tmp);
     return new SqlCommand(Keywords.TEMPORARY_NAME, params).getQuery();
   }
 
@@ -351,7 +336,7 @@ public class SqlUtils {
   }
 
   private static IsQuery createIndex(boolean unique, String table, String name, String... fields) {
-    Map<String, Object> params = new HashMap<String, Object>();
+    Map<String, Object> params = Maps.newHashMap();
     params.put("unique", unique);
     params.put("table", name(table));
     params.put("name", name(name));

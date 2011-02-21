@@ -28,39 +28,35 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.ArrayList;
 import java.util.List;
 
-class RowSetService extends CompositeService {
+public class RowSetService extends CompositeService {
 
-  private enum Stages {
-    REQUEST_TABLE_LIST, CHOOSE_TABLE, REQUEST_TABLE, LOAD_TABLE, SHOW_TABLE,
+  public static enum Stages {
+    CHOOSE_TABLE, REQUEST_TABLE,
     INSERT, SAVE, CANCEL,
-    FILTER_STATES, CHOOSE_STATES, EDIT_STATE, CHOOSE_STATE, REQUEST_STATETABLE
+    FILTER_STATES, SHOW_STATE, REQUEST_STATETABLE
   }
+
+  public static final String NAME = PREFIX + "rowset";
 
   private String tbl = "table_name";
   private String limit = "table_limit";
   private String offset = "table_offset";
   private String stt = "table_states";
 
-  private Stages stage = null;
   private BeeRowSet rs;
 
-  protected RowSetService(String... serviceId) {
-    super(serviceId);
-    stage = Stages.REQUEST_TABLE_LIST;
+  protected RowSetService(String... svcId) {
+    super(svcId);
   }
 
   @Override
   protected CompositeService create(String svcId) {
-    return new RowSetService(self(), svcId);
+    return new RowSetService(NAME, svcId);
   }
 
   @Override
-  protected boolean doStage(Object... params) {
-    if (params.length > 1 && params[1] instanceof String
-        && !BeeUtils.same((String) params[1], "dummy_stage")) {
-      stage = Stages.valueOf((String) params[1]);
-    }
-    Assert.notNull(stage);
+  protected boolean doStage(String stg, Object... params) {
+    Stages stage = Stages.valueOf(stg);
     boolean ok = true;
 
     if (!Global.isVar(tbl)) {
@@ -76,84 +72,60 @@ class RowSetService extends CompositeService {
       Global.createVar(stt, "Choose state", BeeType.STRING, null, BeeWidget.LIST);
     }
     switch (stage) {
-      case REQUEST_TABLE_LIST:
-        stage = Stages.CHOOSE_TABLE;
-
-        BeeKeeper.getRpc().makeGetRequest(adoptService("rpc_ui_tables"));
-        break;
-
       case CHOOSE_TABLE:
-        JsArrayString arr = (JsArrayString) params[0];
-        int cc = (Integer) params[1];
+        BeeKeeper.getRpc().makeGetRequest("rpc_ui_tables",
+            new ResponseCallback() {
+              @Override
+              public void onResponse(JsArrayString arr) {
+                Assert.notNull(arr);
+                Assert.parameterCount(arr.length(), 1);
 
-        List<String> lst = new ArrayList<String>(arr.length() - cc);
-        for (int i = cc; i < arr.length(); i++) {
-          lst.add(arr.get(i));
-        }
-        if (BeeUtils.isEmpty(lst)) {
-          Global.showError("NO TABLES");
-          unregister();
-          return false;
-        }
-        Global.getVar(tbl).setItems(lst);
-        Global.getVar(tbl).setValue(lst.get(0));
+                BeeRowSet res = BeeRowSet.restore(arr.get(0));
+                int rc = res.getNumberOfRows();
+                List<String> lst = new ArrayList<String>(rc);
 
-        Global.inputVars(new BeeStage(self(), Stages.REQUEST_TABLE.name()), "ALL TABLES",
-            tbl, limit, offset);
+                for (int i = 0; i < rc; i++) {
+                  lst.add(res.getString(i, 0));
+                }
+                if (BeeUtils.isEmpty(lst)) {
+                  Global.showError("NO TABLES");
+                  destroy();
+                } else {
+                  Global.getVar(tbl).setItems(lst);
+                  Global.getVar(tbl).setValue(lst.get(0));
+
+                  Global.inputVars(new BeeStage(self(), Stages.REQUEST_TABLE.name()), "ALL TABLES",
+                      tbl, limit, offset);
+                }
+              }
+            });
         break;
 
       case REQUEST_TABLE:
         GwtEvent<?> event = (GwtEvent<?>) params[0];
-
         String table = Global.getVarValue(tbl);
 
         if (BeeUtils.isEmpty(table)) {
           Global.showError("Table name not specified");
-          return false;
+          ok = false;
         } else {
-          stage = Stages.LOAD_TABLE;
-
           Global.closeDialog(event);
-          BeeKeeper.getRpc().makePostRequest(adoptService("rpc_ui_table"),
+          BeeKeeper.getRpc().makePostRequest("rpc_ui_table",
               XmlUtils.createString(BeeService.XML_TAG_DATA
                   , tbl, table
                   , limit, Global.getVarValue(limit)
                   , offset, Global.getVarValue(offset)
-                  , stt, Global.getVarValue(stt)));
+                  , stt, Global.getVarValue(stt)),
+              new ResponseCallback() {
+                @Override
+                public void onResponse(JsArrayString arr) {
+                  rs = BeeRowSet.restore(arr.get(0));
+                  refresh();
+                }
+              });
+          Global.getVar(tbl).setValue("");
+          Global.getVar(stt).setValue("");
         }
-        Global.getVar(tbl).setValue("");
-        Global.getVar(stt).setValue("");
-        break;
-
-      case LOAD_TABLE:
-        JsArrayString fArr = (JsArrayString) params[0];
-        rs = BeeRowSet.restore(fArr.get(0));
-
-        stage = Stages.SHOW_TABLE;
-        doSelf();
-        break;
-
-      case SHOW_TABLE:
-        BeeKeeper.getUi().updateMenu(getTree(rs));
-
-        if (rs.isEmpty()) {
-          BeeKeeper.getUi().updateActivePanel(new BeeLabel("RowSet is empty"));
-        } else {
-          BeeKeeper.getUi().showGrid(rs);
-        }
-        HasWidgets panel = BeeKeeper.getUi().getActivePanel();
-
-        FlowPanel buttons = new FlowPanel();
-        buttons.add(new BeeButton("NEW", self(), Stages.INSERT.name()));
-        buttons.add(new BeeButton("SAVE", self(), Stages.SAVE.name()));
-        buttons.add(new BeeButton("CANCEL", self(), Stages.CANCEL.name()));
-        buttons.add(new BeeButton("FILTER STATES", self(), Stages.FILTER_STATES.name()));
-        buttons.add(new BeeButton("EDIT STATE ROLES", self(), Stages.EDIT_STATE.name()));
-
-        Split root = new Split();
-        root.addNorth(buttons, 25);
-        root.add(panel.iterator().next(), true);
-        BeeKeeper.getUi().updateActiveQuietly(root, true);
         break;
 
       case SAVE:
@@ -165,20 +137,17 @@ class RowSetService extends CompositeService {
           BeeKeeper.getRpc().makePostRequest("rpc_ui_commit", ContentType.BINARY, upd.serialize(),
               new ResponseCallback() {
                 @Override
-                public void onResponse(JsArrayString rArr) {
-                  Assert.notNull(rArr);
-                  Assert.parameterCount(rArr.length(), 2);
-                  int updCount = BeeUtils.toInt(rArr.get(0));
+                public void onResponse(JsArrayString arr) {
+                  Assert.notNull(arr);
+                  Assert.parameterCount(arr.length(), 1);
+                  String data = arr.get(0);
 
-                  if (updCount < 0) {
+                  if (BeeUtils.isEmpty(data)) {
                     rs.rollback();
-                    BeeKeeper.getLog().severe("Resposnse error: ", rArr.get(1));
                   } else {
-                    rs.commit(BeeRowSet.restore(rArr.get(1)));
-                    BeeKeeper.getLog().warning("Update count: ", updCount);
+                    rs.commit(BeeRowSet.restore(data));
                   }
-                  stage = Stages.SHOW_TABLE;
-                  doSelf();
+                  refresh();
                 }
               });
         }
@@ -186,16 +155,12 @@ class RowSetService extends CompositeService {
 
       case INSERT:
         rs.addEmptyRow(true);
-
-        stage = Stages.SHOW_TABLE;
-        doSelf();
+        refresh();
         break;
 
       case CANCEL:
         rs.rollback();
-
-        stage = Stages.SHOW_TABLE;
-        doSelf();
+        refresh();
         break;
 
       case FILTER_STATES:
@@ -206,99 +171,118 @@ class RowSetService extends CompositeService {
           Global.showError("Table name not specified");
           ok = false;
         } else {
-          stage = Stages.CHOOSE_STATES;
+          BeeKeeper.getRpc().makePostRequest("rpc_ui_states",
+              XmlUtils.createString(BeeService.XML_TAG_DATA, tbl, table),
+              new ResponseCallback() {
+                @Override
+                public void onResponse(JsArrayString arr) {
+                  Assert.notNull(arr);
+                  Assert.parameterCount(arr.length(), 1);
 
-          BeeKeeper.getRpc().makePostRequest(adoptService("rpc_ui_states"),
-              XmlUtils.createString(BeeService.XML_TAG_DATA, tbl, table));
+                  BeeRowSet res = BeeRowSet.restore(arr.get(0));
+                  int rc = res.getNumberOfRows();
+                  List<String> lst = new ArrayList<String>();
+                  int x = 1;
+
+                  for (int i = 0; i < rc; i++) {
+                    String current = res.getString(i, 0);
+                    lst.add(current);
+
+                    for (int j = x; j < rc; j++) {
+                      for (int k = j; k < rc; k++) {
+                        lst.add(current + " " + res.getString(k, 0));
+                      }
+                      current += " " + res.getString(j, 0);
+                    }
+                    x++;
+                  }
+                  if (BeeUtils.isEmpty(lst)) {
+                    Global.showError("TABLE " + Global.getVarValue(tbl) + " HAS NO STATES");
+                  } else {
+                    Global.getVar(stt).setItems(lst);
+                    Global.getVar(stt).setValue(lst.get(0));
+                    Global.inputVars(new BeeStage(self(), Stages.REQUEST_TABLE.name()),
+                        Global.getVarValue(tbl), stt);
+                  }
+                }
+              });
         }
         break;
 
-      case CHOOSE_STATES:
-        arr = (JsArrayString) params[0];
-        cc = (Integer) params[1];
-
-        lst = new ArrayList<String>();
-        int x = 1;
-
-        for (int i = cc; i < arr.length(); i++) {
-          String current = arr.get(i);
-          lst.add(current);
-
-          for (int j = x; j < (arr.length() - cc); j++) {
-            for (int k = cc + j; k < arr.length(); k++) {
-              lst.add(current + " " + arr.get(k));
-            }
-            current += " " + arr.get(cc + j);
-          }
-          x++;
-        }
-        if (BeeUtils.isEmpty(lst)) {
-          Global.showError("TABLE " + Global.getVarValue(tbl) + " HAS NO STATES");
-          return false;
-        }
-        Global.getVar(stt).setItems(lst);
-        Global.getVar(stt).setValue(lst.get(0));
-        Global.inputVars(new BeeStage(self(), Stages.REQUEST_TABLE.name()),
-            Global.getVarValue(tbl), stt);
-        break;
-
-      case EDIT_STATE:
+      case SHOW_STATE:
         table = rs.getViewName();
         Global.getVar(tbl).setValue(table);
 
-        stage = Stages.CHOOSE_STATE;
+        BeeKeeper.getRpc().makePostRequest("rpc_ui_states",
+              XmlUtils.createString(BeeService.XML_TAG_DATA, tbl, table),
+              new ResponseCallback() {
+                @Override
+                public void onResponse(JsArrayString arr) {
+                  Assert.notNull(arr);
+                  Assert.parameterCount(arr.length(), 1);
 
-        BeeKeeper.getRpc().makePostRequest(adoptService("rpc_ui_states"),
-              XmlUtils.createString(BeeService.XML_TAG_DATA, tbl, table));
-        break;
+                  BeeRowSet res = BeeRowSet.restore(arr.get(0));
+                  int rc = res.getNumberOfRows();
+                  List<String> lst = new ArrayList<String>(rc);
 
-      case CHOOSE_STATE:
-        arr = (JsArrayString) params[0];
-        cc = (Integer) params[1];
-
-        lst = new ArrayList<String>();
-
-        for (int i = cc; i < arr.length(); i++) {
-          lst.add(arr.get(i));
-        }
-        if (BeeUtils.isEmpty(lst)) {
-          Global.showError("NO STATES");
-          return false;
-        }
-        Global.getVar(stt).setItems(lst);
-        Global.getVar(stt).setValue(lst.get(0));
-        Global.inputVars(new BeeStage(self(), Stages.REQUEST_STATETABLE.name()),
-            BeeUtils.ifString(Global.getVarValue(tbl), "ALL TABLES"), stt);
+                  for (int i = 0; i < rc; i++) {
+                    lst.add(res.getString(i, 0));
+                  }
+                  if (BeeUtils.isEmpty(lst)) {
+                    Global.showError("NO STATES");
+                  } else {
+                    Global.getVar(stt).setItems(lst);
+                    Global.getVar(stt).setValue(lst.get(0));
+                    Global.inputVars(new BeeStage(self(), Stages.REQUEST_STATETABLE.name()),
+                        BeeUtils.ifString(Global.getVarValue(tbl), "ALL TABLES"), stt);
+                  }
+                }
+              });
         break;
 
       case REQUEST_STATETABLE:
         event = (GwtEvent<?>) params[0];
-
         String states = Global.getVarValue(stt);
 
         if (BeeUtils.isEmpty(states)) {
           Global.showError("State name not specified");
-          return false;
+          ok = false;
         } else {
-          stage = Stages.LOAD_TABLE;
-
           Global.closeDialog(event);
-          BeeKeeper.getRpc().makePostRequest(adoptService("rpc_ui_statetable"),
+          BeeKeeper.getRpc().makePostRequest("rpc_ui_statetable",
               XmlUtils.createString(BeeService.XML_TAG_DATA
                   , tbl, Global.getVarValue(tbl)
-                  , stt, states));
+                  , stt, states),
+              new ResponseCallback() {
+                @Override
+                public void onResponse(JsArrayString arr) {
+                  Assert.notNull(arr);
+                  Assert.parameterCount(arr.length(), 1);
+                  String data = arr.get(0);
+
+                  if (!BeeUtils.isEmpty(data)) {
+                    rs = BeeRowSet.restore(data);
+                    refresh();
+                  }
+                }
+              });
+          Global.getVar(tbl).setValue("");
+          Global.getVar(stt).setValue("");
         }
-        Global.getVar(tbl).setValue("");
-        Global.getVar(stt).setValue("");
         break;
 
       default:
         Global.showError("Unhandled stage: " + stage);
-        unregister();
+        destroy();
         ok = false;
         break;
     }
     return ok;
+  }
+
+  @Override
+  protected String getName() {
+    return NAME;
   }
 
   private Widget getTree(BeeRowSet brs) {
@@ -330,5 +314,28 @@ class RowSetService extends CompositeService {
     item.addItem(rows);
 
     return root;
+  }
+
+  private void refresh() {
+    BeeKeeper.getUi().updateMenu(getTree(rs));
+
+    if (rs.isEmpty()) {
+      BeeKeeper.getUi().updateActivePanel(new BeeLabel("RowSet is empty"));
+    } else {
+      BeeKeeper.getUi().showGrid(rs);
+    }
+    HasWidgets panel = BeeKeeper.getUi().getActivePanel();
+
+    FlowPanel buttons = new FlowPanel();
+    buttons.add(new BeeButton("NEW", self(), Stages.INSERT.name()));
+    buttons.add(new BeeButton("SAVE", self(), Stages.SAVE.name()));
+    buttons.add(new BeeButton("CANCEL", self(), Stages.CANCEL.name()));
+    buttons.add(new BeeButton("FILTER STATES", self(), Stages.FILTER_STATES.name()));
+    buttons.add(new BeeButton("SHOW STATE", self(), Stages.SHOW_STATE.name()));
+
+    Split root = new Split();
+    root.addNorth(buttons, 25);
+    root.add(panel.iterator().next(), true);
+    BeeKeeper.getUi().updateActiveQuietly(root, true);
   }
 }

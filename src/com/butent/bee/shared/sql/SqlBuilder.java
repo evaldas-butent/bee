@@ -150,7 +150,7 @@ public abstract class SqlBuilder {
     String s = BeeUtils.transformNoTrim(x);
 
     if (x instanceof CharSequence) {
-      s = "'" + s.replaceAll("'", "''") + "'";
+      s = "'" + s.replace("'", "''") + "'";
     }
     return s;
   }

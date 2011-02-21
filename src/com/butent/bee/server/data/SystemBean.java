@@ -6,7 +6,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 import com.butent.bee.server.Config;
-import com.butent.bee.server.communication.ResponseBuffer;
 import com.butent.bee.server.data.BeeTable.BeeField;
 import com.butent.bee.server.data.BeeTable.BeeForeignKey;
 import com.butent.bee.server.data.BeeTable.BeeKey;
@@ -15,6 +14,7 @@ import com.butent.bee.server.utils.FileUtils;
 import com.butent.bee.server.utils.XmlUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.sql.BeeConstants.DataTypes;
@@ -100,7 +100,7 @@ public class SystemBean {
     return tmp;
   }
 
-  public boolean commitChanges(BeeRowSet changes, ResponseBuffer buff) {
+  public ResponseObject commitChanges(BeeRowSet changes) {
     String err = "";
     int c = 0;
     int idIndex = -1;
@@ -243,7 +243,7 @@ public class SystemBean {
               }
               if (!collision) {
                 if (lockIndex >= 0) {
-                  r.setValue(lockIndex, row.getValue(lockIndex));
+                  r.setValue(lockIndex, row.getString(lockIndex));
                 }
                 row.setValues(r.getValues());
 
@@ -269,19 +269,20 @@ public class SystemBean {
         }
       }
     }
-    if (!BeeUtils.isEmpty(err)) {
-      buff.add(-1);
-      buff.add(err);
-      return false;
-    }
-    buff.add(c);
-    buff.add(changes.serialize());
+    ResponseObject response = new ResponseObject();
 
-    if (BeeUtils.inList(tblName, UserServiceBean.USER_TABLE, UserServiceBean.ROLE_TABLE,
-        UserServiceBean.USER_ROLES_TABLE)) {
-      usr.invalidateCache();
+    if (!BeeUtils.isEmpty(err)) {
+      response.addError(err);
+    } else {
+      response.addInfo("Update count:", c);
+      response.setResponse(changes);
+
+      if (BeeUtils.inList(tblName, UserServiceBean.USER_TABLE, UserServiceBean.ROLE_TABLE,
+          UserServiceBean.USER_ROLES_TABLE)) {
+        usr.invalidateCache();
+      }
     }
-    return true;
+    return response;
   }
 
   public int commitExtChanges(BeeTable table, long id, Map<String, Object> extUpdate,
@@ -323,7 +324,7 @@ public class SystemBean {
     return c;
   }
 
-  public BeeRowSet editStateRoles(String tblName, String stateName) {
+  public ResponseObject editStateRoles(String tblName, String stateName) {
     boolean allMode = BeeUtils.isEmpty(tblName);
     Collection<BeeState> states = Lists.newArrayList();
 
@@ -390,11 +391,9 @@ public class SystemBean {
       }
     }
     if (BeeUtils.isEmpty(union)) {
-      union = new SqlSelect()
-        .addMax(SqlUtils.constant("State \"" + stateName + "\" does not support roles"), "Error")
-        .addFrom("Roles");
+      return ResponseObject.error("State \"", stateName, "\" does not support roles");
     }
-    return qs.getData(union);
+    return ResponseObject.response(qs.getData(union));
   }
 
   public String getDbName() {
@@ -445,7 +444,6 @@ public class SystemBean {
     initTables();
     initExtensions();
     initViews();
-    initDatabase(BeeUtils.ifString(Config.getProperty("DefaultEngine"), BeeConst.MYSQL));
   }
 
   public void initDatabase(String engine) {
@@ -571,16 +569,16 @@ public class SystemBean {
     return table.joinState(query, tblAlias, table.getState(stateName));
   }
 
-  public void rebuildTable(String tableName) {
-    rebuildTable(getTable(tableName), qs.isDbTable(getDbName(), getDbSchema(), tableName));
+  public void rebuildActiveTables() {
+    for (BeeTable table : getTables()) {
+      if (table.isActive()) {
+        rebuildTable(table.getName());
+      }
+    }
   }
 
-  @Lock(LockType.WRITE)
-  public void rebuildTables(ResponseBuffer buff) {
-    for (String tbl : getTableNames()) {
-      rebuildTable(tbl);
-    }
-    buff.add("Recreate structure OK");
+  public void rebuildTable(String tableName) {
+    rebuildTable(getTable(tableName), qs.isDbTable(getDbName(), getDbSchema(), tableName));
   }
 
   public int restoreTable(String tbl, String tmp) {
@@ -622,7 +620,7 @@ public class SystemBean {
       } else {
         if (!state.isActive()) {
           state.setActive(true);
-          rebuildTable(table, true);
+          rebuildTable(tbl);
         }
         Collection<Integer> bitSet = null;
 

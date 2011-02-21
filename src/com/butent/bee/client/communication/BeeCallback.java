@@ -10,7 +10,6 @@ import com.google.gwt.http.client.Response;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.data.ResponseData;
-import com.butent.bee.client.ui.CompositeService;
 import com.butent.bee.client.utils.BeeDuration;
 import com.butent.bee.client.utils.JsUtils;
 import com.butent.bee.shared.BeeConst;
@@ -42,18 +41,6 @@ public class BeeCallback implements RequestCallback {
     int statusCode = resp.getStatusCode();
     boolean debug = Global.isDebug();
 
-    String sid = resp.getHeader(BeeService.RPC_VAR_SID);
-    String usr = resp.getHeader(BeeService.VAR_USER_SIGN);
-    BeeKeeper.getUser().setSessionId(sid);
-
-    if (BeeUtils.isEmpty(sid) || !BeeUtils.isEmpty(usr)) {
-      if (!BeeUtils.isEmpty(usr)) {
-        usr = Codec.decodeBase64(usr);
-      }
-      BeeKeeper.getUser().setUserSign(usr);
-      BeeKeeper.getUi().updateSignature();
-    }
-
     int id = BeeUtils.toInt(resp.getHeader(BeeService.RPC_VAR_QID));
     RpcInfo info = BeeKeeper.getRpc().getRpcInfo(id);
     String svc = (info == null) ? BeeConst.STRING_EMPTY : info.getService();
@@ -83,6 +70,18 @@ public class BeeCallback implements RequestCallback {
       }
       finalizeResponse();
       return;
+    } else {
+      String sid = resp.getHeader(BeeService.RPC_VAR_SID);
+      String usr = resp.getHeader(BeeService.VAR_USER_SIGN);
+      BeeKeeper.getUser().setSessionId(sid);
+
+      if (BeeUtils.isEmpty(sid) || !BeeUtils.isEmpty(usr)) {
+        if (!BeeUtils.isEmpty(usr)) {
+          usr = Codec.decodeBase64(usr);
+        }
+        BeeKeeper.getUser().setUserSign(usr);
+        BeeKeeper.getUi().updateSignature();
+      }
     }
 
     ContentType ctp = CommUtils.getContentType(resp.getHeader(BeeService.RPC_VAR_CTP));
@@ -180,9 +179,7 @@ public class BeeCallback implements RequestCallback {
         callback = info.getRespCallback();
       }
 
-      if (CompositeService.isRegistered(svc)) {
-        CompositeService.doService(svc, arr, cc);
-      } else if (callback != null) {
+      if (callback != null) {
         callback.onResponse(arr);
       } else {
         dispatchResponse(svc, cc, arr);
@@ -260,7 +257,7 @@ public class BeeCallback implements RequestCallback {
       for (int i = 0; i < cc; i++) {
         columns[i] = BeeColumn.restore(arr.get(i));
       }
-      
+
       ResponseData table = new ResponseData(arr, columns);
       BeeKeeper.getUi().showGrid(table);
 

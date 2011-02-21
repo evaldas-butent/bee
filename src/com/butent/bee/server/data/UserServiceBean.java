@@ -113,7 +113,7 @@ public class UserServiceBean {
     SqlSelect ss = new SqlSelect()
       .addFields("r", "Name", roleIdName)
       .addFrom(ROLE_TABLE, "r");
-    
+
     BeeRowSet brs = qs.getData(ss);
     for (BeeRow role : brs.getRows()) {
       roleCache.put(brs.getInt(role, roleIdName), brs.getString(role, "Name"));
@@ -124,7 +124,7 @@ public class UserServiceBean {
       .addFields("r", "Role")
       .addFrom(USER_TABLE, "u")
       .addFromLeft(USER_ROLES_TABLE, "r", SqlUtils.join("u", userIdName, "r", "User"));
-    
+
     brs = qs.getData(ss);
     for (BeeRow user : brs.getRows()) {
       int userId = brs.getInt(user, userIdName);

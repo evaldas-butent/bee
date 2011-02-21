@@ -1,62 +1,57 @@
 package com.butent.bee.client.ui;
 
+import com.google.common.collect.Maps;
+
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.utils.BeeUtils;
 
-import java.util.HashMap;
 import java.util.Map;
 
 public abstract class CompositeService {
 
-  private static Map<String, CompositeService> registeredServices;
-  private static Map<String, CompositeService> pendingServices;
+  public static final String PREFIX = "comp_ui_";
+
+  private static Map<String, CompositeService> registeredServices = Maps.newHashMap();
+  private static Map<String, CompositeService> pendingServices = Maps.newHashMap();
 
   static {
-    registeredServices = new HashMap<String, CompositeService>();
-    pendingServices = new HashMap<String, CompositeService>();
-
-    registeredServices.put("comp_ui_form", new FormService("comp_ui_form"));
-    registeredServices.put("comp_ui_grid", new GridService("comp_ui_grid"));
-    registeredServices.put("comp_ui_menu", new MenuService("comp_ui_menu"));
-    registeredServices.put("comp_ui_rowset", new RowSetService("comp_ui_rowset"));
+    registerService(new FormService());
+    registerService(new GridService());
+    registerService(new MenuService());
+    registerService(new RowSetService());
   }
 
-  public static boolean doService(String svc, Object... parameters) {
+  public static boolean doService(String svc, String stg, Object... parameters) {
     Assert.notEmpty(svc);
+    Assert.notEmpty(stg);
 
     CompositeService service = getService(svc);
-    return service.doStage(parameters);
+    return service.doStage(stg, parameters);
   }
 
   public static boolean isRegistered(String svc) {
-    String serviceId = extractId(svc);
+    String svcId = extractId(svc);
 
-    if (!BeeUtils.isEmpty(serviceId)) {
-      return pendingServices.containsKey(serviceId);
+    if (!BeeUtils.isEmpty(svcId)) {
+      return pendingServices.containsKey(svcId);
     } else {
-      String service = normalizeService(svc);
-      return !BeeUtils.isEmpty(service)
-          && registeredServices.containsKey(service);
+      return registeredServices.containsKey(svc);
     }
   }
 
-  public static String normalizeService(String svc) {
-    if (!BeeUtils.isEmpty(svc)) {
-      if (svc.indexOf(":") > 0) {
-        String[] arr = svc.split(":");
-        return arr[0];
-      }
-    }
-    return svc;
+  public static void registerService(CompositeService service) {
+    String svc = service.getName();
+    Assert.state(!isRegistered(svc), "Service already registered: " + svc);
+    registeredServices.put(svc, service);
   }
 
   private static CompositeService createService(String svc) {
     Assert.contains(registeredServices, svc);
 
-    String serviceId = BeeUtils.createUniqueName("svc");
-    CompositeService service = registeredServices.get(svc).create(serviceId);
+    String svcId = BeeUtils.createUniqueName("svc");
+    CompositeService service = registeredServices.get(svc).create(svcId);
 
-    pendingServices.put(serviceId, service);
+    pendingServices.put(svcId, service);
 
     return service;
   }
@@ -74,7 +69,7 @@ public abstract class CompositeService {
     String svcId = extractId(svc);
 
     if (BeeUtils.isEmpty(svcId)) {
-      service = createService(normalizeService(svc));
+      service = createService(svc);
     } else {
       Assert.contains(pendingServices, svcId);
       service = pendingServices.get(svcId);
@@ -84,29 +79,21 @@ public abstract class CompositeService {
 
   private String serviceId;
 
-  protected CompositeService(String... serviceId) {
-    Assert.arrayLengthMin(serviceId, 1);
-    Assert.noNulls((Object[]) serviceId);
-    this.serviceId = BeeUtils.concat(":", serviceId);
-  }
-
-  protected String adoptService(String svc) {
-    return svc + ":" + serviceId;
+  protected CompositeService(String... svcId) {
+    serviceId = BeeUtils.concat(":", svcId);
   }
 
   protected abstract CompositeService create(String svcId);
 
-  protected boolean doSelf(Object... parameters) {
-    return CompositeService.doService(self(), parameters);
+  protected void destroy() {
+    pendingServices.remove(self());
   }
 
-  protected abstract boolean doStage(Object... params);
+  protected abstract boolean doStage(String stg, Object... params);
+
+  protected abstract String getName();
 
   protected String self() {
     return serviceId;
-  }
-
-  protected void unregister() {
-    pendingServices.remove(serviceId);
   }
 }

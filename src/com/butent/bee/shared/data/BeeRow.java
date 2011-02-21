@@ -1,6 +1,7 @@
 package com.butent.bee.shared.data;
 
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.StringArray;
 import com.butent.bee.shared.utils.ArrayUtils;
@@ -21,10 +22,6 @@ public class BeeRow extends StringRow implements BeeSerializable {
   private int id = 0;
   private int mode = 0;
   private Map<Integer, String> shadow = null;
-  
-  private BeeRow() {
-    super(null);
-  }
 
   BeeRow(int size, int id) {
     super(new StringArray(new String[size]));
@@ -34,6 +31,10 @@ public class BeeRow extends StringRow implements BeeSerializable {
   BeeRow(String[] row, int id) {
     super(new StringArray(row));
     this.id = id;
+  }
+
+  private BeeRow() {
+    super(null);
   }
 
   public void deserialize(String s) {
@@ -113,6 +114,11 @@ public class BeeRow extends StringRow implements BeeSerializable {
 
   public Map<Integer, String> getShadow() {
     return shadow;
+  }
+
+  @Override
+  public String getString(int index) {
+    return BeeUtils.ifString(super.getString(index), BeeConst.STRING_EMPTY);
   }
 
   public boolean markedForDelete() {

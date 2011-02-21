@@ -3,7 +3,6 @@ package com.butent.bee.client.communication;
 import com.google.gwt.http.client.RequestBuilder;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.ui.CompositeService;
 import com.butent.bee.client.utils.XmlUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -28,7 +27,7 @@ public class ParameterList extends ArrayList<RpcParameter> implements
     super();
     this.service = svc;
 
-    addQueryItem(BeeService.RPC_VAR_SVC, CompositeService.normalizeService(svc));
+    addQueryItem(BeeService.RPC_VAR_SVC, svc);
 
     String dsn = BeeKeeper.getRpc().getDsn();
     if (!BeeUtils.isEmpty(dsn)) {
@@ -107,7 +106,7 @@ public class ParameterList extends ArrayList<RpcParameter> implements
       addQueryItem(v);
     }
   }
-  
+
   public void addPositionalQuery(String... values) {
     Assert.parameterCount(values.length, 1);
     for (Object v : values) {
@@ -167,7 +166,7 @@ public class ParameterList extends ArrayList<RpcParameter> implements
     if (BeeUtils.isEmpty(headerItems)) {
       return;
     }
-    
+
     int n = ignore.length;
 
     for (RpcParameter item : headerItems) {

@@ -5,11 +5,11 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
+import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.tree.BeeTree;
 import com.butent.bee.client.tree.BeeTreeItem;
 import com.butent.bee.client.utils.XmlUtils;
 import com.butent.bee.client.widget.BeeListBox;
-import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeService;
 import com.butent.bee.shared.menu.MenuConstants;
 import com.butent.bee.shared.ui.UiComponent;
@@ -17,11 +17,9 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Map.Entry;
 
-class MenuService extends CompositeService {
+public class MenuService extends CompositeService {
 
-  private enum Stages {
-    REQUEST_MENU, SHOW_MENU
-  }
+  public static final String NAME = PREFIX + "menu";
 
   public static Widget buidComponentTree(UiComponent c) {
     BeeTree root = new BeeTree();
@@ -61,11 +59,8 @@ class MenuService extends CompositeService {
     }
   }
 
-  private Stages stage = null;
-
   protected MenuService(String... serviceId) {
     super(serviceId);
-    nextStage();
   }
 
   @Override
@@ -74,45 +69,37 @@ class MenuService extends CompositeService {
   }
 
   @Override
-  protected boolean doStage(Object... params) {
-    Assert.notNull(stage);
+  protected boolean doStage(String stg, Object... params) {
     boolean ok = true;
 
-    switch (stage) {
-      case REQUEST_MENU:
-        String rl = Global.getVarValue(MenuConstants.varMenuLayout(0));
-        String il = Global.getVarValue(MenuConstants.varMenuLayout(1));
+    String rl = Global.getVarValue(MenuConstants.varMenuLayout(0));
+    String il = Global.getVarValue(MenuConstants.varMenuLayout(1));
 
-        if (MenuConstants.isValidLayout(rl) && MenuConstants.isValidLayout(il)) {
-          BeeKeeper.getRpc().makePostRequest(adoptService("rpc_ui_menu"),
-              XmlUtils.createString(BeeService.XML_TAG_DATA, "menu_name", "rootMenu", "root_layout",
-                  getLayout(rl), "item_layout", getLayout(il)));
-        } else {
-          Global.showError("Menu layouts not valid", rl, il);
-          ok = false;
-        }
-        break;
-
-      case SHOW_MENU:
-        JsArrayString fArr = (JsArrayString) params[0];
-        UiComponent c = UiComponent.restore(fArr.get(0));
-
-        showMenu(c);
-        BeeKeeper.getUi().updateMenu((Widget) c.createInstance());
-        break;
-
-      default:
-        Global.showError("Unhandled stage: " + stage);
-        ok = false;
-        break;
-    }
-
-    if (ok) {
-      nextStage();
+    if (MenuConstants.isValidLayout(rl) && MenuConstants.isValidLayout(il)) {
+      BeeKeeper.getRpc().makePostRequest("rpc_ui_menu",
+          XmlUtils.createString(BeeService.XML_TAG_DATA, "menu_name", "rootMenu",
+              "root_layout", getLayout(rl), "item_layout", getLayout(il)),
+          new ResponseCallback() {
+            @Override
+            public void onResponse(JsArrayString arr) {
+              if (!BeeUtils.isEmpty(arr.get(0))) {
+                UiComponent c = UiComponent.restore(arr.get(0));
+                BeeKeeper.getUi().updateActivePanel(buidComponentTree(c));
+                BeeKeeper.getUi().updateMenu((Widget) c.createInstance());
+              }
+            }
+          });
     } else {
-      unregister();
+      Global.showError("Menu layouts not valid", rl, il);
+      ok = false;
     }
+    destroy();
     return ok;
+  }
+
+  @Override
+  protected String getName() {
+    return NAME;
   }
 
   private String getLayout(String layout) {
@@ -130,24 +117,5 @@ class MenuService extends CompositeService {
       l = "UiTab";
     }
     return l;
-  }
-
-  private void nextStage() {
-    int x = 0;
-
-    if (!BeeUtils.isEmpty(stage)) {
-      x = stage.ordinal() + 1;
-    }
-
-    if (x < Stages.values().length) {
-      stage = Stages.values()[x];
-    } else {
-      unregister();
-    }
-  }
-
-  private void showMenu(UiComponent c) {
-    Widget root = buidComponentTree(c);
-    BeeKeeper.getUi().updateActivePanel(root);
   }
 }

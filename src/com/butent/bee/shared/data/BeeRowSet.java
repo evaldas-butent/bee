@@ -1,5 +1,6 @@
 package com.butent.bee.shared.data;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
 import com.butent.bee.shared.Assert;
@@ -52,11 +53,11 @@ public class BeeRowSet extends RowList<BeeRow, BeeColumn> implements BeeSerializ
     }
     return addRow(row);
   }
-  
+
   public int addRow(String[] data) {
     return addRow(createRow(data));
   }
-  
+
   @Override
   public BeeRowSet clone() {
     BeeRowSet result = new BeeRowSet(getRows());
@@ -90,7 +91,7 @@ public class BeeRowSet extends RowList<BeeRow, BeeColumn> implements BeeSerializ
   public BeeColumn createColumn(ValueType type, String label, String id) {
     return new BeeColumn(type, label, id);
   }
-  
+
   @Override
   public BeeRow createRow() {
     return createRow(0);
@@ -103,7 +104,7 @@ public class BeeRowSet extends RowList<BeeRow, BeeColumn> implements BeeSerializ
   public BeeRow createRow(String[] data) {
     return new BeeRow(data, incrementCounter());
   }
-  
+
   @Override
   public void deserialize(String s) {
     Assert.isTrue(getNumberOfColumns() == 0);
@@ -149,7 +150,7 @@ public class BeeRowSet extends RowList<BeeRow, BeeColumn> implements BeeSerializ
       }
     }
   }
-  
+
   public BeeRowSet getChanges() {
     if (isEmpty()) {
       return null;
@@ -191,12 +192,12 @@ public class BeeRowSet extends RowList<BeeRow, BeeColumn> implements BeeSerializ
     Assert.notNull(row);
     return row.getInt(getColumnIndex(columnId));
   }
-  
+
   public long getLong(BeeRow row, String columnId) {
     Assert.notNull(row);
     return row.getLong(getColumnIndex(columnId));
   }
-  
+
   public Object getOriginal(BeeRow row, int colIndex) {
     Assert.notNull(row);
     assertColumnIndex(colIndex);
@@ -215,7 +216,7 @@ public class BeeRowSet extends RowList<BeeRow, BeeColumn> implements BeeSerializ
   public String getViewName() {
     return viewName;
   }
-  
+
   public boolean isEmpty() {
     return getNumberOfRows() <= 0;
   }
@@ -226,7 +227,7 @@ public class BeeRowSet extends RowList<BeeRow, BeeColumn> implements BeeSerializ
 
   public void rollback() {
     if (!isEmpty()) {
-      for (BeeRow row : getRows()) {
+      for (BeeRow row : ImmutableList.copyOf(getRows().getList())) {
         if (row.markedForInsert()) {
           removeRow(row);
         } else {
@@ -240,7 +241,7 @@ public class BeeRowSet extends RowList<BeeRow, BeeColumn> implements BeeSerializ
       }
     }
   }
-  
+
   @Override
   public String serialize() {
     StringBuilder sb = new StringBuilder();
@@ -287,7 +288,7 @@ public class BeeRowSet extends RowList<BeeRow, BeeColumn> implements BeeSerializ
     }
     return null;
   }
-  
+
   private int incrementCounter() {
     return ++counter;
   }

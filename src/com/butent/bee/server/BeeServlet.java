@@ -92,85 +92,83 @@ public class BeeServlet extends HttpServlet {
     int mc = buff.getMessageCount();
     int pc = buff.getPartCount();
 
-    if (respLen > 0 || mc > 0 || pc > 0) {
-      int cnt = buff.getCount();
-      int cc = buff.getColumnCount();
+    int cnt = buff.getCount();
+    int cc = buff.getColumnCount();
 
-      ContentType ctp = buff.getContentType();
-      if (ctp == null) {
-        ctp = (cc > 0) ? ContentType.TABLE : CommUtils.defaultResponseContentType;
+    ContentType ctp = buff.getContentType();
+    if (ctp == null) {
+      ctp = (cc > 0) ? ContentType.TABLE : CommUtils.defaultResponseContentType;
+    }
+
+    resp.setHeader(BeeService.RPC_VAR_SID, sid);
+    resp.setHeader(BeeService.RPC_VAR_QID, rid);
+
+    if (!BeeUtils.isEmpty(sep) || !buff.isDefaultSeparator()) {
+      resp.setHeader(BeeService.RPC_VAR_SEP, buff.getHexSeparator());
+    }
+
+    if (cnt > 0) {
+      resp.setIntHeader(BeeService.RPC_VAR_CNT, cnt);
+    }
+    if (cc > 0) {
+      resp.setIntHeader(BeeService.RPC_VAR_COLS, cc);
+    }
+
+    if (mc > 0) {
+      resp.setIntHeader(BeeService.RPC_VAR_MSG_CNT, mc);
+      for (int i = 0; i < mc; i++) {
+        resp.setHeader(CommUtils.rpcMessageName(i), buff.getMessage(i).serialize());
       }
+    }
 
-      resp.setHeader(BeeService.RPC_VAR_SID, sid);
-      resp.setHeader(BeeService.RPC_VAR_QID, rid);
+    resp.setHeader(BeeService.RPC_VAR_CTP, ctp.transform());
 
-      if (!BeeUtils.isEmpty(sep) || !buff.isDefaultSeparator()) {
-        resp.setHeader(BeeService.RPC_VAR_SEP, buff.getHexSeparator());
-      }
+    resp.setHeader("Cache-Control", "no-cache");
+    resp.setHeader("Pragma", "no-cache");
+    resp.setHeader("Expires", "Thu, 01 Dec 1994 16:00:00 GMT");
 
-      if (cnt > 0) {
-        resp.setIntHeader(BeeService.RPC_VAR_CNT, cnt);
-      }
-      if (cc > 0) {
-        resp.setIntHeader(BeeService.RPC_VAR_COLS, cc);
-      }
+    String mt = BeeUtils.ifString(buff.getMediaType(), CommUtils.getMediaType(ctp));
+    if (!BeeUtils.isEmpty(mt)) {
+      resp.setContentType(mt);
+    }
 
-      if (mc > 0) {
-        resp.setIntHeader(BeeService.RPC_VAR_MSG_CNT, mc);
-        for (int i = 0; i < mc; i++) {
-          resp.setHeader(CommUtils.rpcMessageName(i), buff.getMessage(i).serialize());
-        }
-      }
-
-      resp.setHeader(BeeService.RPC_VAR_CTP, ctp.transform());
-
-      resp.setHeader("Cache-Control", "no-cache");
-      resp.setHeader("Pragma", "no-cache");
-      resp.setHeader("Expires", "Thu, 01 Dec 1994 16:00:00 GMT");
-
-      String mt = BeeUtils.ifString(buff.getMediaType(), CommUtils.getMediaType(ctp));
-      if (!BeeUtils.isEmpty(mt)) {
-        resp.setContentType(mt);
-      }
-
-      String ce = BeeUtils.ifString(buff.getCharacterEncoding(),
+    String ce = BeeUtils.ifString(buff.getCharacterEncoding(),
           CommUtils.getCharacterEncoding(ctp));
-      if (!BeeUtils.isEmpty(ce)) {
-        resp.setCharacterEncoding(ce);
+    if (!BeeUtils.isEmpty(ce)) {
+      resp.setCharacterEncoding(ce);
+    }
+
+    String s;
+    if (respLen > 0) {
+      s = CommUtils.prepareContent(ctp, buff.getString());
+
+    } else if (pc > 0) {
+      resp.setIntHeader(BeeService.RPC_VAR_PART_CNT, pc);
+      StringBuilder sb = new StringBuilder();
+      int pn = 0;
+
+      for (BeeResource br : buff.getParts()) {
+        String part = br.serialize();
+        sb.append(part);
+        resp.setIntHeader(CommUtils.rpcPartName(pn++), part.length());
       }
+      s = sb.toString();
 
-      String s;
-      if (respLen > 0) {
-        s = CommUtils.prepareContent(ctp, buff.getString());
+    } else if (mc > 0) {
+      s = "Messages " + BeeUtils.bracket(mc);
+    } else {
+      s = BeeConst.EMPTY;
+    }
 
-      } else if (pc > 0) {
-        resp.setIntHeader(BeeService.RPC_VAR_PART_CNT, pc);
-        StringBuilder sb = new StringBuilder();
-        int pn = 0;
-
-        for (BeeResource br : buff.getParts()) {
-          String part = br.serialize();
-          sb.append(part);
-          resp.setIntHeader(CommUtils.rpcPartName(pn++), part.length());
-        }
-        s = sb.toString();
-
-      } else if (mc > 0) {
-        s = "Messages " + BeeUtils.bracket(mc);
-      } else {
-        s = BeeConst.EMPTY;
-      }
-
-      LogUtils.infoNow(logger, BeeUtils.elapsedSeconds(start), rid, "response",
+    LogUtils.infoNow(logger, BeeUtils.elapsedSeconds(start), rid, "response",
           ctp, resp.getContentType(), cnt, cc, mc, pc, s.length());
 
-      try {
-        PrintWriter out = resp.getWriter();
-        out.print(s);
-        out.flush();
-      } catch (IOException ex) {
-        LogUtils.error(logger, ex);
-      }
+    try {
+      PrintWriter out = resp.getWriter();
+      out.print(s);
+      out.flush();
+    } catch (IOException ex) {
+      LogUtils.error(logger, ex);
     }
   }
 

@@ -28,6 +28,16 @@ class PostgreSqlBuilder extends SqlBuilder {
   }
 
   @Override
+  protected String sqlTransform(Object x) {
+    String s = super.sqlTransform(x);
+
+    if (x instanceof CharSequence) {
+      s = s.replace("\\", "\\\\");
+    }
+    return s;
+  }
+
+  @Override
   protected Object sqlType(DataTypes type, int precision, int scale) {
     switch (type) {
       case BOOLEAN:

@@ -12,7 +12,6 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.LogUtils;
 import com.butent.bee.shared.utils.Property;
 
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -116,7 +115,7 @@ public class UiLoaderBean extends UiLoader {
           "dock_prnt", "dock_left", "dock_top", "dock_right", "dock_bott",
           "dock_width", "dock_hght").addFrom("controls", "c").setWhere(
           SqlUtils.equal("c", "form", formName));
-      
+
       BeeRowSet brs = qs.getData(ss);
       for (BeeRow cols : brs.getRows()) {
         row = new UiRow();
@@ -206,14 +205,7 @@ public class UiLoaderBean extends UiLoader {
     String itemLayout = (String) params[1];
     String resource = (String) params[2];
 
-    URL url = Thread.currentThread().getContextClassLoader().getResource(
-        resource);
-    if (url == null) {
-      LogUtils.warning(logger, "Menu resource not found");
-      return null;
-    }
-
-    Property[][] arr = XmlUtils.getAttributesFromFile(url.getFile(), "menu");
+    Property[][] arr = XmlUtils.getAttributesFromFile(resource, "menu");
     if (arr == null) {
       return null;
     }

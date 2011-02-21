@@ -1,16 +1,16 @@
 package com.butent.bee.server.ui;
 
-import com.butent.bee.server.communication.ResponseBuffer;
+import com.butent.bee.server.Config;
 import com.butent.bee.server.data.IdGeneratorBean;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.http.RequestInfo;
-import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
-import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.sql.SqlBuilderFactory;
 import com.butent.bee.shared.sql.SqlSelect;
 import com.butent.bee.shared.sql.SqlUtils;
@@ -44,15 +44,16 @@ public class UiServiceBean {
   @Resource
   EJBContext ctx;
 
-  public void doService(String svc, RequestInfo reqInfo, ResponseBuffer buff) {
-    Assert.notEmpty(svc);
-    Assert.notNull(buff);
+  public ResponseObject doService(RequestInfo reqInfo) {
+    ResponseObject response = null;
 
+    String svc = reqInfo.getService();
     String dsn = reqInfo.getDsn();
+
     if (BeeUtils.isEmpty(dsn)) {
       String msg = "DSN not specified";
       logger.severe(msg);
-      buff.add(msg);
+      response = ResponseObject.error(msg);
     } else {
       if (!BeeUtils.same(SqlBuilderFactory.getEngine(), BeeConst.getDsType(dsn))) {
         ig.destroy();
@@ -60,42 +61,46 @@ public class UiServiceBean {
       }
 
       if (svc.equals("rpc_ui_form")) {
-        formInfo(reqInfo, buff);
+        response = formInfo(reqInfo);
       } else if (svc.equals("rpc_ui_form_list")) {
-        formList(buff);
+        response = formList();
       } else if (svc.equals("rpc_ui_menu")) {
-        menuInfo(reqInfo, buff);
+        response = menuInfo(reqInfo);
       } else if (svc.equals("rpc_ui_grid")) {
-        gridInfo(reqInfo, buff);
+        response = gridInfo(reqInfo);
       } else if (svc.equals("rpc_ui_rebuild")) {
-        rebuildData(reqInfo, buff);
+        response = rebuildData(reqInfo);
       } else if (svc.equals("rpc_ui_sql")) {
-        doSql(reqInfo, buff);
+        response = doSql(reqInfo);
       } else if (svc.equals("rpc_ui_tables")) {
-        getTables(buff);
+        response = getTables();
       } else if (svc.equals("rpc_ui_table")) {
-        getTable(reqInfo, buff);
+        response = getTable(reqInfo);
       } else if (svc.equals("rpc_ui_states")) {
-        getStates(reqInfo, buff);
+        response = getStates(reqInfo);
       } else if (svc.equals("rpc_ui_statetable")) {
-        getStateTable(reqInfo, buff);
+        response = getStateTable(reqInfo);
       } else if (svc.equals("rpc_ui_commit")) {
-        commitChanges(reqInfo, buff);
+        response = commitChanges(reqInfo);
       } else {
         String msg = BeeUtils.concat(1, svc, "loader service not recognized");
         logger.warning(msg);
-        buff.add(msg);
+        response = ResponseObject.error(msg);
       }
     }
+    return response;
   }
 
-  private void commitChanges(RequestInfo reqInfo, ResponseBuffer buff) {
-    if (!sys.commitChanges(BeeRowSet.restore(reqInfo.getContent()), buff)) {
+  private ResponseObject commitChanges(RequestInfo reqInfo) {
+    ResponseObject response = sys.commitChanges(BeeRowSet.restore(reqInfo.getContent()));
+
+    if (response.hasError()) {
       ctx.setRollbackOnly();
     }
+    return response;
   }
 
-  private void doSql(RequestInfo reqInfo, ResponseBuffer buff) {
+  private ResponseObject doSql(RequestInfo reqInfo) {
     String sql = reqInfo.getContent();
     String[] arr = sql.split(" ", 2);
     if (arr.length > 1) {
@@ -104,25 +109,18 @@ public class UiServiceBean {
       sql = null;
     }
     if (BeeUtils.isEmpty(sql)) {
-      buff.add("SQL command not found");
-      return;
+      return ResponseObject.error("SQL command not found");
     }
     Object res = qs.processSql(sql);
 
     if (res instanceof BeeRowSet) {
-      buff.addColumns(((BeeRowSet) res).getColumnArray());
-
-      for (IsRow row : ((BeeRowSet) res).getRows()) {
-        for (int col = 0; col < ((BeeRowSet) res).getNumberOfColumns(); col++) {
-          buff.add(row.getString(col));
-        }
-      }
+      return ResponseObject.response(res);
     } else {
-      buff.add("Affected: " + res);
+      return ResponseObject.warning("Affected:", res);
     }
   }
 
-  private void formInfo(RequestInfo reqInfo, ResponseBuffer buff) {
+  private ResponseObject formInfo(RequestInfo reqInfo) {
     String fName = reqInfo.getParameter("form_name");
 
     UiComponent form = holder.getForm(fName);
@@ -130,28 +128,19 @@ public class UiServiceBean {
     if (BeeUtils.isEmpty(form)) {
       String msg = "Form name not recognized: " + fName;
       logger.warning(msg);
-      buff.add(msg);
+      return ResponseObject.error(msg);
     } else {
-      buff.add(form.serialize());
+      return ResponseObject.response(form);
     }
   }
 
-  private void formList(ResponseBuffer buff) {
+  private ResponseObject formList() {
     SqlSelect ss = new SqlSelect();
     ss.addFields("f", "form").addFrom("forms", "f").addOrder("f", "form");
-
-    BeeRowSet res = qs.getData(ss);
-
-    buff.addColumns(res.getColumnArray());
-
-    for (IsRow row : res.getRows()) {
-      for (int col = 0; col < res.getNumberOfColumns(); col++) {
-        buff.add(row.getString(col));
-      }
-    }
+    return ResponseObject.response(qs.getData(ss));
   }
 
-  private void getStates(RequestInfo reqInfo, ResponseBuffer buff) {
+  private ResponseObject getStates(RequestInfo reqInfo) {
     String table = reqInfo.getParameter("table_name");
     Set<String> states = new HashSet<String>();
 
@@ -162,37 +151,39 @@ public class UiServiceBean {
         }
       }
     }
-    buff.addColumn(new BeeColumn("BeeStates"));
+    BeeRowSet rs = new BeeRowSet(new BeeColumn(ValueType.TEXT, "BeeStates", "BeeStates"));
+
     for (String state : states) {
-      buff.add(state);
+      rs.addRow(state);
     }
+    return ResponseObject.response(rs);
   }
 
-  private void getStateTable(RequestInfo reqInfo, ResponseBuffer buff) {
+  private ResponseObject getStateTable(RequestInfo reqInfo) {
     String table = reqInfo.getParameter("table_name");
     String states = reqInfo.getParameter("table_states");
-    BeeRowSet res = sys.editStateRoles(table, states);
-    buff.add(res.serialize());
+    return sys.editStateRoles(table, states);
   }
 
-  private void getTable(RequestInfo reqInfo, ResponseBuffer buff) {
+  private ResponseObject getTable(RequestInfo reqInfo) {
     String table = reqInfo.getParameter("table_name");
     int limit = BeeUtils.toInt(reqInfo.getParameter("table_limit"));
     int offset = BeeUtils.toInt(reqInfo.getParameter("table_offset"));
     String states = reqInfo.getParameter("table_states");
     BeeRowSet res = sys.getViewData(table, limit, offset, states);
-    buff.add(res.serialize());
+    return ResponseObject.response(res);
   }
 
-  private void getTables(ResponseBuffer buff) {
-    buff.addColumn(new BeeColumn("BeeTable"));
+  private ResponseObject getTables() {
+    BeeRowSet rs = new BeeRowSet(new BeeColumn(ValueType.TEXT, "BeeTable", "BeeTable"));
 
     for (String tbl : sys.getTableNames()) {
-      buff.add(tbl);
+      rs.addRow(tbl);
     }
+    return ResponseObject.response(rs);
   }
 
-  private void gridInfo(RequestInfo reqInfo, ResponseBuffer buff) {
+  private ResponseObject gridInfo(RequestInfo reqInfo) {
     String gName = reqInfo.getParameter("grid_name");
     String grd = gName;
 
@@ -213,58 +204,68 @@ public class UiServiceBean {
     BeeRowSet data = qs.getData(ss);
 
     if (!data.isEmpty()) {
+      BeeRowSet rs = new BeeRowSet();
+
       for (BeeRow row : data.getRows()) {
-        buff.addColumn(
-            new BeeColumn(data.getString(row, "caption").replaceAll("['\"]", "")));
+        String colName = data.getString(row, "caption").replaceAll("['\"]", "");
+        rs.addColumn(new BeeColumn(ValueType.TEXT, colName, BeeUtils.createUniqueName("col")));
       }
       for (int i = 0; i < 20; i++) {
-        for (int j = 0; j < data.getNumberOfRows(); j++) {
-          buff.add(j == 0 ? i + 1 : BeeConst.STRING_EMPTY);
+        int cnt = data.getNumberOfRows();
+        String[] cells = new String[cnt];
+
+        for (int j = 0; j < cnt; j++) {
+          cells[j] = (j == 0 ? Integer.toString(i + 1) : BeeConst.STRING_EMPTY);
         }
+        rs.addRow(cells);
       }
-      return;
+      return ResponseObject.response(rs);
     }
     String msg = "Grid name not recognized: " + grd;
     logger.warning(msg);
-    buff.add(msg);
+    return ResponseObject.warning(msg);
   }
 
-  private void menuInfo(RequestInfo reqInfo, ResponseBuffer buff) {
+  private ResponseObject menuInfo(RequestInfo reqInfo) {
+    ResponseObject response = new ResponseObject();
     String mName = reqInfo.getParameter("menu_name");
     String lRoot = reqInfo.getParameter("root_layout");
     String lItem = reqInfo.getParameter("item_layout");
 
-    UiComponent menu = holder.getMenu(mName, lRoot, lItem,
-        "/com/butent/bee/server/menu.xml");
+    UiComponent menu = holder.getMenu(mName, lRoot, lItem, Config.getPath("menu.xml"));
 
     if (BeeUtils.isEmpty(menu)) {
       String msg = "Error initializing menu: " + mName;
       logger.warning(msg);
-      buff.add(msg);
+      response.addError(msg);
     } else {
-      buff.add(menu.serialize());
+      response.setResponse(menu);
     }
+    return response;
   }
 
-  private void rebuildData(RequestInfo reqInfo, ResponseBuffer buff) {
+  private ResponseObject rebuildData(RequestInfo reqInfo) {
+    ResponseObject response = new ResponseObject();
+
     String cmd = reqInfo.getContent();
     String[] arr = cmd.split(" ", 2);
     if (arr.length > 1) {
       cmd = arr[1];
     }
     if (BeeUtils.same(cmd, "all")) {
-      sys.rebuildTables(buff);
+      sys.rebuildActiveTables();
+      response.addInfo("Recreate structure OK");
 
     } else if (BeeUtils.same(cmd, "ext")) {
       sys.initExtensions();
       sys.initDatabase(SqlBuilderFactory.getEngine());
-      buff.add("Extensions OK");
+      response.addInfo("Extensions OK");
 
     } else if (BeeUtils.same(cmd, "views")) {
       sys.initViews();
-      buff.add("Views OK");
+      response.addInfo("Views OK");
 
-    } else if (BeeUtils.startsSame(cmd, "roles")) {
+    } else if (BeeUtils.same(cmd, "setState")) {
       String[] xArr = cmd.split(" ", 5);
       String tbl = xArr[1];
       long id = BeeUtils.toLong(xArr[2]);
@@ -280,15 +281,16 @@ public class UiServiceBean {
         }
       }
       sys.setState(tbl, id, state, true, roles);
-      buff.add("Toggle OK");
+      response.addInfo("Toggle OK");
 
     } else {
       if (sys.isTable(cmd)) {
         sys.rebuildTable(cmd);
-        buff.add("Rebuild " + cmd + " OK");
+        response.addInfo("Rebuild", cmd, "OK");
       } else {
-        buff.add("ERROR: unknown table " + cmd);
+        response.addError("Unknown table:", cmd);
       }
     }
+    return response;
   }
 }
