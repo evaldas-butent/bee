@@ -126,6 +126,8 @@ public class ArrayUtils {
   }
 
   public static <T> T[] insert(T[] source, int index, T value) {
+    Assert.notNull(source);
+    Assert.betweenInclusive(index, 0, source.length);
     T[] result = copyOf(source, source.length + 1);
     
     result[index] = value;
@@ -212,6 +214,7 @@ public class ArrayUtils {
   }
 
   public static <T> T[] remove(T[] source, int index) {
+    Assert.isIndex(source, index);
     T[] result;
     
     if (index == 0) {

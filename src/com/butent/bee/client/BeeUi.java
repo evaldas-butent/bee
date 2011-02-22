@@ -256,7 +256,7 @@ public class BeeUi implements Module {
   }
 
   public void start() {
-    UiComponent.setCreator(new GwtUiCreator());
+    UiComponent.setUiCreator(new GwtUiCreator());
     createUi();
   }
 

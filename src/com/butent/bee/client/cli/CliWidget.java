@@ -7,6 +7,7 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.canvas.CanvasDemo;
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.i18n.LocaleUtils;
 import com.butent.bee.client.visualization.showcase.Showcase;
 import com.butent.bee.client.widget.BeeTextBox;
 import com.butent.bee.shared.Assert;
@@ -85,6 +86,8 @@ public class CliWidget extends BeeTextBox {
       CliWorker.getKeys(arr);
     } else if (z.equals("loaders")) {
       BeeKeeper.getRpc().invoke("loaderInfo");
+    } else if (z.equals("locale")) {
+      BeeKeeper.getUi().showGrid(LocaleUtils.getInfo());
     } else if (z.equals("log")) {
       CliWorker.doLog(arr);
     } else if (z.equals("menu")) {

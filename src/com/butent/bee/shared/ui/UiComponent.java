@@ -22,7 +22,7 @@ public abstract class UiComponent implements HasId, BeeSerializable {
   }
 
   private static Logger logger = Logger.getLogger(UiComponent.class.getName());
-  private static UiCreator creator;
+  private static UiCreator uiCreator;
 
   public static UiComponent createComponent(String oClass, String oName) {
     Assert.notEmpty(oName);
@@ -43,8 +43,8 @@ public abstract class UiComponent implements HasId, BeeSerializable {
     return root;
   }
 
-  public static void setCreator(UiCreator creator) {
-    UiComponent.creator = creator;
+  public static void setUiCreator(UiCreator uiCreator) {
+    UiComponent.uiCreator = uiCreator;
   }
 
   private static UiComponent createComponent(String oClass) {
@@ -133,7 +133,7 @@ public abstract class UiComponent implements HasId, BeeSerializable {
   }
 
   public Object createInstance() {
-    return createInstance(creator);
+    return createInstance(uiCreator);
   }
 
   public abstract Object createInstance(UiCreator creator);
