@@ -185,7 +185,6 @@ public class BeeServlet extends HttpServlet {
     if (doLogout) {
       try {
         req.logout();
-        dispatcher.doLogout((String) session.getAttribute(BeeService.VAR_USER_SIGN));
         session.invalidate();
         loggedIn = false;
         buff.addWarning("Logout successful");
@@ -216,7 +215,8 @@ public class BeeServlet extends HttpServlet {
             }
           } else {
             session = req.getSession(true);
-            session.setAttribute(BeeService.VAR_USER_SIGN, usr);
+            session.setAttribute(BeeService.VAR_LOGIN, req.getRemoteUser());
+
             resp.setHeader(BeeService.VAR_USER_SIGN, Codec.encodeBase64(usr));
             loggedIn = true;
             buff.addWarning("Login successful");

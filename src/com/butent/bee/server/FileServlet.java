@@ -1,6 +1,7 @@
 package com.butent.bee.server;
 
 import com.butent.bee.shared.utils.Codec;
+import com.butent.bee.shared.utils.LogUtils;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -10,7 +11,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.logging.Logger;
 
-import javax.ejb.EJB;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -23,9 +23,6 @@ public class FileServlet extends HttpServlet {
   private static Logger logger = Logger.getLogger(FileServlet.class.getName());
 
   private static final int DEFAULT_BUFFER_SIZE = 10240;
-
-  @EJB
-  DispatcherBean dispatcher;
 
   @Override
   protected void doGet(HttpServletRequest req, HttpServletResponse resp)
@@ -49,14 +46,17 @@ public class FileServlet extends HttpServlet {
     }
   }
 
-  private void doService(HttpServletRequest req, HttpServletResponse resp)
-      throws IOException {
+  private void doService(HttpServletRequest req, HttpServletResponse resp) {
 
     String requestedFile = req.getPathInfo();
 
     if (requestedFile == null) {
-      logger.warning("No file name provided");
-      resp.sendError(HttpServletResponse.SC_NOT_FOUND, "No file name provided");
+      LogUtils.warning(logger, "No file name provided");
+      try {
+        resp.sendError(HttpServletResponse.SC_NOT_FOUND, "No file name provided");
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
       return;
     }
 
@@ -64,7 +64,11 @@ public class FileServlet extends HttpServlet {
 
     String path = Config.getPath(requestedFile);
     if (path == null) {
-      resp.sendError(HttpServletResponse.SC_NOT_FOUND, requestedFile);
+      try {
+        resp.sendError(HttpServletResponse.SC_NOT_FOUND, requestedFile);
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
       return;
     }
 
@@ -94,6 +98,8 @@ public class FileServlet extends HttpServlet {
       while ((length = input.read(buffer)) > 0) {
         output.write(buffer, 0, length);
       }
+    } catch (IOException e) {
+      e.printStackTrace();
     } finally {
       close(output);
       close(input);

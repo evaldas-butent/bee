@@ -52,16 +52,11 @@ public class DispatcherBean {
       ig.destroy();
       sys.initDatabase(dsn);
     }
-    String usr = usrBean.getUserSign();
-
-    if (!BeeUtils.isEmpty(usr)) {
-      LogUtils.infoNow(logger, "User logged in:", usr);
-    }
-    return usr;
+    return usrBean.login();
   }
 
-  public void doLogout(String usr) {
-    LogUtils.infoNow(logger, "User logged out:", usr);
+  public void doLogout(String user) {
+    usrBean.logout(user);
   }
 
   public void doService(String svc, String dsn, RequestInfo reqInfo, ResponseBuffer buff) {

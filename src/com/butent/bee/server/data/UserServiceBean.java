@@ -14,9 +14,11 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.sql.SqlSelect;
 import com.butent.bee.shared.sql.SqlUtils;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.LogUtils;
 
 import java.security.Principal;
 import java.util.Map;
+import java.util.logging.Logger;
 
 import javax.annotation.Resource;
 import javax.ejb.EJB;
@@ -28,6 +30,8 @@ import javax.ejb.Singleton;
 @Singleton
 @Lock(LockType.READ)
 public class UserServiceBean {
+
+  private static Logger logger = Logger.getLogger(UserServiceBean.class.getName());
 
   public static final String USER_TABLE = "Users";
   public static final String ROLE_TABLE = "Roles";
@@ -79,9 +83,9 @@ public class UserServiceBean {
     return ImmutableMap.copyOf(userCache);
   }
 
-  public String getUserSign() {
+  public String getUserSign(String user) {
     initUsers();
-    String user = getCurrentUser();
+    Assert.notEmpty(user);
     String sign = null;
 
     if (userCache.containsValue(user)) {
@@ -95,6 +99,16 @@ public class UserServiceBean {
   @Lock(LockType.WRITE)
   public void invalidateCache() {
     cacheUpToDate = false;
+  }
+
+  public String login() {
+    String usr = getUserSign(getCurrentUser());
+    LogUtils.infoNow(logger, "User logged in:", usr);
+    return usr;
+  }
+
+  public void logout(String user) {
+    LogUtils.infoNow(logger, "User logged out:", getUserSign(user));
   }
 
   @Lock(LockType.WRITE)
@@ -131,9 +145,13 @@ public class UserServiceBean {
 
       userCache.put(userId, brs.getString(user, "Login").toLowerCase());
       userRolesCache.put(userId, brs.getInt(user, "Role"));
-      userInfoCache.put(userId,
-          BeeUtils.concat(1, brs.getString(user, "Position"),
-              BeeUtils.concat(1,
+      userInfoCache.put(
+          userId,
+          BeeUtils.concat(
+              1,
+              brs.getString(user, "Position"),
+              BeeUtils.concat(
+                  1,
                   BeeUtils.ifString(brs.getString(user, "FirstName"), brs.getString(user, "Login")),
                   brs.getString(user, "LastName"))));
     }
