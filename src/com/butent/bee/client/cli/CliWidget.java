@@ -64,7 +64,7 @@ public class CliWidget extends BeeTextBox {
       CliWorker.showDnd();
     } else if (z.equals("dt")) {
       CliWorker.showDate(arr);
-    } else if (BeeUtils.inList(z, "dir", "file", "get")) {
+    } else if (BeeUtils.inList(z, "dir", "file", "get", "download")) {
       CliWorker.getResource(arr);
     } else if (z.equals("eval")) {
       CliWorker.eval(v, arr);

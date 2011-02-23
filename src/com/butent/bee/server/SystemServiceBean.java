@@ -18,7 +18,6 @@ import com.butent.bee.shared.utils.LogUtils;
 import com.butent.bee.shared.utils.PropertyUtils;
 
 import java.io.File;
-import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Set;
@@ -134,14 +133,12 @@ public class SystemServiceBean {
     if (FileUtils.isFile(name)) {
       path = name;
     } else {
-      URL url = getClass().getResource(name);
-      if (url == null) {
+      path = Config.getPath(name);
+      if (path == null) {
         buff.addWarning("resource", name, "not found");
         return;
       }
-
-      buff.addMessage(url);
-      path = url.getPath();
+      buff.addMessage(path);
     }
 
     File fl = new File(path);

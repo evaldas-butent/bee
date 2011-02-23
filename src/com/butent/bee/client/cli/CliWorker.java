@@ -12,6 +12,7 @@ import com.google.gwt.media.client.Audio;
 import com.google.gwt.media.client.Video;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Timer;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -236,6 +237,13 @@ public class CliWorker {
   public static void getResource(String[] arr) {
     if (BeeUtils.length(arr) < 2) {
       Global.sayHuh(BeeUtils.transform(arr));
+      return;
+    }
+
+    if (BeeUtils.same(arr[0], "download")) {
+      String url = GWT.getModuleBaseURL() + "file/" +
+          Codec.encodeBase64(ArrayUtils.join(arr, 1, 1));
+      Window.open(url, "", "");
       return;
     }
 
