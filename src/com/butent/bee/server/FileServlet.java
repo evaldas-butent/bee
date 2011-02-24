@@ -1,5 +1,6 @@
 package com.butent.bee.server;
 
+import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.LogUtils;
 
@@ -47,31 +48,50 @@ public class FileServlet extends HttpServlet {
   }
 
   private void doService(HttpServletRequest req, HttpServletResponse resp) {
+    String err = null;
 
-    String requestedFile = req.getPathInfo();
+    if (BeeUtils.isEmpty(req.getSession(false))) {
+      err = "No logged in";
+    }
+    String requestedFile = null;
 
-    if (requestedFile == null) {
-      LogUtils.warning(logger, "No file name provided");
+    if (BeeUtils.isEmpty(err)) {
+      requestedFile = req.getPathInfo();
+
+      if (requestedFile != null) {
+        requestedFile = requestedFile.substring(1);
+      }
+      if (BeeUtils.isEmpty(requestedFile)) {
+        err = "No file name provided";
+      }
+    }
+
+    if (BeeUtils.isEmpty(err)) {
       try {
-        resp.sendError(HttpServletResponse.SC_NOT_FOUND, "No file name provided");
+        requestedFile = Codec.decodeBase64(requestedFile);
+      } catch (Exception e) {
+        err = e.getMessage();
+      }
+    }
+    String path = null;
+
+    if (BeeUtils.isEmpty(err)) {
+      path = Config.getPath(requestedFile);
+
+      if (path == null) {
+        err = "Resource not found: " + requestedFile;
+      }
+    }
+
+    if (!BeeUtils.isEmpty(err)) {
+      try {
+        LogUtils.warning(logger, err);
+        resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, err);
       } catch (IOException e) {
         e.printStackTrace();
       }
       return;
     }
-
-    requestedFile = Codec.decodeBase64(requestedFile.substring(1));
-
-    String path = Config.getPath(requestedFile);
-    if (path == null) {
-      try {
-        resp.sendError(HttpServletResponse.SC_NOT_FOUND, requestedFile);
-      } catch (IOException e) {
-        e.printStackTrace();
-      }
-      return;
-    }
-
     File file = new File(path);
 
     String contentType = getServletContext().getMimeType(file.getName());
