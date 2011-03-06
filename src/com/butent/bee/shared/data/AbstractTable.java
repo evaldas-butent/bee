@@ -38,7 +38,7 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
 
   protected class RowOrdering implements Comparator<RowType> {
     private List<SortInfo> orderBy = Lists.newArrayList();
-    private Comparator<Value> comparator = Value.getComparator();
+    private List<ValueType> types = Lists.newArrayList();
 
     RowOrdering(SortInfo... sortInfo) {
       Assert.parameterCount(sortInfo.length, 1);
@@ -48,19 +48,46 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
         assertColumnIndex(index);
         if (!containsIndex(index)) {
           orderBy.add(sortInfo[i]);
+          types.add(getColumnType(index));
         }
       }
     }
 
     public int compare(RowType row1, RowType row2) {
+      if (row1 == row2) {
+        return BeeConst.COMPARE_EQUAL;
+      }
+      if (row1 == null) {
+        return orderBy.get(0).isAscending() ? BeeConst.COMPARE_LESS : BeeConst.COMPARE_MORE;
+      }
+      if (row2 == null) {
+        return orderBy.get(0).isAscending() ? BeeConst.COMPARE_MORE : BeeConst.COMPARE_LESS;
+      }
+      
+      int z;
       for (int i = 0; i < orderBy.size(); i++) {
-        int col = orderBy.get(i).getIndex();
-        int z = comparator.compare(row1.getCell(col).getValue(), row2.getCell(col).getValue());
-        if (z != 0) {
+        int index = orderBy.get(i).getIndex();
+        switch (types.get(i)) {
+          case BOOLEAN:
+            z = BeeUtils.compare(row1.getBoolean(index), row2.getBoolean(index));
+            break;
+          case DATE:
+            z = BeeUtils.compare(row1.getDate(index), row2.getDate(index));
+            break;
+          case DATETIME:
+            z = BeeUtils.compare(row1.getDateTime(index), row2.getDateTime(index));
+            break;
+          case NUMBER:
+            z = BeeUtils.compare(row1.getDouble(index), row2.getDouble(index));
+            break;
+          default:
+            z = BeeUtils.compare(row1.getString(index), row2.getString(index));
+        }
+        if (z != BeeConst.COMPARE_EQUAL) {
           return orderBy.get(i).isAscending() ? z : -z;
         }
       }
-      return 0;
+      return BeeConst.COMPARE_EQUAL;
     }
 
     private boolean containsIndex(int index) {
@@ -215,7 +242,7 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
 
   public abstract ColType createColumn(ValueType type, String label, String id);
 
-  public abstract RowType createRow();
+  public abstract RowType createRow(long id);
 
   public IsData fromJson(String data) {
     // TODO Auto-generated method stub
@@ -356,6 +383,10 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
     return getDistinctValues(getColumnIndex(columnId));
   }
 
+  public Double getDouble(int rowIndex, int colIndex) {
+    return getRow(rowIndex).getDouble(colIndex);
+  }
+
   public int[] getFilteredRows(RowFilter... filters) {
     Assert.parameterCount(filters.length, 1);
     List<Integer> match = Lists.newArrayList();
@@ -379,10 +410,6 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
 
   public String getFormattedValue(int rowIndex, int colIndex) {
     return getCell(rowIndex, colIndex).getFormattedValue();
-  }
-
-  public Number getNumber(int rowIndex, int colIndex) {
-    return getRow(rowIndex).getNumber(colIndex);
   }
 
   public int getNumberOfColumns() {
@@ -732,6 +759,10 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
 
   private IsCell createCell(int colIndex) {
     return new TableCell(Value.getNullValueFromValueType(columns.get(colIndex).getType()));
+  }
+  
+  private RowType createRow() {
+    return createRow(getNumberOfRows() + 1);
   }
 
   private RowType fillRow(RowType row) {

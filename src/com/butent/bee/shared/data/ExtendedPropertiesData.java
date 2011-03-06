@@ -46,7 +46,7 @@ public class ExtendedPropertiesData extends RowList<TableRow, TableColumn> {
   }
 
   @Override
-  public TableRow createRow() {
-    return new TableRow();
+  public TableRow createRow(long id) {
+    return new TableRow(id);
   }
 }

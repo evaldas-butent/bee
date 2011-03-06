@@ -5,7 +5,7 @@ import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.layout.Stack;
-import com.butent.bee.client.layout.Tab;
+import com.butent.bee.client.layout.TabbedPages;
 import com.butent.bee.client.menu.MenuBar;
 import com.butent.bee.client.menu.MenuCommand;
 import com.butent.bee.client.menu.MenuDataProvider;
@@ -282,9 +282,9 @@ public class MenuManager implements Module {
             (30.0 - itemCnt) / 10.0);
         ((Stack) rw).add(cw, txt, header);
       }
-    } else if (rw instanceof Tab) {
+    } else if (rw instanceof TabbedPages) {
       if (cw != null) {
-        ((Tab) rw).add(cw, txt);
+        ((TabbedPages) rw).add(cw, txt);
       }
 
     } else if (rw instanceof BeeTree) {
@@ -358,7 +358,7 @@ public class MenuManager implements Module {
     } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_STACK)) {
       w = new Stack(Unit.EM);
     } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_TAB)) {
-      w = new Tab(20, Unit.PX);
+      w = new TabbedPages(20, Unit.PX);
 
     } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_TREE)) {
       w = new BeeTree(new MenuSelectionHandler());

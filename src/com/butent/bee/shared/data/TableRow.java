@@ -9,6 +9,10 @@ import java.util.List;
 public class TableRow extends AbstractRow {
   private List<IsCell> cells = Lists.newArrayList();
 
+  public TableRow(long id) {
+    super(id);
+  }
+
   public void addCell(IsCell cell) {
     cells.add(cell);
   }
@@ -21,7 +25,7 @@ public class TableRow extends AbstractRow {
 
   @Override
   public TableRow clone() {
-    TableRow result = new TableRow();
+    TableRow result = new TableRow(getId());
     for (IsCell cell : getCells()) {
       result.addCell(cell.clone());
     }

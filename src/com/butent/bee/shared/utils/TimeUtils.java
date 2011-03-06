@@ -1,7 +1,10 @@
 package com.butent.bee.shared.utils;
 
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.BeeDate;
+import com.butent.bee.shared.DateTime;
+import com.butent.bee.shared.JustDate;
+
+import java.util.Date;
 
 public class TimeUtils {
   public static final int ERA = 0;
@@ -50,7 +53,7 @@ public class TimeUtils {
     "JULIAN_DAY", "MILLISECONDS_IN_DAY",
   };
 
-  public static void add(BeeDate date, int field, int amount) {
+  public static void add(DateTime date, int field, int amount) {
     Assert.notNull(date);
     if (amount == 0) {
       return;
@@ -58,11 +61,11 @@ public class TimeUtils {
     date.setTime(date.getTime() + getDelta(date, field, amount));
   }
   
-  public static int dateDiff(BeeDate start, BeeDate end) {
+  public static int dateDiff(DateTime start, DateTime end) {
     return fieldDifference(start, end, DATE);
   }
 
-  public static int fieldDifference(BeeDate start, BeeDate end, int field) {
+  public static int fieldDifference(DateTime start, DateTime end, int field) {
     Assert.notNull(start);
     Assert.notNull(end);
 
@@ -106,6 +109,71 @@ public class TimeUtils {
     return min;
   }
 
+  public static boolean isDateOrDateTime(Object x) {
+    return x instanceof JustDate || x instanceof DateTime || x instanceof Date;
+  }
+
+  public static JustDate randomDate(JustDate min, JustDate max) {
+    Assert.notNull(min);
+    Assert.notNull(max);
+    return new JustDate(BeeUtils.randomInt(min.getDay(), max.getDay()));
+  }
+  
+  public static DateTime randomDateTime(DateTime min, DateTime max) {
+    Assert.notNull(min);
+    Assert.notNull(max);
+    return new DateTime(BeeUtils.randomLong(min.getTime(), max.getTime()));
+  }
+  
+  public static JustDate toDate(Object x) {
+    if (x instanceof JustDate) {
+      return (JustDate) x;
+    }
+    if (x instanceof DateTime) {
+      return new JustDate((DateTime) x);
+    }
+    if (x instanceof Date) {
+      return new JustDate((Date) x);
+    }
+
+    assertDateOrDateTime(x);
+    return null;
+  }
+  
+  public static DateTime toDateTime(Object x) {
+    if (x instanceof DateTime) {
+      return (DateTime) x;
+    }
+    if (x instanceof JustDate) {
+      return new DateTime((JustDate) x);
+    }
+    if (x instanceof Date) {
+      return new DateTime((Date) x);
+    }
+
+    assertDateOrDateTime(x);
+    return null;
+  }
+
+  public static Date toJava(Object x) {
+    if (x instanceof Date) {
+      return (Date) x;
+    }
+    if (x instanceof DateTime) {
+      return new Date(((DateTime) x).getTime());
+    }
+    if (x instanceof JustDate) {
+      return new Date(new DateTime((JustDate) x).getTime());
+    }
+
+    assertDateOrDateTime(x);
+    return null;
+  }
+
+  private static void assertDateOrDateTime(Object x) {
+    Assert.isTrue(isDateOrDateTime(x), "Argument must be Date or DateTime");
+  }
+  
   private static String fieldName(int field) {
     if (BeeUtils.isIndex(FIELD_NAME, field)) {
       return FIELD_NAME[field];
@@ -114,7 +182,7 @@ public class TimeUtils {
     }
   }
 
-  private static long getDelta(BeeDate date, int field, int amount) {
+  private static long getDelta(DateTime date, int field, int amount) {
     long delta = amount;
 
     switch (field) {
@@ -138,7 +206,7 @@ public class TimeUtils {
         }
         
         int d2 = Math.min(d1, Grego.monthLength(y2, m2));
-        delta = new BeeDate(y2, m2, d2).getTime() - new BeeDate(y1, m1, d1).getTime();
+        delta = new DateTime(y2, m2, d2).getTime() - new DateTime(y1, m1, d1).getTime();
         break;
         
       case WEEK_OF_YEAR:

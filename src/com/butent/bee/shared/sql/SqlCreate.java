@@ -82,6 +82,14 @@ public class SqlCreate extends SqlQuery<SqlCreate> {
     return addField(field, DataTypes.CHAR, precision, 0, options);
   }
 
+  public SqlCreate addDate(String field, Keywords... options) {
+    return addField(field, DataTypes.DATE, 0, 0, options);
+  }
+
+  public SqlCreate addDateTime(String field, Keywords... options) {
+    return addField(field, DataTypes.DATETIME, 0, 0, options);
+  }
+
   public SqlCreate addDouble(String field, int precision, int scale, Keywords... options) {
     Assert.nonNegative(precision);
     Assert.nonNegative(scale);
@@ -98,7 +106,7 @@ public class SqlCreate extends SqlQuery<SqlCreate> {
 
     return getReference();
   }
-
+  
   public SqlCreate addFloat(String field, int precision, int scale, Keywords... options) {
     Assert.nonNegative(precision);
     Assert.nonNegative(scale);

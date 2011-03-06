@@ -5,7 +5,7 @@ import com.google.gwt.core.client.JsDate;
 import com.google.gwt.event.shared.GwtEvent;
 import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.client.data.CacheUtils;
+import com.butent.bee.client.data.Cache;
 import com.butent.bee.client.dialog.InputBox;
 import com.butent.bee.client.dialog.MessageBox;
 import com.butent.bee.client.grid.CellType;
@@ -35,7 +35,7 @@ public class Global implements Module {
   private static final MessageBox msgBox = new MessageBox();
   private static final InputBox inpBox = new InputBox();
   private static final GridFactory grids = new GridFactory();
-  private static final CacheUtils cache = new CacheUtils();
+  private static final Cache cache = new Cache();
 
   private static final Map<String, Variable> vars = new HashMap<String, Variable>();
 
@@ -82,7 +82,7 @@ public class Global implements Module {
     vars.put(name, new Variable(caption, type, value, widget, items));
   }
 
-  public static CacheUtils getCache() {
+  public static Cache getCache() {
     return cache;
   }
 

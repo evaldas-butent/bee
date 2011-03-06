@@ -30,7 +30,7 @@ import com.butent.bee.client.event.HasAfterAddHandler;
 import com.butent.bee.client.event.HasBeeBlurHandler;
 import com.butent.bee.client.layout.BeeLayoutPanel;
 import com.butent.bee.client.layout.Stack;
-import com.butent.bee.client.layout.Tab;
+import com.butent.bee.client.layout.TabbedPages;
 import com.butent.bee.client.menu.MenuItem.ITEM_TYPE;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -174,7 +174,7 @@ public class MenuBar extends Widget implements HasId, HasAfterAddHandler,
             Layout.Alignment.BEGIN);
       }
 
-    } else if (parent instanceof Stack || parent instanceof Tab) {
+    } else if (parent instanceof Stack || parent instanceof TabbedPages) {
       setStylePrimaryName(STYLENAME_ROOT);
     }
   }

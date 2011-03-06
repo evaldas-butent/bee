@@ -1,6 +1,6 @@
 package com.butent.bee.shared.data.function;
 
-import com.butent.bee.shared.BeeDate;
+import com.butent.bee.shared.DateTime;
 import com.butent.bee.shared.data.InvalidQueryException;
 import com.butent.bee.shared.data.value.DateTimeValue;
 import com.butent.bee.shared.data.value.Value;
@@ -20,7 +20,7 @@ public class CurrentDateTime implements ScalarFunction {
   }
 
   public Value evaluate(List<Value> values) {
-    return new DateTimeValue(new BeeDate());
+    return new DateTimeValue(new DateTime());
   }
 
   public String getFunctionName() {

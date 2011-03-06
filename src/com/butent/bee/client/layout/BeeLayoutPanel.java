@@ -89,5 +89,4 @@ public class BeeLayoutPanel extends LayoutPanel implements HasId {
   public void setId(String id) {
     DomUtils.setId(this, id);
   }
-
 }

@@ -14,9 +14,12 @@ import com.butent.bee.server.utils.FileUtils;
 import com.butent.bee.server.utils.XmlUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.DateTime;
+import com.butent.bee.shared.JustDate;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.TableInfo;
 import com.butent.bee.shared.sql.BeeConstants.DataTypes;
 import com.butent.bee.shared.sql.BeeConstants.Keywords;
 import com.butent.bee.shared.sql.HasFrom;
@@ -33,6 +36,7 @@ import com.butent.bee.shared.sql.SqlUtils;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.LogUtils;
+import com.butent.bee.shared.utils.TimeUtils;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -41,7 +45,9 @@ import org.xml.sax.SAXException;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
@@ -171,7 +177,7 @@ public class SystemBean {
       if (lockIndex >= 0) {
         wh = SqlUtils.and(wh, SqlUtils.equal(tblName, table.getLockName(), row.getLong(lockIndex)));
       }
-      if (row.markedForDelete()) { // DELETE
+      if (row.isMarkedForDelete()) { // DELETE
         int res = qs.updateData(new SqlDelete(tblName).setWhere(wh));
 
         if (res > 0) {
@@ -181,7 +187,7 @@ public class SystemBean {
           break;
         }
 
-      } else if (row.markedForInsert()) { // INSERT
+      } else if (row.isMarkedForInsert()) { // INSERT
         SqlInsert si = new SqlInsert(tblName);
 
         for (String colName : baseUpdate.keySet()) {
@@ -396,6 +402,111 @@ public class SystemBean {
     return ResponseObject.response(qs.getData(union));
   }
 
+  public ResponseObject generateData(String tableName, int rowCount) {
+    Assert.isTrue(isTable(tableName), "Not a base table: " + tableName);
+    Assert.isPositive(rowCount, "rowCount must be positive");
+    
+    Collection<BeeField> fields = getTableFields(tableName);
+    SqlInsert si = new SqlInsert(tableName);
+
+    int minDay = new JustDate().getDay() - 1000;
+    int maxDay = new JustDate().getDay() + 200;
+    long minTime = new DateTime().getTime() - 1000L * TimeUtils.MILLIS_PER_DAY;
+    long maxTime = new DateTime().getTime() + 200L * TimeUtils.MILLIS_PER_DAY;
+    
+    StringBuilder chars = new StringBuilder();
+    for (char c = 'a'; c <= 'z'; c++) {
+      chars.append(c);
+    }
+    chars.append(chars.toString().toUpperCase()).append(" ąčęėįšųūžĄČĘĖĮŠŲŪ0Ž");
+
+    Random random = new Random();
+    Object v;
+    
+    for (int row = 0; row < rowCount; row++) {
+      for (BeeField field : fields) {
+        switch (field.getType()) {
+          case BOOLEAN:
+            v = BeeUtils.toInt(random.nextBoolean());
+            break;
+          case CHAR:
+            v = BeeUtils.randomString(1, field.getPrecision(), BeeConst.CHAR_SPACE, '\u007e');
+            break;
+          case DATE:
+            v = BeeUtils.randomInt(minDay, maxDay);
+            break;
+          case DATETIME:
+            v = BeeUtils.randomLong(minTime, maxTime);
+            break;
+          case DOUBLE:
+            v = Math.random() * Math.pow(10, BeeUtils.randomInt(-7, 20));
+            break;
+          case FLOAT:
+            v = random.nextFloat();
+            break;
+          case INTEGER:
+            v = random.nextInt();
+            break;
+          case LONG:
+            v = random.nextLong() / random.nextInt();
+            break;
+          case NUMERIC:
+            if (field.getPrecision() <= 1) {
+              v = random.nextInt(10);
+            } else {
+              double x = Math.random() * Math.pow(10, BeeUtils.randomInt(0, field.getPrecision()));
+              if (field.getScale() <= 0) {
+                v = Math.round(x);
+              } else {
+                v = Math.round(x) / Math.pow(10, field.getScale());
+              }
+            }
+            break;
+          case STRING:
+            int len = field.getPrecision();
+            if (len > 3) {
+              len = BeeUtils.randomInt(1, len + 1);
+            }
+            v = BeeUtils.randomString(len, chars);
+            break;
+          default:
+            v = null;
+        }
+        if (!field.isNotNull() && random.nextInt(7) == 0) {
+          v = null;
+        }
+        if (v != null) {
+          si.addConstant(field.getName(), v);
+        }
+      }
+      if (si.getFieldCount() <= 0) {
+        continue;
+      }
+
+      long id = qs.insertData(si);
+      if (id < 0) {
+        return new ResponseObject().addError(tableName, si.getQuery(), "Error inserting data");
+      }
+      si.clearFields();
+    }
+    return new ResponseObject().addInfo(tableName, "generated", rowCount, "rows");
+  }
+  
+  public List<TableInfo> getDataInfo() {
+    List<TableInfo> lst = Lists.newArrayList();
+    int cnt;
+    
+    for (BeeTable table : getTables()) {
+      if (table.isActive()) {
+        cnt = getRowCount(table.getName(), null);
+      } else {
+        cnt = -1;
+      }
+      lst.add(new TableInfo(table.getName(), cnt));
+    }
+    return lst;
+  }
+  
   public String getDbName() {
     return dbName;
   }
@@ -407,18 +518,22 @@ public class SystemBean {
   public String getIdName(String table) {
     return getTable(table).getIdName();
   }
-
+  
   public String getLockName(String table) {
     return getTable(table).getLockName();
   }
 
-  public Collection<String> getTableFields(String table) {
-    Collection<String> fields = Lists.newArrayList();
-
-    for (BeeField field : getTable(table).getFields()) {
-      fields.add(field.getName());
+  public int getRowCount(String table, IsCondition where) {
+    Assert.notEmpty(table);
+    SqlSelect ss = new SqlSelect().addCount("cnt").addFrom(table);
+    if (where != null) {
+      ss.setWhere(where);
     }
-    return fields;
+    return qs.getSingleRow(ss).getInt(0);
+  }
+
+  public Collection<BeeField> getTableFields(String table) {
+    return getTable(table).getFields();
   }
 
   public Collection<String> getTableNames() {

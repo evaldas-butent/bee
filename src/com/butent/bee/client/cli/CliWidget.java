@@ -2,6 +2,7 @@ package com.butent.bee.client.cli;
 
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.KeyPressEvent;
+import com.google.gwt.i18n.client.NumberFormat;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
@@ -13,6 +14,7 @@ import com.butent.bee.client.widget.BeeTextBox;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ContentType;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 public class CliWidget extends BeeTextBox {
@@ -96,6 +98,8 @@ public class CliWidget extends BeeTextBox {
       CliWorker.showMeter(arr);
     } else if (z.equals("md5")) {
       CliWorker.digest(v);
+    } else if (z.equals("nf") && arr.length >= 3) {
+      BeeKeeper.getLog().info(NumberFormat.getFormat(arr[1]).format(BeeUtils.toDouble(arr[2])));
     } else if (BeeUtils.inList(z, "p", "prop")) {
       CliWorker.showProperties(v, arr);
     } else if (z.equals("progress")) {
@@ -137,6 +141,9 @@ public class CliWidget extends BeeTextBox {
     } else if (z.equals("vm")) {
       BeeKeeper.getRpc().invoke("vmInfo");
 
+    } else if (z.equals("gen") && BeeUtils.isDigit(ArrayUtils.getQuietly(arr, 2))) {
+      BeeKeeper.getRpc().makePostRequest("rpc_ui_gen", ContentType.BINARY,
+          BeeUtils.concat(1, arr[1], arr[2]));
     } else if (z.equals("rebuild")) {
       BeeKeeper.getRpc().makePostRequest("rpc_ui_rebuild", ContentType.BINARY, v);
     } else if (z.equals("sql")) {

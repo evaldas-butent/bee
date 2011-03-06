@@ -82,6 +82,8 @@
       <xs:enumeration value="NUMERIC" />
       <xs:enumeration value="CHAR" />
       <xs:enumeration value="STRING" />
+      <xs:enumeration value="DATE" />
+      <xs:enumeration value="DATETIME" />
     </xs:restriction>
   </xs:simpleType>
 </xs:schema>

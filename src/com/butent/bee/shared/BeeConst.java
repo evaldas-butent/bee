@@ -61,6 +61,8 @@ public class BeeConst {
   public static final char CHAR_APOS = '\'';
   public static final char CHAR_MINUS = '-';
   public static final char CHAR_PLUS = '+';
+  public static final String CHAR_FALSE = "fFnN0";
+  public static final String CHAR_TRUE = "tTyY1";
 
   public static final int SIZE_UNKNOWN = -1;
   public static final int TIME_UNKNOWN = -1;
@@ -171,9 +173,17 @@ public class BeeConst {
   public static boolean isError(int x) {
     return x == INT_ERROR;
   }
+  
+  public static boolean isFalse(char c) {
+    return CHAR_FALSE.indexOf(c) >= 0;
+  }
 
   public static boolean isServer() {
     return home.equals(SERVER);
+  }
+
+  public static boolean isTrue(char c) {
+    return CHAR_TRUE.indexOf(c) >= 0;
   }
 
   public static void setClient() {

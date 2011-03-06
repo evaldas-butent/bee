@@ -14,7 +14,7 @@ public abstract class CellColumn<C> extends Column<IsRow, C> {
     this.index = index;
   }
 
-  protected int getIndex() {
+  public int getIndex() {
     return index;
   }
   

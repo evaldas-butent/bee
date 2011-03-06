@@ -1,6 +1,8 @@
 package com.butent.bee.shared.data.value;
 
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.DateTime;
+import com.butent.bee.shared.JustDate;
 import com.butent.bee.shared.Transformable;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -69,13 +71,45 @@ public abstract class Value implements Comparable<Value>, Transformable {
     }
   }
   
-  public Number getNumber() {
+  public JustDate getDate() {
+    if (isNull()) {
+      return null;
+    }
+    switch (getType()) {
+      case DATE :
+        return (JustDate) getObjectValue();
+      case DATETIME :
+        return new JustDate((DateTime) getObjectValue());
+      case NUMBER :
+        return new JustDate(((Number) getObjectValue()).intValue());
+      default:
+        return null;
+    }
+  }
+
+  public DateTime getDateTime() {
+    if (isNull()) {
+      return null;
+    }
+    switch (getType()) {
+      case DATE :
+        return new DateTime((JustDate) getObjectValue());
+      case DATETIME :
+        return (DateTime) getObjectValue();
+      case NUMBER :
+        return new DateTime(((Number) getObjectValue()).longValue());
+      default:
+        return null;
+    }
+  }
+  
+  public Double getDouble() {
     if (isNull()) {
       return null;
     }
     switch (getType()) {
       case NUMBER :
-        return (Number) getObjectValue();
+        return (Double) getObjectValue();
       case TEXT :
         return BeeUtils.toDouble((String) getObjectValue());
       default:

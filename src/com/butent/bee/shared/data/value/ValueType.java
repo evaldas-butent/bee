@@ -3,7 +3,8 @@ package com.butent.bee.shared.data.value;
 import com.google.common.collect.Maps;
 
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.BeeDate;
+import com.butent.bee.shared.DateTime;
+import com.butent.bee.shared.utils.TimeUtils;
 
 import java.util.Map;
 
@@ -25,6 +26,10 @@ public enum ValueType { BOOLEAN("boolean"), NUMBER("number"), TEXT("string"),
     }
     return typeCodeToValueType.get(code.trim().toLowerCase());
   }
+  
+  public static boolean isNumber(ValueType type) {
+    return type == NUMBER;
+  }
 
   private String typeCode;
 
@@ -43,12 +48,12 @@ public enum ValueType { BOOLEAN("boolean"), NUMBER("number"), TEXT("string"),
         ret = new NumberValue(((Number) value).doubleValue());
     } else if ((this == BOOLEAN) && (value instanceof Boolean)) {
         ret = ((Boolean) value).booleanValue() ? BooleanValue.TRUE : BooleanValue.FALSE;
-    } else if ((this == DATE) && (value instanceof BeeDate)) {
-        ret = new DateValue((BeeDate) value);
-    } else if ((this == DATETIME) && (value instanceof BeeDate)) {
-        ret = new DateTimeValue((BeeDate) value);
-    } else if ((this == TIMEOFDAY) && (value instanceof BeeDate)) {
-        ret = new TimeOfDayValue((BeeDate) value);
+    } else if ((this == DATE) && TimeUtils.isDateOrDateTime(value)) {
+        ret = new DateValue(TimeUtils.toDate(value));
+    } else if ((this == DATETIME) && TimeUtils.isDateOrDateTime(value)) {
+        ret = new DateTimeValue(TimeUtils.toDateTime(value));
+    } else if ((this == TIMEOFDAY) && (value instanceof DateTime)) {
+        ret = new TimeOfDayValue((DateTime) value);
     }
     
     Assert.notNull(ret, "Value type mismatch.");

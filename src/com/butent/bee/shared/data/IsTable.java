@@ -35,7 +35,7 @@ public interface IsTable<RowType extends IsRow, ColType extends IsColumn> extend
 
   IsTable<RowType, ColType> create();
   ColType createColumn(ValueType type, String label, String id);
-  RowType createRow();
+  RowType createRow(long id);
   
   IsData fromJson(String data);
   IsData fromJson(String data, double version);

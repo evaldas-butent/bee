@@ -38,6 +38,8 @@
       <BeeField name="Numeric" type="NUMERIC" precision="10" scale="2" />
       <BeeField name="Char" type="CHAR" precision="10" />
       <BeeField name="String" type="STRING" precision="10" />
+      <BeeField name="Date" type="DATE" />
+      <BeeField name="DateTime" type="DATETIME" />
     </BeeFields>
   </BeeTable>
   <BeeTable name="Continents" idName="ContinentID">

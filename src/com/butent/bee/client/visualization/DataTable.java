@@ -5,7 +5,7 @@ import com.google.gwt.core.client.JsArrayInteger;
 
 import com.butent.bee.client.ajaxloader.ArrayHelper;
 import com.butent.bee.client.ajaxloader.Properties;
-import com.butent.bee.shared.BeeDate;
+import com.butent.bee.shared.DateTime;
 
 import java.util.Date;
 
@@ -128,7 +128,7 @@ public class DataTable extends AbstractDataTable {
     this.setColumnLabel(columnIndex, label);
   }-*/;
 
-  public final void setDate(int rowIndex, int columnIndex, BeeDate date) {
+  public final void setDate(int rowIndex, int columnIndex, DateTime date) {
     if (date == null) {
       setValueNull(rowIndex, columnIndex);
     } else {

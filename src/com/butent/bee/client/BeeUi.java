@@ -21,6 +21,7 @@ import com.butent.bee.client.layout.BlankTile;
 import com.butent.bee.client.layout.Direction;
 import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.layout.Split;
+import com.butent.bee.client.layout.TabbedPages;
 import com.butent.bee.client.layout.TilePanel;
 import com.butent.bee.client.ui.FormService;
 import com.butent.bee.client.ui.GwtUiCreator;
@@ -49,14 +50,14 @@ public class BeeUi implements Module {
     Direction direction = null;
     boolean close = false;
 
-    public SplitCommand(Direction direction) {
-      super();
-      this.direction = direction;
-    }
-
     public SplitCommand(boolean close) {
       super();
       this.close = close;
+    }
+
+    public SplitCommand(Direction direction) {
+      super();
+      this.direction = direction;
     }
 
     @Override
@@ -77,6 +78,8 @@ public class BeeUi implements Module {
   private Split screenPanel = null;
   private TilePanel activePanel = null;
   private BeeLayoutPanel menuPanel = null;
+  private BeeLayoutPanel dataPanel = null;
+  private BeeLayoutPanel viewPanel = null;
   private BeeLayoutPanel signature = null;
 
   private final String elDsn = "el-data-source";
@@ -145,6 +148,10 @@ public class BeeUi implements Module {
     return p.getOffsetWidth();
   }
 
+  public BeeLayoutPanel getDataPanel() {
+    return dataPanel;
+  }
+
   public CellType getDefaultCellType() {
     return CellType.get(RadioGroup.getValue(getElCell()));
   }
@@ -202,6 +209,10 @@ public class BeeUi implements Module {
     return screenPanel;
   }
 
+  public BeeLayoutPanel getViewPanel() {
+    return viewPanel;
+  }
+
   public void init() {
   }
 
@@ -211,6 +222,10 @@ public class BeeUi implements Module {
 
   public void setActivePanel(TilePanel p) {
     activePanel = p;
+  }
+
+  public void setDataPanel(BeeLayoutPanel dataPanel) {
+    this.dataPanel = dataPanel;
   }
 
   public void setMenuPanel(BeeLayoutPanel menuPanel) {
@@ -227,6 +242,10 @@ public class BeeUi implements Module {
 
   public void setTemporaryDetach(boolean temporaryDetach) {
     this.temporaryDetach = temporaryDetach;
+  }
+
+  public void setViewPanel(BeeLayoutPanel viewPanel) {
+    this.viewPanel = viewPanel;
   }
 
   public void showGrid(Object data, String... cols) {
@@ -282,14 +301,12 @@ public class BeeUi implements Module {
     }
   }
 
+  public void updateData(Widget w, boolean scroll) {
+    updatePanel(getDataPanel(), w, scroll);
+  }
+
   public void updateMenu(Widget w) {
-    Assert.notNull(w);
-
-    BeeLayoutPanel p = getMenuPanel();
-    Assert.notNull(p);
-
-    p.clear();
-    p.add(w);
+    updatePanel(getMenuPanel(), w, false);
   }
 
   public void updateSignature() {
@@ -397,7 +414,7 @@ public class BeeUi implements Module {
 
     w = initWest();
     if (w != null) {
-      p.addWest(w, 200);
+      p.addWest(w, 256);
     }
 
     w = initEast();
@@ -489,7 +506,7 @@ public class BeeUi implements Module {
 
     p.add(hor);
 
-    BeeLabel ver = new BeeLabel("0.2.4");
+    BeeLabel ver = new BeeLabel("0.2.5");
     p.add(ver);
 
     p.setWidgetLeftWidth(cli, 1, Unit.EM, 50, Unit.PCT);
@@ -508,8 +525,6 @@ public class BeeUi implements Module {
   }
 
   private Widget initWest() {
-    Split spl = new Split();
-
     FlexTable fp = new FlexTable();
     fp.setCellSpacing(3);
 
@@ -534,12 +549,23 @@ public class BeeUi implements Module {
 
     fp.setWidget(r, 1, new BeeButton("Refresh", BeeService.SERVICE_REFRESH_MENU));
     fp.setWidget(r + 1, 1, new BeeButton("BEE", MenuService.NAME, "stage_dummy"));
+    
+    TabbedPages tp = new TabbedPages(3, Unit.EX);
+    tp.add(fp, "Menu");
+    
+    BeeLayoutPanel dp = new BeeLayoutPanel();
+    tp.add(dp, "Data", Global.getCache().getDataInfoCreator());
+    setDataPanel(dp);
 
-    spl.addNorth(fp, 180);
+    BeeLayoutPanel vp = new BeeLayoutPanel();
+    tp.add(vp, "Views");
+    setViewPanel(dp);
+    
+    Split spl = new Split();
+    spl.addNorth(tp, 200);
 
     BeeLayoutPanel mp = new BeeLayoutPanel();
     spl.add(mp);
-
     setMenuPanel(mp);
 
     return spl;
@@ -551,5 +577,13 @@ public class BeeUi implements Module {
     } else {
       return !(p.getParent() instanceof TilePanel);
     }
+  }
+
+  private void updatePanel(BeeLayoutPanel p, Widget w, boolean scroll) {
+    Assert.notNull(p);
+    Assert.notNull(w);
+
+    p.clear();
+    p.add(w, scroll);
   }
 }

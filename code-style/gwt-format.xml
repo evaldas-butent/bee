@@ -14,7 +14,7 @@
 <setting id="org.eclipse.jdt.core.formatter.alignment_for_arguments_in_explicit_constructor_call" value="16"/>
 <setting id="org.eclipse.jdt.core.formatter.alignment_for_arguments_in_method_invocation" value="16"/>
 <setting id="org.eclipse.jdt.core.formatter.alignment_for_arguments_in_qualified_allocation_expression" value="16"/>
-<setting id="org.eclipse.jdt.core.formatter.alignment_for_assignment" value="0"/>
+<setting id="org.eclipse.jdt.core.formatter.alignment_for_assignment" value="16"/>
 <setting id="org.eclipse.jdt.core.formatter.alignment_for_binary_expression" value="16"/>
 <setting id="org.eclipse.jdt.core.formatter.alignment_for_compact_if" value="48"/>
 <setting id="org.eclipse.jdt.core.formatter.alignment_for_conditional_expression" value="16"/>
@@ -274,6 +274,6 @@
 <setting id="org.eclipse.jdt.core.formatter.use_on_off_tags" value="false"/>
 <setting id="org.eclipse.jdt.core.formatter.use_tabs_only_for_leading_indentations" value="false"/>
 <setting id="org.eclipse.jdt.core.formatter.wrap_before_binary_operator" value="true"/>
-<setting id="org.eclipse.jdt.core.formatter.wrap_outer_expressions_when_nested" value="true"/>
+<setting id="org.eclipse.jdt.core.formatter.wrap_outer_expressions_when_nested" value="false"/>
 </profile>
 </profiles>

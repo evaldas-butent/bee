@@ -1,7 +1,7 @@
 package com.butent.bee.shared.data.value;
 
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.BeeDate;
+import com.butent.bee.shared.DateTime;
 import com.butent.bee.shared.utils.BeeUtils;
 
 public class DateTimeValue extends Value {
@@ -11,11 +11,11 @@ public class DateTimeValue extends Value {
     return NULL_VALUE;
   }
 
-  private BeeDate value;
+  private DateTime value;
 
   private Integer hashCode = null;
 
-  public DateTimeValue(BeeDate date) {
+  public DateTimeValue(DateTime date) {
     this.value = date;
   }
 
@@ -25,7 +25,7 @@ public class DateTimeValue extends Value {
   
   public DateTimeValue(int year, int month, int dayOfMonth, int hours,
       int minutes, int seconds, int milliseconds) {
-    value = new BeeDate(year, month, dayOfMonth, hours, minutes, seconds);
+    value = new DateTime(year, month, dayOfMonth, hours, minutes, seconds);
     
     Assert.isTrue(getYear() == year && getMonth() == month && getDayOfMonth() == dayOfMonth
         && getHourOfDay() == hours && getMinute() == minutes && getSecond() == seconds
@@ -53,7 +53,7 @@ public class DateTimeValue extends Value {
     return value.compareTo(otherDateTime.getDateTime());
   }
 
-  public BeeDate getDateTime() {
+  public DateTime getDateTime() {
     Assert.isTrue(!isNull());
     return value;
   }
@@ -79,7 +79,7 @@ public class DateTimeValue extends Value {
   }
 
   @Override
-  public BeeDate getObjectValue() {
+  public DateTime getObjectValue() {
     if (isNull()) {
       return null;
     }

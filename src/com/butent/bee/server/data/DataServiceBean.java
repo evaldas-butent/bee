@@ -12,7 +12,7 @@ import com.butent.bee.server.utils.BeeDataSource;
 import com.butent.bee.server.utils.SystemInfo;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.BeeDate;
+import com.butent.bee.shared.DateTime;
 import com.butent.bee.shared.BeeService;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.LogUtils;
@@ -80,7 +80,7 @@ public class DataServiceBean {
   }
 
   private void testJdbc(Connection conn, RequestInfo reqInfo, ResponseBuffer buff) {
-    BeeDate enter = new BeeDate();
+    DateTime enter = new DateTime();
 
     Map<String, String> map = reqInfo.getVars();
     if (BeeUtils.isEmpty(map)) {
@@ -464,11 +464,11 @@ public class DataServiceBean {
     if (BeeConst.JDBC_COLUMNS.equals(ret)) {
       rsb.rsMdToResponse(rs, buff, debug);
     } else if (BeeConst.JDBC_ROW_COUNT.equals(ret)) {
-      BeeDate start = new BeeDate();
+      DateTime start = new DateTime();
       long memC1 = SystemInfo.freeMemory();
       int rc = JdbcUtils.getSize(rs);
       long memC2 = SystemInfo.freeMemory();
-      BeeDate end = new BeeDate();
+      DateTime end = new DateTime();
 
       buff.addLine(enter.toLog(), start.toLog(), end.toLog());
       buff.addLine(ret, rc,

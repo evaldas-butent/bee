@@ -13,15 +13,15 @@ public class StringMatrix<ColType extends IsColumn> extends AbstractTable<String
   
   public StringMatrix(String[][] data, String... columnLabels) {
     super(columnLabels);
-    rows = new ArraySequence<StringRow>(data.length);
+    rows = new ArraySequence<StringRow>(new StringRow[data.length]);
     for (int i = 0; i < data.length; i++) {
-      rows.set(i, new StringRow(new StringArray(data[i])));
+      rows.set(i, new StringRow(i + 1, new StringArray(data[i])));
     }
   }
 
   protected StringMatrix() {
     super();
-    this.rows = new ArraySequence<StringRow>(0);
+    this.rows = new ArraySequence<StringRow>(new StringRow[0]);
   }
   
   protected StringMatrix(ColType... columns) {
@@ -56,8 +56,8 @@ public class StringMatrix<ColType extends IsColumn> extends AbstractTable<String
   }
 
   @Override
-  public StringRow createRow() {
-    return new StringRow(new StringArray(0));
+  public StringRow createRow(long id) {
+    return new StringRow(id, new StringArray(0));
   }
 
   @Override
@@ -98,7 +98,9 @@ public class StringMatrix<ColType extends IsColumn> extends AbstractTable<String
   @Override
   public void sort(SortInfo... sortInfo) {
     if (getNumberOfRows() > 1) {
-      Arrays.sort(getRows().getArray(), new RowOrdering(sortInfo));
+      StringRow[] arr = getRows().getArray();
+      RowOrdering ord = new RowOrdering(sortInfo);
+      Arrays.sort(arr, ord);
     }
   }
 

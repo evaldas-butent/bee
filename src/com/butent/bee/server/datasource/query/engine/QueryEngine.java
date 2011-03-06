@@ -209,7 +209,7 @@ public final class QueryEngine {
 
     DataTableColumnLookup lookup = new DataTableColumnLookup(table);
     for (R sourceRow : table.getRows()) {
-      R newRow = table.createRow();
+      R newRow = table.createRow(tempTable.getNumberOfRows() + 1);
       for (IsCell sourceCell : sourceRow.getCells()) {
         newRow.addCell(sourceCell);
       }
@@ -297,7 +297,7 @@ public final class QueryEngine {
     }
 
     for (RowTitle rowTitle : rowTitles) {
-      IsRow curRow = new TableRow();
+      IsRow curRow = new TableRow(result.getNumberOfRows() + 1);
       for (Value v : rowTitle.values) {
         curRow.addCell(new TableCell(v));
       }
@@ -421,7 +421,7 @@ public final class QueryEngine {
     result.addColumns(newColumns);
 
     for (IsRow sourceRow : table.getRows()) {
-      IsRow newRow = new TableRow();
+      IsRow newRow = new TableRow(result.getNumberOfRows() + 1);
       for (AbstractColumn col : selectedColumns) {
         boolean wasFound = false;
         Set<List<Value>> pivotValuesSet = columnLookups.keySet();

@@ -5,7 +5,7 @@ import com.google.common.collect.Lists;
 import com.butent.bee.server.datasource.base.DataSourceParameters;
 import com.butent.bee.server.datasource.base.ResponseStatus;
 import com.butent.bee.server.datasource.base.StatusType;
-import com.butent.bee.shared.BeeDate;
+import com.butent.bee.shared.DateTime;
 import com.butent.bee.shared.data.CustomProperties;
 import com.butent.bee.shared.data.DataWarning;
 import com.butent.bee.shared.data.IsCell;
@@ -71,7 +71,7 @@ public class JsonRenderer {
           valueJson.append("]");
           break;
         case DATETIME:
-          BeeDate date = ((DateTimeValue) value).getDateTime();
+          DateTime date = ((DateTimeValue) value).getDateTime();
           valueJson.append("new Date(");
           valueJson.append(date.getYear()).append(",");
           valueJson.append(date.getMonth() - 1).append(",");

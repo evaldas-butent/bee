@@ -2,17 +2,13 @@ package com.butent.bee.shared;
 
 import com.butent.bee.shared.utils.ArrayUtils;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 public class ArraySequence<T> extends AbstractSequence<T> {
   private T[] values;
   
-  public ArraySequence(int size) {
-    super();
-    this.values = ArrayUtils.create(size);
-  }
-
   public ArraySequence(T[] values) {
     super();
     this.values = values;
@@ -23,7 +19,7 @@ public class ArraySequence<T> extends AbstractSequence<T> {
   }
 
   public void clear() {
-    values = ArrayUtils.create(0);
+    setValues(new ArrayList<T>());
   }
 
   public T get(int index) {

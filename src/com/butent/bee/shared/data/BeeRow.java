@@ -3,6 +3,8 @@ package com.butent.bee.shared.data;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeSerializable;
+import com.butent.bee.shared.DateTime;
+import com.butent.bee.shared.JustDate;
 import com.butent.bee.shared.StringArray;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -14,41 +16,38 @@ import java.util.Map;
 
 public class BeeRow extends StringRow implements BeeSerializable {
   public static BeeRow restore(String s) {
-    BeeRow row = new BeeRow();
+    BeeRow row = new BeeRow(0, 0);
     row.deserialize(s);
     return row;
   }
-
-  private int id = 0;
+  
+  private long version = 0;
   private int mode = 0;
   private Map<Integer, String> shadow = null;
 
-  BeeRow(int size, int id) {
-    super(new StringArray(new String[size]));
-    this.id = id;
+  BeeRow(long id, int size) {
+    super(id, new StringArray(new String[size]));
   }
 
-  BeeRow(String[] row, int id) {
-    super(new StringArray(row));
-    this.id = id;
-  }
-
-  private BeeRow() {
-    super(null);
+  BeeRow(long id, String[] row) {
+    super(id, new StringArray(row));
   }
 
   public void deserialize(String s) {
     String[] arr = Codec.beeDeserialize(s);
-    Assert.arrayLength(arr, 4);
+    Assert.arrayLength(arr, 5);
+    int p = 0;
 
-    id = BeeUtils.toInt(arr[0]);
-    mode = BeeUtils.toInt(arr[1]);
+    setId(BeeUtils.toLong(arr[p++]));
+    setVersion(BeeUtils.toLong(arr[p++]));
+    mode = BeeUtils.toInt(arr[p++]);
 
-    if (!BeeUtils.isEmpty(arr[2])) {
-      setValues(new StringArray(Codec.beeDeserialize(arr[2])));
+    if (!BeeUtils.isEmpty(arr[p])) {
+      setValues(new StringArray(Codec.beeDeserialize(arr[p])));
     }
-    if (!BeeUtils.isEmpty(arr[3])) {
-      String[] shArr = Codec.beeDeserialize(arr[3]);
+    p++;
+    if (!BeeUtils.isEmpty(arr[p])) {
+      String[] shArr = Codec.beeDeserialize(arr[p]);
 
       if (ArrayUtils.length(shArr) > 1) {
         Map<Integer, String> shMap = new HashMap<Integer, String>();
@@ -60,21 +59,33 @@ public class BeeRow extends StringRow implements BeeSerializable {
       }
     }
   }
+  
+  @Override
+  public Boolean getBoolean(int col) {
+    return BeeUtils.toBoolean(getString(col));
+  }
+
+  @Override
+  public JustDate getDate(int col) {
+    return new JustDate(getInt(col));
+  }
+
+  @Override
+  public DateTime getDateTime(int col) {
+    return new DateTime(getLong(col));
+  }
 
   public BigDecimal getDecimal(int col) {
     return new BigDecimal(getString(col));
   }
 
-  public double getDouble(int col) {
+  @Override
+  public Double getDouble(int col) {
     return BeeUtils.toDouble(getString(col));
   }
 
   public float getFloat(int col) {
     return BeeUtils.toFloat(getString(col));
-  }
-
-  public int getId() {
-    return id;
   }
 
   public int getInt(int col) {
@@ -121,11 +132,15 @@ public class BeeRow extends StringRow implements BeeSerializable {
     return BeeUtils.ifString(super.getString(index), BeeConst.STRING_EMPTY);
   }
 
-  public boolean markedForDelete() {
+  public long getVersion() {
+    return version;
+  }
+
+  public boolean isMarkedForDelete() {
     return mode < 0;
   }
 
-  public boolean markedForInsert() {
+  public boolean isMarkedForInsert() {
     return mode > 0;
   }
 
@@ -145,7 +160,8 @@ public class BeeRow extends StringRow implements BeeSerializable {
   public String serialize() {
     StringBuilder sb = new StringBuilder();
 
-    sb.append(Codec.beeSerialize(id));
+    sb.append(Codec.beeSerialize(getId()));
+    sb.append(Codec.beeSerialize(getVersion()));
     sb.append(Codec.beeSerialize(mode));
     sb.append(Codec.beeSerialize((Object) getValues().getArray()));
     sb.append(Codec.beeSerialize(shadow));
@@ -167,13 +183,17 @@ public class BeeRow extends StringRow implements BeeSerializable {
         if (BeeUtils.equalsTrim(shadow.get(col), value)) {
           shadow.remove(col);
 
-          if (BeeUtils.isEmpty(shadow) && !markedForInsert()) {
+          if (BeeUtils.isEmpty(shadow) && !isMarkedForInsert()) {
             markForDelete(); // TODO: dummy
           }
         }
       }
       super.setValue(col, value);
     }
+  }
+
+  public void setVersion(long version) {
+    this.version = version;
   }
 
   private void setShadow(Map<Integer, String> shadow) {

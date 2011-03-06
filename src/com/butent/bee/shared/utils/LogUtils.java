@@ -3,7 +3,7 @@ package com.butent.bee.shared.utils;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.BeeDate;
+import com.butent.bee.shared.DateTime;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -11,13 +11,13 @@ import java.util.logging.Logger;
 public class LogUtils {
   private static Logger defaultLogger = null;
 
-  public static String dateToLog(BeeDate dt) {
+  public static String dateToLog(DateTime dt) {
     Assert.notNull(dt);
     return dt.toLog();
   }
 
   public static String dateToLog(long millis) {
-    return new BeeDate(millis).toLog();
+    return new DateTime(millis).toLog();
   }
 
   public static void error(Logger logger, Throwable err, Object... obj) {
@@ -85,7 +85,7 @@ public class LogUtils {
   }
 
   public static String now() {
-    return new BeeDate().toLog();
+    return new DateTime().toLog();
   }
 
   public static void setDefaultLogger(Logger def) {

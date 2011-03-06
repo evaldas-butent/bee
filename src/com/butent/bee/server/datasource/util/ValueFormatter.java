@@ -5,7 +5,8 @@ import com.google.common.collect.Maps;
 import com.butent.bee.server.datasource.base.BooleanFormat;
 import com.butent.bee.server.datasource.base.LocaleUtil;
 import com.butent.bee.server.datasource.base.TextFormat;
-import com.butent.bee.shared.BeeDate;
+import com.butent.bee.shared.DateTime;
+import com.butent.bee.shared.JustDate;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.value.DateTimeValue;
 import com.butent.bee.shared.data.value.DateValue;
@@ -195,12 +196,12 @@ public class ValueFormatter {
 
   private DateValue parseDate(String val) throws ParseException {
     Date date = ((SimpleDateFormat) uFormat).parse(val);
-    return new DateValue(new BeeDate(date));
+    return new DateValue(new JustDate(date));
   }
 
   private DateTimeValue parseDateTime(String val) throws ParseException {
     Date date = ((SimpleDateFormat) uFormat).parse(val);
-    return new DateTimeValue(new BeeDate(date));
+    return new DateTimeValue(new DateTime(date));
   }
 
   private NumberValue parseNumber(String val) throws ParseException {
@@ -210,6 +211,6 @@ public class ValueFormatter {
 
   private TimeOfDayValue parseTimeOfDay(String val) throws ParseException {
     Date date = ((SimpleDateFormat) uFormat).parse(val);
-    return new TimeOfDayValue(new BeeDate(date));
+    return new TimeOfDayValue(new DateTime(date));
   }
 }

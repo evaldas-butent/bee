@@ -173,6 +173,10 @@ public abstract class SqlBuilder {
         return "CHAR(" + precision + ")";
       case STRING:
         return "VARCHAR(" + precision + ")";
+      case DATE:
+        return "INTEGER";
+      case DATETIME:
+        return "BIGINT";
       default:
         Assert.unsupported("Unsupported data type: " + type.name());
         return null;

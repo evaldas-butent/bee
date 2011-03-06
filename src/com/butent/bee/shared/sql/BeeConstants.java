@@ -3,7 +3,7 @@ package com.butent.bee.shared.sql;
 public final class BeeConstants {
 
   public enum DataTypes {
-    BOOLEAN, INTEGER, LONG, FLOAT, DOUBLE, NUMERIC, CHAR, STRING
+    BOOLEAN, INTEGER, LONG, FLOAT, DOUBLE, NUMERIC, CHAR, STRING, DATE, DATETIME
   }
   public enum Keywords {
     DB_NAME, DB_SCHEMA, DB_TABLES, DB_FOREIGNKEYS,

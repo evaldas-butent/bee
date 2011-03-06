@@ -1,13 +1,14 @@
 package com.butent.bee.shared.data.function;
 
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.BeeDate;
+import com.butent.bee.shared.JustDate;
 import com.butent.bee.shared.data.InvalidQueryException;
 import com.butent.bee.shared.data.value.DateTimeValue;
 import com.butent.bee.shared.data.value.DateValue;
 import com.butent.bee.shared.data.value.NumberValue;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.utils.TimeUtils;
 
 import java.util.List;
 
@@ -34,10 +35,10 @@ public class ToDate implements ScalarFunction {
         dateValue = (DateValue) value;
         break;
       case DATETIME:
-        dateValue = new DateValue(((DateTimeValue) value).getObjectValue());
+        dateValue = new DateValue(TimeUtils.toDate(((DateTimeValue) value).getObjectValue()));
         break;
       case NUMBER:
-        dateValue = new DateValue(new BeeDate((long) ((NumberValue) value).getValue()));
+        dateValue = new DateValue(new JustDate((long) ((NumberValue) value).getValue()));
         break;
       default:
         Assert.untouchable("Value type was not found: " + value.getType());

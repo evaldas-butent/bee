@@ -1,7 +1,7 @@
 package com.butent.bee.shared.data.value;
 
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.BeeDate;
+import com.butent.bee.shared.JustDate;
 import com.butent.bee.shared.utils.BeeUtils;
 
 public class DateValue extends Value {
@@ -16,14 +16,14 @@ public class DateValue extends Value {
   private int dayOfMonth;
   private Integer hashCode = null;
 
-  public DateValue(BeeDate date) {
+  public DateValue(JustDate date) {
     this.year = date.getYear();
     this.month = date.getMonth();
     this.dayOfMonth = date.getDom();
   }
 
   public DateValue(int year, int month, int dayOfMonth) {
-    BeeDate date = new BeeDate(year, month, dayOfMonth);
+    JustDate date = new JustDate(year, month, dayOfMonth);
     Assert.isTrue(date.getYear() == year && date.getMonth() == month
         && date.getDom() == dayOfMonth, "Invalid date (yyyy-MM-dd): "
         + year + '-' + month + '-' + dayOfMonth);
@@ -78,11 +78,11 @@ public class DateValue extends Value {
   }
 
   @Override
-  public BeeDate getObjectValue() {
+  public JustDate getObjectValue() {
     if (isNull()) {
       return null;
     }
-    return new BeeDate(year, month, dayOfMonth);
+    return new JustDate(year, month, dayOfMonth);
   }
 
   @Override

@@ -1,6 +1,8 @@
 package com.butent.bee.shared.data;
 
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.DateTime;
+import com.butent.bee.shared.JustDate;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.value.NumberValue;
 import com.butent.bee.shared.data.value.TextValue;
@@ -9,8 +11,16 @@ import com.butent.bee.shared.data.value.Value;
 import java.util.List;
 
 public abstract class AbstractRow implements IsRow {
-
+  private long id;
   private CustomProperties properties = null;
+
+  protected AbstractRow(long id) {
+    this.id = id;
+  }
+  
+  @SuppressWarnings("unused")
+  private AbstractRow() {
+  }
 
   public void addCell(boolean value) {
     addCell(new TableCell(value));
@@ -43,8 +53,20 @@ public abstract class AbstractRow implements IsRow {
 
   public abstract List<IsCell> getCells();
 
-  public Number getNumber(int index) {
-    return getValue(index).getNumber();
+  public JustDate getDate(int index) {
+    return getValue(index).getDate();
+  }
+
+  public DateTime getDateTime(int index) {
+    return getValue(index).getDateTime();
+  }
+
+  public Double getDouble(int index) {
+    return getValue(index).getDouble();
+  }
+
+  public long getId() {
+    return id;
   }
 
   public abstract int getNumberOfCells();
@@ -115,5 +137,9 @@ public abstract class AbstractRow implements IsRow {
     if (getProperties() != null) {
       cloneRow.setProperties(getProperties().clone());
     }
+  }
+
+  protected void setId(long id) {
+    this.id = id;
   }
 }

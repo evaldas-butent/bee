@@ -1,7 +1,7 @@
 package com.butent.bee.shared.data.value;
 
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.BeeDate;
+import com.butent.bee.shared.DateTime;
 import com.butent.bee.shared.utils.BeeUtils;
 
 public class TimeOfDayValue extends Value {
@@ -19,7 +19,7 @@ public class TimeOfDayValue extends Value {
 
   private Integer hashCode = null;
 
-  public TimeOfDayValue(BeeDate date) {
+  public TimeOfDayValue(DateTime date) {
     this.hours = date.getHour();
     this.minutes = date.getMinute();
     this.seconds = date.getSecond();
@@ -97,11 +97,11 @@ public class TimeOfDayValue extends Value {
   }
 
   @Override
-  public BeeDate getObjectValue() {
+  public DateTime getObjectValue() {
     if (isNull()) {
       return null;
     }
-    return new BeeDate(2011, 1, 1, hours, minutes, seconds, milliseconds);
+    return new DateTime(2011, 1, 1, hours, minutes, seconds, milliseconds);
   }
 
   public int getSeconds() {

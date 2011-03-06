@@ -24,11 +24,11 @@ public interface IsData {
 
   List<Value> getDistinctValues(int colIndex);
 
+  Double getDouble(int rowIndex, int colIndex);
+
   int[] getFilteredRows(RowFilter... filters);
 
   String getFormattedValue(int rowIndex, int colIndex);
-
-  Number getNumber(int rowIndex, int colIndex);
   
   int getNumberOfColumns();
   int getNumberOfRows();

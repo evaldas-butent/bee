@@ -13,7 +13,7 @@ import com.butent.bee.client.data.ResponseData;
 import com.butent.bee.client.utils.BeeDuration;
 import com.butent.bee.client.utils.JsUtils;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.BeeDate;
+import com.butent.bee.shared.DateTime;
 import com.butent.bee.shared.BeeResource;
 import com.butent.bee.shared.BeeService;
 import com.butent.bee.shared.communication.CommUtils;
@@ -220,7 +220,7 @@ public class BeeCallback implements RequestCallback {
         continue;
       }
 
-      BeeDate date = messages[i].getDate();
+      DateTime date = messages[i].getDate();
       String msg;
       if (date == null) {
         msg = messages[i].getMessage();

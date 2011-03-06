@@ -43,8 +43,9 @@ import com.butent.bee.client.widget.Progress;
 import com.butent.bee.client.widget.Svg;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.BeeDate;
+import com.butent.bee.shared.DateTime;
 import com.butent.bee.shared.BeeService;
+import com.butent.bee.shared.JustDate;
 import com.butent.bee.shared.communication.ContentType;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.utils.ArrayUtils;
@@ -350,33 +351,39 @@ public class CliWorker {
 
   public static void showDate(String[] arr) {
     int len = BeeUtils.length(arr);
-    BeeDate date;
+    JustDate d;
+    DateTime t;
 
     if (len == 2 && BeeUtils.isDigit(arr[1])) {
-      date = new BeeDate(arr[1]);
+      t = new DateTime(Long.parseLong(arr[1]));
+      d = new JustDate(t);
 
     } else if (len >= 3) {
-      int[] fields = new int[7];
-      for (int i = 0; i < fields.length; i++) {
+      int[] v = new int[7];
+      for (int i = 0; i < v.length; i++) {
         if (i < len - 1) {
-          fields[i] = BeeUtils.toInt(arr[i + 1]);
+          v[i] = BeeUtils.toInt(arr[i + 1]);
         } else {
-          fields[i] = 0;
+          v[i] = 0;
         }
       }
-      date = new BeeDate(fields[0], fields[1], fields[2], fields[3], fields[4], fields[5],
-          fields[6]);
+      d = new JustDate(v[0], v[1], v[2]);
+      t = new DateTime(v[0], v[1], v[2], v[3], v[4], v[5], v[6]);
 
     } else {
-      date = new BeeDate();
+      d = new JustDate();
+      t = new DateTime();
     }
 
-    List<Property> lst = PropertyUtils.createProperties("Time", date.getTime(),
-        "Year", date.getYear(), "Month", date.getMonth(), "Dom", date.getDom(),
-        "Dow", date.getDow(), "Doy", date.getDoy(), "Hour", date.getHour(),
-        "Minute", date.getMinute(), "Second", date.getSecond(), "Millis", date.getMillis(),
-        "Log", date.toLog(), "String", date.toString(),
-        "Date", new Date(date.getTime()).toString(), "Tz Offset", Global.getTzo());
+    List<Property> lst = PropertyUtils.createProperties(
+        "Day", d.getDay(), "Year", d.getYear(), "Month", d.getMonth(), "Dom", d.getDom(),
+        "Dow", d.getDow(), "Doy", d.getDoy(),
+        "String", d.toString(), "DateTime", new DateTime(d).toString(), 
+        "Time", t.getTime(), "Year", t.getYear(), "Month", t.getMonth(), "Dom", t.getDom(),
+        "Dow", t.getDow(), "Doy", t.getDoy(), "Hour", t.getHour(),
+        "Minute", t.getMinute(), "Second", t.getSecond(), "Millis", t.getMillis(),
+        "Log", t.toLog(), "String", t.toString(), "JustDate", new JustDate(t).toString(),
+        "Date", new Date(t.getTime()).toString(), "Tz Offset", Global.getTzo());
 
     BeeKeeper.getUi().showGrid(lst);
   }

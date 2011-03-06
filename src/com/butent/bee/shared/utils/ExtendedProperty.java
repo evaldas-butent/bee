@@ -1,14 +1,14 @@
 package com.butent.bee.shared.utils;
 
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.BeeDate;
+import com.butent.bee.shared.DateTime;
 
 public class ExtendedProperty extends Property {
   public static String[] COLUMN_HEADERS = new String[]{"Name", "Sub", "Value", "Date"};
   public static int COLUMN_COUNT = COLUMN_HEADERS.length;
 
   private String sub;
-  private BeeDate date = new BeeDate();
+  private DateTime date = new DateTime();
 
   public ExtendedProperty(String name, String value) {
     super(name, value);
@@ -24,7 +24,7 @@ public class ExtendedProperty extends Property {
     this(sp.getName(), sp.getSub(), sp.getValue());
   }
 
-  public BeeDate getDate() {
+  public DateTime getDate() {
     return date;
   }
 
@@ -32,7 +32,7 @@ public class ExtendedProperty extends Property {
     return sub;
   }
 
-  public void setDate(BeeDate date) {
+  public void setDate(DateTime date) {
     this.date = date;
   }
 

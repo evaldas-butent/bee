@@ -1,10 +1,26 @@
 package com.butent.bee.shared.data.value;
 
+import com.butent.bee.shared.utils.BeeUtils;
+
 public class BooleanValue extends Value {
 
-  private static final BooleanValue NULL_VALUE = new BooleanValue(false);
   public static final BooleanValue TRUE = new BooleanValue(true);
   public static final BooleanValue FALSE = new BooleanValue(false);
+  private static final BooleanValue NULL_VALUE = new BooleanValue(false);
+  
+  private static final String S_TRUE = "t"; 
+  private static final String S_FALSE = "f"; 
+  private static final String S_NULL = "n";
+  
+  public static Boolean deserialize(String s) {
+    if (BeeUtils.startsSame(s, S_TRUE)) {
+      return true;
+    }
+    if (BeeUtils.startsSame(s, S_FALSE)) {
+      return false;
+    }
+    return null;
+  }
 
   public static BooleanValue getInstance(Boolean value) {
     if (value == null) {
@@ -15,6 +31,13 @@ public class BooleanValue extends Value {
 
   public static BooleanValue getNullValue() {
     return NULL_VALUE;
+  }
+  
+  public static String serialize(Boolean value) {
+    if (value == null) {
+      return S_NULL;
+    }
+    return value ? S_TRUE : S_FALSE;
   }
 
   private boolean value;

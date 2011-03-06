@@ -14,7 +14,7 @@ import com.butent.bee.client.layout.BeeLayoutPanel;
 import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.layout.Stack;
-import com.butent.bee.client.layout.Tab;
+import com.butent.bee.client.layout.TabbedPages;
 import com.butent.bee.client.layout.Vertical;
 import com.butent.bee.client.menu.MenuBar;
 import com.butent.bee.client.menu.MenuCommand;
@@ -235,7 +235,7 @@ public class GwtUiCreator implements UiCreator {
 
   @Override
   public Object createTab(UiTab tab) {
-    Tab widget = new Tab(20, Unit.PX);
+    TabbedPages widget = new TabbedPages(20, Unit.PX);
     widget.setTitle(tab.getId());
 
     if (tab.hasChilds()) {

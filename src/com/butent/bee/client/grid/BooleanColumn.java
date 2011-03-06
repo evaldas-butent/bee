@@ -8,7 +8,7 @@ import com.butent.bee.shared.data.IsRow;
 public class BooleanColumn extends CellColumn<Boolean> {
 
   public BooleanColumn(int index) {
-    super(new CheckboxCell(), index);
+    this(new CheckboxCell(), index);
   }
 
   public BooleanColumn(Cell<Boolean> cell, int index) {

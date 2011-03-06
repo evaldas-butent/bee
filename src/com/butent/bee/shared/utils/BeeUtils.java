@@ -4,7 +4,6 @@ import com.google.common.collect.Sets;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.BeeDate;
 import com.butent.bee.shared.BeeType;
 import com.butent.bee.shared.HasLength;
 import com.butent.bee.shared.Transformable;
@@ -126,13 +125,13 @@ public class BeeUtils {
 
   @SuppressWarnings("unchecked")
   public static <T> int compare(Comparable<T> x1, Comparable<T> x2) {
-    if (isEmpty(x1)) {
-      if (isEmpty(x2)) {
+    if (x1 == null) {
+      if (x2 == null) {
         return BeeConst.COMPARE_EQUAL;
       } else {
-        return x1.compareTo((T) x2);
+        return BeeConst.COMPARE_LESS;
       }
-    } else if (isEmpty(x2)) {
+    } else if (x2 == null) {
       return BeeConst.COMPARE_MORE;
     } else {
       return x1.compareTo((T) x2);
@@ -160,13 +159,13 @@ public class BeeUtils {
   }
 
   public static int compare(Object x1, Object x2) {
-    if (isEmpty(x1)) {
-      if (isEmpty(x2)) {
+    if (x1 == null) {
+      if (x2 == null) {
         return BeeConst.COMPARE_EQUAL;
       } else {
         return BeeConst.COMPARE_LESS;
       }
-    } else if (isEmpty(x2)) {
+    } else if (x2 == null) {
       return BeeConst.COMPARE_MORE;
     } else if (x1 == x2 || x1.equals(x2)) {
       return BeeConst.COMPARE_EQUAL;
@@ -187,6 +186,10 @@ public class BeeUtils {
     } else {
       return s1.compareTo(s2);
     }
+  }
+
+  public static int compareNormalized(String s1, String s2) {
+    return compare(normalize(s1), normalize(s2));
   }
 
   public static String concat(Object... x) {
@@ -210,9 +213,9 @@ public class BeeUtils {
     return s.toString();
   }
 
-  public static <T> boolean containsAny(Collection<T> c1, Collection <T> c2) {
+  public static <T> boolean containsAny(Collection<T> c1, Collection<T> c2) {
     boolean ok = false;
-    
+
     int n1 = length(c1);
     if (n1 <= 0) {
       return ok;
@@ -221,7 +224,7 @@ public class BeeUtils {
     if (n2 <= 0) {
       return ok;
     }
-    
+
     if (n1 <= n2) {
       for (T el : c1) {
         if (c2.contains(el)) {
@@ -334,7 +337,7 @@ public class BeeUtils {
     Assert.notEmpty(types);
 
     Set<BeeType> tp = Sets.newHashSet();
-    
+
     if (x == null) {
       tp.add(BeeType.NULL);
     } else if (x instanceof Boolean) {
@@ -352,12 +355,12 @@ public class BeeUtils {
         tp.add(BeeType.FLOAT);
         tp.add(BeeType.DOUBLE);
       }
-    } else if (instanceOfDateTime(x)) {
+    } else if (TimeUtils.isDateOrDateTime(x)) {
       tp.add(BeeType.DATE);
     } else {
       tp.add(BeeType.UNKNOWN);
     }
-    
+
     return containsAny(types, tp);
   }
 
@@ -582,14 +585,6 @@ public class BeeUtils {
     return new StringBuilder(src).insert(pos, cs).toString();
   }
 
-  public static boolean instanceOfDateTime(Object x) {
-    if (x == null) {
-      return false;
-    } else {
-      return x instanceof BeeDate;
-    }
-  }
-
   public static boolean instanceOfFloatingPoint(Object x) {
     if (x == null) {
       return false;
@@ -708,15 +703,13 @@ public class BeeUtils {
   }
 
   public static boolean isHexDigit(char c) {
-    return (c >= '0' && c <= '9' || c >= 'a' && c <= 'f' || c >= 'A'
-        && c <= 'F');
+    return (c >= '0' && c <= '9' || c >= 'a' && c <= 'f' || c >= 'A' && c <= 'F');
   }
 
   public static boolean isHexString(String s) {
     if (isEmpty(s)) {
       return false;
     }
-
     boolean ok = true;
 
     for (int i = 0; i < s.length(); i++) {
@@ -984,6 +977,13 @@ public class BeeUtils {
     return z;
   }
 
+  public static String normalize(String s) {
+    if (s == null) {
+      return BeeConst.STRING_EMPTY;
+    }
+    return s.trim().toLowerCase();
+  }
+
   public static String normSep(Object x) {
     String sep;
 
@@ -1088,8 +1088,29 @@ public class BeeUtils {
     return min + z.intValue();
   }
 
-  public static String randomString(int minLen, int maxLen, char minChar,
-      char maxChar) {
+  public static long randomLong(long min, long max) {
+    Assert.isTrue(max > min + 1);
+
+    Double z = Math.floor(Math.random() * (max - min));
+    return min + z.longValue();
+  }
+
+  public static String randomString(int len, CharSequence characters) {
+    Assert.isPositive(len);
+    Assert.hasLength(characters);
+    int cnt = characters.length();
+    if (cnt == 1) {
+      return replicate(characters.charAt(0), len);
+    }
+
+    StringBuilder sb = new StringBuilder(len);
+    for (int i = 0; i < len; i++) {
+      sb.append(characters.charAt(randomInt(0, cnt)));
+    }
+    return sb.toString();
+  }
+
+  public static String randomString(int minLen, int maxLen, char minChar, char maxChar) {
     int len;
     int x = (minLen > 0) ? minLen : 1;
     int y = (maxLen >= x) ? maxLen : x + 20;
@@ -1112,6 +1133,35 @@ public class BeeUtils {
       sb.append((char) randomInt(x, y + 1));
     }
     return sb.toString();
+  }
+
+  public static String removeTrailingZeros(String str) {
+    if (str == null) {
+      return null;
+    }
+    if (str.length() <= 2) {
+      return str;
+    }
+    if (str.charAt(str.length() - 1) != BeeConst.CHAR_ZERO) {
+      return str;
+    }
+
+    int p = str.indexOf(BeeConst.CHAR_POINT);
+    if (p < 1) {
+      return str;
+    }
+    if (!isDigit(str.substring(0, p))) {
+      return str;
+    }
+
+    int idx = str.length() - 1;
+    while (str.charAt(idx - 1) == BeeConst.CHAR_ZERO) {
+      idx--;
+    }
+    if (idx == p + 1) {
+      idx--;
+    }
+    return str.substring(0, idx);
   }
 
   public static <V> int removeValue(Map<?, V> map, V value) {
@@ -1211,14 +1261,13 @@ public class BeeUtils {
   }
 
   public static boolean same(String s1, String s2) {
-    if (s1 == null) {
-      return s2 == null;
+    if (isEmpty(s1)) {
+      return isEmpty(s2);
     }
-    if (s2 == null) {
+    if (isEmpty(s2)) {
       return isEmpty(s1);
-    } else {
-      return s1.trim().equalsIgnoreCase(s2.trim());
     }
+    return s1.trim().equalsIgnoreCase(s2.trim());
   }
 
   public static String space(int l) {
@@ -1298,11 +1347,10 @@ public class BeeUtils {
   }
 
   public static boolean toBoolean(String s) {
-    if (s == null) {
+    if (isEmpty(s)) {
       return false;
-    } else {
-      return same(s, BeeConst.STRING_TRUE) || same(s, BeeConst.YES);
     }
+    return BeeConst.isTrue(s.trim().charAt(0));
   }
 
   public static double toDouble(String s) {

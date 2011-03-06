@@ -6,7 +6,7 @@ import com.butent.bee.client.visualization.DataTable;
 import com.butent.bee.client.visualization.AbstractDataTable.ColumnType;
 import com.butent.bee.client.visualization.visualizations.MotionChart;
 import com.butent.bee.client.visualization.visualizations.MotionChart.Options;
-import com.butent.bee.shared.BeeDate;
+import com.butent.bee.shared.DateTime;
 
 public class MotionDemo implements LeftTabPanel.WidgetProvider {
   private static final String STATE_STRING = "{"
@@ -57,12 +57,12 @@ public class MotionDemo implements LeftTabPanel.WidgetProvider {
     data.setValue(5, 3, 617);
     data.setValue(5, 4, "Vilnius");
 
-    data.setDate(0, 1, new BeeDate(2010, 1, 1));
-    data.setDate(1, 1, new BeeDate(2010, 1, 1));
-    data.setDate(2, 1, new BeeDate(2010, 1, 1));
-    data.setDate(3, 1, new BeeDate(2010, 2, 1));
-    data.setDate(4, 1, new BeeDate(2010, 2, 1));
-    data.setDate(5, 1, new BeeDate(2010, 2, 1));
+    data.setDate(0, 1, new DateTime(2010, 1, 1));
+    data.setDate(1, 1, new DateTime(2010, 1, 1));
+    data.setDate(2, 1, new DateTime(2010, 1, 1));
+    data.setDate(3, 1, new DateTime(2010, 2, 1));
+    data.setDate(4, 1, new DateTime(2010, 2, 1));
+    data.setDate(5, 1, new DateTime(2010, 2, 1));
 
     widget = new MotionChart(data, options);
   }

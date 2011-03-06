@@ -1,5 +1,7 @@
 package com.butent.bee.shared.data;
 
+import com.butent.bee.shared.DateTime;
+import com.butent.bee.shared.JustDate;
 import com.butent.bee.shared.data.value.Value;
 
 import java.util.List;
@@ -20,8 +22,12 @@ public interface IsRow extends HasCustomProperties {
   IsCell getCell(int index);
   List<IsCell> getCells();
   
-  Number getNumber(int index);
+  JustDate getDate(int index);
+  DateTime getDateTime(int index);
   
+  Double getDouble(int index);
+  
+  long getId();
   int getNumberOfCells();
   
   String getString(int index);

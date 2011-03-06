@@ -1,7 +1,7 @@
 package com.butent.bee.shared.communication;
 
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.BeeDate;
+import com.butent.bee.shared.DateTime;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Transformable;
@@ -12,18 +12,18 @@ import com.butent.bee.shared.utils.LogUtils;
 import java.util.logging.Level;
 
 public class ResponseMessage implements BeeSerializable, Transformable {
-  private BeeDate date = null;
+  private DateTime date = null;
   private Level level = null;
   private String message = null;
 
-  public ResponseMessage(BeeDate date, Level level, String message) {
+  public ResponseMessage(DateTime date, Level level, String message) {
     this.date = date;
     this.level = level;
     this.message = message;
   }
 
   public ResponseMessage(boolean now, Level level, String message) {
-    this(now ? new BeeDate() : null, level, message);
+    this(now ? new DateTime() : null, level, message);
   }
 
   public ResponseMessage(boolean now, String message) {
@@ -66,7 +66,7 @@ public class ResponseMessage implements BeeSerializable, Transformable {
       
       switch (i) {
         case 0:
-          setDate(new BeeDate(v));
+          setDate(new DateTime(Long.parseLong(v)));
           break;
         case 1:
           setLevel(Level.parse(v));
@@ -82,7 +82,7 @@ public class ResponseMessage implements BeeSerializable, Transformable {
     }
   }
 
-  public BeeDate getDate() {
+  public DateTime getDate() {
     return date;
   }
 
@@ -104,7 +104,7 @@ public class ResponseMessage implements BeeSerializable, Transformable {
     return Codec.encodeBase64(sb.toString());
   }
 
-  public void setDate(BeeDate date) {
+  public void setDate(DateTime date) {
     this.date = date;
   }
 

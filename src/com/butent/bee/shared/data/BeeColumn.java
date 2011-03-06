@@ -60,11 +60,11 @@ public class BeeColumn extends TableColumn implements BeeSerializable, Transform
   private boolean writable = false;
 
   public BeeColumn() {
-    super(null);
+    super(ValueType.TEXT);
   }
 
   public BeeColumn(String name) {
-    super(null, name, name);
+    super(ValueType.TEXT, name, name);
     setName(name);
   }
  

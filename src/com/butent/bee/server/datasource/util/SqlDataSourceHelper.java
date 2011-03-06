@@ -208,9 +208,10 @@ public class SqlDataSourceHelper {
     for (int c = 0; c < numOfCols; c++) {
       columnsTypeArray[c] = columns.get(c).getType();
     }
-
+    
+    int id = 0;
     while (rs.next()) {
-      R row = dataTable.createRow();
+      R row = dataTable.createRow(++id);
       for (int c = 0; c < numOfCols; c++) {
         row.addCell(buildTableCell(rs, columnsTypeArray[c], c));
       }

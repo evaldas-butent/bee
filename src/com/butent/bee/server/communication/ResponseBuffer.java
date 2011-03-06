@@ -1,7 +1,7 @@
 package com.butent.bee.server.communication;
 
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.BeeDate;
+import com.butent.bee.shared.DateTime;
 import com.butent.bee.shared.BeeResource;
 import com.butent.bee.shared.communication.CommUtils;
 import com.butent.bee.shared.communication.ContentType;
@@ -219,7 +219,7 @@ public class ResponseBuffer {
 
     add(el.getName());
     add(el.getValue());
-    add(new BeeDate().toLog());
+    add(new DateTime().toLog());
   }
 
   public void addResource(String content) {
@@ -283,7 +283,7 @@ public class ResponseBuffer {
       add(root);
       add(el.getName());
       add(el.getValue());
-      add(new BeeDate().toLog());
+      add(new DateTime().toLog());
     }
   }
 
@@ -369,7 +369,7 @@ public class ResponseBuffer {
   }
 
   public String now() {
-    return new BeeDate().toLog();
+    return new DateTime().toLog();
   }
 
   public void setBuffer(StringBuilder buffer) {

@@ -35,7 +35,7 @@ public class JsData<ColType extends IsColumn> extends StringMatrix<ColType> {
 
     setRows(new ArraySequence<StringRow>(new StringRow[rc]));
     for (int i = 0; i < rc; i++) {
-      getRows().set(i, new StringRow(new JsStringSequence(JsUtils.slice(data, 
+      getRows().set(i, new StringRow(i + 1, new JsStringSequence(JsUtils.slice(data, 
           start + i * rowSize, start + (i + 1) * rowSize))));
     }
   }

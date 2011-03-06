@@ -9,7 +9,7 @@ import com.butent.bee.client.visualization.events.RangeChangeHandler;
 import com.butent.bee.client.visualization.visualizations.AnnotatedTimeLine;
 import com.butent.bee.client.visualization.visualizations.AnnotatedTimeLine.Options;
 import com.butent.bee.client.widget.BeeLabel;
-import com.butent.bee.shared.BeeDate;
+import com.butent.bee.shared.DateTime;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.TimeUtils;
 
@@ -36,8 +36,8 @@ public class AnnotatedDemo implements LeftTabPanel.WidgetProvider {
     int rows = BeeUtils.randomInt(30, 100);
     data.addRows(rows);
     
-    BeeDate now = new BeeDate();
-    double start = new BeeDate(now.getYear(), now.getMonth(), now.getDom()).getTime();
+    DateTime now = new DateTime();
+    double start = new DateTime(now.getYear(), now.getMonth(), now.getDom()).getTime();
     start -= Double.valueOf(TimeUtils.MILLIS_PER_DAY) * (rows + 1);
     
     for (int i = 0; i < rows; i++) {

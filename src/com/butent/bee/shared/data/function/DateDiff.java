@@ -1,6 +1,6 @@
 package com.butent.bee.shared.data.function;
 
-import com.butent.bee.shared.BeeDate;
+import com.butent.bee.shared.DateTime;
 import com.butent.bee.shared.data.InvalidQueryException;
 import com.butent.bee.shared.data.value.DateTimeValue;
 import com.butent.bee.shared.data.value.DateValue;
@@ -29,8 +29,8 @@ public class DateDiff implements ScalarFunction {
     if (firstValue.isNull() || secondValue.isNull()) {
       return NumberValue.getNullValue();
     }
-    BeeDate firstDate = getDateFromValue(firstValue);
-    BeeDate secondDate = getDateFromValue(secondValue);
+    DateTime firstDate = getDateFromValue(firstValue);
+    DateTime secondDate = getDateFromValue(secondValue);
 
     return new NumberValue(TimeUtils.dateDiff(secondDate, firstDate));
   }
@@ -59,9 +59,9 @@ public class DateDiff implements ScalarFunction {
     }
   }
 
-  private BeeDate getDateFromValue(Value value) {
+  private DateTime getDateFromValue(Value value) {
     if (value.getType() == ValueType.DATE) {
-      return ((DateValue) value).getObjectValue();
+      return TimeUtils.toDateTime(((DateValue) value).getObjectValue());
     } else {
       return ((DateTimeValue) value).getObjectValue();
     }

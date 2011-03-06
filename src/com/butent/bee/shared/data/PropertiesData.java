@@ -46,7 +46,7 @@ public class PropertiesData extends RowList<StringRow, TableColumn> {
   }
 
   @Override
-  public StringRow createRow() {
-    return new StringRow(new ListSequence<String>(0));
+  public StringRow createRow(long id) {
+    return new StringRow(id, new ListSequence<String>(0));
   }
 }

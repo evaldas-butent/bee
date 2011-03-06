@@ -2,7 +2,7 @@ package com.butent.bee.server.utils;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.BeeDate;
+import com.butent.bee.shared.DateTime;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.ExtendedProperty;
 import com.butent.bee.shared.utils.LogUtils;
@@ -202,7 +202,7 @@ public class FileUtils {
         fl.getTotalSpace(), "Usable Space", fl.getUsableSpace(), "Absolute",
         fl.isAbsolute(), "Directory", fl.isDirectory(), "File", fl.isFile(),
         "Hidden", fl.isHidden(), "Last Modified",
-        new BeeDate(fl.lastModified()), "Length", fl.length(), "URI",
+        new DateTime(fl.lastModified()), "Length", fl.length(), "URI",
         fl.toURI());
     return lst;
   }

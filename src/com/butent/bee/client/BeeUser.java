@@ -1,5 +1,7 @@
 package com.butent.bee.client;
 
+import com.butent.bee.shared.utils.BeeUtils;
+
 public class BeeUser implements Module {
 
   private String sessionId = null;
@@ -35,6 +37,10 @@ public class BeeUser implements Module {
 
   public void init() {
   }
+  
+  public boolean isLoggedIn() {
+    return !BeeUtils.isEmpty(getUserSign());
+  }
 
   public void setSessionId(String sessionId) {
     this.sessionId = sessionId;
@@ -46,5 +52,4 @@ public class BeeUser implements Module {
 
   public void start() {
   }
-
 }

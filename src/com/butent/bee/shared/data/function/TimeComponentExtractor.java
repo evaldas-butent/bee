@@ -3,7 +3,6 @@ package com.butent.bee.shared.data.function;
 import com.google.common.collect.Maps;
 
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.BeeDate;
 import com.butent.bee.shared.data.InvalidQueryException;
 import com.butent.bee.shared.data.value.DateTimeValue;
 import com.butent.bee.shared.data.value.DateValue;
@@ -136,9 +135,11 @@ public class TimeComponentExtractor implements ScalarFunction {
         break;
       case WEEK:
       case DAY_OF_WEEK:
-        BeeDate date = (valueType == ValueType.DATE) ?
-            ((DateValue) value).getObjectValue() : ((DateTimeValue) value).getObjectValue();
-        component = date.getDow();
+        if (valueType == ValueType.DATE) {
+          component = ((DateValue) value).getObjectValue().getDow();
+        } else {
+          component = ((DateTimeValue) value).getObjectValue().getDow();
+        }
         break;
       default:
         Assert.untouchable("An invalid time component.");

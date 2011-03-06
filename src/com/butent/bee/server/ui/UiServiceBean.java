@@ -15,7 +15,9 @@ import com.butent.bee.shared.sql.SqlBuilderFactory;
 import com.butent.bee.shared.sql.SqlSelect;
 import com.butent.bee.shared.sql.SqlUtils;
 import com.butent.bee.shared.ui.UiComponent;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -59,7 +61,7 @@ public class UiServiceBean {
         ig.destroy();
         sys.initDatabase(dsn);
       }
-
+      
       if (svc.equals("rpc_ui_form")) {
         response = formInfo(reqInfo);
       } else if (svc.equals("rpc_ui_form_list")) {
@@ -82,6 +84,14 @@ public class UiServiceBean {
         response = getStateTable(reqInfo);
       } else if (svc.equals("rpc_ui_commit")) {
         response = commitChanges(reqInfo);
+
+      } else if (svc.equals("rpc_ui_base_data")) {
+        response = getBaseData(reqInfo);
+      } else if (svc.equals("rpc_ui_data_info")) {
+        response = getDataInfo();
+      } else if (svc.equals("rpc_ui_gen")) {
+        response = generateData(reqInfo);
+
       } else {
         String msg = BeeUtils.concat(1, svc, "loader service not recognized");
         logger.warning(msg);
@@ -138,6 +148,40 @@ public class UiServiceBean {
     SqlSelect ss = new SqlSelect();
     ss.addFields("f", "form").addFrom("forms", "f").addOrder("f", "form");
     return ResponseObject.response(qs.getData(ss));
+  }
+
+  private ResponseObject generateData(RequestInfo reqInfo) {
+    ResponseObject response;
+
+    String[] arr = BeeUtils.split(reqInfo.getContent(), BeeConst.STRING_SPACE);
+    String tableName = ArrayUtils.getQuietly(arr, 0); 
+    int rowCount = BeeUtils.toInt(ArrayUtils.getQuietly(arr, 1));
+    
+    if (!sys.isTable(tableName)) {
+      response = new ResponseObject().addError("Unknown table:", tableName);
+    } else if (rowCount <= 0 || rowCount > 10000) {
+      response = new ResponseObject().addError("Invalid row count:", rowCount);
+    } else {
+      response = sys.generateData(tableName, rowCount);
+    }
+    return response;
+  }
+
+  private ResponseObject getBaseData(RequestInfo reqInfo) {
+    ResponseObject response;
+    String tableName = reqInfo.getContent();
+    
+    if (!sys.isTable(tableName)) {
+      response = new ResponseObject().addError("Unknown table:", tableName);
+    } else {
+      String sql = new SqlSelect().addAllFields(tableName).addFrom(tableName).getQuery();
+      response = new ResponseObject().setResponse(qs.getBaseData(tableName, sql));
+    }
+    return response;
+  }
+  
+  private ResponseObject getDataInfo() {
+    return ResponseObject.response(Codec.beeSerialize(sys.getDataInfo()));
   }
 
   private ResponseObject getStates(RequestInfo reqInfo) {
@@ -210,6 +254,7 @@ public class UiServiceBean {
         String colName = data.getString(row, "caption").replaceAll("['\"]", "");
         rs.addColumn(new BeeColumn(ValueType.TEXT, colName, BeeUtils.createUniqueName("col")));
       }
+      long id = 0;
       for (int i = 0; i < 20; i++) {
         int cnt = data.getNumberOfRows();
         String[] cells = new String[cnt];
@@ -217,7 +262,7 @@ public class UiServiceBean {
         for (int j = 0; j < cnt; j++) {
           cells[j] = (j == 0 ? Integer.toString(i + 1) : BeeConst.STRING_EMPTY);
         }
-        rs.addRow(cells);
+        rs.addRow(++id, cells);
       }
       return ResponseObject.response(rs);
     }

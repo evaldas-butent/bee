@@ -4,7 +4,7 @@ import com.butent.bee.server.communication.ResponseBuffer;
 import com.butent.bee.server.jdbc.JdbcException;
 import com.butent.bee.server.jdbc.JdbcUtils;
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.BeeDate;
+import com.butent.bee.shared.DateTime;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.utils.LogUtils;
 
@@ -34,7 +34,7 @@ public class ResultSetBean {
 
   public void rsMdToResponse(ResultSet rs, ResponseBuffer buff, boolean debug) {
     Assert.noNulls(rs, buff);
-    BeeDate start = new BeeDate();
+    DateTime start = new DateTime();
 
     BeeColumn[] cols = null;
     int c;
@@ -71,14 +71,14 @@ public class ResultSetBean {
           z.isReadOnly(), z.isWritable(), z.isDefinitelyWritable(), z.getProperties());
 
       if (debug) {
-        buff.add(new BeeDate().toLog());
+        buff.add(new DateTime().toLog());
       }
     }
   }
 
   public void rsToResponse(ResultSet rs, ResponseBuffer buff, boolean debug) {
     Assert.noNulls(rs, buff);
-    BeeDate start = new BeeDate();
+    DateTime start = new DateTime();
 
     BeeColumn[] cols = null;
     int c;
@@ -111,7 +111,7 @@ public class ResultSetBean {
           buff.add(rs.getString(cols[i].getIndex()));
         }
         if (debug) {
-          buff.add(new BeeDate().toLog());
+          buff.add(new DateTime().toLog());
         }
       }
     } catch (SQLException ex) {

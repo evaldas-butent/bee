@@ -46,9 +46,20 @@ public class SqlInsert extends SqlQuery<SqlInsert> {
     }
     return getReference();
   }
+  
+  public void clearFields() {
+    fieldList.clear();
+    if (!BeeUtils.isEmpty(valueList)) {
+      valueList.clear();
+    }
+  }
 
   public SqlSelect getDataSource() {
     return dataSource;
+  }
+  
+  public int getFieldCount() {
+    return fieldList.size();
   }
 
   public List<IsExpression> getFields() {

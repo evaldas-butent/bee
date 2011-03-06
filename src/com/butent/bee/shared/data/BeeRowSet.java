@@ -19,7 +19,7 @@ import java.util.logging.Logger;
 public class BeeRowSet extends RowList<BeeRow, BeeColumn> implements BeeSerializable {
 
   private enum SerializationMembers {
-    COUNTER, VIEW, COLUMNS, ROWS
+    VIEW, COLUMNS, ROWS
   }
 
   private static Logger logger = Logger.getLogger(BeeRowSet.class.getName());
@@ -30,8 +30,12 @@ public class BeeRowSet extends RowList<BeeRow, BeeColumn> implements BeeSerializ
     return rs;
   }
 
-  private int counter = -1;
   private String viewName;
+
+  public BeeRowSet(List<BeeColumn> columns) {
+    super();
+    setColumns(columns);
+  }
 
   public BeeRowSet(BeeColumn... columns) {
     super();
@@ -47,17 +51,23 @@ public class BeeRowSet extends RowList<BeeRow, BeeColumn> implements BeeSerializ
   public int addEmptyRow(boolean mark) {
     String[] arr = new String[getNumberOfColumns()];
     Arrays.fill(arr, BeeConst.STRING_EMPTY);
-    BeeRow row = createRow(arr);
+    BeeRow row = createRow(-1, arr);
     if (mark) {
       row.markForInsert();
     }
     return addRow(row);
   }
 
-  public int addRow(String[] data) {
-    return addRow(createRow(data));
+  public int addRow(long id, String[] data) {
+    return addRow(createRow(id, data));
   }
 
+  public int addRow(long id, long version, String[] data) {
+    BeeRow row = createRow(id, data);
+    row.setVersion(version);
+    return addRow(row);
+  }
+  
   @Override
   public BeeRowSet clone() {
     BeeRowSet result = new BeeRowSet(getRows());
@@ -71,7 +81,7 @@ public class BeeRowSet extends RowList<BeeRow, BeeColumn> implements BeeSerializ
         BeeRow dst = findRow(upd.getId());
 
         if (!BeeUtils.isEmpty(dst)) {
-          if (dst.markedForDelete()) {
+          if (dst.isMarkedForDelete()) {
             removeRow(dst);
           } else {
             dst.setValues(upd.getValues());
@@ -93,16 +103,16 @@ public class BeeRowSet extends RowList<BeeRow, BeeColumn> implements BeeSerializ
   }
 
   @Override
-  public BeeRow createRow() {
-    return createRow(0);
+  public BeeRow createRow(long id) {
+    return createRow(id, 0);
   }
 
-  public BeeRow createRow(int size) {
-    return new BeeRow(size, incrementCounter());
+  public BeeRow createRow(long id, int size) {
+    return new BeeRow(id, size);
   }
 
-  public BeeRow createRow(String[] data) {
-    return new BeeRow(data, incrementCounter());
+  public BeeRow createRow(long id, String[] data) {
+    return new BeeRow(id, data);
   }
 
   @Override
@@ -119,10 +129,6 @@ public class BeeRowSet extends RowList<BeeRow, BeeColumn> implements BeeSerializ
       String value = arr[i];
 
       switch (member) {
-        case COUNTER:
-          counter = BeeUtils.toInt(value);
-          break;
-
         case VIEW:
           setViewName(value);
           break;
@@ -161,7 +167,8 @@ public class BeeRowSet extends RowList<BeeRow, BeeColumn> implements BeeSerializ
     update.setViewName(getViewName());
 
     for (BeeRow row : getRows()) {
-      if (!BeeUtils.isEmpty(row.getShadow()) || row.markedForDelete() || row.markedForInsert()) {
+      if (!BeeUtils.isEmpty(row.getShadow())
+          || row.isMarkedForDelete() || row.isMarkedForInsert()) {
         update.addRow(row);
       }
     }
@@ -228,7 +235,7 @@ public class BeeRowSet extends RowList<BeeRow, BeeColumn> implements BeeSerializ
   public void rollback() {
     if (!isEmpty()) {
       for (BeeRow row : ImmutableList.copyOf(getRows().getList())) {
-        if (row.markedForInsert()) {
+        if (row.isMarkedForInsert()) {
           removeRow(row);
         } else {
           if (!BeeUtils.isEmpty(row.getShadow())) {
@@ -248,10 +255,6 @@ public class BeeRowSet extends RowList<BeeRow, BeeColumn> implements BeeSerializ
 
     for (SerializationMembers member : SerializationMembers.values()) {
       switch (member) {
-        case COUNTER:
-          sb.append(Codec.beeSerialize(counter));
-          break;
-
         case VIEW:
           sb.append(Codec.beeSerialize(getViewName()));
           break;
@@ -280,16 +283,12 @@ public class BeeRowSet extends RowList<BeeRow, BeeColumn> implements BeeSerializ
     this.viewName = viewName;
   }
 
-  private BeeRow findRow(int id) {
+  private BeeRow findRow(long id) {
     for (BeeRow row : getRows()) {
       if (row.getId() == id) {
         return row;
       }
     }
     return null;
-  }
-
-  private int incrementCounter() {
-    return ++counter;
   }
 }

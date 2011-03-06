@@ -6,35 +6,35 @@ import com.butent.bee.shared.utils.TimeUtils;
 
 import java.util.Date;
 
-public class BeeDate implements BeeSerializable, Comparable<BeeDate> {
+public class DateTime implements BeeSerializable, Comparable<DateTime> {
   private long time;
   private int[] fields = null;
 
-  public BeeDate() {
+  public DateTime() {
     this(System.currentTimeMillis());
   }
 
-  public BeeDate(long time) {
+  public DateTime(long time) {
     this.time = time;
   }
 
-  public BeeDate(String time) {
-    this(Long.parseLong(time));
-  }
-
-  public BeeDate(Date date) {
+  public DateTime(Date date) {
     this(date.getTime());
   }
   
-  public BeeDate(int year, int month, int dom) {
+  public DateTime(JustDate date) {
+    this(date.getYear(), date.getMonth(), date.getDom());
+  }
+  
+  public DateTime(int year, int month, int dom) {
     this(year, month, dom, 0, 0, 0, 0);
   }
 
-  public BeeDate(int year, int month, int dom, int hour, int minute, int second) {
+  public DateTime(int year, int month, int dom, int hour, int minute, int second) {
     this(year, month, dom, hour, minute, second, 0);
   }
   
-  public BeeDate(int year, int month, int dom, int hour, int minute, int second, int millis) {
+  public DateTime(int year, int month, int dom, int hour, int minute, int second, int millis) {
     long z = Grego.fieldsToDay(year, month, dom);
     z *= TimeUtils.MILLIS_PER_DAY;
     
@@ -51,7 +51,7 @@ public class BeeDate implements BeeSerializable, Comparable<BeeDate> {
     this.time = z + millis;
   }
   
-  public int compareTo(BeeDate other) {
+  public int compareTo(DateTime other) {
     long thisVal = getTime();
     long anotherVal = other.getTime();
     return (thisVal < anotherVal ? -1 : (thisVal == anotherVal ? 0 : 1));

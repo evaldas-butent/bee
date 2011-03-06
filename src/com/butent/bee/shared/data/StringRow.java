@@ -11,12 +11,9 @@ import java.util.List;
 public class StringRow extends AbstractRow {
   private Sequence<String> values;
   
-  public StringRow(Sequence<String> values) {
+  public StringRow(long id, Sequence<String> values) {
+    super(id);
     this.values = values;
-  }
-
-  @SuppressWarnings("unused")
-  private StringRow() {
   }
 
   @Override
@@ -37,7 +34,7 @@ public class StringRow extends AbstractRow {
   
   @Override
   public StringRow clone() {
-    StringRow result = new StringRow(values);
+    StringRow result = new StringRow(getId(), values);
     cloneProperties(result);
     return result;
   }
