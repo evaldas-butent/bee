@@ -1,9 +1,10 @@
 package com.butent.bee.shared.sql;
 
+import com.google.common.collect.Lists;
+
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.utils.BeeUtils;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -34,7 +35,7 @@ public class SqlUpdate extends HasFrom<SqlUpdate> {
     updateEntry[VALUE_INDEX] = value;
 
     if (BeeUtils.isEmpty(updates)) {
-      updates = new ArrayList<IsExpression[]>();
+      updates = Lists.newArrayList();
     }
     updates.add(updateEntry);
 
@@ -93,6 +94,15 @@ public class SqlUpdate extends HasFrom<SqlUpdate> {
   @Override
   public boolean isEmpty() {
     return BeeUtils.isEmpty(target) || BeeUtils.isEmpty(updates);
+  }
+
+  public SqlUpdate reset() {
+    if (!BeeUtils.isEmpty(updates)) {
+      updates.clear();
+    }
+    whereClause = null;
+
+    return getReference();
   }
 
   public SqlUpdate setWhere(IsCondition clause) {

@@ -1,6 +1,6 @@
 package com.butent.bee.shared.sql;
 
-import com.butent.bee.shared.sql.BeeConstants.Keywords;
+import com.butent.bee.shared.sql.BeeConstants.Keyword;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Map;
@@ -8,7 +8,7 @@ import java.util.Map;
 class MySqlBuilder extends SqlBuilder {
 
   @Override
-  protected String sqlKeyword(Keywords option, Map<String, Object> params) {
+  protected String sqlKeyword(Keyword option, Map<String, Object> params) {
     switch (option) {
       case DB_SCHEMA:
         return "SELECT schema() as dbSchema";
@@ -20,13 +20,17 @@ class MySqlBuilder extends SqlBuilder {
 
       case DB_TABLES:
         String sql = BeeUtils.concat(" IN ", "SHOW TABLES", params.get("dbSchema"));
-        sql = BeeUtils.concat(" LIKE ", sql, sqlTransform(params.get("table")));
+        Object prm = params.get("table");
+
+        if (!BeeUtils.isEmpty(prm)) {
+          sql = BeeUtils.concat(" LIKE ", sql, sqlTransform(params.get("table")));
+        }
         return sql;
 
       case DB_FOREIGNKEYS:
         IsCondition wh = null;
 
-        Object prm = params.get("dbName");
+        prm = params.get("dbName");
         if (!BeeUtils.isEmpty(prm)) {
           wh = SqlUtils.and(wh,
               SqlUtils.equal("c", "constraint_catalog", prm),
@@ -47,14 +51,14 @@ class MySqlBuilder extends SqlBuilder {
           wh = SqlUtils.and(wh, SqlUtils.equal("c", "referenced_table_name", prm));
         }
         return new SqlSelect()
-          .addField("c", "constraint_name", "Name")
-          .addField("t", "table_name", "TblName")
-          .addField("c", "referenced_table_name", "RefTblName")
-          .addFrom("information_schema.referential_constraints", "c")
-          .addFromInner("information_schema.table_constraints", "t",
-              SqlUtils.joinUsing("c", "t", "constraint_name"))
-          .setWhere(wh)
-          .getQuery(this);
+            .addField("c", "constraint_name", "Name")
+            .addField("t", "table_name", "TblName")
+            .addField("c", "referenced_table_name", "RefTblName")
+            .addFrom("information_schema.referential_constraints", "c")
+            .addFromInner("information_schema.table_constraints", "t",
+                SqlUtils.joinUsing("c", "t", "constraint_name"))
+            .setWhere(wh)
+            .getQuery(this);
 
       default:
         return super.sqlKeyword(option, params);

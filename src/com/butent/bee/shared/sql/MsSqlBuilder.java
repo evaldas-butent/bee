@@ -1,8 +1,8 @@
 package com.butent.bee.shared.sql;
 
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.sql.BeeConstants.DataTypes;
-import com.butent.bee.shared.sql.BeeConstants.Keywords;
+import com.butent.bee.shared.sql.BeeConstants.DataType;
+import com.butent.bee.shared.sql.BeeConstants.Keyword;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Map;
@@ -10,7 +10,7 @@ import java.util.Map;
 class MsSqlBuilder extends SqlBuilder {
 
   @Override
-  protected String sqlKeyword(Keywords option, Map<String, Object> params) {
+  protected String sqlKeyword(Keyword option, Map<String, Object> params) {
     switch (option) {
       case DB_NAME:
         return "SELECT db_name() as dbName";
@@ -35,10 +35,8 @@ class MsSqlBuilder extends SqlBuilder {
   }
 
   @Override
-  protected Object sqlType(DataTypes type, int precision, int scale) {
+  protected Object sqlType(DataType type, int precision, int scale) {
     switch (type) {
-      case FLOAT:
-        return "REAL";
       case DOUBLE:
         return "FLOAT";
       default:

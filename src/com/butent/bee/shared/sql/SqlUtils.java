@@ -1,7 +1,7 @@
 package com.butent.bee.shared.sql;
 
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.sql.BeeConstants.Keywords;
+import com.butent.bee.shared.sql.BeeConstants.Keyword;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -34,7 +34,7 @@ public class SqlUtils {
     params.put("expression", expr);
     params.put("value", value);
 
-    return expression(new SqlCommand(Keywords.BITAND, params));
+    return expression(new SqlCommand(Keyword.BITAND, params));
   }
 
   public static <T> IsExpression bitAnd(String source, String field, T value) {
@@ -50,18 +50,18 @@ public class SqlUtils {
   }
 
   public static IsQuery createForeignKey(String table, String name, String field,
-      String refTable, String refField, Keywords action) {
+      String refTable, String refField, Keyword action) {
 
     Map<String, Object> params = new HashMap<String, Object>();
     params.put("table", name(table));
     params.put("name", name(name));
-    params.put("type", Keywords.FOREIGNKEY);
+    params.put("type", Keyword.FOREIGNKEY);
     params.put("field", name(field));
     params.put("refTable", name(refTable));
     params.put("refField", name(refField));
     params.put("action", action);
 
-    return new SqlCommand(Keywords.ADD_CONSTRAINT, params);
+    return new SqlCommand(Keyword.ADD_CONSTRAINT, params);
   }
 
   public static IsQuery createIndex(String table, String name, String... fields) {
@@ -72,7 +72,7 @@ public class SqlUtils {
     Map<String, Object> params = new HashMap<String, Object>();
     params.put("table", name(table));
     params.put("name", name(name));
-    params.put("type", Keywords.PRIMARYKEY);
+    params.put("type", Keyword.PRIMARYKEY);
 
     if (BeeUtils.isEmpty(fields)) {
       params.put("fields", name(name));
@@ -86,7 +86,7 @@ public class SqlUtils {
       }
       params.put("fields", expression(flds.toArray()));
     }
-    return new SqlCommand(Keywords.ADD_CONSTRAINT, params);
+    return new SqlCommand(Keyword.ADD_CONSTRAINT, params);
   }
 
   public static IsQuery createUniqueIndex(String table, String name, String... fields) {
@@ -100,15 +100,15 @@ public class SqlUtils {
     params.put("table", table);
     params.put("refTable", refTable);
 
-    return new SqlCommand(Keywords.DB_FOREIGNKEYS, params);
+    return new SqlCommand(Keyword.DB_FOREIGNKEYS, params);
   }
 
   public static IsQuery dbName() {
-    return new SqlCommand(Keywords.DB_NAME, null);
+    return new SqlCommand(Keyword.DB_NAME, null);
   }
 
   public static IsQuery dbSchema() {
-    return new SqlCommand(Keywords.DB_SCHEMA, null);
+    return new SqlCommand(Keyword.DB_SCHEMA, null);
   }
 
   public static IsQuery dbTables(String dbName, String dbSchema, String table) {
@@ -117,7 +117,7 @@ public class SqlUtils {
     params.put("dbSchema", dbSchema);
     params.put("table", table);
 
-    return new SqlCommand(Keywords.DB_TABLES, params);
+    return new SqlCommand(Keyword.DB_TABLES, params);
   }
 
   public static IsQuery dropForeignKey(String table, String name) {
@@ -125,14 +125,14 @@ public class SqlUtils {
     params.put("table", name(table));
     params.put("name", name(name));
 
-    return new SqlCommand(Keywords.DROP_FOREIGNKEY, params);
+    return new SqlCommand(Keyword.DROP_FOREIGNKEY, params);
   }
 
   public static IsQuery dropTable(String table) {
     Map<String, Object> params = new HashMap<String, Object>();
     params.put("table", name(table));
 
-    return new SqlCommand(Keywords.DROP_TABLE, params);
+    return new SqlCommand(Keyword.DROP_TABLE, params);
   }
 
   public static IsCondition equal(IsExpression expr, Object value) {
@@ -313,7 +313,7 @@ public class SqlUtils {
     params.put("condition", cond);
     params.put("ifTrue", ifTrue);
     params.put("ifFalse", ifFalse);
-    return expression(new SqlCommand(Keywords.IF, params));
+    return expression(new SqlCommand(Keyword.IF, params));
   }
 
   public static IsCondition sqlTrue() {
@@ -332,7 +332,7 @@ public class SqlUtils {
     Map<String, Object> params = new HashMap<String, Object>();
     params.put("name", tmp);
 
-    return new SqlCommand(Keywords.TEMPORARY_NAME, params).getQuery();
+    return new SqlCommand(Keyword.TEMPORARY_NAME, params).getQuery();
   }
 
   public static String uniqueName() {
@@ -368,6 +368,6 @@ public class SqlUtils {
       }
       params.put("fields", expression(flds.toArray()));
     }
-    return new SqlCommand(Keywords.CREATE_INDEX, params);
+    return new SqlCommand(Keyword.CREATE_INDEX, params);
   }
 }

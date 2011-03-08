@@ -1,14 +1,14 @@
 package com.butent.bee.shared.sql;
 
-import com.butent.bee.shared.sql.BeeConstants.DataTypes;
-import com.butent.bee.shared.sql.BeeConstants.Keywords;
+import com.butent.bee.shared.sql.BeeConstants.DataType;
+import com.butent.bee.shared.sql.BeeConstants.Keyword;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Map;
 
 class OracleSqlBuilder extends SqlBuilder {
 
-  protected String sqlKeyword(Keywords option, Map<String, Object> params) {
+  protected String sqlKeyword(Keyword option, Map<String, Object> params) {
     switch (option) {
       case DB_SCHEMA:
         return "SELECT sys_context('USERENV', 'CURRENT_SCHEMA') as dbSchema FROM dual";
@@ -25,10 +25,10 @@ class OracleSqlBuilder extends SqlBuilder {
           wh = SqlUtils.and(wh, SqlUtils.equal("t", "TABLE_NAME", prm));
         }
         return new SqlSelect()
-          .addFields("t", "TABLE_NAME")
-          .addFrom("ALL_TABLES", "t")
-          .setWhere(wh)
-          .getQuery(this);
+            .addFields("t", "TABLE_NAME")
+            .addFrom("ALL_TABLES", "t")
+            .setWhere(wh)
+            .getQuery(this);
 
       case DB_FOREIGNKEYS:
         wh = SqlUtils.equal("c", "CONSTRAINT_TYPE", "R");
@@ -48,14 +48,14 @@ class OracleSqlBuilder extends SqlBuilder {
           wh = SqlUtils.and(wh, SqlUtils.equal("r", "TABLE_NAME", prm));
         }
         return new SqlSelect()
-          .addField("c", "CONSTRAINT_NAME", "Name")
-          .addField("c", "TABLE_NAME", "TableName")
-          .addField("r", "TABLE_NAME", "RefTableName")
-          .addFrom("ALL_CONSTRAINTS", "c")
-          .addFromInner("ALL_CONSTRAINTS", "r",
-              SqlUtils.join("c", "R_CONSTRAINT_NAME", "r", "CONSTRAINT_NAME"))
-          .setWhere(wh)
-          .getQuery(this);
+            .addField("c", "CONSTRAINT_NAME", "Name")
+            .addField("c", "TABLE_NAME", "TableName")
+            .addField("r", "TABLE_NAME", "RefTableName")
+            .addFrom("ALL_CONSTRAINTS", "c")
+            .addFromInner("ALL_CONSTRAINTS", "r",
+                SqlUtils.join("c", "R_CONSTRAINT_NAME", "r", "CONSTRAINT_NAME"))
+            .setWhere(wh)
+            .getQuery(this);
 
       case TEMPORARY:
         return "";
@@ -74,7 +74,7 @@ class OracleSqlBuilder extends SqlBuilder {
   }
 
   @Override
-  protected Object sqlType(DataTypes type, int precision, int scale) {
+  protected Object sqlType(DataType type, int precision, int scale) {
     switch (type) {
       case BOOLEAN:
         return "NUMERIC(1)";
@@ -84,8 +84,6 @@ class OracleSqlBuilder extends SqlBuilder {
       case LONG:
       case DATETIME:
         return "NUMERIC(19)";
-      case FLOAT:
-        return "BINARY_FLOAT";
       case DOUBLE:
         return "BINARY_DOUBLE";
       case STRING:

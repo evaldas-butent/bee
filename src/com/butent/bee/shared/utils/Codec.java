@@ -150,19 +150,17 @@ public class Codec {
     int pos = 0;
 
     while (pos < ser.length()) {
-      int n = BeeUtils.toInt(ser.substring(pos++, pos));
+      int n = BeeUtils.toInt(ser.substring(pos, ++pos));
       if (BeeUtils.isEmpty(n)) {
         res.add(null);
         continue;
       }
-      int l = BeeUtils.toInt(ser.substring(pos, pos + n));
-      pos += n;
+      int l = BeeUtils.toInt(ser.substring(pos, pos += n));
       if (BeeUtils.isEmpty(l)) {
         res.add(BeeConst.STRING_EMPTY);
         continue;
       }
-      res.add(ser.substring(pos, pos + l));
-      pos += l;
+      res.add(ser.substring(pos, pos += l));
     }
     return res.toArray(new String[0]);
   }

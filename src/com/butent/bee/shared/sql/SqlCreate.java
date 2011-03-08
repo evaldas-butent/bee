@@ -1,8 +1,8 @@
 package com.butent.bee.shared.sql;
 
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.sql.BeeConstants.DataTypes;
-import com.butent.bee.shared.sql.BeeConstants.Keywords;
+import com.butent.bee.shared.sql.BeeConstants.DataType;
+import com.butent.bee.shared.sql.BeeConstants.Keyword;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
@@ -13,12 +13,12 @@ public class SqlCreate extends SqlQuery<SqlCreate> {
 
   public class SqlField {
     private final String name;
-    private final DataTypes type;
+    private final DataType type;
     private final int precision;
     private final int scale;
-    private final Keywords[] options;
+    private final Keyword[] options;
 
-    private SqlField(String name, DataTypes type, int precision, int scale, Keywords... options) {
+    private SqlField(String name, DataType type, int precision, int scale, Keyword... options) {
       Assert.notEmpty(name);
       Assert.notEmpty(type);
 
@@ -27,21 +27,21 @@ public class SqlCreate extends SqlQuery<SqlCreate> {
       this.precision = precision;
       this.scale = scale;
 
-      List<Keywords> opts = new ArrayList<Keywords>();
+      List<Keyword> opts = new ArrayList<Keyword>();
 
-      for (Keywords opt : options) {
+      for (Keyword opt : options) {
         if (!BeeUtils.isEmpty(opt)) {
           opts.add(opt);
         }
       }
-      this.options = opts.toArray(new Keywords[0]);
+      this.options = opts.toArray(new Keyword[0]);
     }
 
     public IsExpression getName() {
       return SqlUtils.name(name);
     }
 
-    public Keywords[] getOptions() {
+    public Keyword[] getOptions() {
       return options;
     }
 
@@ -53,7 +53,7 @@ public class SqlCreate extends SqlQuery<SqlCreate> {
       return scale;
     }
 
-    public DataTypes getType() {
+    public DataType getType() {
       return type;
     }
   }
@@ -73,31 +73,31 @@ public class SqlCreate extends SqlQuery<SqlCreate> {
     this.temporary = temporary;
   }
 
-  public SqlCreate addBoolean(String field, Keywords... options) {
-    return addField(field, DataTypes.BOOLEAN, 0, 0, options);
+  public SqlCreate addBoolean(String field, Keyword... options) {
+    return addField(field, DataType.BOOLEAN, 0, 0, options);
   }
 
-  public SqlCreate addChar(String field, int precision, Keywords... options) {
+  public SqlCreate addChar(String field, int precision, Keyword... options) {
     Assert.isPositive(precision);
-    return addField(field, DataTypes.CHAR, precision, 0, options);
+    return addField(field, DataType.CHAR, precision, 0, options);
   }
 
-  public SqlCreate addDate(String field, Keywords... options) {
-    return addField(field, DataTypes.DATE, 0, 0, options);
+  public SqlCreate addDate(String field, Keyword... options) {
+    return addField(field, DataType.DATE, 0, 0, options);
   }
 
-  public SqlCreate addDateTime(String field, Keywords... options) {
-    return addField(field, DataTypes.DATETIME, 0, 0, options);
+  public SqlCreate addDateTime(String field, Keyword... options) {
+    return addField(field, DataType.DATETIME, 0, 0, options);
   }
 
-  public SqlCreate addDouble(String field, int precision, int scale, Keywords... options) {
+  public SqlCreate addDouble(String field, int precision, int scale, Keyword... options) {
     Assert.nonNegative(precision);
     Assert.nonNegative(scale);
-    return addField(field, DataTypes.DOUBLE, precision, scale, options);
+    return addField(field, DataType.DOUBLE, precision, scale, options);
   }
 
-  public SqlCreate addField(String field, DataTypes type, int precision, int scale,
-      Keywords... options) {
+  public SqlCreate addField(String field, DataType type, int precision, int scale,
+      Keyword... options) {
     Assert.state(BeeUtils.isEmpty(dataSource));
     Assert.notEmpty(field);
     Assert.state(!hasField(field), "Field " + field + " already exist");
@@ -106,30 +106,24 @@ public class SqlCreate extends SqlQuery<SqlCreate> {
 
     return getReference();
   }
-  
-  public SqlCreate addFloat(String field, int precision, int scale, Keywords... options) {
-    Assert.nonNegative(precision);
-    Assert.nonNegative(scale);
-    return addField(field, DataTypes.FLOAT, precision, scale, options);
+
+  public SqlCreate addInt(String field, Keyword... options) {
+    return addField(field, DataType.INTEGER, 0, 0, options);
   }
 
-  public SqlCreate addInt(String field, Keywords... options) {
-    return addField(field, DataTypes.INTEGER, 0, 0, options);
+  public SqlCreate addLong(String field, Keyword... options) {
+    return addField(field, DataType.LONG, 0, 0, options);
   }
 
-  public SqlCreate addLong(String field, Keywords... options) {
-    return addField(field, DataTypes.LONG, 0, 0, options);
-  }
-
-  public SqlCreate addNumeric(String field, int precision, int scale, Keywords... options) {
+  public SqlCreate addNumeric(String field, int precision, int scale, Keyword... options) {
     Assert.isPositive(precision);
     Assert.nonNegative(scale);
-    return addField(field, DataTypes.NUMERIC, precision, scale, options);
+    return addField(field, DataType.NUMERIC, precision, scale, options);
   }
 
-  public SqlCreate addString(String field, int precision, Keywords... options) {
+  public SqlCreate addString(String field, int precision, Keyword... options) {
     Assert.isPositive(precision);
-    return addField(field, DataTypes.STRING, precision, 0, options);
+    return addField(field, DataType.STRING, precision, 0, options);
   }
 
   public SqlSelect getDataSource() {

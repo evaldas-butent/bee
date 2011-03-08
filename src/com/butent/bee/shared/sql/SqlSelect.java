@@ -1,9 +1,10 @@
 package com.butent.bee.shared.sql;
 
+import com.google.common.collect.Lists;
+
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.utils.BeeUtils;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -24,7 +25,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
   private List<SqlSelect> unionList;
 
   private boolean distinctMode = false;
-  private boolean unionAllMode = false;
+  private boolean unionAllMode = true;
   private int limit = 0;
   private int offset = 0;
 
@@ -146,7 +147,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
     Assert.noNulls((Object[]) union);
 
     if (BeeUtils.isEmpty(unionList)) {
-      this.unionList = new ArrayList<SqlSelect>();
+      this.unionList = Lists.newArrayList();
     }
     for (SqlSelect un : union) {
       if (!un.isEmpty()) {
@@ -208,7 +209,8 @@ public class SqlSelect extends HasFrom<SqlSelect> {
     List<Object> paramList = null;
 
     for (IsExpression[] field : fieldList) {
-      paramList = (List<Object>) SqlUtils.addCollection(paramList, field[FIELD_EXPR].getSqlParams());
+      paramList =
+          (List<Object>) SqlUtils.addCollection(paramList, field[FIELD_EXPR].getSqlParams());
     }
     for (IsFrom from : getFrom()) {
       paramList = (List<Object>) SqlUtils.addCollection(paramList, from.getSqlParams());
@@ -265,6 +267,20 @@ public class SqlSelect extends HasFrom<SqlSelect> {
     return unionAllMode;
   }
 
+  public SqlSelect reset() {
+    resetFields();
+    resetGroup();
+    resetOrder();
+    resetUnion();
+    whereClause = null;
+    havingClause = null;
+    setDistinctMode(false);
+    setUnionAllMode(true);
+    setOffset(0);
+    setLimit(0);
+    return getReference();
+  }
+
   public SqlSelect resetFields() {
     if (!BeeUtils.isEmpty(fieldList)) {
       fieldList.clear();
@@ -272,9 +288,23 @@ public class SqlSelect extends HasFrom<SqlSelect> {
     return getReference();
   }
 
+  public SqlSelect resetGroup() {
+    if (!BeeUtils.isEmpty(groupList)) {
+      groupList.clear();
+    }
+    return getReference();
+  }
+
   public SqlSelect resetOrder() {
     if (!BeeUtils.isEmpty(orderList)) {
       orderList.clear();
+    }
+    return getReference();
+  }
+
+  public SqlSelect resetUnion() {
+    if (!BeeUtils.isEmpty(unionList)) {
+      unionList.clear();
     }
     return getReference();
   }
@@ -327,14 +357,14 @@ public class SqlSelect extends HasFrom<SqlSelect> {
     fieldEntry[FIELD_ALIAS] = alias;
 
     if (BeeUtils.isEmpty(fieldList)) {
-      fieldList = new ArrayList<IsExpression[]>();
+      fieldList = Lists.newArrayList();
     }
     fieldList.add(fieldEntry);
   }
 
   private void addGroup(IsExpression... group) {
     if (BeeUtils.isEmpty(groupList)) {
-      groupList = new ArrayList<IsExpression>();
+      groupList = Lists.newArrayList();
     }
     for (IsExpression grp : group) {
       groupList.add(grp);
@@ -351,7 +381,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
       orderEntry[ORDER_DESC] = BeeUtils.isEmpty(desc) ? "" : " DESC";
 
       if (BeeUtils.isEmpty(orderList)) {
-        orderList = new ArrayList<String[]>();
+        orderList = Lists.newArrayList();
       }
       orderList.add(orderEntry);
     }

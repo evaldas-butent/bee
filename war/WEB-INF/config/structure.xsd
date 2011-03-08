@@ -77,7 +77,6 @@
       <xs:enumeration value="BOOLEAN" />
       <xs:enumeration value="INTEGER" />
       <xs:enumeration value="LONG" />
-      <xs:enumeration value="FLOAT" />
       <xs:enumeration value="DOUBLE" />
       <xs:enumeration value="NUMERIC" />
       <xs:enumeration value="CHAR" />

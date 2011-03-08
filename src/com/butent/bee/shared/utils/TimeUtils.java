@@ -45,12 +45,12 @@ public class TimeUtils {
   public static final int MILLIS_PER_WEEK = 7 * MILLIS_PER_DAY;
 
   private static final String[] FIELD_NAME = {
-    "ERA", "YEAR", "MONTH", "WEEK_OF_YEAR", "WEEK_OF_MONTH",
-    "DAY_OF_MONTH", "DAY_OF_YEAR", "DAY_OF_WEEK",
-    "DAY_OF_WEEK_IN_MONTH", "AM_PM", "HOUR", "HOUR_OF_DAY",
-    "MINUTE", "SECOND", "MILLISECOND", "ZONE_OFFSET",
-    "DST_OFFSET", "YEAR_WOY", "DOW_LOCAL", "EXTENDED_YEAR",
-    "JULIAN_DAY", "MILLISECONDS_IN_DAY",
+      "ERA", "YEAR", "MONTH", "WEEK_OF_YEAR", "WEEK_OF_MONTH",
+      "DAY_OF_MONTH", "DAY_OF_YEAR", "DAY_OF_WEEK",
+      "DAY_OF_WEEK_IN_MONTH", "AM_PM", "HOUR", "HOUR_OF_DAY",
+      "MINUTE", "SECOND", "MILLISECOND", "ZONE_OFFSET",
+      "DST_OFFSET", "YEAR_WOY", "DOW_LOCAL", "EXTENDED_YEAR",
+      "JULIAN_DAY", "MILLISECONDS_IN_DAY",
   };
 
   public static void add(DateTime date, int field, int amount) {
@@ -60,7 +60,7 @@ public class TimeUtils {
     }
     date.setTime(date.getTime() + getDelta(date, field, amount));
   }
-  
+
   public static int dateDiff(DateTime start, DateTime end) {
     return fieldDifference(start, end, DATE);
   }
@@ -118,13 +118,13 @@ public class TimeUtils {
     Assert.notNull(max);
     return new JustDate(BeeUtils.randomInt(min.getDay(), max.getDay()));
   }
-  
+
   public static DateTime randomDateTime(DateTime min, DateTime max) {
     Assert.notNull(min);
     Assert.notNull(max);
     return new DateTime(BeeUtils.randomLong(min.getTime(), max.getTime()));
   }
-  
+
   public static JustDate toDate(Object x) {
     if (x instanceof JustDate) {
       return (JustDate) x;
@@ -139,7 +139,7 @@ public class TimeUtils {
     assertDateOrDateTime(x);
     return null;
   }
-  
+
   public static DateTime toDateTime(Object x) {
     if (x instanceof DateTime) {
       return (DateTime) x;
@@ -173,7 +173,7 @@ public class TimeUtils {
   private static void assertDateOrDateTime(Object x) {
     Assert.isTrue(isDateOrDateTime(x), "Argument must be Date or DateTime");
   }
-  
+
   private static String fieldName(int field) {
     if (BeeUtils.isIndex(FIELD_NAME, field)) {
       return FIELD_NAME[field];
@@ -193,7 +193,7 @@ public class TimeUtils {
         int d1 = date.getDom();
         int y2 = y1;
         int m2 = m1;
-        
+
         if (field == YEAR) {
           y2 += amount;
         } else {
@@ -204,11 +204,11 @@ public class TimeUtils {
             m2 = z % 12 + 1;
           }
         }
-        
+
         int d2 = Math.min(d1, Grego.monthLength(y2, m2));
         delta = new DateTime(y2, m2, d2).getTime() - new DateTime(y1, m1, d1).getTime();
         break;
-        
+
       case WEEK_OF_YEAR:
       case WEEK_OF_MONTH:
       case DAY_OF_WEEK_IN_MONTH:

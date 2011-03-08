@@ -6,8 +6,8 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.sql.BeeConstants.DataTypes;
-import com.butent.bee.shared.sql.BeeConstants.Keywords;
+import com.butent.bee.shared.sql.BeeConstants.DataType;
+import com.butent.bee.shared.sql.BeeConstants.Keyword;
 import com.butent.bee.shared.sql.HasFrom;
 import com.butent.bee.shared.sql.IsCondition;
 import com.butent.bee.shared.sql.IsFrom;
@@ -32,7 +32,7 @@ class BeeTable implements HasExtFields, HasStates {
     private boolean custom = false;
     private boolean extended = false;
     private final String name;
-    private final DataTypes type;
+    private final DataType type;
     private final int precision;
     private final int scale;
     private final boolean notNull;
@@ -40,7 +40,7 @@ class BeeTable implements HasExtFields, HasStates {
     private final String relation;
     private final boolean cascade;
 
-    private BeeField(String name, DataTypes type, int precision, int scale,
+    private BeeField(String name, DataType type, int precision, int scale,
         boolean notNull, boolean unique, String relation, boolean cascade) {
       Assert.notEmpty(name);
       Assert.notEmpty(type);
@@ -79,7 +79,7 @@ class BeeTable implements HasExtFields, HasStates {
       return isExtended() ? getExtTable(getName()) : getOwner();
     }
 
-    public DataTypes getType() {
+    public DataType getType() {
       return type;
     }
 
@@ -120,9 +120,9 @@ class BeeTable implements HasExtFields, HasStates {
     private final String name;
     private final String keyField;
     private final String refTable;
-    private final Keywords action;
+    private final Keyword action;
 
-    private BeeForeignKey(String tblName, String keyField, String refTable, Keywords action) {
+    private BeeForeignKey(String tblName, String keyField, String refTable, Keyword action) {
       Assert.notEmpty(tblName);
       Assert.notEmpty(keyField);
       Assert.notEmpty(refTable);
@@ -134,7 +134,7 @@ class BeeTable implements HasExtFields, HasStates {
       this.action = action;
     }
 
-    public Keywords getAction() {
+    public Keyword getAction() {
       return action;
     }
 
@@ -328,16 +328,16 @@ class BeeTable implements HasExtFields, HasStates {
         String tblName = field.getTable();
 
         sc = new SqlCreate(tblName, false)
-            .addLong(extIdName, Keywords.NOT_NULL)
-            .addLong(extLockName, Keywords.NOT_NULL);
+            .addLong(extIdName, Keyword.NOT_NULL)
+            .addLong(extLockName, Keyword.NOT_NULL);
 
         addKey(true, tblName, extIdName).setCustom();
-        addForeignKey(tblName, extIdName, getName(), Keywords.CASCADE).setCustom();
+        addForeignKey(tblName, extIdName, getName(), Keyword.CASCADE).setCustom();
       } else {
         sc = query;
       }
       sc.addField(field.getName(), field.getType(), field.getPrecision(), field.getScale(),
-            field.isNotNull() ? Keywords.NOT_NULL : null);
+            field.isNotNull() ? Keyword.NOT_NULL : null);
 
       return sc;
     }
@@ -464,10 +464,10 @@ class BeeTable implements HasExtFields, HasStates {
         String tblName = state.getTable();
 
         sc = new SqlCreate(tblName, false)
-            .addLong(getIdName(), Keywords.NOT_NULL);
+            .addLong(getIdName(), Keyword.NOT_NULL);
 
         addKey(true, tblName, getIdName()).setCustom();
-        addForeignKey(tblName, getIdName(), getName(), Keywords.CASCADE).setCustom();
+        addForeignKey(tblName, getIdName(), getName(), Keyword.CASCADE).setCustom();
       } else {
         sc = query;
       }
@@ -811,7 +811,7 @@ class BeeTable implements HasExtFields, HasStates {
     stateSource.verifyState(query, tblAlias, state, user, roles);
   }
 
-  BeeField addField(String name, DataTypes type, int precision, int scale,
+  BeeField addField(String name, DataType type, int precision, int scale,
       boolean notNull, boolean unique, String relation, boolean cascade) {
 
     BeeField field = new BeeField(name, type, precision, scale, notNull, unique, relation, cascade);
@@ -823,7 +823,7 @@ class BeeTable implements HasExtFields, HasStates {
     return field;
   }
 
-  BeeForeignKey addForeignKey(String tblName, String keyField, String refTable, Keywords action) {
+  BeeForeignKey addForeignKey(String tblName, String keyField, String refTable, Keyword action) {
     BeeForeignKey fKey = new BeeForeignKey(tblName, keyField, refTable, action);
     foreignKeys.put(fKey.getName(), fKey);
     return fKey;

@@ -13,7 +13,7 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.value.ValueType;
-import com.butent.bee.shared.sql.BeeConstants.DataTypes;
+import com.butent.bee.shared.sql.BeeConstants.DataType;
 import com.butent.bee.shared.sql.IsQuery;
 import com.butent.bee.shared.sql.SqlBuilderFactory;
 import com.butent.bee.shared.sql.SqlInsert;
@@ -55,7 +55,7 @@ public class QueryServiceBean {
 
   public String[] dbFields(String table) {
     BeeRowSet res = getData(new SqlSelect()
-      .addAllFields(table).addFrom(table).setWhere(SqlUtils.sqlFalse()));
+        .addAllFields(table).addFrom(table).setWhere(SqlUtils.sqlFalse()));
 
     return res.getColumnLabels();
   }
@@ -63,8 +63,9 @@ public class QueryServiceBean {
   public Collection<String[]> dbForeignKeys(String dbName, String dbSchema, String table,
       String refTable) {
     List<String[]> dbforeignKeys = new ArrayList<String[]>();
-    BeeRowSet res = (BeeRowSet) processSql(SqlUtils.dbForeignKeys(dbName, dbSchema, table, refTable)
-        .getQuery());
+    BeeRowSet res =
+        (BeeRowSet) processSql(SqlUtils.dbForeignKeys(dbName, dbSchema, table, refTable)
+            .getQuery());
 
     if (!res.isEmpty()) {
       for (IsRow row : res.getRows()) {
@@ -109,11 +110,11 @@ public class QueryServiceBean {
   public BeeRowSet getBaseData(String tableName, String sql) {
     Assert.isTrue(sys.isTable(tableName), "Not a base table: " + tableName);
     Assert.notEmpty(sql);
-    
+
     String idName = sys.getIdName(tableName);
     String verName = sys.getLockName(tableName);
-    
-    Map<String, DataTypes> types = Maps.newHashMap();
+
+    Map<String, DataType> types = Maps.newHashMap();
     for (BeeField field : sys.getTableFields(tableName)) {
       types.put(field.getName().toLowerCase(), field.getType());
     }
@@ -124,22 +125,22 @@ public class QueryServiceBean {
     Statement stmt = null;
     ResultSet rs = null;
     BeeRowSet result = null;
-    
+
     LogUtils.info(logger, tableName, sql);
 
     try {
       con = ds.getConnection();
       stmt = con.createStatement();
       rs = stmt.executeQuery(sql);
-      
+
       BeeColumn[] rsCols = JdbcUtils.getColumns(rs);
       List<BeeColumn> columns = Lists.newArrayList();
-      
+
       int idIndex = -1;
       int verIndex = -1;
 
       String fieldName;
-      DataTypes type;
+      DataType type;
       for (BeeColumn col : rsCols) {
         fieldName = col.getLabel();
         if (BeeUtils.same(fieldName, idName)) {
@@ -151,7 +152,7 @@ public class QueryServiceBean {
           continue;
         }
         columns.add(col);
-        
+
         type = types.get(fieldName.toLowerCase());
         if (type == null) {
           continue;
@@ -169,7 +170,7 @@ public class QueryServiceBean {
           default:
         }
       }
-      
+
       int cc = columns.size();
       Assert.isPositive(idIndex);
       Assert.isPositive(cc);
@@ -260,15 +261,17 @@ public class QueryServiceBean {
     Assert.isTrue(rs.getNumberOfRows() == 1, "Result must contain exactly one row");
     return rs.getString(rs.getRow(0), columnId);
   }
-  
+
   public long insertData(SqlInsert si) {
     Assert.notNull(si);
-    Assert.state(!si.isEmpty());
 
-    long id = 0;
     String source = (String) si.getTarget().getSource();
+    boolean requiresId = BeeUtils.isEmpty(si.getDataSource()) && sys.isTable(source);
+    long id = 0;
 
-    if (BeeUtils.isEmpty(si.getDataSource()) && sys.isTable(source)) {
+    Assert.state(requiresId || !si.isEmpty());
+
+    if (requiresId) {
       String lockFld = sys.getLockName(source);
 
       if (!si.hasField(lockFld)) {
@@ -299,6 +302,8 @@ public class QueryServiceBean {
 
     Connection con = null;
     Statement stmt = null;
+    ResultSet rs = null;
+    Object result = null;
 
     LogUtils.info(logger, "SQL:", sql);
 
@@ -309,11 +314,11 @@ public class QueryServiceBean {
       boolean isResultSet = stmt.execute(sql);
 
       if (isResultSet) {
-        ResultSet rs = stmt.getResultSet();
+        rs = stmt.getResultSet();
 
-        BeeRowSet result = new BeeRowSet(JdbcUtils.getColumns(rs));
-        int cols = result.getNumberOfColumns();
-        
+        BeeRowSet res = new BeeRowSet(JdbcUtils.getColumns(rs));
+        int cols = res.getNumberOfColumns();
+
         long id = 0;
         while (rs.next()) {
           String[] row = new String[cols];
@@ -321,30 +326,24 @@ public class QueryServiceBean {
           for (int i = 0; i < cols; i++) {
             row[i] = rs.getString(i + 1);
           }
-          result.addRow(++id, row);
+          res.addRow(++id, row);
         }
-        LogUtils.info(logger, "Retrieved rows:", result.getNumberOfRows());
-        return result;
+        LogUtils.info(logger, "Retrieved rows:", res.getNumberOfRows());
+        result = res;
 
       } else {
-        int result = stmt.getUpdateCount();
-
+        result = stmt.getUpdateCount();
         LogUtils.info(logger, "Affected rows:", result);
-        return result;
       }
 
     } catch (SQLException ex) {
-      throw new RuntimeException("Cannot perform query: " + ex, ex);
+      LogUtils.error(logger, ex);
     } finally {
-      try {
-        stmt.close();
-        con.close();
-        con = null;
-        stmt = null;
-      } catch (Exception ex) {
-        throw new RuntimeException("Cannot close connection: " + ex, ex);
-      }
+      JdbcUtils.closeResultSet(rs);
+      JdbcUtils.closeStatement(stmt);
+      JdbcUtils.closeConnection(con);
     }
+    return result;
   }
 
   public int updateData(IsQuery query) {

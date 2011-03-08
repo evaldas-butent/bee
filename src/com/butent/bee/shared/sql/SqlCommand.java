@@ -1,7 +1,7 @@
 package com.butent.bee.shared.sql;
 
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.sql.BeeConstants.Keywords;
+import com.butent.bee.shared.sql.BeeConstants.Keyword;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
@@ -10,17 +10,17 @@ import java.util.Map;
 
 class SqlCommand extends SqlQuery<SqlCommand> {
 
-  private final Keywords command;
+  private final Keyword command;
   private final Map<String, Object> parameters;
 
-  public SqlCommand(Keywords command, Map<String, Object> parameters) {
+  public SqlCommand(Keyword command, Map<String, Object> parameters) {
     Assert.notEmpty(command);
 
     this.command = command;
     this.parameters = parameters;
   }
 
-  public Keywords getCommand() {
+  public Keyword getCommand() {
     return command;
   }
 

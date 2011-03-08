@@ -33,7 +33,6 @@
       <BeeField name="Boolean" type="BOOLEAN" />
       <BeeField name="Integer" type="INTEGER" />
       <BeeField name="Long" type="LONG" />
-      <BeeField name="Float" type="FLOAT" />
       <BeeField name="Double" type="DOUBLE" />
       <BeeField name="Numeric" type="NUMERIC" precision="10" scale="2" />
       <BeeField name="Char" type="CHAR" precision="10" />

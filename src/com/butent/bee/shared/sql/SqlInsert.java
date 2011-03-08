@@ -1,18 +1,20 @@
 package com.butent.bee.shared.sql;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
+
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
 public class SqlInsert extends SqlQuery<SqlInsert> {
 
   private final IsFrom target;
-  private Set<String> fieldList = new LinkedHashSet<String>();
+  private Set<String> fieldList = Sets.newLinkedHashSet();
   private List<IsExpression> valueList;
   private SqlSelect dataSource;
 
@@ -21,7 +23,10 @@ public class SqlInsert extends SqlQuery<SqlInsert> {
   }
 
   public SqlInsert addConstant(String field, Object value) {
-    return addExpression(field, SqlUtils.constant(value));
+    if (value != null) {
+      addExpression(field, SqlUtils.constant(value));
+    }
+    return getReference();
   }
 
   public SqlInsert addExpression(String field, IsExpression value) {
@@ -31,7 +36,7 @@ public class SqlInsert extends SqlQuery<SqlInsert> {
     addField(field);
 
     if (BeeUtils.isEmpty(valueList)) {
-      valueList = new ArrayList<IsExpression>();
+      valueList = Lists.newArrayList();
     }
     valueList.add(value);
 
@@ -46,18 +51,11 @@ public class SqlInsert extends SqlQuery<SqlInsert> {
     }
     return getReference();
   }
-  
-  public void clearFields() {
-    fieldList.clear();
-    if (!BeeUtils.isEmpty(valueList)) {
-      valueList.clear();
-    }
-  }
 
   public SqlSelect getDataSource() {
     return dataSource;
   }
-  
+
   public int getFieldCount() {
     return fieldList.size();
   }
@@ -121,6 +119,16 @@ public class SqlInsert extends SqlQuery<SqlInsert> {
         || (BeeUtils.isEmpty(valueList) && BeeUtils.isEmpty(dataSource));
   }
 
+  public SqlInsert reset() {
+    fieldList.clear();
+    if (!BeeUtils.isEmpty(valueList)) {
+      valueList.clear();
+    }
+    dataSource = null;
+
+    return getReference();
+  }
+
   public SqlInsert setDataSource(SqlSelect query) {
     Assert.notNull(query);
     Assert.state(!query.isEmpty());
@@ -138,8 +146,7 @@ public class SqlInsert extends SqlQuery<SqlInsert> {
 
   private void addField(String field) {
     Assert.notEmpty(field);
-    Assert.state(!fieldList.contains(field),
-        "Field " + field + " already exist");
+    Assert.state(!hasField(field), "Field " + field + " already exist");
     fieldList.add(field);
   }
 }

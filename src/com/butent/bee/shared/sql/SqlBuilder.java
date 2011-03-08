@@ -1,18 +1,21 @@
 package com.butent.bee.shared.sql;
 
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.sql.BeeConstants.DataTypes;
-import com.butent.bee.shared.sql.BeeConstants.Keywords;
+import com.butent.bee.shared.DateTime;
+import com.butent.bee.shared.JustDate;
+import com.butent.bee.shared.sql.BeeConstants.DataType;
+import com.butent.bee.shared.sql.BeeConstants.Keyword;
 import com.butent.bee.shared.sql.SqlCreate.SqlField;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public abstract class SqlBuilder {
 
-  protected String sqlKeyword(Keywords option, Map<String, Object> params) {
+  protected String sqlKeyword(Keyword option, Map<String, Object> params) {
     switch (option) {
       case NOT_NULL:
         return "NOT NULL";
@@ -28,7 +31,7 @@ public abstract class SqlBuilder {
         return BeeUtils.concat(1,
             "ALTER TABLE", params.get("table"),
             "ADD CONSTRAINT", params.get("name"),
-            sqlKeyword((Keywords) params.get("type"), params));
+            sqlKeyword((Keyword) params.get("type"), params));
 
       case PRIMARYKEY:
         return BeeUtils.concat(1,
@@ -39,7 +42,7 @@ public abstract class SqlBuilder {
             "FOREIGN KEY", BeeUtils.parenthesize(params.get("field")),
             "REFERENCES", params.get("refTable"), BeeUtils.parenthesize(params.get("refField")));
 
-        Keywords action = (Keywords) params.get("action");
+        Keyword action = (Keyword) params.get("action");
         if (!BeeUtils.isEmpty(action)) {
           foreign = BeeUtils.concat(1,
               foreign, "ON DELETE", sqlKeyword(action, null));
@@ -74,10 +77,10 @@ public abstract class SqlBuilder {
           wh = SqlUtils.and(wh, SqlUtils.equal("t", "table_name", prm));
         }
         return new SqlSelect()
-          .addFields("t", "table_name")
-          .addFrom("information_schema.tables", "t")
-          .setWhere(wh)
-          .getQuery(this);
+            .addFields("t", "table_name")
+            .addFrom("information_schema.tables", "t")
+            .setWhere(wh)
+            .getQuery(this);
 
       case DB_FOREIGNKEYS:
         wh = null;
@@ -103,16 +106,16 @@ public abstract class SqlBuilder {
           wh = SqlUtils.and(wh, SqlUtils.equal("r", "table_name", prm));
         }
         return new SqlSelect()
-          .addField("c", "constraint_name", "Name")
-          .addField("t", "table_name", "TblName")
-          .addField("r", "table_name", "RefTblName")
-          .addFrom("information_schema.referential_constraints", "c")
-          .addFromInner("information_schema.table_constraints", "t",
-              SqlUtils.joinUsing("c", "t", "constraint_name"))
-          .addFromInner("information_schema.table_constraints", "r",
-              SqlUtils.join("c", "unique_constraint_name", "r", "constraint_name"))
-          .setWhere(wh)
-          .getQuery(this);
+            .addField("c", "constraint_name", "Name")
+            .addField("t", "table_name", "TblName")
+            .addField("r", "table_name", "RefTblName")
+            .addFrom("information_schema.referential_constraints", "c")
+            .addFromInner("information_schema.table_constraints", "t",
+                SqlUtils.joinUsing("c", "t", "constraint_name"))
+            .addFromInner("information_schema.table_constraints", "r",
+                SqlUtils.join("c", "unique_constraint_name", "r", "constraint_name"))
+            .setWhere(wh)
+            .getQuery(this);
 
       case DROP_TABLE:
         return "DROP TABLE " + params.get("table");
@@ -147,24 +150,43 @@ public abstract class SqlBuilder {
   protected abstract String sqlQuote(String value);
 
   protected String sqlTransform(Object x) {
-    String s = BeeUtils.transformNoTrim(x);
+    String s = null;
 
-    if (x instanceof CharSequence) {
-      s = "'" + s.replace("'", "''") + "'";
+    if (x == null) {
+      s = "null";
+
+    } else if (x instanceof Boolean) {
+      s = (Boolean) x ? "1" : "0";
+
+    } else if (x instanceof JustDate) {
+      s = BeeUtils.transform(((JustDate) x).getDay());
+
+    } else if (x instanceof Date) {
+      s = BeeUtils.transform(((Date) x).getTime());
+
+    } else if (x instanceof DateTime) {
+      s = BeeUtils.transform(((DateTime) x).getTime());
+
+    } else {
+      s = BeeUtils.transformNoTrim(x);
+
+      if (x instanceof CharSequence) {
+        s = "'" + s.replace("'", "''") + "'";
+      }
     }
     return s;
   }
 
-  protected Object sqlType(DataTypes type, int precision, int scale) {
+  protected Object sqlType(DataType type, int precision, int scale) {
     switch (type) {
       case BOOLEAN:
         return "BIT";
       case INTEGER:
+      case DATE:
         return "INTEGER";
       case LONG:
+      case DATETIME:
         return "BIGINT";
-      case FLOAT:
-        return "FLOAT";
       case DOUBLE:
         return "DOUBLE";
       case NUMERIC:
@@ -173,10 +195,6 @@ public abstract class SqlBuilder {
         return "CHAR(" + precision + ")";
       case STRING:
         return "VARCHAR(" + precision + ")";
-      case DATE:
-        return "INTEGER";
-      case DATETIME:
-        return "BIGINT";
       default:
         Assert.unsupported("Unsupported data type: " + type.name());
         return null;
@@ -210,7 +228,7 @@ public abstract class SqlBuilder {
     StringBuilder query = new StringBuilder("CREATE ");
 
     if (sc.isTemporary()) {
-      query.append(sqlKeyword(Keywords.TEMPORARY, null));
+      query.append(sqlKeyword(Keyword.TEMPORARY, null));
     }
     query.append("TABLE ");
 
@@ -229,9 +247,9 @@ public abstract class SqlBuilder {
         }
         SqlField field = fieldList.get(i);
         query.append(field.getName().getSqlString(this, paramMode))
-          .append(" ").append(sqlType(field.getType(), field.getPrecision(), field.getScale()));
+            .append(" ").append(sqlType(field.getType(), field.getPrecision(), field.getScale()));
 
-        for (Keywords opt : field.getOptions()) {
+        for (Keyword opt : field.getOptions()) {
           query.append(" ").append(sqlKeyword(opt, null));
         }
       }
@@ -365,14 +383,14 @@ public abstract class SqlBuilder {
 
     if (!BeeUtils.isEmpty(havingClause)) {
       query.append(" HAVING ")
-        .append(havingClause.getSqlString(this, paramMode));
+          .append(havingClause.getSqlString(this, paramMode));
     }
     List<SqlSelect> unionList = ss.getUnion();
 
     if (!BeeUtils.isEmpty(unionList)) {
       for (SqlSelect union : unionList) {
         query.append(ss.isUnionAllMode() ? " UNION ALL " : " UNION ")
-          .append("(").append(union.getSqlString(this, paramMode)).append(")");
+            .append("(").append(union.getSqlString(this, paramMode)).append(")");
       }
     }
     List<String[]> orderList = ss.getOrderBy();
@@ -390,7 +408,7 @@ public abstract class SqlBuilder {
             : SqlUtils.name(orderEntry[SqlSelect.ORDER_FLD]);
 
         query.append(order.getSqlString(this, paramMode))
-          .append(orderEntry[SqlSelect.ORDER_DESC]);
+            .append(orderEntry[SqlSelect.ORDER_DESC]);
       }
     }
     return query.toString();

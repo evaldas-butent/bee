@@ -61,7 +61,7 @@ public class UiServiceBean {
         ig.destroy();
         sys.initDatabase(dsn);
       }
-      
+
       if (svc.equals("rpc_ui_form")) {
         response = formInfo(reqInfo);
       } else if (svc.equals("rpc_ui_form_list")) {
@@ -154,9 +154,9 @@ public class UiServiceBean {
     ResponseObject response;
 
     String[] arr = BeeUtils.split(reqInfo.getContent(), BeeConst.STRING_SPACE);
-    String tableName = ArrayUtils.getQuietly(arr, 0); 
+    String tableName = ArrayUtils.getQuietly(arr, 0);
     int rowCount = BeeUtils.toInt(ArrayUtils.getQuietly(arr, 1));
-    
+
     if (!sys.isTable(tableName)) {
       response = new ResponseObject().addError("Unknown table:", tableName);
     } else if (rowCount <= 0 || rowCount > 10000) {
@@ -170,16 +170,16 @@ public class UiServiceBean {
   private ResponseObject getBaseData(RequestInfo reqInfo) {
     ResponseObject response;
     String tableName = reqInfo.getContent();
-    
+
     if (!sys.isTable(tableName)) {
-      response = new ResponseObject().addError("Unknown table:", tableName);
+      response = ResponseObject.error("Unknown table:", tableName);
     } else {
       String sql = new SqlSelect().addAllFields(tableName).addFrom(tableName).getQuery();
-      response = new ResponseObject().setResponse(qs.getBaseData(tableName, sql));
+      response = ResponseObject.response(qs.getBaseData(tableName, sql));
     }
     return response;
   }
-  
+
   private ResponseObject getDataInfo() {
     return ResponseObject.response(Codec.beeSerialize(sys.getDataInfo()));
   }

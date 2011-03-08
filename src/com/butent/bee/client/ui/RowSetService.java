@@ -294,7 +294,7 @@ public class RowSetService extends CompositeService {
     BeeTreeItem cols = new BeeTreeItem("Columns");
     for (BeeColumn col : brs.getColumnArray()) {
       BeeTreeItem c = new BeeTreeItem(col.getName());
-      c.addItem("Type: " + col.getSqlType() + "-" + col.getType());
+      c.addItem("Type: (" + col.getSqlType() + ") " + col.getType());
       c.addItem("Prec: " + col.getPrecision());
       c.addItem("Scale: " + col.getScale());
       c.addItem("Nullable: " + col.getNullable());

@@ -1,7 +1,7 @@
 package com.butent.bee.shared.sql;
 
-import com.butent.bee.shared.sql.BeeConstants.DataTypes;
-import com.butent.bee.shared.sql.BeeConstants.Keywords;
+import com.butent.bee.shared.sql.BeeConstants.DataType;
+import com.butent.bee.shared.sql.BeeConstants.Keyword;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Map;
@@ -9,7 +9,7 @@ import java.util.Map;
 class PostgreSqlBuilder extends SqlBuilder {
 
   @Override
-  protected String sqlKeyword(Keywords option, Map<String, Object> params) {
+  protected String sqlKeyword(Keyword option, Map<String, Object> params) {
     switch (option) {
       case DB_NAME:
         return "SELECT current_database() as dbName";
@@ -38,12 +38,10 @@ class PostgreSqlBuilder extends SqlBuilder {
   }
 
   @Override
-  protected Object sqlType(DataTypes type, int precision, int scale) {
+  protected Object sqlType(DataType type, int precision, int scale) {
     switch (type) {
       case BOOLEAN:
         return "NUMERIC(1)";
-      case FLOAT:
-        return "REAL";
       case DOUBLE:
         return "DOUBLE PRECISION";
       default:

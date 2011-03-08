@@ -43,8 +43,8 @@ import com.butent.bee.client.widget.Progress;
 import com.butent.bee.client.widget.Svg;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.DateTime;
 import com.butent.bee.shared.BeeService;
+import com.butent.bee.shared.DateTime;
 import com.butent.bee.shared.JustDate;
 import com.butent.bee.shared.communication.ContentType;
 import com.butent.bee.shared.data.DataUtils;
@@ -378,7 +378,7 @@ public class CliWorker {
     List<Property> lst = PropertyUtils.createProperties(
         "Day", d.getDay(), "Year", d.getYear(), "Month", d.getMonth(), "Dom", d.getDom(),
         "Dow", d.getDow(), "Doy", d.getDoy(),
-        "String", d.toString(), "DateTime", new DateTime(d).toString(), 
+        "String", d.toString(), "DateTime", new DateTime(d).toString(),
         "Time", t.getTime(), "Year", t.getYear(), "Month", t.getMonth(), "Dom", t.getDom(),
         "Dow", t.getDow(), "Doy", t.getDoy(), "Hour", t.getHour(),
         "Minute", t.getMinute(), "Second", t.getSecond(), "Millis", t.getMillis(),
