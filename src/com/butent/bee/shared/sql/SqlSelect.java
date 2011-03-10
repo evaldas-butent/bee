@@ -157,6 +157,36 @@ public class SqlSelect extends HasFrom<SqlSelect> {
     return getReference();
   }
 
+  public SqlSelect copyOf() {
+    SqlSelect query = new SqlSelect();
+
+    if (fieldList != null) {
+      query.fieldList = Lists.newArrayList(fieldList);
+    }
+    if (getFrom() != null) {
+      query.fromList = Lists.newArrayList(getFrom());
+    }
+    query.setWhere(whereClause);
+
+    if (groupList != null) {
+      query.groupList = Lists.newArrayList(groupList);
+    }
+    if (orderList != null) {
+      query.orderList = Lists.newArrayList(orderList);
+    }
+    query.setHaving(havingClause);
+
+    if (unionList != null) {
+      query.unionList = Lists.newArrayList(unionList);
+    }
+    query.setDistinctMode(distinctMode);
+    query.setUnionAllMode(unionAllMode);
+    query.setLimit(limit);
+    query.setOffset(offset);
+
+    return query;
+  }
+
   // Getters ----------------------------------------------------------------
   public List<IsExpression[]> getFields() {
     return fieldList;

@@ -85,8 +85,6 @@ public class UiServiceBean {
       } else if (svc.equals("rpc_ui_commit")) {
         response = commitChanges(reqInfo);
 
-      } else if (svc.equals("rpc_ui_base_data")) {
-        response = getBaseData(reqInfo);
       } else if (svc.equals("rpc_ui_data_info")) {
         response = getDataInfo();
       } else if (svc.equals("rpc_ui_gen")) {
@@ -167,19 +165,6 @@ public class UiServiceBean {
     return response;
   }
 
-  private ResponseObject getBaseData(RequestInfo reqInfo) {
-    ResponseObject response;
-    String tableName = reqInfo.getContent();
-
-    if (!sys.isTable(tableName)) {
-      response = ResponseObject.error("Unknown table:", tableName);
-    } else {
-      String sql = new SqlSelect().addAllFields(tableName).addFrom(tableName).getQuery();
-      response = ResponseObject.response(qs.getBaseData(tableName, sql));
-    }
-    return response;
-  }
-
   private ResponseObject getDataInfo() {
     return ResponseObject.response(Codec.beeSerialize(sys.getDataInfo()));
   }
@@ -213,8 +198,14 @@ public class UiServiceBean {
     String table = reqInfo.getParameter("table_name");
     int limit = BeeUtils.toInt(reqInfo.getParameter("table_limit"));
     int offset = BeeUtils.toInt(reqInfo.getParameter("table_offset"));
+
     String states = reqInfo.getParameter("table_states");
-    BeeRowSet res = sys.getViewData(table, limit, offset, states);
+    String[] arr = new String[0];
+
+    if (!BeeUtils.isEmpty(states)) {
+      arr = states.split(" ");
+    }
+    BeeRowSet res = sys.getViewData(table, null, limit, offset, arr);
     return ResponseObject.response(res);
   }
 

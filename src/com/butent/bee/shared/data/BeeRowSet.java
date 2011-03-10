@@ -48,26 +48,22 @@ public class BeeRowSet extends RowList<BeeRow, BeeColumn> implements BeeSerializ
     super(rows);
   }
 
-  public int addEmptyRow(boolean mark) {
+  public int addEmptyRow() {
     String[] arr = new String[getNumberOfColumns()];
     Arrays.fill(arr, BeeConst.STRING_EMPTY);
-    BeeRow row = createRow(-1, arr);
-    if (mark) {
-      row.markForInsert();
-    }
-    return addRow(row);
+    return addRow(-System.currentTimeMillis(), arr);
   }
 
   public int addRow(long id, String[] data) {
-    return addRow(createRow(id, data));
+    return addRow(new BeeRow(id, data));
   }
 
   public int addRow(long id, long version, String[] data) {
-    BeeRow row = createRow(id, data);
-    row.setVersion(version);
-    return addRow(row);
+    int idx = addRow(id, data);
+    getRow(idx).setVersion(version);
+    return idx;
   }
-  
+
   @Override
   public BeeRowSet clone() {
     BeeRowSet result = new BeeRowSet(getRows());
@@ -84,7 +80,11 @@ public class BeeRowSet extends RowList<BeeRow, BeeColumn> implements BeeSerializ
           if (dst.isMarkedForDelete()) {
             removeRow(dst);
           } else {
+            if (dst.isMarkedForInsert()) {
+              dst.setId(upd.getNewId());
+            }
             dst.setValues(upd.getValues());
+            dst.setVersion(upd.getVersion());
             dst.reset();
           }
         }
@@ -104,15 +104,7 @@ public class BeeRowSet extends RowList<BeeRow, BeeColumn> implements BeeSerializ
 
   @Override
   public BeeRow createRow(long id) {
-    return createRow(id, 0);
-  }
-
-  public BeeRow createRow(long id, int size) {
-    return new BeeRow(id, size);
-  }
-
-  public BeeRow createRow(long id, String[] data) {
-    return new BeeRow(id, data);
+    return new BeeRow(id, new String[0]);
   }
 
   @Override
@@ -121,7 +113,6 @@ public class BeeRowSet extends RowList<BeeRow, BeeColumn> implements BeeSerializ
 
     SerializationMembers[] members = SerializationMembers.values();
     String[] arr = Codec.beeDeserialize(s);
-
     Assert.arrayLength(arr, members.length);
 
     for (int i = 0; i < members.length; i++) {
@@ -162,8 +153,8 @@ public class BeeRowSet extends RowList<BeeRow, BeeColumn> implements BeeSerializ
       return null;
     }
 
-    BeeRowSet update = new BeeRowSet();
-    cloneColumns(update);
+    BeeRowSet update = create();
+    cloneTableDescription(update);
     update.setViewName(getViewName());
 
     for (BeeRow row : getRows()) {

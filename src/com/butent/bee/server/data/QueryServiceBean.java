@@ -1,6 +1,5 @@
 package com.butent.bee.server.data;
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 import com.butent.bee.server.DataSourceBean;
@@ -13,7 +12,6 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.value.ValueType;
-import com.butent.bee.shared.sql.BeeConstants.DataType;
 import com.butent.bee.shared.sql.IsQuery;
 import com.butent.bee.shared.sql.SqlBuilderFactory;
 import com.butent.bee.shared.sql.SqlInsert;
@@ -107,123 +105,6 @@ public class QueryServiceBean {
     return dbTables;
   }
 
-  public BeeRowSet getBaseData(String tableName, String sql) {
-    Assert.isTrue(sys.isTable(tableName), "Not a base table: " + tableName);
-    Assert.notEmpty(sql);
-
-    String idName = sys.getIdName(tableName);
-    String verName = sys.getLockName(tableName);
-
-    Map<String, DataType> types = Maps.newHashMap();
-    for (BeeField field : sys.getTableFields(tableName)) {
-      types.put(field.getName().toLowerCase(), field.getType());
-    }
-
-    DataSource ds = dsb.locateDs(SqlBuilderFactory.getEngine()).getDs();
-
-    Connection con = null;
-    Statement stmt = null;
-    ResultSet rs = null;
-    BeeRowSet result = null;
-
-    LogUtils.info(logger, tableName, sql);
-
-    try {
-      con = ds.getConnection();
-      stmt = con.createStatement();
-      rs = stmt.executeQuery(sql);
-
-      BeeColumn[] rsCols = JdbcUtils.getColumns(rs);
-      List<BeeColumn> columns = Lists.newArrayList();
-
-      int idIndex = -1;
-      int verIndex = -1;
-
-      String fieldName;
-      DataType type;
-      for (BeeColumn col : rsCols) {
-        fieldName = col.getLabel();
-        if (BeeUtils.same(fieldName, idName)) {
-          idIndex = col.getIndex();
-          continue;
-        }
-        if (BeeUtils.same(fieldName, verName)) {
-          verIndex = col.getIndex();
-          continue;
-        }
-        columns.add(col);
-
-        type = types.get(fieldName.toLowerCase());
-        if (type == null) {
-          continue;
-        }
-        switch (type) {
-          case BOOLEAN:
-            col.setType(ValueType.BOOLEAN);
-            break;
-          case DATE:
-            col.setType(ValueType.DATE);
-            break;
-          case DATETIME:
-            col.setType(ValueType.DATETIME);
-            break;
-          default:
-        }
-      }
-
-      int cc = columns.size();
-      Assert.isPositive(idIndex);
-      Assert.isPositive(cc);
-
-      int[] colIndex = new int[cc];
-      ValueType[] colType = new ValueType[cc];
-      int[] colScale = new int[cc];
-      for (int i = 0; i < cc; i++) {
-        colIndex[i] = columns.get(i).getIndex();
-        colType[i] = columns.get(i).getType();
-        colScale[i] = columns.get(i).getScale();
-      }
-
-      result = new BeeRowSet(columns);
-      result.setViewName(tableName);
-      while (rs.next()) {
-        String[] row = new String[cc];
-
-        for (int i = 0; i < cc; i++) {
-          switch (colType[i]) {
-            case BOOLEAN:
-              row[i] = BooleanValue.serialize(rs.getBoolean(colIndex[i]));
-              break;
-            case NUMBER:
-              if (colScale[i] > 0) {
-                row[i] = BeeUtils.removeTrailingZeros(rs.getString(colIndex[i]));
-              } else {
-                row[i] = rs.getString(colIndex[i]);
-              }
-              break;
-            default:
-              row[i] = rs.getString(colIndex[i]);
-          }
-        }
-        if (verIndex > 0) {
-          result.addRow(rs.getLong(idIndex), rs.getLong(verIndex), row);
-        } else {
-          result.addRow(rs.getLong(idIndex), row);
-        }
-      }
-      LogUtils.info(logger, tableName, "cols:", result.getNumberOfColumns(),
-          "rows:", result.getNumberOfRows());
-
-    } catch (SQLException ex) {
-      LogUtils.error(logger, ex);
-    } finally {
-      JdbcUtils.closeResultSet(rs);
-      JdbcUtils.closeStatement(stmt);
-      JdbcUtils.closeConnection(con);
-    }
-    return result;
-  }
-
   public BeeRowSet getData(SqlSelect ss) {
     Assert.notNull(ss);
     Assert.state(!ss.isEmpty());
@@ -260,6 +141,94 @@ public class QueryServiceBean {
     BeeRowSet rs = getData(ss);
     Assert.isTrue(rs.getNumberOfRows() == 1, "Result must contain exactly one row");
     return rs.getString(rs.getRow(0), columnId);
+  }
+
+  public BeeRowSet getViewData(SqlSelect ss, BeeView view) {
+    if (BeeUtils.isEmpty(view)) {
+      return getData(ss);
+    }
+    Assert.notNull(ss);
+    Assert.state(!ss.isEmpty());
+
+    activateTables(ss);
+
+    String tableName = view.getSource();
+
+    String sql = ss
+        .addField(tableName, sys.getIdName(tableName), SqlUtils.uniqueName())
+        .addField(tableName, sys.getLockName(tableName), SqlUtils.uniqueName())
+        .getQuery();
+
+    DataSource ds = dsb.locateDs(SqlBuilderFactory.getEngine()).getDs();
+
+    Connection con = null;
+    Statement stmt = null;
+    ResultSet rs = null;
+    BeeRowSet result = null;
+
+    LogUtils.info(logger, "SQL:", sql);
+
+    try {
+      con = ds.getConnection();
+      stmt = con.createStatement();
+      rs = stmt.executeQuery(sql);
+
+      int cols = view.getFields().size();
+      BeeColumn[] rsCols = JdbcUtils.getColumns(rs);
+      BeeColumn[] columns = new BeeColumn[cols];
+      System.arraycopy(rsCols, 0, columns, 0, cols);
+
+      int j = 0;
+      for (BeeField field : view.getFields().values()) {
+        BeeColumn col = columns[j++];
+
+        switch (field.getType()) {
+          case BOOLEAN:
+            col.setType(ValueType.BOOLEAN);
+            break;
+          case DATE:
+            col.setType(ValueType.DATE);
+            break;
+          case DATETIME:
+            col.setType(ValueType.DATETIME);
+            break;
+          default:
+        }
+      }
+      result = new BeeRowSet(columns);
+      result.setViewName(tableName);
+
+      while (rs.next()) {
+        String[] row = new String[cols];
+
+        for (int i = 0; i < cols; i++) {
+          row[i] = rs.getString(columns[i].getIndex());
+
+          switch (columns[i].getType()) {
+            case BOOLEAN:
+              row[i] = BooleanValue.serialize(rs.getBoolean(columns[i].getIndex()));
+              break;
+            case NUMBER:
+              if (columns[i].getScale() > 0) {
+                row[i] = BeeUtils.removeTrailingZeros(row[i]);
+              }
+              break;
+            default:
+          }
+        }
+        result.addRow(rs.getLong(cols + 1), rs.getLong(cols + 2), row);
+      }
+      LogUtils.info(logger, tableName, "cols:", result.getNumberOfColumns(),
+          "rows:", result.getNumberOfRows());
+
+    } catch (SQLException ex) {
+      LogUtils.error(logger, ex);
+    } finally {
+      JdbcUtils.closeResultSet(rs);
+      JdbcUtils.closeStatement(stmt);
+      JdbcUtils.closeConnection(con);
+    }
+    return result;
   }
 
   public long insertData(SqlInsert si) {

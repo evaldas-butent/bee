@@ -9,7 +9,7 @@ import java.util.List;
 
 public abstract class HasFrom<T> extends SqlQuery<T> {
 
-  private List<IsFrom> fromList;
+  protected List<IsFrom> fromList;
 
   public T addFrom(String source) {
     addFrom(source, null);

@@ -13,53 +13,78 @@ import com.butent.bee.shared.utils.Codec;
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Logger;
 
 public class BeeRow extends StringRow implements BeeSerializable {
+
+  private enum SerializationMembers {
+    ID, VERSION, VALUES, NEWID, SHADOW
+  }
+
+  private static Logger logger = Logger.getLogger(BeeRow.class.getName());
+
   public static BeeRow restore(String s) {
-    BeeRow row = new BeeRow(0, 0);
+    BeeRow row = new BeeRow(0, null);
     row.deserialize(s);
     return row;
   }
-  
-  private long version = 0;
-  private int mode = 0;
-  private Map<Integer, String> shadow = null;
 
-  BeeRow(long id, int size) {
-    super(id, new StringArray(new String[size]));
-  }
+  private long version = 0;
+  private long newId = 0;
+  private Map<Integer, String> shadow = null;
 
   BeeRow(long id, String[] row) {
     super(id, new StringArray(row));
   }
 
   public void deserialize(String s) {
+    SerializationMembers[] members = SerializationMembers.values();
     String[] arr = Codec.beeDeserialize(s);
-    Assert.arrayLength(arr, 5);
-    int p = 0;
+    Assert.arrayLength(arr, members.length);
 
-    setId(BeeUtils.toLong(arr[p++]));
-    setVersion(BeeUtils.toLong(arr[p++]));
-    mode = BeeUtils.toInt(arr[p++]);
+    for (int i = 0; i < members.length; i++) {
+      SerializationMembers member = members[i];
+      String value = arr[i];
 
-    if (!BeeUtils.isEmpty(arr[p])) {
-      setValues(new StringArray(Codec.beeDeserialize(arr[p])));
-    }
-    p++;
-    if (!BeeUtils.isEmpty(arr[p])) {
-      String[] shArr = Codec.beeDeserialize(arr[p]);
+      switch (member) {
+        case ID:
+          setId(BeeUtils.toLong(value));
+          break;
 
-      if (ArrayUtils.length(shArr) > 1) {
-        Map<Integer, String> shMap = new HashMap<Integer, String>();
+        case VERSION:
+          setVersion(BeeUtils.toLong(value));
+          break;
 
-        for (int i = 0; i < shArr.length; i += 2) {
-          shMap.put(BeeUtils.toInt(shArr[i]), shArr[i + 1]);
-        }
-        setShadow(shMap);
+        case VALUES:
+          setValues(new StringArray(Codec.beeDeserialize(value)));
+          break;
+
+        case NEWID:
+          setNewId(BeeUtils.toLong(value));
+          break;
+
+        case SHADOW:
+          if (!BeeUtils.isEmpty(value)) {
+            String[] shArr = Codec.beeDeserialize(value);
+
+            if (ArrayUtils.length(shArr) > 1) {
+              Map<Integer, String> shMap = new HashMap<Integer, String>();
+
+              for (int j = 0; j < shArr.length; j += 2) {
+                shMap.put(BeeUtils.toInt(shArr[j]), shArr[j + 1]);
+              }
+              setShadow(shMap);
+            }
+          }
+          break;
+
+        default:
+          logger.severe("Unhandled serialization member: " + member);
+          break;
       }
     }
   }
-  
+
   @Override
   public Boolean getBoolean(int col) {
     return BeeUtils.toBoolean(getString(col));
@@ -94,6 +119,10 @@ public class BeeRow extends StringRow implements BeeSerializable {
 
   public long getLong(int col) {
     return BeeUtils.toLong(getString(col));
+  }
+
+  public long getNewId() {
+    return newId;
   }
 
   public Object getOriginal(int col, int sqlType) {
@@ -137,36 +166,53 @@ public class BeeRow extends StringRow implements BeeSerializable {
   }
 
   public boolean isMarkedForDelete() {
-    return mode < 0;
+    return newId < 0;
   }
 
   public boolean isMarkedForInsert() {
-    return mode > 0;
-  }
-
-  public void markForDelete() {
-    mode = -1;
-  }
-
-  public void markForInsert() {
-    mode = 1;
+    return getId() < 0;
   }
 
   public void reset() {
     setShadow(null);
-    mode = 0;
+    newId = 0;
   }
 
   public String serialize() {
     StringBuilder sb = new StringBuilder();
 
-    sb.append(Codec.beeSerialize(getId()));
-    sb.append(Codec.beeSerialize(getVersion()));
-    sb.append(Codec.beeSerialize(mode));
-    sb.append(Codec.beeSerialize((Object) getValues().getArray()));
-    sb.append(Codec.beeSerialize(shadow));
+    for (SerializationMembers member : SerializationMembers.values()) {
+      switch (member) {
+        case ID:
+          sb.append(Codec.beeSerialize(getId()));
+          break;
 
+        case VERSION:
+          sb.append(Codec.beeSerialize(getVersion()));
+          break;
+
+        case VALUES:
+          sb.append(Codec.beeSerialize((Object) getValues().getArray()));
+          break;
+
+        case NEWID:
+          sb.append(Codec.beeSerialize(getNewId()));
+          break;
+
+        case SHADOW:
+          sb.append(Codec.beeSerialize(getShadow()));
+          break;
+
+        default:
+          logger.severe("Unhandled serialization member: " + member);
+          break;
+      }
+    }
     return sb.toString();
+  }
+
+  public void setNewId(long newId) {
+    this.newId = newId;
   }
 
   @Override
@@ -184,7 +230,7 @@ public class BeeRow extends StringRow implements BeeSerializable {
           shadow.remove(col);
 
           if (BeeUtils.isEmpty(shadow) && !isMarkedForInsert()) {
-            markForDelete(); // TODO: dummy
+            setNewId(-1); // TODO: dummy for Delete
           }
         }
       }

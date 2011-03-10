@@ -18,12 +18,12 @@ import com.butent.bee.client.layout.BeeLayoutPanel;
 import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.utils.BeeCommand;
 import com.butent.bee.client.utils.JsUtils;
+import com.butent.bee.client.utils.XmlUtils;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeService;
-import com.butent.bee.shared.communication.ContentType;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.TableInfo;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -194,7 +194,8 @@ public class Cache {
       BeeKeeper.getLog().info(ti.getName(), "not active");
       return;
     }
-    BeeKeeper.getRpc().makePostRequest("rpc_ui_base_data", ContentType.BINARY, ti.getName(),
+    BeeKeeper.getRpc().makePostRequest("rpc_ui_table",
+        XmlUtils.createString(BeeService.XML_TAG_DATA, "table_name", ti.getName()),
         new ResponseCallback() {
           @Override
           public void onResponse(JsArrayString arr) {

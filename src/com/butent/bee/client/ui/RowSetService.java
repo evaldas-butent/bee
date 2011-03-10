@@ -154,7 +154,7 @@ public class RowSetService extends CompositeService {
         break;
 
       case INSERT:
-        rs.addEmptyRow(true);
+        rs.addEmptyRow();
         refresh();
         break;
 
@@ -293,7 +293,7 @@ public class RowSetService extends CompositeService {
 
     BeeTreeItem cols = new BeeTreeItem("Columns");
     for (BeeColumn col : brs.getColumnArray()) {
-      BeeTreeItem c = new BeeTreeItem(col.getName());
+      BeeTreeItem c = new BeeTreeItem(col.getId());
       c.addItem("Type: (" + col.getSqlType() + ") " + col.getType());
       c.addItem("Prec: " + col.getPrecision());
       c.addItem("Scale: " + col.getScale());
@@ -304,7 +304,7 @@ public class RowSetService extends CompositeService {
 
     BeeTreeItem rows = new BeeTreeItem("Data");
     for (int i = 0; i < brs.getNumberOfRows(); i++) {
-      BeeTreeItem r = new BeeTreeItem("Row" + i);
+      BeeTreeItem r = new BeeTreeItem("Row" + brs.getRow(i).getId());
 
       for (int j = 0; j < brs.getNumberOfColumns(); j++) {
         r.addItem(brs.getColumnLabel(j) + ": " + brs.getString(i, j));
