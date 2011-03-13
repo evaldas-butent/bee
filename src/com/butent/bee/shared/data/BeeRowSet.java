@@ -242,20 +242,22 @@ public class BeeRowSet extends RowList<BeeRow, BeeColumn> implements BeeSerializ
 
   @Override
   public String serialize() {
-    StringBuilder sb = new StringBuilder();
+    SerializationMembers[] members = SerializationMembers.values();
+    Object[] arr = new Object[members.length];
+    int i = 0;
 
-    for (SerializationMembers member : SerializationMembers.values()) {
+    for (SerializationMembers member : members) {
       switch (member) {
         case VIEW:
-          sb.append(Codec.beeSerialize(getViewName()));
+          arr[i++] = getViewName();
           break;
 
         case COLUMNS:
-          sb.append(Codec.beeSerialize(getColumns()));
+          arr[i++] = getColumns();
           break;
 
         case ROWS:
-          sb.append(Codec.beeSerialize(getRows().getList()));
+          arr[i++] = getRows().getList();
           break;
 
         default:
@@ -263,7 +265,7 @@ public class BeeRowSet extends RowList<BeeRow, BeeColumn> implements BeeSerializ
           break;
       }
     }
-    return sb.toString();
+    return Codec.beeSerializeAll(arr);
   }
 
   public void setValue(BeeRow row, String columnId, String value) {

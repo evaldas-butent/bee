@@ -1,5 +1,6 @@
 package com.butent.bee.client.ui;
 
+import com.google.common.collect.Lists;
 import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.event.shared.GwtEvent;
 import com.google.gwt.user.client.ui.FlowPanel;
@@ -24,6 +25,7 @@ import com.butent.bee.shared.communication.ContentType;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -80,13 +82,8 @@ public class RowSetService extends CompositeService {
                 Assert.notNull(arr);
                 Assert.parameterCount(arr.length(), 1);
 
-                BeeRowSet res = BeeRowSet.restore(arr.get(0));
-                int rc = res.getNumberOfRows();
-                List<String> lst = new ArrayList<String>(rc);
+                List<String> lst = Lists.newArrayList(Codec.beeDeserialize(arr.get(0)));
 
-                for (int i = 0; i < rc; i++) {
-                  lst.add(res.getString(i, 0));
-                }
                 if (BeeUtils.isEmpty(lst)) {
                   Global.showError("NO TABLES");
                   destroy();
@@ -179,20 +176,20 @@ public class RowSetService extends CompositeService {
                   Assert.notNull(arr);
                   Assert.parameterCount(arr.length(), 1);
 
-                  BeeRowSet res = BeeRowSet.restore(arr.get(0));
-                  int rc = res.getNumberOfRows();
+                  List<String> res = Lists.newArrayList(Codec.beeDeserialize(arr.get(0)));
+                  int rc = res.size();
                   List<String> lst = new ArrayList<String>();
                   int x = 1;
 
                   for (int i = 0; i < rc; i++) {
-                    String current = res.getString(i, 0);
+                    String current = res.get(i);
                     lst.add(current);
 
                     for (int j = x; j < rc; j++) {
                       for (int k = j; k < rc; k++) {
-                        lst.add(current + " " + res.getString(k, 0));
+                        lst.add(current + " " + res.get(k));
                       }
-                      current += " " + res.getString(j, 0);
+                      current += " " + res.get(j);
                     }
                     x++;
                   }
@@ -221,13 +218,8 @@ public class RowSetService extends CompositeService {
                   Assert.notNull(arr);
                   Assert.parameterCount(arr.length(), 1);
 
-                  BeeRowSet res = BeeRowSet.restore(arr.get(0));
-                  int rc = res.getNumberOfRows();
-                  List<String> lst = new ArrayList<String>(rc);
+                  List<String> lst = Lists.newArrayList(Codec.beeDeserialize(arr.get(0)));
 
-                  for (int i = 0; i < rc; i++) {
-                    lst.add(res.getString(i, 0));
-                  }
                   if (BeeUtils.isEmpty(lst)) {
                     Global.showError("NO STATES");
                   } else {

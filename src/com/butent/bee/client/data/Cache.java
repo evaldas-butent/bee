@@ -42,7 +42,7 @@ public class Cache {
     public void onResponse(JsArrayString arr) {
       Assert.notNull(arr);
       Assert.isTrue(arr.length() >= 1);
-      String[] info = Codec.beeDeserialize(Codec.beeDeserialize(arr.get(0))[0]);
+      String[] info = Codec.beeDeserialize(arr.get(0));
 
       getTables().clear();
       for (String s : info) {

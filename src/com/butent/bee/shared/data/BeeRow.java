@@ -179,28 +179,30 @@ public class BeeRow extends StringRow implements BeeSerializable {
   }
 
   public String serialize() {
-    StringBuilder sb = new StringBuilder();
+    SerializationMembers[] members = SerializationMembers.values();
+    Object[] arr = new Object[members.length];
+    int i = 0;
 
-    for (SerializationMembers member : SerializationMembers.values()) {
+    for (SerializationMembers member : members) {
       switch (member) {
         case ID:
-          sb.append(Codec.beeSerialize(getId()));
+          arr[i++] = getId();
           break;
 
         case VERSION:
-          sb.append(Codec.beeSerialize(getVersion()));
+          arr[i++] = getVersion();
           break;
 
         case VALUES:
-          sb.append(Codec.beeSerialize((Object) getValues().getArray()));
+          arr[i++] = getValues().getArray();
           break;
 
         case NEWID:
-          sb.append(Codec.beeSerialize(getNewId()));
+          arr[i++] = getNewId();
           break;
 
         case SHADOW:
-          sb.append(Codec.beeSerialize(getShadow()));
+          arr[i++] = getShadow();
           break;
 
         default:
@@ -208,7 +210,7 @@ public class BeeRow extends StringRow implements BeeSerializable {
           break;
       }
     }
-    return sb.toString();
+    return Codec.beeSerializeAll(arr);
   }
 
   public void setNewId(long newId) {

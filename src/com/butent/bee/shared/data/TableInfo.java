@@ -13,8 +13,9 @@ public class TableInfo implements BeeSerializable, Comparable<TableInfo> {
     ti.deserialize(s);
     return ti;
   }
+
   private String name;
-  
+
   private int rowCount;
 
   public TableInfo(String name, int rowCount) {
@@ -35,7 +36,7 @@ public class TableInfo implements BeeSerializable, Comparable<TableInfo> {
   public void deserialize(String s) {
     String[] arr = Codec.beeDeserialize(s);
     Assert.arrayLength(arr, 2);
-    
+
     name = arr[0];
     setRowCount(BeeUtils.toInt(arr[1]));
   }
@@ -65,7 +66,7 @@ public class TableInfo implements BeeSerializable, Comparable<TableInfo> {
   }
 
   public String serialize() {
-    return Codec.beeSerialize(getName(), getRowCount()); 
+    return Codec.beeSerializeAll(getName(), getRowCount());
   }
 
   public void setRowCount(int rowCount) {

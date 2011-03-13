@@ -1,5 +1,6 @@
 package com.butent.bee.client.cli;
 
+import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.KeyPressEvent;
 import com.google.gwt.i18n.client.NumberFormat;
@@ -7,13 +8,16 @@ import com.google.gwt.i18n.client.NumberFormat;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.canvas.CanvasDemo;
+import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.i18n.LocaleUtils;
 import com.butent.bee.client.visualization.showcase.Showcase;
+import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.client.widget.BeeTextBox;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ContentType;
+import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -147,7 +151,19 @@ public class CliWidget extends BeeTextBox {
     } else if (z.equals("rebuild")) {
       BeeKeeper.getRpc().makePostRequest("rpc_ui_rebuild", ContentType.BINARY, v);
     } else if (z.equals("sql")) {
-      BeeKeeper.getRpc().makePostRequest("rpc_ui_sql", ContentType.BINARY, v);
+      BeeKeeper.getRpc().makePostRequest("rpc_ui_sql", ContentType.BINARY, v,
+          new ResponseCallback() {
+            @Override
+            public void onResponse(JsArrayString arr) {
+              BeeRowSet rs = BeeRowSet.restore(arr.get(0));
+
+              if (rs.isEmpty()) {
+                BeeKeeper.getUi().updateActivePanel(new BeeLabel("RowSet is empty"));
+              } else {
+                BeeKeeper.getUi().showGrid(rs);
+              }
+            }
+          });
 
     } else {
       Global.showDialog("wtf", v);

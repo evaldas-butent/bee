@@ -9,8 +9,6 @@ import com.google.common.collect.Multimap;
 import com.google.common.primitives.Ints;
 
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.data.BeeRow;
-import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.sql.SqlSelect;
 import com.butent.bee.shared.sql.SqlUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -125,35 +123,27 @@ public class UserServiceBean {
     String roleIdName = sys.getIdName(ROLE_TABLE);
 
     SqlSelect ss = new SqlSelect()
-      .addFields("r", "Name", roleIdName)
-      .addFrom(ROLE_TABLE, "r");
+        .addFields("r", roleIdName, "Name")
+        .addFrom(ROLE_TABLE, "r");
 
-    BeeRowSet brs = qs.getData(ss);
-    for (BeeRow role : brs.getRows()) {
-      roleCache.put(brs.getInt(role, roleIdName), brs.getString(role, "Name"));
+    for (String[] row : qs.getData(ss)) {
+      roleCache.put(BeeUtils.toInt(row[0]), row[1]);
     }
 
     ss = new SqlSelect()
-      .addFields("u", "Login", userIdName, "FirstName", "LastName", "Position")
-      .addFields("r", "Role")
-      .addFrom(USER_TABLE, "u")
-      .addFromLeft(USER_ROLES_TABLE, "r", SqlUtils.join("u", userIdName, "r", "User"));
+        .addFields("u", userIdName, "Login", "Position", "FirstName", "LastName")
+        .addFields("r", "Role")
+        .addFrom(USER_TABLE, "u")
+        .addFromLeft(USER_ROLES_TABLE, "r", SqlUtils.join("u", userIdName, "r", "User"));
 
-    brs = qs.getData(ss);
-    for (BeeRow user : brs.getRows()) {
-      int userId = brs.getInt(user, userIdName);
+    for (String[] row : qs.getData(ss)) {
+      int userId = BeeUtils.toInt(row[0]);
+      String login = row[1];
 
-      userCache.put(userId, brs.getString(user, "Login").toLowerCase());
-      userRolesCache.put(userId, brs.getInt(user, "Role"));
-      userInfoCache.put(
-          userId,
-          BeeUtils.concat(
-              1,
-              brs.getString(user, "Position"),
-              BeeUtils.concat(
-                  1,
-                  BeeUtils.ifString(brs.getString(user, "FirstName"), brs.getString(user, "Login")),
-                  brs.getString(user, "LastName"))));
+      userCache.put(userId, login.toLowerCase());
+      userRolesCache.put(userId, BeeUtils.toInt(row[5]));
+      userInfoCache.put(userId,
+          BeeUtils.concat(1, row[2], BeeUtils.concat(1, BeeUtils.ifString(row[3], login), row[4])));
     }
     cacheUpToDate = true;
   }

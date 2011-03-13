@@ -8,7 +8,6 @@ import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
-import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.sql.SqlBuilderFactory;
@@ -17,7 +16,6 @@ import com.butent.bee.shared.sql.SqlUtils;
 import com.butent.bee.shared.ui.UiComponent;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.Codec;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -119,12 +117,14 @@ public class UiServiceBean {
     if (BeeUtils.isEmpty(sql)) {
       return ResponseObject.error("SQL command not found");
     }
-    Object res = qs.processSql(sql);
+    Object res = qs.doSql(sql);
 
     if (res instanceof BeeRowSet) {
-      return ResponseObject.response(res);
+      ResponseObject resp = ResponseObject.response(res);
+      resp.addWarning("Retrieved rows:", ((BeeRowSet) res).getNumberOfRows());
+      return resp;
     } else {
-      return ResponseObject.warning("Affected:", res);
+      return ResponseObject.warning("Affected rows:", res);
     }
   }
 
@@ -145,7 +145,7 @@ public class UiServiceBean {
   private ResponseObject formList() {
     SqlSelect ss = new SqlSelect();
     ss.addFields("f", "form").addFrom("forms", "f").addOrder("f", "form");
-    return ResponseObject.response(qs.getData(ss));
+    return ResponseObject.response(qs.getViewData(ss, null));
   }
 
   private ResponseObject generateData(RequestInfo reqInfo) {
@@ -156,9 +156,9 @@ public class UiServiceBean {
     int rowCount = BeeUtils.toInt(ArrayUtils.getQuietly(arr, 1));
 
     if (!sys.isTable(tableName)) {
-      response = new ResponseObject().addError("Unknown table:", tableName);
+      response = ResponseObject.error("Unknown table:", tableName);
     } else if (rowCount <= 0 || rowCount > 10000) {
-      response = new ResponseObject().addError("Invalid row count:", rowCount);
+      response = ResponseObject.error("Invalid row count:", rowCount);
     } else {
       response = sys.generateData(tableName, rowCount);
     }
@@ -166,7 +166,7 @@ public class UiServiceBean {
   }
 
   private ResponseObject getDataInfo() {
-    return ResponseObject.response(Codec.beeSerialize(sys.getDataInfo()));
+    return ResponseObject.response(sys.getDataInfo());
   }
 
   private ResponseObject getStates(RequestInfo reqInfo) {
@@ -180,12 +180,7 @@ public class UiServiceBean {
         }
       }
     }
-    BeeRowSet rs = new BeeRowSet(new BeeColumn(ValueType.TEXT, "BeeStates", "BeeStates"));
-
-    for (String state : states) {
-      rs.addRow(state);
-    }
-    return ResponseObject.response(rs);
+    return ResponseObject.response(states);
   }
 
   private ResponseObject getStateTable(RequestInfo reqInfo) {
@@ -210,12 +205,7 @@ public class UiServiceBean {
   }
 
   private ResponseObject getTables() {
-    BeeRowSet rs = new BeeRowSet(new BeeColumn(ValueType.TEXT, "BeeTable", "BeeTable"));
-
-    for (String tbl : sys.getTableNames()) {
-      rs.addRow(tbl);
-    }
-    return ResponseObject.response(rs);
+    return ResponseObject.response(sys.getTableNames());
   }
 
   private ResponseObject gridInfo(RequestInfo reqInfo) {
@@ -226,7 +216,7 @@ public class UiServiceBean {
     ss.addFields("g", "properties").addFrom("grids", "g").setWhere(
         SqlUtils.equal("g", "table", gName));
 
-    String x = qs.getString(ss, "properties");
+    String x = qs.getValue(ss);
 
     if (!BeeUtils.isEmpty(x) && x.contains("parent_table")) {
       grd = x.replaceFirst("^((?s).)*parent_table\\s*=\\s*[\\[\"'](.+)[\\]\"']((?s).)*$", "$2");
@@ -236,24 +226,23 @@ public class UiServiceBean {
     ss.addFields("c", "caption").addFrom("columns", "c").setWhere(
           SqlUtils.equal("c", "table", grd)).addOrder("c", "order");
 
-    BeeRowSet data = qs.getData(ss);
+    String[] data = qs.getColumn(ss);
 
-    if (!data.isEmpty()) {
+    if (!BeeUtils.isEmpty(data)) {
       BeeRowSet rs = new BeeRowSet();
 
-      for (BeeRow row : data.getRows()) {
-        String colName = data.getString(row, "caption").replaceAll("['\"]", "");
+      for (String row : data) {
+        String colName = row.replaceAll("['\"]", "");
         rs.addColumn(new BeeColumn(ValueType.TEXT, colName, BeeUtils.createUniqueName("col")));
       }
-      long id = 0;
       for (int i = 0; i < 20; i++) {
-        int cnt = data.getNumberOfRows();
+        int cnt = data.length;
         String[] cells = new String[cnt];
 
         for (int j = 0; j < cnt; j++) {
           cells[j] = (j == 0 ? Integer.toString(i + 1) : BeeConst.STRING_EMPTY);
         }
-        rs.addRow(++id, cells);
+        rs.addRow(i + 1, cells);
       }
       return ResponseObject.response(rs);
     }

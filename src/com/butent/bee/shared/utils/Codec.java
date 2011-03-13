@@ -144,7 +144,7 @@ public class Codec {
   }
 
   public static String[] beeDeserialize(String ser) {
-    Assert.notEmpty(ser);
+    Assert.notNull(ser);
 
     ArrayList<String> res = new ArrayList<String>();
     int pos = 0;
@@ -165,47 +165,53 @@ public class Codec {
     return res.toArray(new String[0]);
   }
 
-  public static String beeSerialize(Object... obj) {
-    Assert.parameterCount(obj.length, 1);
+  public static String beeSerialize(Object obj) {
+    StringBuilder sb = new StringBuilder();
 
+    if (obj == null) {
+      sb.append(0);
+
+    } else if (ArrayUtils.isArray(obj)) {
+      for (int i = 0; i < ArrayUtils.length(obj); i++) {
+        sb.append(beeSerializeAll(ArrayUtils.get(obj, i)));
+      }
+
+    } else if (obj instanceof Map) {
+      for (Map.Entry<?, ?> ob : ((Map<?, ?>) obj).entrySet()) {
+        sb.append(beeSerializeAll(ob.getKey(), ob.getValue()));
+      }
+
+    } else if (obj instanceof Collection) {
+      for (Object ob : (Collection<?>) obj) {
+        sb.append(beeSerializeAll(ob));
+      }
+
+    } else if (obj instanceof BeeSerializable) {
+      sb.append(((BeeSerializable) obj).serialize());
+
+    } else {
+      String s = BeeUtils.transformNoTrim(obj);
+      String l = BeeUtils.transform(s.length());
+      sb.append(l.length()).append(l).append(s);
+    }
+    return sb.toString();
+  }
+
+  public static String beeSerializeAll(Object... obj) {
+    Assert.parameterCount(obj.length, 1);
     StringBuilder sb = new StringBuilder();
 
     for (Object o : obj) {
-      if (o == null) {
-        sb.append(0);
+      String s = beeSerialize(o);
 
-      } else if (o instanceof BeeSerializable) {
-        String s = ((BeeSerializable) o).serialize();
+      if (ArrayUtils.isArray(o)
+          || o instanceof Map
+          || o instanceof Collection
+          || o instanceof BeeSerializable) {
+
         sb.append(beeSerialize(s));
-
-      } else if (o instanceof Map) {
-        StringBuilder s = new StringBuilder();
-
-        for (Map.Entry<?, ?> ob : ((Map<?, ?>) o).entrySet()) {
-          s.append(beeSerialize(ob.getKey(), ob.getValue()));
-        }
-        sb.append(beeSerialize(s));
-
-      } else if (o instanceof Collection) {
-        StringBuilder s = new StringBuilder();
-
-        for (Object ob : (Collection<?>) o) {
-          s.append(beeSerialize(ob));
-        }
-        sb.append(beeSerialize(s));
-
-      } else if (ArrayUtils.isArray(o)) {
-        StringBuilder s = new StringBuilder();
-
-        for (int i = 0; i < ArrayUtils.length(o); i++) {
-          s.append(beeSerialize(ArrayUtils.get(o, i)));
-        }
-        sb.append(beeSerialize(s));
-
       } else {
-        String s = BeeUtils.transformNoTrim(o);
-        String l = BeeUtils.transform(s.length());
-        sb.append(l.length() + l + s);
+        sb.append(s);
       }
     }
     return sb.toString();

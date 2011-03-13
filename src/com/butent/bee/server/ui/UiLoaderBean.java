@@ -70,7 +70,7 @@ public class UiLoaderBean extends UiLoader {
           "dock_bott").addFrom("forms", "f").setWhere(
           SqlUtils.equal("f", "form", formName));
 
-      Map<String, String> data = qs.getRowValues(ss);
+      Map<String, String> data = qs.getRowAsMap(ss);
 
       String top = data.get("top");
       String left = data.get("left");
@@ -116,7 +116,7 @@ public class UiLoaderBean extends UiLoader {
           "dock_width", "dock_hght").addFrom("controls", "c").setWhere(
           SqlUtils.equal("c", "form", formName));
 
-      BeeRowSet brs = qs.getData(ss);
+      BeeRowSet brs = qs.getViewData(ss, null);
       for (BeeRow cols : brs.getRows()) {
         row = new UiRow();
         row.setId(brs.getString(cols, "control"));

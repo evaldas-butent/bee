@@ -266,28 +266,30 @@ public abstract class UiComponent implements HasId, BeeSerializable {
 
   @Override
   public String serialize() {
-    StringBuilder sb = new StringBuilder();
+    SerializationMembers[] members = SerializationMembers.values();
+    Object[] arr = new Object[members.length];
+    int i = 0;
 
-    for (SerializationMembers member : SerializationMembers.values()) {
+    for (SerializationMembers member : members) {
       switch (member) {
         case ID:
-          sb.append(Codec.beeSerialize(id));
+          arr[i++] = id;
           break;
         case CAPTION:
-          sb.append(Codec.beeSerialize(caption));
+          arr[i++] = caption;
           break;
         case PROPERTIES:
-          sb.append(Codec.beeSerialize(properties));
+          arr[i++] = properties;
           break;
         case CHILDS:
-          sb.append(Codec.beeSerialize(childs));
+          arr[i++] = childs;
           break;
         default:
           logger.severe("Unhandled serialization member: " + member);
           break;
       }
     }
-    return Codec.beeSerialize(getClassName(this.getClass()), sb);
+    return Codec.beeSerializeAll(getClassName(this.getClass()), (Object) arr);
   }
 
   public void setCaption(String caption) {

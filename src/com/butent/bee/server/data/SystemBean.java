@@ -95,7 +95,7 @@ public class SystemBean {
 
   public String backupTable(String name) {
     String tmp = null;
-    int rc = qs.getSingleRow(new SqlSelect().addCount(name).addFrom(name)).getInt(0);
+    int rc = getRowCount(name, null);
 
     if (rc > 0) {
       tmp = SqlUtils.temporaryName();
@@ -126,9 +126,11 @@ public class SystemBean {
         err = "Table " + tblName + " is read only.";
       } else {
         int i = 0;
-
         for (BeeField fld : view.getFields().values()) {
-          fields.put(i++, fld);
+          if (BeeUtils.equals(fld.getOwner(), tblName)) { // TODO pataisyti
+            fields.put(i, fld);
+          }
+          i++;
         }
       }
     } else {
@@ -387,7 +389,7 @@ public class SystemBean {
     if (BeeUtils.isEmpty(union)) {
       return ResponseObject.error("State \"", stateName, "\" does not support roles");
     }
-    return ResponseObject.response(qs.getData(union));
+    return ResponseObject.response(qs.getViewData(union, null));
   }
 
   public ResponseObject generateData(String tblName, int rowCount) {
@@ -397,7 +399,7 @@ public class SystemBean {
     Collection<BeeField> fields = getTableFields(tblName);
     SqlInsert si = new SqlInsert(tblName);
     Map<String, Object> extUpdate = Maps.newHashMap();
-    Map<String, BeeRowSet> relations = Maps.newHashMap();
+    Map<String, String[]> relations = Maps.newHashMap();
 
     int minDay = new JustDate().getDay() - 1000;
     int maxDay = new JustDate().getDay() + 200;
@@ -418,13 +420,24 @@ public class SystemBean {
         String relation = field.getRelation();
 
         if (!BeeUtils.isEmpty(relation)) {
+          String[] rs = relations.get(relation);
+
           if (!relations.containsKey(relation)) {
-            relations.put(relation, qs.getData(new SqlSelect()
+            rs = qs.getColumn(new SqlSelect()
                 .addFields(relation, getIdName(relation))
-                .addFrom(relation)));
+                .addFrom(relation));
+
+            if (BeeUtils.isEmpty(rs) && field.isNotNull()) {
+              return ResponseObject
+                  .error(field.getName(), ": Relation table", relation, "is empty");
+            }
+            relations.put(relation, rs);
           }
-          BeeRowSet rs = relations.get(relation);
-          v = rs.getRow(random.nextInt(rs.getNumberOfRows())).getLong(0);
+          if (BeeUtils.isEmpty(rs)) {
+            v = null;
+          } else {
+            v = BeeUtils.toInt(rs[random.nextInt(rs.length)]);
+          }
         } else {
           switch (field.getType()) {
             case BOOLEAN:
@@ -486,14 +499,14 @@ public class SystemBean {
       long id = qs.insertData(si);
 
       if (id < 0) {
-        return new ResponseObject().addError(tblName, si.getQuery(), "Error inserting data");
+        return ResponseObject.error(tblName, si.getQuery(), "Error inserting data");
       } else {
         commitExtChanges(getTable(tblName), id, extUpdate, false);
       }
       si.reset();
       extUpdate.clear();
     }
-    return new ResponseObject().addInfo(tblName, "generated", rowCount, "rows");
+    return ResponseObject.info(tblName, "generated", rowCount, "rows");
   }
 
   public List<TableInfo> getDataInfo() {
@@ -530,10 +543,11 @@ public class SystemBean {
   public int getRowCount(String tblName, IsCondition where) {
     Assert.notEmpty(tblName);
     SqlSelect ss = new SqlSelect().addCount("cnt").addFrom(tblName);
+
     if (where != null) {
       ss.setWhere(where);
     }
-    return qs.getSingleRow(ss).getInt(0);
+    return qs.getInt(ss);
   }
 
   public BeeField getTableField(String tblName, String fldName) {

@@ -13,7 +13,7 @@ import com.butent.bee.shared.utils.PropertyUtils;
 import java.util.List;
 import java.util.logging.Logger;
 
-public class BeeColumn extends TableColumn implements BeeSerializable, Transformable  {
+public class BeeColumn extends TableColumn implements BeeSerializable, Transformable {
 
   private enum SerializationMembers {
     ID, NAME, LABEL, SQL_TYPE, VALUE_TYPE, PRECISION, SCALE, ISNULL
@@ -30,7 +30,7 @@ public class BeeColumn extends TableColumn implements BeeSerializable, Transform
     c.deserialize(s);
     return c;
   }
-  
+
   private int index = BeeConst.INDEX_UNKNOWN;
 
   private String name = null;
@@ -67,7 +67,7 @@ public class BeeColumn extends TableColumn implements BeeSerializable, Transform
     super(ValueType.TEXT, name, name);
     setName(name);
   }
- 
+
   public BeeColumn(ValueType type, String label, String id) {
     super(type, label, id);
     setName(BeeUtils.ifString(label, id));
@@ -75,7 +75,7 @@ public class BeeColumn extends TableColumn implements BeeSerializable, Transform
 
   public BeeColumn clone() {
     BeeColumn result = new BeeColumn();
-    
+
     result.setId(getId());
     result.setType(getType());
     result.setLabel(getLabel());
@@ -83,7 +83,7 @@ public class BeeColumn extends TableColumn implements BeeSerializable, Transform
     if (getProperties() != null) {
       result.setProperties(getProperties());
     }
-    
+
     result.setIndex(getIndex());
     result.setName(getName());
     result.setSchema(getSchema());
@@ -104,7 +104,7 @@ public class BeeColumn extends TableColumn implements BeeSerializable, Transform
     result.setReadOnly(isReadOnly());
     result.setWritable(isWritable());
     result.setDefinitelyWritable(isDefinitelyWritable());
-    
+
     return result;
   }
 
@@ -153,11 +153,11 @@ public class BeeColumn extends TableColumn implements BeeSerializable, Transform
   public String getCatalog() {
     return catalog;
   }
-  
+
   public String getClazz() {
     return clazz;
   }
-  
+
   public int getDisplaySize() {
     return displaySize;
   }
@@ -273,39 +273,42 @@ public class BeeColumn extends TableColumn implements BeeSerializable, Transform
 
   public String serialize() {
     Assert.state(validState());
-    StringBuilder sb = new StringBuilder();
+
+    SerializationMembers[] members = SerializationMembers.values();
+    Object[] arr = new Object[members.length];
+    int i = 0;
 
     for (SerializationMembers member : SerializationMembers.values()) {
       switch (member) {
         case ID:
-          sb.append(Codec.beeSerialize(getId()));
+          arr[i++] = getId();
           break;
         case NAME:
-          sb.append(Codec.beeSerialize(getName()));
+          arr[i++] = getName();
           break;
         case LABEL:
-          sb.append(Codec.beeSerialize(getLabel()));
+          arr[i++] = getLabel();
           break;
         case SQL_TYPE:
-          sb.append(Codec.beeSerialize(getSqlType()));
+          arr[i++] = getSqlType();
           break;
         case VALUE_TYPE:
-          sb.append(Codec.beeSerialize((getType() == null) ? null : getType().getTypeCode()));
+          arr[i++] = (getType() == null) ? null : getType().getTypeCode();
           break;
         case PRECISION:
-          sb.append(Codec.beeSerialize(getPrecision()));
+          arr[i++] = getPrecision();
           break;
         case SCALE:
-          sb.append(Codec.beeSerialize(getScale()));
+          arr[i++] = getScale();
           break;
         case ISNULL:
-          sb.append(Codec.beeSerialize(getNullable()));
+          arr[i++] = getNullable();
           break;
         default:
           Assert.untouchable("Unhandled serialization member: " + member);
       }
     }
-    return sb.toString();
+    return Codec.beeSerializeAll(arr);
   }
 
   public void setAutoIncrement(boolean autoIncrement) {
