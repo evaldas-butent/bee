@@ -1,7 +1,6 @@
 package com.butent.bee.client.visualization.events;
 
 import com.butent.bee.client.ajaxloader.Properties;
-import com.butent.bee.client.ajaxloader.Properties.TypeException;
 
 public abstract class PageHandler extends Handler {
   public class PageEvent {
@@ -19,7 +18,7 @@ public abstract class PageHandler extends Handler {
   public abstract void onPage(PageEvent event);
 
   @Override
-  protected void onEvent(Properties properties) throws TypeException {
+  protected void onEvent(Properties properties) {
     onPage(new PageEvent(properties.getInt("page")));
   }
 }

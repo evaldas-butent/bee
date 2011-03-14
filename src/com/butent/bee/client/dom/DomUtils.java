@@ -71,12 +71,14 @@ public class DomUtils {
   }
 
   public static final String TAG_AUDIO = "audio";
+  public static final String TAG_BUTTON = "button";
   public static final String TAG_CANVAS = "canvas";
   public static final String TAG_DIV = "div";
   public static final String TAG_HEAD = "head";
   public static final String TAG_INPUT = "input";
   public static final String TAG_LABEL = "label";
   public static final String TAG_METER = "meter";
+  public static final String TAG_OPTION = "option";
   public static final String TAG_PROGRESS = "progress";
   public static final String TAG_SPAN = "span";
   public static final String TAG_SVG = "svg";

@@ -1,7 +1,6 @@
 package com.butent.bee.client.visualization.events;
 
 import com.butent.bee.client.ajaxloader.Properties;
-import com.butent.bee.client.ajaxloader.Properties.TypeException;
 
 public abstract class SortHandler extends Handler {
   public class SortEvent {
@@ -25,7 +24,7 @@ public abstract class SortHandler extends Handler {
   public abstract void onSort(SortEvent event);
 
   @Override
-  protected void onEvent(Properties event) throws TypeException {
+  protected void onEvent(Properties event) {
     boolean ascending = event.getBoolean("ascending");
     int column = event.getInt("column");
     onSort(new SortEvent(ascending, column));

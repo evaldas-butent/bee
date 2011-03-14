@@ -21,7 +21,7 @@ public class ValueUtils {
       return BeeUtils.toInt((Boolean) obj);
     }
     if (obj instanceof Character) {
-      return Double.valueOf((Character) obj);
+      return (Character) obj;
     }
     
     if (obj instanceof HasDoubleValue) {
@@ -51,7 +51,7 @@ public class ValueUtils {
       return BeeUtils.toInt((Boolean) obj);
     }
     if (obj instanceof Character) {
-      return (Integer) obj;
+      return (Character) obj;
     }
     
     if (obj instanceof HasIntValue) {
@@ -75,7 +75,7 @@ public class ValueUtils {
       return BeeUtils.toInt((Boolean) obj);
     }
     if (obj instanceof Character) {
-      return (Long) obj;
+      return (Character) obj;
     }
     
     if (obj instanceof HasLongValue) {

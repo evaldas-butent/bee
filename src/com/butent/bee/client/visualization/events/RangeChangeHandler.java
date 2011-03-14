@@ -26,7 +26,7 @@ public abstract class RangeChangeHandler extends Handler {
   public abstract void onRangeChange(RangeChangeEvent event);
 
   @Override
-  protected void onEvent(Properties properties) throws Properties.TypeException {
+  protected void onEvent(Properties properties) {
     Date start = properties.getDate("start");
     Date end = properties.getDate("end");
     onRangeChange(new RangeChangeEvent(start, end));

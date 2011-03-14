@@ -1,9 +1,6 @@
 package com.butent.bee.client.visualization.events;
 
-import com.google.gwt.core.client.GWT;
-
 import com.butent.bee.client.ajaxloader.Properties;
-import com.butent.bee.client.ajaxloader.Properties.TypeException;
 import com.butent.bee.client.visualization.visualizations.Visualization;
 
 public abstract class Handler {
@@ -18,12 +15,8 @@ public abstract class Handler {
   }-*/;
 
   private static void onCallback(final Handler handler, final Properties properties) {
-    try {
-      handler.onEvent(properties);
-    } catch (Throwable x) {
-      GWT.getUncaughtExceptionHandler().onUncaughtException(x);
-    }
+    handler.onEvent(properties);
   }
 
-  protected abstract void onEvent(Properties properties) throws TypeException;
+  protected abstract void onEvent(Properties properties);
 }

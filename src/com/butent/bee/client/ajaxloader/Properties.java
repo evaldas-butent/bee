@@ -3,20 +3,11 @@ package com.butent.bee.client.ajaxloader;
 import com.google.gwt.core.client.JavaScriptException;
 import com.google.gwt.core.client.JavaScriptObject;
 
+import com.butent.bee.client.BeeKeeper;
+
 import java.util.Date;
 
 public class Properties extends JavaScriptObject {
-  @SuppressWarnings("serial")
-  public static class TypeException extends Exception {
-    private TypeException(String key, String expected, String actual) {
-      super("Properties.get" + expected + "(" + key + 
-          ") failed.  Unexpected type : " + actual + ".");
-    }
-    
-    private TypeException() {
-    }
-  }
-  
   public static Properties create() {
     return JavaScriptObject.createObject().cast();
   }
@@ -24,65 +15,61 @@ public class Properties extends JavaScriptObject {
   protected Properties() {
   }
 
-  public final Boolean getBoolean(String key) throws TypeException {
+  public final Boolean getBoolean(String key) {
     if (containsKey(key)) {
       String type = typeof(key);
       if (type.equals("boolean")) {
         return nativeGetBoolean(key);
       } else {
-        throw new TypeException(key, "Boolean", type);
+        wrongType(key, "Boolean", type);
       }
-    } else {
-      return null;
-    }
+    } 
+    return null;
   }
 
-  public final Date getDate(String key) throws JavaScriptException, TypeException {
+  public final Date getDate(String key) throws JavaScriptException {
     return JsDate.toJava((JsDate) getObject(key));
   }
   
-  public final int getInt(String key) throws TypeException {
+  public final int getInt(String key) {
     Double n = getNumber(key);
     return (n == null) ? -1 : n.intValue();
   }
 
-  public final Double getNumber(String key) throws TypeException {
+  public final Double getNumber(String key) {
     if (containsKey(key)) {
       String type = typeof(key);
       if (type.equals("number")) {
         return nativeGetNumber(key);
       } else {
-        throw new TypeException(key, "Number", type);
+        wrongType(key, "Number", type);
       }
-    } else {
-      return null;
     }
+    return null;
   }
 
-  public final JavaScriptObject getObject(String key) throws TypeException {
+  public final JavaScriptObject getObject(String key) {
     if (containsKey(key)) {
       String type = typeof(key);
       if (type.equals("object")) {
         return nativeGetObject(key);
       } else {
-        throw new TypeException(key, "Object", type);
+        wrongType(key, "Object", type);
       }
-    } else {
-      return null;
     }
+    return null;
   }
 
-  public final String getString(String key) throws TypeException {
+  public final String getString(String key) {
     if (containsKey(key)) {
       String type = typeof(key);
       if (type.equals("string")) {
         return nativeGetString(key);
       } else {
-        throw new TypeException(key, "String", type);
+        wrongType(key, "String", type);
       }
-    } else {
-      return null;
     }
+    return null;
   }
   
   public final native void remove(String key) /*-{
@@ -148,4 +135,9 @@ public class Properties extends JavaScriptObject {
   private native void setNumber(String key, double value) /*-{
     this[key] = value;
   }-*/;
+  
+  private void wrongType(String key, String expected, String actual) {
+    BeeKeeper.getLog().severe("Properties.get" + expected + "(" + key + 
+        ") failed.  Unexpected type : " + actual + ".");
+  }
 }

@@ -410,7 +410,7 @@ public class SystemBean {
     for (char c = 'a'; c <= 'z'; c++) {
       chars.append(c);
     }
-    chars.append(chars.toString().toUpperCase()).append(" ąčęėįšųūžĄČĘĖĮŠŲŪ0Ž");
+    chars.append(chars.toString().toUpperCase()).append(" ąčęėįšųūžĄČĘĖĮŠŲŪŽ");
 
     Random random = new Random();
     Object v;

@@ -1,13 +1,17 @@
 package com.butent.bee.client.cli;
 
+import com.google.common.collect.Lists;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArrayString;
+import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.core.client.Scheduler.RepeatingCommand;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.dom.client.StyleInjector;
 import com.google.gwt.i18n.client.DateTimeFormat;
+import com.google.gwt.i18n.client.LocaleInfo;
 import com.google.gwt.media.client.Audio;
 import com.google.gwt.media.client.Video;
 import com.google.gwt.user.client.DOM;
@@ -29,6 +33,12 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Features;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.grid.FlexTable;
+import com.butent.bee.client.i18n.LocaleUtils;
+import com.butent.bee.client.language.DetectionCallback;
+import com.butent.bee.client.language.DetectionResult;
+import com.butent.bee.client.language.Language;
+import com.butent.bee.client.language.Translation;
+import com.butent.bee.client.language.TranslationCallback;
 import com.butent.bee.client.layout.Absolute;
 import com.butent.bee.client.layout.Direction;
 import com.butent.bee.client.layout.Flow;
@@ -62,9 +72,32 @@ import java.util.Map;
 import java.util.logging.Level;
 
 public class CliWorker {
+  private static boolean cornified = false;
 
   public static void clearLog() {
     BeeKeeper.getLog().clear();
+  }
+  
+  public static void cornify(String[] arr) {
+    if (!cornified) {
+      DomUtils.injectExternalScript("http://www.cornify.com/js/cornify.js");
+      cornified = true;
+    }
+    
+    final int cnt = BeeUtils.limit(BeeUtils.toInt(ArrayUtils.getQuietly(arr, 1)), 1, 50);
+
+    int delay = BeeUtils.toInt(ArrayUtils.getQuietly(arr, 2));
+    if (delay <= 0) {
+      delay = 2000;
+    }
+    
+    Scheduler.get().scheduleFixedDelay(new RepeatingCommand() {
+      private int counter = 0;
+      public boolean execute() {
+        cornifyAdd();
+        return (++counter < cnt);
+      }
+    }, delay);
   }
 
   public static void digest(String v) {
@@ -872,7 +905,7 @@ public class CliWorker {
       } else {
         String z = BeeKeeper.getStorage().getItem(key);
         if (z == null) {
-          Global.showError(key, "key not found");
+          Global.showError(Global.messages.keyNotFound(key));
         } else {
           Global.inform(key, z);
         }
@@ -993,6 +1026,118 @@ public class CliWorker {
       StyleInjector.inject(st, immediate);
     }
   }
+  
+  public static void translate(final String[] arr, boolean detect) {
+    int len = BeeUtils.length(arr);
+    if (len < 2) {
+      Global.sayHuh((Object[]) arr);
+      return;
+    }
+    
+    if (detect) {
+      final String detText = ArrayUtils.join(arr, 1, 1, len);
+      Translation.detect(detText, new DetectionCallback() {
+        @Override
+        protected void onCallback(DetectionResult result) {
+          Global.modalGrid("Language Detection",
+              PropertyUtils.createProperties("Text", detText,
+                  "Language Code", result.getLanguage(),
+                  "Language", Language.getByCode(result.getLanguage()),
+                  "Confidence", result.getConfidence(),
+                  "Reliable", result.isReliable()));
+        }
+      });
+      return;
+    }
+
+    final String text;
+    final String codeFrom;
+    final String codeTo;    
+    
+    Language dst = Language.getByCode(arr[len - 1]);
+    
+    if (dst == null) {
+      text = ArrayUtils.join(arr, 1, 1, len); 
+      codeFrom = BeeConst.STRING_EMPTY;
+      codeTo = LocaleUtils.getLanguageCode(LocaleInfo.getCurrentLocale());
+    } else {
+      codeTo = dst.getLangCode();
+      if (len <= 2) {
+        text = BeeConst.STRING_EMPTY;
+        codeFrom = BeeConst.STRING_EMPTY;
+      } else if (len <= 3) {
+        text = arr[len - 2];
+        codeFrom = BeeConst.STRING_EMPTY;
+      } else {
+        Language src = Language.getByCode(arr[len - 2]);
+        if (src == null) {
+          text = ArrayUtils.join(arr, 1, 1, len - 1); 
+          codeFrom = BeeConst.STRING_EMPTY;
+        } else {
+          text = ArrayUtils.join(arr, 1, 1, len - 2); 
+          codeFrom = src.getLangCode();
+        }
+      }
+    }
+    
+    if (BeeUtils.isEmpty(text) || BeeUtils.same(text, BeeConst.STRING_ALL)) {
+      BeeKeeper.getLog().info("Translate", codeFrom, codeTo);
+      List<Element> elements = Lists.newArrayList();
+      
+      NodeList<Element> nodes = Document.get().getElementsByTagName(DomUtils.TAG_BUTTON);
+      for (int i = 0; i < nodes.getLength(); i++) {
+        elements.add(nodes.getItem(i));
+      }
+      nodes = Document.get().getElementsByTagName(DomUtils.TAG_TH);
+      for (int i = 0; i < nodes.getLength(); i++) {
+        elements.add(nodes.getItem(i));
+      }
+      nodes = Document.get().getElementsByTagName(DomUtils.TAG_LABEL);
+      for (int i = 0; i < nodes.getLength(); i++) {
+        elements.add(nodes.getItem(i));
+      }
+      nodes = Document.get().getElementsByTagName(DomUtils.TAG_OPTION);
+      for (int i = 0; i < nodes.getLength(); i++) {
+        elements.add(nodes.getItem(i));
+      }
+      
+      for (final Element elem : elements) {
+        String elTxt = elem.getInnerText();
+        if (BeeUtils.length(elTxt) < 3) {
+          continue;
+        }
+
+        TranslationCallback elBack = new TranslationCallback() {
+          @Override
+          protected void onCallback(String translation) {
+            elem.setInnerText(translation);
+          }
+        };
+        
+        if (BeeUtils.isEmpty(codeFrom)) {
+          Translation.detectAndTranslate(elTxt, codeTo, elBack);
+        } else {
+          Translation.translate(elTxt, codeFrom, codeTo, elBack);
+        }
+      }
+      return;
+    }
+    
+    final String info = ArrayUtils.join(arr, 1, 1, len);
+
+    TranslationCallback callback = new TranslationCallback() {
+      @Override
+      protected void onCallback(String translation) {
+        Global.inform(info, translation);
+      }
+    };
+    
+    if (BeeUtils.isEmpty(codeFrom)) {
+      Translation.detectAndTranslate(text, codeTo, callback);
+    } else {
+      Translation.translate(text, codeFrom, codeTo, callback);
+    }
+  }
 
   public static void unicode(String[] arr) {
     StringBuilder sb = new StringBuilder();
@@ -1045,6 +1190,13 @@ public class CliWorker {
     BeeKeeper.getRpc().makeGetRequest(BeeService.SERVICE_WHERE_AM_I);
   }
 
+  private static native void cornifyAdd() /*-{
+    try {
+      $wnd.cornify_add();
+    } catch (err) {
+    }
+  }-*/;
+  
   private static native void getGeo(Element element) /*-{
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(showPosition);

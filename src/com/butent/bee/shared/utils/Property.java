@@ -16,17 +16,10 @@ public class Property implements Comparable<Property>, Transformable {
   }
 
   public int compareTo(Property oth) {
-    if (name == null) {
-      if (oth.name == null) {
-        return 0;
-      } else {
-        return -1;
-      }
-    } else if (name == null) {
-      return 1;
-    } else {
-      return name.compareTo(oth.name);
+    if (oth == null) {
+      return BeeConst.COMPARE_MORE;
     }
+    return BeeUtils.compare(getName(), oth.getName());
   }
 
   public String getName() {

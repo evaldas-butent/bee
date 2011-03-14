@@ -45,18 +45,16 @@ public class AjaxLoader {
 
     private native void setCallback(Runnable onLoad) /*-{
       this.callback = function() {
-      @com.butent.bee.client.ajaxloader.ExceptionHelper::runProtected(Ljava/lang/Runnable;)(onLoad);
+        @com.butent.bee.client.ajaxloader.ExceptionHelper::runProtected(Ljava/lang/Runnable;)(onLoad);
       }
     }-*/;
   }
 
-  static boolean alreadyInjected = false;
+  private static boolean alreadyInjected = false;
+  private static boolean initialized = false;
+  private static boolean loaded = false;
 
-  static boolean initialized = false;
-
-  static boolean loaded = false;
-
-  static Vector<Runnable> queuedApiLoads = new Vector<Runnable>();
+  private static Vector<Runnable> queuedApiLoads = new Vector<Runnable>();
 
   public static ClientLocation getClientLocation() {
     if (!loaded) {
@@ -159,10 +157,10 @@ public class AjaxLoader {
 
   private static native boolean nativeCreateCallback() /*-{
     if ($wnd['google'] && $wnd.google['load']) {
-    return true;
+      return true;
     }
     $wnd.__gwt_AjaxLoader_onLoad = function() {
-    @com.butent.bee.client.ajaxloader.AjaxLoader::onLoadCallback()();
+      @com.butent.bee.client.ajaxloader.AjaxLoader::onLoadCallback()();
     }
     return false;
   }-*/;

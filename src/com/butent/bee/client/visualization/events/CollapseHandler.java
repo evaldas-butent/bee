@@ -1,7 +1,6 @@
 package com.butent.bee.client.visualization.events;
 
 import com.butent.bee.client.ajaxloader.Properties;
-import com.butent.bee.client.ajaxloader.Properties.TypeException;
 
 public abstract class CollapseHandler extends Handler {
   public static class CollapseEvent {
@@ -25,7 +24,7 @@ public abstract class CollapseHandler extends Handler {
   public abstract void onCollapseEvent(CollapseEvent event);
 
   @Override
-  protected void onEvent(Properties properties) throws TypeException {
+  protected void onEvent(Properties properties) {
     int row = properties.getInt("row");
     boolean collapsed = properties.getBoolean("collapsed");
     onCollapseEvent(new CollapseEvent(row, collapsed));

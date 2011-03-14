@@ -64,6 +64,8 @@ public class CliWidget extends BeeTextBox {
       BeeKeeper.getRpc().invoke("configInfo");
     } else if (z.startsWith("conn") || z.equals("http")) {
       BeeKeeper.getRpc().invoke("connectionInfo");
+    } else if (z.equals("cornify")) {
+      CliWorker.cornify(arr);
     } else if (z.equals("df")) {
       CliWorker.showDateFormat();
     } else if (z.equals("dnd")) {
@@ -134,6 +136,8 @@ public class CliWidget extends BeeTextBox {
           BeeUtils.addName("offset height", DomUtils.getTextBoxOffsetHeight()));
     } else if (z.equals("tiles")) {
       CliWorker.showTiles();
+    } else if (z.startsWith("tran") || z.startsWith("detec")) {
+      CliWorker.translate(arr, z.startsWith("detec"));
     } else if (z.equals("uc") || "unicode".startsWith(z)) {
       CliWorker.unicode(arr);
     } else if (z.equals("vars")) {

@@ -1,9 +1,7 @@
 package com.butent.bee.client.grid;
 
 import com.google.gwt.cell.client.Cell;
-import com.google.gwt.cell.client.DatePickerCell;
 import com.google.gwt.i18n.client.DateTimeFormat;
-import com.google.gwt.i18n.client.DateTimeFormat.PredefinedFormat;
 
 import com.butent.bee.shared.DateTime;
 import com.butent.bee.shared.data.IsRow;
@@ -14,7 +12,11 @@ import java.util.Date;
 public class DateTimeColumn extends CellColumn<Date> {
 
   public DateTimeColumn(int index) {
-    this(new DatePickerCell(DateTimeFormat.getFormat(PredefinedFormat.DATE_TIME_MEDIUM)), index);
+    this(new DateTimeCell(), index);
+  }
+
+  public DateTimeColumn(DateTimeFormat format, int index) {
+    this(new DateTimeCell(format), index);
   }
 
   public DateTimeColumn(Cell<Date> cell, int index) {

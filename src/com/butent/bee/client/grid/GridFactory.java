@@ -1,5 +1,7 @@
 package com.butent.bee.client.grid;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.gwt.cell.client.Cell;
 import com.google.gwt.cell.client.EditTextCell;
 import com.google.gwt.cell.client.TextCell;
@@ -9,7 +11,7 @@ import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.view.client.MultiSelectionModel;
-import com.google.gwt.view.client.SelectionModel;
+import com.google.gwt.view.client.SelectionChangeEvent;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.data.KeyProvider;
@@ -33,6 +35,8 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 public class GridFactory {
 
@@ -190,10 +194,17 @@ public class GridFactory {
       BeeKeeper.getLog().warning("data table empty");
       return null;
     }
+    
+    Map<Integer, Integer> colWidths = calculateColumnWidths(table);
+    boolean fixedLayout = colWidths.size() == c;
 
     BeeCellTable grid = new BeeCellTable(r);
-    if (c > 3 && c < 10) {
-      grid.setWidth("100%", true);
+    if (fixedLayout) {
+      int gridWidth = 0;
+      for (int i = 0; i < c; i++) {
+        gridWidth += colWidths.get(i);
+      }
+      grid.setWidth(gridWidth + Unit.EM.getType(), true);
     }
 
     CellColumn<?> column;
@@ -204,8 +215,8 @@ public class GridFactory {
         column.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_LOCALE_END);
       }
       grid.addColumn(column, table.getColumnLabel(i));
-      if (c > 3 && c < 10) {
-        grid.setColumnWidth(column, 100 / c, Unit.PCT);
+      if (fixedLayout) {
+        grid.setColumnWidth(column, colWidths.get(i), Unit.EM);
       }
     }
 
@@ -215,12 +226,51 @@ public class GridFactory {
     TableSorter sorter = new TableSorter(provider);
     grid.addColumnSortHandler(sorter);
     
-    SelectionModel<IsRow> selector = new MultiSelectionModel<IsRow>(new KeyProvider());
+    final MultiSelectionModel<IsRow> selector = new MultiSelectionModel<IsRow>(new KeyProvider());
+    selector.addSelectionChangeHandler(new SelectionChangeEvent.Handler() {
+      @Override
+      public void onSelectionChange(SelectionChangeEvent event) {
+        List<Long> indexes = Lists.newArrayList();
+        for (IsRow row : selector.getSelectedSet()) {
+          indexes.add(row.getId());
+        }
+        BeeKeeper.getLog().info(indexes);
+      }
+    });
     grid.setSelectionModel(selector);
 
     return grid;
   }
 
+  private Map<Integer, Integer> calculateColumnWidths(IsTable<?, ?> table) {
+    Map<Integer, Integer> colWidths = Maps.newHashMap();
+    if (table == null) {
+      return colWidths;
+    }
+    int cc = table.getNumberOfColumns();
+    if (cc <= 0) {
+      return colWidths;
+    }
+    
+    int w;
+    for (int i = 0; i < cc; i++) {
+      IsColumn column = table.getColumn(i);
+      if (column instanceof BeeColumn) {
+        w = getColumnWidth((BeeColumn) column);
+      } else {
+        w = -1;
+      }
+      
+      if (w > 0) {
+        colWidths.put(i, BeeUtils.limit(w, 3, 30));
+      } else {
+        colWidths.clear();
+        break;
+      }
+    }
+    return colWidths;
+  }
+  
   private Cell<String> createCell(CellType type) {
     Cell<String> cell;
 
@@ -253,21 +303,50 @@ public class GridFactory {
       case NUMBER:
         if (dataColumn instanceof BeeColumn) {
           if (((BeeColumn) dataColumn).getScale() == 2) {
-            return new NumberColumn(NumberFormat.getCurrencyFormat("EUR"), index);
+            return new NumberColumn(NumberFormat.getCurrencyFormat(), index);
           }
           switch (((BeeColumn) dataColumn).getSqlType()) {
             case 4:
               return new NumberColumn(NumberFormat.getFormat("#"), index);
             case 6:
             case 7:
-              return new NumberColumn(NumberFormat.getFormat("#.#####"), index);
             case 8:
-              return new NumberColumn(NumberFormat.getFormat("0.##########E0"), index);
+              return new NumberColumn(NumberFormat.getFormat("#.#######"), index);
           }
         }
         return new NumberColumn(index);
       default:
         return new TextColumn(index);
+    }
+  }
+  
+  private int getColumnWidth(BeeColumn column) {
+    ValueType type = column.getType();
+    int size = column.getPrecision();
+    if (type == null) {
+      return size;
+    }
+
+    switch (type) {
+      case BOOLEAN:
+        return 5;
+      case DATE:
+        return 10;
+      case DATETIME:
+        return 16;
+      case NUMBER:
+        switch (column.getSqlType()) {
+          case 4:
+            return 10;
+          case 6:
+          case 7:
+          case 8:
+            return 16;
+          default:
+            return size;
+        }
+      default:
+        return size;
     }
   }
 }

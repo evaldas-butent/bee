@@ -1,14 +1,13 @@
 package com.butent.bee.client.grid;
 
 import com.google.gwt.cell.client.Cell;
-import com.google.gwt.cell.client.CheckboxCell;
 
 import com.butent.bee.shared.data.IsRow;
 
 public class BooleanColumn extends CellColumn<Boolean> {
 
   public BooleanColumn(int index) {
-    this(new CheckboxCell(), index);
+    this(new BooleanCell(), index);
   }
 
   public BooleanColumn(Cell<Boolean> cell, int index) {

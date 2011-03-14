@@ -314,9 +314,9 @@ public class BeeUi implements Module {
     String usr = BeeKeeper.getUser().getUserSign();
 
     if (!BeeUtils.isEmpty(usr)) {
-      usr = BeeUtils.concat(1, "User:", usr);
+      usr = BeeUtils.concat(1, Global.constants.user() + ":", usr);
     } else {
-      usr = "Not logged in";
+      usr = Global.constants.notLoggedIn();
     }
     signature.add(new BeeLabel(usr));
   }
@@ -369,7 +369,7 @@ public class BeeUi implements Module {
     int z = direction.isHorizontal() ? p.getCenterWidth() : p.getCenterHeight();
     z = Math.round((z - p.getSplitterSize()) / 2);
     if (z < getMinTileSize()) {
-      Global.showError("no", z);
+      Global.showError(Global.constants.no(), z);
       return;
     }
 
@@ -453,14 +453,16 @@ public class BeeUi implements Module {
 
     p.add(new ButtonGroup("Ping", BeeService.SERVICE_DB_PING,
         "Info", BeeService.SERVICE_DB_INFO,
-        "Tables", BeeService.SERVICE_DB_TABLES));
+        Global.constants.tables(), BeeService.SERVICE_DB_TABLES));
 
-    p.add(new BeeButton("Class", BeeService.SERVICE_GET_CLASS, BeeStage.STAGE_GET_PARAMETERS));
+    p.add(new BeeButton(Global.constants.clazz(), BeeService.SERVICE_GET_CLASS,
+        BeeStage.STAGE_GET_PARAMETERS));
     p.add(new BeeButton("Xml", BeeService.SERVICE_GET_XML, BeeStage.STAGE_GET_PARAMETERS));
     p.add(new BeeButton("Jdbc", BeeService.SERVICE_GET_DATA, BeeStage.STAGE_GET_PARAMETERS));
 
-    p.add(new BeeButton("Login", BeeService.SERVICE_GET_LOGIN, BeeStage.STAGE_GET_PARAMETERS));
-    p.add(new BeeButton("Logout", BeeService.SERVICE_LOGOUT));
+    p.add(new BeeButton(Global.constants.login(), BeeService.SERVICE_GET_LOGIN,
+        BeeStage.STAGE_GET_PARAMETERS));
+    p.add(new BeeButton(Global.constants.logout(), BeeService.SERVICE_LOGOUT));
 
     p.add(new BeeCheckBox(Global.getVar(Global.VAR_DEBUG)));
 
@@ -506,7 +508,7 @@ public class BeeUi implements Module {
 
     p.add(hor);
 
-    BeeLabel ver = new BeeLabel("0.2.5");
+    BeeLabel ver = new BeeLabel("0.2.6");
     p.add(ver);
 
     p.setWidgetLeftWidth(cli, 1, Unit.EM, 50, Unit.PCT);
@@ -547,20 +549,20 @@ public class BeeUi implements Module {
     slider.setPixelSize(80, 20);
     fp.setWidget(r + 1, 0, slider);
 
-    fp.setWidget(r, 1, new BeeButton("Refresh", BeeService.SERVICE_REFRESH_MENU));
+    fp.setWidget(r, 1, new BeeButton(Global.constants.refresh(), BeeService.SERVICE_REFRESH_MENU));
     fp.setWidget(r + 1, 1, new BeeButton("BEE", MenuService.NAME, "stage_dummy"));
-    
+
     TabbedPages tp = new TabbedPages(3, Unit.EX);
-    tp.add(fp, "Menu");
-    
+    tp.add(fp, Global.constants.menu());
+
     BeeLayoutPanel dp = new BeeLayoutPanel();
-    tp.add(dp, "Data", Global.getCache().getDataInfoCreator());
+    tp.add(dp, Global.constants.data(), Global.getCache().getDataInfoCreator());
     setDataPanel(dp);
 
     BeeLayoutPanel vp = new BeeLayoutPanel();
-    tp.add(vp, "Views");
+    tp.add(vp, Global.constants.views());
     setViewPanel(dp);
-    
+
     Split spl = new Split();
     spl.addNorth(tp, 200);
 

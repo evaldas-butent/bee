@@ -16,6 +16,8 @@ import com.butent.bee.shared.utils.PropertyUtils;
 import java.util.List;
 
 public class LocaleUtils {
+  public static final String LOCALE_SEPARATOR = "_";
+  
   public static List<ExtendedProperty> getInfo() {
     List<ExtendedProperty> lst = Lists.newArrayList();
     
@@ -137,5 +139,18 @@ public class LocaleUtils {
           "Zero Digit", nc.zeroDigit());
     }
     return lst;
+  }
+  
+  public static String getLanguageCode(LocaleInfo locale) {
+    if (locale == null) {
+      return BeeConst.STRING_EMPTY;
+    }
+    String name = locale.getLocaleName();
+    int p = name.indexOf(LOCALE_SEPARATOR);
+    if (p > 0) {
+      return name.substring(0, p);
+    } else {
+      return name;
+    }
   }
 }

@@ -1,7 +1,6 @@
 package com.butent.bee.client.visualization.events;
 
 import com.butent.bee.client.ajaxloader.Properties;
-import com.butent.bee.client.ajaxloader.Properties.TypeException;
 
 public abstract class OnMouseOverHandler extends Handler {
   public static class OnMouseOverEvent {
@@ -25,7 +24,7 @@ public abstract class OnMouseOverHandler extends Handler {
   public abstract void onMouseOverEvent(OnMouseOverEvent event);
 
   @Override
-  protected void onEvent(Properties properties) throws TypeException {
+  protected void onEvent(Properties properties) {
     int row = properties.getInt("row");
     int column = properties.getInt("column");
     onMouseOverEvent(new OnMouseOverEvent(row, column));

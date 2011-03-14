@@ -10,6 +10,8 @@ import com.butent.bee.client.dialog.InputBox;
 import com.butent.bee.client.dialog.MessageBox;
 import com.butent.bee.client.grid.CellType;
 import com.butent.bee.client.grid.GridFactory;
+import com.butent.bee.client.i18n.LocalizableConstants;
+import com.butent.bee.client.i18n.LocalizableMessages;
 import com.butent.bee.client.resources.Images;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -31,6 +33,9 @@ import java.util.Set;
 
 public class Global implements Module {
   public static final String VAR_DEBUG = "debug";
+  
+  public static LocalizableConstants constants = GWT.create(LocalizableConstants.class);
+  public static LocalizableMessages messages = GWT.create(LocalizableMessages.class);
 
   private static final MessageBox msgBox = new MessageBox();
   private static final InputBox inpBox = new InputBox();
