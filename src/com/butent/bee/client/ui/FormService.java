@@ -1,5 +1,6 @@
 package com.butent.bee.client.ui;
 
+import com.google.common.collect.Lists;
 import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.event.shared.GwtEvent;
 import com.google.gwt.user.client.ui.Panel;
@@ -13,11 +14,10 @@ import com.butent.bee.shared.BeeService;
 import com.butent.bee.shared.BeeStage;
 import com.butent.bee.shared.BeeType;
 import com.butent.bee.shared.BeeWidget;
-import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.ui.UiComponent;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class FormService extends CompositeService {
@@ -52,13 +52,8 @@ public class FormService extends CompositeService {
                 Assert.notNull(arr);
                 Assert.parameterCount(arr.length(), 1);
 
-                BeeRowSet res = BeeRowSet.restore(arr.get(0));
-                int rc = res.getNumberOfRows();
+                List<String> lst = Lists.newArrayList(Codec.beeDeserialize(arr.get(0)));
 
-                List<String> lst = new ArrayList<String>(rc);
-                for (int i = 0; i < rc; i++) {
-                  lst.add(res.getString(i, 0));
-                }
                 if (BeeUtils.isEmpty(lst)) {
                   Global.showError("NO FORMS");
                   destroy();

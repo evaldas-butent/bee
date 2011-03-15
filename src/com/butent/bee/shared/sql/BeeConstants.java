@@ -12,6 +12,10 @@ public final class BeeConstants {
     TEMPORARY, TEMPORARY_NAME, BITAND, IF
   }
 
+  public static final String FK_NAME = "fkName";
+  public static final String FK_TABLE = "fkTable";
+  public static final String FK_REF_TABLE = "fkRefTable";
+
   private BeeConstants() {
   }
 }

@@ -143,9 +143,9 @@ public class UiServiceBean {
   }
 
   private ResponseObject formList() {
-    SqlSelect ss = new SqlSelect();
-    ss.addFields("f", "form").addFrom("forms", "f").addOrder("f", "form");
-    return ResponseObject.response(qs.getViewData(ss, null));
+    SqlSelect ss = new SqlSelect()
+        .addFields("f", "form").addFrom("forms", "f").addOrder("f", "form");
+    return ResponseObject.response(qs.getColumn(ss));
   }
 
   private ResponseObject generateData(RequestInfo reqInfo) {
@@ -283,6 +283,7 @@ public class UiServiceBean {
 
     } else if (BeeUtils.same(cmd, "ext")) {
       sys.initExtensions();
+      sys.initViews();
       sys.initDatabase(SqlBuilderFactory.getEngine());
       response.addInfo("Extensions OK");
 

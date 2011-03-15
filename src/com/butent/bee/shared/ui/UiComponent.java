@@ -289,7 +289,7 @@ public abstract class UiComponent implements HasId, BeeSerializable {
           break;
       }
     }
-    return Codec.beeSerializeAll(getClassName(this.getClass()), (Object) arr);
+    return Codec.beeSerializeAll(getClassName(this.getClass()), arr);
   }
 
   public void setCaption(String caption) {

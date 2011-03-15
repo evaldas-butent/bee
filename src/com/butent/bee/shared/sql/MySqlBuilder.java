@@ -51,9 +51,9 @@ class MySqlBuilder extends SqlBuilder {
           wh = SqlUtils.and(wh, SqlUtils.equal("c", "referenced_table_name", prm));
         }
         return new SqlSelect()
-            .addField("c", "constraint_name", "Name")
-            .addField("t", "table_name", "TblName")
-            .addField("c", "referenced_table_name", "RefTblName")
+            .addField("c", "constraint_name", BeeConstants.FK_NAME)
+            .addField("t", "table_name", BeeConstants.FK_TABLE)
+            .addField("c", "referenced_table_name", BeeConstants.FK_REF_TABLE)
             .addFrom("information_schema.referential_constraints", "c")
             .addFromInner("information_schema.table_constraints", "t",
                 SqlUtils.joinUsing("c", "t", "constraint_name"))

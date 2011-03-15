@@ -106,9 +106,9 @@ public abstract class SqlBuilder {
           wh = SqlUtils.and(wh, SqlUtils.equal("r", "table_name", prm));
         }
         return new SqlSelect()
-            .addField("c", "constraint_name", "Name")
-            .addField("t", "table_name", "TblName")
-            .addField("r", "table_name", "RefTblName")
+            .addField("c", "constraint_name", BeeConstants.FK_NAME)
+            .addField("t", "table_name", BeeConstants.FK_TABLE)
+            .addField("r", "table_name", BeeConstants.FK_REF_TABLE)
             .addFrom("information_schema.referential_constraints", "c")
             .addFromInner("information_schema.table_constraints", "t",
                 SqlUtils.joinUsing("c", "t", "constraint_name"))

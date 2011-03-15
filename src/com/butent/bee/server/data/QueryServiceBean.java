@@ -1,17 +1,15 @@
 package com.butent.bee.server.data;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-
 import com.butent.bee.server.DataSourceBean;
 import com.butent.bee.server.data.BeeTable.BeeField;
 import com.butent.bee.server.jdbc.JdbcUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.BeeColumn;
-import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.sql.IsCondition;
 import com.butent.bee.shared.sql.IsQuery;
 import com.butent.bee.shared.sql.SqlBuilderFactory;
 import com.butent.bee.shared.sql.SqlInsert;
@@ -25,7 +23,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -58,13 +55,13 @@ public class QueryServiceBean {
   SystemBean sys;
 
   public String[] dbFields(String table) {
-    BeeRowSet res = getViewData(new SqlSelect()
-        .addAllFields(table).addFrom(table).setWhere(SqlUtils.sqlFalse()), null);
+    SimpleRowSet res = getData(new SqlSelect()
+        .addAllFields(table).addFrom(table).setWhere(SqlUtils.sqlFalse()));
 
-    return res.getColumnLabels();
+    return res.getColumnNames();
   }
 
-  public List<String[]> dbForeignKeys(String dbName, String dbSchema, String table,
+  public SimpleRowSet dbForeignKeys(String dbName, String dbSchema, String table,
       String refTable) {
     return getData(SqlUtils.dbForeignKeys(dbName, dbSchema, table, refTable));
   }
@@ -76,6 +73,14 @@ public class QueryServiceBean {
       return getValue(query);
     }
     return "";
+  }
+
+  public int dbRowCount(String source, IsCondition where) {
+    return getInt(new SqlSelect().addCount("cnt").addFrom(source).setWhere(where));
+  }
+
+  public int dbRowCount(SqlSelect ss) {
+    return getInt(new SqlSelect().addCount("cnt").addFrom(ss, "als"));
   }
 
   public String dbSchema() {
@@ -108,98 +113,98 @@ public class QueryServiceBean {
     });
   }
 
-  public String[] getColumn(IsQuery query) {
-    List<String[]> res = getData(query);
-    String[] column = new String[res.size()];
-
-    if (!BeeUtils.isEmpty(res)) {
-      Assert.state(res.get(0).length == 1, "Result must contain exactly one column");
-
-      for (int i = 0; i < res.size(); i++) {
-        column[i] = res.get(i)[0];
-      }
-    }
-    return column;
+  public boolean getBoolean(IsQuery query) {
+    return getSingleValue(query).getBoolean(0, 0);
   }
 
-  public List<String[]> getData(IsQuery query) {
+  public boolean[] getBooleanColumn(IsQuery query) {
+    return getSingleColumn(query).getBooleanColumn(0);
+  }
+
+  public String[] getColumn(IsQuery query) {
+    return getSingleColumn(query).getColumn(0);
+  }
+
+  public SimpleRowSet getData(IsQuery query) {
     Assert.notNull(query);
     Assert.state(!query.isEmpty());
 
     activateTables(query);
 
-    return processSql(query.getQuery(), new SqlHandler<List<String[]>>() {
+    return processSql(query.getQuery(), new SqlHandler<SimpleRowSet>() {
       @Override
-      public List<String[]> processResultSet(ResultSet rs) throws SQLException {
-        return rsToList(rs);
+      public SimpleRowSet processResultSet(ResultSet rs) throws SQLException {
+        return rsToSimpleRowSet(rs);
       }
 
       @Override
-      public List<String[]> processUpdateCount(int updateCount) {
+      public SimpleRowSet processUpdateCount(int updateCount) {
         return null;
       }
     });
   }
 
+  public double getDouble(IsQuery query) {
+    return getSingleValue(query).getDouble(0, 0);
+  }
+
+  public double[] getDoubleColumn(IsQuery query) {
+    return getSingleColumn(query).getDoubleColumn(0);
+  }
+
   public int getInt(IsQuery query) {
-    return BeeUtils.toInt(getValue(query));
+    return getSingleValue(query).getInt(0, 0);
+  }
+
+  public int[] getIntColumn(IsQuery query) {
+    return getSingleColumn(query).getIntColumn(0);
   }
 
   public long getLong(IsQuery query) {
-    return BeeUtils.toLong(getValue(query));
+    return getSingleValue(query).getLong(0, 0);
   }
 
-  public String[] getRow(IsQuery query) {
-    List<String[]> res = getData(query);
-    String[] row = null;
-
-    switch (res.size()) {
-      case 0:
-        row = new String[0];
-        break;
-
-      case 1:
-        row = res.get(0);
-        break;
-
-      default:
-        Assert.untouchable("Result must contain exactly one row");
-    }
-    return row;
+  public long[] getlongColumn(IsQuery query) {
+    return getSingleColumn(query).getLongColumn(0);
   }
 
-  public Map<String, String> getRowAsMap(SqlSelect ss) {
-    BeeRowSet rs = getViewData(ss, null);
-    Assert.isTrue(rs.getNumberOfRows() == 1, "Result must contain exactly one row");
-    Map<String, String> values = Maps.newHashMap();
-    BeeRow row = rs.getRow(0);
+  public Map<String, String> getRow(IsQuery query) {
+    SimpleRowSet res = getSingleRow(query);
 
-    for (int i = 0; i < rs.getNumberOfColumns(); i++) {
-      values.put(rs.getColumnId(i).toLowerCase(), row.getString(i));
+    if (BeeUtils.isEmpty(res.getNumberOfRows())) {
+      return null;
     }
-    return values;
+    return res.getRow(0);
   }
 
   public String getValue(IsQuery query) {
-    String[] row = getRow(query);
-
-    Assert.isTrue(row.length == 1, "Result must contain exactly one column");
-    return row[0];
+    return getSingleValue(query).getValue(0, 0);
   }
 
-  public BeeRowSet getViewData(SqlSelect ss, final BeeView view) {
-    Assert.notNull(ss);
-    Assert.state(!ss.isEmpty());
+  public String[] getValues(IsQuery query) {
+    SimpleRowSet res = getSingleRow(query);
 
-    activateTables(ss);
+    if (BeeUtils.isEmpty(res.getNumberOfRows())) {
+      return null;
+    }
+    return res.getValues(0);
+  }
+
+  public BeeRowSet getViewData(IsQuery query, final BeeView view) {
+    Assert.notNull(query);
+    Assert.state(!query.isEmpty());
+
+    activateTables(query);
 
     if (!BeeUtils.isEmpty(view)) {
+      Assert.state(query instanceof SqlSelect);
       String tableName = view.getSource();
 
-      ss.addField(tableName, sys.getIdName(tableName), SqlUtils.uniqueName())
+      ((SqlSelect) query)
+          .addField(tableName, sys.getIdName(tableName), SqlUtils.uniqueName())
           .addField(tableName, sys.getLockName(tableName), SqlUtils.uniqueName());
     }
-    return processSql(ss.getQuery(), new SqlHandler<BeeRowSet>() {
+    return processSql(query.getQuery(), new SqlHandler<BeeRowSet>() {
       @Override
       public BeeRowSet processResultSet(ResultSet rs) throws SQLException {
         return rsToBeeRowSet(rs, view);
@@ -319,10 +324,15 @@ public class QueryServiceBean {
     return result;
   }
 
-  public List<String[]> rsToList(ResultSet rs) throws SQLException {
+  public SimpleRowSet rsToSimpleRowSet(ResultSet rs) throws SQLException {
     BeeColumn[] rsCols = JdbcUtils.getColumns(rs);
     int cols = rsCols.length;
-    List<String[]> res = Lists.newArrayListWithCapacity(cols);
+    String[] columns = new String[cols];
+
+    for (int i = 0; i < cols; i++) {
+      columns[i] = rsCols[i].getId();
+    }
+    SimpleRowSet res = new SimpleRowSet(columns);
 
     while (rs.next()) {
       String[] row = new String[cols];
@@ -330,16 +340,15 @@ public class QueryServiceBean {
       for (int i = 0; i < cols; i++) {
         row[i] = rs.getString(rsCols[i].getIndex());
       }
-      res.add(row);
+      res.addRow(row);
     }
-    LogUtils.info(logger, "Retrieved rows:", res.size());
+    LogUtils.info(logger, "Retrieved rows:", res.getNumberOfRows());
     return res;
   }
 
   public int updateData(IsQuery query) {
     Assert.notNull(query);
     Assert.state(!query.isEmpty());
-    Assert.state(!(query instanceof SqlSelect));
 
     activateTables(query);
 
@@ -355,6 +364,7 @@ public class QueryServiceBean {
         return updateCount;
       }
     });
+
     if (res == null) {
       res = 0;
     }
@@ -371,6 +381,25 @@ public class QueryServiceBean {
         }
       }
     }
+  }
+
+  private SimpleRowSet getSingleColumn(IsQuery query) {
+    SimpleRowSet res = getData(query);
+    Assert.isTrue(res.getNumberOfColumns() == 1, "Result must contain exactly one column");
+    return res;
+  }
+
+  private SimpleRowSet getSingleRow(IsQuery query) {
+    SimpleRowSet res = getData(query);
+    Assert.isTrue(res.getNumberOfRows() <= 1, "Result must contain exactly one row");
+    return res;
+  }
+
+  private SimpleRowSet getSingleValue(IsQuery query) {
+    SimpleRowSet res = getData(query);
+    Assert.isTrue(res.getNumberOfColumns() == 1, "Result must contain exactly one column");
+    Assert.isTrue(res.getNumberOfRows() == 1, "Result must contain exactly one row");
+    return res;
   }
 
   private <T> T processSql(String sql, SqlHandler<T> callback) {

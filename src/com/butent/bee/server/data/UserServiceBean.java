@@ -10,11 +10,11 @@ import com.google.common.primitives.Ints;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.sql.SqlSelect;
-import com.butent.bee.shared.sql.SqlUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.LogUtils;
 
 import java.security.Principal;
+import java.util.Collection;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -29,6 +29,65 @@ import javax.ejb.Singleton;
 @Lock(LockType.READ)
 public class UserServiceBean {
 
+  public class UserInfo {
+    private String login;
+    private int userId;
+    private String firstName;
+    private String lastName;
+    private String position;
+    private Collection<Integer> userRoles;
+    private boolean online = false;
+
+    public UserInfo(int userId, String login, String firstName, String lastName, String position) {
+      this.userId = userId;
+      this.login = login;
+      this.firstName = firstName;
+      this.lastName = lastName;
+      this.position = position;
+    }
+
+    public String firstName() {
+      return firstName;
+    }
+
+    public Collection<Integer> getRoles() {
+      return userRoles;
+    }
+
+    public String getUserSign() {
+      return BeeUtils.concat(1, position(),
+          BeeUtils.concat(1, BeeUtils.ifString(firstName(), login()), lastName()));
+    }
+
+    public boolean isOnline() {
+      return online;
+    }
+
+    public String lastName() {
+      return lastName;
+    }
+
+    public String login() {
+      return login;
+    }
+
+    public String position() {
+      return position;
+    }
+
+    public int userId() {
+      return userId;
+    }
+
+    private void setOnline(boolean online) {
+      this.online = online;
+    }
+
+    private void setRoles(Collection<Integer> userRoles) {
+      this.userRoles = userRoles;
+    }
+  }
+
   private static Logger logger = Logger.getLogger(UserServiceBean.class.getName());
 
   public static final String USER_TABLE = "Users";
@@ -42,10 +101,9 @@ public class UserServiceBean {
   @EJB
   QueryServiceBean qs;
 
-  private BiMap<Integer, String> userCache = HashBiMap.create();
-  private BiMap<Integer, String> roleCache = HashBiMap.create();
-  private Multimap<Integer, Integer> userRolesCache = HashMultimap.create();
-  private Map<Integer, String> userInfoCache = Maps.newHashMap();
+  private BiMap<Integer, String> roles = HashBiMap.create();
+  private BiMap<String, Integer> users = HashBiMap.create();
+  private Map<Integer, UserInfo> userInfoCache = Maps.newHashMap();
 
   private boolean cacheUpToDate = false;
 
@@ -59,54 +117,72 @@ public class UserServiceBean {
   public int getCurrentUserId() {
     initUsers();
     String user = getCurrentUser();
-    Assert.contains(userCache.inverse(), user);
+    Assert.contains(users, user);
 
-    return userCache.inverse().get(user);
+    return users.get(user);
   }
 
   public Map<Integer, String> getRoles() {
     initUsers();
-    return ImmutableMap.copyOf(roleCache);
+    return ImmutableMap.copyOf(roles);
   }
 
   public int[] getUserRoles(int userId) {
     initUsers();
     Assert.notEmpty(userId);
-    Assert.contains(userCache, userId);
-    return Ints.toArray(userRolesCache.get(userId));
+    return Ints.toArray(getUser(userId).getRoles());
   }
 
   public Map<Integer, String> getUsers() {
     initUsers();
-    return ImmutableMap.copyOf(userCache);
-  }
-
-  public String getUserSign(String user) {
-    initUsers();
-    Assert.notEmpty(user);
-    String sign = null;
-
-    if (userCache.containsValue(user)) {
-      sign = userInfoCache.get(userCache.inverse().get(user));
-    } else if (BeeUtils.isEmpty(userCache)) {
-      sign = user;
-    }
-    return sign;
+    return ImmutableMap.copyOf(users.inverse());
   }
 
   @Lock(LockType.WRITE)
   public void invalidateCache() {
-    cacheUpToDate = false;
+    cacheUpToDate = false; // TODO: sukontroliuoti user online būsenas
   }
 
   public String login() {
-    String usr = getUserSign(getCurrentUser());
-    LogUtils.infoNow(logger, "User logged in:", usr);
-    return usr;
+    String sign = null;
+    String usr = getCurrentUser();
+    UserInfo user = getUser(usr);
+
+    if (!BeeUtils.isEmpty(user)) {
+      sign = user.getUserSign();
+      user.setOnline(true);
+      LogUtils.infoNow(logger, "User logged in:", sign);
+
+    } else if (BeeUtils.isEmpty(users)) {
+      sign = usr;
+      LogUtils.warning(logger, "Anonymous user logged in:", sign);
+
+    } else {
+      LogUtils.severe(logger, "Unauthorized login:", usr);
+    }
+    return sign;
   }
 
-  public void logout(String user) {
-    LogUtils.infoNow(logger, "User logged out:", getUserSign(user));
+  public void logout(String usr) {
+    UserInfo user = getUser(usr);
+
+    if (BeeUtils.isEmpty(user)) {
+      LogUtils.warning(logger, "Unknown user:", usr);
+    } else {
+      user.setOnline(false);
+      LogUtils.infoNow(logger, "User logged out:", user.getUserSign());
+    }
+  }
+
+  private UserInfo getUser(int userId) {
+    initUsers();
+    Assert.contains(userInfoCache, userId);
+    return userInfoCache.get(userId);
+  }
+
+  private UserInfo getUser(String usr) {
+    initUsers();
+    return userInfoCache.get(users.get(usr));
   }
 
   @Lock(LockType.WRITE)
@@ -114,9 +190,8 @@ public class UserServiceBean {
     if (cacheUpToDate) {
       return;
     }
-    userCache.clear();
-    roleCache.clear();
-    userRolesCache.clear();
+    roles.clear();
+    users.clear();
     userInfoCache.clear();
 
     String userIdName = sys.getIdName(USER_TABLE);
@@ -126,24 +201,35 @@ public class UserServiceBean {
         .addFields("r", roleIdName, "Name")
         .addFrom(ROLE_TABLE, "r");
 
-    for (String[] row : qs.getData(ss)) {
-      roleCache.put(BeeUtils.toInt(row[0]), row[1]);
+    for (Map<String, String> row : qs.getData(ss)) {
+      roles.put(BeeUtils.toInt(row.get(roleIdName)), row.get("Name"));
+    }
+
+    ss = new SqlSelect()
+        .addFields("r", "User", "Role")
+        .addFrom(USER_ROLES_TABLE, "r");
+
+    Multimap<Integer, Integer> userRoles = HashMultimap.create();
+
+    for (Map<String, String> row : qs.getData(ss)) {
+      userRoles.put(BeeUtils.toInt(row.get("User")), BeeUtils.toInt(row.get("Role")));
     }
 
     ss = new SqlSelect()
         .addFields("u", userIdName, "Login", "Position", "FirstName", "LastName")
-        .addFields("r", "Role")
-        .addFrom(USER_TABLE, "u")
-        .addFromLeft(USER_ROLES_TABLE, "r", SqlUtils.join("u", userIdName, "r", "User"));
+        .addFrom(USER_TABLE, "u");
 
-    for (String[] row : qs.getData(ss)) {
-      int userId = BeeUtils.toInt(row[0]);
-      String login = row[1];
+    for (Map<String, String> row : qs.getData(ss)) {
+      int userId = BeeUtils.toInt(row.get(userIdName));
+      String login = row.get("Login");
 
-      userCache.put(userId, login.toLowerCase());
-      userRolesCache.put(userId, BeeUtils.toInt(row[5]));
-      userInfoCache.put(userId,
-          BeeUtils.concat(1, row[2], BeeUtils.concat(1, BeeUtils.ifString(row[3], login), row[4])));
+      users.put(login.toLowerCase(), userId);
+
+      UserInfo user = new UserInfo(userId, login, row.get("FirstName"), row.get("LastName"),
+          row.get("Position"));
+
+      user.setRoles(userRoles.get(userId));
+      userInfoCache.put(userId, user);
     }
     cacheUpToDate = true;
   }

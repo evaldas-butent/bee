@@ -48,9 +48,9 @@ class OracleSqlBuilder extends SqlBuilder {
           wh = SqlUtils.and(wh, SqlUtils.equal("r", "TABLE_NAME", prm));
         }
         return new SqlSelect()
-            .addField("c", "CONSTRAINT_NAME", "Name")
-            .addField("c", "TABLE_NAME", "TableName")
-            .addField("r", "TABLE_NAME", "RefTableName")
+            .addField("c", "CONSTRAINT_NAME", BeeConstants.FK_NAME)
+            .addField("c", "TABLE_NAME", BeeConstants.FK_TABLE)
+            .addField("r", "TABLE_NAME", BeeConstants.FK_REF_TABLE)
             .addFrom("ALL_CONSTRAINTS", "c")
             .addFromInner("ALL_CONSTRAINTS", "r",
                 SqlUtils.join("c", "R_CONSTRAINT_NAME", "r", "CONSTRAINT_NAME"))

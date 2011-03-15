@@ -20,6 +20,7 @@ import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.TableInfo;
+import com.butent.bee.shared.sql.BeeConstants;
 import com.butent.bee.shared.sql.BeeConstants.DataType;
 import com.butent.bee.shared.sql.BeeConstants.Keyword;
 import com.butent.bee.shared.sql.HasFrom;
@@ -95,7 +96,7 @@ public class SystemBean {
 
   public String backupTable(String name) {
     String tmp = null;
-    int rc = getRowCount(name, null);
+    int rc = qs.dbRowCount(name, null);
 
     if (rc > 0) {
       tmp = SqlUtils.temporaryName();
@@ -515,7 +516,7 @@ public class SystemBean {
 
     for (BeeTable table : getTables()) {
       if (table.isActive()) {
-        cnt = getRowCount(table.getName(), null);
+        cnt = qs.dbRowCount(table.getName(), null);
       } else {
         cnt = -1;
       }
@@ -538,16 +539,6 @@ public class SystemBean {
 
   public String getLockName(String tblName) {
     return getTable(tblName).getLockName();
-  }
-
-  public int getRowCount(String tblName, IsCondition where) {
-    Assert.notEmpty(tblName);
-    SqlSelect ss = new SqlSelect().addCount("cnt").addFrom(tblName);
-
-    if (where != null) {
-      ss.setWhere(where);
-    }
-    return qs.getInt(ss);
   }
 
   public BeeField getTableField(String tblName, String fldName) {
@@ -1164,9 +1155,10 @@ public class SystemBean {
       String tblName = table.getName();
 
       if (exists) {
-        for (String[] fKeys : qs.dbForeignKeys(getDbName(), getDbSchema(), null, tblName)) {
-          String fk = fKeys[0];
-          String tbl = fKeys[1];
+        for (Map<String, String> fKeys : qs
+            .dbForeignKeys(getDbName(), getDbSchema(), null, tblName)) {
+          String fk = fKeys.get(BeeConstants.FK_NAME);
+          String tbl = fKeys.get(BeeConstants.FK_TABLE);
           qs.updateData(SqlUtils.dropForeignKey(tbl, fk));
         }
       }
