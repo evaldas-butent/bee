@@ -14,7 +14,7 @@ class FunctionCondition implements IsCondition {
   public FunctionCondition(String func, IsExpression expr, IsExpression... vals) {
     Assert.notEmpty(func);
     Assert.notEmpty(expr);
-    Assert.arrayLengthMin(vals, 1);
+    Assert.minLength(vals, 1);
 
     function = func;
     expression = expr;

@@ -35,7 +35,7 @@ public class TableInfo implements BeeSerializable, Comparable<TableInfo> {
 
   public void deserialize(String s) {
     String[] arr = Codec.beeDeserialize(s);
-    Assert.arrayLength(arr, 2);
+    Assert.lengthEquals(arr, 2);
 
     name = arr[0];
     setRowCount(BeeUtils.toInt(arr[1]));

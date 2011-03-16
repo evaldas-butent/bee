@@ -16,7 +16,7 @@ public class ResponseHandler {
 
   public static void showXmlInfo(int pc, int[] sizes, String content) {
     Assert.betweenInclusive(pc, 1, 3);
-    Assert.arrayLength(sizes, pc);
+    Assert.lengthEquals(sizes, pc);
     Assert.notEmpty(content);
 
     BeeResource[] resources = new BeeResource[pc];
@@ -53,7 +53,7 @@ public class ResponseHandler {
     Assert.notNull(info);
     Assert.notEmpty(respTxt);
     Assert.isPositive(mc);
-    Assert.arrayLength(messages, mc);
+    Assert.lengthEquals(messages, mc);
 
     Map<String, String> reqData = info.getUserData();
     Assert.notEmpty(reqData);

@@ -158,8 +158,8 @@ public class CliWidget extends BeeTextBox {
       BeeKeeper.getRpc().makePostRequest("rpc_ui_sql", ContentType.BINARY, v,
           new ResponseCallback() {
             @Override
-            public void onResponse(JsArrayString arr) {
-              BeeRowSet rs = BeeRowSet.restore(arr.get(0));
+            public void onResponse(JsArrayString respArr) {
+              BeeRowSet rs = BeeRowSet.restore(respArr.get(0));
 
               if (rs.isEmpty()) {
                 BeeKeeper.getUi().updateActivePanel(new BeeLabel("RowSet is empty"));

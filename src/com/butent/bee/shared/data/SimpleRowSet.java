@@ -64,7 +64,7 @@ public class SimpleRowSet implements Iterable<Map<String, String>>, BeeSerializa
   }
 
   public void addRow(String[] row) {
-    Assert.arrayLength(row, getNumberOfColumns());
+    Assert.lengthEquals(row, getNumberOfColumns());
     rows.add(row);
   }
 
@@ -74,7 +74,7 @@ public class SimpleRowSet implements Iterable<Map<String, String>>, BeeSerializa
 
     SerializationMembers[] members = SerializationMembers.values();
     String[] arr = Codec.beeDeserialize(s);
-    Assert.arrayLength(arr, members.length);
+    Assert.lengthEquals(arr, members.length);
 
     for (int i = 0; i < members.length; i++) {
       SerializationMembers member = members[i];

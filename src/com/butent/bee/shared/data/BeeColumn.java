@@ -112,7 +112,7 @@ public class BeeColumn extends TableColumn implements BeeSerializable, Transform
     SerializationMembers[] members = SerializationMembers.values();
     String[] arr = Codec.beeDeserialize(s);
 
-    Assert.arrayLength(arr, members.length);
+    Assert.lengthEquals(arr, members.length);
 
     for (int i = 0; i < members.length; i++) {
       SerializationMembers member = members[i];

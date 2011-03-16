@@ -11,7 +11,7 @@ class ComplexExpression implements IsExpression {
   private final Object[] content;
 
   public ComplexExpression(Object... expr) {
-    Assert.arrayLengthMin(expr, 1);
+    Assert.minLength(expr, 1);
     Assert.noNulls(expr);
 
     content = expr;

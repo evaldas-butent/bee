@@ -302,6 +302,7 @@ public class QueryServiceBean {
               row[i] = BeeUtils.removeTrailingZeros(rs.getString(columns[i].getIndex()));
               break;
             }
+            //$FALL-THROUGH$
           default:
             row[i] = rs.getString(columns[i].getIndex());
         }

@@ -31,7 +31,7 @@ public class MenuEntry implements BeeSerializable {
   public void deserialize(String s) {
     Assert.notEmpty(s);
     String[] arr = Codec.deserializeValues(s);
-    Assert.arrayLength(arr, 11);
+    Assert.lengthEquals(arr, 11);
     int i = 0;
 
     setId(arr[i++]);

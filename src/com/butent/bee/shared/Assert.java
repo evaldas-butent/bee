@@ -4,7 +4,6 @@ import com.butent.bee.shared.exceptions.ArgumentCountException;
 import com.butent.bee.shared.exceptions.ArgumentTypeException;
 import com.butent.bee.shared.exceptions.BeeRuntimeException;
 import com.butent.bee.shared.exceptions.KeyNotFoundException;
-import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
@@ -12,38 +11,6 @@ import java.util.Map;
 
 public class Assert {
   public static final String ASSERTION_FAILED = "[Assertion failed] - ";
-
-  public static void arrayLength(Object arr, int size) {
-    notNull(arr);
-    int len = ArrayUtils.length(arr);
-
-    if (size > 0 && len != size) {
-      throw new BeeRuntimeException(ASSERTION_FAILED + "array length " + len
-          + " must be equal to " + size);
-    }
-  }
-
-  public static void arrayLength(Object arr, int min, int max) {
-    notNull(arr);
-    int len = ArrayUtils.length(arr);
-
-    if (min > 0 && len < min) {
-      throw new BeeRuntimeException(ASSERTION_FAILED + "array length " + len
-          + " must be >= " + min);
-    }
-    if (max > 0 && len > max) {
-      throw new BeeRuntimeException(ASSERTION_FAILED + "array length " + len
-          + " must be <= " + max);
-    }
-  }
-
-  public static void arrayLengthMax(Object arr, int max) {
-    arrayLength(arr, -1, max);
-  }
-
-  public static void arrayLengthMin(Object arr, int min) {
-    arrayLength(arr, min, -1);
-  }
 
   public static void betweenExclusive(int x, int min, int max) {
     if (!BeeUtils.betweenExclusive(x, min, max)) {
@@ -70,7 +37,7 @@ public class Assert {
   public static void hasLength(Object obj) {
     hasLength(obj, ASSERTION_FAILED + "argument has zero length");
   }
-  
+
   public static void hasLength(Object obj, String msg) {
     if (BeeUtils.length(obj) <= 0) {
       throw new BeeRuntimeException(msg);
@@ -90,7 +57,7 @@ public class Assert {
   public static void isFalse(boolean expression) {
     isFalse(expression, ASSERTION_FAILED + "this expression must be false");
   }
-
+  
   public static void isFalse(boolean expression, String message) {
     if (expression) {
       throw new BeeRuntimeException(message);
@@ -172,7 +139,7 @@ public class Assert {
     isPositive(x, ASSERTION_FAILED + "(" + x + ") scale must be >= 0 and <= "
         + BeeConst.MAX_SCALE);
   }
-  
+
   public static void isScale(int x, String msg) {
     if (x < 0 || x > BeeConst.MAX_SCALE) {
       throw new BeeRuntimeException(msg);
@@ -194,6 +161,36 @@ public class Assert {
     if (!expression) {
       throw new BeeRuntimeException(message);
     }
+  }
+  
+  public static void lengthEquals(Object obj, int size) {
+    notNull(obj);
+    int len = BeeUtils.length(obj);
+
+    if (size >= 0 && len != size) {
+      throw new BeeRuntimeException(ASSERTION_FAILED + "length " + len
+          + " must be equal to " + size);
+    }
+  }
+
+  public static void lengthLimit(Object obj, int min, int max) {
+    notNull(obj);
+    int len = BeeUtils.length(obj);
+
+    if (min > 0 && len < min) {
+      throw new BeeRuntimeException(ASSERTION_FAILED + "length " + len + " must be >= " + min);
+    }
+    if (max > 0 && len > max) {
+      throw new BeeRuntimeException(ASSERTION_FAILED + "length " + len + " must be <= " + max);
+    }
+  }
+
+  public static void maxLength(Object obj, int max) {
+    lengthLimit(obj, -1, max);
+  }
+
+  public static void minLength(Object obj, int min) {
+    lengthLimit(obj, min, -1);
   }
 
   public static void nonNegative(int x) {

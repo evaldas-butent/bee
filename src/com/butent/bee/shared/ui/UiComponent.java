@@ -36,7 +36,7 @@ public abstract class UiComponent implements HasId, BeeSerializable {
 
   public static UiComponent restore(String s) {
     String[] arr = Codec.beeDeserialize(s);
-    Assert.arrayLength(arr, 2);
+    Assert.lengthEquals(arr, 2);
 
     UiComponent root = createComponent(arr[0]);
     root.deserialize(arr[1]);
@@ -143,7 +143,7 @@ public abstract class UiComponent implements HasId, BeeSerializable {
     SerializationMembers[] members = SerializationMembers.values();
     String[] arr = Codec.beeDeserialize(s);
 
-    Assert.arrayLength(arr, members.length);
+    Assert.lengthEquals(arr, members.length);
 
     for (int i = 0; i < members.length; i++) {
       SerializationMembers member = members[i];

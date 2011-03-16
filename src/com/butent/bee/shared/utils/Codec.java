@@ -127,6 +127,7 @@ public class Codec {
   }
 
   public static String adler32(byte[] arr) {
+    Assert.hasLength(arr);
     int s1 = 1;
     int s2 = 0;
 
@@ -218,12 +219,12 @@ public class Codec {
   }
 
   public static String crc16(byte[] arr) {
+    Assert.hasLength(arr);
     int crc = 0;
 
     for (byte b : arr) {
       crc = (crc >>> 8) ^ crc16Table[(crc ^ b) & 0xff];
     }
-
     return Integer.toHexString(crc);
   }
 
@@ -232,12 +233,12 @@ public class Codec {
   }
 
   public static String crc32(byte[] arr) {
+    Assert.hasLength(arr);
     int crc = 0xffffffff;
 
     for (byte b : arr) {
       crc = (crc >>> 8) ^ crc32Table[(crc ^ b) & 0xff];
     }
-
     crc = crc ^ 0xffffffff;
     return Integer.toHexString(crc);
   }
@@ -247,6 +248,7 @@ public class Codec {
   }
 
   public static String crc32Direct(byte[] arr) {
+    Assert.hasLength(arr);
     int crc = 0xffffffff;
     int poly = 0xEDB88320;
 
@@ -262,7 +264,6 @@ public class Codec {
       }
       crc = (crc >>> 8) ^ z;
     }
-
     crc = crc ^ 0xffffffff;
     return Integer.toHexString(crc);
   }
@@ -272,19 +273,20 @@ public class Codec {
   }
 
   public static String decodeBase64(String s) {
-    if (base64chunk <= 0 || BeeUtils.length(s) <= base64chunk * 4) {
+    Assert.notNull(s);
+    int len = s.length();
+    Assert.isPositive(len);
+
+    if (base64chunk <= 0 || len <= base64chunk * 4) {
       return fromBytes(fromBase64(s));
     }
 
     StringBuilder sb = new StringBuilder();
-    int len = s.length();
     int chunk = base64chunk * 4;
 
     for (int offset = 0; offset < len; offset += chunk) {
-      sb.append(fromBytes(fromBase64(s.substring(offset,
-          BeeUtils.min(offset + chunk, len)))));
+      sb.append(fromBytes(fromBase64(s.substring(offset, BeeUtils.min(offset + chunk, len)))));
     }
-
     return sb.toString();
   }
 
@@ -305,7 +307,6 @@ public class Codec {
       Assert.isTrue(start + z < sLen);
       x = Integer.parseInt(src.substring(start + 1, start + z + 1));
     }
-
     return new Pair<Integer, Integer>(x, z + 1);
   }
 
@@ -323,7 +324,6 @@ public class Codec {
 
     for (int i = 0; i < n; i++) {
       p2 = ser.indexOf(SERIALIZATION_SEPARATOR, p1 + 1);
-
       if (p2 == p1 + 1) {
         arr[i] = null;
         p1 = p2;
@@ -339,24 +339,24 @@ public class Codec {
         p1 = p2;
       }
     }
-
     return arr;
   }
 
   public static String encodeBase64(String s) {
-    if (base64chunk <= 0 || BeeUtils.length(s) <= base64chunk * 3) {
+    Assert.notNull(s);
+    int len = s.length();
+    Assert.isPositive(len);
+    
+    if (base64chunk <= 0 || len <= base64chunk * 3) {
       return toBase64(toBytes(s));
     }
 
     StringBuilder sb = new StringBuilder();
-    int len = s.length();
     int chunk = base64chunk * 3;
 
     for (int offset = 0; offset < len; offset += chunk) {
-      sb.append(toBase64(toBytes(s.substring(offset,
-          BeeUtils.min(offset + chunk, len)))));
+      sb.append(toBase64(toBytes(s.substring(offset, BeeUtils.min(offset + chunk, len)))));
     }
-
     return sb.toString();
   }
 
@@ -444,7 +444,6 @@ public class Codec {
       }
       bytes[oidx++] = (byte) c24;
     }
-
     return bytes;
   }
 
@@ -458,7 +457,6 @@ public class Codec {
     for (int i = 0; i < chars.length; i++) {
       chars[i] = (char) ((bytes[i * 2] << 8) + (bytes[i * 2 + 1] & 0xff));
     }
-
     return new String(chars);
   }
 
@@ -483,7 +481,6 @@ public class Codec {
     }
 
     byte[] arr = MD5.digest();
-
     return toHex(arr);
   }
 
@@ -522,7 +519,6 @@ public class Codec {
     for (int i = 0; i < n; i++) {
       sb.append(serialize(obj[i]));
     }
-
     return sb.toString();
   }
 
@@ -578,7 +574,6 @@ public class Codec {
 
       charsLeft -= 3;
     }
-
     return new String(chars);
   }
 
@@ -603,16 +598,18 @@ public class Codec {
     byte[] arr = new byte[(end - start) * 2];
     char c;
 
-    for (int i = start; i < end; i++) {
-      c = s.charAt(i);
+    for (int i = 0; i < end - start; i++) {
+      c = s.charAt(i + start);
       arr[i * 2] = (byte) (c >> 8);
       arr[i * 2 + 1] = (byte) (c & 0xff);
     }
-
     return arr;
   }
 
   public static String toHex(byte[] bytes) {
+    if (BeeUtils.isEmpty(bytes)) {
+      return null;
+    }
     char[] arr = new char[bytes.length * 2];
     int j = 0;
 
@@ -620,7 +617,6 @@ public class Codec {
       arr[j++] = HEX_CHARS[(bytes[i] & 0xF0) >> 4];
       arr[j++] = HEX_CHARS[bytes[i] & 0x0F];
     }
-
     return new String(arr);
   }
 
@@ -641,5 +637,4 @@ public class Codec {
       return sb.toString();
     }
   }
-
 }
