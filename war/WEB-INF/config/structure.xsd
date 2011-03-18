@@ -16,11 +16,11 @@
         <xs:element name="BeeFields" type="bee:fields" minOccurs="0" maxOccurs="1" />
         <xs:element name="BeeExtended" type="bee:fields" minOccurs="0" maxOccurs="1" />
       </xs:choice>
-      <xs:element name="BeeStates" type="bee:states" minOccurs="0" maxOccurs="1" />
     </xs:sequence>
     <xs:attribute name="name" type="xs:string" use="required" />
     <xs:attribute name="idName" type="xs:string" default="ID" />
     <xs:attribute name="lockName" type="xs:string" default="Version" />
+    <xs:attribute name="states" type="xs:string" />
   </xs:complexType>
 
   <xs:complexType name="fields">
@@ -30,14 +30,14 @@
     </xs:sequence>
   </xs:complexType>
 
-  <xs:complexType name="states">
-    <xs:sequence>
-      <xs:element name="BeeState" type="bee:stateType" maxOccurs="unbounded" />
-    </xs:sequence>
-  </xs:complexType>
-
   <xs:complexType name="fieldType">
-    <xs:attribute name="name" type="xs:string" use="required" />
+    <xs:attribute name="name" use="required">
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:maxLength value="30" />
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
     <xs:attribute name="type" type="bee:dataType" use="required" />
     <xs:attribute name="precision" type="xs:integer" />
     <xs:attribute name="scale" type="xs:byte" />
@@ -50,26 +50,6 @@
   <xs:complexType name="keyType">
     <xs:attribute name="fields" type="xs:string" use="required" />
     <xs:attribute name="unique" type="xs:boolean" />
-  </xs:complexType>
-
-  <xs:complexType name="stateType">
-    <xs:attribute name="name" use="required">
-      <xs:simpleType>
-        <xs:restriction base="xs:string">
-          <xs:maxLength value="10" />
-        </xs:restriction>
-      </xs:simpleType>
-    </xs:attribute>
-    <xs:attribute name="id" type="xs:byte" use="required" />
-    <xs:attribute name="mode">
-      <xs:simpleType>
-        <xs:restriction base="xs:string">
-          <xs:enumeration value="ROLE" />
-          <xs:enumeration value="USER" />
-        </xs:restriction>
-      </xs:simpleType>
-    </xs:attribute>
-    <xs:attribute name="checked" type="xs:boolean" />
   </xs:complexType>
 
   <xs:simpleType name="dataType">

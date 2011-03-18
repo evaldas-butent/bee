@@ -2,6 +2,7 @@ package com.butent.bee.server;
 
 import com.butent.bee.server.utils.FileUtils;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.LogUtils;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
@@ -39,6 +40,15 @@ public class Config {
     properties = loadProperties("server.properties");
   }
 
+  public static String getConfigPath(String resource) {
+    Assert.notEmpty(resource);
+
+    if (FileUtils.isInputFile(CONFIG_DIR + resource)) {
+      return CONFIG_DIR + resource;
+    }
+    return null;
+  }
+
   public static List<Property> getInfo() {
     List<Property> lst = PropertyUtils.createProperties("Resource path", RESOURCE_PATH,
         "Config dir", CONFIG_DIR, "User dir", USER_DIR, "Properties", getSize(properties));
@@ -52,20 +62,29 @@ public class Config {
   public static String getPath(String resource) {
     Assert.notEmpty(resource);
 
-    if (FileUtils.isInputFile(USER_DIR + resource)) {
-      return USER_DIR + resource;
-    }
-    if (FileUtils.isInputFile(CONFIG_DIR + resource)) {
-      return CONFIG_DIR + resource;
-    }
+    String path = getUserPath(resource);
 
-    LogUtils.warning(logger, resource, "resource not found");
-    return null;
+    if (BeeUtils.isEmpty(path)) {
+      path = getConfigPath(resource);
+    }
+    if (BeeUtils.isEmpty(path)) {
+      LogUtils.warning(logger, resource, "resource not found");
+    }
+    return path;
   }
 
   public static String getProperty(String key) {
     Assert.notEmpty(key);
     return properties.getProperty(key);
+  }
+
+  public static String getUserPath(String resource) {
+    Assert.notEmpty(resource);
+
+    if (FileUtils.isInputFile(USER_DIR + resource)) {
+      return USER_DIR + resource;
+    }
+    return null;
   }
 
   private static int getSize(Properties props) {

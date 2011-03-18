@@ -6,7 +6,7 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
-import com.google.common.primitives.Ints;
+import com.google.common.primitives.Longs;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.sql.SqlSelect;
@@ -18,6 +18,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.logging.Logger;
 
+import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.ejb.EJBContext;
@@ -31,14 +32,14 @@ public class UserServiceBean {
 
   public class UserInfo {
     private String login;
-    private int userId;
+    private long userId;
     private String firstName;
     private String lastName;
     private String position;
-    private Collection<Integer> userRoles;
+    private Collection<Long> userRoles;
     private boolean online = false;
 
-    public UserInfo(int userId, String login, String firstName, String lastName, String position) {
+    public UserInfo(long userId, String login, String firstName, String lastName, String position) {
       this.userId = userId;
       this.login = login;
       this.firstName = firstName;
@@ -50,7 +51,7 @@ public class UserServiceBean {
       return firstName;
     }
 
-    public Collection<Integer> getRoles() {
+    public Collection<Long> getRoles() {
       return userRoles;
     }
 
@@ -75,7 +76,7 @@ public class UserServiceBean {
       return position;
     }
 
-    public int userId() {
+    public long userId() {
       return userId;
     }
 
@@ -83,7 +84,7 @@ public class UserServiceBean {
       this.online = online;
     }
 
-    private void setRoles(Collection<Integer> userRoles) {
+    private void setRoles(Collection<Long> userRoles) {
       this.userRoles = userRoles;
     }
   }
@@ -101,9 +102,9 @@ public class UserServiceBean {
   @EJB
   QueryServiceBean qs;
 
-  private BiMap<Integer, String> roles = HashBiMap.create();
-  private BiMap<String, Integer> users = HashBiMap.create();
-  private Map<Integer, UserInfo> userInfoCache = Maps.newHashMap();
+  private BiMap<Long, String> roles = HashBiMap.create();
+  private BiMap<String, Long> users = HashBiMap.create();
+  private Map<Long, UserInfo> userCache = Maps.newHashMap();
 
   private boolean cacheUpToDate = false;
 
@@ -114,7 +115,7 @@ public class UserServiceBean {
     return p.getName().toLowerCase();
   }
 
-  public int getCurrentUserId() {
+  public long getCurrentUserId() {
     initUsers();
     String user = getCurrentUser();
     Assert.contains(users, user);
@@ -122,18 +123,18 @@ public class UserServiceBean {
     return users.get(user);
   }
 
-  public Map<Integer, String> getRoles() {
+  public Map<Long, String> getRoles() {
     initUsers();
     return ImmutableMap.copyOf(roles);
   }
 
-  public int[] getUserRoles(int userId) {
+  public long[] getUserRoles(long userId) {
     initUsers();
     Assert.notEmpty(userId);
-    return Ints.toArray(getUser(userId).getRoles());
+    return Longs.toArray(getUser(userId).getRoles());
   }
 
-  public Map<Integer, String> getUsers() {
+  public Map<Long, String> getUsers() {
     initUsers();
     return ImmutableMap.copyOf(users.inverse());
   }
@@ -158,7 +159,7 @@ public class UserServiceBean {
       LogUtils.warning(logger, "Anonymous user logged in:", sign);
 
     } else {
-      LogUtils.severe(logger, "Unauthorized login:", usr);
+      LogUtils.severe(logger, "Login attempt by an unauthorized user:", usr);
     }
     return sign;
   }
@@ -166,23 +167,38 @@ public class UserServiceBean {
   public void logout(String usr) {
     UserInfo user = getUser(usr);
 
-    if (BeeUtils.isEmpty(user)) {
-      LogUtils.warning(logger, "Unknown user:", usr);
-    } else {
+    if (!BeeUtils.isEmpty(user)) {
       user.setOnline(false);
       LogUtils.infoNow(logger, "User logged out:", user.getUserSign());
+
+    } else if (BeeUtils.isEmpty(users)) {
+      LogUtils.warning(logger, "Anonymous user logged out:", usr);
+
+    } else {
+      LogUtils.severe(logger, "Logout attempt by an unauthorized user:", usr);
     }
   }
 
-  private UserInfo getUser(int userId) {
+  @SuppressWarnings("unused")
+  @PreDestroy
+  @Lock(LockType.WRITE)
+  private void destroy() {
+    for (UserInfo user : userCache.values()) {
+      if (user.isOnline()) {
+        logout(user.login());
+      }
+    }
+  }
+
+  private UserInfo getUser(long userId) {
     initUsers();
-    Assert.contains(userInfoCache, userId);
-    return userInfoCache.get(userId);
+    Assert.contains(userCache, userId);
+    return userCache.get(userId);
   }
 
   private UserInfo getUser(String usr) {
     initUsers();
-    return userInfoCache.get(users.get(usr));
+    return userCache.get(users.get(usr));
   }
 
   @Lock(LockType.WRITE)
@@ -192,7 +208,7 @@ public class UserServiceBean {
     }
     roles.clear();
     users.clear();
-    userInfoCache.clear();
+    userCache.clear();
 
     String userIdName = sys.getIdName(USER_TABLE);
     String roleIdName = sys.getIdName(ROLE_TABLE);
@@ -202,17 +218,17 @@ public class UserServiceBean {
         .addFrom(ROLE_TABLE, "r");
 
     for (Map<String, String> row : qs.getData(ss)) {
-      roles.put(BeeUtils.toInt(row.get(roleIdName)), row.get("Name"));
+      roles.put(BeeUtils.toLong(row.get(roleIdName)), row.get("Name"));
     }
 
     ss = new SqlSelect()
         .addFields("r", "User", "Role")
         .addFrom(USER_ROLES_TABLE, "r");
 
-    Multimap<Integer, Integer> userRoles = HashMultimap.create();
+    Multimap<Long, Long> userRoles = HashMultimap.create();
 
     for (Map<String, String> row : qs.getData(ss)) {
-      userRoles.put(BeeUtils.toInt(row.get("User")), BeeUtils.toInt(row.get("Role")));
+      userRoles.put(BeeUtils.toLong(row.get("User")), BeeUtils.toLong(row.get("Role")));
     }
 
     ss = new SqlSelect()
@@ -220,7 +236,7 @@ public class UserServiceBean {
         .addFrom(USER_TABLE, "u");
 
     for (Map<String, String> row : qs.getData(ss)) {
-      int userId = BeeUtils.toInt(row.get(userIdName));
+      long userId = BeeUtils.toLong(row.get(userIdName));
       String login = row.get("Login");
 
       users.put(login.toLowerCase(), userId);
@@ -229,7 +245,7 @@ public class UserServiceBean {
           row.get("Position"));
 
       user.setRoles(userRoles.get(userId));
-      userInfoCache.put(userId, user);
+      userCache.put(userId, user);
     }
     cacheUpToDate = true;
   }

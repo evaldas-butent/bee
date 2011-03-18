@@ -4,21 +4,17 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 
 public class ArrayUtils {
-  
-  public static boolean contains(int value, int[] arr) {
-    return indexOf(value, arr) >= 0;
-  }
 
   public static <T> boolean contains(T value, T[] arr) {
     return indexOf(value, arr) >= 0;
-  }  
-  
+  }
+
   public static boolean context(CharSequence ctxt, String[] arr) {
     boolean ok = false;
     if (BeeUtils.isEmpty(ctxt) || BeeUtils.isEmpty(arr)) {
       return ok;
     }
-  
+
     for (String el : arr) {
       if (BeeUtils.context(ctxt, el)) {
         ok = true;
@@ -27,7 +23,7 @@ public class ArrayUtils {
     }
     return ok;
   }
-  
+
   public static <T> T[] copyOf(T[] original, int newLength) {
     T[] copy = create(newLength);
     if (newLength > 0) {
@@ -84,25 +80,6 @@ public class ArrayUtils {
     }
   }
 
-  public static int indexOf(int value, int[] arr) {
-    int idx = -1;
-    if (arr == null) {
-      return idx;
-    }
-    int len = arr.length;
-    if (len <= 0) {
-      return idx;
-    }
-  
-    for (int i = 0; i < len; i++) {
-      if (arr[i] == value) {
-        idx = i;
-        break;
-      }
-    }
-    return idx;
-  }
-
   @SuppressWarnings("unchecked")
   public static <T> int indexOf(T value, T[] arr) {
     int idx = -1;
@@ -110,13 +87,13 @@ public class ArrayUtils {
     if (len <= 0) {
       return idx;
     }
-  
+
     for (int i = 0; i < len; i++) {
       if (value == arr[i]) {
         idx = i;
         break;
       }
-  
+
       if (value instanceof Comparable<?> && arr[i] != null
           && ((Comparable<T>) value).compareTo(arr[i]) == 0) {
         idx = i;
@@ -130,7 +107,7 @@ public class ArrayUtils {
     Assert.notNull(source);
     Assert.betweenInclusive(index, 0, source.length);
     T[] result = copyOf(source, source.length + 1);
-    
+
     result[index] = value;
     for (int i = index + 1; i < source.length + 1; i++) {
       result[i] = source[i - 1];
@@ -161,7 +138,7 @@ public class ArrayUtils {
   public static String join(Object[] arr, Object separator) {
     return join(arr, separator, -1, -1);
   }
-  
+
   public static String join(Object[] arr, Object separator, int fromIndex) {
     return join(arr, separator, fromIndex, -1);
   }
@@ -170,14 +147,14 @@ public class ArrayUtils {
     int len = length(arr);
     int fr = (fromIndex > 0) ? fromIndex : 0;
     int to = (toIndex >= 0 && toIndex <= len) ? toIndex : len;
-  
+
     if (fr >= to) {
       return BeeConst.STRING_EMPTY;
     }
-  
+
     String sep = BeeUtils.normSep(separator);
     StringBuilder sb = new StringBuilder();
-  
+
     for (int i = fr; i < to; i++) {
       if (sb.length() > 0) {
         sb.append(sep);
@@ -189,7 +166,7 @@ public class ArrayUtils {
 
   public static int length(Object arr) {
     int len;
-  
+
     if (arr instanceof Object[]) {
       len = ((Object[]) arr).length;
     } else if (arr instanceof boolean[]) {
@@ -217,7 +194,7 @@ public class ArrayUtils {
   public static <T> T[] remove(T[] source, int index) {
     Assert.isIndex(source, index);
     T[] result;
-    
+
     if (index == 0) {
       result = copyOfRange(source, 1, source.length);
     } else {
@@ -235,11 +212,11 @@ public class ArrayUtils {
     }
     int cSep = sep.length;
     String z = cSep > 0 ? BeeUtils.normSep(sep[0]) : BeeConst.DEFAULT_LIST_SEPARATOR;
-  
+
     StringBuilder sb = new StringBuilder();
     Object el;
     Object[] nextSep;
-  
+
     if (cSep > 1) {
       nextSep = new Object[cSep - 1];
       for (int i = 0; i < cSep - 1; i++) {
@@ -248,9 +225,9 @@ public class ArrayUtils {
     } else {
       nextSep = new String[]{z};
     }
-  
+
     int r = length(arr);
-  
+
     for (int i = 0; i < r; i++) {
       el = get(arr, i);
       if (i > 0) {

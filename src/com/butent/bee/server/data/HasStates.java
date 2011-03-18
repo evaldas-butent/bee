@@ -1,6 +1,5 @@
 package com.butent.bee.server.data;
 
-import com.butent.bee.server.data.BeeTable.BeeState;
 import com.butent.bee.shared.sql.HasFrom;
 import com.butent.bee.shared.sql.IsCondition;
 import com.butent.bee.shared.sql.SqlCreate;
@@ -8,25 +7,25 @@ import com.butent.bee.shared.sql.SqlInsert;
 import com.butent.bee.shared.sql.SqlSelect;
 import com.butent.bee.shared.sql.SqlUpdate;
 
-import java.util.Collection;
 import java.util.Map;
 
 public interface HasStates {
 
-  SqlCreate createStateTable(SqlCreate query, BeeState state,
-      Collection<Integer> users, Collection<Integer> roles);
+  SqlCreate createStateTable(SqlCreate query, BeeState state);
 
-  IsCondition checkState(String stateAlias, BeeState state, boolean mdRole, int... bits);
+  IsCondition checkState(String stateAlias, BeeState state, boolean mdRole, long... bits);
 
-  String getStateField(String stateName);
+  String getStateField(BeeState state);
 
-  String getStateTable(String stateName);
+  String getStateTable(BeeState state);
 
-  SqlInsert insertState(long id, BeeState state, boolean mdRole, Map<Integer, Boolean> bits);
+  SqlInsert insertState(long id, BeeState state, Map<Long, Boolean> bits);
 
   String joinState(HasFrom<?> query, String tblAlias, BeeState state);
 
-  SqlUpdate updateState(long id, BeeState state, boolean mdRole, Map<Integer, Boolean> bits);
+  void setStateActive(BeeState state, boolean active);
 
-  void verifyState(SqlSelect query, String tblAlias, BeeState state, int user, int... roles);
+  SqlUpdate updateState(long id, BeeState state, Map<Long, Boolean> bits);
+
+  void verifyState(SqlSelect query, String tblAlias, BeeState state, long user, long... roles);
 }

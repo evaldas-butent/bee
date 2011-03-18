@@ -38,15 +38,11 @@
       <BeeField name="Currency" type="STRING" precision="50" />
     </BeeFields>
   </BeeTable>
-  <BeeTable name="Cities" idName="CityID">
+  <BeeTable name="Cities" idName="CityID" states="Marked, Unused">
     <BeeFields>
       <BeeField name="Name" type="STRING" precision="100" notNull="true" unique="true" />
       <BeeField name="Population" type="INTEGER" />
       <BeeField name="Country" type="LONG" relation="Countries" />
     </BeeFields>
-    <BeeStates>
-      <BeeState name="Marked" id="2" mode="USER" />
-      <BeeState name="Unused" id="3" checked="true" />
-    </BeeStates>
   </BeeTable>
 </BeeTables>

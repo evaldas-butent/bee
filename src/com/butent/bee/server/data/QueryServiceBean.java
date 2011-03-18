@@ -4,6 +4,8 @@ import com.butent.bee.server.DataSourceBean;
 import com.butent.bee.server.data.BeeTable.BeeField;
 import com.butent.bee.server.jdbc.JdbcUtils;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.DateTime;
+import com.butent.bee.shared.JustDate;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.SimpleRowSet;
@@ -18,6 +20,7 @@ import com.butent.bee.shared.sql.SqlUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.LogUtils;
 
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -142,6 +145,30 @@ public class QueryServiceBean {
         return null;
       }
     });
+  }
+
+  public JustDate getDate(IsQuery query) {
+    return getSingleValue(query).getDate(0, 0);
+  }
+
+  public JustDate[] getDateColumn(IsQuery query) {
+    return getSingleColumn(query).getDateColumn(0);
+  }
+
+  public DateTime getDateTime(IsQuery query) {
+    return getSingleValue(query).getDateTime(0, 0);
+  }
+
+  public DateTime[] getDateTimeColumn(IsQuery query) {
+    return getSingleColumn(query).getDateTimeColumn(0);
+  }
+
+  public BigDecimal getDecimal(IsQuery query) {
+    return getSingleValue(query).getDecimal(0, 0);
+  }
+
+  public BigDecimal[] getDecimalColumn(IsQuery query) {
+    return getSingleColumn(query).getDecimalColumn(0);
   }
 
   public double getDouble(IsQuery query) {

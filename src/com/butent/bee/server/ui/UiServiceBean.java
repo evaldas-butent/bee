@@ -281,8 +281,14 @@ public class UiServiceBean {
       sys.rebuildActiveTables();
       response.addInfo("Recreate structure OK");
 
-    } else if (BeeUtils.same(cmd, "ext")) {
-      sys.initExtensions();
+    } else if (BeeUtils.same(cmd, "states")) {
+      sys.initStates();
+      sys.initTables();
+      sys.initDatabase(SqlBuilderFactory.getEngine());
+      response.addInfo("Extensions OK");
+
+    } else if (BeeUtils.same(cmd, "tables")) {
+      sys.initTables();
       sys.initViews();
       sys.initDatabase(SqlBuilderFactory.getEngine());
       response.addInfo("Extensions OK");
@@ -296,17 +302,17 @@ public class UiServiceBean {
       String tbl = xArr[1];
       long id = BeeUtils.toLong(xArr[2]);
       String state = xArr[3];
-      int[] roles = null;
+      long[] bits = null;
 
       if (xArr.length > 4) {
         String[] rArr = xArr[4].split(" ");
-        roles = new int[rArr.length];
+        bits = new long[rArr.length];
 
         for (int i = 0; i < rArr.length; i++) {
-          roles[i] = BeeUtils.toInt(rArr[i]);
+          bits[i] = BeeUtils.toLong(rArr[i]);
         }
       }
-      sys.setState(tbl, id, state, true, roles);
+      sys.setState(tbl, id, state, bits);
       response.addInfo("Toggle OK");
 
     } else {

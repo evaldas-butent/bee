@@ -8,9 +8,12 @@ import com.google.common.collect.Maps;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeSerializable;
+import com.butent.bee.shared.DateTime;
+import com.butent.bee.shared.JustDate;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
+import java.math.BigDecimal;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -154,6 +157,60 @@ public class SimpleRowSet implements Iterable<Map<String, String>>, BeeSerializa
       fields[i] = getColumnName(i);
     }
     return fields;
+  }
+
+  public JustDate getDate(int rowIndex, int colIndex) {
+    return new JustDate(getInt(rowIndex, colIndex));
+  }
+
+  public JustDate getDate(int rowIndex, String colName) {
+    return new JustDate(getInt(rowIndex, colName));
+  }
+
+  public JustDate[] getDateColumn(int index) {
+    Assert.contains(columns.inverse(), index);
+    JustDate[] col = new JustDate[getNumberOfRows()];
+
+    for (int i = 0; i < getNumberOfRows(); i++) {
+      col[i] = new JustDate(BeeUtils.toInt(rows.get(i)[index]));
+    }
+    return col;
+  }
+
+  public DateTime getDateTime(int rowIndex, int colIndex) {
+    return new DateTime(getLong(rowIndex, colIndex));
+  }
+
+  public DateTime getDateTime(int rowIndex, String colName) {
+    return new DateTime(getLong(rowIndex, colName));
+  }
+
+  public DateTime[] getDateTimeColumn(int index) {
+    Assert.contains(columns.inverse(), index);
+    DateTime[] col = new DateTime[getNumberOfRows()];
+
+    for (int i = 0; i < getNumberOfRows(); i++) {
+      col[i] = new DateTime(BeeUtils.toLong(rows.get(i)[index]));
+    }
+    return col;
+  }
+
+  public BigDecimal getDecimal(int rowIndex, int colIndex) {
+    return new BigDecimal(getValue(rowIndex, colIndex));
+  }
+
+  public BigDecimal getDecimal(int rowIndex, String colName) {
+    return new BigDecimal(getValue(rowIndex, colName));
+  }
+
+  public BigDecimal[] getDecimalColumn(int index) {
+    Assert.contains(columns.inverse(), index);
+    BigDecimal[] col = new BigDecimal[getNumberOfRows()];
+
+    for (int i = 0; i < getNumberOfRows(); i++) {
+      col[i] = new BigDecimal(rows.get(i)[index]);
+    }
+    return col;
   }
 
   public double getDouble(int rowIndex, int colIndex) {
