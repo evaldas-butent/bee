@@ -2,19 +2,27 @@ package com.butent.bee.server;
 
 import com.butent.bee.server.communication.ResponseBuffer;
 import com.butent.bee.server.http.RequestInfo;
+import com.butent.bee.server.i18n.I18nUtils;
+import com.butent.bee.server.i18n.Localized;
 import com.butent.bee.server.utils.SystemInfo;
 import com.butent.bee.server.utils.Checksum;
 import com.butent.bee.server.utils.JvmUtils;
 import com.butent.bee.server.utils.MxUtils;
 import com.butent.bee.server.utils.XmlUtils;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.ExtendedProperty;
+import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
 
+import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 import javax.ejb.Stateless;
 
@@ -22,7 +30,7 @@ import javax.ejb.Stateless;
 public class Invocation {
 
   public void configInfo(ResponseBuffer buff) {
-    buff.addProperties(Config.getInfo());
+    buff.addExtendedProperties(Config.getInfo());
   }
 
   public void connectionInfo(RequestInfo reqInfo, ResponseBuffer buff) {
@@ -35,6 +43,76 @@ public class Invocation {
       buff.addProperties(JvmUtils.getLoadedClasses());
     } else {
       buff.add(JvmUtils.CVF_FAILURE);
+    }
+  }
+  
+  public void localeInfo(RequestInfo reqInfo, ResponseBuffer buff) {
+    String mode = reqInfo.getContent();
+    
+    if (BeeUtils.length(mode) >= 2) {
+      Locale lc = null;
+      for (String s : BeeUtils.split(mode, BeeConst.CHAR_SPACE)) {
+        lc = I18nUtils.toLocale(s);
+        if (lc != null) {
+          break;
+        }
+      }
+      if (lc == null) {
+        lc = Localized.defaultLocale;
+      }
+      
+      List<Property> lst = PropertyUtils.createProperties(
+          BeeUtils.concat(1, "Locale", mode), Localized.transform(lc),
+          "refresh", Localized.getConstants(lc).refresh(),
+          "class", Localized.getConstants(lc).clazz(),
+          "keyNotFound", Localized.getMessages(lc).keyNotFound("test"));
+      
+      Map<Locale, File> avail = Localized.getAvailableConstants();
+      int idx = 0;
+      if (avail != null) {
+        PropertyUtils.addProperty(lst, "Available Constants", avail.size());
+        for (Map.Entry<Locale, File> entry : avail.entrySet()) {
+          PropertyUtils.addProperty(lst,
+              BeeUtils.concat(2, ++idx, Localized.transform(entry.getKey())), entry.getValue());
+        }
+        PropertyUtils.addProperty(lst, "Normalized", 
+            Localized.transform(Localized.normalize(lc, avail)));
+      }
+
+      avail = Localized.getAvailableMessages();
+      idx = 0;
+      if (avail != null) {
+        PropertyUtils.addProperty(lst, "Available Messages", avail.size());
+        for (Map.Entry<Locale, File> entry : avail.entrySet()) {
+          PropertyUtils.addProperty(lst,
+              BeeUtils.concat(2, ++idx, Localized.transform(entry.getKey())), entry.getValue());
+        }
+        PropertyUtils.addProperty(lst, "Normalized", 
+            Localized.transform(Localized.normalize(lc, avail)));
+      }
+      
+      Collection<Locale> locales = Localized.getCachedConstantLocales();
+      PropertyUtils.addProperty(lst, "Loaded Constants", locales.size());
+      idx = 0;
+      for (Locale z : locales) {
+        PropertyUtils.addProperty(lst,
+            BeeUtils.progress(++idx, locales.size()), Localized.transform(z));
+      }
+
+      locales = Localized.getCachedMessageLocales();
+      PropertyUtils.addProperty(lst, "Loaded Messages", locales.size());
+      idx = 0;
+      for (Locale z : locales) {
+        PropertyUtils.addProperty(lst,
+            BeeUtils.progress(++idx, locales.size()), Localized.transform(z));
+      }
+      buff.addProperties(lst);
+
+    } else if (BeeUtils.context("x", mode)) {
+      buff.addExtendedProperties(I18nUtils.getExtendedInfo());
+    
+    } else {
+      buff.addProperties(I18nUtils.getInfo());
     }
   }
 

@@ -8,10 +8,6 @@ import java.util.zip.CRC32;
 import sun.misc.CRC16;
 
 public class Checksum {
-  public static String adler32(String input) {
-    return adler32(Codec.toBytes(input));
-  }
-
   public static String adler32(byte[] arr) {
     Adler32 cs = new Adler32();
     cs.update(arr);
@@ -20,8 +16,8 @@ public class Checksum {
     return Integer.toHexString((int) value);
   }
 
-  public static String crc16(String input) {
-    return crc16(Codec.toBytes(input));
+  public static String adler32(String input) {
+    return adler32(Codec.toBytes(input));
   }
 
   public static String crc16(byte[] arr) {
@@ -33,9 +29,9 @@ public class Checksum {
     
     return Integer.toHexString(value);
   }
-  
-  public static String crc32(String input) {
-    return crc32(Codec.toBytes(input));
+
+  public static String crc16(String input) {
+    return crc16(Codec.toBytes(input));
   }
 
   public static String crc32(byte[] arr) {
@@ -44,5 +40,12 @@ public class Checksum {
     long value = cs.getValue();
     
     return Integer.toHexString((int) value);
+  }
+  
+  public static String crc32(String input) {
+    return crc32(Codec.toBytes(input));
+  }
+
+  private Checksum() {
   }
 }

@@ -24,7 +24,7 @@ public class SystemInfo {
   }
 
   private static PackageComparator packageComparator = null;
-
+  
   public static long freeMemory() {
     return Runtime.getRuntime().freeMemory();
   }
@@ -36,14 +36,14 @@ public class SystemInfo {
     if (withName) {
       PropertyUtils.addProperty(lst, "Name", p.getName());
     }
-    PropertyUtils.addProperties(lst, "Implementation Title",
-        p.getImplementationTitle(), "Implementation Vendor",
-        p.getImplementationVendor(), "Implementation Version",
-        p.getImplementationVersion(), "Specification Title",
-        p.getSpecificationTitle(), "SpecificationVendor",
-        p.getSpecificationVendor(), "Specification Version",
-        p.getSpecificationVersion(), "Is Sealed",
-        p.isSealed() ? Boolean.toString(true) : BeeConst.STRING_EMPTY);
+    PropertyUtils.addProperties(lst,
+        "Implementation Title", p.getImplementationTitle(),
+        "Implementation Vendor", p.getImplementationVendor(),
+        "Implementation Version", p.getImplementationVersion(),
+        "Specification Title", p.getSpecificationTitle(),
+        "SpecificationVendor", p.getSpecificationVendor(),
+        "Specification Version", p.getSpecificationVersion(),
+        "Is Sealed", p.isSealed() ? Boolean.toString(true) : BeeConst.STRING_EMPTY);
 
     Annotation[] arr = p.getDeclaredAnnotations();
     if (!BeeUtils.isEmpty(arr)) {
@@ -58,7 +58,6 @@ public class SystemInfo {
         PropertyUtils.addProperty(lst, "Annotation",  ClassUtils.transformAnnotation(ann));
       }
     }
-
     return lst;
   }
 
@@ -66,13 +65,11 @@ public class SystemInfo {
     List<ExtendedProperty> lst = new ArrayList<ExtendedProperty>();
 
     Package[] pArr = Package.getPackages();
-
     if (!BeeUtils.isEmpty(pArr)) {
       if (pArr.length > 1) {
         PropertyUtils.addExtended(lst, "Packages", BeeUtils.bracket(pArr.length));
         Arrays.sort(pArr, ensurePackageComparator());
       }
-
       Package p;
       String nm;
 
@@ -84,7 +81,6 @@ public class SystemInfo {
         PropertyUtils.appendChildrenToExtended(lst, nm, getPackageInfo(p, false));
       }
     }
-
     return lst;
   }
 
@@ -93,7 +89,8 @@ public class SystemInfo {
     List<Property> lst = new ArrayList<Property>();
 
     PropertyUtils.addProperties(lst, "Available Processors", rt.availableProcessors(),
-        "Free Memory", rt.freeMemory(), "Max Memory", rt.maxMemory(),
+        "Free Memory", rt.freeMemory(),
+        "Max Memory", rt.maxMemory(),
         "Total Memory", rt.totalMemory());
 
     return lst;
@@ -106,7 +103,6 @@ public class SystemInfo {
     PropertyUtils.addExtended(lst, "Nano Time", System.nanoTime());
 
     int i, c;
-
     Map<String, String> env = System.getenv();
     if (env != null) {
       i = 0;
@@ -120,7 +116,6 @@ public class SystemInfo {
     }
 
     Properties prp = System.getProperties();
-
     if (prp != null) {
       i = 0;
       c = prp.size();
@@ -133,7 +128,6 @@ public class SystemInfo {
             prp.getProperty(key.toString()));
       }
     }
-
     return lst;
   }
 
@@ -150,11 +144,9 @@ public class SystemInfo {
     int tc = tg.activeCount();
     int gc = tg.activeGroupCount();
 
-    PropertyUtils.addProperties(lst, false, "Active Count", tc, "Active Group Count",
-        gc);
+    PropertyUtils.addProperties(lst, false, "Active Count", tc, "Active Group Count", gc);
 
     int n;
-
     if (tc > 0) {
       Thread[] tArr = new Thread[tc];
       n = tg.enumerate(tArr, recurse);
@@ -182,7 +174,6 @@ public class SystemInfo {
         }
       }
     }
-
     return lst;
   }
 
@@ -190,11 +181,10 @@ public class SystemInfo {
     Assert.notNull(t);
     List<Property> lst = new ArrayList<Property>();
 
-    PropertyUtils.addProperties(lst, "Id", t.getId(), "Name", t.getName(), "State",
-        t.getState(), "Thread Group", transformThreadGroup(t.getThreadGroup()),
+    PropertyUtils.addProperties(lst, "Id", t.getId(), "Name", t.getName(),
+        "State", t.getState(), "Thread Group", transformThreadGroup(t.getThreadGroup()),
         "Uncaught Exception Handler", t.getUncaughtExceptionHandler(),
         "Is Alive", t.isAlive(), "Is Daemon", t.isDaemon(), "Is Interrupted", t.isInterrupted());
-
     return lst;
   }
 
@@ -206,11 +196,9 @@ public class SystemInfo {
 
     if (!BeeUtils.isEmpty(arr)) {
       for (int i = 0; i < arr.length; i++) {
-        PropertyUtils.addProperty(lst, BeeUtils.bracket(i),
-            transformStackTraceElement(arr[i]));
+        PropertyUtils.addProperty(lst, BeeUtils.bracket(i), transformStackTraceElement(arr[i]));
       }
     }
-
     return lst;
   }
 
@@ -218,10 +206,9 @@ public class SystemInfo {
     List<Property> lst = new ArrayList<Property>();
 
     PropertyUtils.addProperties(lst, "MAX_PRIORITY", Thread.MAX_PRIORITY,
-        "MIN_PRIORITY", Thread.MIN_PRIORITY, "NORM_PRIORITY",
-        Thread.NORM_PRIORITY, "Default Uncaught Exception Handler",
-        Thread.getDefaultUncaughtExceptionHandler());
-
+        "MIN_PRIORITY", Thread.MIN_PRIORITY,
+        "NORM_PRIORITY", Thread.NORM_PRIORITY,
+        "Default Uncaught Exception Handler", Thread.getDefaultUncaughtExceptionHandler());
     return lst;
   }
 
@@ -254,5 +241,8 @@ public class SystemInfo {
       packageComparator = new PackageComparator();
     }
     return packageComparator;
+  }
+
+  private SystemInfo() {
   }
 }

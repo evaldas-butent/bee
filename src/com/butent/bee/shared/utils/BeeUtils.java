@@ -243,6 +243,25 @@ public class BeeUtils {
     return ok;
   }
 
+  public static boolean containsOnly(CharSequence src, char ch) {
+    if (src == null) {
+      return false;
+    }
+    int len = src.length();
+    if (len <= 0) {
+      return false;
+    }
+    
+    boolean ok = true;
+    for (int i = 0; i < len; i++) {
+      if (src.charAt(i) != ch) {
+        ok = false;
+        break;
+      }
+    }
+    return ok;
+  }
+  
   public static boolean context(CharSequence ctxt, CharSequence src) {
     if (ctxt == null || src == null || ctxt.length() == 0 || src.length() == 0) {
       return false;
@@ -251,6 +270,21 @@ public class BeeUtils {
     }
   }
 
+  public static boolean context(Collection<? extends CharSequence> ctxt, CharSequence src) {
+    boolean ok = false;
+    if (isEmpty(src)) {
+      return ok;
+    }
+
+    for (CharSequence el : ctxt) {
+      if (context(el, src)) {
+        ok = true;
+        break;
+      }
+    }
+    return ok;
+  }
+  
   public static boolean context(CharSequence ctxt, Collection<? extends CharSequence> src) {
     boolean ok = false;
     if (isEmpty(ctxt)) {
@@ -264,6 +298,20 @@ public class BeeUtils {
       }
     }
     return ok;
+  }
+  
+  public static int count(CharSequence src, char ch) {
+    int cnt = 0;
+    if (src == null) {
+      return cnt;
+    }
+    
+    for (int i = 0; i < src.length(); i++) {
+      if (src.charAt(i) == ch) {
+        cnt++;
+      }
+    }
+    return cnt;
   }
 
   public static String createUniqueName() {
@@ -799,6 +847,28 @@ public class BeeUtils {
     }
   }
 
+  public static boolean isPrefix(CharSequence src, char pfx) {
+    if (src == null || src.length() <= 0) {
+      return false;
+    }
+    return src.charAt(0) == pfx;
+  }
+
+  public static boolean isPrefixOrSuffix(CharSequence src, char ch) {
+    return (isPrefix(src, ch) || isSuffix(src, ch)) && !containsOnly(src, ch);
+  }
+  
+  public static boolean isSuffix(CharSequence src, char sfx) {
+    if (src == null) {
+      return false;
+    }
+    int len = src.length();
+    if (len <= 0) {
+      return false;
+    }
+    return src.charAt(len - 1) == sfx;
+  }
+  
   public static boolean isTrue(Object obj) {
     if (obj == null) {
       return false;
@@ -1134,7 +1204,25 @@ public class BeeUtils {
     }
     return sb.toString();
   }
+  
+  public static String removePrefix(String str, char pfx) {
+    if (isPrefix(str, pfx)) {
+      return removePrefix(str.substring(1), pfx);
+    }
+    return str;
+  }
 
+  public static String removePrefixAndSuffix(String str, char ch) {
+    return removeSuffix(removePrefix(str, ch), ch);
+  }
+  
+  public static String removeSuffix(String str, char sfx) {
+    if (isSuffix(str, sfx)) {
+      return removeSuffix(str.substring(0, str.length() - 1), sfx);
+    }
+    return str;
+  }
+  
   public static String removeTrailingZeros(String str) {
     if (str == null) {
       return null;
@@ -1662,5 +1750,8 @@ public class BeeUtils {
     } else {
       return (T) Integer.valueOf(0);
     }
+  }
+  
+  private BeeUtils() {
   }
 }

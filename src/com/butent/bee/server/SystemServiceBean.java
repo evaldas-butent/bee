@@ -1,9 +1,17 @@
 package com.butent.bee.server;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
+
 import com.butent.bee.server.communication.ResponseBuffer;
 import com.butent.bee.server.http.RequestInfo;
+import com.butent.bee.server.io.ExtensionFilter;
+import com.butent.bee.server.io.FileUtils;
+import com.butent.bee.server.io.Filter;
+import com.butent.bee.server.io.NameUtils;
+import com.butent.bee.server.io.NameUtils.Component;
+import com.butent.bee.server.io.WildcardFilter;
 import com.butent.bee.server.utils.ClassUtils;
-import com.butent.bee.server.utils.FileUtils;
 import com.butent.bee.server.utils.JvmUtils;
 import com.butent.bee.server.utils.XmlUtils;
 import com.butent.bee.shared.Assert;
@@ -11,14 +19,18 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeService;
 import com.butent.bee.shared.communication.CommUtils;
 import com.butent.bee.shared.communication.ContentType;
+import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.ExtendedProperty;
 import com.butent.bee.shared.utils.LogUtils;
 import com.butent.bee.shared.utils.PropertyUtils;
+import com.butent.bee.shared.utils.Wildcards;
 
 import java.io.File;
 import java.nio.charset.Charset;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -111,56 +123,157 @@ public class SystemServiceBean {
   }
 
   private void getResource(RequestInfo reqInfo, ResponseBuffer buff) {
-    if (reqInfo.parameterEquals(0, "cs")) {
+    String mode = reqInfo.getParameter(0);
+    if (BeeUtils.same(mode, "cs")) {
       buff.addExtendedProperties(FileUtils.getCharsets());
       return;
     }
-    if (reqInfo.parameterEquals(0, "fs")) {
+    if (BeeUtils.same(mode, "fs")) {
       buff.addProperties(PropertyUtils.createProperties("Path Separator",
           File.pathSeparator, "Separator", File.separator));
       buff.addProperties(FileUtils.getRootsInfo());
       return;
     }
 
-    String name = reqInfo.getParameter(1);
-    if (BeeUtils.isEmpty(name)) {
+    String search = reqInfo.getParameter(1);
+    if (BeeUtils.isEmpty(search)) {
       buff.addSevere("resource name ( parameter", CommUtils.rpcParamName(1), ") not specified");
       return;
     }
 
-    String path;
-
-    if (FileUtils.isFile(name)) {
-      path = name;
+    File resFile = null;
+    if (FileUtils.isFile(search)) {
+      resFile = new File(search);
     } else {
-      path = Config.getPath(name);
-      if (path == null) {
-        buff.addWarning("resource", name, "not found");
+
+      String pfx = NameUtils.getPrefix(search);
+      String path = NameUtils.getPathNoEndSeparator(search);
+      String stem = NameUtils.getBaseName(search);
+      String ext = NameUtils.getExtension(search);
+
+      Set<File> roots = Sets.newLinkedHashSet();
+
+      if (!BeeUtils.isEmpty(pfx)) {
+        File dir;
+        for (int i = 0; i < pfx.length(); i++) {
+          switch (pfx.charAt(i)) {
+            case 'c':
+              dir = Config.CONFIG_DIR;
+              break;
+            case 's':
+              dir = Config.SOURCE_DIR;
+              break;
+            case 'u':
+              dir = Config.USER_DIR;
+              break;
+            case 'w':
+              dir = Config.WAR_DIR;
+              break;
+            default:
+              dir = null;
+          }
+          if (dir != null) {
+            roots.add(dir);
+          }
+        }
+      }
+      
+      if (roots.isEmpty()) {
+        if (BeeUtils.same(mode, "src")) {
+          roots.add(Config.SOURCE_DIR);
+        } else {
+          roots.add(Config.USER_DIR);
+          roots.add(Config.CONFIG_DIR);
+          roots.add(Config.WAR_DIR);
+          roots.add(Config.SOURCE_DIR);
+        }
+      }
+
+      List<Filter> filters = Lists.newArrayList();
+
+      if (BeeUtils.same(mode, "dir")) {
+        filters.add(FileUtils.DIRECTORY_FILTER);
+      } else if (BeeUtils.same(mode, "file")) {
+        filters.add(FileUtils.FILE_FILTER);
+      } else {
+        filters.add(FileUtils.INPUT_FILTER);
+      }
+
+      if (Wildcards.isFsPattern(path)) {
+        filters.add(new WildcardFilter(path, Component.PATH));
+      }
+      if (Wildcards.isFsPattern(stem)) {
+        filters.add(new WildcardFilter(stem, Component.BASE_NAME));
+      }
+      if (Wildcards.isFsPattern(ext)) {
+        filters.add(new WildcardFilter(ext, Component.EXTENSION));
+      } else if (BeeUtils.same(mode, "src")) {
+        filters.add(new ExtensionFilter(FileUtils.EXT_JAVA));
+      }
+
+      List<File> files = FileUtils.findFiles(roots, filters, true, false);
+      if (BeeUtils.isEmpty(files)) {
+        buff.addWarning("resource", search, "not found");
         return;
       }
-      buff.addMessage(path);
+
+      if (files.size() > 1) {
+        Collections.sort(files);
+
+        buff.addColumn(new BeeColumn(ValueType.NUMBER, "Idx"));
+        buff.addColumn(new BeeColumn(ValueType.TEXT, "Name"));
+        buff.addColumn(new BeeColumn(ValueType.TEXT, "Path"));
+        buff.addColumn(new BeeColumn(ValueType.NUMBER, "Size"));
+        buff.addColumn(new BeeColumn(ValueType.DATETIME, "Modified"));
+        
+        long totSize = 0;
+        long lastMod = 0;
+        long x, y;
+        int idx = 0;
+        
+        for (File fl : files) {
+          x = fl.isFile() ? fl.length() : 0;
+          y = fl.lastModified();
+          buff.add(++idx, fl.getName(), fl.getPath(), x, y);
+          
+          if (x > 0) {
+            totSize += x;
+          }
+          if (y != 0) {
+            lastMod = Math.max(lastMod, y);
+          }
+        }
+        buff.add(0, mode, search, totSize, lastMod);
+
+        buff.addMessage(mode, search, "found", files.size(), "files");
+        return;
+      }
+      resFile = files.get(0);
     }
 
-    File fl = new File(path);
-
-    if (!fl.exists()) {
-      buff.addWarning("file", path, "does not exist");
+    Assert.notNull(resFile);
+    String resPath = resFile.getPath();
+    if (!resFile.exists()) {
+      buff.addWarning("file", resPath, "does not exist");
       return;
     }
+    buff.addMessage(mode, search, "found", resPath);
 
-    if (reqInfo.parameterEquals(0, "get")) {
-      if (!FileUtils.isInputFile(fl)) {
-        buff.addWarning("file", path, "is not a valid resource");
+    if (BeeUtils.inListSame(mode, "get", "src")) {
+      if (!FileUtils.isInputFile(resFile)) {
+        buff.addWarning(resPath, "is not readable");
+      } else if (!Config.isText(resFile)) {
+        buff.addWarning(resPath, "is not a text resource");
       } else {
         Charset cs = FileUtils.normalizeCharset(reqInfo.getParameter(2));
         buff.addMessage("charset", cs);
-        String s = FileUtils.fileToString(fl, cs);
+        String s = FileUtils.fileToString(resFile, cs);
 
         if (s == null || s.length() == 0) {
-          buff.addWarning("file", path, "no content found");
+          buff.addWarning(resPath, "no content found");
 
         } else {
-          buff.addResource(fl.getAbsolutePath(), s, ContentType.RESOURCE);
+          buff.addResource(resPath, s, ContentType.RESOURCE);
 
           String mt = reqInfo.getParameter(3);
           if (!BeeUtils.isEmpty(mt)) {
@@ -170,16 +283,15 @@ public class SystemServiceBean {
           if (!BeeUtils.isEmpty(ce)) {
             buff.setCharacterEncoding(ce);
           }
-
           return;
         }
       }
     }
 
-    buff.addProperties(FileUtils.getFileInfo(fl));
+    buff.addProperties(FileUtils.getFileInfo(resFile));
 
-    if (fl.isDirectory()) {
-      String[] arr = FileUtils.getFiles(fl);
+    if (resFile.isDirectory()) {
+      String[] arr = FileUtils.getFiles(resFile);
       int n = BeeUtils.length(arr);
 
       if (n > 0) {
@@ -221,7 +333,7 @@ public class SystemServiceBean {
       }
     }
 
-    boolean ok = FileUtils.toFile(content, uri);
+    boolean ok = FileUtils.saveToFile(content, uri);
     if (ok) {
       buff.addMessage("saved", content.length(), BeeUtils.elapsedSeconds(start));
     } else {
@@ -240,7 +352,7 @@ public class SystemServiceBean {
       return;
     }
 
-    String src = FileUtils.defaultExtension(pSrc, XmlUtils.defaultXmlExtension);
+    String src = NameUtils.defaultExtension(pSrc, XmlUtils.defaultXmlExtension);
     if (!FileUtils.isInputFile(src)) {
       buff.addSevere(src, "is not a valid input file");
       return;
@@ -268,7 +380,7 @@ public class SystemServiceBean {
       return;
     }
 
-    String xsl = FileUtils.defaultExtension(pXsl, XmlUtils.defaultXslExtension);
+    String xsl = NameUtils.defaultExtension(pXsl, XmlUtils.defaultXslExtension);
     if (!FileUtils.isInputFile(xsl)) {
       buff.addSevere(xsl, "is not a valid input file");
       return;
@@ -278,7 +390,7 @@ public class SystemServiceBean {
     if (BeeUtils.isEmpty(pDst)) {
       dst = null;
     } else {
-      dst = FileUtils.defaultExtension(pDst, XmlUtils.defaultXmlExtension);
+      dst = NameUtils.defaultExtension(pDst, XmlUtils.defaultXmlExtension);
       if (BeeUtils.inListSame(dst, src, xsl)) {
         buff.addSevere(dst, "is not a valid target");
         return;

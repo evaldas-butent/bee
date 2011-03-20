@@ -173,4 +173,7 @@ public class ValueUtils {
     }
     return obj;
   }
+  
+  private ValueUtils() {
+  }
 }

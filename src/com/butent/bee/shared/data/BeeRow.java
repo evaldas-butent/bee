@@ -3,8 +3,6 @@ package com.butent.bee.shared.data;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeSerializable;
-import com.butent.bee.shared.DateTime;
-import com.butent.bee.shared.JustDate;
 import com.butent.bee.shared.StringArray;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -85,42 +83,10 @@ public class BeeRow extends StringRow implements BeeSerializable {
     }
   }
 
-  @Override
-  public Boolean getBoolean(int col) {
-    return BeeUtils.toBoolean(getString(col));
-  }
-
-  @Override
-  public JustDate getDate(int col) {
-    return new JustDate(getInt(col));
-  }
-
-  @Override
-  public DateTime getDateTime(int col) {
-    return new DateTime(getLong(col));
-  }
-
   public BigDecimal getDecimal(int col) {
     return new BigDecimal(getString(col));
   }
-
-  @Override
-  public Double getDouble(int col) {
-    return BeeUtils.toDouble(getString(col));
-  }
-
-  public float getFloat(int col) {
-    return BeeUtils.toFloat(getString(col));
-  }
-
-  public int getInt(int col) {
-    return BeeUtils.toInt(getString(col));
-  }
-
-  public long getLong(int col) {
-    return BeeUtils.toLong(getString(col));
-  }
-
+  
   public long getNewId() {
     return newId;
   }
@@ -137,10 +103,6 @@ public class BeeRow extends StringRow implements BeeSerializable {
         return getInt(col);
       case -5: // java.sql.Types.BIGINT
         return getLong(col);
-      case 6: // java.sql.Types.FLOAT
-      case 7: // java.sql.Types.REAL
-      case 100: // oracle.sql.Types.BINARY_FLOAT
-        return getFloat(col);
       case 8: // java.sql.Types.DOUBLE
       case 101: // oracle.sql.Types.BINARY_DOUBLE
         return getDouble(col);

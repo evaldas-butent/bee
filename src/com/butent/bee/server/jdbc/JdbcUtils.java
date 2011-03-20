@@ -821,4 +821,7 @@ public class JdbcUtils {
         BeeConst.TRANSACTION_READ_COMMITTED, BeeConst.TRANSACTION_READ_UNCOMMITTED,
         BeeConst.TRANSACTION_REPEATABLE_READ, BeeConst.TRANSACTION_SERIALIZABLE);
   }
+  
+  private JdbcUtils() {
+  }
 }

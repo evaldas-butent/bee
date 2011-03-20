@@ -53,6 +53,7 @@ public class BeeConst {
   public static final char CHAR_ZERO = '0';
   public static final char CHAR_NINE = '9';
   public static final char CHAR_POINT = '.';
+  public static final char CHAR_COMMA = ',';
   public static final char CHAR_EOL = '\n';
   public static final char CHAR_EQ = '=';
   public static final char CHAR_AMP = '&';
@@ -218,5 +219,8 @@ public class BeeConst {
     } else {
       return UNKNOWN;
     }
+  }
+  
+  private BeeConst() {
   }
 }

@@ -23,5 +23,7 @@ public class JdbcConst {
   public static String rsRows(int cnt) {
     return "result set has " + String.valueOf(cnt) + " rows";
   }
-
+  
+  private JdbcConst() {
+  }
 }

@@ -4,7 +4,10 @@ import com.google.common.collect.Lists;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.DateTime;
+import com.butent.bee.shared.JustDate;
 import com.butent.bee.shared.Sequence;
+import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
 
@@ -17,13 +20,13 @@ public class StringRow extends AbstractRow {
   }
 
   @Override
-  public void addCell(String value) {
-    values.insert(values.length(), value);
+  public void addCell(IsCell cell) {
+    addCell(cell.getValue().getString());
   }
 
   @Override
-  public void addCell(IsCell cell) {
-    addCell(cell.getValue().getString());
+  public void addCell(String value) {
+    values.insert(values.length(), value);
   }
 
   @Override
@@ -40,11 +43,16 @@ public class StringRow extends AbstractRow {
   }
 
   @Override
+  public Boolean getBoolean(int col) {
+    return BeeUtils.toBoolean(getString(col));
+  }
+
+  @Override
   public IsCell getCell(int index) {
     assertIndex(index);
     return new TableCell(values.get(index));
   }
-
+  
   @Override
   public List<IsCell> getCells() {
     List<IsCell> lst = Lists.newArrayList();
@@ -52,6 +60,29 @@ public class StringRow extends AbstractRow {
       lst.add(getCell(i));
     }
     return lst;
+  }
+
+  @Override
+  public JustDate getDate(int col) {
+    return new JustDate(getInt(col));
+  }
+
+  @Override
+  public DateTime getDateTime(int col) {
+    return new DateTime(getLong(col));
+  }
+  
+  @Override
+  public Double getDouble(int col) {
+    return BeeUtils.toDouble(getString(col));
+  }
+
+  public int getInt(int col) {
+    return BeeUtils.toInt(getString(col));
+  }
+  
+  public long getLong(int col) {
+    return BeeUtils.toLong(getString(col));
   }
   
   @Override

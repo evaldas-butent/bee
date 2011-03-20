@@ -137,4 +137,7 @@ public class BeeService {
     Assert.notEmpty(svc);
     return svc.startsWith(UI_SERVICE_PREFIX);
   }
+  
+  private BeeService() {
+  }
 }

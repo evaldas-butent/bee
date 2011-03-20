@@ -64,10 +64,13 @@ public class BeeColumn extends TableColumn implements BeeSerializable, Transform
   }
 
   public BeeColumn(String name) {
-    super(ValueType.TEXT, name, name);
-    setName(name);
+    this(ValueType.TEXT, name, name);
   }
 
+  public BeeColumn(ValueType type, String label) {
+    this(type, label, label);
+  }
+  
   public BeeColumn(ValueType type, String label, String id) {
     super(type, label, id);
     setName(BeeUtils.ifString(label, id));

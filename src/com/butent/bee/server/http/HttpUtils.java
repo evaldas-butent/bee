@@ -19,7 +19,7 @@ import javax.servlet.http.HttpServletRequest;
 
 public class HttpUtils {
   private static Logger logger = Logger.getLogger(HttpUtils.class.getName());
-
+  
   public static String counterInfo(String name, Object obj) {
     if (obj instanceof Counter) {
       return BeeUtils.addName(name, ((Counter) obj).transform());
@@ -53,7 +53,6 @@ public class HttpUtils {
       }
       headers.put(nm, v);
     }
-
     return headers;
   }
 
@@ -84,7 +83,6 @@ public class HttpUtils {
         if (BeeUtils.isEmpty(v)) {
           v = new String[]{req.getParameter(nm)};
         }
-
         lst.put(nm, v);
       }
     }
@@ -172,5 +170,8 @@ public class HttpUtils {
     }
 
     return sb.toString();
+  }
+
+  private HttpUtils() {
   }
 }

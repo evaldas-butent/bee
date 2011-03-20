@@ -8,7 +8,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
-public abstract class PropertyUtils {
+public class PropertyUtils {
   public static final List<Property> EMPTY_PROPERTIES_LIST = new ArrayList<Property>();
   public static final List<ExtendedProperty> EMPTY_EXTENDED_LIST = 
     new ArrayList<ExtendedProperty>();
@@ -285,5 +285,8 @@ public abstract class PropertyUtils {
     } else {
       return true;
     }
+  }
+  
+  private PropertyUtils() {
   }
 }

@@ -1186,4 +1186,7 @@ public class Features {
   private static native boolean testXhrUploadProgress() /*-{
     return "upload" in new XMLHttpRequest;
   }-*/;
+  
+  private Features() {
+  }
 }

@@ -97,4 +97,7 @@ public class XmlUtils {
       return BeeUtils.transform(obj);
     }
   }
+  
+  private XmlUtils() {
+  }
 }

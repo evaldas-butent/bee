@@ -16,7 +16,7 @@ import java.util.Collection;
 import java.util.Map;
 
 public class RpcUtils {
-  public static final String addQueryString(String url, String qs) {
+  public static String addQueryString(String url, String qs) {
     Assert.notEmpty(url);
 
     if (BeeUtils.isEmpty(qs)) {
@@ -26,18 +26,16 @@ public class RpcUtils {
     }
   }
 
-  public static String appendQueryParameters(String qs,
-      Map<String, String> params) {
+  public static String appendQueryParameters(String qs, Map<String, String> params) {
     if (BeeUtils.isEmpty(params)) {
       return qs;
     }
 
     StringBuilder sb = new StringBuilder();
-
     return sb.toString();
   }
 
-  public static final String buildQueryString(String... x) {
+  public static String buildQueryString(String... x) {
     int c = x.length;
     Assert.parameterCount(c, 2);
 
@@ -54,23 +52,23 @@ public class RpcUtils {
         s.append(x[i + 1].trim());
       }
     }
-
     return s.toString();
   }
 
-  public static final Collection<Property> requestInfo(RequestBuilder rb) {
+  public static Collection<Property> requestInfo(RequestBuilder rb) {
     Assert.notNull(rb);
     Collection<Property> prp = new ArrayList<Property>();
 
-    PropertyUtils.addProperties(prp, "Url", rb.getUrl(), "Http Method",
-        rb.getHTTPMethod(), "Request Data", rb.getRequestData(), "Password",
-        rb.getPassword(), "User", rb.getUser(), "Timeout",
-        rb.getTimeoutMillis());
-
+    PropertyUtils.addProperties(prp, "Url", rb.getUrl(),
+        "Http Method", rb.getHTTPMethod(),
+        "Request Data", rb.getRequestData(),
+        "Password", rb.getPassword(),
+        "User", rb.getUser(),
+        "Timeout", rb.getTimeoutMillis());
     return prp;
   }
 
-  public static final Collection<ExtendedProperty> responseInfo(Response resp) {
+  public static Collection<ExtendedProperty> responseInfo(Response resp) {
     Assert.notNull(resp);
 
     Collection<ExtendedProperty> prp = new ArrayList<ExtendedProperty>();
@@ -93,7 +91,9 @@ public class RpcUtils {
         }
       }
     }
-
     return prp;
+  }
+  
+  private RpcUtils() {
   }
 }

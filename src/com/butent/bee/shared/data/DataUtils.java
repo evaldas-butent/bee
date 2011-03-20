@@ -48,4 +48,7 @@ public class DataUtils {
   public static String defaultColumnLabel(int index) {
     return "Column " + index;  
   }
+  
+  private DataUtils() {
+  }
 }

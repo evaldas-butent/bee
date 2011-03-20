@@ -247,7 +247,9 @@ public class TimeUtils {
       default:
         Assert.unsupported(BeeUtils.concat(1, "delta" + fieldName(field) + "not supported"));
     }
-
     return delta;
+  }
+  
+  private TimeUtils() {
   }
 }

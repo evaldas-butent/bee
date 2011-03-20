@@ -19,12 +19,10 @@ public class Counter implements Transformable {
 
   public synchronized int setCounter(int c) {
     counter = c;
-
     return counter;
   }
 
   public String transform() {
     return Integer.toString(getCounter());
   }
-
 }

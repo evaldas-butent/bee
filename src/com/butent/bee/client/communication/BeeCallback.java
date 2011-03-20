@@ -208,7 +208,7 @@ public class BeeCallback implements RequestCallback {
     } else if (cnt > 0) {
       JsArrayString arr = splitResponse(txt, sep, cnt);
       dispatchResponse(svc, cc, arr);
-    } else {
+    } else if (mc <= 0) {
       BeeKeeper.getLog().warning("unknown invocation method", method);
     }
   }

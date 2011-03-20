@@ -1,5 +1,6 @@
 package com.butent.bee.server.utils;
 
+import com.butent.bee.server.io.FileUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -107,7 +108,7 @@ public class XmlUtils {
     }
     xsltFactory = tf;
   }
-
+  
   public static Document fromFileName(String fileName) {
     File fl = new File(fileName);
     if (!FileUtils.isInputFile(fl)) {
@@ -178,9 +179,8 @@ public class XmlUtils {
     PropertyUtils.addProperties(lst, "Name", attr.getName(), "Value", attr.getValue(),
         "Owner Element", transformElement(attr.getOwnerElement()),
         "Schema Type Info", transformTypeInfo(attr.getSchemaTypeInfo()),
-        "Specified", attr.getSpecified(), "Is Id", attr.isId(), "To String",
-        attr.toString());
-
+        "Specified", attr.getSpecified(), "Is Id", attr.isId(),
+        "To String", attr.toString());
     return lst;
   }
 
@@ -188,10 +188,9 @@ public class XmlUtils {
     Assert.notNull(cdata);
     List<Property> lst = new ArrayList<Property>();
 
-    PropertyUtils.addProperties(lst, "Length", cdata.getLength(), "Data",
-        cdata.getData(), "Is Element Content Whitespace",
-        cdata.isElementContentWhitespace());
-
+    PropertyUtils.addProperties(lst, "Length", cdata.getLength(),
+        "Data", cdata.getData(),
+        "Is Element Content Whitespace", cdata.isElementContentWhitespace());
     return lst;
   }
 
@@ -199,9 +198,8 @@ public class XmlUtils {
     Assert.notNull(comm);
     List<Property> lst = new ArrayList<Property>();
 
-    PropertyUtils.addProperties(lst, "Length", comm.getLength(), "Data",
-        comm.getData(), "To String", comm.toString());
-
+    PropertyUtils.addProperties(lst, "Length", comm.getLength(),
+        "Data", comm.getData(), "To String", comm.toString());
     return lst;
   }
 
@@ -210,7 +208,6 @@ public class XmlUtils {
     List<Property> lst = new ArrayList<Property>();
 
     PropertyUtils.addProperty(lst, "To String", df.toString());
-
     return lst;
   }
 
@@ -220,10 +217,12 @@ public class XmlUtils {
 
     PropertyUtils.addProperties(lst, "Document URI", doc.getDocumentURI(),
         "Implementation", transformDOMImplementation(doc.getImplementation()),
-        "Input Encoding", doc.getInputEncoding(), "Strict Error Checking",
-        doc.getStrictErrorChecking(), "Xml Encoding", doc.getXmlEncoding(),
-        "Xml Standalone", doc.getXmlStandalone(), "Xml Version",
-        doc.getXmlVersion(), "To String", doc.toString());
+        "Input Encoding", doc.getInputEncoding(),
+        "Strict Error Checking", doc.getStrictErrorChecking(),
+        "Xml Encoding", doc.getXmlEncoding(),
+        "Xml Standalone", doc.getXmlStandalone(),
+        "Xml Version", doc.getXmlVersion(),
+        "To String", doc.toString());
 
     PropertyUtils.appendChildrenToProperties(lst, "Dom Config",
         getDOMConfigurationInfo(doc.getDomConfig()));
@@ -237,7 +236,6 @@ public class XmlUtils {
     if (el != null) {
       PropertyUtils.appendChildrenToProperties(lst, "Document Element", getElementInfo(el));
     }
-
     return lst;
   }
 
@@ -245,9 +243,11 @@ public class XmlUtils {
     Assert.notNull(dtp);
     List<Property> lst = new ArrayList<Property>();
 
-    PropertyUtils.addProperties(lst, "Name", dtp.getName(), "Internal Subset",
-        dtp.getInternalSubset(), "Public Id", dtp.getPublicId(), "System Id",
-        dtp.getSystemId(), "To String", dtp.toString());
+    PropertyUtils.addProperties(lst, "Name", dtp.getName(),
+        "Internal Subset", dtp.getInternalSubset(),
+        "Public Id", dtp.getPublicId(),
+        "System Id", dtp.getSystemId(),
+        "To String", dtp.toString());
 
     lst.addAll(getNamedNodeMapInfo(dtp.getEntities(), "Entities"));
     lst.addAll(getNamedNodeMapInfo(dtp.getNotations(), "Notations"));
@@ -259,15 +259,14 @@ public class XmlUtils {
     List<Property> lst = new ArrayList<Property>();
 
     if (domBuilder == null) {
-      PropertyUtils.addProperty(lst, "Error creating builder",
-          DocumentBuilder.class.getName());
+      PropertyUtils.addProperty(lst, "Error creating builder", DocumentBuilder.class.getName());
     } else {
       PropertyUtils.addProperties(lst, "Schema", domBuilder.getSchema(),
-          "Is Namespace Aware", domBuilder.isNamespaceAware(), "Is Validating",
-          domBuilder.isValidating(), "Is XInclude Aware",
-          domBuilder.isXIncludeAware(), "To String", domBuilder.toString());
+          "Is Namespace Aware", domBuilder.isNamespaceAware(),
+          "Is Validating", domBuilder.isValidating(),
+          "Is XInclude Aware", domBuilder.isXIncludeAware(),
+          "To String", domBuilder.toString());
     }
-
     return lst;
   }
 
@@ -281,13 +280,12 @@ public class XmlUtils {
       PropertyUtils.addProperties(lst, "Is Coalescing", domFactory.isCoalescing(),
           "Is Expand Entity References", domFactory.isExpandEntityReferences(),
           "Is Ignoring Comments", domFactory.isIgnoringComments(),
-          "Is Ignoring Element Content Whitespace",
-          domFactory.isIgnoringElementContentWhitespace(),
-          "Is Namespace Aware", domFactory.isNamespaceAware(), "Is Validating",
-          domFactory.isValidating(), "Is XInclude Aware",
-          domFactory.isXIncludeAware(), "To String", domFactory.toString());
+          "Is Ignoring Element Content Whitespace", domFactory.isIgnoringElementContentWhitespace(),
+          "Is Namespace Aware", domFactory.isNamespaceAware(),
+          "Is Validating", domFactory.isValidating(),
+          "Is XInclude Aware", domFactory.isXIncludeAware(),
+          "To String", domFactory.toString());
     }
-
     return lst;
   }
 
@@ -295,9 +293,9 @@ public class XmlUtils {
     Assert.notNull(el);
     List<Property> lst = new ArrayList<Property>();
 
-    PropertyUtils.addProperties(lst, "Tag Name", el.getTagName(), "Schema Type Info",
-        transformTypeInfo(el.getSchemaTypeInfo()), "To String", el.toString());
-
+    PropertyUtils.addProperties(lst, "Tag Name", el.getTagName(),
+        "Schema Type Info", transformTypeInfo(el.getSchemaTypeInfo()),
+        "To String", el.toString());
     return lst;
   }
 
@@ -338,7 +336,6 @@ public class XmlUtils {
         ret.put(tg, txt);
       }
     }
-
     return ret;
   }
 
@@ -350,7 +347,6 @@ public class XmlUtils {
         "Notation Name", ent.getNotationName(), "Public Id", ent.getPublicId(),
         "System Id", ent.getSystemId(), "Xml Encoding", ent.getXmlEncoding(),
         "XmlVersion", ent.getXmlVersion(), "To String", ent.toString());
-
     return lst;
   }
 
@@ -359,7 +355,6 @@ public class XmlUtils {
     List<Property> lst = new ArrayList<Property>();
 
     PropertyUtils.addProperty(lst, "To String", er.toString());
-
     return lst;
   }
 
@@ -371,7 +366,6 @@ public class XmlUtils {
       LogUtils.warning(logger, fileName, "cannot parse xml");
       return PropertyUtils.EMPTY_EXTENDED_LIST;
     }
-
     return getTreeInfo(doc, "0");
   }
 
@@ -379,13 +373,19 @@ public class XmlUtils {
     Assert.notNull(nd);
     List<Property> lst = new ArrayList<Property>();
 
-    PropertyUtils.addProperties(lst, "Node Type", nd.getNodeType(), "Node Name",
-        nd.getNodeName(), "Local Name", nd.getLocalName(), "Node Value",
-        nd.getNodeValue(), "Text Content", nd.getTextContent(), "Parent Node",
-        nd.getParentNode(), "First Child", nd.getFirstChild(), "Last Child",
-        nd.getLastChild(), "Previous Sibling", nd.getPreviousSibling(),
-        "Next Sibling", nd.getNextSibling(), "Base URI", nd.getBaseURI(),
-        "Namespace URI", nd.getNamespaceURI(), "Prefix", nd.getPrefix());
+    PropertyUtils.addProperties(lst, "Node Type", nd.getNodeType(),
+        "Node Name", nd.getNodeName(),
+        "Local Name", nd.getLocalName(),
+        "Node Value", nd.getNodeValue(),
+        "Text Content", nd.getTextContent(),
+        "Parent Node", nd.getParentNode(),
+        "First Child", nd.getFirstChild(),
+        "Last Child", nd.getLastChild(),
+        "Previous Sibling", nd.getPreviousSibling(),
+        "Next Sibling", nd.getNextSibling(),
+        "Base URI", nd.getBaseURI(),
+        "Namespace URI", nd.getNamespaceURI(),
+        "Prefix", nd.getPrefix());
 
     if (nd.hasAttributes()) {
       NamedNodeMap attributes = nd.getAttributes();
@@ -402,7 +402,6 @@ public class XmlUtils {
         lst.addAll(getAttrInfo((Attr) attr));
       }
     }
-
     return lst;
   }
 
@@ -410,34 +409,34 @@ public class XmlUtils {
     Assert.notNull(nt);
     List<Property> lst = new ArrayList<Property>();
 
-    PropertyUtils.addProperties(lst, "Public Id", nt.getPublicId(), "System Id",
-        nt.getSystemId(), "To String", nt.toString());
-
+    PropertyUtils.addProperties(lst, "Public Id", nt.getPublicId(),
+        "System Id", nt.getSystemId(), "To String", nt.toString());
     return lst;
   }
 
   public static List<Property> getOutputKeysInfo() {
     List<Property> lst = new ArrayList<Property>();
 
-    PropertyUtils.addProperties(lst, "CDATA SECTION ELEMENTS",
-        OutputKeys.CDATA_SECTION_ELEMENTS, "DOCTYPE PUBLIC",
-        OutputKeys.DOCTYPE_PUBLIC, "DOCTYPE SYSTEM", OutputKeys.DOCTYPE_SYSTEM,
-        "ENCODING", OutputKeys.ENCODING, "INDENT", OutputKeys.INDENT,
-        "MEDIA TYPE", OutputKeys.MEDIA_TYPE, "METHOD", OutputKeys.METHOD,
-        "OMIT XML DECLARATION", OutputKeys.OMIT_XML_DECLARATION, "STANDALONE",
-        OutputKeys.STANDALONE, "VERSION", OutputKeys.VERSION);
-
+    PropertyUtils.addProperties(lst,
+        "CDATA SECTION ELEMENTS", OutputKeys.CDATA_SECTION_ELEMENTS,
+        "DOCTYPE PUBLIC", OutputKeys.DOCTYPE_PUBLIC,
+        "DOCTYPE SYSTEM", OutputKeys.DOCTYPE_SYSTEM,
+        "ENCODING", OutputKeys.ENCODING,
+        "INDENT", OutputKeys.INDENT,
+        "MEDIA TYPE", OutputKeys.MEDIA_TYPE,
+        "METHOD", OutputKeys.METHOD,
+        "OMIT XML DECLARATION", OutputKeys.OMIT_XML_DECLARATION,
+        "STANDALONE", OutputKeys.STANDALONE,
+        "VERSION", OutputKeys.VERSION);
     return lst;
   }
 
-  public static List<Property> getProcessingInstructionInfo(
-      ProcessingInstruction pin) {
+  public static List<Property> getProcessingInstructionInfo(ProcessingInstruction pin) {
     Assert.notNull(pin);
     List<Property> lst = new ArrayList<Property>();
 
     PropertyUtils.addProperties(lst, "Data", pin.getData(), "Target", pin.getTarget(),
         "To String", pin.toString());
-
     return lst;
   }
 
@@ -513,7 +512,6 @@ public class XmlUtils {
         return txt;
       }
     }
-
     return BeeConst.STRING_EMPTY;
   }
 
@@ -521,10 +519,10 @@ public class XmlUtils {
     Assert.notNull(txt);
     List<Property> lst = new ArrayList<Property>();
 
-    PropertyUtils.addProperties(lst, "Length", txt.getLength(), "Data", txt.getData(),
-        "Whole Text", txt.getWholeText(), "Is Element Content Whitespace",
-        txt.isElementContentWhitespace(), "To String", txt.toString());
-
+    PropertyUtils.addProperties(lst, "Length", txt.getLength(),
+        "Data", txt.getData(), "Whole Text", txt.getWholeText(),
+        "Is Element Content Whitespace", txt.isElementContentWhitespace(),
+        "To String", txt.toString());
     return lst;
   }
 
@@ -591,11 +589,9 @@ public class XmlUtils {
       PropertyUtils.addExtended(lst, root, "Children", BeeUtils.bracket(c));
 
       for (int i = 0; i < c; i++) {
-        lst.addAll(getTreeInfo(children.item(i),
-            BeeUtils.concat(".", root, i + 1)));
+        lst.addAll(getTreeInfo(children.item(i), BeeUtils.concat(".", root, i + 1)));
       }
     }
-
     return lst;
   }
 
@@ -628,7 +624,6 @@ public class XmlUtils {
       LogUtils.severe(logger, ex);
       ok = false;
     }
-
     return ok;
   }
 
@@ -715,7 +710,6 @@ public class XmlUtils {
     } catch (IOException ex) {
       LogUtils.error(logger, ex);
     }
-
     return ret;
   }
 
@@ -732,7 +726,6 @@ public class XmlUtils {
     } catch (IOException ex) {
       LogUtils.error(logger, ex);
     }
-
     return ret;
   }
 
@@ -746,7 +739,6 @@ public class XmlUtils {
       LogUtils.severe(logger, ex);
       ok = false;
     }
-
     return ok;
   }
 
@@ -783,15 +775,13 @@ public class XmlUtils {
     }
 
     int c = nodes.getLength();
-    PropertyUtils.addProperty(lst, BeeUtils.ifString(msg, "Named Nodes"),
-        BeeUtils.bracket(c));
+    PropertyUtils.addProperty(lst, BeeUtils.ifString(msg, "Named Nodes"), BeeUtils.bracket(c));
     if (c > 0) {
       for (int i = 0; i < c; i++) {
         PropertyUtils.addProperty(lst, "Node " + BeeUtils.progress(i + 1, c),
             transformNode(nodes.item(i)));
       }
     }
-
     return lst;
   }
 
@@ -837,5 +827,8 @@ public class XmlUtils {
     } else {
       return BeeUtils.concat(1, ti.getTypeName(), ti.getTypeNamespace());
     }
+  }
+
+  private XmlUtils() {
   }
 }

@@ -4,7 +4,7 @@ import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.json.client.JSONObject;
 
-public abstract class JsUtils {
+public class JsUtils {
   public static native void clearProperty(JavaScriptObject obj, String p) /*-{
     if (typeof(obj) != "object") {
       return;
@@ -278,4 +278,7 @@ public abstract class JsUtils {
   public static native String transform(JavaScriptObject obj) /*-{
     return String(obj);
   }-*/;
+  
+  private JsUtils() {
+  }
 }

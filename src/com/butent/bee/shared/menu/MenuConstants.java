@@ -86,4 +86,7 @@ public class MenuConstants {
   public static final String varMenuLayout(int idx) {
     return "menu_layout_" + idx;
   }
+  
+  private MenuConstants() {
+  }
 }

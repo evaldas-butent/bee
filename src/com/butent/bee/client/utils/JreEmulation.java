@@ -21,4 +21,7 @@ public class JreEmulation {
       return name;
     }
   }
+  
+  private JreEmulation() {
+  }
 }

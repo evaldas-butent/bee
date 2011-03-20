@@ -153,4 +153,7 @@ public class LocaleUtils {
       return name;
     }
   }
+  
+  private LocaleUtils() {
+  }
 }

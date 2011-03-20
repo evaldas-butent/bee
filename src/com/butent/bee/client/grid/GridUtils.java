@@ -269,4 +269,7 @@ public class GridUtils {
       return (totalNew - totalTarget) / (double) totalTarget;
     }
   }
+  
+  private GridUtils() {
+  }
 }

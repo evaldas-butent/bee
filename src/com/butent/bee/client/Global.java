@@ -10,8 +10,6 @@ import com.butent.bee.client.dialog.InputBox;
 import com.butent.bee.client.dialog.MessageBox;
 import com.butent.bee.client.grid.CellType;
 import com.butent.bee.client.grid.GridFactory;
-import com.butent.bee.client.i18n.LocalizableConstants;
-import com.butent.bee.client.i18n.LocalizableMessages;
 import com.butent.bee.client.resources.Images;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -21,6 +19,8 @@ import com.butent.bee.shared.BeeType;
 import com.butent.bee.shared.BeeWidget;
 import com.butent.bee.shared.Variable;
 import com.butent.bee.shared.menu.MenuConstants;
+import com.butent.bee.shared.resources.LocalizableConstants;
+import com.butent.bee.shared.resources.LocalizableMessages;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.TimeUtils;
 
@@ -260,6 +260,9 @@ public class Global implements Module {
 
   public static Widget simpleGrid(Object data, String... columnLabels) {
     return grids.simpleGrid(data, columnLabels);
+  }
+  
+  Global() {
   }
 
   public void end() {

@@ -128,4 +128,7 @@ public class Grego {
 
     return quotient;
   }
+  
+  private Grego() {
+  }
 }

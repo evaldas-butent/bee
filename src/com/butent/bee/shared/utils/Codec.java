@@ -637,4 +637,7 @@ public class Codec {
       return sb.toString();
     }
   }
+  
+  private Codec() {
+  }
 }

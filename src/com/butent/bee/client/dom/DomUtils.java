@@ -1354,4 +1354,7 @@ public class DomUtils {
       return BeeUtils.concat(1, nd.getNodeName(), nd.getNodeValue());
     }
   }
+  
+  private DomUtils() {
+  }
 }

@@ -34,9 +34,8 @@ public class MxUtils {
 
     PropertyUtils.addProperties(lst, "Loaded Class Count", mxb.getLoadedClassCount(),
         "Total Loaded Class Count", mxb.getTotalLoadedClassCount(),
-        "Unloaded Class Count", mxb.getUnloadedClassCount(), "Is Verbose",
-        mxb.isVerbose());
-
+        "Unloaded Class Count", mxb.getUnloadedClassCount(),
+        "Is Verbose", mxb.isVerbose());
     return lst;
   }
 
@@ -45,11 +44,9 @@ public class MxUtils {
 
     CompilationMXBean mxb = ManagementFactory.getCompilationMXBean();
 
-    PropertyUtils.addProperties(lst, "Name", mxb.getName(), "Total Compilation Time",
-        mxb.getTotalCompilationTime(),
-        "Is Compilation Time Monitoring Supported",
-        mxb.isCompilationTimeMonitoringSupported());
-
+    PropertyUtils.addProperties(lst, "Name", mxb.getName(),
+        "Total Compilation Time", mxb.getTotalCompilationTime(),
+        "Is Compilation Time Monitoring Supported", mxb.isCompilationTimeMonitoringSupported());
     return lst;
   }
 
@@ -79,9 +76,9 @@ public class MxUtils {
     MemoryMXBean mxb = ManagementFactory.getMemoryMXBean();
     String nm = "Memory";
 
-    PropertyUtils.addProperties(lst, true, nm, "Object Pending Finalization Count",
-        mxb.getObjectPendingFinalizationCount(), nm, "Is Verbose",
-        mxb.isVerbose());
+    PropertyUtils.addProperties(lst, true,
+        nm, "Object Pending Finalization Count", mxb.getObjectPendingFinalizationCount(),
+        nm, "Is Verbose", mxb.isVerbose());
 
     PropertyUtils.appendChildrenToExtended(lst, "Heap Memory Usage",
         getMemoryUsageInfo(mxb.getHeapMemoryUsage()));
@@ -157,11 +154,11 @@ public class MxUtils {
 
     OperatingSystemMXBean mxb = ManagementFactory.getOperatingSystemMXBean();
 
-    PropertyUtils.addProperties(lst, "Name", mxb.getName(), "Version",
-        mxb.getVersion(), "Arch", mxb.getArch(), "Available Processors",
-        mxb.getAvailableProcessors(), "System Load Average",
-        mxb.getSystemLoadAverage());
-
+    PropertyUtils.addProperties(lst, "Name", mxb.getName(),
+        "Version", mxb.getVersion(),
+        "Arch", mxb.getArch(),
+        "Available Processors", mxb.getAvailableProcessors(),
+        "System Load Average", mxb.getSystemLoadAverage());
     return lst;
   }
 
@@ -317,9 +314,8 @@ public class MxUtils {
     }
     List<Property> lst = new ArrayList<Property>();
 
-    PropertyUtils.addProperties(lst, "Committed", mu.getCommitted(), "Init",
-        mu.getInit(), "Max", mu.getMax(), "Used", mu.getUsed());
-
+    PropertyUtils.addProperties(lst, "Committed", mu.getCommitted(), "Init", mu.getInit(),
+        "Max", mu.getMax(), "Used", mu.getUsed());
     return lst;
   }
 
@@ -355,4 +351,6 @@ public class MxUtils {
     }
   }
 
+  private MxUtils() {
+  }
 }

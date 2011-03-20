@@ -237,4 +237,7 @@ public class ArrayUtils {
     }
     return sb.toString();
   }
+  
+  private ArrayUtils() {
+  }
 }

@@ -149,4 +149,7 @@ public class LogUtils {
   private static String transformError(Throwable err) {
     return err.toString();
   }
+  
+  private LogUtils() {
+  }
 }

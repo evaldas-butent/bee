@@ -58,12 +58,14 @@ import com.butent.bee.shared.DateTime;
 import com.butent.bee.shared.JustDate;
 import com.butent.bee.shared.communication.ContentType;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.ExtendedProperty;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
+import com.butent.bee.shared.utils.Wildcards;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -158,6 +160,61 @@ public class CliWorker {
     }
 
     BeeKeeper.getUi().showGrid(lst, "Location", "Api Key");
+  }
+  
+  public static void doLike(String[] arr) {
+    int len = ArrayUtils.length(arr);
+    if (len < 3) {
+      Global.sayHuh(ArrayUtils.join(arr, 1));
+      return;
+    }
+    
+    String mode = ArrayUtils.getQuietly(arr, 0);
+    String input = ArrayUtils.join(arr, 1, 1, len - 1);
+    String expr = ArrayUtils.getQuietly(arr, len - 1);
+    
+    boolean sens = mode.indexOf('+') > 0;
+    boolean insens = mode.indexOf('-') > 0;
+    String defCase = null;
+    boolean match;
+    
+    if (BeeUtils.context("s", mode)) {
+      if (sens || insens) {
+        match = Wildcards.isSqlLike(input, expr, sens);
+      } else {
+        defCase = BeeUtils.concat(1, "sql", BooleanValue.serialize(Wildcards.isSqlCaseSensitive()));
+        match = Wildcards.isSqlLike(input, expr);
+      }
+    } else if (BeeUtils.context("f", mode)) {
+      if (sens || insens) {
+        match = Wildcards.isFsLike(input, expr, sens);
+      } else {
+        defCase = BeeUtils.concat(1, "fs", BooleanValue.serialize(Wildcards.isFsCaseSensitive()));
+        match = Wildcards.isFsLike(input, expr);
+      }
+    } else {
+      if (sens || insens) {
+        match = Wildcards.isLike(input, expr, sens);
+      } else {
+        defCase = BeeUtils.concat(1, "def", 
+            BooleanValue.serialize(Wildcards.isDefaultCaseSensitive()));
+        match = Wildcards.isLike(input, expr);
+      }
+    }
+    Global.showDialog(mode, BeeUtils.addName("input", input), BeeUtils.addName("pattern", expr),
+        BeeUtils.addName("case", BeeUtils.iif(sens, "sensitive", insens, "insensitive", defCase)),
+        BeeUtils.addName("match", match));
+  }
+  
+  public static void doLocale(String[] arr) {
+    String mode = ArrayUtils.getQuietly(arr, 1);
+    if (BeeUtils.isEmpty(mode)) {
+      BeeKeeper.getUi().showGrid(LocaleUtils.getInfo());
+      return;
+    }
+
+    String lang = ArrayUtils.getQuietly(arr, 2);
+    BeeKeeper.getRpc().invoke("localeInfo", ContentType.TEXT, BeeUtils.concat(1, mode, lang));
   }
 
   public static void doLog(String[] arr) {
@@ -270,7 +327,7 @@ public class CliWorker {
 
   public static void getResource(String[] arr) {
     if (BeeUtils.length(arr) < 2) {
-      Global.sayHuh(BeeUtils.transform(arr));
+      Global.sayHuh(ArrayUtils.join(arr, 1));
       return;
     }
 
@@ -1226,5 +1283,8 @@ public class CliWorker {
   private static void sampleSvg(Element el) {
     el.setInnerHTML("<circle cx=\"100\" cy=\"75\" r=\"50\" fill=\"blue\" stroke=\"firebrick\" "
         + "stroke-width=\"3\"></circle><text x=\"60\" y=\"155\">Hello Svg</text>");
+  }
+  
+  private CliWorker() {
   }
 }

@@ -53,9 +53,8 @@ public class JvmUtils {
       if (fld.getType() == Vector.class) {
         fld.setAccessible(true);
       } else {
-        err = new BeeException(
-            "Classloader.classes not of type java.util.Vector: "
-                + fld.getType().getName());
+        err = new BeeException("Classloader.classes not of type java.util.Vector: "
+            + fld.getType().getName());
       }
     } catch (Throwable t) {
       err = t;
@@ -65,7 +64,7 @@ public class JvmUtils {
     CVF_FAILURE = err;
     CLASSES_VECTOR_FIELD = fld;
   }
-
+  
   public static Set<Class<?>> findClass(String name, String... packageNames) {
     Assert.notEmpty(name);
     String nm = name.trim();
@@ -138,7 +137,6 @@ public class JvmUtils {
       }
       found.add(exact);
     }
-
     return found;
   }
 
@@ -217,7 +215,6 @@ public class JvmUtils {
     } catch (ClassNotFoundException ex) {
       cls = null;
     }
-
     return cls;
   }
 
@@ -245,7 +242,6 @@ public class JvmUtils {
         lst.add(cls);
       }
     }
-
     return lst;
   }
 
@@ -285,4 +281,6 @@ public class JvmUtils {
     return lst;
   }
 
+  private JvmUtils() {
+  }
 }

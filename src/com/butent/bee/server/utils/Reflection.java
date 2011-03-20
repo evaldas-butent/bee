@@ -30,10 +30,9 @@ public class Reflection {
     if (!method.isAccessible()) {
       method.setAccessible(true);
     }
-    
     doMethod(obj, method, req, resp);
   }
-
+  
   private static void doMethod(Object obj, Method method, RequestInfo req, ResponseBuffer resp) {
     Class<?>[] parameterTypes = method.getParameterTypes();
     boolean hasReq = ArrayUtils.contains(RequestInfo.class, parameterTypes);
@@ -77,8 +76,9 @@ public class Reflection {
         }
       }
     }
-    
     return found;
   }
-  
+
+  private Reflection() {
+  }
 }

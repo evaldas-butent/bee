@@ -113,4 +113,7 @@ public class Browser {
         "Scroll Left", Window.getScrollLeft(),
         "Scroll Top", Window.getScrollTop());
   }
+  
+  private Browser() {
+  }
 }

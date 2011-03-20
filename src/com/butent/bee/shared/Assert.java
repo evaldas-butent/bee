@@ -270,5 +270,7 @@ public class Assert {
   public static void untouchable(String message) {
     throw new BeeRuntimeException(message);
   }
-
+  
+  private Assert() {
+  }
 }

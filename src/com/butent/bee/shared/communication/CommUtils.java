@@ -69,7 +69,6 @@ public class CommUtils {
         break;
       }
     }
-
     return ctp;
   }
 
@@ -89,7 +88,6 @@ public class CommUtils {
       default:
         mt = "application/octet-stream";
     }
-
     return mt;
   }
 
@@ -137,5 +135,8 @@ public class CommUtils {
 
   public static String rpcPartName(int i) {
     return BeeService.RPC_VAR_PART + i;
+  }
+  
+  private CommUtils() {
   }
 }

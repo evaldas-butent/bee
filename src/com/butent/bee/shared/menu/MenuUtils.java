@@ -28,7 +28,6 @@ public class MenuUtils {
         break;
       }
     }
-
     return lst;
   }
 
@@ -43,4 +42,6 @@ public class MenuUtils {
     }
   }
   
+  private MenuUtils() {
+  }
 }

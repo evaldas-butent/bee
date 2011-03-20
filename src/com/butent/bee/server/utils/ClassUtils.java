@@ -1,5 +1,7 @@
 package com.butent.bee.server.utils;
 
+import com.google.common.primitives.Primitives;
+
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.ExtendedProperty;
@@ -14,8 +16,19 @@ import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class ClassUtils {
+  @SuppressWarnings("unchecked")
+  public static <T extends Annotation> T findAnnotation(Annotation[] arr, Class<T> search) {
+    for (Annotation ann : arr) {
+      if (isAssignable(ann.getClass(), search)) {
+        return (T) ann;
+      }
+    }
+    return null;
+  }
+  
   public static Annotation[] getAnnotations(Class<?> cls) {
     Assert.notNull(cls);
     return cls.getAnnotations();
@@ -31,30 +44,36 @@ public class ClassUtils {
 
     List<ExtendedProperty> lst = new ArrayList<ExtendedProperty>();
 
-    PropertyUtils.addProperties(lst, false, "Package",
-        transformPackage(cls.getPackage()), "Name", cls.getName(),
-        "Simple Name", cls.getSimpleName(), "Canonical Name",
-        cls.getCanonicalName(), "Component Type",
-        transformClass(cls.getComponentType()), "Declaring Class",
-        transformClass(cls.getDeclaringClass()), "Enclosing Class",
-        transformClass(cls.getEnclosingClass()), "Enclosing Constructor",
-        transformConstructor(cls.getEnclosingConstructor()),
+    PropertyUtils.addProperties(lst, false,
+        "Package", transformPackage(cls.getPackage()),
+        "Name", cls.getName(),
+        "Simple Name", cls.getSimpleName(),
+        "Canonical Name", cls.getCanonicalName(),
+        "Component Type", transformClass(cls.getComponentType()),
+        "Declaring Class", transformClass(cls.getDeclaringClass()),
+        "Enclosing Class", transformClass(cls.getEnclosingClass()),
+        "Enclosing Constructor", transformConstructor(cls.getEnclosingConstructor()),
         "Enclosing Method", transformMethod(cls.getEnclosingMethod()),
         "Superclass", transformClass(cls.getSuperclass()),
         "Generic Superclass", cls.getGenericSuperclass());
 
-    PropertyUtils.addExtended(lst, "Modifiers", cls.getModifiers(),
-        Modifier.toString(cls.getModifiers()));
+    PropertyUtils.addExtended(lst,
+        "Modifiers", cls.getModifiers(), Modifier.toString(cls.getModifiers()));
 
-    PropertyUtils.addProperties(lst, false, "Is Annotation", cls.isAnnotation(),
-        "Is Anonymous Class", cls.isAnonymousClass(), "Is Array",
-        cls.isArray(), "Is Enum", cls.isEnum(), "Is Interface",
-        cls.isInterface(), "Is Local Class", cls.isLocalClass(),
-        "Is Member Class", cls.isMemberClass(), "Is Primitive",
-        cls.isPrimitive(), "Is Synthetic", cls.isSynthetic(), "Class Loader",
-        cls.getClassLoader(), "Desired Assertion Status",
-        cls.desiredAssertionStatus(), "Hash Code", cls.hashCode(), "To String",
-        cls.toString());
+    PropertyUtils.addProperties(lst, false,
+        "Is Annotation", cls.isAnnotation(),
+        "Is Anonymous Class", cls.isAnonymousClass(),
+        "Is Array", cls.isArray(),
+        "Is Enum", cls.isEnum(),
+        "Is Interface", cls.isInterface(),
+        "Is Local Class", cls.isLocalClass(),
+        "Is Member Class", cls.isMemberClass(),
+        "Is Primitive", cls.isPrimitive(),
+        "Is Synthetic", cls.isSynthetic(),
+        "Class Loader", cls.getClassLoader(),
+        "Desired Assertion Status", cls.desiredAssertionStatus(),
+        "Hash Code", cls.hashCode(),
+        "To String", cls.toString());
 
     Annotation[] annArr = getDeclaredAnnotations(cls);
     if (!BeeUtils.isEmpty(annArr)) {
@@ -161,7 +180,6 @@ public class ClassUtils {
             tpPar.getName());
       }
     }
-
     return lst;
   }
 
@@ -230,6 +248,107 @@ public class ClassUtils {
     return cls.getTypeParameters();
   }
 
+  public static boolean isAssignable(Class<?> from, Class<?> to) {
+    if (from == null) {
+      return false;
+    }
+    if (to == null) {
+      return false;
+    }
+    if (from.equals(to)) {
+      return true;
+    }
+
+    if (from.isPrimitive() && !to.isPrimitive()) {
+      return isAssignable(Primitives.wrap(from), to);
+    }
+    if (Primitives.isWrapperType(from) && to.isPrimitive()) {
+      return isAssignable(Primitives.unwrap(from), to);
+    }
+
+    if (from.isPrimitive()) {
+      if (!to.isPrimitive()) {
+        return false;
+      }
+      if (Integer.TYPE.equals(from)) {
+        return Long.TYPE.equals(to) || Float.TYPE.equals(to) || Double.TYPE.equals(to);
+      }
+      if (Long.TYPE.equals(from)) {
+        return Float.TYPE.equals(to) || Double.TYPE.equals(to);
+      }
+      if (Boolean.TYPE.equals(from)) {
+        return false;
+      }
+      if (Double.TYPE.equals(from)) {
+        return false;
+      }
+      if (Float.TYPE.equals(from)) {
+        return Double.TYPE.equals(to);
+      }
+      if (Character.TYPE.equals(from)) {
+        return Integer.TYPE.equals(to) || Long.TYPE.equals(to) || Float.TYPE.equals(to)
+            || Double.TYPE.equals(to);
+      }
+      if (Short.TYPE.equals(from)) {
+        return Integer.TYPE.equals(to) || Long.TYPE.equals(to) || Float.TYPE.equals(to)
+            || Double.TYPE.equals(to);
+      }
+      if (Byte.TYPE.equals(from)) {
+        return Short.TYPE.equals(to) || Integer.TYPE.equals(to) || Long.TYPE.equals(to)
+            || Float.TYPE.equals(to) || Double.TYPE.equals(to);
+      }
+      if (Void.TYPE.equals(from)) {
+        return false;
+      }
+      Assert.untouchable();
+      return false;
+    }
+    return to.isAssignableFrom(from);
+  }
+
+  public static boolean isBoolean(Class<?> clazz) {
+    return Boolean.class.equals(clazz) || Boolean.TYPE.equals(clazz);
+  }
+
+  public static boolean isByte(Class<?> clazz) {
+    return Byte.class.equals(clazz) || Byte.TYPE.equals(clazz);
+  }
+
+  public static boolean isCharacter(Class<?> clazz) {
+    return Character.class.equals(clazz) || Character.TYPE.equals(clazz);
+  }
+
+  public static boolean isDouble(Class<?> clazz) {
+    return Double.class.equals(clazz) || Double.TYPE.equals(clazz);
+  }
+
+  public static boolean isFloat(Class<?> clazz) {
+    return Float.class.equals(clazz) || Float.TYPE.equals(clazz);
+  }
+
+  public static boolean isInteger(Class<?> clazz) {
+    return Integer.class.equals(clazz) || Integer.TYPE.equals(clazz);
+  }
+
+  public static boolean isLong(Class<?> clazz) {
+    return Long.class.equals(clazz) || Long.TYPE.equals(clazz);
+  }
+
+  public static boolean isMap(Class<?> clazz) {
+    return isAssignable(clazz, Map.class);
+  }
+
+  public static boolean isShort(Class<?> clazz) {
+    return Short.class.equals(clazz) || Short.TYPE.equals(clazz);
+  }
+
+  public static boolean isStringArray(Class<?> clazz) {
+    if (clazz == null) {
+      return false;
+    }
+    return clazz.isArray() && String.class.equals(clazz.getComponentType());
+  }
+
   public static String transformAnnotation(Annotation ann) {
     if (ann == null) {
       return null;
@@ -278,4 +397,6 @@ public class ClassUtils {
     }
   }
 
+  private ClassUtils() {
+  }
 }

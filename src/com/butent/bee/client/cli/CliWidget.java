@@ -10,7 +10,6 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.canvas.CanvasDemo;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.dom.DomUtils;
-import com.butent.bee.client.i18n.LocaleUtils;
 import com.butent.bee.client.visualization.showcase.Showcase;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.client.widget.BeeTextBox;
@@ -72,7 +71,7 @@ public class CliWidget extends BeeTextBox {
       CliWorker.showDnd();
     } else if (z.equals("dt")) {
       CliWorker.showDate(arr);
-    } else if (BeeUtils.inList(z, "dir", "file", "get", "download")) {
+    } else if (BeeUtils.inList(z, "dir", "file", "get", "download", "src")) {
       CliWorker.getResource(arr);
     } else if (z.equals("eval")) {
       CliWorker.eval(v, arr);
@@ -92,10 +91,12 @@ public class CliWidget extends BeeTextBox {
       CliWorker.showInput();
     } else if (BeeUtils.inList(z, "keys", "pk")) {
       CliWorker.getKeys(arr);
+    } else if (z.startsWith("like") && arr.length >= 3) {
+      CliWorker.doLike(arr);
     } else if (z.equals("loaders")) {
       BeeKeeper.getRpc().invoke("loaderInfo");
     } else if (z.equals("locale")) {
-      BeeKeeper.getUi().showGrid(LocaleUtils.getInfo());
+      CliWorker.doLocale(arr);
     } else if (z.equals("log")) {
       CliWorker.doLog(arr);
     } else if (z.equals("menu")) {
