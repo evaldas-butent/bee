@@ -19,8 +19,8 @@ import com.butent.bee.shared.BeeType;
 import com.butent.bee.shared.BeeWidget;
 import com.butent.bee.shared.Variable;
 import com.butent.bee.shared.menu.MenuConstants;
-import com.butent.bee.shared.resources.LocalizableConstants;
-import com.butent.bee.shared.resources.LocalizableMessages;
+import com.butent.bee.shared.i18n.LocalizableConstants;
+import com.butent.bee.shared.i18n.LocalizableMessages;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.TimeUtils;
 
