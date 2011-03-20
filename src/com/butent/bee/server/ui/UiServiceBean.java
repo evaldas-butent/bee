@@ -297,7 +297,7 @@ public class UiServiceBean {
       sys.initViews();
       response.addInfo("Views OK");
 
-    } else if (BeeUtils.same(cmd, "setState")) {
+    } else if (BeeUtils.startsSame(cmd, "setState")) {
       String[] xArr = cmd.split(" ", 5);
       String tbl = xArr[1];
       long id = BeeUtils.toLong(xArr[2]);

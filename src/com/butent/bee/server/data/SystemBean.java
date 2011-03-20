@@ -323,7 +323,7 @@ public class SystemBean {
   }
 
   public ResponseObject editStateRoles(String tblName, String stateName) {
-    if (isState(stateName)) {
+    if (!isState(stateName)) {
       return ResponseObject.error("Unknown state:", stateName);
     }
     BeeState state = getState(stateName);
@@ -368,8 +368,8 @@ public class SystemBean {
             ss.addConstant(BeeUtils.toInt(state.isChecked()), colName);
           }
         } else {
-          IsExpression expr = SqlUtils.sqlIf(
-              getTable(tbl).checkState(stateAlias, state, true, roleId), 1, 0);
+          IsExpression expr =
+              SqlUtils.sqlIf(getTable(tbl).checkState(stateAlias, state, roleId), 1, 0);
 
           if (allMode) {
             ss.addSum(expr, colName);
@@ -572,7 +572,7 @@ public class SystemBean {
       ss.setWhere(SqlUtils.and(ss.getWhere(), wh));
     }
     if (!BeeUtils.isEmpty(states)) {
-      verifyStates(ss, view.getSource(), null, states);
+      ss = verifyStates(ss, view.getSource(), null, states);
     }
     return qs.getViewData(ss, view);
   }
@@ -591,19 +591,13 @@ public class SystemBean {
 
       for (BeeState state : table.getStates()) {
         String tblName = table.getStateTable(state);
-        List<String> activeFields = Lists.newArrayList();
 
         if (BeeUtils.inListSame(tblName, dbTables)) {
           if (!stateTables.containsKey(tblName)) {
             stateTables.put(tblName, qs.dbFields(tblName));
           }
-          for (String fld : stateTables.get(tblName)) {
-            if (BeeUtils.startsSame(fld, table.getStateField(state))) { // TODO startsSame
-              activeFields.add(fld);
-            }
-          }
         }
-        // TODO table.setStateActive(state, activeFields);
+        table.setStateActive(state, stateTables.get(tblName));
       }
     }
     usr.invalidateCache();
@@ -701,30 +695,33 @@ public class SystemBean {
     } else {
       Map<Long, Boolean> bitMap = Maps.newHashMap();
 
-      if (state.supportsUsers()) {
-        for (long bit : usr.getUsers().keySet()) {
-          bitMap.put(-bit, Longs.contains(bits, -bit));
-        }
+      for (long bit : usr.getUsers().keySet()) {
+        bitMap.put(-bit, Longs.contains(bits, -bit));
       }
-      if (state.supportsRoles()) {
-        for (long bit : usr.getUsers().keySet()) {
-          bitMap.put(bit, Longs.contains(bits, bit));
-        }
+      for (long bit : usr.getRoles().keySet()) {
+        bitMap.put(bit, Longs.contains(bits, bit));
       }
-      // TODO if (!table.setStateActive(state, bitMap.keySet())) {
-      rebuildTable(tblName);
-      // }
+      if (table.updateStateActive(state, Longs.toArray(bitMap.keySet()))) {
+        rebuildTable(tblName);
+      }
       SqlUpdate su = table.updateState(id, state, bitMap);
 
       if (!BeeUtils.isEmpty(su) && qs.updateData(su) == 0) {
-        SqlInsert si = table.insertState(id, state, bitMap);
-        qs.updateData(si);
+        qs.updateData(table.insertState(id, state, bitMap));
       }
     }
   }
 
-  public void verifyStates(SqlSelect query, String tblName, String tblAlias, String... states) {
+  public SqlSelect verifyStates(SqlSelect query, String tblName, String tblAlias, String... states) {
     Assert.notNull(query);
+
+    long userId = usr.getCurrentUserId();
+    long[] userRoles = usr.getUserRoles(userId);
+
+    if (BeeUtils.isEmpty(userRoles)) {
+      return query.setWhere(SqlUtils.sqlFalse());
+    }
+    long[] bits = Longs.concat(new long[]{-userId}, userRoles);
 
     for (String stateName : states) {
       BeeTable table = getTable(tblName);
@@ -733,10 +730,10 @@ public class SystemBean {
       if (!table.hasState(state)) {
         LogUtils.warning(logger, "State not registered:", tblName, stateName);
       } else {
-        long userId = usr.getCurrentUserId();
-        table.verifyState(query, tblAlias, state, userId, usr.getUserRoles(userId));
+        table.verifyState(query, tblAlias, state, bits);
       }
     }
+    return query;
   }
 
   @Lock(LockType.WRITE)

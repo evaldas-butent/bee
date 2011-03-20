@@ -13,9 +13,7 @@ public interface HasStates {
 
   SqlCreate createStateTable(SqlCreate query, BeeState state);
 
-  IsCondition checkState(String stateAlias, BeeState state, boolean mdRole, long... bits);
-
-  String getStateField(BeeState state);
+  IsCondition checkState(String stateAlias, BeeState state, long... bits);
 
   String getStateTable(BeeState state);
 
@@ -23,9 +21,11 @@ public interface HasStates {
 
   String joinState(HasFrom<?> query, String tblAlias, BeeState state);
 
-  void setStateActive(BeeState state, boolean active);
+  void setStateActive(BeeState state, String... fields);
 
   SqlUpdate updateState(long id, BeeState state, Map<Long, Boolean> bits);
 
-  void verifyState(SqlSelect query, String tblAlias, BeeState state, long user, long... roles);
+  boolean updateStateActive(BeeState state, long... bits);
+
+  SqlSelect verifyState(SqlSelect query, String tblAlias, BeeState state, long... bits);
 }
