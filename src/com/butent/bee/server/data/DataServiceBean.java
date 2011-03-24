@@ -470,7 +470,7 @@ public class DataServiceBean {
       long memC2 = SystemInfo.freeMemory();
       DateTime end = new DateTime();
 
-      buff.addLine(enter.toLog(), start.toLog(), end.toLog());
+      buff.addLine(enter.toTimeString(), start.toTimeString(), end.toTimeString());
       buff.addLine(ret, rc,
           BeeUtils.bracket(BeeUtils.toSeconds(end.getTime() - start.getTime())),
           "type", JdbcUtils.getTypeInfo(rs));

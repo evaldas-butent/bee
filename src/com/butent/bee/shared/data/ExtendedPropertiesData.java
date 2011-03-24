@@ -23,7 +23,7 @@ public class ExtendedPropertiesData extends RowList<TableRow, TableColumn> {
     
     for (ExtendedProperty property : data) {
       addRow(property.getName(), property.getSub(), property.getValue(),
-          property.getDate().toLog());
+          property.getDate().toTimeString());
     }
   }
 

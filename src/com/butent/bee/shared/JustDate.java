@@ -1,11 +1,29 @@
 package com.butent.bee.shared;
 
+import com.google.common.primitives.Ints;
+
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Grego;
+import com.butent.bee.shared.utils.TimeUtils;
 
 import java.util.Date;
 
 public class JustDate implements BeeSerializable, Comparable<JustDate> {
+  public static final char FIELD_SEPARATOR = '.';
+  
+  public static JustDate parse(String s) {
+    Assert.notEmpty(s);
+    if (BeeUtils.isDigit(s)) {
+      return new JustDate(BeeUtils.toInt(s));
+    }
+    
+    int[] arr = TimeUtils.parseFields(s);
+    Assert.minLength(arr, 3);
+    Assert.isTrue(Ints.max(arr) > 0);
+    
+    return new JustDate(arr[0], arr[1], arr[2]);
+  }
+
   private int day;
   private int[] fields = null;
 
@@ -17,20 +35,20 @@ public class JustDate implements BeeSerializable, Comparable<JustDate> {
     this(date.getTime());
   }
   
+  public JustDate(DateTime dateTime) {
+    this(dateTime.getYear(), dateTime.getMonth(), dateTime.getDom());
+  }
+
   public JustDate(int day) {
     this.day = day;
   }
 
-  public JustDate(long time) {
-    this(new DateTime(time));
-  }
-
-  public JustDate(DateTime dateTime) {
-    this(dateTime.getYear(), dateTime.getMonth(), dateTime.getDom());
-  }
-  
   public JustDate(int year, int month, int dom) {
     this.day = Grego.fieldsToDay(year, month, dom);
+  }
+  
+  public JustDate(long time) {
+    this(new DateTime(time));
   }
   
   public int compareTo(JustDate other) {
@@ -42,6 +60,14 @@ public class JustDate implements BeeSerializable, Comparable<JustDate> {
   public void deserialize(String s) {
     day = Integer.parseInt(s);
     fields = null;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (obj instanceof JustDate) {
+      return getDay() == ((JustDate) obj).getDay();
+    }
+    return false;
   }
 
   public int getDay() {
@@ -62,7 +88,7 @@ public class JustDate implements BeeSerializable, Comparable<JustDate> {
     ensureFields();
     return fields[Grego.IDX_DOY];
   }
-  
+
   public int getMonth() {
     ensureFields();
     return fields[Grego.IDX_MONTH];
@@ -71,6 +97,11 @@ public class JustDate implements BeeSerializable, Comparable<JustDate> {
   public int getYear() {
     ensureFields();
     return fields[Grego.IDX_YEAR];
+  }
+
+  @Override
+  public int hashCode() {
+    return getDay();
   }
 
   public String serialize() {
@@ -84,9 +115,11 @@ public class JustDate implements BeeSerializable, Comparable<JustDate> {
 
   @Override
   public String toString() {
-    return BeeUtils.toLeadingZeroes(getYear(), 4) + "."
-        + BeeUtils.toLeadingZeroes(getMonth(), 2) + "."
-        + BeeUtils.toLeadingZeroes(getDom(), 2);
+    StringBuilder sb = new StringBuilder(10);
+    sb.append(TimeUtils.yearToString(getYear())).append(FIELD_SEPARATOR);
+    sb.append(TimeUtils.padTwo(getMonth())).append(FIELD_SEPARATOR);
+    sb.append(TimeUtils.padTwo(getDom()));
+    return sb.toString();
   }
  
   private void computeFields() {

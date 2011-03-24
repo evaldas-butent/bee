@@ -225,7 +225,7 @@ public class BeeCallback implements RequestCallback {
       if (date == null) {
         msg = messages[i].getMessage();
       } else {
-        msg = BeeUtils.concat(1, date.toLog(), messages[i].getMessage());
+        msg = BeeUtils.concat(1, date.toTimeString(), messages[i].getMessage());
       }
 
       if (level == null) {

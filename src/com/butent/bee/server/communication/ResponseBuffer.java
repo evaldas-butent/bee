@@ -128,7 +128,7 @@ public class ResponseBuffer {
     add(el.getName());
     add(el.getSub());
     add(el.getValue());
-    add(el.getDate().toLog());
+    add(el.getDate().toTimeString());
   }
 
   public void addExtendedProperties(Collection<ExtendedProperty> lst, String... cap) {
@@ -219,7 +219,7 @@ public class ResponseBuffer {
 
     add(el.getName());
     add(el.getValue());
-    add(new DateTime().toLog());
+    add(new DateTime().toTimeString());
   }
 
   public void addResource(String content) {
@@ -283,7 +283,7 @@ public class ResponseBuffer {
       add(root);
       add(el.getName());
       add(el.getValue());
-      add(new DateTime().toLog());
+      add(new DateTime().toTimeString());
     }
   }
 
@@ -369,7 +369,7 @@ public class ResponseBuffer {
   }
 
   public String now() {
-    return new DateTime().toLog();
+    return new DateTime().toTimeString();
   }
 
   public void setBuffer(StringBuilder buffer) {

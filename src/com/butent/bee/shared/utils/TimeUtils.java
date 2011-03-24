@@ -1,6 +1,10 @@
 package com.butent.bee.shared.utils;
 
+import com.google.common.base.CharMatcher;
+import com.google.common.base.Splitter;
+
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.DateTime;
 import com.butent.bee.shared.JustDate;
 
@@ -52,6 +56,10 @@ public class TimeUtils {
       "DST_OFFSET", "YEAR_WOY", "DOW_LOCAL", "EXTENDED_YEAR",
       "JULIAN_DAY", "MILLISECONDS_IN_DAY",
   };
+
+  private static final Splitter FIELD_SPLITTER =
+      Splitter.on(CharMatcher.inRange(BeeConst.CHAR_ZERO, BeeConst.CHAR_NINE).negate())
+          .omitEmptyStrings().trimResults();
 
   public static void add(DateTime date, int field, int amount) {
     Assert.notNull(date);
@@ -113,6 +121,41 @@ public class TimeUtils {
     return x instanceof JustDate || x instanceof DateTime || x instanceof Date;
   }
 
+  public static String millisToString(int millis) {
+    if (millis >= 0 && millis < 1000) {
+      return Integer.toString(millis + 1000).substring(1);
+    } else {
+      return Integer.toString(millis);
+    }
+  }
+
+  public static String padTwo(int number) {
+    if (number >= 0 && number < 10) {
+      return BeeConst.STRING_ZERO + number;
+    } else {
+      return String.valueOf(number);
+    }
+  }
+
+  public static int[] parseFields(CharSequence cs) {
+    if (BeeUtils.isEmpty(cs)) {
+      return null;
+    }
+    int[] arr = new int[7];
+    int idx = 0;
+
+    for (String z : FIELD_SPLITTER.split(cs)) {
+      arr[idx++] = BeeUtils.toInt(z);
+      if (idx >= arr.length) {
+        break;
+      }
+    }
+    for (int i = idx; i < arr.length; i++) {
+      arr[i] = 0;
+    }
+    return arr;
+  }
+
   public static JustDate randomDate(JustDate min, JustDate max) {
     Assert.notNull(min);
     Assert.notNull(max);
@@ -168,6 +211,10 @@ public class TimeUtils {
 
     assertDateOrDateTime(x);
     return null;
+  }
+
+  public static String yearToString(int year) {
+    return Integer.toString(year);
   }
 
   private static void assertDateOrDateTime(Object x) {
@@ -249,7 +296,7 @@ public class TimeUtils {
     }
     return delta;
   }
-  
+
   private TimeUtils() {
   }
 }

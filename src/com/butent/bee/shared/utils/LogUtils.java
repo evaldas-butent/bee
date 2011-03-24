@@ -13,11 +13,11 @@ public class LogUtils {
 
   public static String dateToLog(DateTime dt) {
     Assert.notNull(dt);
-    return dt.toLog();
+    return dt.toTimeString();
   }
 
   public static String dateToLog(long millis) {
-    return new DateTime(millis).toLog();
+    return new DateTime(millis).toTimeString();
   }
 
   public static void error(Logger logger, Throwable err, Object... obj) {
@@ -65,6 +65,11 @@ public class LogUtils {
     logger.info(BeeUtils.concat(1, now(), obj));
   }
 
+  public static void infoUtc(Logger logger, Object... obj) {
+    Assert.notNull(logger);
+    logger.info(BeeUtils.concat(1, utc(), obj));
+  }
+  
   public static boolean isOff(Level level) {
     if (level == null) {
       return false;
@@ -85,7 +90,7 @@ public class LogUtils {
   }
 
   public static String now() {
-    return new DateTime().toLog();
+    return new DateTime().toTimeString();
   }
 
   public static void setDefaultLogger(Logger def) {
@@ -124,6 +129,10 @@ public class LogUtils {
     } else {
       return level.getName();
     }
+  }
+
+  public static String utc() {
+    return new DateTime().toUtcTimeString();
   }
 
   public static void warning(Logger logger, Object... obj) {

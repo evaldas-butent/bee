@@ -106,7 +106,7 @@ public class PropertyUtils {
       String v, String sep) {
     Assert.notNull(lst);
     int r = 0;
-    if (validName(nm) || BeeUtils.isEmpty(v)) {
+    if (!validName(nm) || BeeUtils.isEmpty(v)) {
       return r;
     }
 
@@ -225,7 +225,7 @@ public class PropertyUtils {
       arr[i][0] = el.getName();
       arr[i][1] = el.getSub();
       arr[i][2] = el.getValue();
-      arr[i][3] = el.getDate().toLog();
+      arr[i][3] = el.getDate().toTimeString();
     }
     return arr;
   }

@@ -57,7 +57,7 @@ public class ResultSetBean {
       buff.addColumn(metaCols[i]);
     }
     if (debug) {
-      buff.addColumn(new BeeColumn(start.toLog()));
+      buff.addColumn(new BeeColumn(start.toTimeString()));
     }
 
     BeeColumn z;
@@ -71,7 +71,7 @@ public class ResultSetBean {
           z.isReadOnly(), z.isWritable(), z.isDefinitelyWritable(), z.getProperties());
 
       if (debug) {
-        buff.add(new DateTime().toLog());
+        buff.add(new DateTime().toTimeString());
       }
     }
   }
@@ -102,7 +102,7 @@ public class ResultSetBean {
     }
 
     if (debug) {
-      buff.addColumn(new BeeColumn(start.toLog()));
+      buff.addColumn(new BeeColumn(start.toTimeString()));
     }
 
     try {
@@ -111,7 +111,7 @@ public class ResultSetBean {
           buff.add(rs.getString(cols[i].getIndex()));
         }
         if (debug) {
-          buff.add(new DateTime().toLog());
+          buff.add(new DateTime().toTimeString());
         }
       }
     } catch (SQLException ex) {

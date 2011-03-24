@@ -1,7 +1,6 @@
 package com.butent.bee.client;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.core.client.JsDate;
 import com.google.gwt.event.shared.GwtEvent;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -22,7 +21,6 @@ import com.butent.bee.shared.menu.MenuConstants;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.LocalizableMessages;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.TimeUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -43,8 +41,6 @@ public class Global implements Module {
   private static final Cache cache = new Cache();
 
   private static final Map<String, Variable> vars = new HashMap<String, Variable>();
-
-  private static int tzo = -JsDate.create().getTimezoneOffset() * TimeUtils.MILLIS_PER_MINUTE;
 
   private static Images images = GWT.create(Images.class);
 
@@ -93,10 +89,6 @@ public class Global implements Module {
 
   public static Images getImages() {
     return images;
-  }
-
-  public static int getTzo() {
-    return tzo;
   }
 
   public static Variable getVar(String name) {

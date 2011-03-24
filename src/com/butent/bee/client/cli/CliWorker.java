@@ -11,6 +11,7 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.dom.client.StyleInjector;
 import com.google.gwt.i18n.client.DateTimeFormat;
+import com.google.gwt.i18n.client.DateTimeFormat.PredefinedFormat;
 import com.google.gwt.i18n.client.LocaleInfo;
 import com.google.gwt.media.client.Audio;
 import com.google.gwt.media.client.Video;
@@ -65,6 +66,7 @@ import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.ExtendedProperty;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
+import com.butent.bee.shared.utils.TimeUtils;
 import com.butent.bee.shared.utils.Wildcards;
 
 import java.util.ArrayList;
@@ -444,36 +446,68 @@ public class CliWorker {
     JustDate d;
     DateTime t;
 
-    if (len == 2 && BeeUtils.isDigit(arr[1])) {
-      t = new DateTime(Long.parseLong(arr[1]));
-      d = new JustDate(t);
-
-    } else if (len >= 3) {
-      int[] v = new int[7];
-      for (int i = 0; i < v.length; i++) {
-        if (i < len - 1) {
-          v[i] = BeeUtils.toInt(arr[i + 1]);
-        } else {
-          v[i] = 0;
+    if (len > 1) {
+      String s = ArrayUtils.join(arr, 1, 1);
+      if (BeeUtils.context("T", s)) {
+        Date j;
+        try {
+          j = DateTimeFormat.getFormat(PredefinedFormat.ISO_8601).parse(s);
+        } catch (IllegalArgumentException ex) {
+          Global.showError(s, ex);
+          j = null;
         }
+        if (j == null) {
+          return;
+        }
+        t = new DateTime(j);
+        d = new JustDate(j);
+      } else {  
+        t = DateTime.parse(s);
+        d = JustDate.parse(s);
       }
-      d = new JustDate(v[0], v[1], v[2]);
-      t = new DateTime(v[0], v[1], v[2], v[3], v[4], v[5], v[6]);
-
     } else {
       d = new JustDate();
       t = new DateTime();
     }
 
     List<Property> lst = PropertyUtils.createProperties(
-        "Day", d.getDay(), "Year", d.getYear(), "Month", d.getMonth(), "Dom", d.getDom(),
-        "Dow", d.getDow(), "Doy", d.getDoy(),
-        "String", d.toString(), "DateTime", new DateTime(d).toString(),
-        "Time", t.getTime(), "Year", t.getYear(), "Month", t.getMonth(), "Dom", t.getDom(),
-        "Dow", t.getDow(), "Doy", t.getDoy(), "Hour", t.getHour(),
-        "Minute", t.getMinute(), "Second", t.getSecond(), "Millis", t.getMillis(),
-        "Log", t.toLog(), "String", t.toString(), "JustDate", new JustDate(t).toString(),
-        "Date", new Date(t.getTime()).toString(), "Tz Offset", Global.getTzo());
+        "Day", d.getDay(),
+        "Year", d.getYear(),
+        "Month", d.getMonth(),
+        "Dom", d.getDom(),
+        "Dow", d.getDow(),
+        "Doy", d.getDoy(),
+        "String", d.toString(),
+        "DateTime", TimeUtils.toDateTime(d).toString(),
+        "Java Date", TimeUtils.toJava(d).toString(),
+        "Time", t.getTime(),
+        "Year", t.getYear(),
+        "Month", t.getMonth(),
+        "Dom", t.getDom(),
+        "Dow", t.getDow(),
+        "Doy", t.getDoy(),
+        "Hour", t.getHour(),
+        "Minute", t.getMinute(),
+        "Second", t.getSecond(),
+        "Millis", t.getMillis(),
+        "Date String", t.toDateString(),
+        "Time String", t.toTimeString(),
+        "String", t.toString(),
+        "Timezone Offset", t.getTimezoneOffset(),
+        "Utc Year", t.getUtcYear(),
+        "Utc Month", t.getUtcMonth(),
+        "Utc Dom", t.getUtcDom(),
+        "Utc Dow", t.getUtcDow(),
+        "Utc Doy", t.getUtcDoy(),
+        "Utc Hour", t.getUtcHour(),
+        "Utc Minute", t.getUtcMinute(),
+        "Utc Second", t.getUtcSecond(),
+        "Utc Millis", t.getUtcMillis(),
+        "Utc Date String", t.toUtcDateString(),
+        "Utc Time String", t.toUtcTimeString(),
+        "Utc String", t.toUtcString(),
+        "JustDate", TimeUtils.toDate(t).toString(),
+        "Java Date", TimeUtils.toJava(t).toString());
 
     BeeKeeper.getUi().showGrid(lst);
   }
