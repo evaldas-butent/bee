@@ -4,6 +4,7 @@ import com.butent.bee.server.Config;
 import com.butent.bee.server.data.IdGeneratorBean;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
+import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -41,6 +42,8 @@ public class UiServiceBean {
   IdGeneratorBean ig;
   @EJB
   SystemBean sys;
+  @EJB
+  UserServiceBean usr;
   @Resource
   EJBContext ctx;
 
@@ -121,7 +124,7 @@ public class UiServiceBean {
 
     if (res instanceof BeeRowSet) {
       ResponseObject resp = ResponseObject.response(res);
-      resp.addWarning("Retrieved rows:", ((BeeRowSet) res).getNumberOfRows());
+      resp.addWarning(usr.localMesssages().rowsRetrieved(((BeeRowSet) res).getNumberOfRows()));
       return resp;
     } else {
       return ResponseObject.warning("Affected rows:", res);

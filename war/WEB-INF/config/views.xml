@@ -2,14 +2,16 @@
 <BeeViews xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.butent.com/bee views.xsd">
 
-  <BeeView name="Nationalities" source="Nationalities" readOnly="false">
+  <BeeView name="UserRoles" source="UserRoles" readOnly="false">
     <BeeColumns>
-      <BeeColumn name="Name" expression="Name" />
-      <BeeColumn name="Percent" expression="Percent" />
-      <BeeColumn name="Country" expression="Country" />
-      <BeeColumn name="CountryName" expression="Country>Name" />
-      <BeeColumn name="CountryCapitalName" expression="Country>Capital>Name" />
-      <BeeColumn name="CountryCapitalPopulation" expression="Country>Capital>Population" />
+      <BeeColumn name="User" expression="User" />
+      <BeeColumn name="UserLogin" expression="User-Login" />
+      <BeeColumn name="Role" expression="Role" />
+      <BeeColumn name="RoleName" expression="Role>Name" />
     </BeeColumns>
+    <BeeOrder>
+      <OrderBy name="User" />
+      <OrderBy name="RoleName" descending="true" />
+    </BeeOrder>
   </BeeView>
 </BeeViews>

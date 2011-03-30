@@ -38,6 +38,7 @@ public class RequestInfo implements HasExtendedInfo, Transformable {
 
   private String service = null;
   private String dsn = null;
+  private String locale = null;
 
   private String separator = null;
   private String options = null;
@@ -181,7 +182,7 @@ public class RequestInfo implements HasExtendedInfo, Transformable {
 
     PropertyUtils.appendExtended(reqInfo, getServletContextInfo(request.getServletContext()));
     PropertyUtils.appendExtended(reqInfo, getSessionInfo(request.getSession(false)));
-    
+
     Principal principal = request.getUserPrincipal();
     if (principal != null) {
       PropertyUtils.addChildren(reqInfo, "User Principal",
@@ -197,6 +198,10 @@ public class RequestInfo implements HasExtendedInfo, Transformable {
         "is Secure", request.isSecure());
 
     return reqInfo;
+  }
+
+  public String getLocale() {
+    return locale;
   }
 
   public String getMethod() {
@@ -275,7 +280,7 @@ public class RequestInfo implements HasExtendedInfo, Transformable {
   public boolean hasParameter(String name) {
     Assert.notEmpty(name);
 
-    if (!BeeUtils.isEmpty(getParams()) && getParams().containsKey(name)) { 
+    if (!BeeUtils.isEmpty(getParams()) && getParams().containsKey(name)) {
       return true;
     }
     if (!BeeUtils.isEmpty(getHeaders()) && getHeaders().containsKey(name)) {
@@ -339,7 +344,7 @@ public class RequestInfo implements HasExtendedInfo, Transformable {
       LogUtils.info(logger, "Var", BeeUtils.progress(++i, n), el.getKey(), el.getValue());
     }
   }
-  
+
   public boolean parameterEquals(int idx, String value) {
     Assert.notEmpty(value);
     return BeeUtils.same(getParameter(idx), value);
@@ -373,6 +378,10 @@ public class RequestInfo implements HasExtendedInfo, Transformable {
 
   public void setId(String id) {
     this.id = id;
+  }
+
+  public void setLocale(String locale) {
+    this.locale = locale;
   }
 
   public void setMethod(String method) {
@@ -707,6 +716,8 @@ public class RequestInfo implements HasExtendedInfo, Transformable {
       options = v;
     } else if (BeeUtils.same(nm, BeeService.RPC_VAR_CTP)) {
       contentType = CommUtils.getContentType(v);
+    } else if (BeeUtils.same(nm, BeeService.RPC_VAR_LOC)) {
+      locale = v;
     }
   }
 

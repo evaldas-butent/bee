@@ -253,12 +253,6 @@ public class SqlSelect extends HasFrom<SqlSelect> {
         paramList = (List<Object>) SqlUtils.addCollection(paramList, group.getSqlParams());
       }
     }
-    if (!BeeUtils.isEmpty(orderList)) {
-      for (Object[] order : orderList) {
-        IsExpression ord = (IsExpression) order[ORDER_FLD];
-        paramList = (List<Object>) SqlUtils.addCollection(paramList, ord.getSqlParams());
-      }
-    }
     if (!BeeUtils.isEmpty(havingClause)) {
       paramList = (List<Object>) SqlUtils.addCollection(paramList, havingClause.getSqlParams());
     }

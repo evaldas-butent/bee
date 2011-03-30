@@ -2,6 +2,7 @@ package com.butent.bee.client;
 
 import com.google.gwt.http.client.RequestBuilder;
 import com.google.gwt.http.client.RequestException;
+import com.google.gwt.i18n.client.LocaleInfo;
 
 import com.butent.bee.client.communication.BeeCallback;
 import com.butent.bee.client.communication.ParameterList;
@@ -223,6 +224,8 @@ public class RpcFactory implements Module {
 
     String svc = params.getService();
     Assert.notEmpty(svc);
+
+    params.addHeaderItem(BeeService.RPC_VAR_LOC, LocaleInfo.getCurrentLocale().getLocaleName());
 
     boolean debug = Global.isDebug();
 

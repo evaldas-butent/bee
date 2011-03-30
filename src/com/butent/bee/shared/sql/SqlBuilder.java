@@ -262,9 +262,9 @@ public abstract class SqlBuilder {
     Assert.notNull(sd);
     Assert.state(!sd.isEmpty());
 
-    StringBuilder query = new StringBuilder("DELETE ");
+    StringBuilder query = new StringBuilder("DELETE FROM ");
 
-    query.append(" FROM ").append(sd.getTarget().getSqlString(this, paramMode));
+    query.append(sd.getTarget().getSqlString(this, paramMode));
 
     List<IsFrom> fromList = sd.getFrom();
 

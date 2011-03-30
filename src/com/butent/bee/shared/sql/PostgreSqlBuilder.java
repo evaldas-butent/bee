@@ -12,10 +12,10 @@ class PostgreSqlBuilder extends SqlBuilder {
   protected String sqlKeyword(Keyword option, Map<String, Object> params) {
     switch (option) {
       case DB_NAME:
-        return "SELECT current_database() as dbName";
+        return "SELECT current_database() as " + sqlQuote("dbName");
 
       case DB_SCHEMA:
-        return "SELECT current_schema() as dbSchema";
+        return "SELECT current_schema() as " + sqlQuote("dbSchema");
 
       default:
         return super.sqlKeyword(option, params);

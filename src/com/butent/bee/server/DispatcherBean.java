@@ -45,12 +45,12 @@ public class DispatcherBean {
   @EJB
   SystemBean sys;
 
-  public String doLogin(String dsn) {
+  public String doLogin(String dsn, String locale) {
     if (!BeeUtils.same(SqlBuilderFactory.getEngine(), BeeConst.getDsType(dsn))) {
       ig.destroy();
       sys.initDatabase(dsn);
     }
-    return usrBean.login();
+    return usrBean.login(locale);
   }
 
   public void doLogout(String user) {

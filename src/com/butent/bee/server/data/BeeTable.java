@@ -1,8 +1,10 @@
 package com.butent.bee.server.data;
 
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 
 import com.butent.bee.shared.Assert;
@@ -18,6 +20,7 @@ import com.butent.bee.shared.sql.SqlInsert;
 import com.butent.bee.shared.sql.SqlSelect;
 import com.butent.bee.shared.sql.SqlUpdate;
 import com.butent.bee.shared.sql.SqlUtils;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -26,7 +29,7 @@ import java.util.Map;
 import java.util.Set;
 
 @SuppressWarnings("hiding")
-class BeeTable implements HasExtFields, HasStates {
+class BeeTable implements HasExtFields, HasStates, HasTranslations {
 
   public class BeeField {
     private boolean custom = false;
@@ -59,8 +62,8 @@ class BeeTable implements HasExtFields, HasStates {
       return name;
     }
 
-    public String getOwner() {
-      return BeeTable.this.getName();
+    public BeeTable getOwner() {
+      return BeeTable.this;
     }
 
     public int getPrecision() {
@@ -76,7 +79,7 @@ class BeeTable implements HasExtFields, HasStates {
     }
 
     public String getTable() {
-      return isExtended() ? getExtTable(getName()) : getOwner();
+      return isExtended() ? getExtTable(this) : getOwner().getName();
     }
 
     public DataType getType() {
@@ -146,8 +149,8 @@ class BeeTable implements HasExtFields, HasStates {
       return name;
     }
 
-    public String getOwner() {
-      return BeeTable.this.getName();
+    public BeeTable getOwner() {
+      return BeeTable.this;
     }
 
     public String getRefTable() {
@@ -219,8 +222,8 @@ class BeeTable implements HasExtFields, HasStates {
       return name;
     }
 
-    public String getOwner() {
-      return BeeTable.this.getName();
+    public BeeTable getOwner() {
+      return BeeTable.this;
     }
 
     public String getTable() {
@@ -256,7 +259,8 @@ class BeeTable implements HasExtFields, HasStates {
 
     @Override
     public SqlCreate createExtTable(SqlCreate query, BeeField field) {
-      SqlCreate sc = null;
+      Assert.state(hasField(field) && field.isExtended());
+      SqlCreate sc = query;
 
       if (BeeUtils.isEmpty(query)) {
         String tblName = field.getTable();
@@ -267,39 +271,35 @@ class BeeTable implements HasExtFields, HasStates {
 
         addKey(true, tblName, extIdName).setCustom();
         addForeignKey(tblName, extIdName, getName(), Keyword.CASCADE).setCustom();
-      } else {
-        sc = query;
       }
       sc.addField(field.getName(), field.getType(), field.getPrecision(), field.getScale(),
             field.isNotNull() ? Keyword.NOT_NULL : null);
-
       return sc;
     }
 
     @Override
-    public String getExtTable(String fldName) {
-      Assert.state(hasField(fldName));
+    public String getExtTable(BeeField field) {
+      Assert.state(hasField(field) && field.isExtended());
       return getName() + "_EXT";
     }
 
     @Override
     public SqlInsert insertExtField(SqlInsert query, long rootId, BeeField field, Object newValue) {
-      SqlInsert si = null;
+      Assert.state(hasField(field) && field.isExtended());
+      SqlInsert si = query;
 
       if (BeeUtils.isEmpty(query)) {
-        si = new SqlInsert(field.getTable())
+        si = new SqlInsert(getExtTable(field))
             .addConstant(extLockName, System.currentTimeMillis())
             .addConstant(extIdName, rootId);
-      } else {
-        si = query;
       }
       si.addConstant(field.getName(), newValue);
-
       return si;
     }
 
     @Override
     public String joinExtField(HasFrom<?> query, String tblAlias, BeeField field) {
+      Assert.state(hasField(field) && field.isExtended());
       String extAlias = null;
 
       String tblName = getName();
@@ -310,18 +310,20 @@ class BeeTable implements HasExtFields, HasStates {
         Object src = from.getSource();
 
         if (src instanceof String && BeeUtils.same((String) src, extTable)) {
+          String tmpAlias = BeeUtils.ifString(from.getAlias(), extTable);
           SqlBuilder builder = SqlBuilderFactory.getBuilder();
-          String strFrom = from.getSqlString(builder, false);
-          String strAlias = SqlUtils.field(alias, getIdName()).getSqlString(builder, false);
 
-          if (strFrom.contains(strAlias)) {
-            extAlias = BeeUtils.ifString(from.getAlias(), extTable);
+          if (from.getSqlString(builder, false)
+              .endsWith(SqlUtils.join(alias, getIdName(), tmpAlias, extIdName)
+                  .getSqlString(builder, false))) {
+
+            extAlias = tmpAlias;
             break;
           }
         }
       }
       if (BeeUtils.isEmpty(extAlias)) {
-        if (BeeUtils.same(alias, tblName)) {
+        if (BeeUtils.isEmpty(tblAlias)) {
           extAlias = extTable;
         } else {
           extAlias = SqlUtils.uniqueName();
@@ -334,26 +336,27 @@ class BeeTable implements HasExtFields, HasStates {
 
     @Override
     public SqlUpdate updateExtField(SqlUpdate query, long rootId, BeeField field, Object newValue) {
-      SqlUpdate su = null;
+      Assert.state(hasField(field) && field.isExtended());
+      SqlUpdate su = query;
 
       if (BeeUtils.isEmpty(query)) {
-        String tblName = field.getTable();
+        String tblName = getExtTable(field);
 
         su = new SqlUpdate(tblName)
             .addConstant(extLockName, System.currentTimeMillis())
             .setWhere(SqlUtils.equal(tblName, extIdName, rootId));
-      } else {
-        su = query;
       }
       su.addConstant(field.getName(), newValue);
-
       return su;
     }
   }
 
   private class StateSingleTable<T extends Number> implements HasStates {
 
+    private final String stateIdName = getName() + getIdName();
+    private final String stateLockName = getName() + getLockName();
     private final int bitCount;
+    private Multimap<BeeState, String> stateFields;
 
     public StateSingleTable(int size) {
       Assert.isPositive(size);
@@ -400,12 +403,13 @@ class BeeTable implements HasExtFields, HasStates {
           String tblName = getStateTable(state);
 
           sc = new SqlCreate(tblName, false)
-              .addLong(getIdName(), Keyword.NOT_NULL);
+              .addLong(stateIdName, Keyword.NOT_NULL)
+              .addLong(stateLockName, Keyword.NOT_NULL);
 
-          addKey(true, tblName, getIdName()).setCustom();
-          addForeignKey(tblName, getIdName(), getName(), Keyword.CASCADE).setCustom();
+          addKey(true, tblName, stateIdName).setCustom();
+          addForeignKey(tblName, stateIdName, getName(), Keyword.CASCADE).setCustom();
         }
-        for (String col : getTableState(state).getFields()) {
+        for (String col : stateFields.get(state)) {
           if (bitCount <= Integer.SIZE) {
             sc.addInt(col);
           } else {
@@ -430,10 +434,9 @@ class BeeTable implements HasExtFields, HasStates {
       if (BeeUtils.isEmpty(bitMasks)) {
         return null;
       }
-      String stateTable = getStateTable(state);
-
-      SqlInsert si = new SqlInsert(stateTable)
-          .addConstant(getIdName(), id);
+      SqlInsert si = new SqlInsert(getStateTable(state))
+          .addConstant(stateLockName, System.currentTimeMillis())
+          .addConstant(stateIdName, id);
 
       for (String bitFld : bitMasks.keySet()) {
         si.addConstant(bitFld, bitMasks.get(bitFld));
@@ -455,42 +458,47 @@ class BeeTable implements HasExtFields, HasStates {
           Object src = from.getSource();
 
           if (src instanceof String && BeeUtils.same((String) src, stateTable)) {
+            String tmpAlias = BeeUtils.ifString(from.getAlias(), stateTable);
             SqlBuilder builder = SqlBuilderFactory.getBuilder();
-            String strFrom = from.getSqlString(builder, false);
-            String strAlias = SqlUtils.field(alias, getIdName()).getSqlString(builder, false);
 
-            if (strFrom.contains(strAlias)) {
-              stateAlias = BeeUtils.ifString(from.getAlias(), stateTable);
+            if (from.getSqlString(builder, false)
+                .endsWith(SqlUtils.join(alias, getIdName(), tmpAlias, stateIdName)
+                    .getSqlString(builder, false))) {
+
+              stateAlias = tmpAlias;
               break;
             }
           }
         }
         if (BeeUtils.isEmpty(stateAlias)) {
-          if (BeeUtils.same(alias, tblName)) {
+          if (BeeUtils.isEmpty(tblAlias)) {
             stateAlias = stateTable;
           } else {
             stateAlias = SqlUtils.uniqueName();
           }
           query.addFromLeft(stateTable, stateAlias,
-              SqlUtils.joinUsing(alias, stateAlias, getIdName()));
+              SqlUtils.join(alias, getIdName(), stateAlias, stateIdName));
         }
       }
       return stateAlias;
     }
 
     @Override
-    public void setStateActive(BeeState state, String... fields) {
+    public void setStateActive(BeeState state, String... flds) {
       Assert.state(hasState(state));
-      Set<String> flds = Sets.newLinkedHashSet();
+      Set<String> fldList = Sets.newLinkedHashSet();
 
-      if (!BeeUtils.isEmpty(fields)) {
-        for (String fld : fields) {
+      if (!BeeUtils.isEmpty(flds)) {
+        for (String fld : flds) {
           if (fld.matches(state.getName() + "\\d+_\\d+")) {
-            flds.add(fld);
+            fldList.add(fld);
           }
         }
       }
-      getTableState(state).setFields(flds);
+      if (BeeUtils.isEmpty(stateFields)) {
+        stateFields = HashMultimap.create();
+      }
+      stateFields.replaceValues(state, fldList);
     }
 
     @Override
@@ -501,10 +509,11 @@ class BeeTable implements HasExtFields, HasStates {
       if (BeeUtils.isEmpty(bitMasks)) {
         return null;
       }
-      String stateTable = getStateTable(state);
+      String tblName = getStateTable(state);
 
-      SqlUpdate su = new SqlUpdate(stateTable)
-          .setWhere(SqlUtils.equal(stateTable, getIdName(), id));
+      SqlUpdate su = new SqlUpdate(tblName)
+          .addConstant(stateLockName, System.currentTimeMillis())
+          .setWhere(SqlUtils.equal(tblName, stateIdName, id));
 
       for (String bitFld : bitMasks.keySet()) {
         su.addConstant(bitFld, bitMasks.get(bitFld));
@@ -525,13 +534,7 @@ class BeeTable implements HasExtFields, HasStates {
         }
         flds.add(getStateField(state, bit));
       }
-      TableState tblState = getTableState(state);
-      boolean upd = !isStateActive(state) || !tblState.getFields().containsAll(flds);
-
-      if (upd) {
-        tblState.setFields(flds);
-      }
-      return upd;
+      return stateFields.putAll(state, flds);
     }
 
     @Override
@@ -561,7 +564,7 @@ class BeeTable implements HasExtFields, HasStates {
         }
         String fld = getStateField(state, bit);
 
-        if (isStateActive(state) && getTableState(state).getFields().contains(fld)) {
+        if (isStateActive(state) && stateFields.containsEntry(state, fld)) {
           long pos = (Math.abs(bit) - 1) % bitCount;
           Long mask = 0L;
 
@@ -587,35 +590,156 @@ class BeeTable implements HasExtFields, HasStates {
         return state.getName() + from + "_" + to; // Role field
       }
     }
+
+    private boolean isStateActive(BeeState state) {
+      return !BeeUtils.isEmpty(stateFields) && stateFields.containsKey(state);
+    }
   }
 
-  private class TableState {
-    private boolean custom = false;
-    private final BeeState state;
-    private Set<String> stateFields;
+  private class TranslationSingleTable implements HasTranslations {
 
-    private TableState(BeeState state) {
-      this.state = state;
+    private final String translationIdName = getName() + getIdName();
+    private final String translationLockName = getName() + getLockName();
+    private final String translationLocaleName = "Locale";
+    private Set<BeeField> translationFields;
+
+    @Override
+    public SqlCreate createTranslationTable(SqlCreate query, BeeField field) {
+      Assert.state(hasField(field));
+      SqlCreate sc = query;
+
+      if (isTranslationActive(field)) {
+        if (BeeUtils.isEmpty(sc)) {
+          String tblName = getTranslationTable(field);
+
+          sc = new SqlCreate(tblName, false)
+              .addLong(translationIdName, Keyword.NOT_NULL)
+              .addLong(translationLockName, Keyword.NOT_NULL)
+              .addString(translationLocaleName, 2, Keyword.NOT_NULL);
+
+          addKey(true, tblName, translationIdName, translationLocaleName).setCustom();
+          addForeignKey(tblName, translationIdName, getName(), Keyword.CASCADE).setCustom();
+        }
+        sc.addField(field.getName(), field.getType(), field.getPrecision(),
+            field.getScale(), field.isNotNull() ? Keyword.NOT_NULL : null);
+      }
+      return sc;
     }
 
-    public Set<String> getFields() {
-      return stateFields;
+    @Override
+    public String getTranslationField(BeeField field, String locale) {
+      Assert.state(hasField(field));
+      Assert.notEmpty(locale);
+      return field.getName();
     }
 
-    public BeeState getState() {
-      return state;
+    @Override
+    public String getTranslationTable(BeeField field) {
+      Assert.state(hasField(field));
+      return getName() + "_TRAN";
     }
 
-    public boolean isCustom() {
-      return custom;
+    @Override
+    public SqlInsert insertTranslationField(SqlInsert query, long rootId, BeeField field,
+        String locale, Object newValue) {
+      Assert.state(hasField(field));
+      Assert.notEmpty(locale);
+      SqlInsert si = query;
+
+      if (isTranslationActive(field)) {
+        if (BeeUtils.isEmpty(query)) {
+          si = new SqlInsert(getTranslationTable(field))
+              .addConstant(translationLocaleName, locale)
+              .addConstant(translationLockName, System.currentTimeMillis())
+              .addConstant(translationIdName, rootId);
+        }
+        si.addConstant(getTranslationField(field, locale), newValue);
+      }
+      return si;
     }
 
-    public void setCustom() {
-      this.custom = true;
+    @Override
+    public String joinTranslationField(HasFrom<?> query, String tblAlias, BeeField field,
+        String locale) {
+      Assert.state(hasField(field));
+      Assert.notEmpty(locale);
+      String tranAlias = null;
+
+      if (isTranslationActive(field)) {
+        String tblName = getName();
+        String alias = BeeUtils.ifString(tblAlias, tblName);
+        String tranTable = getTranslationTable(field);
+
+        for (IsFrom from : query.getFrom()) {
+          Object src = from.getSource();
+
+          if (src instanceof String && BeeUtils.same((String) src, tranTable)) {
+            String tmpAlias = BeeUtils.ifString(from.getAlias(), tranTable);
+            SqlBuilder builder = SqlBuilderFactory.getBuilder();
+
+            if (from.getSqlString(builder, false)
+                .endsWith(SqlUtils.and(
+                    SqlUtils.join(alias, getIdName(), tmpAlias, translationIdName),
+                    SqlUtils.equal(tmpAlias, translationLocaleName, locale))
+                    .getSqlString(builder, false))) {
+
+              tranAlias = tmpAlias;
+              break;
+            }
+          }
+        }
+        if (BeeUtils.isEmpty(tranAlias)) {
+          if (BeeUtils.isEmpty(tblAlias)) {
+            tranAlias = tranTable;
+          } else {
+            tranAlias = SqlUtils.uniqueName();
+          }
+          query.addFromLeft(tranTable, tranAlias,
+              SqlUtils.and(SqlUtils.join(alias, getIdName(), tranAlias, translationIdName),
+                  SqlUtils.equal(tranAlias, translationLocaleName, locale)));
+        }
+      }
+      return tranAlias;
     }
 
-    public void setFields(Set<String> fields) {
-      this.stateFields = fields;
+    @Override
+    public void setTranslationActive(BeeField field, String... flds) {
+      Assert.state(hasField(field));
+
+      if (BeeUtils.isEmpty(translationFields)) {
+        translationFields = Sets.newHashSet();
+      }
+      if (ArrayUtils.contains(field.getName(), flds)) {
+        translationFields.add(field);
+      } else {
+        translationFields.remove(field);
+      }
+    }
+
+    @Override
+    public SqlUpdate updateTranslationField(SqlUpdate query, long rootId, BeeField field,
+        String locale, Object newValue) {
+      Assert.state(hasField(field));
+      Assert.notEmpty(locale);
+      SqlUpdate su = query;
+
+      if (isTranslationActive(field)) {
+        if (BeeUtils.isEmpty(query)) {
+          String tblName = getTranslationTable(field);
+
+          su = new SqlUpdate(tblName)
+              .addConstant(translationLockName, System.currentTimeMillis())
+              .setWhere(SqlUtils.and(
+                  SqlUtils.equal(tblName, translationIdName, rootId),
+                  SqlUtils.equal(tblName, translationLocaleName, locale)));
+        }
+        su.addConstant(getTranslationField(field, locale), newValue);
+      }
+      return su;
+    }
+
+    private boolean isTranslationActive(BeeField field) {
+      return !BeeUtils.isEmpty(translationFields) && translationFields.contains(field);
     }
   }
 
@@ -634,10 +758,11 @@ class BeeTable implements HasExtFields, HasStates {
   private Map<String, BeeField> fields = Maps.newLinkedHashMap();
   private Map<String, BeeForeignKey> foreignKeys = Maps.newLinkedHashMap();
   private Map<String, BeeKey> keys = Maps.newLinkedHashMap();
-  private Map<String, TableState> states = Maps.newLinkedHashMap();
+  private Map<BeeState, Boolean> states = Maps.newLinkedHashMap();
 
   private final HasExtFields extSource;
   private HasStates stateSource;
+  private HasTranslations translationSource;
 
   private boolean active = false;
   private boolean custom = false;
@@ -651,6 +776,7 @@ class BeeTable implements HasExtFields, HasStates {
 
     this.extSource = new ExtSingleTable();
     this.stateSource = new StateSingleTable<Long>(Long.SIZE);
+    this.translationSource = new TranslationSingleTable();
 
     BeeKey key = new BeeKey(KeyTypes.PRIMARY, getName(), getIdName());
     keys.put(key.getName(), key);
@@ -672,12 +798,17 @@ class BeeTable implements HasExtFields, HasStates {
   }
 
   @Override
-  public String getExtTable(String fldName) {
-    return extSource.getExtTable(fldName);
+  public SqlCreate createTranslationTable(SqlCreate query, BeeField field) {
+    return translationSource.createTranslationTable(query, field);
+  }
+
+  @Override
+  public String getExtTable(BeeField field) {
+    return extSource.getExtTable(field);
   }
 
   public BeeField getField(String fldName) {
-    Assert.state(hasField(fldName), "Unknown field name: " + fldName);
+    Assert.state(hasField(fldName), "Unknown field name: " + getName() + " " + fldName);
     return fields.get(fldName);
   }
 
@@ -717,12 +848,7 @@ class BeeTable implements HasExtFields, HasStates {
   }
 
   public Collection<BeeState> getStates() {
-    Collection<BeeState> stateList = Lists.newArrayList();
-
-    for (TableState state : states.values()) {
-      stateList.add(state.getState());
-    }
-    return stateList;
+    return ImmutableList.copyOf(states.keySet());
   }
 
   @Override
@@ -730,12 +856,29 @@ class BeeTable implements HasExtFields, HasStates {
     return stateSource.getStateTable(state);
   }
 
+  @Override
+  public String getTranslationField(BeeField field, String locale) {
+    return translationSource.getTranslationField(field, locale);
+  }
+
+  @Override
+  public String getTranslationTable(BeeField field) {
+    return translationSource.getTranslationTable(field);
+  }
+
   public boolean hasField(String fldName) {
     return fields.containsKey(fldName);
   }
 
+  public boolean hasField(BeeField field) {
+    if (BeeUtils.isEmpty(field)) {
+      return false;
+    }
+    return fields.get(field.getName()) == field;
+  }
+
   public boolean hasState(BeeState state) {
-    return states.containsKey(state.getName());
+    return states.containsKey(state);
   }
 
   @Override
@@ -746,6 +889,12 @@ class BeeTable implements HasExtFields, HasStates {
   @Override
   public SqlInsert insertState(long id, BeeState state, Map<Long, Boolean> bits) {
     return stateSource.insertState(id, state, bits);
+  }
+
+  @Override
+  public SqlInsert insertTranslationField(SqlInsert query, long rootId, BeeField field,
+      String locale, Object newValue) {
+    return translationSource.insertTranslationField(query, rootId, field, locale, newValue);
   }
 
   public boolean isActive() {
@@ -771,8 +920,19 @@ class BeeTable implements HasExtFields, HasStates {
   }
 
   @Override
-  public void setStateActive(BeeState state, String... fields) {
-    stateSource.setStateActive(state, fields);
+  public String joinTranslationField(HasFrom<?> query, String tblAlias, BeeField field,
+      String locale) {
+    return translationSource.joinTranslationField(query, tblAlias, field, locale);
+  }
+
+  @Override
+  public void setStateActive(BeeState state, String... flds) {
+    stateSource.setStateActive(state, flds);
+  }
+
+  @Override
+  public void setTranslationActive(BeeField field, String... flds) {
+    translationSource.setTranslationActive(field, flds);
   }
 
   @Override
@@ -788,6 +948,12 @@ class BeeTable implements HasExtFields, HasStates {
   @Override
   public boolean updateStateActive(BeeState state, long... bits) {
     return stateSource.updateStateActive(state, bits);
+  }
+
+  @Override
+  public SqlUpdate updateTranslationField(SqlUpdate query, long rootId, BeeField field,
+      String locale, Object newValue) {
+    return translationSource.updateTranslationField(query, rootId, field, locale, newValue);
   }
 
   @Override
@@ -819,11 +985,8 @@ class BeeTable implements HasExtFields, HasStates {
     return key;
   }
 
-  TableState addState(BeeState state) {
-    Assert.state(!hasState(state), "Dublicate state: " + getName() + " " + state.getName());
-    TableState tblState = new TableState(state);
-    states.put(state.getName(), tblState);
-    return tblState;
+  BeeState addState(BeeState state) {
+    return addState(state, false);
   }
 
   int applyChanges(BeeTable extension) {
@@ -856,7 +1019,7 @@ class BeeTable implements HasExtFields, HasStates {
       }
     }
     for (BeeState state : extension.getStates()) {
-      addState(state).setCustom();
+      addState(state, true);
       cnt++;
     }
     return cnt;
@@ -868,6 +1031,12 @@ class BeeTable implements HasExtFields, HasStates {
 
   void setCustom() {
     this.custom = true;
+  }
+
+  private BeeState addState(BeeState state, boolean custom) {
+    Assert.state(!hasState(state), "Dublicate state: " + getName() + " " + state.getName());
+    states.put(state, custom);
+    return state;
   }
 
   private void dropCustom() {
@@ -886,20 +1055,16 @@ class BeeTable implements HasExtFields, HasStates {
         foreignKeys.remove(fKey.getName());
       }
     }
-    for (BeeState state : getStates()) {
-      TableState tblState = getTableState(state);
-
-      if (tblState.isCustom()) {
-        states.remove(state.getName());
+    for (BeeForeignKey fKey : Lists.newArrayList(getForeignKeys())) {
+      if (fKey.isCustom()) {
+        foreignKeys.remove(fKey.getName());
       }
     }
-  }
 
-  private TableState getTableState(BeeState state) {
-    return states.get(state.getName());
-  }
-
-  private boolean isStateActive(BeeState state) {
-    return !BeeUtils.isEmpty(getTableState(state).getFields());
+    for (BeeState state : Lists.newArrayList(getStates())) {
+      if (states.get(state)) { // isCustom
+        states.remove(state);
+      }
+    }
   }
 }

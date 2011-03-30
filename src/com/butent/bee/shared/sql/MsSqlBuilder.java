@@ -13,10 +13,10 @@ class MsSqlBuilder extends SqlBuilder {
   protected String sqlKeyword(Keyword option, Map<String, Object> params) {
     switch (option) {
       case DB_NAME:
-        return "SELECT db_name() as dbName";
+        return "SELECT db_name() AS " + sqlQuote("dbName");
 
       case DB_SCHEMA:
-        return "SELECT schema_name() as dbSchema";
+        return "SELECT schema_name() AS " + sqlQuote("dbSchema");
 
       case TEMPORARY:
         return "";

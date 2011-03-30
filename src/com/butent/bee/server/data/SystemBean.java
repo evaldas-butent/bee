@@ -47,6 +47,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Random;
 import java.util.logging.Logger;
 
@@ -116,7 +117,7 @@ public class SystemBean {
     String tblName = null;
 
     BeeView view = getView(changes.getViewName());
-    Map<Integer, BeeField> fields = Maps.newHashMap();
+    Map<String, BeeField> editableFields = Maps.newHashMap();
 
     if (!BeeUtils.isEmpty(view)) {
       tblName = view.getSource();
@@ -127,12 +128,10 @@ public class SystemBean {
       if (view.isReadOnly()) {
         err = "Table " + tblName + " is read only.";
       } else {
-        int i = 0;
-        for (BeeField fld : view.getFields().values()) {
-          if (BeeUtils.equals(fld.getOwner(), tblName)) { // TODO pataisyti
-            fields.put(i, fld);
+        for (String colName : view.getColumns().keySet()) {
+          if (view.isSourceField(colName)) {
+            editableFields.put(colName, getTableField(tblName, view.getField(colName)));
           }
-          i++;
         }
       }
     } else {
@@ -147,10 +146,11 @@ public class SystemBean {
 
       if (!BeeUtils.isEmpty(row.getShadow())) {
         for (Integer col : row.getShadow().keySet()) {
-          BeeField field = fields.get(col);
+          String colId = changes.getColumnId(col);
+          BeeField field = editableFields.get(colId);
 
           if (BeeUtils.isEmpty(field)) {
-            err = "Cannot update column " + changes.getColumnLabel(col) + " (Unknown source).";
+            err = "Cannot update column " + colId + " (Unknown source).";
             break;
           }
           String colName = field.getName();
@@ -587,17 +587,27 @@ public class SystemBean {
     for (BeeTable table : getTables()) {
       table.setActive(BeeUtils.inListSame(table.getName(), dbTables));
 
-      Map<String, String[]> stateTables = Maps.newHashMap();
+      Map<String, String[]> tableFields = Maps.newHashMap();
 
       for (BeeState state : table.getStates()) {
         String tblName = table.getStateTable(state);
 
         if (BeeUtils.inListSame(tblName, dbTables)) {
-          if (!stateTables.containsKey(tblName)) {
-            stateTables.put(tblName, qs.dbFields(tblName));
+          if (!tableFields.containsKey(tblName)) {
+            tableFields.put(tblName, qs.dbFields(tblName));
           }
         }
-        table.setStateActive(state, stateTables.get(tblName));
+        table.setStateActive(state, tableFields.get(tblName));
+      }
+      for (BeeField field : table.getFields()) {
+        String tblName = table.getTranslationTable(field);
+
+        if (BeeUtils.inListSame(tblName, dbTables)) {
+          if (!tableFields.containsKey(tblName)) {
+            tableFields.put(tblName, qs.dbFields(tblName));
+          }
+        }
+        table.setTranslationActive(field, tableFields.get(tblName));
       }
     }
     usr.invalidateCache();
@@ -632,10 +642,11 @@ public class SystemBean {
     BeeTable table = getTable(tblName);
     BeeField field = table.getField(fldName);
 
-    if (field.isExtended()) {
-      return table.joinExtField(query, tblAlias, field);
+    if (!field.isExtended()) {
+      LogUtils.warning(logger, "Field is not extended:", tblName, fldName);
+      return null;
     }
-    return BeeUtils.ifString(tblAlias, tblName);
+    return table.joinExtField(query, tblAlias, field);
   }
 
   public String joinState(HasFrom<?> query, String tblName, String tblAlias, String stateName) {
@@ -648,6 +659,15 @@ public class SystemBean {
       return null;
     }
     return table.joinState(query, tblAlias, state);
+  }
+
+  public String joinTranslationField(HasFrom<?> query, String tblName, String tblAlias,
+      String fldName, String locale) {
+    Assert.notNull(query);
+    BeeTable table = getTable(tblName);
+    BeeField field = table.getField(fldName);
+
+    return table.joinTranslationField(query, tblAlias, field, locale);
   }
 
   public void rebuildActiveTables() {
@@ -827,18 +847,18 @@ public class SystemBean {
     BeeTable table = getTable(tblName);
     Collection<BeeField> fields = allFields ? table.getFields() : table.getMainFields();
 
-    BeeView view = new BeeView(tblName, tblName, false);
+    BeeView view = new BeeView(tblName, tblName, getIdName(tblName), false);
 
     for (BeeField field : fields) {
       String fld = field.getName();
-      loadViewField(view, fld, fld);
+      view.addField(fld, fld, null, dataCache);
       String relTbl = field.getRelation();
 
       if (!BeeUtils.isEmpty(relTbl) && !BeeUtils.same(relTbl, tblName)) {
         BeeView vw = getDefaultView(relTbl, false);
 
-        for (String xpr : vw.getExpressions().values()) {
-          loadViewField(view, fld + xpr.replaceAll(BeeView.JOIN_MASK, ""), fld + ">" + xpr);
+        for (Entry<String, String> col : vw.getColumns().entrySet()) {
+          view.addField(fld + col.getKey(), fld + ">" + col.getValue(), null, dataCache);
         }
       }
     }
@@ -1120,58 +1140,6 @@ public class SystemBean {
     return data;
   }
 
-  private void loadViewField(BeeView vw, String name, String expression) {
-    String src = vw.getSource();
-    SqlSelect ss = vw.getInternalQuery();
-    Map<String, String> aliases = vw.getAliases();
-
-    String xpr = "";
-    String als = aliases.get(xpr);
-    BeeField field = null;
-    String fld = null;
-    String dst = null;
-    boolean isError = false;
-
-    for (String ff : expression.split(BeeView.JOIN_MASK)) {
-      if (isTable(dst)) {
-        xpr = xpr + fld;
-        String key = xpr + ":" + dst;
-
-        if (!aliases.containsKey(key)) {
-          String tmpAls = SqlUtils.uniqueName();
-          ss.addFromLeft(dst, tmpAls, SqlUtils.join(als, fld, tmpAls, getIdName(dst)));
-          aliases.put(key, tmpAls);
-        }
-        als = aliases.get(key);
-        src = dst;
-      }
-      fld = ff;
-
-      if (!getTable(src).hasField(fld)) {
-        isError = true;
-        break;
-      }
-      field = getTableField(src, fld);
-
-      if (field.isExtended()) {
-        String key = fld + ":" + als;
-
-        if (!aliases.containsKey(key)) {
-          String tmpAls = joinExtField(ss, src, als, fld);
-          aliases.put(key, tmpAls);
-        }
-        als = aliases.get(key);
-      }
-      dst = field.getRelation();
-    }
-    if (isError) {
-      LogUtils.warning(logger, "Unknown field name:", fld, src, BeeUtils.bracket(xpr));
-    } else {
-      ss.addField(als, fld, name);
-      vw.addField(name, expression, field);
-    }
-  }
-
   @Lock(LockType.WRITE)
   private Collection<BeeView> loadViews(String resource, String schema) {
     Document xml = getXmlResource(resource, schema);
@@ -1191,7 +1159,8 @@ public class SystemBean {
         continue;
       }
       BeeView vw = new BeeView(view.getAttribute("name")
-          , src, BeeUtils.toBoolean(view.getAttribute("readOnly")));
+          , src, getIdName(src)
+          , BeeUtils.toBoolean(view.getAttribute("readOnly")));
 
       NodeList nodeRoot = view.getElementsByTagName("BeeColumns");
 
@@ -1200,7 +1169,21 @@ public class SystemBean {
 
         for (int j = 0; j < cols.getLength(); j++) {
           Element col = (Element) cols.item(j);
-          loadViewField(vw, col.getAttribute("name"), col.getAttribute("expression"));
+          vw.addField(col.getAttribute("name")
+              , col.getAttribute("expression")
+              , col.getAttribute("locale")
+              , dataCache);
+        }
+      }
+      nodeRoot = view.getElementsByTagName("BeeOrder");
+
+      if (nodeRoot.getLength() > 0) {
+        NodeList orders = ((Element) nodeRoot.item(0)).getElementsByTagName("OrderBy");
+
+        for (int j = 0; j < orders.getLength(); j++) {
+          Element order = (Element) orders.item(j);
+          vw.addOrder(order.getAttribute("name")
+              , BeeUtils.toBoolean(order.getAttribute("descending")));
         }
       }
       data.add(vw);

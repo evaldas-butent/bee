@@ -11,7 +11,7 @@ class MySqlBuilder extends SqlBuilder {
   protected String sqlKeyword(Keyword option, Map<String, Object> params) {
     switch (option) {
       case DB_SCHEMA:
-        return "SELECT schema() as dbSchema";
+        return "SELECT schema() AS " + sqlQuote("dbSchema");
 
       case DROP_FOREIGNKEY:
         return BeeUtils.concat(1,

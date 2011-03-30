@@ -1,7 +1,6 @@
 package com.butent.bee.server.data;
 
 import com.butent.bee.server.DataSourceBean;
-import com.butent.bee.server.data.BeeTable.BeeField;
 import com.butent.bee.server.jdbc.JdbcUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.DateTime;
@@ -228,8 +227,7 @@ public class QueryServiceBean {
       String tableName = view.getSource();
 
       ((SqlSelect) query)
-          .addField(tableName, sys.getIdName(tableName), SqlUtils.uniqueName())
-          .addField(tableName, sys.getLockName(tableName), SqlUtils.uniqueName());
+          .addFields(tableName, sys.getIdName(tableName), sys.getLockName(tableName));
     }
     return processSql(query.getQuery(), new SqlHandler<BeeRowSet>() {
       @Override
@@ -279,7 +277,7 @@ public class QueryServiceBean {
 
   public BeeRowSet rsToBeeRowSet(ResultSet rs, BeeView view) throws SQLException {
     BeeColumn[] rsCols = JdbcUtils.getColumns(rs);
-    int cols = BeeUtils.isEmpty(view) ? rsCols.length : view.getFields().size();
+    int cols = BeeUtils.isEmpty(view) ? rsCols.length : view.getColumnCount();
     BeeColumn[] columns = new BeeColumn[cols];
 
     int idIndex = -1;
@@ -288,9 +286,10 @@ public class QueryServiceBean {
     int j = 0;
     for (BeeColumn col : rsCols) {
       if (!BeeUtils.isEmpty(view)) {
-        BeeField field = view.getFields().get(col.getId());
+        String colName = col.getId();
+        String fld = view.getField(colName);
 
-        if (BeeUtils.isEmpty(field)) {
+        if (BeeUtils.isEmpty(fld)) {
           if (idIndex < 0) {
             idIndex = col.getIndex();
           } else {
@@ -298,7 +297,7 @@ public class QueryServiceBean {
           }
           continue;
         }
-        switch (field.getType()) {
+        switch (sys.getTableField(view.getTable(colName), fld).getType()) {
           case BOOLEAN:
             col.setType(ValueType.BOOLEAN);
             break;

@@ -203,7 +203,7 @@ public class BeeServlet extends HttpServlet {
       if (BeeUtils.allNotEmpty(usr, pwd)) {
         try {
           req.login(usr, pwd);
-          usr = dispatcher.doLogin(reqInfo.getDsn());
+          usr = dispatcher.doLogin(reqInfo.getDsn(), reqInfo.getLocale());
 
           if (BeeUtils.isEmpty(usr)) {
             buff.addSevere("User not authorized:", req.getRemoteUser());

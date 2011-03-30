@@ -8,13 +8,18 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.primitives.Longs;
 
+import com.butent.bee.server.i18n.I18nUtils;
+import com.butent.bee.server.i18n.Localized;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.i18n.LocalizableConstants;
+import com.butent.bee.shared.i18n.LocalizableMessages;
 import com.butent.bee.shared.sql.SqlSelect;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.LogUtils;
 
 import java.security.Principal;
 import java.util.Collection;
+import java.util.Locale;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -38,6 +43,7 @@ public class UserServiceBean {
     private String position;
     private Collection<Long> userRoles;
     private boolean online = false;
+    private Locale locale = Localized.defaultLocale;
 
     public UserInfo(long userId, String login, String firstName, String lastName, String position) {
       this.userId = userId;
@@ -49,6 +55,10 @@ public class UserServiceBean {
 
     public String firstName() {
       return firstName;
+    }
+
+    public Locale getLocale() {
+      return locale;
     }
 
     public Collection<Long> getRoles() {
@@ -74,6 +84,16 @@ public class UserServiceBean {
 
     public String position() {
       return position;
+    }
+
+    public void setLocale(String locale) {
+      Locale loc = I18nUtils.toLocale(locale);
+
+      if (BeeUtils.isEmpty(loc)) {
+        LogUtils.warning(logger, getUserSign(), "Unknown user locale:", locale);
+        loc = Localized.defaultLocale;
+      }
+      this.locale = loc;
     }
 
     public long userId() {
@@ -144,7 +164,15 @@ public class UserServiceBean {
     cacheUpToDate = false; // TODO: sukontroliuoti user online būsenas
   }
 
-  public String login() {
+  public LocalizableConstants localConstants() {
+    return Localized.getConstants(getUser().getLocale());
+  }
+
+  public LocalizableMessages localMesssages() {
+    return Localized.getMessages(getUser().getLocale());
+  }
+
+  public String login(String locale) {
     String sign = null;
     String usr = getCurrentUser();
     UserInfo user = getUser(usr);
@@ -152,6 +180,7 @@ public class UserServiceBean {
     if (!BeeUtils.isEmpty(user)) {
       sign = user.getUserSign();
       user.setOnline(true);
+      user.setLocale(locale);
       LogUtils.infoNow(logger, "User logged in:", sign);
 
     } else if (BeeUtils.isEmpty(users)) {
@@ -188,6 +217,10 @@ public class UserServiceBean {
         logout(user.login());
       }
     }
+  }
+
+  private UserInfo getUser() {
+    return getUser(getCurrentUser());
   }
 
   private UserInfo getUser(long userId) {

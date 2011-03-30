@@ -21,7 +21,7 @@ public interface HasStates {
 
   String joinState(HasFrom<?> query, String tblAlias, BeeState state);
 
-  void setStateActive(BeeState state, String... fields);
+  void setStateActive(BeeState state, String... flds);
 
   SqlUpdate updateState(long id, BeeState state, Map<Long, Boolean> bits);
 

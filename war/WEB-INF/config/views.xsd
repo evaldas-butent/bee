@@ -13,6 +13,7 @@
   <xs:complexType name="view">
     <xs:sequence>
       <xs:element name="BeeColumns" type="bee:columns" minOccurs="1" maxOccurs="1" />
+      <xs:element name="BeeOrder" type="bee:orders" minOccurs="0" maxOccurs="1" />
     </xs:sequence>
     <xs:attribute name="name" type="xs:string" use="required" />
     <xs:attribute name="source" type="xs:string" use="required" />
@@ -25,14 +26,33 @@
     </xs:sequence>
   </xs:complexType>
 
+  <xs:complexType name="orders">
+    <xs:sequence>
+      <xs:element name="OrderBy" type="bee:orderType" maxOccurs="unbounded" />
+    </xs:sequence>
+  </xs:complexType>
+
   <xs:complexType name="columnType">
-    <xs:attribute name="name" use="required">
+    <xs:attribute name="name" type="bee:nameType" use="required" />
+    <xs:attribute name="expression" type="xs:string" use="required" />
+    <xs:attribute name="locale">
       <xs:simpleType>
         <xs:restriction base="xs:string">
-          <xs:maxLength value="30" />
+          <xs:maxLength value="2" />
         </xs:restriction>
       </xs:simpleType>
     </xs:attribute>
-    <xs:attribute name="expression" type="xs:string" use="required" />
   </xs:complexType>
+
+  <xs:complexType name="orderType">
+    <xs:attribute name="name" type="bee:nameType" use="required" />
+    <xs:attribute name="descending" type="xs:boolean" />
+  </xs:complexType>
+
+  <xs:simpleType name="nameType">
+    <xs:restriction base="xs:string">
+      <xs:maxLength value="30" />
+    </xs:restriction>
+  </xs:simpleType>
+
 </xs:schema>

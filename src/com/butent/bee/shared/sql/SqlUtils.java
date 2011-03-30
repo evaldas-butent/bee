@@ -171,10 +171,10 @@ public class SqlUtils {
 
   public static IsCondition in(String src, String fld, String dst, String dFld, IsCondition clause) {
     SqlSelect query = new SqlSelect()
-      .setDistinctMode(true)
-      .addFields(dst, dFld)
-      .addFrom(dst)
-      .setWhere(clause);
+        .setDistinctMode(true)
+        .addFields(dst, dFld)
+        .addFrom(dst)
+        .setWhere(clause);
 
     return in(src, fld, query);
   }
@@ -369,5 +369,8 @@ public class SqlUtils {
       params.put("fields", expression(flds.toArray()));
     }
     return new SqlCommand(Keyword.CREATE_INDEX, params);
+  }
+
+  private SqlUtils() {
   }
 }

@@ -11,7 +11,8 @@ class OracleSqlBuilder extends SqlBuilder {
   protected String sqlKeyword(Keyword option, Map<String, Object> params) {
     switch (option) {
       case DB_SCHEMA:
-        return "SELECT sys_context('USERENV', 'CURRENT_SCHEMA') as dbSchema FROM dual";
+        return "SELECT sys_context('USERENV', 'CURRENT_SCHEMA') AS " + sqlQuote("dbSchema")
+            + " FROM dual";
 
       case DB_TABLES:
         IsCondition wh = null;
