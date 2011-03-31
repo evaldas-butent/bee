@@ -35,7 +35,7 @@ class MsSqlBuilder extends SqlBuilder {
   }
 
   @Override
-  protected Object sqlType(DataType type, int precision, int scale) {
+  protected String sqlType(DataType type, int precision, int scale) {
     switch (type) {
       case DOUBLE:
         return "FLOAT";

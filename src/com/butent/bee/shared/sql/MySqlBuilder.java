@@ -1,5 +1,6 @@
 package com.butent.bee.shared.sql;
 
+import com.butent.bee.shared.sql.BeeConstants.DataType;
 import com.butent.bee.shared.sql.BeeConstants.Keyword;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -19,11 +20,15 @@ class MySqlBuilder extends SqlBuilder {
             "DROP FOREIGN KEY", params.get("name"));
 
       case DB_TABLES:
-        String sql = BeeUtils.concat(" IN ", "SHOW TABLES", params.get("dbSchema"));
-        Object prm = params.get("table");
+        String sql = "SHOW TABLES";
 
+        Object prm = params.get("dbSchema");
         if (!BeeUtils.isEmpty(prm)) {
-          sql = BeeUtils.concat(" LIKE ", sql, sqlTransform(params.get("table")));
+          sql = BeeUtils.concat(1, sql, "IN", sqlQuote((String) prm));
+        }
+        prm = params.get("table");
+        if (!BeeUtils.isEmpty(prm)) {
+          sql = BeeUtils.concat(1, sql, "LIKE", sqlTransform(prm));
         }
         return sql;
 
@@ -59,6 +64,45 @@ class MySqlBuilder extends SqlBuilder {
                 SqlUtils.joinUsing("c", "t", "constraint_name"))
             .setWhere(wh)
             .getQuery(this);
+
+      case CAST:
+        sql = "CAST(" + params.get("expression");
+        String dataType;
+        DataType type = (DataType) params.get("type");
+        int precision = (Integer) params.get("precision");
+        int scale = (Integer) params.get("scale");
+
+        switch (type) {
+          case BOOLEAN:
+            dataType = "DECIMAL(1)";
+            break;
+
+          case INTEGER:
+          case DATE:
+            dataType = "DECIMAL(10)";
+            break;
+
+          case LONG:
+          case DATETIME:
+            dataType = "DECIMAL(19)";
+            break;
+
+          case DOUBLE:
+            dataType = "DECIMAL(65, 30)";
+            break;
+
+          case NUMERIC:
+            dataType = "DECIMAL(" + precision + ", " + scale + ")";
+            break;
+
+          case STRING:
+            dataType = "CHAR(" + precision + ")";
+            break;
+
+          default:
+            dataType = super.sqlType(type, precision, scale);
+        }
+        return BeeUtils.concat(1, sql, "AS", dataType + ")");
 
       default:
         return super.sqlKeyword(option, params);

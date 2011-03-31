@@ -356,7 +356,7 @@ class BeeTable implements HasExtFields, HasStates, HasTranslations {
     private final String stateIdName = getName() + getIdName();
     private final String stateLockName = getName() + getLockName();
     private final int bitCount;
-    private Multimap<BeeState, String> stateFields;
+    private final Multimap<BeeState, String> stateFields = HashMultimap.create();
 
     public StateSingleTable(int size) {
       Assert.isPositive(size);
@@ -495,9 +495,6 @@ class BeeTable implements HasExtFields, HasStates, HasTranslations {
           }
         }
       }
-      if (BeeUtils.isEmpty(stateFields)) {
-        stateFields = HashMultimap.create();
-      }
       stateFields.replaceValues(state, fldList);
     }
 
@@ -592,7 +589,7 @@ class BeeTable implements HasExtFields, HasStates, HasTranslations {
     }
 
     private boolean isStateActive(BeeState state) {
-      return !BeeUtils.isEmpty(stateFields) && stateFields.containsKey(state);
+      return stateFields.containsKey(state);
     }
   }
 
@@ -601,7 +598,7 @@ class BeeTable implements HasExtFields, HasStates, HasTranslations {
     private final String translationIdName = getName() + getIdName();
     private final String translationLockName = getName() + getLockName();
     private final String translationLocaleName = "Locale";
-    private Set<BeeField> translationFields;
+    private final Set<BeeField> translationFields = Sets.newHashSet();
 
     @Override
     public SqlCreate createTranslationTable(SqlCreate query, BeeField field) {
@@ -706,14 +703,19 @@ class BeeTable implements HasExtFields, HasStates, HasTranslations {
     public void setTranslationActive(BeeField field, String... flds) {
       Assert.state(hasField(field));
 
-      if (BeeUtils.isEmpty(translationFields)) {
-        translationFields = Sets.newHashSet();
-      }
       if (ArrayUtils.contains(field.getName(), flds)) {
         translationFields.add(field);
       } else {
         translationFields.remove(field);
       }
+    }
+
+    @Override
+    public boolean updateTranslationActive(BeeField field, String locale) {
+      Assert.state(hasField(field));
+      Assert.notEmpty(locale);
+
+      return translationFields.add(field);
     }
 
     @Override
@@ -739,7 +741,7 @@ class BeeTable implements HasExtFields, HasStates, HasTranslations {
     }
 
     private boolean isTranslationActive(BeeField field) {
-      return !BeeUtils.isEmpty(translationFields) && translationFields.contains(field);
+      return translationFields.contains(field);
     }
   }
 
@@ -755,14 +757,14 @@ class BeeTable implements HasExtFields, HasStates, HasTranslations {
   private final String idName;
   private final String lockName;
 
-  private Map<String, BeeField> fields = Maps.newLinkedHashMap();
-  private Map<String, BeeForeignKey> foreignKeys = Maps.newLinkedHashMap();
-  private Map<String, BeeKey> keys = Maps.newLinkedHashMap();
-  private Map<BeeState, Boolean> states = Maps.newLinkedHashMap();
+  private final Map<String, BeeField> fields = Maps.newLinkedHashMap();
+  private final Map<String, BeeForeignKey> foreignKeys = Maps.newLinkedHashMap();
+  private final Map<String, BeeKey> keys = Maps.newLinkedHashMap();
+  private final Map<BeeState, Boolean> states = Maps.newLinkedHashMap();
 
   private final HasExtFields extSource;
-  private HasStates stateSource;
-  private HasTranslations translationSource;
+  private final HasStates stateSource;
+  private final HasTranslations translationSource;
 
   private boolean active = false;
   private boolean custom = false;
@@ -808,7 +810,7 @@ class BeeTable implements HasExtFields, HasStates, HasTranslations {
   }
 
   public BeeField getField(String fldName) {
-    Assert.state(hasField(fldName), "Unknown field name: " + getName() + " " + fldName);
+    Assert.state(hasField(fldName), BeeUtils.concat(1, "Unknown field name:", getName(), fldName));
     return fields.get(fldName);
   }
 
@@ -951,6 +953,11 @@ class BeeTable implements HasExtFields, HasStates, HasTranslations {
   }
 
   @Override
+  public boolean updateTranslationActive(BeeField field, String locale) {
+    return translationSource.updateTranslationActive(field, locale);
+  }
+
+  @Override
   public SqlUpdate updateTranslationField(SqlUpdate query, long rootId, BeeField field,
       String locale, Object newValue) {
     return translationSource.updateTranslationField(query, rootId, field, locale, newValue);
@@ -967,7 +974,8 @@ class BeeTable implements HasExtFields, HasStates, HasTranslations {
     BeeField field = new BeeField(name, type, precision, scale, notNull, unique, relation, cascade);
     String fieldName = field.getName();
 
-    Assert.state(!hasField(fieldName), "Dublicate field name: " + getName() + " " + fieldName);
+    Assert.state(!hasField(fieldName),
+        BeeUtils.concat(1, "Dublicate field name:", getName(), fieldName));
     fields.put(fieldName, field);
 
     return field;
@@ -1034,7 +1042,8 @@ class BeeTable implements HasExtFields, HasStates, HasTranslations {
   }
 
   private BeeState addState(BeeState state, boolean custom) {
-    Assert.state(!hasState(state), "Dublicate state: " + getName() + " " + state.getName());
+    Assert.state(!hasState(state),
+        BeeUtils.concat(1, "Dublicate state:", getName(), state.getName()));
     states.put(state, custom);
     return state;
   }

@@ -1,5 +1,7 @@
 package com.butent.bee.shared.sql;
 
+import com.google.common.collect.Maps;
+
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.DateTime;
 import com.butent.bee.shared.JustDate;
@@ -9,7 +11,6 @@ import com.butent.bee.shared.sql.SqlCreate.SqlField;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -141,6 +142,14 @@ public abstract class SqlBuilder {
             "ELSE", params.get("ifFalse"),
             "END");
 
+      case CAST:
+        return BeeUtils.concat(1,
+            "CAST(" + params.get("expression"),
+            "AS",
+            sqlType((DataType) params.get("type")
+                , (Integer) params.get("precision")
+                , (Integer) params.get("scale")) + ")");
+
       default:
         Assert.unsupported("Unsupported keyword: " + option);
         return null;
@@ -177,7 +186,7 @@ public abstract class SqlBuilder {
     return s;
   }
 
-  protected Object sqlType(DataType type, int precision, int scale) {
+  protected String sqlType(DataType type, int precision, int scale) {
     switch (type) {
       case BOOLEAN:
         return "BIT";
@@ -205,7 +214,7 @@ public abstract class SqlBuilder {
     Assert.notNull(sc);
     Assert.state(!sc.isEmpty());
 
-    Map<String, Object> params = new HashMap<String, Object>();
+    Map<String, Object> params = Maps.newHashMap();
     Map<String, Object> paramMap = sc.getParameters();
 
     if (!BeeUtils.isEmpty(paramMap)) {

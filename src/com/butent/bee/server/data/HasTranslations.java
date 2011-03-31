@@ -21,6 +21,8 @@ public interface HasTranslations {
 
   void setTranslationActive(BeeField field, String... flds);
 
+  boolean updateTranslationActive(BeeField field, String locale);
+
   SqlUpdate updateTranslationField(SqlUpdate query, long rootId, BeeField field, String locale,
       Object newValue);
 }

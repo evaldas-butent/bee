@@ -90,10 +90,8 @@ public class SqlCreate extends SqlQuery<SqlCreate> {
     return addField(field, DataType.DATETIME, 0, 0, options);
   }
 
-  public SqlCreate addDouble(String field, int precision, int scale, Keyword... options) {
-    Assert.nonNegative(precision);
-    Assert.nonNegative(scale);
-    return addField(field, DataType.DOUBLE, precision, scale, options);
+  public SqlCreate addDouble(String field, Keyword... options) {
+    return addField(field, DataType.DOUBLE, 0, 0, options);
   }
 
   public SqlCreate addField(String field, DataType type, int precision, int scale,

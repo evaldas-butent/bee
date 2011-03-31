@@ -1,7 +1,5 @@
 package com.butent.bee.server.data;
 
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
@@ -36,11 +34,11 @@ import javax.ejb.Singleton;
 public class UserServiceBean {
 
   public class UserInfo {
-    private String login;
-    private long userId;
-    private String firstName;
-    private String lastName;
-    private String position;
+    private final String login;
+    private final long userId;
+    private final String firstName;
+    private final String lastName;
+    private final String position;
     private Collection<Long> userRoles;
     private boolean online = false;
     private Locale locale = Localized.defaultLocale;
@@ -53,59 +51,62 @@ public class UserServiceBean {
       this.position = position;
     }
 
-    public String firstName() {
+    public String getFirstName() {
       return firstName;
+    }
+
+    public String getLastName() {
+      return lastName;
     }
 
     public Locale getLocale() {
       return locale;
     }
 
+    public String getLogin() {
+      return login;
+    }
+
+    public String getPosition() {
+      return position;
+    }
+
     public Collection<Long> getRoles() {
       return userRoles;
     }
 
+    public long getUserId() {
+      return userId;
+    }
+
     public String getUserSign() {
-      return BeeUtils.concat(1, position(),
-          BeeUtils.concat(1, BeeUtils.ifString(firstName(), login()), lastName()));
+      return BeeUtils.concat(1, getPosition(),
+          BeeUtils.concat(1, BeeUtils.ifString(getFirstName(), getLogin()), getLastName()));
     }
 
     public boolean isOnline() {
       return online;
     }
 
-    public String lastName() {
-      return lastName;
-    }
-
-    public String login() {
-      return login;
-    }
-
-    public String position() {
-      return position;
-    }
-
-    public void setLocale(String locale) {
+    private UserInfo setLocale(String locale) {
       Locale loc = I18nUtils.toLocale(locale);
 
       if (BeeUtils.isEmpty(loc)) {
         LogUtils.warning(logger, getUserSign(), "Unknown user locale:", locale);
-        loc = Localized.defaultLocale;
+      } else {
+        this.locale = loc;
       }
-      this.locale = loc;
+      return this;
     }
 
-    public long userId() {
-      return userId;
-    }
-
-    private void setOnline(boolean online) {
+    private UserInfo setOnline(boolean online) {
       this.online = online;
+      return this;
     }
 
-    private void setRoles(Collection<Long> userRoles) {
+    private UserInfo setRoles(Collection<Long> userRoles) {
       this.userRoles = userRoles;
+      return this;
     }
   }
 
@@ -122,89 +123,114 @@ public class UserServiceBean {
   @EJB
   QueryServiceBean qs;
 
-  private BiMap<Long, String> roles = HashBiMap.create();
-  private BiMap<String, Long> users = HashBiMap.create();
-  private Map<Long, UserInfo> userCache = Maps.newHashMap();
+  private final Map<Long, String> roleCache = Maps.newHashMap();
+  private final Map<Long, String> userCache = Maps.newHashMap();
+  private Map<String, UserInfo> infoCache = Maps.newHashMap();
 
   private boolean cacheUpToDate = false;
 
   public String getCurrentUser() {
     Principal p = ctx.getCallerPrincipal();
     Assert.notEmpty(p);
-
     return p.getName().toLowerCase();
   }
 
   public long getCurrentUserId() {
-    initUsers();
-    String user = getCurrentUser();
-    Assert.contains(users, user);
-
-    return users.get(user);
+    return getUserId(getCurrentUser());
   }
 
   public Map<Long, String> getRoles() {
     initUsers();
-    return ImmutableMap.copyOf(roles);
+    return ImmutableMap.copyOf(roleCache);
+  }
+
+  public String getUser(long userId) {
+    Map<Long, String> users = getUsers();
+    Assert.contains(users, userId);
+    return users.get(userId);
+  }
+
+  public long getUserId(String user) {
+    Map<Long, String> users = getUsers();
+
+    for (long userId : users.keySet()) {
+      if (BeeUtils.same(user, users.get(userId))) {
+        return userId;
+      }
+    }
+    Assert.untouchable();
+    return 0;
   }
 
   public long[] getUserRoles(long userId) {
-    initUsers();
-    Assert.notEmpty(userId);
-    return Longs.toArray(getUser(userId).getRoles());
+    return Longs.toArray(getUserInfo(userId).getRoles());
   }
 
   public Map<Long, String> getUsers() {
     initUsers();
-    return ImmutableMap.copyOf(users.inverse());
+    return ImmutableMap.copyOf(userCache);
   }
 
   @Lock(LockType.WRITE)
   public void invalidateCache() {
-    cacheUpToDate = false; // TODO: sukontroliuoti user online būsenas
+    cacheUpToDate = false;
+  }
+
+  public boolean isUser(String user) {
+    for (String usr : getUsers().values()) {
+      if (BeeUtils.same(user, usr)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   public LocalizableConstants localConstants() {
-    return Localized.getConstants(getUser().getLocale());
+    return Localized.getConstants(getCurrentUserInfo().getLocale());
   }
 
   public LocalizableMessages localMesssages() {
-    return Localized.getMessages(getUser().getLocale());
+    return Localized.getMessages(getCurrentUserInfo().getLocale());
   }
 
   public String login(String locale) {
     String sign = null;
-    String usr = getCurrentUser();
-    UserInfo user = getUser(usr);
+    String user = getCurrentUser();
 
-    if (!BeeUtils.isEmpty(user)) {
-      sign = user.getUserSign();
-      user.setOnline(true);
-      user.setLocale(locale);
+    if (isUser(user)) {
+      UserInfo info = getUserInfo(user);
+      sign = user + " " + BeeUtils.parenthesize(info.getUserSign());
+      info.setOnline(true);
+      info.setLocale(locale);
       LogUtils.infoNow(logger, "User logged in:", sign);
 
-    } else if (BeeUtils.isEmpty(users)) {
-      sign = usr;
+    } else if (BeeUtils.isEmpty(getUsers())) {
+      sign = user;
       LogUtils.warning(logger, "Anonymous user logged in:", sign);
 
     } else {
-      LogUtils.severe(logger, "Login attempt by an unauthorized user:", usr);
+      LogUtils.severe(logger, "Login attempt by an unauthorized user:", user);
     }
     return sign;
   }
 
-  public void logout(String usr) {
-    UserInfo user = getUser(usr);
+  public void logout(String user) {
+    if (isUser(user)) {
+      UserInfo info = getUserInfo(user);
+      String sign = user + " " + BeeUtils.parenthesize(info.getUserSign());
 
-    if (!BeeUtils.isEmpty(user)) {
-      user.setOnline(false);
-      LogUtils.infoNow(logger, "User logged out:", user.getUserSign());
+      if (info.isOnline()) {
+        info.setOnline(false);
+        LogUtils.infoNow(logger, "User logged out:", sign);
+      } else {
+        LogUtils.warning(logger, "User was not logged in:", sign);
+      }
 
-    } else if (BeeUtils.isEmpty(users)) {
-      LogUtils.warning(logger, "Anonymous user logged out:", usr);
+    } else if (BeeUtils.isEmpty(getUsers())) {
+      LogUtils.warning(logger, "Anonymous user logged out:", user);
 
     } else {
-      LogUtils.severe(logger, "Logout attempt by an unauthorized user:", usr);
+      LogUtils.severe(logger, "Logout attempt by an unauthorized user:", user);
     }
   }
 
@@ -212,26 +238,25 @@ public class UserServiceBean {
   @PreDestroy
   @Lock(LockType.WRITE)
   private void destroy() {
-    for (UserInfo user : userCache.values()) {
-      if (user.isOnline()) {
-        logout(user.login());
+    for (String user : getUsers().values()) {
+      UserInfo info = getUserInfo(user);
+
+      if (info.isOnline()) {
+        logout(info.getLogin());
       }
     }
   }
 
-  private UserInfo getUser() {
-    return getUser(getCurrentUser());
+  private UserInfo getCurrentUserInfo() {
+    return getUserInfo(getCurrentUserId());
   }
 
-  private UserInfo getUser(long userId) {
-    initUsers();
-    Assert.contains(userCache, userId);
-    return userCache.get(userId);
+  private UserInfo getUserInfo(long userId) {
+    return infoCache.get(getUser(userId));
   }
 
-  private UserInfo getUser(String usr) {
-    initUsers();
-    return userCache.get(users.get(usr));
+  private UserInfo getUserInfo(String user) {
+    return getUserInfo(getUserId(user));
   }
 
   @Lock(LockType.WRITE)
@@ -239,9 +264,10 @@ public class UserServiceBean {
     if (cacheUpToDate) {
       return;
     }
-    roles.clear();
-    users.clear();
+    roleCache.clear();
     userCache.clear();
+    Map<String, UserInfo> expiredCache = infoCache;
+    infoCache = Maps.newHashMap();
 
     String userIdName = sys.getIdName(USER_TABLE);
     String roleIdName = sys.getIdName(ROLE_TABLE);
@@ -251,7 +277,7 @@ public class UserServiceBean {
         .addFrom(ROLE_TABLE, "r");
 
     for (Map<String, String> row : qs.getData(ss)) {
-      roles.put(BeeUtils.toLong(row.get(roleIdName)), row.get("Name"));
+      roleCache.put(BeeUtils.toLong(row.get(roleIdName)), row.get("Name"));
     }
 
     ss = new SqlSelect()
@@ -270,15 +296,21 @@ public class UserServiceBean {
 
     for (Map<String, String> row : qs.getData(ss)) {
       long userId = BeeUtils.toLong(row.get(userIdName));
-      String login = row.get("Login");
+      String login = row.get("Login").toLowerCase();
 
-      users.put(login.toLowerCase(), userId);
+      userCache.put(userId, login);
 
-      UserInfo user = new UserInfo(userId, login, row.get("FirstName"), row.get("LastName"),
-          row.get("Position"));
+      UserInfo user = new UserInfo(userId, login,
+          row.get("FirstName"), row.get("LastName"), row.get("Position"))
+          .setRoles(userRoles.get(userId));
 
-      user.setRoles(userRoles.get(userId));
-      userCache.put(userId, user);
+      UserInfo oldInfo = expiredCache.get(login);
+
+      if (!BeeUtils.isEmpty(oldInfo)) {
+        user.setLocale(oldInfo.getLocale().toString())
+            .setOnline(oldInfo.isOnline());
+      }
+      infoCache.put(login, user);
     }
     cacheUpToDate = true;
   }

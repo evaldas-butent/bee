@@ -3,6 +3,7 @@ package com.butent.bee.shared.sql;
 import com.google.common.collect.Lists;
 
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.sql.BeeConstants.DataType;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
@@ -62,11 +63,74 @@ public class SqlSelect extends HasFrom<SqlSelect> {
     return addCount(SqlUtils.expression("*"), alias);
   }
 
+  public SqlSelect addEmptyBoolean(String alias) {
+    return addEmptyField(alias, DataType.BOOLEAN, 0, 0);
+  }
+
+  public SqlSelect addEmptyChar(String alias, int precision) {
+    return addEmptyField(alias, DataType.CHAR, precision, 0);
+  }
+
+  public SqlSelect addEmptyDate(String alias) {
+    return addEmptyField(alias, DataType.DATE, 0, 0);
+  }
+
+  public SqlSelect addEmptyDateTime(String alias) {
+    return addEmptyField(alias, DataType.DATETIME, 0, 0);
+  }
+
+  public SqlSelect addEmptyDouble(String alias) {
+    return addEmptyField(alias, DataType.DOUBLE, 0, 0);
+  }
+
+  public SqlSelect addEmptyField(String alias, DataType type, int precision, int scale) {
+    Object emptyValue;
+
+    switch (type) {
+      case BOOLEAN:
+      case INTEGER:
+      case LONG:
+      case DOUBLE:
+      case NUMERIC:
+      case DATE:
+      case DATETIME:
+        emptyValue = 0;
+        break;
+
+      case CHAR:
+      case STRING:
+        emptyValue = "";
+        break;
+
+      default:
+        Assert.unsupported("Unsupported data type: " + type.name());
+        return null;
+    }
+    addField(SqlUtils.cast(SqlUtils.constant(emptyValue), type, precision, scale), alias);
+    return getReference();
+  }
+
+  public SqlSelect addEmptyInt(String alias) {
+    return addEmptyField(alias, DataType.INTEGER, 0, 0);
+  }
+
+  public SqlSelect addEmptyLong(String alias) {
+    return addEmptyField(alias, DataType.LONG, 0, 0);
+  }
+
+  public SqlSelect addEmptyNumeric(String alias, int precision, int scale) {
+    return addEmptyField(alias, DataType.NUMERIC, precision, scale);
+  }
+
+  public SqlSelect addEmptyString(String alias, int precision) {
+    return addEmptyField(alias, DataType.STRING, precision, 0);
+  }
+
   public SqlSelect addExpr(IsExpression expr, String alias) {
     Assert.notEmpty(expr);
     Assert.notEmpty(alias);
 
-    addField(expr, SqlUtils.name(alias));
+    addField(expr, alias);
     return getReference();
   }
 
@@ -375,10 +439,10 @@ public class SqlSelect extends HasFrom<SqlSelect> {
     addExpr(SqlUtils.expression(fnc, "(", expr, ")"), alias);
   }
 
-  private void addField(IsExpression expr, IsExpression alias) {
+  private void addField(IsExpression expr, String alias) {
     IsExpression[] fieldEntry = new IsExpression[2];
     fieldEntry[FIELD_EXPR] = expr;
-    fieldEntry[FIELD_ALIAS] = alias;
+    fieldEntry[FIELD_ALIAS] = BeeUtils.isEmpty(alias) ? null : SqlUtils.name(alias);
 
     if (BeeUtils.isEmpty(fieldList)) {
       fieldList = Lists.newArrayList();
