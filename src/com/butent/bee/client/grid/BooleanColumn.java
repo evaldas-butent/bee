@@ -6,12 +6,12 @@ import com.butent.bee.shared.data.IsRow;
 
 public class BooleanColumn extends CellColumn<Boolean> {
 
-  public BooleanColumn(int index) {
-    this(new BooleanCell(), index);
+  public BooleanColumn(int index, String label) {
+    this(new BooleanCell(), index, label);
   }
 
-  public BooleanColumn(Cell<Boolean> cell, int index) {
-    super(cell, index);
+  public BooleanColumn(Cell<Boolean> cell, int index, String label) {
+    super(cell, index, label);
   }
 
   @Override

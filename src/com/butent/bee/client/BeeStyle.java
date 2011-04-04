@@ -1,9 +1,9 @@
 package com.butent.bee.client;
 
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.client.DOM;
-import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.UIObject;
 
 import com.butent.bee.shared.Assert;
@@ -11,6 +11,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.utils.BeeUtils;
 
 public class BeeStyle implements Module {
+  
   public static final String ACTIVE_BLANK = "bee-activeBlank";
   public static final String ACTIVE_CONTENT = "bee-activeContent";
   public static final String CONFIG_PANEL = "bee-configPanel";
@@ -30,6 +31,10 @@ public class BeeStyle implements Module {
 
   public static final String STYLE_TABLE_LAYOUT = "tableLayout";
 
+  public static final String STYLE_OVERFLOW = "overflow";
+  public static final String STYLE_OVERFLOW_X = "overflow-x";
+  public static final String STYLE_OVERFLOW_Y = "overflow-y";
+  
   public static final String VALUE_AUTO = "auto";
   public static final String VALUE_FIXED = "fixed";
 
@@ -58,6 +63,51 @@ public class BeeStyle implements Module {
   public void autoHeight(Style st) {
     Assert.notNull(st);
     st.setProperty(STYLE_HEIGHT, VALUE_AUTO);
+  }
+
+  public void autoOverflow(UIObject obj) {
+    Assert.notNull(obj);
+    autoOverflow(obj.getElement());
+  }
+
+  public void autoOverflow(Element el) {
+    Assert.notNull(el);
+    autoOverflow(el.getStyle());
+  }
+
+  public void autoOverflow(Style st) {
+    Assert.notNull(st);
+    st.setProperty(STYLE_OVERFLOW, VALUE_AUTO);
+  }
+
+  public void autoOverflowX(UIObject obj) {
+    Assert.notNull(obj);
+    autoOverflowX(obj.getElement());
+  }
+
+  public void autoOverflowX(Element el) {
+    Assert.notNull(el);
+    autoOverflowX(el.getStyle());
+  }
+
+  public void autoOverflowX(Style st) {
+    Assert.notNull(st);
+    setStyleProperty(st, STYLE_OVERFLOW_X, VALUE_AUTO);
+  }
+
+  public void autoOverflowY(UIObject obj) {
+    Assert.notNull(obj);
+    autoOverflowY(obj.getElement());
+  }
+
+  public void autoOverflowY(Element el) {
+    Assert.notNull(el);
+    autoOverflowY(el.getStyle());
+  }
+
+  public void autoOverflowY(Style st) {
+    Assert.notNull(st);
+    setStyleProperty(st, STYLE_OVERFLOW_Y, VALUE_AUTO);
   }
   
   public void autoWidth(UIObject obj) {
@@ -441,7 +491,10 @@ public class BeeStyle implements Module {
         break;
       }
     }
-
     return ok;
   }
+
+  private native void setStyleProperty(Style style, String name, String value) /*-{
+    style[name] = value;
+  }-*/;
 }

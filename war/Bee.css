@@ -144,7 +144,7 @@ body, select {
   -moz-box-sizing: border-box;
   -ms-box-sizing: border-box;
 }  
-.bee-LayoutContainer > .bee-TextBox {
+.bee-LayoutContainer > .bee-TextBox, .bee-LayoutContainer > .bee-SearchBox {
   width: 100%;
   margin: 0;
   box-sizing: border-box;
@@ -418,9 +418,7 @@ body, select {
   width: 100%;
   background: white;
 }
-.datePickerDay,
-.datePickerWeekdayLabel,
-.datePickerWeekendLabel {
+.datePickerDay, .datePickerWeekdayLabel, .datePickerWeekendLabel {
   font-size: 85%;
   text-align: center;
   padding: 4px;
@@ -430,8 +428,7 @@ body, select {
   border-right: 1px solid #EDEDED;
   border-bottom: 1px solid #EDEDED;
 }
-.datePickerWeekdayLabel,
-.datePickerWeekendLabel {
+.datePickerWeekdayLabel, .datePickerWeekendLabel {
   background: #fff;
   padding: 0px 4px 2px;
   cursor: default;
@@ -482,8 +479,7 @@ td.datePickerMonth {
   font-weight: bold;
   color: #333;
 }
-.datePickerPreviousButton,
-.datePickerNextButton {
+.datePickerPreviousButton, .datePickerNextButton {
   font-size: 120%;
   line-height: 1em;
   color: #3a6aad;

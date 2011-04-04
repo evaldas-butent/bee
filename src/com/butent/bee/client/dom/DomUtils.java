@@ -107,6 +107,7 @@ public class DomUtils {
   public static final String ATTRIBUTE_MIN = "min";
   public static final String ATTRIBUTE_MAX = "max";
   public static final String ATTRIBUTE_OPTIMUM = "optimum";
+  public static final String ATTRIBUTE_PLACEHOLDER = "placeholder";
   public static final String ATTRIBUTE_POSITION = "position";
   public static final String ATTRIBUTE_ROW_SPAN = "rowSpan";
   public static final String ATTRIBUTE_STEP = "step";
@@ -115,6 +116,8 @@ public class DomUtils {
 
   public static final String ATTRIBUTE_SERVICE = "data-svc";
   public static final String ATTRIBUTE_STAGE = "data-stg";
+  
+  public static final String TYPE_SEARCH = "search";
 
   public static final String VALUE_TRUE = "true";
 
@@ -551,23 +554,33 @@ public class DomUtils {
     Assert.notNull(el);
     List<Property> lst = new ArrayList<Property>();
 
-    PropertyUtils.addProperties(lst, "Absolute Bottom", el.getAbsoluteBottom(),
-        "Absolute Left", el.getAbsoluteLeft(), "Absolute Right",
-        el.getAbsoluteRight(), "Absolute Top", el.getAbsoluteTop(),
-        "Class Name", el.getClassName(), "Client Height", el.getClientHeight(),
-        "Client Width", el.getClientWidth(), "Dir", el.getDir(), "Id",
-        el.getId(), "First Child Element",
-        transformElement(el.getFirstChildElement()), "Inner HTML",
-        el.getInnerHTML(), "Inner Text", el.getInnerText(), "Lang",
-        el.getLang(), "Next Sibling Element",
-        transformElement(el.getNextSiblingElement()), "Offset Height",
-        el.getOffsetHeight(), "Offset Left", el.getOffsetLeft(),
-        "Offset Parent", transformElement(el.getOffsetParent()), "Offset Top",
-        el.getOffsetTop(), "Offset Width", el.getOffsetWidth(),
-        "Scroll Height", el.getScrollHeight(), "Scroll Left",
-        el.getScrollLeft(), "Scroll Top", el.getScrollTop(), "Scroll Width",
-        el.getScrollWidth(), "Tab Index", el.getTabIndex(), "Tag Name",
-        el.getTagName(), "Title", el.getTitle());
+    PropertyUtils.addProperties(lst,
+        "Absolute Bottom", el.getAbsoluteBottom(),
+        "Absolute Left", el.getAbsoluteLeft(),
+        "Absolute Right", el.getAbsoluteRight(),
+        "Absolute Top", el.getAbsoluteTop(),
+        "Class Name", el.getClassName(),
+        "Client Height", el.getClientHeight(),
+        "Client Width", el.getClientWidth(),
+        "Dir", el.getDir(),
+        "Id", el.getId(),
+        "First Child Element", transformElement(el.getFirstChildElement()),
+        "Inner HTML", el.getInnerHTML(),
+        "Inner Text", el.getInnerText(),
+        "Lang", el.getLang(),
+        "Next Sibling Element", transformElement(el.getNextSiblingElement()),
+        "Offset Height", el.getOffsetHeight(),
+        "Offset Left", el.getOffsetLeft(),
+        "Offset Parent", transformElement(el.getOffsetParent()),
+        "Offset Top", el.getOffsetTop(),
+        "Offset Width", el.getOffsetWidth(),
+        "Scroll Height", el.getScrollHeight(),
+        "Scroll Left", el.getScrollLeft(),
+        "Scroll Top", el.getScrollTop(),
+        "Scroll Width", el.getScrollWidth(),
+        "Tab Index", el.getTabIndex(),
+        "Tag Name", el.getTagName(),
+        "Title", el.getTitle());
 
     return lst;
   }
@@ -626,7 +639,6 @@ public class DomUtils {
         }
       }
     }
-
     return lst;
   }
   
@@ -660,15 +672,19 @@ public class DomUtils {
     Assert.notNull(nd);
     List<Property> lst = new ArrayList<Property>();
 
-    PropertyUtils.addProperties(lst, "Child Count", nd.getChildCount(), "First Child",
-        transformNode(nd.getFirstChild()), "Last Child",
-        transformNode(nd.getLastChild()), "Next Sibling",
-        transformNode(nd.getNextSibling()), "Node Name", nd.getNodeName(),
-        "Node Type", nd.getNodeType(), "Node Value", nd.getNodeValue(),
+    PropertyUtils.addProperties(lst,
+        "Child Count", nd.getChildCount(),
+        "First Child", transformNode(nd.getFirstChild()),
+        "Last Child", transformNode(nd.getLastChild()),
+        "Next Sibling", transformNode(nd.getNextSibling()),
+        "Node Name", nd.getNodeName(),
+        "Node Type", nd.getNodeType(),
+        "Node Value", nd.getNodeValue(),
         "Parent Element", transformElement(nd.getParentElement()),
-        "Parent Node", transformNode(nd.getParentNode()), "Previous Sibling",
-        transformNode(nd.getPreviousSibling()), "Has Child Nodes",
-        nd.hasChildNodes(), "Has Parent Element", nd.hasParentElement());
+        "Parent Node", transformNode(nd.getParentNode()),
+        "Previous Sibling", transformNode(nd.getPreviousSibling()),
+        "Has Child Nodes", nd.hasChildNodes(),
+        "Has Parent Element", nd.hasParentElement());
 
     return lst;
   }
@@ -750,24 +766,42 @@ public class DomUtils {
     Assert.notNull(st);
     List<Property> lst = new ArrayList<Property>();
 
-    PropertyUtils.addProperties(lst, "Background Color", st.getBackgroundColor(),
+    PropertyUtils.addProperties(lst,
+        "Background Color", st.getBackgroundColor(),
         "Background Image", st.getBackgroundImage(), 
-        "Border Color", st.getBorderColor(), "Border Style", st.getBorderStyle(),
-        "Border Width", st.getBorderWidth(), "Bottom", st.getBottom(),
-        "Color", st.getColor(), "Cursor", st.getCursor(), "Display", st.getDisplay(),
-        "Font Size", st.getFontSize(), "Font Style", st.getFontStyle(),
-        "Font Weight", st.getFontWeight(), "Height", st.getHeight(),
-        "Left", st.getLeft(), "List Style Type", st.getListStyleType(),
-        "Margin", st.getMargin(), "Margin Bottom", st.getMarginBottom(),
-        "Margin Left", st.getMarginLeft(), "Margin Right", st.getMarginRight(),
-        "Margin Top", st.getMarginTop(), "Opacity", st.getOpacity(),
-        "Overflow", st.getOverflow(), "Padding", st.getPadding(),
-        "Padding Bottom", st.getPaddingBottom(), "Padding Left", st.getPaddingLeft(),
-        "Padding Right", st.getPaddingRight(), "Padding Top", st.getPaddingTop(),
-        "Position", st.getPosition(), "Right", st.getRight(),
-        "Text Decoration", st.getTextDecoration(), "Top", st.getTop(),
-        "Vertical Align", st.getVerticalAlign(), "Visibility", st.getVisibility(),
-        "Width", st.getWidth(), "Z Index", st.getZIndex());
+        "Border Color", st.getBorderColor(),
+        "Border Style", st.getBorderStyle(),
+        "Border Width", st.getBorderWidth(),
+        "Bottom", st.getBottom(),
+        "Color", st.getColor(),
+        "Cursor", st.getCursor(),
+        "Display", st.getDisplay(),
+        "Font Size", st.getFontSize(),
+        "Font Style", st.getFontStyle(),
+        "Font Weight", st.getFontWeight(),
+        "Height", st.getHeight(),
+        "Left", st.getLeft(),
+        "List Style Type", st.getListStyleType(),
+        "Margin", st.getMargin(),
+        "Margin Bottom", st.getMarginBottom(),
+        "Margin Left", st.getMarginLeft(),
+        "Margin Right", st.getMarginRight(),
+        "Margin Top", st.getMarginTop(),
+        "Opacity", st.getOpacity(),
+        "Overflow", st.getOverflow(),
+        "Padding", st.getPadding(),
+        "Padding Bottom", st.getPaddingBottom(),
+        "Padding Left", st.getPaddingLeft(),
+        "Padding Right", st.getPaddingRight(),
+        "Padding Top", st.getPaddingTop(),
+        "Position", st.getPosition(),
+        "Right", st.getRight(),
+        "Text Decoration", st.getTextDecoration(),
+        "Top", st.getTop(),
+        "Vertical Align", st.getVerticalAlign(),
+        "Visibility", st.getVisibility(),
+        "Width", st.getWidth(),
+        "Z Index", st.getZIndex());
 
     return lst;
   }
@@ -821,8 +855,7 @@ public class DomUtils {
     return textBoxOffsetWidth;
   }
   
-  public static List<ExtendedProperty> getUIObjectExtendedInfo(UIObject obj,
-      String prefix) {
+  public static List<ExtendedProperty> getUIObjectExtendedInfo(UIObject obj, String prefix) {
     Assert.notNull(obj);
     List<ExtendedProperty> lst = new ArrayList<ExtendedProperty>();
 
@@ -848,11 +881,16 @@ public class DomUtils {
     Assert.notNull(obj);
     List<Property> lst = new ArrayList<Property>();
 
-    PropertyUtils.addProperties(lst, "Absolute Left", obj.getAbsoluteLeft(),
-        "Absolute Top", obj.getAbsoluteTop(), "Class", transformClass(obj),
-        "Offset Height", obj.getOffsetHeight(), "Offset Width", obj.getOffsetWidth(),
-        "Style Name", obj.getStyleName(), "Style Primary Name", obj.getStylePrimaryName(),
-        "Title", obj.getTitle(), "Visible", obj.isVisible());
+    PropertyUtils.addProperties(lst,
+        "Absolute Left", obj.getAbsoluteLeft(),
+        "Absolute Top", obj.getAbsoluteTop(),
+        "Class", transformClass(obj),
+        "Offset Height", obj.getOffsetHeight(),
+        "Offset Width", obj.getOffsetWidth(),
+        "Style Name", obj.getStyleName(),
+        "Style Primary Name", obj.getStylePrimaryName(),
+        "Title", obj.getTitle(),
+        "Visible", obj.isVisible());
 
     return lst;
   }
@@ -955,8 +993,10 @@ public class DomUtils {
     Assert.notNull(w);
     List<Property> lst = new ArrayList<Property>();
 
-    PropertyUtils.addProperties(lst, "Class", transformClass(w), "Layout Data",
-        w.getLayoutData(), "Parent", transformClass(w.getParent()),
+    PropertyUtils.addProperties(lst,
+        "Class", transformClass(w),
+        "Layout Data", w.getLayoutData(),
+        "Parent", transformClass(w.getParent()),
         "Attached", w.isAttached());
 
     return lst;
@@ -1058,7 +1098,6 @@ public class DomUtils {
       BeeKeeper.getLog().info(BeeUtils.progress(i + 1, lst.size()),
           lst.get(i).getName(), lst.get(i).getValue());
     }
-
     BeeKeeper.getLog().addSeparator();
   }
 
@@ -1070,7 +1109,6 @@ public class DomUtils {
       BeeKeeper.getLog().info(BeeUtils.progress(i + 1, lst.size()),
           lst.get(i).getName(), lst.get(i).getValue());
     }
-
     BeeKeeper.getLog().addSeparator();
   }
 
@@ -1088,7 +1126,6 @@ public class DomUtils {
         break;
       }
     }
-
     return null;
   }
   
@@ -1133,16 +1170,16 @@ public class DomUtils {
     w.getElement().removeAttribute(name);
   }
 
-  public static void setAttribute(Widget w, String name, int value) {
-    setAttribute(w, name, Integer.toString(value));
+  public static void setAttribute(UIObject obj, String name, int value) {
+    setAttribute(obj, name, Integer.toString(value));
   }
   
-  public static void setAttribute(Widget w, String name, String value) {
-    Assert.notNull(w);
+  public static void setAttribute(UIObject obj, String name, String value) {
+    Assert.notNull(obj);
     Assert.notEmpty(name);
     Assert.notEmpty(value);
 
-    w.getElement().setAttribute(name.trim().toLowerCase(), value.trim());
+    obj.getElement().setAttribute(name.trim().toLowerCase(), value.trim());
   }
 
   public static void setCheckValue(Element elem, boolean value) {
@@ -1190,12 +1227,40 @@ public class DomUtils {
     obj.getElement().setId(s);
   }
   
+  public static void setInputType(UIObject obj, String type) {
+    Assert.notNull(obj);
+    setInputType(obj.getElement(), type);
+  }
+
+  public static void setInputType(Element elem, String type) {
+    assertInputElement(elem);
+    Assert.notEmpty(type);
+    elem.setAttribute(ATTRIBUTE_TYPE, type);
+  }
+
   public static void setMax(Widget w, int max) {
     setAttribute(w, ATTRIBUTE_MAX, max);
   }
 
   public static void setMin(Widget w, int min) {
     setAttribute(w, ATTRIBUTE_MIN, min);
+  }
+
+  public static boolean setPlaceholder(UIObject obj, String value) {
+    Assert.notNull(obj);
+    return setPlaceholder(obj.getElement(), value);
+  }
+  
+  public static boolean setPlaceholder(Element elem, String value) {
+    assertInputElement(elem);
+    Assert.notEmpty(value);
+    
+    if (Features.supportsAttributePlaceholder()) {
+      elem.setAttribute(ATTRIBUTE_PLACEHOLDER, value);
+      return true;
+    } else {
+      return false;
+    }
   }
   
   public static void setRowSpan(Element elem, int span) {
@@ -1204,7 +1269,22 @@ public class DomUtils {
     
     TableCellElement.as(elem).setRowSpan(span);
   }
+  
+  public static boolean setSearch(UIObject obj) {
+    Assert.notNull(obj);
+    return setSearch(obj.getElement());
+  }
 
+  public static boolean setSearch(Element elem) {
+    assertInputElement(elem);
+    if (Features.supportsInputSearch()) {
+      setInputType(elem, TYPE_SEARCH);
+      return true;
+    } else {
+      return false;
+    }
+  }
+  
   public static void setSelected(Element elem, boolean selected) {
     Assert.notNull(elem);
     
@@ -1237,10 +1317,6 @@ public class DomUtils {
     elem.setInnerText(text);
   }
 
-  public static void setType(Widget w, String type) {
-    setAttribute(w, ATTRIBUTE_TYPE, type);
-  }
-  
   public static Widget setWidth(Widget w, int width) {
     return setWidth(w, width, Unit.PX);
   }
@@ -1306,6 +1382,10 @@ public class DomUtils {
       return BeeUtils.concat(1, JreEmulation.getSimpleName(w), w.getElement().getId(),
           w.getStyleName());
     }
+  }
+  
+  private static void assertInputElement(Element elem) {
+    Assert.isTrue(isInputElement(elem), "not an input element");
   }
 
   private static void calculateScrollbarSize() {

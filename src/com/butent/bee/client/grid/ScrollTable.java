@@ -18,7 +18,6 @@ import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.ComplexPanel;
-import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment.HorizontalAlignmentConstant;
@@ -31,10 +30,6 @@ import com.butent.bee.client.event.DndEvent;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.HasAllDndHandlers;
 import com.butent.bee.client.grid.FlexTable.FlexCellFormatter;
-import com.butent.bee.client.grid.SelectionGrid.SelectionPolicy;
-import com.butent.bee.client.grid.event.RowSelectionEvent;
-import com.butent.bee.client.grid.event.RowSelectionHandler;
-import com.butent.bee.client.grid.event.TableEvent.Row;
 import com.butent.bee.client.grid.model.TableModel;
 import com.butent.bee.client.grid.model.TableModel.Callback;
 import com.butent.bee.client.grid.model.TableModelHelper.Request;
@@ -42,7 +37,6 @@ import com.butent.bee.client.grid.model.TableModelHelper.Response;
 import com.butent.bee.client.grid.property.FooterProperty;
 import com.butent.bee.client.grid.property.HeaderProperty;
 import com.butent.bee.client.grid.render.FixedWidthGridBulkRenderer;
-import com.butent.bee.client.widget.BeeSimpleCheckBox;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasId;
@@ -50,10 +44,8 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
 public class ScrollTable extends ComplexPanel implements
     HasId, HasScrollHandlers, HasTableDefinition, RequiresResize {
@@ -465,9 +457,6 @@ public class ScrollTable extends ComplexPanel implements
   private boolean loading;
   private Request lastRequest = null;
 
-  private Set<IsRow> selectedRowValues = new HashSet<IsRow>();
-  private BeeSimpleCheckBox selectAllWidget;
-
   private List<IsRow> rowValues = new ArrayList<IsRow>();
   private RowView rowView = new RowView(new ScrollTableCellView(this));
 
@@ -568,22 +557,6 @@ public class ScrollTable extends ComplexPanel implements
     this.tableModel = tableModel;
     setTableDefinition(tableDefinition);
     refreshVisibleColumnDefinitions();
-
-    dataTable.addRowSelectionHandler(new RowSelectionHandler() {
-      public void onRowSelection(RowSelectionEvent event) {
-        if (isLoading()) {
-          return;
-        }
-        Set<Row> deselected = event.getDeselectedRows();
-        for (Row row : deselected) {
-          selectedRowValues.remove(getRowValue(row.getRowIndex()));
-        }
-        Set<Row> selected = event.getSelectedRows();
-        for (Row row : selected) {
-          selectedRowValues.add(getRowValue(row.getRowIndex()));
-        }
-      }
-    });
   }
 
   public HandlerRegistration addScrollHandler(ScrollHandler handler) {
@@ -732,10 +705,6 @@ public class ScrollTable extends ComplexPanel implements
     return rowValues.get(row);
   }
 
-  public Set<IsRow> getSelectedRowValues() {
-    return selectedRowValues;
-  }
-
   public TableDefinition getTableDefinition() {
     return tableDefinition;
   }
@@ -797,9 +766,7 @@ public class ScrollTable extends ComplexPanel implements
 
   public void load() {
     loading = true;
-
     FixedWidthGrid data = getDataTable();
-    data.deselectAllRows();
 
     if (bulkRenderer == null) {
       int rowCount = getAbsoluteLastRowIndex() - getAbsoluteFirstRowIndex() + 1;
@@ -811,7 +778,7 @@ public class ScrollTable extends ComplexPanel implements
 
     int firstRow = getAbsoluteFirstRowIndex();
     int lastRow = tableModel.getRowCount();
-    lastRequest = new Request(firstRow, lastRow, data.getColumnSortList());
+    lastRequest = new Request(firstRow, lastRow);
     tableModel.requestRows(lastRequest, loadCallback);
   }
 
@@ -847,15 +814,6 @@ public class ScrollTable extends ComplexPanel implements
           return;
         }
 
-        if (selectAllWidget != null && selectAllWidget.getElement().isOrHasChild(target)) {
-          if (selectAllWidget.getValue()) {
-            getDataTable().deselectAllRows();
-          } else {
-            getDataTable().selectAllRows();
-          }
-          return;
-        }
-
         if (!DomUtils.isTdElement(target) || EventUtils.hasModifierKey(event)) {
           ScrollTableConfig config = new ScrollTableConfig(this);
           config.show();
@@ -882,9 +840,6 @@ public class ScrollTable extends ComplexPanel implements
     }
 
     int width = fill ? getAvailableWidth() : getDataTableWidth();
-    if (getDataTable().getSelectionPolicy().hasInputColumn()) {
-      width -= getDataTable().getInputColumnWidth();
-    }
     int cnt = dataTable.getColumnCount();
     if (cnt <= 0 || width < cnt) {
       return;
@@ -1096,15 +1051,6 @@ public class ScrollTable extends ComplexPanel implements
 
     FixedWidthGrid data = getDataTable();
     
-    if (selectedRowValues.size() > 0) {
-      int rowCount = data.getRowCount();
-      for (int i = 0; i < rowCount; i++) {
-        if (selectedRowValues.contains(getRowValue(i))) {
-          data.selectRow(i, false);
-        }
-      }
-    }
-
     data.clearIdealWidths();
     redraw();
     loading = false;
@@ -1259,7 +1205,6 @@ public class ScrollTable extends ComplexPanel implements
   }
 
   protected void setData(int firstRow, Iterator<IsRow> rows) {
-    getDataTable().deselectAllRows();
     rowValues = new ArrayList<IsRow>();
 
     if (rows != null && rows.hasNext()) {
@@ -1441,9 +1386,6 @@ public class ScrollTable extends ComplexPanel implements
   }
 
   private int getHeaderOffset() {
-    if (dataTable.getSelectionPolicy().hasInputColumn()) {
-      return 1;
-    }
     return 0;
   }
   
@@ -1460,13 +1402,6 @@ public class ScrollTable extends ComplexPanel implements
   
   private int getIdealHeaderColumnWidth(int column) {
     return getHeaderTable().getIdealColumnWidth(column + getHeaderOffset());
-  }
-
-  private BeeSimpleCheckBox getSelectAllWidget() {
-    if (selectAllWidget == null) {
-      selectAllWidget = new BeeSimpleCheckBox();
-    }
-    return selectAllWidget;
   }
 
   private int getSpacerWidth(FixedWidthFlexTable table) {
@@ -1554,26 +1489,6 @@ public class ScrollTable extends ComplexPanel implements
         row += rowSpan;
       }
       prevInfos = infos;
-    }
-
-    SelectionPolicy selectionPolicy = getDataTable().getSelectionPolicy();
-    if (selectionPolicy.hasInputColumn()) {
-      BeeSimpleCheckBox box = null;
-      if (isHeader && getDataTable().getSelectionPolicy() == SelectionPolicy.CHECKBOX) {
-        box = getSelectAllWidget();
-        box.setValue(false);
-      }
-
-      table.insertCell(0, 0);
-      if (box != null) {
-        table.setWidget(0, 0, box);
-      } else {
-        table.setHTML(0, 0, BeeConst.HTML_NBSP);
-      }
-
-      formatter.setRowSpan(0, 0, table.getRowCount());
-      formatter.setHorizontalAlignment(0, 0, HasHorizontalAlignment.ALIGN_CENTER);
-      table.setColumnWidth(0, getDataTable().getInputColumnWidth());
     }
   }
 

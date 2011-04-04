@@ -11,13 +11,14 @@ import com.butent.bee.shared.Transformable;
 import com.butent.bee.shared.communication.CommUtils;
 import com.butent.bee.shared.communication.ContentType;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Property;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 @SuppressWarnings("serial")
-public class ParameterList extends ArrayList<RpcParameter> implements
-    Transformable {
+public class ParameterList extends ArrayList<RpcParameter> implements Transformable {
   private boolean ready = false;
   private List<RpcParameter> dataItems, headerItems, queryItems;
 
@@ -40,6 +41,30 @@ public class ParameterList extends ArrayList<RpcParameter> implements
     }
   }
 
+  public ParameterList(String svc, Collection<Property> items) {
+    this(svc, RpcParameter.defaultSection, items);
+  }
+  
+  public ParameterList(String svc, RpcParameter.SECTION section, Collection<Property> items) {
+    this(svc);
+    
+    if (section != null) {
+      switch (section) {
+        case DATA:
+          addDataItems(items);
+          break;
+        case HEADER:
+          addHeaderItems(items);
+          break;
+        case QUERY:
+          addQueryItems(items);
+          break;
+        default:
+          Assert.untouchable();
+      }
+    }
+  }
+
   public void addDataItem(Object value) {
     addItem(new RpcParameter(RpcParameter.SECTION.DATA, value));
   }
@@ -54,6 +79,14 @@ public class ParameterList extends ArrayList<RpcParameter> implements
 
   public void addDataItem(String name, String value) {
     addItem(new RpcParameter(RpcParameter.SECTION.DATA, name, value));
+  }
+  
+  public void addDataItems(Collection<Property> items) {
+    if (items != null) {
+      for (Property p : items) {
+        addDataItem(p.getName(), p.getValue());
+      }
+    }
   }
 
   public void addHeaderItem(Object value) {
@@ -72,6 +105,14 @@ public class ParameterList extends ArrayList<RpcParameter> implements
     addItem(new RpcParameter(RpcParameter.SECTION.HEADER, name, value));
   }
 
+  public void addHeaderItems(Collection<Property> items) {
+    if (items != null) {
+      for (Property p : items) {
+        addHeaderItem(p.getName(), p.getValue());
+      }
+    }
+  }
+  
   public void addPositionalData(Object... values) {
     Assert.parameterCount(values.length, 1);
     for (Object v : values) {
@@ -130,6 +171,14 @@ public class ParameterList extends ArrayList<RpcParameter> implements
     addItem(new RpcParameter(RpcParameter.SECTION.QUERY, name, value));
   }
 
+  public void addQueryItems(Collection<Property> items) {
+    if (items != null) {
+      for (Property p : items) {
+        addQueryItem(p.getName(), p.getValue());
+      }
+    }
+  }
+  
   public ContentType getContentType() {
     ContentType ctp = CommUtils.getContentType(getParameter(BeeService.RPC_VAR_CTP));
 
@@ -137,7 +186,6 @@ public class ParameterList extends ArrayList<RpcParameter> implements
       prepare();
       ctp = BeeUtils.isEmpty(dataItems) ? null : ContentType.XML;
     }
-
     return ctp;
   }
 
@@ -156,7 +204,6 @@ public class ParameterList extends ArrayList<RpcParameter> implements
       nodes[i * 2] = item.getName();
       nodes[i * 2 + 1] = item.getValue();
     }
-
     return XmlUtils.createString(BeeService.XML_TAG_DATA, nodes);
   }
 
@@ -189,7 +236,6 @@ public class ParameterList extends ArrayList<RpcParameter> implements
         break;
       }
     }
-
     return value;
   }
 
@@ -212,7 +258,6 @@ public class ParameterList extends ArrayList<RpcParameter> implements
         sb.append(item.getValue().trim());
       }
     }
-
     return sb.toString();
   }
 
@@ -230,7 +275,6 @@ public class ParameterList extends ArrayList<RpcParameter> implements
         break;
       }
     }
-
     return ok;
   }
 
@@ -283,7 +327,6 @@ public class ParameterList extends ArrayList<RpcParameter> implements
           break;
       }
     }
-
     if (n > 0) {
       queryItems.add(new RpcParameter(RpcParameter.SECTION.QUERY, BeeService.RPC_VAR_PRM_CNT, n));
     }

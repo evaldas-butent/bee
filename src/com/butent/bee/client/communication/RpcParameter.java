@@ -89,9 +89,7 @@ public class RpcParameter implements Transformable {
   }
 
   public String transform() {
-    return BeeUtils.addName(
-        BeeUtils.concat(1, BeeUtils.bracket(getSection()), getName()),
+    return BeeUtils.addName(BeeUtils.concat(1, BeeUtils.bracket(getSection()), getName()),
         getValue());
   }
-
 }

@@ -168,6 +168,10 @@ public class RpcFactory implements Module {
     return makeRequest(RequestBuilder.POST, params, null, data, null, BeeConst.TIME_UNKNOWN);
   }
 
+  public int makePostRequest(ParameterList params, ResponseCallback callback) {
+    return makeRequest(RequestBuilder.POST, params, null, null, callback, BeeConst.TIME_UNKNOWN);
+  }
+  
   public int makePostRequest(ParameterList params, String data, ResponseCallback callback) {
     return makeRequest(RequestBuilder.POST, params, null, data, callback, BeeConst.TIME_UNKNOWN);
   }

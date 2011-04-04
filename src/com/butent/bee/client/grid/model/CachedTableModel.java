@@ -1,6 +1,5 @@
 package com.butent.bee.client.grid.model;
 
-import com.butent.bee.client.grid.model.TableModelHelper.ColumnSortList;
 import com.butent.bee.client.grid.model.TableModelHelper.Request;
 import com.butent.bee.client.grid.model.TableModelHelper.Response;
 import com.butent.bee.shared.Assert;
@@ -84,8 +83,6 @@ public class CachedTableModel extends TableModel {
     }
   }
 
-  private ColumnSortList lastSortList = null;
-
   private int postCacheRows = 0;
   private int preCacheRows = 0;
 
@@ -116,17 +113,6 @@ public class CachedTableModel extends TableModel {
 
   @Override
   public void requestRows(Request request, Callback callback) {
-    ColumnSortList sortList = request.getColumnSortList();
-    if (sortList == null) {
-      if (lastSortList != null) {
-        clearCache();
-        lastSortList = null;
-      }
-    } else if (!sortList.equals(lastSortList)) {
-      clearCache();
-      lastSortList = sortList.copy();
-    }
-
     int startRow = request.getStartRow();
     int numRows = request.getNumRows();
     int lastRow = startRow + numRows - 1;
@@ -172,7 +158,7 @@ public class CachedTableModel extends TableModel {
     }
 
     int uncachedNumRows = uncachedLastRow - uncachedFirstRow + 1;
-    Request newRequest = new Request(uncachedFirstRow, uncachedNumRows, sortList);
+    Request newRequest = new Request(uncachedFirstRow, uncachedNumRows);
     tableModel.requestRows(newRequest, new CacheCallback(request, callback,
         startRow, lastRow - startRow + 1));
   }

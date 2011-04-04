@@ -59,7 +59,7 @@ public class InputInteger extends BeeTextBox {
   
   protected void initAttributes(String type, int min, int max, int step) {
     if (!BeeUtils.isEmpty(type)) {
-      DomUtils.setType(this, type);
+      DomUtils.setInputType(this, type);
     }
     if (min < max) {
       DomUtils.setMin(this, min);

@@ -45,6 +45,21 @@ public class PropertyUtils {
     }
   }
 
+  public static int addNotEemptyProperties(Collection<Property> lst, Object... x) {
+    Assert.notNull(lst);
+    int c = x.length;
+    Assert.parameterCount(c + 1, 3);
+    int r = 0;
+
+    for (int i = 0; i < c - 1; i += 2) {
+      if (x[i] instanceof String && validName((String) x[i]) && !BeeUtils.isEmpty(x[i + 1])) {
+        lst.add(new Property((String) x[i], transformValue(x[i + 1])));
+        r++;
+      }
+    }
+    return r;
+  }
+  
   public static int addProperties(Collection<ExtendedProperty> lst, boolean subMd, Object... x) {
     Assert.notNull(lst);
     int c = x.length;
@@ -78,10 +93,6 @@ public class PropertyUtils {
     int c = x.length;
     Assert.parameterCount(c + 1, 3);
     int r = 0;
-
-    if (c < 2) {
-      return r;
-    }
 
     for (int i = 0; i < c - 1; i += 2) {
       if (x[i] instanceof String && validName((String) x[i]) && validValue(x[i + 1])) {

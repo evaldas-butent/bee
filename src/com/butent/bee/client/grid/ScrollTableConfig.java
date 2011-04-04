@@ -25,7 +25,6 @@ import com.butent.bee.client.event.DndEvent;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.HasAllDndHandlers;
 import com.butent.bee.client.grid.ScrollTable.ResizePolicy;
-import com.butent.bee.client.grid.SelectionGrid.SelectionPolicy;
 import com.butent.bee.client.layout.Absolute;
 import com.butent.bee.client.layout.Scroll;
 import com.butent.bee.client.utils.BeeCommand;
@@ -152,7 +151,6 @@ public class ScrollTableConfig {
       boolean updRp = false;
 
       ResizePolicy rp = null;
-      SelectionPolicy sp = null;
 
       int z = DomUtils.getValueInt(cpId);
       if (z != cellPadding && z >= 0) {
@@ -171,16 +169,6 @@ public class ScrollTableConfig {
         scrollTable.setResizePolicy(rp);
         fill = rp.isFixedWidth() && rp.isSacrificial();
         updRp = true;
-      }
-
-      z = RadioGroup.getValue(spName);
-      if (z != selectionPolicy.ordinal() && BeeUtils.isOrdinal(SelectionPolicy.class, z)) {
-        sp = SelectionPolicy.values()[z];
-        scrollTable.getDataTable().setSelectionPolicy(sp);
-        if (selectionPolicy.hasInputColumn() || sp.hasInputColumn()) {
-          reload = true;
-          updInp = true;
-        }
       }
 
       updCur = false;
@@ -518,7 +506,6 @@ public class ScrollTableConfig {
   private int cellSpacing;
 
   private ResizePolicy resizePolicy;
-  private SelectionPolicy selectionPolicy;
 
   private int columnCount, visibleCount;
   private ColumnWidth[] columnWidth;
@@ -527,7 +514,7 @@ public class ScrollTableConfig {
   private int availableWidth;
   private int dataWidth;
 
-  private String cpId, csId, rpName, spName;
+  private String cpId, csId, rpName;
   private String cntId, datTotId, curTotId, minTotId, prefTotId, maxTotId;
   private ColumnRef[] cRef;
 
@@ -569,11 +556,6 @@ public class ScrollTableConfig {
     panel.add(new BeeLabel("Grid Resize"), x, y);
     rpName = BeeUtils.createUniqueName("rp");
     panel.add(new RadioGroup(rpName, resizePolicy, ResizePolicy.values()), x + 100, y);
-    y += 30;
-
-    panel.add(new BeeLabel("Row Selection"), x, y);
-    spName = BeeUtils.createUniqueName("sp");
-    panel.add(new RadioGroup(spName, selectionPolicy, SelectionPolicy.values()), x + 100, y);
     y += 30 + yMrg;
 
     int ww = 50;
@@ -731,7 +713,6 @@ public class ScrollTableConfig {
     cellSpacing = st.getCellSpacing();
 
     resizePolicy = st.getResizePolicy();
-    selectionPolicy = st.getDataTable().getSelectionPolicy();
 
     columnCount = tableDefinition.getColumnDefinitionCount();
     availableWidth = st.getAvailableWidth();

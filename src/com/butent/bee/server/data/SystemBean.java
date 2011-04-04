@@ -238,7 +238,7 @@ public class SystemBean {
             int res = qs.updateData(su.setWhere(wh));
 
             if (res == 0) { // Optimistic lock exception
-              BeeRowSet rs = getViewData(view.getName(), idWh, 0, 0);
+              BeeRowSet rs = getViewData(view.getName(), idWh, null, 0, 0);
 
               if (!rs.isEmpty()) {
                 BeeRow r = rs.getRow(0);
@@ -581,7 +581,7 @@ public class SystemBean {
       } else {
         cnt = -1;
       }
-      lst.add(new TableInfo(table.getName(), cnt));
+      lst.add(new TableInfo(table.getName(), table.getIdName(), cnt));
     }
     return lst;
   }
@@ -623,21 +623,39 @@ public class SystemBean {
     return states;
   }
 
-  public BeeRowSet getViewData(String viewName, IsCondition wh, int limit, int offset,
-      String... states) {
+  public BeeRowSet getViewData(String viewName, IsCondition wh, List<String> order,
+      int limit, int offset, String... states) {
 
     BeeView view = getView(viewName);
-
-    SqlSelect ss = view.getQuery(dataCache)
-        .setLimit(limit)
-        .setOffset(offset);
+    SqlSelect ss = view.getQuery(dataCache);
 
     if (!BeeUtils.isEmpty(wh)) {
       ss.setWhere(SqlUtils.and(ss.getWhere(), wh));
     }
+
+    if (order != null) {
+      ss.resetOrder();
+      String source = view.getSource();
+      for (String fld : order) {
+        if (BeeUtils.isPrefixOrSuffix(fld, BeeConst.CHAR_MINUS)) {
+          ss.addOrderDesc(source, BeeUtils.removePrefixAndSuffix(fld, BeeConst.CHAR_MINUS));
+        } else {
+          ss.addOrder(source, fld);
+        }
+      }
+    }
+
     if (!BeeUtils.isEmpty(states)) {
       ss = verifyStates(ss, view.getSource(), null, states);
     }
+    
+    if (limit > 0) {
+      ss.setLimit(limit);
+    }
+    if (offset > 0) {
+      ss.setOffset(offset);
+    }
+    
     return qs.getViewData(ss, view);
   }
 

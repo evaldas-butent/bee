@@ -3,14 +3,16 @@ package com.butent.bee.shared.data;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.DateTime;
 import com.butent.bee.shared.JustDate;
+import com.butent.bee.shared.Transformable;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.value.NumberValue;
 import com.butent.bee.shared.data.value.TextValue;
 import com.butent.bee.shared.data.value.Value;
+import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
 
-public abstract class AbstractRow implements IsRow {
+public abstract class AbstractRow implements IsRow, Transformable {
   private long id;
   private CustomProperties properties = null;
 
@@ -129,6 +131,24 @@ public abstract class AbstractRow implements IsRow {
     cell.setValue(value);
     cell.clearFormattedValue();
     cell.clearProperties();
+  }
+  
+  public String transform() {
+    StringBuilder sb = new StringBuilder();
+    sb.append("id=").append(getId());
+    
+    String v;
+    for (int i = 0; i < getNumberOfCells(); i++) {
+      v = getString(i);
+      if (!BeeUtils.isEmpty(v)) {
+        sb.append(" [").append(i).append("]=").append(v);
+      }
+    }
+    
+    if (getProperties() != null) {
+      sb.append("p=").append(getProperties().transform());
+    }
+    return sb.toString();
   }
   
   protected abstract void assertIndex(int index);

@@ -8,16 +8,26 @@ import com.butent.bee.shared.data.IsRow;
 
 public abstract class CellColumn<C> extends Column<IsRow, C> {
   private int index;
+  private String label;
 
-  public CellColumn(Cell<C> cell, int index) {
+  public CellColumn(Cell<C> cell, int index, String label) {
     super(cell);
     this.index = index;
+    this.label = label;
   }
 
   public int getIndex() {
     return index;
   }
   
+  public String getLabel() {
+    return label;
+  }
+
+  public void setLabel(String label) {
+    this.label = label;
+  }
+
   protected String getString(IsRow row) {
     if (row == null) {
       return BeeConst.STRING_EMPTY;

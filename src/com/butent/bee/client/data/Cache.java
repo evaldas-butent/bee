@@ -3,8 +3,12 @@ package com.butent.bee.client.data;
 import com.google.common.collect.Lists;
 import com.google.gwt.cell.client.NumberCell;
 import com.google.gwt.core.client.JsArrayString;
+import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.Column;
+import com.google.gwt.user.cellview.client.ColumnSortEvent.AsyncHandler;
+import com.google.gwt.user.cellview.client.HasKeyboardPagingPolicy.KeyboardPagingPolicy;
+import com.google.gwt.user.cellview.client.SimplePager;
 import com.google.gwt.user.cellview.client.TextColumn;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.view.client.SelectionChangeEvent;
@@ -14,11 +18,15 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.grid.BeeCellTable;
+import com.butent.bee.client.grid.RowIdColumn;
+import com.butent.bee.client.grid.TableSorter;
 import com.butent.bee.client.layout.BeeLayoutPanel;
 import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.utils.BeeCommand;
 import com.butent.bee.client.utils.JsUtils;
-import com.butent.bee.client.utils.XmlUtils;
+import com.butent.bee.client.view.SearchBox;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.shared.Assert;
@@ -28,6 +36,8 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.TableInfo;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
+import com.butent.bee.shared.utils.Property;
+import com.butent.bee.shared.utils.PropertyUtils;
 
 import java.util.List;
 
@@ -163,6 +173,14 @@ public class Cache {
     };
     grid.addColumn(nameColumn);
 
+    Column<TableInfo, String> idColumn = new TextColumn<TableInfo>() {
+      @Override
+      public String getValue(TableInfo object) {
+        return (object == null) ? BeeConst.STRING_EMPTY : object.getIdColumn();
+      }
+    };
+    grid.addColumn(idColumn);
+    
     Column<TableInfo, Number> countColumn = new Column<TableInfo, Number>(new NumberCell()) {
       @Override
       public Number getValue(TableInfo object) {
@@ -189,13 +207,26 @@ public class Cache {
     BeeKeeper.getUi().updateData(grid, true);
   }
 
-  private void openTable(TableInfo ti) {
-    if (ti.getRowCount() < 0) {
+  private void openTable(final TableInfo ti) {
+    int rc = ti.getRowCount();
+    if (rc < 0) {
       BeeKeeper.getLog().info(ti.getName(), "not active");
       return;
     }
-    BeeKeeper.getRpc().makePostRequest("rpc_ui_table",
-        XmlUtils.createString(BeeService.XML_TAG_DATA, "table_name", ti.getName()),
+    
+    List<Property> params = PropertyUtils.createProperties("table_name", ti.getName(),
+        "table_order", ti.getIdColumn());
+    
+    int limit = 30;
+    final boolean async;
+    if (rc > limit) {
+      params.add(new Property("table_limit", BeeUtils.toString(limit)));
+      async = true;
+    } else {
+      async = false;
+    }
+
+    BeeKeeper.getRpc().makePostRequest(new ParameterList("rpc_ui_table", params),
         new ResponseCallback() {
           @Override
           public void onResponse(JsArrayString arr) {
@@ -204,7 +235,7 @@ public class Cache {
             if (rs.isEmpty()) {
               BeeKeeper.getLog().info(rs.getViewName(), "RowSet is empty");
             } else {
-              showTable(rs);
+              showTable(ti, rs, async);
             }
           }
         }
@@ -215,11 +246,90 @@ public class Cache {
     return primaryKeyPrefix + table.trim().toLowerCase();
   }
 
-  private void showTable(BeeRowSet rs) {
-    Split sp = new Split();
-    sp.addNorth(new BeeLabel(rs.getViewName()), 20);
-    sp.addSouth(new BeeLabel(BeeUtils.concat(1, rs.getNumberOfRows(), rs.getNumberOfColumns())), 20);
-    sp.add(Global.simpleGrid(rs), true);
-    BeeKeeper.getUi().updateActivePanel(sp);
+  private void showTable(TableInfo ti, BeeRowSet rs, boolean async) {
+    BeeCellTable grid = Global.getGridfactory().createGrid(rs);
+    int rowCount = async ? ti.getRowCount() : rs.getNumberOfRows();
+    int pageSize = -1;
+    
+    if (async) {
+      AsyncProvider provider = new AsyncProvider(ti, null, ti.getIdColumn());
+      provider.addDataDisplay(grid);
+      grid.setRowCount(rowCount, true);
+      
+      AsyncHandler sorter = new AsyncHandler(grid);
+      grid.addColumnSortHandler(sorter);
+      
+    } else {
+      DataProvider provider = new DataProvider(rs);
+      provider.addDataDisplay(grid);
+
+      TableSorter sorter = new TableSorter(provider);
+      grid.addColumnSortHandler(sorter);
+    }
+    
+    if (rowCount > 30) {
+      RowIdColumn idColumn = new RowIdColumn();
+      idColumn.setSortable(true);
+      grid.insertColumn(0, idColumn, "Row Id");
+      grid.setColumnWidth(idColumn, 6, Unit.EM);
+      
+      pageSize = 25;
+      grid.setPageSize(pageSize);
+      grid.setKeyboardPagingPolicy(KeyboardPagingPolicy.CHANGE_PAGE);
+    }
+
+    Split panel = new Split();
+    panel.addNorth(new BeeLabel(rs.getViewName()), 20);
+
+    BeeLayoutPanel footer = new BeeLayoutPanel();
+    int x = 16;
+    int y = 2;
+    int w;
+
+    w = 64;
+    footer.addLeftWidthTop(new BeeLabel(BeeUtils.concat('\u00d7',
+        rowCount, rs.getNumberOfColumns())), x, w, y);
+    x += w;
+
+    if (rowCount > 10) {
+      RangeInfo ri = new RangeInfo();
+      ri.setDisplay(grid);
+      w = 128;
+      footer.addLeftWidthTop(ri, x, w, y);
+      x += w;
+
+      SimplePager sp = new SimplePager();
+      sp.setDisplay(grid);
+      w = 256;
+      footer.addLeftWidthTop(sp, x, w, y);
+      x += w;
+
+      PageResizer psz = new PageResizer(grid.getPageSize(), 1, rowCount, 1);
+      psz.setDisplay(grid);
+      w = 64;
+      footer.addLeftWidthTop(psz, x, w, y);
+      x += w;
+    }
+
+    if (rowCount > 1) {
+      SearchBox search = new SearchBox();
+      x += 16;
+      footer.addLeftTop(search, x, y);
+      footer.setWidgetLeftRight(search, x, Unit.PX, 16, Unit.PX);
+    }
+
+    panel.addSouth(footer, 32);
+
+    if (pageSize > 0) {
+      ScrollPager scroll = new ScrollPager(pageSize, rowCount);
+      scroll.setDisplay(grid);
+      panel.addEast(scroll, DomUtils.getScrollbarWidth() + 1);
+      panel.hideSplitter(scroll);
+    }
+
+    panel.add(grid);
+    BeeKeeper.getStyle().autoOverflowX(panel.getWidgetContainerElement(grid));
+
+    BeeKeeper.getUi().updateActivePanel(panel);
   }
 }

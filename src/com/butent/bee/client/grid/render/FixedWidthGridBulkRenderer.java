@@ -11,7 +11,7 @@ import com.butent.bee.shared.data.IsRow;
 
 import java.util.Iterator;
 
-public class FixedWidthGridBulkRenderer extends SelectionGridBulkRenderer {
+public class FixedWidthGridBulkRenderer extends GridBulkRenderer {
   public FixedWidthGridBulkRenderer(FixedWidthGrid grid, TableDefinition tableDef) {
     super(grid, tableDef);
   }

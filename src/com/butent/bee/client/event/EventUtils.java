@@ -48,26 +48,25 @@ public class EventUtils {
 
   public static List<Property> getEventInfo(NativeEvent ev) {
     Assert.notNull(ev);
-    List<Property> lst = new ArrayList<Property>();
-
-    PropertyUtils.addProperties(lst, "Client X", ev.getClientX(), "Client Y",
-        ev.getClientY(), "Screen X", ev.getScreenX(), "Screen Y",
-        ev.getScreenY(), "Key Code", ev.getKeyCode(), "Char Code",
-        ev.getCharCode(), "Alt Key", ev.getAltKey(), "Shift Key",
-        ev.getShiftKey(), "Ctrl Key", ev.getCtrlKey(), "Meta Key",
-        ev.getMetaKey(), "Button", ev.getButton(), "Mouse Wheel Velocity Y",
-        ev.getMouseWheelVelocityY(), "Event Target",
-        transformEventTarget(ev.getEventTarget()), "Current Event Target",
-        transformEventTarget(ev.getCurrentEventTarget()),
-        "Related Event Target",
-        transformEventTarget(ev.getRelatedEventTarget()), "String",
-        ev.getString(), "Type", ev.getType());
-
-    if (ev instanceof Event) {
-      PropertyUtils.addProperty(lst, "Type Int", ((Event) ev).getTypeInt());
-    }
-
-    return lst;
+    return PropertyUtils.createProperties(
+        "Client X", ev.getClientX(),
+        "Client Y", ev.getClientY(),
+        "Screen X", ev.getScreenX(),
+        "Screen Y", ev.getScreenY(),
+        "Key Code", ev.getKeyCode(),
+        "Char Code", ev.getCharCode(),
+        "Alt Key", ev.getAltKey(),
+        "Shift Key", ev.getShiftKey(),
+        "Ctrl Key", ev.getCtrlKey(),
+        "Meta Key", ev.getMetaKey(),
+        "Button", ev.getButton(),
+        "Mouse Wheel Velocity Y", ev.getMouseWheelVelocityY(),
+        "Event Target", transformEventTarget(ev.getEventTarget()),
+        "Current Event Target", transformEventTarget(ev.getCurrentEventTarget()),
+        "Related Event Target", transformEventTarget(ev.getRelatedEventTarget()),
+        "String", ev.getString(),
+        "Type", ev.getType(),
+        "Type Int", getTypeInt(ev));
   }
 
   public static String getEventTargetId(NativeEvent ev) {
@@ -84,6 +83,16 @@ public class EventUtils {
   public static String getTargetId(EventTarget et) {
     Assert.notNull(et);
     return Element.as(et).getId();
+  }
+  
+  public static int getTypeInt(NativeEvent ev) {
+    if (ev == null) {
+      return 0;
+    }
+    if (ev instanceof Event) {
+      return ((Event) ev).getTypeInt();
+    }
+    return Event.getTypeInt(ev.getType());
   }
 
   public static boolean hasModifierKey(NativeEvent ev) {
@@ -152,7 +161,6 @@ public class EventUtils {
     }
 
     dndSources.put(id, handler);
-
     return true;
   }
 
@@ -175,7 +183,6 @@ public class EventUtils {
     }
 
     dndTargets.put(id, handler);
-
     return true;
   }
 
@@ -209,7 +216,6 @@ public class EventUtils {
         lst.add(new Property(id, "T"));
       }
     }
-
     return lst;
   }
 
@@ -234,12 +240,15 @@ public class EventUtils {
     if (ev == null) {
       return BeeConst.STRING_EMPTY;
     }
-
     return BeeUtils.transformOptions("source", DomUtils.transform(ev.getSource()),
         "target", DomUtils.transform(ev.getTarget()), "auto", ev.isAutoClosed());
   }
 
   public static String transformEvent(NativeEvent ev) {
+    return transformEvent(ev, true);
+  }
+  
+  public static String transformEvent(NativeEvent ev, boolean targets) {
     if (ev == null) {
       return BeeConst.STRING_EMPTY;
     }
@@ -286,20 +295,21 @@ public class EventUtils {
     if (v != 0) {
       sb.append(" mwv=" + v);
     }
-
-    EventTarget et = ev.getEventTarget();
-    if (et != null) {
-      sb.append(" et=" + transformEventTarget(et));
+    
+    if (targets) {
+      EventTarget et = ev.getEventTarget();
+      if (et != null) {
+        sb.append(" et=" + transformEventTarget(et));
+      }
+      EventTarget cet = ev.getCurrentEventTarget();
+      if (cet != null && cet != et) {
+        sb.append(" cet=" + transformEventTarget(cet));
+      }
+      EventTarget ret = ev.getRelatedEventTarget();
+      if (ret != null) {
+        sb.append(" ret=" + transformEventTarget(ret));
+      }
     }
-    EventTarget cet = ev.getCurrentEventTarget();
-    if (cet != null && cet != et) {
-      sb.append(" cet=" + transformEventTarget(cet));
-    }
-    EventTarget ret = ev.getRelatedEventTarget();
-    if (ret != null) {
-      sb.append(" ret=" + transformEventTarget(ret));
-    }
-
     return sb.toString();
   }
 
@@ -381,13 +391,12 @@ public class EventUtils {
           Assert.untouchable(transformEvent(evt));
       }
     }
-
     return ret;
   }
 
   private static native void initDnd() /*-{
     @com.butent.bee.client.event.EventUtils::onDnd = $entry(function(evt) {
-    return @com.butent.bee.client.event.EventUtils::dispatchDnd(Lcom/butent/bee/client/event/DndEvent;)(evt);
+      return @com.butent.bee.client.event.EventUtils::dispatchDnd(Lcom/butent/bee/client/event/DndEvent;)(evt);
     });
   }-*/;
 

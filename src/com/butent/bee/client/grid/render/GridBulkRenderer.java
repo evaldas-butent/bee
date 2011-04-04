@@ -3,7 +3,6 @@ package com.butent.bee.client.grid.render;
 import com.butent.bee.client.grid.FixedWidthGrid;
 import com.butent.bee.client.grid.GridTable;
 import com.butent.bee.client.grid.HasTableDefinition;
-import com.butent.bee.client.grid.SelectionGrid;
 import com.butent.bee.client.grid.TableDefinition;
 import com.butent.bee.shared.Assert;
 
@@ -38,9 +37,6 @@ public class GridBulkRenderer extends TableBulkRenderer {
   private void init(GridTable grid) {
     if (grid instanceof FixedWidthGrid && (!(this instanceof FixedWidthGridBulkRenderer))) {
       Assert.unsupported("Must use a FixedWidthGridBulkLoader to bulk load a fixed grid");
-    }
-    if (grid instanceof SelectionGrid && (!(this instanceof SelectionGridBulkRenderer))) {
-      Assert.unsupported("Must use a SelectionGridBulkLoader to bulk load a selection grid");
     }
   }
 }

@@ -196,8 +196,7 @@ public class DateTime implements BeeSerializable, Comparable<DateTime> {
 
   @Override
   public int hashCode() {
-    long z = getTime();
-    return (int) (z ^ (z >>> 32));
+    return Long.valueOf(getTime()).hashCode();
   }
   
   public String serialize() {

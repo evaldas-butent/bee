@@ -9,16 +9,16 @@ import com.butent.bee.shared.utils.BeeUtils;
 public class TextColumn extends CellColumn<String> {
   private int maxDisplaySize;
 
-  public TextColumn(int index) {
-    this(new TextCell(), index, -1);
+  public TextColumn(int index, String label) {
+    this(new TextCell(), index, label, -1);
   }
 
-  public TextColumn(Cell<String> cell, int index) {
-    this(cell, index, -1);
+  public TextColumn(Cell<String> cell, int index, String label) {
+    this(cell, index, label, -1);
   }
 
-  public TextColumn(Cell<String> cell, int index, int maxDisplaySize) {
-    super(cell, index);
+  public TextColumn(Cell<String> cell, int index, String label, int maxDisplaySize) {
+    super(cell, index, label);
     this.maxDisplaySize = maxDisplaySize;
   }
   

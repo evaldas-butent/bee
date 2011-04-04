@@ -11,16 +11,16 @@ import java.util.Date;
 
 public class DateTimeColumn extends CellColumn<Date> {
 
-  public DateTimeColumn(int index) {
-    this(new DateTimeCell(), index);
+  public DateTimeColumn(int index, String label) {
+    this(new DateTimeCell(), index, label);
   }
 
-  public DateTimeColumn(DateTimeFormat format, int index) {
-    this(new DateTimeCell(format), index);
+  public DateTimeColumn(DateTimeFormat format, int index, String label) {
+    this(new DateTimeCell(format), index, label);
   }
 
-  public DateTimeColumn(Cell<Date> cell, int index) {
-    super(cell, index);
+  public DateTimeColumn(Cell<Date> cell, int index, String label) {
+    super(cell, index, label);
   }
 
   @Override

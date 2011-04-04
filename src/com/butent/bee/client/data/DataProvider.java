@@ -7,6 +7,7 @@ import com.google.gwt.view.client.Range;
 
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.IsTable;
+import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
 
@@ -21,6 +22,12 @@ public class DataProvider extends AbstractDataProvider<IsRow> {
   public DataProvider(IsTable<?, ?> table, ProvidesKey<IsRow> keyProvider) {
     super(keyProvider);
     this.table = table;
+  }
+  
+  @Override
+  public void addDataDisplay(HasData<IsRow> display) {
+    super.addDataDisplay(display);
+    display.setRowCount(table.getNumberOfRows(), true);
   }
 
   public IsTable<?, ?> getTable() {
@@ -50,8 +57,9 @@ public class DataProvider extends AbstractDataProvider<IsRow> {
     
     if (start == 0 && length == rowCount) {
       display.setRowData(start, getRowList());
-    } else {
-      display.setRowData(start, getRowList().subList(start, start + length));
+    } else if (start >= 0 && start < rowCount && length > 0) {
+      display.setRowData(start, getRowList().subList(start, 
+          BeeUtils.min(start + length, rowCount)));
     }
   }
 }

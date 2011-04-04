@@ -74,8 +74,7 @@ public class LogWidgetHandler extends Handler {
       return;
     }
 
-    if (frmt instanceof LogFormatter
-        && ((LogFormatter) frmt).isSeparator(record)) {
+    if (frmt instanceof LogFormatter && ((LogFormatter) frmt).isSeparator(record)) {
       Element elem = Document.get().createDivElement().cast();
       container.add(new Html(elem));
       elem.setClassName(STYLENAME_SEPARATOR);

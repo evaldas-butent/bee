@@ -14,8 +14,8 @@ import com.butent.bee.shared.BeeConst;
 import java.util.HashMap;
 import java.util.Map;
 
-public class FixedWidthGrid extends SortableGrid {
-  public class FixedWidthGridCellFormatter extends SelectionGridCellFormatter {
+public class FixedWidthGrid extends GridTable {
+  public class FixedWidthGridCellFormatter extends CellFormatter {
     @Override
     public void setWidth(int row, int column, String width) {
       Assert.unsupported("setWidth is not supported");
@@ -34,7 +34,7 @@ public class FixedWidthGrid extends SortableGrid {
     }
   }
 
-  public class FixedWidthGridRowFormatter extends SelectionGridRowFormatter {
+  public class FixedWidthGridRowFormatter extends RowFormatter {
     @Override
     protected Element getRawElement(int row) {
       return super.getRawElement(row + 1);
@@ -183,23 +183,6 @@ public class FixedWidthGrid extends SortableGrid {
   }
 
   @Override
-  public void setSelectionPolicy(SelectionPolicy selectionPolicy) {
-    if (selectionPolicy.hasInputColumn() && !getSelectionPolicy().hasInputColumn()) {
-      Element tr = getGhostRow();
-      Element td = GridUtils.createGhostCell(null);
-      tr.insertBefore(td, tr.getFirstChildElement());
-      super.setSelectionPolicy(selectionPolicy);
-      setColumnWidthImpl(-1, getInputColumnWidth());
-    } else if (!selectionPolicy.hasInputColumn() && getSelectionPolicy().hasInputColumn()) {
-      Element tr = getGhostRow();
-      tr.removeChild(tr.getFirstChildElement());
-      super.setSelectionPolicy(selectionPolicy);
-    } else {
-      super.setSelectionPolicy(selectionPolicy);
-    }
-  }
-
-  @Override
   public void setText(int row, int column, String text) {
     super.setText(row, column, text);
     clearIdealWidths();
@@ -273,17 +256,6 @@ public class FixedWidthGrid extends SortableGrid {
     recalculateIdealColumnWidthsTeardown();
   }
 
-  @Override
-  void applySort(Element[] trElems) {
-    Element bodyElem = getBodyElement();
-    for (int i = trElems.length - 1; i >= 0; i--) {
-      if (trElems[i] != null) {
-        DOM.removeChild(bodyElem, trElems[i]);
-        DOM.insertChild(bodyElem, trElems[i], 1);
-      }
-    }
-  }
-
   void clearIdealWidths() {
     idealWidths = null;
   }
@@ -298,9 +270,6 @@ public class FixedWidthGrid extends SortableGrid {
 
   void recalculateIdealColumnWidthsSetup() {
     int offset = 0;
-    if (getSelectionPolicy().hasInputColumn()) {
-      offset++;
-    }
     clearColumnWidhts();
     idealColumnWidthInfo = GridUtils.recalculateIdealColumnWidthsSetup(this,
         getColumnCount(), offset);
@@ -321,9 +290,6 @@ public class FixedWidthGrid extends SortableGrid {
   }
   
   private Element getGhostCellElement(int column) {
-    if (getSelectionPolicy().hasInputColumn()) {
-      column++;
-    }
     return GridUtils.getGhostCell(ghostRow, column);
   }
 
@@ -337,15 +303,9 @@ public class FixedWidthGrid extends SortableGrid {
     for (Map.Entry<Integer, Integer> entry : colWidths.entrySet()) {
       setColumnWidth(entry.getKey(), entry.getValue());
     }
-    if (getSelectionPolicy().hasInputColumn()) {
-      setColumnWidthImpl(-1, getInputColumnWidth());
-    }
   }
 
   private void setColumnWidthImpl(int column, int width) {
-    if (getSelectionPolicy().hasInputColumn()) {
-      column++;
-    }
     if (width > 0) {
       GridUtils.setColumnWidth(ghostRow, column, width);
     } else {

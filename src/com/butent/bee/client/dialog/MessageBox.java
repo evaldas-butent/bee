@@ -8,6 +8,7 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.grid.BeeCellTable;
+import com.butent.bee.client.grid.CellType;
 import com.butent.bee.client.layout.Vertical;
 import com.butent.bee.client.tree.BeeTree;
 import com.butent.bee.client.widget.BeeLabel;
@@ -50,9 +51,9 @@ public class MessageBox {
     showInfo(x);
   }
   
-  public void showGrid(String cap, Object data, String... cols) {
+  public void showGrid(String cap, Object data, String... columnLabels) {
     Assert.notNull(data);
-    showInfo(cap, Global.simpleGrid(data, cols));
+    showInfo(cap, Global.cellGrid(data, CellType.TEXT, columnLabels));
   }
 
   public void showInfo(Object... x) {

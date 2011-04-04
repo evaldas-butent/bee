@@ -1,5 +1,7 @@
 package com.butent.bee.server.ui;
 
+import com.google.common.collect.Lists;
+
 import com.butent.bee.server.Config;
 import com.butent.bee.server.data.IdGeneratorBean;
 import com.butent.bee.server.data.QueryServiceBean;
@@ -11,6 +13,8 @@ import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.sql.IsCondition;
+import com.butent.bee.shared.sql.IsExpression;
 import com.butent.bee.shared.sql.SqlBuilderFactory;
 import com.butent.bee.shared.sql.SqlSelect;
 import com.butent.bee.shared.sql.SqlUtils;
@@ -19,6 +23,7 @@ import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
 
@@ -196,14 +201,58 @@ public class UiServiceBean {
     String table = reqInfo.getParameter("table_name");
     int limit = BeeUtils.toInt(reqInfo.getParameter("table_limit"));
     int offset = BeeUtils.toInt(reqInfo.getParameter("table_offset"));
-
+    String where = reqInfo.getParameter("table_where");
+    String order = reqInfo.getParameter("table_order");
     String states = reqInfo.getParameter("table_states");
-    String[] arr = new String[0];
+    
+    IsCondition condition = null;
+    if (!BeeUtils.isEmpty(where)) {
+      String[] words = BeeUtils.split(where, 1);
+      int cnt = ArrayUtils.length(words);
+      
+      IsExpression field = SqlUtils.field(table, ArrayUtils.getQuietly(words, 0));
+      String op = null;
+      String value = null;
+      
+      if (cnt == 2) {
+        value = words[1];
+      } else if (cnt >= 3) {
+        op = words[1];
+        value = ArrayUtils.join(words, 1, 2);
+      }
+      
+      if (!BeeUtils.isEmpty(op)) {
+        if (op.equals("=")) {
+          condition = SqlUtils.equal(field, value);
+        } else if (op.equals("<")) {
+          condition = SqlUtils.less(field, value);
+        } else if (op.equals("<=")) {
+          condition = SqlUtils.lessEqual(field, value);
+        } else if (op.equals(">")) {
+          condition = SqlUtils.more(field, value);
+        } else if (op.equals(">=")) {
+          condition = SqlUtils.moreEqual(field, value);
+        } else if (op.equals("!=") || op.equals("<>")) {
+          condition = SqlUtils.notEqual(field, value);
+        }
+      } else if (!BeeUtils.isEmpty(value)) {
+        condition = SqlUtils.contains(field, value);
+      } else {
+        condition = SqlUtils.isNotNull(field);
+      }
+    }
+    
+    List<String> lst = null;
+    if (!BeeUtils.isEmpty(order)) {
+      lst = Lists.newArrayList(BeeUtils.split(order, 1));
+    }
 
+    String[] arr = new String[0];
     if (!BeeUtils.isEmpty(states)) {
       arr = states.split(" ");
     }
-    BeeRowSet res = sys.getViewData(table, null, limit, offset, arr);
+
+    BeeRowSet res = sys.getViewData(table, condition, lst, limit, offset, arr);
     return ResponseObject.response(res);
   }
 
