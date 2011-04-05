@@ -223,12 +223,12 @@ public class ScrollTableConfig {
         return true;
       }
       int y = event.getClientY();
-      int pos = panel.getScrollPosition();
+      int pos = panel.getVerticalScrollPosition();
 
       if (y < top && pos > 0) {
-        panel.setScrollPosition(Math.max(pos + y - top, 0));
+        panel.setVerticalScrollPosition(Math.max(pos + y - top, 0));
       } else if (y > bottom && pos < maxScroll) {
-        panel.setScrollPosition(Math.min(pos + y - bottom, maxScroll));
+        panel.setVerticalScrollPosition(Math.min(pos + y - bottom, maxScroll));
       }
       return true;
     }

@@ -25,7 +25,7 @@ public class ScrollPager extends AbstractPager {
 
     scroll.addScrollHandler(new ScrollHandler() {
       public void onScroll(ScrollEvent event) {
-        int pos = scroll.getScrollPosition();
+        int pos = scroll.getVerticalScrollPosition();
         int maxPos = scroll.getWidget().getOffsetHeight();
         if (pos < 0 || pos == lastPos || pos > maxPos) {
           return;
@@ -65,7 +65,7 @@ public class ScrollPager extends AbstractPager {
       int pos = start * maxPos / rc;
       
       if (pos >= 0 && pos <= maxPos) {
-        scroll.setScrollPosition(pos);
+        scroll.setVerticalScrollPosition(pos);
         lastPos = pos;
 //        BeeKeeper.getLog().info("r", start, rc, maxPos, pos);
       }  

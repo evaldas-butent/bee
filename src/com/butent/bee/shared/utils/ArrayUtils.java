@@ -5,7 +5,7 @@ import com.butent.bee.shared.BeeConst;
 
 public class ArrayUtils {
 
-  public static <T> boolean contains(T value, T[] arr) {
+  public static boolean contains(Object value, Object[] arr) {
     return indexOf(value, arr) >= 0;
   }
 
@@ -80,8 +80,7 @@ public class ArrayUtils {
     }
   }
 
-  @SuppressWarnings("unchecked")
-  public static <T> int indexOf(T value, T[] arr) {
+  public static int indexOf(Object value, Object[] arr) {
     int idx = -1;
     int len = length(arr);
     if (len <= 0) {
@@ -89,13 +88,7 @@ public class ArrayUtils {
     }
 
     for (int i = 0; i < len; i++) {
-      if (value == arr[i]) {
-        idx = i;
-        break;
-      }
-
-      if (value instanceof Comparable<?> && arr[i] != null
-          && ((Comparable<T>) value).compareTo(arr[i]) == 0) {
+      if (BeeUtils.equals(value, arr[i])) {
         idx = i;
         break;
       }

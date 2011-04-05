@@ -27,7 +27,7 @@ public class Grego {
 
   private static final int THURSDAY = 5;
 
-  public static int dayOfWeek(long day) {
+  public static int dayOfWeek(int day) {
     long[] remainder = new long[1];
     floorDivide(day + THURSDAY, 7, remainder);
     

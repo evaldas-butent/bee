@@ -6,7 +6,6 @@ import com.google.common.primitives.Ints;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.data.filter.RowFilter;
 import com.butent.bee.shared.data.sort.SortInfo;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.value.NumberValue;

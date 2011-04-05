@@ -1,19 +1,19 @@
 package com.butent.bee.shared.data;
 
 public class DataWarning {
-  private Reasons reasonType;
-  private String messageToUser;
+  private String reason;
+  private String message;
 
-  public DataWarning(Reasons reasonType, String messageToUser) {
-    this.messageToUser = messageToUser;
-    this.reasonType = reasonType;
+  public DataWarning(String reason, String message) {
+    this.reason = reason;
+    this.message = message;
   }
 
   public String getMessage() {
-    return messageToUser;
+    return message;
   }
 
-  public Reasons getReasonType() {
-    return reasonType;
+  public String getReason() {
+    return reason;
   }
 }

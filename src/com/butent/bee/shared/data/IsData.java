@@ -1,6 +1,5 @@
 package com.butent.bee.shared.data;
 
-import com.butent.bee.shared.data.filter.RowFilter;
 import com.butent.bee.shared.data.sort.SortInfo;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.value.ValueType;
