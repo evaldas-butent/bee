@@ -10,6 +10,7 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.dom.StyleUtils.ScrollBars;
 import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.tree.BeeTree;
 import com.butent.bee.client.tree.BeeTreeItem;
@@ -327,7 +328,7 @@ public class RowSetService extends CompositeService {
 
     Split root = new Split();
     root.addNorth(buttons, 25);
-    root.add(panel.iterator().next(), true);
-    BeeKeeper.getUi().updateActiveQuietly(root, true);
+    root.add(panel.iterator().next(), ScrollBars.BOTH);
+    BeeKeeper.getUi().updateActiveQuietly(root, ScrollBars.BOTH);
   }
 }

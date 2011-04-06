@@ -28,7 +28,6 @@ import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.BeeStyle;
 import com.butent.bee.client.layout.Direction;
 import com.butent.bee.client.utils.JreEmulation;
 import com.butent.bee.client.utils.JsUtils;
@@ -1160,7 +1159,7 @@ public class DomUtils {
   
   public static void preventSelection(Element elem) {
     Assert.notNull(elem);
-    elem.addClassName(BeeStyle.NAME_UNSELECTABLE);
+    elem.addClassName(StyleUtils.NAME_UNSELECTABLE);
   }
 
   public static void removeAttribute(Widget w, String name) {

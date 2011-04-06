@@ -1,4 +1,4 @@
-package com.butent.bee.client;
+package com.butent.bee.client.dom;
 
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style;
@@ -6,12 +6,16 @@ import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.ui.UIObject;
 
+import com.butent.bee.client.utils.JsUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.utils.BeeUtils;
 
-public class BeeStyle implements Module {
-  
+public class StyleUtils {
+  public enum ScrollBars {
+    NONE, HORIZONTAL, VERTICAL, BOTH
+  }
+
   public static final String ACTIVE_BLANK = "bee-activeBlank";
   public static final String ACTIVE_CONTENT = "bee-activeContent";
   public static final String CONFIG_PANEL = "bee-configPanel";
@@ -34,126 +38,113 @@ public class BeeStyle implements Module {
   public static final String STYLE_OVERFLOW = "overflow";
   public static final String STYLE_OVERFLOW_X = "overflow-x";
   public static final String STYLE_OVERFLOW_Y = "overflow-y";
-  
+
   public static final String VALUE_AUTO = "auto";
   public static final String VALUE_FIXED = "fixed";
+  public static final String VALUE_SCROLL = "scroll";
 
   public static final String NAME_HORIZONTAL = "horizontal";
   public static final String NAME_VERTICAL = "vertical";
-  public static final String NAME_DISABLED = "disabled";  
-  public static final String NAME_ENABLED = "enabled";  
+  public static final String NAME_DISABLED = "disabled";
+  public static final String NAME_ENABLED = "enabled";
   public static final String NAME_FOCUSED = "focused";
 
   public static final String NAME_UNSELECTABLE = "unselectable";
 
-  public void addStyleDependentName(Element el, String styleSuffix) {
+  public static void addStyleDependentName(Element el, String styleSuffix) {
     setStyleDependentName(el, styleSuffix, true);
   }
 
-  public void autoHeight(UIObject obj) {
+  public static void autoHeight(UIObject obj) {
     Assert.notNull(obj);
     autoHeight(obj.getElement());
   }
 
-  public void autoHeight(Element el) {
+  public static void autoHeight(Element el) {
     Assert.notNull(el);
     autoHeight(el.getStyle());
   }
 
-  public void autoHeight(Style st) {
+  public static void autoHeight(Style st) {
     Assert.notNull(st);
     st.setProperty(STYLE_HEIGHT, VALUE_AUTO);
   }
 
-  public void autoOverflow(UIObject obj) {
+  public static void autoScroll(UIObject obj, ScrollBars scroll) {
     Assert.notNull(obj);
-    autoOverflow(obj.getElement());
-  }
-
-  public void autoOverflow(Element el) {
-    Assert.notNull(el);
-    autoOverflow(el.getStyle());
-  }
-
-  public void autoOverflow(Style st) {
-    Assert.notNull(st);
-    st.setProperty(STYLE_OVERFLOW, VALUE_AUTO);
-  }
-
-  public void autoOverflowX(UIObject obj) {
-    Assert.notNull(obj);
-    autoOverflowX(obj.getElement());
-  }
-
-  public void autoOverflowX(Element el) {
-    Assert.notNull(el);
-    autoOverflowX(el.getStyle());
-  }
-
-  public void autoOverflowX(Style st) {
-    Assert.notNull(st);
-    setStyleProperty(st, STYLE_OVERFLOW_X, VALUE_AUTO);
-  }
-
-  public void autoOverflowY(UIObject obj) {
-    Assert.notNull(obj);
-    autoOverflowY(obj.getElement());
-  }
-
-  public void autoOverflowY(Element el) {
-    Assert.notNull(el);
-    autoOverflowY(el.getStyle());
-  }
-
-  public void autoOverflowY(Style st) {
-    Assert.notNull(st);
-    setStyleProperty(st, STYLE_OVERFLOW_Y, VALUE_AUTO);
+    autoScroll(obj.getElement(), scroll);
   }
   
-  public void autoWidth(UIObject obj) {
+  public static void autoScroll(Element el, ScrollBars scroll) {
+    Assert.notNull(el);
+    autoScroll(el.getStyle(), scroll);
+  }
+  
+  public static void autoScroll(Style st, ScrollBars scroll) {
+    Assert.notNull(st);
+    Assert.notNull(scroll);
+    
+    switch (scroll) {
+      case BOTH:
+        st.setProperty(STYLE_OVERFLOW, VALUE_AUTO);
+        break;
+      case HORIZONTAL:
+        setStyleProperty(st, STYLE_OVERFLOW_X, VALUE_AUTO);
+        break;
+      case VERTICAL:
+        setStyleProperty(st, STYLE_OVERFLOW_Y, VALUE_AUTO);
+        break;
+      case NONE:
+        clearStyleProperty(st, STYLE_OVERFLOW);
+        clearStyleProperty(st, STYLE_OVERFLOW_X);
+        clearStyleProperty(st, STYLE_OVERFLOW_Y);
+        break;
+      default:
+        Assert.untouchable();
+    }
+  }
+
+  public static void autoWidth(UIObject obj) {
     Assert.notNull(obj);
     autoWidth(obj.getElement());
   }
 
-  public void autoWidth(Element el) {
+  public static void autoWidth(Element el) {
     Assert.notNull(el);
     autoWidth(el.getStyle());
   }
 
-  public void autoWidth(Style st) {
+  public static void autoWidth(Style st) {
     Assert.notNull(st);
     st.setProperty(STYLE_WIDTH, VALUE_AUTO);
   }
 
-  public void clearTableLayout(UIObject obj) {
+  public static void clearTableLayout(UIObject obj) {
     Assert.notNull(obj);
     clearTableLayout(obj.getElement());
   }
 
-  public void clearTableLayout(Element el) {
+  public static void clearTableLayout(Element el) {
     Assert.notNull(el);
     clearTableLayout(el.getStyle());
   }
 
-  public void clearTableLayout(Style st) {
+  public static void clearTableLayout(Style st) {
     Assert.notNull(st);
     st.clearProperty(STYLE_TABLE_LAYOUT);
   }
 
-  public void end() {
-  }
-
-  public void fillHorizontal(UIObject obj) {
+  public static void fillHorizontal(UIObject obj) {
     Assert.notNull(obj);
     fillHorizontal(obj.getElement());
   }
 
-  public void fillHorizontal(Element el) {
+  public static void fillHorizontal(Element el) {
     Assert.notNull(el);
     fillHorizontal(el.getStyle());
   }
 
-  public void fillHorizontal(Style st) {
+  public static void fillHorizontal(Style st) {
     Assert.notNull(st);
 
     if (!isZero(st.getLeft())) {
@@ -166,17 +157,17 @@ public class BeeStyle implements Module {
     st.setWidth(100, Unit.PCT);
   }
 
-  public void fillVertical(UIObject obj) {
+  public static void fillVertical(UIObject obj) {
     Assert.notNull(obj);
     fillVertical(obj.getElement());
   }
 
-  public void fillVertical(Element el) {
+  public static void fillVertical(Element el) {
     Assert.notNull(el);
     fillVertical(el.getStyle());
   }
 
-  public void fillVertical(Style st) {
+  public static void fillVertical(Style st) {
     Assert.notNull(st);
 
     if (!isZero(st.getTop())) {
@@ -189,76 +180,84 @@ public class BeeStyle implements Module {
     st.setHeight(100, Unit.PCT);
   }
 
-  public void fixedTableLayout(UIObject obj) {
+  public static void fixedTableLayout(UIObject obj) {
     Assert.notNull(obj);
     fixedTableLayout(obj.getElement());
   }
 
-  public void fixedTableLayout(Element el) {
+  public static void fixedTableLayout(Element el) {
     Assert.notNull(el);
     fixedTableLayout(el.getStyle());
   }
 
-  public void fixedTableLayout(Style st) {
+  public static void fixedTableLayout(Style st) {
     Assert.notNull(st);
     st.setProperty(STYLE_TABLE_LAYOUT, VALUE_FIXED);
   }
 
-  public void fullHeight(UIObject obj) {
+  public static void fullHeight(UIObject obj) {
     Assert.notNull(obj);
     fullHeight(obj.getElement());
   }
 
-  public void fullHeight(Element el) {
+  public static void fullHeight(Element el) {
     Assert.notNull(el);
     fullHeight(el.getStyle());
   }
 
-  public void fullHeight(Style st) {
+  public static void fullHeight(Style st) {
     Assert.notNull(st);
     st.setHeight(100, Unit.PCT);
   }
 
-  public void fullWidth(UIObject obj) {
+  public static void fullWidth(UIObject obj) {
     Assert.notNull(obj);
     fullWidth(obj.getElement());
   }
 
-  public void fullWidth(Element el) {
+  public static void fullWidth(Element el) {
     Assert.notNull(el);
     fullWidth(el.getStyle());
   }
 
-  public void fullWidth(Style st) {
+  public static void fullWidth(Style st) {
     Assert.notNull(st);
     st.setWidth(100, Unit.PCT);
   }
-  
-  public Element getElement(String id) {
+
+  public static Element getElement(String id) {
     Assert.notEmpty(id);
     Element el = DOM.getElementById(id);
     Assert.notNull(el, "id " + id + " element not found");
     return el;
   }
+
+  public static ScrollBars getScroll(UIObject obj) {
+    Assert.notNull(obj);
+    return getScroll(obj.getElement());
+  }
   
-  public String getName() {
-    return getClass().getName();
+  public static ScrollBars getScroll(Element el) {
+    Assert.notNull(el);
+    return getScroll(el.getStyle());
   }
-
-  public int getPriority(int p) {
-    switch (p) {
-      case PRIORITY_INIT:
-        return DO_NOT_CALL;
-      case PRIORITY_START:
-        return DO_NOT_CALL;
-      case PRIORITY_END:
-        return DO_NOT_CALL;
-      default:
-        return DO_NOT_CALL;
+  
+  public static ScrollBars getScroll(Style st) {
+    Assert.notNull(st);
+    
+    if (isScroll(st.getOverflow())) {
+      return ScrollBars.BOTH;
     }
+    if (isScroll(getStyleProperty(st, STYLE_OVERFLOW_X))) {
+      return ScrollBars.HORIZONTAL;
+    }
+    if (isScroll(getStyleProperty(st, STYLE_OVERFLOW_Y))) {
+      return ScrollBars.VERTICAL;
+    }
+    return ScrollBars.NONE;
   }
 
-  public String getStylePrimaryName(Element el) {
+  public static String getStylePrimaryName(Element el) {
     Assert.notNull(el);
     String className = el.getClassName();
     if (BeeUtils.isEmpty(className)) {
@@ -272,104 +271,101 @@ public class BeeStyle implements Module {
     return className;
   }
 
-  public int getTop(String id) {
+  public static int getTop(String id) {
     return getTop(getElement(id));
   }
 
-  public int getTop(UIObject obj) {
+  public static int getTop(UIObject obj) {
     Assert.notNull(obj);
     return getTop(obj.getElement());
   }
 
-  public int getTop(Element el) {
+  public static int getTop(Element el) {
     Assert.notNull(el);
     return getTop(el.getStyle());
   }
 
-  public int getTop(Style st) {
+  public static int getTop(Style st) {
     Assert.notNull(st);
     return BeeUtils.val(st.getTop());
   }
-  
-  public void init() {
-  }
 
-  public void removeStyleDependentName(Element el, String styleSuffix) {
+  public static void removeStyleDependentName(Element el, String styleSuffix) {
     setStyleDependentName(el, styleSuffix, false);
   }
 
-  public void setBorderBottomWidth(UIObject obj, int px) {
+  public static void setBorderBottomWidth(UIObject obj, int px) {
     setBorderBottomWidth(obj.getElement(), px);
   }
 
-  public void setBorderBottomWidth(Element el, int px) {
+  public static void setBorderBottomWidth(Element el, int px) {
     Assert.notNull(el);
     setBorderBottomWidth(el.getStyle(), px);
   }
 
-  public void setBorderBottomWidth(Style st, int px) {
+  public static void setBorderBottomWidth(Style st, int px) {
     Assert.notNull(st);
     Assert.nonNegative(px);
     st.setPropertyPx(STYLE_BORDER_BOTTOM, px);
   }
 
-  public void setBorderTopWidth(UIObject obj, int px) {
+  public static void setBorderTopWidth(UIObject obj, int px) {
     Assert.notNull(obj);
     setBorderTopWidth(obj.getElement(), px);
   }
 
-  public void setBorderTopWidth(Element el, int px) {
+  public static void setBorderTopWidth(Element el, int px) {
     Assert.notNull(el);
     setBorderTopWidth(el.getStyle(), px);
   }
 
-  public void setBorderTopWidth(Style st, int px) {
+  public static void setBorderTopWidth(Style st, int px) {
     Assert.notNull(st);
     Assert.nonNegative(px);
     st.setPropertyPx(STYLE_BORDER_TOP, px);
   }
 
-  public void setHeight(UIObject obj, int px) {
+  public static void setHeight(UIObject obj, int px) {
     Assert.notNull(obj);
     setHeight(obj.getElement(), px);
   }
 
-  public void setHeight(Element el, int px) {
+  public static void setHeight(Element el, int px) {
     Assert.notNull(el);
     setHeight(el.getStyle(), px);
   }
 
-  public void setHeight(Style st, int px) {
+  public static void setHeight(Style st, int px) {
     Assert.notNull(st);
     st.setHeight(px, Unit.PX);
   }
 
-  public void setLeft(UIObject obj, int px) {
+  public static void setLeft(UIObject obj, int px) {
     Assert.notNull(obj);
     setLeft(obj.getElement(), px);
   }
 
-  public void setLeft(Element el, int px) {
+  public static void setLeft(Element el, int px) {
     Assert.notNull(el);
     setLeft(el.getStyle(), px);
   }
 
-  public void setLeft(Style st, int px) {
+  public static void setLeft(Style st, int px) {
     Assert.notNull(st);
     st.setLeft(px, Unit.PX);
   }
 
-  public void setStyleDependentName(Element el, String styleSuffix, boolean add) {
+  public static void setStyleDependentName(Element el, String styleSuffix, boolean add) {
     Assert.notNull(el);
     Assert.notEmpty(styleSuffix);
-    
+
     String primary = getStylePrimaryName(el);
     Assert.notEmpty(primary, "element has no primary style");
-    
+
     setStyleName(el, primary + BeeConst.CHAR_MINUS + styleSuffix.trim(), add);
   }
-  
-  public void setStyleName(Element el, String st, boolean add) {
+
+  public static void setStyleName(Element el, String st, boolean add) {
     Assert.notNull(el);
     Assert.notEmpty(st);
 
@@ -380,97 +376,108 @@ public class BeeStyle implements Module {
     }
   }
 
-  public void setTop(String id, int px) {
+  public static void setTop(String id, int px) {
     setTop(getElement(id), px);
   }
 
-  public void setTop(UIObject obj, int px) {
+  public static void setTop(UIObject obj, int px) {
     Assert.notNull(obj);
     setTop(obj.getElement(), px);
   }
 
-  public void setTop(Element el, int px) {
+  public static void setTop(Element el, int px) {
     Assert.notNull(el);
     setTop(el.getStyle(), px);
   }
 
-  public void setTop(Style st, int px) {
+  public static void setTop(Style st, int px) {
     Assert.notNull(st);
     st.setTop(px, Unit.PX);
   }
 
-  public void setWidth(UIObject obj, int px) {
+  public static void setWidth(UIObject obj, int px) {
     Assert.notNull(obj);
     setWidth(obj.getElement(), px);
   }
 
-  public void setWidth(Element el, int px) {
+  public static void setWidth(Element el, int px) {
     Assert.notNull(el);
     setWidth(el.getStyle(), px);
   }
 
-  public void setWidth(Style st, int px) {
+  public static void setWidth(Style st, int px) {
     Assert.notNull(st);
     st.setWidth(px, Unit.PX);
   }
 
-  public void start() {
-  }
-
-  public void zeroLeft(UIObject obj) {
+  public static void zeroLeft(UIObject obj) {
     Assert.notNull(obj);
     zeroLeft(obj.getElement());
   }
 
-  public void zeroLeft(Element el) {
+  public static void zeroLeft(Element el) {
     Assert.notNull(el);
     zeroLeft(el.getStyle());
   }
 
-  public void zeroLeft(Style st) {
+  public static void zeroLeft(Style st) {
     Assert.notNull(st);
     st.setPropertyPx(STYLE_LEFT, 0);
   }
 
-  public void zeroTop(UIObject obj) {
+  public static void zeroTop(UIObject obj) {
     Assert.notNull(obj);
     zeroTop(obj.getElement());
   }
 
-  public void zeroTop(Element el) {
+  public static void zeroTop(Element el) {
     Assert.notNull(el);
     zeroTop(el.getStyle());
   }
 
-  public void zeroTop(Style st) {
+  public static void zeroTop(Style st) {
     Assert.notNull(st);
     st.setPropertyPx(STYLE_TOP, 0);
   }
 
-  public void zeroWidth(UIObject obj) {
+  public static void zeroWidth(UIObject obj) {
     Assert.notNull(obj);
     zeroWidth(obj.getElement());
   }
 
-  public void zeroWidth(Element el) {
+  public static void zeroWidth(Element el) {
     Assert.notNull(el);
     zeroWidth(el.getStyle());
   }
 
-  public void zeroWidth(Style st) {
+  public static void zeroWidth(Style st) {
     Assert.notNull(st);
     st.setPropertyPx(STYLE_WIDTH, 0);
   }
 
-  private boolean hasProperty(Style st, String name) {
+  private static void clearStyleProperty(Style style, String name) {
+    if (!BeeUtils.isEmpty(getStyleProperty(style, name))) {
+      setStyleProperty(style, name, BeeConst.STRING_EMPTY);
+    }
+  }
+  
+  private static String getStyleProperty(Style style, String name) {
+    return JsUtils.getProperty(style, name);
+  }
+  
+  private static boolean hasProperty(Style st, String name) {
     if (st == null || BeeUtils.isEmpty(name)) {
       return false;
     } else {
       return !BeeUtils.isEmpty(st.getProperty(name));
     }
   }
+  
+  private static boolean isScroll(String value) {
+    return BeeUtils.inListSame(value, VALUE_AUTO, VALUE_SCROLL);
+  }
 
-  private boolean isZero(String s) {
+  private static boolean isZero(String s) {
     if (BeeUtils.isEmpty(s)) {
       return false;
     }
@@ -494,7 +501,10 @@ public class BeeStyle implements Module {
     return ok;
   }
 
-  private native void setStyleProperty(Style style, String name, String value) /*-{
-    style[name] = value;
-  }-*/;
+  private static void setStyleProperty(Style style, String name, String value) {
+    JsUtils.setProperty(style, name, value);
+  }
+
+  private StyleUtils() {
+  }
 }

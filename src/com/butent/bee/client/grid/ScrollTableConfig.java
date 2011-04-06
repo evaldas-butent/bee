@@ -13,13 +13,12 @@ import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.PopupPanel.PositionCallback;
 import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.BeeStyle;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.composite.RadioGroup;
 import com.butent.bee.client.composite.SpinnerListener;
 import com.butent.bee.client.composite.ValueSpinner;
 import com.butent.bee.client.dialog.BeePopupPanel;
+import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.DndEvent;
 import com.butent.bee.client.event.EventUtils;
@@ -234,7 +233,7 @@ public class ScrollTableConfig {
     }
 
     public boolean onDragEnd(DndEvent event) {
-      event.getElement().removeClassName(BeeStyle.DND_SOURCE);
+      event.getElement().removeClassName(StyleUtils.DND_SOURCE);
       if (!BeeUtils.isEmpty(sourceId) && !BeeUtils.isEmpty(targetId)
           && !BeeUtils.same(sourceId, targetId)) {
         moveColumn(sourceId, targetId);
@@ -245,7 +244,7 @@ public class ScrollTableConfig {
     public boolean onDragEnter(DndEvent event) {
       Element elem = event.getElement();
       if (isTarget(elem)) {
-        elem.addClassName(BeeStyle.DND_OVER);
+        elem.addClassName(StyleUtils.DND_OVER);
       }
       return true;
     }
@@ -253,7 +252,7 @@ public class ScrollTableConfig {
     public boolean onDragLeave(DndEvent event) {
       Element elem = event.getElement();
       if (isTarget(elem)) {
-        elem.removeClassName(BeeStyle.DND_OVER);
+        elem.removeClassName(StyleUtils.DND_OVER);
       }
       return true;
     }
@@ -276,7 +275,7 @@ public class ScrollTableConfig {
         maxScroll = panel.getElement().getScrollHeight() - height;
       }
 
-      elem.addClassName(BeeStyle.DND_SOURCE);
+      elem.addClassName(StyleUtils.DND_SOURCE);
       event.setData(sourceId);
       event.setEffectAllowed(DndEvent.EFFECT_MOVE);
 
@@ -288,7 +287,7 @@ public class ScrollTableConfig {
       event.stopPropagation();
 
       if (isTarget(elem)) {
-        elem.removeClassName(BeeStyle.DND_OVER);
+        elem.removeClassName(StyleUtils.DND_OVER);
         targetId = elem.getId();
       }
       return false;
@@ -682,7 +681,7 @@ public class ScrollTableConfig {
 
     popup = new BeePopupPanel(true, true);
     popup.setWidget(panel);
-    popup.setStyleName(BeeStyle.CONFIG_PANEL);
+    popup.setStyleName(StyleUtils.CONFIG_PANEL);
     popup.enableGlass();
 
     popup.addCloseHandler(new PopupCloseHandler());
@@ -829,14 +828,14 @@ public class ScrollTableConfig {
   }
 
   private void setRowTop(int row, int top) {
-    BeeKeeper.getStyle().setTop(cRef[row].getShow(), top);
-    BeeKeeper.getStyle().setTop(cRef[row].getOrder(), top);
-    BeeKeeper.getStyle().setTop(cRef[row].getCap(), top);
-    BeeKeeper.getStyle().setTop(cRef[row].getDatW(), top);
-    BeeKeeper.getStyle().setTop(cRef[row].getCurW(), top);
-    BeeKeeper.getStyle().setTop(cRef[row].getMinW(), top);
-    BeeKeeper.getStyle().setTop(cRef[row].getPrefW(), top);
-    BeeKeeper.getStyle().setTop(cRef[row].getMaxW(), top);
+    StyleUtils.setTop(cRef[row].getShow(), top);
+    StyleUtils.setTop(cRef[row].getOrder(), top);
+    StyleUtils.setTop(cRef[row].getCap(), top);
+    StyleUtils.setTop(cRef[row].getDatW(), top);
+    StyleUtils.setTop(cRef[row].getCurW(), top);
+    StyleUtils.setTop(cRef[row].getMinW(), top);
+    StyleUtils.setTop(cRef[row].getPrefW(), top);
+    StyleUtils.setTop(cRef[row].getMaxW(), top);
   }
 
   private boolean setupColumns() {

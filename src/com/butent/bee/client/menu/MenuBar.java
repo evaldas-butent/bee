@@ -22,8 +22,8 @@ import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.BeeStyle;
 import com.butent.bee.client.dom.BeeImpl;
+import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.HasAfterAddHandler;
@@ -550,9 +550,9 @@ public class MenuBar extends Widget implements HasId, HasAfterAddHandler,
       addStyleDependentName("level-" + lvl);
     }
     if (vertical) {
-      addStyleDependentName(BeeStyle.NAME_VERTICAL);
+      addStyleDependentName(StyleUtils.NAME_VERTICAL);
     } else {
-      addStyleDependentName(BeeStyle.NAME_HORIZONTAL);
+      addStyleDependentName(StyleUtils.NAME_HORIZONTAL);
     }
 
     addStyleDependentName(barType.toString().toLowerCase());

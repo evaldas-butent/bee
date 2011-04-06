@@ -24,7 +24,7 @@ import com.google.gwt.user.client.ui.HasHorizontalAlignment.HorizontalAlignmentC
 import com.google.gwt.user.client.ui.HasVerticalAlignment.VerticalAlignmentConstant;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.BeeStyle;
+import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.DndEvent;
 import com.butent.bee.client.event.EventUtils;
@@ -162,7 +162,7 @@ public class ScrollTable extends ComplexPanel implements
     }
 
     public boolean onDragEnd(DndEvent event) {
-      event.getElement().removeClassName(BeeStyle.DND_SOURCE);
+      event.getElement().removeClassName(StyleUtils.DND_SOURCE);
       
       if (BeeUtils.context(columnIdSeparator, sourceId)
           && BeeUtils.context(columnIdSeparator, targetId)) {
@@ -179,7 +179,7 @@ public class ScrollTable extends ComplexPanel implements
     public boolean onDragEnter(DndEvent event) {
       Element elem = event.getElement();
       if (isTarget(elem)) {
-        elem.addClassName(BeeStyle.DND_OVER);
+        elem.addClassName(StyleUtils.DND_OVER);
       }
       return true;
     }
@@ -187,7 +187,7 @@ public class ScrollTable extends ComplexPanel implements
     public boolean onDragLeave(DndEvent event) {
       Element elem = event.getElement();
       if (isTarget(elem)) {
-        elem.removeClassName(BeeStyle.DND_OVER);
+        elem.removeClassName(StyleUtils.DND_OVER);
       }
       return true;
     }
@@ -211,7 +211,7 @@ public class ScrollTable extends ComplexPanel implements
       if (BeeUtils.isEmpty(sourceId) || BeeUtils.isEmpty(parentId)) {
         event.preventDefault();
       } else {
-        elem.addClassName(BeeStyle.DND_SOURCE);
+        elem.addClassName(StyleUtils.DND_SOURCE);
         event.setData(sourceId);
         event.setEffectAllowed(DndEvent.EFFECT_MOVE);
       }
@@ -224,7 +224,7 @@ public class ScrollTable extends ComplexPanel implements
       event.stopPropagation();
 
       if (isTarget(elem)) {
-        elem.removeClassName(BeeStyle.DND_OVER);
+        elem.removeClassName(StyleUtils.DND_OVER);
         targetId = elem.getId();
       }
       return false;

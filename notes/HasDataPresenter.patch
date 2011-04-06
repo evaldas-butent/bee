@@ -1,0 +1,8 @@
+803a804,810
+>       
+>       // start patch
+>       if (newPageStart < 0) {
+>         newPageStart = 0;
+>         index = 0;
+>       }
+>       // end patch

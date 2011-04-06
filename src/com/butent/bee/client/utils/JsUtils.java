@@ -151,6 +151,10 @@ public class JsUtils {
     return arr;
   }-*/;
 
+  public static native String getProperty(JavaScriptObject obj, String p) /*-{
+    return obj[p];
+  }-*/;
+  
   public static native boolean hasProperty(JavaScriptObject obj, String p) /*-{
     var ok;
 
@@ -220,6 +224,10 @@ public class JsUtils {
 
   public static native void remove(JsArrayString arr, int index) /*-{
     arr.splice(index, 0);
+  }-*/;
+
+  public static native void setProperty(JavaScriptObject obj, String p, String value) /*-{
+    obj[p] = value;
   }-*/;
   
   public static native JsArrayString slice(JsArrayString src, int start, int end) /*-{

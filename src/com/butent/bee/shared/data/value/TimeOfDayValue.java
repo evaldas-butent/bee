@@ -146,14 +146,4 @@ public class TimeOfDayValue extends Value {
     }
     return result;
   }
-
-  @Override
-  protected String innerToQueryString() {
-    String s = "TIMEOFDAY '" + hours + ":" + minutes + ":" + seconds;
-    if (milliseconds != 0) {
-      s += "." + milliseconds;
-    }
-    s += "'";
-    return s;
-  }
 }

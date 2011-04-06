@@ -6,6 +6,7 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.dom.StyleUtils.ScrollBars;
 import com.butent.bee.client.tree.BeeTreeItem;
 import com.butent.bee.client.utils.JreEmulation;
 import com.butent.bee.shared.Assert;
@@ -112,7 +113,7 @@ public class TilePanel extends Split {
     Assert.notNull(dst);
     
     Widget centerWidget = getCenter();
-    boolean centerScroll = isWidgetScroll(centerWidget);
+    ScrollBars centerScroll = getWidgetScroll(centerWidget);
 
     List<Widget> lst = getTiles(false);
     int c = lst.size();
@@ -129,21 +130,23 @@ public class TilePanel extends Split {
     
     Direction[] directions = new Direction[c];
     double[] sizes = new double[c];
-    boolean[] scroll = new boolean[c];
+    ScrollBars[] scroll = new ScrollBars[c];
+    int[] splSizes = new int[c];
 
     for (int i = 0; i < c; i++) {
       Widget w = lst.get(i);
 
       directions[i] = getWidgetDirection(w);
       sizes[i] = directions[i].isHorizontal() ? getWidgetWidth(w) : getWidgetHeight(w);
-      scroll[i] = isWidgetScroll(w);
+      scroll[i] = getWidgetScroll(w);
+      splSizes[i] = getWidgetSplitterSize(w);
     }
     
     clear();
     dst.clear();
     
     for (int i = 0; i < c; i++) {
-      dst.insert(lst.get(i), directions[i], sizes[i], null, scroll[i]);
+      dst.insert(lst.get(i), directions[i], sizes[i], null, scroll[i], splSizes[i]);
     }
     if (centerWidget != null) {
       dst.add(centerWidget, centerScroll);

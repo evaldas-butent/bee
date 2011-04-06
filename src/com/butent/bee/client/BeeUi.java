@@ -13,7 +13,9 @@ import com.butent.bee.client.composite.RadioGroup;
 import com.butent.bee.client.composite.TextEditor;
 import com.butent.bee.client.composite.ValueSpinner;
 import com.butent.bee.client.composite.VolumeSlider;
+import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.dom.StyleUtils.ScrollBars;
 import com.butent.bee.client.grid.CellType;
 import com.butent.bee.client.grid.FlexTable;
 import com.butent.bee.client.layout.BeeLayoutPanel;
@@ -104,9 +106,9 @@ public class BeeUi implements Module {
       Widget w = np.getCenter();
 
       if (w instanceof BlankTile) {
-        w.addStyleName(BeeStyle.ACTIVE_BLANK);
+        w.addStyleName(StyleUtils.ACTIVE_BLANK);
       } else if (w != null) {
-        np.getWidgetContainerElement(w).addClassName(BeeStyle.ACTIVE_CONTENT);
+        np.getWidgetContainerElement(w).addClassName(StyleUtils.ACTIVE_CONTENT);
       }
     }
 
@@ -120,9 +122,9 @@ public class BeeUi implements Module {
       Widget w = op.getCenter();
 
       if (w instanceof BlankTile) {
-        w.removeStyleName(BeeStyle.ACTIVE_BLANK);
+        w.removeStyleName(StyleUtils.ACTIVE_BLANK);
       } else if (w != null) {
-        op.getWidgetContainerElement(w).removeClassName(BeeStyle.ACTIVE_CONTENT);
+        op.getWidgetContainerElement(w).removeClassName(StyleUtils.ACTIVE_CONTENT);
       }
     }
 
@@ -251,22 +253,23 @@ public class BeeUi implements Module {
   public void showGrid(Object data, String... cols) {
     Assert.notNull(data);
     Widget grd = null;
-    boolean addScroll = false;
+    ScrollBars scroll;
 
     switch (getDefaultGridType()) {
       case 1:
         grd = Global.scrollGrid(getActivePanelWidth(), data, cols);
+        scroll = ScrollBars.NONE;
         break;
       case 2:
         grd = Global.cellGrid(data, getDefaultCellType(), cols);
-        addScroll = true;
+        scroll = ScrollBars.BOTH;
         break;
       default:
         grd = Global.simpleGrid(data, cols);
-        addScroll = true;
+        scroll = ScrollBars.BOTH;
     }
 
-    updateActiveQuietly(grd, addScroll);
+    updateActiveQuietly(grd, scroll);
   }
 
   public void showResource(BeeResource resource) {
@@ -280,10 +283,10 @@ public class BeeUi implements Module {
   }
 
   public void updateActivePanel(Widget w) {
-    updateActivePanel(w, false);
+    updateActivePanel(w, ScrollBars.NONE);
   }
 
-  public void updateActivePanel(Widget w, boolean scroll) {
+  public void updateActivePanel(Widget w, ScrollBars scroll) {
     Assert.notNull(w);
 
     TilePanel p = getActivePanel();
@@ -295,7 +298,7 @@ public class BeeUi implements Module {
     activatePanel(p);
   }
 
-  public void updateActiveQuietly(Widget w, boolean scroll) {
+  public void updateActiveQuietly(Widget w, ScrollBars scroll) {
     if (w != null) {
       updateActivePanel(w, scroll);
     }
@@ -378,7 +381,7 @@ public class BeeUi implements Module {
     TilePanel center = new TilePanel();
     Widget w = p.getCenter();
     if (w != null) {
-      boolean scroll = p.isWidgetScroll(w);
+      ScrollBars scroll = p.getWidgetScroll(w);
 
       setTemporaryDetach(true);
       p.remove(w);
@@ -392,7 +395,7 @@ public class BeeUi implements Module {
     BlankTile bt = new BlankTile();
     tp.add(bt);
 
-    p.insert(tp, direction, z, null, false);
+    p.insert(tp, direction, z, null, null, p.getSplitterSize());
     p.add(center);
 
     activatePanel(tp);
@@ -419,12 +422,12 @@ public class BeeUi implements Module {
 
     w = initEast();
     if (w != null) {
-      p.addEast(w, 256, true);
+      p.addEast(w, 256, ScrollBars.BOTH);
     }
 
     w = initCenter();
     if (w != null) {
-      p.add(w, true);
+      p.add(w, ScrollBars.BOTH);
     }
 
     rootUi.add(p);

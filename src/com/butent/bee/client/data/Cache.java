@@ -19,6 +19,7 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.dom.StyleUtils.ScrollBars;
 import com.butent.bee.client.grid.BeeCellTable;
 import com.butent.bee.client.grid.RowIdColumn;
 import com.butent.bee.client.grid.TableSorter;
@@ -278,7 +279,7 @@ public class Cache {
       grid.setKeyboardPagingPolicy(KeyboardPagingPolicy.CHANGE_PAGE);
     }
 
-    Split panel = new Split();
+    Split panel = new Split(2);
     panel.addNorth(new BeeLabel(rs.getViewName()), 20);
 
     BeeLayoutPanel footer = new BeeLayoutPanel();
@@ -323,12 +324,10 @@ public class Cache {
     if (pageSize > 0) {
       ScrollPager scroll = new ScrollPager(pageSize, rowCount);
       scroll.setDisplay(grid);
-      panel.addEast(scroll, DomUtils.getScrollbarWidth() + 1);
-      panel.hideSplitter(scroll);
+      panel.addEast(scroll, DomUtils.getScrollbarWidth() + 1, null, -1);
     }
 
-    panel.add(grid);
-    BeeKeeper.getStyle().autoOverflowX(panel.getWidgetContainerElement(grid));
+    panel.add(grid, ScrollBars.HORIZONTAL);
 
     BeeKeeper.getUi().updateActivePanel(panel);
   }

@@ -8,6 +8,7 @@ import com.google.gwt.user.client.ui.Panel;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.dom.StyleUtils.ScrollBars;
 import com.butent.bee.client.utils.XmlUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeService;
@@ -92,7 +93,7 @@ public class FormService extends CompositeService {
                   if (!BeeUtils.isEmpty(data)) {
                     UiComponent c = UiComponent.restore(data);
                     BeeKeeper.getUi().updateMenu(MenuService.buidComponentTree(c));
-                    BeeKeeper.getUi().updateActivePanel((Panel) c.createInstance(), true);
+                    BeeKeeper.getUi().updateActivePanel((Panel) c.createInstance(), ScrollBars.BOTH);
                   }
                 }
               });

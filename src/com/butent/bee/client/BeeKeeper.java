@@ -12,7 +12,6 @@ public class BeeKeeper {
   private static EventManager BUS;
 
   private static BeeLog LOG;
-  private static BeeStyle STYLE;
   private static BeeScheduler SCHED;
   private static BeeUser USER;
   private static Global GLOB;
@@ -39,10 +38,6 @@ public class BeeKeeper {
     return STOR;
   }
 
-  public static BeeStyle getStyle() {
-    return STYLE;
-  }
-
   public static BeeUi getUi() {
     return UI;
   }
@@ -59,14 +54,13 @@ public class BeeKeeper {
     RPC = new RpcFactory(url);
 
     LOG = new BeeLog();
-    STYLE = new BeeStyle();
     SCHED = new BeeScheduler();
     USER = new BeeUser();
     GLOB = new Global();
     STOR = new Storage();
     MENU = new MenuManager();
 
-    modules = new Module[]{UI, BUS, RPC, LOG, STYLE, SCHED, USER, GLOB, STOR, MENU};
+    modules = new Module[]{UI, BUS, RPC, LOG, SCHED, USER, GLOB, STOR, MENU};
   }
 
   public void end() {

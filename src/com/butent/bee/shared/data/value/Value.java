@@ -1,6 +1,5 @@
 package com.butent.bee.shared.data.value;
 
-import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.DateTime;
 import com.butent.bee.shared.JustDate;
 import com.butent.bee.shared.Transformable;
@@ -136,14 +135,7 @@ public abstract class Value implements Comparable<Value>, Transformable {
 
   public abstract boolean isNull();
 
-  public final String toQueryString() {
-    Assert.isTrue(!isNull(), "Cannot run toQueryString() on a null value.");
-    return innerToQueryString();
-  }
-
   public String transform() {
     return toString();
   }
-
-  protected abstract String innerToQueryString();
 }

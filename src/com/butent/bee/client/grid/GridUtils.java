@@ -8,7 +8,7 @@ import com.google.gwt.dom.client.TableRowElement;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Element;
 
-import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 
@@ -72,8 +72,8 @@ public class GridUtils {
     td.getStyle().setOverflow(Overflow.HIDDEN);
     td.getStyle().setPaddingTop(0, Unit.PX);
     td.getStyle().setPaddingBottom(0, Unit.PX);
-    BeeKeeper.getStyle().setBorderTopWidth(td, 0);
-    BeeKeeper.getStyle().setBorderBottomWidth(td, 0);
+    StyleUtils.setBorderTopWidth(td, 0);
+    StyleUtils.setBorderBottomWidth(td, 0);
     td.getStyle().setMargin(0, Unit.PX);
     return td;
   }
@@ -146,7 +146,7 @@ public class GridUtils {
 
   public static IdealColumnWidthInfo recalculateIdealColumnWidthsSetup(
       HtmlTable table, int columnCount, int offset) {
-    BeeKeeper.getStyle().clearTableLayout(table);
+    StyleUtils.clearTableLayout(table);
 
     TableRowElement tr = Document.get().createTRElement();
     TableCellElement td = Document.get().createTDElement();
@@ -164,7 +164,7 @@ public class GridUtils {
     if (info == null) {
       return;
     }
-    BeeKeeper.getStyle().fixedTableLayout(info.table);
+    StyleUtils.fixedTableLayout(info.table);
     getTableBody(info.table).removeChild(info.tr);
   }
 

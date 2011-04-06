@@ -32,6 +32,7 @@ import com.butent.bee.client.composite.SliderBar;
 import com.butent.bee.client.data.JsData;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Features;
+import com.butent.bee.client.dom.StyleUtils.ScrollBars;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.grid.FlexTable;
 import com.butent.bee.client.i18n.LocaleUtils;
@@ -362,7 +363,7 @@ public class CliWorker {
     widget.getAudioElement().setSrc(src);
     widget.getAudioElement().setControls(true);
 
-    BeeKeeper.getUi().updateActivePanel(widget, true);
+    BeeKeeper.getUi().updateActivePanel(widget, ScrollBars.BOTH);
   }
 
   public static void playVideo(String[] arr) {
@@ -379,7 +380,7 @@ public class CliWorker {
     Video widget = new Video(src);
     widget.getVideoElement().setControls(true);
 
-    BeeKeeper.getUi().updateActivePanel(widget, true);
+    BeeKeeper.getUi().updateActivePanel(widget, ScrollBars.BOTH);
   }
 
   public static void showBrowser(String[] arr) {
@@ -668,7 +669,7 @@ public class CliWorker {
       row++;
     }
 
-    BeeKeeper.getUi().updateActivePanel(table, true);
+    BeeKeeper.getUi().updateActivePanel(table, ScrollBars.BOTH);
   }
 
   public static void showMeter(String[] arr) {
@@ -762,7 +763,7 @@ public class CliWorker {
       table.setHTML(r, 0, BeeUtils.toString(i));
       table.setWidget(r, 1, new Meter(min, max, i, low, high, optimum));
     }
-    BeeKeeper.getUi().updateActivePanel(table, true);
+    BeeKeeper.getUi().updateActivePanel(table, ScrollBars.BOTH);
   }
 
   public static void showProgress(String[] arr) {
@@ -822,7 +823,7 @@ public class CliWorker {
     };
     timer.scheduleRepeating(millis);
 
-    BeeKeeper.getUi().updateActivePanel(panel, true);
+    BeeKeeper.getUi().updateActivePanel(panel, ScrollBars.BOTH);
   }
 
   public static void showProperties(String v, String[] arr) {

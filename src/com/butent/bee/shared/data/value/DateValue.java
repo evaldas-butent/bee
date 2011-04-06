@@ -121,9 +121,4 @@ public class DateValue extends Value {
     return BeeUtils.toString(year) + "-" + 
         BeeUtils.toLeadingZeroes(month, 2) + "-" + BeeUtils.toLeadingZeroes(dayOfMonth, 2);
   }
-
-  @Override
-  protected String innerToQueryString() {
-    return "DATE '" + year + "-" + month + "-" + dayOfMonth + "'";
-  }
 }

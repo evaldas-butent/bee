@@ -8,8 +8,8 @@ import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.shared.HasId;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -64,8 +64,8 @@ public class ProgressBar extends Widget implements HasId, RequiresResize {
     barElement = DOM.createDiv();
     getElement().appendChild(barElement);
 
-    BeeKeeper.getStyle().fullWidth(barElement);
-    BeeKeeper.getStyle().fullHeight(barElement);
+    StyleUtils.fullWidth(barElement);
+    StyleUtils.fullHeight(barElement);
     barElement.setClassName(styleNameBar);
     DomUtils.createId(barElement, "bar");
 
@@ -73,7 +73,7 @@ public class ProgressBar extends Widget implements HasId, RequiresResize {
     getElement().appendChild(textElement);
 
     textElement.getStyle().setPosition(Position.ABSOLUTE);
-    BeeKeeper.getStyle().zeroTop(textElement);
+    StyleUtils.zeroTop(textElement);
     textElement.setClassName(styleNameText);
     DomUtils.createId(textElement, "text");
 
@@ -126,7 +126,7 @@ public class ProgressBar extends Widget implements HasId, RequiresResize {
       int width = getElement().getClientWidth();
       int textWidth = textElement.getOffsetWidth();
       int left = (width / 2) - (textWidth / 2);
-      BeeKeeper.getStyle().setLeft(textElement, left);
+      StyleUtils.setLeft(textElement, left);
     }
   }
 
@@ -157,17 +157,17 @@ public class ProgressBar extends Widget implements HasId, RequiresResize {
 
     if (percent < 50) {
       if (!BeeUtils.context(styleNameFirstHalf, textClassName)) {
-        BeeKeeper.getStyle().addStyleDependentName(textElement, styleNameFirstHalf);
+        StyleUtils.addStyleDependentName(textElement, styleNameFirstHalf);
       }
       if (BeeUtils.context(styleNameSecondHalf, textClassName)) {
-        BeeKeeper.getStyle().removeStyleDependentName(textElement, styleNameSecondHalf);
+        StyleUtils.removeStyleDependentName(textElement, styleNameSecondHalf);
       }
     } else {
       if (BeeUtils.context(styleNameFirstHalf, textClassName)) {
-        BeeKeeper.getStyle().removeStyleDependentName(textElement, styleNameFirstHalf);
+        StyleUtils.removeStyleDependentName(textElement, styleNameFirstHalf);
       }
       if (!BeeUtils.context(styleNameSecondHalf, textClassName)) {
-        BeeKeeper.getStyle().addStyleDependentName(textElement, styleNameSecondHalf);
+        StyleUtils.addStyleDependentName(textElement, styleNameSecondHalf);
       }
     }
     redraw();

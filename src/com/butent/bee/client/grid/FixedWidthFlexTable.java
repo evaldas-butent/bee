@@ -5,7 +5,7 @@ import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.grid.GridUtils.IdealColumnWidthInfo;
 import com.butent.bee.shared.Assert;
 
@@ -89,8 +89,8 @@ public class FixedWidthFlexTable extends FlexTable {
     super();
     setDefaultColumnWidth(defColWidth);
     Element tableElem = getElement();
-    BeeKeeper.getStyle().fixedTableLayout(tableElem);
-    BeeKeeper.getStyle().zeroWidth(tableElem);
+    StyleUtils.fixedTableLayout(tableElem);
+    StyleUtils.zeroWidth(tableElem);
 
     setCellFormatter(new FixedWidthFlexCellFormatter());
     setColumnFormatter(new FixedWidthFlexColumnFormatter());

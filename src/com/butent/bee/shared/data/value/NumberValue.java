@@ -42,9 +42,6 @@ public class NumberValue extends Value {
   }
 
   public double getValue() {
-    if (this == NULL_VALUE) {
-      throw new NullValueException("This null number has no value");
-    }
     return value;
   }
 
@@ -66,11 +63,6 @@ public class NumberValue extends Value {
     if (this == NULL_VALUE) {
       return "null";
     }
-    return Double.toString(value);
-  }
-
-  @Override
-  protected String innerToQueryString() {
     return Double.toString(value);
   }
 }

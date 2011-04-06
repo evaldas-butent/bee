@@ -6,7 +6,7 @@ import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.grid.GridUtils.IdealColumnWidthInfo;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -56,7 +56,7 @@ public class FixedWidthGrid extends GridTable {
     setClearText(BeeConst.HTML_NBSP);
 
     Element tableElem = getElement();
-    BeeKeeper.getStyle().fixedTableLayout(tableElem);
+    StyleUtils.fixedTableLayout(tableElem);
     tableElem.getStyle().setWidth(0, Unit.PX);
 
     setRowFormatter(new FixedWidthGridRowFormatter());

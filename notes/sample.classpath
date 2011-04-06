@@ -10,6 +10,7 @@
 	<classpathentry kind="lib" path="lib/guava-r08-gwt.jar"/>
 	<classpathentry kind="lib" path="lib/jsr305.jar"/>
 	<classpathentry kind="lib" path="C:/eclipse64/plugins/com.google.gwt.eclipse.sdkbundle_2.3.0.ms1_r36v201103311806/gwt-2.3.0-m1/validation-api-1.0.0.GA-sources.jar"/>
+	<classpathentry kind="lib" path="C:/eclipse64/plugins/com.google.gwt.eclipse.sdkbundle_2.3.0.ms1_r36v201103311806/gwt-2.3.0-m1/validation-api-1.0.0.GA.jar"/>
 	<classpathentry kind="lib" path="C:/eclipse64/plugins/com.google.gwt.eclipse.sdkbundle_2.3.0.ms1_r36v201103311806/gwt-2.3.0-m1/gwt-user.jar">
 		<attributes>
 			<attribute name="javadoc_location" value="file:/C:/eclipse64/plugins/com.google.gwt.eclipse.sdkbundle_2.3.0.ms1_r36v201103311806/gwt-2.3.0-m1/doc/javadoc/"/>

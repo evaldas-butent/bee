@@ -137,16 +137,4 @@ public class DateTimeValue extends Value {
     }
     return result;
   }
-
-  @Override
-  protected String innerToQueryString() {
-    String s = "DATETIME '" + getYear() + "-" + getMonth() + "-" + getDayOfMonth() + " "
-        + getHourOfDay() + ":" + getMinute() + ":" + getSecond();
-    int milli = getMillisecond();
-    if (milli != 0) {
-      s += "." + milli;
-    }
-    s += "'";
-    return s;
-  }
 }

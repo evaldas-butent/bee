@@ -75,9 +75,6 @@ public class BooleanValue extends Value {
   }
 
   public boolean getValue() {
-    if (this == NULL_VALUE) {
-      throw new NullValueException("This null boolean has no value");
-    }
     return value;
   }
 
@@ -97,10 +94,5 @@ public class BooleanValue extends Value {
       return "null";
     }
     return Boolean.toString(value);
-  }
-
-  @Override
-  protected String innerToQueryString() {
-    return value ? "true" : "false";
   }
 }

@@ -13,9 +13,8 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.RequiresResize;
 
-import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.BeeStyle;
 import com.butent.bee.client.Global;
+import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.layout.Focus;
 import com.butent.bee.client.widget.BeeImage;
@@ -301,7 +300,7 @@ public class SliderBar extends Focus implements RequiresResize {
       int lineWidth = lineElement.getOffsetWidth();
 
       lineLeftOffset = (width / 2) - (lineWidth / 2);
-      BeeKeeper.getStyle().setLeft(lineElement, lineLeftOffset);
+      StyleUtils.setLeft(lineElement, lineLeftOffset);
 
       drawLabels();
       drawTicks();
@@ -327,10 +326,10 @@ public class SliderBar extends Focus implements RequiresResize {
     this.enabled = enabled;
     if (enabled) {
       knobImage.setResource(knobDefault());
-      BeeKeeper.getStyle().removeStyleDependentName(lineElement, BeeStyle.NAME_DISABLED);
+      StyleUtils.removeStyleDependentName(lineElement, StyleUtils.NAME_DISABLED);
     } else {
       knobImage.setResource(knobDisabled());
-      BeeKeeper.getStyle().addStyleDependentName(lineElement, BeeStyle.NAME_DISABLED);
+      StyleUtils.addStyleDependentName(lineElement, StyleUtils.NAME_DISABLED);
     }
     redraw();
   }
@@ -413,7 +412,7 @@ public class SliderBar extends Focus implements RequiresResize {
 
     int knobLeftOffset = (int) (lineLeftOffset + (getKnobPercent() * lineWidth) - (knobWidth / 2));
     knobLeftOffset = Math.min(knobLeftOffset, lineLeftOffset + lineWidth - (knobWidth / 2) - 1);
-    BeeKeeper.getStyle().setLeft(knobElement, knobLeftOffset);
+    StyleUtils.setLeft(knobElement, knobLeftOffset);
   }
 
   private void drawLabels() {
@@ -435,7 +434,7 @@ public class SliderBar extends Focus implements RequiresResize {
           label.getStyle().setDisplay(Display.NONE);
           label.setClassName(styleNameLabel);
           if (!enabled) {
-            BeeKeeper.getStyle().addStyleDependentName(label, BeeStyle.NAME_DISABLED);
+            StyleUtils.addStyleDependentName(label, StyleUtils.NAME_DISABLED);
           }
           getElement().appendChild(label);
           labelElements.add(label);
@@ -446,12 +445,12 @@ public class SliderBar extends Focus implements RequiresResize {
         label.getStyle().clearDisplay();
         label.setInnerHTML(formatLabel(value));
 
-        BeeKeeper.getStyle().zeroLeft(label);
+        StyleUtils.zeroLeft(label);
         int labelWidth = label.getOffsetWidth();
         int labelLeftOffset = lineLeftOffset + (lineWidth * i / numLabels) - (labelWidth / 2);
         labelLeftOffset = Math.min(labelLeftOffset, shellWidth - labelWidth - 1);
         labelLeftOffset = Math.max(labelLeftOffset, 1);
-        BeeKeeper.getStyle().setLeft(label, labelLeftOffset);
+        StyleUtils.setLeft(label, labelLeftOffset);
         label.getStyle().setVisibility(Visibility.VISIBLE);
       }
 
@@ -487,7 +486,7 @@ public class SliderBar extends Focus implements RequiresResize {
           tickElements.add(tick);
         }
         if (!enabled) {
-          BeeKeeper.getStyle().addStyleDependentName(tick, BeeStyle.NAME_DISABLED);
+          StyleUtils.addStyleDependentName(tick, StyleUtils.NAME_DISABLED);
         }
 
         tick.getStyle().setVisibility(Visibility.HIDDEN);
@@ -495,7 +494,7 @@ public class SliderBar extends Focus implements RequiresResize {
         int tickWidth = tick.getOffsetWidth();
         int tickLeftOffset = lineLeftOffset + (lineWidth * i / numTicks) - (tickWidth / 2);
         tickLeftOffset = Math.min(tickLeftOffset, lineLeftOffset + lineWidth - tickWidth);
-        BeeKeeper.getStyle().setLeft(tick, tickLeftOffset);
+        StyleUtils.setLeft(tick, tickLeftOffset);
         tick.getStyle().setVisibility(Visibility.VISIBLE);
       }
 
@@ -510,7 +509,7 @@ public class SliderBar extends Focus implements RequiresResize {
   }
 
   private void highlight() {
-    addStyleDependentName(BeeStyle.NAME_FOCUSED);
+    addStyleDependentName(StyleUtils.NAME_FOCUSED);
   }
 
   private void resetCurrentValue() {
@@ -529,21 +528,21 @@ public class SliderBar extends Focus implements RequiresResize {
 
   private void startSliding(boolean highlight) {
     if (highlight) {
-      BeeKeeper.getStyle().addStyleDependentName(lineElement, styleNameSliding);
-      BeeKeeper.getStyle().addStyleDependentName(knobImage.getElement(), styleNameSliding);
+      StyleUtils.addStyleDependentName(lineElement, styleNameSliding);
+      StyleUtils.addStyleDependentName(knobImage.getElement(), styleNameSliding);
       knobImage.setResource(knobSliding());
     }
   }
 
   private void stopSliding(boolean unhighlight) {
     if (unhighlight) {
-      BeeKeeper.getStyle().removeStyleDependentName(lineElement, styleNameSliding);
-      BeeKeeper.getStyle().removeStyleDependentName(knobImage.getElement(), styleNameSliding);
+      StyleUtils.removeStyleDependentName(lineElement, styleNameSliding);
+      StyleUtils.removeStyleDependentName(knobImage.getElement(), styleNameSliding);
       knobImage.setResource(knobDefault());
     }
   }
 
   private void unhighlight() {
-    removeStyleDependentName(BeeStyle.NAME_FOCUSED);
+    removeStyleDependentName(StyleUtils.NAME_FOCUSED);
   }
 }

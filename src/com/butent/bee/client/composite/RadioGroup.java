@@ -5,8 +5,8 @@ import com.google.gwt.dom.client.InputElement;
 import com.google.gwt.dom.client.NodeList;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.BeeStyle;
 import com.butent.bee.client.Global;
+import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.layout.Span;
 import com.butent.bee.client.widget.BeeRadioButton;
@@ -138,7 +138,7 @@ public class RadioGroup extends Span implements HasService {
       rb.setFormValue(BeeUtils.toString(idx));
       BeeKeeper.getBus().addBoolVch(rb);
       
-      rb.addStyleDependentName(vertical ? BeeStyle.NAME_VERTICAL : BeeStyle.NAME_HORIZONTAL);
+      rb.addStyleDependentName(vertical ? StyleUtils.NAME_VERTICAL : StyleUtils.NAME_HORIZONTAL);
 
       if (idx == value) {
         rb.setValue(true);

@@ -50,18 +50,4 @@ public class TextValue extends Value {
   public String toString() {
     return value;
   }
-
-  @Override
-  protected String innerToQueryString() {
-    if (value.contains("\"")) {
-      if (value.contains("'")) {
-        throw new RuntimeException("Cannot run toQueryString() on string"
-            + " values that contain both \" and '.");
-      } else {
-        return "'" + value + "'";
-      }
-    } else {
-      return "\"" + value + "\"";
-    }
-  }
 }
