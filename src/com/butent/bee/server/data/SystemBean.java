@@ -648,14 +648,14 @@ public class SystemBean {
     if (!BeeUtils.isEmpty(states)) {
       ss = verifyStates(ss, view.getSource(), null, states);
     }
-    
+
     if (limit > 0) {
       ss.setLimit(limit);
     }
     if (offset > 0) {
       ss.setOffset(offset);
     }
-    
+
     return qs.getViewData(ss, view);
   }
 

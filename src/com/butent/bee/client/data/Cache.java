@@ -181,7 +181,7 @@ public class Cache {
       }
     };
     grid.addColumn(idColumn);
-    
+
     Column<TableInfo, Number> countColumn = new Column<TableInfo, Number>(new NumberCell()) {
       @Override
       public Number getValue(TableInfo object) {
@@ -214,10 +214,10 @@ public class Cache {
       BeeKeeper.getLog().info(ti.getName(), "not active");
       return;
     }
-    
+
     List<Property> params = PropertyUtils.createProperties("table_name", ti.getName(),
         "table_order", ti.getIdColumn());
-    
+
     int limit = 30;
     final boolean async;
     if (rc > limit) {
@@ -251,15 +251,17 @@ public class Cache {
     BeeCellTable grid = Global.getGridfactory().createGrid(rs);
     int rowCount = async ? ti.getRowCount() : rs.getNumberOfRows();
     int pageSize = -1;
-    
+
+    SearchBox search = new SearchBox();
+
     if (async) {
-      AsyncProvider provider = new AsyncProvider(ti, null, ti.getIdColumn());
+      AsyncProvider provider = new AsyncProvider(ti, search, ti.getIdColumn());
       provider.addDataDisplay(grid);
       grid.setRowCount(rowCount, true);
-      
+
       AsyncHandler sorter = new AsyncHandler(grid);
       grid.addColumnSortHandler(sorter);
-      
+
     } else {
       DataProvider provider = new DataProvider(rs);
       provider.addDataDisplay(grid);
@@ -267,13 +269,13 @@ public class Cache {
       TableSorter sorter = new TableSorter(provider);
       grid.addColumnSortHandler(sorter);
     }
-    
+
     if (rowCount > 30) {
       RowIdColumn idColumn = new RowIdColumn();
       idColumn.setSortable(true);
       grid.insertColumn(0, idColumn, "Row Id");
       grid.setColumnWidth(idColumn, 6, Unit.EM);
-      
+
       pageSize = 25;
       grid.setPageSize(pageSize);
       grid.setKeyboardPagingPolicy(KeyboardPagingPolicy.CHANGE_PAGE);
@@ -313,7 +315,6 @@ public class Cache {
     }
 
     if (rowCount > 1) {
-      SearchBox search = new SearchBox();
       x += 16;
       footer.addLeftTop(search, x, y);
       footer.setWidgetLeftRight(search, x, Unit.PX, 16, Unit.PX);

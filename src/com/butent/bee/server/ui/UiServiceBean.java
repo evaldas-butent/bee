@@ -13,8 +13,8 @@ import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.sql.Condition;
 import com.butent.bee.shared.sql.IsCondition;
-import com.butent.bee.shared.sql.IsExpression;
 import com.butent.bee.shared.sql.SqlBuilderFactory;
 import com.butent.bee.shared.sql.SqlSelect;
 import com.butent.bee.shared.sql.SqlUtils;
@@ -204,44 +204,12 @@ public class UiServiceBean {
     String where = reqInfo.getParameter("table_where");
     String order = reqInfo.getParameter("table_order");
     String states = reqInfo.getParameter("table_states");
-    
+
     IsCondition condition = null;
     if (!BeeUtils.isEmpty(where)) {
-      String[] words = BeeUtils.split(where, 1);
-      int cnt = ArrayUtils.length(words);
-      
-      IsExpression field = SqlUtils.field(table, ArrayUtils.getQuietly(words, 0));
-      String op = null;
-      String value = null;
-      
-      if (cnt == 2) {
-        value = words[1];
-      } else if (cnt >= 3) {
-        op = words[1];
-        value = ArrayUtils.join(words, 1, 2);
-      }
-      
-      if (!BeeUtils.isEmpty(op)) {
-        if (op.equals("=")) {
-          condition = SqlUtils.equal(field, value);
-        } else if (op.equals("<")) {
-          condition = SqlUtils.less(field, value);
-        } else if (op.equals("<=")) {
-          condition = SqlUtils.lessEqual(field, value);
-        } else if (op.equals(">")) {
-          condition = SqlUtils.more(field, value);
-        } else if (op.equals(">=")) {
-          condition = SqlUtils.moreEqual(field, value);
-        } else if (op.equals("!=") || op.equals("<>")) {
-          condition = SqlUtils.notEqual(field, value);
-        }
-      } else if (!BeeUtils.isEmpty(value)) {
-        condition = SqlUtils.contains(field, value);
-      } else {
-        condition = SqlUtils.isNotNull(field);
-      }
+      condition = Condition.restore(where);
     }
-    
+
     List<String> lst = null;
     if (!BeeUtils.isEmpty(order)) {
       lst = Lists.newArrayList(BeeUtils.split(order, 1));

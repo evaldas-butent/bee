@@ -1,6 +1,8 @@
 package com.butent.bee.shared.sql;
 
-public interface IsExpression extends IsSql {
+import com.butent.bee.shared.BeeSerializable;
 
-  String getValue();
+public interface IsExpression extends IsSql, BeeSerializable {
+
+  Object getValue();
 }

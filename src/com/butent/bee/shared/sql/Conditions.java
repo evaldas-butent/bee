@@ -1,19 +1,30 @@
 package com.butent.bee.shared.sql;
 
-import com.butent.bee.shared.utils.BeeUtils;
+import com.google.common.collect.Lists;
 
-import java.util.ArrayList;
+import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
+
 import java.util.Collection;
 import java.util.List;
 
-public abstract class Conditions implements IsCondition {
-  private List<IsCondition> conditionList = new ArrayList<IsCondition>();
+public abstract class Conditions extends Condition {
+
+  private final List<IsCondition> conditionList = Lists.newArrayList();
 
   public void add(IsCondition... conditions) {
     for (IsCondition cond : conditions) {
       if (!BeeUtils.isEmpty(cond)) {
         conditionList.add(cond);
       }
+    }
+  }
+
+  @Override
+  public void deserialize(String s) {
+    setSafe();
+    for (String cond : Codec.beeDeserialize(s)) {
+      conditionList.add(Condition.restore(cond));
     }
   }
 
@@ -50,6 +61,11 @@ public abstract class Conditions implements IsCondition {
       clause.append(expr);
     }
     return clause.toString();
+  }
+
+  @Override
+  public String serialize() {
+    return Codec.beeSerializeAll(BeeUtils.getClassName(this.getClass()), conditionList);
   }
 
   protected abstract String joinMode();

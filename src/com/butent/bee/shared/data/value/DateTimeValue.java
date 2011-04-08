@@ -22,16 +22,16 @@ public class DateTimeValue extends Value {
   public DateTimeValue(int year, int month, int dayOfMonth, int hours, int minutes, int seconds) {
     this(year, month, dayOfMonth, hours, minutes, seconds, 0);
   }
-  
+
   public DateTimeValue(int year, int month, int dayOfMonth, int hours,
       int minutes, int seconds, int milliseconds) {
     value = new DateTime(year, month, dayOfMonth, hours, minutes, seconds);
-    
+
     Assert.isTrue(getYear() == year && getMonth() == month && getDayOfMonth() == dayOfMonth
         && getHourOfDay() == hours && getMinute() == minutes && getSecond() == seconds
         && getMillisecond() == milliseconds,
         "Invalid date (yyyy-MM-dd hh:mm:ss.S): " + year + '-' + month + '-' + dayOfMonth + ' '
-        + hours + ':' + minutes + ':' + seconds + '.' + milliseconds);
+            + hours + ':' + minutes + ':' + seconds + '.' + milliseconds);
   }
 
   private DateTimeValue() {

@@ -100,13 +100,13 @@ public class DateValue extends Value {
     if (null != hashCode) {
       return hashCode;
     }
-    int hash  = 1279;
+    int hash = 1279;
     hash = (hash * 17) + year;
     hash = (hash * 17) + month;
     hash = (hash * 17) + dayOfMonth;
     hashCode = hash;
     return hashCode;
- }
+  }
 
   @Override
   public boolean isNull() {
@@ -118,7 +118,7 @@ public class DateValue extends Value {
     if (this == NULL_VALUE) {
       return "null";
     }
-    return BeeUtils.toString(year) + "-" + 
+    return BeeUtils.toString(year) + "-" +
         BeeUtils.toLeadingZeroes(month, 2) + "-" + BeeUtils.toLeadingZeroes(dayOfMonth, 2);
   }
 }

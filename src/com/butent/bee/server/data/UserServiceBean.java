@@ -193,6 +193,7 @@ public class UserServiceBean {
     return Localized.getMessages(getCurrentUserInfo().getLocale());
   }
 
+  @Lock(LockType.WRITE)
   public String login(String locale) {
     String sign = null;
     String user = getCurrentUser();
@@ -214,6 +215,7 @@ public class UserServiceBean {
     return sign;
   }
 
+  @Lock(LockType.WRITE)
   public void logout(String user) {
     if (isUser(user)) {
       UserInfo info = getUserInfo(user);

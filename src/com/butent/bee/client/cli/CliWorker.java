@@ -185,14 +185,14 @@ public class CliWorker {
       if (sens || insens) {
         match = Wildcards.isSqlLike(input, expr, sens);
       } else {
-        defCase = BeeUtils.concat(1, "sql", BooleanValue.serialize(Wildcards.isSqlCaseSensitive()));
+        defCase = BeeUtils.concat(1, "sql", BooleanValue.pack(Wildcards.isSqlCaseSensitive()));
         match = Wildcards.isSqlLike(input, expr);
       }
     } else if (BeeUtils.context("f", mode)) {
       if (sens || insens) {
         match = Wildcards.isFsLike(input, expr, sens);
       } else {
-        defCase = BeeUtils.concat(1, "fs", BooleanValue.serialize(Wildcards.isFsCaseSensitive()));
+        defCase = BeeUtils.concat(1, "fs", BooleanValue.pack(Wildcards.isFsCaseSensitive()));
         match = Wildcards.isFsLike(input, expr);
       }
     } else {
@@ -200,7 +200,7 @@ public class CliWorker {
         match = Wildcards.isLike(input, expr, sens);
       } else {
         defCase = BeeUtils.concat(1, "def", 
-            BooleanValue.serialize(Wildcards.isDefaultCaseSensitive()));
+            BooleanValue.pack(Wildcards.isDefaultCaseSensitive()));
         match = Wildcards.isLike(input, expr);
       }
     }

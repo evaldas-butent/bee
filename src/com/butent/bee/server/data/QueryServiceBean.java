@@ -287,27 +287,29 @@ public class QueryServiceBean {
     for (BeeColumn col : rsCols) {
       if (!BeeUtils.isEmpty(view)) {
         String colName = col.getId();
-        String fld = view.getField(colName);
 
-        if (BeeUtils.isEmpty(fld)) {
+        if (view.hasColumn(colName)) {
+          String fld = view.getField(colName);
+
+          switch (sys.getTableField(view.getTable(colName), fld).getType()) {
+            case BOOLEAN:
+              col.setType(ValueType.BOOLEAN);
+              break;
+            case DATE:
+              col.setType(ValueType.DATE);
+              break;
+            case DATETIME:
+              col.setType(ValueType.DATETIME);
+              break;
+            default:
+          }
+        } else {
           if (idIndex < 0) {
             idIndex = col.getIndex();
           } else {
             verIndex = col.getIndex();
           }
           continue;
-        }
-        switch (sys.getTableField(view.getTable(colName), fld).getType()) {
-          case BOOLEAN:
-            col.setType(ValueType.BOOLEAN);
-            break;
-          case DATE:
-            col.setType(ValueType.DATE);
-            break;
-          case DATETIME:
-            col.setType(ValueType.DATETIME);
-            break;
-          default:
         }
       }
       columns[j++] = col;
@@ -321,7 +323,7 @@ public class QueryServiceBean {
       for (int i = 0; i < cols; i++) {
         switch (columns[i].getType()) {
           case BOOLEAN:
-            row[i] = BooleanValue.serialize(rs.getBoolean(columns[i].getIndex()));
+            row[i] = BooleanValue.pack(rs.getBoolean(columns[i].getIndex()));
             break;
           case NUMBER:
             if (columns[i].getScale() > 0) {

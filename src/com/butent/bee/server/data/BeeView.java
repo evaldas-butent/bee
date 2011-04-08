@@ -58,6 +58,7 @@ class BeeView {
   private static final String JOIN_MASK = "-<>+";
   private static final int EXPRESSION = 0;
   private static final int LOCALE = 1;
+  private static final int ALIAS = 2;
 
   private final String name;
   private final String source;
@@ -81,12 +82,10 @@ class BeeView {
   }
 
   public String getAlias(String colName) {
-    ViewField vf = getViewField(colName);
-
-    if (!BeeUtils.isEmpty(vf)) {
-      return vf.getAlias();
+    if (BeeUtils.isEmpty(getLocale(colName))) {
+      return getViewField(colName).getAlias();
     }
-    return null;
+    return getLocaleAlias(colName);
   }
 
   public int getColumnCount() {
@@ -98,26 +97,19 @@ class BeeView {
   }
 
   public String getExpression(String colName) {
-    if (columns.containsKey(colName)) {
-      return columns.get(colName)[EXPRESSION];
-    }
-    return null;
+    return getColumnInfo(colName)[EXPRESSION];
   }
 
   public String getField(String colName) {
-    ViewField vf = getViewField(colName);
-
-    if (!BeeUtils.isEmpty(vf)) {
-      return vf.getField();
-    }
-    return null;
+    return getViewField(colName).getField();
   }
 
   public String getLocale(String colName) {
-    if (columns.containsKey(colName)) {
-      return columns.get(colName)[LOCALE];
-    }
-    return null;
+    return getColumnInfo(colName)[LOCALE];
+  }
+
+  public String getLocaleAlias(String colName) {
+    return getColumnInfo(colName)[ALIAS];
   }
 
   public String getName() {
@@ -126,58 +118,15 @@ class BeeView {
 
   public SqlSelect getQuery(Map<String, BeeTable> tables) {
     Assert.state(!isEmpty());
-    SqlSelect ss = query.copyOf();
 
     for (String colName : columns.keySet()) {
-      String als = getAlias(colName);
-      String fld = getField(colName);
-      String locale = getLocale(colName);
-
-      if (!BeeUtils.isEmpty(locale)) {
-        if (BeeUtils.isEmpty(tables)) {
-          continue;
-        }
-        BeeTable table = tables.get(getTable(colName));
-        BeeField field = table.getField(fld);
-        als = table.joinTranslationField(ss, als, field, locale);
-        fld = table.getTranslationField(field, locale);
-
-        if (BeeUtils.isEmpty(als)) {
-          ss.addEmptyField(colName, field.getType(), field.getPrecision(), field.getScale());
-          continue;
-        }
-      }
-      ss.addField(als, fld, colName);
-    }
-    if (BeeUtils.isEmpty(orders)) {
-      ss.addOrder(getSource(), sourceIdName);
-    } else {
-      for (String colName : orders.keySet()) {
-        String als = getAlias(colName);
-        String fld = getField(colName);
-        String locale = getLocale(colName);
-
-        if (!BeeUtils.isEmpty(locale)) {
-          if (BeeUtils.isEmpty(tables)) {
-            continue;
-          }
-          BeeTable table = tables.get(getTable(colName));
-          BeeField field = table.getField(fld);
-          als = table.joinTranslationField(ss, als, field, locale);
-          fld = table.getTranslationField(field, locale);
-
-          if (BeeUtils.isEmpty(als)) {
-            continue;
-          }
-        }
-        if (orders.get(colName)) {
-          ss.addOrderDesc(als, fld);
-        } else {
-          ss.addOrder(als, fld);
-        }
+      if (query.isEmpty()
+          || (!BeeUtils.isEmpty(getLocale(colName)) && BeeUtils.isEmpty(getLocaleAlias(colName)))) {
+        rebuildQuery(tables);
+        break;
       }
     }
-    return ss;
+    return query.copyOf();
   }
 
   public String getSource() {
@@ -185,12 +134,12 @@ class BeeView {
   }
 
   public String getTable(String colName) {
-    ViewField vf = getViewField(colName);
+    return getViewField(colName).getTable();
+  }
 
-    if (!BeeUtils.isEmpty(vf)) {
-      return vf.getTable();
-    }
-    return null;
+  public boolean hasColumn(String colName) {
+    Assert.notEmpty(colName);
+    return columns.containsKey(colName);
   }
 
   public boolean isEmpty() {
@@ -202,29 +151,26 @@ class BeeView {
   }
 
   public boolean isSourceField(String colName) {
-    ViewField vf = getViewField(colName);
-
-    if (!BeeUtils.isEmpty(vf)) {
-      return vf.isSourceField();
-    }
-    return false;
+    return getViewField(colName).isSourceField();
   }
 
   void addField(String colName, String expression, String locale, Map<String, BeeTable> tables) {
-    Assert.notEmpty(colName);
     Assert.notEmpty(expression);
-    Assert.state(!columns.containsKey(colName),
+    Assert.state(!hasColumn(colName),
         BeeUtils.concat(1, "Dublicate column name:", getName(), colName));
 
-    columns.put(colName, new String[]{expression, locale});
+    columns.put(colName, new String[]{expression, locale, null});
     loadField(expression, tables);
   }
 
   void addOrder(String colName, boolean descending) {
-    Assert.notEmpty(colName);
-    Assert.contains(columns, colName);
-
+    Assert.state(hasColumn(colName));
     orders.put(colName, descending);
+  }
+
+  private String[] getColumnInfo(String colName) {
+    Assert.state(hasColumn(colName));
+    return columns.get(colName);
   }
 
   private ViewField getViewField(String colName) {
@@ -301,5 +247,47 @@ class BeeView {
       als = table.joinExtField(query, als, field);
     }
     expressions.put(expression, new ViewField(tbl, als, fld, BeeUtils.isEmpty(xpr)));
+  }
+
+  private synchronized void rebuildQuery(Map<String, BeeTable> tables) {
+    query.resetFields();
+    query.resetOrder();
+
+    for (String colName : columns.keySet()) {
+      String als = getAlias(colName);
+      String fld = getField(colName);
+
+      if (BeeUtils.isEmpty(als)) {
+        if (BeeUtils.isEmpty(tables)) {
+          continue;
+        }
+        BeeTable table = tables.get(getTable(colName));
+        BeeField field = table.getField(fld);
+        String locale = getLocale(colName);
+        als = table.joinTranslationField(query, getViewField(colName).getAlias(), field, locale);
+        fld = table.getTranslationField(field, locale);
+
+        if (BeeUtils.isEmpty(als)) {
+          query.addEmptyField(colName, field.getType(), field.getPrecision(), field.getScale());
+          continue;
+        }
+        getColumnInfo(colName)[ALIAS] = als;
+      }
+      query.addField(als, fld, colName);
+    }
+    for (String colName : orders.keySet()) {
+      String als = getAlias(colName);
+      String fld = getField(colName);
+
+      if (BeeUtils.isEmpty(als)) {
+        continue;
+      }
+      if (orders.get(colName)) {
+        query.addOrderDesc(als, fld);
+      } else {
+        query.addOrder(als, fld);
+      }
+    }
+    query.addOrder(getSource(), sourceIdName);
   }
 }

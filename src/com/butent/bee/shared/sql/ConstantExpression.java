@@ -1,22 +1,32 @@
 package com.butent.bee.shared.sql;
 
-import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.data.value.Value;
 
 import java.util.ArrayList;
 import java.util.List;
 
-class ConstantExpression implements IsExpression {
+class ConstantExpression extends Expression {
 
-  private final Object constant;
+  private Value constant;
 
-  public ConstantExpression(Object value) {
+  public ConstantExpression(Value value) {
     this.constant = value;
+  }
+
+  protected ConstantExpression() {
+    super();
+  }
+
+  @Override
+  public void deserialize(String s) {
+    setSafe();
+    this.constant = Value.restore(s);
   }
 
   @Override
   public List<Object> getSqlParams() {
     List<Object> param = new ArrayList<Object>(1);
-    param.add(constant);
+    param.add(constant.getObjectValue());
     return param;
   }
 
@@ -26,7 +36,7 @@ class ConstantExpression implements IsExpression {
   }
 
   @Override
-  public String getValue() {
-    return BeeUtils.transformNoTrim(constant);
+  public Value getValue() {
+    return constant;
   }
 }

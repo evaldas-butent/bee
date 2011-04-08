@@ -1,20 +1,61 @@
 package com.butent.bee.shared.sql;
 
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.utils.ArrayUtils;
+import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
 
 import java.util.List;
 
-class ComplexExpression implements IsExpression {
+class ComplexExpression extends Expression {
 
-  private final Object[] content;
+  private Object[] content;
 
   public ComplexExpression(Object... expr) {
     Assert.minLength(expr, 1);
     Assert.noNulls(expr);
-
     content = expr;
+  }
+
+  protected ComplexExpression() {
+    super();
+  }
+
+  @Override
+  public void deserialize(String s) {
+    setSafe();
+
+    String[] arr = Codec.beeDeserialize(s);
+    this.content = new Object[arr.length];
+
+    for (int i = 0; i < arr.length; i++) {
+      String[] data = Codec.beeDeserialize(arr[i]);
+
+      switch (data.length) {
+        case 0:
+          this.content[i] = arr[i];
+          break;
+
+        case 1:
+          this.content[i] = data[0];
+          break;
+
+        case 2:
+          if (Value.supports(data[0])) {
+            this.content[i] = Value.restore(arr[i]);
+
+          } else if (Expression.supports(data[0])) {
+            this.content[i] = Expression.restore(arr[i]);
+
+          } else if (Condition.supports(data[0])) {
+            this.content[i] = Condition.restore(arr[i]);
+          }
+          break;
+
+        default:
+          Assert.unsupported(arr[i]);
+      }
+    }
   }
 
   @Override
@@ -44,7 +85,7 @@ class ComplexExpression implements IsExpression {
   }
 
   @Override
-  public String getValue() {
-    return ArrayUtils.join(content, 0);
+  public Object getValue() {
+    return content;
   }
 }

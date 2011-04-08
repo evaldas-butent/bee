@@ -5,6 +5,7 @@ import com.google.common.collect.Maps;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.DateTime;
 import com.butent.bee.shared.JustDate;
+import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.sql.BeeConstants.DataType;
 import com.butent.bee.shared.sql.BeeConstants.Keyword;
 import com.butent.bee.shared.sql.SqlCreate.SqlField;
@@ -142,6 +143,24 @@ public abstract class SqlBuilder {
             "ELSE", params.get("ifFalse"),
             "END");
 
+      case CASE:
+        StringBuilder xpr = new StringBuilder("CASE ")
+            .append(params.get("expression"));
+
+        int cnt = (params.size() - 2) / 2;
+
+        for (int i = 0; i < cnt; i++) {
+          xpr.append(" WHEN ")
+              .append(params.get("case" + i))
+              .append(" THEN ")
+              .append(params.get("value" + i));
+        }
+        xpr.append(" ELSE ")
+            .append(params.get("caseElse"))
+            .append(" END");
+
+        return xpr.toString();
+
       case CAST:
         return BeeUtils.concat(1,
             "CAST(" + params.get("expression"),
@@ -164,23 +183,32 @@ public abstract class SqlBuilder {
     if (x == null) {
       s = "null";
 
-    } else if (x instanceof Boolean) {
-      s = (Boolean) x ? "1" : "0";
-
-    } else if (x instanceof JustDate) {
-      s = BeeUtils.transform(((JustDate) x).getDay());
-
-    } else if (x instanceof Date) {
-      s = BeeUtils.transform(((Date) x).getTime());
-
-    } else if (x instanceof DateTime) {
-      s = BeeUtils.transform(((DateTime) x).getTime());
-
     } else {
-      s = BeeUtils.transformNoTrim(x);
+      Object val;
 
-      if (x instanceof CharSequence) {
-        s = "'" + s.replace("'", "''") + "'";
+      if (x instanceof Value) {
+        val = ((Value) x).getObjectValue();
+      } else {
+        val = x;
+      }
+      if (val instanceof Boolean) {
+        s = (Boolean) val ? "1" : "0";
+
+      } else if (val instanceof JustDate) {
+        s = BeeUtils.transform(((JustDate) val).getDay());
+
+      } else if (val instanceof Date) {
+        s = BeeUtils.transform(((Date) val).getTime());
+
+      } else if (val instanceof DateTime) {
+        s = BeeUtils.transform(((DateTime) val).getTime());
+
+      } else {
+        s = BeeUtils.transformNoTrim(val);
+
+        if (val instanceof CharSequence) {
+          s = "'" + s.replace("'", "''") + "'";
+        }
       }
     }
     return s;
@@ -440,10 +468,10 @@ public abstract class SqlBuilder {
         query.append(", ");
       }
       IsExpression[] updateEntry = updates.get(i);
-      IsExpression field = updateEntry[SqlUpdate.FIELD_INDEX];
+      IsExpression field = updateEntry[SqlUpdate.FIELD];
       query.append(field.getSqlString(this, paramMode));
 
-      IsExpression value = updateEntry[SqlUpdate.VALUE_INDEX];
+      IsExpression value = updateEntry[SqlUpdate.VALUE];
       query.append("=").append(value.getSqlString(this, paramMode));
     }
     List<IsFrom> fromList = su.getFrom();

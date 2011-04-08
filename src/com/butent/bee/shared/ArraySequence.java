@@ -8,7 +8,7 @@ import java.util.List;
 
 public class ArraySequence<T> extends AbstractSequence<T> {
   private T[] values;
-  
+
   public ArraySequence(T[] values) {
     super();
     this.values = values;

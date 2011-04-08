@@ -151,7 +151,11 @@ public class Codec {
     int pos = 0;
 
     while (pos < ser.length()) {
-      int n = BeeUtils.toInt(ser.substring(pos, ++pos));
+      String digit = ser.substring(pos, ++pos);
+      if (!BeeUtils.isDigit(digit)) {
+        break;
+      }
+      int n = BeeUtils.toInt(digit);
       if (BeeUtils.isEmpty(n)) {
         res.add(null);
         continue;
@@ -163,7 +167,7 @@ public class Codec {
       }
       res.add(ser.substring(pos, pos += l));
     }
-    return res.toArray(new String[0]);
+    return res.toArray(new String[res.size()]);
   }
 
   public static String beeSerialize(Object obj) {
@@ -346,7 +350,7 @@ public class Codec {
     Assert.notNull(s);
     int len = s.length();
     Assert.isPositive(len);
-    
+
     if (base64chunk <= 0 || len <= base64chunk * 3) {
       return toBase64(toBytes(s));
     }
@@ -637,7 +641,7 @@ public class Codec {
       return sb.toString();
     }
   }
-  
+
   private Codec() {
   }
 }

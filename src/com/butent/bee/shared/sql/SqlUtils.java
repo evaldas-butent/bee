@@ -5,12 +5,21 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.DateTime;
+import com.butent.bee.shared.JustDate;
+import com.butent.bee.shared.data.value.BooleanValue;
+import com.butent.bee.shared.data.value.DateTimeValue;
+import com.butent.bee.shared.data.value.DateValue;
+import com.butent.bee.shared.data.value.NumberValue;
+import com.butent.bee.shared.data.value.TextValue;
+import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.sql.BeeConstants.DataType;
 import com.butent.bee.shared.sql.BeeConstants.Keyword;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -47,11 +56,44 @@ public class SqlUtils {
   }
 
   public static IsExpression constant(Object constant) {
-    return new ConstantExpression(constant);
+    Value val = null;
+
+    if (constant != null) {
+      if (constant instanceof Value) {
+        val = (Value) constant;
+
+      } else if (constant instanceof Boolean) {
+        val = BooleanValue.getInstance((Boolean) constant);
+
+      } else if (constant instanceof Number) {
+        val = new NumberValue(((Number) constant).doubleValue());
+
+      } else if (constant instanceof CharSequence) {
+        val = new TextValue(constant.toString());
+
+      } else if (constant instanceof Date) {
+        val = new DateValue(new JustDate((Date) constant));
+
+      } else if (constant instanceof JustDate) {
+        val = new DateValue((JustDate) constant);
+
+      } else if (constant instanceof DateTime) {
+        val = new DateTimeValue((DateTime) constant);
+
+      } else {
+        Assert.untouchable("Unsupported constant type: "
+            + BeeUtils.getClassName(constant.getClass()));
+      }
+    }
+    return new ConstantExpression(val);
   }
 
   public static IsCondition contains(IsExpression expr, Object value) {
     return new JoinCondition(expr, LIKE, constant("%" + value + "%"));
+  }
+
+  public static IsCondition contains(String source, String field, Object value) {
+    return contains(field(source, field), value);
   }
 
   public static IsQuery createForeignKey(String table, String name, String field,
@@ -300,6 +342,21 @@ public class SqlUtils {
     Conditions cb = new OrConditions();
     cb.add(conditions);
     return cb;
+  }
+
+  public static IsExpression sqlCase(IsExpression expr, Object... pairs) {
+    Assert.parameterCount(pairs.length, 3);
+    Assert.notEmpty(pairs.length % 2);
+
+    Map<String, Object> params = Maps.newHashMap();
+    params.put("expression", expr);
+    params.put("caseElse", pairs[pairs.length - 1]);
+
+    for (int i = 0; i < (pairs.length - 1) / 2; i++) {
+      params.put("case" + i, constant(pairs[i * 2]));
+      params.put("value" + i, pairs[i * 2 + 1]);
+    }
+    return expression(new SqlCommand(Keyword.CASE, params));
   }
 
   public static IsCondition sqlFalse() {

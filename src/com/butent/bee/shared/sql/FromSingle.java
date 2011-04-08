@@ -10,8 +10,8 @@ import java.util.List;
 
 class FromSingle implements IsFrom {
 
-  private Object source;
-  private String alias;
+  private final Object source;
+  private final String alias;
 
   public FromSingle(String source) {
     this(source, null);
