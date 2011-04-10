@@ -37,7 +37,6 @@ public class Global implements Module {
 
   private static final MessageBox msgBox = new MessageBox();
   private static final InputBox inpBox = new InputBox();
-  private static final GridFactory gridFactory = new GridFactory();
   private static final Cache cache = new Cache();
 
   private static final Map<String, Variable> vars = new HashMap<String, Variable>();
@@ -49,7 +48,7 @@ public class Global implements Module {
   }
 
   public static Widget cellGrid(Object data, CellType cellType, String... columnLabels) {
-    return gridFactory.cellGrid(data, cellType, columnLabels);
+    return GridFactory.cellGrid(data, cellType, columnLabels);
   }
 
   public static boolean closeDialog(GwtEvent<?> event) {
@@ -87,10 +86,6 @@ public class Global implements Module {
     return cache;
   }
   
-  public static GridFactory getGridfactory() {
-    return gridFactory;
-  }
-
   public static Images getImages() {
     return images;
   }
@@ -176,7 +171,7 @@ public class Global implements Module {
   }
 
   public static Widget scrollGrid(int width, Object data, String... columnLabels) {
-    return gridFactory.scrollGrid(width, data, columnLabels);
+    return GridFactory.scrollGrid(width, data, columnLabels);
   }
 
   public static Widget scrollGrid(Object data, String... columns) {
@@ -255,7 +250,7 @@ public class Global implements Module {
   }
 
   public static Widget simpleGrid(Object data, String... columnLabels) {
-    return gridFactory.simpleGrid(data, columnLabels);
+    return GridFactory.simpleGrid(data, columnLabels);
   }
   
   Global() {

@@ -95,6 +95,8 @@ public class UiServiceBean {
         response = getDataInfo();
       } else if (svc.equals("rpc_ui_gen")) {
         response = generateData(reqInfo);
+      } else if (svc.equals("rpc_ui_row_count")) {
+        response = getRowCount(reqInfo);
 
       } else {
         String msg = BeeUtils.concat(1, svc, "loader service not recognized");
@@ -177,6 +179,17 @@ public class UiServiceBean {
     return ResponseObject.response(sys.getDataInfo());
   }
 
+  private ResponseObject getRowCount(RequestInfo reqInfo) {
+    String table = reqInfo.getParameter("table_name");
+    String where = reqInfo.getParameter("table_where");
+
+    IsCondition condition = null;
+    if (!BeeUtils.isEmpty(where)) {
+      condition = Condition.restore(where);
+    }
+    return ResponseObject.response(sys.getRowCount(table, condition));
+  }
+
   private ResponseObject getStates(RequestInfo reqInfo) {
     String table = reqInfo.getParameter("table_name");
     Set<String> states = new HashSet<String>();
@@ -190,7 +203,7 @@ public class UiServiceBean {
     }
     return ResponseObject.response(states);
   }
-
+ 
   private ResponseObject getStateTable(RequestInfo reqInfo) {
     String table = reqInfo.getParameter("table_name");
     String states = reqInfo.getParameter("table_states");

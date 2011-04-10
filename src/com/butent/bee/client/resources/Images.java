@@ -5,6 +5,9 @@ import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.resources.client.ImageResource.ImageOptions;
 
 public interface Images extends ClientBundle {
+  @Source("add.png")
+  ImageResource add();
+
   @Source("arrowDown.png")
   ImageResource arrowDown();
 
@@ -59,16 +62,61 @@ public interface Images extends ClientBundle {
   @Source("bee.png")
   @ImageOptions(width = 60)
   ImageResource bee();
+
+  @Source("bookmark.png")
+  ImageResource bookmark();
+  
+  @Source("bookmark_add.png")
+  ImageResource bookmarkAdd();
   
   @Source("close.png")
   ImageResource close();
 
+  @Source("configure.png")
+  ImageResource configure();
+
+  @Source("delete.png")
+  ImageResource delete();
+  
   @Source("descending.gif")
   ImageResource descending();
 
+  @Source("edit_add.png")
+  ImageResource editAdd();
+
+  @Source("edit_delete.png")
+  ImageResource editDelete();
+
+  @Source("first.png")
+  ImageResource first();
+  
+  @Source("forward.png")
+  ImageResource forward();
+  
+  @Source("last.png")
+  ImageResource last();
+  
   @Source("loading.gif")
   ImageResource loading();
 
+  @Source("next.png")
+  ImageResource next();
+  
+  @Source("previous.png")
+  ImageResource previous();
+  
+  @Source("refresh.png")
+  ImageResource refresh();
+  
+  @Source("reload.png")
+  ImageResource reload();
+
+  @Source("rewind.png")
+  ImageResource rewind();
+
+  @Source("save.png")
+  ImageResource save();
+  
   @Source("slider.gif")
   ImageResource slider();
 

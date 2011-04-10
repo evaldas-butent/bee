@@ -19,6 +19,10 @@ public class LogUtils {
   public static String dateToLog(long millis) {
     return new DateTime(millis).toTimeString();
   }
+  
+  public static void debug(Object... obj) {
+    log(Level.CONFIG, obj);
+  }
 
   public static void error(Logger logger, Throwable err, Object... obj) {
     if (err != null) {

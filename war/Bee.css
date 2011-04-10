@@ -317,6 +317,20 @@ body, select {
   filter: alpha(opacity=30);
 }
 
+.bee-WindowHeader {
+  background-color: #eee;
+}
+
+.bee-WindowFooter {
+  background-color: #eee;
+}
+
+.bee-WindowCaption {
+  color: #00e;
+  font-size: medium;
+  font-weight: bolder;
+}
+
 .gwt-TreeItem-selected {
   background-color: #ffffaa;
 }

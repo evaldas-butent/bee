@@ -136,6 +136,11 @@ public class DomUtils {
   private static int textBoxClientWidth = -1;
   private static int textBoxClientHeight = -1;
   
+  public static void clearTitle(UIObject obj) {
+    Assert.notNull(obj);
+    obj.setTitle(null);
+  }
+  
   public static Element createButton(String text) {
     return createButton(text, false, null);
   }

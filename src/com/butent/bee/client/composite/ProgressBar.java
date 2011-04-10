@@ -211,4 +211,4 @@ public class ProgressBar extends Widget implements HasId, RequiresResize {
   private void resetProgress() {
     setProgress(getProgress());
   }
-} 
+}

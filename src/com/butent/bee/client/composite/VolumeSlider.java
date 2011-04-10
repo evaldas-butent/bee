@@ -174,7 +174,8 @@ public class VolumeSlider extends Absolute implements RequiresResize {
       int rightWidth = spinner.getIncrementArrow().getWidth();
       int rightHeight = spinner.getIncrementArrow().getHeight();
       
-      int h = BeeUtils.max(panelHeight, barHeight, leftHeight, rightHeight);
+      int h = BeeUtils.max(panelHeight, barHeight, leftHeight, rightHeight,
+          DomUtils.getTextBoxClientHeight());
       if (panelHeight < h) {
         DomUtils.setHeight(this, h);
       }

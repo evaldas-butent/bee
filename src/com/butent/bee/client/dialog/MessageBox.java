@@ -7,7 +7,7 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.Global;
 import com.butent.bee.client.dom.DomUtils;
-import com.butent.bee.client.grid.BeeCellTable;
+import com.butent.bee.client.grid.CellGrid;
 import com.butent.bee.client.grid.CellType;
 import com.butent.bee.client.layout.Vertical;
 import com.butent.bee.client.tree.BeeTree;
@@ -66,7 +66,7 @@ public class MessageBox {
       if (x[i] instanceof Widget) {
         vp.add((Widget) x[i]);
 
-        if (x[i] instanceof BeeCellTable) {
+        if (x[i] instanceof CellGrid) {
           vp.setCellHeight((Widget) x[i], "200px");
           vp.setCellWidth((Widget) x[i], "400px");
         } else if (x[i] instanceof BeeTree) {

@@ -1,0 +1,14 @@
+.container {
+  border: 1px solid SkyBlue;
+  border-radius: 7px;
+  padding: 1px 2px 0px 2px;
+  background-color: Snow;
+}
+
+.disabledButton {
+  opacity: 0.4;
+}
+
+.pageInfo {
+  color: MediumBlue;
+}

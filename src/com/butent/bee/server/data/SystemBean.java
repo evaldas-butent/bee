@@ -601,6 +601,10 @@ public class SystemBean {
   public String getLockName(String tblName) {
     return getTable(tblName).getLockName();
   }
+  
+  public int getRowCount(String tblName, IsCondition condition) {
+    return qs.dbRowCount(tblName, condition);
+  }
 
   public BeeField getTableField(String tblName, String fldName) {
     return getTable(tblName).getField(fldName);

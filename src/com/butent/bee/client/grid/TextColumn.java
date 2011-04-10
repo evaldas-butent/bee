@@ -3,22 +3,23 @@ package com.butent.bee.client.grid;
 import com.google.gwt.cell.client.Cell;
 import com.google.gwt.cell.client.TextCell;
 
+import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.utils.BeeUtils;
 
 public class TextColumn extends CellColumn<String> {
   private int maxDisplaySize;
 
-  public TextColumn(int index, String label) {
-    this(new TextCell(), index, label, -1);
+  public TextColumn(int index, IsColumn dataColumn) {
+    this(new TextCell(), index, dataColumn, -1);
   }
 
-  public TextColumn(Cell<String> cell, int index, String label) {
-    this(cell, index, label, -1);
+  public TextColumn(Cell<String> cell, int index, IsColumn dataColumn) {
+    this(cell, index, dataColumn, -1);
   }
 
-  public TextColumn(Cell<String> cell, int index, String label, int maxDisplaySize) {
-    super(cell, index, label);
+  public TextColumn(Cell<String> cell, int index, IsColumn dataColumn, int maxDisplaySize) {
+    super(cell, index, dataColumn);
     this.maxDisplaySize = maxDisplaySize;
   }
   

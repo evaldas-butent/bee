@@ -11,17 +11,14 @@ import com.google.gwt.view.client.Range;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
-import com.butent.bee.client.grid.BeeCellTable;
+import com.butent.bee.client.grid.CellGrid;
 import com.butent.bee.client.grid.CellColumn;
-import com.butent.bee.client.view.SearchBox;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.TableInfo;
 import com.butent.bee.shared.sql.IsCondition;
-import com.butent.bee.shared.sql.SqlUtils;
-import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.Property;
@@ -77,10 +74,10 @@ public class AsyncProvider extends AbstractDataProvider<IsRow> {
   }
 
   private TableInfo tableInfo;
-  private SearchBox where;
+  private IsCondition where;
   private String order;
 
-  public AsyncProvider(TableInfo tableInfo, SearchBox where, String order) {
+  public AsyncProvider(TableInfo tableInfo, IsCondition where, String order) {
     super();
     this.tableInfo = tableInfo;
     this.where = where;
@@ -95,8 +92,8 @@ public class AsyncProvider extends AbstractDataProvider<IsRow> {
     return tableInfo;
   }
 
-  public String getWhere() {
-    return where.getCondition();
+  public IsCondition getWhere() {
+    return where;
   }
 
   public void setOrder(String order) {
@@ -107,8 +104,8 @@ public class AsyncProvider extends AbstractDataProvider<IsRow> {
     this.tableInfo = tableInfo;
   }
 
-  public void setWhere(String where) {
-    this.where.setCondition(where);
+  public void setWhere(IsCondition where) {
+    this.where = where;
   }
 
   @Override
@@ -118,52 +115,15 @@ public class AsyncProvider extends AbstractDataProvider<IsRow> {
 
     List<Property> lst = PropertyUtils.createProperties("table_name", getTableInfo().getName(),
         "table_offset", range.getStart(), "table_limit", range.getLength());
-    String wh = getWhere();
-    if (!BeeUtils.isEmpty(wh)) {
-      IsCondition condition = null;
-      String[] words = BeeUtils.split(wh, 1);
-      int cnt = ArrayUtils.length(words);
 
-      String table = getTableInfo().getName();
-      String field = ArrayUtils.getQuietly(words, 0);
-      String op = null;
-      Object value = null;
-
-      if (cnt == 2) {
-        value = words[1];
-      } else if (cnt >= 3) {
-        op = words[1];
-        value = ArrayUtils.join(words, 1, 2);
-      }
-      if (BeeUtils.isDigit((String) value)) {
-        value = BeeUtils.val((String) value);
-      }
-      if (!BeeUtils.isEmpty(op)) {
-        if (op.equals("=")) {
-          condition = SqlUtils.equal(table, field, value);
-        } else if (op.equals("<")) {
-          condition = SqlUtils.less(table, field, value);
-        } else if (op.equals("<=")) {
-          condition = SqlUtils.lessEqual(table, field, value);
-        } else if (op.equals(">")) {
-          condition = SqlUtils.more(table, field, value);
-        } else if (op.equals(">=")) {
-          condition = SqlUtils.moreEqual(table, field, value);
-        } else if (op.equals("!=") || op.equals("<>")) {
-          condition = SqlUtils.notEqual(table, field, value);
-        }
-      } else if (!BeeUtils.isEmpty(value)) {
-        condition = SqlUtils.contains(table, field, value);
-      }
-      condition = SqlUtils.or(SqlUtils.isNull(table, field),
-          SqlUtils.and(SqlUtils.isNotNull(table, field), condition));
-
+    IsCondition condition = getWhere();
+    if (condition != null) {
       PropertyUtils.addProperties(lst, "table_where", Codec.beeSerialize(condition));
     }
 
     String ord = null;
-    if (display instanceof BeeCellTable) {
-      ord = getTableOrder((BeeCellTable) display);
+    if (display instanceof CellGrid) {
+      ord = getTableOrder((CellGrid) display);
     }
     if (BeeUtils.isEmpty(ord)) {
       ord = getOrder();
@@ -176,7 +136,7 @@ public class AsyncProvider extends AbstractDataProvider<IsRow> {
         new Callback(display, range));
   }
 
-  private String getTableOrder(BeeCellTable grid) {
+  private String getTableOrder(CellGrid grid) {
     ColumnSortList sortList = grid.getColumnSortList();
     if (sortList == null) {
       return null;

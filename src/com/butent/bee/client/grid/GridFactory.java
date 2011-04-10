@@ -1,11 +1,9 @@
 package com.butent.bee.client.grid;
 
-import com.google.common.collect.Maps;
 import com.google.gwt.cell.client.Cell;
 import com.google.gwt.cell.client.EditTextCell;
 import com.google.gwt.cell.client.TextCell;
 import com.google.gwt.cell.client.TextInputCell;
-import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.view.client.MultiSelectionModel;
@@ -22,7 +20,6 @@ import com.butent.bee.client.grid.render.FixedWidthGridBulkRenderer;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeColumn;
-import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
@@ -33,11 +30,10 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.Map;
 
 public class GridFactory {
 
-  private class ScrollGridColumnDefinition extends ColumnDefinition {
+  private static class ScrollGridColumnDefinition extends ColumnDefinition {
     private int idx;
     private int maxDisplaySize;
 
@@ -72,7 +68,7 @@ public class GridFactory {
     }
   }
 
-  private class ScrollGridResponse extends Response {
+  private static class ScrollGridResponse extends Response {
     private Collection<IsRow> rowValues = new ArrayList<IsRow>();
 
     private ScrollGridResponse(IsTable<?, ?> data, int start, int cnt, int tot) {
@@ -87,7 +83,7 @@ public class GridFactory {
     }
   }
 
-  private class ScrollGridTableModel extends TableModel {
+  private static class ScrollGridTableModel extends TableModel {
     private IsTable<?, ?> data;
 
     private ScrollGridTableModel(IsTable<?, ?> data) {
@@ -104,7 +100,7 @@ public class GridFactory {
     }
   }
 
-  public Widget cellGrid(Object data, CellType cellType, String... columnLabels) {
+  public static Widget cellGrid(Object data, CellType cellType, String... columnLabels) {
     Assert.notNull(data);
 
     IsTable<?, ?> table = DataUtils.createTable(data, columnLabels);
@@ -119,11 +115,11 @@ public class GridFactory {
       return null;
     }
 
-    BeeCellTable grid = new BeeCellTable(r);
+    CellGrid grid = new CellGrid(r);
 
     TextColumn column;
     for (int i = 0; i < c; i++) {
-      column = new TextColumn(createCell(cellType), i, table.getColumnLabel(i));
+      column = new TextColumn(createCell(cellType), i, table.getColumn(i));
       if (cellType != null && cellType.isEditable()) {
         column.setFieldUpdater(new CellUpdater(i));
       }
@@ -133,48 +129,41 @@ public class GridFactory {
 
     return grid;
   }
-
-  public BeeCellTable createGrid(BeeRowSet table) {
-    Assert.notNull(table);
-
-    int c = table.getNumberOfColumns();
-    Assert.isPositive(c);
-
-    int r = table.getNumberOfRows();
-    if (r <= 0) {
-      BeeKeeper.getLog().warning("data table empty");
-      return null;
-    }
-    
-    Map<Integer, Integer> colWidths = calculateColumnWidths(table);
-    boolean fixedLayout = colWidths.size() == c;
-
-    BeeCellTable grid = new BeeCellTable(r);
-    if (fixedLayout) {
-      int gridWidth = 0;
-      for (int i = 0; i < c; i++) {
-        gridWidth += colWidths.get(i);
-      }
-      grid.setWidth(gridWidth + Unit.EM.getType(), true);
-    }
-
-    CellColumn<?> column;
-    for (int i = 0; i < c; i++) {
-      column = createColumn(table.getColumn(i), i, table.getColumnLabel(i));
-      column.setSortable(true);
-      grid.addColumn(column, table.getColumnLabel(i));
-      if (fixedLayout) {
-        grid.setColumnWidth(column, colWidths.get(i), Unit.EM);
-      }
-    }
-   
-    MultiSelectionModel<IsRow> selector = new MultiSelectionModel<IsRow>(new KeyProvider());
-    grid.setSelectionModel(selector);
-
-    return grid;
-  }
   
-  public Widget scrollGrid(int width, Object data, String... columnLabels) {
+  public static CellColumn<?> createColumn(IsColumn dataColumn, int index) {
+    ValueType type = dataColumn.getType();
+    if (type == null) {
+      return new TextColumn(index, dataColumn);
+    }
+
+    switch (type) {
+      case BOOLEAN:
+        return new BooleanColumn(index, dataColumn);
+      case DATE:
+        return new DateColumn(index, dataColumn);
+      case DATETIME:
+        return new DateTimeColumn(index, dataColumn);
+      case NUMBER:
+        if (dataColumn instanceof BeeColumn) {
+          if (((BeeColumn) dataColumn).getScale() == 2) {
+            return new NumberColumn(NumberFormat.getCurrencyFormat(), index, dataColumn);
+          }
+          switch (((BeeColumn) dataColumn).getSqlType()) {
+            case 4:
+              return new NumberColumn(NumberFormat.getFormat("#"), index, dataColumn);
+            case 6:
+            case 7:
+            case 8:
+              return new NumberColumn(NumberFormat.getFormat("#.#######"), index, dataColumn);
+          }
+        }
+        return new NumberColumn(index, dataColumn);
+      default:
+        return new TextColumn(index, dataColumn);
+    }
+  }
+
+  public static Widget scrollGrid(int width, Object data, String... columnLabels) {
     Assert.notNull(data);
 
     IsTable<?, ?> table = DataUtils.createTable(data, columnLabels);
@@ -217,7 +206,7 @@ public class GridFactory {
     return grid;
   }
 
-  public Widget simpleGrid(Object data, String... columnLabels) {
+  public static Widget simpleGrid(Object data, String... columnLabels) {
     Assert.notNull(data);
 
     IsTable<?, ?> table = DataUtils.createTable(data, columnLabels);
@@ -232,56 +221,25 @@ public class GridFactory {
       return null;
     }
     
-    BeeCellTable grid = new BeeCellTable(r);
+    CellGrid grid = new CellGrid(r);
     CellColumn<?> column;
     for (int i = 0; i < c; i++) {
-      column = createColumn(table.getColumn(i), i, table.getColumnLabel(i));
+      column = createColumn(table.getColumn(i), i);
       column.setSortable(true);
       grid.addColumn(column, table.getColumnLabel(i));
     }
 
     DataProvider provider = new DataProvider(table);
     provider.addDataDisplay(grid);
-
-    TableSorter sorter = new TableSorter(provider);
-    grid.addColumnSortHandler(sorter);
+    grid.addColumnSortHandler(provider);
     
     MultiSelectionModel<IsRow> selector = new MultiSelectionModel<IsRow>(new KeyProvider());
     grid.setSelectionModel(selector);
 
     return grid;
   }
-
-  private Map<Integer, Integer> calculateColumnWidths(IsTable<?, ?> table) {
-    Map<Integer, Integer> colWidths = Maps.newHashMap();
-    if (table == null) {
-      return colWidths;
-    }
-    int cc = table.getNumberOfColumns();
-    if (cc <= 0) {
-      return colWidths;
-    }
-    
-    int w;
-    for (int i = 0; i < cc; i++) {
-      IsColumn column = table.getColumn(i);
-      if (column instanceof BeeColumn) {
-        w = getColumnWidth((BeeColumn) column);
-      } else {
-        w = -1;
-      }
-      
-      if (w > 0) {
-        colWidths.put(i, BeeUtils.limit(w, 3, 30));
-      } else {
-        colWidths.clear();
-        break;
-      }
-    }
-    return colWidths;
-  }
   
-  private Cell<String> createCell(CellType type) {
+  private static Cell<String> createCell(CellType type) {
     Cell<String> cell;
 
     switch (type) {
@@ -297,66 +255,6 @@ public class GridFactory {
     return cell;
   }
   
-  private CellColumn<?> createColumn(IsColumn dataColumn, int index, String label) {
-    ValueType type = dataColumn.getType();
-    if (type == null) {
-      return new TextColumn(index, label);
-    }
-
-    switch (type) {
-      case BOOLEAN:
-        return new BooleanColumn(index, label);
-      case DATE:
-        return new DateColumn(index, label);
-      case DATETIME:
-        return new DateTimeColumn(index, label);
-      case NUMBER:
-        if (dataColumn instanceof BeeColumn) {
-          if (((BeeColumn) dataColumn).getScale() == 2) {
-            return new NumberColumn(NumberFormat.getCurrencyFormat(), index, label);
-          }
-          switch (((BeeColumn) dataColumn).getSqlType()) {
-            case 4:
-              return new NumberColumn(NumberFormat.getFormat("#"), index, label);
-            case 6:
-            case 7:
-            case 8:
-              return new NumberColumn(NumberFormat.getFormat("#.#######"), index, label);
-          }
-        }
-        return new NumberColumn(index, label);
-      default:
-        return new TextColumn(index, label);
-    }
-  }
-  
-  private int getColumnWidth(BeeColumn column) {
-    ValueType type = column.getType();
-    int size = column.getPrecision();
-    if (type == null) {
-      return size;
-    }
-
-    switch (type) {
-      case BOOLEAN:
-        return 6;
-      case DATE:
-        return 10;
-      case DATETIME:
-        return 16;
-      case NUMBER:
-        switch (column.getSqlType()) {
-          case 4:
-            return 10;
-          case 6:
-          case 7:
-          case 8:
-            return 16;
-          default:
-            return size;
-        }
-      default:
-        return size;
-    }
+  private GridFactory() {
   }
 }

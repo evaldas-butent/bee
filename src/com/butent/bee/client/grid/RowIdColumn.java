@@ -13,6 +13,7 @@ public class RowIdColumn extends Column<IsRow, Number> {
 
   public RowIdColumn(Cell<Number> cell) {
     super(cell);
+    setHorizontalAlignment(ALIGN_RIGHT);
   }
 
   @Override

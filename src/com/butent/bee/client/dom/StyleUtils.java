@@ -21,6 +21,9 @@ public class StyleUtils {
   public static final String CONFIG_PANEL = "bee-configPanel";
   public static final String DND_SOURCE = "bee-dndSource";
   public static final String DND_OVER = "bee-dndOver";
+  public static final String WINDOW_CAPTION = "bee-WindowCaption";
+  public static final String WINDOW_HEADER = "bee-WindowHeader";
+  public static final String WINDOW_FOOTER = "bee-WindowFooter";
 
   public static final String STYLE_LEFT = "left";
   public static final String STYLE_WIDTH = "width";

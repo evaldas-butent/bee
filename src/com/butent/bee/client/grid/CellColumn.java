@@ -4,28 +4,29 @@ import com.google.gwt.cell.client.Cell;
 import com.google.gwt.user.cellview.client.Column;
 
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 
 public abstract class CellColumn<C> extends Column<IsRow, C> {
-  private int index;
-  private String label;
+  private final int index;
+  private final IsColumn dataColumn;
 
-  public CellColumn(Cell<C> cell, int index, String label) {
+  public CellColumn(Cell<C> cell, int index, IsColumn dataColumn) {
     super(cell);
     this.index = index;
-    this.label = label;
+    this.dataColumn = dataColumn;
   }
 
+  public IsColumn getDataColumn() {
+    return dataColumn;
+  }
+  
   public int getIndex() {
     return index;
   }
-  
-  public String getLabel() {
-    return label;
-  }
 
-  public void setLabel(String label) {
-    this.label = label;
+  public String getLabel() {
+    return getDataColumn().getLabel();
   }
 
   protected String getString(IsRow row) {
