@@ -1,17 +1,17 @@
 package com.butent.bee.shared;
 
-public class BeeStage implements HasService, HasStage {
+public class Stage implements HasService, HasStage {
   public static final String STAGE_GET_PARAMETERS = "stage_get";
   public static final String STAGE_CONFIRM = "stage_confirm";
 
   private String service;
   private String stage;
 
-  public BeeStage() {
+  public Stage() {
     super();
   }
 
-  public BeeStage(String service, String stage) {
+  public Stage(String service, String stage) {
     this();
     this.service = service;
     this.stage = stage;
@@ -32,5 +32,4 @@ public class BeeStage implements HasService, HasStage {
   public void setStage(String stg) {
     this.stage = stg;
   }
-
 }

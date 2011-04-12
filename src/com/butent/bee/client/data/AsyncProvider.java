@@ -1,6 +1,5 @@
 package com.butent.bee.client.data;
 
-import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.ColumnSortList;
 import com.google.gwt.user.cellview.client.ColumnSortList.ColumnSortInfo;
@@ -9,25 +8,18 @@ import com.google.gwt.view.client.HasData;
 import com.google.gwt.view.client.Range;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.communication.ParameterList;
-import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.grid.CellGrid;
 import com.butent.bee.client.grid.CellColumn;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.data.TableInfo;
+import com.butent.bee.shared.data.ViewInfo;
 import com.butent.bee.shared.sql.IsCondition;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.Codec;
-import com.butent.bee.shared.utils.Property;
-import com.butent.bee.shared.utils.PropertyUtils;
-
-import java.util.List;
 
 public class AsyncProvider extends AbstractDataProvider<IsRow> {
-  private class Callback implements ResponseCallback {
+  private class Callback implements Queries.RowSetCallback {
     private final HasData<IsRow> display;
     private final Range range;
 
@@ -37,20 +29,18 @@ public class AsyncProvider extends AbstractDataProvider<IsRow> {
     }
 
     @Override
-    public void onResponse(JsArrayString arr) {
+    public void onResponse(BeeRowSet rowSet) {
       if (!display.getVisibleRange().equals(range)) {
         BeeKeeper.getLog().warning("range changed");
         return;
       }
 
-      Assert.notNull(arr);
-      BeeRowSet rs = BeeRowSet.restore(arr.get(0));
-      if (rs.isEmpty()) {
+      if (rowSet.isEmpty()) {
         BeeKeeper.getLog().warning("rowset empty");
         return;
       }
 
-      updateDisplay(rs);
+      updateDisplay(rowSet);
     }
 
     private void updateDisplay(BeeRowSet data) {
@@ -73,13 +63,13 @@ public class AsyncProvider extends AbstractDataProvider<IsRow> {
     }
   }
 
-  private TableInfo tableInfo;
+  private ViewInfo viewInfo;
   private IsCondition where;
   private String order;
 
-  public AsyncProvider(TableInfo tableInfo, IsCondition where, String order) {
+  public AsyncProvider(ViewInfo viewInfo, IsCondition where, String order) {
     super();
-    this.tableInfo = tableInfo;
+    this.viewInfo = viewInfo;
     this.where = where;
     this.order = order;
   }
@@ -88,8 +78,8 @@ public class AsyncProvider extends AbstractDataProvider<IsRow> {
     return order;
   }
 
-  public TableInfo getTableInfo() {
-    return tableInfo;
+  public ViewInfo getViewInfo() {
+    return viewInfo;
   }
 
   public IsCondition getWhere() {
@@ -100,8 +90,8 @@ public class AsyncProvider extends AbstractDataProvider<IsRow> {
     this.order = order;
   }
 
-  public void setTableInfo(TableInfo tableInfo) {
-    this.tableInfo = tableInfo;
+  public void setViewInfo(ViewInfo viewInfo) {
+    this.viewInfo = viewInfo;
   }
 
   public void setWhere(IsCondition where) {
@@ -113,37 +103,28 @@ public class AsyncProvider extends AbstractDataProvider<IsRow> {
     Assert.notNull(display);
     Range range = display.getVisibleRange();
 
-    List<Property> lst = PropertyUtils.createProperties("table_name", getTableInfo().getName(),
-        "table_offset", range.getStart(), "table_limit", range.getLength());
-
     IsCondition condition = getWhere();
-    if (condition != null) {
-      PropertyUtils.addProperties(lst, "table_where", Codec.beeSerialize(condition));
-    }
 
     String ord = null;
     if (display instanceof CellGrid) {
-      ord = getTableOrder((CellGrid) display);
+      ord = getViewOrder((CellGrid) display);
     }
     if (BeeUtils.isEmpty(ord)) {
       ord = getOrder();
     }
-    if (!BeeUtils.isEmpty(ord)) {
-      PropertyUtils.addProperties(lst, "table_order", ord);
-    }
-
-    BeeKeeper.getRpc().makeGetRequest(new ParameterList("rpc_ui_table", lst),
+    
+    Queries.getRowSet(getViewInfo().getName(), condition, ord, range.getStart(), range.getLength(),
         new Callback(display, range));
   }
 
-  private String getTableOrder(CellGrid grid) {
+  private String getViewOrder(CellGrid grid) {
     ColumnSortList sortList = grid.getColumnSortList();
     if (sortList == null) {
       return null;
     }
 
     boolean hasId = false;
-    String idLabel = getTableInfo().getIdColumn();
+    String idLabel = getViewInfo().getIdColumn();
 
     StringBuilder sb = new StringBuilder();
 

@@ -72,7 +72,7 @@ public class ArrayUtils {
   }
 
   /**
-   * Creates a new empty array with specified size
+   * Creates a new empty array with specified size.
    * 
    * @param size the size of the new array
    * @return a new empty array.

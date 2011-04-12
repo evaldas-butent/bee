@@ -132,7 +132,7 @@ public class LogUtils {
   }
 
   /**
-   * Checks if the specified Level {@code level} is equal to Level.OFF
+   * Checks if the specified Level {@code level} is equal to Level.OFF.
    * 
    * @param level the argument to check
    * @return true if Levels are equal, otherwise false
@@ -178,7 +178,7 @@ public class LogUtils {
   }
 
   /**
-   * Sets the default logger to {@code def}
+   * Sets the default logger to {@code def}.
    * 
    * @param def the value to set default logger to
    */

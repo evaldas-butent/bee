@@ -12,8 +12,8 @@ import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.resources.Images;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.BeeService;
-import com.butent.bee.shared.BeeStage;
+import com.butent.bee.shared.Service;
+import com.butent.bee.shared.Stage;
 import com.butent.bee.shared.BeeType;
 import com.butent.bee.shared.BeeWidget;
 import com.butent.bee.shared.Variable;
@@ -140,7 +140,7 @@ public class Global implements Module {
     msgBox.showInfo(obj);
   }
 
-  public static void inputVars(BeeStage bst, String cap, String... names) {
+  public static void inputVars(Stage bst, String cap, String... names) {
     List<Variable> lst = new ArrayList<Variable>();
     for (String name : names) {
       if (vars.containsKey(name)) {
@@ -150,7 +150,7 @@ public class Global implements Module {
     inputVars(bst, cap, lst.toArray(new Variable[0]));
   }
 
-  public static void inputVars(BeeStage bst, String cap, Variable... variables) {
+  public static void inputVars(Stage bst, String cap, Variable... variables) {
     inpBox.inputVars(bst, cap, variables);
   }
 
@@ -284,73 +284,73 @@ public class Global implements Module {
   }
 
   private void initVars() {
-    createVar(BeeService.VAR_CLASS_NAME, "Class name");
-    createVar(BeeService.VAR_PACKAGE_LIST, "Default Packages");
+    createVar(Service.VAR_CLASS_NAME, "Class name");
+    createVar(Service.VAR_PACKAGE_LIST, "Default Packages");
 
-    createVar(BeeService.VAR_LOGIN, "Login");
-    createVar(BeeService.VAR_PASSWORD, "Password");
+    createVar(Service.VAR_LOGIN, "Login");
+    createVar(Service.VAR_PASSWORD, "Password");
 
-    createVar(BeeService.VAR_XML_SOURCE, "source");
-    createVar(BeeService.VAR_XML_TRANSFORM, "transform");
-    createVar(BeeService.VAR_XML_TARGET, "target");
-    createVar(BeeService.VAR_XML_RETURN, "return", BeeType.STRING,
+    createVar(Service.VAR_XML_SOURCE, "source");
+    createVar(Service.VAR_XML_TRANSFORM, "transform");
+    createVar(Service.VAR_XML_TARGET, "target");
+    createVar(Service.VAR_XML_RETURN, "return", BeeType.STRING,
         "all", BeeWidget.RADIO, "all", "xsl", "source", "xml", "prop");
 
-    setVarWidth(BeeService.VAR_XML_SOURCE, "300px");
-    setVarWidth(BeeService.VAR_XML_TRANSFORM, "300px");
-    setVarWidth(BeeService.VAR_XML_TARGET, "300px");
+    setVarWidth(Service.VAR_XML_SOURCE, "300px");
+    setVarWidth(Service.VAR_XML_TRANSFORM, "300px");
+    setVarWidth(Service.VAR_XML_TARGET, "300px");
 
-    createVar(BeeService.VAR_FILE_NAME, null, BeeType.FILE, BeeConst.STRING_EMPTY);
+    createVar(Service.VAR_FILE_NAME, null, BeeType.FILE, BeeConst.STRING_EMPTY);
 
-    createVar(BeeService.VAR_JDBC_QUERY, "Jdbc Query");
-    setVarWidth(BeeService.VAR_JDBC_QUERY, "500px");
+    createVar(Service.VAR_JDBC_QUERY, "Jdbc Query");
+    setVarWidth(Service.VAR_JDBC_QUERY, "500px");
 
-    createVar(BeeService.VAR_CONNECTION_AUTO_COMMIT,
+    createVar(Service.VAR_CONNECTION_AUTO_COMMIT,
         "Connection auto commit", BeeType.STRING, BeeConst.DEFAULT,
         BeeWidget.RADIO, BeeConst.DEFAULT, BeeConst.STRING_FALSE, BeeConst.STRING_TRUE);
-    createVar(BeeService.VAR_CONNECTION_READ_ONLY, "Connection read only",
+    createVar(Service.VAR_CONNECTION_READ_ONLY, "Connection read only",
         BeeType.STRING, BeeConst.DEFAULT, BeeWidget.RADIO,
         BeeConst.DEFAULT, BeeConst.STRING_FALSE, BeeConst.STRING_TRUE);
-    createVar(BeeService.VAR_CONNECTION_HOLDABILITY, "Connection holdability",
+    createVar(Service.VAR_CONNECTION_HOLDABILITY, "Connection holdability",
         BeeType.STRING, BeeConst.DEFAULT, BeeWidget.RADIO, BeeConst.DEFAULT,
         BeeConst.HOLD_CURSORS_OVER_COMMIT, BeeConst.CLOSE_CURSORS_AT_COMMIT);
-    createVar(BeeService.VAR_CONNECTION_TRANSACTION_ISOLATION,
+    createVar(Service.VAR_CONNECTION_TRANSACTION_ISOLATION,
         "Transaction isolation", BeeType.STRING, BeeConst.DEFAULT,
         BeeWidget.LIST, BeeConst.DEFAULT, BeeConst.TRANSACTION_NONE,
         BeeConst.TRANSACTION_READ_COMMITTED, BeeConst.TRANSACTION_READ_UNCOMMITTED,
         BeeConst.TRANSACTION_REPEATABLE_READ, BeeConst.TRANSACTION_SERIALIZABLE);
 
-    createVar(BeeService.VAR_STATEMENT_CURSOR_NAME, "Cursor name");
-    createVar(BeeService.VAR_STATEMENT_ESCAPE_PROCESSING,
+    createVar(Service.VAR_STATEMENT_CURSOR_NAME, "Cursor name");
+    createVar(Service.VAR_STATEMENT_ESCAPE_PROCESSING,
         "Escape Processing", BeeType.STRING, BeeConst.DEFAULT,
         BeeWidget.RADIO, BeeConst.DEFAULT, BeeConst.STRING_FALSE, BeeConst.STRING_TRUE);
-    createVar(BeeService.VAR_STATEMENT_FETCH_DIRECTION, "Statement fetch direction",
+    createVar(Service.VAR_STATEMENT_FETCH_DIRECTION, "Statement fetch direction",
         BeeType.STRING, BeeConst.DEFAULT, BeeWidget.RADIO, BeeConst.DEFAULT,
         BeeConst.FETCH_FORWARD, BeeConst.FETCH_REVERSE, BeeConst.FETCH_UNKNOWN);
-    createVar(BeeService.VAR_STATEMENT_FETCH_SIZE, "Statement fetch size");
-    createVar(BeeService.VAR_STATEMENT_MAX_FIELD_SIZE, "Statement max field size");
-    createVar(BeeService.VAR_STATEMENT_MAX_ROWS, "Statement max rows");
-    createVar(BeeService.VAR_STATEMENT_POOLABLE, "Poolable", BeeType.STRING,
+    createVar(Service.VAR_STATEMENT_FETCH_SIZE, "Statement fetch size");
+    createVar(Service.VAR_STATEMENT_MAX_FIELD_SIZE, "Statement max field size");
+    createVar(Service.VAR_STATEMENT_MAX_ROWS, "Statement max rows");
+    createVar(Service.VAR_STATEMENT_POOLABLE, "Poolable", BeeType.STRING,
         BeeConst.DEFAULT, BeeWidget.RADIO, BeeConst.DEFAULT, BeeConst.STRING_FALSE,
         BeeConst.STRING_TRUE);
-    createVar(BeeService.VAR_STATEMENT_QUERY_TIMEOUT, "Query timeout");
+    createVar(Service.VAR_STATEMENT_QUERY_TIMEOUT, "Query timeout");
 
-    createVar(BeeService.VAR_STATEMENT_RS_TYPE, "Statement rs type", BeeType.STRING,
+    createVar(Service.VAR_STATEMENT_RS_TYPE, "Statement rs type", BeeType.STRING,
         BeeConst.DEFAULT, BeeWidget.RADIO, BeeConst.DEFAULT, BeeConst.TYPE_FORWARD_ONLY,
         BeeConst.TYPE_SCROLL_INSENSITIVE, BeeConst.TYPE_SCROLL_SENSITIVE);
-    createVar(BeeService.VAR_STATEMENT_RS_CONCURRENCY, "Statement rs concurrency",
+    createVar(Service.VAR_STATEMENT_RS_CONCURRENCY, "Statement rs concurrency",
         BeeType.STRING, BeeConst.DEFAULT, BeeWidget.RADIO, BeeConst.DEFAULT,
         BeeConst.CONCUR_READ_ONLY, BeeConst.CONCUR_UPDATABLE);
-    createVar(BeeService.VAR_STATEMENT_RS_HOLDABILITY, "Statement rs holdability",
+    createVar(Service.VAR_STATEMENT_RS_HOLDABILITY, "Statement rs holdability",
         BeeType.STRING, BeeConst.DEFAULT, BeeWidget.RADIO, BeeConst.DEFAULT,
         BeeConst.HOLD_CURSORS_OVER_COMMIT, BeeConst.CLOSE_CURSORS_AT_COMMIT);
 
-    createVar(BeeService.VAR_RESULT_SET_FETCH_DIRECTION, "Rs fetch direction",
+    createVar(Service.VAR_RESULT_SET_FETCH_DIRECTION, "Rs fetch direction",
         BeeType.STRING, BeeConst.DEFAULT, BeeWidget.RADIO, BeeConst.DEFAULT,
         BeeConst.FETCH_FORWARD, BeeConst.FETCH_REVERSE, BeeConst.FETCH_UNKNOWN);
-    createVar(BeeService.VAR_RESULT_SET_FETCH_SIZE, "Rs fetch size");
+    createVar(Service.VAR_RESULT_SET_FETCH_SIZE, "Rs fetch size");
 
-    createVar(BeeService.VAR_JDBC_RETURN, "Jdbc return", BeeType.STRING,
+    createVar(Service.VAR_JDBC_RETURN, "Jdbc return", BeeType.STRING,
         BeeConst.JDBC_RESULT_SET, BeeWidget.RADIO, BeeConst.JDBC_RESULT_SET,
         BeeConst.JDBC_META_DATA, BeeConst.JDBC_ROW_COUNT, BeeConst.JDBC_COLUMNS);
 

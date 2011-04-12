@@ -40,7 +40,7 @@ public class PropertyUtils {
   }
 
   /**
-   * Adds an ExtendedProperty to {@code lst} with specified {@code nm} and {@code v} values
+   * Adds an ExtendedProperty to {@code lst} with specified {@code nm} and {@code v} values.
    * 
    * @param lst a collection to add the new ExtendedProperty to
    * @param nm the name for the ExtendedProperty
@@ -53,7 +53,7 @@ public class PropertyUtils {
   }
 
   /**
-   * Adds an ExtendedProperty to {@code lst} with specified {@code nm}, {@code sub} and {@code v}
+   * Adds an ExtendedProperty to {@code lst} with specified {@code nm}, {@code sub} and {@code v}.
    * values
    * 
    * @param lst a collection to add the new ExtendedProperty to

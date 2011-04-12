@@ -15,7 +15,7 @@ import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.client.widget.BeeTextBox;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.communication.ContentType;
+import com.butent.bee.shared.Service;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -151,12 +151,11 @@ public class CliWidget extends BeeTextBox {
       BeeKeeper.getRpc().invoke("vmInfo");
 
     } else if (z.equals("gen") && BeeUtils.isDigit(ArrayUtils.getQuietly(arr, 2))) {
-      BeeKeeper.getRpc().makePostRequest("rpc_ui_gen", ContentType.BINARY,
-          BeeUtils.concat(1, arr[1], arr[2]));
+      BeeKeeper.getRpc().sendText(Service.GENERATE, BeeUtils.concat(1, arr[1], arr[2]));
     } else if (z.equals("rebuild")) {
-      BeeKeeper.getRpc().makePostRequest("rpc_ui_rebuild", ContentType.BINARY, v);
+      BeeKeeper.getRpc().sendText(Service.REBUILD, v);
     } else if (z.equals("sql")) {
-      BeeKeeper.getRpc().makePostRequest("rpc_ui_sql", ContentType.BINARY, v,
+      BeeKeeper.getRpc().sendText(Service.DO_SQL, v,
           new ResponseCallback() {
             @Override
             public void onResponse(JsArrayString respArr) {

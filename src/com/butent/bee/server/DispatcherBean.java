@@ -10,7 +10,7 @@ import com.butent.bee.server.ui.UiServiceBean;
 import com.butent.bee.server.utils.Reflection;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.BeeService;
+import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseMessage;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.sql.SqlBuilderFactory;
@@ -61,20 +61,20 @@ public class DispatcherBean {
     Assert.notEmpty(svc);
     Assert.notNull(buff);
 
-    if (BeeService.isDbService(svc)) {
+    if (Service.isDbService(svc)) {
       dataBean.doService(svc, dsn, reqInfo, buff);
-    } else if (BeeService.isSysService(svc)) {
+    } else if (Service.isSysService(svc)) {
       sysBean.doService(svc, reqInfo, buff);
 
-    } else if (BeeUtils.same(svc, BeeService.SERVICE_GET_MENU)) {
+    } else if (BeeUtils.same(svc, Service.LOAD_MENU)) {
       menu.getMenu(reqInfo, buff);
-    } else if (BeeUtils.same(svc, BeeService.SERVICE_WHERE_AM_I)) {
+    } else if (BeeUtils.same(svc, Service.WHERE_AM_I)) {
       buff.addLine(buff.now(), BeeConst.whereAmI());
 
-    } else if (BeeUtils.same(svc, BeeService.SERVICE_INVOKE)) {
-      Reflection.invoke(invBean, reqInfo.getParameter(BeeService.RPC_VAR_METH), reqInfo, buff);
+    } else if (BeeUtils.same(svc, Service.INVOKE)) {
+      Reflection.invoke(invBean, reqInfo.getParameter(Service.RPC_VAR_METH), reqInfo, buff);
 
-    } else if (svc.startsWith("rpc_ui_")) {
+    } else if (Service.isDataService(svc)) {
       ResponseObject resp = uiBean.doService(reqInfo);
 
       for (ResponseMessage msg : resp.getMessages()) {

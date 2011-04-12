@@ -21,7 +21,7 @@ import com.butent.bee.client.utils.BeeCommand;
 import com.butent.bee.client.utils.BeeDuration;
 import com.butent.bee.client.widget.BeeCellList;
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.BeeService;
+import com.butent.bee.shared.Service;
 import com.butent.bee.shared.menu.MenuConstants;
 import com.butent.bee.shared.menu.MenuEntry;
 import com.butent.bee.shared.menu.MenuUtils;
@@ -181,7 +181,7 @@ public class MenuManager implements Module {
   }
 
   public void loadMenu() {
-    BeeKeeper.getRpc().makeGetRequest(BeeService.SERVICE_GET_MENU);
+    BeeKeeper.getRpc().makeGetRequest(Service.LOAD_MENU);
   }
 
   public void setItems(List<MenuEntry> items) {

@@ -5,7 +5,7 @@ import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.jdbc.JdbcException;
 import com.butent.bee.server.utils.BeeDataSource;
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.BeeService;
+import com.butent.bee.shared.Service;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.ExtendedProperty;
 import com.butent.bee.shared.utils.LogUtils;
@@ -31,15 +31,15 @@ public class MetaDataBean {
     Assert.notNull(ds);
     Assert.notNull(buff);
 
-    if (BeeUtils.same(svc, BeeService.SERVICE_DB_PING)) {
+    if (BeeUtils.same(svc, Service.DB_PING)) {
       ping(ds, buff);
-    } else if (BeeUtils.same(svc, BeeService.SERVICE_DB_INFO)) {
+    } else if (BeeUtils.same(svc, Service.DB_INFO)) {
       dbInfo(ds, buff);
-    } else if (BeeUtils.same(svc, BeeService.SERVICE_DB_TABLES)) {
+    } else if (BeeUtils.same(svc, Service.DB_TABLES)) {
       getTables(ds, reqInfo, buff);
-    } else if (BeeUtils.same(svc, BeeService.SERVICE_DB_KEYS)) {
+    } else if (BeeUtils.same(svc, Service.DB_KEYS)) {
       getKeys(ds, reqInfo, buff, true);
-    } else if (BeeUtils.same(svc, BeeService.SERVICE_DB_PRIMARY)) {
+    } else if (BeeUtils.same(svc, Service.DB_PRIMARY)) {
       getKeys(ds, reqInfo, buff, false);
     } else {
       String msg = BeeUtils.concat(1, svc, "meta data service not recognized");

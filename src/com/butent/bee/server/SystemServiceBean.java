@@ -16,7 +16,7 @@ import com.butent.bee.server.utils.JvmUtils;
 import com.butent.bee.server.utils.XmlUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.BeeService;
+import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.CommUtils;
 import com.butent.bee.shared.communication.ContentType;
 import com.butent.bee.shared.data.BeeColumn;
@@ -45,17 +45,17 @@ public class SystemServiceBean {
     Assert.notEmpty(svc);
     Assert.notNull(buff);
 
-    if (BeeUtils.same(svc, BeeService.SERVICE_CLASS_INFO)) {
+    if (BeeUtils.same(svc, Service.GET_CLASS_INFO)) {
       classInfo(reqInfo, buff);
-    } else if (BeeUtils.same(svc, BeeService.SERVICE_XML_INFO)) {
+    } else if (BeeUtils.same(svc, Service.GET_XML_INFO)) {
       xmlInfo(reqInfo, buff);
 
-    } else if (BeeUtils.same(svc, BeeService.SERVICE_GET_RESOURCE)) {
+    } else if (BeeUtils.same(svc, Service.GET_RESOURCE)) {
       getResource(reqInfo, buff);
-    } else if (BeeUtils.same(svc, BeeService.SERVICE_SAVE_RESOURCE)) {
+    } else if (BeeUtils.same(svc, Service.SAVE_RESOURCE)) {
       saveResource(reqInfo, buff);
 
-    } else if (BeeUtils.same(svc, BeeService.SERVICE_GET_DIGEST)) {
+    } else if (BeeUtils.same(svc, Service.GET_DIGEST)) {
       getDigest(reqInfo, buff);
 
     } else {
@@ -66,11 +66,11 @@ public class SystemServiceBean {
   }
 
   private void classInfo(RequestInfo reqInfo, ResponseBuffer buff) {
-    String cnm = reqInfo.getParameter(BeeService.VAR_CLASS_NAME);
-    String pck = reqInfo.getParameter(BeeService.VAR_PACKAGE_LIST);
+    String cnm = reqInfo.getParameter(Service.VAR_CLASS_NAME);
+    String pck = reqInfo.getParameter(Service.VAR_PACKAGE_LIST);
 
     if (BeeUtils.isEmpty(cnm)) {
-      buff.addSevere("Parameter", BeeService.VAR_CLASS_NAME, "not found");
+      buff.addSevere("Parameter", Service.VAR_CLASS_NAME, "not found");
       return;
     }
 
@@ -305,8 +305,8 @@ public class SystemServiceBean {
   private void saveResource(RequestInfo reqInfo, ResponseBuffer buff) {
     long start = System.currentTimeMillis();
 
-    String uri = reqInfo.getParameter(BeeService.RPC_VAR_URI);
-    String md5 = reqInfo.getParameter(BeeService.RPC_VAR_MD5);
+    String uri = reqInfo.getParameter(Service.RPC_VAR_URI);
+    String md5 = reqInfo.getParameter(Service.RPC_VAR_MD5);
 
     if (BeeUtils.isEmpty(uri)) {
       buff.addSevere("URI not specified");
@@ -342,13 +342,13 @@ public class SystemServiceBean {
   }
 
   private void xmlInfo(RequestInfo reqInfo, ResponseBuffer buff) {
-    String pSrc = reqInfo.getParameter(BeeService.VAR_XML_SOURCE);
-    String pXsl = reqInfo.getParameter(BeeService.VAR_XML_TRANSFORM);
-    String pDst = reqInfo.getParameter(BeeService.VAR_XML_TARGET);
-    String ret = reqInfo.getParameter(BeeService.VAR_XML_RETURN);
+    String pSrc = reqInfo.getParameter(Service.VAR_XML_SOURCE);
+    String pXsl = reqInfo.getParameter(Service.VAR_XML_TRANSFORM);
+    String pDst = reqInfo.getParameter(Service.VAR_XML_TARGET);
+    String ret = reqInfo.getParameter(Service.VAR_XML_RETURN);
 
     if (BeeUtils.isEmpty(pSrc)) {
-      buff.addSevere("Parameter", BeeService.VAR_XML_SOURCE, "not found");
+      buff.addSevere("Parameter", Service.VAR_XML_SOURCE, "not found");
       return;
     }
 

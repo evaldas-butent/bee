@@ -10,6 +10,7 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.dom.StyleUtils.ScrollBars;
 import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.tree.BeeTree;
@@ -18,8 +19,8 @@ import com.butent.bee.client.utils.XmlUtils;
 import com.butent.bee.client.widget.BeeButton;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.BeeService;
-import com.butent.bee.shared.BeeStage;
+import com.butent.bee.shared.Service;
+import com.butent.bee.shared.Stage;
 import com.butent.bee.shared.BeeType;
 import com.butent.bee.shared.BeeWidget;
 import com.butent.bee.shared.communication.ContentType;
@@ -41,10 +42,10 @@ public class RowSetService extends CompositeService {
 
   public static final String NAME = PREFIX + "rowset";
 
-  private String tbl = "table_name";
-  private String limit = "table_limit";
-  private String offset = "table_offset";
-  private String stt = "table_states";
+  private String tbl = Service.VAR_VIEW_NAME;
+  private String limit = Service.VAR_VIEW_LIMIT;
+  private String offset = Service.VAR_VIEW_OFFSET;
+  private String stt = Service.VAR_VIEW_STATES;
 
   private BeeRowSet rs;
 
@@ -76,7 +77,7 @@ public class RowSetService extends CompositeService {
     }
     switch (stage) {
       case CHOOSE_TABLE:
-        BeeKeeper.getRpc().makeGetRequest("rpc_ui_tables",
+        BeeKeeper.getRpc().makeGetRequest(Service.GET_TABLE_LIST,
             new ResponseCallback() {
               @Override
               public void onResponse(JsArrayString arr) {
@@ -92,7 +93,7 @@ public class RowSetService extends CompositeService {
                   Global.getVar(tbl).setItems(lst);
                   Global.getVar(tbl).setValue(lst.get(0));
 
-                  Global.inputVars(new BeeStage(self(), Stages.REQUEST_TABLE.name()), "ALL TABLES",
+                  Global.inputVars(new Stage(self(), Stages.REQUEST_TABLE.name()), "ALL TABLES",
                       tbl, limit, offset);
                 }
               }
@@ -108,16 +109,10 @@ public class RowSetService extends CompositeService {
           ok = false;
         } else {
           Global.closeDialog(event);
-          BeeKeeper.getRpc().makePostRequest("rpc_ui_table",
-              XmlUtils.createString(BeeService.XML_TAG_DATA
-                  , tbl, table
-                  , limit, Global.getVarValue(limit)
-                  , offset, Global.getVarValue(offset)
-                  , stt, Global.getVarValue(stt)),
-              new ResponseCallback() {
-                @Override
-                public void onResponse(JsArrayString arr) {
-                  rs = BeeRowSet.restore(arr.get(0));
+          Queries.getRowSet(table, null, null, Global.getVarInt(limit), Global.getVarInt(offset),
+              Global.getVarValue(stt), new Queries.RowSetCallback() {
+                public void onResponse(BeeRowSet rowSet) {
+                  rs = rowSet;
                   refresh();
                 }
               });
@@ -132,7 +127,7 @@ public class RowSetService extends CompositeService {
         if (BeeUtils.isEmpty(upd)) {
           BeeKeeper.getLog().info("Nothing to update");
         } else {
-          BeeKeeper.getRpc().makePostRequest("rpc_ui_commit", ContentType.BINARY, upd.serialize(),
+          BeeKeeper.getRpc().makePostRequest(Service.COMMIT, ContentType.BINARY, upd.serialize(),
               new ResponseCallback() {
                 @Override
                 public void onResponse(JsArrayString arr) {
@@ -169,8 +164,8 @@ public class RowSetService extends CompositeService {
           Global.showError("Table name not specified");
           ok = false;
         } else {
-          BeeKeeper.getRpc().makePostRequest("rpc_ui_states",
-              XmlUtils.createString(BeeService.XML_TAG_DATA, tbl, table),
+          BeeKeeper.getRpc().makePostRequest(Service.GET_STATES,
+              XmlUtils.createString(Service.XML_TAG_DATA, tbl, table),
               new ResponseCallback() {
                 @Override
                 public void onResponse(JsArrayString arr) {
@@ -199,7 +194,7 @@ public class RowSetService extends CompositeService {
                   } else {
                     Global.getVar(stt).setItems(lst);
                     Global.getVar(stt).setValue(lst.get(0));
-                    Global.inputVars(new BeeStage(self(), Stages.REQUEST_TABLE.name()),
+                    Global.inputVars(new Stage(self(), Stages.REQUEST_TABLE.name()),
                         Global.getVarValue(tbl), stt);
                   }
                 }
@@ -211,8 +206,8 @@ public class RowSetService extends CompositeService {
         table = rs.getViewName();
         Global.getVar(tbl).setValue(table);
 
-        BeeKeeper.getRpc().makePostRequest("rpc_ui_states",
-              XmlUtils.createString(BeeService.XML_TAG_DATA, tbl, table),
+        BeeKeeper.getRpc().makePostRequest(Service.GET_STATES,
+              XmlUtils.createString(Service.XML_TAG_DATA, tbl, table),
               new ResponseCallback() {
                 @Override
                 public void onResponse(JsArrayString arr) {
@@ -226,7 +221,7 @@ public class RowSetService extends CompositeService {
                   } else {
                     Global.getVar(stt).setItems(lst);
                     Global.getVar(stt).setValue(lst.get(0));
-                    Global.inputVars(new BeeStage(self(), Stages.REQUEST_STATETABLE.name()),
+                    Global.inputVars(new Stage(self(), Stages.REQUEST_STATETABLE.name()),
                         BeeUtils.ifString(Global.getVarValue(tbl), "ALL TABLES"), stt);
                   }
                 }
@@ -242,8 +237,8 @@ public class RowSetService extends CompositeService {
           ok = false;
         } else {
           Global.closeDialog(event);
-          BeeKeeper.getRpc().makePostRequest("rpc_ui_statetable",
-              XmlUtils.createString(BeeService.XML_TAG_DATA
+          BeeKeeper.getRpc().makePostRequest(Service.GET_STATE_TABLE,
+              XmlUtils.createString(Service.XML_TAG_DATA
                   , tbl, Global.getVarValue(tbl)
                   , stt, states),
               new ResponseCallback() {

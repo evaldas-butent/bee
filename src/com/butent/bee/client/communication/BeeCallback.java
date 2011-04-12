@@ -15,7 +15,7 @@ import com.butent.bee.client.utils.JsUtils;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.DateTime;
 import com.butent.bee.shared.BeeResource;
-import com.butent.bee.shared.BeeService;
+import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.CommUtils;
 import com.butent.bee.shared.communication.ContentType;
 import com.butent.bee.shared.communication.ResponseMessage;
@@ -41,7 +41,7 @@ public class BeeCallback implements RequestCallback {
     int statusCode = resp.getStatusCode();
     boolean debug = Global.isDebug();
 
-    int id = BeeUtils.toInt(resp.getHeader(BeeService.RPC_VAR_QID));
+    int id = BeeUtils.toInt(resp.getHeader(Service.RPC_VAR_QID));
     RpcInfo info = BeeKeeper.getRpc().getRpcInfo(id);
     String svc = (info == null) ? BeeConst.STRING_EMPTY : info.getService();
 
@@ -52,12 +52,12 @@ public class BeeCallback implements RequestCallback {
     }
     if (BeeUtils.isEmpty(svc)) {
       BeeKeeper.getLog().warning("Rpc service",
-          BeeUtils.bracket(BeeService.RPC_VAR_SVC), "not available");
+          BeeUtils.bracket(Service.RPC_VAR_SVC), "not available");
     }
 
     if (statusCode != Response.SC_OK) {
-      msg = BeeUtils.concat(1, BeeUtils.addName(BeeService.RPC_VAR_QID, id),
-          BeeUtils.addName(BeeService.RPC_VAR_SVC, svc));
+      msg = BeeUtils.concat(1, BeeUtils.addName(Service.RPC_VAR_QID, id),
+          BeeUtils.addName(Service.RPC_VAR_SVC, svc));
       if (!BeeUtils.isEmpty(msg)) {
         BeeKeeper.getLog().severe(msg);
       }
@@ -71,8 +71,8 @@ public class BeeCallback implements RequestCallback {
       finalizeResponse();
       return;
     } else {
-      String sid = resp.getHeader(BeeService.RPC_VAR_SID);
-      String usr = resp.getHeader(BeeService.VAR_USER_SIGN);
+      String sid = resp.getHeader(Service.RPC_VAR_SID);
+      String usr = resp.getHeader(Service.VAR_USER_SIGN);
       BeeKeeper.getUser().setSessionId(sid);
 
       if (BeeUtils.isEmpty(sid) || !BeeUtils.isEmpty(usr)) {
@@ -84,30 +84,30 @@ public class BeeCallback implements RequestCallback {
       }
     }
 
-    ContentType ctp = CommUtils.getContentType(resp.getHeader(BeeService.RPC_VAR_CTP));
+    ContentType ctp = CommUtils.getContentType(resp.getHeader(Service.RPC_VAR_CTP));
 
     String txt = CommUtils.getContent(ctp, resp.getText());
     int len = txt.length();
 
-    int cnt = BeeUtils.toInt(resp.getHeader(BeeService.RPC_VAR_CNT));
-    int cc = BeeUtils.toInt(resp.getHeader(BeeService.RPC_VAR_COLS));
-    int mc = BeeUtils.toInt(resp.getHeader(BeeService.RPC_VAR_MSG_CNT));
-    int pc = BeeUtils.toInt(resp.getHeader(BeeService.RPC_VAR_PART_CNT));
+    int cnt = BeeUtils.toInt(resp.getHeader(Service.RPC_VAR_CNT));
+    int cc = BeeUtils.toInt(resp.getHeader(Service.RPC_VAR_COLS));
+    int mc = BeeUtils.toInt(resp.getHeader(Service.RPC_VAR_MSG_CNT));
+    int pc = BeeUtils.toInt(resp.getHeader(Service.RPC_VAR_PART_CNT));
 
     if (debug) {
-      BeeKeeper.getLog().finish(dur, BeeUtils.addName(BeeService.RPC_VAR_QID, id),
-          BeeUtils.addName(BeeService.RPC_VAR_SVC, svc));
+      BeeKeeper.getLog().finish(dur, BeeUtils.addName(Service.RPC_VAR_QID, id),
+          BeeUtils.addName(Service.RPC_VAR_SVC, svc));
 
-      BeeKeeper.getLog().info(BeeUtils.addName(BeeService.RPC_VAR_CTP, ctp),
-          BeeUtils.addName("len", len), BeeUtils.addName(BeeService.RPC_VAR_CNT, cnt));
-      BeeKeeper.getLog().info(BeeUtils.addName(BeeService.RPC_VAR_COLS, cc),
-          BeeUtils.addName(BeeService.RPC_VAR_MSG_CNT, mc),
-          BeeUtils.addName(BeeService.RPC_VAR_PART_CNT, pc));
+      BeeKeeper.getLog().info(BeeUtils.addName(Service.RPC_VAR_CTP, ctp),
+          BeeUtils.addName("len", len), BeeUtils.addName(Service.RPC_VAR_CNT, cnt));
+      BeeKeeper.getLog().info(BeeUtils.addName(Service.RPC_VAR_COLS, cc),
+          BeeUtils.addName(Service.RPC_VAR_MSG_CNT, mc),
+          BeeUtils.addName(Service.RPC_VAR_PART_CNT, pc));
     } else {
       BeeKeeper.getLog().info("response", id, svc, ctp, cnt, cc, mc, pc, len);
     }
 
-    String hSep = resp.getHeader(BeeService.RPC_VAR_SEP);
+    String hSep = resp.getHeader(Service.RPC_VAR_SEP);
     String sep;
 
     if (BeeUtils.isHexString(hSep)) {
@@ -158,7 +158,7 @@ public class BeeCallback implements RequestCallback {
         BeeKeeper.getLog().warning("response empty");
       }
 
-    } else if (BeeService.isInvocation(svc)) {
+    } else if (Service.isInvocation(svc)) {
       dispatchInvocation(svc, info, txt, mc, messages, cc, cnt, sep);
 
     } else if (pc > 0) {
@@ -197,7 +197,7 @@ public class BeeCallback implements RequestCallback {
       return;
     }
 
-    String method = info.getParameter(BeeService.RPC_VAR_METH);
+    String method = info.getParameter(Service.RPC_VAR_METH);
     if (BeeUtils.isEmpty(method)) {
       BeeKeeper.getLog().severe("rpc parameter [method] not found");
       return;
@@ -237,7 +237,7 @@ public class BeeCallback implements RequestCallback {
   }
 
   private void dispatchParts(String svc, int pc, int[] sizes, String content) {
-    if (BeeUtils.same(svc, BeeService.SERVICE_XML_INFO)) {
+    if (BeeUtils.same(svc, Service.GET_XML_INFO)) {
       ResponseHandler.showXmlInfo(pc, sizes, content);
     } else {
       BeeKeeper.getLog().warning("unknown multipart response", svc);
@@ -249,7 +249,7 @@ public class BeeCallback implements RequestCallback {
   }
 
   private void dispatchResponse(String svc, int cc, JsArrayString arr) {
-    if (BeeUtils.same(svc, BeeService.SERVICE_GET_MENU)) {
+    if (BeeUtils.same(svc, Service.LOAD_MENU)) {
       BeeKeeper.getMenu().loadCallBack(arr);
 
     } else if (cc > 0) {
@@ -268,7 +268,7 @@ public class BeeCallback implements RequestCallback {
         }
       }
 
-      if (BeeUtils.same(svc, BeeService.SERVICE_WHERE_AM_I)) {
+      if (BeeUtils.same(svc, Service.WHERE_AM_I)) {
         BeeKeeper.getLog().info(BeeConst.whereAmI());
       }
     }

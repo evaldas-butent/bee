@@ -10,7 +10,7 @@ import com.butent.bee.client.tree.BeeTree;
 import com.butent.bee.client.tree.BeeTreeItem;
 import com.butent.bee.client.utils.XmlUtils;
 import com.butent.bee.client.widget.BeeListBox;
-import com.butent.bee.shared.BeeService;
+import com.butent.bee.shared.Service;
 import com.butent.bee.shared.menu.MenuConstants;
 import com.butent.bee.shared.ui.UiComponent;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -76,8 +76,8 @@ public class MenuService extends CompositeService {
     String il = Global.getVarValue(MenuConstants.varMenuLayout(1));
 
     if (MenuConstants.isValidLayout(rl) && MenuConstants.isValidLayout(il)) {
-      BeeKeeper.getRpc().makePostRequest("rpc_ui_menu",
-          XmlUtils.createString(BeeService.XML_TAG_DATA, "menu_name", "rootMenu",
+      BeeKeeper.getRpc().makePostRequest(Service.GET_MENU,
+          XmlUtils.createString(Service.XML_TAG_DATA, "menu_name", "rootMenu",
               "root_layout", getLayout(rl), "item_layout", getLayout(il)),
           new ResponseCallback() {
             @Override

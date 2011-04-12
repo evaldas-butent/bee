@@ -1,7 +1,7 @@
 package com.butent.bee.shared.communication;
 
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.BeeService;
+import com.butent.bee.shared.Service;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -97,7 +97,7 @@ public class CommUtils {
 
   public static boolean isReservedParameter(String name) {
     Assert.notEmpty(name);
-    return BeeUtils.startsSame(name, BeeService.RPC_VAR_SYS_PREFIX);
+    return BeeUtils.startsSame(name, Service.RPC_VAR_SYS_PREFIX);
   }
   
   public static boolean isResource(ContentType ctp) {
@@ -126,15 +126,15 @@ public class CommUtils {
   }
 
   public static String rpcMessageName(int i) {
-    return BeeService.RPC_VAR_MSG + i;
+    return Service.RPC_VAR_MSG + i;
   }
 
   public static String rpcParamName(int i) {
-    return BeeService.RPC_VAR_PRM + i;
+    return Service.RPC_VAR_PRM + i;
   }
 
   public static String rpcPartName(int i) {
-    return BeeService.RPC_VAR_PART + i;
+    return Service.RPC_VAR_PART + i;
   }
   
   private CommUtils() {

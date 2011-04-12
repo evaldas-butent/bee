@@ -158,7 +158,7 @@ public class Codec {
   }
 
   /**
-   * Deserializes the String {@code ser}
+   * Deserializes the String {@code ser}.
    * 
    * @param ser a value to deserialize
    * @return a deserialized String array.
@@ -261,7 +261,7 @@ public class Codec {
 
   /**
    * Encodes a Byte array with an Crc16 algorithm using a CRC-16 table (<b>{@code arr} must be a
-   * double byte array </b>)
+   * double byte array </b>).
    * 
    * @param arr the array to encode
    * @return an encoded String
@@ -288,7 +288,7 @@ public class Codec {
 
   /**
    * Encodes a Byte array with an Crc32 algorithm using CRC-32 table (<b>{@code arr} must be a
-   * double byte array </b>)
+   * double byte array </b>).
    * 
    * @param arr the array to encode
    * @return an encoded String
@@ -315,7 +315,7 @@ public class Codec {
   }
 
   /**
-   * Encodes a Byte array with an Crc32 algorithm (<b>{@code arr} must be a double byte array </b>)
+   * Encodes a Byte array with an Crc32 algorithm (<b>{@code arr} must be a double byte array </b>).
    * 
    * @param arr the array to encode
    * @return an encoded String
@@ -376,7 +376,7 @@ public class Codec {
   }
 
   /**
-   * Deserializes the length of the String {@code src} starting at {@code start}
+   * Deserializes the length of the String {@code src} starting at {@code start}.
    * 
    * @param src the String's length to deserialize
    * @param start the starting position
@@ -664,7 +664,7 @@ public class Codec {
   /**
    * Serializes all Objects {@code obj} using a default serialization separator.
    * 
-   * @param ser values to serialize
+   * @param obj values to serialize
    * @return a String with serializes values
    */
   public static String serializeValues(Object... obj) {

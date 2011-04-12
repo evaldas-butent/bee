@@ -15,7 +15,7 @@ import com.butent.bee.client.widget.BeeButton;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.client.widget.BeeTextArea;
 import com.butent.bee.shared.BeeResource;
-import com.butent.bee.shared.BeeService;
+import com.butent.bee.shared.Service;
 import com.butent.bee.shared.HasId;
 import com.butent.bee.shared.communication.ContentType;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -50,9 +50,9 @@ public class TextEditor extends Composite implements HasId {
       
       String digest = JsUtils.md5(v);
 
-      ParameterList params = new ParameterList(BeeService.SERVICE_SAVE_RESOURCE);
-      params.addHeaderItem(BeeService.RPC_VAR_URI, path);
-      params.addHeaderItem(BeeService.RPC_VAR_MD5, digest);
+      ParameterList params = new ParameterList(Service.SAVE_RESOURCE);
+      params.addHeaderItem(Service.RPC_VAR_URI, path);
+      params.addHeaderItem(Service.RPC_VAR_MD5, digest);
 
       BeeKeeper.getRpc().makePostRequest(params, ContentType.RESOURCE, v);
       area.onAfterSave(digest);

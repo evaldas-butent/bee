@@ -2,47 +2,63 @@ package com.butent.bee.shared;
 
 import com.butent.bee.shared.utils.BeeUtils;
 
-public class BeeService {
+public class Service {
   public static final String RPC_SERVICE_PREFIX = "rpc_";
   public static final String UI_SERVICE_PREFIX = "ui_";
   public static final String COMPOSITE_SERVICE_PREFIX = "comp_";
 
   public static final String DB_SERVICE_PREFIX = RPC_SERVICE_PREFIX + "db_";
-  public static final String SERVICE_DB_JDBC = DB_SERVICE_PREFIX + "jdbc";
+  public static final String DB_JDBC = DB_SERVICE_PREFIX + "jdbc";
 
   public static final String DB_META_SERVICE_PREFIX = DB_SERVICE_PREFIX + "meta_";
-  public static final String SERVICE_DB_PING = DB_META_SERVICE_PREFIX + "ping";
-  public static final String SERVICE_DB_INFO = DB_META_SERVICE_PREFIX + "info";
-  public static final String SERVICE_DB_TABLES = DB_META_SERVICE_PREFIX + "tables";
-  public static final String SERVICE_DB_KEYS = DB_META_SERVICE_PREFIX + "keys";
-  public static final String SERVICE_DB_PRIMARY = DB_META_SERVICE_PREFIX + "primary";
+  public static final String DB_PING = DB_META_SERVICE_PREFIX + "ping";
+  public static final String DB_INFO = DB_META_SERVICE_PREFIX + "info";
+  public static final String DB_TABLES = DB_META_SERVICE_PREFIX + "tables";
+  public static final String DB_KEYS = DB_META_SERVICE_PREFIX + "keys";
+  public static final String DB_PRIMARY = DB_META_SERVICE_PREFIX + "primary";
 
   public static final String SYS_SERVICE_PREFIX = RPC_SERVICE_PREFIX + "sys_";
-  public static final String SERVICE_CLASS_INFO = SYS_SERVICE_PREFIX + "class_info";
-  public static final String SERVICE_XML_INFO = SYS_SERVICE_PREFIX + "xml_info";
-  public static final String SERVICE_GET_RESOURCE = SYS_SERVICE_PREFIX + "get_resource";
-  public static final String SERVICE_SAVE_RESOURCE = SYS_SERVICE_PREFIX + "save_resource";
-  public static final String SERVICE_GET_DIGEST = SYS_SERVICE_PREFIX + "get_digest";
+  public static final String GET_CLASS_INFO = SYS_SERVICE_PREFIX + "class_info";
+  public static final String GET_XML_INFO = SYS_SERVICE_PREFIX + "xml_info";
+  public static final String GET_RESOURCE = SYS_SERVICE_PREFIX + "get_resource";
+  public static final String SAVE_RESOURCE = SYS_SERVICE_PREFIX + "save_resource";
+  public static final String GET_DIGEST = SYS_SERVICE_PREFIX + "get_digest";
 
-  public static final String SERVICE_INVOKE = RPC_SERVICE_PREFIX + "invoke";
+  public static final String INVOKE = RPC_SERVICE_PREFIX + "invoke";
 
-  public static final String SERVICE_GET_LOGIN = COMPOSITE_SERVICE_PREFIX + "get_login";
-  public static final String SERVICE_LOGIN = RPC_SERVICE_PREFIX + "login";
-  public static final String SERVICE_LOGOUT = RPC_SERVICE_PREFIX + "logout";
+  public static final String GET_LOGIN = COMPOSITE_SERVICE_PREFIX + "get_login";
+  public static final String LOGIN = RPC_SERVICE_PREFIX + "login";
+  public static final String LOGOUT = RPC_SERVICE_PREFIX + "logout";
 
-  public static final String SERVICE_GET_MENU = RPC_SERVICE_PREFIX + "get_menu";
+  public static final String LOAD_MENU = RPC_SERVICE_PREFIX + "load_menu";
 
-  public static final String SERVICE_WHERE_AM_I = RPC_SERVICE_PREFIX + "where_am_i";
+  public static final String WHERE_AM_I = RPC_SERVICE_PREFIX + "where_am_i";
 
-  public static final String SERVICE_CLOSE_DIALOG = UI_SERVICE_PREFIX + "close_dialog";
-  public static final String SERVICE_CONFIRM_DIALOG = UI_SERVICE_PREFIX + "confirm_dialog";
-  public static final String SERVICE_CANCEL_DIALOG = UI_SERVICE_PREFIX + "cancel_dialog";
-  public static final String SERVICE_REFRESH_MENU = UI_SERVICE_PREFIX + "refresh_menu";
+  public static final String CLOSE_DIALOG = UI_SERVICE_PREFIX + "close_dialog";
+  public static final String CONFIRM_DIALOG = UI_SERVICE_PREFIX + "confirm_dialog";
+  public static final String CANCEL_DIALOG = UI_SERVICE_PREFIX + "cancel_dialog";
+  public static final String REFRESH_MENU = UI_SERVICE_PREFIX + "refresh_menu";
 
-  public static final String SERVICE_GET_CLASS = COMPOSITE_SERVICE_PREFIX + "get_class";
-  public static final String SERVICE_GET_XML = COMPOSITE_SERVICE_PREFIX + "get_xml";
-  public static final String SERVICE_GET_DATA = COMPOSITE_SERVICE_PREFIX + "get_data";
+  public static final String GET_CLASS = COMPOSITE_SERVICE_PREFIX + "get_class";
+  public static final String GET_XML = COMPOSITE_SERVICE_PREFIX + "get_xml";
+  public static final String GET_DATA = COMPOSITE_SERVICE_PREFIX + "get_data";
 
+  public static final String DATA_SERVICE_PREFIX = RPC_SERVICE_PREFIX + "data_";
+  public static final String GET_FORM = DATA_SERVICE_PREFIX + "form";
+  public static final String GET_FORM_LIST = DATA_SERVICE_PREFIX + "form_list";
+  public static final String GET_MENU = DATA_SERVICE_PREFIX + "menu";
+  public static final String GET_GRID = DATA_SERVICE_PREFIX + "grid";
+  public static final String REBUILD = DATA_SERVICE_PREFIX + "rebuild";
+  public static final String DO_SQL = DATA_SERVICE_PREFIX + "do_sql";
+  public static final String GET_TABLE_LIST = DATA_SERVICE_PREFIX + "table_list";
+  public static final String QUERY = DATA_SERVICE_PREFIX + "query";
+  public static final String GET_STATES = DATA_SERVICE_PREFIX + "states";
+  public static final String GET_STATE_TABLE = DATA_SERVICE_PREFIX + "state_table";
+  public static final String COMMIT = DATA_SERVICE_PREFIX + "commit";
+  public static final String GET_VIEW_LIST = DATA_SERVICE_PREFIX + "view_list";
+  public static final String GENERATE = DATA_SERVICE_PREFIX + "generate";
+  public static final String COUNT_ROWS = DATA_SERVICE_PREFIX + "row_count";
+  
   public static final String RPC_VAR_PREFIX = "bee_";
   public static final String RPC_VAR_SYS_PREFIX = RPC_VAR_PREFIX + "sys_";
 
@@ -103,11 +119,23 @@ public class BeeService {
   public static final String VAR_RESULT_SET_FETCH_SIZE = RPC_VAR_PREFIX + "rs_fetch_size";
   public static final String VAR_JDBC_RETURN = RPC_VAR_PREFIX + "jdbc_return";
 
+  public static final String VAR_VIEW_NAME = RPC_VAR_PREFIX + "view_name";
+  public static final String VAR_VIEW_WHERE = RPC_VAR_PREFIX + "view_where";
+  public static final String VAR_VIEW_ORDER = RPC_VAR_PREFIX + "view_order";
+  public static final String VAR_VIEW_OFFSET = RPC_VAR_PREFIX + "view_offset";
+  public static final String VAR_VIEW_LIMIT = RPC_VAR_PREFIX + "view_limit";
+  public static final String VAR_VIEW_STATES = RPC_VAR_PREFIX + "view_states";
+
   public static final String XML_TAG_DATA = RPC_VAR_PREFIX + "data";
 
   public static boolean isCompositeService(String svc) {
     Assert.notEmpty(svc);
     return svc.startsWith(COMPOSITE_SERVICE_PREFIX);
+  }
+
+  public static boolean isDataService(String svc) {
+    Assert.notEmpty(svc);
+    return svc.startsWith(DATA_SERVICE_PREFIX);
   }
 
   public static boolean isDbMetaService(String svc) {
@@ -121,7 +149,7 @@ public class BeeService {
   }
 
   public static boolean isInvocation(String svc) {
-    return BeeUtils.same(svc, SERVICE_INVOKE);
+    return BeeUtils.same(svc, INVOKE);
   }
 
   public static boolean isRpcService(String svc) {
@@ -139,6 +167,6 @@ public class BeeService {
     return svc.startsWith(UI_SERVICE_PREFIX);
   }
 
-  private BeeService() {
+  private Service() {
   }
 }

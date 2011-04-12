@@ -19,7 +19,7 @@ import com.butent.bee.shared.JustDate;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
-import com.butent.bee.shared.data.TableInfo;
+import com.butent.bee.shared.data.ViewInfo;
 import com.butent.bee.shared.sql.BeeConstants;
 import com.butent.bee.shared.sql.BeeConstants.DataType;
 import com.butent.bee.shared.sql.BeeConstants.Keyword;
@@ -571,17 +571,30 @@ public class SystemBean {
     return ResponseObject.info(tblName, "generated", rowCount, "rows");
   }
 
-  public List<TableInfo> getDataInfo() {
-    List<TableInfo> lst = Lists.newArrayList();
+  public List<ViewInfo> getDataInfo() {
+    List<ViewInfo> lst = Lists.newArrayList();
     int cnt;
+    
+    for (BeeView view : viewCache.values()) {
+      BeeTable sourceTable = dataCache.get(view.getSource());
+      if (sourceTable.isActive()) {
+        cnt = qs.dbRowCount(sourceTable.getName(), null);
+      } else {
+        cnt = -1;
+      }
+      lst.add(new ViewInfo(sourceTable.getName(), sourceTable.getIdName(), cnt));
+    }
 
     for (BeeTable table : getTables()) {
+      if (isView(table.getName())) {
+        continue;
+      }
       if (table.isActive()) {
         cnt = qs.dbRowCount(table.getName(), null);
       } else {
         cnt = -1;
       }
-      lst.add(new TableInfo(table.getName(), table.getIdName(), cnt));
+      lst.add(new ViewInfo(table.getName(), table.getIdName(), cnt));
     }
     return lst;
   }

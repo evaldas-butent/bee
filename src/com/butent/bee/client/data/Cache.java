@@ -12,23 +12,18 @@ import com.google.gwt.view.client.SingleSelectionModel;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
-import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.layout.BeeLayoutPanel;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.utils.BeeCommand;
-import com.butent.bee.client.utils.JsUtils;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.BeeService;
+import com.butent.bee.shared.Service;
 import com.butent.bee.shared.data.BeeRowSet;
-import com.butent.bee.shared.data.TableInfo;
-import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.data.ViewInfo;
 import com.butent.bee.shared.utils.Codec;
-import com.butent.bee.shared.utils.Property;
-import com.butent.bee.shared.utils.PropertyUtils;
 
 import java.util.List;
 
@@ -45,9 +40,9 @@ public class Cache {
       Assert.isTrue(arr.length() >= 1);
       String[] info = Codec.beeDeserialize(arr.get(0));
 
-      getTables().clear();
+      getViews().clear();
       for (String s : info) {
-        getTables().add(TableInfo.restore(s));
+        getViews().add(ViewInfo.restore(s));
       }
       if (show) {
         showDataInfo();
@@ -66,7 +61,7 @@ public class Cache {
         return;
       }
 
-      if (getTables().isEmpty()) {
+      if (getViews().isEmpty()) {
         BeeKeeper.getUi().updateData(new BeeImage(Global.getImages().loading()), false);
         loadDataInfo(true);
       } else {
@@ -75,32 +70,7 @@ public class Cache {
     }
   }
 
-  private class PrimaryKeyCallback implements ResponseCallback {
-    private String table;
-    private ResponseCallback callback;
-
-    private PrimaryKeyCallback(String table, ResponseCallback callback) {
-      this.table = table;
-      this.callback = callback;
-    }
-
-    @Override
-    public void onResponse(JsArrayString arr) {
-      Assert.notNull(arr);
-      Assert.isTrue(arr.length() >= 1);
-      String column = arr.get(0);
-      Assert.notEmpty(column);
-
-      setPrimaryKey(table, column);
-      BeeKeeper.getLog().info(table, column);
-
-      callback.onResponse(arr);
-    }
-  }
-
-  private static String primaryKeyPrefix = "pk-";
-
-  private List<TableInfo> tables = Lists.newArrayList();
+  private List<ViewInfo> views = Lists.newArrayList();
   private DataInfoCreator dataInfoCreator = new DataInfoCreator();
 
   public Cache() {
@@ -110,78 +80,48 @@ public class Cache {
     return dataInfoCreator;
   }
 
-  public void getPrimaryKey(String table, ResponseCallback callback) {
-    Assert.notEmpty(table);
-    Assert.notNull(callback);
-
-    String value = BeeKeeper.getStorage().getItem(pkName(table));
-    if (!BeeUtils.isEmpty(value)) {
-      callback.onResponse(JsUtils.createArray(value));
-      return;
-    }
-
-    ParameterList params = BeeKeeper.getRpc().createParameters(BeeService.SERVICE_DB_PRIMARY);
-    params.addPositionalHeader(table);
-    BeeKeeper.getRpc().makeGetRequest(params, new PrimaryKeyCallback(table, callback));
-  }
-
-  public List<TableInfo> getTables() {
-    return tables;
+  public List<ViewInfo> getViews() {
+    return views;
   }
 
   public void loadDataInfo(boolean show) {
-    BeeKeeper.getRpc().makeGetRequest("rpc_ui_data_info", new DataInfoCallback(show));
-  }
-
-  public void setPrimaryKey(String ref) {
-    Assert.notEmpty(ref);
-    String table = BeeUtils.getPrefix(ref, BeeConst.CHAR_POINT);
-    String column = BeeUtils.getSuffix(ref, BeeConst.CHAR_POINT);
-
-    setPrimaryKey(table, column);
-  }
-
-  public void setPrimaryKey(String table, String column) {
-    Assert.notEmpty(table);
-    Assert.notEmpty(column);
-
-    BeeKeeper.getStorage().setItem(pkName(table), column.trim());
+    BeeKeeper.getRpc().makeGetRequest(Service.GET_VIEW_LIST, new DataInfoCallback(show));
   }
 
   public void showDataInfo() {
-    if (getTables().isEmpty()) {
+    if (getViews().isEmpty()) {
       BeeKeeper.getUi().updateData(new BeeLabel("Data not available"), false);
       return;
     }
 
-    CellTable<TableInfo> grid = new CellTable<TableInfo>(getTables().size());
+    CellTable<ViewInfo> grid = new CellTable<ViewInfo>(getViews().size());
 
-    Column<TableInfo, String> nameColumn = new TextColumn<TableInfo>() {
+    Column<ViewInfo, String> nameColumn = new TextColumn<ViewInfo>() {
       @Override
-      public String getValue(TableInfo object) {
+      public String getValue(ViewInfo object) {
         return (object == null) ? BeeConst.STRING_EMPTY : object.getName();
       }
     };
     grid.addColumn(nameColumn);
 
-    Column<TableInfo, Number> countColumn = new Column<TableInfo, Number>(new NumberCell()) {
+    Column<ViewInfo, Number> countColumn = new Column<ViewInfo, Number>(new NumberCell()) {
       @Override
-      public Number getValue(TableInfo object) {
+      public Number getValue(ViewInfo object) {
         return (object == null) ? -1 : object.getRowCount();
       }
     };
     countColumn.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
     grid.addColumn(countColumn);
 
-    grid.setRowData(getTables());
+    grid.setRowData(getViews());
 
-    final SingleSelectionModel<TableInfo> selector = new SingleSelectionModel<TableInfo>();
+    final SingleSelectionModel<ViewInfo> selector = new SingleSelectionModel<ViewInfo>();
     selector.addSelectionChangeHandler(new SelectionChangeEvent.Handler() {
       @Override
       public void onSelectionChange(SelectionChangeEvent event) {
-        TableInfo info = selector.getSelectedObject();
+        ViewInfo info = selector.getSelectedObject();
         if (info != null) {
-          openTable(info);
+          openView(info);
         }
       }
     });
@@ -190,46 +130,34 @@ public class Cache {
     BeeKeeper.getUi().updateData(grid, true);
   }
 
-  private void openTable(final TableInfo ti) {
+  private void openView(final ViewInfo ti) {
     int rc = ti.getRowCount();
     if (rc < 0) {
       BeeKeeper.getLog().info(ti.getName(), "not active");
       return;
     }
 
-    List<Property> params = PropertyUtils.createProperties("table_name", ti.getName(),
-        "table_order", ti.getIdColumn());
-
     int limit = 30;
     final boolean async;
     if (rc > limit) {
-      params.add(new Property("table_limit", BeeUtils.toString(limit)));
       async = true;
     } else {
       async = false;
+      limit = -1;
     }
 
-    BeeKeeper.getRpc().makePostRequest(new ParameterList("rpc_ui_table", params),
-        new ResponseCallback() {
-          @Override
-          public void onResponse(JsArrayString arr) {
-            Assert.notNull(arr);
-            BeeRowSet rs = BeeRowSet.restore(arr.get(0));
-            if (rs.isEmpty()) {
-              BeeKeeper.getLog().info(rs.getViewName(), "RowSet is empty");
-            } else {
-              showTable(ti, rs, async);
-            }
-          }
+    Queries.getRowSet(ti.getName(), null, ti.getIdColumn(), 0, limit, new Queries.RowSetCallback() {
+      public void onResponse(BeeRowSet rowSet) {
+        if (rowSet.isEmpty()) {
+          BeeKeeper.getLog().info(rowSet.getViewName(), "RowSet is empty");
+        } else {
+          showView(ti, rowSet, async);
         }
-        );
+      }
+    });
   }
 
-  private String pkName(String table) {
-    return primaryKeyPrefix + table.trim().toLowerCase();
-  }
-
-  private void showTable(TableInfo ti, BeeRowSet rs, boolean async) {
+  private void showView(ViewInfo ti, BeeRowSet rs, boolean async) {
     GridPresenter presenter = new GridPresenter(ti, rs, async);
     BeeKeeper.getUi().updateActivePanel(presenter.getGridView());
   }

@@ -6,10 +6,10 @@ import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
-public class TableInfo implements BeeSerializable, Comparable<TableInfo> {
-  public static TableInfo restore(String s) {
+public class ViewInfo implements BeeSerializable, Comparable<ViewInfo> {
+  public static ViewInfo restore(String s) {
     Assert.notEmpty(s);
-    TableInfo ti = new TableInfo();
+    ViewInfo ti = new ViewInfo();
     ti.deserialize(s);
     return ti;
   }
@@ -19,16 +19,16 @@ public class TableInfo implements BeeSerializable, Comparable<TableInfo> {
 
   private int rowCount;
 
-  public TableInfo(String name, String idColumn, int rowCount) {
+  public ViewInfo(String name, String idColumn, int rowCount) {
     this.name = name;
     this.idColumn = idColumn;
     this.rowCount = rowCount;
   }
 
-  private TableInfo() {
+  private ViewInfo() {
   }
 
-  public int compareTo(TableInfo o) {
+  public int compareTo(ViewInfo o) {
     if (o == null) {
       return BeeConst.COMPARE_MORE;
     }
@@ -49,10 +49,10 @@ public class TableInfo implements BeeSerializable, Comparable<TableInfo> {
     if (this == obj) {
       return true;
     }
-    if (!(obj instanceof TableInfo)) {
+    if (!(obj instanceof ViewInfo)) {
       return false;
     }
-    return BeeUtils.same(getName(), ((TableInfo) obj).getName());
+    return BeeUtils.same(getName(), ((ViewInfo) obj).getName());
   }
   
   public String getIdColumn() {

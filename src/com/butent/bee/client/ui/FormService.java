@@ -11,8 +11,8 @@ import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.dom.StyleUtils.ScrollBars;
 import com.butent.bee.client.utils.XmlUtils;
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.BeeService;
-import com.butent.bee.shared.BeeStage;
+import com.butent.bee.shared.Service;
+import com.butent.bee.shared.Stage;
 import com.butent.bee.shared.BeeType;
 import com.butent.bee.shared.BeeWidget;
 import com.butent.bee.shared.ui.UiComponent;
@@ -46,7 +46,7 @@ public class FormService extends CompositeService {
 
     switch (stage) {
       case CHOOSE_FORM:
-        BeeKeeper.getRpc().makeGetRequest("rpc_ui_form_list",
+        BeeKeeper.getRpc().makeGetRequest(Service.GET_FORM_LIST,
             new ResponseCallback() {
               @Override
               public void onResponse(JsArrayString arr) {
@@ -66,7 +66,7 @@ public class FormService extends CompositeService {
                   Global.getVar(fld).setItems(lst);
                   Global.getVar(fld).setValue(lst.get(0));
 
-                  Global.inputVars(new BeeStage(self(), Stages.SHOW_FORM.name()), "Load form", fld);
+                  Global.inputVars(new Stage(self(), Stages.SHOW_FORM.name()), "Load form", fld);
                 }
               }
             });
@@ -81,8 +81,8 @@ public class FormService extends CompositeService {
           ok = false;
         } else {
           Global.closeDialog(event);
-          BeeKeeper.getRpc().makePostRequest("rpc_ui_form",
-              XmlUtils.createString(BeeService.XML_TAG_DATA, fld, fName),
+          BeeKeeper.getRpc().makePostRequest(Service.GET_FORM,
+              XmlUtils.createString(Service.XML_TAG_DATA, fld, fName),
               new ResponseCallback() {
                 @Override
                 public void onResponse(JsArrayString arr) {

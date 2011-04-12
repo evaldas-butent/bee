@@ -55,7 +55,7 @@ import com.butent.bee.client.widget.Progress;
 import com.butent.bee.client.widget.Svg;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.BeeService;
+import com.butent.bee.shared.Service;
 import com.butent.bee.shared.DateTime;
 import com.butent.bee.shared.JustDate;
 import com.butent.bee.shared.communication.ContentType;
@@ -138,7 +138,7 @@ public class CliWorker {
     BeeKeeper.getLog().info("js fast", JsUtils.md5fast(src));
     BeeKeeper.getLog().info(BeeConst.CLIENT, Codec.md5(src));
 
-    BeeKeeper.getRpc().makePostRequest(BeeService.SERVICE_GET_DIGEST, ContentType.BINARY, src);
+    BeeKeeper.getRpc().makePostRequest(Service.GET_DIGEST, ContentType.BINARY, src);
   }
 
   public static void doAjaxKeys(String[] arr) {
@@ -249,7 +249,7 @@ public class CliWorker {
 
   public static void doMenu(String[] arr) {
     if (BeeUtils.length(arr) > 1) {
-      ParameterList params = BeeKeeper.getRpc().createParameters(BeeService.SERVICE_GET_MENU);
+      ParameterList params = BeeKeeper.getRpc().createParameters(Service.LOAD_MENU);
       params.addPositionalHeader(arr[1]);
       BeeKeeper.getRpc().makeGetRequest(params);
     } else {
@@ -300,14 +300,14 @@ public class CliWorker {
   }
 
   public static void getCharsets() {
-    ParameterList params = BeeKeeper.getRpc().createParameters(BeeService.SERVICE_GET_RESOURCE);
+    ParameterList params = BeeKeeper.getRpc().createParameters(Service.GET_RESOURCE);
     params.addPositionalHeader("cs");
 
     BeeKeeper.getRpc().makeGetRequest(params);
   }
 
   public static void getFs() {
-    ParameterList params = BeeKeeper.getRpc().createParameters(BeeService.SERVICE_GET_RESOURCE);
+    ParameterList params = BeeKeeper.getRpc().createParameters(Service.GET_RESOURCE);
     params.addPositionalHeader("fs");
 
     BeeKeeper.getRpc().makeGetRequest(params);
@@ -321,7 +321,7 @@ public class CliWorker {
     }
 
     ParameterList params = BeeKeeper.getRpc().createParameters(
-        BeeUtils.same(arr[0], "pk") ? BeeService.SERVICE_DB_PRIMARY : BeeService.SERVICE_DB_KEYS);
+        BeeUtils.same(arr[0], "pk") ? Service.DB_PRIMARY : Service.DB_KEYS);
     for (int i = 0; i < parCnt; i++) {
       params.addPositionalHeader(arr[i + 1]);
     }
@@ -341,7 +341,7 @@ public class CliWorker {
       return;
     }
 
-    ParameterList params = BeeKeeper.getRpc().createParameters(BeeService.SERVICE_GET_RESOURCE);
+    ParameterList params = BeeKeeper.getRpc().createParameters(Service.GET_RESOURCE);
     params.addPositionalHeader(arr);
 
     BeeKeeper.getRpc().makeGetRequest(params);
@@ -1279,7 +1279,7 @@ public class CliWorker {
 
   public static void whereAmI() {
     BeeKeeper.getLog().info(BeeConst.whereAmI());
-    BeeKeeper.getRpc().makeGetRequest(BeeService.SERVICE_WHERE_AM_I);
+    BeeKeeper.getRpc().makeGetRequest(Service.WHERE_AM_I);
   }
 
   private static native void cornifyAdd() /*-{

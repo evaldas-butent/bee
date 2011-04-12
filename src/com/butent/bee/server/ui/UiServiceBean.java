@@ -9,6 +9,7 @@ import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -68,34 +69,34 @@ public class UiServiceBean {
         sys.initDatabase(dsn);
       }
 
-      if (svc.equals("rpc_ui_form")) {
+      if (BeeUtils.same(svc, Service.GET_FORM)) {
         response = formInfo(reqInfo);
-      } else if (svc.equals("rpc_ui_form_list")) {
+      } else if (BeeUtils.same(svc, Service.GET_FORM_LIST)) {
         response = formList();
-      } else if (svc.equals("rpc_ui_menu")) {
+      } else if (BeeUtils.same(svc, Service.GET_MENU)) {
         response = menuInfo(reqInfo);
-      } else if (svc.equals("rpc_ui_grid")) {
+      } else if (BeeUtils.same(svc, Service.GET_GRID)) {
         response = gridInfo(reqInfo);
-      } else if (svc.equals("rpc_ui_rebuild")) {
+      } else if (BeeUtils.same(svc, Service.REBUILD)) {
         response = rebuildData(reqInfo);
-      } else if (svc.equals("rpc_ui_sql")) {
+      } else if (BeeUtils.same(svc, Service.DO_SQL)) {
         response = doSql(reqInfo);
-      } else if (svc.equals("rpc_ui_tables")) {
+      } else if (BeeUtils.same(svc, Service.GET_TABLE_LIST)) {
         response = getTables();
-      } else if (svc.equals("rpc_ui_table")) {
-        response = getTable(reqInfo);
-      } else if (svc.equals("rpc_ui_states")) {
+      } else if (BeeUtils.same(svc, Service.QUERY)) {
+        response = getViewData(reqInfo);
+      } else if (BeeUtils.same(svc, Service.GET_STATES)) {
         response = getStates(reqInfo);
-      } else if (svc.equals("rpc_ui_statetable")) {
+      } else if (BeeUtils.same(svc, Service.GET_STATE_TABLE)) {
         response = getStateTable(reqInfo);
-      } else if (svc.equals("rpc_ui_commit")) {
+      } else if (BeeUtils.same(svc, Service.COMMIT)) {
         response = commitChanges(reqInfo);
 
-      } else if (svc.equals("rpc_ui_data_info")) {
+      } else if (BeeUtils.same(svc, Service.GET_VIEW_LIST)) {
         response = getDataInfo();
-      } else if (svc.equals("rpc_ui_gen")) {
+      } else if (BeeUtils.same(svc, Service.GENERATE)) {
         response = generateData(reqInfo);
-      } else if (svc.equals("rpc_ui_row_count")) {
+      } else if (BeeUtils.same(svc, Service.COUNT_ROWS)) {
         response = getRowCount(reqInfo);
 
       } else {
@@ -182,8 +183,8 @@ public class UiServiceBean {
   }
 
   private ResponseObject getRowCount(RequestInfo reqInfo) {
-    String table = reqInfo.getParameter("table_name");
-    String where = reqInfo.getParameter("table_where");
+    String table = reqInfo.getParameter(Service.VAR_VIEW_NAME);
+    String where = reqInfo.getParameter(Service.VAR_VIEW_WHERE);
 
     IsCondition condition = null;
     if (!BeeUtils.isEmpty(where)) {
@@ -193,7 +194,7 @@ public class UiServiceBean {
   }
 
   private ResponseObject getStates(RequestInfo reqInfo) {
-    String table = reqInfo.getParameter("table_name");
+    String table = reqInfo.getParameter(Service.VAR_VIEW_NAME);
     Set<String> states = new HashSet<String>();
 
     for (String tbl : sys.getTableNames()) {
@@ -207,18 +208,22 @@ public class UiServiceBean {
   }
 
   private ResponseObject getStateTable(RequestInfo reqInfo) {
-    String table = reqInfo.getParameter("table_name");
-    String states = reqInfo.getParameter("table_states");
+    String table = reqInfo.getParameter(Service.VAR_VIEW_NAME);
+    String states = reqInfo.getParameter(Service.VAR_VIEW_STATES);
     return sys.editStateRoles(table, states);
   }
 
-  private ResponseObject getTable(RequestInfo reqInfo) {
-    String table = reqInfo.getParameter("table_name");
-    int limit = BeeUtils.toInt(reqInfo.getParameter("table_limit"));
-    int offset = BeeUtils.toInt(reqInfo.getParameter("table_offset"));
-    String where = reqInfo.getParameter("table_where");
-    String order = reqInfo.getParameter("table_order");
-    String states = reqInfo.getParameter("table_states");
+  private ResponseObject getTables() {
+    return ResponseObject.response(sys.getTableNames());
+  }
+
+  private ResponseObject getViewData(RequestInfo reqInfo) {
+    String view = reqInfo.getParameter(Service.VAR_VIEW_NAME);
+    int limit = BeeUtils.toInt(reqInfo.getParameter(Service.VAR_VIEW_LIMIT));
+    int offset = BeeUtils.toInt(reqInfo.getParameter(Service.VAR_VIEW_OFFSET));
+    String where = reqInfo.getParameter(Service.VAR_VIEW_WHERE);
+    String order = reqInfo.getParameter(Service.VAR_VIEW_ORDER);
+    String states = reqInfo.getParameter(Service.VAR_VIEW_STATES);
 
     IsCondition condition = null;
     if (!BeeUtils.isEmpty(where)) {
@@ -235,12 +240,8 @@ public class UiServiceBean {
       arr = states.split(" ");
     }
 
-    BeeRowSet res = sys.getViewData(table, condition, lst, limit, offset, arr);
+    BeeRowSet res = sys.getViewData(view, condition, lst, limit, offset, arr);
     return ResponseObject.response(res);
-  }
-
-  private ResponseObject getTables() {
-    return ResponseObject.response(sys.getTableNames());
   }
 
   private ResponseObject gridInfo(RequestInfo reqInfo) {

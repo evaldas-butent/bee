@@ -6,7 +6,7 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.utils.XmlUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.BeeService;
+import com.butent.bee.shared.Service;
 import com.butent.bee.shared.Transformable;
 import com.butent.bee.shared.communication.CommUtils;
 import com.butent.bee.shared.communication.ContentType;
@@ -28,16 +28,16 @@ public class ParameterList extends ArrayList<RpcParameter> implements Transforma
     super();
     this.service = svc;
 
-    addQueryItem(BeeService.RPC_VAR_SVC, svc);
+    addQueryItem(Service.RPC_VAR_SVC, svc);
 
     String dsn = BeeKeeper.getRpc().getDsn();
     if (!BeeUtils.isEmpty(dsn)) {
-      addQueryItem(BeeService.RPC_VAR_DSN, dsn);
+      addQueryItem(Service.RPC_VAR_DSN, dsn);
     }
 
     String opt = BeeKeeper.getRpc().getOptions();
     if (!BeeUtils.isEmpty(opt)) {
-      addHeaderItem(BeeService.RPC_VAR_OPT, opt);
+      addHeaderItem(Service.RPC_VAR_OPT, opt);
     }
   }
 
@@ -180,7 +180,7 @@ public class ParameterList extends ArrayList<RpcParameter> implements Transforma
   }
   
   public ContentType getContentType() {
-    ContentType ctp = CommUtils.getContentType(getParameter(BeeService.RPC_VAR_CTP));
+    ContentType ctp = CommUtils.getContentType(getParameter(Service.RPC_VAR_CTP));
 
     if (ctp == null) {
       prepare();
@@ -204,7 +204,7 @@ public class ParameterList extends ArrayList<RpcParameter> implements Transforma
       nodes[i * 2] = item.getName();
       nodes[i * 2 + 1] = item.getValue();
     }
-    return XmlUtils.createString(BeeService.XML_TAG_DATA, nodes);
+    return XmlUtils.createString(Service.XML_TAG_DATA, nodes);
   }
 
   public void getHeadersExcept(RequestBuilder bld, String... ignore) {
@@ -328,7 +328,7 @@ public class ParameterList extends ArrayList<RpcParameter> implements Transforma
       }
     }
     if (n > 0) {
-      queryItems.add(new RpcParameter(RpcParameter.SECTION.QUERY, BeeService.RPC_VAR_PRM_CNT, n));
+      queryItems.add(new RpcParameter(RpcParameter.SECTION.QUERY, Service.RPC_VAR_PRM_CNT, n));
     }
   }
 }

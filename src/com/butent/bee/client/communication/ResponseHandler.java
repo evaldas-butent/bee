@@ -48,8 +48,7 @@ public class ResponseHandler {
     BeeKeeper.getUi().updateActivePanel(panel);
   }
 
-  public static void unicodeTest(RpcInfo info, String respTxt, int mc,
-      ResponseMessage[] messages) {
+  public static void unicodeTest(RpcInfo info, String respTxt, int mc, ResponseMessage[] messages) {
     Assert.notNull(info);
     Assert.notEmpty(respTxt);
     Assert.isPositive(mc);
@@ -72,10 +71,10 @@ public class ResponseHandler {
 
       for (int i = 0; i < respLen && i < reqLen; i++) {
         if (reqTxt.charAt(i) != respTxt.charAt(i)) {
-          BeeKeeper.getLog().warning("charAt", i, "req",
-              Integer.toHexString(reqTxt.charAt(i)),
-              BeeUtils.bracket((int) reqTxt.charAt(i)), "resp",
-              Integer.toHexString(respTxt.charAt(i)),
+          BeeKeeper.getLog().warning("charAt", i,
+              "req", Integer.toHexString(reqTxt.charAt(i)),
+              BeeUtils.bracket((int) reqTxt.charAt(i)),
+              "resp", Integer.toHexString(respTxt.charAt(i)),
               BeeUtils.bracket((int) respTxt.charAt(i)));
           break;
         }
@@ -131,5 +130,4 @@ public class ResponseHandler {
       }
     }
   }
-
 }

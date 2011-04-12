@@ -3,7 +3,7 @@ package com.butent.bee.client.composite;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.layout.Span;
 import com.butent.bee.client.widget.BeeButton;
-import com.butent.bee.shared.BeeStage;
+import com.butent.bee.shared.Stage;
 import com.butent.bee.shared.HasService;
 import com.butent.bee.shared.HasStage;
 
@@ -36,7 +36,7 @@ public class ButtonGroup extends Span implements HasService, HasStage {
     add(new BeeButton(cap));
   }
 
-  public void addButton(String cap, BeeStage bst) {
+  public void addButton(String cap, Stage bst) {
     add(new BeeButton(cap, bst));
   }
 

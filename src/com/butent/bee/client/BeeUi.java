@@ -39,8 +39,8 @@ import com.butent.bee.client.widget.BeeSimpleCheckBox;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeResource;
-import com.butent.bee.shared.BeeService;
-import com.butent.bee.shared.BeeStage;
+import com.butent.bee.shared.Service;
+import com.butent.bee.shared.Stage;
 import com.butent.bee.shared.menu.MenuConstants;
 import com.butent.bee.shared.ui.UiComponent;
 import com.butent.bee.shared.utils.ArrayUtils;
@@ -454,18 +454,18 @@ public class BeeUi implements Module {
     p.add(new RadioGroup(getElDsn(), BeeKeeper.getStorage().checkInt(getElDsn(), 0),
         BeeConst.DS_TYPES));
 
-    p.add(new ButtonGroup("Ping", BeeService.SERVICE_DB_PING,
-        "Info", BeeService.SERVICE_DB_INFO,
-        Global.constants.tables(), BeeService.SERVICE_DB_TABLES));
+    p.add(new ButtonGroup("Ping", Service.DB_PING,
+        "Info", Service.DB_INFO,
+        Global.constants.tables(), Service.DB_TABLES));
 
-    p.add(new BeeButton(Global.constants.clazz(), BeeService.SERVICE_GET_CLASS,
-        BeeStage.STAGE_GET_PARAMETERS));
-    p.add(new BeeButton("Xml", BeeService.SERVICE_GET_XML, BeeStage.STAGE_GET_PARAMETERS));
-    p.add(new BeeButton("Jdbc", BeeService.SERVICE_GET_DATA, BeeStage.STAGE_GET_PARAMETERS));
+    p.add(new BeeButton(Global.constants.clazz(), Service.GET_CLASS,
+        Stage.STAGE_GET_PARAMETERS));
+    p.add(new BeeButton("Xml", Service.GET_XML, Stage.STAGE_GET_PARAMETERS));
+    p.add(new BeeButton("Jdbc", Service.GET_DATA, Stage.STAGE_GET_PARAMETERS));
 
-    p.add(new BeeButton(Global.constants.login(), BeeService.SERVICE_GET_LOGIN,
-        BeeStage.STAGE_GET_PARAMETERS));
-    p.add(new BeeButton(Global.constants.logout(), BeeService.SERVICE_LOGOUT));
+    p.add(new BeeButton(Global.constants.login(), Service.GET_LOGIN,
+        Stage.STAGE_GET_PARAMETERS));
+    p.add(new BeeButton(Global.constants.logout(), Service.LOGOUT));
 
     p.add(new BeeCheckBox(Global.getVar(Global.VAR_DEBUG)));
 
@@ -552,7 +552,7 @@ public class BeeUi implements Module {
     slider.setPixelSize(80, 20);
     fp.setWidget(r + 1, 0, slider);
 
-    fp.setWidget(r, 1, new BeeButton(Global.constants.refresh(), BeeService.SERVICE_REFRESH_MENU));
+    fp.setWidget(r, 1, new BeeButton(Global.constants.refresh(), Service.REFRESH_MENU));
     fp.setWidget(r + 1, 1, new BeeButton("BEE", MenuService.NAME, "stage_dummy"));
 
     TabbedPages tp = new TabbedPages(3, Unit.EX);

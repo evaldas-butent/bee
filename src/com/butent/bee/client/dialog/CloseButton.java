@@ -4,13 +4,13 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.ClickHandler;
 
 import com.butent.bee.client.widget.BeeButton;
-import com.butent.bee.shared.BeeService;
-import com.butent.bee.shared.BeeStage;
+import com.butent.bee.shared.Service;
+import com.butent.bee.shared.Stage;
 
 public class CloseButton extends BeeButton {
 
   public CloseButton() {
-    super("Close", BeeService.SERVICE_CLOSE_DIALOG);
+    super("Close", Service.CLOSE_DIALOG);
   }
 
   public CloseButton(Element element) {
@@ -18,10 +18,10 @@ public class CloseButton extends BeeButton {
   }
 
   public CloseButton(String html) {
-    super(html, BeeService.SERVICE_CLOSE_DIALOG);
+    super(html, Service.CLOSE_DIALOG);
   }
 
-  public CloseButton(String html, BeeStage bst) {
+  public CloseButton(String html, Stage bst) {
     super(html, bst);
   }
 

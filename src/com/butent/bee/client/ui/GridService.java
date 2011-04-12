@@ -8,7 +8,7 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.utils.XmlUtils;
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.BeeService;
+import com.butent.bee.shared.Service;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -32,8 +32,8 @@ class GridService extends CompositeService {
     final Panel destination = (Panel) params[0];
     String grd = (String) params[1];
 
-    BeeKeeper.getRpc().makePostRequest("rpc_ui_grid",
-        XmlUtils.createString(BeeService.XML_TAG_DATA, "grid_name",
+    BeeKeeper.getRpc().makePostRequest(Service.GET_GRID,
+        XmlUtils.createString(Service.XML_TAG_DATA, "grid_name",
             grd.replaceFirst("['\\[\"](\\w+)['\\]\"][,].*", "$1")),
         new ResponseCallback() {
           @Override

@@ -3,7 +3,7 @@ package com.butent.bee.server.ui;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.utils.XmlUtils;
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.BeeService;
+import com.butent.bee.shared.Service;
 import com.butent.bee.shared.sql.SqlSelect;
 import com.butent.bee.shared.sql.SqlUtils;
 import com.butent.bee.shared.ui.UiLoader;
@@ -45,7 +45,7 @@ public class UiLoaderBean extends UiLoader {
           null,
           "Database Info",
           "click_proc="
-              + BeeService.SERVICE_DB_INFO
+              + Service.DB_INFO
               + "\n left=50px\n right=50%\r top=10\r\n height=3\\\n           3%"});
 
       for (Object[] cols : buff) {

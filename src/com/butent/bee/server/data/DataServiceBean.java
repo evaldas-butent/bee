@@ -13,7 +13,7 @@ import com.butent.bee.server.utils.SystemInfo;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.DateTime;
-import com.butent.bee.shared.BeeService;
+import com.butent.bee.shared.Service;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.LogUtils;
 
@@ -46,9 +46,9 @@ public class DataServiceBean {
       return;
     }
 
-    if (BeeService.isDbMetaService(svc)) {
+    if (Service.isDbMetaService(svc)) {
       mdb.doService(svc, ds, reqInfo, buff);
-    } else if (BeeUtils.same(svc, BeeService.SERVICE_DB_JDBC)) {
+    } else if (BeeUtils.same(svc, Service.DB_JDBC)) {
       testJdbc(ds.getConn(), reqInfo, buff);
     } else {
       String msg = BeeUtils.concat(1, svc, dsn, "data service not recognized");
@@ -88,9 +88,9 @@ public class DataServiceBean {
       return;
     }
 
-    String sql = map.get(BeeService.VAR_JDBC_QUERY);
+    String sql = map.get(Service.VAR_JDBC_QUERY);
     if (BeeUtils.isEmpty(sql)) {
-      buff.addSevere("Parameter", BeeService.VAR_JDBC_QUERY, "not found");
+      buff.addSevere("Parameter", Service.VAR_JDBC_QUERY, "not found");
       return;
     }
 
@@ -100,27 +100,27 @@ public class DataServiceBean {
       }
     }
 
-    String cAc = map.get(BeeService.VAR_CONNECTION_AUTO_COMMIT);
-    String cHo = map.get(BeeService.VAR_CONNECTION_HOLDABILITY);
-    String cRo = map.get(BeeService.VAR_CONNECTION_READ_ONLY);
-    String cTi = map.get(BeeService.VAR_CONNECTION_TRANSACTION_ISOLATION);
+    String cAc = map.get(Service.VAR_CONNECTION_AUTO_COMMIT);
+    String cHo = map.get(Service.VAR_CONNECTION_HOLDABILITY);
+    String cRo = map.get(Service.VAR_CONNECTION_READ_ONLY);
+    String cTi = map.get(Service.VAR_CONNECTION_TRANSACTION_ISOLATION);
 
-    String sCn = map.get(BeeService.VAR_STATEMENT_CURSOR_NAME);
-    String sEp = map.get(BeeService.VAR_STATEMENT_ESCAPE_PROCESSING);
-    String sFd = map.get(BeeService.VAR_STATEMENT_FETCH_DIRECTION);
-    String sFs = map.get(BeeService.VAR_STATEMENT_FETCH_SIZE);
-    String sMf = map.get(BeeService.VAR_STATEMENT_MAX_FIELD_SIZE);
-    String sMr = map.get(BeeService.VAR_STATEMENT_MAX_ROWS);
-    String sPo = map.get(BeeService.VAR_STATEMENT_POOLABLE);
-    String sQt = map.get(BeeService.VAR_STATEMENT_QUERY_TIMEOUT);
-    String sRc = map.get(BeeService.VAR_STATEMENT_RS_CONCURRENCY);
-    String sRh = map.get(BeeService.VAR_STATEMENT_RS_HOLDABILITY);
-    String sRt = map.get(BeeService.VAR_STATEMENT_RS_TYPE);
+    String sCn = map.get(Service.VAR_STATEMENT_CURSOR_NAME);
+    String sEp = map.get(Service.VAR_STATEMENT_ESCAPE_PROCESSING);
+    String sFd = map.get(Service.VAR_STATEMENT_FETCH_DIRECTION);
+    String sFs = map.get(Service.VAR_STATEMENT_FETCH_SIZE);
+    String sMf = map.get(Service.VAR_STATEMENT_MAX_FIELD_SIZE);
+    String sMr = map.get(Service.VAR_STATEMENT_MAX_ROWS);
+    String sPo = map.get(Service.VAR_STATEMENT_POOLABLE);
+    String sQt = map.get(Service.VAR_STATEMENT_QUERY_TIMEOUT);
+    String sRc = map.get(Service.VAR_STATEMENT_RS_CONCURRENCY);
+    String sRh = map.get(Service.VAR_STATEMENT_RS_HOLDABILITY);
+    String sRt = map.get(Service.VAR_STATEMENT_RS_TYPE);
 
-    String rFd = map.get(BeeService.VAR_RESULT_SET_FETCH_DIRECTION);
-    String rFs = map.get(BeeService.VAR_RESULT_SET_FETCH_SIZE);
+    String rFd = map.get(Service.VAR_RESULT_SET_FETCH_DIRECTION);
+    String rFs = map.get(Service.VAR_RESULT_SET_FETCH_SIZE);
 
-    String ret = map.get(BeeService.VAR_JDBC_RETURN);
+    String ret = map.get(Service.VAR_JDBC_RETURN);
     boolean debug = reqInfo.isDebug();
 
     String before = "before:";

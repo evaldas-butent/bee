@@ -4,7 +4,7 @@ import com.butent.bee.server.communication.ResponseBuffer;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeResource;
-import com.butent.bee.shared.BeeService;
+import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.CommUtils;
 import com.butent.bee.shared.communication.ContentType;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -81,7 +81,7 @@ public class BeeServlet extends HttpServlet {
     if (isAuthorized(req, reqInfo, resp, buff)) {
       sid = req.getSession(false).getId();
 
-      if (!BeeUtils.same(svc, BeeService.SERVICE_LOGIN)) {
+      if (!BeeUtils.same(svc, Service.LOGIN)) {
         dispatcher.doService(svc, dsn, reqInfo, buff);
       }
     } else {
@@ -100,28 +100,28 @@ public class BeeServlet extends HttpServlet {
       ctp = (cc > 0) ? ContentType.TABLE : CommUtils.defaultResponseContentType;
     }
 
-    resp.setHeader(BeeService.RPC_VAR_SID, sid);
-    resp.setHeader(BeeService.RPC_VAR_QID, rid);
+    resp.setHeader(Service.RPC_VAR_SID, sid);
+    resp.setHeader(Service.RPC_VAR_QID, rid);
 
     if (!BeeUtils.isEmpty(sep) || !buff.isDefaultSeparator()) {
-      resp.setHeader(BeeService.RPC_VAR_SEP, buff.getHexSeparator());
+      resp.setHeader(Service.RPC_VAR_SEP, buff.getHexSeparator());
     }
 
     if (cnt > 0) {
-      resp.setIntHeader(BeeService.RPC_VAR_CNT, cnt);
+      resp.setIntHeader(Service.RPC_VAR_CNT, cnt);
     }
     if (cc > 0) {
-      resp.setIntHeader(BeeService.RPC_VAR_COLS, cc);
+      resp.setIntHeader(Service.RPC_VAR_COLS, cc);
     }
 
     if (mc > 0) {
-      resp.setIntHeader(BeeService.RPC_VAR_MSG_CNT, mc);
+      resp.setIntHeader(Service.RPC_VAR_MSG_CNT, mc);
       for (int i = 0; i < mc; i++) {
         resp.setHeader(CommUtils.rpcMessageName(i), buff.getMessage(i).serialize());
       }
     }
 
-    resp.setHeader(BeeService.RPC_VAR_CTP, ctp.transform());
+    resp.setHeader(Service.RPC_VAR_CTP, ctp.transform());
 
     resp.setHeader("Cache-Control", "no-cache");
     resp.setHeader("Pragma", "no-cache");
@@ -143,7 +143,7 @@ public class BeeServlet extends HttpServlet {
       s = CommUtils.prepareContent(ctp, buff.getString());
 
     } else if (pc > 0) {
-      resp.setIntHeader(BeeService.RPC_VAR_PART_CNT, pc);
+      resp.setIntHeader(Service.RPC_VAR_PART_CNT, pc);
       StringBuilder sb = new StringBuilder();
       int pn = 0;
 
@@ -179,8 +179,8 @@ public class BeeServlet extends HttpServlet {
     String svc = reqInfo.getService();
     boolean loggedIn = !BeeUtils.isEmpty(session);
     boolean doLogout = loggedIn
-        && (BeeUtils.inListSame(svc, BeeService.SERVICE_LOGIN, BeeService.SERVICE_LOGOUT)
-        || !BeeUtils.same(session.getId(), reqInfo.getParameter(BeeService.RPC_VAR_SID)));
+        && (BeeUtils.inListSame(svc, Service.LOGIN, Service.LOGOUT)
+        || !BeeUtils.same(session.getId(), reqInfo.getParameter(Service.RPC_VAR_SID)));
 
     if (doLogout) {
       try {
@@ -194,10 +194,10 @@ public class BeeServlet extends HttpServlet {
       }
     }
 
-    if (!loggedIn && !BeeUtils.same(svc, BeeService.SERVICE_LOGOUT)) {
-      String usr = BeeUtils.ifString(reqInfo.getParameter(BeeService.VAR_LOGIN),
+    if (!loggedIn && !BeeUtils.same(svc, Service.LOGOUT)) {
+      String usr = BeeUtils.ifString(reqInfo.getParameter(Service.VAR_LOGIN),
           Config.getProperty("DefaultUser"));
-      String pwd = BeeUtils.ifString(reqInfo.getParameter(BeeService.VAR_PASSWORD),
+      String pwd = BeeUtils.ifString(reqInfo.getParameter(Service.VAR_PASSWORD),
           Config.getProperty("DefaultPassword"));
 
       if (BeeUtils.allNotEmpty(usr, pwd)) {
@@ -215,9 +215,9 @@ public class BeeServlet extends HttpServlet {
             }
           } else {
             session = req.getSession(true);
-            session.setAttribute(BeeService.VAR_LOGIN, req.getRemoteUser());
+            session.setAttribute(Service.VAR_LOGIN, req.getRemoteUser());
 
-            resp.setHeader(BeeService.VAR_USER_SIGN, Codec.encodeBase64(usr));
+            resp.setHeader(Service.VAR_USER_SIGN, Codec.encodeBase64(usr));
             loggedIn = true;
             buff.addWarning("Login successful");
           }

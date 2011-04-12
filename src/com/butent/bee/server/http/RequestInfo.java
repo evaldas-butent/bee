@@ -3,7 +3,7 @@ package com.butent.bee.server.http;
 import com.butent.bee.server.utils.XmlUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.BeeService;
+import com.butent.bee.shared.Service;
 import com.butent.bee.shared.HasExtendedInfo;
 import com.butent.bee.shared.Transformable;
 import com.butent.bee.shared.communication.CommUtils;
@@ -89,7 +89,7 @@ public class RequestInfo implements HasExtendedInfo, Transformable {
     }
 
     if (isXml()) {
-      vars = XmlUtils.getElements(content, BeeService.XML_TAG_DATA);
+      vars = XmlUtils.getElements(content, Service.XML_TAG_DATA);
     }
   }
 
@@ -704,19 +704,19 @@ public class RequestInfo implements HasExtendedInfo, Transformable {
       return;
     }
 
-    if (BeeUtils.same(nm, BeeService.RPC_VAR_QID)) {
+    if (BeeUtils.same(nm, Service.RPC_VAR_QID)) {
       id = v;
-    } else if (BeeUtils.same(nm, BeeService.RPC_VAR_SVC)) {
+    } else if (BeeUtils.same(nm, Service.RPC_VAR_SVC)) {
       service = v;
-    } else if (BeeUtils.same(nm, BeeService.RPC_VAR_DSN)) {
+    } else if (BeeUtils.same(nm, Service.RPC_VAR_DSN)) {
       dsn = v;
-    } else if (BeeUtils.same(nm, BeeService.RPC_VAR_SEP)) {
+    } else if (BeeUtils.same(nm, Service.RPC_VAR_SEP)) {
       separator = v;
-    } else if (BeeUtils.same(nm, BeeService.RPC_VAR_OPT)) {
+    } else if (BeeUtils.same(nm, Service.RPC_VAR_OPT)) {
       options = v;
-    } else if (BeeUtils.same(nm, BeeService.RPC_VAR_CTP)) {
+    } else if (BeeUtils.same(nm, Service.RPC_VAR_CTP)) {
       contentType = CommUtils.getContentType(v);
-    } else if (BeeUtils.same(nm, BeeService.RPC_VAR_LOC)) {
+    } else if (BeeUtils.same(nm, Service.RPC_VAR_LOC)) {
       locale = v;
     }
   }

@@ -1,6 +1,6 @@
 package com.butent.bee.server;
 
-import com.butent.bee.shared.BeeService;
+import com.butent.bee.shared.Service;
 import com.butent.bee.shared.utils.LogUtils;
 
 import java.util.logging.Logger;
@@ -25,7 +25,7 @@ public class ServletSessionListener implements HttpSessionListener {
 
   @Override
   public void sessionDestroyed(HttpSessionEvent se) {
-    Object loginName = se.getSession().getAttribute(BeeService.VAR_LOGIN);
+    Object loginName = se.getSession().getAttribute(Service.VAR_LOGIN);
 
     if (loginName != null) {
       try {

@@ -14,15 +14,15 @@ import com.butent.bee.client.widget.BeeSimpleCheckBox;
 import com.butent.bee.client.widget.BeeTextBox;
 import com.butent.bee.client.widget.InputInteger;
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.BeeService;
-import com.butent.bee.shared.BeeStage;
+import com.butent.bee.shared.Service;
+import com.butent.bee.shared.Stage;
 import com.butent.bee.shared.BeeType;
 import com.butent.bee.shared.BeeWidget;
 import com.butent.bee.shared.Variable;
 import com.butent.bee.shared.utils.BeeUtils;
 
 public class InputBox {
-  public void inputVars(BeeStage bst, String cap, Variable... vars) {
+  public void inputVars(Stage bst, String cap, Variable... vars) {
     Assert.parameterCount(vars.length + 1, 2);
 
     FlexTable ft = new FlexTable();
@@ -103,11 +103,11 @@ public class InputBox {
 
     ButtonGroup bg = new ButtonGroup();
     if (bst == null) {
-      bg.addButton("OK", BeeService.SERVICE_CONFIRM_DIALOG);
+      bg.addButton("OK", Service.CONFIRM_DIALOG);
     } else {
       bg.addButton("OK", bst);
     }
-    bg.addButton("Cancel", BeeService.SERVICE_CANCEL_DIALOG);
+    bg.addButton("Cancel", Service.CANCEL_DIALOG);
 
     ft.setWidget(r, 0, bg);
     ft.getFlexCellFormatter().setColSpan(r, 0, 2);

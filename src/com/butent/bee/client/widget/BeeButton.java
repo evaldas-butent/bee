@@ -8,7 +8,7 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.utils.BeeCommand;
 import com.butent.bee.client.utils.HasCommand;
-import com.butent.bee.shared.BeeStage;
+import com.butent.bee.shared.Stage;
 import com.butent.bee.shared.HasId;
 import com.butent.bee.shared.HasService;
 import com.butent.bee.shared.HasStage;
@@ -41,7 +41,7 @@ public class BeeButton extends Button implements HasId, HasService, HasStage, Ha
     }
   }
 
-  public BeeButton(String html, BeeStage bst) {
+  public BeeButton(String html, Stage bst) {
     this(html, bst.getService(), bst.getStage());
   }
 
