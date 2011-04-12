@@ -22,7 +22,13 @@ import java.util.Set;
 
 public class BeeUtils {
   private static int nameCounter = 0;
-
+/**
+ * Adds a value to a name. Object {@code v} must be either numeric or boolean.
+ * Name and value are separated by a default separator.
+ * @param nm name
+ * @param v a value
+ * @return a formed String
+ */
   public static String addName(String nm, Object v) {
     if (isEmpty(v, EnumSet.of(BeeType.NUMBER, BeeType.BOOLEAN))) {
       return BeeConst.STRING_EMPTY;
@@ -32,7 +38,12 @@ public class BeeUtils {
       return nm.trim() + BeeConst.DEFAULT_VALUE_SEPARATOR + transform(v);
     }
   }
-
+  /**
+   * Checks if all specified objects are empty.
+   * @param obj objects to check
+   * @return true if all of the specified objects are empty. Returns false if
+   * any of these objects aren't empty.
+   */
   public static boolean allEmpty(Object... obj) {
     Assert.parameterCount(obj.length, 1);
     boolean ok = true;
@@ -45,7 +56,12 @@ public class BeeUtils {
     }
     return ok;
   }
-
+  /**
+   * Checks if all specified objects are <b>not empty</b>.
+   * @param obj objects to check
+   * @return true if all of the specified objects are not empty. Returns false if
+   * any of these objects are empty.
+   */
   public static boolean allNotEmpty(Object... obj) {
     Assert.parameterCount(obj.length, 1);
     boolean ok = true;
@@ -58,7 +74,14 @@ public class BeeUtils {
     }
     return ok;
   }
-
+  /**
+   * Appends array elements to a specified StringBuilder.
+   * @param bld a builder used for appending
+   * @param arr array to append
+   * @param sep separator used for appending the array. Elements are separated
+   * by this separator.
+   * @return a string builder with the array elements appended.
+   */
   public static StringBuilder append(StringBuilder bld, Object[] arr, Object sep) {
     if (arr != null && arr.length > 0) {
       String z = normSep(sep);
@@ -71,7 +94,14 @@ public class BeeUtils {
     }
     return bld;
   }
-
+  /**
+   * Appends specified list's {@code iterable} elements to a specified StringBuilder {@code bld}. 
+   * @param bld a builder used for appending
+   * @param iterable a list to append
+   * @param sep separator used for appending the list. List elements are separated
+   * by this separator.
+   * @return a string builder with the list elements appended.
+   */
   public static StringBuilder append(StringBuilder bld, Iterable<?> iterable, Object sep) {
     if (iterable != null) {
       String z = normSep(sep);
@@ -86,15 +116,36 @@ public class BeeUtils {
     }
     return bld;
   }
-
+  /**
+   * Checks if the specified value {@code x} is between values {@code min} and 
+   * {@code max}.
+   * Note: {@code min} value is inclusive, {@code max} value - exclusive.
+   * @param x value to check
+   * @param min the minimum value
+   * @param max the maximum value
+   * @return true if x is between {@code min} (inclusively) and {@code max} 
+   * (exclusively), else false.
+   */
   public static boolean betweenExclusive(int x, int min, int max) {
     return x >= min && x < max;
   }
-
+  /**
+   * Checks if the specified value {@code x} is between values {@code min} and 
+   * {@code max} inclusively.
+   * @param x value to check 
+   * @param min the minimum value
+   * @param max the maximum value
+   * @return true if {@code x} is between {@code min} and {@code max} inclusively,
+   * else false.
+   */
   public static boolean betweenInclusive(int x, int min, int max) {
     return x >= min && x <= max;
   }
-
+  /**
+   * Surrounds the Object value {@code x} in brackets.
+   * @param x Object to put in brackets.
+   * @return a String representation of the Object surrounded by brackets.
+   */
   public static String bracket(Object x) {
     String s = transform(x);
 
@@ -104,7 +155,16 @@ public class BeeUtils {
       return BeeConst.STRING_LEFT_BRACKET + s + BeeConst.STRING_RIGHT_BRACKET;
     }
   }
-
+  /**
+   * A string in the specified position is appended with "..." and the left string
+   * after the index {@code n} is replaced with a progress indicator.
+   * <p> E.g  {@code clip("This is a sentence", 6)} result is {@code 
+   * "This i...[6/18]"}</p>
+   * @param s a String to modify
+   * @param n an index in the String where to modify
+   * @return returns a String with a progress indicator after the specified 
+   * {@code n} index
+   */
   public static String clip(String s, int n) {
     Assert.isPositive(n);
     if (isEmpty(s)) {
@@ -122,7 +182,14 @@ public class BeeUtils {
       return s.substring(0, n).trim() + BeeConst.ELLIPSIS + bracket(progress(n, len));
     }
   }
-
+  /**
+   * Compares {@code x1} and {@code x2}. Both values must implement the Comparable interface.
+   * This method allows to compare values even if one or both of the specified
+   * values are {@code null}.
+   * @param x1 first value to compare
+   * @param x2 second value to compare
+   * @return 0 if objects are equal, -1 if {@code x1 < x2}, and 1 if @code {x1 > x2}.
+   */
   @SuppressWarnings("unchecked")
   public static <T> int compare(Comparable<T> x1, Comparable<T> x2) {
     if (x1 == null) {
@@ -137,7 +204,12 @@ public class BeeUtils {
       return x1.compareTo((T) x2);
     }
   }
-
+  /**
+   * Compares the two specified Double values
+   * @param x1 the first Double value to be compared
+   * @param x2 the second Double value to be compared
+   * @return 0 if values are equal, -1 if {@code x1 < x2}, and 1 if @code {x1 > x2}.
+   */
   public static int compare(double x1, double x2) {
     if (x1 == x2 || ((Double) x1).equals(x2)) {
       return BeeConst.COMPARE_EQUAL;
@@ -147,7 +219,12 @@ public class BeeUtils {
       return BeeConst.COMPARE_MORE;
     }
   }
-
+  /**
+   * Compares the two specified Integer values
+   * @param x1 the first Integer value to be compared
+   * @param x2 the second Integer value to be compared
+   * @return 0 if values are equal, -1 if {@code x1 < x2}, and 1 if {@code x1 > x2}.
+   */
   public static int compare(int x1, int x2) {
     if (x1 == x2) {
       return BeeConst.COMPARE_EQUAL;
@@ -157,7 +234,14 @@ public class BeeUtils {
       return BeeConst.COMPARE_MORE;
     }
   }
-
+  /**
+   * Compares objects {@code x1} and {@code x2}. This method allows to compare 
+   * values even if one or both of the specified values are {@code null}.
+   * @param x1 first value to compare
+   * @param x2 second value to compare
+   * @return 0 if objects are equal, -1 if {@code x1 < x2}, and 1 if
+   * {@code x1 > x2}.
+   */
   public static int compare(Object x1, Object x2) {
     if (x1 == null) {
       if (x2 == null) {
@@ -173,7 +257,12 @@ public class BeeUtils {
       return x1.toString().compareTo(x2.toString());
     }
   }
-
+  /**
+   * Compares the two specified String values
+   * @param s1 the first String value to be compared
+   * @param s2 the second String value to be compared
+   * @return 0 if values are equal, -1 if {@code x1 < x2}, and 1 if {@code x1 > x2}.
+   */
   public static int compare(String s1, String s2) {
     if (isEmpty(s1)) {
       if (isEmpty(s2)) {
@@ -187,11 +276,22 @@ public class BeeUtils {
       return s1.compareTo(s2);
     }
   }
-
+  /**
+   * Compares two normalized String values.
+   * @param s1 first normalized String value
+   * @param s2 second normalized String value
+   * @return 0 if values are equal, -1 if {@code s1 < s2}, and 1 if {@code s1 > s2}.
+   */
   public static int compareNormalized(String s1, String s2) {
     return compare(normalize(s1), normalize(s2));
   }
-
+  /**
+   * Concats specified Objects. The first argument is the separator for the 
+   * rest of the arguments.
+   * @param x Objects to concatenate
+   * @return a String concatenized using the fist Object as a separator, an
+   * empty string if no or only single Object is specified.
+   */
   public static String concat(Object... x) {
     int c = x.length;
     if (c <= 1) {
@@ -212,7 +312,13 @@ public class BeeUtils {
 
     return s.toString();
   }
-
+  /**
+   * Checks is there are equal elements in the Collections.
+   * @param c1 first Collection's elements to be compared
+   * @param c2 second Collection's elements to be compared
+   * @return true if one of the collections contain at least one equal element from
+   * the other collection, otherwise false.
+   */
   public static <T> boolean containsAny(Collection<T> c1, Collection<T> c2) {
     boolean ok = false;
 
@@ -242,7 +348,13 @@ public class BeeUtils {
     }
     return ok;
   }
-
+  /**
+   * Checks if the CharSequence {@code src} contains only of the specified characters.
+   * @param src source CharSequence to be checked
+   * @param ch characters to check for
+   * @return true if the src contains only the specified characters,
+   * false if src contains any different characters.
+   */
   public static boolean containsOnly(CharSequence src, char ch) {
     if (src == null) {
       return false;
@@ -261,7 +373,13 @@ public class BeeUtils {
     }
     return ok;
   }
-
+  /**
+   * Checks if {@code src} contains {@code ctxt}. Both values are compared after
+   * transforming to lower case.
+   * @param ctxt value to check for
+   * @param src source value to check in
+   * @return true if {@code src} contains {@code ctxt}, otherwise false.
+   */
   public static boolean context(CharSequence ctxt, CharSequence src) {
     if (ctxt == null || src == null || ctxt.length() == 0 || src.length() == 0) {
       return false;
@@ -269,7 +387,14 @@ public class BeeUtils {
       return src.toString().toLowerCase().contains(ctxt.toString().toLowerCase());
     }
   }
-
+  /**
+   * Checks if {@code src} contains any of the elements from {@code ctxt}. 
+   * Compared values are transformed to lower case.
+   * @param ctxt list of elements to be compared
+   * @param src source value to check in
+   * @return true if {@code src} contains any of the elements from {@code ctxt},
+   * false if {@code src} is empty or if it doesn't contain any of the elements.
+   */
   public static boolean context(Collection<? extends CharSequence> ctxt, CharSequence src) {
     boolean ok = false;
     if (isEmpty(src)) {
@@ -284,7 +409,14 @@ public class BeeUtils {
     }
     return ok;
   }
-
+  /**
+   * Checks if {@code ctxt} contains any of the elements from {@code src}. 
+   * Compared values are transformed to lower case.
+   * @param ctxt value to check for
+   * @param src list of elements to compare to
+   * @return true if any of {@code src} elements contain {@code ctxt}, 
+   * otherwise false.
+   */
   public static boolean context(CharSequence ctxt, Collection<? extends CharSequence> src) {
     boolean ok = false;
     if (isEmpty(ctxt)) {
@@ -299,7 +431,12 @@ public class BeeUtils {
     }
     return ok;
   }
-
+  /**
+   * Counts the appearances of the specified character {@code ch} in a CharSequence.
+   * @param src source to count in
+   * @param ch characters to count
+   * @return a number of the specified character appearances in the CharSequence.
+   */
   public static int count(CharSequence src, char ch) {
     int cnt = 0;
     if (src == null) {
@@ -313,11 +450,18 @@ public class BeeUtils {
     }
     return cnt;
   }
-
+  /**
+   * Creates a unique name.
+   * @return a unique name.
+   */
   public static String createUniqueName() {
     return createUniqueName(null);
   }
-
+  /**
+   * Created a unique name with a specified prefix.
+   * @param pfx prefix used for generating a unique name
+   * @return String which contains unique value with a specified prefix.
+   */
   public static String createUniqueName(String pfx) {
     nameCounter++;
 
@@ -327,7 +471,15 @@ public class BeeUtils {
       return pfx.trim() + nameCounter;
     }
   }
-
+  /**
+   * Deletes a part of a String from specified {@code start} to {@code end}.
+   * @param src source String to delete from
+   * @param start position to start deleting from
+   * @param end position to end deleting
+   * @return a String without the deleted part.
+   *         empty String - if {@code src} is {@code null} or empty,
+   *         {@code src} - if start and end is wrong to given String
+   */
   public static String delete(String src, int start, int end) {
     if (src == null) {
       return BeeConst.STRING_EMPTY;
@@ -351,11 +503,21 @@ public class BeeUtils {
     }
     return src.substring(0, start) + src.substring(end);
   }
-
+  /**
+   * Returns the elapsed time in seconds.
+   * @param start the start time
+   * @return the elapsed time in seconds from the specified start in brackets.
+   */
   public static String elapsedSeconds(long start) {
     return bracket(toSeconds(System.currentTimeMillis() - start));
   }
-
+  /**
+   * Checks if Object {@code x} and Object {@code y} are equal.
+   * @param x fist Object to compare
+   * @param y second Object to compare
+   * @return true if Objects are equal,
+   *         false if Objects differ.
+   */
   public static boolean equals(Object x, Object y) {
     if (x == null) {
       return y == null;
@@ -363,7 +525,13 @@ public class BeeUtils {
       return x.equals(y);
     }
   }
-
+  /**
+   * Trims both Strings and then compares them.
+   * @param s1 the String to compare
+   * @param s2 the String to compare
+   * @return true if trimmed Strings are equal,
+   *         false if Strings differ or any of them are empty or {@code null}.
+   */
   public static boolean equalsTrim(String s1, String s2) {
     if (s1 == null) {
       return isEmpty(s2);
@@ -373,14 +541,24 @@ public class BeeUtils {
       return s1.trim().equals(s2.trim());
     }
   }
-
+  /**
+   * Raises the value {@code z} to the power of 10.
+   * @param z value to raise to the power of 10
+   * @return of value of the specified argument raised to the power of 10.
+   */
   public static int exp10(int z) {
     Assert.nonNegative(z);
     Double x = Math.pow(10, z);
     Assert.isTrue(x < Integer.MAX_VALUE);
     return x.intValue();
   }
-
+  /**
+   * Filters Object {@code x} through BeeType set. Gets the type of Object 
+   * {@code x} and checks if any of the set types contain it.
+   * @param x the Object to filter
+   * @param types the set of elements to compare to
+   * @return true when types contain the type of Object, otherwise false
+   */
   public static boolean filterType(Object x, Set<BeeType> types) {
     Assert.notEmpty(types);
 
@@ -411,7 +589,13 @@ public class BeeUtils {
 
     return containsAny(types, tp);
   }
-
+  /**
+   * Looks for a fitting starting position.
+   * @param start the start index
+   * @param len the length
+   * @param end the end index
+   * @return the new starting position
+   */
   public static int fitStart(int start, int len, int end) {
     if (start + len <= end) {
       return start;
@@ -419,11 +603,25 @@ public class BeeUtils {
       return end - len;
     }
   }
-
+  /**
+   * Looks for a fitting starting position.
+   * @param start the start index
+   * @param len the length
+   * @param end end index
+   * @param min the minimum starting position
+   * @return the new starting position
+   */
   public static int fitStart(int start, int len, int end, int min) {
     return max(fitStart(start, len, end), min);
   }
-
+  /**
+   * Converts a String representation of Hex symbol to a corresponding Hex symbol.
+   * <p><b>Note: the specified String must be in double bytes.</b>
+   * E.g "005D" is "]".<p>
+   * @param s the string to convert
+   * @return returns a corresponding Hex symbol for the specified String input,
+   *         {@code null} if the specified String format is wrong
+   */
   public static char[] fromHex(String s) {
     if (!isHexString(s)) {
       return null;
@@ -458,12 +656,23 @@ public class BeeUtils {
       return arr;
     }
   }
-
+/**
+ * @param cls the class to get a name from
+ * @return only the String class name with packages excluded.
+ */
   public static String getClassName(Class<?> cls) {
     String c = cls.getName();
     return c.substring(c.lastIndexOf(".") + 1);
   }
-
+  /**
+   * If any {@code src} Collection element contains {@code ctxt} (case is ignored),
+   * than that element is added to the new Collection and returned after all 
+   * elements from {@code src} Collection are covered.
+   * @param ctxt context to search for
+   * @param src source list to search from
+   * @return a new list with elements that contain {@code ctxt} in {@code src}
+   * collection.
+   */
   public static <T extends CharSequence> List<T> getContext(T ctxt, Collection<T> src) {
     List<T> lst = new ArrayList<T>();
     if (isEmpty(ctxt)) {
@@ -477,7 +686,14 @@ public class BeeUtils {
     }
     return lst;
   }
-
+  /**
+   * Gets the key of the value from the specified Map when the Mmap contains 
+   * the value.
+   * @param map the Map to search for the value
+   * @param value the value to search for
+   * @return a key when the value is found,
+   *         {@code null} if there is no such value
+   */
   public static <K, V> K getKey(Map<K, V> map, V value) {
     K key = null;
     for (Map.Entry<K, V> entry : map.entrySet()) {
@@ -488,7 +704,14 @@ public class BeeUtils {
     }
     return key;
   }
-
+  /**
+   * Gets a prefix from a String, where separator sets that the prefix will end
+   * at the first occurance of the separator.
+   * @param src the source to get a prefix from
+   * @param sep the separator.
+   * @return a String, where the length is determined by the first occurance of
+   *         the separator.
+   */
   public static String getPrefix(String src, char sep) {
     if (isEmpty(src)) {
       return BeeConst.STRING_EMPTY;
@@ -502,7 +725,13 @@ public class BeeUtils {
       return BeeConst.STRING_EMPTY;
     }
   }
-
+  /**
+   * Separates a String with separator value. Returns a String that goes before 
+   * the separator.
+   * @param src source to get the prefix from
+   * @param sep the separator
+   * @return a prefix value that goes before the separator.
+   */
   public static String getPrefix(String src, String sep) {
     if (isEmpty(src) || length(sep) <= 0) {
       return BeeConst.STRING_EMPTY;
@@ -516,7 +745,13 @@ public class BeeUtils {
       return BeeConst.STRING_EMPTY;
     }
   }
-
+  /**
+   * Separates a string with separator value. Returns a string that goes after 
+   * the separator.
+   * @param src source string to get suffix from
+   * @param sep separator
+   * @return a suffix value that goes after the separator.
+   */
   public static String getSuffix(String src, char sep) {
     if (isEmpty(src)) {
       return BeeConst.STRING_EMPTY;
@@ -530,7 +765,13 @@ public class BeeUtils {
       return BeeConst.STRING_EMPTY;
     }
   }
-
+  /**
+   * Separates a string with separator value. Returns a string that goes after 
+   * the separator.
+   * @param src source string to get suffix from
+   * @param sep separator
+   * @return a suffix value that goes after the separator.
+   */
   public static String getSuffix(String src, String sep) {
     if (isEmpty(src) || length(sep) <= 0) {
       return BeeConst.STRING_EMPTY;
@@ -544,7 +785,12 @@ public class BeeUtils {
       return BeeConst.STRING_EMPTY;
     }
   }
-
+  /**
+   * @param x Object to check
+   * @param def Objects {@code x} default value to set
+   * @return the String from the Object if the Object is an instance of String,
+   * else returns a default String value {@code def}.
+   */
   public static String ifString(Object x, String def) {
     if (x instanceof String && !isEmpty(x)) {
       return (String) x;
@@ -552,7 +798,13 @@ public class BeeUtils {
       return def;
     }
   }
-
+  /**
+   * Extended if sentence. Basic syntax : if {@code obj[i] == true} the method 
+   * jumps to {@code obj[i+1]} else jumps to {@code obj[i+2]}
+   * @param obj Objects to check
+   * @return {@code obj[i+1]} if condition {@code obj[i]} is true, or 
+   * {@code obj[i+2]} if condition is false.
+   */
   @SuppressWarnings("unchecked")
   public static <T> T iif(Object... obj) {
     int n = obj.length;
@@ -568,15 +820,29 @@ public class BeeUtils {
     }
     return z;
   }
-
+  /**
+   * Transforms the Object to a String and increments the value by 1. 
+   * @param obj object to increment
+   * @return a String representation of the incremented Object value.
+   */
   public static String increment(Object obj) {
     return increment(transform(obj));
   }
-
+  /**
+   * Transforms the String to Integer and increments it by 1.
+   * @param s a string to increment
+   * @return a String representation of the incremented String value.
+   */
   public static String increment(String s) {
     return Integer.toString(toInt(s) + 1);
   }
-
+  /**
+   * Checks if value {@code x} is in {@code lst}.
+   * @param x the value to check for
+   * @param lst variables to check in
+   * @return true if {@code x} was found in these variables, false if they did not 
+   * contain the value {@code x}.
+   */
   public static <T extends Comparable<T>> boolean inList(T x, T... lst) {
     boolean ok = false;
 
@@ -589,7 +855,13 @@ public class BeeUtils {
 
     return ok;
   }
-
+  /**
+   * Checks if the String value {@code x} equals any value of {@code lst}.
+   * Note: case is ignored. 
+   * @param x a string to check
+   * @param lst a list to check in
+   * @return true if value x string is found, otherwise false
+   */
   public static boolean inListIgnoreCase(String x, String... lst) {
     Assert.notEmpty(x);
     boolean ok = false;
@@ -602,7 +874,12 @@ public class BeeUtils {
     }
     return ok;
   }
-
+  /**
+   * Checks if {@code x} is found in any of the {@code lst} Strings.
+   * @param x value to search for
+   * @param lst all Strings to search
+   * @return true if {@code x} is found in {@code lst}, false otherwise.
+   */
   public static boolean inListSame(String x, String... lst) {
     Assert.notEmpty(x);
     boolean ok = false;
@@ -620,7 +897,13 @@ public class BeeUtils {
     }
     return ok;
   }
-
+  /**
+   * Inserts a character to a specified position in the String.
+   * @param src the string to be inserted to
+   * @param pos position to insert to
+   * @param c character to insert
+   * @return a String with the character inserted in the specified position
+   */
   public static String insert(String src, int pos, char c) {
     Assert.notNull(src);
     Assert.nonNegative(pos);
@@ -628,7 +911,13 @@ public class BeeUtils {
 
     return new StringBuilder(src).insert(pos, c).toString();
   }
-
+  /**
+   * Inserts a CharSequence to a specified position in the specified String.
+   * @param src the String to be inserted to
+   * @param pos position to insert to
+   * @param cs CharSequence to insert
+   * @return a String with the CharSequence inserted in the specified String.
+   */
   public static String insert(String src, int pos, CharSequence cs) {
     Assert.notNull(src);
     Assert.nonNegative(pos);
@@ -637,7 +926,11 @@ public class BeeUtils {
 
     return new StringBuilder(src).insert(pos, cs).toString();
   }
-
+  /**
+   * Checks if Object {@code x} is an instance of a floating point(Double or Float).
+   * @param x the Object to check
+   * @return true if the Object is an instance of a floating point, false otherwise
+   */
   public static boolean instanceOfFloatingPoint(Object x) {
     if (x == null) {
       return false;
@@ -645,7 +938,12 @@ public class BeeUtils {
       return (x instanceof Float || x instanceof Double);
     }
   }
-
+  /**
+   * Checks if Object {@code x} is an instance of an integer type(Byte, Short,
+   * Integer, Long, BigInteger, BigDecimal).
+   * @param x Object to check
+   * @return true if the Object is an instance of an integer type, false otherwise
+   */
   public static boolean instanceOfIntegerType(Object x) {
     if (x == null) {
       return false;
@@ -654,7 +952,11 @@ public class BeeUtils {
           || x instanceof Long || x instanceof BigInteger || x instanceof BigDecimal);
     }
   }
-
+  /**
+   * Checks if Object {@code x} is an instance of a String(String, StringBuilder, StringBuffer).
+   * @param x Object to check
+   * @return true if the Object is an instance of String type, false otherwise
+   */
   public static boolean instanceOfStringType(Object x) {
     if (x == null) {
       return false;
@@ -662,11 +964,19 @@ public class BeeUtils {
       return (x instanceof String || x instanceof StringBuilder || x instanceof StringBuffer);
     }
   }
-
+  /**
+   * Checks if {@code x} is a Boolean value (0 or 1).
+   * @param x the number to check
+   * @return true if integer equals 1, false if integer is {@code <= 0 or > 1}.
+   */
   public static boolean isBoolean(int x) {
     return x == BeeConst.INT_TRUE || x == BeeConst.INT_FALSE;
   }
-
+  /**
+   * Checks if {@code s} is a Boolean value.
+   * @param s a String to check
+   * @return true if s equals "true", "false", "yes", "no", false otherwise.
+   */
   public static boolean isBoolean(String s) {
     if (s == null) {
       return false;
@@ -675,11 +985,20 @@ public class BeeUtils {
           || same(s, BeeConst.STRING_FALSE) || same(s, BeeConst.NO);
     }
   }
-
+  /**
+   * Checks if a character {@code c} is a digit.
+   * @param c character to check
+   * @return true if the character ir {@code >= 0 and <=9};
+   */
   public static boolean isDigit(char c) {
     return c >= BeeConst.CHAR_ZERO && c <= BeeConst.CHAR_NINE;
   }
-
+  /**
+   * Checks if a CharacterSequence {@code d} is a digit.
+   * @param s CharSequence to check
+   * @return true if all characters in the sequence are digits, false if sequence 
+   *  is {@code null} or empty or contains at least one non-digit character.
+   */
   public static boolean isDigit(CharSequence s) {
     if (s == null) {
       return false;
@@ -699,11 +1018,19 @@ public class BeeUtils {
     }
     return ok;
   }
-
+  /**
+   * Checks if the value {@code x} is Double.
+   * @param x a Double value to check
+   * @return true if x is a number and is not infinite, otherwise false
+   */
   public static boolean isDouble(double x) {
     return !Double.isNaN(x) && !Double.isInfinite(x);
   }
-
+  /**
+   * Checks if value {@code s} can be cast to a Double value.
+   * @param s a string value to check
+   * @return true if {@code s} value can be cast to Double, false otherwise.
+   */
   public static boolean isDouble(String s) {
     if (isEmpty(s)) {
       return false;
@@ -718,7 +1045,11 @@ public class BeeUtils {
     }
     return ok;
   }
-
+  /**
+   * Checks if an Object is empty.
+   * @param x an Object to check
+   * @return true if the Object is empty, false otherwise.
+   */
   public static boolean isEmpty(Object x) {
     boolean ok;
 
@@ -746,7 +1077,12 @@ public class BeeUtils {
     }
     return ok;
   }
-
+  /**
+   * Checks if an Object {@code x} is empty, and if it not a BeeType.
+   * @param orType type Set to filter.
+   * @return true if an Object is empty, false if Object contains a type in the 
+   * {@code orType} or is not empty.
+   */
   public static boolean isEmpty(Object x, Set<BeeType> orType) {
     if (filterType(x, orType)) {
       return false;
@@ -754,11 +1090,19 @@ public class BeeUtils {
       return isEmpty(x);
     }
   }
-
+  /**
+   * Checks if the specified character contains only Hex digits.
+   * @param c the value to check
+   * @return true if the value contains only Hex digits, false otherwise.
+   */
   public static boolean isHexDigit(char c) {
     return (c >= '0' && c <= '9' || c >= 'a' && c <= 'f' || c >= 'A' && c <= 'F');
   }
-
+  /**
+   * Checks if the specified String contains only Hex digits. 
+   * @param s the value to check
+   * @return true if the String contains only Hex digits,false otherwise.
+   */
   public static boolean isHexString(String s) {
     if (isEmpty(s)) {
       return false;
@@ -773,7 +1117,12 @@ public class BeeUtils {
     }
     return ok;
   }
-
+  /**
+   * Checks if a string is a correct identifier. Identifier cannot start with a
+   * number, and can only contain "_", digits and letters.
+   * @param name the name to check
+   * @return true if the String is a correct identifier, false otherwise.
+   */
   public static boolean isIdentifier(CharSequence name) {
     if (isEmpty(name)) {
       return false;
@@ -793,7 +1142,12 @@ public class BeeUtils {
     }
     return ok;
   }
-
+  /**
+   * Checks if an Object has the specified index.
+   * @param obj an Object to check
+   * @param idx Objects index to check
+   * @return true if such index in the object exists, false otherwise.
+   */
   public static boolean isIndex(Object obj, int idx) {
     if (obj == null || idx < 0) {
       return false;
@@ -803,10 +1157,20 @@ public class BeeUtils {
     }
   }
 
+  /**
+   * Checks if a Double value can be transformed to an Integer value.
+   * @param x double value to transform
+   * @return true if x is more than the integer's minimum value and less than the
+   *         maximum, false otherwise.
+   */
   public static boolean isInt(double x) {
     return isDouble(x) && x > Integer.MIN_VALUE && x < Integer.MAX_VALUE;
   }
-
+  /**
+   * Checks if a String value can be transformed to an Integer value.
+   * @param s a string value to transform
+   * @return true if the string has a correct number format, otherwise false. 
+   */
   public static boolean isInt(String s) {
     if (isEmpty(s)) {
       return false;
@@ -821,18 +1185,31 @@ public class BeeUtils {
     }
     return ok;
   }
-
+  /**
+   * Checks if a Double value can be transformed to a Long value.
+   * @param x the value to check
+   * @return true if x value range is in long range, false otherwise.
+   */
   public static boolean isLong(double x) {
     return isDouble(x) && x > Long.MIN_VALUE && x < Long.MAX_VALUE;
   }
-
+  /**
+   * @param clazz the class to check for Enum constants
+   * @param idx the index to check
+   * @return true if an Enum with the specified index {@code idx} exists, 
+   * otherwise false.
+   */
   public static boolean isOrdinal(Class<?> clazz, int idx) {
     if (clazz == null || !clazz.isEnum() || idx < 0) {
       return false;
     }
     return idx < ArrayUtils.length(clazz.getEnumConstants());
   }
-
+  /**
+   * Checks if an Object is a positive number.
+   * @param x the object to be checked
+   * @return true if a number is greater than 0, false otherwise.
+   */
   public static boolean isPositive(Object x) {
     if (x instanceof Integer) {
       return (Integer) x > 0;
@@ -842,7 +1219,11 @@ public class BeeUtils {
       return false;
     }
   }
-
+  /**
+   * Checks if an Object is a positive number.
+   * @param x the object to be checked
+   * @return true if a number is greater than 0, false otherwise
+   */
   public static <T extends Comparable<T>> boolean isPositive(T x) {
     if (x instanceof Number) {
       T z = zero(x);
@@ -851,18 +1232,35 @@ public class BeeUtils {
       return false;
     }
   }
-
+  /**
+   * Checks if the first character in a CharSequence is a prefix.
+   * @param src sequence to ceck
+   * @param pfx a prefix to check for
+   * @return true if the first character equals {@code pfx}, otherwise false.
+   */
   public static boolean isPrefix(CharSequence src, char pfx) {
     if (src == null || src.length() <= 0) {
       return false;
     }
     return src.charAt(0) == pfx;
   }
-
+  /**
+   * Checks if the specified character is a prefix or a suffix.
+   * @param src a sequence to check in
+   * @param ch a suffix of prefix to search for
+   * @return true if the first or the last character equals {@code pfx}, false
+   * if the sequence contains only one symbol and is suffix or prefix, and if the 
+   * sequence does not contain nor suffix nor prefix
+   */
   public static boolean isPrefixOrSuffix(CharSequence src, char ch) {
     return (isPrefix(src, ch) || isSuffix(src, ch)) && !containsOnly(src, ch);
   }
-
+  /**
+   * Checks if the last character in a CharSequence is a suffix.
+   * @param src sequence to ceck
+   * @param sfx a suffix to check for
+   * @return true if the last character equals {@code sfx}, otherwise false.
+   */
   public static boolean isSuffix(CharSequence src, char sfx) {
     if (src == null) {
       return false;
@@ -873,7 +1271,11 @@ public class BeeUtils {
     }
     return src.charAt(len - 1) == sfx;
   }
-
+  /**
+   * Checks if the specified value is true.
+   * @param obj value to check
+   * @return true if the Object is a Boolean, otherwise false.
+   */
   public static boolean isTrue(Object obj) {
     if (obj == null) {
       return false;
@@ -883,35 +1285,68 @@ public class BeeUtils {
       return false;
     }
   }
-
+  /**
+   * Checks if a BigDecimal value is zero.
+   * @param x value to check
+   * @return true if {@code x == 0}, otherwise false.
+   */
   public static boolean isZero(BigDecimal x) {
     return x == BigDecimal.ZERO;
   }
-
+  /**
+   * Checks if a BigInteger value is zero.
+   * @param x value to check
+   * @return true if it is 0, otherwise false.
+   */
   public static boolean isZero(BigInteger x) {
     return x == BigInteger.ZERO;
   }
-
+  /**
+   * Checks if Byte value is zero.
+   * @param x value to check
+   * @return true if {@code x ==0} , false otherwise.
+   */
   public static boolean isZero(byte x) {
     return x == 0;
   }
-
+  /**
+   * Checks if a Double value is zero.
+   * @param x value to check
+   * @return true if x == 0.0, otherwise false.
+   */
   public static boolean isZero(double x) {
     return x == Double.valueOf(BeeConst.DOUBLE_ZERO);
   }
-
+  /**
+   * Checks if a Float value is zero.
+   * @param x value to check
+   * @return true if {@code x == 0.0}, otherwise false
+   */
   public static boolean isZero(float x) {
     return x == Float.valueOf(BeeConst.FLOAT_ZERO);
   }
-
+  /**
+   * Checks if an Integer value is zero.
+   * @param x value to check
+   * @return true if {@code x==0}, otherwise false.
+   */
   public static boolean isZero(int x) {
     return x == 0;
   }
-
+  /**
+   * Checks if a Long value is zero.
+   * @param x value to check
+   * @return true if {@code x == 0L}, otherwise false.
+   */
   public static boolean isZero(long x) {
     return x == 0L;
   }
 
+  /**
+   * Checks if an Object is zero.
+   * @param x value to check
+   * @return true if and Object is zero, otherwise false.
+   */
   public static boolean isZero(Object x) {
     if (x instanceof Number) {
       return ((Number) x).doubleValue() == Double.valueOf(BeeConst.DOUBLE_ZERO);
@@ -920,10 +1355,20 @@ public class BeeUtils {
     }
   }
 
+  /**
+   * Checks if a Short value is zero.
+   * @param x value to check
+   * @return true if x is zero, otherwise false.
+   */
   public static boolean isZero(short x) {
     return x == 0;
   }
 
+  /**
+   * Joins specified lists to a one list and returns it.
+   * @param src all lists to be joined
+   * @return a new list containing all elements from the {@code src} lists.
+   */
   public static <T> List<T> join(List<? extends T>... src) {
     int n = src.length;
     Assert.parameterCount(n, 2);
@@ -938,6 +1383,12 @@ public class BeeUtils {
     return dst;
   }
 
+  /**
+   * Cuts the string from the beginning to a specified index. 
+   * @param s string to cut
+   * @param n index to cut to
+   * @return a String with a cut part out of the String.
+   */
   public static String left(String s, int n) {
     if (s == null) {
       return null;
@@ -950,6 +1401,13 @@ public class BeeUtils {
     }
   }
 
+  /**
+   * Gets the length of an Object(CharSequence, Character, Collection, Map,
+   * HasLenght, Array).
+   * @param x the value to get length from
+   * @return the length of the supported Object. If an Object is not supported
+   *         it returns 0.
+   */
   public static int length(Object x) {
     int len;
 
@@ -973,6 +1431,15 @@ public class BeeUtils {
     return len;
   }
 
+  /**
+   * Gets the value between {@code min} and {@code max}.
+   * @param x a value to return in the specified limits
+   * @param min the minimum possible value
+   * @param max the maximum possible value
+   * @return x if the value is between {@code min} and {@code max},
+   * if the value is less than {@code min} it returns {@code min}, if greater
+   * than {@code max} it returns {@code max}.
+   */
   public static int limit(int x, int min, int max) {
     int z = Math.min(min, max);
     if (x < z) {
@@ -985,6 +1452,15 @@ public class BeeUtils {
     return x;
   }
 
+  /**
+   * Gets the value between {@code min} and {@code max}.
+   * @param x a value to return in the specified limits
+   * @param min the minimum possible value
+   * @param max the maximum possible value
+   * @return {@code x} if the value is between {@code min} and {@code max}, 
+   * is the value is less than {@code min} it returns {@code min}, if greater
+   * than {@code max} it returns {@code max}.
+   */
   public static double limit(double x, double min, double max) {
     if (!isDouble(x)) {
       if (isDouble(min)) {
@@ -1018,6 +1494,12 @@ public class BeeUtils {
     return x;
   }
 
+  /**
+   * Retuns a value from the list in the specified index.
+   * @param lst the list to return from
+   * @param idx the element which to return by index
+   * @return return an element in the specified position.
+   */
   public static <T> T listGetQuietly(List<? extends T> lst, int idx) {
     if (isIndex(lst, idx)) {
       return lst.get(idx);
@@ -1025,7 +1507,11 @@ public class BeeUtils {
       return null;
     }
   }
-
+/**
+ * Gets an Object with the greatest value.
+ * @param x the objects
+ * @return the greatest value of all of the Objects.
+ */
   public static <T extends Comparable<T>> T max(T... x) {
     int n = x.length;
     Assert.parameterCount(n, 2);
@@ -1038,7 +1524,11 @@ public class BeeUtils {
     }
     return z;
   }
-
+  /**
+   * Gets an Object with the smallest value.
+   * @param x the objects
+   * @return the smallest value of all of the Objects.
+   */
   public static <T extends Comparable<T>> T min(T... x) {
     int n = x.length;
     Assert.parameterCount(n, 2);
@@ -1051,14 +1541,24 @@ public class BeeUtils {
     }
     return z;
   }
-
+  /**
+   * Normalizes the String to lower case.
+   * @param s string to be normalized
+   * @return a normalized string
+   */
   public static String normalize(String s) {
     if (s == null) {
       return BeeConst.STRING_EMPTY;
     }
     return s.trim().toLowerCase();
   }
-
+  /**
+   * Returns an Object as a separator. If an Object is a number it's returned
+   * spaces quantity equal to the numeric value. String, Char and CharSequence
+   * type Objects are transformed to String values and returned.
+   * @param x the object to create a separator from
+   * @return a String separator
+   */
   public static String normSep(Object x) {
     String sep;
 
@@ -1075,7 +1575,15 @@ public class BeeUtils {
     }
     return sep;
   }
-
+/**
+* Returns an Object as a separator. If an Object is a number it's returned
+* spaces quantity equal to the numeric value. String, Char and CharSequence
+* type Objects are transformed to String values and returned. If an Object is none
+* of these types it return teh default Object {@code def} as a separator.
+* @param x the Object to create a separator from
+* @param def the default Object value 
+* @return a String separator
+*/
   public static String normSep(Object x, Object def) {
     String sep;
 
@@ -1088,6 +1596,13 @@ public class BeeUtils {
     return sep;
   }
 
+  /**
+   * Gets the first object which is not {@code null}. At least 2 Objects must 
+   * be specified.
+   * @param obj objects to check
+   * @return the first not null object in specified objects. Returns null if
+   * no such object is found.
+   */
   public static <T> T nvl(T... obj) {
     Assert.parameterCount(obj.length, 2);
     T z = null;
@@ -1101,6 +1616,15 @@ public class BeeUtils {
     return z;
   }
 
+  /**
+   * Pads left with a specified symbol {@code z}, for length of
+   * {@code n - s.length}. If the String is longer than {@code n}, it returns 
+   * the original String.
+   * @param s a String to pad left
+   * @param n specifies the length
+   * @param z character to use for padding
+   * @return returns a left padded String with a specified {@code z} character.
+   */
   public static String padLeft(String s, int n, char z) {
     if (s == null) {
       return null;
@@ -1112,7 +1636,11 @@ public class BeeUtils {
       return replicate(z, n - s.length()) + s;
     }
   }
-
+/**
+ * Transforms an Object to a String and parenthesizes it. 
+ * @param x object to parenthesize
+ * @return a parenthesized String from both sides.
+ */
   public static String parenthesize(Object x) {
     String s = transform(x);
 
@@ -1122,11 +1650,26 @@ public class BeeUtils {
       return BeeConst.STRING_LEFT_PARENTHESIS + s + BeeConst.STRING_RIGHT_PARENTHESIS;
     }
   }
-
+/**
+ * Shows how much of the progress is done, separated by the default progress
+ * separator. <p>E.g. the current position is 5 of a total 10. Method returns 
+ * "5/10".</p>
+ * @param pos current position
+ * @param tot total count of positions
+ * @return a String representation of the progress. 
+ */
   public static String progress(int pos, int tot) {
     return Integer.toString(pos) + BeeConst.DEFAULT_PROGRESS_SEPARATOR + Integer.toString(tot);
   }
-
+/**
+ * Separates the String {@code s} to an array with a specified separator.
+ * Capitalizes each array element's first letter and converts other to lower-case.
+ * <p> E.g the separator is {@code "."}: {@code "this.IS.a.string"} is formed
+ *  to {@code "This Is A String"}.
+ * @param s the String to form
+ * @param separators used for separating {@code s}
+ * @return a new formed String
+ */
   public static String proper(String s, Object separators) {
     if (isEmpty(s)) {
       return BeeConst.STRING_EMPTY;
@@ -1155,21 +1698,38 @@ public class BeeUtils {
     }
     return z.toString();
   }
-
+/**
+ * Generates a random Integer value in range of the specified {@code min} and
+ * {@code max} values.
+ * @param min the minimum value
+ * @param max the maximum value
+ * @return a generated Integer value
+ */
   public static int randomInt(int min, int max) {
     Assert.isTrue(max > min + 1);
 
     Double z = Math.floor(Math.random() * (max - min));
     return min + z.intValue();
   }
-
+/**
+ * Generates a random Long value in range of the specified {@code min} and
+ * {@code max} values.
+ * @param min the minimum value
+ * @param max the maximum value
+ * @return a generated value
+ */
   public static long randomLong(long min, long max) {
     Assert.isTrue(max > min + 1);
 
     Double z = Math.floor(Math.random() * (max - min));
     return min + z.longValue();
   }
-
+/**
+ * Generates a random String with a specified length from the given characters.
+ * @param len length to generate.
+ * @param characters characters to use for generating a new string
+ * @return a generated random String
+ */
   public static String randomString(int len, CharSequence characters) {
     Assert.isPositive(len);
     Assert.hasLength(characters);
@@ -1184,7 +1744,14 @@ public class BeeUtils {
     }
     return sb.toString();
   }
-
+/**
+ * Generates a random String with a specified length from the given characters.
+ * @param minLen the minimum length of the string
+ * @param maxLen the maximum length of the string
+ * @param minChar the minimum character to use for generation
+ * @param maxChar the maximum character to use for generation
+ * @return a generated random String
+ */
   public static String randomString(int minLen, int maxLen, char minChar, char maxChar) {
     int len;
     int x = (minLen > 0) ? minLen : 1;
@@ -1209,25 +1776,45 @@ public class BeeUtils {
     }
     return sb.toString();
   }
-
+  /**
+   * Removes the specified prefix from a String.
+   * @param str a value to remove the prefix from
+   * @param pfx prefix to remove
+   * @return a value with the prefix removed
+   */
   public static String removePrefix(String str, char pfx) {
     if (isPrefix(str, pfx)) {
       return removePrefix(str.substring(1), pfx);
     }
     return str;
   }
-
+/**
+ * Removes specified prefix and suffix from a String.
+ * @param str a value to remove the prefix and suffix from
+ * @param ch a prefix and suffix to remove
+ * @return a String value with prefix and suffix removed.
+ */
   public static String removePrefixAndSuffix(String str, char ch) {
     return removeSuffix(removePrefix(str, ch), ch);
   }
-
+  
+  /**
+   * Removes the specified suffix from a String.
+   * @param str a value to remove the prefix from
+   * @param sfx prefix to remove
+   * @return a value with the suffix removed
+   */
   public static String removeSuffix(String str, char sfx) {
     if (isSuffix(str, sfx)) {
       return removeSuffix(str.substring(0, str.length() - 1), sfx);
     }
     return str;
   }
-
+  /**
+   * Removes all trailing zeros.
+   * @param str a value to remove trailing zeros from
+   * @return a value with trailing zeros removed
+   */
   public static String removeTrailingZeros(String str) {
     if (str == null) {
       return null;
@@ -1256,7 +1843,13 @@ public class BeeUtils {
     }
     return str.substring(0, idx);
   }
-
+/**
+ * Removes a corresponding Map entry from the Map where value {@code V} equals 
+ * the Map's element value.
+ * @param map a Map to remove the Map entry from
+ * @param value the value to search from
+ * @return a Map with the value removed.
+ */
   public static <V> int removeValue(Map<?, V> map, V value) {
     int c = 0;
     if (length(map) <= 0) {
@@ -1271,11 +1864,25 @@ public class BeeUtils {
     }
     return c;
   }
-
+  /**
+   * Replaces the specified part of the {@code src} with a {@code c} value.
+   * @param src the source String to replace
+   * @param start the start position of the repalcement
+   * @param end the end position of the repalcement
+   * @param c a String to replace with
+   * @return a new String after the replacement.
+   */
   public static String replace(String src, int start, int end, char c) {
     return replace(src, start, end, String.valueOf(c));
   }
-
+/**
+ * Replaces the specified part of the {@code src} with a {@code str} value.
+ * @param src the source string to replace
+ * @param start the start possition of the repalcement
+ * @param end the end possition of the repalcement
+ * @param str a string to replace with
+ * @return a new String after the replacement.
+ */
   public static String replace(String src, int start, int end, String str) {
     Assert.isIndex(src, start);
     Assert.isIndex(src, end - 1);
@@ -1284,10 +1891,25 @@ public class BeeUtils {
     return new StringBuilder(src).replace(start, end, str).toString();
   }
 
+/**
+ * Replaces all occurances of {@code search} with {@code replacement}.
+ * @param text the source text
+ * @param search search phrase to replace
+ * @param replacement a replacement for the search phrase
+ * @return a String with replaced phrases.
+ */
   public static String replace(String text, String search, String replacement) {
     return replace(text, search, replacement, -1);
   }
 
+  /**
+   * Replaces the specified number of occurances of {@code search} with {@code replacement}.
+   * @param text the source text
+   * @param search search phrase to replace
+   * @param replacement a replacement for the search phrase
+   * @param max the number of occurances to replace
+   * @return a String with replaced phrases.
+   */
   public static String replace(String text, String search, String replacement, int max) {
     if (isEmpty(text) || isEmpty(search) || replacement == null || max == 0) {
       return text;
@@ -1313,7 +1935,12 @@ public class BeeUtils {
 
     return sb.toString();
   }
-
+/**
+ * Fills a String with value {@code z} for the length of {@code n}.
+ * @param z the value to fill with
+ * @param n lenght to fill
+ * @return a filled String
+ */
   public static String replicate(char z, int n) {
     Assert.isPositive(n);
 
@@ -1321,7 +1948,12 @@ public class BeeUtils {
     Arrays.fill(arr, z);
     return new String(arr);
   }
-
+/**
+ * Rounds {@code x} with a specified scale {@code dec}.
+ * @param x a value to round
+ * @param dec rounding scale
+ * @return a rounded value.
+ */
   public static double round(double x, int dec) {
     Assert.isScale(dec);
     if (Double.isInfinite(x) || Double.isNaN(x)) {
@@ -1352,7 +1984,13 @@ public class BeeUtils {
     }
     return BeeConst.DOUBLE_ZERO;
   }
-
+/**
+ * Checks if {@code s1} and {@code s2} are same. Note: values are trimmed,
+ * case is ignored.
+ * @param s1 value to check
+ * @param s2 value to check
+ * @return true if values are same, otherwise false.
+ */
   public static boolean same(String s1, String s2) {
     if (isEmpty(s1)) {
       return isEmpty(s2);
@@ -1362,7 +2000,11 @@ public class BeeUtils {
     }
     return s1.trim().equalsIgnoreCase(s2.trim());
   }
-
+/**
+ * Creates a String with defined length of spaces.
+ * @param l spaces count
+ * @return a created String.
+ */
   public static String space(int l) {
     if (l == 1) {
       return BeeConst.STRING_SPACE;
@@ -1372,7 +2014,12 @@ public class BeeUtils {
       return replicate(BeeConst.CHAR_SPACE, l);
     }
   }
-
+/**
+ * Splits {@code str} with a specified separator {@code separator}.
+ * @param str a string to split
+ * @param separators a separator used for splitting
+ * @return a String array splitted using the separator.
+ */
   public static String[] split(String str, Object separators) {
     if (str == null) {
       return null;
@@ -1421,7 +2068,13 @@ public class BeeUtils {
     }
     return lst.toArray(new String[lst.size()]);
   }
-
+/**
+ * Checks if {@code s1} and {@code s2} starts the same. The shorter String is 
+ * compared with the start of the longer String.
+ * @param s1 the first String for comparing
+ * @param s2 the second String for comparing
+ * @return true if {@code s1} and {@code s2} stats the same, otherwise false.
+ */
   public static boolean startsSame(String s1, String s2) {
     if (isEmpty(s1) || isEmpty(s2)) {
       return false;
@@ -1434,18 +2087,31 @@ public class BeeUtils {
       return false;
     }
   }
-
+/**
+ * Checks if {@code x} is a Boolean value.
+ * @param x value to check
+ * @return true if the value is Boolean, otherwise false.
+ */
   public static boolean toBoolean(int x) {
     return x == BeeConst.INT_TRUE;
   }
-
+/**
+ * Checks if {@code s} is a Boolean value.
+ * @param s value to check
+ * @return true if the value is Boolean, otherwise false.
+ */
   public static boolean toBoolean(String s) {
     if (isEmpty(s)) {
       return false;
     }
     return BeeConst.isTrue(s.trim().charAt(0));
   }
-
+/**
+ * Converts a String value {@code s} to Double.
+ * @param s a string to convert
+ * @return a corresponding double value
+ * @throws NumberFormatException ex
+ */
   public static double toDouble(String s) {
     if (isEmpty(s)) {
       return BeeConst.DOUBLE_ZERO;
@@ -1459,7 +2125,12 @@ public class BeeUtils {
     }
     return d;
   }
-
+/**
+ * Converts a String value {@code s} to Float.
+ * @param s a string to convert
+ * @return a corresponding Float value
+ * @throws NumberFormatException ex
+ */
   public static float toFloat(String s) {
     if (isEmpty(s)) {
       return BeeConst.FLOAT_ZERO;
@@ -1473,11 +2144,20 @@ public class BeeUtils {
     }
     return i;
   }
-
+/**
+ * Converts {@code b} to Integer.
+ * @param b value to convert
+ * @return 1 if b is true, otherwise 0.
+ */
   public static int toInt(boolean b) {
     return b ? BeeConst.INT_TRUE : BeeConst.INT_FALSE;
   }
-
+/**
+ * Converts a String value {@code s} to Integer.
+ * @param s value to convert
+ * @return a corresponding Integer value
+ * @throws NumberFormatException ex
+ */
   public static int toInt(String s) {
     if (isEmpty(s)) {
       return 0;
@@ -1491,7 +2171,13 @@ public class BeeUtils {
     }
     return i;
   }
-
+/**
+ * Adds leading zeros to {@code x}. Converts {@code x} to a String and if it's
+ * length is less than {@code n} adds them.
+ * @param x a value to add leading zeros to
+ * @param n length to add zeros
+ * @return a String representation of {@code x} with leading zeros.
+ */
   public static String toLeadingZeroes(int x, int n) {
     if (x >= 0 && n > 0) {
       return padLeft(((Integer) x).toString(), n, BeeConst.CHAR_ZERO);
@@ -1499,7 +2185,12 @@ public class BeeUtils {
       return ((Integer) x).toString();
     }
   }
-
+/**
+ * Converts a String value {@code s} to Long.
+ * @param s value to convert
+ * @return a corresponding Long value
+ * @throws NumberFormatException ex
+ */
   public static long toLong(String s) {
     if (isEmpty(s)) {
       return 0L;
@@ -1513,28 +2204,55 @@ public class BeeUtils {
     }
     return x;
   }
-
+/**
+ * Convers milliseconds {@code millis} to seconds. E.g 6010 is converted to
+ * 6.010.
+ * @param millis value to convert
+ * @return seconds.
+ */
   public static String toSeconds(long millis) {
     return Long.toString(millis / 1000) + BeeConst.STRING_POINT
         + toLeadingZeroes((int) (millis % 1000), 3);
   }
-
+/**
+ * Converts a Boolean value {@code b} to a String value. 
+ * @param b value to convert
+ * @return a String representation of {@code b}
+ */
   public static String toString(boolean b) {
     return b ? BeeConst.STRING_TRUE : BeeConst.STRING_FALSE;
   }
-
+/**
+ * Converts a Double value {@code x} to a String value.
+ * @param x value to convert
+ * @return a String representation of {@code x}
+ */
   public static String toString(double x) {
     return Double.toString(x);
   }
-
+/**
+ * Converts an Integer value {@code x} to a String value.
+ * @param x value to convert
+ * @return String representation of {@code x}
+ */
   public static String toString(int x) {
     return Integer.toString(x);
   }
-
+/**
+ * Converts an Long value {@code x} to a String value.
+ * @param x value to convert
+ * @return String representation of {@code x}
+ */
   public static String toString(long x) {
     return Long.toString(x);
   }
-
+/**
+ * Transforms an Object {@code x} to a String representation. In general, this 
+ * method returns a string that "textually represents" this object. String type
+ * Objects are trimmed.
+ * @param x value to transform.
+ * @return a string that "textually represents" this object.
+ */
   public static String transform(Object x) {
     String s;
 
@@ -1549,7 +2267,14 @@ public class BeeUtils {
     }
     return s;
   }
-
+/**
+ * Transforms an Object {@code x} to a String representation using the specified
+ * separator {@code sep}. Each level of recursion use the next separator.
+ * @param x an Object to transform.
+ * @param sep separators for transforming Collections,Maps,Arrays and Enumerations.
+ * Uses a default separator if none are specified.
+ * @return a String representation of the Object {@code x}.
+ */
   public static String transform(Object x, Object... sep) {
     if (x instanceof Collection) {
       return transformCollection((Collection<?>) x, sep);
@@ -1563,7 +2288,12 @@ public class BeeUtils {
       return transform(x);
     }
   }
-
+/**
+ * Transforms an Object {@code obj} to a String representation. In general, this 
+ * method returns a string that "textually represents" a class(class name).
+ * @param obj value to transform
+ * @return Object's class name
+ */
   public static String transformClass(Object obj) {
     if (obj == null) {
       return BeeConst.NULL;
@@ -1571,7 +2301,14 @@ public class BeeUtils {
       return obj.getClass().getName();
     }
   }
-
+/**
+ * Transforms a Colection {@code col} to a String representation using the specified
+ * separators {@code sep}. Each level of recursion use the next separator.
+ * @param col a Collection to transform.
+ * @param sep separators used to transform. Uses a default separator if none 
+ * are specified.
+ * @return a String representation of the Collection {@code col}.
+ */
   public static String transformCollection(Collection<?> col, Object... sep) {
     if (isEmpty(col)) {
       return BeeConst.STRING_EMPTY;
@@ -1602,7 +2339,14 @@ public class BeeUtils {
     }
     return sb.toString();
   }
-
+/**
+ * Transforms an Enumeration {@code src} to a String representation using the specified
+ * separators {@code sep}. Each level of recursion use the next separator.
+ * @param src an Enumeration to transform.
+ * @param sep separators used to transform. Uses a default separator if none 
+ * are specified.
+ * @return String representation of the Enumeration {@code src}.
+ */
   public static String transformEnumeration(Enumeration<?> src, Object... sep) {
     if (isEmpty(src)) {
       return BeeConst.STRING_EMPTY;
@@ -1632,7 +2376,14 @@ public class BeeUtils {
     }
     return sb.toString();
   }
-
+/**
+ * Transforms a Map {@code map} to a String representation using the specified
+ * separators {@code sep}. Each level of recursion use the next separator.
+ * @param map a Map to transform.
+ * @param sep separators used to transform. Uses a default separator if none 
+ * are specified.
+ * @return String representation of the Map {@code map}.
+ */
   public static String transformMap(Map<?, ?> map, Object... sep) {
     if (isEmpty(map)) {
       return BeeConst.STRING_EMPTY;
@@ -1665,7 +2416,13 @@ public class BeeUtils {
     }
     return sb.toString();
   }
-
+/**
+ * Transforms an Object {@code x} to a String representation. In general, this 
+ * method returns a string that "textually represents" this object. String type
+ * Objects are <b>not trimmed</b>.
+ * @param x a value to transform
+ * @return 
+ */
   public static String transformNoTrim(Object x) {
     if (x instanceof String) {
       return (String) x;
@@ -1673,7 +2430,14 @@ public class BeeUtils {
       return transform(x);
     }
   }
-
+/**
+ * Transforms Objects {@code opt} to a String representation. {@code opt} are 
+ * coupled of two. A default separator is used. 
+ * <p>E.g  {@code transformOption("name", "John", "name2", "Dan") results in
+ * "name=John;name2=Dan"}. </p>
+ * @param opt Objects to transform
+ * @return a String representation of Objects {@code opt}.
+ */
   public static String transformOptions(Object... opt) {
     int c = opt.length;
     if (c < 2) {
@@ -1696,7 +2460,11 @@ public class BeeUtils {
     }
     return sb.toString();
   }
-
+/**
+ * Searches for an Integer value from a String {@code s}
+ * @param s the String to search value from
+ * @return an Integer value if found, oterwise 0;
+ */
   public static int val(String s) {
     if (s == null) {
       return 0;
@@ -1731,7 +2499,11 @@ public class BeeUtils {
 
     return toInt(s.substring(start, end));
   }
-
+/**
+ * Returns a zero value of a specified Object {@code x}.
+ * @param x a value to return zero
+ * @return a zero value of a specified Object {@code x}.
+ */
   @SuppressWarnings("unchecked")
   public static <T> T zero(T x) {
     if (x == null) {
@@ -1756,7 +2528,7 @@ public class BeeUtils {
       return (T) Integer.valueOf(0);
     }
   }
-
+  
   private BeeUtils() {
   }
 }
