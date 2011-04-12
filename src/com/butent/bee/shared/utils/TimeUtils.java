@@ -60,7 +60,12 @@ public class TimeUtils {
   private static final Splitter FIELD_SPLITTER =
       Splitter.on(CharMatcher.inRange(BeeConst.CHAR_ZERO, BeeConst.CHAR_NINE).negate())
           .omitEmptyStrings().trimResults();
-
+/**
+ * Adds an amount of field type data to the date.
+ * @param date the initial date to add to
+ * @param field the field type to add
+ * @param amount the amount to add
+ */
   public static void add(DateTime date, int field, int amount) {
     Assert.notNull(date);
     if (amount == 0) {
@@ -68,11 +73,22 @@ public class TimeUtils {
     }
     date.setTime(date.getTime() + getDelta(date, field, amount));
   }
-
+/**
+ * Gets the difference between {@code start} and {@code end}.
+ * @param start the start time
+ * @param end the end time
+ * @return the difference between {@code start} and {@code end} in days.
+ */
   public static int dateDiff(DateTime start, DateTime end) {
     return fieldDifference(start, end, DATE);
   }
-
+/**
+ * Gets the specified field's difference between {@code start} and {@code end}.
+ * @param start the start time
+ * @param end the end time
+ * @param field the used field. E.g 1(years),2(months),5(days) etc.
+ * @return difference between {@code start} and {@code end}.
+ */
   public static int fieldDifference(DateTime start, DateTime end, int field) {
     Assert.notNull(start);
     Assert.notNull(end);
@@ -116,11 +132,18 @@ public class TimeUtils {
 
     return min;
   }
-
+/**
+ * Checks if {@code x} is and instance of JustDate,DateTeim or Date.
+ * @param x the Object to check
+ * @return true if {@code x} is an instance of any of these types, false otherwise.
+ */
   public static boolean isDateOrDateTime(Object x) {
     return x instanceof JustDate || x instanceof DateTime || x instanceof Date;
   }
-
+/**
+ * @param millis the value to convert
+ * @return the String representation of milliseconds.
+ */
   public static String millisToString(int millis) {
     if (millis >= 0 && millis < 1000) {
       return Integer.toString(millis + 1000).substring(1);
@@ -128,7 +151,12 @@ public class TimeUtils {
       return Integer.toString(millis);
     }
   }
-
+/**
+ * Left pads and integer {@code number} by adding "0" to size of two.
+ * @param number the value to pad
+ * @return a String representation of the padded value {@code number} if 
+ * {@code number >=0 and number < 10}, otherwise a non-padded value String.
+ */
   public static String padTwo(int number) {
     if (number >= 0 && number < 10) {
       return BeeConst.STRING_ZERO + number;
@@ -136,7 +164,11 @@ public class TimeUtils {
       return String.valueOf(number);
     }
   }
-
+/**
+ * Parses a CharSequence {@code cs} to an array. Used for constructing Date etc.
+ * @param cs the CharSequence to parse
+ * @return an Integer array with the parsed fields.
+ */
   public static int[] parseFields(CharSequence cs) {
     if (BeeUtils.isEmpty(cs)) {
       return null;
@@ -155,19 +187,33 @@ public class TimeUtils {
     }
     return arr;
   }
-
+/**
+ * Generates a random JustDate between {@code min} and {@code max}.
+ * @param min the minimum JustDate
+ * @param max the maximum JustDate
+ * @return a JustDate between specified {@code min} and {@code max}.
+ */
   public static JustDate randomDate(JustDate min, JustDate max) {
     Assert.notNull(min);
     Assert.notNull(max);
     return new JustDate(BeeUtils.randomInt(min.getDay(), max.getDay()));
   }
-
+/**
+ * Generates a random DateTime between {@code min} and {@code max}.
+ * @param min the minimum DateTime
+ * @param max the maximum DateTime
+ * @return a DateTime between specified {@code min} and {@code max}.
+ */
   public static DateTime randomDateTime(DateTime min, DateTime max) {
     Assert.notNull(min);
     Assert.notNull(max);
     return new DateTime(BeeUtils.randomLong(min.getTime(), max.getTime()));
   }
-
+/**
+ * Converts {@code x} to a JustDate format.
+ * @param x the Object to convert
+ * @return a JustDate type date.
+ */
   public static JustDate toDate(Object x) {
     if (x instanceof JustDate) {
       return (JustDate) x;
@@ -182,7 +228,11 @@ public class TimeUtils {
     assertDateOrDateTime(x);
     return null;
   }
-
+/**
+ * Converts {@code x} to a DateTime format.
+ * @param x the Object to convert
+ * @return a DateTime type date.
+ */
   public static DateTime toDateTime(Object x) {
     if (x instanceof DateTime) {
       return (DateTime) x;
@@ -197,7 +247,11 @@ public class TimeUtils {
     assertDateOrDateTime(x);
     return null;
   }
-
+/**
+ * Converts {@code x} to a Date format.
+ * @param x the Object to convert
+ * @return a Date type date.
+ */
   public static Date toJava(Object x) {
     if (x instanceof Date) {
       return (Date) x;
@@ -212,7 +266,10 @@ public class TimeUtils {
     assertDateOrDateTime(x);
     return null;
   }
-
+/**
+ * @param year the number to transform
+ * @return a textual representation of {@code year}.
+ */
   public static String yearToString(int year) {
     return Integer.toString(year);
   }

@@ -43,35 +43,51 @@ public class Wildcards {
         this.exact = false;
       }
     }
-
+/**
+ * @return the current String expression.
+ */
     public String getExpr() {
       return expr;
     }
-
+/** 
+ * @return current tokens in a String array.
+ */
     public String[] getTokens() {
       return tokens;
     }
-
+/**
+ * @return the current ANY wildcard.
+ */
     public char getWildcardAny() {
       return wildcardAny;
     }
-
+/**
+ * @return the current ONE wildcard.
+ */
     public char getWildcardOne() {
       return wildcardOne;
     }
-
+/**
+ * @return true if an expression has atleast one of the wildcards, otherwise false. 
+ */
     public boolean hasWildcards() {
       return containsWildcards;
     }
-
+/**
+ * @return true if Exact mode is on, otherwise false.
+ */
     public boolean isExact() {
       return exact;
     }
-
+/**
+ * @return true if Sensitive mode is on, otherwise false.
+ */
     public boolean isSensitive() {
       return sensitive;
     }
-
+/**
+ * @return a String expression with Sensitive and/or Exact modes included, if on.
+ */
     @Override
     public String toString() {
       return BeeUtils.concat(1, expr, sensitive ? "(sensitive)" : "", exact ? "(exact)" : "");
@@ -161,112 +177,201 @@ public class Wildcards {
   private static char defaultAny = FS_ANY;
   private static char defaultOne = FS_ONE;
   private static boolean defaultCaseSensitivity = false;
-
+/**
+ * @return the default ANY wildcard.
+ */
   public static char getDefaultAny() {
     return defaultAny;
   }
-
+/**
+ * @return teh default ONE wildcard.
+ */
   public static char getDefaultOne() {
     return defaultOne;
   }
-
+/**
+ * @param expr the expression for a pattern
+ * @return a default Pattern with the specified expression.
+ */
   public static Pattern getDefaultPattern(String expr) {
     return new DefaultPattern(expr);
   }
-
+/**
+ * @param expr the expression for a pattern
+ * @param sens specifies if Sensitive mode is set
+ * @return a default Pattern with the specified expression and Sensitive mode.
+ */
   public static Pattern getDefaultPattern(String expr, boolean sens) {
     return new DefaultPattern(expr, sens);
   }
-
+/**
+ * @return the current FS ANY wildcard.
+ */
   public static char getFsAny() {
     return FS_ANY;
   }
-
+/**
+ * @return the current FS ONE wildcard.
+ */
   public static char getFsOne() {
     return FS_ONE;
   }
-
+/**
+ * @param expr an expression used in a FsPattern
+ * @return a new FsPattern with the specified expression {@code expr}
+ */
   public static Pattern getFsPattern(String expr) {
     return new FsPattern(expr);
   }
-
+/**
+ * 
+ * @param expr the expression for a pattern
+ * @param sens specifies if Sensitive mode is set
+ * @return a FsPattern with the specified expression and Sensitive mode.
+ */
   public static Pattern getFsPattern(String expr, boolean sens) {
     return new FsPattern(expr, sens);
   }
-
+/**
+ * @param expr the expression for a pattern
+ * @param any the ANY wildcard
+ * @param one the ONE wildcard
+ * @param sens specifies if Sensitive mode is set
+ * @return a Pattern with the specified expression, ONE wilcdard, ANY wildcard
+ * and Sensitive mode.
+ */
   public static Pattern getPattern(String expr, char any, char one, boolean sens) {
     return new Pattern(expr, any, one, sens);
   }
-
+/**
+ * @return the current SQL ANY wildcard.
+ */
   public static char getSqlAny() {
     return SQL_ANY;
   }
-
+/**
+ * @return the current SQL ONE wildcard.
+ */
   public static char getSqlOne() {
     return SQL_ONE;
   }
-
+/**
+ * @param expr an expression used in a the new SqlPattern
+ * @return a new SqlPattern with the specified expression {@code expr}
+ */
   public static Pattern getSqlPattern(String expr) {
     return new SqlPattern(expr);
   }
-
+/**
+ * @param expr the expression for a pattern
+ * @param sens specifies if Sensitive mode is set
+ * @return a SqlPattern with the specified expression and Sensitive mode.
+ */
   public static Pattern getSqlPattern(String expr, boolean sens) {
     return new SqlPattern(expr, sens);
   }
-
+/**
+ * Checks if an expression {@code expr} has any of default wildcards.
+ * @param expr the expression to check
+ * @return true if at least one of the wildcards are found, otherwise false
+ */
   public static boolean hasDefaultWildcards(String expr) {
     if (expr == null) {
       return false;
     }
     return expr.indexOf(defaultAny) >= 0 || expr.indexOf(defaultOne) >= 0;
   }
-
+/**
+ * Checks if an expression {@code expr} has any FS wildcards.
+ * @param expr the expression to check
+ * @return true if at least one of the wildcards are found, otherwise false
+ */
   public static boolean hasFsWildcards(String expr) {
     if (expr == null) {
       return false;
     }
     return expr.indexOf(FS_ANY) >= 0 || expr.indexOf(FS_ONE) >= 0;
   }
-
+/**
+ * Checks if an expression {@code expr} has any Sql wildcards.
+ * @param expr the expression to check
+ * @return true if at least one of the wildcards are found, otherwise false
+ */
   public static boolean hasSqlWildcards(String expr) {
     if (expr == null) {
       return false;
     }
     return expr.indexOf(SQL_ANY) >= 0 || expr.indexOf(SQL_ONE) >= 0;
   }
-
+/**
+ * Checks if an expression {@code expr} contains only of the default ANY wildcards.
+ * @param expr the expression to check
+ * @return true if the expression contain only of default ANY wildcards, otherwise false
+ */
   public static boolean isDefaultAny(String expr) {
     return BeeUtils.containsOnly(expr, defaultAny);
   }
-
+/**
+ * @return the defaultCaseSensitivity.
+ */
   public static boolean isDefaultCaseSensitive() {
     return defaultCaseSensitivity;
   }
-
+/**
+ * Checks if {@code expr} is a default Pattern.
+ * @param expr the expression to check
+ * @return true if it's a default Pattern, otherwise false.
+ */
   public static boolean isDefaultPattern(String expr) {
     return !BeeUtils.isEmpty(expr) && !isDefaultAny(expr);
   }
-
+  /**
+   * Checks if an expression {@code expr} contains only of the FS ANY wildcards.
+   * @param expr the expression to check
+   * @return true if the expression contain only of FS Any wildcards, otherwise false
+   */
   public static boolean isFsAny(String expr) {
     return BeeUtils.containsOnly(expr, FS_ANY);
   }
-
+/**
+ * @return the FsCaseSensitivity.
+ */
   public static boolean isFsCaseSensitive() {
     return fsCaseSensitivity;
   }
-
+/**
+ * @param input the input to check
+ * @param expr the expression for a FsPattern
+ * @return true if the {@code input} matches the Pattern with an expression 
+ * {@code expr}, false otherwise.
+ */
   public static boolean isFsLike(String input, String expr) {
     return isLike(input, new FsPattern(expr));
   }
-
+/**
+ * @param input the input to check
+ * @param expr  the expression for a FsPattern
+ * @param sensitive the Sensitive mode
+ * @return true if the {@code input} matches the Pattern with an expression 
+ * {@code expr} using the specified Sensitive mode, false otherwise.
+ */
   public static boolean isFsLike(String input, String expr, boolean sensitive) {
     return isLike(input, new FsPattern(expr, sensitive));
   }
-
+/**
+ * Checks if {@code expr} is a FS Pattern.
+ * @param expr the expression to check
+ * @return true if it's a FS Pattern, otherwise false.
+ */
   public static boolean isFsPattern(String expr) {
     return !BeeUtils.isEmpty(expr) && !isFsAny(expr);
   }
-
+/**
+ * Checks if an input {@code input} matches the specified Pattern.
+ * @param input the input String
+ * @param pattern the Pattern to use for checking
+ * @return true if {@code input} matches the specified Pattern, otherwise false.
+ */
   public static boolean isLike(String input, Pattern pattern) {
     Assert.notNull(pattern);
     if (BeeUtils.isEmpty(input)) {
@@ -346,51 +451,100 @@ public class Wildcards {
 
     return false;
   }
-
+/**
+ * @param input the input to check
+ * @param expr the expression for a default Pattern
+ * @return true if the {@code input} matches the default Pattern with an
+ * expression {@code expr}, false otherwise.
+ */
   public static boolean isLike(String input, String expr) {
     return isLike(input, new DefaultPattern(expr));
   }
-
+/**
+ * @param input the input to check
+ * @param expr  the expression for a default Pattern
+ * @param sensitive the Sensitive mode
+ * @return true if the {@code input} matches the default Pattern with an
+ * expression {@code expr} using the specified Sensitive mode, false otherwise.
+ */
   public static boolean isLike(String input, String expr, boolean sensitive) {
     return isLike(input, new DefaultPattern(expr, sensitive));
   }
-
+  /**
+   * Checks if an expression {@code expr} contains only of the SQL ANY wildcards.
+   * @param expr the expression to check
+   * @return true if the expression contain only of SQL ANY wildcards, otherwise
+   * false.
+   */
   public static boolean isSqlAny(String expr) {
     return BeeUtils.containsOnly(expr, SQL_ANY);
   }
-
+/**
+ * @return the sqlCaseSensitivity
+ */
   public static boolean isSqlCaseSensitive() {
     return sqlCaseSensitivity;
   }
-
+/** 
+ * @param input the input to check
+ * @param expr the expression for an SQLPattern
+ * @return true if the {@code input} matches the SQLPattern with an
+ * expression {@code expr}, false otherwise.
+ */
   public static boolean isSqlLike(String input, String expr) {
     return isLike(input, new SqlPattern(expr));
   }
-
+/**
+ * 
+ * @param input the input to check
+ * @param expr the expression for an SQL Pattern
+ * @param sensitive the Sensitive mode
+ * @return true if the {@code input} matches the SQLPattern with an
+ * expression {@code expr} using the specified Sensitive mode, false otherwise.
+ */
   public static boolean isSqlLike(String input, String expr, boolean sensitive) {
     return isLike(input, new SqlPattern(expr, sensitive));
   }
-
+/**
+ * Checks if {@code expr} is an Sql Pattern.
+ * @param expr the expression to check
+ * @return true if it's an Sql Pattern, otherwise false.
+ */
   public static boolean isSqlPattern(String expr) {
     return !BeeUtils.isEmpty(expr) && !isSqlAny(expr);
   }
-
+/**
+ * Sets the default ANY wildcard to the specified {@code defaultAny}.
+ * @param defaultAny the value to set ANY wildcard to
+ */
   public static void setDefaultAny(char defaultAny) {
     Wildcards.defaultAny = defaultAny;
   }
-
+/**
+ * Sets the default case sensitivity to the specified {@code defaultCastSensitivity}.
+ * @param defaultCaseSensitivity the value to set default sensitivity to
+ */
   public static void setDefaultCaseSensitivity(boolean defaultCaseSensitivity) {
     Wildcards.defaultCaseSensitivity = defaultCaseSensitivity;
   }
-
+/**
+ * Sets the default ONE wildcard to the specified {@code defaultOne}.
+ * @param defaultOne the value to set ONE wildcard to
+ */
   public static void setDefaultOne(char defaultOne) {
     Wildcards.defaultOne = defaultOne;
   }
-
+/**
+ * Sets the FS case sensitivity to the specified {@code fsCaseSensitivity}.
+ * @param fsCaseSensitivity the value to set fsCaseSensitivity to
+ */
   public static void setFsCaseSensitivity(boolean fsCaseSensitivity) {
     Wildcards.fsCaseSensitivity = fsCaseSensitivity;
   }
-
+/**
+ * Sets the SQL case sensitivity to the specified {@code sqlCaseSensitivity}.
+ * @param sqlCaseSensitivity the value to set sqlCaseSensitivity to
+ */
   public static void setSqlCaseSensitivity(boolean sqlCaseSensitivity) {
     Wildcards.sqlCaseSensitivity = sqlCaseSensitivity;
   }

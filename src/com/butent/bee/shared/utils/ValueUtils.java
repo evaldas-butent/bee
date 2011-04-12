@@ -6,6 +6,10 @@ import com.butent.bee.shared.HasIntValue;
 import com.butent.bee.shared.HasLongValue;
 
 public class ValueUtils {
+	/**
+	 * @param obj the value to get from
+	 * @return a double value represented by the argument {@code obj}
+	 */
   public static double getDouble(Object obj) {
     if (obj == null) {
       return BeeConst.DOUBLE_ZERO;
@@ -35,7 +39,10 @@ public class ValueUtils {
     }
     return BeeConst.DOUBLE_ZERO;
   }
-  
+  /**
+   * @param obj the value to get from
+   * @return an integer value represented by the argument {@code obj}
+   */
   public static int getInt(Object obj) {
     if (obj == null) {
       return 0;
@@ -59,7 +66,10 @@ public class ValueUtils {
     }
     return 0;
   }
-
+/**
+ * @param obj the value to get from
+ * @return a long value represented by the argument {@code obj}
+ */
   public static long getLong(Object obj) {
     if (obj == null) {
       return 0;
@@ -86,7 +96,12 @@ public class ValueUtils {
     }
     return 0;
   }
-
+/**
+ * Sets the double value {@code value} to {@code obj}.
+ * @param obj an Object to set value to
+ * @param value the value to set
+ * @return an Object with a set value {@code value}
+ */
   public static Object setDouble(Object obj, double value) {
     if (obj == null) {
       return obj;
@@ -119,7 +134,12 @@ public class ValueUtils {
     }
     return obj;
   }
-
+  /**
+   * Sets the integer value {@code value} to {@code obj}.
+   * @param obj an Object to set value to
+   * @param value the value to set
+   * @return an Object with a set value {@code value}
+   */
   public static Object setInt(Object obj, int value) {
     if (obj == null) {
       return obj;
@@ -144,7 +164,12 @@ public class ValueUtils {
     }
     return obj;
   }
-
+  /**
+   * Sets the long value {@code value} to {@code obj}.
+   * @param obj an Object to set value to
+   * @param value the value to set
+   * @return an Object with a set value {@code value}
+   */
   public static Object setLong(Object obj, long value) {
     if (obj == null) {
       return obj;
