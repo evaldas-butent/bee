@@ -125,7 +125,12 @@ public class Codec {
       base64Values[base64Chars[i]] = (byte) i;
     }
   }
-
+/**
+ * Encodes a Byte array with an Adler32 checksum algorithm (<b>{@code arr} 
+ * must be a double byte array </b>).
+ * @param arr the value to encode
+ * @return an encoded String
+ */
   public static String adler32(byte[] arr) {
     Assert.hasLength(arr);
     int s1 = 1;
@@ -139,11 +144,19 @@ public class Codec {
     int value = (s2 << 16) | s1;
     return Integer.toHexString(value);
   }
-
+/**
+ * Encodes {@code input} with an Adler32 checksum algorithm.
+ * @param input the String to encode
+ * @return an encoded String
+ */
   public static String adler32(String input) {
     return adler32(toBytes(input));
   }
-
+/**
+ * Deserializes the String {@code ser} 
+ * @param ser a value to deserialize
+ * @return a deserialized String array.
+ */
   public static String[] beeDeserialize(String ser) {
     Assert.notNull(ser);
 
@@ -167,9 +180,18 @@ public class Codec {
       }
       res.add(ser.substring(pos, pos += l));
     }
-    return res.toArray(new String[res.size()]);
+    return res.toArray(new String[0]);
   }
-
+/**
+ * Serializes an Object {@code obj}. The method wraps the Object,
+ * if the object is an array, the array itself is wrapped too. This method also
+ * serializes the length of each object.
+ * <p> E.g we are serializing: {@code arr[] = {"hello", "ab", "abc"} , the 
+ * output is {@code 15hello12ab13abc}
+ * 
+ * @param obj an Object to serialize
+ * @return a String represenration of the serialized Object for deserialization.
+ */
   public static String beeSerialize(Object obj) {
     StringBuilder sb = new StringBuilder();
 
@@ -201,7 +223,13 @@ public class Codec {
     }
     return sb.toString();
   }
-
+/**
+ * Serializes all Objects {@code obj}. The method wraps each element in the object,
+ * if the object is an array, the array itself is wrapped too.
+ * @see #beeSerialize(Object)
+ * @param obj Objects to serialize
+ * @return
+ */
   public static String beeSerializeAll(Object... obj) {
     Assert.parameterCount(obj.length, 1);
     StringBuilder sb = new StringBuilder();
@@ -221,7 +249,12 @@ public class Codec {
     }
     return sb.toString();
   }
-
+/**
+ * Encodes a Byte array with an Crc16 algorithm using a CRC-16 table (<b>{@code arr} 
+ * must be a double byte array </b>)
+ * @param arr the array to encode
+ * @return an encoded String
+ */
   public static String crc16(byte[] arr) {
     Assert.hasLength(arr);
     int crc = 0;
@@ -231,11 +264,20 @@ public class Codec {
     }
     return Integer.toHexString(crc);
   }
-
+/**
+ * Encodes {@code input} with a Crc16 algorithm using a CRC-16 table.
+ * @param input the String to encode
+ * @return an encoded String
+ */
   public static String crc16(String input) {
     return crc16(toBytes(input));
   }
-
+  /**
+   * Encodes a Byte array with an Crc32 algorithm using CRC-32 table (<b>{@code arr} 
+   * must be a double byte array </b>)
+   * @param arr the array to encode
+   * @return an encoded String
+   */
   public static String crc32(byte[] arr) {
     Assert.hasLength(arr);
     int crc = 0xffffffff;
@@ -246,11 +288,20 @@ public class Codec {
     crc = crc ^ 0xffffffff;
     return Integer.toHexString(crc);
   }
-
+  /**
+   * Encodes {@code input} with a Crc32 algorithm using CRC-32 table.
+   * @param input the String to encode
+   * @return an encoded String
+   */
   public static String crc32(String input) {
     return crc32(toBytes(input));
   }
-
+  /**
+   * Encodes a Byte array with an Crc32 algorithm (<b>{@code arr} 
+   * must be a double byte array </b>)
+   * @param arr the array to encode
+   * @return an encoded String
+   */
   public static String crc32Direct(byte[] arr) {
     Assert.hasLength(arr);
     int crc = 0xffffffff;
@@ -271,11 +322,19 @@ public class Codec {
     crc = crc ^ 0xffffffff;
     return Integer.toHexString(crc);
   }
-
+  /**
+   * Encodes {@code input} using Crc32 algorithm.
+   * @param input the String to encode
+   * @return an encoded String
+   */
   public static String crc32Direct(String input) {
     return crc32Direct(toBytes(input));
   }
-
+/**
+ * Decodes {@code s} using Base64 algorithm.
+ * @param s a String to decode
+ * @return a decoded String.
+ */
   public static String decodeBase64(String s) {
     Assert.notNull(s);
     int len = s.length();
@@ -293,7 +352,12 @@ public class Codec {
     }
     return sb.toString();
   }
-
+/**
+ * Deserializes the length of the String {@code src} starting at {@code start}
+ * @param src the String's length to deserialize
+ * @param start the starting position
+ * @return a deserialized pair
+ */
   public static Pair<Integer, Integer> deserializeLength(String src, int start) {
     Assert.notNull(src);
     Assert.nonNegative(start);
@@ -313,7 +377,11 @@ public class Codec {
     }
     return new Pair<Integer, Integer>(x, z + 1);
   }
-
+/**
+ * Deserializes String values {@code ser} using a default serialization separator.
+ * @param ser values to deserialize
+ * @return deserialized values in a String array
+ */
   public static String[] deserializeValues(String ser) {
     Assert.notEmpty(ser);
 
@@ -345,12 +413,17 @@ public class Codec {
     }
     return arr;
   }
+/**
+ * Encodes {@code s} using Base64 algorithm.
+ * @param s a String to encode
+ * @return encoded String.
+ */
 
   public static String encodeBase64(String s) {
     Assert.notNull(s);
     int len = s.length();
     Assert.isPositive(len);
-
+    
     if (base64chunk <= 0 || len <= base64chunk * 3) {
       return toBase64(toBytes(s));
     }
@@ -363,7 +436,11 @@ public class Codec {
     }
     return sb.toString();
   }
-
+/**
+ * Escapes HTML symbols.
+ * @param src value to escape HTML symbols
+ * @return a safe String.
+ */
   public static String escapeHtml(String src) {
     if (BeeUtils.length(src) <= 0) {
       return BeeConst.STRING_EMPTY;
@@ -371,7 +448,11 @@ public class Codec {
       return SafeHtmlUtils.htmlEscape(src);
     }
   }
-
+/**
+ * Escapes Unicode characters.
+ * @param src a value to check
+ * @return a String without unicode characters
+ */
   public static String escapeUnicode(String src) {
     int len = BeeUtils.length(src);
     if (len <= 0) {
@@ -409,7 +490,11 @@ public class Codec {
       return src;
     }
   }
-
+/**
+ * Decodes {@code data} using Base64 algorithm. 
+ * @param data the encoded value
+ * @return encoded value as a Byte array (single byte)
+ */
   public static byte[] fromBase64(String data) {
     Assert.notNull(data);
     int len = data.length();
@@ -450,7 +535,12 @@ public class Codec {
     }
     return bytes;
   }
-
+/**
+ * Converts a Byte array to a String. Note: {@code bytes} must be a double byte
+ * array.
+ * @param bytes the array to convert
+ * @return a String representation of the Byte array.
+ */
   public static String fromBytes(byte[] bytes) {
     Assert.notNull(bytes);
     int len = bytes.length;
@@ -463,12 +553,20 @@ public class Codec {
     }
     return new String(chars);
   }
-
+/**
+ * Checks is {@code ch} is a valid Unicode character.
+ * @param ch value to check
+ * @return true if the value is valid, otherwise false.
+ */
   public static boolean isValidUnicodeChar(char ch) {
     return ch >= '\u0020' && ch < '\u007f' || ch > '\u00a0' && ch <= '\u024f'
         || ch >= '\u0400' && ch <= '\u04ff';
   }
-
+/**
+ * Encodes {@code s} using md5 algorithm.
+ * @param s a String to encode
+ * @return encoded value
+ */
   public static String md5(String s) {
     Assert.notNull(MD5);
     Assert.notEmpty(s);
@@ -487,7 +585,11 @@ public class Codec {
     byte[] arr = MD5.digest();
     return toHex(arr);
   }
-
+/**
+ * Serializes an Object using a default serialization separator.
+ * @param obj the Object to serialize
+ * @return a String representation of the serialized Object
+ */
   public static String serialize(Object obj) {
     if (obj == null) {
       return SERIALIZATION_SEPARATOR;
@@ -496,7 +598,11 @@ public class Codec {
       return s.length() + SERIALIZATION_SEPARATOR + s;
     }
   }
-
+/**
+ * Serializes the input length {@code len}.
+ * @param len length to serialize
+ * @return a serialized length String
+ */
   public static String serializeLength(int len) {
     Assert.nonNegative(len);
     if (len == 0) {
@@ -511,7 +617,11 @@ public class Codec {
       return sb.toString();
     }
   }
-
+  /**
+   * Serializes all Objects {@code obj} using a default serialization separator.
+   * @param ser values to serialize
+   * @return a String with serializes values
+   */
   public static String serializeValues(Object... obj) {
     int n = obj.length;
     Assert.parameterCount(n, 1);
@@ -525,7 +635,11 @@ public class Codec {
     }
     return sb.toString();
   }
-
+/**
+ * Serializes an Object {@code obj} and appends it to a StringBuilder.
+ * @param sb a StringBuilder to append to
+ * @param obj the Object to serialize
+ */
   public static void serializeWithLength(StringBuilder sb, Object obj) {
     Assert.notNull(sb);
     if (obj == null) {
@@ -548,7 +662,11 @@ public class Codec {
       sb.append(v);
     }
   }
-
+/**
+ * Encodes {@code data} using Base64 algorithm.
+ * @param data the data to encode
+ * @return an encoded String.
+ */
   public static String toBase64(byte[] data) {
     Assert.notNull(data);
     int len = data.length;
@@ -580,15 +698,31 @@ public class Codec {
     }
     return new String(chars);
   }
-
+/**
+ * Converts {@code s} to Byte array.
+ * @param s the value to convert
+ * @return a representing <b>double Byte</b> array
+ */
   public static byte[] toBytes(String s) {
     return toBytes(s, 0, BeeUtils.length(s));
   }
-
+/**
+ * Converts {@code s} to Byte array from a specified index {@code start}.
+ * @param s the value to convert
+ * @param start the start index where from to start converting
+ * @return a representing <b>double Byte</b> array
+ */
   public static byte[] toBytes(String s, int start) {
     return toBytes(s, start, BeeUtils.length(s));
   }
-
+/**
+ * Converts {@code s} to Byte array from a specified start index {@code start} to
+ * and end index {@code end}.
+ * @param s the value to convert
+ * @param start the start index where from to start converting
+ * @param end the last index to convert to
+ * @return a representing <b>double Byte</b> array
+ */
   public static byte[] toBytes(String s, int start, int end) {
     Assert.notNull(s);
     int len = s.length();
@@ -609,7 +743,11 @@ public class Codec {
     }
     return arr;
   }
-
+/**
+ * Converts a <b>double Byte</b> array into a corresponding Hex.
+ * @param bytes the array to convert
+ * @return a Hex representation of the {@code bytes} array
+ */
   public static String toHex(byte[] bytes) {
     if (BeeUtils.isEmpty(bytes)) {
       return null;
@@ -623,11 +761,19 @@ public class Codec {
     }
     return new String(arr);
   }
-
+/**
+ * Converts a character {@code c} to a corresponding Hex.
+ * @param c the character to convert
+ * @return a Hex representation of the character {@code c}
+ */
   public static String toHex(char c) {
     return BeeUtils.padLeft(Integer.toHexString(c), 4, BeeConst.CHAR_ZERO);
   }
-
+/**
+ * Converts a character array {@code arr} to a corresponding Hex.
+ * @param arr the array to convert
+ * @return a Hex representation of the character array {@code arr}
+ */
   public static String toHex(char[] arr) {
     if (BeeUtils.isEmpty(arr)) {
       return null;
@@ -641,7 +787,7 @@ public class Codec {
       return sb.toString();
     }
   }
-
+  
   private Codec() {
   }
 }
