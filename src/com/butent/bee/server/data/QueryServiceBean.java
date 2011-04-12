@@ -42,6 +42,8 @@ public class QueryServiceBean {
 
   private interface SqlHandler<T> {
 
+    T processError(SQLException ex);
+
     T processResultSet(ResultSet rs) throws SQLException;
 
     T processUpdateCount(int updateCount);
@@ -59,6 +61,7 @@ public class QueryServiceBean {
   public String[] dbFields(String table) {
     SimpleRowSet res = getData(new SqlSelect()
         .addAllFields(table).addFrom(table).setWhere(SqlUtils.sqlFalse()));
+    Assert.notNull(res);
 
     return res.getColumnNames();
   }
@@ -78,11 +81,16 @@ public class QueryServiceBean {
   }
 
   public int dbRowCount(String source, IsCondition where) {
-    return getInt(new SqlSelect().addCount("cnt").addFrom(source).setWhere(where));
+    return dbRowCount(new SqlSelect().addConstant(1, "dummy").addFrom(source).setWhere(where));
   }
 
   public int dbRowCount(SqlSelect ss) {
-    return getInt(new SqlSelect().addCount("cnt").addFrom(ss, "als"));
+    SimpleRowSet res = getData(new SqlSelect().addCount("cnt").addFrom(ss, "als"));
+
+    if (res == null) {
+      return -1;
+    }
+    return res.getInt(0, 0);
   }
 
   public String dbSchema() {
@@ -102,6 +110,12 @@ public class QueryServiceBean {
     Assert.notEmpty(sql);
 
     return processSql(sql, new SqlHandler<Object>() {
+      @Override
+      public Object processError(SQLException ex) {
+        LogUtils.error(logger, ex);
+        return ex.getMessage();
+      }
+
       @Override
       public Object processResultSet(ResultSet rs) throws SQLException {
         return rsToBeeRowSet(rs, null);
@@ -135,12 +149,19 @@ public class QueryServiceBean {
 
     return processSql(query.getQuery(), new SqlHandler<SimpleRowSet>() {
       @Override
+      public SimpleRowSet processError(SQLException ex) {
+        LogUtils.error(logger, ex);
+        return null;
+      }
+
+      @Override
       public SimpleRowSet processResultSet(ResultSet rs) throws SQLException {
         return rsToSimpleRowSet(rs);
       }
 
       @Override
       public SimpleRowSet processUpdateCount(int updateCount) {
+        LogUtils.warning(logger, "Query must return a ResultSet");
         return null;
       }
     });
@@ -231,12 +252,19 @@ public class QueryServiceBean {
     }
     return processSql(query.getQuery(), new SqlHandler<BeeRowSet>() {
       @Override
+      public BeeRowSet processError(SQLException ex) {
+        LogUtils.error(logger, ex);
+        return null;
+      }
+
+      @Override
       public BeeRowSet processResultSet(ResultSet rs) throws SQLException {
         return rsToBeeRowSet(rs, view);
       }
 
       @Override
       public BeeRowSet processUpdateCount(int updateCount) {
+        LogUtils.warning(logger, "Query must return a ResultSet");
         return null;
       }
     });
@@ -383,7 +411,14 @@ public class QueryServiceBean {
 
     Integer res = processSql(query.getQuery(), new SqlHandler<Integer>() {
       @Override
+      public Integer processError(SQLException ex) {
+        LogUtils.error(logger, ex);
+        return -1;
+      }
+
+      @Override
       public Integer processResultSet(ResultSet rs) throws SQLException {
+        LogUtils.warning(logger, "Data modification query must not return a ResultSet");
         return -1;
       }
 
@@ -414,18 +449,21 @@ public class QueryServiceBean {
 
   private SimpleRowSet getSingleColumn(IsQuery query) {
     SimpleRowSet res = getData(query);
+    Assert.notNull(res);
     Assert.isTrue(res.getNumberOfColumns() == 1, "Result must contain exactly one column");
     return res;
   }
 
   private SimpleRowSet getSingleRow(IsQuery query) {
     SimpleRowSet res = getData(query);
+    Assert.notNull(res);
     Assert.isTrue(res.getNumberOfRows() <= 1, "Result must contain exactly one row");
     return res;
   }
 
   private SimpleRowSet getSingleValue(IsQuery query) {
     SimpleRowSet res = getData(query);
+    Assert.notNull(res);
     Assert.isTrue(res.getNumberOfColumns() == 1, "Result must contain exactly one column");
     Assert.isTrue(res.getNumberOfRows() == 1, "Result must contain exactly one row");
     return res;
@@ -458,7 +496,7 @@ public class QueryServiceBean {
       }
 
     } catch (SQLException ex) {
-      LogUtils.error(logger, ex);
+      result = callback.processError(ex);
     } finally {
       JdbcUtils.closeResultSet(rs);
       JdbcUtils.closeStatement(stmt);

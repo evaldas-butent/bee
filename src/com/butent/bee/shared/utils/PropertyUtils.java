@@ -10,16 +10,18 @@ import java.util.List;
 
 public class PropertyUtils {
   public static final List<Property> EMPTY_PROPERTIES_LIST = new ArrayList<Property>();
-  public static final List<ExtendedProperty> EMPTY_EXTENDED_LIST = 
-    new ArrayList<ExtendedProperty>();
-/**
- * Adds children to the specified {@code lst}. {@code root} is the name and 
- * {@code x} the sub and value of the new children.
- * @param lst a collection to add children to
- * @param root a name for the children
- * @param x the children's Sub and Value values coupled by 2
- * @return how many children were added to the collection.
- */
+  public static final List<ExtendedProperty> EMPTY_EXTENDED_LIST =
+      new ArrayList<ExtendedProperty>();
+
+  /**
+   * Adds children to the specified {@code lst}. {@code root} is the name and {@code x} the sub and
+   * value of the new children.
+   * 
+   * @param lst a collection to add children to
+   * @param root a name for the children
+   * @param x the children's Sub and Value values coupled by 2
+   * @return how many children were added to the collection.
+   */
   public static int addChildren(Collection<ExtendedProperty> lst, String root, Object... x) {
     Assert.notNull(lst);
     Assert.notEmpty(root);
@@ -36,28 +38,31 @@ public class PropertyUtils {
     }
     return r;
   }
-/**
- * Adds an ExtendedProperty to {@code lst} with specified {@code nm} and 
- * {@code v} values
- * @param lst a collection to add the new ExtendedProperty to
- * @param nm the name for the ExtendedProperty
- * @param v the value for the ExtendedProperty
- * @return true, if the new ExtendedProperty was valid and was added to the
- * collection, otherwise false.
- */
+
+  /**
+   * Adds an ExtendedProperty to {@code lst} with specified {@code nm} and {@code v} values
+   * 
+   * @param lst a collection to add the new ExtendedProperty to
+   * @param nm the name for the ExtendedProperty
+   * @param v the value for the ExtendedProperty
+   * @return true, if the new ExtendedProperty was valid and was added to the collection, otherwise
+   *         false.
+   */
   public static boolean addExtended(Collection<ExtendedProperty> lst, String nm, Object v) {
     return addExtended(lst, nm, null, v);
   }
-/**
- * Adds an ExtendedProperty to {@code lst} with specified {@code nm}, {@code sub} 
- * and {@code v} values
- * @param lst a collection to add the new ExtendedProperty to
- * @param nm the name for the ExtendedProperty
- * @param sub  the sub for the ExtendedProperty
- * @param v  the value for the ExtendedProperty
- * @return true, if the new ExtendedProperty was valid and was added to the
- * collection, otherwise false.
- */
+
+  /**
+   * Adds an ExtendedProperty to {@code lst} with specified {@code nm}, {@code sub} and {@code v}
+   * values
+   * 
+   * @param lst a collection to add the new ExtendedProperty to
+   * @param nm the name for the ExtendedProperty
+   * @param sub the sub for the ExtendedProperty
+   * @param v the value for the ExtendedProperty
+   * @return true, if the new ExtendedProperty was valid and was added to the collection, otherwise
+   *         false.
+   */
   public static boolean addExtended(Collection<ExtendedProperty> lst, String nm, Object sub,
       Object v) {
     Assert.notNull(lst);
@@ -68,12 +73,14 @@ public class PropertyUtils {
       return false;
     }
   }
-/**
- * Adds a non empty Property to the specified collection {@code lst}.
- * @param lst a collection to add the new Property to
- * @param x the name and value added in pairs
- * @return the amount of added Properties.
- */
+
+  /**
+   * Adds a non empty Property to the specified collection {@code lst}.
+   * 
+   * @param lst a collection to add the new Property to
+   * @param x the name and value added in pairs
+   * @return the amount of added Properties.
+   */
   public static int addNotEemptyProperties(Collection<Property> lst, Object... x) {
     Assert.notNull(lst);
     int c = x.length;
@@ -88,10 +95,12 @@ public class PropertyUtils {
     }
     return r;
   }
+
   /**
-   * Adds valid ExtendedProperties to the specified collection {@code lst}. If 
-   * {@code subMd} is set to {@code false} only name and value are required. 
-   * If {@code subMd} is set to {@code true} then name, sub and value are required.
+   * Adds valid ExtendedProperties to the specified collection {@code lst}. If {@code subMd} is set
+   * to {@code false} only name and value are required. If {@code subMd} is set to {@code true} then
+   * name, sub and value are required.
+   * 
    * @param lst a collection to add the new ExtendedProperty to
    * @param subMd the value sets if sub is required
    * @param x the ExtendedProperty values in couples or in threes.
@@ -124,12 +133,14 @@ public class PropertyUtils {
     }
     return r;
   }
-/**
- * Adds valid Properties to the specified collection {@code lst}.
- * @param lst a collection to add the new Properties to
- * @param x values in pairs of the new Properties to be added
- * @return amount of Properties added to the list.
- */
+
+  /**
+   * Adds valid Properties to the specified collection {@code lst}.
+   * 
+   * @param lst a collection to add the new Properties to
+   * @param x values in pairs of the new Properties to be added
+   * @return amount of Properties added to the list.
+   */
   public static int addProperties(Collection<Property> lst, Object... x) {
     Assert.notNull(lst);
     int c = x.length;
@@ -144,13 +155,15 @@ public class PropertyUtils {
     }
     return r;
   }
-/**
- * Adds a valid Property to the collection {@code lst}.
- * @param lst lst a collection to add the new Property to
- * @param nm name of the Property
- * @param v value of the Property
- * @return true if the Property was succesfully added to the list, otherwise false.
- */
+
+  /**
+   * Adds a valid Property to the collection {@code lst}.
+   * 
+   * @param lst lst a collection to add the new Property to
+   * @param nm name of the Property
+   * @param v value of the Property
+   * @return true if the Property was succesfully added to the list, otherwise false.
+   */
   public static boolean addProperty(Collection<Property> lst, String nm, Object v) {
     Assert.notNull(lst);
     if (validName(nm) && validValue(v)) {
@@ -160,13 +173,14 @@ public class PropertyUtils {
       return false;
     }
   }
+
   /**
-   * Adds ExtendedProperties to the specified collection {@code lst}.
-   * ExtendedProperties contain a name {@code nm}, sub {@code sub} and values 
-   * split by separator {@code sep}.
-   * <p> E.g  {@code nm = "name", sub ="sub", v = "value1, value2", sep = ","}
-   * adds two ExtendedProperties containing: {"name","sub","value1"} and {
-   * "name","sub","value2"}.
+   * Adds ExtendedProperties to the specified collection {@code lst}. ExtendedProperties contain a
+   * name {@code nm}, sub {@code sub} and values split by separator {@code sep}.
+   * <p>
+   * E.g {@code nm = "name", sub ="sub", v = "value1, value2", sep = ","} adds two
+   * ExtendedProperties containing: {"name","sub","value1"} and { "name","sub","value2"}.
+   * 
    * @param lst the collection to add ExtendedProperties to
    * @param nm name of new ExtendedProperties to add
    * @param sub the sub of new ExtendedProperties to add
@@ -205,13 +219,15 @@ public class PropertyUtils {
     }
     return r;
   }
-/**
- * Appends {@code src} elements to the collection {@code dst}. {@code root} is 
- * used as a name in {@code dst} and the {@code src} name is transformed to sub.
- * @param dst the destination collection
- * @param root the specified name for new elements
- * @param src the source collection.
- */
+
+  /**
+   * Appends {@code src} elements to the collection {@code dst}. {@code root} is used as a name in
+   * {@code dst} and the {@code src} name is transformed to sub.
+   * 
+   * @param dst the destination collection
+   * @param root the specified name for new elements
+   * @param src the source collection.
+   */
   public static void appendChildrenToExtended(Collection<ExtendedProperty> dst, String root,
       Collection<Property> src) {
     Assert.notNull(dst);
@@ -226,13 +242,15 @@ public class PropertyUtils {
       }
     }
   }
-/**
- * Appends elements from collection {@code src} to {@code dst}. Adds {@code root}
- * value to the name for each added element.
- * @param dst the destination collection
- * @param root the specified value to add in the name
- * @param src the source collection
- */
+
+  /**
+   * Appends elements from collection {@code src} to {@code dst}. Adds {@code root} value to the
+   * name for each added element.
+   * 
+   * @param dst the destination collection
+   * @param root the specified value to add in the name
+   * @param src the source collection
+   */
   public static void appendChildrenToProperties(Collection<Property> dst, String root,
       Collection<Property> src) {
     Assert.notNull(dst);
@@ -249,25 +267,29 @@ public class PropertyUtils {
       }
     }
   }
-/**
- * Appends all elements from {@code src} to {@code dst}.
- * @param dst the destination collection
- * @param src the source collection
- */
-  public static void appendExtended(Collection<ExtendedProperty> dst, 
+
+  /**
+   * Appends all elements from {@code src} to {@code dst}.
+   * 
+   * @param dst the destination collection
+   * @param src the source collection
+   */
+  public static void appendExtended(Collection<ExtendedProperty> dst,
       Collection<ExtendedProperty> src) {
     Assert.notNull(dst);
     if (src != null && !src.isEmpty()) {
       dst.addAll(src);
     }
   }
-/**
- * Appends all elements from {@code src} to {@code dst} using a {@code prefix} 
- * prefix for all added elements.
- * @param dst the destination collection
- * @param prefix the prefix to add in {@code name} value
- * @param src the source collection
- */
+
+  /**
+   * Appends all elements from {@code src} to {@code dst} using a {@code prefix} prefix for all
+   * added elements.
+   * 
+   * @param dst the destination collection
+   * @param prefix the prefix to add in {@code name} value
+   * @param src the source collection
+   */
   public static void appendWithPrefix(Collection<ExtendedProperty> dst, String prefix,
       Collection<ExtendedProperty> src) {
     Assert.notNull(dst);
@@ -284,8 +306,10 @@ public class PropertyUtils {
       }
     }
   }
+
   /**
    * Creates a Property list and adds {@code obj}.
+   * 
    * @param obj the Objects to add to Properties
    * @return a new list of Properties
    */
@@ -296,31 +320,35 @@ public class PropertyUtils {
     }
     return lst;
   }
-/**
- * Creates a new list of Properties with a specified prefix. Property names are
- * represented as the progress.
- * @param prefix a prefix if specified is used in {@code name} value
- * @param values the values of the Properties
- * @return a new list of Properties
- */
+
+  /**
+   * Creates a new list of Properties with a specified prefix. Property names are represented as the
+   * progress.
+   * 
+   * @param prefix a prefix if specified is used in {@code name} value
+   * @param values the values of the Properties
+   * @return a new list of Properties
+   */
   public static List<Property> createProperties(String prefix, String[] values) {
     Assert.notEmpty(values);
     List<Property> lst = new ArrayList<Property>();
-    
+
     int n = values.length;
     String name = BeeUtils.isEmpty(prefix) ? BeeConst.STRING_EMPTY :
-      prefix.trim() + BeeConst.STRING_SPACE;
-    
+        prefix.trim() + BeeConst.STRING_SPACE;
+
     for (int i = 0; i < n; i++) {
       addProperty(lst, name + BeeUtils.progress(i + 1, n), values[i]);
     }
     return lst;
   }
-/**
- * Returns an ExtendedProperty list as an array.
- * @param lst the data list
- * @return a String array of the {@code lst}
- */
+
+  /**
+   * Returns an ExtendedProperty list as an array.
+   * 
+   * @param lst the data list
+   * @return a String array of the {@code lst}
+   */
   public static String[][] extendedToArray(List<ExtendedProperty> lst) {
     Assert.notEmpty(lst);
 
@@ -337,11 +365,13 @@ public class PropertyUtils {
     }
     return arr;
   }
-/**
- * Returns a Property list as an array.
- * @param lst the data list
- * @return a String array of the {@code lst}
- */
+
+  /**
+   * Returns a Property list as an array.
+   * 
+   * @param lst the data list
+   * @return a String array of the {@code lst}
+   */
   public static String[][] propertiesToArray(List<Property> lst) {
     Assert.notEmpty(lst);
 
@@ -356,14 +386,18 @@ public class PropertyUtils {
     }
     return arr;
   }
-/**
- * Transforms a String {@code v}. <p> If {@code v} has leading or trailing 
- * whitespaces it ommits them and if {@code v.length() <= 10} returns a Hex 
- * representation of {@code v} with "[hex]" tag. If {@code v.length() > 10} 
- * returns a "[whitespace]" tag with the length of {@code v}.</p>
- * @param v the String to transform
- * @return a String representation of the value {@code v}
- */
+
+  /**
+   * Transforms a String {@code v}.
+   * <p>
+   * If {@code v} has leading or trailing whitespaces it ommits them and if {@code v.length() <= 10}
+   * returns a Hex representation of {@code v} with "[hex]" tag. If {@code v.length() > 10} returns
+   * a "[whitespace]" tag with the length of {@code v}.
+   * </p>
+   * 
+   * @param v the String to transform
+   * @return a String representation of the value {@code v}
+   */
   private static String transformString(String v) {
     if (v.isEmpty()) {
       return v;
@@ -377,21 +411,24 @@ public class PropertyUtils {
       return v;
     }
   }
-/**
- * Transforms a sub {@code s}. Transforms using {@link #transformValue(Object)}
- * @param s the Object to transform
- * @return a String representation of the value {@code s}
- */
+
+  /**
+   * Transforms a sub {@code s}. Transforms using {@link #transformValue(Object)}
+   * 
+   * @param s the Object to transform
+   * @return a String representation of the value {@code s}
+   */
   private static String transformSub(Object s) {
     return transformValue(s);
   }
-/**
- * If {@code v} is a Sting value, transforms using {@link #transformString(String)}.
- * If any other Object, transforms it using 
- * {@link com.butent.bee.shared.utils.BeeUtils#transform(Object)}
- * @param v teh String to transform
- * @return a String representation of the value {@code v}
- */
+
+  /**
+   * If {@code v} is a Sting value, transforms using {@link #transformString(String)}. If any other
+   * Object, transforms it using {@link com.butent.bee.shared.utils.BeeUtils#transform(Object)}
+   * 
+   * @param v teh String to transform
+   * @return a String representation of the value {@code v}
+   */
   private static String transformValue(Object v) {
     if (v == null) {
       return BeeConst.STRING_EMPTY;
@@ -401,19 +438,23 @@ public class PropertyUtils {
       return BeeUtils.transform(v);
     }
   }
-/**
- * Checks if {@code nm} is a valid name value.
- * @param nm the name to check
- * @return true if {@code nm} is not {@code null} or empty, otherwise false
- */
+
+  /**
+   * Checks if {@code nm} is a valid name value.
+   * 
+   * @param nm the name to check
+   * @return true if {@code nm} is not {@code null} or empty, otherwise false
+   */
   private static boolean validName(String nm) {
     return (nm != null && !nm.isEmpty());
   }
-/**
- * Checks if {@code v} is a valid value.
- * @param v the value to check
- * @return true if the value is valid, otherwise false.
- */
+
+  /**
+   * Checks if {@code v} is a valid value.
+   * 
+   * @param v the value to check
+   * @return true if the value is valid, otherwise false.
+   */
   private static boolean validValue(Object v) {
     if (v == null) {
       return false;
@@ -423,7 +464,7 @@ public class PropertyUtils {
       return true;
     }
   }
-  
+
   private PropertyUtils() {
   }
 }

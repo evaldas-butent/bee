@@ -133,8 +133,10 @@ public class UiServiceBean {
       ResponseObject resp = ResponseObject.response(res);
       resp.addWarning(usr.localMesssages().rowsRetrieved(((BeeRowSet) res).getNumberOfRows()));
       return resp;
-    } else {
+    } else if (res instanceof Number) {
       return ResponseObject.warning("Affected rows:", res);
+    } else {
+      return ResponseObject.error(res);
     }
   }
 
@@ -203,7 +205,7 @@ public class UiServiceBean {
     }
     return ResponseObject.response(states);
   }
- 
+
   private ResponseObject getStateTable(RequestInfo reqInfo) {
     String table = reqInfo.getParameter("table_name");
     String states = reqInfo.getParameter("table_states");

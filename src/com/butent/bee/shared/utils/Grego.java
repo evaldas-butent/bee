@@ -26,25 +26,28 @@ public class Grego {
       0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335};
 
   private static final int THURSDAY = 5;
-/**
- * @param day the day in year
- * @return the day of week
- */
+
+  /**
+   * @param day the day in year
+   * @return the day of week
+   */
   public static int dayOfWeek(int day) {
     long[] remainder = new long[1];
     floorDivide(day + THURSDAY, 7, remainder);
-    
+
     int dayOfWeek = (int) remainder[0];
     dayOfWeek = (dayOfWeek == 0) ? 7 : dayOfWeek;
 
     return dayOfWeek;
   }
-/**
- * Converts the day {@code day} to an integer array representation of the day(
- * year,month,dayOfMonth, dayOfWeek,dayOfYear).
- * @param day the day to convert
- * @return an integer array representation of the day.
- */
+
+  /**
+   * Converts the day {@code day} to an integer array representation of the day(
+   * year,month,dayOfMonth, dayOfWeek,dayOfYear).
+   * 
+   * @param day the day to convert
+   * @return an integer array representation of the day.
+   */
   public static int[] dayToFields(long day) {
     int[] fields = new int[FIELD_COUNT];
 
@@ -86,13 +89,15 @@ public class Grego {
 
     return fields;
   }
-/** 
- * Calculates how many days passed since 1970 January 1.
- * @param year the year to calculate to
- * @param month the month to calculate to
- * @param dom the dom to calculate to
- * @return days passed since 1970 January 1.
- */
+
+  /**
+   * Calculates how many days passed since 1970 January 1.
+   * 
+   * @param year the year to calculate to
+   * @param month the month to calculate to
+   * @param dom the dom to calculate to
+   * @return days passed since 1970 January 1.
+   */
   public static int fieldsToDay(int year, int month, int dom) {
     int y = year - 1;
     int julian = 365 * y + floorDivide(y, 4) + (JULIAN_1_CE - 3) +
@@ -101,20 +106,24 @@ public class Grego {
 
     return julian - JULIAN_1970_CE;
   }
-/**
- * Checks if {@code year} is a leap year.
- * @param year the value to check
- * @return true if {@code year} is a leap year, otherwise false.
- */
+
+  /**
+   * Checks if {@code year} is a leap year.
+   * 
+   * @param year the value to check
+   * @return true if {@code year} is a leap year, otherwise false.
+   */
   public static final boolean isLeapYear(int year) {
     return ((year & 0x3) == 0) && ((year % 100 != 0) || (year % 400 == 0));
   }
-/**
- * Gets the length of the specified month.
- * @param year the year to check
- * @param month the month to check
- * @return the length of the specified year and month.
- */
+
+  /**
+   * Gets the length of the specified month.
+   * 
+   * @param year the year to check
+   * @param month the month to check
+   * @return the length of the specified year and month.
+   */
   public static final int monthLength(int year, int month) {
     if (isLeapYear(year)) {
       return MONTH_LENGTH[month + 11];
@@ -122,18 +131,20 @@ public class Grego {
       return MONTH_LENGTH[month - 1];
     }
   }
-/**
- * Converts the time {@code time} to an integer array representation of the time
- * (hour,minute,second,millis).
- * @param time the time to convert
- * @return an integer array representation of the time.
- */
+
+  /**
+   * Converts the time {@code time} to an integer array representation of the time
+   * (hour,minute,second,millis).
+   * 
+   * @param time the time to convert
+   * @return an integer array representation of the time.
+   */
   public static int[] timeToFields(long time) {
     long[] remainder = new long[1];
 
     long day = floorDivide(time, TimeUtils.MILLIS_PER_DAY, remainder);
     int[] fields = dayToFields(day);
-    
+
     fields[IDX_HOUR] = (int) floorDivide(remainder[0], TimeUtils.MILLIS_PER_HOUR, remainder);
     fields[IDX_MINUTE] = (int) floorDivide(remainder[0], TimeUtils.MILLIS_PER_MINUTE, remainder);
     fields[IDX_SECOND] = (int) floorDivide(remainder[0], TimeUtils.MILLIS_PER_SECOND, remainder);
@@ -156,7 +167,7 @@ public class Grego {
 
     return quotient;
   }
-  
+
   private Grego() {
   }
 }

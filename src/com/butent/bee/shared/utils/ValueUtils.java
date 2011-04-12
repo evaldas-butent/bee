@@ -6,15 +6,15 @@ import com.butent.bee.shared.HasIntValue;
 import com.butent.bee.shared.HasLongValue;
 
 public class ValueUtils {
-	/**
-	 * @param obj the value to get from
-	 * @return a double value represented by the argument {@code obj}
-	 */
+  /**
+   * @param obj the value to get from
+   * @return a double value represented by the argument {@code obj}
+   */
   public static double getDouble(Object obj) {
     if (obj == null) {
       return BeeConst.DOUBLE_ZERO;
     }
-    
+
     if (obj instanceof Number) {
       return ((Number) obj).doubleValue();
     }
@@ -27,7 +27,7 @@ public class ValueUtils {
     if (obj instanceof Character) {
       return (Character) obj;
     }
-    
+
     if (obj instanceof HasDoubleValue) {
       return ((HasDoubleValue) obj).getDouble();
     }
@@ -39,6 +39,7 @@ public class ValueUtils {
     }
     return BeeConst.DOUBLE_ZERO;
   }
+
   /**
    * @param obj the value to get from
    * @return an integer value represented by the argument {@code obj}
@@ -47,7 +48,7 @@ public class ValueUtils {
     if (obj == null) {
       return 0;
     }
-    
+
     if (obj instanceof Number) {
       return ((Number) obj).intValue();
     }
@@ -60,21 +61,22 @@ public class ValueUtils {
     if (obj instanceof Character) {
       return (Character) obj;
     }
-    
+
     if (obj instanceof HasIntValue) {
       return ((HasIntValue) obj).getInt();
     }
     return 0;
   }
-/**
- * @param obj the value to get from
- * @return a long value represented by the argument {@code obj}
- */
+
+  /**
+   * @param obj the value to get from
+   * @return a long value represented by the argument {@code obj}
+   */
   public static long getLong(Object obj) {
     if (obj == null) {
       return 0;
     }
-    
+
     if (obj instanceof Number) {
       return ((Number) obj).longValue();
     }
@@ -87,7 +89,7 @@ public class ValueUtils {
     if (obj instanceof Character) {
       return (Character) obj;
     }
-    
+
     if (obj instanceof HasLongValue) {
       return ((HasLongValue) obj).getLong();
     }
@@ -96,17 +98,19 @@ public class ValueUtils {
     }
     return 0;
   }
-/**
- * Sets the double value {@code value} to {@code obj}.
- * @param obj an Object to set value to
- * @param value the value to set
- * @return an Object with a set value {@code value}
- */
+
+  /**
+   * Sets the double value {@code value} to {@code obj}.
+   * 
+   * @param obj an Object to set value to
+   * @param value the value to set
+   * @return an Object with a set value {@code value}
+   */
   public static Object setDouble(Object obj, double value) {
     if (obj == null) {
       return obj;
     }
-    
+
     if (obj instanceof Number) {
       return value;
     }
@@ -119,7 +123,7 @@ public class ValueUtils {
     if (obj instanceof Character) {
       return (char) value;
     }
-    
+
     if (obj instanceof HasDoubleValue) {
       ((HasDoubleValue) obj).setValue(value);
       return obj;
@@ -134,8 +138,10 @@ public class ValueUtils {
     }
     return obj;
   }
+
   /**
    * Sets the integer value {@code value} to {@code obj}.
+   * 
    * @param obj an Object to set value to
    * @param value the value to set
    * @return an Object with a set value {@code value}
@@ -144,7 +150,7 @@ public class ValueUtils {
     if (obj == null) {
       return obj;
     }
-    
+
     if (obj instanceof Number) {
       return value;
     }
@@ -157,15 +163,17 @@ public class ValueUtils {
     if (obj instanceof Character) {
       return (char) value;
     }
-    
+
     if (obj instanceof HasIntValue) {
       ((HasIntValue) obj).setValue(value);
       return obj;
     }
     return obj;
   }
+
   /**
    * Sets the long value {@code value} to {@code obj}.
+   * 
    * @param obj an Object to set value to
    * @param value the value to set
    * @return an Object with a set value {@code value}
@@ -174,7 +182,7 @@ public class ValueUtils {
     if (obj == null) {
       return obj;
     }
-    
+
     if (obj instanceof Number) {
       return value;
     }
@@ -187,7 +195,7 @@ public class ValueUtils {
     if (obj instanceof Character) {
       return (char) value;
     }
-    
+
     if (obj instanceof HasLongValue) {
       ((HasLongValue) obj).setValue(value);
       return obj;
@@ -198,7 +206,7 @@ public class ValueUtils {
     }
     return obj;
   }
-  
+
   private ValueUtils() {
   }
 }
