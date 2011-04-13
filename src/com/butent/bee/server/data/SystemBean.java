@@ -19,6 +19,7 @@ import com.butent.bee.shared.JustDate;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.Filter;
 import com.butent.bee.shared.data.ViewInfo;
 import com.butent.bee.shared.sql.BeeConstants;
 import com.butent.bee.shared.sql.BeeConstants.DataType;
@@ -418,7 +419,7 @@ public class SystemBean {
             .addCount("TotalRows")
             .addFrom(tbl);
       } else {
-        ss = getView(tbl).getQuery(dataCache);
+        ss = getViewQuery(tbl);
       }
       String stateAlias = joinState(ss, tbl, null, state.getName());
 
@@ -574,7 +575,7 @@ public class SystemBean {
   public List<ViewInfo> getDataInfo() {
     List<ViewInfo> lst = Lists.newArrayList();
     int cnt;
-    
+
     for (BeeView view : viewCache.values()) {
       BeeTable sourceTable = dataCache.get(view.getSource());
       if (sourceTable.isActive()) {
@@ -640,11 +641,15 @@ public class SystemBean {
     return states;
   }
 
+  public IsCondition getViewCondition(String viewName, Filter condition) {
+    return getView(viewName).getCondition(condition);
+  }
+
   public BeeRowSet getViewData(String viewName, IsCondition wh, List<String> order,
       int limit, int offset, String... states) {
 
+    SqlSelect ss = getViewQuery(viewName);
     BeeView view = getView(viewName);
-    SqlSelect ss = view.getQuery(dataCache);
 
     if (!BeeUtils.isEmpty(wh)) {
       ss.setWhere(SqlUtils.and(ss.getWhere(), wh));
@@ -652,14 +657,23 @@ public class SystemBean {
 
     if (order != null) {
       ss.resetOrder();
-      String source = view.getSource();
+
       for (String fld : order) {
-        if (BeeUtils.isPrefixOrSuffix(fld, BeeConst.CHAR_MINUS)) {
-          ss.addOrderDesc(source, BeeUtils.removePrefixAndSuffix(fld, BeeConst.CHAR_MINUS));
+        boolean desc = BeeUtils.isPrefixOrSuffix(fld, BeeConst.CHAR_MINUS);
+
+        if (desc) {
+          fld = BeeUtils.removePrefixAndSuffix(fld, BeeConst.CHAR_MINUS);
+        }
+        String als = view.getAlias(fld);
+        fld = view.getField(fld);
+
+        if (desc) {
+          ss.addOrderDesc(als, fld);
         } else {
-          ss.addOrder(source, fld);
+          ss.addOrder(als, fld);
         }
       }
+      ss.addOrder(view.getSource(), getIdName(view.getSource()));
     }
 
     if (!BeeUtils.isEmpty(states)) {
@@ -674,6 +688,10 @@ public class SystemBean {
     }
 
     return qs.getViewData(ss, view);
+  }
+
+  public SqlSelect getViewQuery(String viewName) {
+    return getView(viewName).getQuery(dataCache);
   }
 
   @Lock(LockType.WRITE)

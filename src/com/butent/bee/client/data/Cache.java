@@ -146,7 +146,7 @@ public class Cache {
       limit = -1;
     }
 
-    Queries.getRowSet(ti.getName(), null, ti.getIdColumn(), 0, limit, new Queries.RowSetCallback() {
+    Queries.getRowSet(ti.getName(), null, null, 0, limit, new Queries.RowSetCallback() {
       public void onResponse(BeeRowSet rowSet) {
         if (rowSet.isEmpty()) {
           BeeKeeper.getLog().info(rowSet.getViewName(), "RowSet is empty");

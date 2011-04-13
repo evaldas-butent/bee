@@ -1102,7 +1102,7 @@ public class BeeUtils {
    * @return true if all characters in the sequence are digits, false if sequence is {@code null} or
    *         empty or contains at least one non-digit character.
    */
-  public static boolean isDigit(CharSequence s) {
+  public static boolean isDigit(CharSequence s) { // TODO negative
     if (s == null) {
       return false;
     }

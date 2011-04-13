@@ -13,9 +13,8 @@ import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.Filter;
 import com.butent.bee.shared.data.value.ValueType;
-import com.butent.bee.shared.sql.Condition;
-import com.butent.bee.shared.sql.IsCondition;
 import com.butent.bee.shared.sql.SqlBuilderFactory;
 import com.butent.bee.shared.sql.SqlSelect;
 import com.butent.bee.shared.sql.SqlUtils;
@@ -183,14 +182,17 @@ public class UiServiceBean {
   }
 
   private ResponseObject getRowCount(RequestInfo reqInfo) {
-    String table = reqInfo.getParameter(Service.VAR_VIEW_NAME);
+    String viewName = reqInfo.getParameter(Service.VAR_VIEW_NAME);
     String where = reqInfo.getParameter(Service.VAR_VIEW_WHERE);
 
-    IsCondition condition = null;
+    Filter condition = null;
     if (!BeeUtils.isEmpty(where)) {
-      condition = Condition.restore(where);
+      condition = Filter.restore(where);
     }
-    return ResponseObject.response(sys.getRowCount(table, condition));
+    SqlSelect ss = sys.getViewQuery(viewName);
+    ss.setWhere(SqlUtils.and(ss.getWhere(), sys.getViewCondition(viewName, condition)));
+
+    return ResponseObject.response(qs.dbRowCount(ss));
   }
 
   private ResponseObject getStates(RequestInfo reqInfo) {
@@ -218,29 +220,30 @@ public class UiServiceBean {
   }
 
   private ResponseObject getViewData(RequestInfo reqInfo) {
-    String view = reqInfo.getParameter(Service.VAR_VIEW_NAME);
+    String viewName = reqInfo.getParameter(Service.VAR_VIEW_NAME);
     int limit = BeeUtils.toInt(reqInfo.getParameter(Service.VAR_VIEW_LIMIT));
     int offset = BeeUtils.toInt(reqInfo.getParameter(Service.VAR_VIEW_OFFSET));
     String where = reqInfo.getParameter(Service.VAR_VIEW_WHERE);
     String order = reqInfo.getParameter(Service.VAR_VIEW_ORDER);
     String states = reqInfo.getParameter(Service.VAR_VIEW_STATES);
 
-    IsCondition condition = null;
+    Filter condition = null;
     if (!BeeUtils.isEmpty(where)) {
-      condition = Condition.restore(where);
+      condition = Filter.restore(where);
     }
 
-    List<String> lst = null;
+    List<String> ord = null;
     if (!BeeUtils.isEmpty(order)) {
-      lst = Lists.newArrayList(BeeUtils.split(order, 1));
+      ord = Lists.newArrayList(BeeUtils.split(order, 1));
     }
 
-    String[] arr = new String[0];
+    String[] stt = new String[0];
     if (!BeeUtils.isEmpty(states)) {
-      arr = states.split(" ");
+      stt = states.split(" ");
     }
 
-    BeeRowSet res = sys.getViewData(view, condition, lst, limit, offset, arr);
+    BeeRowSet res = sys.getViewData(viewName, sys.getViewCondition(viewName, condition),
+        ord, limit, offset, stt);
     return ResponseObject.response(res);
   }
 

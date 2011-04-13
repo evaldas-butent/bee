@@ -26,7 +26,10 @@ class ConstantExpression extends Expression {
   @Override
   public List<Object> getSqlParams() {
     List<Object> param = new ArrayList<Object>(1);
-    param.add(constant.getObjectValue());
+
+    if (constant != null) {
+      param.add(constant.getObjectValue());
+    }
     return param;
   }
 

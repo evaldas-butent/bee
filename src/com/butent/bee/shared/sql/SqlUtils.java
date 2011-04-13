@@ -46,12 +46,16 @@ public class SqlUtils {
         ImmutableMap.of("expression", expr, "type", type, "precision", precision, "scale", scale)));
   }
 
+  public static IsCondition compare(IsExpression expr, String op, IsExpression value) {
+    return new JoinCondition(expr, op, value);
+  }
+
   public static IsExpression constant(Object constant) {
     return new ConstantExpression(BeeUtils.objectToValue(constant));
   }
 
   public static IsCondition contains(IsExpression expr, Object value) {
-    return new JoinCondition(expr, LIKE, constant("%" + value + "%"));
+    return compare(expr, LIKE, constant("%" + value + "%"));
   }
 
   public static IsCondition contains(String source, String field, Object value) {
@@ -138,7 +142,7 @@ public class SqlUtils {
   }
 
   public static IsCondition equal(IsExpression expr, Object value) {
-    return new JoinCondition(expr, EQUAL, constant(value));
+    return compare(expr, EQUAL, constant(value));
   }
 
   public static IsCondition equal(String source, String field, Object value) {
@@ -197,7 +201,7 @@ public class SqlUtils {
   }
 
   public static IsCondition isNotNull(IsExpression expr) {
-    return new JoinCondition(expr, IS, expression("NOT NULL"));
+    return compare(expr, IS, expression("NOT NULL"));
   }
 
   public static IsCondition isNotNull(String src, String fld) {
@@ -205,7 +209,7 @@ public class SqlUtils {
   }
 
   public static IsCondition isNull(IsExpression expr) {
-    return new JoinCondition(expr, IS, expression("NULL"));
+    return compare(expr, IS, expression("NULL"));
   }
 
   public static IsCondition isNull(String src, String fld) {
@@ -213,27 +217,27 @@ public class SqlUtils {
   }
 
   public static IsCondition join(String src1, String fld1, String src2, String fld2) {
-    return new JoinCondition(field(src1, fld1), EQUAL, field(src2, fld2));
+    return compare(field(src1, fld1), EQUAL, field(src2, fld2));
   }
 
   public static IsCondition joinLess(String src1, String fld1, String src2, String fld2) {
-    return new JoinCondition(field(src1, fld1), LESS, field(src2, fld2));
+    return compare(field(src1, fld1), LESS, field(src2, fld2));
   }
 
   public static IsCondition joinLessEqual(String src1, String fld1, String src2, String fld2) {
-    return new JoinCondition(field(src1, fld1), LESS_EQUAL, field(src2, fld2));
+    return compare(field(src1, fld1), LESS_EQUAL, field(src2, fld2));
   }
 
   public static IsCondition joinMore(String src1, String fld1, String src2, String fld2) {
-    return new JoinCondition(field(src1, fld1), MORE, field(src2, fld2));
+    return compare(field(src1, fld1), MORE, field(src2, fld2));
   }
 
   public static IsCondition joinMoreEqual(String src1, String fld1, String src2, String fld2) {
-    return new JoinCondition(field(src1, fld1), MORE_EQUAL, field(src2, fld2));
+    return compare(field(src1, fld1), MORE_EQUAL, field(src2, fld2));
   }
 
   public static IsCondition joinNotEqual(String src1, String fld1, String src2, String fld2) {
-    return new JoinCondition(field(src1, fld1), NOT_EQUAL, field(src2, fld2));
+    return compare(field(src1, fld1), NOT_EQUAL, field(src2, fld2));
   }
 
   public static IsCondition joinUsing(String src1, String src2, String... flds) {
@@ -257,7 +261,7 @@ public class SqlUtils {
   }
 
   public static IsCondition less(IsExpression expr, Object value) {
-    return new JoinCondition(expr, LESS, constant(value));
+    return compare(expr, LESS, constant(value));
   }
 
   public static IsCondition less(String source, String field, Object value) {
@@ -265,7 +269,7 @@ public class SqlUtils {
   }
 
   public static IsCondition lessEqual(IsExpression expr, Object value) {
-    return new JoinCondition(expr, LESS_EQUAL, constant(value));
+    return compare(expr, LESS_EQUAL, constant(value));
   }
 
   public static IsCondition lessEqual(String source, String field, Object value) {
@@ -273,7 +277,7 @@ public class SqlUtils {
   }
 
   public static IsCondition more(IsExpression expr, Object value) {
-    return new JoinCondition(expr, MORE, constant(value));
+    return compare(expr, MORE, constant(value));
   }
 
   public static IsCondition more(String source, String field, Object value) {
@@ -281,7 +285,7 @@ public class SqlUtils {
   }
 
   public static IsCondition moreEqual(IsExpression expr, Object value) {
-    return new JoinCondition(expr, MORE_EQUAL, constant(value));
+    return compare(expr, MORE_EQUAL, constant(value));
   }
 
   public static IsCondition moreEqual(String source, String field, Object value) {
@@ -293,7 +297,7 @@ public class SqlUtils {
   }
 
   public static IsCondition notEqual(IsExpression expr, Object value) {
-    return new JoinCondition(expr, NOT_EQUAL, constant(value));
+    return compare(expr, NOT_EQUAL, constant(value));
   }
 
   public static IsCondition notEqual(String source, String field, Object value) {

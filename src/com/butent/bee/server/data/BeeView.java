@@ -4,6 +4,8 @@ import com.google.common.collect.Maps;
 
 import com.butent.bee.server.data.BeeTable.BeeField;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.data.Filter;
+import com.butent.bee.shared.sql.Conditions;
 import com.butent.bee.shared.sql.IsCondition;
 import com.butent.bee.shared.sql.SqlSelect;
 import com.butent.bee.shared.sql.SqlUtils;
@@ -96,6 +98,36 @@ class BeeView {
     return Collections.unmodifiableSet(columns.keySet());
   }
 
+  public IsCondition getCondition(Filter condition) {
+    IsCondition cond = null;
+
+    if (!BeeUtils.isEmpty(condition) && !condition.isEmpty()) {
+      String join = condition.getNodeType();
+
+      if (BeeUtils.isEmpty(join)) {
+        String colName = condition.getColumn();
+        String op = condition.getOperator();
+
+        if ("$".equals(op)) {
+          cond = SqlUtils.contains(getAlias(colName), getField(colName), condition.getValue());
+        } else {
+          cond = SqlUtils.compare(SqlUtils.field(getAlias(colName), getField(colName)),
+              op, SqlUtils.constant(condition.getValue()));
+        }
+      } else {
+        if (BeeUtils.same(join, "AND")) {
+          cond = SqlUtils.and();
+        } else {
+          cond = SqlUtils.or();
+        }
+        for (Filter flt : condition.getConditions()) {
+          ((Conditions) cond).add(getCondition(flt));
+        }
+      }
+    }
+    return cond;
+  }
+
   public String getExpression(String colName) {
     return getColumnInfo(colName)[EXPRESSION];
   }
@@ -139,7 +171,7 @@ class BeeView {
 
   public boolean hasColumn(String colName) {
     Assert.notEmpty(colName);
-    return columns.containsKey(colName);
+    return columns.containsKey(colName.toLowerCase());
   }
 
   public boolean isEmpty() {
@@ -159,7 +191,7 @@ class BeeView {
     Assert.state(!hasColumn(colName),
         BeeUtils.concat(1, "Dublicate column name:", getName(), colName));
 
-    columns.put(colName, new String[]{expression, locale, null});
+    columns.put(colName.toLowerCase(), new String[]{expression, locale, null});
     loadField(expression, tables);
   }
 
@@ -169,8 +201,8 @@ class BeeView {
   }
 
   private String[] getColumnInfo(String colName) {
-    Assert.state(hasColumn(colName));
-    return columns.get(colName);
+    Assert.state(hasColumn(colName), "Unknown view column: " + getName() + " " + colName);
+    return columns.get(colName.toLowerCase());
   }
 
   private ViewField getViewField(String colName) {

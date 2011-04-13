@@ -8,14 +8,14 @@ import com.google.gwt.view.client.HasData;
 import com.google.gwt.view.client.Range;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.grid.CellGrid;
 import com.butent.bee.client.grid.CellColumn;
+import com.butent.bee.client.grid.CellGrid;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.Filter;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.ViewInfo;
-import com.butent.bee.shared.sql.IsCondition;
 import com.butent.bee.shared.utils.BeeUtils;
 
 public class AsyncProvider extends AbstractDataProvider<IsRow> {
@@ -64,10 +64,10 @@ public class AsyncProvider extends AbstractDataProvider<IsRow> {
   }
 
   private ViewInfo viewInfo;
-  private IsCondition where;
+  private Filter where;
   private String order;
 
-  public AsyncProvider(ViewInfo viewInfo, IsCondition where, String order) {
+  public AsyncProvider(ViewInfo viewInfo, Filter where, String order) {
     super();
     this.viewInfo = viewInfo;
     this.where = where;
@@ -82,7 +82,7 @@ public class AsyncProvider extends AbstractDataProvider<IsRow> {
     return viewInfo;
   }
 
-  public IsCondition getWhere() {
+  public Filter getWhere() {
     return where;
   }
 
@@ -94,7 +94,7 @@ public class AsyncProvider extends AbstractDataProvider<IsRow> {
     this.viewInfo = viewInfo;
   }
 
-  public void setWhere(IsCondition where) {
+  public void setWhere(Filter where) {
     this.where = where;
   }
 
@@ -103,7 +103,7 @@ public class AsyncProvider extends AbstractDataProvider<IsRow> {
     Assert.notNull(display);
     Range range = display.getVisibleRange();
 
-    IsCondition condition = getWhere();
+    Filter condition = getWhere();
 
     String ord = null;
     if (display instanceof CellGrid) {
@@ -112,7 +112,7 @@ public class AsyncProvider extends AbstractDataProvider<IsRow> {
     if (BeeUtils.isEmpty(ord)) {
       ord = getOrder();
     }
-    
+
     Queries.getRowSet(getViewInfo().getName(), condition, ord, range.getStart(), range.getLength(),
         new Callback(display, range));
   }
@@ -122,9 +122,6 @@ public class AsyncProvider extends AbstractDataProvider<IsRow> {
     if (sortList == null) {
       return null;
     }
-
-    boolean hasId = false;
-    String idLabel = getViewInfo().getIdColumn();
 
     StringBuilder sb = new StringBuilder();
 
@@ -139,9 +136,6 @@ public class AsyncProvider extends AbstractDataProvider<IsRow> {
         break;
       }
 
-      if (BeeUtils.same(label, idLabel)) {
-        hasId = true;
-      }
       if (sb.length() > 0) {
         sb.append(BeeConst.CHAR_SPACE);
       }
@@ -153,9 +147,6 @@ public class AsyncProvider extends AbstractDataProvider<IsRow> {
 
     if (sb.length() <= 0) {
       return null;
-    }
-    if (!hasId && !BeeUtils.isEmpty(idLabel)) {
-      sb.append(BeeConst.CHAR_SPACE).append(idLabel.trim());
     }
     return sb.toString();
   }

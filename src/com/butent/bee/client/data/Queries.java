@@ -9,7 +9,7 @@ import com.butent.bee.client.communication.RpcParameter;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.data.BeeRowSet;
-import com.butent.bee.shared.sql.IsCondition;
+import com.butent.bee.shared.data.Filter;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.Property;
@@ -26,12 +26,12 @@ public class Queries {
     void onResponse(BeeRowSet rowSet);
   }
 
-  public static void getRowSet(String viewName, IsCondition condition, String order,
+  public static void getRowSet(String viewName, Filter condition, String order,
       int offset, int limit, RowSetCallback callback) {
     getRowSet(viewName, condition, order, offset, limit, null, callback);
   }
-  
-  public static void getRowSet(String viewName, IsCondition condition, String order,
+
+  public static void getRowSet(String viewName, Filter condition, String order,
       int offset, int limit, String states, final RowSetCallback callback) {
     Assert.notEmpty(viewName);
     Assert.notNull(callback);
@@ -62,7 +62,7 @@ public class Queries {
     });
   }
 
-  public static void getRowCount(String viewName, IsCondition condition,
+  public static void getRowCount(String viewName, Filter condition,
       final IntCallback callback) {
     Assert.notEmpty(viewName);
     Assert.notNull(callback);

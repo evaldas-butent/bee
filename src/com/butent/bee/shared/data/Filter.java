@@ -108,7 +108,9 @@ public class Filter implements BeeSerializable {
           break;
 
         case VALUE:
-          this.value = Value.restore(expr);
+          if (!BeeUtils.isEmpty(expr)) {
+            this.value = Value.restore(expr);
+          }
           break;
 
         case CONDITIONS:
@@ -144,6 +146,10 @@ public class Filter implements BeeSerializable {
 
   public Value getValue() {
     return value;
+  }
+
+  public boolean isEmpty() {
+    return !BeeUtils.isEmpty(nodeType) && BeeUtils.isEmpty(conditions);
   }
 
   @Override

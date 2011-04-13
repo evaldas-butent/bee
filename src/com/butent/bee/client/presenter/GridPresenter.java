@@ -35,9 +35,9 @@ import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.Filter;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.ViewInfo;
-import com.butent.bee.shared.sql.IsCondition;
 
 import java.util.List;
 
@@ -93,7 +93,7 @@ public class GridPresenter {
       boolean isAsync) {
     AbstractDataProvider<IsRow> provider;
     if (isAsync) {
-      provider = new AsyncProvider(ti, null, getIdColumn());
+      provider = new AsyncProvider(ti, null, null);
     } else {
       provider = new DataProvider(data);
     }
@@ -175,7 +175,7 @@ public class GridPresenter {
         search.addChangeHandler(new ChangeHandler() {
           @Override
           public void onChange(ChangeEvent event) {
-            updateCondition(search.getCondition(getViewName()));
+            updateCondition(search.getCondition());
           }
         });
       }
@@ -204,7 +204,7 @@ public class GridPresenter {
     return viewInfo.getName();
   }
 
-  private void updateCondition(final IsCondition condition) {
+  private void updateCondition(final Filter condition) {
     BeeKeeper.getLog().info(condition == null ? "no condition" : condition.serialize());
 
     Queries.getRowCount(getViewName(), condition, new Queries.IntCallback() {

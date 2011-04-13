@@ -1,5 +1,6 @@
 package com.butent.bee.shared.sql;
 
+import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.sql.BeeConstants.DataType;
 import com.butent.bee.shared.sql.BeeConstants.Keyword;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -29,9 +30,16 @@ class PostgreSqlBuilder extends SqlBuilder {
 
   @Override
   protected String sqlTransform(Object x) {
-    String s = super.sqlTransform(x);
+    Object val;
 
-    if (x instanceof CharSequence) {
+    if (x instanceof Value) {
+      val = ((Value) x).getObjectValue();
+    } else {
+      val = x;
+    }
+    String s = super.sqlTransform(val);
+
+    if (val instanceof CharSequence) {
       s = s.replace("\\", "\\\\");
     }
     return s;
