@@ -187,4 +187,25 @@ public class Filter implements BeeSerializable {
     }
     return Codec.beeSerializeAll(arr);
   }
+
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder();
+
+    if (!isEmpty()) {
+      String join = getNodeType();
+
+      if (BeeUtils.isEmpty(join)) {
+        sb.append(getColumn()).append(getOperator()).append(getValue().getString());
+      } else {
+        for (Filter flt : getConditions()) {
+          if (sb.length() > 0) {
+            sb.append(" ").append(join).append(" ");
+          }
+          sb.append(flt);
+        }
+      }
+    }
+    return sb.toString();
+  }
 }

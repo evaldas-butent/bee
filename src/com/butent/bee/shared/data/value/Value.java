@@ -62,7 +62,7 @@ public abstract class Value implements Comparable<Value>, Transformable, BeeSeri
         val = BooleanValue.getInstance(BooleanValue.unpack(data));
 
       } else if (BeeUtils.getClassName(NumberValue.class).equals(clazz)) {
-        val = new NumberValue(BeeUtils.toDouble(data));
+        val = new NumberValue(BeeUtils.toDouble(data)); // TODO toDouble?
 
       } else if (BeeUtils.getClassName(TextValue.class).equals(clazz)) {
         val = new TextValue(data);

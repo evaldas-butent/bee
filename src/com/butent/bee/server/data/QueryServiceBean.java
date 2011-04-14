@@ -81,12 +81,17 @@ public class QueryServiceBean {
   }
 
   public int dbRowCount(String source, IsCondition where) {
-    return dbRowCount(new SqlSelect().addConstant(1, "dummy").addFrom(source).setWhere(where));
+    return dbRowCount(new SqlSelect().addConstant(null, "dummy").addFrom(source).setWhere(where));
   }
 
   public int dbRowCount(SqlSelect ss) {
-    SimpleRowSet res = getData(new SqlSelect().addCount("cnt").addFrom(ss, "als"));
+    SimpleRowSet res;
 
+    if (BeeUtils.allEmpty(ss.getGroupBy(), ss.getUnion())) {
+      res = getData(ss.copyOf().resetFields().resetOrder().addCount("cnt"));
+    } else {
+      res = getData(new SqlSelect().addCount("cnt").addFrom(ss, "als"));
+    }
     if (res == null) {
       return -1;
     }

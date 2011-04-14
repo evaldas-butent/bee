@@ -92,11 +92,11 @@ public class UiServiceBean {
         response = commitChanges(reqInfo);
 
       } else if (BeeUtils.same(svc, Service.GET_VIEW_LIST)) {
-        response = getDataInfo();
+        response = getViewInfo();
       } else if (BeeUtils.same(svc, Service.GENERATE)) {
         response = generateData(reqInfo);
       } else if (BeeUtils.same(svc, Service.COUNT_ROWS)) {
-        response = getRowCount(reqInfo);
+        response = getViewSize(reqInfo);
 
       } else {
         String msg = BeeUtils.concat(1, svc, "loader service not recognized");
@@ -177,24 +177,6 @@ public class UiServiceBean {
     return response;
   }
 
-  private ResponseObject getDataInfo() {
-    return ResponseObject.response(sys.getDataInfo());
-  }
-
-  private ResponseObject getRowCount(RequestInfo reqInfo) {
-    String viewName = reqInfo.getParameter(Service.VAR_VIEW_NAME);
-    String where = reqInfo.getParameter(Service.VAR_VIEW_WHERE);
-
-    Filter condition = null;
-    if (!BeeUtils.isEmpty(where)) {
-      condition = Filter.restore(where);
-    }
-    SqlSelect ss = sys.getViewQuery(viewName);
-    ss.setWhere(SqlUtils.and(ss.getWhere(), sys.getViewCondition(viewName, condition)));
-
-    return ResponseObject.response(qs.dbRowCount(ss));
-  }
-
   private ResponseObject getStates(RequestInfo reqInfo) {
     String table = reqInfo.getParameter(Service.VAR_VIEW_NAME);
     Set<String> states = new HashSet<String>();
@@ -245,6 +227,22 @@ public class UiServiceBean {
     BeeRowSet res = sys.getViewData(viewName, sys.getViewCondition(viewName, condition),
         ord, limit, offset, stt);
     return ResponseObject.response(res);
+  }
+
+  private ResponseObject getViewInfo() {
+    return ResponseObject.response(sys.getViewInfo());
+  }
+
+  private ResponseObject getViewSize(RequestInfo reqInfo) {
+    String viewName = reqInfo.getParameter(Service.VAR_VIEW_NAME);
+    String where = reqInfo.getParameter(Service.VAR_VIEW_WHERE);
+
+    Filter condition = null;
+    if (!BeeUtils.isEmpty(where)) {
+      condition = Filter.restore(where);
+    }
+    return ResponseObject.response(sys.getViewSize(viewName,
+        sys.getViewCondition(viewName, condition)));
   }
 
   private ResponseObject gridInfo(RequestInfo reqInfo) {
@@ -328,7 +326,6 @@ public class UiServiceBean {
 
     } else if (BeeUtils.same(cmd, "tables")) {
       sys.initTables();
-      sys.initViews();
       sys.initDatabase(SqlBuilderFactory.getEngine());
       response.addInfo("Extensions OK");
 

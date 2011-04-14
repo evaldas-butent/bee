@@ -196,16 +196,12 @@ public class GridPresenter {
     return panel;
   }
 
-  private String getIdColumn() {
-    return viewInfo.getIdColumn();
-  }
-
   private String getViewName() {
     return viewInfo.getName();
   }
 
   private void updateCondition(final Filter condition) {
-    BeeKeeper.getLog().info(condition == null ? "no condition" : condition.serialize());
+    BeeKeeper.getLog().info(condition == null ? "no condition" : condition);
 
     Queries.getRowCount(getViewName(), condition, new Queries.IntCallback() {
       public void onResponse(int value) {

@@ -309,15 +309,15 @@ class BeeView {
     }
     for (String colName : orders.keySet()) {
       String als = getAlias(colName);
-      String fld = getField(colName);
 
-      if (BeeUtils.isEmpty(als)) {
-        continue;
-      }
-      if (orders.get(colName)) {
-        query.addOrderDesc(als, fld);
-      } else {
-        query.addOrder(als, fld);
+      if (!BeeUtils.isEmpty(als)) {
+        String fld = getField(colName);
+
+        if (orders.get(colName)) {
+          query.addOrderDesc(als, fld);
+        } else {
+          query.addOrder(als, fld);
+        }
       }
     }
     query.addOrder(getSource(), sourceIdName);

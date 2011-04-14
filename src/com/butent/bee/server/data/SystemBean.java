@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.google.common.primitives.Longs;
 
 import com.butent.bee.server.Config;
@@ -49,6 +50,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
@@ -81,7 +83,7 @@ public class SystemBean {
   private String dbName;
   private String dbSchema;
   private Map<String, BeeState> stateCache = Maps.newHashMap();
-  private Map<String, BeeTable> dataCache = Maps.newHashMap();
+  private Map<String, BeeTable> tableCache = Maps.newHashMap();
   private Map<String, BeeView> viewCache = Maps.newHashMap();
 
   public void activateTable(String tableName) {
@@ -572,34 +574,6 @@ public class SystemBean {
     return ResponseObject.info(tblName, "generated", rowCount, "rows");
   }
 
-  public List<ViewInfo> getDataInfo() {
-    List<ViewInfo> lst = Lists.newArrayList();
-    int cnt;
-
-    for (BeeView view : viewCache.values()) {
-      BeeTable sourceTable = dataCache.get(view.getSource());
-      if (sourceTable.isActive()) {
-        cnt = qs.dbRowCount(sourceTable.getName(), null);
-      } else {
-        cnt = -1;
-      }
-      lst.add(new ViewInfo(sourceTable.getName(), sourceTable.getIdName(), cnt));
-    }
-
-    for (BeeTable table : getTables()) {
-      if (isView(table.getName())) {
-        continue;
-      }
-      if (table.isActive()) {
-        cnt = qs.dbRowCount(table.getName(), null);
-      } else {
-        cnt = -1;
-      }
-      lst.add(new ViewInfo(table.getName(), table.getIdName(), cnt));
-    }
-    return lst;
-  }
-
   public String getDbName() {
     return dbName;
   }
@@ -616,10 +590,6 @@ public class SystemBean {
     return getTable(tblName).getLockName();
   }
 
-  public int getRowCount(String tblName, IsCondition condition) {
-    return qs.dbRowCount(tblName, condition);
-  }
-
   public BeeField getTableField(String tblName, String fldName) {
     return getTable(tblName).getField(fldName);
   }
@@ -629,7 +599,7 @@ public class SystemBean {
   }
 
   public Collection<String> getTableNames() {
-    return ImmutableSet.copyOf(dataCache.keySet());
+    return ImmutableSet.copyOf(tableCache.keySet());
   }
 
   public Collection<String> getTableStates(String tblName) {
@@ -645,14 +615,14 @@ public class SystemBean {
     return getView(viewName).getCondition(condition);
   }
 
-  public BeeRowSet getViewData(String viewName, IsCondition wh, List<String> order,
+  public BeeRowSet getViewData(String viewName, IsCondition condition, List<String> order,
       int limit, int offset, String... states) {
 
     SqlSelect ss = getViewQuery(viewName);
     BeeView view = getView(viewName);
 
-    if (!BeeUtils.isEmpty(wh)) {
-      ss.setWhere(SqlUtils.and(ss.getWhere(), wh));
+    if (!BeeUtils.isEmpty(condition)) {
+      ss.setWhere(SqlUtils.and(ss.getWhere(), condition));
     }
 
     if (order != null) {
@@ -665,12 +635,15 @@ public class SystemBean {
           fld = BeeUtils.removePrefixAndSuffix(fld, BeeConst.CHAR_MINUS);
         }
         String als = view.getAlias(fld);
-        fld = view.getField(fld);
 
-        if (desc) {
-          ss.addOrderDesc(als, fld);
-        } else {
-          ss.addOrder(als, fld);
+        if (!BeeUtils.isEmpty(als)) {
+          fld = view.getField(fld);
+
+          if (desc) {
+            ss.addOrderDesc(als, fld);
+          } else {
+            ss.addOrder(als, fld);
+          }
         }
       }
       ss.addOrder(view.getSource(), getIdName(view.getSource()));
@@ -690,8 +663,38 @@ public class SystemBean {
     return qs.getViewData(ss, view);
   }
 
+  public List<ViewInfo> getViewInfo() {
+    List<ViewInfo> lst = Lists.newArrayList();
+    Set<String> views = Sets.newHashSet(getViewNames());
+    views.addAll(getTableNames());
+
+    for (String vw : views) {
+      BeeTable source = getTable(getView(vw).getSource());
+      int cnt = -1;
+
+      if (source.isActive()) {
+        cnt = getViewSize(vw, null);
+      }
+      lst.add(new ViewInfo(vw, source.getIdName(), cnt));
+    }
+    return lst;
+  }
+
+  public Collection<String> getViewNames() {
+    return ImmutableSet.copyOf(viewCache.keySet());
+  }
+
   public SqlSelect getViewQuery(String viewName) {
-    return getView(viewName).getQuery(dataCache);
+    return getView(viewName).getQuery(tableCache);
+  }
+
+  public int getViewSize(String viewName, IsCondition condition) {
+    SqlSelect ss = getViewQuery(viewName);
+
+    if (!BeeUtils.isEmpty(condition)) {
+      ss.setWhere(SqlUtils.and(ss.getWhere(), condition));
+    }
+    return qs.dbRowCount(ss);
   }
 
   @Lock(LockType.WRITE)
@@ -728,6 +731,7 @@ public class SystemBean {
       }
     }
     usr.invalidateCache();
+    initViews(true);
   }
 
   public void initStates() {
@@ -747,7 +751,7 @@ public class SystemBean {
   }
 
   public boolean isTable(String tblName) {
-    return dataCache.containsKey(tblName);
+    return tableCache.containsKey(tblName);
   }
 
   public boolean isView(String viewName) {
@@ -974,14 +978,14 @@ public class SystemBean {
 
     for (BeeField field : fields) {
       String fld = field.getName();
-      view.addField(fld, fld, null, dataCache);
+      view.addField(fld, fld, null, tableCache);
       String relTbl = field.getRelation();
 
       if (!BeeUtils.isEmpty(relTbl) && !BeeUtils.same(relTbl, tblName)) {
         BeeView vw = getDefaultView(relTbl, false);
 
         for (String colName : vw.getColumns()) {
-          view.addField(fld + colName, fld + ">" + vw.getExpression(colName), null, dataCache);
+          view.addField(fld + colName, fld + ">" + vw.getExpression(colName), null, tableCache);
         }
       }
     }
@@ -995,11 +999,11 @@ public class SystemBean {
 
   private BeeTable getTable(String tblName) {
     Assert.state(isTable(tblName), "Not a base table: " + tblName);
-    return dataCache.get(tblName);
+    return tableCache.get(tblName);
   }
 
   private Collection<BeeTable> getTables() {
-    return ImmutableList.copyOf(dataCache.values());
+    return ImmutableList.copyOf(tableCache.values());
   }
 
   private BeeView getView(String viewName) {
@@ -1041,11 +1045,13 @@ public class SystemBean {
   private void init() {
     initStates(true);
     initTables(true);
-    initViews(true);
   }
 
   @Lock(LockType.WRITE)
   private void initStates(boolean mainMode) {
+    if (mainMode) {
+      stateCache.clear();
+    }
     String resource =
         mainMode ? Config.getConfigPath("states.xml") : Config.getUserPath("states.xml");
 
@@ -1084,6 +1090,9 @@ public class SystemBean {
 
   @Lock(LockType.WRITE)
   private void initTables(boolean mainMode) {
+    if (mainMode) {
+      tableCache.clear();
+    }
     String resource =
         mainMode ? Config.getConfigPath("structure.xml") : Config.getUserPath("structure.xml");
 
@@ -1133,6 +1142,9 @@ public class SystemBean {
 
   @Lock(LockType.WRITE)
   private void initViews(boolean mainMode) {
+    if (mainMode) {
+      viewCache.clear();
+    }
     String resource =
         mainMode ? Config.getConfigPath("views.xml") : Config.getUserPath("views.xml");
 
@@ -1295,7 +1307,7 @@ public class SystemBean {
           vw.addField(col.getAttribute("name")
               , col.getAttribute("expression")
               , col.getAttribute("locale")
-              , dataCache);
+              , tableCache);
         }
       }
       nodeRoot = view.getElementsByTagName("BeeOrder");
@@ -1316,34 +1328,32 @@ public class SystemBean {
 
   @Lock(LockType.WRITE)
   private void rebuildTable(BeeTable table, boolean exists) {
-    if (!BeeUtils.isEmpty(table)) {
-      String tblName = table.getName();
+    String tblName = table.getName();
 
-      if (exists) {
-        for (Map<String, String> fKeys : qs
+    if (exists) {
+      for (Map<String, String> fKeys : qs
             .dbForeignKeys(getDbName(), getDbSchema(), null, tblName)) {
-          String fk = fKeys.get(BeeConstants.FK_NAME);
-          String tbl = fKeys.get(BeeConstants.FK_TABLE);
-          qs.updateData(SqlUtils.dropForeignKey(tbl, fk));
-        }
+        String fk = fKeys.get(BeeConstants.FK_NAME);
+        String tbl = fKeys.get(BeeConstants.FK_TABLE);
+        qs.updateData(SqlUtils.dropForeignKey(tbl, fk));
       }
-      Collection<BeeForeignKey> fKeys = Lists.newArrayList();
-
-      for (BeeTable tbl : getTables()) {
-        if (BeeUtils.same(tbl.getName(), tblName)) {
-          continue;
-        }
-        for (BeeForeignKey fKey : tbl.getForeignKeys()) {
-          if (BeeUtils.same(fKey.getRefTable(), tblName) && tbl.isActive()) {
-            fKeys.add(fKey);
-          }
-        }
-      }
-      createTable(table, exists);
-      createKeys(table.getKeys());
-      createForeignKeys(table.getForeignKeys());
-      createForeignKeys(fKeys);
     }
+    Collection<BeeForeignKey> fKeys = Lists.newArrayList();
+
+    for (BeeTable tbl : getTables()) {
+      if (BeeUtils.same(tbl.getName(), tblName)) {
+        continue;
+      }
+      for (BeeForeignKey fKey : tbl.getForeignKeys()) {
+        if (BeeUtils.same(fKey.getRefTable(), tblName) && tbl.isActive()) {
+          fKeys.add(fKey);
+        }
+      }
+    }
+    createTable(table, exists);
+    createKeys(table.getKeys());
+    createForeignKeys(table.getForeignKeys());
+    createForeignKeys(fKeys);
   }
 
   private void registerState(BeeState state) {
@@ -1354,7 +1364,7 @@ public class SystemBean {
 
   private void registerTable(BeeTable table) {
     if (!BeeUtils.isEmpty(table)) {
-      dataCache.put(table.getName(), table);
+      tableCache.put(table.getName(), table);
     }
   }
 

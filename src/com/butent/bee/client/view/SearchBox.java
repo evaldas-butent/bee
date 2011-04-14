@@ -1,10 +1,10 @@
 package com.butent.bee.client.view;
 
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.widget.BeeTextBox;
 import com.butent.bee.shared.data.Filter;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.LogUtils;
 
 public class SearchBox extends BeeTextBox implements SearchView {
 
@@ -63,7 +63,7 @@ public class SearchBox extends BeeTextBox implements SearchView {
           flt = Filter.condition(column, operator,
               BeeUtils.isDigit(value) ? BeeUtils.val(value) : value);
         } else {
-          LogUtils.warning(LogUtils.getDefaultLogger(), "Wrong filter expression: " + wh);
+          BeeKeeper.getLog().warning("Wrong filter expression: " + wh);
         }
       }
     }
