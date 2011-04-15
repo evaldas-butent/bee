@@ -20,8 +20,9 @@ import com.butent.bee.shared.JustDate;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
-import com.butent.bee.shared.data.Filter;
-import com.butent.bee.shared.data.ViewInfo;
+import com.butent.bee.shared.data.view.Filter;
+import com.butent.bee.shared.data.view.Order;
+import com.butent.bee.shared.data.view.ViewInfo;
 import com.butent.bee.shared.sql.BeeConstants;
 import com.butent.bee.shared.sql.BeeConstants.DataType;
 import com.butent.bee.shared.sql.BeeConstants.Keyword;
@@ -615,7 +616,7 @@ public class SystemBean {
     return getView(viewName).getCondition(condition);
   }
 
-  public BeeRowSet getViewData(String viewName, IsCondition condition, List<String> order,
+  public BeeRowSet getViewData(String viewName, IsCondition condition, Order order,
       int limit, int offset, String... states) {
 
     SqlSelect ss = getViewQuery(viewName);
@@ -627,26 +628,29 @@ public class SystemBean {
 
     if (order != null) {
       ss.resetOrder();
+      String source = view.getSource();
+      String idCol = getIdName(source);
+      boolean hasId = false;
 
-      for (String fld : order) {
-        boolean desc = BeeUtils.isPrefixOrSuffix(fld, BeeConst.CHAR_MINUS);
-
-        if (desc) {
-          fld = BeeUtils.removePrefixAndSuffix(fld, BeeConst.CHAR_MINUS);
+      for (Order.Column col : order.getColumns()) {
+        String als = view.getAlias(col.getLabel());
+        if (BeeUtils.isEmpty(als)) {
+          break;
         }
-        String als = view.getAlias(fld);
+        String fld = view.getField(col.getLabel());
 
-        if (!BeeUtils.isEmpty(als)) {
-          fld = view.getField(fld);
-
-          if (desc) {
-            ss.addOrderDesc(als, fld);
-          } else {
-            ss.addOrder(als, fld);
-          }
+        if (col.isAscending()) {
+          ss.addOrder(als, fld);
+        } else {
+          ss.addOrderDesc(als, fld);
+        }
+        if (BeeUtils.same(fld, idCol) && BeeUtils.same(als, source)) {
+          hasId = true;
         }
       }
-      ss.addOrder(view.getSource(), getIdName(view.getSource()));
+      if (!hasId) {
+        ss.addOrder(source, idCol);
+      }
     }
 
     if (!BeeUtils.isEmpty(states)) {

@@ -1,7 +1,5 @@
 package com.butent.bee.server.ui;
 
-import com.google.common.collect.Lists;
-
 import com.butent.bee.server.Config;
 import com.butent.bee.server.data.IdGeneratorBean;
 import com.butent.bee.server.data.QueryServiceBean;
@@ -13,8 +11,9 @@ import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
-import com.butent.bee.shared.data.Filter;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.data.view.Filter;
+import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.sql.SqlBuilderFactory;
 import com.butent.bee.shared.sql.SqlSelect;
 import com.butent.bee.shared.sql.SqlUtils;
@@ -23,7 +22,6 @@ import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
 
@@ -206,17 +204,17 @@ public class UiServiceBean {
     int limit = BeeUtils.toInt(reqInfo.getParameter(Service.VAR_VIEW_LIMIT));
     int offset = BeeUtils.toInt(reqInfo.getParameter(Service.VAR_VIEW_OFFSET));
     String where = reqInfo.getParameter(Service.VAR_VIEW_WHERE);
-    String order = reqInfo.getParameter(Service.VAR_VIEW_ORDER);
+    String sort = reqInfo.getParameter(Service.VAR_VIEW_ORDER);
     String states = reqInfo.getParameter(Service.VAR_VIEW_STATES);
 
-    Filter condition = null;
+    Filter filter = null;
     if (!BeeUtils.isEmpty(where)) {
-      condition = Filter.restore(where);
+      filter = Filter.restore(where);
     }
 
-    List<String> ord = null;
-    if (!BeeUtils.isEmpty(order)) {
-      ord = Lists.newArrayList(BeeUtils.split(order, 1));
+    Order order = null;
+    if (!BeeUtils.isEmpty(sort)) {
+      order = Order.restore(sort);
     }
 
     String[] stt = new String[0];
@@ -224,8 +222,8 @@ public class UiServiceBean {
       stt = states.split(" ");
     }
 
-    BeeRowSet res = sys.getViewData(viewName, sys.getViewCondition(viewName, condition),
-        ord, limit, offset, stt);
+    BeeRowSet res = sys.getViewData(viewName, sys.getViewCondition(viewName, filter),
+        order, limit, offset, stt);
     return ResponseObject.response(res);
   }
 

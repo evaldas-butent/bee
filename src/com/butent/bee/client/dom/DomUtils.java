@@ -550,7 +550,6 @@ public class DomUtils {
         dir = (dir == null) ? z : null;
       }
     }
-
     return dir;
   }
 
@@ -628,19 +627,12 @@ public class DomUtils {
     }
 
     if (obj instanceof HasWidgets && depth > 0) {
-      Widget w;
       int i = 0;
       String p;
 
       for (Iterator<Widget> iter = ((HasWidgets) obj).iterator(); iter.hasNext();) {
-        w = iter.next();
         p = BeeUtils.concat(BeeConst.DEFAULT_PROPERTY_SEPARATOR, prefix, i++);
-
-        if (depth == 1) {
-          PropertyUtils.appendExtended(lst, getWidgetExtendedInfo(w, p));
-        } else {
-          getInfo(w, p, depth--);
-        }
+        PropertyUtils.appendExtended(lst, getInfo(iter.next(), p, depth - 1));
       }
     }
     return lst;
@@ -810,11 +802,16 @@ public class DomUtils {
     return lst;
   }
 
-  public static int getTabIndex(Widget w) {
-    Assert.notNull(w);
-    return w.getElement().getTabIndex();
+  public static int getTabIndex(UIObject obj) {
+    Assert.notNull(obj);
+    return obj.getElement().getTabIndex();
   }
 
+  public static int getTabIndex(Element el) {
+    Assert.notNull(el);
+    return el.getTabIndex();
+  }
+  
   public static String getText(Element elem) {
     if (elem == null) {
       return BeeConst.STRING_EMPTY;
@@ -1116,6 +1113,13 @@ public class DomUtils {
     BeeKeeper.getLog().addSeparator();
   }
 
+  public static void makeFocusable(Element el) {
+    Assert.notNull(el);
+    if (getTabIndex(el) < 0) {
+      el.setTabIndex(0);
+    }
+  }
+  
   public static PopupPanel parentPopup(Widget w) {
     Assert.notNull(w);
 

@@ -974,6 +974,26 @@ public class CliWorker {
     }
   }
 
+  public static void showWidgetInfo(String[] arr) {
+    String id = ArrayUtils.getQuietly(arr, 1);
+    if (BeeUtils.isEmpty(id)) {
+      Global.showError("widget id not specified");
+      return;
+    }
+    
+    Widget widget = DomUtils.getWidget(BeeKeeper.getUi().getScreenPanel(), id);
+    if (widget == null) {
+      Global.showError(id, "widget not found");
+      return;
+    }
+
+    String z = ArrayUtils.getQuietly(arr, 2);
+    int depth = BeeUtils.isDigit(z) ? BeeUtils.toInt(z) : 0;
+    
+    List<ExtendedProperty> info = DomUtils.getInfo(widget, id, depth);
+    BeeKeeper.getUi().showGrid(info);
+  }
+  
   public static void storage(String[] arr) {
     int parCnt = ArrayUtils.length(arr) - 1;
     int len = BeeKeeper.getStorage().length();

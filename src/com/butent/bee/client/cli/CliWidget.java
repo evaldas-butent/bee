@@ -17,6 +17,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.cache.CacheManager;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -49,6 +50,8 @@ public class CliWidget extends BeeTextBox {
       CliWorker.playAudio(arr);
     } else if (z.equals("browser") || z.startsWith("wind")) {
       CliWorker.showBrowser(arr);
+    } else if (z.equals("cache")) {
+      BeeKeeper.getUi().showGrid(CacheManager.getInfo());
     } else if (z.equals("canvas")) {
       new CanvasDemo().start();
     } else if (BeeUtils.inList(z, "center", "east", "north", "south", "screen", "west")) {
@@ -79,6 +82,8 @@ public class CliWidget extends BeeTextBox {
       CliWorker.showFunctions(v, arr);
     } else if (z.equals("fs")) {
       CliWorker.getFs();
+    } else if (z.equals("gen") && BeeUtils.isDigit(ArrayUtils.getQuietly(arr, 2))) {
+      BeeKeeper.getRpc().sendText(Service.GENERATE, BeeUtils.concat(1, arr[1], arr[2]));
     } else if (z.equals("geo")) {
       CliWorker.showGeo();
     } else if (z.equals("gwt")) {
@@ -111,6 +116,8 @@ public class CliWidget extends BeeTextBox {
       CliWorker.showProperties(v, arr);
     } else if (z.equals("progress")) {
       CliWorker.showProgress(arr);
+    } else if (z.equals("rebuild")) {
+      BeeKeeper.getRpc().sendText(Service.REBUILD, v);
     } else if (z.equals("rpc")) {
       CliWorker.showRpc();
     } else if (z.equals("sb")) {
@@ -121,6 +128,20 @@ public class CliWidget extends BeeTextBox {
       BeeKeeper.getRpc().invoke("systemInfo");
     } else if (z.equals("slider")) {
       CliWorker.showSlider(arr);
+    } else if (z.equals("sql")) {
+      BeeKeeper.getRpc().sendText(Service.DO_SQL, v,
+          new ResponseCallback() {
+            @Override
+            public void onResponse(JsArrayString respArr) {
+              BeeRowSet rs = BeeRowSet.restore(respArr.get(0));
+
+              if (rs.isEmpty()) {
+                BeeKeeper.getUi().updateActivePanel(new BeeLabel("RowSet is empty"));
+              } else {
+                BeeKeeper.getUi().showGrid(rs);
+              }
+            }
+          });
     } else if (z.equals("stack")) {
       CliWorker.showStack();
     } else if (z.startsWith("stor")) {
@@ -149,25 +170,8 @@ public class CliWidget extends BeeTextBox {
       Showcase.open();
     } else if (z.equals("vm")) {
       BeeKeeper.getRpc().invoke("vmInfo");
-
-    } else if (z.equals("gen") && BeeUtils.isDigit(ArrayUtils.getQuietly(arr, 2))) {
-      BeeKeeper.getRpc().sendText(Service.GENERATE, BeeUtils.concat(1, arr[1], arr[2]));
-    } else if (z.equals("rebuild")) {
-      BeeKeeper.getRpc().sendText(Service.REBUILD, v);
-    } else if (z.equals("sql")) {
-      BeeKeeper.getRpc().sendText(Service.DO_SQL, v,
-          new ResponseCallback() {
-            @Override
-            public void onResponse(JsArrayString respArr) {
-              BeeRowSet rs = BeeRowSet.restore(respArr.get(0));
-
-              if (rs.isEmpty()) {
-                BeeKeeper.getUi().updateActivePanel(new BeeLabel("RowSet is empty"));
-              } else {
-                BeeKeeper.getUi().showGrid(rs);
-              }
-            }
-          });
+    } else if (z.equals("widget") && arr.length >= 2) {
+      CliWorker.showWidgetInfo(arr);
 
     } else {
       Global.showDialog("wtf", v);

@@ -11,11 +11,11 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.grid.CellColumn;
 import com.butent.bee.client.grid.CellGrid;
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeRowSet;
-import com.butent.bee.shared.data.Filter;
 import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.data.ViewInfo;
+import com.butent.bee.shared.data.view.Filter;
+import com.butent.bee.shared.data.view.Order;
+import com.butent.bee.shared.data.view.ViewInfo;
 import com.butent.bee.shared.utils.BeeUtils;
 
 public class AsyncProvider extends AbstractDataProvider<IsRow> {
@@ -64,17 +64,19 @@ public class AsyncProvider extends AbstractDataProvider<IsRow> {
   }
 
   private ViewInfo viewInfo;
-  private Filter where;
-  private String order;
+  private Filter filter = null;
+  private Order order = null;
 
-  public AsyncProvider(ViewInfo viewInfo, Filter where, String order) {
+  public AsyncProvider(ViewInfo viewInfo) {
     super();
     this.viewInfo = viewInfo;
-    this.where = where;
-    this.order = order;
   }
 
-  public String getOrder() {
+  public Filter getFilter() {
+    return filter;
+  }
+
+  public Order getOrder() {
     return order;
   }
 
@@ -82,11 +84,11 @@ public class AsyncProvider extends AbstractDataProvider<IsRow> {
     return viewInfo;
   }
 
-  public Filter getWhere() {
-    return where;
+  public void setFilter(Filter filter) {
+    this.filter = filter;
   }
 
-  public void setOrder(String order) {
+  public void setOrder(Order order) {
     this.order = order;
   }
 
@@ -94,36 +96,32 @@ public class AsyncProvider extends AbstractDataProvider<IsRow> {
     this.viewInfo = viewInfo;
   }
 
-  public void setWhere(Filter where) {
-    this.where = where;
-  }
-
   @Override
   protected void onRangeChanged(HasData<IsRow> display) {
     Assert.notNull(display);
     Range range = display.getVisibleRange();
 
-    Filter condition = getWhere();
+    Filter flt = getFilter();
 
-    String ord = null;
+    Order ord = null;
     if (display instanceof CellGrid) {
       ord = getViewOrder((CellGrid) display);
     }
-    if (BeeUtils.isEmpty(ord)) {
+    if (ord == null) {
       ord = getOrder();
     }
 
-    Queries.getRowSet(getViewInfo().getName(), condition, ord, range.getStart(), range.getLength(),
+    Queries.getRowSet(getViewInfo().getName(), flt, ord, range.getStart(), range.getLength(),
         new Callback(display, range));
   }
 
-  private String getViewOrder(CellGrid grid) {
+  private Order getViewOrder(CellGrid grid) {
     ColumnSortList sortList = grid.getColumnSortList();
     if (sortList == null) {
       return null;
     }
 
-    StringBuilder sb = new StringBuilder();
+    Order ord = new Order();
 
     for (int i = 0; i < sortList.size(); i++) {
       ColumnSortInfo sortInfo = sortList.get(i);
@@ -135,19 +133,9 @@ public class AsyncProvider extends AbstractDataProvider<IsRow> {
       if (BeeUtils.isEmpty(label)) {
         break;
       }
-
-      if (sb.length() > 0) {
-        sb.append(BeeConst.CHAR_SPACE);
-      }
-      sb.append(label.trim());
-      if (!sortInfo.isAscending()) {
-        sb.append(BeeConst.CHAR_MINUS);
-      }
+      
+      ord.add(label, sortInfo.isAscending());
     }
-
-    if (sb.length() <= 0) {
-      return null;
-    }
-    return sb.toString();
+    return ord;
   }
 }

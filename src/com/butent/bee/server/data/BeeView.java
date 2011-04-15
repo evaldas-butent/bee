@@ -4,7 +4,7 @@ import com.google.common.collect.Maps;
 
 import com.butent.bee.server.data.BeeTable.BeeField;
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.data.Filter;
+import com.butent.bee.shared.data.view.Filter;
 import com.butent.bee.shared.sql.Conditions;
 import com.butent.bee.shared.sql.IsCondition;
 import com.butent.bee.shared.sql.SqlSelect;

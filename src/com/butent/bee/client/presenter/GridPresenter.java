@@ -35,9 +35,9 @@ import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
-import com.butent.bee.shared.data.Filter;
 import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.data.ViewInfo;
+import com.butent.bee.shared.data.view.Filter;
+import com.butent.bee.shared.data.view.ViewInfo;
 
 import java.util.List;
 
@@ -93,7 +93,7 @@ public class GridPresenter {
       boolean isAsync) {
     AbstractDataProvider<IsRow> provider;
     if (isAsync) {
-      provider = new AsyncProvider(ti, null, null);
+      provider = new AsyncProvider(ti);
     } else {
       provider = new DataProvider(data);
     }
@@ -175,7 +175,7 @@ public class GridPresenter {
         search.addChangeHandler(new ChangeHandler() {
           @Override
           public void onChange(ChangeEvent event) {
-            updateCondition(search.getCondition());
+            updateFilter(search.getFilter());
           }
         });
       }
@@ -200,17 +200,17 @@ public class GridPresenter {
     return viewInfo.getName();
   }
 
-  private void updateCondition(final Filter condition) {
-    BeeKeeper.getLog().info(condition == null ? "no condition" : condition);
+  private void updateFilter(final Filter filter) {
+    BeeKeeper.getLog().info(filter == null ? "no filter" : filter);
 
-    Queries.getRowCount(getViewName(), condition, new Queries.IntCallback() {
+    Queries.getRowCount(getViewName(), filter, new Queries.IntCallback() {
       public void onResponse(int value) {
         BeeKeeper.getLog().info(value);
 
         if (value > 0 && value != rowCount) {
           rowCount = value;
           if (async) {
-            ((AsyncProvider) dataProvider).setWhere(condition);
+            ((AsyncProvider) dataProvider).setFilter(filter);
             cellGrid.setRowCount(value, true);
             if (cellGrid.getPageSize() > value) {
               cellGrid.setPageSize(value);

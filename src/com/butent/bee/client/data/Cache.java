@@ -22,7 +22,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.data.BeeRowSet;
-import com.butent.bee.shared.data.ViewInfo;
+import com.butent.bee.shared.data.view.ViewInfo;
 import com.butent.bee.shared.utils.Codec;
 
 import java.util.List;

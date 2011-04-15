@@ -4,7 +4,7 @@ import com.google.gwt.http.client.RequestBuilder;
 import com.google.gwt.http.client.RequestException;
 import com.google.gwt.i18n.client.LocaleInfo;
 
-import com.butent.bee.client.communication.BeeCallback;
+import com.butent.bee.client.communication.AsyncCallback;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.communication.RpcInfo;
@@ -23,7 +23,7 @@ public class RpcFactory implements Module {
   private final String rpcUrl;
 
   private RpcList rpcList = new RpcList();
-  private BeeCallback reqCallBack = new BeeCallback();
+  private AsyncCallback reqCallBack = new AsyncCallback();
 
   public RpcFactory(String url) {
     this.rpcUrl = url;
@@ -73,7 +73,7 @@ public class RpcFactory implements Module {
     }
   }
 
-  public BeeCallback getReqCallBack() {
+  public AsyncCallback getReqCallBack() {
     return reqCallBack;
   }
 
@@ -218,7 +218,7 @@ public class RpcFactory implements Module {
     return makePostRequest(svc, ContentType.BINARY, data, callback);
   }
 
-  public void setReqCallBack(BeeCallback reqCallBack) {
+  public void setReqCallBack(AsyncCallback reqCallBack) {
     this.reqCallBack = reqCallBack;
   }
 

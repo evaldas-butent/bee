@@ -5,7 +5,7 @@ import com.google.common.collect.Lists;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.widget.BeeTextBox;
-import com.butent.bee.shared.data.Filter;
+import com.butent.bee.shared.data.view.Filter;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
@@ -23,13 +23,13 @@ public class SearchBox extends BeeTextBox implements SearchView {
     DomUtils.createId(this, "search");
   }
 
-  public Filter getCondition() {
-    return getFilter(getValue());
-  }
-
   @Override
   public String getDefaultStyleName() {
     return "bee-SearchBox";
+  }
+
+  public Filter getFilter() {
+    return getFilter(getValue());
   }
 
   private Filter getFilter(String wh) {

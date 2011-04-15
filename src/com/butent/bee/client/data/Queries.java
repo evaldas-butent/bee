@@ -9,7 +9,9 @@ import com.butent.bee.client.communication.RpcParameter;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.data.BeeRowSet;
-import com.butent.bee.shared.data.Filter;
+import com.butent.bee.shared.data.cache.CacheManager;
+import com.butent.bee.shared.data.view.Filter;
+import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.Property;
@@ -26,23 +28,29 @@ public class Queries {
     void onResponse(BeeRowSet rowSet);
   }
 
-  public static void getRowSet(String viewName, Filter condition, String order,
+  public static void getRowSet(String viewName, Filter filter, Order order,
       int offset, int limit, RowSetCallback callback) {
-    getRowSet(viewName, condition, order, offset, limit, null, callback);
+    getRowSet(viewName, filter, order, offset, limit, null, callback);
   }
 
-  public static void getRowSet(String viewName, Filter condition, String order,
-      int offset, int limit, String states, final RowSetCallback callback) {
+  public static void getRowSet(String viewName, final Filter filter, final Order order,
+      final int offset, final int limit, String states, final RowSetCallback callback) {
     Assert.notEmpty(viewName);
     Assert.notNull(callback);
+    
+    BeeRowSet rowSet = CacheManager.getRowSet(viewName, filter, order, offset, limit);
+    if (rowSet != null) {
+      callback.onResponse(rowSet);
+      return;
+    }
 
     List<Property> lst = PropertyUtils.createProperties(Service.VAR_VIEW_NAME, viewName);
 
-    if (condition != null) {
-      PropertyUtils.addProperties(lst, Service.VAR_VIEW_WHERE, Codec.beeSerialize(condition));
+    if (filter != null) {
+      PropertyUtils.addProperties(lst, Service.VAR_VIEW_WHERE, filter.serialize());
     }
-    if (!BeeUtils.isEmpty(order)) {
-      PropertyUtils.addProperties(lst, Service.VAR_VIEW_ORDER, order);
+    if (order != null) {
+      PropertyUtils.addProperties(lst, Service.VAR_VIEW_ORDER, order.serialize());
     }
 
     if (offset >= 0 && limit > 0) {
@@ -57,19 +65,20 @@ public class Queries {
     BeeKeeper.getRpc().makePostRequest(new ParameterList(Service.QUERY,
         RpcParameter.SECTION.DATA, lst), new ResponseCallback() {
       public void onResponse(JsArrayString arr) {
-        callback.onResponse(BeeRowSet.restore(arr.get(0)));
+        BeeRowSet rs = BeeRowSet.restore(arr.get(0));
+        callback.onResponse(rs);
+        CacheManager.add(rs, filter, order, offset, limit);
       }
     });
   }
 
-  public static void getRowCount(String viewName, Filter condition,
-      final IntCallback callback) {
+  public static void getRowCount(String viewName, Filter filter, final IntCallback callback) {
     Assert.notEmpty(viewName);
     Assert.notNull(callback);
 
     List<Property> lst = PropertyUtils.createProperties(Service.VAR_VIEW_NAME, viewName);
-    if (condition != null) {
-      PropertyUtils.addProperties(lst, Service.VAR_VIEW_WHERE, Codec.beeSerialize(condition));
+    if (filter != null) {
+      PropertyUtils.addProperties(lst, Service.VAR_VIEW_WHERE, filter.serialize());
     }
 
     BeeKeeper.getRpc().makePostRequest(new ParameterList(Service.COUNT_ROWS,

@@ -40,12 +40,22 @@ public class EventUtils {
     }
   }
 
+  public static void blur(Element elem) {
+    Assert.notNull(elem);
+    elem.blur();
+  }
+  
   public static void eatEvent(NativeEvent ev) {
     Assert.notNull(ev);
     ev.preventDefault();
     ev.stopPropagation();
   }
 
+  public static void focus(Element elem) {
+    Assert.notNull(elem);
+    elem.focus();
+  }
+  
   public static List<Property> getEventInfo(NativeEvent ev) {
     Assert.notNull(ev);
     return PropertyUtils.createProperties(

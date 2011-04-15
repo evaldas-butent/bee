@@ -44,6 +44,16 @@ public class BeeRowSet extends RowList<BeeRow, BeeColumn> implements BeeSerializ
     }
   }
 
+  public BeeRowSet(String viewName, List<BeeColumn> columns) {
+    this(columns);
+    this.viewName = viewName;
+  }
+
+  public BeeRowSet(String viewName, List<BeeColumn> columns, List<BeeRow> rows) {
+    this(viewName, columns);
+    setRows(new ListSequence<BeeRow>(rows));
+  }
+  
   private BeeRowSet(ListSequence<BeeRow> rows) {
     super(rows);
   }

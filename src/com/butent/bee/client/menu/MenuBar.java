@@ -22,7 +22,6 @@ import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.dom.BeeImpl;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
@@ -460,7 +459,7 @@ public class MenuBar extends Widget implements HasId, HasAfterAddHandler,
   }
 
   private void focus() {
-    BeeImpl.focus(getElement());
+    EventUtils.focus(getElement());
   }
 
   private Element getItemContainerElement() {
@@ -536,7 +535,8 @@ public class MenuBar extends Widget implements HasId, HasAfterAddHandler,
         }
     }
 
-    Element outer = BeeImpl.createFocusable();
+    Element outer = DOM.createDiv();
+    DomUtils.makeFocusable(outer);
     DOM.appendChild(outer, elem);
     setElement(outer);
 
