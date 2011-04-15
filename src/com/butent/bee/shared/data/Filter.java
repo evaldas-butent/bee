@@ -190,22 +190,29 @@ public class Filter implements BeeSerializable {
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder();
+    String flt = "";
 
     if (!isEmpty()) {
       String join = getNodeType();
 
       if (BeeUtils.isEmpty(join)) {
-        sb.append(getColumn()).append(getOperator()).append(getValue().getString());
+        flt = BeeUtils.concat(0, getColumn(), getOperator(), getValue().getString());
       } else {
-        for (Filter flt : getConditions()) {
+        StringBuilder sb = new StringBuilder();
+
+        for (Filter wh : getConditions()) {
           if (sb.length() > 0) {
             sb.append(" ").append(join).append(" ");
           }
-          sb.append(flt);
+          sb.append(wh);
+        }
+        if ("OR".equals(join)) {
+          flt = BeeUtils.parenthesize(sb.toString());
+        } else {
+          flt = sb.toString();
         }
       }
     }
-    return sb.toString();
+    return flt;
   }
 }
