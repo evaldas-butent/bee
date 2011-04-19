@@ -204,6 +204,9 @@ public class Assert {
   }
 
   public static void noNullElements(String message, Object... obj) {
+    if (obj == null) {
+      throw new BeeRuntimeException(message);
+    }
     for (int i = 0; i < obj.length; i++) {
       if (obj[i] == null) {
         throw new BeeRuntimeException(BeeUtils.concat(1, message, BeeUtils.bracket(i)));

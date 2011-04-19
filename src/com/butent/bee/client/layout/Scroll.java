@@ -29,5 +29,4 @@ public class Scroll extends ScrollPanel implements HasId {
   public void setId(String id) {
     DomUtils.setId(this, id);
   }
-
 }

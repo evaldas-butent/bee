@@ -44,6 +44,7 @@ public class StyleUtils {
 
   public static final String VALUE_AUTO = "auto";
   public static final String VALUE_FIXED = "fixed";
+  public static final String VALUE_HIDDEN = "hidden";
   public static final String VALUE_SCROLL = "scroll";
 
   public static final String NAME_HORIZONTAL = "horizontal";
@@ -58,6 +59,20 @@ public class StyleUtils {
     setStyleDependentName(el, styleSuffix, true);
   }
 
+  public static void alwaysScroll(UIObject obj, ScrollBars scroll) {
+    Assert.notNull(obj);
+    alwaysScroll(obj.getElement(), scroll);
+  }
+  
+  public static void alwaysScroll(Element el, ScrollBars scroll) {
+    Assert.notNull(el);
+    alwaysScroll(el.getStyle(), scroll);
+  }
+  
+  public static void alwaysScroll(Style st, ScrollBars scroll) {
+    setOverflow(st, scroll, VALUE_SCROLL);
+  }
+  
   public static void autoHeight(UIObject obj) {
     Assert.notNull(obj);
     autoHeight(obj.getElement());
@@ -84,27 +99,7 @@ public class StyleUtils {
   }
   
   public static void autoScroll(Style st, ScrollBars scroll) {
-    Assert.notNull(st);
-    Assert.notNull(scroll);
-    
-    switch (scroll) {
-      case BOTH:
-        st.setProperty(STYLE_OVERFLOW, VALUE_AUTO);
-        break;
-      case HORIZONTAL:
-        setStyleProperty(st, STYLE_OVERFLOW_X, VALUE_AUTO);
-        break;
-      case VERTICAL:
-        setStyleProperty(st, STYLE_OVERFLOW_Y, VALUE_AUTO);
-        break;
-      case NONE:
-        clearStyleProperty(st, STYLE_OVERFLOW);
-        clearStyleProperty(st, STYLE_OVERFLOW_X);
-        clearStyleProperty(st, STYLE_OVERFLOW_Y);
-        break;
-      default:
-        Assert.untouchable();
-    }
+    setOverflow(st, scroll, VALUE_AUTO);
   }
 
   public static void autoWidth(UIObject obj) {
@@ -293,6 +288,20 @@ public class StyleUtils {
     return BeeUtils.val(st.getTop());
   }
 
+  public static void hideScroll(UIObject obj, ScrollBars scroll) {
+    Assert.notNull(obj);
+    hideScroll(obj.getElement(), scroll);
+  }
+  
+  public static void hideScroll(Element el, ScrollBars scroll) {
+    Assert.notNull(el);
+    hideScroll(el.getStyle(), scroll);
+  }
+  
+  public static void hideScroll(Style st, ScrollBars scroll) {
+    setOverflow(st, scroll, VALUE_HIDDEN);
+  }
+  
   public static void removeStyleDependentName(Element el, String styleSuffix) {
     setStyleDependentName(el, styleSuffix, false);
   }
@@ -358,6 +367,41 @@ public class StyleUtils {
     st.setLeft(px, Unit.PX);
   }
 
+  public static void setOverflow(UIObject obj, ScrollBars scroll, String value) {
+    Assert.notNull(obj);
+    setOverflow(obj.getElement(), scroll, value);
+  }
+  
+  public static void setOverflow(Element el, ScrollBars scroll, String value) {
+    Assert.notNull(el);
+    setOverflow(el.getStyle(), scroll, value);
+  }
+  
+  public static void setOverflow(Style st, ScrollBars scroll, String value) {
+    Assert.notNull(st);
+    Assert.notNull(scroll);
+    Assert.notEmpty(value);
+    
+    switch (scroll) {
+      case BOTH:
+        st.setProperty(STYLE_OVERFLOW, value);
+        break;
+      case HORIZONTAL:
+        setStyleProperty(st, STYLE_OVERFLOW_X, value);
+        break;
+      case VERTICAL:
+        setStyleProperty(st, STYLE_OVERFLOW_Y, value);
+        break;
+      case NONE:
+        clearStyleProperty(st, STYLE_OVERFLOW);
+        clearStyleProperty(st, STYLE_OVERFLOW_X);
+        clearStyleProperty(st, STYLE_OVERFLOW_Y);
+        break;
+      default:
+        Assert.untouchable();
+    }
+  }
+  
   public static void setStyleDependentName(Element el, String styleSuffix, boolean add) {
     Assert.notNull(el);
     Assert.notEmpty(styleSuffix);

@@ -198,7 +198,7 @@ public class ResponseBuffer {
   }
 
   public void addPropertiesColumns(String... cap) {
-    int c = cap.length;
+    int c = (cap == null) ? 0 : cap.length;
     String nm;
 
     for (int i = 0; i < Property.HEADER_COUNT + 1; i++) {
@@ -209,7 +209,6 @@ public class ResponseBuffer {
       } else {
         nm = "Date";
       }
-
       addColumn(new BeeColumn(nm));
     }
   }
@@ -288,10 +287,9 @@ public class ResponseBuffer {
   }
 
   public void build(Object... obj) {
-    if (obj.length == 0) {
+    if (obj == null || obj.length == 0) {
       return;
     }
-
     for (Object z : obj) {
       add(z);
     }

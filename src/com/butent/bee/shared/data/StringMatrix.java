@@ -2,6 +2,8 @@ package com.butent.bee.shared.data;
 
 import com.butent.bee.shared.ArraySequence;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.StringArray;
 import com.butent.bee.shared.data.sort.SortInfo;
 import com.butent.bee.shared.data.value.ValueType;
@@ -57,12 +59,12 @@ public class StringMatrix<ColType extends IsColumn> extends AbstractTable<String
 
   @Override
   public StringRow createRow(long id) {
-    return new StringRow(id, new StringArray(0));
+    return new StringRow(id, new StringArray(BeeConst.EMPTY_STRING_ARRAY));
   }
 
   @Override
   public int getNumberOfRows() {
-    return (rows == null) ? 0 : getRows().length();
+    return (rows == null) ? 0 : getRows().getLength();
   }
 
   @Override
@@ -98,9 +100,20 @@ public class StringMatrix<ColType extends IsColumn> extends AbstractTable<String
   @Override
   public void sort(SortInfo... sortInfo) {
     if (getNumberOfRows() > 1) {
-      StringRow[] arr = getRows().getArray();
       RowOrdering ord = new RowOrdering(sortInfo);
+      Pair<StringRow[], Integer> pair = getRows().getArray(new StringRow[0]);
+      int len = pair.getB();
+
+      StringRow[] arr;
+      if (len == pair.getA().length) {
+        arr = pair.getA();
+      } else {  
+        arr = new StringRow[len];
+        System.arraycopy(pair.getA(), 0, arr, 0, len);
+      }
+
       Arrays.sort(arr, ord);
+      getRows().setValues(arr);
     }
   }
 

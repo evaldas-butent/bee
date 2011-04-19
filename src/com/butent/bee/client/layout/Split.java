@@ -191,6 +191,17 @@ public class Split extends ComplexPanel implements AnimatedLayout,
     return x;
   }
 
+  public List<Widget> getDirectionChildren(Direction dir) {
+    List<Widget> lst = new ArrayList<Widget>();
+
+    for (Widget w : getChildren()) {
+      if (getWidgetDirection(w) == dir) {
+        lst.add(w);
+      }
+    }
+    return lst;
+  }
+
   public List<ExtendedProperty> getDirectionInfo(Direction dir) {
     Assert.notNull(dir);
     List<ExtendedProperty> lst = new ArrayList<ExtendedProperty>();
@@ -582,17 +593,6 @@ public class Split extends ComplexPanel implements AnimatedLayout,
           "Absolute Position", bspl.getAbsolutePosition(),
           "Target Position", bspl.getTargetPosition(),
           "Target Size", bspl.getTargetSize());
-    }
-    return lst;
-  }
-
-  private List<Widget> getDirectionChildren(Direction dir) {
-    List<Widget> lst = new ArrayList<Widget>();
-
-    for (Widget w : getChildren()) {
-      if (getWidgetDirection(w) == dir) {
-        lst.add(w);
-      }
     }
     return lst;
   }

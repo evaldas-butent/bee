@@ -9,9 +9,9 @@ public interface Sequence<T> extends HasLength, Iterable<T> {
   
   T get(int index);
   
-  T[] getArray();
+  Pair<T[], Integer> getArray(T[] a);
   List<T> getList();
-
+  
   void insert(int index, T value);
   
   void remove(int index);

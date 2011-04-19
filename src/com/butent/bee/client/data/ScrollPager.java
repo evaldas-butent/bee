@@ -3,41 +3,46 @@ package com.butent.bee.client.data;
 import com.google.gwt.event.dom.client.ScrollEvent;
 import com.google.gwt.event.dom.client.ScrollHandler;
 import com.google.gwt.user.cellview.client.AbstractPager;
+import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.view.client.HasRows;
 
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.dom.StyleUtils;
+import com.butent.bee.client.dom.StyleUtils.ScrollBars;
 import com.butent.bee.client.layout.Scroll;
 import com.butent.bee.client.widget.Html;
 
-public class ScrollPager extends AbstractPager {
+public class ScrollPager extends AbstractPager implements RequiresResize {
+  public static int maxHeight = 10000;
 
-  private final Scroll scroll = new Scroll();
-  private int lastPos = -1;
+  private static final int UNKNOWN = -1;
 
-  public ScrollPager(int pageSize, int rowCount) {
+  private int lastPos = UNKNOWN;
+  private long lastHeight = UNKNOWN;
+  private boolean isScrolling = false;
+
+  public ScrollPager() {
     Widget widget = new Html();
     DomUtils.setWidth(widget, 0);
-    DomUtils.setHeight(widget, rowCount * 1000 / pageSize);
-    
-    scroll.add(widget);
+    DomUtils.setHeight(widget, 0);
+
+    Scroll scroll = new Scroll(widget);
     initWidget(scroll);
+
+    StyleUtils.hideScroll(scroll, ScrollBars.HORIZONTAL);
+    StyleUtils.alwaysScroll(scroll, ScrollBars.VERTICAL);
 
     scroll.addScrollHandler(new ScrollHandler() {
       public void onScroll(ScrollEvent event) {
-        int pos = scroll.getVerticalScrollPosition();
-        int maxPos = scroll.getWidget().getOffsetHeight();
+        int pos = getPosition();
+        int maxPos = getMaxPosition();
         if (pos < 0 || pos == lastPos || pos > maxPos) {
           return;
         }
-        
-        HasRows display = getDisplay();
-        if (display == null) {
-          return;
-        }
-        
-        int ps = display.getVisibleRange().getLength(); 
-        int rc = display.getRowCount();
+
+        int ps = getPageSize();
+        int rc = getRowCount();
         if (ps <= 0 || ps >= rc) {
           return;
         }
@@ -47,28 +52,101 @@ public class ScrollPager extends AbstractPager {
           z = rc - ps;
         }
         
-        display.setVisibleRange(z, ps);
-        
-//        BeeKeeper.getLog().info(pos, lastPos, maxPos, ps, rc, z);
+        if (z != getPageStart()) {
+          isScrolling = true;
+          setPageStart(z);
+        }
         lastPos = pos;
       }
     });
   }
 
   @Override
+  public void onResize() {
+    updateHeight();
+  }
+
+  @Override
   protected void onRangeOrRowCountChanged() {
+    if (isScrolling) {
+      isScrolling = false;
+      return;
+    }
+
+    updateHeight();
+
+    int start = getPageStart();
+    int rc = getRowCount();
+    int maxPos = getMaxPosition();
+    int pos = start * maxPos / rc;
+
+    if (pos >= 0 && pos <= maxPos) {
+      setPosition(pos);
+      lastPos = pos;
+    }
+  }
+
+  private long calculateHeight(int pageSize, int rowCount, int widgetHeight) {
+    if (pageSize <= 0 || rowCount < pageSize || widgetHeight <= 0) {
+      return UNKNOWN;
+    }
+    return (long) widgetHeight * rowCount / pageSize;
+  }
+
+  private Widget getInnerWidget() {
+    Scroll outer = getOuterWidget();
+    if (outer == null) {
+      return null;
+    }
+    return outer.getWidget();
+  }
+
+  private int getMaxPosition() {
+    if (lastHeight < maxHeight) {
+      return (int) lastHeight;
+    } else {
+      return maxHeight;
+    }
+  }
+
+  private Scroll getOuterWidget() {
+    Widget outer = getWidget();
+    if (outer == null) {
+      return null;
+    }
+    return (Scroll) outer;
+  }
+
+  private int getPosition() {
+    Scroll outer = getOuterWidget();
+    if (outer == null) {
+      return UNKNOWN;
+    }
+    return outer.getVerticalScrollPosition();
+  }
+
+  private int getRowCount() {
     HasRows display = getDisplay();
-    if (display != null) {
-      int start = display.getVisibleRange().getStart();
-      int rc = display.getRowCount();
-      int maxPos = scroll.getWidget().getOffsetHeight();
-      int pos = start * maxPos / rc;
-      
-      if (pos >= 0 && pos <= maxPos) {
-        scroll.setVerticalScrollPosition(pos);
-        lastPos = pos;
-//        BeeKeeper.getLog().info("r", start, rc, maxPos, pos);
-      }  
+    if (display == null) {
+      return UNKNOWN;
+    } else {
+      return display.getRowCount();
+    }
+  }
+
+  private void setPosition(int position) {
+    Scroll outer = getOuterWidget();
+    if (outer != null && position >= 0) {
+      outer.setVerticalScrollPosition(position);
+    }
+  }
+
+  private void updateHeight() {
+    long h = calculateHeight(getPageSize(), getRowCount(), getElement().getClientHeight());
+    if (h >= 0 && h != lastHeight) {
+      lastHeight = h;
+      int z = (h < maxHeight) ? (int) h : maxHeight;
+      DomUtils.setHeight(getInnerWidget(), z);
     }
   }
 }

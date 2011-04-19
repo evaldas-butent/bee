@@ -89,9 +89,9 @@ public class SimpleCache<K, V> implements HasInfo {
         "Is Full", isFull(), "Fill Ratio", getFillRatio(),
         "Replacement Policy", getReplacementPolicy(), "History Size", getHistorySize(),
         "Add Count", getAddCount(), "Rem Count", getRemCount(),
-        "Last Add", new DateTime(getLastAdd()), "Last Rem", new DateTime(getLastRem()),
+        "Last Add", transformTime(getLastAdd()), "Last Rem", transformTime(getLastRem()),
         "Hit Count", getHitCount(), "Miss Count", getMissCount(), "Hit Ratio", getHitRatio(),
-        "Last Hit", new DateTime(getLastHit()), "Last Miss", new DateTime(getLastMiss()));
+        "Last Hit", transformTime(getLastHit()), "Last Miss", transformTime(getLastMiss()));
   }
 
   public long getLastAdd() {
@@ -286,5 +286,13 @@ public class SimpleCache<K, V> implements HasInfo {
   private void setMiss() {
     missCount++;
     lastMiss = currentTime();
+  }
+  
+  private String transformTime(long time) {
+    if (time <= 0) {
+      return BeeConst.STRING_MINUS;
+    } else {
+      return new DateTime(time).toString();
+    }
   }
 }

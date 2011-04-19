@@ -1,6 +1,7 @@
 package com.butent.bee.client.visualization;
 
 import com.butent.bee.client.visualization.AbstractDataTable.ColumnType;
+import com.butent.bee.shared.Assert;
 
 import java.util.AbstractList;
 import java.util.ArrayList;
@@ -197,13 +198,12 @@ public abstract class DataColumn<T> extends AbstractList<T> {
   final ColumnType columnType;
   
   DataColumn(AbstractDataTable table, int columnIndex, ColumnType... compatibleColumnTypes) {
-    if (columnIndex < 0 || columnIndex >= table.getNumberOfColumns()) {
-      throw new IndexOutOfBoundsException(Integer.toString(columnIndex));
-    }
+    Assert.notNull(table);
+    Assert.betweenExclusive(columnIndex, 0, table.getNumberOfColumns());
+    Assert.notNull(compatibleColumnTypes);
+
     this.columnType = table.getColumnType(columnIndex);
-    if (!Arrays.asList(compatibleColumnTypes).contains(columnType)) {
-      throw new IllegalArgumentException(columnType.name());
-    }
+    Assert.isTrue(Arrays.asList(compatibleColumnTypes).contains(columnType));
     this.data = table;
     this.columnIndex = columnIndex;
   }

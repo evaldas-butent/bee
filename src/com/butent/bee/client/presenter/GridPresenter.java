@@ -1,221 +1,138 @@
 package com.butent.bee.client.presenter;
 
-import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
-import com.google.gwt.user.cellview.client.ColumnSortEvent;
-import com.google.gwt.user.cellview.client.ColumnSortEvent.AsyncHandler;
-import com.google.gwt.user.cellview.client.HasKeyboardPagingPolicy.KeyboardPagingPolicy;
-import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
-import com.google.gwt.view.client.AbstractDataProvider;
-import com.google.gwt.view.client.MultiSelectionModel;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.Global;
 import com.butent.bee.client.data.AsyncProvider;
-import com.butent.bee.client.data.DataProvider;
-import com.butent.bee.client.data.KeyProvider;
-import com.butent.bee.client.data.PageResizer;
-import com.butent.bee.client.data.Pager;
+import com.butent.bee.client.data.CachedProvider;
+import com.butent.bee.client.data.Provider;
 import com.butent.bee.client.data.Queries;
-import com.butent.bee.client.data.ScrollPager;
-import com.butent.bee.client.dom.DomUtils;
-import com.butent.bee.client.dom.StyleUtils;
-import com.butent.bee.client.dom.StyleUtils.ScrollBars;
-import com.butent.bee.client.grid.CellColumn;
-import com.butent.bee.client.grid.CellGrid;
-import com.butent.bee.client.grid.ColumnHeader;
-import com.butent.bee.client.grid.GridFactory;
-import com.butent.bee.client.grid.RowIdColumn;
-import com.butent.bee.client.layout.BeeLayoutPanel;
-import com.butent.bee.client.layout.Split;
-import com.butent.bee.client.view.SearchBox;
-import com.butent.bee.client.widget.BeeImage;
-import com.butent.bee.client.widget.BeeLabel;
+import com.butent.bee.client.view.GridContainerImpl;
+import com.butent.bee.client.view.GridContainerView;
+import com.butent.bee.client.view.SearchView;
+import com.butent.bee.client.view.View;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
-import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.view.Filter;
-import com.butent.bee.shared.data.view.ViewInfo;
+import com.butent.bee.shared.data.view.DataInfo;
 
 import java.util.List;
 
-public class GridPresenter {
-  private final ViewInfo viewInfo;
+public class GridPresenter implements Presenter {
+  private final DataInfo dataInfo;
   private final boolean async;
   private final List<BeeColumn> dataColumns;
 
   private int rowCount;
 
-  private final CellGrid cellGrid;
-  private final AbstractDataProvider<IsRow> dataProvider;
-  private final Split gridView;
+  private final GridContainerView gridContainer;
+  private final Provider dataProvider;
 
-  public GridPresenter(ViewInfo viewInfo, BeeRowSet rowSet, boolean async) {
-    super();
-    this.viewInfo = viewInfo;
+  public GridPresenter(DataInfo dataInfo, BeeRowSet rowSet, boolean async) {
+    this.dataInfo = dataInfo;
     this.async = async;
     this.dataColumns = rowSet.getColumns();
-    this.rowCount = async ? viewInfo.getRowCount() : rowSet.getNumberOfRows();
+    this.rowCount = async ? dataInfo.getRowCount() : rowSet.getNumberOfRows();
 
-    this.cellGrid = createGrid(dataColumns, rowCount);
-    this.dataProvider = createProvider(viewInfo, rowSet, cellGrid, async);
-    this.gridView = createView(cellGrid, rowCount, async);
+    this.gridContainer = createView(dataInfo.getName(), dataColumns, rowCount);
+    this.dataProvider = createProvider(gridContainer, dataInfo, rowSet, async);
+
+    bind();
   }
 
-  public Widget getGridView() {
-    return gridView;
+  public List<BeeColumn> getDataColumns() {
+    return dataColumns;
   }
 
-  private CellGrid createGrid(List<BeeColumn> dataCols, int pageSize) {
-    CellGrid grid = new CellGrid(pageSize);
-    grid.setTableLayoutFixed(true);
+  public DataInfo getDataInfo() {
+    return dataInfo;
+  }
 
-    grid.insertColumn(0, new RowIdColumn(), "Row Id");
+  public Provider getDataProvider() {
+    return dataProvider;
+  }
 
-    BeeColumn dataColumn;
-    CellColumn<?> column;
-    for (int i = 0; i < dataCols.size(); i++) {
-      dataColumn = dataCols.get(i);
-      column = GridFactory.createColumn(dataColumn, i);
-      column.setSortable(true);
-      grid.addColumn(column, new ColumnHeader(dataColumn));
+  public int getRowCount() {
+    return rowCount;
+  }
+
+  public GridContainerView getView() {
+    return gridContainer;
+  }
+
+  public Widget getWidget() {
+    return getView().asWidget();
+  }
+
+  public boolean isAsync() {
+    return async;
+  }
+
+  public void onUnload(View view) {
+  }
+
+  public void setRowCount(int rowCount) {
+    this.rowCount = rowCount;
+  }
+
+  public void start(int containerWidth, int containerHeight) {
+    int pageSize = getView().estimatePageSize(containerWidth, containerHeight);
+    if (pageSize > 0) {
+      getView().updatePageSize(pageSize);
     }
-
-    MultiSelectionModel<IsRow> selector = new MultiSelectionModel<IsRow>(new KeyProvider());
-    grid.setSelectionModel(selector);
-
-    return grid;
   }
 
-  private AbstractDataProvider<IsRow> createProvider(ViewInfo ti, BeeRowSet data, CellGrid grid,
+  private void bind() {
+    final SearchView search = getView().getSearchView();
+
+    if (getRowCount() > 1 && getDataProvider() instanceof AsyncProvider && search != null) {
+      search.addChangeHandler(new ChangeHandler() {
+        @Override
+        public void onChange(ChangeEvent event) {
+          updateFilter(search.getFilter());
+        }
+      });
+    }
+  }
+
+  private Provider createProvider(GridContainerView view, DataInfo info, BeeRowSet rowSet,
       boolean isAsync) {
-    AbstractDataProvider<IsRow> provider;
+    Provider provider;
     if (isAsync) {
-      provider = new AsyncProvider(ti);
+      provider = new AsyncProvider(view.getContent(), info);
     } else {
-      provider = new DataProvider(data);
-    }
-
-    provider.addDataDisplay(grid);
-    if (provider instanceof ColumnSortEvent.Handler) {
-      grid.addColumnSortHandler((ColumnSortEvent.Handler) provider);
+      provider = new CachedProvider(view.getContent(), rowSet);
     }
     return provider;
   }
 
-  private Split createView(CellGrid grid, int rows, boolean isAsync) {
-    int pageSize = -1;
+  private GridContainerView createView(String caption, List<BeeColumn> columns, int rc) {
+    GridContainerView view = new GridContainerImpl();
+    view.create(caption, columns, rc);
 
-    if (isAsync) {
-      grid.setRowCount(rows, true);
-      AsyncHandler sorter = new AsyncHandler(grid);
-      grid.addColumnSortHandler(sorter);
-    }
-
-    if (rows > 30) {
-      pageSize = 20;
-      grid.setPageSize(pageSize);
-      grid.setKeyboardPagingPolicy(KeyboardPagingPolicy.CHANGE_PAGE);
-    }
-
-    Split panel = new Split(2);
-    int x;
-    int y;
-    int w;
-
-    BeeLayoutPanel header = new BeeLayoutPanel();
-    header.addStyleName(StyleUtils.WINDOW_HEADER);
-    x = 2;
-    y = 2;
-    w = 32;
-
-    header.addRightWidthTop(new BeeImage(Global.getImages().close()), x, w, y);
-    header.addRightWidthTop(new BeeImage(Global.getImages().configure()), x += w * 2, w, y);
-    header.addRightWidthTop(new BeeImage(Global.getImages().save()), x += w, w, y);
-    header.addRightWidthTop(new BeeImage(Global.getImages().bookmarkAdd()), x += w, w, y);
-    header.addRightWidthTop(new BeeImage(Global.getImages().editDelete()), x += w, w, y);
-    header.addRightWidthTop(new BeeImage(Global.getImages().editAdd()), x += w, w, y);
-    header.addRightWidthTop(new BeeImage(Global.getImages().reload()), x += w, w, y);
-
-    BeeLabel caption = new BeeLabel(getViewName());
-    caption.addStyleName(StyleUtils.WINDOW_CAPTION);
-    header.addLeftWidthTop(caption, 16, 200, 0);
-
-    panel.addNorth(header, 22, null, -1);
-
-    BeeLayoutPanel footer = new BeeLayoutPanel();
-    footer.addStyleName(StyleUtils.WINDOW_FOOTER);
-    x = 0;
-    y = 2;
-
-    if (rowCount > 10) {
-      x += 4;
-      Pager sp = new Pager(rowCount);
-      sp.setDisplay(grid);
-      w = 256;
-      footer.addLeftWidthTop(sp, x, w, y);
-      x += w;
-
-      PageResizer psz = new PageResizer(grid.getPageSize(), 1, rowCount, 1);
-      psz.setDisplay(grid);
-      w = 64;
-      footer.addLeftWidthTop(psz, x, w, y);
-      x += w;
-    }
-
-    if (rowCount > 1) {
-      x += 16;
-      final SearchBox search = new SearchBox();
-      footer.addLeftTop(search, x, y + 1);
-      footer.setWidgetLeftRight(search, x, Unit.PX, 16, Unit.PX);
-
-      if (dataProvider instanceof AsyncProvider) {
-        search.addChangeHandler(new ChangeHandler() {
-          @Override
-          public void onChange(ChangeEvent event) {
-            updateFilter(search.getFilter());
-          }
-        });
-      }
-    }
-
-    panel.addSouth(footer, 32, null, -1);
-
-    if (pageSize > 0) {
-      ScrollPager scroll = new ScrollPager(pageSize, rowCount);
-      scroll.setDisplay(grid);
-      panel.addEast(scroll, DomUtils.getScrollbarWidth() + 1, null, -1);
-
-      grid.sinkEvents(Event.ONMOUSEWHEEL);
-    }
-
-    panel.add(grid, ScrollBars.HORIZONTAL);
-
-    return panel;
+    return view;
   }
 
-  private String getViewName() {
-    return viewInfo.getName();
+  private String getDataName() {
+    return getDataInfo().getName();
   }
 
   private void updateFilter(final Filter filter) {
     BeeKeeper.getLog().info(filter == null ? "no filter" : filter);
 
-    Queries.getRowCount(getViewName(), filter, new Queries.IntCallback() {
+    Queries.getRowCount(getDataName(), filter, new Queries.IntCallback() {
       public void onResponse(int value) {
         BeeKeeper.getLog().info(value);
 
-        if (value > 0 && value != rowCount) {
-          rowCount = value;
-          if (async) {
-            ((AsyncProvider) dataProvider).setFilter(filter);
-            cellGrid.setRowCount(value, true);
-            if (cellGrid.getPageSize() > value) {
-              cellGrid.setPageSize(value);
-            }
-            cellGrid.setVisibleRangeAndClearData(cellGrid.getVisibleRange(), true);
+        if (value > 0 && value != getRowCount()) {
+          setRowCount(value);
+          if (isAsync()) {
+            ((AsyncProvider) getDataProvider()).setFilter(filter);
+            getView().getContent().setRowCount(value, true);
+            getView().getContent().setVisibleRangeAndClearData(
+                getView().getContent().getVisibleRange(), true);
           }
         }
       }

@@ -23,6 +23,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 public class InputBox {
   public void inputVars(Stage bst, String cap, Variable... vars) {
+    Assert.notNull(vars);
     Assert.parameterCount(vars.length + 1, 2);
 
     FlexTable ft = new FlexTable();

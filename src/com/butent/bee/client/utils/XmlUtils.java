@@ -13,6 +13,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 public class XmlUtils {
   public static String createSimple(String rootName, Object... nodes) {
     Assert.notEmpty(rootName);
+    Assert.notNull(nodes);
     Assert.parameterCount(nodes.length + 1, 3);
 
     return transformDocument(createDoc(rootName, nodes), null);
@@ -20,6 +21,7 @@ public class XmlUtils {
 
   public static String createString(String rootName, Object... nodes) {
     Assert.notEmpty(rootName);
+    Assert.notNull(nodes);
     Assert.parameterCount(nodes.length + 1, 3);
 
     return transformDocument(createDoc(rootName, nodes));
@@ -27,6 +29,7 @@ public class XmlUtils {
 
   public static String fromVars(String rootName, String... names) {
     Assert.notEmpty(rootName);
+    Assert.notNull(names);
     Assert.parameterCount(names.length + 1, 2);
 
     Object[] nodes = new Object[names.length * 2];
@@ -38,8 +41,7 @@ public class XmlUtils {
     return transformDocument(createDoc(rootName, nodes));
   }
 
-  private static void appendElementWithText(Document doc, Element root,
-      String tag, String txt) {
+  private static void appendElementWithText(Document doc, Element root, String tag, String txt) {
     Element el = doc.createElement(tag);
     Text x = doc.createTextNode(txt);
 
@@ -66,7 +68,6 @@ public class XmlUtils {
       if (BeeUtils.isEmpty(txt)) {
         continue;
       }
-
       appendElementWithText(doc, root, tag, txt);
     }
 

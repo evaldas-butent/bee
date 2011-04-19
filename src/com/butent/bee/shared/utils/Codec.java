@@ -240,7 +240,7 @@ public class Codec {
    * @return
    */
   public static String beeSerializeAll(Object... obj) {
-    Assert.parameterCount(obj.length, 1);
+    Assert.parameterCount((obj == null) ? 0 : obj.length, 1);
     StringBuilder sb = new StringBuilder();
 
     for (Object o : obj) {
@@ -668,7 +668,7 @@ public class Codec {
    * @return a String with serializes values
    */
   public static String serializeValues(Object... obj) {
-    int n = obj.length;
+    int n = (obj == null) ? 0 : obj.length;
     Assert.parameterCount(n, 1);
 
     StringBuilder sb = new StringBuilder();

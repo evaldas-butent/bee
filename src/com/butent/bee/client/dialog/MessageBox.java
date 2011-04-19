@@ -23,6 +23,7 @@ import java.util.Iterator;
 public class MessageBox {
 
   public void alert(Object... obj) {
+    Assert.notNull(obj);
     Assert.parameterCount(obj.length, 1);
     Window.alert(BeeUtils.concat(BeeConst.CHAR_EOL, obj));
   }
@@ -43,6 +44,7 @@ public class MessageBox {
   }
 
   public boolean confirm(Object... obj) {
+    Assert.notNull(obj);    
     Assert.parameterCount(obj.length, 1);
     return Window.confirm(BeeUtils.concat(BeeConst.CHAR_EOL, obj));
   }
@@ -57,6 +59,7 @@ public class MessageBox {
   }
 
   public void showInfo(Object... x) {
+    Assert.notNull(x);
     int n = x.length;
     Assert.parameterCount(n, 1);
 

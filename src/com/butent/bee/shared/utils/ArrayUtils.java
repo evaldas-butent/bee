@@ -45,8 +45,8 @@ public class ArrayUtils {
    * @param newLength number of elements to be copied
    * @return a new array
    */
-  public static <T> T[] copyOf(T[] original, int newLength) {
-    T[] copy = create(newLength);
+  public static Object[] copyOf(Object[] original, int newLength) {
+    Object[] copy = create(newLength);
     if (newLength > 0) {
       System.arraycopy(original, 0, copy, 0, Math.min(original.length, newLength));
     }
@@ -62,9 +62,9 @@ public class ArrayUtils {
    * @param to end index
    * @return a new array
    */
-  public static <T> T[] copyOfRange(T[] src, int from, int to) {
+  public static Object[] copyOfRange(Object[] src, int from, int to) {
     int dstLen = to - from;
-    T[] dst = create(dstLen);
+    Object[] dst = create(dstLen);
     if (dstLen > 0) {
       System.arraycopy(src, from, dst, 0, Math.min(src.length - from, dstLen));
     }
@@ -77,11 +77,9 @@ public class ArrayUtils {
    * @param size the size of the new array
    * @return a new empty array.
    */
-  // TODO Array.newInstance
-  @SuppressWarnings("unchecked")
-  public static <T> T[] create(int size) {
+  public static Object[] create(int size) {
     Assert.nonNegative(size);
-    return (T[]) new Object[size];
+    return new Object[size];
   }
 
   /**
@@ -162,10 +160,10 @@ public class ArrayUtils {
    * @param value value to insert
    * @return an array with the value inserted in specified index
    */
-  public static <T> T[] insert(T[] source, int index, T value) {
+  public static Object[] insert(Object[] source, int index, Object value) {
     Assert.notNull(source);
     Assert.betweenInclusive(index, 0, source.length);
-    T[] result = copyOf(source, source.length + 1);
+    Object[] result = copyOf(source, source.length + 1);
 
     result[index] = value;
     for (int i = index + 1; i < source.length + 1; i++) {
@@ -309,9 +307,9 @@ public class ArrayUtils {
    * @param index the element in the index to remove
    * @return a new array with the value from the specified index removed.
    */
-  public static <T> T[] remove(T[] source, int index) {
+  public static Object[] remove(Object[] source, int index) {
     Assert.isIndex(source, index);
-    T[] result;
+    Object[] result;
 
     if (index == 0) {
       result = copyOfRange(source, 1, source.length);
@@ -336,7 +334,7 @@ public class ArrayUtils {
     if (BeeUtils.isEmpty(arr)) {
       return BeeConst.STRING_EMPTY;
     }
-    int cSep = sep.length;
+    int cSep = (sep == null) ? 0 : sep.length;
     String z = cSep > 0 ? BeeUtils.normSep(sep[0]) : BeeConst.DEFAULT_LIST_SEPARATOR;
 
     StringBuilder sb = new StringBuilder();

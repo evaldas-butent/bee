@@ -45,7 +45,7 @@ public class LogHandler implements Module {
     Assert.notNull(dur);
 
     dur.finish();
-    if (obj.length > 0) {
+    if (obj != null && obj.length > 0) {
       info(dur.toLog(), obj);
     } else {
       info(dur.toLog());

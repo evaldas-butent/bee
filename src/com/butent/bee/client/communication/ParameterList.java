@@ -114,6 +114,7 @@ public class ParameterList extends ArrayList<RpcParameter> implements Transforma
   }
   
   public void addPositionalData(Object... values) {
+    Assert.notNull(values);
     Assert.parameterCount(values.length, 1);
     for (Object v : values) {
       addDataItem(v);
@@ -121,6 +122,7 @@ public class ParameterList extends ArrayList<RpcParameter> implements Transforma
   }
 
   public void addPositionalData(String... values) {
+    Assert.notNull(values);
     Assert.parameterCount(values.length, 1);
     for (Object v : values) {
       addDataItem(v);
@@ -128,6 +130,7 @@ public class ParameterList extends ArrayList<RpcParameter> implements Transforma
   }
 
   public void addPositionalHeader(Object... values) {
+    Assert.notNull(values);
     Assert.parameterCount(values.length, 1);
     for (Object v : values) {
       addHeaderItem(v);
@@ -135,6 +138,7 @@ public class ParameterList extends ArrayList<RpcParameter> implements Transforma
   }
 
   public void addPositionalHeader(String... values) {
+    Assert.notNull(values);
     Assert.parameterCount(values.length, 1);
     for (Object v : values) {
       addHeaderItem(v);
@@ -142,6 +146,7 @@ public class ParameterList extends ArrayList<RpcParameter> implements Transforma
   }
 
   public void addPositionalQuery(Object... values) {
+    Assert.notNull(values);
     Assert.parameterCount(values.length, 1);
     for (Object v : values) {
       addQueryItem(v);
@@ -149,6 +154,7 @@ public class ParameterList extends ArrayList<RpcParameter> implements Transforma
   }
 
   public void addPositionalQuery(String... values) {
+    Assert.notNull(values);
     Assert.parameterCount(values.length, 1);
     for (Object v : values) {
       addQueryItem(v);
@@ -214,7 +220,7 @@ public class ParameterList extends ArrayList<RpcParameter> implements Transforma
       return;
     }
 
-    int n = ignore.length;
+    int n = (ignore == null) ? 0 : ignore.length;
 
     for (RpcParameter item : headerItems) {
       if (item.isReady()) {

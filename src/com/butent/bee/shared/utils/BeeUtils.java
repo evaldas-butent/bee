@@ -58,6 +58,9 @@ public class BeeUtils {
    *         aren't empty.
    */
   public static boolean allEmpty(Object... obj) {
+    if (obj == null) {
+      return true; 
+    }
     Assert.parameterCount(obj.length, 1);
     boolean ok = true;
 
@@ -78,6 +81,7 @@ public class BeeUtils {
    *         objects are empty.
    */
   public static boolean allNotEmpty(Object... obj) {
+    Assert.notNull(obj);
     Assert.parameterCount(obj.length, 1);
     boolean ok = true;
 
@@ -328,7 +332,7 @@ public class BeeUtils {
    *         only single Object is specified.
    */
   public static String concat(Object... x) {
-    int c = x.length;
+    int c = (x == null) ? 0 : x.length;
     if (c <= 1) {
       return BeeConst.STRING_EMPTY;
     }
@@ -883,6 +887,7 @@ public class BeeUtils {
    */
   @SuppressWarnings("unchecked")
   public static <T> T iif(Object... obj) {
+    Assert.notNull(obj);
     int n = obj.length;
     Assert.parameterCount(n, 3);
 
@@ -926,6 +931,7 @@ public class BeeUtils {
    *         {@code x}.
    */
   public static <T extends Comparable<T>> boolean inList(T x, T... lst) {
+    Assert.notNull(lst);
     boolean ok = false;
 
     for (int i = 0; i < lst.length; i++) {
@@ -947,6 +953,7 @@ public class BeeUtils {
    */
   public static boolean inListIgnoreCase(String x, String... lst) {
     Assert.notEmpty(x);
+    Assert.notNull(lst);
     boolean ok = false;
 
     for (int i = 0; i < lst.length; i++) {
@@ -967,6 +974,7 @@ public class BeeUtils {
    */
   public static boolean inListSame(String x, String... lst) {
     Assert.notEmpty(x);
+    Assert.notNull(lst);
     boolean ok = false;
 
     String z = x.trim().toLowerCase();
@@ -1523,6 +1531,7 @@ public class BeeUtils {
    * @return a new list containing all elements from the {@code src} lists.
    */
   public static <T> List<T> join(List<? extends T>... src) {
+    Assert.notNull(src);
     int n = src.length;
     Assert.parameterCount(n, 2);
 
@@ -1575,7 +1584,7 @@ public class BeeUtils {
     } else if (x instanceof Map) {
       len = ((Map<?, ?>) x).size();
     } else if (x instanceof HasLength) {
-      len = ((HasLength) x).length();
+      len = ((HasLength) x).getLength();
     } else if (ArrayUtils.isArray(x)) {
       len = ArrayUtils.length(x);
     } else {
@@ -1670,6 +1679,7 @@ public class BeeUtils {
    * @return the greatest value of all of the Objects.
    */
   public static <T extends Comparable<T>> T max(T... x) {
+    Assert.notNull(x);
     int n = x.length;
     Assert.parameterCount(n, 2);
     T z = x[0];
@@ -1689,6 +1699,7 @@ public class BeeUtils {
    * @return the smallest value of all of the Objects.
    */
   public static <T extends Comparable<T>> T min(T... x) {
+    Assert.notNull(x);
     int n = x.length;
     Assert.parameterCount(n, 2);
     T z = x[0];
@@ -1769,6 +1780,7 @@ public class BeeUtils {
    *         found.
    */
   public static <T> T nvl(T... obj) {
+    Assert.notNull(obj);
     Assert.parameterCount(obj.length, 2);
     T z = null;
 
@@ -2582,7 +2594,7 @@ public class BeeUtils {
       return BeeConst.STRING_EMPTY;
     }
 
-    int cSep = sep.length;
+    int cSep = (sep == null) ? 0 : sep.length;
     String z = cSep > 0 ? normSep(sep[0]) : BeeConst.DEFAULT_LIST_SEPARATOR;
 
     StringBuilder sb = new StringBuilder();
@@ -2620,7 +2632,7 @@ public class BeeUtils {
     if (isEmpty(src)) {
       return BeeConst.STRING_EMPTY;
     }
-    int cSep = sep.length;
+    int cSep = (sep == null) ? 0 : sep.length;
     String z = cSep > 0 ? normSep(sep[0]) : BeeConst.DEFAULT_LIST_SEPARATOR;
 
     StringBuilder sb = new StringBuilder();
@@ -2658,7 +2670,7 @@ public class BeeUtils {
     if (isEmpty(map)) {
       return BeeConst.STRING_EMPTY;
     }
-    int cSep = sep.length;
+    int cSep = (sep == null) ? 0 : sep.length;
     String z = cSep > 0 ? normSep(sep[0]) : BeeConst.DEFAULT_LIST_SEPARATOR;
 
     StringBuilder sb = new StringBuilder();
@@ -2714,10 +2726,9 @@ public class BeeUtils {
    * @return a String representation of Objects {@code opt}.
    */
   public static String transformOptions(Object... opt) {
+    Assert.notNull(opt);
     int c = opt.length;
-    if (c < 2) {
-      return null;
-    }
+    Assert.parameterCount(c, 2);
 
     StringBuilder sb = new StringBuilder();
     String el;

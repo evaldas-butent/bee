@@ -1,23 +1,25 @@
 package com.butent.bee.client.grid;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.cellview.client.CellTable;
-import com.google.gwt.user.client.Event;
 
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.HasId;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.IsTable;
+import com.butent.bee.shared.utils.BeeUtils;
 
 public class CellGrid extends CellTable<IsRow> implements HasId {
-  public interface GridStyle extends CellTable.Style {
-    String DEFAULT_CSS = "CellGrid.css"; 
-  }
-  
+
   public interface GridResources extends CellTable.Resources {
     @Source(GridStyle.DEFAULT_CSS)
     GridStyle cellTableStyle();
+  }
+  
+  public interface GridStyle extends CellTable.Style {
+    String DEFAULT_CSS = "CellGrid.css"; 
   }
   
   private static GridResources defaultResources = null;
@@ -28,6 +30,12 @@ public class CellGrid extends CellTable<IsRow> implements HasId {
     }
     return defaultResources;
   }
+
+  private int headerCellHeight = 24;
+  private int bodyCellHeight = 22;
+  private int footerCellHeight = -1;
+  
+  private int borderWidth = 1;
   
   public CellGrid(int pageSize) {
     super(pageSize, getDefaultResources());
@@ -36,6 +44,34 @@ public class CellGrid extends CellTable<IsRow> implements HasId {
 
   public void createId() {
     DomUtils.createId(this, "cellgrid");
+  }
+
+  public int getBodyCellHeight() {
+    return bodyCellHeight;
+  }
+  
+  public int getBorderWidth() {
+    return borderWidth;
+  }
+
+  public String getCssBodyCellHeight() {
+    return BeeUtils.toString(getBodyCellHeight()) + Unit.PX.getType();
+  }
+  
+  public String getCssFooterCellHeight() {
+    return BeeUtils.toString(getFooterCellHeight()) + Unit.PX.getType();
+  }
+
+  public String getCssHeaderCellHeight() {
+    return BeeUtils.toString(getHeaderCellHeight()) + Unit.PX.getType();
+  }
+
+  public int getFooterCellHeight() {
+    return footerCellHeight;
+  }
+
+  public int getHeaderCellHeight() {
+    return headerCellHeight;
   }
 
   public String getId() {
@@ -48,37 +84,17 @@ public class CellGrid extends CellTable<IsRow> implements HasId {
     setRowCount(data.getNumberOfRows());
     setRowData(0, data.getRows().getList());
   }
+  
+  public void setBorderWidth(int borderWidth) {
+    this.borderWidth = borderWidth;
+  }
 
   public void setId(String id) {
     DomUtils.setId(this, id);
   }
 
-  @Override
-  protected void onBrowserEvent2(Event event) {
-    super.onBrowserEvent2(event);
-    
-    if (event.getTypeInt() == Event.ONMOUSEWHEEL && !isKeyboardNavigationSuppressed()) {
-      int y = event.getMouseWheelVelocityY();
-      int rc = getRowCount();
-      int start = getPageStart();
-      int length = getPageSize();
-      
-      if (length > 0 && rc > length) {
-        int p = -1;
-        if (y > 0 && start + length < rc) {
-          p = start + 1;
-        } else if (y < 0 && start > 0) {
-          p = start - 1;
-        }
-        
-        if (p >= 0) {
-          setVisibleRange(p, length);
-        }
-      }
-    }
-  }
-  
   private void init() {
     createId();
+    addStyleName("bee-CellGrid");
   }
 }

@@ -14,7 +14,7 @@ public class ExtendedPropertiesData extends RowList<TableRow, TableColumn> {
   public ExtendedPropertiesData(List<ExtendedProperty> data, String... columnLabels) {
     super();
 
-    int pc = columnLabels.length;
+    int pc = (columnLabels == null) ? 0 : columnLabels.length;
     String label;
     for (int i = 0; i < ExtendedProperty.COLUMN_COUNT; i++) {
       label = (pc > 0 && i < pc) ? columnLabels[i] : ExtendedProperty.COLUMN_HEADERS[i];

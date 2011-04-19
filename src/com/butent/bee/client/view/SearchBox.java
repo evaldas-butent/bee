@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.widget.BeeTextBox;
 import com.butent.bee.shared.data.view.Filter;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -11,6 +12,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.List;
 
 public class SearchBox extends BeeTextBox implements SearchView {
+  private Presenter presenter = null;
 
   public SearchBox() {
     super();
@@ -32,6 +34,14 @@ public class SearchBox extends BeeTextBox implements SearchView {
     return getFilter(getValue());
   }
 
+  public Presenter getViewPresenter() {
+    return presenter;
+  }
+
+  public void setViewPresenter(Presenter presenter) {
+    this.presenter = presenter;
+  }
+  
   private Filter getFilter(String wh) {
     Filter flt = null;
 

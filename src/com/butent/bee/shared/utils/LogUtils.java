@@ -50,7 +50,7 @@ public class LogUtils {
     if (err != null) {
       logger.severe(transformError(err));
     }
-    if (obj.length > 0) {
+    if (obj != null && obj.length > 0) {
       logger.severe(BeeUtils.concat(1, obj));
     }
 
@@ -92,7 +92,7 @@ public class LogUtils {
    */
   public static void info(Logger logger, Object... obj) {
     Assert.notNull(logger);
-    Assert.parameterCount(obj.length + 1, 2);
+    Assert.parameterCount(((obj == null) ? 0 : obj.length) + 1, 2);
     logger.info(BeeUtils.concat(1, obj));
   }
 
@@ -166,7 +166,7 @@ public class LogUtils {
   public static void log(Logger logger, Level level, Object... obj) {
     Assert.notNull(logger);
     Assert.notNull(level);
-    Assert.parameterCount(obj.length + 2, 3);
+    Assert.parameterCount(((obj == null) ? 0 : obj.length) + 2, 3);
     logger.log(level, BeeUtils.concat(1, obj));
   }
 
@@ -194,7 +194,7 @@ public class LogUtils {
    */
   public static void severe(Logger logger, Object... obj) {
     Assert.notNull(logger);
-    Assert.parameterCount(obj.length + 1, 2);
+    Assert.parameterCount(((obj == null) ? 0 : obj.length) + 1, 2);
     logger.severe(BeeUtils.concat(1, obj));
   }
 
@@ -210,7 +210,7 @@ public class LogUtils {
     if (err != null) {
       logger.severe(transformError(err));
     }
-    if (obj.length > 0) {
+    if (obj != null && obj.length > 0) {
       logger.severe(BeeUtils.concat(1, obj));
     }
   }
@@ -267,7 +267,7 @@ public class LogUtils {
    */
   public static void warning(Logger logger, Object... obj) {
     Assert.notNull(logger);
-    Assert.parameterCount(obj.length + 1, 2);
+    Assert.parameterCount(((obj == null) ? 0 : obj.length) + 1, 2);
     logger.warning(BeeUtils.concat(1, obj));
   }
 
@@ -294,7 +294,7 @@ public class LogUtils {
     if (err != null) {
       logger.warning(transformError(err));
     }
-    if (obj.length > 0) {
+    if (obj != null && obj.length > 0) {
       logger.warning(BeeUtils.concat(1, obj));
     }
   }

@@ -31,10 +31,12 @@ public class VisualizationUtils {
     Assert.notNull(onLoad);
     
     List<String> lst = new ArrayList<String>();
-    for (int i = 0; i < packages.length; i++) {
-      if (!loadedPackages.contains(packages[i])) {
-        lst.add(packages[i]);
-        loadedPackages.add(packages[i]);
+    if (packages != null) {
+      for (int i = 0; i < packages.length; i++) {
+        if (!loadedPackages.contains(packages[i])) {
+          lst.add(packages[i]);
+          loadedPackages.add(packages[i]);
+        }
       }
     }
     

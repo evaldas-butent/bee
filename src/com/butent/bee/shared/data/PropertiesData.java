@@ -15,7 +15,7 @@ public class PropertiesData extends RowList<StringRow, TableColumn> {
   public PropertiesData(List<Property> data, String... columnLabels) {
     super();
     
-    int pc = columnLabels.length;
+    int pc = (columnLabels == null) ? 0 : columnLabels.length;
     String label;
     for (int i = 0; i < Property.HEADER_COUNT; i++) {
       label = (pc > 0 && i < pc) ? columnLabels[i] : Property.HEADERS[i];

@@ -10,7 +10,7 @@ import com.google.gwt.view.client.MultiSelectionModel;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.data.KeyProvider;
-import com.butent.bee.client.data.DataProvider;
+import com.butent.bee.client.data.CachedProvider;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.grid.model.CachedTableModel;
 import com.butent.bee.client.grid.model.TableModel;
@@ -229,12 +229,13 @@ public class GridFactory {
       grid.addColumn(column, table.getColumnLabel(i));
     }
 
-    DataProvider provider = new DataProvider(table);
-    provider.addDataDisplay(grid);
+    CachedProvider provider = new CachedProvider(grid, table);
     grid.addColumnSortHandler(provider);
     
     MultiSelectionModel<IsRow> selector = new MultiSelectionModel<IsRow>(new KeyProvider());
     grid.setSelectionModel(selector);
+
+    grid.setRowData(table.getRows().getList());
 
     return grid;
   }

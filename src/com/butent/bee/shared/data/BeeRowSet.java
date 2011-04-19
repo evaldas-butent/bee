@@ -39,8 +39,10 @@ public class BeeRowSet extends RowList<BeeRow, BeeColumn> implements BeeSerializ
 
   public BeeRowSet(BeeColumn... columns) {
     super();
-    for (BeeColumn column : columns) {
-      addColumn(column);
+    if (columns != null) {
+      for (BeeColumn column : columns) {
+        addColumn(column);
+      }
     }
   }
 
@@ -114,7 +116,7 @@ public class BeeRowSet extends RowList<BeeRow, BeeColumn> implements BeeSerializ
 
   @Override
   public BeeRow createRow(long id) {
-    return new BeeRow(id, new String[0]);
+    return new BeeRow(id, BeeConst.EMPTY_STRING_ARRAY);
   }
 
   @Override
@@ -146,8 +148,9 @@ public class BeeRowSet extends RowList<BeeRow, BeeColumn> implements BeeSerializ
         case ROWS:
           if (!BeeUtils.isEmpty(value)) {
             String[] data = Codec.beeDeserialize(value);
+            int cc = getNumberOfColumns();
             for (String r : data) {
-              addRow(BeeRow.restore(r));
+              addRow(BeeRow.restore(r, cc));
             }
           }
           break;

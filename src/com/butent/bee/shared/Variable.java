@@ -44,10 +44,12 @@ public class Variable implements HasBooleanValue, HasDoubleValue, HasStringValue
 
   public Variable(String caption, BeeType type, String value, BeeWidget widget, String... items) {
     this(caption, type, value, widget);
-
-    this.items = new ArrayList<String>();
-    for (int i = 0; i < items.length; i++) {
-      this.items.add(items[i]);
+    
+    if (items != null) {
+      this.items = new ArrayList<String>();
+      for (int i = 0; i < items.length; i++) {
+        this.items.add(items[i]);
+      }
     }
   }
 

@@ -526,6 +526,20 @@ public class CliWorker {
 
     BeeKeeper.getUi().showGrid(data, "Format", "Value");
   }
+  
+  public static void showDimensions() {
+    Global.modalGrid("Dimensions",
+        PropertyUtils.createProperties("TextBox client width", DomUtils.getTextBoxClientWidth(),
+            "TextBox client height", DomUtils.getTextBoxClientHeight(),
+            "TextBox offset width", DomUtils.getTextBoxOffsetWidth(),
+            "TextBox offset height", DomUtils.getTextBoxOffsetHeight(),
+            "CheckBox client width", DomUtils.getCheckBoxClientWidth(),
+            "CheckBox client height", DomUtils.getCheckBoxClientHeight(),
+            "CheckBox offset width", DomUtils.getCheckBoxOffsetWidth(),
+            "CheckBox offset height", DomUtils.getCheckBoxOffsetHeight(),
+            "Scrollbar width", DomUtils.getScrollbarWidth(),
+            "Scrollbar height", DomUtils.getScrollbarHeight()));
+  }
 
   public static void showDnd() {
     if (!EventUtils.supportsDnd()) {
@@ -967,8 +981,13 @@ public class CliWorker {
   }
 
   public static void showVars(String[] arr) {
-    if (BeeUtils.length(arr) > 1) {
-      Global.showVars(ArrayUtils.copyOfRange(arr, 1, arr.length));
+    int len = BeeUtils.length(arr);
+    if (len > 1) {
+      String[] vars = new String[len - 1];
+      for (int i = 0; i < len - 1; i++) {
+        vars[i] = arr[i + 1];
+      }
+      Global.showVars(vars);
     } else {
       Global.showVars();
     }

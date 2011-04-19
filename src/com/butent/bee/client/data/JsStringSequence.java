@@ -5,6 +5,8 @@ import com.google.gwt.core.client.JsArrayString;
 
 import com.butent.bee.client.utils.JsUtils;
 import com.butent.bee.shared.AbstractSequence;
+import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.Pair;
 
 import java.util.List;
 
@@ -12,73 +14,75 @@ public class JsStringSequence extends AbstractSequence<String> {
   private JsArrayString values;
 
   public JsStringSequence(int size) {
-    super();
+    Assert.nonNegative(size);
     this.values = JsUtils.createArray(size);
   }
 
   public JsStringSequence(JsArrayString values) {
-    super();
+    Assert.notNull(values);
     this.values = values;
   }
   
-  @SuppressWarnings("unused")
-  private JsStringSequence() {
-  }
-
   public void clear() {
     values.setLength(0);
   }
 
   public String get(int index) {
+    assertIndex(index);
     return values.get(index);
   }
 
-  public String[] getArray() {
-    String[] arr = new String[length()];
-    for (int i = 0; i < length(); i++) {
+  public Pair<String[], Integer> getArray(String[] a) {
+    String[] arr = new String[getLength()];
+    for (int i = 0; i < getLength(); i++) {
       arr[i] = get(i); 
     }
-    return arr;
+    return new Pair<String[], Integer>(arr, getLength());
+  }
+
+  public int getLength() {
+    return values.length();
   }
 
   public List<String> getList() {
-    List<String> lst = Lists.newArrayListWithCapacity(length());
-    for (int i = 0; i < length(); i++) {
+    List<String> lst = Lists.newArrayListWithCapacity(getLength());
+    for (int i = 0; i < getLength(); i++) {
       lst.add(get(i)); 
     }
     return lst;
   }
 
   public void insert(int index, String value) {
+    assertInsert(index);
     JsUtils.insert(values, index, value);
   }
 
-  public int length() {
-    return values.length();
-  }
-
   public void remove(int index) {
+    assertIndex(index);
     JsUtils.remove(values, index);
   }
 
   public void set(int index, String value) {
+    assertIndex(index);
     values.set(index, value);
   }
 
   public void setValues(List<String> lst) {
-    if (length() != lst.size()) {
+    Assert.notNull(lst);
+    if (getLength() != lst.size()) {
       this.values = JsUtils.createArray(lst.size());
     }
-    for (int i = 0; i < length(); i++) {
+    for (int i = 0; i < getLength(); i++) {
       set(i, lst.get(i));
     }
   }
 
   public void setValues(String[] arr) {
-    if (length() != arr.length) {
+    Assert.notNull(arr);
+    if (getLength() != arr.length) {
       this.values = JsUtils.createArray(arr.length);
     }
-    for (int i = 0; i < length(); i++) {
+    for (int i = 0; i < getLength(); i++) {
       set(i, arr[i]);
     }
   }

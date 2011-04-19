@@ -93,8 +93,8 @@ public class BeeConnection {
     Assert.notNull(conn);
     Statement stmt = null;
 
-    int n = opt.length;
-    if (n == 0) {
+    int n = (opt == null) ? 0 : opt.length;
+    if (n <= 0) {
       try {
         stmt = conn.createStatement();
       } catch (SQLException ex) {

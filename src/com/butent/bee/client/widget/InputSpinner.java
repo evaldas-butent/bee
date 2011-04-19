@@ -31,5 +31,4 @@ public class InputSpinner extends InputInteger {
   public String getDefaultStyleName() {
     return "bee-InputSpinner";
   }
-  
 }

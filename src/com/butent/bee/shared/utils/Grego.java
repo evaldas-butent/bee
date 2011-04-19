@@ -101,8 +101,15 @@ public class Grego {
   public static int fieldsToDay(int year, int month, int dom) {
     int y = year - 1;
     int julian = 365 * y + floorDivide(y, 4) + (JULIAN_1_CE - 3) +
-        floorDivide(y, 400) - floorDivide(y, 100) + 2 +
-        DAYS_BEFORE[month + (isLeapYear(year) ? 11 : -1)] + dom;
+        floorDivide(y, 400) - floorDivide(y, 100) + 2;
+    if (month > 1 && month <= 12) {
+      julian += DAYS_BEFORE[month + (isLeapYear(year) ? 11 : -1)];
+    }
+    if (dom > 0) {
+      julian += dom;
+    } else {
+      julian++;
+    }
 
     return julian - JULIAN_1970_CE;
   }

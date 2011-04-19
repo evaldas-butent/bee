@@ -22,12 +22,13 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.data.BeeRowSet;
-import com.butent.bee.shared.data.view.ViewInfo;
+import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.utils.Codec;
 
 import java.util.List;
 
-public class Cache {
+public class Explorer {
+
   private class DataInfoCallback implements ResponseCallback {
     private boolean show;
 
@@ -42,7 +43,7 @@ public class Cache {
 
       getViews().clear();
       for (String s : info) {
-        getViews().add(ViewInfo.restore(s));
+        getViews().add(DataInfo.restore(s));
       }
       if (show) {
         showDataInfo();
@@ -70,22 +71,38 @@ public class Cache {
     }
   }
 
-  private List<ViewInfo> views = Lists.newArrayList();
-  private DataInfoCreator dataInfoCreator = new DataInfoCreator();
+  private final List<DataInfo> views = Lists.newArrayList();
+  private final DataInfoCreator dataInfoCreator = new DataInfoCreator();
 
-  public Cache() {
+  private int asyncThreshold = 100;
+
+  public Explorer() {
+    super();
+  }
+
+  public Explorer(int asyncThreshold) {
+    this();
+    setAsyncThreshold(asyncThreshold);
+  }
+
+  public int getAsyncThreshold() {
+    return asyncThreshold;
   }
 
   public DataInfoCreator getDataInfoCreator() {
     return dataInfoCreator;
   }
 
-  public List<ViewInfo> getViews() {
+  public List<DataInfo> getViews() {
     return views;
   }
 
   public void loadDataInfo(boolean show) {
     BeeKeeper.getRpc().makeGetRequest(Service.GET_VIEW_LIST, new DataInfoCallback(show));
+  }
+
+  public void setAsyncThreshold(int asyncThreshold) {
+    this.asyncThreshold = asyncThreshold;
   }
 
   public void showDataInfo() {
@@ -94,19 +111,19 @@ public class Cache {
       return;
     }
 
-    CellTable<ViewInfo> grid = new CellTable<ViewInfo>(getViews().size());
+    CellTable<DataInfo> grid = new CellTable<DataInfo>(getViews().size());
 
-    Column<ViewInfo, String> nameColumn = new TextColumn<ViewInfo>() {
+    Column<DataInfo, String> nameColumn = new TextColumn<DataInfo>() {
       @Override
-      public String getValue(ViewInfo object) {
+      public String getValue(DataInfo object) {
         return (object == null) ? BeeConst.STRING_EMPTY : object.getName();
       }
     };
     grid.addColumn(nameColumn);
 
-    Column<ViewInfo, Number> countColumn = new Column<ViewInfo, Number>(new NumberCell()) {
+    Column<DataInfo, Number> countColumn = new Column<DataInfo, Number>(new NumberCell()) {
       @Override
-      public Number getValue(ViewInfo object) {
+      public Number getValue(DataInfo object) {
         return (object == null) ? -1 : object.getRowCount();
       }
     };
@@ -115,13 +132,14 @@ public class Cache {
 
     grid.setRowData(getViews());
 
-    final SingleSelectionModel<ViewInfo> selector = new SingleSelectionModel<ViewInfo>();
+    final SingleSelectionModel<DataInfo> selector = new SingleSelectionModel<DataInfo>();
     selector.addSelectionChangeHandler(new SelectionChangeEvent.Handler() {
       @Override
       public void onSelectionChange(SelectionChangeEvent event) {
-        ViewInfo info = selector.getSelectedObject();
-        if (info != null) {
+        DataInfo info = selector.getSelectedObject();
+        if (info != null && selector.isSelected(info)) {
           openView(info);
+          selector.setSelected(info, false);
         }
       }
     });
@@ -130,35 +148,37 @@ public class Cache {
     BeeKeeper.getUi().updateData(grid, true);
   }
 
-  private void openView(final ViewInfo ti) {
-    int rc = ti.getRowCount();
+  private void openView(final DataInfo dataInfo) {
+    int rc = dataInfo.getRowCount();
     if (rc < 0) {
-      BeeKeeper.getLog().info(ti.getName(), "not active");
+      BeeKeeper.getLog().info(dataInfo.getName(), "not active");
       return;
     }
 
-    int limit = 30;
+    int limit = getAsyncThreshold();
     final boolean async;
-    if (rc > limit) {
+    if (limit > 0 && rc > limit) {
       async = true;
     } else {
       async = false;
       limit = -1;
     }
 
-    Queries.getRowSet(ti.getName(), null, null, 0, limit, new Queries.RowSetCallback() {
+    Queries.getRowSet(dataInfo.getName(), null, null, 0, limit, new Queries.RowSetCallback() {
       public void onResponse(BeeRowSet rowSet) {
         if (rowSet.isEmpty()) {
           BeeKeeper.getLog().info(rowSet.getViewName(), "RowSet is empty");
         } else {
-          showView(ti, rowSet, async);
+          showView(dataInfo, rowSet, async);
         }
       }
     });
   }
 
-  private void showView(ViewInfo ti, BeeRowSet rs, boolean async) {
-    GridPresenter presenter = new GridPresenter(ti, rs, async);
-    BeeKeeper.getUi().updateActivePanel(presenter.getGridView());
+  private void showView(DataInfo dataInfo, BeeRowSet rowSet, boolean async) {
+    GridPresenter presenter = new GridPresenter(dataInfo, rowSet, async);
+    presenter.start(BeeKeeper.getUi().getActivePanelWidth(),
+        BeeKeeper.getUi().getActivePanelHeight());
+    BeeKeeper.getUi().updateActivePanel(presenter.getWidget());
   }
 }

@@ -6,6 +6,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.DateTime;
 import com.butent.bee.shared.JustDate;
+import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Sequence;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -26,7 +27,7 @@ public class StringRow extends AbstractRow {
 
   @Override
   public void addCell(String value) {
-    values.insert(values.length(), value);
+    values.insert(values.getLength(), value);
   }
 
   @Override
@@ -56,7 +57,7 @@ public class StringRow extends AbstractRow {
   @Override
   public List<IsCell> getCells() {
     List<IsCell> lst = Lists.newArrayList();
-    for (int i = 0; i < values.length(); i++) {
+    for (int i = 0; i < values.getLength(); i++) {
       lst.add(getCell(i));
     }
     return lst;
@@ -87,12 +88,24 @@ public class StringRow extends AbstractRow {
   
   @Override
   public int getNumberOfCells() {
-    return values.length(); 
+    return values.getLength(); 
   }
   
   public String getString(int index) {
     assertIndex(index);
     return values.get(index);
+  }
+  
+  public String[] getValueArray() {
+    Pair<String[], Integer> pair = getValues().getArray(BeeConst.EMPTY_STRING_ARRAY);
+    int len = pair.getB();
+    if (len == pair.getA().length) {
+      return pair.getA();
+    } else {
+      String[] arr = new String[len];
+      System.arraycopy(pair.getA(), 0, arr, 0, len);
+      return arr;
+    }
   }
 
   public Sequence<String> getValues() {

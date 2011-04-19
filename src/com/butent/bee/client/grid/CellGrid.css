@@ -24,12 +24,14 @@
   text-align: center;
   overflow: hidden;
   background-color: #e8e8e8; 
+  white-space: nowrap;
 }
 
 .cellTableCell {
   padding: 2px horizontalPadding;
   border: 1px solid gray;
   overflow: hidden;
+  white-space: nowrap;
 }
 
 .cellTableFirstColumnFooter {

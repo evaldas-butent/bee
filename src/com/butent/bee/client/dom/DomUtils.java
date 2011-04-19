@@ -135,6 +135,11 @@ public class DomUtils {
   private static int textBoxOffsetHeight = -1;
   private static int textBoxClientWidth = -1;
   private static int textBoxClientHeight = -1;
+
+  private static int checkBoxOffsetWidth = -1;
+  private static int checkBoxOffsetHeight = -1;
+  private static int checkBoxClientWidth = -1;
+  private static int checkBoxClientHeight = -1;
   
   public static void clearTitle(UIObject obj) {
     Assert.notNull(obj);
@@ -507,6 +512,34 @@ public class DomUtils {
     }
   }
 
+  public static int getCheckBoxClientHeight() {
+    if (checkBoxClientHeight <= 0) {
+      calculateCheckBoxSize();
+    }
+    return checkBoxClientHeight;
+  }
+
+  public static int getCheckBoxClientWidth() {
+    if (checkBoxClientWidth <= 0) {
+      calculateCheckBoxSize();
+    }
+    return checkBoxClientWidth;
+  }
+
+  public static int getCheckBoxOffsetHeight() {
+    if (checkBoxOffsetHeight <= 0) {
+      calculateCheckBoxSize();
+    }
+    return checkBoxOffsetHeight;
+  }
+
+  public static int getCheckBoxOffsetWidth() {
+    if (checkBoxOffsetWidth <= 0) {
+      calculateCheckBoxSize();
+    }
+    return checkBoxOffsetWidth;
+  }
+  
   public static List<Property> getChildrenInfo(Widget w) {
     Assert.notNull(w);
     List<Property> lst = new ArrayList<Property>();
@@ -1143,7 +1176,7 @@ public class DomUtils {
     if (children == null) {
       return;
     }
-    int tagCnt = tags.length;
+    int tagCnt = (tags == null) ? 0 : tags.length;
     Element child;
     
     for (int i = 0; i < children.getLength(); i++) {
@@ -1171,13 +1204,25 @@ public class DomUtils {
     elem.addClassName(StyleUtils.NAME_UNSELECTABLE);
   }
 
-  public static void removeAttribute(Widget w, String name) {
-    Assert.notNull(w);
+  public static void removeAttribute(UIObject obj, String name) {
+    Assert.notNull(obj);
     Assert.notEmpty(name);
 
-    w.getElement().removeAttribute(name);
+    obj.getElement().removeAttribute(name);
   }
 
+  public static void removeMax(UIObject obj) {
+    removeAttribute(obj, ATTRIBUTE_MAX);
+  }
+
+  public static void removeMin(UIObject obj) {
+    removeAttribute(obj, ATTRIBUTE_MIN);
+  }
+
+  public static void removeStep(UIObject obj) {
+    removeAttribute(obj, ATTRIBUTE_STEP);
+  }
+  
   public static void setAttribute(UIObject obj, String name, int value) {
     setAttribute(obj, name, Integer.toString(value));
   }
@@ -1246,12 +1291,12 @@ public class DomUtils {
     elem.setAttribute(ATTRIBUTE_TYPE, type);
   }
 
-  public static void setMax(Widget w, int max) {
-    setAttribute(w, ATTRIBUTE_MAX, max);
+  public static void setMax(UIObject obj, int max) {
+    setAttribute(obj, ATTRIBUTE_MAX, max);
   }
 
-  public static void setMin(Widget w, int min) {
-    setAttribute(w, ATTRIBUTE_MIN, min);
+  public static void setMin(UIObject obj, int min) {
+    setAttribute(obj, ATTRIBUTE_MIN, min);
   }
 
   public static boolean setPlaceholder(UIObject obj, String value) {
@@ -1308,8 +1353,8 @@ public class DomUtils {
     setAttribute(w, ATTRIBUTE_STAGE, stg);
   }
 
-  public static void setStep(Widget w, int step) {
-    setAttribute(w, ATTRIBUTE_STEP, step);
+  public static void setStep(UIObject obj, int step) {
+    setAttribute(obj, ATTRIBUTE_STEP, step);
   }
 
   public static void setTabIndex(Widget w, int idx) {
@@ -1396,6 +1441,21 @@ public class DomUtils {
     Assert.isTrue(isInputElement(elem), "not an input element");
   }
 
+  private static void calculateCheckBoxSize() {
+    Element elem = DOM.createInputCheck();
+
+    Element body = Document.get().getBody();
+    body.appendChild(elem);
+
+    checkBoxOffsetWidth = elem.getOffsetWidth();
+    checkBoxOffsetHeight = elem.getOffsetHeight();
+
+    checkBoxClientWidth = elem.getClientWidth();
+    checkBoxClientHeight = elem.getClientHeight();
+
+    body.removeChild(elem);
+  }
+  
   private static void calculateScrollbarSize() {
     Element elem = DOM.createDiv();
     elem.getStyle().setVisibility(Visibility.HIDDEN);
@@ -1419,7 +1479,7 @@ public class DomUtils {
     scrollbarWidth = w1 - w2;
     scrollbarHeight = h1 - h2;    
   }
-  
+ 
   private static void calculateTextBoxSize() {
     Element elem = DOM.createInputText();
 

@@ -22,7 +22,7 @@ public abstract class RowList<RowType extends IsRow, ColType extends IsColumn> e
 
   @Override
   public int getNumberOfRows() {
-    return getRows().length();
+    return getRows().getLength();
   }
 
   @Override

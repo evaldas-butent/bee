@@ -9,7 +9,6 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.canvas.CanvasDemo;
 import com.butent.bee.client.communication.ResponseCallback;
-import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.visualization.showcase.Showcase;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.client.widget.BeeTextBox;
@@ -70,6 +69,8 @@ public class CliWidget extends BeeTextBox {
       CliWorker.cornify(arr);
     } else if (z.equals("df")) {
       CliWorker.showDateFormat();
+    } else if (z.startsWith("dim")) {
+      CliWorker.showDimensions();
     } else if (z.equals("dnd")) {
       CliWorker.showDnd();
     } else if (z.equals("dt")) {
@@ -120,10 +121,6 @@ public class CliWidget extends BeeTextBox {
       BeeKeeper.getRpc().sendText(Service.REBUILD, v);
     } else if (z.equals("rpc")) {
       CliWorker.showRpc();
-    } else if (z.equals("sb")) {
-      Global.showDialog("Scrollbar",
-          BeeUtils.addName("width", DomUtils.getScrollbarWidth()),
-          BeeUtils.addName("height", DomUtils.getScrollbarHeight()));
     } else if (z.startsWith("serv") || z.startsWith("sys")) {
       BeeKeeper.getRpc().invoke("systemInfo");
     } else if (z.equals("slider")) {
@@ -150,12 +147,6 @@ public class CliWidget extends BeeTextBox {
       CliWorker.style(v, arr);
     } else if (z.equals("svg")) {
       CliWorker.showSvg(arr);
-    } else if (z.equals("tb")) {
-      Global.showDialog("TextBox",
-          BeeUtils.addName("client width", DomUtils.getTextBoxClientWidth()),
-          BeeUtils.addName("client height", DomUtils.getTextBoxClientHeight()),
-          BeeUtils.addName("offset width", DomUtils.getTextBoxOffsetWidth()),
-          BeeUtils.addName("offset height", DomUtils.getTextBoxOffsetHeight()));
     } else if (z.equals("tiles")) {
       CliWorker.showTiles();
     } else if (z.startsWith("tran") || z.startsWith("detec")) {

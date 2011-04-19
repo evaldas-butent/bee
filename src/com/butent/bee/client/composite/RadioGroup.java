@@ -10,6 +10,7 @@ import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.layout.Span;
 import com.butent.bee.client.widget.BeeRadioButton;
+import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasService;
 import com.butent.bee.shared.Variable;
@@ -69,7 +70,7 @@ public class RadioGroup extends Span implements HasService {
       value = opt.indexOf(z);
     }
 
-    addButtons(Global.getVarName(var), vertical, value, opt.toArray(new String[0]));
+    addButtons(Global.getVarName(var), vertical, value, opt.toArray(BeeConst.EMPTY_STRING_ARRAY));
   }
 
   public RadioGroup(String name, String... opt) {
@@ -124,6 +125,7 @@ public class RadioGroup extends Span implements HasService {
   }
 
   private void addButtons(String name, boolean vertical, int value, String... opt) {
+    Assert.notNull(opt);
     BeeRadioButton rb;
     int idx = 0;
 

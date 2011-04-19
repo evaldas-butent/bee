@@ -22,7 +22,7 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.view.Filter;
 import com.butent.bee.shared.data.view.Order;
-import com.butent.bee.shared.data.view.ViewInfo;
+import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.sql.BeeConstants;
 import com.butent.bee.shared.sql.BeeConstants.DataType;
 import com.butent.bee.shared.sql.BeeConstants.Keyword;
@@ -667,8 +667,8 @@ public class SystemBean {
     return qs.getViewData(ss, view);
   }
 
-  public List<ViewInfo> getViewInfo() {
-    List<ViewInfo> lst = Lists.newArrayList();
+  public List<DataInfo> getViewInfo() {
+    List<DataInfo> lst = Lists.newArrayList();
     Set<String> views = Sets.newHashSet(getViewNames());
     views.addAll(getTableNames());
 
@@ -679,7 +679,7 @@ public class SystemBean {
       if (source.isActive()) {
         cnt = getViewSize(vw, null);
       }
-      lst.add(new ViewInfo(vw, source.getIdName(), cnt));
+      lst.add(new DataInfo(vw, source.getIdName(), cnt));
     }
     return lst;
   }

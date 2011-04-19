@@ -317,7 +317,7 @@ public class XmlUtils {
     Element el;
     String tg, txt;
 
-    int n = ignore.length;
+    int n = (ignore == null) ? 0 : ignore.length;
 
     for (int i = 0; i < nodes.getLength(); i++) {
       nd = nodes.item(i);

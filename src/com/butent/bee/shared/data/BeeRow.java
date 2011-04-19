@@ -21,8 +21,8 @@ public class BeeRow extends StringRow implements BeeSerializable {
 
   private static Logger logger = Logger.getLogger(BeeRow.class.getName());
 
-  public static BeeRow restore(String s) {
-    BeeRow row = new BeeRow(0, null);
+  static BeeRow restore(String s, int cellCount) {
+    BeeRow row = new BeeRow(0, new String[cellCount]);
     row.deserialize(s);
     return row;
   }
@@ -156,7 +156,7 @@ public class BeeRow extends StringRow implements BeeSerializable {
           break;
 
         case VALUES:
-          arr[i++] = getValues().getArray();
+          arr[i++] = getValueArray();
           break;
 
         case NEWID:

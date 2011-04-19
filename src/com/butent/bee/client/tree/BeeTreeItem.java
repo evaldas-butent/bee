@@ -27,6 +27,7 @@ public class BeeTreeItem extends TreeItem implements HasId {
   }
   
   public void addText(Object... obj) {
+    Assert.notNull(obj);    
     Assert.parameterCount(obj.length, 1);
     addItem(BeeUtils.concat(1, obj));
   }

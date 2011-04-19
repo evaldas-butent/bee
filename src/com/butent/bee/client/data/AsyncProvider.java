@@ -3,7 +3,6 @@ package com.butent.bee.client.data;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.ColumnSortList;
 import com.google.gwt.user.cellview.client.ColumnSortList.ColumnSortInfo;
-import com.google.gwt.view.client.AbstractDataProvider;
 import com.google.gwt.view.client.HasData;
 import com.google.gwt.view.client.Range;
 
@@ -15,10 +14,10 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.view.Filter;
 import com.butent.bee.shared.data.view.Order;
-import com.butent.bee.shared.data.view.ViewInfo;
+import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.utils.BeeUtils;
 
-public class AsyncProvider extends AbstractDataProvider<IsRow> {
+public class AsyncProvider extends Provider {
   private class Callback implements Queries.RowSetCallback {
     private final HasData<IsRow> display;
     private final Range range;
@@ -39,37 +38,21 @@ public class AsyncProvider extends AbstractDataProvider<IsRow> {
         BeeKeeper.getLog().warning("rowset empty");
         return;
       }
-
-      updateDisplay(rowSet);
-    }
-
-    private void updateDisplay(BeeRowSet data) {
-      int start = range.getStart();
-      int length = range.getLength();
-      int rowCount = data.getNumberOfRows();
-
-      BeeKeeper.getLog().info("upd", start, length, rowCount);
-
-      Assert.nonNegative(start);
-      Assert.isPositive(length);
-      Assert.isPositive(rowCount);
-
-      if (length == rowCount) {
-        display.setRowData(start, data.getRows().getList());
-      } else {
-        display.setRowData(start,
-            data.getRows().getList().subList(0, BeeUtils.min(length, rowCount)));
-      }
+      updateDisplay(range.getStart(), range.getLength(), rowSet);
     }
   }
 
-  private ViewInfo viewInfo;
+  private DataInfo dataInfo;
   private Filter filter = null;
   private Order order = null;
 
-  public AsyncProvider(ViewInfo viewInfo) {
-    super();
-    this.viewInfo = viewInfo;
+  public AsyncProvider(HasData<IsRow> display, DataInfo dataInfo) {
+    super(display);
+    this.dataInfo = dataInfo;
+  }
+
+  public DataInfo getDataInfo() {
+    return dataInfo;
   }
 
   public Filter getFilter() {
@@ -80,8 +63,8 @@ public class AsyncProvider extends AbstractDataProvider<IsRow> {
     return order;
   }
 
-  public ViewInfo getViewInfo() {
-    return viewInfo;
+  public void setDataInfo(DataInfo dataInfo) {
+    this.dataInfo = dataInfo;
   }
 
   public void setFilter(Filter filter) {
@@ -92,32 +75,45 @@ public class AsyncProvider extends AbstractDataProvider<IsRow> {
     this.order = order;
   }
 
-  public void setViewInfo(ViewInfo viewInfo) {
-    this.viewInfo = viewInfo;
+  public void updateDisplay(int start, int length, BeeRowSet data) {
+    int rowCount = data.getNumberOfRows();
+
+    BeeKeeper.getLog().info("upd", start, length, rowCount);
+
+    Assert.nonNegative(start);
+    Assert.isPositive(length);
+    Assert.isPositive(rowCount);
+
+    if (length == rowCount) {
+      getDisplay().setRowData(start, data.getRows().getList());
+    } else {
+      getDisplay().setRowData(start,
+          data.getRows().getList().subList(0, BeeUtils.min(length, rowCount)));
+    }
   }
 
   @Override
-  protected void onRangeChanged(HasData<IsRow> display) {
-    Assert.notNull(display);
-    Range range = display.getVisibleRange();
+  protected void onRangeChanged() {
+    HasData<IsRow> displ = getDisplay();
+    Range range = getRange();
 
     Filter flt = getFilter();
 
     Order ord = null;
-    if (display instanceof CellGrid) {
-      ord = getViewOrder((CellGrid) display);
+    if (displ instanceof CellGrid) {
+      ord = getViewOrder((CellGrid) displ);
     }
     if (ord == null) {
       ord = getOrder();
     }
 
-    Queries.getRowSet(getViewInfo().getName(), flt, ord, range.getStart(), range.getLength(),
-        new Callback(display, range));
+    Queries.getRowSet(getDataInfo().getName(), flt, ord, range.getStart(), range.getLength(),
+        new Callback(displ, range));
   }
 
   private Order getViewOrder(CellGrid grid) {
     ColumnSortList sortList = grid.getColumnSortList();
-    if (sortList == null) {
+    if (sortList == null || sortList.size() <= 0) {
       return null;
     }
 

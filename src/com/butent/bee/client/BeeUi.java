@@ -511,7 +511,7 @@ public class BeeUi implements Module {
 
     p.add(hor);
 
-    BeeLabel ver = new BeeLabel("0.2.9");
+    BeeLabel ver = new BeeLabel("0.3.0");
     p.add(ver);
 
     p.setWidgetLeftWidth(cli, 1, Unit.EM, 50, Unit.PCT);
@@ -559,11 +559,11 @@ public class BeeUi implements Module {
     tp.add(fp, Global.constants.menu());
 
     BeeLayoutPanel dp = new BeeLayoutPanel();
-    tp.add(dp, Global.constants.data(), Global.getCache().getDataInfoCreator());
+    tp.add(dp, Global.constants.data(), Global.getDataExplorer().getDataInfoCreator());
     setDataPanel(dp);
 
     BeeLayoutPanel vp = new BeeLayoutPanel();
-    tp.add(vp, Global.constants.views());
+    tp.add(vp, new BeeImage(Global.getImages().bookmark()));
     setViewPanel(dp);
 
     Split spl = new Split();

@@ -40,6 +40,7 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
     private List<ValueType> types = Lists.newArrayList();
 
     RowOrdering(SortInfo... sortInfo) {
+      Assert.notNull(sortInfo);
       Assert.parameterCount(sortInfo.length, 1);
 
       for (int i = 0; i < sortInfo.length; i++) {
@@ -110,12 +111,14 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
   }
   
   protected AbstractTable(ColType... columns) {
+    Assert.notNull(columns);
     for (ColType column : columns) {
       addColumn(column);
     }
   }
 
   protected AbstractTable(String... columnLabels) {
+    Assert.notNull(columnLabels);
     for (String label : columnLabels) {
       addColumn(ValueType.TEXT, label);
     }
@@ -160,6 +163,7 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
   }
 
   public int addRow(Object... cells) {
+    Assert.notNull(cells);
     Assert.parameterCount(cells.length, 1, getNumberOfColumns());
     RowType row = createRow();
 
@@ -387,6 +391,7 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
   }
 
   public int[] getFilteredRows(RowFilter... filters) {
+    Assert.notNull(filters);
     Assert.parameterCount(filters.length, 1);
     List<Integer> match = Lists.newArrayList();
     boolean ok;
@@ -436,6 +441,7 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
   }
 
   public int[] getSortedRows(int... colIndexes) {
+    Assert.notNull(colIndexes);
     SortInfo[] sortInfo = new SortInfo[colIndexes.length];
     for (int i = 0; i < colIndexes.length; i++) {
       sortInfo[i] = new SortInfo(colIndexes[i]);
@@ -444,6 +450,7 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
   }
 
   public int[] getSortedRows(SortInfo... sortInfo) {
+    Assert.notNull(sortInfo);
     Assert.parameterCount(sortInfo.length, 1);
     int rowCount = getNumberOfRows();
     if (rowCount <= 0) {
@@ -684,6 +691,7 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
   }
 
   public void sort(int... colIndexes) {
+    Assert.notNull(colIndexes);
     SortInfo[] sortInfo = new SortInfo[colIndexes.length];
     for (int i = 0; i < colIndexes.length; i++) {
       sortInfo[i] = new SortInfo(colIndexes[i]);

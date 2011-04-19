@@ -4,7 +4,7 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.shared.GwtEvent;
 import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.client.data.Cache;
+import com.butent.bee.client.data.Explorer;
 import com.butent.bee.client.dialog.InputBox;
 import com.butent.bee.client.dialog.MessageBox;
 import com.butent.bee.client.grid.CellType;
@@ -37,7 +37,7 @@ public class Global implements Module {
 
   private static final MessageBox msgBox = new MessageBox();
   private static final InputBox inpBox = new InputBox();
-  private static final Cache cache = new Cache();
+  private static final Explorer dataExplorer = new Explorer();
 
   private static final Map<String, Variable> vars = new HashMap<String, Variable>();
 
@@ -82,8 +82,8 @@ public class Global implements Module {
     vars.put(name, new Variable(caption, type, value, widget, items));
   }
 
-  public static Cache getCache() {
-    return cache;
+  public static Explorer getDataExplorer() {
+    return dataExplorer;
   }
   
   public static Images getImages() {
@@ -141,6 +141,7 @@ public class Global implements Module {
   }
 
   public static void inputVars(Stage bst, String cap, String... names) {
+    Assert.notNull(names);
     List<Variable> lst = new ArrayList<Variable>();
     for (String name : names) {
       if (vars.containsKey(name)) {
@@ -222,7 +223,7 @@ public class Global implements Module {
   }
 
   public static void showVars(String... context) {
-    int n = context.length;
+    int n = (context == null) ? 0 : context.length;
     Variable[] arr = null;
 
     if (n > 0) {

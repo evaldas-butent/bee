@@ -114,6 +114,7 @@ public class RpcInfo {
   }
   
   public void addUserData(Object... obj) {
+    Assert.notNull(obj);
     Assert.parameterCount(obj.length, 2);
     Assert.isEven(obj.length);
     

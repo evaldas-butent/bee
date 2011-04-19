@@ -26,7 +26,7 @@ public class PropertyUtils {
     Assert.notNull(lst);
     Assert.notEmpty(root);
 
-    int c = x.length;
+    int c = (x == null) ? 0 : x.length;
     Assert.isTrue(c >= 2);
 
     int r = 0;
@@ -83,7 +83,7 @@ public class PropertyUtils {
    */
   public static int addNotEemptyProperties(Collection<Property> lst, Object... x) {
     Assert.notNull(lst);
-    int c = x.length;
+    int c = (x == null) ? 0 : x.length;
     Assert.parameterCount(c + 1, 3);
     int r = 0;
 
@@ -108,7 +108,7 @@ public class PropertyUtils {
    */
   public static int addProperties(Collection<ExtendedProperty> lst, boolean subMd, Object... x) {
     Assert.notNull(lst);
-    int c = x.length;
+    int c = (x == null) ? 0 : x.length;
     int r = 0;
     boolean ok;
 
@@ -143,7 +143,7 @@ public class PropertyUtils {
    */
   public static int addProperties(Collection<Property> lst, Object... x) {
     Assert.notNull(lst);
-    int c = x.length;
+    int c = (x == null) ? 0 : x.length;
     Assert.parameterCount(c + 1, 3);
     int r = 0;
 
@@ -315,7 +315,7 @@ public class PropertyUtils {
    */
   public static List<Property> createProperties(Object... obj) {
     List<Property> lst = new ArrayList<Property>();
-    if (obj.length > 0) {
+    if (obj != null && obj.length > 0) {
       addProperties(lst, obj);
     }
     return lst;

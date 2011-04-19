@@ -9,20 +9,16 @@ public class ListSequence<T> extends AbstractSequence<T> {
   private List<T> values;
     
   public ListSequence(int size) {
-    super();
-    this.values = Lists.newArrayList();
+    Assert.nonNegative(size);
+    this.values = Lists.newArrayListWithCapacity(size);
     for (int i = 0; i < size; i++) {
       this.values.add(null);
     }
   }
 
   public ListSequence(List<T> values) {
-    super();
+    Assert.notNull(values);
     this.values = values;
-  }
-
-  @SuppressWarnings("unused")
-  private ListSequence() {
   }
 
   public void clear() {
@@ -30,12 +26,17 @@ public class ListSequence<T> extends AbstractSequence<T> {
   }
 
   public T get(int index) {
+    assertIndex(index);
     return values.get(index);
   }
 
-  @SuppressWarnings("unchecked")
-  public T[] getArray() {
-    return (T[]) values.toArray();
+  public Pair<T[], Integer> getArray(T[] a) {
+    Assert.notNull(a);
+    return new Pair<T[], Integer>(values.toArray(a), getLength());
+  }
+
+  public int getLength() {
+    return values.size();
   }
 
   public List<T> getList() {
@@ -43,27 +44,27 @@ public class ListSequence<T> extends AbstractSequence<T> {
   }
 
   public void insert(int index, T value) {
+    assertInsert(index);
     values.add(index, value);
   }
 
-  public int length() {
-    return values.size();
-  }
-
   public void remove(int index) {
+    assertIndex(index);
     values.remove(index);
   }
 
   public void set(int index, T value) {
+    assertIndex(index);
     values.set(index, value);
   }
 
   public void setValues(List<T> lst) {
+    Assert.notNull(lst);
     values = lst;
   }
 
-  @Override
   public void setValues(T[] arr) {
+    Assert.notNull(arr);
     setValues(Arrays.asList(arr));
   }
 }

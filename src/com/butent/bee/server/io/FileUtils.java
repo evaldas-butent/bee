@@ -169,6 +169,7 @@ public class FileUtils {
   }
   
   public static List<File> findFiles(File dir, Filter... filters) {
+    Assert.notNull(filters);
     return findFiles(dir, Lists.newArrayList(filters));
   }
 

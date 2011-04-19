@@ -7,6 +7,8 @@ import com.google.gwt.core.client.JsArrayInteger;
 import com.google.gwt.core.client.JsArrayNumber;
 import com.google.gwt.core.client.JsArrayString;
 
+import com.butent.bee.shared.Assert;
+
 public class ArrayHelper {
   public static byte[] toJavaArrayBytes(JsArrayInteger bytes) {
     int length = bytes.length();
@@ -18,6 +20,7 @@ public class ArrayHelper {
   }
 
   public static <J extends JavaScriptObject> JsArray<J> toJsArray(J... objects) {
+    Assert.notNull(objects);
     JsArray<J> result = JsArray.createArray().cast();
     for (int i = 0; i < objects.length; i++) {
       result.set(i, objects[i]);
@@ -27,6 +30,7 @@ public class ArrayHelper {
   }
 
   public static JsArrayBoolean toJsArrayBoolean(boolean... bits) {
+    Assert.notNull(bits);
     JsArrayBoolean result = JsArrayBoolean.createArray().cast();
     for (int i = 0; i < bits.length; i++) {
       result.set(i, bits[i]);
@@ -36,6 +40,7 @@ public class ArrayHelper {
   }
 
   public static JsArrayInteger toJsArrayInteger(int... integers) {
+    Assert.notNull(integers);
     JsArrayInteger result = JsArrayInteger.createArray().cast();
     for (int i = 0; i < integers.length; i++) {
       result.set(i, integers[i]);
@@ -45,6 +50,7 @@ public class ArrayHelper {
   }
 
   public static JsArrayNumber toJsArrayNumber(double... numbers) {
+    Assert.notNull(numbers);
     JsArrayNumber result = JsArrayNumber.createArray().cast();
     for (int i = 0; i < numbers.length; i++) {
       result.set(i, numbers[i]);
@@ -54,6 +60,7 @@ public class ArrayHelper {
   }
 
   public static JsArrayString toJsArrayString(String... strings) {
+    Assert.notNull(strings);
     JsArrayString result = JsArrayString.createArray().cast();
     for (int i = 0; i < strings.length; i++) {
       result.set(i, strings[i]);

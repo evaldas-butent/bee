@@ -1,6 +1,7 @@
 package com.butent.bee.client.layout;
 
 import com.butent.bee.client.utils.BeeCommand;
+import com.butent.bee.shared.Assert;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,7 +11,7 @@ public class LayoutCommand extends BeeCommand {
   
   public LayoutCommand(HasLayoutCallback... widgets) {
     super();
-    
+    Assert.notNull(widgets);    
     for (HasLayoutCallback w : widgets) {
       this.layoutWidgets.add(w);
     }
@@ -22,5 +23,4 @@ public class LayoutCommand extends BeeCommand {
       w.onLayout();
     }
   }
-
 }

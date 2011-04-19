@@ -21,11 +21,13 @@ public class JsData<ColType extends IsColumn> extends StringMatrix<ColType> {
   
   public JsData(JsArrayString data, int start, ColType... columns) {
     super(columns);
+    Assert.notNull(columns);
     initData(data, start, columns.length);
   }
 
   public JsData(JsArrayString data, int start, String... columnLabels) {
     super(columnLabels);
+    Assert.notNull(columnLabels);
     initData(data, start, columnLabels.length);
   }
   

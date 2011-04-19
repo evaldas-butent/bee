@@ -109,7 +109,7 @@ public class JvmUtils {
       exact = forName(nm);
     }
 
-    if (exact == null && packageNames.length > 0) {
+    if (exact == null && packageNames != null && packageNames.length > 0) {
       String s;
       if (nm.startsWith(CLASS_NAME_SEPARATOR)) {
         s = nm;

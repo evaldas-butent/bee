@@ -36,6 +36,7 @@ public class RpcUtils {
   }
 
   public static String buildQueryString(String... x) {
+    Assert.notNull(x);
     int c = x.length;
     Assert.parameterCount(c, 2);
 

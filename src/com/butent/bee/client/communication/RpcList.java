@@ -61,6 +61,7 @@ public class RpcList extends LinkedList<RpcInfo> {
       return null;
     }
 
+    Assert.notNull(cols);
     int c = cols.length;
     Assert.parameterCount(c + 1, 2);
 
