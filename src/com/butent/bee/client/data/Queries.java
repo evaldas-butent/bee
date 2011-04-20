@@ -10,6 +10,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.cache.CacheManager;
+import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.view.Filter;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -29,19 +30,22 @@ public class Queries {
   }
 
   public static void getRowSet(String viewName, Filter filter, Order order,
-      int offset, int limit, RowSetCallback callback) {
-    getRowSet(viewName, filter, order, offset, limit, null, callback);
+      int offset, int limit, CachingPolicy cachingPolicy, RowSetCallback callback) {
+    getRowSet(viewName, filter, order, offset, limit, null, cachingPolicy, callback);
   }
 
   public static void getRowSet(String viewName, final Filter filter, final Order order,
-      final int offset, final int limit, String states, final RowSetCallback callback) {
+      final int offset, final int limit, String states, final CachingPolicy cachingPolicy,
+      final RowSetCallback callback) {
     Assert.notEmpty(viewName);
     Assert.notNull(callback);
     
-    BeeRowSet rowSet = CacheManager.getRowSet(viewName, filter, order, offset, limit);
-    if (rowSet != null) {
-      callback.onResponse(rowSet);
-      return;
+    if (cachingPolicy != null && cachingPolicy.doRead()) {
+      BeeRowSet rowSet = CacheManager.getRowSet(viewName, filter, order, offset, limit);
+      if (rowSet != null) {
+        callback.onResponse(rowSet);
+        return;
+      }
     }
 
     List<Property> lst = PropertyUtils.createProperties(Service.VAR_VIEW_NAME, viewName);
@@ -67,7 +71,9 @@ public class Queries {
       public void onResponse(JsArrayString arr) {
         BeeRowSet rs = BeeRowSet.restore(arr.get(0));
         callback.onResponse(rs);
-        CacheManager.add(rs, filter, order, offset, limit);
+        if (cachingPolicy != null && cachingPolicy.doWrite()) {
+          CacheManager.add(rs, filter, order, offset, limit);
+        }
       }
     });
   }

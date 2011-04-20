@@ -76,11 +76,6 @@ public class CacheManager {
       }
     }
     
-    private void assertRange(int offset, int limit) {
-      Assert.nonNegative(offset);
-      Assert.isPositive(limit);
-    }
-    
     private void clearHistory() {
       data.clearHistory();
       for (CachedQuery query : queries) {
@@ -114,17 +109,22 @@ public class CacheManager {
     }
 
     private List<BeeRow> getRows(Filter filter, Order order, int offset, int limit) {
-      assertRange(offset, limit);
-
       if (data.isEmpty()) {
         return null;
       }
+      
       CachedQuery query = getQuery(filter, order);
       if (query == null) {
         return null;
       }
+
+      int start = Math.max(offset, 0);
+      int length = (limit > 0) ? limit : query.getRowCount() - start;
+      if (length <= 0) {
+        return null;
+      }
       
-      List<Long> rowIds = query.getRowIds(offset, offset + limit);
+      List<Long> rowIds = query.getRowIds(start, length);
       if (rowIds == null) {
         return null;
       }

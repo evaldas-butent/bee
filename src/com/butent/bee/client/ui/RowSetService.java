@@ -26,6 +26,7 @@ import com.butent.bee.shared.BeeWidget;
 import com.butent.bee.shared.communication.ContentType;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -110,7 +111,8 @@ public class RowSetService extends CompositeService {
         } else {
           Global.closeDialog(event);
           Queries.getRowSet(table, null, null, Global.getVarInt(limit), Global.getVarInt(offset),
-              Global.getVarValue(stt), new Queries.RowSetCallback() {
+              Global.getVarValue(stt), CachingPolicy.NONE,
+              new Queries.RowSetCallback() {
                 public void onResponse(BeeRowSet rowSet) {
                   rs = rowSet;
                   refresh();

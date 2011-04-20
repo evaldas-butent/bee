@@ -12,6 +12,7 @@ import com.butent.bee.client.grid.CellGrid;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.view.Filter;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.DataInfo;
@@ -108,7 +109,7 @@ public class AsyncProvider extends Provider {
     }
 
     Queries.getRowSet(getDataInfo().getName(), flt, ord, range.getStart(), range.getLength(),
-        new Callback(displ, range));
+        CachingPolicy.FULL, new Callback(displ, range));
   }
 
   private Order getViewOrder(CellGrid grid) {

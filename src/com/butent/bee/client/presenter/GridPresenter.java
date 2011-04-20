@@ -11,8 +11,10 @@ import com.butent.bee.client.data.Provider;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.view.GridContainerImpl;
 import com.butent.bee.client.view.GridContainerView;
+import com.butent.bee.client.view.GridContentView;
 import com.butent.bee.client.view.SearchView;
 import com.butent.bee.client.view.View;
+import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.view.Filter;
@@ -100,10 +102,15 @@ public class GridPresenter implements Presenter {
   private Provider createProvider(GridContainerView view, DataInfo info, BeeRowSet rowSet,
       boolean isAsync) {
     Provider provider;
+    GridContentView display = view.getContent();
+
     if (isAsync) {
-      provider = new AsyncProvider(view.getContent(), info);
+      provider = new AsyncProvider(display, info);
     } else {
-      provider = new CachedProvider(view.getContent(), rowSet);
+      provider = new CachedProvider(display, rowSet);
+      Assert.notNull(rowSet);
+      display.setRowData(0, rowSet.getRows().getList());
+      display.setRowCount(rowSet.getNumberOfRows());
     }
     return provider;
   }

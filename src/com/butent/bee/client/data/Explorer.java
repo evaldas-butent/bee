@@ -22,6 +22,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.utils.Codec;
 
@@ -164,15 +165,16 @@ public class Explorer {
       limit = -1;
     }
 
-    Queries.getRowSet(dataInfo.getName(), null, null, 0, limit, new Queries.RowSetCallback() {
-      public void onResponse(BeeRowSet rowSet) {
-        if (rowSet.isEmpty()) {
-          BeeKeeper.getLog().info(rowSet.getViewName(), "RowSet is empty");
-        } else {
-          showView(dataInfo, rowSet, async);
-        }
-      }
-    });
+    Queries.getRowSet(dataInfo.getName(), null, null, 0, limit, CachingPolicy.FULL,
+        new Queries.RowSetCallback() {
+          public void onResponse(BeeRowSet rowSet) {
+            if (rowSet.isEmpty()) {
+              BeeKeeper.getLog().info(rowSet.getViewName(), "RowSet is empty");
+            } else {
+              showView(dataInfo, rowSet, async);
+            }
+          }
+        });
   }
 
   private void showView(DataInfo dataInfo, BeeRowSet rowSet, boolean async) {
