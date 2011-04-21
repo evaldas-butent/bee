@@ -1,4 +1,4 @@
-package com.butent.bee.client.view;
+package com.butent.bee.client.view.search;
 
 import com.google.common.collect.Lists;
 

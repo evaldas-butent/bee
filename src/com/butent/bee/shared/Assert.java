@@ -125,11 +125,11 @@ public class Assert {
     }
   }
 
-  public static void isPositive(int x) {
+  public static void isPositive(double x) {
     isPositive(x, ASSERTION_FAILED + "(" + x + ") argument must be positive");
   }
 
-  public static void isPositive(int x, String msg) {
+  public static void isPositive(double x, String msg) {
     if (x <= 0) {
       throw new BeeRuntimeException(msg);
     }

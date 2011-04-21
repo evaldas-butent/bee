@@ -6,5 +6,5 @@ import com.butent.bee.client.presenter.Presenter;
 
 public interface View extends IsWidget {
   Presenter getViewPresenter();
-  void setViewPresenter(Presenter presenter);
+  void setViewPresenter(Presenter viewPresenter);
 }

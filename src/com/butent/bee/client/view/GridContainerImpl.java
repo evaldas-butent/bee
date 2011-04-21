@@ -1,30 +1,35 @@
 package com.butent.bee.client.view;
 
+import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.EventTarget;
 import com.google.gwt.dom.client.Node;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.client.data.ScrollPager;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils.ScrollBars;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.layout.Direction;
 import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.presenter.Presenter;
+import com.butent.bee.client.view.navigation.PagerView;
+import com.butent.bee.client.view.navigation.ScrollPager;
+import com.butent.bee.client.view.search.SearchView;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeColumn;
 
+import java.util.Collection;
 import java.util.List;
 
-public class GridContainerImpl extends Split implements GridContainerView {
+public class GridContainerImpl extends Split implements GridContainerView, HasNavigation, HasSearch {
   public static int minPagingRows = 20;
   public static int minSearchRows = 2;
-  
+
   public static int defaultPageSize = 15;
 
-  private Presenter presenter = null;
+  private Presenter viewPresenter = null;
 
   private Direction footerDirection = null;
   private Direction headerDirection = null;
@@ -57,7 +62,7 @@ public class GridContainerImpl extends Split implements GridContainerView {
   public void create(String caption, List<BeeColumn> dataColumns, int rowCount) {
     hasPaging = rowCount >= minPagingRows;
     hasSearch = rowCount >= minSearchRows;
-    
+
     int pageSize = hasPaging ? defaultPageSize : rowCount;
 
     DataHeaderView header = new DataHeaderImpl();
@@ -71,14 +76,13 @@ public class GridContainerImpl extends Split implements GridContainerView {
 
     if (hasPaging || hasSearch) {
       footer = new DataFooterImpl();
-      footer.create(content, rowCount, pageSize, hasPaging, hasSearch);
+      footer.create(rowCount, pageSize, hasPaging, hasSearch);
     } else {
       footer = null;
     }
 
     if (hasPaging) {
       scroller = new ScrollPager();
-      scroller.setDisplay(content);
     } else {
       scroller = null;
     }
@@ -99,28 +103,6 @@ public class GridContainerImpl extends Split implements GridContainerView {
     } else {
       add(content.asWidget(), ScrollBars.BOTH);
     }
-  }
-
-  public int estimatePageSize(int containerWidth, int containerHeight) {
-    if (containerHeight > 0) {
-      GridContentView content = getContent();
-      if (content != null) {
-        int w = containerWidth;
-        int h = containerHeight;
-
-        if (hasHeader()) {
-          h -= getHeaderHeight();
-        }
-        if (hasFooter()) {
-          h -= getFooterHeight();
-        }
-        if (hasScroller()) {
-          w -= getScrollerWidth();
-        }
-        return content.estimatePageSize(w, h);
-      }
-    }
-    return BeeConst.SIZE_UNKNOWN;
   }
 
   public GridContentView getContent() {
@@ -162,6 +144,14 @@ public class GridContainerImpl extends Split implements GridContainerView {
     return headerHeight;
   }
 
+  public Collection<PagerView> getPagers() {
+    if (hasPaging) {
+      return ViewHelper.getPagers(this);
+    } else {
+      return null;
+    }
+  }
+
   public ScrollPager getScroller() {
     if (scrollerDirection == null) {
       return null;
@@ -178,16 +168,16 @@ public class GridContainerImpl extends Split implements GridContainerView {
     return scrollerWidth;
   }
 
-  public SearchView getSearchView() {
-    DataFooterView footer = getFooter();
-    if (footer == null) {
+  public Collection<SearchView> getSearchers() {
+    if (hasSearch) {
+      return ViewHelper.getSearchers(this);
+    } else {
       return null;
     }
-    return footer.getSearchView();
   }
 
   public Presenter getViewPresenter() {
-    return presenter;
+    return viewPresenter;
   }
 
   public boolean hasFooter() {
@@ -245,13 +235,12 @@ public class GridContainerImpl extends Split implements GridContainerView {
 
   @Override
   public void onResize() {
-    if (hasPaging) {
-      int ps = estimatePageSize(getElement().getClientWidth(), getElement().getClientHeight());
-      if (ps > 0 && ps != getPageSize()) {
-        updatePageSize(ps);
-      }
-    }
     super.onResize();
+    Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+      public void execute() {
+        adapt(false);
+      }
+    });
   }
 
   public void setFooterHeight(int footerHeight) {
@@ -266,23 +255,79 @@ public class GridContainerImpl extends Split implements GridContainerView {
     this.scrollerWidth = scrollerWidth;
   }
 
-  public void setViewPresenter(Presenter presenter) {
-    this.presenter = presenter;
+  public void setViewPresenter(Presenter viewPresenter) {
+    this.viewPresenter = viewPresenter;
   }
 
-  public void updatePageSize(int pageSize) {
+  @Override
+  protected void onLoad() {
+    super.onLoad();
+    Scheduler.get().scheduleEntry(new ScheduledCommand() {
+      public void execute() {
+        adapt(true);
+      }
+    });
+  }
+
+  @Override
+  protected void onUnload() {
+    if (getViewPresenter() != null) {
+      getViewPresenter().onViewUnload();
+    }
+    super.onUnload();
+  }
+
+  private void adapt(boolean init) {
     GridContentView content = getContent();
-    if (content != null && pageSize > 0 && hasPaging) {
-      content.updatePageSize(pageSize);
+
+    if (hasPaging && content != null) {
+      int pageSize = estimatePageSize(content,
+          getElement().getClientWidth(), getElement().getClientHeight());
+      if (pageSize > 0 && (init || pageSize != getPageSize(content))) {
+        updatePageSize(content, pageSize, init);
+      }
+
+      if (init) {
+        Collection<PagerView> pagers = getPagers();
+        if (pagers != null) {
+          for (PagerView pager : pagers) {
+            pager.start(content);
+          }
+        }
+      }
     }
   }
 
-  private int getPageSize() {
-    GridContentView content = getContent();
+  private int estimatePageSize(GridContentView content, int containerWidth, int containerHeight) {
+    if (content != null && containerHeight > 0) {
+      int w = containerWidth;
+      int h = containerHeight;
+
+      if (hasHeader()) {
+        h -= getHeaderHeight();
+      }
+      if (hasFooter()) {
+        h -= getFooterHeight();
+      }
+      if (hasScroller()) {
+        w -= getScrollerWidth();
+      }
+      return content.estimatePageSize(w, h);
+    }
+    return BeeConst.SIZE_UNKNOWN;
+  }
+
+  private int getPageSize(GridContentView content) {
     if (content == null) {
       return BeeConst.SIZE_UNKNOWN;
     } else {
       return content.getVisibleRange().getLength();
+    }
+  }
+
+  private void updatePageSize(GridContentView content, int pageSize, boolean init) {
+    if (content != null && pageSize > 0 && hasPaging) {
+      content.updatePageSize(pageSize, init);
     }
   }
 }

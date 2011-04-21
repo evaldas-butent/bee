@@ -1,4 +1,4 @@
-package com.butent.bee.client.data;
+package com.butent.bee.client.view.navigation;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
@@ -6,7 +6,6 @@ import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.CssResource;
-import com.google.gwt.user.cellview.client.AbstractPager;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.view.client.HasRows;
 
@@ -19,10 +18,10 @@ import com.butent.bee.client.widget.Html;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.utils.BeeUtils;
 
-public class Pager extends AbstractPager {
+public class SimplePager extends AbstractPagerImpl {
 
   public interface Resources extends ClientBundle {
-    @Source("Pager.css")
+    @Source("SimplePager.css")
     Style pagerStyle();
   }
 
@@ -110,15 +109,15 @@ public class Pager extends AbstractPager {
 
   private final int maxRowCount;
 
-  public Pager(int maxRowCount) {
+  public SimplePager(int maxRowCount) {
     this(maxRowCount, maxRowCount >= minRowCountForFastNavigation);
   }
 
-  public Pager(int maxRowCount, boolean showFastNavigation) {
+  public SimplePager(int maxRowCount, boolean showFastNavigation) {
     this(maxRowCount, showFastNavigation, getDefaultStyle());
   }
 
-  public Pager(int maxRowCount, boolean showFastNavigation, Style style) {
+  public SimplePager(int maxRowCount, boolean showFastNavigation, Style style) {
     this.maxRowCount = maxRowCount;
 
     String s = style.disabledButton();

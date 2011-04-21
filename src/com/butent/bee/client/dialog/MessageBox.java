@@ -33,13 +33,11 @@ public class MessageBox {
 
     if (src instanceof Widget) {
       PopupPanel p = DomUtils.parentPopup((Widget) src);
-
       if (p != null) {
         p.hide();
         ok = true;
       }
     }
-
     return ok;
   }
 
@@ -104,5 +102,15 @@ public class MessageBox {
 
     box.center();
     b.setFocus(true);
+  }
+
+  public void showWidget(Widget widget) {
+    Assert.notNull(widget);
+
+    BeePopupPanel box = new BeePopupPanel();
+    box.setAnimationEnabled(true);
+
+    box.setWidget(widget);
+    box.center();
   }
 }

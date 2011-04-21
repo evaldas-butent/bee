@@ -179,8 +179,6 @@ public class Explorer {
 
   private void showView(DataInfo dataInfo, BeeRowSet rowSet, boolean async) {
     GridPresenter presenter = new GridPresenter(dataInfo, rowSet, async);
-    presenter.start(BeeKeeper.getUi().getActivePanelWidth(),
-        BeeKeeper.getUi().getActivePanelHeight());
     BeeKeeper.getUi().updateActivePanel(presenter.getWidget());
   }
 }

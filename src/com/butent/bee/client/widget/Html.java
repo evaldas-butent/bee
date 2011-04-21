@@ -60,5 +60,4 @@ public class Html extends HTML implements HasId, HasCommand {
   public void setId(String id) {
     DomUtils.setId(this, id);
   }
-
 }

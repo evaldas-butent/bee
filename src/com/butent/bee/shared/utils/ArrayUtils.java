@@ -323,6 +323,57 @@ public class ArrayUtils {
   }
 
   /**
+   * Copies the specified range of the {@code source} array into a new array.
+   * Implements JavaScript array.slice method. Null-safe.
+   * 
+   * @param source array to slice 
+   * @param start specifies where to start the selection (The first element has an index of 0).
+   *        Negative value selects from the end of an array.
+   * @return a new array containing all elements from the start position to the end of
+   *         the original array.
+   */
+  public static String[] slice(String[] source, int start) {
+    if (source == null) {
+      return null;
+    }
+    return slice(source, start, source.length);
+  }
+  
+  /**
+   * Copies the specified range of the {@code source} array into a new array.
+   * Implements JavaScript array.slice method. Null-safe.
+   * 
+   * @param source array to slice 
+   * @param start specifies where to start the selection (The first element has an index of 0).
+   *        Negative value selects from the end of an array.
+   * @param end specifies where to end the selection.
+   *        Negative value selects from the end of an array.    
+   * @return a new array containing the specified range from the original array.
+   */
+  public static String[] slice(String[] source, int start, int end) {
+    if (source == null) {
+      return null;
+    }
+    int srcLen = source.length;
+    if (srcLen <= 0 || start >= srcLen || end <= -srcLen) {
+      return BeeConst.EMPTY_STRING_ARRAY;
+    }
+    
+    int p1 = (start >= 0) ? start : Math.max(srcLen + start, 0);
+    int p2 = (end >= 0) ? Math.min(srcLen, end) : Math.max(srcLen + end, 0);
+    if (p1 >= p2) {
+      return BeeConst.EMPTY_STRING_ARRAY;
+    }
+    
+    int len = p2 - p1;
+    String[] arr = new String[len];
+    for (int i = 0; i < len; i++) {
+      arr[i] = source[p1 + i];
+    }
+    return arr;
+  }
+
+  /**
    * Transforms an array recursively using the specified separators. Each recursive level uses the
    * next separator. If there are no separators defined, it uses the default ", " separator.
    * 

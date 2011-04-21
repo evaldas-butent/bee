@@ -18,6 +18,7 @@ import com.google.gwt.media.client.Video;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.InlineHTML;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -32,6 +33,7 @@ import com.butent.bee.client.composite.SliderBar;
 import com.butent.bee.client.data.JsData;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Features;
+import com.butent.bee.client.dom.Font;
 import com.butent.bee.client.dom.StyleUtils.ScrollBars;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.grid.FlexTable;
@@ -679,7 +681,6 @@ public class CliWorker {
       } else {
         table.setWidget(row, 1, new BeeLabel("not supported"));
       }
-
       row++;
     }
 
@@ -1011,6 +1012,51 @@ public class CliWorker {
     
     List<ExtendedProperty> info = DomUtils.getInfo(widget, id, depth);
     BeeKeeper.getUi().showGrid(info);
+  }
+
+  public static void showWidth(String[] arr) {
+    int len = ArrayUtils.length(arr);
+    String txt = ArrayUtils.getQuietly(arr, 1);
+    
+    if (BeeUtils.isEmpty(txt)) {
+      Global.sayHuh();
+      return;
+    }
+    
+    if (len <= 2) {
+      Global.inform(BeeUtils.clip(txt, 256), DomUtils.getTextWidth(txt));
+      return;
+    }
+    
+    Font font = Font.parse(ArrayUtils.slice(arr, 2));
+    int width = DomUtils.getTextWidth(txt, font);
+    
+    List<Property> info = PropertyUtils.createProperties("Text", txt, "Width", width);
+    if (font != null) {
+      info.addAll(font.getInfo());
+    }
+    
+    InlineHTML label = new InlineHTML();
+    if (font != null) {
+      font.applyTo(label);
+    }
+    label.setHTML(txt);
+    
+    FlexTable table = new FlexTable();
+    table.setCellPadding(3);
+    table.setBorderWidth(1);
+    
+    for (int i = 0; i < info.size(); i++) {
+      table.setHTML(i, 0, info.get(i).getName());
+      table.setHTML(i, 1, info.get(i).getValue());
+    }
+    
+    Absolute panel = new Absolute();
+    panel.setPixelSize(Math.max(width + 40, 256), info.size() * 30 + 50);
+    panel.add(label, 10, 10);
+    panel.add(table, 10, 50);
+    
+    Global.showWidget(panel);
   }
   
   public static void storage(String[] arr) {

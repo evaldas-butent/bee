@@ -1,6 +1,6 @@
-package com.butent.bee.client.data;
+package com.butent.bee.client.view.navigation;
 
-import com.google.gwt.user.cellview.client.AbstractPager;
+import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.view.client.HasRows;
 import com.google.gwt.view.client.Range;
 
@@ -8,11 +8,9 @@ import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.utils.BeeUtils;
 
-public class RangeInfo extends AbstractPager {
-  private BeeLabel label = new BeeLabel();
-
+public class RangeInfo extends AbstractPagerImpl {
   public RangeInfo() {
-    initWidget(label);
+    initWidget(new BeeLabel());
   }
 
   @Override
@@ -23,6 +21,10 @@ public class RangeInfo extends AbstractPager {
     Range range = display.getVisibleRange();
     int start = range.getStart() + 1;
     int end = BeeUtils.min(start + range.getLength() - 1, display.getRowCount());
-    label.setText(start + " - " + end + " / " + display.getRowCount());
+    
+    Widget label = getWidget();
+    if (label instanceof BeeLabel) {
+      ((BeeLabel) label).setText(start + " - " + end + " / " + display.getRowCount());
+    }
   }
 }

@@ -46,7 +46,6 @@ public class TilePanel extends Split {
         break;
       }
     }
-
     return child;
   }
 
@@ -58,7 +57,6 @@ public class TilePanel extends Split {
         lst.add((TilePanel) w);
       }
     }
-
     return lst;
   }
 
@@ -74,7 +72,6 @@ public class TilePanel extends Split {
         idx++;
       }
     }
-
     return idx;
   }
   
@@ -95,7 +92,6 @@ public class TilePanel extends Split {
         root.addText(s, JreEmulation.getSimpleName(child), DomUtils.getId(child));
       }
     }
-    
     return root;
   }
 
@@ -105,7 +101,6 @@ public class TilePanel extends Split {
         return false;
       }
     }
-
     return true;
   }
   
@@ -151,7 +146,6 @@ public class TilePanel extends Split {
     if (centerWidget != null) {
       dst.add(centerWidget, centerScroll);
     }
-    
     dst.onLayout();
   }
   
@@ -161,7 +155,6 @@ public class TilePanel extends Split {
       BeeKeeper.getUi().activatePanel(this);
       ev.stopPropagation();
     }
-    
     super.onBrowserEvent(ev);
   }
   
@@ -175,12 +168,10 @@ public class TilePanel extends Split {
         break;
       }
     }
-
     return w;
   }
   
-  private Map<Element, Widget> getChildrenElements(boolean tiles,
-      boolean splitters) {
+  private Map<Element, Widget> getChildrenElements(boolean tiles, boolean splitters) {
     Map<Element, Widget> z = new HashMap<Element, Widget>();
 
     for (Widget w : getChildren()) {
@@ -192,7 +183,6 @@ public class TilePanel extends Split {
       }
       z.put(w.getElement(), w);
     }
-
     return z;
   }
 
@@ -205,8 +195,6 @@ public class TilePanel extends Split {
       }
       lst.add(w);
     }
-
     return lst;
   }
-
 }

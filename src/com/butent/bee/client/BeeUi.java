@@ -386,7 +386,7 @@ public class BeeUi implements Module {
       setTemporaryDetach(true);
       p.remove(w);
       setTemporaryDetach(false);
-
+      
       center.add(w, scroll);
       center.onLayout();
     }

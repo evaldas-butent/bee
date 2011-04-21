@@ -1,15 +1,14 @@
-package com.butent.bee.client.data;
+package com.butent.bee.client.view.navigation;
 
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
-import com.google.gwt.user.cellview.client.AbstractPager;
 import com.google.gwt.view.client.HasRows;
 import com.google.gwt.view.client.Range;
 
 import com.butent.bee.client.widget.InputSpinner;
 import com.butent.bee.shared.utils.BeeUtils;
 
-public class PageResizer extends AbstractPager {
+public class PageResizer extends AbstractPagerImpl {
   public static int minPageSize = 2;
   public static int maxPageSize = 100;
   public static int defaultStep = 1;
@@ -17,7 +16,7 @@ public class PageResizer extends AbstractPager {
   public PageResizer(int value) {
     this(BeeUtils.limit(value, minPageSize, maxPageSize), minPageSize, maxPageSize, defaultStep);
   }
-  
+
   public PageResizer(int value, int min, int max, int step) {
     InputSpinner widget = new InputSpinner(value, min, max, step);
     initWidget(widget);
@@ -46,17 +45,22 @@ public class PageResizer extends AbstractPager {
         getInputWidget().setMaxValue(pageSize);
       }
     }
-    
+
     int rowCount = getDisplay().getRowCount();
-    if (rowCount > 0 && rowCount <= maxPageSize && rowCount >= pageSize) {
+    if (rowCount > 0 && rowCount <= maxPageSize && rowCount >= pageSize
+        && rowCount != getMaxValue()) {
       getInputWidget().setMaxValue(rowCount);
     }
   }
-  
+
   private InputSpinner getInputWidget() {
     return (InputSpinner) getWidget();
   }
-  
+
+  private int getMaxValue() {
+    return BeeUtils.unbox(getInputWidget().getMaxValue());
+  }
+
   private int getValue() {
     return getInputWidget().getIntValue();
   }

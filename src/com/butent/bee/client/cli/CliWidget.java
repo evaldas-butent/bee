@@ -163,6 +163,8 @@ public class CliWidget extends BeeTextBox {
       BeeKeeper.getRpc().invoke("vmInfo");
     } else if (z.equals("widget") && arr.length >= 2) {
       CliWorker.showWidgetInfo(arr);
+    } else if (z.equals("width") && arr.length >= 2) {
+      CliWorker.showWidth(arr);
 
     } else {
       Global.showDialog("wtf", v);

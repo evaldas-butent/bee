@@ -249,6 +249,10 @@ public class Global implements Module {
       inputVars(null, "Variables", arr);
     }
   }
+  
+  public static void showWidget(Widget widget) {
+    msgBox.showWidget(widget);
+  }
 
   public static Widget simpleGrid(Object data, String... columnLabels) {
     return GridFactory.simpleGrid(data, columnLabels);

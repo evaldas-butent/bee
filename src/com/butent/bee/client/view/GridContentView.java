@@ -13,5 +13,5 @@ public interface GridContentView extends View, HasData<IsRow>, HasKeyboardPaging
 
   int estimatePageSize(int containerWidth, int containerHeight); 
   
-  void updatePageSize(int pageSize); 
+  void updatePageSize(int pageSize, boolean init); 
 }

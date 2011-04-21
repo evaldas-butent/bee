@@ -2,6 +2,9 @@ package com.butent.bee.client.dom;
 
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style;
+import com.google.gwt.dom.client.Style.FontStyle;
+import com.google.gwt.dom.client.Style.FontWeight;
+import com.google.gwt.dom.client.Style.HasCssName;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.ui.UIObject;
@@ -12,10 +15,73 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.utils.BeeUtils;
 
 public class StyleUtils {
+
+  public enum FontSize implements HasCssName {
+    XX_SMALL {
+      public String getCssName() {
+        return FONT_SIZE_XX_SMALL;
+      }
+    },
+    X_SMALL {
+      public String getCssName() {
+        return FONT_SIZE_X_SMALL;
+      }
+    },
+    SMALL {
+      public String getCssName() {
+        return FONT_SIZE_SMALL;
+      }
+    },
+    MEDIUM {
+      public String getCssName() {
+        return FONT_SIZE_MEDIUM;
+      }
+    },
+    LARGE {
+      public String getCssName() {
+        return FONT_SIZE_LARGE;
+      }
+    },
+    X_LARGE {
+      public String getCssName() {
+        return FONT_SIZE_X_LARGE;
+      }
+    },
+    XX_LARGE {
+      public String getCssName() {
+        return FONT_SIZE_XX_LARGE;
+      }
+    },
+
+    SMALLER {
+      public String getCssName() {
+        return FONT_SIZE_SMALLER;
+      }
+    },
+    LARGER {
+      public String getCssName() {
+        return FONT_SIZE_LARGER;
+      }
+    }
+  }
+
+  public enum FontVariant implements HasCssName {
+    NORMAL {
+      public String getCssName() {
+        return FONT_VARIANT_NORMAL;
+      }
+    },
+    SMALL_CAPS {
+      public String getCssName() {
+        return FONT_VARIANT_SMALL_CAPS;
+      }
+    }
+  }
+  
   public enum ScrollBars {
     NONE, HORIZONTAL, VERTICAL, BOTH
   }
-
+  
   public static final String ACTIVE_BLANK = "bee-activeBlank";
   public static final String ACTIVE_CONTENT = "bee-activeContent";
   public static final String CONFIG_PANEL = "bee-configPanel";
@@ -42,6 +108,10 @@ public class StyleUtils {
   public static final String STYLE_OVERFLOW_X = "overflow-x";
   public static final String STYLE_OVERFLOW_Y = "overflow-y";
 
+  public static final String STYLE_FONT_FAMILY = "fontFamily";
+  public static final String STYLE_FONT_SIZE = "fontSize";
+  public static final String STYLE_FONT_VARIANT = "fontVariant";
+  
   public static final String VALUE_AUTO = "auto";
   public static final String VALUE_FIXED = "fixed";
   public static final String VALUE_HIDDEN = "hidden";
@@ -54,6 +124,20 @@ public class StyleUtils {
   public static final String NAME_FOCUSED = "focused";
 
   public static final String NAME_UNSELECTABLE = "unselectable";
+  
+  public static final String FONT_SIZE_XX_SMALL = "xx-small";
+  public static final String FONT_SIZE_X_SMALL = "x-small";
+  public static final String FONT_SIZE_SMALL = "small";
+  public static final String FONT_SIZE_MEDIUM = "medium";
+  public static final String FONT_SIZE_LARGE = "large";
+  public static final String FONT_SIZE_X_LARGE = "x-large";
+  public static final String FONT_SIZE_XX_LARGE = "xx-large";
+
+  public static final String FONT_SIZE_SMALLER = "smaller";
+  public static final String FONT_SIZE_LARGER = "larger";
+
+  public static final String FONT_VARIANT_NORMAL = "normal";
+  public static final String FONT_VARIANT_SMALL_CAPS = "small-caps";
 
   public static void addStyleDependentName(Element el, String styleSuffix) {
     setStyleDependentName(el, styleSuffix, true);
@@ -302,6 +386,45 @@ public class StyleUtils {
     setOverflow(st, scroll, VALUE_HIDDEN);
   }
   
+  public static <E extends Enum<?> & HasCssName> E parseCssName(Class<E> clazz, String input) {
+    Assert.notNull(clazz);
+    Assert.notEmpty(input);
+    
+    for (E constant : clazz.getEnumConstants()) {
+      if (BeeUtils.same(constant.getCssName(), input)) {
+        return constant;
+      }
+    }
+    return null;
+  }
+
+  public static FontSize parseFontSize(String input) {
+    return parseCssName(FontSize.class, input);
+  }
+
+  public static FontStyle parseFontStyle(String input) {
+    return parseCssName(FontStyle.class, input);
+  }
+
+  public static FontVariant parseFontVariant(String input) {
+    return parseCssName(FontVariant.class, input);
+  }
+  
+  public static FontWeight parseFontWeight(String input) {
+    return parseCssName(FontWeight.class, input);
+  }
+  
+  public static Unit parseUnit(String input) {
+    Assert.notEmpty(input);
+
+    for (Unit constant : Unit.class.getEnumConstants()) {
+      if (BeeUtils.same(constant.getType(), input)) {
+        return constant;
+      }
+    }
+    return null;
+  }
+ 
   public static void removeStyleDependentName(Element el, String styleSuffix) {
     setStyleDependentName(el, styleSuffix, false);
   }
@@ -337,6 +460,82 @@ public class StyleUtils {
     st.setPropertyPx(STYLE_BORDER_TOP, px);
   }
 
+  public static void setFontFamily(UIObject obj, String family) {
+    Assert.notNull(obj);
+    setFontFamily(obj.getElement(), family);
+  }
+
+  public static void setFontFamily(Element el, String family) {
+    Assert.notNull(el);
+    setFontFamily(el.getStyle(), family);
+  }
+  
+  public static void setFontFamily(Style st, String family) {
+    Assert.notNull(st);
+    Assert.notEmpty(family);
+    st.setProperty(STYLE_FONT_FAMILY, family);
+  }
+  
+  public static void setFontSize(UIObject obj, FontSize size) {
+    Assert.notNull(obj);
+    setFontSize(obj.getElement(), size);
+  }
+
+  public static void setFontSize(Element el, FontSize size) {
+    Assert.notNull(el);
+    setFontSize(el.getStyle(), size);
+  }
+
+  public static void setFontSize(UIObject obj, double size, Unit unit) {
+    Assert.notNull(obj);
+    setFontSize(obj.getElement(), size, unit);
+  }
+  
+  public static void setFontSize(Element el, double size, Unit unit) {
+    Assert.notNull(el);
+    Assert.isPositive(size);
+    Assert.notNull(unit);
+    el.getStyle().setFontSize(size, unit);
+  }
+  
+  public static void setFontSize(Style st, FontSize size) {
+    Assert.notNull(st);
+    Assert.notNull(size);
+    setFontSize(st, size.getCssName());
+  }
+
+  public static void setFontSizePx(UIObject obj, double size) {
+    Assert.notNull(obj);
+    setFontSizePx(obj.getElement(), size);
+  }
+  
+  public static void setFontSizePx(Element el, double size) {
+    Assert.notNull(el);
+    setFontSizePx(el.getStyle(), size);
+  }
+  
+  public static void setFontSizePx(Style st, double size) {
+    Assert.notNull(st);
+    Assert.isPositive(size);
+    st.setFontSize(size, Unit.PX);
+  }
+
+  public static void setFontVariant(UIObject obj, FontVariant variant) {
+    Assert.notNull(obj);
+    setFontVariant(obj.getElement(), variant);
+  }
+
+  public static void setFontVariant(Element el, FontVariant variant) {
+    Assert.notNull(el);
+    setFontVariant(el.getStyle(), variant);
+  }
+  
+  public static void setFontVariant(Style st, FontVariant variant) {
+    Assert.notNull(st);
+    Assert.notNull(variant);
+    st.setProperty(STYLE_FONT_VARIANT, variant.getCssName());
+  }
+  
   public static void setHeight(UIObject obj, int px) {
     Assert.notNull(obj);
     setHeight(obj.getElement(), px);
@@ -548,6 +747,12 @@ public class StyleUtils {
     return ok;
   }
 
+  private static void setFontSize(Style st, String value) {
+    Assert.notNull(st);
+    Assert.notEmpty(value);
+    st.setProperty(STYLE_FONT_SIZE, value);
+  }
+  
   private static void setStyleProperty(Style style, String name, String value) {
     JsUtils.setProperty(style, name, value);
   }

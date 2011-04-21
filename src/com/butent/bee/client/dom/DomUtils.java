@@ -1,5 +1,6 @@
 package com.butent.bee.client.dom;
 
+import com.google.common.collect.Iterables;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
 import com.google.gwt.dom.client.ButtonElement;
@@ -17,6 +18,7 @@ import com.google.gwt.dom.client.ScriptElement;
 import com.google.gwt.dom.client.SpanElement;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.dom.client.Style.Overflow;
+import com.google.gwt.dom.client.Style.Position;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.dom.client.Style.Visibility;
 import com.google.gwt.dom.client.TableCellElement;
@@ -40,7 +42,6 @@ import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 public class DomUtils {
@@ -140,7 +141,20 @@ public class DomUtils {
   private static int checkBoxOffsetHeight = -1;
   private static int checkBoxClientWidth = -1;
   private static int checkBoxClientHeight = -1;
-  
+
+  private static final SpanElement widthRuler;
+
+  static {
+    widthRuler = Document.get().createSpanElement();
+
+    Style style = widthRuler.getStyle();
+    style.setPosition(Position.ABSOLUTE);
+    style.setZIndex(-1024);
+    style.setTop(-100, Unit.PX);
+
+    Document.get().getBody().appendChild(widthRuler);
+  }  
+
   public static void clearTitle(UIObject obj) {
     Assert.notNull(obj);
     obj.setTitle(null);
@@ -545,8 +559,7 @@ public class DomUtils {
     List<Property> lst = new ArrayList<Property>();
 
     if (w instanceof HasWidgets) {
-      for (Iterator<Widget> it = ((HasWidgets) w).iterator(); it.hasNext();) {
-        Widget child = it.next();
+      for (Widget child : (HasWidgets) w) {
         PropertyUtils.addProperty(lst, JreEmulation.getSimpleName(child), getId(child));
       }
     }
@@ -663,9 +676,9 @@ public class DomUtils {
       int i = 0;
       String p;
 
-      for (Iterator<Widget> iter = ((HasWidgets) obj).iterator(); iter.hasNext();) {
+      for (Widget child : (HasWidgets) obj) {
         p = BeeUtils.concat(BeeConst.DEFAULT_PROPERTY_SEPARATOR, prefix, i++);
-        PropertyUtils.appendExtended(lst, getInfo(iter.next(), p, depth - 1));
+        PropertyUtils.appendExtended(lst, getInfo(child, p, depth - 1));
       }
     }
     return lst;
@@ -779,11 +792,9 @@ public class DomUtils {
     }
 
     List<Widget> sib = new ArrayList<Widget>();
-
-    for (Iterator<Widget> it = ((HasWidgets) p).iterator(); it.hasNext();) {
-      sib.add(it.next());
+    for (Widget c : (HasWidgets) p) {
+      sib.add(c);
     }
-
     return sib;
   }
 
@@ -888,7 +899,31 @@ public class DomUtils {
     }
     return textBoxOffsetWidth;
   }
+
+  public static int getTextWidth(String text) {
+    return getTextWidth(text, null);
+  }
   
+  public static int getTextWidth(String text, Font font) {
+    if (BeeUtils.isEmpty(text)) {
+      return 0;
+    }
+    
+    if (font != null) {
+      font.applyTo(widthRuler);
+    }
+    widthRuler.setInnerHTML(text);
+
+    int width = widthRuler.getOffsetWidth();
+
+    widthRuler.setInnerHTML(BeeConst.STRING_EMPTY);
+    if (font != null) {
+      font.removeFrom(widthRuler);
+    }
+    
+    return width;
+  }
+ 
   public static List<ExtendedProperty> getUIObjectExtendedInfo(UIObject obj, String prefix) {
     Assert.notNull(obj);
     List<ExtendedProperty> lst = new ArrayList<ExtendedProperty>();
@@ -991,8 +1026,8 @@ public class DomUtils {
     Widget ret = null; 
     if (root instanceof HasWidgets) {
       Widget found;
-      for (Iterator<Widget> it = ((HasWidgets) root).iterator(); it.hasNext(); ) {
-        found = getWidget(it.next(), elem);
+      for (Widget child : (HasWidgets) root) {
+        found = getWidget(child, elem);
         if (found != null) {
           ret = found;
           break;
@@ -1004,12 +1039,7 @@ public class DomUtils {
 
   public static int getWidgetCount(HasWidgets container) {
     Assert.notNull(container);
-    int c = 0;
-    for (Iterator<Widget> it = container.iterator(); it.hasNext();) {
-      it.next();
-      c++;
-    }
-    return c;
+    return Iterables.size(container);
   }
 
   public static List<ExtendedProperty> getWidgetExtendedInfo(Widget w, String prefix) {

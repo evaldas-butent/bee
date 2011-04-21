@@ -3,6 +3,7 @@ package com.butent.bee.client.view;
 import com.google.gwt.user.cellview.client.TextHeader;
 import com.google.gwt.view.client.MultiSelectionModel;
 
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.data.KeyProvider;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.grid.CellColumn;
@@ -60,6 +61,8 @@ public class GridContentImpl extends CellGrid implements GridContentView {
     if (width <= 0 || width > containerWidth) {
       z -= DomUtils.getScrollbarHeight();
     }
+    
+    BeeKeeper.getLog().info("estimate", containerWidth, containerHeight, width, z, z / (rh + bw));
 
     if (rh > 0 && z > rh + bw) {
       return z / (rh + bw);
@@ -75,8 +78,18 @@ public class GridContentImpl extends CellGrid implements GridContentView {
     this.viewPresenter = presenter;
   }
 
-  public void updatePageSize(int pageSize) {
+  public void updatePageSize(int pageSize, boolean init) {
     Assert.isPositive(pageSize);
-    setPageSize(pageSize);
+    int oldSize = getPageSize();
+    
+    BeeKeeper.getLog().info("page size", oldSize, "/", pageSize, init);
+
+    if (oldSize == pageSize) {
+      if (init) {
+        setVisibleRangeAndClearData(getVisibleRange(), true);
+      }
+    } else {
+      setPageSize(pageSize);
+    }
   }
 }

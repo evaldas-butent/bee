@@ -1,8 +1,7 @@
-package com.butent.bee.client.data;
+package com.butent.bee.client.view.navigation;
 
 import com.google.gwt.event.dom.client.ScrollEvent;
 import com.google.gwt.event.dom.client.ScrollHandler;
-import com.google.gwt.user.cellview.client.AbstractPager;
 import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.view.client.HasRows;
@@ -13,7 +12,7 @@ import com.butent.bee.client.dom.StyleUtils.ScrollBars;
 import com.butent.bee.client.layout.Scroll;
 import com.butent.bee.client.widget.Html;
 
-public class ScrollPager extends AbstractPager implements RequiresResize {
+public class ScrollPager extends AbstractPagerImpl implements RequiresResize {
   public static int maxHeight = 10000;
 
   private static final int UNKNOWN = -1;
@@ -72,18 +71,8 @@ public class ScrollPager extends AbstractPager implements RequiresResize {
       isScrolling = false;
       return;
     }
-
     updateHeight();
-
-    int start = getPageStart();
-    int rc = getRowCount();
-    int maxPos = getMaxPosition();
-    int pos = start * maxPos / rc;
-
-    if (pos >= 0 && pos <= maxPos) {
-      setPosition(pos);
-      lastPos = pos;
-    }
+    updatePosition();
   }
 
   private long calculateHeight(int pageSize, int rowCount, int widgetHeight) {
@@ -140,13 +129,25 @@ public class ScrollPager extends AbstractPager implements RequiresResize {
       outer.setVerticalScrollPosition(position);
     }
   }
-
+  
   private void updateHeight() {
     long h = calculateHeight(getPageSize(), getRowCount(), getElement().getClientHeight());
     if (h >= 0 && h != lastHeight) {
       lastHeight = h;
       int z = (h < maxHeight) ? (int) h : maxHeight;
       DomUtils.setHeight(getInnerWidget(), z);
+    }
+  }
+
+  private void updatePosition() {
+    int start = getPageStart();
+    int rc = getRowCount();
+    int maxPos = getMaxPosition();
+    int pos = start * maxPos / rc;
+
+    if (pos >= 0 && pos <= maxPos) {
+      setPosition(pos);
+      lastPos = pos;
     }
   }
 }

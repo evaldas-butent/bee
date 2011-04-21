@@ -148,8 +148,6 @@ public class FlexTable extends HtmlTable {
         }
       }
     }
-
     return columnIndex;
   }
-  
 }

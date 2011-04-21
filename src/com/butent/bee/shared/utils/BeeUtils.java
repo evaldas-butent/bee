@@ -15,6 +15,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -1552,6 +1553,27 @@ public class BeeUtils {
   }
 
   /**
+   * Null-safe set union.
+   * 
+   * @param src all sets to be joined
+   * @return a new set containing all elements from the {@code src} sets.
+   */
+  public static <T> Set<T> join(Set<? extends T>... src) {
+    Assert.notNull(src);
+    int n = src.length;
+    Assert.parameterCount(n, 2);
+
+    Set<T> dst = new HashSet<T>();
+
+    for (Set<? extends T> set : src) {
+      if (set != null) {
+        dst.addAll(set);
+      }
+    }
+    return dst;
+  }
+  
+  /**
    * Cuts the string from the beginning to a specified index.
    * 
    * @param s string to cut
@@ -2720,12 +2742,22 @@ public class BeeUtils {
     }
     return sb.toString();
   }
+  
+  /**
+   * Null-safe Integer unboxing.
+   * 
+   * @param box an Integer to unbox
+   * @return unboxed int value or 0 if {@code box} is null
+   */
+  public static int unbox(Integer box) {
+    return (box == null) ? 0 : box;
+  }
 
   /**
    * Searches for an Integer value from a String {@code s}.
    * 
    * @param s the String to search value from
-   * @return an Integer value if found, oterwise 0;
+   * @return an Integer value if found, otherwise 0;
    */
   public static int val(String s) {
     if (s == null) {

@@ -1,7 +1,11 @@
 package com.butent.bee.client.presenter;
 
+import com.google.common.base.Objects;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
+import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
@@ -12,31 +16,65 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.view.GridContainerImpl;
 import com.butent.bee.client.view.GridContainerView;
 import com.butent.bee.client.view.GridContentView;
-import com.butent.bee.client.view.SearchView;
-import com.butent.bee.client.view.View;
+import com.butent.bee.client.view.HasSearch;
+import com.butent.bee.client.view.search.SearchView;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.DataInfo;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 public class GridPresenter implements Presenter {
+  
+  private class FilterCallback implements Queries.IntCallback {
+    private Filter filter;
+
+    private FilterCallback(Filter filter) {
+      this.filter = filter;
+    }
+
+    public void onResponse(int value) {
+      BeeKeeper.getLog().info("filter callback", filter);
+      BeeKeeper.getLog().info("row count", value);
+
+      if (!Objects.equal(filter, getLastFilter())) {
+        BeeKeeper.getLog().warning("filter not the same");
+        BeeKeeper.getLog().warning(getLastFilter());
+        return;
+      }
+
+      if (value > 0) {
+        if (isAsync()) {
+          ((AsyncProvider) getDataProvider()).setFilter(filter);
+          getView().getContent().setRowCount(value, true);
+          getView().getContent().setVisibleRangeAndClearData(
+              getView().getContent().getVisibleRange(), true);
+        }
+      }
+    }
+  }
+  
   private final DataInfo dataInfo;
   private final boolean async;
   private final List<BeeColumn> dataColumns;
 
-  private int rowCount;
-
   private final GridContainerView gridContainer;
   private final Provider dataProvider;
+
+  private final Set<HandlerRegistration> filterChangeHandlers = Sets.newHashSet();
+  private Filter lastFilter = null;
 
   public GridPresenter(DataInfo dataInfo, BeeRowSet rowSet, boolean async) {
     this.dataInfo = dataInfo;
     this.async = async;
     this.dataColumns = rowSet.getColumns();
-    this.rowCount = async ? dataInfo.getRowCount() : rowSet.getNumberOfRows();
+
+    int rowCount = async ? dataInfo.getRowCount() : rowSet.getNumberOfRows();
 
     this.gridContainer = createView(dataInfo.getName(), dataColumns, rowCount);
     this.dataProvider = createProvider(gridContainer, dataInfo, rowSet, async);
@@ -56,8 +94,8 @@ public class GridPresenter implements Presenter {
     return dataProvider;
   }
 
-  public int getRowCount() {
-    return rowCount;
+  public Filter getLastFilter() {
+    return lastFilter;
   }
 
   public GridContainerView getView() {
@@ -72,30 +110,33 @@ public class GridPresenter implements Presenter {
     return async;
   }
 
-  public void onUnload(View view) {
-  }
-
-  public void setRowCount(int rowCount) {
-    this.rowCount = rowCount;
-  }
-
-  public void start(int containerWidth, int containerHeight) {
-    int pageSize = getView().estimatePageSize(containerWidth, containerHeight);
-    if (pageSize > 0) {
-      getView().updatePageSize(pageSize);
+  public void onViewUnload() {
+    if (BeeKeeper.getUi().isTemporaryDetach()) {
+      return;
     }
+    getView().setViewPresenter(null);
+
+    for (HandlerRegistration hr : filterChangeHandlers) {
+      hr.removeHandler();
+    }
+    filterChangeHandlers.clear();
+    
+    getDataProvider().onUnload();
   }
 
   private void bind() {
-    final SearchView search = getView().getSearchView();
+    GridContainerView view = getView();
+    view.setViewPresenter(this);
 
-    if (getRowCount() > 1 && getDataProvider() instanceof AsyncProvider && search != null) {
-      search.addChangeHandler(new ChangeHandler() {
-        @Override
-        public void onChange(ChangeEvent event) {
-          updateFilter(search.getFilter(dataColumns));
-        }
-      });
+    Collection<SearchView> searchers = getSearchers();
+    if (searchers != null) {
+      for (SearchView search : searchers) {
+        filterChangeHandlers.add(search.addChangeHandler(new ChangeHandler() {
+          public void onChange(ChangeEvent event) {
+            updateFilter();
+          }
+        }));
+      }
     }
   }
 
@@ -126,23 +167,47 @@ public class GridPresenter implements Presenter {
     return getDataInfo().getName();
   }
 
-  private void updateFilter(final Filter filter) {
-    BeeKeeper.getLog().info(filter == null ? "no filter" : filter.transform());
+  private Collection<SearchView> getSearchers() {
+    Collection<SearchView> searchers;
 
-    Queries.getRowCount(getDataName(), filter, new Queries.IntCallback() {
-      public void onResponse(int value) {
-        BeeKeeper.getLog().info(value);
-
-        if (value > 0 && value != getRowCount()) {
-          setRowCount(value);
-          if (isAsync()) {
-            ((AsyncProvider) getDataProvider()).setFilter(filter);
-            getView().getContent().setRowCount(value, true);
-            getView().getContent().setVisibleRangeAndClearData(
-                getView().getContent().getVisibleRange(), true);
-          }
-        }
+    if (getView() instanceof HasSearch) {
+      searchers = ((HasSearch) getView()).getSearchers();
+    } else {
+      searchers = null;
+    }
+    return searchers;
+  }
+  
+  private void updateFilter() {
+    Collection<SearchView> searchers = getSearchers();
+    Assert.notNull(searchers);
+    
+    List<Filter> filters = Lists.newArrayListWithCapacity(searchers.size());
+    for (SearchView search : searchers) {
+      Filter flt = search.getFilter(getDataColumns());
+      if (flt != null && !filters.contains(flt)) {
+        filters.add(flt);
       }
-    });
+    }
+
+    Filter filter;
+    switch (filters.size()) {
+      case 0:
+        filter = null;
+        break;
+      case 1:
+        filter = filters.get(0);
+        break;
+      default:
+        filter = CompoundFilter.and(filters.toArray(new Filter[filters.size()]));
+    }
+    
+    if (Objects.equal(filter, getLastFilter())) {
+      BeeKeeper.getLog().info("filter not changed", filter);
+      return;
+    }
+    
+    lastFilter = filter;
+    Queries.getRowCount(getDataName(), filter, new FilterCallback(filter));
   }
 }

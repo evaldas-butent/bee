@@ -8,7 +8,7 @@ import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.BeeLabel;
 
 public class DataHeaderImpl extends BeeLayoutPanel implements DataHeaderView {
-  private Presenter presenter = null;
+  private Presenter viewPresenter = null;
 
   public DataHeaderImpl() {
     super();
@@ -34,10 +34,10 @@ public class DataHeaderImpl extends BeeLayoutPanel implements DataHeaderView {
   }
 
   public Presenter getViewPresenter() {
-    return presenter;
+    return viewPresenter;
   }
 
-  public void setViewPresenter(Presenter presenter) {
-    this.presenter = presenter;
+  public void setViewPresenter(Presenter viewPresenter) {
+    this.viewPresenter = viewPresenter;
   }
 }
