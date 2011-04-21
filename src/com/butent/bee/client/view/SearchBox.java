@@ -6,7 +6,12 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.widget.BeeTextBox;
-import com.butent.bee.shared.data.view.Filter;
+import com.butent.bee.shared.data.IsColumn;
+import com.butent.bee.shared.data.filter.ColumnIsEmptyFilter;
+import com.butent.bee.shared.data.filter.ComparisonFilter;
+import com.butent.bee.shared.data.filter.ComparisonFilter.Operator;
+import com.butent.bee.shared.data.filter.CompoundFilter;
+import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
@@ -30,8 +35,18 @@ public class SearchBox extends BeeTextBox implements SearchView {
     return "bee-SearchBox";
   }
 
-  public Filter getFilter() {
-    return getFilter(getValue());
+  public Filter getFilter(List<? extends IsColumn> columns) {
+    StringBuilder sb = new StringBuilder();
+
+    if (!BeeUtils.isEmpty(columns)) {
+      for (IsColumn column : columns) {
+        if (sb.length() > 0) {
+          sb.append("|");
+        }
+        sb.append(column.getId().toLowerCase());
+      }
+    }
+    return getFilter(getValue(), sb.toString());
   }
 
   public Presenter getViewPresenter() {
@@ -41,36 +56,40 @@ public class SearchBox extends BeeTextBox implements SearchView {
   public void setViewPresenter(Presenter presenter) {
     this.presenter = presenter;
   }
-  
-  private Filter getFilter(String wh) {
+
+  private Filter getFilter(String wh, String colPattern) {
     Filter flt = null;
 
     if (!BeeUtils.isEmpty(wh)) {
-      String orPattern = "\\s+[Oo][Rr]\\s+";
-      String andPattern = "\\s+[Aa][Nn][Dd]\\s+";
-
-      List<String> parts = getParts(wh, orPattern);
+      List<String> parts = getParts(wh, "\\s+[oO][rR]\\s+");
 
       if (parts.size() > 1) {
-        flt = Filter.or();
+        flt = CompoundFilter.or();
       } else {
-        parts = getParts(wh, andPattern);
+        parts = getParts(wh, "\\s+[aA][nN][dD]\\s+");
 
         if (parts.size() > 1) {
-          flt = Filter.and();
+          flt = CompoundFilter.and();
         }
       }
-      if (parts.size() > 1) {
+      if (!BeeUtils.isEmpty(flt)) {
         for (String part : parts) {
-          flt.add(getFilter(part));
+          ((CompoundFilter) flt).add(getFilter(part, colPattern));
         }
       } else {
-        String s = unparenthesize(wh);
-        String pattern = "\\s*(\\S+)\\s*(<=|>=|!=|<>)\\s*(.+)";
+        String ptrn;
+
+        if (BeeUtils.isEmpty(colPattern)) {
+          ptrn = "[a-z_]\\w*";
+        } else {
+          ptrn = colPattern;
+        }
+        String s = parts.get(0).toLowerCase();
+        String pattern = "\\s*(" + ptrn + ")\\s*(" + Operator.getPattern(true) + ")\\s*(.*)";
         boolean ok = s.matches(pattern);
 
         if (!ok) {
-          pattern = "\\s*(\\S+)\\s*([<>=\\$])\\s*(.+)";
+          pattern = "\\s*(" + ptrn + ")\\s*(" + Operator.getPattern(false) + ")\\s*(.*)";
           ok = s.matches(pattern);
         }
         if (ok) {
@@ -78,8 +97,16 @@ public class SearchBox extends BeeTextBox implements SearchView {
           String operator = s.replaceFirst(pattern, "$2");
           String value = s.replaceFirst(pattern, "$3");
 
-          flt = Filter.condition(column, operator,
-              BeeUtils.isDigit(value) ? BeeUtils.val(value) : value);
+          if (BeeUtils.isEmpty(value)) {
+            flt = new ColumnIsEmptyFilter(column);
+
+          } else if (!BeeUtils.isEmpty(colPattern) && value.matches("^(" + colPattern + ")$")) {
+            flt = ComparisonFilter.compareWithColumn(column, operator, value);
+
+          } else {
+            flt = ComparisonFilter.compareWithValue(column, operator,
+                BeeUtils.isNumeric(value) ? BeeUtils.toDouble(value) : value);
+          }
         } else {
           BeeKeeper.getLog().warning("Wrong filter expression: " + s);
         }
@@ -91,7 +118,7 @@ public class SearchBox extends BeeTextBox implements SearchView {
   private List<String> getParts(String expr, String pattern) {
     List<String> parts = Lists.newArrayList();
 
-    String s = unparenthesize(expr);
+    String s = expr.replaceFirst("^\\s*\\(\\s*(.+)\\s*\\)\\s*$", "$1");
     int cnt = s.split(pattern).length;
     boolean ok = false;
 
@@ -99,11 +126,18 @@ public class SearchBox extends BeeTextBox implements SearchView {
       String[] pair = s.split(pattern, i);
       String right = pair[pair.length - 1];
       String left = s.substring(0, s.lastIndexOf(right)).replaceFirst(pattern + "$", "");
-      ok = validPart(left);
 
-      if (ok) {
+      if (validPart(left)) {
         parts.add(left);
         parts.addAll(getParts(right, pattern));
+        ok = true;
+
+      } else if (validPart(right)) {
+        parts.addAll(getParts(left, pattern));
+        parts.add(right);
+        ok = true;
+      }
+      if (ok) {
         break;
       }
     }
@@ -111,10 +145,6 @@ public class SearchBox extends BeeTextBox implements SearchView {
       parts.add(s);
     }
     return parts;
-  }
-
-  private String unparenthesize(String expr) {
-    return expr.replaceFirst("^\\s*\\(\\s*(.*)\\s*\\)\\s*$", "$1");
   }
 
   private boolean validPart(String expr) {

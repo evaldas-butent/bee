@@ -63,7 +63,7 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
       if (row2 == null) {
         return orderBy.get(0).isAscending() ? BeeConst.COMPARE_MORE : BeeConst.COMPARE_LESS;
       }
-      
+
       int z;
       for (int i = 0; i < orderBy.size(); i++) {
         int index = orderBy.get(i).getIndex();
@@ -109,7 +109,7 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
 
   public AbstractTable() {
   }
-  
+
   protected AbstractTable(ColType... columns) {
     Assert.notNull(columns);
     for (ColType column : columns) {
@@ -123,7 +123,7 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
       addColumn(ValueType.TEXT, label);
     }
   }
-  
+
   public int addColumn(ColType column) {
     assertNewColumnId(column.getId());
     columns.add(column);
@@ -191,7 +191,7 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
     getRows().add(row);
     return getNumberOfRows() - 1;
   }
-  
+
   public int addRows(Collection<RowType> rowsToAdd) {
     Assert.hasLength(rowsToAdd);
     int lastIndex = BeeConst.INDEX_UNKNOWN;
@@ -227,7 +227,7 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
 
   @Override
   public abstract IsTable<RowType, ColType> clone();
-  
+
   public boolean containsAllColumnIds(Collection<String> colIds) {
     for (String id : colIds) {
       if (!containsColumn(id)) {
@@ -400,7 +400,7 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
       RowType row = getRow(i);
       ok = true;
       for (RowFilter filter : filters) {
-        if (!filter.isMatch(this, row)) {
+        if (!filter.isMatch(getColumns(), row)) {
           ok = false;
           break;
         }
@@ -457,7 +457,7 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
       return new int[0];
     }
     if (rowCount == 1) {
-      return new int[]{0};
+      return new int[] {0};
     }
 
     List<Integer> rowIndexes = Lists.newArrayListWithCapacity(rowCount);
@@ -496,7 +496,7 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
   public void insertColumn(int colIndex, ColType column) {
     assertColumnIndex(colIndex);
     assertNewColumnId(column.getId());
-    
+
     columns.add(colIndex, column);
     if (getNumberOfRows() > 0) {
       Value nullValue = Value.getNullValueFromValueType(column.getType());
@@ -738,13 +738,13 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
   protected void cloneColumns(IsTable<RowType, ColType> cloneTable) {
     cloneTable.setColumns(getColumns());
   }
-  
+
   protected void cloneTableDescription(IsTable<RowType, ColType> cloneTable) {
     cloneColumns(cloneTable);
     cloneProperties(cloneTable);
     cloneWarnings(cloneTable);
   }
-  
+
   protected abstract void insertRow(int rowIndex, RowType row);
 
   private void assertNewColumnId(String columnId) {
@@ -767,7 +767,7 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
   private IsCell createCell(int colIndex) {
     return new TableCell(Value.getNullValueFromValueType(columns.get(colIndex).getType()));
   }
-  
+
   private RowType createRow() {
     return createRow(getNumberOfRows() + 1);
   }

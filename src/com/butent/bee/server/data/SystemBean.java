@@ -20,9 +20,9 @@ import com.butent.bee.shared.JustDate;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
-import com.butent.bee.shared.data.view.Filter;
-import com.butent.bee.shared.data.view.Order;
+import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.DataInfo;
+import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.sql.BeeConstants;
 import com.butent.bee.shared.sql.BeeConstants.DataType;
 import com.butent.bee.shared.sql.BeeConstants.Keyword;
@@ -163,11 +163,11 @@ public class SystemBean {
           Object oldValue = row.getShadow().get(col);
 
           if (!BeeUtils.isEmpty(locale)) {
-            translationUpdate.put(fld, new Object[]{locale, newValue});
+            translationUpdate.put(fld, new Object[] {locale, newValue});
           } else if (field.isExtended()) {
             extUpdate.put(fld, newValue);
           } else {
-            baseUpdate.put(fld, new Object[]{newValue, oldValue});
+            baseUpdate.put(fld, new Object[] {newValue, oldValue});
           }
         }
         if (!BeeUtils.isEmpty(err)) {
@@ -612,8 +612,11 @@ public class SystemBean {
     return states;
   }
 
-  public IsCondition getViewCondition(String viewName, Filter condition) {
-    return getView(viewName).getCondition(condition);
+  public IsCondition getViewCondition(String viewName, Filter filter) {
+    if (!BeeUtils.isEmpty(filter)) {
+      return filter.getCondition(getView(viewName).getFields());
+    }
+    return null;
   }
 
   public BeeRowSet getViewData(String viewName, IsCondition condition, Order order,
@@ -634,18 +637,18 @@ public class SystemBean {
 
       for (Order.Column col : order.getColumns()) {
         String als = view.getAlias(col.getLabel());
-        if (BeeUtils.isEmpty(als)) {
-          break;
-        }
-        String fld = view.getField(col.getLabel());
 
-        if (col.isAscending()) {
-          ss.addOrder(als, fld);
-        } else {
-          ss.addOrderDesc(als, fld);
-        }
-        if (BeeUtils.same(fld, idCol) && BeeUtils.same(als, source)) {
-          hasId = true;
+        if (!BeeUtils.isEmpty(als)) {
+          String fld = view.getField(col.getLabel());
+
+          if (col.isAscending()) {
+            ss.addOrder(als, fld);
+          } else {
+            ss.addOrderDesc(als, fld);
+          }
+          if (!hasId) {
+            hasId = BeeUtils.same(fld, idCol) && BeeUtils.same(als, source);
+          }
         }
       }
       if (!hasId) {
@@ -866,7 +869,7 @@ public class SystemBean {
     if (BeeUtils.isEmpty(userRoles)) {
       return query.setWhere(SqlUtils.sqlFalse());
     }
-    long[] bits = Longs.concat(new long[]{-userId}, userRoles);
+    long[] bits = Longs.concat(new long[] {-userId}, userRoles);
 
     for (String stateName : states) {
       BeeTable table = getTable(tblName);

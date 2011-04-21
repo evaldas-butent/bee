@@ -5,6 +5,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.sql.BeeConstants.DataType;
 import com.butent.bee.shared.sql.BeeConstants.Keyword;
 import com.butent.bee.shared.utils.ArrayUtils;
@@ -26,10 +27,8 @@ public class SqlUtils {
   private static final String IN = " IN ";
   private static final String IS = " IS ";
 
-  public static Conditions and(IsCondition... conditions) {
-    Conditions cb = new AndConditions();
-    cb.add(conditions);
-    return cb;
+  public static CompoundCondition and(IsCondition... conditions) {
+    return CompoundCondition.and(conditions);
   }
 
   public static <T> IsExpression bitAnd(IsExpression expr, T value) {
@@ -47,18 +46,18 @@ public class SqlUtils {
   }
 
   public static IsCondition compare(IsExpression expr, String op, IsExpression value) {
-    return new JoinCondition(expr, op, value);
+    return new ComparisonCondition(expr, op, value);
   }
 
   public static IsExpression constant(Object constant) {
-    return new ConstantExpression(BeeUtils.objectToValue(constant));
+    return new ConstantExpression(Value.getValue(constant));
   }
 
-  public static IsCondition contains(IsExpression expr, Object value) {
-    return compare(expr, LIKE, constant("%" + value + "%"));
+  public static IsCondition contains(IsExpression expr, String value) {
+    return like(expr, "%" + value + "%");
   }
 
-  public static IsCondition contains(String source, String field, Object value) {
+  public static IsCondition contains(String source, String field, String value) {
     return contains(field(source, field), value);
   }
 
@@ -141,6 +140,14 @@ public class SqlUtils {
     return new SqlCommand(Keyword.DROP_TABLE, ImmutableMap.of("table", (Object) name(table)));
   }
 
+  public static IsCondition endsWith(IsExpression expr, String value) {
+    return like(expr, "%" + value);
+  }
+
+  public static IsCondition endsWith(String source, String field, String value) {
+    return endsWith(field(source, field), value);
+  }
+
   public static IsCondition equal(IsExpression expr, Object value) {
     return compare(expr, EQUAL, constant(value));
   }
@@ -150,7 +157,7 @@ public class SqlUtils {
   }
 
   public static IsExpression expression(Object... expr) {
-    return new ComplexExpression(expr);
+    return new CompoundExpression(expr);
   }
 
   public static IsExpression field(String source, String field) {
@@ -172,7 +179,7 @@ public class SqlUtils {
   }
 
   public static IsCondition in(String src, String fld, SqlSelect query) {
-    return new JoinCondition(field(src, fld), IN, query);
+    return new ComparisonCondition(field(src, fld), IN, query);
   }
 
   public static IsCondition in(String src, String fld, String dst, String dFld, IsCondition clause) {
@@ -187,8 +194,7 @@ public class SqlUtils {
 
   public static IsCondition inList(IsExpression expr, Object... values) {
     Assert.minLength(values, 1);
-
-    Conditions cond = new OrConditions();
+    CompoundCondition cond = or();
 
     for (Object value : values) {
       cond.add(equal(expr, value));
@@ -246,7 +252,7 @@ public class SqlUtils {
     IsCondition cond = null;
 
     if (flds.length > 1) {
-      Conditions cb = new AndConditions();
+      CompoundCondition cb = and();
 
       for (String fld : flds) {
         cb.add(join(src1, fld, src2, fld));
@@ -274,6 +280,14 @@ public class SqlUtils {
 
   public static IsCondition lessEqual(String source, String field, Object value) {
     return lessEqual(field(source, field), value);
+  }
+
+  public static IsCondition like(IsExpression expr, String value) {
+    return compare(expr, LIKE, constant(value));
+  }
+
+  public static IsCondition like(String source, String field, String value) {
+    return like(field(source, field), value);
   }
 
   public static IsCondition more(IsExpression expr, Object value) {
@@ -304,10 +318,8 @@ public class SqlUtils {
     return notEqual(field(source, field), value);
   }
 
-  public static Conditions or(IsCondition... conditions) {
-    Conditions cb = new OrConditions();
-    cb.add(conditions);
-    return cb;
+  public static CompoundCondition or(IsCondition... conditions) {
+    return CompoundCondition.or(conditions);
   }
 
   public static IsExpression sqlCase(IsExpression expr, Object... pairs) {
@@ -336,6 +348,14 @@ public class SqlUtils {
 
   public static IsCondition sqlTrue() {
     return equal(constant(1), 1);
+  }
+
+  public static IsCondition startsWith(IsExpression expr, String value) {
+    return like(expr, value + "%");
+  }
+
+  public static IsCondition startsWith(String source, String field, String value) {
+    return startsWith(field(source, field), value);
   }
 
   public static String temporaryName() {

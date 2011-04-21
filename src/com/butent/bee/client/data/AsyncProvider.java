@@ -13,9 +13,9 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.cache.CachingPolicy;
-import com.butent.bee.shared.data.view.Filter;
-import com.butent.bee.shared.data.view.Order;
+import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.DataInfo;
+import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.utils.BeeUtils;
 
 public class AsyncProvider extends Provider {
@@ -130,7 +130,7 @@ public class AsyncProvider extends Provider {
       if (BeeUtils.isEmpty(label)) {
         break;
       }
-      
+
       ord.add(label, sortInfo.isAscending());
     }
     return ord;

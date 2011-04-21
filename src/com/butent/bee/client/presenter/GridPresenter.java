@@ -17,7 +17,7 @@ import com.butent.bee.client.view.View;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
-import com.butent.bee.shared.data.view.Filter;
+import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.DataInfo;
 
 import java.util.List;
@@ -93,7 +93,7 @@ public class GridPresenter implements Presenter {
       search.addChangeHandler(new ChangeHandler() {
         @Override
         public void onChange(ChangeEvent event) {
-          updateFilter(search.getFilter());
+          updateFilter(search.getFilter(dataColumns));
         }
       });
     }
@@ -127,7 +127,7 @@ public class GridPresenter implements Presenter {
   }
 
   private void updateFilter(final Filter filter) {
-    BeeKeeper.getLog().info(filter == null ? "no filter" : filter);
+    BeeKeeper.getLog().info(filter == null ? "no filter" : filter.transform());
 
     Queries.getRowCount(getDataName(), filter, new Queries.IntCallback() {
       public void onResponse(int value) {

@@ -5,23 +5,14 @@ import com.google.common.collect.Sets;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeType;
-import com.butent.bee.shared.DateTime;
 import com.butent.bee.shared.HasLength;
-import com.butent.bee.shared.JustDate;
 import com.butent.bee.shared.Transformable;
-import com.butent.bee.shared.data.value.BooleanValue;
-import com.butent.bee.shared.data.value.DateTimeValue;
-import com.butent.bee.shared.data.value.DateValue;
-import com.butent.bee.shared.data.value.NumberValue;
-import com.butent.bee.shared.data.value.TextValue;
-import com.butent.bee.shared.data.value.Value;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Date;
 import java.util.EnumSet;
 import java.util.Enumeration;
 import java.util.Iterator;
@@ -59,7 +50,7 @@ public class BeeUtils {
    */
   public static boolean allEmpty(Object... obj) {
     if (obj == null) {
-      return true; 
+      return true;
     }
     Assert.parameterCount(obj.length, 1);
     boolean ok = true;
@@ -699,7 +690,7 @@ public class BeeUtils {
     }
 
     if (s.length() <= 4) {
-      return new char[]{(char) Integer.parseInt(s, 16)};
+      return new char[] {(char) Integer.parseInt(s, 16)};
     } else {
       int z = s.length() % 4;
       int n;
@@ -1110,7 +1101,7 @@ public class BeeUtils {
    * @return true if all characters in the sequence are digits, false if sequence is {@code null} or
    *         empty or contains at least one non-digit character.
    */
-  public static boolean isDigit(CharSequence s) { // TODO negative
+  public static boolean isDigit(CharSequence s) {
     if (s == null) {
       return false;
     }
@@ -1119,8 +1110,8 @@ public class BeeUtils {
     if (len < 1) {
       return false;
     }
-
     boolean ok = true;
+
     for (int i = 0; i < len; i++) {
       if (!isDigit(s.charAt(i))) {
         ok = false;
@@ -1324,6 +1315,21 @@ public class BeeUtils {
    */
   public static boolean isLong(double x) {
     return isDouble(x) && x > Long.MIN_VALUE && x < Long.MAX_VALUE;
+  }
+
+  public static boolean isNumeric(String s) {
+    if (isEmpty(s)) {
+      return false;
+    }
+    boolean ok;
+
+    try {
+      Double.parseDouble(s.trim());
+      ok = true;
+    } catch (NumberFormatException ex) {
+      ok = false;
+    }
+    return ok;
   }
 
   /**
@@ -1741,7 +1747,7 @@ public class BeeUtils {
     } else if (x instanceof Number) {
       sep = space(((Number) x).intValue());
     } else if (x instanceof Character) {
-      sep = new String(new char[]{(Character) x});
+      sep = new String(new char[] {(Character) x});
     } else if (x instanceof CharSequence && length(x) > 0) {
       sep = ((CharSequence) x).toString();
     } else {
@@ -1791,38 +1797,6 @@ public class BeeUtils {
       }
     }
     return z;
-  }
-
-  public static Value objectToValue(Object value) {
-    Value val = null;
-
-    if (value != null) {
-      if (value instanceof Value) {
-        val = (Value) value;
-
-      } else if (value instanceof Boolean) {
-        val = BooleanValue.getInstance((Boolean) value);
-
-      } else if (value instanceof Number) {
-        val = new NumberValue(((Number) value).doubleValue());
-
-      } else if (value instanceof CharSequence) {
-        val = new TextValue(value.toString());
-
-      } else if (value instanceof Date) {
-        val = new DateValue(new JustDate((Date) value));
-
-      } else if (value instanceof JustDate) {
-        val = new DateValue((JustDate) value);
-
-      } else if (value instanceof DateTime) {
-        val = new DateTimeValue((DateTime) value);
-
-      } else {
-        Assert.unsupported("Unsupported value type: " + BeeUtils.getClassName(value.getClass()));
-      }
-    }
-    return val;
   }
 
   /**
@@ -2060,7 +2034,7 @@ public class BeeUtils {
     if (p < 1) {
       return str;
     }
-    if (!isDigit(str.substring(0, p))) {
+    if (!isDigit(str.substring(p + 1))) {
       return str;
     }
 
@@ -2281,7 +2255,7 @@ public class BeeUtils {
     char ch = sep.charAt(0);
 
     if (z == 1 && str.indexOf(ch) < 0) {
-      return new String[]{str.trim()};
+      return new String[] {str.trim()};
     }
 
     List<String> lst = new ArrayList<String>();
@@ -2607,7 +2581,7 @@ public class BeeUtils {
         nextSep[i] = sep[i + 1];
       }
     } else {
-      nextSep = new String[]{z};
+      nextSep = new String[] {z};
     }
 
     for (Iterator<?> it = col.iterator(); it.hasNext();) {
@@ -2645,7 +2619,7 @@ public class BeeUtils {
         nextSep[i] = sep[i + 1];
       }
     } else {
-      nextSep = new String[]{z};
+      nextSep = new String[] {z};
     }
 
     while (src.hasMoreElements()) {
@@ -2684,7 +2658,7 @@ public class BeeUtils {
         nextSep[i] = sep[i + 1];
       }
     } else {
-      nextSep = new String[]{z};
+      nextSep = new String[] {z};
     }
 
     for (Map.Entry<?, ?> el : map.entrySet()) {

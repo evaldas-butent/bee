@@ -11,7 +11,7 @@ import com.butent.bee.shared.Service;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.cache.CacheManager;
 import com.butent.bee.shared.data.cache.CachingPolicy;
-import com.butent.bee.shared.data.view.Filter;
+import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -39,7 +39,7 @@ public class Queries {
       final RowSetCallback callback) {
     Assert.notEmpty(viewName);
     Assert.notNull(callback);
-    
+
     if (cachingPolicy != null && cachingPolicy.doRead()) {
       BeeRowSet rowSet = CacheManager.getRowSet(viewName, filter, order, offset, limit);
       if (rowSet != null) {

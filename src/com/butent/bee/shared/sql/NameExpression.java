@@ -5,23 +5,13 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
 
-class NameExpression extends Expression {
+class NameExpression implements IsExpression {
 
-  private String name;
+  private final String name;
 
   public NameExpression(String name) {
     Assert.notEmpty(name);
     this.name = name;
-  }
-
-  protected NameExpression() {
-    super();
-  }
-
-  @Override
-  public void deserialize(String s) {
-    setSafe();
-    this.name = s;
   }
 
   @Override

@@ -5,7 +5,7 @@ import com.google.common.collect.Lists;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.data.view.Filter;
+import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Property;
@@ -18,7 +18,7 @@ class CachedQuery extends SimpleCache<Integer, Long> {
 
   private final Filter filter;
   private final Order order;
-  
+
   private int rowCount = BeeConst.SIZE_UNKNOWN;
 
   CachedQuery(Filter filter, Order order) {
@@ -28,13 +28,13 @@ class CachedQuery extends SimpleCache<Integer, Long> {
   CachedQuery(Filter filter, Order order, int maxSize) {
     this(filter, order, maxSize, defaultReplacementPolicy);
   }
-  
+
   CachedQuery(Filter filter, Order order, int maxSize, ReplacementPolicy replacementPolicy) {
     super(maxSize, replacementPolicy);
     this.filter = filter;
     this.order = order;
   }
-  
+
   CachedQuery(Filter filter, Order order, ReplacementPolicy replacementPolicy) {
     this(filter, order, defaultMaxSize, replacementPolicy);
   }
@@ -62,11 +62,11 @@ class CachedQuery extends SimpleCache<Integer, Long> {
       lst.add(new Property("Order", order.transform()));
     }
     lst.add(new Property("Row Count", BeeUtils.toString(getRowCount())));
-    
+
     lst.addAll(super.getInfo());
     return lst;
   }
-  
+
   @Override
   public int hashCode() {
     return Objects.hashCode(filter, order);
@@ -109,7 +109,7 @@ class CachedQuery extends SimpleCache<Integer, Long> {
   boolean same(Filter flt, Order ord) {
     return Objects.equal(this.filter, flt) && Objects.equal(this.order, ord);
   }
-  
+
   boolean sameFilter(Filter flt) {
     return Objects.equal(this.filter, flt);
   }

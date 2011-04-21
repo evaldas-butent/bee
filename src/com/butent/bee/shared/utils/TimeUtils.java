@@ -140,7 +140,7 @@ public class TimeUtils {
   }
 
   /**
-   * Checks if {@code x} is and instance of JustDate,DateTeim or Date.
+   * Checks if {@code x} is and instance of JustDate, DateTime or Date.
    * 
    * @param x the Object to check
    * @return true if {@code x} is an instance of any of these types, false otherwise.

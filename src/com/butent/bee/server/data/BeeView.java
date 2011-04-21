@@ -4,8 +4,6 @@ import com.google.common.collect.Maps;
 
 import com.butent.bee.server.data.BeeTable.BeeField;
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.data.view.Filter;
-import com.butent.bee.shared.sql.Conditions;
 import com.butent.bee.shared.sql.IsCondition;
 import com.butent.bee.shared.sql.SqlSelect;
 import com.butent.bee.shared.sql.SqlUtils;
@@ -68,7 +66,7 @@ class BeeView {
   private final boolean readOnly;
   private final SqlSelect query;
   private final Map<String, String[]> columns = Maps.newLinkedHashMap();
-  private final Map<String, ViewField> expressions = Maps.newLinkedHashMap();
+  private final Map<String, ViewField> expressions = Maps.newHashMap();
   private final Map<String, Boolean> orders = Maps.newLinkedHashMap();
 
   BeeView(String name, String source, String idName, boolean readOnly) {
@@ -98,36 +96,6 @@ class BeeView {
     return Collections.unmodifiableSet(columns.keySet());
   }
 
-  public IsCondition getCondition(Filter condition) {
-    IsCondition cond = null;
-
-    if (!BeeUtils.isEmpty(condition) && !condition.isEmpty()) {
-      String join = condition.getNodeType();
-
-      if (BeeUtils.isEmpty(join)) {
-        String colName = condition.getColumn();
-        String op = condition.getOperator();
-
-        if ("$".equals(op)) {
-          cond = SqlUtils.contains(getAlias(colName), getField(colName), condition.getValue());
-        } else {
-          cond = SqlUtils.compare(SqlUtils.field(getAlias(colName), getField(colName)),
-              op, SqlUtils.constant(condition.getValue()));
-        }
-      } else {
-        if (BeeUtils.same(join, "AND")) {
-          cond = SqlUtils.and();
-        } else {
-          cond = SqlUtils.or();
-        }
-        for (Filter flt : condition.getConditions()) {
-          ((Conditions) cond).add(getCondition(flt));
-        }
-      }
-    }
-    return cond;
-  }
-
   public String getExpression(String colName) {
     return getColumnInfo(colName)[EXPRESSION];
   }
@@ -136,12 +104,17 @@ class BeeView {
     return getViewField(colName).getField();
   }
 
-  public String getLocale(String colName) {
-    return getColumnInfo(colName)[LOCALE];
+  public Map<String, String[]> getFields() {
+    Map<String, String[]> fields = Maps.newLinkedHashMap();
+
+    for (String colName : getColumns()) {
+      fields.put(colName, new String[] {getAlias(colName), getField(colName)});
+    }
+    return fields;
   }
 
-  public String getLocaleAlias(String colName) {
-    return getColumnInfo(colName)[ALIAS];
+  public String getLocale(String colName) {
+    return getColumnInfo(colName)[LOCALE];
   }
 
   public String getName() {
@@ -191,7 +164,7 @@ class BeeView {
     Assert.state(!hasColumn(colName),
         BeeUtils.concat(1, "Dublicate column name:", getName(), colName));
 
-    columns.put(colName.toLowerCase(), new String[]{expression, locale, null});
+    columns.put(colName.toLowerCase(), new String[] {expression, locale, null});
     loadField(expression, tables);
   }
 
@@ -203,6 +176,10 @@ class BeeView {
   private String[] getColumnInfo(String colName) {
     Assert.state(hasColumn(colName), "Unknown view column: " + getName() + " " + colName);
     return columns.get(colName.toLowerCase());
+  }
+
+  private String getLocaleAlias(String colName) {
+    return getColumnInfo(colName)[ALIAS];
   }
 
   private ViewField getViewField(String colName) {

@@ -9,6 +9,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
 import java.util.Comparator;
+import java.util.Date;
 
 public abstract class Value implements Comparable<Value>, Transformable, BeeSerializable {
 
@@ -49,6 +50,38 @@ public abstract class Value implements Comparable<Value>, Transformable, BeeSeri
     return null;
   }
 
+  public static Value getValue(Object value) {
+    Value val = null;
+  
+    if (value != null) {
+      if (value instanceof Value) {
+        val = (Value) value;
+  
+      } else if (value instanceof Boolean) {
+        val = BooleanValue.getInstance((Boolean) value);
+  
+      } else if (value instanceof Number) {
+        val = new NumberValue(((Number) value).doubleValue());
+  
+      } else if (value instanceof CharSequence) {
+        val = new TextValue(value.toString());
+  
+      } else if (value instanceof Date) {
+        val = new DateValue(new JustDate((Date) value));
+  
+      } else if (value instanceof JustDate) {
+        val = new DateValue((JustDate) value);
+  
+      } else if (value instanceof DateTime) {
+        val = new DateTimeValue((DateTime) value);
+  
+      } else {
+        Assert.unsupported("Unsupported value type: " + BeeUtils.getClassName(value.getClass()));
+      }
+    }
+    return val;
+  }
+
   public static Value restore(String s) {
     String[] arr = Codec.beeDeserialize(s);
     Assert.lengthEquals(arr, 2);
@@ -62,7 +95,7 @@ public abstract class Value implements Comparable<Value>, Transformable, BeeSeri
         val = BooleanValue.getInstance(BooleanValue.unpack(data));
 
       } else if (BeeUtils.getClassName(NumberValue.class).equals(clazz)) {
-        val = new NumberValue(BeeUtils.toDouble(data)); // TODO toDouble?
+        val = new NumberValue(BeeUtils.toDouble(data));
 
       } else if (BeeUtils.getClassName(TextValue.class).equals(clazz)) {
         val = new TextValue(data);

@@ -203,6 +203,9 @@ public abstract class SqlBuilder {
       } else if (val instanceof DateTime) {
         s = BeeUtils.transform(((DateTime) val).getTime());
 
+      } else if (val instanceof Number) {
+        s = BeeUtils.removeTrailingZeros(BeeUtils.transformNoTrim(val));
+
       } else {
         s = BeeUtils.transformNoTrim(val);
 

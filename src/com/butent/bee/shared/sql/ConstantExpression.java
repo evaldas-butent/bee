@@ -5,22 +5,12 @@ import com.butent.bee.shared.data.value.Value;
 import java.util.ArrayList;
 import java.util.List;
 
-class ConstantExpression extends Expression {
+class ConstantExpression implements IsExpression {
 
-  private Value constant;
+  private final Value constant;
 
   public ConstantExpression(Value value) {
     this.constant = value;
-  }
-
-  protected ConstantExpression() {
-    super();
-  }
-
-  @Override
-  public void deserialize(String s) {
-    setSafe();
-    this.constant = Value.restore(s);
   }
 
   @Override

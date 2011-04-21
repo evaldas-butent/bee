@@ -11,8 +11,8 @@ import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.ValueType;
-import com.butent.bee.shared.data.view.Filter;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.sql.SqlBuilderFactory;
 import com.butent.bee.shared.sql.SqlSelect;
@@ -235,12 +235,12 @@ public class UiServiceBean {
     String viewName = reqInfo.getParameter(Service.VAR_VIEW_NAME);
     String where = reqInfo.getParameter(Service.VAR_VIEW_WHERE);
 
-    Filter condition = null;
+    Filter filter = null;
     if (!BeeUtils.isEmpty(where)) {
-      condition = Filter.restore(where);
+      filter = Filter.restore(where);
     }
     return ResponseObject.response(sys.getViewSize(viewName,
-        sys.getViewCondition(viewName, condition)));
+        sys.getViewCondition(viewName, filter)));
   }
 
   private ResponseObject gridInfo(RequestInfo reqInfo) {
