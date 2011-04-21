@@ -312,7 +312,7 @@ public abstract class SqlBuilder {
       query.append(" FROM ");
 
       for (IsFrom from : fromList) {
-        query.append(from.getJoinMode()).append(from.getSqlString(this, paramMode));
+        query.append(from.getSqlString(this, paramMode));
       }
     }
     String wh = sd.getWhere().getSqlString(this, paramMode);
@@ -395,7 +395,7 @@ public abstract class SqlBuilder {
     query.append(" FROM ");
 
     for (IsFrom from : fromList) {
-      query.append(from.getJoinMode()).append(from.getSqlString(this, paramMode));
+      query.append(from.getSqlString(this, paramMode));
     }
     IsCondition whereClause = ss.getWhere();
 
@@ -483,7 +483,7 @@ public abstract class SqlBuilder {
       query.append(" FROM ");
 
       for (IsFrom from : fromList) {
-        query.append(from.getJoinMode()).append(from.getSqlString(this, paramMode));
+        query.append(from.getSqlString(this, paramMode));
       }
     }
     IsCondition whereClause = su.getWhere();

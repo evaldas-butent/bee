@@ -69,7 +69,7 @@ public class SqlCreate extends SqlQuery<SqlCreate> {
   }
 
   public SqlCreate(String target, boolean temporary) {
-    this.target = new FromSingle(target);
+    this.target = FromJoin.fromSingle(target, null);
     this.temporary = temporary;
   }
 

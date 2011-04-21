@@ -12,11 +12,11 @@ public class SqlDelete extends HasFrom<SqlDelete> {
   private IsCondition whereClause;
 
   public SqlDelete(String target) {
-    this.target = new FromSingle(target);
+    this.target = FromJoin.fromSingle(target, null);
   }
 
   public SqlDelete(String target, String alias) {
-    this.target = new FromSingle(target, alias);
+    this.target = FromJoin.fromSingle(target, alias);
   }
 
   @Override

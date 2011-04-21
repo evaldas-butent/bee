@@ -18,11 +18,11 @@ public class SqlUpdate extends HasFrom<SqlUpdate> {
   private IsCondition whereClause;
 
   public SqlUpdate(String target) {
-    this.target = new FromSingle(target);
+    this.target = FromJoin.fromSingle(target, null);
   }
 
   public SqlUpdate(String target, String alias) {
-    this.target = new FromSingle(target, alias);
+    this.target = FromJoin.fromSingle(target, alias);
   }
 
   public SqlUpdate addConstant(String field, Object value) {

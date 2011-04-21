@@ -1,6 +1,7 @@
 package com.butent.bee.shared.sql;
 
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.sql.FromJoin.JoinMode;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
@@ -18,18 +19,18 @@ public abstract class HasFrom<T> extends SqlQuery<T> {
 
   public T addFrom(String source, String alias) {
     if (BeeUtils.isEmpty(fromList)) {
-      addFrom(new FromSingle(source, alias));
+      addFrom(FromJoin.fromSingle(source, alias));
     } else {
-      addFromList(new FromList(source, alias));
+      addFromJoin(FromJoin.fromList(source, alias));
     }
     return getReference();
   }
 
   public T addFrom(SqlSelect source, String alias) {
     if (BeeUtils.isEmpty(fromList)) {
-      addFrom(new FromSingle(source, alias));
+      addFrom(FromJoin.fromSingle(source, alias));
     } else {
-      addFromList(new FromList(source, alias));
+      addFromJoin(FromJoin.fromList(source, alias));
     }
     return getReference();
   }
@@ -40,12 +41,12 @@ public abstract class HasFrom<T> extends SqlQuery<T> {
   }
 
   public T addFromFull(String source, String alias, IsCondition on) {
-    addFromJoin(new FromFull(source, alias, on));
+    addFromJoin(FromJoin.fromFull(source, alias, on));
     return getReference();
   }
 
   public T addFromFull(SqlSelect source, String alias, IsCondition on) {
-    addFromJoin(new FromFull(source, alias, on));
+    addFromJoin(FromJoin.fromFull(source, alias, on));
     return getReference();
   }
 
@@ -55,12 +56,12 @@ public abstract class HasFrom<T> extends SqlQuery<T> {
   }
 
   public T addFromInner(String source, String alias, IsCondition on) {
-    addFromJoin(new FromInner(source, alias, on));
+    addFromJoin(FromJoin.fromInner(source, alias, on));
     return getReference();
   }
 
   public T addFromInner(SqlSelect source, String alias, IsCondition on) {
-    addFromJoin(new FromInner(source, alias, on));
+    addFromJoin(FromJoin.fromInner(source, alias, on));
     return getReference();
   }
 
@@ -70,12 +71,12 @@ public abstract class HasFrom<T> extends SqlQuery<T> {
   }
 
   public T addFromLeft(String source, String alias, IsCondition on) {
-    addFromJoin(new FromLeft(source, alias, on));
+    addFromJoin(FromJoin.fromLeft(source, alias, on));
     return getReference();
   }
 
   public T addFromLeft(SqlSelect source, String alias, IsCondition on) {
-    addFromJoin(new FromLeft(source, alias, on));
+    addFromJoin(FromJoin.fromLeft(source, alias, on));
     return getReference();
   }
 
@@ -85,12 +86,12 @@ public abstract class HasFrom<T> extends SqlQuery<T> {
   }
 
   public T addFromRight(String source, String alias, IsCondition on) {
-    addFromJoin(new FromRight(source, alias, on));
+    addFromJoin(FromJoin.fromRight(source, alias, on));
     return getReference();
   }
 
   public T addFromRight(SqlSelect source, String alias, IsCondition on) {
-    addFromJoin(new FromRight(source, alias, on));
+    addFromJoin(FromJoin.fromRight(source, alias, on));
     return getReference();
   }
 
@@ -119,18 +120,15 @@ public abstract class HasFrom<T> extends SqlQuery<T> {
 
   private void addFromJoin(FromJoin from) {
     Assert.notEmpty(fromList, "First FROM source cannot be of type JOIN");
+    boolean listMode = (JoinMode.LIST == from.getJoinMode());
 
-    for (IsFrom f : fromList) {
-      Assert.state(!(f instanceof FromList),
-          "Cannot mix FROM sources with types JOIN and LIST");
-    }
-    addFrom(from);
-  }
+    for (IsFrom fr : fromList) {
+      if (fr instanceof FromJoin) {
+        boolean isList = (JoinMode.LIST == ((FromJoin) fr).getJoinMode());
 
-  private void addFromList(FromList from) {
-    for (IsFrom f : fromList) {
-      Assert.state(!(f instanceof FromJoin),
-          "Cannot mix FROM sources with types JOIN and LIST");
+        Assert.state((listMode && isList) || !(listMode || isList),
+            "Mix of incompatible join types");
+      }
     }
     addFrom(from);
   }

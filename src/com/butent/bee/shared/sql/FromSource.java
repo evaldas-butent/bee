@@ -8,23 +8,19 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.Collection;
 import java.util.List;
 
-class FromSingle implements IsFrom {
+class FromSource implements IsFrom {
 
   private final Object source;
   private final String alias;
 
-  public FromSingle(String source) {
-    this(source, null);
-  }
-
-  public FromSingle(String source, String alias) {
+  protected FromSource(String source, String alias) {
     Assert.notEmpty(source);
 
     this.source = source;
     this.alias = alias;
   }
 
-  public FromSingle(SqlSelect source, String alias) {
+  protected FromSource(SqlSelect source, String alias) {
     Assert.notNull(source);
     Assert.state(!source.isEmpty());
     Assert.notEmpty(alias);
@@ -36,11 +32,6 @@ class FromSingle implements IsFrom {
   @Override
   public String getAlias() {
     return alias;
-  }
-
-  @Override
-  public String getJoinMode() {
-    return "";
   }
 
   @Override

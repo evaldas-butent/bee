@@ -19,7 +19,7 @@ public class SqlInsert extends SqlQuery<SqlInsert> {
   private SqlSelect dataSource;
 
   public SqlInsert(String target) {
-    this.target = new FromSingle(target);
+    this.target = FromJoin.fromSingle(target, null);
   }
 
   public SqlInsert addConstant(String field, Object value) {
