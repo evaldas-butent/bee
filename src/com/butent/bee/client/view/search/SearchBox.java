@@ -55,6 +55,10 @@ public class SearchBox extends BeeTextBox implements SearchView {
     return presenter;
   }
 
+  public String getWidgetId() {
+    return getId();
+  }
+
   public void setViewPresenter(Presenter presenter) {
     this.presenter = presenter;
   }

@@ -1,0 +1,19 @@
+@def top 2;
+@def horizontalMargin 6px;
+@def spacing 15;
+
+@def resizerWidth 48px;
+
+.container {
+}
+
+.simplePager {
+}  
+
+.pageResizer {
+  width: resizerWidth;
+}  
+
+.search {
+  right: horizontalMargin;
+}  

@@ -74,6 +74,10 @@ public class GridContentImpl extends CellGrid implements GridContentView {
     return viewPresenter;
   }
 
+  public String getWidgetId() {
+    return getId();
+  }
+
   public void setViewPresenter(Presenter presenter) {
     this.viewPresenter = presenter;
   }

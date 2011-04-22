@@ -1,13 +1,61 @@
 package com.butent.bee.client.view;
 
+import com.google.gwt.core.client.GWT;
+import com.google.gwt.resources.client.ClientBundle;
+import com.google.gwt.resources.client.CssResource;
+import com.google.gwt.resources.client.ImageResource;
+import com.google.gwt.user.client.ui.Widget;
+
 import com.butent.bee.client.Global;
 import com.butent.bee.client.dom.StyleUtils;
-import com.butent.bee.client.layout.BeeLayoutPanel;
+import com.butent.bee.client.layout.Complex;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.BeeLabel;
+import com.butent.bee.shared.utils.BeeUtils;
 
-public class DataHeaderImpl extends BeeLayoutPanel implements DataHeaderView {
+public class DataHeaderImpl extends Complex implements DataHeaderView {
+
+  public interface Resources extends ClientBundle {
+    @Source("DataHeaderImpl.css")
+    Style headerStyle();
+  }
+  
+  public interface Style extends CssResource {
+    String caption();
+    int captionLeft();
+    int captionTop();
+
+    String close();
+    int closeRight();
+    int closeTop();
+
+    String container();
+
+    String control();
+    int controlsRight();
+    int controlTop();
+    int controlWidth();
+  }
+
+  private static Resources defaultResources = null;
+  private static Style defaultStyle = null;
+  
+  private static Resources getDefaultResources() {
+    if (defaultResources == null) {
+      defaultResources = GWT.create(Resources.class);
+    }
+    return defaultResources; 
+  }
+  
+  private static Style getDefaultStyle() {
+    if (defaultStyle == null) {
+      defaultStyle = getDefaultResources().headerStyle();
+      defaultStyle.ensureInjected();
+    }
+    return defaultStyle;
+  }
+  
   private Presenter viewPresenter = null;
 
   public DataHeaderImpl() {
@@ -15,29 +63,48 @@ public class DataHeaderImpl extends BeeLayoutPanel implements DataHeaderView {
   }
 
   public void create(String caption) {
+    Style style = getDefaultStyle();
     addStyleName(StyleUtils.WINDOW_HEADER);
-    int x = 2;
-    int y = 2;
-    int w = 32;
-
-    addRightWidthTop(new BeeImage(Global.getImages().close()), x, w, y);
-    addRightWidthTop(new BeeImage(Global.getImages().configure()), x += w * 2, w, y);
-    addRightWidthTop(new BeeImage(Global.getImages().save()), x += w, w, y);
-    addRightWidthTop(new BeeImage(Global.getImages().bookmarkAdd()), x += w, w, y);
-    addRightWidthTop(new BeeImage(Global.getImages().editDelete()), x += w, w, y);
-    addRightWidthTop(new BeeImage(Global.getImages().editAdd()), x += w, w, y);
-    addRightWidthTop(new BeeImage(Global.getImages().reload()), x += w, w, y);
+    addStyleName(style.container());
 
     BeeLabel label = new BeeLabel(caption);
     label.addStyleName(StyleUtils.WINDOW_CAPTION);
-    addLeftWidthTop(label, 16, 200, 0);
+    addLeftTop(label, style.captionLeft(), style.captionTop());
+    
+    int x = style.controlsRight();
+    int y = style.controlTop();
+    int w = style.controlWidth();
+    
+    String cst = style.control();
+
+    addRightTop(createControl(Global.getImages().configure(), cst), x, y);
+    addRightTop(createControl(Global.getImages().save(), cst), x += w, y);
+    addRightTop(createControl(Global.getImages().bookmarkAdd(), cst), x += w, y);
+    addRightTop(createControl(Global.getImages().editDelete(), cst), x += w, y);
+    addRightTop(createControl(Global.getImages().editAdd(), cst), x += w, y);
+    addRightTop(createControl(Global.getImages().reload(), cst), x += w, y);
+
+    addRightTop(createControl(Global.getImages().close(), style.close()),
+        style.closeRight(), style.closeTop());
   }
 
   public Presenter getViewPresenter() {
     return viewPresenter;
   }
 
+  public String getWidgetId() {
+    return getId();
+  }
+  
   public void setViewPresenter(Presenter viewPresenter) {
     this.viewPresenter = viewPresenter;
+  }
+  
+  private Widget createControl(ImageResource image, String styleName) {
+    Widget control = new BeeImage(image);
+    if (!BeeUtils.isEmpty(styleName)) {
+      control.addStyleName(styleName);
+    }
+    return control;
   }
 }

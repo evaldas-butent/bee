@@ -180,6 +180,10 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     return viewPresenter;
   }
 
+  public String getWidgetId() {
+    return getId();
+  }
+
   public boolean hasFooter() {
     return footerDirection != null;
   }
@@ -258,7 +262,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
   public void setViewPresenter(Presenter viewPresenter) {
     this.viewPresenter = viewPresenter;
   }
-
+  
   @Override
   protected void onLoad() {
     super.onLoad();

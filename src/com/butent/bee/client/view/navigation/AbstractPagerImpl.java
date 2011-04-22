@@ -4,6 +4,7 @@ import com.google.common.base.Objects;
 import com.google.gwt.user.cellview.client.AbstractPager;
 import com.google.gwt.view.client.HasRows;
 
+import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.presenter.Presenter;
 
 public abstract class AbstractPagerImpl extends AbstractPager implements PagerView {
@@ -11,6 +12,10 @@ public abstract class AbstractPagerImpl extends AbstractPager implements PagerVi
 
   public Presenter getViewPresenter() {
     return viewPresenter;
+  }
+
+  public String getWidgetId() {
+    return DomUtils.getId(getWidget());
   }
 
   public void setViewPresenter(Presenter viewPresenter) {

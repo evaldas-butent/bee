@@ -1,8 +1,6 @@
 package com.butent.bee.client.view.navigation;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.core.client.Scheduler;
-import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.CssResource;
@@ -107,8 +105,6 @@ public class SimplePager extends AbstractPagerImpl {
 
   private final Html widgetInfo = new Html();
 
-  private final int maxRowCount;
-
   public SimplePager(int maxRowCount) {
     this(maxRowCount, maxRowCount >= minRowCountForFastNavigation);
   }
@@ -118,8 +114,6 @@ public class SimplePager extends AbstractPagerImpl {
   }
 
   public SimplePager(int maxRowCount, boolean showFastNavigation, Style style) {
-    this.maxRowCount = maxRowCount;
-
     String s = style.disabledButton();
     widgetFirst = new BeeImage(Global.getImages().first(), new GoCommand(Navigation.FIRST), s);
     widgetPrev = new BeeImage(Global.getImages().previous(), new GoCommand(Navigation.PREV), s);
@@ -146,6 +140,8 @@ public class SimplePager extends AbstractPagerImpl {
     }
     layout.add(widgetPrev);
 
+    int maxWidth = DomUtils.getTextWidth(createText(maxRowCount, maxRowCount, maxRowCount));
+    DomUtils.setWidth(widgetInfo, maxWidth);
     widgetInfo.addStyleName(style.pageInfo());
     layout.add(widgetInfo);
     layout.setCellHorizontalAlignment(widgetInfo, HasHorizontalAlignment.ALIGN_CENTER);
@@ -155,24 +151,6 @@ public class SimplePager extends AbstractPagerImpl {
       layout.add(widgetForw);
     }
     layout.add(widgetLast);
-  }
-
-  @Override
-  protected void onLoad() {
-    super.onLoad();
-
-    Scheduler.get().scheduleDeferred(new ScheduledCommand() {
-      public void execute() {
-        String text = widgetInfo.getText();
-        int oldWidth = widgetInfo.getOffsetWidth();
-        widgetInfo.setText(createText(maxRowCount, maxRowCount, maxRowCount));
-        int newWidth = widgetInfo.getOffsetWidth();
-        widgetInfo.setText(text);
-        if (newWidth > oldWidth) {
-          DomUtils.setWidth(widgetInfo, newWidth);
-        }
-      }
-    });
   }
 
   @Override

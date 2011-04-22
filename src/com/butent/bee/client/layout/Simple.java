@@ -23,5 +23,4 @@ public class Simple extends SimplePanel implements HasId {
   public void setId(String id) {
     DomUtils.setId(this, id);
   }
-
 }

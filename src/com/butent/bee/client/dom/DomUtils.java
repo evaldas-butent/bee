@@ -455,7 +455,6 @@ public class DomUtils {
     if (BeeUtils.isEmpty(id)) {
       id = createId(elem, BeeUtils.ifString(prefix, DEFAULT_ID_PREFIX));
     }
-
     return id;
   }
 
@@ -554,6 +553,43 @@ public class DomUtils {
     return checkBoxOffsetWidth;
   }
   
+  public static Widget getChild(HasWidgets parent, String id) {
+    if (parent == null || BeeUtils.isEmpty(id)) {
+      return null;
+    }
+    
+    for (Widget child : parent) {
+      if (idEquals(child, id)) {
+        return child;
+      }
+      if (child instanceof HasWidgets) {
+        Widget grandchild = getChild((HasWidgets) child, id);
+        if (grandchild != null) {
+          return grandchild;
+        }
+      }
+    }
+    return null;
+  }
+
+  public static int getChildOffsetHeight(HasWidgets parent, String id) {
+    Widget child = getChild(parent, id);
+    if (child == null) {
+      return BeeConst.SIZE_UNKNOWN;
+    } else {
+      return child.getOffsetHeight();
+    }
+  }
+  
+  public static int getChildOffsetWidth(HasWidgets parent, String id) {
+    Widget child = getChild(parent, id);
+    if (child == null) {
+      return BeeConst.SIZE_UNKNOWN;
+    } else {
+      return child.getOffsetWidth();
+    }
+  }
+  
   public static List<Property> getChildrenInfo(Widget w) {
     Assert.notNull(w);
     List<Property> lst = new ArrayList<Property>();
@@ -563,7 +599,6 @@ public class DomUtils {
         PropertyUtils.addProperty(lst, JreEmulation.getSimpleName(child), getId(child));
       }
     }
-
     return lst;
   }
 
@@ -743,7 +778,6 @@ public class DomUtils {
     if (!find || !BeeUtils.isEmpty(id)) {
       return id;
     }
-    
     return getParentId(parent, find);
   }
 
@@ -1065,6 +1099,22 @@ public class DomUtils {
 
     return lst;
   }
+
+  public static boolean idEquals(UIObject obj, String id) {
+    if (obj == null) {
+      return false;
+    } else {
+      return idEquals(obj.getElement(), id);
+    }
+  }
+  
+  public static boolean idEquals(Element el, String id) {
+    if (el == null) {
+      return false;
+    } else {
+      return BeeUtils.same(el.getId(), id);
+    }
+  }
   
   public static void injectExternalScript(String src) {
     Assert.notEmpty(src);
@@ -1086,7 +1136,7 @@ public class DomUtils {
     link.setHref(css);
     head.appendChild(link);
   }
-
+  
   public static boolean isChecked(String id) {
     Assert.notEmpty(id);
     Element elem = DOM.getElementById(id);
