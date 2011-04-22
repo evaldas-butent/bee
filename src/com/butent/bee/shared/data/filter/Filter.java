@@ -41,6 +41,9 @@ public abstract class Filter implements BeeSerializable, Transformable {
     } else if (BeeUtils.getClassName(ColumnIsEmptyFilter.class).equals(clazz)) {
       flt = new ColumnIsEmptyFilter();
 
+    } else if (BeeUtils.getClassName(NegationFilter.class).equals(clazz)) {
+      flt = new NegationFilter();
+
     } else if (BeeUtils.getClassName(CompoundFilter.class).equals(clazz)) {
       flt = new CompoundFilter();
     }

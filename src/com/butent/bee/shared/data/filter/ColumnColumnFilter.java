@@ -32,8 +32,8 @@ public class ColumnColumnFilter extends ComparisonFilter {
 
   protected ColumnColumnFilter(String firstColumn, Operator operator, String secondColumn) {
     super(operator);
-    Assert.state(Operator.CONTAINS != operator,
-        "Operator " + operator.toQueryString() + " is not allowed in a columns comparison");
+    Assert.state(Operator.LIKE != operator,
+        "Operator " + operator.toTextString() + " is not allowed in a columns comparison");
     Assert.notEmpty(firstColumn);
     Assert.notEmpty(secondColumn);
     this.firstColumn = firstColumn;
@@ -112,7 +112,7 @@ public class ColumnColumnFilter extends ComparisonFilter {
 
       if (!BeeUtils.isEmpty(als)) {
         IsExpression secondSrc = SqlUtils.field(als, columns.get(secondName)[1]);
-        condition = SqlUtils.compare(firstSrc, getOperator().toQueryString(), secondSrc);
+        condition = SqlUtils.compare(firstSrc, getOperator(), secondSrc);
       } else {
         err = secondName;
       }
@@ -181,6 +181,6 @@ public class ColumnColumnFilter extends ComparisonFilter {
 
   @Override
   public String toString() {
-    return BeeUtils.concat(1, firstColumn, getOperator().toQueryString(), secondColumn);
+    return BeeUtils.concat(0, firstColumn, getOperator().toTextString(), secondColumn);
   }
 }

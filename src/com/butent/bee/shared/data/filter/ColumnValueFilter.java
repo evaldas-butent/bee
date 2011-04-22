@@ -36,9 +36,9 @@ public class ColumnValueFilter extends ComparisonFilter {
     Assert.notEmpty(column);
     Assert.notNull(value);
 
-    if (Operator.CONTAINS == operator) {
+    if (Operator.LIKE == operator) {
       Assert.state(ValueType.TEXT == value.getType(),
-          "Operator " + operator.toQueryString() + " can only be used with TEXT values");
+          "Operator " + operator.toTextString() + " can only be used with TEXT values");
     }
     this.column = column;
     this.value = value;
@@ -115,7 +115,7 @@ public class ColumnValueFilter extends ComparisonFilter {
       IsExpression src = SqlUtils.field(als, columns.get(colName)[1]);
       Operator op = getOperator();
 
-      if (Operator.CONTAINS == op) {
+      if (Operator.LIKE == op) {
         String val = value.getString();
 
         if (hasLikeCharacters(val)) {
@@ -124,7 +124,7 @@ public class ColumnValueFilter extends ComparisonFilter {
           condition = SqlUtils.contains(src, val);
         }
       } else {
-        condition = SqlUtils.compare(src, op.toQueryString(), SqlUtils.constant(value));
+        condition = SqlUtils.compare(src, op, SqlUtils.constant(value));
       }
     } else {
       LogUtils.warning(logger, "Column " + colName + " is not initialized");
@@ -183,6 +183,6 @@ public class ColumnValueFilter extends ComparisonFilter {
 
   @Override
   public String toString() {
-    return BeeUtils.concat(1, column, getOperator().toQueryString(), value.getString());
+    return BeeUtils.concat(0, column, getOperator().toTextString(), value.getString());
   }
 }

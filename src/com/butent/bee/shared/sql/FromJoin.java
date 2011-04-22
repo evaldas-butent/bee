@@ -15,14 +15,14 @@ class FromJoin extends FromSource {
     RIGHT(" RIGHT JOIN "),
     FULL(" FULL JOIN ");
 
-    private String queryString;
+    private String sqlString;
 
-    JoinMode(String queryString) {
-      this.queryString = queryString;
+    JoinMode(String sqlString) {
+      this.sqlString = sqlString;
     }
 
-    public String toQueryString() {
-      return queryString;
+    public String toSqlString() {
+      return sqlString;
     }
   }
 
@@ -123,7 +123,7 @@ class FromJoin extends FromSource {
 
   @Override
   public String getSqlString(SqlBuilder builder, boolean queryMode) {
-    StringBuilder from = new StringBuilder(join.toQueryString())
+    StringBuilder from = new StringBuilder(join.toSqlString())
         .append(super.getSqlString(builder, queryMode));
 
     if (!BeeUtils.isEmpty(on)) {

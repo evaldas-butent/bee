@@ -62,11 +62,8 @@ public class SqlUpdate extends HasFrom<SqlUpdate> {
       IsExpression val = (IsExpression) update[VALUE];
       paramList = (List<Object>) SqlUtils.addCollection(paramList, val.getSqlParams());
     }
-    if (!BeeUtils.isEmpty(getFrom())) {
-      for (IsFrom from : getFrom()) {
-        paramList = (List<Object>) SqlUtils.addCollection(paramList, from.getSqlParams());
-      }
-    }
+    paramList = (List<Object>) SqlUtils.addCollection(paramList, super.getSqlParams());
+
     if (!BeeUtils.isEmpty(whereClause)) {
       paramList = (List<Object>) SqlUtils.addCollection(paramList, whereClause.getSqlParams());
     }

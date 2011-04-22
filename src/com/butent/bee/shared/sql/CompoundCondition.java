@@ -2,8 +2,7 @@ package com.butent.bee.shared.sql;
 
 import com.google.common.collect.Lists;
 
-import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.data.filter.CompoundFilter.JoinType;
+import com.butent.bee.shared.data.filter.CompoundType;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
@@ -12,18 +11,17 @@ import java.util.List;
 public class CompoundCondition implements IsCondition {
 
   static CompoundCondition and(IsCondition... conditions) {
-    return new CompoundCondition(JoinType.AND, conditions);
+    return new CompoundCondition(CompoundType.AND, conditions);
   }
 
   static CompoundCondition or(IsCondition... conditions) {
-    return new CompoundCondition(JoinType.OR, conditions);
+    return new CompoundCondition(CompoundType.OR, conditions);
   }
 
-  private final JoinType joinType;
+  private final CompoundType joinType;
   private final List<IsCondition> subConditions = Lists.newArrayList();
 
-  private CompoundCondition(JoinType joinType, IsCondition... conditions) {
-    Assert.notEmpty(joinType);
+  private CompoundCondition(CompoundType joinType, IsCondition... conditions) {
     this.joinType = joinType;
     add(conditions);
   }
@@ -66,13 +64,13 @@ public class CompoundCondition implements IsCondition {
       String expr = cond.getSqlString(builder, paramMode);
 
       if (!BeeUtils.isEmpty(expr) && sb.length() > 0) {
-        sb.append(" ").append(joinType).append(" ");
+        sb.append(joinType.toSqlString());
       }
       sb.append(expr);
     }
     String flt = sb.toString();
 
-    if (JoinType.OR == joinType && !BeeUtils.isEmpty(flt)) {
+    if (CompoundType.OR == joinType && !BeeUtils.isEmpty(flt)) {
       flt = BeeUtils.parenthesize(flt);
     }
     return flt;

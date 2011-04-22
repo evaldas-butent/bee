@@ -1572,7 +1572,7 @@ public class BeeUtils {
     }
     return dst;
   }
-  
+
   /**
    * Cuts the string from the beginning to a specified index.
    * 
@@ -2742,7 +2742,7 @@ public class BeeUtils {
     }
     return sb.toString();
   }
-  
+
   /**
    * Null-safe Integer unboxing.
    * 

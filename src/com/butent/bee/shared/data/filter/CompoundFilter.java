@@ -18,10 +18,6 @@ import java.util.logging.Logger;
 
 public class CompoundFilter extends Filter {
 
-  public static enum JoinType {
-    AND, OR
-  }
-
   private enum SerializationMembers {
     JOINTYPE, SUBFILTERS
   }
@@ -29,21 +25,21 @@ public class CompoundFilter extends Filter {
   private static Logger logger = Logger.getLogger(CompoundFilter.class.getName());
 
   public static Filter and(Filter... filters) {
-    return new CompoundFilter(JoinType.AND, filters);
+    return new CompoundFilter(CompoundType.AND, filters);
   }
 
   public static Filter or(Filter... filters) {
-    return new CompoundFilter(JoinType.OR, filters);
+    return new CompoundFilter(CompoundType.OR, filters);
   }
 
-  private JoinType joinType;
+  private CompoundType joinType;
   private final List<Filter> subFilters = Lists.newArrayList();
 
   protected CompoundFilter() {
     super();
   }
 
-  private CompoundFilter(JoinType joinType, Filter... filters) {
+  private CompoundFilter(CompoundType joinType, Filter... filters) {
     this.joinType = joinType;
     add(filters);
   }
@@ -73,7 +69,7 @@ public class CompoundFilter extends Filter {
 
       switch (member) {
         case JOINTYPE:
-          joinType = JoinType.valueOf(arr[0]);
+          joinType = CompoundType.valueOf(arr[0]);
           break;
         case SUBFILTERS:
           for (String flt : Codec.beeDeserialize(xpr)) {
@@ -114,19 +110,25 @@ public class CompoundFilter extends Filter {
     CompoundCondition condition = null;
 
     if (!BeeUtils.isEmpty(subFilters)) {
-      if (joinType == JoinType.AND) {
-        condition = SqlUtils.and();
-      } else {
-        condition = SqlUtils.or();
+      switch (joinType) {
+        case AND:
+          condition = SqlUtils.and();
+          break;
+        case OR:
+          condition = SqlUtils.or();
+          break;
+        default:
+          Assert.unsupported();
+          break;
       }
-      for (Filter filter : subFilters) {
-        condition.add(filter.getCondition(columns));
+      for (Filter subFilter : subFilters) {
+        condition.add(subFilter.getCondition(columns));
       }
     }
     return condition;
   }
 
-  public JoinType getJoinType() {
+  public CompoundType getJoinType() {
     return joinType;
   }
 
@@ -161,12 +163,12 @@ public class CompoundFilter extends Filter {
       for (Filter subFilter : subFilters) {
         boolean result = subFilter.isMatch(columns, row);
 
-        if ((joinType == JoinType.AND && !result) ||
-            (joinType == JoinType.OR && result)) {
+        if ((joinType == CompoundType.AND && !result) ||
+            (joinType == CompoundType.OR && result)) {
           return result;
         }
       }
-      return (joinType == JoinType.AND);
+      return (joinType == CompoundType.AND);
     }
     return true;
   }
@@ -201,13 +203,13 @@ public class CompoundFilter extends Filter {
       String expr = wh.transform();
 
       if (!BeeUtils.isEmpty(expr) && sb.length() > 0) {
-        sb.append(" ").append(joinType).append(" ");
+        sb.append(joinType.toTextString());
       }
       sb.append(expr);
     }
     String flt = sb.toString();
 
-    if (JoinType.OR == joinType && !BeeUtils.isEmpty(flt)) {
+    if (CompoundType.OR == joinType && !BeeUtils.isEmpty(flt)) {
       flt = BeeUtils.parenthesize(flt);
     }
     return flt;

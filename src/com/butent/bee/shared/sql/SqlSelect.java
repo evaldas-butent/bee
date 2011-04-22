@@ -306,9 +306,8 @@ public class SqlSelect extends HasFrom<SqlSelect> {
       paramList =
           (List<Object>) SqlUtils.addCollection(paramList, field[FIELD_EXPR].getSqlParams());
     }
-    for (IsFrom from : getFrom()) {
-      paramList = (List<Object>) SqlUtils.addCollection(paramList, from.getSqlParams());
-    }
+    paramList = (List<Object>) SqlUtils.addCollection(paramList, super.getSqlParams());
+
     if (!BeeUtils.isEmpty(whereClause)) {
       paramList = (List<Object>) SqlUtils.addCollection(paramList, whereClause.getSqlParams());
     }
@@ -348,7 +347,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
 
   @Override
   public boolean isEmpty() {
-    return BeeUtils.isEmpty(fieldList) || BeeUtils.isEmpty(getFrom());
+    return BeeUtils.isEmpty(fieldList) || super.isEmpty();
   }
 
   public boolean isUnionAllMode() {

@@ -111,6 +111,23 @@ public abstract class HasFrom<T> extends SqlQuery<T> {
     return sources;
   }
 
+  @Override
+  public List<Object> getSqlParams() {
+    List<Object> paramList = null;
+
+    if (!BeeUtils.isEmpty(fromList)) {
+      for (IsFrom from : fromList) {
+        paramList = (List<Object>) SqlUtils.addCollection(paramList, from.getSqlParams());
+      }
+    }
+    return paramList;
+  }
+
+  @Override
+  public boolean isEmpty() {
+    return BeeUtils.isEmpty(fromList);
+  }
+
   private void addFrom(IsFrom from) {
     if (BeeUtils.isEmpty(fromList)) {
       fromList = new ArrayList<IsFrom>();

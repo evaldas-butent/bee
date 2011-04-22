@@ -1,6 +1,7 @@
 package com.butent.bee.shared.sql;
 
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.data.filter.Operator;
 
 import java.util.Collection;
 import java.util.List;
@@ -8,23 +9,19 @@ import java.util.List;
 class ComparisonCondition implements IsCondition {
 
   private final IsExpression leftExpression;
-  private final String operator;
+  private final Operator operator;
   private final Object rightExpression;
 
-  public ComparisonCondition(IsExpression left, String op, IsExpression right) {
-    Assert.notEmpty(left);
-    Assert.notEmpty(op);
-    Assert.notEmpty(right);
+  public ComparisonCondition(IsExpression left, Operator op, IsExpression right) {
+    Assert.noNulls(left, op, right);
 
     leftExpression = left;
     operator = op;
     rightExpression = right;
   }
 
-  public ComparisonCondition(IsExpression left, String op, SqlSelect right) {
-    Assert.notEmpty(left);
-    Assert.notEmpty(op);
-    Assert.notNull(right);
+  public ComparisonCondition(IsExpression left, Operator op, SqlSelect right) {
+    Assert.noNulls(left, op, right);
     Assert.state(!right.isEmpty());
 
     leftExpression = left;
@@ -54,6 +51,6 @@ class ComparisonCondition implements IsCondition {
     if (rightExpression instanceof SqlSelect) {
       expr = "(" + expr + ")";
     }
-    return leftExpression.getSqlString(builder, false) + operator + expr;
+    return leftExpression.getSqlString(builder, false) + operator.toSqlString() + expr;
   }
 }

@@ -1,8 +1,9 @@
 package com.butent.bee.shared.sql;
 
+import com.google.common.collect.Lists;
+
 import com.butent.bee.shared.data.value.Value;
 
-import java.util.ArrayList;
 import java.util.List;
 
 class ConstantExpression implements IsExpression {
@@ -15,7 +16,7 @@ class ConstantExpression implements IsExpression {
 
   @Override
   public List<Object> getSqlParams() {
-    List<Object> param = new ArrayList<Object>(1);
+    List<Object> param = Lists.newArrayList();
 
     if (constant != null) {
       param.add(constant.getObjectValue());

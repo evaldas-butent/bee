@@ -383,7 +383,7 @@ class BeeTable implements HasExtFields, HasStates, HasTranslations {
                       SqlUtils.notEqual(SqlUtils.bitAnd(stateAlias, fld, mask), mask)));
         } else {
           wh = SqlUtils.or(wh,
-                  SqlUtils.and(SqlUtils.isNotNull(stateAlias, fld),
+                  SqlUtils.and(SqlUtils.notNull(stateAlias, fld),
                       SqlUtils.notEqual(SqlUtils.bitAnd(stateAlias, fld, mask), 0)));
         }
       }

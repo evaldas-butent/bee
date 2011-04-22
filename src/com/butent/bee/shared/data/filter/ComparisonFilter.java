@@ -2,59 +2,10 @@ package com.butent.bee.shared.data.filter;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.value.Value;
-import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.StringTokenizer;
 
 public abstract class ComparisonFilter extends Filter {
-
-  public static enum Operator {
-    EQ("="),
-    NE("!="),
-    LT("<"),
-    GT(">"),
-    LE("<="),
-    GE(">="),
-    CONTAINS("$");
-
-    public static Operator getOperator(String op) {
-      for (Operator operator : Operator.values()) {
-        if (BeeUtils.same(operator.toQueryString(), op)) {
-          return operator;
-        }
-      }
-      return null;
-    }
-
-    public static String getPattern(boolean multipleChars) {
-      StringBuilder sb = new StringBuilder();
-
-      for (Operator operator : Operator.values()) {
-        String op = operator.toQueryString();
-
-        if (multipleChars && op.length() > 1 || !multipleChars && op.length() == 1) {
-          if (sb.length() > 0) {
-            sb.append("|");
-          }
-          if (CONTAINS == operator) {
-            op = "\\" + op;
-          }
-          sb.append(op);
-        }
-      }
-      return sb.toString();
-    }
-
-    private String queryString;
-
-    Operator(String queryString) {
-      this.queryString = queryString;
-    }
-
-    public String toQueryString() {
-      return queryString;
-    }
-  }
 
   public static Filter compareWithColumn(String firstColumn, String operator, String secondColumn) {
     return new ColumnColumnFilter(firstColumn, Operator.getOperator(operator), secondColumn);
@@ -124,15 +75,16 @@ public abstract class ComparisonFilter extends Filter {
         return (v1.compareTo(v2) <= 0);
       case GE:
         return (v1.compareTo(v2) >= 0);
-      case CONTAINS:
+      case LIKE:
         String val = v2.toString();
 
         if (hasLikeCharacters(val)) {
           return isLike(v1.toString(), val);
         }
         return v1.toString().contains(val);
+      default:
+        Assert.unsupported();
     }
-    Assert.untouchable();
     return false;
   }
 
