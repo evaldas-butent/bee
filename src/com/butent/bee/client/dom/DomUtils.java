@@ -18,7 +18,6 @@ import com.google.gwt.dom.client.ScriptElement;
 import com.google.gwt.dom.client.SpanElement;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.dom.client.Style.Overflow;
-import com.google.gwt.dom.client.Style.Position;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.dom.client.Style.Visibility;
 import com.google.gwt.dom.client.TableCellElement;
@@ -141,19 +140,6 @@ public class DomUtils {
   private static int checkBoxOffsetHeight = -1;
   private static int checkBoxClientWidth = -1;
   private static int checkBoxClientHeight = -1;
-
-  private static final SpanElement widthRuler;
-
-  static {
-    widthRuler = Document.get().createSpanElement();
-
-    Style style = widthRuler.getStyle();
-    style.setPosition(Position.ABSOLUTE);
-    style.setZIndex(-1024);
-    style.setTop(-100, Unit.PX);
-
-    Document.get().getBody().appendChild(widthRuler);
-  }  
 
   public static void clearTitle(UIObject obj) {
     Assert.notNull(obj);
@@ -765,6 +751,18 @@ public class DomUtils {
 
     return lst;
   }
+
+  public static int getParentClientHeight(Widget widget) {
+    Assert.notNull(widget);
+    Assert.notNull(widget.getParent(), "Widget is orphan");
+    return widget.getParent().getElement().getClientHeight();
+  }
+  
+  public static int getParentClientWidth(Widget widget) {
+    Assert.notNull(widget);
+    Assert.notNull(widget.getParent(), "Widget is orphan");
+    return widget.getParent().getElement().getClientWidth();
+  }
   
   public static String getParentId(Element elem, boolean find) {
     Assert.notNull(elem);
@@ -934,30 +932,6 @@ public class DomUtils {
     return textBoxOffsetWidth;
   }
 
-  public static int getTextWidth(String text) {
-    return getTextWidth(text, null);
-  }
-  
-  public static int getTextWidth(String text, Font font) {
-    if (BeeUtils.isEmpty(text)) {
-      return 0;
-    }
-    
-    if (font != null) {
-      font.applyTo(widthRuler);
-    }
-    widthRuler.setInnerHTML(text);
-
-    int width = widthRuler.getOffsetWidth();
-
-    widthRuler.setInnerHTML(BeeConst.STRING_EMPTY);
-    if (font != null) {
-      font.removeFrom(widthRuler);
-    }
-    
-    return width;
-  }
- 
   public static List<ExtendedProperty> getUIObjectExtendedInfo(UIObject obj, String prefix) {
     Assert.notNull(obj);
     List<ExtendedProperty> lst = new ArrayList<ExtendedProperty>();

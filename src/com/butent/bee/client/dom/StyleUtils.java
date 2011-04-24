@@ -12,6 +12,7 @@ import com.google.gwt.user.client.ui.UIObject;
 import com.butent.bee.client.utils.JsUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.utils.BeeUtils;
 
 public class StyleUtils {
@@ -81,6 +82,34 @@ public class StyleUtils {
   public enum ScrollBars {
     NONE, HORIZONTAL, VERTICAL, BOTH
   }
+
+  public enum WhiteSpace implements HasCssName {
+    NORMAL {
+      public String getCssName() {
+        return WHITE_SPACE_NORMAL;
+      }
+    },
+    NOWRAP {
+      public String getCssName() {
+        return WHITE_SPACE_NOWRAP;
+      }
+    },
+    PRE {
+      public String getCssName() {
+        return WHITE_SPACE_PRE;
+      }
+    },
+    PRE_LINE {
+      public String getCssName() {
+        return WHITE_SPACE_PRE_LINE;
+      }
+    },
+    PRE_WRAP {
+      public String getCssName() {
+        return WHITE_SPACE_PRE_WRAP;
+      }
+    }
+  }
   
   public static final String ACTIVE_BLANK = "bee-activeBlank";
   public static final String ACTIVE_CONTENT = "bee-activeContent";
@@ -91,12 +120,17 @@ public class StyleUtils {
   public static final String WINDOW_HEADER = "bee-WindowHeader";
   public static final String WINDOW_FOOTER = "bee-WindowFooter";
 
-  public static final String STYLE_LEFT = "left";
   public static final String STYLE_WIDTH = "width";
-  public static final String STYLE_RIGHT = "right";
+  public static final String STYLE_MIN_WIDTH = "minWidth";
+  public static final String STYLE_MAX_WIDTH = "maxWidth";
 
-  public static final String STYLE_TOP = "top";
   public static final String STYLE_HEIGHT = "height";
+  public static final String STYLE_MIN_HEIGHT = "minHeight";
+  public static final String STYLE_MAX_HEIGHT = "maxHeight";
+
+  public static final String STYLE_LEFT = "left";
+  public static final String STYLE_RIGHT = "right";
+  public static final String STYLE_TOP = "top";
   public static final String STYLE_BOTTOM = "bottom";
 
   public static final String STYLE_BORDER_TOP = "borderTop";
@@ -105,12 +139,14 @@ public class StyleUtils {
   public static final String STYLE_TABLE_LAYOUT = "tableLayout";
 
   public static final String STYLE_OVERFLOW = "overflow";
-  public static final String STYLE_OVERFLOW_X = "overflow-x";
-  public static final String STYLE_OVERFLOW_Y = "overflow-y";
+  public static final String STYLE_OVERFLOW_X = "overflowX";
+  public static final String STYLE_OVERFLOW_Y = "overflowY";
 
   public static final String STYLE_FONT_FAMILY = "fontFamily";
   public static final String STYLE_FONT_SIZE = "fontSize";
   public static final String STYLE_FONT_VARIANT = "fontVariant";
+
+  public static final String STYLE_WHITE_SPACE = "whiteSpace";
   
   public static final String VALUE_AUTO = "auto";
   public static final String VALUE_FIXED = "fixed";
@@ -138,16 +174,17 @@ public class StyleUtils {
 
   public static final String FONT_VARIANT_NORMAL = "normal";
   public static final String FONT_VARIANT_SMALL_CAPS = "small-caps";
-
+  
+  public static final String WHITE_SPACE_NORMAL = "normal";
+  public static final String WHITE_SPACE_NOWRAP = "nowrap";
+  public static final String WHITE_SPACE_PRE = "pre";
+  public static final String WHITE_SPACE_PRE_WRAP = "pre-wrap";
+  public static final String WHITE_SPACE_PRE_LINE = "pre-line";
+  
   public static void addStyleDependentName(Element el, String styleSuffix) {
     setStyleDependentName(el, styleSuffix, true);
   }
 
-  public static void alwaysScroll(UIObject obj, ScrollBars scroll) {
-    Assert.notNull(obj);
-    alwaysScroll(obj.getElement(), scroll);
-  }
-  
   public static void alwaysScroll(Element el, ScrollBars scroll) {
     Assert.notNull(el);
     alwaysScroll(el.getStyle(), scroll);
@@ -157,11 +194,11 @@ public class StyleUtils {
     setOverflow(st, scroll, VALUE_SCROLL);
   }
   
-  public static void autoHeight(UIObject obj) {
+  public static void alwaysScroll(UIObject obj, ScrollBars scroll) {
     Assert.notNull(obj);
-    autoHeight(obj.getElement());
+    alwaysScroll(obj.getElement(), scroll);
   }
-
+  
   public static void autoHeight(Element el) {
     Assert.notNull(el);
     autoHeight(el.getStyle());
@@ -172,11 +209,11 @@ public class StyleUtils {
     st.setProperty(STYLE_HEIGHT, VALUE_AUTO);
   }
 
-  public static void autoScroll(UIObject obj, ScrollBars scroll) {
+  public static void autoHeight(UIObject obj) {
     Assert.notNull(obj);
-    autoScroll(obj.getElement(), scroll);
+    autoHeight(obj.getElement());
   }
-  
+
   public static void autoScroll(Element el, ScrollBars scroll) {
     Assert.notNull(el);
     autoScroll(el.getStyle(), scroll);
@@ -185,10 +222,10 @@ public class StyleUtils {
   public static void autoScroll(Style st, ScrollBars scroll) {
     setOverflow(st, scroll, VALUE_AUTO);
   }
-
-  public static void autoWidth(UIObject obj) {
+  
+  public static void autoScroll(UIObject obj, ScrollBars scroll) {
     Assert.notNull(obj);
-    autoWidth(obj.getElement());
+    autoScroll(obj.getElement(), scroll);
   }
 
   public static void autoWidth(Element el) {
@@ -201,9 +238,9 @@ public class StyleUtils {
     st.setProperty(STYLE_WIDTH, VALUE_AUTO);
   }
 
-  public static void clearTableLayout(UIObject obj) {
+  public static void autoWidth(UIObject obj) {
     Assert.notNull(obj);
-    clearTableLayout(obj.getElement());
+    autoWidth(obj.getElement());
   }
 
   public static void clearTableLayout(Element el) {
@@ -216,9 +253,9 @@ public class StyleUtils {
     st.clearProperty(STYLE_TABLE_LAYOUT);
   }
 
-  public static void fillHorizontal(UIObject obj) {
+  public static void clearTableLayout(UIObject obj) {
     Assert.notNull(obj);
-    fillHorizontal(obj.getElement());
+    clearTableLayout(obj.getElement());
   }
 
   public static void fillHorizontal(Element el) {
@@ -239,9 +276,9 @@ public class StyleUtils {
     st.setWidth(100, Unit.PCT);
   }
 
-  public static void fillVertical(UIObject obj) {
+  public static void fillHorizontal(UIObject obj) {
     Assert.notNull(obj);
-    fillVertical(obj.getElement());
+    fillHorizontal(obj.getElement());
   }
 
   public static void fillVertical(Element el) {
@@ -262,9 +299,9 @@ public class StyleUtils {
     st.setHeight(100, Unit.PCT);
   }
 
-  public static void fixedTableLayout(UIObject obj) {
+  public static void fillVertical(UIObject obj) {
     Assert.notNull(obj);
-    fixedTableLayout(obj.getElement());
+    fillVertical(obj.getElement());
   }
 
   public static void fixedTableLayout(Element el) {
@@ -277,9 +314,9 @@ public class StyleUtils {
     st.setProperty(STYLE_TABLE_LAYOUT, VALUE_FIXED);
   }
 
-  public static void fullHeight(UIObject obj) {
+  public static void fixedTableLayout(UIObject obj) {
     Assert.notNull(obj);
-    fullHeight(obj.getElement());
+    fixedTableLayout(obj.getElement());
   }
 
   public static void fullHeight(Element el) {
@@ -292,9 +329,9 @@ public class StyleUtils {
     st.setHeight(100, Unit.PCT);
   }
 
-  public static void fullWidth(UIObject obj) {
+  public static void fullHeight(UIObject obj) {
     Assert.notNull(obj);
-    fullWidth(obj.getElement());
+    fullHeight(obj.getElement());
   }
 
   public static void fullWidth(Element el) {
@@ -307,6 +344,11 @@ public class StyleUtils {
     st.setWidth(100, Unit.PCT);
   }
 
+  public static void fullWidth(UIObject obj) {
+    Assert.notNull(obj);
+    fullWidth(obj.getElement());
+  }
+
   public static Element getElement(String id) {
     Assert.notEmpty(id);
     Element el = DOM.getElementById(id);
@@ -314,11 +356,6 @@ public class StyleUtils {
     return el;
   }
 
-  public static ScrollBars getScroll(UIObject obj) {
-    Assert.notNull(obj);
-    return getScroll(obj.getElement());
-  }
-  
   public static ScrollBars getScroll(Element el) {
     Assert.notNull(el);
     return getScroll(el.getStyle());
@@ -330,13 +367,18 @@ public class StyleUtils {
     if (isScroll(st.getOverflow())) {
       return ScrollBars.BOTH;
     }
-    if (isScroll(getStyleProperty(st, STYLE_OVERFLOW_X))) {
+    if (isScroll(st.getOverflowX())) {
       return ScrollBars.HORIZONTAL;
     }
-    if (isScroll(getStyleProperty(st, STYLE_OVERFLOW_Y))) {
+    if (isScroll(st.getOverflowY())) {
       return ScrollBars.VERTICAL;
     }
     return ScrollBars.NONE;
+  }
+  
+  public static ScrollBars getScroll(UIObject obj) {
+    Assert.notNull(obj);
+    return getScroll(obj.getElement());
   }
 
   public static String getStylePrimaryName(Element el) {
@@ -353,15 +395,6 @@ public class StyleUtils {
     return className;
   }
 
-  public static int getTop(String id) {
-    return getTop(getElement(id));
-  }
-
-  public static int getTop(UIObject obj) {
-    Assert.notNull(obj);
-    return getTop(obj.getElement());
-  }
-
   public static int getTop(Element el) {
     Assert.notNull(el);
     return getTop(el.getStyle());
@@ -372,11 +405,15 @@ public class StyleUtils {
     return BeeUtils.val(st.getTop());
   }
 
-  public static void hideScroll(UIObject obj, ScrollBars scroll) {
-    Assert.notNull(obj);
-    hideScroll(obj.getElement(), scroll);
+  public static int getTop(String id) {
+    return getTop(getElement(id));
   }
-  
+
+  public static int getTop(UIObject obj) {
+    Assert.notNull(obj);
+    return getTop(obj.getElement());
+  }
+
   public static void hideScroll(Element el, ScrollBars scroll) {
     Assert.notNull(el);
     hideScroll(el.getStyle(), scroll);
@@ -386,6 +423,45 @@ public class StyleUtils {
     setOverflow(st, scroll, VALUE_HIDDEN);
   }
   
+  public static void hideScroll(UIObject obj, ScrollBars scroll) {
+    Assert.notNull(obj);
+    hideScroll(obj.getElement(), scroll);
+  }
+  
+  public static boolean isUnitFragment(char ch) {
+    boolean ok = false;
+
+    for (Unit constant : Unit.class.getEnumConstants()) {
+      if (constant.getType().indexOf(ch) >= 0) {
+        ok = true;
+        break;
+      }
+    }
+    return ok;
+  }
+  
+  public static Pair<Double, Unit> parseCssLength(String input) {
+    Assert.notEmpty(input);
+    Double value = null;
+    Unit unit = null;
+    
+    String s = input.trim();
+    int p = s.length() - 1;
+    while (p >= 0 && isUnitFragment(s.charAt(p))) {
+      p--;
+    }
+    
+    if (p >= 0 && p < s.length() - 1) {
+      String v = s.substring(0, p + 1).trim();
+      String u = s.substring(p + 1).trim();
+      if (BeeUtils.isNumeric(v)) {
+        value = BeeUtils.toDouble(v);
+        unit = parseUnit(u);
+      }
+    }
+    return new Pair<Double, Unit>(value, unit);
+  }
+
   public static <E extends Enum<?> & HasCssName> E parseCssName(Class<E> clazz, String input) {
     Assert.notNull(clazz);
     Assert.notEmpty(input);
@@ -405,7 +481,7 @@ public class StyleUtils {
   public static FontStyle parseFontStyle(String input) {
     return parseCssName(FontStyle.class, input);
   }
-
+  
   public static FontVariant parseFontVariant(String input) {
     return parseCssName(FontVariant.class, input);
   }
@@ -413,24 +489,20 @@ public class StyleUtils {
   public static FontWeight parseFontWeight(String input) {
     return parseCssName(FontWeight.class, input);
   }
-  
+ 
   public static Unit parseUnit(String input) {
     Assert.notEmpty(input);
 
-    for (Unit constant : Unit.class.getEnumConstants()) {
-      if (BeeUtils.same(constant.getType(), input)) {
-        return constant;
+    for (Unit unit : Unit.values()) {
+      if (BeeUtils.same(unit.getType(), input)) {
+        return unit;
       }
     }
     return null;
   }
- 
+
   public static void removeStyleDependentName(Element el, String styleSuffix) {
     setStyleDependentName(el, styleSuffix, false);
-  }
-
-  public static void setBorderBottomWidth(UIObject obj, int px) {
-    setBorderBottomWidth(obj.getElement(), px);
   }
 
   public static void setBorderBottomWidth(Element el, int px) {
@@ -444,9 +516,8 @@ public class StyleUtils {
     st.setPropertyPx(STYLE_BORDER_BOTTOM, px);
   }
 
-  public static void setBorderTopWidth(UIObject obj, int px) {
-    Assert.notNull(obj);
-    setBorderTopWidth(obj.getElement(), px);
+  public static void setBorderBottomWidth(UIObject obj, int px) {
+    setBorderBottomWidth(obj.getElement(), px);
   }
 
   public static void setBorderTopWidth(Element el, int px) {
@@ -460,9 +531,9 @@ public class StyleUtils {
     st.setPropertyPx(STYLE_BORDER_TOP, px);
   }
 
-  public static void setFontFamily(UIObject obj, String family) {
+  public static void setBorderTopWidth(UIObject obj, int px) {
     Assert.notNull(obj);
-    setFontFamily(obj.getElement(), family);
+    setBorderTopWidth(obj.getElement(), px);
   }
 
   public static void setFontFamily(Element el, String family) {
@@ -476,26 +547,21 @@ public class StyleUtils {
     st.setProperty(STYLE_FONT_FAMILY, family);
   }
   
-  public static void setFontSize(UIObject obj, FontSize size) {
+  public static void setFontFamily(UIObject obj, String family) {
     Assert.notNull(obj);
-    setFontSize(obj.getElement(), size);
+    setFontFamily(obj.getElement(), family);
   }
 
-  public static void setFontSize(Element el, FontSize size) {
-    Assert.notNull(el);
-    setFontSize(el.getStyle(), size);
-  }
-
-  public static void setFontSize(UIObject obj, double size, Unit unit) {
-    Assert.notNull(obj);
-    setFontSize(obj.getElement(), size, unit);
-  }
-  
   public static void setFontSize(Element el, double size, Unit unit) {
     Assert.notNull(el);
     Assert.isPositive(size);
     Assert.notNull(unit);
     el.getStyle().setFontSize(size, unit);
+  }
+
+  public static void setFontSize(Element el, FontSize size) {
+    Assert.notNull(el);
+    setFontSize(el.getStyle(), size);
   }
   
   public static void setFontSize(Style st, FontSize size) {
@@ -503,10 +569,15 @@ public class StyleUtils {
     Assert.notNull(size);
     setFontSize(st, size.getCssName());
   }
-
-  public static void setFontSizePx(UIObject obj, double size) {
+  
+  public static void setFontSize(UIObject obj, double size, Unit unit) {
     Assert.notNull(obj);
-    setFontSizePx(obj.getElement(), size);
+    setFontSize(obj.getElement(), size, unit);
+  }
+
+  public static void setFontSize(UIObject obj, FontSize size) {
+    Assert.notNull(obj);
+    setFontSize(obj.getElement(), size);
   }
   
   public static void setFontSizePx(Element el, double size) {
@@ -520,9 +591,9 @@ public class StyleUtils {
     st.setFontSize(size, Unit.PX);
   }
 
-  public static void setFontVariant(UIObject obj, FontVariant variant) {
+  public static void setFontSizePx(UIObject obj, double size) {
     Assert.notNull(obj);
-    setFontVariant(obj.getElement(), variant);
+    setFontSizePx(obj.getElement(), size);
   }
 
   public static void setFontVariant(Element el, FontVariant variant) {
@@ -536,9 +607,9 @@ public class StyleUtils {
     st.setProperty(STYLE_FONT_VARIANT, variant.getCssName());
   }
   
-  public static void setHeight(UIObject obj, int px) {
+  public static void setFontVariant(UIObject obj, FontVariant variant) {
     Assert.notNull(obj);
-    setHeight(obj.getElement(), px);
+    setFontVariant(obj.getElement(), variant);
   }
 
   public static void setHeight(Element el, int px) {
@@ -551,9 +622,9 @@ public class StyleUtils {
     st.setHeight(px, Unit.PX);
   }
 
-  public static void setLeft(UIObject obj, int px) {
+  public static void setHeight(UIObject obj, int px) {
     Assert.notNull(obj);
-    setLeft(obj.getElement(), px);
+    setHeight(obj.getElement(), px);
   }
 
   public static void setLeft(Element el, int px) {
@@ -566,9 +637,141 @@ public class StyleUtils {
     st.setLeft(px, Unit.PX);
   }
 
-  public static void setOverflow(UIObject obj, ScrollBars scroll, String value) {
+  public static void setLeft(UIObject obj, int px) {
     Assert.notNull(obj);
-    setOverflow(obj.getElement(), scroll, value);
+    setLeft(obj.getElement(), px);
+  }
+
+  public static void setMaxHeight(Element el, double value, Unit unit) {
+    Assert.notNull(el);
+    setMaxHeight(el.getStyle(), value, unit);
+  }
+
+  public static void setMaxHeight(Element el, int px) {
+    Assert.notNull(el);
+    setMaxHeight(el.getStyle(), px);
+  }
+
+  public static void setMaxHeight(Style st, double value, Unit unit) {
+    Assert.notNull(st);
+    Assert.isPositive(value);
+    Assert.notNull(unit);
+    st.setProperty(STYLE_MAX_HEIGHT, value, unit);
+  }
+
+  public static void setMaxHeight(Style st, int px) {
+    Assert.notNull(st);
+    Assert.isPositive(px);
+    st.setPropertyPx(STYLE_MAX_HEIGHT, px);
+  }
+
+  public static void setMaxHeight(UIObject obj, double value, Unit unit) {
+    Assert.notNull(obj);
+    setMaxHeight(obj.getElement(), value, unit);
+  }
+
+  public static void setMaxHeight(UIObject obj, int px) {
+    Assert.notNull(obj);
+    setMaxHeight(obj.getElement(), px);
+  }
+
+  public static void setMaxWidth(Element el, double value, Unit unit) {
+    Assert.notNull(el);
+    setMaxWidth(el.getStyle(), value, unit);
+  }
+
+  public static void setMaxWidth(Element el, int px) {
+    Assert.notNull(el);
+    setMaxWidth(el.getStyle(), px);
+  }
+
+  public static void setMaxWidth(Style st, double value, Unit unit) {
+    Assert.notNull(st);
+    Assert.isPositive(value);
+    Assert.notNull(unit);
+    st.setProperty(STYLE_MAX_WIDTH, value, unit);
+  }
+
+  public static void setMaxWidth(Style st, int px) {
+    Assert.notNull(st);
+    Assert.isPositive(px);
+    st.setPropertyPx(STYLE_MAX_WIDTH, px);
+  }
+
+  public static void setMaxWidth(UIObject obj, double value, Unit unit) {
+    Assert.notNull(obj);
+    setMaxWidth(obj.getElement(), value, unit);
+  }
+  
+  public static void setMaxWidth(UIObject obj, int px) {
+    Assert.notNull(obj);
+    setMaxWidth(obj.getElement(), px);
+  }
+
+  public static void setMinHeight(Element el, double value, Unit unit) {
+    Assert.notNull(el);
+    setMinHeight(el.getStyle(), value, unit);
+  }
+
+  public static void setMinHeight(Element el, int px) {
+    Assert.notNull(el);
+    setMinHeight(el.getStyle(), px);
+  }
+
+  public static void setMinHeight(Style st, double value, Unit unit) {
+    Assert.notNull(st);
+    Assert.isPositive(value);
+    Assert.notNull(unit);
+    st.setProperty(STYLE_MIN_HEIGHT, value, unit);
+  }
+
+  public static void setMinHeight(Style st, int px) {
+    Assert.notNull(st);
+    Assert.isPositive(px);
+    st.setPropertyPx(STYLE_MIN_HEIGHT, px);
+  }
+
+  public static void setMinHeight(UIObject obj, double value, Unit unit) {
+    Assert.notNull(obj);
+    setMinHeight(obj.getElement(), value, unit);
+  }
+
+  public static void setMinHeight(UIObject obj, int px) {
+    Assert.notNull(obj);
+    setMinHeight(obj.getElement(), px);
+  }
+
+  public static void setMinWidth(Element el, double value, Unit unit) {
+    Assert.notNull(el);
+    setMinWidth(el.getStyle(), value, unit);
+  }
+
+  public static void setMinWidth(Element el, int px) {
+    Assert.notNull(el);
+    setMinWidth(el.getStyle(), px);
+  }
+
+  public static void setMinWidth(Style st, double value, Unit unit) {
+    Assert.notNull(st);
+    Assert.isPositive(value);
+    Assert.notNull(unit);
+    st.setProperty(STYLE_MIN_WIDTH, value, unit);
+  }
+
+  public static void setMinWidth(Style st, int px) {
+    Assert.notNull(st);
+    Assert.isPositive(px);
+    st.setPropertyPx(STYLE_MIN_WIDTH, px);
+  }
+
+  public static void setMinWidth(UIObject obj, double value, Unit unit) {
+    Assert.notNull(obj);
+    setMinWidth(obj.getElement(), value, unit);
+  }
+
+  public static void setMinWidth(UIObject obj, int px) {
+    Assert.notNull(obj);
+    setMinWidth(obj.getElement(), px);
   }
   
   public static void setOverflow(Element el, ScrollBars scroll, String value) {
@@ -586,10 +789,10 @@ public class StyleUtils {
         st.setProperty(STYLE_OVERFLOW, value);
         break;
       case HORIZONTAL:
-        setStyleProperty(st, STYLE_OVERFLOW_X, value);
+        st.setProperty(STYLE_OVERFLOW_X, value);
         break;
       case VERTICAL:
-        setStyleProperty(st, STYLE_OVERFLOW_Y, value);
+        st.setProperty(STYLE_OVERFLOW_Y, value);
         break;
       case NONE:
         clearStyleProperty(st, STYLE_OVERFLOW);
@@ -601,6 +804,11 @@ public class StyleUtils {
     }
   }
   
+  public static void setOverflow(UIObject obj, ScrollBars scroll, String value) {
+    Assert.notNull(obj);
+    setOverflow(obj.getElement(), scroll, value);
+  }
+
   public static void setStyleDependentName(Element el, String styleSuffix, boolean add) {
     Assert.notNull(el);
     Assert.notEmpty(styleSuffix);
@@ -622,13 +830,10 @@ public class StyleUtils {
     }
   }
 
-  public static void setTop(String id, int px) {
-    setTop(getElement(id), px);
-  }
-
-  public static void setTop(UIObject obj, int px) {
-    Assert.notNull(obj);
-    setTop(obj.getElement(), px);
+  public static void setStyleProperty(Style style, String name, String value) {
+    Assert.notNull(style);
+    Assert.notEmpty(name);
+    JsUtils.setProperty(style, name, value);
   }
 
   public static void setTop(Element el, int px) {
@@ -641,9 +846,29 @@ public class StyleUtils {
     st.setTop(px, Unit.PX);
   }
 
-  public static void setWidth(UIObject obj, int px) {
+  public static void setTop(String id, int px) {
+    setTop(getElement(id), px);
+  }
+
+  public static void setTop(UIObject obj, int px) {
     Assert.notNull(obj);
-    setWidth(obj.getElement(), px);
+    setTop(obj.getElement(), px);
+  }
+  
+  public static void setWhiteSpace(Element el, WhiteSpace value) {
+    Assert.notNull(el);
+    setWhiteSpace(el.getStyle(), value);
+  }
+  
+  public static void setWhiteSpace(Style st, WhiteSpace value) {
+    Assert.notNull(st);
+    Assert.notNull(value);
+    st.setProperty(STYLE_WHITE_SPACE, value.getCssName());
+  }
+
+  public static void setWhiteSpace(UIObject obj, WhiteSpace value) {
+    Assert.notNull(obj);
+    setWhiteSpace(obj.getElement(), value);
   }
 
   public static void setWidth(Element el, int px) {
@@ -656,9 +881,23 @@ public class StyleUtils {
     st.setWidth(px, Unit.PX);
   }
 
-  public static void zeroLeft(UIObject obj) {
+  public static void setWidth(UIObject obj, int px) {
     Assert.notNull(obj);
-    zeroLeft(obj.getElement());
+    setWidth(obj.getElement(), px);
+  }
+  
+  public static void setWordWrap(Element el, boolean wrap) {
+    Assert.notNull(el);
+    setWordWrap(el.getStyle(), wrap);
+  }
+  
+  public static void setWordWrap(Style st, boolean wrap) {
+    setWhiteSpace(st, wrap ? WhiteSpace.NORMAL : WhiteSpace.NOWRAP);
+  }
+
+  public static void setWordWrap(UIObject obj, boolean wrap) {
+    Assert.notNull(obj);
+    setWordWrap(obj.getElement(), wrap);
   }
 
   public static void zeroLeft(Element el) {
@@ -671,9 +910,9 @@ public class StyleUtils {
     st.setPropertyPx(STYLE_LEFT, 0);
   }
 
-  public static void zeroTop(UIObject obj) {
+  public static void zeroLeft(UIObject obj) {
     Assert.notNull(obj);
-    zeroTop(obj.getElement());
+    zeroLeft(obj.getElement());
   }
 
   public static void zeroTop(Element el) {
@@ -686,9 +925,9 @@ public class StyleUtils {
     st.setPropertyPx(STYLE_TOP, 0);
   }
 
-  public static void zeroWidth(UIObject obj) {
+  public static void zeroTop(UIObject obj) {
     Assert.notNull(obj);
-    zeroWidth(obj.getElement());
+    zeroTop(obj.getElement());
   }
 
   public static void zeroWidth(Element el) {
@@ -700,17 +939,18 @@ public class StyleUtils {
     Assert.notNull(st);
     st.setPropertyPx(STYLE_WIDTH, 0);
   }
-
+  
+  public static void zeroWidth(UIObject obj) {
+    Assert.notNull(obj);
+    zeroWidth(obj.getElement());
+  }
+  
   private static void clearStyleProperty(Style style, String name) {
-    if (!BeeUtils.isEmpty(getStyleProperty(style, name))) {
-      setStyleProperty(style, name, BeeConst.STRING_EMPTY);
+    if (!BeeUtils.isEmpty(style.getProperty(name))) {
+      style.clearProperty(name);
     }
   }
-  
-  private static String getStyleProperty(Style style, String name) {
-    return JsUtils.getProperty(style, name);
-  }
-  
+
   private static boolean hasProperty(Style st, String name) {
     if (st == null || BeeUtils.isEmpty(name)) {
       return false;
@@ -746,15 +986,11 @@ public class StyleUtils {
     }
     return ok;
   }
-
+  
   private static void setFontSize(Style st, String value) {
     Assert.notNull(st);
     Assert.notEmpty(value);
     st.setProperty(STYLE_FONT_SIZE, value);
-  }
-  
-  private static void setStyleProperty(Style style, String name, String value) {
-    JsUtils.setProperty(style, name, value);
   }
 
   private StyleUtils() {

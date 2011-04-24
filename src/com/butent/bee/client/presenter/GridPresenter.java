@@ -15,8 +15,8 @@ import com.butent.bee.client.data.Provider;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.view.GridContainerImpl;
 import com.butent.bee.client.view.GridContainerView;
-import com.butent.bee.client.view.GridContentView;
 import com.butent.bee.client.view.HasSearch;
+import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.search.SearchView;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.BeeColumn;
@@ -143,7 +143,7 @@ public class GridPresenter implements Presenter {
   private Provider createProvider(GridContainerView view, DataInfo info, BeeRowSet rowSet,
       boolean isAsync) {
     Provider provider;
-    GridContentView display = view.getContent();
+    GridView display = view.getContent();
 
     if (isAsync) {
       provider = new AsyncProvider(display, info);

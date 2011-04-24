@@ -31,4 +31,37 @@
   <source path='client'/>
   <source path='shared'/>
   <super-source path='translatable'/> 
+
+  <replace-with class="com.butent.bee.client.view.grid.CellBasedWidgetImplStandard">
+    <when-type-is class="com.butent.bee.client.view.grid.CellBasedWidgetImpl"/>
+    <any>
+      <when-property-is name="user.agent" value="opera"/>
+      <when-property-is name="user.agent" value="gecko1_8"/>
+    </any>
+  </replace-with>
+
+  <replace-with class="com.butent.bee.client.view.grid.CellBasedWidgetImplTrident">
+    <when-type-is class="com.butent.bee.client.view.grid.CellBasedWidgetImpl"/>
+    <any>
+      <when-property-is name="user.agent" value="ie6"/>
+      <when-property-is name="user.agent" value="ie8"/>
+    </any>
+  </replace-with>
+
+  <replace-with class="com.butent.bee.client.view.grid.CellBasedWidgetImplStandardBase">
+    <when-type-is class="com.butent.bee.client.view.grid.CellBasedWidgetImpl"/>
+    <any>
+      <when-property-is name="user.agent" value="safari"/>
+      <when-property-is name="user.agent" value="ie9"/>
+    </any>
+  </replace-with>
+
+  <replace-with class="com.butent.bee.client.view.grid.CellGrid.ImplTrident">
+    <when-type-is class="com.butent.bee.client.view.grid.CellGrid.Impl"/>
+    <any>
+      <when-property-is name="user.agent" value="ie6"/>
+      <when-property-is name="user.agent" value="ie8"/>
+      <when-property-is name="user.agent" value="ie9"/>
+    </any>
+  </replace-with>
 </module>

@@ -331,11 +331,6 @@ body, select {
   font-weight: bolder;
 }
 
-.bee-CellGrid input[type="checkbox"] {
-  margin-top: 0px;
-  margin-bottom: 0px;
-}  
-
 .gwt-TreeItem-selected {
   background-color: #ffffaa;
 }

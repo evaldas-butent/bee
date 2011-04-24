@@ -17,6 +17,7 @@ import com.butent.bee.client.grid.model.TableModel;
 import com.butent.bee.client.grid.model.TableModelHelper.Request;
 import com.butent.bee.client.grid.model.TableModelHelper.Response;
 import com.butent.bee.client.grid.render.FixedWidthGridBulkRenderer;
+import com.butent.bee.client.view.grid.CellGrid;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeColumn;
@@ -125,7 +126,9 @@ public class GridFactory {
       }
       grid.addColumn(column, table.getColumnLabel(i));
     }
-    grid.initData(table);
+    
+    grid.setRowCount(r);
+    grid.setRowData(table.getRows().getList());
 
     return grid;
   }

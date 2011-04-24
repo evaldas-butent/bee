@@ -34,6 +34,7 @@ import com.butent.bee.client.data.JsData;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Features;
 import com.butent.bee.client.dom.Font;
+import com.butent.bee.client.dom.Rulers;
 import com.butent.bee.client.dom.StyleUtils.ScrollBars;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.grid.FlexTable;
@@ -1024,12 +1025,12 @@ public class CliWorker {
     }
     
     if (len <= 2) {
-      Global.inform(BeeUtils.clip(txt, 256), DomUtils.getTextWidth(txt));
+      Global.inform(BeeUtils.clip(txt, 256), Rulers.getLineWidth(txt));
       return;
     }
     
     Font font = Font.parse(ArrayUtils.slice(arr, 2));
-    int width = DomUtils.getTextWidth(txt, font);
+    int width = Rulers.getLineWidth(txt, font);
     
     List<Property> info = PropertyUtils.createProperties("Text", txt, "Width", width);
     if (font != null) {

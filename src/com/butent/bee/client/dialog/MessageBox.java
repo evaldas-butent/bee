@@ -7,10 +7,10 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.Global;
 import com.butent.bee.client.dom.DomUtils;
-import com.butent.bee.client.grid.CellGrid;
 import com.butent.bee.client.grid.CellType;
 import com.butent.bee.client.layout.Vertical;
 import com.butent.bee.client.tree.BeeTree;
+import com.butent.bee.client.view.grid.CellGrid;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;

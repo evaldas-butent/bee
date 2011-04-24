@@ -1128,8 +1128,8 @@ public class BeeUtils {
    * @param x a Double value to check
    * @return true if x is a number and is not infinite, otherwise false
    */
-  public static boolean isDouble(double x) {
-    return !Double.isNaN(x) && !Double.isInfinite(x);
+  public static boolean isDouble(Double x) {
+    return x != null && !Double.isNaN(x) && !Double.isInfinite(x);
   }
 
   /**
@@ -2407,6 +2407,19 @@ public class BeeUtils {
   public static int toInt(boolean b) {
     return b ? BeeConst.INT_TRUE : BeeConst.INT_FALSE;
   }
+  
+  public static int toInt(Double d) {
+    if (!isDouble(d)) {
+      return 0;
+    }
+    if (d <= Integer.MIN_VALUE) {
+      return Integer.MIN_VALUE;
+    }
+    if (d >= Integer.MAX_VALUE) {
+      return Integer.MAX_VALUE;
+    }
+    return d.intValue();
+  }
 
   /**
    * Converts a String value {@code s} to Integer.
@@ -2489,12 +2502,13 @@ public class BeeUtils {
 
   /**
    * Converts a Double value {@code x} to a String value.
+   * Removes trailing zeroes.
    * 
    * @param x value to convert
    * @return a String representation of {@code x}
    */
   public static String toString(double x) {
-    return Double.toString(x);
+    return removeTrailingZeros(Double.toString(x));
   }
 
   /**

@@ -1,4 +1,4 @@
-package com.butent.bee.client.view;
+package com.butent.bee.client.view.grid;
 
 import com.google.gwt.user.cellview.client.TextHeader;
 import com.google.gwt.view.client.MultiSelectionModel;
@@ -7,7 +7,6 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.data.KeyProvider;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.grid.CellColumn;
-import com.butent.bee.client.grid.CellGrid;
 import com.butent.bee.client.grid.ColumnHeader;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.RowIdColumn;
@@ -19,16 +18,21 @@ import com.butent.bee.shared.data.IsRow;
 
 import java.util.List;
 
-public class GridContentImpl extends CellGrid implements GridContentView {
+public class CellGridImpl extends CellGrid implements GridView {
+
   private Presenter viewPresenter = null;
 
-  public GridContentImpl(int pageSize) {
+  public CellGridImpl(int pageSize) {
     super(pageSize);
+    
+    setHeaderCellHeight(25);
+    setBodyCellHeight(24);
   }
 
   public void create(List<BeeColumn> dataCols, int rowCount) {
     RowIdColumn idColumn = new RowIdColumn();
-    addColumn(idColumn, new TextHeader("Row Id"));
+    addColumn(idColumn, new TextHeader("Id"));
+    setColumnWidth(idColumn, 40);
 
     BeeColumn dataColumn;
     CellColumn<?> column;
@@ -47,14 +51,13 @@ public class GridContentImpl extends CellGrid implements GridContentView {
   
   public int estimatePageSize(int containerWidth, int containerHeight) {
     int rh = getBodyCellHeight();
-    int bw = Math.max(getBorderWidth(), 0);
 
     int z = containerHeight;
     if (getHeaderCellHeight() > 0) {
-      z -= getHeaderCellHeight() + bw;
+      z -= getHeaderCellHeight();
     }
     if (getFooterCellHeight() > 0) {
-      z -= getFooterCellHeight() + bw;
+      z -= getFooterCellHeight();
     }
     
     int width = getOffsetWidth();
@@ -62,10 +65,10 @@ public class GridContentImpl extends CellGrid implements GridContentView {
       z -= DomUtils.getScrollbarHeight();
     }
     
-    BeeKeeper.getLog().info("estimate", containerWidth, containerHeight, width, z, z / (rh + bw));
+    BeeKeeper.getLog().info("estimate", containerWidth, containerHeight, width, z, rh, z / rh);
 
-    if (rh > 0 && z > rh + bw) {
-      return z / (rh + bw);
+    if (rh > 0 && z > rh) {
+      return z / rh;
     }
     return BeeConst.SIZE_UNKNOWN;
   }

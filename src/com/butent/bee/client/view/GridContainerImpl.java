@@ -8,12 +8,16 @@ import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 
+import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Global;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils.ScrollBars;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.layout.Direction;
 import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.presenter.Presenter;
+import com.butent.bee.client.view.grid.CellGridImpl;
+import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.navigation.PagerView;
 import com.butent.bee.client.view.navigation.ScrollPager;
 import com.butent.bee.client.view.search.SearchView;
@@ -24,6 +28,7 @@ import java.util.Collection;
 import java.util.List;
 
 public class GridContainerImpl extends Split implements GridContainerView, HasNavigation, HasSearch {
+
   public static int minPagingRows = 20;
   public static int minSearchRows = 2;
 
@@ -68,7 +73,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     DataHeaderView header = new DataHeaderImpl();
     header.create(caption);
 
-    GridContentView content = new GridContentImpl(pageSize);
+    GridView content = new CellGridImpl(pageSize);
     content.create(dataColumns, rowCount);
 
     DataFooterView footer;
@@ -105,11 +110,11 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     }
   }
 
-  public GridContentView getContent() {
+  public GridView getContent() {
     if (getCenter() == null) {
       return null;
     }
-    return (GridContentView) getCenter();
+    return (GridView) getCenter();
   }
 
   public DataFooterView getFooter() {
@@ -203,7 +208,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     if (event.getTypeInt() == Event.ONMOUSEWHEEL) {
       int y = event.getMouseWheelVelocityY();
 
-      GridContentView display = getContent();
+      GridView display = getContent();
       ScrollPager scroller = getScroller();
 
       if (y == 0 || display == null || scroller == null) {
@@ -239,12 +244,10 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
 
   @Override
   public void onResize() {
-    super.onResize();
-    Scheduler.get().scheduleDeferred(new ScheduledCommand() {
-      public void execute() {
-        adapt(false);
-      }
-    });
+    if (isAttached()) {
+      super.onResize();
+      adapt(false);
+    }
   }
 
   public void setFooterHeight(int footerHeight) {
@@ -266,7 +269,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
   @Override
   protected void onLoad() {
     super.onLoad();
-    Scheduler.get().scheduleEntry(new ScheduledCommand() {
+    Scheduler.get().scheduleDeferred(new ScheduledCommand() {
       public void execute() {
         adapt(true);
       }
@@ -282,11 +285,24 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
   }
 
   private void adapt(boolean init) {
-    GridContentView content = getContent();
+    GridView content = getContent();
 
     if (hasPaging && content != null) {
-      int pageSize = estimatePageSize(content,
-          getElement().getClientWidth(), getElement().getClientHeight());
+      int w = getElement().getClientWidth();
+      int h = getElement().getClientHeight();
+      
+      if (w <= 0) {
+        w = DomUtils.getParentClientWidth(this);
+      }
+      if (h <= 0) {
+        h = DomUtils.getParentClientHeight(this);
+      }
+      
+      if (Global.isDebug()) {
+        BeeKeeper.getLog().info("adapt", init, w, h);
+      }
+      
+      int pageSize = estimatePageSize(content, w, h);
       if (pageSize > 0 && (init || pageSize != getPageSize(content))) {
         updatePageSize(content, pageSize, init);
       }
@@ -302,7 +318,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     }
   }
 
-  private int estimatePageSize(GridContentView content, int containerWidth, int containerHeight) {
+  private int estimatePageSize(GridView content, int containerWidth, int containerHeight) {
     if (content != null && containerHeight > 0) {
       int w = containerWidth;
       int h = containerHeight;
@@ -321,7 +337,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     return BeeConst.SIZE_UNKNOWN;
   }
 
-  private int getPageSize(GridContentView content) {
+  private int getPageSize(GridView content) {
     if (content == null) {
       return BeeConst.SIZE_UNKNOWN;
     } else {
@@ -329,7 +345,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     }
   }
 
-  private void updatePageSize(GridContentView content, int pageSize, boolean init) {
+  private void updatePageSize(GridView content, int pageSize, boolean init) {
     if (content != null && pageSize > 0 && hasPaging) {
       content.updatePageSize(pageSize, init);
     }

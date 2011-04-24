@@ -9,6 +9,7 @@ import com.google.gwt.view.client.HasRows;
 
 import com.butent.bee.client.Global;
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.dom.Rulers;
 import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.utils.BeeCommand;
 import com.butent.bee.client.widget.BeeImage;
@@ -140,7 +141,7 @@ public class SimplePager extends AbstractPagerImpl {
     }
     layout.add(widgetPrev);
 
-    int maxWidth = DomUtils.getTextWidth(createText(maxRowCount, maxRowCount, maxRowCount));
+    int maxWidth = Rulers.getLineWidth(createText(maxRowCount, maxRowCount, maxRowCount));
     DomUtils.setWidth(widgetInfo, maxWidth);
     widgetInfo.addStyleName(style.pageInfo());
     layout.add(widgetInfo);

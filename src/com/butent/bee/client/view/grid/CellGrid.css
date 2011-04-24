@@ -1,0 +1,101 @@
+@def headerBorderWidth 1px;
+@def bodyBorderWidth 1px;
+@def footerBorderWidth 1px;
+
+.cellGridWidget {
+  border-collapse: collapse;
+}
+
+.cellGridFirstColumn {
+}
+
+.cellGridLastColumn {
+}
+
+.cellGridFooter {
+  border: footerBorderWidth solid gray;
+  text-align: left;
+  overflow: hidden;
+  background-color: #e8e8e8;
+}
+
+.cellGridHeader {
+  border: headerBorderWidth solid gray;
+  text-align: center;
+  overflow: hidden;
+  background-color: #e8e8e8; 
+}
+
+.cellGridCell {
+  border: bodyBorderWidth solid gray;
+  overflow: hidden;
+}
+
+.cellGridFirstColumnFooter {
+}
+
+.cellGridFirstColumnHeader {
+}
+
+.cellGridLastColumnFooter {
+}
+
+.cellGridLastColumnHeader {
+}
+
+.cellGridSortableHeader {
+}
+
+.cellGridSortableHeader:hover {
+}
+
+.cellGridSortedHeaderAscending {
+}
+
+.cellGridSortedHeaderDescending {
+}
+
+.cellGridEvenRow {
+  background: #ffffff;
+}
+
+.cellGridEvenRowCell {
+}
+
+.cellGridOddRow {
+  background: #f3f7fb;
+}
+
+.cellGridOddRowCell {
+}
+
+.cellGridHoveredRow {
+  background: #b0ffa0;
+}
+
+.cellGridHoveredRowCell {
+}
+
+.cellGridKeyboardSelectedRow {
+  background: #ffc;
+}
+
+.cellGridKeyboardSelectedRowCell {
+}
+
+.cellGridSelectedRow {
+  background: #628cd5;
+  color: white;
+  height: auto;
+  overflow: auto;
+}
+
+.cellGridSelectedRowCell {
+}
+
+.cellGridKeyboardSelectedCell {
+}
+
+.cellGridLoading {
+  margin: 30px;
+}

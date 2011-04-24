@@ -8,7 +8,7 @@ import com.google.gwt.view.client.Range;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.grid.CellColumn;
-import com.butent.bee.client.grid.CellGrid;
+import com.butent.bee.client.view.grid.CellGrid;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.IsRow;
