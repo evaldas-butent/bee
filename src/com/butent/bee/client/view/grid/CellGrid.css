@@ -84,9 +84,8 @@
 }
 
 .cellGridSelectedRow {
-  background: #628cd5;
+  background: RoyalBlue;
   color: white;
-  height: auto;
   overflow: auto;
 }
 
@@ -97,5 +96,4 @@
 }
 
 .cellGridLoading {
-  margin: 30px;
 }

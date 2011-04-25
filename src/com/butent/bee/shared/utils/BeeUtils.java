@@ -2479,6 +2479,17 @@ public class BeeUtils {
     return x;
   }
 
+  public static int toNonNegativeInt(Integer x) {
+    if (x == null) {
+      return 0;
+    }
+    return Math.max(x, 0);
+  }
+  
+  public static int toNonNegativeInt(Double d) {
+    return toNonNegativeInt(toInt(d));
+  }
+  
   /**
    * Convers milliseconds {@code millis} to seconds. E.g 6010 is converted to 6.010.
    * 
@@ -2755,6 +2766,10 @@ public class BeeUtils {
       }
     }
     return sb.toString();
+  }
+  
+  public static String trim(String s) {
+    return (s == null) ? BeeConst.STRING_EMPTY : s.trim();
   }
 
   /**

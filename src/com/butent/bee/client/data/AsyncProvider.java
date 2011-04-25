@@ -7,6 +7,7 @@ import com.google.gwt.view.client.HasData;
 import com.google.gwt.view.client.Range;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Global;
 import com.butent.bee.client.grid.CellColumn;
 import com.butent.bee.client.view.grid.CellGrid;
 import com.butent.bee.shared.Assert;
@@ -78,8 +79,10 @@ public class AsyncProvider extends Provider {
 
   public void updateDisplay(int start, int length, BeeRowSet data) {
     int rowCount = data.getNumberOfRows();
-
-    BeeKeeper.getLog().info("upd", start, length, rowCount);
+    
+    if (Global.isDebug()) {
+      BeeKeeper.getLog().info("upd", start, length, rowCount);
+    }
 
     Assert.nonNegative(start);
     Assert.isPositive(length);

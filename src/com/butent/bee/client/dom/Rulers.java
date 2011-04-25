@@ -309,6 +309,7 @@ public class Rulers {
     if (font != null) {
       font.removeFrom(ruler);
     }
+    ruler.setInnerHTML(BeeConst.HTML_NBSP);
   }
   
   private Rulers() {

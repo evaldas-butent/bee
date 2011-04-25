@@ -43,5 +43,6 @@ public class InlineHtml extends InlineHTML implements HasId {
 
   private void init() {
     createId();
+    setWordWrap(false);
   }
 }

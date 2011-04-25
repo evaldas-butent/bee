@@ -289,7 +289,7 @@ public abstract class AbstractHasData<T> extends Widget implements HasData<T>,
     } else if ("blur".equals(eventType)) {
       isFocused = false;
       onBlur();
-    } else if ("keydown".equals(eventType) && !isKeyboardNavigationSuppressed()) {
+    } else if ("keydown".equals(eventType) && !isKeyboardNavigationSuppressed(event)) {
       isFocused = true;
 
       int keyCode = event.getKeyCode();
@@ -444,7 +444,7 @@ public abstract class AbstractHasData<T> extends Widget implements HasData<T>,
     return (keyProvider == null || value == null) ? value : keyProvider.getKey(value);
   }
 
-  protected abstract boolean isKeyboardNavigationSuppressed();
+  protected abstract boolean isKeyboardNavigationSuppressed(Event event);
 
   protected boolean isRowWithinBounds(int row) {
     return row >= 0 && row < presenter.getVisibleItemCount();

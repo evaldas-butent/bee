@@ -23,6 +23,7 @@ import com.butent.bee.client.view.navigation.ScrollPager;
 import com.butent.bee.client.view.search.SearchView;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.data.BeeRowSet;
 
 import java.util.Collection;
 import java.util.List;
@@ -64,7 +65,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     super(style, splitterSize);
   }
 
-  public void create(String caption, List<BeeColumn> dataColumns, int rowCount) {
+  public void create(String caption, List<BeeColumn> dataColumns, int rowCount, BeeRowSet rowSet) {
     hasPaging = rowCount >= minPagingRows;
     hasSearch = rowCount >= minSearchRows;
 
@@ -74,7 +75,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     header.create(caption);
 
     GridView content = new CellGridImpl(pageSize);
-    content.create(dataColumns, rowCount);
+    content.create(dataColumns, rowCount, rowSet);
 
     DataFooterView footer;
     ScrollPager scroller;
@@ -214,13 +215,16 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
       if (y == 0 || display == null || scroller == null) {
         return;
       }
+      if (display.isCellEditing()) {
+        return;
+      }
 
       Element elem = scroller.getElement();
       EventTarget target = event.getEventTarget();
       if (target != null && elem.isOrHasChild(Node.as(target))) {
         return;
       }
-
+      
       EventUtils.eatEvent(event);
 
       int rc = display.getRowCount();

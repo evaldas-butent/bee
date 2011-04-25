@@ -76,7 +76,7 @@ public class GridPresenter implements Presenter {
 
     int rowCount = async ? dataInfo.getRowCount() : rowSet.getNumberOfRows();
 
-    this.gridContainer = createView(dataInfo.getName(), dataColumns, rowCount);
+    this.gridContainer = createView(dataInfo.getName(), dataColumns, rowCount, rowSet);
     this.dataProvider = createProvider(gridContainer, dataInfo, rowSet, async);
 
     bind();
@@ -156,9 +156,10 @@ public class GridPresenter implements Presenter {
     return provider;
   }
 
-  private GridContainerView createView(String caption, List<BeeColumn> columns, int rc) {
+  private GridContainerView createView(String caption, List<BeeColumn> columns, int rc,
+      BeeRowSet rowSet) {
     GridContainerView view = new GridContainerImpl();
-    view.create(caption, columns, rc);
+    view.create(caption, columns, rc, rowSet);
 
     return view;
   }

@@ -24,6 +24,15 @@ import java.util.List;
 import java.util.Map;
 
 public class EventUtils {
+
+  public static final String EVENT_TYPE_BLUR = "blur"; 
+  public static final String EVENT_TYPE_CHANGE = "change"; 
+  public static final String EVENT_TYPE_FOCUS = "focus"; 
+  public static final String EVENT_TYPE_KEY_DOWN = "keydown";
+  public static final String EVENT_TYPE_KEY_PRESS = "keypress";
+  public static final String EVENT_TYPE_KEY_UP = "keyup";
+  public static final String EVENT_TYPE_MOUSE_WHEEL = "mousewheel";
+  
   private static boolean dnd;
 
   private static JavaScriptObject onDnd;
@@ -94,6 +103,11 @@ public class EventUtils {
     Assert.notNull(et);
     return Element.as(et).getId();
   }
+
+  public static String getTargetTagName(EventTarget et) {
+    Assert.notNull(et);
+    return Element.as(et).getTagName();
+  }
   
   public static int getTypeInt(NativeEvent ev) {
     if (ev == null) {
@@ -112,6 +126,10 @@ public class EventUtils {
     return ev.getShiftKey() || ev.getCtrlKey() || ev.getAltKey() || ev.getMetaKey();
   }
 
+  public static boolean isInputElement(EventTarget et) {
+    return isTargetTagName(et, DomUtils.TAG_INPUT);
+  }
+  
   public static boolean isKeyEvent(int type) {
     return (type & Event.KEYEVENTS) != 0;
   }
@@ -123,18 +141,32 @@ public class EventUtils {
       return isKeyEvent(ev.getTypeInt());
     }
   }
-
+ 
+  public static boolean isTargetTagName(EventTarget et, String tagName) {
+    if (et == null || BeeUtils.isEmpty(tagName)) {
+      return false;
+    }
+    return BeeUtils.same(getTargetTagName(et), tagName);
+  }
+  
   public static void logCloseEvent(CloseEvent<?> ev) {
     Assert.notNull(ev);
     BeeKeeper.getLog().info(transformCloseEvent(ev));
   }
 
   public static void logEvent(NativeEvent ev) {
-    logEvent(ev, false);
+    logEvent(ev, false, null);
   }
 
-  public static void logEvent(NativeEvent ev, boolean detailed) {
+  public static void logEvent(NativeEvent ev, String title) {
+    logEvent(ev, false, title);
+  }
+
+  public static void logEvent(NativeEvent ev, boolean detailed, String title) {
     Assert.notNull(ev);
+    if (!BeeUtils.isEmpty(title)) {
+      BeeKeeper.getLog().info(title);
+    }
 
     if (detailed) {
       List<Property> lst = getEventInfo(ev);

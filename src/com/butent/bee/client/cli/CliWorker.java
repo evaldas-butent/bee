@@ -9,6 +9,7 @@ import com.google.gwt.core.client.Scheduler.RepeatingCommand;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NodeList;
+import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.dom.client.StyleInjector;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.i18n.client.DateTimeFormat.PredefinedFormat;
@@ -18,7 +19,6 @@ import com.google.gwt.media.client.Video;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.InlineHTML;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -31,10 +31,12 @@ import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.RpcList;
 import com.butent.bee.client.composite.SliderBar;
 import com.butent.bee.client.data.JsData;
+import com.butent.bee.client.dom.Dimensions;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Features;
 import com.butent.bee.client.dom.Font;
 import com.butent.bee.client.dom.Rulers;
+import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.dom.StyleUtils.ScrollBars;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.grid.FlexTable;
@@ -53,6 +55,8 @@ import com.butent.bee.client.tree.BeeTree;
 import com.butent.bee.client.utils.Browser;
 import com.butent.bee.client.utils.JsUtils;
 import com.butent.bee.client.widget.BeeLabel;
+import com.butent.bee.client.widget.Html;
+import com.butent.bee.client.widget.InlineHtml;
 import com.butent.bee.client.widget.Meter;
 import com.butent.bee.client.widget.Progress;
 import com.butent.bee.client.widget.Svg;
@@ -881,6 +885,91 @@ public class CliWorker {
     }
   }
 
+  public static void showSize(String[] arr) {
+    int len = ArrayUtils.length(arr);
+    String html = ArrayUtils.getQuietly(arr, 1);
+    
+    if (BeeUtils.isEmpty(html)) {
+      Global.sayHuh();
+      return;
+    }
+    
+    int pos = 2;
+
+    if (html.equals("[") && len > 3) {
+      pos = len;
+      StringBuilder sb = new StringBuilder(arr[2]);
+      for (int i = 3; i < len; i++) {
+        if (arr[i].equals("]")) {
+          pos = i + 1;
+          break;
+        }
+        sb.append(BeeConst.CHAR_SPACE).append(arr[i]);
+      }
+      html = sb.toString();
+    } else {
+      Element elem = Document.get().getElementById(html);
+      if (elem != null) {
+        html = elem.getInnerHTML();
+      }
+    }
+    
+    Font font = (len > pos) ? Font.parse(ArrayUtils.slice(arr, pos)) : null;
+    Dimensions lineDim = Rulers.getLineDimensions(html, font);
+    Dimensions areaDim = Rulers.getAreaDimensions(html, font);
+    
+    int lineW = -1;
+    int lineH = -1;
+    int areaW = -1;
+    int areaH = -1;
+    
+    if (lineDim != null) {
+      lineW = BeeUtils.toInt(lineDim.getWidthValue());
+      lineH = BeeUtils.toInt(lineDim.getHeightValue());
+    }
+    if (areaDim != null) {
+      areaW = BeeUtils.toInt(areaDim.getWidthValue());
+      areaH = BeeUtils.toInt(areaDim.getHeightValue());
+    }
+    
+    List<Property> info = PropertyUtils.createProperties("Line Width", lineW, "Line Height", lineH,
+        "Area Width", areaW, "Area Height", areaH);
+    if (font != null) {
+      info.addAll(font.getInfo());
+    }
+
+    InlineHtml lineHtml = new InlineHtml();
+    if (font != null) {
+      font.applyTo(lineHtml);
+    }
+    lineHtml.setHTML(html);
+    
+    Html areaHtml = new Html();
+    if (font != null) {
+      font.applyTo(areaHtml);
+    }
+    areaHtml.setHTML(html);
+    
+    FlexTable table = new FlexTable();
+    table.setCellPadding(3);
+    table.setBorderWidth(1);
+    
+    for (int i = 0; i < info.size(); i++) {
+      table.setHTML(i, 0, info.get(i).getName());
+      table.setHTML(i, 1, info.get(i).getValue());
+    }
+    
+    Absolute panel = new Absolute();
+    panel.setPixelSize(Math.max(Math.max(lineH, areaH) + 40, 256),
+        lineH + areaH + 20 + info.size() * 32);
+
+    panel.add(lineHtml, 10, 5);
+    panel.add(areaHtml, 10, lineH + 10);
+    panel.add(table, 10, lineH + areaH + 20);
+    
+    Global.showWidget(panel);
+  }
+
   public static void showSlider(String[] arr) {
     double value = 0;
     double min = 0;
@@ -981,7 +1070,64 @@ public class CliWorker {
 
     Global.inform(tree);
   }
-
+  
+  public static void showUnits(String[] arr) {
+    int len = ArrayUtils.length(arr);
+    
+    Double value = null;
+    Unit unit = null;
+    Font font = null;
+    Integer containerSize = null;
+    
+    if (len > 1) {
+      for (int i = 1; i < len; i++) {
+        if (arr[i] == "f" && i < len - 1) {
+          font = Font.parse(ArrayUtils.slice(arr, i + 1));
+          break;
+        }
+        if (arr[i] == "c" && i < len - 1) {
+          containerSize = BeeUtils.toInt(arr[i + 1]);
+          i++;
+          continue;
+        }
+        
+        if (BeeUtils.isNumeric(arr[i])) {
+          value = BeeUtils.toDouble(arr[i]);
+        } else {
+          unit = StyleUtils.parseUnit(arr[i]);
+        }
+      }
+    }
+    
+    List<Unit> units = Lists.newArrayList();
+    if (value == null) {
+      value = 1.0;
+    }
+    
+    if (unit != null) {
+      units.add(unit);
+    } else {
+      for (Unit u : Unit.values()) {
+        units.add(u);
+      }
+    }
+    
+    List<Property> info = PropertyUtils.createProperties("Value", value);
+    if (font != null) {
+      info.addAll(font.getInfo());
+    }
+    if (containerSize != null) {
+      info.add(new Property("Container Size", containerSize.toString()));
+    }
+    
+    for (Unit u : units) {
+      int px = Rulers.getIntPixels(value, u, font, BeeUtils.unbox(containerSize));
+      info.add(new Property(u.getType(), BeeUtils.toString(px)));
+    }
+    
+    Global.modalGrid("Pixels", info);
+  }
+  
   public static void showVars(String[] arr) {
     int len = BeeUtils.length(arr);
     if (len > 1) {
@@ -1013,51 +1159,6 @@ public class CliWorker {
     
     List<ExtendedProperty> info = DomUtils.getInfo(widget, id, depth);
     BeeKeeper.getUi().showGrid(info);
-  }
-
-  public static void showWidth(String[] arr) {
-    int len = ArrayUtils.length(arr);
-    String txt = ArrayUtils.getQuietly(arr, 1);
-    
-    if (BeeUtils.isEmpty(txt)) {
-      Global.sayHuh();
-      return;
-    }
-    
-    if (len <= 2) {
-      Global.inform(BeeUtils.clip(txt, 256), Rulers.getLineWidth(txt));
-      return;
-    }
-    
-    Font font = Font.parse(ArrayUtils.slice(arr, 2));
-    int width = Rulers.getLineWidth(txt, font);
-    
-    List<Property> info = PropertyUtils.createProperties("Text", txt, "Width", width);
-    if (font != null) {
-      info.addAll(font.getInfo());
-    }
-    
-    InlineHTML label = new InlineHTML();
-    if (font != null) {
-      font.applyTo(label);
-    }
-    label.setHTML(txt);
-    
-    FlexTable table = new FlexTable();
-    table.setCellPadding(3);
-    table.setBorderWidth(1);
-    
-    for (int i = 0; i < info.size(); i++) {
-      table.setHTML(i, 0, info.get(i).getName());
-      table.setHTML(i, 1, info.get(i).getValue());
-    }
-    
-    Absolute panel = new Absolute();
-    panel.setPixelSize(Math.max(width + 40, 256), info.size() * 30 + 50);
-    panel.add(label, 10, 10);
-    panel.add(table, 10, 50);
-    
-    Global.showWidget(panel);
   }
   
   public static void storage(String[] arr) {

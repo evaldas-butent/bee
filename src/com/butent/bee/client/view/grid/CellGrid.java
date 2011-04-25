@@ -1,9 +1,9 @@
 package com.butent.bee.client.view.grid;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.google.gwt.cell.client.Cell;
 import com.google.gwt.cell.client.Cell.Context;
-import com.google.gwt.cell.client.IconCellDecorator;
-import com.google.gwt.cell.client.SafeHtmlCell;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Document;
@@ -50,19 +50,18 @@ import com.google.gwt.view.client.SelectionModel;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Edges;
+import com.butent.bee.client.dom.Font;
 import com.butent.bee.client.dom.Rulers;
+import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.presenter.DataPresenter;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.HasId;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.sort.SortInfo;
 import com.butent.bee.shared.utils.BeeUtils;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 public class CellGrid extends AbstractHasData<IsRow> implements HasId {
@@ -132,31 +131,31 @@ public class CellGrid extends AbstractHasData<IsRow> implements HasId {
     int headerBorderWidth();
   }
 
-  interface Template extends SafeHtmlTemplates {
-    @Template("<div style=\"outline:none;\">{0}</div>")
+  public interface Template extends SafeHtmlTemplates {
+    @Template("<div style=\"outline:none; position:relative;\">{0}</div>")
     SafeHtml div(SafeHtml contents);
 
-    @Template("<div style=\"outline:none; height:{0}px;\">{1}</div>")
+    @Template("<div style=\"outline:none; position:relative; height:{0}px;\">{1}</div>")
     SafeHtml divFixedHeight(int height, SafeHtml contents);
 
-    @Template("<div style=\"outline:none; width:{0}px; height:{1}px;\">{2}</div>")
+    @Template("<div style=\"outline:none; position:relative; width:{0}px; height:{1}px;\">{2}</div>")
     SafeHtml divFixedSize(int width, int height, SafeHtml contents);
 
-    @Template("<div style=\"outline:none; width:{0}px;\">{1}</div>")
+    @Template("<div style=\"outline:none; position:relative; width:{0}px;\">{1}</div>")
     SafeHtml divFixedWidth(int width, SafeHtml contents);
-    
-    @Template("<div style=\"outline:none;\" tabindex=\"{0}\">{1}</div>")
+
+    @Template("<div style=\"outline:none; position:relative;\" tabindex=\"{0}\">{1}</div>")
     SafeHtml divFocusable(int tabIndex, SafeHtml contents);
 
-    @Template("<div style=\"outline:none; height:{0}px;\" tabindex=\"{1}\">{2}</div>")
+    @Template("<div style=\"outline:none; position:relative; height:{0}px;\" tabindex=\"{1}\">{2}</div>")
     SafeHtml divFocusableFixedHeight(int height, int tabIndex, SafeHtml contents);
 
-    @Template("<div style=\"outline:none; width:{0}px; height:{1}px;\" tabindex=\"{2}\">{3}</div>")
+    @Template("<div style=\"outline:none; position:relative; width:{0}px; height:{1}px;\" tabindex=\"{2}\">{3}</div>")
     SafeHtml divFocusableFixedSize(int width, int height, int tabIndex, SafeHtml contents);
 
-    @Template("<div style=\"outline:none; width:{0}px;\" tabindex=\"{1}\">{2}</div>")
+    @Template("<div style=\"outline:none; position:relative; width:{0}px;\" tabindex=\"{1}\">{2}</div>")
     SafeHtml divFocusableFixedWidth(int width, int tabIndex, SafeHtml contents);
-    
+
     @Template("<table><tbody>{0}</tbody></table>")
     SafeHtml tbody(SafeHtml rowHtml);
 
@@ -176,14 +175,142 @@ public class CellGrid extends AbstractHasData<IsRow> implements HasId {
     @Template("<table><tfoot>{0}</tfoot></table>")
     SafeHtml tfoot(SafeHtml rowHtml);
 
-    @Template("<th colspan=\"{0}\" class=\"{1}\" style=\"padding:{2};\">{3}</th>")
-    SafeHtml th(int colspan, String classes, String padding, SafeHtml contents);
+    @Template("<th class=\"{0}\" style=\"padding:{1};\">{2}</th>")
+    SafeHtml th(String classes, String padding, SafeHtml contents);
 
     @Template("<table><thead>{0}</thead></table>")
     SafeHtml thead(SafeHtml rowHtml);
 
     @Template("<tr onclick=\"\" class=\"{0}\">{1}</tr>")
     SafeHtml tr(String classes, SafeHtml contents);
+  }
+
+  private class ColumnInfo {
+    private final Column<IsRow, ?> column;
+    private final Header<?> header;
+    private final Header<?> footer;
+
+    private int width = UNDEF;
+    private int headerWidth = UNDEF;
+    private int bodyWidth = UNDEF;
+    private int footerWidth = UNDEF;
+
+    private Font headerFont = null;
+    private Font bodyFont = null;
+    private Font footerFont = null;
+
+    private ColumnInfo(Column<IsRow, ?> column) {
+      this(column, null, null, UNDEF);
+    }
+
+    private ColumnInfo(Column<IsRow, ?> column, Header<?> header) {
+      this(column, header, null, UNDEF);
+    }
+
+    private ColumnInfo(Column<IsRow, ?> column, Header<?> header, Header<?> footer) {
+      this(column, header, footer, UNDEF);
+    }
+
+    private ColumnInfo(Column<IsRow, ?> column, Header<?> header, Header<?> footer, int width) {
+      this.column = column;
+      this.header = header;
+      this.footer = footer;
+      this.width = width;
+    }
+
+    private ColumnInfo(Column<IsRow, ?> column, Header<?> header, int width) {
+      this(column, header, null, width);
+    }
+
+    private ColumnInfo(Column<IsRow, ?> column, int width) {
+      this(column, null, null, width);
+    }
+
+    private void ensureBodyWidth(int w) {
+      if (w > 0) {
+        setBodyWidth(Math.max(getBodyWidth(), w));
+      }
+    }
+
+    private void ensureFooterWidth(int w) {
+      if (w > 0) {
+        setFooterWidth(Math.max(getFooterWidth(), w));
+      }
+    }
+
+    private void ensureHeaderWidth(int w) {
+      if (w > 0) {
+        setHeaderWidth(Math.max(getHeaderWidth(), w));
+      }
+    }
+
+    private Font getBodyFont() {
+      return bodyFont;
+    }
+
+    private int getBodyWidth() {
+      return bodyWidth;
+    }
+
+    private Column<IsRow, ?> getColumn() {
+      return column;
+    }
+
+    private Header<?> getFooter() {
+      return footer;
+    }
+
+    private Font getFooterFont() {
+      return footerFont;
+    }
+
+    private int getFooterWidth() {
+      return footerWidth;
+    }
+
+    private Header<?> getHeader() {
+      return header;
+    }
+
+    private Font getHeaderFont() {
+      return headerFont;
+    }
+
+    private int getHeaderWidth() {
+      return headerWidth;
+    }
+
+    private int getWidth() {
+      return width;
+    }
+
+    private void setBodyFont(Font bodyFont) {
+      this.bodyFont = bodyFont;
+    }
+
+    private void setBodyWidth(int bodyWidth) {
+      this.bodyWidth = bodyWidth;
+    }
+
+    private void setFooterFont(Font footerFont) {
+      this.footerFont = footerFont;
+    }
+
+    private void setFooterWidth(int footerWidth) {
+      this.footerWidth = footerWidth;
+    }
+
+    private void setHeaderFont(Font headerFont) {
+      this.headerFont = headerFont;
+    }
+
+    private void setHeaderWidth(int headerWidth) {
+      this.headerWidth = headerWidth;
+    }
+
+    private void setWidth(int width) {
+      this.width = width;
+    }
   }
 
   private static class Impl {
@@ -203,7 +330,7 @@ public class CellGrid extends AbstractHasData<IsRow> implements HasId {
       } else if ("tfoot".equals(sectionTag)) {
         tmpElem.setInnerHTML(template.tfoot(rowHtml).asString());
       } else {
-        throw new IllegalArgumentException("Invalid table section tag: " + sectionTag);
+        Assert.untouchable("Invalid table section tag: " + sectionTag);
       }
       TableElement tableElem = tmpElem.getFirstChildElement().cast();
 
@@ -216,7 +343,8 @@ public class CellGrid extends AbstractHasData<IsRow> implements HasId {
       } else if ("tfoot".equals(sectionTag)) {
         return tableElem.getTFoot();
       } else {
-        throw new IllegalArgumentException("Invalid table section tag: " + sectionTag);
+        Assert.untouchable("Invalid table section tag: " + sectionTag);
+        return null;
       }
     }
 
@@ -266,10 +394,10 @@ public class CellGrid extends AbstractHasData<IsRow> implements HasId {
   public static int defaultMinCellHeight = 1;
 
   public static int defaultMaxCellHeight = 256;
-  public static Edges defaultHeaderCellPadding = new Edges(3.0, 5.0);
-  public static Edges defaultBodyCellPadding = new Edges(2.0, 5.0);
-  public static Edges defaultFooterCellPadding = new Edges(2.0, 2.0);
-  
+  public static Edges defaultHeaderCellPadding = new Edges(0.0, 0.0);
+  public static Edges defaultBodyCellPadding = new Edges(2.0, 3.0);
+  public static Edges defaultFooterCellPadding = new Edges(1.0, 2.0, 0.0);
+
   private static final int DEFAULT_PAGESIZE = 15;
 
   private static Resources DEFAULT_RESOURCES = null;
@@ -282,12 +410,14 @@ public class CellGrid extends AbstractHasData<IsRow> implements HasId {
   private static Widget createDefaultLoadingIndicator() {
     return new BeeImage(Global.getImages().loading());
   }
+
   private static Resources getDefaultResources() {
     if (DEFAULT_RESOURCES == null) {
       DEFAULT_RESOURCES = GWT.create(Resources.class);
     }
     return DEFAULT_RESOURCES;
   }
+
   private static Style getDefaultStyle() {
     if (DEFAULT_STYLE == null) {
       DEFAULT_STYLE = getDefaultResources().cellGridStyle();
@@ -309,34 +439,22 @@ public class CellGrid extends AbstractHasData<IsRow> implements HasId {
   private Edges bodyCellPadding = defaultBodyCellPadding;
   private Edges footerCellPadding = defaultFooterCellPadding;
 
+  private final List<ColumnInfo> columns = Lists.newArrayList();
+
   private boolean cellIsEditing;
-
-  private final List<Column<IsRow, ?>> columns = new ArrayList<Column<IsRow, ?>>();
-  private final Map<Column<IsRow, ?>, Integer> columnWidths =
-      new HashMap<Column<IsRow, ?>, Integer>();
-
-  private boolean dependsOnSelection;
-
-  private final SimplePanel emptyTableWidgetContainer = new SimplePanel();
-  private final List<Header<?>> footers = new ArrayList<Header<?>>();
-
-  private boolean handlesSelection;
-
-  private final List<Header<?>> headers = new ArrayList<Header<?>>();
-
-  private TableRowElement hoveringRow;
-
   private boolean isInteractive;
 
+  private boolean dependsOnSelection;
+  private boolean handlesSelection;
+
   private int keyboardSelectedColumn = 0;
-  private final SimplePanel loadingIndicatorContainer = new SimplePanel();
 
   private final DeckPanel messagesPanel = new DeckPanel();
+  private final SimplePanel emptyTableWidgetContainer = new SimplePanel();
+  private final SimplePanel loadingIndicatorContainer = new SimplePanel();
 
-  private RowStyles<IsRow> rowStyles;
-  private IconCellDecorator<SafeHtml> sortAscDecorator;
-  private IconCellDecorator<SafeHtml> sortDescDecorator;
   private final Style style;
+  private RowStyles<IsRow> rowStyles;
 
   private final TableElement table;
   private final TableColElement colgroup;
@@ -345,6 +463,8 @@ public class CellGrid extends AbstractHasData<IsRow> implements HasId {
   private final TableCellElement tbodyLoadingCell;
   private final TableSectionElement tfoot;
   private final TableSectionElement thead;
+
+  private TableRowElement hoveringRow;
 
   private final ColumnSortList sortList;
   private boolean updatingSortList;
@@ -420,7 +540,7 @@ public class CellGrid extends AbstractHasData<IsRow> implements HasId {
     setLoadingIndicator(createDefaultLoadingIndicator());
     messagesPanel.add(loadingIndicatorContainer);
 
-    Set<String> eventTypes = new HashSet<String>();
+    Set<String> eventTypes = Sets.newHashSet();
     eventTypes.add("mouseover");
     eventTypes.add("mouseout");
     CellBasedWidgetImpl.get().sinkEvents(this, eventTypes);
@@ -469,11 +589,93 @@ public class CellGrid extends AbstractHasData<IsRow> implements HasId {
   }
 
   public void clearColumnWidth(Column<IsRow, ?> column) {
-    columnWidths.remove(column);
+    setColumnWidth(column, UNDEF);
   }
 
   public void createId() {
     DomUtils.createId(this, "cell-grid");
+  }
+
+  public <T extends IsRow> void estimateColumnWidths(List<T> values) {
+    Assert.notNull(values);
+    estimateColumnWidths(values, 0, values.size());
+  }
+
+  public <T extends IsRow> void estimateColumnWidths(List<T> values, int length) {
+    estimateColumnWidths(values, 0, length);
+  }
+
+  public <T extends IsRow> void estimateColumnWidths(List<T> values, int start, int end) {
+    Assert.notNull(values);
+
+    int borderWidth = getBodyBorderWidth();
+    Edges padding = getBodyCellPadding();
+    int widthIncrement = getWidthIncrement(padding, borderWidth);
+
+    for (int i = start; i < end; i++) {
+      IsRow value = values.get(i - start);
+      if (value == null) {
+        continue;
+      }
+
+      int curColumn = 0;
+      for (ColumnInfo columnInfo : columns) {
+        Column<IsRow, ?> column = columnInfo.getColumn();
+
+        SafeHtmlBuilder cellBuilder = new SafeHtmlBuilder();
+        Context context = new Context(i, curColumn, getValueKey(value));
+        column.render(context, value, cellBuilder);
+        SafeHtml cellHtml = cellBuilder.toSafeHtml();
+
+        int cellWidth = Rulers.getLineWidth(cellHtml.asString(), columnInfo.getBodyFont());
+        if (cellWidth > 0) {
+          columnInfo.ensureBodyWidth(cellWidth + widthIncrement);
+        }
+        curColumn++;
+      }
+    }
+  }
+
+  public void estimateFooterWidths() {
+    int borderWidth = getFooterBorderWidth();
+    Edges padding = getFooterCellPadding();
+    int widthIncrement = getWidthIncrement(padding, borderWidth);
+
+    for (int i = 0; i < columns.size(); i++) {
+      ColumnInfo columnInfo = columns.get(i);
+      Header<?> footer = columnInfo.getFooter();
+
+      SafeHtmlBuilder cellBuilder = new SafeHtmlBuilder();
+      Context context = new Context(0, i, footer.getKey());
+      footer.render(context, cellBuilder);
+      SafeHtml cellHtml = cellBuilder.toSafeHtml();
+
+      int cellWidth = Rulers.getLineWidth(cellHtml.asString(), columnInfo.getFooterFont());
+      if (cellWidth > 0) {
+        columnInfo.ensureFooterWidth(cellWidth + widthIncrement);
+      }
+    }
+  }
+
+  public void estimateHeaderWidths() {
+    int borderWidth = getHeaderBorderWidth();
+    Edges padding = getHeaderCellPadding();
+    int widthIncrement = getWidthIncrement(padding, borderWidth);
+
+    for (int i = 0; i < columns.size(); i++) {
+      ColumnInfo columnInfo = columns.get(i);
+      Header<?> header = columnInfo.getHeader();
+
+      SafeHtmlBuilder cellBuilder = new SafeHtmlBuilder();
+      Context context = new Context(0, i, header.getKey());
+      header.render(context, cellBuilder);
+      SafeHtml cellHtml = cellBuilder.toSafeHtml();
+
+      int cellWidth = Rulers.getLineWidth(cellHtml.asString(), columnInfo.getHeaderFont());
+      if (cellWidth > 0) {
+        columnInfo.ensureHeaderWidth(cellWidth + widthIncrement);
+      }
+    }
   }
 
   public int getBodyBorderWidth() {
@@ -492,12 +694,28 @@ public class CellGrid extends AbstractHasData<IsRow> implements HasId {
     int height = getClientHeight(tbody);
     return height;
   }
+  
+  public int getBodyWidth() {
+    int width = 0;
+
+    for (ColumnInfo columnInfo : columns) {
+      int w = columnInfo.getWidth();
+      if (w <= 0) {
+        w = columnInfo.getBodyWidth();
+        if (w <= 0) {
+          width = UNDEF;
+          break;
+        }
+      }
+      width += w;
+    }
+    return width;
+  }
 
   public Column<IsRow, ?> getColumn(int col) {
-    checkColumnBounds(col);
-    return columns.get(col);
+    return getColumnInfo(col).getColumn();
   }
-  
+
   public int getColumnCount() {
     return columns.size();
   }
@@ -514,11 +732,11 @@ public class CellGrid extends AbstractHasData<IsRow> implements HasId {
     if (column == null) {
       return UNDEF;
     }
-    Integer width = columnWidths.get(column);
-    if (width == null) {
+    ColumnInfo info = getColumnInfo(column);
+    if (info == null) {
       return UNDEF;
     }
-    return width;
+    return info.getWidth();
   }
 
   public Widget getEmptyTableWidget() {
@@ -535,6 +753,16 @@ public class CellGrid extends AbstractHasData<IsRow> implements HasId {
 
   public Edges getFooterCellPadding() {
     return footerCellPadding;
+  }
+
+  public List<Header<?>> getFooters() {
+    List<Header<?>> lst = Lists.newArrayList();
+    for (ColumnInfo info : columns) {
+      if (info.getFooter() != null) {
+        lst.add(info.getFooter());
+      }
+    }
+    return lst;
   }
 
   public int getHeaderBorderWidth() {
@@ -577,7 +805,25 @@ public class CellGrid extends AbstractHasData<IsRow> implements HasId {
   public int getMinCellWidth() {
     return minCellWidth;
   }
-  
+
+  public int getPreferredTableWidth() {
+    int width = 0;
+
+    for (ColumnInfo columnInfo : columns) {
+      int w = columnInfo.getWidth();
+      if (w <= 0) {
+        w = BeeUtils.max(columnInfo.getHeaderWidth(), columnInfo.getBodyWidth(),
+            columnInfo.getFooterWidth());
+        if (w <= 0) {
+          width = UNDEF;
+          break;
+        }
+      }
+      width += w;
+    }
+    return width;
+  }
+
   public TableRowElement getRowElement(int row) {
     getPresenter().flush();
     checkRowBounds(row);
@@ -585,23 +831,39 @@ public class CellGrid extends AbstractHasData<IsRow> implements HasId {
     return rows.getLength() > row ? rows.getItem(row) : null;
   }
 
-  public void insertColumn(int beforeIndex, Column<IsRow, ?> col) {
-    insertColumn(beforeIndex, col, (Header<?>) null, (Header<?>) null);
+  public boolean hasFooters() {
+    for (ColumnInfo info : columns) {
+      if (info.getFooter() != null) {
+        return true;
+      }
+    }
+    return false;
   }
 
-  public void insertColumn(int beforeIndex, Column<IsRow, ?> col, Header<?> header) {
-    insertColumn(beforeIndex, col, header, null);
+  public boolean hasHeaders() {
+    for (ColumnInfo info : columns) {
+      if (info.getHeader() != null) {
+        return true;
+      }
+    }
+    return false;
   }
 
-  public void insertColumn(int beforeIndex, Column<IsRow, ?> col,
+  public void insertColumn(int beforeIndex, Column<IsRow, ?> column) {
+    insertColumn(beforeIndex, column, (Header<?>) null, (Header<?>) null);
+  }
+
+  public void insertColumn(int beforeIndex, Column<IsRow, ?> column, Header<?> header) {
+    insertColumn(beforeIndex, column, header, null);
+  }
+
+  public void insertColumn(int beforeIndex, Column<IsRow, ?> column,
       Header<?> header, Header<?> footer) {
     if (beforeIndex != getColumnCount()) {
       checkColumnBounds(beforeIndex);
     }
 
-    headers.add(beforeIndex, header);
-    footers.add(beforeIndex, footer);
-    columns.add(beforeIndex, col);
+    columns.add(beforeIndex, new ColumnInfo(column, header, footer));
     boolean wasinteractive = isInteractive;
     updateDependsOnSelection();
 
@@ -609,9 +871,9 @@ public class CellGrid extends AbstractHasData<IsRow> implements HasId {
       keyboardSelectedColumn = beforeIndex;
     }
 
-    Set<String> consumedEvents = new HashSet<String>();
+    Set<String> consumedEvents = Sets.newHashSet();
     {
-      Set<String> cellEvents = col.getCell().getConsumedEvents();
+      Set<String> cellEvents = column.getCell().getConsumedEvents();
       if (cellEvents != null) {
         consumedEvents.addAll(cellEvents);
       }
@@ -633,22 +895,27 @@ public class CellGrid extends AbstractHasData<IsRow> implements HasId {
     redraw();
   }
 
-  public void insertColumn(int beforeIndex, Column<IsRow, ?> col, SafeHtml headerHtml) {
-    insertColumn(beforeIndex, col, new SafeHtmlHeader(headerHtml), null);
+  public void insertColumn(int beforeIndex, Column<IsRow, ?> column, SafeHtml headerHtml) {
+    insertColumn(beforeIndex, column, new SafeHtmlHeader(headerHtml), null);
   }
 
-  public void insertColumn(int beforeIndex, Column<IsRow, ?> col,
+  public void insertColumn(int beforeIndex, Column<IsRow, ?> column,
       SafeHtml headerHtml, SafeHtml footerHtml) {
-    insertColumn(beforeIndex, col, new SafeHtmlHeader(headerHtml), new SafeHtmlHeader(footerHtml));
+    insertColumn(beforeIndex, column,
+        new SafeHtmlHeader(headerHtml), new SafeHtmlHeader(footerHtml));
   }
 
-  public void insertColumn(int beforeIndex, Column<IsRow, ?> col, String headerString) {
-    insertColumn(beforeIndex, col, new TextHeader(headerString), null);
+  public void insertColumn(int beforeIndex, Column<IsRow, ?> column, String headerString) {
+    insertColumn(beforeIndex, column, new TextHeader(headerString), null);
   }
 
-  public void insertColumn(int beforeIndex, Column<IsRow, ?> col,
+  public void insertColumn(int beforeIndex, Column<IsRow, ?> column,
       String headerString, String footerString) {
-    insertColumn(beforeIndex, col, new TextHeader(headerString), new TextHeader(footerString));
+    insertColumn(beforeIndex, column, new TextHeader(headerString), new TextHeader(footerString));
+  }
+
+  public boolean isCellEditing() {
+    return cellIsEditing;
   }
 
   public void redrawFooters() {
@@ -669,15 +936,13 @@ public class CellGrid extends AbstractHasData<IsRow> implements HasId {
     Assert.isIndex(columns, index);
 
     columns.remove(index);
-    headers.remove(index);
-    footers.remove(index);
     updateDependsOnSelection();
 
     if (index <= keyboardSelectedColumn) {
       keyboardSelectedColumn = 0;
       if (isInteractive) {
         for (int i = 0; i < columns.size(); i++) {
-          if (isColumnInteractive(columns.get(i))) {
+          if (isColumnInteractive(columns.get(i).getColumn())) {
             keyboardSelectedColumn = i;
             break;
           }
@@ -702,6 +967,54 @@ public class CellGrid extends AbstractHasData<IsRow> implements HasId {
     this.bodyCellPadding = bodyCellPadding;
   }
 
+  public void setColumnBodyFont(Column<IsRow, ?> column, Font font) {
+    Assert.notNull(column);
+    ColumnInfo info = getColumnInfo(column);
+    Assert.notNull(info);
+
+    info.setBodyFont(font);
+  }
+
+  public void setColumnBodyWidth(Column<IsRow, ?> column, int width) {
+    Assert.notNull(column);
+    ColumnInfo info = getColumnInfo(column);
+    Assert.notNull(info);
+
+    info.setBodyWidth(width);
+  }
+
+  public void setColumnFooterFont(Column<IsRow, ?> column, Font font) {
+    Assert.notNull(column);
+    ColumnInfo info = getColumnInfo(column);
+    Assert.notNull(info);
+
+    info.setFooterFont(font);
+  }
+
+  public void setColumnFooterWidth(Column<IsRow, ?> column, int width) {
+    Assert.notNull(column);
+    ColumnInfo info = getColumnInfo(column);
+    Assert.notNull(info);
+
+    info.setFooterWidth(width);
+  }
+
+  public void setColumnHeaderFont(Column<IsRow, ?> column, Font font) {
+    Assert.notNull(column);
+    ColumnInfo info = getColumnInfo(column);
+    Assert.notNull(info);
+
+    info.setHeaderFont(font);
+  }
+
+  public void setColumnHeaderWidth(Column<IsRow, ?> column, int width) {
+    Assert.notNull(column);
+    ColumnInfo info = getColumnInfo(column);
+    Assert.notNull(info);
+
+    info.setHeaderWidth(width);
+  }
+
   public void setColumnWidth(Column<IsRow, ?> column, double width, Unit unit) {
     int containerSize = table.getOffsetWidth();
     Assert.isPositive(containerSize);
@@ -713,7 +1026,11 @@ public class CellGrid extends AbstractHasData<IsRow> implements HasId {
   }
 
   public void setColumnWidth(Column<IsRow, ?> column, int width) {
-    columnWidths.put(column, width);
+    Assert.notNull(column);
+    ColumnInfo info = getColumnInfo(column);
+    Assert.notNull(info);
+
+    info.setWidth(width);
   }
 
   public void setEmptyTableWidget(Widget widget) {
@@ -805,8 +1122,14 @@ public class CellGrid extends AbstractHasData<IsRow> implements HasId {
   }
 
   @Override
-  protected boolean isKeyboardNavigationSuppressed() {
-    return cellIsEditing;
+  protected boolean isKeyboardNavigationSuppressed(Event event) {
+    if (cellIsEditing) {
+      return true;
+    }
+    if (event != null) {
+      return EventUtils.isInputElement(event.getEventTarget());
+    }
+    return false;
   }
 
   @Override
@@ -830,7 +1153,7 @@ public class CellGrid extends AbstractHasData<IsRow> implements HasId {
     final Element target = event.getEventTarget().cast();
 
     String eventType = event.getType();
-    if ("keydown".equals(eventType) && !isKeyboardNavigationSuppressed()
+    if ("keydown".equals(eventType) && !isKeyboardNavigationSuppressed(event)
         && KeyboardSelectionPolicy.DISABLED != getKeyboardSelectionPolicy()) {
       if (handleKey(event)) {
         return;
@@ -856,14 +1179,14 @@ public class CellGrid extends AbstractHasData<IsRow> implements HasId {
     boolean isClick = "click".equals(eventType);
     int col = tableCell.getCellIndex();
     if (section == thead) {
-      Header<?> header = headers.get(col);
+      Header<?> header = columns.get(col).getHeader();
       if (header != null) {
         if (cellConsumesEventType(header.getCell(), eventType)) {
           Context context = new Context(0, col, header.getKey());
           header.onBrowserEvent(context, tableCell, event);
         }
 
-        Column<IsRow, ?> column = columns.get(col);
+        Column<IsRow, ?> column = columns.get(col).getColumn();
         if (isClick && column.isSortable()) {
           updatingSortList = true;
           sortList.push(column);
@@ -872,7 +1195,7 @@ public class CellGrid extends AbstractHasData<IsRow> implements HasId {
         }
       }
     } else if (section == tfoot) {
-      Header<?> footer = footers.get(col);
+      Header<?> footer = columns.get(col).getFooter();
       if (footer != null && cellConsumesEventType(footer.getCell(), eventType)) {
         Context context = new Context(0, col, footer.getKey());
         footer.onBrowserEvent(context, tableCell, event);
@@ -910,7 +1233,7 @@ public class CellGrid extends AbstractHasData<IsRow> implements HasId {
           this, context, value, cellIsEditing, isSelectionHandled);
 
       if (!previewEvent.isCanceled()) {
-        fireEventToCell(event, eventType, tableCell, value, context, columns.get(col));
+        fireEventToCell(event, eventType, tableCell, value, context, columns.get(col).getColumn());
       }
     }
   }
@@ -951,109 +1274,8 @@ public class CellGrid extends AbstractHasData<IsRow> implements HasId {
   @Override
   protected void renderRowValues(SafeHtmlBuilder sb, List<IsRow> values, int start,
       SelectionModel<? super IsRow> selectionModel) {
+    renderBody(sb, values, start, selectionModel);
     createHeadersAndFooters();
-
-    int keyboardSelectedRow = getKeyboardSelectedRow() + getPageStart();
-
-    String evenRowStyle = style.cellGridEvenRow();
-    String oddRowStyle = style.cellGridOddRow();
-    String cellStyle = style.cellGridCell();
-    String evenCellStyle = " " + style.cellGridEvenRowCell();
-    String oddCellStyle = " " + style.cellGridOddRowCell();
-    String firstColumnStyle = " " + style.cellGridFirstColumn();
-    String lastColumnStyle = " " + style.cellGridLastColumn();
-    String selectedRowStyle = " " + style.cellGridSelectedRow();
-    String selectedCellStyle = " " + style.cellGridSelectedRowCell();
-    String keyboardRowStyle = " " + style.cellGridKeyboardSelectedRow();
-    String keyboardRowCellStyle = " " + style.cellGridKeyboardSelectedRowCell();
-    String keyboardCellStyle = " " + style.cellGridKeyboardSelectedCell();
-    
-    int cellHeight = getBodyCellHeight();
-    int borderWidth = getBodyBorderWidth();
-    
-    Edges padding = getBodyCellPadding();
-    String cssPadding = getCssValue(padding);
-
-    int columnCount = columns.size();
-    int length = values.size();
-    int end = start + length;
-
-    for (int i = start; i < end; i++) {
-      IsRow value = values.get(i - start);
-      boolean isSelected = (selectionModel == null || value == null) ? false
-          : selectionModel.isSelected(value);
-      boolean isEven = i % 2 == 0;
-      boolean isKeyboardSelected = i == keyboardSelectedRow && isFocused;
-      String trClasses = isEven ? evenRowStyle : oddRowStyle;
-      if (isSelected) {
-        trClasses += selectedRowStyle;
-      }
-      if (isKeyboardSelected) {
-        trClasses += keyboardRowStyle;
-      }
-
-      if (rowStyles != null) {
-        String extraRowStyles = rowStyles.getStyleNames(value, i);
-        if (extraRowStyles != null) {
-          trClasses += " ";
-          trClasses += extraRowStyles;
-        }
-      }
-
-      SafeHtmlBuilder trBuilder = new SafeHtmlBuilder();
-      int curColumn = 0;
-      for (Column<IsRow, ?> column : columns) {
-        String tdClasses = cellStyle;
-        tdClasses += isEven ? evenCellStyle : oddCellStyle;
-        if (curColumn == 0) {
-          tdClasses += firstColumnStyle;
-        }
-        if (isSelected) {
-          tdClasses += selectedCellStyle;
-        }
-        if (isKeyboardSelected) {
-          tdClasses += keyboardRowCellStyle;
-        }
-        if (curColumn == columnCount - 1) {
-          tdClasses += lastColumnStyle;
-        }
-
-        SafeHtmlBuilder cellBuilder = new SafeHtmlBuilder();
-        if (value != null) {
-          Context context = new Context(i, curColumn, getValueKey(value));
-          column.render(context, value, cellBuilder);
-        }
-
-        boolean focusable = (i == keyboardSelectedRow && curColumn == keyboardSelectedColumn);
-        if (focusable) {
-          if (isFocused) {
-            tdClasses += keyboardCellStyle;
-          }
-        }
-
-        SafeHtml contents = renderCell(cellBuilder.toSafeHtml(), focusable,
-            getColumnWidth(column), cellHeight, padding, borderWidth);
-
-        HorizontalAlignmentConstant hAlign = column.getHorizontalAlignment();
-        VerticalAlignmentConstant vAlign = column.getVerticalAlignment();
-        if (hAlign != null && vAlign != null) {
-          trBuilder.append(template.tdBothAlign(tdClasses,
-              hAlign.getTextAlignString(), vAlign.getVerticalAlignString(), cssPadding, contents));
-        } else if (hAlign != null) {
-          trBuilder.append(template.tdHorizontalAlign(tdClasses,
-              hAlign.getTextAlignString(), cssPadding, contents));
-        } else if (vAlign != null) {
-          trBuilder.append(template.tdVerticalAlign(tdClasses,
-              vAlign.getVerticalAlignString(), cssPadding, contents));
-        } else {
-          trBuilder.append(template.td(tdClasses, cssPadding, contents));
-        }
-
-        curColumn++;
-      }
-
-      sb.append(template.tr(trClasses, trBuilder.toSafeHtml()));
-    }
   }
 
   @Override
@@ -1065,7 +1287,7 @@ public class CellGrid extends AbstractHasData<IsRow> implements HasId {
   protected boolean resetFocusOnCell() {
     int row = getKeyboardSelectedRow();
     if (isRowWithinBounds(row) && columns.size() > 0) {
-      Column<IsRow, ?> column = columns.get(keyboardSelectedColumn);
+      Column<IsRow, ?> column = columns.get(keyboardSelectedColumn).getColumn();
       return resetFocusOnCellImpl(row, keyboardSelectedColumn, column);
     }
     return false;
@@ -1109,116 +1331,11 @@ public class CellGrid extends AbstractHasData<IsRow> implements HasId {
   }
 
   private void createHeaders(boolean isFooter) {
-    List<Header<?>> theHeaders = isFooter ? footers : headers;
-    TableSectionElement section = isFooter ? tfoot : thead;
-
-    String className = isFooter ? style.cellGridFooter() : style.cellGridHeader();
-    String firstColumnStyle = " "
-        + (isFooter ? style.cellGridFirstColumnFooter() : style.cellGridFirstColumnHeader());
-    String lastColumnStyle = " "
-        + (isFooter ? style.cellGridLastColumnFooter() : style.cellGridLastColumnHeader());
-    String sortableStyle = " " + style.cellGridSortableHeader();
-    String sortedAscStyle = " " + style.cellGridSortedHeaderAscending();
-    String sortedDescStyle = " " + style.cellGridSortedHeaderDescending();
-    
-    String padding = getCssValue(isFooter ? getFooterCellPadding() : getHeaderCellPadding());
-
-    boolean hasHeader = false;
-    SafeHtmlBuilder sb = new SafeHtmlBuilder();
-    sb.appendHtmlConstant("<tr>");
-    int columnCount = columns.size();
-    if (columnCount > 0) {
-      ColumnSortInfo sortedInfo = (sortList.size() == 0) ? null : sortList.get(0);
-      Column<?, ?> sortedColumn = (sortedInfo == null) ? null : sortedInfo.getColumn();
-      boolean isSortAscending = (sortedInfo == null) ? false : sortedInfo.isAscending();
-
-      Header<?> prevHeader = theHeaders.get(0);
-      Column<IsRow, ?> column = columns.get(0);
-      int prevColspan = 1;
-      boolean isSortable = false;
-      boolean isSorted = false;
-      StringBuilder classesBuilder = new StringBuilder(className);
-      classesBuilder.append(firstColumnStyle);
-      if (!isFooter && column.isSortable()) {
-        isSortable = true;
-        isSorted = (column == sortedColumn);
-      }
-
-      int curColumn;
-      for (curColumn = 1; curColumn < columnCount; curColumn++) {
-        Header<?> header = theHeaders.get(curColumn);
-
-        if (header != prevHeader) {
-          SafeHtml headerHtml = SafeHtmlUtils.EMPTY_SAFE_HTML;
-          if (prevHeader != null) {
-            hasHeader = true;
-
-            SafeHtmlBuilder headerBuilder = new SafeHtmlBuilder();
-            Context context = new Context(0, curColumn - prevColspan, prevHeader.getKey());
-            prevHeader.render(context, headerBuilder);
-
-            if (isSorted) {
-              SafeHtml unwrappedHeader = headerBuilder.toSafeHtml();
-              headerBuilder = new SafeHtmlBuilder();
-              getSortDecorator(isSortAscending).render(null, unwrappedHeader, headerBuilder);
-            }
-            headerHtml = headerBuilder.toSafeHtml();
-          }
-          if (isSortable) {
-            classesBuilder.append(sortableStyle);
-          }
-          if (isSorted) {
-            classesBuilder.append(isSortAscending ? sortedAscStyle : sortedDescStyle);
-          }
-          sb.append(template.th(prevColspan, classesBuilder.toString(), padding, headerHtml));
-
-          prevHeader = header;
-          prevColspan = 1;
-          classesBuilder = new StringBuilder(className);
-          isSortable = false;
-          isSorted = false;
-        } else {
-          prevColspan++;
-        }
-
-        column = columns.get(curColumn);
-        if (!isFooter && column.isSortable()) {
-          isSortable = true;
-          isSorted = (column == sortedColumn);
-        }
-      }
-
-      SafeHtml headerHtml = SafeHtmlUtils.EMPTY_SAFE_HTML;
-      if (prevHeader != null) {
-        hasHeader = true;
-
-        SafeHtmlBuilder headerBuilder = new SafeHtmlBuilder();
-        Context context = new Context(0, curColumn - prevColspan, prevHeader.getKey());
-        prevHeader.render(context, headerBuilder);
-
-        if (isSorted) {
-          SafeHtml unwrappedHeader = headerBuilder.toSafeHtml();
-          headerBuilder = new SafeHtmlBuilder();
-          getSortDecorator(isSortAscending).render(null, unwrappedHeader, headerBuilder);
-        }
-        headerHtml = headerBuilder.toSafeHtml();
-      }
-      if (isSortable) {
-        classesBuilder.append(sortableStyle);
-      }
-      if (isSorted) {
-        classesBuilder.append(isSortAscending ? sortedAscStyle : sortedDescStyle);
-      }
-
-      classesBuilder.append(" ");
-      classesBuilder.append(lastColumnStyle);
-      sb.append(template.th(prevColspan, classesBuilder.toString(), padding, headerHtml));
+    SafeHtml html = renderHeaders(isFooter);
+    if (html == null) {
+      return;
     }
-    sb.appendHtmlConstant("</tr>");
-
-    TABLE_IMPL.replaceAllRows(this, section, sb.toSafeHtml());
-
-    setVisible(section, hasHeader);
+    TABLE_IMPL.replaceAllRows(this, isFooter ? tfoot : thead, html);
   }
 
   private void createHeadersAndFooters() {
@@ -1232,29 +1349,29 @@ public class CellGrid extends AbstractHasData<IsRow> implements HasId {
     }
     return colgroup.getChild(index).cast();
   }
-
+  
   private int findInteractiveColumn(int start, boolean reverse) {
     if (!isInteractive) {
       return 0;
     } else if (reverse) {
       for (int i = start - 1; i >= 0; i--) {
-        if (isColumnInteractive(columns.get(i))) {
+        if (isColumnInteractive(columns.get(i).getColumn())) {
           return i;
         }
       }
       for (int i = columns.size() - 1; i >= start; i--) {
-        if (isColumnInteractive(columns.get(i))) {
+        if (isColumnInteractive(columns.get(i).getColumn())) {
           return i;
         }
       }
     } else {
       for (int i = start + 1; i < columns.size(); i++) {
-        if (isColumnInteractive(columns.get(i))) {
+        if (isColumnInteractive(columns.get(i).getColumn())) {
           return i;
         }
       }
       for (int i = 0; i <= start; i++) {
-        if (isColumnInteractive(columns.get(i))) {
+        if (isColumnInteractive(columns.get(i).getColumn())) {
           return i;
         }
       }
@@ -1300,6 +1417,21 @@ public class CellGrid extends AbstractHasData<IsRow> implements HasId {
     return element.clientHeight;
   }-*/;
 
+  private ColumnInfo getColumnInfo(Column<IsRow, ?> column) {
+    Assert.notNull(column);
+    for (ColumnInfo info : columns) {
+      if (info.getColumn().equals(column)) {
+        return info;
+      }
+    }
+    return null;
+  }
+
+  private ColumnInfo getColumnInfo(int col) {
+    checkColumnBounds(col);
+    return columns.get(col);
+  }
+
   private String getCssValue(Edges edges) {
     if (edges == null) {
       return Edges.EMPTY_CSS_VALUE;
@@ -1308,20 +1440,13 @@ public class CellGrid extends AbstractHasData<IsRow> implements HasId {
     }
   }
 
-  private IconCellDecorator<SafeHtml> getSortDecorator(boolean ascending) {
-    if (ascending) {
-      if (sortAscDecorator == null) {
-        sortAscDecorator = new IconCellDecorator<SafeHtml>(
-            Global.getImages().ascending(), new SafeHtmlCell());
-      }
-      return sortAscDecorator;
-    } else {
-      if (sortDescDecorator == null) {
-        sortDescDecorator = new IconCellDecorator<SafeHtml>(
-            Global.getImages().descending(), new SafeHtmlCell());
-      }
-      return sortDescDecorator;
+  private int getWidthIncrement(Edges padding, int border) {
+    int incr = Math.max(border, 0);
+    if (padding != null) {
+      incr += BeeUtils.toNonNegativeInt(padding.getLeftValue());
+      incr += BeeUtils.toNonNegativeInt(padding.getRightValue());
     }
+    return incr;
   }
 
   private boolean handleKey(Event event) {
@@ -1371,20 +1496,133 @@ public class CellGrid extends AbstractHasData<IsRow> implements HasId {
     return consumedEvents != null && consumedEvents.size() > 0;
   }
 
+  private void renderBody(SafeHtmlBuilder sb, List<IsRow> values, int start,
+      SelectionModel<? super IsRow> selectionModel) {
+    int keyboardSelectedRow = getKeyboardSelectedRow() + getPageStart();
+
+    String evenRowStyle = style.cellGridEvenRow();
+    String oddRowStyle = style.cellGridOddRow();
+    String cellStyle = style.cellGridCell();
+    String evenCellStyle = " " + style.cellGridEvenRowCell();
+    String oddCellStyle = " " + style.cellGridOddRowCell();
+    String firstColumnStyle = " " + style.cellGridFirstColumn();
+    String lastColumnStyle = " " + style.cellGridLastColumn();
+    String selectedRowStyle = " " + style.cellGridSelectedRow();
+    String selectedCellStyle = " " + style.cellGridSelectedRowCell();
+    String keyboardRowStyle = " " + style.cellGridKeyboardSelectedRow();
+    String keyboardRowCellStyle = " " + style.cellGridKeyboardSelectedRowCell();
+    String keyboardCellStyle = " " + style.cellGridKeyboardSelectedCell();
+
+    int cellHeight = getBodyCellHeight();
+    int borderWidth = getBodyBorderWidth();
+
+    Edges padding = getBodyCellPadding();
+    String cssPadding = getCssValue(padding);
+
+    int columnCount = columns.size();
+    int length = values.size();
+    int end = start + length;
+
+    for (int i = start; i < end; i++) {
+      IsRow value = values.get(i - start);
+
+      boolean isSelected = (selectionModel == null || value == null) ? false
+          : selectionModel.isSelected(value);
+      boolean isEven = i % 2 == 0;
+      boolean isKeyboardSelected = i == keyboardSelectedRow && isFocused;
+
+      String trClasses = isEven ? evenRowStyle : oddRowStyle;
+      if (isSelected) {
+        trClasses += selectedRowStyle;
+      }
+      if (isKeyboardSelected) {
+        trClasses += keyboardRowStyle;
+      }
+
+      if (rowStyles != null) {
+        String extraRowStyles = rowStyles.getStyleNames(value, i);
+        if (extraRowStyles != null) {
+          trClasses += " ";
+          trClasses += extraRowStyles;
+        }
+      }
+
+      SafeHtmlBuilder trBuilder = new SafeHtmlBuilder();
+      int curColumn = 0;
+
+      for (ColumnInfo columnInfo : columns) {
+        Column<IsRow, ?> column = columnInfo.getColumn();
+
+        String tdClasses = cellStyle;
+        tdClasses += isEven ? evenCellStyle : oddCellStyle;
+        if (curColumn == 0) {
+          tdClasses += firstColumnStyle;
+        }
+        if (isSelected) {
+          tdClasses += selectedCellStyle;
+        }
+        if (isKeyboardSelected) {
+          tdClasses += keyboardRowCellStyle;
+        }
+        if (curColumn == columnCount - 1) {
+          tdClasses += lastColumnStyle;
+        }
+
+        boolean focusable = (i == keyboardSelectedRow && curColumn == keyboardSelectedColumn);
+        if (focusable && isFocused) {
+          tdClasses += keyboardCellStyle;
+        }
+
+        SafeHtmlBuilder cellBuilder = new SafeHtmlBuilder();
+        if (value != null) {
+          Context context = new Context(i, curColumn, getValueKey(value));
+          column.render(context, value, cellBuilder);
+        }
+        SafeHtml cellHtml = cellBuilder.toSafeHtml();
+
+        int width = columnInfo.getWidth();
+        if (width <= 0) {
+          width = columnInfo.getBodyWidth();
+        }
+
+        SafeHtml html = renderCell(cellHtml, focusable, width, cellHeight, padding, borderWidth);
+
+        HorizontalAlignmentConstant hAlign = column.getHorizontalAlignment();
+        VerticalAlignmentConstant vAlign = column.getVerticalAlignment();
+
+        if (hAlign != null && vAlign != null) {
+          trBuilder.append(template.tdBothAlign(tdClasses,
+              hAlign.getTextAlignString(), vAlign.getVerticalAlignString(), cssPadding, html));
+        } else if (hAlign != null) {
+          trBuilder.append(template.tdHorizontalAlign(tdClasses,
+              hAlign.getTextAlignString(), cssPadding, html));
+        } else if (vAlign != null) {
+          trBuilder.append(template.tdVerticalAlign(tdClasses,
+              vAlign.getVerticalAlignString(), cssPadding, html));
+        } else {
+          trBuilder.append(template.td(tdClasses, cssPadding, html));
+        }
+
+        curColumn++;
+      }
+      sb.append(template.tr(trClasses, trBuilder.toSafeHtml()));
+    }
+  }
+
   private SafeHtml renderCell(SafeHtml cellContent, boolean focusable,
       int width, int height, Edges padding, int borderWidth) {
     SafeHtml result = SafeHtmlUtils.EMPTY_SAFE_HTML;
 
     int w = UNDEF;
     int h = UNDEF;
-    
+
     boolean fixedWidth = false;
     boolean fixedHeight = false;
-    
+
     if (width > 0) {
       w = width - borderWidth;
       if (padding != null) {
-        w -= Math.max(BeeUtils.toInt(padding.getRightValue()), 0);
+        w -= Math.max(BeeUtils.toInt(padding.getLeftValue()), 0);
         w -= Math.max(BeeUtils.toInt(padding.getRightValue()), 0);
       }
       if (w > 0) {
@@ -1392,7 +1630,7 @@ public class CellGrid extends AbstractHasData<IsRow> implements HasId {
         fixedWidth = (w > 0);
       }
     }
-    
+
     if (height > 0) {
       h = height - borderWidth;
       if (padding != null) {
@@ -1404,7 +1642,7 @@ public class CellGrid extends AbstractHasData<IsRow> implements HasId {
         fixedHeight = (h > 0);
       }
     }
-    
+
     if (focusable) {
       int tabIndex = getTabIndex();
       if (fixedWidth && fixedHeight) {
@@ -1428,8 +1666,92 @@ public class CellGrid extends AbstractHasData<IsRow> implements HasId {
         result = template.div(cellContent);
       }
     }
-    
+
     return result;
+  }
+
+  private SafeHtml renderHeaders(boolean isFooter) {
+    if (isFooter ? !hasFooters() : !hasHeaders()) {
+      return null;
+    }
+
+    String className = isFooter ? style.cellGridFooter() : style.cellGridHeader();
+    String firstColumnStyle = " "
+        + (isFooter ? style.cellGridFirstColumnFooter() : style.cellGridFirstColumnHeader());
+    String lastColumnStyle = " "
+        + (isFooter ? style.cellGridLastColumnFooter() : style.cellGridLastColumnHeader());
+    String sortableStyle = " " + style.cellGridSortableHeader();
+    String sortedAscStyle = " " + style.cellGridSortedHeaderAscending();
+    String sortedDescStyle = " " + style.cellGridSortedHeaderDescending();
+
+    int cellHeight = isFooter ? getFooterCellHeight() : getHeaderCellHeight();
+    int borderWidth = isFooter ? getFooterBorderWidth() : getHeaderBorderWidth();
+
+    Edges padding = isFooter ? getFooterCellPadding() : getHeaderCellPadding();
+    String cssPadding = getCssValue(padding);
+
+    List<Column<?, ?>> sortedColumns = Lists.newArrayList();
+    List<Boolean> sortedAscending = Lists.newArrayList();
+    if (!isFooter) {
+      for (int i = 0; i < sortList.size(); i++) {
+        ColumnSortInfo sortInfo = sortList.get(i);
+        sortedColumns.add(sortInfo.getColumn());
+        sortedAscending.add(sortInfo.isAscending());
+      }
+    }
+
+    int order = UNDEF;
+    boolean ascending = false;
+
+    SafeHtmlBuilder sb = new SafeHtmlBuilder();
+    sb.appendHtmlConstant("<tr>");
+
+    for (int i = 0; i < columns.size(); i++) {
+      ColumnInfo columnInfo = columns.get(i);
+      Column<?, ?> column = columnInfo.getColumn();
+      Header<?> header = isFooter ? columnInfo.getFooter() : columnInfo.getHeader();
+
+      if (!isFooter) {
+        order = sortedColumns.indexOf(column);
+        if (order >= 0) {
+          ascending = sortedAscending.get(order);
+        }
+      }
+
+      StringBuilder classesBuilder = new StringBuilder(className);
+      if (i == 0) {
+        classesBuilder.append(firstColumnStyle);
+      }
+      if (i == columns.size()) {
+        classesBuilder.append(lastColumnStyle);
+      }
+
+      if (!isFooter && column.isSortable()) {
+        classesBuilder.append(sortableStyle);
+      }
+      if (!isFooter && order >= 0) {
+        classesBuilder.append(ascending ? sortedAscStyle : sortedDescStyle);
+      }
+
+      SafeHtmlBuilder headerBuilder = new SafeHtmlBuilder();
+      if (header != null) {
+        Object key = (isFooter || order < 0) ? header.getKey() : new SortInfo(order, ascending);
+        Context context = new Context(0, i, key);
+        header.render(context, headerBuilder);
+      }
+
+      int width = columnInfo.getWidth();
+      if (width <= 0) {
+        width = columnInfo.getBodyWidth();
+      }
+
+      SafeHtml contents = renderCell(headerBuilder.toSafeHtml(), false,
+          width, cellHeight, padding, borderWidth);
+      sb.append(template.th(classesBuilder.toString(), cssPadding, contents));
+    }
+
+    sb.appendHtmlConstant("</tr>");
+    return sb.toSafeHtml();
   }
 
   private <C> boolean resetFocusOnCellImpl(int row, int col, Column<IsRow, C> column) {
@@ -1441,7 +1763,7 @@ public class CellGrid extends AbstractHasData<IsRow> implements HasId {
     Context context = new Context(row + getPageStart(), col, key);
     return cell.resetFocus(context, parent, cellValue);
   }
-  
+
   private void setRowStyleName(TableRowElement tr, String rowStyle, String cellStyle, boolean add) {
     setStyleName(tr, rowStyle, add);
     NodeList<TableCellElement> cells = tr.getCells();
@@ -1449,13 +1771,16 @@ public class CellGrid extends AbstractHasData<IsRow> implements HasId {
       setStyleName(cells.getItem(i), cellStyle, add);
     }
   }
-  
+
   private void updateDependsOnSelection() {
     dependsOnSelection = false;
     handlesSelection = false;
     isInteractive = false;
-    for (Column<IsRow, ?> column : columns) {
+
+    for (ColumnInfo columnInfo : columns) {
+      Column<IsRow, ?> column = columnInfo.getColumn();
       Cell<?> cell = column.getCell();
+
       if (cell.dependsOnSelection()) {
         dependsOnSelection = true;
       }

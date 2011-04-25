@@ -8,6 +8,10 @@ public class SortInfo {
     this(index, SortOrder.ASCENDING);
   }
 
+  public SortInfo(int index, boolean ascending) {
+    this(index, ascending ? SortOrder.ASCENDING : SortOrder.DESCENDING);
+  }
+  
   public SortInfo(int index, SortOrder order) {
     this.index = index;
     this.order = order;

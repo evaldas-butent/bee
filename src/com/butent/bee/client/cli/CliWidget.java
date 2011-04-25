@@ -123,6 +123,8 @@ public class CliWidget extends BeeTextBox {
       CliWorker.showRpc();
     } else if (z.startsWith("serv") || z.startsWith("sys")) {
       BeeKeeper.getRpc().invoke("systemInfo");
+    } else if (z.equals("size") && arr.length >= 2) {
+      CliWorker.showSize(arr);
     } else if (z.equals("slider")) {
       CliWorker.showSlider(arr);
     } else if (z.equals("sql")) {
@@ -153,6 +155,8 @@ public class CliWidget extends BeeTextBox {
       CliWorker.translate(arr, z.startsWith("detec"));
     } else if (z.equals("uc") || "unicode".startsWith(z)) {
       CliWorker.unicode(arr);
+    } else if (z.startsWith("unit")) {
+      CliWorker.showUnits(arr);
     } else if (z.equals("vars")) {
       CliWorker.showVars(arr);
     } else if (z.equals("video")) {
@@ -163,8 +167,6 @@ public class CliWidget extends BeeTextBox {
       BeeKeeper.getRpc().invoke("vmInfo");
     } else if (z.equals("widget") && arr.length >= 2) {
       CliWorker.showWidgetInfo(arr);
-    } else if (z.equals("width") && arr.length >= 2) {
-      CliWorker.showWidth(arr);
 
     } else {
       Global.showDialog("wtf", v);
