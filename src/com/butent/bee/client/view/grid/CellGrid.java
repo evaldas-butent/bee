@@ -23,6 +23,8 @@ import com.google.gwt.i18n.client.LocaleInfo;
 import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.CssResource;
 import com.google.gwt.resources.client.CssResource.ImportedWithPrefix;
+import com.google.gwt.safecss.shared.SafeStyles;
+import com.google.gwt.safecss.shared.SafeStylesBuilder;
 import com.google.gwt.safehtml.client.SafeHtmlTemplates;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
@@ -52,6 +54,7 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Edges;
 import com.butent.bee.client.dom.Font;
 import com.butent.bee.client.dom.Rulers;
+import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.presenter.DataPresenter;
 import com.butent.bee.client.widget.BeeImage;
@@ -135,48 +138,37 @@ public class CellGrid extends AbstractHasData<IsRow> implements HasId {
     @Template("<div style=\"outline:none; position:relative;\">{0}</div>")
     SafeHtml div(SafeHtml contents);
 
-    @Template("<div style=\"outline:none; position:relative; height:{0}px;\">{1}</div>")
-    SafeHtml divFixedHeight(int height, SafeHtml contents);
-
-    @Template("<div style=\"outline:none; position:relative; width:{0}px; height:{1}px;\">{2}</div>")
-    SafeHtml divFixedSize(int width, int height, SafeHtml contents);
-
-    @Template("<div style=\"outline:none; position:relative; width:{0}px;\">{1}</div>")
-    SafeHtml divFixedWidth(int width, SafeHtml contents);
-
     @Template("<div style=\"outline:none; position:relative;\" tabindex=\"{0}\">{1}</div>")
     SafeHtml divFocusable(int tabIndex, SafeHtml contents);
 
-    @Template("<div style=\"outline:none; position:relative; height:{0}px;\" tabindex=\"{1}\">{2}</div>")
-    SafeHtml divFocusableFixedHeight(int height, int tabIndex, SafeHtml contents);
+    @Template("<div style=\"{0}outline:none; position:relative;\" tabindex=\"{1}\">{2}</div>")
+    SafeHtml divFocusableRigid(SafeStyles dimensions, int tabIndex, SafeHtml contents);
 
-    @Template("<div style=\"outline:none; position:relative; width:{0}px; height:{1}px;\" tabindex=\"{2}\">{3}</div>")
-    SafeHtml divFocusableFixedSize(int width, int height, int tabIndex, SafeHtml contents);
-
-    @Template("<div style=\"outline:none; position:relative; width:{0}px;\" tabindex=\"{1}\">{2}</div>")
-    SafeHtml divFocusableFixedWidth(int width, int tabIndex, SafeHtml contents);
-
+    @Template("<div style=\"{0}outline:none; position:relative;\">{1}</div>")
+    SafeHtml divRigid(SafeStyles dimensions, SafeHtml contents);
+    
     @Template("<table><tbody>{0}</tbody></table>")
     SafeHtml tbody(SafeHtml rowHtml);
 
-    @Template("<td class=\"{0}\" style=\"padding:{1};\">{2}</td>")
-    SafeHtml td(String classes, String padding, SafeHtml contents);
+    @Template("<td class=\"{0}\" style=\"{1}\">{2}</td>")
+    SafeHtml td(String classes, SafeStyles padding, SafeHtml contents);
 
-    @Template("<td class=\"{0}\" align=\"{1}\" valign=\"{2}\" style=\"padding:{3};\">{4}</td>")
-    SafeHtml tdBothAlign(String classes, String hAlign, String vAlign, String padding,
+    @Template("<td class=\"{0}\" align=\"{1}\" valign=\"{2}\" style=\"{3}\">{4}</td>")
+    SafeHtml tdBothAlign(String classes, String hAlign, String vAlign, SafeStyles padding,
         SafeHtml contents);
 
-    @Template("<td class=\"{0}\" align=\"{1}\" style=\"padding:{2};\">{3}</td>")
-    SafeHtml tdHorizontalAlign(String classes, String hAlign, String padding, SafeHtml contents);
+    @Template("<td class=\"{0}\" align=\"{1}\" style=\"{2}\">{3}</td>")
+    SafeHtml tdHorizontalAlign(String classes, String hAlign, SafeStyles padding,
+        SafeHtml contents);
 
-    @Template("<td class=\"{0}\" valign=\"{1}\" style=\"padding:{2};\">{3}</td>")
-    SafeHtml tdVerticalAlign(String classes, String vAlign, String padding, SafeHtml contents);
+    @Template("<td class=\"{0}\" valign=\"{1}\" style=\"{2}\">{3}</td>")
+    SafeHtml tdVerticalAlign(String classes, String vAlign, SafeStyles padding, SafeHtml contents);
 
     @Template("<table><tfoot>{0}</tfoot></table>")
     SafeHtml tfoot(SafeHtml rowHtml);
 
-    @Template("<th class=\"{0}\" style=\"padding:{1};\">{2}</th>")
-    SafeHtml th(String classes, String padding, SafeHtml contents);
+    @Template("<th class=\"{0}\" style=\"{1}\">{2}</th>")
+    SafeHtml th(String classes, SafeStyles padding, SafeHtml contents);
 
     @Template("<table><thead>{0}</thead></table>")
     SafeHtml thead(SafeHtml rowHtml);
@@ -1517,7 +1509,7 @@ public class CellGrid extends AbstractHasData<IsRow> implements HasId {
     int borderWidth = getBodyBorderWidth();
 
     Edges padding = getBodyCellPadding();
-    String cssPadding = getCssValue(padding);
+    SafeStyles cssPadding = StyleUtils.buildPadding(getCssValue(padding));
 
     int columnCount = columns.size();
     int length = values.size();
@@ -1615,9 +1607,9 @@ public class CellGrid extends AbstractHasData<IsRow> implements HasId {
 
     int w = UNDEF;
     int h = UNDEF;
-
-    boolean fixedWidth = false;
-    boolean fixedHeight = false;
+    
+    SafeStylesBuilder dimensions = new SafeStylesBuilder();
+    boolean rigid = false;
 
     if (width > 0) {
       w = width - borderWidth;
@@ -1627,7 +1619,10 @@ public class CellGrid extends AbstractHasData<IsRow> implements HasId {
       }
       if (w > 0) {
         w = BeeUtils.limit(w, minCellWidth, maxCellWidth);
-        fixedWidth = (w > 0);
+        if (w > 0) {
+          dimensions.append(StyleUtils.buildWidth(w));
+          rigid = true;
+        }
       }
     }
 
@@ -1639,34 +1634,27 @@ public class CellGrid extends AbstractHasData<IsRow> implements HasId {
       }
       if (h > 0) {
         h = BeeUtils.limit(h, minCellHeight, maxCellHeight);
-        fixedHeight = (h > 0);
+        if (h > 0) {
+          dimensions.append(StyleUtils.buildHeight(h));
+          rigid = true;
+        }
       }
     }
 
     if (focusable) {
       int tabIndex = getTabIndex();
-      if (fixedWidth && fixedHeight) {
-        result = template.divFocusableFixedSize(w, h, tabIndex, cellContent);
-      } else if (fixedWidth) {
-        result = template.divFocusableFixedWidth(w, tabIndex, cellContent);
-      } else if (fixedHeight) {
-        result = template.divFocusableFixedHeight(h, tabIndex, cellContent);
+      if (rigid) {
+        result = template.divFocusableRigid(dimensions.toSafeStyles(), tabIndex, cellContent);
       } else {
         result = template.divFocusable(tabIndex, cellContent);
       }
-
     } else {
-      if (fixedWidth && fixedHeight) {
-        result = template.divFixedSize(w, h, cellContent);
-      } else if (fixedWidth) {
-        result = template.divFixedWidth(w, cellContent);
-      } else if (fixedHeight) {
-        result = template.divFixedHeight(h, cellContent);
+      if (rigid) {
+        result = template.divRigid(dimensions.toSafeStyles(), cellContent);
       } else {
         result = template.div(cellContent);
       }
     }
-
     return result;
   }
 
@@ -1688,7 +1676,7 @@ public class CellGrid extends AbstractHasData<IsRow> implements HasId {
     int borderWidth = isFooter ? getFooterBorderWidth() : getHeaderBorderWidth();
 
     Edges padding = isFooter ? getFooterCellPadding() : getHeaderCellPadding();
-    String cssPadding = getCssValue(padding);
+    SafeStyles cssPadding = StyleUtils.buildPadding(getCssValue(padding));
 
     List<Column<?, ?>> sortedColumns = Lists.newArrayList();
     List<Boolean> sortedAscending = Lists.newArrayList();

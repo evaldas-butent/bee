@@ -9,8 +9,8 @@ import java.util.List;
 public interface IsRow extends HasCustomProperties {
   void addCell(boolean value);
   void addCell(double value);
-  void addCell(String value);
   void addCell(IsCell cell);
+  void addCell(String value);
   void addCell(Value value);
 
   void clearCell(int index);
@@ -35,6 +35,9 @@ public interface IsRow extends HasCustomProperties {
   Value getValue(int index);
   
   void insertCell(int index, IsCell cell);
+  
+  boolean isNull(int index);
+
   void removeCell(int index);
   
   void setCell(int index, IsCell cell);

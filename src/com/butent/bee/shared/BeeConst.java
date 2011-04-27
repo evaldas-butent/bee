@@ -71,6 +71,7 @@ public class BeeConst {
   public static final int SELECTION_UNKNOWN = -1;
   public static final int INDEX_UNKNOWN = -1;
 
+  public static final int COMPARE_UNKNOWN = -2;
   public static final int COMPARE_LESS = -1;
   public static final int COMPARE_EQUAL = 0;
   public static final int COMPARE_MORE = 1;

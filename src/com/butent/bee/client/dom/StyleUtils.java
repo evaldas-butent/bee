@@ -6,6 +6,9 @@ import com.google.gwt.dom.client.Style.FontStyle;
 import com.google.gwt.dom.client.Style.FontWeight;
 import com.google.gwt.dom.client.Style.HasCssName;
 import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.safecss.shared.SafeStyles;
+import com.google.gwt.safecss.shared.SafeStylesBuilder;
+import com.google.gwt.safecss.shared.SafeStylesUtils;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.ui.UIObject;
 
@@ -148,6 +151,8 @@ public class StyleUtils {
 
   public static final String STYLE_WHITE_SPACE = "whiteSpace";
   
+  public static final String STYLE_PADDING = "padding";
+  
   public static final String VALUE_AUTO = "auto";
   public static final String VALUE_FIXED = "fixed";
   public static final String VALUE_HIDDEN = "hidden";
@@ -180,6 +185,9 @@ public class StyleUtils {
   public static final String WHITE_SPACE_PRE = "pre";
   public static final String WHITE_SPACE_PRE_WRAP = "pre-wrap";
   public static final String WHITE_SPACE_PRE_LINE = "pre-line";
+  
+  public static final char DEFINITION_SEPARATOR = ';';
+  public static final char NAME_VALUE_SEPARATOR = ':';
   
   public static void addStyleDependentName(Element el, String styleSuffix) {
     setStyleDependentName(el, styleSuffix, true);
@@ -243,6 +251,46 @@ public class StyleUtils {
     autoWidth(obj.getElement());
   }
 
+  public static SafeStyles buildHeight(int height) {
+    return buildHeight(height, Unit.PX);
+  }
+  
+  public static SafeStyles buildHeight(double value, Unit unit) {
+    return buildStyle(STYLE_HEIGHT, toCssLength(value, unit));
+  }
+
+  public static SafeStyles buildPadding(String value) {
+    return buildStyle(STYLE_PADDING, value);
+  }
+  
+  public static SafeStyles buildStyle(SafeStyles... styles) {
+    Assert.notNull(styles);
+    Assert.parameterCount(styles.length, 1);
+    
+    SafeStylesBuilder ssb = new SafeStylesBuilder();
+    for (SafeStyles style : styles) {
+      if (style != null) {
+        ssb.append(style);
+      }
+    }
+    return ssb.toSafeStyles();
+  }
+  
+  public static SafeStyles buildStyle(String name, String value) {
+    Assert.notEmpty(name);
+    Assert.notEmpty(value);
+    return SafeStylesUtils.fromTrustedString(name + NAME_VALUE_SEPARATOR + value
+        + DEFINITION_SEPARATOR);
+  }
+
+  public static SafeStyles buildWidth(int width) {
+    return buildWidth(width, Unit.PX);
+  }
+  
+  public static SafeStyles buildWidth(double value, Unit unit) {
+    return buildStyle(STYLE_WIDTH, toCssLength(value, unit));
+  }
+  
   public static void clearTableLayout(Element el) {
     Assert.notNull(el);
     clearTableLayout(el.getStyle());
@@ -900,6 +948,11 @@ public class StyleUtils {
     setWordWrap(obj.getElement(), wrap);
   }
 
+  public static String toCssLength(double value, Unit unit) {
+    Assert.notNull(unit);
+    return BeeUtils.toString(value) + unit.getType();
+  }
+  
   public static void zeroLeft(Element el) {
     Assert.notNull(el);
     zeroLeft(el.getStyle());

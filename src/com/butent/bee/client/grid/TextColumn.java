@@ -29,7 +29,14 @@ public class TextColumn extends CellColumn<String> {
 
   @Override
   public String getValue(IsRow row) {
-    String v = getString(row);
+    if (row == null) {
+      return null;
+    }
+    String v = row.getString(getIndex());
+    if (v == null) {
+      return null;
+    }
+
     if (maxDisplaySize <= 0 || v.length() <= maxDisplaySize) {
       return v;
     }

@@ -45,7 +45,7 @@ public class StringRow extends AbstractRow {
 
   @Override
   public Boolean getBoolean(int col) {
-    return BeeUtils.toBoolean(getString(col));
+    return BeeUtils.toBooleanOrNull(getString(col));
   }
 
   @Override
@@ -65,25 +65,31 @@ public class StringRow extends AbstractRow {
 
   @Override
   public JustDate getDate(int col) {
+    if (isNull(col)) {
+      return null;
+    }
     return new JustDate(getInt(col));
   }
 
   @Override
   public DateTime getDateTime(int col) {
+    if (isNull(col)) {
+      return null;
+    }
     return new DateTime(getLong(col));
   }
   
   @Override
   public Double getDouble(int col) {
-    return BeeUtils.toDouble(getString(col));
+    return BeeUtils.toDoubleOrNull(getString(col));
   }
 
-  public int getInt(int col) {
-    return BeeUtils.toInt(getString(col));
+  public Integer getInt(int col) {
+    return BeeUtils.toIntOrNull(getString(col));
   }
   
-  public long getLong(int col) {
-    return BeeUtils.toLong(getString(col));
+  public Long getLong(int col) {
+    return BeeUtils.toLongOrNull(getString(col));
   }
   
   @Override
@@ -116,6 +122,12 @@ public class StringRow extends AbstractRow {
   public void insertCell(int index, IsCell cell) {
     Assert.betweenInclusive(index, 0, getNumberOfCells());
     values.insert(index, cell.getValue().getString());
+  }
+
+  @Override
+  public boolean isNull(int index) {
+    assertIndex(index);
+    return values.get(index) == null;
   }
 
   @Override

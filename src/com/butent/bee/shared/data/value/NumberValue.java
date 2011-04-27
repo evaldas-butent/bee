@@ -1,31 +1,33 @@
 package com.butent.bee.shared.data.value;
 
+import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.utils.BeeUtils;
+
 public class NumberValue extends Value {
-  private static final NumberValue NULL_VALUE = new NumberValue(-9999);
+
+  private static final NumberValue NULL_VALUE = new NumberValue(null);
 
   public static NumberValue getNullValue() {
     return NULL_VALUE;
   }
 
-  private double value;
+  private Double value;
 
-  public NumberValue(double value) {
+  public NumberValue(Double value) {
     this.value = value;
   }
 
+  public int compareTo(Value o) {
+    int diff = precompareTo(o);
+    if (diff == BeeConst.COMPARE_UNKNOWN) {
+      diff = getDouble().compareTo(o.getDouble());
+    }
+    return diff;
+  }
+  
   @Override
-  public int compareTo(Value other) {
-    if (this == other) {
-      return 0;
-    }
-    NumberValue otherNumber = (NumberValue) other;
-    if (isNull()) {
-      return -1;
-    }
-    if (otherNumber.isNull()) {
-      return 1;
-    }
-    return Double.compare(value, otherNumber.value);
+  public Double getDouble() {
+    return value;
   }
 
   @Override
@@ -41,28 +43,24 @@ public class NumberValue extends Value {
     return ValueType.NUMBER;
   }
 
-  public double getValue() {
-    return value;
-  }
-
   @Override
   public int hashCode() {
     if (isNull()) {
       return 0;
     }
-    return new Double(value).hashCode();
+    return getDouble().hashCode();
   }
 
   @Override
   public boolean isNull() {
-    return (this == NULL_VALUE);
+    return this == NULL_VALUE || getDouble() == null;
   }
 
   @Override
   public String toString() {
-    if (this == NULL_VALUE) {
-      return "null";
+    if (isNull()) {
+      return BeeConst.NULL;
     }
-    return Double.toString(value);
+    return BeeUtils.toString(value);
   }
 }

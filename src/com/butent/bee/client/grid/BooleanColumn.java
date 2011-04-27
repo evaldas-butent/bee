@@ -19,7 +19,7 @@ public class BooleanColumn extends CellColumn<Boolean> {
   @Override
   public Boolean getValue(IsRow row) {
     if (row == null) {
-      return false;
+      return null;
     }
     return row.getBoolean(getIndex());
   }

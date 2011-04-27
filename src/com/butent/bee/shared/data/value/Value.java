@@ -1,6 +1,7 @@
 package com.butent.bee.shared.data.value;
 
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.DateTime;
 import com.butent.bee.shared.JustDate;
@@ -8,29 +9,9 @@ import com.butent.bee.shared.Transformable;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
-import java.util.Comparator;
 import java.util.Date;
 
 public abstract class Value implements Comparable<Value>, Transformable, BeeSerializable {
-
-  public static Comparator<Value> getComparator() {
-    return new Comparator<Value>() {
-
-      @Override
-      public int compare(Value value1, Value value2) {
-        if (value1 == value2) {
-          return 0;
-        }
-        if (value1 == null) {
-          return -1;
-        }
-        if (value2 == null) {
-          return 1;
-        }
-        return value1.compareTo(value2);
-      }
-    };
-  }
 
   public static Value getNullValueFromValueType(ValueType type) {
     switch (type) {
@@ -116,10 +97,6 @@ public abstract class Value implements Comparable<Value>, Transformable, BeeSeri
     return val;
   }
 
-  public static boolean supports(String clazz) {
-    return !BeeUtils.isEmpty(Value.getNullValue(clazz));
-  }
-
   private static Value getNullValue(String clazz) {
     Value val = null;
 
@@ -143,15 +120,17 @@ public abstract class Value implements Comparable<Value>, Transformable, BeeSeri
     }
     return val;
   }
+  
+  public abstract int compareTo(Value o);
 
   @Override
   public void deserialize(String s) {
     Assert.unsupported();
   }
-
+  
   @Override
   public boolean equals(Object o) {
-    if ((null == o) || (this.getClass() != o.getClass())) {
+    if (o == null || this.getClass() != o.getClass()) {
       return false;
     }
     return (this.compareTo((Value) o) == 0);
@@ -258,5 +237,18 @@ public abstract class Value implements Comparable<Value>, Transformable, BeeSeri
 
   public String transform() {
     return toString();
+  }
+
+  protected int precompareTo(Value o) {
+    int diff = BeeUtils.precompare(this, o);
+
+    if (diff == BeeConst.COMPARE_UNKNOWN) {
+      if (isNull()) {
+        diff = o.isNull() ? BeeConst.COMPARE_EQUAL : BeeConst.COMPARE_LESS;
+      } else if (o.isNull()) {
+        diff = BeeConst.COMPARE_MORE;
+      }
+    }
+    return diff;
   }
 }

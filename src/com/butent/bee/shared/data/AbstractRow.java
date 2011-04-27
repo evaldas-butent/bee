@@ -95,6 +95,10 @@ public abstract class AbstractRow implements IsRow, Transformable {
 
   public abstract void insertCell(int index, IsCell cell);
 
+  public boolean isNull(int index) {
+    return getCell(index).isNull();
+  }
+
   public abstract void removeCell(int index);
 
   public abstract void setCell(int index, IsCell cell);

@@ -1,11 +1,18 @@
 package com.butent.bee.shared.data.value;
 
+import com.google.common.base.Objects;
+import com.google.common.collect.ComparisonChain;
+
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.DateTime;
-import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.TimeUtils;
 
 public class TimeOfDayValue extends Value {
 
+  public static final char FIELD_SEPARATOR = ':';
+  public static final char MILLIS_SEPARATOR = '.';
+  
   private static final TimeOfDayValue NULL_VALUE = new TimeOfDayValue();
 
   public static TimeOfDayValue getNullValue() {
@@ -16,8 +23,6 @@ public class TimeOfDayValue extends Value {
   private int minutes;
   private int seconds;
   private int milliseconds;
-
-  private Integer hashCode = null;
 
   public TimeOfDayValue(DateTime date) {
     this.hours = date.getHour();
@@ -43,42 +48,21 @@ public class TimeOfDayValue extends Value {
   }
 
   private TimeOfDayValue() {
-    hashCode = 0;
+    this.hours = -1;
+    this.minutes = -1;
+    this.seconds = -1;
+    this.milliseconds = -1;
   }
 
-  @Override
-  public int compareTo(Value other) {
-    if (this == other) {
-      return 0;
+  public int compareTo(Value o) {
+    int diff = precompareTo(o);
+    if (diff == BeeConst.COMPARE_UNKNOWN) {
+      TimeOfDayValue other = (TimeOfDayValue) o;
+      diff = ComparisonChain.start().compare(getHours(), other.getHours()).compare(getMinutes(),
+          other.getMinutes()).compare(getSeconds(), other.getSeconds()).compare(getMilliseconds(),
+              other.getMilliseconds()).result();
     }
-    TimeOfDayValue otherTimeOfDay = (TimeOfDayValue) other;
-    if (isNull()) {
-      return -1;
-    }
-    if (otherTimeOfDay.isNull()) {
-      return 1;
-    }
-    if (this.hours > otherTimeOfDay.hours) {
-      return 1;
-    } else if (this.hours < otherTimeOfDay.hours) {
-      return -1;
-    }
-    if (this.minutes > otherTimeOfDay.minutes) {
-      return 1;
-    } else if (this.minutes < otherTimeOfDay.minutes) {
-      return -1;
-    }
-    if (this.seconds > otherTimeOfDay.seconds) {
-      return 1;
-    } else if (this.seconds < otherTimeOfDay.seconds) {
-      return -1;
-    }
-    if (this.milliseconds > otherTimeOfDay.milliseconds) {
-      return 1;
-    } else if (this.milliseconds < otherTimeOfDay.milliseconds) {
-      return -1;
-    }
-    return 0;
+    return diff;
   }
 
   public int getHours() {
@@ -97,11 +81,11 @@ public class TimeOfDayValue extends Value {
   }
 
   @Override
-  public DateTime getObjectValue() {
+  public String getObjectValue() {
     if (isNull()) {
       return null;
     }
-    return new DateTime(2011, 1, 1, hours, minutes, seconds, milliseconds);
+    return toString();
   }
 
   public int getSeconds() {
@@ -116,17 +100,11 @@ public class TimeOfDayValue extends Value {
 
   @Override
   public int hashCode() {
-    if (null != hashCode) {
-      return hashCode;
+    if (isNull()) {
+      return -1;
     }
-    int hash = 1193;
-    hash = (hash * 13) + hours;
-    hash = (hash * 13) + minutes;
-    hash = (hash * 13) + seconds;
-    hash = (hash * 13) + milliseconds;
-    hashCode = hash;
-    return hashCode;
-  }
+    return Objects.hashCode(getHours(), getMinutes(), getSeconds(), getMilliseconds());
+    }
 
   @Override
   public boolean isNull() {
@@ -135,15 +113,17 @@ public class TimeOfDayValue extends Value {
 
   @Override
   public String toString() {
-    if (this == NULL_VALUE) {
-      return "null";
+    if (isNull()) {
+      return BeeConst.NULL;
     }
-    String result = BeeUtils.toLeadingZeroes(hours, 2) + ":"
-        + BeeUtils.toLeadingZeroes(minutes, 2) + ":"
-        + BeeUtils.toLeadingZeroes(seconds, 2);
-    if (milliseconds > 0) {
-      result += "." + BeeUtils.toLeadingZeroes(milliseconds, 3);
+    StringBuilder sb = new StringBuilder(12);
+    sb.append(TimeUtils.padTwo(getHours())).append(FIELD_SEPARATOR);
+    sb.append(TimeUtils.padTwo(getMinutes())).append(FIELD_SEPARATOR);
+    sb.append(TimeUtils.padTwo(getSeconds()));
+    int z = getMilliseconds();
+    if (z != 0) {
+      sb.append(MILLIS_SEPARATOR).append(TimeUtils.millisToString(z));
     }
-    return result;
+    return sb.toString();
   }
 }

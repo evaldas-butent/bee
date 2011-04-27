@@ -1,7 +1,6 @@
 package com.butent.bee.shared.data;
 
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.StringArray;
 import com.butent.bee.shared.utils.ArrayUtils;
@@ -92,7 +91,7 @@ public class BeeRow extends StringRow implements BeeSerializable {
   }
 
   public Object getOriginal(int col, int sqlType) {
-    if (getValue(col) == null) {
+    if (isNull(col)) {
       return null;
     }
     switch (sqlType) {
@@ -116,11 +115,6 @@ public class BeeRow extends StringRow implements BeeSerializable {
 
   public Map<Integer, String> getShadow() {
     return shadow;
-  }
-
-  @Override
-  public String getString(int index) {
-    return BeeUtils.ifString(super.getString(index), BeeConst.STRING_EMPTY);
   }
 
   public long getVersion() {

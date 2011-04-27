@@ -1,12 +1,13 @@
 package com.butent.bee.shared.data.value;
 
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.utils.BeeUtils;
 
 public class BooleanValue extends Value {
 
   public static final BooleanValue TRUE = new BooleanValue(true);
   public static final BooleanValue FALSE = new BooleanValue(false);
-  private static final BooleanValue NULL_VALUE = new BooleanValue(false);
+  private static final BooleanValue NULL_VALUE = new BooleanValue(null);
 
   private static final String S_TRUE = "t";
   private static final String S_FALSE = "f";
@@ -40,27 +41,24 @@ public class BooleanValue extends Value {
     return null;
   }
 
-  private boolean value;
+  private Boolean value;
 
-  private BooleanValue(boolean value) {
+  private BooleanValue(Boolean value) {
     this.value = value;
   }
 
-  @Override
-  public int compareTo(Value other) {
-    if (this == other) {
-      return 0;
+  public int compareTo(Value o) {
+    int diff = precompareTo(o);
+    if (diff == BeeConst.COMPARE_UNKNOWN) {
+      diff = getBoolean().compareTo(o.getBoolean());
     }
-    BooleanValue otherBoolean = (BooleanValue) other;
-    if (isNull()) {
-      return -1;
-    }
-    if (otherBoolean.isNull()) {
-      return 1;
-    }
-    return (value == otherBoolean.value ? 0 : (value ? 1 : -1));
+    return diff;
   }
 
+  public Boolean getBoolean() {
+    return value;
+  }
+  
   @Override
   public Boolean getObjectValue() {
     if (isNull()) {
@@ -74,10 +72,6 @@ public class BooleanValue extends Value {
     return ValueType.BOOLEAN;
   }
 
-  public boolean getValue() {
-    return value;
-  }
-
   @Override
   public int hashCode() {
     return (isNull() ? -1 : (value ? 1 : 0));
@@ -85,13 +79,13 @@ public class BooleanValue extends Value {
 
   @Override
   public boolean isNull() {
-    return (this == NULL_VALUE);
+    return this == NULL_VALUE || getBoolean() == null;
   }
 
   @Override
   public String toString() {
-    if (this == NULL_VALUE) {
-      return "null";
+    if (isNull()) {
+      return BeeConst.NULL;
     }
     return Boolean.toString(value);
   }

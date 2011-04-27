@@ -88,7 +88,7 @@ public class CellGridImpl extends CellGrid implements GridView, SearchView {
     setKeyboardPagingPolicy(KeyboardPagingPolicy.CHANGE_PAGE);
     
     if (rowSet != null) {
-      estimateColumnWidths(rowSet.getRows().getList(), Math.min(rowSet.getNumberOfRows(), 10));
+      estimateColumnWidths(rowSet.getRows().getList(), Math.min(rowSet.getNumberOfRows(), 3));
     }
   }
   

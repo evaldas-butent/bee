@@ -1,19 +1,22 @@
 package com.butent.bee.shared;
 
 import com.google.common.primitives.Ints;
+import com.google.common.primitives.Longs;
 
+import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Grego;
 import com.butent.bee.shared.utils.TimeUtils;
 
 import java.util.Date;
 
-public class DateTime implements BeeSerializable, Comparable<DateTime> {
-  public static final char DATE_FIELD_SEPARATOR = '.';
+public class DateTime extends AbstractDate implements BeeSerializable, Comparable<DateTime> {
 
+  public static final char DATE_FIELD_SEPARATOR = '.';
   public static final char DATE_TIME_SEPARATOR = ' ';
   public static final char TIME_FIELD_SEPARATOR = ':';
   public static final char MILLIS_SEPARATOR = '.';
+
   public static DateTime parse(String s) {
     Assert.notEmpty(s);
     if (BeeUtils.isDigit(s)) {
@@ -36,11 +39,14 @@ public class DateTime implements BeeSerializable, Comparable<DateTime> {
   }
 
   public DateTime(Date date) {
-    this(date.getTime());
-    @SuppressWarnings("deprecation")
-    int z = getTimezoneOffset() - date.getTimezoneOffset();
-    if (z != 0) {
-      setTime(getTime() + z * TimeUtils.MILLIS_PER_MINUTE);
+    this(date == null ? 0L : date.getTime());
+    
+    if (date != null) {
+      @SuppressWarnings("deprecation")
+      int z = getTimezoneOffset() - date.getTimezoneOffset();
+      if (z != 0) {
+        setTime(getTime() + z * TimeUtils.MILLIS_PER_MINUTE);
+      }
     }
   }
 
@@ -70,7 +76,11 @@ public class DateTime implements BeeSerializable, Comparable<DateTime> {
   }
 
   public DateTime(JustDate date) {
-    this(date.getYear(), date.getMonth(), date.getDom());
+    if (date == null) {
+      setTime(0L);
+    } else {
+      setLocalDate(date.getYear(), date.getMonth(), date.getDom());
+    }
   }
 
   public DateTime(long time) {
@@ -78,9 +88,10 @@ public class DateTime implements BeeSerializable, Comparable<DateTime> {
   }
 
   public int compareTo(DateTime other) {
-    long thisVal = getTime();
-    long anotherVal = other.getTime();
-    return (thisVal < anotherVal ? -1 : (thisVal == anotherVal ? 0 : 1));
+    if (other == null) {
+      return BeeConst.COMPARE_MORE;
+    }
+    return Longs.compare(getTime(), other.getTime());
   }
 
   public void deserialize(String s) {
@@ -93,6 +104,16 @@ public class DateTime implements BeeSerializable, Comparable<DateTime> {
       return getTime() == ((DateTime) obj).getTime();
     }
     return false;
+  }
+
+  @Override
+  public JustDate getDate() {
+    return new JustDate(this);
+  }
+
+  @Override
+  public DateTime getDateTime() {
+    return this;
   }
 
   public int getDom() {
@@ -109,10 +130,15 @@ public class DateTime implements BeeSerializable, Comparable<DateTime> {
     ensureFields();
     return fields[Grego.IDX_DOY];
   }
-
+  
   public int getHour() {
     ensureFields();
     return fields[Grego.IDX_HOUR];
+  }
+
+  @Override
+  public Date getJava() {
+    return new Date(getTime());
   }
 
   public int getMillis() {
@@ -144,6 +170,11 @@ public class DateTime implements BeeSerializable, Comparable<DateTime> {
     return new Date(getTime()).getTimezoneOffset();
   }
 
+  @Override
+  public ValueType getType() {
+    return ValueType.DATETIME;
+  }
+
   public int getUtcDom() {
     ensureUtcFields();
     return utcFields[Grego.IDX_DOM];
@@ -168,7 +199,7 @@ public class DateTime implements BeeSerializable, Comparable<DateTime> {
     ensureUtcFields();
     return utcFields[Grego.IDX_MILLIS];
   }
-
+  
   public int getUtcMinute() {
     ensureUtcFields();
     return utcFields[Grego.IDX_MINUTE];
@@ -178,7 +209,7 @@ public class DateTime implements BeeSerializable, Comparable<DateTime> {
     ensureUtcFields();
     return utcFields[Grego.IDX_MONTH];
   }
-
+  
   public int getUtcSecond() {
     ensureUtcFields();
     return utcFields[Grego.IDX_SECOND];
@@ -188,12 +219,12 @@ public class DateTime implements BeeSerializable, Comparable<DateTime> {
     ensureUtcFields();
     return utcFields[Grego.IDX_YEAR];
   }
-
+  
   public int getYear() {
     ensureFields();
     return fields[Grego.IDX_YEAR];
   }
-
+  
   @Override
   public int hashCode() {
     return Long.valueOf(getTime()).hashCode();
@@ -203,11 +234,44 @@ public class DateTime implements BeeSerializable, Comparable<DateTime> {
     return Long.toString(time);
   }
 
+  public void setLocalDate(int year, int month, int dom) {
+    setLocalDate(year, month, dom, 0, 0, 0, 0);
+  }
+  
+  public void setLocalDate(int year, int month, int dom,
+      int hour, int minute, int second, int millis) {
+    long z = Grego.fieldsToDay(year, month, dom);
+    z *= TimeUtils.MILLIS_PER_DAY;
+
+    if (hour != 0) {
+      z += hour * TimeUtils.MILLIS_PER_HOUR;
+    }
+    if (minute != 0) {
+      z += minute * TimeUtils.MILLIS_PER_MINUTE;
+    }
+    if (second != 0) {
+      z += second * TimeUtils.MILLIS_PER_SECOND;
+    }
+    
+    setLocalTime(z + millis);
+  }
+
+  public void setLocalTime(long localTime) {
+    setTime(localTime);
+    int tzo = getTimezoneOffsetInMillis();
+    if (tzo == 0) {
+      return;
+    }
+
+    int diff = new DateTime(localTime + tzo).getTimezoneOffsetInMillis() - tzo;
+    setTime(localTime + tzo + diff);
+  }
+
   public void setTime(long time) {
     this.time = time;
     resetComputedFields();
   }
-
+  
   public String toDateString() {
     StringBuilder sb = new StringBuilder(10);
     sb.append(TimeUtils.yearToString(getYear())).append(DATE_FIELD_SEPARATOR);
@@ -215,14 +279,14 @@ public class DateTime implements BeeSerializable, Comparable<DateTime> {
     sb.append(TimeUtils.padTwo(getDom()));
     return sb.toString();
   }
-  
+
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder(23);
     sb.append(toDateString()).append(DATE_TIME_SEPARATOR).append(toTimeString());
     return sb.toString();
   }
-
+  
   public String toTimeString() {
     StringBuilder sb = new StringBuilder(12);
     sb.append(TimeUtils.padTwo(getHour())).append(TIME_FIELD_SEPARATOR);
@@ -242,7 +306,7 @@ public class DateTime implements BeeSerializable, Comparable<DateTime> {
     sb.append(TimeUtils.padTwo(getUtcDom()));
     return sb.toString();
   }
-  
+
   public String toUtcString() {
     StringBuilder sb = new StringBuilder(23);
     sb.append(toUtcDateString()).append(DATE_TIME_SEPARATOR).append(toUtcTimeString());
@@ -260,11 +324,11 @@ public class DateTime implements BeeSerializable, Comparable<DateTime> {
     }
     return sb.toString();
   }
-  
+
   private void computeFields() {
     fields = Grego.timeToFields(time - getTimezoneOffsetInMillis());
   }
-
+  
   private void computeUtcFields() {
     utcFields = Grego.timeToFields(time);
   }
@@ -284,20 +348,9 @@ public class DateTime implements BeeSerializable, Comparable<DateTime> {
   private int getTimezoneOffsetInMillis() {
     return getTimezoneOffset() * TimeUtils.MILLIS_PER_MINUTE;
   }
-  
+
   private void resetComputedFields() {
     fields = null;
     utcFields = null;
-  }
-
-  private void setLocalTime(long localTime) {
-    setTime(localTime);
-    int tzo = getTimezoneOffsetInMillis();
-    if (tzo == 0) {
-      return;
-    }
-
-    int diff = new DateTime(localTime + tzo).getTimezoneOffsetInMillis() - tzo;
-    setTime(localTime + tzo + diff);
   }
 }

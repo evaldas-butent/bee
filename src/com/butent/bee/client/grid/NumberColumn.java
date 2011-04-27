@@ -25,7 +25,7 @@ public class NumberColumn extends CellColumn<Number> {
   @Override
   public Number getValue(IsRow row) {
     if (row == null) {
-      return 0;
+      return null;
     }
     return row.getDouble(getIndex());
   }

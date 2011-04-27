@@ -6,11 +6,8 @@ import com.google.gwt.i18n.client.DateTimeFormat;
 import com.butent.bee.shared.DateTime;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.utils.TimeUtils;
 
-import java.util.Date;
-
-public class DateTimeColumn extends CellColumn<Date> {
+public class DateTimeColumn extends CellColumn<DateTime> {
 
   public DateTimeColumn(int index, IsColumn dataColumn) {
     this(new DateTimeCell(), index, dataColumn);
@@ -20,19 +17,15 @@ public class DateTimeColumn extends CellColumn<Date> {
     this(new DateTimeCell(format), index, dataColumn);
   }
 
-  public DateTimeColumn(Cell<Date> cell, int index, IsColumn dataColumn) {
+  public DateTimeColumn(Cell<DateTime> cell, int index, IsColumn dataColumn) {
     super(cell, index, dataColumn);
   }
 
   @Override
-  public Date getValue(IsRow row) {
+  public DateTime getValue(IsRow row) {
     if (row == null) {
       return null;
     }
-    DateTime dt = row.getDateTime(getIndex());
-    if (dt == null) {
-      return null;
-    }
-    return TimeUtils.toJava(dt);
+    return row.getDateTime(getIndex());
   }
 }

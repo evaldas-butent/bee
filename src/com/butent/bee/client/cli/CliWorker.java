@@ -384,7 +384,9 @@ public class CliWorker {
       src = "http://people.opera.com/shwetankd/webm/sunflower.webm";
     }
 
-    Video widget = new Video(src);
+    Video widget = Video.createIfSupported();
+    Assert.notNull(widget);
+    widget.getVideoElement().setSrc(src);
     widget.getVideoElement().setControls(true);
 
     BeeKeeper.getUi().updateActivePanel(widget, ScrollBars.BOTH);

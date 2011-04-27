@@ -1858,6 +1858,27 @@ public class BeeUtils {
     }
   }
 
+  public static int precompare(Object x1, Object x2) {
+    if (x1 == x2) {
+      return BeeConst.COMPARE_EQUAL;
+    }
+    if (x1 == null) {
+      if (x2 == null) {
+        return BeeConst.COMPARE_EQUAL;
+      } else {
+        return BeeConst.COMPARE_LESS;
+      }
+    }
+    if (x2 == null) {
+      return BeeConst.COMPARE_MORE;
+    }
+
+    if (!x1.getClass().equals(x2.getClass())) {
+      return x1.getClass().getName().compareTo(x2.getClass().getName());
+    }
+    return BeeConst.COMPARE_UNKNOWN;
+  }
+  
   /**
    * Shows how much of the progress is done, separated by the default progress separator.
    * <p>
@@ -2356,6 +2377,13 @@ public class BeeUtils {
     return BeeConst.isTrue(s.trim().charAt(0));
   }
 
+  public static Boolean toBooleanOrNull(String s) {
+    if (isEmpty(s)) {
+      return null;
+    }
+    return toBoolean(s);
+  }
+  
   /**
    * Converts a String value {@code s} to Double.
    * 
@@ -2377,6 +2405,13 @@ public class BeeUtils {
     return d;
   }
 
+  public static Double toDoubleOrNull(String s) {
+    if (isEmpty(s)) {
+      return null;
+    }
+    return toDouble(s);
+  }
+  
   /**
    * Converts a String value {@code s} to Float.
    * 
@@ -2437,11 +2472,22 @@ public class BeeUtils {
     try {
       i = Integer.parseInt(s.trim());
     } catch (NumberFormatException ex) {
-      i = 0;
+      if (isNumeric(s)) {
+        i = toInt(toDouble(s));
+      } else {
+        i = 0;
+      }
     }
     return i;
   }
 
+  public static Integer toIntOrNull(String s) {
+    if (isEmpty(s)) {
+      return null;
+    }
+    return toInt(s);
+  }
+  
   /**
    * Adds leading zeros to {@code x}. Converts {@code x} to a String and if it's length is less than
    * {@code n} adds them.
@@ -2458,6 +2504,19 @@ public class BeeUtils {
     }
   }
 
+  public static long toLong(Double d) {
+    if (!isDouble(d)) {
+      return 0L;
+    }
+    if (d <= Long.MIN_VALUE) {
+      return Long.MIN_VALUE;
+    }
+    if (d >= Long.MAX_VALUE) {
+      return Long.MAX_VALUE;
+    }
+    return d.longValue();
+  }
+  
   /**
    * Converts a String value {@code s} to Long.
    * 
@@ -2474,11 +2533,22 @@ public class BeeUtils {
     try {
       x = Long.parseLong(s.trim());
     } catch (NumberFormatException ex) {
-      x = 0L;
+      if (isNumeric(s)) {
+        x = toLong(toDouble(s));
+      } else {
+        x = 0L;
+      }
     }
     return x;
   }
 
+  public static Long toLongOrNull(String s) {
+    if (isEmpty(s)) {
+      return null;
+    }
+    return toLong(s);
+  }
+  
   public static int toNonNegativeInt(Integer x) {
     if (x == null) {
       return 0;

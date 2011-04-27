@@ -1,8 +1,10 @@
 package com.butent.bee.shared.data.value;
 
+import com.butent.bee.shared.BeeConst;
+
 public class TextValue extends Value {
 
-  private static final TextValue NULL_VALUE = new TextValue("");
+  private static final TextValue NULL_VALUE = new TextValue(null);
 
   public static TextValue getNullValue() {
     return NULL_VALUE;
@@ -11,15 +13,15 @@ public class TextValue extends Value {
   private String value;
 
   public TextValue(String value) {
-    this.value = (value == null) ? NULL_VALUE.getValue() : value;
+    this.value = value;
   }
 
-  @Override
-  public int compareTo(Value other) {
-    if (this == other) {
-      return 0;
+  public int compareTo(Value o) {
+    int diff = precompareTo(o);
+    if (diff == BeeConst.COMPARE_UNKNOWN) {
+      diff = getString().compareTo(o.getString());
     }
-    return value.compareTo(((TextValue) other).value);
+    return diff;
   }
 
   @Override
@@ -27,27 +29,33 @@ public class TextValue extends Value {
     return value;
   }
 
+  public String getString() {
+    return value;
+  }
+  
   @Override
   public ValueType getType() {
     return ValueType.TEXT;
   }
 
-  public String getValue() {
-    return value;
-  }
-
   @Override
   public int hashCode() {
-    return value.hashCode();
+    if (isNull()) {
+      return -1;
+    }
+    return getString().hashCode();
   }
 
   @Override
   public boolean isNull() {
-    return (this == NULL_VALUE);
+    return this == NULL_VALUE || getString() == null;
   }
 
   @Override
   public String toString() {
-    return value;
+    if (isNull()) {
+      return BeeConst.NULL;
+    }
+    return getString();
   }
 }
