@@ -10,6 +10,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * enables to store information on client side using Local Storage element from HTML5.
+ * 
+ * 
+ */
+
 public class Storage implements Module {
   private Map<String, String> items = new HashMap<String, String>();
   private boolean localStorage;
@@ -17,7 +23,7 @@ public class Storage implements Module {
   public Storage() {
     localStorage = Features.supportsLocalStorage();
   }
-  
+
   public Enum<?> checkEnum(String key, Enum<?> def) {
     Assert.notNull(def);
     String v = getItem(key);
@@ -28,7 +34,7 @@ public class Storage implements Module {
         return arr[idx];
       }
     }
-    
+
     setItem(key, BeeUtils.transform(def.ordinal()));
     return def;
   }
@@ -38,7 +44,7 @@ public class Storage implements Module {
     if (BeeUtils.isDigit(v)) {
       return BeeUtils.toInt(v);
     }
-    
+
     setItem(key, BeeUtils.transform(def));
     return def;
   }
@@ -50,7 +56,7 @@ public class Storage implements Module {
       items.clear();
     }
   }
-  
+
   public void end() {
   }
 
@@ -63,7 +69,7 @@ public class Storage implements Module {
       z = key(i);
       lst.add(new Property(z, getItem(z)));
     }
-    
+
     return lst;
   }
 
@@ -137,15 +143,15 @@ public class Storage implements Module {
     }
     return key;
   }
-  
+
   public int length() {
     if (localStorage) {
       return lsLength();
     } else {
-      return items.size(); 
+      return items.size();
     }
   }
-  
+
   public void removeItem(String key) {
     Assert.notEmpty(key);
 
@@ -164,34 +170,34 @@ public class Storage implements Module {
       items.put(key, BeeUtils.transform(value));
     }
   }
-  
+
   public void start() {
   }
-  
+
   private native void lsClear() /*-{
-    $wnd.localStorage.clear();
+		$wnd.localStorage.clear();
   }-*/;
 
   private native String lsGetItem(String key) /*-{
-    return $wnd.localStorage.getItem(key);
+		return $wnd.localStorage.getItem(key);
   }-*/;
 
   private native String lsKey(int index) /*-{
-    return $wnd.localStorage.key(index);
+		return $wnd.localStorage.key(index);
   }-*/;
 
   private native int lsLength() /*-{
-    return $wnd.localStorage.length;
+		return $wnd.localStorage.length;
   }-*/;
 
   private native void lsRemoveItem(String key) /*-{
-    $wnd.localStorage.removeItem(key);
+		$wnd.localStorage.removeItem(key);
   }-*/;
-  
+
   private native void lsSetItem(String key, Object value) /*-{
-    $wnd.localStorage.setItem(key, value);
+		$wnd.localStorage.setItem(key, value);
   }-*/;
-  
+
   private boolean validIndex(int index) {
     return index >= 0 && index < length();
   }

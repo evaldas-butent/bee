@@ -15,6 +15,9 @@ import com.butent.bee.shared.utils.LogUtils;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * Manages appearance and content of the logger object.
+ */
 public class LogHandler implements Module {
   private Logger logger = null;
   private LogArea area = null;
@@ -76,13 +79,13 @@ public class LogHandler implements Module {
         return DO_NOT_CALL;
     }
   }
-  
+
   public int getSize() {
     int z = BeeConst.SIZE_UNKNOWN;
     if (getArea() == null) {
       return z;
     }
-    
+
     Widget parent = getArea().getParent();
     if (parent instanceof Split) {
       z = ((Split) parent).getWidgetSize(getArea());
@@ -90,7 +93,7 @@ public class LogHandler implements Module {
 
     return z;
   }
-  
+
   public void hide() {
     resize(0);
   }
@@ -105,16 +108,16 @@ public class LogHandler implements Module {
   public void log(Level level, Object... obj) {
     LogUtils.log(getLogger(), level, obj);
   }
-  
+
   public void resize(int size) {
     if (getArea() == null) {
       return;
     }
-    
+
     Widget parent = getArea().getParent();
     if (parent instanceof Split) {
       if (size <= 0) {
-        hiddenSize = getSize(); 
+        hiddenSize = getSize();
       } else {
         hiddenSize = BeeConst.SIZE_UNKNOWN;
       }
@@ -122,7 +125,7 @@ public class LogHandler implements Module {
       ((Split) parent).setWidgetSize(getArea(), size);
     }
   }
-  
+
   public void setArea(LogArea area) {
     this.area = area;
   }
@@ -138,7 +141,7 @@ public class LogHandler implements Module {
   public void severe(Object... obj) {
     LogUtils.severe(getLogger(), obj);
   }
-  
+
   public void show() {
     if (hiddenSize > 0) {
       resize(hiddenSize);

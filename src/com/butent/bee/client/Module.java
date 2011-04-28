@@ -1,5 +1,12 @@
 package com.butent.bee.client;
 
+/**
+ * sets requirements for class initialization priority, most of the classes depend on other ones to
+ * be initialised before them.
+ * 
+ * 
+ */
+
 public interface Module {
   int PRIORITY_INIT = 1;
   int PRIORITY_START = 2;

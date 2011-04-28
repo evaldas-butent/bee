@@ -6,6 +6,11 @@ import com.butent.bee.shared.utils.RowComparator;
 
 import java.util.Arrays;
 
+/**
+ * starts and stops core system modules
+ * <code>BeeUi, RpcFactory, EventManager, LogHandler, UserInfo, Global, Storage, MenuManager
+ */
+
 public class BeeKeeper {
   private static BeeUi UI;
   private static RpcFactory RPC;
@@ -58,7 +63,7 @@ public class BeeKeeper {
     STOR = new Storage();
     MENU = new MenuManager();
 
-    modules = new Module[]{UI, BUS, RPC, LOG, USER, GLOB, STOR, MENU};
+    modules = new Module[] {UI, BUS, RPC, LOG, USER, GLOB, STOR, MENU};
   }
 
   public void end() {

@@ -6,6 +6,10 @@ import com.google.gwt.user.client.ui.RootLayoutPanel;
 
 import com.butent.bee.shared.BeeConst;
 
+/**
+ * The entry point class of the application, initializes <code>BeeKeeper</code> class.
+ */
+
 public class Bee implements EntryPoint {
   public void onModuleLoad() {
     BeeConst.setClient();

@@ -13,8 +13,8 @@ import com.butent.bee.client.composite.RadioGroup;
 import com.butent.bee.client.composite.TextEditor;
 import com.butent.bee.client.composite.ValueSpinner;
 import com.butent.bee.client.composite.VolumeSlider;
-import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.dom.StyleUtils.ScrollBars;
 import com.butent.bee.client.grid.CellType;
 import com.butent.bee.client.grid.FlexTable;
@@ -45,6 +45,10 @@ import com.butent.bee.shared.menu.MenuConstants;
 import com.butent.bee.shared.ui.UiComponent;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
+
+/**
+ * manages the main browser window and it's main containing elements (f.e. panels).
+ */
 
 public class BeeUi implements Module {
 
@@ -386,7 +390,7 @@ public class BeeUi implements Module {
       setTemporaryDetach(true);
       p.remove(w);
       setTemporaryDetach(false);
-      
+
       center.add(w, scroll);
       center.onLayout();
     }

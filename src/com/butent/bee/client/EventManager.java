@@ -21,6 +21,10 @@ import com.butent.bee.shared.Service;
 import com.butent.bee.shared.Stage;
 import com.butent.bee.shared.utils.BeeUtils;
 
+/**
+ * creates handlers for events such as mouse and keyboard actions or server responses.
+ */
+
 public class EventManager implements Module {
   private BeeClickHandler clickHandler = null;
   private BeeKeyPressHandler keyHandler = null;
@@ -238,7 +242,7 @@ public class EventManager implements Module {
 
     } else if (svc.equals(Service.GET_LOGIN)) {
       if (stg.equals(Stage.STAGE_GET_PARAMETERS)) {
-        Global.inputVars(new Stage(Service.GET_LOGIN, Stage.STAGE_CONFIRM), 
+        Global.inputVars(new Stage(Service.GET_LOGIN, Stage.STAGE_CONFIRM),
             "Login", Service.VAR_LOGIN, Service.VAR_PASSWORD);
         ok = true;
 

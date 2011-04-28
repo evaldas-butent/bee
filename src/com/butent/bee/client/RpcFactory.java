@@ -19,6 +19,12 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Map;
 
+/**
+ * enables to generate and manage remote procedure calls, GET and POST statements.
+ * 
+ * 
+ */
+
 public class RpcFactory implements Module {
   private final String rpcUrl;
 
@@ -131,7 +137,7 @@ public class RpcFactory implements Module {
   public int makeGetRequest(ParameterList params, ResponseCallback callback) {
     return makeRequest(RequestBuilder.GET, params, null, null, callback, BeeConst.TIME_UNKNOWN);
   }
-  
+
   public int makeGetRequest(ParameterList params, ResponseCallback callback, int timeout) {
     return makeRequest(RequestBuilder.GET, params, null, null, callback, timeout);
   }
@@ -180,7 +186,7 @@ public class RpcFactory implements Module {
       int timeout) {
     return makeRequest(RequestBuilder.POST, params, null, data, callback, timeout);
   }
-  
+
   public int makePostRequest(String svc, ContentType ctp, String data) {
     return makeRequest(RequestBuilder.POST, createParameters(svc), ctp, data,
         null, BeeConst.TIME_UNKNOWN);

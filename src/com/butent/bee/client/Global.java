@@ -12,14 +12,14 @@ import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.resources.Images;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Service;
-import com.butent.bee.shared.Stage;
 import com.butent.bee.shared.BeeType;
 import com.butent.bee.shared.BeeWidget;
+import com.butent.bee.shared.Service;
+import com.butent.bee.shared.Stage;
 import com.butent.bee.shared.Variable;
-import com.butent.bee.shared.menu.MenuConstants;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.LocalizableMessages;
+import com.butent.bee.shared.menu.MenuConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
@@ -29,9 +29,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * initializes and contains system parameters, which are used globally in the whole system.
+ */
+
 public class Global implements Module {
   public static final String VAR_DEBUG = "debug";
-  
+
   public static LocalizableConstants constants = GWT.create(LocalizableConstants.class);
   public static LocalizableMessages messages = GWT.create(LocalizableMessages.class);
 
@@ -85,7 +89,7 @@ public class Global implements Module {
   public static Explorer getDataExplorer() {
     return dataExplorer;
   }
-  
+
   public static Images getImages() {
     return images;
   }
@@ -249,7 +253,7 @@ public class Global implements Module {
       inputVars(null, "Variables", arr);
     }
   }
-  
+
   public static void showWidget(Widget widget) {
     msgBox.showWidget(widget);
   }
@@ -257,7 +261,7 @@ public class Global implements Module {
   public static Widget simpleGrid(Object data, String... columnLabels) {
     return GridFactory.simpleGrid(data, columnLabels);
   }
-  
+
   Global() {
   }
 

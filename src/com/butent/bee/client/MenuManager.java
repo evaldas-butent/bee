@@ -30,6 +30,10 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * creates and manages menu of the system using authorization and layout configuration.
+ */
+
 public class MenuManager implements Module {
   private class DrawCommand extends BeeCommand {
     @Override
@@ -40,7 +44,7 @@ public class MenuManager implements Module {
 
   private List<MenuEntry> roots = null;
   private List<MenuEntry> items = null;
-  
+
   private boolean loaded = false;
   private BeeCommand onLoad = null;
 
@@ -172,7 +176,7 @@ public class MenuManager implements Module {
       }
     }
     BeeKeeper.getLog().finish(dur, BeeUtils.addName("roots", rc), BeeUtils.addName("items", ic));
-    
+
     setLoaded(true);
     if (getOnLoad() != null) {
       getOnLoad().execute();
@@ -210,7 +214,7 @@ public class MenuManager implements Module {
       return;
     }
 
-    String[] cols = new String[]{
+    String[] cols = new String[] {
         "id", "parent", "order", "sep", "text", "service", "parameters",
         "type", "style", "key", "visible"};
 

@@ -2,6 +2,12 @@ package com.butent.bee.client;
 
 import com.butent.bee.shared.utils.BeeUtils;
 
+/**
+ * gets user login status, session ID and stores them.
+ * 
+ * 
+ */
+
 public class UserInfo implements Module {
 
   private String sessionId = null;
@@ -37,7 +43,7 @@ public class UserInfo implements Module {
 
   public void init() {
   }
-  
+
   public boolean isLoggedIn() {
     return !BeeUtils.isEmpty(getUserSign());
   }
