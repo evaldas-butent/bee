@@ -7,7 +7,7 @@ import com.butent.bee.shared.utils.RowComparator;
 import java.util.Arrays;
 
 /**
- * starts and stops core system modules
+ * starts and stops core system modules.
  * <code>BeeUi, RpcFactory, EventManager, LogHandler, UserInfo, Global, Storage, MenuManager
  */
 

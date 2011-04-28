@@ -175,27 +175,27 @@ public class Storage implements Module {
   }
 
   private native void lsClear() /*-{
-		$wnd.localStorage.clear();
+    $wnd.localStorage.clear();
   }-*/;
 
   private native String lsGetItem(String key) /*-{
-		return $wnd.localStorage.getItem(key);
+    return $wnd.localStorage.getItem(key);
   }-*/;
 
   private native String lsKey(int index) /*-{
-		return $wnd.localStorage.key(index);
+    return $wnd.localStorage.key(index);
   }-*/;
 
   private native int lsLength() /*-{
-		return $wnd.localStorage.length;
+    return $wnd.localStorage.length;
   }-*/;
 
   private native void lsRemoveItem(String key) /*-{
-		$wnd.localStorage.removeItem(key);
+    $wnd.localStorage.removeItem(key);
   }-*/;
 
   private native void lsSetItem(String key, Object value) /*-{
-		$wnd.localStorage.setItem(key, value);
+    $wnd.localStorage.setItem(key, value);
   }-*/;
 
   private boolean validIndex(int index) {
