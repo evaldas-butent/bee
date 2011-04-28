@@ -5,12 +5,10 @@ import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.Transformable;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.sql.IsCondition;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
 import java.util.List;
-import java.util.Map;
 
 public abstract class Filter implements BeeSerializable, Transformable {
 
@@ -23,7 +21,6 @@ public abstract class Filter implements BeeSerializable, Transformable {
 
     if (data != null) {
       flt = Filter.getFilter(clazz);
-      Assert.notEmpty(flt, "Unsupported class name: " + clazz);
       flt.deserialize(data);
     }
     return flt;
@@ -46,6 +43,9 @@ public abstract class Filter implements BeeSerializable, Transformable {
 
     } else if (BeeUtils.getClassName(CompoundFilter.class).equals(clazz)) {
       flt = new CompoundFilter();
+
+    } else {
+      Assert.unsupported("Unsupported class name: " + clazz);
     }
     return flt;
   }
@@ -55,8 +55,6 @@ public abstract class Filter implements BeeSerializable, Transformable {
   protected Filter() {
     this.safe = false;
   }
-
-  public abstract IsCondition getCondition(Map<String, String[]> columns);
 
   public abstract boolean involvesColumn(String colName);
 

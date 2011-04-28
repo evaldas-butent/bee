@@ -318,6 +318,7 @@ public class SqlUtils {
   }
 
   public static IsExpression sqlCase(IsExpression expr, Object... pairs) {
+    Assert.noNulls(expr, pairs);
     Assert.parameterCount(pairs.length, 3);
     Assert.notEmpty(pairs.length % 2);
 

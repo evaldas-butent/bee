@@ -5,15 +5,10 @@ import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.value.ValueType;
-import com.butent.bee.shared.sql.IsCondition;
-import com.butent.bee.shared.sql.IsExpression;
-import com.butent.bee.shared.sql.SqlUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
-import com.butent.bee.shared.utils.LogUtils;
 
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Logger;
 
 public class ColumnValueFilter extends ComparisonFilter {
@@ -100,36 +95,6 @@ public class ColumnValueFilter extends ComparisonFilter {
 
   public String getColumn() {
     return column;
-  }
-
-  @Override
-  public IsCondition getCondition(Map<String, String[]> columns) {
-    IsCondition condition = null;
-
-    String colName = column.toLowerCase();
-    Assert.contains(columns, colName);
-
-    String als = columns.get(colName)[0];
-
-    if (!BeeUtils.isEmpty(als)) {
-      IsExpression src = SqlUtils.field(als, columns.get(colName)[1]);
-      Operator op = getOperator();
-
-      if (Operator.LIKE == op) {
-        String val = value.getString();
-
-        if (hasLikeCharacters(val)) {
-          condition = SqlUtils.like(src, val);
-        } else {
-          condition = SqlUtils.contains(src, val);
-        }
-      } else {
-        condition = SqlUtils.compare(src, op, SqlUtils.constant(value));
-      }
-    } else {
-      LogUtils.warning(logger, "Column " + colName + " is not initialized");
-    }
-    return condition;
   }
 
   public Value getValue() {

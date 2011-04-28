@@ -613,10 +613,7 @@ public class SystemBean {
   }
 
   public IsCondition getViewCondition(String viewName, Filter filter) {
-    if (!BeeUtils.isEmpty(filter)) {
-      return filter.getCondition(getView(viewName).getFields());
-    }
-    return null;
+    return getView(viewName).getCondition(filter);
   }
 
   public BeeRowSet getViewData(String viewName, IsCondition condition, Order order,

@@ -4,12 +4,25 @@ import com.google.common.collect.Maps;
 
 import com.butent.bee.server.data.BeeTable.BeeField;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.data.filter.ColumnColumnFilter;
+import com.butent.bee.shared.data.filter.ColumnIsEmptyFilter;
+import com.butent.bee.shared.data.filter.ColumnValueFilter;
+import com.butent.bee.shared.data.filter.CompoundFilter;
+import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.filter.NegationFilter;
+import com.butent.bee.shared.data.filter.Operator;
+import com.butent.bee.shared.data.value.Value;
+import com.butent.bee.shared.sql.BeeConstants.DataType;
+import com.butent.bee.shared.sql.CompoundCondition;
 import com.butent.bee.shared.sql.IsCondition;
+import com.butent.bee.shared.sql.IsExpression;
 import com.butent.bee.shared.sql.SqlSelect;
 import com.butent.bee.shared.sql.SqlUtils;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.LogUtils;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -20,13 +33,18 @@ class BeeView {
     private final String table;
     private final String alias;
     private final String field;
+    private final DataType type;
+    private final boolean isNotNull;
     private boolean sourceField;
     private String targetAlias;
 
-    public ViewField(String tbl, String als, String fld, boolean sourceField) {
+    public ViewField(String tbl, String als, String fld, DataType type, boolean isNotNull,
+        boolean sourceField) {
       this.table = tbl;
       this.alias = als;
       this.field = fld;
+      this.type = type;
+      this.isNotNull = isNotNull;
       this.sourceField = sourceField;
     }
 
@@ -44,6 +62,14 @@ class BeeView {
 
     public String getTargetAlias() {
       return targetAlias;
+    }
+
+    public DataType getType() {
+      return type;
+    }
+
+    public boolean isNotNull() {
+      return isNotNull;
     }
 
     public boolean isSourceField() {
@@ -96,21 +122,136 @@ class BeeView {
     return Collections.unmodifiableSet(columns.keySet());
   }
 
+  public IsCondition getCondition(ColumnValueFilter filter) {
+    IsCondition condition = null;
+    String colName = filter.getColumn();
+    String als = getAlias(colName);
+
+    if (!BeeUtils.isEmpty(als)) {
+      IsExpression src = SqlUtils.field(als, getField(colName));
+      Operator op = filter.getOperator();
+      Value value = filter.getValue();
+
+      if (Operator.LIKE == op) {
+        String val = value.getString();
+
+        if (filter.hasLikeCharacters(val)) {
+          condition = SqlUtils.like(src, val);
+        } else {
+          condition = SqlUtils.contains(src, val);
+        }
+      } else {
+        condition = SqlUtils.compare(src, op, SqlUtils.constant(value));
+      }
+    } else {
+      LogUtils.warning(LogUtils.getDefaultLogger(), "Column " + colName + " is not initialized");
+    }
+    return condition;
+  }
+
+  public IsCondition getCondition(ColumnColumnFilter filter) {
+    IsCondition condition = null;
+    String firstName = filter.getFirstColumn().toLowerCase();
+    String secondName = filter.getSecondColumn().toLowerCase();
+    String err = null;
+    String als = getAlias(firstName);
+
+    if (!BeeUtils.isEmpty(als)) {
+      IsExpression firstSrc = SqlUtils.field(als, getField(firstName));
+      als = getAlias(secondName);
+
+      if (!BeeUtils.isEmpty(als)) {
+        IsExpression secondSrc = SqlUtils.field(als, getField(secondName));
+        condition = SqlUtils.compare(firstSrc, filter.getOperator(), secondSrc);
+      } else {
+        err = secondName;
+      }
+    } else {
+      err = firstName;
+    }
+    if (!BeeUtils.isEmpty(err)) {
+      LogUtils.warning(LogUtils.getDefaultLogger(), "Column " + err + " is not initialized");
+    }
+    return condition;
+  }
+
+  public IsCondition getCondition(ColumnIsEmptyFilter filter) {
+    IsCondition condition = null;
+    String colName = filter.getColumn();
+    String als = getAlias(colName);
+
+    if (!BeeUtils.isEmpty(als)) {
+      String fld = getField(colName);
+      condition = SqlUtils.equal(als, fld, getType(colName).getEmptyValue());
+
+      if (!isNotNull(colName)) {
+        condition = SqlUtils.or(SqlUtils.isNull(als, fld), condition);
+      }
+    } else {
+      condition = SqlUtils.sqlTrue();
+    }
+    return condition;
+  }
+
+  public IsCondition getCondition(NegationFilter filter) {
+    return SqlUtils.not(getCondition(filter.getSubFilter()));
+  }
+
+  public IsCondition getCondition(CompoundFilter filter) {
+    CompoundCondition condition = null;
+    List<Filter> subFilters = filter.getSubFilters();
+
+    if (!BeeUtils.isEmpty(subFilters)) {
+      switch (filter.getJoinType()) {
+        case AND:
+          condition = SqlUtils.and();
+          break;
+        case OR:
+          condition = SqlUtils.or();
+          break;
+        default:
+          Assert.unsupported();
+          break;
+      }
+      for (Filter subFilter : subFilters) {
+        condition.add(getCondition(subFilter));
+      }
+    }
+    return condition;
+  }
+
+  public IsCondition getCondition(Filter filter) {
+    if (filter != null) {
+      String clazz = BeeUtils.getClassName(filter.getClass());
+
+      if (BeeUtils.getClassName(ColumnValueFilter.class).equals(clazz)) {
+        return getCondition((ColumnValueFilter) filter);
+
+      } else if (BeeUtils.getClassName(ColumnColumnFilter.class).equals(clazz)) {
+        return getCondition((ColumnColumnFilter) filter);
+
+      } else if (BeeUtils.getClassName(ColumnIsEmptyFilter.class).equals(clazz)) {
+        return getCondition((ColumnIsEmptyFilter) filter);
+
+      } else if (BeeUtils.getClassName(NegationFilter.class).equals(clazz)) {
+        return getCondition((NegationFilter) filter);
+
+      } else if (BeeUtils.getClassName(CompoundFilter.class).equals(clazz)) {
+        return getCondition((CompoundFilter) filter);
+
+      } else {
+        Assert.unsupported("Unsupported class name: " + clazz);
+      }
+    }
+    return null;
+  }
+
   public String getExpression(String colName) {
     return getColumnInfo(colName)[EXPRESSION];
   }
 
   public String getField(String colName) {
     return getViewField(colName).getField();
-  }
-
-  public Map<String, String[]> getFields() {
-    Map<String, String[]> fields = Maps.newLinkedHashMap();
-
-    for (String colName : getColumns()) {
-      fields.put(colName, new String[] {getAlias(colName), getField(colName)});
-    }
-    return fields;
   }
 
   public String getLocale(String colName) {
@@ -142,6 +283,10 @@ class BeeView {
     return getViewField(colName).getTable();
   }
 
+  public DataType getType(String colName) {
+    return getViewField(colName).getType();
+  }
+
   public boolean hasColumn(String colName) {
     Assert.notEmpty(colName);
     return columns.containsKey(colName.toLowerCase());
@@ -149,6 +294,10 @@ class BeeView {
 
   public boolean isEmpty() {
     return BeeUtils.isEmpty(getColumnCount());
+  }
+
+  public boolean isNotNull(String colName) {
+    return getViewField(colName).isNotNull();
   }
 
   public boolean isReadOnly() {
@@ -255,7 +404,8 @@ class BeeView {
     if (field.isExtended()) {
       als = table.joinExtField(query, als, field);
     }
-    expressions.put(expression, new ViewField(tbl, als, fld, BeeUtils.isEmpty(xpr)));
+    expressions.put(expression, new ViewField(tbl, als, fld, field.getType(), field.isNotNull(),
+        BeeUtils.isEmpty(xpr)));
   }
 
   private synchronized void rebuildQuery(Map<String, BeeTable> tables) {

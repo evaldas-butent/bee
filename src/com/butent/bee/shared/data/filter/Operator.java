@@ -13,6 +13,23 @@ public enum Operator {
   IN(null, " IN "),
   IS(null, " IS ");
 
+  public static Operator detectOperator(String expr) {
+    Operator op = null;
+  
+    if (!BeeUtils.isEmpty(expr)) {
+      for (Operator operator : Operator.values()) {
+        String s = operator.toTextString();
+  
+        if (!BeeUtils.isEmpty(s)) {
+          if (expr.startsWith(s) && (op == null || s.length() > op.toTextString().length())) {
+            op = operator;
+          }
+        }
+      }
+    }
+    return op;
+  }
+
   public static Operator getOperator(String op) {
     if (!BeeUtils.isEmpty(op)) {
       for (Operator operator : Operator.values()) {
@@ -22,27 +39,6 @@ public enum Operator {
       }
     }
     return null;
-  }
-
-  public static String getPattern(boolean multipleChars) {
-    StringBuilder sb = new StringBuilder();
-
-    for (Operator operator : Operator.values()) {
-      String op = operator.toTextString();
-
-      if (!BeeUtils.isEmpty(op)) {
-        if (multipleChars && op.length() > 1 || !multipleChars && op.length() == 1) {
-          if (sb.length() > 0) {
-            sb.append("|");
-          }
-          if (LIKE == operator) {
-            op = "\\" + op;
-          }
-          sb.append(op);
-        }
-      }
-    }
-    return sb.toString();
   }
 
   private String textString;

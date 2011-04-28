@@ -4,13 +4,10 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.value.Value;
-import com.butent.bee.shared.sql.IsCondition;
-import com.butent.bee.shared.sql.SqlUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
 import java.util.List;
-import java.util.Map;
 
 public class ColumnIsEmptyFilter extends Filter {
 
@@ -52,22 +49,6 @@ public class ColumnIsEmptyFilter extends Filter {
 
   public String getColumn() {
     return column;
-  }
-
-  @Override
-  public IsCondition getCondition(Map<String, String[]> columns) {
-    IsCondition condition = null;
-
-    String colName = column.toLowerCase();
-    Assert.contains(columns, colName);
-
-    String als = columns.get(colName)[0];
-
-    if (!BeeUtils.isEmpty(als)) {
-      String fld = columns.get(colName)[1];
-      condition = SqlUtils.isNull(als, fld); // TODO: compare according type
-    }
-    return condition;
   }
 
   @Override

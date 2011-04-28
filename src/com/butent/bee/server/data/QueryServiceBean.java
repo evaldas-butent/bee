@@ -322,9 +322,7 @@ public class QueryServiceBean {
         String colName = col.getId();
 
         if (view.hasColumn(colName)) {
-          String fld = view.getField(colName);
-
-          switch (sys.getTableField(view.getTable(colName), fld).getType()) {
+          switch (view.getType(colName)) {
             case BOOLEAN:
               col.setType(ValueType.BOOLEAN);
               break;

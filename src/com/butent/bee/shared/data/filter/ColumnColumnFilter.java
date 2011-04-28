@@ -4,15 +4,10 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.value.Value;
-import com.butent.bee.shared.sql.IsCondition;
-import com.butent.bee.shared.sql.IsExpression;
-import com.butent.bee.shared.sql.SqlUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
-import com.butent.bee.shared.utils.LogUtils;
 
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Logger;
 
 public class ColumnColumnFilter extends ComparisonFilter {
@@ -92,37 +87,6 @@ public class ColumnColumnFilter extends ComparisonFilter {
       return false;
     }
     return true;
-  }
-
-  @Override
-  public IsCondition getCondition(Map<String, String[]> columns) {
-    IsCondition condition = null;
-
-    String firstName = firstColumn.toLowerCase();
-    Assert.contains(columns, firstName);
-    String secondName = secondColumn.toLowerCase();
-    Assert.contains(columns, secondName);
-
-    String err = null;
-    String als = columns.get(firstName)[0];
-
-    if (!BeeUtils.isEmpty(als)) {
-      IsExpression firstSrc = SqlUtils.field(als, columns.get(firstName)[1]);
-      als = columns.get(secondName)[0];
-
-      if (!BeeUtils.isEmpty(als)) {
-        IsExpression secondSrc = SqlUtils.field(als, columns.get(secondName)[1]);
-        condition = SqlUtils.compare(firstSrc, getOperator(), secondSrc);
-      } else {
-        err = secondName;
-      }
-    } else {
-      err = firstName;
-    }
-    if (!BeeUtils.isEmpty(err)) {
-      LogUtils.warning(logger, "Column " + err + " is not initialized");
-    }
-    return condition;
   }
 
   public String getFirstColumn() {

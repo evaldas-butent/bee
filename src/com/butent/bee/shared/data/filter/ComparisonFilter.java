@@ -7,12 +7,12 @@ import java.util.StringTokenizer;
 
 public abstract class ComparisonFilter extends Filter {
 
-  public static Filter compareWithColumn(String firstColumn, String operator, String secondColumn) {
-    return new ColumnColumnFilter(firstColumn, Operator.getOperator(operator), secondColumn);
+  public static Filter compareWithColumn(String firstColumn, Operator operator, String secondColumn) {
+    return new ColumnColumnFilter(firstColumn, operator, secondColumn);
   }
 
-  public static Filter compareWithValue(String column, String operator, Object value) {
-    return new ColumnValueFilter(column, Operator.getOperator(operator), Value.getValue(value));
+  public static Filter compareWithValue(String column, Operator operator, Object value) {
+    return new ColumnValueFilter(column, operator, Value.getValue(value));
   }
 
   private Operator operator;
@@ -57,7 +57,7 @@ public abstract class ComparisonFilter extends Filter {
     return result;
   }
 
-  protected boolean hasLikeCharacters(String xpr) {
+  public boolean hasLikeCharacters(String xpr) {
     return xpr.matches("^.*[%_].*$");
   }
 

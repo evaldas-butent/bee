@@ -3,13 +3,10 @@ package com.butent.bee.shared.data.filter;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.sql.IsCondition;
-import com.butent.bee.shared.sql.SqlUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
 import java.util.List;
-import java.util.Map;
 
 public class NegationFilter extends Filter {
 
@@ -47,11 +44,6 @@ public class NegationFilter extends Filter {
       return false;
     }
     return true;
-  }
-
-  @Override
-  public IsCondition getCondition(Map<String, String[]> columns) {
-    return SqlUtils.not(subFilter.getCondition(columns));
   }
 
   public Filter getSubFilter() {

@@ -6,14 +6,10 @@ import com.google.common.collect.Lists;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.sql.CompoundCondition;
-import com.butent.bee.shared.sql.IsCondition;
-import com.butent.bee.shared.sql.SqlUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Logger;
 
 public class CompoundFilter extends Filter {
@@ -103,29 +99,6 @@ public class CompoundFilter extends Filter {
       return false;
     }
     return true;
-  }
-
-  @Override
-  public IsCondition getCondition(Map<String, String[]> columns) {
-    CompoundCondition condition = null;
-
-    if (!BeeUtils.isEmpty(subFilters)) {
-      switch (joinType) {
-        case AND:
-          condition = SqlUtils.and();
-          break;
-        case OR:
-          condition = SqlUtils.or();
-          break;
-        default:
-          Assert.unsupported();
-          break;
-      }
-      for (Filter subFilter : subFilters) {
-        condition.add(subFilter.getCondition(columns));
-      }
-    }
-    return condition;
   }
 
   public CompoundType getJoinType() {
