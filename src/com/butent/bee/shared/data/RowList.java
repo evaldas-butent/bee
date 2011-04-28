@@ -2,9 +2,10 @@ package com.butent.bee.shared.data;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.ListSequence;
-import com.butent.bee.shared.data.sort.SortInfo;
+import com.butent.bee.shared.Pair;
 
 import java.util.Collections;
+import java.util.List;
 
 public abstract class RowList<RowType extends IsRow, ColType extends IsColumn> extends
     AbstractTable<RowType, ColType> {
@@ -46,9 +47,19 @@ public abstract class RowList<RowType extends IsRow, ColType extends IsColumn> e
   }
 
   @Override
-  public void sort(SortInfo... sortInfo) {
+  public void sort(List<Pair<Integer, Boolean>> sortInfo) {
+    Assert.notNull(sortInfo);
+    Assert.isTrue(sortInfo.size() >= 1);
+
     if (getNumberOfRows() > 1) {
       Collections.sort(getRows().getList(), new RowOrdering(sortInfo));
+    }
+  }
+
+  @Override
+  public void sortByRowId(boolean ascending) {
+    if (getNumberOfRows() > 1) {
+      Collections.sort(getRows().getList(), new RowIdOrdering(ascending));
     }
   }
 

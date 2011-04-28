@@ -1,0 +1,11 @@
+package com.butent.bee.client.view.event;
+
+import com.google.gwt.event.shared.HandlerRegistration;
+import com.google.gwt.event.shared.HasHandlers;
+
+import com.butent.bee.shared.data.view.Order;
+
+public interface HasSortHandlers extends HasHandlers {
+  HandlerRegistration addSortHandler(SortEvent.Handler handler);
+  Order getSortOrder();
+}

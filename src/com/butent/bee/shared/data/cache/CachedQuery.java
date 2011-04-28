@@ -16,8 +16,8 @@ class CachedQuery extends SimpleCache<Integer, Long> {
   static int defaultMaxSize = 0xffff;
   static ReplacementPolicy defaultReplacementPolicy = ReplacementPolicy.LEAST_FREQUENTLY_USED;
 
-  private final Filter filter;
-  private final Order order;
+  private final String strFilter;
+  private final String strOrder;
 
   private int rowCount = BeeConst.SIZE_UNKNOWN;
 
@@ -31,8 +31,8 @@ class CachedQuery extends SimpleCache<Integer, Long> {
 
   CachedQuery(Filter filter, Order order, int maxSize, ReplacementPolicy replacementPolicy) {
     super(maxSize, replacementPolicy);
-    this.filter = filter;
-    this.order = order;
+    this.strFilter = transformFilter(filter);
+    this.strOrder = transformOrder(order);
   }
 
   CachedQuery(Filter filter, Order order, ReplacementPolicy replacementPolicy) {
@@ -48,18 +48,19 @@ class CachedQuery extends SimpleCache<Integer, Long> {
       return false;
     }
     CachedQuery other = (CachedQuery) obj;
-    return same(other.filter, other.order);
+    return BeeUtils.same(this.strFilter, other.strFilter)
+        && BeeUtils.same(this.strOrder, other.strOrder);
   }
 
   @Override
   public List<Property> getInfo() {
     List<Property> lst = Lists.newArrayList();
 
-    if (filter != null) {
-      lst.add(new Property("Filter", filter.transform()));
+    if (!BeeUtils.isEmpty(strFilter)) {
+      lst.add(new Property("Filter", strFilter));
     }
-    if (order != null) {
-      lst.add(new Property("Order", order.transform()));
+    if (!BeeUtils.isEmpty(strOrder)) {
+      lst.add(new Property("Order", strOrder));
     }
     lst.add(new Property("Row Count", BeeUtils.toString(getRowCount())));
 
@@ -69,7 +70,7 @@ class CachedQuery extends SimpleCache<Integer, Long> {
 
   @Override
   public int hashCode() {
-    return Objects.hashCode(filter, order);
+    return Objects.hashCode(strFilter, strOrder);
   }
 
   void addRange(int offset, List<Long> idList) {
@@ -107,14 +108,26 @@ class CachedQuery extends SimpleCache<Integer, Long> {
   }
 
   boolean same(Filter flt, Order ord) {
-    return Objects.equal(this.filter, flt) && Objects.equal(this.order, ord);
+    return sameFilter(flt) && sameOrder(ord);
   }
 
   boolean sameFilter(Filter flt) {
-    return Objects.equal(this.filter, flt);
+    return BeeUtils.same(this.strFilter, transformFilter(flt));
+  }
+
+  boolean sameOrder(Order ord) {
+    return BeeUtils.same(this.strOrder, transformOrder(ord));
   }
 
   void setRowCount(int rowCount) {
     this.rowCount = rowCount;
+  }
+
+  private String transformFilter(Filter flt) {
+    return BeeUtils.transform(flt);
+  }
+
+  private String transformOrder(Order ord) {
+    return BeeUtils.transform(ord);
   }
 }

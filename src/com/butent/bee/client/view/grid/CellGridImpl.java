@@ -60,8 +60,9 @@ public class CellGridImpl extends CellGrid implements GridView, SearchView {
     }
 
     RowIdColumn idColumn = new RowIdColumn();
-    addColumn(idColumn, new TextHeader("Id"));
-    setColumnWidth(idColumn, 40);
+    String id = "row-id";
+    addColumn(id, idColumn, new TextHeader("Id"));
+    setColumnWidth(id, 40);
 
     BeeColumn dataColumn;
     CellColumn<?> column;
@@ -71,10 +72,10 @@ public class CellGridImpl extends CellGrid implements GridView, SearchView {
       column.setSortable(true);
 
       if (footers) {
-        addColumn(column, new ColumnHeader(dataColumn),
+        addColumn(dataColumn.getLabel(), column, new ColumnHeader(dataColumn),
             new ColumnFooter(dataColumn, filterUpdater));
       } else {
-        addColumn(column, new ColumnHeader(dataColumn));
+        addColumn(dataColumn.getLabel(), column, new ColumnHeader(dataColumn));
       }
     }
 

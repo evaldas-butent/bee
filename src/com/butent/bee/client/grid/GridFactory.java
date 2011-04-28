@@ -124,7 +124,7 @@ public class GridFactory {
       if (cellType != null && cellType.isEditable()) {
         column.setFieldUpdater(new CellUpdater(i));
       }
-      grid.addColumn(column, table.getColumnLabel(i));
+      grid.addColumn(table.getColumnLabel(i), column, table.getColumnLabel(i));
     }
     
     grid.setRowCount(r);
@@ -229,11 +229,11 @@ public class GridFactory {
     for (int i = 0; i < c; i++) {
       column = createColumn(table.getColumn(i), i);
       column.setSortable(true);
-      grid.addColumn(column, table.getColumnLabel(i));
+      grid.addColumn(table.getColumnLabel(i), column, table.getColumnLabel(i));
     }
 
+    @SuppressWarnings("unused")
     CachedProvider provider = new CachedProvider(grid, table);
-    grid.addColumnSortHandler(provider);
     
     MultiSelectionModel<IsRow> selector = new MultiSelectionModel<IsRow>(new KeyProvider());
     grid.setSelectionModel(selector);

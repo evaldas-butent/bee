@@ -1,15 +1,11 @@
 package com.butent.bee.client.data;
 
-import com.google.gwt.user.cellview.client.Column;
-import com.google.gwt.user.cellview.client.ColumnSortList;
-import com.google.gwt.user.cellview.client.ColumnSortList.ColumnSortInfo;
 import com.google.gwt.view.client.HasData;
 import com.google.gwt.view.client.Range;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
-import com.butent.bee.client.grid.CellColumn;
-import com.butent.bee.client.view.grid.CellGrid;
+import com.butent.bee.client.view.event.SortEvent;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.IsRow;
@@ -20,6 +16,7 @@ import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.utils.BeeUtils;
 
 public class AsyncProvider extends Provider {
+
   private class Callback implements Queries.RowSetCallback {
     private final HasData<IsRow> display;
     private final Range range;
@@ -44,12 +41,13 @@ public class AsyncProvider extends Provider {
     }
   }
 
-  private DataInfo dataInfo;
+  private final DataInfo dataInfo;
   private Filter filter = null;
   private Order order = null;
 
-  public AsyncProvider(HasData<IsRow> display, DataInfo dataInfo) {
+  public AsyncProvider(HasDataTable display, DataInfo dataInfo) {
     super(display);
+    Assert.notNull(dataInfo);
     this.dataInfo = dataInfo;
   }
 
@@ -65,10 +63,14 @@ public class AsyncProvider extends Provider {
     return order;
   }
 
-  public void setDataInfo(DataInfo dataInfo) {
-    this.dataInfo = dataInfo;
+  @Override
+  public void onSort(SortEvent event) {
+    Assert.notNull(event);
+    setOrder(event.getOrder());
+    
+    goTop(true);
   }
-
+  
   public void setFilter(Filter filter) {
     this.filter = filter;
   }
@@ -102,40 +104,9 @@ public class AsyncProvider extends Provider {
     Range range = getRange();
 
     Filter flt = getFilter();
-
-    Order ord = null;
-    if (displ instanceof CellGrid) {
-      ord = getViewOrder((CellGrid) displ);
-    }
-    if (ord == null) {
-      ord = getOrder();
-    }
+    Order ord = getOrder();
 
     Queries.getRowSet(getDataInfo().getName(), flt, ord, range.getStart(), range.getLength(),
         CachingPolicy.FULL, new Callback(displ, range));
-  }
-
-  private Order getViewOrder(CellGrid grid) {
-    ColumnSortList sortList = grid.getColumnSortList();
-    if (sortList == null || sortList.size() <= 0) {
-      return null;
-    }
-
-    Order ord = new Order();
-
-    for (int i = 0; i < sortList.size(); i++) {
-      ColumnSortInfo sortInfo = sortList.get(i);
-      Column<?, ?> column = sortInfo.getColumn();
-      if (!(column instanceof CellColumn)) {
-        break;
-      }
-      String label = ((CellColumn<?>) column).getLabel();
-      if (BeeUtils.isEmpty(label)) {
-        break;
-      }
-
-      ord.add(label, sortInfo.isAscending());
-    }
-    return ord;
   }
 }

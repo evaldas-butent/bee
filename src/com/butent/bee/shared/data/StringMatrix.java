@@ -5,10 +5,11 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.StringArray;
-import com.butent.bee.shared.data.sort.SortInfo;
 import com.butent.bee.shared.data.value.ValueType;
 
 import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
 
 public class StringMatrix<ColType extends IsColumn> extends AbstractTable<StringRow, ColType> {
   private ArraySequence<StringRow> rows = null;
@@ -98,22 +99,19 @@ public class StringMatrix<ColType extends IsColumn> extends AbstractTable<String
   }
 
   @Override
-  public void sort(SortInfo... sortInfo) {
+  public void sort(List<Pair<Integer, Boolean>> sortInfo) {
+    Assert.notNull(sortInfo);
+    Assert.isTrue(sortInfo.size() >= 1);
+    
     if (getNumberOfRows() > 1) {
-      RowOrdering ord = new RowOrdering(sortInfo);
-      Pair<StringRow[], Integer> pair = getRows().getArray(new StringRow[0]);
-      int len = pair.getB();
-
-      StringRow[] arr;
-      if (len == pair.getA().length) {
-        arr = pair.getA();
-      } else {  
-        arr = new StringRow[len];
-        System.arraycopy(pair.getA(), 0, arr, 0, len);
-      }
-
-      Arrays.sort(arr, ord);
-      getRows().setValues(arr);
+      sortRows(new RowOrdering(sortInfo));
+    }
+  }
+  
+  @Override
+  public void sortByRowId(boolean ascending) {
+    if (getNumberOfRows() > 1) {
+      sortRows(new RowIdOrdering(ascending));
     }
   }
 
@@ -135,5 +133,21 @@ public class StringMatrix<ColType extends IsColumn> extends AbstractTable<String
 
   protected void setRows(ArraySequence<StringRow> rows) {
     this.rows = rows;
+  }
+  
+  private void sortRows(Comparator<StringRow> comparator) {
+    Pair<StringRow[], Integer> pair = getRows().getArray(new StringRow[0]);
+    int len = pair.getB();
+
+    StringRow[] arr;
+    if (len == pair.getA().length) {
+      arr = pair.getA();
+    } else {  
+      arr = new StringRow[len];
+      System.arraycopy(pair.getA(), 0, arr, 0, len);
+    }
+
+    Arrays.sort(arr, comparator);
+    getRows().setValues(arr);
   }
 }

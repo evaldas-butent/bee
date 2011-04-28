@@ -1,6 +1,6 @@
 package com.butent.bee.shared.data;
 
-import com.butent.bee.shared.data.sort.SortInfo;
+import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.value.ValueType;
 
@@ -39,7 +39,7 @@ public interface IsData {
   Object getRowProperty(int rowIndex, String name);
 
   int[] getSortedRows(int... colIndexes);
-  int[] getSortedRows(SortInfo... sortInfo);
+  int[] getSortedRows(List<Pair<Integer, Boolean>> sortInfo);
 
   String getString(int rowIndex, int colIndex);
   

@@ -5,7 +5,7 @@ import com.google.gwt.cell.client.CheckboxCell;
 public class BooleanCell extends CheckboxCell {
 
   public BooleanCell() {
-    super();
+    this(false, true);
   }
 
   public BooleanCell(boolean dependsOnSelection, boolean handlesSelection) {

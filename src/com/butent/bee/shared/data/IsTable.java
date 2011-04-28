@@ -1,7 +1,7 @@
 package com.butent.bee.shared.data;
 
+import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Sequence;
-import com.butent.bee.shared.data.sort.SortInfo;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.value.ValueType;
 
@@ -116,5 +116,6 @@ public interface IsTable<RowType extends IsRow, ColType extends IsColumn> extend
   void setValue(int rowIndex, int colIndex, Value value);
 
   void sort(int... colIndexes);
-  void sort(SortInfo... sortInfo);
+  void sort(List<Pair<Integer, Boolean>> sortInfo);
+  void sortByRowId(boolean ascending);  
 }

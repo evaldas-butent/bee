@@ -2,10 +2,9 @@ package com.butent.bee.client.grid;
 
 import com.google.gwt.i18n.client.DateTimeFormat;
 
-import com.butent.bee.shared.JustDate;
 import com.butent.bee.shared.data.value.ValueType;
 
-public class DateCell extends DatePickerCell<JustDate> {
+public class DateCell extends DatePickerCell {
   public static DateTimeFormat defaultFormat = null;
 
   public DateCell() {

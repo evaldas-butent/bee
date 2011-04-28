@@ -4,6 +4,7 @@ import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.Transformable;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -14,7 +15,7 @@ public class Order implements BeeSerializable, Transformable {
 
   public class Column implements Transformable {
     private final String label;
-    private final boolean ascending;
+    private boolean ascending;
 
     private Column(String label) {
       this(label, true);
@@ -49,12 +50,20 @@ public class Order implements BeeSerializable, Transformable {
       return ascending;
     }
 
+    public void setAscending(boolean ascending) {
+      this.ascending = ascending;
+    }
+
     public String transform() {
       if (ascending) {
         return BeeUtils.transform(label);
       } else {
         return BeeUtils.transform(label) + DESC;
       }
+    }
+    
+    private boolean is(String id) {
+      return BeeUtils.same(this.label, id);
     }
   }
 
@@ -69,6 +78,10 @@ public class Order implements BeeSerializable, Transformable {
 
   private final List<Column> columns = Lists.newArrayList();
 
+  public Order() {
+    super();
+  }
+
   public void add(String label, boolean ascending) {
     Assert.notEmpty(label);
 
@@ -77,6 +90,10 @@ public class Order implements BeeSerializable, Transformable {
       columns.remove(found);
     }
     columns.add(new Column(label.trim(), ascending));
+  }
+  
+  public void clear() {
+    columns.clear();
   }
   
   public void deserialize(String s) {
@@ -117,11 +134,49 @@ public class Order implements BeeSerializable, Transformable {
     return columns;
   }
 
+  public int getIndex(String label) {
+    Assert.notNull(label);
+    
+    for (int i = 0; i < getSize(); i++) {
+      if (columns.get(i).is(label)) {
+        return i;
+      }
+    }
+    return BeeConst.UNDEF;
+  }
+  
+  public int getSize() {
+    return columns.size();
+  }
+  
   @Override
   public int hashCode() {
     return columns.hashCode();
   }
 
+  public boolean isAscending(String label) {
+    Assert.notNull(label);
+    
+    for (Column col : columns) {
+      if (col.is(label)) {
+        return col.isAscending(); 
+      }
+    }
+    return false;
+  }
+
+  public boolean remove(String label) {
+    Assert.notEmpty(label);
+
+    Column found = find(label);
+    if (found != null) {
+      columns.remove(found);
+      return true;
+    } else {
+      return false;
+    }
+  }
+  
   public String serialize() {
     StringBuilder sb = new StringBuilder();
     for (Column col : columns) {
@@ -133,6 +188,13 @@ public class Order implements BeeSerializable, Transformable {
     return sb.toString();
   }
 
+  public void setAscending(String label, boolean ascending) {
+    Assert.notNull(label);
+    Column col = find(label);
+    Assert.notNull(col);
+    col.setAscending(ascending);
+  }
+  
   @Override
   public String toString() {
     return serialize();
@@ -147,7 +209,7 @@ public class Order implements BeeSerializable, Transformable {
       return null;
     }
     for (Column col : columns) {
-      if (BeeUtils.same(col.label, label)) {
+      if (col.is(label)) {
         return col;
       }
     }

@@ -2843,6 +2843,16 @@ public class BeeUtils {
   }
 
   /**
+   * Null-safe Boolean unboxing.
+   * 
+   * @param box an Boolean to unbox
+   * @return unboxed boolean value or false if {@code box} is null
+   */
+  public static boolean unbox(Boolean box) {
+    return (box == null) ? false : box;
+  }
+  
+  /**
    * Null-safe Integer unboxing.
    * 
    * @param box an Integer to unbox

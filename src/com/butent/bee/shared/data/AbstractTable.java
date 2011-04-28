@@ -3,10 +3,11 @@ package com.butent.bee.shared.data;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.common.primitives.Ints;
+import com.google.common.primitives.Longs;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.data.sort.SortInfo;
+import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.value.NumberValue;
 import com.butent.bee.shared.data.value.TextValue;
@@ -35,22 +36,15 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
     }
   }
 
-  protected class RowOrdering implements Comparator<RowType> {
-    private List<SortInfo> orderBy = Lists.newArrayList();
-    private List<ValueType> types = Lists.newArrayList();
+  protected class RowIdOrdering implements Comparator<RowType> {
+    private final boolean ascending;
 
-    RowOrdering(SortInfo... sortInfo) {
-      Assert.notNull(sortInfo);
-      Assert.parameterCount(sortInfo.length, 1);
-
-      for (int i = 0; i < sortInfo.length; i++) {
-        int index = sortInfo[i].getIndex();
-        assertColumnIndex(index);
-        if (!containsIndex(index)) {
-          orderBy.add(sortInfo[i]);
-          types.add(getColumnType(index));
-        }
-      }
+    RowIdOrdering() {
+      this(true);
+    }
+    
+    RowIdOrdering(boolean ascending) {
+      this.ascending = ascending;
     }
 
     public int compare(RowType row1, RowType row2) {
@@ -58,15 +52,56 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
         return BeeConst.COMPARE_EQUAL;
       }
       if (row1 == null) {
-        return orderBy.get(0).isAscending() ? BeeConst.COMPARE_LESS : BeeConst.COMPARE_MORE;
+        return ascending ? BeeConst.COMPARE_LESS : BeeConst.COMPARE_MORE;
       }
       if (row2 == null) {
-        return orderBy.get(0).isAscending() ? BeeConst.COMPARE_MORE : BeeConst.COMPARE_LESS;
+        return ascending ? BeeConst.COMPARE_MORE : BeeConst.COMPARE_LESS;
+      }
+      
+      if (ascending) {
+        return Longs.compare(row1.getId(), row2.getId());
+      } else {
+        return Longs.compare(row2.getId(), row1.getId());
+      }
+    }
+  }
+  
+  protected class RowOrdering implements Comparator<RowType> {
+    private List<Integer> indexes = Lists.newArrayList();
+    private List<Boolean> ascending = Lists.newArrayList();
+    private List<ValueType> types = Lists.newArrayList();
+
+    RowOrdering(List<Pair<Integer, Boolean>> sortInfo) {
+      Assert.notNull(sortInfo);
+      Assert.isTrue(sortInfo.size() >= 1);
+
+      for (int i = 0; i < sortInfo.size(); i++) {
+        Assert.notNull(sortInfo.get(i).getA());
+        int index = sortInfo.get(i).getA();
+        assertColumnIndex(index);
+
+        if (!containsIndex(index)) {
+          indexes.add(index);
+          ascending.add(BeeUtils.unbox(sortInfo.get(i).getB()));
+          types.add(getColumnType(index));
+        }
+      }
+    }
+    
+    public int compare(RowType row1, RowType row2) {
+      if (row1 == row2) {
+        return BeeConst.COMPARE_EQUAL;
+      }
+      if (row1 == null) {
+        return ascending.get(0) ? BeeConst.COMPARE_LESS : BeeConst.COMPARE_MORE;
+      }
+      if (row2 == null) {
+        return ascending.get(0) ? BeeConst.COMPARE_MORE : BeeConst.COMPARE_LESS;
       }
 
       int z;
-      for (int i = 0; i < orderBy.size(); i++) {
-        int index = orderBy.get(i).getIndex();
+      for (int i = 0; i < indexes.size(); i++) {
+        int index = indexes.get(i);
         switch (types.get(i)) {
           case BOOLEAN:
             z = BeeUtils.compare(row1.getBoolean(index), row2.getBoolean(index));
@@ -84,21 +119,14 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
             z = BeeUtils.compare(row1.getString(index), row2.getString(index));
         }
         if (z != BeeConst.COMPARE_EQUAL) {
-          return orderBy.get(i).isAscending() ? z : -z;
+          return ascending.get(i) ? z : -z;
         }
       }
       return BeeConst.COMPARE_EQUAL;
     }
 
     private boolean containsIndex(int index) {
-      boolean found = false;
-      for (SortInfo info : orderBy) {
-        if (info.getIndex() == index) {
-          found = true;
-          break;
-        }
-      }
-      return found;
+      return indexes.contains(index);
     }
   }
 
@@ -442,16 +470,18 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
 
   public int[] getSortedRows(int... colIndexes) {
     Assert.notNull(colIndexes);
-    SortInfo[] sortInfo = new SortInfo[colIndexes.length];
+    Assert.parameterCount(colIndexes.length, 1);
+    
+    List<Pair<Integer, Boolean>> sortInfo = Lists.newArrayList();
     for (int i = 0; i < colIndexes.length; i++) {
-      sortInfo[i] = new SortInfo(colIndexes[i]);
+      sortInfo.add(new Pair<Integer, Boolean>(colIndexes[i], true));
     }
     return getSortedRows(sortInfo);
   }
 
-  public int[] getSortedRows(SortInfo... sortInfo) {
+  public int[] getSortedRows(List<Pair<Integer, Boolean>> sortInfo) {
     Assert.notNull(sortInfo);
-    Assert.parameterCount(sortInfo.length, 1);
+    Assert.isTrue(sortInfo.size() >= 1);
     int rowCount = getNumberOfRows();
     if (rowCount <= 0) {
       return new int[0];
@@ -468,7 +498,7 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
     Collections.sort(rowIndexes, new IndexOrdering(new RowOrdering(sortInfo)));
     return Ints.toArray(rowIndexes);
   }
-
+  
   public String getString(int rowIndex, int colIndex) {
     return getRow(rowIndex).getString(colIndex);
   }
@@ -692,14 +722,18 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
 
   public void sort(int... colIndexes) {
     Assert.notNull(colIndexes);
-    SortInfo[] sortInfo = new SortInfo[colIndexes.length];
+    Assert.parameterCount(colIndexes.length, 1);
+    
+    List<Pair<Integer, Boolean>> sortInfo = Lists.newArrayList();
     for (int i = 0; i < colIndexes.length; i++) {
-      sortInfo[i] = new SortInfo(colIndexes[i]);
+      sortInfo.add(new Pair<Integer, Boolean>(colIndexes[i], true));
     }
     sort(sortInfo);
   }
 
-  public abstract void sort(SortInfo... sortInfo);
+  public abstract void sort(List<Pair<Integer, Boolean>> sortInfo);
+  
+  public abstract void sortByRowId(boolean ascending);
 
   public String toJson() {
     // TODO Auto-generated method stub

@@ -22,11 +22,10 @@ import com.butent.bee.shared.AbstractDate;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.HasDateValue;
 import com.butent.bee.shared.data.value.ValueType;
-import com.butent.bee.shared.utils.TimeUtils;
 
 import java.util.Date;
 
-public class DatePickerCell<T extends HasDateValue> extends AbstractEditableCell<T, T> {
+public class DatePickerCell extends AbstractEditableCell<HasDateValue, HasDateValue> {
 
   private static final int ESCAPE = 27;
 
@@ -41,11 +40,11 @@ public class DatePickerCell<T extends HasDateValue> extends AbstractEditableCell
   private Element lastParent;
   private int lastIndex;
   private int lastColumn;
-  private T lastValue;
+  private HasDateValue lastValue;
 
   private final DatePicker datePicker;
   private PopupPanel panel;
-  private ValueUpdater<T> updater;
+  private ValueUpdater<HasDateValue> updater;
 
   public DatePickerCell(ValueType valueType, DateTimeFormat format) {
     super("click", "keydown");
@@ -82,14 +81,13 @@ public class DatePickerCell<T extends HasDateValue> extends AbstractEditableCell
     datePicker.addValueChangeHandler(new ValueChangeHandler<Date>() {
       public void onValueChange(ValueChangeEvent<Date> event) {
         Element cellParent = lastParent;
-        T oldValue = lastValue;
+        HasDateValue oldValue = lastValue;
         Object key = lastKey;
         int index = lastIndex;
         int column = lastColumn;
         panel.hide();
 
-        @SuppressWarnings("unchecked")
-        T date = (T) AbstractDate.fromJava(event.getValue(), DatePickerCell.this.valueType);
+        HasDateValue date = AbstractDate.fromJava(event.getValue(), DatePickerCell.this.valueType);
         setViewData(key, date);
         setValue(new Context(index, column, key), cellParent, oldValue);
         if (updater != null) {
@@ -98,15 +96,20 @@ public class DatePickerCell<T extends HasDateValue> extends AbstractEditableCell
       }
     });
   }
+  
+  @Override
+  public boolean handlesSelection() {
+    return true;
+  }
 
   @Override
-  public boolean isEditing(Context context, Element parent, T value) {
+  public boolean isEditing(Context context, Element parent, HasDateValue value) {
     return lastKey != null && lastKey.equals(context.getKey());
   }
 
   @Override
-  public void onBrowserEvent(Context context, Element parent, T value,
-      NativeEvent event, ValueUpdater<T> valueUpdater) {
+  public void onBrowserEvent(Context context, Element parent, HasDateValue value,
+      NativeEvent event, ValueUpdater<HasDateValue> valueUpdater) {
     super.onBrowserEvent(context, parent, value, event, valueUpdater);
     if ("click".equals(event.getType())) {
       onEnterKeyDown(context, parent, value, event, valueUpdater);
@@ -114,15 +117,15 @@ public class DatePickerCell<T extends HasDateValue> extends AbstractEditableCell
   }
 
   @Override
-  public void render(Context context, T value, SafeHtmlBuilder sb) {
+  public void render(Context context, HasDateValue value, SafeHtmlBuilder sb) {
     Object key = context.getKey();
-    T viewData = getViewData(key);
+    HasDateValue viewData = getViewData(key);
     if (viewData != null && viewData.equals(value)) {
       clearViewData(key);
       viewData = null;
     }
     
-    T date = null;
+    HasDateValue date = null;
     if (viewData != null) {
       date = viewData;
     } else if (value != null) {
@@ -139,8 +142,8 @@ public class DatePickerCell<T extends HasDateValue> extends AbstractEditableCell
   }
 
   @Override
-  protected void onEnterKeyDown(Context context, Element parent, T value,
-      NativeEvent event, ValueUpdater<T> valueUpdater) {
+  protected void onEnterKeyDown(Context context, Element parent, HasDateValue value,
+      NativeEvent event, ValueUpdater<HasDateValue> valueUpdater) {
     this.lastKey = context.getKey();
     this.lastParent = parent;
     this.lastValue = value;
@@ -148,11 +151,12 @@ public class DatePickerCell<T extends HasDateValue> extends AbstractEditableCell
     this.lastColumn = context.getColumn();
     this.updater = valueUpdater;
 
-    T viewData = getViewData(lastKey);
-    T date = (viewData == null) ? lastValue : viewData;
+    HasDateValue viewData = getViewData(lastKey);
+    HasDateValue date = (viewData == null) ? lastValue : viewData;
     if (date != null) {
-      datePicker.setCurrentMonth(TimeUtils.toJava(date));
-      datePicker.setValue(TimeUtils.toJava(date));
+      Date jd = date.getJava();
+      datePicker.setCurrentMonth(jd);
+      datePicker.setValue(jd);
     }
 
     panel.setPopupPositionAndShow(new PositionCallback() {

@@ -6,6 +6,7 @@ import com.google.common.base.Splitter;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.DateTime;
+import com.butent.bee.shared.HasDateValue;
 import com.butent.bee.shared.JustDate;
 
 import java.util.Date;
@@ -140,13 +141,13 @@ public class TimeUtils {
   }
 
   /**
-   * Checks if {@code x} is and instance of JustDate, DateTime or Date.
+   * Checks if {@code x} is and instance of HasDateValue or Date.
    * 
    * @param x the Object to check
    * @return true if {@code x} is an instance of any of these types, false otherwise.
    */
   public static boolean isDateOrDateTime(Object x) {
-    return x instanceof JustDate || x instanceof DateTime || x instanceof Date;
+    return x instanceof HasDateValue || x instanceof Date;
   }
 
   /**
@@ -279,11 +280,8 @@ public class TimeUtils {
     if (x instanceof Date) {
       return (Date) x;
     }
-    if (x instanceof DateTime) {
-      return new Date(((DateTime) x).getTime());
-    }
-    if (x instanceof JustDate) {
-      return new Date(new DateTime((JustDate) x).getTime());
+    if (x instanceof HasDateValue) {
+      return ((HasDateValue) x).getJava();
     }
 
     assertDateOrDateTime(x);

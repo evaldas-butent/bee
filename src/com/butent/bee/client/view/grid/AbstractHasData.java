@@ -429,8 +429,6 @@ public abstract class AbstractHasData<T> extends Widget implements HasData<T>,
     return convertToElements(this, getTmpElem(), html);
   }
 
-  protected abstract boolean dependsOnSelection();
-
   protected abstract Element getChildContainer();
 
   protected abstract Element getKeyboardSelectedElement();

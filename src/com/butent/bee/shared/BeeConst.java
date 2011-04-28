@@ -44,6 +44,8 @@ public class BeeConst {
   public static final String STRING_FALSE = Boolean.toString(false);
   public static final String STRING_TRUE = Boolean.toString(true);
 
+  public static final int UNDEF = -1;
+  
   public static final int INT_ERROR = -1;
   public static final int INT_FALSE = 0;
   public static final int INT_TRUE = 1;
@@ -189,6 +191,10 @@ public class BeeConst {
     return CHAR_TRUE.indexOf(c) >= 0;
   }
 
+  public static boolean isUndef(int x) {
+    return x == UNDEF;
+  }
+  
   public static void setClient() {
     home = CLIENT;
   }
