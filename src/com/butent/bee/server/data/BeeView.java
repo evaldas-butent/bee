@@ -3,6 +3,12 @@ package com.butent.bee.server.data;
 import com.google.common.collect.Maps;
 
 import com.butent.bee.server.data.BeeTable.BeeField;
+import com.butent.bee.server.sql.CompoundCondition;
+import com.butent.bee.server.sql.IsCondition;
+import com.butent.bee.server.sql.IsExpression;
+import com.butent.bee.server.sql.SqlSelect;
+import com.butent.bee.server.sql.SqlUtils;
+import com.butent.bee.server.sql.BeeConstants.DataType;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.filter.ColumnColumnFilter;
 import com.butent.bee.shared.data.filter.ColumnIsEmptyFilter;
@@ -12,12 +18,6 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.NegationFilter;
 import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.value.Value;
-import com.butent.bee.shared.sql.BeeConstants.DataType;
-import com.butent.bee.shared.sql.CompoundCondition;
-import com.butent.bee.shared.sql.IsCondition;
-import com.butent.bee.shared.sql.IsExpression;
-import com.butent.bee.shared.sql.SqlSelect;
-import com.butent.bee.shared.sql.SqlUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.LogUtils;
 

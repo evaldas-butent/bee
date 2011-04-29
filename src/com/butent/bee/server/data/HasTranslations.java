@@ -1,10 +1,10 @@
 package com.butent.bee.server.data;
 
 import com.butent.bee.server.data.BeeTable.BeeField;
-import com.butent.bee.shared.sql.HasFrom;
-import com.butent.bee.shared.sql.SqlCreate;
-import com.butent.bee.shared.sql.SqlInsert;
-import com.butent.bee.shared.sql.SqlUpdate;
+import com.butent.bee.server.sql.HasFrom;
+import com.butent.bee.server.sql.SqlCreate;
+import com.butent.bee.server.sql.SqlInsert;
+import com.butent.bee.server.sql.SqlUpdate;
 
 public interface HasTranslations {
 

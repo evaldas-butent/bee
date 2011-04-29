@@ -2,6 +2,12 @@ package com.butent.bee.server.data;
 
 import com.butent.bee.server.DataSourceBean;
 import com.butent.bee.server.jdbc.JdbcUtils;
+import com.butent.bee.server.sql.IsCondition;
+import com.butent.bee.server.sql.IsQuery;
+import com.butent.bee.server.sql.SqlBuilderFactory;
+import com.butent.bee.server.sql.SqlInsert;
+import com.butent.bee.server.sql.SqlSelect;
+import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.DateTime;
 import com.butent.bee.shared.JustDate;
@@ -10,12 +16,6 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.value.ValueType;
-import com.butent.bee.shared.sql.IsCondition;
-import com.butent.bee.shared.sql.IsQuery;
-import com.butent.bee.shared.sql.SqlBuilderFactory;
-import com.butent.bee.shared.sql.SqlInsert;
-import com.butent.bee.shared.sql.SqlSelect;
-import com.butent.bee.shared.sql.SqlUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.LogUtils;
 

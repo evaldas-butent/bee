@@ -1,11 +1,11 @@
 package com.butent.bee.server.ui;
 
 import com.butent.bee.server.data.QueryServiceBean;
+import com.butent.bee.server.sql.SqlSelect;
+import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.server.utils.XmlUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Service;
-import com.butent.bee.shared.sql.SqlSelect;
-import com.butent.bee.shared.sql.SqlUtils;
 import com.butent.bee.shared.ui.UiLoader;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.LogUtils;

@@ -1,11 +1,11 @@
 package com.butent.bee.server.data;
 
+import com.butent.bee.server.sql.IsCondition;
+import com.butent.bee.server.sql.SqlInsert;
+import com.butent.bee.server.sql.SqlSelect;
+import com.butent.bee.server.sql.SqlUpdate;
+import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.sql.IsCondition;
-import com.butent.bee.shared.sql.SqlInsert;
-import com.butent.bee.shared.sql.SqlSelect;
-import com.butent.bee.shared.sql.SqlUpdate;
-import com.butent.bee.shared.sql.SqlUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.LogUtils;
 

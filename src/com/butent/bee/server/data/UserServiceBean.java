@@ -8,10 +8,10 @@ import com.google.common.primitives.Longs;
 
 import com.butent.bee.server.i18n.I18nUtils;
 import com.butent.bee.server.i18n.Localized;
+import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.LocalizableMessages;
-import com.butent.bee.shared.sql.SqlSelect;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.LogUtils;
 
