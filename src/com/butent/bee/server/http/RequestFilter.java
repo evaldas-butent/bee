@@ -15,6 +15,10 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
+/**
+ * Applies a HTTP request filter to determine values of request, context and session counters.
+ */
+
 public class RequestFilter implements Filter {
   public static Counter COUNTER = new Counter();
   private FilterConfig config = null;

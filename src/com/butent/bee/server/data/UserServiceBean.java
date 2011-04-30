@@ -29,6 +29,10 @@ import javax.ejb.Lock;
 import javax.ejb.LockType;
 import javax.ejb.Singleton;
 
+/**
+ * Responsible for users system, their login status, localization, user and roles cache etc.
+ */
+
 @Singleton
 @Lock(LockType.READ)
 public class UserServiceBean {

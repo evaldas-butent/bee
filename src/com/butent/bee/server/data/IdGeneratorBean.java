@@ -20,6 +20,11 @@ import javax.ejb.Singleton;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 
+/**
+ * Generates new ID values for database fields, ensuring integrity and uniqueness requirements of a
+ * database.
+ */
+
 @Singleton
 // TODO: waiting for JBoss bugfix http://community.jboss.org/thread/161844
 // @TransactionAttribute(TransactionAttributeType.MANDATORY)

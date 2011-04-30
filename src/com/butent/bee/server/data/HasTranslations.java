@@ -6,6 +6,10 @@ import com.butent.bee.server.sql.SqlCreate;
 import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlUpdate;
 
+/**
+ * Contains requirements for classes, which can have translations implemented on them.
+ */
+
 public interface HasTranslations {
 
   SqlCreate createTranslationTable(SqlCreate query, BeeField field);

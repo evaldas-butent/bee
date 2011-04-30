@@ -32,6 +32,11 @@ import java.util.Properties;
 import java.util.SortedMap;
 import java.util.logging.Logger;
 
+/**
+ * Contains utility functions, necessary for operations with files, for example search, read
+ * contents or save.
+ */
+
 public class FileUtils {
   public static final String EXT_CLASS = "class";
   public static final String EXT_JAVA = "java";
@@ -45,9 +50,9 @@ public class FileUtils {
 
   private static int defaultBufferSize = 4096;
   private static Charset defaultCharset = UTF_8;
-  
+
   private static Logger logger = Logger.getLogger(FileUtils.class.getName());
-  
+
   public static void closeQuietly(Reader rdr) {
     if (rdr == null) {
       return;
@@ -120,7 +125,7 @@ public class FileUtils {
       boolean recurse, boolean all) {
     Assert.notEmpty(directories);
     List<File> files = Lists.newArrayList();
-    
+
     for (File dir : directories) {
       files.addAll(findFiles(dir, filters, recurse));
       if (!all && !files.isEmpty()) {
@@ -133,15 +138,15 @@ public class FileUtils {
   public static List<File> findFiles(File dir, Collection<Filter> filters) {
     return findFiles(dir, filters, true);
   }
-  
+
   public static List<File> findFiles(File dir, Collection<Filter> filters, boolean recurse) {
     Assert.notNull(dir);
-    
+
     List<File> found = Lists.newArrayList();
     if (!dir.isDirectory() || !Config.isVisible(dir)) {
       return found;
     }
-    
+
     boolean ok;
     for (File entry : dir.listFiles()) {
       if (!Config.isVisible(entry)) {
@@ -167,7 +172,7 @@ public class FileUtils {
     }
     return found;
   }
-  
+
   public static List<File> findFiles(File dir, Filter... filters) {
     Assert.notNull(filters);
     return findFiles(dir, Lists.newArrayList(filters));
@@ -317,7 +322,7 @@ public class FileUtils {
   public static int loadProperties(Properties prp, File fl) {
     return loadProperties(prp, fl, UTF_8);
   }
-  
+
   public static int loadProperties(Properties prp, File fl, Charset cs) {
     Assert.notNull(prp);
     Assert.notNull(fl);
@@ -389,7 +394,7 @@ public class FileUtils {
     closeQuietly(fw);
     return ok;
   }
-  
+
   public static File toFile(Class<?> clazz) {
     Assert.notNull(clazz);
     return toFile(clazz.getResource(NameUtils.addExtension(clazz.getSimpleName(), EXT_CLASS)));
@@ -405,7 +410,7 @@ public class FileUtils {
     }
     return file;
   }
-  
+
   private FileUtils() {
   }
 }

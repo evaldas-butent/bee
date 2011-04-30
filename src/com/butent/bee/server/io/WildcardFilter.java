@@ -11,6 +11,10 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.Collection;
 
+/**
+ * Enables using wildcards to filter files and directories.
+ */
+
 public class WildcardFilter extends AbstractFileFilter {
   private Pattern[] patterns;
   private Component component;
@@ -22,27 +26,27 @@ public class WildcardFilter extends AbstractFileFilter {
   public WildcardFilter(String expr, Boolean sensitive) {
     this(expr, null, sensitive);
   }
-  
+
   public WildcardFilter(Collection<String> like) {
     this(like, null, null);
   }
-  
+
   public WildcardFilter(Collection<String> like, Boolean sensitive) {
     this(like, null, sensitive);
   }
-  
+
   public WildcardFilter(String expr, Component component) {
     this(expr, component, null);
   }
-  
+
   public WildcardFilter(String expr, Component component, Boolean sensitive) {
     this(Sets.newHashSet(expr), component, sensitive);
   }
-  
+
   public WildcardFilter(Collection<String> like, Component component) {
     this(like, component, null);
   }
-  
+
   public WildcardFilter(Collection<String> like, Component component, Boolean sensitive) {
     patterns = new Pattern[like.size()];
     int i = 0;
@@ -74,7 +78,7 @@ public class WildcardFilter extends AbstractFileFilter {
     if (BeeUtils.isEmpty(z)) {
       return ok;
     }
-    
+
     for (Pattern pattern : patterns) {
       if (Wildcards.isLike(z, pattern)) {
         ok = true;

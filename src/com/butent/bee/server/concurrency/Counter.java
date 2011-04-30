@@ -2,6 +2,10 @@ package com.butent.bee.server.concurrency;
 
 import com.butent.bee.shared.Transformable;
 
+/**
+ * Enables server requests counter management in order to identify them uniquely.
+ */
+
 public class Counter implements Transformable {
   private int counter;
 

@@ -24,6 +24,11 @@ import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 
+/**
+ * Receives a service request and then passes it along, depending on service name structure, to an
+ * according class for execution.
+ */
+
 @Stateless
 public class DispatcherBean {
   private static Logger logger = Logger.getLogger(DispatcherBean.class.getName());

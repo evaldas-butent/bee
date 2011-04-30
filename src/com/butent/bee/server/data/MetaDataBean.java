@@ -19,6 +19,10 @@ import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 
+/**
+ * Handles rpc_db_meta service requests (database ping, current tables list etc)
+ */
+
 @Stateless
 public class MetaDataBean {
   private static Logger logger = Logger.getLogger(MetaDataBean.class.getName());
@@ -70,7 +74,7 @@ public class MetaDataBean {
     buff.addExtendedProperties(prp);
   }
 
-  private void getKeys(BeeDataSource ds, RequestInfo reqInfo, ResponseBuffer buff, 
+  private void getKeys(BeeDataSource ds, RequestInfo reqInfo, ResponseBuffer buff,
       boolean result) {
     String table = reqInfo.getParameter(0);
     String catalog = reqInfo.getParameter(1);
@@ -79,7 +83,7 @@ public class MetaDataBean {
     try {
       DatabaseMetaData md = ds.getDbMd();
       ResultSet rs = md.getPrimaryKeys(catalog, schema, table);
-      
+
       if (result) {
         rsb.rsToResponse(rs, buff, reqInfo.isDebug());
       } else {

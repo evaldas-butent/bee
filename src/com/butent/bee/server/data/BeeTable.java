@@ -7,6 +7,8 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 
+import com.butent.bee.server.sql.BeeConstants.DataType;
+import com.butent.bee.server.sql.BeeConstants.Keyword;
 import com.butent.bee.server.sql.HasFrom;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.IsFrom;
@@ -17,8 +19,6 @@ import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
-import com.butent.bee.server.sql.BeeConstants.DataType;
-import com.butent.bee.server.sql.BeeConstants.Keyword;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -27,6 +27,11 @@ import com.butent.bee.shared.utils.Codec;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
+
+/**
+ * Implements database table management - contains parameters for table and it's fields, keys,
+ * extensions and methods for operating with the table.
+ */
 
 @SuppressWarnings("hiding")
 class BeeTable implements HasExtFields, HasStates, HasTranslations {
@@ -247,6 +252,10 @@ class BeeTable implements HasExtFields, HasStates, HasTranslations {
       return this;
     }
   }
+
+  /**
+   * Contains available database key types.
+   */
 
   private enum KeyTypes {
     PRIMARY, UNIQUE, INDEX

@@ -6,6 +6,10 @@ import com.butent.bee.server.sql.SqlCreate;
 import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlUpdate;
 
+/**
+ * Contains required methods for classes that can have extended customized fields.
+ */
+
 public interface HasExtFields {
 
   SqlCreate createExtTable(SqlCreate query, BeeField field);

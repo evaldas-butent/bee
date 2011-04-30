@@ -7,6 +7,10 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.io.File;
 import java.util.Collection;
 
+/**
+ * Enables to filter files by their extensions.
+ */
+
 public class ExtensionFilter extends AbstractNameFilter {
   private Collection<String> extensions;
   private boolean sensitive;
@@ -18,11 +22,11 @@ public class ExtensionFilter extends AbstractNameFilter {
   public ExtensionFilter(String ext, boolean sensitive) {
     this(Sets.newHashSet(ext), sensitive);
   }
-  
+
   public ExtensionFilter(Collection<String> values) {
     this(values, false);
   }
-  
+
   public ExtensionFilter(Collection<String> values, boolean sensitive) {
     this.extensions = values;
     this.sensitive = sensitive;
@@ -35,7 +39,7 @@ public class ExtensionFilter extends AbstractNameFilter {
     if (BeeUtils.isEmpty(x)) {
       return ok;
     }
-    
+
     for (String ext : extensions) {
       if (sensitive) {
         ok = x.equals(ext);

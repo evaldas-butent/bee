@@ -5,6 +5,9 @@ import com.butent.bee.server.concurrency.Counter;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 
+/**
+ * Initializes and destroys HTTP contexts.
+ */
 public class ContextListener implements ServletContextListener {
   private String attrCnt = null;
 

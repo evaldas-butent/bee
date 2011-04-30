@@ -5,6 +5,10 @@ import com.butent.bee.server.concurrency.Counter;
 import javax.servlet.ServletRequestEvent;
 import javax.servlet.ServletRequestListener;
 
+/**
+ * Initializes and destroys HTTP requests.
+ */
+
 public class RequestListener implements ServletRequestListener {
   private String attrCnt = null;
 

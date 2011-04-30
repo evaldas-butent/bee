@@ -30,9 +30,18 @@ import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.Properties;
 
+/**
+ * Contains internationalization and localization related utility functions like
+ * <code>getAvailableLocales</code> and <code>getIso3Language</code>.
+ */
+
 public class I18nUtils {
   public static final char LOCALE_SEPARATOR = '_';
-  
+
+  /**
+   * Compares two locales and returns the result of the comparison.
+   */
+
   public static class LocaleComparator implements Comparator<Locale> {
     public int compare(Locale o1, Locale o2) {
       if (o1 == o2) {
@@ -47,23 +56,23 @@ public class I18nUtils {
       return BeeUtils.compare(o1.toString(), o2.toString());
     }
   }
-  
+
   public static <T extends Constants> T createConstants(Class<T> itf, Properties properties) {
     Assert.notNull(itf);
     Assert.notNull(properties);
-    
+
     InvocationHandler ih = new GwtConstants(properties);
     return createProxy(itf, ih);
   }
-  
+
   public static <T extends Messages> T createMessages(Class<T> itf, Properties properties) {
     Assert.notNull(itf);
     Assert.notNull(properties);
-    
+
     InvocationHandler ih = new GwtMessages(properties);
     return createProxy(itf, ih);
   }
-  
+
   public static List<ExtendedProperty> getExtendedInfo() {
     List<ExtendedProperty> lst = Lists.newArrayList();
 
@@ -71,7 +80,7 @@ public class I18nUtils {
     for (Locale lc : Locale.getAvailableLocales()) {
       locales.put(lc, "Loc");
     }
-    
+
     char sep = ',';
     for (Locale lc : BreakIterator.getAvailableLocales()) {
       locales.put(lc, BeeUtils.concat(sep, locales.get(lc), "BrIt"));
@@ -94,7 +103,7 @@ public class I18nUtils {
     for (Locale lc : Calendar.getAvailableLocales()) {
       locales.put(lc, BeeUtils.concat(sep, locales.get(lc), "Cal"));
     }
-    
+
     int i = 0;
     for (Map.Entry<Locale, String> entry : locales.entrySet()) {
       Locale lc = entry.getKey();
@@ -103,7 +112,7 @@ public class I18nUtils {
           BeeUtils.concat(3, BeeUtils.progress(++i, locales.size()), lc.toString()),
           BeeUtils.concat(" | ", lc.getDisplayName(), lc.getDisplayName(lc),
               (BeeUtils.count(av, sep) == 7) ? null : av),
-          BeeUtils.concat(" ; ", 
+          BeeUtils.concat(" ; ",
               BeeUtils.concat(" | ", lc.getDisplayLanguage(), lc.getDisplayLanguage(lc)),
               BeeUtils.concat(" | ", lc.getDisplayCountry(), lc.getDisplayCountry(lc)),
               BeeUtils.concat(" | ", lc.getDisplayVariant(), lc.getDisplayVariant(lc)),
@@ -114,7 +123,7 @@ public class I18nUtils {
 
   public static List<Property> getInfo() {
     List<Property> lst = PropertyUtils.createProperties("Default Locale", Locale.getDefault());
-    
+
     Locale[] locales = Locale.getAvailableLocales();
     int len = ArrayUtils.length(locales);
     PropertyUtils.addProperty(lst, "Available Locales", len);
@@ -127,7 +136,7 @@ public class I18nUtils {
             BeeUtils.concat(" | ", lc.getDisplayName(), lc.getDisplayName(lc))));
       }
     }
-    
+
     String[] languages = Locale.getISOLanguages();
     len = ArrayUtils.length(languages);
     PropertyUtils.addProperty(lst, "Languages", len);
@@ -137,7 +146,7 @@ public class I18nUtils {
     }
 
     String[] countries = Locale.getISOCountries();
-    len  = ArrayUtils.length(countries);
+    len = ArrayUtils.length(countries);
     PropertyUtils.addProperty(lst, "Countries", len);
     if (len > 0) {
       Arrays.sort(countries);
@@ -145,7 +154,7 @@ public class I18nUtils {
     }
     return lst;
   }
-  
+
   public static String getIso3Country(Locale locale) {
     if (locale == null) {
       return BeeConst.STRING_EMPTY;
@@ -176,7 +185,7 @@ public class I18nUtils {
     if (BeeUtils.isEmpty(s)) {
       return null;
     }
-    
+
     for (Locale lc : Locale.getAvailableLocales()) {
       if (BeeUtils.same(lc.toString(), s)) {
         return lc;
@@ -184,10 +193,10 @@ public class I18nUtils {
     }
     return null;
   }
-  
+
   @SuppressWarnings("unchecked")
   private static <T> T createProxy(Class<T> itf, InvocationHandler ih) {
-    return (T) Proxy.newProxyInstance(itf.getClassLoader(), new Class[] { itf }, ih);
+    return (T) Proxy.newProxyInstance(itf.getClassLoader(), new Class[] {itf}, ih);
   }
 
   private I18nUtils() {

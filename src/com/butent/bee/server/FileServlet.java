@@ -18,6 +18,10 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+/**
+ * Manages file transfers between client and server sides.
+ */
+
 @SuppressWarnings("serial")
 @WebServlet(name = "FileServlet", urlPatterns = {"/bee/file/*"})
 public class FileServlet extends HttpServlet {

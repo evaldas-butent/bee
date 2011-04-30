@@ -17,9 +17,14 @@ import java.util.logging.Logger;
 import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
 
+/**
+ * Contains utility HTTP request related functions like getting header information or execute binary
+ * read of requests.
+ */
+
 public class HttpUtils {
   private static Logger logger = Logger.getLogger(HttpUtils.class.getName());
-  
+
   public static String counterInfo(String name, Object obj) {
     if (obj instanceof Counter) {
       return BeeUtils.addName(name, ((Counter) obj).transform());
@@ -81,7 +86,7 @@ public class HttpUtils {
 
         v = req.getParameterValues(nm);
         if (BeeUtils.isEmpty(v)) {
-          v = new String[]{req.getParameter(nm)};
+          v = new String[] {req.getParameter(nm)};
         }
         lst.put(nm, v);
       }
@@ -120,12 +125,12 @@ public class HttpUtils {
 
     byte[] arr = new byte[len];
     boolean ok = true;
-    
+
     try {
       ServletInputStream stream = req.getInputStream();
       int tot = stream.read(arr, 0, len);
       Assert.isPositive(tot);
-    
+
       while (tot < len) {
         int cnt = stream.read(arr, tot, len - tot);
         Assert.isPositive(cnt);
@@ -136,7 +141,7 @@ public class HttpUtils {
       LogUtils.error(logger, ex);
       ok = false;
     }
-    
+
     if (ok) {
       return Codec.fromBytes(arr);
     } else {

@@ -11,6 +11,10 @@ import javax.servlet.annotation.WebListener;
 import javax.servlet.http.HttpSessionEvent;
 import javax.servlet.http.HttpSessionListener;
 
+/**
+ * Destroys user sessions after configured amount of idle time.
+ */
+
 @WebListener
 public class ServletSessionListener implements HttpSessionListener {
 

@@ -20,6 +20,10 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
+/**
+ * Manages the data source (DSN) that the system is using.
+ */
+
 @Singleton
 @Startup
 @Lock(LockType.READ)

@@ -21,6 +21,10 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Logger;
 
+/**
+ * Contains essential server configuration parameters like directory structure or files blacklist.
+ */
+
 public class Config {
   private static Logger logger = Logger.getLogger(Config.class.getName());
 
@@ -32,7 +36,7 @@ public class Config {
   private static Properties properties;
 
   private static final Splitter VALUE_SPLITTER =
-    Splitter.on(BeeConst.CHAR_COMMA).trimResults().omitEmptyStrings();
+      Splitter.on(BeeConst.CHAR_COMMA).trimResults().omitEmptyStrings();
 
   private static List<Filter> fileBlacklist = null;
   private static List<String> textExtensions = null;
@@ -67,7 +71,7 @@ public class Config {
     }
     return null;
   }
-  
+
   public static List<Filter> getFileBlacklist() {
     if (fileBlacklist == null) {
       fileBlacklist = Lists.newArrayList();
@@ -85,10 +89,10 @@ public class Config {
         "Source dir", SOURCE_DIR.isDirectory(), SOURCE_DIR.getAbsolutePath(),
         "Config dir", CONFIG_DIR.isDirectory(), CONFIG_DIR.getAbsolutePath(),
         "User dir", USER_DIR.isDirectory(), USER_DIR.getAbsolutePath());
-    
+
     if (fileBlacklist == null) {
       PropertyUtils.addExtended(lst, "File Blacklist", "not initialized");
-    } else {  
+    } else {
       int cnt = fileBlacklist.size();
       PropertyUtils.addExtended(lst, "File Blacklist", cnt);
       for (int i = 0; i < cnt; i++) {
@@ -96,10 +100,10 @@ public class Config {
             fileBlacklist.get(i));
       }
     }
-    
+
     if (textExtensions == null) {
       PropertyUtils.addExtended(lst, "Text extensions", "not initialized");
-    } else {  
+    } else {
       int cnt = textExtensions.size();
       PropertyUtils.addExtended(lst, "Text extensions", cnt);
       for (int i = 0; i < cnt; i++) {
@@ -145,8 +149,8 @@ public class Config {
   public static String getProperty(String key) {
     Assert.notEmpty(key);
     return properties.getProperty(key);
-  }  
-  
+  }
+
   public static List<String> getTextExtensions() {
     if (textExtensions == null) {
       textExtensions = getList("TextExtensions");
@@ -171,7 +175,7 @@ public class Config {
     if (BeeUtils.isEmpty(ext)) {
       return false;
     }
-    
+
     boolean ok = false;
     for (String x : getTextExtensions()) {
       if (BeeUtils.same(x, ext)) {
@@ -181,12 +185,12 @@ public class Config {
     }
     return ok;
   }
-  
+
   public static boolean isVisible(File file) {
     if (file == null) {
       return false;
     }
-    
+
     boolean ok = true;
     for (Filter filter : getFileBlacklist()) {
       if (filter.accept(file) && filter.accept(file, file.getName())) {
@@ -196,7 +200,7 @@ public class Config {
     }
     return ok;
   }
-  
+
   private static int getSize(Properties props) {
     if (props == null) {
       return 0;
@@ -226,7 +230,7 @@ public class Config {
     }
     return result;
   }
-  
+
   private static Properties readProperties(File file) {
     if (!FileUtils.isInputFile(file)) {
       return null;

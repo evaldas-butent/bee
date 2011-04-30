@@ -22,7 +22,14 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.logging.Logger;
 
+/**
+ * Initializes or makes available particular localizations.
+ */
+
 public class Localized {
+  /**
+   * Contains a list of types, that can be translated into a local language.
+   */
   private enum LocalizableType {
     CONSTANTS, MESSAGES
   }

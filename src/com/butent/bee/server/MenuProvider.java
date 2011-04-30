@@ -25,6 +25,10 @@ import javax.ejb.LockType;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
 
+/**
+ * Manages rpc_load_menu service request, creates logical structure of application menu.
+ */
+
 @Singleton
 @Startup
 @DependsOn("SystemBean")

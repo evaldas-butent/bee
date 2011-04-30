@@ -19,6 +19,10 @@ import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.Properties;
 
+/**
+ * Manages localization related values of system parameters.
+ */
+
 public class GwtConstants extends GwtLocalizable {
 
   public GwtConstants(Properties properties) {
@@ -103,7 +107,7 @@ public class GwtConstants extends GwtLocalizable {
     if (type.equals(String.class)) {
       return str;
     }
-    
+
     if (ClassUtils.isInteger(type)) {
       return Integer.valueOf(str);
     }
@@ -116,7 +120,7 @@ public class GwtConstants extends GwtLocalizable {
     if (ClassUtils.isBoolean(type)) {
       return Boolean.valueOf(str);
     }
-    
+
     if (ClassUtils.isMap(type)) {
       Map<String, String> result = Maps.newHashMap();
       String[] arr = BeeUtils.split(str, BeeConst.CHAR_COMMA);

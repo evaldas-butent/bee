@@ -5,6 +5,10 @@ import com.butent.bee.server.concurrency.Counter;
 import javax.servlet.http.HttpSessionEvent;
 import javax.servlet.http.HttpSessionListener;
 
+/**
+ * Creates and destroys HTTP sessions.
+ */
+
 public class SessionListener implements HttpSessionListener {
   private String attrCnt = null;
 

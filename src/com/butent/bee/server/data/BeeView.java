@@ -3,12 +3,12 @@ package com.butent.bee.server.data;
 import com.google.common.collect.Maps;
 
 import com.butent.bee.server.data.BeeTable.BeeField;
+import com.butent.bee.server.sql.BeeConstants.DataType;
 import com.butent.bee.server.sql.CompoundCondition;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.IsExpression;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
-import com.butent.bee.server.sql.BeeConstants.DataType;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.filter.ColumnColumnFilter;
 import com.butent.bee.shared.data.filter.ColumnIsEmptyFilter;
@@ -25,6 +25,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+/**
+ * Implements database view management - contains parameters for views and their fields and methods
+ * for doing operations with them.
+ */
 
 class BeeView {
 

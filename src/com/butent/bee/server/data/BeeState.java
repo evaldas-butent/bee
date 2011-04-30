@@ -3,6 +3,10 @@ package com.butent.bee.server.data;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.utils.BeeUtils;
 
+/**
+ * Enables usage of user, role, checked or unchecked related states.
+ */
+
 class BeeState {
   private static final String USER_MODE = "USER";
   private static final String ROLE_MODE = "ROLE";

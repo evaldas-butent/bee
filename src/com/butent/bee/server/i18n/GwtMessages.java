@@ -1,8 +1,8 @@
 package com.butent.bee.server.i18n;
 
 import com.google.common.collect.Maps;
-import com.google.gwt.i18n.client.Messages.AlternateMessage;
 import com.google.gwt.i18n.client.LocalizableResource.Key;
+import com.google.gwt.i18n.client.Messages.AlternateMessage;
 import com.google.gwt.i18n.client.Messages.DefaultMessage;
 import com.google.gwt.i18n.client.Messages.PluralCount;
 
@@ -15,6 +15,10 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.Properties;
+
+/**
+ * Dynamically generates user interface messages depending on language set in the system.
+ */
 
 public class GwtMessages extends GwtLocalizable {
 

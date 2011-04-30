@@ -1,8 +1,8 @@
 package com.butent.bee.server.communication;
 
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.DateTime;
 import com.butent.bee.shared.BeeResource;
+import com.butent.bee.shared.DateTime;
 import com.butent.bee.shared.communication.CommUtils;
 import com.butent.bee.shared.communication.ContentType;
 import com.butent.bee.shared.communication.ResponseMessage;
@@ -17,6 +17,10 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
+
+/**
+ * Enables server response buffer's contents management.
+ */
 
 public class ResponseBuffer {
   private char[] separator;
@@ -38,7 +42,7 @@ public class ResponseBuffer {
   }
 
   public ResponseBuffer(char sep) {
-    this.separator = new char[]{sep};
+    this.separator = new char[] {sep};
   }
 
   public ResponseBuffer(ContentType contentType) {
@@ -52,7 +56,7 @@ public class ResponseBuffer {
       setDefaultSeparator();
     }
   }
-  
+
   public void add(CharSequence s) {
     if (s != null && s.length() > 0) {
       checkSeparator(s);
@@ -90,10 +94,10 @@ public class ResponseBuffer {
     if (s == null || s.length() <= 0) {
       return;
     }
-    
+
     buffer.append(s);
     count++;
-    
+
     setContentType(ContentType.BINARY);
   }
 
@@ -455,7 +459,7 @@ public class ResponseBuffer {
 
     return ok;
   }
-  
+
   private char[] nextSeparator(CharSequence s) {
     if (separator == null || separator.length == 0) {
       return null;
@@ -480,7 +484,7 @@ public class ResponseBuffer {
   }
 
   private void setDefaultSeparator() {
-    separator = new char[]{CommUtils.DEFAULT_INFORMATION_SEPARATOR};
+    separator = new char[] {CommUtils.DEFAULT_INFORMATION_SEPARATOR};
   }
 
   private void updateSeparator(char[] newSep) {

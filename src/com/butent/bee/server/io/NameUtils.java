@@ -7,6 +7,10 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.io.File;
 import java.util.Collection;
 
+/**
+ * Enables operations with file names, paths, extensions, read and change them.
+ */
+
 public class NameUtils {
   public enum Component {
     PREFIX, PATH, FULL_PATH, NAME, BASE_NAME, EXTENSION
@@ -367,7 +371,7 @@ public class NameUtils {
     }
     return path.replace(UNIX_SEPARATOR, WINDOWS_SEPARATOR);
   }
-  
+
   private static String doGetFullPath(String filename, boolean includeSeparator) {
     if (filename == null) {
       return null;

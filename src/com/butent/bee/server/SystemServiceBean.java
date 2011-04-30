@@ -37,6 +37,11 @@ import java.util.logging.Logger;
 
 import javax.ejb.Stateless;
 
+/**
+ * Manages system requests with <code>rpc_sys</code> tag, for example working with system's files
+ * and other resources.
+ */
+
 @Stateless
 public class SystemServiceBean {
   private static Logger logger = Logger.getLogger(SystemServiceBean.class.getName());
@@ -177,7 +182,7 @@ public class SystemServiceBean {
           }
         }
       }
-      
+
       if (roots.isEmpty()) {
         if (BeeUtils.same(mode, "src")) {
           roots.add(Config.SOURCE_DIR);
@@ -225,17 +230,17 @@ public class SystemServiceBean {
         buff.addColumn(new BeeColumn(ValueType.TEXT, "Path"));
         buff.addColumn(new BeeColumn(ValueType.NUMBER, "Size"));
         buff.addColumn(new BeeColumn(ValueType.DATETIME, "Modified"));
-        
+
         long totSize = 0;
         long lastMod = 0;
         long x, y;
         int idx = 0;
-        
+
         for (File fl : files) {
           x = fl.isFile() ? fl.length() : 0;
           y = fl.lastModified();
           buff.add(++idx, fl.getName(), fl.getPath(), x, y);
-          
+
           if (x > 0) {
             totSize += x;
           }

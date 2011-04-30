@@ -14,13 +14,17 @@ import java.util.logging.Logger;
 
 import javax.ejb.Stateless;
 
+/**
+ * Is used by rpc_db_meta service requests handler, returns parameters of <code>ResultSets</code>.
+ */
+
 @Stateless
 public class ResultSetBean {
   private static final Logger logger = Logger.getLogger(ResultSetBean.class.getName());
   private static final BeeColumn[] metaCols;
 
   static {
-    String[] arr = new String[]{
+    String[] arr = new String[] {
         "index", "id", "name", "label", "schema", "catalog", "table", "class", "sql type",
         "type name", "type", "precision", "scale", "nullable", "pattern", "display size", "signed",
         "auto increment", "case sensitive", "currency", "searchable", "read only", "writable",

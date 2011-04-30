@@ -35,10 +35,18 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.sql.DataSource;
 
+/**
+ * Manages SQL related requests from client side.
+ */
+
 @Stateless
 @LocalBean
 @TransactionAttribute(TransactionAttributeType.MANDATORY)
 public class QueryServiceBean {
+
+  /**
+   * Is a private interface for SQL processing.
+   */
 
   private interface SqlHandler<T> {
 

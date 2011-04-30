@@ -3,8 +3,8 @@ package com.butent.bee.server.http;
 import com.butent.bee.server.utils.XmlUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Service;
 import com.butent.bee.shared.HasExtendedInfo;
+import com.butent.bee.shared.Service;
 import com.butent.bee.shared.Transformable;
 import com.butent.bee.shared.communication.CommUtils;
 import com.butent.bee.shared.communication.ContentType;
@@ -30,6 +30,10 @@ import javax.servlet.SessionTrackingMode;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+
+/**
+ * Enables to manage HTTP requests - get and set their attributes and change their parameters.
+ */
 
 public class RequestInfo implements HasExtendedInfo, Transformable {
   private static int COUNTER = 0;

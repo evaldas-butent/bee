@@ -23,6 +23,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+/**
+ * Sends client side HTTP service requests to server, extends Java standard <code>HttpServlet</code>
+ * functionality.
+ */
+
 @SuppressWarnings("serial")
 @WebServlet(name = "BeeServlet", urlPatterns = {"/bee/bee"})
 public class BeeServlet extends HttpServlet {

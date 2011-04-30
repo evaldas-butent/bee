@@ -4,10 +4,10 @@ import com.butent.bee.server.communication.ResponseBuffer;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.i18n.I18nUtils;
 import com.butent.bee.server.i18n.Localized;
-import com.butent.bee.server.utils.SystemInfo;
 import com.butent.bee.server.utils.Checksum;
 import com.butent.bee.server.utils.JvmUtils;
 import com.butent.bee.server.utils.MxUtils;
+import com.butent.bee.server.utils.SystemInfo;
 import com.butent.bee.server.utils.XmlUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -25,6 +25,10 @@ import java.util.Locale;
 import java.util.Map;
 
 import javax.ejb.Stateless;
+
+/**
+ * Manages services with <code>invoke</code> tag (reflection invocation).
+ */
 
 @Stateless
 public class Invocation {
@@ -45,10 +49,10 @@ public class Invocation {
       buff.add(JvmUtils.CVF_FAILURE);
     }
   }
-  
+
   public void localeInfo(RequestInfo reqInfo, ResponseBuffer buff) {
     String mode = reqInfo.getContent();
-    
+
     if (BeeUtils.length(mode) >= 2) {
       Locale lc = null;
       for (String s : BeeUtils.split(mode, BeeConst.CHAR_SPACE)) {
@@ -60,13 +64,13 @@ public class Invocation {
       if (lc == null) {
         lc = Localized.defaultLocale;
       }
-      
+
       List<Property> lst = PropertyUtils.createProperties(
           BeeUtils.concat(1, "Locale", mode), Localized.transform(lc),
           "refresh", Localized.getConstants(lc).refresh(),
           "class", Localized.getConstants(lc).clazz(),
           "keyNotFound", Localized.getMessages(lc).keyNotFound("test"));
-      
+
       Map<Locale, File> avail = Localized.getAvailableConstants();
       int idx = 0;
       if (avail != null) {
@@ -75,7 +79,7 @@ public class Invocation {
           PropertyUtils.addProperty(lst,
               BeeUtils.concat(2, ++idx, Localized.transform(entry.getKey())), entry.getValue());
         }
-        PropertyUtils.addProperty(lst, "Normalized", 
+        PropertyUtils.addProperty(lst, "Normalized",
             Localized.transform(Localized.normalize(lc, avail)));
       }
 
@@ -87,10 +91,10 @@ public class Invocation {
           PropertyUtils.addProperty(lst,
               BeeUtils.concat(2, ++idx, Localized.transform(entry.getKey())), entry.getValue());
         }
-        PropertyUtils.addProperty(lst, "Normalized", 
+        PropertyUtils.addProperty(lst, "Normalized",
             Localized.transform(Localized.normalize(lc, avail)));
       }
-      
+
       Collection<Locale> locales = Localized.getCachedConstantLocales();
       PropertyUtils.addProperty(lst, "Loaded Constants", locales.size());
       idx = 0;
@@ -110,7 +114,7 @@ public class Invocation {
 
     } else if (BeeUtils.context("x", mode)) {
       buff.addExtendedProperties(I18nUtils.getExtendedInfo());
-    
+
     } else {
       buff.addProperties(I18nUtils.getInfo());
     }

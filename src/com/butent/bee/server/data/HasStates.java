@@ -9,6 +9,10 @@ import com.butent.bee.server.sql.SqlUpdate;
 
 import java.util.Map;
 
+/**
+ * Contains required methods for classes that can have different states when they are used.
+ */
+
 public interface HasStates {
 
   SqlCreate createStateTable(SqlCreate query, BeeState state);

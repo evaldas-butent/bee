@@ -27,6 +27,10 @@ import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 
+/**
+ * Manages JDBC connectivity and executes service requests with rpc_db_jdbc tag.
+ */
+
 @Stateless
 public class DataServiceBean {
   private static Logger logger = Logger.getLogger(DataServiceBean.class.getName());
