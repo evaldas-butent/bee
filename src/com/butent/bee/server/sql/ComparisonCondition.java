@@ -6,6 +6,12 @@ import com.butent.bee.shared.data.filter.Operator;
 import java.util.Collection;
 import java.util.List;
 
+/**
+ * Generates comparison condition parts for SQL statements depending on specific SQL server
+ * requirements.
+ * 
+ */
+
 class ComparisonCondition implements IsCondition {
 
   private final IsExpression leftExpression;

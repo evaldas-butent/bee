@@ -9,6 +9,11 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.Collection;
 import java.util.List;
 
+/**
+ * Generates SELECT SQL statements and their full range of elements (inc. formation of WHERE and
+ * GROUP BY clauses, union, distinct, result limitations support etc).
+ */
+
 public class SqlSelect extends HasFrom<SqlSelect> {
 
   static final int FIELD_EXPR = 0;

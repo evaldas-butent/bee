@@ -6,6 +6,10 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Map;
 
+/**
+ * Contains specific requirements for SQL statement building for Oracle SQL server.
+ */
+
 class OracleSqlBuilder extends SqlBuilder {
 
   protected String sqlKeyword(Keyword option, Map<String, Object> params) {

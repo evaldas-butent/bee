@@ -6,6 +6,11 @@ import com.butent.bee.shared.data.value.Value;
 
 import java.util.List;
 
+/**
+ * Transforms given constant expressions for compliance to specific SQL server requirements.
+ * 
+ */
+
 class ConstantExpression implements IsExpression {
 
   private final Value constant;

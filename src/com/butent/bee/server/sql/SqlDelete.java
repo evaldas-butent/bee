@@ -6,6 +6,10 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.Collection;
 import java.util.List;
 
+/**
+ * Builds a DELETE SQL statement for a given target using specified WHERE clause.
+ */
+
 public class SqlDelete extends HasFrom<SqlDelete> {
 
   private final IsFrom target;

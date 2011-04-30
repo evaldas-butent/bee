@@ -8,6 +8,11 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.Collection;
 import java.util.List;
 
+/**
+ * Generates FROM part of a SQL statement depending on requirements of a specific SQL server,
+ * supports alias names.
+ */
+
 class FromSource implements IsFrom {
 
   private final Object source;

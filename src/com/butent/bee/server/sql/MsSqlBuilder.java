@@ -7,6 +7,10 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Map;
 
+/**
+ * Contains specific requirements for SQL statement building for Microsoft SQL server.
+ */
+
 class MsSqlBuilder extends SqlBuilder {
 
   @Override

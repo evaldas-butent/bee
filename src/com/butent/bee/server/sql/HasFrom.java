@@ -8,6 +8,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+/**
+ * An abstract class, contains an engine for generation of FROM parts for SQL statements.
+ */
+
 public abstract class HasFrom<T> extends SqlQuery<T> {
 
   protected List<IsFrom> fromList;

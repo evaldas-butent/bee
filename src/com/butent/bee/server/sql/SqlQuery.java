@@ -6,6 +6,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Is an abstract class for SQL queries forming classes and indicates to use SQL builder classes.
+ * 
+ * @param <T> used for reference getting.
+ */
+
 abstract class SqlQuery<T> implements IsQuery {
 
   private boolean paramMode = false;

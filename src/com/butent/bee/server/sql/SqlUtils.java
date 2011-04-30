@@ -16,6 +16,11 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Contains various utility SQL statement related functions like joining by comparisons, creating
+ * and dropping keys etc.
+ */
+
 public class SqlUtils {
 
   public static CompoundCondition and(IsCondition... conditions) {

@@ -15,6 +15,11 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Is an abstract class for all SQL server specific SQL builders, contains core requirements for SQL
+ * statements.
+ */
+
 public abstract class SqlBuilder {
 
   protected String sqlKeyword(Keyword option, Map<String, Object> params) {

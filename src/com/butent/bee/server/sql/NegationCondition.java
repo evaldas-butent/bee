@@ -7,6 +7,11 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.Collection;
 import java.util.List;
 
+/**
+ * Forms a logically negative expression for a given one according to requirements of specific SQL
+ * servers.
+ */
+
 class NegationCondition implements IsCondition {
 
   private final IsCondition condition;

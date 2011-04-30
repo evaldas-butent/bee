@@ -8,6 +8,11 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.Collection;
 import java.util.List;
 
+/**
+ * Generates complex condition expressions for SQL statements depending on specific SQL server
+ * requirements.
+ */
+
 public class CompoundCondition implements IsCondition {
 
   static CompoundCondition and(IsCondition... conditions) {

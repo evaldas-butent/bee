@@ -9,6 +9,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+/**
+ * Generates a CREATE SQL statements with all necessary options and support for different SQL
+ * servers.
+ */
+
 public class SqlCreate extends SqlQuery<SqlCreate> {
 
   public class SqlField {

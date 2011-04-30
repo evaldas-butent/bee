@@ -11,6 +11,10 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * Builds an INSERT SQL statement for a given target using specified field and value lists.
+ */
+
 public class SqlInsert extends SqlQuery<SqlInsert> {
 
   private final IsFrom target;

@@ -2,7 +2,15 @@ package com.butent.bee.server.sql;
 
 import com.butent.bee.shared.Assert;
 
+/**
+ * Contains constants lists, such as keywords, datatypes and empty values for each of them.
+ */
+
 public final class BeeConstants {
+
+  /**
+   * Contains a list of supported data types.
+   */
 
   public enum DataType {
     BOOLEAN, INTEGER, LONG, DOUBLE, NUMERIC, CHAR, STRING, DATE, DATETIME;
@@ -31,6 +39,10 @@ public final class BeeConstants {
       return value;
     }
   }
+
+  /**
+   * Contains a list of SQL keywords used by the system.
+   */
 
   public enum Keyword {
     DB_NAME, DB_SCHEMA, DB_TABLES, DB_FOREIGNKEYS,

@@ -6,7 +6,15 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.Collection;
 import java.util.List;
 
+/**
+ * Implements support for left, right, inner and full joins and lists for SQL statements.
+ */
+
 class FromJoin extends FromSource {
+
+  /**
+   * Contains a list of all JOIN modes.
+   */
 
   public enum JoinMode {
     LIST(", "),
