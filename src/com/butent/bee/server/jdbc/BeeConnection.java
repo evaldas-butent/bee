@@ -18,6 +18,11 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Logger;
 
+/**
+ * Contains information and operational methods (mostly getting and changing parameters) for a JDBC
+ * connection to a database.
+ */
+
 public class BeeConnection {
   private static final Logger logger = Logger.getLogger(BeeConnection.class.getName());
 
@@ -69,6 +74,7 @@ public class BeeConnection {
 
     return lst;
   }
+
   private boolean autoCommit;
   private String catalog;
   private Properties clientInfo;
@@ -376,7 +382,7 @@ public class BeeConnection {
   public void setTypeMap(Map<String, Class<?>> typeMap) {
     this.typeMap = typeMap;
   }
-  
+
   public boolean updateAutoCommit(Connection conn, String s) {
     Assert.notNull(conn);
     Assert.notEmpty(s);

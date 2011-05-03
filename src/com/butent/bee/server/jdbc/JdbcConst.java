@@ -2,6 +2,10 @@ package com.butent.bee.server.jdbc;
 
 import java.sql.ResultSet;
 
+/**
+ * Contains constant expressions and values for JDBC connectivity parameters.
+ */
+
 public class JdbcConst {
   public static final String ROW_ID = "row_id";
   public static final String RESULT_SET_EMPTY = "result set empty";
@@ -23,7 +27,7 @@ public class JdbcConst {
   public static String rsRows(int cnt) {
     return "result set has " + String.valueOf(cnt) + " rows";
   }
-  
+
   private JdbcConst() {
   }
 }

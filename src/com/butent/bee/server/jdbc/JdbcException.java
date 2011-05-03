@@ -2,6 +2,10 @@ package com.butent.bee.server.jdbc;
 
 import java.sql.SQLException;
 
+/**
+ * Enables to handle exceptions, related to JDBC connectivity problems.
+ */
+
 @SuppressWarnings("serial")
 public class JdbcException extends SQLException {
 

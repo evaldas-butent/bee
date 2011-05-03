@@ -19,6 +19,10 @@ import javax.ejb.EJB;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
 
+/**
+ * contains the engine for dynamic interface generation for forms and menu.
+ */
+
 @Stateless
 @LocalBean
 public class UiLoaderBean extends UiLoader {
@@ -37,9 +41,9 @@ public class UiLoaderBean extends UiLoader {
         e.printStackTrace();
       }
       List<Object[]> buff = new ArrayList<Object[]>();
-      buff.add(new Object[]{formName, "UiWindow", null, null, null});
+      buff.add(new Object[] {formName, "UiWindow", null, null, null});
 
-      buff.add(new Object[]{
+      buff.add(new Object[] {
           "Button1",
           "UiButton",
           null,

@@ -2,6 +2,10 @@ package com.butent.bee.server.jdbc;
 
 import java.sql.SQLWarning;
 
+/**
+ * Enables to release warnings about possible problems with JDBC connection.
+ */
+
 @SuppressWarnings("serial")
 public class JdbcWarning extends SQLWarning {
 

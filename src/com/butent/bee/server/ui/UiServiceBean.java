@@ -31,6 +31,11 @@ import javax.ejb.EJBContext;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
 
+/**
+ * Manages <code>rpc_data</code> type service requests from client side, including such services as
+ * <code>GET_MENU, GET_FORM, DO_SQL</code>.
+ */
+
 @Stateless
 @LocalBean
 public class UiServiceBean {

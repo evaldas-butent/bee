@@ -26,6 +26,11 @@ import java.util.logging.Logger;
 
 import javax.sql.DataSource;
 
+/**
+ * Contains utility functions for management of JDBC related objects (
+ * <code>BeeConnection, BeeStatement, BeeResultSet</code>).
+ */
+
 public class JdbcUtils {
   private static final Logger logger = Logger.getLogger(JdbcUtils.class.getName());
 
@@ -593,11 +598,11 @@ public class JdbcUtils {
       col.setId(BeeUtils.ifString(label, name));
       col.setName(name);
       col.setLabel(label);
-      
+
       col.setSchema(rsmd.getSchemaName(idx));
       col.setCatalog(rsmd.getCatalogName(idx));
       col.setTable(rsmd.getTableName(idx));
-      
+
       int sqlType = rsmd.getColumnType(idx);
       col.setSqlType(sqlType);
       col.setType(sqlTypeToValueType(sqlType));
@@ -631,7 +636,7 @@ public class JdbcUtils {
 
   public static ValueType sqlTypeToValueType(int sqlType) {
     ValueType valueType;
-    
+
     switch (sqlType) {
       case Types.BOOLEAN:
       case Types.BIT: {
@@ -821,7 +826,7 @@ public class JdbcUtils {
         BeeConst.TRANSACTION_READ_COMMITTED, BeeConst.TRANSACTION_READ_UNCOMMITTED,
         BeeConst.TRANSACTION_REPEATABLE_READ, BeeConst.TRANSACTION_SERIALIZABLE);
   }
-  
+
   private JdbcUtils() {
   }
 }

@@ -19,6 +19,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
+/**
+ * Manages JDBC result sets, which are objects for containing results from SQL statements to a JDBC
+ * server.
+ */
+
 public class BeeResultSet implements Transformable {
   private static final Logger logger = Logger.getLogger(BeeResultSet.class.getName());
 
@@ -56,6 +61,7 @@ public class BeeResultSet implements Transformable {
     }
     return lst;
   }
+
   private int concurrency = 0;
   private String cursorName = null;
   private int fetchDirection = 0;

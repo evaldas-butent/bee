@@ -15,6 +15,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
+/**
+ * Contains necessary attributes for a JDBC statements, which are used for sending SQL commands to
+ * the server, and methods needed for getting and setting particular statement's attributes.
+ */
+
 public class BeeStatement {
   private static final Logger logger = Logger.getLogger(BeeStatement.class.getName());
 
@@ -61,6 +66,7 @@ public class BeeStatement {
 
     return lst;
   }
+
   private int state = BeeConst.STATE_UNKNOWN;
 
   private List<SQLException> errors = new ArrayList<SQLException>();

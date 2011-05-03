@@ -13,6 +13,11 @@ import javax.ejb.Lock;
 import javax.ejb.LockType;
 import javax.ejb.Singleton;
 
+/**
+ * Initializes and uses <code>UiLoaderBean</code> for dynamic interface generation from a data
+ * source.
+ */
+
 @Singleton
 public class UiHolderBean {
 
