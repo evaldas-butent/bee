@@ -129,6 +129,11 @@ public class BeeConst {
 
   private static String home = SERVER;
   
+  /**
+   * Returns the name of database system by {@code dsn} phrase
+   * @param dsn phrase of database system
+   * @return the name of database system
+   */
   public static String getDsType(String dsn) {
     if (dsn == null) {
       return null;
@@ -163,10 +168,19 @@ public class BeeConst {
     return tp;
   }
   
+  /**
+   * Returns the state of client
+   * @return {@code true} if state is client, {@code false} otherwise
+   */
   public static boolean isClient() {
     return home.equals(CLIENT);
   }
 
+  /**
+   * Returns is parameter {@code s} value equals {@code DEFAULT} constant
+   * @param s default value
+   * @return {@code true} if {@code s} is equals {@code DEFAULT} constant
+   */
   public static boolean isDefault(String s) {
     if (s == null) {
       return false;
@@ -175,18 +189,39 @@ public class BeeConst {
     }
   }
 
+  /**
+   * Returns is {@code x} the value of error code.
+   * @param x error code
+   * @return {@code true} if {@code x} is value of error code.
+   */
   public static boolean isError(int x) {
     return x == INT_ERROR;
   }
   
+  /**
+   * Returns is {@code c} the boolean  value of {@code false}. There are {@code 'f', 'F', 'n',
+   * 'N', '0'} values of character witch returns {@code true}
+   * @param c character of boolean value
+   * @return {@code true} if character {@code c} is the boolean value of {@code false} 
+   */
   public static boolean isFalse(char c) {
     return CHAR_FALSE.indexOf(c) >= 0;
   }
 
+  /**
+   * Returns the state of server
+   * @return {@code} if state is server
+   */
   public static boolean isServer() {
     return home.equals(SERVER);
   }
 
+  /**
+   * Returns is (@code c} the boolean value od {@code true}. There are {@code
+   * 't', 'T', 'y', 'Y', '1'} values of character witch returns {@code true}
+   * @param c character of boolean value
+   * @return {@code true} if character {@code c} is the bolean value of {@code true} 
+   */
   public static boolean isTrue(char c) {
     return CHAR_TRUE.indexOf(c) >= 0;
   }
@@ -194,15 +229,29 @@ public class BeeConst {
   public static boolean isUndef(int x) {
     return x == UNDEF;
   }
-  
+
+  /**
+   * Sets the state to client
+   * @see #isClient
+   */
   public static void setClient() {
     home = CLIENT;
   }
 
+  /**
+   * Sets the state to server
+   * @see #isServer
+   */
   public static void setServer() {
     home = SERVER;
   }
 
+  /**
+   * Returns is string the {@code tp} value of database system. 
+   * @param tp database system name
+   * @return {@code true} if the {@code tp} is of datebase system
+   * @see #getDsType(String)
+   */
   public static boolean validDsType(String tp) {
     boolean ok = false;
     if (tp == null || tp.isEmpty()) {
@@ -218,6 +267,12 @@ public class BeeConst {
     return ok;
   }
 
+  /**
+   * Returns value of state
+   * @return value of state
+   * @see #isClient()
+   * @see #isServer()
+   */
   public static String whereAmI() {
     if (isClient()) {
       return CLIENT;

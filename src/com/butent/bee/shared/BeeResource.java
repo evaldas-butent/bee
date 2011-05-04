@@ -43,6 +43,11 @@ public class BeeResource implements BeeSerializable {
     this.readOnly = readOnly;
   }
   
+  /**
+   * Deserializes the provided argument {@code src}, and sets the deserialized
+   * values to the resource.
+   * @param src the String to deserialize
+   */
   public void deserialize(String src) {
     Assert.notNull(src);
     
@@ -101,6 +106,11 @@ public class BeeResource implements BeeSerializable {
     return readOnly;
   }
 
+  /**
+   * Serializes resources {@code (name, uri, type, readOnly, content)} in this
+   * and sequence and returns a serialized String.
+   * @return a serializes String for deserialization.
+   */
   public String serialize() {
     int[] arr = new int[]{
         BeeUtils.length(name), BeeUtils.length(uri),

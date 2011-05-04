@@ -128,40 +128,80 @@ public class Service {
 
   public static final String XML_TAG_DATA = RPC_VAR_PREFIX + "data";
 
+  /**
+   * Returns true if {@code svc} value starts with {@link #COMPOSITE_SERVICE_PREFIX}
+   * @param svc name of service
+   * @return true if name of service starts with {@link #COMPOSITE_SERVICE_PREFIX}
+   */
   public static boolean isCompositeService(String svc) {
     Assert.notEmpty(svc);
     return svc.startsWith(COMPOSITE_SERVICE_PREFIX);
   }
 
+  /**
+   * Returns true if {@code svc} value starts with {@link #DATA_SERVICE_PREFIX}
+   * @param svc name of service
+   * @return true if name of service starts with {@link #DATA_SERVICE_PREFIX}
+   */
   public static boolean isDataService(String svc) {
     Assert.notEmpty(svc);
     return svc.startsWith(DATA_SERVICE_PREFIX);
   }
 
+  /**
+   * Returns true if {@code svc} value starts with {@link #DB_META_SERVICE_PREFIX}
+   * @param svc name of service
+   * @return true if name of service starts with {@link #DB_META_SERVICE_PREFIX}
+   */
   public static boolean isDbMetaService(String svc) {
     Assert.notEmpty(svc);
     return svc.startsWith(DB_META_SERVICE_PREFIX);
   }
 
+  /**
+   * Returns true if {@code svc} value starts with {@link #DB_SERVICE_PREFIX}
+   * @param svc name of service;
+   * @return true if name of service starts with {@link #DB_SERVICE_PREFIX}
+   */
   public static boolean isDbService(String svc) {
     Assert.notEmpty(svc);
     return svc.startsWith(DB_SERVICE_PREFIX);
   }
 
+  /**
+   * Returns true if {@code svc} value has {@link #INVOKE}
+   * @param svc name of service;
+   * @return true if name of service starts {@link #INVOKE}
+   */
   public static boolean isInvocation(String svc) {
     return BeeUtils.same(svc, INVOKE);
   }
 
+  /**
+   * Returns true if {@code svc} value starts with {@link #RPC_SERVICE_PREFIX} 
+   * @param svc name of service
+   * @return true if name of servce starts with {@link #RPC_SERVICE_PREFIX}
+   */
   public static boolean isRpcService(String svc) {
     Assert.notEmpty(svc);
     return svc.startsWith(RPC_SERVICE_PREFIX);
   }
 
+  /**
+   * Returns true if {@code svc} value starts with {@link #SYS_SERVICE_PREFIX}
+   * @param svc name of service
+   * @return true if name of service starts with {@link #SYS_SERVICE_PREFIX};
+   */
   public static boolean isSysService(String svc) {
     Assert.notEmpty(svc);
     return svc.startsWith(SYS_SERVICE_PREFIX);
   }
 
+  /**
+   * Returns true if {@code svc} value stars with {@link #UI_SERVICE_PREFIX}
+   * @param svc name of service
+   * @return true if name of service value starts with {@link #UI_SERVICE_PREFIX}
+   */
   public static boolean isUiService(String svc) {
     Assert.notEmpty(svc);
     return svc.startsWith(UI_SERVICE_PREFIX);
