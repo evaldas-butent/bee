@@ -165,12 +165,10 @@ public class MenuBar extends Widget implements HasId, HasAfterAddHandler,
   public void onAfterAdd(HasWidgets parent) {
     if (parent instanceof BeeLayoutPanel) {
       if (vertical) {
-        ((BeeLayoutPanel) parent).setWidgetHorizontalPosition(this,
-            Layout.Alignment.BEGIN);
+        ((BeeLayoutPanel) parent).setWidgetHorizontalPosition(this, Layout.Alignment.BEGIN);
       }
       if (!vertical || barType != BAR_TYPE.TABLE) {
-        ((BeeLayoutPanel) parent).setWidgetVerticalPosition(this,
-            Layout.Alignment.BEGIN);
+        ((BeeLayoutPanel) parent).setWidgetVerticalPosition(this, Layout.Alignment.BEGIN);
       }
 
     } else if (parent instanceof Stack || parent instanceof TabbedPages) {
@@ -198,8 +196,7 @@ public class MenuBar extends Widget implements HasId, HasAfterAddHandler,
     }
 
     MenuItem item = findItem(target);
-    if (item == null && !EventUtils.isKeyEvent(type)
-        && type != Event.ONMOUSEWHEEL) {
+    if (item == null && !EventUtils.isKeyEvent(type) && type != Event.ONMOUSEWHEEL) {
       super.onBrowserEvent(event);
       return;
     }
@@ -454,7 +451,6 @@ public class MenuBar extends Widget implements HasId, HasAfterAddHandler,
         return item;
       }
     }
-
     return null;
   }
 
@@ -581,8 +577,7 @@ public class MenuBar extends Widget implements HasId, HasAfterAddHandler,
     return item;
   }
 
-  private MenuSeparator insertSeparator(MenuSeparator separator,
-      int beforeIndex) {
+  private MenuSeparator insertSeparator(MenuSeparator separator, int beforeIndex) {
     if (vertical) {
       setItemColSpan(separator, 2);
     }
@@ -825,5 +820,4 @@ public class MenuBar extends Widget implements HasId, HasAfterAddHandler,
       DOM.setElementPropertyInt(item.getElement(), "colSpan", colspan);
     }
   }
-
 }

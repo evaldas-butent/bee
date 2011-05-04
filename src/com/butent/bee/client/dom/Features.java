@@ -74,6 +74,7 @@ public class Features {
   private static Boolean localStorage = null;
   private static Boolean microdata = null;
   private static Boolean postMessage = null;
+  private static Boolean selectors = null;
   private static Boolean sendAsFormData = null;
   private static Boolean serverSentEvents = null;
   private static Boolean sessionStorage = null;
@@ -200,6 +201,7 @@ public class Features {
         "Microdata", supportsMicrodata(),
         "Post Message", supportsPostMessage(),
         "Send As Form Data", supportsSendAsFormData(),
+        "Selectors", supportsSelectors(),
         "Server Sent Events", supportsServerSentEvents(),
         "Session Storage", supportsSessionStorage(),
 
@@ -274,6 +276,20 @@ public class Features {
     return obj;
   }-*/;
 
+  public static native boolean isDocumentFunction(String fnc) /*-{
+    if (fnc == null || fnc == "") {
+      return false;
+    }
+
+    var ok;
+    try {
+      ok = (typeof($doc[fnc]) == "function");
+    } catch (err) {
+      ok = false;
+    }
+    return ok;
+  }-*/;
+  
   public static native boolean isDocumentProperty(String p) /*-{
     if (p == null || p == "") {
       return false;
@@ -664,13 +680,20 @@ public class Features {
     return postMessage;
   }
 
+  public static boolean supportsSelectors() {
+    if (selectors == null) {
+      selectors = testSelectors();
+    }
+    return selectors;
+  }
+
   public static boolean supportsSendAsFormData() {
     if (sendAsFormData == null) {
       sendAsFormData = testSendAsFormData();
     }
     return sendAsFormData;
   }
-
+ 
   public static boolean supportsServerSentEvents() {
     if (serverSentEvents == null) {
       serverSentEvents = testServerSentEvents();
@@ -1053,6 +1076,10 @@ public class Features {
     return isWindowProperty("postMessage");
   }
 
+  private static boolean testSelectors() {
+    return isDocumentFunction("querySelector") && isDocumentFunction("querySelectorAll");
+  }
+  
   private static boolean testSendAsFormData() {
     return isWindowProperty("FormData");
   }

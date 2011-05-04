@@ -411,6 +411,18 @@ public class BeeUtils {
     }
     return ok;
   }
+  
+  public static boolean containsWhitespace(CharSequence cs) {
+    if (cs == null) {
+      return false;
+    }
+    for (int i = 0; i < cs.length(); i++) {
+      if (isWhitespace(cs.charAt(i))) {
+        return true;
+      }
+    }
+    return false;
+  }
 
   /**
    * Checks if {@code src} contains {@code ctxt}. Both values are compared after transforming to
@@ -775,11 +787,11 @@ public class BeeUtils {
 
   /**
    * Gets a prefix from a String, where separator sets that the prefix will end at the first
-   * occurance of the separator.
+   * occurrence of the separator.
    * 
    * @param src the source to get a prefix from
    * @param sep the separator.
-   * @return a String, where the length is determined by the first occurance of the separator.
+   * @return a String, where the length is determined by the first occurrence of the separator.
    */
   public static String getPrefix(String src, char sep) {
     if (isEmpty(src)) {
@@ -917,6 +929,19 @@ public class BeeUtils {
     return Integer.toString(toInt(s) + 1);
   }
 
+  public static boolean inList(int x, int... lst) {
+    Assert.notNull(lst);
+    boolean ok = false;
+
+    for (int i = 0; i < lst.length; i++) {
+      if (x == lst[i]) {
+        ok = true;
+        break;
+      }
+    }
+    return ok;
+  }
+  
   /**
    * Checks if value {@code x} is in {@code lst}.
    * 
@@ -935,7 +960,6 @@ public class BeeUtils {
         break;
       }
     }
-
     return ok;
   }
 
@@ -1088,11 +1112,23 @@ public class BeeUtils {
     }
   }
 
+  public static boolean isDelimited(CharSequence cs, char delimiter) {
+    return isDelimited(cs, delimiter, delimiter);
+  }
+  
+  public static boolean isDelimited(CharSequence cs, char start, char end) {
+    if (cs == null || cs.length() < 2) {
+      return false;
+    } else {
+      return cs.charAt(0) == start && cs.charAt(cs.length() - 1) == end;
+    }
+  }
+  
   /**
    * Checks if a character {@code c} is a digit.
    * 
    * @param c character to check
-   * @return true if the character ir {@code >= 0 and <=9};
+   * @return true if the character is {@code >= 0 and <= 9};
    */
   public static boolean isDigit(char c) {
     return c >= BeeConst.CHAR_ZERO && c <= BeeConst.CHAR_NINE;
@@ -1409,7 +1445,7 @@ public class BeeUtils {
   /**
    * Checks if the last character in a CharSequence is a suffix.
    * 
-   * @param src sequence to ceck
+   * @param src sequence to check
    * @param sfx a suffix to check for
    * @return true if the last character equals {@code sfx}, otherwise false.
    */
@@ -1438,6 +1474,10 @@ public class BeeUtils {
     } else {
       return false;
     }
+  }
+  
+  public static boolean isWhitespace(char ch) {
+    return ch <= BeeConst.CHAR_SPACE || ch == BeeConst.CHAR_NBSP;
   }
 
   /**
@@ -1689,7 +1729,7 @@ public class BeeUtils {
   }
 
   /**
-   * Retuns a value from the list in the specified index.
+   * Returns a value from the list in the specified index.
    * 
    * @param lst the list to return from
    * @param idx the element which to return by index
@@ -1784,7 +1824,7 @@ public class BeeUtils {
   /**
    * Returns an Object as a separator. If an Object is a number it's returned spaces quantity equal
    * to the numeric value. String, Char and CharSequence type Objects are transformed to String
-   * values and returned. If an Object is none of these types it return teh default Object
+   * values and returned. If an Object is none of these types it return the default Object
    * {@code def} as a separator.
    * 
    * @param x the Object to create a separator from
@@ -2128,8 +2168,8 @@ public class BeeUtils {
    * Replaces the specified part of the {@code src} with a {@code c} value.
    * 
    * @param src the source String to replace
-   * @param start the start position of the repalcement
-   * @param end the end position of the repalcement
+   * @param start the start position of the replacement
+   * @param end the end position of the replacement
    * @param c a String to replace with
    * @return a new String after the replacement.
    */
@@ -2141,8 +2181,8 @@ public class BeeUtils {
    * Replaces the specified part of the {@code src} with a {@code str} value.
    * 
    * @param src the source string to replace
-   * @param start the start possition of the repalcement
-   * @param end the end possition of the repalcement
+   * @param start the start position of the replacement
+   * @param end the end position of the replacement
    * @param str a string to replace with
    * @return a new String after the replacement.
    */
@@ -2155,7 +2195,7 @@ public class BeeUtils {
   }
 
   /**
-   * Replaces all occurances of {@code search} with {@code replacement}.
+   * Replaces all occurrences of {@code search} with {@code replacement}.
    * 
    * @param text the source text
    * @param search search phrase to replace
@@ -2167,12 +2207,12 @@ public class BeeUtils {
   }
 
   /**
-   * Replaces the specified number of occurances of {@code search} with {@code replacement}.
+   * Replaces the specified number of occurrences of {@code search} with {@code replacement}.
    * 
    * @param text the source text
    * @param search search phrase to replace
    * @param replacement a replacement for the search phrase
-   * @param max the number of occurances to replace
+   * @param max the number of occurrences to replace
    * @return a String with replaced phrases.
    */
   public static String replace(String text, String search, String replacement, int max) {
@@ -2205,7 +2245,7 @@ public class BeeUtils {
    * Fills a String with value {@code z} for the length of {@code n}.
    * 
    * @param z the value to fill with
-   * @param n lenght to fill
+   * @param n length to fill
    * @return a filled String
    */
   public static String replicate(char z, int n) {
@@ -2269,6 +2309,10 @@ public class BeeUtils {
       return isEmpty(s1);
     }
     return s1.trim().equalsIgnoreCase(s2.trim());
+  }
+  
+  public static boolean sameSign(int i1, int i2) {
+    return Integer.signum(i1) == Integer.signum(i2);
   }
 
   /**
@@ -2349,7 +2393,7 @@ public class BeeUtils {
    * 
    * @param s1 the first String for comparing
    * @param s2 the second String for comparing
-   * @return true if {@code s1} and {@code s2} stats the same, otherwise false.
+   * @return true if {@code s1} and {@code s2} starts the same, otherwise false.
    */
   public static boolean startsSame(String s1, String s2) {
     if (isEmpty(s1) || isEmpty(s2)) {
@@ -2363,7 +2407,7 @@ public class BeeUtils {
       return false;
     }
   }
-
+  
   /**
    * Checks if {@code x} is a Boolean value.
    * 
@@ -2571,7 +2615,7 @@ public class BeeUtils {
   }
   
   /**
-   * Convers milliseconds {@code millis} to seconds. E.g 6010 is converted to 6.010.
+   * Converts milliseconds {@code millis} to seconds. E.g 6010 is converted to 6.010.
    * 
    * @param millis value to convert
    * @return seconds.
@@ -2683,7 +2727,7 @@ public class BeeUtils {
   }
 
   /**
-   * Transforms a Colection {@code col} to a String representation using the specified separators
+   * Transforms a Collection {@code col} to a String representation using the specified separators
    * {@code sep}. Each level of recursion use the next separator.
    * 
    * @param col a Collection to transform.
@@ -2699,7 +2743,6 @@ public class BeeUtils {
     String z = cSep > 0 ? normSep(sep[0]) : BeeConst.DEFAULT_LIST_SEPARATOR;
 
     StringBuilder sb = new StringBuilder();
-    Object el;
     Object[] nextSep;
 
     if (cSep > 1) {
@@ -2711,8 +2754,7 @@ public class BeeUtils {
       nextSep = new String[] {z};
     }
 
-    for (Iterator<?> it = col.iterator(); it.hasNext();) {
-      el = it.next();
+    for (Object el : col) {
       if (sb.length() > 0) {
         sb.append(z);
       }

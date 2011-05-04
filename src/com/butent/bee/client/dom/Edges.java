@@ -7,15 +7,41 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.utils.BeeUtils;
 
 public class Edges {
+
   public enum Edge {
     BOTTOM, LEFT, RIGHT, TOP
   }
-
+  
   public static final String EMPTY_CSS_VALUE = BeeConst.STRING_ZERO;
 
   private static final String CSS_VALUE_SEPARATOR = BeeConst.STRING_SPACE;
   private static final Unit DEFAULT_UNIT = Unit.PX;
+  
+  public static Edges copyOf(Edges original) {
+    if (original == null) {
+      return null;
+    }
+    
+    return new Edges(original.getTopValue(), original.getTopUnit(),
+        original.getRightValue(), original.getRightUnit(),
+        original.getBottomValue(), original.getBottomUnit(),
+        original.getLeftValue(), original.getLeftUnit());
+  }
+  
+  public static boolean hasPositiveHorizontalValue(Edges edges) {
+    if (edges == null) {
+      return false;
+    }
+    return BeeUtils.isPositive(edges.getLeftValue()) || BeeUtils.isPositive(edges.getRightValue());
+  }
 
+  public static boolean hasPositiveVerticalValue(Edges edges) {
+    if (edges == null) {
+      return false;
+    }
+    return BeeUtils.isPositive(edges.getTopValue()) || BeeUtils.isPositive(edges.getBottomValue());
+  }
+  
   private Unit bottomUnit = null;
   private Double bottomValue = null;
 
@@ -31,16 +57,32 @@ public class Edges {
   public Edges() {
   }
 
+  public Edges(int value) {
+    this((double) value);
+  }
+  
   public Edges(Double value) {
     this(value, DEFAULT_UNIT);
+  }
+
+  public Edges(int verticalValue, int horizontalValue) {
+    this((double) verticalValue, (double) horizontalValue);
   }
   
   public Edges(Double verticalValue, Double horizontalValue) {
     this(verticalValue, DEFAULT_UNIT, horizontalValue, DEFAULT_UNIT);
   }
 
+  public Edges(int topValue, int horizontalValue, int bottomValue) {
+    this((double) topValue, (double) horizontalValue, (double) bottomValue);
+  }
+  
   public Edges(Double topValue, Double horizontalValue, Double bottomValue) {
     this(topValue, DEFAULT_UNIT, horizontalValue, DEFAULT_UNIT, bottomValue, DEFAULT_UNIT);
+  }
+
+  public Edges(int topValue, int rightValue, int bottomValue, int leftValue) {
+    this((double) topValue, (double) rightValue, (double) bottomValue, (double) leftValue);
   }
   
   public Edges(Double topValue, Double rightValue, Double bottomValue, Double leftValue) {
@@ -76,6 +118,22 @@ public class Edges {
     this.leftUnit = leftUnit;
   }
 
+  public void clearBottom() {
+    setBottom(null, null);
+  }
+  
+  public void clearLeft() {
+    setLeft(null, null);
+  }
+
+  public void clearRight() {
+    setRight(null, null);
+  }
+
+  public void clearTop() {
+    setTop(null, null);
+  }
+  
   public Unit getBottomUnit() {
     return bottomUnit;
   }
@@ -84,6 +142,10 @@ public class Edges {
     return bottomValue;
   }
 
+  public String getCssBottom() {
+    return getCssEdge(Edge.BOTTOM);    
+  }
+  
   public String getCssEdge(Edge edge) {
     Assert.notNull(edge);
 
@@ -123,6 +185,18 @@ public class Edges {
     }
   }
 
+  public String getCssLeft() {
+    return getCssEdge(Edge.LEFT);    
+  }
+  
+  public String getCssRight() {
+    return getCssEdge(Edge.RIGHT);    
+  }
+  
+  public String getCssTop() {
+    return getCssEdge(Edge.TOP);    
+  }
+  
   public String getCssValue() {
     if (isEmpty()) {
       return EMPTY_CSS_VALUE;
@@ -133,6 +207,22 @@ public class Edges {
         + getCssEdge(Edge.LEFT);
   }
 
+  public int getIntBottom() {
+    return BeeUtils.toInt(getBottomValue());    
+  }
+  
+  public int getIntLeft() {
+    return BeeUtils.toInt(getLeftValue());    
+  }
+  
+  public int getIntRight() {
+    return BeeUtils.toInt(getRightValue());    
+  }
+
+  public int getIntTop() {
+    return BeeUtils.toInt(getTopValue());    
+  }
+  
   public Unit getLeftUnit() {
     return leftUnit;
   }
@@ -162,6 +252,10 @@ public class Edges {
         && getBottomValue() == null;
   }
 
+  public void setBottom(int value) {
+    setBottom((double) value);
+  }
+  
   public void setBottom(Double value) {
     setBottom(value, DEFAULT_UNIT);
   }
@@ -202,6 +296,10 @@ public class Edges {
     }
   }
 
+  public void setLeft(int value) {
+    setLeft((double) value);
+  }
+  
   public void setLeft(Double value) {
     setLeft(value, DEFAULT_UNIT);
   }
@@ -219,6 +317,10 @@ public class Edges {
     this.leftValue = leftValue;
   }
 
+  public void setRight(int value) {
+    setRight((double) value);
+  }
+  
   public void setRight(Double value) {
     setRight(value, DEFAULT_UNIT);
   }
@@ -236,6 +338,10 @@ public class Edges {
     this.rightValue = rightValue;
   }
 
+  public void setTop(int value) {
+    setTop((double) value);
+  }
+  
   public void setTop(Double value) {
     setTop(value, DEFAULT_UNIT);
   }

@@ -20,7 +20,7 @@ import javax.ejb.EJB;
 import javax.ejb.Stateless;
 
 /**
- * Handles rpc_db_meta service requests (database ping, current tables list etc)
+ * Handles rpc_db_meta service requests (database ping, current tables list etc).
  */
 
 @Stateless

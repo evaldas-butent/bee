@@ -68,6 +68,8 @@ public class BeeConst {
   public static final char CHAR_APOS = '\'';
   public static final char CHAR_MINUS = '-';
   public static final char CHAR_PLUS = '+';
+  public static final char CHAR_NBSP = '\u00a0';
+
   public static final String CHAR_FALSE = "fFnN0";
   public static final String CHAR_TRUE = "tTyY1";
 

@@ -36,6 +36,7 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Features;
 import com.butent.bee.client.dom.Font;
 import com.butent.bee.client.dom.Rulers;
+import com.butent.bee.client.dom.Selectors;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.dom.StyleUtils.ScrollBars;
 import com.butent.bee.client.event.EventUtils;
@@ -397,6 +398,60 @@ public class CliWorker {
     BeeKeeper.getUi().updateActivePanel(widget, ScrollBars.BOTH);
   }
 
+  public static void querySelector(String command, String selectors) {
+    int p = command.indexOf('#');
+    Element root = null;
+    if (p > 0 && p < command.length() - 1) {
+      String id = command.substring(p + 1);
+      root = DOM.getElementById(id);
+      if (root == null) {
+        Global.showError(command, id, "element id not found");
+        return;
+      }
+    }
+    boolean all = command.indexOf('=') < 0;
+    
+    Element element = null;
+    NodeList<Element> nodes = null;
+    
+    if (root == null) {
+      if (all) {
+        nodes = Selectors.getNodes(selectors);
+      } else {
+        element = Selectors.getElement(selectors);
+      }
+    } else {
+      if (all) {
+        nodes = Selectors.getNodes(root, selectors);
+      } else {
+        element = Selectors.getElement(root, selectors);
+      }
+    }
+    
+    if (element != null) {
+      Global.inform(DomUtils.transformElement(element));
+      return;
+    }
+    
+    int cnt = (nodes == null) ? 0 : nodes.getLength();
+    if (cnt <= 0) {
+      Global.showError(command, selectors, "no elements found");
+      return;
+    }
+    
+    List<Property> info = PropertyUtils.createProperties(command, selectors, "Count", cnt);
+    for (int i = 0; i < cnt; i++) {
+      info.add(new Property(BeeUtils.progress(i + 1, cnt), 
+          DomUtils.transformElement(nodes.getItem(i))));
+    }
+    
+    if (cnt <= 16) {
+      Global.modalGrid("Selectors", info);
+    } else {
+      BeeKeeper.getUi().showGrid(info);
+    }
+  }
+  
   public static void showBrowser(String[] arr) {
     boolean wnd = false;
     boolean loc = false;
@@ -607,7 +662,12 @@ public class CliWorker {
       return;
     }
 
-    JavaScriptObject obj = JsUtils.eval(arr[1]);
+    JavaScriptObject obj;
+    if (arr[1].startsWith("#")) {
+      obj = DOM.getElementById(arr[1].substring(1)); 
+    } else {
+      obj = JsUtils.eval(arr[1]);
+    }
     if (obj == null) {
       Global.showError(arr[1], "not a js object");
       return;
@@ -859,7 +919,12 @@ public class CliWorker {
       return;
     }
 
-    JavaScriptObject obj = JsUtils.eval(arr[1]);
+    JavaScriptObject obj;
+    if (arr[1].startsWith("#")) {
+      obj = DOM.getElementById(arr[1].substring(1)); 
+    } else {
+      obj = JsUtils.eval(arr[1]);
+    }
     if (obj == null) {
       Global.showError(arr[1], "not a js object");
       return;

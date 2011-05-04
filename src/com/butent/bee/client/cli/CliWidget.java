@@ -45,6 +45,7 @@ public class CliWidget extends BeeTextBox {
     Assert.notEmpty(arr);
 
     String z = arr[0].toLowerCase();
+    String args = (arr.length > 1) ? v.substring(z.length()).trim() : BeeConst.STRING_EMPTY;
 
     if (z.equals("?")) {
       CliWorker.whereAmI();
@@ -126,6 +127,8 @@ public class CliWidget extends BeeTextBox {
       BeeKeeper.getRpc().sendText(Service.REBUILD, v);
     } else if (z.equals("rpc")) {
       CliWorker.showRpc();
+    } else if (z.startsWith("selector") && arr.length >= 2) {
+      CliWorker.querySelector(z, args);
     } else if (z.startsWith("serv") || z.startsWith("sys")) {
       BeeKeeper.getRpc().invoke("systemInfo");
     } else if (z.equals("size") && arr.length >= 2) {

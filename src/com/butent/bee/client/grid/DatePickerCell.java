@@ -4,6 +4,7 @@ import com.google.gwt.cell.client.AbstractEditableCell;
 import com.google.gwt.cell.client.ValueUpdater;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
+import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.logical.shared.CloseEvent;
 import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
@@ -18,6 +19,9 @@ import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.PopupPanel.PositionCallback;
 import com.google.gwt.user.datepicker.client.DatePicker;
 
+import com.butent.bee.client.dom.StyleUtils;
+import com.butent.bee.client.event.EventUtils;
+import com.butent.bee.client.view.grid.CellGrid;
 import com.butent.bee.shared.AbstractDate;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.HasDateValue;
@@ -27,15 +31,10 @@ import java.util.Date;
 
 public class DatePickerCell extends AbstractEditableCell<HasDateValue, HasDateValue> {
 
-  private static final int ESCAPE = 27;
-
   private final SafeHtmlRenderer<String> renderer = SimpleSafeHtmlRenderer.getInstance();
   private final DateTimeFormat format;
   private final ValueType valueType;
 
-  private int offsetX = 10;
-  private int offsetY = 10;
-  
   private Object lastKey;
   private Element lastParent;
   private int lastIndex;
@@ -47,7 +46,7 @@ public class DatePickerCell extends AbstractEditableCell<HasDateValue, HasDateVa
   private ValueUpdater<HasDateValue> updater;
 
   public DatePickerCell(ValueType valueType, DateTimeFormat format) {
-    super("click", "keydown");
+    super(EventUtils.EVENT_TYPE_CLICK, EventUtils.EVENT_TYPE_KEY_DOWN);
     Assert.notNull(valueType);
     this.valueType = valueType;
     this.format = format;
@@ -57,7 +56,7 @@ public class DatePickerCell extends AbstractEditableCell<HasDateValue, HasDateVa
       @Override
       protected void onPreviewNativeEvent(NativePreviewEvent event) {
         if (Event.ONKEYUP == event.getTypeInt()) {
-          if (event.getNativeEvent().getKeyCode() == ESCAPE) {
+          if (event.getNativeEvent().getKeyCode() == KeyCodes.KEY_ESCAPE) {
             panel.hide();
           }
         }
@@ -70,7 +69,8 @@ public class DatePickerCell extends AbstractEditableCell<HasDateValue, HasDateVa
         lastValue = null;
         lastIndex = -1;
         lastColumn = -1;
-        if (lastParent != null && !event.isAutoClosed()) {
+
+        if (lastParent != null) {
           lastParent.focus();
         }
         lastParent = null;
@@ -85,7 +85,6 @@ public class DatePickerCell extends AbstractEditableCell<HasDateValue, HasDateVa
         Object key = lastKey;
         int index = lastIndex;
         int column = lastColumn;
-        panel.hide();
 
         HasDateValue date = AbstractDate.fromJava(event.getValue(), DatePickerCell.this.valueType);
         setViewData(key, date);
@@ -93,6 +92,7 @@ public class DatePickerCell extends AbstractEditableCell<HasDateValue, HasDateVa
         if (updater != null) {
           updater.update(date);
         }
+        panel.hide();
       }
     });
   }
@@ -104,14 +104,14 @@ public class DatePickerCell extends AbstractEditableCell<HasDateValue, HasDateVa
 
   @Override
   public boolean isEditing(Context context, Element parent, HasDateValue value) {
-    return lastKey != null && lastKey.equals(context.getKey());
+    return lastKey != null;
   }
 
   @Override
   public void onBrowserEvent(Context context, Element parent, HasDateValue value,
       NativeEvent event, ValueUpdater<HasDateValue> valueUpdater) {
     super.onBrowserEvent(context, parent, value, event, valueUpdater);
-    if ("click".equals(event.getType())) {
+    if (EventUtils.isClick(event)) {
       onEnterKeyDown(context, parent, value, event, valueUpdater);
     }
   }
@@ -158,11 +158,21 @@ public class DatePickerCell extends AbstractEditableCell<HasDateValue, HasDateVa
       datePicker.setCurrentMonth(jd);
       datePicker.setValue(jd);
     }
+    
+    int z;
+    if (context instanceof CellContext) {
+      CellGrid grid = ((CellContext) context).getGrid();
+      Assert.notNull(grid);
+      z = grid.getZIndex();
+    } else {
+      z = StyleUtils.getZIndex(parent);
+    }
+    StyleUtils.setZIndex(panel, z + 1);
 
     panel.setPopupPositionAndShow(new PositionCallback() {
       public void setPosition(int offsetWidth, int offsetHeight) {
-        panel.setPopupPosition(lastParent.getAbsoluteLeft() + offsetX,
-            lastParent.getAbsoluteTop() + offsetY);
+        panel.setPopupPosition(lastParent.getAbsoluteLeft() + 10,
+            lastParent.getAbsoluteTop() + lastParent.getClientHeight());
       }
     });
   }

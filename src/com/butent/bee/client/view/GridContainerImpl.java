@@ -21,6 +21,7 @@ import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.navigation.PagerView;
 import com.butent.bee.client.view.navigation.ScrollPager;
 import com.butent.bee.client.view.search.SearchView;
+import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -74,7 +75,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     DataHeaderView header = new DataHeaderImpl();
     header.create(caption);
 
-    GridView content = new CellGridImpl(pageSize);
+    GridView content = new CellGridImpl();
     content.create(dataColumns, rowCount, rowSet);
 
     DataFooterView footer;
@@ -290,8 +291,9 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
 
   private void adapt(boolean init) {
     GridView content = getContent();
+    Assert.notNull(content);
 
-    if (hasPaging && content != null) {
+    if (hasPaging) {
       int w = getElement().getClientWidth();
       int h = getElement().getClientHeight();
       
@@ -319,6 +321,8 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
           }
         }
       }
+    } else if (init) {
+      content.updatePageSize(content.getRowCount(), init);
     }
   }
 

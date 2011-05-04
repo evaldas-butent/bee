@@ -113,6 +113,8 @@ public class DomUtils {
   public static final String ATTRIBUTE_TYPE = "type";
   public static final String ATTRIBUTE_VALUE = "value";
 
+  public static final String ATTRIBUTE_DATA_COLUMN = "data-col";
+  public static final String ATTRIBUTE_DATA_ROW = "data-row";
   public static final String ATTRIBUTE_SERVICE = "data-svc";
   public static final String ATTRIBUTE_STAGE = "data-stg";
   
@@ -469,11 +471,11 @@ public class DomUtils {
     return lst;
   }
 
-  public static String getAttribute(Widget w, String name) {
-    Assert.notNull(w);
+  public static String getAttribute(UIObject obj, String name) {
+    Assert.notNull(obj);
     Assert.notEmpty(name);
 
-    return w.getElement().getAttribute(name);
+    return obj.getElement().getAttribute(name);
   }
 
   public static List<Property> getAttributes(Element el) {
@@ -604,6 +606,22 @@ public class DomUtils {
     }
   }
 
+  public static String getDataColumn(UIObject obj) {
+    return getAttribute(obj, ATTRIBUTE_DATA_COLUMN);
+  }
+
+  public static String getDataColumn(Element elem) {
+    return elem.getAttribute(ATTRIBUTE_DATA_COLUMN);
+  }
+
+  public static String getDataRow(UIObject obj) {
+    return getAttribute(obj, ATTRIBUTE_DATA_ROW);
+  }
+
+  public static String getDataRow(Element elem) {
+    return elem.getAttribute(ATTRIBUTE_DATA_ROW);
+  }
+  
   public static Direction getDirection(String s) {
     Assert.notEmpty(s);
     Direction dir = null;
@@ -1326,6 +1344,14 @@ public class DomUtils {
     return w;
   }
 
+  public static void setHtml(String id, String html) {
+    Assert.notEmpty(id);
+    Element elem = DOM.getElementById(id);
+    Assert.notNull(elem, "id " + id + " element not found");
+
+    elem.setInnerHTML(html);
+  }
+  
   public static void setId(UIObject obj, String id) {
     Assert.notNull(obj);
     Assert.notEmpty(id);
@@ -1548,7 +1574,7 @@ public class DomUtils {
 
     body.removeChild(elem);
   }
-
+  
   private static String transformNode(Node nd) {
     if (nd == null) {
       return BeeConst.STRING_EMPTY;

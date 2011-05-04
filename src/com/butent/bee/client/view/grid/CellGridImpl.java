@@ -46,8 +46,8 @@ public class CellGridImpl extends CellGrid implements GridView, SearchView {
   private ChangeHandler filterChangeHandler = null;
   private final FilterUpdater filterUpdater = new FilterUpdater();
 
-  public CellGridImpl(int pageSize) {
-    super(pageSize);
+  public CellGridImpl() {
+    super();
   }
 
   public void create(List<BeeColumn> dataCols, int rowCount, BeeRowSet rowSet) {
@@ -83,23 +83,17 @@ public class CellGridImpl extends CellGrid implements GridView, SearchView {
     setSelectionModel(selector);
 
     setRowCount(rowCount, true);
-    setKeyboardPagingPolicy(KeyboardPagingPolicy.CHANGE_PAGE);
 
     if (rowSet != null) {
       estimateColumnWidths(rowSet.getRows().getList(), Math.min(rowSet.getNumberOfRows(), 3));
     }
+    estimateHeaderWidths();
   }
 
   public int estimatePageSize(int containerWidth, int containerHeight) {
-    int rh = getBodyCellHeight();
+    int rh = getBodyCellHeight() + getBodyCellHeightIncrement();
 
-    int z = containerHeight;
-    if (getHeaderCellHeight() > 0) {
-      z -= getHeaderCellHeight();
-    }
-    if (getFooterCellHeight() > 0) {
-      z -= getFooterCellHeight();
-    }
+    int z = containerHeight - getHeaderHeight() - getFooterHeight();
 
     int width = getBodyWidth();
     if (width <= 0 || width > containerWidth) {

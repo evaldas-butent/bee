@@ -1,6 +1,8 @@
 package com.butent.bee.client.dom;
 
+import com.google.common.base.Splitter;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.dom.client.Style.FontStyle;
 import com.google.gwt.dom.client.Style.FontWeight;
@@ -12,7 +14,6 @@ import com.google.gwt.safecss.shared.SafeStylesUtils;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.ui.UIObject;
 
-import com.butent.bee.client.utils.JsUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
@@ -136,9 +137,13 @@ public class StyleUtils {
   public static final String STYLE_TOP = "top";
   public static final String STYLE_BOTTOM = "bottom";
 
+  public static final String STYLE_BORDER_LEFT = "borderLeft";
+  public static final String STYLE_BORDER_RIGHT = "borderRight";
   public static final String STYLE_BORDER_TOP = "borderTop";
   public static final String STYLE_BORDER_BOTTOM = "borderBottom";
+  public static final String STYLE_BORDER_WIDTH = "borderWidth";
 
+  public static final String STYLE_BORDER_COLLAPSE = "borderCollapse";
   public static final String STYLE_TABLE_LAYOUT = "tableLayout";
 
   public static final String STYLE_OVERFLOW = "overflow";
@@ -152,6 +157,9 @@ public class StyleUtils {
   public static final String STYLE_WHITE_SPACE = "whiteSpace";
   
   public static final String STYLE_PADDING = "padding";
+  public static final String STYLE_MARGIN = "margin";
+  
+  public static final String STYLE_Z_INDEX = "zIndex";
   
   public static final String VALUE_AUTO = "auto";
   public static final String VALUE_FIXED = "fixed";
@@ -185,12 +193,38 @@ public class StyleUtils {
   public static final String WHITE_SPACE_PRE = "pre";
   public static final String WHITE_SPACE_PRE_WRAP = "pre-wrap";
   public static final String WHITE_SPACE_PRE_LINE = "pre-line";
+
+  public static final String BORDER_COLLAPSE = "collapse";
+  public static final String BORDER_SEPARATE = "separate";
   
   public static final char DEFINITION_SEPARATOR = ';';
   public static final char NAME_VALUE_SEPARATOR = ':';
+
+  public static final String CSS_BORDER_WIDTH = "border-width";
+  public static final String CSS_BORDER_LEFT_WIDTH = "border-left-width";
+  public static final String CSS_BORDER_RIGHT_WIDTH = "border-right-width";
+  public static final String CSS_BORDER_TOP_WIDTH = "border-top-width";
+  public static final String CSS_BORDER_BOTTOM_WIDTH = "border-bottom-width";
   
-  public static void addStyleDependentName(Element el, String styleSuffix) {
-    setStyleDependentName(el, styleSuffix, true);
+  public static final String CSS_TEXT_ALIGN = "text-align";
+  
+  private static final char CLASS_NAME_SEPARATOR = ' ';
+  private static final Splitter CLASS_NAME_SPLITTER =
+    Splitter.on(CLASS_NAME_SEPARATOR).omitEmptyStrings().trimResults();
+  
+  public static int addClassName(NodeList<Element> nodes, String className) {
+    Assert.notNull(nodes);
+    Assert.notEmpty(className);
+    
+    int cnt = nodes.getLength();
+    for (int i = 0; i < cnt; i++) {
+      nodes.getItem(i).addClassName(className);
+    }
+    return cnt;
+  }
+
+  public static void addStyleDependentName(Element el, String style) {
+    setStyleDependentName(el, style, true);
   }
 
   public static void alwaysScroll(Element el, ScrollBars scroll) {
@@ -211,7 +245,7 @@ public class StyleUtils {
     Assert.notNull(el);
     autoHeight(el.getStyle());
   }
-
+  
   public static void autoHeight(Style st) {
     Assert.notNull(st);
     st.setProperty(STYLE_HEIGHT, VALUE_AUTO);
@@ -226,7 +260,7 @@ public class StyleUtils {
     Assert.notNull(el);
     autoScroll(el.getStyle(), scroll);
   }
-  
+
   public static void autoScroll(Style st, ScrollBars scroll) {
     setOverflow(st, scroll, VALUE_AUTO);
   }
@@ -235,7 +269,7 @@ public class StyleUtils {
     Assert.notNull(obj);
     autoScroll(obj.getElement(), scroll);
   }
-
+  
   public static void autoWidth(Element el) {
     Assert.notNull(el);
     autoWidth(el.getStyle());
@@ -251,12 +285,88 @@ public class StyleUtils {
     autoWidth(obj.getElement());
   }
 
+  public static SafeStyles buildBorderBottomWidth(double value, Unit unit) {
+    return buildBorderBottomWidth(toCssLength(value, unit));
+  }
+  
+  public static SafeStyles buildBorderBottomWidth(int width) {
+    return buildBorderBottomWidth(width, Unit.PX);
+  }
+
+  public static SafeStyles buildBorderBottomWidth(String value) {
+    return buildStyle(CSS_BORDER_BOTTOM_WIDTH, value);
+  }
+  
+  public static SafeStyles buildBorderLeftWidth(double value, Unit unit) {
+    return buildBorderLeftWidth(toCssLength(value, unit));
+  }
+
+  public static SafeStyles buildBorderLeftWidth(int width) {
+    return buildBorderLeftWidth(width, Unit.PX);
+  }
+
+  public static SafeStyles buildBorderLeftWidth(String value) {
+    return buildStyle(CSS_BORDER_LEFT_WIDTH, value);
+  }
+  
+  public static SafeStyles buildBorderRightWidth(double value, Unit unit) {
+    return buildBorderRightWidth(toCssLength(value, unit));
+  }
+
+  public static SafeStyles buildBorderRightWidth(int width) {
+    return buildBorderRightWidth(width, Unit.PX);
+  }
+
+  public static SafeStyles buildBorderRightWidth(String value) {
+    return buildStyle(CSS_BORDER_RIGHT_WIDTH, value);
+  }
+  
+  public static SafeStyles buildBorderTopWidth(double value, Unit unit) {
+    return buildBorderTopWidth(toCssLength(value, unit));
+  }
+
+  public static SafeStyles buildBorderTopWidth(int width) {
+    return buildBorderTopWidth(width, Unit.PX);
+  }
+  
+  public static SafeStyles buildBorderTopWidth(String value) {
+    return buildStyle(CSS_BORDER_TOP_WIDTH, value);
+  }
+  
+  public static SafeStyles buildBorderWidth(double value, Unit unit) {
+    return buildBorderWidth(toCssLength(value, unit));
+  }
+
+  public static SafeStyles buildBorderWidth(int width) {
+    return buildBorderWidth(width, Unit.PX);
+  }
+  
+  public static SafeStyles buildBorderWidth(String value) {
+    return buildStyle(CSS_BORDER_WIDTH, value);
+  }
+  
+  public static String buildClasses(String... styleNames) {
+    return BeeUtils.concat(CLASS_NAME_SEPARATOR, styleNames);
+  }
+
+  public static SafeStyles buildHeight(double value, Unit unit) {
+    return buildStyle(STYLE_HEIGHT, toCssLength(value, unit));
+  }
+  
   public static SafeStyles buildHeight(int height) {
     return buildHeight(height, Unit.PX);
   }
   
-  public static SafeStyles buildHeight(double value, Unit unit) {
-    return buildStyle(STYLE_HEIGHT, toCssLength(value, unit));
+  public static SafeStyles buildLeft(double value, Unit unit) {
+    return buildStyle(STYLE_LEFT, toCssLength(value, unit));
+  }
+
+  public static SafeStyles buildLeft(int left) {
+    return buildLeft(left, Unit.PX);
+  }
+  
+  public static SafeStyles buildMargin(String value) {
+    return buildStyle(STYLE_MARGIN, value);
   }
 
   public static SafeStyles buildPadding(String value) {
@@ -282,20 +392,28 @@ public class StyleUtils {
     return SafeStylesUtils.fromTrustedString(name + NAME_VALUE_SEPARATOR + value
         + DEFINITION_SEPARATOR);
   }
+  
+  public static SafeStyles buildTop(double value, Unit unit) {
+    return buildStyle(STYLE_TOP, toCssLength(value, unit));
+  }
 
-  public static SafeStyles buildWidth(int width) {
-    return buildWidth(width, Unit.PX);
+  public static SafeStyles buildTop(int top) {
+    return buildTop(top, Unit.PX);
   }
   
   public static SafeStyles buildWidth(double value, Unit unit) {
     return buildStyle(STYLE_WIDTH, toCssLength(value, unit));
   }
   
+  public static SafeStyles buildWidth(int width) {
+    return buildWidth(width, Unit.PX);
+  }
+  
   public static void clearTableLayout(Element el) {
     Assert.notNull(el);
     clearTableLayout(el.getStyle());
   }
-
+  
   public static void clearTableLayout(Style st) {
     Assert.notNull(st);
     st.clearProperty(STYLE_TABLE_LAYOUT);
@@ -306,6 +424,28 @@ public class StyleUtils {
     clearTableLayout(obj.getElement());
   }
 
+  public static void collapseBorders(Element el) {
+    Assert.notNull(el);
+    collapseBorders(el.getStyle());
+  }
+
+  public static void collapseBorders(Style st) {
+    Assert.notNull(st);
+    st.setProperty(STYLE_BORDER_COLLAPSE, BORDER_COLLAPSE);
+  }
+
+  public static void collapseBorders(UIObject obj) {
+    Assert.notNull(obj);
+    collapseBorders(obj.getElement());
+  }
+
+  public static boolean containsClassName(Element el, String className) {
+    if (el == null || BeeUtils.isEmpty(className)) {
+      return false;
+    }
+    return indexOfClassName(className,  el.getClassName()) >= 0;
+  }
+  
   public static void fillHorizontal(Element el) {
     Assert.notNull(el);
     fillHorizontal(el.getStyle());
@@ -404,6 +544,44 @@ public class StyleUtils {
     return el;
   }
 
+  public static int getHeight(Element el) {
+    Assert.notNull(el);
+    return getHeight(el.getStyle());
+  }
+
+  public static int getHeight(Style st) {
+    Assert.notNull(st);
+    return BeeUtils.val(st.getHeight());
+  }
+
+  public static int getHeight(String id) {
+    return getHeight(getElement(id));
+  }
+
+  public static int getHeight(UIObject obj) {
+    Assert.notNull(obj);
+    return getHeight(obj.getElement());
+  }
+  
+  public static int getLeft(Element el) {
+    Assert.notNull(el);
+    return getLeft(el.getStyle());
+  }
+
+  public static int getLeft(Style st) {
+    Assert.notNull(st);
+    return BeeUtils.val(st.getLeft());
+  }
+
+  public static int getLeft(String id) {
+    return getLeft(getElement(id));
+  }
+
+  public static int getLeft(UIObject obj) {
+    Assert.notNull(obj);
+    return getLeft(obj.getElement());
+  }
+  
   public static ScrollBars getScroll(Element el) {
     Assert.notNull(el);
     return getScroll(el.getStyle());
@@ -436,7 +614,7 @@ public class StyleUtils {
       return BeeConst.STRING_EMPTY;
     }
 
-    int idx = className.indexOf(BeeConst.CHAR_SPACE);
+    int idx = className.indexOf(CLASS_NAME_SEPARATOR);
     if (idx >= 0) {
       return className.substring(0, idx);
     }
@@ -462,6 +640,44 @@ public class StyleUtils {
     return getTop(obj.getElement());
   }
 
+  public static int getWidth(Element el) {
+    Assert.notNull(el);
+    return getWidth(el.getStyle());
+  }
+
+  public static int getWidth(Style st) {
+    Assert.notNull(st);
+    return BeeUtils.val(st.getWidth());
+  }
+
+  public static int getWidth(String id) {
+    return getWidth(getElement(id));
+  }
+
+  public static int getWidth(UIObject obj) {
+    Assert.notNull(obj);
+    return getWidth(obj.getElement());
+  }
+
+  public static int getZIndex(Element el) {
+    Assert.notNull(el);
+    return getZIndex(el.getStyle());
+  }
+
+  public static int getZIndex(Style st) {
+    Assert.notNull(st);
+    return BeeUtils.toInt(st.getZIndex());
+  }
+
+  public static int getZIndex(String id) {
+    return getZIndex(getElement(id));
+  }
+
+  public static int getZIndex(UIObject obj) {
+    Assert.notNull(obj);
+    return getZIndex(obj.getElement());
+  }
+  
   public static void hideScroll(Element el, ScrollBars scroll) {
     Assert.notNull(el);
     hideScroll(el.getStyle(), scroll);
@@ -474,6 +690,54 @@ public class StyleUtils {
   public static void hideScroll(UIObject obj, ScrollBars scroll) {
     Assert.notNull(obj);
     hideScroll(obj.getElement(), scroll);
+  }
+  
+  public static void insertClassName(Element el, String className, String beforeName) {
+    Assert.notNull(el);
+    Assert.notEmpty(className);
+    Assert.notEmpty(beforeName);
+    Assert.isFalse(BeeUtils.same(className, beforeName));
+    
+    String classes = el.getClassName();
+    int beforeIndex = indexOfClassName(beforeName, classes);
+    if (beforeIndex < 0) {
+      el.addClassName(className);
+      return;
+    }
+    
+    int classIndex = indexOfClassName(className, classes);
+    if (classIndex >= 0 && classIndex == beforeIndex - 1) {
+      return;
+    }
+    
+    StringBuilder sb = new StringBuilder();
+    for (String name : CLASS_NAME_SPLITTER.split(classes.trim())) {
+      if (classIndex >= 0 && BeeUtils.same(name, className)) {
+        continue;
+      }
+      if (BeeUtils.same(name, beforeName)) {
+        if (sb.length() > 0) {
+          sb.append(CLASS_NAME_SEPARATOR);
+        }
+        sb.append(className);
+      }
+
+      if (sb.length() > 0) {
+        sb.append(CLASS_NAME_SEPARATOR);
+      }
+      sb.append(name);
+    }
+    el.setClassName(sb.toString());
+  }
+
+  public static int insertClassName(NodeList<Element> nodes, String className, String beforeName) {
+    Assert.notNull(nodes);
+    
+    int cnt = nodes.getLength();
+    for (int i = 0; i < cnt; i++) {
+      insertClassName(nodes.getItem(i), className, beforeName);
+    }
+    return cnt;
   }
   
   public static boolean isUnitFragment(char ch) {
@@ -509,7 +773,7 @@ public class StyleUtils {
     }
     return new Pair<Double, Unit>(value, unit);
   }
-
+  
   public static <E extends Enum<?> & HasCssName> E parseCssName(Class<E> clazz, String input) {
     Assert.notNull(clazz);
     Assert.notEmpty(input);
@@ -529,7 +793,7 @@ public class StyleUtils {
   public static FontStyle parseFontStyle(String input) {
     return parseCssName(FontStyle.class, input);
   }
-  
+
   public static FontVariant parseFontVariant(String input) {
     return parseCssName(FontVariant.class, input);
   }
@@ -537,7 +801,7 @@ public class StyleUtils {
   public static FontWeight parseFontWeight(String input) {
     return parseCssName(FontWeight.class, input);
   }
- 
+  
   public static Unit parseUnit(String input) {
     Assert.notEmpty(input);
 
@@ -548,9 +812,20 @@ public class StyleUtils {
     }
     return null;
   }
+ 
+  public static int removeClassName(NodeList<Element> nodes, String className) {
+    Assert.notNull(nodes);
+    Assert.notEmpty(className);
+    
+    int cnt = nodes.getLength();
+    for (int i = 0; i < cnt; i++) {
+      nodes.getItem(i).removeClassName(className);
+    }
+    return cnt;
+  }
 
-  public static void removeStyleDependentName(Element el, String styleSuffix) {
-    setStyleDependentName(el, styleSuffix, false);
+  public static void removeStyleDependentName(Element el, String style) {
+    setStyleDependentName(el, style, false);
   }
 
   public static void setBorderBottomWidth(Element el, int px) {
@@ -568,6 +843,38 @@ public class StyleUtils {
     setBorderBottomWidth(obj.getElement(), px);
   }
 
+  public static void setBorderLeftWidth(Element el, int px) {
+    Assert.notNull(el);
+    setBorderLeftWidth(el.getStyle(), px);
+  }
+
+  public static void setBorderLeftWidth(Style st, int px) {
+    Assert.notNull(st);
+    Assert.nonNegative(px);
+    st.setPropertyPx(STYLE_BORDER_LEFT, px);
+  }
+
+  public static void setBorderLeftWidth(UIObject obj, int px) {
+    Assert.notNull(obj);
+    setBorderLeftWidth(obj.getElement(), px);
+  }
+
+  public static void setBorderRightWidth(Element el, int px) {
+    Assert.notNull(el);
+    setBorderRightWidth(el.getStyle(), px);
+  }
+
+  public static void setBorderRightWidth(Style st, int px) {
+    Assert.notNull(st);
+    Assert.nonNegative(px);
+    st.setPropertyPx(STYLE_BORDER_RIGHT, px);
+  }
+
+  public static void setBorderRightWidth(UIObject obj, int px) {
+    Assert.notNull(obj);
+    setBorderRightWidth(obj.getElement(), px);
+  }
+  
   public static void setBorderTopWidth(Element el, int px) {
     Assert.notNull(el);
     setBorderTopWidth(el.getStyle(), px);
@@ -670,11 +977,15 @@ public class StyleUtils {
     st.setHeight(px, Unit.PX);
   }
 
+  public static void setHeight(String id, int px) {
+    setHeight(getElement(id), px);
+  }
+
   public static void setHeight(UIObject obj, int px) {
     Assert.notNull(obj);
     setHeight(obj.getElement(), px);
   }
-
+  
   public static void setLeft(Element el, int px) {
     Assert.notNull(el);
     setLeft(el.getStyle(), px);
@@ -685,11 +996,15 @@ public class StyleUtils {
     st.setLeft(px, Unit.PX);
   }
 
+  public static void setLeft(String id, int px) {
+    setLeft(getElement(id), px);
+  }
+
   public static void setLeft(UIObject obj, int px) {
     Assert.notNull(obj);
     setLeft(obj.getElement(), px);
   }
-
+  
   public static void setMaxHeight(Element el, double value, Unit unit) {
     Assert.notNull(el);
     setMaxHeight(el.getStyle(), value, unit);
@@ -857,14 +1172,14 @@ public class StyleUtils {
     setOverflow(obj.getElement(), scroll, value);
   }
 
-  public static void setStyleDependentName(Element el, String styleSuffix, boolean add) {
+  public static void setStyleDependentName(Element el, String style, boolean add) {
     Assert.notNull(el);
-    Assert.notEmpty(styleSuffix);
+    Assert.notEmpty(style);
 
     String primary = getStylePrimaryName(el);
     Assert.notEmpty(primary, "element has no primary style");
 
-    setStyleName(el, primary + BeeConst.CHAR_MINUS + styleSuffix.trim(), add);
+    setStyleName(el, primary + BeeConst.CHAR_MINUS + style.trim(), add);
   }
 
   public static void setStyleName(Element el, String st, boolean add) {
@@ -878,10 +1193,31 @@ public class StyleUtils {
     }
   }
 
-  public static void setStyleProperty(Style style, String name, String value) {
-    Assert.notNull(style);
+  public static int setStyleProperty(NodeList<Element> nodes, String name,
+      double value, Unit unit) {
+    Assert.notNull(nodes);
     Assert.notEmpty(name);
-    JsUtils.setProperty(style, name, value);
+    Assert.notNull(unit);
+    
+    return setStyleProperty(nodes, name, value + unit.getType());
+  }
+
+  public static int setStyleProperty(NodeList<Element> nodes, String name, String value) {
+    Assert.notNull(nodes);
+    Assert.notEmpty(name);
+    
+    int cnt = nodes.getLength();
+    for (int i = 0; i < cnt; i++) {
+      nodes.getItem(i).getStyle().setProperty(name, value);
+    }
+    return cnt;
+  }
+  
+  public static int setStylePropertyPx(NodeList<Element> nodes, String name, int value) {
+    Assert.notNull(nodes);
+    Assert.notEmpty(name);
+    
+    return setStyleProperty(nodes, name, value, Unit.PX);
   }
 
   public static void setTop(Element el, int px) {
@@ -929,16 +1265,20 @@ public class StyleUtils {
     st.setWidth(px, Unit.PX);
   }
 
+  public static void setWidth(String id, int px) {
+    setWidth(getElement(id), px);
+  }
+
   public static void setWidth(UIObject obj, int px) {
     Assert.notNull(obj);
     setWidth(obj.getElement(), px);
   }
-  
+
   public static void setWordWrap(Element el, boolean wrap) {
     Assert.notNull(el);
     setWordWrap(el.getStyle(), wrap);
   }
-  
+
   public static void setWordWrap(Style st, boolean wrap) {
     setWhiteSpace(st, wrap ? WhiteSpace.NORMAL : WhiteSpace.NOWRAP);
   }
@@ -946,6 +1286,25 @@ public class StyleUtils {
   public static void setWordWrap(UIObject obj, boolean wrap) {
     Assert.notNull(obj);
     setWordWrap(obj.getElement(), wrap);
+  }
+
+  public static void setZIndex(Element el, int value) {
+    Assert.notNull(el);
+    setZIndex(el.getStyle(), value);
+  }
+  
+  public static void setZIndex(Style st, int value) {
+    Assert.notNull(st);
+    st.setZIndex(value);
+  }
+  
+  public static void setZIndex(String id, int value) {
+    setZIndex(getElement(id), value);
+  }
+
+  public static void setZIndex(UIObject obj, int value) {
+    Assert.notNull(obj);
+    setZIndex(obj.getElement(), value);
   }
 
   public static String toCssLength(double value, Unit unit) {
@@ -1010,6 +1369,21 @@ public class StyleUtils {
     } else {
       return !BeeUtils.isEmpty(st.getProperty(name));
     }
+  }
+  
+  private static int indexOfClassName(String className, String classes) {
+    if (className == null || !BeeUtils.context(className.trim(), classes)) {
+      return BeeConst.INDEX_UNKNOWN;
+    }
+    
+    int idx = 0;
+    for (String name : CLASS_NAME_SPLITTER.split(classes.trim())) {
+      if (BeeUtils.same(name, className)) {
+        return idx;
+      }
+      idx++;
+    }
+    return BeeConst.INDEX_UNKNOWN;
   }
   
   private static boolean isScroll(String value) {

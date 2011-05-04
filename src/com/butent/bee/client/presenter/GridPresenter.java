@@ -149,9 +149,6 @@ public class GridPresenter implements Presenter {
       provider = new AsyncProvider(display, info);
     } else {
       provider = new CachedProvider(display, rowSet);
-      Assert.notNull(rowSet);
-      display.setRowData(0, rowSet.getRows().getList());
-      display.setRowCount(rowSet.getNumberOfRows());
     }
     return provider;
   }

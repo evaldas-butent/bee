@@ -5,11 +5,10 @@ import com.google.gwt.cell.client.EditTextCell;
 import com.google.gwt.cell.client.TextCell;
 import com.google.gwt.cell.client.TextInputCell;
 import com.google.gwt.i18n.client.NumberFormat;
+import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.client.ui.Widget;
-import com.google.gwt.view.client.MultiSelectionModel;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.data.KeyProvider;
 import com.butent.bee.client.data.CachedProvider;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.grid.model.CachedTableModel;
@@ -116,7 +115,7 @@ public class GridFactory {
       return null;
     }
 
-    CellGrid grid = new CellGrid(r);
+    CellTable<IsRow> grid = new CellTable<IsRow>(r);
 
     TextColumn column;
     for (int i = 0; i < c; i++) {
@@ -124,10 +123,10 @@ public class GridFactory {
       if (cellType != null && cellType.isEditable()) {
         column.setFieldUpdater(new CellUpdater(i));
       }
-      grid.addColumn(table.getColumnLabel(i), column, table.getColumnLabel(i));
+      grid.addColumn(column, table.getColumnLabel(i));
     }
     
-    grid.setRowCount(r);
+    grid.setRowCount(r, true);
     grid.setRowData(table.getRows().getList());
 
     return grid;
@@ -224,20 +223,23 @@ public class GridFactory {
       return null;
     }
     
-    CellGrid grid = new CellGrid(r);
+    CellGrid grid = new CellGrid();
+    
     CellColumn<?> column;
     for (int i = 0; i < c; i++) {
       column = createColumn(table.getColumn(i), i);
       column.setSortable(true);
-      grid.addColumn(table.getColumnLabel(i), column, table.getColumnLabel(i));
+      grid.addColumn(table.getColumnLabel(i), column, new ColumnHeader(table.getColumn(i)));
     }
 
     @SuppressWarnings("unused")
     CachedProvider provider = new CachedProvider(grid, table);
     
-    MultiSelectionModel<IsRow> selector = new MultiSelectionModel<IsRow>(new KeyProvider());
-    grid.setSelectionModel(selector);
-
+    grid.setHeaderCellHeight(23);
+    grid.setBodyCellHeight(20);
+    grid.estimateColumnWidths(table.getRows().getList(), Math.min(r, 20));
+    grid.estimateHeaderWidths();
+    
     grid.setRowData(table.getRows().getList());
 
     return grid;
