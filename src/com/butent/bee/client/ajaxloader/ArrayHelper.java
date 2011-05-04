@@ -9,6 +9,10 @@ import com.google.gwt.core.client.JsArrayString;
 
 import com.butent.bee.shared.Assert;
 
+/**
+ * Converts data into javascript arrays.
+ */
+
 public class ArrayHelper {
   public static byte[] toJavaArrayBytes(JsArrayInteger bytes) {
     int length = bytes.length();
@@ -70,6 +74,6 @@ public class ArrayHelper {
   }
 
   private static native void nativePatchConstructorForSafari(JavaScriptObject result) /*-{
-    result.constructor = $wnd.Array;
+		result.constructor = $wnd.Array;
   }-*/;
 }

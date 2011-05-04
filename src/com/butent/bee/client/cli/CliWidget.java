@@ -20,6 +20,11 @@ import com.butent.bee.shared.data.cache.CacheManager;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
+/**
+ * Contains representation structure for client side command line interface, catches command
+ * keywords and processes them.
+ */
+
 public class CliWidget extends BeeTextBox {
   public CliWidget() {
     super();

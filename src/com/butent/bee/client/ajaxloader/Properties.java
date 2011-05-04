@@ -7,11 +7,15 @@ import com.butent.bee.client.BeeKeeper;
 
 import java.util.Date;
 
+/**
+ * Works with native Javascript objects, gets and sets their parameters.
+ */
+
 public class Properties extends JavaScriptObject {
   public static Properties create() {
     return JavaScriptObject.createObject().cast();
   }
-  
+
   protected Properties() {
   }
 
@@ -23,14 +27,14 @@ public class Properties extends JavaScriptObject {
       } else {
         wrongType(key, "Boolean", type);
       }
-    } 
+    }
     return null;
   }
 
   public final Date getDate(String key) throws JavaScriptException {
     return JsDate.toJava((JsDate) getObject(key));
   }
-  
+
   public final int getInt(String key) {
     Double n = getNumber(key);
     return (n == null) ? -1 : n.intValue();
@@ -71,9 +75,9 @@ public class Properties extends JavaScriptObject {
     }
     return null;
   }
-  
+
   public final native void remove(String key) /*-{
-    delete this[key];
+		delete this[key];
   }-*/;
 
   public final void set(String key, Boolean value) {
@@ -97,47 +101,47 @@ public class Properties extends JavaScriptObject {
   }
 
   public final native void set(String key, JavaScriptObject value) /*-{
-    this[key] = value;
+		this[key] = value;
   }-*/;
 
   public final native void set(String key, String value) /*-{
-    this[key] = value;
+		this[key] = value;
   }-*/;
-  
+
   public final native String typeof(String key) /*-{
-    return typeof this[key];
+		return typeof this[key];
   }-*/;
-  
+
   private native boolean containsKey(String key) /*-{
-    return this[key] != null;
+		return this[key] != null;
   }-*/;
 
   private native boolean nativeGetBoolean(String key) /*-{
-    return this[key];
+		return this[key];
   }-*/;
 
   private native double nativeGetNumber(String key) /*-{
-    return this[key];
+		return this[key];
   }-*/;
 
   private native JavaScriptObject nativeGetObject(String key) /*-{
-    return this[key];
+		return this[key];
   }-*/;
-  
+
   private native String nativeGetString(String key) /*-{
-    return this[key];
+		return this[key];
   }-*/;
-  
+
   private native void setBoolean(String key, boolean value) /*-{
-    this[key] = value;
+		this[key] = value;
   }-*/;
-  
+
   private native void setNumber(String key, double value) /*-{
-    this[key] = value;
+		this[key] = value;
   }-*/;
-  
+
   private void wrongType(String key, String expected, String actual) {
-    BeeKeeper.getLog().severe("Properties.get" + expected + "(" + key + 
+    BeeKeeper.getLog().severe("Properties.get" + expected + "(" + key +
         ") failed.  Unexpected type : " + actual + ".");
   }
 }

@@ -62,9 +62,9 @@ import com.butent.bee.client.widget.Progress;
 import com.butent.bee.client.widget.Svg;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Service;
 import com.butent.bee.shared.DateTime;
 import com.butent.bee.shared.JustDate;
+import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ContentType;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.value.BooleanValue;
@@ -83,28 +83,33 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 
+/**
+ * Contains the engine for processing client side command line interface commands.
+ */
+
 public class CliWorker {
   private static boolean cornified = false;
 
   public static void clearLog() {
     BeeKeeper.getLog().clear();
   }
-  
+
   public static void cornify(String[] arr) {
     if (!cornified) {
       DomUtils.injectExternalScript("http://www.cornify.com/js/cornify.js");
       cornified = true;
     }
-    
+
     final int cnt = BeeUtils.limit(BeeUtils.toInt(ArrayUtils.getQuietly(arr, 1)), 1, 50);
 
     int delay = BeeUtils.toInt(ArrayUtils.getQuietly(arr, 2));
     if (delay <= 0) {
       delay = 2000;
     }
-    
+
     Scheduler.get().scheduleFixedDelay(new RepeatingCommand() {
       private int counter = 0;
+
       public boolean execute() {
         cornifyAdd();
         return (++counter < cnt);
@@ -171,23 +176,23 @@ public class CliWorker {
 
     BeeKeeper.getUi().showGrid(lst, "Location", "Api Key");
   }
-  
+
   public static void doLike(String[] arr) {
     int len = ArrayUtils.length(arr);
     if (len < 3) {
       Global.sayHuh(ArrayUtils.join(arr, 1));
       return;
     }
-    
+
     String mode = ArrayUtils.getQuietly(arr, 0);
     String input = ArrayUtils.join(arr, 1, 1, len - 1);
     String expr = ArrayUtils.getQuietly(arr, len - 1);
-    
+
     boolean sens = mode.indexOf('+') > 0;
     boolean insens = mode.indexOf('-') > 0;
     String defCase = null;
     boolean match;
-    
+
     if (BeeUtils.context("s", mode)) {
       if (sens || insens) {
         match = Wildcards.isSqlLike(input, expr, sens);
@@ -206,7 +211,7 @@ public class CliWorker {
       if (sens || insens) {
         match = Wildcards.isLike(input, expr, sens);
       } else {
-        defCase = BeeUtils.concat(1, "def", 
+        defCase = BeeUtils.concat(1, "def",
             BooleanValue.pack(Wildcards.isDefaultCaseSensitive()));
         match = Wildcards.isLike(input, expr);
       }
@@ -215,7 +220,7 @@ public class CliWorker {
         BeeUtils.addName("case", BeeUtils.iif(sens, "sensitive", insens, "insensitive", defCase)),
         BeeUtils.addName("match", match));
   }
-  
+
   public static void doLocale(String[] arr) {
     String mode = ArrayUtils.getQuietly(arr, 1);
     if (BeeUtils.isEmpty(mode)) {
@@ -246,7 +251,7 @@ public class CliWorker {
       return;
     }
 
-    Level[] levels = new Level[]{Level.FINEST, Level.FINER, Level.FINE, Level.CONFIG, Level.INFO,
+    Level[] levels = new Level[] {Level.FINEST, Level.FINER, Level.FINE, Level.CONFIG, Level.INFO,
         Level.WARNING, Level.SEVERE};
     for (Level lvl : levels) {
       BeeKeeper.getLog().log(lvl, lvl.getName().toLowerCase());
@@ -471,7 +476,7 @@ public class CliWorker {
         }
         t = new DateTime(j);
         d = new JustDate(j);
-      } else {  
+      } else {
         t = DateTime.parse(s);
         d = JustDate.parse(s);
       }
@@ -535,7 +540,7 @@ public class CliWorker {
 
     BeeKeeper.getUi().showGrid(data, "Format", "Value");
   }
-  
+
   public static void showDimensions() {
     Global.modalGrid("Dimensions",
         PropertyUtils.createProperties("TextBox client width", DomUtils.getTextBoxClientWidth(),
@@ -654,7 +659,7 @@ public class CliWorker {
     FlexTable table = new FlexTable();
     table.setCellSpacing(3);
 
-    String[] types = new String[]{
+    String[] types = new String[] {
         "search", "tel", "url", "email", "datetime", "date", "month", "week", "time",
         "datetime-local", "number", "range", "color"};
     TextBox widget;
@@ -890,12 +895,12 @@ public class CliWorker {
   public static void showSize(String[] arr) {
     int len = ArrayUtils.length(arr);
     String html = ArrayUtils.getQuietly(arr, 1);
-    
+
     if (BeeUtils.isEmpty(html)) {
       Global.sayHuh();
       return;
     }
-    
+
     int pos = 2;
 
     if (html.equals("[") && len > 3) {
@@ -915,16 +920,16 @@ public class CliWorker {
         html = elem.getInnerHTML();
       }
     }
-    
+
     Font font = (len > pos) ? Font.parse(ArrayUtils.slice(arr, pos)) : null;
     Dimensions lineDim = Rulers.getLineDimensions(html, font);
     Dimensions areaDim = Rulers.getAreaDimensions(html, font);
-    
+
     int lineW = -1;
     int lineH = -1;
     int areaW = -1;
     int areaH = -1;
-    
+
     if (lineDim != null) {
       lineW = BeeUtils.toInt(lineDim.getWidthValue());
       lineH = BeeUtils.toInt(lineDim.getHeightValue());
@@ -933,7 +938,7 @@ public class CliWorker {
       areaW = BeeUtils.toInt(areaDim.getWidthValue());
       areaH = BeeUtils.toInt(areaDim.getHeightValue());
     }
-    
+
     List<Property> info = PropertyUtils.createProperties("Line Width", lineW, "Line Height", lineH,
         "Area Width", areaW, "Area Height", areaH);
     if (font != null) {
@@ -945,22 +950,22 @@ public class CliWorker {
       font.applyTo(lineHtml);
     }
     lineHtml.setHTML(html);
-    
+
     Html areaHtml = new Html();
     if (font != null) {
       font.applyTo(areaHtml);
     }
     areaHtml.setHTML(html);
-    
+
     FlexTable table = new FlexTable();
     table.setCellPadding(3);
     table.setBorderWidth(1);
-    
+
     for (int i = 0; i < info.size(); i++) {
       table.setHTML(i, 0, info.get(i).getName());
       table.setHTML(i, 1, info.get(i).getValue());
     }
-    
+
     Absolute panel = new Absolute();
     panel.setPixelSize(Math.max(Math.max(lineH, areaH) + 40, 256),
         lineH + areaH + 20 + info.size() * 32);
@@ -968,7 +973,7 @@ public class CliWorker {
     panel.add(lineHtml, 10, 5);
     panel.add(areaHtml, 10, lineH + 10);
     panel.add(table, 10, lineH + areaH + 20);
-    
+
     Global.showWidget(panel);
   }
 
@@ -1072,15 +1077,15 @@ public class CliWorker {
 
     Global.inform(tree);
   }
-  
+
   public static void showUnits(String[] arr) {
     int len = ArrayUtils.length(arr);
-    
+
     Double value = null;
     Unit unit = null;
     Font font = null;
     Integer containerSize = null;
-    
+
     if (len > 1) {
       for (int i = 1; i < len; i++) {
         if (arr[i] == "f" && i < len - 1) {
@@ -1092,7 +1097,7 @@ public class CliWorker {
           i++;
           continue;
         }
-        
+
         if (BeeUtils.isNumeric(arr[i])) {
           value = BeeUtils.toDouble(arr[i]);
         } else {
@@ -1100,12 +1105,12 @@ public class CliWorker {
         }
       }
     }
-    
+
     List<Unit> units = Lists.newArrayList();
     if (value == null) {
       value = 1.0;
     }
-    
+
     if (unit != null) {
       units.add(unit);
     } else {
@@ -1113,7 +1118,7 @@ public class CliWorker {
         units.add(u);
       }
     }
-    
+
     List<Property> info = PropertyUtils.createProperties("Value", value);
     if (font != null) {
       info.addAll(font.getInfo());
@@ -1121,15 +1126,15 @@ public class CliWorker {
     if (containerSize != null) {
       info.add(new Property("Container Size", containerSize.toString()));
     }
-    
+
     for (Unit u : units) {
       int px = Rulers.getIntPixels(value, u, font, BeeUtils.unbox(containerSize));
       info.add(new Property(u.getType(), BeeUtils.toString(px)));
     }
-    
+
     Global.modalGrid("Pixels", info);
   }
-  
+
   public static void showVars(String[] arr) {
     int len = BeeUtils.length(arr);
     if (len > 1) {
@@ -1149,7 +1154,7 @@ public class CliWorker {
       Global.showError("widget id not specified");
       return;
     }
-    
+
     Widget widget = DomUtils.getWidget(BeeKeeper.getUi().getScreenPanel(), id);
     if (widget == null) {
       Global.showError(id, "widget not found");
@@ -1158,11 +1163,11 @@ public class CliWorker {
 
     String z = ArrayUtils.getQuietly(arr, 2);
     int depth = BeeUtils.isDigit(z) ? BeeUtils.toInt(z) : 0;
-    
+
     List<ExtendedProperty> info = DomUtils.getInfo(widget, id, depth);
     BeeKeeper.getUi().showGrid(info);
   }
-  
+
   public static void storage(String[] arr) {
     int parCnt = ArrayUtils.length(arr) - 1;
     int len = BeeKeeper.getStorage().length();
@@ -1307,14 +1312,14 @@ public class CliWorker {
       StyleInjector.inject(st, immediate);
     }
   }
-  
+
   public static void translate(final String[] arr, boolean detect) {
     int len = BeeUtils.length(arr);
     if (len < 2) {
       Global.sayHuh((Object[]) arr);
       return;
     }
-    
+
     if (detect) {
       final String detText = ArrayUtils.join(arr, 1, 1, len);
       Translation.detect(detText, new DetectionCallback() {
@@ -1333,12 +1338,12 @@ public class CliWorker {
 
     final String text;
     final String codeFrom;
-    final String codeTo;    
-    
+    final String codeTo;
+
     Language dst = Language.getByCode(arr[len - 1]);
-    
+
     if (dst == null) {
-      text = ArrayUtils.join(arr, 1, 1, len); 
+      text = ArrayUtils.join(arr, 1, 1, len);
       codeFrom = BeeConst.STRING_EMPTY;
       codeTo = LocaleUtils.getLanguageCode(LocaleInfo.getCurrentLocale());
     } else {
@@ -1352,19 +1357,19 @@ public class CliWorker {
       } else {
         Language src = Language.getByCode(arr[len - 2]);
         if (src == null) {
-          text = ArrayUtils.join(arr, 1, 1, len - 1); 
+          text = ArrayUtils.join(arr, 1, 1, len - 1);
           codeFrom = BeeConst.STRING_EMPTY;
         } else {
-          text = ArrayUtils.join(arr, 1, 1, len - 2); 
+          text = ArrayUtils.join(arr, 1, 1, len - 2);
           codeFrom = src.getLangCode();
         }
       }
     }
-    
+
     if (BeeUtils.isEmpty(text) || BeeUtils.same(text, BeeConst.STRING_ALL)) {
       BeeKeeper.getLog().info("Translate", codeFrom, codeTo);
       List<Element> elements = Lists.newArrayList();
-      
+
       NodeList<Element> nodes = Document.get().getElementsByTagName(DomUtils.TAG_BUTTON);
       for (int i = 0; i < nodes.getLength(); i++) {
         elements.add(nodes.getItem(i));
@@ -1381,7 +1386,7 @@ public class CliWorker {
       for (int i = 0; i < nodes.getLength(); i++) {
         elements.add(nodes.getItem(i));
       }
-      
+
       for (final Element elem : elements) {
         String elTxt = elem.getInnerText();
         if (BeeUtils.length(elTxt) < 3) {
@@ -1394,7 +1399,7 @@ public class CliWorker {
             elem.setInnerText(translation);
           }
         };
-        
+
         if (BeeUtils.isEmpty(codeFrom)) {
           Translation.detectAndTranslate(elTxt, codeTo, elBack);
         } else {
@@ -1403,7 +1408,7 @@ public class CliWorker {
       }
       return;
     }
-    
+
     final String info = ArrayUtils.join(arr, 1, 1, len);
 
     TranslationCallback callback = new TranslationCallback() {
@@ -1412,7 +1417,7 @@ public class CliWorker {
         Global.inform(info, translation);
       }
     };
-    
+
     if (BeeUtils.isEmpty(codeFrom)) {
       Translation.detectAndTranslate(text, codeTo, callback);
     } else {
@@ -1472,43 +1477,43 @@ public class CliWorker {
   }
 
   private static native void cornifyAdd() /*-{
-    try {
-      $wnd.cornify_add();
-    } catch (err) {
-    }
+		try {
+			$wnd.cornify_add();
+		} catch (err) {
+		}
   }-*/;
-  
-  private static native void getGeo(Element element) /*-{
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(showPosition);
-    } else {
-      element.innerHTML = "no geolocation support";
-    }
 
-    function showPosition(position) {
-      var lat = position.coords.latitude;
-      var lng = position.coords.longitude;
-      element.innerHTML = "Lat = " + lat + ", Lng = " + lng;
-    }
+  private static native void getGeo(Element element) /*-{
+		if (navigator.geolocation) {
+			navigator.geolocation.getCurrentPosition(showPosition);
+		} else {
+			element.innerHTML = "no geolocation support";
+		}
+
+		function showPosition(position) {
+			var lat = position.coords.latitude;
+			var lng = position.coords.longitude;
+			element.innerHTML = "Lat = " + lat + ", Lng = " + lng;
+		}
   }-*/;
 
   private static native void sampleCanvas(Element el) /*-{
-    var ctx = el.getContext("2d");
+		var ctx = el.getContext("2d");
 
-    for ( var i = 0; i < 6; i++) {
-      for ( var j = 0; j < 6; j++) {
-        ctx.fillStyle = 'rgb(' + Math.floor(255 - 42.5 * i) + ', ' + Math.floor(255 - 42.5 * j)
-            + ', 0)';
-        ctx.fillRect(j * 25, i * 25, 25, 25);
-      }
-    }
+		for ( var i = 0; i < 6; i++) {
+			for ( var j = 0; j < 6; j++) {
+				ctx.fillStyle = 'rgb(' + Math.floor(255 - 42.5 * i) + ', '
+						+ Math.floor(255 - 42.5 * j) + ', 0)';
+				ctx.fillRect(j * 25, i * 25, 25, 25);
+			}
+		}
   }-*/;
 
   private static void sampleSvg(Element el) {
     el.setInnerHTML("<circle cx=\"100\" cy=\"75\" r=\"50\" fill=\"blue\" stroke=\"firebrick\" "
         + "stroke-width=\"3\"></circle><text x=\"60\" y=\"155\">Hello Svg</text>");
   }
-  
+
   private CliWorker() {
   }
 }
