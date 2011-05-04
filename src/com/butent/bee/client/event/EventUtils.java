@@ -23,16 +23,20 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Contains core event processing methods.
+ */
+
 public class EventUtils {
 
-  public static final String EVENT_TYPE_BLUR = "blur"; 
-  public static final String EVENT_TYPE_CHANGE = "change"; 
-  public static final String EVENT_TYPE_FOCUS = "focus"; 
+  public static final String EVENT_TYPE_BLUR = "blur";
+  public static final String EVENT_TYPE_CHANGE = "change";
+  public static final String EVENT_TYPE_FOCUS = "focus";
   public static final String EVENT_TYPE_KEY_DOWN = "keydown";
   public static final String EVENT_TYPE_KEY_PRESS = "keypress";
   public static final String EVENT_TYPE_KEY_UP = "keyup";
   public static final String EVENT_TYPE_MOUSE_WHEEL = "mousewheel";
-  
+
   private static boolean dnd;
 
   private static JavaScriptObject onDnd;
@@ -53,7 +57,7 @@ public class EventUtils {
     Assert.notNull(elem);
     elem.blur();
   }
-  
+
   public static void eatEvent(NativeEvent ev) {
     Assert.notNull(ev);
     ev.preventDefault();
@@ -64,7 +68,7 @@ public class EventUtils {
     Assert.notNull(elem);
     elem.focus();
   }
-  
+
   public static List<Property> getEventInfo(NativeEvent ev) {
     Assert.notNull(ev);
     return PropertyUtils.createProperties(
@@ -108,7 +112,7 @@ public class EventUtils {
     Assert.notNull(et);
     return Element.as(et).getTagName();
   }
-  
+
   public static int getTypeInt(NativeEvent ev) {
     if (ev == null) {
       return 0;
@@ -129,7 +133,7 @@ public class EventUtils {
   public static boolean isInputElement(EventTarget et) {
     return isTargetTagName(et, DomUtils.TAG_INPUT);
   }
-  
+
   public static boolean isKeyEvent(int type) {
     return (type & Event.KEYEVENTS) != 0;
   }
@@ -141,14 +145,14 @@ public class EventUtils {
       return isKeyEvent(ev.getTypeInt());
     }
   }
- 
+
   public static boolean isTargetTagName(EventTarget et, String tagName) {
     if (et == null || BeeUtils.isEmpty(tagName)) {
       return false;
     }
     return BeeUtils.same(getTargetTagName(et), tagName);
   }
-  
+
   public static void logCloseEvent(CloseEvent<?> ev) {
     Assert.notNull(ev);
     BeeKeeper.getLog().info(transformCloseEvent(ev));
@@ -289,7 +293,7 @@ public class EventUtils {
   public static String transformEvent(NativeEvent ev) {
     return transformEvent(ev, true);
   }
-  
+
   public static String transformEvent(NativeEvent ev, boolean targets) {
     if (ev == null) {
       return BeeConst.STRING_EMPTY;
@@ -337,7 +341,7 @@ public class EventUtils {
     if (v != 0) {
       sb.append(" mwv=" + v);
     }
-    
+
     if (targets) {
       EventTarget et = ev.getEventTarget();
       if (et != null) {
@@ -437,9 +441,9 @@ public class EventUtils {
   }
 
   private static native void initDnd() /*-{
-    @com.butent.bee.client.event.EventUtils::onDnd = $entry(function(evt) {
-      return @com.butent.bee.client.event.EventUtils::dispatchDnd(Lcom/butent/bee/client/event/DndEvent;)(evt);
-    });
+		@com.butent.bee.client.event.EventUtils::onDnd = $entry(function(evt) {
+			return @com.butent.bee.client.event.EventUtils::dispatchDnd(Lcom/butent/bee/client/event/DndEvent;)(evt);
+		});
   }-*/;
 
   private static boolean isDndSource(String id) {
@@ -451,31 +455,31 @@ public class EventUtils {
   }
 
   private static native String sinkDrag(Element elem) /*-{
-    elem.ondrag = @com.butent.bee.client.event.EventUtils::onDnd;
+		elem.ondrag = @com.butent.bee.client.event.EventUtils::onDnd;
   }-*/;
 
   private static native String sinkDragEnd(Element elem) /*-{
-    elem.ondragend = @com.butent.bee.client.event.EventUtils::onDnd;
+		elem.ondragend = @com.butent.bee.client.event.EventUtils::onDnd;
   }-*/;
 
   private static native String sinkDragEnter(Element elem) /*-{
-    elem.ondragenter = @com.butent.bee.client.event.EventUtils::onDnd;
+		elem.ondragenter = @com.butent.bee.client.event.EventUtils::onDnd;
   }-*/;
 
   private static native String sinkDragLeave(Element elem) /*-{
-    elem.ondragleave = @com.butent.bee.client.event.EventUtils::onDnd;
+		elem.ondragleave = @com.butent.bee.client.event.EventUtils::onDnd;
   }-*/;
 
   private static native String sinkDragOver(Element elem) /*-{
-    elem.ondragover = @com.butent.bee.client.event.EventUtils::onDnd;
+		elem.ondragover = @com.butent.bee.client.event.EventUtils::onDnd;
   }-*/;
 
   private static native String sinkDragStart(Element elem) /*-{
-    elem.ondragstart = @com.butent.bee.client.event.EventUtils::onDnd;
+		elem.ondragstart = @com.butent.bee.client.event.EventUtils::onDnd;
   }-*/;
 
   private static native String sinkDrop(Element elem) /*-{
-    elem.ondrop = @com.butent.bee.client.event.EventUtils::onDnd;
+		elem.ondrop = @com.butent.bee.client.event.EventUtils::onDnd;
   }-*/;
 
   private static String transformEventTarget(EventTarget et) {
@@ -485,7 +489,7 @@ public class EventUtils {
       return DomUtils.transformElement(Element.as(et));
     }
   }
-  
+
   private EventUtils() {
   }
 }

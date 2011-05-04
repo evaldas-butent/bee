@@ -9,6 +9,10 @@ import com.butent.bee.client.utils.BeeCommand;
 import com.butent.bee.client.widget.BeeRadioButton;
 import com.butent.bee.shared.utils.BeeUtils;
 
+/**
+ * Implements value change event handling for user interface components.
+ */
+
 public class BeeValueChangeHandler<I> implements ValueChangeHandler<I> {
 
   public void onValueChange(ValueChangeEvent<I> event) {

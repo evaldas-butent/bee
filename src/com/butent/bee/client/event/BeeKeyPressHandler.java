@@ -5,6 +5,9 @@ import com.google.gwt.event.dom.client.KeyPressEvent;
 import com.google.gwt.event.dom.client.KeyPressHandler;
 import com.google.gwt.user.client.ui.ValueBoxBase;
 
+/**
+ * Handles keyboard key presses events.
+ */
 public class BeeKeyPressHandler implements KeyPressHandler {
 
   public void onKeyPress(KeyPressEvent event) {

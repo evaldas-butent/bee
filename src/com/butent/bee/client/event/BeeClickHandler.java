@@ -10,11 +10,15 @@ import com.butent.bee.shared.HasService;
 import com.butent.bee.shared.HasStage;
 import com.butent.bee.shared.utils.BeeUtils;
 
+/**
+ * Handles mouse clicks on various user interface components.
+ */
+
 public class BeeClickHandler implements ClickHandler {
 
   public void onClick(ClickEvent event) {
     Object source = event.getSource();
-    
+
     if (source instanceof HasBeeClickHandler) {
       ((HasBeeClickHandler) source).onBeeClick(event);
       return;
