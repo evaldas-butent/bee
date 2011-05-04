@@ -35,59 +35,139 @@ public class SqlSelect extends HasFrom<SqlSelect> {
   private int limit = 0;
   private int offset = 0;
 
+  /**
+   * Adds all friend from {@code source} table. <p> E.g:  source.* </p>
+   * @param source the source table
+   * @return object's SqlSelect instance.
+   */
   public SqlSelect addAllFields(String source) {
     Assert.notEmpty(source);
     addField(SqlUtils.name(source + ".*"), null);
     return getReference();
   }
 
+  /**
+   * Adds an AVG function with a specified expression {@code expr} and 
+   * alias {@code alias}.
+   * @param expr the expression
+   * @param alias the alias name
+   * @return object's SqlSelect instance.
+   */
   public SqlSelect addAvg(IsExpression expr, String alias) {
     addAggregate("AVG", expr, alias);
     return getReference();
   }
 
+  /**
+   * Adds an AVG function for {@code source} table and field {@code field}.
+   * @param source the source's name
+   * @param field the field's name
+   * @return object's SqlSelect instance.
+   */
   public SqlSelect addAvg(String source, String field) {
     return addAvg(SqlUtils.field(source, field), field);
   }
 
+  /**
+   * Adds an AVG function for {@code source} table and field {@code field}
+   * using an alias {@code alias}.
+   * @param source  the source's name
+   * @param field the field's name
+   * @param alias the alias name.
+   * @return object's SqlSelect instance.
+   */
   public SqlSelect addAvg(String source, String field, String alias) {
     return addAvg(SqlUtils.field(source, field), alias);
   }
 
+  /**
+   * Creates a constant expression.
+   * @param constant the constant value.
+   * @param alias the alias name.
+   * @return object's SqlSelect instance.
+   */
   public SqlSelect addConstant(Object constant, String alias) {
     addExpr(SqlUtils.constant(constant), alias);
     return getReference();
   }
 
+  /**
+   * Adds a COUNT function with a specified expression {@code expr} and 
+   * alias {@code alias}.
+   * @param expr the expression
+   * @param alias the alias name
+   * @return object's SqlSelect instance.
+   */
   public SqlSelect addCount(IsExpression expr, String alias) {
     addAggregate("COUNT", expr, alias);
     return getReference();
   }
 
+  /**
+   * Adds a COUNT function wihtout any defined expressions. 
+   * @param alias the alias name.
+   * @return object's SqlSelect instance.
+   */
   public SqlSelect addCount(String alias) {
     return addCount(SqlUtils.expression("*"), alias);
   }
 
+  /**
+   * Adds an empty BOOLEAN field with the specified {@code alias} name.
+   * @param alias the alias name.
+   * @return object's SqlSelect instance.
+   */
   public SqlSelect addEmptyBoolean(String alias) {
     return addEmptyField(alias, DataType.BOOLEAN, 0, 0);
   }
 
+  /**
+   * Adds an empty CHAR field with the specified {@code alias} name and 
+   * precition.
+   * @param alias the alias name
+   * @param precision the fields precision
+   * @return object's SqlSelect instance.
+   */
   public SqlSelect addEmptyChar(String alias, int precision) {
     return addEmptyField(alias, DataType.CHAR, precision, 0);
   }
 
+  /**
+   * Adds an empty DATE field with the specified {@code alias} name.
+   * @param alias the alias name
+   * @return object's SqlSelect instance.
+   */
   public SqlSelect addEmptyDate(String alias) {
     return addEmptyField(alias, DataType.DATE, 0, 0);
   }
 
+  /**
+   * Adds an empty DATETIME field with the specified {@code alias} name.
+   * @param alias the alias name
+   * @return object's SqlSelect instance.
+   */
   public SqlSelect addEmptyDateTime(String alias) {
     return addEmptyField(alias, DataType.DATETIME, 0, 0);
   }
 
+  /**
+   * Adds an empty DOUBLE field with the specified {@code alias} name.
+   * @param alias the alias name
+   * @return object's SqlSelect instance.
+   */
   public SqlSelect addEmptyDouble(String alias) {
     return addEmptyField(alias, DataType.DOUBLE, 0, 0);
   }
 
+  /**
+   * Adds a specified type {@code type} field with a specified precision and
+   * scale.
+   * @param alias the alias name
+   * @param type the field's type to add
+   * @param precision the field's name
+   * @param scale the field's scale
+   * @return object's SqlSelect instance.
+   */
   public SqlSelect addEmptyField(String alias, DataType type, int precision, int scale) {
     Object emptyValue;
 
@@ -115,22 +195,60 @@ public class SqlSelect extends HasFrom<SqlSelect> {
     return getReference();
   }
 
+  /**
+   * Creates an empty INTEGER type field and adds it.
+   * 
+   * @param alias the alias to use
+   * @return object's SqlSelect instance
+   */
   public SqlSelect addEmptyInt(String alias) {
     return addEmptyField(alias, DataType.INTEGER, 0, 0);
   }
 
+  /**
+   * Creates an empty LONG type field and adds it.
+   * 
+   * @param alias the alias to use
+   * @return object's SqlSelect instance
+   * @param alias
+   * @return object's SqlSelect instance.
+   */
   public SqlSelect addEmptyLong(String alias) {
     return addEmptyField(alias, DataType.LONG, 0, 0);
   }
 
+  /**
+   * Creates an empty NUMERIC type field with specified precision
+   * {@code precision} and scale {@code scale} and adds it.
+   * 
+   * @param alias the alias to use
+   * @param precision the precision
+   * @param scale the scale
+   * @return object's SqlSelect instance
+   */
   public SqlSelect addEmptyNumeric(String alias, int precision, int scale) {
     return addEmptyField(alias, DataType.NUMERIC, precision, scale);
   }
 
+  /**
+   * Creates an empty STRING type field with specified precision
+   * {@code precision} and adds it.
+   * 
+   * @param alias the alias to use
+   * @param precision the precition
+   * @return object's SqlSelect instance
+   */
   public SqlSelect addEmptyString(String alias, int precision) {
     return addEmptyField(alias, DataType.STRING, precision, 0);
   }
 
+  /**
+   * Adds an expression {@code expr}.
+   * 
+   * @param expr the expression
+   * @param alias the alias
+   * @return object's SqlSelect instance
+   */
   public SqlSelect addExpr(IsExpression expr, String alias) {
     Assert.notEmpty(expr);
     Assert.notEmpty(alias);
@@ -139,16 +257,39 @@ public class SqlSelect extends HasFrom<SqlSelect> {
     return getReference();
   }
 
+  /**
+   * Adds an expression {@code expr} with the specified alias name.
+   * @param expr the expression to add
+   * @param alias the alias name
+   * @return object's SqlSelect instance.
+   */
   public SqlSelect addExpr(String expr, String alias) {
     addExpr(SqlUtils.expression(expr), alias);
     return getReference();
   }
 
+  /**
+   * Adds a field to a specified source destination {@code source}. Fields name
+   * is {@code field} and alias {@code alias}.
+   * 
+   * @param source the source table to add to
+   * @param field the field to add
+   * @param alias alias to use
+   * @return object's SqlSelect instance
+   */
   public SqlSelect addField(String source, String field, String alias) {
     addExpr(SqlUtils.field(source, field), alias);
     return getReference();
   }
 
+  /**
+   * Adds multiple fields {@code fields} to a specified source tabel {@code 
+   * source}.
+   * 
+   * @param source the source table to add to
+   * @param fields the fields to add
+   * @return object's SqlSelect instance
+   */
   public SqlSelect addFields(String source, String... fields) {
     Assert.minLength(fields, 1);
 
@@ -158,60 +299,149 @@ public class SqlSelect extends HasFrom<SqlSelect> {
     return getReference();
   }
 
+  /**
+   * Adds specified fields to a group list.
+   * @param source the source table
+   * @param fields the fields to add to the group
+   * @return object's SqlSelect instance.
+   */
   public SqlSelect addGroup(String source, String... fields) {
     addGroup(SqlUtils.fields(source, fields));
     return getReference();
   }
 
+  /**
+   * Adds a MAX function with a specified expression {@code expr} and 
+   * alias {@code alias}.
+   * @param expr the expression
+   * @param alias the alias name
+   * @return object's SqlSelect instance.
+   */
   public SqlSelect addMax(IsExpression expr, String alias) {
     addAggregate("MAX", expr, alias);
     return getReference();
   }
 
+  /**
+   * Adds a MAX function with a specified table {@code source} and field
+   * {@code field}.
+   * @param source the source table name
+   * @param field the field's name
+   * @return object's SqlSelect instance.
+   */
   public SqlSelect addMax(String source, String field) {
     return addMax(SqlUtils.field(source, field), field);
   }
 
+  /**
+   * Adds a MAX function with a specified table {@code source} and field
+   * {@code field} using an alias.
+   * @param source the source table name
+   * @param field the field's name
+   * @param alias the alias name
+   * @return object's SqlSelect instance.
+   */
   public SqlSelect addMax(String source, String field, String alias) {
     return addMax(SqlUtils.field(source, field), alias);
   }
 
+  /**
+   * Adds a MIN function with a specified expression {@code expr} and 
+   * alias {@code alias}.
+   * @param expr the expression
+   * @param alias the alias name
+   * @return object's SqlSelect instance.
+   */
   public SqlSelect addMin(IsExpression expr, String alias) {
     addAggregate("MIN", expr, alias);
     return getReference();
   }
 
+  /**
+   * Adds a MIN function with a specified table {@code source} and field
+   * {@code field}.
+   * @param source the source table name
+   * @param field the field's name
+   * @return object's SqlSelect instance.
+   */
   public SqlSelect addMin(String source, String field) {
     return addMin(SqlUtils.field(source, field), field);
   }
 
+  /**
+   * Adds a MIN function with a specified table {@code source} and field
+   * {@code field} using an alias.
+   * @param source the source table name
+   * @param field the field's name
+   * @param alias the alias name
+   * @return object's SqlSelect instance.
+   */
   public SqlSelect addMin(String source, String field, String alias) {
     return addMin(SqlUtils.field(source, field), alias);
   }
 
+  /**
+   * Adds {@code order} to an order list.
+   * @param source the source table.
+   * @param order the fields to add to the order list
+   * @return object's SqlSelect instance.
+   */
   public SqlSelect addOrder(String source, String... order) {
     addOrder(false, source, order);
     return getReference();
   }
 
+  /**
+   * Adds {@code order} to an order list. Uses descending ordering.
+   * @param source the source table.
+   * @param order the fields to add to the order list
+   * @return object's SqlSelect instance.
+   */
   public SqlSelect addOrderDesc(String source, String... order) {
     addOrder(true, source, order);
     return getReference();
   }
 
+  /**
+   * Adds a SUM function with a specified expression {@code expr} and 
+   * alias {@code alias}.
+   * @param expr the expression
+   * @param alias the alias name
+   * @return object's SqlSelect instance.
+   */
   public SqlSelect addSum(IsExpression expr, String alias) {
     addAggregate("SUM", expr, alias);
     return getReference();
   }
 
+  /**
+   * Adds a SUM function with a specified table {@code source} and field
+   * {@code field}.
+   * @param source the source table name
+   * @param field the field's name
+   * @return object's SqlSelect instance.
+   */
   public SqlSelect addSum(String source, String field) {
     return addSum(SqlUtils.field(source, field), field);
   }
 
+  /**
+   * Adds a SUM function with a specified table {@code source} and field
+   * {@code field} using an alias.
+   * @param source the source table name
+   * @param field the field's name
+   * @param alias the alias name
+   * @return object's SqlSelect instance.
+   */
   public SqlSelect addSum(String source, String field, String alias) {
     return addSum(SqlUtils.field(source, field), alias);
   }
 
+  /**
+   * Adds other SqlSelect {@code union} sentences to the union list.
+   * @param union specified SqlSelect sentences
+   * @return object's SqlSelect instance.
+   */
   public SqlSelect addUnion(SqlSelect... union) {
     Assert.noNulls((Object[]) union);
 
@@ -226,6 +456,11 @@ public class SqlSelect extends HasFrom<SqlSelect> {
     return getReference();
   }
 
+  /**
+   * Copies the current query and returns it
+   * 
+   * @return the current SqlSelect query
+   */
   public SqlSelect copyOf() {
     SqlSelect query = new SqlSelect();
 
@@ -257,30 +492,54 @@ public class SqlSelect extends HasFrom<SqlSelect> {
   }
 
   // Getters ----------------------------------------------------------------
+  /**
+   * @return current field list.
+   */
   public List<IsExpression[]> getFields() {
     return fieldList;
   }
 
+  /**
+   * @return the current group by list {@code groupList}.
+   */
   public List<IsExpression> getGroupBy() {
     return groupList;
   }
 
+  /**
+   * @return the current having clause
+   */
   public IsCondition getHaving() {
     return havingClause;
   }
 
+  /**
+   * @return the current limit {@code limit}
+   */
   public int getLimit() {
     return limit;
   }
 
+  /**
+   * @return the current offset {@code offset}
+   */
   public int getOffset() {
     return offset;
   }
 
+  /**
+   * @return the current order by {@code orgetList} list
+   */
   public List<String[]> getOrderBy() {
     return orderList;
   }
 
+  /**
+   * Returns a list of sources found in the where clause {@code whereClause} 
+   * , having clause {@code havingClause}, union list {@code unionList} . 
+   * 
+   * @return the list of sources
+   */
   @Override
   public Collection<String> getSources() {
     Assert.state(!isEmpty());
@@ -301,6 +560,11 @@ public class SqlSelect extends HasFrom<SqlSelect> {
     return sources;
   }
 
+  /**
+   * Returns a list of parameters found in the this object.
+   * 
+   * @returns a list of parameters.
+   */
   @Override
   public List<Object> getSqlParams() {
     Assert.state(!isEmpty());
@@ -332,33 +596,60 @@ public class SqlSelect extends HasFrom<SqlSelect> {
     return paramList;
   }
 
+  /**
+   * @param builder the builder to use
+   * @param paramMode sets param mode on or off
+   * @return a generated SqlCreate query with a specified SqlBuilder
+   * {@code builder} and parameter mode {@code paramMode}.
+   */
   @Override
   public String getSqlString(SqlBuilder builder, boolean paramMode) {
     Assert.notEmpty(builder);
     return builder.getQuery(this, paramMode);
   }
 
+  /**
+   * @return the current SqlSelect union list.
+   */
   public List<SqlSelect> getUnion() {
     return unionList;
   }
 
+  /**
+   * @return the current Where clause.
+   */
   public IsCondition getWhere() {
     return whereClause;
   }
 
+  /**
+   * @return the current distinct mode.
+   */
   public boolean isDistinctMode() {
     return distinctMode;
   }
 
+  /**
+   * Checks if the current SqlSelect object is empty.
+   * @return true - if the object is empty, otherwise false.
+   */
   @Override
   public boolean isEmpty() {
     return BeeUtils.isEmpty(fieldList) || super.isEmpty();
   }
 
+  /**
+   * @return the currently set union all mode.
+   */
   public boolean isUnionAllMode() {
     return unionAllMode;
   }
 
+  /**
+   * Clears the SqlSelect object.
+   * 
+   * @return a cleared SqlSelect object.
+   */
   public SqlSelect reset() {
     resetFields();
     resetGroup();
@@ -373,6 +664,11 @@ public class SqlSelect extends HasFrom<SqlSelect> {
     return getReference();
   }
 
+  /**
+   * Clears all fields from the field list.
+   * 
+   * @return object's SqlSelect instance
+   */
   public SqlSelect resetFields() {
     if (!BeeUtils.isEmpty(fieldList)) {
       fieldList.clear();
@@ -380,6 +676,10 @@ public class SqlSelect extends HasFrom<SqlSelect> {
     return getReference();
   }
 
+  /**
+   * Resets the group list.
+   * @return object's SqlSelect instance.
+   */
   public SqlSelect resetGroup() {
     if (!BeeUtils.isEmpty(groupList)) {
       groupList.clear();
@@ -387,6 +687,10 @@ public class SqlSelect extends HasFrom<SqlSelect> {
     return getReference();
   }
 
+  /**
+   * Resets the order list.
+   * @return object's SqlSelect instance.
+   */
   public SqlSelect resetOrder() {
     if (!BeeUtils.isEmpty(orderList)) {
       orderList.clear();
@@ -394,6 +698,10 @@ public class SqlSelect extends HasFrom<SqlSelect> {
     return getReference();
   }
 
+  /**
+   * Resets the union list.
+   * @return object's SqlSelect instance.
+   */
   public SqlSelect resetUnion() {
     if (!BeeUtils.isEmpty(unionList)) {
       unionList.clear();
@@ -401,33 +709,64 @@ public class SqlSelect extends HasFrom<SqlSelect> {
     return getReference();
   }
 
+  /**
+   * Resets the distinct mode to the specified {@code distinct} value.
+   * @param distinct the value to change to
+   * @return object's SqlSelect instance.
+   */
   public SqlSelect setDistinctMode(boolean distinct) {
     this.distinctMode = distinct;
     return getReference();
   }
 
+  /**
+   * Sets the having clause
+   * @param having the clause's condition to set
+   * @return object's SqlSelect instance.
+   */
   public SqlSelect setHaving(IsCondition having) {
     havingClause = having;
     return getReference();
   }
 
+  /**
+   * Sets the limit parameter to {@code limit}.
+   * @param limit the value to set to
+   * @return object's SqlSelect instance.
+   */
   public SqlSelect setLimit(int limit) {
     Assert.nonNegative(limit);
     this.limit = limit;
     return getReference();
   }
 
+  /**
+   * Sets the offset parameter to {@code offset}.
+   * @param offset the value to set to.
+   * @return object's SqlSelect instance.
+   */
   public SqlSelect setOffset(int offset) {
     Assert.nonNegative(offset);
     this.offset = offset;
     return getReference();
   }
 
+  /**
+   * Sets the  union all mode to the specified argument {@code unionAll).
+   * 
+   * @param unionAll the argument to use for setting the mode
+   * @return object's SqlSelect instance
+   */
   public SqlSelect setUnionAllMode(boolean unionAll) {
     unionAllMode = unionAll;
     return getReference();
   }
 
+  /**
+   * Sets the where condition.
+   * @param clause the condition to set.
+   * @return object's SqlSelect instance.
+   */
   public SqlSelect setWhere(IsCondition clause) {
     whereClause = clause;
     return getReference();

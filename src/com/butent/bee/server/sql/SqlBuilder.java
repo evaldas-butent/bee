@@ -246,6 +246,14 @@ public abstract class SqlBuilder {
     }
   }
 
+  /**
+   * Forms a String from an SqlCommand {@code sc} using the specified {@code
+   * paramMode}.
+   * 
+   * @param sc the SqlCommand to use for forming
+   * @param paramMode defines if parameter mode is true or false.
+   * @return a formed String from the SqlCommand
+   */
   String getCommand(SqlCommand sc, boolean paramMode) {
     Assert.notNull(sc);
     Assert.state(!sc.isEmpty());
@@ -266,6 +274,16 @@ public abstract class SqlBuilder {
     return sqlKeyword(sc.getCommand(), params);
   }
 
+  /**
+   * Generates an SQL CREATE query from the specified argument {@code sc}.
+   * There are two ways to generate the query. First: by defining a {@code 
+   * dataSource}. Second: describing the fields manually. Only one at an 
+   * instance of the SqlCreate object is possible. 
+   * 
+   * @param sc the SqlCreate object
+   * @param paramMode sets the parameter mode
+   * @return a generated SQL CREATE query
+   */
   String getCreate(SqlCreate sc, boolean paramMode) {
     Assert.notNull(sc);
     Assert.state(!sc.isEmpty());
@@ -303,6 +321,14 @@ public abstract class SqlBuilder {
     return query.toString();
   }
 
+  /**
+   * Generates an SQL DELETE query from the specified argument {@code sd}.
+   * {@code sd} must have From and Where contitions set.
+   * 
+   * @param sd the SqlDelete object to use for generating
+   * @param paramMode sets the parameter mode
+   * @return a generated SQL DELETE query
+   */
   String getDelete(SqlDelete sd, boolean paramMode) {
     Assert.notNull(sd);
     Assert.state(!sd.isEmpty());
@@ -328,6 +354,16 @@ public abstract class SqlBuilder {
     return query.toString();
   }
 
+  /**
+   * Generates an SQL INSERT query from the specified argument {@code si}.
+   * There are two ways to generate the query. First: by defining a {@code 
+   * dataSource}. Second: describing the fields manually. Only one at an 
+   * instance of the SqlInsert object is possible. 
+   * 
+   * @param si the SqlInsert object
+   * @param paramMode sets the parameter mode
+   * @return a generated SQL INSERT query
+   */
   String getInsert(SqlInsert si, boolean paramMode) {
     Assert.notNull(si);
     Assert.state(!si.isEmpty());
@@ -370,6 +406,14 @@ public abstract class SqlBuilder {
     return query.toString();
   }
 
+  /**
+   * Generates an SQL SELECT query from the specified argument {@code ss}.
+   * From value must be defined in order to generate the query. 
+   * 
+   * @param ss the SqlSelect object
+   * @param paramMode sets the parameter mode
+   * @return a generated SQL SELECT query
+   */
   String getQuery(SqlSelect ss, boolean paramMode) {
     Assert.notNull(ss);
     Assert.state(!ss.isEmpty());
@@ -459,6 +503,14 @@ public abstract class SqlBuilder {
     return query.toString();
   }
 
+  /**
+   * Generates an SQL UPDATE query from the specified argument {@code su}.
+   * A target table and at least one expression must be defined.
+   * 
+   * @param su the SqlUpdate object.
+   * @param paramMode sets teh parameter mode
+   * @return a generated SQL UPDATE query
+   */
   String getUpdate(SqlUpdate su, boolean paramMode) {
     Assert.notNull(su);
     Assert.state(!su.isEmpty());

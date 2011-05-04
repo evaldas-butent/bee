@@ -13,10 +13,20 @@ public class SqlBuilderFactory {
   private static String defaultEngine;
   private static SqlBuilder defaultBuilder;
 
+  /**
+   * @return the default builder.
+   */
   public static SqlBuilder getBuilder() {
     return defaultBuilder;
   }
 
+  /**
+   * Creates and returns a builder defined by the specified engine
+   * {@code engine}. E.g (BeeConst.MYSQL, BeeConst.PGSQL etc..).
+   * 
+   * @param engine the engine for a builder
+   * @return a new builder 
+   */
   public static SqlBuilder getBuilder(String engine) {
     SqlBuilder builder;
 
@@ -34,10 +44,18 @@ public class SqlBuilderFactory {
     return builder;
   }
 
+  /**
+   * @return the default engine.
+   */
   public static String getEngine() {
     return defaultEngine;
   }
 
+  /**
+   * Sets {@code engine} as a default engine.
+   * 
+   * @param engine the value to set.
+   */
   public static synchronized void setDefaultEngine(String engine) {
     defaultEngine = engine;
     defaultBuilder = getBuilder(defaultEngine);
