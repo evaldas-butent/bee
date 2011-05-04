@@ -3,6 +3,11 @@ package com.butent.bee.shared.data.value;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.utils.BeeUtils;
 
+/**
+ * The {@code NumberValue} class represents number values. The value is set
+ * using {@link com.butent.bee.shared.data.value.NumberValue#NumberValue(Double)}
+ * constructor.
+ */
 public class NumberValue extends Value {
 
   private static final NumberValue NULL_VALUE = new NumberValue(null);

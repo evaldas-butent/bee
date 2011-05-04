@@ -10,7 +10,7 @@ import com.butent.bee.shared.StringArray;
 import com.butent.bee.shared.exceptions.BeeRuntimeException;
 
 /**
- * Tests {@link com.butent.bee.shared.StringArray}
+ * Tests {@link com.butent.bee.shared.StringArray}.
  */
 public class TestStringArray {
 

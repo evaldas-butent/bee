@@ -9,7 +9,7 @@ import com.butent.bee.shared.utils.Wildcards;
 import com.butent.bee.shared.utils.Wildcards.Pattern;
 
 /**
- * Tests {@link com.butent.bee.shared.utils.Wildcards}
+ * Tests {@link com.butent.bee.shared.utils.Wildcards}.
  */
 public class TestWildcards {
 

@@ -4,8 +4,9 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.utils.BeeUtils;
 
 /**
- * Invokes SQL statement builders for MySQL, Microsoft SQL Server, Oracle, PostgreSQL servers, sets
- * default SQL builder for a particular instance of application.
+ * Invokes SQL statement builders for MySQL, Microsoft SQL Server, Oracle, 
+ * PostgreSQL servers, sets default SQL builder for a particular instance of 
+ * application.
  */
 
 public class SqlBuilderFactory {

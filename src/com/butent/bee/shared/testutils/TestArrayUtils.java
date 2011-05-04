@@ -11,7 +11,7 @@ import com.butent.bee.shared.exceptions.BeeRuntimeException;
 import com.butent.bee.shared.utils.ArrayUtils;
 
 /**
- * Tests   {@link com.butent.bee.shared.utils.ArrayUtils}
+ * Tests   {@link com.butent.bee.shared.utils.ArrayUtils}.
  */
 public class TestArrayUtils {
 

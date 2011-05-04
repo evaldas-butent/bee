@@ -16,7 +16,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.google.common.collect.Sets;
 
 /**
- * Tests {@link com.butent.bee.shared.utils.BeeUtils#filterType(Object, Set)}
+ * Tests {@link com.butent.bee.shared.utils.BeeUtils#filterType(Object, Set)}.
  */
 @SuppressWarnings("deprecation")
 @RunWith (value=Parameterized.class)

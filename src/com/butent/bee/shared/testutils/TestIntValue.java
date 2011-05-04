@@ -7,7 +7,7 @@ import org.junit.Test;
 import com.butent.bee.shared.IntValue;
 
 /**
- * Tests {@link com.butent.bee.shared.IntValue}
+ * Tests {@link com.butent.bee.shared.IntValue}.
  */
 public class TestIntValue {
 

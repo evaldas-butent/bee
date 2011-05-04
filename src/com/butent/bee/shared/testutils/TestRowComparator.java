@@ -8,7 +8,7 @@ import com.butent.bee.shared.BeeType;
 import com.butent.bee.shared.utils.RowComparator;
 
 /**
- * Tests {@link com.butent.bee.shared.utils.RowComparator}
+ * Tests {@link com.butent.bee.shared.utils.RowComparator}.
  */
 public class TestRowComparator {
 

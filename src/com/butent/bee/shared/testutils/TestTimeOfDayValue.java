@@ -11,7 +11,7 @@ import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.exceptions.BeeRuntimeException;
 
 /**
- * Tests {@link com.butent.bee.shared.data.value.TimeOfDayValue}
+ * Tests {@link com.butent.bee.shared.data.value.TimeOfDayValue}.
  */
 public class TestTimeOfDayValue {
 

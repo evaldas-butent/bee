@@ -7,7 +7,7 @@ import org.junit.Test;
 import com.butent.bee.shared.Stage;
 
 /**
- * Tests {@link com.butent.bee.shared.Stage}
+ * Tests {@link com.butent.bee.shared.Stage}.
  */
 public class TestStage {
 

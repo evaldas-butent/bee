@@ -6,7 +6,8 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.List;
 
 /**
- * Generates complex expressions for SQL statements depending on specific SQL server requirements.
+ * Generates complex expressions for SQL statements depending on specific SQL 
+ * server requirements.
  */
 
 class CompoundExpression implements IsExpression {

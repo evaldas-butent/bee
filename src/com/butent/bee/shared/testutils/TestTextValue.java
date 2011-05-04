@@ -8,7 +8,7 @@ import com.butent.bee.shared.data.value.TextValue;
 import com.butent.bee.shared.data.value.ValueType;
 
 /**
- * Tests {@link com.butent.bee.shared.data.value.TextValue}
+ * Tests {@link com.butent.bee.shared.data.value.TextValue}.
  */
 public class TestTextValue {
 

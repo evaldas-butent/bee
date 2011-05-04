@@ -6,8 +6,8 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.List;
 
 /**
- * Generates expressions for table and field names depending on specific SQL server requirements.
- * 
+ * Generates expressions for table and field names depending on specific SQL 
+ * server requirements.
  */
 class NameExpression implements IsExpression {
 

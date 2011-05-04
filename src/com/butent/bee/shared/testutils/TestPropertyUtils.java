@@ -15,7 +15,7 @@ import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
 
 /**
- * Tests {@link com.butent.bee.shared.utils.PropertyUtils}
+ * Tests {@link com.butent.bee.shared.utils.PropertyUtils}.
  */
 public class TestPropertyUtils {
 

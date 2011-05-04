@@ -3,6 +3,12 @@ package com.butent.bee.shared.data.value;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.utils.BeeUtils;
 
+/**
+ * The {@code BooleanValue} class represents a boolean value. These values 
+ * are set by using
+ * {@link com.butent.bee.shared.data.value.BooleanValue#getInstance(Boolean)} 
+ * and are comparable. 
+ */
 public class BooleanValue extends Value {
 
   public static final BooleanValue TRUE = new BooleanValue(true);

@@ -7,7 +7,7 @@ import org.junit.Test;
 import com.butent.bee.shared.LongValue;
 
 /**
- * Tests {@link com.butent.bee.shared.LongValue}
+ * Tests {@link com.butent.bee.shared.LongValue}.
  */
 public class TestLongValue {
 

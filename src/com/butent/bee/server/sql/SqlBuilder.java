@@ -16,8 +16,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Is an abstract class for all SQL server specific SQL builders, contains core requirements for SQL
- * statements.
+ * Is an abstract class for all SQL server specific SQL builders, contains core 
+ * requirements for SQL statements.
  */
 
 public abstract class SqlBuilder {

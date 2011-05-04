@@ -11,6 +11,11 @@ import com.butent.bee.shared.utils.Codec;
 
 import java.util.Date;
 
+/**
+ * Class {@code Value} is the root of the class hierarchy. {@code BooleanValue},
+ * {@code DateTimeValue}, {@code DateValue}, {@code NumberValue}, 
+ * {@code TextValue}, {@code TimeOfDayValue} has {@code Value} as a superclass.
+ */
 public abstract class Value implements Comparable<Value>, Transformable, BeeSerializable {
 
   public static Value getNullValueFromValueType(ValueType type) {

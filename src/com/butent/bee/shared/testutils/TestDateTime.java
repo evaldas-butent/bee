@@ -10,7 +10,7 @@ import com.butent.bee.shared.JustDate;
 import com.butent.bee.shared.exceptions.BeeRuntimeException;
 
 /**
- * Tests {@link com.butent.bee.shared.DateTime}
+ * Tests {@link com.butent.bee.shared.DateTime}.
  */
 public class TestDateTime {
 

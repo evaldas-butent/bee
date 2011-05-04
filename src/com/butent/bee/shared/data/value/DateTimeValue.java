@@ -4,6 +4,11 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.DateTime;
 
+/**
+ * The {@code DateTimeValue} class represents date and time values. It allows 
+ * the interpretation of dates as year, month, day, hour, minute,
+ * second, millisecond values.
+ */
 public class DateTimeValue extends Value {
   private static final DateTimeValue NULL_VALUE = new DateTimeValue(null);
 

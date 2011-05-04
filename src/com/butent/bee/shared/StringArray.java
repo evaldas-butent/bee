@@ -1,7 +1,7 @@
 package com.butent.bee.shared;
 
 /**
- * Implements operations with arrays of String
+ * Implements operations with arrays of String.
  */
 public class StringArray extends ArraySequence<String> {
   

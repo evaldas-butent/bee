@@ -16,7 +16,7 @@ import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
 
 /**
- * Tests {@link com.butent.bee.server.sql.SqlUpdate}
+ * Tests {@link com.butent.bee.server.sql.SqlUpdate}.
  */
 public class TestSqlUpdate {
 

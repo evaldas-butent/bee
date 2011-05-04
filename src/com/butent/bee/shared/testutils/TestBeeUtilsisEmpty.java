@@ -18,7 +18,7 @@ import com.butent.bee.shared.utils.*;
 import com.google.gwt.dev.util.collect.HashMap;
 
 /**
- * Tests {@link com.butent.bee.shared.utils.BeeUtils#isEmpty(Object)}
+ * Tests {@link com.butent.bee.shared.utils.BeeUtils#isEmpty(Object)}.
  */
 @SuppressWarnings("rawtypes")
 @RunWith(value=Parameterized.class)

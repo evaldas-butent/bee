@@ -1,6 +1,6 @@
 package com.butent.bee.shared;
 /**
- * Store the {@code long} type value
+ * Store the {@code long} type value.
  */
 public class LongValue implements HasLongValue {
   private long value;

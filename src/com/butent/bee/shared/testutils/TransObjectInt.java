@@ -5,7 +5,7 @@ import com.butent.bee.shared.HasLength;
 import com.butent.bee.shared.Transformable;
 
 /**
- * Object for testing {@link com.butent.bee.shared.HasIntValue}
+ * Object for testing {@link com.butent.bee.shared.HasIntValue}.
  */
 public class TransObjectInt implements Transformable, HasLength, HasIntValue {
 

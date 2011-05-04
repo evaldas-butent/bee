@@ -7,7 +7,7 @@ import org.junit.Test;
 import com.butent.bee.shared.utils.ValueUtils;
 
 /**
- * Tests {@link com.butent.bee.shared.utils.ValueUtils}
+ * Tests {@link com.butent.bee.shared.utils.ValueUtils}.
  */
 public class TestValueUtils {
 

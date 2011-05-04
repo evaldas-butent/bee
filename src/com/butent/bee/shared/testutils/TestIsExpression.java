@@ -18,7 +18,7 @@ import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
 
 /**
- * Tests {@link com.butent.bee.server.sql.IsExpression}
+ * Tests {@link com.butent.bee.server.sql.IsExpression}.
  */
 public class TestIsExpression {
 

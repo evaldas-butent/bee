@@ -11,7 +11,7 @@ import com.butent.bee.server.sql.SqlDelete;
 import com.butent.bee.server.sql.SqlUtils;
 
 /**
- * Tests {@link com.butent.bee.server.sql.SqlDelete}
+ * Tests {@link com.butent.bee.server.sql.SqlDelete}.
  */
 public class TestSqlDelete {
 

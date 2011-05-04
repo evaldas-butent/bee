@@ -16,7 +16,7 @@ import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
 
 /**
- * Tests {@link com.butent.bee.server.sql.SqlInsert}
+ * Tests {@link com.butent.bee.server.sql.SqlInsert}.
  */
 public class TestSqlInsert {
 

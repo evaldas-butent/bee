@@ -9,7 +9,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Contains methods used for logging.
+ * Contains methods used for logging, changing logging level.
  */
 public class LogUtils {
   private static Logger defaultLogger = null;

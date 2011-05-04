@@ -13,7 +13,7 @@ import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.server.sql.BeeConstants.Keyword;
 
 /**
- * Tests {@link com.butent.bee.server.sql.SqlUtils}
+ * Tests {@link com.butent.bee.server.sql.SqlUtils}.
  */
 public class TestSqlUtilsIsQuery {
 

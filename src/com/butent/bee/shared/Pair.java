@@ -2,7 +2,7 @@ package com.butent.bee.shared;
 
 import com.butent.bee.shared.utils.BeeUtils;
 /**
- * Defines pairs of objects
+ * Defines pairs of objects.
  * 
  * @param <A> type of first object to pair
  * @param <B> type of second object to pair

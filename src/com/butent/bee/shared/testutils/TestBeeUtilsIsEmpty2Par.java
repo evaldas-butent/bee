@@ -15,7 +15,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.google.common.collect.Sets;
 
 /**
- * Tests {@link com.butent.bee.shared.utils.BeeUtils#isEmpty(Object, Set)}
+ * Tests {@link com.butent.bee.shared.utils.BeeUtils#isEmpty(Object, Set)}.
  */
 @RunWith (value=Parameterized.class)
 public class TestBeeUtilsIsEmpty2Par extends TestCase{

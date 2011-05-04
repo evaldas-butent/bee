@@ -2,6 +2,9 @@ package com.butent.bee.shared.exceptions;
 
 import com.butent.bee.shared.utils.LogUtils;
 
+/**
+ * The class {@code BeeRuntimeException} logs using SEVERE message level. 
+ */
 @SuppressWarnings("serial")
 public class BeeRuntimeException extends RuntimeException {
 

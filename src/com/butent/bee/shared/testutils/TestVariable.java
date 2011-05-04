@@ -13,7 +13,7 @@ import com.butent.bee.shared.BeeWidget;
 import com.butent.bee.shared.Variable;
 
 /**
- * Tests {@link com.butent.bee.shared.Variable}
+ * Tests {@link com.butent.bee.shared.Variable}.
  */
 public class TestVariable {
 

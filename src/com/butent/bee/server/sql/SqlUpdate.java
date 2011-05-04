@@ -9,7 +9,8 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Generates UPDATE SQL statements for specified target, update values and WHERE condition.
+ * Generates UPDATE SQL statements for specified target, update values and WHERE 
+ * condition.
  */
 
 public class SqlUpdate extends HasFrom<SqlUpdate> {

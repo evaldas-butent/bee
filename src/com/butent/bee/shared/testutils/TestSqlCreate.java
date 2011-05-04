@@ -17,7 +17,7 @@ import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.server.sql.BeeConstants.Keyword;
 
 /**
- * Tests {@link com.butent.bee.server.sql.SqlCreate}
+ * Tests {@link com.butent.bee.server.sql.SqlCreate}.
  */
 public class TestSqlCreate {
 

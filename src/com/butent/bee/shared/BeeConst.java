@@ -1,5 +1,8 @@
 package com.butent.bee.shared;
 
+/**
+ * Stores all default values (datebases, boolean, separators etc.). 
+ */
 public class BeeConst {
   public static final String MYSQL = "MySql";
   public static final String MSSQL = "MsSql";

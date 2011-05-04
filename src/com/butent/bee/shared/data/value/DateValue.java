@@ -3,6 +3,10 @@ package com.butent.bee.shared.data.value;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.JustDate;
 
+/**
+ * The {@code DateTimeValue} class represents date values. It allows 
+ * the interpretation of dates as year, month and day values.
+ */
 public class DateValue extends Value {
   private static final DateValue NULL_VALUE = new DateValue(null);
 

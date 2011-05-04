@@ -9,8 +9,8 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Generates FROM part of a SQL statement depending on requirements of a specific SQL server,
- * supports alias names.
+ * Generates FROM part of a SQL statement depending on requirements of a 
+ * specific SQL server, supports alias names.
  */
 
 class FromSource implements IsFrom {

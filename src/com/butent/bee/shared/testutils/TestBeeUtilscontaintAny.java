@@ -16,7 +16,8 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.google.common.collect.Sets;
 
 /**
- * Tests {@link com.butent.bee.shared.utils.BeeUtils#containsAny(Collection, Collection)}
+ * Tests 
+ * {@link com.butent.bee.shared.utils.BeeUtils#containsAny(Collection, Collection)}.
  */
 @SuppressWarnings("unused")
 @RunWith(value=Parameterized.class)

@@ -9,7 +9,7 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * Contains methods for processing Property objects.
+ * Contains methods for processing (removing, creating, adding) Property objects.
  */
 public class PropertyUtils {
   public static final List<Property> EMPTY_PROPERTIES_LIST = new ArrayList<Property>();

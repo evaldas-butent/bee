@@ -8,6 +8,10 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.DateTime;
 import com.butent.bee.shared.utils.TimeUtils;
 
+/**
+ * The {@code DateTimeValue} class represents time values. It allows 
+ * the interpretation of time as hour, minute, second, millisecond values.
+ */
 public class TimeOfDayValue extends Value {
 
   public static final char FIELD_SEPARATOR = ':';

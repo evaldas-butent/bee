@@ -9,7 +9,7 @@ import org.junit.Test;
 import com.butent.bee.shared.BeeConst;
 
 /**
- * Tests {@link com.butent.bee.shared.BeeConst}
+ * Tests {@link com.butent.bee.shared.BeeConst}.
  */
 public class TestBeeConst {
 

@@ -10,8 +10,8 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Generates a CREATE SQL statements with all necessary options and support for different SQL
- * servers.
+ * Generates a CREATE SQL statements with all necessary options and support for 
+ * different SQL servers.
  */
 
 public class SqlCreate extends SqlQuery<SqlCreate> {

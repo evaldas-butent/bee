@@ -7,7 +7,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Is an abstract class for SQL queries forming classes and indicates to use SQL builder classes.
+ * Is an abstract class for SQL queries forming classes and indicates to use SQL 
+ * builder classes.
  * 
  * @param <T> used for reference getting.
  */

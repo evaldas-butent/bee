@@ -14,7 +14,7 @@ import com.butent.bee.shared.utils.LogUtils;
 import com.butent.bee.shared.utils.TimeUtils;
 
 /**
- * Tests {@link com.butent.bee.shared.utils.TimeUtils}
+ * Tests {@link com.butent.bee.shared.utils.TimeUtils}.
  */
 public class TestTimeUtils {
 

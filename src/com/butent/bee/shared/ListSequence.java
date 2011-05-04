@@ -5,7 +5,7 @@ import com.google.common.collect.Lists;
 import java.util.Arrays;
 import java.util.List;
 /**
- * Implements operations of list
+ * Implements operations of list.
  * @param <T> type of object
  */
 public class ListSequence<T> extends AbstractSequence<T> {

@@ -8,7 +8,7 @@ import com.butent.bee.shared.HasLength;
 import com.butent.bee.shared.Transformable;
 
 /**
- * Object for testing {@link com.butent.bee.shared.HasDoubleValue}
+ * Object for testing {@link com.butent.bee.shared.HasDoubleValue}.
  */
 public class TransObject implements Transformable, HasLength, HasDoubleValue {
 

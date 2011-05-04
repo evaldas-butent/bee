@@ -9,7 +9,7 @@ import com.butent.bee.shared.ListSequence;
 import com.butent.bee.shared.exceptions.BeeRuntimeException;
 
 /**
- * Tests {@link com.butent.bee.shared.ListSequence}
+ * Tests {@link com.butent.bee.shared.ListSequence}.
  */
 public class TestListSequence {
 

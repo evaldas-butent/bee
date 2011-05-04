@@ -3,7 +3,8 @@ package com.butent.bee.server.sql;
 import com.butent.bee.shared.Assert;
 
 /**
- * Contains constants lists, such as keywords, datatypes and empty values for each of them.
+ * Contains constants lists, such as keywords, datatypes and empty values for 
+ * each of them.
  */
 
 public final class BeeConstants {

@@ -2,6 +2,9 @@ package com.butent.bee.shared.data.value;
 
 import com.butent.bee.shared.BeeConst;
 
+/**
+ * The {@code TextValue} class represents character strings. 
+ */
 public class TextValue extends Value {
 
   private static final TextValue NULL_VALUE = new TextValue(null);

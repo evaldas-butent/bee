@@ -1,7 +1,7 @@
 package com.butent.bee.shared;
 
 /**
- * Stores the {@code int} type value 
+ * Stores the {@code int} type value.
  * 
  */
 public class IntValue implements HasIntValue {

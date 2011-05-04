@@ -9,8 +9,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Enables to form any SQL statement with specified parameters, mainly used for rarer SQL commands
- * like dropping indexes.
+ * Enables to form any SQL statement with specified parameters, mainly used for 
+ * rarer SQL commands like dropping indexes.
  */
 
 class SqlCommand extends SqlQuery<SqlCommand> {

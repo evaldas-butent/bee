@@ -7,7 +7,8 @@ import com.butent.bee.shared.data.value.Value;
 import java.util.List;
 
 /**
- * Transforms given constant expressions for compliance to specific SQL server requirements.
+ * Transforms given constant expressions for compliance to specific SQL server 
+ * requirements.
  * 
  */
 

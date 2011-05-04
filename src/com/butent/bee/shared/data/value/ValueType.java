@@ -7,7 +7,10 @@ import com.butent.bee.shared.DateTime;
 import com.butent.bee.shared.utils.TimeUtils;
 
 import java.util.Map;
-
+/**
+ * The {@code ValueType} enumeration represents the types of Value.
+ * Creates a value  of {@code Object} type using {@link #createValue(Object)}.
+ */
 public enum ValueType { BOOLEAN("boolean"), NUMBER("number"), TEXT("string"),
   DATE("date"), TIMEOFDAY("timeofday"), DATETIME("datetime");
 
