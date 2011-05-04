@@ -8,6 +8,9 @@ import com.butent.bee.shared.DateTime;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * Contains methods used for logging.
+ */
 public class LogUtils {
   private static Logger defaultLogger = null;
 

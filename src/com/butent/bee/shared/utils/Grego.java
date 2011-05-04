@@ -1,5 +1,8 @@
 package com.butent.bee.shared.utils;
 
+/**
+ * Contains methods for date/time calculations.
+ */
 public class Grego {
   public static final int IDX_YEAR = 0;
   public static final int IDX_MONTH = 1;

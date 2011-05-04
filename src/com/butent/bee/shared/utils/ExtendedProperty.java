@@ -3,6 +3,9 @@ package com.butent.bee.shared.utils;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.DateTime;
 
+/**
+ * Extends Property implementation with new funcionality.
+ */
 public class ExtendedProperty extends Property {
   public static String[] COLUMN_HEADERS = new String[]{"Name", "Sub", "Value", "Date"};
   public static int COLUMN_COUNT = COLUMN_HEADERS.length;

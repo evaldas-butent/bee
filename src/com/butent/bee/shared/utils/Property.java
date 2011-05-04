@@ -3,6 +3,9 @@ package com.butent.bee.shared.utils;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Transformable;
 
+/**
+ * Used for creating Properties.
+ */
 public class Property implements Comparable<Property>, Transformable {
   public static String[] HEADERS = new String[]{"Property", "Value"};
   public static int HEADER_COUNT = HEADERS.length;

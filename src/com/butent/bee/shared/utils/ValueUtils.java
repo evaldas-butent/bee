@@ -5,6 +5,9 @@ import com.butent.bee.shared.HasDoubleValue;
 import com.butent.bee.shared.HasIntValue;
 import com.butent.bee.shared.HasLongValue;
 
+/**
+ * Used for value storing.
+ */
 public class ValueUtils {
   /**
    * @param obj the value to get from

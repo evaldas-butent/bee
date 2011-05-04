@@ -11,6 +11,9 @@ import com.butent.bee.shared.JustDate;
 
 import java.util.Date;
 
+/**
+ * Contains methods for date/time calculations.
+ */
 public class TimeUtils {
   public static final int ERA = 0;
 

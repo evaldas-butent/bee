@@ -21,6 +21,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * Contains base methods for developement.
+ */
 public class BeeUtils {
   private static int nameCounter = 0;
 
@@ -1858,6 +1861,13 @@ public class BeeUtils {
     }
   }
 
+  /**
+   * Compares {@code x1} and {@code x2}.
+   * @param x1 the Object to compare
+   * @param x2 the Object to compare
+   * @return 0 if both objects are equal, 1 if {@code x1} > {@code x2} and
+   * -1 if {@code x1} < {@code x2}.  
+   */
   public static int precompare(Object x1, Object x2) {
     if (x1 == x2) {
       return BeeConst.COMPARE_EQUAL;

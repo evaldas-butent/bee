@@ -7,6 +7,9 @@ import com.butent.bee.shared.Assert;
 import java.util.List;
 import java.util.Stack;
 
+/**
+ * Used for forming search patterns.
+ */
 public class Wildcards {
   public static class Pattern {
     private static final char CHAR_EXACT = '=';

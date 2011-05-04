@@ -3,6 +3,9 @@ package com.butent.bee.shared.utils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 
+/**
+ * Contains methods for processing arrays.
+ */
 public class ArrayUtils {
   /**
    * Searches the specified collection for a value.

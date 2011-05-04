@@ -13,6 +13,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
 
+/**
+ * Contains methods for encypting/decrypting data using various algorithms.
+ */
 public class Codec {
   private static final String SERIALIZATION_SEPARATOR = ";";
   private static final char[] HEX_CHARS = new char[]{
