@@ -14,8 +14,8 @@ import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.RequiresResize;
 
 import com.butent.bee.client.Global;
-import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.layout.Focus;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -24,7 +24,13 @@ import com.butent.bee.shared.utils.ValueUtils;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Contains presentation and logic of a slider bar user interface component.
+ */
 public class SliderBar extends Focus implements RequiresResize {
+  /**
+   * Requires that classes implementing this interface have formatLabel method.
+   */
   public static interface LabelFormatter {
     String formatLabel(double value);
   }
@@ -58,15 +64,15 @@ public class SliderBar extends Focus implements RequiresResize {
       super.schedule(delayMillis);
     }
   }
-  
-  private String styleNameShell = "bee-SliderBar-shell"; 
+
+  private String styleNameShell = "bee-SliderBar-shell";
   private String styleNameLine = "bee-SliderBar-line";
   private String styleNameKnob = "bee-SliderBar-knob";
   private String styleNameLabel = "bee-SliderBar-label";
   private String styleNameTick = "bee-SliderBar-tick";
 
   private String styleNameSliding = "sliding";
-  
+
   private Object source;
 
   private double curValue;
@@ -105,7 +111,7 @@ public class SliderBar extends Focus implements RequiresResize {
     this.minValue = min;
     this.maxValue = max;
     this.stepSize = step;
-    
+
     this.numLabels = labels;
     this.numTicks = ticks;
 
@@ -179,11 +185,11 @@ public class SliderBar extends Focus implements RequiresResize {
   public ImageResource knobDisabled() {
     return Global.getImages().sliderDisabled();
   }
-  
+
   public ImageResource knobSliding() {
     return Global.getImages().sliderSliding();
   }
-  
+
   @Override
   public void onBrowserEvent(Event event) {
     super.onBrowserEvent(event);
@@ -318,7 +324,7 @@ public class SliderBar extends Focus implements RequiresResize {
     }
 
     drawKnob();
-    
+
     source = ValueUtils.setDouble(source, this.curValue);
   }
 
@@ -372,7 +378,7 @@ public class SliderBar extends Focus implements RequiresResize {
   public void shiftRight(int numSteps) {
     setCurrentValue(getCurrentValue() + numSteps * stepSize);
   }
-  
+
   protected String formatLabel(double value) {
     if (labelFormatter != null) {
       return labelFormatter.formatLabel(value);

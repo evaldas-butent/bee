@@ -17,6 +17,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+/**
+ * Contains and manages RPC parameter lists for individual requests.
+ */
 @SuppressWarnings("serial")
 public class ParameterList extends ArrayList<RpcParameter> implements Transformable {
   private boolean ready = false;
@@ -44,10 +47,10 @@ public class ParameterList extends ArrayList<RpcParameter> implements Transforma
   public ParameterList(String svc, Collection<Property> items) {
     this(svc, RpcParameter.defaultSection, items);
   }
-  
+
   public ParameterList(String svc, RpcParameter.SECTION section, Collection<Property> items) {
     this(svc);
-    
+
     if (section != null) {
       switch (section) {
         case DATA:
@@ -80,7 +83,7 @@ public class ParameterList extends ArrayList<RpcParameter> implements Transforma
   public void addDataItem(String name, String value) {
     addItem(new RpcParameter(RpcParameter.SECTION.DATA, name, value));
   }
-  
+
   public void addDataItems(Collection<Property> items) {
     if (items != null) {
       for (Property p : items) {
@@ -112,7 +115,7 @@ public class ParameterList extends ArrayList<RpcParameter> implements Transforma
       }
     }
   }
-  
+
   public void addPositionalData(Object... values) {
     Assert.notNull(values);
     Assert.parameterCount(values.length, 1);
@@ -184,7 +187,7 @@ public class ParameterList extends ArrayList<RpcParameter> implements Transforma
       }
     }
   }
-  
+
   public ContentType getContentType() {
     ContentType ctp = CommUtils.getContentType(getParameter(Service.RPC_VAR_CTP));
 

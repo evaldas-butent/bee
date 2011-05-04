@@ -20,6 +20,10 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.Collection;
 import java.util.Iterator;
 
+/**
+ * Implements a message box user interface component, sending text messages to the user.
+ */
+
 public class MessageBox {
 
   public void alert(Object... obj) {
@@ -42,7 +46,7 @@ public class MessageBox {
   }
 
   public boolean confirm(Object... obj) {
-    Assert.notNull(obj);    
+    Assert.notNull(obj);
     Assert.parameterCount(obj.length, 1);
     return Window.confirm(BeeUtils.concat(BeeConst.CHAR_EOL, obj));
   }
@@ -50,7 +54,7 @@ public class MessageBox {
   public void showError(Object... x) {
     showInfo(x);
   }
-  
+
   public void showGrid(String cap, Object data, String... columnLabels) {
     Assert.notNull(data);
     showInfo(cap, Global.cellGrid(data, CellType.TEXT, columnLabels));

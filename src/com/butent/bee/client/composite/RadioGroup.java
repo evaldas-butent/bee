@@ -6,8 +6,8 @@ import com.google.gwt.dom.client.NodeList;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
-import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.layout.Span;
 import com.butent.bee.client.widget.BeeRadioButton;
 import com.butent.bee.shared.Assert;
@@ -18,6 +18,9 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
 
+/**
+ * Enables to use a user interface component, consisting of a group of radio buttons.
+ */
 public class RadioGroup extends Span implements HasService {
   public static int getValue(String name) {
     int v = BeeConst.SELECTION_UNKNOWN;
@@ -55,7 +58,7 @@ public class RadioGroup extends Span implements HasService {
   public RadioGroup(Variable var) {
     this(var, false);
   }
-  
+
   public RadioGroup(Variable var, boolean vertical) {
     this();
 
@@ -80,11 +83,11 @@ public class RadioGroup extends Span implements HasService {
   public RadioGroup(String name, boolean vertical, String... opt) {
     this(name, vertical, -1, opt);
   }
-  
+
   public RadioGroup(String name, int value, String... opt) {
     this(name, false, value, opt);
   }
-  
+
   public RadioGroup(String name, boolean vertical, int value, String... opt) {
     this();
     addButtons(name, vertical, value, opt);
@@ -93,15 +96,15 @@ public class RadioGroup extends Span implements HasService {
   public RadioGroup(String name, Enum<?> value, Enum<?>[] values) {
     this(name, false, value, values);
   }
-  
+
   public RadioGroup(String name, boolean vertical, Enum<?> value, Enum<?>[] values) {
     this();
-    
+
     String[] opt = new String[values.length];
     for (int i = 0; i < values.length; i++) {
       opt[i] = BeeUtils.proper(values[i].name(), BeeConst.CHAR_UNDER);
     }
-    
+
     int z = (value == null) ? -1 : value.ordinal();
     addButtons(name, vertical, z, opt);
   }
@@ -139,7 +142,7 @@ public class RadioGroup extends Span implements HasService {
 
       rb.setFormValue(BeeUtils.toString(idx));
       BeeKeeper.getBus().addBoolVch(rb);
-      
+
       rb.addStyleDependentName(vertical ? StyleUtils.NAME_VERTICAL : StyleUtils.NAME_HORIZONTAL);
 
       if (idx == value) {

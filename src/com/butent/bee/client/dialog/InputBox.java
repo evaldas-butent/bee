@@ -14,12 +14,17 @@ import com.butent.bee.client.widget.BeeSimpleCheckBox;
 import com.butent.bee.client.widget.BeeTextBox;
 import com.butent.bee.client.widget.InputInteger;
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.Service;
-import com.butent.bee.shared.Stage;
 import com.butent.bee.shared.BeeType;
 import com.butent.bee.shared.BeeWidget;
+import com.butent.bee.shared.Service;
+import com.butent.bee.shared.Stage;
 import com.butent.bee.shared.Variable;
 import com.butent.bee.shared.utils.BeeUtils;
+
+/**
+ * Implements a user interface component, which enables to produce a input box for information input
+ * from the user.
+ */
 
 public class InputBox {
   public void inputVars(Stage bst, String cap, Variable... vars) {

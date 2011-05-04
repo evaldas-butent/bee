@@ -21,6 +21,11 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.ValueUtils;
 
+/**
+ * Enables to use value spinner user interface component, incrementally increasing and decreasing
+ * input value.
+ */
+
 public class ValueSpinner extends Absolute implements RequiresResize {
   private static final String STYLENAME_DEFAULT = "bee-ValueSpinner";
 
@@ -41,7 +46,7 @@ public class ValueSpinner extends Absolute implements RequiresResize {
       if (!isEnabled()) {
         return;
       }
-      
+
       switch (event.getNativeKeyCode()) {
         case KeyCodes.KEY_UP:
           valueBox.cancelKey();
@@ -54,12 +59,12 @@ public class ValueSpinner extends Absolute implements RequiresResize {
         case KeyCodes.KEY_DELETE:
         case KeyCodes.KEY_BACKSPACE:
           valueBox.cancelKey();
-          
+
           String oldText = valueBox.getText();
           int pos = valueBox.getCursorPos();
           int sel = valueBox.getSelectionLength();
           int len = BeeUtils.length(oldText);
-          
+
           String newText;
           if (sel > 0) {
             newText = BeeUtils.delete(oldText, pos, pos + sel);
@@ -72,7 +77,7 @@ public class ValueSpinner extends Absolute implements RequiresResize {
           } else {
             newText = oldText;
           }
-          
+
           if (!BeeUtils.same(oldText, newText)) {
             long value = BeeUtils.isEmpty(newText) ? spinner.getMin() : BeeUtils.toLong(newText);
             spinner.updateValue(value);
@@ -81,7 +86,7 @@ public class ValueSpinner extends Absolute implements RequiresResize {
       }
     }
   };
-  
+
   private KeyPressHandler keyPressHandler = new KeyPressHandler() {
     public void onKeyPress(KeyPressEvent event) {
       char charCode = event.getCharCode();
@@ -93,13 +98,13 @@ public class ValueSpinner extends Absolute implements RequiresResize {
       if (!isEnabled()) {
         return;
       }
-      
+
       if (!BeeUtils.isDigit(charCode)) {
         switch (charCode) {
           case BeeConst.CHAR_PLUS:
             doStep(true);
             break;
-          case BeeConst.CHAR_MINUS:  
+          case BeeConst.CHAR_MINUS:
             doStep(false);
             break;
         }
@@ -112,7 +117,7 @@ public class ValueSpinner extends Absolute implements RequiresResize {
 
       int len = BeeUtils.length(oldText);
       int maxLen = valueBox.getMaxLength();
-      
+
       String newText;
       if (sel > 0) {
         newText = BeeUtils.replace(oldText, pos, pos + sel, charCode);
@@ -138,12 +143,12 @@ public class ValueSpinner extends Absolute implements RequiresResize {
       }
     }
   };
-  
+
   private HandlesAllFocusEvents focusHandler = new HandlesAllFocusEvents() {
     public void onBlur(BlurEvent event) {
       focus = false;
     }
-    
+
     public void onFocus(FocusEvent event) {
       focus = true;
     }
@@ -154,7 +159,7 @@ public class ValueSpinner extends Absolute implements RequiresResize {
       setPositions();
     }
   };
-  
+
   public ValueSpinner(Object source) {
     this(source, 0, 0, 1, 99, false);
   }
@@ -190,7 +195,7 @@ public class ValueSpinner extends Absolute implements RequiresResize {
     }
     add(valueBox);
 
-    spinner = new SpinnerBase(spinnerListener, getSourceValue(), 
+    spinner = new SpinnerBase(spinnerListener, getSourceValue(),
         min, max, minStep, maxStep, constr);
     add(spinner.getIncrementArrow());
     add(spinner.getDecrementArrow());
@@ -199,7 +204,7 @@ public class ValueSpinner extends Absolute implements RequiresResize {
   public void addSpinnerListener(SpinnerListener listener) {
     spinner.addSpinnerListener(listener);
   }
-  
+
   @Override
   public void createId() {
     DomUtils.createId(this, "spin-container");
@@ -237,7 +242,7 @@ public class ValueSpinner extends Absolute implements RequiresResize {
     spinner.setEnabled(enabled);
     valueBox.setEnabled(enabled);
   }
-  
+
   public void updateValue(long value) {
     spinner.updateValue(value);
   }
@@ -251,7 +256,7 @@ public class ValueSpinner extends Absolute implements RequiresResize {
     super.onLoad();
     Scheduler.get().scheduleDeferred(layoutCommand);
   }
-  
+
   private void doStep(boolean incr) {
     spinner.doStep(parseValue(), incr);
   }

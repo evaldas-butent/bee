@@ -5,6 +5,10 @@ import com.google.gwt.user.client.ui.PopupPanel;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.shared.HasId;
 
+/**
+ * Implements a informational message delivering pop up window user interface component.
+ */
+
 public class BeePopupPanel extends PopupPanel implements HasId {
   public BeePopupPanel() {
     super(true);
@@ -24,7 +28,7 @@ public class BeePopupPanel extends PopupPanel implements HasId {
   public void createId() {
     DomUtils.createId(this, "popup");
   }
-  
+
   public void enableGlass() {
     setGlassStyleName("bee-PopupGlass");
     setGlassEnabled(true);
@@ -37,7 +41,7 @@ public class BeePopupPanel extends PopupPanel implements HasId {
   public void setId(String id) {
     DomUtils.setId(this, id);
   }
-  
+
   private void init() {
     createId();
     setStyleName("bee-PopupPanel");

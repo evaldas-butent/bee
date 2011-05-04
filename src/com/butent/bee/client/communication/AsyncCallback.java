@@ -13,8 +13,8 @@ import com.butent.bee.client.data.ResponseData;
 import com.butent.bee.client.utils.BeeDuration;
 import com.butent.bee.client.utils.JsUtils;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.DateTime;
 import com.butent.bee.shared.BeeResource;
+import com.butent.bee.shared.DateTime;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.CommUtils;
 import com.butent.bee.shared.communication.ContentType;
@@ -25,6 +25,10 @@ import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.LogUtils;
 
 import java.util.logging.Level;
+
+/**
+ * Manages responses to RPC calls on the client side.
+ */
 
 public class AsyncCallback implements RequestCallback {
 

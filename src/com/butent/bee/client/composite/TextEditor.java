@@ -15,11 +15,14 @@ import com.butent.bee.client.widget.BeeButton;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.client.widget.BeeTextArea;
 import com.butent.bee.shared.BeeResource;
-import com.butent.bee.shared.Service;
 import com.butent.bee.shared.HasId;
+import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ContentType;
 import com.butent.bee.shared.utils.BeeUtils;
 
+/**
+ * Implements a text area editor user interface component.
+ */
 public class TextEditor extends Composite implements HasId {
 
   protected class SaveCommand extends BeeCommand {
@@ -47,7 +50,7 @@ public class TextEditor extends Composite implements HasId {
       if (!Global.confirm("Save " + BeeUtils.bracket(len), path)) {
         return;
       }
-      
+
       String digest = JsUtils.md5(v);
 
       ParameterList params = new ParameterList(Service.SAVE_RESOURCE);

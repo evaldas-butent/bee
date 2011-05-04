@@ -15,6 +15,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
 
+/**
+ * Contains utility functions for working with remote procedure calls, for example building query
+ * strings or appending query parameters.
+ * 
+ */
+
 public class RpcUtils {
   public static String addQueryString(String url, String qs) {
     Assert.notEmpty(url);
@@ -94,7 +100,7 @@ public class RpcUtils {
     }
     return prp;
   }
-  
+
   private RpcUtils() {
   }
 }

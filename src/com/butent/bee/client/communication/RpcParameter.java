@@ -3,7 +3,13 @@ package com.butent.bee.client.communication;
 import com.butent.bee.shared.Transformable;
 import com.butent.bee.shared.utils.BeeUtils;
 
+/**
+ * Contains necessary properties of a particular RPC parameter and methods to get and set them.
+ */
 public class RpcParameter implements Transformable {
+  /**
+   * Contains available sections of RPC parameters.
+   */
   public static enum SECTION {
     QUERY, HEADER, DATA
   }

@@ -17,6 +17,11 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Contains all relevant RPC related information, both request and response, and methods for
+ * operating with that information.
+ */
+
 public class RpcInfo {
   private static int COUNTER = 0;
 
@@ -93,7 +98,7 @@ public class RpcInfo {
   private int[] respPartSize = null;
 
   private String errMsg = null;
-  
+
   private Map<String, String> userData = null;
   private ResponseCallback respCallback;
 
@@ -112,23 +117,23 @@ public class RpcInfo {
 
   protected RpcInfo() {
   }
-  
+
   public void addUserData(Object... obj) {
     Assert.notNull(obj);
     Assert.parameterCount(obj.length, 2);
     Assert.isEven(obj.length);
-    
+
     if (userData == null) {
       userData = new HashMap<String, String>();
     }
-    
+
     for (int i = 0; i < obj.length; i += 2) {
       if (!(obj[i] instanceof String)) {
         BeeKeeper.getLog().warning("parameter", i, "not a string");
         continue;
       }
-      
-      userData.put((String) obj[i], BeeUtils.transformNoTrim(obj[i + 1])); 
+
+      userData.put((String) obj[i], BeeUtils.transformNoTrim(obj[i + 1]));
     }
   }
 
@@ -212,10 +217,10 @@ public class RpcInfo {
       return getMethod().toString();
     }
   }
-  
+
   public String getParameter(String name) {
     Assert.notEmpty(name);
-    
+
     if (getReqParams() == null) {
       return null;
     } else {
@@ -490,5 +495,5 @@ public class RpcInfo {
   private int done() {
     return duration.finish();
   }
-  
+
 }

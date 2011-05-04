@@ -4,12 +4,16 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.layout.Span;
 import com.butent.bee.client.widget.BeeButton;
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.Stage;
 import com.butent.bee.shared.HasService;
 import com.butent.bee.shared.HasStage;
+import com.butent.bee.shared.Stage;
 
 import java.util.ArrayList;
 import java.util.List;
+
+/**
+ * Enables an interface element, consisting of few buttons grouped into one component.
+ */
 
 public class ButtonGroup extends Span implements HasService, HasStage {
   private List<BeeButton> buttons = new ArrayList<BeeButton>();

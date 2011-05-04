@@ -18,6 +18,9 @@ import com.butent.bee.client.widget.BeeImage;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Contains core behaviors of spinner type user interface components.
+ */
 public class SpinnerBase {
 
   public static final int INITIAL_SPEED = 7;
@@ -26,13 +29,13 @@ public class SpinnerBase {
   private final BeeImage incrementArrow;
 
   private List<SpinnerListener> spinnerListeners = new ArrayList<SpinnerListener>();
-  
+
   private int step, minStep, maxStep;
   private int initialSpeed;
 
   private long value, min, max;
   private boolean constrained;
-  
+
   private boolean enabled = true;
   private boolean increment;
 
@@ -144,13 +147,13 @@ public class SpinnerBase {
     this.constrained = constrained;
 
     this.initialSpeed = INITIAL_SPEED;
-    
+
     incrementArrow = new BeeImage(arrowUp());
     incrementArrow.addMouseUpHandler(mouseUpHandler);
     incrementArrow.addMouseDownHandler(mouseDownHandler);
     incrementArrow.addMouseOverHandler(mouseOverHandler);
     incrementArrow.addMouseOutHandler(mouseOutHandler);
-    
+
     decrementArrow = new BeeImage(arrowDown());
     decrementArrow.addMouseUpHandler(mouseUpHandler);
     decrementArrow.addMouseDownHandler(mouseDownHandler);
@@ -163,7 +166,7 @@ public class SpinnerBase {
   public void addSpinnerListener(SpinnerListener listener) {
     spinnerListeners.add(listener);
   }
-  
+
   public ImageResource arrowDown() {
     return Global.getImages().arrowDown();
   }
@@ -175,15 +178,15 @@ public class SpinnerBase {
   public ImageResource arrowDownHover() {
     return Global.getImages().arrowDownHover();
   }
-  
+
   public ImageResource arrowDownPressed() {
     return Global.getImages().arrowDownPressed();
   }
-  
+
   public ImageResource arrowUp() {
     return Global.getImages().arrowUp();
   }
-  
+
   public ImageResource arrowUpDisabled() {
     return Global.getImages().arrowUpDisabled();
   }
@@ -191,7 +194,7 @@ public class SpinnerBase {
   public ImageResource arrowUpHover() {
     return Global.getImages().arrowUpHover();
   }
-  
+
   public ImageResource arrowUpPressed() {
     return Global.getImages().arrowUpPressed();
   }
@@ -218,7 +221,7 @@ public class SpinnerBase {
     }
     updateValue(v);
   }
-  
+
   public BeeImage getDecrementArrow() {
     return decrementArrow;
   }
@@ -254,7 +257,7 @@ public class SpinnerBase {
   public boolean isEnabled() {
     return enabled;
   }
-  
+
   public boolean isValid(long v) {
     if (isConstrained()) {
       return v >= getMin() && v <= getMax();
@@ -313,7 +316,7 @@ public class SpinnerBase {
       setValue(v, true);
     }
   }
-  
+
   protected void decrease() {
     value -= step;
     if (constrained && value < min) {

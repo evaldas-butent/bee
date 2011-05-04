@@ -7,6 +7,9 @@ import com.butent.bee.client.widget.BeeButton;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.Stage;
 
+/**
+ * Implements a button with "close" function.
+ */
 public class CloseButton extends BeeButton {
 
   public CloseButton() {

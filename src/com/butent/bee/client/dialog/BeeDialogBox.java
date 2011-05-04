@@ -5,6 +5,10 @@ import com.google.gwt.user.client.ui.DialogBox;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.shared.HasId;
 
+/**
+ * Enables using a pop up window with several possible options for a user.
+ */
+
 public class BeeDialogBox extends DialogBox implements HasId {
 
   public BeeDialogBox() {

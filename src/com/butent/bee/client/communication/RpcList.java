@@ -9,11 +9,14 @@ import com.butent.bee.shared.utils.Codec;
 
 import java.util.LinkedList;
 
+/**
+ * Enables to see all processed requests and their information in one object.
+ */
 @SuppressWarnings("serial")
 public class RpcList extends LinkedList<RpcInfo> {
   private static final int DEFAULT_CAPACITY = 1000;
 
-  public static String[] DEFAULT_INFO_COLUMNS = new String[]{
+  public static String[] DEFAULT_INFO_COLUMNS = new String[] {
       RpcInfo.COL_ID, RpcInfo.COL_SERVICE, RpcInfo.COL_METHOD,
       RpcInfo.COL_STATE, RpcInfo.COL_START, RpcInfo.COL_TIMEOUT,
       RpcInfo.COL_EXPIRES, RpcInfo.COL_END, RpcInfo.COL_COMPLETED,

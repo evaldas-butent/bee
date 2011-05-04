@@ -13,7 +13,14 @@ import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.shared.HasId;
 import com.butent.bee.shared.utils.BeeUtils;
 
+/**
+ * Enables an user interface component, which indicates to a user how much progress a process has
+ * made and how much is still left to be done.
+ */
 public class ProgressBar extends Widget implements HasId, RequiresResize {
+  /**
+   * Requires classes implementing this interface to have TextFormatter method.
+   */
   public static interface TextFormatter {
     String getText(double curProgress);
   }
@@ -27,7 +34,7 @@ public class ProgressBar extends Widget implements HasId, RequiresResize {
 
   private boolean textVisible = true;
   private TextFormatter textFormatter;
-  
+
   private String styleNameShell = "bee-ProgressBar-shell";
   private String styleNameBar = "bee-ProgressBar-bar";
   private String styleNameText = "bee-ProgressBar-text";
@@ -152,7 +159,7 @@ public class ProgressBar extends Widget implements HasId, RequiresResize {
     int percent = (int) (100 * getPercent());
     barElement.getStyle().setWidth(percent, Unit.PCT);
     textElement.setInnerHTML(generateText());
-    
+
     String textClassName = textElement.getClassName();
 
     if (percent < 50) {

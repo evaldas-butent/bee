@@ -12,6 +12,10 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.Map;
 import java.util.logging.Level;
 
+/**
+ * Enables to show response's xml info and to apply unicode test to response messages.
+ */
+
 public class ResponseHandler {
 
   public static void showXmlInfo(int pc, int[] sizes, String content) {
