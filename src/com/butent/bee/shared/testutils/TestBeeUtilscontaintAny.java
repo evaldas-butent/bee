@@ -1,6 +1,7 @@
 package com.butent.bee.shared.testutils;
 
 import java.util.Arrays;
+
 import java.util.Collection;
 import java.util.Set;
 import junit.framework.TestCase;
@@ -13,6 +14,10 @@ import org.junit.runners.Parameterized.Parameters;
 import com.butent.bee.shared.BeeType;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.google.common.collect.Sets;
+
+/**
+ * Tests {@link com.butent.bee.shared.utils.BeeUtils#containsAny(Collection, Collection)}
+ */
 @SuppressWarnings("unused")
 @RunWith(value=Parameterized.class)
 public class TestBeeUtilscontaintAny extends TestCase{

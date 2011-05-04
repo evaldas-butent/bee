@@ -7,6 +7,9 @@ import org.junit.Test;
 import com.butent.bee.shared.BeeResource;
 import com.butent.bee.shared.communication.ContentType;
 
+/**
+ * Tests {@link com.butent.bee.shared.BeeResource}
+ */
 public class TestBeeResource {
 
 	@Before

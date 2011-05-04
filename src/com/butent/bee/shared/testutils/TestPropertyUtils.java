@@ -14,6 +14,9 @@ import com.butent.bee.shared.utils.ExtendedProperty;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
 
+/**
+ * Tests {@link com.butent.bee.shared.utils.PropertyUtils}
+ */
 public class TestPropertyUtils {
 
 	public List<Property> propList = new ArrayList<Property>();

@@ -7,6 +7,9 @@ import org.junit.Test;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.exceptions.BeeRuntimeException;
 
+/**
+ * Tests {@link com.butent.bee.shared.Service}
+ */
 public class TestService {
 
 	@Before

@@ -9,6 +9,9 @@ import com.butent.bee.shared.data.value.DateTimeValue;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.exceptions.BeeRuntimeException;
 
+/**
+ * Tests {@link com.butent.bee.shared.data.value.DateTimeValue}
+ */
 public class TestDateTimeValue {
 
 	@Before

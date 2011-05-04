@@ -10,6 +10,9 @@ import org.junit.Test;
 import com.butent.bee.shared.ArraySequence;
 import com.butent.bee.shared.exceptions.BeeRuntimeException;
 
+/**
+ * Tests {@link com.butent.bee.shared.ArraySequence}
+ */
 public class TestArraySequence {
 
 	@Before

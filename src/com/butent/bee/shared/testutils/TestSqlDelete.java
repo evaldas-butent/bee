@@ -10,6 +10,9 @@ import com.butent.bee.server.sql.SqlBuilderFactory;
 import com.butent.bee.server.sql.SqlDelete;
 import com.butent.bee.server.sql.SqlUtils;
 
+/**
+ * Tests {@link com.butent.bee.server.sql.SqlDelete}
+ */
 public class TestSqlDelete {
 
 	@Before

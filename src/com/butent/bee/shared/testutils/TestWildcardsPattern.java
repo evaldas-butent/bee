@@ -8,6 +8,9 @@ import com.butent.bee.shared.exceptions.BeeRuntimeException;
 import com.butent.bee.shared.utils.Wildcards;
 import com.butent.bee.shared.utils.Wildcards.Pattern;
 
+/**
+ * Tests {@link com.butent.bee.shared.utils.Wildcards.Pattern}
+ */
 public class TestWildcardsPattern {
 
 	@Before

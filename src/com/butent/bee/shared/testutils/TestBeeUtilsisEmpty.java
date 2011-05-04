@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Map;
+import java.util.Set;
 import java.util.Vector;
 import junit.framework.TestCase;
 import org.junit.After;
@@ -15,6 +16,10 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 import com.butent.bee.shared.utils.*;
 import com.google.gwt.dev.util.collect.HashMap;
+
+/**
+ * Tests {@link com.butent.bee.shared.utils.BeeUtils#isEmpty(Object)}
+ */
 @SuppressWarnings("rawtypes")
 @RunWith(value=Parameterized.class)
 public class TestBeeUtilsisEmpty extends TestCase {

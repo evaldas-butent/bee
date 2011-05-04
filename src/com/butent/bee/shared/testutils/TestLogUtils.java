@@ -15,6 +15,9 @@ import org.junit.Test;
 import com.butent.bee.shared.DateTime;
 import com.butent.bee.shared.utils.LogUtils;
 
+/**
+ * Tests {@link com.butent.bee.shared.utils.LogUtils}
+ */
 public class TestLogUtils {
 
 	private static DateTime BDDate1;

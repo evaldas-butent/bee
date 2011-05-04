@@ -1,6 +1,3 @@
-/**
- * transformuojantis objektas
- */
 package com.butent.bee.shared.testutils;
 
 import com.butent.bee.shared.HasIntValue;
@@ -8,8 +5,7 @@ import com.butent.bee.shared.HasLength;
 import com.butent.bee.shared.Transformable;
 
 /**
- * @author EvaldasIrGedas
- * 
+ * Object for testing {@link com.butent.bee.shared.HasIntValue}
  */
 public class TransObjectInt implements Transformable, HasLength, HasIntValue {
 

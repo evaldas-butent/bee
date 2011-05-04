@@ -8,6 +8,9 @@ import com.butent.bee.shared.data.value.NumberValue;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.exceptions.BeeRuntimeException;
 
+/**
+ * Tests {@link com.butent.bee.shared.data.value.NumberValue}
+ */
 public class TestNumberValue {
 
 	@Before

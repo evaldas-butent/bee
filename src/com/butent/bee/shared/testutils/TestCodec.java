@@ -12,6 +12,9 @@ import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.exceptions.BeeRuntimeException;
 import com.butent.bee.shared.utils.Codec;
 
+/**
+ * Tests {@link com.butent.bee.shared.utils.Codec}
+ */
 public class TestCodec {
 
 	@Before

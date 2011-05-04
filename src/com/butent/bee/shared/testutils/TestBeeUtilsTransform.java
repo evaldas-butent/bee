@@ -20,6 +20,9 @@ import com.butent.bee.shared.exceptions.BeeRuntimeException;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.google.gwt.dev.util.collect.HashMap;
 
+/**
+ * Tests {@link com.butent.bee.shared.utils.BeeUtils}
+ */
 @SuppressWarnings("static-access")
 public class TestBeeUtilsTransform extends TestCase implements ILogger {
 

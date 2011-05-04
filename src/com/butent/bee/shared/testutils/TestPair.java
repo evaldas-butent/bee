@@ -6,6 +6,9 @@ import org.junit.Before;
 import org.junit.Test;
 import com.butent.bee.shared.Pair;
 
+/**
+ * Tests {@link com.butent.bee.shared.Pair}
+ */
 public class TestPair {
 
 	@Before

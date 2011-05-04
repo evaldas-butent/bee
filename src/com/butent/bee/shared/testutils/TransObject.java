@@ -7,6 +7,9 @@ import com.butent.bee.shared.HasDoubleValue;
 import com.butent.bee.shared.HasLength;
 import com.butent.bee.shared.Transformable;
 
+/**
+ * Object for testing {@link com.butent.bee.shared.HasDoubleValue}
+ */
 public class TransObject implements Transformable, HasLength, HasDoubleValue {
 
 	public static final double DOUBLE_DEFAULT_VALUE = 5.0;

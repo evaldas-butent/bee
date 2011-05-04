@@ -8,6 +8,9 @@ import org.junit.Test;
 import com.butent.bee.shared.ListSequence;
 import com.butent.bee.shared.exceptions.BeeRuntimeException;
 
+/**
+ * Tests {@link com.butent.bee.shared.ListSequence}
+ */
 public class TestListSequence {
 
 	private ListSequence<String> LS;

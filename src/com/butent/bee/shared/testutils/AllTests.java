@@ -2,7 +2,9 @@ package com.butent.bee.shared.testutils;
 
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite.SuiteClasses;
-
+/**
+ * Contains the Test Suite
+ */
 @RunWith(value = org.junit.runners.Suite.class)
 @SuiteClasses(value = { TestBeeUtilsisEmpty.class,
 		TestBeeUtilscontaintAny.class, TestBeeUtilsFilterType.class,

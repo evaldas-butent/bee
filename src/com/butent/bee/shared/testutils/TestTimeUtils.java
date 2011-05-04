@@ -13,6 +13,9 @@ import com.butent.bee.shared.utils.Grego;
 import com.butent.bee.shared.utils.LogUtils;
 import com.butent.bee.shared.utils.TimeUtils;
 
+/**
+ * Tests {@link com.butent.bee.shared.utils.TimeUtils}
+ */
 public class TestTimeUtils {
 
 	public final long MAX_RANDOM_REQUEST = 1000L;

@@ -13,6 +13,9 @@ import com.butent.bee.shared.data.value.TextValue;
 import com.butent.bee.shared.data.value.TimeOfDayValue;
 import com.butent.bee.shared.data.value.ValueType;
 
+/**
+ * Tests {@link com.butent.bee.shared.data.value.ValueType}
+ */
 public class TestValueType {
 
 	@Before

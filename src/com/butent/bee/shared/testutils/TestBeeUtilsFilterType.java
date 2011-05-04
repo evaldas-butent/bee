@@ -14,6 +14,10 @@ import org.junit.runners.Parameterized.Parameters;
 import com.butent.bee.shared.BeeType;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.google.common.collect.Sets;
+
+/**
+ * Tests {@link com.butent.bee.shared.utils.BeeUtils#filterType(Object, Set)}
+ */
 @SuppressWarnings("deprecation")
 @RunWith (value=Parameterized.class)
 public class TestBeeUtilsFilterType {

@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import com.butent.bee.server.sql.HasSource;
-
+/**
+ * Object for testing   {@link com.butent.bee.server.sql.HasSource}
+ */
 public class HasSourceClass implements HasSource {
 
 	public HasSourceClass() {

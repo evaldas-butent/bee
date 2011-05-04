@@ -5,6 +5,9 @@ import com.butent.bee.shared.HasLength;
 import com.butent.bee.shared.HasLongValue;
 import com.butent.bee.shared.Transformable;
 
+/**
+ * Object for testing {@link com.butent.bee.shared.HasLongValue}
+ */
 public class TransObjectLong implements BeeSerializable, Transformable, HasLength, HasLongValue {
 
 	public static final double DOUBLE_DEFAULT_VALUE = 5.0;
