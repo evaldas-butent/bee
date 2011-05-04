@@ -18,6 +18,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Contains a set of functions, needed to get information of a given class (get type, fields,
+ * methods and so on).
+ */
+
 public class ClassUtils {
   @SuppressWarnings("unchecked")
   public static <T extends Annotation> T findAnnotation(Annotation[] arr, Class<T> search) {
@@ -28,7 +33,7 @@ public class ClassUtils {
     }
     return null;
   }
-  
+
   public static Annotation[] getAnnotations(Class<?> cls) {
     Assert.notNull(cls);
     return cls.getAnnotations();

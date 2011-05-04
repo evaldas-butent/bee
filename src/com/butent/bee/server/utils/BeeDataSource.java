@@ -19,6 +19,11 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
+/**
+ * Contains information about a particular data source and enables to operate with it (open, close,
+ * get status etc).
+ */
+
 public class BeeDataSource implements Transformable {
   public static final int STATUS_ERROR = -1;
   public static final int STATUS_UNKNOWN = 0;
@@ -139,9 +144,9 @@ public class BeeDataSource implements Transformable {
     PropertyUtils.addSplit(lst, "Time Date Functions", null,
         dbMd.getTimeDateFunctions(), BeeConst.STRING_COMMA);
 
-    PropertyUtils.addProperties(lst, false, 
+    PropertyUtils.addProperties(lst, false,
         "All Procedures Are Callable", dbMd.allProceduresAreCallable(),
-        "All Tables Are Selectable",  dbMd.allTablesAreSelectable(),
+        "All Tables Are Selectable", dbMd.allTablesAreSelectable(),
         "Auto Commit Failure Closes All Result Sets", dbMd.autoCommitFailureClosesAllResultSets(),
         "Data Definition Causes Transaction Commit", dbMd.dataDefinitionCausesTransactionCommit(),
         "Data Definition Ignored In Transactions", dbMd.dataDefinitionIgnoredInTransactions(),
@@ -241,7 +246,7 @@ public class BeeDataSource implements Transformable {
       PropertyUtils.addExtended(lst, "Client Property", k, BeeUtils.ifString(v, "(empty)"));
     }
     rs.close();
-    
+
     try {
       rs = dbMd.getFunctions(null, null, null);
       c = JdbcUtils.getSize(rs);
@@ -268,7 +273,7 @@ public class BeeDataSource implements Transformable {
       }
       rs.close();
     }
-    
+
     try {
       rs = dbMd.getProcedures(null, null, null);
       c = JdbcUtils.getSize(rs);
@@ -358,7 +363,7 @@ public class BeeDataSource implements Transformable {
         continue;
       }
 
-      z = dbMd.getTables(null, null, null, new String[]{k.trim()});
+      z = dbMd.getTables(null, null, null, new String[] {k.trim()});
       c = JdbcUtils.getSize(z);
       z.close();
 

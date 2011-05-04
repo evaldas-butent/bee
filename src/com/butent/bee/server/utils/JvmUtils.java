@@ -19,6 +19,10 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+/**
+ * Finds out whether a particular class is loaded in Java Virtual Machine.
+ */
+
 public class JvmUtils {
   private static Logger logger = Logger.getLogger(JvmUtils.class.getName());
 
@@ -64,7 +68,7 @@ public class JvmUtils {
     CVF_FAILURE = err;
     CLASSES_VECTOR_FIELD = fld;
   }
-  
+
   public static Set<Class<?>> findClass(String name, String... packageNames) {
     Assert.notEmpty(name);
     String nm = name.trim();

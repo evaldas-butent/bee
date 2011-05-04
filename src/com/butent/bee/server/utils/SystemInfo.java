@@ -16,7 +16,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+/**
+ * Contains classes used for deployment environment detection and management (overall and thread
+ * related).
+ */
+
 public class SystemInfo {
+  /**
+   * Compares two specified packages with each other.
+   */
+
   private static class PackageComparator implements Comparator<Package> {
     public int compare(Package p1, Package p2) {
       return p1.getName().compareTo(p2.getName());
@@ -24,7 +33,7 @@ public class SystemInfo {
   }
 
   private static PackageComparator packageComparator = null;
-  
+
   public static long freeMemory() {
     return Runtime.getRuntime().freeMemory();
   }
@@ -55,7 +64,7 @@ public class SystemInfo {
     arr = p.getAnnotations();
     if (!BeeUtils.isEmpty(arr)) {
       for (Annotation ann : arr) {
-        PropertyUtils.addProperty(lst, "Annotation",  ClassUtils.transformAnnotation(ann));
+        PropertyUtils.addProperty(lst, "Annotation", ClassUtils.transformAnnotation(ann));
       }
     }
     return lst;

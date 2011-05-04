@@ -11,16 +11,20 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.logging.Logger;
 
+/**
+ * Enables to invoke methods from a given name reference.
+ */
+
 public class Reflection {
   private static Logger logger = Logger.getLogger(Reflection.class.getName());
-  
+
   public static void invoke(Object obj, String methodName, RequestInfo req, ResponseBuffer resp) {
     Assert.notNull(obj);
     if (BeeUtils.isEmpty(methodName)) {
       resp.addSevere("method name not specified");
       return;
     }
-    
+
     Method method = findMethod(obj.getClass(), methodName);
 
     if (method == null) {
@@ -32,7 +36,7 @@ public class Reflection {
     }
     doMethod(obj, method, req, resp);
   }
-  
+
   private static void doMethod(Object obj, Method method, RequestInfo req, ResponseBuffer resp) {
     Class<?>[] parameterTypes = method.getParameterTypes();
     boolean hasReq = ArrayUtils.contains(RequestInfo.class, parameterTypes);
@@ -67,7 +71,7 @@ public class Reflection {
         found = method;
         break;
       }
-      
+
       if (BeeUtils.context(name, method.getName())) {
         if (found == null) {
           found = method;

@@ -57,6 +57,10 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
+/**
+ * Manages XML configuration files used by the system.
+ */
+
 public class XmlUtils {
   public static String defaultXmlExtension = "xml";
   public static String defaultXslExtension = "xsl";
@@ -108,7 +112,7 @@ public class XmlUtils {
     }
     xsltFactory = tf;
   }
-  
+
   public static Document fromFileName(String fileName) {
     File fl = new File(fileName);
     if (!FileUtils.isInputFile(fl)) {
@@ -280,7 +284,8 @@ public class XmlUtils {
       PropertyUtils.addProperties(lst, "Is Coalescing", domFactory.isCoalescing(),
           "Is Expand Entity References", domFactory.isExpandEntityReferences(),
           "Is Ignoring Comments", domFactory.isIgnoringComments(),
-          "Is Ignoring Element Content Whitespace", domFactory.isIgnoringElementContentWhitespace(),
+          "Is Ignoring Element Content Whitespace",
+          domFactory.isIgnoringElementContentWhitespace(),
           "Is Namespace Aware", domFactory.isNamespaceAware(),
           "Is Validating", domFactory.isValidating(),
           "Is XInclude Aware", domFactory.isXIncludeAware(),
