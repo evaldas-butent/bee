@@ -34,6 +34,10 @@ import com.butent.bee.shared.utils.PropertyUtils;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Contains core layout management methods.
+ */
+
 public class Split extends ComplexPanel implements AnimatedLayout,
     RequiresResize, ProvidesResize, HasId, HasExtendedInfo, HasLayoutCallback {
 

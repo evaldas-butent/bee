@@ -15,31 +15,36 @@ import com.butent.bee.shared.utils.PropertyUtils;
 
 import java.util.List;
 
+/**
+ * Enables user interface translation engine to extract local internationalization and localization
+ * parameters.
+ */
+
 public class LocaleUtils {
   public static final String LOCALE_SEPARATOR = "_";
-  
+
   public static List<ExtendedProperty> getInfo() {
     List<ExtendedProperty> lst = Lists.newArrayList();
-    
+
     String[] names = LocaleInfo.getAvailableLocaleNames();
     PropertyUtils.addExtended(lst, "Available Locale Names", ArrayUtils.length(names));
     int i = 0;
     for (String name : names) {
       PropertyUtils.addExtended(lst, "Name", i++, name);
     }
-    
+
     PropertyUtils.addProperties(lst, false,
         "Locale Cookie Name", LocaleInfo.getLocaleCookieName(),
         "Locale Query Param", LocaleInfo.getLocaleQueryParam(),
         "Has Any RTL", LocaleInfo.hasAnyRTL());
-    
+
     LocaleInfo cl = LocaleInfo.getCurrentLocale();
     Assert.notNull(cl);
-    
+
     PropertyUtils.addProperties(lst, false, "Current Locale", cl.getLocaleName(),
         "Locale Native Display Name", LocaleInfo.getLocaleNativeDisplayName(cl.getLocaleName()),
         "Is RTL", cl.isRTL());
-    
+
     LocalizedNames localizedNames = cl.getLocalizedNames();
     if (localizedNames != null) {
       String[] codes = localizedNames.getLikelyRegionCodes();
@@ -49,7 +54,7 @@ public class LocaleUtils {
         PropertyUtils.addExtended(lst, BeeUtils.concat(1, "Region", i++),
             localizedNames.getRegionName(code), code);
       }
-    
+
       codes = localizedNames.getSortedRegionCodes();
       PropertyUtils.addExtended(lst, "Sorted Region Codes", ArrayUtils.length(codes));
       i = 0;
@@ -140,7 +145,7 @@ public class LocaleUtils {
     }
     return lst;
   }
-  
+
   public static String getLanguageCode(LocaleInfo locale) {
     if (locale == null) {
       return BeeConst.STRING_EMPTY;
@@ -153,7 +158,7 @@ public class LocaleUtils {
       return name;
     }
   }
-  
+
   private LocaleUtils() {
   }
 }

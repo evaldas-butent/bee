@@ -13,6 +13,10 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
+/**
+ * Manages content of log information showing user interface component.
+ */
+
 public class LogWidgetHandler extends Handler {
   private static final String STYLENAME_DEFAULT = "bee-LogRecord";
   private static final String STYLENAME_SEPARATOR = "bee-LogSeparator";

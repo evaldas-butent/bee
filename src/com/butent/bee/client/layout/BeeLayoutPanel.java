@@ -12,6 +12,10 @@ import com.butent.bee.client.event.HasBeforeAddHandler;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.HasId;
 
+/**
+ * Implements NSEW (North, South, East, West) management element.
+ */
+
 public class BeeLayoutPanel extends LayoutPanel implements HasId {
 
   public BeeLayoutPanel() {
@@ -22,7 +26,7 @@ public class BeeLayoutPanel extends LayoutPanel implements HasId {
     this();
     add(widget);
   }
-  
+
   @Override
   public void add(Widget widget) {
     Assert.notNull(widget);
@@ -34,15 +38,15 @@ public class BeeLayoutPanel extends LayoutPanel implements HasId {
     super.add(w);
     DomUtils.createId(getWidgetContainerElement(w), "container");
     getWidgetContainerElement(w).setClassName("bee-LayoutContainer");
-    
+
     if (w instanceof HasAfterAddHandler) {
       ((HasAfterAddHandler) w).onAfterAdd(this);
     }
   }
-  
+
   public void add(Widget widget, boolean scroll) {
     add(widget);
-    
+
     if (scroll) {
       getWidgetContainerElement(widget).getStyle().setOverflow(Overflow.AUTO);
     }
@@ -51,7 +55,7 @@ public class BeeLayoutPanel extends LayoutPanel implements HasId {
   public String addLeftTop(Widget widget, int left, int top) {
     return addLeftTop(widget, left, Unit.PX, top, Unit.PX);
   }
-  
+
   public String addLeftTop(Widget widget, double left, Unit leftUnit, double top, Unit topUnit) {
     add(widget);
     setWidgetLeftRight(widget, left, leftUnit, 0, Unit.PX);
@@ -59,15 +63,15 @@ public class BeeLayoutPanel extends LayoutPanel implements HasId {
 
     setWidgetTopBottom(widget, top, topUnit, 0, Unit.PX);
     setWidgetVerticalPosition(widget, Alignment.BEGIN);
-    
+
     return DomUtils.getId(widget);
   }
 
   public String addLeftWidthTop(Widget widget, int left, int width, int top) {
     return addLeftWidthTop(widget, left, Unit.PX, width, Unit.PX, top, Unit.PX);
   }
-  
-  public String addLeftWidthTop(Widget widget, double left, Unit leftUnit, 
+
+  public String addLeftWidthTop(Widget widget, double left, Unit leftUnit,
       double width, Unit widthUnit, double top, Unit topUnit) {
     add(widget);
     setWidgetLeftWidth(widget, left, leftUnit, width, widthUnit);
@@ -81,8 +85,8 @@ public class BeeLayoutPanel extends LayoutPanel implements HasId {
   public String addRightWidthTop(Widget widget, int right, int width, int top) {
     return addRightWidthTop(widget, right, Unit.PX, width, Unit.PX, top, Unit.PX);
   }
-  
-  public String addRightWidthTop(Widget widget, double right, Unit rightUnit, 
+
+  public String addRightWidthTop(Widget widget, double right, Unit rightUnit,
       double width, Unit widthUnit, double top, Unit topUnit) {
     add(widget);
     setWidgetRightWidth(widget, right, rightUnit, width, widthUnit);
@@ -93,7 +97,7 @@ public class BeeLayoutPanel extends LayoutPanel implements HasId {
 
     return DomUtils.getId(widget);
   }
-  
+
   public void createId() {
     DomUtils.createId(this, "layout");
   }

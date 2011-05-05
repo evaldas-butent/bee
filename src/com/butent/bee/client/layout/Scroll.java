@@ -6,6 +6,10 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.shared.HasId;
 
+/**
+ * Contains a panel that wraps its contents in a scrollable area.
+ */
+
 public class Scroll extends ScrollPanel implements HasId {
 
   public Scroll() {

@@ -7,6 +7,10 @@ import java.util.logging.Formatter;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
+/**
+ * Formats log records depending on formatting settings.
+ */
+
 public class LogFormatter extends Formatter {
   public static Level LOG_SEPARATOR_LEVEL = Level.FINE;
   public static String LOG_SEPARATOR_TAG = "-";

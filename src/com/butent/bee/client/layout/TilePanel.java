@@ -18,6 +18,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Manages a panel consisting of sever child tiles.
+ */
+
 public class TilePanel extends Split {
   public TilePanel() {
     super("bee-tile", 5);
@@ -74,18 +78,18 @@ public class TilePanel extends Split {
     }
     return idx;
   }
-  
+
   public BeeTreeItem getTree(String prefix, boolean splitters) {
     BeeTreeItem root = new BeeTreeItem(BeeUtils.concat(1, prefix, getId()));
-    
+
     for (Widget child : getChildren()) {
       if (!splitters && isSplitter(child)) {
         continue;
       }
-      
+
       String s = BeeUtils.concat(1, getWidgetDirection(child).brief(),
           getWidgetWidth(child), getWidgetHeight(child));
-      
+
       if (child instanceof TilePanel) {
         root.addItem(((TilePanel) child).getTree(s, splitters));
       } else {
@@ -103,10 +107,10 @@ public class TilePanel extends Split {
     }
     return true;
   }
-  
+
   public void move(TilePanel dst) {
     Assert.notNull(dst);
-    
+
     Widget centerWidget = getCenter();
     ScrollBars centerScroll = getWidgetScroll(centerWidget);
 
@@ -116,13 +120,13 @@ public class TilePanel extends Split {
     if (c <= 0) {
       clear();
       dst.clear();
-      
+
       if (centerWidget != null) {
         dst.add(centerWidget, centerScroll);
       }
       return;
     }
-    
+
     Direction[] directions = new Direction[c];
     double[] sizes = new double[c];
     ScrollBars[] scroll = new ScrollBars[c];
@@ -136,10 +140,10 @@ public class TilePanel extends Split {
       scroll[i] = getWidgetScroll(w);
       splSizes[i] = getWidgetSplitterSize(w);
     }
-    
+
     clear();
     dst.clear();
-    
+
     for (int i = 0; i < c; i++) {
       dst.insert(lst.get(i), directions[i], sizes[i], null, scroll[i], splSizes[i]);
     }
@@ -148,7 +152,7 @@ public class TilePanel extends Split {
     }
     dst.onLayout();
   }
-  
+
   @Override
   public void onBrowserEvent(Event ev) {
     if (ev.getTypeInt() == Event.ONMOUSEDOWN && isLeaf()) {
@@ -157,7 +161,7 @@ public class TilePanel extends Split {
     }
     super.onBrowserEvent(ev);
   }
-  
+
   protected Widget locateChild(Element elem, boolean tiles, boolean splitters) {
     Widget w = null;
     Map<Element, Widget> children = getChildrenElements(tiles, splitters);
@@ -170,7 +174,7 @@ public class TilePanel extends Split {
     }
     return w;
   }
-  
+
   private Map<Element, Widget> getChildrenElements(boolean tiles, boolean splitters) {
     Map<Element, Widget> z = new HashMap<Element, Widget>();
 

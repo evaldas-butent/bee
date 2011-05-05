@@ -1,11 +1,11 @@
 package com.butent.bee.client.layout;
 
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.ui.HasOneWidget;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.Widget;
-import com.google.gwt.dom.client.Element;
 
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.shared.Assert;
@@ -13,6 +13,10 @@ import com.butent.bee.shared.HasId;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+
+/**
+ * Enables to manage a inline panel which contains only one child component.
+ */
 
 public class SimpleInline extends Panel implements HasOneWidget, HasId {
 
@@ -31,7 +35,7 @@ public class SimpleInline extends Panel implements HasOneWidget, HasId {
     this();
     setWidget(child);
   }
-  
+
   @Override
   public void add(Widget w) {
     Assert.isNull(getWidget(), "Simple Inline Panel can only contain one child widget");
@@ -45,11 +49,11 @@ public class SimpleInline extends Panel implements HasOneWidget, HasId {
   public String getId() {
     return DomUtils.getId(this);
   }
-  
+
   public Widget getWidget() {
     return widget;
   }
-  
+
   public Iterator<Widget> iterator() {
     return new Iterator<Widget>() {
       boolean hasElement = widget != null;

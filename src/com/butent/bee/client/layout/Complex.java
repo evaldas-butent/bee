@@ -11,6 +11,11 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.HasId;
 
+/**
+ * Implements a class for panels that can contain multiple child widgets and manages their creation
+ * at the specific areas of the layout.
+ */
+
 public class Complex extends ComplexPanel implements HasId {
 
   public Complex() {
@@ -53,7 +58,7 @@ public class Complex extends ComplexPanel implements HasId {
     setChildTop(child, top, topUnit);
     add(child);
   }
-  
+
   public void addRightBottom(Widget child, int right, int bottom) {
     addRightBottom(child, right, Unit.PX, bottom, Unit.PX);
   }
@@ -66,7 +71,7 @@ public class Complex extends ComplexPanel implements HasId {
     setChildBottom(child, bottom, bottomUnit);
     add(child);
   }
-  
+
   public void addRightTop(Widget child, int right, int top) {
     addRightTop(child, right, Unit.PX, top, Unit.PX);
   }
@@ -78,7 +83,7 @@ public class Complex extends ComplexPanel implements HasId {
     setChildTop(child, top, topUnit);
     add(child);
   }
-  
+
   public void createId() {
     DomUtils.createId(this, "complex");
   }

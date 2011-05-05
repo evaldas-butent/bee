@@ -7,6 +7,10 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.shared.HasId;
 
+/**
+ * Implements a panel, which positions all of its children absolutely, allowing them to overlap.
+ */
+
 public class Absolute extends AbsolutePanel implements HasId {
   public Absolute() {
     createId();
@@ -16,7 +20,7 @@ public class Absolute extends AbsolutePanel implements HasId {
     super(elem);
     createId();
   }
-  
+
   public String append(Widget w, int left, int top) {
     super.add(w, left, top);
     return DomUtils.getId(w);

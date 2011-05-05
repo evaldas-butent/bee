@@ -15,9 +15,13 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Map;
 
+/**
+ * Enables to use a panel with tab pages.
+ */
+
 public class TabbedPages extends TabLayoutPanel implements HasId {
   private Map<String, BeeCommand> pageCommands = Maps.newHashMap();
-  
+
   private class PageHandler implements BeforeSelectionHandler<Integer> {
     public void onBeforeSelection(BeforeSelectionEvent<Integer> event) {
       String id = DomUtils.getId(getWidget(event.getItem()));
@@ -57,14 +61,14 @@ public class TabbedPages extends TabLayoutPanel implements HasId {
   public void setId(String id) {
     DomUtils.setId(this, id);
   }
-  
+
   private void addCommand(Widget child, BeeCommand onPage) {
     if (onPage == null) {
       return;
     }
     String id = DomUtils.getId(child);
     Assert.notEmpty(id, "page widget has no id");
-    
+
     if (pageCommands.isEmpty()) {
       addBeforeSelectionHandler(new PageHandler());
     }

@@ -5,6 +5,10 @@ import com.google.gwt.user.client.ui.SimplePanel;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.shared.HasId;
 
+/**
+ * Contains a class for panels that contain only one widget.
+ */
+
 public class Simple extends SimplePanel implements HasId {
 
   public Simple() {

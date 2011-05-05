@@ -16,6 +16,10 @@ import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.shared.HasId;
 import com.butent.bee.shared.utils.BeeUtils;
 
+/**
+ * Handles separate areas(tiles) of the layout.
+ */
+
 public class BlankTile extends Composite implements HasAfterAddHandler, HasId,
     RequiresResize {
   private class UpdateCommand extends BeeCommand {

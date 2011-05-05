@@ -8,6 +8,10 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.layout.Flow;
 
+/**
+ * Manages a specific type of flow panel to contain log entries.
+ */
+
 public class LogArea extends Flow {
 
   public LogArea() {

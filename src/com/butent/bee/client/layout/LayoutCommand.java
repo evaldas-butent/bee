@@ -6,12 +6,16 @@ import com.butent.bee.shared.Assert;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Extends {@code BeeCommand} functionality on layout objects.
+ */
+
 public class LayoutCommand extends BeeCommand {
   private List<HasLayoutCallback> layoutWidgets = new ArrayList<HasLayoutCallback>();
-  
+
   public LayoutCommand(HasLayoutCallback... widgets) {
     super();
-    Assert.notNull(widgets);    
+    Assert.notNull(widgets);
     for (HasLayoutCallback w : widgets) {
       this.layoutWidgets.add(w);
     }
