@@ -1,129 +1,134 @@
 package com.butent.bee.shared.testutils;
 
-import static org.junit.Assert.*;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import com.butent.bee.shared.exceptions.BeeRuntimeException;
 import com.butent.bee.server.sql.SqlBuilder;
 import com.butent.bee.server.sql.SqlBuilderFactory;
 import com.butent.bee.server.sql.SqlDelete;
 import com.butent.bee.server.sql.SqlUtils;
+import com.butent.bee.shared.exceptions.BeeRuntimeException;
+
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Tests {@link com.butent.bee.server.sql.SqlDelete}.
  */
 public class TestSqlDelete {
 
-	@Before
-	public void setUp() throws Exception {
-	}
+  @Before
+  public void setUp() throws Exception {
+  }
 
-	@After
-	public void tearDown() throws Exception {
-	}
+  @After
+  public void tearDown() throws Exception {
+  }
 
-	@Test
-	public final void testGetSqlString() {
-		SqlBuilderFactory.setDefaultEngine("Generic");
-		SqlBuilder builder = SqlBuilderFactory.getBuilder();
+  @Test
+  public final void testGetSources() {
+    SqlBuilderFactory.setDefaultEngine("Generic");
 
-		SqlDelete delete = new SqlDelete("Target_table");
-		delete.addFrom("From_source1");
-		delete.addFrom("From_source2");
+    SqlDelete delete = new SqlDelete("Target_table", "target_alias");
+    delete.addFrom("From_source1");
+    delete.addFrom("From_source2");
+    delete.setWhere(SqlUtils.sqlFalse());
 
-		delete.setWhere(SqlUtils.equal(SqlUtils.name("username"), "root"));
+    Object[] arr = delete.getSources().toArray();
+    Object[] rez = {"From_source1", "Target_table", "From_source2"};
 
-		assertEquals(
-				"DELETE FROM Target_table FROM From_source1, From_source2 WHERE username='root'",
-				delete.getSqlString(builder, false));
-	}
+    assertArrayEquals(rez, arr);
+  }
 
-	@Test
-	public final void testGetSqlStringAlias() {
-		SqlBuilderFactory.setDefaultEngine("Generic");
-		SqlBuilder builder = SqlBuilderFactory.getBuilder();
+  @Test
+  public final void testGetSqlParams() {
 
-		SqlDelete delete = new SqlDelete("Target_table", "target_alias");
-		delete.addFrom("From_source1");
-		delete.addFrom("From_source2");
+    SqlBuilderFactory.setDefaultEngine("Generic");
+    SqlBuilder builder = SqlBuilderFactory.getBuilder();
 
-		delete.setWhere(SqlUtils.equal(SqlUtils.name("username"), "root"));
+    SqlDelete delete = new SqlDelete("Target_table", "target_alias");
+    delete.addFrom("From_source1");
+    delete.addFrom("From_source2");
 
-		assertEquals(
-				"DELETE FROM Target_table target_alias FROM From_source1, From_source2 WHERE username='root'",
-				delete.getSqlString(builder, false));
-	}
+    try {
+      delete.setWhere(SqlUtils.equal("Target_table", "field", 'c'));
 
-	@Test
-	public final void testGetSources() {
-		SqlBuilderFactory.setDefaultEngine("Generic");
+      Object[] a = delete.getSqlParams().toArray();
+      Object[] rez = {'c'};
 
-		SqlDelete delete = new SqlDelete("Target_table", "target_alias");
-		delete.addFrom("From_source1");
-		delete.addFrom("From_source2");
-		delete.setWhere(SqlUtils.sqlFalse());
+      assertArrayEquals(rez, a);
 
-		Object[] arr = delete.getSources().toArray();
-		Object[] rez = { "From_source1", "Target_table", "From_source2" };
+      assertEquals(
+          "DELETE FROM Target_table target_alias FROM From_source1, From_source2 WHERE Target_table.field=c",
+          delete.getSqlString(builder, false));
+    } catch (BeeRuntimeException e) {
+      assertTrue(true);
+    }
 
-		assertArrayEquals(rez, arr);
-	}
+    delete.setWhere(SqlUtils.equal("Target_table", "field", "c"));
 
-	@Test
-	public final void testGetSqlParams() {
+    Object[] a1 = delete.getSqlParams().toArray();
+    Object[] rez1 = {"c"};
 
-		SqlBuilderFactory.setDefaultEngine("Generic");
-		SqlBuilder builder = SqlBuilderFactory.getBuilder();
+    assertArrayEquals(rez1, a1);
 
-		SqlDelete delete = new SqlDelete("Target_table", "target_alias");
-		delete.addFrom("From_source1");
-		delete.addFrom("From_source2");
+    assertEquals(
+        "DELETE FROM Target_table target_alias FROM From_source1, From_source2 WHERE Target_table.field='c'",
+        delete.getSqlString(builder, false));
+  }
 
-		try {
-			delete.setWhere(SqlUtils.equal("Target_table", "field", 'c'));
+  @Test
+  public final void testGetSqlString() {
+    SqlBuilderFactory.setDefaultEngine("Generic");
+    SqlBuilder builder = SqlBuilderFactory.getBuilder();
 
-			Object[] a = delete.getSqlParams().toArray();
-			Object[] rez = { 'c' };
+    SqlDelete delete = new SqlDelete("Target_table");
+    delete.addFrom("From_source1");
+    delete.addFrom("From_source2");
 
-			assertArrayEquals(rez, a);
+    delete.setWhere(SqlUtils.equal(SqlUtils.name("username"), "root"));
 
-			assertEquals(
-					"DELETE FROM Target_table target_alias FROM From_source1, From_source2 WHERE Target_table.field=c",
-					delete.getSqlString(builder, false));
-		} catch (BeeRuntimeException e) {
-			assertTrue(true);
-		}
+    assertEquals(
+        "DELETE FROM Target_table FROM From_source1, From_source2 WHERE username='root'",
+        delete.getSqlString(builder, false));
+  }
 
-		delete.setWhere(SqlUtils.equal("Target_table", "field", "c"));
+  @Test
+  public final void testGetSqlStringAlias() {
+    SqlBuilderFactory.setDefaultEngine("Generic");
+    SqlBuilder builder = SqlBuilderFactory.getBuilder();
 
-		Object[] a1 = delete.getSqlParams().toArray();
-		Object[] rez1 = { "c" };
+    SqlDelete delete = new SqlDelete("Target_table", "target_alias");
+    delete.addFrom("From_source1");
+    delete.addFrom("From_source2");
 
-		assertArrayEquals(rez1, a1);
+    delete.setWhere(SqlUtils.equal(SqlUtils.name("username"), "root"));
 
-		assertEquals(
-				"DELETE FROM Target_table target_alias FROM From_source1, From_source2 WHERE Target_table.field='c'",
-				delete.getSqlString(builder, false));
+    assertEquals(
+        "DELETE FROM Target_table target_alias FROM From_source1, From_source2 WHERE username='root'",
+        delete.getSqlString(builder, false));
+  }
 
-	}
+  @SuppressWarnings("unused")
+  @Test
+  public final void testIsEmpty() {
+    try {
+      SqlDelete del = new SqlDelete("\n \t \r");
+      fail("Exceptions not work");
+    } catch (BeeRuntimeException e) {
+      assertTrue(true);
+    } catch (Exception e) {
+      fail("Need BeeRuntimeException: " + e.getMessage());
+    }
+    SqlDelete del = new SqlDelete("Table1");
+    assertTrue(del.isEmpty());
 
-	@SuppressWarnings("unused")
-	@Test
-	public final void testIsEmpty() {
-		try {
-			SqlDelete del = new SqlDelete("\n \t \r");
-			fail("Exceptions not work");
-		} catch (BeeRuntimeException e) {
-			assertTrue(true);
-		} catch (Exception e) {
-			fail("Need BeeRuntimeException :" + e.getMessage());
-		}
-		SqlDelete del = new SqlDelete("Table1");
-		assertTrue(del.isEmpty());
-
-		del.setWhere(SqlUtils.isNull("Table1", "Filed1"));
-		assertFalse(del.isEmpty());
-	}
+    del.setWhere(SqlUtils.isNull("Table1", "Filed1"));
+    assertFalse(del.isEmpty());
+  }
 
 }

@@ -9,41 +9,41 @@ import com.butent.bee.shared.Transformable;
  */
 public class TransObjectInt implements Transformable, HasLength, HasIntValue {
 
-	public static final double DOUBLE_DEFAULT_VALUE = 5.0;
-	public int intValue = 0;
-	public long longValue = 0;
-	private double Digit;
+  public static final double DOUBLE_DEFAULT_VALUE = 5.0;
+  public int intValue = 0;
+  public long longValue = 0;
+  private double digit;
 
-	public double getDigit() {
-		return Digit;
-	}
+  @SuppressWarnings("static-access")
+  public TransObjectInt() {
+    setDigit(this.DOUBLE_DEFAULT_VALUE);
+  }
 
-	public void setDigit(double digit) {
-		Digit = digit;
-	}
+  public double getDigit() {
+    return digit;
+  }
 
-	@SuppressWarnings("static-access")
-	public TransObjectInt() {
-		setDigit(this.DOUBLE_DEFAULT_VALUE);
-	}
+  @Override
+  public int getInt() {
+    return intValue;
+  }
 
-	@Override
-	public String transform() {
-		return Double.toString(this.Digit);
-	}
+  @Override
+  public int getLength() {
+    return 5;
+  }
 
-	@Override
-	public int getInt() {
-		return intValue;
-	}
+  public void setDigit(double digit) {
+    this.digit = digit;
+  }
 
-	@Override
-	public void setValue(int value) {
-		intValue = value;
-	}
+  @Override
+  public void setValue(int value) {
+    intValue = value;
+  }
 
-	@Override
-	public int getLength() {
-		return 5;
-	}
+  @Override
+  public String transform() {
+    return Double.toString(this.digit);
+  }
 }

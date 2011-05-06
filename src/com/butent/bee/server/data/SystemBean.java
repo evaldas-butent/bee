@@ -11,8 +11,9 @@ import com.butent.bee.server.Config;
 import com.butent.bee.server.data.BeeTable.BeeField;
 import com.butent.bee.server.data.BeeTable.BeeForeignKey;
 import com.butent.bee.server.data.BeeTable.BeeKey;
-import com.butent.bee.server.io.FileUtils;
 import com.butent.bee.server.sql.BeeConstants;
+import com.butent.bee.server.sql.BeeConstants.DataType;
+import com.butent.bee.server.sql.BeeConstants.Keyword;
 import com.butent.bee.server.sql.HasFrom;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.IsExpression;
@@ -24,8 +25,6 @@ import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
-import com.butent.bee.server.sql.BeeConstants.DataType;
-import com.butent.bee.server.sql.BeeConstants.Keyword;
 import com.butent.bee.server.utils.XmlUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -44,9 +43,7 @@ import com.butent.bee.shared.utils.TimeUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -60,11 +57,6 @@ import javax.ejb.Lock;
 import javax.ejb.LockType;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
-import javax.xml.XMLConstants;
-import javax.xml.transform.stream.StreamSource;
-import javax.xml.validation.Schema;
-import javax.xml.validation.SchemaFactory;
-import javax.xml.validation.Validator;
 
 @Singleton
 @Startup
@@ -72,7 +64,7 @@ import javax.xml.validation.Validator;
 public class SystemBean {
   public static final String STATE_SCHEMA = "states.xsd";
   public static final String STRUCTURE_SCHEMA = "structure.xsd";
-  public static final String VIEW_SCHEMA = "views.xsd";
+  public static final String VIEW_SCHEMA = "view.xsd";
 
   private static Logger logger = Logger.getLogger(SystemBean.class.getName());
 
@@ -591,12 +583,13 @@ public class SystemBean {
     return getTable(tblName).getLockName();
   }
 
-  public BeeField getTableField(String tblName, String fldName) {
-    return getTable(tblName).getField(fldName);
+  public String getRelation(String tblName, String fldName) {
+    return getTableField(tblName, fldName).getRelation();
   }
 
-  public Collection<BeeField> getTableFields(String tblName) {
-    return getTable(tblName).getFields();
+  public BeeState getState(String stateName) {
+    Assert.state(isState(stateName), "Not a state: " + stateName);
+    return stateCache.get(stateName);
   }
 
   public Collection<String> getTableNames() {
@@ -610,6 +603,17 @@ public class SystemBean {
       states.add(state.getName());
     }
     return states;
+  }
+
+  public BeeView getView(String viewName) {
+    Assert.state(isView(viewName) || isTable(viewName), "Not a view: " + viewName);
+    BeeView view = viewCache.get(viewName);
+
+    if (BeeUtils.isEmpty(view)) {
+      view = getDefaultView(viewName, true);
+      registerView(view);
+    }
+    return view;
   }
 
   public IsCondition getViewCondition(String viewName, Filter filter) {
@@ -699,6 +703,10 @@ public class SystemBean {
       ss.setWhere(SqlUtils.and(ss.getWhere(), condition));
     }
     return qs.dbRowCount(ss);
+  }
+
+  public boolean hasField(String tblName, String fldName) {
+    return getTable(tblName).hasField(fldName);
   }
 
   @Lock(LockType.WRITE)
@@ -996,52 +1004,21 @@ public class SystemBean {
     return view;
   }
 
-  private BeeState getState(String stateName) {
-    Assert.state(isState(stateName), "Not a state: " + stateName);
-    return stateCache.get(stateName);
-  }
-
   private BeeTable getTable(String tblName) {
     Assert.state(isTable(tblName), "Not a base table: " + tblName);
     return tableCache.get(tblName);
   }
 
+  private BeeField getTableField(String tblName, String fldName) {
+    return getTable(tblName).getField(fldName);
+  }
+
+  private Collection<BeeField> getTableFields(String tblName) {
+    return getTable(tblName).getFields();
+  }
+
   private Collection<BeeTable> getTables() {
     return ImmutableList.copyOf(tableCache.values());
-  }
-
-  private BeeView getView(String viewName) {
-    Assert.state(isView(viewName) || isTable(viewName), "Not a view: " + viewName);
-    BeeView view = viewCache.get(viewName);
-
-    if (BeeUtils.isEmpty(view)) {
-      view = getDefaultView(viewName, true);
-      registerView(view);
-    }
-    return view;
-  }
-
-  private Document getXmlResource(String resource, String resourceSchema) {
-    if (BeeUtils.isEmpty(resource) || !FileUtils.isInputFile(resource)) {
-      return null;
-    }
-    String error = null;
-    SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-
-    try {
-      Schema schema = factory.newSchema(new StreamSource(resourceSchema));
-      Validator validator = schema.newValidator();
-      validator.validate(new StreamSource(resource));
-    } catch (SAXException e) {
-      error = e.getMessage();
-    } catch (IOException e) {
-      error = e.getMessage();
-    }
-    if (!BeeUtils.isEmpty(error)) {
-      LogUtils.severe(logger, resource, error);
-      return null;
-    }
-    return XmlUtils.fromFileName(resource);
   }
 
   @SuppressWarnings("unused")
@@ -1059,7 +1036,7 @@ public class SystemBean {
     String resource =
         mainMode ? Config.getConfigPath("states.xml") : Config.getUserPath("states.xml");
 
-    Collection<BeeState> states = loadStates(resource, Config.getConfigPath(STATE_SCHEMA));
+    Collection<BeeState> states = loadStates(resource, Config.getSchemaPath(STATE_SCHEMA));
 
     if (BeeUtils.isEmpty(states)) {
       if (mainMode) {
@@ -1100,7 +1077,7 @@ public class SystemBean {
     String resource =
         mainMode ? Config.getConfigPath("structure.xml") : Config.getUserPath("structure.xml");
 
-    Collection<BeeTable> tables = loadTables(resource, Config.getPath(STRUCTURE_SCHEMA));
+    Collection<BeeTable> tables = loadTables(resource, Config.getSchemaPath(STRUCTURE_SCHEMA));
 
     if (BeeUtils.isEmpty(tables)) {
       if (mainMode) {
@@ -1152,7 +1129,7 @@ public class SystemBean {
     String resource =
         mainMode ? Config.getConfigPath("views.xml") : Config.getUserPath("views.xml");
 
-    Collection<BeeView> views = loadViews(resource, Config.getConfigPath(VIEW_SCHEMA));
+    Collection<BeeView> views = loadViews(resource, Config.getSchemaPath(VIEW_SCHEMA));
 
     if (BeeUtils.isEmpty(views)) {
       if (mainMode) {
@@ -1190,7 +1167,7 @@ public class SystemBean {
 
   @Lock(LockType.WRITE)
   private Collection<BeeState> loadStates(String resource, String schema) {
-    Document xml = getXmlResource(resource, schema);
+    Document xml = XmlUtils.getXmlResource(resource, schema);
     if (BeeUtils.isEmpty(xml)) {
       return null;
     }
@@ -1210,7 +1187,7 @@ public class SystemBean {
 
   @Lock(LockType.WRITE)
   private Collection<BeeTable> loadTables(String resource, String schema) {
-    Document xml = getXmlResource(resource, schema);
+    Document xml = XmlUtils.getXmlResource(resource, schema);
     if (BeeUtils.isEmpty(xml)) {
       return null;
     }
@@ -1281,7 +1258,7 @@ public class SystemBean {
 
   @Lock(LockType.WRITE)
   private Collection<BeeView> loadViews(String resource, String schema) {
-    Document xml = getXmlResource(resource, schema);
+    Document xml = XmlUtils.getXmlResource(resource, schema);
     if (BeeUtils.isEmpty(xml)) {
       return null;
     }

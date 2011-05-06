@@ -42,6 +42,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -56,6 +57,9 @@ import javax.xml.transform.dom.DOMResult;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
+import javax.xml.validation.Schema;
+import javax.xml.validation.SchemaFactory;
+import javax.xml.validation.Validator;
 
 /**
  * Manages XML configuration files used by the system.
@@ -598,6 +602,29 @@ public class XmlUtils {
       }
     }
     return lst;
+  }
+
+  public static Document getXmlResource(String resource, String resourceSchema) {
+    if (BeeUtils.isEmpty(resource) || !FileUtils.isInputFile(resource)) {
+      return null;
+    }
+    String error = null;
+    SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+
+    try {
+      Schema schema = factory.newSchema(new StreamSource(resourceSchema));
+      Validator validator = schema.newValidator();
+      validator.validate(new StreamSource(resource));
+    } catch (SAXException e) {
+      error = e.getMessage();
+    } catch (IOException e) {
+      error = e.getMessage();
+    }
+    if (!BeeUtils.isEmpty(error)) {
+      LogUtils.severe(logger, resource, error);
+      return null;
+    }
+    return XmlUtils.fromFileName(resource);
   }
 
   public static List<Property> getXsltFactoryInfo() {

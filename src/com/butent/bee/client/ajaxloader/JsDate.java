@@ -10,28 +10,28 @@ import java.util.Date;
 
 public class JsDate extends JavaScriptObject {
   public static native JsDate create() /*-{
-		var result = new $wnd.Date();
-		result.constructor = $wnd.Date;
-		return result;
+    var result = new $wnd.Date();
+    result.constructor = $wnd.Date;
+    return result;
   }-*/;
 
   public static native JsDate create(double time) /*-{
-		var result = new $wnd.Date(time);
-		result.constructor = $wnd.Date;
-		return result;
+    var result = new $wnd.Date(time);
+    result.constructor = $wnd.Date;
+    return result;
   }-*/;
 
   public static native boolean isDate(JavaScriptObject js) /*-{
-		var result = false;
-		if (js != null) {
-			if (typeof js.getTime == 'function') {
-				var time = js.getTime();
-				if (typeof time == 'number') {
-					result = true;
-				}
-			}
-		}
-		return result;
+    var result = false;
+    if (js != null) {
+      if (typeof js.getTime == 'function') {
+        var time = js.getTime();
+        if (typeof time == 'number') {
+          result = true;
+        }
+      }
+    }
+    return result;
   }-*/;
 
   public static Date toJava(JsDate js) {
@@ -50,6 +50,6 @@ public class JsDate extends JavaScriptObject {
   }
 
   private native double doubleTime() /*-{
-		return this.getTime();
+    return this.getTime();
   }-*/;
 }

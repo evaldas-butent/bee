@@ -10,58 +10,58 @@ import com.butent.bee.shared.Transformable;
  */
 public class TransObjectLong implements BeeSerializable, Transformable, HasLength, HasLongValue {
 
-	public static final double DOUBLE_DEFAULT_VALUE = 5.0;
-	public double doubleValue=0;
-	public long longValue = 0;
-	private double Digit;
-	
-	public double getDigit() {
-		return Digit;
-	}
+  public static final double DOUBLE_DEFAULT_VALUE = 5.0;
+  public double doubleValue = 0;
+  public long longValue = 0;
+  private double digit;
 
-	public void setDigit(double digit) {
-		Digit = digit;
-	}
+  public TransObjectLong() {
+    setDigit(DOUBLE_DEFAULT_VALUE);
+  }
 
-	public TransObjectLong() {
-		setDigit(DOUBLE_DEFAULT_VALUE);
-	}
+  @Override
+  public void deserialize(String s) {
+  }
 
-	@Override
-	public String transform() {
-		return Double.toString(this.Digit);
-	}
-	
-	@Override
-	public long getLong() {
-		return longValue;
-	}
+  public double getDigit() {
+    return digit;
+  }
 
-	@Override
-	public void setValue(long value) {
-		longValue = value;
-	}
+  @Override
+  public int getInt() {
+    return 0;
+  }
 
-	@Override
-	public int getInt() {
-		return 0;
-	}
+  @Override
+  public int getLength() {
+    return 5;
+  }
 
-	@Override
-	public void setValue(int value) {
-	}
+  @Override
+  public long getLong() {
+    return longValue;
+  }
 
-	@Override
-	public void deserialize(String s) {
-	}
+  @Override
+  public String serialize() {
+    return "Hello world";
+  }
 
-	@Override
-	public String serialize() {
-		return "Hello world";
-	}
+  public void setDigit(double digit) {
+    this.digit = digit;
+  }
 
-	@Override
-	public int getLength() {
-		return 5;
-	}
+  @Override
+  public void setValue(int value) {
+  }
+
+  @Override
+  public void setValue(long value) {
+    longValue = value;
+  }
+
+  @Override
+  public String transform() {
+    return Double.toString(this.digit);
+  }
 }

@@ -266,46 +266,46 @@ public class Features {
   }
 
   public static native JavaScriptObject getWindowProperty(String p) /*-{
-		if (p == null || p == "") {
-			return null;
-		}
+    if (p == null || p == "") {
+      return null;
+    }
 
-		var obj;
-		try {
-			obj = $wnd[p];
-		} catch (err) {
-			obj = null;
-		}
+    var obj;
+    try {
+      obj = $wnd[p];
+    } catch (err) {
+      obj = null;
+    }
 
-		return obj;
+    return obj;
   }-*/;
 
   public static native boolean isDocumentFunction(String fnc) /*-{
-		if (fnc == null || fnc == "") {
-			return false;
-		}
+    if (fnc == null || fnc == "") {
+      return false;
+    }
 
-		var ok;
-		try {
-			ok = (typeof ($doc[fnc]) == "function");
-		} catch (err) {
-			ok = false;
-		}
-		return ok;
+    var ok;
+    try {
+      ok = (typeof ($doc[fnc]) == "function");
+    } catch (err) {
+      ok = false;
+    }
+    return ok;
   }-*/;
 
   public static native boolean isDocumentProperty(String p) /*-{
-		if (p == null || p == "") {
-			return false;
-		}
+    if (p == null || p == "") {
+      return false;
+    }
 
-		var ok;
-		try {
-			ok = !!$doc[p];
-		} catch (err) {
-			ok = false;
-		}
-		return ok;
+    var ok;
+    try {
+      ok = !!$doc[p];
+    } catch (err) {
+      ok = false;
+    }
+    return ok;
   }-*/;
 
   public static boolean isEventSupported(String tagName, String eventName) {
@@ -333,39 +333,39 @@ public class Features {
   }
 
   public static native boolean isInWindow(String p) /*-{
-		if (p == null || p == "") {
-			return false;
-		} else {
-			return p in $wnd;
-		}
+    if (p == null || p == "") {
+      return false;
+    } else {
+      return p in $wnd;
+    }
   }-*/;
 
   public static native boolean isNavigatorProperty(String p) /*-{
-		if (p == null || p == "") {
-			return false;
-		}
+    if (p == null || p == "") {
+      return false;
+    }
 
-		var ok;
-		try {
-			ok = !!$wnd.navigator[p];
-		} catch (err) {
-			ok = false;
-		}
-		return ok;
+    var ok;
+    try {
+      ok = !!$wnd.navigator[p];
+    } catch (err) {
+      ok = false;
+    }
+    return ok;
   }-*/;
 
   public static native boolean isWindowProperty(String p) /*-{
-		if (p == null || p == "") {
-			return false;
-		}
+    if (p == null || p == "") {
+      return false;
+    }
 
-		var ok;
-		try {
-			ok = !!$wnd[p];
-		} catch (err) {
-			ok = false;
-		}
-		return ok;
+    var ok;
+    try {
+      ok = !!$wnd[p];
+    } catch (err) {
+      ok = false;
+    }
+    return ok;
   }-*/;
 
   public static boolean supportsApplicationCache() {
@@ -888,23 +888,23 @@ public class Features {
   }
 
   private static native String testAudioType(String type) /*-{
-		if (type == null || type == "") {
-			return "";
-		}
+    if (type == null || type == "") {
+      return "";
+    }
 
-		var el = $doc.createElement('audio');
-		var v = "";
+    var el = $doc.createElement('audio');
+    var v = "";
 
-		try {
-			if (typeof el["canPlayType"] == "function") {
-				v = el.canPlayType(type);
-			}
-		} catch (err) {
-			v = null;
-		}
+    try {
+      if (typeof el["canPlayType"] == "function") {
+        v = el.canPlayType(type);
+      }
+    } catch (err) {
+      v = null;
+    }
 
-		el = null;
-		return v;
+    el = null;
+    return v;
   }-*/;
 
   private static String testAudioVorbis() {
@@ -916,24 +916,24 @@ public class Features {
   }
 
   private static native boolean testCanvas() /*-{
-		var elem = $doc.createElement('canvas');
-		var ok = !!(elem.getContext && elem.getContext('2d'));
-		elem = null;
-		return ok;
+    var elem = $doc.createElement('canvas');
+    var ok = !!(elem.getContext && elem.getContext('2d'));
+    elem = null;
+    return ok;
   }-*/;
 
   private static native boolean testCanvasText() /*-{
-		var elem = $doc.createElement('canvas');
-		var ok = false;
+    var elem = $doc.createElement('canvas');
+    var ok = false;
 
-		try {
-			ok = !!(elem.getContext && typeof elem.getContext('2d').fillText == "function");
-		} catch (err) {
-			ok = false;
-		}
+    try {
+      ok = !!(elem.getContext && typeof elem.getContext('2d').fillText == "function");
+    } catch (err) {
+      ok = false;
+    }
 
-		elem = null;
-		return ok;
+    elem = null;
+    return ok;
   }-*/;
 
   private static boolean testContentEditable() {
@@ -987,7 +987,7 @@ public class Features {
   }
 
   private static native boolean testFileApi() /*-{
-		return typeof FileReader != 'undefined';
+    return typeof FileReader != 'undefined';
   }-*/;
 
   private static boolean testGeolocation() {
@@ -1086,7 +1086,7 @@ public class Features {
   }
 
   private static native boolean testServerSentEvents() /*-{
-		return typeof EventSource !== 'undefined';
+    return typeof EventSource !== 'undefined';
   }-*/;
 
   private static boolean testSessionStorage() {
@@ -1125,13 +1125,13 @@ public class Features {
   }
 
   private static native boolean testSvgInTextHtml() /*-{
-		var el = $doc.createElement('div');
-		el.innerHTML = '<svg></svg>';
-		return !!($wnd.SVGSVGElement && el.firstChild instanceof $wnd.SVGSVGElement);
+    var el = $doc.createElement('div');
+    el.innerHTML = '<svg></svg>';
+    return !!($wnd.SVGSVGElement && el.firstChild instanceof $wnd.SVGSVGElement);
   }-*/;
 
   private static native boolean testUndo() /*-{
-		return typeof UndoManager !== 'undefined';
+    return typeof UndoManager !== 'undefined';
   }-*/;
 
   private static boolean testVideo() {
@@ -1163,16 +1163,16 @@ public class Features {
   }
 
   private static native String testVideoType(String type) /*-{
-		var elem = $doc.createElement('video');
-		if (elem == null || elem == undefined) {
-			return "";
-		}
+    var elem = $doc.createElement('video');
+    if (elem == null || elem == undefined) {
+      return "";
+    }
 
-		if (!!elem.canPlayType) {
-			return elem.canPlayType(type);
-		} else {
-			return "";
-		}
+    if (!!elem.canPlayType) {
+      return elem.canPlayType(type);
+    } else {
+      return "";
+    }
   }-*/;
 
   private static String testVideoWebm() {
@@ -1180,23 +1180,23 @@ public class Features {
   }
 
   private static native boolean testWebGl() /*-{
-		var elem = $doc.createElement('canvas');
-		if (elem == null || elem == undefined || !elem.getContext) {
-			return false;
-		}
+    var elem = $doc.createElement('canvas');
+    if (elem == null || elem == undefined || !elem.getContext) {
+      return false;
+    }
 
-		var ok = false;
-		try {
-			if (elem.getContext('webgl')) {
-				ok = true;
-			} else if (elem.getContext('experimental-webgl')) {
-				ok = true;
-			}
-		} catch (err) {
-			ok = false;
-		}
+    var ok = false;
+    try {
+      if (elem.getContext('webgl')) {
+        ok = true;
+      } else if (elem.getContext('experimental-webgl')) {
+        ok = true;
+      }
+    } catch (err) {
+      ok = false;
+    }
 
-		return ok;
+    return ok;
   }-*/;
 
   private static boolean testWebSockets() {
@@ -1208,11 +1208,11 @@ public class Features {
   }
 
   private static native boolean testXhrCrossDomain() /*-{
-		return "withCredentials" in new XMLHttpRequest;
+    return "withCredentials" in new XMLHttpRequest;
   }-*/;
 
   private static native boolean testXhrUploadProgress() /*-{
-		return "upload" in new XMLHttpRequest;
+    return "upload" in new XMLHttpRequest;
   }-*/;
 
   private Features() {

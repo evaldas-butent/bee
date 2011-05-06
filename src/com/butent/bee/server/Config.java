@@ -30,6 +30,7 @@ public class Config {
 
   public static final File WAR_DIR;
   public static final File SOURCE_DIR;
+  public static final File SCHEMA_DIR;
   public static final File CONFIG_DIR;
   public static final File USER_DIR;
 
@@ -57,6 +58,7 @@ public class Config {
     WAR_DIR = dir.getParentFile();
     SOURCE_DIR = new File(WAR_DIR.getParentFile(), "src");
 
+    SCHEMA_DIR = new File(dir, "schemas");
     CONFIG_DIR = new File(dir, "config");
     USER_DIR = new File(dir, "user");
 
@@ -149,6 +151,15 @@ public class Config {
   public static String getProperty(String key) {
     Assert.notEmpty(key);
     return properties.getProperty(key);
+  }
+
+  public static String getSchemaPath(String resource) {
+    Assert.notEmpty(resource);
+
+    if (FileUtils.isInputFile(SCHEMA_DIR, resource)) {
+      return new File(SCHEMA_DIR, resource).getPath();
+    }
+    return null;
   }
 
   public static List<String> getTextExtensions() {

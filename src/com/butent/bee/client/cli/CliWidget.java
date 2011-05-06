@@ -17,6 +17,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.cache.CacheManager;
+import com.butent.bee.shared.ui.BeeGrid;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -147,6 +148,16 @@ public class CliWidget extends BeeTextBox {
               } else {
                 BeeKeeper.getUi().showGrid(rs);
               }
+            }
+          });
+    } else if (z.equals("gridinfo")) {
+      BeeKeeper.getRpc().sendText("rpc_data_gridinfo", v,
+          new ResponseCallback() {
+            @Override
+            public void onResponse(JsArrayString respArr) {
+              BeeGrid grd = BeeGrid.restore(respArr.get(0));
+              BeeKeeper.getUi()
+                  .updateActivePanel(new BeeLabel(BeeUtils.transform(grd.getColumns(), 1)));
             }
           });
     } else if (z.equals("stack")) {

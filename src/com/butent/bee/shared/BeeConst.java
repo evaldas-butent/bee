@@ -1,7 +1,7 @@
 package com.butent.bee.shared;
 
 /**
- * Stores all default values (datebases, boolean, separators etc.). 
+ * Stores all default values (datebases, boolean, separators etc.).
  */
 public class BeeConst {
   public static final String MYSQL = "MySql";
@@ -48,7 +48,7 @@ public class BeeConst {
   public static final String STRING_TRUE = Boolean.toString(true);
 
   public static final int UNDEF = -1;
-  
+
   public static final int INT_ERROR = -1;
   public static final int INT_FALSE = 0;
   public static final int INT_TRUE = 1;
@@ -129,13 +129,14 @@ public class BeeConst {
   public static final String HTML_NBSP = "&nbsp;";
 
   public static final int MAX_SCALE = 20;
-  public static final double DOUBLE_ZERO = 0.0d; 
-  public static final float FLOAT_ZERO = 0.0f; 
+  public static final double DOUBLE_ZERO = 0.0d;
+  public static final float FLOAT_ZERO = 0.0f;
 
   private static String home = SERVER;
-  
+
   /**
-   * Returns the name of database system by {@code dsn} phrase
+   * Returns the name of database system by {@code dsn} phrase.
+   * 
    * @param dsn phrase of database system
    * @return the name of database system
    */
@@ -143,14 +144,14 @@ public class BeeConst {
     if (dsn == null) {
       return null;
     }
-    
+
     String name = dsn.trim().toLowerCase();
     if (name.isEmpty()) {
       return null;
     }
     char c = name.charAt(0);
     String tp;
-    
+
     if (name.indexOf("my") == 0) {
       tp = MYSQL;
     } else if (c == 'm' && !name.contains("my")) {
@@ -172,9 +173,10 @@ public class BeeConst {
     }
     return tp;
   }
-  
+
   /**
-   * Returns the state of client
+   * Returns the state of client.
+   * 
    * @return {@code true} if state is client, {@code false} otherwise
    */
   public static boolean isClient() {
@@ -182,7 +184,8 @@ public class BeeConst {
   }
 
   /**
-   * Returns is parameter {@code s} value equals {@code DEFAULT} constant
+   * Returns is parameter {@code s} value equals {@code DEFAULT} constant.
+   * 
    * @param s default value
    * @return {@code true} if {@code s} is equals {@code DEFAULT} constant
    */
@@ -196,25 +199,28 @@ public class BeeConst {
 
   /**
    * Returns is {@code x} the value of error code.
+   * 
    * @param x error code
    * @return {@code true} if {@code x} is value of error code.
    */
   public static boolean isError(int x) {
     return x == INT_ERROR;
   }
-  
+
   /**
-   * Returns is {@code c} the boolean  value of {@code false}. There are {@code 'f', 'F', 'n',
+   * Returns is {@code c} the boolean value of {@code false}. There are {@code 'f', 'F', 'n',
    * 'N', '0'} values of character witch returns {@code true}
+   * 
    * @param c character of boolean value
-   * @return {@code true} if character {@code c} is the boolean value of {@code false} 
+   * @return {@code true} if character {@code c} is the boolean value of {@code false}
    */
   public static boolean isFalse(char c) {
     return CHAR_FALSE.indexOf(c) >= 0;
   }
 
   /**
-   * Returns the state of server
+   * Returns the state of server.
+   * 
    * @return {@code} if state is server
    */
   public static boolean isServer() {
@@ -222,10 +228,11 @@ public class BeeConst {
   }
 
   /**
-   * Returns is (@code c} the boolean value od {@code true}. There are {@code
-   * 't', 'T', 'y', 'Y', '1'} values of character witch returns {@code true}
+   * Returns is (@code c} the boolean value od {@code true}. There are
+   * {@code 't', 'T', 'y', 'Y', '1'} values of character witch returns {@code true}
+   * 
    * @param c character of boolean value
-   * @return {@code true} if character {@code c} is the bolean value of {@code true} 
+   * @return {@code true} if character {@code c} is the bolean value of {@code true}
    */
   public static boolean isTrue(char c) {
     return CHAR_TRUE.indexOf(c) >= 0;
@@ -236,7 +243,8 @@ public class BeeConst {
   }
 
   /**
-   * Sets the state to client
+   * Sets the state to client.
+   * 
    * @see #isClient
    */
   public static void setClient() {
@@ -244,7 +252,8 @@ public class BeeConst {
   }
 
   /**
-   * Sets the state to server
+   * Sets the state to server.
+   * 
    * @see #isServer
    */
   public static void setServer() {
@@ -252,7 +261,8 @@ public class BeeConst {
   }
 
   /**
-   * Returns is string the {@code tp} value of database system. 
+   * Returns is string the {@code tp} value of database system.
+   * 
    * @param tp database system name
    * @return {@code true} if the {@code tp} is of datebase system
    * @see #getDsType(String)
@@ -273,7 +283,8 @@ public class BeeConst {
   }
 
   /**
-   * Returns value of state
+   * Returns value of state.
+   * 
    * @return value of state
    * @see #isClient()
    * @see #isServer()
@@ -287,7 +298,7 @@ public class BeeConst {
       return UNKNOWN;
     }
   }
-  
+
   private BeeConst() {
   }
 }

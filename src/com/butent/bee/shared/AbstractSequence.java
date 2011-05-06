@@ -23,14 +23,14 @@ public abstract class AbstractSequence<T> implements Sequence<T> {
       AbstractSequence.this.remove(index--);
     }
   }
-  
+
   /**
-   * Insert object value to end of array
+   * Insert object value to end of array.
    */
   public void add(T value) {
     insert(getLength(), value);
   }
-  
+
   /**
    * @return a new SequenceIterator
    */

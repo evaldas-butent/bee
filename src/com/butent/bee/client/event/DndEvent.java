@@ -79,23 +79,23 @@ public class DndEvent extends NativeEvent {
   }
 
   private native String dataTransferGetDropEffect(DndEvent evt) /*-{
-		return evt.dataTransfer.dropEffect;
+    return evt.dataTransfer.dropEffect;
   }-*/;
 
   private native String dataTransferGetEffectAllowed(DndEvent evt) /*-{
-		return evt.dataTransfer.effectAllowed;
+    return evt.dataTransfer.effectAllowed;
   }-*/;
 
   private native void dataTransferSetData(DndEvent evt, String format, String value) /*-{
-		evt.dataTransfer.setData(format, value);
+    evt.dataTransfer.setData(format, value);
   }-*/;
 
   private native void dataTransferSetDropEffect(DndEvent evt, String value) /*-{
-		evt.dataTransfer.dropEffect = value;
+    evt.dataTransfer.dropEffect = value;
   }-*/;
 
   private native void dataTransferSetEffectAllowed(DndEvent evt, String value) /*-{
-		evt.dataTransfer.effectAllowed = value;
+    evt.dataTransfer.effectAllowed = value;
   }-*/;
 
 }

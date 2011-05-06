@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <BeeStates xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://www.butent.com/bee states.xsd">
+  xsi:schemaLocation="http://www.butent.com/bee ../schemas/states.xsd">
 
   <BeeState name="Visible" mode="ROLE" checked="true" />
   <BeeState name="Marked" mode="USER" />

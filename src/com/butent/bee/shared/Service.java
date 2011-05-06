@@ -58,7 +58,7 @@ public class Service {
   public static final String GET_VIEW_LIST = DATA_SERVICE_PREFIX + "view_list";
   public static final String GENERATE = DATA_SERVICE_PREFIX + "generate";
   public static final String COUNT_ROWS = DATA_SERVICE_PREFIX + "row_count";
-  
+
   public static final String RPC_VAR_PREFIX = "bee_";
   public static final String RPC_VAR_SYS_PREFIX = RPC_VAR_PREFIX + "sys_";
 
@@ -129,7 +129,8 @@ public class Service {
   public static final String XML_TAG_DATA = RPC_VAR_PREFIX + "data";
 
   /**
-   * Returns true if {@code svc} value starts with {@link #COMPOSITE_SERVICE_PREFIX}
+   * Returns true if {@code svc} value starts with {@link #COMPOSITE_SERVICE_PREFIX}.
+   * 
    * @param svc name of service
    * @return true if name of service starts with {@link #COMPOSITE_SERVICE_PREFIX}
    */
@@ -139,7 +140,8 @@ public class Service {
   }
 
   /**
-   * Returns true if {@code svc} value starts with {@link #DATA_SERVICE_PREFIX}
+   * Returns true if {@code svc} value starts with {@link #DATA_SERVICE_PREFIX}.
+   * 
    * @param svc name of service
    * @return true if name of service starts with {@link #DATA_SERVICE_PREFIX}
    */
@@ -149,7 +151,8 @@ public class Service {
   }
 
   /**
-   * Returns true if {@code svc} value starts with {@link #DB_META_SERVICE_PREFIX}
+   * Returns true if {@code svc} value starts with {@link #DB_META_SERVICE_PREFIX}.
+   * 
    * @param svc name of service
    * @return true if name of service starts with {@link #DB_META_SERVICE_PREFIX}
    */
@@ -159,7 +162,8 @@ public class Service {
   }
 
   /**
-   * Returns true if {@code svc} value starts with {@link #DB_SERVICE_PREFIX}
+   * Returns true if {@code svc} value starts with {@link #DB_SERVICE_PREFIX}.
+   * 
    * @param svc name of service;
    * @return true if name of service starts with {@link #DB_SERVICE_PREFIX}
    */
@@ -169,7 +173,8 @@ public class Service {
   }
 
   /**
-   * Returns true if {@code svc} value has {@link #INVOKE}
+   * Returns true if {@code svc} value has {@link #INVOKE}.
+   * 
    * @param svc name of service;
    * @return true if name of service starts {@link #INVOKE}
    */
@@ -178,7 +183,8 @@ public class Service {
   }
 
   /**
-   * Returns true if {@code svc} value starts with {@link #RPC_SERVICE_PREFIX} 
+   * Returns true if {@code svc} value starts with {@link #RPC_SERVICE_PREFIX}.
+   * 
    * @param svc name of service
    * @return true if name of servce starts with {@link #RPC_SERVICE_PREFIX}
    */
@@ -188,7 +194,8 @@ public class Service {
   }
 
   /**
-   * Returns true if {@code svc} value starts with {@link #SYS_SERVICE_PREFIX}
+   * Returns true if {@code svc} value starts with {@link #SYS_SERVICE_PREFIX}.
+   * 
    * @param svc name of service
    * @return true if name of service starts with {@link #SYS_SERVICE_PREFIX};
    */
@@ -198,7 +205,8 @@ public class Service {
   }
 
   /**
-   * Returns true if {@code svc} value stars with {@link #UI_SERVICE_PREFIX}
+   * Returns true if {@code svc} value stars with {@link #UI_SERVICE_PREFIX}.
+   * 
    * @param svc name of service
    * @return true if name of service value starts with {@link #UI_SERVICE_PREFIX}
    */

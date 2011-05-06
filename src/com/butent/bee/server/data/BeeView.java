@@ -31,7 +31,7 @@ import java.util.Set;
  * for doing operations with them.
  */
 
-class BeeView {
+public class BeeView {
 
   private class ViewField {
 
@@ -39,17 +39,17 @@ class BeeView {
     private final String alias;
     private final String field;
     private final DataType type;
-    private final boolean isNotNull;
+    private final boolean notNull;
     private boolean sourceField;
     private String targetAlias;
 
-    public ViewField(String tbl, String als, String fld, DataType type, boolean isNotNull,
+    public ViewField(String tbl, String als, String fld, DataType type, boolean notNull,
         boolean sourceField) {
       this.table = tbl;
       this.alias = als;
       this.field = fld;
       this.type = type;
-      this.isNotNull = isNotNull;
+      this.notNull = notNull;
       this.sourceField = sourceField;
     }
 
@@ -74,7 +74,7 @@ class BeeView {
     }
 
     public boolean isNotNull() {
-      return isNotNull;
+      return notNull;
     }
 
     public boolean isSourceField() {
@@ -140,7 +140,7 @@ class BeeView {
       if (Operator.LIKE == op) {
         String val = value.getString();
 
-        if (filter.hasLikeCharacters(val)) {
+        if (filter.hasLikeCharacters(val)) { // TODO: create LIKE and CONTAINS operators
           condition = SqlUtils.like(src, val);
         } else {
           condition = SqlUtils.contains(src, val);

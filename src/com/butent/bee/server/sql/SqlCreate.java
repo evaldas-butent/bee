@@ -10,8 +10,8 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Generates a CREATE SQL statements with all necessary options and support for 
- * different SQL servers.
+ * Generates a CREATE SQL statements with all necessary options and support for different SQL
+ * servers.
  */
 
 public class SqlCreate extends SqlQuery<SqlCreate> {
@@ -43,8 +43,8 @@ public class SqlCreate extends SqlQuery<SqlCreate> {
     }
 
     /**
-     * Returns a field name as an expression. See {@link com.butent.bee.shared.
-     * sql.SqlUtils#name(String)} for details.
+     * Returns a field name as an expression. See
+     * {@link com.butent.bee.shared. sql.SqlUtils#name(String)} for details.
      * 
      * @return a field name as an expression
      */
@@ -88,8 +88,8 @@ public class SqlCreate extends SqlQuery<SqlCreate> {
   private SqlSelect dataSource;
 
   /**
-   * Creates an SqlCreate statement with a specified IsFrom target 
-   * {@code target} and sets the temporary argument to true
+   * Creates an SqlCreate statement with a specified IsFrom target. {@code target} and sets the
+   * temporary argument to true
    * 
    * @param target the IsFrom target
    */
@@ -98,8 +98,8 @@ public class SqlCreate extends SqlQuery<SqlCreate> {
   }
 
   /**
-   * Creates an SqlCreate statement with a specified IsFrom target 
-   * {@code target} and a specified {@code temporary} value.
+   * Creates an SqlCreate statement with a specified IsFrom target {@code target} and a specified
+   * {@code temporary} value.
    * 
    * @param target the IsFrom target
    * @param temporary the temporary keyword value
@@ -110,8 +110,7 @@ public class SqlCreate extends SqlQuery<SqlCreate> {
   }
 
   /**
-   * Adds a BOOLEAN type field with a field name {@code field} and Keywords
-   * {@code options}.
+   * Adds a BOOLEAN type field with a field name {@code field} and Keywords {@code options}.
    * 
    * @param field the field's name
    * @param options additional Keywords
@@ -122,8 +121,8 @@ public class SqlCreate extends SqlQuery<SqlCreate> {
   }
 
   /**
-   * Adds a CHAR type field with a field name {@code field}, precision
-   * {@code precision} and Keywords {@code options}.
+   * Adds a CHAR type field with a field name {@code field}, precision {@code precision} and
+   * Keywords {@code options}.
    * 
    * @param field the field's name
    * @param precision the field's precision
@@ -136,8 +135,7 @@ public class SqlCreate extends SqlQuery<SqlCreate> {
   }
 
   /**
-   * Adds a DATE type field with a field name {@code field} and Keywords 
-   * {@code options}.
+   * Adds a DATE type field with a field name {@code field} and Keywords {@code options}.
    * 
    * @param field the field's name
    * @param options additional Keywords
@@ -148,8 +146,7 @@ public class SqlCreate extends SqlQuery<SqlCreate> {
   }
 
   /**
-   * Adds a DATETIME type field with a field name {@code field} and Keywords 
-   * {@code options}.
+   * Adds a DATETIME type field with a field name {@code field} and Keywords {@code options}.
    * 
    * @param field the field's name
    * @param options additional Keywords
@@ -160,8 +157,7 @@ public class SqlCreate extends SqlQuery<SqlCreate> {
   }
 
   /**
-   * Adds a DATETIME type field with a field name {@code field} and Keywords 
-   * {@code options}.
+   * Adds a DATETIME type field with a field name {@code field} and Keywords {@code options}.
    * 
    * @param field the field's name
    * @param options additional Keywords
@@ -172,10 +168,9 @@ public class SqlCreate extends SqlQuery<SqlCreate> {
   }
 
   /**
-   * Adds a specified type {@code type} field with a field name {@code field}, 
-   * precision {@code precision}, scale {@code scale} and Keywords
-   * {@code options}. Note: a field name {@code field} must not exist, and 
-   * dataSource must be empty.
+   * Adds a specified type {@code type} field with a field name {@code field}, precision
+   * {@code precision}, scale {@code scale} and Keywords {@code options}. Note: a field name
+   * {@code field} must not exist, and dataSource must be empty.
    * 
    * @param field the field's name
    * @param type the field's type
@@ -196,8 +191,7 @@ public class SqlCreate extends SqlQuery<SqlCreate> {
   }
 
   /**
-   * Adds an INTEGER type field with a field name {@code field} and Keywords 
-   * {@code options}.
+   * Adds an INTEGER type field with a field name {@code field} and Keywords {@code options}.
    * 
    * @param field the field's name
    * @param options additional Keywords
@@ -208,8 +202,7 @@ public class SqlCreate extends SqlQuery<SqlCreate> {
   }
 
   /**
-   * Adds a LONG type field with a field name {@code field} and Keywords 
-   * {@code options}.
+   * Adds a LONG type field with a field name {@code field} and Keywords {@code options}.
    * 
    * @param field the field's name
    * @param options additional Keywords
@@ -220,11 +213,11 @@ public class SqlCreate extends SqlQuery<SqlCreate> {
   }
 
   /**
-   * Adds a NUMERIC type field with a field name {@code field}, precision
-   * {@code precision}, scale {@code scale} and Keywords {@code options}.
+   * Adds a NUMERIC type field with a field name {@code field}, precision {@code precision}, scale
+   * {@code scale} and Keywords {@code options}.
    * 
    * @param field the field's name
-   * @param precision the field's precition
+   * @param precision the field's precision
    * @param scale the field's scale
    * @param options additional Keywords
    * @return object's SqlCreate instance
@@ -236,8 +229,8 @@ public class SqlCreate extends SqlQuery<SqlCreate> {
   }
 
   /**
-   * Adds a STRING type field with a field name {@code field}, precision
-   * {@code precision} and Keywords {@code options}.
+   * Adds a STRING type field with a field name {@code field}, precision {@code precision} and
+   * Keywords {@code options}.
    * 
    * @param field the field's name
    * @param precision the field's precision
@@ -260,8 +253,7 @@ public class SqlCreate extends SqlQuery<SqlCreate> {
    * Returns a field named {@code field} if such exists.
    * 
    * @param field the field's name
-   * @return a field named {@code field} if such exists, {@code null} if the
-   * name was not found.
+   * @return a field named {@code field} if such exists, {@code null} if the name was not found.
    */
   public SqlField getField(String field) {
     for (SqlField fld : fieldList) {
@@ -280,8 +272,8 @@ public class SqlCreate extends SqlQuery<SqlCreate> {
   }
 
   /**
-   * Returns a list of sources found in the {@code dataSource}. For more 
-   * details see {@link com.butent.bee.shared.sql.SqlSelect#getSources()}. 
+   * Returns a list of sources found in the {@code dataSource}. For more details see
+   * {@link com.butent.bee.shared.sql.SqlSelect#getSources()}.
    * 
    * @returns a list of sources found in the {@code dataSource}.
    */
@@ -296,8 +288,8 @@ public class SqlCreate extends SqlQuery<SqlCreate> {
   }
 
   /**
-   * Returns a list of parameters found in the {@code dataSource}. For more 
-   * details see {@link com.butent.bee.shared.sql.SqlSelect#getParams()}. 
+   * Returns a list of parameters found in the {@code dataSource}. For more details see
+   * {@link com.butent.bee.shared.sql.SqlSelect#getParams()}.
    * 
    * @returns a list of parameters found in the {@code dataSource}.
    */
@@ -316,8 +308,8 @@ public class SqlCreate extends SqlQuery<SqlCreate> {
   /**
    * @param builder the builder to use
    * @param paramMode sets param mode on or off
-   * @return a generated SqlCreate query with a specified SqlBuilder
-   * {@code builder} and parameter mode {@code paramMode}.
+   * @return a generated SqlCreate query with a specified SqlBuilder {@code builder} and parameter
+   *         mode {@code paramMode}.
    */
   @Override
   public String getSqlString(SqlBuilder builder, boolean paramMode) {
@@ -363,8 +355,8 @@ public class SqlCreate extends SqlQuery<SqlCreate> {
   }
 
   /**
-   * If there are no fields created sets the {@code dataSource} from an
-   * SqlSelect query {@code query}.
+   * If there are no fields created sets the {@code dataSource} from an SqlSelect query
+   * {@code query}.
    * 
    * @param query the query to use for setting the dataSource
    * @return object's SqlCreate instance

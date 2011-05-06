@@ -29,36 +29,36 @@ import java.util.Map;
 
 public class EventUtils {
 
-  public static final String EVENT_TYPE_BLUR = "blur"; 
+  public static final String EVENT_TYPE_BLUR = "blur";
 
   public static final String EVENT_TYPE_CAN_PLAY_THROUGH = "canplaythrough";
-  
-  public static final String EVENT_TYPE_CHANGE = "change"; 
-  
+
+  public static final String EVENT_TYPE_CHANGE = "change";
+
   public static final String EVENT_TYPE_CLICK = "click";
-  
+
   public static final String EVENT_TYPE_CONTEXT_MENU = "contextmenu";
 
   public static final String EVENT_TYPE_DBL_CLICK = "dblclick";
-  
+
   public static final String EVENT_TYPE_ENDED = "ended";
 
   public static final String EVENT_TYPE_ERROR = "error";
 
-  public static final String EVENT_TYPE_FOCUS = "focus"; 
+  public static final String EVENT_TYPE_FOCUS = "focus";
 
   public static final String EVENT_TYPE_GESTURE_CHANGE = "gesturechange";
   public static final String EVENT_TYPE_GESTURE_END = "gestureend";
   public static final String EVENT_TYPE_GESTURE_START = "gesturestart";
-  
+
   public static final String EVENT_TYPE_KEY_DOWN = "keydown";
   public static final String EVENT_TYPE_KEY_PRESS = "keypress";
   public static final String EVENT_TYPE_KEY_UP = "keyup";
-  
+
   public static final String EVENT_TYPE_LOAD = "load";
-  
+
   public static final String EVENT_TYPE_LOSE_CAPTURE = "losecapture";
-  
+
   public static final String EVENT_TYPE_MOUSE_DOWN = "mousedown";
   public static final String EVENT_TYPE_MOUSE_MOVE = "mousemove";
   public static final String EVENT_TYPE_MOUSE_OUT = "mouseout";
@@ -69,14 +69,14 @@ public class EventUtils {
   public static final String EVENT_TYPE_PASTE = "paste";
 
   public static final String EVENT_TYPE_PROGRESS = "progress";
-  
+
   public static final String EVENT_TYPE_SCROLL = "scroll";
 
   public static final String EVENT_TYPE_TOUCH_CANCEL = "touchcancel";
   public static final String EVENT_TYPE_TOUCH_END = "touchend";
   public static final String EVENT_TYPE_TOUCH_MOVE = "touchmove";
   public static final String EVENT_TYPE_TOUCH_START = "touchstart";
-  
+
   private static boolean dnd;
 
   private static JavaScriptObject onDnd;
@@ -176,7 +176,7 @@ public class EventUtils {
     }
     return isClick(ev.getType());
   }
-  
+
   public static boolean isClick(String type) {
     return isEventType(type, EVENT_TYPE_CLICK);
   }
@@ -186,7 +186,7 @@ public class EventUtils {
     Assert.notEmpty(t2);
     return BeeUtils.same(t1, t2);
   }
-  
+
   public static boolean isInputElement(EventTarget et) {
     return isTargetTagName(et, DomUtils.TAG_INPUT);
   }
@@ -198,7 +198,7 @@ public class EventUtils {
   public static boolean isKeyEvent(int type) {
     return (type & Event.KEYEVENTS) != 0;
   }
-  
+
   public static boolean isKeyEvent(Event ev) {
     if (ev == null) {
       return false;
@@ -210,14 +210,14 @@ public class EventUtils {
   public static boolean isKeyPress(String type) {
     return isEventType(type, EVENT_TYPE_KEY_PRESS);
   }
-  
+
   public static boolean isTargetId(EventTarget et, String id) {
     if (et == null || BeeUtils.isEmpty(id)) {
       return false;
     }
     return BeeUtils.same(getTargetId(et), id);
   }
-  
+
   public static boolean isTargetTagName(EventTarget et, String tagName) {
     if (et == null || BeeUtils.isEmpty(tagName)) {
       return false;
@@ -513,9 +513,9 @@ public class EventUtils {
   }
 
   private static native void initDnd() /*-{
-		@com.butent.bee.client.event.EventUtils::onDnd = $entry(function(evt) {
-			return @com.butent.bee.client.event.EventUtils::dispatchDnd(Lcom/butent/bee/client/event/DndEvent;)(evt);
-		});
+    @com.butent.bee.client.event.EventUtils::onDnd = $entry(function(evt) {
+      return @com.butent.bee.client.event.EventUtils::dispatchDnd(Lcom/butent/bee/client/event/DndEvent;)(evt);
+    });
   }-*/;
 
   private static boolean isDndSource(String id) {
@@ -527,31 +527,31 @@ public class EventUtils {
   }
 
   private static native String sinkDrag(Element elem) /*-{
-		elem.ondrag = @com.butent.bee.client.event.EventUtils::onDnd;
+    elem.ondrag = @com.butent.bee.client.event.EventUtils::onDnd;
   }-*/;
 
   private static native String sinkDragEnd(Element elem) /*-{
-		elem.ondragend = @com.butent.bee.client.event.EventUtils::onDnd;
+    elem.ondragend = @com.butent.bee.client.event.EventUtils::onDnd;
   }-*/;
 
   private static native String sinkDragEnter(Element elem) /*-{
-		elem.ondragenter = @com.butent.bee.client.event.EventUtils::onDnd;
+    elem.ondragenter = @com.butent.bee.client.event.EventUtils::onDnd;
   }-*/;
 
   private static native String sinkDragLeave(Element elem) /*-{
-		elem.ondragleave = @com.butent.bee.client.event.EventUtils::onDnd;
+    elem.ondragleave = @com.butent.bee.client.event.EventUtils::onDnd;
   }-*/;
 
   private static native String sinkDragOver(Element elem) /*-{
-		elem.ondragover = @com.butent.bee.client.event.EventUtils::onDnd;
+    elem.ondragover = @com.butent.bee.client.event.EventUtils::onDnd;
   }-*/;
 
   private static native String sinkDragStart(Element elem) /*-{
-		elem.ondragstart = @com.butent.bee.client.event.EventUtils::onDnd;
+    elem.ondragstart = @com.butent.bee.client.event.EventUtils::onDnd;
   }-*/;
 
   private static native String sinkDrop(Element elem) /*-{
-		elem.ondrop = @com.butent.bee.client.event.EventUtils::onDnd;
+    elem.ondrop = @com.butent.bee.client.event.EventUtils::onDnd;
   }-*/;
 
   private static String transformEventTarget(EventTarget et) {

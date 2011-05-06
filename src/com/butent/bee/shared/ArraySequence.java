@@ -6,15 +6,16 @@ import java.util.List;
 
 /**
  * Operations with arrays.
+ * 
  * @param <T> the object type of array
  */
 public class ArraySequence<T> extends AbstractSequence<T> {
   private T[] values;
-  private int length; 
+  private int length;
 
   /**
-   * Creates object with array sequence. All operations changes {@code values}
-   * array in this object. 
+   * Creates object with array sequence. All operations changes {@code values} array in this object.
+   * 
    * @param values the array of objects
    */
   public ArraySequence(T[] values) {
@@ -24,7 +25,7 @@ public class ArraySequence<T> extends AbstractSequence<T> {
   }
 
   /**
-   * Clear the array of object;
+   * Clear the array of object.
    */
   public void clear() {
     this.length = 0;
@@ -32,6 +33,7 @@ public class ArraySequence<T> extends AbstractSequence<T> {
 
   /**
    * Returns the object of array contains of the index.
+   * 
    * @param index the object index of array
    * @return the object of array contains of the index.
    */
@@ -41,7 +43,8 @@ public class ArraySequence<T> extends AbstractSequence<T> {
   }
 
   /**
-   * Returns the array of objects
+   * Returns the array of objects.
+   * 
    * @return the array of objects
    */
   public Pair<T[], Integer> getArray(T[] a) {
@@ -53,7 +56,8 @@ public class ArraySequence<T> extends AbstractSequence<T> {
   }
 
   /**
-   * Returns the {@code List} of objects
+   * Returns the {@code List} of objects.
+   * 
    * @return the list of objects
    */
   public List<T> getList() {
@@ -68,6 +72,7 @@ public class ArraySequence<T> extends AbstractSequence<T> {
 
   /**
    * Insert object to array specified index of array.
+   * 
    * @param index index of object array
    * @param value the object inserts to array
    */
@@ -79,7 +84,8 @@ public class ArraySequence<T> extends AbstractSequence<T> {
   }
 
   /**
-   * Removes the object of array specified by index
+   * Removes the object of array specified by index.
+   * 
    * @param index the index of object array
    */
   public void remove(int index) {
@@ -90,19 +96,21 @@ public class ArraySequence<T> extends AbstractSequence<T> {
   }
 
   /**
-   * Change object to other object of array specified by index
-   * @param index the index of object array. 
+   * Change object to other object of array specified by index.
+   * 
+   * @param index the index of object array.
    */
   public void set(int index, T value) {
     assertIndex(index);
     values[index] = value;
   }
-  
+
   /**
-  * Converts a list {@code lst} to an array and sets it to {@code values} using 
-  * {@link #setValues(T[])}
-  * @param lst the new value to set
-  */
+   * Converts a list {@code lst} to an array and sets it to {@code values} using.
+   * {@link #setValues(T[])}
+   * 
+   * @param lst the new value to set
+   */
   public void setValues(List<T> lst) {
     Assert.notNull(lst);
     values = lst.toArray(values);
@@ -110,7 +118,8 @@ public class ArraySequence<T> extends AbstractSequence<T> {
   }
 
   /**
-   * Sets {@code values} to a specified array {@code arr}
+   * Sets {@code values} to a specified array {@code arr}.
+   * 
    * @param arr the new value to set
    */
   public void setValues(T[] arr) {

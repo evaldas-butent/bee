@@ -56,19 +56,19 @@ public class DomUtils {
     }
 
     public native String getName() /*-{
-			return this.name;
+      return this.name;
     }-*/;
 
     public native String getValue() /*-{
-			return this.value;
+      return this.value;
     }-*/;
 
     public native void setName(String nm) /*-{
-			this.name = nm;
+      this.name = nm;
     }-*/;
 
     public native void setValue(String v) /*-{
-			this.value = v;
+      this.value = v;
     }-*/;
 
     public String transform() {
@@ -224,7 +224,7 @@ public class DomUtils {
   }
 
   public static native Element createElement(Document doc, String tag) /*-{
-		return doc.createElement(tag);
+    return doc.createElement(tag);
   }-*/;
 
   public static Element createElement(String tag) {
@@ -233,7 +233,7 @@ public class DomUtils {
   }
 
   public static native Element createElementNs(Document doc, String ns, String tag) /*-{
-		return doc.createElementNS(ns, tag);
+    return doc.createElementNS(ns, tag);
   }-*/;
 
   public static Element createElementNs(String ns, String tag) {
@@ -681,7 +681,7 @@ public class DomUtils {
   }
 
   public static native NodeList<Element> getElementsByName(String name) /*-{
-		return $doc.getElementsByName(name);
+    return $doc.getElementsByName(name);
   }-*/;
 
   public static HeadElement getHead() {
@@ -749,11 +749,11 @@ public class DomUtils {
   }
 
   public static native String getNamespaceUri(Node nd) /*-{
-		return nd.namespaceURI;
+    return nd.namespaceURI;
   }-*/;
 
   public static native JsArray<ElementAttribute> getNativeAttributes(Element el) /*-{
-		return el.attributes;
+    return el.attributes;
   }-*/;
 
   public static List<Property> getNodeInfo(Node nd) {

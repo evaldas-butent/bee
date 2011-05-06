@@ -4,16 +4,18 @@ import com.google.common.collect.Lists;
 
 import java.util.Arrays;
 import java.util.List;
+
 /**
  * Implements operations of list.
+ * 
  * @param <T> type of object
  */
 public class ListSequence<T> extends AbstractSequence<T> {
   private List<T> values;
-    
+
   /**
-   * Creates a new list with finite size. All elements of list are  setting 
-   * {@code null}
+   * Creates a new list with finite size. All elements of list are setting {@code null}
+   * 
    * @param size size of the list;
    */
   public ListSequence(int size) {
@@ -25,7 +27,8 @@ public class ListSequence<T> extends AbstractSequence<T> {
   }
 
   /**
-   * Creates a new list with {@code List} type values.  
+   * Creates a new list with {@code List} type values.
+   * 
    * @param values values of the list
    */
   public ListSequence(List<T> values) {
@@ -34,15 +37,16 @@ public class ListSequence<T> extends AbstractSequence<T> {
   }
 
   /**
-   * Removes all values of the list
+   * Removes all values of the list.
    */
   public void clear() {
     values.clear();
   }
 
   /**
-   * Returns the value of the list by {@code index}. The value {@code index} are
-   * between 0 and {@code length() - 1} 
+   * Returns the value of the list by {@code index}. The value {@code index} are between 0 and
+   * {@code length() - 1}
+   * 
    * @param index index of the list field
    * @return the value of the list by index
    */
@@ -53,6 +57,7 @@ public class ListSequence<T> extends AbstractSequence<T> {
 
   /**
    * Converts list to array.
+   * 
    * @return converted array of list
    */
   public Pair<T[], Integer> getArray(T[] a) {
@@ -65,18 +70,20 @@ public class ListSequence<T> extends AbstractSequence<T> {
   }
 
   /**
-   * Returns list of {@code java.util.List} type
-   * @return list of {@code java.util.List} type 
+   * Returns list of {@code java.util.List} type.
+   * 
+   * @return list of {@code java.util.List} type
    */
   public List<T> getList() {
     return values;
   }
 
   /**
-   * Inserts a new {@code value} into list by {@code index}.
-   * The value of {@code index} are between 0 and {@code length()}
+   * Inserts a new {@code value} into list by {@code index}. The value of {@code index} are between
+   * 0 and {@code length()}
+   * 
    * @param index index of value in the list;
-   * @param value value there will be insert 
+   * @param value value there will be insert
    */
   public void insert(int index, T value) {
     assertInsert(index);
@@ -84,15 +91,18 @@ public class ListSequence<T> extends AbstractSequence<T> {
   }
 
   /**
-   * Removes the value of the list by index
+   * Removes the value of the list by index.
+   * 
    * @param index index of value of the list;
    */
   public void remove(int index) {
     assertIndex(index);
     values.remove(index);
   }
+
   /**
-   * Replaces the list values to other {@code value} by {@code index}
+   * Replaces the list values to other {@code value} by {@code index}.
+   * 
    * @param index index of value in the list
    * @param value a new value
    */
@@ -102,7 +112,8 @@ public class ListSequence<T> extends AbstractSequence<T> {
   }
 
   /**
-   * Sets a values in the list of other {@code lst}
+   * Sets a values in the list of other {@code lst}.
+   * 
    * @param lst the list of new values
    */
   public void setValues(List<T> lst) {
@@ -111,7 +122,8 @@ public class ListSequence<T> extends AbstractSequence<T> {
   }
 
   /**
-   * Sets a value in the list of the array
+   * Sets a value in the list of the array.
+   * 
    * @param arr the array of values
    */
   public void setValues(T[] arr) {

@@ -24,23 +24,23 @@ public class AjaxLoader {
     }
 
     public final native void setBaseDomain(String baseDomain) /*-{
-			this.base_domain = baseDomain;
+      this.base_domain = baseDomain;
     }-*/;
 
     public final native void setLanguage(String language) /*-{
-			this.language = language;
+      this.language = language;
     }-*/;
 
     public final native void setNoCss(boolean value) /*-{
-			this.nocss = value;
+      this.nocss = value;
     }-*/;
 
     public final native void setOtherParms(String otherParams) /*-{
-			this.other_params = otherParams;
+      this.other_params = otherParams;
     }-*/;
 
     public final native void setPackages(JsArrayString packages) /*-{
-			this.packages = packages;
+      this.packages = packages;
     }-*/;
 
     public final void setPackages(String... packages) {
@@ -48,9 +48,9 @@ public class AjaxLoader {
     }
 
     private native void setCallback(Runnable onLoad) /*-{
-			this.callback = function() {
-				@com.butent.bee.client.ajaxloader.ExceptionHelper::runProtected(Ljava/lang/Runnable;)(onLoad);
-			}
+      this.callback = function() {
+        @com.butent.bee.client.ajaxloader.ExceptionHelper::runProtected(Ljava/lang/Runnable;)(onLoad);
+      }
     }-*/;
   }
 
@@ -160,22 +160,22 @@ public class AjaxLoader {
   }
 
   private static native boolean nativeCreateCallback() /*-{
-		if ($wnd['google'] && $wnd.google['load']) {
-			return true;
-		}
-		$wnd.__gwt_AjaxLoader_onLoad = function() {
-			@com.butent.bee.client.ajaxloader.AjaxLoader::onLoadCallback()();
-		}
-		return false;
+    if ($wnd['google'] && $wnd.google['load']) {
+      return true;
+    }
+    $wnd.__gwt_AjaxLoader_onLoad = function() {
+      @com.butent.bee.client.ajaxloader.AjaxLoader::onLoadCallback()();
+    }
+    return false;
   }-*/;
 
   private static native ClientLocation nativeGetClientLocation() /*-{
-		return $wnd.google.loader.ClientLocation;
+    return $wnd.google.loader.ClientLocation;
   }-*/;
 
   private static native void nativeLoadApi(String api, String version,
       JavaScriptObject settings) /*-{
-		$wnd.google.load(api, version, settings);
+    $wnd.google.load(api, version, settings);
   }-*/;
 
   private static void onLoadCallback() {

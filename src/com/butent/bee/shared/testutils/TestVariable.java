@@ -1,326 +1,328 @@
 package com.butent.bee.shared.testutils;
 
-import static org.junit.Assert.*;
+import com.butent.bee.shared.BeeType;
+import com.butent.bee.shared.BeeWidget;
+import com.butent.bee.shared.Variable;
 
-import java.util.ArrayList;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.butent.bee.shared.BeeType;
-import com.butent.bee.shared.BeeWidget;
-import com.butent.bee.shared.Variable;
+import java.util.ArrayList;
 
 /**
  * Tests {@link com.butent.bee.shared.Variable}.
  */
 public class TestVariable {
 
-	Variable Var;
-
-	@Before
-	public void setUp() throws Exception {
-	}
-
-	@After
-	public void tearDown() throws Exception {
-	}
-
-	@Test
-	public final void testVariable() {
-		Var = new Variable();
-		assertEquals(BeeType.UNKNOWN, Var.getType());
-		assertNull(Var.getValue());
-		assertNull(Var.getCaption());
-		assertNull(Var.getWidget());
-		assertNull(Var.getItems());
-	}
-
-	@Test
-	public final void testVariableBeeType() {
-		Var = new Variable(BeeType.DATE);
-		assertEquals(BeeType.DATE, Var.getType());
-		assertNull(Var.getValue());
-		assertNull(Var.getCaption());
-		assertNull(Var.getWidget());
-		assertNull(Var.getItems());
-	}
-
-	@Test
-	public final void testVariableBeeTypeString() {
-		Var = new Variable(BeeType.CHAR, "d");
-		assertEquals(BeeType.CHAR, Var.getType());
-		assertEquals(null, Var.getCaption());
-		assertEquals("d", Var.getValue());
-		assertNull(Var.getWidget());
-		assertNull(Var.getItems());
-	}
-
-	@Test
-	public final void testVariableStringBeeType() {
-		Var = new Variable("value 5", BeeType.BYTE);
-
-		assertEquals("value 5", Var.getCaption());
-		assertEquals(BeeType.BYTE, Var.getType());
-		assertNull(Var.getValue());
-		assertNull(Var.getWidget());
-		assertNull(Var.getItems());
-	}
-
-	@Test
-	public final void testVariableStringBeeTypeString() {
-		Var = new Variable("Var1", BeeType.BLOB, "blobas");
-
-		assertEquals("Var1", Var.getCaption());
-		assertEquals(BeeType.BLOB, Var.getType());
-		assertEquals("blobas", Var.getValue());
-
-		Var = new Variable(null, BeeType.BOOLEAN, "true");
-
-		assertEquals(null, Var.getCaption());
-		assertEquals(BeeType.BOOLEAN, Var.getType());
-		assertEquals("true", Var.getValue());
-		assertEquals(true, Var.getBoolean());
-
-		Var = new Variable("Var2", null, "lblobas");
-
-		assertEquals("Var2", Var.getCaption());
-		assertEquals(null, Var.getType());
-		assertEquals("lblobas", Var.getValue());
-
-		Var = new Variable("Var3", BeeType.ENUM, null);
-
-		assertEquals("Var3", Var.getCaption());
-		assertEquals(BeeType.ENUM, Var.getType());
-		assertEquals(null, Var.getValue());
-		assertNull(Var.getWidget());
-		assertNull(Var.getItems());
-	}
-
-	@Test
-	public final void testVariableStringBeeTypeStringBeeWidget() {
-		Var = new Variable("Var8", BeeType.FILE, "/@vmlinuz", BeeWidget.AREA);
-
-		assertEquals("Var8", Var.getCaption());
-		assertEquals(BeeType.FILE, Var.getType());
-		assertEquals("/@vmlinuz", Var.getValue());
-		assertEquals(BeeWidget.AREA, Var.getWidget());
-		assertNull(Var.getItems());
-	}
-
-	@Test
-	public final void testVariableStringBeeTypeStringBeeWidgetStringArray() {
-
-		Var = new Variable("Var10", BeeType.INT, "100", BeeWidget.BUTTON_GROUP,
-				"one");
-		assertEquals("Var10", Var.getCaption());
-		assertEquals(BeeType.INT, Var.getType());
-		assertEquals("100", Var.getValue());
-		assertEquals(100, Var.getInt());
-		assertEquals(BeeWidget.BUTTON_GROUP, Var.getWidget());
-		String[] a = { "one" };
-		assertArrayEquals(a, Var.getItems().toArray());
+  Variable var;
 
-		Var = new Variable("Var11", BeeType.LONG, "54", BeeWidget.CHECK, "one",
-				"time");
-		assertEquals("Var11", Var.getCaption());
-		assertEquals(BeeType.LONG, Var.getType());
-		assertEquals("54", Var.getValue());
-		assertEquals(54, Var.getLong());
-		assertEquals(BeeWidget.CHECK, Var.getWidget());
-		String[] b = { "one", "time" };
-		assertArrayEquals(b, Var.getItems().toArray());
+  @Before
+  public void setUp() throws Exception {
+  }
 
-		Var = new Variable("Var9", BeeType.FLOAT, "1.255", BeeWidget.BUTTON,
-				(String[]) null);
+  @After
+  public void tearDown() throws Exception {
+  }
 
-		assertEquals("Var9", Var.getCaption());
-		assertEquals(BeeType.FLOAT, Var.getType());
-		assertEquals("1.255", Var.getValue());
-		assertEquals(1.255, Var.getDouble(), 0.0);
-		assertEquals(BeeWidget.BUTTON, Var.getWidget());
-		assertNull(Var.getItems());
-	}
+  @Test
+  public final void testGetBoolean() {
+    var = new Variable();
+    var.setValue("10");
 
-	@Test
-	public final void testGetBoolean() {
-		Var = new Variable();
-		Var.setValue("10");
+    assertTrue(var.getBoolean());
+    var.setValue(true);
+    assertTrue(var.getBoolean());
 
-		assertTrue(Var.getBoolean());
-		Var.setValue(true);
-		assertTrue(Var.getBoolean());
+    var.setValue(0.9);
 
-		Var.setValue(0.9);
+    assertFalse(var.getBoolean());
 
-		assertFalse(Var.getBoolean());
+    var.setValue("firm");
+    assertFalse(var.getBoolean());
+  }
 
-		Var.setValue("firm");
-		assertFalse(Var.getBoolean());
-	}
+  @Test
+  public final void testGetDouble() {
+    var = new Variable();
 
-	@Test
-	public final void testGetDouble() {
-		Var = new Variable();
+    var.setValue("xyz");
+    assertEquals(0.0, var.getDouble(), 0.0);
 
-		Var.setValue("xyz");
-		assertEquals(0.0, Var.getDouble(), 0.0);
+    var.setValue(true);
 
-		Var.setValue(true);
+    assertEquals(0.0, var.getDouble(), 0.0);
 
-		assertEquals(0.0, Var.getDouble(), 0.0);
+    var.setValue(false);
+    assertEquals(0.0, var.getDouble(), 0.0);
 
-		Var.setValue(false);
-		assertEquals(0.0, Var.getDouble(), 0.0);
+    var.setValue(1.0);
+    assertEquals(1.0, var.getDouble(), 0.0);
 
-		Var.setValue(1.0);
-		assertEquals(1.0, Var.getDouble(), 0.0);
+    var.setValue(99);
+    assertEquals(99.0, var.getDouble(), 0.0);
 
-		Var.setValue(99);
-		assertEquals(99.0, Var.getDouble(), 0.0);
+    var.setValue("-128.99");
+    assertEquals(-128.99, var.getDouble(), 0.0);
+  }
 
-		Var.setValue("-128.99");
-		assertEquals(-128.99, Var.getDouble(), 0.0);
+  @Test
+  public final void testGetInt() {
+    var = new Variable();
 
-	}
+    var.setValue(true);
 
-	@Test
-	public final void testGetInt() {
-		Var = new Variable();
+    assertEquals(0, var.getInt());
 
-		Var.setValue(true);
+    var.setValue(false);
+    assertEquals(0, var.getInt());
 
-		assertEquals(0, Var.getInt());
+    var.setValue(1.0);
+    assertEquals(1, var.getInt());
 
-		Var.setValue(false);
-		assertEquals(0, Var.getInt());
+    var.setValue(99);
+    assertEquals(99, var.getInt());
 
-		Var.setValue(1.0);
-		assertEquals(1, Var.getInt());
+    var.setValue(-1.0);
+    assertEquals(-1, var.getInt());
 
-		Var.setValue(99);
-		assertEquals(99, Var.getInt());
+    var.setValue(254.0);
+    assertEquals(254, var.getInt());
 
-		Var.setValue(-1.0);
-		assertEquals(-1, Var.getInt());
+    var.setValue(458.1);
+    assertEquals(458, var.getInt());
 
-		Var.setValue(254.0);
-		assertEquals(254, Var.getInt());
+    var.setValue("-128.99");
+    assertEquals(-128, var.getInt());
+  }
 
-		Var.setValue(458.1);
-		assertEquals(458, Var.getInt());
+  @Test
+  public final void testGetItems() {
+    var = new Variable();
 
-		Var.setValue("-128.99");
-		assertEquals(-128, Var.getInt());
-	}
+    assertNull(var.getItems());
 
-	@Test
-	public final void testGetItems() {
-		Var = new Variable();
+    String expArr[] = {"any", "many", "delta"};
+    ArrayList<String> expLst = new ArrayList<String>();
+    expLst.add("any");
+    expLst.add("many");
+    expLst.add("delta");
 
-		assertNull(Var.getItems());
+    var.setItems(expLst);
 
-		String expArr[] = { "any", "many", "delta" };
-		ArrayList<String> expLst = new ArrayList<String>();
-		expLst.add("any");
-		expLst.add("many");
-		expLst.add("delta");
+    assertArrayEquals(expArr, var.getItems().toArray());
+  }
 
-		Var.setItems(expLst);
+  @Test
+  public final void testGetLong() {
+    var = new Variable();
 
-		assertArrayEquals(expArr, Var.getItems().toArray());
-	}
+    var.setValue(true);
 
-	@Test
-	public final void testGetLong() {
-		Var = new Variable();
+    assertEquals(0, var.getLong());
 
-		Var.setValue(true);
+    var.setValue(false);
+    assertEquals(0, var.getLong());
 
-		assertEquals(0, Var.getLong());
+    var.setValue(1.0);
+    assertEquals(1, var.getLong());
 
-		Var.setValue(false);
-		assertEquals(0, Var.getLong());
-
-		Var.setValue(1.0);
-		assertEquals(1, Var.getLong());
-
-		Var.setValue(99);
-		assertEquals(99, Var.getLong());
-
-		Var.setValue("-128.99");
-		assertEquals(-128, Var.getLong());
-	}
-
-	@Test
-	public final void testGetString() {
-		Var = new Variable();
-
-		Var.setValue(true);
-
-		assertEquals("true", Var.getString());
-
-		Var.setValue(false);
-		assertEquals("false", Var.getString());
-
-		Var.setValue(1.0);
-		try {
-			assertEquals("1.0", Var.getString());
-		} catch (AssertionError e) {
-			System.out
-					.println("[INFO] TeestVariable.testGetString(): Alternative test 1");
-			assertEquals("1", Var.getString());
-		}
-
-		Var.setValue(99);
-		assertEquals("99", Var.getString());
-
-		Var.setValue("-128.99");
-		assertEquals("-128.99", Var.getString());
-	}
-
-	@Test
-	public final void testGetWidth() {
-		Var = new Variable();
-
-		Var.setWidth(null);
-		assertNull(Var.getWidth());
-	}
-
-	@Test
-	public final void testSetType() {
-		Var = new Variable();
-
-		assertEquals(BeeType.UNKNOWN, Var.getType());
-
-		Var.setType(BeeType.TEXT);
-
-		assertEquals(BeeType.TEXT, Var.getType());
-	}
-
-	@Test
-	public final void testSetWidget() {
-		Var = new Variable();
-
-		assertNull(Var.getWidget());
-
-		Var.setWidget(BeeWidget.UPLOAD);
-		assertEquals(BeeWidget.UPLOAD, Var.getWidget());
-
-	}
-
-	@Test
-	public final void testToString() {
-		Var = new Variable("TestUnit", BeeType.BLOB, "1.0");
-
-		assertEquals("caption=TestUnit;type=BLOB;value=1.0", Var.toString());
-	}
-
-	@Test
-	public final void testTransform() {
-		Var = new Variable("TestUnit", BeeType.BLOB, "1.0");
-		assertEquals("caption=TestUnit;type=BLOB;value=1.0", Var.transform());
-	}
+    var.setValue(99);
+    assertEquals(99, var.getLong());
+
+    var.setValue("-128.99");
+    assertEquals(-128, var.getLong());
+  }
+
+  @Test
+  public final void testGetString() {
+    var = new Variable();
+
+    var.setValue(true);
+
+    assertEquals("true", var.getString());
+
+    var.setValue(false);
+    assertEquals("false", var.getString());
+
+    var.setValue(1.0);
+    try {
+      assertEquals("1.0", var.getString());
+    } catch (AssertionError e) {
+      System.out
+          .println("[INFO] TeestVariable.testGetString(): Alternative test 1");
+      assertEquals("1", var.getString());
+    }
+
+    var.setValue(99);
+    assertEquals("99", var.getString());
+
+    var.setValue("-128.99");
+    assertEquals("-128.99", var.getString());
+  }
+
+  @Test
+  public final void testGetWidth() {
+    var = new Variable();
+
+    var.setWidth(null);
+    assertNull(var.getWidth());
+  }
+
+  @Test
+  public final void testSetType() {
+    var = new Variable();
+
+    assertEquals(BeeType.UNKNOWN, var.getType());
+
+    var.setType(BeeType.TEXT);
+
+    assertEquals(BeeType.TEXT, var.getType());
+  }
+
+  @Test
+  public final void testSetWidget() {
+    var = new Variable();
+
+    assertNull(var.getWidget());
+
+    var.setWidget(BeeWidget.UPLOAD);
+    assertEquals(BeeWidget.UPLOAD, var.getWidget());
+  }
+
+  @Test
+  public final void testToString() {
+    var = new Variable("TestUnit", BeeType.BLOB, "1.0");
+
+    assertEquals("caption=TestUnit;type=BLOB;value=1.0", var.toString());
+  }
+
+  @Test
+  public final void testTransform() {
+    var = new Variable("TestUnit", BeeType.BLOB, "1.0");
+    assertEquals("caption=TestUnit;type=BLOB;value=1.0", var.transform());
+  }
+
+  @Test
+  public final void testVariable() {
+    var = new Variable();
+    assertEquals(BeeType.UNKNOWN, var.getType());
+    assertNull(var.getValue());
+    assertNull(var.getCaption());
+    assertNull(var.getWidget());
+    assertNull(var.getItems());
+  }
+
+  @Test
+  public final void testVariableBeeType() {
+    var = new Variable(BeeType.DATE);
+    assertEquals(BeeType.DATE, var.getType());
+    assertNull(var.getValue());
+    assertNull(var.getCaption());
+    assertNull(var.getWidget());
+    assertNull(var.getItems());
+  }
+
+  @Test
+  public final void testVariableBeeTypeString() {
+    var = new Variable(BeeType.CHAR, "d");
+    assertEquals(BeeType.CHAR, var.getType());
+    assertEquals(null, var.getCaption());
+    assertEquals("d", var.getValue());
+    assertNull(var.getWidget());
+    assertNull(var.getItems());
+  }
+
+  @Test
+  public final void testVariableStringBeeType() {
+    var = new Variable("value 5", BeeType.BYTE);
+
+    assertEquals("value 5", var.getCaption());
+    assertEquals(BeeType.BYTE, var.getType());
+    assertNull(var.getValue());
+    assertNull(var.getWidget());
+    assertNull(var.getItems());
+  }
+
+  @Test
+  public final void testVariableStringBeeTypeString() {
+    var = new Variable("Var1", BeeType.BLOB, "blobas");
+
+    assertEquals("Var1", var.getCaption());
+    assertEquals(BeeType.BLOB, var.getType());
+    assertEquals("blobas", var.getValue());
+
+    var = new Variable(null, BeeType.BOOLEAN, "true");
+
+    assertEquals(null, var.getCaption());
+    assertEquals(BeeType.BOOLEAN, var.getType());
+    assertEquals("true", var.getValue());
+    assertEquals(true, var.getBoolean());
+
+    var = new Variable("Var2", null, "lblobas");
+
+    assertEquals("Var2", var.getCaption());
+    assertEquals(null, var.getType());
+    assertEquals("lblobas", var.getValue());
+
+    var = new Variable("Var3", BeeType.ENUM, null);
+
+    assertEquals("Var3", var.getCaption());
+    assertEquals(BeeType.ENUM, var.getType());
+    assertEquals(null, var.getValue());
+    assertNull(var.getWidget());
+    assertNull(var.getItems());
+  }
+
+  @Test
+  public final void testVariableStringBeeTypeStringBeeWidget() {
+    var = new Variable("Var8", BeeType.FILE, "/@vmlinuz", BeeWidget.AREA);
+
+    assertEquals("Var8", var.getCaption());
+    assertEquals(BeeType.FILE, var.getType());
+    assertEquals("/@vmlinuz", var.getValue());
+    assertEquals(BeeWidget.AREA, var.getWidget());
+    assertNull(var.getItems());
+  }
+
+  @Test
+  public final void testVariableStringBeeTypeStringBeeWidgetStringArray() {
+
+    var = new Variable("Var10", BeeType.INT, "100", BeeWidget.BUTTON_GROUP,
+        "one");
+    assertEquals("Var10", var.getCaption());
+    assertEquals(BeeType.INT, var.getType());
+    assertEquals("100", var.getValue());
+    assertEquals(100, var.getInt());
+    assertEquals(BeeWidget.BUTTON_GROUP, var.getWidget());
+    String[] a = {"one"};
+    assertArrayEquals(a, var.getItems().toArray());
+
+    var = new Variable("Var11", BeeType.LONG, "54", BeeWidget.CHECK, "one",
+        "time");
+    assertEquals("Var11", var.getCaption());
+    assertEquals(BeeType.LONG, var.getType());
+    assertEquals("54", var.getValue());
+    assertEquals(54, var.getLong());
+    assertEquals(BeeWidget.CHECK, var.getWidget());
+    String[] b = {"one", "time"};
+    assertArrayEquals(b, var.getItems().toArray());
+
+    var = new Variable("Var9", BeeType.FLOAT, "1.255", BeeWidget.BUTTON,
+        (String[]) null);
+
+    assertEquals("Var9", var.getCaption());
+    assertEquals(BeeType.FLOAT, var.getType());
+    assertEquals("1.255", var.getValue());
+    assertEquals(1.255, var.getDouble(), 0.0);
+    assertEquals(BeeWidget.BUTTON, var.getWidget());
+    assertNull(var.getItems());
+  }
 
 }

@@ -410,10 +410,10 @@ public class CliWorker {
       }
     }
     boolean all = command.indexOf('=') < 0;
-    
+
     Element element = null;
     NodeList<Element> nodes = null;
-    
+
     if (root == null) {
       if (all) {
         nodes = Selectors.getNodes(selectors);
@@ -427,31 +427,31 @@ public class CliWorker {
         element = Selectors.getElement(root, selectors);
       }
     }
-    
+
     if (element != null) {
       Global.inform(DomUtils.transformElement(element));
       return;
     }
-    
+
     int cnt = (nodes == null) ? 0 : nodes.getLength();
     if (cnt <= 0) {
       Global.showError(command, selectors, "no elements found");
       return;
     }
-    
+
     List<Property> info = PropertyUtils.createProperties(command, selectors, "Count", cnt);
     for (int i = 0; i < cnt; i++) {
-      info.add(new Property(BeeUtils.progress(i + 1, cnt), 
+      info.add(new Property(BeeUtils.progress(i + 1, cnt),
           DomUtils.transformElement(nodes.getItem(i))));
     }
-    
+
     if (cnt <= 16) {
       Global.modalGrid("Selectors", info);
     } else {
       BeeKeeper.getUi().showGrid(info);
     }
   }
-  
+
   public static void showBrowser(String[] arr) {
     boolean wnd = false;
     boolean loc = false;
@@ -664,7 +664,7 @@ public class CliWorker {
 
     JavaScriptObject obj;
     if (arr[1].startsWith("#")) {
-      obj = DOM.getElementById(arr[1].substring(1)); 
+      obj = DOM.getElementById(arr[1].substring(1));
     } else {
       obj = JsUtils.eval(arr[1]);
     }
@@ -921,7 +921,7 @@ public class CliWorker {
 
     JavaScriptObject obj;
     if (arr[1].startsWith("#")) {
-      obj = DOM.getElementById(arr[1].substring(1)); 
+      obj = DOM.getElementById(arr[1].substring(1));
     } else {
       obj = JsUtils.eval(arr[1]);
     }
@@ -1542,36 +1542,36 @@ public class CliWorker {
   }
 
   private static native void cornifyAdd() /*-{
-		try {
-			$wnd.cornify_add();
-		} catch (err) {
-		}
+    try {
+      $wnd.cornify_add();
+    } catch (err) {
+    }
   }-*/;
 
   private static native void getGeo(Element element) /*-{
-		if (navigator.geolocation) {
-			navigator.geolocation.getCurrentPosition(showPosition);
-		} else {
-			element.innerHTML = "no geolocation support";
-		}
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(showPosition);
+    } else {
+      element.innerHTML = "no geolocation support";
+    }
 
-		function showPosition(position) {
-			var lat = position.coords.latitude;
-			var lng = position.coords.longitude;
-			element.innerHTML = "Lat = " + lat + ", Lng = " + lng;
-		}
+    function showPosition(position) {
+      var lat = position.coords.latitude;
+      var lng = position.coords.longitude;
+      element.innerHTML = "Lat = " + lat + ", Lng = " + lng;
+    }
   }-*/;
 
   private static native void sampleCanvas(Element el) /*-{
-		var ctx = el.getContext("2d");
+    var ctx = el.getContext("2d");
 
-		for ( var i = 0; i < 6; i++) {
-			for ( var j = 0; j < 6; j++) {
-				ctx.fillStyle = 'rgb(' + Math.floor(255 - 42.5 * i) + ', '
-						+ Math.floor(255 - 42.5 * j) + ', 0)';
-				ctx.fillRect(j * 25, i * 25, 25, 25);
-			}
-		}
+    for ( var i = 0; i < 6; i++) {
+      for ( var j = 0; j < 6; j++) {
+        ctx.fillStyle = 'rgb(' + Math.floor(255 - 42.5 * i) + ', ' + Math.floor(255 - 42.5 * j)
+            + ', 0)';
+        ctx.fillRect(j * 25, i * 25, 25, 25);
+      }
+    }
   }-*/;
 
   private static void sampleSvg(Element el) {

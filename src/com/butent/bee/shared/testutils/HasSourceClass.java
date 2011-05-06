@@ -1,24 +1,26 @@
 package com.butent.bee.shared.testutils;
 
+import com.butent.bee.server.sql.HasSource;
+
 import java.util.ArrayList;
 import java.util.Collection;
 
-import com.butent.bee.server.sql.HasSource;
 /**
- * Object for testing   {@link com.butent.bee.server.sql.HasSource}.
+ * Object for testing {@link com.butent.bee.server.sql.HasSource}.
  */
 public class HasSourceClass implements HasSource {
 
-	public HasSourceClass() {
-	}
+  Collection<String> a;
 
-	Collection<String> a;
-	@Override
-	public Collection<String> getSources() {
-		a = new ArrayList<String>();
-		a.add("sql");
-		a.add("test");
-		return null;
-	}
+  public HasSourceClass() {
+  }
+
+  @Override
+  public Collection<String> getSources() {
+    a = new ArrayList<String>();
+    a.add("sql");
+    a.add("test");
+    return null;
+  }
 
 }

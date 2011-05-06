@@ -74,6 +74,6 @@ public class ArrayHelper {
   }
 
   private static native void nativePatchConstructorForSafari(JavaScriptObject result) /*-{
-		result.constructor = $wnd.Array;
+    result.constructor = $wnd.Array;
   }-*/;
 }

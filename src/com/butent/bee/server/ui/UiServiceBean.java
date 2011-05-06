@@ -52,6 +52,8 @@ public class UiServiceBean {
   SystemBean sys;
   @EJB
   UserServiceBean usr;
+  @EJB
+  GridHolderBean grd;
   @Resource
   EJBContext ctx;
 
@@ -79,6 +81,8 @@ public class UiServiceBean {
         response = menuInfo(reqInfo);
       } else if (BeeUtils.same(svc, Service.GET_GRID)) {
         response = gridInfo(reqInfo);
+      } else if (BeeUtils.same(svc, "rpc_data_gridinfo")) {
+        response = grid(reqInfo);
       } else if (BeeUtils.same(svc, Service.REBUILD)) {
         response = rebuildData(reqInfo);
       } else if (BeeUtils.same(svc, Service.DO_SQL)) {
@@ -248,9 +252,26 @@ public class UiServiceBean {
         sys.getViewCondition(viewName, filter)));
   }
 
+  private ResponseObject grid(RequestInfo reqInfo) {
+    String gridName = reqInfo.getContent();
+    String[] arr = gridName.split(" ", 2);
+    if (arr.length > 1) {
+      gridName = arr[1];
+    } else {
+      gridName = null;
+    }
+    if (BeeUtils.isEmpty(gridName)) {
+      return ResponseObject.error("Which grid?");
+    }
+    if (grd.isGrid(gridName)) {
+      return ResponseObject.response(grd.getGrid(gridName));
+    }
+    return ResponseObject.error("Grid not found:", gridName);
+  }
+
   private ResponseObject gridInfo(RequestInfo reqInfo) {
     String gName = reqInfo.getParameter("grid_name");
-    String grd = gName;
+    String grid = gName;
 
     SqlSelect ss = new SqlSelect();
     ss.addFields("g", "properties").addFrom("grids", "g").setWhere(
@@ -259,12 +280,12 @@ public class UiServiceBean {
     String x = qs.getValue(ss);
 
     if (!BeeUtils.isEmpty(x) && x.contains("parent_table")) {
-      grd = x.replaceFirst("^((?s).)*parent_table\\s*=\\s*[\\[\"'](.+)[\\]\"']((?s).)*$", "$2");
+      grid = x.replaceFirst("^((?s).)*parent_table\\s*=\\s*[\\[\"'](.+)[\\]\"']((?s).)*$", "$2");
     }
 
     ss = new SqlSelect();
     ss.addFields("c", "caption").addFrom("columns", "c").setWhere(
-          SqlUtils.equal("c", "table", grd)).addOrder("c", "order");
+          SqlUtils.equal("c", "table", grid)).addOrder("c", "order");
 
     String[] data = qs.getColumn(ss);
 
@@ -286,7 +307,7 @@ public class UiServiceBean {
       }
       return ResponseObject.response(rs);
     }
-    String msg = "Grid name not recognized: " + grd;
+    String msg = "Grid name not recognized: " + grid;
     logger.warning(msg);
     return ResponseObject.warning(msg);
   }

@@ -12,65 +12,64 @@ import com.butent.bee.shared.Transformable;
  */
 public class TransObject implements Transformable, HasLength, HasDoubleValue {
 
-	public static final double DOUBLE_DEFAULT_VALUE = 5.0;
-	public double doubleValue = 0;
-	public long longValue = 0;
-	private double Digit;
+  public static final double DOUBLE_DEFAULT_VALUE = 5.0;
+  public double doubleValue = 0;
+  public long longValue = 0;
+  public int sqlval = 8088;
 
-	public double getDigit() {
-		return Digit;
-	}
+  private double digit;
 
-	public void setDigit(double digit) {
-		Digit = digit;
-	}
+  @SuppressWarnings("static-access")
+  public TransObject() {
+    setDigit(this.DOUBLE_DEFAULT_VALUE);
+  }
 
-	@SuppressWarnings("static-access")
-	public TransObject() {
-		setDigit(this.DOUBLE_DEFAULT_VALUE);
-	}
+  public double getDigit() {
+    return digit;
+  }
 
-	@Override
-	public String transform() {
-		return Double.toString(this.Digit);
-	}
+  @Override
+  public double getDouble() {
 
-	@Override
-	public double getDouble() {
+    return doubleValue;
+  }
 
-		return doubleValue;
-	}
+  @Override
+  public int getInt() {
+    return 0;
+  }
 
-	@Override
-	public void setValue(double value) {
-		doubleValue = value;
+  @Override
+  public int getLength() {
+    return 5;
+  }
 
-	}
+  @Override
+  public long getLong() {
+    return 0;
+  }
 
-	@Override
-	public long getLong() {
-		return 0;
-	}
+  public void setDigit(double digit) {
+    this.digit = digit;
+  }
 
-	@Override
-	public void setValue(long value) {
-	}
+  @Override
+  public void setValue(double value) {
+    doubleValue = value;
+  }
 
-	@Override
-	public int getInt() {
-		return 0;
-	}
+  @Override
+  public void setValue(int value) {
+    sqlval = value;
+  }
 
-	public int sqlval = 8088;
+  @Override
+  public void setValue(long value) {
+  }
 
-	@Override
-	public void setValue(int value) {
-		sqlval = value;
-	}
-
-	@Override
-	public int getLength() {
-		return 5;
-	}
+  @Override
+  public String transform() {
+    return Double.toString(digit);
+  }
 
 }

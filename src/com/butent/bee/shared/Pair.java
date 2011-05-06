@@ -1,6 +1,7 @@
 package com.butent.bee.shared;
 
 import com.butent.bee.shared.utils.BeeUtils;
+
 /**
  * Defines pairs of objects.
  * 
@@ -12,7 +13,8 @@ public class Pair<A, B> implements Transformable {
   private final B b;
 
   /**
-   * Creates the new {@code Pair} object passing the pair of objects.  
+   * Creates the new {@code Pair} object passing the pair of objects.
+   * 
    * @param a object to pair the object {@code b}
    * @param b object to pair the object {@code a}
    */
@@ -23,6 +25,7 @@ public class Pair<A, B> implements Transformable {
 
   /**
    * Returns the first object or value of object.
+   * 
    * @return the first object or value of object.
    */
   public A getA() {
@@ -31,6 +34,7 @@ public class Pair<A, B> implements Transformable {
 
   /**
    * Returns the second object or value of object.
+   * 
    * @return the second object or value of object.
    */
   public B getB() {
@@ -38,7 +42,8 @@ public class Pair<A, B> implements Transformable {
   }
 
   /**
-   * Converts pair of objects to {@code String}
+   * Converts pair of objects to {@code String}.
+   * 
    * @return {@code String} of objects pair
    */
   @Override
@@ -47,7 +52,8 @@ public class Pair<A, B> implements Transformable {
   }
 
   /**
-   * Equivalents method {@link Pair#toString()}
+   * Equivalents method {@link Pair#toString()}.
+   * 
    * @see {@link Pair#toString()}
    */
   public String transform() {

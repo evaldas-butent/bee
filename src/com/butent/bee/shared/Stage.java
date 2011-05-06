@@ -8,14 +8,15 @@ public class Stage implements HasService, HasStage {
   private String stage;
 
   /**
-   * Cereates a new {@code Stage} object
+   * Creates a new {@code Stage} object.
    */
   public Stage() {
     super();
   }
 
   /**
-   * Creates a new {@code Stage} objec with service and stage names
+   * Creates a new {@code Stage} object with service and stage names.
+   * 
    * @param service name of service
    * @param stage name of stage
    */
@@ -26,7 +27,8 @@ public class Stage implements HasService, HasStage {
   }
 
   /**
-   * Returns the name of service
+   * Returns the name of service.
+   * 
    * @return the name of service
    */
   public String getService() {
@@ -34,7 +36,8 @@ public class Stage implements HasService, HasStage {
   }
 
   /**
-   * Returns the name of stage
+   * Returns the name of stage.
+   * 
    * @return the name of stage
    */
   public String getStage() {
@@ -42,7 +45,8 @@ public class Stage implements HasService, HasStage {
   }
 
   /**
-   * Sets the new name of service
+   * Sets the new name of service.
+   * 
    * @param svc name of service
    */
   public void setService(String svc) {
@@ -50,7 +54,8 @@ public class Stage implements HasService, HasStage {
   }
 
   /**
-   * Sets the new name of stage
+   * Sets the new name of stage.
+   * 
    * @param stg name of stage
    */
   public void setStage(String stg) {

@@ -240,19 +240,19 @@ public class Selectors {
   }
 
   private static native Element querySelector(Element root, String selectors) /*-{
-		return root.querySelector(selectors);
+    return root.querySelector(selectors);
   }-*/;
 
   private static native Element querySelector(String selectors) /*-{
-		return $doc.querySelector(selectors);
+    return $doc.querySelector(selectors);
   }-*/;
 
   private static native NodeList<Element> querySelectorAll(Element root, String selectors) /*-{
-		return root.querySelectorAll(selectors);
+    return root.querySelectorAll(selectors);
   }-*/;
 
   private static native NodeList<Element> querySelectorAll(String selectors) /*-{
-		return $doc.querySelectorAll(selectors);
+    return $doc.querySelectorAll(selectors);
   }-*/;
 
   private static String transformAttributeValue(String value) {
