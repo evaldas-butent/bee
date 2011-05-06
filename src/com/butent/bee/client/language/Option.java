@@ -2,6 +2,10 @@ package com.butent.bee.client.language;
 
 import com.google.gwt.core.client.JavaScriptObject;
 
+/**
+ * Contains options for translation, for example case sensitivity.
+ */
+
 public final class Option extends JavaScriptObject {
 
   public static Option newInstance(String text, ContentType contentType) {

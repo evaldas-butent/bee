@@ -28,6 +28,10 @@ import com.butent.bee.shared.utils.Codec;
 
 import java.util.List;
 
+/**
+ * Implements usage of data views in user interface.
+ */
+
 public class Explorer {
 
   private class DataInfoCallback implements ResponseCallback {

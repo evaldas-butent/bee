@@ -13,15 +13,18 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
+/**
+ * Controls scale parameters between lenght measure units and screen pixels.
+ */
 public class Rulers {
-  
+
   private static final double unitRulerScale = 10.0;
-  
-  private static final double cmToPx = 1.0 / unitRulerScale; 
-  private static final double mmToPx = 0.1 / unitRulerScale; 
-  private static final double inToPx = 2.54 / unitRulerScale; 
-  private static final double ptToPx = inToPx / 72.0; 
-  private static final double pcToPx = ptToPx * 12.0; 
+
+  private static final double cmToPx = 1.0 / unitRulerScale;
+  private static final double mmToPx = 0.1 / unitRulerScale;
+  private static final double inToPx = 2.54 / unitRulerScale;
+  private static final double ptToPx = inToPx / 72.0;
+  private static final double pcToPx = ptToPx * 12.0;
 
   private static final SpanElement lineRuler;
   private static final DivElement areaRuler;
@@ -31,7 +34,7 @@ public class Rulers {
 
   static {
     String idPrefix = "ruler";
-    
+
     lineRuler = Document.get().createSpanElement();
     DomUtils.createId(lineRuler, idPrefix);
     lineRuler.setInnerHTML(BeeConst.HTML_NBSP);
@@ -55,7 +58,7 @@ public class Rulers {
     StyleUtils.setWordWrap(style, true);
 
     Document.get().getBody().appendChild(areaRuler);
-    
+
     fixedUnitRuler = Document.get().createDivElement();
     DomUtils.createId(fixedUnitRuler, idPrefix);
     fixedUnitRuler.setInnerHTML(BeeConst.HTML_NBSP);
@@ -67,7 +70,7 @@ public class Rulers {
 
     style.setWidth(unitRulerScale, Unit.CM);
     style.setHeight(unitRulerScale, Unit.CM);
-    
+
     Document.get().getBody().appendChild(fixedUnitRuler);
 
     relativeUnitRuler = Document.get().createDivElement();
@@ -81,14 +84,14 @@ public class Rulers {
 
     style.setWidth(unitRulerScale, Unit.EM);
     style.setHeight(unitRulerScale, Unit.EX);
-    
+
     Document.get().getBody().appendChild(relativeUnitRuler);
   }
 
   public static Dimensions getAreaDimensions(String html) {
     return getAreaDimensions(html, null);
   }
-  
+
   public static Dimensions getAreaDimensions(String html, Font font) {
     Assert.notNull(html);
     return getDimensions(areaRuler, html, font);
@@ -97,25 +100,25 @@ public class Rulers {
   public static int getAreaHeight(String html) {
     return getAreaHeight(html, null);
   }
-  
+
   public static int getAreaHeight(String html, Font font) {
     Assert.notNull(html);
     return getHeight(areaRuler, html, font);
   }
-  
+
   public static int getAreaWidth(String html) {
     return getAreaWidth(html, null);
   }
-  
+
   public static int getAreaWidth(String html, Font font) {
     Assert.notNull(html);
     return getWidth(areaRuler, html, font);
   }
-  
+
   public static int getIntPixels(double value, Unit unit) {
     return BeeUtils.toInt(getPixels(value, unit));
   }
-  
+
   public static int getIntPixels(double value, Unit unit, double containerSize) {
     return BeeUtils.toInt(getPixels(value, unit, containerSize));
   }
@@ -123,15 +126,15 @@ public class Rulers {
   public static int getIntPixels(double value, Unit unit, Font font) {
     return BeeUtils.toInt(getPixels(value, unit, font));
   }
-  
+
   public static int getIntPixels(double value, Unit unit, Font font, double containerSize) {
     return BeeUtils.toInt(getPixels(value, unit, font, containerSize));
   }
-  
+
   public static Dimensions getLineDimensions(String html) {
     return getLineDimensions(html, null);
   }
-  
+
   public static Dimensions getLineDimensions(String html, Font font) {
     Assert.notNull(html);
     return getDimensions(lineRuler, html, font);
@@ -140,7 +143,7 @@ public class Rulers {
   public static int getLineHeight(String html) {
     return getLineHeight(html, null);
   }
-  
+
   public static int getLineHeight(String html, Font font) {
     Assert.notNull(html);
     return getHeight(lineRuler, html, font);
@@ -149,12 +152,12 @@ public class Rulers {
   public static int getLineWidth(String html) {
     return getLineWidth(html, null);
   }
-  
+
   public static int getLineWidth(String html, Font font) {
     Assert.notNull(html);
     return getWidth(lineRuler, html, font);
   }
-  
+
   public static double getPixels(double value, Unit unit) {
     return getPixels(value, unit, null);
   }
@@ -166,10 +169,10 @@ public class Rulers {
   public static double getPixels(double value, Unit unit, Font font) {
     return getPixels(value, unit, font, 0);
   }
- 
+
   public static double getPixels(double value, Unit unit, Font font, double containerSize) {
     Assert.notNull(unit);
-    
+
     if (isUnitSizeFixed(unit)) {
       return value * getFixedUnitSizeInPixels(unit);
     } else if (isUnitFontDependent(unit)) {
@@ -191,22 +194,22 @@ public class Rulers {
         return 0;
     }
   }
-  
+
   private static Dimensions getDimensions(Element ruler, String html, Font font) {
     if (html == null) {
       return null;
     }
-    
+
     prepareRuler(ruler, html, font);
 
     int width = ruler.getOffsetWidth();
     int height = ruler.getOffsetHeight();
-    
+
     resetRuler(ruler, font);
 
     return new Dimensions(width, height);
   }
-  
+
   private static double getFixedUnitSizeInPixels(Unit unit) {
     switch (unit) {
       case PX:
@@ -226,11 +229,11 @@ public class Rulers {
         return 0;
     }
   }
-  
+
   private static double getFontDependentUnitSizeInPixels(Unit unit, Font font) {
     double size;
     prepareRuler(relativeUnitRuler, font);
-    
+
     switch (unit) {
       case EM:
         size = relativeUnitRuler.getOffsetWidth() / unitRulerScale;
@@ -242,7 +245,7 @@ public class Rulers {
         Assert.untouchable();
         size = 0;
     }
-    
+
     resetRuler(relativeUnitRuler, font);
     return size;
   }
@@ -251,7 +254,7 @@ public class Rulers {
     if (html == null) {
       return 0;
     }
-    
+
     prepareRuler(ruler, html, font);
     int height = ruler.getOffsetHeight();
     resetRuler(ruler, font);
@@ -263,7 +266,7 @@ public class Rulers {
     if (html == null) {
       return 0;
     }
-    
+
     prepareRuler(ruler, html, font);
     int width = ruler.getOffsetWidth();
     resetRuler(ruler, font);
@@ -277,7 +280,7 @@ public class Rulers {
     }
     return ArrayUtils.contains(unit, units);
   }
-  
+
   private static boolean isUnitContainerDependent(Unit unit) {
     return inList(unit, Unit.PCT);
   }
@@ -295,7 +298,7 @@ public class Rulers {
       font.applyTo(ruler);
     }
   }
-  
+
   private static void prepareRuler(Element ruler, String html, Font font) {
     if (font != null) {
       font.applyTo(ruler);
@@ -304,14 +307,14 @@ public class Rulers {
       ruler.setInnerHTML(html);
     }
   }
-  
+
   private static void resetRuler(Element ruler, Font font) {
     if (font != null) {
       font.removeFrom(ruler);
     }
     ruler.setInnerHTML(BeeConst.HTML_NBSP);
   }
-  
+
   private Rulers() {
   }
 }

@@ -2,6 +2,10 @@ package com.butent.bee.client.language;
 
 import com.google.gwt.core.client.JavaScriptObject;
 
+/**
+ * Enables to get such detection result parameters as language, reliability, confidence.
+ */
+
 public class DetectionResult extends JavaScriptObject {
   protected DetectionResult() {
   }

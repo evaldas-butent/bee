@@ -2,6 +2,10 @@ package com.butent.bee.client.language;
 
 import com.butent.bee.client.BeeKeeper;
 
+/**
+ * Processes detection result, informs about language detection error if it occurs.
+ */
+
 public abstract class DetectionCallback {
 
   public final void onCallbackWrapper(DetectionResult result) {

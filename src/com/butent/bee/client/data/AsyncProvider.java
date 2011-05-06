@@ -15,6 +15,11 @@ import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.utils.BeeUtils;
 
+/**
+ * Extends {@code Provider} class and implements data range management from asynchronous data
+ * transfers from the server side.
+ */
+
 public class AsyncProvider extends Provider {
 
   private class Callback implements Queries.RowSetCallback {
@@ -67,10 +72,10 @@ public class AsyncProvider extends Provider {
   public void onSort(SortEvent event) {
     Assert.notNull(event);
     setOrder(event.getOrder());
-    
+
     goTop(true);
   }
-  
+
   public void setFilter(Filter filter) {
     this.filter = filter;
   }
@@ -81,7 +86,7 @@ public class AsyncProvider extends Provider {
 
   public void updateDisplay(int start, int length, BeeRowSet data) {
     int rowCount = data.getNumberOfRows();
-    
+
     if (Global.isDebug()) {
       BeeKeeper.getLog().info("upd", start, length, rowCount);
     }

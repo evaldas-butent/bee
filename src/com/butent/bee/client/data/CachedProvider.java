@@ -14,6 +14,11 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
 
+/**
+ * Extends {@code Provider} class, enables to manage data ranges from sources stored directly in
+ * memory.
+ */
+
 public class CachedProvider extends Provider {
   private IsTable<?, ?> table;
 
@@ -26,11 +31,11 @@ public class CachedProvider extends Provider {
   public int getRowCount() {
     return table.getNumberOfRows();
   }
-  
+
   public IsTable<?, ?> getTable() {
     return table;
   }
-  
+
   public void onSort(SortEvent event) {
     if (getRowCount() <= 1) {
       return;
@@ -55,17 +60,17 @@ public class CachedProvider extends Provider {
     }
     goTop(true);
   }
- 
+
   public void refreshDisplay() {
     Range range = getRange();
     int start = range.getStart();
     int length = range.getLength();
     int rowCount = getRowCount();
-    
+
     if (start == 0 && length == rowCount) {
       getDisplay().setRowData(start, getRowList());
     } else if (start >= 0 && start < rowCount && length > 0) {
-      getDisplay().setRowData(start, getRowList().subList(start, 
+      getDisplay().setRowData(start, getRowList().subList(start,
           BeeUtils.min(start + length, rowCount)));
     }
   }
@@ -74,7 +79,7 @@ public class CachedProvider extends Provider {
   protected void onRangeChanged() {
     refreshDisplay();
   }
-  
+
   private List<? extends IsRow> getRowList() {
     return table.getRows().getList();
   }

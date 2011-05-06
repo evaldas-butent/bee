@@ -12,10 +12,14 @@ import com.butent.bee.shared.data.IsRow;
 
 import java.util.List;
 
+/**
+ * Enables to manage ranges of data shown in user interface tables.
+ */
+
 public abstract class Provider implements SortEvent.Handler {
 
   private final HasDataTable display;
-  
+
   private final List<HandlerRegistration> handlerRegistry = Lists.newArrayList();
 
   private boolean rangeChangeEnabled = true;
@@ -31,10 +35,10 @@ public abstract class Provider implements SortEvent.Handler {
         }
       }
     }));
-    
+
     this.handlerRegistry.add(display.addSortHandler(this));
   }
-  
+
   public void disableRangeChange() {
     setRangeChangeEnabled(false);
   }
@@ -42,13 +46,13 @@ public abstract class Provider implements SortEvent.Handler {
   public void enableRangeChange() {
     setRangeChangeEnabled(true);
   }
-  
+
   public boolean isRangeChangeEnabled() {
     return rangeChangeEnabled;
   }
 
   public abstract void onSort(SortEvent event);
-  
+
   public void onUnload() {
     for (HandlerRegistration entry : handlerRegistry) {
       if (entry != null) {
@@ -68,11 +72,11 @@ public abstract class Provider implements SortEvent.Handler {
   protected int getPageSize() {
     return getDisplay().getVisibleRange().getLength();
   }
-  
+
   protected Range getRange() {
     return getDisplay().getVisibleRange();
   }
-  
+
   protected void goTop(boolean forceRangeChange) {
     getDisplay().setVisibleRangeAndClearData(new Range(0, getPageSize()), forceRangeChange);
   }

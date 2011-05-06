@@ -11,6 +11,11 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
+/**
+ * Enables using DOM selectors, which are a way to select specified set of elements fitting certain
+ * filters.
+ */
+
 public class Selectors {
 
   private static final String UNIVERSAL_SELECTOR = "*";
@@ -53,7 +58,7 @@ public class Selectors {
   public static String attributeEquals(String att, int val) {
     return attributeEquals(att, BeeUtils.toString(val));
   }
-  
+
   public static String attributeEquals(String att, String val) {
     return buildAttributeSelector(att, "=", val);
   }
@@ -67,7 +72,7 @@ public class Selectors {
     assertIdentifier(att);
     return ATTRIBUTE_SELECTOR_PREFIX + att.trim() + ATTRIBUTE_SELECTOR_SUFFIX;
   }
-  
+
   public static String attributeStartsWith(String att, String val) {
     Assert.notEmpty(val);
     return buildAttributeSelector(att, "^=", val);
@@ -79,7 +84,7 @@ public class Selectors {
 
     return BeeUtils.transformCollection(selectors, SELECTOR_SEPARATOR);
   }
-  
+
   public static String buildSelectors(String... selectors) {
     Assert.notNull(selectors);
     Assert.parameterCount(selectors.length, 1);
@@ -106,7 +111,7 @@ public class Selectors {
   public static String conjunction(List<String> selectors) {
     Assert.notNull(selectors);
     Assert.isTrue(!selectors.isEmpty());
-    
+
     StringBuilder sb = new StringBuilder();
     for (String selector : selectors) {
       if (!BeeUtils.isEmpty(selector)) {
@@ -115,7 +120,7 @@ public class Selectors {
     }
     return sb.toString();
   }
-  
+
   public static String descendantCombinator(String... selectors) {
     Assert.notNull(selectors);
     Assert.parameterCount(selectors.length, 2);
@@ -135,7 +140,7 @@ public class Selectors {
   public static Element getElement(Element root, Collection<String> selectors) {
     return getElement(root, buildSelectors(selectors));
   }
-  
+
   public static Element getElement(Element root, String selectors) {
     assertSupported();
     Assert.notNull(root);
@@ -235,19 +240,19 @@ public class Selectors {
   }
 
   private static native Element querySelector(Element root, String selectors) /*-{
-    return root.querySelector(selectors);
+		return root.querySelector(selectors);
   }-*/;
 
   private static native Element querySelector(String selectors) /*-{
-    return $doc.querySelector(selectors);
+		return $doc.querySelector(selectors);
   }-*/;
 
   private static native NodeList<Element> querySelectorAll(Element root, String selectors) /*-{
-    return root.querySelectorAll(selectors);
+		return root.querySelectorAll(selectors);
   }-*/;
 
   private static native NodeList<Element> querySelectorAll(String selectors) /*-{
-    return $doc.querySelectorAll(selectors);
+		return $doc.querySelectorAll(selectors);
   }-*/;
 
   private static String transformAttributeValue(String value) {

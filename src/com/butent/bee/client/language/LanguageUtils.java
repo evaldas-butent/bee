@@ -7,11 +7,15 @@ import com.butent.bee.shared.Assert;
 
 import java.util.List;
 
+/**
+ * Loads translation application programming interface.
+ */
+
 public class LanguageUtils {
 
   public static final String TRANSLATION_API_NAME = "language";
   public static final String TRANSLATION_API_VERSION = "1";
-  
+
   private static boolean translationLoaded = false;
   private static List<Runnable> queue = Lists.newArrayList();
 
@@ -33,7 +37,7 @@ public class LanguageUtils {
     queue.add(onLoad);
     loadTranslationApi(version);
   }
-  
+
   private static void loadTranslationApi(String version) {
     AjaxLoader.loadApi(TRANSLATION_API_NAME, version,
         new Runnable() {

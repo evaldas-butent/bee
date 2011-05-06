@@ -14,9 +14,14 @@ import com.butent.bee.shared.utils.PropertyUtils;
 
 import java.util.List;
 
+/**
+ * Checks whether a user's browser support certain features like mp3, drag and drop, web sockets,
+ * canvas and so on.
+ */
+
 public class Features {
   private static String nsSvg = "http://www.w3.org/2000/svg";
-  
+
   private static Boolean applicationCache = null;
 
   private static Boolean attributeAutocomplete = null;
@@ -35,7 +40,7 @@ public class Features {
   private static String audioMp3 = null;
   private static String audioVorbis = null;
   private static String audioWav = null;
-  
+
   private static Boolean canvas = null;
   private static Boolean canvasText = null;
 
@@ -52,7 +57,7 @@ public class Features {
   private static Boolean elementOutput = null;
   private static Boolean elementProgress = null;
   private static Boolean elementTime = null;
-  
+
   private static Boolean fileApi = null;
   private static Boolean geolocation = null;
   private static Boolean indexedDB = null;
@@ -161,7 +166,7 @@ public class Features {
         "Audio Mp3", getAudioMp3(),
         "Audio Vorbis", getAudioVorbis(),
         "Audio Wav", getAudioWav(),
-        
+
         "Canvas", supportsCanvas(),
         "Canvas Text", supportsCanvasText(),
 
@@ -178,7 +183,7 @@ public class Features {
         "Element Output", supportsElementOutput(),
         "Element Progress", supportsElementProgress(),
         "Element Time", supportsElementTime(),
-        
+
         "File Api", supportsFileApi(),
         "Geolocation", supportsGeolocation(),
         "Indexed DB", supportsIndexedDB(),
@@ -226,7 +231,7 @@ public class Features {
 
         "Xhr Cross Domain", supportsXhrCrossDomain(),
         "Xhr Upload Progress", supportsXhrUploadProgress());
-    
+
     return lst;
   }
 
@@ -239,7 +244,7 @@ public class Features {
     }
     return videoH264;
   }
- 
+
   public static String getVideoTheora() {
     if (!supportsVideo()) {
       return BeeConst.STRING_EMPTY;
@@ -261,48 +266,46 @@ public class Features {
   }
 
   public static native JavaScriptObject getWindowProperty(String p) /*-{
-    if (p == null || p == "") {
-      return null;
-    }
+		if (p == null || p == "") {
+			return null;
+		}
 
-    var obj;
-    try {
-      obj = $wnd[p];
-    }
-    catch (err) {
-      obj = null;
-    }
+		var obj;
+		try {
+			obj = $wnd[p];
+		} catch (err) {
+			obj = null;
+		}
 
-    return obj;
+		return obj;
   }-*/;
 
   public static native boolean isDocumentFunction(String fnc) /*-{
-    if (fnc == null || fnc == "") {
-      return false;
-    }
+		if (fnc == null || fnc == "") {
+			return false;
+		}
 
-    var ok;
-    try {
-      ok = (typeof($doc[fnc]) == "function");
-    } catch (err) {
-      ok = false;
-    }
-    return ok;
+		var ok;
+		try {
+			ok = (typeof ($doc[fnc]) == "function");
+		} catch (err) {
+			ok = false;
+		}
+		return ok;
   }-*/;
-  
-  public static native boolean isDocumentProperty(String p) /*-{
-    if (p == null || p == "") {
-      return false;
-    }
 
-    var ok;
-    try {
-      ok = !!$doc[p];
-    }
-    catch (err) {
-      ok = false;
-    }
-    return ok;
+  public static native boolean isDocumentProperty(String p) /*-{
+		if (p == null || p == "") {
+			return false;
+		}
+
+		var ok;
+		try {
+			ok = !!$doc[p];
+		} catch (err) {
+			ok = false;
+		}
+		return ok;
   }-*/;
 
   public static boolean isEventSupported(String tagName, String eventName) {
@@ -330,41 +333,39 @@ public class Features {
   }
 
   public static native boolean isInWindow(String p) /*-{
-    if (p == null || p == "") {
-      return false;
-    } else {
-      return p in $wnd;
-    }
+		if (p == null || p == "") {
+			return false;
+		} else {
+			return p in $wnd;
+		}
   }-*/;
 
   public static native boolean isNavigatorProperty(String p) /*-{
-    if (p == null || p == "") {
-      return false;
-    }
+		if (p == null || p == "") {
+			return false;
+		}
 
-    var ok;
-    try {
-      ok = !!$wnd.navigator[p];
-    }
-    catch (err) {
-      ok = false;
-    }
-    return ok;
+		var ok;
+		try {
+			ok = !!$wnd.navigator[p];
+		} catch (err) {
+			ok = false;
+		}
+		return ok;
   }-*/;
 
   public static native boolean isWindowProperty(String p) /*-{
-    if (p == null || p == "") {
-      return false;
-    }
+		if (p == null || p == "") {
+			return false;
+		}
 
-    var ok;
-    try {
-      ok = !!$wnd[p];
-    }
-    catch (err) {
-      ok = false;
-    }
-    return ok;
+		var ok;
+		try {
+			ok = !!$wnd[p];
+		} catch (err) {
+			ok = false;
+		}
+		return ok;
   }-*/;
 
   public static boolean supportsApplicationCache() {
@@ -618,7 +619,7 @@ public class Features {
     }
     return inputRange;
   }
-  
+
   public static boolean supportsInputSearch() {
     if (inputSearch == null) {
       inputSearch = testInputSearch();
@@ -693,7 +694,7 @@ public class Features {
     }
     return sendAsFormData;
   }
- 
+
   public static boolean supportsServerSentEvents() {
     if (serverSentEvents == null) {
       serverSentEvents = testServerSentEvents();
@@ -804,7 +805,7 @@ public class Features {
     }
     return xhrCrossDomain;
   }
-  
+
   public static boolean supportsXhrUploadProgress() {
     if (xhrUploadProgress == null) {
       xhrUploadProgress = testXhrUploadProgress();
@@ -876,7 +877,7 @@ public class Features {
       z = testAudioType("audio/aac;");
     }
     if (BeeUtils.isEmpty(z) || BeeUtils.same(z, BeeConst.NO)) {
-      z  = testAudioType("audio/mp4; codecs=\"mp4a.40.2\"");
+      z = testAudioType("audio/mp4; codecs=\"mp4a.40.2\"");
     }
 
     return z;
@@ -887,23 +888,23 @@ public class Features {
   }
 
   private static native String testAudioType(String type) /*-{
-    if (type == null || type == "") {
-      return "";
-    }
+		if (type == null || type == "") {
+			return "";
+		}
 
-    var el = $doc.createElement('audio');
-    var v = "";
+		var el = $doc.createElement('audio');
+		var v = "";
 
-    try {
-      if (typeof el["canPlayType"] == "function") {
-        v = el.canPlayType(type);
-      }
-    } catch (err) {
-      v = null;
-    }
+		try {
+			if (typeof el["canPlayType"] == "function") {
+				v = el.canPlayType(type);
+			}
+		} catch (err) {
+			v = null;
+		}
 
-    el = null;
-    return v;
+		el = null;
+		return v;
   }-*/;
 
   private static String testAudioVorbis() {
@@ -915,24 +916,24 @@ public class Features {
   }
 
   private static native boolean testCanvas() /*-{
-    var elem = $doc.createElement('canvas');
-    var ok = !!(elem.getContext && elem.getContext('2d'));
-    elem = null;
-    return ok;
+		var elem = $doc.createElement('canvas');
+		var ok = !!(elem.getContext && elem.getContext('2d'));
+		elem = null;
+		return ok;
   }-*/;
 
   private static native boolean testCanvasText() /*-{
-    var elem = $doc.createElement('canvas');
-    var ok = false;
+		var elem = $doc.createElement('canvas');
+		var ok = false;
 
-    try {
-      ok = !!(elem.getContext && typeof elem.getContext('2d').fillText == "function");
-    } catch (err) {
-      ok = false;
-    }
+		try {
+			ok = !!(elem.getContext && typeof elem.getContext('2d').fillText == "function");
+		} catch (err) {
+			ok = false;
+		}
 
-    elem = null;
-    return ok;
+		elem = null;
+		return ok;
   }-*/;
 
   private static boolean testContentEditable() {
@@ -986,7 +987,7 @@ public class Features {
   }
 
   private static native boolean testFileApi() /*-{
-    return typeof FileReader != 'undefined';
+		return typeof FileReader != 'undefined';
   }-*/;
 
   private static boolean testGeolocation() {
@@ -1079,13 +1080,13 @@ public class Features {
   private static boolean testSelectors() {
     return isDocumentFunction("querySelector") && isDocumentFunction("querySelectorAll");
   }
-  
+
   private static boolean testSendAsFormData() {
     return isWindowProperty("FormData");
   }
 
   private static native boolean testServerSentEvents() /*-{
-    return typeof EventSource !== 'undefined';
+		return typeof EventSource !== 'undefined';
   }-*/;
 
   private static boolean testSessionStorage() {
@@ -1124,13 +1125,13 @@ public class Features {
   }
 
   private static native boolean testSvgInTextHtml() /*-{
-    var el = $doc.createElement('div');
-    el.innerHTML = '<svg></svg>';
-    return !!($wnd.SVGSVGElement && el.firstChild instanceof $wnd.SVGSVGElement);
+		var el = $doc.createElement('div');
+		el.innerHTML = '<svg></svg>';
+		return !!($wnd.SVGSVGElement && el.firstChild instanceof $wnd.SVGSVGElement);
   }-*/;
 
   private static native boolean testUndo() /*-{
-    return typeof UndoManager !== 'undefined';
+		return typeof UndoManager !== 'undefined';
   }-*/;
 
   private static boolean testVideo() {
@@ -1162,16 +1163,16 @@ public class Features {
   }
 
   private static native String testVideoType(String type) /*-{
-    var elem = $doc.createElement('video');
-    if (elem == null || elem == undefined) {
-      return "";
-    }
+		var elem = $doc.createElement('video');
+		if (elem == null || elem == undefined) {
+			return "";
+		}
 
-    if (!!elem.canPlayType) {
-      return elem.canPlayType(type);
-    } else {
-      return "";
-    }
+		if (!!elem.canPlayType) {
+			return elem.canPlayType(type);
+		} else {
+			return "";
+		}
   }-*/;
 
   private static String testVideoWebm() {
@@ -1179,23 +1180,23 @@ public class Features {
   }
 
   private static native boolean testWebGl() /*-{
-    var elem = $doc.createElement('canvas');
-    if (elem == null || elem == undefined || ! elem.getContext) {
-      return false;
-    }
+		var elem = $doc.createElement('canvas');
+		if (elem == null || elem == undefined || !elem.getContext) {
+			return false;
+		}
 
-    var ok = false; 
-    try {
-      if (elem.getContext('webgl')) {
-        ok = true;
-      } else if (elem.getContext('experimental-webgl')) {
-        ok = true;
-      }
-    } catch(err){
-      ok = false;
-    }
+		var ok = false;
+		try {
+			if (elem.getContext('webgl')) {
+				ok = true;
+			} else if (elem.getContext('experimental-webgl')) {
+				ok = true;
+			}
+		} catch (err) {
+			ok = false;
+		}
 
-    return ok;
+		return ok;
   }-*/;
 
   private static boolean testWebSockets() {
@@ -1207,13 +1208,13 @@ public class Features {
   }
 
   private static native boolean testXhrCrossDomain() /*-{
-    return "withCredentials" in new XMLHttpRequest;
+		return "withCredentials" in new XMLHttpRequest;
   }-*/;
 
   private static native boolean testXhrUploadProgress() /*-{
-    return "upload" in new XMLHttpRequest;
+		return "upload" in new XMLHttpRequest;
   }-*/;
-  
+
   private Features() {
   }
 }

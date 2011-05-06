@@ -9,6 +9,10 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Map;
 
+/**
+ * Contains a list of available languages and their short codes.
+ */
+
 public enum Language {
   AFRIKAANS("af"),
   ALBANIAN("sq"),
@@ -102,7 +106,11 @@ public enum Language {
   UNKNOWN(""),
   WELSH("cy"),
   YIDDISH("yi");
-  
+
+  /**
+   * Enables to identify supported languages and identify them by code.
+   */
+
   public static class SupportedLanguages extends JavaScriptObject {
     protected SupportedLanguages() {
     }
@@ -114,7 +122,7 @@ public enum Language {
     public final native String getLanguageName(String languageCode) /*-{
       if (!this.__lookupByCode) {
         this.__lookupByCode = {};
-        for (var prop in this) {
+        for ( var prop in this) {
           if (prop.match(/^[A-Z_]+$/)) {
             this.__lookupByCode[this[prop]] = prop;
           }
@@ -125,7 +133,7 @@ public enum Language {
 
     public final native JsArrayString getLanguages() /*-{
       var result = [];
-      for (var prop in this) {
+      for ( var prop in this) {
         if (prop.match(/^[A-Z_]+$/)) {
           result.push(prop);
         }
@@ -133,8 +141,9 @@ public enum Language {
       return result;
     }-*/;
   }
+
   private static Map<String, Language> codes = Maps.newHashMap();
-  
+
   static {
     for (Language lang : Language.values()) {
       codes.put(BeeUtils.normalize(lang.getLangCode()), lang);

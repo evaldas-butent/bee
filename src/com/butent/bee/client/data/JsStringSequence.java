@@ -10,6 +10,11 @@ import com.butent.bee.shared.Pair;
 
 import java.util.List;
 
+/**
+ * Enables to set values, clear and get information for a wrapper around a homogeneous native array
+ * of string values.
+ */
+
 public class JsStringSequence extends AbstractSequence<String> {
   private JsArrayString values;
 
@@ -22,7 +27,7 @@ public class JsStringSequence extends AbstractSequence<String> {
     Assert.notNull(values);
     this.values = values;
   }
-  
+
   public void clear() {
     values.setLength(0);
   }
@@ -35,7 +40,7 @@ public class JsStringSequence extends AbstractSequence<String> {
   public Pair<String[], Integer> getArray(String[] a) {
     String[] arr = new String[getLength()];
     for (int i = 0; i < getLength(); i++) {
-      arr[i] = get(i); 
+      arr[i] = get(i);
     }
     return new Pair<String[], Integer>(arr, getLength());
   }
@@ -47,7 +52,7 @@ public class JsStringSequence extends AbstractSequence<String> {
   public List<String> getList() {
     List<String> lst = Lists.newArrayListWithCapacity(getLength());
     for (int i = 0; i < getLength(); i++) {
-      lst.add(get(i)); 
+      lst.add(get(i));
     }
     return lst;
   }

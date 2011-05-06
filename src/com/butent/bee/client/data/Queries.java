@@ -20,11 +20,21 @@ import com.butent.bee.shared.utils.PropertyUtils;
 
 import java.util.List;
 
+/**
+ * Contains methods for getting {@code RowSets} and making POST requests.
+ */
+
 public class Queries {
+  /**
+   * Requires implementing classes to have {@code onResponse) method. 
+   */
   public interface IntCallback {
     void onResponse(int value);
   }
-
+  /**
+   * Requires implementing classes to have {@code onResponse) method applied for a {@code RowSet}
+   * object.
+   */
   public interface RowSetCallback {
     void onResponse(BeeRowSet rowSet);
   }

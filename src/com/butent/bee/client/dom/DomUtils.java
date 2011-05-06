@@ -43,25 +43,32 @@ import com.butent.bee.shared.utils.PropertyUtils;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Contains necessary functions for reading and changing DOM information.
+ */
+
 public class DomUtils {
+  /**
+   * Enables to get and set element attribute values.
+   */
   static final class ElementAttribute extends JavaScriptObject implements Transformable {
     protected ElementAttribute() {
     }
 
     public native String getName() /*-{
-      return this.name;
+			return this.name;
     }-*/;
 
     public native String getValue() /*-{
-      return this.value;
+			return this.value;
     }-*/;
 
     public native void setName(String nm) /*-{
-      this.name = nm;
+			this.name = nm;
     }-*/;
 
     public native void setValue(String v) /*-{
-      this.value = v;
+			this.value = v;
     }-*/;
 
     public String transform() {
@@ -117,7 +124,7 @@ public class DomUtils {
   public static final String ATTRIBUTE_DATA_ROW = "data-row";
   public static final String ATTRIBUTE_SERVICE = "data-svc";
   public static final String ATTRIBUTE_STAGE = "data-stg";
-  
+
   public static final String TYPE_SEARCH = "search";
 
   public static final String VALUE_TRUE = "true";
@@ -127,7 +134,7 @@ public class DomUtils {
   private static final String ID_SEPARATOR = "-";
 
   private static final int MAX_GENERATIONS = 100;
-  
+
   private static int idCounter = 0;
 
   private static int scrollbarWidth = -1;
@@ -147,7 +154,7 @@ public class DomUtils {
     Assert.notNull(obj);
     obj.setTitle(null);
   }
-  
+
   public static Element createButton(String text) {
     return createButton(text, false, null);
   }
@@ -192,7 +199,7 @@ public class DomUtils {
     } else {
       elem = createElement(DdElement.TAG);
     }
-    
+
     if (!BeeUtils.isEmpty(text)) {
       if (asHtml) {
         elem.setInnerHTML(text);
@@ -217,7 +224,7 @@ public class DomUtils {
   }
 
   public static native Element createElement(Document doc, String tag) /*-{
-    return doc.createElement(tag);
+		return doc.createElement(tag);
   }-*/;
 
   public static Element createElement(String tag) {
@@ -226,7 +233,7 @@ public class DomUtils {
   }
 
   public static native Element createElementNs(Document doc, String ns, String tag) /*-{
-    return doc.createElementNS(ns, tag);
+		return doc.createElementNS(ns, tag);
   }-*/;
 
   public static Element createElementNs(String ns, String tag) {
@@ -234,7 +241,7 @@ public class DomUtils {
     Assert.notEmpty(tag);
     return createElementNs(Document.get(), ns, tag);
   }
-  
+
   public static Element createHtml(String html) {
     return createHtml(html, null);
   }
@@ -281,7 +288,7 @@ public class DomUtils {
 
   public static Element createLabel(String text, String id, boolean asDiv) {
     Assert.notEmpty(text);
-    
+
     Element elem;
     if (asDiv) {
       elem = Document.get().createDivElement();
@@ -312,7 +319,7 @@ public class DomUtils {
 
   public static Element createListItem(String text, boolean asHtml, String id) {
     LIElement elem = Document.get().createLIElement();
-    
+
     if (!BeeUtils.isEmpty(text)) {
       if (asHtml) {
         elem.setInnerHTML(text);
@@ -392,7 +399,7 @@ public class DomUtils {
 
     return elem;
   }
-  
+
   public static Element createTableCell(String text) {
     return createTableCell(text, false, null);
   }
@@ -540,12 +547,12 @@ public class DomUtils {
     }
     return checkBoxOffsetWidth;
   }
-  
+
   public static Widget getChild(HasWidgets parent, String id) {
     if (parent == null || BeeUtils.isEmpty(id)) {
       return null;
     }
-    
+
     for (Widget child : parent) {
       if (idEquals(child, id)) {
         return child;
@@ -568,7 +575,7 @@ public class DomUtils {
       return child.getOffsetHeight();
     }
   }
-  
+
   public static int getChildOffsetWidth(HasWidgets parent, String id) {
     Widget child = getChild(parent, id);
     if (child == null) {
@@ -577,7 +584,7 @@ public class DomUtils {
       return child.getOffsetWidth();
     }
   }
-  
+
   public static List<Property> getChildrenInfo(Widget w) {
     Assert.notNull(w);
     List<Property> lst = new ArrayList<Property>();
@@ -597,7 +604,7 @@ public class DomUtils {
   public static int getClientWidth() {
     return Document.get().getClientWidth();
   }
-  
+
   public static int getColSpan(Element elem) {
     if (isTableCellElement(elem)) {
       return elem.getPropertyInt(ATTRIBUTE_COL_SPAN);
@@ -621,7 +628,7 @@ public class DomUtils {
   public static String getDataRow(Element elem) {
     return elem.getAttribute(ATTRIBUTE_DATA_ROW);
   }
-  
+
   public static Direction getDirection(String s) {
     Assert.notEmpty(s);
     Direction dir = null;
@@ -674,7 +681,7 @@ public class DomUtils {
   }
 
   public static native NodeList<Element> getElementsByName(String name) /*-{
-    return $doc.getElementsByName(name);
+		return $doc.getElementsByName(name);
   }-*/;
 
   public static HeadElement getHead() {
@@ -722,7 +729,7 @@ public class DomUtils {
     }
     return lst;
   }
-  
+
   public static InputElement getInputElement(Element elem) {
     Assert.notNull(elem);
     InputElement input;
@@ -737,18 +744,18 @@ public class DomUtils {
         input = null;
       }
     }
-    
+
     return input;
   }
-  
+
   public static native String getNamespaceUri(Node nd) /*-{
-    return nd.namespaceURI;
+		return nd.namespaceURI;
   }-*/;
 
   public static native JsArray<ElementAttribute> getNativeAttributes(Element el) /*-{
-    return el.attributes;
+		return el.attributes;
   }-*/;
-  
+
   public static List<Property> getNodeInfo(Node nd) {
     Assert.notNull(nd);
     List<Property> lst = new ArrayList<Property>();
@@ -775,21 +782,21 @@ public class DomUtils {
     Assert.notNull(widget.getParent(), "Widget is orphan");
     return widget.getParent().getElement().getClientHeight();
   }
-  
+
   public static int getParentClientWidth(Widget widget) {
     Assert.notNull(widget);
     Assert.notNull(widget.getParent(), "Widget is orphan");
     return widget.getParent().getElement().getClientWidth();
   }
-  
+
   public static String getParentId(Element elem, boolean find) {
     Assert.notNull(elem);
-    
+
     Element parent = elem.getParentElement();
     if (parent == null) {
       return null;
     }
-    
+
     String id = parent.getId();
     if (!find || !BeeUtils.isEmpty(id)) {
       return id;
@@ -806,7 +813,7 @@ public class DomUtils {
     }
     return lst;
   }
-  
+
   public static int getRowSpan(Element elem) {
     if (isTableCellElement(elem)) {
       return elem.getPropertyInt(ATTRIBUTE_ROW_SPAN);
@@ -858,7 +865,7 @@ public class DomUtils {
 
     PropertyUtils.addProperties(lst,
         "Background Color", st.getBackgroundColor(),
-        "Background Image", st.getBackgroundImage(), 
+        "Background Image", st.getBackgroundImage(),
         "Border Color", st.getBorderColor(),
         "Border Style", st.getBorderStyle(),
         "Border Width", st.getBorderWidth(),
@@ -905,7 +912,7 @@ public class DomUtils {
     Assert.notNull(el);
     return el.getTabIndex();
   }
-  
+
   public static String getText(Element elem) {
     if (elem == null) {
       return BeeConst.STRING_EMPTY;
@@ -994,14 +1001,14 @@ public class DomUtils {
     Assert.notEmpty(id);
     Element elem = DOM.getElementById(id);
     Assert.notNull(elem, "id " + id + " element not found");
-    
+
     if (JsUtils.hasProperty(elem, ATTRIBUTE_VALUE)) {
       return getValueInt(elem);
     }
-    
+
     int value = 0;
     boolean found = false;
-    
+
     NodeList<Node> children = elem.getChildNodes();
     int len = (children == null) ? 0 : children.getLength();
     for (int i = 0; i < len; i++) {
@@ -1016,29 +1023,29 @@ public class DomUtils {
     Assert.isTrue(found, "id " + id + " element has no value and no valuable children");
     return value;
   }
-  
+
   public static int getValueInt(UIObject obj) {
     Assert.notNull(obj);
     return getValueInt(obj.getElement());
   }
-  
+
   public static int getValueInt(Element elem) {
     Assert.notNull(elem);
     return elem.getPropertyInt(ATTRIBUTE_VALUE);
   }
-  
+
   public static Widget getWidget(Widget root, String id) {
     Assert.notNull(root);
     Assert.notEmpty(id);
-    
+
     return getWidget(root, DOM.getElementById(id));
   }
-  
+
   public static Widget getWidget(Widget root, Element elem) {
     if (root == null || elem == null) {
       return null;
     }
-    
+
     if (root.getElement() == elem) {
       return root;
     }
@@ -1048,8 +1055,8 @@ public class DomUtils {
     if (root instanceof HasOneWidget) {
       return getWidget(((HasOneWidget) root).getWidget(), elem);
     }
-    
-    Widget ret = null; 
+
+    Widget ret = null;
     if (root instanceof HasWidgets) {
       Widget found;
       for (Widget child : (HasWidgets) root) {
@@ -1099,7 +1106,7 @@ public class DomUtils {
       return idEquals(obj.getElement(), id);
     }
   }
-  
+
   public static boolean idEquals(Element el, String id) {
     if (el == null) {
       return false;
@@ -1107,7 +1114,7 @@ public class DomUtils {
       return BeeUtils.same(el.getId(), id);
     }
   }
-  
+
   public static void injectExternalScript(String src) {
     Assert.notEmpty(src);
     Document doc = Document.get();
@@ -1128,14 +1135,14 @@ public class DomUtils {
     link.setHref(css);
     head.appendChild(link);
   }
-  
+
   public static boolean isChecked(String id) {
     Assert.notEmpty(id);
     Element elem = DOM.getElementById(id);
     Assert.notNull(elem, "id " + id + " element not found");
     return isChecked(elem);
   }
-  
+
   public static boolean isChecked(UIObject obj) {
     Assert.notNull(obj);
     return isChecked(obj.getElement());
@@ -1156,7 +1163,7 @@ public class DomUtils {
       return getDirection(s) != null;
     }
   }
-  
+
   public static boolean isInputElement(Element el) {
     if (el == null) {
       return false;
@@ -1174,7 +1181,7 @@ public class DomUtils {
   public static boolean isTableCellElement(Element el) {
     return isTdElement(el) || isThElement(el);
   }
-  
+
   public static boolean isTableElement(Element el) {
     if (el == null) {
       return false;
@@ -1195,7 +1202,7 @@ public class DomUtils {
     }
     return el.getTagName().equalsIgnoreCase(TAG_TH);
   }
-  
+
   public static void logChildren(Widget w) {
     Assert.notNull(w);
     List<Property> lst = getChildrenInfo(w);
@@ -1224,7 +1231,7 @@ public class DomUtils {
       el.setTabIndex(0);
     }
   }
-  
+
   public static PopupPanel parentPopup(Widget w) {
     Assert.notNull(w);
 
@@ -1241,7 +1248,7 @@ public class DomUtils {
     }
     return null;
   }
-  
+
   public static void preventChildSelection(Element elem, boolean recurse, String... tags) {
     Assert.notNull(elem);
     NodeList<Node> children = elem.getChildNodes();
@@ -1250,7 +1257,7 @@ public class DomUtils {
     }
     int tagCnt = (tags == null) ? 0 : tags.length;
     Element child;
-    
+
     for (int i = 0; i < children.getLength(); i++) {
       if (!Element.is(children.getItem(i))) {
         continue;
@@ -1259,7 +1266,7 @@ public class DomUtils {
       if (tagCnt <= 0 || BeeUtils.inListSame(child.getTagName(), tags)) {
         preventSelection(child);
       }
-      
+
       if (recurse) {
         preventChildSelection(child, recurse, tags);
       }
@@ -1270,7 +1277,7 @@ public class DomUtils {
     Assert.notNull(obj);
     preventSelection(obj.getElement());
   }
-  
+
   public static void preventSelection(Element elem) {
     Assert.notNull(elem);
     elem.addClassName(StyleUtils.NAME_UNSELECTABLE);
@@ -1294,11 +1301,11 @@ public class DomUtils {
   public static void removeStep(UIObject obj) {
     removeAttribute(obj, ATTRIBUTE_STEP);
   }
-  
+
   public static void setAttribute(UIObject obj, String name, int value) {
     setAttribute(obj, name, Integer.toString(value));
   }
-  
+
   public static void setAttribute(UIObject obj, String name, String value) {
     Assert.notNull(obj);
     Assert.notEmpty(name);
@@ -1319,7 +1326,7 @@ public class DomUtils {
   public static void setColSpan(Element elem, int span) {
     Assert.isTrue(isTableCellElement(elem), "not a table cell element");
     Assert.isPositive(span);
-    
+
     TableCellElement.as(elem).setColSpan(span);
   }
 
@@ -1332,7 +1339,7 @@ public class DomUtils {
     Assert.notNull(elem);
     elem.setAttribute(ATTRIBUTE_DRAGGABLE, VALUE_TRUE);
   }
-  
+
   public static Widget setHeight(Widget w, int height) {
     return setHeight(w, height, Unit.PX);
   }
@@ -1351,7 +1358,7 @@ public class DomUtils {
 
     elem.setInnerHTML(html);
   }
-  
+
   public static void setId(UIObject obj, String id) {
     Assert.notNull(obj);
     Assert.notEmpty(id);
@@ -1359,7 +1366,7 @@ public class DomUtils {
     String s = id.trim();
     obj.getElement().setId(s);
   }
-  
+
   public static void setInputType(UIObject obj, String type) {
     Assert.notNull(obj);
     setInputType(obj.getElement(), type);
@@ -1383,11 +1390,11 @@ public class DomUtils {
     Assert.notNull(obj);
     return setPlaceholder(obj.getElement(), value);
   }
-  
+
   public static boolean setPlaceholder(Element elem, String value) {
     assertInputElement(elem);
     Assert.notEmpty(value);
-    
+
     if (Features.supportsAttributePlaceholder()) {
       elem.setAttribute(ATTRIBUTE_PLACEHOLDER, value);
       return true;
@@ -1395,14 +1402,14 @@ public class DomUtils {
       return false;
     }
   }
-  
+
   public static void setRowSpan(Element elem, int span) {
     Assert.isTrue(isTableCellElement(elem), "not a table cell element");
     Assert.isPositive(span);
-    
+
     TableCellElement.as(elem).setRowSpan(span);
   }
-  
+
   public static boolean setSearch(UIObject obj) {
     Assert.notNull(obj);
     return setSearch(obj.getElement());
@@ -1417,10 +1424,10 @@ public class DomUtils {
       return false;
     }
   }
-  
+
   public static void setSelected(Element elem, boolean selected) {
     Assert.notNull(elem);
-    
+
     OptionElement.as(elem).setSelected(selected);
     OptionElement.as(elem).setDefaultSelected(selected);
   }
@@ -1460,7 +1467,7 @@ public class DomUtils {
     w.getElement().getStyle().setWidth(width, unit);
     return w;
   }
-  
+
   public static String transform(Object obj) {
     if (obj == null) {
       return BeeConst.STRING_EMPTY;
@@ -1516,7 +1523,7 @@ public class DomUtils {
           w.getStyleName());
     }
   }
-  
+
   private static void assertInputElement(Element elem) {
     Assert.isTrue(isInputElement(elem), "not an input element");
   }
@@ -1535,7 +1542,7 @@ public class DomUtils {
 
     body.removeChild(elem);
   }
-  
+
   private static void calculateScrollbarSize() {
     Element elem = DOM.createDiv();
     elem.getStyle().setVisibility(Visibility.HIDDEN);
@@ -1544,7 +1551,7 @@ public class DomUtils {
     elem.getStyle().setBorderWidth(0, Unit.PX);
     elem.getStyle().setMargin(0, Unit.PX);
     elem.getStyle().setOverflow(Overflow.SCROLL);
-    
+
     Element body = Document.get().getBody();
     body.appendChild(elem);
 
@@ -1557,9 +1564,9 @@ public class DomUtils {
     body.removeChild(elem);
 
     scrollbarWidth = w1 - w2;
-    scrollbarHeight = h1 - h2;    
+    scrollbarHeight = h1 - h2;
   }
- 
+
   private static void calculateTextBoxSize() {
     Element elem = DOM.createInputText();
 
@@ -1574,7 +1581,7 @@ public class DomUtils {
 
     body.removeChild(elem);
   }
-  
+
   private static String transformNode(Node nd) {
     if (nd == null) {
       return BeeConst.STRING_EMPTY;
@@ -1582,7 +1589,7 @@ public class DomUtils {
       return BeeUtils.concat(1, nd.getNodeName(), nd.getNodeValue());
     }
   }
-  
+
   private DomUtils() {
   }
 }

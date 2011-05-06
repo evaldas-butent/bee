@@ -8,13 +8,17 @@ import com.google.gwt.user.client.ui.UIObject;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.utils.BeeUtils;
 
+/**
+ * Implements box element and enables to get and set it's parameters like height and width.
+ */
+
 public class Box {
-  
+
   private static final Unit DEFAULT_UNIT = Unit.PX;
 
   private Unit leftUnit = null;
   private Double leftValue = null;
-  
+
   private Unit widthUnit = null;
   private Double widthValue = null;
 
@@ -31,7 +35,7 @@ public class Box {
     this(leftValue, DEFAULT_UNIT, widthValue, DEFAULT_UNIT, topValue, DEFAULT_UNIT,
         heightValue, DEFAULT_UNIT);
   }
-  
+
   public Box(Double leftValue, Unit leftUnit, Double widthValue, Unit widthUnit,
       Double topValue, Unit topUnit, Double heightValue, Unit heightUnit) {
     this.leftValue = leftValue;
@@ -76,11 +80,11 @@ public class Box {
     Assert.notNull(obj);
     applyTo(obj.getElement());
   }
-  
+
   public void clearHeight() {
     setHeight(null, null);
   }
-  
+
   public void clearLeft() {
     setLeft(null, null);
   }
@@ -92,7 +96,7 @@ public class Box {
   public void clearWidth() {
     setWidth(null, null);
   }
-  
+
   public Unit getHeightUnit() {
     return heightUnit;
   }
@@ -102,21 +106,21 @@ public class Box {
   }
 
   public int getIntHeight() {
-    return BeeUtils.toInt(getHeightValue());    
+    return BeeUtils.toInt(getHeightValue());
   }
-  
+
   public int getIntLeft() {
-    return BeeUtils.toInt(getLeftValue());    
+    return BeeUtils.toInt(getLeftValue());
   }
-  
+
   public int getIntTop() {
-    return BeeUtils.toInt(getTopValue());    
+    return BeeUtils.toInt(getTopValue());
   }
 
   public int getIntWidth() {
-    return BeeUtils.toInt(getWidthValue());    
+    return BeeUtils.toInt(getWidthValue());
   }
-  
+
   public Unit getLeftUnit() {
     return leftUnit;
   }
@@ -149,7 +153,7 @@ public class Box {
   public void setHeight(Double value) {
     setHeight(value, DEFAULT_UNIT);
   }
-  
+
   public void setHeight(Double value, Unit unit) {
     setHeightValue(value);
     setHeightUnit(unit);
@@ -170,7 +174,7 @@ public class Box {
   public void setLeft(Double value) {
     setLeft(value, DEFAULT_UNIT);
   }
-  
+
   public void setLeft(Double value, Unit unit) {
     setLeftValue(value);
     setLeftUnit(unit);
@@ -191,7 +195,7 @@ public class Box {
   public void setTop(Double value) {
     setTop(value, DEFAULT_UNIT);
   }
-  
+
   public void setTop(Double value, Unit unit) {
     setTopValue(value);
     setTopUnit(unit);
@@ -212,7 +216,7 @@ public class Box {
   public void setWidth(Double value) {
     setWidth(value, DEFAULT_UNIT);
   }
-  
+
   public void setWidth(Double value, Unit unit) {
     setWidthValue(value);
     setWidthUnit(unit);
@@ -241,4 +245,3 @@ public class Box {
     }
   }
 }
-

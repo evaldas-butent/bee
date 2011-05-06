@@ -15,6 +15,10 @@ import com.butent.bee.shared.utils.Property;
 
 import java.util.List;
 
+/**
+ * Contains information about application height and width, both current and max values.
+ */
+
 public class Dimensions implements HasInfo {
 
   private static final Unit DEFAULT_UNIT = Unit.PX;
@@ -39,25 +43,25 @@ public class Dimensions implements HasInfo {
 
   public Dimensions() {
   }
-  
+
   public Dimensions(double width, double height) {
     this(width, DEFAULT_UNIT, height, DEFAULT_UNIT);
   }
-  
+
   public Dimensions(double width, double height, double minWidth, double minHeight,
       double maxWidth, double maxHeight) {
     this(width, DEFAULT_UNIT, height, DEFAULT_UNIT, minWidth, DEFAULT_UNIT, minHeight,
         DEFAULT_UNIT,
         maxWidth, DEFAULT_UNIT, maxHeight, DEFAULT_UNIT);
   }
-  
+
   public Dimensions(Double widthValue, Unit widthUnit, Double heightValue, Unit heightUnit) {
     this.widthValue = widthValue;
     this.widthUnit = widthUnit;
     this.heightValue = heightValue;
     this.heightUnit = heightUnit;
   }
-  
+
   public Dimensions(Double widthValue, Unit widthUnit, Double heightValue, Unit heightUnit,
       Double minWidthValue, Unit minWidthUnit, Double minHeightValue, Unit minHeightUnit,
       Double maxWidthValue, Unit maxWidthUnit, Double maxHeightValue, Unit maxHeightUnit) {
@@ -296,7 +300,7 @@ public class Dimensions implements HasInfo {
 
   private void setFromStyle(Style style) {
     Assert.notNull(style);
-    
+
     setFromStyleProperty(style, StyleUtils.STYLE_WIDTH);
     setFromStyleProperty(style, StyleUtils.STYLE_HEIGHT);
     setFromStyleProperty(style, StyleUtils.STYLE_MIN_WIDTH);
@@ -319,7 +323,7 @@ public class Dimensions implements HasInfo {
     if (value == null) {
       return;
     }
-    
+
     if (BeeUtils.same(name, StyleUtils.STYLE_WIDTH)) {
       setWidthValue(value);
     } else if (BeeUtils.same(name, StyleUtils.STYLE_HEIGHT)) {

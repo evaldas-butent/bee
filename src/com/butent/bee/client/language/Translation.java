@@ -9,6 +9,10 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+/**
+ * Contains core live content translation functions like {@code detectAndTranslate}.
+ */
+
 public class Translation {
   @SuppressWarnings("serial")
   private static Map<String, String> translationCache = new LinkedHashMap<String, String>() {
@@ -21,7 +25,7 @@ public class Translation {
   public static void detect(final String text, final DetectionCallback callback) {
     Assert.notEmpty(text);
     Assert.notNull(callback);
-    
+
     if (LanguageUtils.isTranslationLoaded()) {
       detectLanguage(text, callback);
     } else {
@@ -32,7 +36,7 @@ public class Translation {
       });
     }
   }
-  
+
   public static void detectAndTranslate(String text, String to, TranslationCallback callback) {
     Language dst = Language.getByCode(to);
     if (dst == null) {
@@ -52,7 +56,7 @@ public class Translation {
     }
     return FontRenderingStatus.UNKNOWN;
   }
-  
+
   public static boolean isTranslatable(Language lang) {
     return isTranslatable(lang.getLangCode());
   }
@@ -62,7 +66,7 @@ public class Translation {
     Assert.notEmpty(value);
     translationCache.put(key, value);
   }
-  
+
   public static void translate(Option option, Language src, Language dst,
       TranslationCallback callback) {
     Assert.notNull(option);
@@ -79,21 +83,21 @@ public class Translation {
     Assert.notEmpty(text);
     Assert.notNull(dst);
     Assert.notNull(callback);
-    
+
     final String codeFrom = (src == null) ? BeeConst.STRING_EMPTY : src.getLangCode();
     final String codeTo = dst.getLangCode();
     if (BeeUtils.same(codeFrom, codeTo)) {
       callback.onCallback(text);
       return;
     }
-    
+
     final String key = translationKey(text, codeFrom, codeTo);
     String value = translationCache.get(key);
     if (!BeeUtils.isEmpty(value)) {
       callback.onCallback(text);
       return;
     }
-    
+
     if (LanguageUtils.isTranslationLoaded()) {
       translate(text, codeFrom, codeTo, key, callback);
     } else {
@@ -107,11 +111,16 @@ public class Translation {
 
   public static native void translate(String text, String src, String dst,
       String key, TranslationCallback callback) /*-{
-    $wnd.google.language.translate(text, src, dst, function(result) {
-      callback.@com.butent.bee.client.language.TranslationCallback::onCallbackWrapper(Ljava/lang/String;Lcom/butent/bee/client/language/TranslationResult;)(key,result);
-    });
+    $wnd.google.language
+        .translate(
+            text,
+            src,
+            dst,
+            function(result) {
+              callback.@com.butent.bee.client.language.TranslationCallback::onCallbackWrapper(Ljava/lang/String;Lcom/butent/bee/client/language/TranslationResult;)(key,result);
+            });
   }-*/;
-  
+
   public static void translate(String text, String from, String to, TranslationCallback callback) {
     Language src = Language.getByCode(from);
     if (src == null) {
@@ -127,9 +136,12 @@ public class Translation {
   }
 
   private static native void detectLanguage(String text, DetectionCallback callback) /*-{
-    $wnd.google.language.detect(text, function(result) {
-      callback.@com.butent.bee.client.language.DetectionCallback::onCallbackWrapper(Lcom/butent/bee/client/language/DetectionResult;)(result);
-    });
+    $wnd.google.language
+        .detect(
+            text,
+            function(result) {
+              callback.@com.butent.bee.client.language.DetectionCallback::onCallbackWrapper(Lcom/butent/bee/client/language/DetectionResult;)(result);
+            });
   }-*/;
 
   private static native int isFontRenderingSupported(String langCode) /*-{
@@ -142,9 +154,14 @@ public class Translation {
 
   private static native void translateWithOption(Option option, String src, String dst,
       String key, TranslationCallback callback) /*-{
-    $wnd.google.language.translate(option, src, dst, function(result) {
-      callback.@com.butent.bee.client.language.TranslationCallback::onCallbackWrapper(Ljava/lang/String;Lcom/butent/bee/client/language/TranslationResult;)(key,result);
-    });
+    $wnd.google.language
+        .translate(
+            option,
+            src,
+            dst,
+            function(result) {
+              callback.@com.butent.bee.client.language.TranslationCallback::onCallbackWrapper(Ljava/lang/String;Lcom/butent/bee/client/language/TranslationResult;)(key,result);
+            });
   }-*/;
 
   private static String translationKey(String text, String from, String to) {
