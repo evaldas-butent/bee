@@ -4,6 +4,10 @@ import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.resources.client.ImageResource.ImageOptions;
 
+/**
+ * Contains a list of images used in the system.
+ */
+
 public interface Images extends ClientBundle {
   @Source("add.png")
   ImageResource add();
@@ -65,10 +69,10 @@ public interface Images extends ClientBundle {
 
   @Source("bookmark.png")
   ImageResource bookmark();
-  
+
   @Source("bookmark_add.png")
   ImageResource bookmarkAdd();
-  
+
   @Source("close.png")
   ImageResource close();
 
@@ -77,7 +81,7 @@ public interface Images extends ClientBundle {
 
   @Source("delete.png")
   ImageResource delete();
-  
+
   @Source("descending.gif")
   ImageResource descending();
 
@@ -89,25 +93,25 @@ public interface Images extends ClientBundle {
 
   @Source("first.png")
   ImageResource first();
-  
+
   @Source("forward.png")
   ImageResource forward();
-  
+
   @Source("last.png")
   ImageResource last();
-  
+
   @Source("loading.gif")
   ImageResource loading();
 
   @Source("next.png")
   ImageResource next();
-  
+
   @Source("previous.png")
   ImageResource previous();
-  
+
   @Source("refresh.png")
   ImageResource refresh();
-  
+
   @Source("reload.png")
   ImageResource reload();
 
@@ -116,7 +120,7 @@ public interface Images extends ClientBundle {
 
   @Source("save.png")
   ImageResource save();
-  
+
   @Source("slider.gif")
   ImageResource slider();
 

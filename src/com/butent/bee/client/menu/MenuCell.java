@@ -9,13 +9,18 @@ import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.butent.bee.shared.menu.MenuEntry;
 import com.butent.bee.shared.utils.BeeUtils;
 
+/**
+ * Holds a representation of a menu item in a cell format and lets the system to catch it's click
+ * event.
+ */
+
 public class MenuCell extends AbstractCell<MenuEntry> {
-  private static String[] events = new String[]{"mousedown"};
+  private static String[] events = new String[] {"mousedown"};
 
   public MenuCell() {
     super(events);
   }
-  
+
   @Override
   public void onBrowserEvent(Context context, Element parent, MenuEntry value, NativeEvent event,
       ValueUpdater<MenuEntry> valueUpdater) {

@@ -6,7 +6,15 @@ import com.google.gwt.user.client.ui.UIObject;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.shared.HasId;
 
+/**
+ * Contains attributes and getting and setting methods for a single menu item.
+ */
+
 public class MenuItem extends UIObject implements HasId {
+
+  /**
+   * Lists all possible menu item types
+   */
   public static enum ITEM_TYPE {
     LABEL, BUTTON, RADIO, HTML, OPTION, LI, DT, DD
   }

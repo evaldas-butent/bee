@@ -8,6 +8,10 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.HasId;
 import com.butent.bee.shared.utils.BeeUtils;
 
+/**
+ * Handles a tree item user interface component, manages it's ID.
+ */
+
 public class BeeTreeItem extends TreeItem implements HasId {
   public BeeTreeItem() {
     super();
@@ -25,9 +29,9 @@ public class BeeTreeItem extends TreeItem implements HasId {
     this(html);
     setUserObject(obj);
   }
-  
+
   public void addText(Object... obj) {
-    Assert.notNull(obj);    
+    Assert.notNull(obj);
     Assert.parameterCount(obj.length, 1);
     addItem(BeeUtils.concat(1, obj));
   }

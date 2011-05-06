@@ -6,6 +6,11 @@ import com.google.gwt.view.client.TreeViewModel;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.shared.HasId;
 
+/**
+ * Implements a browsable view of a tree in which only a single node per level may be open at one
+ * time, manages it's ID.
+ */
+
 public class BeeCellBrowser extends CellBrowser implements HasId {
 
   public <T> BeeCellBrowser(TreeViewModel viewModel, T rootValue) {

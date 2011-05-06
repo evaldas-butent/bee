@@ -7,6 +7,10 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.utils.BeeUtils;
 
+/**
+ * Waits for menu position changes and sets them.
+ */
+
 public class MenuPositionCallback implements PositionCallback {
   private Element parent = null;
   private Element item = null;
@@ -27,7 +31,7 @@ public class MenuPositionCallback implements PositionCallback {
     Assert.notNull(popup);
 
     int x, y;
-    
+
     if (vertical) {
       x = parent.getAbsoluteLeft() + parent.getOffsetWidth() + 5;
       y = item.getAbsoluteTop();

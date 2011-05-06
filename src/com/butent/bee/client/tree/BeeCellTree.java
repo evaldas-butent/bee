@@ -6,6 +6,10 @@ import com.google.gwt.view.client.TreeViewModel;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.shared.HasId;
 
+/**
+ * Handles a cell tree user interface component, manages it's ID.
+ */
+
 public class BeeCellTree extends CellTree implements HasId {
   public <T> BeeCellTree(TreeViewModel viewModel, T rootValue) {
     super(viewModel, rootValue);
@@ -28,7 +32,7 @@ public class BeeCellTree extends CellTree implements HasId {
   public void setId(String id) {
     DomUtils.setId(this, id);
   }
-  
+
   private void init() {
     createId();
     setStyleName("bee-CellTree");

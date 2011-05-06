@@ -22,8 +22,8 @@ import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.HasAfterAddHandler;
 import com.butent.bee.client.event.HasBeeBlurHandler;
@@ -39,12 +39,23 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Contains menu object and core menu handling methods like {@code addItem} or {@code doCommand}.
+ */
+
 public class MenuBar extends Widget implements HasId, HasAfterAddHandler,
     HasBeeBlurHandler, CloseHandler<PopupPanel> {
+
+  /**
+   * Contains a list of possible menu types.
+   */
   public static enum BAR_TYPE {
     TABLE, FLOW, LIST, OLIST, ULIST, DLIST
   }
 
+  /**
+   * Specifies implementing classes to have an image resource.
+   */
   public static interface Resources extends ClientBundle {
     @ImageOptions(flipRtl = true)
     ImageResource subMenuIcon();
@@ -59,7 +70,7 @@ public class MenuBar extends Widget implements HasId, HasAfterAddHandler,
     Resources resources = GWT.create(Resources.class);
     subMenuIcon = AbstractImagePrototype.create(resources.subMenuIcon());
   }
-  
+
   private List<UIObject> allItems = new ArrayList<UIObject>();
   private List<MenuItem> items = new ArrayList<MenuItem>();
 
@@ -76,9 +87,9 @@ public class MenuBar extends Widget implements HasId, HasAfterAddHandler,
   private BAR_TYPE barType = BAR_TYPE.TABLE;
   private ITEM_TYPE defaultItemType = MenuItem.defaultType;
   private String name = BeeUtils.createUniqueName("mb-");
-  
+
   private boolean hoverEnabled = true;
-  
+
   public MenuBar() {
     this(0);
   }
@@ -188,7 +199,7 @@ public class MenuBar extends Widget implements HasId, HasAfterAddHandler,
   public void onBrowserEvent(Event event) {
     Element target = DOM.eventGetTarget(event);
     int type = DOM.eventGetType(event);
-    
+
     if (EventUtils.isKeyEvent(type)) {
       hoverEnabled = false;
     } else if (type == Event.ONCLICK || type == Event.ONMOUSEWHEEL) {
@@ -214,7 +225,7 @@ public class MenuBar extends Widget implements HasId, HasAfterAddHandler,
         break;
 
       case Event.ONMOUSEOVER:
-        if (hoverEnabled) { 
+        if (hoverEnabled) {
           itemOver(item);
         }
         break;
@@ -322,12 +333,12 @@ public class MenuBar extends Widget implements HasId, HasAfterAddHandler,
   public void onClose(CloseEvent<PopupPanel> event) {
     childMenu = null;
     popup = null;
-    
+
     if (event.isAutoClosed() && parentMenu == null) {
       selectItem(null);
     }
   }
-  
+
   public void prepare() {
     if (barType == BAR_TYPE.LIST && items.size() > 1) {
       SelectElement.as(body).setSize(items.size());
@@ -384,7 +395,7 @@ public class MenuBar extends Widget implements HasId, HasAfterAddHandler,
     if (!hasSubMenu(item)) {
       return;
     }
-    
+
     openSubMenu(item);
 
     if (end) {
@@ -392,7 +403,7 @@ public class MenuBar extends Widget implements HasId, HasAfterAddHandler,
     } else {
       item.getSubMenu().selectFirstItemIfNoneSelected();
     }
-    
+
     if (hasSubMenu(item.getSubMenu().selectedItem)) {
       item.getSubMenu().openSubMenu(item.getSubMenu().selectedItem);
     }
@@ -439,7 +450,7 @@ public class MenuBar extends Widget implements HasId, HasAfterAddHandler,
     closeAll();
     Scheduler.get().scheduleDeferred(item.getCommand());
   }
-  
+
   private void eatEvent(Event event) {
     event.stopPropagation();
     event.preventDefault();
@@ -491,20 +502,20 @@ public class MenuBar extends Widget implements HasId, HasAfterAddHandler,
     if (it != null) {
       this.defaultItemType = it;
     }
-    
+
     Element elem;
-    
+
     switch (barType) {
       case FLOW:
         elem = DOM.createDiv();
         body = elem;
         break;
-      
+
       case LIST:
         elem = DOM.createSelect();
         body = elem;
         break;
-      
+
       case OLIST:
         elem = Document.get().createOLElement().cast();
         body = elem;
@@ -514,7 +525,7 @@ public class MenuBar extends Widget implements HasId, HasAfterAddHandler,
         elem = Document.get().createULElement().cast();
         body = elem;
         break;
-        
+
       case DLIST:
         elem = Document.get().createDLElement().cast();
         body = elem;
@@ -593,7 +604,7 @@ public class MenuBar extends Widget implements HasId, HasAfterAddHandler,
     if (item == null && childMenu != null) {
       return;
     }
-    
+
     if (item != null) {
       focus();
     }
@@ -664,7 +675,7 @@ public class MenuBar extends Widget implements HasId, HasAfterAddHandler,
     int oldIdx = (selectedItem == null) ? -1 : items.indexOf(selectedItem);
     int idx = oldIdx;
 
-    String search = new String(new char[]{(char) code});
+    String search = new String(new char[] {(char) code});
     String txt;
 
     for (int i = 0; i < ((oldIdx >= 0) ? n - 1 : n); i++) {
@@ -768,7 +779,7 @@ public class MenuBar extends Widget implements HasId, HasAfterAddHandler,
 
     MenuItem item = items.get(index);
     selectItem(item);
-    
+
     if (hasSubMenu(item)) {
       openSubMenu(item);
     }

@@ -29,8 +29,13 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * Contains necessary methods for implementing grid presentation on the client side (view, filters,
+ * content etc).
+ */
+
 public class GridPresenter implements Presenter {
-  
+
   private class FilterCallback implements Queries.IntCallback {
     private Filter filter;
 
@@ -58,7 +63,7 @@ public class GridPresenter implements Presenter {
       }
     }
   }
-  
+
   private final DataInfo dataInfo;
   private final boolean async;
   private final List<BeeColumn> dataColumns;
@@ -120,7 +125,7 @@ public class GridPresenter implements Presenter {
       hr.removeHandler();
     }
     filterChangeHandlers.clear();
-    
+
     getDataProvider().onUnload();
   }
 
@@ -175,11 +180,11 @@ public class GridPresenter implements Presenter {
     }
     return searchers;
   }
-  
+
   private void updateFilter() {
     Collection<SearchView> searchers = getSearchers();
     Assert.notNull(searchers);
-    
+
     List<Filter> filters = Lists.newArrayListWithCapacity(searchers.size());
     for (SearchView search : searchers) {
       Filter flt = search.getFilter(getDataColumns());
@@ -199,12 +204,12 @@ public class GridPresenter implements Presenter {
       default:
         filter = CompoundFilter.and(filters.toArray(new Filter[filters.size()]));
     }
-    
+
     if (Objects.equal(filter, getLastFilter())) {
       BeeKeeper.getLog().info("filter not changed", filter);
       return;
     }
-    
+
     lastFilter = filter;
     Queries.getRowCount(getDataName(), filter, new FilterCallback(filter));
   }

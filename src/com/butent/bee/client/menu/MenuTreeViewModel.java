@@ -6,6 +6,10 @@ import com.butent.bee.shared.menu.MenuEntry;
 
 import java.util.List;
 
+/**
+ * Enables to represent menu in a tree view.
+ */
+
 public class MenuTreeViewModel implements TreeViewModel {
   private MenuDataProvider rootProvider = null;
   private MenuDataProvider itemProvider = null;

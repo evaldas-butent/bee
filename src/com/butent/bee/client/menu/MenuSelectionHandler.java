@@ -4,6 +4,10 @@ import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.user.client.ui.TreeItem;
 
+/**
+ * Checks whether selected menu item has a command, and if so, calls it.
+ */
+
 public class MenuSelectionHandler implements SelectionHandler<TreeItem> {
 
   public void onSelection(SelectionEvent<TreeItem> event) {

@@ -3,6 +3,10 @@ package com.butent.bee.client.menu;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.utils.BeeCommand;
 
+/**
+ * Extends {@code BeeCommand} class for command execution with it's service name and parameters.
+ */
+
 public class MenuCommand extends BeeCommand {
 
   public MenuCommand() {

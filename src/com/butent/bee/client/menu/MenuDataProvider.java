@@ -7,6 +7,10 @@ import com.butent.bee.shared.menu.MenuUtils;
 
 import java.util.List;
 
+/**
+ * Fetches menu data for {@code MenuTreeViewModel}.
+ */
+
 public class MenuDataProvider extends ListDataProvider<MenuEntry> {
   private int limit = 0;
 
@@ -34,5 +38,5 @@ public class MenuDataProvider extends ListDataProvider<MenuEntry> {
   public void setLimit(int limit) {
     this.limit = limit;
   }
-  
+
 }

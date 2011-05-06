@@ -7,6 +7,10 @@ import com.google.gwt.user.client.ui.TreeItem;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.shared.HasId;
 
+/**
+ * Handles a tree user interface component, manages it's ID.
+ */
+
 public class BeeTree extends Tree implements HasId {
   public BeeTree() {
     super();
@@ -29,7 +33,7 @@ public class BeeTree extends Tree implements HasId {
   public void setId(String id) {
     DomUtils.setId(this, id);
   }
-  
+
   private void init() {
     createId();
     setStyleName("bee-Tree");
