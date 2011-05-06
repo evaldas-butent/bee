@@ -7,6 +7,11 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Map;
 
+/**
+ * Is an abstract class for menu, grid, form and row set service classes, registers and creates
+ * services with comp_ui prefix.
+ */
+
 public abstract class CompositeService {
 
   public static final String PREFIX = "comp_ui_";

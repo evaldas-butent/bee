@@ -11,18 +11,25 @@ import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.dom.StyleUtils.ScrollBars;
 import com.butent.bee.client.utils.XmlUtils;
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.Service;
-import com.butent.bee.shared.Stage;
 import com.butent.bee.shared.BeeType;
 import com.butent.bee.shared.BeeWidget;
+import com.butent.bee.shared.Service;
+import com.butent.bee.shared.Stage;
 import com.butent.bee.shared.ui.UiComponent;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
 import java.util.List;
 
+/**
+ * Implements asynchronous creation of forms.
+ */
+
 public class FormService extends CompositeService {
 
+  /**
+   * Contains possible stages for form generation process.
+   */
   public enum Stages {
     CHOOSE_FORM, SHOW_FORM
   }
@@ -93,7 +100,8 @@ public class FormService extends CompositeService {
                   if (!BeeUtils.isEmpty(data)) {
                     UiComponent c = UiComponent.restore(data);
                     BeeKeeper.getUi().updateMenu(MenuService.buidComponentTree(c));
-                    BeeKeeper.getUi().updateActivePanel((Panel) c.createInstance(), ScrollBars.BOTH);
+                    BeeKeeper.getUi()
+                        .updateActivePanel((Panel) c.createInstance(), ScrollBars.BOTH);
                   }
                 }
               });

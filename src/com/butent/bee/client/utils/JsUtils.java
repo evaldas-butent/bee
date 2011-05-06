@@ -4,16 +4,20 @@ import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.json.client.JSONObject;
 
+/**
+ * Contains javascript related utility functions, like array operations or type conversions.
+ */
+
 public class JsUtils {
   public static native void clearProperty(JavaScriptObject obj, String p) /*-{
-    if (typeof(obj) != "object") {
+    if (typeof (obj) != "object") {
       return;
     }
     if (p == undefined || p == null || p == "") {
       return;
     }
 
-    if (typeof(obj[p]) != "undefined") {
+    if (typeof (obj[p]) != "undefined") {
       obj[p] = undefined;
     }
   }-*/;
@@ -27,7 +31,7 @@ public class JsUtils {
     var arr = new Array(length);
     return arr;
   }-*/;
-  
+
   public static native double currentTimeMillis() /*-{
     return (new Date()).getTime();
   }-*/;
@@ -52,10 +56,10 @@ public class JsUtils {
   public static native String evalToString(String xpr) /*-{
     try {
       var z = eval(xpr);
-      if (typeof(z) == "object") {
+      if (typeof (z) == "object") {
         var s = "";
         var v = "";
-        for (var p in z) {
+        for ( var p in z) {
           if (s.length > 0) {
             s = s + "; ";
           }
@@ -67,8 +71,7 @@ public class JsUtils {
           s = s + p + "=" + v;
         }
         return s;
-      }
-      else {
+      } else {
         return String(z);
       }
     } catch (err) {
@@ -83,16 +86,16 @@ public class JsUtils {
     var tp = null;
     var ok = true;
 
-    for (var p in obj) {
+    for ( var p in obj) {
       try {
         v = obj[p];
-        tp = typeof(v);
+        tp = typeof (v);
         ok = true;
       } catch (err) {
         ok = false;
       }
 
-      if (! ok) {
+      if (!ok) {
         continue;
       }
       if (tp != "function") {
@@ -103,7 +106,7 @@ public class JsUtils {
       }
 
       arr[i] = p;
-      i++; 
+      i++;
     }
     return arr;
   }-*/;
@@ -115,10 +118,10 @@ public class JsUtils {
     var tp = null;
     var ok = true;
 
-    for (var p in obj) {
+    for ( var p in obj) {
       try {
         v = obj[p];
-        tp = typeof(v);
+        tp = typeof (v);
         ok = true;
       } catch (err) {
         arr[i] = p;
@@ -127,7 +130,7 @@ public class JsUtils {
         ok = false;
       }
 
-      if (! ok) {
+      if (!ok) {
         continue;
       }
       if (tp == "function") {
@@ -140,13 +143,13 @@ public class JsUtils {
 
       arr[i] = p;
       try {
-        arr[i + 1] = typeof(obj[p]);
+        arr[i + 1] = typeof (obj[p]);
         arr[i + 2] = String(obj[p]);
       } catch (err) {
         arr[i + 1] = "error";
         arr[i + 2] = String(err);
       }
-      i += 3; 
+      i += 3;
     }
     return arr;
   }-*/;
@@ -154,13 +157,13 @@ public class JsUtils {
   public static native String getProperty(JavaScriptObject obj, String p) /*-{
     return obj[p];
   }-*/;
-  
+
   public static native boolean hasProperty(JavaScriptObject obj, String p) /*-{
     var ok;
 
     try {
       if (p in obj) {
-        var tp = typeof(obj[p]);
+        var tp = typeof (obj[p]);
         ok = (tp != "function" && tp != "undefined");
       } else {
         ok = false;
@@ -174,7 +177,7 @@ public class JsUtils {
   public static native void insert(JsArrayString arr, int index, String value) /*-{
     arr.splice(index, 0, value);
   }-*/;
-  
+
   public static native boolean isEmpty(JavaScriptObject obj) /*-{
     if (obj == undefined || obj == null) {
       return true;
@@ -196,7 +199,7 @@ public class JsUtils {
     var ok;
 
     try {
-      ok = (typeof(obj[p]) == "function");
+      ok = (typeof (obj[p]) == "function");
     } catch (err) {
       ok = false;
     }
@@ -229,7 +232,7 @@ public class JsUtils {
   public static native void setProperty(JavaScriptObject obj, String p, String value) /*-{
     obj[p] = value;
   }-*/;
-  
+
   public static native JsArrayString slice(JsArrayString src, int start, int end) /*-{
     if (src == null) {
       return null;
@@ -251,7 +254,7 @@ public class JsUtils {
   public static native int toInt(double from) /*-{
     return from;
   }-*/;
-  
+
   public static String toJson(JavaScriptObject obj) {
     if (obj == null) {
       return null;
@@ -286,7 +289,7 @@ public class JsUtils {
   public static native String transform(JavaScriptObject obj) /*-{
     return String(obj);
   }-*/;
-  
+
   private JsUtils() {
   }
 }

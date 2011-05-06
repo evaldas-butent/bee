@@ -52,6 +52,11 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.Collection;
 import java.util.logging.Logger;
 
+/**
+ * Implements {@code UiCreator} interface and contains methods creating various user interface
+ * components like button, label, checkbox etc.
+ */
+
 public class GwtUiCreator implements UiCreator {
 
   private static Logger logger = Logger.getLogger(GwtUiCreator.class.getName());

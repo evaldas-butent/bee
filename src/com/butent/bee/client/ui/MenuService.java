@@ -17,6 +17,9 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Map.Entry;
 
+/**
+ * Implements asynchronous creation of menus.
+ */
 public class MenuService extends CompositeService {
 
   public static final String NAME = PREFIX + "menu";

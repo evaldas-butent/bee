@@ -19,10 +19,10 @@ import com.butent.bee.client.utils.XmlUtils;
 import com.butent.bee.client.widget.BeeButton;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.Service;
-import com.butent.bee.shared.Stage;
 import com.butent.bee.shared.BeeType;
 import com.butent.bee.shared.BeeWidget;
+import com.butent.bee.shared.Service;
+import com.butent.bee.shared.Stage;
 import com.butent.bee.shared.communication.ContentType;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -33,8 +33,15 @@ import com.butent.bee.shared.utils.Codec;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Implements asynchronous management of row sets - chunks of data table for representation to a
+ * user.
+ */
 public class RowSetService extends CompositeService {
 
+  /**
+   * Contains a list of stages for row set service.
+   */
   public static enum Stages {
     CHOOSE_TABLE, REQUEST_TABLE,
     INSERT, SAVE, CANCEL,

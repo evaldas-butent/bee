@@ -3,6 +3,10 @@ package com.butent.bee.client.utils;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.utils.BeeUtils;
 
+/**
+ * Enables system to measure time consumption of specific processes.
+ */
+
 public class BeeDuration {
   private double start = BeeConst.TIME_UNKNOWN;
   private double end = BeeConst.TIME_UNKNOWN;

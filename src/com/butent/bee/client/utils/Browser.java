@@ -10,7 +10,16 @@ import com.butent.bee.shared.utils.PropertyUtils;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Enables system to get information about user's browser.
+ */
+
 public class Browser {
+
+  /**
+   * Enables system to get information about user's display screen and it's properties.
+   */
+
   public static class Screen {
     public static int getAvailHeight() {
       return getPropertyInt("availHeight");
@@ -23,15 +32,15 @@ public class Browser {
     public static int getColorDepth() {
       return getPropertyInt("colorDepth");
     }
-    
+
     public static int getHeight() {
       return getPropertyInt("height");
     }
-    
+
     public static int getPixelDepth() {
       return getPropertyInt("pixelDepth");
     }
-    
+
     public static int getWidth() {
       return getPropertyInt("width");
     }
@@ -40,13 +49,13 @@ public class Browser {
       var x;
       try {
         x = $wnd.screen[name];
-        if (typeof(x) != "number") {
+        if (typeof (x) != "number") {
           x = -1;
         }
       } catch (err) {
         x = -1;
       }
-      return x;  
+      return x;
     }-*/;
   }
 
@@ -60,7 +69,7 @@ public class Browser {
         "Port", Window.Location.getPort(),
         "Protocol", Window.Location.getProtocol(),
         "Query String", Window.Location.getQueryString());
-    
+
     Map<String, List<String>> params = Window.Location.getParameterMap();
     if (!BeeUtils.isEmpty(params)) {
       int parCnt = params.size();
@@ -70,7 +79,7 @@ public class Browser {
         parIdx++;
         int valCnt = entry.getValue().size();
         int valIdx = 1;
-        
+
         String name = BeeUtils.concat(1, "Parameter",
             (parCnt > 1) ? BeeUtils.progress(parIdx, parCnt) : BeeConst.STRING_EMPTY,
             entry.getKey(),
@@ -83,7 +92,7 @@ public class Browser {
     }
     return lst;
   }
-  
+
   public static List<Property> getNavigatorInfo() {
     return PropertyUtils.createProperties(
         "App Code Name", Window.Navigator.getAppCodeName(),
@@ -94,7 +103,7 @@ public class Browser {
         "Cookie Enabled", Window.Navigator.isCookieEnabled(),
         "Java Enabled", Window.Navigator.isJavaEnabled());
   }
-  
+
   public static List<Property> getScreenInfo() {
     return PropertyUtils.createProperties(
         "Avail Height", Screen.getAvailHeight(),
@@ -113,7 +122,7 @@ public class Browser {
         "Scroll Left", Window.getScrollLeft(),
         "Scroll Top", Window.getScrollTop());
   }
-  
+
   private Browser() {
   }
 }

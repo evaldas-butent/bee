@@ -12,6 +12,10 @@ import com.butent.bee.shared.Service;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.utils.BeeUtils;
 
+/**
+ * Implements asynchronous creation of grids.
+ */
+
 class GridService extends CompositeService {
 
   public static final String NAME = PREFIX + "grid";

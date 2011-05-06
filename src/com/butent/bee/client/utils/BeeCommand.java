@@ -2,6 +2,10 @@ package com.butent.bee.client.utils;
 
 import com.google.gwt.user.client.Command;
 
+/**
+ * Contains action instructions for later execution, manages it's called service and parameters.
+ */
+
 public abstract class BeeCommand implements Command {
   private String service = null;
   private String parameters = null;

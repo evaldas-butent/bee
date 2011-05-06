@@ -10,6 +10,10 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.utils.BeeUtils;
 
+/**
+ * Contains utility functions for working with xml on the client side.
+ */
+
 public class XmlUtils {
   public static String createSimple(String rootName, Object... nodes) {
     Assert.notEmpty(rootName);
@@ -98,7 +102,7 @@ public class XmlUtils {
       return BeeUtils.transform(obj);
     }
   }
-  
+
   private XmlUtils() {
   }
 }

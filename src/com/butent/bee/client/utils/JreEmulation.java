@@ -2,6 +2,10 @@ package com.butent.bee.client.utils;
 
 import com.butent.bee.shared.utils.ArrayUtils;
 
+/**
+ * Enables using simple java functions in client javascript based environment.
+ */
+
 public class JreEmulation {
 
   public static String getSimpleName(Object obj) {
@@ -21,7 +25,7 @@ public class JreEmulation {
       return name;
     }
   }
-  
+
   private JreEmulation() {
   }
 }
