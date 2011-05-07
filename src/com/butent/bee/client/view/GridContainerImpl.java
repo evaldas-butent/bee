@@ -29,6 +29,10 @@ import com.butent.bee.shared.data.BeeRowSet;
 import java.util.Collection;
 import java.util.List;
 
+/**
+ * Implements design content for a grid container component.
+ */
+
 public class GridContainerImpl extends Split implements GridContainerView, HasNavigation, HasSearch {
 
   public static int minPagingRows = 20;
@@ -225,7 +229,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
       if (target != null && elem.isOrHasChild(Node.as(target))) {
         return;
       }
-      
+
       EventUtils.eatEvent(event);
 
       int rc = display.getRowCount();
@@ -270,7 +274,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
   public void setViewPresenter(Presenter viewPresenter) {
     this.viewPresenter = viewPresenter;
   }
-  
+
   @Override
   protected void onLoad() {
     super.onLoad();
@@ -296,18 +300,18 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     if (hasPaging) {
       int w = getElement().getClientWidth();
       int h = getElement().getClientHeight();
-      
+
       if (w <= 0) {
         w = DomUtils.getParentClientWidth(this);
       }
       if (h <= 0) {
         h = DomUtils.getParentClientHeight(this);
       }
-      
+
       if (Global.isDebug()) {
         BeeKeeper.getLog().info("adapt", init, w, h);
       }
-      
+
       int pageSize = estimatePageSize(content, w, h);
       if (pageSize > 0 && (init || pageSize != getPageSize(content))) {
         updatePageSize(content, pageSize, init);

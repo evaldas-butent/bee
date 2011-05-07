@@ -19,41 +19,50 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
 
+/**
+ * Implements styling and user command capture for data footers.
+ */
+
 public class DataFooterImpl extends Absolute implements DataFooterView, HasNavigation, HasSearch {
-  
+
+  /**
+   * Specifies which styling resources to use for a data footer implementation.
+   */
   public interface Resources extends ClientBundle {
     @Source("DataFooterImpl.css")
     Style footerStyle();
   }
-
+  /**
+   * Specifies which styling aspects have to be implemented on data header implementations.
+   */
   public interface Style extends CssResource {
     String container();
 
     int horizontalMargin();
-    
+
     String pageResizer();
 
     int resizerWidth();
-    
+
     String search();
-    
+
     String simplePager();
-    
+
     int spacing();
-    
+
     int top();
   }
-  
+
   private static Resources defaultResources = null;
   private static Style defaultStyle = null;
-  
+
   private static Resources getDefaultResources() {
     if (defaultResources == null) {
       defaultResources = GWT.create(Resources.class);
     }
-    return defaultResources; 
+    return defaultResources;
   }
-  
+
   private static Style getDefaultStyle() {
     if (defaultStyle == null) {
       defaultStyle = getDefaultResources().footerStyle();
@@ -61,15 +70,15 @@ public class DataFooterImpl extends Absolute implements DataFooterView, HasNavig
     }
     return defaultStyle;
   }
-  
+
   private Presenter viewPresenter = null;
 
   private String pagerId = null;
   private String resizerId = null;
   private String searchId = null;
-  
+
   private boolean adjusted = false;
-  
+
   public DataFooterImpl() {
     super();
     addStyleName(StyleUtils.WINDOW_FOOTER);
@@ -78,23 +87,23 @@ public class DataFooterImpl extends Absolute implements DataFooterView, HasNavig
   public void create(int rowCount, int pageSize, boolean addPaging, boolean addSearch) {
     Style style = getDefaultStyle();
     addStyleName(style.container());
-    
+
     int top = style.top();
     int spacing = style.spacing();
     int margin = style.horizontalMargin();
-    
+
     int pagerWidth = 256;
     int resizerWidth = style.resizerWidth();
-    
+
     int left = margin;
-    
+
     if (addPaging) {
       SimplePager pager = new SimplePager(rowCount);
       pager.addStyleName(style.simplePager());
       add(pager, left, top);
       left += pagerWidth + spacing;
       pagerId = pager.getWidgetId();
-      
+
       PageResizer pageResizer = new PageResizer(pageSize);
       pageResizer.addStyleName(style.pageResizer());
       add(pageResizer, left, top);
@@ -125,7 +134,7 @@ public class DataFooterImpl extends Absolute implements DataFooterView, HasNavig
   public String getWidgetId() {
     return getId();
   }
-  
+
   public void setViewPresenter(Presenter viewPresenter) {
     this.viewPresenter = viewPresenter;
   }
@@ -142,7 +151,7 @@ public class DataFooterImpl extends Absolute implements DataFooterView, HasNavig
       });
     }
   }
-  
+
   private void adjust() {
     if (BeeUtils.isEmpty(pagerId)) {
       return;
@@ -156,9 +165,9 @@ public class DataFooterImpl extends Absolute implements DataFooterView, HasNavig
     int spacing = style.spacing();
     int resizerWidth = style.resizerWidth();
     int margin = style.horizontalMargin();
-    
+
     int left = margin + pagerWidth + spacing;
-    
+
     if (!BeeUtils.isEmpty(resizerId)) {
       StyleUtils.setLeft(DomUtils.getChild(this, resizerId), left);
       left += resizerWidth + spacing;

@@ -7,6 +7,10 @@ import com.google.gwt.view.client.HasRows;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.presenter.Presenter;
 
+/**
+ * Is an abstract class with default pager implementation behavior.
+ */
+
 public abstract class AbstractPagerImpl extends AbstractPager implements PagerView {
   private Presenter viewPresenter = null;
 

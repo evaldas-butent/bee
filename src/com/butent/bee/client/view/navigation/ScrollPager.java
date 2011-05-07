@@ -12,6 +12,10 @@ import com.butent.bee.client.dom.StyleUtils.ScrollBars;
 import com.butent.bee.client.layout.Scroll;
 import com.butent.bee.client.widget.Html;
 
+/**
+ * Enables to use scroll function in pager user interface elements.
+ */
+
 public class ScrollPager extends AbstractPagerImpl implements RequiresResize {
   public static int maxHeight = 10000;
 
@@ -45,12 +49,12 @@ public class ScrollPager extends AbstractPagerImpl implements RequiresResize {
         if (ps <= 0 || ps >= rc) {
           return;
         }
-        
+
         int z = pos * rc / maxPos;
         if (z + ps > rc) {
           z = rc - ps;
         }
-        
+
         if (z != getPageStart()) {
           isScrolling = true;
           setPageStart(z);
@@ -129,7 +133,7 @@ public class ScrollPager extends AbstractPagerImpl implements RequiresResize {
       outer.setVerticalScrollPosition(position);
     }
   }
-  
+
   private void updateHeight() {
     long h = calculateHeight(getPageSize(), getRowCount(), getElement().getClientHeight());
     if (h >= 0 && h != lastHeight) {

@@ -17,6 +17,7 @@ import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.safecss.shared.SafeStyles;
 import com.google.gwt.safecss.shared.SafeStylesBuilder;
 import com.google.gwt.safehtml.client.SafeHtmlTemplates;
+import com.google.gwt.safehtml.client.SafeHtmlTemplates.Template;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.google.gwt.safehtml.shared.SafeHtmlUtils;
@@ -26,8 +27,8 @@ import com.google.gwt.user.cellview.client.RowStyles;
 import com.google.gwt.user.cellview.client.SafeHtmlHeader;
 import com.google.gwt.user.cellview.client.TextHeader;
 import com.google.gwt.user.client.Event;
-import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment.HorizontalAlignmentConstant;
+import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.view.client.CellPreviewEvent;
 import com.google.gwt.view.client.Range;
 import com.google.gwt.view.client.RangeChangeEvent;
@@ -56,7 +57,16 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * Manages the structure and behavour of a cell grid user interface component.
+ */
+
 public class CellGrid extends Widget implements HasId, HasDataTable {
+
+  /**
+   * Contains templates which facilitates compile-time binding of HTML templates to generate
+   * SafeHtml strings.
+   */
 
   public interface Template extends SafeHtmlTemplates {
     @Template("<div data-row=\"{0}\" data-col=\"{1}\" class=\"{2}\" style=\"{3}position:absolute;\">{4}</div>")
@@ -304,7 +314,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable {
   private int zIndex = 0;
 
   private boolean hasCellPreview = false;
-  
+
   public CellGrid() {
     setElement(Document.get().createDivElement());
 
@@ -1404,7 +1414,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable {
     if (!isRowWithinBounds(row) || !isColumnWithinBounds(col)) {
       return null;
     }
-    
+
     int left = 0;
     if (col > 0) {
       int xIncr = getBodyCellWidthIncrement();
@@ -1413,10 +1423,10 @@ public class CellGrid extends Widget implements HasId, HasDataTable {
       }
     }
     int width = getColumnWidth(col);
-    
+
     int top = getHeaderHeight();
     if (row > 0) {
-      top += (getBodyCellHeight() + getBodyCellHeightIncrement()) * row; 
+      top += (getBodyCellHeight() + getBodyCellHeightIncrement()) * row;
     }
     int height = getBodyCellHeight();
 
@@ -1474,7 +1484,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable {
   private Object getRowId(IsRow value) {
     return (value == null) ? value : value.getId();
   }
-  
+
   private int getWidthIncrement(Edges padding, Edges border, Edges margin) {
     int incr = 0;
     if (padding != null) {
@@ -1497,7 +1507,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable {
       case BeeConst.CHAR_SPACE:
         selectRow(row, rowValue);
         return true;
-      
+
       case BeeConst.CHAR_PLUS:
       case BeeConst.CHAR_MINUS:
       case BeeConst.CHAR_ZERO:
@@ -1511,7 +1521,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable {
         if (width <= 0 || height <= 0) {
           return false;
         }
-        
+
         Box cellBox = null;
         if (charCode == BeeConst.CHAR_PLUS) {
           cellBox = new Box(--left, width += 2, --top, height += 2);
@@ -1520,8 +1530,8 @@ public class CellGrid extends Widget implements HasId, HasDataTable {
         } else {
           cellBox = getCellBox(row, col);
         }
-        
-        if (cellBox == null 
+
+        if (cellBox == null
             || width <= 0 || width < getMinCellWidth() || width > getMaxCellWidth()
             || height <= 0 || height < getMinCellHeight() || height > getMaxCellHeight()) {
           return false;
@@ -1533,7 +1543,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable {
           cellBox.setTop(0);
         }
         cellBox.applyTo(cell);
-       
+
         return true;
 
       default:
@@ -1639,7 +1649,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable {
   private void keyboardPrevPage() {
     activateRow(getPageStart() - 1);
   }
-  
+
   private void keyboardRight() {
     int nextColumn = getActiveColumn() + 1;
     if (nextColumn >= getColumnCount()) {

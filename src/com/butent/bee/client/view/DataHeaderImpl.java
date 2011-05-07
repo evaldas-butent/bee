@@ -14,40 +14,59 @@ import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.shared.utils.BeeUtils;
 
+/**
+ * Implements styling and user command capture for data headers.
+ */
+
 public class DataHeaderImpl extends Complex implements DataHeaderView {
+
+  /**
+   * Specifies which styling resources to use for a data header implementation.
+   */
 
   public interface Resources extends ClientBundle {
     @Source("DataHeaderImpl.css")
     Style headerStyle();
   }
-  
+
+  /**
+   * Specifies which styling aspects have to be implemented on data header implementations.
+   */
+
   public interface Style extends CssResource {
     String caption();
+
     int captionLeft();
+
     int captionTop();
 
     String close();
+
     int closeRight();
+
     int closeTop();
 
     String container();
 
     String control();
+
     int controlsRight();
+
     int controlTop();
+
     int controlWidth();
   }
 
   private static Resources defaultResources = null;
   private static Style defaultStyle = null;
-  
+
   private static Resources getDefaultResources() {
     if (defaultResources == null) {
       defaultResources = GWT.create(Resources.class);
     }
-    return defaultResources; 
+    return defaultResources;
   }
-  
+
   private static Style getDefaultStyle() {
     if (defaultStyle == null) {
       defaultStyle = getDefaultResources().headerStyle();
@@ -55,7 +74,7 @@ public class DataHeaderImpl extends Complex implements DataHeaderView {
     }
     return defaultStyle;
   }
-  
+
   private Presenter viewPresenter = null;
 
   public DataHeaderImpl() {
@@ -70,11 +89,11 @@ public class DataHeaderImpl extends Complex implements DataHeaderView {
     BeeLabel label = new BeeLabel(caption);
     label.addStyleName(StyleUtils.WINDOW_CAPTION);
     addLeftTop(label, style.captionLeft(), style.captionTop());
-    
+
     int x = style.controlsRight();
     int y = style.controlTop();
     int w = style.controlWidth();
-    
+
     String cst = style.control();
 
     addRightTop(createControl(Global.getImages().configure(), cst), x, y);
@@ -95,11 +114,11 @@ public class DataHeaderImpl extends Complex implements DataHeaderView {
   public String getWidgetId() {
     return getId();
   }
-  
+
   public void setViewPresenter(Presenter viewPresenter) {
     this.viewPresenter = viewPresenter;
   }
-  
+
   private Widget createControl(ImageResource image, String styleName) {
     Widget control = new BeeImage(image);
     if (!BeeUtils.isEmpty(styleName)) {

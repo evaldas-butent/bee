@@ -31,6 +31,10 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
 
+/**
+ * Creates cell grid elements, connecting view and presenter elements of them.
+ */
+
 public class CellGridImpl extends CellGrid implements GridView, SearchView {
 
   private class FilterUpdater implements ValueUpdater<String> {

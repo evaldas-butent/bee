@@ -17,13 +17,24 @@ import com.butent.bee.client.widget.Html;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.utils.BeeUtils;
 
+/**
+ * Implements a user interface component, which enables organizing information on the screen into
+ * several pages.
+ */
+
 public class SimplePager extends AbstractPagerImpl {
 
+  /**
+   * Specifies which CSS style resources to use.
+   */
   public interface Resources extends ClientBundle {
     @Source("SimplePager.css")
     Style pagerStyle();
   }
 
+  /**
+   * Specifies which styling aspects have to be implemented on simple pager implementations.
+   */
   public interface Style extends CssResource {
     String container();
 
@@ -67,6 +78,9 @@ public class SimplePager extends AbstractPagerImpl {
     }
   }
 
+  /**
+   * Contains possible navigation options like first, previous, next, last etc.
+   */
   private static enum Navigation {
     FIRST, REWIND, PREV, NEXT, FORWARD, LAST
   }

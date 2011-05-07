@@ -8,6 +8,10 @@ import com.butent.bee.shared.data.filter.Filter;
 
 import java.util.List;
 
+/**
+ * Requires implementing classes to have {@code getFilter} method.
+ */
+
 public interface SearchView extends View, HasChangeHandlers {
   Filter getFilter(List<? extends IsColumn> columns);
 }

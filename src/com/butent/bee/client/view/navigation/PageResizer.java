@@ -8,6 +8,10 @@ import com.google.gwt.view.client.Range;
 import com.butent.bee.client.widget.InputSpinner;
 import com.butent.bee.shared.utils.BeeUtils;
 
+/**
+ * Handles page resize events and data refresh that comes because of it.
+ */
+
 public class PageResizer extends AbstractPagerImpl {
   public static int minPageSize = 2;
   public static int maxPageSize = 100;

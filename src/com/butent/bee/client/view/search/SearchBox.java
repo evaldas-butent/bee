@@ -9,6 +9,10 @@ import com.butent.bee.shared.data.filter.Filter;
 
 import java.util.List;
 
+/**
+ * Implements a text box for search purposes.
+ */
+
 public class SearchBox extends BeeTextBox implements SearchView {
   private Presenter presenter = null;
 

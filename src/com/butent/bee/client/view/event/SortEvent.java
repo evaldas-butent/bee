@@ -6,8 +6,15 @@ import com.google.gwt.event.shared.HasHandlers;
 
 import com.butent.bee.shared.data.view.Order;
 
+/**
+ * Gets the type of sorting needed to be done and triggers it.
+ */
+
 public class SortEvent extends GwtEvent<SortEvent.Handler> {
 
+  /**
+   * Requires to have onSort event.
+   */
   public interface Handler extends EventHandler {
     void onSort(SortEvent event);
   }

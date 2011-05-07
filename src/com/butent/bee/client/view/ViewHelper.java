@@ -9,6 +9,10 @@ import com.butent.bee.client.view.search.SearchView;
 
 import java.util.Collection;
 
+/**
+ * Gets pagers and searchers for views.
+ */
+
 public class ViewHelper {
 
   public static Collection<PagerView> getPagers(HasWidgets container) {
@@ -46,7 +50,7 @@ public class ViewHelper {
     }
     return searchers;
   }
-  
+
   private ViewHelper() {
   }
 }
