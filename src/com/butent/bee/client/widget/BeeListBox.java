@@ -14,6 +14,10 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
 
+/**
+ * Implements a list box user interface component that presents a list of choices to the user.
+ */
+
 public class BeeListBox extends ListBox implements HasId, HasBeeChangeHandler {
   private HasStringValue source = null;
 
@@ -36,7 +40,7 @@ public class BeeListBox extends ListBox implements HasId, HasBeeChangeHandler {
     this();
     this.source = source;
     addDefaultHandlers();
-    
+
     if (source instanceof Variable) {
       initVar((Variable) source);
     }
@@ -71,11 +75,11 @@ public class BeeListBox extends ListBox implements HasId, HasBeeChangeHandler {
   public String getId() {
     return DomUtils.getId(this);
   }
-  
+
   public int getIndex(String text) {
     Assert.notNull(text);
     int index = -1;
-    
+
     for (int i = 0; i < getItemCount(); i++) {
       if (BeeUtils.same(getValue(i), text)) {
         index = i;
@@ -119,7 +123,7 @@ public class BeeListBox extends ListBox implements HasId, HasBeeChangeHandler {
     createId();
     setStyleName("bee-ListBox");
   }
-  
+
   private void initVar(Variable var) {
     addItems(var.getItems());
 

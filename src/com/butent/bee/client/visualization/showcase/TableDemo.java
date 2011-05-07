@@ -5,10 +5,14 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.layout.Vertical;
 import com.butent.bee.client.visualization.Query;
-import com.butent.bee.client.visualization.QueryResponse;
 import com.butent.bee.client.visualization.Query.Callback;
+import com.butent.bee.client.visualization.QueryResponse;
 import com.butent.bee.client.visualization.visualizations.Table;
 import com.butent.bee.client.widget.BeeLabel;
+
+/**
+ * Implements a demonstration of query results showing table visualization.
+ */
 
 public class TableDemo implements LeftTabPanel.WidgetProvider {
   private Vertical panel = new Vertical();

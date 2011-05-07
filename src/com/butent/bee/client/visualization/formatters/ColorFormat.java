@@ -4,6 +4,10 @@ import com.google.gwt.core.client.JavaScriptObject;
 
 import com.butent.bee.client.visualization.DataTable;
 
+/**
+ * Manages color formatting in visualizations.
+ */
+
 public class ColorFormat extends JavaScriptObject {
   public static native ColorFormat create() /*-{
     return new $wnd.google.visualization.ColorFormat();

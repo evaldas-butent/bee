@@ -5,11 +5,14 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.shared.HasId;
 
+/**
+ * Handles a component for using scalable vector graphics.
+ */
 public class Svg extends Widget implements HasId {
 
   public Svg() {
     super();
-    
+
     setElement(DomUtils.createElement(DomUtils.TAG_SVG));
     init();
   }
@@ -29,5 +32,5 @@ public class Svg extends Widget implements HasId {
   private void init() {
     createId();
   }
-  
+
 }

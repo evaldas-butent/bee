@@ -11,6 +11,11 @@ import com.butent.bee.client.visualization.AbstractDrawOptions;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.HasId;
 
+/**
+ * Is an abstract class for all visualizations in this package, contains methods structure for
+ * successful management of a particular visualization.
+ */
+
 public abstract class Visualization<OptionsType extends AbstractDrawOptions> extends Widget
     implements HasId {
   private AbstractDataTable dataTable;

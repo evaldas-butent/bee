@@ -2,10 +2,14 @@ package com.butent.bee.client.visualization.showcase;
 
 import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.client.visualization.DataTable;
 import com.butent.bee.client.visualization.AbstractDataTable.ColumnType;
+import com.butent.bee.client.visualization.DataTable;
 import com.butent.bee.client.visualization.visualizations.Gauge;
 import com.butent.bee.shared.utils.BeeUtils;
+
+/**
+ * Implements demonstration of a gauge visualization.
+ */
 
 public class GaugeDemo implements LeftTabPanel.WidgetProvider {
   private Widget widget;
@@ -30,7 +34,7 @@ public class GaugeDemo implements LeftTabPanel.WidgetProvider {
     options.setGreenRange(0, 50);
     options.setYellowRange(50, 75);
     options.setRedRange(75, 100);
-    
+
     widget = new Gauge(data, options);
   }
 

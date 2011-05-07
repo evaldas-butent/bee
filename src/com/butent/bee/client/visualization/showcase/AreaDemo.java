@@ -10,18 +10,22 @@ import com.butent.bee.client.visualization.visualizations.corechart.ChartAreaOpt
 import com.butent.bee.client.visualization.visualizations.corechart.Options;
 import com.butent.bee.client.widget.BeeLabel;
 
+/**
+ * Implements demonstration of an area chart visualization.
+ */
+
 public class AreaDemo implements LeftTabPanel.WidgetProvider {
   public Widget getWidget() {
     Options options = Options.create();
     options.setHeight(240);
     options.setTitle("Įmonės veikla");
     options.setWidth(400);
-    
+
     ChartAreaOptions areaOptions = ChartAreaOptions.create();
     areaOptions.setLeft(50);
     areaOptions.setWidthPct(60);
     options.setChartAreaOptions(areaOptions);
-    
+
     AxisOptions vAxisOptions = AxisOptions.create();
     vAxisOptions.setMinValue(0);
     vAxisOptions.setMaxValue(2000);
@@ -44,7 +48,7 @@ public class AreaDemo implements LeftTabPanel.WidgetProvider {
     result.add(status);
     result.add(viz);
     result.add(onMouseOverAndOutStatus);
-    
+
     return result;
   }
 }

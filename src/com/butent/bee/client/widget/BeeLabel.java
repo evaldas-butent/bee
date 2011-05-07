@@ -10,6 +10,10 @@ import com.butent.bee.client.utils.HasCommand;
 import com.butent.bee.shared.HasId;
 import com.butent.bee.shared.utils.BeeUtils;
 
+/**
+ * Implements standard label user interface component.
+ */
+
 public class BeeLabel extends Label implements HasId, HasCommand {
   private BeeCommand command = null;
 
@@ -55,7 +59,7 @@ public class BeeLabel extends Label implements HasId, HasCommand {
     this(text);
     setHorizontalAlignment(align);
   }
-  
+
   public void createId() {
     DomUtils.createId(this, DomUtils.LABEL_ID_PREFIX);
   }

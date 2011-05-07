@@ -4,7 +4,15 @@ import com.google.gwt.core.client.JavaScriptObject;
 
 import com.butent.bee.client.visualization.DataTable;
 
-public class ArrowFormat extends JavaScriptObject {  
+/**
+ * Manages formatting for arrows in visualizations.
+ */
+
+public class ArrowFormat extends JavaScriptObject {
+
+  /**
+   * Sets options for arrow formatting.
+   */
   public static class Options extends JavaScriptObject {
     public static Options create() {
       return JavaScriptObject.createObject().cast();
@@ -12,19 +20,19 @@ public class ArrowFormat extends JavaScriptObject {
 
     protected Options() {
     }
-    
+
     public final native void setBase(double base) /*-{
       this.base = base;
     }-*/;
   }
-  
+
   public static native ArrowFormat create(Options options) /*-{
     return new $wnd.google.visualization.ArrowFormat(options);
   }-*/;
 
   protected ArrowFormat() {
   }
-  
+
   public final native void format(DataTable data, int columnIndex) /*-{
     this.format(data, columnIndex);
   }-*/;

@@ -11,6 +11,9 @@ import com.butent.bee.shared.utils.BeeUtils;
  */
 
 public class DndEvent extends NativeEvent {
+  /**
+   * Contains a list of possible drag and drop event types.
+   */
   public static enum TYPE {
     DRAG("drag"), DRAGEND("dragend"), DRAGENTER("dragenter"), DRAGLEAVE("dragleave"),
     DRAGOVER("dragover"), DRAGSTART("dragstart"), DROP("drop");

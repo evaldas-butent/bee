@@ -3,6 +3,11 @@ package com.butent.bee.client.widget;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.shared.HasStringValue;
 
+/**
+ * Implements standard spinner user interface component, letting user to increase and decrease input
+ * value as well as input it straight from the keyboard.
+ */
+
 public class InputSpinner extends InputInteger {
   private static String inputType = "number";
 

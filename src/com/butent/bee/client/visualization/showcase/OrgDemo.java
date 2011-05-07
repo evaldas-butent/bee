@@ -3,12 +3,16 @@ package com.butent.bee.client.visualization.showcase;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.layout.Vertical;
-import com.butent.bee.client.visualization.DataTable;
 import com.butent.bee.client.visualization.AbstractDataTable.ColumnType;
+import com.butent.bee.client.visualization.DataTable;
 import com.butent.bee.client.visualization.visualizations.OrgChart;
 import com.butent.bee.client.visualization.visualizations.OrgChart.Options;
 import com.butent.bee.client.visualization.visualizations.OrgChart.Size;
 import com.butent.bee.client.widget.BeeLabel;
+
+/**
+ * Implements demonstration of a organizational chart visualization.
+ */
 
 public class OrgDemo implements LeftTabPanel.WidgetProvider {
   private Vertical panel = new Vertical();

@@ -6,6 +6,10 @@ import com.google.gwt.user.cellview.client.CellList;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.shared.HasId;
 
+/**
+ * Implements a cell list user interface component, a single column list of cells.
+ */
+
 public class BeeCellList<T> extends CellList<T> implements HasId {
 
   public BeeCellList(Cell<T> cell) {

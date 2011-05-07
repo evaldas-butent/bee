@@ -14,8 +14,20 @@ import com.butent.bee.client.visualization.events.SelectHandler;
 import com.butent.bee.client.visualization.events.SortHandler;
 import com.butent.bee.shared.Assert;
 
+/**
+ * Implements data table visualization for representing data set in rows and columns.
+ */
 public class Table extends Visualization<Table.Options> implements Selectable {
+
+  /**
+   * Sets option values for a data table visualization.
+   */
+
   public static class Options extends AbstractDrawOptions {
+
+    /**
+     * Sets Css class names values for a data table visualization .
+     */
     public static class CssClassNames extends JavaScriptObject {
       protected CssClassNames() {
       }
@@ -52,6 +64,10 @@ public class Table extends Visualization<Table.Options> implements Selectable {
         this.tableRow = tableRow;
       }-*/;
     }
+
+    /**
+     * Contains a list of possible policies (disable, enable, event).
+     */
 
     public static enum Policy {
       DISABLE, ENABLE, EVENT;

@@ -4,6 +4,10 @@ import com.google.gwt.core.client.JavaScriptObject;
 
 import com.butent.bee.client.ajaxloader.Properties;
 
+/**
+ * Enables using colors with 3D effect.
+ */
+
 public class Color3D extends Properties {
   public static Color3D create() {
     return JavaScriptObject.createObject().<Color3D> cast();

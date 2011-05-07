@@ -6,7 +6,16 @@ import com.google.gwt.dom.client.Element;
 import com.butent.bee.client.visualization.AbstractDataTable;
 import com.butent.bee.client.visualization.CommonChartOptions;
 
+/**
+ * Implements image spark line chart visualization.
+ */
+
 public class ImageSparklineChart extends Visualization<ImageSparklineChart.Options> {
+
+  /**
+   * Sets option values for image spark line chart visualization.
+   */
+
   public static class Options extends CommonChartOptions {
     public static Options create() {
       return JavaScriptObject.createObject().cast();

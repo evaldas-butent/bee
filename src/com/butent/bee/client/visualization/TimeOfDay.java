@@ -1,7 +1,14 @@
 package com.butent.bee.client.visualization;
 
+/**
+ * Enables to form objects with time of day contained in them.
+ */
+
 public class TimeOfDay implements Comparable<TimeOfDay> {
   @SuppressWarnings("serial")
+  /**
+   * Is an exception for invalid time values.
+   */
   public static class BadTimeException extends Exception {
     BadTimeException(int i, String field) {
       super(i + " is an invalid " + field + ".");
@@ -58,7 +65,7 @@ public class TimeOfDay implements Comparable<TimeOfDay> {
   public int getSecond() {
     return second;
   }
-  
+
   @Override
   public int hashCode() {
     final int prime = 31;
@@ -69,7 +76,7 @@ public class TimeOfDay implements Comparable<TimeOfDay> {
     result = prime * result + second;
     return result;
   }
-  
+
   public void setHour(int hour) throws BadTimeException {
     if (hour < 0 || hour > 23) {
       throw new BadTimeException(hour, "hour");

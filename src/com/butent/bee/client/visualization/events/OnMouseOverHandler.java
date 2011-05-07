@@ -2,7 +2,15 @@ package com.butent.bee.client.visualization.events;
 
 import com.butent.bee.client.ajaxloader.Properties;
 
+/**
+ * Stores current row and column over which mouse cursor currently is.
+ */
+
 public abstract class OnMouseOverHandler extends Handler {
+
+  /**
+   * Occurs when the mouse cursor moves over an area.
+   */
   public static class OnMouseOverEvent {
     private int row;
     private int column;

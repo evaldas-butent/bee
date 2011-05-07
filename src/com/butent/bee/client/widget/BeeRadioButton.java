@@ -8,6 +8,10 @@ import com.butent.bee.client.utils.HasCommand;
 import com.butent.bee.shared.HasId;
 import com.butent.bee.shared.HasService;
 
+/**
+ * Implements a mutually-exclusive selection radio button user interface component.
+ */
+
 public class BeeRadioButton extends RadioButton implements HasId, HasService, HasCommand {
   private BeeCommand command = null;
 

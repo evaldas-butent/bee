@@ -1,5 +1,9 @@
 package com.butent.bee.client.visualization;
 
+/**
+ * Contains possible legend positions in the visualization object.
+ */
+
 public class LegendPosition {
   public static final LegendPosition BOTTOM = new LegendPosition("bottom");
   public static final LegendPosition LEFT = new LegendPosition("left");

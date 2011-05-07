@@ -9,6 +9,10 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.visualization.AbstractDrawOptions;
 
+/**
+ * Implements image area chart visualization.
+ */
+
 public class Toolbar extends Widget {
 
   public static final String PACKAGE = "default";
@@ -16,6 +20,9 @@ public class Toolbar extends Widget {
   private JsArray<Component> components;
   private DivElement div;
 
+  /**
+   * Contains a list of possible toolbar types ( html, csv and so on).
+   */
   public enum Type {
     HTMLCODE("htmlcode"), CSV("csv"), HTML("html"), IGOOGLE("igoogle");
 
@@ -29,6 +36,10 @@ public class Toolbar extends Widget {
       return typeCode;
     }
   }
+
+  /**
+   * Handles individual elements of toolbar visualization component.
+   */
 
   public static class Component extends AbstractDrawOptions {
     public static Component create() {

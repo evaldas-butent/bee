@@ -12,6 +12,10 @@ import com.butent.bee.shared.HasId;
 import com.butent.bee.shared.HasStringValue;
 import com.butent.bee.shared.utils.BeeUtils;
 
+/**
+ * Implements a text box that allows a single line of text to be entered.
+ */
+
 public class BeeTextBox extends TextBox implements HasId, HasBeeKeyHandler,
     HasBeeValueChangeHandler<String> {
   private HasStringValue source = null;
@@ -28,7 +32,7 @@ public class BeeTextBox extends TextBox implements HasId, HasBeeKeyHandler,
 
   public BeeTextBox(HasStringValue source) {
     this();
-    
+
     if (source != null) {
       setSource(source);
       String v = source.getString();
@@ -41,7 +45,7 @@ public class BeeTextBox extends TextBox implements HasId, HasBeeKeyHandler,
   public void createId() {
     DomUtils.createId(this, "txt");
   }
-  
+
   public String getDefaultStyleName() {
     return "bee-TextBox";
   }
@@ -77,7 +81,7 @@ public class BeeTextBox extends TextBox implements HasId, HasBeeKeyHandler,
     BeeKeeper.getBus().addKeyHandler(this);
     BeeKeeper.getBus().addStringVch(this);
   }
-  
+
   private void init() {
     setStyleName(getDefaultStyleName());
     createId();

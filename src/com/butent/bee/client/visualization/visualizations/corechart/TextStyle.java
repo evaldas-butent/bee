@@ -4,6 +4,10 @@ import com.google.gwt.core.client.JavaScriptObject;
 
 import com.butent.bee.client.ajaxloader.Properties;
 
+/**
+ * Sets main font parameters like color, font name and size.
+ */
+
 public class TextStyle extends Properties {
   public static TextStyle create() {
     return JavaScriptObject.createObject().cast();

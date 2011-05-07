@@ -9,6 +9,11 @@ import com.butent.bee.shared.DateTime;
 
 import java.util.Date;
 
+/**
+ * Enables operations with data table object, like adding rows or columns, setting cell values and
+ * so on.
+ */
+
 public class DataTable extends AbstractDataTable {
 
   public static native DataTable create() /*-{
@@ -112,7 +117,7 @@ public class DataTable extends AbstractDataTable {
     if (value == null) {
       setCellNull(rowIndex, columnIndex, formattedValue, properties);
     } else {
-      int[] integers = new int[]{
+      int[] integers = new int[] {
           value.getHour(), value.getMinute(), value.getSecond(), value.getMillisecond()};
       setCell(rowIndex, columnIndex, ArrayHelper.toJsArrayInteger(integers),
           formattedValue, properties);

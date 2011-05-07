@@ -7,6 +7,11 @@ import com.google.gwt.user.client.ui.InlineHTML;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.shared.HasId;
 
+/**
+ * Implements a user interface component that can contain arbitrary HTML and uses a span element,
+ * causing it to be displayed with inline layout.
+ */
+
 public class InlineHtml extends InlineHTML implements HasId {
 
   public InlineHtml() {
@@ -28,7 +33,7 @@ public class InlineHtml extends InlineHTML implements HasId {
     super(html);
     init();
   }
-  
+
   public void createId() {
     DomUtils.createId(this, "inline");
   }

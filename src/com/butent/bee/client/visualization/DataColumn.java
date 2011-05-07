@@ -9,7 +9,16 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
+/**
+ * Is an abstract class determining how to handle different types of data in columns of
+ * visualization tables.
+ */
+
 public abstract class DataColumn<T> extends AbstractList<T> {
+
+  /**
+   * Determines how to handle columns with primitive data types.
+   */
 
   private abstract static class PrimitiveDataColumn<T> extends DataColumn<T> {
     PrimitiveDataColumn(AbstractDataTable table, int columnIndex, ColumnType columnType) {
@@ -34,6 +43,7 @@ public abstract class DataColumn<T> extends AbstractList<T> {
       Boolean getNonNullValue(int row) {
         return data.getValueBoolean(row, columnIndex);
       }
+
       @Override
       void setNonNullValue(int row, Boolean value) {
         ((DataTable) data).setValue(row, columnIndex, value);
@@ -59,30 +69,32 @@ public abstract class DataColumn<T> extends AbstractList<T> {
       public Date get(int row) {
         return data.getValueDate(row, columnIndex);
       }
+
       @Override
       void setNonNullValue(int row, Date value) {
         ((DataTable) data).setValue(row, columnIndex, value);
       }
     };
   }
-  
+
   public static DataColumn<Date> datetimes(AbstractDataTable table, String columnId) {
     return datetimes(table, getColumnIndex(table, columnId));
   }
-  
+
   public static DataColumn<Double> doubles(AbstractDataTable table, int columnIndex) {
     return new PrimitiveDataColumn<Double>(table, columnIndex, ColumnType.NUMBER) {
       @Override
       Double getNonNullValue(int row) {
         return data.getValueDouble(row, columnIndex);
       }
+
       @Override
       void setNonNullValue(int row, Double value) {
         ((DataTable) data).setValue(row, columnIndex, value.doubleValue());
       }
     };
   }
-  
+
   public static DataColumn<Double> doubles(AbstractDataTable table, String columnId) {
     return doubles(table, getColumnIndex(table, columnId));
   }
@@ -101,6 +113,7 @@ public abstract class DataColumn<T> extends AbstractList<T> {
       Integer getNonNullValue(int row) {
         return data.getValueInt(row, columnIndex);
       }
+
       @Override
       void setNonNullValue(int row, Integer value) {
         ((DataTable) data).setValue(row, columnIndex, value);
@@ -135,54 +148,57 @@ public abstract class DataColumn<T> extends AbstractList<T> {
   public static DataColumn<?> of(AbstractDataTable table, String columnId) {
     return of(table, getColumnIndex(table, columnId));
   }
-  
+
   public static DataColumn<String> strings(AbstractDataTable table, int columnIndex) {
     return new DataColumn<String>(table, columnIndex, ColumnType.STRING) {
       @Override
       public String get(int row) {
         return data.getValueString(row, columnIndex);
       }
+
       @Override
       void setNonNullValue(int row, String value) {
         ((DataTable) data).setValue(row, columnIndex, value);
       }
-    };  
+    };
   }
-  
+
   public static DataColumn<String> strings(AbstractDataTable table, String columnId) {
     return strings(table, getColumnIndex(table, columnId));
   }
-  
+
   public static DataColumn<TimeOfDay> timeOfDays(AbstractDataTable table, int columnIndex) {
     return new DataColumn<TimeOfDay>(table, columnIndex, ColumnType.TIMEOFDAY) {
       @Override
       public TimeOfDay get(int row) {
         return data.getValueTimeOfDay(row, columnIndex);
       }
+
       @Override
       void setNonNullValue(int row, TimeOfDay value) {
         ((DataTable) data).setValue(row, columnIndex, value);
       }
     };
   }
-  
+
   public static DataColumn<TimeOfDay> timeOfDays(AbstractDataTable table, String columnId) {
     return timeOfDays(table, getColumnIndex(table, columnId));
   }
-  
+
   static DataColumn<Number> numbers(AbstractDataTable table, int columnIndex) {
     return new PrimitiveDataColumn<Number>(table, columnIndex, ColumnType.NUMBER) {
       @Override
       Number getNonNullValue(int row) {
         return data.getValueDouble(row, columnIndex);
       }
+
       @Override
       void setNonNullValue(int row, Number value) {
         ((DataTable) data).setValue(row, columnIndex, value.doubleValue());
       }
     };
   }
-  
+
   private static int getColumnIndex(AbstractDataTable table, String columnId) {
     int index = table.getColumnIndex(columnId);
     if (index < 0) {
@@ -190,13 +206,13 @@ public abstract class DataColumn<T> extends AbstractList<T> {
     }
     return index;
   }
-  
+
   final AbstractDataTable data;
-  
+
   final int columnIndex;
-  
+
   final ColumnType columnType;
-  
+
   DataColumn(AbstractDataTable table, int columnIndex, ColumnType... compatibleColumnTypes) {
     Assert.notNull(table);
     Assert.betweenExclusive(columnIndex, 0, table.getNumberOfColumns());
@@ -207,37 +223,37 @@ public abstract class DataColumn<T> extends AbstractList<T> {
     this.data = table;
     this.columnIndex = columnIndex;
   }
-  
+
   @Override
   public abstract T get(int row);
-  
+
   public final String getColumnId() {
     return data.getColumnId(columnIndex);
   }
-  
+
   public final int getColumnIndex() {
     return columnIndex;
   }
-  
+
   public final String getColumnLabel() {
     return data.getColumnLabel(columnIndex);
   }
-  
+
   public final ColumnType getColumnType() {
-   return data.getColumnType(columnIndex);
+    return data.getColumnType(columnIndex);
   }
-  
+
   public final AbstractDataTable getDataTable() {
     return data;
   }
-  
+
   @Override
   public final T set(int row, T value) {
     T oldValue = get(row);
     setValue(row, value);
     return oldValue;
   }
- 
+
   public final void setValue(int row, T value) {
     DataTable dataTable = (DataTable) data;
     if (value == null) {
@@ -246,7 +262,7 @@ public abstract class DataColumn<T> extends AbstractList<T> {
       setNonNullValue(row, value);
     }
   }
-  
+
   @Override
   public final int size() {
     return data.getNumberOfRows();

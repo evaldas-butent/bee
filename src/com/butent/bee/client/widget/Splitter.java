@@ -12,6 +12,11 @@ import com.butent.bee.client.layout.LayoutCommand;
 import com.butent.bee.client.layout.LayoutData;
 import com.butent.bee.shared.HasId;
 
+/**
+ * Implements a panel that arranges two parts of it and allows the user to interactively change the
+ * proportion of the area dedicated to each of the two parts.
+ */
+
 public abstract class Splitter extends Widget implements HasId, HasLayoutCallback {
   private Widget target;
   private Element targetContainer;
@@ -90,7 +95,7 @@ public abstract class Splitter extends Widget implements HasId, HasLayoutCallbac
         mouseDown = true;
         offset = getEventPosition(event) - getAbsolutePosition();
         Event.setCapture(getElement());
-        
+
         event.preventDefault();
         event.stopPropagation();
         break;
@@ -98,7 +103,7 @@ public abstract class Splitter extends Widget implements HasId, HasLayoutCallbac
       case Event.ONMOUSEUP:
         mouseDown = false;
         Event.releaseCapture(getElement());
-        
+
         event.preventDefault();
         event.stopPropagation();
         break;
@@ -131,7 +136,7 @@ public abstract class Splitter extends Widget implements HasId, HasLayoutCallbac
   public void setId(String id) {
     DomUtils.setId(this, id);
   }
-  
+
   public void setLayoutCommand(LayoutCommand layoutCommand) {
     this.layoutCommand = layoutCommand;
   }

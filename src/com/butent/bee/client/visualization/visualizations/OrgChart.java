@@ -16,7 +16,16 @@ import com.butent.bee.client.visualization.events.OnMouseOverHandler;
 import com.butent.bee.client.visualization.events.ReadyHandler;
 import com.butent.bee.client.visualization.events.SelectHandler;
 
+/**
+ * Implements organization chart visualization.
+ */
+
 public class OrgChart extends Visualization<OrgChart.Options> implements Selectable {
+
+  /**
+   * Sets option values for organization chart visualization.
+   */
+
   public static class Options extends AbstractDrawOptions {
     public static Options create() {
       return JavaScriptObject.createObject().cast();
@@ -49,6 +58,10 @@ public class OrgChart extends Visualization<OrgChart.Options> implements Selecta
       this.size = size;
     }-*/;
   }
+
+  /**
+   * Contains a list of possible size options (small, medium, large).
+   */
 
   public static enum Size {
     LARGE, MEDIUM, SMALL

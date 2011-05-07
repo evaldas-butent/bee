@@ -15,6 +15,11 @@ import java.util.Vector;
  */
 
 public class AjaxLoader {
+
+  /**
+   * Sets values for loading options of external APIs.
+   */
+
   public static class AjaxLoaderOptions extends JavaScriptObject {
     public static AjaxLoaderOptions newInstance() {
       return JavaScriptObject.createObject().cast();

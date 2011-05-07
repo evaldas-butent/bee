@@ -9,6 +9,10 @@ import com.butent.bee.client.utils.BeeCommand;
 import com.butent.bee.client.utils.HasCommand;
 import com.butent.bee.shared.HasId;
 
+/**
+ * Implements a user interface component that can contain arbitrary HTML code.
+ */
+
 public class Html extends HTML implements HasId, HasCommand {
   private BeeCommand command = null;
 

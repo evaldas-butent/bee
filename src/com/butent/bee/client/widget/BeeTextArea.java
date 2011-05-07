@@ -15,6 +15,10 @@ import com.butent.bee.shared.HasId;
 import com.butent.bee.shared.HasStringValue;
 import com.butent.bee.shared.utils.BeeUtils;
 
+/**
+ * Implements a text box that allows multiple lines of text to be entered.
+ */
+
 public class BeeTextArea extends TextArea implements HasId, HasBeeKeyHandler,
     HasBeeValueChangeHandler<String>, HasAfterSaveHandler {
   private HasStringValue source = null;
@@ -83,7 +87,7 @@ public class BeeTextArea extends TextArea implements HasId, HasBeeKeyHandler,
       return !d.equals(JsUtils.md5(v));
     }
   }
- 
+
   public void onAfterSave(String opt) {
     if (BeeUtils.isEmpty(opt)) {
       updateDigest();

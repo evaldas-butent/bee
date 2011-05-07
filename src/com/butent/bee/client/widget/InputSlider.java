@@ -3,6 +3,11 @@ package com.butent.bee.client.widget;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.shared.HasStringValue;
 
+/**
+ * Implements a user interface component which lets to select a value by dragging a slider with a
+ * mouse.
+ */
+
 public class InputSlider extends InputInteger {
   private static String inputType = "range";
 
@@ -31,5 +36,5 @@ public class InputSlider extends InputInteger {
   public String getDefaultStyleName() {
     return "bee-InputSlider";
   }
-  
+
 }

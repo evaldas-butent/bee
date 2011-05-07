@@ -2,7 +2,16 @@ package com.butent.bee.client.visualization.events;
 
 import com.butent.bee.client.ajaxloader.Properties;
 
+/**
+ * Handles sorting events for visualizations.
+ */
+
 public abstract class SortHandler extends Handler {
+
+  /**
+   * Occurs when a user calls for sorting on a particular column.
+   */
+
   public class SortEvent {
     private int column;
     private boolean ascending;
@@ -17,7 +26,7 @@ public abstract class SortHandler extends Handler {
     }
 
     public boolean isAscending() {
-     return ascending;
+      return ascending;
     }
   }
 

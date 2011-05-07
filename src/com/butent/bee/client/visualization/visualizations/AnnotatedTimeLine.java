@@ -21,8 +21,17 @@ import com.butent.bee.shared.Assert;
 import java.util.Date;
 import java.util.Map;
 
+/**
+ * Implements annotated time line chart visualization.
+ */
 public class AnnotatedTimeLine extends Visualization<AnnotatedTimeLine.Options> {
-  public static enum AnnotatedLegendPosition { NEW_ROW, SAME_ROW;
+
+  /**
+   * Contains available annotated legend positions (for example new row or same row).
+   */
+
+  public static enum AnnotatedLegendPosition {
+    NEW_ROW, SAME_ROW;
 
     @Override
     public String toString() {
@@ -38,7 +47,12 @@ public class AnnotatedTimeLine extends Visualization<AnnotatedTimeLine.Options> 
     }
   }
 
-  public static enum HighlightDotMode { LAST("last"), NEAREST("nearest");
+  /**
+   * Contains available highlight dot modes (nearest or last).
+   */
+
+  public static enum HighlightDotMode {
+    LAST("last"), NEAREST("nearest");
     private final String parameter;
 
     HighlightDotMode(String parameter) {
@@ -49,6 +63,10 @@ public class AnnotatedTimeLine extends Visualization<AnnotatedTimeLine.Options> 
       return parameter;
     }
   }
+
+  /**
+   * Sets option values for annotated time line chart.
+   */
 
   public static class Options extends AbstractDrawOptions {
     public static Options create() {
@@ -215,6 +233,10 @@ public class AnnotatedTimeLine extends Visualization<AnnotatedTimeLine.Options> 
     }-*/;
   }
 
+  /**
+   * Contains available scale types for annotated time line chart.
+   */
+
   public static enum ScaleType {
     ALLFIXED("allfixed"),
     ALLMAXIMIZE("allmaximize"),
@@ -231,6 +253,10 @@ public class AnnotatedTimeLine extends Visualization<AnnotatedTimeLine.Options> 
       return parameter;
     }
   }
+
+  /**
+   * Contains available window modes (for example opaque ,transparent, window).
+   */
 
   public static enum WindowMode {
     OPAQUE("opaque"),
@@ -317,7 +343,7 @@ public class AnnotatedTimeLine extends Visualization<AnnotatedTimeLine.Options> 
     if (dates == null) {
       return null;
     }
-    return [dates['start'], dates['end']];
+    return [ dates['start'], dates['end'] ];
   }-*/;
 
   private native void hideDataColumns(JavaScriptObject jso, JsArrayInteger columnIndexes) /*-{
@@ -326,8 +352,7 @@ public class AnnotatedTimeLine extends Visualization<AnnotatedTimeLine.Options> 
 
   private native void setVisibleChartRange(JavaScriptObject jso,
       double startTime, double endTime) /*-{
-    jso.setVisibleChartRange(new $wnd.Date(startTime), 
-        new $wnd.Date(endTime));
+    jso.setVisibleChartRange(new $wnd.Date(startTime), new $wnd.Date(endTime));
   }-*/;
 
   private native void showDataColumns(JavaScriptObject jso, JsArrayInteger columnIndexes) /*-{

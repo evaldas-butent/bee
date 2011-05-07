@@ -5,13 +5,17 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.shared.HasId;
 
+/**
+ * Implements a meter user interface component for gauging actual values against the target ones.
+ */
+
 public class Meter extends Widget implements HasId {
   public Meter() {
     super();
     setElement(DomUtils.createElement(DomUtils.TAG_METER));
     init();
   }
-  
+
   public Meter(double min, double max, double value) {
     this();
     setMin(min);

@@ -4,7 +4,14 @@ import com.google.gwt.core.client.JavaScriptObject;
 
 import com.butent.bee.client.visualization.DataTable;
 
+/**
+ * Manages numbers formatting in visualizations.
+ */
 public class NumberFormat extends JavaScriptObject {
+  /**
+   * Sets options for number formatting.
+   */
+
   public static class Options extends JavaScriptObject {
     public static Options create() {
       return JavaScriptObject.createObject().cast();

@@ -2,21 +2,26 @@ package com.butent.bee.client.visualization.showcase;
 
 import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.client.visualization.DataTable;
 import com.butent.bee.client.visualization.AbstractDataTable.ColumnType;
+import com.butent.bee.client.visualization.DataTable;
 import com.butent.bee.client.visualization.visualizations.MotionChart;
 import com.butent.bee.client.visualization.visualizations.MotionChart.Options;
 import com.butent.bee.shared.DateTime;
 
+/**
+ * Implements demonstration of motion chart visualization in an image chart.
+ */
+
 public class MotionDemo implements LeftTabPanel.WidgetProvider {
-  private static final String STATE_STRING = "{"
-      + "\"duration\":{\"timeUnit\":\"D\",\"multiplier\":1},\"nonSelectedAlpha\":0.4,"
-      + "\"yZoomedDataMin\":300,\"yZoomedDataMax\":1200,\"iconKeySettings\":[],\"yZoomedIn\":false,"
-      + "\"xZoomedDataMin\":300,\"xLambda\":1,\"time\":\"2010-01-06\",\"orderedByX\":false,\"xZoomedIn\":false,"
-      + "\"uniColorForNonSelected\":false,\"sizeOption\":\"_UNISIZE\",\"iconType\":\"BUBBLE\","
-      + "\"playDuration\":15000,\"dimensions\":{\"iconDimensions\":[\"dim0\"]},\"xZoomedDataMax\":1200,"
-      + "\"yLambda\":1,\"yAxisOption\":\"2\",\"colorOption\":\"4\",\"showTrails\":true,\"xAxisOption\":\"2\","
-      + "\"orderedByY\":false}";
+  private static final String STATE_STRING =
+      "{"
+          + "\"duration\":{\"timeUnit\":\"D\",\"multiplier\":1},\"nonSelectedAlpha\":0.4,"
+          + "\"yZoomedDataMin\":300,\"yZoomedDataMax\":1200,\"iconKeySettings\":[],\"yZoomedIn\":false,"
+          + "\"xZoomedDataMin\":300,\"xLambda\":1,\"time\":\"2010-01-06\",\"orderedByX\":false,\"xZoomedIn\":false,"
+          + "\"uniColorForNonSelected\":false,\"sizeOption\":\"_UNISIZE\",\"iconType\":\"BUBBLE\","
+          + "\"playDuration\":15000,\"dimensions\":{\"iconDimensions\":[\"dim0\"]},\"xZoomedDataMax\":1200,"
+          + "\"yLambda\":1,\"yAxisOption\":\"2\",\"colorOption\":\"4\",\"showTrails\":true,\"xAxisOption\":\"2\","
+          + "\"orderedByY\":false}";
   private Widget widget;
 
   public MotionDemo() {

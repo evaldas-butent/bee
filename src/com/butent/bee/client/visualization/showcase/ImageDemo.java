@@ -2,16 +2,20 @@ package com.butent.bee.client.visualization.showcase;
 
 import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.client.visualization.DataTable;
 import com.butent.bee.client.visualization.AbstractDataTable.ColumnType;
+import com.butent.bee.client.visualization.DataTable;
 import com.butent.bee.client.visualization.visualizations.ImageChart;
+
+/**
+ * Implements demonstration of data table visualization in an image chart.
+ */
 
 public class ImageDemo implements LeftTabPanel.WidgetProvider {
   private Widget widget;
 
   public ImageDemo() {
     ImageChart.Options options = ImageChart.Options.create();
-    
+
     options.set("cht", "rs");
     options.set("chco", "00ff00,ff00ff");
     options.set("chg", "25.0,25.0,4.0,4.0");
@@ -52,7 +56,7 @@ public class ImageDemo implements LeftTabPanel.WidgetProvider {
     dataTable.setValue(5, 2, 20);
     dataTable.setValue(6, 2, 10);
     dataTable.setValue(7, 2, 5);
-    
+
     widget = new ImageChart(dataTable, options);
   }
 

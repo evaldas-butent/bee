@@ -4,6 +4,10 @@ import com.google.gwt.core.client.JavaScriptObject;
 
 import com.butent.bee.client.ajaxloader.Properties;
 
+/**
+ * Sets color related option values like fill, stroke and stroke size.
+ */
+
 public class Color extends Properties {
   public static Color create() {
     return JavaScriptObject.createObject().cast();

@@ -8,7 +8,14 @@ import com.butent.bee.client.ajaxloader.ArrayHelper;
 import com.butent.bee.client.visualization.AbstractDataTable;
 import com.butent.bee.client.visualization.AbstractDrawOptions;
 
+/**
+ * Implements gauge type visualization.
+ */
 public class Gauge extends Visualization<Gauge.Options> {
+
+  /**
+   * Sets option values for gauge type visualization.
+   */
   public static class Options extends AbstractDrawOptions {
     public static Options create() {
       return JavaScriptObject.createObject().cast();
@@ -37,7 +44,7 @@ public class Gauge extends Visualization<Gauge.Options> {
 
     public final native void setMinorTicks(int numberOfTicks) /*-{
       this.minorTicks = numberOfTicks;
-     }-*/;
+    }-*/;
 
     public final native void setRedRange(int from, int to) /*-{
       this.redFrom = from;

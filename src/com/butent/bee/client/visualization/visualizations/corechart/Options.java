@@ -10,6 +10,10 @@ import com.butent.bee.client.visualization.Color;
 import com.butent.bee.client.visualization.LegendPosition;
 import com.butent.bee.client.visualization.visualizations.corechart.CoreChart.Type;
 
+/**
+ * Sets values for main options for core visualizations.
+ */
+
 public class Options extends AbstractDrawOptions {
   public static Options create() {
     return JavaScriptObject.createObject().cast();
@@ -29,11 +33,11 @@ public class Options extends AbstractDrawOptions {
   public final native void setBackgroundColor(Color color) /*-{
     this.backgroundColor = color;
   }-*/;
-  
+
   public final native void setChartArea(ChartArea chartArea) /*-{
     this.chartArea = chartArea;
   }-*/;
-  
+
   public final native void setChartAreaOptions(ChartAreaOptions options) /*-{
     this.chartArea = options;
   }-*/;
@@ -61,7 +65,7 @@ public class Options extends AbstractDrawOptions {
   public final native void setGridlineColor(String color) /*-{
     this.gridlineColor = color;
   }-*/;
-  
+
   public final native void setHAxisOptions(AxisOptions options) /*-{
     this.hAxis = options;
   }-*/;

@@ -13,7 +13,15 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Creates left side tab panel for navigation across visualization demos.
+ */
+
 public class LeftTabPanel extends Composite {
+  /**
+   * Requires implementing classes to have a {@code getWidget} method.
+   */
+
   public interface WidgetProvider {
     Widget getWidget();
   }
@@ -41,7 +49,7 @@ public class LeftTabPanel extends Composite {
       }
     });
   }
-  
+
   public void add(final WidgetProvider cog, String title) {
     cogs.put(title, cog);
     left.addItem(title);

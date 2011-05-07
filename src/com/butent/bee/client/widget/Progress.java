@@ -5,10 +5,15 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.shared.HasId;
 
+/**
+ * Implements a progress bar user interface component for gauging actual stage of processes against
+ * 100% of the process.
+ */
+
 public class Progress extends Widget implements HasId {
   public Progress() {
     super();
-    
+
     setElement(DomUtils.createElement(DomUtils.TAG_PROGRESS));
     init();
   }
@@ -23,7 +28,7 @@ public class Progress extends Widget implements HasId {
     setMax(max);
     setValue(value);
   }
-  
+
   public void createId() {
     DomUtils.createId(this, "progress");
   }
@@ -43,7 +48,7 @@ public class Progress extends Widget implements HasId {
   public double getValue() {
     return getElement().getPropertyDouble(DomUtils.ATTRIBUTE_VALUE);
   }
-  
+
   public void setId(String id) {
     DomUtils.setId(this, id);
   }

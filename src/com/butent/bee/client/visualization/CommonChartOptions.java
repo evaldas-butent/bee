@@ -2,6 +2,10 @@ package com.butent.bee.client.visualization;
 
 import com.google.gwt.core.client.JavaScriptObject;
 
+/**
+ * Sets widely used chart options like axis color or Y axis title.
+ */
+
 public class CommonChartOptions extends CommonOptions {
   public static CommonChartOptions create() {
     return JavaScriptObject.createObject().cast();

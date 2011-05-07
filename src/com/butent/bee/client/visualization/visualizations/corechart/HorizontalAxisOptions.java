@@ -2,6 +2,10 @@ package com.butent.bee.client.visualization.visualizations.corechart;
 
 import com.google.gwt.core.client.JavaScriptObject;
 
+/**
+ * Sets option values for horizontal chart axis.
+ */
+
 public class HorizontalAxisOptions extends AxisOptions {
   public static HorizontalAxisOptions create() {
     return JavaScriptObject.createObject().cast();

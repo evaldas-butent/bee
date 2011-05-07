@@ -6,6 +6,11 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.dom.DomUtils;
 
+/**
+ * Implements a panel that arranges two parts of it horizontally and allows the user to
+ * interactively change the width of the area dedicated to each of the two parts.
+ */
+
 public class HorizontalSplitter extends Splitter {
 
   public HorizontalSplitter(Widget target, Element targetContainer, boolean reverse, int size) {
@@ -18,7 +23,7 @@ public class HorizontalSplitter extends Splitter {
   public void createId() {
     DomUtils.createId(this, "h-splitter");
   }
-  
+
   @Override
   public int getAbsolutePosition() {
     return getAbsoluteLeft();

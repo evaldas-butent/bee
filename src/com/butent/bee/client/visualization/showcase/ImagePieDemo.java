@@ -5,6 +5,10 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.client.visualization.visualizations.ImagePieChart;
 import com.butent.bee.client.visualization.visualizations.ImagePieChart.Options;
 
+/**
+ * Implements demonstration of image pie chart visualization.
+ */
+
 public class ImagePieDemo implements LeftTabPanel.WidgetProvider {
 
   public Widget getWidget() {

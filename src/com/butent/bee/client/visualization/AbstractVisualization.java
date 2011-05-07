@@ -5,14 +5,24 @@ import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.RootPanel;
 
+/**
+ * is an abstract class and describes such necessary processes for visualizations like creation,
+ * registration and drawing.
+ */
+
 public abstract class AbstractVisualization<E extends AbstractDrawOptions> extends Composite {
+
+  /**
+   * Requires to have {@code create} method.
+   */
+
   public interface VisualizationFactory {
     AbstractVisualization<?> create();
   }
 
   public static final native void registerVisualization(String name, VisualizationFactory factory) /*-{
     $wnd[name] = function(container) {
-    this.gwt_vis = @com.butent.bee.client.visualization.AbstractVisualization::createVisualization(Lcom/butent/bee/client/visualization/AbstractVisualization$VisualizationFactory;Lcom/google/gwt/core/client/JavaScriptObject;Lcom/google/gwt/user/client/Element;)(factory, this, container);
+      this.gwt_vis = @com.butent.bee.client.visualization.AbstractVisualization::createVisualization(Lcom/butent/bee/client/visualization/AbstractVisualization$VisualizationFactory;Lcom/google/gwt/core/client/JavaScriptObject;Lcom/google/gwt/user/client/Element;)(factory, this, container);
     }
     // TODO gwt compiler warning
     //    $wnd[name].prototype.draw = function(data, options) {
@@ -39,10 +49,10 @@ public abstract class AbstractVisualization<E extends AbstractDrawOptions> exten
 
   private static native void registerSelectFunctions(JavaScriptObject jso) /*-{
     jso.getSelection = function() {
-    return this.gwt_vis.@com.butent.bee.client.visualization.Selectable::getSelections()();
+      return this.gwt_vis.@com.butent.bee.client.visualization.Selectable::getSelections()();
     }
     jso.setSelection = function(selection) {
-    this.gwt_vis.@com.butent.bee.client.visualization.Selectable::setSelections(Lcom/google/gwt/core/client/JsArray;)(selection);
+      this.gwt_vis.@com.butent.bee.client.visualization.Selectable::setSelections(Lcom/google/gwt/core/client/JsArray;)(selection);
     }
   }-*/;
 

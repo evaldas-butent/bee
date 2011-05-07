@@ -2,10 +2,14 @@ package com.butent.bee.client.visualization.showcase;
 
 import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.client.visualization.DataTable;
 import com.butent.bee.client.visualization.AbstractDataTable.ColumnType;
+import com.butent.bee.client.visualization.DataTable;
 import com.butent.bee.client.visualization.visualizations.MapVisualization;
 import com.butent.bee.client.visualization.visualizations.MapVisualization.Options;
+
+/**
+ * Implements demonstration of map visualization.
+ */
 
 public class MapDemo implements LeftTabPanel.WidgetProvider {
   private Widget widget;
@@ -34,7 +38,7 @@ public class MapDemo implements LeftTabPanel.WidgetProvider {
     data.setValue(2, 0, 55.7);
     data.setValue(2, 1, 21.133333);
     data.setValue(2, 2, "Klaipėda");
-    
+
     widget = new MapVisualization(data, options, "400px", "300px");
   }
 

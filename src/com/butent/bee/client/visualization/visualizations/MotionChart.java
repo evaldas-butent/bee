@@ -9,7 +9,16 @@ import com.butent.bee.client.visualization.events.Handler;
 import com.butent.bee.client.visualization.events.ReadyHandler;
 import com.butent.bee.client.visualization.events.StateChangeHandler;
 
+/**
+ * Implements motion chart visualization.
+ */
+
 public class MotionChart extends Visualization<MotionChart.Options> {
+
+  /**
+   * Sets option values for motion chart visualization.
+   */
+
   public static class Options extends AbstractDrawOptions {
     public static Options create() {
       return JavaScriptObject.createObject().cast();
@@ -94,7 +103,7 @@ public class MotionChart extends Visualization<MotionChart.Options> {
   public final native String getState() /*-{
     var jso = this.@com.butent.bee.client.visualization.visualizations.Visualization::getJso()();
     if (jso.getState) {
-    return jso.getState();
+      return jso.getState();
     }
     return null;
   }-*/;

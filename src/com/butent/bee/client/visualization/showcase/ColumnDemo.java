@@ -11,6 +11,10 @@ import com.butent.bee.client.visualization.visualizations.corechart.HorizontalAx
 import com.butent.bee.client.visualization.visualizations.corechart.Options;
 import com.butent.bee.client.widget.BeeLabel;
 
+/**
+ * Implements demonstration of a column chart visualization.
+ */
+
 public class ColumnDemo implements LeftTabPanel.WidgetProvider {
   public Widget getWidget() {
     Options options = CoreChart.createOptions();

@@ -4,6 +4,10 @@ import com.google.gwt.user.client.ui.Label;
 
 import com.butent.bee.client.visualization.events.ReadyHandler;
 
+/**
+ * Creates a label with text "ready" when ready event occurs.
+ */
+
 public class ReadyDemo extends ReadyHandler {
   private final Label label;
 
@@ -13,6 +17,6 @@ public class ReadyDemo extends ReadyHandler {
 
   @Override
   public void onReady(ReadyEvent event) {
-    label.setText("ready"); 
+    label.setText("ready");
   }
 }

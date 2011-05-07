@@ -8,7 +8,17 @@ import com.butent.bee.client.visualization.TimeOfDay.BadTimeException;
 
 import java.util.Date;
 
+/**
+ * Is an abstract class for classes, managing JavaScript data tables objects, and contains core
+ * methods for operations with them.
+ */
+
 public class AbstractDataTable extends JavaScriptObject {
+
+  /**
+   * Contains a list of possible column types in visualization data tables.
+   */
+
   public enum ColumnType {
     BOOLEAN("boolean"),
     DATE("date"),
@@ -22,6 +32,7 @@ public class AbstractDataTable extends JavaScriptObject {
     }
 
     private final String parameter;
+
     ColumnType(String parameter) {
       this.parameter = parameter;
     }
@@ -37,7 +48,7 @@ public class AbstractDataTable extends JavaScriptObject {
   public final native String getColumnId(int columnIndex) /*-{
     return this.getColumnId(columnIndex);
   }-*/;
-  
+
   public final native int getColumnIndex(String columnId) /*-{
     return this.getColumnIndex(columnId);
   }-*/;
@@ -134,7 +145,7 @@ public class AbstractDataTable extends JavaScriptObject {
     if (value == null) {
       return [];
     } else {
-      return [value.getTime()];
+      return [ value.getTime() ];
     }
   }-*/;
 }

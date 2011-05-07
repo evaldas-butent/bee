@@ -4,7 +4,15 @@ import com.butent.bee.client.ajaxloader.Properties;
 
 import java.util.Date;
 
+/**
+ * Handles a data range change event in visualizations.
+ */
+
 public abstract class RangeChangeHandler extends Handler {
+
+  /**
+   * Occurs when a data range change event happens in visualizations.
+   */
   public class RangeChangeEvent {
     private Date end;
     private Date start;

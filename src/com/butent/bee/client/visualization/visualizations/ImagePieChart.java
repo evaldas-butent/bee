@@ -6,7 +6,16 @@ import com.google.gwt.dom.client.Element;
 import com.butent.bee.client.visualization.AbstractDataTable;
 import com.butent.bee.client.visualization.CommonChartOptions;
 
+/**
+ * Implements image pie chart visualization.
+ */
+
 public class ImagePieChart extends Visualization<ImagePieChart.Options> {
+
+  /**
+   * Sets option values for image pie chart visualization.
+   */
+
   public static class Options extends CommonChartOptions {
     public static Options create() {
       return JavaScriptObject.createObject().cast();

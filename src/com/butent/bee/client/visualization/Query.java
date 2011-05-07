@@ -6,10 +6,22 @@ import com.google.gwt.core.client.JavaScriptObject;
 
 import com.butent.bee.client.ajaxloader.Properties;
 
+/**
+ * Enables creating queries to get data for visualizations.
+ */
+
 public class Query extends JavaScriptObject {
+
+  /**
+   * Requires to have a {@code onResponse} method.
+   */
   public interface Callback {
     void onResponse(QueryResponse response);
   }
+
+  /**
+   * Sets option values for visualization data queries.
+   */
 
   public static class Options extends Properties {
     public static Options create() {
@@ -31,6 +43,10 @@ public class Query extends JavaScriptObject {
       this.sendMethod = sendMethod;
     }-*/;
   }
+
+  /**
+   * Contains a list of possible visualization query methods.
+   */
 
   public static enum SendMethod {
     XHR("xhr"), SCRIPT_INJECTION("scriptInjection"), MAKE_REQUEST("makeRequest"), AUTO("auto");
@@ -82,9 +98,10 @@ public class Query extends JavaScriptObject {
   }
 
   public final native void send(Callback callback) /*-{
-    this.send(function(c) {
-    @com.butent.bee.client.visualization.Query::onResponseCallback(Lcom/butent/bee/client/visualization/Query$Callback;Lcom/butent/bee/client/visualization/QueryResponse;)(callback, c);
-    });
+    this
+        .send(function(c) {
+          @com.butent.bee.client.visualization.Query::onResponseCallback(Lcom/butent/bee/client/visualization/Query$Callback;Lcom/butent/bee/client/visualization/QueryResponse;)(callback, c);
+        });
   }-*/;
 
   public final native void setQuery(String query) /*-{

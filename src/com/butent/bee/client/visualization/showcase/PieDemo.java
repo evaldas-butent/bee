@@ -9,6 +9,10 @@ import com.butent.bee.client.visualization.visualizations.corechart.PieChart;
 import com.butent.bee.client.visualization.visualizations.corechart.TextStyle;
 import com.butent.bee.client.widget.BeeLabel;
 
+/**
+ * Implements demonstration of pie chart visualization.
+ */
+
 public class PieDemo implements LeftTabPanel.WidgetProvider {
   public Widget getWidget() {
     PieChart.PieOptions options = PieChart.createPieOptions();
@@ -17,7 +21,7 @@ public class PieDemo implements LeftTabPanel.WidgetProvider {
     options.set3D(true);
     options.setTitle("Pardavimai");
     options.setLegend(LegendPosition.LEFT);
-    
+
     TextStyle style = TextStyle.create();
     style.setColor("red");
     style.setFontName("Verdana");

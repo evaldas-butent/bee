@@ -2,14 +2,18 @@ package com.butent.bee.client.visualization.showcase;
 
 import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.client.visualization.DataTable;
 import com.butent.bee.client.visualization.AbstractDataTable.ColumnType;
+import com.butent.bee.client.visualization.DataTable;
 import com.butent.bee.client.visualization.visualizations.IntensityMap;
 import com.butent.bee.client.visualization.visualizations.IntensityMap.Options;
 
+/**
+ * Implements demonstration of a intensity map visualization.
+ */
+
 public class IntensityDemo implements LeftTabPanel.WidgetProvider {
   private Widget widget;
-  
+
   public IntensityDemo() {
     Options options = Options.create();
 
@@ -33,7 +37,7 @@ public class IntensityDemo implements LeftTabPanel.WidgetProvider {
     data.setValue(4, 0, "BR");
     data.setValue(4, 1, 187);
     data.setValue(4, 2, 8514877);
-    
+
     widget = new IntensityMap(data, options);
   }
 

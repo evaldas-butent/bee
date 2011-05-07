@@ -14,7 +14,17 @@ import com.butent.bee.client.visualization.events.ReadyHandler;
 import com.butent.bee.client.visualization.events.SelectHandler;
 import com.butent.bee.client.visualization.visualizations.Visualization;
 
+/**
+ * Serves as an abstract class for main visualization types and contains necessary methods for their
+ * implementation.
+ */
+
 public abstract class CoreChart extends Visualization<Options> implements Selectable {
+
+  /**
+   * Contains a list of possible visualization types.
+   */
+
   public enum Type {
     AREA, LINE, SCATTER, BARS, COLUMNS, PIE, NONE
   }

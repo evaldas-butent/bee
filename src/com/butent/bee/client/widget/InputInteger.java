@@ -6,6 +6,11 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.shared.HasStringValue;
 import com.butent.bee.shared.utils.BeeUtils;
 
+/**
+ * Enables to use a component for input of integer type values with minimum and maximum values and a
+ * increment step.
+ */
+
 public class InputInteger extends BeeTextBox {
   private Integer minValue, maxValue, stepValue = null;
 
@@ -16,7 +21,7 @@ public class InputInteger extends BeeTextBox {
   public InputInteger(Element element) {
     super(element);
   }
-  
+
   public InputInteger(HasStringValue source) {
     super(source);
   }
@@ -38,7 +43,7 @@ public class InputInteger extends BeeTextBox {
   public InputInteger(int value, String type, int min, int max) {
     this(value, type, min, max, 1);
   }
-  
+
   public InputInteger(int value, String type, int min, int max, int step) {
     this(value);
     initAttributes(type, min, max, step);
@@ -53,11 +58,11 @@ public class InputInteger extends BeeTextBox {
   public String getDefaultStyleName() {
     return "bee-InputInteger";
   }
-  
+
   public int getIntValue() {
     return BeeUtils.toInt(getValue());
   }
-  
+
   public Integer getMaxValue() {
     return maxValue;
   }
@@ -82,7 +87,7 @@ public class InputInteger extends BeeTextBox {
 
   public void setMinValue(Integer minValue) {
     this.minValue = minValue;
-    
+
     if (minValue == null) {
       DomUtils.removeMin(this);
     } else {
@@ -103,7 +108,7 @@ public class InputInteger extends BeeTextBox {
   public void setValue(int value) {
     setValue(Integer.toString(value));
   }
-  
+
   protected void initAttributes(String type, int min, int max, int step) {
     if (!BeeUtils.isEmpty(type)) {
       DomUtils.setInputType(this, type);

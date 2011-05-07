@@ -8,11 +8,15 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.utils.BeeCommand;
 import com.butent.bee.client.utils.HasCommand;
-import com.butent.bee.shared.Stage;
 import com.butent.bee.shared.HasId;
 import com.butent.bee.shared.HasService;
 import com.butent.bee.shared.HasStage;
+import com.butent.bee.shared.Stage;
 import com.butent.bee.shared.utils.BeeUtils;
+
+/**
+ * Implements a push button user interface component.
+ */
 
 public class BeeButton extends Button implements HasId, HasService, HasStage, HasCommand {
   private BeeCommand command = null;
@@ -107,5 +111,5 @@ public class BeeButton extends Button implements HasId, HasService, HasStage, Ha
     setStyleName("bee-Button");
     createId();
   }
-  
+
 }

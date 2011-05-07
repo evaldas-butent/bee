@@ -10,8 +10,16 @@ import com.butent.bee.client.visualization.Selectable;
 import com.butent.bee.client.visualization.Selection;
 import com.butent.bee.client.visualization.events.SelectHandler;
 
+/**
+ * Implements map type visualization.
+ */
+
 public class MapVisualization extends Visualization<MapVisualization.Options>
     implements Selectable {
+
+  /**
+   * Sets option values for map type visualization.
+   */
   public static class Options extends AbstractDrawOptions {
     public static Options create() {
       return JavaScriptObject.createObject().cast();
@@ -47,11 +55,15 @@ public class MapVisualization extends Visualization<MapVisualization.Options>
     public final native void setZoomLevel(double zoomLevel) /*-{
       this.zoomLevel = zoomLevel;
     }-*/;
-    
+
     private native void setMapType(String type) /*-{
       this.mapType = type;
     }-*/;
   }
+
+  /**
+   * Contains a list of possible map types.
+   */
 
   public static enum Type {
     HYBRID, NORMAL, SATELLITE

@@ -4,11 +4,16 @@ import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.Widget;
 
+import com.butent.bee.client.visualization.AbstractDataTable.ColumnType;
 import com.butent.bee.client.visualization.AbstractDrawOptions;
 import com.butent.bee.client.visualization.CommonChartOptions;
 import com.butent.bee.client.visualization.DataTable;
-import com.butent.bee.client.visualization.AbstractDataTable.ColumnType;
 import com.butent.bee.client.visualization.visualizations.Visualization;
+
+/**
+ * Implements demonstration of abstract drawing usage in common chart by showing piles of money
+ * instead of bars in this particular demo.
+ */
 
 public class MoneyDemo implements LeftTabPanel.WidgetProvider {
   private Widget widget;
@@ -35,8 +40,8 @@ public class MoneyDemo implements LeftTabPanel.WidgetProvider {
     widget = new Visualization<AbstractDrawOptions>(data, options) {
       @Override
       protected native JavaScriptObject createJso(Element div) /*-{
-        return new $wnd.PilesOfMoney(div);
-      }-*/;
+    return new $wnd.PilesOfMoney(div);
+  }-*/;
     };
   }
 

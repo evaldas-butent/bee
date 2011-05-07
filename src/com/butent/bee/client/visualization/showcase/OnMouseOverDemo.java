@@ -4,10 +4,14 @@ import com.google.gwt.user.client.ui.Label;
 
 import com.butent.bee.client.visualization.events.OnMouseOverHandler;
 
+/**
+ * Handles a situation when mouse cursor moves over a particular area in visualization demos.
+ */
+
 public class OnMouseOverDemo extends OnMouseOverHandler {
 
   private final Label label;
-  
+
   OnMouseOverDemo(Label label) {
     this.label = label;
   }
@@ -21,6 +25,6 @@ public class OnMouseOverDemo extends OnMouseOverHandler {
     b.append(row);
     b.append(", column: ");
     b.append(column);
-    label.setText("Mouse over " + b.toString()); 
+    label.setText("Mouse over " + b.toString());
   }
 }

@@ -11,6 +11,10 @@ import com.butent.bee.client.visualization.visualizations.corechart.LineChart;
 import com.butent.bee.client.visualization.visualizations.corechart.Options;
 import com.butent.bee.client.widget.BeeLabel;
 
+/**
+ * Implements demonstration of line chart visualization.
+ */
+
 public class LineDemo implements LeftTabPanel.WidgetProvider {
   public Widget getWidget() {
 
@@ -30,7 +34,7 @@ public class LineDemo implements LeftTabPanel.WidgetProvider {
     HorizontalAxisOptions hAxisOptions = HorizontalAxisOptions.create();
     hAxisOptions.setDirection(-1);
     options.setHAxisOptions(hAxisOptions);
-    
+
     DataTable data = Showcase.getCompanyPerformance();
     LineChart viz = new LineChart(data, options);
 

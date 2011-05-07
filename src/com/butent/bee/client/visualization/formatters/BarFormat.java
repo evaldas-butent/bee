@@ -4,15 +4,25 @@ import com.google.gwt.core.client.JavaScriptObject;
 
 import com.butent.bee.client.visualization.DataTable;
 
+/**
+ * Manages formatting for bars in visualizations.
+ */
+
 public class BarFormat extends JavaScriptObject {
-  public static enum Color { RED, GREEN, BLUE;
+  /**
+   * Enlists possible base colors for color mixing.
+   */
+  public static enum Color {
+    RED, GREEN, BLUE;
 
     @Override
     public String toString() {
       return name().toLowerCase();
     }
   }
-
+  /**
+   * Sets options for bar formatting.
+   */
   public static class Options extends JavaScriptObject {
     public static Options create() {
       return JavaScriptObject.createObject().cast();

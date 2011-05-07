@@ -2,7 +2,15 @@ package com.butent.bee.client.visualization.events;
 
 import com.butent.bee.client.ajaxloader.Properties;
 
+/**
+ * Handles an event when mouse moves out of a particular area.
+ */
+
 public abstract class OnMouseOutHandler extends Handler {
+
+  /**
+   * Occurs when mouse moves out of a particular area.
+   */
   public static class OnMouseOutEvent {
     private int row;
     private int column;

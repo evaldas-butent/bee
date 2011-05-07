@@ -9,6 +9,11 @@ import com.butent.bee.client.event.HasBeeChangeHandler;
 import com.butent.bee.shared.HasId;
 import com.butent.bee.shared.HasStringValue;
 
+/**
+ * Implements a user interface component that wraps the HTML {@code input type='file'} element for
+ * file upload.
+ */
+
 public class BeeFileUpload extends FileUpload implements HasId, HasBeeChangeHandler {
   private HasStringValue source = null;
 
@@ -53,7 +58,7 @@ public class BeeFileUpload extends FileUpload implements HasId, HasBeeChangeHand
   public void setSource(HasStringValue source) {
     this.source = source;
   }
-  
+
   private void addDefaultHandlers() {
     BeeKeeper.getBus().addVch(this);
   }

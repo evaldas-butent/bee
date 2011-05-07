@@ -7,6 +7,10 @@ import com.butent.bee.client.visualization.Selectable;
 import com.butent.bee.client.visualization.Selection;
 import com.butent.bee.client.visualization.events.SelectHandler;
 
+/**
+ * Creates a label informing that selection changed when such event occurs.
+ */
+
 class SelectionDemo extends SelectHandler {
   private final Selectable viz;
   private final Label label;
@@ -34,7 +38,7 @@ class SelectionDemo extends SelectHandler {
         b.append(s.get(i).getColumn());
       }
     }
-    label.setText("selection changed " + b.toString()); 
+    label.setText("selection changed " + b.toString());
   }
 
   private JsArray<Selection> getSelections() {

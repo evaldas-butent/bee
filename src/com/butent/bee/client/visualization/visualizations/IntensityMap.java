@@ -12,7 +12,16 @@ import com.butent.bee.client.visualization.Selectable;
 import com.butent.bee.client.visualization.Selection;
 import com.butent.bee.client.visualization.events.SelectHandler;
 
+/**
+ * Implements intensity map visualization.
+ */
+
 public class IntensityMap extends Visualization<IntensityMap.Options> implements Selectable {
+
+  /**
+   * Sets option values for intensity map visualization.
+   */
+
   public static class Options extends AbstractDrawOptions {
     public static Options create() {
       return JavaScriptObject.createObject().cast();
@@ -54,6 +63,10 @@ public class IntensityMap extends Visualization<IntensityMap.Options> implements
       this.region = region;
     }-*/;
   }
+
+  /**
+   * Contains a list of possible regions for intensity map.
+   */
 
   public static enum Region {
     AFRICA, ASIA, EUROPE, MIDDLE_EAST, SOUTH_AMERICA, USA, WORLD

@@ -2,11 +2,15 @@ package com.butent.bee.client.visualization.showcase;
 
 import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.client.visualization.DataTable;
 import com.butent.bee.client.visualization.AbstractDataTable.ColumnType;
+import com.butent.bee.client.visualization.DataTable;
 import com.butent.bee.client.visualization.visualizations.GeoMap;
 import com.butent.bee.client.visualization.visualizations.GeoMap.Options;
 import com.butent.bee.shared.utils.BeeUtils;
+
+/**
+ * Implements demonstration of a geographical map visualization.
+ */
 
 public class GeoDemo implements LeftTabPanel.WidgetProvider {
   public Widget getWidget() {
@@ -17,16 +21,16 @@ public class GeoDemo implements LeftTabPanel.WidgetProvider {
     options.setDataMode(GeoMap.DataMode.MARKERS);
     options.setRegion("LT");
 
-    final DataTable dataTable = DataTable.create();      
+    final DataTable dataTable = DataTable.create();
     dataTable.addColumn(ColumnType.NUMBER, "Latitude");
     dataTable.addColumn(ColumnType.NUMBER, "Longitude");
     dataTable.addColumn(ColumnType.NUMBER, "Klientai");
     dataTable.addColumn(ColumnType.STRING, "Miestas");
     dataTable.addRows(10);
-    
+
     int min = 20;
     int max = 1000;
-    
+
     dataTable.setValue(0, 0, 54.4);
     dataTable.setValue(0, 1, 24.05);
     dataTable.setValue(0, 3, "Alytus");
@@ -57,11 +61,11 @@ public class GeoDemo implements LeftTabPanel.WidgetProvider {
     dataTable.setValue(9, 0, 54.683333);
     dataTable.setValue(9, 1, 25.283333);
     dataTable.setValue(9, 3, "Vilnius");
-    
+
     for (int i = 0; i < 10; i++) {
-      dataTable.setValue(i, 2, BeeUtils.randomInt(min, max)); 
+      dataTable.setValue(i, 2, BeeUtils.randomInt(min, max));
     }
-    
+
     final GeoMap geo = new GeoMap(dataTable, options);
     return geo;
   }

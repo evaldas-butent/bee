@@ -12,6 +12,10 @@ import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Variable;
 import com.butent.bee.shared.utils.BeeUtils;
 
+/**
+ * Implements a standard check box user interface component.
+ */
+
 public class BeeCheckBox extends CheckBox implements HasId, HasBeeValueChangeHandler<Boolean> {
   private HasBooleanValue source = null;
 
@@ -37,7 +41,7 @@ public class BeeCheckBox extends CheckBox implements HasId, HasBeeValueChangeHan
       setText(label);
     }
   }
-  
+
   public BeeCheckBox(Pair<String, String> caption) {
     this();
 
@@ -112,7 +116,7 @@ public class BeeCheckBox extends CheckBox implements HasId, HasBeeValueChangeHan
   private void addDefaultHandler() {
     BeeKeeper.getBus().addBoolVch(this);
   }
-  
+
   private void init() {
     createId();
     setStyleName("bee-CheckBox");

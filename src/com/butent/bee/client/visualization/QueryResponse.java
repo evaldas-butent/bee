@@ -2,6 +2,10 @@ package com.butent.bee.client.visualization;
 
 import com.google.gwt.core.client.JavaScriptObject;
 
+/**
+ * Contains responses to visualization queries and enables getting specific informations from them.
+ */
+
 public class QueryResponse extends JavaScriptObject {
   protected QueryResponse() {
   }

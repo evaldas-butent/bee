@@ -4,6 +4,10 @@ import com.google.gwt.core.client.JavaScriptObject;
 
 import com.butent.bee.client.visualization.AbstractDrawOptions;
 
+/**
+ * Sets option values for chart axes.
+ */
+
 public class AxisOptions extends AbstractDrawOptions {
   public static AxisOptions create() {
     return JavaScriptObject.createObject().cast();

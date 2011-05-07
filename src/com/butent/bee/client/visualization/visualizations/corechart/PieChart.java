@@ -4,7 +4,14 @@ import com.google.gwt.core.client.JavaScriptObject;
 
 import com.butent.bee.client.visualization.AbstractDataTable;
 
+/**
+ * Implements pie chart type visualization.
+ */
 public class PieChart extends CoreChart {
+
+  /**
+   * Sets option values for pie charts.
+   */
   public static class PieOptions extends Options {
     public static PieOptions create() {
       return JavaScriptObject.createObject().cast();
@@ -20,7 +27,7 @@ public class PieChart extends CoreChart {
     public final native void setPieResidueSliceLabel(String label) /*-{
       this.pieResidueSliceLabel = label;
     }-*/;
-    
+
     public final native void setPieSliceText(String text) /*-{
       this.pieSliceText = text;
     }-*/;

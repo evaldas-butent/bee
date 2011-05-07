@@ -2,7 +2,15 @@ package com.butent.bee.client.visualization.events;
 
 import com.butent.bee.client.ajaxloader.Properties;
 
+/**
+ * Handles events when an user interface component is minimized or hidden.
+ */
+
 public abstract class CollapseHandler extends Handler {
+  /**
+   * Occurs when an user interface component is minimized or hidden.
+   */
+
   public static class CollapseEvent {
     private boolean collapsed;
     private int row;

@@ -10,6 +10,10 @@ import com.butent.bee.client.visualization.visualizations.corechart.BarChart;
 import com.butent.bee.client.visualization.visualizations.corechart.Options;
 import com.butent.bee.client.widget.BeeLabel;
 
+/**
+ * Implements demonstration of an bar chart visualization.
+ */
+
 public class BarDemo implements LeftTabPanel.WidgetProvider {
   public Widget getWidget() {
     Options options = Options.create();

@@ -4,6 +4,10 @@ import com.google.gwt.core.client.JsArrayInteger;
 
 import com.butent.bee.client.ajaxloader.ArrayHelper;
 
+/**
+ * Allows to use a live windows to view contents of {@code DataTable} objects.
+ */
+
 public class DataView extends AbstractDataTable {
 
   public static native DataView create(AbstractDataTable table) /*-{

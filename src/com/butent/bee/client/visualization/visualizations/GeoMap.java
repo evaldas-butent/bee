@@ -16,8 +16,23 @@ import com.butent.bee.client.visualization.events.RegionClickHandler;
 import com.butent.bee.client.visualization.events.SelectHandler;
 import com.butent.bee.client.visualization.events.ZoomOutHandler;
 
+/**
+ * Implements geographical map visualization.
+ */
+
 public class GeoMap extends Visualization<GeoMap.Options> implements Selectable {
-  public static enum DataMode { MARKERS, REGIONS }
+
+  /**
+   * Contains a list for available data mode for geo map visualization.
+   */
+
+  public static enum DataMode {
+    MARKERS, REGIONS
+  }
+
+  /**
+   * Sets option values for geo map visualization.
+   */
 
   public static class Options extends AbstractDrawOptions {
     public static Options create() {
@@ -26,7 +41,7 @@ public class GeoMap extends Visualization<GeoMap.Options> implements Selectable 
 
     protected Options() {
     }
-    
+
     public final void setColors(int... colors) {
       setColors(ArrayHelper.toJsArrayInteger(colors));
     }
@@ -72,11 +87,11 @@ public class GeoMap extends Visualization<GeoMap.Options> implements Selectable 
     public final native void setWidth(int width) /*-{
       this.width = width + 'px';
     }-*/;
-    
+
     public final native void setWidth(String width) /*-{
       this.width = width;
     }-*/;
-    
+
     public final native void setZoomOutLabel(String label) /*-{
       this.zoomOutLabel = label;
     }-*/;
@@ -90,7 +105,7 @@ public class GeoMap extends Visualization<GeoMap.Options> implements Selectable 
 
   public GeoMap() {
     super();
-    setSize("100%", "100%");   
+    setSize("100%", "100%");
   }
 
   public GeoMap(AbstractDataTable data, Options options) {
@@ -125,5 +140,5 @@ public class GeoMap extends Visualization<GeoMap.Options> implements Selectable 
   @Override
   protected native JavaScriptObject createJso(Element parent) /*-{
     return new $wnd.google.visualization.GeoMap(parent);
-  }-*/; 
+  }-*/;
 }

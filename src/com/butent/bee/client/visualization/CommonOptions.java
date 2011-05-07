@@ -6,6 +6,10 @@ import com.google.gwt.core.client.JsArrayString;
 
 import com.butent.bee.client.ajaxloader.ArrayHelper;
 
+/**
+ * Sets generic option values for background, title, legend, tooltip etc.
+ */
+
 public class CommonOptions extends AbstractDrawOptions {
   public static CommonOptions create() {
     return JavaScriptObject.createObject().cast();

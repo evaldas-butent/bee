@@ -10,21 +10,39 @@ import com.butent.bee.client.visualization.AbstractDataTable;
 import com.butent.bee.client.visualization.AbstractDrawOptions;
 import com.butent.bee.client.visualization.LegendPosition;
 
+/**
+ * Implements image chart visualization.
+ */
+
 public class ImageChart extends Visualization<ImageChart.Options> {
+
+  /**
+   * Enables using an annotation column in image chart.
+   */
+
   public static class AnnotationColumn extends JavaScriptObject {
-    public static enum Priority { LOW, MEDIUM, HIGH }
-    
+
+    /**
+     * Contains a list of possible priorities in image chart.
+     */
+    public static enum Priority {
+      LOW, MEDIUM, HIGH
+    }
+
     public static native AnnotationColumn create(int index, int size) /*-{
-      return {column: index, size: size};
+      return {
+        column : index,
+        size : size
+      };
     }-*/;
-    
+
     protected AnnotationColumn() {
     }
-    
+
     public final native void setColor(String color) /*-{
       this.color = color;
     }-*/;
-    
+
     public final void setDrawFlag(boolean draw) {
       if (draw) {
         setType("flag");
@@ -32,24 +50,26 @@ public class ImageChart extends Visualization<ImageChart.Options> {
         setType("text");
       }
     }
-        
+
     public final native void setPositionColumn(int index) /*-{
       this.positionColumn = index;
     }-*/;
-    
+
     public final void setPriority(Priority priority) {
       setPriority(priority.toString().toLowerCase());
     }
-    
+
     private native void setPriority(String priority) /*-{
       this.priority = priority;
     }-*/;
-    
+
     private native void setType(String type) /*-{
       this.type = type;
     }-*/;
   }
-  
+  /**
+   * Sets option values for image chart visualization.
+   */
   public static class Options extends AbstractDrawOptions {
     public static Options create() {
       return JavaScriptObject.createObject().cast();
@@ -57,15 +77,15 @@ public class ImageChart extends Visualization<ImageChart.Options> {
 
     protected Options() {
     }
-    
+
     public final native void setAnnotationColumns(JsArray<AnnotationColumn> columns) /*-{
       this.annotationColumns = columns;
     }-*/;
-    
+
     public final native void setColor(String color) /*-{
       this.color = color;
     }-*/;
-    
+
     public final native void setColors(JsArrayString colors) /*-{
       this.colors = colors;
     }-*/;
@@ -73,7 +93,7 @@ public class ImageChart extends Visualization<ImageChart.Options> {
     public final void setColors(String... colors) {
       setColors(ArrayHelper.toJsArrayString(colors));
     }
-    
+
     public final native void setFill(boolean fill) /*-{
       this.fill = fill;
     }-*/;
@@ -85,19 +105,19 @@ public class ImageChart extends Visualization<ImageChart.Options> {
     public final void setLegend(LegendPosition position) {
       setLegend(position.toString());
     }
-    
+
     public final native void setMax(double max) /*-{
       this.max = max;
     }-*/;
-    
+
     public final native void setMin(double min) /*-{
       this.min = min;
     }-*/;
-    
+
     public final native void setShowCategoryLabels(boolean show) /*-{
       this.showCategoryLabels = show;
     }-*/;
-    
+
     public final native void setShowValueLabels(boolean show) /*-{
       this.showValueLabels = show;
     }-*/;
@@ -106,7 +126,7 @@ public class ImageChart extends Visualization<ImageChart.Options> {
       setWidth(width);
       setHeight(height);
     }
-    
+
     public final native void setTitle(String title) /*-{
       this.title = title;
     }-*/;

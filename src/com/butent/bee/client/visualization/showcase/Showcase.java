@@ -2,9 +2,9 @@ package com.butent.bee.client.visualization.showcase;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.visualization.AbstractDataTable.ColumnType;
 import com.butent.bee.client.visualization.DataTable;
 import com.butent.bee.client.visualization.VisualizationUtils;
-import com.butent.bee.client.visualization.AbstractDataTable.ColumnType;
 import com.butent.bee.client.visualization.visualizations.AnnotatedTimeLine;
 import com.butent.bee.client.visualization.visualizations.Gauge;
 import com.butent.bee.client.visualization.visualizations.GeoMap;
@@ -22,16 +22,20 @@ import com.butent.bee.client.visualization.visualizations.Table;
 import com.butent.bee.client.visualization.visualizations.corechart.CoreChart;
 import com.butent.bee.shared.utils.BeeUtils;
 
+/**
+ * Initializes visualization demos.
+ */
+
 public class Showcase {
   private static boolean pomInjected = false;
   private static boolean pomLoaded = false;
-  
+
   public static void open() {
     BeeKeeper.getLog().info("loading api");
     final long start = System.currentTimeMillis();
-    
+
     injectPom();
-    
+
     VisualizationUtils.loadVisualizationApi(new Runnable() {
       public void run() {
         BeeKeeper.getLog().info(BeeUtils.elapsedSeconds(start), "api loaded");
@@ -60,14 +64,15 @@ public class Showcase {
         panel.add(new ScatterDemo(), "ScatterChart");
         panel.add(new SparklineDemo(), "Sparkline (Image)");
         panel.add(new TableDemo(), "Table");
-        
+
         panel.init("AreaChart");
         BeeKeeper.getUi().updateActivePanel(panel);
         BeeKeeper.getLog().info(BeeUtils.elapsedSeconds(start), "showcase ready");
-      }}, AnnotatedTimeLine.PACKAGE, CoreChart.PACKAGE, Gauge.PACKAGE, GeoMap.PACKAGE,
-      ImageChart.PACKAGE, ImageLineChart.PACKAGE, ImageAreaChart.PACKAGE, ImageBarChart.PACKAGE,
-      ImagePieChart.PACKAGE, IntensityMap.PACKAGE, MapVisualization.PACKAGE, MotionChart.PACKAGE,
-      OrgChart.PACKAGE, Table.PACKAGE, ImageSparklineChart.PACKAGE);
+      }
+    }, AnnotatedTimeLine.PACKAGE, CoreChart.PACKAGE, Gauge.PACKAGE, GeoMap.PACKAGE,
+        ImageChart.PACKAGE, ImageLineChart.PACKAGE, ImageAreaChart.PACKAGE, ImageBarChart.PACKAGE,
+        ImagePieChart.PACKAGE, IntensityMap.PACKAGE, MapVisualization.PACKAGE, MotionChart.PACKAGE,
+        OrgChart.PACKAGE, Table.PACKAGE, ImageSparklineChart.PACKAGE);
   }
 
   static DataTable getCompanyPerformance() {
@@ -75,7 +80,7 @@ public class Showcase {
     data.addColumn(ColumnType.STRING, "Metai");
     data.addColumn(ColumnType.NUMBER, "Pajamos");
     data.addColumn(ColumnType.NUMBER, "Sąnaudos");
-    
+
     int rows = BeeUtils.randomInt(4, 12);
     int min1 = 800;
     int max1 = 2000;
@@ -95,11 +100,11 @@ public class Showcase {
     DataTable data = DataTable.create();
     data.addColumn(ColumnType.STRING, "Pavadinimas");
     data.addColumn(ColumnType.NUMBER, "Kiekis");
-    
+
     int rows = 5;
     int min = 10;
     int max = 100;
-    
+
     data.addRows(rows);
     data.setValue(0, 0, "Agurkai");
     data.setValue(1, 0, "Pomidorai");
@@ -112,18 +117,20 @@ public class Showcase {
     }
     return data;
   }
-  
+
   private static native boolean checkPom() /*-{
     if ($wnd['PilesOfMoney']) {
       return true;
     }
     return false;
   }-*/;
-  
+
   private static void injectPom() {
     if (!pomInjected) {
-      DomUtils.injectExternalScript("http://visapi-gadgets.googlecode.com/svn/trunk/pilesofmoney/pom.js");
-      DomUtils.injectExternalStyle("http://visapi-gadgets.googlecode.com/svn/trunk/pilesofmoney/pom.css");
+      DomUtils
+          .injectExternalScript("http://visapi-gadgets.googlecode.com/svn/trunk/pilesofmoney/pom.js");
+      DomUtils
+          .injectExternalStyle("http://visapi-gadgets.googlecode.com/svn/trunk/pilesofmoney/pom.css");
       pomInjected = true;
     }
   }

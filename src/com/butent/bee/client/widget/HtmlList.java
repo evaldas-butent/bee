@@ -11,10 +11,14 @@ import com.butent.bee.shared.HasId;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Implements a user interface component that can contain a list of HTML code items.
+ */
+
 public class HtmlList extends Widget implements HasId {
   private static final int INSERT_AT_END = -1;
   private boolean ordered = false;
-  
+
   private List<LIElement> items = new ArrayList<LIElement>();
 
   public HtmlList() {
@@ -74,7 +78,7 @@ public class HtmlList extends Widget implements HasId {
   public void insertItem(String item, boolean asHtml, int index) {
     LIElement child = DomUtils.createListItem(item, asHtml).cast();
     child.setClassName("bee-HtmlListItem");
-    
+
     if ((index < 0) || (index >= getItemCount())) {
       getElement().appendChild(child);
       items.add(child);
@@ -94,7 +98,7 @@ public class HtmlList extends Widget implements HasId {
 
   public void removeItem(int index) {
     checkIndex(index);
-    
+
     getElement().removeChild(getItem(index));
     items.remove(index);
   }
@@ -106,19 +110,19 @@ public class HtmlList extends Widget implements HasId {
   public void setItemHtml(int index, String html) {
     checkIndex(index);
     Assert.notNull(html);
-    
+
     getItem(index).setInnerHTML(html);
   }
 
   public void setItemText(int index, String text) {
     checkIndex(index);
     Assert.notNull(text);
-    
+
     getItem(index).setInnerText(text);
   }
-  
+
   private void checkIndex(int index) {
     Assert.isIndex(items, index);
   }
-  
+
 }

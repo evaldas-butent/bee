@@ -9,6 +9,10 @@ import com.butent.bee.client.event.HasBeeClickHandler;
 import com.butent.bee.shared.HasBooleanValue;
 import com.butent.bee.shared.HasId;
 
+/**
+ * Implements a checkbox user interface component without label.
+ */
+
 public class BeeSimpleCheckBox extends SimpleCheckBox implements HasId, HasBeeClickHandler {
   private HasBooleanValue source = null;
 
@@ -21,7 +25,7 @@ public class BeeSimpleCheckBox extends SimpleCheckBox implements HasId, HasBeeCl
     this();
     setValue(value);
   }
-  
+
   public BeeSimpleCheckBox(HasBooleanValue source) {
     this();
     if (source != null) {

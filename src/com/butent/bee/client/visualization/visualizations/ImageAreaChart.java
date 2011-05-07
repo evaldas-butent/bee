@@ -6,7 +6,16 @@ import com.google.gwt.dom.client.Element;
 import com.butent.bee.client.visualization.AbstractDataTable;
 import com.butent.bee.client.visualization.CommonChartOptions;
 
+/**
+ * Implements image area chart visualization.
+ */
+
 public class ImageAreaChart extends Visualization<ImageAreaChart.Options> {
+
+  /**
+   * Sets option values for image area chart visualization.
+   */
+
   public static class Options extends CommonChartOptions {
     public static Options create() {
       return JavaScriptObject.createObject().cast();

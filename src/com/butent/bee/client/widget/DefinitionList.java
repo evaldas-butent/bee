@@ -11,6 +11,10 @@ import com.butent.bee.shared.HasId;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Enables using definitions for user interface components.
+ */
+
 public class DefinitionList extends Widget implements HasId {
   private static final int INSERT_AT_END = -1;
   private List<Element> items = new ArrayList<Element>();
@@ -18,7 +22,7 @@ public class DefinitionList extends Widget implements HasId {
   public DefinitionList() {
     setElement(Document.get().createDLElement());
     setStyleName("bee-DefinitionList");
-    
+
     createId();
   }
 
@@ -73,10 +77,10 @@ public class DefinitionList extends Widget implements HasId {
 
   public void insertItem(String item, boolean definition, boolean asHtml, int index) {
     Element child = DomUtils.createDefinitionItem(definition, item, asHtml).cast();
-   
+
     String tag = child.getTagName().toLowerCase();
     child.setClassName("bee-Definition-" + tag);
-    
+
     if ((index < 0) || (index >= getItemCount())) {
       getElement().appendChild(child);
       items.add(child);
@@ -92,7 +96,7 @@ public class DefinitionList extends Widget implements HasId {
 
   public void removeItem(int index) {
     checkIndex(index);
-    
+
     getElement().removeChild(getItem(index));
     items.remove(index);
   }
@@ -104,17 +108,17 @@ public class DefinitionList extends Widget implements HasId {
   public void setItemHtml(int index, String html) {
     checkIndex(index);
     Assert.notNull(html);
-    
+
     getItem(index).setInnerHTML(html);
   }
 
   public void setItemText(int index, String text) {
     checkIndex(index);
     Assert.notNull(text);
-    
+
     getItem(index).setInnerText(text);
   }
-  
+
   private void checkIndex(int index) {
     Assert.isIndex(items, index);
   }

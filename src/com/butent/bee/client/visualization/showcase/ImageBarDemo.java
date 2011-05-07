@@ -5,6 +5,10 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.client.visualization.visualizations.ImageBarChart;
 import com.butent.bee.client.visualization.visualizations.ImageBarChart.Options;
 
+/**
+ * Implements demonstration of image bar chart visualization.
+ */
+
 public class ImageBarDemo implements LeftTabPanel.WidgetProvider {
 
   public Widget getWidget() {

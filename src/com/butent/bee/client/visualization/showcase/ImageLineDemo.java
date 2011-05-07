@@ -6,6 +6,10 @@ import com.butent.bee.client.visualization.LegendPosition;
 import com.butent.bee.client.visualization.visualizations.ImageLineChart;
 import com.butent.bee.client.visualization.visualizations.ImageLineChart.Options;
 
+/**
+ * Implements demonstration of image line chart visualization.
+ */
+
 public class ImageLineDemo implements LeftTabPanel.WidgetProvider {
 
   public Widget getWidget() {
