@@ -21,7 +21,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 public class HeaderCell extends AbstractCell<String> {
   
   interface Template extends SafeHtmlTemplates {
-    @Template("<div class=\"bee-HeaderCellCaption unselectable\">{0}</div>")
+    @Template("<div class=\"bee-HeaderCellCaption\">{0}</div>")
     SafeHtml caption(SafeHtml label);
 
     @Template("<div class=\"{0}\"></div>")
@@ -30,11 +30,8 @@ public class HeaderCell extends AbstractCell<String> {
     @Template("<div class=\"{0}\">{1}</div>")
     SafeHtml sorted(String classes, String sortInfo);
     
-    @Template("<div id=\"{0}\" class=\"bee-HeaderCellWidthInfo unselectable\">{1}</div>")
+    @Template("<div id=\"{0}\" class=\"bee-HeaderCellWidthInfo\">{1}</div>")
     SafeHtml widthInfo(String id, int width);
-    
-    @Template("<div id=\"{0}\" class=\"bee-HeaderCellWidthResizer unselectable\"></div>")
-    SafeHtml widthResizer(String id);
   }
   
   private static final String STYLE_SORT_INFO = "bee-HeaderCellSortInfo";
@@ -45,20 +42,13 @@ public class HeaderCell extends AbstractCell<String> {
   private static Template template = null;
   
   private final String widthInfoId;
-  private final String widthResizerId;
-
-  private boolean isWidthResizing = false;
-  private int lastMouseX;
 
   public HeaderCell() {
-    super(EventUtils.EVENT_TYPE_MOUSE_DOWN, EventUtils.EVENT_TYPE_MOUSE_MOVE,
-        EventUtils.EVENT_TYPE_MOUSE_UP, EventUtils.EVENT_TYPE_MOUSE_OUT,
-        EventUtils.EVENT_TYPE_CLICK);
+    super(EventUtils.EVENT_TYPE_CLICK);
     if (template == null) {
       template = GWT.create(Template.class);
     }
     widthInfoId = DomUtils.createUniqueId("width-info");
-    widthResizerId = DomUtils.createUniqueId("width-resizer");
   }
   
   @Override
@@ -69,38 +59,12 @@ public class HeaderCell extends AbstractCell<String> {
       return;
     }
 
-    String type = event.getType();
-    if (EventUtils.isEventType(type, EventUtils.EVENT_TYPE_MOUSE_OUT)) {
-      isWidthResizing = false;
-      return;
-    }
-    
     CellGrid grid = ((CellContext) context).getGrid();
     if (grid == null) {
       return;
     }
     
-    if (EventUtils.isTargetId(event.getEventTarget(), widthResizerId)) {
-      if (EventUtils.isEventType(type, EventUtils.EVENT_TYPE_MOUSE_MOVE)) {
-        if (!isWidthResizing) {
-          return;
-        }
-        int x = event.getClientX();
-        int width = grid.resizeColumnWidth(context.getColumn(), x - lastMouseX);
-        lastMouseX = x;
-        if (width > 0) {
-          DomUtils.setHtml(widthInfoId, BeeUtils.toString(width));
-        }
-      } else if (EventUtils.isEventType(type, EventUtils.EVENT_TYPE_MOUSE_DOWN)) {
-        isWidthResizing = true;
-        lastMouseX = event.getClientX();
-      } else if (EventUtils.isEventType(type, EventUtils.EVENT_TYPE_MOUSE_UP)) {
-        isWidthResizing = false;
-      }
-      return;
-    }
-    
-    if (EventUtils.isClick(event)) {
+    if (EventUtils.isClick(event) && !EventUtils.isTargetId(event.getEventTarget(), widthInfoId)) {
       EventUtils.eatEvent(event);
       grid.updateOrder(context.getColumn(), event);
     }
@@ -131,17 +95,15 @@ public class HeaderCell extends AbstractCell<String> {
         if (sortIndex >= 0) {
           boolean ascending = sortOrder.isAscending(label);
           String classes = StyleUtils.buildClasses(STYLE_SORT_INFO,
-              ascending ? STYLE_ASCENDING : STYLE_DESCENDING, StyleUtils.NAME_UNSELECTABLE);
+              ascending ? STYLE_ASCENDING : STYLE_DESCENDING);
           String sortInfo = (size > 1) ? BeeUtils.toString(sortIndex + 1) : BeeConst.STRING_EMPTY;
           sb.append(template.sorted(classes, sortInfo));
         } else {
-          sb.append(template.sortable(StyleUtils.buildClasses(STYLE_SORT_INFO, STYLE_SORTABLE,
-              StyleUtils.NAME_UNSELECTABLE)));
+          sb.append(template.sortable(StyleUtils.buildClasses(STYLE_SORT_INFO, STYLE_SORTABLE)));
         }
       }
       
       sb.append(template.widthInfo(widthInfoId, grid.getColumnWidth(label)));
-      sb.append(template.widthResizer(widthResizerId));
     }
   }
 }

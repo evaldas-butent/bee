@@ -1,7 +1,7 @@
 package com.butent.bee.shared;
 
 /**
- * Stores all default values (datebases, boolean, separators etc.).
+ * Stores all default values (databases, boolean, separators etc.).
  */
 public class BeeConst {
   public static final String MYSQL = "MySql";
@@ -56,6 +56,14 @@ public class BeeConst {
   public static final char CHAR_SPACE = ' ';
   public static final char CHAR_UNDER = '_';
   public static final char CHAR_ZERO = '0';
+  public static final char CHAR_ONE = '1';
+  public static final char CHAR_TWO = '2';
+  public static final char CHAR_THREE = '3';
+  public static final char CHAR_FOUR = '4';
+  public static final char CHAR_FIVE = '5';
+  public static final char CHAR_SIX = '6';
+  public static final char CHAR_SEVEN = '7';
+  public static final char CHAR_EIGHT = '8';
   public static final char CHAR_NINE = '9';
   public static final char CHAR_POINT = '.';
   public static final char CHAR_COMMA = ',';

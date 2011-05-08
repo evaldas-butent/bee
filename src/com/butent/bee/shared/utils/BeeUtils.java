@@ -1357,6 +1357,14 @@ public class BeeUtils {
     return isDouble(x) && x > Long.MIN_VALUE && x < Long.MAX_VALUE;
   }
 
+  public static boolean isNonNegative(Double d) {
+    if (isDouble(d)) {
+      return Double.compare(d, BeeConst.DOUBLE_ZERO) >= 0;
+    } else {
+      return false;
+    }
+  }
+  
   public static boolean isNumeric(String s) {
     if (isEmpty(s)) {
       return false;
@@ -1384,6 +1392,14 @@ public class BeeUtils {
     return idx < ArrayUtils.length(clazz.getEnumConstants());
   }
 
+  public static boolean isPositive(Double d) {
+    if (isDouble(d)) {
+      return Double.compare(d, BeeConst.DOUBLE_ZERO) > 0;
+    } else {
+      return false;
+    }
+  }
+  
   /**
    * Checks if an Object is a positive number.
    * 

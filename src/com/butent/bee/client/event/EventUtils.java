@@ -170,6 +170,10 @@ public class EventUtils {
     return ev.getShiftKey() || ev.getCtrlKey() || ev.getAltKey() || ev.getMetaKey();
   }
 
+  public static boolean isBlur(String type) {
+    return isEventType(type, EVENT_TYPE_BLUR);
+  }
+  
   public static boolean isClick(NativeEvent ev) {
     if (ev == null) {
       return false;
@@ -187,6 +191,10 @@ public class EventUtils {
     return BeeUtils.same(t1, t2);
   }
 
+  public static boolean isFocus(String type) {
+    return isEventType(type, EVENT_TYPE_FOCUS);
+  }
+  
   public static boolean isInputElement(EventTarget et) {
     return isTargetTagName(et, DomUtils.TAG_INPUT);
   }
@@ -211,6 +219,22 @@ public class EventUtils {
     return isEventType(type, EVENT_TYPE_KEY_PRESS);
   }
 
+  public static boolean isMouseDown(String type) {
+    return isEventType(type, EVENT_TYPE_MOUSE_DOWN);
+  }
+
+  public static boolean isMouseMove(String type) {
+    return isEventType(type, EVENT_TYPE_MOUSE_MOVE);
+  }
+  
+  public static boolean isMouseOut(String type) {
+    return isEventType(type, EVENT_TYPE_MOUSE_OUT);
+  }
+  
+  public static boolean isMouseUp(String type) {
+    return isEventType(type, EVENT_TYPE_MOUSE_UP);
+  }
+  
   public static boolean isTargetId(EventTarget et, String id) {
     if (et == null || BeeUtils.isEmpty(id)) {
       return false;
@@ -406,7 +430,7 @@ public class EventUtils {
     }
 
     int b = ev.getButton();
-    if (k != 0) {
+    if (b != 0) {
       sb.append(" b=" + b);
     }
     int v = ev.getMouseWheelVelocityY();

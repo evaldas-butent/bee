@@ -16,11 +16,11 @@ body, select {
 
 .bee-RadioButton input:checked + label {
   text-transform: uppercase;
-}  
+}
 
 .bee-RadioButton-vertical {
   display: block;
-}  
+}
 
 .bee-HSplitter {
   background-color: #d0e4f6;
@@ -341,19 +341,20 @@ body, select {
 
 .bee-HeaderCellCaption {
   text-align: center;
+  overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .bee-HeaderCellSortInfo {
   position: absolute;
-  left: 4px;
+  left: 8px;
   bottom: 1px;
   font-weight: normal;
 }
 
 .bee-HeaderCellSortable {
   opacity: 0.3;
-  font-size: x-small; 
+  font-size: small; 
 }
 .bee-HeaderCellSortable:before {
   content: "\0021c5"; 
@@ -383,25 +384,6 @@ body, select {
   -webkit-transform: rotate(-90deg);
 }
 
-.bee-HeaderCellWidthResizer {
-  position: absolute;
-  right: 0px;
-  top: 0px;
-  bottom :0px;
-  width: 8px;
-}
-
-.bee-HeaderCellWidthResizer:hover {
-  background-color: #a5c4ff;
-  cursor: col-resize;
-  right: -4px;
-  bottom: -60px;
-  z-index: 1024;
-}
-
-.bee-CellGrid {
-}
-
 .bee-CellGridCell {
   border-style: solid;
   border-color: gray;
@@ -409,7 +391,6 @@ body, select {
 
 .bee-CellGridHeader {
   background-color: #e8e8e8;
-  overflow: visible; 
 }
 
 .bee-CellGridBody {
@@ -451,6 +432,22 @@ body, select {
   overflow: auto;
   resize: both;
 }
+
+.bee-CellGridResizerHorizontal {
+  cursor: col-resize;
+}  
+.bee-CellGridResizerVertical {
+  cursor: row-resize;
+}  
+
+.bee-CellGridResizerBar {
+  background-color: #a5c4ff;
+  z-index: 1;
+}  
+.bee-CellGridResizerHandle {
+  background-color: #bcf;
+  z-index: 2;
+}  
 
 .gwt-TreeItem-selected {
   background-color: #ffffaa;

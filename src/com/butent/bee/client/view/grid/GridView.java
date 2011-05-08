@@ -16,7 +16,5 @@ public interface GridView extends View, HasDataTable {
 
   int estimatePageSize(int containerWidth, int containerHeight);
 
-  boolean isCellEditing();
-
-  void updatePageSize(int pageSize, boolean init);
+  void updatePageSize(int pageSize, boolean init); 
 }

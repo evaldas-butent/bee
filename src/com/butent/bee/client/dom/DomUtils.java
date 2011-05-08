@@ -150,6 +150,16 @@ public class DomUtils {
   private static int checkBoxClientWidth = -1;
   private static int checkBoxClientHeight = -1;
 
+  public static void allowSelection(Element elem) {
+    Assert.notNull(elem);
+    elem.removeClassName(StyleUtils.NAME_UNSELECTABLE);
+  }
+
+  public static void allowSelection(UIObject obj) {
+    Assert.notNull(obj);
+    DomUtils.preventSelection(obj.getElement());
+  }
+
   public static void clearTitle(UIObject obj) {
     Assert.notNull(obj);
     obj.setTitle(null);
@@ -613,22 +623,22 @@ public class DomUtils {
     }
   }
 
-  public static String getDataColumn(UIObject obj) {
-    return getAttribute(obj, ATTRIBUTE_DATA_COLUMN);
-  }
-
   public static String getDataColumn(Element elem) {
     return elem.getAttribute(ATTRIBUTE_DATA_COLUMN);
   }
 
-  public static String getDataRow(UIObject obj) {
-    return getAttribute(obj, ATTRIBUTE_DATA_ROW);
+  public static String getDataColumn(UIObject obj) {
+    return getAttribute(obj, ATTRIBUTE_DATA_COLUMN);
   }
 
   public static String getDataRow(Element elem) {
     return elem.getAttribute(ATTRIBUTE_DATA_ROW);
   }
 
+  public static String getDataRow(UIObject obj) {
+    return getAttribute(obj, ATTRIBUTE_DATA_ROW);
+  }
+  
   public static Direction getDirection(String s) {
     Assert.notEmpty(s);
     Direction dir = null;
@@ -643,6 +653,13 @@ public class DomUtils {
       }
     }
     return dir;
+  }
+
+  public static Element getElement(String id) {
+    Assert.notEmpty(id);
+    Element el = DOM.getElementById(id);
+    Assert.notNull(el, "id " + id + " element not found");
+    return el;
   }
 
   public static List<Property> getElementInfo(Element el) {
@@ -903,14 +920,14 @@ public class DomUtils {
     return lst;
   }
 
-  public static int getTabIndex(UIObject obj) {
-    Assert.notNull(obj);
-    return obj.getElement().getTabIndex();
-  }
-
   public static int getTabIndex(Element el) {
     Assert.notNull(el);
     return el.getTabIndex();
+  }
+
+  public static int getTabIndex(UIObject obj) {
+    Assert.notNull(obj);
+    return obj.getElement().getTabIndex();
   }
 
   public static String getText(Element elem) {
@@ -997,10 +1014,13 @@ public class DomUtils {
     return lst;
   }
 
+  public static int getValueInt(Element elem) {
+    Assert.notNull(elem);
+    return elem.getPropertyInt(ATTRIBUTE_VALUE);
+  }
+
   public static int getValueInt(String id) {
-    Assert.notEmpty(id);
-    Element elem = DOM.getElementById(id);
-    Assert.notNull(elem, "id " + id + " element not found");
+    Element elem = getElement(id);
 
     if (JsUtils.hasProperty(elem, ATTRIBUTE_VALUE)) {
       return getValueInt(elem);
@@ -1027,18 +1047,6 @@ public class DomUtils {
   public static int getValueInt(UIObject obj) {
     Assert.notNull(obj);
     return getValueInt(obj.getElement());
-  }
-
-  public static int getValueInt(Element elem) {
-    Assert.notNull(elem);
-    return elem.getPropertyInt(ATTRIBUTE_VALUE);
-  }
-
-  public static Widget getWidget(Widget root, String id) {
-    Assert.notNull(root);
-    Assert.notEmpty(id);
-
-    return getWidget(root, DOM.getElementById(id));
   }
 
   public static Widget getWidget(Widget root, Element elem) {
@@ -1070,6 +1078,11 @@ public class DomUtils {
     return ret;
   }
 
+  public static Widget getWidget(Widget root, String id) {
+    Assert.notNull(root);
+    return getWidget(root, getElement(id));
+  }
+
   public static int getWidgetCount(HasWidgets container) {
     Assert.notNull(container);
     return Iterables.size(container);
@@ -1099,19 +1112,19 @@ public class DomUtils {
     return lst;
   }
 
-  public static boolean idEquals(UIObject obj, String id) {
-    if (obj == null) {
-      return false;
-    } else {
-      return idEquals(obj.getElement(), id);
-    }
-  }
-
   public static boolean idEquals(Element el, String id) {
     if (el == null) {
       return false;
     } else {
       return BeeUtils.same(el.getId(), id);
+    }
+  }
+
+  public static boolean idEquals(UIObject obj, String id) {
+    if (obj == null) {
+      return false;
+    } else {
+      return idEquals(obj.getElement(), id);
     }
   }
 
@@ -1136,24 +1149,22 @@ public class DomUtils {
     head.appendChild(link);
   }
 
-  public static boolean isChecked(String id) {
-    Assert.notEmpty(id);
-    Element elem = DOM.getElementById(id);
-    Assert.notNull(elem, "id " + id + " element not found");
-    return isChecked(elem);
-  }
-
-  public static boolean isChecked(UIObject obj) {
-    Assert.notNull(obj);
-    return isChecked(obj.getElement());
-  }
-
   public static boolean isChecked(Element elem) {
     Assert.notNull(elem);
     InputElement input = getInputElement(elem);
     Assert.notNull(input, "input element not found");
 
     return input.getPropertyBoolean(ATTRIBUTE_CHECKED);
+  }
+
+  public static boolean isChecked(String id) {
+    Element elem = getElement(id);
+    return isChecked(elem);
+  }
+
+  public static boolean isChecked(UIObject obj) {
+    Assert.notNull(obj);
+    return isChecked(obj.getElement());
   }
 
   public static boolean isDirection(String s) {
@@ -1231,6 +1242,87 @@ public class DomUtils {
       el.setTabIndex(0);
     }
   }
+  
+  public static void moveBy(Element el, int dx, int dy) {
+    Assert.notNull(el);
+    moveBy(el.getStyle(), dx, dy);
+  }
+
+  public static void moveBy(NodeList<Element> elements, int dx, int dy) {
+    Assert.notNull(elements);
+    if (dx == 0 && dy == 0) {
+      return;
+    }
+    for (int i = 0; i < elements.getLength(); i++) {
+      moveBy(elements.getItem(i), dx, dy);
+    }
+  }
+
+  public static void moveBy(Style st, int dx, int dy) {
+    if (dx != 0) {
+      StyleUtils.setLeft(st, StyleUtils.getLeft(st) + dx);
+    }
+    if (dy != 0) {
+      StyleUtils.setTop(st, StyleUtils.getTop(st) + dy);
+    }
+  }
+
+  public static void moveBy(String id, int dx, int dy) {
+    moveBy(getElement(id), dx, dy);
+  }
+
+  public static void moveBy(UIObject obj, int dx, int dy) {
+    Assert.notNull(obj);
+    moveBy(obj.getElement(), dx, dy);
+  }
+  
+  public static void moveHorizontalBy(Element el, int dx) {
+    Assert.notNull(el);
+    moveBy(el.getStyle(), dx, 0);
+  }
+
+  public static void moveHorizontalBy(NodeList<Element> elements, int dx) {
+    Assert.notNull(elements);
+    if (dx == 0) {
+      return;
+    }
+    for (int i = 0; i < elements.getLength(); i++) {
+      moveHorizontalBy(elements.getItem(i), dx);
+    }
+  }
+
+  public static void moveHorizontalBy(String id, int dx) {
+    moveHorizontalBy(getElement(id), dx);
+  }
+
+  public static void moveHorizontalBy(UIObject obj, int dx) {
+    Assert.notNull(obj);
+    moveHorizontalBy(obj.getElement(), dx);
+  }
+  
+  public static void moveVerticalBy(Element el, int dy) {
+    Assert.notNull(el);
+    moveBy(el.getStyle(), 0, dy);
+  }
+
+  public static void moveVerticalBy(NodeList<Element> elements, int dy) {
+    Assert.notNull(elements);
+    if (dy == 0) {
+      return;
+    }
+    for (int i = 0; i < elements.getLength(); i++) {
+      moveVerticalBy(elements.getItem(i), dy);
+    }
+  }
+  
+  public static void moveVerticalBy(String id, int dy) {
+    moveVerticalBy(getElement(id), dy);
+  }
+
+  public static void moveVerticalBy(UIObject obj, int dy) {
+    Assert.notNull(obj);
+    moveVerticalBy(obj.getElement(), dy);
+  }
 
   public static PopupPanel parentPopup(Widget w) {
     Assert.notNull(w);
@@ -1264,7 +1356,7 @@ public class DomUtils {
       }
       child = Element.as(children.getItem(i));
       if (tagCnt <= 0 || BeeUtils.inListSame(child.getTagName(), tags)) {
-        preventSelection(child);
+        DomUtils.preventSelection(child);
       }
 
       if (recurse) {
@@ -1273,14 +1365,14 @@ public class DomUtils {
     }
   }
 
-  public static void preventSelection(UIObject obj) {
-    Assert.notNull(obj);
-    preventSelection(obj.getElement());
-  }
-
   public static void preventSelection(Element elem) {
     Assert.notNull(elem);
     elem.addClassName(StyleUtils.NAME_UNSELECTABLE);
+  }
+
+  public static void preventSelection(UIObject obj) {
+    Assert.notNull(obj);
+    DomUtils.preventSelection(obj.getElement());
   }
 
   public static void removeAttribute(UIObject obj, String name) {
@@ -1293,13 +1385,102 @@ public class DomUtils {
   public static void removeMax(UIObject obj) {
     removeAttribute(obj, ATTRIBUTE_MAX);
   }
-
+  
   public static void removeMin(UIObject obj) {
     removeAttribute(obj, ATTRIBUTE_MIN);
   }
 
   public static void removeStep(UIObject obj) {
     removeAttribute(obj, ATTRIBUTE_STEP);
+  }
+
+  public static void resizeBy(Element el, int dw, int dh) {
+    Assert.notNull(el);
+    resizeBy(el.getStyle(), dw, dh);
+  }
+
+  public static void resizeBy(NodeList<Element> elements, int dw, int dh) {
+    Assert.notNull(elements);
+    if (dw == 0 && dh == 0) {
+      return;
+    }
+    for (int i = 0; i < elements.getLength(); i++) {
+      resizeBy(elements.getItem(i), dw, dh);
+    }
+  }
+
+  public static void resizeBy(Style st, int dw, int dh) {
+    if (dw != 0) {
+      StyleUtils.setWidth(st, StyleUtils.getWidth(st) + dw);
+    }
+    if (dh != 0) {
+      StyleUtils.setHeight(st, StyleUtils.getHeight(st) + dh);
+    }
+  }
+  
+  public static void resizeBy(String id, int dw, int dh) {
+    resizeBy(getElement(id), dw, dh);
+  }
+
+  public static void resizeBy(UIObject obj, int dw, int dh) {
+    Assert.notNull(obj);
+    resizeBy(obj.getElement(), dw, dh);
+  }
+
+  public static void resizeHorizontalBy(Element el, int dw) {
+    Assert.notNull(el);
+    resizeHorizontalBy(el.getStyle(), dw);
+  }
+
+  public static void resizeHorizontalBy(NodeList<Element> elements, int dw) {
+    Assert.notNull(elements);
+    if (dw == 0) {
+      return;
+    }
+    for (int i = 0; i < elements.getLength(); i++) {
+      resizeHorizontalBy(elements.getItem(i), dw);
+    }
+  }
+
+  public static void resizeHorizontalBy(Style st, int dw) {
+    resizeBy(st, dw, 0);
+  }
+  
+  public static void resizeHorizontalBy(String id, int dw) {
+    resizeHorizontalBy(getElement(id), dw);
+  }
+
+  public static void resizeHorizontalBy(UIObject obj, int dw) {
+    Assert.notNull(obj);
+    resizeHorizontalBy(obj.getElement(), dw);
+  }
+
+  public static void resizeVerticalBy(Element el, int dh) {
+    Assert.notNull(el);
+    resizeVerticalBy(el.getStyle(), dh);
+  }
+  
+  public static void resizeVerticalBy(NodeList<Element> elements, int dh) {
+    Assert.notNull(elements);
+    if (dh == 0) {
+      return;
+    }
+    for (int i = 0; i < elements.getLength(); i++) {
+      resizeVerticalBy(elements.getItem(i), dh);
+    }
+  }
+
+  public static void resizeVerticalBy(Style st, int dh) {
+    resizeBy(st, 0, dh);
+  }
+
+  public static void resizeVerticalBy(String id, int dh) {
+    resizeVerticalBy(getElement(id), dh);
+  }
+
+  public static void resizeVerticalBy(UIObject obj, int dh) {
+    Assert.notNull(obj);
+    resizeVerticalBy(obj.getElement(), dh);
   }
 
   public static void setAttribute(UIObject obj, String name, int value) {
@@ -1330,14 +1511,14 @@ public class DomUtils {
     TableCellElement.as(elem).setColSpan(span);
   }
 
-  public static void setDraggable(UIObject obj) {
-    Assert.notNull(obj);
-    setDraggable(obj.getElement());
-  }
-
   public static void setDraggable(Element elem) {
     Assert.notNull(elem);
     elem.setAttribute(ATTRIBUTE_DRAGGABLE, VALUE_TRUE);
+  }
+
+  public static void setDraggable(UIObject obj) {
+    Assert.notNull(obj);
+    setDraggable(obj.getElement());
   }
 
   public static Widget setHeight(Widget w, int height) {
@@ -1352,10 +1533,7 @@ public class DomUtils {
   }
 
   public static void setHtml(String id, String html) {
-    Assert.notEmpty(id);
-    Element elem = DOM.getElementById(id);
-    Assert.notNull(elem, "id " + id + " element not found");
-
+    Element elem = getElement(id);
     elem.setInnerHTML(html);
   }
 
@@ -1367,15 +1545,15 @@ public class DomUtils {
     obj.getElement().setId(s);
   }
 
-  public static void setInputType(UIObject obj, String type) {
-    Assert.notNull(obj);
-    setInputType(obj.getElement(), type);
-  }
-
   public static void setInputType(Element elem, String type) {
     assertInputElement(elem);
     Assert.notEmpty(type);
     elem.setAttribute(ATTRIBUTE_TYPE, type);
+  }
+
+  public static void setInputType(UIObject obj, String type) {
+    Assert.notNull(obj);
+    setInputType(obj.getElement(), type);
   }
 
   public static void setMax(UIObject obj, int max) {
@@ -1384,11 +1562,6 @@ public class DomUtils {
 
   public static void setMin(UIObject obj, int min) {
     setAttribute(obj, ATTRIBUTE_MIN, min);
-  }
-
-  public static boolean setPlaceholder(UIObject obj, String value) {
-    Assert.notNull(obj);
-    return setPlaceholder(obj.getElement(), value);
   }
 
   public static boolean setPlaceholder(Element elem, String value) {
@@ -1403,16 +1576,16 @@ public class DomUtils {
     }
   }
 
+  public static boolean setPlaceholder(UIObject obj, String value) {
+    Assert.notNull(obj);
+    return setPlaceholder(obj.getElement(), value);
+  }
+
   public static void setRowSpan(Element elem, int span) {
     Assert.isTrue(isTableCellElement(elem), "not a table cell element");
     Assert.isPositive(span);
 
     TableCellElement.as(elem).setRowSpan(span);
-  }
-
-  public static boolean setSearch(UIObject obj) {
-    Assert.notNull(obj);
-    return setSearch(obj.getElement());
   }
 
   public static boolean setSearch(Element elem) {
@@ -1423,6 +1596,11 @@ public class DomUtils {
     } else {
       return false;
     }
+  }
+
+  public static boolean setSearch(UIObject obj) {
+    Assert.notNull(obj);
+    return setSearch(obj.getElement());
   }
 
   public static void setSelected(Element elem, boolean selected) {
@@ -1450,10 +1628,7 @@ public class DomUtils {
   }
 
   public static void setText(String id, String text) {
-    Assert.notEmpty(id);
-    Element elem = DOM.getElementById(id);
-    Assert.notNull(elem, "id " + id + " element not found");
-
+    Element elem = getElement(id);
     elem.setInnerText(text);
   }
 

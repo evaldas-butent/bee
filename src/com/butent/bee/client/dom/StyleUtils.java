@@ -4,6 +4,7 @@ import com.google.common.base.Splitter;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.dom.client.Style;
+import com.google.gwt.dom.client.Style.Display;
 import com.google.gwt.dom.client.Style.FontStyle;
 import com.google.gwt.dom.client.Style.FontWeight;
 import com.google.gwt.dom.client.Style.HasCssName;
@@ -11,7 +12,6 @@ import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.safecss.shared.SafeStyles;
 import com.google.gwt.safecss.shared.SafeStylesBuilder;
 import com.google.gwt.safecss.shared.SafeStylesUtils;
-import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.ui.UIObject;
 
 import com.butent.bee.shared.Assert;
@@ -227,6 +227,7 @@ public class StyleUtils {
   public static final String CSS_BORDER_BOTTOM_WIDTH = "border-bottom-width";
 
   public static final String CSS_TEXT_ALIGN = "text-align";
+  public static final String CSS_Z_INDEX = "z-index";
 
   private static final char CLASS_NAME_SEPARATOR = ' ';
   private static final Splitter CLASS_NAME_SPLITTER =
@@ -406,6 +407,10 @@ public class StyleUtils {
     return ssb.toSafeStyles();
   }
 
+  public static SafeStyles buildStyle(String name, int value) {
+    return buildStyle(name, BeeUtils.toString(value));
+  }
+  
   public static SafeStyles buildStyle(String name, String value) {
     Assert.notEmpty(name);
     Assert.notEmpty(value);
@@ -429,6 +434,26 @@ public class StyleUtils {
     return buildWidth(width, Unit.PX);
   }
 
+  public static SafeStyles buildZIndex(int value) {
+    return buildStyle(CSS_Z_INDEX, value);
+  }
+  
+  public static void clearDisplay(Element el) {
+    Assert.notNull(el);
+    if (!BeeUtils.isEmpty(el.getStyle().getDisplay())) {
+      el.getStyle().clearDisplay();
+    }
+  }
+
+  public static void clearDisplay(String id) {
+    clearDisplay(DomUtils.getElement(id));
+  }
+  
+  public static void clearDisplay(UIObject obj) {
+    Assert.notNull(obj);
+    clearDisplay(obj.getElement());
+  }
+  
   public static void clearTableLayout(Element el) {
     Assert.notNull(el);
     clearTableLayout(el.getStyle());
@@ -557,13 +582,6 @@ public class StyleUtils {
     fullWidth(obj.getElement());
   }
 
-  public static Element getElement(String id) {
-    Assert.notEmpty(id);
-    Element el = DOM.getElementById(id);
-    Assert.notNull(el, "id " + id + " element not found");
-    return el;
-  }
-
   public static int getHeight(Element el) {
     Assert.notNull(el);
     return getHeight(el.getStyle());
@@ -575,7 +593,7 @@ public class StyleUtils {
   }
 
   public static int getHeight(String id) {
-    return getHeight(getElement(id));
+    return getHeight(DomUtils.getElement(id));
   }
 
   public static int getHeight(UIObject obj) {
@@ -594,7 +612,7 @@ public class StyleUtils {
   }
 
   public static int getLeft(String id) {
-    return getLeft(getElement(id));
+    return getLeft(DomUtils.getElement(id));
   }
 
   public static int getLeft(UIObject obj) {
@@ -602,6 +620,25 @@ public class StyleUtils {
     return getLeft(obj.getElement());
   }
 
+  public static Rectangle getRectangle(Element el) {
+    Assert.notNull(el);
+    return getRectangle(el.getStyle());
+  }
+
+  public static Rectangle getRectangle(Style st) {
+    Assert.notNull(st);
+    return new Rectangle(st);
+  }
+
+  public static Rectangle getRectangle(String id) {
+    return getRectangle(DomUtils.getElement(id));
+  }
+
+  public static Rectangle getRectangle(UIObject obj) {
+    Assert.notNull(obj);
+    return getRectangle(obj.getElement());
+  }
+  
   public static ScrollBars getScroll(Element el) {
     Assert.notNull(el);
     return getScroll(el.getStyle());
@@ -652,7 +689,7 @@ public class StyleUtils {
   }
 
   public static int getTop(String id) {
-    return getTop(getElement(id));
+    return getTop(DomUtils.getElement(id));
   }
 
   public static int getTop(UIObject obj) {
@@ -671,7 +708,7 @@ public class StyleUtils {
   }
 
   public static int getWidth(String id) {
-    return getWidth(getElement(id));
+    return getWidth(DomUtils.getElement(id));
   }
 
   public static int getWidth(UIObject obj) {
@@ -690,7 +727,7 @@ public class StyleUtils {
   }
 
   public static int getZIndex(String id) {
-    return getZIndex(getElement(id));
+    return getZIndex(DomUtils.getElement(id));
   }
 
   public static int getZIndex(UIObject obj) {
@@ -698,6 +735,20 @@ public class StyleUtils {
     return getZIndex(obj.getElement());
   }
 
+  public static void hideDisplay(Element el) {
+    Assert.notNull(el);
+    el.getStyle().setDisplay(Display.NONE);
+  }
+
+  public static void hideDisplay(String id) {
+    hideDisplay(DomUtils.getElement(id));
+  }
+  
+  public static void hideDisplay(UIObject obj) {
+    Assert.notNull(obj);
+    hideDisplay(obj.getElement());
+  }
+  
   public static void hideScroll(Element el, ScrollBars scroll) {
     Assert.notNull(el);
     hideScroll(el.getStyle(), scroll);
@@ -911,6 +962,20 @@ public class StyleUtils {
     setBorderTopWidth(obj.getElement(), px);
   }
 
+  public static void setDisplay(Element el, Display value) {
+    Assert.notNull(el);
+    el.getStyle().setDisplay(value);
+  }
+
+  public static void setDisplay(String id, Display value) {
+    setDisplay(DomUtils.getElement(id), value);
+  }
+  
+  public static void setDisplay(UIObject obj, Display value) {
+    Assert.notNull(obj);
+    setDisplay(obj.getElement(), value);
+  }
+  
   public static void setFontFamily(Element el, String family) {
     Assert.notNull(el);
     setFontFamily(el.getStyle(), family);
@@ -998,7 +1063,7 @@ public class StyleUtils {
   }
 
   public static void setHeight(String id, int px) {
-    setHeight(getElement(id), px);
+    setHeight(DomUtils.getElement(id), px);
   }
 
   public static void setHeight(UIObject obj, int px) {
@@ -1017,7 +1082,7 @@ public class StyleUtils {
   }
 
   public static void setLeft(String id, int px) {
-    setLeft(getElement(id), px);
+    setLeft(DomUtils.getElement(id), px);
   }
 
   public static void setLeft(UIObject obj, int px) {
@@ -1192,6 +1257,48 @@ public class StyleUtils {
     setOverflow(obj.getElement(), scroll, value);
   }
 
+  public static void setRectangle(Element el, int left, int top, int width, int height) {
+    Assert.notNull(el);
+    setRectangle(el.getStyle(), left, top, width, height);
+  }
+
+  public static void setRectangle(Style st, int left, int top, int width, int height) {
+    Assert.notNull(st);
+    st.setLeft(left, Unit.PX);
+    st.setTop(top, Unit.PX);
+    st.setWidth(width, Unit.PX);
+    st.setHeight(height, Unit.PX);
+  }
+
+  public static void setRectangle(String id, int left, int top, int width, int height) {
+    setRectangle(DomUtils.getElement(id), left, top, width, height);
+  }
+
+  public static void setRectangle(UIObject obj, int left, int top, int width, int height) {
+    Assert.notNull(obj);
+    setRectangle(obj.getElement(), left, top, width, height);
+  }
+  
+  public static void setSize(Element el, int width, int height) {
+    Assert.notNull(el);
+    setSize(el.getStyle(), width, height);
+  }
+
+  public static void setSize(Style st, int width, int height) {
+    Assert.notNull(st);
+    st.setWidth(width, Unit.PX);
+    st.setHeight(height, Unit.PX);
+  }
+
+  public static void setSize(String id, int width, int height) {
+    setSize(DomUtils.getElement(id), width, height);
+  }
+
+  public static void setSize(UIObject obj, int width, int height) {
+    Assert.notNull(obj);
+    setSize(obj.getElement(), width, height);
+  }
+  
   public static void setStyleDependentName(Element el, String style, boolean add) {
     Assert.notNull(el);
     Assert.notEmpty(style);
@@ -1251,7 +1358,7 @@ public class StyleUtils {
   }
 
   public static void setTop(String id, int px) {
-    setTop(getElement(id), px);
+    setTop(DomUtils.getElement(id), px);
   }
 
   public static void setTop(UIObject obj, int px) {
@@ -1286,7 +1393,7 @@ public class StyleUtils {
   }
 
   public static void setWidth(String id, int px) {
-    setWidth(getElement(id), px);
+    setWidth(DomUtils.getElement(id), px);
   }
 
   public static void setWidth(UIObject obj, int px) {
@@ -1319,7 +1426,7 @@ public class StyleUtils {
   }
 
   public static void setZIndex(String id, int value) {
-    setZIndex(getElement(id), value);
+    setZIndex(DomUtils.getElement(id), value);
   }
 
   public static void setZIndex(UIObject obj, int value) {
@@ -1332,6 +1439,22 @@ public class StyleUtils {
     return BeeUtils.toString(value) + unit.getType();
   }
 
+  public static void unhideDisplay(Element el) {
+    Assert.notNull(el);
+    if (BeeUtils.same(el.getStyle().getDisplay(), Display.NONE.getCssName())) {
+      el.getStyle().clearDisplay();
+    }
+  }
+
+  public static void unhideDisplay(String id) {
+    unhideDisplay(DomUtils.getElement(id));
+  }
+  
+  public static void unhideDisplay(UIObject obj) {
+    Assert.notNull(obj);
+    unhideDisplay(obj.getElement());
+  }
+  
   public static void zeroLeft(Element el) {
     Assert.notNull(el);
     zeroLeft(el.getStyle());

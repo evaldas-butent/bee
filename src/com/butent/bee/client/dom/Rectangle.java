@@ -6,51 +6,66 @@ import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.client.ui.UIObject;
 
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.utils.BeeUtils;
 
-/**
- * Implements box element and enables to get and set it's parameters like height and width.
- */
-
-public class Box {
+public class Rectangle {
 
   private static final Unit DEFAULT_UNIT = Unit.PX;
 
+  public static Rectangle createFromAbsoluteCoordinates(Element element) {
+    Rectangle rectangle = new Rectangle();
+    rectangle.setFromAbsoluteCoordinates(element);
+    return rectangle;
+  }
+
+  public static Rectangle createFromParentOffset(Element element) {
+    Rectangle rectangle = new Rectangle();
+    rectangle.setFromParentOffset(element);
+    return rectangle;
+  }
+  
   private Unit leftUnit = null;
   private Double leftValue = null;
-
-  private Unit widthUnit = null;
-  private Double widthValue = null;
 
   private Unit topUnit = null;
   private Double topValue = null;
 
+  private Unit widthUnit = null;
+  private Double widthValue = null;
+
   private Unit heightUnit = null;
   private Double heightValue = null;
 
-  public Box() {
+  public Rectangle() {
+    super();
+  }
+  
+  public Rectangle(Style style) {
+    this();
+    setFromStyle(style);
   }
 
-  public Box(Double leftValue, Double widthValue, Double topValue, Double heightValue) {
-    this(leftValue, DEFAULT_UNIT, widthValue, DEFAULT_UNIT, topValue, DEFAULT_UNIT,
+  public Rectangle(Double leftValue, Double topValue, Double widthValue, Double heightValue) {
+    this(leftValue, DEFAULT_UNIT, topValue, DEFAULT_UNIT, widthValue, DEFAULT_UNIT,
         heightValue, DEFAULT_UNIT);
   }
 
-  public Box(Double leftValue, Unit leftUnit, Double widthValue, Unit widthUnit,
-      Double topValue, Unit topUnit, Double heightValue, Unit heightUnit) {
+  public Rectangle(Double leftValue, Unit leftUnit, Double topValue, Unit topUnit,
+      Double widthValue, Unit widthUnit, Double heightValue, Unit heightUnit) {
     this.leftValue = leftValue;
     this.leftUnit = leftUnit;
-    this.widthValue = widthValue;
-    this.widthUnit = widthUnit;
-
     this.topValue = topValue;
     this.topUnit = topUnit;
+
+    this.widthValue = widthValue;
+    this.widthUnit = widthUnit;
     this.heightValue = heightValue;
     this.heightUnit = heightUnit;
   }
 
-  public Box(int leftValue, int widthValue, int topValue, int heightValue) {
-    this((double) leftValue, (double) widthValue, (double) topValue, (double) heightValue);
+  public Rectangle(int leftValue, int topValue, int widthValue, int heightValue) {
+    this((double) leftValue, (double) topValue, (double) widthValue, (double) heightValue);
   }
 
   public void applyTo(Element el) {
@@ -64,12 +79,12 @@ public class Box {
     if (getLeftValue() != null) {
       setStyleProperty(st, StyleUtils.STYLE_LEFT, getLeftValue(), getLeftUnit());
     }
-    if (getWidthValue() != null) {
-      setStyleProperty(st, StyleUtils.STYLE_WIDTH, getWidthValue(), getWidthUnit());
-    }
-
     if (getTopValue() != null) {
       setStyleProperty(st, StyleUtils.STYLE_TOP, getTopValue(), getTopUnit());
+    }
+
+    if (getWidthValue() != null) {
+      setStyleProperty(st, StyleUtils.STYLE_WIDTH, getWidthValue(), getWidthUnit());
     }
     if (getHeightValue() != null) {
       setStyleProperty(st, StyleUtils.STYLE_HEIGHT, getHeightValue(), getHeightUnit());
@@ -95,6 +110,19 @@ public class Box {
 
   public void clearWidth() {
     setWidth(null, null);
+  }
+
+  public boolean contains(int x, int y) {
+    return contains((double) x, (double) y); 
+  }
+  
+  public boolean contains(double x, double y) {
+    if (isValid()) {
+      return x >= getLeftValue() && x <= getLeftValue() + getWidthValue() 
+          && y >= getTopValue() && y <= getTopValue() + getHeightValue();
+    } else {
+      return false;
+    }
   }
 
   public Unit getHeightUnit() {
@@ -148,6 +176,11 @@ public class Box {
   public boolean isEmpty() {
     return getLeftValue() == null && getWidthValue() == null && getTopValue() == null
         && getHeightValue() == null;
+  }
+
+  public boolean isValid() {
+    return getLeftValue() != null && BeeUtils.isNonNegative(getWidthValue())
+        && getTopValue() != null && BeeUtils.isNonNegative(getHeightValue());
   }
 
   public void setHeight(Double value) {
@@ -234,6 +267,76 @@ public class Box {
     this.widthValue = widthValue;
   }
 
+  private void setFromAbsoluteCoordinates(Element element) {
+    Assert.notNull(element);
+    
+    setLeft(element.getAbsoluteLeft());
+    setTop(element.getAbsoluteTop());
+    setWidth(element.getOffsetWidth());
+    setHeight(element.getOffsetHeight());
+  }
+  
+  private void setFromParentOffset(Element element) {
+    Assert.notNull(element);
+    
+    setLeft(element.getOffsetLeft());
+    setTop(element.getOffsetTop());
+    setWidth(element.getOffsetWidth());
+    setHeight(element.getOffsetHeight());
+  }
+
+  private void setFromStyle(Style style) {
+    Assert.notNull(style);
+
+    setFromStyleProperty(style, StyleUtils.STYLE_LEFT);
+    setFromStyleProperty(style, StyleUtils.STYLE_TOP);
+    setFromStyleProperty(style, StyleUtils.STYLE_WIDTH);
+    setFromStyleProperty(style, StyleUtils.STYLE_HEIGHT);
+  }
+
+  private void setFromStyleProperty(Style style, String name) {
+    String length = style.getProperty(name);
+    if (!BeeUtils.isEmpty(length)) {
+      return;
+    }
+    Pair<Double, Unit> pair = StyleUtils.parseCssLength(length);
+    if (pair == null) {
+      return;
+    }
+
+    Double value = pair.getA();
+    if (value == null) {
+      return;
+    }
+
+    if (BeeUtils.same(name, StyleUtils.STYLE_LEFT)) {
+      setLeftValue(value);
+    } else if (BeeUtils.same(name, StyleUtils.STYLE_TOP)) {
+      setTopValue(value);
+    } else if (BeeUtils.same(name, StyleUtils.STYLE_WIDTH)) {
+      setWidthValue(value);
+    } else if (BeeUtils.same(name, StyleUtils.STYLE_HEIGHT)) {
+      setHeightValue(value);
+    } else {
+      Assert.untouchable();
+    }
+
+    Unit unit = pair.getB();
+    if (unit == null) {
+      return;
+    }
+
+    if (BeeUtils.same(name, StyleUtils.STYLE_LEFT)) {
+      setLeftUnit(unit);
+    } else if (BeeUtils.same(name, StyleUtils.STYLE_TOP)) {
+      setTopUnit(unit);
+    } else if (BeeUtils.same(name, StyleUtils.STYLE_WIDTH)) {
+      setWidthUnit(unit);
+    } else if (BeeUtils.same(name, StyleUtils.STYLE_HEIGHT)) {
+      setHeightUnit(unit);
+    }
+  }
+  
   private void setStyleProperty(Style style, String name, Double value, Unit unit) {
     if (value == null) {
       return;
