@@ -29,6 +29,6 @@
   <entry-point class='com.butent.bee.client.Bee'/>
   
   <source path='client'/>
-  <source path='shared' excludes='testutils/'/>
+  <source path='shared'/>
   <super-source path='translatable'/> 
 </module>
