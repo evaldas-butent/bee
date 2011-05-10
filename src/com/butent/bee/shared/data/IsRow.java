@@ -3,6 +3,7 @@ package com.butent.bee.shared.data;
 import com.butent.bee.shared.DateTime;
 import com.butent.bee.shared.JustDate;
 import com.butent.bee.shared.data.value.Value;
+import com.butent.bee.shared.data.value.ValueType;
 
 import java.util.List;
 
@@ -44,6 +45,7 @@ public interface IsRow extends HasCustomProperties {
   String getString(int index);
 
   Value getValue(int index);
+  Value getValue(int index, ValueType type);
 
   void insertCell(int index, IsCell cell);
 

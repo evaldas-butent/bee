@@ -1,6 +1,5 @@
 package com.butent.bee.client.data;
 
-import com.google.gwt.view.client.HasData;
 import com.google.gwt.view.client.Range;
 
 import com.butent.bee.client.BeeKeeper;
@@ -8,12 +7,10 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.view.event.SortEvent;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.BeeRowSet;
-import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.Order;
-import com.butent.bee.shared.utils.BeeUtils;
 
 /**
  * Extends {@code Provider} class and implements data range management from asynchronous data
@@ -23,10 +20,10 @@ import com.butent.bee.shared.utils.BeeUtils;
 public class AsyncProvider extends Provider {
 
   private class Callback implements Queries.RowSetCallback {
-    private final HasData<IsRow> display;
+    private final HasDataTable display;
     private final Range range;
 
-    private Callback(HasData<IsRow> display, Range range) {
+    private Callback(HasDataTable display, Range range) {
       this.display = display;
       this.range = range;
     }
@@ -47,8 +44,6 @@ public class AsyncProvider extends Provider {
   }
 
   private final DataInfo dataInfo;
-  private Filter filter = null;
-  private Order order = null;
 
   public AsyncProvider(HasDataTable display, DataInfo dataInfo) {
     super(display);
@@ -60,28 +55,11 @@ public class AsyncProvider extends Provider {
     return dataInfo;
   }
 
-  public Filter getFilter() {
-    return filter;
-  }
-
-  public Order getOrder() {
-    return order;
-  }
-
   @Override
   public void onSort(SortEvent event) {
     Assert.notNull(event);
     setOrder(event.getOrder());
-
-    goTop(true);
-  }
-
-  public void setFilter(Filter filter) {
-    this.filter = filter;
-  }
-
-  public void setOrder(Order order) {
-    this.order = order;
+    goTop();
   }
 
   public void updateDisplay(int start, int length, BeeRowSet data) {
@@ -95,17 +73,16 @@ public class AsyncProvider extends Provider {
     Assert.isPositive(length);
     Assert.isPositive(rowCount);
 
-    if (length == rowCount) {
+    if (length >= rowCount) {
       getDisplay().setRowData(start, data.getRows().getList());
     } else {
-      getDisplay().setRowData(start,
-          data.getRows().getList().subList(0, BeeUtils.min(length, rowCount)));
+      getDisplay().setRowData(start, data.getRows().getList().subList(0, length));
     }
   }
 
   @Override
   protected void onRangeChanged() {
-    HasData<IsRow> displ = getDisplay();
+    HasDataTable displ = getDisplay();
     Range range = getRange();
 
     Filter flt = getFilter();

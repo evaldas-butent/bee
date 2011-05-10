@@ -54,12 +54,7 @@ public class GridPresenter implements Presenter {
       }
 
       if (value > 0) {
-        if (isAsync()) {
-          ((AsyncProvider) getDataProvider()).setFilter(filter);
-          getView().getContent().setRowCount(value, true);
-          getView().getContent().setVisibleRangeAndClearData(
-              getView().getContent().getVisibleRange(), true);
-        }
+        getDataProvider().onFilterChanged(filter, value);
       }
     }
   }

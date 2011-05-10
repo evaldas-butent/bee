@@ -595,7 +595,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable {
     }
     if (size == 1) {
       setActiveRow(0);
-      setPageStart(absIndex);
+      setVisibleRange(absIndex, getPageSize());
       return;
     }
 
@@ -603,7 +603,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable {
     setActiveRow(absIndex - newPageStart);
 
     if (newPageStart != oldPageStart) {
-      setPageStart(newPageStart);
+      setVisibleRange(newPageStart, getPageSize());
     }
   }
 
@@ -1082,7 +1082,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable {
   }
 
   public int getVisibleItemCount() {
-    return getPageSize();
+    return Math.min(getPageSize(), getRowCount());
   }
 
   public List<IsRow> getVisibleItems() {
@@ -1530,11 +1530,11 @@ public class CellGrid extends Widget implements HasId, HasDataTable {
   }
 
   public void setPageSize(int pageSize) {
-    setVisibleRange(getPageStart(), pageSize);
+    this.pageSize = pageSize;
   }
 
   public void setPageStart(int pageStart) {
-    setVisibleRange(pageStart, getPageSize());
+    this.pageStart = pageStart;
   }
 
   public void setRowCount(int count) {
@@ -1557,8 +1557,6 @@ public class CellGrid extends Widget implements HasId, HasDataTable {
     
     int size = values.size();
     Assert.isPositive(size);
-    Assert.isTrue(size == getPageSize(), "setRowData: data size " + size
-        + " does not match page size " + getPageSize());
 
     int oldRow = getActiveRow();
     if (oldRow >= 0 && oldRow < rowData.size()) {
@@ -1687,7 +1685,8 @@ public class CellGrid extends Widget implements HasId, HasDataTable {
   }
 
   private void checkRowBounds(int row) {
-    Assert.isTrue(isRowWithinBounds(row));
+    Assert.isTrue(isRowWithinBounds(row), "row index " + row + " out of bounds: page size "
+        + getPageSize() + ", row count " + getRowCount());
   }
 
   private void clearRowResized(int row) {
@@ -1721,7 +1720,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable {
   private int getBodyHeight() {
     int height = 0;
     int increment = getBodyCellHeightIncrement();
-    for (int i = 0; i < getPageSize(); i++) {
+    for (int i = 0; i < getVisibleItemCount(); i++) {
       height += getRowHeight(i) + increment;
     }
     return height;
@@ -1962,8 +1961,8 @@ public class CellGrid extends Widget implements HasId, HasDataTable {
     if (element == null && hasFooters()) {
       element = getFooterCellElement(col);
     }
-    if (element == null && getPageSize() > 0) {
-      for (int i = 0; i < getPageSize(); i++) {
+    if (element == null) {
+      for (int i = 0; i < getVisibleItemCount(); i++) {
         element = getBodyCellElement(i, col);
         if (element != null) {
           break;
@@ -2253,7 +2252,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable {
     
     switch (resizer) {
       case HORIZONTAL:
-        return row == 0 && !hasHeaders() || row == getPageSize() - 1 && !hasFooters();
+        return row == 0 && !hasHeaders() || row == getVisibleItemCount() - 1 && !hasFooters();
       case VERTICAL:
         return col == 0 || col == getColumnCount() - 1;
       default:
@@ -2298,7 +2297,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable {
   }
 
   private boolean isRowWithinBounds(int row) {
-    return row >= 0 && row < getPageSize();
+    return row >= 0 && row < getVisibleItemCount();
   }
 
   private void keyboardEnd() {
@@ -2714,7 +2713,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable {
     }
 
     int dh = newHeight - oldHeight;
-    int rc = getPageSize();
+    int rc = getVisibleItemCount();
     NodeList<Element> nodes;
 
     if (isBodyRow(rowIdx) && Modifiers.isNotEmpty(modifiers)) {

@@ -68,6 +68,9 @@ public abstract class ComparisonFilter extends Filter {
   }
 
   protected boolean isOperatorMatch(Value v1, Value v2) {
+    if (v1.isNull() || v2.isNull()) {
+      return false;
+    }
     switch (operator) {
       case EQ:
         return (v1.compareTo(v2) == 0);

@@ -24,14 +24,14 @@ public class HeaderCell extends AbstractCell<String> {
     @Template("<div class=\"bee-HeaderCellCaption\">{0}</div>")
     SafeHtml caption(SafeHtml label);
 
-    @Template("<div class=\"{0}\"></div>")
-    SafeHtml sortable(String classes);
+    @Template("<div id=\"{0}\" class=\"{1}\"></div>")
+    SafeHtml sortable(String id, String classes);
     
-    @Template("<div class=\"{0}\">{1}</div>")
-    SafeHtml sorted(String classes, String sortInfo);
+    @Template("<div id=\"{0}\" class=\"{1}\">{2}</div>")
+    SafeHtml sorted(String id, String classes, String sortInfo);
     
-    @Template("<div id=\"{0}\" class=\"bee-HeaderCellWidthInfo\">{1}</div>")
-    SafeHtml widthInfo(String id, int width);
+    @Template("<div class=\"bee-HeaderCellWidthInfo\">{0}</div>")
+    SafeHtml widthInfo(int width);
   }
   
   private static final String STYLE_SORT_INFO = "bee-HeaderCellSortInfo";
@@ -41,14 +41,14 @@ public class HeaderCell extends AbstractCell<String> {
   
   private static Template template = null;
   
-  private final String widthInfoId;
+  private final String sortInfoId;
 
   public HeaderCell() {
     super(EventUtils.EVENT_TYPE_CLICK);
     if (template == null) {
       template = GWT.create(Template.class);
     }
-    widthInfoId = DomUtils.createUniqueId("width-info");
+    sortInfoId = DomUtils.createUniqueId("sort-info");
   }
   
   @Override
@@ -64,7 +64,7 @@ public class HeaderCell extends AbstractCell<String> {
       return;
     }
     
-    if (EventUtils.isClick(event) && !EventUtils.isTargetId(event.getEventTarget(), widthInfoId)) {
+    if (EventUtils.isClick(event) && EventUtils.isTargetId(event.getEventTarget(), sortInfoId)) {
       EventUtils.eatEvent(event);
       grid.updateOrder(context.getColumn(), event);
     }
@@ -97,13 +97,14 @@ public class HeaderCell extends AbstractCell<String> {
           String classes = StyleUtils.buildClasses(STYLE_SORT_INFO,
               ascending ? STYLE_ASCENDING : STYLE_DESCENDING);
           String sortInfo = (size > 1) ? BeeUtils.toString(sortIndex + 1) : BeeConst.STRING_EMPTY;
-          sb.append(template.sorted(classes, sortInfo));
+          sb.append(template.sorted(sortInfoId, classes, sortInfo));
         } else {
-          sb.append(template.sortable(StyleUtils.buildClasses(STYLE_SORT_INFO, STYLE_SORTABLE)));
+          sb.append(template.sortable(sortInfoId,
+              StyleUtils.buildClasses(STYLE_SORT_INFO, STYLE_SORTABLE)));
         }
       }
       
-      sb.append(template.widthInfo(widthInfoId, grid.getColumnWidth(label)));
+      sb.append(template.widthInfo(grid.getColumnWidth(label)));
     }
   }
 }

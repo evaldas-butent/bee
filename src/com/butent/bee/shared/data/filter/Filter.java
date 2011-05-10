@@ -5,6 +5,7 @@ import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.Transformable;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.RowFilter;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -15,7 +16,7 @@ import java.util.List;
  * apply.
  */
 
-public abstract class Filter implements BeeSerializable, Transformable {
+public abstract class Filter implements BeeSerializable, Transformable, RowFilter {
 
   public static Filter restore(String s) {
     String[] arr = Codec.beeDeserialize(s);

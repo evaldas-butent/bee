@@ -1938,10 +1938,6 @@ public class BeeUtils {
     if (x2 == null) {
       return BeeConst.COMPARE_MORE;
     }
-
-    if (!x1.getClass().equals(x2.getClass())) {
-      return x1.getClass().getName().compareTo(x2.getClass().getName());
-    }
     return BeeConst.COMPARE_UNKNOWN;
   }
   

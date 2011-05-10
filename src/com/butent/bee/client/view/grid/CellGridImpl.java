@@ -139,7 +139,7 @@ public class CellGridImpl extends CellGrid implements GridView, SearchView {
         setVisibleRangeAndClearData(getVisibleRange(), true);
       }
     } else {
-      setPageSize(pageSize);
+      setVisibleRange(getPageStart(), pageSize);
     }
   }
 

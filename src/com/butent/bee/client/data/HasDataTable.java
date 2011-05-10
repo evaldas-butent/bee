@@ -10,5 +10,6 @@ import com.butent.bee.shared.data.IsRow;
  */
 
 public interface HasDataTable extends HasData<IsRow>, HasSortHandlers {
+  void setPageStart(int pageStart);
 
 }

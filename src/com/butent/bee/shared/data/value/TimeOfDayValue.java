@@ -6,6 +6,7 @@ import com.google.common.collect.ComparisonChain;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.DateTime;
+import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.TimeUtils;
 
 /**
@@ -51,6 +52,21 @@ public class TimeOfDayValue extends Value {
     this.milliseconds = milliseconds;
   }
 
+  public TimeOfDayValue(String tod) {
+    if (BeeUtils.isEmpty(tod)) {
+      this.hours = 0;
+      this.minutes = 0;
+      this.seconds = 0;
+      this.milliseconds = 0;
+    } else {  
+      int[] arr = TimeUtils.parseFields(tod);
+      this.hours = arr[0];
+      this.minutes = arr[1];
+      this.seconds = arr[2];
+      this.milliseconds = arr[3];
+    }
+  }
+  
   private TimeOfDayValue() {
     this.hours = -1;
     this.minutes = -1;

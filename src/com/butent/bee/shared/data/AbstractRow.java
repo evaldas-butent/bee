@@ -5,9 +5,13 @@ import com.butent.bee.shared.DateTime;
 import com.butent.bee.shared.JustDate;
 import com.butent.bee.shared.Transformable;
 import com.butent.bee.shared.data.value.BooleanValue;
+import com.butent.bee.shared.data.value.DateTimeValue;
+import com.butent.bee.shared.data.value.DateValue;
 import com.butent.bee.shared.data.value.NumberValue;
 import com.butent.bee.shared.data.value.TextValue;
+import com.butent.bee.shared.data.value.TimeOfDayValue;
 import com.butent.bee.shared.data.value.Value;
+import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
@@ -95,6 +99,29 @@ public abstract class AbstractRow implements IsRow, Transformable {
 
   public Value getValue(int index) {
     return getCell(index).getValue();
+  }
+  
+  public Value getValue(int index, ValueType type) {
+    if (type == null) {
+      return new TextValue(getString(index));
+    }
+    switch (type) {
+      case BOOLEAN:
+        return new BooleanValue(getBoolean(index));
+      case DATE:
+        return new DateValue(getDate(index));
+      case DATETIME:
+        return new DateTimeValue(getDateTime(index));
+      case NUMBER:
+        return new NumberValue(getDouble(index));
+      case TEXT:
+        return new TextValue(getString(index));
+      case TIMEOFDAY:
+        return new TimeOfDayValue(getString(index));
+      default:
+        Assert.untouchable();
+        return null;
+    }
   }
 
   public abstract void insertCell(int index, IsCell cell);

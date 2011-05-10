@@ -121,8 +121,10 @@ public class ColumnColumnFilter extends ComparisonFilter {
 
   @Override
   public boolean isMatch(List<? extends IsColumn> columns, IsRow row) {
-    Value firstValue = row.getValue(getColumnIndex(firstColumn, columns));
-    Value secondValue = row.getValue(getColumnIndex(secondColumn, columns));
+    int firstIndex = getColumnIndex(firstColumn, columns);
+    Value firstValue = row.getValue(firstIndex, columns.get(firstIndex).getType());
+    int secondIndex = getColumnIndex(secondColumn, columns);
+    Value secondValue = row.getValue(secondIndex, columns.get(secondIndex).getType());
     return isOperatorMatch(firstValue, secondValue);
   }
 

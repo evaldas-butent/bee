@@ -49,7 +49,7 @@ public class BooleanValue extends Value {
 
   private Boolean value;
 
-  private BooleanValue(Boolean value) {
+  public BooleanValue(Boolean value) {
     this.value = value;
   }
 
