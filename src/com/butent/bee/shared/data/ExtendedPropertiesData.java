@@ -5,8 +5,12 @@ import com.butent.bee.shared.utils.ExtendedProperty;
 
 import java.util.List;
 
+/**
+ * Extends {@code RowList} class, enables to extend specified table properties.
+ */
+
 public class ExtendedPropertiesData extends RowList<TableRow, TableColumn> {
-  
+
   private ExtendedPropertiesData() {
     super();
   }
@@ -20,7 +24,7 @@ public class ExtendedPropertiesData extends RowList<TableRow, TableColumn> {
       label = (pc > 0 && i < pc) ? columnLabels[i] : ExtendedProperty.COLUMN_HEADERS[i];
       addColumn(ValueType.TEXT, label);
     }
-    
+
     for (ExtendedProperty property : data) {
       addRow(property.getName(), property.getSub(), property.getValue(),
           property.getDate().toTimeString());
@@ -34,7 +38,7 @@ public class ExtendedPropertiesData extends RowList<TableRow, TableColumn> {
     result.setRows(getRows());
     return result;
   }
-  
+
   @Override
   public ExtendedPropertiesData create() {
     return new ExtendedPropertiesData();

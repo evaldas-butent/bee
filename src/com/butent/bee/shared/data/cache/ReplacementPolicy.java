@@ -7,6 +7,11 @@ import com.butent.bee.shared.Assert;
 import java.util.Collection;
 import java.util.List;
 
+/**
+ * Contains a list of possible cache objects replacement management types, for example first in
+ * first out or least recently used.
+ */
+
 public enum ReplacementPolicy {
   LEAST_FREQUENTLY_USED(true, false),
   LEAST_RECENTLY_USED(true, false),
@@ -33,18 +38,18 @@ public enum ReplacementPolicy {
   public boolean addFirst() {
     return addFirst;
   }
-  
+
   public boolean addLast() {
     return !addFirst;
   }
-  
+
   public <K> int getEvictionIndex(final List<K> keys, final Multimap<K, Long> history) {
     Assert.notEmpty(keys);
     int size = keys.size();
     if (size <= 1 || history == null || history.isEmpty()) {
       return 0;
     }
-    
+
     int idx;
     switch (this) {
       case LEAST_FREQUENTLY_USED:

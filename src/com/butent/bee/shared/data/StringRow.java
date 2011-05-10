@@ -12,9 +12,13 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
 
+/**
+ * Extends {@code AbstractRow} class, contains it's information in string sequences.
+ */
+
 public class StringRow extends AbstractRow {
   private Sequence<String> values;
-  
+
   public StringRow(long id, Sequence<String> values) {
     super(id);
     this.values = values;
@@ -35,7 +39,7 @@ public class StringRow extends AbstractRow {
     assertIndex(index);
     values.set(index, BeeConst.STRING_EMPTY);
   }
-  
+
   @Override
   public StringRow clone() {
     StringRow result = new StringRow(getId(), values);
@@ -53,7 +57,7 @@ public class StringRow extends AbstractRow {
     assertIndex(index);
     return new TableCell(values.get(index));
   }
-  
+
   @Override
   public List<IsCell> getCells() {
     List<IsCell> lst = Lists.newArrayList();
@@ -78,7 +82,7 @@ public class StringRow extends AbstractRow {
     }
     return new DateTime(getLong(col));
   }
-  
+
   @Override
   public Double getDouble(int col) {
     return BeeUtils.toDoubleOrNull(getString(col));
@@ -87,21 +91,21 @@ public class StringRow extends AbstractRow {
   public Integer getInt(int col) {
     return BeeUtils.toIntOrNull(getString(col));
   }
-  
+
   public Long getLong(int col) {
     return BeeUtils.toLongOrNull(getString(col));
   }
-  
+
   @Override
   public int getNumberOfCells() {
-    return values.getLength(); 
+    return values.getLength();
   }
-  
+
   public String getString(int index) {
     assertIndex(index);
     return values.get(index);
   }
-  
+
   public String[] getValueArray() {
     Pair<String[], Integer> pair = getValues().getArray(BeeConst.EMPTY_STRING_ARRAY);
     int len = pair.getB();
@@ -141,7 +145,7 @@ public class StringRow extends AbstractRow {
     assertIndex(index);
     values.set(index, cell.getValue().getString());
   }
-  
+
   @Override
   public void setCells(List<IsCell> cells) {
     for (int i = 0; i < cells.size(); i++) {

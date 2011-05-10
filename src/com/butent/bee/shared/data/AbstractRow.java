@@ -12,6 +12,10 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
 
+/**
+ * Implements {@code isRow} interface, sets behaviors for row classes.
+ */
+
 public abstract class AbstractRow implements IsRow, Transformable {
   private long id;
   private CustomProperties properties = null;
@@ -19,7 +23,7 @@ public abstract class AbstractRow implements IsRow, Transformable {
   protected AbstractRow(long id) {
     this.id = id;
   }
-  
+
   @SuppressWarnings("unused")
   private AbstractRow() {
   }
@@ -43,10 +47,10 @@ public abstract class AbstractRow implements IsRow, Transformable {
   }
 
   public abstract void clearCell(int index);
-  
+
   @Override
   public abstract IsRow clone();
-  
+
   public Boolean getBoolean(int index) {
     return getValue(index).getBoolean();
   }
@@ -76,7 +80,7 @@ public abstract class AbstractRow implements IsRow, Transformable {
   public CustomProperties getProperties() {
     return properties;
   }
-  
+
   public Object getProperty(String key) {
     Assert.notEmpty(key);
     if (properties == null) {
@@ -136,11 +140,11 @@ public abstract class AbstractRow implements IsRow, Transformable {
     cell.clearFormattedValue();
     cell.clearProperties();
   }
-  
+
   public String transform() {
     StringBuilder sb = new StringBuilder();
     sb.append("id=").append(getId());
-    
+
     String v;
     for (int i = 0; i < getNumberOfCells(); i++) {
       v = getString(i);
@@ -148,15 +152,15 @@ public abstract class AbstractRow implements IsRow, Transformable {
         sb.append(" [").append(i).append("]=").append(v);
       }
     }
-    
+
     if (getProperties() != null) {
       sb.append("p=").append(getProperties().transform());
     }
     return sb.toString();
   }
-  
+
   protected abstract void assertIndex(int index);
-  
+
   protected void cloneProperties(IsRow cloneRow) {
     if (getProperties() != null) {
       cloneRow.setProperties(getProperties().clone());

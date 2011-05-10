@@ -18,7 +18,15 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Enables storing data in hash map type structure.
+ */
+
 public class SimpleRowSet implements Iterable<Map<String, String>>, BeeSerializable {
+
+  /**
+   * Contains a list of items for serialization.
+   */
 
   private enum SerializationMembers {
     COLUMNS, ROWS

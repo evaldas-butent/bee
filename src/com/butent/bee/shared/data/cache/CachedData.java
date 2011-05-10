@@ -8,6 +8,10 @@ import com.butent.bee.shared.data.BeeRow;
 import java.util.Collection;
 import java.util.List;
 
+/**
+ * Extends {@code SimpleCache} class, manages maximum cache size and contains data in rows format.
+ */
+
 class CachedData extends SimpleCache<Long, BeeRow> {
   static int defaultMaxSize = 0xffff;
   static ReplacementPolicy defaultReplacementPolicy = ReplacementPolicy.LEAST_FREQUENTLY_USED;
@@ -19,26 +23,26 @@ class CachedData extends SimpleCache<Long, BeeRow> {
   CachedData(int maxSize) {
     this(maxSize, defaultReplacementPolicy);
   }
-  
+
   CachedData(ReplacementPolicy replacementPolicy) {
     this(defaultMaxSize, replacementPolicy);
   }
-  
+
   CachedData(int maxSize, ReplacementPolicy replacementPolicy) {
     super(maxSize, replacementPolicy);
   }
-  
+
   void addRows(Collection<BeeRow> rows) {
     Assert.notEmpty(rows);
     for (BeeRow row : rows) {
       add(row.getId(), row);
     }
   }
-  
+
   List<BeeRow> getRows(List<Long> rowIds) {
     Assert.notEmpty(rowIds);
     List<BeeRow> result = null;
-    
+
     BeeRow row;
     for (Long id : rowIds) {
       row = get(id);
@@ -46,7 +50,7 @@ class CachedData extends SimpleCache<Long, BeeRow> {
         result = null;
         break;
       }
-      
+
       if (result == null) {
         result = Lists.newArrayListWithCapacity(rowIds.size());
       }

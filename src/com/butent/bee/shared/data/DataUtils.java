@@ -20,6 +20,10 @@ import com.butent.bee.shared.utils.Property;
 
 import java.util.List;
 
+/**
+ * Contains a set of utility functions for data management, for example {@code parseExpression}.
+ */
+
 public class DataUtils {
 
   @SuppressWarnings("unchecked")

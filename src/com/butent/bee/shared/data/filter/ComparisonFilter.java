@@ -5,6 +5,12 @@ import com.butent.bee.shared.data.value.Value;
 
 import java.util.StringTokenizer;
 
+/**
+ * Is an abstract class, extends {@code Filter) class, determines implementation of comparison
+ * filters.
+
+ */
+
 public abstract class ComparisonFilter extends Filter {
 
   public static Filter compareWithColumn(String firstColumn, Operator operator, String secondColumn) {

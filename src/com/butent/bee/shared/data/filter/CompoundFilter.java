@@ -12,7 +12,15 @@ import com.butent.bee.shared.utils.Codec;
 import java.util.List;
 import java.util.logging.Logger;
 
+/**
+ * Implements complex filters, containing more than one condition.
+ */
+
 public class CompoundFilter extends Filter {
+
+  /**
+   * Contains a list of filter parts which go through serialization.
+   */
 
   private enum SerializationMembers {
     JOINTYPE, SUBFILTERS

@@ -2,10 +2,14 @@ package com.butent.bee.shared.data;
 
 import com.butent.bee.shared.data.value.Value;
 
+/**
+ * Handles range management for data structures, containing min and max values of a range.
+ */
+
 public class Range {
   private Value min = null;
   private Value max = null;
-  
+
   public Range(Value min, Value max) {
     this.min = min;
     this.max = max;

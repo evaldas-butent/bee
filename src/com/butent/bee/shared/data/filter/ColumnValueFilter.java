@@ -11,8 +11,15 @@ import com.butent.bee.shared.utils.Codec;
 import java.util.List;
 import java.util.logging.Logger;
 
+/**
+ * Enables to compare column data against given value (for example quantity > 10).
+ */
+
 public class ColumnValueFilter extends ComparisonFilter {
 
+  /**
+   * Contains a list of filter parts which go through serialization.
+   */
   private enum SerializationMembers {
     COLUMN, OPERATOR, VALUE
   }

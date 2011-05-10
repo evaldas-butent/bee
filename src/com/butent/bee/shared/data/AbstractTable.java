@@ -21,6 +21,11 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * Is an abstract class for table classes, contains full range of table operating methods like
+ * {@code addRow} or {@code sort}.
+ */
+
 public abstract class AbstractTable<RowType extends IsRow, ColType extends IsColumn> implements
     IsTable<RowType, ColType> {
 
@@ -42,7 +47,7 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
     RowIdOrdering() {
       this(true);
     }
-    
+
     RowIdOrdering(boolean ascending) {
       this.ascending = ascending;
     }
@@ -57,7 +62,7 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
       if (row2 == null) {
         return ascending ? BeeConst.COMPARE_MORE : BeeConst.COMPARE_LESS;
       }
-      
+
       if (ascending) {
         return Longs.compare(row1.getId(), row2.getId());
       } else {
@@ -65,7 +70,7 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
       }
     }
   }
-  
+
   protected class RowOrdering implements Comparator<RowType> {
     private List<Integer> indexes = Lists.newArrayList();
     private List<Boolean> ascending = Lists.newArrayList();
@@ -87,7 +92,7 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
         }
       }
     }
-    
+
     public int compare(RowType row1, RowType row2) {
       if (row1 == row2) {
         return BeeConst.COMPARE_EQUAL;
@@ -471,7 +476,7 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
   public int[] getSortedRows(int... colIndexes) {
     Assert.notNull(colIndexes);
     Assert.parameterCount(colIndexes.length, 1);
-    
+
     List<Pair<Integer, Boolean>> sortInfo = Lists.newArrayList();
     for (int i = 0; i < colIndexes.length; i++) {
       sortInfo.add(new Pair<Integer, Boolean>(colIndexes[i], true));
@@ -498,7 +503,7 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
     Collections.sort(rowIndexes, new IndexOrdering(new RowOrdering(sortInfo)));
     return Ints.toArray(rowIndexes);
   }
-  
+
   public String getString(int rowIndex, int colIndex) {
     return getRow(rowIndex).getString(colIndex);
   }
@@ -723,7 +728,7 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
   public void sort(int... colIndexes) {
     Assert.notNull(colIndexes);
     Assert.parameterCount(colIndexes.length, 1);
-    
+
     List<Pair<Integer, Boolean>> sortInfo = Lists.newArrayList();
     for (int i = 0; i < colIndexes.length; i++) {
       sortInfo.add(new Pair<Integer, Boolean>(colIndexes[i], true));
@@ -732,7 +737,7 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
   }
 
   public abstract void sort(List<Pair<Integer, Boolean>> sortInfo);
-  
+
   public abstract void sortByRowId(boolean ascending);
 
   public String toJson() {

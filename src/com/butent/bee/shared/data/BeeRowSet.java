@@ -16,7 +16,16 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.logging.Logger;
 
+/**
+ * Extends {@code RowList} class and enables using row set objects which are chunks of data put in
+ * columns and rows.
+ */
+
 public class BeeRowSet extends RowList<BeeRow, BeeColumn> implements BeeSerializable {
+
+  /**
+   * Contains a list of items for serialization.
+   */
 
   private enum SerializationMembers {
     VIEW, COLUMNS, ROWS
@@ -55,7 +64,7 @@ public class BeeRowSet extends RowList<BeeRow, BeeColumn> implements BeeSerializ
     this(viewName, columns);
     setRows(new ListSequence<BeeRow>(rows));
   }
-  
+
   private BeeRowSet(ListSequence<BeeRow> rows) {
     super(rows);
   }

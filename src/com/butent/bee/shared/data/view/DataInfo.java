@@ -6,6 +6,10 @@ import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
+/**
+ * Enables to get main information about data objects, like row count, ID column etc.
+ */
+
 public class DataInfo implements BeeSerializable, Comparable<DataInfo> {
   public static DataInfo restore(String s) {
     Assert.notEmpty(s);
@@ -54,7 +58,7 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo> {
     }
     return BeeUtils.same(getName(), ((DataInfo) obj).getName());
   }
-  
+
   public String getIdColumn() {
     return idColumn;
   }

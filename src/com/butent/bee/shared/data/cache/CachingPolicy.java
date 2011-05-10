@@ -1,8 +1,12 @@
 package com.butent.bee.shared.data.cache;
 
+/**
+ * Contains a list of possible read and write settings.
+ */
+
 public enum CachingPolicy {
   NONE(false, false), READ(true, false), WRITE(false, true), FULL(true, true);
-  
+
   private boolean read;
   private boolean write;
 

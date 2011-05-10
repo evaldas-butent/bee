@@ -1,5 +1,9 @@
 package com.butent.bee.shared.data;
 
+/**
+ * Handles data warnings, containing their reasons and messages.
+ */
+
 public class DataWarning {
   private String reason;
   private String message;

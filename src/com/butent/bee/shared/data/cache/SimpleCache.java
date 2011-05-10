@@ -15,6 +15,11 @@ import com.butent.bee.shared.utils.PropertyUtils;
 import java.util.LinkedList;
 import java.util.List;
 
+/**
+ * Enables to store frequently used data into memory, contains usage attributes like hit count or
+ * last hit.
+ */
+
 public class SimpleCache<K, V> implements HasInfo {
   private final LinkedList<K> keys = Lists.newLinkedList();
   private final LinkedList<V> values = Lists.newLinkedList();
@@ -133,7 +138,7 @@ public class SimpleCache<K, V> implements HasInfo {
   public boolean isEmpty() {
     return getSize() <= 0;
   }
-  
+
   public boolean isFull() {
     if (maxSize > 0) {
       return getSize() >= maxSize;
@@ -287,7 +292,7 @@ public class SimpleCache<K, V> implements HasInfo {
     missCount++;
     lastMiss = currentTime();
   }
-  
+
   private String transformTime(long time) {
     if (time <= 0) {
       return BeeConst.STRING_MINUS;

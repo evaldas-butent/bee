@@ -10,6 +10,11 @@ import com.butent.bee.shared.utils.Codec;
 
 import java.util.List;
 
+/**
+ * Is an abstract class for all specific filter applying classes, determines which type of filter to
+ * apply.
+ */
+
 public abstract class Filter implements BeeSerializable, Transformable {
 
   public static Filter restore(String s) {

@@ -12,6 +12,10 @@ import com.butent.bee.shared.utils.Property;
 
 import java.util.List;
 
+/**
+ * Enables storing frequently used queries and their results into memory.
+ */
+
 class CachedQuery extends SimpleCache<Integer, Long> {
   static int defaultMaxSize = 0xffff;
   static ReplacementPolicy defaultReplacementPolicy = ReplacementPolicy.LEAST_FREQUENTLY_USED;

@@ -8,13 +8,17 @@ import com.butent.bee.shared.utils.PropertyUtils;
 
 import java.util.List;
 
+/**
+ * Implements {@code IsColumn} interface, gets and sets table column's properties.
+ */
+
 public class TableColumn implements HasInfo, IsColumn {
   private ValueType type;
   private String label;
   private String id;
   private String pattern;
   private CustomProperties properties = null;
-  
+
   public TableColumn(ValueType type) {
     this(type, null, null);
   }
@@ -22,14 +26,14 @@ public class TableColumn implements HasInfo, IsColumn {
   public TableColumn(ValueType type, String label) {
     this(type, label, null);
   }
-  
+
   public TableColumn(ValueType type, String label, String id) {
     this.type = type;
     this.label = label;
     this.id = id;
     this.pattern = null;
   }
-  
+
   public TableColumn clone() {
     TableColumn result = new TableColumn(type, label, id);
     result.setPattern(pattern);

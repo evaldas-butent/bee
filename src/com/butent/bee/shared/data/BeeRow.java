@@ -12,7 +12,16 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 
+/**
+ * Extends {@code StringRow} class, handles core row object's requirements like serialization, id
+ * and value management.
+ */
+
 public class BeeRow extends StringRow implements BeeSerializable {
+
+  /**
+   * Contains a list of parameters for row serialization.
+   */
 
   private enum SerializationMembers {
     ID, VERSION, VALUES, NEWID, SHADOW
@@ -85,7 +94,7 @@ public class BeeRow extends StringRow implements BeeSerializable {
   public BigDecimal getDecimal(int col) {
     return new BigDecimal(getString(col));
   }
-  
+
   public long getNewId() {
     return newId;
   }

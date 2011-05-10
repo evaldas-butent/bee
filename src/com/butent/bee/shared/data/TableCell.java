@@ -9,6 +9,11 @@ import com.butent.bee.shared.data.value.ValueType;
 
 import java.util.Comparator;
 
+/**
+ * Implements {@code IsCell} interface, handles data cell functionality like changing value and
+ * format of it.
+ */
+
 public class TableCell implements IsCell {
 
   public static Comparator<TableCell> getComparator() {
@@ -63,7 +68,7 @@ public class TableCell implements IsCell {
     this.formattedValue = formattedValue;
     this.properties = properties;
   }
-  
+
   public void clearFormattedValue() {
     setFormattedValue(null);
   }
@@ -138,7 +143,7 @@ public class TableCell implements IsCell {
     this.value = value;
     this.formattedValue = formattedValue;
   }
-  
+
   @Override
   public String toString() {
     return value.toString();

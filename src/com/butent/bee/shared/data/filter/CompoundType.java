@@ -2,6 +2,10 @@ package com.butent.bee.shared.data.filter;
 
 import com.butent.bee.shared.utils.BeeUtils;
 
+/**
+ * Contains a list of possible constructors for complex filter expressions (AND, OR, NOT).
+ */
+
 public enum CompoundType {
     AND(" AND "),
     OR(" OR "),

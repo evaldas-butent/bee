@@ -8,6 +8,10 @@ import com.butent.bee.shared.utils.Codec;
 
 import java.util.List;
 
+/**
+ * Implements a filter which applies equality satisfying conditions to a set of data.
+ */
+
 public class NegationFilter extends Filter {
 
   private Filter subFilter;

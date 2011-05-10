@@ -20,6 +20,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * Enables operations within cache, adding and removing cached objects.
+ */
+
 public class CacheManager {
 
   private static class Entry implements HasExtendedInfo {

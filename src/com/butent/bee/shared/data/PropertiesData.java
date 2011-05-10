@@ -6,15 +6,19 @@ import com.butent.bee.shared.utils.Property;
 
 import java.util.List;
 
+/**
+ * Enables creating, containing and cloning properties of a row list.
+ */
+
 public class PropertiesData extends RowList<StringRow, TableColumn> {
-  
+
   private PropertiesData() {
     super();
   }
 
   public PropertiesData(List<Property> data, String... columnLabels) {
     super();
-    
+
     int pc = (columnLabels == null) ? 0 : columnLabels.length;
     String label;
     for (int i = 0; i < Property.HEADER_COUNT; i++) {

@@ -7,6 +7,11 @@ import com.butent.bee.shared.Pair;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * Is an abstract class for table structure implementing classes which are realized through row list
+ * principle.
+ */
+
 public abstract class RowList<RowType extends IsRow, ColType extends IsColumn> extends
     AbstractTable<RowType, ColType> {
   private ListSequence<RowType> rows;

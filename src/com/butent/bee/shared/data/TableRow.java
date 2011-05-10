@@ -6,6 +6,10 @@ import com.butent.bee.shared.Assert;
 
 import java.util.List;
 
+/**
+ * Extends {@code AbstractRow} class, contains it's information in object tree structure.
+ */
+
 public class TableRow extends AbstractRow {
   private List<IsCell> cells = Lists.newArrayList();
 
@@ -45,7 +49,7 @@ public class TableRow extends AbstractRow {
 
   @Override
   public int getNumberOfCells() {
-    return cells.size(); 
+    return cells.size();
   }
 
   @Override
@@ -70,7 +74,7 @@ public class TableRow extends AbstractRow {
   public void setCells(List<IsCell> cells) {
     this.cells = cells;
   }
-  
+
   @Override
   protected void assertIndex(int index) {
     Assert.isIndex(cells, index);

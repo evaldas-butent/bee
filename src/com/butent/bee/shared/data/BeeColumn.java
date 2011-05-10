@@ -13,7 +13,16 @@ import com.butent.bee.shared.utils.PropertyUtils;
 import java.util.List;
 import java.util.logging.Logger;
 
+/**
+ * Extends {@code TableColumn} class, handles core column object's requirements like serialization,
+ * id and parameters management.
+ */
+
 public class BeeColumn extends TableColumn implements BeeSerializable, Transformable {
+
+  /**
+   * Contains a list of parameters for column serialization.
+   */
 
   private enum SerializationMembers {
     ID, NAME, LABEL, SQL_TYPE, VALUE_TYPE, PRECISION, SCALE, ISNULL
@@ -70,7 +79,7 @@ public class BeeColumn extends TableColumn implements BeeSerializable, Transform
   public BeeColumn(ValueType type, String label) {
     this(type, label, label);
   }
-  
+
   public BeeColumn(ValueType type, String label, String id) {
     super(type, label, id);
     setName(BeeUtils.ifString(label, id));

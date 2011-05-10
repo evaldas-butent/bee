@@ -11,9 +11,14 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
+/**
+ * Is an implementation of {@code AbstractTable} abstract class, realizes table structure through
+ * string matrix principle.
+ */
+
 public class StringMatrix<ColType extends IsColumn> extends AbstractTable<StringRow, ColType> {
   private ArraySequence<StringRow> rows = null;
-  
+
   public StringMatrix(String[][] data, String... columnLabels) {
     super(columnLabels);
     rows = new ArraySequence<StringRow>(new StringRow[data.length]);
@@ -26,7 +31,7 @@ public class StringMatrix<ColType extends IsColumn> extends AbstractTable<String
     super();
     this.rows = new ArraySequence<StringRow>(new StringRow[0]);
   }
-  
+
   protected StringMatrix(ColType... columns) {
     super(columns);
   }
@@ -39,7 +44,7 @@ public class StringMatrix<ColType extends IsColumn> extends AbstractTable<String
     super();
     this.rows = rows;
   }
-  
+
   @Override
   public StringMatrix<ColType> clone() {
     StringMatrix<ColType> result = new StringMatrix<ColType>(rows);
@@ -51,7 +56,7 @@ public class StringMatrix<ColType extends IsColumn> extends AbstractTable<String
   public IsTable<StringRow, ColType> create() {
     return new StringMatrix<ColType>();
   }
-  
+
   @SuppressWarnings("unchecked")
   @Override
   public ColType createColumn(ValueType type, String label, String id) {
@@ -102,12 +107,12 @@ public class StringMatrix<ColType extends IsColumn> extends AbstractTable<String
   public void sort(List<Pair<Integer, Boolean>> sortInfo) {
     Assert.notNull(sortInfo);
     Assert.isTrue(sortInfo.size() >= 1);
-    
+
     if (getNumberOfRows() > 1) {
       sortRows(new RowOrdering(sortInfo));
     }
   }
-  
+
   @Override
   public void sortByRowId(boolean ascending) {
     if (getNumberOfRows() > 1) {
@@ -134,7 +139,7 @@ public class StringMatrix<ColType extends IsColumn> extends AbstractTable<String
   protected void setRows(ArraySequence<StringRow> rows) {
     this.rows = rows;
   }
-  
+
   private void sortRows(Comparator<StringRow> comparator) {
     Pair<StringRow[], Integer> pair = getRows().getArray(new StringRow[0]);
     int len = pair.getB();
@@ -142,7 +147,7 @@ public class StringMatrix<ColType extends IsColumn> extends AbstractTable<String
     StringRow[] arr;
     if (len == pair.getA().length) {
       arr = pair.getA();
-    } else {  
+    } else {
       arr = new StringRow[len];
       System.arraycopy(pair.getA(), 0, arr, 0, len);
     }

@@ -9,6 +9,10 @@ import com.butent.bee.shared.utils.Codec;
 
 import java.util.List;
 
+/**
+ * Implements a filter which checks for empty values in a specified column.
+ */
+
 public class ColumnIsEmptyFilter extends Filter {
 
   private String column;

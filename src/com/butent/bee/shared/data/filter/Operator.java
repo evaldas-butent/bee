@@ -2,6 +2,10 @@ package com.butent.bee.shared.data.filter;
 
 import com.butent.bee.shared.utils.BeeUtils;
 
+/**
+ * Contains a list of possible comparison operators, like equals, more, less, like, in, is.
+ */
+
 public enum Operator {
   EQ("="),
   NE("!="),
@@ -15,11 +19,11 @@ public enum Operator {
 
   public static Operator detectOperator(String expr) {
     Operator op = null;
-  
+
     if (!BeeUtils.isEmpty(expr)) {
       for (Operator operator : Operator.values()) {
         String s = operator.toTextString();
-  
+
         if (!BeeUtils.isEmpty(s)) {
           if (expr.startsWith(s) && (op == null || s.length() > op.toTextString().length())) {
             op = operator;

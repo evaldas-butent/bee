@@ -11,6 +11,10 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
 
+/**
+ * Implements sorting functionality in data objects.
+ */
+
 public class Order implements BeeSerializable, Transformable {
 
   public class Column implements Transformable {
@@ -61,7 +65,7 @@ public class Order implements BeeSerializable, Transformable {
         return BeeUtils.transform(label) + DESC;
       }
     }
-    
+
     private boolean is(String id) {
       return BeeUtils.same(this.label, id);
     }
@@ -91,11 +95,11 @@ public class Order implements BeeSerializable, Transformable {
     }
     columns.add(new Column(label.trim(), ascending));
   }
-  
+
   public void clear() {
     columns.clear();
   }
-  
+
   public void deserialize(String s) {
     if (columns.size() > 0) {
       columns.clear();
@@ -123,7 +127,7 @@ public class Order implements BeeSerializable, Transformable {
   public boolean equals(Object obj) {
     if (this == obj) {
       return true;
-    } 
+    }
     if (!(obj instanceof Order)) {
       return false;
     }
@@ -136,7 +140,7 @@ public class Order implements BeeSerializable, Transformable {
 
   public int getIndex(String label) {
     Assert.notNull(label);
-    
+
     for (int i = 0; i < getSize(); i++) {
       if (columns.get(i).is(label)) {
         return i;
@@ -144,11 +148,11 @@ public class Order implements BeeSerializable, Transformable {
     }
     return BeeConst.UNDEF;
   }
-  
+
   public int getSize() {
     return columns.size();
   }
-  
+
   @Override
   public int hashCode() {
     return columns.hashCode();
@@ -156,10 +160,10 @@ public class Order implements BeeSerializable, Transformable {
 
   public boolean isAscending(String label) {
     Assert.notNull(label);
-    
+
     for (Column col : columns) {
       if (col.is(label)) {
-        return col.isAscending(); 
+        return col.isAscending();
       }
     }
     return false;
@@ -176,7 +180,7 @@ public class Order implements BeeSerializable, Transformable {
       return false;
     }
   }
-  
+
   public String serialize() {
     StringBuilder sb = new StringBuilder();
     for (Column col : columns) {
@@ -194,12 +198,12 @@ public class Order implements BeeSerializable, Transformable {
     Assert.notNull(col);
     col.setAscending(ascending);
   }
-  
+
   @Override
   public String toString() {
     return serialize();
   }
-  
+
   public String transform() {
     return serialize();
   }
