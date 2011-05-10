@@ -1,5 +1,9 @@
 package com.butent.bee.shared.exceptions;
 
+/**
+ * Extends {@code BeeRuntimeException} class and is thrown when a specified key is not found.
+ */
+
 @SuppressWarnings("serial")
 public class KeyNotFoundException extends BeeRuntimeException {
   private Object key = null;

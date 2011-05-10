@@ -13,6 +13,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
+/**
+ * Builds and loads user interface components from data source descriptions.
+ */
+
 public abstract class UiLoader {
 
   protected class UiRow implements Comparable<UiRow> {

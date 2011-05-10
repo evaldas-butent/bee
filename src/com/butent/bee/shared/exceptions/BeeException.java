@@ -1,5 +1,9 @@
 package com.butent.bee.shared.exceptions;
 
+/**
+ * Enables serialization of exception messages.
+ */
+
 public class BeeException extends Exception {
   private static final long serialVersionUID = 1L;
 

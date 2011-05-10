@@ -2,6 +2,10 @@ package com.butent.bee.shared.ui;
 
 import com.butent.bee.shared.Assert;
 
+/**
+ * Enables to dynamically create button user interface components.
+ */
+
 public class UiButton extends UiComponent {
 
   @Override

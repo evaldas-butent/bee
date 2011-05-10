@@ -4,6 +4,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 
+/**
+ * Enables using tree data structures in the system.
+ */
+
 public class GenericTree<T> {
   private static final int indent = 2;
 

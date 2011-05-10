@@ -4,6 +4,10 @@ import com.butent.bee.shared.BeeType;
 
 import java.util.Comparator;
 
+/**
+ * Enables row comparison for various data types.
+ */
+
 public class RowComparator implements Comparator<Object[]> {
   private int cnt = 0;
 
@@ -41,7 +45,7 @@ public class RowComparator implements Comparator<Object[]> {
       this.asc[0] = !up;
     }
 
-    this.types = new BeeType[]{tp};
+    this.types = new BeeType[] {tp};
   }
 
   public RowComparator(int col, BeeType tp) {
@@ -49,19 +53,19 @@ public class RowComparator implements Comparator<Object[]> {
   }
 
   public RowComparator(int[] col) {
-    this(col, new boolean[]{true}, new BeeType[]{BeeType.UNKNOWN});
+    this(col, new boolean[] {true}, new BeeType[] {BeeType.UNKNOWN});
   }
 
   public RowComparator(int[] col, boolean up) {
-    this(col, new boolean[]{up}, new BeeType[]{BeeType.UNKNOWN});
+    this(col, new boolean[] {up}, new BeeType[] {BeeType.UNKNOWN});
   }
 
   public RowComparator(int[] col, boolean up, BeeType[] tp) {
-    this(col, new boolean[]{up}, tp);
+    this(col, new boolean[] {up}, tp);
   }
 
   public RowComparator(int[] col, boolean[] up, BeeType tp) {
-    this(col, up, new BeeType[]{tp});
+    this(col, up, new BeeType[] {tp});
   }
 
   public RowComparator(int[] col, boolean[] up, BeeType[] tp) {
@@ -101,11 +105,11 @@ public class RowComparator implements Comparator<Object[]> {
   }
 
   public RowComparator(int[] col, BeeType tp) {
-    this(col, new boolean[]{true}, new BeeType[]{tp});
+    this(col, new boolean[] {true}, new BeeType[] {tp});
   }
 
   public RowComparator(int[] col, BeeType tp[]) {
-    this(col, new boolean[]{true}, tp);
+    this(col, new boolean[] {true}, tp);
   }
 
   public int compare(Object[] o1, Object[] o2) {

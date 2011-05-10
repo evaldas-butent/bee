@@ -10,6 +10,10 @@ import com.butent.bee.shared.utils.Codec;
 import java.util.Map;
 import java.util.logging.Logger;
 
+/**
+ * Implementation of a grid user interface component.
+ */
+
 public class BeeGrid implements BeeSerializable {
 
   private static Logger logger = Logger.getLogger(BeeGrid.class.getName());
@@ -20,13 +24,25 @@ public class BeeGrid implements BeeSerializable {
     return grid;
   }
 
+  /**
+   * Contains a list of column parameters.
+   */
+
   private enum ColumnMembers {
     TYPE, NAME, CAPTION, READONLY, WIDTH, SOURCE, RELSOURCE, RELATION, EXPRESSION
   }
 
+  /**
+   * Contains a list of grid parameters.
+   */
+
   private enum GridMembers {
     NAME, VIEW, CAPTION, READONLY, COLUMNS
   }
+
+  /**
+   * Contains a list of available column types in the grid.
+   */
 
   public enum ColType {
     DATA("BeeDataColumn"),

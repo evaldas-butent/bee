@@ -1,5 +1,10 @@
 package com.butent.bee.shared.exceptions;
 
+/**
+ * Extends {@code BeeRuntimeException} class and is thrown when an incorrect number of parameters is
+ * given to a method.
+ */
+
 @SuppressWarnings("serial")
 public class ArgumentCountException extends BeeRuntimeException {
 

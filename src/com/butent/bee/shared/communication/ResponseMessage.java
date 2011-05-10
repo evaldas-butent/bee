@@ -1,8 +1,8 @@
 package com.butent.bee.shared.communication;
 
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.DateTime;
 import com.butent.bee.shared.BeeSerializable;
+import com.butent.bee.shared.DateTime;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Transformable;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -10,6 +10,11 @@ import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.LogUtils;
 
 import java.util.logging.Level;
+
+/**
+ * Manages response message object with it's date, level and message parameters and methods for
+ * getting and setting these parameters as well as serialization methods.
+ */
 
 public class ResponseMessage implements BeeSerializable, Transformable {
   private DateTime date = null;
@@ -37,7 +42,7 @@ public class ResponseMessage implements BeeSerializable, Transformable {
   public ResponseMessage(String message) {
     this(null, null, message);
   }
-  
+
   public ResponseMessage(String source, boolean serial) {
     if (serial) {
       deserialize(source);
@@ -45,25 +50,25 @@ public class ResponseMessage implements BeeSerializable, Transformable {
       this.message = source;
     }
   }
-  
+
   public void deserialize(String s) {
     Assert.notEmpty(s);
-    
+
     String src = Codec.decodeBase64(s);
 
     Pair<Integer, Integer> scan;
     int len, start = 0;
-    
+
     for (int i = 0; i < 3; i++) {
       scan = Codec.deserializeLength(src, start);
       len = scan.getA();
       start += scan.getB();
-      
+
       if (len <= 0) {
         continue;
       }
       String v = src.substring(start, start + len);
-      
+
       switch (i) {
         case 0:
           setDate(new DateTime(Long.parseLong(v)));
@@ -77,7 +82,7 @@ public class ResponseMessage implements BeeSerializable, Transformable {
         default:
           Assert.untouchable();
       }
-      
+
       start += len;
     }
   }
@@ -96,11 +101,11 @@ public class ResponseMessage implements BeeSerializable, Transformable {
 
   public String serialize() {
     StringBuilder sb = new StringBuilder();
-    
+
     Codec.serializeWithLength(sb, date);
     Codec.serializeWithLength(sb, LogUtils.transformLevel(level));
     Codec.serializeWithLength(sb, message);
-    
+
     return Codec.encodeBase64(sb.toString());
   }
 

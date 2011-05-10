@@ -15,7 +15,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
+/**
+ * Creates and manages instances of user interface components with specified parameters.
+ */
+
 public abstract class UiComponent implements HasId, BeeSerializable {
+
+  /**
+   * Contains a list of component's parts going through serialization.
+   */
 
   private enum SerializationMembers {
     ID, CAPTION, PROPERTIES, CHILDS

@@ -5,6 +5,11 @@ import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
+/**
+ * Handles menu entries of the system, operates with their parameters( service, text, separator
+ * visibility etc).
+ */
+
 public class MenuEntry implements BeeSerializable {
   private String id = null;
   private String parent = null;

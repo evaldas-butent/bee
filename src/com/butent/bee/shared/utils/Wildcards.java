@@ -11,6 +11,10 @@ import java.util.Stack;
  * Used for forming search patterns.
  */
 public class Wildcards {
+  /**
+   * Handles instances of wildcard patterns.
+   */
+
   public static class Pattern {
     private static final char CHAR_EXACT = '=';
 
@@ -147,6 +151,10 @@ public class Wildcards {
     }
   }
 
+  /**
+   * Manages default wildcard pattern.
+   */
+
   private static class DefaultPattern extends Pattern {
     private DefaultPattern(String expr) {
       this(expr, defaultCaseSensitivity);
@@ -157,6 +165,10 @@ public class Wildcards {
     }
   }
 
+  /**
+   * Enables using file system type wildcard pattern.
+   */
+
   private static class FsPattern extends Pattern {
     private FsPattern(String expr) {
       this(expr, fsCaseSensitivity);
@@ -166,6 +178,10 @@ public class Wildcards {
       super(expr, FS_ANY, FS_ONE, sensitive);
     }
   }
+
+  /**
+   * Enables using sql type wildcard pattern.
+   */
 
   private static class SqlPattern extends Pattern {
     private SqlPattern(String expr) {
@@ -471,7 +487,7 @@ public class Wildcards {
             }
             int repeat = indexOfContext(sensitive, input, inpIdx + 1, tokens[tokIdx]);
             if (repeat >= 0) {
-              backtrack.push(new int[]{tokIdx, repeat});
+              backtrack.push(new int[] {tokIdx, repeat});
             }
           } else {
             if (!isContext(sensitive, input, inpIdx, tokens[tokIdx])) {

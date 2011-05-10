@@ -2,6 +2,10 @@ package com.butent.bee.shared.ui;
 
 import com.butent.bee.shared.Assert;
 
+/**
+ * Enables to dynamically create checkbox user interface components.
+ */
+
 public class UiCheckBox extends UiComponent {
 
   @Override

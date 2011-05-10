@@ -26,6 +26,10 @@ import java.util.Set;
 
 public class CacheManager {
 
+  /**
+   * Handles single cache entry, contains it's attributes and methods for changing them.
+   */
+
   private static class Entry implements HasExtendedInfo {
     private final String viewName;
     private final List<BeeColumn> columns;

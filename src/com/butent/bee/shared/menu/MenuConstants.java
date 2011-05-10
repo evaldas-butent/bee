@@ -5,7 +5,16 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Comparator;
 
+/**
+ * Contains list of constants for various types of menus and checks whether a given menu object fits
+ * certain criteria (for example {@code isRootLevel} or {@code isValidLayout}.
+ */
+
 public class MenuConstants {
+
+  /**
+   * Compares two menu entries.
+   */
   private static class MenuComparator implements Comparator<MenuEntry> {
     public int compare(MenuEntry m1, MenuEntry m2) {
       int z = BeeUtils.compare(m1.getParent(), m2.getParent());
@@ -31,10 +40,10 @@ public class MenuConstants {
 
   public static final String LAYOUT_MENU_HOR = "menu horizontal";
   public static final String LAYOUT_MENU_VERT = "menu vertical";
-  
+
   public static final String LAYOUT_STACK = "stack panel";
   public static final String LAYOUT_TAB = "tab panel";
- 
+
   public static final String LAYOUT_TREE = "simple tree";
   public static final String LAYOUT_CELL_TREE = "cell tree";
   public static final String LAYOUT_CELL_BROWSER = "cell browser";
@@ -86,7 +95,7 @@ public class MenuConstants {
   public static final String varMenuLayout(int idx) {
     return "menu_layout_" + idx;
   }
-  
+
   private MenuConstants() {
   }
 }

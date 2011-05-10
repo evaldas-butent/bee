@@ -6,6 +6,10 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Contains utility functions for operations with menus, for example {@code getChildren}.
+ */
+
 public class MenuUtils {
   public static List<MenuEntry> getChildren(List<MenuEntry> entries, String id,
       boolean isOrdered, int limit) {
@@ -41,7 +45,7 @@ public class MenuUtils {
       return entries.subList(0, limit);
     }
   }
-  
+
   private MenuUtils() {
   }
 }

@@ -2,6 +2,10 @@ package com.butent.bee.shared.ui;
 
 import com.butent.bee.shared.Assert;
 
+/**
+ * Enables to dynamically create horizontal layout interface components.
+ */
+
 public class UiHorizontalLayout extends UiComponent {
 
   @Override

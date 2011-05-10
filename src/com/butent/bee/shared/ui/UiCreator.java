@@ -1,5 +1,9 @@
 package com.butent.bee.shared.ui;
 
+/**
+ * Requires any user interface creating classes to have all necessary user interface objects.
+ */
+
 public interface UiCreator {
 
   Object createButton(UiButton button);

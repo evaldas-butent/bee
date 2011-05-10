@@ -7,6 +7,10 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.Collection;
 import java.util.logging.Level;
 
+/**
+ * Enables to use bundles of response messages in one object.
+ */
+
 public class ResponseObject {
 
   public static ResponseObject error(Object... err) {

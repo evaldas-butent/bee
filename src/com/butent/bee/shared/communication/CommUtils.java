@@ -5,6 +5,11 @@ import com.butent.bee.shared.Service;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
+/**
+ * Contains utility functions for communication between server and client sides, for example
+ * determining type of message type or encoding.
+ */
+
 public class CommUtils {
   public static final char DEFAULT_INFORMATION_SEPARATOR = '\u001d';
 
@@ -15,8 +20,8 @@ public class CommUtils {
   public static final String OPTION_DEBUG = "debug";
 
   public static final String CONTENT_TYPE_HEADER = "content-type";
-  public static final String CONTENT_LENGTH_HEADER = "content-length";  
-  
+  public static final String CONTENT_LENGTH_HEADER = "content-length";
+
   public static ContentType defaultRequestContentType = ContentType.XML;
   public static ContentType defaultResponseContentType = ContentType.TEXT;
 
@@ -48,7 +53,7 @@ public class CommUtils {
       return "utf-8";
     }
   }
-  
+
   public static String getContent(ContentType type, String data) {
     if (isBinary(type) && BeeUtils.length(data) > 0) {
       return Codec.decodeBase64(data);
@@ -99,7 +104,7 @@ public class CommUtils {
     Assert.notEmpty(name);
     return BeeUtils.startsSame(name, Service.RPC_VAR_SYS_PREFIX);
   }
-  
+
   public static boolean isResource(ContentType ctp) {
     return ctp == ContentType.RESOURCE;
   }
@@ -116,7 +121,7 @@ public class CommUtils {
   public static ContentType normalizeResponse(ContentType ctp) {
     return (ctp == null) ? defaultResponseContentType : ctp;
   }
-  
+
   public static String prepareContent(ContentType type, String data) {
     if (isBinary(type) && BeeUtils.length(data) > 0) {
       return Codec.encodeBase64(data);
@@ -136,7 +141,7 @@ public class CommUtils {
   public static String rpcPartName(int i) {
     return Service.RPC_VAR_PART + i;
   }
-  
+
   private CommUtils() {
   }
 }

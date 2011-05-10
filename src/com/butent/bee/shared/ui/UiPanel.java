@@ -2,6 +2,9 @@ package com.butent.bee.shared.ui;
 
 import com.butent.bee.shared.Assert;
 
+/**
+ * Enables to dynamically create panel user interface components.
+ */
 public class UiPanel extends UiComponent {
 
   @Override
