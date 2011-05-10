@@ -2,6 +2,11 @@ package com.butent.bee.shared;
 
 import java.util.Iterator;
 
+/**
+ * Is an abstract class for sequence implementing classes in the system, describes iterator
+ * operations.
+ */
+
 public abstract class AbstractSequence<T> implements Sequence<T> {
 
   private class SequenceIterator implements Iterator<T> {

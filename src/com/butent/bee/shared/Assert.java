@@ -9,6 +9,10 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.Collection;
 import java.util.Map;
 
+/**
+ * Implements various assertions for given objects, for example {@code isNull, isEven, isTrue} etc.
+ */
+
 public class Assert {
   public static final String ASSERTION_FAILED = "[Assertion failed] - ";
 
@@ -57,7 +61,7 @@ public class Assert {
   public static void isFalse(boolean expression) {
     isFalse(expression, ASSERTION_FAILED + "this expression must be false");
   }
-  
+
   public static void isFalse(boolean expression, String message) {
     if (expression) {
       throw new BeeRuntimeException(message);
@@ -162,7 +166,7 @@ public class Assert {
       throw new BeeRuntimeException(message);
     }
   }
-  
+
   public static void lengthEquals(Object obj, int size) {
     notNull(obj);
     int len = BeeUtils.length(obj);
@@ -273,7 +277,7 @@ public class Assert {
   public static void untouchable(String message) {
     throw new BeeRuntimeException(message);
   }
-  
+
   private Assert() {
   }
 }

@@ -7,6 +7,10 @@ import com.google.gwt.event.dom.client.LoadHandler;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.RootPanel;
 
+/**
+ * Implements group of logos visual component.
+ */
+
 public class LogoGroup {
   final double width;
   final double height;

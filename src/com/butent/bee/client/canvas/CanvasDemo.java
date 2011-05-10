@@ -18,26 +18,30 @@ import com.google.gwt.user.client.Timer;
 
 import com.butent.bee.client.BeeKeeper;
 
+/**
+ * Implements canvas demo, add elements and handlers.
+ */
+
 public class CanvasDemo {
   Canvas canvas;
   Canvas backBuffer;
   LogoGroup logoGroup;
   BallGroup ballGroup;
   Lens lens;
-  
+
   int mouseX, mouseY;
 
   int refreshRate = 25;
   int height = 400;
   int width = 400;
-  
+
   CssColor redrawColor = CssColor.make("rgba(255,255,255,0.6)");
   Context2d context;
   Context2d backBufferContext;
-  
+
   public CanvasDemo() {
   }
-  
+
   public void start() {
     canvas = Canvas.createIfSupported();
     backBuffer = Canvas.createIfSupported();
@@ -52,18 +56,18 @@ public class CanvasDemo {
     canvas.setCoordinateSpaceHeight(height);
     backBuffer.setCoordinateSpaceWidth(width);
     backBuffer.setCoordinateSpaceHeight(height);
-    
+
     BeeKeeper.getUi().updateActivePanel(canvas);
-    
+
     context = canvas.getContext2d();
     backBufferContext = backBuffer.getContext2d();
-    
+
     logoGroup = new LogoGroup(width, height, 15, 160);
     ballGroup = new BallGroup(width, height);
     lens = new Lens(35, 15, width, height, new Vector(320, 150), new Vector(1, 1));
 
     initHandlers();
-    
+
     final Timer timer = new Timer() {
       @Override
       public void run() {
@@ -84,7 +88,7 @@ public class CanvasDemo {
     lens.update();
     lens.draw(backBufferContext, context);
   }
-  
+
   void initHandlers() {
     canvas.addMouseMoveHandler(new MouseMoveHandler() {
       public void onMouseMove(MouseMoveEvent event) {

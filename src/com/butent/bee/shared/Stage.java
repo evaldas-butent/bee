@@ -1,5 +1,9 @@
 package com.butent.bee.shared;
 
+/**
+ * Manages object stages in the system, this can be used for marking, visibility and so on.
+ */
+
 public class Stage implements HasService, HasStage {
   public static final String STAGE_GET_PARAMETERS = "stage_get";
   public static final String STAGE_CONFIRM = "stage_confirm";

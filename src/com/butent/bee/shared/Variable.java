@@ -5,6 +5,10 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Implements operations with variables in the system.
+ */
+
 public class Variable implements HasBooleanValue, HasDoubleValue, HasStringValue, Transformable {
   private String caption = null;
   private BeeType type;
@@ -44,7 +48,7 @@ public class Variable implements HasBooleanValue, HasDoubleValue, HasStringValue
 
   public Variable(String caption, BeeType type, String value, BeeWidget widget, String... items) {
     this(caption, type, value, widget);
-    
+
     if (items != null) {
       this.items = new ArrayList<String>();
       for (int i = 0; i < items.length; i++) {
@@ -60,7 +64,7 @@ public class Variable implements HasBooleanValue, HasDoubleValue, HasStringValue
   public String getCaption() {
     return caption;
   }
-  
+
   public double getDouble() {
     return BeeUtils.toDouble(getValue());
   }
@@ -108,7 +112,7 @@ public class Variable implements HasBooleanValue, HasDoubleValue, HasStringValue
   public void setType(BeeType type) {
     this.type = type;
   }
-  
+
   public void setValue(Boolean value) {
     setValue(BeeUtils.toString(value));
   }

@@ -9,6 +9,10 @@ import com.google.gwt.core.client.GWT;
 
 import java.util.ArrayList;
 
+/**
+ * Implements lens visual component for zooming in.
+ */
+
 public class Lens {
   final int radius;
   final int mag;
@@ -40,7 +44,7 @@ public class Lens {
           b = (int) (y * mag / z + 0.5);
           int dstIdx = (y + radius) * 2 * radius + (x + radius);
           int srcIdx = (b + radius) * 2 * radius + (a + radius);
-          calcLensArray.add(new int[]{dstIdx, srcIdx});
+          calcLensArray.add(new int[] {dstIdx, srcIdx});
         }
       }
     }

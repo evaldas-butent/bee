@@ -2,6 +2,10 @@ package com.butent.bee.shared;
 
 import com.butent.bee.shared.utils.BeeUtils;
 
+/**
+ * Contains service tag descriptions and type identification methods.
+ */
+
 public class Service {
   public static final String RPC_SERVICE_PREFIX = "rpc_";
   public static final String UI_SERVICE_PREFIX = "ui_";

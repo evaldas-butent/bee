@@ -4,6 +4,11 @@ import com.butent.bee.shared.data.value.ValueType;
 
 import java.util.Date;
 
+/**
+ * Implements {@code HasDateValue} interface and enables assertions and transformations for data
+ * types.
+ */
+
 public abstract class AbstractDate implements HasDateValue {
 
   public static HasDateValue fromJava(Date date, ValueType type) {
@@ -27,7 +32,7 @@ public abstract class AbstractDate implements HasDateValue {
     Assert.notNull(type);
     Assert.isTrue(type.equals(ValueType.DATE) || type.equals(ValueType.DATETIME));
   }
-  
+
   public HasDateValue fromDate(JustDate justDate) {
     if (justDate == null) {
       return null;

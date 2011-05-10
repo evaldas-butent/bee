@@ -5,7 +5,7 @@ import com.google.common.collect.Lists;
 import java.util.List;
 
 /**
- * Operations with arrays.
+ * Enables operations with arrays.
  * 
  * @param <T> the object type of array
  */

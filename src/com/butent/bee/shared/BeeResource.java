@@ -5,6 +5,11 @@ import com.butent.bee.shared.communication.ContentType;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
+/**
+ * Enables management of resource files used by the system, mainly serialization and deserialization
+ * of them.
+ */
+
 public class BeeResource implements BeeSerializable {
   private String name = null;
   private String uri = null;
@@ -15,7 +20,7 @@ public class BeeResource implements BeeSerializable {
 
   public BeeResource() {
   }
-  
+
   public BeeResource(String src) {
     deserialize(src);
   }
@@ -27,7 +32,7 @@ public class BeeResource implements BeeSerializable {
   public BeeResource(String uri, String content) {
     this(uri, content, null, false);
   }
-  
+
   public BeeResource(String uri, String content, boolean readOnly) {
     this(uri, content, null, readOnly);
   }
@@ -42,28 +47,29 @@ public class BeeResource implements BeeSerializable {
     this.type = type;
     this.readOnly = readOnly;
   }
-  
+
   /**
-   * Deserializes the provided argument {@code src}, and sets the deserialized
-   * values to the resource.
+   * Deserializes the provided argument {@code src}, and sets the deserialized values to the
+   * resource.
+   * 
    * @param src the String to deserialize
    */
   public void deserialize(String src) {
     Assert.notNull(src);
-    
+
     Pair<Integer, Integer> scan;
     int len, start = 0;
-    
+
     for (int i = 0; i < 5; i++) {
       scan = Codec.deserializeLength(src, start);
       len = scan.getA();
       start += scan.getB();
-      
+
       if (len <= 0) {
         continue;
       }
       String v = src.substring(start, start + len);
-      
+
       switch (i) {
         case 0:
           setName(v);
@@ -81,7 +87,7 @@ public class BeeResource implements BeeSerializable {
           setContent(v);
           break;
       }
-      
+
       start += len;
     }
   }
@@ -107,12 +113,13 @@ public class BeeResource implements BeeSerializable {
   }
 
   /**
-   * Serializes resources {@code (name, uri, type, readOnly, content)} in this
-   * and sequence and returns a serialized String.
+   * Serializes resources {@code (name, uri, type, readOnly, content)} in this and sequence and
+   * returns a serialized String.
+   * 
    * @return a serializes String for deserialization.
    */
   public String serialize() {
-    int[] arr = new int[]{
+    int[] arr = new int[] {
         BeeUtils.length(name), BeeUtils.length(uri),
         BeeUtils.length(BeeUtils.transform(type)),
         BeeUtils.length(BeeUtils.toString(readOnly)),

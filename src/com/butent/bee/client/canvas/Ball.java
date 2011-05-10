@@ -3,6 +3,10 @@ package com.butent.bee.client.canvas;
 import com.google.gwt.canvas.dom.client.Context2d;
 import com.google.gwt.canvas.dom.client.CssColor;
 
+/**
+ * Implements ball visual component.
+ */
+
 public class Ball extends SpringObject {
   public CssColor color;
   public double posZ, velZ, goalZ;
@@ -14,7 +18,7 @@ public class Ball extends SpringObject {
   public Ball(double x, double y, double z, double radius, int r, int g, int b) {
     this(new Vector(x, y), z, radius, CssColor.make(r, g, b));
   }
-  
+
   public Ball(Vector start, double startPosZ, double radius, CssColor color) {
     super(start);
     this.color = color;
@@ -26,7 +30,7 @@ public class Ball extends SpringObject {
     this.startPosZ = startPosZ;
     this.startRadius = radius;
   }
-  
+
   public void draw(Context2d context) {
     context.setFillStyle(color);
     context.beginPath();
@@ -34,10 +38,10 @@ public class Ball extends SpringObject {
     context.closePath();
     context.fill();
   }
-  
+
   public void update() {
     super.update();
-    
+
     Vector dh = Vector.sub(startPos, pos);
     double dist = dh.mag();
     goalZ = dist / 100.0 + 1.0;
@@ -46,7 +50,7 @@ public class Ball extends SpringObject {
     velZ += aZ;
     velZ *= friction;
     posZ += velZ;
-    
+
     radius = startRadius * posZ;
     radius = radius < 1 ? 1 : radius;
   }

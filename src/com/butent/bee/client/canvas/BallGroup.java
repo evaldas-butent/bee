@@ -4,6 +4,10 @@ import com.google.gwt.canvas.dom.client.Context2d;
 
 import com.butent.bee.shared.utils.BeeUtils;
 
+/**
+ * Implements group of balls visual component.
+ */
+
 public class BallGroup {
   final double width;
   final double height;
@@ -13,7 +17,7 @@ public class BallGroup {
     this.width = width;
     this.height = height;
     balls = new Ball[64];
-    
+
     double x = (width - 8 * 20) / 2 + 10;
     double y = (height - 8 * 20) / 2 + 10;
     double radius;
