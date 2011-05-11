@@ -378,7 +378,7 @@ body, select {
 
 .bee-HeaderCellWidthInfo {
   position: absolute;
-  right: 8px;
+  right: 4px;
   top: 2px;
   font-size: small;
   -webkit-transform: rotate(-90deg);

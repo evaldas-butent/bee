@@ -1,9 +1,14 @@
 package com.butent.bee.client.dom;
 
+import com.google.common.base.Splitter;
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.Style;
 import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.user.client.ui.UIObject;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.utils.BeeUtils;
 
 /**
@@ -22,8 +27,12 @@ public class Edges {
 
   public static final String EMPTY_CSS_VALUE = BeeConst.STRING_ZERO;
 
-  private static final String CSS_VALUE_SEPARATOR = BeeConst.STRING_SPACE;
+  private static final char CSS_VALUE_SEPARATOR = BeeConst.CHAR_SPACE;
+
   private static final Unit DEFAULT_UNIT = Unit.PX;
+
+  private static final Splitter CSS_SPLITTER =
+      Splitter.on(CSS_VALUE_SEPARATOR).omitEmptyStrings().trimResults();
 
   public static Edges copyOf(Edges original) {
     if (original == null) {
@@ -36,11 +45,39 @@ public class Edges {
         original.getLeftValue(), original.getLeftUnit());
   }
 
+  public static boolean hasPositiveBottom(Edges edges) {
+    if (edges == null) {
+      return false;
+    }
+    return BeeUtils.isPositive(edges.getBottomValue());
+  }
+
   public static boolean hasPositiveHorizontalValue(Edges edges) {
     if (edges == null) {
       return false;
     }
     return BeeUtils.isPositive(edges.getLeftValue()) || BeeUtils.isPositive(edges.getRightValue());
+  }
+
+  public static boolean hasPositiveLeft(Edges edges) {
+    if (edges == null) {
+      return false;
+    }
+    return BeeUtils.isPositive(edges.getLeftValue());
+  }
+
+  public static boolean hasPositiveRight(Edges edges) {
+    if (edges == null) {
+      return false;
+    }
+    return BeeUtils.isPositive(edges.getRightValue());
+  }
+  
+  public static boolean hasPositiveTop(Edges edges) {
+    if (edges == null) {
+      return false;
+    }
+    return BeeUtils.isPositive(edges.getTopValue());
   }
 
   public static boolean hasPositiveVerticalValue(Edges edges) {
@@ -124,6 +161,39 @@ public class Edges {
     this.bottomUnit = bottomUnit;
     this.leftValue = leftValue;
     this.leftUnit = leftUnit;
+  }
+
+  public Edges(Element element, String propertyName) {
+    this();
+    Assert.notNull(element);
+    setFromStyleProperty(element.getStyle(), propertyName);
+  }
+
+  public Edges(Style style, String propertyName) {
+    this();
+    setFromStyleProperty(style, propertyName);
+  }
+
+  public Edges(UIObject uiObject, String propertyName) {
+    this();
+    Assert.notNull(uiObject);
+    setFromStyleProperty(uiObject.getElement().getStyle(), propertyName);
+  }
+
+  public void applyTo(Element el, String propertyName) {
+    Assert.notNull(el);
+    applyTo(el.getStyle(), propertyName);
+  }
+
+  public void applyTo(Style st, String propertyName) {
+    Assert.notNull(st);
+    Assert.notEmpty(propertyName);
+    st.setProperty(propertyName, getCssValue());
+  }
+
+  public void applyTo(UIObject obj, String propertyName) {
+    Assert.notNull(obj);
+    applyTo(obj.getElement(), propertyName);
   }
 
   public void clearBottom() {
@@ -273,6 +343,11 @@ public class Edges {
     setBottomUnit(unit);
   }
 
+  public void setBottom(Edges edges) {
+    Assert.notNull(edges);
+    setBottom(edges.getBottomValue(), edges.getBottomUnit());
+  }
+
   public void setBottomUnit(Unit bottomUnit) {
     this.bottomUnit = bottomUnit;
   }
@@ -317,6 +392,11 @@ public class Edges {
     setLeftUnit(unit);
   }
 
+  public void setLeft(Edges edges) {
+    Assert.notNull(edges);
+    setLeft(edges.getLeftValue(), edges.getLeftUnit());
+  }
+
   public void setLeftUnit(Unit leftUnit) {
     this.leftUnit = leftUnit;
   }
@@ -338,6 +418,11 @@ public class Edges {
     setRightUnit(unit);
   }
 
+  public void setRight(Edges edges) {
+    Assert.notNull(edges);
+    setRight(edges.getRightValue(), edges.getRightUnit());
+  }
+
   public void setRightUnit(Unit rightUnit) {
     this.rightUnit = rightUnit;
   }
@@ -354,6 +439,11 @@ public class Edges {
     setTop(value, DEFAULT_UNIT);
   }
 
+  public void setTop(Edges edges) {
+    Assert.notNull(edges);
+    setTop(edges.getTopValue(), edges.getTopUnit());
+  }
+
   public void setTop(Double value, Unit unit) {
     setTopValue(value);
     setTopUnit(unit);
@@ -365,5 +455,66 @@ public class Edges {
 
   public void setTopValue(Double topValue) {
     this.topValue = topValue;
+  }
+
+  private void setFromStyleProperty(Style style, String propertyName) {
+    Assert.notNull(style);
+    Assert.notEmpty(propertyName);
+
+    String value = style.getProperty(propertyName);
+    if (BeeUtils.isEmpty(value)) {
+      return;
+    }
+
+    if (BeeUtils.same(value, EMPTY_CSS_VALUE)) {
+      setTop(0);
+      setRight(0);
+      setBottom(0);
+      setLeft(0);
+      return;
+    }
+
+    int cnt = 0;
+    for (String cssLength : CSS_SPLITTER.split(value)) {
+      Pair<Double, Unit> pair = StyleUtils.parseCssLength(cssLength);
+      Double v = pair.getA();
+      Unit u = pair.getB();
+
+      switch (cnt) {
+        case 0:
+          setTop(v, u);
+          break;
+        case 1:
+          setRight(v, u);
+          break;
+        case 2:
+          setBottom(v, u);
+          break;
+        case 3:
+          setLeft(v, u);
+          break;
+        default:
+          Assert.untouchable(value);
+          return;
+      }
+      cnt++;
+    }
+
+    if (cnt < 4) {
+      switch (cnt) {
+        case 1:
+          setRight(getTopValue(), getTopUnit());
+          setBottom(getTopValue(), getTopUnit());
+          setLeft(getTopValue(), getTopUnit());
+          break;
+        case 2:
+          setBottom(getTopValue(), getTopUnit());
+          setLeft(getRightValue(), getRightUnit());
+          break;
+        case 3:
+          setLeft(getRightValue(), getRightUnit());
+          break;
+      }
+    }
   }
 }
