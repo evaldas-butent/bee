@@ -523,7 +523,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable {
   private RowStyles<IsRow> rowStyles = null;
 
   private SelectionModel<? super IsRow> selectionModel;
-  private final Set<Long> selectedRows = Sets.newHashSet();
+  private final List<Long> selectedRows = Lists.newArrayList();
 
   private final Order sortOrder = new Order();
 
@@ -772,8 +772,15 @@ public class CellGrid extends Widget implements HasId, HasDataTable {
       } else if (cmd.contains("maxh")) {
         msg = "setMaxCellHeight " + xp[0];
         setMaxCellHeight(xp[0]);
-      }
 
+      } else if (cmd.startsWith("zm")) {
+        msg = "setResizerMoveSensitivityMillis " + xp[0];
+        setResizerMoveSensitivityMillis(xp[0]);
+      } else if (cmd.startsWith("zs")) {
+        msg = "setResizerShowSensitivityMillis " + xp[0];
+        setResizerShowSensitivityMillis(xp[0]);
+      }
+      
       if (msg == null) {
         BeeKeeper.getLog().warning("unrecognized command", opt[i]);
       } else {
@@ -1260,6 +1267,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable {
 
     if (EventUtils.isMouseMove(eventType)) {
       if (handleMouseMove(event, targetElement, targetType, rowIdx, col)) {
+        EventUtils.eatEvent(event);
         return;
       }
     } else if (EventUtils.isMouseDown(eventType)) {
@@ -1316,7 +1324,11 @@ public class CellGrid extends Widget implements HasId, HasDataTable {
       if (!isEditing) {
         if (EventUtils.isClick(eventType)) {
           if (EventUtils.hasModifierKey(event)) {
-            selectRow(row, rowValue);
+            if (event.getShiftKey()) {
+              selectRange(row, rowValue);
+            } else {
+              selectRow(row, rowValue);
+            }
             return;
           }
           if (!isCellActive(row, col)) {
@@ -1559,8 +1571,8 @@ public class CellGrid extends Widget implements HasId, HasDataTable {
     Assert.isPositive(size);
 
     int oldRow = getActiveRow();
+    int newRow = BeeConst.UNDEF;
     if (oldRow >= 0 && oldRow < rowData.size()) {
-      int newRow = 0;
       long id = rowData.get(oldRow).getId();
       for (int i = 0; i < size; i++) {
         if (values.get(i).getId() == id) {
@@ -1568,7 +1580,10 @@ public class CellGrid extends Widget implements HasId, HasDataTable {
           break;
         }
       }
-      this.activeRow = newRow;
+    }
+    this.activeRow = newRow;
+    if (newRow == BeeConst.UNDEF) {
+      this.activeColumn = BeeConst.UNDEF; 
     }
     
     if (rowData.size() == size) {
@@ -1689,10 +1704,6 @@ public class CellGrid extends Widget implements HasId, HasDataTable {
         + getPageSize() + ", row count " + getRowCount());
   }
 
-  private void clearRowResized(int row) {
-    getResizedRows().remove(getVisibleRowId(row));
-  }
-
   private <C> void fireEventToCell(Event event, String eventType,
       Element parentElem, IsRow value, CellContext context, Column<IsRow, C> column) {
     Cell<C> cell = column.getCell();
@@ -1736,14 +1747,6 @@ public class CellGrid extends Widget implements HasId, HasDataTable {
 
   private String getCellSelector(String rowIdx, int col) {
     return Selectors.conjunction(getRowSelector(rowIdx), getColumnSelector(col));
-  }
-
-  private CellSize getCellSize(Long rowId, String columnId) {
-    CellSize size = getResizedCells().get(rowId, columnId);
-    if (size == null) {
-      size = new CellSize(getColumnWidth(columnId), getRowHeightById(rowId));
-    }
-    return size;
   }
 
   private int getChildrenHeight() {
@@ -1912,10 +1915,6 @@ public class CellGrid extends Widget implements HasId, HasDataTable {
 
   private int getRowHeight(int row) {
     return getRowHeightById(getVisibleRowId(row));
-  }
-
-  private int getRowHeight(IsRow rowValue) {
-    return getRowHeightById(rowValue.getId());
   }
 
   private int getRowHeight(String rowIdx) {
@@ -2129,7 +2128,8 @@ public class CellGrid extends Widget implements HasId, HasDataTable {
           } else {
             showColumnResizer(element, eventCol);
           }
-           return true;
+          setResizerPosition(x);
+          return true;
         }
       }
 
@@ -2144,6 +2144,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable {
           } else {
             showRowResizer(element, eventRow);
           }
+          setResizerPosition(y);
           return true;
         }
       }
@@ -2160,6 +2161,8 @@ public class CellGrid extends Widget implements HasId, HasDataTable {
             } else {
               resizeHorizontal(x - position);
             }
+            setResizerPosition(x);
+            return true;
           }
           break;
         case VERTICAL:
@@ -2169,6 +2172,8 @@ public class CellGrid extends Widget implements HasId, HasDataTable {
             } else {
               resizeVertical(y - position);
             }
+            setResizerPosition(y);
+            return true;
           }
           break;
         default:
@@ -2181,7 +2186,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable {
       }
     }
 
-    return true;
+    return false;
   }
   
   private boolean hasCellPreview() {
@@ -2278,10 +2283,6 @@ public class CellGrid extends Widget implements HasId, HasDataTable {
 
   private boolean isResizing() {
     return isResizing;
-  }
-
-  private boolean isRowResized(int row) {
-    return getResizedRows().containsKey(getVisibleRowId(row));
   }
 
   private boolean isRowSelected(IsRow rowValue) {
@@ -2452,7 +2453,10 @@ public class CellGrid extends Widget implements HasId, HasDataTable {
 
       String rowIdx = BeeUtils.toString(i);
       long valueId = value.getId();
-      int rowHeight = getRowHeight(value);
+      int rowHeight = getRowHeightById(valueId);
+
+      int cellWidth;
+      int cellHeight;
 
       for (ColumnInfo columnInfo : columns) {
         Column<IsRow, ?> column = columnInfo.getColumn();
@@ -2467,15 +2471,20 @@ public class CellGrid extends Widget implements HasId, HasDataTable {
         column.render(context, value, cellBuilder);
         SafeHtml cellHtml = cellBuilder.toSafeHtml();
         
-        int columnWidth = columnInfo.getColumnWidth();
-        CellSize cellSize = getCellSize(valueId, columnInfo.getColumnId());
-        int cellWidth = cellSize.getWidth();
-        int cellHeight = cellSize.getHeight();
+        extraStyles = null;
         
-        if (cellWidth <= columnWidth && cellHeight <= rowHeight) {
-          extraStyles = null;
+        int columnWidth = columnInfo.getColumnWidth();
+        CellSize cellSize = getResizedCells().get(valueId, columnInfo.getColumnId());
+
+        if (cellSize == null) {
+          cellWidth = columnWidth;
+          cellHeight = rowHeight;
         } else {
-          extraStyles = StyleUtils.buildZIndex(incrementZIndex());
+          cellWidth = cellSize.getWidth();
+          cellHeight = cellSize.getHeight();
+          if (cellWidth > columnWidth || cellHeight > rowHeight) {
+            extraStyles = StyleUtils.buildZIndex(incrementZIndex());
+          }
         }
 
         SafeHtml html = renderCell(rowIdx, col, cellClasses, left, top, cellWidth, cellHeight,
@@ -2684,7 +2693,6 @@ public class CellGrid extends Widget implements HasId, HasDataTable {
     int incr = newWidth - oldWidth;
     if (incr != 0) {
       DomUtils.moveHorizontalBy(resizerId, incr);
-      setResizerPosition(getResizerPosition() + incr);
     }
   }
 
@@ -2717,22 +2725,51 @@ public class CellGrid extends Widget implements HasId, HasDataTable {
     NodeList<Element> nodes;
 
     if (isBodyRow(rowIdx) && Modifiers.isNotEmpty(modifiers)) {
-      setBodyCellHeight(newHeight);
-      for (int i = 0; i < rc; i++) {
-        nodes = getRowElements(i);
-        if (i > 0) {
-          DomUtils.moveVerticalBy(nodes, i * dh);
-        }
-        resizeRowElements(i, nodes, dh);
-        if (isRowResized(i)) {
-          setRowHeight(i, getRowHeight(i) + dh);
-        }
+      int dt = 0;
+      int row = BeeUtils.toInt(rowIdx);
+      
+      int start = 0;
+      int end = rc;
+      boolean updateDefault = false;
+
+      if (modifiers.isCtrlKey()) {
+        updateDefault = true;
+      } else if (modifiers.isShiftKey() && row < rc - 1 || row == 0) {
+        start = row;
+      } else if (modifiers.isAltKey() && row > 0 || row == rc - 1) {
+        end = row + 1;
+      } else {
+        start = row;
+        end = row + 1;
       }
-      nodes = getFooterElements();
-      if (nodes != null) {
-        DomUtils.moveVerticalBy(nodes, rc * dh);
+      
+      for (int i = start; i < rc; i++) {
+        nodes = getRowElements(i);
+        if (dt != 0) {
+          DomUtils.moveVerticalBy(nodes, dt);
+        }
+        if (i >= end) {
+          continue;
+        }
+
+        int rh = getRowHeight(i);
+        resizeRowElements(i, nodes, newHeight - rh);
+        dt += newHeight - rh;
+        if (!updateDefault) {
+          setRowHeight(i, newHeight);
+        }
       }
 
+      if (updateDefault) {
+        setBodyCellHeight(newHeight);
+        getResizedRows().clear();
+      }
+      
+      nodes = getFooterElements();
+      if (nodes != null) {
+        DomUtils.moveVerticalBy(nodes, dt);
+      }
+      
     } else if (isHeaderRow(rowIdx)) {
       DomUtils.resizeVerticalBy(getHeaderElements(), dh);
       for (int i = 0; i < rc; i++) {
@@ -2781,13 +2818,66 @@ public class CellGrid extends Widget implements HasId, HasDataTable {
       return;
     }
 
-    int incr = cellElement.getOffsetTop() - oldTop + newHeight - oldHeight;
+    int newTop = cellElement.getOffsetTop();
+    int incr = newTop - oldTop + newHeight - oldHeight;
     if (incr != 0) {
       DomUtils.moveVerticalBy(resizerId, incr);
-      setResizerPosition(getResizerPosition() + incr);
     }
   }
 
+  private void selectRange(int visibleIndex, IsRow rowValue) {
+    if (rowValue == null) {
+      return;
+    }
+    long rowId = rowValue.getId();
+
+    if (isRowSelected(rowId)) {
+      for (int i = 0; i < getVisibleItemCount(); i++) {
+        IsRow value = getVisibleItem(i);
+        if (isRowSelected(value)) {
+          selectRow(i, value);
+        }
+      }
+      if (getSelectionModel() == null) {
+        selectedRows.clear();
+      }
+
+    } else {
+      int lastSelectedRow = BeeConst.UNDEF;
+      if (!selectedRows.isEmpty()) {
+        int maxIndex = -1;
+        for (int i = 0; i < getVisibleItemCount(); i++) {
+          if (i == visibleIndex) {
+            continue;
+          }
+          int index = selectedRows.indexOf(getVisibleRowId(i));
+          if (index > maxIndex) {
+            maxIndex = index;
+            lastSelectedRow = i;
+          }
+        }
+      }
+      
+      if (lastSelectedRow == BeeConst.UNDEF) {
+        selectRow(visibleIndex, rowValue);
+      } else if (lastSelectedRow < visibleIndex) {
+        for (int i = lastSelectedRow + 1; i <= visibleIndex; i++) {
+          IsRow value = getVisibleItem(i);
+          if (!isRowSelected(value)) {
+            selectRow(i, value);
+          }
+        }
+      } else {
+        for (int i = visibleIndex; i < lastSelectedRow; i++) {
+          IsRow value = getVisibleItem(i);
+          if (!isRowSelected(value)) {
+            selectRow(i, value);
+          }
+        }
+      }
+    }
+  }
+  
   private void selectRow(int visibleIndex, IsRow rowValue) {
     if (rowValue == null) {
       return;
@@ -2940,7 +3030,6 @@ public class CellGrid extends Widget implements HasId, HasDataTable {
     int min = absLeft + Math.min(Math.max(getMinCellWidth(), 0), cellWidth);
     int max = absLeft + Math.max(getMaxCellWidth(), cellWidth);
     setResizerBounds(min, max);
-    setResizerPosition(absLeft + cellWidth);
 
     StyleUtils.unhideDisplay(resizerElement);
     setResizerStatus(ResizerMode.HORIZONTAL);
@@ -2990,7 +3079,6 @@ public class CellGrid extends Widget implements HasId, HasDataTable {
     int min = absTop + Math.min(Math.max(getMinCellHeight(), 0), cellHeight);
     int max = absTop + Math.max(getMaxCellHeight(), cellHeight);
     setResizerBounds(min, max);
-    setResizerPosition(absTop + cellHeight);
     
     StyleUtils.unhideDisplay(resizerElement);
     setResizerStatus(ResizerMode.VERTICAL);

@@ -5,11 +5,9 @@ import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.cellview.client.Header;
 import com.google.gwt.user.cellview.client.TextHeader;
-import com.google.gwt.view.client.MultiSelectionModel;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
-import com.butent.bee.client.data.KeyProvider;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.grid.CellColumn;
 import com.butent.bee.client.grid.ColumnFooter;
@@ -24,7 +22,6 @@ import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
-import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -83,10 +80,7 @@ public class CellGridImpl extends CellGrid implements GridView, SearchView {
       }
     }
 
-    MultiSelectionModel<IsRow> selector = new MultiSelectionModel<IsRow>(new KeyProvider());
-    setSelectionModel(selector);
-
-    setRowCount(rowCount, true);
+    setRowCount(rowCount);
 
     if (rowSet != null) {
       estimateColumnWidths(rowSet.getRows().getList(), Math.min(rowSet.getNumberOfRows(), 3));

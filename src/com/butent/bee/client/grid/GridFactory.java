@@ -7,9 +7,11 @@ import com.google.gwt.cell.client.TextInputCell;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.view.client.MultiSelectionModel;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.data.CachedProvider;
+import com.butent.bee.client.data.KeyProvider;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.grid.model.CachedTableModel;
 import com.butent.bee.client.grid.model.TableModel;
@@ -125,6 +127,9 @@ public class GridFactory {
       }
       grid.addColumn(column, table.getColumnLabel(i));
     }
+    
+    MultiSelectionModel<IsRow> selector = new MultiSelectionModel<IsRow>(new KeyProvider());
+    grid.setSelectionModel(selector);
     
     grid.setRowCount(r, true);
     grid.setRowData(table.getRows().getList());

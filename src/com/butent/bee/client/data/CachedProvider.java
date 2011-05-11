@@ -98,7 +98,6 @@ public class CachedProvider extends Provider {
     
     goTop();
   }
-
   
   public void refreshDisplay() {
     Range range = getRange();
