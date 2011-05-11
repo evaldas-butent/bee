@@ -1,5 +1,10 @@
 package com.butent.bee.client.grid.property;
 
+/**
+ * Extends {@code HeaderPropertyBase} class, handles setting and getting column footer and footer
+ * count.
+ */
+
 public class FooterProperty extends HeaderPropertyBase {
   public static final String NAME = "footer";
 

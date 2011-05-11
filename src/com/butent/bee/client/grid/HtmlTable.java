@@ -30,6 +30,11 @@ import com.butent.bee.shared.HasId;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+/**
+ * Is an abstract class for for HTML table type grids, enables grid attribute management in document
+ * object model.
+ */
+
 public abstract class HtmlTable extends Panel implements HasClickHandlers,
     HasDoubleClickHandlers, HasId {
 
@@ -115,7 +120,7 @@ public abstract class HtmlTable extends Panel implements HasClickHandlers,
     }
 
     public void setWidth(int row, int column, String width) {
-      DOM.setElementProperty(ensureElement(row, column), "width",  width);
+      DOM.setElementProperty(ensureElement(row, column), "width", width);
     }
 
     public void setWordWrap(int row, int column, boolean wrap) {
@@ -266,7 +271,7 @@ public abstract class HtmlTable extends Panel implements HasClickHandlers,
     protected Element getRawElement(int row) {
       return getRow(bodyElem, row);
     }
-    
+
     protected native Element getRow(Element elem, int row)/*-{
       return elem.rows[row];
     }-*/;
@@ -287,13 +292,13 @@ public abstract class HtmlTable extends Panel implements HasClickHandlers,
   private ElementMapperImpl<Widget> widgetMap = new ElementMapperImpl<Widget>();
 
   private String clearText = BeeConst.STRING_EMPTY;
-  
+
   public HtmlTable() {
     tableElem = DOM.createTable();
     bodyElem = DOM.createTBody();
     DOM.appendChild(tableElem, bodyElem);
     setElement(tableElem);
-    
+
     init();
   }
 
@@ -498,7 +503,7 @@ public abstract class HtmlTable extends Panel implements HasClickHandlers,
   public void setCellSpacing(int spacing) {
     TableElement.as(tableElem).setCellSpacing(spacing);
   }
-  
+
   public void setHTML(int row, int column, SafeHtml html) {
     setHTML(row, column, html.asString());
   }
@@ -605,7 +610,7 @@ public abstract class HtmlTable extends Panel implements HasClickHandlers,
     if (td == null) {
       return false;
     }
-  
+
     Element maybeChild = DOM.getFirstChild(td);
     Widget widget = null;
     if (maybeChild != null) {
@@ -649,7 +654,7 @@ public abstract class HtmlTable extends Panel implements HasClickHandlers,
   protected void setCellFormatter(CellFormatter cellFormatter) {
     this.cellFormatter = cellFormatter;
   }
-  
+
   protected void setClearText(String clearText) {
     this.clearText = clearText;
   }

@@ -1,5 +1,10 @@
 package com.butent.bee.client.grid.property;
 
+/**
+ * Extends {@code HeaderPropertyBase} class, handles setting and getting column header and header
+ * count.
+ */
+
 public class HeaderProperty extends HeaderPropertyBase {
   public static final String NAME = "header";
 

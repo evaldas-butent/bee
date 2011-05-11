@@ -6,6 +6,7 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.safehtml.client.SafeHtmlTemplates;
+import com.google.gwt.safehtml.client.SafeHtmlTemplates.Template;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.google.gwt.safehtml.shared.SafeHtmlUtils;
@@ -18,29 +19,37 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.utils.BeeUtils;
 
+/**
+ * Implements header cells rendering and behavior management.
+ */
+
 public class HeaderCell extends AbstractCell<String> {
-  
+
+  /**
+   * Specifies header cell's templates for safeHtml usage.
+   */
+
   interface Template extends SafeHtmlTemplates {
     @Template("<div class=\"bee-HeaderCellCaption\">{0}</div>")
     SafeHtml caption(SafeHtml label);
 
     @Template("<div id=\"{0}\" class=\"{1}\"></div>")
     SafeHtml sortable(String id, String classes);
-    
+
     @Template("<div id=\"{0}\" class=\"{1}\">{2}</div>")
     SafeHtml sorted(String id, String classes, String sortInfo);
-    
+
     @Template("<div class=\"bee-HeaderCellWidthInfo\">{0}</div>")
     SafeHtml widthInfo(int width);
   }
-  
+
   private static final String STYLE_SORT_INFO = "bee-HeaderCellSortInfo";
   private static final String STYLE_SORTABLE = "bee-HeaderCellSortable";
   private static final String STYLE_ASCENDING = "bee-HeaderCellAscending";
   private static final String STYLE_DESCENDING = "bee-HeaderCellDescending";
-  
+
   private static Template template = null;
-  
+
   private final String sortInfoId;
 
   public HeaderCell() {
@@ -50,7 +59,7 @@ public class HeaderCell extends AbstractCell<String> {
     }
     sortInfoId = DomUtils.createUniqueId("sort-info");
   }
-  
+
   @Override
   public void onBrowserEvent(Context context, Element parent, String value, NativeEvent event,
       ValueUpdater<String> valueUpdater) {
@@ -63,7 +72,7 @@ public class HeaderCell extends AbstractCell<String> {
     if (grid == null) {
       return;
     }
-    
+
     if (EventUtils.isClick(event) && EventUtils.isTargetId(event.getEventTarget(), sortInfoId)) {
       EventUtils.eatEvent(event);
       grid.updateOrder(context.getColumn(), event);
@@ -82,15 +91,15 @@ public class HeaderCell extends AbstractCell<String> {
   public void renderHeader(CellContext context, String label, SafeHtmlBuilder sb) {
     if (label != null) {
       sb.append(template.caption(SafeHtmlUtils.fromString(label)));
-    }   
+    }
 
     CellGrid grid = context.getGrid();
     if (grid != null && grid.contains(label)) {
 
       Order sortOrder = grid.getSortOrder();
       int size = (sortOrder == null) ? 0 : sortOrder.getSize();
-      
-      if ((grid.getColumnCount() > 1 || size > 0) && grid.isSortable(label)) { 
+
+      if ((grid.getColumnCount() > 1 || size > 0) && grid.isSortable(label)) {
         int sortIndex = (size > 0) ? sortOrder.getIndex(label) : BeeConst.UNDEF;
         if (sortIndex >= 0) {
           boolean ascending = sortOrder.isAscending(label);
@@ -103,7 +112,7 @@ public class HeaderCell extends AbstractCell<String> {
               StyleUtils.buildClasses(STYLE_SORT_INFO, STYLE_SORTABLE)));
         }
       }
-      
+
       sb.append(template.widthInfo(grid.getColumnWidth(label)));
     }
   }

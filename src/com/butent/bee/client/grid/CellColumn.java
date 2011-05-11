@@ -6,6 +6,11 @@ import com.google.gwt.user.cellview.client.Column;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 
+/**
+ * Is an abstract class for specific type implementing columns, requires them to have methods for
+ * getting label, index and data column.
+ */
+
 public abstract class CellColumn<C> extends Column<IsRow, C> {
   private final int index;
   private final IsColumn dataColumn;
@@ -19,7 +24,7 @@ public abstract class CellColumn<C> extends Column<IsRow, C> {
   public IsColumn getDataColumn() {
     return dataColumn;
   }
-  
+
   public int getIndex() {
     return index;
   }

@@ -3,10 +3,20 @@ package com.butent.bee.client.grid.model;
 import com.butent.bee.client.grid.model.TableModelHelper.Request;
 import com.butent.bee.client.grid.model.TableModelHelper.Response;
 
+/**
+ * Requires all extending classes to have {@code requestRows} method and row count management
+ * implementation.
+ */
+
 public abstract class TableModel {
+
+  /**
+   * Determines necessary methods for callback implementing classes.
+   */
 
   public static interface Callback {
     void onFailure(Throwable caught);
+
     void onRowsReady(Request request, Response response);
   }
 

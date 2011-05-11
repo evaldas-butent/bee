@@ -6,6 +6,10 @@ import com.butent.bee.client.grid.HasTableDefinition;
 import com.butent.bee.client.grid.TableDefinition;
 import com.butent.bee.shared.Assert;
 
+/**
+ * Extends {@code TableBulkRenderer}, draws grids on the screen, manages their dimensions.
+ */
+
 public class GridBulkRenderer extends TableBulkRenderer {
   public GridBulkRenderer(GridTable grid, TableDefinition tableDef) {
     super(grid, tableDef);

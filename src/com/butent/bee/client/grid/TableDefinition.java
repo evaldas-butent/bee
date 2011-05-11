@@ -10,6 +10,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * Generates a set of column definitions for a table and operates with it.
+ */
+
 public class TableDefinition {
   private List<ColumnDefinition> columnDefs;
   private Set<ColumnDefinition> hiddenColumnDefs;
@@ -65,17 +69,17 @@ public class TableDefinition {
   public boolean isColumnVisible(ColumnDefinition colDef) {
     return !hiddenColumnDefs.contains(colDef);
   }
-  
+
   public void moveColumnDef(int srcId, int dstId) {
     Assert.isTrue(srcId != dstId);
     int fr = -1;
     int to = -1;
     int id;
     int n = columnDefs.size();
-    
+
     for (int i = 0; i < n; i++) {
       id = columnDefs.get(i).getColumnId();
-      
+
       if (id == srcId) {
         fr = i;
       } else if (id == dstId) {
@@ -85,11 +89,11 @@ public class TableDefinition {
     Assert.nonNegative(fr);
     Assert.nonNegative(to);
     Assert.isTrue(fr != to);
-    
+
     for (int i = 0; i < n; i++) {
       columnDefs.get(i).setColumnOrder(i);
     }
-    
+
     if (fr < to) {
       for (int i = fr + 1; i <= to; i++) {
         columnDefs.get(i).setColumnOrder(i - 1);
@@ -100,10 +104,10 @@ public class TableDefinition {
       }
     }
     columnDefs.get(fr).setColumnOrder(to);
-    
+
     orderColumnDefs();
   }
-  
+
   public void orderColumnDefs() {
     Collections.sort(columnDefs);
   }

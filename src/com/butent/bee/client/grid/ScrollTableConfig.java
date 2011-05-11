@@ -18,8 +18,8 @@ import com.butent.bee.client.composite.RadioGroup;
 import com.butent.bee.client.composite.SpinnerListener;
 import com.butent.bee.client.composite.ValueSpinner;
 import com.butent.bee.client.dialog.BeePopupPanel;
-import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.event.DndEvent;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.HasAllDndHandlers;
@@ -35,6 +35,11 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Arrays;
+
+/**
+ * Handles scroll table parameters like order or current width and events like drag and drop or
+ * visibility handling.
+ */
 
 public class ScrollTableConfig {
   private class ColumnRef {
@@ -493,6 +498,10 @@ public class ScrollTableConfig {
       }
     }
   }
+
+  /**
+   * Contains a list of tags for grid actions.
+   */
 
   private enum Action {
     APPLY, DISTR_CUR, DISTR_PREF, FILL_CUR, FILL_PREF, CANCEL

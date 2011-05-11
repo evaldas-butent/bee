@@ -3,9 +3,9 @@ package com.butent.bee.client.grid.render;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Element;
-import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment.HorizontalAlignmentConstant;
 import com.google.gwt.user.client.ui.HasVerticalAlignment.VerticalAlignmentConstant;
+import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.grid.AbstractCellView;
 import com.butent.bee.client.grid.ColumnDefinition;
@@ -22,7 +22,15 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+/**
+ * Determines methods for drawing tables and their inner elements.
+ */
+
 public abstract class TableBulkRenderer implements HasTableDefinition {
+
+  /**
+   * Enables using custom user interface components for table cells drawing.
+   */
 
   private static class DelayedWidget {
     public int cellIndex;
@@ -35,6 +43,10 @@ public abstract class TableBulkRenderer implements HasTableDefinition {
       this.widget = widget;
     }
   }
+
+  /**
+   * Draws more than one cell together, enables to align them horizontally and vertically.
+   */
 
   protected static class BulkCellView extends AbstractCellView {
     private StringBuffer buffer = null;
@@ -86,7 +98,7 @@ public abstract class TableBulkRenderer implements HasTableDefinition {
     }
 
     @Override
-    protected  void renderRowValue(IsRow rowValue, ColumnDefinition columnDef) {
+    protected void renderRowValue(IsRow rowValue, ColumnDefinition columnDef) {
       curCellHtml = null;
       curCellWidget = null;
       curCellHorizontalAlign = null;
@@ -123,6 +135,10 @@ public abstract class TableBulkRenderer implements HasTableDefinition {
       return curCellHtml;
     }
   }
+
+  /**
+   * Paints more than one row of data in one go.
+   */
 
   protected static class BulkRowView extends RowView {
     private StringBuffer buffer;
@@ -188,6 +204,10 @@ public abstract class TableBulkRenderer implements HasTableDefinition {
       }
     }
   }
+
+  /**
+   * Contains rendering settings values.
+   */
 
   protected static class RenderingOptions {
     public int startRow = 0;

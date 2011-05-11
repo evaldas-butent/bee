@@ -14,6 +14,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Extends {@code FlexTable} class, enables to represent data row spans on the screen with fixed
+ * width conditon.
+ */
+
 public class FixedWidthFlexTable extends FlexTable {
   public class FixedWidthFlexCellFormatter extends FlexCellFormatter {
     @Override
@@ -253,7 +258,7 @@ public class FixedWidthFlexTable extends FlexTable {
   }
 
   public void setColumnWidth(int column, int width) {
-    Assert.nonNegative(column,  "Cannot access a column with a negative index: " + column);
+    Assert.nonNegative(column, "Cannot access a column with a negative index: " + column);
     Assert.isPositive(width, "column width must be positive");
 
     colWidths.put(new Integer(column), new Integer(width));
@@ -385,7 +390,7 @@ public class FixedWidthFlexTable extends FlexTable {
       }
     }
   }
-  
+
   private int getNumColumnsPerRow(int row) {
     if (columnsPerRow.size() <= row) {
       return 0;

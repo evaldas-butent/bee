@@ -7,6 +7,11 @@ import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.utils.BeeUtils;
 
+/**
+ * Implements boolean type column, enables to get value for a specified row and manage column's
+ * maximum display size.
+ */
+
 public class TextColumn extends CellColumn<String> {
   private int maxDisplaySize;
 
@@ -22,7 +27,7 @@ public class TextColumn extends CellColumn<String> {
     super(cell, index, dataColumn);
     this.maxDisplaySize = maxDisplaySize;
   }
-  
+
   public int getMaxDisplaySize() {
     return maxDisplaySize;
   }

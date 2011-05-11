@@ -17,7 +17,17 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+/**
+ * Contains a collection of utility functions for grid management, for example setting ideal column
+ * widths.
+ */
+
 public class GridUtils {
+
+  /**
+   * Contains ideal column widths for specified tables.
+   */
+
   public static class IdealColumnWidthInfo {
     private HtmlTable table;
     private TableRowElement tr;
@@ -45,7 +55,7 @@ public class GridUtils {
       }
     }
   };
-  
+
   private static Comparator<ColumnWidth> shrinkComparator = new Comparator<ColumnWidth>() {
     public int compare(ColumnWidth o1, ColumnWidth o2) {
       double diff1 = o1.getDifference();
@@ -252,7 +262,7 @@ public class GridUtils {
   private static Element getTableBody(HtmlTable table) {
     return table.getBodyElement();
   }
-  
+
   private static double getTargetDiff(List<ColumnWidth> columns, int syncedColumns, int width) {
     if (syncedColumns < columns.size()) {
       return columns.get(syncedColumns).getDifference();
@@ -269,7 +279,7 @@ public class GridUtils {
       return (totalNew - totalTarget) / (double) totalTarget;
     }
   }
-  
+
   private GridUtils() {
   }
 }

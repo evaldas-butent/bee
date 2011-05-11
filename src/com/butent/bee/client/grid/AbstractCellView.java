@@ -6,6 +6,11 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.shared.data.IsRow;
 
+/**
+ * Is an abstract class for cell view data presentation components, contains mandatory methods for
+ * setting cell view's attributes.
+ */
+
 public abstract class AbstractCellView {
   private int cellIndex = 0;
   private int rowIndex = 0;

@@ -8,6 +8,10 @@ import com.butent.bee.shared.data.IsRow;
 import java.util.HashMap;
 import java.util.Iterator;
 
+/**
+ * Enables to store and access grids data in memory for quicker grids performance.
+ */
+
 public class CachedTableModel extends TableModel {
 
   private class CacheCallback implements Callback {

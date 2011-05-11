@@ -5,6 +5,10 @@ import com.google.gwt.cell.client.Cell;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 
+/**
+ * Implements boolean type column, enables to get value for a specified row or index point.
+ */
+
 public class BooleanColumn extends CellColumn<Boolean> {
 
   public BooleanColumn(int index, IsColumn dataColumn) {

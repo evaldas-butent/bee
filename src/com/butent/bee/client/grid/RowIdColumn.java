@@ -6,6 +6,10 @@ import com.google.gwt.user.cellview.client.Column;
 
 import com.butent.bee.shared.data.IsRow;
 
+/**
+ * Implements row id column, enables to get value for a specified row.
+ */
+
 public class RowIdColumn extends Column<IsRow, Number> {
   public RowIdColumn() {
     this(new NumberCell());

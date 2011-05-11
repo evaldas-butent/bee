@@ -2,12 +2,16 @@ package com.butent.bee.client.grid;
 
 import com.butent.bee.shared.BeeConst;
 
+/**
+ * Contains width information for grid objects (min, max, data, header, footer etc).
+ */
+
 public class ColumnWidth {
   private int minWidth;
   private int maxWidth;
   private int prefWidth;
   private int curWidth;
-  
+
   private int dataWidth;
   private int headerWidth;
   private int footerWidth;
@@ -72,7 +76,7 @@ public class ColumnWidth {
   public int getRequiredWidth() {
     return requiredWidth;
   }
-  
+
   public int getTargetWidth() {
     return (distrWidth > 0) ? distrWidth : prefWidth;
   }
@@ -84,7 +88,7 @@ public class ColumnWidth {
   public boolean hasMinWidth() {
     return minWidth > 0;
   }
-  
+
   public int limit(int width) {
     int z = (width > 0) ? width : 0;
 
@@ -96,7 +100,7 @@ public class ColumnWidth {
     }
     return z;
   }
-  
+
   public void setCurWidth(int curWidth) {
     this.curWidth = curWidth;
   }

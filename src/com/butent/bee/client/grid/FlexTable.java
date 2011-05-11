@@ -5,6 +5,10 @@ import com.google.gwt.user.client.Element;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.shared.Assert;
 
+/**
+ * Extends {@code HtmlTable} class, enables to use flexible tables that create cells on demand.
+ */
+
 public class FlexTable extends HtmlTable {
 
   public class FlexCellFormatter extends CellFormatter {
@@ -27,9 +31,9 @@ public class FlexTable extends HtmlTable {
 
   private static native void addCells(Element table, int row, int num)/*-{
     var rowElem = table.rows[row];
-    for(var i = 0; i < num; i++){
+    for ( var i = 0; i < num; i++) {
       var cell = $doc.createElement("td");
-      rowElem.appendChild(cell);  
+      rowElem.appendChild(cell);
     }
   }-*/;
 
@@ -38,7 +42,7 @@ public class FlexTable extends HtmlTable {
     setCellFormatter(new FlexCellFormatter());
     setRowFormatter(new RowFormatter());
     setColumnFormatter(new ColumnFormatter());
-    
+
     setStyleName("bee-FlexTable");
   }
 
@@ -122,7 +126,7 @@ public class FlexTable extends HtmlTable {
 
   @Override
   protected void prepareRow(int row) {
-    Assert.nonNegative(row,  "Cannot create a row with a negative index: " + row);
+    Assert.nonNegative(row, "Cannot create a row with a negative index: " + row);
 
     int rowCount = getRowCount();
     for (int i = rowCount; i <= row; i++) {

@@ -1,5 +1,9 @@
 package com.butent.bee.client.grid.property;
 
+/**
+ * Stores preferred width for a column.
+ */
+
 public class PreferredWidthProperty implements ColumnProperty {
   public static final String NAME = "pref";
 
@@ -8,7 +12,7 @@ public class PreferredWidthProperty implements ColumnProperty {
   public PreferredWidthProperty(int preferredWidth) {
     this.preferredWidth = preferredWidth;
   }
-  
+
   public int getPreferredColumnWidth() {
     return preferredWidth;
   }

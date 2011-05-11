@@ -14,6 +14,11 @@ import com.butent.bee.shared.BeeConst;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Extends {@code GridTable} class, enables using grids with fixed width and manage their attributes
+ * and events.
+ */
+
 public class FixedWidthGrid extends GridTable {
   public class FixedWidthGridCellFormatter extends CellFormatter {
     @Override
@@ -288,7 +293,7 @@ public class FixedWidthGrid extends GridTable {
       }
     }
   }
-  
+
   private Element getGhostCellElement(int column) {
     return GridUtils.getGhostCell(ghostRow, column);
   }
@@ -298,7 +303,7 @@ public class FixedWidthGrid extends GridTable {
       recalculateIdealColumnWidths();
     }
   }
-  
+
   private void resetColumnWidhts() {
     for (Map.Entry<Integer, Integer> entry : colWidths.entrySet()) {
       setColumnWidth(entry.getKey(), entry.getValue());

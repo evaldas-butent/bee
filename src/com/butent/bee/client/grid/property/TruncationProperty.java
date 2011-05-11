@@ -1,5 +1,9 @@
 package com.butent.bee.client.grid.property;
 
+/**
+ * Stores information whether a specified column can be truncated.
+ */
+
 public class TruncationProperty implements ColumnProperty {
   public static final String NAME = "trunc";
 

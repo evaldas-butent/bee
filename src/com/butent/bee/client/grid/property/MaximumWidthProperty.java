@@ -1,5 +1,9 @@
 package com.butent.bee.client.grid.property;
 
+/**
+ * Stores maximum width for a column.
+ */
+
 public class MaximumWidthProperty implements ColumnProperty {
   public static final String NAME = "max";
 

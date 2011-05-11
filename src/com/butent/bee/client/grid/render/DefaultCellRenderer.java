@@ -6,6 +6,10 @@ import com.butent.bee.client.grid.AbstractCellView;
 import com.butent.bee.client.grid.ColumnDefinition;
 import com.butent.bee.shared.data.IsRow;
 
+/**
+ * Paints cell value in various available formats (text, html, object).
+ */
+
 public class DefaultCellRenderer implements CellRenderer {
 
   private boolean asHtml;

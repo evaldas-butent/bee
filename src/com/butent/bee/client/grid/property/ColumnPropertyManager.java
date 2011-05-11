@@ -5,6 +5,10 @@ import com.butent.bee.shared.Assert;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Sets, gets and removes column properties.
+ */
+
 public class ColumnPropertyManager {
   private Map<String, ColumnProperty> properties = new HashMap<String, ColumnProperty>();
 
@@ -29,7 +33,7 @@ public class ColumnPropertyManager {
   public <P extends ColumnProperty> void setColumnProperty(String name, P property) {
     Assert.notEmpty(name, "Cannot add a property with no name");
     Assert.notNull(property, "Cannot add a null property");
-    
+
     properties.put(name, property);
   }
 }

@@ -15,6 +15,10 @@ import com.butent.bee.client.grid.render.DefaultCellRenderer;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.IsRow;
 
+/**
+ * Manages columns properties like sortable, header, footer, minimum width etc.
+ */
+
 public abstract class ColumnDefinition implements Comparable<ColumnDefinition> {
   private CellRenderer cellRenderer = new DefaultCellRenderer();
 
@@ -48,7 +52,7 @@ public abstract class ColumnDefinition implements Comparable<ColumnDefinition> {
   public Object getFooter() {
     return getFooter(HeaderPropertyBase.DEFAULT_ROW);
   }
-  
+
   public Object getFooter(int row) {
     FooterProperty prop = getColumnProperty(FooterProperty.NAME);
     if (prop == null) {
@@ -64,7 +68,7 @@ public abstract class ColumnDefinition implements Comparable<ColumnDefinition> {
     }
     return prop.getFooterCount();
   }
-  
+
   public Object getHeader() {
     return getHeader(HeaderPropertyBase.DEFAULT_ROW);
   }
@@ -183,7 +187,7 @@ public abstract class ColumnDefinition implements Comparable<ColumnDefinition> {
   public void setColumnSortable(boolean sortable) {
     setColumnProperty(SortableProperty.NAME, new SortableProperty(sortable));
   }
-  
+
   public void setColumnTruncatable(boolean truncatable) {
     TruncationProperty prop = properties.getColumnProperty(TruncationProperty.NAME);
     if (prop == null) {
@@ -224,7 +228,7 @@ public abstract class ColumnDefinition implements Comparable<ColumnDefinition> {
     }
     prop.setFooterTruncatable(truncatable);
   }
-  
+
   public void setHeader(int row, Object header) {
     HeaderProperty prop = properties.getColumnProperty(HeaderProperty.NAME);
     if (prop == null) {

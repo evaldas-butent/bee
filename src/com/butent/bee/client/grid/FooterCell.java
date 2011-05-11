@@ -8,6 +8,7 @@ import com.google.gwt.dom.client.EventTarget;
 import com.google.gwt.dom.client.InputElement;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.safehtml.client.SafeHtmlTemplates;
+import com.google.gwt.safehtml.client.SafeHtmlTemplates.Template;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 
@@ -15,15 +16,23 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
+/**
+ * Implements footer cells rendering and behavior management.
+ */
+
 public class FooterCell extends AbstractCell<String> {
+
+  /**
+   * Specifies footer cell's templates for safeHtml usage.
+   */
 
   public interface Template extends SafeHtmlTemplates {
     @Template("<input type=\"search\" value=\"{0}\" tabindex=\"-1\" class=\"bee-FooterCell\"></input>")
     SafeHtml input(String value);
   }
-  
+
   private static Template template;
-  
+
   private boolean hasFocus = false;
 
   public FooterCell() {
@@ -50,7 +59,7 @@ public class FooterCell extends AbstractCell<String> {
     }
 
     String type = event.getType();
-    
+
     if (BeeUtils.same(type, EventUtils.EVENT_TYPE_FOCUS)) {
       hasFocus = true;
     } else if (BeeUtils.same(type, EventUtils.EVENT_TYPE_BLUR)) {

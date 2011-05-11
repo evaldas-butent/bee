@@ -11,14 +11,18 @@ import com.butent.bee.shared.utils.PropertyUtils;
 
 import java.util.List;
 
+/**
+ * Enables previewing of cell value by reacting to mouse action.
+ */
+
 public class CellPreview implements CellPreviewEvent.Handler<IsRow> {
   private final int listen;
   private final int ignore;
-  
+
   public CellPreview() {
     this(Event.ONMOUSEMOVE | Event.ONMOUSEOUT | Event.ONMOUSEOVER, false);
   }
-  
+
   public CellPreview(int events, boolean handle) {
     if (handle) {
       this.listen = events;
@@ -39,13 +43,13 @@ public class CellPreview implements CellPreviewEvent.Handler<IsRow> {
         return;
       }
     }
-    
+
     for (Property p : getInfo(event)) {
       BeeKeeper.getLog().info(p.getName(), p.getValue());
     }
     BeeKeeper.getLog().addSeparator();
   }
-  
+
   private List<Property> getInfo(CellPreviewEvent<IsRow> event) {
     List<Property> lst = PropertyUtils.createProperties(
         "Column", event.getColumn(),

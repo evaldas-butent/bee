@@ -8,6 +8,10 @@ import com.butent.bee.shared.HasDateValue;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 
+/**
+ * Implements DateTime type column, enables to get value for a specified row or index point.
+ */
+
 public class DateTimeColumn extends CellColumn<HasDateValue> {
 
   public DateTimeColumn(int index, IsColumn dataColumn) {

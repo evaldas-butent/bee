@@ -29,6 +29,10 @@ import com.butent.bee.shared.data.value.ValueType;
 
 import java.util.Date;
 
+/**
+ * Enables to use a user friendly data picker component.
+ */
+
 public class DatePickerCell extends AbstractEditableCell<HasDateValue, HasDateValue> {
 
   private final SafeHtmlRenderer<String> renderer = SimpleSafeHtmlRenderer.getInstance();
@@ -96,7 +100,7 @@ public class DatePickerCell extends AbstractEditableCell<HasDateValue, HasDateVa
       }
     });
   }
-  
+
   @Override
   public boolean handlesSelection() {
     return true;
@@ -124,7 +128,7 @@ public class DatePickerCell extends AbstractEditableCell<HasDateValue, HasDateVa
       clearViewData(key);
       viewData = null;
     }
-    
+
     HasDateValue date = null;
     if (viewData != null) {
       date = viewData;
@@ -134,7 +138,7 @@ public class DatePickerCell extends AbstractEditableCell<HasDateValue, HasDateVa
     if (date == null) {
       return;
     }
-    
+
     String s = (format == null) ? date.toString() : format.format(date.getJava());
     if (s != null) {
       sb.append(renderer.render(s));
@@ -158,7 +162,7 @@ public class DatePickerCell extends AbstractEditableCell<HasDateValue, HasDateVa
       datePicker.setCurrentMonth(jd);
       datePicker.setValue(jd);
     }
-    
+
     int z;
     if (context instanceof CellContext) {
       CellGrid grid = ((CellContext) context).getGrid();

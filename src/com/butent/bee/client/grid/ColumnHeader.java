@@ -4,6 +4,10 @@ import com.google.gwt.user.cellview.client.Header;
 
 import com.butent.bee.shared.data.IsColumn;
 
+/**
+ * Creates new header cells for grids.
+ */
+
 public class ColumnHeader extends Header<String> {
   private final IsColumn dataColumn;
 

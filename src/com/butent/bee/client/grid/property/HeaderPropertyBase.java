@@ -3,6 +3,10 @@ package com.butent.bee.client.grid.property;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Enables operations with column headers.
+ */
+
 public class HeaderPropertyBase implements ColumnProperty {
   public static final int DEFAULT_ROW = 0;
 

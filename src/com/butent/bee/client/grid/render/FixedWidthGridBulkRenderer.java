@@ -11,6 +11,11 @@ import com.butent.bee.shared.data.IsRow;
 
 import java.util.Iterator;
 
+/**
+ * Extends {@code GridBulkRenderer}, draws fixed width grids on the screen, manages their dimensions
+ * and hidden bits of data.
+ */
+
 public class FixedWidthGridBulkRenderer extends GridBulkRenderer {
   public FixedWidthGridBulkRenderer(FixedWidthGrid grid, TableDefinition tableDef) {
     super(grid, tableDef);

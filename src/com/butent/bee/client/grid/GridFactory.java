@@ -33,7 +33,15 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 
+/**
+ * Creates simple and scroll grid objects for usage in the user interface.
+ */
+
 public class GridFactory {
+
+  /**
+   * Sets id and order for scroll grid columns.
+   */
 
   private static class ScrollGridColumnDefinition extends ColumnDefinition {
     private int idx;
@@ -70,6 +78,10 @@ public class GridFactory {
     }
   }
 
+  /**
+   * Adds up row values into one object for response purposes.
+   */
+
   private static class ScrollGridResponse extends Response {
     private Collection<IsRow> rowValues = new ArrayList<IsRow>();
 
@@ -84,6 +96,10 @@ public class GridFactory {
       return rowValues.iterator();
     }
   }
+
+  /**
+   * Extends {@code TableModel} class, gets starting row of selection and number of rows to select.
+   */
 
   private static class ScrollGridTableModel extends TableModel {
     private IsTable<?, ?> data;
@@ -127,7 +143,7 @@ public class GridFactory {
       }
       grid.addColumn(column, table.getColumnLabel(i));
     }
-    
+
     MultiSelectionModel<IsRow> selector = new MultiSelectionModel<IsRow>(new KeyProvider());
     grid.setSelectionModel(selector);
     
@@ -136,7 +152,7 @@ public class GridFactory {
 
     return grid;
   }
-  
+
   public static CellColumn<?> createColumn(IsColumn dataColumn, int index) {
     ValueType type = dataColumn.getType();
     if (type == null) {
@@ -227,9 +243,9 @@ public class GridFactory {
       BeeKeeper.getLog().warning("data table empty");
       return null;
     }
-    
+
     CellGrid grid = new CellGrid();
-    
+
     CellColumn<?> column;
     for (int i = 0; i < c; i++) {
       column = createColumn(table.getColumn(i), i);
@@ -239,17 +255,17 @@ public class GridFactory {
 
     @SuppressWarnings("unused")
     CachedProvider provider = new CachedProvider(grid, table);
-    
+
     grid.setHeaderCellHeight(23);
     grid.setBodyCellHeight(20);
     grid.estimateColumnWidths(table.getRows().getList(), Math.min(r, 20));
     grid.estimateHeaderWidths();
-    
+
     grid.setRowData(table.getRows().getList());
 
     return grid;
   }
-  
+
   private static Cell<String> createCell(CellType type) {
     Cell<String> cell;
 
@@ -265,7 +281,7 @@ public class GridFactory {
     }
     return cell;
   }
-  
+
   private GridFactory() {
   }
 }

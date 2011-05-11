@@ -5,6 +5,10 @@ import com.butent.bee.shared.data.IsRow;
 import java.util.Iterator;
 import java.util.List;
 
+/**
+ * Creates and renders row views, which enable to show only parts of a data table to the user.
+ */
+
 public class RowView {
   private int rowIndex = 0;
   private AbstractCellView cellView;

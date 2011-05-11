@@ -7,18 +7,23 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 
+/**
+ * Extends {@code HtmlTable} class, enables to use grid tables and make such operations with them as
+ * adding/removing rows or setting formatters to it.
+ */
+
 public class GridTable extends HtmlTable {
 
   private static native void addRows(Element table, int rows, int columns) /*-{
     var td = $doc.createElement("td");
     td.innerHTML = "&nbsp;";
     var row = $doc.createElement("tr");
-    for(var cellNum = 0; cellNum < columns; cellNum++) {
+    for ( var cellNum = 0; cellNum < columns; cellNum++) {
       var cell = td.cloneNode(true);
       row.appendChild(cell);
     }
     table.appendChild(row);
-    for(var rowNum = 1; rowNum < rows; rowNum++) {  
+    for ( var rowNum = 1; rowNum < rows; rowNum++) {
       table.appendChild(row.cloneNode(true));
     }
   }-*/;

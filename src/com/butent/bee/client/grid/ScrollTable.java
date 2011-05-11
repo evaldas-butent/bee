@@ -3,11 +3,11 @@ package com.butent.bee.client.grid;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Style.Cursor;
+import com.google.gwt.dom.client.Style.Overflow;
 import com.google.gwt.dom.client.Style.Position;
+import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.dom.client.TableRowElement;
-import com.google.gwt.dom.client.Style.Overflow;
-import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.DomEvent;
 import com.google.gwt.event.dom.client.HasScrollHandlers;
 import com.google.gwt.event.dom.client.ScrollEvent;
@@ -18,14 +18,14 @@ import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.ComplexPanel;
-import com.google.gwt.user.client.ui.RequiresResize;
-import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment.HorizontalAlignmentConstant;
 import com.google.gwt.user.client.ui.HasVerticalAlignment.VerticalAlignmentConstant;
+import com.google.gwt.user.client.ui.RequiresResize;
+import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.event.DndEvent;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.HasAllDndHandlers;
@@ -47,8 +47,18 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+/**
+ * Implements a grid user interface component with an ability to change selected data range by
+ * scrolling through it.
+ */
+
 public class ScrollTable extends ComplexPanel implements
     HasId, HasScrollHandlers, HasTableDefinition, RequiresResize {
+
+  /**
+   * Contains a list of resize policies for a particular scroll table (none, horizontal, vertical or
+   * both).
+   */
 
   public static enum ResizePolicy {
     UNCONSTRAINED(false, false), FLOW(false, true), FIXED_WIDTH(true, false),
@@ -70,6 +80,11 @@ public class ScrollTable extends ComplexPanel implements
       return isSacrificial;
     }
   }
+
+  /**
+   * Extends {@code AbstractCellView} class, enables creating scroll table cell view object and set
+   * it's parameters.
+   */
 
   protected static class ScrollTableCellView extends AbstractCellView {
     private ScrollTable table;
@@ -106,6 +121,10 @@ public class ScrollTable extends ComplexPanel implements
       table.getDataTable().setWidget(getRowIndex(), getCellIndex(), widget);
     }
   }
+
+  /**
+   * Contains such column header information as column id or row span.
+   */
 
   private static class ColumnHeaderInfo {
     private int rowSpan = 1;
@@ -144,7 +163,7 @@ public class ScrollTable extends ComplexPanel implements
     private String sourceId;
     private String parentId;
     private String targetId;
-    
+
     private int left;
     private int width;
     private int right;
@@ -163,16 +182,16 @@ public class ScrollTable extends ComplexPanel implements
 
     public boolean onDragEnd(DndEvent event) {
       event.getElement().removeClassName(StyleUtils.DND_SOURCE);
-      
+
       if (BeeUtils.context(columnIdSeparator, sourceId)
           && BeeUtils.context(columnIdSeparator, targetId)) {
         int srcId = BeeUtils.toInt(BeeUtils.getSuffix(sourceId, columnIdSeparator));
         int dstId = BeeUtils.toInt(BeeUtils.getSuffix(targetId, columnIdSeparator));
-        
+
         tableDefinition.moveColumnDef(srcId, dstId);
         reload();
       }
-      
+
       return true;
     }
 
@@ -203,7 +222,7 @@ public class ScrollTable extends ComplexPanel implements
       sourceId = elem.getId();
       parentId = DomUtils.getParentId(elem, true);
       targetId = null;
-      
+
       left = dataWrapper.getAbsoluteLeft();
       width = dataTable.getElement().getScrollWidth();
       right = dataWrapper.getAbsoluteRight();
@@ -640,7 +659,7 @@ public class ScrollTable extends ComplexPanel implements
   public FixedWidthGrid getDataTable() {
     return dataTable;
   }
-  
+
   public int getDataTableWidth() {
     return dataTable.getElement().getScrollWidth();
   }
@@ -851,7 +870,7 @@ public class ScrollTable extends ComplexPanel implements
       info.setDistrWidth(w);
       info.setCurWidth(0);
     }
-    
+
     GridUtils.distributeWidth(colWidths, width);
     applyNewColumnWidths(0, colWidths, false);
 
@@ -915,7 +934,7 @@ public class ScrollTable extends ComplexPanel implements
   public void scheduleRedraw() {
     Scheduler.get().scheduleDeferred(redrawCommand);
   }
-  
+
   public void setBulkRenderer(FixedWidthGridBulkRenderer bulkRenderer) {
     this.bulkRenderer = bulkRenderer;
   }
@@ -1050,7 +1069,7 @@ public class ScrollTable extends ComplexPanel implements
     }
 
     FixedWidthGrid data = getDataTable();
-    
+
     data.clearIdealWidths();
     redraw();
     loading = false;
@@ -1310,7 +1329,7 @@ public class ScrollTable extends ComplexPanel implements
         info.setCurWidth(0);
       }
     }
-    
+
     GridUtils.distributeWidth(colWidths, totalWidth);
     return colWidths;
   }
@@ -1352,7 +1371,7 @@ public class ScrollTable extends ComplexPanel implements
       minWidth = Math.max(minWidth, w);
     }
 
-    return new ColumnWidth(minWidth, maxWidth, prefWidth, 
+    return new ColumnWidth(minWidth, maxWidth, prefWidth,
         curWidth, dataWidth, headerWidth, footerWidth);
   }
 
@@ -1388,7 +1407,7 @@ public class ScrollTable extends ComplexPanel implements
   private int getHeaderOffset() {
     return 0;
   }
-  
+
   private int getIdealDataColumnWidth(int column) {
     return getDataTable().getIdealColumnWidth(column);
   }
@@ -1399,7 +1418,7 @@ public class ScrollTable extends ComplexPanel implements
     }
     return -1;
   }
-  
+
   private int getIdealHeaderColumnWidth(int column) {
     return getHeaderTable().getIdealColumnWidth(column + getHeaderOffset());
   }

@@ -1,5 +1,9 @@
 package com.butent.bee.client.grid.property;
 
+/**
+ * Stores information whether a certain column is sortable or not.
+ */
+
 public class SortableProperty implements ColumnProperty {
   public static final String NAME = "sort";
 
