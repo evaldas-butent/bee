@@ -12,6 +12,8 @@ import java.util.List;
  */
 
 public interface GridView extends View, HasDataTable {
+  void applyOptions(String options, boolean redraw);
+
   void create(List<BeeColumn> dataColumns, int rowCount, BeeRowSet rowSet);
 
   int estimatePageSize(int containerWidth, int containerHeight);

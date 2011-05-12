@@ -9,7 +9,9 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.layout.Complex;
+import com.butent.bee.client.presenter.Action;
 import com.butent.bee.client.presenter.Presenter;
+import com.butent.bee.client.utils.BeeCommand;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -56,7 +58,23 @@ public class DataHeaderImpl extends Complex implements DataHeaderView {
 
     int controlWidth();
   }
+  
+  private class ActionListener extends BeeCommand {
+    private final Action action;
 
+    private ActionListener(Action action) {
+      super();
+      this.action = action;
+    }
+
+    @Override
+    public void execute() {
+      if (getViewPresenter() != null) {
+        getViewPresenter().handleAction(action);
+      }
+    }
+  }
+  
   private static Resources defaultResources = null;
   private static Style defaultStyle = null;
 
@@ -96,14 +114,14 @@ public class DataHeaderImpl extends Complex implements DataHeaderView {
 
     String cst = style.control();
 
-    addRightTop(createControl(Global.getImages().configure(), cst), x, y);
-    addRightTop(createControl(Global.getImages().save(), cst), x += w, y);
-    addRightTop(createControl(Global.getImages().bookmarkAdd(), cst), x += w, y);
-    addRightTop(createControl(Global.getImages().editDelete(), cst), x += w, y);
-    addRightTop(createControl(Global.getImages().editAdd(), cst), x += w, y);
-    addRightTop(createControl(Global.getImages().reload(), cst), x += w, y);
+    addRightTop(createControl(Global.getImages().configure(), Action.CONFIGURE, cst), x, y);
+    addRightTop(createControl(Global.getImages().save(), Action.SAVE, cst), x += w, y);
+    addRightTop(createControl(Global.getImages().bookmarkAdd(), Action.BOOKMARK, cst), x += w, y);
+    addRightTop(createControl(Global.getImages().editDelete(), Action.DELETE, cst), x += w, y);
+    addRightTop(createControl(Global.getImages().editAdd(), Action.ADD, cst), x += w, y);
+    addRightTop(createControl(Global.getImages().reload(), Action.REFRESH, cst), x += w, y);
 
-    addRightTop(createControl(Global.getImages().close(), style.close()),
+    addRightTop(createControl(Global.getImages().close(), Action.CLOSE, style.close()),
         style.closeRight(), style.closeTop());
   }
 
@@ -119,8 +137,8 @@ public class DataHeaderImpl extends Complex implements DataHeaderView {
     this.viewPresenter = viewPresenter;
   }
 
-  private Widget createControl(ImageResource image, String styleName) {
-    Widget control = new BeeImage(image);
+  private Widget createControl(ImageResource image, Action action, String styleName) {
+    Widget control = new BeeImage(image, new ActionListener(action));
     if (!BeeUtils.isEmpty(styleName)) {
       control.addStyleName(styleName);
     }

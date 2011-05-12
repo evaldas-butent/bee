@@ -7,7 +7,10 @@ import com.google.gwt.user.client.ui.Widget;
  */
 
 public interface Presenter {
+
   Widget getWidget();
+  
+  void handleAction(Action action);
 
   void onViewUnload();
 }

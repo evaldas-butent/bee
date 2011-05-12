@@ -6,6 +6,7 @@ import com.google.common.collect.Sets;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
@@ -24,6 +25,7 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.DataInfo;
+import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
 import java.util.List;
@@ -104,6 +106,25 @@ public class GridPresenter implements Presenter {
 
   public Widget getWidget() {
     return getView().asWidget();
+  }
+
+  @Override
+  public void handleAction(Action action) {
+    Assert.notNull(action);
+    
+    switch (action) {
+      case CLOSE:
+        BeeKeeper.getUi().closeView(getView());
+        break;
+      case CONFIGURE:
+        String input = Window.prompt("Options", "");
+        if (!BeeUtils.isEmpty(input)) {
+          getView().getContent().applyOptions(input, true);
+        }
+        break;
+      default:
+        BeeKeeper.getLog().info(action, "not implemented");
+    }
   }
 
   public boolean isAsync() {

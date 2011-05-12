@@ -30,6 +30,7 @@ import com.butent.bee.client.ui.GwtUiCreator;
 import com.butent.bee.client.ui.MenuService;
 import com.butent.bee.client.ui.RowSetService;
 import com.butent.bee.client.utils.BeeCommand;
+import com.butent.bee.client.view.View;
 import com.butent.bee.client.widget.BeeButton;
 import com.butent.bee.client.widget.BeeCheckBox;
 import com.butent.bee.client.widget.BeeImage;
@@ -117,6 +118,23 @@ public class BeeUi implements Module {
     }
 
     setActivePanel(np);
+  }
+  
+  public void closeView(View view) {
+    Assert.notNull(view, "closeView: view is null");
+    Widget widget = view.asWidget();
+    Assert.notNull(widget, "closeView: view widget is null");
+    
+    TilePanel panel = getPanel(widget);
+    if (panel == null) {
+      BeeKeeper.getLog().warning("closeView: panel not found");
+      return;
+    }
+    
+    if (panel != getActivePanel()) {
+      activatePanel(panel);
+    }
+    closePanel();
   }
 
   public void deactivatePanel() {
@@ -439,6 +457,15 @@ public class BeeUi implements Module {
     setScreenPanel(p);
   }
 
+  private TilePanel getPanel(Widget w) {
+    for (Widget p = w; p != null; p = p.getParent()) {
+      if (p instanceof TilePanel) {
+        return (TilePanel) p;
+      }
+    }
+    return null;
+  }
+  
   private Widget initCenter() {
     TilePanel p = new TilePanel();
     p.add(new BlankTile());
@@ -587,7 +614,7 @@ public class BeeUi implements Module {
       return !(p.getParent() instanceof TilePanel);
     }
   }
-
+  
   private void updatePanel(BeeLayoutPanel p, Widget w, boolean scroll) {
     Assert.notNull(p);
     Assert.notNull(w);

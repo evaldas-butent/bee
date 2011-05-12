@@ -39,7 +39,6 @@ import com.google.gwt.view.client.RangeChangeEvent;
 import com.google.gwt.view.client.RowCountChangeEvent;
 import com.google.gwt.view.client.SelectionModel;
 
-import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.data.HasDataTable;
 import com.butent.bee.client.dom.Rectangle;
 import com.butent.bee.client.dom.DomUtils;
@@ -656,145 +655,6 @@ public class CellGrid extends Widget implements HasId, HasDataTable {
 
   public HandlerRegistration addSortHandler(SortEvent.Handler handler) {
     return addHandler(handler, SortEvent.getType());
-  }
-
-  public void apply(String options, boolean refresh) {
-    if (BeeUtils.isEmpty(options)) {
-      return;
-    }
-
-    String[] opt = BeeUtils.split(options, ";");
-    for (int i = 0; i < opt.length; i++) {
-      String[] arr = BeeUtils.split(opt[i], " ");
-      int len = arr.length;
-      if (len <= 1) {
-        continue;
-      }
-      String cmd = arr[0].trim().toLowerCase();
-
-      int[] xp = new int[len - 1];
-      String[] sp = new String[len - 1];
-
-      for (int j = 1; j < len; j++) {
-        sp[j - 1] = arr[j].trim();
-        if (BeeUtils.isDigit(arr[j])) {
-          xp[j - 1] = BeeUtils.toInt(arr[j]);
-        } else {
-          xp[j - 1] = 0;
-        }
-      }
-
-      Edges edges = null;
-      switch (len - 1) {
-        case 1:
-          edges = new Edges(xp[0]);
-          break;
-        case 2:
-          edges = new Edges(xp[0], xp[1]);
-          break;
-        case 3:
-          edges = new Edges(xp[0], xp[1], xp[2]);
-          break;
-        default:
-          edges = new Edges(xp[0], xp[1], xp[2], xp[3]);
-      }
-
-      String colId = sp[0];
-      if (BeeUtils.isDigit(colId) && xp[0] < getColumnCount()) {
-        colId = getColumnId(xp[0]);
-      }
-
-      String msg = null;
-
-      if (cmd.contains("bh")) {
-        msg = "setBodyCellHeight " + xp[0];
-        setBodyCellHeight(xp[0]);
-      } else if (cmd.contains("bp")) {
-        msg = "setBodyCellPadding " + edges.getCssValue();
-        setBodyCellPadding(edges);
-      } else if (cmd.contains("bw")) {
-        msg = "setBodyBorderWidth " + edges.getCssValue();
-        setBodyBorderWidth(edges);
-      } else if (cmd.contains("bm")) {
-        msg = "setBodyCellMargin " + edges.getCssValue();
-        setBodyCellMargin(edges);
-
-      } else if (cmd.contains("hh")) {
-        msg = "setHeaderCellHeight " + xp[0];
-        setHeaderCellHeight(xp[0]);
-      } else if (cmd.contains("hp")) {
-        msg = "setHeaderCellPadding " + edges.getCssValue();
-        setHeaderCellPadding(edges);
-      } else if (cmd.contains("hw")) {
-        msg = "setHeaderBorderWidth " + edges.getCssValue();
-        setHeaderBorderWidth(edges);
-      } else if (cmd.contains("hm")) {
-        msg = "setHeaderCellMargin " + edges.getCssValue();
-        setHeaderCellMargin(edges);
-
-      } else if (cmd.contains("fh")) {
-        msg = "setFooterCellHeight " + xp[0];
-        setFooterCellHeight(xp[0]);
-      } else if (cmd.contains("fp")) {
-        msg = "setFooterCellPadding " + edges.getCssValue();
-        setFooterCellPadding(edges);
-      } else if (cmd.contains("fw")) {
-        msg = "setFooterBorderWidth " + edges.getCssValue();
-        setFooterBorderWidth(edges);
-      } else if (cmd.contains("fm")) {
-        msg = "setFooterCellMargin " + edges.getCssValue();
-        setFooterCellMargin(edges);
-
-      } else if (cmd.contains("chw") && len > 2) {
-        msg = "setColumnHeaderWidth " + colId + " " + xp[1];
-        setColumnHeaderWidth(colId, xp[1]);
-      } else if (cmd.contains("cbw") && len > 2) {
-        msg = "setColumnBodyWidth " + colId + " " + xp[1];
-        setColumnBodyWidth(colId, xp[1]);
-      } else if (cmd.contains("cfw") && len > 2) {
-        msg = "setColumnFooterWidth " + colId + " " + xp[1];
-        setColumnFooterWidth(colId, xp[1]);
-
-      } else if (cmd.contains("cw") && len > 2) {
-        if (len <= 3) {
-          msg = "setColumnWidth " + colId + " " + xp[1];
-          setColumnWidth(colId, xp[1]);
-        } else {
-          msg = "setColumnWidth " + colId + " " + xp[1] + " " + StyleUtils.parseUnit(sp[2]);
-          setColumnWidth(colId, xp[1], StyleUtils.parseUnit(sp[2]));
-        }
-
-      } else if (cmd.contains("minw")) {
-        msg = "setMinCellWidth " + xp[0];
-        setMinCellWidth(xp[0]);
-      } else if (cmd.contains("maxw")) {
-        msg = "setMaxCellWidth " + xp[0];
-        setMaxCellWidth(xp[0]);
-      } else if (cmd.contains("minh")) {
-        msg = "setMinCellHeight " + xp[0];
-        setMinCellHeight(xp[0]);
-      } else if (cmd.contains("maxh")) {
-        msg = "setMaxCellHeight " + xp[0];
-        setMaxCellHeight(xp[0]);
-
-      } else if (cmd.startsWith("zm")) {
-        msg = "setResizerMoveSensitivityMillis " + xp[0];
-        setResizerMoveSensitivityMillis(xp[0]);
-      } else if (cmd.startsWith("zs")) {
-        msg = "setResizerShowSensitivityMillis " + xp[0];
-        setResizerShowSensitivityMillis(xp[0]);
-      }
-
-      if (msg == null) {
-        BeeKeeper.getLog().warning("unrecognized command", opt[i]);
-      } else {
-        BeeKeeper.getLog().info(msg);
-      }
-    }
-
-    if (refresh) {
-      redraw();
-    }
   }
 
   public void clearColumnWidth(String columnId) {
@@ -1647,6 +1507,14 @@ public class CellGrid extends Widget implements HasId, HasDataTable {
     getResizerShowTimer().cancel();
     getResizerMoveTimer().cancel();
     super.onUnload();
+  }
+
+  protected void setResizerMoveSensitivityMillis(int resizerMoveSensitivityMillis) {
+    this.resizerMoveSensitivityMillis = resizerMoveSensitivityMillis;
+  }
+
+  protected void setResizerShowSensitivityMillis(int resizerShowSensitivityMillis) {
+    this.resizerShowSensitivityMillis = resizerShowSensitivityMillis;
   }
 
   private void activateCell(int row, int col) {
@@ -3301,10 +3169,6 @@ public class CellGrid extends Widget implements HasId, HasDataTable {
     this.resizerModifiers = resizerModifiers;
   }
 
-  private void setResizerMoveSensitivityMillis(int resizerMoveSensitivityMillis) {
-    this.resizerMoveSensitivityMillis = resizerMoveSensitivityMillis;
-  }
-
   private void setResizerPosition(int resizerPosition) {
     this.resizerPosition = resizerPosition;
   }
@@ -3319,10 +3183,6 @@ public class CellGrid extends Widget implements HasId, HasDataTable {
 
   private void setResizerRow(String resizerRow) {
     this.resizerRow = resizerRow;
-  }
-
-  private void setResizerShowSensitivityMillis(int resizerShowSensitivityMillis) {
-    this.resizerShowSensitivityMillis = resizerShowSensitivityMillis;
   }
 
   private void setResizerStatus(ResizerMode resizerStatus) {

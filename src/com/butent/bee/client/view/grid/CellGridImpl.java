@@ -9,6 +9,8 @@ import com.google.gwt.user.cellview.client.TextHeader;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.dom.Edges;
+import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.grid.CellColumn;
 import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
@@ -51,6 +53,145 @@ public class CellGridImpl extends CellGrid implements GridView, SearchView {
     super();
   }
 
+  public void applyOptions(String options, boolean redraw) {
+    if (BeeUtils.isEmpty(options)) {
+      return;
+    }
+
+    String[] opt = BeeUtils.split(options, ";");
+    for (int i = 0; i < opt.length; i++) {
+      String[] arr = BeeUtils.split(opt[i], " ");
+      int len = arr.length;
+      if (len <= 1) {
+        continue;
+      }
+      String cmd = arr[0].trim().toLowerCase();
+
+      int[] xp = new int[len - 1];
+      String[] sp = new String[len - 1];
+
+      for (int j = 1; j < len; j++) {
+        sp[j - 1] = arr[j].trim();
+        if (BeeUtils.isDigit(arr[j])) {
+          xp[j - 1] = BeeUtils.toInt(arr[j]);
+        } else {
+          xp[j - 1] = 0;
+        }
+      }
+
+      Edges edges = null;
+      switch (len - 1) {
+        case 1:
+          edges = new Edges(xp[0]);
+          break;
+        case 2:
+          edges = new Edges(xp[0], xp[1]);
+          break;
+        case 3:
+          edges = new Edges(xp[0], xp[1], xp[2]);
+          break;
+        default:
+          edges = new Edges(xp[0], xp[1], xp[2], xp[3]);
+      }
+
+      String colId = sp[0];
+      if (BeeUtils.isDigit(colId) && xp[0] < getColumnCount()) {
+        colId = getColumnId(xp[0]);
+      }
+
+      String msg = null;
+
+      if (cmd.startsWith("bh")) {
+        msg = "setBodyCellHeight " + xp[0];
+        setBodyCellHeight(xp[0]);
+      } else if (cmd.startsWith("bp")) {
+        msg = "setBodyCellPadding " + edges.getCssValue();
+        setBodyCellPadding(edges);
+      } else if (cmd.startsWith("bw")) {
+        msg = "setBodyBorderWidth " + edges.getCssValue();
+        setBodyBorderWidth(edges);
+      } else if (cmd.startsWith("bm")) {
+        msg = "setBodyCellMargin " + edges.getCssValue();
+        setBodyCellMargin(edges);
+
+      } else if (cmd.startsWith("hh")) {
+        msg = "setHeaderCellHeight " + xp[0];
+        setHeaderCellHeight(xp[0]);
+      } else if (cmd.startsWith("hp")) {
+        msg = "setHeaderCellPadding " + edges.getCssValue();
+        setHeaderCellPadding(edges);
+      } else if (cmd.startsWith("hw")) {
+        msg = "setHeaderBorderWidth " + edges.getCssValue();
+        setHeaderBorderWidth(edges);
+      } else if (cmd.startsWith("hm")) {
+        msg = "setHeaderCellMargin " + edges.getCssValue();
+        setHeaderCellMargin(edges);
+
+      } else if (cmd.startsWith("fh")) {
+        msg = "setFooterCellHeight " + xp[0];
+        setFooterCellHeight(xp[0]);
+      } else if (cmd.startsWith("fp")) {
+        msg = "setFooterCellPadding " + edges.getCssValue();
+        setFooterCellPadding(edges);
+      } else if (cmd.startsWith("fw")) {
+        msg = "setFooterBorderWidth " + edges.getCssValue();
+        setFooterBorderWidth(edges);
+      } else if (cmd.startsWith("fm")) {
+        msg = "setFooterCellMargin " + edges.getCssValue();
+        setFooterCellMargin(edges);
+
+      } else if (cmd.startsWith("chw") && len > 2) {
+        msg = "setColumnHeaderWidth " + colId + " " + xp[1];
+        setColumnHeaderWidth(colId, xp[1]);
+      } else if (cmd.startsWith("cbw") && len > 2) {
+        msg = "setColumnBodyWidth " + colId + " " + xp[1];
+        setColumnBodyWidth(colId, xp[1]);
+      } else if (cmd.startsWith("cfw") && len > 2) {
+        msg = "setColumnFooterWidth " + colId + " " + xp[1];
+        setColumnFooterWidth(colId, xp[1]);
+
+      } else if (cmd.startsWith("cw") && len > 2) {
+        if (len <= 3) {
+          msg = "setColumnWidth " + colId + " " + xp[1];
+          setColumnWidth(colId, xp[1]);
+        } else {
+          msg = "setColumnWidth " + colId + " " + xp[1] + " " + StyleUtils.parseUnit(sp[2]);
+          setColumnWidth(colId, xp[1], StyleUtils.parseUnit(sp[2]));
+        }
+
+      } else if (cmd.startsWith("minw")) {
+        msg = "setMinCellWidth " + xp[0];
+        setMinCellWidth(xp[0]);
+      } else if (cmd.startsWith("maxw")) {
+        msg = "setMaxCellWidth " + xp[0];
+        setMaxCellWidth(xp[0]);
+      } else if (cmd.startsWith("minh")) {
+        msg = "setMinCellHeight " + xp[0];
+        setMinCellHeight(xp[0]);
+      } else if (cmd.startsWith("maxh")) {
+        msg = "setMaxCellHeight " + xp[0];
+        setMaxCellHeight(xp[0]);
+
+      } else if (cmd.startsWith("zm")) {
+        msg = "setResizerMoveSensitivityMillis " + xp[0];
+        setResizerMoveSensitivityMillis(xp[0]);
+      } else if (cmd.startsWith("zs")) {
+        msg = "setResizerShowSensitivityMillis " + xp[0];
+        setResizerShowSensitivityMillis(xp[0]);
+      }
+
+      if (msg == null) {
+        BeeKeeper.getLog().warning("unrecognized command", opt[i]);
+      } else {
+        BeeKeeper.getLog().info(msg);
+      }
+    }
+
+    if (redraw) {
+      redraw();
+    }
+  }
+  
   public void create(List<BeeColumn> dataCols, int rowCount, BeeRowSet rowSet) {
     setHeaderCellHeight(25);
     setBodyCellHeight(24);

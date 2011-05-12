@@ -10,7 +10,7 @@ import com.butent.bee.client.presenter.Presenter;
  */
 
 public interface View extends IsWidget {
-
+  
   Presenter getViewPresenter();
 
   String getWidgetId();

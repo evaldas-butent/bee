@@ -115,6 +115,11 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
       add(content.asWidget(), ScrollBars.BOTH);
     }
   }
+  
+  @Override
+  public void createId() {
+    DomUtils.createId(this, "grid-container");
+  }
 
   public GridView getContent() {
     if (getCenter() == null) {
@@ -270,6 +275,11 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
 
   public void setViewPresenter(Presenter viewPresenter) {
     this.viewPresenter = viewPresenter;
+    for (Widget child : getChildren()) {
+      if (child instanceof View) {
+        ((View) child).setViewPresenter(viewPresenter);
+      }
+    }
   }
 
   @Override
