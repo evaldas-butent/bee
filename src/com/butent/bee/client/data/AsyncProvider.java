@@ -7,10 +7,13 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.view.event.SortEvent;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.Order;
+
+import java.util.List;
 
 /**
  * Extends {@code Provider} class and implements data range management from asynchronous data
@@ -22,10 +25,12 @@ public class AsyncProvider extends Provider {
   private class Callback implements Queries.RowSetCallback {
     private final HasDataTable display;
     private final Range range;
+    private final boolean updateActiveRow;
 
-    private Callback(HasDataTable display, Range range) {
+    private Callback(HasDataTable display, Range range, boolean updateActiveRow) {
       this.display = display;
       this.range = range;
+      this.updateActiveRow = updateActiveRow;
     }
 
     @Override
@@ -39,7 +44,7 @@ public class AsyncProvider extends Provider {
         BeeKeeper.getLog().warning("rowset empty");
         return;
       }
-      updateDisplay(range.getStart(), range.getLength(), rowSet);
+      updateDisplay(range.getStart(), range.getLength(), rowSet, updateActiveRow);
     }
   }
 
@@ -62,7 +67,7 @@ public class AsyncProvider extends Provider {
     goTop();
   }
 
-  public void updateDisplay(int start, int length, BeeRowSet data) {
+  public void updateDisplay(int start, int length, BeeRowSet data, boolean updateActiveRow) {
     int rowCount = data.getNumberOfRows();
 
     if (Global.isDebug()) {
@@ -72,16 +77,22 @@ public class AsyncProvider extends Provider {
     Assert.nonNegative(start);
     Assert.isPositive(length);
     Assert.isPositive(rowCount);
-
+    
+    List<? extends IsRow> rowValues; 
     if (length >= rowCount) {
-      getDisplay().setRowData(start, data.getRows().getList());
+      rowValues = data.getRows().getList();
     } else {
-      getDisplay().setRowData(start, data.getRows().getList().subList(0, length));
+      rowValues = data.getRows().getList().subList(0, length);
     }
+
+    if (updateActiveRow) {
+      getDisplay().updateActiveRow(rowValues);
+    }
+    getDisplay().setRowData(start, rowValues);
   }
 
   @Override
-  protected void onRangeChanged() {
+  protected void onRangeChanged(boolean updateActiveRow) {
     HasDataTable displ = getDisplay();
     Range range = getRange();
 
@@ -89,6 +100,6 @@ public class AsyncProvider extends Provider {
     Order ord = getOrder();
 
     Queries.getRowSet(getDataInfo().getName(), flt, ord, range.getStart(), range.getLength(),
-        CachingPolicy.FULL, new Callback(displ, range));
+        CachingPolicy.FULL, new Callback(displ, range, updateActiveRow));
   }
 }

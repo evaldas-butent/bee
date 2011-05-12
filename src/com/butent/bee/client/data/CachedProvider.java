@@ -99,23 +99,28 @@ public class CachedProvider extends Provider {
     goTop();
   }
   
-  public void refreshDisplay() {
+  public void refreshDisplay(boolean updateActiveRow) {
     Range range = getRange();
     int start = range.getStart();
     int length = range.getLength();
     int rowCount = getRowCount();
-
+    
+    List<? extends IsRow> rowValues;
     if (start == 0 && length >= rowCount) {
-      getDisplay().setRowData(start, getRowList());
+      rowValues = getRowList();
     } else {
-      getDisplay().setRowData(start, getRowList().subList(start,
-          BeeUtils.min(start + length, rowCount)));
+      rowValues = getRowList().subList(start, BeeUtils.min(start + length, rowCount));
     }
+    
+    if (updateActiveRow) {
+      getDisplay().updateActiveRow(rowValues);
+    }
+    getDisplay().setRowData(start, rowValues);
   }
 
   @Override
-  protected void onRangeChanged() {
-    refreshDisplay();
+  protected void onRangeChanged(boolean updateActiveRow) {
+    refreshDisplay(updateActiveRow);
   }
 
   private Set<Long> getFilteredRowIds() {

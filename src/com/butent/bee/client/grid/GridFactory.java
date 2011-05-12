@@ -6,6 +6,7 @@ import com.google.gwt.cell.client.TextCell;
 import com.google.gwt.cell.client.TextInputCell;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.cellview.client.CellTable;
+import com.google.gwt.user.cellview.client.TextHeader;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.view.client.MultiSelectionModel;
 
@@ -246,6 +247,11 @@ public class GridFactory {
 
     CellGrid grid = new CellGrid();
 
+    RowIdColumn idColumn = new RowIdColumn();
+    String id = "row-id";
+    grid.addColumn(id, idColumn, new TextHeader("Id"));
+    grid.setColumnWidth(id, 40);
+    
     CellColumn<?> column;
     for (int i = 0; i < c; i++) {
       column = createColumn(table.getColumn(i), i);

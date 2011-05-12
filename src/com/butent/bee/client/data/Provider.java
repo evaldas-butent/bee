@@ -34,7 +34,7 @@ public abstract class Provider implements SortEvent.Handler {
     this.handlerRegistry.add(display.addRangeChangeHandler(new RangeChangeEvent.Handler() {
       public void onRangeChange(RangeChangeEvent event) {
         if (rangeChangeEnabled) {
-          onRangeChanged();
+          onRangeChanged(false);
         }
       }
     }));
@@ -104,8 +104,8 @@ public abstract class Provider implements SortEvent.Handler {
 
   protected void goTop() {
     getDisplay().setPageStart(0);
-    onRangeChanged();
+    onRangeChanged(true);
   }
 
-  protected abstract void onRangeChanged();
+  protected abstract void onRangeChanged(boolean updateActiveRow);
 }

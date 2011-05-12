@@ -425,12 +425,15 @@ body, select {
 
 .bee-CellGridActiveCell {
   background-color: #ffc !important;
-  outline-color: red;
-  outline-style: solid;
-  outline-width: medium;
+  outline: red solid medium !important;
   outline-offset: -1px;
   overflow: auto;
   resize: both;
+}
+
+.bee-CellGridResizedCell {
+  outline: blue dashed 1px;
+  outline-offset: -1px;
 }
 
 .bee-CellGridResizerHorizontal {
