@@ -46,9 +46,6 @@ public class GridPresenter implements Presenter {
     }
 
     public void onResponse(int value) {
-      BeeKeeper.getLog().info("filter callback", filter);
-      BeeKeeper.getLog().info("row count", value);
-
       if (!Objects.equal(filter, getLastFilter())) {
         BeeKeeper.getLog().warning("filter not the same");
         BeeKeeper.getLog().warning(getLastFilter());
@@ -122,6 +119,9 @@ public class GridPresenter implements Presenter {
           getView().getContent().applyOptions(options);
         }
         break;
+      case REFRESH:
+        getDataProvider().refresh();
+        break;
       default:
         BeeKeeper.getLog().info(action, "not implemented");
     }
@@ -169,7 +169,7 @@ public class GridPresenter implements Presenter {
     if (isAsync) {
       provider = new AsyncProvider(display, info);
     } else {
-      provider = new CachedProvider(display, rowSet);
+      provider = new CachedProvider(display, info.getName(), rowSet);
     }
     return provider;
   }

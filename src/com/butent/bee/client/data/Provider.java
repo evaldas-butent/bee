@@ -5,8 +5,10 @@ import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.view.client.Range;
 import com.google.gwt.view.client.RangeChangeEvent;
 
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.view.event.SortEvent;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.data.cache.CacheManager;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.Order;
 
@@ -77,6 +79,40 @@ public abstract class Provider implements SortEvent.Handler {
       }
     }
   }
+  
+  public void refresh() {
+    CacheManager.removeQuietly(getViewName());
+
+    final Filter flt = getFilter();
+    Queries.getRowCount(getViewName(), flt, new Queries.IntCallback() {
+      @Override
+      public void onResponse(int value) {
+        if (value <= 0) {
+          BeeKeeper.getLog().warning(getViewName(), flt, "refresh: row count", value);
+          if (flt == null) {
+            return;
+          }
+          
+          Queries.getRowCount(getViewName(), new Queries.IntCallback() {
+            @Override
+            public void onResponse(int rowCount) {
+              if (rowCount <= 0) {
+                BeeKeeper.getLog().warning(getViewName(), "refresh: row count", rowCount);
+              } else {
+                BeeKeeper.getLog().info(getViewName(), "filter off");
+                setFilter(null);
+                getDisplay().setRowCount(rowCount);
+                onRefresh();
+              }
+            }
+          });
+        } else {
+          getDisplay().setRowCount(value);
+          onRefresh();
+        }
+      }
+    });
+  }
 
   public void setFilter(Filter filter) {
     this.filter = filter;
@@ -101,6 +137,8 @@ public abstract class Provider implements SortEvent.Handler {
   protected Range getRange() {
     return getDisplay().getVisibleRange();
   }
+  
+  protected abstract String getViewName();
 
   protected void goTop() {
     getDisplay().setPageStart(0);
@@ -108,4 +146,6 @@ public abstract class Provider implements SortEvent.Handler {
   }
 
   protected abstract void onRangeChanged(boolean updateActiveRow);
+
+  protected abstract void onRefresh();
 }

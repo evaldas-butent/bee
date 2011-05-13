@@ -8,8 +8,6 @@ import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.Global;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils.ScrollBars;
 import com.butent.bee.client.event.EventUtils;
@@ -313,10 +311,6 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
       }
       if (h <= 0) {
         h = DomUtils.getParentClientHeight(this);
-      }
-
-      if (Global.isDebug()) {
-        BeeKeeper.getLog().info("adapt", init, w, h);
       }
 
       int pageSize = estimatePageSize(content, w, h);

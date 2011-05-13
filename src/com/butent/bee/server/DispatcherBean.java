@@ -11,6 +11,7 @@ import com.butent.bee.server.ui.UiServiceBean;
 import com.butent.bee.server.utils.Reflection;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.BeeType;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseMessage;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -18,6 +19,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.LogUtils;
 
+import java.util.EnumSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -95,7 +97,7 @@ public class DispatcherBean {
       }
       Object obj = resp.getResponse();
 
-      if (!BeeUtils.isEmpty(obj)) {
+      if (!BeeUtils.isEmpty(obj, EnumSet.of(BeeType.NUMBER))) {
         buff.add(Codec.beeSerialize(obj));
       }
     } else {

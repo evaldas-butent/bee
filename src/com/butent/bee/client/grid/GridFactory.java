@@ -260,7 +260,7 @@ public class GridFactory {
     }
 
     @SuppressWarnings("unused")
-    CachedProvider provider = new CachedProvider(grid, table);
+    CachedProvider provider = new CachedProvider(grid, null, table);
 
     grid.setHeaderCellHeight(23);
     grid.setBodyCellHeight(20);

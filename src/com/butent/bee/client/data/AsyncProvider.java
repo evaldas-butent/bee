@@ -3,7 +3,6 @@ package com.butent.bee.client.data;
 import com.google.gwt.view.client.Range;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.Global;
 import com.butent.bee.client.view.event.SortEvent;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -23,19 +22,17 @@ import java.util.List;
 public class AsyncProvider extends Provider {
 
   private class Callback implements Queries.RowSetCallback {
-    private final HasDataTable display;
     private final Range range;
     private final boolean updateActiveRow;
 
-    private Callback(HasDataTable display, Range range, boolean updateActiveRow) {
-      this.display = display;
+    private Callback(Range range, boolean updateActiveRow) {
       this.range = range;
       this.updateActiveRow = updateActiveRow;
     }
 
     @Override
     public void onResponse(BeeRowSet rowSet) {
-      if (!display.getVisibleRange().equals(range)) {
+      if (!getDisplay().getVisibleRange().equals(range)) {
         BeeKeeper.getLog().warning("range changed");
         return;
       }
@@ -49,11 +46,16 @@ public class AsyncProvider extends Provider {
   }
 
   private final DataInfo dataInfo;
+  private CachingPolicy cachingPolicy = CachingPolicy.FULL;
 
   public AsyncProvider(HasDataTable display, DataInfo dataInfo) {
     super(display);
     Assert.notNull(dataInfo);
     this.dataInfo = dataInfo;
+  }
+
+  public CachingPolicy getCachingPolicy() {
+    return cachingPolicy;
   }
 
   public DataInfo getDataInfo() {
@@ -67,12 +69,12 @@ public class AsyncProvider extends Provider {
     goTop();
   }
 
+  public void setCachingPolicy(CachingPolicy cachingPolicy) {
+    this.cachingPolicy = cachingPolicy;
+  }
+  
   public void updateDisplay(int start, int length, BeeRowSet data, boolean updateActiveRow) {
     int rowCount = data.getNumberOfRows();
-
-    if (Global.isDebug()) {
-      BeeKeeper.getLog().info("upd", start, length, rowCount);
-    }
 
     Assert.nonNegative(start);
     Assert.isPositive(length);
@@ -92,14 +94,23 @@ public class AsyncProvider extends Provider {
   }
 
   @Override
+  protected String getViewName() {
+    return getDataInfo().getName();
+  }
+
+  @Override
   protected void onRangeChanged(boolean updateActiveRow) {
-    HasDataTable displ = getDisplay();
     Range range = getRange();
 
     Filter flt = getFilter();
     Order ord = getOrder();
 
-    Queries.getRowSet(getDataInfo().getName(), flt, ord, range.getStart(), range.getLength(),
-        CachingPolicy.FULL, new Callback(displ, range, updateActiveRow));
+    Queries.getRowSet(getViewName(), flt, ord, range.getStart(), range.getLength(),
+        getCachingPolicy(), new Callback(range, updateActiveRow));
+  }
+
+  @Override
+  protected void onRefresh() {
+    onRangeChanged(true);
   }
 }

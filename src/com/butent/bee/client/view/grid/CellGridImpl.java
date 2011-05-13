@@ -7,7 +7,6 @@ import com.google.gwt.user.cellview.client.Header;
 import com.google.gwt.user.cellview.client.TextHeader;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.Global;
 import com.butent.bee.client.dom.Edges;
 import com.butent.bee.client.dom.Font;
 import com.butent.bee.client.dom.StyleUtils;
@@ -331,10 +330,6 @@ public class CellGridImpl extends CellGrid implements GridView, SearchView {
   public void updatePageSize(int pageSize, boolean init) {
     Assert.isPositive(pageSize);
     int oldSize = getPageSize();
-
-    if (Global.isDebug()) {
-      BeeKeeper.getLog().info("page size", oldSize, "/", pageSize, init);
-    }
 
     if (oldSize == pageSize) {
       if (init) {

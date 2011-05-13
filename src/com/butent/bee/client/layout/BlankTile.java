@@ -6,9 +6,7 @@ import com.google.gwt.layout.client.Layout;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.RequiresResize;
-import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.client.Global;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.HasAfterAddHandler;
 import com.butent.bee.client.utils.BeeCommand;
@@ -20,8 +18,8 @@ import com.butent.bee.shared.utils.BeeUtils;
  * Handles separate areas(tiles) of the layout.
  */
 
-public class BlankTile extends Composite implements HasAfterAddHandler, HasId,
-    RequiresResize {
+public class BlankTile extends Composite implements HasAfterAddHandler, HasId, RequiresResize {
+
   private class UpdateCommand extends BeeCommand {
     @Override
     public void execute() {
@@ -67,43 +65,6 @@ public class BlankTile extends Composite implements HasAfterAddHandler, HasId,
       return;
     }
     TilePanel t = (TilePanel) getParent();
-
-    if (!Global.isDebug()) {
-      caption.setText(BeeUtils.concat(1, t.getWidgetWidth(this),
-          t.getWidgetHeight(this)));
-      return;
-    }
-
-    StringBuilder sb = new StringBuilder();
-    int c = 0;
-    Widget w = getParent();
-    Widget p = w.getParent();
-
-    while (p instanceof TilePanel) {
-      Direction direction = ((TilePanel) p).getWidgetDirection(w);
-      switch (direction) {
-        case CENTER:
-          c++;
-          break;
-        default:
-          if (c > 0) {
-            sb.insert(0, c);
-          }
-          c = 0;
-          if (direction != null) {
-            sb.insert(0, direction.brief().toLowerCase());
-          }
-      }
-
-      w = p;
-      p = w.getParent();
-    }
-    if (c > 0) {
-      sb.insert(0, c);
-    }
-
-    caption.setText(BeeUtils.concat(1, t.getId(), sb, t.getWidgetWidth(this),
-        t.getWidgetHeight(this)));
+    caption.setText(BeeUtils.concat(1, t.getWidgetWidth(this), t.getWidgetHeight(this)));
   }
-
 }

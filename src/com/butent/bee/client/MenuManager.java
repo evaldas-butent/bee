@@ -77,16 +77,7 @@ public class MenuManager implements Module {
       limits[i] = MenuConstants.isRootLevel(i) ? rLim : iLim;
     }
 
-    boolean debug = Global.isDebug();
-    BeeDuration dur = null;
-    if (debug) {
-      dur = new BeeDuration("draw menu");
-    }
-
     Widget w = createMenu(0, MenuUtils.limitEntries(getRoots(), rLim), null);
-    if (debug) {
-      BeeKeeper.getLog().finish(dur);
-    }
 
     boolean ok = (w != null);
     if (ok) {
@@ -94,7 +85,6 @@ public class MenuManager implements Module {
     } else {
       BeeKeeper.getLog().severe("error creating menu");
     }
-
     return ok;
   }
 

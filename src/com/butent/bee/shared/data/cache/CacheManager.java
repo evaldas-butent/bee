@@ -279,6 +279,12 @@ public class CacheManager {
     }
   }
 
+  public static void invalidateQuietly(String key) {
+    if (contains(key)) {
+      get(key).invalidate();
+    }
+  }
+  
   public static Entry put(String viewName, List<BeeColumn> columns) {
     Assert.notEmpty(viewName);
 
@@ -299,6 +305,13 @@ public class CacheManager {
   public static void removeAll() {
     invalidateAll();
     ENTRIES.clear();
+  }
+  
+  public static void removeQuietly(String key) {
+    if (contains(key)) {
+      invalidate(key);
+      ENTRIES.remove(normalizeKey(key));
+    }
   }
 
   public static boolean setRowCount(String viewName, Filter filter, Order order, int rowCount) {
