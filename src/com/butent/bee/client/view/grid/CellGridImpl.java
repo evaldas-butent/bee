@@ -8,8 +8,8 @@ import com.google.gwt.user.cellview.client.TextHeader;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
-import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Edges;
+import com.butent.bee.client.dom.Font;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.grid.CellColumn;
 import com.butent.bee.client.grid.ColumnFooter;
@@ -19,13 +19,13 @@ import com.butent.bee.client.grid.RowIdColumn;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.view.search.SearchView;
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
@@ -53,12 +53,14 @@ public class CellGridImpl extends CellGrid implements GridView, SearchView {
     super();
   }
 
-  public void applyOptions(String options, boolean redraw) {
+  public void applyOptions(String options) {
     if (BeeUtils.isEmpty(options)) {
       return;
     }
-
+    
+    boolean redraw = false;
     String[] opt = BeeUtils.split(options, ";");
+
     for (int i = 0; i < opt.length; i++) {
       String[] arr = BeeUtils.split(opt[i], " ");
       int len = arr.length;
@@ -66,6 +68,7 @@ public class CellGridImpl extends CellGrid implements GridView, SearchView {
         continue;
       }
       String cmd = arr[0].trim().toLowerCase();
+      String args = opt[i].trim().substring(cmd.length() + 1).trim();
 
       int[] xp = new int[len - 1];
       String[] sp = new String[len - 1];
@@ -98,65 +101,122 @@ public class CellGridImpl extends CellGrid implements GridView, SearchView {
       if (BeeUtils.isDigit(colId) && xp[0] < getColumnCount()) {
         colId = getColumnId(xp[0]);
       }
-
+      int cc = getColumnCount();
+      
+      Font font = null;
       String msg = null;
 
       if (cmd.startsWith("bh")) {
         msg = "setBodyCellHeight " + xp[0];
         setBodyCellHeight(xp[0]);
+        redraw = true;
       } else if (cmd.startsWith("bp")) {
         msg = "setBodyCellPadding " + edges.getCssValue();
         setBodyCellPadding(edges);
+        redraw = true;
       } else if (cmd.startsWith("bw")) {
         msg = "setBodyBorderWidth " + edges.getCssValue();
         setBodyBorderWidth(edges);
+        redraw = true;
       } else if (cmd.startsWith("bm")) {
         msg = "setBodyCellMargin " + edges.getCssValue();
         setBodyCellMargin(edges);
+        redraw = true;
+      } else if (cmd.startsWith("bf")) {
+        font = Font.parse(args);
+        msg = "setColumnBodyFont " + font.transform();
+        for (int c = 0; c < cc; c++) {
+          setColumnBodyFont(getColumnId(c), font);
+        }
+        redraw = true;
 
       } else if (cmd.startsWith("hh")) {
         msg = "setHeaderCellHeight " + xp[0];
         setHeaderCellHeight(xp[0]);
+        redraw = true;
       } else if (cmd.startsWith("hp")) {
         msg = "setHeaderCellPadding " + edges.getCssValue();
         setHeaderCellPadding(edges);
+        redraw = true;
       } else if (cmd.startsWith("hw")) {
         msg = "setHeaderBorderWidth " + edges.getCssValue();
         setHeaderBorderWidth(edges);
+        redraw = true;
       } else if (cmd.startsWith("hm")) {
         msg = "setHeaderCellMargin " + edges.getCssValue();
         setHeaderCellMargin(edges);
+        redraw = true;
+      } else if (cmd.startsWith("hf")) {
+        font = Font.parse(args);
+        msg = "setColumnHeaderFont " + font.transform();
+        for (int c = 0; c < cc; c++) {
+          setColumnHeaderFont(getColumnId(c), font);
+        }
+        redraw = true;
 
       } else if (cmd.startsWith("fh")) {
         msg = "setFooterCellHeight " + xp[0];
         setFooterCellHeight(xp[0]);
+        redraw = true;
       } else if (cmd.startsWith("fp")) {
         msg = "setFooterCellPadding " + edges.getCssValue();
         setFooterCellPadding(edges);
+        redraw = true;
       } else if (cmd.startsWith("fw")) {
         msg = "setFooterBorderWidth " + edges.getCssValue();
         setFooterBorderWidth(edges);
+        redraw = true;
       } else if (cmd.startsWith("fm")) {
         msg = "setFooterCellMargin " + edges.getCssValue();
         setFooterCellMargin(edges);
+        redraw = true;
+      } else if (cmd.startsWith("ff")) {
+        font = Font.parse(args);
+        msg = "setColumnFooterFont " + font.transform();
+        for (int c = 0; c < cc; c++) {
+          setColumnFooterFont(getColumnId(c), font);
+        }
+        redraw = true;
 
       } else if (cmd.startsWith("chw") && len > 2) {
         msg = "setColumnHeaderWidth " + colId + " " + xp[1];
         setColumnHeaderWidth(colId, xp[1]);
+        redraw = true;
+      } else if (cmd.startsWith("chf") && len > 2) {
+        font = Font.parse(ArrayUtils.join(sp, " ", 1));
+        msg = "setColumnHeaderFont " + colId + " " + font.transform();
+        setColumnHeaderFont(colId, font);
+        redraw = true;
+
       } else if (cmd.startsWith("cbw") && len > 2) {
         msg = "setColumnBodyWidth " + colId + " " + xp[1];
         setColumnBodyWidth(colId, xp[1]);
+        redraw = true;
+      } else if (cmd.startsWith("cbf") && len > 2) {
+        font = Font.parse(ArrayUtils.join(sp, " ", 1));
+        msg = "setColumnBodyFont " + colId + " " + font.transform();
+        setColumnBodyFont(colId, font);
+        redraw = true;
+
       } else if (cmd.startsWith("cfw") && len > 2) {
         msg = "setColumnFooterWidth " + colId + " " + xp[1];
         setColumnFooterWidth(colId, xp[1]);
+        redraw = true;
+      } else if (cmd.startsWith("cff") && len > 2) {
+        font = Font.parse(ArrayUtils.join(sp, " ", 1));
+        msg = "setColumnFooterFont " + colId + " " + font.transform();
+        setColumnFooterFont(colId, font);
+        redraw = true;
 
       } else if (cmd.startsWith("cw") && len > 2) {
         if (len <= 3) {
           msg = "setColumnWidth " + colId + " " + xp[1];
           setColumnWidth(colId, xp[1]);
+          redraw = true;
         } else {
           msg = "setColumnWidth " + colId + " " + xp[1] + " " + StyleUtils.parseUnit(sp[2]);
           setColumnWidth(colId, xp[1], StyleUtils.parseUnit(sp[2]));
+          redraw = true;
         }
 
       } else if (cmd.startsWith("minw")) {
@@ -178,6 +238,28 @@ public class CellGridImpl extends CellGrid implements GridView, SearchView {
       } else if (cmd.startsWith("zs")) {
         msg = "setResizerShowSensitivityMillis " + xp[0];
         setResizerShowSensitivityMillis(xp[0]);
+        
+      } else if (cmd.startsWith("fit")) {
+        if (contains(colId)) {
+          autoFitColumn(colId);
+          msg = "autoFitColumn " + colId;
+        } else {
+          autoFit();
+          msg = "autoFit";
+        }
+      
+      } else if (cmd.startsWith("ps")) {
+        if (xp[0] > 0) {
+          updatePageSize(xp[0], false);
+          msg = "updatePageSize " + xp[0];
+        } else {
+          int oldPageSize = getPageSize();
+          int newPageSize = estimatePageSize();
+          if (newPageSize > 0) {
+            updatePageSize(newPageSize, false);
+          }
+          msg = "page size: old " + oldPageSize + " new " + newPageSize;
+        }
       }
 
       if (msg == null) {
@@ -228,25 +310,10 @@ public class CellGridImpl extends CellGrid implements GridView, SearchView {
     }
     estimateHeaderWidths();
   }
-
+  
+  @Override
   public int estimatePageSize(int containerWidth, int containerHeight) {
-    int rh = getBodyCellHeight() + getBodyCellHeightIncrement();
-
-    int z = containerHeight - getHeaderHeight() - getFooterHeight();
-
-    int width = getBodyWidth();
-    if (width <= 0 || width > containerWidth) {
-      z -= DomUtils.getScrollbarHeight();
-    }
-
-    if (Global.isDebug()) {
-      BeeKeeper.getLog().info("estimate", containerWidth, containerHeight, width, z, rh, z / rh);
-    }
-
-    if (rh > 0 && z > rh) {
-      return z / rh;
-    }
-    return BeeConst.SIZE_UNKNOWN;
+    return super.estimatePageSize(containerWidth, containerHeight);
   }
 
   public Presenter getViewPresenter() {

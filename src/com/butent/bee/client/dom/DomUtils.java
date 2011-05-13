@@ -135,6 +135,8 @@ public class DomUtils {
 
   private static final int MAX_GENERATIONS = 100;
 
+  private static final String ALL_TAGS = "*";
+
   private static int idCounter = 0;
 
   private static int scrollbarWidth = -1;
@@ -577,6 +579,22 @@ public class DomUtils {
     return null;
   }
 
+  public static Element getChildById(Element parent, String id) {
+    Assert.notEmpty(id);
+    NodeList<Element> children = getChildren(parent);
+    if (children == null) {
+      return null;
+    }
+    
+    for (int i = 0; i < children.getLength(); i++) {
+      Element child = children.getItem(i);
+      if (BeeUtils.same(id, child.getId())) {
+        return child;
+      }
+    }
+    return null;
+  }
+  
   public static int getChildOffsetHeight(HasWidgets parent, String id) {
     Widget child = getChild(parent, id);
     if (child == null) {
@@ -594,7 +612,12 @@ public class DomUtils {
       return child.getOffsetWidth();
     }
   }
-
+  
+  public static NodeList<Element> getChildren(Element parent) {
+    Assert.notNull(parent);
+    return parent.getElementsByTagName(ALL_TAGS);
+  }
+ 
   public static List<Property> getChildrenInfo(Widget w) {
     Assert.notNull(w);
     List<Property> lst = new ArrayList<Property>();

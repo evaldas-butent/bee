@@ -117,9 +117,9 @@ public class GridPresenter implements Presenter {
         BeeKeeper.getUi().closeView(getView());
         break;
       case CONFIGURE:
-        String input = Window.prompt("Options", "");
-        if (!BeeUtils.isEmpty(input)) {
-          getView().getContent().applyOptions(input, true);
+        String options = Window.prompt("Options", "");
+        if (!BeeUtils.isEmpty(options)) {
+          getView().getContent().applyOptions(options);
         }
         break;
       default:

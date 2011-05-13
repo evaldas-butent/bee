@@ -6,12 +6,17 @@ import com.google.gwt.dom.client.Style;
 import com.google.gwt.dom.client.Style.FontStyle;
 import com.google.gwt.dom.client.Style.FontWeight;
 import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.safecss.shared.SafeStyles;
+import com.google.gwt.safecss.shared.SafeStylesBuilder;
 import com.google.gwt.user.client.ui.UIObject;
 
 import com.butent.bee.client.dom.StyleUtils.FontSize;
 import com.butent.bee.client.dom.StyleUtils.FontVariant;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasInfo;
+import com.butent.bee.shared.RangeMap;
+import com.butent.bee.shared.Transformable;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Property;
 
@@ -21,11 +26,20 @@ import java.util.List;
  * Enables to operate with various parameters of fonts used by the system.
  */
 
-public class Font implements HasInfo {
+public class Font implements HasInfo, Transformable {
 
   private static final double UNKNOWN = -1.0;
+  private static final RangeMap<Unit> DEFAULT_UNITS =
+    RangeMap.create(null, 4.0, Unit.EM, 4.0, null, Unit.PX);
 
-  public static Font parse(String... input) {
+  public static Font parse(String input) {
+    if (BeeUtils.isEmpty(input)) {
+      return null;
+    }
+    return parse(BeeUtils.split(input, BeeConst.STRING_SPACE));
+  }
+  
+  public static Font parse(String[] input) {
     if (input == null || input.length <= 0) {
       return null;
     }
@@ -168,14 +182,12 @@ public class Font implements HasInfo {
       st.setFontWeight(getWeight());
     }
 
-    if (getAbsoluteSize() != null) {
+    if (getSizeValue() > 0 && getSizeUnit() != null) {
+      st.setFontSize(getSizeValue(), getSizeUnit());
+    } else if (getAbsoluteSize() != null) {
       StyleUtils.setFontSize(st, getAbsoluteSize());
     } else if (getSizeValue() > 0) {
-      if (getSizeUnit() != null) {
-        st.setFontSize(getSizeValue(), getSizeUnit());
-      } else {
-        StyleUtils.setFontSizePx(st, getSizeValue());
-      }
+      st.setFontSize(getSizeValue(), DEFAULT_UNITS.get(getSizeValue()));
     }
 
     if (!BeeUtils.isEmpty(getFamily())) {
@@ -188,6 +200,37 @@ public class Font implements HasInfo {
     applyTo(obj.getElement());
   }
 
+  public SafeStyles buildCss() {
+    if (isEmpty()) {
+      return null;
+    }
+    
+    SafeStylesBuilder builder = new SafeStylesBuilder();
+
+    if (getStyle() != null) {
+      builder.append(StyleUtils.buildFontStyle(getStyle()));
+    }
+    if (getVariant() != null) {
+      builder.append(StyleUtils.buildFontVariant(getVariant()));
+    }
+    if (getWeight() != null) {
+      builder.append(StyleUtils.buildFontWeight(getWeight()));
+    }
+
+    if (getSizeValue() > 0 && getSizeUnit() != null) {
+      builder.append(StyleUtils.buildFontSize(getSizeValue(), getSizeUnit()));
+    } else if (getAbsoluteSize() != null) {
+      builder.append(StyleUtils.buildFontSize(getAbsoluteSize()));
+    } else if (getSizeValue() > 0) {
+      builder.append(StyleUtils.buildFontSize(getSizeValue(), DEFAULT_UNITS.get(getSizeValue())));
+    }
+    
+    if (!BeeUtils.isEmpty(getFamily())) {
+      builder.append(StyleUtils.buildFontFamily(getFamily()));
+    }
+    return builder.toSafeStyles();
+  }
+  
   public FontSize getAbsoluteSize() {
     return absoluteSize;
   }
@@ -249,6 +292,11 @@ public class Font implements HasInfo {
     return weight;
   }
 
+  public boolean isEmpty() {
+    return getStyle() == null && getVariant() == null && getWeight() == null
+        && getAbsoluteSize() == null && getSizeValue() <= 0 && getFamily() == null;
+  }
+
   public void removeFrom(Element el) {
     Assert.notNull(el);
     removeFrom(el.getStyle());
@@ -307,5 +355,14 @@ public class Font implements HasInfo {
 
   public void setWeight(FontWeight weight) {
     this.weight = weight;
+  }
+
+  @Override
+  public String transform() {
+    SafeStyles css = buildCss();
+    if (css == null) {
+      return "Font instance is empty"; 
+    }
+    return css.asString();
   }
 }

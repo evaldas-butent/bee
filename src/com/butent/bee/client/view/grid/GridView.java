@@ -12,7 +12,7 @@ import java.util.List;
  */
 
 public interface GridView extends View, HasDataTable {
-  void applyOptions(String options, boolean redraw);
+  void applyOptions(String options);
 
   void create(List<BeeColumn> dataColumns, int rowCount, BeeRowSet rowSet);
 

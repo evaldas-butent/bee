@@ -29,8 +29,8 @@ public class HeaderCell extends AbstractCell<String> {
    */
 
   interface Template extends SafeHtmlTemplates {
-    @Template("<div class=\"bee-HeaderCellCaption\">{0}</div>")
-    SafeHtml caption(SafeHtml label);
+    @Template("<div id=\"{0}\" class=\"bee-HeaderCellCaption\">{1}</div>")
+    SafeHtml caption(String id, SafeHtml label);
 
     @Template("<div id=\"{0}\" class=\"{1}\"></div>")
     SafeHtml sortable(String id, String classes);
@@ -38,8 +38,8 @@ public class HeaderCell extends AbstractCell<String> {
     @Template("<div id=\"{0}\" class=\"{1}\">{2}</div>")
     SafeHtml sorted(String id, String classes, String sortInfo);
 
-    @Template("<div class=\"bee-HeaderCellWidthInfo\">{0}</div>")
-    SafeHtml widthInfo(int width);
+    @Template("<div id=\"{0}\" class=\"bee-HeaderCellWidthInfo\">{1}</div>")
+    SafeHtml widthInfo(String id, int width);
   }
 
   private static final String STYLE_SORT_INFO = "bee-HeaderCellSortInfo";
@@ -50,13 +50,18 @@ public class HeaderCell extends AbstractCell<String> {
   private static Template template = null;
 
   private final String sortInfoId;
+  private final String captionId;
+  private final String widthInfoId;
 
   public HeaderCell() {
     super(EventUtils.EVENT_TYPE_CLICK);
     if (template == null) {
       template = GWT.create(Template.class);
     }
+
     sortInfoId = DomUtils.createUniqueId("sort-info");
+    captionId = DomUtils.createUniqueId("caption");
+    widthInfoId = DomUtils.createUniqueId("width-info");
   }
 
   @Override
@@ -72,9 +77,34 @@ public class HeaderCell extends AbstractCell<String> {
       return;
     }
 
-    if (EventUtils.isClick(event) && EventUtils.isTargetId(event.getEventTarget(), sortInfoId)) {
-      EventUtils.eatEvent(event);
-      grid.updateOrder(context.getColumn(), event);
+    if (EventUtils.isClick(event)) {
+      int col = context.getColumn();
+      
+      if (EventUtils.isTargetId(event.getEventTarget(), sortInfoId)) {
+        EventUtils.eatEvent(event);
+        grid.updateOrder(col, event);
+
+      } else if (parent != null && EventUtils.hasModifierKey(event)) {
+        EventUtils.eatEvent(event);
+        int headerWidth = grid.estimateHeaderWidth(col);
+
+        Element leftElement = DomUtils.getChildById(parent, sortInfoId);
+        if (leftElement != null) {
+          headerWidth += leftElement.getOffsetLeft() + leftElement.getOffsetWidth();
+        }
+        Element rightElement = DomUtils.getChildById(parent, widthInfoId);
+        if (rightElement != null) {
+          headerWidth += parent.getOffsetWidth() - rightElement.getOffsetLeft();
+        }
+        
+        if (headerWidth > grid.getColumnWidth(col)) {
+          grid.resizeColumn(col, headerWidth);
+        }
+        
+      } else if (EventUtils.isTargetId(event.getEventTarget(), widthInfoId)) {
+        EventUtils.eatEvent(event);
+        grid.autoFitColumn(col);
+      }
     }
   }
 
@@ -89,7 +119,7 @@ public class HeaderCell extends AbstractCell<String> {
 
   public void renderHeader(CellContext context, String label, SafeHtmlBuilder sb) {
     if (label != null) {
-      sb.append(template.caption(SafeHtmlUtils.fromString(label)));
+      sb.append(template.caption(captionId, SafeHtmlUtils.fromString(label)));
     }
 
     CellGrid grid = context.getGrid();
@@ -112,7 +142,7 @@ public class HeaderCell extends AbstractCell<String> {
         }
       }
 
-      sb.append(template.widthInfo(grid.getColumnWidth(label)));
+      sb.append(template.widthInfo(widthInfoId, grid.getColumnWidth(label)));
     }
   }
 }

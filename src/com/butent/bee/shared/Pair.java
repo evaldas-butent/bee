@@ -1,5 +1,7 @@
 package com.butent.bee.shared;
 
+import com.google.common.base.Objects;
+
 import com.butent.bee.shared.utils.BeeUtils;
 
 /**
@@ -23,6 +25,18 @@ public class Pair<A, B> implements Transformable {
     this.b = b;
   }
 
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (!(obj instanceof Pair)) {
+      return false;
+    }
+    return Objects.equal(getA(), ((Pair<?, ?>) obj).getA())
+        && Objects.equal(getB(), ((Pair<?, ?>) obj).getB());
+  }
+
   /**
    * Returns the first object or value of object.
    * 
@@ -39,6 +53,11 @@ public class Pair<A, B> implements Transformable {
    */
   public B getB() {
     return b;
+  }
+
+  @Override
+  public int hashCode() {
+    return 1 + Objects.hashCode(getA(), getB());
   }
 
   /**
