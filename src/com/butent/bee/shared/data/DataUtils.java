@@ -44,6 +44,8 @@ public class DataUtils {
         table = new ExtendedPropertiesData((List<ExtendedProperty>) data, columnLabels);
       } else if (el instanceof Property) {
         table = new PropertiesData((List<Property>) data, columnLabels);
+      } else if (el instanceof String[]) {
+        table = new StringMatrix<TableColumn>((List<String[]>) data, columnLabels);
       }
     }
 

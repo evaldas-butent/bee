@@ -2,6 +2,7 @@ package com.butent.bee.server.jdbc;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.State;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.LogUtils;
 import com.butent.bee.shared.utils.Property;
@@ -12,7 +13,9 @@ import java.sql.SQLException;
 import java.sql.SQLWarning;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Logger;
 
 /**
@@ -67,7 +70,7 @@ public class BeeStatement {
     return lst;
   }
 
-  private int state = BeeConst.STATE_UNKNOWN;
+  private Set<State> states = EnumSet.noneOf(State.class);
 
   private List<SQLException> errors = new ArrayList<SQLException>();
   private int fetchDirection;
@@ -248,8 +251,8 @@ public class BeeStatement {
     return resultSetType;
   }
 
-  public int getState() {
-    return state;
+  public Set<State> getStates() {
+    return states;
   }
 
   public boolean hasErrors() {
@@ -299,7 +302,7 @@ public class BeeStatement {
     Assert.notNull(stmt);
     Assert.state(validState());
 
-    if (!hasState(BeeConst.STATE_CHANGED)) {
+    if (!hasState(State.CHANGED)) {
       return;
     }
 
@@ -398,8 +401,10 @@ public class BeeStatement {
     this.resultSetType = resultSetType;
   }
 
-  public void setState(int state) {
-    this.state = state;
+  public void setState(State state) {
+    Assert.notNull(state);
+    getStates().clear();
+    addState(state);
   }
 
   public void setStatementInfo(Statement stmt) {
@@ -416,7 +421,7 @@ public class BeeStatement {
       resultSetType = stmt.getResultSetType();
       poolable = stmt.isPoolable();
 
-      state = BeeConst.STATE_INITIALIZED;
+      setState(State.INITIALIZED);
     } catch (SQLException ex) {
       handleError(ex);
     }
@@ -452,11 +457,10 @@ public class BeeStatement {
       stmt.setFetchSize(size);
       int z = stmt.getFetchSize();
       if (z == size) {
-        addState(BeeConst.STATE_CHANGED);
+        addState(State.CHANGED);
         ok = true;
       } else {
-        LogUtils.warning(logger, "fetch size not updated:", "expected", size,
-            "getFetchSize", z);
+        LogUtils.warning(logger, "fetch size not updated:", "expected", size, "getFetchSize", z);
         ok = false;
       }
     } catch (SQLException ex) {
@@ -467,7 +471,6 @@ public class BeeStatement {
       }
       ok = false;
     }
-
     return ok;
   }
 
@@ -484,11 +487,11 @@ public class BeeStatement {
       stmt.setMaxFieldSize(size);
       int z = stmt.getMaxFieldSize();
       if (z == size) {
-        addState(BeeConst.STATE_CHANGED);
+        addState(State.CHANGED);
         ok = true;
       } else {
-        LogUtils.warning(logger, "max field size not updated:", "expected",
-            size, "getMaxFieldSize", z);
+        LogUtils.warning(logger, "max field size not updated:",
+            "expected", size, "getMaxFieldSize", z);
         ok = false;
       }
     } catch (SQLException ex) {
@@ -499,7 +502,6 @@ public class BeeStatement {
       }
       ok = false;
     }
-
     return ok;
   }
 
@@ -516,11 +518,10 @@ public class BeeStatement {
       stmt.setMaxRows(rows);
       int z = stmt.getMaxRows();
       if (z == rows) {
-        addState(BeeConst.STATE_CHANGED);
+        addState(State.CHANGED);
         ok = true;
       } else {
-        LogUtils.warning(logger, "max rows not updated:", "expected", rows,
-            "getMaxRows", z);
+        LogUtils.warning(logger, "max rows not updated:", "expected", rows, "getMaxRows", z);
         ok = false;
       }
     } catch (SQLException ex) {
@@ -531,7 +532,6 @@ public class BeeStatement {
       }
       ok = false;
     }
-
     return ok;
   }
 
@@ -564,11 +564,11 @@ public class BeeStatement {
       stmt.setQueryTimeout(timeout);
       int z = stmt.getQueryTimeout();
       if (z == timeout) {
-        addState(BeeConst.STATE_CHANGED);
+        addState(State.CHANGED);
         ok = true;
       } else {
-        LogUtils.warning(logger, "query timeout not updated:", "expected",
-            timeout, "getQueryTimeout", z);
+        LogUtils.warning(logger, "query timeout not updated:",
+            "expected", timeout, "getQueryTimeout", z);
         ok = false;
       }
     } catch (SQLException ex) {
@@ -579,12 +579,13 @@ public class BeeStatement {
       }
       ok = false;
     }
-
     return ok;
   }
 
-  private void addState(int st) {
-    this.state |= st;
+  private void addState(State state) {
+    if (state != null) {
+      getStates().add(state);
+    }
   }
 
   private boolean checkConcurrency(Statement stmt) {
@@ -599,7 +600,6 @@ public class BeeStatement {
       handleError(ex);
       ok = true;
     }
-
     return ok;
   }
 
@@ -631,7 +631,6 @@ public class BeeStatement {
       handleError(ex);
       ok = true;
     }
-
     return ok;
   }
 
@@ -663,7 +662,6 @@ public class BeeStatement {
       handleError(ex);
       ok = true;
     }
-
     return ok;
   }
 
@@ -695,7 +693,6 @@ public class BeeStatement {
       handleError(ex);
       ok = true;
     }
-
     return ok;
   }
 
@@ -727,18 +724,20 @@ public class BeeStatement {
       handleError(ex);
       ok = true;
     }
-
     return ok;
   }
 
   private void handleError(SQLException ex) {
     errors.add(ex);
     LogUtils.error(logger, ex);
-    addState(BeeConst.STATE_ERROR);
+    addState(State.ERROR);
   }
 
-  private boolean hasState(int st) {
-    return (state & st) != 0;
+  private boolean hasState(State state) {
+    if (state == null) {
+      return false;
+    }
+    return getStates().contains(state);
   }
 
   private void noStatement() {
@@ -753,13 +752,12 @@ public class BeeStatement {
 
     try {
       stmt.setFetchDirection(direction);
-      addState(BeeConst.STATE_CHANGED);
+      addState(State.CHANGED);
       ok = true;
     } catch (SQLException ex) {
       handleError(ex);
       ok = false;
     }
-
     return ok;
   }
 
@@ -771,19 +769,16 @@ public class BeeStatement {
 
     try {
       stmt.setPoolable(pool);
-      addState(BeeConst.STATE_CHANGED);
+      addState(State.CHANGED);
       ok = true;
     } catch (SQLException ex) {
       handleError(ex);
       ok = false;
     }
-
     return ok;
   }
 
   private boolean validState() {
-    return hasState(BeeConst.STATE_INITIALIZED)
-        && !hasState(BeeConst.STATE_ERROR);
+    return hasState(State.INITIALIZED) && !hasState(State.ERROR);
   }
-
 }

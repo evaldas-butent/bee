@@ -55,7 +55,7 @@ public class SimplePager extends AbstractPagerImpl {
     public void execute() {
       switch (goTo) {
         case FIRST:
-          firstPage();
+          getDisplay().setVisibleRange(0, getDisplay().getVisibleRange().getLength());
           break;
         case REWIND:
           rewind();
@@ -70,7 +70,8 @@ public class SimplePager extends AbstractPagerImpl {
           forward();
           break;
         case LAST:
-          lastPage();
+          int length = getDisplay().getVisibleRange().getLength();
+          getDisplay().setVisibleRange(getDisplay().getRowCount() - length, length);
           break;
         default:
           Assert.untouchable();

@@ -2,6 +2,7 @@ package com.butent.bee.server.jdbc;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.State;
 import com.butent.bee.shared.Transformable;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -16,7 +17,9 @@ import java.sql.SQLException;
 import java.sql.SQLWarning;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Logger;
 
 /**
@@ -77,7 +80,7 @@ public class BeeResultSet implements Transformable {
   private int queryTimeout = BeeConst.TIME_UNKNOWN;
 
   private boolean poolable = false;
-  private int state = BeeConst.STATE_UNKNOWN;
+  private final Set<State> states = EnumSet.noneOf(State.class);
 
   private List<Exception> errors = new ArrayList<Exception>();
 
@@ -202,8 +205,8 @@ public class BeeResultSet implements Transformable {
     return lst;
   }
 
-  public int getState() {
-    return state;
+  public Set<State> getStates() {
+    return states;
   }
 
   public int getType() {
@@ -252,7 +255,7 @@ public class BeeResultSet implements Transformable {
 
   public void setInitialized() {
     if (!hasErrors()) {
-      addState(BeeConst.STATE_INITIALIZED);
+      addState(State.INITIALIZED);
     }
   }
 
@@ -287,15 +290,17 @@ public class BeeResultSet implements Transformable {
       setStmtInfo(rs.getStatement());
 
       if (!hasErrors()) {
-        state = BeeConst.STATE_INITIALIZED;
+        setState(State.INITIALIZED);
       }
     } catch (SQLException ex) {
       handleError(ex);
     }
   }
 
-  public void setState(int state) {
-    this.state = state;
+  public void setState(State state) {
+    Assert.notNull(state);
+    getStates().clear();
+    addState(state);
   }
 
   public void setType(int type) {
@@ -350,7 +355,7 @@ public class BeeResultSet implements Transformable {
       rs.setFetchSize(size);
       int z = rs.getFetchSize();
       if (z == size) {
-        addState(BeeConst.STATE_CHANGED);
+        addState(State.CHANGED);
         ok = true;
       } else {
         LogUtils.warning(logger, "fetch size not updated:", "expected", size, "getFetchSize", z);
@@ -367,18 +372,23 @@ public class BeeResultSet implements Transformable {
     return ok;
   }
 
-  private void addState(int st) {
-    this.state |= st;
+  private void addState(State state) {
+    if (state != null) {
+      getStates().add(state);
+    }
   }
 
   private void handleError(SQLException ex) {
     errors.add(ex);
     LogUtils.error(logger, ex);
-    addState(BeeConst.STATE_ERROR);
+    addState(State.ERROR);
   }
 
-  private boolean hasState(int st) {
-    return (state & st) != 0;
+  private boolean hasState(State state) {
+    if (state == null) {
+      return false;
+    }
+    return getStates().contains(state);
   }
 
   private void noResultSet() {
@@ -433,18 +443,17 @@ public class BeeResultSet implements Transformable {
 
     try {
       rs.setFetchDirection(direction);
-      addState(BeeConst.STATE_CHANGED);
+      addState(State.CHANGED);
       ok = true;
     } catch (SQLException ex) {
       handleError(ex);
       ok = false;
     }
-
     return ok;
   }
 
   private boolean validState() {
-    return hasState(BeeConst.STATE_INITIALIZED) && !hasState(BeeConst.STATE_ERROR);
+    return hasState(State.INITIALIZED) && !hasState(State.ERROR);
   }
 
   private String valueAsString(int v) {

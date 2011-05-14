@@ -1,5 +1,6 @@
 package com.butent.bee.client.data;
 
+import com.google.common.collect.Lists;
 import com.google.gwt.view.client.Range;
 
 import com.butent.bee.client.BeeKeeper;
@@ -24,6 +25,7 @@ public class AsyncProvider extends Provider {
   private class Callback implements Queries.RowSetCallback {
     private final Range range;
     private final boolean updateActiveRow;
+    private Integer rpcId = null;
 
     private Callback(Range range, boolean updateActiveRow) {
       this.range = range;
@@ -32,6 +34,17 @@ public class AsyncProvider extends Provider {
 
     @Override
     public void onResponse(BeeRowSet rowSet) {
+      Integer id = getRpcId();
+      if (id != null) {
+        if (getPendingRequests().contains(id)) {
+          getPendingRequests().remove(id);
+          BeeKeeper.getLog().info("response", id, "range", range.getStart(), range.getLength());
+        } else {
+          BeeKeeper.getLog().info("response", id, "ignored");
+          return;
+        }
+      }
+
       if (!getDisplay().getVisibleRange().equals(range)) {
         BeeKeeper.getLog().warning("range changed");
         return;
@@ -43,10 +56,20 @@ public class AsyncProvider extends Provider {
       }
       updateDisplay(range.getStart(), range.getLength(), rowSet, updateActiveRow);
     }
+
+    private Integer getRpcId() {
+      return rpcId;
+    }
+
+    private void setRpcId(Integer rpcId) {
+      this.rpcId = rpcId;
+    }
   }
 
   private final DataInfo dataInfo;
   private CachingPolicy cachingPolicy = CachingPolicy.FULL;
+  
+  private final List<Integer> pendingRequests = Lists.newArrayList();
 
   public AsyncProvider(HasDataTable display, DataInfo dataInfo) {
     super(display);
@@ -100,17 +123,38 @@ public class AsyncProvider extends Provider {
 
   @Override
   protected void onRangeChanged(boolean updateActiveRow) {
+    cancelPendingRequests();
+    
     Range range = getRange();
 
     Filter flt = getFilter();
     Order ord = getOrder();
 
-    Queries.getRowSet(getViewName(), flt, ord, range.getStart(), range.getLength(),
-        getCachingPolicy(), new Callback(range, updateActiveRow));
+    Callback callback = new Callback(range, updateActiveRow);    
+    int rpcId = Queries.getRowSet(getViewName(), flt, ord, range.getStart(), range.getLength(),
+        getCachingPolicy(), callback);
+
+    if (!Queries.isResponseFromCache(rpcId)) {
+      callback.setRpcId(rpcId);
+      getPendingRequests().add(rpcId);
+    }
   }
 
   @Override
   protected void onRefresh() {
     onRangeChanged(true);
+  }
+  
+  private void cancelPendingRequests() {
+    if (!getPendingRequests().isEmpty()) {
+      for (int rpcId : getPendingRequests()) {
+        BeeKeeper.getRpc().cancelRequest(rpcId);
+      }
+      getPendingRequests().clear();
+    }
+  }
+
+  private List<Integer> getPendingRequests() {
+    return pendingRequests;
   }
 }

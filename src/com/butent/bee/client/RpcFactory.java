@@ -1,5 +1,6 @@
 package com.butent.bee.client;
 
+import com.google.gwt.http.client.Request;
 import com.google.gwt.http.client.RequestBuilder;
 import com.google.gwt.http.client.RequestException;
 import com.google.gwt.i18n.client.LocaleInfo;
@@ -13,11 +14,13 @@ import com.butent.bee.client.communication.RpcUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
+import com.butent.bee.shared.State;
 import com.butent.bee.shared.communication.CommUtils;
 import com.butent.bee.shared.communication.ContentType;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Map;
+import java.util.Set;
 
 /**
  * enables to generate and manage remote procedure calls, GET and POST statements.
@@ -40,6 +43,28 @@ public class RpcFactory implements Module {
     if (info != null) {
       info.addUserData(obj);
     }
+  }
+  
+  public boolean cancelRequest(int id) {
+    RpcInfo info = getRpcInfo(id);
+    if (info == null) {
+      return false;
+    }
+    
+    Set<State> states = info.getStates();
+    boolean ok = info.cancel();
+    
+    if (ok) {
+      BeeKeeper.getLog().info("request", id, "canceled");
+      BeeKeeper.getLog().addSeparator();
+    } else {
+      BeeKeeper.getLog().info("request", id, "is not pendind");
+      if (states != null) {
+        BeeKeeper.getLog().info("States:", states);
+      }
+    }
+    
+    return ok;
   }
 
   public ParameterList createParameters(String svc) {
@@ -84,7 +109,7 @@ public class RpcFactory implements Module {
   }
 
   public RpcInfo getRpcInfo(int id) {
-    return rpcList.locateInfo(id);
+    return rpcList.get(id);
   }
 
   public RpcList getRpcList() {
@@ -310,21 +335,22 @@ public class RpcFactory implements Module {
       int size = content.length();
       info.setReqSize(size);
 
-      BeeKeeper.getLog().info("sending", BeeUtils.transform(ctp), cth, BeeUtils.bracket(size));
       if (debug) {
-        BeeKeeper.getLog().info(data);
+        BeeKeeper.getLog().info("sending", BeeUtils.transform(ctp), cth, BeeUtils.bracket(size));
+        BeeKeeper.getLog().info(BeeUtils.clip(data, 1024));
       }
     }
 
     try {
-      bld.sendRequest(content, reqCallBack);
-      info.setState(BeeConst.STATE_OPEN);
+      Request request = bld.sendRequest(content, reqCallBack);
+      info.setRequest(request);
+      info.setState(State.OPEN);
     } catch (RequestException ex) {
       info.endError(ex);
       BeeKeeper.getLog().severe("send request error", id, ex);
     }
 
-    rpcList.addInfo(info);
+    rpcList.put(id, info);
     return id;
   }
 }

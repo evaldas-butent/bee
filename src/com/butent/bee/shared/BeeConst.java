@@ -118,15 +118,6 @@ public class BeeConst {
   public static final String JDBC_ROW_COUNT = "row count";
   public static final String JDBC_COLUMNS = "columns";
 
-  public static final int STATE_UNKNOWN = 0;
-  public static final int STATE_INITIALIZED = 1;
-  public static final int STATE_OPEN = 2;
-  public static final int STATE_CLOSED = 4;
-  public static final int STATE_ERROR = 8;
-  public static final int STATE_EXPIRED = 16;
-  public static final int STATE_CANCELED = 32;
-  public static final int STATE_CHANGED = 64;
-
   public static final String SERVER = "server";
   public static final String CLIENT = "client";
 

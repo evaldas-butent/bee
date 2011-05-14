@@ -8,14 +8,17 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.utils.BeeDuration;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.State;
 import com.butent.bee.shared.communication.ContentType;
 import com.butent.bee.shared.communication.ResponseMessage;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.ExtendedProperty;
 
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Contains all relevant RPC related information, both request and response, and methods for
@@ -70,8 +73,8 @@ public class RpcInfo {
   private String stage = null;
   private RequestBuilder.Method method = RequestBuilder.GET;
 
-  private int state = BeeConst.STATE_UNKNOWN;
-  private BeeDuration duration = new BeeDuration();
+  private final Set<State> states = EnumSet.noneOf(State.class);
+  private final BeeDuration duration;
 
   private RequestBuilder reqBuilder = null;
   private Request request = null;
@@ -104,8 +107,8 @@ public class RpcInfo {
 
   public RpcInfo(RequestBuilder.Method method, String service,
       ParameterList params, ContentType ctp, String data, ResponseCallback callback) {
-    id = ++COUNTER;
-    duration = new BeeDuration();
+    this.id = ++COUNTER;
+    this.duration = new BeeDuration();
 
     this.method = method;
     this.service = service;
@@ -114,8 +117,11 @@ public class RpcInfo {
     this.reqData = data;
     this.respCallback = callback;
   }
-
-  protected RpcInfo() {
+ 
+  public void addState(State state) {
+    if (state != null) {
+      getStates().add(state);
+    }
   }
 
   public void addUserData(Object... obj) {
@@ -132,15 +138,26 @@ public class RpcInfo {
         BeeKeeper.getLog().warning("parameter", i, "not a string");
         continue;
       }
-
       userData.put((String) obj[i], BeeUtils.transformNoTrim(obj[i + 1]));
     }
+  }
+  
+  public boolean cancel() {
+    boolean wasPending = false;
+
+    if (getRequest() != null) {
+      wasPending = getRequest().isPending();
+      getRequest().cancel();
+    }
+    addState(State.CANCELED);
+    
+    return wasPending;
   }
 
   public int end(ContentType ctp, String data, int size, int rows,
       int cols, int msgCnt, ResponseMessage[] messages, int partCnt, int[] partSizes) {
     int r = done();
-    setState(BeeConst.STATE_CLOSED);
+    setState(State.CLOSED);
 
     setRespType(ctp);
     setRespData(data);
@@ -168,7 +185,6 @@ public class RpcInfo {
     if (partSizes != null) {
       setRespPartSize(partSizes);
     }
-
     return r;
   }
 
@@ -178,12 +194,18 @@ public class RpcInfo {
 
   public void endError(String msg) {
     done();
-    setState(BeeConst.STATE_ERROR);
+    setState(State.ERROR);
     setErrMsg(msg);
   }
 
-  public boolean filterState(int st) {
-    return (state & st) != 0;
+  public boolean filterStates(Collection<State> filter) {
+    if (filter == null) {
+      return true;
+    }
+    if (getStates().isEmpty()) {
+      return false;
+    }
+    return BeeUtils.containsAny(getStates(), filter);
   }
 
   public String getCompletedTime() {
@@ -277,8 +299,7 @@ public class RpcInfo {
   }
 
   public String getRespInfoString() {
-    return BeeUtils.transformCollection(getRespInfo(),
-        BeeConst.DEFAULT_ROW_SEPARATOR);
+    return BeeUtils.transformCollection(getRespInfo(), BeeConst.DEFAULT_ROW_SEPARATOR);
   }
 
   public ResponseMessage[] getRespMessages() {
@@ -319,7 +340,7 @@ public class RpcInfo {
 
   public String getSizeString(int z) {
     if (z != BeeConst.SIZE_UNKNOWN) {
-      return BeeUtils.transform(z);
+      return BeeUtils.toString(z);
     } else {
       return BeeConst.STRING_EMPTY;
     }
@@ -333,39 +354,23 @@ public class RpcInfo {
     return duration.getStartTime();
   }
 
-  public int getState() {
-    return state;
+  public Set<State> getStates() {
+    return states;
   }
 
   public String getStateString() {
-    String s;
-
-    switch (state) {
-      case BeeConst.STATE_OPEN: {
-        s = "Open";
-        break;
-      }
-      case BeeConst.STATE_CLOSED: {
-        s = "Finished";
-        break;
-      }
-      case BeeConst.STATE_ERROR: {
-        s = "Error";
-        break;
-      }
-      case BeeConst.STATE_EXPIRED: {
-        s = "Expired";
-        break;
-      }
-      case BeeConst.STATE_CANCELED: {
-        s = "Canceled";
-        break;
-      }
-      default:
-        s = "Unknown";
+    if (getStates().isEmpty()) {
+      return BeeConst.STRING_EMPTY;
     }
 
-    return s;
+    StringBuilder sb = new StringBuilder();
+    for (State state : getStates()) {
+      if (sb.length() > 0) {
+        sb.append(BeeConst.CHAR_SPACE);
+      }
+      sb.append(state.name().toLowerCase());
+    }
+    return sb.toString();
   }
 
   public int getTimeout() {
@@ -378,6 +383,10 @@ public class RpcInfo {
 
   public Map<String, String> getUserData() {
     return userData;
+  }
+  
+  public boolean isCanceled() {
+    return getStates().contains(State.CANCELED);
   }
 
   public void setErrMsg(String errMsg) {
@@ -480,8 +489,10 @@ public class RpcInfo {
     this.stage = stage;
   }
 
-  public void setState(int state) {
-    this.state = state;
+  public void setState(State state) {
+    Assert.notNull(state);
+    getStates().clear();
+    getStates().add(state);
   }
 
   public void setTimeout(int timeout) {
@@ -495,5 +506,4 @@ public class RpcInfo {
   private int done() {
     return duration.finish();
   }
-
 }

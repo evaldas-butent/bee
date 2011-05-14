@@ -27,6 +27,14 @@ public class StringMatrix<ColType extends IsColumn> extends AbstractTable<String
     }
   }
 
+  public StringMatrix(List<String[]> data, String... columnLabels) {
+    super(columnLabels);
+    rows = new ArraySequence<StringRow>(new StringRow[data.size()]);
+    for (int i = 0; i < data.size(); i++) {
+      rows.set(i, new StringRow(i + 1, new StringArray(data.get(i))));
+    }
+  }
+  
   protected StringMatrix() {
     super();
     this.rows = new ArraySequence<StringRow>(new StringRow[0]);

@@ -25,12 +25,16 @@ import java.util.List;
  */
 
 public class Queries {
+  
+  private static final int RESPONSE_FROM_CACHE = 0;
+
   /**
    * Requires implementing classes to have {@code onResponse) method. 
    */
   public interface IntCallback {
     void onResponse(int value);
   }
+
   /**
    * Requires implementing classes to have {@code onResponse) method applied for a {@code RowSet}
    * object.
@@ -64,22 +68,22 @@ public class Queries {
     getRowCount(viewName, null, callback);
   }
 
-  public static void getRowSet(String viewName, Filter filter, Order order,
+  public static int getRowSet(String viewName, Filter filter, Order order,
       CachingPolicy cachingPolicy, RowSetCallback callback) {
-    getRowSet(viewName, filter, order, -1, -1, cachingPolicy, callback);
+    return getRowSet(viewName, filter, order, -1, -1, cachingPolicy, callback);
   }
   
-  public static void getRowSet(String viewName, Filter filter, Order order,
+  public static int getRowSet(String viewName, Filter filter, Order order,
       int offset, int limit, CachingPolicy cachingPolicy, RowSetCallback callback) {
-    getRowSet(viewName, filter, order, offset, limit, null, cachingPolicy, callback);
+    return getRowSet(viewName, filter, order, offset, limit, null, cachingPolicy, callback);
   }
   
-  public static void getRowSet(String viewName, Filter filter, Order order,
+  public static int getRowSet(String viewName, Filter filter, Order order,
       int offset, int limit, RowSetCallback callback) {
-    getRowSet(viewName, filter, order, offset, limit, CachingPolicy.NONE, callback);
+    return getRowSet(viewName, filter, order, offset, limit, CachingPolicy.NONE, callback);
   }
   
-  public static void getRowSet(String viewName, final Filter filter, final Order order,
+  public static int getRowSet(String viewName, final Filter filter, final Order order,
       final int offset, final int limit, String states, final CachingPolicy cachingPolicy,
       final RowSetCallback callback) {
     Assert.notEmpty(viewName);
@@ -89,7 +93,7 @@ public class Queries {
       BeeRowSet rowSet = CacheManager.getRowSet(viewName, filter, order, offset, limit);
       if (rowSet != null) {
         callback.onResponse(rowSet);
-        return;
+        return RESPONSE_FROM_CACHE;
       }
     }
 
@@ -111,7 +115,7 @@ public class Queries {
       PropertyUtils.addProperties(lst, Service.VAR_VIEW_STATES, states);
     }
 
-    BeeKeeper.getRpc().makePostRequest(new ParameterList(Service.QUERY,
+    return BeeKeeper.getRpc().makePostRequest(new ParameterList(Service.QUERY,
         RpcParameter.SECTION.DATA, lst), new ResponseCallback() {
       public void onResponse(JsArrayString arr) {
         BeeRowSet rs = BeeRowSet.restore(arr.get(0));
@@ -123,21 +127,25 @@ public class Queries {
     });
   }
   
-  public static void getRowSet(String viewName, Filter filter, Order order,
+  public static int getRowSet(String viewName, Filter filter, Order order,
       RowSetCallback callback) {
-    getRowSet(viewName, filter, order, CachingPolicy.NONE, callback);
+    return getRowSet(viewName, filter, order, CachingPolicy.NONE, callback);
   }
 
-  public static void getRowSet(String viewName, Filter filter, RowSetCallback callback) {
-    getRowSet(viewName, filter, null, callback);
+  public static int getRowSet(String viewName, Filter filter, RowSetCallback callback) {
+    return getRowSet(viewName, filter, null, callback);
   }
 
-  public static void getRowSet(String viewName, Order order, RowSetCallback callback) {
-    getRowSet(viewName, null, order, callback);
+  public static int getRowSet(String viewName, Order order, RowSetCallback callback) {
+    return getRowSet(viewName, null, order, callback);
   }
   
-  public static void getRowSet(String viewName, RowSetCallback callback) {
-    getRowSet(viewName, null, null, callback);
+  public static int getRowSet(String viewName, RowSetCallback callback) {
+    return getRowSet(viewName, null, null, callback);
+  }
+  
+  public static boolean isResponseFromCache(int id) {
+    return id == RESPONSE_FROM_CACHE;
   }
 
   private Queries() {

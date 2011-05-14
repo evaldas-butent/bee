@@ -1834,7 +1834,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable {
   }
 
   private Element getBodyCellElement(int row, int col) {
-    return Selectors.getElement(getBodyCellSelector(row, col));
+    return Selectors.getElement(getElement(), getBodyCellSelector(row, col));
   }
 
   private String getBodyCellSelector(int row, int col) {
@@ -1997,7 +1997,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable {
   }
 
   private Element getCellElement(String rowIdx, int col) {
-    return Selectors.getElement(getCellSelector(rowIdx, col));
+    return Selectors.getElement(getElement(), getCellSelector(rowIdx, col));
   }
 
   private String getCellSelector(String rowIdx, int col) {
@@ -2009,7 +2009,8 @@ public class CellGrid extends Widget implements HasId, HasDataTable {
   }
 
   private NodeList<Element> getColumnElements(int col) {
-    return Selectors.getNodes(Selectors.attributeEquals(DomUtils.ATTRIBUTE_DATA_COLUMN, col));
+    return Selectors.getNodes(getElement(), 
+        Selectors.attributeEquals(DomUtils.ATTRIBUTE_DATA_COLUMN, col));
   }
 
   private ColumnInfo getColumnInfo(int col) {
@@ -2040,7 +2041,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable {
   }
 
   private Element getFooterCellElement(int col) {
-    return Selectors.getElement(getFooterCellSelector(col));
+    return Selectors.getElement(getElement(), getFooterCellSelector(col));
   }
 
   private String getFooterCellSelector(int col) {
@@ -2060,7 +2061,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable {
   }
 
   private Element getHeaderCellElement(int col) {
-    return Selectors.getElement(getHeaderCellSelector(col));
+    return Selectors.getElement(getElement(), getHeaderCellSelector(col));
   }
 
   private String getHeaderCellSelector(int col) {
@@ -2157,11 +2158,13 @@ public class CellGrid extends Widget implements HasId, HasDataTable {
   }
 
   private NodeList<Element> getRowElements(int row) {
-    return Selectors.getNodes(Selectors.attributeEquals(DomUtils.ATTRIBUTE_DATA_ROW, row));
+    return Selectors.getNodes(getElement(), 
+        Selectors.attributeEquals(DomUtils.ATTRIBUTE_DATA_ROW, row));
   }
 
   private NodeList<Element> getRowElements(String rowIdx) {
-    return Selectors.getNodes(Selectors.attributeEquals(DomUtils.ATTRIBUTE_DATA_ROW, rowIdx));
+    return Selectors.getNodes(getElement(), 
+        Selectors.attributeEquals(DomUtils.ATTRIBUTE_DATA_ROW, rowIdx));
   }
 
   private int getRowHeight(int row) {

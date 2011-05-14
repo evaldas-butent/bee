@@ -40,8 +40,6 @@ public class AsyncCallback implements RequestCallback {
 
   @Override
   public void onResponseReceived(Request req, Response resp) {
-    BeeDuration dur = new BeeDuration("response");
-
     int statusCode = resp.getStatusCode();
     boolean debug = Global.isDebug();
 
@@ -99,7 +97,7 @@ public class AsyncCallback implements RequestCallback {
     int pc = BeeUtils.toInt(resp.getHeader(Service.RPC_VAR_PART_CNT));
 
     if (debug) {
-      BeeKeeper.getLog().finish(dur, BeeUtils.addName(Service.RPC_VAR_QID, id),
+      BeeKeeper.getLog().info("response", BeeUtils.addName(Service.RPC_VAR_QID, id),
           BeeUtils.addName(Service.RPC_VAR_SVC, svc));
 
       BeeKeeper.getLog().info(BeeUtils.addName(Service.RPC_VAR_CTP, ctp),
@@ -107,8 +105,6 @@ public class AsyncCallback implements RequestCallback {
       BeeKeeper.getLog().info(BeeUtils.addName(Service.RPC_VAR_COLS, cc),
           BeeUtils.addName(Service.RPC_VAR_MSG_CNT, mc),
           BeeUtils.addName(Service.RPC_VAR_PART_CNT, pc));
-    } else {
-      BeeKeeper.getLog().info("response", id, svc, ctp, cnt, cc, mc, pc, len);
     }
 
     String hSep = resp.getHeader(Service.RPC_VAR_SEP);
@@ -157,6 +153,7 @@ public class AsyncCallback implements RequestCallback {
       info.end(ctp, txt, len, cnt, cc, mc, messages, pc, partSizes);
     }
 
+    BeeDuration duration = new BeeDuration();
     if (len == 0) {
       if (mc == 0) {
         BeeKeeper.getLog().warning("response empty");
@@ -172,7 +169,7 @@ public class AsyncCallback implements RequestCallback {
       dispatchResource(txt);
 
     } else if (txt.indexOf(sep) < 0) {
-      BeeKeeper.getLog().info("text", txt);
+      BeeKeeper.getLog().info("response", id, "text", txt);
 
     } else {
 
@@ -189,8 +186,11 @@ public class AsyncCallback implements RequestCallback {
         dispatchResponse(svc, cc, arr);
       }
     }
+    duration.finish();
 
-    BeeKeeper.getLog().finish(dur);
+    BeeKeeper.getLog().info("response", id, len,
+        (info == null) ? BeeConst.STRING_EMPTY : BeeUtils.bracket(info.getCompletedTime()),
+        BeeUtils.bracket(duration.getCompletedTime()));
     finalizeResponse();
   }
 

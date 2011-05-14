@@ -2,6 +2,7 @@ package com.butent.bee.server.jdbc;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.State;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.LogUtils;
 import com.butent.bee.shared.utils.Property;
@@ -13,9 +14,11 @@ import java.sql.SQLFeatureNotSupportedException;
 import java.sql.SQLWarning;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.logging.Logger;
 
 /**
@@ -83,7 +86,7 @@ public class BeeConnection {
   private Map<String, Class<?>> typeMap;
 
   private boolean readOnly;
-  private int state = BeeConst.STATE_UNKNOWN;
+  private final Set<State> states = EnumSet.noneOf(State.class);
 
   private List<SQLException> errors = new ArrayList<SQLException>();
 
@@ -244,8 +247,8 @@ public class BeeConnection {
     return z;
   }
 
-  public int getState() {
-    return state;
+  public Set<State> getStates() {
+    return states;
   }
 
   public int getTransactionIsolation() {
@@ -309,7 +312,7 @@ public class BeeConnection {
     if (!validState()) {
       return;
     }
-    if (!hasState(BeeConst.STATE_CHANGED)) {
+    if (!hasState(State.CHANGED)) {
       return;
     }
 
@@ -353,7 +356,7 @@ public class BeeConnection {
       typeMap = conn.getTypeMap();
       readOnly = conn.isReadOnly();
 
-      state = BeeConst.STATE_INITIALIZED;
+      setState(State.INITIALIZED);
     } catch (SQLException ex) {
       handleError(ex);
     }
@@ -371,8 +374,10 @@ public class BeeConnection {
     this.readOnly = readOnly;
   }
 
-  public void setState(int state) {
-    this.state = state;
+  public void setState(State state) {
+    Assert.notNull(state);
+    getStates().clear();
+    addState(state);
   }
 
   public void setTransactionIsolation(int transactionIsolation) {
@@ -449,8 +454,10 @@ public class BeeConnection {
     return updateTransactionIsolation(conn, ti);
   }
 
-  private void addState(int st) {
-    this.state |= st;
+  private void addState(State state) {
+    if (state != null) {
+      getStates().add(state);
+    }
   }
 
   private boolean checkAutoCommit(Connection conn) {
@@ -520,11 +527,14 @@ public class BeeConnection {
   private void handleError(SQLException ex) {
     errors.add(ex);
     LogUtils.error(logger, ex);
-    addState(BeeConst.STATE_ERROR);
+    addState(State.ERROR);
   }
 
-  private boolean hasState(int st) {
-    return (state & st) != 0;
+  private boolean hasState(State state) {
+    if (state == null) {
+      return false;
+    }
+    return getStates().contains(state);
   }
 
   private void noConnection() {
@@ -539,7 +549,7 @@ public class BeeConnection {
 
     try {
       conn.setAutoCommit(ac);
-      addState(BeeConst.STATE_CHANGED);
+      addState(State.CHANGED);
       ok = true;
     } catch (SQLException ex) {
       handleError(ex);
@@ -559,12 +569,12 @@ public class BeeConnection {
       conn.setHoldability(hold);
       int z = conn.getHoldability();
       if (z == hold) {
-        addState(BeeConst.STATE_CHANGED);
+        addState(State.CHANGED);
         ok = true;
       } else {
-        LogUtils.warning(logger, "holdability not set:", "expected", hold,
-            JdbcUtils.holdabilityAsString(hold), "getHoldability", z,
-            JdbcUtils.holdabilityAsString(z));
+        LogUtils.warning(logger, "holdability not set:",
+            "expected", hold, JdbcUtils.holdabilityAsString(hold),
+            "getHoldability", z, JdbcUtils.holdabilityAsString(z));
         ok = false;
       }
     } catch (SQLFeatureNotSupportedException ex) {
@@ -588,11 +598,11 @@ public class BeeConnection {
       conn.setReadOnly(ro);
       boolean z = conn.isReadOnly();
       if (z == ro) {
-        addState(BeeConst.STATE_CHANGED);
+        addState(State.CHANGED);
         ok = true;
       } else {
-        LogUtils.warning(logger, "read only not set:", "expected",
-            BeeUtils.toString(ro), "isReadOnly", BeeUtils.toString(z));
+        LogUtils.warning(logger, "read only not set:",
+            "expected", BeeUtils.toString(ro), "isReadOnly", BeeUtils.toString(z));
         ok = false;
       }
     } catch (SQLFeatureNotSupportedException ex) {
@@ -616,26 +626,23 @@ public class BeeConnection {
       conn.setTransactionIsolation(ti);
       int z = conn.getTransactionIsolation();
       if (z == ti) {
-        addState(BeeConst.STATE_CHANGED);
+        addState(State.CHANGED);
         ok = true;
       } else {
-        LogUtils.warning(logger, "Transaction isolation not set:", "expected",
-            ti, JdbcUtils.transactionIsolationAsString(ti),
-            "getTransactionIsolation", z,
-            JdbcUtils.transactionIsolationAsString(z));
+        LogUtils.warning(logger, "Transaction isolation not set:",
+            "expected", ti, JdbcUtils.transactionIsolationAsString(ti),
+            "getTransactionIsolation", z, JdbcUtils.transactionIsolationAsString(z));
         ok = false;
       }
     } catch (SQLFeatureNotSupportedException ex) {
-      LogUtils.warning(logger, ti, JdbcUtils.transactionIsolationAsString(ti),
-          ex);
+      LogUtils.warning(logger, ti, JdbcUtils.transactionIsolationAsString(ti), ex);
       ok = false;
     } catch (SQLException ex) {
       if (ti == Connection.TRANSACTION_NONE) {
-        LogUtils.warning(logger,
-            "Transaction isolation level NONE not supported");
+        LogUtils.warning(logger, "Transaction isolation level NONE not supported");
       } else {
-        LogUtils.severe(logger, ex, "Transaction isolation level", ti,
-            JdbcUtils.transactionIsolationAsString(ti), "not supported");
+        LogUtils.severe(logger, ex, "Transaction isolation level",
+            ti, JdbcUtils.transactionIsolationAsString(ti), "not supported");
       }
       ok = false;
     }
@@ -644,8 +651,6 @@ public class BeeConnection {
   }
 
   private boolean validState() {
-    return (state & BeeConst.STATE_INITIALIZED) != 0
-        && (state & BeeConst.STATE_ERROR) == 0;
+    return hasState(State.INITIALIZED) && !hasState(State.ERROR);
   }
-
 }
