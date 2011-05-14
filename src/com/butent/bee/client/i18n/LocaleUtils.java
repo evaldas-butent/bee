@@ -1,10 +1,10 @@
 package com.butent.bee.client.i18n;
 
 import com.google.common.collect.Lists;
-import com.google.gwt.i18n.client.DateTimeFormatInfo;
 import com.google.gwt.i18n.client.LocaleInfo;
 import com.google.gwt.i18n.client.LocalizedNames;
 import com.google.gwt.i18n.client.constants.NumberConstants;
+import com.google.gwt.i18n.shared.DateTimeFormatInfo;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;

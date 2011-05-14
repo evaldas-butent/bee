@@ -3,3 +3,4 @@
 2011.04.14 guava-r09, deleted unused jars
 2011.04.27 gwt-2.3.0.rc1 sdk only. HasDataPresenter.java no longer used.
 2011.05.03 gwt-2.3.0
+2011.05.14 gwt-2.4.0.beta
