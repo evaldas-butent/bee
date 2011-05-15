@@ -47,7 +47,7 @@ public class TextEditor extends Composite implements HasId {
       }
 
       int len = v.length();
-      if (!Global.confirm("Save " + BeeUtils.bracket(len), path)) {
+      if (!Global.nativeConfirm("Save " + BeeUtils.bracket(len), path)) {
         return;
       }
 

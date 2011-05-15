@@ -5,9 +5,11 @@ import com.google.gwt.event.dom.client.HasChangeHandlers;
 import com.google.gwt.event.dom.client.HasClickHandlers;
 import com.google.gwt.event.dom.client.HasKeyPressHandlers;
 import com.google.gwt.event.logical.shared.HasValueChangeHandlers;
-import com.google.gwt.event.shared.GwtEvent;
-import com.google.gwt.event.shared.SimpleEventBus;
 import com.google.gwt.user.client.ui.Widget;
+import com.google.web.bindery.event.shared.Event;
+import com.google.web.bindery.event.shared.Event.Type;
+import com.google.web.bindery.event.shared.HandlerRegistration;
+import com.google.web.bindery.event.shared.SimpleEventBus;
 
 import com.butent.bee.client.event.BeeBlurHandler;
 import com.butent.bee.client.event.BeeChangeHandler;
@@ -37,7 +39,7 @@ public class EventManager implements Module {
 
   private BeeBlurHandler blurHandler = null;
 
-  private SimpleEventBus eventBus;
+  private final SimpleEventBus eventBus;
 
   public EventManager() {
     this.eventBus = new SimpleEventBus();
@@ -61,7 +63,20 @@ public class EventManager implements Module {
     Assert.notNull(w);
     w.addClickHandler(ensureClickHandler());
   }
+  
+  public <H> HandlerRegistration addHandler(Type<H> type, H handler) {
+    Assert.notNull(type);
+    Assert.notNull(handler);
+    return eventBus.addHandler(type, handler);
+  }
 
+  public <H> HandlerRegistration addHandlerToSource(Type<H> type, Object source, H handler) {
+    Assert.notNull(type);
+    Assert.notNull(source);
+    Assert.notNull(handler);
+    return eventBus.addHandlerToSource(type, source, handler);
+  }
+  
   public void addIntVch(HasValueChangeHandlers<Integer> w) {
     Assert.notNull(w);
     w.addValueChangeHandler(ensureIntVch());
@@ -82,7 +97,7 @@ public class EventManager implements Module {
     w.addChangeHandler(ensureVch());
   }
 
-  public boolean dispatchService(String svc, String stg, GwtEvent<?> event) {
+  public boolean dispatchService(String svc, String stg, Event<?> event) {
     Assert.notEmpty(svc);
 
     if (Service.isRpcService(svc)) {
@@ -101,10 +116,17 @@ public class EventManager implements Module {
   public void end() {
   }
 
-  public void fireEvent(GwtEvent<?> ev) {
-    eventBus.fireEvent(ev);
+  public void fireEvent(Event<?> event) {
+    Assert.notNull(event);
+    eventBus.fireEvent(event);
   }
 
+  public void fireEventFromSource(Event<?> event, Object source) {
+    Assert.notNull(event);
+    Assert.notNull(source);
+    eventBus.fireEventFromSource(event, source);
+  }
+  
   public String getName() {
     return getClass().getName();
   }
@@ -132,7 +154,7 @@ public class EventManager implements Module {
   public void start() {
   }
 
-  private boolean dispatchCompositeService(String svc, String stg, GwtEvent<?> event) {
+  private boolean dispatchCompositeService(String svc, String stg, Event<?> event) {
     Assert.notEmpty(svc);
     Assert.notEmpty(stg);
 
@@ -277,7 +299,7 @@ public class EventManager implements Module {
     return ok;
   }
 
-  private boolean dispatchUiService(String svc, GwtEvent<?> event) {
+  private boolean dispatchUiService(String svc, Event<?> event) {
     if (svc.equals(Service.CLOSE_DIALOG)) {
       return Global.closeDialog(event);
     } else if (svc.equals(Service.CONFIRM_DIALOG)) {

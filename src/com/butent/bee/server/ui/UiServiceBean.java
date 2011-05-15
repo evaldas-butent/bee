@@ -9,6 +9,7 @@ import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.sql.SqlBuilderFactory;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
+import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -17,6 +18,7 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.Order;
+import com.butent.bee.shared.data.view.RowInfoCollection;
 import com.butent.bee.shared.ui.UiComponent;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -104,6 +106,8 @@ public class UiServiceBean {
         response = generateData(reqInfo);
       } else if (BeeUtils.same(svc, Service.COUNT_ROWS)) {
         response = getViewSize(reqInfo);
+      } else if (BeeUtils.same(svc, Service.DELETE_ROWS)) {
+        response = deleteRows(reqInfo);
 
       } else {
         String msg = BeeUtils.concat(1, svc, "loader service not recognized");
@@ -123,6 +127,15 @@ public class UiServiceBean {
     return response;
   }
 
+  private ResponseObject deleteRows(RequestInfo reqInfo) {
+    String viewName = reqInfo.getParameter(Service.VAR_VIEW_NAME);
+    String rowInfos = reqInfo.getParameter(Service.VAR_VIEW_ROWS);
+    Assert.notEmpty(viewName);
+    Assert.notEmpty(rowInfos);
+
+    return ResponseObject.response(sys.deleteRows(viewName, RowInfoCollection.restore(rowInfos)));
+  }
+  
   private ResponseObject doSql(RequestInfo reqInfo) {
     String sql = reqInfo.getContent();
     String[] arr = sql.split(" ", 2);

@@ -732,6 +732,11 @@ public class DomUtils {
     return null;
   }
 
+  public static String getHtml(String id) {
+    Element elem = getElement(id);
+    return elem.getInnerHTML();
+  }
+  
   public static String getId(UIObject obj) {
     Assert.notNull(obj);
     return obj.getElement().getId();
@@ -953,22 +958,11 @@ public class DomUtils {
     return obj.getElement().getTabIndex();
   }
 
-  public static String getText(Element elem) {
-    if (elem == null) {
-      return BeeConst.STRING_EMPTY;
-    } else {
-      return elem.getInnerText();
-    }
+  public static String getText(String id) {
+    Element elem = getElement(id);
+    return elem.getInnerText();
   }
-
-  public static String getText(UIObject obj) {
-    if (obj == null) {
-      return BeeConst.STRING_EMPTY;
-    } else {
-      return getText(obj.getElement());
-    }
-  }
-
+  
   public static int getTextBoxClientHeight() {
     if (textBoxClientHeight <= 0) {
       calculateTextBoxSize();

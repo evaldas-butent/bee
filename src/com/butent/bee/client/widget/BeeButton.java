@@ -111,5 +111,4 @@ public class BeeButton extends Button implements HasId, HasService, HasStage, Ha
     setStyleName("bee-Button");
     createId();
   }
-
 }

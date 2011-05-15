@@ -162,7 +162,6 @@ public class RpcList extends LinkedHashMap<Integer, RpcInfo> {
     }
     return result;
   }
-
   
   public int getMaxSize() {
     return maxSize;

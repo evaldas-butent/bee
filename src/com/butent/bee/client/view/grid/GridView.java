@@ -12,11 +12,18 @@ import java.util.List;
  */
 
 public interface GridView extends View, HasDataTable {
+  
   void applyOptions(String options);
 
   void create(List<BeeColumn> dataColumns, int rowCount, BeeRowSet rowSet);
 
   int estimatePageSize(int containerWidth, int containerHeight);
 
+  Long getActiveRowId();
+  
+  List<Long> getSelectedRows();  
+
+  boolean isRowSelected(long rowId);
+  
   void updatePageSize(int pageSize, boolean init); 
 }

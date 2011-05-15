@@ -10,13 +10,18 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Global;
 import com.butent.bee.client.data.AsyncProvider;
 import com.butent.bee.client.data.CachedProvider;
 import com.butent.bee.client.data.Provider;
 import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.dom.StyleUtils;
+import com.butent.bee.client.utils.BeeCommand;
 import com.butent.bee.client.view.GridContainerImpl;
 import com.butent.bee.client.view.GridContainerView;
 import com.butent.bee.client.view.HasSearch;
+import com.butent.bee.client.view.event.MultiDeleteEvent;
+import com.butent.bee.client.view.event.RowDeleteEvent;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.search.SearchView;
 import com.butent.bee.shared.Assert;
@@ -57,7 +62,7 @@ public class GridPresenter implements Presenter {
       }
     }
   }
-
+  
   private final DataInfo dataInfo;
   private final boolean async;
   private final List<BeeColumn> dataColumns;
@@ -113,15 +118,29 @@ public class GridPresenter implements Presenter {
       case CLOSE:
         BeeKeeper.getUi().closeView(getView());
         break;
+
       case CONFIGURE:
         String options = Window.prompt("Options", "");
         if (!BeeUtils.isEmpty(options)) {
           getView().getContent().applyOptions(options);
         }
         break;
+      
+      case DELETE:
+        Long activeRowId = getView().getContent().getActiveRowId();
+        if (activeRowId != null) {
+          if (getView().getContent().isRowSelected(activeRowId)) {
+            deleteRows(getView().getContent().getSelectedRows());
+          } else {
+            deleteRow(activeRowId);
+          }
+        }
+        break;
+
       case REFRESH:
         getDataProvider().refresh();
         break;
+      
       default:
         BeeKeeper.getLog().info(action, "not implemented");
     }
@@ -180,6 +199,36 @@ public class GridPresenter implements Presenter {
     view.create(caption, columns, rc, rowSet);
 
     return view;
+  }
+  
+  private void deleteRow(final long rowId) {
+    Global.getMsgBoxen().confirm("Delete Row ?", new BeeCommand() {
+      @Override
+      public void execute() {
+        Queries.deleteRow(getDataName(), rowId);
+        BeeKeeper.getBus().fireEvent(new RowDeleteEvent(getDataName(), rowId));
+      }
+    }, StyleUtils.NAME_SCARY);
+  }
+  
+  private void deleteRows(final List<Long> rows) {
+    Assert.notNull(rows);
+    int count = rows.size();
+    Assert.isPositive(count);
+    if (count == 1) {
+      deleteRow(rows.get(0));
+      return;
+    }
+    
+    Global.getMsgBoxen().confirm(BeeUtils.concat(1, "Delete", count, "rows"),
+        Lists.newArrayList("Do you really want to hurt me", "Do you really want to make me cry"),
+        new BeeCommand() {
+          @Override
+          public void execute() {
+            Queries.deleteRows(getDataName(), rows);
+            BeeKeeper.getBus().fireEvent(new MultiDeleteEvent(getDataName(), rows));
+          }
+        }, StyleUtils.NAME_SUPER_SCARY);
   }
 
   private String getDataName() {

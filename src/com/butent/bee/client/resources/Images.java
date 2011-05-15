@@ -72,6 +72,9 @@ public interface Images extends ClientBundle {
 
   @Source("bookmark_add.png")
   ImageResource bookmarkAdd();
+  
+  @Source("cancel.png")
+  ImageResource cancel();
 
   @Source("close.png")
   ImageResource close();
@@ -105,6 +108,9 @@ public interface Images extends ClientBundle {
 
   @Source("next.png")
   ImageResource next();
+  
+  @Source("ok.png")
+  ImageResource ok();
 
   @Source("previous.png")
   ImageResource previous();

@@ -1,16 +1,19 @@
 package com.butent.bee.client.data;
 
 import com.google.common.collect.Lists;
-import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.view.client.Range;
 import com.google.gwt.view.client.RangeChangeEvent;
+import com.google.web.bindery.event.shared.HandlerRegistration;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.view.event.MultiDeleteEvent;
+import com.butent.bee.client.view.event.RowDeleteEvent;
 import com.butent.bee.client.view.event.SortEvent;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.cache.CacheManager;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.Order;
+import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
 
@@ -18,7 +21,7 @@ import java.util.List;
  * Enables to manage ranges of data shown in user interface tables.
  */
 
-public abstract class Provider implements SortEvent.Handler {
+public abstract class Provider implements SortEvent.Handler, RowDeleteEvent.Handler, MultiDeleteEvent.Handler {
 
   private final HasDataTable display;
 
@@ -42,6 +45,9 @@ public abstract class Provider implements SortEvent.Handler {
     }));
 
     this.handlerRegistry.add(display.addSortHandler(this));
+    
+    this.handlerRegistry.add(RowDeleteEvent.register(this));
+    this.handlerRegistry.add(MultiDeleteEvent.register(this));
   }
 
   public void disableRangeChange() {
@@ -69,7 +75,19 @@ public abstract class Provider implements SortEvent.Handler {
     getDisplay().setRowCount(rowCount);
     goTop();
   }
-  
+
+  public void onMultiDelete(MultiDeleteEvent event) {
+    if (BeeUtils.same(getViewName(), event.getViewName())) {
+      refresh();
+    }
+  }
+
+  public void onRowDelete(RowDeleteEvent event) {
+    if (BeeUtils.same(getViewName(), event.getViewName())) {
+      refresh();
+    }
+  }
+
   public abstract void onSort(SortEvent event);
 
   public void onUnload() {

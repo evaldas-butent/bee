@@ -39,5 +39,4 @@ public class CloseButton extends BeeButton {
   public CloseButton(String html, String svc, String stg) {
     super(html, svc, stg);
   }
-
 }

@@ -36,6 +36,8 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.Order;
+import com.butent.bee.shared.data.view.RowInfo;
+import com.butent.bee.shared.data.view.RowInfoCollection;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.LogUtils;
 import com.butent.bee.shared.utils.TimeUtils;
@@ -382,6 +384,29 @@ public class SystemBean {
     return c;
   }
 
+  public int deleteRows(String viewName, RowInfoCollection rows) {
+    if (BeeUtils.isEmpty(viewName) || rows == null) {
+      return -1;
+    }
+    String idName = getIdName(viewName);
+    if (BeeUtils.isEmpty(idName)) {
+      return -1;
+    }
+    
+    int result = 0;
+    
+    for (RowInfo rowInfo : rows) {
+      long id = rowInfo.getId();
+      int z = qs.updateData(new SqlDelete(viewName).setWhere(SqlUtils.equal(viewName, idName, id)));
+      if (z > 0) {
+        result++;
+      } else if (z < 0) {
+        break;
+      }
+    }
+    return result;
+  }
+  
   public ResponseObject editStateRoles(String tblName, String stateName) {
     if (!isState(stateName)) {
       return ResponseObject.error("Unknown state:", stateName);
@@ -449,7 +474,7 @@ public class SystemBean {
     }
     return ResponseObject.response(qs.getViewData(union, null));
   }
-
+ 
   public ResponseObject generateData(String tblName, int rowCount) {
     Assert.isTrue(isTable(tblName), "Not a base table: " + tblName);
     Assert.isPositive(rowCount, "rowCount must be positive");

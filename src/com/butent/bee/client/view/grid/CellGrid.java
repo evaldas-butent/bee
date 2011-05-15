@@ -832,6 +832,16 @@ public class CellGrid extends Widget implements HasId, HasDataTable {
   public int getActiveRow() {
     return activeRow;
   }
+  
+  public Long getActiveRowId() {
+    int visibleIndex = getActiveRow();
+    if (visibleIndex >= 0 && visibleIndex < getVisibleItemCount()
+        && visibleIndex < getVisibleItems().size()) {
+      return getVisibleRowId(visibleIndex);
+    } else {
+      return null;
+    }
+  }
 
   public Edges getBodyBorderWidth() {
     return bodyBorderWidth;
@@ -1012,6 +1022,10 @@ public class CellGrid extends Widget implements HasId, HasDataTable {
   public int getRowCount() {
     return rowCount;
   }
+  
+  public List<Long> getSelectedRows() {
+    return selectedRows;
+  }
 
   public SelectionModel<? super IsRow> getSelectionModel() {
     return selectionModel;
@@ -1146,6 +1160,10 @@ public class CellGrid extends Widget implements HasId, HasDataTable {
 
   public boolean isRowCountExact() {
     return rowCountIsExact;
+  }
+
+  public boolean isRowSelected(long rowId) {
+    return getSelectedRows().contains(rowId);
   }
 
   public boolean isSortable(String columnId) {
@@ -1511,6 +1529,10 @@ public class CellGrid extends Widget implements HasId, HasDataTable {
     }
     rowCount = size;
     rowCountIsExact = isExact;
+    
+    if (getPageStart() > 0 && getPageSize() > 0 && getPageStart() + getPageSize() > size) {
+      setPageStart(Math.max(size - getPageSize(), 0));
+    }
 
     RowCountChangeEvent.fire(this, size, isExact);
   }
@@ -2595,10 +2617,6 @@ public class CellGrid extends Widget implements HasId, HasDataTable {
     }
   }
 
-  private boolean isRowSelected(long rowId) {
-    return selectedRows.contains(rowId);
-  }
-
   private boolean isRowWithinBounds(int row) {
     return row >= 0 && row < getVisibleItemCount();
   }
@@ -3231,18 +3249,18 @@ public class CellGrid extends Widget implements HasId, HasDataTable {
         }
       }
       if (getSelectionModel() == null) {
-        selectedRows.clear();
+        getSelectedRows().clear();
       }
 
     } else {
       int lastSelectedRow = BeeConst.UNDEF;
-      if (!selectedRows.isEmpty()) {
+      if (!getSelectedRows().isEmpty()) {
         int maxIndex = -1;
         for (int i = 0; i < getVisibleItemCount(); i++) {
           if (i == visibleIndex) {
             continue;
           }
-          int index = selectedRows.indexOf(getVisibleRowId(i));
+          int index = getSelectedRows().indexOf(getVisibleRowId(i));
           if (index > maxIndex) {
             maxIndex = index;
             lastSelectedRow = i;
@@ -3278,9 +3296,9 @@ public class CellGrid extends Widget implements HasId, HasDataTable {
     boolean wasSelected = isRowSelected(rowId);
 
     if (wasSelected) {
-      selectedRows.remove(rowId);
+      getSelectedRows().remove(rowId);
     } else {
-      selectedRows.add(rowId);
+      getSelectedRows().add(rowId);
     }
     if (getSelectionModel() != null) {
       getSelectionModel().setSelected(rowValue, !wasSelected);

@@ -159,7 +159,7 @@ public class CliWorker {
       String loc = arr[1];
       String key = arr[2];
 
-      if (Global.confirm("add api key", loc, key)) {
+      if (Global.nativeConfirm("add api key", loc, key)) {
         AjaxKeyRepository.putKey(loc, key);
       }
     }

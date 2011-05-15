@@ -1,5 +1,6 @@
 package com.butent.bee.client.layout;
 
+import com.google.gwt.dom.client.TableElement;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
 import com.butent.bee.client.dom.DomUtils;
@@ -27,4 +28,7 @@ public class Vertical extends VerticalPanel implements HasId {
     DomUtils.setId(this, id);
   }
 
+  public void setPadding(int padding) {
+    TableElement.as(getElement()).setCellPadding(padding);
+  }
 }

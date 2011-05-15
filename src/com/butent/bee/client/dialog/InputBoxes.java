@@ -26,7 +26,7 @@ import com.butent.bee.shared.utils.BeeUtils;
  * from the user.
  */
 
-public class InputBox {
+public class InputBoxes {
   public void inputVars(Stage bst, String cap, Variable... vars) {
     Assert.notNull(vars);
     Assert.parameterCount(vars.length + 1, 2);
@@ -119,7 +119,7 @@ public class InputBox {
     ft.getFlexCellFormatter().setColSpan(r, 0, 2);
     ft.getCellFormatter().setHorizontalAlignment(r, 0, HasHorizontalAlignment.ALIGN_CENTER);
 
-    BeeDialogBox dialog = new BeeDialogBox();
+    DialogBox dialog = new DialogBox();
 
     if (!BeeUtils.isEmpty(cap)) {
       dialog.setText(cap);

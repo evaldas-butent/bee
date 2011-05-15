@@ -1,5 +1,6 @@
 package com.butent.bee.client.layout;
 
+import com.google.gwt.dom.client.TableElement;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 
 import com.butent.bee.client.dom.DomUtils;
@@ -26,5 +27,8 @@ public class Horizontal extends HorizontalPanel implements HasId {
   public void setId(String id) {
     DomUtils.setId(this, id);
   }
-
+  
+  public void setPadding(int padding) {
+    TableElement.as(getElement()).setCellPadding(padding);
+  }
 }

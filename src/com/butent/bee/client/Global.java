@@ -1,12 +1,12 @@
 package com.butent.bee.client;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.event.shared.GwtEvent;
 import com.google.gwt.user.client.ui.Widget;
+import com.google.web.bindery.event.shared.Event;
 
 import com.butent.bee.client.data.Explorer;
-import com.butent.bee.client.dialog.InputBox;
-import com.butent.bee.client.dialog.MessageBox;
+import com.butent.bee.client.dialog.InputBoxes;
+import com.butent.bee.client.dialog.MessageBoxes;
 import com.butent.bee.client.grid.CellType;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.resources.Images;
@@ -39,8 +39,8 @@ public class Global implements Module {
   public static LocalizableConstants constants = GWT.create(LocalizableConstants.class);
   public static LocalizableMessages messages = GWT.create(LocalizableMessages.class);
 
-  private static final MessageBox msgBox = new MessageBox();
-  private static final InputBox inpBox = new InputBox();
+  private static final MessageBoxes msgBoxen = new MessageBoxes();
+  private static final InputBoxes inpBoxen = new InputBoxes();
   private static final Explorer dataExplorer = new Explorer();
 
   private static final Map<String, Variable> vars = new HashMap<String, Variable>();
@@ -48,23 +48,19 @@ public class Global implements Module {
   private static Images images = GWT.create(Images.class);
 
   public static void alert(Object... obj) {
-    msgBox.alert(obj);
+    msgBoxen.alert(obj);
   }
 
   public static Widget cellGrid(Object data, CellType cellType, String... columnLabels) {
     return GridFactory.cellGrid(data, cellType, columnLabels);
   }
 
-  public static boolean closeDialog(GwtEvent<?> event) {
+  public static boolean closeDialog(Event<?> event) {
     if (event == null) {
       return false;
     } else {
-      return msgBox.close(event.getSource());
+      return msgBoxen.close(event.getSource());
     }
-  }
-
-  public static boolean confirm(Object... obj) {
-    return msgBox.confirm(obj);
   }
 
   public static void createVar(String name, String caption) {
@@ -94,6 +90,10 @@ public class Global implements Module {
     return images;
   }
 
+  public static MessageBoxes getMsgBoxen() {
+    return msgBoxen;
+  }
+  
   public static Variable getVar(String name) {
     Assert.contains(vars, name);
     return vars.get(name);
@@ -141,7 +141,7 @@ public class Global implements Module {
   }
 
   public static void inform(Object... obj) {
-    msgBox.showInfo(obj);
+    msgBoxen.showInfo(obj);
   }
 
   public static void inputVars(Stage bst, String cap, String... names) {
@@ -156,7 +156,7 @@ public class Global implements Module {
   }
 
   public static void inputVars(Stage bst, String cap, Variable... variables) {
-    inpBox.inputVars(bst, cap, variables);
+    inpBoxen.inputVars(bst, cap, variables);
   }
 
   public static boolean isDebug() {
@@ -168,11 +168,15 @@ public class Global implements Module {
   }
 
   public static void modalGrid(String cap, Object data, String... cols) {
-    msgBox.showGrid(cap, data, cols);
+    msgBoxen.showGrid(cap, data, cols);
+  }
+
+  public static boolean nativeConfirm(Object... obj) {
+    return msgBoxen.nativeConfirm(obj);
   }
 
   public static void sayHuh(Object... obj) {
-    msgBox.showInfo("Huh ?", obj);
+    msgBoxen.showInfo("Huh ?", obj);
   }
 
   public static Widget scrollGrid(int width, Object data, String... columnLabels) {
@@ -211,19 +215,19 @@ public class Global implements Module {
   }
 
   public static void showDialog(Object... obj) {
-    msgBox.showInfo(obj);
+    msgBoxen.showInfo(obj);
   }
 
   public static void showDialog(String cap, String msg, Throwable err) {
     if (err == null) {
-      msgBox.showInfo(cap, msg);
+      msgBoxen.showInfo(cap, msg);
     } else {
-      msgBox.showError(cap, msg, err);
+      msgBoxen.showError(cap, msg, err);
     }
   }
 
   public static void showError(Object... obj) {
-    msgBox.showError(obj);
+    msgBoxen.showError(obj);
   }
 
   public static void showVars(String... context) {
@@ -255,7 +259,7 @@ public class Global implements Module {
   }
 
   public static void showWidget(Widget widget) {
-    msgBox.showWidget(widget);
+    msgBoxen.showWidget(widget);
   }
 
   public static Widget simpleGrid(Object data, String... columnLabels) {

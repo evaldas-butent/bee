@@ -310,6 +310,7 @@ body, select {
   border-radius: 12px;
   padding: 5px;
   background: #eee;
+  z-index: 1024;
 }
 .bee-PopupGlass {
   background-color: #000;
@@ -450,7 +451,51 @@ body, select {
 .bee-CellGridResizerHandle {
   background-color: #bcf;
   z-index: 2;
+}
+
+.bee-afraid {
+  background-color: fuchsia !important;
+  font-size: x-large;
 }  
+
+@-webkit-keyframes scary
+{
+  from {background-color: #cfc; font-size: 1em;}
+  25% {background-color: crimson; font-size: 2.5em;}
+  50% {background-color: violet; font-size: 3em;}
+  75% {background-color: red; font-size: 3.5em;}
+  to {background-color: deeppink; font-size: 4em;}
+}
+
+.bee-very-afraid {
+  -webkit-animation: scary 100s linear infinite alternate;
+}
+
+.bee-DialogBox {
+  border: 1px solid activeborder;
+  border-radius: 2px;
+  z-index: 1024;
+}  
+
+.bee-DialogBox .Caption {
+  background-color: #e3e8f3;
+  padding: 4px 4px 4px 8px;
+  border-bottom: 1px solid #ddd;
+  font-size: medium;
+  font-weight: bolder;
+}
+
+.bee-DialogBox .Close {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  z-index: 1;
+}
+
+.bee-DialogBox .Content {
+  background-color: #cfc;
+  padding: 1ex 1em 4px;
+}
 
 .gwt-TreeItem-selected {
   background-color: #ffffaa;
@@ -459,18 +504,6 @@ body, select {
 .gwt-SplitLayoutPanel-HDragger {
   background: #f6cef5;
   cursor: col-resize;
-}
-
-.gwt-DialogBox .Caption {
-  background: #e3e8f3;
-  padding: 4px 4px 4px 8px;
-  border-bottom: 1px solid #bbbbbb;
-  border-top: 5px solid #d0e4f6;
-}
-
-.gwt-DialogBox .dialogContent {
-  border: 1px solid #bbbbbb;
-  background: #CCFFCC;
 }
 
 .gwt-StackLayoutPanel {
