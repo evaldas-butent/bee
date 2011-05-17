@@ -5,22 +5,26 @@ import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.Transformable;
 import com.butent.bee.shared.utils.BeeUtils;
 
+/**
+ * Implements operations with data row - serialization, comparison, transformations.
+ */
+
 public class RowInfo implements BeeSerializable, Comparable<RowInfo>, Transformable {
-  
+
   public static RowInfo restore(String s) {
     Assert.notEmpty(s);
     RowInfo rowInfo = new RowInfo();
     rowInfo.deserialize(s);
     return rowInfo;
   }
-  
+
   private long id;
 
   public RowInfo(long id) {
     super();
     this.id = id;
   }
-  
+
   private RowInfo() {
   }
 

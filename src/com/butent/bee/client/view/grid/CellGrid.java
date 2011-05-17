@@ -21,6 +21,7 @@ import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.safecss.shared.SafeStyles;
 import com.google.gwt.safecss.shared.SafeStylesBuilder;
 import com.google.gwt.safehtml.client.SafeHtmlTemplates;
+import com.google.gwt.safehtml.client.SafeHtmlTemplates.Template;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.google.gwt.safehtml.shared.SafeHtmlUtils;
@@ -41,10 +42,10 @@ import com.google.gwt.view.client.SelectionModel;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.data.HasDataTable;
-import com.butent.bee.client.dom.Rectangle;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Edges;
 import com.butent.bee.client.dom.Font;
+import com.butent.bee.client.dom.Rectangle;
 import com.butent.bee.client.dom.Rulers;
 import com.butent.bee.client.dom.Selectors;
 import com.butent.bee.client.dom.StyleUtils;
@@ -68,6 +69,10 @@ import java.util.Set;
  */
 
 public class CellGrid extends Widget implements HasId, HasDataTable {
+
+  /**
+   * Contains a list of possible resizing modes (horizontal, vertical).
+   */
 
   public enum ResizerMode {
     HORIZONTAL(10, 4), VERTICAL(10, 4);
@@ -468,6 +473,10 @@ public class CellGrid extends Widget implements HasId, HasDataTable {
     }
   }
 
+  /**
+   * Lists possible grid elements for parameter management.
+   */
+
   private enum TargetType {
     CONTAINER, RESIZER, HEADER, BODY, FOOTER;
   }
@@ -692,7 +701,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable {
       autoFitColumn(col);
     }
   }
-  
+
   public void clearColumnWidth(String columnId) {
     setColumnWidth(columnId, BeeConst.UNDEF);
   }
@@ -709,7 +718,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable {
     }
     return false;
   }
-  
+
   public void createId() {
     DomUtils.createId(this, "cell-grid");
   }
@@ -717,16 +726,16 @@ public class CellGrid extends Widget implements HasId, HasDataTable {
   public <T extends IsRow> int estimateColumnWidth(int col) {
     return estimateColumnWidth(col, getVisibleItems(), true);
   }
-  
+
   public <T extends IsRow> int estimateColumnWidth(int col, boolean update) {
     return estimateColumnWidth(col, getVisibleItems(), update);
   }
-  
+
   public <T extends IsRow> int estimateColumnWidth(int col, List<T> values, boolean update) {
     Assert.notNull(values);
     return estimateColumnWidth(col, values, values.size(), update);
   }
-  
+
   public <T extends IsRow> int estimateColumnWidth(int col, List<T> values, int length,
       boolean update) {
     Assert.notNull(values);
@@ -734,7 +743,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable {
     ColumnInfo columnInfo = getColumnInfo(col);
     Column<IsRow, ?> column = columnInfo.getColumn();
     Font font = columnInfo.getBodyFont();
-    
+
     int width = 0;
     for (int i = 0; i < length; i++) {
       IsRow rowValue = values.get(i);
@@ -749,7 +758,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable {
     }
     return width;
   }
-  
+
   public <T extends IsRow> void estimateColumnWidths(List<T> values) {
     Assert.notNull(values);
     estimateColumnWidths(values, values.size());
@@ -799,7 +808,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable {
     }
     return width;
   }
-  
+
   public void estimateHeaderWidths() {
     for (int i = 0; i < getColumnCount(); i++) {
       estimateHeaderWidth(i);
@@ -809,7 +818,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable {
   public int estimatePageSize() {
     return estimatePageSize(getElement().getClientWidth(), getElement().getClientHeight());
   }
-  
+
   public int estimatePageSize(int containerWidth, int containerHeight) {
     int availableBodyHeight = containerHeight - getHeaderHeight() - getFooterHeight();
 
@@ -824,7 +833,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable {
     }
     return BeeConst.UNDEF;
   }
-  
+
   public int getActiveColumn() {
     return activeColumn;
   }
@@ -832,7 +841,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable {
   public int getActiveRow() {
     return activeRow;
   }
-  
+
   public Long getActiveRowId() {
     int visibleIndex = getActiveRow();
     if (visibleIndex >= 0 && visibleIndex < getVisibleItemCount()
@@ -1022,7 +1031,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable {
   public int getRowCount() {
     return rowCount;
   }
-  
+
   public List<Long> getSelectedRows() {
     return selectedRows;
   }
@@ -1529,7 +1538,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable {
     }
     rowCount = size;
     rowCountIsExact = isExact;
-    
+
     if (getPageStart() > 0 && getPageSize() > 0 && getPageStart() + getPageSize() > size) {
       setPageStart(Math.max(size - getPageSize(), 0));
     }
@@ -2031,7 +2040,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable {
   }
 
   private NodeList<Element> getColumnElements(int col) {
-    return Selectors.getNodes(getElement(), 
+    return Selectors.getNodes(getElement(),
         Selectors.attributeEquals(DomUtils.ATTRIBUTE_DATA_COLUMN, col));
   }
 
@@ -2180,12 +2189,12 @@ public class CellGrid extends Widget implements HasId, HasDataTable {
   }
 
   private NodeList<Element> getRowElements(int row) {
-    return Selectors.getNodes(getElement(), 
+    return Selectors.getNodes(getElement(),
         Selectors.attributeEquals(DomUtils.ATTRIBUTE_DATA_ROW, row));
   }
 
   private NodeList<Element> getRowElements(String rowIdx) {
-    return Selectors.getNodes(getElement(), 
+    return Selectors.getNodes(getElement(),
         Selectors.attributeEquals(DomUtils.ATTRIBUTE_DATA_ROW, rowIdx));
   }
 
@@ -2903,7 +2912,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable {
       top += rowHeight + defaultHeightIncr;
     }
   }
-  
+
   private SafeHtml renderCell(String rowIdx, int col, String classes, int left, int top,
       int width, int height, SafeStyles styles, SafeStyles extraStyles,
       HorizontalAlignmentConstant hAlign, SafeHtml cellContent, boolean focusable) {
@@ -3514,7 +3523,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable {
     getResizerMoveTimer().reset();
     setResizing(true);
   }
-  
+
   private void stopResizing() {
     getResizerMoveTimer().stop();
     setResizing(false);
@@ -3522,7 +3531,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable {
 
     setResizerModifiers(null);
   }
-  
+
   private void updateOrder(String columnId, boolean hasModifiers) {
     Assert.notEmpty(columnId);
     Order ord = getSortOrder();
@@ -3567,7 +3576,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable {
       ord.clear();
     }
   }
-  
+
   private boolean updatePageSize() {
     if (hasPaging()) {
       int newPageSize = estimatePageSize();

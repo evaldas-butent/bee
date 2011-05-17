@@ -41,8 +41,16 @@ import com.butent.bee.shared.HasId;
 
 public class DialogBox extends PopupPanel implements HasId, HasHTML, HasSafeHtml {
 
+  /**
+   * Extends {@code HasHTML, HasSafeHtml, Is Widget}, sets requirements for captions.
+   */
+
   public interface Caption extends HasHTML, HasSafeHtml, IsWidget {
   }
+
+  /**
+   * Implements caption element in user dialog interface components.
+   */
 
   public static class CaptionImpl extends Html implements Caption {
     public CaptionImpl() {
@@ -72,7 +80,7 @@ public class DialogBox extends PopupPanel implements HasId, HasHTML, HasSafeHtml
   private static final String STYLE_CAPTION = "Caption";
   private static final String STYLE_CONTENT = "Content";
   private static final String STYLE_CLOSE = "Close";
-  
+
   private final Complex container = new Complex();
   private final Vertical layout = new Vertical();
   private final Caption caption;
@@ -103,10 +111,10 @@ public class DialogBox extends PopupPanel implements HasId, HasHTML, HasSafeHtml
     Assert.notNull(captionWidget);
     captionWidget.asWidget().addStyleName(STYLE_CAPTION);
     this.caption = captionWidget;
-    
+
     this.layout.add(captionWidget);
     this.container.add(layout);
-    
+
     BeeImage close = new BeeImage(Global.getImages().close(), new BeeCommand() {
       @Override
       public void execute() {
@@ -115,7 +123,7 @@ public class DialogBox extends PopupPanel implements HasId, HasHTML, HasSafeHtml
     });
     close.addStyleName(STYLE_CLOSE);
     this.container.add(close);
-    
+
     createId();
     setStyleName(STYLE_CONTAINER);
 
@@ -194,7 +202,7 @@ public class DialogBox extends PopupPanel implements HasId, HasHTML, HasSafeHtml
   public void setText(String text) {
     caption.setText(text);
   }
-  
+
   @Override
   public void setWidget(Widget w) {
     Assert.notNull(w);

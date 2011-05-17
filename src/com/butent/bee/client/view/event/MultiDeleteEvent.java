@@ -7,18 +7,26 @@ import com.butent.bee.client.BeeKeeper;
 
 import java.util.Collection;
 
+/**
+ * Enables deleting more than one row of data.
+ */
+
 public class MultiDeleteEvent extends Event<MultiDeleteEvent.Handler> {
-  
+
+  /**
+   * Requires any implementing classes to have a {@code onMultiDelete} method.
+   */
+
   public interface Handler {
     void onMultiDelete(MultiDeleteEvent event);
   }
 
   private static final Type<Handler> TYPE = new Type<Handler>();
-  
+
   public static HandlerRegistration register(Handler handler) {
     return BeeKeeper.getBus().addHandler(TYPE, handler);
   }
-  
+
   private final String viewName;
   private final Collection<Long> rowIds;
 

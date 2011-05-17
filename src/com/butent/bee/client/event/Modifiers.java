@@ -2,8 +2,12 @@ package com.butent.bee.client.event;
 
 import com.google.gwt.dom.client.NativeEvent;
 
+/**
+ * Enables using keyboard combinations with Shift, Ctrl, Alt and Meta keys.
+ */
+
 public class Modifiers {
-  
+
   public static boolean isEmpty(Modifiers m) {
     if (m == null) {
       return true;
@@ -17,12 +21,12 @@ public class Modifiers {
     }
     return m.isShiftKey() || m.isCtrlKey() || m.isAltKey() || m.isMetaKey();
   }
-  
+
   private boolean shiftKey = false;
   private boolean ctrlKey = false;
   private boolean altKey = false;
   private boolean metaKey = false;
-  
+
   public Modifiers(NativeEvent event) {
     if (event != null) {
       this.shiftKey = event.getShiftKey();
@@ -31,7 +35,7 @@ public class Modifiers {
       this.metaKey = event.getMetaKey();
     }
   }
-  
+
   protected Modifiers() {
   }
 

@@ -60,6 +60,12 @@ import javax.ejb.LockType;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
 
+/**
+ * Ensures core data management functionality containing: data structures for tables and views,
+ * current SQL server configuration, creating data tables only when they are in demand, handles data
+ * with exceptions etc.
+ */
+
 @Singleton
 @Startup
 @Lock(LockType.READ)
@@ -392,9 +398,9 @@ public class SystemBean {
     if (BeeUtils.isEmpty(idName)) {
       return -1;
     }
-    
+
     int result = 0;
-    
+
     for (RowInfo rowInfo : rows) {
       long id = rowInfo.getId();
       int z = qs.updateData(new SqlDelete(viewName).setWhere(SqlUtils.equal(viewName, idName, id)));
@@ -406,7 +412,7 @@ public class SystemBean {
     }
     return result;
   }
-  
+
   public ResponseObject editStateRoles(String tblName, String stateName) {
     if (!isState(stateName)) {
       return ResponseObject.error("Unknown state:", stateName);
@@ -474,7 +480,7 @@ public class SystemBean {
     }
     return ResponseObject.response(qs.getViewData(union, null));
   }
- 
+
   public ResponseObject generateData(String tblName, int rowCount) {
     Assert.isTrue(isTable(tblName), "Not a base table: " + tblName);
     Assert.isPositive(rowCount, "rowCount must be positive");

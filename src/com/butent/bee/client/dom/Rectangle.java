@@ -9,6 +9,10 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.utils.BeeUtils;
 
+/**
+ * Enables to create rectangle objects and manage their size and style.
+ */
+
 public class Rectangle {
 
   private static final Unit DEFAULT_UNIT = Unit.PX;
@@ -24,7 +28,7 @@ public class Rectangle {
     rectangle.setFromParentOffset(element);
     return rectangle;
   }
-  
+
   private Unit leftUnit = null;
   private Double leftValue = null;
 
@@ -40,7 +44,7 @@ public class Rectangle {
   public Rectangle() {
     super();
   }
-  
+
   public Rectangle(Style style) {
     this();
     setFromStyle(style);
@@ -113,12 +117,12 @@ public class Rectangle {
   }
 
   public boolean contains(int x, int y) {
-    return contains((double) x, (double) y); 
+    return contains((double) x, (double) y);
   }
-  
+
   public boolean contains(double x, double y) {
     if (isValid()) {
-      return x >= getLeftValue() && x <= getLeftValue() + getWidthValue() 
+      return x >= getLeftValue() && x <= getLeftValue() + getWidthValue()
           && y >= getTopValue() && y <= getTopValue() + getHeightValue();
     } else {
       return false;
@@ -269,16 +273,16 @@ public class Rectangle {
 
   private void setFromAbsoluteCoordinates(Element element) {
     Assert.notNull(element);
-    
+
     setLeft(element.getAbsoluteLeft());
     setTop(element.getAbsoluteTop());
     setWidth(element.getOffsetWidth());
     setHeight(element.getOffsetHeight());
   }
-  
+
   private void setFromParentOffset(Element element) {
     Assert.notNull(element);
-    
+
     setLeft(element.getOffsetLeft());
     setTop(element.getOffsetTop());
     setWidth(element.getOffsetWidth());
@@ -336,7 +340,7 @@ public class Rectangle {
       setHeightUnit(unit);
     }
   }
-  
+
   private void setStyleProperty(Style style, String name, Double value, Unit unit) {
     if (value == null) {
       return;

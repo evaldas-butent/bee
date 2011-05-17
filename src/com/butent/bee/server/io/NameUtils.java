@@ -12,6 +12,10 @@ import java.util.Collection;
  */
 
 public class NameUtils {
+  /**
+   * Contains a list of possible name components like prefix, path, extension and so on.
+   */
+
   public enum Component {
     PREFIX, PATH, FULL_PATH, NAME, BASE_NAME, EXTENSION
   }

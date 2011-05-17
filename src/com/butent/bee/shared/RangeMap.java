@@ -2,6 +2,10 @@ package com.butent.bee.shared;
 
 import java.util.HashMap;
 
+/**
+ * Enables using arrays to store ranges with minimum and maximum values.
+ */
+
 @SuppressWarnings("serial")
 public class RangeMap<V> extends HashMap<RangeMap<V>.Range, V> {
 
@@ -81,7 +85,7 @@ public class RangeMap<V> extends HashMap<RangeMap<V>.Range, V> {
     Range bestRange = null;
 
     for (Range range : keySet()) {
-      if (range != null && range.contains(key) 
+      if (range != null && range.contains(key)
           && (bestRange == null || bestRange.contains(range))) {
         bestRange = range;
       }
