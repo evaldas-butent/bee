@@ -16,7 +16,6 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.data.BeeRowSet;
-import com.butent.bee.shared.data.cache.CacheManager;
 import com.butent.bee.shared.ui.BeeGrid;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -57,7 +56,7 @@ public class CliWidget extends BeeTextBox {
     } else if (z.equals("browser") || z.startsWith("wind")) {
       CliWorker.showBrowser(arr);
     } else if (z.equals("cache")) {
-      BeeKeeper.getUi().showGrid(CacheManager.getInfo());
+      BeeKeeper.getUi().showGrid(Global.getCache().getInfo());
     } else if (z.equals("canvas")) {
       new CanvasDemo().start();
     } else if (BeeUtils.inList(z, "center", "east", "north", "south", "screen", "west")) {

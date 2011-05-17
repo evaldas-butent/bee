@@ -13,7 +13,6 @@ import com.google.gwt.view.client.SingleSelectionModel;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ResponseCallback;
-import com.butent.bee.client.layout.BeeLayoutPanel;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.utils.BeeCommand;
 import com.butent.bee.client.widget.BeeImage;
@@ -23,7 +22,11 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.cache.CachingPolicy;
+import com.butent.bee.shared.data.event.HandlesDeleteEvents;
+import com.butent.bee.shared.data.event.MultiDeleteEvent;
+import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.view.DataInfo;
+import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
 import java.util.List;
@@ -32,13 +35,10 @@ import java.util.List;
  * Implements usage of data views in user interface.
  */
 
-public class Explorer {
+public class Explorer implements HandlesDeleteEvents {
 
   private class DataInfoCallback implements ResponseCallback {
-    private boolean show;
-
-    private DataInfoCallback(boolean show) {
-      this.show = show;
+    private DataInfoCallback() {
     }
 
     public void onResponse(JsArrayString arr) {
@@ -50,8 +50,11 @@ public class Explorer {
       for (String s : info) {
         getViews().add(DataInfo.restore(s));
       }
-      if (show) {
-        showDataInfo();
+      
+      if (getDataInfoWidget() == null) {
+        showDataInfo(); 
+      } else {
+        getDataInfoWidget().setRowData(getViews());
       }
     }
   }
@@ -59,20 +62,10 @@ public class Explorer {
   private class DataInfoCreator extends BeeCommand {
     @Override
     public void execute() {
-      BeeLayoutPanel panel = BeeKeeper.getUi().getDataPanel();
-      if (panel.getWidgetCount() > 0) {
-        return;
-      }
-      if (!BeeKeeper.getUser().isLoggedIn()) {
-        return;
-      }
-
-      if (getViews().isEmpty()) {
+      if (getDataInfoWidget() == null) {
         BeeKeeper.getUi().updateData(new BeeImage(Global.getImages().loading()), false);
-        loadDataInfo(true);
-      } else {
-        showDataInfo();
       }
+      loadDataInfo();
     }
   }
 
@@ -80,6 +73,8 @@ public class Explorer {
   private final DataInfoCreator dataInfoCreator = new DataInfoCreator();
 
   private int asyncThreshold = 100;
+  
+  private CellTable<DataInfo> dataInfoWidget = null;
 
   public Explorer() {
     super();
@@ -102,8 +97,30 @@ public class Explorer {
     return views;
   }
 
-  public void loadDataInfo(boolean show) {
-    BeeKeeper.getRpc().makeGetRequest(Service.GET_VIEW_LIST, new DataInfoCallback(show));
+  public void loadDataInfo() {
+    BeeKeeper.getRpc().makeGetRequest(Service.GET_VIEW_LIST, new DataInfoCallback());
+  }
+
+  public void onMultiDelete(MultiDeleteEvent event) {
+    DataInfo dataInfo = getDataInfo(event.getViewName());
+    if (dataInfo != null) {
+      dataInfo.setRowCount(dataInfo.getRowCount() - event.getRowIds().size());
+      refresh();
+    }
+  }
+
+  public void onRowDelete(RowDeleteEvent event) {
+    DataInfo dataInfo = getDataInfo(event.getViewName());
+    if (dataInfo != null) {
+      dataInfo.setRowCount(dataInfo.getRowCount() - 1);
+      refresh();
+    }
+  }
+  
+  public void refresh() {
+    if (getDataInfoWidget() != null) {
+      getDataInfoWidget().redraw();
+    }
   }
 
   public void setAsyncThreshold(int asyncThreshold) {
@@ -117,6 +134,7 @@ public class Explorer {
     }
 
     CellTable<DataInfo> grid = new CellTable<DataInfo>(getViews().size());
+    setDataInfoWidget(grid);
 
     Column<DataInfo, String> nameColumn = new TextColumn<DataInfo>() {
       @Override
@@ -149,8 +167,22 @@ public class Explorer {
       }
     });
     grid.setSelectionModel(selector);
-
+    
     BeeKeeper.getUi().updateData(grid, true);
+  }
+  
+  private DataInfo getDataInfo(String name) {
+    Assert.notNull(name);
+    for (DataInfo dataInfo : getViews()) {
+      if (BeeUtils.same(dataInfo.getName(), name)) {
+        return dataInfo;
+      }
+    }
+    return null;
+  }
+
+  private CellTable<DataInfo> getDataInfoWidget() {
+    return dataInfoWidget;
   }
 
   private void openView(final DataInfo dataInfo) {
@@ -172,15 +204,15 @@ public class Explorer {
     Queries.getRowSet(dataInfo.getName(), null, null, 0, limit, CachingPolicy.FULL,
         new Queries.RowSetCallback() {
           public void onResponse(BeeRowSet rowSet) {
-            if (rowSet.isEmpty()) {
-              BeeKeeper.getLog().info(rowSet.getViewName(), "RowSet is empty");
-            } else {
-              showView(dataInfo, rowSet, async);
-            }
+            showView(dataInfo, rowSet, async);
           }
         });
   }
 
+  private void setDataInfoWidget(CellTable<DataInfo> dataInfoWidget) {
+    this.dataInfoWidget = dataInfoWidget;
+  }
+  
   private void showView(DataInfo dataInfo, BeeRowSet rowSet, boolean async) {
     GridPresenter presenter = new GridPresenter(dataInfo, rowSet, async);
     BeeKeeper.getUi().updateActivePanel(presenter.getWidget());

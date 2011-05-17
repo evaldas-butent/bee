@@ -179,7 +179,35 @@ public class SimpleCache<K, V> implements HasInfo {
   protected boolean contains(K key) {
     return keys.contains(key);
   }
+  
+  protected synchronized boolean deleteKey(K key) {
+    int idx = keys.indexOf(key);
+    if (idx >= 0) {
+      keys.remove(idx);
+      values.remove(idx);
+      if (history != null) {
+        history.removeAll(key);
+      }
+      return true;
+    } else {
+      return false;
+    }
+  }
 
+  protected synchronized int deleteValue(V value) {
+    int idx = values.indexOf(value);
+    if (idx >= 0) {
+      K key = keys.remove(idx);
+      values.remove(idx);
+      if (history != null) {
+        history.removeAll(key);
+      }
+      return deleteValue(value) + 1;
+    } else {
+      return 0;
+    }
+  }
+  
   protected synchronized V get(K key) {
     int idx = keys.indexOf(key);
     if (idx >= 0) {

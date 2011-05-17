@@ -1,16 +1,18 @@
 package com.butent.bee.client.data;
 
 import com.google.common.collect.Lists;
+import com.google.gwt.user.cellview.client.LoadingStateChangeEvent;
 import com.google.gwt.view.client.Range;
 import com.google.gwt.view.client.RangeChangeEvent;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.view.event.MultiDeleteEvent;
-import com.butent.bee.client.view.event.RowDeleteEvent;
-import com.butent.bee.client.view.event.SortEvent;
+import com.butent.bee.client.Global;
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.data.cache.CacheManager;
+import com.butent.bee.shared.data.event.HandlesDeleteEvents;
+import com.butent.bee.shared.data.event.MultiDeleteEvent;
+import com.butent.bee.shared.data.event.RowDeleteEvent;
+import com.butent.bee.shared.data.event.SortEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -21,17 +23,18 @@ import java.util.List;
  * Enables to manage ranges of data shown in user interface tables.
  */
 
-public abstract class Provider implements SortEvent.Handler, RowDeleteEvent.Handler, MultiDeleteEvent.Handler {
+public abstract class Provider implements SortEvent.Handler, HandlesDeleteEvents {
 
   private final HasDataTable display;
 
   private final List<HandlerRegistration> handlerRegistry = Lists.newArrayList();
 
   private boolean rangeChangeEnabled = true;
+  private boolean cacheEnabled = true;
 
   private Filter filter = null;
   private Order order = null;
-  
+
   protected Provider(HasDataTable display) {
     Assert.notNull(display);
     this.display = display;
@@ -45,15 +48,23 @@ public abstract class Provider implements SortEvent.Handler, RowDeleteEvent.Hand
     }));
 
     this.handlerRegistry.add(display.addSortHandler(this));
-    
-    this.handlerRegistry.add(RowDeleteEvent.register(this));
-    this.handlerRegistry.add(MultiDeleteEvent.register(this));
+
+    this.handlerRegistry.add(BeeKeeper.getBus().registerRowDeleteHandler(this));
+    this.handlerRegistry.add(BeeKeeper.getBus().registerMultiDeleteHandler(this));
+  }
+
+  public void disableCache() {
+    setCacheEnabled(false);
   }
 
   public void disableRangeChange() {
     setRangeChangeEnabled(false);
   }
 
+  public void enableCache() {
+    setCacheEnabled(true);
+  }
+  
   public void enableRangeChange() {
     setRangeChangeEnabled(true);
   }
@@ -65,11 +76,15 @@ public abstract class Provider implements SortEvent.Handler, RowDeleteEvent.Hand
   public Order getOrder() {
     return order;
   }
+  
+  public boolean isCacheEnabled() {
+    return cacheEnabled;
+  }
 
   public boolean isRangeChangeEnabled() {
     return rangeChangeEnabled;
   }
- 
+
   public void onFilterChanged(Filter newFilter, int rowCount) {
     setFilter(newFilter);
     getDisplay().setRowCount(rowCount);
@@ -78,13 +93,19 @@ public abstract class Provider implements SortEvent.Handler, RowDeleteEvent.Hand
 
   public void onMultiDelete(MultiDeleteEvent event) {
     if (BeeUtils.same(getViewName(), event.getViewName())) {
-      refresh();
+      disableCache();
+      getDisplay().onMultiDelete(event);
+      onRangeChanged(false);
+      enableCache();
     }
   }
 
   public void onRowDelete(RowDeleteEvent event) {
     if (BeeUtils.same(getViewName(), event.getViewName())) {
-      refresh();
+      disableCache();
+      getDisplay().onRowDelete(event);
+      onRangeChanged(false);
+      enableCache();
     }
   }
 
@@ -97,9 +118,10 @@ public abstract class Provider implements SortEvent.Handler, RowDeleteEvent.Hand
       }
     }
   }
-  
+
   public void refresh() {
-    CacheManager.removeQuietly(getViewName());
+    startLoading();
+    Global.getCache().removeQuietly(getViewName());
 
     final Filter flt = getFilter();
     Queries.getRowCount(getViewName(), flt, new Queries.IntCallback() {
@@ -107,31 +129,17 @@ public abstract class Provider implements SortEvent.Handler, RowDeleteEvent.Hand
       public void onResponse(int value) {
         if (value <= 0) {
           BeeKeeper.getLog().warning(getViewName(), flt, "refresh: row count", value);
-          if (flt == null) {
-            return;
-          }
-          
-          Queries.getRowCount(getViewName(), new Queries.IntCallback() {
-            @Override
-            public void onResponse(int rowCount) {
-              if (rowCount <= 0) {
-                BeeKeeper.getLog().warning(getViewName(), "refresh: row count", rowCount);
-              } else {
-                BeeKeeper.getLog().info(getViewName(), "filter off");
-                setFilter(null);
-                getDisplay().setRowCount(rowCount);
-                onRefresh();
-              }
-            }
-          });
-        } else {
-          getDisplay().setRowCount(value);
-          onRefresh();
         }
+        getDisplay().setRowCount(value);
+        onRefresh();
       }
     });
   }
 
+  public void setCacheEnabled(boolean cacheEnabled) {
+    this.cacheEnabled = cacheEnabled;
+  }
+  
   public void setFilter(Filter filter) {
     this.filter = filter;
   }
@@ -139,7 +147,7 @@ public abstract class Provider implements SortEvent.Handler, RowDeleteEvent.Hand
   public void setOrder(Order order) {
     this.order = order;
   }
-  
+
   public void setRangeChangeEnabled(boolean rangeChangeEnabled) {
     this.rangeChangeEnabled = rangeChangeEnabled;
   }
@@ -155,7 +163,7 @@ public abstract class Provider implements SortEvent.Handler, RowDeleteEvent.Hand
   protected Range getRange() {
     return getDisplay().getVisibleRange();
   }
-  
+
   protected abstract String getViewName();
 
   protected void goTop() {
@@ -166,4 +174,8 @@ public abstract class Provider implements SortEvent.Handler, RowDeleteEvent.Hand
   protected abstract void onRangeChanged(boolean updateActiveRow);
 
   protected abstract void onRefresh();
+  
+  protected void startLoading() {
+    getDisplay().fireLoadingStateChange(LoadingStateChangeEvent.LoadingState.LOADING);
+  }
 }

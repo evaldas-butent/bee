@@ -1317,6 +1317,25 @@ public class StyleUtils {
     setRectangle(obj.getElement(), left, top, width, height);
   }
   
+  public static void setRight(Element el, int px) {
+    Assert.notNull(el);
+    setRight(el.getStyle(), px);
+  }
+
+  public static void setRight(Style st, int px) {
+    Assert.notNull(st);
+    st.setRight(px, Unit.PX);
+  }
+
+  public static void setRight(String id, int px) {
+    setRight(DomUtils.getElement(id), px);
+  }
+
+  public static void setRight(UIObject obj, int px) {
+    Assert.notNull(obj);
+    setRight(obj.getElement(), px);
+  }
+  
   public static void setSize(Element el, int width, int height) {
     Assert.notNull(el);
     setSize(el.getStyle(), width, height);

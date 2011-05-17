@@ -4,18 +4,22 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasExtendedInfo;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.event.HandlesDeleteEvents;
+import com.butent.bee.shared.data.event.MultiDeleteEvent;
+import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.ExtendedProperty;
 import com.butent.bee.shared.utils.PropertyUtils;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -24,13 +28,13 @@ import java.util.Set;
  * Enables operations within cache, adding and removing cached objects.
  */
 
-public class CacheManager {
+public class CacheManager implements HandlesDeleteEvents {
 
   /**
    * Handles single cache entry, contains it's attributes and methods for changing them.
    */
 
-  private static class Entry implements HasExtendedInfo {
+  private class Entry implements HasExtendedInfo {
     private final String viewName;
     private final List<BeeColumn> columns;
     private final CachedData data = new CachedData();
@@ -90,6 +94,20 @@ public class CacheManager {
         query.clearHistory();
       }
     }
+    
+    private boolean deleteRow(long id) {
+      boolean ok = data.deleteKey(id);
+      if (ok) {
+        for (Iterator<CachedQuery> it = queries.iterator(); it.hasNext(); ) {
+          CachedQuery query = it.next();
+          query.deleteValue(id);
+          if (query.isEmpty()) {
+            it.remove();
+          }
+        }
+      }
+      return ok;
+    }
 
     private CachedQuery getQuery(Filter filter, Order order) {
       for (CachedQuery query : queries) {
@@ -98,22 +116,6 @@ public class CacheManager {
         }
       }
       return null;
-    }
-
-    private int getRowCount(Filter filter) {
-      int rowCount = BeeConst.SIZE_UNKNOWN;
-      int qrc;
-
-      for (CachedQuery query : queries) {
-        if (query.sameFilter(filter)) {
-          qrc = query.getRowCount();
-          if (qrc >= 0) {
-            rowCount = qrc;
-            break;
-          }
-        }
-      }
-      return rowCount;
     }
 
     private List<BeeRow> getRows(Filter filter, Order order, int offset, int limit) {
@@ -153,6 +155,10 @@ public class CacheManager {
         query.invalidate();
       }
     }
+    
+    private boolean isEmpty() {
+      return data.isEmpty();
+    }
 
     private void setRowCount(Filter filter, Order order, int rowCount) {
       boolean found = false;
@@ -172,25 +178,29 @@ public class CacheManager {
     }
   }
 
-  private static final Map<String, Entry> ENTRIES = Maps.newHashMap();
+  private final Map<String, Entry> entries = Maps.newHashMap();
+  
+  public CacheManager() {
+    super();
+  }
 
-  public static void add(BeeRowSet rowSet) {
+  public void add(BeeRowSet rowSet) {
     add(rowSet, null);
   }
 
-  public static void add(BeeRowSet rowSet, Filter filter) {
+  public void add(BeeRowSet rowSet, Filter filter) {
     add(rowSet, filter, null);
   }
 
-  public static void add(BeeRowSet rowSet, Filter filter, Order order) {
+  public void add(BeeRowSet rowSet, Filter filter, Order order) {
     add(rowSet, filter, order, 0);
   }
 
-  public static void add(BeeRowSet rowSet, Filter filter, Order order, int offset) {
+  public void add(BeeRowSet rowSet, Filter filter, Order order, int offset) {
     add(rowSet, filter, order, offset, -1);
   }
 
-  public static void add(BeeRowSet rowSet, Filter filter, Order order, int offset, int limit) {
+  public void add(BeeRowSet rowSet, Filter filter, Order order, int offset, int limit) {
     Assert.notNull(rowSet);
     Assert.nonNegative(offset);
 
@@ -209,47 +219,51 @@ public class CacheManager {
     }
   }
 
-  public static void clearAllHistory() {
-    for (Entry entry : ENTRIES.values()) {
+  public void clearAllHistory() {
+    for (Entry entry : entries.values()) {
       entry.clearHistory();
     }
   }
 
-  public static void clearHistory(String key) {
+  public void clearHistory(String key) {
     assertKey(key);
     get(key).clearHistory();
   }
 
-  public static boolean contains(String key) {
+  public boolean contains(String key) {
     if (BeeUtils.isEmpty(key)) {
       return false;
     }
-    return ENTRIES.containsKey(normalizeKey(key));
+    return entries.containsKey(normalizeKey(key));
+  }
+  
+  public boolean deleteRow(String key, long rowId) {
+    if (!contains(key)) {
+      return false;
+    }
+    Entry entry = get(key);
+    
+    boolean ok = entry.deleteRow(rowId);
+    if (ok && entry.isEmpty()) {
+      remove(key);
+    }
+    
+    return ok;
   }
 
-  public static List<ExtendedProperty> getInfo() {
+  public List<ExtendedProperty> getInfo() {
     List<ExtendedProperty> info = Lists.newArrayList();
-    info.add(new ExtendedProperty("Cache", "Entries", BeeUtils.toString(ENTRIES.size())));
+    info.add(new ExtendedProperty("Cache", "Entries", BeeUtils.toString(entries.size())));
 
     int idx = 0;
-    for (Entry entry : ENTRIES.values()) {
-      PropertyUtils.appendWithPrefix(info, BeeUtils.progress(++idx, ENTRIES.size()),
+    for (Entry entry : entries.values()) {
+      PropertyUtils.appendWithPrefix(info, BeeUtils.progress(++idx, entries.size()),
           entry.getInfo());
     }
     return info;
   }
 
-  public static int getRowCount(String viewName, Filter filter) {
-    Assert.notEmpty(viewName);
-    Entry entry = get(viewName);
-    if (entry == null) {
-      return BeeConst.SIZE_UNKNOWN;
-    }
-    return entry.getRowCount(filter);
-  }
-
-  public static List<BeeRow> getRows(String viewName, Filter filter, Order order,
-      int offset, int limit) {
+  public List<BeeRow> getRows(String viewName, Filter filter, Order order, int offset, int limit) {
     Assert.notEmpty(viewName);
     Entry entry = get(viewName);
     if (entry == null) {
@@ -258,8 +272,7 @@ public class CacheManager {
     return entry.getRows(filter, order, offset, limit);
   }
 
-  public static BeeRowSet getRowSet(String viewName, Filter filter, Order order,
-      int offset, int limit) {
+  public BeeRowSet getRowSet(String viewName, Filter filter, Order order, int offset, int limit) {
     Assert.notEmpty(viewName);
     Entry entry = get(viewName);
     if (entry == null) {
@@ -268,76 +281,86 @@ public class CacheManager {
     return entry.getRowSet(filter, order, offset, limit);
   }
 
-  public static void invalidate(String key) {
+  public void invalidate(String key) {
     assertKey(key);
     get(key).invalidate();
   }
 
-  public static void invalidateAll() {
-    for (Entry entry : ENTRIES.values()) {
+  public void invalidateAll() {
+    for (Entry entry : entries.values()) {
       entry.invalidate();
     }
   }
 
-  public static void invalidateQuietly(String key) {
+  public void invalidateQuietly(String key) {
     if (contains(key)) {
       get(key).invalidate();
     }
   }
+
+  public void onMultiDelete(MultiDeleteEvent event) {
+    Assert.notNull(event);
+    String key = event.getViewName();
+    if (!contains(key)) {
+      return;
+    }
+    
+    int cnt = 0;
+    for (long rowId : event.getRowIds()) {
+      if (deleteRow(key, rowId)) {
+        cnt++;
+      }
+    }
+    BeeKeeper.getLog().info("Cache", key, "deleted", cnt, "rows", "of", event.getRowIds().size());
+  }
+
+  public void onRowDelete(RowDeleteEvent event) {
+    Assert.notNull(event);
+    if (deleteRow(event.getViewName(), event.getRowId())) {
+      BeeKeeper.getLog().info("Cache", event.getViewName(), "deleted row id:", event.getRowId());
+    }
+  }
   
-  public static Entry put(String viewName, List<BeeColumn> columns) {
+  public Entry put(String viewName, List<BeeColumn> columns) {
     Assert.notEmpty(viewName);
 
     Entry entry = get(viewName);
     if (entry == null) {
       Assert.notEmpty(columns);
       entry = new Entry(viewName, columns);
-      ENTRIES.put(normalizeKey(viewName), entry);
+      entries.put(normalizeKey(viewName), entry);
     }
     return entry;
   }
 
-  public static void remove(String key) {
+  public void remove(String key) {
     invalidate(key);
-    ENTRIES.remove(normalizeKey(key));
+    entries.remove(normalizeKey(key));
+    BeeKeeper.getLog().info("Cache: removed", key);
   }
 
-  public static void removeAll() {
+  public void removeAll() {
     invalidateAll();
-    ENTRIES.clear();
+    entries.clear();
   }
   
-  public static void removeQuietly(String key) {
+  public void removeQuietly(String key) {
     if (contains(key)) {
       invalidate(key);
-      ENTRIES.remove(normalizeKey(key));
+      entries.remove(normalizeKey(key));
     }
   }
 
-  public static boolean setRowCount(String viewName, Filter filter, Order order, int rowCount) {
-    Assert.notEmpty(viewName);
-    Entry entry = get(viewName);
-    if (entry == null) {
-      return false;
-    }
-
-    entry.setRowCount(filter, order, rowCount);
-    return true;
-  }
-
-  private static void assertKey(String key) {
+  private void assertKey(String key) {
     Assert.notEmpty(key);
-    Assert.contains(ENTRIES, normalizeKey(key));
+    Assert.contains(entries, normalizeKey(key));
   }
 
-  private static Entry get(String key) {
-    return ENTRIES.get(normalizeKey(key));
+  private Entry get(String key) {
+    return entries.get(normalizeKey(key));
   }
 
-  private static String normalizeKey(String key) {
+  private String normalizeKey(String key) {
     return BeeUtils.normalize(key);
-  }
-
-  private CacheManager() {
   }
 }

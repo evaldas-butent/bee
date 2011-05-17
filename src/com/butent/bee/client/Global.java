@@ -17,6 +17,7 @@ import com.butent.bee.shared.BeeWidget;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.Stage;
 import com.butent.bee.shared.Variable;
+import com.butent.bee.shared.data.cache.CacheManager;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.LocalizableMessages;
 import com.butent.bee.shared.menu.MenuConstants;
@@ -44,6 +45,8 @@ public class Global implements Module {
   private static final Explorer dataExplorer = new Explorer();
 
   private static final Map<String, Variable> vars = new HashMap<String, Variable>();
+  
+  private static final CacheManager cache = new CacheManager();
 
   private static Images images = GWT.create(Images.class);
 
@@ -80,6 +83,10 @@ public class Global implements Module {
     Assert.notNull(type);
 
     vars.put(name, new Variable(caption, type, value, widget, items));
+  }
+
+  public static CacheManager getCache() {
+    return cache;
   }
 
   public static Explorer getDataExplorer() {
@@ -290,12 +297,24 @@ public class Global implements Module {
   }
 
   public void init() {
+    initCache();
+    initDataExplorer();
     initVars();
   }
 
   public void start() {
   }
+  
+  private void initCache() {
+    BeeKeeper.getBus().registerRowDeleteHandler(getCache());
+    BeeKeeper.getBus().registerMultiDeleteHandler(getCache());
+  }
 
+  private void initDataExplorer() {
+    BeeKeeper.getBus().registerRowDeleteHandler(getDataExplorer());
+    BeeKeeper.getBus().registerMultiDeleteHandler(getDataExplorer());
+  }
+  
   private void initVars() {
     createVar(Service.VAR_CLASS_NAME, "Class name");
     createVar(Service.VAR_PACKAGE_LIST, "Default Packages");

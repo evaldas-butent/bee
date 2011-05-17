@@ -62,6 +62,8 @@ public interface IsTable<RowType extends IsRow, ColType extends IsColumn> extend
   List<ColType> getColumns();
 
   RowType getRow(int rowIndex);
+  
+  int getRowIndex(long rowId);
 
   Sequence<RowType> getRows();
 
@@ -84,6 +86,8 @@ public interface IsTable<RowType extends IsRow, ColType extends IsColumn> extend
   void removeColumns(int colIndex, int colCount);
 
   void removeRow(int rowIndex);
+  
+  void removeRowById(long rowId);
 
   void removeRows(int rowIndex, int rowCount);
 

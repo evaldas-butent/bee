@@ -6,6 +6,7 @@ import com.google.common.collect.Sets;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
+import com.google.gwt.user.cellview.client.LoadingStateChangeEvent;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -20,13 +21,13 @@ import com.butent.bee.client.utils.BeeCommand;
 import com.butent.bee.client.view.GridContainerImpl;
 import com.butent.bee.client.view.GridContainerView;
 import com.butent.bee.client.view.HasSearch;
-import com.butent.bee.client.view.event.MultiDeleteEvent;
-import com.butent.bee.client.view.event.RowDeleteEvent;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.search.SearchView;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.event.MultiDeleteEvent;
+import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.DataInfo;
@@ -42,6 +43,49 @@ import java.util.Set;
  */
 
 public class GridPresenter implements Presenter {
+  
+  private class DeleteCallback extends BeeCommand {
+    private final List<Long> rows;
+    private final Long rowId;
+
+    private DeleteCallback(long rowId) {
+      super();
+      this.rows = null;
+      this.rowId = rowId;
+    }
+
+    private DeleteCallback(List<Long> rows) {
+      super();
+      if (rows.size() == 1) {
+        this.rows = null;
+        this.rowId = rows.get(0);
+      } else {
+        this.rows = rows;
+        this.rowId = null;
+      }
+    }
+    
+    @Override
+    public void execute() {
+      getView().getContent().fireLoadingStateChange(LoadingStateChangeEvent.LoadingState.LOADING);
+
+      if (rowId != null) {
+        Queries.deleteRow(getDataName(), rowId, new Queries.IntCallback() {
+          @Override
+          public void onResponse(int value) {
+            BeeKeeper.getBus().fireEvent(new RowDeleteEvent(getDataName(), rowId));
+          }
+        });
+      } else if (rows != null) {
+        Queries.deleteRows(getDataName(), rows, new Queries.IntCallback() {
+          @Override
+          public void onResponse(int value) {
+            BeeKeeper.getBus().fireEvent(new MultiDeleteEvent(getDataName(), rows));
+          }
+        });
+      }
+    }
+  }
 
   private class FilterCallback implements Queries.IntCallback {
     private Filter filter;
@@ -167,6 +211,7 @@ public class GridPresenter implements Presenter {
   private void bind() {
     GridContainerView view = getView();
     view.setViewPresenter(this);
+    view.bind();
 
     Collection<SearchView> searchers = getSearchers();
     if (searchers != null) {
@@ -201,17 +246,11 @@ public class GridPresenter implements Presenter {
     return view;
   }
   
-  private void deleteRow(final long rowId) {
-    Global.getMsgBoxen().confirm("Delete Row ?", new BeeCommand() {
-      @Override
-      public void execute() {
-        Queries.deleteRow(getDataName(), rowId);
-        BeeKeeper.getBus().fireEvent(new RowDeleteEvent(getDataName(), rowId));
-      }
-    }, StyleUtils.NAME_SCARY);
+  private void deleteRow(long rowId) {
+    Global.getMsgBoxen().confirm("Delete Row ?", new DeleteCallback(rowId), StyleUtils.NAME_SCARY);
   }
   
-  private void deleteRows(final List<Long> rows) {
+  private void deleteRows(List<Long> rows) {
     Assert.notNull(rows);
     int count = rows.size();
     Assert.isPositive(count);
@@ -222,13 +261,7 @@ public class GridPresenter implements Presenter {
     
     Global.getMsgBoxen().confirm(BeeUtils.concat(1, "Delete", count, "rows"),
         Lists.newArrayList("Do you really want to hurt me", "Do you really want to make me cry"),
-        new BeeCommand() {
-          @Override
-          public void execute() {
-            Queries.deleteRows(getDataName(), rows);
-            BeeKeeper.getBus().fireEvent(new MultiDeleteEvent(getDataName(), rows));
-          }
-        }, StyleUtils.NAME_SUPER_SCARY);
+        new DeleteCallback(rows), StyleUtils.NAME_SUPER_SCARY);
   }
 
   private String getDataName() {

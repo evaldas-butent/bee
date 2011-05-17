@@ -67,6 +67,15 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
   public GridContainerImpl(String style, int splitterSize) {
     super(style, splitterSize);
   }
+  
+  public void bind() {
+    if (hasHeader()) {
+      getContent().addLoadingStateChangeHandler(getHeader());
+    }
+    if (hasFooter()) {
+      getContent().addSelectionCountChangeHandler(getFooter());
+    }
+  }
 
   public void create(String caption, List<BeeColumn> dataColumns, int rowCount, BeeRowSet rowSet) {
     hasPaging = rowCount >= minPagingRows;
@@ -327,7 +336,8 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
         }
       }
     } else if (init) {
-      content.updatePageSize(content.getRowCount(), init);
+      int pageSize = (content.getRowCount() > 0) ? content.getRowCount() : 10;
+      content.updatePageSize(pageSize, init);
     }
   }
 

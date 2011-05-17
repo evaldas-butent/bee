@@ -15,6 +15,10 @@ import com.butent.bee.client.view.navigation.PagerView;
 import com.butent.bee.client.view.navigation.SimplePager;
 import com.butent.bee.client.view.search.SearchBox;
 import com.butent.bee.client.view.search.SearchView;
+import com.butent.bee.client.widget.BeeLabel;
+import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.data.event.SelectionCountChangeEvent;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
@@ -32,8 +36,9 @@ public class DataFooterImpl extends Absolute implements DataFooterView, HasNavig
     @Source("DataFooterImpl.css")
     Style footerStyle();
   }
+
   /**
-   * Specifies which styling aspects have to be implemented on data header implementations.
+   * Specifies which styling aspects have to be implemented on data footer implementations.
    */
   public interface Style extends CssResource {
     String container();
@@ -45,6 +50,10 @@ public class DataFooterImpl extends Absolute implements DataFooterView, HasNavig
     int resizerWidth();
 
     String search();
+
+    String selectionCounter();
+
+    int selectionCounterWidth();
 
     String simplePager();
 
@@ -76,6 +85,7 @@ public class DataFooterImpl extends Absolute implements DataFooterView, HasNavig
   private String pagerId = null;
   private String resizerId = null;
   private String searchId = null;
+  private String selectionCounterId = null;
 
   private boolean adjusted = false;
 
@@ -94,6 +104,7 @@ public class DataFooterImpl extends Absolute implements DataFooterView, HasNavig
 
     int pagerWidth = 256;
     int resizerWidth = style.resizerWidth();
+    int selectionCounterWidth = style.selectionCounterWidth();
 
     int left = margin;
 
@@ -115,7 +126,16 @@ public class DataFooterImpl extends Absolute implements DataFooterView, HasNavig
       SearchBox search = new SearchBox();
       search.addStyleName(style.search());
       add(search, left, top);
+      int right = (selectionCounterWidth > 0) ? spacing + selectionCounterWidth + margin : margin;
+      StyleUtils.setRight(search, right);
       searchId = search.getWidgetId();
+    }
+    
+    if (selectionCounterWidth > 0) {
+      BeeLabel selectionCounter = new BeeLabel();
+      selectionCounter.addStyleName(style.selectionCounter());
+      add(selectionCounter);
+      selectionCounterId = selectionCounter.getId();
     }
   }
 
@@ -133,6 +153,15 @@ public class DataFooterImpl extends Absolute implements DataFooterView, HasNavig
 
   public String getWidgetId() {
     return getId();
+  }
+
+  public void onSelectionCountChange(SelectionCountChangeEvent event) {
+    Assert.notNull(event);
+    if (selectionCounterId != null) {
+      int cnt = event.getCount();
+      String text = (cnt > 0) ? BeeUtils.toString(cnt) : BeeConst.STRING_EMPTY;
+      DomUtils.setText(selectionCounterId, text);
+    }
   }
 
   public void setViewPresenter(Presenter viewPresenter) {

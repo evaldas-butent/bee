@@ -5,11 +5,16 @@
 @def controlsRight 48;
 @def closeRight 2;
 @def closeTop 2;
+@def loadingIndicatorTop 2;
+@def loadingIndicatorRightMargin 48;
 
 .container {
 }
 
 .caption {
+}
+
+.loadingIndicator {
 }
 
 .control {

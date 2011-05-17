@@ -12,6 +12,9 @@ import java.util.List;
  */
 
 public interface GridContainerView extends View {
+  
+  void bind();
+  
   void create(String caption, List<BeeColumn> dataColumns, int rowCount, BeeRowSet rowSet);
 
   GridView getContent();

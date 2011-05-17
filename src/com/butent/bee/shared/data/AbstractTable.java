@@ -465,6 +465,15 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
 
   public abstract RowType getRow(int rowIndex);
 
+  public int getRowIndex(long rowId) {
+    for (int i = 0; i < getNumberOfRows(); i++) {
+      if (getRow(i).getId() == rowId) {
+        return i;
+      }
+    }
+    return BeeConst.INDEX_UNKNOWN;
+  }
+
   public CustomProperties getRowProperties(int rowIndex) {
     return getRow(rowIndex).getProperties();
   }
@@ -589,6 +598,10 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
   }
 
   public abstract void removeRow(int rowIndex);
+
+  public void removeRowById(long rowId) {
+    removeRow(getRowIndex(rowId));
+  }
 
   public void removeRows(int rowIndex, int rowCount) {
     assertRowIndex(rowIndex);

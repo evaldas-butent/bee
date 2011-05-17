@@ -3,6 +3,7 @@
 @def spacing 15;
 
 @def resizerWidth 48px;
+@def selectionCounterWidth 32px;
 
 .container {
 }
@@ -15,5 +16,13 @@
 }  
 
 .search {
+}
+
+.selectionCounter {
+  position: absolute;
+  top: 6px;
+  width: selectionCounterWidth;
   right: horizontalMargin;
-}  
+  background-color: DeepSkyBlue;
+  text-align: center;
+}

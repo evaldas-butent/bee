@@ -4,11 +4,11 @@ import com.google.common.collect.Lists;
 import com.google.gwt.view.client.Range;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.view.event.SortEvent;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.cache.CachingPolicy;
+import com.butent.bee.shared.data.event.SortEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.Order;
@@ -50,10 +50,6 @@ public class AsyncProvider extends Provider {
         return;
       }
 
-      if (rowSet.isEmpty()) {
-        BeeKeeper.getLog().warning("rowset empty");
-        return;
-      }
       updateDisplay(range.getStart(), range.getLength(), rowSet, updateActiveRow);
     }
 
@@ -124,15 +120,18 @@ public class AsyncProvider extends Provider {
   @Override
   protected void onRangeChanged(boolean updateActiveRow) {
     cancelPendingRequests();
+    startLoading();
     
     Range range = getRange();
 
     Filter flt = getFilter();
     Order ord = getOrder();
-
+    
+    CachingPolicy caching = isCacheEnabled() ? getCachingPolicy() : CachingPolicy.NONE;
     Callback callback = new Callback(range, updateActiveRow);    
+
     int rpcId = Queries.getRowSet(getViewName(), flt, ord, range.getStart(), range.getLength(),
-        getCachingPolicy(), callback);
+        caching, callback);
 
     if (!Queries.isResponseFromCache(rpcId)) {
       callback.setRpcId(rpcId);

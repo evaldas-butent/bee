@@ -1,30 +1,25 @@
-package com.butent.bee.client.view.event;
+package com.butent.bee.shared.data.event;
 
 import com.google.web.bindery.event.shared.Event;
+import com.google.web.bindery.event.shared.EventBus;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 
-import com.butent.bee.client.BeeKeeper;
-
-/**
- * Enables deleting one row of data.
- */
+import com.butent.bee.shared.Assert;
 
 public class RowDeleteEvent extends Event<RowDeleteEvent.Handler> {
-
-  /**
-   * Requires any implementing classes to have a {@code onRowDelete} method.
-   */
-
+  
   public interface Handler {
     void onRowDelete(RowDeleteEvent event);
   }
 
   private static final Type<Handler> TYPE = new Type<Handler>();
-
-  public static HandlerRegistration register(Handler handler) {
-    return BeeKeeper.getBus().addHandler(TYPE, handler);
+  
+  public static HandlerRegistration register(EventBus eventBus, Handler handler) {
+    Assert.notNull(eventBus);
+    Assert.notNull(handler);
+    return eventBus.addHandler(TYPE, handler);
   }
-
+  
   private final String viewName;
   private final long rowId;
 

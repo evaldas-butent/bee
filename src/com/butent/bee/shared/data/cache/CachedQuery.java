@@ -77,6 +77,24 @@ class CachedQuery extends SimpleCache<Integer, Long> {
     return Objects.hashCode(strFilter, strOrder);
   }
 
+  @Override
+  protected synchronized boolean deleteKey(Integer key) {
+    boolean ok = super.deleteKey(key);
+    if (ok && getRowCount() > 0) {
+      setRowCount(getRowCount() - 1);
+    }
+    return ok;
+  }
+
+  @Override
+  protected synchronized int deleteValue(Long value) {
+    int cnt = super.deleteValue(value);
+    if (cnt > 0 && getRowCount() > 0) {
+      setRowCount(Math.max(getRowCount() - cnt, 0));
+    }
+    return cnt;
+  }
+
   void addRange(int offset, List<Long> idList) {
     Assert.nonNegative(offset);
     Assert.notNull(idList);

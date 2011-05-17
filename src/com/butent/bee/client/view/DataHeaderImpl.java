@@ -4,6 +4,7 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.CssResource;
 import com.google.gwt.resources.client.ImageResource;
+import com.google.gwt.user.cellview.client.LoadingStateChangeEvent;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.Global;
@@ -14,6 +15,7 @@ import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.utils.BeeCommand;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.BeeLabel;
+import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.utils.BeeUtils;
 
 /**
@@ -57,6 +59,12 @@ public class DataHeaderImpl extends Complex implements DataHeaderView {
     int controlTop();
 
     int controlWidth();
+
+    String loadingIndicator();
+    
+    int loadingIndicatorRightMargin();
+
+    int loadingIndicatorTop();
   }
   
   private class ActionListener extends BeeCommand {
@@ -94,6 +102,8 @@ public class DataHeaderImpl extends Complex implements DataHeaderView {
   }
 
   private Presenter viewPresenter = null;
+  
+  private String loadingIndicatorId = null;
 
   public DataHeaderImpl() {
     super();
@@ -120,6 +130,12 @@ public class DataHeaderImpl extends Complex implements DataHeaderView {
     addRightTop(createControl(Global.getImages().editDelete(), Action.DELETE, cst), x += w, y);
     addRightTop(createControl(Global.getImages().editAdd(), Action.ADD, cst), x += w, y);
     addRightTop(createControl(Global.getImages().reload(), Action.REFRESH, cst), x += w, y);
+    
+    BeeImage loadingIndicator = new BeeImage(Global.getImages().loading());
+    this.loadingIndicatorId = loadingIndicator.getId();
+    loadingIndicator.addStyleName(style.loadingIndicator());
+    addRightTop(loadingIndicator,
+        x + style.loadingIndicatorRightMargin(), style.loadingIndicatorTop());
 
     addRightTop(createControl(Global.getImages().close(), Action.CLOSE, style.close()),
         style.closeRight(), style.closeTop());
@@ -131,6 +147,16 @@ public class DataHeaderImpl extends Complex implements DataHeaderView {
 
   public String getWidgetId() {
     return getId();
+  }
+  
+  @Override
+  public void onLoadingStateChanged(LoadingStateChangeEvent event) {
+    Assert.notNull(event);
+    if (LoadingStateChangeEvent.LoadingState.LOADED.equals(event.getLoadingState())) {
+      StyleUtils.hideDisplay(loadingIndicatorId);
+    } else {
+      StyleUtils.unhideDisplay(loadingIndicatorId);
+    }
   }
 
   public void setViewPresenter(Presenter viewPresenter) {

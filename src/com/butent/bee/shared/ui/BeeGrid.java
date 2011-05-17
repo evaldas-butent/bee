@@ -226,36 +226,36 @@ public class BeeGrid implements BeeSerializable {
   private BeeGrid() {
   }
 
-  public void addCalculatedColumn(String name, String caption, boolean readOnly, int width,
+  public void addCalculatedColumn(String colName, String colCaption, boolean isReadOnly, int width,
       String expr) {
     Assert.notEmpty(expr);
-    addColumn(ColType.CALCULATED, name, caption, readOnly, width)
+    addColumn(ColType.CALCULATED, colName, colCaption, isReadOnly, width)
         .setExpression(expr);
   }
 
-  public void addDataColumn(String name, String caption, boolean readOnly, int width,
+  public void addDataColumn(String colName, String colCaption, boolean isReadOnly, int width,
       String source) {
     Assert.notEmpty(source);
-    addColumn(ColType.DATA, name, caption, readOnly, width)
+    addColumn(ColType.DATA, colName, colCaption, isReadOnly, width)
         .setSource(source);
   }
 
-  public void addIdColumn(String name, String caption, int width) {
-    addColumn(ColType.ID, name, caption, true, width);
+  public void addIdColumn(String colName, String colCaption, int width) {
+    addColumn(ColType.ID, colName, colCaption, true, width);
   }
 
-  public void addRelatedColumn(String name, String caption, boolean readOnly, int width,
+  public void addRelatedColumn(String colName, String colCaption, boolean isReadOnly, int width,
       String source, String relSource, String relation) {
     Assert.notEmpty(source);
     Assert.notEmpty(relation);
-    addColumn(ColType.RELATED, name, caption, readOnly, width)
+    addColumn(ColType.RELATED, colName, colCaption, isReadOnly, width)
         .setSource(source)
         .setRelSource(relSource)
         .setRelation(relation);
   }
 
-  public void addVersionColumn(String name, String caption, int width) {
-    addColumn(ColType.VERSION, name, caption, true, width);
+  public void addVersionColumn(String colName, String colCaption, int width) {
+    addColumn(ColType.VERSION, colName, colCaption, true, width);
   }
 
   @Override
@@ -360,9 +360,9 @@ public class BeeGrid implements BeeSerializable {
     return getColumn(colName).width;
   }
 
-  public boolean hasColumn(String name) {
-    Assert.notEmpty(name);
-    return columns.containsKey(name.toLowerCase());
+  public boolean hasColumn(String colName) {
+    Assert.notEmpty(colName);
+    return columns.containsKey(colName.toLowerCase());
   }
 
   public boolean isEmpty() {
@@ -416,15 +416,15 @@ public class BeeGrid implements BeeSerializable {
     columns.put(column.colName.toLowerCase(), column);
   }
 
-  private GridColumn addColumn(ColType type, String name, String caption, boolean readOnly,
+  private GridColumn addColumn(ColType type, String colName, String colCaption, boolean isReadOnly,
       int width) {
-    GridColumn col = new GridColumn(type, name, caption, readOnly, width);
+    GridColumn col = new GridColumn(type, colName, colCaption, isReadOnly, width);
     addColumn(col);
     return col;
   }
 
-  private GridColumn getColumn(String name) {
-    Assert.state(hasColumn(name), "Column not found: " + name);
-    return columns.get(name.toLowerCase());
+  private GridColumn getColumn(String colName) {
+    Assert.state(hasColumn(colName), "Column not found: " + colName);
+    return columns.get(colName.toLowerCase());
   }
 }

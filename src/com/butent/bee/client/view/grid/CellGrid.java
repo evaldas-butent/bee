@@ -21,12 +21,12 @@ import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.safecss.shared.SafeStyles;
 import com.google.gwt.safecss.shared.SafeStylesBuilder;
 import com.google.gwt.safehtml.client.SafeHtmlTemplates;
-import com.google.gwt.safehtml.client.SafeHtmlTemplates.Template;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.google.gwt.safehtml.shared.SafeHtmlUtils;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.Header;
+import com.google.gwt.user.cellview.client.LoadingStateChangeEvent;
 import com.google.gwt.user.cellview.client.RowStyles;
 import com.google.gwt.user.cellview.client.SafeHtmlHeader;
 import com.google.gwt.user.cellview.client.TextHeader;
@@ -52,11 +52,14 @@ import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.Modifiers;
 import com.butent.bee.client.grid.CellContext;
-import com.butent.bee.client.view.event.SortEvent;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasId;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.event.MultiDeleteEvent;
+import com.butent.bee.shared.data.event.RowDeleteEvent;
+import com.butent.bee.shared.data.event.SelectionCountChangeEvent;
+import com.butent.bee.shared.data.event.SortEvent;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -114,6 +117,9 @@ public class CellGrid extends Widget implements HasId, HasDataTable {
     @Template("<div data-row=\"{0}\" data-col=\"{1}\" class=\"{2}\" style=\"{3}position:absolute;\" tabindex=\"{4}\">{5}</div>")
     SafeHtml cellFocusable(String rowIdx, int colIdx, String classes, SafeStyles styles,
         int tabIndex, SafeHtml contents);
+
+    @Template("<div class=\"{0}\">{1}</div>")
+    SafeHtml emptiness(String classes, String text);
 
     @Template("<div id=\"{0}\" style=\"position:absolute; top:-64px; left:-64px;\">{1}{2}</div>")
     SafeHtml resizer(String id, SafeHtml handle, SafeHtml bar);
@@ -505,6 +511,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable {
   public static int defaultResizerMoveSensitivityMillis = 0;
 
   public static String STYLE_GRID = "bee-CellGrid";
+  public static String STYLE_EMPTY = "bee-CellGridEmpty";
 
   public static String STYLE_CELL = "bee-CellGridCell";
   public static String STYLE_HEADER = "bee-CellGridHeader";
@@ -655,12 +662,21 @@ public class CellGrid extends Widget implements HasId, HasDataTable {
     insertColumn(getColumnCount(), columnId, col, headerString, footerString);
   }
 
+  public HandlerRegistration addLoadingStateChangeHandler(LoadingStateChangeEvent.Handler handler) {
+    return addHandler(handler, LoadingStateChangeEvent.TYPE);
+  }
+
   public HandlerRegistration addRangeChangeHandler(RangeChangeEvent.Handler handler) {
     return addHandler(handler, RangeChangeEvent.getType());
   }
 
   public HandlerRegistration addRowCountChangeHandler(RowCountChangeEvent.Handler handler) {
     return addHandler(handler, RowCountChangeEvent.getType());
+  }
+
+  public HandlerRegistration addSelectionCountChangeHandler(
+      SelectionCountChangeEvent.Handler handler) {
+    return addHandler(handler, SelectionCountChangeEvent.getType());
   }
 
   public HandlerRegistration addSortHandler(SortEvent.Handler handler) {
@@ -832,6 +848,12 @@ public class CellGrid extends Widget implements HasId, HasDataTable {
       return availableBodyHeight / bodyRowHeight;
     }
     return BeeConst.UNDEF;
+  }
+
+  public void fireLoadingStateChange(LoadingStateChangeEvent.LoadingState loadingState) {
+    if (loadingState != null) {
+      fireEvent(new LoadingStateChangeEvent(loadingState));
+    }
   }
 
   public int getActiveColumn() {
@@ -1232,7 +1254,6 @@ public class CellGrid extends Widget implements HasId, HasDataTable {
     }
 
     if (targetType == null) {
-      EventUtils.logEvent(event, "unkown event target");
       return;
     }
 
@@ -1334,11 +1355,33 @@ public class CellGrid extends Widget implements HasId, HasDataTable {
     }
   }
 
+  public void onMultiDelete(MultiDeleteEvent event) {
+    Assert.notNull(event);
+    for (Long rowId : event.getRowIds()) {
+      deleteRow(rowId);
+    }
+    setRowCount(getRowCount() - event.getRowIds().size());
+  }
+
+  public void onRowDelete(RowDeleteEvent event) {
+    Assert.notNull(event);
+    deleteRow(event.getRowId());
+    setRowCount(getRowCount() - 1);
+  }
+
   public void redraw() {
+    fireLoadingStateChange(LoadingStateChangeEvent.LoadingState.PARTIALLY_LOADED);
+
     SafeHtmlBuilder sb = new SafeHtmlBuilder();
-    renderRowValues(sb, rowData);
-    renderResizer(sb);
+    if (rowData == null || rowData.isEmpty()) {
+      sb.append(template.emptiness(STYLE_EMPTY, BeeConst.STRING_EMPTY));
+    } else {
+      renderData(sb, rowData);
+      renderResizer(sb);
+    }
     replaceAllChildren(sb.toSafeHtml());
+
+    fireLoadingStateChange(LoadingStateChangeEvent.LoadingState.LOADED);
 
     setZIndex(0);
 
@@ -1533,6 +1576,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable {
   }
 
   public void setRowCount(int size, boolean isExact) {
+    Assert.nonNegative(size);
     if (size == getRowCount() && isExact == isRowCountExact()) {
       return;
     }
@@ -1551,8 +1595,6 @@ public class CellGrid extends Widget implements HasId, HasDataTable {
     Assert.notNull(values);
 
     int size = values.size();
-    Assert.isPositive(size);
-
     if (rowData.size() == size) {
       for (int i = 0; i < size; i++) {
         rowData.set(i, values.get(i));
@@ -1838,6 +1880,20 @@ public class CellGrid extends Widget implements HasId, HasDataTable {
         + getPageSize() + ", row count " + getRowCount());
   }
 
+  private void deleteRow(long rowId) {
+    if (isRowSelected(rowId)) {
+      getSelectedRows().remove(rowId);
+      fireSelectionCountChange();
+    }
+    
+    if (getResizedRows().containsKey(rowId)) {
+      getResizedRows().remove(rowId);
+    }
+    if (getResizedCells().containsRow(rowId)) {
+      getResizedCells().rowKeySet().remove(rowId);
+    }
+  }
+  
   private int estimateBodyCellWidth(int visibleIndex, int col, IsRow rowValue,
       Column<IsRow, ?> column, Font font) {
     SafeHtmlBuilder cellBuilder = new SafeHtmlBuilder();
@@ -1854,6 +1910,10 @@ public class CellGrid extends Widget implements HasId, HasDataTable {
     if (cellConsumesEventType(cell, eventType)) {
       column.onBrowserEvent(context, parentElem, value, event);
     }
+  }
+
+  private void fireSelectionCountChange() {
+    fireEvent(new SelectionCountChangeEvent(getSelectedRows().size()));
   }
 
   private Element getActiveCellElement() {
@@ -2950,6 +3010,12 @@ public class CellGrid extends Widget implements HasId, HasDataTable {
     return result;
   }
 
+  private void renderData(SafeHtmlBuilder sb, List<IsRow> values) {
+    renderHeaders(sb, true);
+    renderBody(sb, values);
+    renderHeaders(sb, false);
+  }
+
   private void renderHeaders(SafeHtmlBuilder sb, boolean isHeader) {
     if (isHeader ? !hasHeaders() : !hasFooters()) {
       return;
@@ -3045,12 +3111,6 @@ public class CellGrid extends Widget implements HasId, HasDataTable {
   private void renderResizer(SafeHtmlBuilder sb) {
     sb.append(template.resizer(resizerId,
         template.resizerHandle(resizerHandleId), template.resizerBar(resizerBarId)));
-  }
-
-  private void renderRowValues(SafeHtmlBuilder sb, List<IsRow> values) {
-    renderHeaders(sb, true);
-    renderBody(sb, values);
-    renderHeaders(sb, false);
   }
 
   private void replaceAllChildren(SafeHtml html) {
@@ -3259,6 +3319,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable {
       }
       if (getSelectionModel() == null) {
         getSelectedRows().clear();
+        fireSelectionCountChange();
       }
 
     } else {
@@ -3313,6 +3374,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable {
       getSelectionModel().setSelected(rowValue, !wasSelected);
     }
     onSelectRow(visibleIndex, !wasSelected);
+    fireSelectionCountChange();
   }
 
   private void setHasCellPreview(boolean hasCellPreview) {

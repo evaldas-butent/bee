@@ -453,6 +453,17 @@ body, select {
   z-index: 2;
 }
 
+.bee-CellGridEmpty {
+  text-align: center;
+  margin-top: 3ex;
+  font-family: Georgia;
+  font-size: larger;
+  color: teal;
+}
+.bee-CellGridEmpty:before {
+  content: "You ain't seen nothing yet"; 
+}
+
 .bee-afraid {
   background-color: fuchsia !important;
   font-size: x-large;

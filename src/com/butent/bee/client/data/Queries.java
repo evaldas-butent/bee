@@ -4,13 +4,13 @@ import com.google.common.collect.Lists;
 import com.google.gwt.core.client.JsArrayString;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.communication.RpcParameter;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.data.BeeRowSet;
-import com.butent.bee.shared.data.cache.CacheManager;
 import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.Order;
@@ -133,7 +133,7 @@ public class Queries {
     Assert.notNull(callback);
 
     if (cachingPolicy != null && cachingPolicy.doRead()) {
-      BeeRowSet rowSet = CacheManager.getRowSet(viewName, filter, order, offset, limit);
+      BeeRowSet rowSet = Global.getCache().getRowSet(viewName, filter, order, offset, limit);
       if (rowSet != null) {
         callback.onResponse(rowSet);
         return RESPONSE_FROM_CACHE;
@@ -164,7 +164,7 @@ public class Queries {
         BeeRowSet rs = BeeRowSet.restore(arr.get(0));
         callback.onResponse(rs);
         if (cachingPolicy != null && cachingPolicy.doWrite()) {
-          CacheManager.add(rs, filter, order, offset, limit);
+          Global.getCache().add(rs, filter, order, offset, limit);
         }
       }
     });

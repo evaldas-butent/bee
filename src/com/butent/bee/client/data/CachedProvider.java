@@ -5,17 +5,20 @@ import com.google.common.collect.Sets;
 import com.google.gwt.view.client.Range;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.view.event.SortEvent;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.IsTable;
+import com.butent.bee.shared.data.event.MultiDeleteEvent;
+import com.butent.bee.shared.data.event.RowDeleteEvent;
+import com.butent.bee.shared.data.event.SortEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -62,6 +65,24 @@ public class CachedProvider extends Provider {
       }
     }
     super.onFilterChanged(newFilter, rowCount);
+  }
+  
+  @Override
+  public void onMultiDelete(MultiDeleteEvent event) {
+    if (BeeUtils.same(event.getViewName(), getViewName())) {
+      for (long rowId : event.getRowIds()) {
+        deleteRow(rowId);
+      }
+      super.onMultiDelete(event);
+    }
+  }
+
+  @Override
+  public void onRowDelete(RowDeleteEvent event) {
+    if (BeeUtils.same(event.getViewName(), getViewName())) {
+      deleteRow(event.getRowId());
+      super.onRowDelete(event);
+    }
   }
 
   @Override
@@ -137,17 +158,22 @@ public class CachedProvider extends Provider {
     if (BeeUtils.isEmpty(name)) {
       return;
     }
+    
+    final int oldPageSize = getPageSize();
+    final int oldTableSize = getTable().getNumberOfRows();
 
     Queries.getRowSet(name, getOrder(), new Queries.RowSetCallback() {
       @Override
       public void onResponse(BeeRowSet rowSet) {
-        if (rowSet == null || rowSet.isEmpty()) {
-          BeeKeeper.getLog().severe("CachedProvider refresh: response empty");
-          return;
-        }
+        Assert.notNull(rowSet);
         
         setTable(rowSet);
         applyFilter(getFilter());
+        
+        int newTableSize = rowSet.getNumberOfRows();
+        if (oldPageSize > 0 && oldPageSize >= oldTableSize && newTableSize != oldTableSize) {
+          getDisplay().setPageSize(newTableSize);
+        }
         
         updateDisplay(true);
       }
@@ -164,6 +190,19 @@ public class CachedProvider extends Provider {
         if (newFilter.isMatch(columns, row)) {
           filteredRowIds.add(row.getId());
           viewRows.add(row);
+        }
+      }
+    }
+  }
+  
+  private void deleteRow(long rowId) {
+    getTable().removeRowById(rowId);
+    if (filteredRowIds.contains(rowId)) {
+      filteredRowIds.remove(rowId);
+      for (Iterator<IsRow> it = viewRows.iterator(); it.hasNext(); ) {
+        if (it.next().getId() == rowId) {
+          it.remove();
+          break;
         }
       }
     }

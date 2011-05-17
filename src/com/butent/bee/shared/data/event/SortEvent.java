@@ -1,4 +1,4 @@
-package com.butent.bee.client.view.event;
+package com.butent.bee.shared.data.event;
 
 import com.google.gwt.event.shared.EventHandler;
 import com.google.gwt.event.shared.GwtEvent;
