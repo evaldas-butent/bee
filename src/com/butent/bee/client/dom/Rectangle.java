@@ -7,13 +7,14 @@ import com.google.gwt.user.client.ui.UIObject;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Pair;
+import com.butent.bee.shared.Transformable;
 import com.butent.bee.shared.utils.BeeUtils;
 
 /**
  * Enables to create rectangle objects and manage their size and style.
  */
 
-public class Rectangle {
+public class Rectangle implements Transformable {
 
   private static final Unit DEFAULT_UNIT = Unit.PX;
 
@@ -269,6 +270,26 @@ public class Rectangle {
 
   public void setWidthValue(Double widthValue) {
     this.widthValue = widthValue;
+  }
+
+  @Override
+  public String toString() {
+    return transform();
+  }
+
+  public String transform() {
+    if (isEmpty()) {
+      return "Rectangle: instance is empty";
+    }
+    return StyleUtils.buildStyle(
+        (getLeftValue() != null) ? 
+            StyleUtils.buildLeft(getLeftValue(), getLeftUnit()) : null,
+        (getTopValue() != null) ? 
+            StyleUtils.buildTop(getTopValue(), getTopUnit()) : null,
+        (getWidthValue() != null) ? 
+            StyleUtils.buildWidth(getWidthValue(), getWidthUnit()) : null,
+        (getHeightValue() != null) ? 
+            StyleUtils.buildHeight(getHeightValue(), getHeightUnit()) : null).asString();
   }
 
   private void setFromAbsoluteCoordinates(Element element) {

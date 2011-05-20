@@ -13,6 +13,8 @@ import com.butent.bee.client.composite.RadioGroup;
 import com.butent.bee.client.composite.TextEditor;
 import com.butent.bee.client.composite.ValueSpinner;
 import com.butent.bee.client.composite.VolumeSlider;
+import com.butent.bee.client.dialog.Notification;
+import com.butent.bee.client.dialog.NotificationListener;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.dom.StyleUtils.ScrollBars;
@@ -20,6 +22,7 @@ import com.butent.bee.client.grid.CellType;
 import com.butent.bee.client.grid.FlexTable;
 import com.butent.bee.client.layout.BeeLayoutPanel;
 import com.butent.bee.client.layout.BlankTile;
+import com.butent.bee.client.layout.Complex;
 import com.butent.bee.client.layout.Direction;
 import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.layout.Split;
@@ -51,7 +54,7 @@ import com.butent.bee.shared.utils.BeeUtils;
  * manages the main browser window and it's main containing elements (f.e. panels).
  */
 
-public class BeeUi implements Module {
+public class BeeUi implements Module, NotificationListener {
 
   private class SplitCommand extends BeeCommand {
     Direction direction = null;
@@ -77,7 +80,7 @@ public class BeeUi implements Module {
     }
   }
 
-  private final HasWidgets rootUi;
+  private final HasWidgets rootPanel;
 
   private int minTileSize = 20;
   private boolean temporaryDetach = false;
@@ -92,9 +95,11 @@ public class BeeUi implements Module {
   private final String elDsn = "el-data-source";
   private final String elGrid = "el-grid-type";
   private final String elCell = "el-cell-type";
+  
+  private Notification notification = null;
 
-  public BeeUi(HasWidgets root) {
-    this.rootUi = root;
+  public BeeUi(HasWidgets rootPanel) {
+    this.rootPanel = rootPanel;
   }
 
   public void activatePanel(TilePanel np) {
@@ -225,8 +230,8 @@ public class BeeUi implements Module {
     }
   }
 
-  public HasWidgets getRootUi() {
-    return rootUi;
+  public HasWidgets getRootPanel() {
+    return rootPanel;
   }
 
   public Split getScreenPanel() {
@@ -242,6 +247,10 @@ public class BeeUi implements Module {
 
   public boolean isTemporaryDetach() {
     return temporaryDetach;
+  }
+
+  public void notify(String... messages) {
+    notification.show(messages);
   }
 
   public void setActivePanel(TilePanel p) {
@@ -452,7 +461,7 @@ public class BeeUi implements Module {
       p.add(w, ScrollBars.BOTH);
     }
 
-    rootUi.add(p);
+    getRootPanel().add(p);
 
     setScreenPanel(p);
   }
@@ -489,13 +498,11 @@ public class BeeUi implements Module {
         "Info", Service.DB_INFO,
         Global.constants.tables(), Service.DB_TABLES));
 
-    p.add(new BeeButton(Global.constants.clazz(), Service.GET_CLASS,
-        Stage.STAGE_GET_PARAMETERS));
+    p.add(new BeeButton(Global.constants.clazz(), Service.GET_CLASS, Stage.STAGE_GET_PARAMETERS));
     p.add(new BeeButton("Xml", Service.GET_XML, Stage.STAGE_GET_PARAMETERS));
     p.add(new BeeButton("Jdbc", Service.GET_DATA, Stage.STAGE_GET_PARAMETERS));
 
-    p.add(new BeeButton(Global.constants.login(), Service.GET_LOGIN,
-        Stage.STAGE_GET_PARAMETERS));
+    p.add(new BeeButton(Global.constants.login(), Service.GET_LOGIN, Stage.STAGE_GET_PARAMETERS));
     p.add(new BeeButton(Global.constants.logout(), Service.LOGOUT));
 
     p.add(new BeeCheckBox(Global.getVar(Global.VAR_DEBUG)));
@@ -508,17 +515,16 @@ public class BeeUi implements Module {
     p.add(new RadioGroup(getElCell(), true, BeeKeeper.getStorage().checkEnum(getElCell(),
         CellType.TEXT_EDIT), CellType.values()));
 
-    BeeLayoutPanel blp = new BeeLayoutPanel();
-    blp.add(p);
+    Complex panel = new Complex();
+    panel.addLeftTop(p, 1, Unit.EM, 4, Unit.PX);
 
     BeeImage bee = new BeeImage(Global.getImages().bee());
-    blp.add(bee);
+    panel.addRightBottom(bee, 10, 1);
+    
+    notification = new Notification();
+    panel.addRightTop(notification, 80, 0);
 
-    blp.setWidgetLeftRight(p, 1, Unit.EM, 100, Unit.PX);
-    blp.setWidgetTopBottom(p, 4, Unit.PX, 0, Unit.PX);
-    blp.setWidgetRightWidth(bee, 10, Unit.PX, 64, Unit.PX);
-
-    return blp;
+    return panel;
   }
 
   private Widget initSouth() {

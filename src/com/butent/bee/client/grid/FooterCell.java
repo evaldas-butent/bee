@@ -36,8 +36,7 @@ public class FooterCell extends AbstractCell<String> {
 
   public FooterCell() {
     super(EventUtils.EVENT_TYPE_FOCUS, EventUtils.EVENT_TYPE_BLUR, EventUtils.EVENT_TYPE_CHANGE,
-        EventUtils.EVENT_TYPE_KEY_DOWN, EventUtils.EVENT_TYPE_KEY_UP,
-        EventUtils.EVENT_TYPE_MOUSE_WHEEL);
+        EventUtils.EVENT_TYPE_KEY_DOWN, EventUtils.EVENT_TYPE_KEY_UP);
     init();
   }
 
@@ -63,10 +62,6 @@ public class FooterCell extends AbstractCell<String> {
       hasFocus = true;
     } else if (BeeUtils.same(type, EventUtils.EVENT_TYPE_BLUR)) {
       hasFocus = false;
-    } else if (BeeUtils.same(type, EventUtils.EVENT_TYPE_MOUSE_WHEEL)) {
-      if (hasFocus) {
-        EventUtils.eatEvent(event);
-      }
     } else if (BeeUtils.same(type, EventUtils.EVENT_TYPE_CHANGE)) {
       if (input != null && valueUpdater != null) {
         valueUpdater.update(input.getValue());

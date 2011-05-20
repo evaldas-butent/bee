@@ -134,5 +134,4 @@ public class TextEditor extends Composite implements HasId {
   public void setUri(String uri) {
     this.uri = uri;
   }
-
 }

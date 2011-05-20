@@ -1,6 +1,7 @@
 package com.butent.bee.client.data;
 
 import com.google.common.collect.Lists;
+import com.google.gwt.core.client.Callback;
 import com.google.gwt.core.client.JsArrayString;
 
 import com.butent.bee.client.BeeKeeper;
@@ -33,16 +34,14 @@ public class Queries {
   /**
    * Requires implementing classes to have {@code onResponse) method. 
    */
-  public interface IntCallback {
-    void onResponse(int value);
+  public interface IntCallback extends Callback<Integer, String> {
   }
 
   /**
    * Requires implementing classes to have {@code onResponse) method applied for a {@code RowSet}
    * object.
    */
-  public interface RowSetCallback {
-    void onResponse(BeeRowSet rowSet);
+  public interface RowSetCallback extends Callback<BeeRowSet, String> {
   }
 
   public static void deleteRow(String viewName, long rowId) {
@@ -63,6 +62,7 @@ public class Queries {
     Assert.notNull(rowIds);
     
     final int requestCount = rowIds.size();
+    Assert.isPositive(requestCount);
 
     List<Property> lst = PropertyUtils.createProperties(Service.VAR_VIEW_NAME, viewName,
         Service.VAR_VIEW_ROWS, new RowInfoCollection(rowIds).serialize());
@@ -70,17 +70,34 @@ public class Queries {
     BeeKeeper.getRpc().makePostRequest(new ParameterList(Service.DELETE_ROWS,
         RpcParameter.SECTION.DATA, lst), new ResponseCallback() {
       public void onResponse(JsArrayString arr) {
-        String s = arr.get(0);
-        int responseCount = BeeUtils.toInt(Codec.beeDeserialize(s)[0]);
-        
-        if (responseCount == requestCount) {
-          BeeKeeper.getLog().info(viewName, "deleted", responseCount, "rows");
+        String s = Codec.beeDeserialize(arr.get(0))[0];
+
+        if (BeeUtils.isInt(s)) {
+          int responseCount = BeeUtils.toInt(Codec.beeDeserialize(s)[0]);
+          String message;
+          if (responseCount == requestCount) {
+            message = BeeUtils.concat(1, viewName, "deleted", responseCount, "rows");
+            BeeKeeper.getLog().info(message);
+          } else {
+            message = BeeUtils.concat(1, viewName, "deleted", responseCount, "rows of",
+                requestCount, "requested");
+            BeeKeeper.getLog().warning(message);
+          }
+
+          if (callback != null) {
+            if (responseCount > 0) {
+              callback.onSuccess(responseCount);
+            } else {
+              callback.onFailure(message);
+            }
+          }
+          
         } else {
-          BeeKeeper.getLog().severe(viewName, "deleted", responseCount, "rows of",
-              requestCount, "requested");
-        }
-        if (callback != null) {
-          callback.onResponse(responseCount);
+          BeeKeeper.getLog().severe(viewName, "delete", requestCount, "rows");
+          BeeKeeper.getLog().severe("response:", s);
+          if (callback != null) {
+            callback.onFailure(s);
+          }
         }
       }
     });
@@ -99,10 +116,16 @@ public class Queries {
     BeeKeeper.getRpc().makePostRequest(new ParameterList(Service.COUNT_ROWS,
         RpcParameter.SECTION.DATA, lst), new ResponseCallback() {
       public void onResponse(JsArrayString arr) {
-        String s = arr.get(0);
-        int rowCount = BeeUtils.toInt(Codec.beeDeserialize(s)[0]);
-        BeeKeeper.getLog().info(viewName, filter, "row count", rowCount);
-        callback.onResponse(rowCount);
+        String s = Codec.beeDeserialize(arr.get(0))[0];
+        if (BeeUtils.isDigit(s)) {
+          int rowCount = BeeUtils.toInt(s);
+          BeeKeeper.getLog().info(viewName, filter, "row count:", rowCount);
+          callback.onSuccess(rowCount);
+        } else {
+          String message = BeeUtils.concat(1, viewName, filter, "row count response:", s);
+          BeeKeeper.getLog().severe(message);
+          callback.onFailure(message);
+        }
       }
     });
   }
@@ -135,7 +158,7 @@ public class Queries {
     if (cachingPolicy != null && cachingPolicy.doRead()) {
       BeeRowSet rowSet = Global.getCache().getRowSet(viewName, filter, order, offset, limit);
       if (rowSet != null) {
-        callback.onResponse(rowSet);
+        callback.onSuccess(rowSet);
         return RESPONSE_FROM_CACHE;
       }
     }
@@ -162,7 +185,7 @@ public class Queries {
         RpcParameter.SECTION.DATA, lst), new ResponseCallback() {
       public void onResponse(JsArrayString arr) {
         BeeRowSet rs = BeeRowSet.restore(arr.get(0));
-        callback.onResponse(rs);
+        callback.onSuccess(rs);
         if (cachingPolicy != null && cachingPolicy.doWrite()) {
           Global.getCache().add(rs, filter, order, offset, limit);
         }

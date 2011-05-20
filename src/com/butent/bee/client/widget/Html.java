@@ -8,6 +8,7 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.utils.BeeCommand;
 import com.butent.bee.client.utils.HasCommand;
 import com.butent.bee.shared.HasId;
+import com.butent.bee.shared.utils.BeeUtils;
 
 /**
  * Implements a user interface component that can contain arbitrary HTML code.
@@ -23,7 +24,9 @@ public class Html extends HTML implements HasId, HasCommand {
 
   public Html(Element element) {
     super(element);
-    createId();
+    if (element == null || BeeUtils.isEmpty(element.getId())) {
+      createId();
+    }
   }
 
   public Html(String html) {

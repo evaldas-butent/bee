@@ -34,14 +34,12 @@ public class MenuItem extends UIObject implements HasId {
     setSubMenu(subMenu);
   }
 
-  public MenuItem(MenuBar parent, String text, ITEM_TYPE type,
-      MenuBar subMenu) {
+  public MenuItem(MenuBar parent, String text, ITEM_TYPE type, MenuBar subMenu) {
     init(parent, text, type);
     setSubMenu(subMenu);
   }
 
-  public MenuItem(MenuBar parent, String text, ITEM_TYPE type,
-      MenuCommand cmd) {
+  public MenuItem(MenuBar parent, String text, ITEM_TYPE type, MenuCommand cmd) {
     init(parent, text, type);
     setCommand(cmd);
   }
@@ -172,5 +170,4 @@ public class MenuItem extends UIObject implements HasId {
     setParentMenu(parent);
     setItemType(type);
   }
-
 }

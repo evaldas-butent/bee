@@ -950,12 +950,16 @@ public class BeeUtils {
    * @return true if {@code x} was found in these variables, false if they did not contain the value
    *         {@code x}.
    */
-  public static <T extends Comparable<T>> boolean inList(T x, T... lst) {
+  public static boolean inList(String x, String... lst) {
+    Assert.notNull(x);
     Assert.notNull(lst);
     boolean ok = false;
 
     for (int i = 0; i < lst.length; i++) {
-      if (x.compareTo(lst[i]) == 0) {
+      if (lst[i] == null) {
+        continue;
+      }
+      if (x.trim().equals(lst[i].trim())) {
         ok = true;
         break;
       }
@@ -976,6 +980,9 @@ public class BeeUtils {
     boolean ok = false;
 
     for (int i = 0; i < lst.length; i++) {
+      if (lst[i] == null) {
+        continue;
+      }
       if (x.equalsIgnoreCase(lst[i])) {
         ok = true;
         break;

@@ -119,16 +119,16 @@ public class MenuBar extends Widget implements HasId, HasAfterAddHandler,
     return insertItem(item, allItems.size());
   }
 
-  public MenuItem addItem(String text, MenuBar mb) {
-    return addItem(new MenuItem(this, text, defaultItemType, mb));
-  }
-
   public MenuItem addItem(String text, ITEM_TYPE type, MenuBar mb) {
     return addItem(new MenuItem(this, text, type, mb));
   }
 
   public MenuItem addItem(String text, ITEM_TYPE type, MenuCommand cmd) {
     return addItem(new MenuItem(this, text, type, cmd));
+  }
+
+  public MenuItem addItem(String text, MenuBar mb) {
+    return addItem(new MenuItem(this, text, defaultItemType, mb));
   }
 
   public MenuItem addItem(String text, MenuCommand cmd) {
@@ -141,6 +141,13 @@ public class MenuBar extends Widget implements HasId, HasAfterAddHandler,
 
   public MenuSeparator addSeparator(MenuSeparator separator) {
     return insertSeparator(separator, allItems.size());
+  }
+  
+  public void clearItems() {
+    closeAll();
+    
+    items.clear();
+    allItems.clear();
   }
 
   public void closePopup() {
@@ -161,12 +168,20 @@ public class MenuBar extends Widget implements HasId, HasAfterAddHandler,
     return DomUtils.getId(this);
   }
 
+  public List<MenuItem> getItems() {
+    return items;
+  }
+
   public int getLevel() {
     return level;
   }
 
   public String getName() {
     return name;
+  }
+
+  public MenuItem getSelectedItem() {
+    return selectedItem;
   }
 
   public boolean isVertical() {
@@ -343,6 +358,26 @@ public class MenuBar extends Widget implements HasId, HasAfterAddHandler,
     if (barType == BAR_TYPE.LIST && items.size() > 1) {
       SelectElement.as(body).setSize(items.size());
     }
+  }
+
+  public void selectItem(MenuItem item) {
+    if (item == selectedItem) {
+      return;
+    }
+
+    if (selectedItem != null) {
+      selectedItem.setSelected(false);
+      closeChildMenu();
+    }
+
+    if (item == null) {
+      hoverEnabled = true;
+    } else {
+      DOM.scrollIntoView(item.getElement());
+      item.setSelected(true);
+    }
+
+    selectedItem = item;
   }
 
   public void setId(String id) {
@@ -749,26 +784,6 @@ public class MenuBar extends Widget implements HasId, HasAfterAddHandler,
       return true;
     }
     return false;
-  }
-
-  private void selectItem(MenuItem item) {
-    if (item == selectedItem) {
-      return;
-    }
-
-    if (selectedItem != null) {
-      selectedItem.setSelected(false);
-      closeChildMenu();
-    }
-
-    if (item == null) {
-      hoverEnabled = true;
-    } else {
-      DOM.scrollIntoView(item.getElement());
-      item.setSelected(true);
-    }
-
-    selectedItem = item;
   }
 
   private void selectItem(int index) {

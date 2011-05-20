@@ -120,7 +120,10 @@ public class RowSetService extends CompositeService {
           Queries.getRowSet(table, null, null, Global.getVarInt(limit), Global.getVarInt(offset),
               Global.getVarValue(stt), CachingPolicy.NONE,
               new Queries.RowSetCallback() {
-                public void onResponse(BeeRowSet rowSet) {
+                public void onFailure(String reason) {
+                }
+
+                public void onSuccess(BeeRowSet rowSet) {
                   rs = rowSet;
                   refresh();
                 }

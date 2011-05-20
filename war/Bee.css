@@ -385,6 +385,9 @@ body, select {
   -webkit-transform: rotate(-90deg);
 }
 
+.bee-CellGrid {
+}  
+
 .bee-CellGridCell {
   border-style: solid;
   border-color: gray;
@@ -464,6 +467,13 @@ body, select {
   content: "You ain't seen nothing yet"; 
 }
 
+.bee-CellGridEditor {
+  position: absolute;
+  color: indigo;
+  background-color: snow;
+  z-index: 512;
+}
+
 .bee-afraid {
   background-color: fuchsia !important;
   font-size: x-large;
@@ -506,6 +516,24 @@ body, select {
 .bee-DialogBox .Content {
   background-color: #cfc;
   padding: 1ex 1em 4px;
+}
+
+.bee-NotificationContainer {
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 0;
+  border: 3px ridge #eee;
+  border-top-width: 0;
+  background-color: #cfc;
+  padding: 5px;
+  text-align: center;
+  overflow: hidden;
+}
+
+.bee-NotificationText {
+  font-family: Verdana;
+  font-size: 1em;
 }
 
 .gwt-TreeItem-selected {

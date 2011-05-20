@@ -1,13 +1,18 @@
 package com.butent.bee.client.widget;
 
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.event.dom.client.ChangeEvent;
+import com.google.gwt.event.dom.client.ChangeHandler;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
+import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.ui.ListBox;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.HasBeeChangeHandler;
+import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.HasId;
 import com.butent.bee.shared.HasStringValue;
 import com.butent.bee.shared.Variable;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -18,9 +23,12 @@ import java.util.List;
  * Implements a list box user interface component that presents a list of choices to the user.
  */
 
-public class BeeListBox extends ListBox implements HasId, HasBeeChangeHandler {
+public class BeeListBox extends ListBox implements Editor, HasBeeChangeHandler {
+
   private HasStringValue source = null;
 
+  private boolean valueChangeHandlerInitialized = false;
+  
   public BeeListBox() {
     super();
     init();
@@ -68,6 +76,18 @@ public class BeeListBox extends ListBox implements HasId, HasBeeChangeHandler {
     }
   }
 
+  public HandlerRegistration addValueChangeHandler(ValueChangeHandler<String> handler) {
+    if (!valueChangeHandlerInitialized) {
+      valueChangeHandlerInitialized = true;
+      addChangeHandler(new ChangeHandler() {
+        public void onChange(ChangeEvent event) {
+          ValueChangeEvent.fire(BeeListBox.this, getValue());
+        }
+      });
+    }
+    return addHandler(handler, ValueChangeEvent.getType());
+  }
+
   public void createId() {
     DomUtils.createId(this, "list");
   }
@@ -93,6 +113,10 @@ public class BeeListBox extends ListBox implements HasId, HasBeeChangeHandler {
     return source;
   }
 
+  public String getValue() {
+    return getValue(getSelectedIndex());
+  }
+
   public boolean onChange() {
     if (getSource() != null) {
       getSource().setValue(getValue(getSelectedIndex()));
@@ -113,6 +137,18 @@ public class BeeListBox extends ListBox implements HasId, HasBeeChangeHandler {
 
   public void setSource(HasStringValue source) {
     this.source = source;
+  }
+
+  public void setValue(String value) {
+    setValue(value, false);
+  }
+
+  public void setValue(String value, boolean fireEvents) {
+    String oldValue = getValue();
+    setSelectedIndex(getIndex(value));
+    if (fireEvents) {
+      ValueChangeEvent.fireIfNotEqual(this, oldValue, value);
+    }
   }
 
   private void addDefaultHandlers() {

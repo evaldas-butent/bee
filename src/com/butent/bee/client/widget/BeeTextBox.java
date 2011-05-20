@@ -8,7 +8,7 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.HasBeeKeyHandler;
 import com.butent.bee.client.event.HasBeeValueChangeHandler;
-import com.butent.bee.shared.HasId;
+import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.shared.HasStringValue;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -16,7 +16,7 @@ import com.butent.bee.shared.utils.BeeUtils;
  * Implements a text box that allows a single line of text to be entered.
  */
 
-public class BeeTextBox extends TextBox implements HasId, HasBeeKeyHandler,
+public class BeeTextBox extends TextBox implements Editor, HasBeeKeyHandler,
     HasBeeValueChangeHandler<String> {
   private HasStringValue source = null;
 

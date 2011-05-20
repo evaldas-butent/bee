@@ -71,15 +71,20 @@ public class GridPresenter implements Presenter {
 
       if (rowId != null) {
         Queries.deleteRow(getDataName(), rowId, new Queries.IntCallback() {
-          @Override
-          public void onResponse(int value) {
+          public void onFailure(String reason) {
+          }
+
+          public void onSuccess(Integer result) {
             BeeKeeper.getBus().fireEvent(new RowDeleteEvent(getDataName(), rowId));
           }
         });
+
       } else if (rows != null) {
         Queries.deleteRows(getDataName(), rows, new Queries.IntCallback() {
-          @Override
-          public void onResponse(int value) {
+          public void onFailure(String reason) {
+          }
+
+          public void onSuccess(Integer result) {
             BeeKeeper.getBus().fireEvent(new MultiDeleteEvent(getDataName(), rows));
           }
         });
@@ -94,15 +99,18 @@ public class GridPresenter implements Presenter {
       this.filter = filter;
     }
 
-    public void onResponse(int value) {
+    public void onFailure(String reason) {
+    }
+
+    public void onSuccess(Integer result) {
       if (!Objects.equal(filter, getLastFilter())) {
         BeeKeeper.getLog().warning("filter not the same");
         BeeKeeper.getLog().warning(getLastFilter());
         return;
       }
 
-      if (value > 0) {
-        getDataProvider().onFilterChanged(filter, value);
+      if (result > 0) {
+        getDataProvider().onFilterChanged(filter, result);
       }
     }
   }

@@ -359,7 +359,7 @@ public class CliWorker {
 
     BeeKeeper.getRpc().makeGetRequest(params);
   }
-
+  
   public static void playAudio(String[] arr) {
     String src = ArrayUtils.getQuietly(arr, 1);
     if (BeeUtils.isEmpty(src)) {

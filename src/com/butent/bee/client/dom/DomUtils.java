@@ -821,6 +821,22 @@ public class DomUtils {
 
     return lst;
   }
+  
+  public static native String getOuterHtml(Element elem) /*-{
+    if (elem == undefined || elem == null) {
+      return "";
+    }
+    if (elem.outerHTML) {
+      return elem.outerHTML;
+    }
+
+    var attributes = elem.attributes;
+    var attrs = "";
+    for (var i = 0; i < attributes.length; i++) {
+      attrs += " " + attributes[i].name + "=\"" + attributes[i].value + "\"";
+    }
+    return "<" + elem.tagName + attrs + ">" + elem.innerHTML + "</" + elem.tagName + ">";
+  }-*/;
 
   public static int getParentClientHeight(Widget widget) {
     Assert.notNull(widget);

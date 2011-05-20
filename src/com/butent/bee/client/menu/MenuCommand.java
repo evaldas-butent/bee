@@ -25,5 +25,4 @@ public class MenuCommand extends BeeCommand {
   public void execute() {
     Global.showDialog(getService(), getParameters());
   }
-
 }

@@ -119,6 +119,8 @@ public class CliWidget extends BeeTextBox {
       CliWorker.digest(v);
     } else if (z.equals("nf") && arr.length >= 3) {
       BeeKeeper.getLog().info(NumberFormat.getFormat(arr[1]).format(BeeUtils.toDouble(arr[2])));
+    } else if (z.equals("notify") && arr.length >= 2) {
+      BeeKeeper.getUi().notify(ArrayUtils.slice(arr, 1));
     } else if (BeeUtils.inList(z, "p", "prop")) {
       CliWorker.showProperties(v, arr);
     } else if (z.equals("progress")) {

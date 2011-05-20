@@ -125,12 +125,14 @@ public abstract class Provider implements SortEvent.Handler, HandlesDeleteEvents
 
     final Filter flt = getFilter();
     Queries.getRowCount(getViewName(), flt, new Queries.IntCallback() {
-      @Override
-      public void onResponse(int value) {
-        if (value <= 0) {
-          BeeKeeper.getLog().warning(getViewName(), flt, "refresh: row count", value);
+      public void onFailure(String reason) {
+      }
+
+      public void onSuccess(Integer result) {
+        if (result <= 0) {
+          BeeKeeper.getLog().warning(getViewName(), flt, "refresh: row count", result);
         }
-        getDisplay().setRowCount(value);
+        getDisplay().setRowCount(result);
         onRefresh();
       }
     });

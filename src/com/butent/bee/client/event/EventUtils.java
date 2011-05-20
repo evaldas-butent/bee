@@ -76,6 +76,8 @@ public class EventUtils {
   public static final String EVENT_TYPE_TOUCH_END = "touchend";
   public static final String EVENT_TYPE_TOUCH_MOVE = "touchmove";
   public static final String EVENT_TYPE_TOUCH_START = "touchstart";
+  
+  public static final int KEY_INSERT = 45;  
 
   private static boolean dnd;
 

@@ -32,6 +32,7 @@ import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
 
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 
 /**
@@ -477,11 +478,14 @@ public class Split extends ComplexPanel implements AnimatedLayout,
   }
 
   public boolean validDirection(Direction direction, boolean allowCenter) {
+    if (direction == null) {
+      return false;
+    }
     if (direction == Direction.CENTER) {
       return allowCenter;
     }
-    return BeeUtils.inList(direction, Direction.EAST, Direction.NORTH,
-        Direction.SOUTH, Direction.WEST);
+    return EnumSet.of(Direction.EAST, Direction.NORTH, Direction.SOUTH, Direction.WEST).contains(
+        direction);
   }
 
   protected Unit getUnit() {

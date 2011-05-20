@@ -32,8 +32,10 @@ public class AsyncProvider extends Provider {
       this.updateActiveRow = updateActiveRow;
     }
 
-    @Override
-    public void onResponse(BeeRowSet rowSet) {
+    public void onFailure(String reason) {
+    }
+
+    public void onSuccess(BeeRowSet rowSet) {
       Integer id = getRpcId();
       if (id != null) {
         if (getPendingRequests().contains(id)) {
