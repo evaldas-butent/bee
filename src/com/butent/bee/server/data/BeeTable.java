@@ -754,8 +754,8 @@ class BeeTable implements HasExtFields, HasStates, HasTranslations {
     }
   }
 
-  private static final String DEFAULT_ID_FIELD = "ID";
-  private static final String DEFAULT_LOCK_FIELD = "Version";
+  public static final String DEFAULT_ID_FIELD = "ID";
+  public static final String DEFAULT_LOCK_FIELD = "VERSION";
 
   private static final String PRIMARY_KEY_PREFIX = "PK_";
   private static final String UNIQUE_KEY_PREFIX = "UK_";

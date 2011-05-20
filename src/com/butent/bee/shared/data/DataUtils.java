@@ -161,7 +161,7 @@ public class DataUtils {
       for (IsColumn col : columns) {
         String s = col.getId();
 
-        if (BeeUtils.startsSame(s, expr)
+        if (expr.toLowerCase().startsWith(s.toLowerCase())
             && (column == null || s.length() > column.getId().length())) {
           column = col;
         }
