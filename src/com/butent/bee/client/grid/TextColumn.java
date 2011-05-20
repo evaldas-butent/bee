@@ -8,8 +8,8 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.utils.BeeUtils;
 
 /**
- * Implements boolean type column, enables to get value for a specified row and manage column's
- * maximum display size.
+ * Implements text type column, enables to get value for a specified row and manage column's maximum
+ * display size.
  */
 
 public class TextColumn extends CellColumn<String> {
