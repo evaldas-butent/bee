@@ -3,13 +3,12 @@ package com.butent.bee.client.view.edit;
 import com.google.gwt.event.shared.EventHandler;
 import com.google.gwt.event.shared.GwtEvent;
 
-import com.butent.bee.client.dom.Rectangle;
 import com.butent.bee.shared.data.IsRow;
 
-public class EditStartEvent extends GwtEvent<EditStartEvent.Handler> { 
+public class EditEndEvent extends GwtEvent<EditEndEvent.Handler> { 
   
   public interface Handler extends EventHandler {
-    void onEditStart(EditStartEvent event);
+    void onEditEnd(EditEndEvent event);
   }
   
   private static final Type<Handler> TYPE = new Type<Handler>();
@@ -21,14 +20,14 @@ public class EditStartEvent extends GwtEvent<EditStartEvent.Handler> {
   private final IsRow rowValue;
   private final String columnId;
 
-  private final Rectangle rectangle;
-  private final int charCode;
+  private final String oldValue;
+  private final String newValue;
   
-  public EditStartEvent(IsRow rowValue, String columnId, Rectangle rectangle, int charCode) {
+  public EditEndEvent(IsRow rowValue, String columnId, String oldValue, String newValue) {
     this.rowValue = rowValue;
     this.columnId = columnId;
-    this.rectangle = rectangle;
-    this.charCode = charCode;
+    this.oldValue = oldValue;
+    this.newValue = newValue;
   }
 
   @Override
@@ -36,16 +35,16 @@ public class EditStartEvent extends GwtEvent<EditStartEvent.Handler> {
     return TYPE;
   }
 
-  public int getCharCode() {
-    return charCode;
-  }
-
   public String getColumnId() {
     return columnId;
   }
 
-  public Rectangle getRectangle() {
-    return rectangle;
+  public String getNewValue() {
+    return newValue;
+  }
+
+  public String getOldValue() {
+    return oldValue;
   }
   
   public IsRow getRowValue() {
@@ -54,6 +53,6 @@ public class EditStartEvent extends GwtEvent<EditStartEvent.Handler> {
 
   @Override
   protected void dispatch(Handler handler) {
-    handler.onEditStart(this);
+    handler.onEditEnd(this);
   }
 }

@@ -103,6 +103,13 @@ class CachedQuery extends SimpleCache<Integer, Long> {
       add(offset + i, idList.get(i));
     }
   }
+  
+  boolean containsColumn(String columnId) {
+    if (BeeUtils.isEmpty(columnId)) {
+      return false;
+    }
+    return BeeUtils.context(columnId, strFilter) || BeeUtils.context(columnId, strOrder);
+  }
 
   int getRowCount() {
     return rowCount;
@@ -127,6 +134,14 @@ class CachedQuery extends SimpleCache<Integer, Long> {
       result.add(rowId);
     }
     return result;
+  }
+ 
+  String getStrFilter() {
+    return strFilter;
+  }
+
+  String getStrOrder() {
+    return strOrder;
   }
 
   boolean same(Filter flt, Order ord) {

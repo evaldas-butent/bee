@@ -21,7 +21,10 @@ import java.util.List;
  */
 
 public abstract class AbstractRow implements IsRow, Transformable {
+  
   private long id;
+  private long version = 0;
+
   private CustomProperties properties = null;
 
   protected AbstractRow(long id) {
@@ -124,6 +127,10 @@ public abstract class AbstractRow implements IsRow, Transformable {
     }
   }
 
+  public long getVersion() {
+    return version;
+  }
+  
   public abstract void insertCell(int index, IsCell cell);
 
   public boolean isNull(int index) {
@@ -168,6 +175,10 @@ public abstract class AbstractRow implements IsRow, Transformable {
     cell.clearProperties();
   }
 
+  public void setVersion(long version) {
+    this.version = version;
+  }
+  
   public String transform() {
     StringBuilder sb = new StringBuilder();
     sb.append("id=").append(getId());

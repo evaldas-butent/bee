@@ -308,6 +308,8 @@ public class Global implements Module {
   private void initCache() {
     BeeKeeper.getBus().registerRowDeleteHandler(getCache());
     BeeKeeper.getBus().registerMultiDeleteHandler(getCache());
+
+    BeeKeeper.getBus().registerCellUpdateHandler(getCache());
   }
 
   private void initDataExplorer() {

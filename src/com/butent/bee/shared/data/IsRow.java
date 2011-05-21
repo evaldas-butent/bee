@@ -47,6 +47,8 @@ public interface IsRow extends HasCustomProperties {
   Value getValue(int index);
   Value getValue(int index, ValueType type);
 
+  long getVersion();
+  
   void insertCell(int index, IsCell cell);
 
   boolean isNull(int index);
@@ -64,4 +66,6 @@ public interface IsRow extends HasCustomProperties {
   void setValue(int index, String value);
 
   void setValue(int index, Value value);
+
+  void setVersion(long version);  
 }

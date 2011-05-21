@@ -1364,6 +1364,21 @@ public class BeeUtils {
     return isDouble(x) && x > Long.MIN_VALUE && x < Long.MAX_VALUE;
   }
 
+  public static boolean isLong(String s) {
+    if (isEmpty(s)) {
+      return false;
+    }
+    boolean ok;
+
+    try {
+      Long.parseLong(s.trim());
+      ok = true;
+    } catch (NumberFormatException ex) {
+      ok = false;
+    }
+    return ok;
+  }
+  
   public static boolean isNonNegative(Double d) {
     if (isDouble(d)) {
       return Double.compare(d, BeeConst.DOUBLE_ZERO) >= 0;

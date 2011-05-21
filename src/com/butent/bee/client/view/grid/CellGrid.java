@@ -58,6 +58,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasId;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.event.CellUpdateEvent;
 import com.butent.bee.shared.data.event.MultiDeleteEvent;
 import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.event.SelectionCountChangeEvent;
@@ -207,6 +208,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     private int bodyWidth = BeeConst.UNDEF;
     private final Column<IsRow, ?> column;
     private final String columnId;
+    private final int dataIndex;
 
     private final Header<?> footer;
     private Font footerFont = null;
@@ -217,34 +219,36 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     private int headerWidth = BeeConst.UNDEF;
     private int width = BeeConst.UNDEF;
 
-    private ColumnInfo(String columnId, Column<IsRow, ?> column) {
-      this(columnId, column, null, null, BeeConst.UNDEF);
+    private ColumnInfo(String columnId, int dataIndex, Column<IsRow, ?> column) {
+      this(columnId, dataIndex, column, null, null, BeeConst.UNDEF);
     }
 
-    private ColumnInfo(String columnId, Column<IsRow, ?> column, Header<?> header) {
-      this(columnId, column, header, null, BeeConst.UNDEF);
+    private ColumnInfo(String columnId, int dataIndex, Column<IsRow, ?> column, Header<?> header) {
+      this(columnId, dataIndex, column, header, null, BeeConst.UNDEF);
     }
 
-    private ColumnInfo(String columnId, Column<IsRow, ?> column,
+    private ColumnInfo(String columnId, int dataIndex, Column<IsRow, ?> column,
         Header<?> header, Header<?> footer) {
-      this(columnId, column, header, footer, BeeConst.UNDEF);
+      this(columnId, dataIndex, column, header, footer, BeeConst.UNDEF);
     }
 
-    private ColumnInfo(String columnId, Column<IsRow, ?> column,
+    private ColumnInfo(String columnId, int dataIndex, Column<IsRow, ?> column,
         Header<?> header, Header<?> footer, int width) {
       this.columnId = columnId;
+      this.dataIndex = dataIndex;
       this.column = column;
       this.header = header;
       this.footer = footer;
       this.width = width;
     }
 
-    private ColumnInfo(String columnId, Column<IsRow, ?> column, Header<?> header, int width) {
-      this(columnId, column, header, null, width);
+    private ColumnInfo(String columnId, int dataIndex, Column<IsRow, ?> column, Header<?> header,
+        int width) {
+      this(columnId, dataIndex, column, header, null, width);
     }
 
-    private ColumnInfo(String columnId, Column<IsRow, ?> column, int width) {
-      this(columnId, column, null, null, width);
+    private ColumnInfo(String columnId, int dataIndex, Column<IsRow, ?> column, int width) {
+      this(columnId, dataIndex, column, null, null, width);
     }
 
     private void ensureBodyWidth(int w) {
@@ -291,6 +295,10 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
       } else {
         return getFooterWidth();
       }
+    }
+
+    private int getDataIndex() {
+      return dataIndex;
     }
 
     private Header<?> getFooter() {
@@ -634,40 +642,41 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     return addHandler(handler, CellPreviewEvent.getType());
   }
 
-  public void addColumn(String columnId, Column<IsRow, ?> col) {
-    insertColumn(getColumnCount(), columnId, col);
+  public void addColumn(String columnId, int dataIndex, Column<IsRow, ?> col) {
+    insertColumn(getColumnCount(), columnId, dataIndex, col);
   }
 
-  public void addColumn(String columnId, Column<IsRow, ?> col, Header<?> header) {
-    insertColumn(getColumnCount(), columnId, col, header);
+  public void addColumn(String columnId, int dataIndex, Column<IsRow, ?> col, Header<?> header) {
+    insertColumn(getColumnCount(), columnId, dataIndex, col, header);
   }
 
-  public void addColumn(String columnId, Column<IsRow, ?> col, Header<?> header, Header<?> footer) {
-    insertColumn(getColumnCount(), columnId, col, header, footer);
+  public void addColumn(String columnId, int dataIndex, Column<IsRow, ?> col,
+      Header<?> header, Header<?> footer) {
+    insertColumn(getColumnCount(), columnId, dataIndex, col, header, footer);
   }
 
-  public void addColumn(String columnId, Column<IsRow, ?> col, SafeHtml headerHtml) {
-    insertColumn(getColumnCount(), columnId, col, headerHtml);
+  public void addColumn(String columnId, int dataIndex, Column<IsRow, ?> col, SafeHtml headerHtml) {
+    insertColumn(getColumnCount(), columnId, dataIndex, col, headerHtml);
   }
 
-  public void addColumn(String columnId, Column<IsRow, ?> col,
+  public void addColumn(String columnId, int dataIndex, Column<IsRow, ?> col,
       SafeHtml headerHtml, SafeHtml footerHtml) {
-    insertColumn(getColumnCount(), columnId, col, headerHtml, footerHtml);
+    insertColumn(getColumnCount(), columnId, dataIndex, col, headerHtml, footerHtml);
   }
 
-  public void addColumn(String columnId, Column<IsRow, ?> col, String headerString) {
-    insertColumn(getColumnCount(), columnId, col, headerString);
+  public void addColumn(String columnId, int dataIndex, Column<IsRow, ?> col, String headerString) {
+    insertColumn(getColumnCount(), columnId, dataIndex, col, headerString);
   }
 
-  public void addColumn(String columnId, Column<IsRow, ?> col,
+  public void addColumn(String columnId, int dataIndex, Column<IsRow, ?> col,
       String headerString, String footerString) {
-    insertColumn(getColumnCount(), columnId, col, headerString, footerString);
+    insertColumn(getColumnCount(), columnId, dataIndex, col, headerString, footerString);
   }
 
   public HandlerRegistration addEditStartHandler(EditStartEvent.Handler handler) {
     return addHandler(handler, EditStartEvent.getType());
   }
-  
+
   public HandlerRegistration addLoadingStateChangeHandler(LoadingStateChangeEvent.Handler handler) {
     return addHandler(handler, LoadingStateChangeEvent.TYPE);
   }
@@ -1131,23 +1140,24 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     return getActiveRow() > 0 || getPageStart() > 0;
   }
 
-  public void insertColumn(int beforeIndex, String columnId, Column<IsRow, ?> column) {
-    insertColumn(beforeIndex, columnId, column, (Header<?>) null, (Header<?>) null);
+  public void insertColumn(int beforeIndex, String columnId, int dataIndex, 
+      Column<IsRow, ?> column) {
+    insertColumn(beforeIndex, columnId, dataIndex, column, (Header<?>) null, (Header<?>) null);
   }
 
-  public void insertColumn(int beforeIndex, String columnId, Column<IsRow, ?> column,
+  public void insertColumn(int beforeIndex, String columnId, int dataIndex, Column<IsRow, ?> column,
       Header<?> header) {
-    insertColumn(beforeIndex, columnId, column, header, null);
+    insertColumn(beforeIndex, columnId, dataIndex, column, header, null);
   }
 
-  public void insertColumn(int beforeIndex, String columnId, Column<IsRow, ?> column,
+  public void insertColumn(int beforeIndex, String columnId, int dataIndex, Column<IsRow, ?> column,
       Header<?> header, Header<?> footer) {
     if (beforeIndex != getColumnCount()) {
       checkColumnBounds(beforeIndex);
     }
     checkColumnId(columnId);
 
-    columns.add(beforeIndex, new ColumnInfo(columnId, column, header, footer));
+    columns.add(beforeIndex, new ColumnInfo(columnId, dataIndex, column, header, footer));
 
     Set<String> consumedEvents = Sets.newHashSet();
     {
@@ -1173,25 +1183,25 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     }
   }
 
-  public void insertColumn(int beforeIndex, String columnId, Column<IsRow, ?> column,
+  public void insertColumn(int beforeIndex, String columnId, int dataIndex, Column<IsRow, ?> column,
       SafeHtml headerHtml) {
-    insertColumn(beforeIndex, columnId, column, new SafeHtmlHeader(headerHtml), null);
+    insertColumn(beforeIndex, columnId, dataIndex, column, new SafeHtmlHeader(headerHtml), null);
   }
 
-  public void insertColumn(int beforeIndex, String columnId, Column<IsRow, ?> column,
+  public void insertColumn(int beforeIndex, String columnId, int dataIndex, Column<IsRow, ?> column,
       SafeHtml headerHtml, SafeHtml footerHtml) {
-    insertColumn(beforeIndex, columnId, column,
+    insertColumn(beforeIndex, columnId, dataIndex, column,
         new SafeHtmlHeader(headerHtml), new SafeHtmlHeader(footerHtml));
   }
 
-  public void insertColumn(int beforeIndex, String columnId, Column<IsRow, ?> column,
+  public void insertColumn(int beforeIndex, String columnId, int dataIndex, Column<IsRow, ?> column,
       String headerString) {
-    insertColumn(beforeIndex, columnId, column, new TextHeader(headerString), null);
+    insertColumn(beforeIndex, columnId, dataIndex, column, new TextHeader(headerString), null);
   }
 
-  public void insertColumn(int beforeIndex, String columnId, Column<IsRow, ?> column,
+  public void insertColumn(int beforeIndex, String columnId, int dataIndex, Column<IsRow, ?> column,
       String headerString, String footerString) {
-    insertColumn(beforeIndex, columnId, column,
+    insertColumn(beforeIndex, columnId, dataIndex, column,
         new TextHeader(headerString), new TextHeader(footerString));
   }
 
@@ -1339,7 +1349,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
 
         } else if (EventUtils.isKeyDown(eventType)) {
           int keyCode = event.getKeyCode();
-          
+
           if (keyCode == KeyCodes.KEY_ENTER) {
             startEditing(rowValue, col, target, -1);
             EventUtils.eatEvent(event);
@@ -1351,7 +1361,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
         } else if (EventUtils.isKeyPress(eventType)) {
           int charCode = event.getCharCode();
           EventUtils.eatEvent(event);
-          
+
           if (charCode == BeeConst.CHAR_SPACE) {
             selectRow(row, rowValue);
           } else {
@@ -1370,6 +1380,38 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
       }
       fireEventToCell(event, eventType, target, rowValue, context, column);
     }
+  }
+  
+  public void onCellUpdate(CellUpdateEvent event) {
+    Assert.notNull(event);
+    long rowId = event.getRowId();
+    long version = event.getVersion();
+    String columnId = event.getColumnId();
+    String value = event.getValue();
+    
+    int row = BeeConst.UNDEF;
+    for (int i = 0; i < getVisibleItems().size(); i++) {
+      if (getVisibleRowId(i) == rowId) {
+        row = i;
+        break;
+      }
+    }
+    if (!isRowWithinBounds(row)) {
+      BeeKeeper.getLog().warning("onCellUpdate: row id", rowId, "is not visible");
+      return;
+    }
+    
+    int col = getColumnIndex(columnId);
+    if (!isColumnWithinBounds(col)) {
+      return;
+    }
+    
+    IsRow rowValue = getVisibleItem(row);
+    rowValue.setVersion(version);
+    int dataIndex = getColumnInfo(col).getDataIndex();
+    rowValue.setValue(dataIndex, value);
+    
+    updateCell(row, col);
   }
 
   public void onMultiDelete(MultiDeleteEvent event) {
@@ -1412,6 +1454,15 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
           }
         }
       });
+    }
+  }
+
+  public void refocus() {
+    if (getActiveRow() >= 0 && getActiveColumn() >= 0) {
+      Element cellElement = getActiveCellElement();
+      if (cellElement != null) {
+        cellElement.focus();
+      }
     }
   }
 
@@ -1902,7 +1953,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
       getSelectedRows().remove(rowId);
       fireSelectionCountChange();
     }
-    
+
     if (getResizedRows().containsKey(rowId)) {
       getResizedRows().remove(rowId);
     }
@@ -1910,7 +1961,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
       getResizedCells().rowKeySet().remove(rowId);
     }
   }
-  
+
   private int estimateBodyCellWidth(int visibleIndex, int col, IsRow rowValue,
       Column<IsRow, ?> column, Font font) {
     SafeHtmlBuilder cellBuilder = new SafeHtmlBuilder();
@@ -2355,7 +2406,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     if (resizeCell(keyCode, hasModifiers, row, col, cell)) {
       return true;
     }
-    
+
     switch (keyCode) {
       case KeyCodes.KEY_DOWN:
         keyboardNext();
@@ -2553,7 +2604,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
   }
 
   private boolean isCellActive(int row, int col) {
-    return getActiveRow() == row && getActiveColumn() == col;
+    return row >= 0 && col >= 0 && getActiveRow() == row && getActiveColumn() == col;
   }
 
   private <C> boolean isCellEditing(Element parentElem, IsRow rowValue, CellContext context,
@@ -3062,12 +3113,12 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
   private void replaceAllChildren(SafeHtml html) {
     getElement().setInnerHTML(html.asString());
   }
-  
+
   private boolean resizeCell(int keyCode, boolean hasModifiers, int row, int col, Element cell) {
     if (cell == null) {
       return false;
     }
-    
+
     if (keyCode == KeyCodes.KEY_ESCAPE || hasModifiers && BeeUtils.inList(keyCode,
         EventUtils.KEY_INSERT, KeyCodes.KEY_DELETE, KeyCodes.KEY_DOWN, KeyCodes.KEY_LEFT,
         KeyCodes.KEY_RIGHT, KeyCodes.KEY_UP)) {
@@ -3585,9 +3636,9 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
       sinkEvents(eventsToSink);
     }
   }
-  
+
   private void startEditing(IsRow rowValue, int col, Element cellElement, int charCode) {
-    fireEvent(new EditStartEvent(rowValue, getColumnId(col), 
+    fireEvent(new EditStartEvent(rowValue, getColumnId(col),
         Rectangle.createFromParentOffset(cellElement), charCode));
   }
 
@@ -3608,6 +3659,21 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     hideResizer();
 
     setResizerModifiers(null);
+  }
+
+  private void updateCell(int visibleIndex, int col) {
+    IsRow rowValue = getVisibleItem(visibleIndex);
+    Assert.notNull(rowValue);
+    Column<IsRow, ?> column = getColumn(col);
+
+    SafeHtmlBuilder cellBuilder = new SafeHtmlBuilder();
+    CellContext context = new CellContext(visibleIndex, col, rowValue.getId(), this);
+    column.render(context, rowValue, cellBuilder);
+    SafeHtml cellHtml = cellBuilder.toSafeHtml();
+
+    Element cellElement = getCellElement(visibleIndex, col);
+    Assert.notNull(cellElement, "cell not found: row " + visibleIndex + " col " + col);
+    cellElement.setInnerHTML(cellHtml.asString());
   }
 
   private void updateOrder(String columnId, boolean hasModifiers) {

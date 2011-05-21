@@ -9,7 +9,9 @@ import com.google.web.bindery.event.shared.HandlerRegistration;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.data.event.CellUpdateEvent;
 import com.butent.bee.shared.data.event.HandlesDeleteEvents;
+import com.butent.bee.shared.data.event.HandlesUpdateEvents;
 import com.butent.bee.shared.data.event.MultiDeleteEvent;
 import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.event.SortEvent;
@@ -23,7 +25,8 @@ import java.util.List;
  * Enables to manage ranges of data shown in user interface tables.
  */
 
-public abstract class Provider implements SortEvent.Handler, HandlesDeleteEvents {
+public abstract class Provider implements SortEvent.Handler, HandlesDeleteEvents,
+    HandlesUpdateEvents {
 
   private final HasDataTable display;
 
@@ -51,6 +54,8 @@ public abstract class Provider implements SortEvent.Handler, HandlesDeleteEvents
 
     this.handlerRegistry.add(BeeKeeper.getBus().registerRowDeleteHandler(this));
     this.handlerRegistry.add(BeeKeeper.getBus().registerMultiDeleteHandler(this));
+
+    this.handlerRegistry.add(BeeKeeper.getBus().registerCellUpdateHandler(this));
   }
 
   public void disableCache() {
@@ -64,7 +69,7 @@ public abstract class Provider implements SortEvent.Handler, HandlesDeleteEvents
   public void enableCache() {
     setCacheEnabled(true);
   }
-  
+
   public void enableRangeChange() {
     setRangeChangeEnabled(true);
   }
@@ -76,13 +81,19 @@ public abstract class Provider implements SortEvent.Handler, HandlesDeleteEvents
   public Order getOrder() {
     return order;
   }
-  
+
   public boolean isCacheEnabled() {
     return cacheEnabled;
   }
 
   public boolean isRangeChangeEnabled() {
     return rangeChangeEnabled;
+  }
+
+  public void onCellUpdate(CellUpdateEvent event) {
+    if (BeeUtils.same(getViewName(), event.getViewName())) {
+      getDisplay().onCellUpdate(event);
+    }
   }
 
   public void onFilterChanged(Filter newFilter, int rowCount) {
@@ -141,7 +152,7 @@ public abstract class Provider implements SortEvent.Handler, HandlesDeleteEvents
   public void setCacheEnabled(boolean cacheEnabled) {
     this.cacheEnabled = cacheEnabled;
   }
-  
+
   public void setFilter(Filter filter) {
     this.filter = filter;
   }
@@ -176,7 +187,7 @@ public abstract class Provider implements SortEvent.Handler, HandlesDeleteEvents
   protected abstract void onRangeChanged(boolean updateActiveRow);
 
   protected abstract void onRefresh();
-  
+
   protected void startLoading() {
     getDisplay().fireLoadingStateChange(LoadingStateChangeEvent.LoadingState.LOADING);
   }

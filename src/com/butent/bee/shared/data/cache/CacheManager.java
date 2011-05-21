@@ -10,7 +10,9 @@ import com.butent.bee.shared.HasExtendedInfo;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.event.CellUpdateEvent;
 import com.butent.bee.shared.data.event.HandlesDeleteEvents;
+import com.butent.bee.shared.data.event.HandlesUpdateEvents;
 import com.butent.bee.shared.data.event.MultiDeleteEvent;
 import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.filter.Filter;
@@ -28,7 +30,7 @@ import java.util.Set;
  * Enables operations within cache, adding and removing cached objects.
  */
 
-public class CacheManager implements HandlesDeleteEvents {
+public class CacheManager implements HandlesDeleteEvents, HandlesUpdateEvents {
 
   /**
    * Handles single cache entry, contains it's attributes and methods for changing them.
@@ -176,6 +178,38 @@ public class CacheManager implements HandlesDeleteEvents {
         queries.add(query);
       }
     }
+
+    private boolean updateCell(long rowId, long version, String columnId, String value) {
+      BeeRow row = data.get(rowId);
+      if (row == null) {
+        return false;
+      }
+      row.setVersion(version);
+      
+      boolean ok = false;
+      for (int i = 0; i < columns.size(); i++) {
+        if (BeeUtils.same(columns.get(i).getLabel(), columnId)) {
+          row.setValue(i, value);
+          ok = true;
+        }
+      }
+      if (!ok) {
+        BeeKeeper.getLog().warning("Cache", viewName, "column", columnId, "not found");
+        return ok;
+      }
+
+      for (Iterator<CachedQuery> it = queries.iterator(); it.hasNext(); ) {
+        CachedQuery query = it.next();
+        if (query.containsColumn(columnId)) {
+          BeeKeeper.getLog().info("Cache", viewName, "update column", columnId);
+          BeeKeeper.getLog().info("invalidated query", query.getStrFilter(), query.getStrOrder());
+
+          query.invalidate();
+          it.remove();
+        }
+      }
+      return ok;
+    }
   }
 
   private final Map<String, Entry> entries = Maps.newHashMap();
@@ -295,6 +329,24 @@ public class CacheManager implements HandlesDeleteEvents {
   public void invalidateQuietly(String key) {
     if (contains(key)) {
       get(key).invalidate();
+    }
+  }
+
+  public void onCellUpdate(CellUpdateEvent event) {
+    Assert.notNull(event);
+    String key = event.getViewName();
+    if (!contains(key)) {
+      return;
+    }
+
+    Entry entry = get(key);
+    long rowId = event.getRowId();
+    long version = event.getVersion();
+    String columnId = event.getColumnId();
+    String value = event.getValue();
+    
+    if (entry.updateCell(rowId, version, columnId, value)) {
+      BeeKeeper.getLog().info("Cache", key, "updated", rowId, columnId, value);
     }
   }
 

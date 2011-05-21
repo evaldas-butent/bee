@@ -1,5 +1,6 @@
 package com.butent.bee.client.data;
 
+import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import com.google.gwt.core.client.Callback;
 import com.google.gwt.core.client.JsArrayString;
@@ -44,6 +45,9 @@ public class Queries {
   public interface RowSetCallback extends Callback<BeeRowSet, String> {
   }
 
+  public interface VersionCallback extends Callback<Long, String> {
+  }
+  
   public static void deleteRow(String viewName, long rowId) {
     deleteRow(viewName, rowId, null);
   }
@@ -73,7 +77,7 @@ public class Queries {
         String s = Codec.beeDeserialize(arr.get(0))[0];
 
         if (BeeUtils.isInt(s)) {
-          int responseCount = BeeUtils.toInt(Codec.beeDeserialize(s)[0]);
+          int responseCount = BeeUtils.toInt(s);
           String message;
           if (responseCount == requestCount) {
             message = BeeUtils.concat(1, viewName, "deleted", responseCount, "rows");
@@ -212,6 +216,46 @@ public class Queries {
   
   public static boolean isResponseFromCache(int id) {
     return id == RESPONSE_FROM_CACHE;
+  }
+  
+  public static void updateCell(final String viewName, final long rowId, long version,
+      final String columnId, final String oldValue, final String newValue,
+      final VersionCallback callback) {
+    Assert.notEmpty(viewName);
+    Assert.notEmpty(columnId);
+    
+    if (Objects.equal(oldValue, newValue)) {
+      BeeKeeper.getLog().warning("updateCell:", viewName, rowId, columnId,
+          "value not changed:", newValue);
+      return;
+    }
+
+    List<Property> lst = PropertyUtils.createProperties(Service.VAR_VIEW_NAME, viewName,
+        Service.VAR_VIEW_ROW_ID, rowId, Service.VAR_VIEW_VERSION, version,
+        Service.VAR_VIEW_COLUMN, columnId,
+        Service.VAR_VIEW_OLD_VALUE, oldValue, Service.VAR_VIEW_NEW_VALUE, newValue);
+
+    BeeKeeper.getRpc().makePostRequest(new ParameterList(Service.UPDATE_CELL,
+        RpcParameter.SECTION.DATA, lst), new ResponseCallback() {
+      public void onResponse(JsArrayString arr) {
+        String s = Codec.beeDeserialize(arr.get(0))[0];
+
+        if (BeeUtils.isLong(s)) {
+          long newVersion = BeeUtils.toLong(s);
+          if (callback != null) {
+            callback.onSuccess(newVersion);
+          }
+          
+        } else {
+          BeeKeeper.getLog().warning("updateCell:", viewName, rowId, columnId,
+              "old value:", oldValue, "new value:", newValue);
+          BeeKeeper.getLog().warning("response:", s);
+          if (callback != null) {
+            callback.onFailure(s);
+          }
+        }
+      }
+    });
   }
 
   private Queries() {

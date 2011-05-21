@@ -249,14 +249,14 @@ public class GridFactory {
 
     RowIdColumn idColumn = new RowIdColumn();
     String id = "row-id";
-    grid.addColumn(id, idColumn, new TextHeader("Id"));
+    grid.addColumn(id, -1, idColumn, new TextHeader("Id"));
     grid.setColumnWidth(id, 40);
     
     CellColumn<?> column;
     for (int i = 0; i < c; i++) {
       column = createColumn(table.getColumn(i), i);
       column.setSortable(true);
-      grid.addColumn(table.getColumnLabel(i), column, new ColumnHeader(table.getColumn(i)));
+      grid.addColumn(table.getColumnLabel(i), i, column, new ColumnHeader(table.getColumn(i)));
     }
 
     @SuppressWarnings("unused")

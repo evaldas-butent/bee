@@ -11,6 +11,7 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.IsTable;
+import com.butent.bee.shared.data.event.CellUpdateEvent;
 import com.butent.bee.shared.data.event.MultiDeleteEvent;
 import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.event.SortEvent;
@@ -52,6 +53,21 @@ public class CachedProvider extends Provider {
 
   public IsTable<?, ?> getTable() {
     return table;
+  }
+
+  @Override
+  public void onCellUpdate(CellUpdateEvent event) {
+    if (BeeUtils.same(event.getViewName(), getViewName())) {
+      long id = event.getRowId();
+      for (IsRow row : getTable().getRows()) {
+        if (row.getId() == id) {
+          row.setVersion(event.getVersion());
+          row.setValue(getTable().getColumnIndex(event.getColumnId()), event.getValue());
+          break;
+        }
+      }
+      super.onCellUpdate(event);
+    }
   }
 
   @Override
@@ -188,7 +204,7 @@ public class CachedProvider extends Provider {
 
     if (newFilter != null) {
       List<? extends IsColumn> columns = getTable().getColumns();
-      for (IsRow row : getTable().getRows().getList()) {
+      for (IsRow row : getTable().getRows()) {
         if (newFilter.isMatch(columns, row)) {
           filteredRowIds.add(row.getId());
           viewRows.add(row);
@@ -236,7 +252,7 @@ public class CachedProvider extends Provider {
       return;
     }
 
-    for (IsRow row : getTable().getRows().getList()) {
+    for (IsRow row : getTable().getRows()) {
       if (filteredRowIds.contains(row.getId())) {
         viewRows.add(row);
       }

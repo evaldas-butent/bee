@@ -18,6 +18,7 @@ import com.butent.bee.client.data.Provider;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.utils.BeeCommand;
+import com.butent.bee.client.view.edit.EditEndEvent;
 import com.butent.bee.client.view.GridContainerImpl;
 import com.butent.bee.client.view.GridContainerView;
 import com.butent.bee.client.view.HasSearch;
@@ -26,6 +27,7 @@ import com.butent.bee.client.view.search.SearchView;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.event.CellUpdateEvent;
 import com.butent.bee.shared.data.event.MultiDeleteEvent;
 import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.filter.CompoundFilter;
@@ -42,17 +44,11 @@ import java.util.Set;
  * content etc).
  */
 
-public class GridPresenter implements Presenter {
-  
+public class GridPresenter implements Presenter, EditEndEvent.Handler {
+
   private class DeleteCallback extends BeeCommand {
     private final List<Long> rows;
     private final Long rowId;
-
-    private DeleteCallback(long rowId) {
-      super();
-      this.rows = null;
-      this.rowId = rowId;
-    }
 
     private DeleteCallback(List<Long> rows) {
       super();
@@ -64,10 +60,17 @@ public class GridPresenter implements Presenter {
         this.rowId = null;
       }
     }
-    
+
+    private DeleteCallback(long rowId) {
+      super();
+      this.rows = null;
+      this.rowId = rowId;
+    }
+
     @Override
     public void execute() {
-      getView().getContent().fireLoadingStateChange(LoadingStateChangeEvent.LoadingState.LOADING);
+      getView().getContent().getGrid().fireLoadingStateChange(
+          LoadingStateChangeEvent.LoadingState.LOADING);
 
       if (rowId != null) {
         Queries.deleteRow(getDataName(), rowId, new Queries.IntCallback() {
@@ -114,7 +117,7 @@ public class GridPresenter implements Presenter {
       }
     }
   }
-  
+
   private final DataInfo dataInfo;
   private final boolean async;
   private final List<BeeColumn> dataColumns;
@@ -165,7 +168,7 @@ public class GridPresenter implements Presenter {
   @Override
   public void handleAction(Action action) {
     Assert.notNull(action);
-    
+
     switch (action) {
       case CLOSE:
         BeeKeeper.getUi().closeView(getView());
@@ -177,7 +180,7 @@ public class GridPresenter implements Presenter {
           getView().getContent().applyOptions(options);
         }
         break;
-      
+
       case DELETE:
         Long activeRowId = getView().getContent().getActiveRowId();
         if (activeRowId != null) {
@@ -192,7 +195,7 @@ public class GridPresenter implements Presenter {
       case REFRESH:
         getDataProvider().refresh();
         break;
-      
+
       default:
         BeeKeeper.getLog().info(action, "not implemented");
     }
@@ -200,6 +203,27 @@ public class GridPresenter implements Presenter {
 
   public boolean isAsync() {
     return async;
+  }
+
+  public void onEditEnd(EditEndEvent event) {
+    final String viewName = getDataName();
+    final long rowId = event.getRowValue().getId();
+    final long version = event.getRowValue().getVersion();
+    final String columnId = event.getColumnId();
+    final String newValue = event.getNewValue();
+
+    Queries.updateCell(viewName, rowId, version, columnId, event.getOldValue(), newValue,
+        new Queries.VersionCallback() {
+          public void onFailure(String reason) {
+            BeeKeeper.getLog().severe("version callback:", reason);
+          }
+
+          public void onSuccess(Long result) {
+            BeeKeeper.getLog().info("cell updated:", viewName, rowId, columnId, newValue);
+            BeeKeeper.getBus().fireEvent(
+                new CellUpdateEvent(viewName, rowId, result, columnId, newValue));
+          }
+        });
   }
 
   public void onViewUnload() {
@@ -231,6 +255,8 @@ public class GridPresenter implements Presenter {
         }));
       }
     }
+
+    view.getContent().addEditEndHandler(this);
   }
 
   private Provider createProvider(GridContainerView view, DataInfo info, BeeRowSet rowSet,
@@ -239,9 +265,9 @@ public class GridPresenter implements Presenter {
     GridView display = view.getContent();
 
     if (isAsync) {
-      provider = new AsyncProvider(display, info);
+      provider = new AsyncProvider(display.getGrid(), info);
     } else {
-      provider = new CachedProvider(display, info.getName(), rowSet);
+      provider = new CachedProvider(display.getGrid(), info.getName(), rowSet);
     }
     return provider;
   }
@@ -253,11 +279,11 @@ public class GridPresenter implements Presenter {
 
     return view;
   }
-  
+
   private void deleteRow(long rowId) {
     Global.getMsgBoxen().confirm("Delete Row ?", new DeleteCallback(rowId), StyleUtils.NAME_SCARY);
   }
-  
+
   private void deleteRows(List<Long> rows) {
     Assert.notNull(rows);
     int count = rows.size();
@@ -266,7 +292,7 @@ public class GridPresenter implements Presenter {
       deleteRow(rows.get(0));
       return;
     }
-    
+
     Global.getMsgBoxen().confirm(BeeUtils.concat(1, "Delete", count, "rows"),
         Lists.newArrayList("Do you really want to hurt me", "Do you really want to make me cry"),
         new DeleteCallback(rows), StyleUtils.NAME_SUPER_SCARY);

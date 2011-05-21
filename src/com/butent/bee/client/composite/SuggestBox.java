@@ -1,5 +1,7 @@
 package com.butent.bee.client.composite;
 
+import com.google.gwt.event.dom.client.BlurEvent;
+import com.google.gwt.event.dom.client.BlurHandler;
 import com.google.gwt.event.dom.client.HandlesAllKeyEvents;
 import com.google.gwt.event.dom.client.HasAllKeyHandlers;
 import com.google.gwt.event.dom.client.KeyCodes;
@@ -16,7 +18,6 @@ import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.ui.Composite;
-import com.google.gwt.user.client.ui.Focusable;
 import com.google.gwt.user.client.ui.HasAnimation;
 import com.google.gwt.user.client.ui.HasText;
 import com.google.gwt.user.client.ui.MultiWordSuggestOracle;
@@ -41,7 +42,7 @@ import com.butent.bee.shared.Assert;
 import java.util.Collection;
 import java.util.List;
 
-public class SuggestBox extends Composite implements HasText, Focusable, HasAllKeyHandlers,
+public class SuggestBox extends Composite implements HasText, HasAllKeyHandlers,
     HasSelectionHandlers<Suggestion>, Editor {
 
   public static interface SuggestionCallback {
@@ -262,6 +263,10 @@ public class SuggestBox extends Composite implements HasText, Focusable, HasAllK
     setStyleName(STYLENAME_DEFAULT);
   }
 
+  public HandlerRegistration addBlurHandler(BlurHandler handler) {
+    return addDomHandler(handler, BlurEvent.getType());
+  }
+  
   public HandlerRegistration addKeyDownHandler(KeyDownHandler handler) {
     return addDomHandler(handler, KeyDownEvent.getType());
   }

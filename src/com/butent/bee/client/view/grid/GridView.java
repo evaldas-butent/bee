@@ -2,6 +2,7 @@ package com.butent.bee.client.view.grid;
 
 import com.butent.bee.client.data.HasDataTable;
 import com.butent.bee.client.view.View;
+import com.butent.bee.client.view.edit.HasEditEndHandlers;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
 
@@ -11,7 +12,7 @@ import java.util.List;
  * Specifies necessary methods for grid view user interface component.
  */
 
-public interface GridView extends View, HasDataTable {
+public interface GridView extends View, HasEditEndHandlers {
   
   void applyOptions(String options);
 
@@ -20,6 +21,8 @@ public interface GridView extends View, HasDataTable {
   int estimatePageSize(int containerWidth, int containerHeight);
 
   Long getActiveRowId();
+  
+  HasDataTable getGrid();
   
   List<Long> getSelectedRows();  
 

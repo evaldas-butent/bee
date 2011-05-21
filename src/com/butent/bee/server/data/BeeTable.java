@@ -812,6 +812,18 @@ class BeeTable implements HasExtFields, HasStates, HasTranslations {
   public SqlCreate createTranslationTable(SqlCreate query, BeeField field) {
     return translationSource.createTranslationTable(query, field);
   }
+  
+  public BeeField findField(String fldName) {
+    if (BeeUtils.isEmpty(fldName)) {
+      return null;
+    }
+    for (Map.Entry<String, BeeField> entry : fields.entrySet()) {
+      if (BeeUtils.same(entry.getKey(), fldName)) {
+        return entry.getValue();
+      }
+    }
+    return null;
+  }
 
   @Override
   public String getExtTable(BeeField field) {

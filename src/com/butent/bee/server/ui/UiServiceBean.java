@@ -108,6 +108,8 @@ public class UiServiceBean {
         response = getViewSize(reqInfo);
       } else if (BeeUtils.same(svc, Service.DELETE_ROWS)) {
         response = deleteRows(reqInfo);
+      } else if (BeeUtils.same(svc, Service.UPDATE_CELL)) {
+        response = updateCell(reqInfo);
 
       } else {
         String msg = BeeUtils.concat(1, svc, "loader service not recognized");
@@ -397,5 +399,21 @@ public class UiServiceBean {
       }
     }
     return response;
+  }
+
+  private ResponseObject updateCell(RequestInfo reqInfo) {
+    String viewName = reqInfo.getParameter(Service.VAR_VIEW_NAME);
+    String rowId = reqInfo.getParameter(Service.VAR_VIEW_ROW_ID);
+    String version = reqInfo.getParameter(Service.VAR_VIEW_VERSION);
+    String columnId = reqInfo.getParameter(Service.VAR_VIEW_COLUMN);
+    String oldValue = reqInfo.getParameter(Service.VAR_VIEW_OLD_VALUE);
+    String newValue = reqInfo.getParameter(Service.VAR_VIEW_NEW_VALUE);
+
+    Assert.notEmpty(viewName, "updateCell: viewName not specified");
+    Assert.notEmpty(rowId, "updateCell: row id not specified");
+    Assert.notEmpty(columnId, "updateCell: column id not specified");
+
+    return sys.updateCell(viewName, BeeUtils.toLong(rowId), BeeUtils.toLong(version), columnId,
+        oldValue, newValue);
   }
 }

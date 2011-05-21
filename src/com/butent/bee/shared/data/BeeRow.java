@@ -35,7 +35,6 @@ public class BeeRow extends StringRow implements BeeSerializable {
     return row;
   }
 
-  private long version = 0;
   private long newId = 0;
   private Map<Integer, String> shadow = null;
 
@@ -126,10 +125,6 @@ public class BeeRow extends StringRow implements BeeSerializable {
     return shadow;
   }
 
-  public long getVersion() {
-    return version;
-  }
-
   public boolean isMarkedForDelete() {
     return newId < 0;
   }
@@ -203,10 +198,6 @@ public class BeeRow extends StringRow implements BeeSerializable {
       }
       super.setValue(col, value);
     }
-  }
-
-  public void setVersion(long version) {
-    this.version = version;
   }
 
   private void setShadow(Map<Integer, String> shadow) {
