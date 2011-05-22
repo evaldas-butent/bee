@@ -26,8 +26,8 @@ import com.butent.bee.client.widget.BeeCheckBox;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.client.widget.BeeListBox;
 import com.butent.bee.client.widget.BeeRadioButton;
-import com.butent.bee.client.widget.BeeTextArea;
-import com.butent.bee.client.widget.BeeTextBox;
+import com.butent.bee.client.widget.InputArea;
+import com.butent.bee.client.widget.InputText;
 import com.butent.bee.shared.ui.UiButton;
 import com.butent.bee.shared.ui.UiCheckBox;
 import com.butent.bee.shared.ui.UiComponent;
@@ -95,7 +95,7 @@ public class GwtUiCreator implements UiCreator {
     BeeLabel label = new BeeLabel();
     label.setText(field.getCaption());
 
-    BeeTextBox input = new BeeTextBox();
+    InputText input = new InputText();
     input.setTitle(field.getId());
 
     widget.add(label);
@@ -260,7 +260,7 @@ public class GwtUiCreator implements UiCreator {
 
   @Override
   public Object createTextArea(UiTextArea textArea) {
-    BeeTextArea widget = new BeeTextArea();
+    InputArea widget = new InputArea();
     widget.setText(textArea.getCaption());
     widget.setTitle(textArea.getId());
 

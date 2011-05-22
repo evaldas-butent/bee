@@ -253,6 +253,10 @@ public class BeeColumn extends TableColumn implements BeeSerializable, Transform
   public boolean isDefinitelyWritable() {
     return definitelyWritable;
   }
+  
+  public boolean isNullable() {
+    return getNullable() == NULLABLE;
+  }
 
   public boolean isReadOnly() {
     return readOnly;

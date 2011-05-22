@@ -948,7 +948,9 @@ public class SystemBean {
     }
     
     if (res <= 0) {
-      response.addError((res < 0) ? "Error updating data" : "Optimistic lock exception");
+      String message = (res < 0) ? "Error updating data" : "Optimistic lock exception";
+      response.addError(message);
+      response.setResponse(message);
       return response;
     }
 

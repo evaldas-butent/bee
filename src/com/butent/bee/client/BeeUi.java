@@ -249,10 +249,18 @@ public class BeeUi implements Module, NotificationListener {
     return temporaryDetach;
   }
 
-  public void notify(String... messages) {
-    notification.show(messages);
+  public void notifyInfo(String... messages) {
+    notification.info(messages);
   }
 
+  public void notifySevere(String... messages) {
+    notification.severe(messages);
+  }
+
+  public void notifyWarning(String... messages) {
+    notification.warning(messages);
+  }
+  
   public void setActivePanel(TilePanel p) {
     activePanel = p;
   }
@@ -548,7 +556,7 @@ public class BeeUi implements Module, NotificationListener {
 
     p.add(hor);
 
-    BeeLabel ver = new BeeLabel("0.3.4");
+    BeeLabel ver = new BeeLabel("0.3.5");
     p.add(ver);
 
     p.setWidgetLeftWidth(cli, 1, Unit.EM, 50, Unit.PCT);

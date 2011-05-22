@@ -19,16 +19,17 @@ import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.PopupPanel;
-import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.datepicker.client.DatePicker;
 
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.view.edit.Editor;
+import com.butent.bee.client.widget.InputText;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Date;
 
-public class DateBox extends Composite implements Editor {
+public class InputDate extends Composite implements Editor {
 
   public static class DefaultFormat implements Format {
 
@@ -38,7 +39,7 @@ public class DateBox extends Composite implements Editor {
       this.dateTimeFormat = dateTimeFormat;
     }
 
-    public String format(DateBox box, Date date) {
+    public String format(InputDate box, Date date) {
       if (date == null) {
         return "";
       } else {
@@ -51,7 +52,7 @@ public class DateBox extends Composite implements Editor {
     }
 
     @SuppressWarnings("deprecation")
-    public Date parse(DateBox dateBox, String dateText, boolean reportError) {
+    public Date parse(InputDate dateBox, String dateText, boolean reportError) {
       Date date = null;
       try {
         if (dateText.length() > 0) {
@@ -70,18 +71,18 @@ public class DateBox extends Composite implements Editor {
       return date;
     }
 
-    public void reset(DateBox dateBox, boolean abandon) {
+    public void reset(InputDate dateBox, boolean abandon) {
       dateBox.removeStyleName(DATE_BOX_FORMAT_ERROR);
     }
   }
 
   public interface Format {
 
-    String format(DateBox dateBox, Date date);
+    String format(InputDate dateBox, Date date);
 
-    Date parse(DateBox dateBox, String text, boolean reportError);
+    Date parse(InputDate dateBox, String text, boolean reportError);
 
-    void reset(DateBox dateBox, boolean abandon);
+    void reset(InputDate dateBox, boolean abandon);
   }
 
   private class DateBoxHandler implements ValueChangeHandler<Date>,
@@ -139,16 +140,16 @@ public class DateBox extends Composite implements Editor {
   private static final DefaultFormat DEFAULT_FORMAT = 
     new DefaultFormat(DateTimeFormat.getFormat(DateTimeFormat.PredefinedFormat.DATE_MEDIUM));
   private final PopupPanel popup;
-  private final TextBox box = new TextBox();
+  private final InputText box = new InputText();
   private final DatePicker picker;
   private Format format;
   private boolean allowDPShow = true;
 
-  public DateBox() {
+  public InputDate() {
     this(new DatePicker(), null, DEFAULT_FORMAT);
   }
 
-  public DateBox(DatePicker picker, Date date, Format format) {
+  public InputDate(DatePicker picker, Date date, Format format) {
     this.picker = picker;
     this.popup = new PopupPanel(true);
     Assert.notNull(format);
@@ -175,6 +176,10 @@ public class DateBox extends Composite implements Editor {
     return addDomHandler(handler, BlurEvent.getType());
   }
 
+  public HandlerRegistration addKeyDownHandler(KeyDownHandler handler) {
+    return addDomHandler(handler, KeyDownEvent.getType());
+  }
+  
   public HandlerRegistration addValueChangeHandler(ValueChangeHandler<String> handler) {
     return addHandler(handler, ValueChangeEvent.getType());
   }
@@ -203,12 +208,12 @@ public class DateBox extends Composite implements Editor {
     return DomUtils.getId(this);
   }
 
-  public int getTabIndex() {
-    return box.getTabIndex();
+  public String getNormalizedValue() {
+    return getBox().getNormalizedValue();
   }
 
-  public TextBox getTextBox() {
-    return box;
+  public int getTabIndex() {
+    return box.getTabIndex();
   }
 
   public String getValue() {
@@ -218,9 +223,13 @@ public class DateBox extends Composite implements Editor {
   public void hideDatePicker() {
     popup.hide();
   }
-
+  
   public boolean isDatePickerShowing() {
     return popup.isShowing();
+  }
+
+  public boolean isNullable() {
+    return getBox().isNullable();
   }
 
   public void setAccessKey(char key) {
@@ -249,6 +258,10 @@ public class DateBox extends Composite implements Editor {
 
   public void setId(String id) {
     DomUtils.setId(this, id);
+  }
+
+  public void setNullable(boolean nullable) {
+    getBox().setNullable(nullable);
   }
 
   public void setTabIndex(int index) {
@@ -280,6 +293,18 @@ public class DateBox extends Composite implements Editor {
     popup.showRelativeTo(this);
   }
 
+  public void startEdit(String oldValue, char charCode) {
+    setValue(BeeUtils.trim(oldValue));
+  }
+
+  public boolean validate() {
+    return getBox().validate();
+  }
+
+  private InputText getBox() {
+    return box;
+  }
+  
   private Date parseDate(boolean reportError) {
     if (reportError) {
       getFormat().reset(this, false);

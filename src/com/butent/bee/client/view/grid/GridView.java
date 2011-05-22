@@ -1,6 +1,7 @@
 package com.butent.bee.client.view.grid;
 
 import com.butent.bee.client.data.HasDataTable;
+import com.butent.bee.client.dialog.NotificationListener;
 import com.butent.bee.client.view.View;
 import com.butent.bee.client.view.edit.HasEditEndHandlers;
 import com.butent.bee.shared.data.BeeColumn;
@@ -12,7 +13,7 @@ import java.util.List;
  * Specifies necessary methods for grid view user interface component.
  */
 
-public interface GridView extends View, HasEditEndHandlers {
+public interface GridView extends View, HasEditEndHandlers, NotificationListener {
   
   void applyOptions(String options);
 

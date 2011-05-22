@@ -1,17 +1,18 @@
 package com.butent.bee.client.cli;
 
 import com.google.gwt.core.client.JsArrayString;
-import com.google.gwt.dom.client.Element;
-import com.google.gwt.event.dom.client.KeyPressEvent;
+import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.i18n.client.NumberFormat;
+import com.google.gwt.user.client.Event;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.canvas.CanvasDemo;
 import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.visualization.showcase.Showcase;
 import com.butent.bee.client.widget.BeeLabel;
-import com.butent.bee.client.widget.BeeTextBox;
+import com.butent.bee.client.widget.InputText;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
@@ -25,20 +26,22 @@ import com.butent.bee.shared.utils.BeeUtils;
  * keywords and processes them.
  */
 
-public class CliWidget extends BeeTextBox {
+public class CliWidget extends InputText {
+
   public CliWidget() {
     super();
+    sinkEvents(Event.ONKEYDOWN);
   }
-
-  public CliWidget(Element element) {
-    super(element);
-  }
-
+  
   @Override
-  public boolean onBeeKey(KeyPressEvent event) {
-    if (BeeUtils.isEmpty(getValue())) {
-      return true;
+  public void onBrowserEvent(Event event) {
+    if (event.getTypeInt() != Event.ONKEYDOWN || event.getKeyCode() != KeyCodes.KEY_ENTER 
+        || BeeUtils.isEmpty(getValue())) {
+      super.onBrowserEvent(event);
+      return;
     }
+    
+    EventUtils.eatEvent(event);
 
     String v = getValue().trim();
     String[] arr = BeeUtils.split(v, BeeConst.STRING_SPACE);
@@ -120,7 +123,7 @@ public class CliWidget extends BeeTextBox {
     } else if (z.equals("nf") && arr.length >= 3) {
       BeeKeeper.getLog().info(NumberFormat.getFormat(arr[1]).format(BeeUtils.toDouble(arr[2])));
     } else if (z.equals("notify") && arr.length >= 2) {
-      BeeKeeper.getUi().notify(ArrayUtils.slice(arr, 1));
+      CliWorker.showNotes(args);
     } else if (BeeUtils.inList(z, "p", "prop")) {
       CliWorker.showProperties(v, arr);
     } else if (z.equals("progress")) {
@@ -191,7 +194,5 @@ public class CliWidget extends BeeTextBox {
     } else {
       Global.showDialog("wtf", v);
     }
-
-    return false;
   }
 }

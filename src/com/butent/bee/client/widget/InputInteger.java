@@ -11,8 +11,7 @@ import com.butent.bee.shared.utils.BeeUtils;
  * increment step.
  */
 
-public class InputInteger extends BeeTextBox {
-  private Integer minValue, maxValue, stepValue = null;
+public class InputInteger extends InputNumber {
 
   public InputInteger() {
     super();
@@ -50,11 +49,6 @@ public class InputInteger extends BeeTextBox {
   }
 
   @Override
-  public void createId() {
-    DomUtils.createId(this, "int");
-  }
-
-  @Override
   public String getDefaultStyleName() {
     return "bee-InputInteger";
   }
@@ -63,42 +57,25 @@ public class InputInteger extends BeeTextBox {
     return BeeUtils.toInt(getValue());
   }
 
-  public Integer getMaxValue() {
-    return maxValue;
+  @Override
+  public Number getNumber() {
+    return BeeUtils.toIntOrNull(BeeUtils.trim(getValue()));
   }
 
-  public Integer getMinValue() {
-    return minValue;
+  public void setMaxValue(int maxValue) {
+    super.setMaxValue(maxValue);
+    DomUtils.setMax(this, maxValue);
   }
 
-  public Integer getStepValue() {
-    return stepValue;
+  public void setMinValue(int minValue) {
+    super.setMinValue(minValue);
+    DomUtils.setMin(this, minValue);
   }
 
-  public void setMaxValue(Integer maxValue) {
-    this.maxValue = maxValue;
+  public void setStepValue(int stepValue) {
+    super.setStepValue(stepValue);
 
-    if (maxValue == null) {
-      DomUtils.removeMax(this);
-    } else {
-      DomUtils.setMax(this, maxValue);
-    }
-  }
-
-  public void setMinValue(Integer minValue) {
-    this.minValue = minValue;
-
-    if (minValue == null) {
-      DomUtils.removeMin(this);
-    } else {
-      DomUtils.setMin(this, minValue);
-    }
-  }
-
-  public void setStepValue(Integer stepValue) {
-    this.stepValue = stepValue;
-
-    if (stepValue == null || stepValue == 0) {
+    if (stepValue == 0) {
       DomUtils.removeStep(this);
     } else {
       DomUtils.setStep(this, stepValue);
@@ -107,6 +84,16 @@ public class InputInteger extends BeeTextBox {
 
   public void setValue(int value) {
     setValue(Integer.toString(value));
+  }
+
+  @Override
+  protected boolean checkType(String v) {
+    return BeeUtils.isInt(v);
+  }
+
+  @Override
+  protected String getDefaultIdPrefix() {
+    return "int";
   }
 
   protected void initAttributes(String type, int min, int max, int step) {
@@ -120,5 +107,10 @@ public class InputInteger extends BeeTextBox {
     if (step != 0) {
       setStepValue(step);
     }
+  }
+  
+  @Override
+  protected String normalize(String v) {
+    return BeeUtils.toString(BeeUtils.toInt(v));
   }
 }

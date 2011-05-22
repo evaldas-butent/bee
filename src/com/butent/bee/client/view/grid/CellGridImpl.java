@@ -2,19 +2,24 @@ package com.butent.bee.client.view.grid;
 
 import com.google.common.collect.Maps;
 import com.google.gwt.cell.client.ValueUpdater;
+import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.event.dom.client.BlurEvent;
 import com.google.gwt.event.dom.client.BlurHandler;
 import com.google.gwt.event.dom.client.ChangeHandler;
-import com.google.gwt.event.logical.shared.ValueChangeEvent;
-import com.google.gwt.event.logical.shared.ValueChangeHandler;
+import com.google.gwt.event.dom.client.KeyCodes;
+import com.google.gwt.event.dom.client.KeyDownEvent;
+import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.cellview.client.Header;
 import com.google.gwt.user.cellview.client.TextHeader;
+import com.google.gwt.user.client.Element;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.dialog.Notification;
 import com.butent.bee.client.dom.Edges;
 import com.butent.bee.client.dom.Font;
 import com.butent.bee.client.dom.StyleUtils;
+import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.grid.CellColumn;
 import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
@@ -29,7 +34,6 @@ import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.edit.EditorFactory;
 import com.butent.bee.client.view.search.SearchView;
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -43,6 +47,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 
 /**
  * Creates cell grid elements, connecting view and presenter elements of them.
@@ -50,7 +55,7 @@ import java.util.Map;
 
 public class CellGridImpl extends Absolute implements GridView, SearchView, EditStartEvent.Handler {
 
-  private class EditableColumn implements ValueChangeHandler<String>, BlurHandler {
+  private class EditableColumn implements KeyDownHandler, BlurHandler {
     private final int colIndex;
     private final BeeColumn dataColumn;
 
@@ -86,18 +91,64 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       }
     }
     
-    public void onValueChange(ValueChangeEvent<String> event) {
-      if (State.OPEN.equals(getState())) {
-        closeEditor();
-        fireEvent(new EditEndEvent(getRowValue(), getDataColumn().getLabel(),
-            getRowValue().getString(getColIndex()), event.getValue()));
+    public void onKeyDown(KeyDownEvent event) {
+      int keyCode = event.getNativeKeyCode();
+      NativeEvent nativeEvent = event.getNativeEvent();
+
+      switch (keyCode) {
+        case KeyCodes.KEY_ESCAPE:
+          EventUtils.eatEvent(nativeEvent);
+          closeEditor();
+          break;
+
+        case KeyCodes.KEY_ENTER:
+          EventUtils.eatEvent(nativeEvent);
+          endEdit();
+          break;
+        
+        case KeyCodes.KEY_TAB:
+        case KeyCodes.KEY_UP:
+        case KeyCodes.KEY_DOWN:
+        case KeyCodes.KEY_PAGEDOWN:
+        case KeyCodes.KEY_PAGEUP:
+          EventUtils.eatEvent(event.getNativeEvent());
+          if (endEdit()) {
+            getGrid().handleKeyboardNavigation(keyCode, EventUtils.hasModifierKey(nativeEvent));
+          }
+          break;
       }
     }
-    
+
     private void closeEditor() {
       setState(State.CLOSED);
       StyleUtils.hideDisplay(getEditor().asWidget());
       getGrid().refocus();
+    }
+    
+    private boolean endEdit() {
+      if (State.OPEN.equals(getState())) {
+        String oldValue = getRowValue().getString(getColIndex());
+        String editorValue = getEditor().getValue();
+
+        if (BeeUtils.equalsTrimRight(oldValue, editorValue)) {
+          closeEditor();
+          return true;
+        }
+        
+        if (!getEditor().validate()) {
+          notifySevere("Validation error", editorValue);
+          return false;
+        }
+        
+        String newValue = getEditor().getNormalizedValue();
+        closeEditor();
+
+        if (!BeeUtils.equalsTrimRight(oldValue, newValue)) {
+          fireEvent(new EditEndEvent(getRowValue(), getDataColumn().getLabel(), oldValue, newValue));
+        }
+        return true;
+      }
+      return false;
     }
 
     private int getColIndex() {
@@ -152,6 +203,8 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
 
   private final Map<String, EditableColumn> editableColumns = Maps.newHashMap();
 
+  private final Notification notification = new Notification();
+  
   public CellGridImpl() {
     super();
   }
@@ -432,11 +485,13 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     getGrid().estimateHeaderWidths();
 
     getGrid().addEditStartHandler(this);
+    
     add(getGrid());
+    add(getNotification());
   }
 
   public int estimatePageSize(int containerWidth, int containerHeight) {
-    return getGrid().estimatePageSize(containerWidth, containerHeight);
+    return getGrid().estimatePageSize(containerWidth, containerHeight, true);
   }
 
   public Long getActiveRowId() {
@@ -504,6 +559,18 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     return getGrid().isRowSelected(rowId);
   }
 
+  public void notifyInfo(String... messages) {
+    showNote(Level.INFO, messages);
+  }
+
+  public void notifySevere(String... messages) {
+    showNote(Level.SEVERE, messages);
+  }
+
+  public void notifyWarning(String... messages) {
+    showNote(Level.WARNING, messages);
+  }
+
   public void onEditStart(EditStartEvent event) {
     Assert.notNull(event);
     String columnId = event.getColumnId();
@@ -516,8 +583,8 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     if (editor == null) {
       editor = EditorFactory.createEditor(editableColumn.getDataColumn());
       editor.asWidget().addStyleName(STYLE_EDITOR);
-
-      editor.addValueChangeHandler(editableColumn);
+      
+      editor.addKeyDownHandler(editableColumn);
       editor.addBlurHandler(editableColumn);
 
       add(editor);
@@ -527,19 +594,21 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
 
     editableColumn.setRowValue(event.getRowValue());
     editableColumn.setState(State.OPEN);
-
-    String value = event.getRowValue().getString(editableColumn.getColIndex());
-    int charCode = event.getCharCode();
-    if (charCode > BeeConst.CHAR_SPACE) {
-      value = new String(new char[]{(char) charCode}) + BeeUtils.trim(value);
+   
+    Element editorElement = editor.asWidget().getElement();
+    if (event.getSourceElement() != null) {
+      StyleUtils.copyBox(event.getSourceElement(), editorElement);
     }
-    editor.setValue(value);
 
-    event.getRectangle().applyTo(editor.asWidget());
-    StyleUtils.unhideDisplay(editor.asWidget());
+    StyleUtils.setZIndex(editorElement, getGrid().getZIndex() + 1);
+    StyleUtils.unhideDisplay(editorElement);
+
+    editor.startEdit(event.getRowValue().getString(editableColumn.getColIndex()), 
+        BeeUtils.toChar(event.getCharCode()));
+    
     editor.setFocus(true);
   }
-
+  
   public void setViewPresenter(Presenter presenter) {
     this.viewPresenter = presenter;
   }
@@ -570,5 +639,14 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
 
   private Map<String, EditableColumn> getEditableColumns() {
     return editableColumns;
+  }
+
+  private Notification getNotification() {
+    return notification;
+  }
+
+  private void showNote(Level level, String... messages) {
+    StyleUtils.setZIndex(getNotification(), getGrid().getZIndex() + 1);
+    getNotification().show(level, messages);
   }
 }

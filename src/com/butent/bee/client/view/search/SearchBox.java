@@ -2,7 +2,7 @@ package com.butent.bee.client.view.search;
 
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.presenter.Presenter;
-import com.butent.bee.client.widget.BeeTextBox;
+import com.butent.bee.client.widget.InputText;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.filter.Filter;
@@ -13,7 +13,7 @@ import java.util.List;
  * Implements a text box for search purposes.
  */
 
-public class SearchBox extends BeeTextBox implements SearchView {
+public class SearchBox extends InputText implements SearchView {
   private Presenter presenter = null;
 
   public SearchBox() {

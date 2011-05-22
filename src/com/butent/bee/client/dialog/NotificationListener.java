@@ -1,6 +1,10 @@
 package com.butent.bee.client.dialog;
 
 public interface NotificationListener {
-  void notify(String... messages);
+  
+  void notifyInfo(String... messages);
+  
+  void notifySevere(String... messages);
 
+  void notifyWarning(String... messages);
 }

@@ -161,7 +161,10 @@ public class StyleUtils {
   public static final String STYLE_BORDER_RIGHT = "borderRight";
   public static final String STYLE_BORDER_TOP = "borderTop";
   public static final String STYLE_BORDER_BOTTOM = "borderBottom";
+
   public static final String STYLE_BORDER_WIDTH = "borderWidth";
+  public static final String STYLE_BORDER_STYLE = "borderStyle";
+  public static final String STYLE_BORDER_COLOR = "borderColor";
 
   public static final String STYLE_BORDER_COLLAPSE = "borderCollapse";
   public static final String STYLE_TABLE_LAYOUT = "tableLayout";
@@ -177,7 +180,16 @@ public class StyleUtils {
   public static final String STYLE_WHITE_SPACE = "whiteSpace";
 
   public static final String STYLE_PADDING = "padding";
+  public static final String STYLE_PADDING_TOP = "paddingTop";
+  public static final String STYLE_PADDING_RIGHT = "paddingRight";
+  public static final String STYLE_PADDING_LEFT = "paddingLeft";
+  public static final String STYLE_PADDING_BOTTOM = "paddingBottom";
+
   public static final String STYLE_MARGIN = "margin";
+  public static final String STYLE_MARGIN_TOP = "marginTop";
+  public static final String STYLE_MARGIN_RIGHT = "marginRight";
+  public static final String STYLE_MARGIN_LEFT = "marginLeft";
+  public static final String STYLE_MARGIN_BOTTOM = "marginBottom";
 
   public static final String STYLE_Z_INDEX = "zIndex";
 
@@ -529,6 +541,58 @@ public class StyleUtils {
     return indexOfClassName(className, el.getClassName()) >= 0;
   }
 
+  public static void copyBorder(Style src, Style dst) {
+    copyProperties(src, dst, STYLE_BORDER_WIDTH, STYLE_BORDER_STYLE, STYLE_BORDER_COLOR, 
+        STYLE_BORDER_LEFT, STYLE_BORDER_RIGHT, STYLE_BORDER_TOP, STYLE_BORDER_BOTTOM);
+  }
+
+  public static void copyBox(Style src, Style dst) {
+    copyRectangle(src, dst);
+    copyPadding(src, dst);
+    copyBorder(src, dst);
+    copyMargin(src, dst);
+  }
+
+  public static void copyBox(Element src, Element dst) {
+    Assert.notNull(src);
+    Assert.notNull(dst);
+    if (src.equals(dst)) {
+      return;
+    }
+    copyBox(src.getStyle(), dst.getStyle());
+  }
+  
+  public static void copyMargin(Style src, Style dst) {
+    copyProperties(src, dst, STYLE_MARGIN,
+        STYLE_MARGIN_LEFT, STYLE_MARGIN_RIGHT, STYLE_MARGIN_TOP, STYLE_MARGIN_BOTTOM);
+  }
+
+  public static void copyPadding(Style src, Style dst) {
+    copyProperties(src, dst, STYLE_PADDING,
+        STYLE_PADDING_LEFT, STYLE_PADDING_RIGHT, STYLE_PADDING_TOP, STYLE_PADDING_BOTTOM);
+  }
+  
+  public static void copyProperties(Style src, Style dst, String... names) {
+    Assert.notNull(src);
+    Assert.notNull(dst);
+    Assert.notNull(names);
+    Assert.isPositive(names.length);
+    if (src.equals(dst)) {
+      return;
+    }
+    
+    for (String name : names) {
+      if (!BeeUtils.isEmpty(name)) {
+        copyStyleProperty(src, dst, name);
+      }
+    }
+  }
+
+  public static void copyRectangle(Style src, Style dst) {
+    copyProperties(src, dst, STYLE_LEFT, STYLE_RIGHT, STYLE_TOP, STYLE_BOTTOM,
+        STYLE_WIDTH, STYLE_HEIGHT);
+  }
+  
   public static void fillHorizontal(Element el) {
     Assert.notNull(el);
     fillHorizontal(el.getStyle());
@@ -1560,6 +1624,13 @@ public class StyleUtils {
   private static void clearStyleProperty(Style style, String name) {
     if (!BeeUtils.isEmpty(style.getProperty(name))) {
       style.clearProperty(name);
+    }
+  }
+  
+  private static void copyStyleProperty(Style src, Style dst, String name) {
+    String value = src.getProperty(name);
+    if (!BeeUtils.equalsTrim(value, dst.getProperty(name))) {
+      dst.setProperty(name, value);
     }
   }
 

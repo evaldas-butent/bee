@@ -75,6 +75,7 @@ public class GridPresenter implements Presenter, EditEndEvent.Handler {
       if (rowId != null) {
         Queries.deleteRow(getDataName(), rowId, new Queries.IntCallback() {
           public void onFailure(String reason) {
+            showFailure("Delete Row", reason);
           }
 
           public void onSuccess(Integer result) {
@@ -85,6 +86,7 @@ public class GridPresenter implements Presenter, EditEndEvent.Handler {
       } else if (rows != null) {
         Queries.deleteRows(getDataName(), rows, new Queries.IntCallback() {
           public void onFailure(String reason) {
+            showFailure("Delete Rows", reason);
           }
 
           public void onSuccess(Integer result) {
@@ -103,6 +105,7 @@ public class GridPresenter implements Presenter, EditEndEvent.Handler {
     }
 
     public void onFailure(String reason) {
+      showFailure("Filter", reason);
     }
 
     public void onSuccess(Integer result) {
@@ -215,7 +218,7 @@ public class GridPresenter implements Presenter, EditEndEvent.Handler {
     Queries.updateCell(viewName, rowId, version, columnId, event.getOldValue(), newValue,
         new Queries.VersionCallback() {
           public void onFailure(String reason) {
-            BeeKeeper.getLog().severe("version callback:", reason);
+            showFailure("Update Cell", reason);
           }
 
           public void onSuccess(Long result) {
@@ -311,6 +314,10 @@ public class GridPresenter implements Presenter, EditEndEvent.Handler {
       searchers = null;
     }
     return searchers;
+  }
+  
+  private void showFailure(String activity, String reason) {
+    getView().getContent().notifySevere(activity, reason);
   }
 
   private void updateFilter() {

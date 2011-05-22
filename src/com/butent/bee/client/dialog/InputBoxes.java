@@ -11,7 +11,7 @@ import com.butent.bee.client.widget.BeeCheckBox;
 import com.butent.bee.client.widget.BeeFileUpload;
 import com.butent.bee.client.widget.BeeListBox;
 import com.butent.bee.client.widget.BeeSimpleCheckBox;
-import com.butent.bee.client.widget.BeeTextBox;
+import com.butent.bee.client.widget.InputText;
 import com.butent.bee.client.widget.InputInteger;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeType;
@@ -92,7 +92,7 @@ public class InputBoxes {
       }
 
       if (!ok) {
-        inp = new BeeTextBox(var);
+        inp = new InputText(var);
       }
 
       if (!BeeUtils.isEmpty(w)) {

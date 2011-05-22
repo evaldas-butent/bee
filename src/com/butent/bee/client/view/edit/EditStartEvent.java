@@ -1,9 +1,9 @@
 package com.butent.bee.client.view.edit;
 
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.shared.EventHandler;
 import com.google.gwt.event.shared.GwtEvent;
 
-import com.butent.bee.client.dom.Rectangle;
 import com.butent.bee.shared.data.IsRow;
 
 public class EditStartEvent extends GwtEvent<EditStartEvent.Handler> { 
@@ -21,13 +21,13 @@ public class EditStartEvent extends GwtEvent<EditStartEvent.Handler> {
   private final IsRow rowValue;
   private final String columnId;
 
-  private final Rectangle rectangle;
+  private final Element sourceElement;
   private final int charCode;
   
-  public EditStartEvent(IsRow rowValue, String columnId, Rectangle rectangle, int charCode) {
+  public EditStartEvent(IsRow rowValue, String columnId, Element sourceElement, int charCode) {
     this.rowValue = rowValue;
     this.columnId = columnId;
-    this.rectangle = rectangle;
+    this.sourceElement = sourceElement;
     this.charCode = charCode;
   }
 
@@ -44,12 +44,12 @@ public class EditStartEvent extends GwtEvent<EditStartEvent.Handler> {
     return columnId;
   }
 
-  public Rectangle getRectangle() {
-    return rectangle;
-  }
-  
   public IsRow getRowValue() {
     return rowValue;
+  }
+  
+  public Element getSourceElement() {
+    return sourceElement;
   }
 
   @Override

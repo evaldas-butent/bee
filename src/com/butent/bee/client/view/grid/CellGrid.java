@@ -847,15 +847,17 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
   }
 
   public int estimatePageSize() {
-    return estimatePageSize(getElement().getClientWidth(), getElement().getClientHeight());
+    return estimatePageSize(getElement().getClientWidth(), getElement().getClientHeight(), false);
   }
 
-  public int estimatePageSize(int containerWidth, int containerHeight) {
+  public int estimatePageSize(int containerWidth, int containerHeight, boolean checkWidth) {
     int availableBodyHeight = containerHeight - getHeaderHeight() - getFooterHeight();
-
-    int width = getBodyWidth();
-    if (width <= 0 || width > containerWidth) {
-      availableBodyHeight -= DomUtils.getScrollbarHeight();
+    
+    if (checkWidth) {
+      int width = getBodyWidth();
+      if (width <= 0 || width > containerWidth) {
+        availableBodyHeight -= DomUtils.getScrollbarHeight();
+      }
     }
 
     int bodyRowHeight = getBodyCellHeight() + getBodyCellHeightIncrement();
@@ -1114,6 +1116,77 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     return zIndex;
   }
 
+  public boolean handleKeyboardNavigation(int keyCode, boolean hasModifiers) {
+    if (getActiveRow() < 0 || getActiveColumn() < 0) {
+      return false;
+    }
+
+    switch (keyCode) {
+      case KeyCodes.KEY_DOWN:
+        keyboardNext();
+        return true;
+
+      case KeyCodes.KEY_UP:
+        keyboardPrev();
+        return true;
+
+      case KeyCodes.KEY_PAGEDOWN:
+        if (hasModifiers) {
+          keyboardEnd();
+        } else {
+          keyboardNextPage();
+        }
+        return true;
+
+      case KeyCodes.KEY_PAGEUP:
+        if (hasModifiers) {
+          keyboardHome();
+        } else {
+          keyboardPrevPage();
+        }
+        return true;
+
+      case KeyCodes.KEY_HOME:
+        if (hasModifiers) {
+          keyboardHome();
+        }
+        return true;
+
+      case KeyCodes.KEY_END:
+        if (hasModifiers) {
+          keyboardEnd();
+        }
+        return true;
+
+      case KeyCodes.KEY_LEFT:
+        if (getActiveColumn() > 0) {
+          setActiveColumn(getActiveColumn() - 1);
+        }
+        return true;
+
+      case KeyCodes.KEY_BACKSPACE:
+        keyboardLeft();
+        return true;
+
+      case KeyCodes.KEY_RIGHT:
+        if (getActiveColumn() < getColumnCount() - 1) {
+          setActiveColumn(getActiveColumn() + 1);
+        }
+        return true;
+
+      case KeyCodes.KEY_TAB:
+        if (hasModifiers) {
+          keyboardLeft();
+        } else {
+          keyboardRight();
+        }
+        return true;
+
+      default:
+        return false;
+    }
+  }
+
   public boolean hasFooters() {
     for (ColumnInfo info : columns) {
       if (info.getFooter() != null) {
@@ -1224,7 +1297,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
   public boolean isSortAscending(String columnId) {
     return getSortOrder().isAscending(columnId);
   }
-
+  
   @Override
   public void onBrowserEvent(Event event) {
     super.onBrowserEvent(event);
@@ -1381,7 +1454,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
       fireEventToCell(event, eventType, target, rowValue, context, column);
     }
   }
-  
+
   public void onCellUpdate(CellUpdateEvent event) {
     Assert.notNull(event);
     long rowId = event.getRowId();
@@ -2401,68 +2474,12 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
   private int getWidthIncrement(Edges padding, Edges border, Edges margin) {
     return getWidthIncrement(padding) + getWidthIncrement(border) + getWidthIncrement(margin);
   }
-
+    
   private boolean handleKey(int keyCode, boolean hasModifiers, int row, int col, Element cell) {
     if (resizeCell(keyCode, hasModifiers, row, col, cell)) {
       return true;
     }
-
-    switch (keyCode) {
-      case KeyCodes.KEY_DOWN:
-        keyboardNext();
-        return true;
-
-      case KeyCodes.KEY_UP:
-        keyboardPrev();
-        return true;
-
-      case KeyCodes.KEY_PAGEDOWN:
-        if (hasModifiers) {
-          keyboardEnd();
-        } else {
-          keyboardNextPage();
-        }
-        return true;
-
-      case KeyCodes.KEY_PAGEUP:
-        if (hasModifiers) {
-          keyboardHome();
-        } else {
-          keyboardPrevPage();
-        }
-        return true;
-
-      case KeyCodes.KEY_HOME:
-        keyboardHome();
-        return true;
-
-      case KeyCodes.KEY_END:
-        keyboardEnd();
-        return true;
-
-      case KeyCodes.KEY_LEFT:
-        if (getActiveColumn() > 0) {
-          setActiveColumn(getActiveColumn() - 1);
-        }
-        return true;
-
-      case KeyCodes.KEY_BACKSPACE:
-        keyboardLeft();
-        return true;
-
-      case KeyCodes.KEY_RIGHT:
-        if (getActiveColumn() < getColumnCount() - 1) {
-          setActiveColumn(getActiveColumn() + 1);
-        }
-        return true;
-
-      case KeyCodes.KEY_TAB:
-        keyboardRight();
-        return true;
-
-      default:
-        return false;
-    }
+    return handleKeyboardNavigation(keyCode, hasModifiers);
   }
 
   private boolean handleMouseMove(Event event, Element element, TargetType targetType,
@@ -3638,8 +3655,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
   }
 
   private void startEditing(IsRow rowValue, int col, Element cellElement, int charCode) {
-    fireEvent(new EditStartEvent(rowValue, getColumnId(col),
-        Rectangle.createFromParentOffset(cellElement), charCode));
+    fireEvent(new EditStartEvent(rowValue, getColumnId(col), cellElement, charCode));
   }
 
   private void startResizing(Event event) {

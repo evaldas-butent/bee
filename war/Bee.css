@@ -135,7 +135,7 @@ body, select {
   background: -moz-linear-gradient(top, yellow, greenyellow);
 }
 
-.bee-LayoutContainer > .bee-TextArea {
+.bee-LayoutContainer > .bee-InputArea {
   width: 100%;
   height: 100%;
   margin: 0;
@@ -144,7 +144,7 @@ body, select {
   -moz-box-sizing: border-box;
   -ms-box-sizing: border-box;
 }  
-.bee-LayoutContainer > .bee-TextBox {
+.bee-LayoutContainer > .bee-InputText {
   width: 100%;
   margin: 0;
   box-sizing: border-box;
@@ -218,7 +218,7 @@ body, select {
   background: #7aa5d6;
 }
 
-.bee-InputInteger {
+.bee-InputInteger, .bee-InputLong, .bee-InputNumber {
   text-align: right;
 }
 
@@ -386,6 +386,12 @@ body, select {
 }
 
 .bee-CellGrid {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  overflow: auto;
 }  
 
 .bee-CellGridCell {
@@ -416,7 +422,7 @@ body, select {
 }
 
 .bee-CellGridBody:hover {
-  background-color: BlanchedAlmond;
+  background-color: Cornsilk;
 }
 
 .bee-CellGridSelectedRow {
@@ -428,8 +434,8 @@ body, select {
 }
 
 .bee-CellGridActiveCell {
-  background-color: #ffc !important;
-  outline: red solid medium !important;
+  background-color: #e0ffe0 !important;
+  outline: goldenrod solid 2px !important;
   outline-offset: -1px;
   overflow: auto;
   resize: both;
@@ -469,9 +475,10 @@ body, select {
 
 .bee-CellGridEditor {
   position: absolute;
-  color: indigo;
-  background-color: snow;
-  z-index: 512;
+  background-color: #ffc;
+  color: darkblue;
+  outline: red solid 2px;
+  outline-offset: -1px;
 }
 
 .bee-afraid {
@@ -526,14 +533,27 @@ body, select {
   border: 3px ridge #eee;
   border-top-width: 0;
   background-color: #cfc;
-  padding: 5px;
   text-align: center;
   overflow: hidden;
 }
 
-.bee-NotificationText {
+.bee-NotificationMessages {
+  padding: 5px;
   font-family: Verdana;
+}
+.bee-NotificationInfo {
   font-size: 1em;
+}
+.bee-NotificationSevere {
+  background-color: #ffcccc;
+  font-size: 1.4em;
+}
+.bee-NotificationWarning {
+  background-color: yellow;
+  font-size: 1.2em;
+}
+
+.bee-NotificationText {
 }
 
 .gwt-TreeItem-selected {
@@ -595,21 +615,6 @@ body, select {
   background: white;
   color: #333;
   font-weight: bold;
-}
-
-.gwt-DateBox {
-  padding: 5px 4px;
-  border: 1px solid #ccc;
-  border-top: 1px solid #999;
-  font-size: 100%;
-}
-.gwt-DateBox input {
-  width: 8em;
-}
-.dateBoxFormatError {
-  background: #ffcccc;
-}
-.dateBoxPopup {
 }
 
 .gwt-DatePicker {

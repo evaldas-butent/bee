@@ -13,7 +13,7 @@ import com.butent.bee.client.utils.BeeCommand;
 import com.butent.bee.client.utils.JsUtils;
 import com.butent.bee.client.widget.BeeButton;
 import com.butent.bee.client.widget.BeeLabel;
-import com.butent.bee.client.widget.BeeTextArea;
+import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.shared.BeeResource;
 import com.butent.bee.shared.HasId;
 import com.butent.bee.shared.Service;
@@ -28,7 +28,7 @@ public class TextEditor extends Composite implements HasId {
   protected class SaveCommand extends BeeCommand {
     @Override
     public void execute() {
-      BeeTextArea area = getTextArea();
+      InputArea area = getTextArea();
       if (!area.isValueChanged()) {
         Global.inform("Value has not changed", area.getDigest());
         return;
@@ -64,7 +64,7 @@ public class TextEditor extends Composite implements HasId {
     }
   }
 
-  private BeeTextArea textArea = null;
+  private InputArea textArea = null;
   private String uri = null;
 
   public TextEditor(BeeResource resource) {
@@ -96,7 +96,7 @@ public class TextEditor extends Composite implements HasId {
       bottom = 2;
     }
 
-    BeeTextArea area = new BeeTextArea(resource);
+    InputArea area = new InputArea(resource);
     p.add(area);
     p.setWidgetTopBottom(area, top, Unit.EM, bottom, Unit.EM);
 
@@ -115,7 +115,7 @@ public class TextEditor extends Composite implements HasId {
     return DomUtils.getId(this);
   }
 
-  public BeeTextArea getTextArea() {
+  public InputArea getTextArea() {
     return textArea;
   }
 
@@ -127,7 +127,7 @@ public class TextEditor extends Composite implements HasId {
     DomUtils.setId(this, id);
   }
 
-  public void setTextArea(BeeTextArea textArea) {
+  public void setTextArea(InputArea textArea) {
     this.textArea = textArea;
   }
 

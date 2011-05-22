@@ -62,7 +62,8 @@ public class PageResizer extends AbstractPagerImpl {
   }
 
   private int getMaxValue() {
-    return BeeUtils.unbox(getInputWidget().getMaxValue());
+    Number maxValue = getInputWidget().getMaxValue();
+    return (maxValue == null) ? 0 : maxValue.intValue(); 
   }
 
   private int getValue() {

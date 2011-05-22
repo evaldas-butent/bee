@@ -609,6 +609,16 @@ public class BeeUtils {
     }
   }
 
+  public static boolean equalsTrimRight(String s1, String s2) {
+    if (s1 == null) {
+      return isEmpty(s2);
+    } else if (s2 == null) {
+      return isEmpty(s1);
+    } else {
+      return trimRight(s1).equals(trimRight(s2));
+    }
+  }
+  
   /**
    * Raises the value {@code z} to the power of 10.
    * 
@@ -2471,6 +2481,16 @@ public class BeeUtils {
     }
     return toBoolean(s);
   }
+
+  public static char toChar(int x) {
+    if (x < Character.MIN_VALUE) {
+      return Character.MIN_VALUE;
+    }
+    if (x >= Character.MAX_VALUE) {
+      return Character.MAX_VALUE;
+    }
+    return (char) x;
+  }
   
   /**
    * Converts a String value {@code s} to Double.
@@ -2658,7 +2678,7 @@ public class BeeUtils {
     return Long.toString(millis / 1000) + BeeConst.STRING_POINT
         + toLeadingZeroes((int) (millis % 1000), 3);
   }
-
+  
   /**
    * Converts a Boolean value {@code b} to a String value.
    * 
@@ -2667,6 +2687,10 @@ public class BeeUtils {
    */
   public static String toString(boolean b) {
     return b ? BeeConst.STRING_TRUE : BeeConst.STRING_FALSE;
+  }
+  
+  public static String toString(char c) {
+    return new String(new char[] { c });
   }
 
   /**
@@ -2926,6 +2950,48 @@ public class BeeUtils {
   
   public static String trim(String s) {
     return (s == null) ? BeeConst.STRING_EMPTY : s.trim();
+  }
+
+  public static String trimLeft(String s) {
+    if (s == null || s.isEmpty()) {
+      return BeeConst.STRING_EMPTY;
+    }
+    
+    int len = s.length();
+    int pos = 0;
+    
+    while (pos < len && isWhitespace(s.charAt(pos))) {
+      pos++;
+    }
+    
+    if (pos >= len) {
+      return BeeConst.STRING_EMPTY;
+    } else if (pos > 0) {
+      return s.substring(pos);
+    } else {
+      return s;
+    }
+  }
+  
+  public static String trimRight(String s) {
+    if (s == null || s.isEmpty()) {
+      return BeeConst.STRING_EMPTY;
+    }
+    
+    int len = s.length();
+    int pos = len;
+    
+    while (pos > 0 && isWhitespace(s.charAt(pos - 1))) {
+      pos--;
+    }
+    
+    if (pos <= 0) {
+      return BeeConst.STRING_EMPTY;
+    } else if (pos < len) {
+      return s.substring(0, pos);
+    } else {
+      return s;
+    }
   }
 
   /**

@@ -13,6 +13,7 @@ import com.google.gwt.user.client.Event.NativePreviewHandler;
 import com.google.gwt.user.client.ui.Composite;
 
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.utils.Animation;
 import com.butent.bee.client.widget.Html;
@@ -21,8 +22,48 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.LinkedList;
+import java.util.List;
+import java.util.logging.Level;
 
 public class Notification extends Composite implements NativePreviewHandler {
+
+  private class Message {
+    private final Level level;
+    private final List<String> lines;
+
+    private Message(Level level, List<String> lines) {
+      this.level = level;
+      this.lines = lines;
+    }
+
+    private Message(Level level, String... lines) {
+      this(level, Lists.newArrayList(lines));
+    }
+
+    private Level getLevel() {
+      return level;
+    }
+
+    private String getLine(int index) {
+      return getLines().get(index);
+    }
+
+    private int getLineCount() {
+      return getLines().size();
+    }
+
+    private List<String> getLines() {
+      return lines;
+    }
+
+    private String getStyleName() {
+      if (getLevel() == null) {
+        return STYLE_DEFAULT;
+      } else {
+        return "bee-Notification" + BeeUtils.proper(getLevel().getName(), null);
+      }
+    }
+  }
 
   private class MoleAnimation extends Animation {
     private int startSize;
@@ -65,7 +106,9 @@ public class Notification extends Composite implements NativePreviewHandler {
   public static int defaultCloseDuration = 500;
 
   private static final String STYLE_CONTAINER = "bee-NotificationContainer";
+  private static final String STYLE_MESSAGES = "bee-NotificationMessages";
   private static final String STYLE_TEXT = "bee-NotificationText";
+  private static final String STYLE_DEFAULT = "bee-NotificationInfo";
 
   private final DivElement messageContainer = Document.get().createDivElement();
 
@@ -78,7 +121,7 @@ public class Notification extends Composite implements NativePreviewHandler {
 
   private State state = State.PENDING;
 
-  private final LinkedList<String[]> pendingMessages = Lists.newLinkedList();
+  private final LinkedList<Message> pendingMessages = Lists.newLinkedList();
 
   public Notification() {
     messageContainer.setId(DomUtils.createUniqueId("note-messages"));
@@ -96,6 +139,22 @@ public class Notification extends Composite implements NativePreviewHandler {
 
   public void clearPendingMessages() {
     getPendingMessages().clear();
+  }
+
+  public void config(String... lines) {
+    show(Level.CONFIG, lines);
+  }
+
+  public void fine(String... lines) {
+    show(Level.FINE, lines);
+  }
+
+  public void finer(String... lines) {
+    show(Level.FINER, lines);
+  }
+
+  public void finest(String... lines) {
+    show(Level.FINEST, lines);
   }
 
   public void hide() {
@@ -118,6 +177,10 @@ public class Notification extends Composite implements NativePreviewHandler {
     }
   }
 
+  public void info(String... lines) {
+    show(Level.INFO, lines);
+  }
+
   public void onPreviewNativeEvent(NativePreviewEvent event) {
     Assert.notNull(event);
     String type = event.getNativeEvent().getType();
@@ -127,7 +190,7 @@ public class Notification extends Composite implements NativePreviewHandler {
       hide();
     }
   }
-  
+
   public void setCloseDuration(int duration) {
     this.closeDuration = duration;
   }
@@ -136,15 +199,27 @@ public class Notification extends Composite implements NativePreviewHandler {
     this.openDuration = duration;
   }
 
-  public void show(String... messages) {
-    Assert.notNull(messages);
-    Assert.parameterCount(messages.length, 1);
+  public void severe(String... lines) {
+    show(Level.SEVERE, lines);
+  }
+
+  public void show(Level level, String... lines) {
+    Assert.notNull(level);
+    Assert.notNull(lines);
+    Assert.parameterCount(lines.length, 1);
+
+    Message message = new Message(level, lines);
+
     if (State.PENDING.equals(getState())) {
-      setMessage(messages);
+      setMessage(message);
       openDisplay();
     } else {
-      getPendingMessages().add(messages);
+      getPendingMessages().add(message);
     }
+  }
+
+  public void warning(String... lines) {
+    show(Level.WARNING, lines);
   }
 
   @Override
@@ -183,7 +258,7 @@ public class Notification extends Composite implements NativePreviewHandler {
     return openDuration;
   }
 
-  private LinkedList<String[]> getPendingMessages() {
+  private LinkedList<Message> getPendingMessages() {
     return pendingMessages;
   }
 
@@ -205,12 +280,12 @@ public class Notification extends Composite implements NativePreviewHandler {
     getAnimation().animate(0, getMessageContainer().getOffsetHeight(), getOpenDuration(),
         State.SHOWING);
   }
-  
-  private void setMessage(String... messages) {
-    Assert.notNull(messages);
+
+  private void setMessage(Message message) {
+    Assert.notNull(message);
     int oldCount = getMessageContainer().getChildCount();
     int pendingCount = getPendingMessages().size();
-    int newCount = messages.length;
+    int newCount = message.getLineCount();
     if (pendingCount > 0) {
       newCount++;
     }
@@ -232,44 +307,47 @@ public class Notification extends Composite implements NativePreviewHandler {
     }
 
     if (newCount > 0) {
-      for (int i = 0; i < messages.length; i++) {
-        Element.as(getMessageContainer().getChild(i)).setInnerHTML(messages[i]);
+      for (int i = 0; i < message.getLineCount(); i++) {
+        Element.as(getMessageContainer().getChild(i)).setInnerHTML(message.getLine(i));
       }
       if (pendingCount > 0) {
         String msg = BeeUtils.concat(1, BeeUtils.bracket(pendingCount), "pending...");
         Element.as(getMessageContainer().getLastChild()).setInnerHTML(msg);
       }
+
+      getMessageContainer().setClassName(
+          StyleUtils.buildClasses(STYLE_MESSAGES, message.getStyleName()));
     }
   }
-  
+
   private void setPreviewReg(HandlerRegistration previewReg) {
     this.previewReg = previewReg;
   }
-  
+
   private void setState(State state) {
     Assert.notNull(state, "notification state can not be null");
     this.state = state;
-    
+
     switch (state) {
       case PENDING:
         hideDisplay();
-        String[] message = getPendingMessages().poll();
+        Message message = getPendingMessages().poll();
         if (message != null) {
           setMessage(message);
           openDisplay();
         }
         break;
-      
+
       case SHOWING:
         if (getPreviewReg() == null) {
           setPreviewReg(Event.addNativePreviewHandler(this));
         }
         break;
-      
+
       case CLOSING:
         closePreview();
         break;
-        
+
       default:
     }
   }

@@ -1,5 +1,6 @@
 package com.butent.bee.client.cli;
 
+import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
@@ -851,6 +852,38 @@ public class CliWorker {
       table.setWidget(r, 1, new Meter(min, max, i, low, high, optimum));
     }
     BeeKeeper.getUi().updateActivePanel(table, ScrollBars.BOTH);
+  }
+  
+  public static void showNotes(String args) {
+    if (BeeUtils.isEmpty(args)) {
+      Global.sayHuh(args);
+      return;
+    }
+    
+    for (String msg : Splitter.on(';').omitEmptyStrings().trimResults().split(args)) {
+      List<String> lst = Lists.newArrayList();
+      for (String line : Splitter.on(',').trimResults().split(msg)) {
+        lst.add(line);
+      }
+      int c = lst.size();
+      if (c <= 0) {
+        continue;
+      }
+      
+      String lvl = lst.get(0);
+      String[] arr = new String[0];
+      if (c > 1 && BeeUtils.inListSame(lvl, "w", "e", "s")) {
+        arr = lst.subList(1, c).toArray(arr);
+        if (BeeUtils.same(lvl, "w")) {
+          BeeKeeper.getUi().notifyWarning(arr);
+        } else {
+          BeeKeeper.getUi().notifySevere(arr);
+        }
+
+      } else {
+        BeeKeeper.getUi().notifyInfo(lst.toArray(arr));
+      }
+    }
   }
 
   public static void showProgress(String[] arr) {

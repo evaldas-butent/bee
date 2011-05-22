@@ -1,13 +1,11 @@
 package com.butent.bee.client.widget;
 
-import com.google.gwt.event.dom.client.KeyPressEvent;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.TextArea;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.HasAfterSaveHandler;
-import com.butent.bee.client.event.HasBeeKeyHandler;
 import com.butent.bee.client.event.HasBeeValueChangeHandler;
 import com.butent.bee.client.utils.JsUtils;
 import com.butent.bee.client.view.edit.Editor;
@@ -16,22 +14,25 @@ import com.butent.bee.shared.HasStringValue;
 import com.butent.bee.shared.utils.BeeUtils;
 
 /**
- * Implements a text box that allows multiple lines of text to be entered.
+ * Implements a text area that allows multiple lines of text to be entered.
  */
 
-public class BeeTextArea extends TextArea implements Editor, HasBeeKeyHandler,
-    HasBeeValueChangeHandler<String>, HasAfterSaveHandler {
+public class InputArea extends TextArea implements Editor, HasBeeValueChangeHandler<String>, HasAfterSaveHandler {
 
   private HasStringValue source = null;
+
   private BeeResource resource = null;
+  
   private String digest = null;
 
-  public BeeTextArea() {
+  private boolean nullable = true;
+  
+  public InputArea() {
     super();
     init();
   }
 
-  public BeeTextArea(BeeResource resource) {
+  public InputArea(BeeResource resource) {
     this();
     this.resource = resource;
 
@@ -41,12 +42,12 @@ public class BeeTextArea extends TextArea implements Editor, HasBeeKeyHandler,
     }
   }
 
-  public BeeTextArea(Element element) {
+  public InputArea(Element element) {
     super(element);
     init();
   }
 
-  public BeeTextArea(HasStringValue source) {
+  public InputArea(HasStringValue source) {
     this();
     setSource(source);
 
@@ -68,12 +69,25 @@ public class BeeTextArea extends TextArea implements Editor, HasBeeKeyHandler,
     return DomUtils.getId(this);
   }
 
+  public String getNormalizedValue() {
+    String v = getValue();
+    if (BeeUtils.isEmpty(v) && isNullable()) {
+      return null;
+    } else {
+      return BeeUtils.trimRight(v);
+    }
+  }
+
   public BeeResource getResource() {
     return resource;
   }
-
+  
   public HasStringValue getSource() {
     return source;
+  }
+
+  public boolean isNullable() {
+    return nullable;
   }
 
   public boolean isValueChanged() {
@@ -88,17 +102,13 @@ public class BeeTextArea extends TextArea implements Editor, HasBeeKeyHandler,
       return !d.equals(JsUtils.md5(v));
     }
   }
-
+  
   public void onAfterSave(String opt) {
     if (BeeUtils.isEmpty(opt)) {
       updateDigest();
     } else {
       setDigest(opt);
     }
-  }
-
-  public boolean onBeeKey(KeyPressEvent event) {
-    return true;
   }
 
   public boolean onValueChange(String value) {
@@ -116,10 +126,14 @@ public class BeeTextArea extends TextArea implements Editor, HasBeeKeyHandler,
     DomUtils.setId(this, id);
   }
 
+  public void setNullable(boolean nullable) {
+    this.nullable = nullable;
+  }
+
   public void setResource(BeeResource resource) {
     this.resource = resource;
   }
-
+  
   public void setSource(HasStringValue source) {
     this.source = source;
   }
@@ -130,10 +144,22 @@ public class BeeTextArea extends TextArea implements Editor, HasBeeKeyHandler,
     updateDigest(getValue());
   }
 
+  public void startEdit(String oldValue, char charCode) {
+    if (Character.isLetterOrDigit(charCode) && BeeUtils.length(oldValue) < 20) {
+      setValue(BeeUtils.toString(charCode));
+    } else {
+      String v = BeeUtils.trimRight(oldValue);
+      setValue(v);
+      if (!BeeUtils.isEmpty(v)) {
+        setSelectionRange(0, v.length());
+      }
+    }
+  }
+
   public String updateDigest() {
     return updateDigest(getValue());
   }
-
+  
   public String updateDigest(String value) {
     if (BeeUtils.isEmpty(value)) {
       setDigest(null);
@@ -143,13 +169,16 @@ public class BeeTextArea extends TextArea implements Editor, HasBeeKeyHandler,
     return getDigest();
   }
 
+  public boolean validate() {
+    return true;
+  }
+
   private void addDefaultHandlers() {
-    BeeKeeper.getBus().addKeyHandler(this);
     BeeKeeper.getBus().addStringVch(this);
   }
 
   private void init() {
-    setStyleName("bee-TextArea");
+    setStyleName("bee-InputArea");
     createId();
     addDefaultHandlers();
   }

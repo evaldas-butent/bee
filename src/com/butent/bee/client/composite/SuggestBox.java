@@ -26,7 +26,6 @@ import com.google.gwt.user.client.ui.SuggestOracle.Callback;
 import com.google.gwt.user.client.ui.SuggestOracle.Request;
 import com.google.gwt.user.client.ui.SuggestOracle.Response;
 import com.google.gwt.user.client.ui.SuggestOracle.Suggestion;
-import com.google.gwt.user.client.ui.TextBoxBase;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.dialog.BeePopupPanel;
@@ -36,8 +35,10 @@ import com.butent.bee.client.menu.MenuBar;
 import com.butent.bee.client.menu.MenuCommand;
 import com.butent.bee.client.menu.MenuItem;
 import com.butent.bee.client.view.edit.Editor;
-import com.butent.bee.client.widget.BeeTextBox;
+import com.butent.bee.client.widget.InputText;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
 import java.util.List;
@@ -225,7 +226,7 @@ public class SuggestBox extends Composite implements HasText, HasAllKeyHandlers,
   private SuggestOracle oracle;
   
   private final SuggestionDisplay display;
-  private final TextBoxBase box;
+  private final InputText box;
 
   private final Callback callback = new Callback() {
     public void onSuggestionsReady(Request request, Response response) {
@@ -245,14 +246,14 @@ public class SuggestBox extends Composite implements HasText, HasAllKeyHandlers,
   }
 
   public SuggestBox(SuggestOracle oracle) {
-    this(oracle, new BeeTextBox());
+    this(oracle, new InputText());
   }
 
-  public SuggestBox(SuggestOracle oracle, TextBoxBase box) {
+  public SuggestBox(SuggestOracle oracle, InputText box) {
     this(oracle, box, new SuggestionDisplay());
   }
 
-  public SuggestBox(SuggestOracle oracle, TextBoxBase box, SuggestionDisplay suggestDisplay) {
+  public SuggestBox(SuggestOracle oracle, InputText box, SuggestionDisplay suggestDisplay) {
     this.box = box;
     this.display = suggestDisplay;
     initWidget(box);
@@ -299,10 +300,14 @@ public class SuggestBox extends Composite implements HasText, HasAllKeyHandlers,
     return limit;
   }
 
+  public String getNormalizedValue() {
+    return getBox().getNormalizedValue();
+  }
+
   public SuggestionDisplay getSuggestionDisplay() {
     return display;
   }
-
+  
   public SuggestOracle getSuggestOracle() {
     return oracle;
   }
@@ -315,16 +320,16 @@ public class SuggestBox extends Composite implements HasText, HasAllKeyHandlers,
     return box.getText();
   }
 
-  public TextBoxBase getTextBox() {
-    return box;
-  }
-
   public String getValue() {
     return box.getValue();
   }
 
   public boolean isAutoSelectEnabled() {
     return selectsFirstItem;
+  }
+
+  public boolean isNullable() {
+    return getBox().isNullable();
   }
 
   public void setAccessKey(char key) {
@@ -345,6 +350,10 @@ public class SuggestBox extends Composite implements HasText, HasAllKeyHandlers,
 
   public void setLimit(int limit) {
     this.limit = limit;
+  }
+
+  public void setNullable(boolean nullable) {
+    getBox().setNullable(nullable);
   }
 
   public void setTabIndex(int index) {
@@ -368,6 +377,18 @@ public class SuggestBox extends Composite implements HasText, HasAllKeyHandlers,
       currentText = null;
       refreshSuggestions();
     }
+  }
+
+  public void startEdit(String oldValue, char charCode) {
+    if (Character.isLetterOrDigit(charCode)) {
+      setValue(BeeUtils.toString(charCode));
+    } else {
+      setValue(BeeConst.STRING_EMPTY);
+    }
+  }
+
+  public boolean validate() {
+    return getBox().validate();
   }
 
   private void addEventsToTextBox() {
@@ -412,9 +433,13 @@ public class SuggestBox extends Composite implements HasText, HasAllKeyHandlers,
     events.addKeyHandlersTo(box);
     box.addValueChangeHandler(events);
   }
-
+  
   private void fireSuggestionEvent(Suggestion selectedSuggestion) {
     SelectionEvent.fire(this, selectedSuggestion);
+  }
+
+  private InputText getBox() {
+    return box;
   }
 
   private void refreshSuggestions() {

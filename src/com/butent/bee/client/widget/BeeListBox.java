@@ -28,6 +28,8 @@ public class BeeListBox extends ListBox implements Editor, HasBeeChangeHandler {
   private HasStringValue source = null;
 
   private boolean valueChangeHandlerInitialized = false;
+
+  private boolean nullable = true;
   
   public BeeListBox() {
     super();
@@ -109,12 +111,25 @@ public class BeeListBox extends ListBox implements Editor, HasBeeChangeHandler {
     return index;
   }
 
+  public String getNormalizedValue() {
+    String v = getValue();
+    if (BeeUtils.isEmpty(v) && isNullable()) {
+      return null;
+    } else {
+      return BeeUtils.trimRight(v);
+    }
+  }
+
   public HasStringValue getSource() {
     return source;
   }
-
+  
   public String getValue() {
     return getValue(getSelectedIndex());
+  }
+
+  public boolean isNullable() {
+    return nullable;
   }
 
   public boolean onChange() {
@@ -123,7 +138,7 @@ public class BeeListBox extends ListBox implements Editor, HasBeeChangeHandler {
     }
     return true;
   }
-
+  
   public void setAllVisible() {
     int cnt = getItemCount();
     if (cnt > 0) {
@@ -135,10 +150,14 @@ public class BeeListBox extends ListBox implements Editor, HasBeeChangeHandler {
     DomUtils.setId(this, id);
   }
 
+  public void setNullable(boolean nullable) {
+    this.nullable = nullable;
+  }
+
   public void setSource(HasStringValue source) {
     this.source = source;
   }
-
+  
   public void setValue(String value) {
     setValue(value, false);
   }
@@ -151,6 +170,13 @@ public class BeeListBox extends ListBox implements Editor, HasBeeChangeHandler {
     }
   }
 
+  public void startEdit(String oldValue, char charCode) {
+  }
+
+  public boolean validate() {
+    return true;
+  }
+  
   private void addDefaultHandlers() {
     BeeKeeper.getBus().addVch(this);
   }

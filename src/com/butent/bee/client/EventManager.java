@@ -3,7 +3,6 @@ package com.butent.bee.client;
 import com.google.gwt.event.dom.client.BlurEvent;
 import com.google.gwt.event.dom.client.HasChangeHandlers;
 import com.google.gwt.event.dom.client.HasClickHandlers;
-import com.google.gwt.event.dom.client.HasKeyPressHandlers;
 import com.google.gwt.event.logical.shared.HasValueChangeHandlers;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.web.bindery.event.shared.Event;
@@ -14,7 +13,6 @@ import com.google.web.bindery.event.shared.SimpleEventBus;
 import com.butent.bee.client.event.BeeBlurHandler;
 import com.butent.bee.client.event.BeeChangeHandler;
 import com.butent.bee.client.event.BeeClickHandler;
-import com.butent.bee.client.event.BeeKeyPressHandler;
 import com.butent.bee.client.event.BeeValueChangeHandler;
 import com.butent.bee.client.ui.CompositeService;
 import com.butent.bee.client.utils.XmlUtils;
@@ -32,7 +30,6 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 public class EventManager implements Module {
   private BeeClickHandler clickHandler = null;
-  private BeeKeyPressHandler keyHandler = null;
 
   private BeeValueChangeHandler<Boolean> boolVch = null;
   private BeeValueChangeHandler<String> stringVch = null;
@@ -83,11 +80,6 @@ public class EventManager implements Module {
   public void addIntVch(HasValueChangeHandlers<Integer> w) {
     Assert.notNull(w);
     w.addValueChangeHandler(ensureIntVch());
-  }
-
-  public void addKeyHandler(HasKeyPressHandlers w) {
-    Assert.notNull(w);
-    w.addKeyPressHandler(ensureKeyHandler());
   }
 
   public void addStringVch(HasValueChangeHandlers<String> w) {
@@ -355,13 +347,6 @@ public class EventManager implements Module {
       intVch = new BeeValueChangeHandler<Integer>();
     }
     return intVch;
-  }
-
-  private BeeKeyPressHandler ensureKeyHandler() {
-    if (keyHandler == null) {
-      keyHandler = new BeeKeyPressHandler();
-    }
-    return keyHandler;
   }
 
   private BeeValueChangeHandler<String> ensureStringVch() {
