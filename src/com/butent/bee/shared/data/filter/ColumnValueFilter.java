@@ -34,14 +34,9 @@ public class ColumnValueFilter extends ComparisonFilter {
   }
 
   protected ColumnValueFilter(String column, Operator operator, Value value) {
-    super(operator);
+    super(operator == Operator.LIKE && value.getType() != ValueType.TEXT ? Operator.EQ : operator);
     Assert.notEmpty(column);
     Assert.notNull(value);
-
-    if (Operator.LIKE == operator) {
-      Assert.state(ValueType.TEXT == value.getType(),
-          "Operator " + operator.toTextString() + " can only be used with TEXT values");
-    }
     this.column = column;
     this.value = value;
   }

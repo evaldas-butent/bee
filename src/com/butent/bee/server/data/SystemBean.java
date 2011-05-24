@@ -1,7 +1,6 @@
 package com.butent.bee.server.data;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -621,11 +620,16 @@ public class SystemBean {
 
   public BeeState getState(String stateName) {
     Assert.state(isState(stateName), "Not a state: " + stateName);
-    return stateCache.get(stateName);
+    return stateCache.get(stateName.toLowerCase());
   }
 
   public Collection<String> getTableNames() {
-    return ImmutableSet.copyOf(tableCache.keySet());
+    Collection<String> tables = Lists.newArrayList();
+
+    for (BeeTable table : getTables()) {
+      tables.add(table.getName());
+    }
+    return tables;
   }
 
   public Collection<String> getTableStates(String tblName) {
@@ -639,7 +643,7 @@ public class SystemBean {
 
   public BeeView getView(String viewName) {
     Assert.state(isView(viewName) || isTable(viewName), "Not a view: " + viewName);
-    BeeView view = viewCache.get(viewName);
+    BeeView view = viewCache.get(viewName.toLowerCase());
 
     if (BeeUtils.isEmpty(view)) {
       view = getDefaultView(viewName, true);
@@ -721,7 +725,12 @@ public class SystemBean {
   }
 
   public Collection<String> getViewNames() {
-    return ImmutableSet.copyOf(viewCache.keySet());
+    Collection<String> views = Lists.newArrayList();
+
+    for (BeeView view : viewCache.values()) {
+      views.add(view.getName());
+    }
+    return views;
   }
 
   public SqlSelect getViewQuery(String viewName) {
@@ -791,15 +800,15 @@ public class SystemBean {
   }
 
   public boolean isState(String stateName) {
-    return stateCache.containsKey(stateName);
+    return !BeeUtils.isEmpty(stateName) && stateCache.containsKey(stateName.toLowerCase());
   }
 
   public boolean isTable(String tblName) {
-    return tableCache.containsKey(tblName);
+    return !BeeUtils.isEmpty(tblName) && tableCache.containsKey(tblName.toLowerCase());
   }
 
   public boolean isView(String viewName) {
-    return viewCache.containsKey(viewName);
+    return !BeeUtils.isEmpty(viewName) && viewCache.containsKey(viewName.toLowerCase());
   }
 
   public String joinExtField(HasFrom<?> query, String tblName, String tblAlias, String fldName) {
@@ -912,16 +921,15 @@ public class SystemBean {
       response.addError("view " + viewName + " is read only.");
       return response;
     }
-    
+
     String tblName = view.getSource();
     BeeTable table = getTable(tblName);
-    BeeField field = table.findField(columnId);
 
-    if (field == null) {
+    if (!table.hasField(columnId)) {
       response.addError("table " + tblName + " does not contain column " + columnId);
       return response;
     }
-    
+    BeeField field = table.getField(columnId);
     String fieldName = field.getName();
     DataType type = field.getType();
 
@@ -937,16 +945,16 @@ public class SystemBean {
     int res = qs.updateData(su.setWhere(wh));
 
     if (res == 0) {
-      SimpleRowSet rs = 
-        qs.getData(new SqlSelect().addFields(tblName, fieldName).addFrom(tblName).setWhere(idWh));
-      
+      SimpleRowSet rs =
+          qs.getData(new SqlSelect().addFields(tblName, fieldName).addFrom(tblName).setWhere(idWh));
+
       if (rs != null && rs.getNumberOfRows() == 1) {
         if (BeeUtils.same(oldValue, rs.getValue(0, 0))) {
           res = qs.updateData(su.setWhere(idWh));
         }
       }
     }
-    
+
     if (res <= 0) {
       String message = (res < 0) ? "Error updating data" : "Optimistic lock exception";
       response.addError(message);
@@ -958,11 +966,11 @@ public class SystemBean {
         UserServiceBean.USER_ROLES_TABLE)) {
       usr.invalidateCache();
     }
-  
+
     response.setResponse(newVersion);
     return response;
   }
-  
+
   public SqlSelect verifyStates(SqlSelect query, String tblName, String tblAlias, String... states) {
     Assert.notNull(query);
 
@@ -1104,7 +1112,7 @@ public class SystemBean {
 
   private BeeTable getTable(String tblName) {
     Assert.state(isTable(tblName), "Not a base table: " + tblName);
-    return tableCache.get(tblName);
+    return tableCache.get(tblName.toLowerCase());
   }
 
   private BeeField getTableField(String tblName, String fldName) {
@@ -1292,7 +1300,7 @@ public class SystemBean {
     Collection<BeeTable> data = Lists.newArrayList();
     Element root = xml.getDocumentElement();
     NodeList tables = root.getElementsByTagName("BeeTable");
-    
+
     String defaultVersionColumn = Config.getProperty("DefaultVersionColumn");
 
     for (int i = 0; i < tables.getLength(); i++) {
@@ -1439,19 +1447,19 @@ public class SystemBean {
 
   private void registerState(BeeState state) {
     if (!BeeUtils.isEmpty(state)) {
-      stateCache.put(state.getName(), state);
+      stateCache.put(state.getName().toLowerCase(), state);
     }
   }
 
   private void registerTable(BeeTable table) {
     if (!BeeUtils.isEmpty(table)) {
-      tableCache.put(table.getName(), table);
+      tableCache.put(table.getName().toLowerCase(), table);
     }
   }
 
   private void registerView(BeeView view) {
     if (!BeeUtils.isEmpty(view)) {
-      viewCache.put(view.getName(), view);
+      viewCache.put(view.getName().toLowerCase(), view);
     }
   }
 }

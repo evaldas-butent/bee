@@ -812,18 +812,6 @@ class BeeTable implements HasExtFields, HasStates, HasTranslations {
   public SqlCreate createTranslationTable(SqlCreate query, BeeField field) {
     return translationSource.createTranslationTable(query, field);
   }
-  
-  public BeeField findField(String fldName) {
-    if (BeeUtils.isEmpty(fldName)) {
-      return null;
-    }
-    for (Map.Entry<String, BeeField> entry : fields.entrySet()) {
-      if (BeeUtils.same(entry.getKey(), fldName)) {
-        return entry.getValue();
-      }
-    }
-    return null;
-  }
 
   @Override
   public String getExtTable(BeeField field) {
@@ -832,7 +820,7 @@ class BeeTable implements HasExtFields, HasStates, HasTranslations {
 
   public BeeField getField(String fldName) {
     Assert.state(hasField(fldName), BeeUtils.concat(1, "Unknown field name:", getName(), fldName));
-    return fields.get(fldName);
+    return fields.get(fldName.toLowerCase());
   }
 
   public Collection<BeeField> getFields() {
@@ -890,14 +878,14 @@ class BeeTable implements HasExtFields, HasStates, HasTranslations {
   }
 
   public boolean hasField(String fldName) {
-    return fields.containsKey(fldName);
+    return !BeeUtils.isEmpty(fldName) && fields.containsKey(fldName.toLowerCase());
   }
 
   public boolean hasField(BeeField field) {
-    if (BeeUtils.isEmpty(field)) {
+    if (BeeUtils.isEmpty(field) || !hasField(field.getName())) {
       return false;
     }
-    return fields.get(field.getName()) == field;
+    return getField(field.getName()) == field;
   }
 
   public boolean hasState(BeeState state) {
@@ -997,7 +985,7 @@ class BeeTable implements HasExtFields, HasStates, HasTranslations {
 
     Assert.state(!hasField(fieldName),
         BeeUtils.concat(1, "Dublicate field name:", getName(), fieldName));
-    fields.put(fieldName, field);
+    fields.put(fieldName.toLowerCase(), field);
 
     return field;
   }
@@ -1072,7 +1060,7 @@ class BeeTable implements HasExtFields, HasStates, HasTranslations {
   private void dropCustom() {
     for (BeeField field : Lists.newArrayList(getFields())) {
       if (field.isCustom()) {
-        fields.remove(field.getName());
+        fields.remove(field.getName().toLowerCase());
       }
     }
     for (BeeKey key : Lists.newArrayList(getKeys())) {

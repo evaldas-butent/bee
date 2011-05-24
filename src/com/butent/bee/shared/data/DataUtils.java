@@ -130,8 +130,10 @@ public class DataUtils {
             operator = Operator.EQ;
           }
         }
-        if (isColumn(value, columns)) {
-          flt = ComparisonFilter.compareWithColumn(colName, operator, value);
+        IsColumn column2 = isColumn(value, columns);
+
+        if (column2 != null) {
+          flt = ComparisonFilter.compareWithColumn(column, operator, column2);
 
         } else {
           value = value.replaceFirst("^\"(.*)\"$", "$1") // Unquote
@@ -140,15 +142,14 @@ public class DataUtils {
           if (BeeUtils.isEmpty(value)) {
             flt = new ColumnIsEmptyFilter(colName);
           } else {
-            flt = ComparisonFilter.compareWithValue(colName, operator,
-                  BeeUtils.isNumeric(value) ? BeeUtils.toDouble(value) : value);
+            flt = ComparisonFilter.compareWithValue(column, operator, value);
           }
         }
-        if (notMode) {
+        if (notMode && flt != null) {
           flt = new NegationFilter(flt);
         }
       } else {
-        LogUtils.warning(LogUtils.getDefaultLogger(), "Wrong condition expression: " + expr);
+        LogUtils.warning(LogUtils.getDefaultLogger(), "Unknown column in expression: " + expr);
       }
     }
     return flt;
@@ -204,15 +205,15 @@ public class DataUtils {
     return parts;
   }
 
-  private static boolean isColumn(String expr, List<? extends IsColumn> columns) {
+  private static IsColumn isColumn(String expr, List<? extends IsColumn> columns) {
     if (!BeeUtils.isEmpty(expr) && !BeeUtils.isEmpty(columns)) {
-      for (IsColumn column : columns) {
-        if (BeeUtils.same(column.getId(), expr)) {
-          return true;
+      for (IsColumn col : columns) {
+        if (BeeUtils.same(col.getId(), expr)) {
+          return col;
         }
       }
     }
-    return false;
+    return null;
   }
 
   private static boolean validPart(String expr) {

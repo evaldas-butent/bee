@@ -47,7 +47,7 @@ public class GridHolderBean {
 
   public BeeGrid getGrid(String gridName) {
     Assert.state(isGrid(gridName), "Not a grid: " + gridName);
-    return gridCache.get(gridName);
+    return gridCache.get(gridName.toLowerCase());
   }
 
   public void initGrids() {
@@ -55,10 +55,13 @@ public class GridHolderBean {
   }
 
   public boolean isGrid(String gridName) {
-    if (!gridCache.containsKey(gridName)) {
+    if (BeeUtils.isEmpty(gridName)) {
+      return false;
+    }
+    if (!gridCache.containsKey(gridName.toLowerCase())) {
       initGrid(gridName);
     }
-    return gridCache.containsKey(gridName);
+    return gridCache.containsKey(gridName.toLowerCase());
   }
 
   @SuppressWarnings("unused")
@@ -194,7 +197,7 @@ public class GridHolderBean {
 
   private void registerGrid(BeeGrid grid) {
     if (!BeeUtils.isEmpty(grid)) {
-      gridCache.put(grid.getName(), grid);
+      gridCache.put(grid.getName().toLowerCase(), grid);
     }
   }
 }

@@ -1,5 +1,6 @@
 package com.butent.bee.shared.ui;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 import com.butent.bee.shared.Assert;
@@ -7,6 +8,7 @@ import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -317,13 +319,11 @@ public class BeeGrid implements BeeSerializable {
     return columns.size();
   }
 
-  public String[] getColumns() {
-    int i = 0;
-    int cnt = getColumnCount();
-    String[] cols = new String[cnt];
+  public Collection<String> getColumns() {
+    Collection<String> cols = Lists.newArrayList();
 
     for (GridColumn col : columns.values()) {
-      cols[i++] = col.colName;
+      cols.add(col.colName);
     }
     return cols;
   }
@@ -361,8 +361,7 @@ public class BeeGrid implements BeeSerializable {
   }
 
   public boolean hasColumn(String colName) {
-    Assert.notEmpty(colName);
-    return columns.containsKey(colName.toLowerCase());
+    return !BeeUtils.isEmpty(colName) && columns.containsKey(colName.toLowerCase());
   }
 
   public boolean isEmpty() {

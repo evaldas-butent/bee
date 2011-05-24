@@ -1,7 +1,11 @@
 package com.butent.bee.shared.data.filter;
 
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.value.Value;
+import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.LogUtils;
 
 import java.util.StringTokenizer;
 
@@ -13,12 +17,26 @@ import java.util.StringTokenizer;
 
 public abstract class ComparisonFilter extends Filter {
 
-  public static Filter compareWithColumn(String firstColumn, Operator operator, String secondColumn) {
-    return new ColumnColumnFilter(firstColumn, operator, secondColumn);
+  public static Filter compareWithColumn(IsColumn left, Operator op, IsColumn right) {
+    Assert.noNulls(left, right);
+    String leftColumn = left.getId();
+    ValueType leftType = left.getType();
+    String rightColumn = right.getId();
+    ValueType rightType = right.getType();
+
+    if (leftType != rightType) {
+      LogUtils.warning(LogUtils.getDefaultLogger(),
+          "Incompatible column types: " +
+              leftColumn + BeeUtils.parenthesize(leftType) + " AND " +
+              rightColumn + BeeUtils.parenthesize(rightType));
+      return null;
+    }
+    return new ColumnColumnFilter(leftColumn, op, rightColumn);
   }
 
-  public static Filter compareWithValue(String column, Operator operator, Object value) {
-    return new ColumnValueFilter(column, operator, Value.getValue(value));
+  public static Filter compareWithValue(IsColumn column, Operator op, String value) {
+    Assert.notNull(column);
+    return new ColumnValueFilter(column.getId(), op, Value.parseValue(column.getType(), value));
   }
 
   private Operator operator;

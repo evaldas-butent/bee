@@ -74,7 +74,7 @@ public class IdGeneratorBean {
 
     long[] ids = idCache.get(source);
 
-    if (BeeUtils.isEmpty(ids) || ids[NEXT_ID_INDEX] == ids[LAST_ID_INDEX]) {
+    if (BeeUtils.isEmpty(ids) || ids[NEXT_ID_INDEX] >= ids[LAST_ID_INDEX]) {
       ids = prepareId(source);
     }
     return ++ids[NEXT_ID_INDEX];
@@ -88,23 +88,25 @@ public class IdGeneratorBean {
             SqlUtils.expression(SqlUtils.name(ID_LAST), "+", SqlUtils.constant(idChunk)))
         .setWhere(wh);
 
+    long lastId;
+
     if (BeeUtils.isEmpty(qs.updateData(su))) {
       String idFld = sys.getIdName(source);
 
-      long lastId = qs.getLong(new SqlSelect().addMax(source, idFld).addFrom(source));
+      lastId = qs.getLong(new SqlSelect().addMax(source, idFld).addFrom(source));
 
       SqlInsert si = new SqlInsert(ID_TABLE);
 
       if (BeeUtils.same(source, ID_TABLE)) {
-        lastId = 1;
+        lastId++;
         si.addConstant(idFld, lastId);
       }
-      si.addConstant(ID_KEY, source).addConstant(ID_LAST, lastId + idChunk);
+      si.addConstant(ID_KEY, source).addConstant(ID_LAST, lastId += idChunk);
       qs.insertData(si);
+    } else {
+      lastId = qs.getLong(new SqlSelect()
+          .addFields(ID_TABLE, ID_LAST).addFrom(ID_TABLE).setWhere(wh));
     }
-    long lastId = qs.getLong(new SqlSelect()
-        .addFields(ID_TABLE, ID_LAST).addFrom(ID_TABLE).setWhere(wh));
-
     long[] ids = new long[2];
     ids[NEXT_ID_INDEX] = lastId - idChunk;
     ids[LAST_ID_INDEX] = lastId;

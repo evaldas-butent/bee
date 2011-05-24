@@ -1,5 +1,6 @@
 package com.butent.bee.server.data;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 import com.butent.bee.server.data.BeeTable.BeeField;
@@ -21,10 +22,9 @@ import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.LogUtils;
 
-import java.util.Collections;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Implements database view management - contains parameters for views and their fields and methods
@@ -87,9 +87,10 @@ public class BeeView {
   }
 
   private static final String JOIN_MASK = "-<>+";
-  private static final int EXPRESSION = 0;
-  private static final int LOCALE = 1;
-  private static final int ALIAS = 2;
+  private static final int NAME = 0;
+  private static final int EXPRESSION = 1;
+  private static final int LOCALE = 2;
+  private static final int LOCALE_ALIAS = 3;
 
   private final String name;
   private final String source;
@@ -123,8 +124,13 @@ public class BeeView {
     return columns.size();
   }
 
-  public Set<String> getColumns() {
-    return Collections.unmodifiableSet(columns.keySet());
+  public Collection<String> getColumns() {
+    Collection<String> cols = Lists.newArrayList();
+
+    for (String[] col : columns.values()) {
+      cols.add(col[NAME]);
+    }
+    return cols;
   }
 
   public IsCondition getCondition(ColumnValueFilter filter) {
@@ -293,8 +299,7 @@ public class BeeView {
   }
 
   public boolean hasColumn(String colName) {
-    Assert.notEmpty(colName);
-    return columns.containsKey(colName.toLowerCase());
+    return !BeeUtils.isEmpty(colName) && columns.containsKey(colName.toLowerCase());
   }
 
   public boolean isEmpty() {
@@ -318,7 +323,11 @@ public class BeeView {
     Assert.state(!hasColumn(colName),
         BeeUtils.concat(1, "Dublicate column name:", getName(), colName));
 
-    columns.put(colName.toLowerCase(), new String[] {expression, locale, null});
+    String[] colInfo = new String[4];
+    colInfo[NAME] = colName;
+    colInfo[EXPRESSION] = expression;
+    colInfo[LOCALE] = locale;
+    columns.put(colName.toLowerCase(), colInfo);
     loadField(expression, tables);
   }
 
@@ -333,15 +342,15 @@ public class BeeView {
   }
 
   private String getLocaleAlias(String colName) {
-    return getColumnInfo(colName)[ALIAS];
+    return getColumnInfo(colName)[LOCALE_ALIAS];
   }
 
   private ViewField getViewField(String colName) {
-    return expressions.get(getExpression(colName));
+    return expressions.get(getExpression(colName).toLowerCase());
   }
 
   private void loadField(String expression, Map<String, BeeTable> tables) {
-    if (expressions.containsKey(expression)) {
+    if (expressions.containsKey(expression.toLowerCase())) {
       return;
     }
     char joinMode = 0;
@@ -369,9 +378,9 @@ public class BeeView {
       als = tbl;
     } else {
       loadField(xpr, tables);
-      ViewField vf = expressions.get(xpr);
+      ViewField vf = expressions.get(xpr.toLowerCase());
       als = vf.getTargetAlias();
-      tbl = tables.get(vf.getTable()).getField(vf.getField()).getRelation();
+      tbl = tables.get(vf.getTable().toLowerCase()).getField(vf.getField()).getRelation();
       Assert.notEmpty(tbl,
           BeeUtils.concat(1, "Not a relation field:", vf.getTable(), vf.getField()));
 
@@ -379,7 +388,8 @@ public class BeeView {
         als = SqlUtils.uniqueName();
         vf.setTargetAlias(als);
         IsCondition join =
-              SqlUtils.join(vf.getAlias(), vf.getField(), als, tables.get(tbl).getIdName());
+            SqlUtils.join(vf.getAlias(), vf.getField(), als,
+                tables.get(tbl.toLowerCase()).getIdName());
 
         switch (joinMode) {
           case '<':
@@ -403,21 +413,21 @@ public class BeeView {
         }
       }
     }
-    BeeTable table = tables.get(tbl);
+    BeeTable table = tables.get(tbl.toLowerCase());
     BeeField field = table.getField(fld);
 
     if (field.isExtended()) {
       als = table.joinExtField(query, als, field);
     }
-    expressions.put(expression, new ViewField(tbl, als, fld, field.getType(), field.isNotNull(),
-        BeeUtils.isEmpty(xpr)));
+    expressions.put(expression.toLowerCase(), new ViewField(tbl, als, fld, field.getType(),
+        field.isNotNull(), BeeUtils.isEmpty(xpr)));
   }
 
   private synchronized void rebuildQuery(Map<String, BeeTable> tables) {
     query.resetFields();
     query.resetOrder();
 
-    for (String colName : columns.keySet()) {
+    for (String colName : getColumns()) {
       String als = getAlias(colName);
       String fld = getField(colName);
 
@@ -425,7 +435,7 @@ public class BeeView {
         if (BeeUtils.isEmpty(tables)) {
           continue;
         }
-        BeeTable table = tables.get(getTable(colName));
+        BeeTable table = tables.get(getTable(colName).toLowerCase());
         BeeField field = table.getField(fld);
         String locale = getLocale(colName);
         als = table.joinTranslationField(query, getViewField(colName).getAlias(), field, locale);
@@ -435,7 +445,7 @@ public class BeeView {
           query.addEmptyField(colName, field.getType(), field.getPrecision(), field.getScale());
           continue;
         }
-        getColumnInfo(colName)[ALIAS] = als;
+        getColumnInfo(colName)[LOCALE_ALIAS] = als;
       }
       query.addField(als, fld, colName);
     }
