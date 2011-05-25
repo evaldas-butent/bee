@@ -3,6 +3,7 @@ package com.butent.bee.server.io;
 import com.google.common.collect.Lists;
 
 import com.butent.bee.server.Config;
+import com.butent.bee.server.io.NameUtils.Component;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.DateTime;
@@ -11,6 +12,7 @@ import com.butent.bee.shared.utils.ExtendedProperty;
 import com.butent.bee.shared.utils.LogUtils;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
+import com.butent.bee.shared.utils.Wildcards;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -38,6 +40,7 @@ import java.util.logging.Logger;
  */
 
 public class FileUtils {
+
   public static final String EXT_CLASS = "class";
   public static final String EXT_JAVA = "java";
   public static final String EXT_PROPERTIES = "properties";
@@ -119,6 +122,54 @@ public class FileUtils {
     Assert.notEmpty(fileName);
     File fl = new File(fileName.trim());
     return fileToString(fl, cs);
+  }
+
+  public static List<File> findFiles(String search, Collection<File> defaultRoots,
+      Collection<Filter> requiredFilters, String defaultExtension, boolean recurse, boolean all) {
+    if (BeeUtils.isEmpty(search)) {
+      return null;
+    }
+    if (isFile(search.trim())) {
+      return Lists.newArrayList(new File(search.trim()));
+    }
+
+    String pfx = NameUtils.getPrefix(search);
+    String path = NameUtils.getPathNoEndSeparator(search);
+    String stem = NameUtils.getBaseName(search);
+    String ext = NameUtils.getExtension(search);
+
+    List<File> roots = Lists.newArrayList();
+
+    if (!BeeUtils.isEmpty(pfx)) {
+      roots.addAll(Config.getDirectories(pfx));
+    }
+
+    if (roots.isEmpty()) {
+      if (defaultRoots != null && !defaultRoots.isEmpty()) {
+        roots.addAll(defaultRoots);
+      } else {
+        roots.addAll(Config.getDefaultSearchDirectories());
+      }
+    }
+
+    List<Filter> filters = Lists.newArrayList();
+    if (requiredFilters != null) {
+      filters.addAll(requiredFilters);
+    }
+
+    if (Wildcards.isFsPattern(path)) {
+      filters.add(new WildcardFilter(path, Component.PATH));
+    }
+    if (Wildcards.isFsPattern(stem)) {
+      filters.add(new WildcardFilter(stem, Component.BASE_NAME));
+    }
+    if (Wildcards.isFsPattern(ext)) {
+      filters.add(new WildcardFilter(ext, Component.EXTENSION));
+    } else if (!BeeUtils.isEmpty(defaultExtension)) {
+      filters.add(new ExtensionFilter(defaultExtension));
+    }
+
+    return findFiles(roots, filters, recurse, all);
   }
 
   public static List<File> findFiles(Collection<File> directories, Collection<Filter> filters,

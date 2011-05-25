@@ -8,7 +8,9 @@ import com.butent.bee.shared.JustDate;
 import com.butent.bee.shared.Transformable;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
+import com.butent.bee.shared.utils.TimeUtils;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 /**
@@ -32,6 +34,12 @@ public abstract class Value implements Comparable<Value>, Transformable, BeeSeri
         return DateValue.getNullValue();
       case DATETIME:
         return DateTimeValue.getNullValue();
+      case INTEGER:
+        return IntegerValue.getNullValue();
+      case LONG:
+        return LongValue.getNullValue();
+      case DECIMAL:
+        return DecimalValue.getNullValue();
     }
     return null;
   }
@@ -45,6 +53,15 @@ public abstract class Value implements Comparable<Value>, Transformable, BeeSeri
 
       } else if (value instanceof Boolean) {
         val = BooleanValue.getInstance((Boolean) value);
+
+      } else if (value instanceof Integer) {
+        val = new IntegerValue(((Integer) value));
+
+      } else if (value instanceof Long) {
+        val = new LongValue(((Long) value));
+
+      } else if (value instanceof BigDecimal) {
+        val = new DecimalValue(((BigDecimal) value));
 
       } else if (value instanceof Number) {
         val = new NumberValue(((Number) value).doubleValue());
@@ -69,22 +86,30 @@ public abstract class Value implements Comparable<Value>, Transformable, BeeSeri
   }
 
   public static Value parseValue(ValueType type, String value) {
+    Assert.notNull(type, "value type not specified");
     if (value == null) {
       return getNullValueFromValueType(type);
     }
+
     switch (type) {
       case BOOLEAN:
-        return new BooleanValue(BeeUtils.toBoolean(value));
+        return new BooleanValue(BeeUtils.toBooleanOrNull(value));
       case TEXT:
         return new TextValue(value);
       case NUMBER:
-        return new NumberValue(BeeUtils.toDouble(value));
+        return new NumberValue(BeeUtils.toDoubleOrNull(value));
       case TIMEOFDAY:
         return new TimeOfDayValue(value);
       case DATE:
-        return new DateValue(JustDate.parse(value));
+        return new DateValue(TimeUtils.toDateOrNull(value));
       case DATETIME:
-        return new DateTimeValue(DateTime.parse(value));
+        return new DateTimeValue(TimeUtils.toDateTimeOrNull(value));
+      case INTEGER:
+        return new IntegerValue(BeeUtils.toIntOrNull(value));
+      case LONG:
+        return new LongValue(BeeUtils.toLongOrNull(value));
+      case DECIMAL:
+        return new DecimalValue(BeeUtils.toDecimalOrNull(value));
     }
     return null;
   }
@@ -94,57 +119,11 @@ public abstract class Value implements Comparable<Value>, Transformable, BeeSeri
     Assert.lengthEquals(arr, 2);
     String clazz = arr[0];
     String data = arr[1];
-    Value val = Value.getNullValue(clazz);
-    Assert.notEmpty(val, "Unsupported class name: " + clazz);
-
-    if (data != null) {
-      if (BeeUtils.getClassName(BooleanValue.class).equals(clazz)) {
-        val = BooleanValue.getInstance(BooleanValue.unpack(data));
-
-      } else if (BeeUtils.getClassName(NumberValue.class).equals(clazz)) {
-        val = new NumberValue(BeeUtils.toDouble(data));
-
-      } else if (BeeUtils.getClassName(TextValue.class).equals(clazz)) {
-        val = new TextValue(data);
-
-      } else if (BeeUtils.getClassName(DateValue.class).equals(clazz)) {
-        val = new DateValue(JustDate.parse(data));
-
-      } else if (BeeUtils.getClassName(DateTimeValue.class).equals(clazz)) {
-        val = new DateTimeValue(DateTime.parse(data));
-
-      } else if (BeeUtils.getClassName(TimeOfDayValue.class).equals(clazz)) {
-        val = new TimeOfDayValue(DateTime.parse(data));
-
-      } else {
-        Assert.untouchable("Unsupported class name: " + clazz);
-      }
-    }
-    return val;
-  }
-
-  private static Value getNullValue(String clazz) {
-    Value val = null;
-
-    if (BeeUtils.getClassName(BooleanValue.class).equals(clazz)) {
-      val = BooleanValue.getNullValue();
-
-    } else if (BeeUtils.getClassName(NumberValue.class).equals(clazz)) {
-      val = NumberValue.getNullValue();
-
-    } else if (BeeUtils.getClassName(TextValue.class).equals(clazz)) {
-      val = TextValue.getNullValue();
-
-    } else if (BeeUtils.getClassName(DateValue.class).equals(clazz)) {
-      val = DateValue.getNullValue();
-
-    } else if (BeeUtils.getClassName(DateTimeValue.class).equals(clazz)) {
-      val = DateTimeValue.getNullValue();
-
-    } else if (BeeUtils.getClassName(TimeOfDayValue.class).equals(clazz)) {
-      val = TimeOfDayValue.getNullValue();
-    }
-    return val;
+    
+    ValueType type = ValueType.getByTypeCode(clazz);
+    Assert.notNull(type, "Unsupported value type: " + clazz);
+    
+    return parseValue(type, data);
   }
 
   public abstract int compareTo(Value o);
@@ -162,79 +141,23 @@ public abstract class Value implements Comparable<Value>, Transformable, BeeSeri
     return (this.compareTo((Value) o) == 0);
   }
 
-  public Boolean getBoolean() {
-    if (isNull()) {
-      return null;
-    }
-    switch (getType()) {
-      case BOOLEAN:
-        return (Boolean) getObjectValue();
-      case NUMBER:
-        return !BeeUtils.isZero(getObjectValue());
-      case TEXT:
-        return BeeUtils.toBoolean((String) getObjectValue());
-      default:
-        return null;
-    }
-  }
+  public abstract Boolean getBoolean();
 
-  public JustDate getDate() {
-    if (isNull()) {
-      return null;
-    }
-    switch (getType()) {
-      case DATE:
-        return (JustDate) getObjectValue();
-      case DATETIME:
-        return new JustDate((DateTime) getObjectValue());
-      case NUMBER:
-        return new JustDate(((Number) getObjectValue()).intValue());
-      default:
-        return null;
-    }
-  }
+  public abstract JustDate getDate();
 
-  public DateTime getDateTime() {
-    if (isNull()) {
-      return null;
-    }
-    switch (getType()) {
-      case DATE:
-        return new DateTime((JustDate) getObjectValue());
-      case DATETIME:
-        return (DateTime) getObjectValue();
-      case NUMBER:
-        return new DateTime(((Number) getObjectValue()).longValue());
-      default:
-        return null;
-    }
-  }
+  public abstract DateTime getDateTime();
 
-  public Double getDouble() {
-    if (isNull()) {
-      return null;
-    }
-    switch (getType()) {
-      case NUMBER:
-        return (Double) getObjectValue();
-      case TEXT:
-        return BeeUtils.toDouble((String) getObjectValue());
-      default:
-        return null;
-    }
-  }
+  public abstract BigDecimal getDecimal();
+
+  public abstract Double getDouble();
+
+  public abstract Integer getInteger();
+
+  public abstract Long getLong();
 
   public abstract Object getObjectValue();
 
-  public String getString() {
-    if (isNull()) {
-      return null;
-    }
-    if (getType().equals(ValueType.TEXT)) {
-      return (String) getObjectValue();
-    }
-    return transform();
-  }
+  public abstract String getString();
 
   public abstract ValueType getType();
 
@@ -261,9 +184,7 @@ public abstract class Value implements Comparable<Value>, Transformable, BeeSeri
     return Codec.beeSerializeAll(BeeUtils.getClassName(this.getClass()), value);
   }
 
-  public String transform() {
-    return toString();
-  }
+  public abstract String transform();
 
   protected int precompareTo(Value o) {
     int diff = BeeUtils.precompare(this, o);

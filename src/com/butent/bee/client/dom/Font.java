@@ -80,7 +80,7 @@ public class Font implements HasInfo, Transformable {
         continue;
       }
 
-      if (BeeUtils.isNumeric(s)) {
+      if (BeeUtils.isDouble(s)) {
         font.setSizeValue(BeeUtils.toDouble(s));
         continue;
       }

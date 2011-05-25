@@ -3,11 +3,11 @@ package com.butent.bee.shared.data;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.StringArray;
+import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
-import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -90,35 +90,34 @@ public class BeeRow extends StringRow implements BeeSerializable {
     }
   }
 
-  public BigDecimal getDecimal(int col) {
-    return new BigDecimal(getString(col));
-  }
-
   public long getNewId() {
     return newId;
   }
 
-  public Object getOriginal(int col, int sqlType) {
-    if (isNull(col)) {
-      return null;
+  public Object getOriginal(int index, ValueType type) {
+    Assert.notNull(type, "value type not specified");
+
+    switch (type) {
+      case BOOLEAN:
+        return getBoolean(index);
+      case DATE:
+        return getDate(index);
+      case DATETIME:
+        return getDateTime(index);
+      case NUMBER:
+        return getDouble(index);
+      case TEXT:
+        return getString(index);
+      case TIMEOFDAY:
+        return getString(index);
+      case INTEGER:   
+        return getInteger(index);
+      case LONG:
+        return getLong(index);
+      case DECIMAL:
+        return getDecimal(index);
     }
-    switch (sqlType) {
-      case 2: // java.sql.Types.NUMERIC // TODO Kaip su Oracle, PgSql?
-      case 3: // java.sql.Types.DECIMAL
-        return getDecimal(col);
-      case 4: // java.sql.Types.INTEGER
-        return getInt(col);
-      case -5: // java.sql.Types.BIGINT
-        return getLong(col);
-      case 8: // java.sql.Types.DOUBLE
-      case 101: // oracle.sql.Types.BINARY_DOUBLE
-        return getDouble(col);
-      case -7: // java.sql.Types.BIT
-      case 16: // java.sql.Types.BOOLEAN
-        return getBoolean(col);
-      default:
-        return getString(col);
-    }
+    return null;
   }
 
   public Map<Integer, String> getShadow() {

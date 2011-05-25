@@ -16,6 +16,7 @@ import com.google.gwt.user.client.Element;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.dialog.Notification;
+import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Edges;
 import com.butent.bee.client.dom.Font;
 import com.butent.bee.client.dom.StyleUtils;
@@ -598,6 +599,11 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     Element editorElement = editor.asWidget().getElement();
     if (event.getSourceElement() != null) {
       StyleUtils.copyBox(event.getSourceElement(), editorElement);
+      int x = getGrid().getElement().getScrollLeft();
+      int y = getGrid().getElement().getScrollTop();
+      if (x > 0 || y > 0) {
+        DomUtils.moveBy(editorElement, -x, -y);
+      }
     }
 
     StyleUtils.setZIndex(editorElement, getGrid().getZIndex() + 1);

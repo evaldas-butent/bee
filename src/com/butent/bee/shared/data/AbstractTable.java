@@ -7,14 +7,23 @@ import com.google.common.primitives.Longs;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.DateTime;
+import com.butent.bee.shared.JustDate;
 import com.butent.bee.shared.Pair;
+import com.butent.bee.shared.Sequence;
 import com.butent.bee.shared.data.value.BooleanValue;
+import com.butent.bee.shared.data.value.DateTimeValue;
+import com.butent.bee.shared.data.value.DateValue;
+import com.butent.bee.shared.data.value.DecimalValue;
+import com.butent.bee.shared.data.value.IntegerValue;
+import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.value.NumberValue;
 import com.butent.bee.shared.data.value.TextValue;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -119,6 +128,15 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
             break;
           case NUMBER:
             z = BeeUtils.compare(row1.getDouble(index), row2.getDouble(index));
+            break;
+          case INTEGER:
+            z = BeeUtils.compare(row1.getInteger(index), row2.getInteger(index));
+            break;
+          case LONG:
+            z = BeeUtils.compare(row1.getLong(index), row2.getLong(index));
+            break;
+          case DECIMAL:
+            z = BeeUtils.compare(row1.getDecimal(index), row2.getDecimal(index));
             break;
           default:
             z = BeeUtils.compare(row1.getString(index), row2.getString(index));
@@ -406,6 +424,18 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
     return values;
   }
 
+  public JustDate getDate(int rowIndex, int colIndex) {
+    return getRow(rowIndex).getDate(colIndex);
+  }
+
+  public DateTime getDateTime(int rowIndex, int colIndex) {
+    return getRow(rowIndex).getDateTime(colIndex);
+  }
+
+  public BigDecimal getDecimal(int rowIndex, int colIndex) {
+    return getRow(rowIndex).getDecimal(colIndex);
+  }
+
   public List<Value> getDistinctValues(int colIndex) {
     assertColumnIndex(colIndex);
     Set<Value> values = Sets.newTreeSet();
@@ -449,6 +479,14 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
     return getCell(rowIndex, colIndex).getFormattedValue();
   }
 
+  public Integer getInteger(int rowIndex, int colIndex) {
+    return getRow(rowIndex).getInteger(colIndex);
+  }
+
+  public Long getLong(int rowIndex, int colIndex) {
+    return getRow(rowIndex).getLong(colIndex);
+  }
+
   public int getNumberOfColumns() {
     return columns.size();
   }
@@ -481,6 +519,8 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
   public Object getRowProperty(int rowIndex, String name) {
     return getRow(rowIndex).getProperty(name);
   }
+
+  public abstract Sequence<RowType> getRows();
 
   public int[] getSortedRows(int... colIndexes) {
     Assert.notNull(colIndexes);
@@ -612,47 +652,8 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
     }
   }
 
-  public void setCell(int rowIndex, int colIndex, boolean value) {
-    setCell(rowIndex, colIndex, BooleanValue.getInstance(value));
-  }
-
-  public void setCell(int rowIndex, int colIndex, boolean value, String formattedValue) {
-    setCell(rowIndex, colIndex, BooleanValue.getInstance(value), formattedValue);
-  }
-
-  public void setCell(int rowIndex, int colIndex, boolean value, String formattedValue,
-      CustomProperties properties) {
-    setCell(rowIndex, colIndex, BooleanValue.getInstance(value), formattedValue, properties);
-  }
-
-  public void setCell(int rowIndex, int colIndex, double value) {
-    setCell(rowIndex, colIndex, new NumberValue(value));
-  }
-
-  public void setCell(int rowIndex, int colIndex, double value, String formattedValue) {
-    setCell(rowIndex, colIndex, new NumberValue(value), formattedValue);
-  }
-
-  public void setCell(int rowIndex, int colIndex, double value, String formattedValue,
-      CustomProperties properties) {
-    setCell(rowIndex, colIndex, new NumberValue(value), formattedValue, properties);
-  }
-
   public void setCell(int rowIndex, int colIndex, IsCell cell) {
     getRow(rowIndex).setCell(colIndex, cell);
-  }
-
-  public void setCell(int rowIndex, int colIndex, String value) {
-    setCell(rowIndex, colIndex, new TextValue(value));
-  }
-
-  public void setCell(int rowIndex, int colIndex, String value, String formattedValue) {
-    setCell(rowIndex, colIndex, new TextValue(value), formattedValue);
-  }
-
-  public void setCell(int rowIndex, int colIndex, String value, String formattedValue,
-      CustomProperties properties) {
-    setCell(rowIndex, colIndex, new TextValue(value), formattedValue, properties);
   }
 
   public void setCell(int rowIndex, int colIndex, Value value) {
@@ -722,12 +723,32 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
     properties.put(propertyKey, propertyValue);
   }
 
-  public void setValue(int rowIndex, int colIndex, boolean value) {
+  public void setValue(int rowIndex, int colIndex, BigDecimal value) {
+    setValue(rowIndex, colIndex, new DecimalValue(value));
+  }
+
+  public void setValue(int rowIndex, int colIndex, Boolean value) {
     setValue(rowIndex, colIndex, BooleanValue.getInstance(value));
   }
 
-  public void setValue(int rowIndex, int colIndex, double value) {
+  public void setValue(int rowIndex, int colIndex, DateTime value) {
+    setValue(rowIndex, colIndex, new DateTimeValue(value));
+  }
+
+  public void setValue(int rowIndex, int colIndex, Double value) {
     setValue(rowIndex, colIndex, new NumberValue(value));
+  }
+
+  public void setValue(int rowIndex, int colIndex, Integer value) {
+    setValue(rowIndex, colIndex, new IntegerValue(value));
+  }
+
+  public void setValue(int rowIndex, int colIndex, JustDate value) {
+    setValue(rowIndex, colIndex, new DateValue(value));
+  }
+
+  public void setValue(int rowIndex, int colIndex, Long value) {
+    setValue(rowIndex, colIndex, new LongValue(value));
   }
 
   public void setValue(int rowIndex, int colIndex, String value) {

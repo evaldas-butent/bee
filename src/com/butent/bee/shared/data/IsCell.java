@@ -9,6 +9,7 @@ import com.butent.bee.shared.data.value.ValueType;
  */
 
 public interface IsCell extends HasCustomProperties {
+
   void clearFormattedValue();
 
   void clearProperties();

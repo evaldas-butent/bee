@@ -649,13 +649,19 @@ public class JdbcUtils {
         break;
       case Types.INTEGER:
       case Types.SMALLINT:
-      case Types.BIGINT:
       case Types.TINYINT:
-      case Types.REAL:
+        valueType = ValueType.INTEGER;
+        break;
+      case Types.BIGINT:
+        valueType = ValueType.LONG;
+        break;
+      case Types.DECIMAL:
       case Types.NUMERIC:
+        valueType = ValueType.DECIMAL;
+        break;
+      case Types.REAL:
       case Types.DOUBLE:
       case Types.FLOAT:
-      case Types.DECIMAL:
         valueType = ValueType.NUMBER;
         break;
       case Types.DATE:

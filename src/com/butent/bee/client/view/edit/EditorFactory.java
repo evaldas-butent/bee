@@ -33,17 +33,18 @@ public class EditorFactory {
       case DATETIME:
         editor = new InputDate();
         break;
+        
+      case INTEGER:
+        editor = new InputInteger();
+        break;
+        
+      case LONG:
+        editor = new InputLong();
+        break;
 
       case NUMBER:
-        if (scale == 0) {
-          if (precision > 10) {
-            editor = new InputLong();
-          } else {
-            editor = new InputInteger();
-          }
-        } else {
-          editor = new InputNumber();
-        }
+      case DECIMAL:
+        editor = new InputNumber();
         break;
 
       case TEXT:
@@ -53,10 +54,8 @@ public class EditorFactory {
           ((InputText) editor).setMaxLength(precision);
         }
         break;
-
-      default:
-        Assert.untouchable();
     }
+    Assert.notNull(editor);
     
     editor.setNullable(column.isNullable());
     

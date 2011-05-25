@@ -7,6 +7,9 @@ import com.butent.bee.shared.Transformable;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.value.DateTimeValue;
 import com.butent.bee.shared.data.value.DateValue;
+import com.butent.bee.shared.data.value.DecimalValue;
+import com.butent.bee.shared.data.value.IntegerValue;
+import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.value.NumberValue;
 import com.butent.bee.shared.data.value.TextValue;
 import com.butent.bee.shared.data.value.TimeOfDayValue;
@@ -14,6 +17,7 @@ import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -35,19 +39,7 @@ public abstract class AbstractRow implements IsRow, Transformable {
   private AbstractRow() {
   }
 
-  public void addCell(boolean value) {
-    addCell(new TableCell(value));
-  }
-
-  public void addCell(double value) {
-    addCell(new TableCell(value));
-  }
-
   public abstract void addCell(IsCell cell);
-
-  public void addCell(String value) {
-    addCell(new TableCell(value));
-  }
 
   public void addCell(Value value) {
     addCell(new TableCell(value));
@@ -74,12 +66,24 @@ public abstract class AbstractRow implements IsRow, Transformable {
     return getValue(index).getDateTime();
   }
 
+  public BigDecimal getDecimal(int index) {
+    return getValue(index).getDecimal();
+  }
+
   public Double getDouble(int index) {
     return getValue(index).getDouble();
   }
 
   public long getId() {
     return id;
+  }
+
+  public Integer getInteger(int index) {
+    return getValue(index).getInteger();
+  }
+
+  public Long getLong(int index) {
+    return getValue(index).getLong();
   }
 
   public abstract int getNumberOfCells();
@@ -105,9 +109,8 @@ public abstract class AbstractRow implements IsRow, Transformable {
   }
   
   public Value getValue(int index, ValueType type) {
-    if (type == null) {
-      return new TextValue(getString(index));
-    }
+    Assert.notNull(type, "value type not specified");
+
     switch (type) {
       case BOOLEAN:
         return new BooleanValue(getBoolean(index));
@@ -121,10 +124,14 @@ public abstract class AbstractRow implements IsRow, Transformable {
         return new TextValue(getString(index));
       case TIMEOFDAY:
         return new TimeOfDayValue(getString(index));
-      default:
-        Assert.untouchable();
-        return null;
+      case INTEGER:   
+        return new IntegerValue(getInteger(index));
+      case LONG:
+        return new LongValue(getLong(index));
+      case DECIMAL:
+        return new DecimalValue(getDecimal(index));
     }
+    return null;
   }
 
   public long getVersion() {
@@ -156,18 +163,38 @@ public abstract class AbstractRow implements IsRow, Transformable {
     properties.put(propertyKey, propertyValue);
   }
 
-  public void setValue(int index, boolean value) {
+  public void setValue(int index, BigDecimal value) {
+    setValue(index, new DecimalValue(value));
+  }
+
+  public void setValue(int index, Boolean value) {
     setValue(index, BooleanValue.getInstance(value));
   }
 
-  public void setValue(int index, double value) {
+  public void setValue(int index, DateTime value) {
+    setValue(index, new DateTimeValue(value));
+  }
+
+  public void setValue(int index, Double value) {
     setValue(index, new NumberValue(value));
+  }
+
+  public void setValue(int index, Integer value) {
+    setValue(index, new IntegerValue(value));
+  }
+
+  public void setValue(int index, JustDate value) {
+    setValue(index, new DateValue(value));
+  }
+
+  public void setValue(int index, Long value) {
+    setValue(index, new LongValue(value));
   }
 
   public void setValue(int index, String value) {
     setValue(index, new TextValue(value));
   }
-
+  
   public void setValue(int index, Value value) {
     IsCell cell = getCell(index);
     cell.setValue(value);

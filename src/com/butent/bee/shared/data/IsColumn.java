@@ -7,6 +7,7 @@ import com.butent.bee.shared.data.value.ValueType;
  */
 
 public interface IsColumn extends HasCustomProperties {
+
   IsColumn clone();
 
   String getId();

@@ -1076,7 +1076,7 @@ public class BeeUtils {
 
   /**
    * Checks if Object {@code x} is an instance of an integer type(Byte, Short, Integer, Long,
-   * BigInteger, BigDecimal).
+   * BigInteger).
    * 
    * @param x Object to check
    * @return true if the Object is an instance of an integer type, false otherwise
@@ -1086,7 +1086,7 @@ public class BeeUtils {
       return false;
     } else {
       return (x instanceof Byte || x instanceof Short || x instanceof Integer
-          || x instanceof Long || x instanceof BigInteger || x instanceof BigDecimal);
+          || x instanceof Long || x instanceof BigInteger);
     }
   }
 
@@ -1129,6 +1129,20 @@ public class BeeUtils {
     }
   }
 
+  public static boolean isDecimal(String s) {
+    if (isEmpty(s)) {
+      return false;
+    }
+    BigDecimal d;
+
+    try {
+      d = new BigDecimal(s.trim());
+    } catch (NumberFormatException ex) {
+      d = null;
+    }
+    return d != null;
+  }
+  
   public static boolean isDelimited(CharSequence cs, char delimiter) {
     return isDelimited(cs, delimiter, delimiter);
   }
@@ -1397,21 +1411,6 @@ public class BeeUtils {
     }
   }
   
-  public static boolean isNumeric(String s) {
-    if (isEmpty(s)) {
-      return false;
-    }
-    boolean ok;
-
-    try {
-      Double.parseDouble(s.trim());
-      ok = true;
-    } catch (NumberFormatException ex) {
-      ok = false;
-    }
-    return ok;
-  }
-
   /**
    * @param clazz the class to check for Enum constants
    * @param idx the index to check
@@ -2491,6 +2490,44 @@ public class BeeUtils {
     }
     return (char) x;
   }
+
+  public static BigDecimal toDecimalOrNull(String s) {
+    if (isEmpty(s)) {
+      return null;
+    }
+    BigDecimal d;
+
+    try {
+      d = new BigDecimal(s.trim());
+    } catch (NumberFormatException ex) {
+      d = null;
+    }
+    return d;
+  }
+
+  public static BigDecimal toDecimalOrNull(Double x) {
+    if (x == null) {
+      return null;
+    } else {
+      return BigDecimal.valueOf(x);
+    }
+  }
+
+  public static BigDecimal toDecimalOrNull(Long x) {
+    if (x == null) {
+      return null;
+    } else {
+      return BigDecimal.valueOf(x);
+    }
+  }
+
+  public static BigDecimal toDecimalOrNull(Integer x) {
+    if (x == null) {
+      return null;
+    } else {
+      return BigDecimal.valueOf(x);
+    }
+  }
   
   /**
    * Converts a String value {@code s} to Double.
@@ -2580,7 +2617,7 @@ public class BeeUtils {
     try {
       i = Integer.parseInt(s.trim());
     } catch (NumberFormatException ex) {
-      if (isNumeric(s)) {
+      if (isDouble(s)) {
         i = toInt(toDouble(s));
       } else {
         i = 0;
@@ -2641,7 +2678,7 @@ public class BeeUtils {
     try {
       x = Long.parseLong(s.trim());
     } catch (NumberFormatException ex) {
-      if (isNumeric(s)) {
+      if (isDouble(s)) {
         x = toLong(toDouble(s));
       } else {
         x = 0L;

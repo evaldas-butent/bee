@@ -13,10 +13,15 @@ import java.util.List;
  */
 
 public class TableColumn implements HasInfo, IsColumn {
+
   private ValueType type;
+  
   private String label;
+  
   private String id;
+  
   private String pattern;
+  
   private CustomProperties properties = null;
 
   public TableColumn(ValueType type) {

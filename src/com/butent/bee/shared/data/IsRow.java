@@ -5,6 +5,7 @@ import com.butent.bee.shared.JustDate;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.value.ValueType;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -12,13 +13,8 @@ import java.util.List;
  */
 
 public interface IsRow extends HasCustomProperties {
-  void addCell(boolean value);
-
-  void addCell(double value);
 
   void addCell(IsCell cell);
-
-  void addCell(String value);
 
   void addCell(Value value);
 
@@ -36,15 +32,22 @@ public interface IsRow extends HasCustomProperties {
 
   DateTime getDateTime(int index);
 
+  BigDecimal getDecimal(int index);
+  
   Double getDouble(int index);
-
+  
   long getId();
+  
+  Integer getInteger(int index);
+
+  Long getLong(int index);
 
   int getNumberOfCells();
 
   String getString(int index);
 
   Value getValue(int index);
+
   Value getValue(int index, ValueType type);
 
   long getVersion();
@@ -59,13 +62,23 @@ public interface IsRow extends HasCustomProperties {
 
   void setCells(List<IsCell> cells);
 
-  void setValue(int index, boolean value);
+  void setValue(int index, BigDecimal value);
 
-  void setValue(int index, double value);
+  void setValue(int index, Boolean value);
 
+  void setValue(int index, DateTime value);
+
+  void setValue(int index, Double value);
+
+  void setValue(int index, Integer value);
+
+  void setValue(int index, JustDate value);
+  
+  void setValue(int index, Long value);
+  
   void setValue(int index, String value);
-
+  
   void setValue(int index, Value value);
-
+  
   void setVersion(long version);  
 }

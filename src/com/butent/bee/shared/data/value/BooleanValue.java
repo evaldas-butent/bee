@@ -1,7 +1,12 @@
 package com.butent.bee.shared.data.value;
 
+import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.DateTime;
+import com.butent.bee.shared.JustDate;
 import com.butent.bee.shared.utils.BeeUtils;
+
+import java.math.BigDecimal;
 
 /**
  * The {@code BooleanValue} class represents a boolean value. These values 
@@ -53,6 +58,7 @@ public class BooleanValue extends Value {
     this.value = value;
   }
 
+  @Override
   public int compareTo(Value o) {
     int diff = precompareTo(o);
     if (diff == BeeConst.COMPARE_UNKNOWN) {
@@ -61,16 +67,75 @@ public class BooleanValue extends Value {
     return diff;
   }
 
+  @Override
   public Boolean getBoolean() {
     return value;
   }
   
+  @Override
+  public JustDate getDate() {
+    if (isNull()) {
+      return null;
+    }
+    Assert.unsupported("get date from boolean");
+    return null;
+  }
+
+  @Override
+  public DateTime getDateTime() {
+    if (isNull()) {
+      return null;
+    }
+    Assert.unsupported("get datetime from boolean");
+    return null;
+  }
+
+  @Override
+  public BigDecimal getDecimal() {
+    if (isNull()) {
+      return null;
+    }
+    return BeeUtils.toDecimalOrNull(BeeUtils.toInt(value));
+  }
+
+  @Override
+  public Double getDouble() {
+    if (isNull()) {
+      return null;
+    }
+    return (double) BeeUtils.toInt(value);
+  }
+
+  @Override
+  public Integer getInteger() {
+    if (isNull()) {
+      return null;
+    }
+    return BeeUtils.toInt(value);
+  }
+
+  @Override
+  public Long getLong() {
+    if (isNull()) {
+      return null;
+    }
+    return (long) BeeUtils.toInt(value);
+  }
+
   @Override
   public Boolean getObjectValue() {
     if (isNull()) {
       return null;
     }
     return value;
+  }
+
+  @Override
+  public String getString() {
+    if (isNull()) {
+      return null;
+    }
+    return value ? S_TRUE : S_FALSE;
   }
 
   @Override
@@ -94,5 +159,10 @@ public class BooleanValue extends Value {
       return BeeConst.NULL;
     }
     return Boolean.toString(value);
+  }
+
+  @Override
+  public String transform() {
+    return toString();
   }
 }

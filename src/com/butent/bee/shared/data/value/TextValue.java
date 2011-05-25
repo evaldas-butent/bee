@@ -1,6 +1,11 @@
 package com.butent.bee.shared.data.value;
 
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.DateTime;
+import com.butent.bee.shared.JustDate;
+import com.butent.bee.shared.utils.BeeUtils;
+
+import java.math.BigDecimal;
 
 /**
  * The {@code TextValue} class represents character strings. 
@@ -19,12 +24,71 @@ public class TextValue extends Value {
     this.value = value;
   }
 
+  @Override
   public int compareTo(Value o) {
     int diff = precompareTo(o);
     if (diff == BeeConst.COMPARE_UNKNOWN) {
       diff = getString().compareTo(o.getString());
     }
     return diff;
+  }
+
+  @Override
+  public Boolean getBoolean() {
+    if (isNull()) {
+      return null;
+    }
+    return BeeUtils.toBooleanOrNull(value);
+  }
+
+  @Override
+  public JustDate getDate() {
+    if (isNull() || !BeeUtils.isInt(value)) {
+      return null;
+    }
+    return new JustDate(BeeUtils.toInt(value));
+  }
+  
+  @Override
+  public DateTime getDateTime() {
+    if (isNull() || !BeeUtils.isLong(value)) {
+      return null;
+    }
+    return new DateTime(BeeUtils.toLong(value));
+  }
+
+  @Override
+  public BigDecimal getDecimal() {
+    if (isNull()) {
+      return null;
+    }
+    return BeeUtils.toDecimalOrNull(value);
+  }
+
+  @Override
+  public Double getDouble() {
+    if (isNull() || !BeeUtils.isDouble(value)) {
+      return null;
+    }
+    return BeeUtils.toDouble(value);
+  }
+
+  @Override
+  public Integer getInteger() {
+    Double d = getDouble();
+    if (d == null) {
+      return null;
+    }
+    return d.intValue();
+  }
+
+  @Override
+  public Long getLong() {
+    Double d = getDouble();
+    if (d == null) {
+      return null;
+    }
+    return d.longValue();
   }
 
   @Override
@@ -35,7 +99,7 @@ public class TextValue extends Value {
   public String getString() {
     return value;
   }
-  
+
   @Override
   public ValueType getType() {
     return ValueType.TEXT;
@@ -60,5 +124,10 @@ public class TextValue extends Value {
       return BeeConst.NULL;
     }
     return getString();
+  }
+
+  @Override
+  public String transform() {
+    return toString();
   }
 }

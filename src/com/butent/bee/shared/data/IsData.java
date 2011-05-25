@@ -1,9 +1,12 @@
 package com.butent.bee.shared.data;
 
+import com.butent.bee.shared.DateTime;
+import com.butent.bee.shared.JustDate;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.value.ValueType;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -29,13 +32,22 @@ public interface IsData {
 
   ValueType getColumnType(int colIndex);
 
+  JustDate getDate(int rowIndex, int colIndex);
+
+  DateTime getDateTime(int rowIndex, int colIndex);
+  BigDecimal getDecimal(int rowIndex, int colIndex);
+
   List<Value> getDistinctValues(int colIndex);
-
+  
   Double getDouble(int rowIndex, int colIndex);
-
+  
   int[] getFilteredRows(RowFilter... filters);
-
+  
   String getFormattedValue(int rowIndex, int colIndex);
+
+  Integer getInteger(int rowIndex, int colIndex);
+
+  Long getLong(int rowIndex, int colIndex);
 
   int getNumberOfColumns();
 

@@ -939,7 +939,7 @@ public class StyleUtils {
     if (p >= 0 && p < s.length() - 1) {
       String v = s.substring(0, p + 1).trim();
       String u = s.substring(p + 1).trim();
-      if (BeeUtils.isNumeric(v)) {
+      if (BeeUtils.isDouble(v)) {
         value = BeeUtils.toDouble(v);
         unit = parseUnit(u);
       }

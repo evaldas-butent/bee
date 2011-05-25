@@ -17,6 +17,7 @@ import java.util.List;
  */
 
 public class StringMatrix<ColType extends IsColumn> extends AbstractTable<StringRow, ColType> {
+
   private ArraySequence<StringRow> rows = null;
 
   public StringMatrix(String[][] data, String... columnLabels) {

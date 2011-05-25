@@ -19,6 +19,7 @@ import com.butent.bee.shared.utils.LogUtils;
 import com.butent.bee.shared.utils.Property;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Contains a set of utility functions for data management, for example {@code parseExpression}.
@@ -33,10 +34,13 @@ public class DataUtils {
 
     if (data instanceof IsTable) {
       table = (IsTable<?, ?>) data;
+
     } else if (data instanceof String[][]) {
       table = new StringMatrix<TableColumn>((String[][]) data, columnLabels);
+    
     } else if (data instanceof JsArrayString) {
       table = new JsData<TableColumn>((JsArrayString) data, columnLabels);
+
     } else if (data instanceof List) {
       Object el = BeeUtils.listGetQuietly((List<?>) data, 0);
 
@@ -47,9 +51,12 @@ public class DataUtils {
       } else if (el instanceof String[]) {
         table = new StringMatrix<TableColumn>((List<String[]>) data, columnLabels);
       }
+    
+    } else if (data instanceof Map) {
+      table = new PropertiesData((Map<?, ?>) data, columnLabels);
     }
 
-    Assert.notNull(table);
+    Assert.notNull(table, "createTable: data not recognized");
     return table;
   }
 

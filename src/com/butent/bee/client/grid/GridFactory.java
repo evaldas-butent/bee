@@ -22,7 +22,6 @@ import com.butent.bee.client.grid.render.FixedWidthGridBulkRenderer;
 import com.butent.bee.client.view.grid.CellGrid;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
@@ -168,20 +167,13 @@ public class GridFactory {
       case DATETIME:
         return new DateTimeColumn(index, dataColumn);
       case NUMBER:
-        if (dataColumn instanceof BeeColumn) {
-          if (((BeeColumn) dataColumn).getScale() == 2) {
-            return new NumberColumn(NumberFormat.getCurrencyFormat(), index, dataColumn);
-          }
-          switch (((BeeColumn) dataColumn).getSqlType()) {
-            case 4:
-              return new NumberColumn(NumberFormat.getFormat("#"), index, dataColumn);
-            case 6:
-            case 7:
-            case 8:
-              return new NumberColumn(NumberFormat.getFormat("#.#######"), index, dataColumn);
-          }
-        }
+        return new NumberColumn(NumberFormat.getFormat("#.#####"), index, dataColumn);
+      case INTEGER:
+        return new NumberColumn(NumberFormat.getFormat("#"), index, dataColumn);
+      case LONG:
         return new NumberColumn(index, dataColumn);
+      case DECIMAL:
+        return new NumberColumn(NumberFormat.getFormat("#,##0.00;(#)"), index, dataColumn);
       default:
         return new TextColumn(index, dataColumn);
     }

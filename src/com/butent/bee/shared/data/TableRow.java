@@ -7,10 +7,11 @@ import com.butent.bee.shared.Assert;
 import java.util.List;
 
 /**
- * Extends {@code AbstractRow} class, contains it's information in object tree structure.
+ * Extends {@code AbstractRow} class, contains its information in object tree structure.
  */
 
 public class TableRow extends AbstractRow {
+
   private List<IsCell> cells = Lists.newArrayList();
 
   public TableRow(long id) {

@@ -6,18 +6,21 @@ import com.google.common.collect.ComparisonChain;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.DateTime;
+import com.butent.bee.shared.JustDate;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.TimeUtils;
 
+import java.math.BigDecimal;
+
 /**
- * The {@code DateTimeValue} class represents time values. It allows 
- * the interpretation of time as hour, minute, second, millisecond values.
+ * The {@code DateTimeValue} class represents time values. It allows the interpretation of time as
+ * hour, minute, second, millisecond values.
  */
 public class TimeOfDayValue extends Value {
 
   public static final char FIELD_SEPARATOR = ':';
   public static final char MILLIS_SEPARATOR = '.';
-  
+
   private static final TimeOfDayValue NULL_VALUE = new TimeOfDayValue();
 
   public static TimeOfDayValue getNullValue() {
@@ -34,6 +37,14 @@ public class TimeOfDayValue extends Value {
     this.minutes = date.getMinute();
     this.seconds = date.getSecond();
     this.milliseconds = date.getMillis();
+  }
+
+  public TimeOfDayValue(int hours) {
+    this(hours, 0, 0, 0);
+  }
+
+  public TimeOfDayValue(int hours, int minutes) {
+    this(hours, minutes, 0, 0);
   }
 
   public TimeOfDayValue(int hours, int minutes, int seconds) {
@@ -53,20 +64,9 @@ public class TimeOfDayValue extends Value {
   }
 
   public TimeOfDayValue(String tod) {
-    if (BeeUtils.isEmpty(tod)) {
-      this.hours = 0;
-      this.minutes = 0;
-      this.seconds = 0;
-      this.milliseconds = 0;
-    } else {  
-      int[] arr = TimeUtils.parseFields(tod);
-      this.hours = arr[0];
-      this.minutes = arr[1];
-      this.seconds = arr[2];
-      this.milliseconds = arr[3];
-    }
+    this(new DateTime(BeeUtils.toLong(tod)));
   }
-  
+
   private TimeOfDayValue() {
     this.hours = -1;
     this.minutes = -1;
@@ -74,6 +74,7 @@ public class TimeOfDayValue extends Value {
     this.milliseconds = -1;
   }
 
+  @Override
   public int compareTo(Value o) {
     int diff = precompareTo(o);
     if (diff == BeeConst.COMPARE_UNKNOWN) {
@@ -85,9 +86,68 @@ public class TimeOfDayValue extends Value {
     return diff;
   }
 
+  @Override
+  public Boolean getBoolean() {
+    if (isNull()) {
+      return null;
+    }
+    Assert.unsupported("get boolean from timeofday");
+    return null;
+  }
+
+  @Override
+  public JustDate getDate() {
+    if (isNull()) {
+      return null;
+    }
+    Assert.unsupported("get date from timeofday");
+    return null;
+  }
+
+  @Override
+  public DateTime getDateTime() {
+    if (isNull()) {
+      return null;
+    }
+    Assert.unsupported("get datetime from timeofday");
+    return null;
+  }
+
+  @Override
+  public BigDecimal getDecimal() {
+    if (isNull()) {
+      return null;
+    }
+    return BeeUtils.toDecimalOrNull(getTime());
+  }
+
+  @Override
+  public Double getDouble() {
+    if (isNull()) {
+      return null;
+    }
+    return (double) getTime();
+  }
+
   public int getHours() {
     Assert.isTrue(!isNull());
     return hours;
+  }
+
+  @Override
+  public Integer getInteger() {
+    if (isNull()) {
+      return null;
+    }
+    return getTime();
+  }
+
+  @Override
+  public Long getLong() {
+    if (isNull()) {
+      return null;
+    }
+    return (long) getTime();
   }
 
   public int getMilliseconds() {
@@ -114,6 +174,14 @@ public class TimeOfDayValue extends Value {
   }
 
   @Override
+  public String getString() {
+    if (isNull()) {
+      return null;
+    }
+    return BeeUtils.toString(getTime());
+  }
+
+  @Override
   public ValueType getType() {
     return ValueType.TIMEOFDAY;
   }
@@ -124,7 +192,7 @@ public class TimeOfDayValue extends Value {
       return -1;
     }
     return Objects.hashCode(getHours(), getMinutes(), getSeconds(), getMilliseconds());
-    }
+  }
 
   @Override
   public boolean isNull() {
@@ -145,5 +213,15 @@ public class TimeOfDayValue extends Value {
       sb.append(MILLIS_SEPARATOR).append(TimeUtils.millisToString(z));
     }
     return sb.toString();
+  }
+
+  @Override
+  public String transform() {
+    return toString();
+  }
+
+  private int getTime() {
+    return getHours() * TimeUtils.MILLIS_PER_HOUR + getMinutes() * TimeUtils.MILLIS_PER_MINUTE
+        + getSeconds() * TimeUtils.MILLIS_PER_SECOND + getMilliseconds();
   }
 }

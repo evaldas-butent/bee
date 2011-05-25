@@ -556,7 +556,7 @@ public class BeeUi implements Module, NotificationListener {
 
     p.add(hor);
 
-    BeeLabel ver = new BeeLabel("0.3.5");
+    BeeLabel ver = new BeeLabel(Settings.getVersion());
     p.add(ver);
 
     p.setWidgetLeftWidth(cli, 1, Unit.EM, 50, Unit.PCT);

@@ -3,6 +3,10 @@ package com.butent.bee.shared.data.value;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.DateTime;
+import com.butent.bee.shared.JustDate;
+import com.butent.bee.shared.utils.BeeUtils;
+
+import java.math.BigDecimal;
 
 /**
  * The {@code DateTimeValue} class represents date and time values. It allows 
@@ -31,6 +35,7 @@ public class DateTimeValue extends Value {
     this.value = new DateTime(year, month, dayOfMonth, hours, minutes, seconds, milliseconds);
   }
 
+  @Override
   public int compareTo(Value o) {
     int diff = precompareTo(o);
     if (diff == BeeConst.COMPARE_UNKNOWN) {
@@ -39,6 +44,24 @@ public class DateTimeValue extends Value {
     return diff;
   }
 
+  @Override
+  public Boolean getBoolean() {
+    if (isNull()) {
+      return null;
+    }
+    Assert.unsupported("get boolean from datetime");
+    return null;
+  }
+
+  @Override
+  public JustDate getDate() {
+    if (isNull()) {
+      return null;
+    }
+    return new JustDate(value);
+  }
+
+  @Override
   public DateTime getDateTime() {
     return value;
   }
@@ -47,10 +70,43 @@ public class DateTimeValue extends Value {
     Assert.notNull(getDateTime());
     return getDateTime().getDom();
   }
+  
+  @Override
+  public BigDecimal getDecimal() {
+    if (isNull()) {
+      return null;
+    }
+    return BeeUtils.toDecimalOrNull(value.getTime());
+  }
+
+  @Override
+  public Double getDouble() {
+    if (isNull()) {
+      return null;
+    }
+    return (double) value.getTime();
+  }
 
   public int getHourOfDay() {
     Assert.notNull(getDateTime());
     return getDateTime().getHour();
+  }
+
+  @Override
+  public Integer getInteger() {
+    if (isNull()) {
+      return null;
+    }
+    Assert.unsupported("get integer from datetime");
+    return null;
+  }
+
+  @Override
+  public Long getLong() {
+    if (isNull()) {
+      return null;
+    }
+    return value.getTime();
   }
 
   public int getMillisecond() {
@@ -82,6 +138,14 @@ public class DateTimeValue extends Value {
   }
 
   @Override
+  public String getString() {
+    if (isNull()) {
+      return null;
+    }
+    return BeeUtils.toString(value.getTime());
+  }
+
+  @Override
   public ValueType getType() {
     return ValueType.DATETIME;
   }
@@ -90,7 +154,7 @@ public class DateTimeValue extends Value {
     Assert.notNull(getDateTime());
     return getDateTime().getYear();
   }
-
+  
   @Override
   public int hashCode() {
     if (isNull()) {
@@ -110,5 +174,10 @@ public class DateTimeValue extends Value {
       return BeeConst.NULL;
     }
     return getDateTime().toString();
+  }
+
+  @Override
+  public String transform() {
+    return toString();
   }
 }

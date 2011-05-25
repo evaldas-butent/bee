@@ -15,6 +15,7 @@ import java.util.Date;
  * Contains methods for date/time calculations.
  */
 public class TimeUtils {
+
   public static final int ERA = 0;
 
   public static final int YEAR = 1;
@@ -252,6 +253,22 @@ public class TimeUtils {
     return null;
   }
 
+  public static JustDate toDateOrNull(Integer day) {
+    if (day == null) {
+      return null;
+    } else {
+      return new JustDate(day);
+    }
+  }
+
+  public static JustDate toDateOrNull(String s) {
+    if (BeeUtils.isInt(s)) {
+      return new JustDate(BeeUtils.toInt(s));
+    } else {
+      return null; 
+    }
+  }
+  
   /**
    * Converts {@code x} to a DateTime format.
    * 
@@ -273,6 +290,22 @@ public class TimeUtils {
     return null;
   }
 
+  public static DateTime toDateTimeOrNull(Long time) {
+    if (time == null) {
+      return null;
+    } else {
+      return new DateTime(time);
+    }
+  }
+
+  public static DateTime toDateTimeOrNull(String s) {
+    if (BeeUtils.isLong(s)) {
+      return new DateTime(BeeUtils.toLong(s));
+    } else {
+      return null; 
+    }
+  }
+  
   /**
    * Converts {@code x} to a Date format.
    * 

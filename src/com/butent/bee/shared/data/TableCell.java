@@ -1,9 +1,6 @@
 package com.butent.bee.shared.data;
 
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.data.value.BooleanValue;
-import com.butent.bee.shared.data.value.NumberValue;
-import com.butent.bee.shared.data.value.TextValue;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.value.ValueType;
 
@@ -37,18 +34,6 @@ public class TableCell implements IsCell {
   private Value value;
   private String formattedValue = null;
   private CustomProperties properties = null;
-
-  public TableCell(boolean value) {
-    this.value = BooleanValue.getInstance(value);
-  }
-
-  public TableCell(double value) {
-    this.value = new NumberValue(value);
-  }
-
-  public TableCell(String value) {
-    this.value = new TextValue(value);
-  }
 
   public TableCell(TableCell other) {
     this(other.value, other.formattedValue);

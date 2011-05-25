@@ -208,20 +208,10 @@ public class BeeRowSet extends RowList<BeeRow, BeeColumn> implements BeeSerializ
     return arr;
   }
 
-  public int getInt(BeeRow row, String columnId) {
-    Assert.notNull(row);
-    return row.getInt(getColumnIndex(columnId));
-  }
-
-  public long getLong(BeeRow row, String columnId) {
-    Assert.notNull(row);
-    return row.getLong(getColumnIndex(columnId));
-  }
-
   public Object getOriginal(BeeRow row, int colIndex) {
     Assert.notNull(row);
     assertColumnIndex(colIndex);
-    return row.getOriginal(colIndex, getColumn(colIndex).getSqlType());
+    return row.getOriginal(colIndex, getColumn(colIndex).getType());
   }
 
   public Object getOriginal(BeeRow row, String columnId) {

@@ -1,7 +1,12 @@
 package com.butent.bee.shared.data.value;
 
+import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.DateTime;
 import com.butent.bee.shared.JustDate;
+import com.butent.bee.shared.utils.BeeUtils;
+
+import java.math.BigDecimal;
 
 /**
  * The {@code DateTimeValue} class represents date values. It allows 
@@ -16,14 +21,15 @@ public class DateValue extends Value {
 
   private JustDate value;
 
-  public DateValue(JustDate date) {
-    this.value = date;
-  }
-
   public DateValue(int year, int month, int dayOfMonth) {
     this(new JustDate(year, month, dayOfMonth));
   }
 
+  public DateValue(JustDate date) {
+    this.value = date;
+  }
+
+  @Override
   public int compareTo(Value o) {
     int diff = precompareTo(o);
     if (diff == BeeConst.COMPARE_UNKNOWN) {
@@ -33,8 +39,57 @@ public class DateValue extends Value {
   }
 
   @Override
+  public Boolean getBoolean() {
+    if (isNull()) {
+      return null;
+    }
+    Assert.unsupported("get boolean from date");
+    return null;
+  }
+
+  @Override
   public JustDate getDate() {
     return value;
+  }
+
+  @Override
+  public DateTime getDateTime() {
+    if (isNull()) {
+      return null;
+    }
+    return new DateTime(value);
+  }
+
+  @Override
+  public BigDecimal getDecimal() {
+    if (isNull()) {
+      return null;
+    }
+    return BeeUtils.toDecimalOrNull(value.getDay());
+  }
+
+  @Override
+  public Double getDouble() {
+    if (isNull()) {
+      return null;
+    }
+    return (double) value.getDay();
+  }
+
+  @Override
+  public Integer getInteger() {
+    if (isNull()) {
+      return null;
+    }
+    return value.getDay();
+  }
+
+  @Override
+  public Long getLong() {
+    if (isNull()) {
+      return null;
+    }
+    return (long) value.getDay();
   }
 
   @Override
@@ -43,6 +98,14 @@ public class DateValue extends Value {
       return null;
     }
     return value;
+  }
+
+  @Override
+  public String getString() {
+    if (isNull()) {
+      return null;
+    }
+    return BeeUtils.toString(value.getDay());
   }
 
   @Override
@@ -69,5 +132,10 @@ public class DateValue extends Value {
       return BeeConst.NULL;
     }
     return value.toString();
+  }
+
+  @Override
+  public String transform() {
+    return toString();
   }
 }

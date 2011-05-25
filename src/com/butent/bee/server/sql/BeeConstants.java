@@ -2,7 +2,6 @@ package com.butent.bee.server.sql;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.ibm.icu.math.BigDecimal;
 
 /**
  * Contains constants lists, such as keywords, datatypes and empty values for 
@@ -49,7 +48,7 @@ public final class BeeConstants {
 
       switch (this) {
         case BOOLEAN:
-          return BeeUtils.toBoolean(s);
+          return BeeUtils.toBooleanOrNull(s);
         case INTEGER:
           return BeeUtils.toIntOrNull(s);
         case LONG:
@@ -57,7 +56,7 @@ public final class BeeConstants {
         case DOUBLE:
           return BeeUtils.toDoubleOrNull(s);
         case NUMERIC:
-          return new BigDecimal(s.trim());
+          return BeeUtils.toDecimalOrNull(s);
         case DATE:
           return BeeUtils.toIntOrNull(s);
         case DATETIME:

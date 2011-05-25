@@ -25,7 +25,7 @@ public class BeeColumn extends TableColumn implements BeeSerializable, Transform
    */
 
   private enum SerializationMembers {
-    ID, NAME, LABEL, SQL_TYPE, VALUE_TYPE, PRECISION, SCALE, ISNULL
+    ID, NAME, LABEL, VALUE_TYPE, PRECISION, SCALE, ISNULL
   }
 
   public static final int NO_NULLS = 0;
@@ -139,9 +139,6 @@ public class BeeColumn extends TableColumn implements BeeSerializable, Transform
           break;
         case LABEL:
           setLabel(value);
-          break;
-        case SQL_TYPE:
-          setSqlType(BeeUtils.toInt(value));
           break;
         case VALUE_TYPE:
           setType(ValueType.getByTypeCode(value));
@@ -304,9 +301,6 @@ public class BeeColumn extends TableColumn implements BeeSerializable, Transform
           break;
         case LABEL:
           arr[i++] = getLabel();
-          break;
-        case SQL_TYPE:
-          arr[i++] = getSqlType();
           break;
         case VALUE_TYPE:
           arr[i++] = (getType() == null) ? null : getType().getTypeCode();

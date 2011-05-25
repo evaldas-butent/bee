@@ -1196,7 +1196,7 @@ public class CliWorker {
           continue;
         }
 
-        if (BeeUtils.isNumeric(arr[i])) {
+        if (BeeUtils.isDouble(arr[i])) {
           value = BeeUtils.toDouble(arr[i]);
         } else {
           unit = StyleUtils.parseUnit(arr[i]);

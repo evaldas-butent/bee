@@ -1,0 +1,132 @@
+package com.butent.bee.shared.data.value;
+
+import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.DateTime;
+import com.butent.bee.shared.JustDate;
+import com.butent.bee.shared.utils.BeeUtils;
+
+import java.math.BigDecimal;
+
+public class DecimalValue extends Value {
+
+  private static final DecimalValue NULL_VALUE = new DecimalValue(null);
+
+  public static DecimalValue getNullValue() {
+    return NULL_VALUE;
+  }
+
+  private BigDecimal value;
+
+  public DecimalValue(BigDecimal value) {
+    this.value = value;
+  }
+
+  @Override
+  public int compareTo(Value o) {
+    int diff = precompareTo(o);
+    if (diff == BeeConst.COMPARE_UNKNOWN) {
+      diff = getDecimal().compareTo(o.getDecimal());
+    }
+    return diff;
+  }
+  
+  @Override
+  public Boolean getBoolean() {
+    if (isNull()) {
+      return null;
+    }
+    return !BeeUtils.isZero(value);
+  }
+
+  @Override
+  public JustDate getDate() {
+    if (isNull()) {
+      return null;
+    }
+    return new JustDate(value.intValue());
+  }
+
+  @Override
+  public DateTime getDateTime() {
+    if (isNull()) {
+      return null;
+    }
+    return new DateTime(value.longValue());
+  }
+
+  @Override
+  public BigDecimal getDecimal() {
+    return value;
+  }
+
+  @Override
+  public Double getDouble() {
+    if (isNull()) {
+      return null;
+    }
+    return value.doubleValue();
+  }
+
+  @Override
+  public Integer getInteger() {
+    if (isNull()) {
+      return null;
+    }
+    return value.intValue();
+  }
+
+  @Override
+  public Long getLong() {
+    if (isNull()) {
+      return null;
+    }
+    return value.longValue();
+  }
+
+  @Override
+  public BigDecimal getObjectValue() {
+    if (isNull()) {
+      return null;
+    }
+    return value;
+  }
+
+  @Override
+  public String getString() {
+    if (isNull()) {
+      return null;
+    }
+    return value.toString();
+  }
+
+  @Override
+  public ValueType getType() {
+    return ValueType.DECIMAL;
+  }
+
+  @Override
+  public int hashCode() {
+    if (isNull()) {
+      return 0;
+    }
+    return getDecimal().hashCode();
+  }
+
+  @Override
+  public boolean isNull() {
+    return this == NULL_VALUE || getDecimal() == null;
+  }
+
+  @Override
+  public String toString() {
+    if (isNull()) {
+      return BeeConst.NULL;
+    }
+    return value.toString();
+  }
+
+  @Override
+  public String transform() {
+    return toString();
+  }
+}

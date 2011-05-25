@@ -1,10 +1,13 @@
 package com.butent.bee.shared.data;
 
+import com.butent.bee.shared.DateTime;
+import com.butent.bee.shared.JustDate;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Sequence;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.value.ValueType;
 
+import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
 
@@ -13,6 +16,7 @@ import java.util.List;
  */
 
 public interface IsTable<RowType extends IsRow, ColType extends IsColumn> extends IsData {
+
   int addColumn(ColType column);
 
   int addColumn(ValueType type);
@@ -91,28 +95,7 @@ public interface IsTable<RowType extends IsRow, ColType extends IsColumn> extend
 
   void removeRows(int rowIndex, int rowCount);
 
-  void setCell(int rowIndex, int colIndex, boolean value);
-
-  void setCell(int rowIndex, int colIndex, boolean value, String formattedValue);
-
-  void setCell(int rowIndex, int colIndex, boolean value, String formattedValue,
-      CustomProperties properties);
-
-  void setCell(int rowIndex, int colIndex, double value);
-
-  void setCell(int rowIndex, int colIndex, double value, String formattedValue);
-
-  void setCell(int rowIndex, int colIndex, double value, String formattedValue,
-      CustomProperties properties);
-
   void setCell(int rowIndex, int colIndex, IsCell cell);
-
-  void setCell(int rowIndex, int colIndex, String value);
-
-  void setCell(int rowIndex, int colIndex, String value, String formattedValue);
-
-  void setCell(int rowIndex, int colIndex, String value, String formattedValue,
-      CustomProperties properties);
 
   void setCell(int rowIndex, int colIndex, Value value);
 
@@ -145,11 +128,21 @@ public interface IsTable<RowType extends IsRow, ColType extends IsColumn> extend
 
   void setTableProperty(String propertyKey, Object propertyValue);
 
-  void setValue(int rowIndex, int colIndex, boolean value);
+  void setValue(int rowIndex, int colIndex, Boolean value);
 
-  void setValue(int rowIndex, int colIndex, double value);
+  void setValue(int rowIndex, int colIndex, Double value);
 
   void setValue(int rowIndex, int colIndex, String value);
+
+  void setValue(int rowIndex, int colIndex, Integer value);
+  
+  void setValue(int rowIndex, int colIndex, Long value);
+  
+  void setValue(int rowIndex, int colIndex, BigDecimal value);
+  
+  void setValue(int rowIndex, int colIndex, JustDate value);
+  
+  void setValue(int rowIndex, int colIndex, DateTime value);
 
   void setValue(int rowIndex, int colIndex, Value value);
 

@@ -7,6 +7,7 @@ import com.google.gwt.user.client.Event;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
+import com.butent.bee.client.Settings;
 import com.butent.bee.client.canvas.CanvasDemo;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.event.EventUtils;
@@ -136,6 +137,8 @@ public class CliWidget extends InputText {
       CliWorker.querySelector(z, args);
     } else if (z.startsWith("serv") || z.startsWith("sys")) {
       BeeKeeper.getRpc().invoke("systemInfo");
+    } else if (z.equals("settings")) {
+      BeeKeeper.getUi().showGrid(Settings.getSettings());
     } else if (z.equals("size") && arr.length >= 2) {
       CliWorker.showSize(arr);
     } else if (z.equals("slider")) {

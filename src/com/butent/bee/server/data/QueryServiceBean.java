@@ -146,7 +146,7 @@ public class QueryServiceBean {
     return getSingleValue(query).getBoolean(0, 0);
   }
 
-  public boolean[] getBooleanColumn(IsQuery query) {
+  public Boolean[] getBooleanColumn(IsQuery query) {
     return getSingleColumn(query).getBooleanColumn(0);
   }
 
@@ -208,7 +208,7 @@ public class QueryServiceBean {
     return getSingleValue(query).getDouble(0, 0);
   }
 
-  public double[] getDoubleColumn(IsQuery query) {
+  public Double[] getDoubleColumn(IsQuery query) {
     return getSingleColumn(query).getDoubleColumn(0);
   }
 
@@ -216,7 +216,7 @@ public class QueryServiceBean {
     return getSingleValue(query).getInt(0, 0);
   }
 
-  public int[] getIntColumn(IsQuery query) {
+  public Integer[] getIntColumn(IsQuery query) {
     return getSingleColumn(query).getIntColumn(0);
   }
 
@@ -224,7 +224,7 @@ public class QueryServiceBean {
     return getSingleValue(query).getLong(0, 0);
   }
 
-  public long[] getlongColumn(IsQuery query) {
+  public Long[] getlongColumn(IsQuery query) {
     return getSingleColumn(query).getLongColumn(0);
   }
 
@@ -365,6 +365,7 @@ public class QueryServiceBean {
             row[i] = BooleanValue.pack(rs.getBoolean(columns[i].getIndex()));
             break;
           case NUMBER:
+          case DECIMAL:  
             if (columns[i].getScale() > 0) {
               row[i] = BeeUtils.removeTrailingZeros(rs.getString(columns[i].getIndex()));
               break;

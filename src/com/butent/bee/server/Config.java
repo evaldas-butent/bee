@@ -74,6 +74,45 @@ public class Config {
     return null;
   }
 
+  public static List<File> getDefaultSearchDirectories() {
+    return Lists.newArrayList(USER_DIR, CONFIG_DIR, SCHEMA_DIR, WAR_DIR, SOURCE_DIR);
+  }
+  
+  public static List<File> getDirectories(String pfx) {
+    if (BeeUtils.isEmpty(pfx)) {
+      return null;
+    }
+    
+    List<File> directories = Lists.newArrayList();
+    File dir;
+
+    for (int i = 0; i < pfx.length(); i++) {
+      switch (pfx.charAt(i)) {
+        case 'c':
+          dir = CONFIG_DIR;
+          break;
+        case 's':
+          dir = SOURCE_DIR;
+          break;
+        case 'u':
+          dir = USER_DIR;
+          break;
+        case 'w':
+          dir = WAR_DIR;
+          break;
+        case 'x':
+          dir = SCHEMA_DIR;
+          break;
+        default:
+          dir = null;
+      }
+      if (dir != null && !directories.contains(dir)) {
+        directories.add(dir);
+      }
+    }
+    return directories;
+  }
+
   public static List<Filter> getFileBlacklist() {
     if (fileBlacklist == null) {
       fileBlacklist = Lists.newArrayList();

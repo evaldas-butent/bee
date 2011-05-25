@@ -12,6 +12,7 @@ import com.butent.bee.shared.DateTime;
 import com.butent.bee.shared.JustDate;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
+import com.butent.bee.shared.utils.TimeUtils;
 
 import java.math.BigDecimal;
 import java.util.Iterator;
@@ -120,20 +121,20 @@ public class SimpleRowSet implements Iterable<Map<String, String>>, BeeSerializa
     }
   }
 
-  public boolean getBoolean(int rowIndex, int colIndex) {
-    return BeeUtils.toBoolean(getValue(rowIndex, colIndex));
+  public Boolean getBoolean(int rowIndex, int colIndex) {
+    return BeeUtils.toBooleanOrNull(getValue(rowIndex, colIndex));
   }
 
-  public boolean getBoolean(int rowIndex, String colName) {
-    return BeeUtils.toBoolean(getValue(rowIndex, colName));
+  public Boolean getBoolean(int rowIndex, String colName) {
+    return BeeUtils.toBooleanOrNull(getValue(rowIndex, colName));
   }
 
-  public boolean[] getBooleanColumn(int index) {
+  public Boolean[] getBooleanColumn(int index) {
     Assert.contains(columns.inverse(), index);
-    boolean[] col = new boolean[getNumberOfRows()];
+    Boolean[] col = new Boolean[getNumberOfRows()];
 
     for (int i = 0; i < getNumberOfRows(); i++) {
-      col[i] = BeeUtils.toBoolean(rows.get(i)[index]);
+      col[i] = BeeUtils.toBooleanOrNull(rows.get(i)[index]);
     }
     return col;
   }
@@ -168,11 +169,11 @@ public class SimpleRowSet implements Iterable<Map<String, String>>, BeeSerializa
   }
 
   public JustDate getDate(int rowIndex, int colIndex) {
-    return new JustDate(getInt(rowIndex, colIndex));
+    return TimeUtils.toDateOrNull(getValue(rowIndex, colIndex));
   }
 
   public JustDate getDate(int rowIndex, String colName) {
-    return new JustDate(getInt(rowIndex, colName));
+    return TimeUtils.toDateOrNull(getValue(rowIndex, colName));
   }
 
   public JustDate[] getDateColumn(int index) {
@@ -180,17 +181,17 @@ public class SimpleRowSet implements Iterable<Map<String, String>>, BeeSerializa
     JustDate[] col = new JustDate[getNumberOfRows()];
 
     for (int i = 0; i < getNumberOfRows(); i++) {
-      col[i] = new JustDate(BeeUtils.toInt(rows.get(i)[index]));
+      col[i] = TimeUtils.toDateOrNull(rows.get(i)[index]);
     }
     return col;
   }
 
   public DateTime getDateTime(int rowIndex, int colIndex) {
-    return new DateTime(getLong(rowIndex, colIndex));
+    return TimeUtils.toDateTimeOrNull(getValue(rowIndex, colIndex));
   }
 
   public DateTime getDateTime(int rowIndex, String colName) {
-    return new DateTime(getLong(rowIndex, colName));
+    return TimeUtils.toDateTimeOrNull(getValue(rowIndex, colName));
   }
 
   public DateTime[] getDateTimeColumn(int index) {
@@ -198,17 +199,17 @@ public class SimpleRowSet implements Iterable<Map<String, String>>, BeeSerializa
     DateTime[] col = new DateTime[getNumberOfRows()];
 
     for (int i = 0; i < getNumberOfRows(); i++) {
-      col[i] = new DateTime(BeeUtils.toLong(rows.get(i)[index]));
+      col[i] = TimeUtils.toDateTimeOrNull(rows.get(i)[index]);
     }
     return col;
   }
 
   public BigDecimal getDecimal(int rowIndex, int colIndex) {
-    return new BigDecimal(getValue(rowIndex, colIndex));
+    return BeeUtils.toDecimalOrNull(getValue(rowIndex, colIndex));
   }
 
   public BigDecimal getDecimal(int rowIndex, String colName) {
-    return new BigDecimal(getValue(rowIndex, colName));
+    return BeeUtils.toDecimalOrNull(getValue(rowIndex, colName));
   }
 
   public BigDecimal[] getDecimalColumn(int index) {
@@ -216,61 +217,61 @@ public class SimpleRowSet implements Iterable<Map<String, String>>, BeeSerializa
     BigDecimal[] col = new BigDecimal[getNumberOfRows()];
 
     for (int i = 0; i < getNumberOfRows(); i++) {
-      col[i] = new BigDecimal(rows.get(i)[index]);
+      col[i] = BeeUtils.toDecimalOrNull(rows.get(i)[index]);
     }
     return col;
   }
 
-  public double getDouble(int rowIndex, int colIndex) {
-    return BeeUtils.toDouble(getValue(rowIndex, colIndex));
+  public Double getDouble(int rowIndex, int colIndex) {
+    return BeeUtils.toDoubleOrNull(getValue(rowIndex, colIndex));
   }
 
-  public double getDouble(int rowIndex, String colName) {
-    return BeeUtils.toDouble(getValue(rowIndex, colName));
+  public Double getDouble(int rowIndex, String colName) {
+    return BeeUtils.toDoubleOrNull(getValue(rowIndex, colName));
   }
 
-  public double[] getDoubleColumn(int index) {
+  public Double[] getDoubleColumn(int index) {
     Assert.contains(columns.inverse(), index);
-    double[] col = new double[getNumberOfRows()];
+    Double[] col = new Double[getNumberOfRows()];
 
     for (int i = 0; i < getNumberOfRows(); i++) {
-      col[i] = BeeUtils.toDouble(rows.get(i)[index]);
+      col[i] = BeeUtils.toDoubleOrNull(rows.get(i)[index]);
     }
     return col;
   }
 
-  public int getInt(int rowIndex, int colIndex) {
-    return BeeUtils.toInt(getValue(rowIndex, colIndex));
+  public Integer getInt(int rowIndex, int colIndex) {
+    return BeeUtils.toIntOrNull(getValue(rowIndex, colIndex));
   }
 
-  public int getInt(int rowIndex, String colName) {
-    return BeeUtils.toInt(getValue(rowIndex, colName));
+  public Integer getInt(int rowIndex, String colName) {
+    return BeeUtils.toIntOrNull(getValue(rowIndex, colName));
   }
 
-  public int[] getIntColumn(int index) {
+  public Integer[] getIntColumn(int index) {
     Assert.contains(columns.inverse(), index);
-    int[] col = new int[getNumberOfRows()];
+    Integer[] col = new Integer[getNumberOfRows()];
 
     for (int i = 0; i < getNumberOfRows(); i++) {
-      col[i] = BeeUtils.toInt(rows.get(i)[index]);
+      col[i] = BeeUtils.toIntOrNull(rows.get(i)[index]);
     }
     return col;
   }
 
-  public long getLong(int rowIndex, int colIndex) {
-    return BeeUtils.toLong(getValue(rowIndex, colIndex));
+  public Long getLong(int rowIndex, int colIndex) {
+    return BeeUtils.toLongOrNull(getValue(rowIndex, colIndex));
   }
 
-  public long getLong(int rowIndex, String colName) {
-    return BeeUtils.toLong(getValue(rowIndex, colName));
+  public Long getLong(int rowIndex, String colName) {
+    return BeeUtils.toLongOrNull(getValue(rowIndex, colName));
   }
 
-  public long[] getLongColumn(int index) {
+  public Long[] getLongColumn(int index) {
     Assert.contains(columns.inverse(), index);
-    long[] col = new long[getNumberOfRows()];
+    Long[] col = new Long[getNumberOfRows()];
 
     for (int i = 0; i < getNumberOfRows(); i++) {
-      col[i] = BeeUtils.toLong(rows.get(i)[index]);
+      col[i] = BeeUtils.toLongOrNull(rows.get(i)[index]);
     }
     return col;
   }

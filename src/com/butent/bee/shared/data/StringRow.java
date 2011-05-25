@@ -8,8 +8,10 @@ import com.butent.bee.shared.DateTime;
 import com.butent.bee.shared.JustDate;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Sequence;
+import com.butent.bee.shared.data.value.TextValue;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -17,6 +19,7 @@ import java.util.List;
  */
 
 public class StringRow extends AbstractRow {
+
   private Sequence<String> values;
 
   public StringRow(long id, Sequence<String> values) {
@@ -26,12 +29,8 @@ public class StringRow extends AbstractRow {
 
   @Override
   public void addCell(IsCell cell) {
-    addCell(cell.getValue().getString());
-  }
-
-  @Override
-  public void addCell(String value) {
-    values.insert(values.getLength(), value);
+    Assert.notNull(cell);
+    values.add(cell.getValue().getString());
   }
 
   @Override
@@ -55,7 +54,7 @@ public class StringRow extends AbstractRow {
   @Override
   public IsCell getCell(int index) {
     assertIndex(index);
-    return new TableCell(values.get(index));
+    return new TableCell(new TextValue(values.get(index)));
   }
 
   @Override
@@ -72,7 +71,7 @@ public class StringRow extends AbstractRow {
     if (isNull(col)) {
       return null;
     }
-    return new JustDate(getInt(col));
+    return new JustDate(getInteger(col));
   }
 
   @Override
@@ -84,11 +83,16 @@ public class StringRow extends AbstractRow {
   }
 
   @Override
+  public BigDecimal getDecimal(int col) {
+    return BeeUtils.toDecimalOrNull(getString(col));
+  }
+
+  @Override
   public Double getDouble(int col) {
     return BeeUtils.toDoubleOrNull(getString(col));
   }
 
-  public Integer getInt(int col) {
+  public Integer getInteger(int col) {
     return BeeUtils.toIntOrNull(getString(col));
   }
 
