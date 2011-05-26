@@ -18,10 +18,10 @@ import com.butent.bee.client.data.Provider;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.utils.BeeCommand;
-import com.butent.bee.client.view.edit.EditEndEvent;
 import com.butent.bee.client.view.GridContainerImpl;
 import com.butent.bee.client.view.GridContainerView;
 import com.butent.bee.client.view.HasSearch;
+import com.butent.bee.client.view.edit.EditEndEvent;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.search.SearchView;
 import com.butent.bee.shared.Assert;
@@ -212,10 +212,16 @@ public class GridPresenter implements Presenter, EditEndEvent.Handler {
     final String viewName = getDataName();
     final long rowId = event.getRowValue().getId();
     final long version = event.getRowValue().getVersion();
-    final String columnId = event.getColumnId();
+    final String columnId = event.getColumn().getId();
     final String newValue = event.getNewValue();
 
-    Queries.updateCell(viewName, rowId, version, columnId, event.getOldValue(), newValue,
+    BeeRowSet rs = new BeeRowSet(new BeeColumn(event.getColumn().getType(), columnId));
+    rs.setViewName(viewName);
+    rs.addRow(rowId, version, new String[] {event.getOldValue()});
+    rs.setValue(0, 0, newValue);
+
+    // Queries.updateCell(viewName, rowId, version, columnId, event.getOldValue(), newValue,
+    Queries.updateCell(rs,
         new Queries.VersionCallback() {
           public void onFailure(String reason) {
             showFailure("Update Cell", reason);
@@ -315,7 +321,7 @@ public class GridPresenter implements Presenter, EditEndEvent.Handler {
     }
     return searchers;
   }
-  
+
   private void showFailure(String activity, String reason) {
     getView().getContent().notifySevere(activity, reason);
   }

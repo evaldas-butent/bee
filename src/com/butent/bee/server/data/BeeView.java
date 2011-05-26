@@ -40,17 +40,17 @@ public class BeeView {
     private final String field;
     private final DataType type;
     private final boolean notNull;
-    private boolean sourceField;
+    private boolean editable;
     private String targetAlias;
 
     public ViewField(String tbl, String als, String fld, DataType type, boolean notNull,
-        boolean sourceField) {
+        boolean editable) {
       this.table = tbl;
       this.alias = als;
       this.field = fld;
       this.type = type;
       this.notNull = notNull;
-      this.sourceField = sourceField;
+      this.editable = editable;
     }
 
     public String getAlias() {
@@ -73,12 +73,12 @@ public class BeeView {
       return type;
     }
 
-    public boolean isNotNull() {
-      return notNull;
+    public boolean isEditable() {
+      return editable;
     }
 
-    public boolean isSourceField() {
-      return sourceField;
+    public boolean isNotNull() {
+      return notNull;
     }
 
     public void setTargetAlias(String als) {
@@ -302,6 +302,10 @@ public class BeeView {
     return !BeeUtils.isEmpty(colName) && columns.containsKey(colName.toLowerCase());
   }
 
+  public boolean isEditable(String colName) {
+    return getViewField(colName).isEditable();
+  }
+
   public boolean isEmpty() {
     return BeeUtils.isEmpty(getColumnCount());
   }
@@ -312,10 +316,6 @@ public class BeeView {
 
   public boolean isReadOnly() {
     return readOnly;
-  }
-
-  public boolean isSourceField(String colName) {
-    return getViewField(colName).isSourceField();
   }
 
   void addField(String colName, String expression, String locale, Map<String, BeeTable> tables) {

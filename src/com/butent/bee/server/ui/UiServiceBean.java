@@ -109,7 +109,8 @@ public class UiServiceBean {
       } else if (BeeUtils.same(svc, Service.DELETE_ROWS)) {
         response = deleteRows(reqInfo);
       } else if (BeeUtils.same(svc, Service.UPDATE_CELL)) {
-        response = updateCell(reqInfo);
+        // response = updateCell(reqInfo);
+        response = updateRow(reqInfo);
 
       } else {
         String msg = BeeUtils.concat(1, svc, "loader service not recognized");
@@ -137,7 +138,7 @@ public class UiServiceBean {
 
     return ResponseObject.response(sys.deleteRows(viewName, RowInfoCollection.restore(rowInfos)));
   }
-  
+
   private ResponseObject doSql(RequestInfo reqInfo) {
     String sql = reqInfo.getContent();
     String[] arr = sql.split(" ", 2);
@@ -415,5 +416,9 @@ public class UiServiceBean {
 
     return sys.updateCell(viewName, BeeUtils.toLong(rowId), BeeUtils.toLong(version), columnId,
         oldValue, newValue);
+  }
+
+  private ResponseObject updateRow(RequestInfo reqInfo) {
+    return sys.updateRow(BeeRowSet.restore(reqInfo.getContent()), false);
   }
 }

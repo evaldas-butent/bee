@@ -1,6 +1,7 @@
 package com.butent.bee.shared.data;
 
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.StringArray;
 import com.butent.bee.shared.data.value.ValueType;
@@ -29,8 +30,8 @@ public class BeeRow extends StringRow implements BeeSerializable {
 
   private static Logger logger = Logger.getLogger(BeeRow.class.getName());
 
-  static BeeRow restore(String s, int cellCount) {
-    BeeRow row = new BeeRow(0, new String[cellCount]);
+  public static BeeRow restore(String s) {
+    BeeRow row = new BeeRow(0, 0);
     row.deserialize(s);
     return row;
   }
@@ -38,7 +39,12 @@ public class BeeRow extends StringRow implements BeeSerializable {
   private long newId = 0;
   private Map<Integer, String> shadow = null;
 
-  BeeRow(long id, String[] row) {
+  public BeeRow(long id, long version) {
+    this(id, BeeConst.EMPTY_STRING_ARRAY);
+    setVersion(version);
+  }
+
+  public BeeRow(long id, String[] row) {
     super(id, new StringArray(row));
   }
 
@@ -110,7 +116,7 @@ public class BeeRow extends StringRow implements BeeSerializable {
         return getString(index);
       case TIMEOFDAY:
         return getString(index);
-      case INTEGER:   
+      case INTEGER:
         return getInteger(index);
       case LONG:
         return getLong(index);

@@ -62,8 +62,8 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
 
     private Editor editor = null;
     private IsRow rowValue = null;
-    
-    private State state = State.PENDING; 
+
+    private State state = State.PENDING;
 
     private EditableColumn(int colIndex, BeeColumn dataColumn) {
       this.colIndex = colIndex;
@@ -91,7 +91,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
         closeEditor();
       }
     }
-    
+
     public void onKeyDown(KeyDownEvent event) {
       int keyCode = event.getNativeKeyCode();
       NativeEvent nativeEvent = event.getNativeEvent();
@@ -106,7 +106,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
           EventUtils.eatEvent(nativeEvent);
           endEdit();
           break;
-        
+
         case KeyCodes.KEY_TAB:
         case KeyCodes.KEY_UP:
         case KeyCodes.KEY_DOWN:
@@ -125,7 +125,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       StyleUtils.hideDisplay(getEditor().asWidget());
       getGrid().refocus();
     }
-    
+
     private boolean endEdit() {
       if (State.OPEN.equals(getState())) {
         String oldValue = getRowValue().getString(getColIndex());
@@ -135,17 +135,17 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
           closeEditor();
           return true;
         }
-        
+
         if (!getEditor().validate()) {
           notifySevere("Validation error", editorValue);
           return false;
         }
-        
+
         String newValue = getEditor().getNormalizedValue();
         closeEditor();
 
         if (!BeeUtils.equalsTrimRight(oldValue, newValue)) {
-          fireEvent(new EditEndEvent(getRowValue(), getDataColumn().getLabel(), oldValue, newValue));
+          fireEvent(new EditEndEvent(getRowValue(), getDataColumn(), oldValue, newValue));
         }
         return true;
       }
@@ -205,7 +205,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
   private final Map<String, EditableColumn> editableColumns = Maps.newHashMap();
 
   private final Notification notification = new Notification();
-  
+
   public CellGridImpl() {
     super();
   }
@@ -486,7 +486,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     getGrid().estimateHeaderWidths();
 
     getGrid().addEditStartHandler(this);
-    
+
     add(getGrid());
     add(getNotification());
   }
@@ -584,7 +584,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     if (editor == null) {
       editor = EditorFactory.createEditor(editableColumn.getDataColumn());
       editor.asWidget().addStyleName(STYLE_EDITOR);
-      
+
       editor.addKeyDownHandler(editableColumn);
       editor.addBlurHandler(editableColumn);
 
@@ -595,7 +595,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
 
     editableColumn.setRowValue(event.getRowValue());
     editableColumn.setState(State.OPEN);
-   
+
     Element editorElement = editor.asWidget().getElement();
     if (event.getSourceElement() != null) {
       StyleUtils.copyBox(event.getSourceElement(), editorElement);
@@ -609,12 +609,12 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     StyleUtils.setZIndex(editorElement, getGrid().getZIndex() + 1);
     StyleUtils.unhideDisplay(editorElement);
 
-    editor.startEdit(event.getRowValue().getString(editableColumn.getColIndex()), 
+    editor.startEdit(event.getRowValue().getString(editableColumn.getColIndex()),
         BeeUtils.toChar(event.getCharCode()));
-    
+
     editor.setFocus(true);
   }
-  
+
   public void setViewPresenter(Presenter presenter) {
     this.viewPresenter = presenter;
   }
