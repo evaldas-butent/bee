@@ -40,6 +40,8 @@ public abstract class Value implements Comparable<Value>, Transformable, BeeSeri
         return LongValue.getNullValue();
       case DECIMAL:
         return DecimalValue.getNullValue();
+      default:
+        Assert.unsupported("Unsupported value type: " + type);
     }
     return null;
   }
@@ -110,6 +112,8 @@ public abstract class Value implements Comparable<Value>, Transformable, BeeSeri
         return new LongValue(BeeUtils.toLongOrNull(value));
       case DECIMAL:
         return new DecimalValue(BeeUtils.toDecimalOrNull(value));
+      default:
+        Assert.unsupported("Unsupported value type: " + type);
     }
     return null;
   }
@@ -119,10 +123,10 @@ public abstract class Value implements Comparable<Value>, Transformable, BeeSeri
     Assert.lengthEquals(arr, 2);
     String clazz = arr[0];
     String data = arr[1];
-    
+
     ValueType type = ValueType.getByTypeCode(clazz);
     Assert.notNull(type, "Unsupported value type: " + clazz);
-    
+
     return parseValue(type, data);
   }
 
@@ -181,7 +185,7 @@ public abstract class Value implements Comparable<Value>, Transformable, BeeSeri
         value = ((DateTime) value).getTime();
       }
     }
-    return Codec.beeSerializeAll(BeeUtils.getClassName(this.getClass()), value);
+    return Codec.beeSerializeAll(getType().getTypeCode(), value);
   }
 
   public abstract String transform();

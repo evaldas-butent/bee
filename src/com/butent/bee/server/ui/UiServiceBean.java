@@ -1,6 +1,7 @@
 package com.butent.bee.server.ui;
 
 import com.butent.bee.server.Config;
+import com.butent.bee.server.data.BeeView;
 import com.butent.bee.server.data.IdGeneratorBean;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
@@ -18,6 +19,7 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.Order;
+import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.data.view.RowInfoCollection;
 import com.butent.bee.shared.ui.UiComponent;
 import com.butent.bee.shared.utils.ArrayUtils;
@@ -136,7 +138,32 @@ public class UiServiceBean {
     Assert.notEmpty(viewName);
     Assert.notEmpty(rowInfos);
 
-    return ResponseObject.response(sys.deleteRows(viewName, RowInfoCollection.restore(rowInfos)));
+    ResponseObject response = new ResponseObject();
+    BeeView view = sys.getView(viewName);
+    int cnt = 0;
+
+    if (view.isReadOnly()) {
+      response.addError("View", view.getName(), "is read only.");
+    } else {
+      for (RowInfo row : RowInfoCollection.restore(rowInfos)) {
+        int res = sys.deleteRow(viewName, row);
+
+        switch (res) {
+          case -1:
+            response.addError("Error deleting row:", row.getId());
+            break;
+
+          case 0:
+            response.addError("Optimistic lock exception:", row.getId());
+            break;
+
+          default:
+            cnt++;
+            break;
+        }
+      }
+    }
+    return response.setResponse(cnt);
   }
 
   private ResponseObject doSql(RequestInfo reqInfo) {

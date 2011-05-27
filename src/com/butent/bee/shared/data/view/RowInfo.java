@@ -4,6 +4,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.Transformable;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
 
 /**
  * Implements operations with data row - serialization, comparison, transformations.
@@ -19,10 +20,16 @@ public class RowInfo implements BeeSerializable, Comparable<RowInfo>, Transforma
   }
 
   private long id;
+  private long version;
 
   public RowInfo(long id) {
+    this(id, 0);
+  }
+
+  public RowInfo(long id, long version) {
     super();
-    this.id = id;
+    setId(id);
+    setVersion(version);
   }
 
   private RowInfo() {
@@ -31,15 +38,20 @@ public class RowInfo implements BeeSerializable, Comparable<RowInfo>, Transforma
   @Override
   public int compareTo(RowInfo o) {
     Assert.notNull(o);
-    return Long.valueOf(getId()).compareTo(o.getId());
+    int res = Long.valueOf(getId()).compareTo(o.getId());
+
+    if (res == 0) {
+      res = Long.valueOf(getVersion()).compareTo(o.getVersion());
+    }
+    return res;
   }
 
   @Override
   public void deserialize(String s) {
-    Assert.notEmpty(s);
-    long x = BeeUtils.toLong(s);
-    Assert.isTrue(x != 0);
-    setId(x);
+    String[] arr = Codec.beeDeserialize(s);
+    Assert.lengthEquals(arr, 2);
+    setId(BeeUtils.toLong(arr[0]));
+    setVersion(BeeUtils.toLong(arr[1]));
   }
 
   @Override
@@ -50,26 +62,34 @@ public class RowInfo implements BeeSerializable, Comparable<RowInfo>, Transforma
     if (!(obj instanceof RowInfo)) {
       return false;
     }
-    return getId() == ((RowInfo) obj).getId();
+    return getId() == ((RowInfo) obj).getId() && getVersion() == ((RowInfo) obj).getVersion();
   }
 
   public long getId() {
     return id;
   }
 
+  public long getVersion() {
+    return version;
+  }
+
   @Override
   public int hashCode() {
-    return Long.valueOf(getId()).hashCode();
+    final int prime = 31;
+    int result = 1;
+    result = prime * result + Long.valueOf(getId()).hashCode();
+    result = prime * result + Long.valueOf(getVersion()).hashCode();
+    return result;
   }
 
   @Override
   public String serialize() {
-    return Long.toString(getId());
+    return Codec.beeSerializeAll(getId(), getVersion());
   }
 
   @Override
   public String toString() {
-    return BeeUtils.toString(getId());
+    return BeeUtils.concat(0, "ID=", getId(), ", VERSION=" + getVersion());
   }
 
   public String transform() {
@@ -77,6 +97,11 @@ public class RowInfo implements BeeSerializable, Comparable<RowInfo>, Transforma
   }
 
   private void setId(long id) {
+    Assert.notEmpty(id);
     this.id = id;
+  }
+
+  private void setVersion(long version) {
+    this.version = version;
   }
 }

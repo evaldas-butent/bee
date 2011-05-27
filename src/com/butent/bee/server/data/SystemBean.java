@@ -40,7 +40,6 @@ import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
-import com.butent.bee.shared.data.view.RowInfoCollection;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.LogUtils;
 import com.butent.bee.shared.utils.TimeUtils;
@@ -389,27 +388,29 @@ public class SystemBean {
     return c;
   }
 
-  public int deleteRows(String viewName, RowInfoCollection rows) {
-    if (BeeUtils.isEmpty(viewName) || rows == null) {
-      return -1;
-    }
-    String idName = getIdName(viewName);
-    if (BeeUtils.isEmpty(idName)) {
-      return -1;
-    }
+  public int deleteRow(String viewName, RowInfo row) {
+    int res = -1;
 
-    int result = 0;
+    if (!BeeUtils.isEmpty(viewName) && row != null) {
+      BeeView view = getView(viewName);
 
-    for (RowInfo rowInfo : rows) {
-      long id = rowInfo.getId();
-      int z = qs.updateData(new SqlDelete(viewName).setWhere(SqlUtils.equal(viewName, idName, id)));
-      if (z > 0) {
-        result++;
-      } else if (z < 0) {
-        break;
+      if (!view.isReadOnly()) {
+        String tblName = view.getSource();
+        IsCondition wh = SqlUtils.equal(tblName, getIdName(tblName), row.getId());
+
+        if (!BeeUtils.isEmpty(row.getVersion())) {
+          wh = SqlUtils.and(wh, SqlUtils.equal(tblName, getLockName(tblName), row.getVersion()));
+        }
+        res = qs.updateData(new SqlDelete(tblName).setWhere(wh));
+
+        if (res > 0
+            && BeeUtils.inList(tblName, UserServiceBean.USER_TABLE, UserServiceBean.ROLE_TABLE,
+                UserServiceBean.USER_ROLES_TABLE)) {
+          usr.invalidateCache();
+        }
       }
     }
-    return result;
+    return res;
   }
 
   public ResponseObject editStateRoles(String tblName, String stateName) {
@@ -1101,6 +1102,11 @@ public class SystemBean {
         if (!response.hasError()) {
           response.addInfo("Update count:", c);
           response.setResponse(newRow);
+
+          if (BeeUtils.inList(tblName, UserServiceBean.USER_TABLE, UserServiceBean.ROLE_TABLE,
+              UserServiceBean.USER_ROLES_TABLE)) {
+            usr.invalidateCache();
+          }
         }
       }
     }
