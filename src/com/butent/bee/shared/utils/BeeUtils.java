@@ -411,7 +411,7 @@ public class BeeUtils {
     }
     return ok;
   }
-  
+
   public static boolean containsWhitespace(CharSequence cs) {
     if (cs == null) {
       return false;
@@ -618,7 +618,7 @@ public class BeeUtils {
       return trimRight(s1).equals(trimRight(s2));
     }
   }
-  
+
   /**
    * Raises the value {@code z} to the power of 10.
    * 
@@ -951,7 +951,7 @@ public class BeeUtils {
     }
     return ok;
   }
-  
+
   /**
    * Checks if value {@code x} is in {@code lst}.
    * 
@@ -1142,11 +1142,11 @@ public class BeeUtils {
     }
     return d != null;
   }
-  
+
   public static boolean isDelimited(CharSequence cs, char delimiter) {
     return isDelimited(cs, delimiter, delimiter);
   }
-  
+
   public static boolean isDelimited(CharSequence cs, char start, char end) {
     if (cs == null || cs.length() < 2) {
       return false;
@@ -1154,7 +1154,7 @@ public class BeeUtils {
       return cs.charAt(0) == start && cs.charAt(cs.length() - 1) == end;
     }
   }
-  
+
   /**
    * Checks if a character {@code c} is a digit.
    * 
@@ -1402,7 +1402,7 @@ public class BeeUtils {
     }
     return ok;
   }
-  
+
   public static boolean isNonNegative(Double d) {
     if (isDouble(d)) {
       return Double.compare(d, BeeConst.DOUBLE_ZERO) >= 0;
@@ -1410,7 +1410,7 @@ public class BeeUtils {
       return false;
     }
   }
-  
+
   /**
    * @param clazz the class to check for Enum constants
    * @param idx the index to check
@@ -1430,7 +1430,7 @@ public class BeeUtils {
       return false;
     }
   }
-  
+
   /**
    * Checks if an Object is a positive number.
    * 
@@ -1522,7 +1522,7 @@ public class BeeUtils {
       return false;
     }
   }
-  
+
   public static boolean isWhitespace(char ch) {
     return ch <= BeeConst.CHAR_SPACE || ch == BeeConst.CHAR_NBSP;
   }
@@ -1950,10 +1950,11 @@ public class BeeUtils {
 
   /**
    * Compares {@code x1} and {@code x2}.
+   * 
    * @param x1 the Object to compare
    * @param x2 the Object to compare
-   * @return 0 if both objects are equal, 1 if {@code x1} > {@code x2} and
-   * -1 if {@code x1} < {@code x2}.  
+   * @return 0 if both objects are equal, 1 if {@code x1} > {@code x2} and -1 if {@code x1} <
+   *         {@code x2}.
    */
   public static int precompare(Object x1, Object x2) {
     if (x1 == x2) {
@@ -1971,7 +1972,7 @@ public class BeeUtils {
     }
     return BeeConst.COMPARE_UNKNOWN;
   }
-  
+
   /**
    * Shows how much of the progress is done, separated by the default progress separator.
    * <p>
@@ -2353,7 +2354,7 @@ public class BeeUtils {
     }
     return s1.trim().equalsIgnoreCase(s2.trim());
   }
-  
+
   public static boolean sameSign(int i1, int i2) {
     return Integer.signum(i1) == Integer.signum(i2);
   }
@@ -2450,7 +2451,7 @@ public class BeeUtils {
       return false;
     }
   }
-  
+
   /**
    * Checks if {@code x} is a Boolean value.
    * 
@@ -2528,7 +2529,7 @@ public class BeeUtils {
       return BigDecimal.valueOf(x);
     }
   }
-  
+
   /**
    * Converts a String value {@code s} to Double.
    * 
@@ -2556,7 +2557,7 @@ public class BeeUtils {
     }
     return toDouble(s);
   }
-  
+
   /**
    * Converts a String value {@code s} to Float.
    * 
@@ -2587,7 +2588,7 @@ public class BeeUtils {
   public static int toInt(boolean b) {
     return b ? BeeConst.INT_TRUE : BeeConst.INT_FALSE;
   }
-  
+
   public static int toInt(Double d) {
     if (!isDouble(d)) {
       return 0;
@@ -2632,7 +2633,7 @@ public class BeeUtils {
     }
     return toInt(s);
   }
-  
+
   /**
    * Adds leading zeros to {@code x}. Converts {@code x} to a String and if it's length is less than
    * {@code n} adds them.
@@ -2661,7 +2662,7 @@ public class BeeUtils {
     }
     return d.longValue();
   }
-  
+
   /**
    * Converts a String value {@code s} to Long.
    * 
@@ -2693,18 +2694,18 @@ public class BeeUtils {
     }
     return toLong(s);
   }
-  
+
   public static int toNonNegativeInt(Integer x) {
     if (x == null) {
       return 0;
     }
     return Math.max(x, 0);
   }
-  
+
   public static int toNonNegativeInt(Double d) {
     return toNonNegativeInt(toInt(d));
   }
-  
+
   /**
    * Converts milliseconds {@code millis} to seconds. E.g 6010 is converted to 6.010.
    * 
@@ -2715,7 +2716,7 @@ public class BeeUtils {
     return Long.toString(millis / 1000) + BeeConst.STRING_POINT
         + toLeadingZeroes((int) (millis % 1000), 3);
   }
-  
+
   /**
    * Converts a Boolean value {@code b} to a String value.
    * 
@@ -2725,14 +2726,13 @@ public class BeeUtils {
   public static String toString(boolean b) {
     return b ? BeeConst.STRING_TRUE : BeeConst.STRING_FALSE;
   }
-  
+
   public static String toString(char c) {
-    return new String(new char[] { c });
+    return new String(new char[] {c});
   }
 
   /**
-   * Converts a Double value {@code x} to a String value.
-   * Removes trailing zeroes.
+   * Converts a Double value {@code x} to a String value. Removes trailing zeroes.
    * 
    * @param x value to convert
    * @return a String representation of {@code x}
@@ -2984,7 +2984,7 @@ public class BeeUtils {
     }
     return sb.toString();
   }
-  
+
   public static String trim(String s) {
     return (s == null) ? BeeConst.STRING_EMPTY : s.trim();
   }
@@ -2993,14 +2993,14 @@ public class BeeUtils {
     if (s == null || s.isEmpty()) {
       return BeeConst.STRING_EMPTY;
     }
-    
+
     int len = s.length();
     int pos = 0;
-    
+
     while (pos < len && isWhitespace(s.charAt(pos))) {
       pos++;
     }
-    
+
     if (pos >= len) {
       return BeeConst.STRING_EMPTY;
     } else if (pos > 0) {
@@ -3009,19 +3009,19 @@ public class BeeUtils {
       return s;
     }
   }
-  
+
   public static String trimRight(String s) {
     if (s == null || s.isEmpty()) {
       return BeeConst.STRING_EMPTY;
     }
-    
+
     int len = s.length();
     int pos = len;
-    
+
     while (pos > 0 && isWhitespace(s.charAt(pos - 1))) {
       pos--;
     }
-    
+
     if (pos <= 0) {
       return BeeConst.STRING_EMPTY;
     } else if (pos < len) {
@@ -3040,7 +3040,7 @@ public class BeeUtils {
   public static boolean unbox(Boolean box) {
     return (box == null) ? false : box;
   }
-  
+
   /**
    * Null-safe Integer unboxing.
    * 
@@ -3048,6 +3048,16 @@ public class BeeUtils {
    * @return unboxed int value or 0 if {@code box} is null
    */
   public static int unbox(Integer box) {
+    return (box == null) ? 0 : box;
+  }
+
+  /**
+   * Null-safe Long unboxing.
+   * 
+   * @param box an Long to unbox
+   * @return unboxed long value or 0 if {@code box} is null
+   */
+  public static long unbox(Long box) {
     return (box == null) ? 0 : box;
   }
 
