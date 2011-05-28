@@ -556,6 +556,17 @@ body, select {
 .bee-NotificationText {
 }
 
+.bee-Toggle {
+  font-size: large;
+  text-align: center;
+}
+.bee-Toggle-up-hovering {
+  color: red;
+}  
+.bee-Toggle-down-hovering {
+  color: green;
+}  
+
 .gwt-TreeItem-selected {
   background-color: #ffffaa;
 }

@@ -363,6 +363,9 @@ public class QueryServiceBean {
         switch (columns[i].getType()) {
           case BOOLEAN:
             row[i] = BooleanValue.pack(rs.getBoolean(columns[i].getIndex()));
+            if (rs.wasNull()) {
+              row[i] = BooleanValue.S_NULL;
+            }
             break;
           case NUMBER:
           case DECIMAL:

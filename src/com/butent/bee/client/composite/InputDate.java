@@ -132,7 +132,7 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat {
   }
 
   public DateTimeFormat getDateTimeFormat() {
-    return this.format;
+    return format;
   }
 
   public String getId() {
@@ -218,7 +218,13 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat {
   }
 
   public void setValue(String value, boolean fireEvents) {
-    setValue(AbstractDate.restore(value, getDateType()));
+    AbstractDate oldValue = getDate();
+    AbstractDate newValue = AbstractDate.restore(value, getDateType());
+    setValue(newValue);
+    
+    if (fireEvents && !TimeUtils.equals(oldValue, newValue)) {
+      ValueChangeEvent.fire(this, value);
+    }
   }
 
   public void startEdit(String oldValue, char charCode) {

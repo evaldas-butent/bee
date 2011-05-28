@@ -91,6 +91,7 @@ public class GridPresenter implements Presenter, EditEndEvent.Handler {
 
           public void onSuccess(Integer result) {
             BeeKeeper.getBus().fireEvent(new MultiDeleteEvent(getDataName(), rows));
+            showInfo("Deleted " + result + " rows");
           }
         });
       }
@@ -117,6 +118,8 @@ public class GridPresenter implements Presenter, EditEndEvent.Handler {
 
       if (result > 0) {
         getDataProvider().onFilterChanged(filter, result);
+      } else if (filter != null) {
+        showWarning("Filter: " + filter.transform(), "no data found");
       }
     }
   }
@@ -212,7 +215,7 @@ public class GridPresenter implements Presenter, EditEndEvent.Handler {
     final String viewName = getDataName();
     final long rowId = event.getRowValue().getId();
     final long version = event.getRowValue().getVersion();
-    final String columnId = event.getColumn().getId();
+    final String columnId = event.getColumn().getLabel();
     final String newValue = event.getNewValue();
 
     BeeRowSet rs = new BeeRowSet(new BeeColumn(event.getColumn().getType(), columnId));
@@ -224,6 +227,7 @@ public class GridPresenter implements Presenter, EditEndEvent.Handler {
     Queries.updateCell(rs,
         new Queries.VersionCallback() {
           public void onFailure(String reason) {
+            getView().getContent().refreshCell(rowId, columnId);
             showFailure("Update Cell", reason);
           }
 
@@ -303,8 +307,7 @@ public class GridPresenter implements Presenter, EditEndEvent.Handler {
     }
 
     Global.getMsgBoxen().confirm(BeeUtils.concat(1, "Delete", count, "rows"),
-        Lists.newArrayList("Do you really want to hurt me", "Do you really want to make me cry"),
-        new DeleteCallback(rows), StyleUtils.NAME_SUPER_SCARY);
+        Lists.newArrayList("SRSLY ?"), new DeleteCallback(rows), StyleUtils.NAME_SUPER_SCARY);
   }
 
   private String getDataName() {
@@ -326,6 +329,14 @@ public class GridPresenter implements Presenter, EditEndEvent.Handler {
     getView().getContent().notifySevere(activity, reason);
   }
 
+  private void showInfo(String... messages) {
+    getView().getContent().notifyInfo(messages);
+  }
+
+  private void showWarning(String... messages) {
+    getView().getContent().notifyWarning(messages);
+  }
+  
   private void updateFilter() {
     Collection<SearchView> searchers = getSearchers();
     Assert.notNull(searchers);

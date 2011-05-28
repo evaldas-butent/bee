@@ -50,7 +50,7 @@ public class FooterCell extends AbstractCell<String> {
       ValueUpdater<String> valueUpdater) {
     EventTarget target = event.getEventTarget();
     InputElement input;
-    if (BeeUtils.same(EventUtils.getTargetTagName(target), DomUtils.TAG_INPUT)) {
+    if (EventUtils.isInputElement(target)) {
       input = InputElement.as(Element.as(target));
     } else {
       input = DomUtils.getInputElement(parent);

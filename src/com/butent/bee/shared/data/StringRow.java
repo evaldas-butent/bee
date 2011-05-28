@@ -42,6 +42,7 @@ public class StringRow extends AbstractRow {
   @Override
   public StringRow clone() {
     StringRow result = new StringRow(getId(), values);
+    result.setVersion(getVersion());
     cloneProperties(result);
     return result;
   }

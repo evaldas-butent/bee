@@ -29,7 +29,7 @@ import com.butent.bee.client.layout.Scroll;
 import com.butent.bee.client.utils.BeeCommand;
 import com.butent.bee.client.widget.BeeButton;
 import com.butent.bee.client.widget.BeeLabel;
-import com.butent.bee.client.widget.BeeSimpleCheckBox;
+import com.butent.bee.client.widget.SimpleBoolean;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -331,8 +331,8 @@ public class ScrollTableConfig {
 
   private class VisibilityHandler implements ClickHandler {
     public void onClick(ClickEvent event) {
-      if (event.getSource() instanceof BeeSimpleCheckBox) {
-        if (((BeeSimpleCheckBox) event.getSource()).getValue()) {
+      if (event.getSource() instanceof SimpleBoolean) {
+        if (((SimpleBoolean) event.getSource()).getValue()) {
           visibleCount++;
         } else {
           visibleCount--;
@@ -613,7 +613,7 @@ public class ScrollTableConfig {
 
     for (int i = 0; i < columnCount; i++) {
       cRef[i] = new ColumnRef(i);
-      BeeSimpleCheckBox scb = new BeeSimpleCheckBox(columnVisible[i]);
+      SimpleBoolean scb = new SimpleBoolean(columnVisible[i]);
       scb.addClickHandler(vh);
       cRef[i].setShow(cp.append(scb, cx, cy));
 

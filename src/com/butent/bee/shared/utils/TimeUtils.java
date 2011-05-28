@@ -134,6 +134,16 @@ public class TimeUtils {
     return new JustDate(Grego.fieldsToDay(year, month, 1) - 1);
   }
   
+  public static boolean equals(HasDateValue x, HasDateValue y) {
+    if (x instanceof JustDate && y instanceof JustDate) {
+      return sameDate(x, y);
+    }
+    if (x instanceof DateTime && y instanceof DateTime) {
+      return sameDateTime(x, y);
+    }
+    return false;
+  }
+  
   /**
    * Gets the specified field's difference between {@code start} and {@code end}.
    * 
@@ -317,17 +327,17 @@ public class TimeUtils {
     Assert.notNull(max);
     return new DateTime(BeeUtils.randomLong(min.getTime(), max.getTime()));
   }
-  
+
   public static boolean sameDate(HasDateValue x, HasDateValue y) {
     if (x == null || y == null) {
-      return false;
+      return x == y;
     }
     return x.getYear() == y.getYear() && x.getMonth() == y.getMonth() && x.getDom() == y.getDom();
   }
 
   public static boolean sameDateTime(HasDateValue x, HasDateValue y) {
     if (x == null || y == null) {
-      return false;
+      return x == y;
     }
     return x.getDateTime().getTime() == y.getDateTime().getTime();
   }

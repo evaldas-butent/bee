@@ -107,6 +107,7 @@ public class DomUtils {
   public static final String ATTRIBUTE_CELL_SPACING = "cellSpacing";
   public static final String ATTRIBUTE_CHECKED = "checked";
   public static final String ATTRIBUTE_COL_SPAN = "colSpan";
+  public static final String ATTRIBUTE_DEFAULT_CHECKED = "defaultChecked";
   public static final String ATTRIBUTE_DRAGGABLE = "draggable";
   public static final String ATTRIBUTE_HIGH = "high";
   public static final String ATTRIBUTE_LOW = "low";

@@ -175,6 +175,10 @@ public class EventUtils {
   public static boolean isBlur(String type) {
     return isEventType(type, EVENT_TYPE_BLUR);
   }
+
+  public static boolean isChange(String type) {
+    return isEventType(type, EVENT_TYPE_CHANGE);
+  }
   
   public static boolean isClick(NativeEvent ev) {
     if (ev == null) {

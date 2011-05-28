@@ -31,6 +31,7 @@ public class TableRow extends AbstractRow {
   @Override
   public TableRow clone() {
     TableRow result = new TableRow(getId());
+    result.setVersion(getVersion());
     for (IsCell cell : getCells()) {
       result.addCell(cell.clone());
     }

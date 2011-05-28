@@ -46,6 +46,8 @@ import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.value.BooleanValue;
+import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -161,7 +163,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
         closeEditor();
 
         if (!BeeUtils.equalsTrimRight(oldValue, newValue)) {
-          fireEvent(new EditEndEvent(getRowValue(), getDataColumn(), oldValue, newValue));
+          updateCell(getRowValue(), getDataColumn(), oldValue, newValue);
         }
         return true;
       }
@@ -596,6 +598,23 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       return;
     }
     
+    if (ValueType.BOOLEAN.equals(editableColumn.getDataColumn().getType())
+        && BeeUtils.inList(event.getCharCode(), EditorFactory.START_MOUSE_CLICK,
+            EditorFactory.START_KEY_ENTER)) {
+      IsRow rowValue = event.getRowValue();
+      BeeColumn dataColumn = editableColumn.getDataColumn();
+      
+      String oldValue = rowValue.getString(editableColumn.getColIndex());
+      Boolean b = !BeeUtils.toBoolean(oldValue);
+      if (!b && dataColumn.isNullable()) {
+        b = null;
+      }
+      String newValue = BooleanValue.pack(b);
+      
+      updateCell(rowValue, dataColumn, oldValue, newValue);
+      return;
+    }
+    
     getGrid().setEditing(true);
 
     Editor editor = editableColumn.getEditor();
@@ -658,11 +677,14 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
 
     StyleUtils.setZIndex(editorElement, getGrid().getZIndex() + 1);
     StyleUtils.unhideDisplay(editorElement);
+    editor.setFocus(true);
 
     editor.startEdit(event.getRowValue().getString(editableColumn.getColIndex()),
         BeeUtils.toChar(event.getCharCode()));
+  }
 
-    editor.setFocus(true);
+  public void refreshCell(long rowId, String columnId) {
+    getGrid().refreshCell(rowId, columnId);
   }
 
   public void setViewPresenter(Presenter presenter) {
@@ -704,5 +726,10 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
   private void showNote(Level level, String... messages) {
     StyleUtils.setZIndex(getNotification(), getGrid().getZIndex() + 1);
     getNotification().show(level, messages);
+  }
+  
+  private void updateCell(IsRow rowValue, IsColumn dataColumn, String oldValue, String newValue) {
+    getGrid().preliminaryUpdate(rowValue.getId(), dataColumn.getLabel(), newValue);
+    fireEvent(new EditEndEvent(rowValue, dataColumn, oldValue, newValue));
   }
 }

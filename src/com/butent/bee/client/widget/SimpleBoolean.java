@@ -13,20 +13,20 @@ import com.butent.bee.shared.HasId;
  * Implements a checkbox user interface component without label.
  */
 
-public class BeeSimpleCheckBox extends SimpleCheckBox implements HasId, HasBeeClickHandler {
+public class SimpleBoolean extends SimpleCheckBox implements HasId, HasBeeClickHandler {
   private HasBooleanValue source = null;
 
-  public BeeSimpleCheckBox() {
+  public SimpleBoolean() {
     super();
     init();
   }
 
-  public BeeSimpleCheckBox(boolean value) {
+  public SimpleBoolean(boolean value) {
     this();
     setValue(value);
   }
 
-  public BeeSimpleCheckBox(HasBooleanValue source) {
+  public SimpleBoolean(HasBooleanValue source) {
     this();
     if (source != null) {
       initSource(source);
@@ -35,7 +35,7 @@ public class BeeSimpleCheckBox extends SimpleCheckBox implements HasId, HasBeeCl
   }
 
   public void createId() {
-    DomUtils.createId(this, "sc");
+    DomUtils.createId(this, "bool");
   }
 
   public String getId() {
@@ -65,7 +65,7 @@ public class BeeSimpleCheckBox extends SimpleCheckBox implements HasId, HasBeeCl
 
   private void init() {
     createId();
-    setStyleName("bee-SimpleCheckBox");
+    setStyleName("bee-SimpleBoolean");
   }
 
   private void initSource(HasBooleanValue src) {

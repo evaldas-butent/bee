@@ -16,13 +16,13 @@ import java.math.BigDecimal;
  */
 public class BooleanValue extends Value {
 
+  public static final String S_TRUE = "t";
+  public static final String S_FALSE = "f";
+  public static final String S_NULL = "n";
+  
   public static final BooleanValue TRUE = new BooleanValue(true);
   public static final BooleanValue FALSE = new BooleanValue(false);
   private static final BooleanValue NULL_VALUE = new BooleanValue(null);
-
-  private static final String S_TRUE = "t";
-  private static final String S_FALSE = "f";
-  private static final String S_NULL = "n";
 
   public static BooleanValue getInstance(Boolean value) {
     if (value == null) {

@@ -19,16 +19,17 @@ import com.butent.bee.shared.utils.BeeUtils;
  * Implements a text area that allows multiple lines of text to be entered.
  */
 
-public class InputArea extends TextArea implements Editor, HasBeeValueChangeHandler<String>, HasAfterSaveHandler {
+public class InputArea extends TextArea implements Editor, HasBeeValueChangeHandler<String>,
+    HasAfterSaveHandler {
 
   private HasStringValue source = null;
 
   private BeeResource resource = null;
-  
+
   private String digest = null;
 
   private boolean nullable = true;
-  
+
   public InputArea() {
     super();
     init();
@@ -62,7 +63,7 @@ public class InputArea extends TextArea implements Editor, HasBeeValueChangeHand
   public HandlerRegistration addEditStopHandler(EditStopEvent.Handler handler) {
     return addHandler(handler, EditStopEvent.getType());
   }
-  
+
   public void createId() {
     DomUtils.createId(this, "area");
   }
@@ -87,7 +88,7 @@ public class InputArea extends TextArea implements Editor, HasBeeValueChangeHand
   public BeeResource getResource() {
     return resource;
   }
-  
+
   public HasStringValue getSource() {
     return source;
   }
@@ -108,7 +109,7 @@ public class InputArea extends TextArea implements Editor, HasBeeValueChangeHand
       return !d.equals(JsUtils.md5(v));
     }
   }
-  
+
   public void onAfterSave(String opt) {
     if (BeeUtils.isEmpty(opt)) {
       updateDigest();
@@ -139,7 +140,7 @@ public class InputArea extends TextArea implements Editor, HasBeeValueChangeHand
   public void setResource(BeeResource resource) {
     this.resource = resource;
   }
-  
+
   public void setSource(HasStringValue source) {
     this.source = source;
   }
@@ -165,7 +166,7 @@ public class InputArea extends TextArea implements Editor, HasBeeValueChangeHand
   public String updateDigest() {
     return updateDigest(getValue());
   }
-  
+
   public String updateDigest(String value) {
     if (BeeUtils.isEmpty(value)) {
       setDigest(null);

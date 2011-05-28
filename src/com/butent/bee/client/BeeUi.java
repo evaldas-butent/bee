@@ -39,7 +39,7 @@ import com.butent.bee.client.widget.BeeCheckBox;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.client.widget.BeeListBox;
-import com.butent.bee.client.widget.BeeSimpleCheckBox;
+import com.butent.bee.client.widget.SimpleBoolean;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeResource;
@@ -586,7 +586,7 @@ public class BeeUi implements Module, NotificationListener {
       fp.setWidget(i, 0, new BeeListBox(Global.getVar(name)));
 
       name = MenuConstants.varMenuBarType(i);
-      fp.setWidget(i, 1, new BeeSimpleCheckBox(Global.getVar(name)));
+      fp.setWidget(i, 1, new SimpleBoolean(Global.getVar(name)));
     }
 
     ValueSpinner spinner = new ValueSpinner(Global.getVar(MenuConstants.VAR_ROOT_LIMIT), 0, 30, 3);

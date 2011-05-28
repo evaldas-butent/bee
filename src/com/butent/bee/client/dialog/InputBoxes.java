@@ -10,7 +10,7 @@ import com.butent.bee.client.grid.FlexTable;
 import com.butent.bee.client.widget.BeeCheckBox;
 import com.butent.bee.client.widget.BeeFileUpload;
 import com.butent.bee.client.widget.BeeListBox;
-import com.butent.bee.client.widget.BeeSimpleCheckBox;
+import com.butent.bee.client.widget.SimpleBoolean;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.client.widget.InputInteger;
 import com.butent.bee.shared.Assert;
@@ -76,7 +76,7 @@ public class InputBoxes {
             break;
           case BOOLEAN:
             if (BeeUtils.isEmpty(z)) {
-              inp = new BeeSimpleCheckBox(var);
+              inp = new SimpleBoolean(var);
             } else {
               inp = new BeeCheckBox(var);
             }
