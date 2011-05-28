@@ -233,13 +233,19 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
       if (y == 0 || display == null || scroller == null) {
         return;
       }
+      if (display.isEditing()) {
+        return;
+      }
 
       Element elem = scroller.getElement();
       EventTarget target = event.getEventTarget();
       if (target != null && elem.isOrHasChild(Node.as(target))) {
         return;
       }
-
+      if (EventUtils.isInputElement(target)) {
+        EventUtils.eatEvent(event);
+        return;
+      }
       EventUtils.eatEvent(event);
 
       int rc = display.getRowCount();

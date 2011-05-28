@@ -9,18 +9,18 @@ import com.butent.bee.shared.HasId;
  * Implements a informational message delivering pop up window user interface component.
  */
 
-public class BeePopupPanel extends PopupPanel implements HasId {
-  public BeePopupPanel() {
+public class Popup extends PopupPanel implements HasId {
+  public Popup() {
     super(true);
     init();
   }
 
-  public BeePopupPanel(boolean autoHide) {
+  public Popup(boolean autoHide) {
     super(autoHide);
     init();
   }
 
-  public BeePopupPanel(boolean autoHide, boolean modal) {
+  public Popup(boolean autoHide, boolean modal) {
     super(autoHide, modal);
     init();
   }
@@ -44,6 +44,6 @@ public class BeePopupPanel extends PopupPanel implements HasId {
 
   private void init() {
     createId();
-    setStyleName("bee-PopupPanel");
+    setStyleName("bee-Popup");
   }
 }

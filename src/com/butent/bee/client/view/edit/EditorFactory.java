@@ -31,7 +31,7 @@ public class EditorFactory {
 
       case DATE:
       case DATETIME:
-        editor = new InputDate();
+        editor = new InputDate(type);
         break;
         
       case INTEGER:

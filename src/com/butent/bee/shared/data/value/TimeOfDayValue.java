@@ -221,7 +221,6 @@ public class TimeOfDayValue extends Value {
   }
 
   private int getTime() {
-    return getHours() * TimeUtils.MILLIS_PER_HOUR + getMinutes() * TimeUtils.MILLIS_PER_MINUTE
-        + getSeconds() * TimeUtils.MILLIS_PER_SECOND + getMilliseconds();
+    return TimeUtils.getMillis(getHours(), getMinutes(), getSeconds(), getMilliseconds());
   }
 }

@@ -53,8 +53,6 @@ public class BeeColumn extends TableColumn implements BeeSerializable, Transform
   private String typeName = null;
 
   private int displaySize = BeeConst.SIZE_UNKNOWN;
-  private int precision = BeeConst.SIZE_UNKNOWN;
-  private int scale = BeeConst.SIZE_UNKNOWN;
 
   private int nullable = NULLABLE_UNKNOWN;
   private boolean signed = false;
@@ -211,14 +209,6 @@ public class BeeColumn extends TableColumn implements BeeSerializable, Transform
     return nullable;
   }
 
-  public int getPrecision() {
-    return precision;
-  }
-
-  public int getScale() {
-    return scale;
-  }
-
   public String getSchema() {
     return schema;
   }
@@ -361,16 +351,8 @@ public class BeeColumn extends TableColumn implements BeeSerializable, Transform
     this.nullable = nullable;
   }
 
-  public void setPrecision(int precision) {
-    this.precision = precision;
-  }
-
   public void setReadOnly(boolean readOnly) {
     this.readOnly = readOnly;
-  }
-
-  public void setScale(int scale) {
-    this.scale = scale;
   }
 
   public void setSchema(String schema) {

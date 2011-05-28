@@ -13,7 +13,7 @@ import java.util.Date;
 /**
  * The class DateTime represents a specific instant in time, with millisecond precision.
  */
-public class DateTime extends AbstractDate implements BeeSerializable, Comparable<DateTime> {
+public class DateTime extends AbstractDate implements Comparable<DateTime> {
 
   /**
    * Separator for fields of date separate to YYYY.MM.DD format.
@@ -43,14 +43,14 @@ public class DateTime extends AbstractDate implements BeeSerializable, Comparabl
    * @return new {@code DateTime} object parses of {@code String}
    */
   public static DateTime parse(String s) {
-    Assert.notEmpty(s);
-    if (BeeUtils.isDigit(s)) {
-      return new DateTime(BeeUtils.toLong(s));
+    if (BeeUtils.isEmpty(s)) {
+      return null;
     }
 
     int[] arr = TimeUtils.parseFields(s);
-    Assert.minLength(arr, 7);
-    Assert.isTrue(Ints.max(arr) > 0);
+    if (Ints.max(arr) <= 0) {
+      return null;
+    }
 
     return new DateTime(arr[0], arr[1], arr[2], arr[3], arr[4], arr[5], arr[6]);
   }
@@ -120,20 +120,7 @@ public class DateTime extends AbstractDate implements BeeSerializable, Comparabl
    * @param millis milliseconds
    */
   public DateTime(int year, int month, int dom, int hour, int minute, int second, int millis) {
-    long z = Grego.fieldsToDay(year, month, dom);
-    z *= TimeUtils.MILLIS_PER_DAY;
-
-    if (hour != 0) {
-      z += hour * TimeUtils.MILLIS_PER_HOUR;
-    }
-    if (minute != 0) {
-      z += minute * TimeUtils.MILLIS_PER_MINUTE;
-    }
-    if (second != 0) {
-      z += second * TimeUtils.MILLIS_PER_SECOND;
-    }
-
-    setLocalTime(z + millis);
+    setLocalDate(year, month, dom, hour, minute, second, millis);
   }
 
   /**
@@ -177,6 +164,7 @@ public class DateTime extends AbstractDate implements BeeSerializable, Comparabl
    * 
    * @param s the {@code String} to deserialize
    */
+  @Override
   public void deserialize(String s) {
     setTime(Long.parseLong(s));
   }
@@ -432,6 +420,7 @@ public class DateTime extends AbstractDate implements BeeSerializable, Comparabl
   /**
    * Serializes the {@code DateTime} object to {@code String}.
    */
+  @Override
   public String serialize() {
     return Long.toString(time);
   }
@@ -445,17 +434,9 @@ public class DateTime extends AbstractDate implements BeeSerializable, Comparabl
     long z = Grego.fieldsToDay(year, month, dom);
     z *= TimeUtils.MILLIS_PER_DAY;
 
-    if (hour != 0) {
-      z += hour * TimeUtils.MILLIS_PER_HOUR;
-    }
-    if (minute != 0) {
-      z += minute * TimeUtils.MILLIS_PER_MINUTE;
-    }
-    if (second != 0) {
-      z += second * TimeUtils.MILLIS_PER_SECOND;
-    }
+    z += TimeUtils.getMillis(hour, minute, second, millis);
 
-    setLocalTime(z + millis);
+    setLocalTime(z);
   }
 
   public void setLocalTime(long localTime) {

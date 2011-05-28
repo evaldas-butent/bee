@@ -21,8 +21,27 @@ import java.util.List;
  */
 
 public class LocaleUtils {
-  public static final String LOCALE_SEPARATOR = "_";
 
+  public static final String LOCALE_SEPARATOR = "_";
+  
+  public static boolean copyDateTimeFormat(Object src, Object dst) {
+    if (src instanceof HasDateTimeFormat && dst instanceof HasDateTimeFormat && src != dst) {
+      ((HasDateTimeFormat) dst).setDateTimeFormat(((HasDateTimeFormat) src).getDateTimeFormat());
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  public static boolean copyNumberFormat(Object src, Object dst) {
+    if (src instanceof HasNumberFormat && dst instanceof HasNumberFormat && src != dst) {
+      ((HasNumberFormat) dst).setNumberFormat(((HasNumberFormat) src).getNumberFormat());
+      return true;
+    } else {
+      return false;
+    }
+  }
+  
   public static List<ExtendedProperty> getInfo() {
     List<ExtendedProperty> lst = Lists.newArrayList();
 

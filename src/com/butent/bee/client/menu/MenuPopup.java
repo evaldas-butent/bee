@@ -1,13 +1,13 @@
 package com.butent.bee.client.menu;
 
-import com.butent.bee.client.dialog.BeePopupPanel;
+import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dom.DomUtils;
 
 /**
  * Implements a menu element in style of {@code BeePopupPanel}.
  */
 
-public class MenuPopup extends BeePopupPanel {
+public class MenuPopup extends Popup {
   private static final String STYLENAME_DEFAULT = "bee-MenuPopup";
 
   private MenuBar parentMenu = null;

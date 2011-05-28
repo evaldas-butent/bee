@@ -79,7 +79,7 @@ public class MessageBoxes {
     
     final PopupPanel panel;
     if (BeeUtils.isEmpty(caption)) {
-      panel = new BeePopupPanel();
+      panel = new Popup();
     } else {
       panel = new DialogBox(caption);
     }
@@ -202,7 +202,7 @@ public class MessageBoxes {
     vp.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
     vp.add(b);
 
-    BeePopupPanel box = new BeePopupPanel();
+    Popup box = new Popup();
     box.setAnimationEnabled(true);
 
     box.setWidget(vp);
@@ -214,7 +214,7 @@ public class MessageBoxes {
   public void showWidget(Widget widget) {
     Assert.notNull(widget);
 
-    BeePopupPanel box = new BeePopupPanel();
+    Popup box = new Popup();
     box.setAnimationEnabled(true);
 
     box.setWidget(widget);

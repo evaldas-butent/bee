@@ -9,7 +9,7 @@ import com.google.gwt.user.client.ui.IsWidget;
 import com.butent.bee.shared.HasId;
 
 public interface Editor extends HasId, IsWidget, HasValue<String>, Focusable, HasBlurHandlers,
-    HasKeyDownHandlers {
+    HasKeyDownHandlers, HasEditStopHandlers {
   
   String getNormalizedValue();
 
@@ -19,5 +19,5 @@ public interface Editor extends HasId, IsWidget, HasValue<String>, Focusable, Ha
 
   void startEdit(String oldValue, char charCode);
   
-  boolean validate();
+  String validate();
 }

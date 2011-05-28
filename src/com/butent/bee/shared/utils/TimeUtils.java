@@ -2,12 +2,14 @@ package com.butent.bee.shared.utils;
 
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Splitter;
+import com.google.gwt.i18n.shared.DateTimeFormat;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.DateTime;
 import com.butent.bee.shared.HasDateValue;
 import com.butent.bee.shared.JustDate;
+import com.butent.bee.shared.Pair;
 
 import java.util.Date;
 
@@ -81,6 +83,32 @@ public class TimeUtils {
     date.setTime(date.getTime() + getDelta(date, field, amount));
   }
 
+  public static void addDay(JustDate date, int amount) {
+    Assert.notNull(date);
+    if (amount != 0) {
+      date.setDay(date.getDay() + amount);
+    }
+  }
+  
+  public static DateTime combine(Date datePart, DateTime timePart) {
+    if (datePart == null) {
+      return timePart;
+    }
+    return combine(new DateTime(datePart), timePart);
+  }
+  
+  public static DateTime combine(HasDateValue datePart, DateTime timePart) {
+    if (datePart == null) {
+      return timePart;
+    }
+    if (timePart == null) {
+      return datePart.getDateTime();
+    }
+    
+    return new DateTime(datePart.getYear(), datePart.getMonth(), datePart.getDom(),
+        timePart.getHour(), timePart.getMinute(), timePart.getSecond(), timePart.getMillis());
+  }
+
   /**
    * Gets the difference between {@code start} and {@code end}.
    * 
@@ -92,6 +120,20 @@ public class TimeUtils {
     return fieldDifference(start, end, DATE);
   }
 
+  public static JustDate endOfMonth(HasDateValue ref) {
+    Assert.notNull(ref);
+    int year = ref.getYear();
+    int month = ref.getMonth();
+    return new JustDate(year, month, Grego.monthLength(year, month));
+  }
+
+  public static JustDate endOfPreviousMonth(HasDateValue ref) {
+    Assert.notNull(ref);
+    int year = ref.getYear();
+    int month = ref.getMonth();
+    return new JustDate(Grego.fieldsToDay(year, month, 1) - 1);
+  }
+  
   /**
    * Gets the specified field's difference between {@code start} and {@code end}.
    * 
@@ -144,6 +186,25 @@ public class TimeUtils {
     return min;
   }
 
+  public static JustDate getDate(HasDateValue src, int increment) {
+    Assert.notNull(src);
+    return new JustDate(src.getDate().getDay() + increment);
+  }
+  
+  public static int getMillis(int hour, int minute, int second, int millis) {
+    int z = 0;
+    if (hour != 0) {
+      z += hour * MILLIS_PER_HOUR;
+    }
+    if (minute != 0) {
+      z += minute * MILLIS_PER_MINUTE;
+    }
+    if (second != 0) {
+      z += second * MILLIS_PER_SECOND;
+    }
+    return z + millis;
+  }
+  
   /**
    * Checks if {@code x} is and instance of HasDateValue or Date.
    * 
@@ -153,7 +214,7 @@ public class TimeUtils {
   public static boolean isDateOrDateTime(Object x) {
     return x instanceof HasDateValue || x instanceof Date;
   }
-
+  
   /**
    * @param millis the value to convert
    * @return the String representation of milliseconds.
@@ -166,6 +227,17 @@ public class TimeUtils {
     }
   }
 
+  public static JustDate nextMonth() {
+    return nextMonth(new DateTime());
+  }
+
+  public static JustDate nextMonth(HasDateValue ref) {
+    Assert.notNull(ref);
+    int year = ref.getYear();
+    int month = ref.getMonth();
+    return new JustDate(year, month, Grego.monthLength(year, month) + 1);
+  }
+  
   /**
    * Left pads and integer {@code number} by adding "0" to size of two.
    * 
@@ -206,6 +278,20 @@ public class TimeUtils {
     return arr;
   }
 
+  public static Date parseQuietly(DateTimeFormat format, String s) {
+    if (format == null || BeeUtils.isEmpty(s)) {
+      return null;
+    }
+
+    Date date;
+    try {
+      date = format.parse(s.trim());
+    } catch (IllegalArgumentException ex) {
+      date = null;
+    }
+    return date;
+  }
+
   /**
    * Generates a random JustDate between {@code min} and {@code max}.
    * 
@@ -231,7 +317,85 @@ public class TimeUtils {
     Assert.notNull(max);
     return new DateTime(BeeUtils.randomLong(min.getTime(), max.getTime()));
   }
+  
+  public static boolean sameDate(HasDateValue x, HasDateValue y) {
+    if (x == null || y == null) {
+      return false;
+    }
+    return x.getYear() == y.getYear() && x.getMonth() == y.getMonth() && x.getDom() == y.getDom();
+  }
 
+  public static boolean sameDateTime(HasDateValue x, HasDateValue y) {
+    if (x == null || y == null) {
+      return false;
+    }
+    return x.getDateTime().getTime() == y.getDateTime().getTime();
+  }
+
+  public static JustDate startOfMonth() {
+    JustDate date = new JustDate();
+    int dom = date.getDom();
+    if (dom > 1) {
+      addDay(date, 1 - dom);
+    }
+    return date;
+  }
+
+  public static JustDate startOfMonth(HasDateValue ref, int increment) {
+    Assert.notNull(ref);
+    int year = ref.getYear();
+    int month = ref.getMonth();
+
+    if (increment != 0) {
+      Pair<Integer,Integer> pair = incrementMonth(year, month, increment);
+      year = pair.getA();
+      month = pair.getB();
+    }
+    return new JustDate(year, month, 1);
+  }
+  
+  public static JustDate startOfQuarter(HasDateValue ref, int increment) {
+    Assert.notNull(ref);
+    int year = ref.getYear();
+    int month = ref.getMonth();
+    month -= (month - 1) % 3;
+
+    if (increment != 0) {
+      Pair<Integer,Integer> pair = incrementMonth(year, month, increment * 3);
+      year = pair.getA();
+      month = pair.getB();
+    }
+    return new JustDate(year, month, 1);
+  }
+
+  public static JustDate startOfWeek(HasDateValue ref, int increment) {
+    Assert.notNull(ref);
+    JustDate date = new JustDate(ref.getYear(), ref.getMonth(), ref.getDom());
+    
+    int incrDays = 0;
+    int dow = ref.getDow();
+    if (dow > 1) {
+      incrDays -= dow - 1;
+    }
+    if (increment != 0) {
+      incrDays += increment * 7;
+    }
+    
+    if (incrDays != 0) {
+      addDay(date, incrDays);
+    }
+    return date;
+  }
+
+  public static JustDate startOfYear(HasDateValue ref, int increment) {
+    Assert.notNull(ref);
+    int year = ref.getYear();
+    if (increment != 0) {
+      year += increment;
+    }
+    return new JustDate(year, 1, 1);
+  }
+  
   /**
    * Converts {@code x} to a JustDate format.
    * 
@@ -289,7 +453,7 @@ public class TimeUtils {
     assertDateOrDateTime(x);
     return null;
   }
-
+  
   public static DateTime toDateTimeOrNull(Long time) {
     if (time == null) {
       return null;
@@ -304,6 +468,14 @@ public class TimeUtils {
     } else {
       return null; 
     }
+  }
+
+  public static JustDate today(int increment) {
+    JustDate date = new JustDate();
+    if (increment != 0) {
+      addDay(date, increment);
+    }
+    return date;
   }
   
   /**
@@ -331,7 +503,7 @@ public class TimeUtils {
   public static String yearToString(int year) {
     return Integer.toString(year);
   }
-
+  
   private static void assertDateOrDateTime(Object x) {
     Assert.isTrue(isDateOrDateTime(x), "Argument must be Date or DateTime");
   }
@@ -343,7 +515,7 @@ public class TimeUtils {
       return "Field " + field;
     }
   }
-
+  
   private static long getDelta(DateTime date, int field, int amount) {
     long delta = amount;
 
@@ -412,6 +584,23 @@ public class TimeUtils {
     return delta;
   }
 
+  private static Pair<Integer, Integer> incrementMonth(int year, int month, int increment) {
+    if (increment == 0) {
+      return new Pair<Integer, Integer>(year, month);
+    }
+    int y = year;
+    int m = month + increment;
+    
+    if (m < 1) {
+      y += m / 12 - 1; 
+      m = m % 12 + 12;
+    } else if (m > 12) {
+      y += (m - 1) / 12;
+      m = (m - 1) % 12 + 1;
+    }
+    return new Pair<Integer, Integer>(y, m);
+  }
+  
   private TimeUtils() {
   }
 }

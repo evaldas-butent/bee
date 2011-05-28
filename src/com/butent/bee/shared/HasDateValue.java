@@ -17,6 +17,16 @@ public interface HasDateValue {
   JustDate getDate();
 
   DateTime getDateTime();
-
+  
+  int getDom();
+  
+  int getDow();
+  
+  int getDoy();
+  
   Date getJava();
+
+  int getMonth();
+  
+  int getYear();  
 }

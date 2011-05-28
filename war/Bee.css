@@ -305,7 +305,7 @@ body, select {
   cursor: default;
 }
 
-.bee-PopupPanel {
+.bee-Popup {
   border: 3px solid activeborder;
   border-radius: 12px;
   padding: 5px;
@@ -619,11 +619,10 @@ body, select {
 
 .gwt-DatePicker {
   border: 1px solid #ccc;
-  border-top:1px solid #999;
+  border-top: 1px solid #999;
   cursor: default;
 }
-.gwt-DatePicker td,
-.datePickerMonthSelector td:focus {
+.gwt-DatePicker td, .datePickerMonthSelector td:focus {
   outline: none;
 }
 .datePickerDays {
@@ -636,7 +635,7 @@ body, select {
   padding: 4px;
   outline: none;
   font-weight:bold;
-  color:#333;
+  color: #333;
   border-right: 1px solid #EDEDED;
   border-bottom: 1px solid #EDEDED;
 }
@@ -644,9 +643,9 @@ body, select {
   background: #fff;
   padding: 0px 4px 2px;
   cursor: default;
-  color:#666;
-  font-size:70%;
-  font-weight:normal;
+  color: #666;
+  font-size: 70%;
+  font-weight: normal;
 }
 .datePickerDay {
   padding: 4px 7px;

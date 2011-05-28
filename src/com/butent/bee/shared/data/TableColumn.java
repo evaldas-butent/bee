@@ -1,6 +1,7 @@
 package com.butent.bee.shared.data;
 
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasInfo;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.utils.Property;
@@ -23,6 +24,10 @@ public class TableColumn implements HasInfo, IsColumn {
   private String pattern;
   
   private CustomProperties properties = null;
+  
+  private int precision = BeeConst.SIZE_UNKNOWN;
+
+  private int scale = BeeConst.SIZE_UNKNOWN;
 
   public TableColumn(ValueType type) {
     this(type, null, null);
@@ -69,16 +74,24 @@ public class TableColumn implements HasInfo, IsColumn {
     return pattern;
   }
 
+  public int getPrecision() {
+    return precision;
+  }
+
   public CustomProperties getProperties() {
     return properties;
   }
-
+  
   public Object getProperty(String key) {
     Assert.notEmpty(key);
     if (properties == null) {
       return null;
     }
     return properties.get(key);
+  }
+
+  public int getScale() {
+    return scale;
   }
 
   public ValueType getType() {
@@ -97,6 +110,10 @@ public class TableColumn implements HasInfo, IsColumn {
     this.pattern = pattern;
   }
 
+  public void setPrecision(int precision) {
+    this.precision = precision;
+  }
+  
   public void setProperties(CustomProperties properties) {
     this.properties = properties;
   }
@@ -110,6 +127,10 @@ public class TableColumn implements HasInfo, IsColumn {
     properties.put(propertyKey, propertyValue);
   }
 
+  public void setScale(int scale) {
+    this.scale = scale;
+  }
+  
   public void setType(ValueType type) {
     this.type = type;
   }

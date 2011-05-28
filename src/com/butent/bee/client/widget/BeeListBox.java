@@ -11,6 +11,7 @@ import com.google.gwt.user.client.ui.ListBox;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.HasBeeChangeHandler;
+import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.HasStringValue;
@@ -70,6 +71,10 @@ public class BeeListBox extends ListBox implements Editor, HasBeeChangeHandler {
     }
   }
 
+  public HandlerRegistration addEditStopHandler(EditStopEvent.Handler handler) {
+    return addHandler(handler, EditStopEvent.getType());
+  }
+
   public void addItems(List<String> items) {
     Assert.notNull(items);
 
@@ -77,7 +82,7 @@ public class BeeListBox extends ListBox implements Editor, HasBeeChangeHandler {
       addItem(it);
     }
   }
-
+  
   public HandlerRegistration addValueChangeHandler(ValueChangeHandler<String> handler) {
     if (!valueChangeHandlerInitialized) {
       valueChangeHandlerInitialized = true;
@@ -173,8 +178,8 @@ public class BeeListBox extends ListBox implements Editor, HasBeeChangeHandler {
   public void startEdit(String oldValue, char charCode) {
   }
 
-  public boolean validate() {
-    return true;
+  public String validate() {
+    return null;
   }
   
   private void addDefaultHandlers() {

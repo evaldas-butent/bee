@@ -4,7 +4,6 @@ import com.google.gwt.cell.client.Cell;
 import com.google.gwt.cell.client.EditTextCell;
 import com.google.gwt.cell.client.TextCell;
 import com.google.gwt.cell.client.TextInputCell;
-import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.TextHeader;
 import com.google.gwt.user.client.ui.Widget;
@@ -167,13 +166,17 @@ public class GridFactory {
       case DATETIME:
         return new DateTimeColumn(index, dataColumn);
       case NUMBER:
-        return new NumberColumn(NumberFormat.getFormat("#.#####"), index, dataColumn);
+        return new DoubleColumn(index, dataColumn);
       case INTEGER:
-        return new NumberColumn(NumberFormat.getFormat("#"), index, dataColumn);
+        return new IntegerColumn(index, dataColumn);
       case LONG:
-        return new NumberColumn(index, dataColumn);
+        return new LongColumn(index, dataColumn);
       case DECIMAL:
-        return new NumberColumn(NumberFormat.getFormat("#,##0.00;(#)"), index, dataColumn);
+        if (dataColumn.getScale() == 2) {
+          return new CurrencyColumn(index, dataColumn);
+        } else {
+          return new DecimalColumn(index, dataColumn);
+        }
       default:
         return new TextColumn(index, dataColumn);
     }

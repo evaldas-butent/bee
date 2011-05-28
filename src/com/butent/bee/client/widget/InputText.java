@@ -2,6 +2,7 @@ package com.butent.bee.client.widget;
 
 import com.google.common.base.CharMatcher;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.TextBox;
 
@@ -9,6 +10,7 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.HasBeeValueChangeHandler;
+import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasStringValue;
@@ -48,6 +50,10 @@ public class InputText extends TextBox implements Editor, HasBeeValueChangeHandl
     }
   }
 
+  public HandlerRegistration addEditStopHandler(EditStopEvent.Handler handler) {
+    return addHandler(handler, EditStopEvent.getType());
+  }
+  
   public void createId() {
     DomUtils.createId(this, getDefaultIdPrefix());
   }
@@ -121,8 +127,8 @@ public class InputText extends TextBox implements Editor, HasBeeValueChangeHandl
     }
   }
 
-  public boolean validate() {
-    return true;
+  public String validate() {
+    return null;
   }
 
   protected boolean acceptChar(char charCode) {

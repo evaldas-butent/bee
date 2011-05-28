@@ -28,12 +28,13 @@ import com.google.gwt.user.client.ui.SuggestOracle.Response;
 import com.google.gwt.user.client.ui.SuggestOracle.Suggestion;
 import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.client.dialog.BeePopupPanel;
+import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.menu.MenuBar;
 import com.butent.bee.client.menu.MenuCommand;
 import com.butent.bee.client.menu.MenuItem;
+import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.shared.Assert;
@@ -53,7 +54,7 @@ public class SuggestBox extends Composite implements HasText, HasAllKeyHandlers,
   public static class SuggestionDisplay implements HasAnimation {
 
     private final SuggestionMenu suggestionMenu;
-    private final BeePopupPanel suggestionPopup;
+    private final Popup suggestionPopup;
 
     private SuggestBox lastSuggestBox = null;
 
@@ -93,8 +94,8 @@ public class SuggestBox extends Composite implements HasText, HasAllKeyHandlers,
       this.hideWhenEmpty = hideWhenEmpty;
     }
 
-    protected BeePopupPanel createPopup() {
-      BeePopupPanel p = new BeePopupPanel(true, false);
+    protected Popup createPopup() {
+      Popup p = new Popup(true, false);
       p.setStyleName("bee-SuggestBoxPopup");
       p.setPreviewingAllNativeEvents(true);
       return p;
@@ -112,7 +113,7 @@ public class SuggestBox extends Composite implements HasText, HasAllKeyHandlers,
       return item == null ? null : ((SuggestionMenuItem) item).getSuggestion();
     }
 
-    protected BeePopupPanel getPopupPanel() {
+    protected Popup getPopupPanel() {
       return suggestionPopup;
     }
 
@@ -267,6 +268,10 @@ public class SuggestBox extends Composite implements HasText, HasAllKeyHandlers,
   public HandlerRegistration addBlurHandler(BlurHandler handler) {
     return addDomHandler(handler, BlurEvent.getType());
   }
+
+  public HandlerRegistration addEditStopHandler(EditStopEvent.Handler handler) {
+    return addHandler(handler, EditStopEvent.getType());
+  }
   
   public HandlerRegistration addKeyDownHandler(KeyDownHandler handler) {
     return addDomHandler(handler, KeyDownEvent.getType());
@@ -387,7 +392,7 @@ public class SuggestBox extends Composite implements HasText, HasAllKeyHandlers,
     }
   }
 
-  public boolean validate() {
+  public String validate() {
     return getBox().validate();
   }
 

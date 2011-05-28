@@ -12,7 +12,9 @@ import com.butent.bee.shared.data.IsRow;
  */
 
 public abstract class CellColumn<C> extends Column<IsRow, C> {
+
   private final int index;
+  
   private final IsColumn dataColumn;
 
   public CellColumn(Cell<C> cell, int index, IsColumn dataColumn) {

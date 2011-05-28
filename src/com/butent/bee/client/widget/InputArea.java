@@ -1,5 +1,6 @@
 package com.butent.bee.client.widget;
 
+import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.TextArea;
 
@@ -8,6 +9,7 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.HasAfterSaveHandler;
 import com.butent.bee.client.event.HasBeeValueChangeHandler;
 import com.butent.bee.client.utils.JsUtils;
+import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.shared.BeeResource;
 import com.butent.bee.shared.HasStringValue;
@@ -57,6 +59,10 @@ public class InputArea extends TextArea implements Editor, HasBeeValueChangeHand
     }
   }
 
+  public HandlerRegistration addEditStopHandler(EditStopEvent.Handler handler) {
+    return addHandler(handler, EditStopEvent.getType());
+  }
+  
   public void createId() {
     DomUtils.createId(this, "area");
   }
@@ -169,8 +175,8 @@ public class InputArea extends TextArea implements Editor, HasBeeValueChangeHand
     return getDigest();
   }
 
-  public boolean validate() {
-    return true;
+  public String validate() {
+    return null;
   }
 
   private void addDefaultHandlers() {

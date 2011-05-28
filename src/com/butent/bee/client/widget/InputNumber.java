@@ -96,20 +96,35 @@ public class InputNumber extends InputText {
   }
   
   @Override
-  public boolean validate() {
-    if (!super.validate()) {
-      return false;
+  public String validate() {
+    String msg = super.validate();
+    if (!BeeUtils.isEmpty(msg)) {
+      return msg;
     }
     
     String v = BeeUtils.trim(getValue());
     if (BeeUtils.isEmpty(v)) {
-      return isNullable();
+      if (isNullable()) {
+        return null;
+      } else {
+        return "Value must not be null";
+      }  
     }
     if (!checkType(v)) {
-      return false;
+      return "Not a number";
     }
     
-    return checkBounds();
+    if (!checkBounds()) {
+      StringBuilder sb = new StringBuilder("Value out of bounds:");
+      if (getMinValue() != null) {
+        sb.append(" min ").append(BeeUtils.toString(getMinValue().doubleValue()));
+      }
+      if (getMaxValue() != null) {
+        sb.append(" max ").append(BeeUtils.toString(getMaxValue().doubleValue()));
+      }
+      return sb.toString();
+    }
+    return null;
   }
   
   protected boolean checkType(String v) {

@@ -16,6 +16,10 @@ public interface IsColumn extends HasCustomProperties {
 
   String getPattern();
 
+  int getPrecision();
+
+  int getScale();
+
   ValueType getType();
 
   void setId(String id);
@@ -24,5 +28,9 @@ public interface IsColumn extends HasCustomProperties {
 
   void setPattern(String pattern);
 
+  void setPrecision(int precision);
+
+  void setScale(int scale);
+  
   void setType(ValueType type);
 }

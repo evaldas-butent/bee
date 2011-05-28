@@ -4,6 +4,7 @@ package com.butent.bee.shared.utils;
  * Contains methods for date/time calculations.
  */
 public class Grego {
+
   public static final int IDX_YEAR = 0;
   public static final int IDX_MONTH = 1;
   public static final int IDX_DOM = 2;
@@ -123,7 +124,7 @@ public class Grego {
    * @param year the value to check
    * @return true if {@code year} is a leap year, otherwise false.
    */
-  public static final boolean isLeapYear(int year) {
+  public static boolean isLeapYear(int year) {
     return ((year & 0x3) == 0) && ((year % 100 != 0) || (year % 400 == 0));
   }
 
@@ -134,7 +135,7 @@ public class Grego {
    * @param month the month to check
    * @return the length of the specified year and month.
    */
-  public static final int monthLength(int year, int month) {
+  public static int monthLength(int year, int month) {
     if (isLeapYear(year)) {
       return MONTH_LENGTH[month + 11];
     } else {

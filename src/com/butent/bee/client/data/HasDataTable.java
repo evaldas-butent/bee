@@ -3,6 +3,7 @@ package com.butent.bee.client.data;
 import com.google.gwt.view.client.HasData;
 
 import com.butent.bee.client.view.HasLoadingState;
+import com.butent.bee.client.view.edit.HasEditState;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.HandlesDeleteEvents;
 import com.butent.bee.shared.data.event.HandlesUpdateEvents;
@@ -16,7 +17,7 @@ import java.util.List;
  */
 
 public interface HasDataTable extends HasData<IsRow>, HasLoadingState, HasSortHandlers,
-    HandlesDeleteEvents, HandlesUpdateEvents, HasSelectionCountChangeHandlers {
+    HandlesDeleteEvents, HandlesUpdateEvents, HasSelectionCountChangeHandlers, HasEditState {
 
   void setPageSize(int pageSize);
 

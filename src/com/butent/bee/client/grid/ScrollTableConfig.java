@@ -17,7 +17,7 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.composite.RadioGroup;
 import com.butent.bee.client.composite.SpinnerListener;
 import com.butent.bee.client.composite.ValueSpinner;
-import com.butent.bee.client.dialog.BeePopupPanel;
+import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.event.DndEvent;
@@ -530,7 +530,7 @@ public class ScrollTableConfig {
   private DndHandler dndHandler = new DndHandler();
   private CopyHandler copyHandler = new CopyHandler();
 
-  private BeePopupPanel popup;
+  private Popup popup;
 
   private int colInfoTop = 0;
   private int colInfoHeight = 30;
@@ -688,7 +688,7 @@ public class ScrollTableConfig {
     DomUtils.setWidth(panel, w);
     DomUtils.setHeight(panel, y);
 
-    popup = new BeePopupPanel(true, true);
+    popup = new Popup(true, true);
     popup.setWidget(panel);
     popup.setStyleName(StyleUtils.CONFIG_PANEL);
     popup.enableGlass();

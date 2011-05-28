@@ -12,7 +12,7 @@ import java.util.Date;
 /**
  * The class {@code JustDate} represents a specific instant in date, with days precision.
  */
-public class JustDate extends AbstractDate implements BeeSerializable, Comparable<JustDate> {
+public class JustDate extends AbstractDate implements Comparable<JustDate> {
   /**
    * Default field of date separator to separate {@code YYYY.MM.DD} format.
    */
@@ -26,14 +26,14 @@ public class JustDate extends AbstractDate implements BeeSerializable, Comparabl
    * @return new {@code JustDate} object parsed from {@code s}
    */
   public static JustDate parse(String s) {
-    Assert.notEmpty(s);
-    if (BeeUtils.isDigit(s)) {
-      return new JustDate(BeeUtils.toInt(s));
+    if (BeeUtils.isEmpty(s)) {
+      return null;
     }
 
     int[] arr = TimeUtils.parseFields(s);
-    Assert.minLength(arr, 3);
-    Assert.isTrue(Ints.max(arr) > 0);
+    if (Ints.max(arr) <= 0) {
+      return null;
+    }
 
     return new JustDate(arr[0], arr[1], arr[2]);
   }
@@ -118,6 +118,7 @@ public class JustDate extends AbstractDate implements BeeSerializable, Comparabl
    * 
    * @param s the String of serialized {@code JustDate} object
    */
+  @Override
   public void deserialize(String s) {
     day = Integer.parseInt(s);
     fields = null;
@@ -228,6 +229,7 @@ public class JustDate extends AbstractDate implements BeeSerializable, Comparabl
   /**
    * Serializes the {@code JustDate} object to {@code String} format.
    */
+  @Override
   public String serialize() {
     return Integer.toString(day);
   }

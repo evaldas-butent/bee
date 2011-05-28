@@ -1,6 +1,8 @@
 package com.butent.bee.shared;
 
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.TimeUtils;
 
 import java.util.Date;
 
@@ -9,9 +11,9 @@ import java.util.Date;
  * types.
  */
 
-public abstract class AbstractDate implements HasDateValue {
+public abstract class AbstractDate implements BeeSerializable, HasDateValue {
 
-  public static HasDateValue fromJava(Date date, ValueType type) {
+  public static AbstractDate fromJava(Date date, ValueType type) {
     if (date == null) {
       return null;
     }
@@ -28,11 +30,47 @@ public abstract class AbstractDate implements HasDateValue {
     }
   }
 
+  public static AbstractDate parse(String s, ValueType type) {
+    if (BeeUtils.isEmpty(s)) {
+      return null;
+    }
+    assertType(type);
+
+    switch (type) {
+      case DATE:
+        return JustDate.parse(s);
+      case DATETIME:
+        return DateTime.parse(s);
+      default:
+        Assert.untouchable();
+        return null;
+    }
+  }
+  
+  public static AbstractDate restore(String s, ValueType type) {
+    if (BeeUtils.isEmpty(s)) {
+      return null;
+    }
+    assertType(type);
+
+    switch (type) {
+      case DATE:
+        return TimeUtils.toDateOrNull(s);
+      case DATETIME:
+        return TimeUtils.toDateTimeOrNull(s);
+      default:
+        Assert.untouchable();
+        return null;
+    }
+  }
+  
   private static void assertType(ValueType type) {
     Assert.notNull(type);
     Assert.isTrue(type.equals(ValueType.DATE) || type.equals(ValueType.DATETIME));
   }
 
+  public abstract void deserialize(String s);
+  
   public HasDateValue fromDate(JustDate justDate) {
     if (justDate == null) {
       return null;
@@ -80,4 +118,6 @@ public abstract class AbstractDate implements HasDateValue {
   public abstract Date getJava();
 
   public abstract ValueType getType();
+
+  public abstract String serialize();
 }

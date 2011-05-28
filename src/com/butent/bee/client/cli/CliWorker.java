@@ -12,9 +12,9 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.dom.client.StyleInjector;
-import com.google.gwt.i18n.client.DateTimeFormat;
-import com.google.gwt.i18n.client.DateTimeFormat.PredefinedFormat;
 import com.google.gwt.i18n.client.LocaleInfo;
+import com.google.gwt.i18n.shared.DateTimeFormat;
+import com.google.gwt.i18n.shared.DateTimeFormat.PredefinedFormat;
 import com.google.gwt.media.client.Audio;
 import com.google.gwt.media.client.Video;
 import com.google.gwt.user.client.DOM;
@@ -585,16 +585,20 @@ public class CliWorker {
 
   public static void showDateFormat() {
     int r = DateTimeFormat.PredefinedFormat.values().length;
-    String[][] data = new String[r][2];
+    String[][] data = new String[r][3];
 
+    Date d = new Date();
     int i = 0;
     for (DateTimeFormat.PredefinedFormat dtf : DateTimeFormat.PredefinedFormat.values()) {
       data[i][0] = dtf.toString();
-      data[i][1] = DateTimeFormat.getFormat(dtf).format(new Date());
+
+      DateTimeFormat format = DateTimeFormat.getFormat(dtf);      
+      data[i][1] = format.getPattern();
+      data[i][2] = format.format(d);
       i++;
     }
 
-    BeeKeeper.getUi().showGrid(data, "Format", "Value");
+    BeeKeeper.getUi().showGrid(data, "Format", "Pattern", "Value");
   }
 
   public static void showDimensions() {

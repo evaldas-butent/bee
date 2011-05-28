@@ -10,6 +10,7 @@ import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
+import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.Header;
 import com.google.gwt.user.cellview.client.TextHeader;
 import com.google.gwt.user.client.Element;
@@ -26,11 +27,13 @@ import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.RowIdColumn;
+import com.butent.bee.client.i18n.LocaleUtils;
 import com.butent.bee.client.layout.Absolute;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.view.edit.EditEndEvent;
 import com.butent.bee.client.view.edit.EditEndEvent.Handler;
 import com.butent.bee.client.view.edit.EditStartEvent;
+import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.edit.EditorFactory;
 import com.butent.bee.client.view.search.SearchView;
@@ -56,7 +59,7 @@ import java.util.logging.Level;
 
 public class CellGridImpl extends Absolute implements GridView, SearchView, EditStartEvent.Handler {
 
-  private class EditableColumn implements KeyDownHandler, BlurHandler {
+  private class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEvent.Handler {
     private final int colIndex;
     private final BeeColumn dataColumn;
 
@@ -92,6 +95,16 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       }
     }
 
+    public void onEditStop(EditStopEvent event) {
+      if (event.isFinished()) {
+        endEdit();
+      } else if (event.isError()) {
+        notifySevere(event.getMessage());
+      } else {
+        closeEditor();
+      }
+    }
+
     public void onKeyDown(KeyDownEvent event) {
       int keyCode = event.getNativeKeyCode();
       NativeEvent nativeEvent = event.getNativeEvent();
@@ -123,7 +136,9 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     private void closeEditor() {
       setState(State.CLOSED);
       StyleUtils.hideDisplay(getEditor().asWidget());
+      
       getGrid().refocus();
+      getGrid().setEditing(false);
     }
 
     private boolean endEdit() {
@@ -136,8 +151,9 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
           return true;
         }
 
-        if (!getEditor().validate()) {
-          notifySevere("Validation error", editorValue);
+        String errorMessage = getEditor().validate();
+        if (!BeeUtils.isEmpty(errorMessage)) {
+          notifySevere(editorValue, errorMessage);
           return false;
         }
 
@@ -579,14 +595,21 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     if (editableColumn == null) {
       return;
     }
+    
+    getGrid().setEditing(true);
 
     Editor editor = editableColumn.getEditor();
     if (editor == null) {
       editor = EditorFactory.createEditor(editableColumn.getDataColumn());
       editor.asWidget().addStyleName(STYLE_EDITOR);
+      
+      Column<IsRow, ?> gridColumn = getGrid().getColumn(columnId);
+      LocaleUtils.copyDateTimeFormat(gridColumn, editor);
+      LocaleUtils.copyNumberFormat(gridColumn, editor);
 
       editor.addKeyDownHandler(editableColumn);
       editor.addBlurHandler(editableColumn);
+      editor.addEditStopHandler(editableColumn);
 
       add(editor);
 
@@ -599,10 +622,37 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     Element editorElement = editor.asWidget().getElement();
     if (event.getSourceElement() != null) {
       StyleUtils.copyBox(event.getSourceElement(), editorElement);
+
       int x = getGrid().getElement().getScrollLeft();
+      int left = StyleUtils.getLeft(editorElement);
+      int width = StyleUtils.getWidth(editorElement);
+      int margins = event.getSourceElement().getOffsetWidth() - width;
+      int maxWidth = getGrid().getElement().getClientWidth();
+
+      if (x > 0 || left + width + margins > maxWidth) {
+        left -= x;
+        int newWidth = width;
+        if (left < 0) {
+          newWidth += left;
+          left = 0;
+        }
+        if (left + newWidth + margins > maxWidth) {
+          if (left > 0) {
+            left = Math.max(0, maxWidth - newWidth - margins);
+          }
+          if (left + newWidth + margins > maxWidth) {
+            newWidth = maxWidth - left - margins;
+          }
+        }
+        StyleUtils.setLeft(editorElement, left);
+        if (newWidth > 0 && newWidth != width) {
+          StyleUtils.setWidth(editorElement, newWidth);
+        }
+      }
+
       int y = getGrid().getElement().getScrollTop();
-      if (x > 0 || y > 0) {
-        DomUtils.moveBy(editorElement, -x, -y);
+      if (y > 0) {
+        DomUtils.moveVerticalBy(editorElement, -y);
       }
     }
 
