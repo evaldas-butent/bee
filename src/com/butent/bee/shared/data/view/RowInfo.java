@@ -3,6 +3,7 @@ package com.butent.bee.shared.data.view;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.Transformable;
+import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -22,14 +23,14 @@ public class RowInfo implements BeeSerializable, Comparable<RowInfo>, Transforma
   private long id;
   private long version;
 
-  public RowInfo(long id) {
-    this(id, 0);
-  }
-
   public RowInfo(long id, long version) {
     super();
     setId(id);
     setVersion(version);
+  }
+  
+  public RowInfo(IsRow row) {
+    this(row.getId(), row.getVersion());
   }
 
   private RowInfo() {
@@ -87,6 +88,10 @@ public class RowInfo implements BeeSerializable, Comparable<RowInfo>, Transforma
     return Codec.beeSerializeAll(getId(), getVersion());
   }
 
+  public void setVersion(long version) {
+    this.version = version;
+  }
+  
   @Override
   public String toString() {
     return BeeUtils.concat(0, "ID=", getId(), ", VERSION=" + getVersion());
@@ -99,9 +104,5 @@ public class RowInfo implements BeeSerializable, Comparable<RowInfo>, Transforma
   private void setId(long id) {
     Assert.notEmpty(id);
     this.id = id;
-  }
-
-  private void setVersion(long version) {
-    this.version = version;
   }
 }

@@ -104,7 +104,7 @@ public class Explorer implements HandlesDeleteEvents {
   public void onMultiDelete(MultiDeleteEvent event) {
     DataInfo dataInfo = getDataInfo(event.getViewName());
     if (dataInfo != null) {
-      dataInfo.setRowCount(dataInfo.getRowCount() - event.getRowIds().size());
+      dataInfo.setRowCount(dataInfo.getRowCount() - event.getRows().size());
       refresh();
     }
   }

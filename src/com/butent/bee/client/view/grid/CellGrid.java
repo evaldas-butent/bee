@@ -65,8 +65,10 @@ import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.event.SelectionCountChangeEvent;
 import com.butent.bee.shared.data.event.SortEvent;
 import com.butent.bee.shared.data.view.Order;
+import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -589,7 +591,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
   private RowStyles<IsRow> rowStyles = null;
 
   private SelectionModel<? super IsRow> selectionModel;
-  private final List<Long> selectedRows = Lists.newArrayList();
+  private final LinkedHashMap<Long, RowInfo> selectedRows = Maps.newLinkedHashMap();
 
   private final Order sortOrder = new Order();
 
@@ -884,11 +886,10 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     return activeRow;
   }
 
-  public Long getActiveRowId() {
+  public RowInfo getActiveRowInfo() {
     int visibleIndex = getActiveRow();
-    if (visibleIndex >= 0 && visibleIndex < getVisibleItemCount()
-        && visibleIndex < getVisibleItems().size()) {
-      return getVisibleRowId(visibleIndex);
+    if (isRowWithinBounds(visibleIndex) && visibleIndex < getVisibleItems().size()) {
+      return new RowInfo(getVisibleItem(visibleIndex));
     } else {
       return null;
     }
@@ -1082,7 +1083,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     return rowCount;
   }
 
-  public List<Long> getSelectedRows() {
+  public LinkedHashMap<Long, RowInfo> getSelectedRows() {
     return selectedRows;
   }
 
@@ -1304,7 +1305,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
   }
 
   public boolean isRowSelected(long rowId) {
-    return getSelectedRows().contains(rowId);
+    return getSelectedRows().containsKey(rowId);
   }
 
   public boolean isSortable(String columnId) {
@@ -1433,6 +1434,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
           } else {
             selectRow(row, rowValue);
           }
+          activateCell(row, col);
         } else if (isCellActive(row, col)) {
           startEditing(rowValue, col, target, EditorFactory.START_MOUSE_CLICK);
         } else {
@@ -1441,8 +1443,13 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
         return;
 
       } else if (EventUtils.isKeyDown(eventType)) {
-        int keyCode = event.getKeyCode();
+        if (!isCellActive(row, col)) {
+          EventUtils.eatEvent(event);
+          refocus();
+          return;
+        }
 
+        int keyCode = event.getKeyCode();
         if (keyCode == KeyCodes.KEY_ENTER) {
           startEditing(rowValue, col, target, EditorFactory.START_KEY_ENTER);
           EventUtils.eatEvent(event);
@@ -1483,6 +1490,11 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     long version = event.getVersion();
     String columnId = event.getColumnId();
     String value = event.getValue();
+    
+    RowInfo selectedRowInfo = getSelectedRows().get(rowId);
+    if (selectedRowInfo != null) {
+      selectedRowInfo.setVersion(version);
+    }
 
     int row = getRowIndex(rowId);
     if (!isRowWithinBounds(row)) {
@@ -1505,10 +1517,10 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
 
   public void onMultiDelete(MultiDeleteEvent event) {
     Assert.notNull(event);
-    for (Long rowId : event.getRowIds()) {
-      deleteRow(rowId);
+    for (RowInfo rowInfo : event.getRows()) {
+      deleteRow(rowInfo.getId());
     }
-    setRowCount(getRowCount() - event.getRowIds().size());
+    setRowCount(getRowCount() - event.getRows().size());
   }
 
   public void onRowDelete(RowDeleteEvent event) {
@@ -3505,12 +3517,13 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     } else {
       int lastSelectedRow = BeeConst.UNDEF;
       if (!getSelectedRows().isEmpty()) {
+        List<Long> selectedIds = Lists.newArrayList(getSelectedRows().keySet());
         int maxIndex = -1;
         for (int i = 0; i < getVisibleItemCount(); i++) {
           if (i == visibleIndex) {
             continue;
           }
-          int index = getSelectedRows().indexOf(getVisibleRowId(i));
+          int index = selectedIds.indexOf(getVisibleRowId(i));
           if (index > maxIndex) {
             maxIndex = index;
             lastSelectedRow = i;
@@ -3548,7 +3561,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     if (wasSelected) {
       getSelectedRows().remove(rowId);
     } else {
-      getSelectedRows().add(rowId);
+      getSelectedRows().put(rowId, new RowInfo(rowValue));
     }
     if (getSelectionModel() != null) {
       getSelectionModel().setSelected(rowValue, !wasSelected);

@@ -1948,6 +1948,16 @@ public class BeeUtils {
       return BeeConst.STRING_LEFT_PARENTHESIS + s + BeeConst.STRING_RIGHT_PARENTHESIS;
     }
   }
+  
+  public static <T> T peek(Iterable<T> container) {
+    if (container == null) {
+      return null;
+    }
+    for (T element : container) {
+      return element;
+    }
+    return null;
+  }
 
   /**
    * Compares {@code x1} and {@code x2}.

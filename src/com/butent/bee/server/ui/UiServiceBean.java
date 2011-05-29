@@ -16,14 +16,15 @@ import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
-import com.butent.bee.shared.data.view.RowInfoCollection;
 import com.butent.bee.shared.ui.UiComponent;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -111,7 +112,8 @@ public class UiServiceBean {
       } else if (BeeUtils.same(svc, Service.DELETE_ROWS)) {
         response = deleteRows(reqInfo);
       } else if (BeeUtils.same(svc, Service.UPDATE_CELL)) {
-        // response = updateCell(reqInfo);
+        response = updateCell(reqInfo);
+      } else if (BeeUtils.same(svc, Service.UPDATE_ROW)) {
         response = updateRow(reqInfo);
 
       } else {
@@ -134,9 +136,9 @@ public class UiServiceBean {
 
   private ResponseObject deleteRows(RequestInfo reqInfo) {
     String viewName = reqInfo.getParameter(Service.VAR_VIEW_NAME);
-    String rowInfos = reqInfo.getParameter(Service.VAR_VIEW_ROWS);
+    String rows = reqInfo.getParameter(Service.VAR_VIEW_ROWS);
     Assert.notEmpty(viewName);
-    Assert.notEmpty(rowInfos);
+    Assert.notEmpty(rows);
 
     ResponseObject response = new ResponseObject();
     BeeView view = sys.getView(viewName);
@@ -145,7 +147,8 @@ public class UiServiceBean {
     if (view.isReadOnly()) {
       response.addError("View", view.getName(), "is read only.");
     } else {
-      for (RowInfo row : RowInfoCollection.restore(rowInfos)) {
+      for (String s : Codec.beeDeserialize(rows)) {
+        RowInfo row = RowInfo.restore(s);
         int res = sys.deleteRow(viewName, row);
 
         switch (res) {
@@ -434,15 +437,26 @@ public class UiServiceBean {
     String rowId = reqInfo.getParameter(Service.VAR_VIEW_ROW_ID);
     String version = reqInfo.getParameter(Service.VAR_VIEW_VERSION);
     String columnId = reqInfo.getParameter(Service.VAR_VIEW_COLUMN);
+    String columnType = reqInfo.getParameter(Service.VAR_VIEW_TYPE);
     String oldValue = reqInfo.getParameter(Service.VAR_VIEW_OLD_VALUE);
     String newValue = reqInfo.getParameter(Service.VAR_VIEW_NEW_VALUE);
 
     Assert.notEmpty(viewName, "updateCell: viewName not specified");
     Assert.notEmpty(rowId, "updateCell: row id not specified");
     Assert.notEmpty(columnId, "updateCell: column id not specified");
+    Assert.notEmpty(columnType, "updateCell: column type not specified");
 
-    return sys.updateCell(viewName, BeeUtils.toLong(rowId), BeeUtils.toLong(version), columnId,
-        oldValue, newValue);
+    BeeRowSet rs = new BeeRowSet(new BeeColumn(ValueType.getByTypeCode(columnType), columnId));
+    rs.setViewName(viewName);
+    rs.addRow(rowId, version, new String[] {oldValue});
+    rs.setValue(0, 0, newValue);
+    
+    ResponseObject result = sys.updateRow(rs, false);
+    if (result.getResponse() instanceof IsRow) {
+      long newVersion = ((IsRow) result.getResponse()).getVersion();
+      result.setResponse(newVersion);
+    }
+    return result;
   }
 
   private ResponseObject updateRow(RequestInfo reqInfo) {

@@ -31,7 +31,6 @@ import com.butent.bee.client.i18n.LocaleUtils;
 import com.butent.bee.client.layout.Absolute;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.view.edit.EditEndEvent;
-import com.butent.bee.client.view.edit.EditEndEvent.Handler;
 import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.view.edit.Editor;
@@ -48,9 +47,11 @@ import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -237,7 +238,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     };
   }
 
-  public HandlerRegistration addEditEndHandler(Handler handler) {
+  public HandlerRegistration addEditEndHandler(EditEndEvent.Handler handler) {
     return addHandler(handler, EditEndEvent.getType());
   }
 
@@ -513,8 +514,8 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     return getGrid().estimatePageSize(containerWidth, containerHeight, true);
   }
 
-  public Long getActiveRowId() {
-    return getGrid().getActiveRowId();
+  public RowInfo getActiveRowInfo() {
+    return getGrid().getActiveRowInfo();
   }
 
   public Filter getFilter(List<? extends IsColumn> columns) {
@@ -555,8 +556,8 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     return grid;
   }
 
-  public List<Long> getSelectedRows() {
-    return getGrid().getSelectedRows();
+  public Collection<RowInfo> getSelectedRows() {
+    return getGrid().getSelectedRows().values();
   }
 
   public Presenter getViewPresenter() {

@@ -17,6 +17,7 @@ import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.event.SortEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.Order;
+import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Iterator;
@@ -86,8 +87,8 @@ public class CachedProvider extends Provider {
   @Override
   public void onMultiDelete(MultiDeleteEvent event) {
     if (BeeUtils.same(event.getViewName(), getViewName())) {
-      for (long rowId : event.getRowIds()) {
-        deleteRow(rowId);
+      for (RowInfo rowInfo : event.getRows()) {
+        deleteRow(rowInfo.getId());
       }
       super.onMultiDelete(event);
     }

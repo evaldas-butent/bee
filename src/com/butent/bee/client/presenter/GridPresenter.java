@@ -26,6 +26,7 @@ import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.search.SearchView;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
 import com.butent.bee.shared.data.event.MultiDeleteEvent;
@@ -33,6 +34,7 @@ import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.DataInfo;
+import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
@@ -47,35 +49,33 @@ import java.util.Set;
 public class GridPresenter implements Presenter, EditEndEvent.Handler {
 
   private class DeleteCallback extends BeeCommand {
-    private final List<Long> rows;
-    private final Long rowId;
+    private final Collection<RowInfo> rows;
 
-    private DeleteCallback(List<Long> rows) {
-      super();
-      if (rows.size() == 1) {
-        this.rows = null;
-        this.rowId = rows.get(0);
-      } else {
-        this.rows = rows;
-        this.rowId = null;
-      }
+    private DeleteCallback(Collection<RowInfo> rows) {
+      this.rows = rows;
     }
 
-    private DeleteCallback(long rowId) {
-      super();
-      this.rows = null;
-      this.rowId = rowId;
+    private DeleteCallback(long rowId, long version) {
+      this(Lists.newArrayList(new RowInfo(rowId, version)));
     }
 
     @Override
     public void execute() {
-      getView().getContent().getGrid().fireLoadingStateChange(
-          LoadingStateChangeEvent.LoadingState.LOADING);
+      Assert.notNull(rows);
+      int count = rows.size();
+      Assert.isPositive(count);
 
-      if (rowId != null) {
-        Queries.deleteRow(getDataName(), rowId, new Queries.IntCallback() {
+      setLoadingState(LoadingStateChangeEvent.LoadingState.LOADING);
+
+      if (count == 1) {
+        RowInfo rowInfo = BeeUtils.peek(rows);
+        final long rowId = rowInfo.getId();
+        long version = rowInfo.getVersion();
+
+        Queries.deleteRow(getDataName(), rowId, version, new Queries.IntCallback() {
           public void onFailure(String reason) {
             showFailure("Delete Row", reason);
+            setLoadingState(LoadingStateChangeEvent.LoadingState.LOADED);
           }
 
           public void onSuccess(Integer result) {
@@ -83,10 +83,11 @@ public class GridPresenter implements Presenter, EditEndEvent.Handler {
           }
         });
 
-      } else if (rows != null) {
+      } else if (count > 1) {
         Queries.deleteRows(getDataName(), rows, new Queries.IntCallback() {
           public void onFailure(String reason) {
             showFailure("Delete Rows", reason);
+            setLoadingState(LoadingStateChangeEvent.LoadingState.LOADED);
           }
 
           public void onSuccess(Integer result) {
@@ -188,12 +189,12 @@ public class GridPresenter implements Presenter, EditEndEvent.Handler {
         break;
 
       case DELETE:
-        Long activeRowId = getView().getContent().getActiveRowId();
-        if (activeRowId != null) {
-          if (getView().getContent().isRowSelected(activeRowId)) {
+        RowInfo activeRowInfo = getView().getContent().getActiveRowInfo();
+        if (activeRowInfo != null) {
+          if (getView().getContent().isRowSelected(activeRowInfo.getId())) {
             deleteRows(getView().getContent().getSelectedRows());
           } else {
-            deleteRow(activeRowId);
+            deleteRow(activeRowInfo.getId(), activeRowInfo.getVersion());
           }
         }
         break;
@@ -223,18 +224,17 @@ public class GridPresenter implements Presenter, EditEndEvent.Handler {
     rs.addRow(rowId, version, new String[] {event.getOldValue()});
     rs.setValue(0, 0, newValue);
 
-    // Queries.updateCell(viewName, rowId, version, columnId, event.getOldValue(), newValue,
-    Queries.updateCell(rs,
-        new Queries.VersionCallback() {
+    Queries.updateRow(rs,
+        new Queries.RowCallback() {
           public void onFailure(String reason) {
             getView().getContent().refreshCell(rowId, columnId);
-            showFailure("Update Cell", reason);
+            showFailure("Update Row", reason);
           }
 
-          public void onSuccess(Long result) {
+          public void onSuccess(BeeRow row) {
             BeeKeeper.getLog().info("cell updated:", viewName, rowId, columnId, newValue);
             BeeKeeper.getBus().fireEvent(
-                new CellUpdateEvent(viewName, rowId, result, columnId, newValue));
+                new CellUpdateEvent(viewName, rowId, row.getVersion(), columnId, newValue));
           }
         });
   }
@@ -271,7 +271,7 @@ public class GridPresenter implements Presenter, EditEndEvent.Handler {
 
     view.getContent().addEditEndHandler(this);
   }
-
+  
   private Provider createProvider(GridContainerView view, DataInfo info, BeeRowSet rowSet,
       boolean isAsync) {
     Provider provider;
@@ -293,16 +293,18 @@ public class GridPresenter implements Presenter, EditEndEvent.Handler {
     return view;
   }
 
-  private void deleteRow(long rowId) {
-    Global.getMsgBoxen().confirm("Delete Row ?", new DeleteCallback(rowId), StyleUtils.NAME_SCARY);
+  private void deleteRow(long rowId, long version) {
+    Global.getMsgBoxen().confirm("Delete Row ?", new DeleteCallback(rowId, version),
+        StyleUtils.NAME_SCARY);
   }
 
-  private void deleteRows(List<Long> rows) {
+  private void deleteRows(Collection<RowInfo> rows) {
     Assert.notNull(rows);
     int count = rows.size();
     Assert.isPositive(count);
     if (count == 1) {
-      deleteRow(rows.get(0));
+      RowInfo rowInfo = BeeUtils.peek(rows);
+      deleteRow(rowInfo.getId(), rowInfo.getVersion());
       return;
     }
 
@@ -323,6 +325,12 @@ public class GridPresenter implements Presenter, EditEndEvent.Handler {
       searchers = null;
     }
     return searchers;
+  }
+
+  private void setLoadingState(LoadingStateChangeEvent.LoadingState loadingState) {
+    if (loadingState != null) {
+      getView().getContent().getGrid().fireLoadingStateChange(loadingState);
+    }
   }
 
   private void showFailure(String activity, String reason) {

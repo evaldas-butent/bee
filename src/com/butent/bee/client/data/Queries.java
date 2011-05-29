@@ -16,13 +16,15 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.Order;
-import com.butent.bee.shared.data.view.RowInfoCollection;
+import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -39,6 +41,9 @@ public class Queries {
   public interface IntCallback extends Callback<Integer, String> {
   }
 
+  public interface RowCallback extends Callback<BeeRow, String> {
+  }
+
   /**
    * Requires implementing classes to have {@code onResponse) method applied for a {@code RowSet}
    * object.
@@ -49,28 +54,28 @@ public class Queries {
   public interface VersionCallback extends Callback<Long, String> {
   }
 
-  public static void deleteRow(String viewName, long rowId) {
-    deleteRow(viewName, rowId, null);
+  public static void deleteRow(String viewName, long rowId, long version) {
+    deleteRow(viewName, rowId, version, null);
   }
 
-  public static void deleteRow(String viewName, long rowId, IntCallback callback) {
-    deleteRows(viewName, Lists.newArrayList(rowId), callback);
+  public static void deleteRow(String viewName, long rowId, long version, IntCallback callback) {
+    deleteRows(viewName, Lists.newArrayList(new RowInfo(rowId, version)), callback);
   }
 
-  public static void deleteRows(String viewName, List<Long> rowIds) {
-    deleteRows(viewName, rowIds, null);
+  public static void deleteRows(String viewName, Collection<RowInfo> rows) {
+    deleteRows(viewName, rows, null);
   }
 
-  public static void deleteRows(final String viewName, List<Long> rowIds,
+  public static void deleteRows(final String viewName, Collection<RowInfo> rows,
       final IntCallback callback) {
     Assert.notEmpty(viewName);
-    Assert.notNull(rowIds);
+    Assert.notNull(rows);
 
-    final int requestCount = rowIds.size();
+    final int requestCount = rows.size();
     Assert.isPositive(requestCount);
 
     List<Property> lst = PropertyUtils.createProperties(Service.VAR_VIEW_NAME, viewName,
-        Service.VAR_VIEW_ROWS, new RowInfoCollection(rowIds).serialize());
+        Service.VAR_VIEW_ROWS, Codec.beeSerialize(rows));
 
     BeeKeeper.getRpc().makePostRequest(new ParameterList(Service.DELETE_ROWS,
         RpcParameter.SECTION.DATA, lst), new ResponseCallback() {
@@ -220,10 +225,12 @@ public class Queries {
   }
 
   public static void updateCell(final String viewName, final long rowId, long version,
-      final String columnId, final String oldValue, final String newValue,
-      final VersionCallback callback) {
+      final String columnId, final ValueType columnType,
+      final String oldValue, final String newValue, final VersionCallback callback) {
     Assert.notEmpty(viewName);
+    Assert.isTrue(rowId != 0);
     Assert.notEmpty(columnId);
+    Assert.notNull(columnType);
 
     if (Objects.equal(oldValue, newValue)) {
       BeeKeeper.getLog().warning("updateCell:", viewName, rowId, columnId,
@@ -233,7 +240,7 @@ public class Queries {
 
     List<Property> lst = PropertyUtils.createProperties(Service.VAR_VIEW_NAME, viewName,
         Service.VAR_VIEW_ROW_ID, rowId, Service.VAR_VIEW_VERSION, version,
-        Service.VAR_VIEW_COLUMN, columnId,
+        Service.VAR_VIEW_COLUMN, columnId, Service.VAR_VIEW_TYPE, columnType.getTypeCode(),
         Service.VAR_VIEW_OLD_VALUE, oldValue, Service.VAR_VIEW_NEW_VALUE, newValue);
 
     BeeKeeper.getRpc().makePostRequest(new ParameterList(Service.UPDATE_CELL,
@@ -248,7 +255,7 @@ public class Queries {
           }
 
         } else {
-          BeeKeeper.getLog().warning("updateCell:", viewName, rowId, columnId,
+          BeeKeeper.getLog().warning("updateCell:", viewName, rowId, columnId, columnType,
               "old value:", oldValue, "new value:", newValue);
           BeeKeeper.getLog().warning("response:", s);
           if (callback != null) {
@@ -259,23 +266,21 @@ public class Queries {
     });
   }
 
-  public static void updateCell(final BeeRowSet rs, final VersionCallback callback) {
+  public static void updateRow(final BeeRowSet rs, final RowCallback callback) {
     Assert.notNull(rs);
 
-    BeeKeeper.getRpc().sendText(Service.UPDATE_CELL, Codec.beeSerialize(rs),
+    BeeKeeper.getRpc().sendText(Service.UPDATE_ROW, Codec.beeSerialize(rs),
         new ResponseCallback() {
           public void onResponse(JsArrayString arr) {
-            BeeRow s = BeeRow.restore(arr.get(0));
-
-            if (!BeeUtils.isEmpty(s)) {
-              long newVersion = s.getVersion();
+            BeeRow row = BeeRow.restore(arr.get(0));
+            if (row != null) {
               if (callback != null) {
-                callback.onSuccess(newVersion);
+                callback.onSuccess(row);
               }
 
             } else {
               if (callback != null) {
-                callback.onFailure("Error");
+                callback.onFailure(arr.get(0));
               }
             }
           }

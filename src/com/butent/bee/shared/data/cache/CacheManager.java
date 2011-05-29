@@ -17,6 +17,7 @@ import com.butent.bee.shared.data.event.MultiDeleteEvent;
 import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.Order;
+import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.ExtendedProperty;
 import com.butent.bee.shared.utils.PropertyUtils;
@@ -358,12 +359,12 @@ public class CacheManager implements HandlesDeleteEvents, HandlesUpdateEvents {
     }
     
     int cnt = 0;
-    for (long rowId : event.getRowIds()) {
-      if (deleteRow(key, rowId)) {
+    for (RowInfo rowInfo : event.getRows()) {
+      if (deleteRow(key, rowInfo.getId())) {
         cnt++;
       }
     }
-    BeeKeeper.getLog().info("Cache", key, "deleted", cnt, "rows", "of", event.getRowIds().size());
+    BeeKeeper.getLog().info("Cache", key, "deleted", cnt, "rows", "of", event.getRows().size());
   }
 
   public void onRowDelete(RowDeleteEvent event) {

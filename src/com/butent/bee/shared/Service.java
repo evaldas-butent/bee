@@ -65,6 +65,7 @@ public class Service {
   public static final String COUNT_ROWS = DATA_SERVICE_PREFIX + "row_count";
   public static final String DELETE_ROWS = DATA_SERVICE_PREFIX + "delete_rows";
   public static final String UPDATE_CELL = DATA_SERVICE_PREFIX + "update_cell";
+  public static final String UPDATE_ROW = DATA_SERVICE_PREFIX + "update_row";
 
   public static final String RPC_VAR_PREFIX = "bee_";
   public static final String RPC_VAR_SYS_PREFIX = RPC_VAR_PREFIX + "sys_";
@@ -136,6 +137,7 @@ public class Service {
   public static final String VAR_VIEW_ROW_ID = RPC_VAR_PREFIX + "view_row_id";
   public static final String VAR_VIEW_VERSION = RPC_VAR_PREFIX + "view_version";
   public static final String VAR_VIEW_COLUMN = RPC_VAR_PREFIX + "view_column";
+  public static final String VAR_VIEW_TYPE = RPC_VAR_PREFIX + "view_type";
   public static final String VAR_VIEW_OLD_VALUE = RPC_VAR_PREFIX + "view_old";
   public static final String VAR_VIEW_NEW_VALUE = RPC_VAR_PREFIX + "view_new";
 

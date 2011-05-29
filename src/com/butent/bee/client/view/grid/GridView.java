@@ -6,7 +6,9 @@ import com.butent.bee.client.view.View;
 import com.butent.bee.client.view.edit.HasEditEndHandlers;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.view.RowInfo;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -21,11 +23,11 @@ public interface GridView extends View, HasEditEndHandlers, NotificationListener
 
   int estimatePageSize(int containerWidth, int containerHeight);
 
-  Long getActiveRowId();
+  RowInfo getActiveRowInfo();
   
   HasDataTable getGrid();
   
-  List<Long> getSelectedRows();  
+  Collection<RowInfo> getSelectedRows();  
 
   boolean isRowSelected(long rowId);
   

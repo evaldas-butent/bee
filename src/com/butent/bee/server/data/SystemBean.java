@@ -33,7 +33,6 @@ import com.butent.bee.shared.JustDate;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
-import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.value.ValueType;
@@ -904,71 +903,6 @@ public class SystemBean {
         qs.updateData(table.insertState(id, state, bitMap));
       }
     }
-  }
-
-  public ResponseObject updateCell(String viewName, long rowId, long oldVersion, String columnId,
-      String oldValue, String newValue) {
-
-    ResponseObject response = new ResponseObject();
-    if (!isView(viewName) && !isTable(viewName)) {
-      response.addError("viewName", viewName, "not recognized");
-      return response;
-    }
-
-    BeeView view = getView(viewName);
-    Assert.notNull(view);
-    if (view.isReadOnly()) {
-      response.addError("view " + viewName + " is read only.");
-      return response;
-    }
-
-    String tblName = view.getSource();
-    BeeTable table = getTable(tblName);
-
-    if (!table.hasField(columnId)) {
-      response.addError("table " + tblName + " does not contain column " + columnId);
-      return response;
-    }
-    BeeField field = table.getField(columnId);
-    String fieldName = field.getName();
-    DataType type = field.getType();
-
-    IsCondition idWh = SqlUtils.equal(tblName, table.getIdName(), rowId);
-    IsCondition wh = SqlUtils.and(idWh, SqlUtils.equal(tblName, table.getLockName(), oldVersion));
-
-    SqlUpdate su = new SqlUpdate(tblName);
-    su.addConstant(fieldName, type.parse(newValue));
-
-    long newVersion = System.currentTimeMillis();
-    su.addConstant(table.getLockName(), newVersion);
-
-    int res = qs.updateData(su.setWhere(wh));
-
-    if (res == 0) {
-      SimpleRowSet rs =
-          qs.getData(new SqlSelect().addFields(tblName, fieldName).addFrom(tblName).setWhere(idWh));
-
-      if (rs != null && rs.getNumberOfRows() == 1) {
-        if (BeeUtils.same(oldValue, rs.getValue(0, 0))) {
-          res = qs.updateData(su.setWhere(idWh));
-        }
-      }
-    }
-
-    if (res <= 0) {
-      String message = (res < 0) ? "Error updating data" : "Optimistic lock exception";
-      response.addError(message);
-      response.setResponse(message);
-      return response;
-    }
-
-    if (BeeUtils.inList(tblName, UserServiceBean.USER_TABLE, UserServiceBean.ROLE_TABLE,
-        UserServiceBean.USER_ROLES_TABLE)) {
-      usr.invalidateCache();
-    }
-
-    response.setResponse(newVersion);
-    return response;
   }
 
   public ResponseObject updateRow(BeeRowSet rs, boolean returnAllFields) {

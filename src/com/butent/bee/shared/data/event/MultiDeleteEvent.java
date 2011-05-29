@@ -6,6 +6,7 @@ import com.google.web.bindery.event.shared.EventBus;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.data.view.RowInfo;
 
 import java.util.Collection;
 import java.util.Set;
@@ -25,11 +26,11 @@ public class MultiDeleteEvent extends Event<MultiDeleteEvent.Handler> {
   }
   
   private final String viewName;
-  private final Set<Long> rowIds;
+  private final Set<RowInfo> rows;
 
-  public MultiDeleteEvent(String viewName, Collection<Long> rowIds) {
+  public MultiDeleteEvent(String viewName, Collection<RowInfo> rows) {
     this.viewName = viewName;
-    this.rowIds = Sets.newHashSet(rowIds); 
+    this.rows = Sets.newHashSet(rows); 
   }
 
   @Override
@@ -37,8 +38,8 @@ public class MultiDeleteEvent extends Event<MultiDeleteEvent.Handler> {
     return TYPE;
   }
 
-  public Set<Long> getRowIds() {
-    return rowIds;
+  public Set<RowInfo> getRows() {
+    return rows;
   }
 
   public String getViewName() {
