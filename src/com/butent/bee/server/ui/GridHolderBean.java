@@ -123,7 +123,7 @@ public class GridHolderBean {
           , grid.getAttribute("caption")
           , BeeUtils.toBoolean(grid.getAttribute("readOnly")));
 
-      NodeList cols = grid.getElementsByTagName("*");
+      NodeList cols = ((Element) grid.getElementsByTagName("columns").item(0)).getElementsByTagName("*");
 
       for (int j = 0; j < cols.getLength(); j++) {
         Element col = (Element) cols.item(j);

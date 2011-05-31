@@ -11,37 +11,51 @@
   </xs:element>
 
   <xs:complexType name="grid">
-    <xs:choice minOccurs="1" maxOccurs="unbounded">
-      <xs:element name="BeeDataColumn" type="bee:dataColumn" />
-      <xs:element name="BeeRelColumn" type="bee:relatedColumn" />
-      <xs:element name="BeeCalcColumn" type="bee:calculatedColumn" />
-      <xs:element name="BeeIdColumn" type="bee:column" />
-      <xs:element name="BeeVerColumn" type="bee:column" />
-    </xs:choice>
+    <xs:sequence>
+      <xs:element name="settings" type="bee:gridSettings" minOccurs="0" />
+      <xs:element name="header" type="bee:componentType" minOccurs="0" />
+      <xs:element name="body" type="bee:componentType" minOccurs="0" />
+      <xs:element name="footer" type="bee:componentType" minOccurs="0" />
+      <xs:element name="columns" type="bee:columnList" />
+      <xs:element name="rowStyles" type="bee:conditionalStyle" minOccurs="0" maxOccurs="unbounded" />
+      <xs:element name="rowMessage" type="bee:calcType" minOccurs="0" />
+      <xs:element name="rowEditable" type="bee:calcType" minOccurs="0" />
+    </xs:sequence>
     <xs:attribute name="name" type="bee:nameType" use="required" />
     <xs:attribute name="viewName" type="bee:nameType" use="required" />
     <xs:attribute name="caption" type="xs:string" />
-    <xs:attribute name="headerCellHeight" type="xs:byte" />
-    <xs:attribute name="bodyCellHeight" type="xs:byte" />
-    <xs:attribute name="footerCellHeight" type="xs:byte" />
     <xs:attribute name="readOnly" type="xs:boolean" />
-    <xs:attribute name="width" type="xs:byte" />
-    <xs:attribute name="headerWidth" type="xs:byte" />
-    <xs:attribute name="bodyWidth" type="xs:byte" />
-    <xs:attribute name="footerWidth" type="xs:byte" />
+    <xs:attribute name="minColumnWidth" type="bee:widthType" />
+    <xs:attribute name="maxColumnWidth" type="bee:widthType" />
+  </xs:complexType>
+
+  <xs:complexType name="baseColumn">
+    <xs:complexContent>
+      <xs:extension base="bee:column">
+        <xs:sequence>
+          <xs:element name="validation" type="bee:calcType" minOccurs="0" />
+          <xs:element name="editable" type="bee:calcType" minOccurs="0" />
+          <xs:element name="carry" type="bee:calcType" minOccurs="0" />
+        </xs:sequence>
+        <xs:attribute name="source" type="bee:nameType" use="required" />
+        <xs:attribute name="editor" type="bee:editorType" />
+      </xs:extension>
+    </xs:complexContent>
   </xs:complexType>
 
   <xs:complexType name="dataColumn">
     <xs:complexContent>
-      <xs:extension base="bee:column">
-        <xs:attribute name="source" type="bee:nameType" use="required" />
+      <xs:extension base="bee:baseColumn">
+        <xs:attribute name="minValue" type="xs:normalizedString" />
+        <xs:attribute name="maxValue" type="xs:normalizedString" />
+        <xs:attribute name="stepValue" type="xs:normalizedString" />
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
 
   <xs:complexType name="relatedColumn">
     <xs:complexContent>
-      <xs:extension base="bee:dataColumn">
+      <xs:extension base="bee:baseColumn">
         <xs:attribute name="relation" type="bee:nameType" use="required" />
       </xs:extension>
     </xs:complexContent>
@@ -50,21 +64,146 @@
   <xs:complexType name="calculatedColumn">
     <xs:complexContent>
       <xs:extension base="bee:column">
-        <xs:attribute name="expression" type="xs:string" use="required" />
+        <xs:sequence>
+          <xs:element name="calc" type="bee:calcType" />
+        </xs:sequence>
+        <xs:attribute name="type" type="bee:valueType" use="required" />
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
 
   <xs:complexType name="column">
+    <xs:sequence>
+      <xs:element name="style" type="bee:columnStyle" minOccurs="0" />
+    </xs:sequence>
     <xs:attribute name="name" type="bee:nameType" use="required" />
-    <xs:attribute name="caption" use="required" />
+    <xs:attribute name="caption" type="xs:string" />
     <xs:attribute name="readOnly" type="xs:boolean" />
-    <xs:attribute name="width" type="xs:byte" />
+    <xs:attribute name="width" type="bee:widthType" />
+    <xs:attribute name="minWidth" type="bee:widthType" />
+    <xs:attribute name="maxWidth" type="bee:widthType" />
+    <xs:attribute name="sortable" type="xs:boolean" default="true" />
+    <xs:attribute name="visible" type="xs:boolean" default="true" />
+    <xs:attribute name="format" type="xs:normalizedString" />
+  </xs:complexType>
+  
+  <xs:complexType name="columnStyle">
+    <xs:sequence>
+      <xs:element name="headerStyle" type="bee:styleType" minOccurs="0" />
+      <xs:element name="bodyStyle" type="bee:styleType" minOccurs="0" />
+      <xs:element name="footerStyle" type="bee:styleType" minOccurs="0" />
+      <xs:element name="dynStyle" type="bee:conditionalStyle" minOccurs="0" maxOccurs="unbounded" />
+    </xs:sequence>
   </xs:complexType>
 
   <xs:simpleType name="nameType">
-    <xs:restriction base="xs:string">
+    <xs:restriction base="xs:token">
       <xs:maxLength value="30" />
     </xs:restriction>
   </xs:simpleType>
+
+  <xs:simpleType name="widthType">
+    <xs:restriction base="xs:positiveInteger">
+      <xs:minInclusive value="16" />
+      <xs:maxInclusive value="999" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="heightType">
+    <xs:restriction base="xs:positiveInteger">
+      <xs:minInclusive value="12" />
+      <xs:maxExclusive value="400" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:complexType name="styleType">
+    <xs:sequence>
+      <xs:element name="className" type="xs:normalizedString" minOccurs="0" />
+      <xs:element name="inlineStyle" type="xs:normalizedString" minOccurs="0" />
+      <xs:element name="font" type="xs:normalizedString" minOccurs="0" />
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="componentType">
+    <xs:sequence>
+      <xs:element name="style" type="bee:styleType" minOccurs="0" />
+    </xs:sequence>
+    <xs:attribute name="height" type="bee:heightType" />
+    <xs:attribute name="minHeight" type="bee:heightType" />
+    <xs:attribute name="maxHeight" type="bee:heightType" />
+    <xs:attribute name="padding" type="bee:edges" />
+    <xs:attribute name="borderWidth" type="bee:edges" />
+    <xs:attribute name="margin" type="bee:edges" />
+  </xs:complexType>
+
+  <xs:complexType name="columnList">
+    <xs:choice minOccurs="1" maxOccurs="unbounded">
+      <xs:element name="BeeDataColumn" type="bee:dataColumn" />
+      <xs:element name="BeeRelColumn" type="bee:relatedColumn" />
+      <xs:element name="BeeCalcColumn" type="bee:calculatedColumn" />
+      <xs:element name="BeeIdColumn" type="bee:column" maxOccurs="1" />
+      <xs:element name="BeeVerColumn" type="bee:column" maxOccurs="1" />
+    </xs:choice>
+  </xs:complexType>
+
+  <xs:simpleType name="edges">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[0-9]( [0-9]){0,3}" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:complexType name="gridSettings">
+    <xs:attribute name="hasHeader" type="xs:boolean" default="true" />
+    <xs:attribute name="hasFooter" type="xs:boolean" default="true" />
+    <xs:attribute name="asyncThreshold" type="xs:nonNegativeInteger" default="100" />
+    <xs:attribute name="pagingThreshold" type="xs:nonNegativeInteger" default="20" />
+    <xs:attribute name="searchThreshold" type="xs:nonNegativeInteger" default="2" />
+    <xs:attribute name="newRowColumns" type="xs:normalizedString" />
+  </xs:complexType>
+
+  <xs:simpleType name="valueType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="boolean" />
+      <xs:enumeration value="date" />
+      <xs:enumeration value="datetime" />
+      <xs:enumeration value="decimal" />
+      <xs:enumeration value="integer" />
+      <xs:enumeration value="long" />
+      <xs:enumeration value="number" />
+      <xs:enumeration value="string" />
+      <xs:enumeration value="timeofday" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:complexType name="calcType">
+    <xs:choice>
+      <xs:element name="expression" type="xs:normalizedString" />
+      <xs:element name="function" type="xs:string" />
+    </xs:choice>
+  </xs:complexType>
+  
+  <xs:complexType name="conditionalStyle">
+    <xs:sequence>
+      <xs:element name="style" type="bee:styleType" />
+      <xs:element name="when" type="bee:calcType" />
+    </xs:sequence>
+  </xs:complexType>  
+
+  <xs:simpleType name="editorType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="list" />
+      <xs:enumeration value="area" />
+      <xs:enumeration value="date" />
+      <xs:enumeration value="text" />
+      <xs:enumeration value="rich" />
+      <xs:enumeration value="number" />
+      <xs:enumeration value="integer" />
+      <xs:enumeration value="slider" />
+      <xs:enumeration value="spinner" />
+      <xs:enumeration value="long" />
+      <xs:enumeration value="suggest" />
+      <xs:enumeration value="toggle" />
+    </xs:restriction>
+  </xs:simpleType>
+
 </xs:schema>

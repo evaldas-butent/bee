@@ -1,12 +1,15 @@
 package com.butent.bee.client.widget;
 
+import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
+import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.CustomButton;
 import com.google.gwt.user.client.ui.Image;
 
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.view.edit.EditStopEvent.Handler;
 import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.view.edit.Editor;
@@ -96,6 +99,16 @@ public class Toggle extends CustomButton implements Editor, HasEditState {
 
   public boolean isNullable() {
     return nullable;
+  }
+
+  @Override
+  public void onBrowserEvent(Event event) {
+    if (EventUtils.isKeyDown(event.getType()) && event.getKeyCode() == KeyCodes.KEY_ENTER) {
+      EventUtils.eatEvent(event);
+      onClick();
+      return;
+    }
+    super.onBrowserEvent(event);
   }
 
   public void setEditing(boolean editing) {
