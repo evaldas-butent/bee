@@ -6,6 +6,10 @@ import com.google.common.collect.Maps;
 import com.butent.bee.server.io.FileUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.ui.Calculation;
+import com.butent.bee.shared.ui.ConditionalStyle;
+import com.butent.bee.shared.ui.Style;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.ExtendedProperty;
 import com.butent.bee.shared.utils.LogUtils;
@@ -131,6 +135,18 @@ public class XmlUtils {
     return doc;
   }
   
+  public static Boolean getAttributeBoolean(Element element, String name) {
+    Assert.notNull(element);
+    Assert.notEmpty(name);
+    return BeeUtils.toBooleanOrNull(element.getAttribute(name));
+  }
+
+  public static Integer getAttributeInteger(Element element, String name) {
+    Assert.notNull(element);
+    Assert.notEmpty(name);
+    return BeeUtils.toIntOrNull(element.getAttribute(name));
+  }
+
   public static Map<String, String> getAttributes(Node node) {
     Assert.notNull(node);
     Map<String, String> result = Maps.newHashMap();
@@ -151,7 +167,7 @@ public class XmlUtils {
   public static Property[][] getAttributesFromFile(String src, String tag) {
     return getAttributesFromFile(src, null, tag);
   }
-
+  
   public static Property[][] getAttributesFromFile(String src, String xsl, String tag) {
     Assert.notEmpty(src);
     Assert.notEmpty(tag);
@@ -210,7 +226,31 @@ public class XmlUtils {
         "To String", attr.toString());
     return lst;
   }
+  
+  public static Calculation getCalculation(Element element) {
+    Assert.notNull(element);
 
+    String expr = getTextQuietly(getFirstChildElement(element, Calculation.TAG_EXPRESSION));
+    String func = getTextQuietly(getFirstChildElement(element, Calculation.TAG_FUNCTION));
+    if (BeeUtils.allEmpty(expr, func)) {
+      return null;
+    }
+    
+    String typeCode = element.getAttribute(Calculation.ATTR_TYPE);
+    return new Calculation(ValueType.getByTypeCode(typeCode), expr, func);
+  }
+
+  public static Calculation getCalculation(Element parent, String tagName) {
+    Assert.notNull(parent);
+    Assert.notEmpty(tagName);
+    
+    Element element = getFirstChildElement(parent, tagName);
+    if (element == null) {
+      return null;
+    }
+    return getCalculation(element);
+  }
+  
   public static List<Property> getCDATAInfo(CDATASection cdata) {
     Assert.notNull(cdata);
     List<Property> lst = new ArrayList<Property>();
@@ -220,7 +260,7 @@ public class XmlUtils {
         "Is Element Content Whitespace", cdata.isElementContentWhitespace());
     return lst;
   }
-
+  
   public static List<Element> getChildrenElements(Element parent) {
     Assert.notNull(parent);
     List<Element> result = Lists.newArrayList();
@@ -245,6 +285,29 @@ public class XmlUtils {
     return lst;
   }
 
+  public static ConditionalStyle getConditionalStyle(Element element) {
+    Assert.notNull(element);
+
+    Style style = getStyle(element, ConditionalStyle.TAG_STYLE);
+    Calculation condition = getCalculation(element, ConditionalStyle.TAG_CONDITION);
+
+    if (style == null && condition == null) {
+      return null;
+    }
+    return new ConditionalStyle(style, condition);
+  }
+  
+  public static ConditionalStyle getConditionalStyle(Element parent, String tagName) {
+    Assert.notNull(parent);
+    Assert.notEmpty(tagName);
+    
+    Element element = getFirstChildElement(parent, tagName);
+    if (element == null) {
+      return null;
+    }
+    return getConditionalStyle(element);
+  }
+  
   public static List<Property> getDocumentFragmentInfo(DocumentFragment df) {
     Assert.notNull(df);
     List<Property> lst = new ArrayList<Property>();
@@ -538,6 +601,30 @@ public class XmlUtils {
     return lst;
   }
 
+  public static Style getStyle(Element element) {
+    Assert.notNull(element);
+
+    String className = getTextQuietly(getFirstChildElement(element, Style.TAG_CLASS));
+    String inline = getTextQuietly(getFirstChildElement(element, Style.TAG_INLINE));
+    String font = getTextQuietly(getFirstChildElement(element, Style.TAG_FONT));
+    
+    if (BeeUtils.allEmpty(className, inline, font)) {
+      return null;
+    }
+    return new Style(className, inline, font);
+  }
+  
+  public static Style getStyle(Element parent, String tagName) {
+    Assert.notNull(parent);
+    Assert.notEmpty(tagName);
+    
+    Element element = getFirstChildElement(parent, tagName);
+    if (element == null) {
+      return null;
+    }
+    return getStyle(element);
+  }
+  
   public static String getText(String xml, String tag) {
     Assert.notEmpty(xml);
     Assert.notEmpty(tag);
@@ -578,6 +665,13 @@ public class XmlUtils {
         "Is Element Content Whitespace", txt.isElementContentWhitespace(),
         "To String", txt.toString());
     return lst;
+  }
+  
+  public static String getTextQuietly(Element element) {
+    if (element == null) {
+      return null;
+    }
+    return element.getTextContent();
   }
 
   public static List<ExtendedProperty> getTreeInfo(Node nd, String root) {

@@ -14,6 +14,10 @@ import java.util.List;
 
 public class Style implements BeeSerializable, HasInfo {
   
+  public static final String TAG_CLASS = "class";
+  public static final String TAG_INLINE = "inline";
+  public static final String TAG_FONT = "font";
+  
   public static Style restore(String s) {
     if (BeeUtils.isEmpty(s)) {
       return null;

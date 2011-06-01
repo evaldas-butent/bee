@@ -63,7 +63,7 @@ public class GridColumn implements BeeSerializable, HasInfo {
   private ColType type;
   private String name;
   private String caption = null;
-  private boolean readOnly = false;
+  private Boolean readOnly = null;
   private Integer width = null;
 
   private String source = null;
@@ -73,12 +73,12 @@ public class GridColumn implements BeeSerializable, HasInfo {
   private Integer minWidth = null;
   private Integer maxWidth = null;
 
-  private boolean sortable = true;
-  private boolean visible = true;
+  private Boolean sortable = null;
+  private Boolean visible = null;
   private String format = null;
 
-  private boolean hasFooter = true;
-  private boolean showWidth = true;
+  private Boolean hasFooter = null;
+  private Boolean showWidth = null;
 
   private Calculation validation = null;
   private Calculation editable = null;
@@ -98,14 +98,11 @@ public class GridColumn implements BeeSerializable, HasInfo {
 
   private Collection<ConditionalStyle> dynStyles = null;
 
-  public GridColumn(ColType type, String name, String caption, boolean readOnly, Integer width) {
+  public GridColumn(ColType type, String name) {
     Assert.notEmpty(type);
     Assert.notEmpty(name);
     this.type = type;
     this.name = name;
-    this.caption = caption;
-    this.readOnly = readOnly;
-    this.width = width;
   }
 
   private GridColumn() {
@@ -132,7 +129,7 @@ public class GridColumn implements BeeSerializable, HasInfo {
           setCaption(value);
           break;
         case READ_ONLY:
-          setReadOnly(BeeUtils.toBoolean(value));
+          setReadOnly(BeeUtils.toBooleanOrNull(value));
           break;
         case WIDTH:
           setWidth(BeeUtils.toIntOrNull(value));
@@ -162,7 +159,7 @@ public class GridColumn implements BeeSerializable, HasInfo {
           setFormat(value);
           break;
         case HAS_FOOTER:
-          setHasFooter(BeeUtils.toBoolean(value));
+          setHasFooter(BeeUtils.toBooleanOrNull(value));
           break;
         case MAX_VALUE:
           setMaxValue(value);
@@ -177,10 +174,10 @@ public class GridColumn implements BeeSerializable, HasInfo {
           setMinWidth(BeeUtils.toIntOrNull(value));
           break;
         case SHOW_WIDTH:
-          setShowWidth(BeeUtils.toBoolean(value));
+          setShowWidth(BeeUtils.toBooleanOrNull(value));
           break;
         case SORTABLE:
-          setSortable(BeeUtils.toBoolean(value));
+          setSortable(BeeUtils.toBooleanOrNull(value));
           break;
         case STEP_VALUE:
           setStepValue(value);
@@ -189,7 +186,7 @@ public class GridColumn implements BeeSerializable, HasInfo {
           setValidation(Calculation.restore(value));
           break;
         case VISIBLE:
-          setVisible(BeeUtils.toBoolean(value));
+          setVisible(BeeUtils.toBooleanOrNull(value));
           break;
         case BODY_STYLE:
           setBodyStyle(Style.restore(value));
@@ -214,6 +211,10 @@ public class GridColumn implements BeeSerializable, HasInfo {
           break;
       }
     }
+  }
+
+  public Calculation getCalc() {
+    return calc;
   }
 
   public List<Property> getInfo() {
@@ -280,6 +281,18 @@ public class GridColumn implements BeeSerializable, HasInfo {
 
   public String getName() {
     return name;
+  }
+
+  public String getRelField() {
+    return relField;
+  }
+
+  public String getSource() {
+    return source;
+  }
+
+  public ColType getType() {
+    return type;
   }
 
   @Override
@@ -376,8 +389,68 @@ public class GridColumn implements BeeSerializable, HasInfo {
     return Codec.beeSerializeAll(arr);
   }
 
+  public void setBodyStyle(Style bodyStyle) {
+    this.bodyStyle = bodyStyle;
+  }
+
   public void setCalc(Calculation calc) {
     this.calc = calc;
+  }
+
+  public void setCaption(String caption) {
+    this.caption = caption;
+  }
+
+  public void setCarry(Calculation carry) {
+    this.carry = carry;
+  }
+
+  public void setDynStyles(Collection<ConditionalStyle> dynStyles) {
+    this.dynStyles = dynStyles;
+  }
+
+  public void setEditable(Calculation editable) {
+    this.editable = editable;
+  }
+
+  public void setEditor(String editor) {
+    this.editor = editor;
+  }
+
+  public void setFooterStyle(Style footerStyle) {
+    this.footerStyle = footerStyle;
+  }
+
+  public void setFormat(String format) {
+    this.format = format;
+  }
+
+  public void setHasFooter(Boolean hasFooter) {
+    this.hasFooter = hasFooter;
+  }
+
+  public void setHeaderStyle(Style headerStyle) {
+    this.headerStyle = headerStyle;
+  }
+
+  public void setMaxValue(String maxValue) {
+    this.maxValue = maxValue;
+  }
+
+  public void setMaxWidth(Integer maxWidth) {
+    this.maxWidth = maxWidth;
+  }
+
+  public void setMinValue(String minValue) {
+    this.minValue = minValue;
+  }
+
+  public void setMinWidth(Integer minWidth) {
+    this.minWidth = minWidth;
+  }
+
+  public void setReadOnly(Boolean readOnly) {
+    this.readOnly = readOnly;
   }
 
   public void setRelField(String relField) {
@@ -388,16 +461,36 @@ public class GridColumn implements BeeSerializable, HasInfo {
     this.relTable = relTable;
   }
 
+  public void setShowWidth(Boolean showWidth) {
+    this.showWidth = showWidth;
+  }
+
+  public void setSortable(Boolean sortable) {
+    this.sortable = sortable;
+  }
+
   public void setSource(String source) {
     this.source = source;
   }
 
-  private Style getBodyStyle() {
-    return bodyStyle;
+  public void setStepValue(String stepValue) {
+    this.stepValue = stepValue;
   }
 
-  private Calculation getCalc() {
-    return calc;
+  public void setValidation(Calculation validation) {
+    this.validation = validation;
+  }
+
+  public void setVisible(Boolean visible) {
+    this.visible = visible;
+  }
+
+  public void setWidth(Integer width) {
+    this.width = width;
+  }
+
+  private Style getBodyStyle() {
+    return bodyStyle;
   }
 
   private String getCaption() {
@@ -448,24 +541,12 @@ public class GridColumn implements BeeSerializable, HasInfo {
     return minWidth;
   }
 
-  private String getRelField() {
-    return relField;
-  }
-
   private String getRelTable() {
     return relTable;
   }
 
-  private String getSource() {
-    return source;
-  }
-
   private String getStepValue() {
     return stepValue;
-  }
-
-  private ColType getType() {
-    return type;
   }
 
   private Calculation getValidation() {
@@ -476,115 +557,31 @@ public class GridColumn implements BeeSerializable, HasInfo {
     return width;
   }
 
-  private boolean hasFooter() {
+  private Boolean hasFooter() {
     return hasFooter;
   }
 
-  private boolean isReadOnly() {
+  private Boolean isReadOnly() {
     return readOnly;
   }
 
-  private boolean isSortable() {
+  private Boolean isSortable() {
     return sortable;
   }
 
-  private boolean isVisible() {
+  private Boolean isVisible() {
     return visible;
-  }
-
-  private void setBodyStyle(Style bodyStyle) {
-    this.bodyStyle = bodyStyle;
-  }
-
-  private void setCaption(String caption) {
-    this.caption = caption;
-  }
-
-  private void setCarry(Calculation carry) {
-    this.carry = carry;
-  }
-
-  private void setDynStyles(Collection<ConditionalStyle> dynStyles) {
-    this.dynStyles = dynStyles;
-  }
-
-  private void setEditable(Calculation editable) {
-    this.editable = editable;
-  }
-
-  private void setEditor(String editor) {
-    this.editor = editor;
-  }
-
-  private void setFooterStyle(Style footerStyle) {
-    this.footerStyle = footerStyle;
-  }
-
-  private void setFormat(String format) {
-    this.format = format;
-  }
-
-  private void setHasFooter(boolean hasFooter) {
-    this.hasFooter = hasFooter;
-  }
-
-  private void setHeaderStyle(Style headerStyle) {
-    this.headerStyle = headerStyle;
-  }
-
-  private void setMaxValue(String maxValue) {
-    this.maxValue = maxValue;
-  }
-
-  private void setMaxWidth(Integer maxWidth) {
-    this.maxWidth = maxWidth;
-  }
-
-  private void setMinValue(String minValue) {
-    this.minValue = minValue;
-  }
-
-  private void setMinWidth(Integer minWidth) {
-    this.minWidth = minWidth;
   }
 
   private void setName(String name) {
     this.name = name;
   }
 
-  private void setReadOnly(boolean readOnly) {
-    this.readOnly = readOnly;
-  }
-
-  private void setShowWidth(boolean showWidth) {
-    this.showWidth = showWidth;
-  }
-
-  private void setSortable(boolean sortable) {
-    this.sortable = sortable;
-  }
-
-  private void setStepValue(String stepValue) {
-    this.stepValue = stepValue;
-  }
-
   private void setType(ColType type) {
     this.type = type;
   }
 
-  private void setValidation(Calculation validation) {
-    this.validation = validation;
-  }
-
-  private void setVisible(boolean visible) {
-    this.visible = visible;
-  }
-
-  private void setWidth(Integer width) {
-    this.width = width;
-  }
-
-  private boolean showWidth() {
+  private Boolean showWidth() {
     return showWidth;
   }
 }

@@ -6,8 +6,6 @@ import com.google.common.collect.Maps;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.HasExtendedInfo;
-import com.butent.bee.shared.data.value.ValueType;
-import com.butent.bee.shared.ui.GridColumn.ColType;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.ExtendedProperty;
@@ -45,15 +43,15 @@ public class BeeGrid implements BeeSerializable, HasExtendedInfo {
   private String name;
   private String viewName;
   private String caption = null;
-  private boolean readOnly = false;
+  private Boolean readOnly = null;
 
-  private boolean hasHeaders = true;
-  private boolean hasFooters = true;
+  private Boolean hasHeaders = null;
+  private Boolean hasFooters = null;
   private Integer asyncThreshold = null;
   private Integer pagingThreshold = null;
   private Integer searchThreshold = null;
   private String newRowColumns = null;
-  private boolean showColumnWidths = true;
+  private Boolean showColumnWidths = null;
 
   private GridComponent header = null;
   private GridComponent body = null;
@@ -69,51 +67,23 @@ public class BeeGrid implements BeeSerializable, HasExtendedInfo {
 
   private final Map<String, GridColumn> columns = Maps.newLinkedHashMap();
 
-  public BeeGrid(String name, String viewName, String caption, boolean readOnly) {
+  public BeeGrid(String name, String viewName) {
     Assert.notEmpty(name);
     Assert.notEmpty(viewName);
 
     this.name = name;
     this.viewName = viewName;
-    this.caption = caption;
-    this.readOnly = readOnly;
   }
 
   private BeeGrid() {
   }
 
-  public void addCalculatedColumn(String colName, String colCaption, Integer width,
-      ValueType type, String expr, String func) {
-    Assert.notEmpty(expr);
-    addColumn(ColType.CALCULATED, colName, colCaption, true, width)
-        .setCalc(new Calculation(type, expr, func));
-  }
+  public void addColumn(GridColumn column) {
+    Assert.notNull(column);
+    Assert.state(!hasColumn(column.getName()),
+        BeeUtils.concat(1, "Dublicate column name:", getName(), column.getName()));
 
-  public void addDataColumn(String colName, String colCaption, boolean isReadOnly, Integer width,
-      String source) {
-    Assert.notEmpty(source);
-    addColumn(ColType.DATA, colName, colCaption, isReadOnly, width)
-        .setSource(source);
-  }
-
-  public void addIdColumn(String colName, String colCaption, Integer width) {
-    addColumn(ColType.ID, colName, colCaption, true, width);
-  }
-
-  public void addRelatedColumn(String colName, String colCaption, boolean isReadOnly,
-      Integer width, String source, String relTable, String relField) {
-    Assert.notEmpty(source);
-    Assert.notEmpty(relTable);
-    Assert.notEmpty(relField);
-
-    GridColumn column = addColumn(ColType.RELATED, colName, colCaption, isReadOnly, width);
-    column.setSource(source);
-    column.setRelTable(relTable);
-    column.setRelField(relField);
-  }
-
-  public void addVersionColumn(String colName, String colCaption, Integer width) {
-    addColumn(ColType.VERSION, colName, colCaption, true, width);
+    getColumns().put(columnKey(column.getName()), column);
   }
 
   @Override
@@ -139,7 +109,7 @@ public class BeeGrid implements BeeSerializable, HasExtendedInfo {
           setCaption(value);
           break;
         case READONLY:
-          setReadOnly(BeeUtils.toBoolean(value));
+          setReadOnly(BeeUtils.toBooleanOrNull(value));
           break;
         case COLUMNS:
           getColumns().clear();
@@ -159,10 +129,10 @@ public class BeeGrid implements BeeSerializable, HasExtendedInfo {
           setFooter(GridComponent.restore(value));
           break;
         case HAS_FOOTERS:
-          setHasFooters(BeeUtils.toBoolean(value));
+          setHasFooters(BeeUtils.toBooleanOrNull(value));
           break;
         case HAS_HEADERS:
-          setHasHeaders(BeeUtils.toBoolean(value));
+          setHasHeaders(BeeUtils.toBooleanOrNull(value));
           break;
         case HEADER:
           setHeader(GridComponent.restore(value));
@@ -200,7 +170,7 @@ public class BeeGrid implements BeeSerializable, HasExtendedInfo {
           setSearchThreshold(BeeUtils.toIntOrNull(value));
           break;
         case SHOW_COLUMN_WIDTHS:
-          setShowColumnWidths(BeeUtils.toBoolean(value));
+          setShowColumnWidths(BeeUtils.toBooleanOrNull(value));
           break;
       }
     }
@@ -355,19 +325,72 @@ public class BeeGrid implements BeeSerializable, HasExtendedInfo {
     return Codec.beeSerializeAll(arr);
   }
 
-  private GridColumn addColumn(ColType type, String colName, String colCaption, boolean isReadOnly,
-      Integer width) {
-    GridColumn col = new GridColumn(type, colName, colCaption, isReadOnly, width);
-    addColumn(col);
-    return col;
+  public void setAsyncThreshold(Integer asyncThreshold) {
+    this.asyncThreshold = asyncThreshold;
   }
 
-  private void addColumn(GridColumn column) {
-    Assert.notNull(column);
-    Assert.state(!hasColumn(column.getName()),
-        BeeUtils.concat(1, "Dublicate column name:", getName(), column.getName()));
+  public void setBody(GridComponent body) {
+    this.body = body;
+  }
 
-    getColumns().put(columnKey(column.getName()), column);
+  public void setCaption(String caption) {
+    this.caption = caption;
+  }
+
+  public void setFooter(GridComponent footer) {
+    this.footer = footer;
+  }
+
+  public void setHasFooters(Boolean hasFooters) {
+    this.hasFooters = hasFooters;
+  }
+
+  public void setHasHeaders(Boolean hasHeaders) {
+    this.hasHeaders = hasHeaders;
+  }
+
+  public void setHeader(GridComponent header) {
+    this.header = header;
+  }
+
+  public void setMaxColumnWidth(Integer maxColumnWidth) {
+    this.maxColumnWidth = maxColumnWidth;
+  }
+
+  public void setMinColumnWidth(Integer minColumnWidth) {
+    this.minColumnWidth = minColumnWidth;
+  }
+
+  public void setNewRowColumns(String newRowColumns) {
+    this.newRowColumns = newRowColumns;
+  }
+
+  public void setPagingThreshold(Integer pagingThreshold) {
+    this.pagingThreshold = pagingThreshold;
+  }
+
+  public void setReadOnly(Boolean readOnly) {
+    this.readOnly = readOnly;
+  }
+
+  public void setRowEditable(Calculation rowEditable) {
+    this.rowEditable = rowEditable;
+  }
+
+  public void setRowMessage(Calculation rowMessage) {
+    this.rowMessage = rowMessage;
+  }
+
+  public void setRowStyles(Collection<ConditionalStyle> rowStyles) {
+    this.rowStyles = rowStyles;
+  }
+
+  public void setSearchThreshold(Integer searchThreshold) {
+    this.searchThreshold = searchThreshold;
+  }
+
+  public void setShowColumnWidths(Boolean showColumnWidths) {
+    this.showColumnWidths = showColumnWidths;
   }
 
   private String columnKey(String colName) {
@@ -435,96 +458,27 @@ public class BeeGrid implements BeeSerializable, HasExtendedInfo {
     return viewName;
   }
 
-  private boolean hasFooters() {
+  private Boolean hasFooters() {
     return hasFooters;
   }
 
-  private boolean hasHeaders() {
+  private Boolean hasHeaders() {
     return hasHeaders;
   }
 
-  private boolean isReadOnly() {
+  private Boolean isReadOnly() {
     return readOnly;
-  }
-
-  private void setAsyncThreshold(Integer asyncThreshold) {
-    this.asyncThreshold = asyncThreshold;
-  }
-
-  private void setBody(GridComponent body) {
-    this.body = body;
-  }
-
-  private void setCaption(String caption) {
-    this.caption = caption;
-  }
-
-  private void setFooter(GridComponent footer) {
-    this.footer = footer;
-  }
-
-  private void setHasFooters(boolean hasFooters) {
-    this.hasFooters = hasFooters;
-  }
-
-  private void setHasHeaders(boolean hasHeaders) {
-    this.hasHeaders = hasHeaders;
-  }
-
-  private void setHeader(GridComponent header) {
-    this.header = header;
-  }
-
-  private void setMaxColumnWidth(Integer maxColumnWidth) {
-    this.maxColumnWidth = maxColumnWidth;
-  }
-
-  private void setMinColumnWidth(Integer minColumnWidth) {
-    this.minColumnWidth = minColumnWidth;
   }
 
   private void setName(String name) {
     this.name = name;
   }
 
-  private void setNewRowColumns(String newRowColumns) {
-    this.newRowColumns = newRowColumns;
-  }
-
-  private void setPagingThreshold(Integer pagingThreshold) {
-    this.pagingThreshold = pagingThreshold;
-  }
-
-  private void setReadOnly(boolean readOnly) {
-    this.readOnly = readOnly;
-  }
-
-  private void setRowEditable(Calculation rowEditable) {
-    this.rowEditable = rowEditable;
-  }
-
-  private void setRowMessage(Calculation rowMessage) {
-    this.rowMessage = rowMessage;
-  }
-
-  private void setRowStyles(Collection<ConditionalStyle> rowStyles) {
-    this.rowStyles = rowStyles;
-  }
-
-  private void setSearchThreshold(Integer searchThreshold) {
-    this.searchThreshold = searchThreshold;
-  }
-
-  private void setShowColumnWidths(boolean showColumnWidths) {
-    this.showColumnWidths = showColumnWidths;
-  }
-
   private void setViewName(String viewName) {
     this.viewName = viewName;
   }
 
-  private boolean showColumnWidths() {
+  private Boolean showColumnWidths() {
     return showColumnWidths;
   }
-
 }

@@ -17,7 +17,7 @@
       <xs:element name="body" type="bee:componentType" minOccurs="0" />
       <xs:element name="footer" type="bee:componentType" minOccurs="0" />
       <xs:element name="columns" type="bee:columnList" />
-      <xs:element name="rowStyles" type="bee:conditionalStyle" minOccurs="0" maxOccurs="unbounded" />
+      <xs:element name="rowStyle" type="bee:conditionalStyle" minOccurs="0" maxOccurs="unbounded" />
       <xs:element name="rowMessage" type="bee:calcType" minOccurs="0" />
       <xs:element name="rowEditable" type="bee:calcType" minOccurs="0" />
     </xs:sequence>
@@ -92,7 +92,7 @@
       <xs:element name="headerStyle" type="bee:styleType" minOccurs="0" />
       <xs:element name="bodyStyle" type="bee:styleType" minOccurs="0" />
       <xs:element name="footerStyle" type="bee:styleType" minOccurs="0" />
-      <xs:element name="dynStyles" type="bee:conditionalStyle" minOccurs="0" maxOccurs="unbounded" />
+      <xs:element name="dynStyle" type="bee:conditionalStyle" minOccurs="0" maxOccurs="unbounded" />
     </xs:sequence>
   </xs:complexType>
 
@@ -175,7 +175,7 @@
       <xs:enumeration value="decimal" />
       <xs:enumeration value="integer" />
       <xs:enumeration value="long" />
-      <xs:enumeration value="number" />
+      <xs:enumeration value="double" />
       <xs:enumeration value="string" />
       <xs:enumeration value="timeofday" />
     </xs:restriction>

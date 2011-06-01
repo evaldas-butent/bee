@@ -15,6 +15,11 @@ import java.util.List;
 
 public class Calculation implements BeeSerializable, HasInfo {
   
+  public static final String TAG_EXPRESSION = "expression"; 
+  public static final String TAG_FUNCTION = "function"; 
+  
+  public static final String ATTR_TYPE = "type"; 
+  
   public static Calculation restore(String s) {
     if (BeeUtils.isEmpty(s)) {
       return null;

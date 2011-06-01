@@ -14,6 +14,9 @@ import java.util.List;
 
 public class ConditionalStyle implements BeeSerializable, HasInfo {
 
+  public static final String TAG_STYLE = "style";
+  public static final String TAG_CONDITION = "condition";
+  
   public static ConditionalStyle restore(String s) {
     if (BeeUtils.isEmpty(s)) {
       return null;

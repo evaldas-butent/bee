@@ -11,12 +11,22 @@ import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
 
 import java.util.List;
+import java.util.Map;
 
 public class GridComponent implements BeeSerializable, HasInfo {
-
+  
   private enum SerializationMember {
     STYLE, HEIGHT, MIN_HEIGHT, MAX_HEIGHT, PADDING, BORDER_WIDTH, MARGIN
   }
+  
+  public static final String TAG_STYLE = "style";
+  private static final String ATTR_HEIGHT = "height";
+  private static final String ATTR_MIN_HEIGHT = "minHeight";
+  private static final String ATTR_MAX_HEIGHT = "maxHeight";
+  private static final String ATTR_PADDING = "padding";
+  private static final String ATTR_BORDER_WIDTH = "borderWidth";
+  
+  private static final String ATTR_MARGIN = "margin";
 
   public static GridComponent restore(String s) {
     if (BeeUtils.isEmpty(s)) {
@@ -37,9 +47,14 @@ public class GridComponent implements BeeSerializable, HasInfo {
   private String borderWidth = null;
   private String margin = null;
 
-  public GridComponent() {
+  public GridComponent(Style style, Map<String, String> attributes) {
+    setStyle(style);
+    setAttributes(attributes);
   }
 
+  private GridComponent() {
+  }
+  
   public void deserialize(String s) {
     SerializationMember[] members = SerializationMember.values();
     String[] arr = Codec.beeDeserialize(s);
@@ -123,6 +138,38 @@ public class GridComponent implements BeeSerializable, HasInfo {
     }
     return Codec.beeSerializeAll(arr);
   }
+  
+  public void setAttributes(Map<String, String> attributes) {
+    if (attributes == null || attributes.isEmpty()) {
+      return;
+    }
+
+    for (Map.Entry<String, String> attribute : attributes.entrySet()) {
+      String key = attribute.getKey();
+      String value = attribute.getValue();
+      if (BeeUtils.isEmpty(value)) {
+        continue;
+      }
+        
+      if (BeeUtils.same(key, ATTR_HEIGHT)) {
+        setHeight(BeeUtils.toIntOrNull(value));
+      } else if (BeeUtils.same(key, ATTR_MIN_HEIGHT)) {
+        setMinHeight(BeeUtils.toIntOrNull(value));
+      } else if (BeeUtils.same(key, ATTR_MAX_HEIGHT)) {
+        setMaxHeight(BeeUtils.toIntOrNull(value));
+      } else if (BeeUtils.same(key, ATTR_PADDING)) {
+        setPadding(value.trim());
+      } else if (BeeUtils.same(key, ATTR_BORDER_WIDTH)) {
+        setBorderWidth(value.trim());
+      } else if (BeeUtils.same(key, ATTR_MARGIN)) {
+        setMargin(value.trim());
+      }
+    }
+  }
+
+  public void setStyle(Style style) {
+    this.style = style;
+  }
 
   private String getBorderWidth() {
     return borderWidth;
@@ -174,9 +221,5 @@ public class GridComponent implements BeeSerializable, HasInfo {
 
   private void setPadding(String padding) {
     this.padding = padding;
-  }
-
-  private void setStyle(Style style) {
-    this.style = style;
   }
 }
