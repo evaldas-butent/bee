@@ -5,7 +5,6 @@ import com.butent.bee.shared.BeeConst;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -162,7 +161,7 @@ public class PropertyUtils {
   /**
    * Adds a valid Property to the collection {@code lst}.
    * 
-   * @param lst lst a collection to add the new Property to
+   * @param lst a collection to add the new Property to
    * @param nm name of the Property
    * @param v value of the Property
    * @return true if the Property was succesfully added to the list, otherwise false.
@@ -222,6 +221,15 @@ public class PropertyUtils {
     }
     return r;
   }
+  
+  public static void addWhenEmpty(Collection<Property> dst, Class<?> clazz) {
+    Assert.notNull(dst);
+    Assert.notNull(clazz);
+    
+    if (dst.isEmpty()) {
+      dst.add(new Property(BeeUtils.getClassName(clazz), "instance is empty"));
+    }
+  }
 
   /**
    * Appends {@code src} elements to the collection {@code dst}. {@code root} is used as a name in
@@ -237,10 +245,7 @@ public class PropertyUtils {
     Assert.notEmpty(root);
 
     if (src != null && !src.isEmpty()) {
-      Property el;
-
-      for (Iterator<Property> it = src.iterator(); it.hasNext();) {
-        el = it.next();
+      for (Property el : src) {
         addExtended(dst, root, el.getName(), el.getValue());
       }
     }
@@ -261,10 +266,7 @@ public class PropertyUtils {
       if (BeeUtils.isEmpty(root)) {
         dst.addAll(src);
       } else {
-        Property el;
-
-        for (Iterator<Property> it = src.iterator(); it.hasNext();) {
-          el = it.next();
+        for (Property el : src) {
           addProperty(dst, BeeUtils.concat(1, root, el.getName()), el.getValue());
         }
       }
@@ -299,13 +301,9 @@ public class PropertyUtils {
     Assert.notEmpty(prefix);
 
     if (src != null && !src.isEmpty()) {
-      ExtendedProperty el;
-
-      for (Iterator<ExtendedProperty> it = src.iterator(); it.hasNext();) {
-        el = new ExtendedProperty(it.next());
-        el.setName(BeeUtils.concat(1, prefix, el.getName()));
-
-        dst.add(el);
+      for (ExtendedProperty el : src) {
+        dst.add(new ExtendedProperty(BeeUtils.concat(1, prefix, el.getName()),
+            el.getSub(), el.getValue()));
       }
     }
   }

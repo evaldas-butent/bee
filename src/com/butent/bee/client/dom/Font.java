@@ -19,6 +19,7 @@ import com.butent.bee.shared.RangeMap;
 import com.butent.bee.shared.Transformable;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Property;
+import com.butent.bee.shared.utils.PropertyUtils;
 
 import java.util.List;
 
@@ -266,9 +267,7 @@ public class Font implements HasInfo, Transformable {
       info.add(new Property("Font Family", getFamily()));
     }
 
-    if (info.isEmpty()) {
-      info.add(new Property("Font", "instance is empty"));
-    }
+    PropertyUtils.addWhenEmpty(info, getClass());
     return info;
   }
 

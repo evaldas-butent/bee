@@ -5,20 +5,36 @@ import com.google.common.collect.Maps;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeSerializable;
+import com.butent.bee.shared.HasExtendedInfo;
+import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.ui.GridColumn.ColType;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
+import com.butent.bee.shared.utils.ExtendedProperty;
+import com.butent.bee.shared.utils.PropertyUtils;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
 
 /**
  * Implementation of a grid user interface component.
  */
 
-public class BeeGrid implements BeeSerializable {
+public class BeeGrid implements BeeSerializable, HasExtendedInfo {
 
-  private static Logger logger = Logger.getLogger(BeeGrid.class.getName());
+  /**
+   * Contains a list of grid parameters.
+   */
+
+  private enum SerializationMember {
+    NAME, VIEW, CAPTION, READONLY, HAS_HEADERS, HAS_FOOTERS,
+    ASYNC_THRESHOLD, PAGING_THRESHOLD, SEARCH_THRESHOLD,
+    NEW_ROW_COLUMNS, SHOW_COLUMN_WIDTHS,
+    HEADER, BODY, FOOTER,
+    ROW_STYLES, ROW_MESSAGE, ROW_EDITABLE,
+    MIN_COLUMN_WIDTH, MAX_COLUMN_WIDTH, COLUMNS
+  }
 
   public static BeeGrid restore(String s) {
     BeeGrid grid = new BeeGrid();
@@ -26,194 +42,32 @@ public class BeeGrid implements BeeSerializable {
     return grid;
   }
 
-  /**
-   * Contains a list of column parameters.
-   */
-
-  private enum ColumnMembers {
-    TYPE, NAME, CAPTION, READONLY, WIDTH, SOURCE, RELSOURCE, RELATION, EXPRESSION
-  }
-
-  /**
-   * Contains a list of grid parameters.
-   */
-
-  private enum GridMembers {
-    NAME, VIEW, CAPTION, READONLY, COLUMNS
-  }
-
-  /**
-   * Contains a list of available column types in the grid.
-   */
-
-  public enum ColType {
-    DATA("BeeDataColumn"),
-    RELATED("BeeRelColumn"),
-    CALCULATED("BeeCalcColumn"),
-    ID("BeeIdColumn"),
-    VERSION("BeeVerColumn");
-
-    public static ColType getColType(String tagName) {
-      if (!BeeUtils.isEmpty(tagName)) {
-        for (ColType type : ColType.values()) {
-          if (BeeUtils.same(type.getTagName(), tagName)) {
-            return type;
-          }
-        }
-      }
-      return null;
-    }
-
-    private final String tagName;
-
-    private ColType(String tagName) {
-      this.tagName = tagName;
-    }
-
-    public String getTagName() {
-      return tagName;
-    }
-  }
-
-  private class GridColumn implements BeeSerializable {
-    private ColType type;
-    private String colName;
-    private String colCaption;
-    private boolean colReadOnly;
-    private int width;
-
-    private String source;
-    private String relSource;
-    private String relation;
-    private String expression;
-
-    private GridColumn() {
-    }
-
-    public GridColumn(ColType type, String name, String caption, boolean readOnly, int width) {
-      Assert.notEmpty(type);
-      Assert.notEmpty(name);
-      this.type = type;
-      this.colName = name;
-      this.colCaption = caption;
-      this.colReadOnly = readOnly;
-      this.width = width;
-    }
-
-    @Override
-    public void deserialize(String s) {
-      ColumnMembers[] members = ColumnMembers.values();
-      String[] arr = Codec.beeDeserialize(s);
-      Assert.lengthEquals(arr, members.length);
-
-      for (int i = 0; i < members.length; i++) {
-        ColumnMembers member = members[i];
-        String value = arr[i];
-
-        switch (member) {
-          case TYPE:
-            type = ColType.valueOf(value);
-            break;
-          case NAME:
-            colName = value;
-            break;
-          case CAPTION:
-            colCaption = value;
-            break;
-          case READONLY:
-            colReadOnly = BeeUtils.toBoolean(value);
-            break;
-          case WIDTH:
-            width = BeeUtils.toInt(value);
-            break;
-          case SOURCE:
-            source = value;
-            break;
-          case RELSOURCE:
-            relSource = value;
-            break;
-          case RELATION:
-            relation = value;
-            break;
-          case EXPRESSION:
-            expression = value;
-            break;
-          default:
-            logger.severe("Unhandled serialization member: " + member);
-            break;
-        }
-      }
-    }
-
-    @Override
-    public String serialize() {
-      ColumnMembers[] members = ColumnMembers.values();
-      Object[] arr = new Object[members.length];
-      int i = 0;
-
-      for (ColumnMembers member : members) {
-        switch (member) {
-          case TYPE:
-            arr[i++] = type;
-            break;
-          case NAME:
-            arr[i++] = colName;
-            break;
-          case CAPTION:
-            arr[i++] = colCaption;
-            break;
-          case READONLY:
-            arr[i++] = colReadOnly;
-            break;
-          case WIDTH:
-            arr[i++] = width;
-            break;
-          case SOURCE:
-            arr[i++] = source;
-            break;
-          case RELSOURCE:
-            arr[i++] = relSource;
-            break;
-          case RELATION:
-            arr[i++] = relation;
-            break;
-          case EXPRESSION:
-            arr[i++] = expression;
-            break;
-          default:
-            logger.severe("Unhandled serialization member: " + member);
-            break;
-        }
-      }
-      return Codec.beeSerializeAll(arr);
-    }
-
-    private GridColumn setExpression(String expr) {
-      this.expression = expr;
-      return this;
-    }
-
-    private GridColumn setRelation(String relation) {
-      this.relation = relation;
-      return this;
-    }
-
-    private GridColumn setRelSource(String relSource) {
-      this.relSource = relSource;
-      return this;
-    }
-
-    private GridColumn setSource(String source) {
-      this.source = source;
-      return this;
-    }
-  }
-
   private String name;
   private String viewName;
-  private String caption;
-  private boolean readOnly;
-  private Map<String, GridColumn> columns = Maps.newLinkedHashMap();
+  private String caption = null;
+  private boolean readOnly = false;
+
+  private boolean hasHeaders = true;
+  private boolean hasFooters = true;
+  private Integer asyncThreshold = null;
+  private Integer pagingThreshold = null;
+  private Integer searchThreshold = null;
+  private String newRowColumns = null;
+  private boolean showColumnWidths = true;
+  
+  private GridComponent header = null;
+  private GridComponent body = null;
+  private GridComponent footer = null;
+  
+  private Collection<ConditionalStyle> rowStyles = null;
+  
+  private Calculation rowMessage = null;
+  private Calculation rowEditable = null;
+
+  private Integer minColumnWidth = null;
+  private Integer maxColumnWidth = null;
+  
+  private final Map<String, GridColumn> columns = Maps.newLinkedHashMap();
 
   public BeeGrid(String name, String viewName, String caption, boolean readOnly) {
     Assert.notEmpty(name);
@@ -228,35 +82,36 @@ public class BeeGrid implements BeeSerializable {
   private BeeGrid() {
   }
 
-  public void addCalculatedColumn(String colName, String colCaption, boolean isReadOnly, int width,
-      String expr) {
+  public void addCalculatedColumn(String colName, String colCaption, Integer width,
+      ValueType type, String expr, String func) {
     Assert.notEmpty(expr);
-    addColumn(ColType.CALCULATED, colName, colCaption, isReadOnly, width)
-        .setExpression(expr);
+    addColumn(ColType.CALCULATED, colName, colCaption, true, width)
+        .setCalc(new Calculation(type, expr, func));
   }
 
-  public void addDataColumn(String colName, String colCaption, boolean isReadOnly, int width,
+  public void addDataColumn(String colName, String colCaption, boolean isReadOnly, Integer width,
       String source) {
     Assert.notEmpty(source);
     addColumn(ColType.DATA, colName, colCaption, isReadOnly, width)
         .setSource(source);
   }
 
-  public void addIdColumn(String colName, String colCaption, int width) {
+  public void addIdColumn(String colName, String colCaption, Integer width) {
     addColumn(ColType.ID, colName, colCaption, true, width);
   }
 
-  public void addRelatedColumn(String colName, String colCaption, boolean isReadOnly, int width,
+  public void addRelatedColumn(String colName, String colCaption, boolean isReadOnly, Integer width,
       String source, String relSource, String relation) {
     Assert.notEmpty(source);
     Assert.notEmpty(relation);
-    addColumn(ColType.RELATED, colName, colCaption, isReadOnly, width)
-        .setSource(source)
-        .setRelSource(relSource)
-        .setRelation(relation);
+
+    GridColumn column = addColumn(ColType.RELATED, colName, colCaption, isReadOnly, width);
+    column.setSource(source);
+    column.setRelSource(relSource);
+    column.setRelation(relation);
   }
 
-  public void addVersionColumn(String colName, String colCaption, int width) {
+  public void addVersionColumn(String colName, String colCaption, Integer width) {
     addColumn(ColType.VERSION, colName, colCaption, true, width);
   }
 
@@ -264,125 +119,175 @@ public class BeeGrid implements BeeSerializable {
   public void deserialize(String s) {
     Assert.isTrue(isEmpty());
 
-    GridMembers[] members = GridMembers.values();
+    SerializationMember[] members = SerializationMember.values();
     String[] arr = Codec.beeDeserialize(s);
     Assert.lengthEquals(arr, members.length);
 
     for (int i = 0; i < members.length; i++) {
-      GridMembers member = members[i];
+      SerializationMember member = members[i];
       String value = arr[i];
 
       switch (member) {
         case NAME:
-          name = value;
+          setName(value);
           break;
-
         case VIEW:
-          viewName = value;
+          setViewName(value);
           break;
-
         case CAPTION:
-          caption = value;
+          setCaption(value);
           break;
-
         case READONLY:
-          readOnly = BeeUtils.toBoolean(value);
+          setReadOnly(BeeUtils.toBoolean(value));
           break;
-
         case COLUMNS:
+          getColumns().clear();
           if (!BeeUtils.isEmpty(value)) {
-            String[] data = Codec.beeDeserialize(value);
-
-            for (String str : data) {
-              GridColumn col = new GridColumn();
-              col.deserialize(str);
-              addColumn(col);
+            for (String z : Codec.beeDeserialize(value)) {
+              addColumn(GridColumn.restore(z));
             }
           }
           break;
-        default:
-          logger.severe("Unhandled serialization member: " + member);
+        case ASYNC_THRESHOLD:
+          setAsyncThreshold(BeeUtils.toIntOrNull(value));
+          break;
+        case BODY:
+          setBody(GridComponent.restore(value));
+          break;
+        case FOOTER:
+          setFooter(GridComponent.restore(value));
+          break;
+        case HAS_FOOTERS:
+          setHasFooters(BeeUtils.toBoolean(value));
+          break;
+        case HAS_HEADERS:
+          setHasHeaders(BeeUtils.toBoolean(value));
+          break;
+        case HEADER:
+          setHeader(GridComponent.restore(value));
+          break;
+        case MAX_COLUMN_WIDTH:
+          setMaxColumnWidth(BeeUtils.toIntOrNull(value));
+          break;
+        case MIN_COLUMN_WIDTH:
+          setMinColumnWidth(BeeUtils.toIntOrNull(value));
+          break;
+        case NEW_ROW_COLUMNS:
+          setNewRowColumns(value);
+          break;
+        case PAGING_THRESHOLD:
+          setPagingThreshold(BeeUtils.toIntOrNull(value));
+          break;
+        case ROW_EDITABLE:
+          setRowEditable(Calculation.restore(value));
+          break;
+        case ROW_MESSAGE:
+          setRowMessage(Calculation.restore(value));
+          break;
+        case ROW_STYLES:
+          if (BeeUtils.isEmpty(value)) {
+            setRowStyles(null);
+          } else {
+            List<ConditionalStyle> lst = Lists.newArrayList();
+            for (String cs : Codec.beeDeserialize(value)) {
+              lst.add(ConditionalStyle.restore(cs));
+            }
+            setRowStyles(lst);
+          }
+          break;
+        case SEARCH_THRESHOLD:
+          setSearchThreshold(BeeUtils.toIntOrNull(value));
+          break;
+        case SHOW_COLUMN_WIDTHS:
+          setShowColumnWidths(BeeUtils.toBoolean(value));
           break;
       }
     }
   }
 
-  public String getCaption() {
-    return caption;
-  }
-
-  public String getCaption(String colName) {
-    return getColumn(colName).colCaption;
-  }
-
   public int getColumnCount() {
-    return columns.size();
+    return getColumns().size();
   }
 
-  public Collection<String> getColumns() {
-    Collection<String> cols = Lists.newArrayList();
-
-    for (GridColumn col : columns.values()) {
-      cols.add(col.colName);
+  public List<ExtendedProperty> getInfo() {
+    List<ExtendedProperty> info = Lists.newArrayList(); 
+      
+    PropertyUtils.addProperties(info, false,
+        "Name", getName(),
+        "View Name", getViewName(),
+        "Caption",  getCaption(),
+        "Read Only", isReadOnly(),
+        "Has Headers", hasHeaders(),
+        "Has Footers", hasFooters(),
+        "Async Threshold", getAsyncThreshold(),
+        "Paging Threshold", getPagingThreshold(),
+        "Search Threshold", getSearchThreshold(),
+        "New Row Columns", getNewRowColumns(),
+        "Show Column Widths", showColumnWidths(),
+        "Min Column Width", getMinColumnWidth(),
+        "Max Column Width", getMaxColumnWidth());
+    
+    if (getHeader() != null) {
+      PropertyUtils.appendChildrenToExtended(info, "Header", getHeader().getInfo());
     }
-    return cols;
-  }
+    if (getBody() != null) {
+      PropertyUtils.appendChildrenToExtended(info, "Body", getBody().getInfo());
+    }
+    if (getFooter() != null) {
+      PropertyUtils.appendChildrenToExtended(info, "Footer", getFooter().getInfo());
+    }
+    
+    if (getRowStyles() != null && !getRowStyles().isEmpty()) {
+      int cnt = getRowStyles().size();
+      PropertyUtils.addExtended(info, "Row Styles", BeeUtils.bracket(cnt));
+      int i = 0;
+      for (ConditionalStyle cs : getRowStyles()) {
+        i++;
+        if (cs != null) {
+          PropertyUtils.appendChildrenToExtended(info, "Row Style " + BeeUtils.progress(i, cnt),
+              cs.getInfo());
+        }
+      }
+    }
 
-  public String getExpression(String colName) {
-    return getColumn(colName).expression;
+    if (getRowMessage() != null) {
+      PropertyUtils.appendChildrenToExtended(info, "Row Message", getRowMessage().getInfo());
+    }
+    if (getRowEditable() != null) {
+      PropertyUtils.appendChildrenToExtended(info, "Row Editable", getRowEditable().getInfo());
+    }
+    
+    int cc = getColumnCount();
+    PropertyUtils.addExtended(info, "Column Count", BeeUtils.bracket(cc));
+    
+    int i = 0;
+    for (GridColumn column : getColumns().values()) {
+      i++;
+      PropertyUtils.appendChildrenToExtended(info, "Column " + BeeUtils.progress(i, cc),
+          column.getInfo());
+    }
+    return info;
   }
 
   public String getName() {
     return name;
   }
 
-  public String getRelation(String colName) {
-    return getColumn(colName).relation;
-  }
-
-  public String getRelSource(String colName) {
-    return getColumn(colName).relSource;
-  }
-
-  public String getSource(String colName) {
-    return getColumn(colName).source;
-  }
-
-  public ColType getType(String colName) {
-    return getColumn(colName).type;
-  }
-
-  public String getViewName() {
-    return viewName;
-  }
-
-  public int getWidth(String colName) {
-    return getColumn(colName).width;
-  }
-
   public boolean hasColumn(String colName) {
-    return !BeeUtils.isEmpty(colName) && columns.containsKey(colName.toLowerCase());
+    return getColumns().containsKey(columnKey(colName));
   }
 
   public boolean isEmpty() {
-    return BeeUtils.isEmpty(getColumnCount());
-  }
-
-  public boolean isReadOnly() {
-    return readOnly;
-  }
-
-  public boolean isReadOnly(String colName) {
-    return getColumn(colName).colReadOnly;
+    return getColumnCount() <= 0;
   }
 
   @Override
   public String serialize() {
-    GridMembers[] members = GridMembers.values();
+    SerializationMember[] members = SerializationMember.values();
     Object[] arr = new Object[members.length];
     int i = 0;
 
-    for (GridMembers member : members) {
+    for (SerializationMember member : members) {
       switch (member) {
         case NAME:
           arr[i++] = getName();
@@ -397,33 +302,228 @@ public class BeeGrid implements BeeSerializable {
           arr[i++] = isReadOnly();
           break;
         case COLUMNS:
-          arr[i++] = columns.values();
+          arr[i++] = getColumns().values();
           break;
-        default:
-          logger.severe("Unhandled serialization member: " + member);
+        case ASYNC_THRESHOLD:
+          arr[i++] = getAsyncThreshold();
+          break;
+        case BODY:
+          arr[i++] = getBody();
+          break;
+        case FOOTER:
+          arr[i++] = getFooter();
+          break;
+        case HAS_FOOTERS:
+          arr[i++] = hasFooters();
+          break;
+        case HAS_HEADERS:
+          arr[i++] = hasHeaders();
+          break;
+        case HEADER:
+          arr[i++] = getHeader();
+          break;
+        case MAX_COLUMN_WIDTH:
+          arr[i++] = getMaxColumnWidth();
+          break;
+        case MIN_COLUMN_WIDTH:
+          arr[i++] = getMinColumnWidth();
+          break;
+        case NEW_ROW_COLUMNS:
+          arr[i++] = getNewRowColumns();
+          break;
+        case PAGING_THRESHOLD:
+          arr[i++] = getPagingThreshold();
+          break;
+        case ROW_EDITABLE:
+          arr[i++] = getRowEditable();
+          break;
+        case ROW_MESSAGE:
+          arr[i++] = getRowMessage();
+          break;
+        case ROW_STYLES:
+          arr[i++] = getRowStyles();
+          break;
+        case SEARCH_THRESHOLD:
+          arr[i++] = getSearchThreshold();
+          break;
+        case SHOW_COLUMN_WIDTHS:
+          arr[i++] = showColumnWidths(); 
           break;
       }
     }
     return Codec.beeSerializeAll(arr);
   }
 
-  private void addColumn(GridColumn column) {
-    Assert.notNull(column);
-    Assert.state(!hasColumn(column.colName),
-        BeeUtils.concat(1, "Dublicate column name:", getName(), column.colName));
-
-    columns.put(column.colName.toLowerCase(), column);
-  }
-
   private GridColumn addColumn(ColType type, String colName, String colCaption, boolean isReadOnly,
-      int width) {
+      Integer width) {
     GridColumn col = new GridColumn(type, colName, colCaption, isReadOnly, width);
     addColumn(col);
     return col;
   }
+  
+  private void addColumn(GridColumn column) {
+    Assert.notNull(column);
+    Assert.state(!hasColumn(column.getName()),
+        BeeUtils.concat(1, "Dublicate column name:", getName(), column.getName()));
 
-  private GridColumn getColumn(String colName) {
-    Assert.state(hasColumn(colName), "Column not found: " + colName);
-    return columns.get(colName.toLowerCase());
+    getColumns().put(columnKey(column.getName()), column);
   }
+
+  private String columnKey(String colName) {
+    Assert.notEmpty(colName);
+    return colName.trim().toLowerCase();
+  }
+
+  private Integer getAsyncThreshold() {
+    return asyncThreshold;
+  }
+
+  private GridComponent getBody() {
+    return body;
+  }
+
+  private String getCaption() {
+    return caption;
+  }
+
+  private Map<String, GridColumn> getColumns() {
+    return columns;
+  }
+
+  private GridComponent getFooter() {
+    return footer;
+  }
+
+  private GridComponent getHeader() {
+    return header;
+  }
+
+  private Integer getMaxColumnWidth() {
+    return maxColumnWidth;
+  }
+
+  private Integer getMinColumnWidth() {
+    return minColumnWidth;
+  }
+
+  private String getNewRowColumns() {
+    return newRowColumns;
+  }
+
+  private Integer getPagingThreshold() {
+    return pagingThreshold;
+  }
+
+  private Calculation getRowEditable() {
+    return rowEditable;
+  }
+
+  private Calculation getRowMessage() {
+    return rowMessage;
+  }
+
+  private Collection<ConditionalStyle> getRowStyles() {
+    return rowStyles;
+  }
+
+  private Integer getSearchThreshold() {
+    return searchThreshold;
+  }
+
+  private String getViewName() {
+    return viewName;
+  }
+
+  private boolean hasFooters() {
+    return hasFooters;
+  }
+
+  private boolean hasHeaders() {
+    return hasHeaders;
+  }
+
+  private boolean isReadOnly() {
+    return readOnly;
+  }
+
+  private void setAsyncThreshold(Integer asyncThreshold) {
+    this.asyncThreshold = asyncThreshold;
+  }
+
+  private void setBody(GridComponent body) {
+    this.body = body;
+  }
+
+  private void setCaption(String caption) {
+    this.caption = caption;
+  }
+
+  private void setFooter(GridComponent footer) {
+    this.footer = footer;
+  }
+
+  private void setHasFooters(boolean hasFooters) {
+    this.hasFooters = hasFooters;
+  }
+
+  private void setHasHeaders(boolean hasHeaders) {
+    this.hasHeaders = hasHeaders;
+  }
+
+  private void setHeader(GridComponent header) {
+    this.header = header;
+  }
+
+  private void setMaxColumnWidth(Integer maxColumnWidth) {
+    this.maxColumnWidth = maxColumnWidth;
+  }
+
+  private void setMinColumnWidth(Integer minColumnWidth) {
+    this.minColumnWidth = minColumnWidth;
+  }
+
+  private void setName(String name) {
+    this.name = name;
+  }
+
+  private void setNewRowColumns(String newRowColumns) {
+    this.newRowColumns = newRowColumns;
+  }
+
+  private void setPagingThreshold(Integer pagingThreshold) {
+    this.pagingThreshold = pagingThreshold;
+  }
+
+  private void setReadOnly(boolean readOnly) {
+    this.readOnly = readOnly;
+  }
+
+  private void setRowEditable(Calculation rowEditable) {
+    this.rowEditable = rowEditable;
+  }
+
+  private void setRowMessage(Calculation rowMessage) {
+    this.rowMessage = rowMessage;
+  }
+
+  private void setRowStyles(Collection<ConditionalStyle> rowStyles) {
+    this.rowStyles = rowStyles;
+  }
+
+  private void setSearchThreshold(Integer searchThreshold) {
+    this.searchThreshold = searchThreshold;
+  }
+
+  private void setShowColumnWidths(boolean showColumnWidths) {
+    this.showColumnWidths = showColumnWidths;
+  }
+
+  private void setViewName(String viewName) {
+    this.viewName = viewName;
+  }
+
+  private boolean showColumnWidths() {
+    return showColumnWidths;
+  }
+
 }

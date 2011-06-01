@@ -163,8 +163,7 @@ public class CliWidget extends InputText {
             @Override
             public void onResponse(JsArrayString respArr) {
               BeeGrid grd = BeeGrid.restore(respArr.get(0));
-              BeeKeeper.getUi()
-                  .updateActivePanel(new BeeLabel(BeeUtils.transform(grd.getColumns(), 1)));
+              BeeKeeper.getUi().showGrid(grd.getInfo());
             }
           });
     } else if (z.equals("stack")) {

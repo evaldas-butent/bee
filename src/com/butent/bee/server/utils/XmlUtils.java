@@ -1,5 +1,8 @@
 package com.butent.bee.server.utils;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+
 import com.butent.bee.server.io.FileUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -127,13 +130,29 @@ public class XmlUtils {
     Document doc = createDocument(fl);
     return doc;
   }
+  
+  public static Map<String, String> getAttributes(Node node) {
+    Assert.notNull(node);
+    Map<String, String> result = Maps.newHashMap();
+    
+    NamedNodeMap attributes = node.getAttributes();
+    if (attributes == null || attributes.getLength() <= 0) {
+      return result;
+    }
+
+    Attr attr;
+    for (int i = 0; i < attributes.getLength(); i++) {
+      attr = (Attr) attributes.item(i);
+      result.put(attr.getName(), attr.getValue());
+    }
+    return result;
+  }
 
   public static Property[][] getAttributesFromFile(String src, String tag) {
     return getAttributesFromFile(src, null, tag);
   }
 
-  public static Property[][] getAttributesFromFile(String src, String xsl,
-      String tag) {
+  public static Property[][] getAttributesFromFile(String src, String xsl, String tag) {
     Assert.notEmpty(src);
     Assert.notEmpty(tag);
 
@@ -202,6 +221,21 @@ public class XmlUtils {
     return lst;
   }
 
+  public static List<Element> getChildrenElements(Element parent) {
+    Assert.notNull(parent);
+    List<Element> result = Lists.newArrayList();
+    
+    NodeList nodes = parent.getElementsByTagName(ALL_TAGS);
+    if (nodes == null || nodes.getLength() <= 0) {
+      return result;
+    }
+    
+    for (int i = 0; i < nodes.getLength(); i++) {
+      result.add((Element) nodes.item(i));
+    }
+    return result;
+  }
+  
   public static List<Property> getCommentInfo(Comment comm) {
     Assert.notNull(comm);
     List<Property> lst = new ArrayList<Property>();
@@ -376,6 +410,17 @@ public class XmlUtils {
       return PropertyUtils.EMPTY_EXTENDED_LIST;
     }
     return getTreeInfo(doc, "0");
+  }
+  
+  public static Element getFirstChildElement(Element parent, String tagName) {
+    Assert.notNull(parent);
+    Assert.notEmpty(tagName);
+    
+    NodeList children = parent.getElementsByTagName(tagName.trim());
+    if (children == null || children.getLength() <= 0) {
+      return null;
+    }
+    return (Element) children.item(0);
   }
 
   public static List<Property> getNodeInfo(Node nd) {

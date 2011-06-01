@@ -67,13 +67,13 @@
         <xs:sequence>
           <xs:element name="calc" type="bee:calcType" />
         </xs:sequence>
-        <xs:attribute name="type" type="bee:valueType" use="required" />
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
 
   <xs:complexType name="column">
     <xs:sequence>
+      <xs:element name="settings" type="bee:columnSettings" minOccurs="0" />
       <xs:element name="style" type="bee:columnStyle" minOccurs="0" />
     </xs:sequence>
     <xs:attribute name="name" type="bee:nameType" use="required" />
@@ -92,7 +92,7 @@
       <xs:element name="headerStyle" type="bee:styleType" minOccurs="0" />
       <xs:element name="bodyStyle" type="bee:styleType" minOccurs="0" />
       <xs:element name="footerStyle" type="bee:styleType" minOccurs="0" />
-      <xs:element name="dynStyle" type="bee:conditionalStyle" minOccurs="0" maxOccurs="unbounded" />
+      <xs:element name="dynStyles" type="bee:conditionalStyle" minOccurs="0" maxOccurs="unbounded" />
     </xs:sequence>
   </xs:complexType>
 
@@ -118,8 +118,8 @@
 
   <xs:complexType name="styleType">
     <xs:sequence>
-      <xs:element name="className" type="xs:normalizedString" minOccurs="0" />
-      <xs:element name="inlineStyle" type="xs:normalizedString" minOccurs="0" />
+      <xs:element name="class" type="xs:normalizedString" minOccurs="0" />
+      <xs:element name="inline" type="xs:normalizedString" minOccurs="0" />
       <xs:element name="font" type="xs:normalizedString" minOccurs="0" />
     </xs:sequence>
   </xs:complexType>
@@ -153,12 +153,18 @@
   </xs:simpleType>
 
   <xs:complexType name="gridSettings">
-    <xs:attribute name="hasHeader" type="xs:boolean" default="true" />
-    <xs:attribute name="hasFooter" type="xs:boolean" default="true" />
+    <xs:attribute name="hasHeaders" type="xs:boolean" default="true" />
+    <xs:attribute name="hasFooters" type="xs:boolean" default="true" />
     <xs:attribute name="asyncThreshold" type="xs:nonNegativeInteger" default="100" />
     <xs:attribute name="pagingThreshold" type="xs:nonNegativeInteger" default="20" />
     <xs:attribute name="searchThreshold" type="xs:nonNegativeInteger" default="2" />
     <xs:attribute name="newRowColumns" type="xs:normalizedString" />
+    <xs:attribute name="showColumnWidths" type="xs:boolean" default="true" />
+  </xs:complexType>
+
+  <xs:complexType name="columnSettings">
+    <xs:attribute name="hasFooter" type="xs:boolean" default="true" />
+    <xs:attribute name="showWidth" type="xs:boolean" default="true" />
   </xs:complexType>
 
   <xs:simpleType name="valueType">
@@ -180,12 +186,13 @@
       <xs:element name="expression" type="xs:normalizedString" />
       <xs:element name="function" type="xs:string" />
     </xs:choice>
+    <xs:attribute name="type" type="bee:valueType" />
   </xs:complexType>
   
   <xs:complexType name="conditionalStyle">
     <xs:sequence>
       <xs:element name="style" type="bee:styleType" />
-      <xs:element name="when" type="bee:calcType" />
+      <xs:element name="condition" type="bee:calcType" />
     </xs:sequence>
   </xs:complexType>  
 

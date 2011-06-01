@@ -9,7 +9,7 @@ import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.utils.XmlUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.ui.BeeGrid;
-import com.butent.bee.shared.ui.BeeGrid.ColType;
+import com.butent.bee.shared.ui.GridColumn.ColType;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.LogUtils;
 
@@ -18,6 +18,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -37,6 +38,17 @@ public class GridHolderBean {
 
   public static final String GRID_SCHEMA = "grid.xsd";
   public static final String GRID_PATH = "grids/";
+  
+  private static final String TAG_GRID = "BeeGrid";
+  private static final String TAG_COLUMNS = "columns";
+
+  private static final String ATTR_VIEW_NAME = "viewName";
+  private static final String ATTR_NAME = "name";
+  private static final String ATTR_CAPTION = "caption";
+  private static final String ATTR_READ_ONLY = "readOnly";
+  private static final String ATTR_WIDTH = "width";
+  private static final String ATTR_SOURCE = "source";
+  private static final String ATTR_RELATION = "relation";
 
   private static Logger logger = Logger.getLogger(GridHolderBean.class.getName());
 
@@ -47,7 +59,7 @@ public class GridHolderBean {
 
   public BeeGrid getGrid(String gridName) {
     Assert.state(isGrid(gridName), "Not a grid: " + gridName);
-    return gridCache.get(gridName.toLowerCase());
+    return gridCache.get(gridKey(gridName));
   }
 
   public void initGrids() {
@@ -58,10 +70,15 @@ public class GridHolderBean {
     if (BeeUtils.isEmpty(gridName)) {
       return false;
     }
-    if (!gridCache.containsKey(gridName.toLowerCase())) {
+    if (!gridCache.containsKey(gridKey(gridName))) {
       initGrid(gridName);
     }
-    return gridCache.containsKey(gridName.toLowerCase());
+    return gridCache.containsKey(gridKey(gridName));
+  }
+
+  private String gridKey(String gridName) {
+    Assert.notEmpty(gridName);
+    return gridName.trim().toLowerCase();
   }
 
   @SuppressWarnings("unused")
@@ -108,55 +125,54 @@ public class GridHolderBean {
     }
     Collection<BeeGrid> data = Lists.newArrayList();
     Element root = xml.getDocumentElement();
-    NodeList grids = root.getElementsByTagName("BeeGrid");
+    NodeList grids = root.getElementsByTagName(TAG_GRID);
 
     for (int i = 0; i < grids.getLength(); i++) {
       Element grid = (Element) grids.item(i);
 
-      String vw = grid.getAttribute("viewName");
+      String vw = grid.getAttribute(ATTR_VIEW_NAME);
       if (!sys.isView(vw)) {
         LogUtils.warning(logger, "Unrecongized view name:", vw);
         continue;
       }
-      BeeGrid grd = new BeeGrid(grid.getAttribute("name")
+      BeeGrid grd = new BeeGrid(grid.getAttribute(ATTR_NAME)
           , vw
-          , grid.getAttribute("caption")
-          , BeeUtils.toBoolean(grid.getAttribute("readOnly")));
+          , grid.getAttribute(ATTR_CAPTION)
+          , BeeUtils.toBoolean(grid.getAttribute(ATTR_READ_ONLY)));
 
-      NodeList cols = ((Element) grid.getElementsByTagName("columns").item(0)).getElementsByTagName("*");
+      List<Element> cols = XmlUtils.getChildrenElements(XmlUtils.getFirstChildElement(grid, TAG_COLUMNS));
 
-      for (int j = 0; j < cols.getLength(); j++) {
-        Element col = (Element) cols.item(j);
+      for (int j = 0; j < cols.size(); j++) {
+        Element col = cols.get(j);
 
-        String name = col.getAttribute("name");
-        String caption = col.getAttribute("caption");
-        boolean readOnly = BeeUtils.toBoolean(col.getAttribute("readOnly"));
-        int width = BeeUtils.toInt(col.getAttribute("width"));
+        String name = col.getAttribute(ATTR_NAME);
+        String caption = col.getAttribute(ATTR_CAPTION);
+        boolean readOnly = BeeUtils.toBoolean(col.getAttribute(ATTR_READ_ONLY));
+        int width = BeeUtils.toInt(col.getAttribute(ATTR_WIDTH));
 
         ColType type = ColType.getColType(col.getTagName());
 
         switch (type) {
           case DATA:
-            String colName = col.getAttribute("source");
+            String colName = col.getAttribute(ATTR_SOURCE);
             BeeView view = sys.getView(vw);
 
             if (view.hasColumn(colName)) {
-              grd.addDataColumn(name, caption, readOnly, width,
-                    col.getAttribute("source"));
+              grd.addDataColumn(name, caption, readOnly, width, colName);
             } else {
               LogUtils.warning(logger, "Unrecognized view column:", vw, colName);
             }
             break;
 
           case RELATED:
-            colName = col.getAttribute("source");
+            colName = col.getAttribute(ATTR_SOURCE);
             view = sys.getView(vw);
 
             if (view.hasColumn(colName)) {
               String relTable = sys.getRelation(view.getTable(colName), view.getField(colName));
 
               if (!BeeUtils.isEmpty(relTable)) {
-                String relField = col.getAttribute("relation");
+                String relField = col.getAttribute(ATTR_RELATION);
 
                 if (sys.hasField(relTable, relField)) {
                   grd.addRelatedColumn(name, caption, readOnly, width,
@@ -173,8 +189,8 @@ public class GridHolderBean {
             break;
 
           case CALCULATED:
-            grd.addCalculatedColumn(name, caption, readOnly, width, col
-                  .getAttribute("expression"));
+//            grd.addCalculatedColumn(name, caption, readOnly, width, col
+//                  .getAttribute("expression"));
             break;
 
           case ID:
@@ -194,10 +210,10 @@ public class GridHolderBean {
     }
     return data;
   }
-
+  
   private void registerGrid(BeeGrid grid) {
     if (!BeeUtils.isEmpty(grid)) {
-      gridCache.put(grid.getName().toLowerCase(), grid);
+      gridCache.put(gridKey(grid.getName()), grid);
     }
   }
 }

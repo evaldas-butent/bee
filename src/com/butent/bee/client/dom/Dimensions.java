@@ -12,6 +12,7 @@ import com.butent.bee.shared.HasInfo;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Property;
+import com.butent.bee.shared.utils.PropertyUtils;
 
 import java.util.List;
 
@@ -168,10 +169,8 @@ public class Dimensions implements HasInfo {
       info.add(new Property(StyleUtils.STYLE_MAX_HEIGHT,
           toCssLength(getMaxHeightValue(), getMaxHeightUnit())));
     }
-
-    if (info.isEmpty()) {
-      info.add(new Property("Dimesions", "instance is empty"));
-    }
+    
+    PropertyUtils.addWhenEmpty(info, getClass());
     return info;
   }
 
