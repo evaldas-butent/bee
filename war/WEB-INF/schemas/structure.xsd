@@ -19,7 +19,7 @@
     </xs:sequence>
     <xs:attribute name="name" type="xs:string" use="required" />
     <xs:attribute name="idName" type="xs:string" default="ID" />
-    <xs:attribute name="lockName" type="xs:string" default="Version" />
+    <xs:attribute name="versionName" type="xs:string" default="VERSION" />
     <xs:attribute name="states" type="xs:string" />
   </xs:complexType>
 
@@ -58,7 +58,7 @@
       <xs:enumeration value="INTEGER" />
       <xs:enumeration value="LONG" />
       <xs:enumeration value="DOUBLE" />
-      <xs:enumeration value="NUMERIC" />
+      <xs:enumeration value="DECIMAL" />
       <xs:enumeration value="CHAR" />
       <xs:enumeration value="STRING" />
       <xs:enumeration value="DATE" />

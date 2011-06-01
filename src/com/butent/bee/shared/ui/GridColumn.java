@@ -14,7 +14,7 @@ import java.util.Collection;
 import java.util.List;
 
 public class GridColumn implements BeeSerializable, HasInfo {
-  
+
   public enum ColType {
     DATA("BeeDataColumn"),
     RELATED("BeeRelColumn"),
@@ -43,14 +43,14 @@ public class GridColumn implements BeeSerializable, HasInfo {
       return tagName;
     }
   }
- 
+
   private enum SerializationMember {
-    TYPE, NAME, CAPTION, READ_ONLY, WIDTH, SOURCE, REL_SOURCE, RELATION,
+    TYPE, NAME, CAPTION, READ_ONLY, WIDTH, SOURCE, REL_TABLE, REL_FIELD,
     MIN_WIDTH, MAX_WIDTH, SORTABLE, VISIBLE, FORMAT, HAS_FOOTER, SHOW_WIDTH,
     VALIDATION, EDITABLE, CARRY, EDITOR, MIN_VALUE, MAX_VALUE, STEP_VALUE,
-    CALC, HEADER_STYLE, BODY_STYLE, FOOTER_STYLE, DYN_STYLES 
+    CALC, HEADER_STYLE, BODY_STYLE, FOOTER_STYLE, DYN_STYLES
   }
-  
+
   public static GridColumn restore(String s) {
     if (BeeUtils.isEmpty(s)) {
       return null;
@@ -59,7 +59,7 @@ public class GridColumn implements BeeSerializable, HasInfo {
     column.deserialize(s);
     return column;
   }
-  
+
   private ColType type;
   private String name;
   private String caption = null;
@@ -67,37 +67,37 @@ public class GridColumn implements BeeSerializable, HasInfo {
   private Integer width = null;
 
   private String source = null;
-  private String relSource = null;
-  private String relation = null;
+  private String relTable = null;
+  private String relField = null;
 
   private Integer minWidth = null;
   private Integer maxWidth = null;
-  
+
   private boolean sortable = true;
   private boolean visible = true;
   private String format = null;
-  
+
   private boolean hasFooter = true;
   private boolean showWidth = true;
-  
+
   private Calculation validation = null;
   private Calculation editable = null;
   private Calculation carry = null;
-  
+
   private String editor = null;
-  
+
   private String minValue = null;
   private String maxValue = null;
   private String stepValue = null;
-  
+
   private Calculation calc = null;
 
   private Style headerStyle = null;
   private Style bodyStyle = null;
   private Style footerStyle = null;
-  
+
   private Collection<ConditionalStyle> dynStyles = null;
-  
+
   public GridColumn(ColType type, String name, String caption, boolean readOnly, Integer width) {
     Assert.notEmpty(type);
     Assert.notEmpty(name);
@@ -140,11 +140,11 @@ public class GridColumn implements BeeSerializable, HasInfo {
         case SOURCE:
           setSource(value);
           break;
-        case REL_SOURCE:
-          setRelSource(value);
+        case REL_TABLE:
+          setRelTable(value);
           break;
-        case RELATION:
-          setRelation(value);
+        case REL_FIELD:
+          setRelField(value);
           break;
         case CALC:
           setCalc(Calculation.restore(value));
@@ -224,8 +224,8 @@ public class GridColumn implements BeeSerializable, HasInfo {
         "Read Only", isReadOnly(),
         "Width", getWidth(),
         "Source", getSource(),
-        "Rel Source", getRelSource(),
-        "Relation", getRelation(),
+        "Rel Table", getRelTable(),
+        "Rel Field", getRelField(),
         "Min Width", getMinWidth(),
         "Max Width", getMaxWidth(),
         "Sortable", isSortable(),
@@ -237,7 +237,7 @@ public class GridColumn implements BeeSerializable, HasInfo {
         "Max Value", getMaxValue(),
         "Step Value", getStepValue(),
         "Calc", getCalc());
-    
+
     if (getValidation() != null) {
       PropertyUtils.appendChildrenToProperties(info, "Validation", getValidation().getInfo());
     }
@@ -250,7 +250,7 @@ public class GridColumn implements BeeSerializable, HasInfo {
     if (getCalc() != null) {
       PropertyUtils.appendChildrenToProperties(info, "Calc", getCalc().getInfo());
     }
-    
+
     if (getHeaderStyle() != null) {
       PropertyUtils.appendChildrenToProperties(info, "Header Style", getHeaderStyle().getInfo());
     }
@@ -260,7 +260,7 @@ public class GridColumn implements BeeSerializable, HasInfo {
     if (getFooterStyle() != null) {
       PropertyUtils.appendChildrenToProperties(info, "Footer Style", getFooterStyle().getInfo());
     }
-    
+
     if (getDynStyles() != null && !getDynStyles().isEmpty()) {
       int cnt = getDynStyles().size();
       info.add(new Property("Dyn Styles", BeeUtils.bracket(cnt)));
@@ -273,7 +273,7 @@ public class GridColumn implements BeeSerializable, HasInfo {
         }
       }
     }
-    
+
     PropertyUtils.addWhenEmpty(info, getClass());
     return info;
   }
@@ -308,11 +308,11 @@ public class GridColumn implements BeeSerializable, HasInfo {
         case SOURCE:
           arr[i++] = getSource();
           break;
-        case REL_SOURCE:
-          arr[i++] = getRelSource();
+        case REL_TABLE:
+          arr[i++] = getRelTable();
           break;
-        case RELATION:
-          arr[i++] = getRelation();
+        case REL_FIELD:
+          arr[i++] = getRelField();
           break;
         case CALC:
           arr[i++] = getCalc();
@@ -345,7 +345,7 @@ public class GridColumn implements BeeSerializable, HasInfo {
           arr[i++] = getMinWidth();
           break;
         case SHOW_WIDTH:
-          arr[i++] = showWidth(); 
+          arr[i++] = showWidth();
           break;
         case SORTABLE:
           arr[i++] = isSortable();
@@ -380,12 +380,12 @@ public class GridColumn implements BeeSerializable, HasInfo {
     this.calc = calc;
   }
 
-  public void setRelation(String relation) {
-    this.relation = relation;
+  public void setRelField(String relField) {
+    this.relField = relField;
   }
 
-  public void setRelSource(String relSource) {
-    this.relSource = relSource;
+  public void setRelTable(String relTable) {
+    this.relTable = relTable;
   }
 
   public void setSource(String source) {
@@ -448,12 +448,12 @@ public class GridColumn implements BeeSerializable, HasInfo {
     return minWidth;
   }
 
-  private String getRelation() {
-    return relation;
+  private String getRelField() {
+    return relField;
   }
 
-  private String getRelSource() {
-    return relSource;
+  private String getRelTable() {
+    return relTable;
   }
 
   private String getSource() {

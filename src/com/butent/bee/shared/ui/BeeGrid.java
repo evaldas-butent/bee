@@ -54,19 +54,19 @@ public class BeeGrid implements BeeSerializable, HasExtendedInfo {
   private Integer searchThreshold = null;
   private String newRowColumns = null;
   private boolean showColumnWidths = true;
-  
+
   private GridComponent header = null;
   private GridComponent body = null;
   private GridComponent footer = null;
-  
+
   private Collection<ConditionalStyle> rowStyles = null;
-  
+
   private Calculation rowMessage = null;
   private Calculation rowEditable = null;
 
   private Integer minColumnWidth = null;
   private Integer maxColumnWidth = null;
-  
+
   private final Map<String, GridColumn> columns = Maps.newLinkedHashMap();
 
   public BeeGrid(String name, String viewName, String caption, boolean readOnly) {
@@ -100,15 +100,16 @@ public class BeeGrid implements BeeSerializable, HasExtendedInfo {
     addColumn(ColType.ID, colName, colCaption, true, width);
   }
 
-  public void addRelatedColumn(String colName, String colCaption, boolean isReadOnly, Integer width,
-      String source, String relSource, String relation) {
+  public void addRelatedColumn(String colName, String colCaption, boolean isReadOnly,
+      Integer width, String source, String relTable, String relField) {
     Assert.notEmpty(source);
-    Assert.notEmpty(relation);
+    Assert.notEmpty(relTable);
+    Assert.notEmpty(relField);
 
     GridColumn column = addColumn(ColType.RELATED, colName, colCaption, isReadOnly, width);
     column.setSource(source);
-    column.setRelSource(relSource);
-    column.setRelation(relation);
+    column.setRelTable(relTable);
+    column.setRelField(relField);
   }
 
   public void addVersionColumn(String colName, String colCaption, Integer width) {
@@ -210,12 +211,12 @@ public class BeeGrid implements BeeSerializable, HasExtendedInfo {
   }
 
   public List<ExtendedProperty> getInfo() {
-    List<ExtendedProperty> info = Lists.newArrayList(); 
-      
+    List<ExtendedProperty> info = Lists.newArrayList();
+
     PropertyUtils.addProperties(info, false,
         "Name", getName(),
         "View Name", getViewName(),
-        "Caption",  getCaption(),
+        "Caption", getCaption(),
         "Read Only", isReadOnly(),
         "Has Headers", hasHeaders(),
         "Has Footers", hasFooters(),
@@ -226,7 +227,7 @@ public class BeeGrid implements BeeSerializable, HasExtendedInfo {
         "Show Column Widths", showColumnWidths(),
         "Min Column Width", getMinColumnWidth(),
         "Max Column Width", getMaxColumnWidth());
-    
+
     if (getHeader() != null) {
       PropertyUtils.appendChildrenToExtended(info, "Header", getHeader().getInfo());
     }
@@ -236,7 +237,7 @@ public class BeeGrid implements BeeSerializable, HasExtendedInfo {
     if (getFooter() != null) {
       PropertyUtils.appendChildrenToExtended(info, "Footer", getFooter().getInfo());
     }
-    
+
     if (getRowStyles() != null && !getRowStyles().isEmpty()) {
       int cnt = getRowStyles().size();
       PropertyUtils.addExtended(info, "Row Styles", BeeUtils.bracket(cnt));
@@ -256,10 +257,10 @@ public class BeeGrid implements BeeSerializable, HasExtendedInfo {
     if (getRowEditable() != null) {
       PropertyUtils.appendChildrenToExtended(info, "Row Editable", getRowEditable().getInfo());
     }
-    
+
     int cc = getColumnCount();
     PropertyUtils.addExtended(info, "Column Count", BeeUtils.bracket(cc));
-    
+
     int i = 0;
     for (GridColumn column : getColumns().values()) {
       i++;
@@ -347,7 +348,7 @@ public class BeeGrid implements BeeSerializable, HasExtendedInfo {
           arr[i++] = getSearchThreshold();
           break;
         case SHOW_COLUMN_WIDTHS:
-          arr[i++] = showColumnWidths(); 
+          arr[i++] = showColumnWidths();
           break;
       }
     }
@@ -360,7 +361,7 @@ public class BeeGrid implements BeeSerializable, HasExtendedInfo {
     addColumn(col);
     return col;
   }
-  
+
   private void addColumn(GridColumn column) {
     Assert.notNull(column);
     Assert.state(!hasColumn(column.getName()),

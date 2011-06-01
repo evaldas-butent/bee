@@ -96,7 +96,7 @@ class MySqlBuilder extends SqlBuilder {
             dataType = "DECIMAL(65, 30)";
             break;
 
-          case NUMERIC:
+          case DECIMAL:
             dataType = "DECIMAL(" + precision + ", " + scale + ")";
             break;
 

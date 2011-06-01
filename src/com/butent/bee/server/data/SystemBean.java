@@ -88,11 +88,11 @@ public class SystemBean {
   private Map<String, BeeTable> tableCache = Maps.newHashMap();
   private Map<String, BeeView> viewCache = Maps.newHashMap();
 
-  public void activateTable(String tableName) {
-    BeeTable table = getTable(tableName);
+  public void activateTable(String tblName) {
+    BeeTable table = getTable(tblName);
 
     if (!table.isActive()) {
-      if (!qs.isDbTable(getDbName(), getDbSchema(), tableName)) {
+      if (!qs.isDbTable(getDbName(), getDbSchema(), table.getName())) {
         rebuildTable(table, false);
       } else {
         table.setActive(true);
@@ -172,9 +172,9 @@ public class SystemBean {
         for (String fld : baseUpdate.keySet()) {
           si.addConstant(fld, baseUpdate.get(fld)[0]);
         }
-        long lock = System.currentTimeMillis();
-        si.addConstant(table.getLockName(), lock);
-        row.setVersion(lock);
+        long version = System.currentTimeMillis();
+        si.addConstant(table.getVersionName(), version);
+        row.setVersion(version);
 
         long id = qs.insertData(si);
 
@@ -207,7 +207,7 @@ public class SystemBean {
         long id = row.getId();
         IsCondition idWh = SqlUtils.equal(tblName, table.getIdName(), id);
         IsCondition wh = SqlUtils.and(idWh,
-            SqlUtils.equal(tblName, table.getLockName(), row.getVersion()));
+            SqlUtils.equal(tblName, table.getVersionName(), row.getVersion()));
 
         if (row.isMarkedForDelete()) { // DELETE
           int res = qs.updateData(new SqlDelete(tblName).setWhere(wh));
@@ -226,9 +226,9 @@ public class SystemBean {
             for (String fld : baseUpdate.keySet()) {
               su.addConstant(fld, baseUpdate.get(fld)[0]);
             }
-            long lock = System.currentTimeMillis();
-            su.addConstant(table.getLockName(), lock);
-            row.setVersion(lock);
+            long version = System.currentTimeMillis();
+            su.addConstant(table.getVersionName(), version);
+            row.setVersion(version);
 
             int res = qs.updateData(su.setWhere(wh));
 
@@ -398,7 +398,7 @@ public class SystemBean {
         IsCondition wh = SqlUtils.equal(tblName, getIdName(tblName), row.getId());
 
         if (!BeeUtils.isEmpty(row.getVersion())) {
-          wh = SqlUtils.and(wh, SqlUtils.equal(tblName, getLockName(tblName), row.getVersion()));
+          wh = SqlUtils.and(wh, SqlUtils.equal(tblName, getVersionName(tblName), row.getVersion()));
         }
         res = qs.updateData(new SqlDelete(tblName).setWhere(wh));
 
@@ -483,9 +483,10 @@ public class SystemBean {
   public ResponseObject generateData(String tblName, int rowCount) {
     Assert.isTrue(isTable(tblName), "Not a base table: " + tblName);
     Assert.isPositive(rowCount, "rowCount must be positive");
+    BeeTable table = getTable(tblName);
 
     Collection<BeeField> fields = getTableFields(tblName);
-    SqlInsert si = new SqlInsert(tblName);
+    SqlInsert si = new SqlInsert(table.getName());
     Map<String, Object[]> extUpdate = Maps.newHashMap();
     Map<String, String[]> relations = Maps.newHashMap();
 
@@ -541,7 +542,8 @@ public class SystemBean {
               v = new DateTime(BeeUtils.randomLong(minTime, maxTime));
               break;
             case DOUBLE:
-              v = Math.random() * Math.pow(10, BeeUtils.randomInt(-7, 20));
+              v = (random.nextBoolean() ? -1 : 1)
+                  * Math.random() * Math.pow(10, BeeUtils.randomInt(-7, 20));
               break;
             case INTEGER:
               v = random.nextInt();
@@ -549,12 +551,12 @@ public class SystemBean {
             case LONG:
               v = random.nextLong() / random.nextInt();
               break;
-            case NUMERIC:
+            case DECIMAL:
               if (field.getPrecision() <= 1) {
                 v = random.nextInt(10);
               } else {
-                double x =
-                    Math.random() * Math.pow(10, BeeUtils.randomInt(0, field.getPrecision()));
+                double x = (random.nextBoolean() ? -1 : 1)
+                    * Math.random() * Math.pow(10, BeeUtils.randomInt(0, field.getPrecision()));
                 if (field.getScale() <= 0) {
                   v = Math.round(x);
                 } else {
@@ -589,7 +591,7 @@ public class SystemBean {
       if (id < 0) {
         return ResponseObject.error(tblName, si.getQuery(), "Error inserting data");
       } else {
-        commitExtChanges(getTable(tblName), id, extUpdate, 0, 1, false);
+        commitExtChanges(table, id, extUpdate, 0, 1, false);
       }
       si.reset();
       extUpdate.clear();
@@ -607,10 +609,6 @@ public class SystemBean {
 
   public String getIdName(String tblName) {
     return getTable(tblName).getIdName();
-  }
-
-  public String getLockName(String tblName) {
-    return getTable(tblName).getLockName();
   }
 
   public String getRelation(String tblName, String fldName) {
@@ -638,6 +636,10 @@ public class SystemBean {
       states.add(state.getName());
     }
     return states;
+  }
+
+  public String getVersionName(String tblName) {
+    return getTable(tblName).getVersionName();
   }
 
   public BeeView getView(String viewName) {
@@ -798,6 +800,91 @@ public class SystemBean {
     initViews(false);
   }
 
+  public ResponseObject insertRow(BeeRowSet rs, boolean returnAllFields) {
+    Assert.notNull(rs);
+    ResponseObject response = new ResponseObject();
+
+    if (!BeeUtils.isPositive(rs.getNumberOfColumns())) {
+      response.addError("Nothing to insert");
+
+    } else if (rs.getNumberOfRows() != 1) {
+      response.addError("Can insert only one row at a time");
+
+    } else {
+      BeeView view = getView(rs.getViewName());
+      String tblName = view.getSource();
+      BeeTable table = getTable(tblName);
+
+      if (view.isReadOnly()) {
+        response.addError("View", view.getName(), "is read only.");
+      } else {
+        Map<String, Object[]> baseUpdate = Maps.newHashMap();
+        Map<String, Object[]> extUpdate = Maps.newHashMap();
+        Map<String, Object[]> translationUpdate = Maps.newHashMap();
+        int idxField = 0;
+        int idxLocale = 1;
+        int idxOldValue = 2;
+        int idxNewValue = 3;
+
+        prepareRow(rs, response, baseUpdate, extUpdate, translationUpdate,
+            idxField, idxLocale, idxOldValue, idxNewValue);
+
+        int c = 0;
+        long id = 0;
+        long version = System.currentTimeMillis();
+
+        if (!response.hasError()) {
+          SqlInsert si = new SqlInsert(tblName);
+
+          for (String col : baseUpdate.keySet()) {
+            si.addConstant((String) baseUpdate.get(col)[idxField],
+                  baseUpdate.get(col)[idxNewValue]);
+          }
+          si.addConstant(table.getVersionName(), version);
+          id = qs.insertData(si);
+
+          if (id < 0) {
+            response.addError("Error inserting data");
+          }
+        }
+        if (!response.hasError() && !BeeUtils.isEmpty(extUpdate)) {
+          int res = commitExtChanges(table, id, extUpdate, idxField, idxNewValue, false);
+
+          if (res < 0) {
+            response.addError("Error inserting extended fields");
+          }
+          c += res;
+        }
+        if (!response.hasError() && !BeeUtils.isEmpty(translationUpdate)) {
+          int res = commitTranslationChanges(table, id, translationUpdate,
+                idxField, idxLocale, idxNewValue, false);
+
+          if (res < 0) {
+            response.addError("Error inserting translation fields");
+          }
+          c += res;
+        }
+        if (!response.hasError()) {
+          BeeRow newRow = new BeeRow(id, version);
+
+          if (returnAllFields) {
+            BeeRowSet newRs = getViewData(view.getName(),
+                SqlUtils.equal(tblName, table.getIdName(), id), new Order(), 0, 0);
+            newRow.setValues(newRs.getRow(0).getValues());
+          }
+          response.setResponse(newRow);
+          response.addInfo("Insert count:", c);
+
+          if (BeeUtils.inList(tblName, UserServiceBean.USER_TABLE, UserServiceBean.ROLE_TABLE,
+              UserServiceBean.USER_ROLES_TABLE)) {
+            usr.invalidateCache();
+          }
+        }
+      }
+    }
+    return response;
+  }
+
   public boolean isState(String stateName) {
     return !BeeUtils.isEmpty(stateName) && stateCache.containsKey(stateName.toLowerCase());
   }
@@ -852,7 +939,8 @@ public class SystemBean {
   }
 
   public void rebuildTable(String tblName) {
-    rebuildTable(getTable(tblName), qs.isDbTable(getDbName(), getDbSchema(), tblName));
+    BeeTable table = getTable(tblName);
+    rebuildTable(table, qs.isDbTable(getDbName(), getDbSchema(), table.getName()));
   }
 
   public int restoreTable(String tblName, String tmp) {
@@ -860,19 +948,22 @@ public class SystemBean {
 
     if (!BeeUtils.isEmpty(tmp)) {
       String[] tmpFields = qs.dbFields(tmp);
-      Collection<String> fldList = Lists.newArrayList();
+      Collection<String> srcFlds = Lists.newArrayList();
+      Collection<String> dstFlds = Lists.newArrayList();
 
       for (String fld : qs.dbFields(tblName)) {
-        if (BeeUtils.inListSame(fld, tmpFields)) {
-          fldList.add(fld);
+        for (String tmpFld : tmpFields) {
+          if (BeeUtils.same(fld, tmpFld)) {
+            srcFlds.add(tmpFld);
+            dstFlds.add(fld);
+          }
         }
       }
-      if (!BeeUtils.isEmpty(fldList)) {
-        String[] flds = fldList.toArray(new String[0]);
-
+      if (!BeeUtils.isEmpty(srcFlds)) {
         rc = qs.updateData(new SqlInsert(tblName)
-            .addFields(flds)
-            .setDataSource(new SqlSelect().addFields(tmp, flds).addFrom(tmp)));
+            .addFields(dstFlds.toArray(new String[0]))
+            .setDataSource(new SqlSelect()
+                .addFields(tmp, srcFlds.toArray(new String[0])).addFrom(tmp)));
       }
       qs.updateData(SqlUtils.dropTable(tmp));
     }
@@ -923,8 +1014,6 @@ public class SystemBean {
       if (view.isReadOnly()) {
         response.addError("View", view.getName(), "is read only.");
       } else {
-        BeeRow row = rs.getRow(0);
-
         Map<String, Object[]> baseUpdate = Maps.newHashMap();
         Map<String, Object[]> extUpdate = Maps.newHashMap();
         Map<String, Object[]> translationUpdate = Maps.newHashMap();
@@ -933,109 +1022,88 @@ public class SystemBean {
         int idxOldValue = 2;
         int idxNewValue = 3;
 
-        for (int i = 0; i < rs.getNumberOfColumns(); i++) {
-          ValueType colType = rs.getColumnType(i);
-          String colName = rs.getColumnId(i);
+        prepareRow(rs, response, baseUpdate, extUpdate, translationUpdate,
+            idxField, idxLocale, idxOldValue, idxNewValue);
 
-          if (!view.hasColumn(colName) || !view.isEditable(colName)) {
-            response.addError("Column", colName, "is read only.");
-          } else {
-            String fldName = view.getField(colName);
-            String locale = view.getLocale(colName);
-            BeeField field = getTableField(tblName, fldName);
-            String oldValue = row.getShadow().get(i);
-            Object newValue = Value.parseValue(colType, row.getString(i)).getObjectValue();
-
-            Object[] arr = new Object[Ints.max(idxField, idxLocale, idxOldValue, idxNewValue) + 1];
-            arr[idxField] = fldName;
-            arr[idxOldValue] = oldValue;
-            arr[idxNewValue] = newValue;
-            arr[idxLocale] = locale;
-
-            if (!BeeUtils.isEmpty(locale)) {
-              translationUpdate.put(colName, arr);
-            } else if (field.isExtended()) {
-              extUpdate.put(colName, arr);
-            } else {
-              baseUpdate.put(colName, arr);
-            }
-          }
-        }
         int c = 0;
-        long id = row.getId();
-        long oldVersion = row.getVersion();
+        long id = rs.getRow(0).getId();
+        long oldVersion = rs.getRow(0).getVersion();
         BeeRow newRow = new BeeRow(id, oldVersion);
+        IsCondition wh = SqlUtils.equal(tblName, table.getIdName(), id);
 
-        if (!response.hasError()) {
-          IsCondition idWh = SqlUtils.equal(tblName, table.getIdName(), id);
-          IsCondition wh = SqlUtils.and(idWh,
-              SqlUtils.equal(tblName, table.getLockName(), oldVersion));
+        if (!response.hasError() && !BeeUtils.isEmpty(extUpdate)) {
+          int res = commitExtChanges(table, id, extUpdate, idxField, idxNewValue, true);
 
-          if (!BeeUtils.isEmpty(translationUpdate)) {
-            int res = commitTranslationChanges(table, id, translationUpdate,
+          if (res < 0) {
+            response.addError("Error updating extended fields");
+          }
+          c += res;
+        }
+        if (!response.hasError() && !BeeUtils.isEmpty(translationUpdate)) {
+          int res = commitTranslationChanges(table, id, translationUpdate,
                 idxField, idxLocale, idxNewValue, true);
 
-            if (res < 0) {
-              response.addError("Error updating translation fields");
-            }
-            c += res;
+          if (res < 0) {
+            response.addError("Error updating translation fields");
           }
-          if (!response.hasError() && !BeeUtils.isEmpty(extUpdate)) {
-            int res = commitExtChanges(table, id, extUpdate, idxField, idxNewValue, true);
+          c += res;
+        }
+        if (!response.hasError() && !BeeUtils.isEmpty(baseUpdate)) {
+          newRow.setVersion(System.currentTimeMillis());
 
-            if (res < 0) {
-              response.addError("Error updating extended fields");
-            }
-            c += res;
-          }
-          if (!response.hasError() && !BeeUtils.isEmpty(baseUpdate)) {
-            newRow.setVersion(System.currentTimeMillis());
-            SqlUpdate su = new SqlUpdate(tblName)
-                .addConstant(table.getLockName(), newRow.getVersion());
+          SqlUpdate su = new SqlUpdate(tblName)
+                .addConstant(table.getVersionName(), newRow.getVersion());
 
-            for (String col : baseUpdate.keySet()) {
-              su.addConstant((String) baseUpdate.get(col)[idxField],
+          for (String col : baseUpdate.keySet()) {
+            su.addConstant((String) baseUpdate.get(col)[idxField],
                   baseUpdate.get(col)[idxNewValue]);
-            }
-            int res = qs.updateData(su.setWhere(wh));
-            BeeRowSet newRs = null;
-            int rowIndex = 0;
+          }
+          int res = qs.updateData(su.setWhere(SqlUtils.and(wh,
+              SqlUtils.equal(tblName, table.getVersionName(), oldVersion))));
 
-            if (returnAllFields || res == 0) {
-              newRs = getViewData(view.getName(), idWh, new Order(), 0, 0);
-            }
-            if (res == 0 && !newRs.isEmpty()) { // Optimistic lock exception
+          if (res == 0) { // Optimistic lock exception
+            BeeRowSet newRs = getViewData(view.getName(), wh, new Order(), 0, 0);
+
+            if (!newRs.isEmpty()) {
               boolean collision = false;
 
               for (String col : baseUpdate.keySet()) {
                 int colIndex = newRs.getColumnIndex(col);
 
-                if (!BeeUtils.equals(newRs.getString(rowIndex, colIndex),
+                if (BeeUtils.equals(newRs.getString(0, colIndex),
                     baseUpdate.get(col)[idxOldValue])) {
-                  collision = true;
-                  response.addError("Optimistic lock exception:", col);
-                } else {
-                  newRs.setValue(rowIndex, colIndex,
+
+                  newRs.setValue(0, colIndex,
                       BeeUtils.transformNoTrim(baseUpdate.get(col)[idxNewValue]));
+                } else {
+                  collision = true;
+                  newRs.rollback();
+                  break;
                 }
               }
-              if (!collision) {
-                res = qs.updateData(su.setWhere(idWh));
+              if (collision) {
+                response.setResponse(newRs.getRow(0));
+              } else {
+                newRow.setValues(newRs.getRow(0).getValues());
+                res = qs.updateData(su.setWhere(wh));
               }
             }
-            if (res > 0) {
-              if (!BeeUtils.isEmpty(newRs)) {
-                newRow.setValues(newRs.getRow(rowIndex).getValues());
-              }
-              c += res;
-            } else if (res < 0) {
-              response.addError("Error updating data");
-            }
+          }
+          if (res > 0) {
+            c += res;
+          } else if (res < 0) {
+            response.addError("Error updating data");
+          } else {
+            response.addError("Optimistic lock exception");
           }
         }
         if (!response.hasError()) {
-          response.addInfo("Update count:", c);
+          if (returnAllFields && BeeUtils.isEmpty(newRow.getValues())) {
+            BeeRowSet newRs = getViewData(view.getName(), wh, new Order(), 0, 0);
+            newRow.setValues(newRs.getRow(0).getValues());
+          }
           response.setResponse(newRow);
+          response.addInfo("Update count:", c);
 
           if (BeeUtils.inList(tblName, UserServiceBean.USER_TABLE, UserServiceBean.ROLE_TABLE,
               UserServiceBean.USER_ROLES_TABLE)) {
@@ -1141,7 +1209,7 @@ public class SystemBean {
         }
       }
       newTables.get(tblMain)
-          .addLong(table.getLockName(), Keyword.NOT_NULL)
+          .addLong(table.getVersionName(), Keyword.NOT_NULL)
           .addLong(table.getIdName(), Keyword.NOT_NULL);
 
       for (SqlCreate sc : newTables.values()) {
@@ -1377,14 +1445,14 @@ public class SystemBean {
     Element root = xml.getDocumentElement();
     NodeList tables = root.getElementsByTagName("BeeTable");
 
-    String defaultVersionColumn = Config.getProperty("DefaultVersionColumn");
+    String defaultVersionColumn = Config.getProperty("DefaultVersionColumn"); // TODO: ZAP
 
     for (int i = 0; i < tables.getLength(); i++) {
       Element table = (Element) tables.item(i);
 
       BeeTable tbl = new BeeTable(table.getAttribute("name")
           , table.getAttribute("idName")
-          , BeeUtils.ifString(table.getAttribute("lockName"), defaultVersionColumn));
+          , BeeUtils.ifString(table.getAttribute("versionName"), defaultVersionColumn));
 
       String[] states = BeeUtils.split(table.getAttribute("states"), ",");
       for (String state : states) {
@@ -1459,7 +1527,7 @@ public class SystemBean {
         continue;
       }
       BeeView vw = new BeeView(view.getAttribute("name")
-          , src, getIdName(src)
+          , getTable(src).getName(), getIdName(src)
           , BeeUtils.toBoolean(view.getAttribute("readOnly")));
 
       NodeList nodeRoot = view.getElementsByTagName("BeeColumns");
@@ -1469,10 +1537,16 @@ public class SystemBean {
 
         for (int j = 0; j < cols.getLength(); j++) {
           Element col = (Element) cols.item(j);
-          vw.addField(col.getAttribute("name")
-              , col.getAttribute("expression")
-              , col.getAttribute("locale")
-              , tableCache);
+          String name = col.getAttribute("name");
+
+          if (BeeUtils.inListSame(name, getIdName(src), getVersionName(src))) {
+            LogUtils.warning(logger, "Attempt to use reserved column name:", vw.getName(), name);
+          } else {
+            vw.addField(name
+                , col.getAttribute("expression")
+                , col.getAttribute("locale")
+                , tableCache);
+          }
         }
       }
       nodeRoot = view.getElementsByTagName("BeeOrder");
@@ -1489,6 +1563,43 @@ public class SystemBean {
       data.add(vw);
     }
     return data;
+  }
+
+  private void prepareRow(BeeRowSet rs, ResponseObject response, Map<String, Object[]> baseUpdate,
+      Map<String, Object[]> extUpdate, Map<String, Object[]> translationUpdate,
+      int idxField, int idxLocale, int idxOldValue, int idxNewValue) {
+
+    BeeView view = getView(rs.getViewName());
+    BeeRow row = rs.getRow(0);
+
+    for (int i = 0; i < rs.getNumberOfColumns(); i++) {
+      ValueType colType = rs.getColumnType(i);
+      String colName = rs.getColumnId(i);
+
+      if (!view.hasColumn(colName) || !view.isEditable(colName)) {
+        response.addError("Column", colName, "is read only.");
+      } else {
+        String fldName = view.getField(colName);
+        String locale = view.getLocale(colName);
+        BeeField field = getTableField(view.getSource(), fldName);
+        String oldValue = row.getShadow().get(i);
+        Object newValue = Value.parseValue(colType, row.getString(i)).getObjectValue();
+
+        Object[] arr = new Object[Ints.max(idxField, idxLocale, idxOldValue, idxNewValue) + 1];
+        arr[idxField] = fldName;
+        arr[idxOldValue] = oldValue;
+        arr[idxNewValue] = newValue;
+        arr[idxLocale] = locale;
+
+        if (!BeeUtils.isEmpty(locale)) {
+          translationUpdate.put(colName, arr);
+        } else if (field.isExtended()) {
+          extUpdate.put(colName, arr);
+        } else {
+          baseUpdate.put(colName, arr);
+        }
+      }
+    }
   }
 
   @Lock(LockType.WRITE)

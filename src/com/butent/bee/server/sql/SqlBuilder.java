@@ -234,7 +234,7 @@ public abstract class SqlBuilder {
         return "BIGINT";
       case DOUBLE:
         return "DOUBLE";
-      case NUMERIC:
+      case DECIMAL:
         return "NUMERIC(" + precision + ", " + scale + ")";
       case CHAR:
         return "CHAR(" + precision + ")";

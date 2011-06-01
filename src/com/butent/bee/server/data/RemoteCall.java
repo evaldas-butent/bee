@@ -10,6 +10,7 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -161,9 +162,10 @@ public class RemoteCall {
 
         if (!BeeUtils.isEmpty(prm.filter)) {
           List<IsColumn> columns = Lists.newArrayList();
+          BeeView view = sys.getView(prm.view);
 
-          for (String col : sys.getView(prm.view).getColumns()) {
-            columns.add(new BeeColumn(col)); // TODO include column type
+          for (String col : view.getColumns()) {
+            columns.add(new BeeColumn(ValueType.getByTypeCode(view.getType(col).toString()), col));
           }
           filter = DataUtils.parseCondition(prm.filter, columns);
         }
@@ -199,11 +201,11 @@ public class RemoteCall {
       }
       if (!BeeUtils.isEmpty(data.columns)) {
         boolean idMode = true;
-        boolean verMode = true;
+        boolean versionMode = true;
 
         if (!BeeUtils.isEmpty(prm.fields)) {
           idMode = ArrayUtils.contains(BeeTable.DEFAULT_ID_FIELD, prm.fields);
-          verMode = ArrayUtils.contains(BeeTable.DEFAULT_LOCK_FIELD, prm.fields);
+          versionMode = ArrayUtils.contains(BeeTable.DEFAULT_VERSION_FIELD, prm.fields);
         }
         for (BeeRow r : rowSet.getRows()) {
           HashMap<String, String> row = Maps.newLinkedHashMap();
@@ -214,16 +216,16 @@ public class RemoteCall {
           if (idMode) {
             row.put(BeeTable.DEFAULT_ID_FIELD, BeeUtils.transform(r.getId()));
           }
-          if (verMode) {
-            row.put(BeeTable.DEFAULT_LOCK_FIELD, BeeUtils.transform(r.getVersion()));
+          if (versionMode) {
+            row.put(BeeTable.DEFAULT_VERSION_FIELD, BeeUtils.transform(r.getVersion()));
           }
           data.rows.add(row);
         }
         if (idMode) {
           data.columns.add(BeeTable.DEFAULT_ID_FIELD);
         }
-        if (verMode) {
-          data.columns.add(BeeTable.DEFAULT_LOCK_FIELD);
+        if (versionMode) {
+          data.columns.add(BeeTable.DEFAULT_VERSION_FIELD);
         }
       }
     } else {

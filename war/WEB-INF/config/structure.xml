@@ -29,10 +29,10 @@
       <BeeKey fields="User, Role" unique="true" />
     </BeeFields>
   </BeeTable>
-  <BeeTable name="Countries" idName="CountryID" lockName="LastLock">
+  <BeeTable name="Countries" idName="CountryID" versionName="LastLock">
     <BeeFields>
       <BeeField name="Name" type="STRING" precision="100" notNull="true" unique="true" />
-      <BeeField name="Area" type="NUMERIC" precision="10" scale="2" />
+      <BeeField name="Area" type="DECIMAL" precision="10" scale="2" />
       <BeeField name="SeaPort" type="LONG" relation="Cities" />
       <BeeField name="Neighbour" type="LONG" relation="Countries" />
       <BeeField name="Currency" type="STRING" precision="50" />

@@ -115,6 +115,8 @@ public class UiServiceBean {
         response = updateCell(reqInfo);
       } else if (BeeUtils.same(svc, Service.UPDATE_ROW)) {
         response = updateRow(reqInfo);
+      } else if (BeeUtils.same(svc, Service.INSERT_ROW)) {
+        response = insertRow(reqInfo);
 
       } else {
         String msg = BeeUtils.concat(1, svc, "loader service not recognized");
@@ -358,6 +360,11 @@ public class UiServiceBean {
     return ResponseObject.warning(msg);
   }
 
+  private ResponseObject insertRow(RequestInfo reqInfo) {
+    return sys.insertRow(BeeRowSet.restore(reqInfo.getContent()),
+        BeeUtils.toBoolean(reqInfo.getParameter(Service.VAR_VIEW_FULL_ROW)));
+  }
+
   private ResponseObject menuInfo(RequestInfo reqInfo) {
     ResponseObject response = new ResponseObject();
     String mName = reqInfo.getParameter("menu_name");
@@ -432,6 +439,7 @@ public class UiServiceBean {
     return response;
   }
 
+  @Deprecated
   private ResponseObject updateCell(RequestInfo reqInfo) {
     String viewName = reqInfo.getParameter(Service.VAR_VIEW_NAME);
     String rowId = reqInfo.getParameter(Service.VAR_VIEW_ROW_ID);
@@ -450,7 +458,7 @@ public class UiServiceBean {
     rs.setViewName(viewName);
     rs.addRow(rowId, version, new String[] {oldValue});
     rs.setValue(0, 0, newValue);
-    
+
     ResponseObject result = sys.updateRow(rs, false);
     if (result.getResponse() instanceof IsRow) {
       long newVersion = ((IsRow) result.getResponse()).getVersion();
@@ -460,6 +468,7 @@ public class UiServiceBean {
   }
 
   private ResponseObject updateRow(RequestInfo reqInfo) {
-    return sys.updateRow(BeeRowSet.restore(reqInfo.getContent()), false);
+    return sys.updateRow(BeeRowSet.restore(reqInfo.getContent()),
+        BeeUtils.toBoolean(reqInfo.getParameter(Service.VAR_VIEW_FULL_ROW)));
   }
 }

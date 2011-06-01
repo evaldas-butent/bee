@@ -157,6 +157,22 @@ public class SqlCreate extends SqlQuery<SqlCreate> {
   }
 
   /**
+   * Adds a DECIMAL type field with a field name {@code field}, precision {@code precision}, scale
+   * {@code scale} and Keywords {@code options}.
+   * 
+   * @param field the field's name
+   * @param precision the field's precision
+   * @param scale the field's scale
+   * @param options additional Keywords
+   * @return object's SqlCreate instance
+   */
+  public SqlCreate addDecimal(String field, int precision, int scale, Keyword... options) {
+    Assert.isPositive(precision);
+    Assert.nonNegative(scale);
+    return addField(field, DataType.DECIMAL, precision, scale, options);
+  }
+
+  /**
    * Adds a DATETIME type field with a field name {@code field} and Keywords {@code options}.
    * 
    * @param field the field's name
@@ -197,7 +213,7 @@ public class SqlCreate extends SqlQuery<SqlCreate> {
    * @param options additional Keywords
    * @return object's SqlCreate instance
    */
-  public SqlCreate addInt(String field, Keyword... options) {
+  public SqlCreate addInteger(String field, Keyword... options) {
     return addField(field, DataType.INTEGER, 0, 0, options);
   }
 
@@ -210,22 +226,6 @@ public class SqlCreate extends SqlQuery<SqlCreate> {
    */
   public SqlCreate addLong(String field, Keyword... options) {
     return addField(field, DataType.LONG, 0, 0, options);
-  }
-
-  /**
-   * Adds a NUMERIC type field with a field name {@code field}, precision {@code precision}, scale
-   * {@code scale} and Keywords {@code options}.
-   * 
-   * @param field the field's name
-   * @param precision the field's precision
-   * @param scale the field's scale
-   * @param options additional Keywords
-   * @return object's SqlCreate instance
-   */
-  public SqlCreate addNumeric(String field, int precision, int scale, Keyword... options) {
-    Assert.isPositive(precision);
-    Assert.nonNegative(scale);
-    return addField(field, DataType.NUMERIC, precision, scale, options);
   }
 
   /**

@@ -442,7 +442,8 @@ public class BeeView {
         fld = table.getTranslationField(field, locale);
 
         if (BeeUtils.isEmpty(als)) {
-          query.addEmptyField(colName, field.getType(), field.getPrecision(), field.getScale());
+          query.addEmptyField(colName, field.getType(), field.getPrecision(), field.getScale(),
+              field.isNotNull());
           continue;
         }
         getColumnInfo(colName)[LOCALE_ALIAS] = als;

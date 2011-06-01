@@ -261,7 +261,7 @@ public class QueryServiceBean {
       String tableName = view.getSource();
 
       ((SqlSelect) query)
-          .addFields(tableName, sys.getIdName(tableName), sys.getLockName(tableName));
+          .addFields(tableName, sys.getIdName(tableName), sys.getVersionName(tableName));
     }
     return processSql(query.getQuery(), new SqlHandler<BeeRowSet>() {
       @Override
@@ -293,10 +293,10 @@ public class QueryServiceBean {
     Assert.state(requiresId || !si.isEmpty());
 
     if (requiresId) {
-      String lockFld = sys.getLockName(source);
+      String versionFld = sys.getVersionName(source);
 
-      if (!si.hasField(lockFld)) {
-        si.addConstant(lockFld, System.currentTimeMillis());
+      if (!si.hasField(versionFld)) {
+        si.addConstant(versionFld, System.currentTimeMillis());
       }
       String idFld = sys.getIdName(source);
 
@@ -322,7 +322,9 @@ public class QueryServiceBean {
     BeeColumn[] columns = new BeeColumn[cols];
 
     int idIndex = -1;
-    int verIndex = -1;
+    int versionIndex = -1;
+    String idName = sys.getIdName(view.getSource());
+    String versionName = sys.getVersionName(view.getSource());
 
     int j = 0;
     for (BeeColumn col : rsCols) {
@@ -343,10 +345,10 @@ public class QueryServiceBean {
             default:
           }
         } else {
-          if (idIndex < 0) {
+          if (BeeUtils.same(colName, idName)) {
             idIndex = col.getIndex();
-          } else {
-            verIndex = col.getIndex();
+          } else if (BeeUtils.same(colName, versionName)) {
+            versionIndex = col.getIndex();
           }
           continue;
         }
@@ -383,10 +385,10 @@ public class QueryServiceBean {
       } else {
         idx = rs.getLong(idIndex);
       }
-      if (verIndex < 0) {
+      if (versionIndex < 0) {
         result.addRow(idx, row);
       } else {
-        result.addRow(idx, rs.getLong(verIndex), row);
+        result.addRow(idx, rs.getLong(versionIndex), row);
       }
     }
     if (idIndex >= 0) {

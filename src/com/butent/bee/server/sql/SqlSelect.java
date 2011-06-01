@@ -127,7 +127,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
    * @return object's SqlSelect instance.
    */
   public SqlSelect addEmptyBoolean(String alias) {
-    return addEmptyField(alias, DataType.BOOLEAN, 0, 0);
+    return addEmptyField(alias, DataType.BOOLEAN, 0, 0, false);
   }
 
   /**
@@ -138,7 +138,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
    * @return object's SqlSelect instance.
    */
   public SqlSelect addEmptyChar(String alias, int precision) {
-    return addEmptyField(alias, DataType.CHAR, precision, 0);
+    return addEmptyField(alias, DataType.CHAR, precision, 0, false);
   }
 
   /**
@@ -148,7 +148,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
    * @return object's SqlSelect instance.
    */
   public SqlSelect addEmptyDate(String alias) {
-    return addEmptyField(alias, DataType.DATE, 0, 0);
+    return addEmptyField(alias, DataType.DATE, 0, 0, false);
   }
 
   /**
@@ -158,7 +158,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
    * @return object's SqlSelect instance.
    */
   public SqlSelect addEmptyDateTime(String alias) {
-    return addEmptyField(alias, DataType.DATETIME, 0, 0);
+    return addEmptyField(alias, DataType.DATETIME, 0, 0, false);
   }
 
   /**
@@ -168,7 +168,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
    * @return object's SqlSelect instance.
    */
   public SqlSelect addEmptyDouble(String alias) {
-    return addEmptyField(alias, DataType.DOUBLE, 0, 0);
+    return addEmptyField(alias, DataType.DOUBLE, 0, 0, false);
   }
 
   /**
@@ -178,30 +178,16 @@ public class SqlSelect extends HasFrom<SqlSelect> {
    * @param type the field's type to add
    * @param precision the field's name
    * @param scale the field's scale
+   * @param notNull field's default value is not null
    * @return object's SqlSelect instance.
    */
-  public SqlSelect addEmptyField(String alias, DataType type, int precision, int scale) {
-    Object emptyValue;
+  public SqlSelect addEmptyField(String alias, DataType type, int precision, int scale,
+      boolean notNull) {
+    Assert.notNull(type);
+    Object emptyValue = null;
 
-    switch (type) {
-      case BOOLEAN:
-      case INTEGER:
-      case LONG:
-      case DOUBLE:
-      case NUMERIC:
-      case DATE:
-      case DATETIME:
-        emptyValue = 0;
-        break;
-
-      case CHAR:
-      case STRING:
-        emptyValue = "";
-        break;
-
-      default:
-        Assert.unsupported("Unsupported data type: " + type.name());
-        return null;
+    if (notNull) {
+      emptyValue = type.getEmptyValue();
     }
     addField(SqlUtils.cast(SqlUtils.constant(emptyValue), type, precision, scale), alias);
     return getReference();
@@ -214,7 +200,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
    * @return object's SqlSelect instance
    */
   public SqlSelect addEmptyInt(String alias) {
-    return addEmptyField(alias, DataType.INTEGER, 0, 0);
+    return addEmptyField(alias, DataType.INTEGER, 0, 0, false);
   }
 
   /**
@@ -224,7 +210,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
    * @return object's SqlSelect instance
    */
   public SqlSelect addEmptyLong(String alias) {
-    return addEmptyField(alias, DataType.LONG, 0, 0);
+    return addEmptyField(alias, DataType.LONG, 0, 0, false);
   }
 
   /**
@@ -237,7 +223,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
    * @return object's SqlSelect instance
    */
   public SqlSelect addEmptyNumeric(String alias, int precision, int scale) {
-    return addEmptyField(alias, DataType.NUMERIC, precision, scale);
+    return addEmptyField(alias, DataType.DECIMAL, precision, scale, false);
   }
 
   /**
@@ -248,7 +234,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
    * @return object's SqlSelect instance
    */
   public SqlSelect addEmptyString(String alias, int precision) {
-    return addEmptyField(alias, DataType.STRING, precision, 0);
+    return addEmptyField(alias, DataType.STRING, precision, 0, false);
   }
 
   /**

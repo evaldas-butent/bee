@@ -15,7 +15,7 @@ public final class BeeConstants {
    */
 
   public enum DataType {
-    BOOLEAN, INTEGER, LONG, DOUBLE, NUMERIC, CHAR, STRING, DATE, DATETIME;
+    BOOLEAN, INTEGER, LONG, DOUBLE, DECIMAL, CHAR, STRING, DATE, DATETIME;
 
     public Object getEmptyValue() {
       Object value = null;
@@ -25,7 +25,7 @@ public final class BeeConstants {
         case INTEGER:
         case LONG:
         case DOUBLE:
-        case NUMERIC:
+        case DECIMAL:
         case DATE:
         case DATETIME:
           value = 0;
@@ -55,7 +55,7 @@ public final class BeeConstants {
           return BeeUtils.toLongOrNull(s);
         case DOUBLE:
           return BeeUtils.toDoubleOrNull(s);
-        case NUMERIC:
+        case DECIMAL:
           return BeeUtils.toDecimalOrNull(s);
         case DATE:
           return BeeUtils.toIntOrNull(s);
