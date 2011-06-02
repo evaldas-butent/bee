@@ -9,7 +9,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.ui.Calculation;
 import com.butent.bee.shared.ui.ConditionalStyle;
-import com.butent.bee.shared.ui.Style;
+import com.butent.bee.shared.ui.StyleDeclaration;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.ExtendedProperty;
 import com.butent.bee.shared.utils.LogUtils;
@@ -266,13 +266,16 @@ public class XmlUtils {
     Assert.notNull(parent);
     List<Element> result = Lists.newArrayList();
 
-    NodeList nodes = parent.getElementsByTagName(ALL_TAGS);
+    NodeList nodes = parent.getChildNodes();
     if (nodes == null || nodes.getLength() <= 0) {
       return result;
     }
 
     for (int i = 0; i < nodes.getLength(); i++) {
-      result.add((Element) nodes.item(i));
+      Node node = nodes.item(i);
+      if (isElement(node)) {
+        result.add((Element) node);
+      }
     }
     return result;
   }
@@ -289,7 +292,7 @@ public class XmlUtils {
   public static ConditionalStyle getConditionalStyle(Element element) {
     Assert.notNull(element);
 
-    Style style = getStyle(element, ConditionalStyle.TAG_STYLE);
+    StyleDeclaration style = getStyle(element, ConditionalStyle.TAG_STYLE);
     Calculation condition = getCalculation(element, ConditionalStyle.TAG_CONDITION);
 
     if (style == null && condition == null) {
@@ -602,20 +605,20 @@ public class XmlUtils {
     return lst;
   }
 
-  public static Style getStyle(Element element) {
+  public static StyleDeclaration getStyle(Element element) {
     Assert.notNull(element);
 
-    String className = getTextQuietly(getFirstChildElement(element, Style.TAG_CLASS));
-    String inline = getTextQuietly(getFirstChildElement(element, Style.TAG_INLINE));
-    String font = getTextQuietly(getFirstChildElement(element, Style.TAG_FONT));
+    String className = getTextQuietly(getFirstChildElement(element, StyleDeclaration.TAG_CLASS));
+    String inline = getTextQuietly(getFirstChildElement(element, StyleDeclaration.TAG_INLINE));
+    String font = getTextQuietly(getFirstChildElement(element, StyleDeclaration.TAG_FONT));
 
     if (BeeUtils.allEmpty(className, inline, font)) {
       return null;
     }
-    return new Style(className, inline, font);
+    return new StyleDeclaration(className, inline, font);
   }
 
-  public static Style getStyle(Element parent, String tagName) {
+  public static StyleDeclaration getStyle(Element parent, String tagName) {
     Assert.notNull(parent);
     Assert.notEmpty(tagName);
 

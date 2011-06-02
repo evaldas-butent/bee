@@ -96,9 +96,13 @@ public class DispatcherBean {
         }
       }
       Object obj = resp.getResponse();
+      String type = resp.getType();
 
-      if (!BeeUtils.isEmpty(obj, EnumSet.of(BeeType.NUMBER))) {
+      if (!BeeUtils.isEmpty(obj, EnumSet.of(BeeType.NUMBER)) || !BeeUtils.isEmpty(type)) {
         buff.add(Codec.beeSerialize(obj));
+        if (!BeeUtils.isEmpty(type)) {
+          buff.add(type);
+        }
       }
     } else {
       String msg = BeeUtils.concat(1, svc, "service type not recognized");

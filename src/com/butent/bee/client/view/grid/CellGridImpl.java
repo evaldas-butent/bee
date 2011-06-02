@@ -48,6 +48,7 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.RowInfo;
+import com.butent.bee.shared.ui.BeeGrid;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -211,20 +212,21 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       }
     }
   }
-
+  
   private static final String STYLE_EDITOR = "bee-CellGridEditor";
-
+  
   private Presenter viewPresenter = null;
 
   private ChangeHandler filterChangeHandler = null;
   private final FilterUpdater filterUpdater = new FilterUpdater();
 
   private final CellGrid grid = new CellGrid();
+  private BeeGrid gridDescription = null;
 
   private final Map<String, EditableColumn> editableColumns = Maps.newHashMap();
 
   private final Notification notification = new Notification();
-
+  
   public CellGridImpl() {
     super();
   }
@@ -416,10 +418,10 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
         getGrid().setMaxCellWidth(xp[0]);
       } else if (cmd.startsWith("minh")) {
         msg = "setMinCellHeight " + xp[0];
-        getGrid().setMinCellHeight(xp[0]);
+        getGrid().setMinBodyCellHeight(xp[0]);
       } else if (cmd.startsWith("maxh")) {
         msg = "setMaxCellHeight " + xp[0];
-        getGrid().setMaxCellHeight(xp[0]);
+        getGrid().setMaxBodyCellHeight(xp[0]);
 
       } else if (cmd.startsWith("zm")) {
         msg = "setResizerMoveSensitivityMillis " + xp[0];
@@ -463,19 +465,53 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     }
   }
 
-  public void create(List<BeeColumn> dataCols, int rowCount, BeeRowSet rowSet) {
-    getGrid().setHeaderCellHeight(25);
-    getGrid().setBodyCellHeight(24);
+  public void create(List<BeeColumn> dataCols, int rowCount, BeeRowSet rowSet, BeeGrid descr,
+      boolean hasSearch) {
+    
+    boolean hasHeaders = (descr == null) ? true : !BeeUtils.isFalse(descr.hasHeaders());
+    boolean hasFooters = hasSearch;
+    if (hasFooters && descr != null && BeeUtils.isFalse(descr.hasFooters())) {
+      hasFooters = false;
+    }
+    
+    boolean showColumnWidths = true;
 
-    boolean footers = rowCount > 10;
-    if (footers) {
-      getGrid().setFooterCellHeight(25);
+    if (descr != null) {
+      setGridDescription(descr);
+
+      if (hasHeaders && descr.getHeader() != null) {
+        getGrid().setHeaderComponent(descr.getHeader());
+      }
+      if (descr.getBody() != null) {
+        getGrid().setBodyComponent(descr.getBody());
+      }
+      if (hasFooters && descr.getFooter() != null) {
+        getGrid().setFooterComponent(descr.getFooter());
+      }
+      
+      if (BeeUtils.isTrue(descr.isReadOnly())) {
+        getGrid().setReadOnly(true);
+      }
+      
+      if (descr.getMinColumnWidth() != null) {
+        getGrid().setMinCellWidth(descr.getMinColumnWidth());
+      }
+      if (descr.getMaxColumnWidth() != null) {
+        getGrid().setMaxCellWidth(descr.getMaxColumnWidth());
+      }
+      
+      if (BeeUtils.isFalse(descr.showColumnWidths())) {
+        showColumnWidths = false;
+      }
+      
+      if (descr.getRowStyles() != null) {
+        getGrid().setRowStyles(descr.getRowStyles());
+      }
     }
 
     RowIdColumn idColumn = new RowIdColumn();
     String id = "row-id";
     getGrid().addColumn(id, -1, idColumn, new TextHeader("Id"));
-    getGrid().setColumnWidth(id, 40);
 
     BeeColumn dataColumn;
     CellColumn<?> column;
@@ -486,7 +522,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       column.setSortable(true);
 
       columnId = dataColumn.getLabel();
-      if (footers) {
+      if (hasFooters) {
         getGrid().addColumn(columnId, i, column, new ColumnHeader(dataColumn),
             new ColumnFooter(dataColumn, filterUpdater));
       } else {
@@ -720,8 +756,16 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     return editableColumns;
   }
 
+  private BeeGrid getGridDescription() {
+    return gridDescription;
+  }
+  
   private Notification getNotification() {
     return notification;
+  }
+
+  private void setGridDescription(BeeGrid gridDescription) {
+    this.gridDescription = gridDescription;
   }
 
   private void showNote(Level level, String... messages) {

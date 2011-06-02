@@ -300,7 +300,7 @@ public class BeeUi implements Module, NotificationListener {
         scroll = ScrollBars.NONE;
         break;
       case 2:
-        grd = Global.cellGrid(data, getDefaultCellType(), cols);
+        grd = Global.cellTable(data, getDefaultCellType(), cols);
         scroll = ScrollBars.BOTH;
         break;
       default:

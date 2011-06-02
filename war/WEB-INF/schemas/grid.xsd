@@ -12,7 +12,6 @@
 
   <xs:complexType name="grid">
     <xs:sequence>
-      <xs:element name="settings" type="bee:gridSettings" minOccurs="0" />
       <xs:element name="header" type="bee:componentType" minOccurs="0" />
       <xs:element name="body" type="bee:componentType" minOccurs="0" />
       <xs:element name="footer" type="bee:componentType" minOccurs="0" />
@@ -27,6 +26,14 @@
     <xs:attribute name="readOnly" type="xs:boolean" />
     <xs:attribute name="minColumnWidth" type="bee:widthType" />
     <xs:attribute name="maxColumnWidth" type="bee:widthType" />
+    <xs:attribute name="hasHeaders" type="xs:boolean" default="true" />
+    <xs:attribute name="hasFooters" type="xs:boolean" default="true" />
+    <xs:attribute name="asyncThreshold" type="xs:nonNegativeInteger" default="100" />
+    <xs:attribute name="pagingThreshold" type="xs:nonNegativeInteger" default="20" />
+    <xs:attribute name="searchThreshold" type="xs:nonNegativeInteger" default="2" />
+    <xs:attribute name="pageSize" type="xs:positiveInteger" default="15" />
+    <xs:attribute name="newRowColumns" type="xs:normalizedString" />
+    <xs:attribute name="showColumnWidths" type="xs:boolean" default="true" />
   </xs:complexType>
 
   <xs:complexType name="baseColumn">
@@ -73,7 +80,6 @@
 
   <xs:complexType name="column">
     <xs:sequence>
-      <xs:element name="settings" type="bee:columnSettings" minOccurs="0" />
       <xs:element name="style" type="bee:columnStyle" minOccurs="0" />
     </xs:sequence>
     <xs:attribute name="name" type="bee:nameType" use="required" />
@@ -85,6 +91,8 @@
     <xs:attribute name="sortable" type="xs:boolean" default="true" />
     <xs:attribute name="visible" type="xs:boolean" default="true" />
     <xs:attribute name="format" type="xs:normalizedString" />
+    <xs:attribute name="hasFooter" type="xs:boolean" default="true" />
+    <xs:attribute name="showWidth" type="xs:boolean" default="true" />
   </xs:complexType>
   
   <xs:complexType name="columnStyle">
@@ -151,21 +159,6 @@
       <xs:pattern value="[0-9]( [0-9]){0,3}" />
     </xs:restriction>
   </xs:simpleType>
-
-  <xs:complexType name="gridSettings">
-    <xs:attribute name="hasHeaders" type="xs:boolean" default="true" />
-    <xs:attribute name="hasFooters" type="xs:boolean" default="true" />
-    <xs:attribute name="asyncThreshold" type="xs:nonNegativeInteger" default="100" />
-    <xs:attribute name="pagingThreshold" type="xs:nonNegativeInteger" default="20" />
-    <xs:attribute name="searchThreshold" type="xs:nonNegativeInteger" default="2" />
-    <xs:attribute name="newRowColumns" type="xs:normalizedString" />
-    <xs:attribute name="showColumnWidths" type="xs:boolean" default="true" />
-  </xs:complexType>
-
-  <xs:complexType name="columnSettings">
-    <xs:attribute name="hasFooter" type="xs:boolean" default="true" />
-    <xs:attribute name="showWidth" type="xs:boolean" default="true" />
-  </xs:complexType>
 
   <xs:simpleType name="valueType">
     <xs:restriction base="xs:string">

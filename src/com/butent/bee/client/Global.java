@@ -54,8 +54,8 @@ public class Global implements Module {
     msgBoxen.alert(obj);
   }
 
-  public static Widget cellGrid(Object data, CellType cellType, String... columnLabels) {
-    return GridFactory.cellGrid(data, cellType, columnLabels);
+  public static Widget cellTable(Object data, CellType cellType, String... columnLabels) {
+    return GridFactory.cellTable(data, cellType, columnLabels);
   }
 
   public static boolean closeDialog(Event<?> event) {

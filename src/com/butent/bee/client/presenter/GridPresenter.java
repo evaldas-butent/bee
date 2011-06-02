@@ -35,6 +35,7 @@ import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.RowInfo;
+import com.butent.bee.shared.ui.BeeGrid;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
@@ -135,14 +136,14 @@ public class GridPresenter implements Presenter, EditEndEvent.Handler {
   private final Set<HandlerRegistration> filterChangeHandlers = Sets.newHashSet();
   private Filter lastFilter = null;
 
-  public GridPresenter(DataInfo dataInfo, BeeRowSet rowSet, boolean async) {
+  public GridPresenter(DataInfo dataInfo, BeeRowSet rowSet, boolean async, BeeGrid descr) {
     this.dataInfo = dataInfo;
     this.async = async;
     this.dataColumns = rowSet.getColumns();
 
     int rowCount = async ? dataInfo.getRowCount() : rowSet.getNumberOfRows();
 
-    this.gridContainer = createView(dataInfo.getName(), dataColumns, rowCount, rowSet);
+    this.gridContainer = createView(dataInfo.getName(), dataColumns, rowCount, rowSet, descr);
     this.dataProvider = createProvider(gridContainer, dataInfo, rowSet, async);
 
     bind();
@@ -285,10 +286,12 @@ public class GridPresenter implements Presenter, EditEndEvent.Handler {
     return provider;
   }
 
-  private GridContainerView createView(String caption, List<BeeColumn> columns, int rc,
-      BeeRowSet rowSet) {
+  private GridContainerView createView(String dataName, List<BeeColumn> columns, int rc,
+      BeeRowSet rowSet, BeeGrid descr) {
     GridContainerView view = new GridContainerImpl();
-    view.create(caption, columns, rc, rowSet);
+    
+    String caption = (descr == null) ? dataName : BeeUtils.ifString(descr.getCaption(), dataName);
+    view.create(caption, columns, rc, rowSet, descr);
 
     return view;
   }

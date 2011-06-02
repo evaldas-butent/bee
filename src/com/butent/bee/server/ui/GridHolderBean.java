@@ -14,7 +14,7 @@ import com.butent.bee.shared.ui.ConditionalStyle;
 import com.butent.bee.shared.ui.GridColumn;
 import com.butent.bee.shared.ui.GridComponent;
 import com.butent.bee.shared.ui.GridColumn.ColType;
-import com.butent.bee.shared.ui.Style;
+import com.butent.bee.shared.ui.StyleDeclaration;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.LogUtils;
 
@@ -43,11 +43,10 @@ public class GridHolderBean {
 
   public static final String GRID_SCHEMA = "grid.xsd";
   public static final String GRID_PATH = "grids/";
-  
+
   private static final String TAG_GRID = "BeeGrid";
   private static final String TAG_COLUMNS = "columns";
-  
-  private static final String TAG_SETTINGS = "settings";
+
   private static final String TAG_HEADER = "header";
   private static final String TAG_BODY = "body";
   private static final String TAG_FOOTER = "footer";
@@ -64,7 +63,9 @@ public class GridHolderBean {
   private static final String TAG_VALIDATION = "validation";
   private static final String TAG_EDITABLE = "editable";
   private static final String TAG_CARRY = "carry";
-  
+
+  private static final String TAG_CALC = "calc";
+
   private static final String ATTR_VIEW_NAME = "viewName";
   private static final String ATTR_NAME = "name";
   private static final String ATTR_CAPTION = "caption";
@@ -77,9 +78,10 @@ public class GridHolderBean {
   private static final String ATTR_ASYNC_THRESHOLD = "asyncThreshold";
   private static final String ATTR_PAGING_THRESHOLD = "pagingThreshold";
   private static final String ATTR_SEARCH_THRESHOLD = "searchThreshold";
+  private static final String ATTR_PAGE_SIZE = "pageSize";
   private static final String ATTR_NEW_ROW_COLUMNS = "newRowColumns";
   private static final String ATTR_SHOW_COLUMN_WIDTHS = "showColumnWidths";
-  
+
   private static final String ATTR_WIDTH = "width";
   private static final String ATTR_MIN_WIDTH = "minWidth";
   private static final String ATTR_MAX_WIDTH = "maxWidth";
@@ -89,14 +91,14 @@ public class GridHolderBean {
 
   private static final String ATTR_HAS_FOOTER = "hasFooter";
   private static final String ATTR_SHOW_WIDTH = "showWidth";
-  
+
   private static final String ATTR_SOURCE = "source";
   private static final String ATTR_EDITOR = "editor";
 
   private static final String ATTR_MIN_VALUE = "minValue";
   private static final String ATTR_MAX_VALUE = "maxValue";
   private static final String ATTR_STEP_VALUE = "stepValue";
-  
+
   private static final String ATTR_RELATION = "relation";
 
   private static Logger logger = Logger.getLogger(GridHolderBean.class.getName());
@@ -128,15 +130,15 @@ public class GridHolderBean {
   private GridComponent getComponent(Element parent, String tagName) {
     Assert.notNull(parent);
     Assert.notEmpty(tagName);
-    
+
     Element element = XmlUtils.getFirstChildElement(parent, tagName);
     if (element == null) {
       return null;
     }
-    
-    Style style = XmlUtils.getStyle(element, GridComponent.TAG_STYLE);
+
+    StyleDeclaration style = XmlUtils.getStyle(element, GridComponent.TAG_STYLE);
     Map<String, String> attributes = XmlUtils.getAttributes(element);
-    
+
     if (style == null && (attributes == null || attributes.isEmpty())) {
       return null;
     }
@@ -161,7 +163,7 @@ public class GridHolderBean {
 
     String viewName = view.getName();
     String source = column.getSource();
-    
+
     switch (column.getType()) {
       case DATA:
         if (view.hasColumn(source)) {
@@ -182,7 +184,8 @@ public class GridHolderBean {
               column.setRelTable(relTable);
               ok = true;
             } else {
-              LogUtils.warning(logger, viewName, "unrecognized relation field:", relTable, relField);
+              LogUtils
+                  .warning(logger, viewName, "unrecognized relation field:", relTable, relField);
             }
           } else {
             LogUtils.warning(logger, viewName, "not a relation column:", source);
@@ -191,7 +194,7 @@ public class GridHolderBean {
           LogUtils.warning(logger, viewName, "unrecognized view column:", source);
         }
         break;
-        
+
       case CALCULATED:
         if (column.getCalc() == null || column.getCalc().isEmpty()) {
           LogUtils.warning(logger, viewName, "column", column.getName(),
@@ -200,17 +203,17 @@ public class GridHolderBean {
           ok = true;
         }
         break;
-      
+
       default:
         ok = true;
     }
-    
+
     return ok;
   }
-  
+
   @Lock(LockType.WRITE)
   private void initGrid(String gridName) {
-    String resource = Config.getPath(GRID_PATH + gridName + ".xml");
+    String resource = Config.getPath(GRID_PATH + gridName + ".xml", false);
 
     if (!BeeUtils.isEmpty(resource)) {
       boolean loaded = false;
@@ -237,7 +240,7 @@ public class GridHolderBean {
       }
     }
   }
-  
+
   @Lock(LockType.WRITE)
   private Collection<BeeGrid> loadGrids(String resource, String schema) {
     Document xml = XmlUtils.getXmlResource(resource, schema);
@@ -259,14 +262,14 @@ public class GridHolderBean {
         LogUtils.warning(logger, "Grid attribute", ATTR_NAME, "not found");
         continue;
       }
-      if (!sys.isView(viewName)) {
-        LogUtils.warning(logger, "Grid", gridName, "unrecongized view name:", viewName);
+      if (!sys.isView(viewName) && !sys.isTable(viewName)) {
+        LogUtils.warning(logger, "Grid", gridName, "unrecognized view name:", viewName);
         continue;
       }
-      
+
       BeeGrid grid = new BeeGrid(gridName, viewName);
       xmlToGrid(gridElement, grid);
-      
+
       Element container = XmlUtils.getFirstChildElement(gridElement, TAG_COLUMNS);
       if (container == null) {
         LogUtils.warning(logger, "Grid", gridName, "tag", TAG_COLUMNS, "not found");
@@ -282,7 +285,7 @@ public class GridHolderBean {
 
       for (int j = 0; j < columns.size(); j++) {
         Element columnElement = columns.get(j);
-        
+
         String colTag = columnElement.getTagName();
         ColType colType = ColType.getColType(colTag);
         String colName = columnElement.getAttribute(ATTR_NAME);
@@ -298,18 +301,22 @@ public class GridHolderBean {
         }
         if (grid.hasColumn(colName)) {
           LogUtils.warning(logger, "Grid", gridName, "column", j, colTag,
-            "duplicate column name:", colName);
+              "duplicate column name:", colName);
           continue;
         }
-        
+
         GridColumn column = new GridColumn(colType, colName);
         xmlToColumn(columnElement, column);
-        
+
         if (initColumn(view, column)) {
           grid.addColumn(column);
         }
       }
-
+      
+      if (grid.isEmpty()) {
+        LogUtils.warning(logger, "Grid", gridName, "has no columns");
+        continue;
+      }
       grids.add(grid);
     }
     return grids;
@@ -320,16 +327,12 @@ public class GridHolderBean {
       gridCache.put(gridKey(grid.getName()), grid);
     }
   }
-  
+
   private void xmlToColumn(Element src, GridColumn dst) {
     Assert.notNull(src);
     Assert.notNull(dst);
-    
+
     Map<String, String> attributes = XmlUtils.getAttributes(src);
-    Element settings = XmlUtils.getFirstChildElement(src, TAG_SETTINGS);
-    if (settings != null) {
-      attributes.putAll(XmlUtils.getAttributes(settings));
-    }
 
     if (!attributes.isEmpty()) {
       for (Map.Entry<String, String> attribute : attributes.entrySet()) {
@@ -338,7 +341,7 @@ public class GridHolderBean {
         if (BeeUtils.isEmpty(value)) {
           continue;
         }
-        
+
         if (BeeUtils.same(key, ATTR_CAPTION)) {
           dst.setCaption(value.trim());
         } else if (BeeUtils.same(key, ATTR_READ_ONLY)) {
@@ -378,22 +381,22 @@ public class GridHolderBean {
         }
       }
     }
-    
+
     Element styleElement = XmlUtils.getFirstChildElement(src, TAG_STYLE);
     if (styleElement != null) {
-      Style headerStyle = XmlUtils.getStyle(styleElement, TAG_HEADER_STYLE);
+      StyleDeclaration headerStyle = XmlUtils.getStyle(styleElement, TAG_HEADER_STYLE);
       if (headerStyle != null) {
         dst.setHeaderStyle(headerStyle);
       }
-      Style bodyStyle = XmlUtils.getStyle(styleElement, TAG_BODY_STYLE);
+      StyleDeclaration bodyStyle = XmlUtils.getStyle(styleElement, TAG_BODY_STYLE);
       if (bodyStyle != null) {
         dst.setBodyStyle(bodyStyle);
       }
-      Style footerStyle = XmlUtils.getStyle(styleElement, TAG_FOOTER_STYLE);
+      StyleDeclaration footerStyle = XmlUtils.getStyle(styleElement, TAG_FOOTER_STYLE);
       if (footerStyle != null) {
         dst.setFooterStyle(footerStyle);
       }
-    
+
       NodeList dynStyleNodes = styleElement.getElementsByTagName(TAG_DYN_STYLE);
       if (dynStyleNodes != null && dynStyleNodes.getLength() > 0) {
         List<ConditionalStyle> dynStyles = Lists.newArrayList();
@@ -408,7 +411,7 @@ public class GridHolderBean {
         }
       }
     }
-    
+
     Calculation validation = XmlUtils.getCalculation(src, TAG_VALIDATION);
     if (validation != null) {
       dst.setValidation(validation);
@@ -421,53 +424,70 @@ public class GridHolderBean {
     if (carry != null) {
       dst.setCarry(carry);
     }
+
+    Calculation calc = XmlUtils.getCalculation(src, TAG_CALC);
+    if (calc != null) {
+      dst.setCalc(calc);
+    }
   }
-  
+
   private void xmlToGrid(Element src, BeeGrid dst) {
     Assert.notNull(src);
     Assert.notNull(dst);
-    
-    Map<String, String> attributes = XmlUtils.getAttributes(src);
-    Element settings = XmlUtils.getFirstChildElement(src, TAG_SETTINGS);
-    if (settings != null) {
-      attributes.putAll(XmlUtils.getAttributes(settings));
+
+    String caption = src.getAttribute(ATTR_CAPTION);
+    if (!BeeUtils.isEmpty(caption)) {
+      dst.setCaption(caption.trim());
+    }
+    Boolean readOnly = XmlUtils.getAttributeBoolean(src, ATTR_READ_ONLY);
+    if (readOnly != null) {
+      dst.setReadOnly(readOnly);
     }
 
-    if (!attributes.isEmpty()) {
-      for (Map.Entry<String, String> attribute : attributes.entrySet()) {
-        String key = attribute.getKey();
-        String value = attribute.getValue();
-        if (BeeUtils.isEmpty(value)) {
-          continue;
-        }
-        
-        if (BeeUtils.same(key, ATTR_CAPTION)) {
-          dst.setCaption(value.trim());
-        } else if (BeeUtils.same(key, ATTR_READ_ONLY)) {
-          dst.setReadOnly(BeeUtils.toBooleanOrNull(value));
-        } else if (BeeUtils.same(key, ATTR_MIN_COLUMN_WIDTH)) {
-          dst.setMinColumnWidth(BeeUtils.toIntOrNull(value));
-        } else if (BeeUtils.same(key, ATTR_MAX_COLUMN_WIDTH)) {
-          dst.setMaxColumnWidth(BeeUtils.toIntOrNull(value));
-
-        } else if (BeeUtils.same(key, ATTR_HAS_HEADERS)) {
-          dst.setHasHeaders(BeeUtils.toBooleanOrNull(value));
-        } else if (BeeUtils.same(key, ATTR_HAS_FOOTERS)) {
-          dst.setHasFooters(BeeUtils.toBooleanOrNull(value));
-        } else if (BeeUtils.same(key, ATTR_SHOW_COLUMN_WIDTHS)) {
-          dst.setShowColumnWidths(BeeUtils.toBooleanOrNull(value));
-        } else if (BeeUtils.same(key, ATTR_ASYNC_THRESHOLD)) {
-          dst.setAsyncThreshold(BeeUtils.toIntOrNull(value));
-        } else if (BeeUtils.same(key, ATTR_PAGING_THRESHOLD)) {
-          dst.setPagingThreshold(BeeUtils.toIntOrNull(value));
-        } else if (BeeUtils.same(key, ATTR_SEARCH_THRESHOLD)) {
-          dst.setSearchThreshold(BeeUtils.toIntOrNull(value));
-        } else if (BeeUtils.same(key, ATTR_NEW_ROW_COLUMNS)) {
-          dst.setNewRowColumns(value.trim());
-        }
-      }
+    Integer minColumnWidth = XmlUtils.getAttributeInteger(src, ATTR_MIN_COLUMN_WIDTH);
+    if (minColumnWidth != null) {
+      dst.setMinColumnWidth(minColumnWidth);
     }
-    
+    Integer maxColumnWidth = XmlUtils.getAttributeInteger(src, ATTR_MAX_COLUMN_WIDTH);
+    if (maxColumnWidth != null) {
+      dst.setMaxColumnWidth(maxColumnWidth);
+    }
+
+    Boolean hasHeaders = XmlUtils.getAttributeBoolean(src, ATTR_HAS_HEADERS);
+    if (hasHeaders != null) {
+      dst.setHasHeaders(hasHeaders);
+    }
+    Boolean hasFooters = XmlUtils.getAttributeBoolean(src, ATTR_HAS_FOOTERS);
+    if (hasFooters != null) {
+      dst.setHasFooters(hasFooters);
+    }
+    Boolean showColumnWidths = XmlUtils.getAttributeBoolean(src, ATTR_SHOW_COLUMN_WIDTHS);
+    if (showColumnWidths != null) {
+      dst.setShowColumnWidths(showColumnWidths);
+    }
+
+    Integer asyncThreshold = XmlUtils.getAttributeInteger(src, ATTR_ASYNC_THRESHOLD);
+    if (asyncThreshold != null) {
+      dst.setAsyncThreshold(asyncThreshold);
+    }
+    Integer pagingThreshold = XmlUtils.getAttributeInteger(src, ATTR_PAGING_THRESHOLD);
+    if (pagingThreshold != null) {
+      dst.setPagingThreshold(pagingThreshold);
+    }
+    Integer searchThreshold = XmlUtils.getAttributeInteger(src, ATTR_SEARCH_THRESHOLD);
+    if (searchThreshold != null) {
+      dst.setSearchThreshold(searchThreshold);
+    }
+    Integer pageSize = XmlUtils.getAttributeInteger(src, ATTR_PAGE_SIZE);
+    if (pageSize != null) {
+      dst.setPageSize(pageSize);
+    }
+
+    String newRowColumns = src.getAttribute(ATTR_NEW_ROW_COLUMNS);
+    if (!BeeUtils.isEmpty(newRowColumns)) {
+      dst.setNewRowColumns(newRowColumns.trim());
+    }
+
     GridComponent header = getComponent(src, TAG_HEADER);
     if (header != null) {
       dst.setHeader(header);
@@ -480,7 +500,7 @@ public class GridHolderBean {
     if (footer != null) {
       dst.setFooter(footer);
     }
-    
+
     NodeList rowStyleNodes = src.getElementsByTagName(TAG_ROW_STYLE);
     if (rowStyleNodes != null && rowStyleNodes.getLength() > 0) {
       List<ConditionalStyle> rowStyles = Lists.newArrayList();
@@ -494,7 +514,7 @@ public class GridHolderBean {
         dst.setRowStyles(rowStyles);
       }
     }
-    
+
     Calculation rowMessage = XmlUtils.getCalculation(src, TAG_ROW_MESSAGE);
     if (rowMessage != null) {
       dst.setRowMessage(rowMessage);

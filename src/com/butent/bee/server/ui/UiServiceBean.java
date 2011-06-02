@@ -21,6 +21,7 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
+import com.butent.bee.shared.ui.BeeGrid;
 import com.butent.bee.shared.ui.UiComponent;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -84,10 +85,10 @@ public class UiServiceBean {
         response = formList();
       } else if (BeeUtils.same(svc, Service.GET_MENU)) {
         response = menuInfo(reqInfo);
-      } else if (BeeUtils.same(svc, Service.GET_GRID)) {
+      } else if (BeeUtils.same(svc, Service.GET_X_GRID)) {
         response = gridInfo(reqInfo);
-      } else if (BeeUtils.same(svc, "rpc_data_gridinfo")) {
-        response = grid(reqInfo);
+      } else if (BeeUtils.same(svc, Service.GET_GRID)) {
+        response = getGrid(reqInfo);
       } else if (BeeUtils.same(svc, Service.REBUILD)) {
         response = rebuildData(reqInfo);
       } else if (BeeUtils.same(svc, Service.DO_SQL)) {
@@ -232,6 +233,17 @@ public class UiServiceBean {
     return response;
   }
 
+  private ResponseObject getGrid(RequestInfo reqInfo) {
+    String gridName = reqInfo.getContent();
+    if (BeeUtils.isEmpty(gridName)) {
+      return ResponseObject.error("Which grid?");
+    }
+    if (grd.isGrid(gridName)) {
+      return ResponseObject.response(grd.getGrid(gridName)).setType(BeeGrid.class);
+    }
+    return ResponseObject.response(BeeUtils.concat(1, "grid", gridName, "not found"));
+  }
+
   private ResponseObject getStates(RequestInfo reqInfo) {
     String table = reqInfo.getParameter(Service.VAR_VIEW_NAME);
     Set<String> states = new HashSet<String>();
@@ -298,23 +310,6 @@ public class UiServiceBean {
     }
     return ResponseObject.response(sys.getViewSize(viewName,
         sys.getViewCondition(viewName, filter)));
-  }
-
-  private ResponseObject grid(RequestInfo reqInfo) {
-    String gridName = reqInfo.getContent();
-    String[] arr = gridName.split(" ", 2);
-    if (arr.length > 1) {
-      gridName = arr[1];
-    } else {
-      gridName = null;
-    }
-    if (BeeUtils.isEmpty(gridName)) {
-      return ResponseObject.error("Which grid?");
-    }
-    if (grd.isGrid(gridName)) {
-      return ResponseObject.response(grd.getGrid(gridName));
-    }
-    return ResponseObject.error("Grid not found:", gridName);
   }
 
   private ResponseObject gridInfo(RequestInfo reqInfo) {

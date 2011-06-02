@@ -11,6 +11,7 @@ import com.butent.bee.client.Settings;
 import com.butent.bee.client.canvas.CanvasDemo;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.event.EventUtils;
+import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.visualization.showcase.Showcase;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.client.widget.InputText;
@@ -18,7 +19,6 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.data.BeeRowSet;
-import com.butent.bee.shared.ui.BeeGrid;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -97,6 +97,8 @@ public class CliWidget extends InputText {
       BeeKeeper.getRpc().sendText(Service.GENERATE, BeeUtils.concat(1, arr[1], arr[2]));
     } else if (z.equals("geo")) {
       CliWorker.showGeo();
+    } else if (z.startsWith("grid")) {
+      GridFactory.showGridInfo(args);
     } else if (z.equals("gwt")) {
       CliWorker.showGwt();
     } else if (BeeUtils.inList(z, "h5", "html5", "supp", "support")) {
@@ -157,15 +159,7 @@ public class CliWidget extends InputText {
               }
             }
           });
-    } else if (z.equals("gridinfo")) {
-      BeeKeeper.getRpc().sendText("rpc_data_gridinfo", v,
-          new ResponseCallback() {
-            @Override
-            public void onResponse(JsArrayString respArr) {
-              BeeGrid grd = BeeGrid.restore(respArr.get(0));
-              BeeKeeper.getUi().showGrid(grd.getInfo());
-            }
-          });
+      
     } else if (z.equals("stack")) {
       CliWorker.showStack();
     } else if (z.startsWith("stor")) {

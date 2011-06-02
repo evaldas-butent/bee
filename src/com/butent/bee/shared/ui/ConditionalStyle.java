@@ -26,10 +26,10 @@ public class ConditionalStyle implements BeeSerializable, HasInfo {
     return cs;
   }
 
-  private Style style;
+  private StyleDeclaration style;
   private Calculation condition;
 
-  public ConditionalStyle(Style style, Calculation condition) {
+  public ConditionalStyle(StyleDeclaration style, Calculation condition) {
     this.style = style;
     this.condition = condition;
   }
@@ -41,7 +41,7 @@ public class ConditionalStyle implements BeeSerializable, HasInfo {
     String[] arr = Codec.beeDeserialize(s);
     Assert.lengthEquals(arr, 2);
 
-    setStyle(Style.restore(arr[0]));
+    setStyle(StyleDeclaration.restore(arr[0]));
     setCondition(Calculation.restore(arr[1]));
   }
 
@@ -76,7 +76,7 @@ public class ConditionalStyle implements BeeSerializable, HasInfo {
     return condition;
   }
 
-  private Style getStyle() {
+  private StyleDeclaration getStyle() {
     return style;
   }
 
@@ -84,7 +84,7 @@ public class ConditionalStyle implements BeeSerializable, HasInfo {
     this.condition = condition;
   }
 
-  private void setStyle(Style style) {
+  private void setStyle(StyleDeclaration style) {
     this.style = style;
   }
 }

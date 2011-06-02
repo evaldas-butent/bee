@@ -24,6 +24,8 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.ui.BeeGrid;
+import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
 import java.util.List;
@@ -34,10 +36,10 @@ import java.util.List;
 
 public class GridContainerImpl extends Split implements GridContainerView, HasNavigation, HasSearch {
 
-  public static int minPagingRows = 20;
-  public static int minSearchRows = 2;
+  public static Integer minPagingRows = 20;
+  public static Integer minSearchRows = 2;
 
-  public static int defaultPageSize = 15;
+  public static Integer defaultPageSize = 15;
 
   private Presenter viewPresenter = null;
 
@@ -78,29 +80,39 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     }
   }
 
-  public void create(String caption, List<BeeColumn> dataColumns, int rowCount, BeeRowSet rowSet) {
-    hasPaging = rowCount >= minPagingRows;
-    hasSearch = rowCount >= minSearchRows;
+  public void create(String caption, List<BeeColumn> dataColumns, int rowCount, BeeRowSet rowSet,
+      BeeGrid descr) {
+    int minRows = BeeUtils.unbox((descr == null) ? minPagingRows : descr.getPagingThreshold());
+    setHasPaging(rowCount >= minRows);
 
-    int pageSize = hasPaging ? defaultPageSize : rowCount;
+    minRows = BeeUtils.unbox((descr == null) ? minSearchRows : descr.getSearchThreshold());
+    setHasSearch(rowCount >= minRows);
+    
+    int pageSize;
+    if (hasPaging()) {
+      pageSize = BeeUtils.unbox((descr == null) ? defaultPageSize : descr.getPageSize());
+      pageSize = Math.max(pageSize, 1);
+    } else {
+      pageSize = rowCount;
+    }
 
     DataHeaderView header = new DataHeaderImpl();
     header.create(caption);
 
     GridView content = new CellGridImpl();
-    content.create(dataColumns, rowCount, rowSet);
+    content.create(dataColumns, rowCount, rowSet, descr, hasSearch());
 
     DataFooterView footer;
     ScrollPager scroller;
 
-    if (hasPaging || hasSearch) {
+    if (hasPaging() || hasSearch()) {
       footer = new DataFooterImpl();
-      footer.create(rowCount, pageSize, hasPaging, hasSearch);
+      footer.create(rowCount, pageSize, hasPaging(), hasSearch());
     } else {
       footer = null;
     }
 
-    if (hasPaging) {
+    if (hasPaging()) {
       scroller = new ScrollPager();
     } else {
       scroller = null;
@@ -169,7 +181,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
   }
 
   public Collection<PagerView> getPagers() {
-    if (hasPaging) {
+    if (hasPaging()) {
       return ViewHelper.getPagers(this);
     } else {
       return null;
@@ -193,7 +205,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
   }
 
   public Collection<SearchView> getSearchers() {
-    if (hasSearch) {
+    if (hasSearch()) {
       return ViewHelper.getSearchers(this);
     } else {
       return null;
@@ -318,7 +330,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     GridView content = getContent();
     Assert.notNull(content);
 
-    if (hasPaging) {
+    if (hasPaging()) {
       int w = getElement().getClientWidth();
       int h = getElement().getClientHeight();
 
@@ -376,8 +388,24 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     }
   }
 
+  private boolean hasPaging() {
+    return hasPaging;
+  }
+
+  private boolean hasSearch() {
+    return hasSearch;
+  }
+
+  private void setHasPaging(boolean hasPaging) {
+    this.hasPaging = hasPaging;
+  }
+
+  private void setHasSearch(boolean hasSearch) {
+    this.hasSearch = hasSearch;
+  }
+
   private void updatePageSize(GridView content, int pageSize, boolean init) {
-    if (content != null && pageSize > 0 && hasPaging) {
+    if (content != null && pageSize > 0 && hasPaging()) {
       content.updatePageSize(pageSize, init);
     }
   }

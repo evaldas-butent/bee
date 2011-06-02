@@ -36,7 +36,7 @@ class GridService extends CompositeService {
     final Panel destination = (Panel) params[0];
     String grd = (String) params[1];
 
-    BeeKeeper.getRpc().makePostRequest(Service.GET_GRID,
+    BeeKeeper.getRpc().makePostRequest(Service.GET_X_GRID,
         XmlUtils.createString(Service.XML_TAG_DATA, "grid_name",
             grd.replaceFirst("['\\[\"](\\w+)['\\]\"][,].*", "$1")),
         new ResponseCallback() {

@@ -1,15 +1,20 @@
 package com.butent.bee.client.grid;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.gwt.cell.client.Cell;
 import com.google.gwt.cell.client.EditTextCell;
 import com.google.gwt.cell.client.TextCell;
 import com.google.gwt.cell.client.TextInputCell;
+import com.google.gwt.core.client.Callback;
+import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.TextHeader;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.view.client.MultiSelectionModel;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.CachedProvider;
 import com.butent.bee.client.data.KeyProvider;
 import com.butent.bee.client.dom.DomUtils;
@@ -21,22 +26,31 @@ import com.butent.bee.client.grid.render.FixedWidthGridBulkRenderer;
 import com.butent.bee.client.view.grid.CellGrid;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Service;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.IsTable;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.ui.BeeGrid;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
+import com.butent.bee.shared.utils.Property;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Creates simple and scroll grid objects for usage in the user interface.
  */
 
 public class GridFactory {
+
+  public interface GridCallback extends Callback<BeeGrid, String[]> {
+  }
 
   /**
    * Sets id and order for scroll grid columns.
@@ -117,7 +131,9 @@ public class GridFactory {
     }
   }
 
-  public static Widget cellGrid(Object data, CellType cellType, String... columnLabels) {
+  private static final Map<String, BeeGrid> gridCache = Maps.newHashMap();
+
+  public static Widget cellTable(Object data, CellType cellType, String... columnLabels) {
     Assert.notNull(data);
 
     IsTable<?, ?> table = DataUtils.createTable(data, columnLabels);
@@ -145,11 +161,15 @@ public class GridFactory {
 
     MultiSelectionModel<IsRow> selector = new MultiSelectionModel<IsRow>(new KeyProvider());
     grid.setSelectionModel(selector);
-    
+
     grid.setRowCount(r, true);
     grid.setRowData(table.getRows().getList());
 
     return grid;
+  }
+
+  public static void clearCache() {
+    gridCache.clear();
   }
 
   public static CellColumn<?> createColumn(IsColumn dataColumn, int index) {
@@ -180,6 +200,34 @@ public class GridFactory {
       default:
         return new TextColumn(index, dataColumn);
     }
+  }
+
+  public static void getGrid(String name, GridCallback callback) {
+    getGrid(name, callback, false);
+  }
+
+  public static void getGrid(final String name, final GridCallback callback, boolean reload) {
+    Assert.notEmpty(name);
+    Assert.notNull(callback);
+
+    if (!reload && isGridCached(name)) {
+      callback.onSuccess(gridCache.get(gridKey(name)));
+      return;
+    }
+
+    BeeKeeper.getRpc().sendText(Service.GET_GRID, name, new ResponseCallback() {
+      public void onResponse(JsArrayString respArr) {
+        if (respArr.length() >= 2
+            && BeeUtils.same(respArr.get(1), BeeUtils.getClassName(BeeGrid.class))) {
+          BeeGrid grd = BeeGrid.restore(respArr.get(0));
+          callback.onSuccess(grd);
+          gridCache.put(gridKey(name), grd);
+        } else {
+          callback.onFailure(Codec.beeDeserialize(respArr.get(0)));
+          gridCache.put(gridKey(name), null);
+        }
+      }
+    });
   }
 
   public static Widget scrollGrid(int width, Object data, String... columnLabels) {
@@ -225,6 +273,36 @@ public class GridFactory {
     return grid;
   }
 
+  public static void showGridInfo(String name) {
+    if (gridCache.isEmpty()) {
+      BeeKeeper.getLog().warning("grid cache is empty");
+      return;
+    }
+
+    if (!BeeUtils.isEmpty(name)) {
+      if (isGridCached(name)) {
+        BeeGrid grid = gridCache.get(gridKey(name));
+        if (grid != null) {
+          BeeKeeper.getUi().showGrid(grid.getInfo());
+          return;
+        } else {
+          BeeKeeper.getLog().warning("grid", name, "was not found");
+        }
+      } else {
+        BeeKeeper.getLog().warning("grid", name, "not in cache");
+      }
+    }
+
+    List<Property> info = Lists.newArrayList();
+    for (Map.Entry<String, BeeGrid> entry : gridCache.entrySet()) {
+      BeeGrid grid = entry.getValue();
+      String cc = (grid == null) ? BeeConst.STRING_MINUS : BeeUtils.toString(grid.getColumnCount());
+      info.add(new Property(entry.getKey(), cc));
+    }
+
+    BeeKeeper.getUi().showGrid(info, "Grid Name", "Column Count");
+  }
+
   public static Widget simpleGrid(Object data, String... columnLabels) {
     Assert.notNull(data);
 
@@ -246,7 +324,7 @@ public class GridFactory {
     String id = "row-id";
     grid.addColumn(id, -1, idColumn, new TextHeader("Id"));
     grid.setColumnWidth(id, 40);
-    
+
     CellColumn<?> column;
     for (int i = 0; i < c; i++) {
       column = createColumn(table.getColumn(i), i);
@@ -263,10 +341,11 @@ public class GridFactory {
     grid.estimateHeaderWidths();
 
     grid.setRowData(table.getRows().getList());
+    grid.setReadOnly(true);
 
     return grid;
   }
-
+  
   private static Cell<String> createCell(CellType type) {
     Cell<String> cell;
 
@@ -281,6 +360,18 @@ public class GridFactory {
         cell = new TextCell();
     }
     return cell;
+  }
+  
+  private static String gridKey(String name) {
+    Assert.notEmpty(name);
+    return name.trim().toLowerCase();
+  }
+
+  private static boolean isGridCached(String name) {
+    if (BeeUtils.isEmpty(name)) {
+      return false;
+    }
+    return gridCache.containsKey(gridKey(name));
   }
 
   private GridFactory() {

@@ -92,9 +92,9 @@ public class GridColumn implements BeeSerializable, HasInfo {
 
   private Calculation calc = null;
 
-  private Style headerStyle = null;
-  private Style bodyStyle = null;
-  private Style footerStyle = null;
+  private StyleDeclaration headerStyle = null;
+  private StyleDeclaration bodyStyle = null;
+  private StyleDeclaration footerStyle = null;
 
   private Collection<ConditionalStyle> dynStyles = null;
 
@@ -189,7 +189,7 @@ public class GridColumn implements BeeSerializable, HasInfo {
           setVisible(BeeUtils.toBooleanOrNull(value));
           break;
         case BODY_STYLE:
-          setBodyStyle(Style.restore(value));
+          setBodyStyle(StyleDeclaration.restore(value));
           break;
         case DYN_STYLES:
           if (BeeUtils.isEmpty(value)) {
@@ -204,10 +204,10 @@ public class GridColumn implements BeeSerializable, HasInfo {
           }
           break;
         case FOOTER_STYLE:
-          setFooterStyle(Style.restore(value));
+          setFooterStyle(StyleDeclaration.restore(value));
           break;
         case HEADER_STYLE:
-          setHeaderStyle(Style.restore(value));
+          setHeaderStyle(StyleDeclaration.restore(value));
           break;
       }
     }
@@ -237,7 +237,7 @@ public class GridColumn implements BeeSerializable, HasInfo {
         "Min Value", getMinValue(),
         "Max Value", getMaxValue(),
         "Step Value", getStepValue(),
-        "Calc", getCalc());
+        "Editor", getEditor());
 
     if (getValidation() != null) {
       PropertyUtils.appendChildrenToProperties(info, "Validation", getValidation().getInfo());
@@ -389,7 +389,7 @@ public class GridColumn implements BeeSerializable, HasInfo {
     return Codec.beeSerializeAll(arr);
   }
 
-  public void setBodyStyle(Style bodyStyle) {
+  public void setBodyStyle(StyleDeclaration bodyStyle) {
     this.bodyStyle = bodyStyle;
   }
 
@@ -417,7 +417,7 @@ public class GridColumn implements BeeSerializable, HasInfo {
     this.editor = editor;
   }
 
-  public void setFooterStyle(Style footerStyle) {
+  public void setFooterStyle(StyleDeclaration footerStyle) {
     this.footerStyle = footerStyle;
   }
 
@@ -429,7 +429,7 @@ public class GridColumn implements BeeSerializable, HasInfo {
     this.hasFooter = hasFooter;
   }
 
-  public void setHeaderStyle(Style headerStyle) {
+  public void setHeaderStyle(StyleDeclaration headerStyle) {
     this.headerStyle = headerStyle;
   }
 
@@ -489,7 +489,7 @@ public class GridColumn implements BeeSerializable, HasInfo {
     this.width = width;
   }
 
-  private Style getBodyStyle() {
+  private StyleDeclaration getBodyStyle() {
     return bodyStyle;
   }
 
@@ -513,7 +513,7 @@ public class GridColumn implements BeeSerializable, HasInfo {
     return editor;
   }
 
-  private Style getFooterStyle() {
+  private StyleDeclaration getFooterStyle() {
     return footerStyle;
   }
 
@@ -521,7 +521,7 @@ public class GridColumn implements BeeSerializable, HasInfo {
     return format;
   }
 
-  private Style getHeaderStyle() {
+  private StyleDeclaration getHeaderStyle() {
     return headerStyle;
   }
 

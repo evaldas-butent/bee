@@ -174,6 +174,10 @@ public class Config {
   }
 
   public static String getPath(String resource) {
+    return getPath(resource, true);
+  }
+  
+  public static String getPath(String resource, boolean warn) {
     Assert.notEmpty(resource);
 
     String path = getUserPath(resource);
@@ -181,7 +185,7 @@ public class Config {
       path = getConfigPath(resource);
     }
 
-    if (BeeUtils.isEmpty(path)) {
+    if (warn && BeeUtils.isEmpty(path)) {
       LogUtils.warning(logger, resource, "resource not found");
     }
     return path;

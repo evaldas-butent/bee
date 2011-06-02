@@ -2,6 +2,7 @@ package com.butent.bee.shared.communication;
 
 import com.google.common.collect.Lists;
 
+import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
@@ -32,6 +33,7 @@ public class ResponseObject {
 
   private Collection<ResponseMessage> messages = Lists.newArrayList();
   private Object response = null;
+  private String type = null;
 
   public ResponseObject addError(Object... err) {
     messages.add(new ResponseMessage(Level.SEVERE, BeeUtils.concat(1, err)));
@@ -69,6 +71,10 @@ public class ResponseObject {
     return response;
   }
 
+  public String getType() {
+    return type;
+  }
+
   public String[] getWarnings() {
     return getMessageArray(Level.WARNING);
   }
@@ -87,6 +93,16 @@ public class ResponseObject {
 
   public ResponseObject setResponse(Object response) {
     this.response = response;
+    return this;
+  }
+
+  public ResponseObject setType(Class<?> clazz) {
+    Assert.notNull(clazz);
+    return setType(BeeUtils.getClassName(clazz));
+  }
+  
+  public ResponseObject setType(String type) {
+    this.type = type;
     return this;
   }
 

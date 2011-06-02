@@ -1272,6 +1272,10 @@ public class BeeUtils {
       return isEmpty(x);
     }
   }
+  
+  public static boolean isFalse(Boolean b) {
+    return Boolean.FALSE.equals(b);
+  }
 
   /**
    * Checks if the specified character contains only Hex digits.
@@ -1518,7 +1522,7 @@ public class BeeUtils {
     if (obj == null) {
       return false;
     } else if (obj instanceof Boolean) {
-      return (Boolean) obj;
+      return Boolean.TRUE.equals(obj);
     } else {
       return false;
     }

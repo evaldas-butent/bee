@@ -37,7 +37,7 @@ public class GridComponent implements BeeSerializable, HasInfo {
     return component;
   }
 
-  private Style style = null;
+  private StyleDeclaration style = null;
 
   private Integer height = null;
   private Integer minHeight = null;
@@ -47,7 +47,11 @@ public class GridComponent implements BeeSerializable, HasInfo {
   private String borderWidth = null;
   private String margin = null;
 
-  public GridComponent(Style style, Map<String, String> attributes) {
+  public GridComponent(Integer height) {
+    setHeight(height);
+  }
+  
+  public GridComponent(StyleDeclaration style, Map<String, String> attributes) {
     setStyle(style);
     setAttributes(attributes);
   }
@@ -63,7 +67,7 @@ public class GridComponent implements BeeSerializable, HasInfo {
     for (int i = 0; i < members.length; i++) {
       switch (members[i]) {
         case STYLE:
-          setStyle(Style.restore(arr[i]));
+          setStyle(StyleDeclaration.restore(arr[i]));
           break;
         case HEIGHT:
           setHeight(BeeUtils.toIntOrNull(arr[i]));
@@ -87,6 +91,14 @@ public class GridComponent implements BeeSerializable, HasInfo {
     }
   }
 
+  public String getBorderWidth() {
+    return borderWidth;
+  }
+
+  public Integer getHeight() {
+    return height;
+  }
+
   public List<Property> getInfo() {
     List<Property> info = Lists.newArrayList();
     if (getStyle() != null) {
@@ -99,6 +111,26 @@ public class GridComponent implements BeeSerializable, HasInfo {
     
     PropertyUtils.addWhenEmpty(info, getClass());
     return info;
+  }
+  
+  public String getMargin() {
+    return margin;
+  }
+
+  public Integer getMaxHeight() {
+    return maxHeight;
+  }
+
+  public Integer getMinHeight() {
+    return minHeight;
+  }
+
+  public String getPadding() {
+    return padding;
+  }
+
+  public StyleDeclaration getStyle() {
+    return style;
   }
 
   public boolean isEmpty() {
@@ -138,7 +170,7 @@ public class GridComponent implements BeeSerializable, HasInfo {
     }
     return Codec.beeSerializeAll(arr);
   }
-  
+
   public void setAttributes(Map<String, String> attributes) {
     if (attributes == null || attributes.isEmpty()) {
       return;
@@ -167,36 +199,8 @@ public class GridComponent implements BeeSerializable, HasInfo {
     }
   }
 
-  public void setStyle(Style style) {
+  public void setStyle(StyleDeclaration style) {
     this.style = style;
-  }
-
-  private String getBorderWidth() {
-    return borderWidth;
-  }
-
-  private Integer getHeight() {
-    return height;
-  }
-
-  private String getMargin() {
-    return margin;
-  }
-
-  private Integer getMaxHeight() {
-    return maxHeight;
-  }
-
-  private Integer getMinHeight() {
-    return minHeight;
-  }
-
-  private String getPadding() {
-    return padding;
-  }
-
-  private Style getStyle() {
-    return style;
   }
 
   private void setBorderWidth(String borderWidth) {

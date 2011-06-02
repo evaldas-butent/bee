@@ -16,7 +16,7 @@ import com.butent.bee.shared.utils.BeeUtils;
  */
 
 public class Edges {
-
+  
   /**
    * Lists all possible edges on the screen.
    */
@@ -72,19 +72,28 @@ public class Edges {
     }
     return BeeUtils.isPositive(edges.getRightValue());
   }
-  
+
   public static boolean hasPositiveTop(Edges edges) {
     if (edges == null) {
       return false;
     }
     return BeeUtils.isPositive(edges.getTopValue());
   }
-
+  
   public static boolean hasPositiveVerticalValue(Edges edges) {
     if (edges == null) {
       return false;
     }
     return BeeUtils.isPositive(edges.getTopValue()) || BeeUtils.isPositive(edges.getBottomValue());
+  }
+
+  public static Edges parse(String s) {
+    if (BeeUtils.isEmpty(s)) {
+      return null;
+    }
+    Edges edges = new Edges();
+    edges.setFromCssLength(s.trim());
+    return edges;
   }
 
   private Unit bottomUnit = null;
@@ -102,32 +111,16 @@ public class Edges {
   public Edges() {
   }
 
-  public Edges(int value) {
-    this((double) value);
-  }
-
   public Edges(Double value) {
     this(value, DEFAULT_UNIT);
-  }
-
-  public Edges(int verticalValue, int horizontalValue) {
-    this((double) verticalValue, (double) horizontalValue);
   }
 
   public Edges(Double verticalValue, Double horizontalValue) {
     this(verticalValue, DEFAULT_UNIT, horizontalValue, DEFAULT_UNIT);
   }
 
-  public Edges(int topValue, int horizontalValue, int bottomValue) {
-    this((double) topValue, (double) horizontalValue, (double) bottomValue);
-  }
-
   public Edges(Double topValue, Double horizontalValue, Double bottomValue) {
     this(topValue, DEFAULT_UNIT, horizontalValue, DEFAULT_UNIT, bottomValue, DEFAULT_UNIT);
-  }
-
-  public Edges(int topValue, int rightValue, int bottomValue, int leftValue) {
-    this((double) topValue, (double) rightValue, (double) bottomValue, (double) leftValue);
   }
 
   public Edges(Double topValue, Double rightValue, Double bottomValue, Double leftValue) {
@@ -167,6 +160,22 @@ public class Edges {
     this();
     Assert.notNull(element);
     setFromStyleProperty(element.getStyle(), propertyName);
+  }
+
+  public Edges(int value) {
+    this((double) value);
+  }
+
+  public Edges(int verticalValue, int horizontalValue) {
+    this((double) verticalValue, (double) horizontalValue);
+  }
+
+  public Edges(int topValue, int horizontalValue, int bottomValue) {
+    this((double) topValue, (double) horizontalValue, (double) bottomValue);
+  }
+
+  public Edges(int topValue, int rightValue, int bottomValue, int leftValue) {
+    this((double) topValue, (double) rightValue, (double) bottomValue, (double) leftValue);
   }
 
   public Edges(Style style, String propertyName) {
@@ -330,10 +339,6 @@ public class Edges {
         && getBottomValue() == null;
   }
 
-  public void setBottom(int value) {
-    setBottom((double) value);
-  }
-
   public void setBottom(Double value) {
     setBottom(value, DEFAULT_UNIT);
   }
@@ -346,6 +351,10 @@ public class Edges {
   public void setBottom(Edges edges) {
     Assert.notNull(edges);
     setBottom(edges.getBottomValue(), edges.getBottomUnit());
+  }
+
+  public void setBottom(int value) {
+    setBottom((double) value);
   }
 
   public void setBottomUnit(Unit bottomUnit) {
@@ -379,10 +388,6 @@ public class Edges {
     }
   }
 
-  public void setLeft(int value) {
-    setLeft((double) value);
-  }
-
   public void setLeft(Double value) {
     setLeft(value, DEFAULT_UNIT);
   }
@@ -397,16 +402,16 @@ public class Edges {
     setLeft(edges.getLeftValue(), edges.getLeftUnit());
   }
 
+  public void setLeft(int value) {
+    setLeft((double) value);
+  }
+
   public void setLeftUnit(Unit leftUnit) {
     this.leftUnit = leftUnit;
   }
 
   public void setLeftValue(Double leftValue) {
     this.leftValue = leftValue;
-  }
-
-  public void setRight(int value) {
-    setRight((double) value);
   }
 
   public void setRight(Double value) {
@@ -423,6 +428,10 @@ public class Edges {
     setRight(edges.getRightValue(), edges.getRightUnit());
   }
 
+  public void setRight(int value) {
+    setRight((double) value);
+  }
+
   public void setRightUnit(Unit rightUnit) {
     this.rightUnit = rightUnit;
   }
@@ -431,12 +440,13 @@ public class Edges {
     this.rightValue = rightValue;
   }
 
-  public void setTop(int value) {
-    setTop((double) value);
-  }
-
   public void setTop(Double value) {
     setTop(value, DEFAULT_UNIT);
+  }
+
+  public void setTop(Double value, Unit unit) {
+    setTopValue(value);
+    setTopUnit(unit);
   }
 
   public void setTop(Edges edges) {
@@ -444,9 +454,8 @@ public class Edges {
     setTop(edges.getTopValue(), edges.getTopUnit());
   }
 
-  public void setTop(Double value, Unit unit) {
-    setTopValue(value);
-    setTopUnit(unit);
+  public void setTop(int value) {
+    setTop((double) value);
   }
 
   public void setTopUnit(Unit topUnit) {
@@ -457,16 +466,12 @@ public class Edges {
     this.topValue = topValue;
   }
 
-  private void setFromStyleProperty(Style style, String propertyName) {
-    Assert.notNull(style);
-    Assert.notEmpty(propertyName);
-
-    String value = style.getProperty(propertyName);
-    if (BeeUtils.isEmpty(value)) {
+  private void setFromCssLength(String s) {
+    if (BeeUtils.isEmpty(s)) {
       return;
     }
 
-    if (BeeUtils.same(value, EMPTY_CSS_VALUE)) {
+    if (BeeUtils.same(s, EMPTY_CSS_VALUE)) {
       setTop(0);
       setRight(0);
       setBottom(0);
@@ -475,7 +480,7 @@ public class Edges {
     }
 
     int cnt = 0;
-    for (String cssLength : CSS_SPLITTER.split(value)) {
+    for (String cssLength : CSS_SPLITTER.split(s)) {
       Pair<Double, Unit> pair = StyleUtils.parseCssLength(cssLength);
       Double v = pair.getA();
       Unit u = pair.getB();
@@ -494,7 +499,7 @@ public class Edges {
           setLeft(v, u);
           break;
         default:
-          Assert.untouchable(value);
+          Assert.untouchable("Edges - illegal css length: " + s);
           return;
       }
       cnt++;
@@ -516,5 +521,12 @@ public class Edges {
           break;
       }
     }
+  }
+
+  private void setFromStyleProperty(Style style, String propertyName) {
+    Assert.notNull(style);
+    Assert.notEmpty(propertyName);
+
+    setFromCssLength(style.getProperty(propertyName));
   }
 }

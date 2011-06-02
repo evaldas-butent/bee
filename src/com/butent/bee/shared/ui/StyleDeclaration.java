@@ -12,32 +12,36 @@ import com.butent.bee.shared.utils.PropertyUtils;
 
 import java.util.List;
 
-public class Style implements BeeSerializable, HasInfo {
+public class StyleDeclaration implements BeeSerializable, HasInfo {
   
   public static final String TAG_CLASS = "class";
   public static final String TAG_INLINE = "inline";
   public static final String TAG_FONT = "font";
   
-  public static Style restore(String s) {
+  public static StyleDeclaration restore(String s) {
     if (BeeUtils.isEmpty(s)) {
       return null;
     }
-    Style style = new Style();
+    StyleDeclaration style = new StyleDeclaration();
     style.deserialize(s);
     return style;
   }
   
   private String className = null;
   private String inline = null;
-  private String font = null;
+  private String fontDeclaration = null;
   
-  public Style(String className, String inline, String font) {
-    this.className = className;
-    this.inline = inline;
-    this.font = font;
+  public StyleDeclaration(String className) {
+    this(className, null, null);
   }
 
-  private Style() {
+  public StyleDeclaration(String className, String inline, String fontDeclaration) {
+    this.className = className;
+    this.inline = inline;
+    setFontDeclaration(fontDeclaration);
+  }
+
+  private StyleDeclaration() {
   }
 
   public void deserialize(String s) {
@@ -46,7 +50,15 @@ public class Style implements BeeSerializable, HasInfo {
     
     setClassName(arr[0]);
     setInline(arr[1]);
-    setFont(arr[2]);
+    setFontDeclaration(arr[2]);
+  }
+
+  public String getClassName() {
+    return className;
+  }
+
+  public String getFontDeclaration() {
+    return fontDeclaration;
   }
 
   public List<Property> getInfo() {
@@ -63,38 +75,30 @@ public class Style implements BeeSerializable, HasInfo {
     if (!BeeUtils.isEmpty(getInline())) {
       info.add(new Property("Inline", getInline()));
     }
-    if (!BeeUtils.isEmpty(getFont())) {
-      info.add(new Property("Font", getFont()));
+    if (!BeeUtils.isEmpty(getFontDeclaration())) {
+      info.add(new Property("Font Declaration", getFontDeclaration()));
     }
     return info;
   }
 
+  public String getInline() {
+    return inline;
+  }
+
   public boolean isEmpty() {
-    return BeeUtils.allEmpty(getClassName(), getInline(), getFont());
+    return BeeUtils.allEmpty(getClassName(), getInline(), getFontDeclaration());
   }
 
   public String serialize() {
-    return Codec.beeSerializeAll(getClassName(), getInline(), getFont());
+    return Codec.beeSerializeAll(getClassName(), getInline(), getFontDeclaration());
   }
 
-  private String getClassName() {
-    return className;
-  }
-
-  private String getFont() {
-    return font;
-  }
-
-  private String getInline() {
-    return inline;
+  protected void setFontDeclaration(String fontDeclaration) {
+    this.fontDeclaration = fontDeclaration;
   }
 
   private void setClassName(String className) {
     this.className = className;
-  }
-
-  private void setFont(String font) {
-    this.font = font;
   }
   
   private void setInline(String inline) {

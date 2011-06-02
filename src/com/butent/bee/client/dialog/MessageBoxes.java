@@ -160,7 +160,7 @@ public class MessageBoxes {
 
   public void showGrid(String cap, Object data, String... columnLabels) {
     Assert.notNull(data);
-    showInfo(cap, Global.cellGrid(data, CellType.TEXT, columnLabels));
+    showInfo(cap, Global.cellTable(data, CellType.TEXT, columnLabels));
   }
 
   public void showInfo(Object... x) {

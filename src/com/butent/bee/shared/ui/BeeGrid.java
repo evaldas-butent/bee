@@ -27,7 +27,7 @@ public class BeeGrid implements BeeSerializable, HasExtendedInfo {
 
   private enum SerializationMember {
     NAME, VIEW, CAPTION, READONLY, HAS_HEADERS, HAS_FOOTERS,
-    ASYNC_THRESHOLD, PAGING_THRESHOLD, SEARCH_THRESHOLD,
+    ASYNC_THRESHOLD, PAGING_THRESHOLD, SEARCH_THRESHOLD, PAGE_SIZE,
     NEW_ROW_COLUMNS, SHOW_COLUMN_WIDTHS,
     HEADER, BODY, FOOTER,
     ROW_STYLES, ROW_MESSAGE, ROW_EDITABLE,
@@ -35,6 +35,9 @@ public class BeeGrid implements BeeSerializable, HasExtendedInfo {
   }
 
   public static BeeGrid restore(String s) {
+    if (BeeUtils.isEmpty(s)) {
+      return null;
+    }
     BeeGrid grid = new BeeGrid();
     grid.deserialize(s);
     return grid;
@@ -47,9 +50,13 @@ public class BeeGrid implements BeeSerializable, HasExtendedInfo {
 
   private Boolean hasHeaders = null;
   private Boolean hasFooters = null;
+  
   private Integer asyncThreshold = null;
   private Integer pagingThreshold = null;
   private Integer searchThreshold = null;
+  
+  private Integer pageSize = null;
+
   private String newRowColumns = null;
   private Boolean showColumnWidths = null;
 
@@ -88,8 +95,6 @@ public class BeeGrid implements BeeSerializable, HasExtendedInfo {
 
   @Override
   public void deserialize(String s) {
-    Assert.isTrue(isEmpty());
-
     SerializationMember[] members = SerializationMember.values();
     String[] arr = Codec.beeDeserialize(s);
     Assert.lengthEquals(arr, members.length);
@@ -146,6 +151,9 @@ public class BeeGrid implements BeeSerializable, HasExtendedInfo {
         case NEW_ROW_COLUMNS:
           setNewRowColumns(value);
           break;
+        case PAGE_SIZE:
+          setPageSize(BeeUtils.toIntOrNull(value));
+          break;
         case PAGING_THRESHOLD:
           setPagingThreshold(BeeUtils.toIntOrNull(value));
           break;
@@ -176,8 +184,32 @@ public class BeeGrid implements BeeSerializable, HasExtendedInfo {
     }
   }
 
+  public Integer getAsyncThreshold() {
+    return asyncThreshold;
+  }
+
+  public GridComponent getBody() {
+    return body;
+  }
+
+  public String getCaption() {
+    return caption;
+  }
+
   public int getColumnCount() {
     return getColumns().size();
+  }
+
+  public Map<String, GridColumn> getColumns() {
+    return columns;
+  }
+
+  public GridComponent getFooter() {
+    return footer;
+  }
+
+  public GridComponent getHeader() {
+    return header;
   }
 
   public List<ExtendedProperty> getInfo() {
@@ -193,6 +225,7 @@ public class BeeGrid implements BeeSerializable, HasExtendedInfo {
         "Async Threshold", getAsyncThreshold(),
         "Paging Threshold", getPagingThreshold(),
         "Search Threshold", getSearchThreshold(),
+        "Page Size", getPageSize(),
         "New Row Columns", getNewRowColumns(),
         "Show Column Widths", showColumnWidths(),
         "Min Column Width", getMinColumnWidth(),
@@ -240,16 +273,64 @@ public class BeeGrid implements BeeSerializable, HasExtendedInfo {
     return info;
   }
 
+  public Integer getMaxColumnWidth() {
+    return maxColumnWidth;
+  }
+
+  public Integer getMinColumnWidth() {
+    return minColumnWidth;
+  }
+
   public String getName() {
     return name;
+  }
+
+  public String getNewRowColumns() {
+    return newRowColumns;
+  }
+
+  public Integer getPageSize() {
+    return pageSize;
+  }
+
+  public Integer getPagingThreshold() {
+    return pagingThreshold;
+  }
+
+  public Calculation getRowEditable() {
+    return rowEditable;
+  }
+
+  public Calculation getRowMessage() {
+    return rowMessage;
+  }
+
+  public Collection<ConditionalStyle> getRowStyles() {
+    return rowStyles;
+  }
+
+  public Integer getSearchThreshold() {
+    return searchThreshold;
   }
 
   public boolean hasColumn(String colName) {
     return getColumns().containsKey(columnKey(colName));
   }
 
+  public Boolean hasFooters() {
+    return hasFooters;
+  }
+
+  public Boolean hasHeaders() {
+    return hasHeaders;
+  }
+
   public boolean isEmpty() {
     return getColumnCount() <= 0;
+  }
+
+  public Boolean isReadOnly() {
+    return readOnly;
   }
 
   @Override
@@ -301,6 +382,9 @@ public class BeeGrid implements BeeSerializable, HasExtendedInfo {
           break;
         case NEW_ROW_COLUMNS:
           arr[i++] = getNewRowColumns();
+          break;
+        case PAGE_SIZE:
+          arr[i++] = getPageSize();
           break;
         case PAGING_THRESHOLD:
           arr[i++] = getPagingThreshold();
@@ -365,6 +449,10 @@ public class BeeGrid implements BeeSerializable, HasExtendedInfo {
     this.newRowColumns = newRowColumns;
   }
 
+  public void setPageSize(Integer pageSize) {
+    this.pageSize = pageSize;
+  }
+
   public void setPagingThreshold(Integer pagingThreshold) {
     this.pagingThreshold = pagingThreshold;
   }
@@ -393,81 +481,17 @@ public class BeeGrid implements BeeSerializable, HasExtendedInfo {
     this.showColumnWidths = showColumnWidths;
   }
 
+  public Boolean showColumnWidths() {
+    return showColumnWidths;
+  }
+
   private String columnKey(String colName) {
     Assert.notEmpty(colName);
     return colName.trim().toLowerCase();
   }
 
-  private Integer getAsyncThreshold() {
-    return asyncThreshold;
-  }
-
-  private GridComponent getBody() {
-    return body;
-  }
-
-  private String getCaption() {
-    return caption;
-  }
-
-  private Map<String, GridColumn> getColumns() {
-    return columns;
-  }
-
-  private GridComponent getFooter() {
-    return footer;
-  }
-
-  private GridComponent getHeader() {
-    return header;
-  }
-
-  private Integer getMaxColumnWidth() {
-    return maxColumnWidth;
-  }
-
-  private Integer getMinColumnWidth() {
-    return minColumnWidth;
-  }
-
-  private String getNewRowColumns() {
-    return newRowColumns;
-  }
-
-  private Integer getPagingThreshold() {
-    return pagingThreshold;
-  }
-
-  private Calculation getRowEditable() {
-    return rowEditable;
-  }
-
-  private Calculation getRowMessage() {
-    return rowMessage;
-  }
-
-  private Collection<ConditionalStyle> getRowStyles() {
-    return rowStyles;
-  }
-
-  private Integer getSearchThreshold() {
-    return searchThreshold;
-  }
-
   private String getViewName() {
     return viewName;
-  }
-
-  private Boolean hasFooters() {
-    return hasFooters;
-  }
-
-  private Boolean hasHeaders() {
-    return hasHeaders;
-  }
-
-  private Boolean isReadOnly() {
-    return readOnly;
   }
 
   private void setName(String name) {
@@ -476,9 +500,5 @@ public class BeeGrid implements BeeSerializable, HasExtendedInfo {
 
   private void setViewName(String viewName) {
     this.viewName = viewName;
-  }
-
-  private Boolean showColumnWidths() {
-    return showColumnWidths;
   }
 }
