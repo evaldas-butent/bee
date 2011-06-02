@@ -130,7 +130,7 @@ public class UiServiceBean {
   private ResponseObject commitChanges(RequestInfo reqInfo) {
     ResponseObject response = sys.commitChanges(BeeRowSet.restore(reqInfo.getContent()));
 
-    if (response.hasError()) {
+    if (response.hasErrors()) {
       ctx.setRollbackOnly();
     }
     return response;
@@ -163,7 +163,7 @@ public class UiServiceBean {
             break;
 
           default:
-            cnt++;
+            cnt += res;
             break;
         }
       }

@@ -35,8 +35,10 @@ import org.w3c.dom.Notation;
 import org.w3c.dom.ProcessingInstruction;
 import org.w3c.dom.Text;
 import org.w3c.dom.TypeInfo;
+import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
 import java.io.File;
 import java.io.IOException;
@@ -66,7 +68,6 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
-import javax.xml.validation.Validator;
 
 /**
  * Manages XML configuration files used by the system.
@@ -134,7 +135,7 @@ public class XmlUtils {
     Document doc = createDocument(fl);
     return doc;
   }
-  
+
   public static Boolean getAttributeBoolean(Element element, String name) {
     Assert.notNull(element);
     Assert.notEmpty(name);
@@ -150,7 +151,7 @@ public class XmlUtils {
   public static Map<String, String> getAttributes(Node node) {
     Assert.notNull(node);
     Map<String, String> result = Maps.newHashMap();
-    
+
     NamedNodeMap attributes = node.getAttributes();
     if (attributes == null || attributes.getLength() <= 0) {
       return result;
@@ -167,7 +168,7 @@ public class XmlUtils {
   public static Property[][] getAttributesFromFile(String src, String tag) {
     return getAttributesFromFile(src, null, tag);
   }
-  
+
   public static Property[][] getAttributesFromFile(String src, String xsl, String tag) {
     Assert.notEmpty(src);
     Assert.notEmpty(tag);
@@ -226,7 +227,7 @@ public class XmlUtils {
         "To String", attr.toString());
     return lst;
   }
-  
+
   public static Calculation getCalculation(Element element) {
     Assert.notNull(element);
 
@@ -235,7 +236,7 @@ public class XmlUtils {
     if (BeeUtils.allEmpty(expr, func)) {
       return null;
     }
-    
+
     String typeCode = element.getAttribute(Calculation.ATTR_TYPE);
     return new Calculation(ValueType.getByTypeCode(typeCode), expr, func);
   }
@@ -243,14 +244,14 @@ public class XmlUtils {
   public static Calculation getCalculation(Element parent, String tagName) {
     Assert.notNull(parent);
     Assert.notEmpty(tagName);
-    
+
     Element element = getFirstChildElement(parent, tagName);
     if (element == null) {
       return null;
     }
     return getCalculation(element);
   }
-  
+
   public static List<Property> getCDATAInfo(CDATASection cdata) {
     Assert.notNull(cdata);
     List<Property> lst = new ArrayList<Property>();
@@ -260,22 +261,22 @@ public class XmlUtils {
         "Is Element Content Whitespace", cdata.isElementContentWhitespace());
     return lst;
   }
-  
+
   public static List<Element> getChildrenElements(Element parent) {
     Assert.notNull(parent);
     List<Element> result = Lists.newArrayList();
-    
+
     NodeList nodes = parent.getElementsByTagName(ALL_TAGS);
     if (nodes == null || nodes.getLength() <= 0) {
       return result;
     }
-    
+
     for (int i = 0; i < nodes.getLength(); i++) {
       result.add((Element) nodes.item(i));
     }
     return result;
   }
-  
+
   public static List<Property> getCommentInfo(Comment comm) {
     Assert.notNull(comm);
     List<Property> lst = new ArrayList<Property>();
@@ -296,18 +297,18 @@ public class XmlUtils {
     }
     return new ConditionalStyle(style, condition);
   }
-  
+
   public static ConditionalStyle getConditionalStyle(Element parent, String tagName) {
     Assert.notNull(parent);
     Assert.notEmpty(tagName);
-    
+
     Element element = getFirstChildElement(parent, tagName);
     if (element == null) {
       return null;
     }
     return getConditionalStyle(element);
   }
-  
+
   public static List<Property> getDocumentFragmentInfo(DocumentFragment df) {
     Assert.notNull(df);
     List<Property> lst = new ArrayList<Property>();
@@ -474,11 +475,11 @@ public class XmlUtils {
     }
     return getTreeInfo(doc, "0");
   }
-  
+
   public static Element getFirstChildElement(Element parent, String tagName) {
     Assert.notNull(parent);
     Assert.notEmpty(tagName);
-    
+
     NodeList children = parent.getElementsByTagName(tagName.trim());
     if (children == null || children.getLength() <= 0) {
       return null;
@@ -607,24 +608,24 @@ public class XmlUtils {
     String className = getTextQuietly(getFirstChildElement(element, Style.TAG_CLASS));
     String inline = getTextQuietly(getFirstChildElement(element, Style.TAG_INLINE));
     String font = getTextQuietly(getFirstChildElement(element, Style.TAG_FONT));
-    
+
     if (BeeUtils.allEmpty(className, inline, font)) {
       return null;
     }
     return new Style(className, inline, font);
   }
-  
+
   public static Style getStyle(Element parent, String tagName) {
     Assert.notNull(parent);
     Assert.notEmpty(tagName);
-    
+
     Element element = getFirstChildElement(parent, tagName);
     if (element == null) {
       return null;
     }
     return getStyle(element);
   }
-  
+
   public static String getText(String xml, String tag) {
     Assert.notEmpty(xml);
     Assert.notEmpty(tag);
@@ -666,7 +667,7 @@ public class XmlUtils {
         "To String", txt.toString());
     return lst;
   }
-  
+
   public static String getTextQuietly(Element element) {
     if (element == null) {
       return null;
@@ -747,23 +748,44 @@ public class XmlUtils {
     if (BeeUtils.isEmpty(resource) || !FileUtils.isInputFile(resource)) {
       return null;
     }
+    Document ret = null;
     String error = null;
-    SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+    SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+    DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
+    builderFactory.setNamespaceAware(true);
 
     try {
-      Schema schema = factory.newSchema(new StreamSource(resourceSchema));
-      Validator validator = schema.newValidator();
-      validator.validate(new StreamSource(resource));
+      Schema schema = schemaFactory.newSchema(new StreamSource(resourceSchema));
+      builderFactory.setSchema(schema);
+      DocumentBuilder builder = builderFactory.newDocumentBuilder();
+      builder.setErrorHandler(new ErrorHandler() {
+        @Override
+        public void error(SAXParseException exception) throws SAXException {
+          throw exception;
+        }
+
+        @Override
+        public void fatalError(SAXParseException exception) throws SAXException {
+          throw exception;
+        }
+
+        @Override
+        public void warning(SAXParseException exception) throws SAXException {
+          throw exception;
+        }
+      });
+      ret = builder.parse(new InputSource(resource));
     } catch (SAXException e) {
       error = e.getMessage();
     } catch (IOException e) {
       error = e.getMessage();
+    } catch (ParserConfigurationException e) {
+      error = e.getMessage();
     }
     if (!BeeUtils.isEmpty(error)) {
       LogUtils.severe(logger, resource, error);
-      return null;
     }
-    return XmlUtils.fromFileName(resource);
+    return ret;
   }
 
   public static List<Property> getXsltFactoryInfo() {

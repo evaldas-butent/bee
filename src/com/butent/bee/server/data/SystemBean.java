@@ -833,7 +833,7 @@ public class SystemBean {
         long id = 0;
         long version = System.currentTimeMillis();
 
-        if (!response.hasError()) {
+        if (!response.hasErrors()) {
           SqlInsert si = new SqlInsert(tblName);
 
           for (String col : baseUpdate.keySet()) {
@@ -847,7 +847,7 @@ public class SystemBean {
             response.addError("Error inserting data");
           }
         }
-        if (!response.hasError() && !BeeUtils.isEmpty(extUpdate)) {
+        if (!response.hasErrors() && !BeeUtils.isEmpty(extUpdate)) {
           int res = commitExtChanges(table, id, extUpdate, idxField, idxNewValue, false);
 
           if (res < 0) {
@@ -855,7 +855,7 @@ public class SystemBean {
           }
           c += res;
         }
-        if (!response.hasError() && !BeeUtils.isEmpty(translationUpdate)) {
+        if (!response.hasErrors() && !BeeUtils.isEmpty(translationUpdate)) {
           int res = commitTranslationChanges(table, id, translationUpdate,
                 idxField, idxLocale, idxNewValue, false);
 
@@ -864,7 +864,7 @@ public class SystemBean {
           }
           c += res;
         }
-        if (!response.hasError()) {
+        if (!response.hasErrors()) {
           BeeRow newRow = new BeeRow(id, version);
 
           if (returnAllFields) {
@@ -1031,7 +1031,7 @@ public class SystemBean {
         BeeRow newRow = new BeeRow(id, oldVersion);
         IsCondition wh = SqlUtils.equal(tblName, table.getIdName(), id);
 
-        if (!response.hasError() && !BeeUtils.isEmpty(extUpdate)) {
+        if (!response.hasErrors() && !BeeUtils.isEmpty(extUpdate)) {
           int res = commitExtChanges(table, id, extUpdate, idxField, idxNewValue, true);
 
           if (res < 0) {
@@ -1039,7 +1039,7 @@ public class SystemBean {
           }
           c += res;
         }
-        if (!response.hasError() && !BeeUtils.isEmpty(translationUpdate)) {
+        if (!response.hasErrors() && !BeeUtils.isEmpty(translationUpdate)) {
           int res = commitTranslationChanges(table, id, translationUpdate,
                 idxField, idxLocale, idxNewValue, true);
 
@@ -1048,7 +1048,7 @@ public class SystemBean {
           }
           c += res;
         }
-        if (!response.hasError() && !BeeUtils.isEmpty(baseUpdate)) {
+        if (!response.hasErrors() && !BeeUtils.isEmpty(baseUpdate)) {
           newRow.setVersion(System.currentTimeMillis());
 
           SqlUpdate su = new SqlUpdate(tblName)
@@ -1097,7 +1097,7 @@ public class SystemBean {
             response.addError("Optimistic lock exception");
           }
         }
-        if (!response.hasError()) {
+        if (!response.hasErrors()) {
           if (returnAllFields && BeeUtils.isEmpty(newRow.getValues())) {
             BeeRowSet newRs = getViewData(view.getName(), wh, new Order(), 0, 0);
             newRow.setValues(newRs.getRow(0).getValues());

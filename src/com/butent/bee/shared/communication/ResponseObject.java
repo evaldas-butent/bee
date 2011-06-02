@@ -5,6 +5,7 @@ import com.google.common.collect.Lists;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.logging.Level;
 
 /**
@@ -52,25 +53,60 @@ public class ResponseObject {
     return this;
   }
 
+  public String[] getErrors() {
+    return getMessageArray(Level.SEVERE);
+  }
+
   public Collection<ResponseMessage> getMessages() {
     return messages;
+  }
+
+  public String[] getNotifications() {
+    return getMessageArray(Level.INFO);
   }
 
   public Object getResponse() {
     return response;
   }
 
-  public boolean hasError() {
-    for (ResponseMessage message : messages) {
-      if (BeeUtils.equals(message.getLevel(), Level.SEVERE)) {
-        return true;
-      }
-    }
-    return false;
+  public String[] getWarnings() {
+    return getMessageArray(Level.WARNING);
+  }
+
+  public boolean hasErrors() {
+    return hasMessages(Level.SEVERE);
+  }
+
+  public boolean hasNotifications() {
+    return hasMessages(Level.INFO);
+  }
+
+  public boolean hasWarnings() {
+    return hasMessages(Level.WARNING);
   }
 
   public ResponseObject setResponse(Object response) {
     this.response = response;
     return this;
+  }
+
+  private String[] getMessageArray(Level lvl) {
+    List<String> msgs = Lists.newArrayList();
+
+    for (ResponseMessage message : messages) {
+      if (BeeUtils.equals(message.getLevel(), lvl)) {
+        msgs.add(message.getMessage());
+      }
+    }
+    return msgs.toArray(new String[0]);
+  }
+
+  private boolean hasMessages(Level lvl) {
+    for (ResponseMessage message : messages) {
+      if (BeeUtils.equals(message.getLevel(), lvl)) {
+        return true;
+      }
+    }
+    return false;
   }
 }
