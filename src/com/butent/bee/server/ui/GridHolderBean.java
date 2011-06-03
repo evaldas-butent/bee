@@ -8,12 +8,12 @@ import com.butent.bee.server.data.BeeView;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.utils.XmlUtils;
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.ui.BeeGrid;
+import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.ui.Calculation;
-import com.butent.bee.shared.ui.ConditionalStyle;
-import com.butent.bee.shared.ui.GridColumn;
-import com.butent.bee.shared.ui.GridComponent;
-import com.butent.bee.shared.ui.GridColumn.ColType;
+import com.butent.bee.shared.ui.ConditionalStyleDeclaration;
+import com.butent.bee.shared.ui.ColumnDescription;
+import com.butent.bee.shared.ui.GridComponentDescription;
+import com.butent.bee.shared.ui.ColumnDescription.ColType;
 import com.butent.bee.shared.ui.StyleDeclaration;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.LogUtils;
@@ -106,9 +106,9 @@ public class GridHolderBean {
   @EJB
   SystemBean sys;
 
-  private Map<String, BeeGrid> gridCache = Maps.newHashMap();
+  private Map<String, GridDescription> gridCache = Maps.newHashMap();
 
-  public BeeGrid getGrid(String gridName) {
+  public GridDescription getGrid(String gridName) {
     Assert.state(isGrid(gridName), "Not a grid: " + gridName);
     return gridCache.get(gridKey(gridName));
   }
@@ -127,7 +127,7 @@ public class GridHolderBean {
     return gridCache.containsKey(gridKey(gridName));
   }
 
-  private GridComponent getComponent(Element parent, String tagName) {
+  private GridComponentDescription getComponent(Element parent, String tagName) {
     Assert.notNull(parent);
     Assert.notEmpty(tagName);
 
@@ -136,13 +136,13 @@ public class GridHolderBean {
       return null;
     }
 
-    StyleDeclaration style = XmlUtils.getStyle(element, GridComponent.TAG_STYLE);
+    StyleDeclaration style = XmlUtils.getStyle(element, GridComponentDescription.TAG_STYLE);
     Map<String, String> attributes = XmlUtils.getAttributes(element);
 
     if (style == null && (attributes == null || attributes.isEmpty())) {
       return null;
     }
-    return new GridComponent(style, attributes);
+    return new GridComponentDescription(style, attributes);
   }
 
   private String gridKey(String gridName) {
@@ -156,7 +156,7 @@ public class GridHolderBean {
     initGrids();
   }
 
-  private boolean initColumn(BeeView view, GridColumn column) {
+  private boolean initColumn(BeeView view, ColumnDescription column) {
     Assert.notNull(view);
     Assert.notNull(column);
     boolean ok = false;
@@ -217,10 +217,10 @@ public class GridHolderBean {
 
     if (!BeeUtils.isEmpty(resource)) {
       boolean loaded = false;
-      Collection<BeeGrid> grids = loadGrids(resource, Config.getSchemaPath(GRID_SCHEMA));
+      Collection<GridDescription> grids = loadGrids(resource, Config.getSchemaPath(GRID_SCHEMA));
 
       if (!BeeUtils.isEmpty(grids)) {
-        for (BeeGrid grid : grids) {
+        for (GridDescription grid : grids) {
           if (BeeUtils.same(grid.getName(), gridName)) {
             if (loaded) {
               LogUtils.warning(logger, resource, "Dublicate grid name:", gridName);
@@ -242,13 +242,13 @@ public class GridHolderBean {
   }
 
   @Lock(LockType.WRITE)
-  private Collection<BeeGrid> loadGrids(String resource, String schema) {
+  private Collection<GridDescription> loadGrids(String resource, String schema) {
     Document xml = XmlUtils.getXmlResource(resource, schema);
     if (BeeUtils.isEmpty(xml)) {
       return null;
     }
 
-    Collection<BeeGrid> grids = Lists.newArrayList();
+    Collection<GridDescription> grids = Lists.newArrayList();
     Element root = xml.getDocumentElement();
     NodeList gridNodes = root.getElementsByTagName(TAG_GRID);
 
@@ -267,7 +267,7 @@ public class GridHolderBean {
         continue;
       }
 
-      BeeGrid grid = new BeeGrid(gridName, viewName);
+      GridDescription grid = new GridDescription(gridName, viewName);
       xmlToGrid(gridElement, grid);
 
       Element container = XmlUtils.getFirstChildElement(gridElement, TAG_COLUMNS);
@@ -305,7 +305,7 @@ public class GridHolderBean {
           continue;
         }
 
-        GridColumn column = new GridColumn(colType, colName);
+        ColumnDescription column = new ColumnDescription(colType, colName);
         xmlToColumn(columnElement, column);
 
         if (initColumn(view, column)) {
@@ -322,13 +322,13 @@ public class GridHolderBean {
     return grids;
   }
 
-  private void registerGrid(BeeGrid grid) {
+  private void registerGrid(GridDescription grid) {
     if (!BeeUtils.isEmpty(grid)) {
       gridCache.put(gridKey(grid.getName()), grid);
     }
   }
 
-  private void xmlToColumn(Element src, GridColumn dst) {
+  private void xmlToColumn(Element src, ColumnDescription dst) {
     Assert.notNull(src);
     Assert.notNull(dst);
 
@@ -399,9 +399,9 @@ public class GridHolderBean {
 
       NodeList dynStyleNodes = styleElement.getElementsByTagName(TAG_DYN_STYLE);
       if (dynStyleNodes != null && dynStyleNodes.getLength() > 0) {
-        List<ConditionalStyle> dynStyles = Lists.newArrayList();
+        List<ConditionalStyleDeclaration> dynStyles = Lists.newArrayList();
         for (int i = 0; i < dynStyleNodes.getLength(); i++) {
-          ConditionalStyle cs = XmlUtils.getConditionalStyle((Element) dynStyleNodes.item(i));
+          ConditionalStyleDeclaration cs = XmlUtils.getConditionalStyle((Element) dynStyleNodes.item(i));
           if (cs != null) {
             dynStyles.add(cs);
           }
@@ -431,7 +431,7 @@ public class GridHolderBean {
     }
   }
 
-  private void xmlToGrid(Element src, BeeGrid dst) {
+  private void xmlToGrid(Element src, GridDescription dst) {
     Assert.notNull(src);
     Assert.notNull(dst);
 
@@ -488,24 +488,24 @@ public class GridHolderBean {
       dst.setNewRowColumns(newRowColumns.trim());
     }
 
-    GridComponent header = getComponent(src, TAG_HEADER);
+    GridComponentDescription header = getComponent(src, TAG_HEADER);
     if (header != null) {
       dst.setHeader(header);
     }
-    GridComponent body = getComponent(src, TAG_BODY);
+    GridComponentDescription body = getComponent(src, TAG_BODY);
     if (body != null) {
       dst.setBody(body);
     }
-    GridComponent footer = getComponent(src, TAG_FOOTER);
+    GridComponentDescription footer = getComponent(src, TAG_FOOTER);
     if (footer != null) {
       dst.setFooter(footer);
     }
 
     NodeList rowStyleNodes = src.getElementsByTagName(TAG_ROW_STYLE);
     if (rowStyleNodes != null && rowStyleNodes.getLength() > 0) {
-      List<ConditionalStyle> rowStyles = Lists.newArrayList();
+      List<ConditionalStyleDeclaration> rowStyles = Lists.newArrayList();
       for (int i = 0; i < rowStyleNodes.getLength(); i++) {
-        ConditionalStyle cs = XmlUtils.getConditionalStyle((Element) rowStyleNodes.item(i));
+        ConditionalStyleDeclaration cs = XmlUtils.getConditionalStyle((Element) rowStyleNodes.item(i));
         if (cs != null) {
           rowStyles.add(cs);
         }

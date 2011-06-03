@@ -8,7 +8,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.ui.Calculation;
-import com.butent.bee.shared.ui.ConditionalStyle;
+import com.butent.bee.shared.ui.ConditionalStyleDeclaration;
 import com.butent.bee.shared.ui.StyleDeclaration;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.ExtendedProperty;
@@ -289,19 +289,19 @@ public class XmlUtils {
     return lst;
   }
 
-  public static ConditionalStyle getConditionalStyle(Element element) {
+  public static ConditionalStyleDeclaration getConditionalStyle(Element element) {
     Assert.notNull(element);
 
-    StyleDeclaration style = getStyle(element, ConditionalStyle.TAG_STYLE);
-    Calculation condition = getCalculation(element, ConditionalStyle.TAG_CONDITION);
+    StyleDeclaration style = getStyle(element, ConditionalStyleDeclaration.TAG_STYLE);
+    Calculation condition = getCalculation(element, ConditionalStyleDeclaration.TAG_CONDITION);
 
     if (style == null && condition == null) {
       return null;
     }
-    return new ConditionalStyle(style, condition);
+    return new ConditionalStyleDeclaration(style, condition);
   }
 
-  public static ConditionalStyle getConditionalStyle(Element parent, String tagName) {
+  public static ConditionalStyleDeclaration getConditionalStyle(Element parent, String tagName) {
     Assert.notNull(parent);
     Assert.notEmpty(tagName);
 

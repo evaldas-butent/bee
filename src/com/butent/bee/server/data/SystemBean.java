@@ -720,7 +720,7 @@ public class SystemBean {
       if (source.isActive()) {
         cnt = getViewSize(vw, null);
       }
-      lst.add(new DataInfo(vw, source.getIdName(), cnt));
+      lst.add(new DataInfo(vw, source.getIdName(), source.getVersionName(), cnt));
     }
     return lst;
   }

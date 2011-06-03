@@ -32,6 +32,53 @@ public class Font implements HasInfo, Transformable {
   private static final double UNKNOWN = -1.0;
   private static final RangeMap<Unit> DEFAULT_UNITS =
     RangeMap.create(null, 4.0, Unit.EM, 4.0, null, Unit.PX);
+  
+  public static Font copyOf(Font original) {
+    if (original == null) {
+      return null;
+    }
+    return new Font(original.getStyle(), original.getVariant(), original.getWeight(),
+        original.getAbsoluteSize(), original.getSizeValue(), original.getSizeUnit(),
+        original.getFamily());
+  }
+  
+  public static Font merge(Font... fonts) {
+    if (fonts == null || fonts.length <= 0) {
+      return null;
+    }
+    Font result = null;
+    
+    for (Font font : fonts) {
+      if (font == null) {
+        continue;
+      }
+      if (result == null) {
+        result = copyOf(font);
+        continue;
+      }
+      
+      if (font.getStyle() != null) {
+        result.setStyle(font.getStyle());
+      }
+      if (font.getVariant() != null) {
+        result.setVariant(font.getVariant());
+      }
+      if (font.getWeight() != null) {
+        result.setWeight(font.getWeight());
+      }
+      if (font.getAbsoluteSize() != null) {
+        result.setAbsoluteSize(font.getAbsoluteSize());
+      }
+      if (font.getSizeValue() > 0) {
+        result.setSizeValue(font.getSizeValue());
+        result.setSizeUnit(font.getSizeUnit());
+      }
+      if (font.getFamily() != null) {
+        result.setFamily(font.getFamily());
+      }
+    }
+    return result;
+  }
 
   public static Font parse(String input) {
     if (BeeUtils.isEmpty(input)) {

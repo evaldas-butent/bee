@@ -37,7 +37,7 @@ public class StyleDeclaration implements BeeSerializable, HasInfo {
 
   public StyleDeclaration(String className, String inline, String fontDeclaration) {
     this.className = className;
-    this.inline = inline;
+    setInline(inline);
     setFontDeclaration(fontDeclaration);
   }
 
@@ -97,11 +97,11 @@ public class StyleDeclaration implements BeeSerializable, HasInfo {
     this.fontDeclaration = fontDeclaration;
   }
 
+  protected void setInline(String inline) {
+    this.inline = inline;
+  }
+
   private void setClassName(String className) {
     this.className = className;
-  }
-  
-  private void setInline(String inline) {
-    this.inline = inline;
   }
 }

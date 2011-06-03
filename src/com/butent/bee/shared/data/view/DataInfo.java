@@ -11,6 +11,7 @@ import com.butent.bee.shared.utils.Codec;
  */
 
 public class DataInfo implements BeeSerializable, Comparable<DataInfo> {
+
   public static DataInfo restore(String s) {
     Assert.notEmpty(s);
     DataInfo ti = new DataInfo();
@@ -20,12 +21,14 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo> {
 
   private String name;
   private String idColumn;
+  private String versionColumn;
 
   private int rowCount;
 
-  public DataInfo(String name, String idColumn, int rowCount) {
+  public DataInfo(String name, String idColumn, String versionColumn, int rowCount) {
     this.name = name;
     this.idColumn = idColumn;
+    this.versionColumn = versionColumn;
     this.rowCount = rowCount;
   }
 
@@ -41,11 +44,12 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo> {
 
   public void deserialize(String s) {
     String[] arr = Codec.beeDeserialize(s);
-    Assert.lengthEquals(arr, 3);
+    Assert.lengthEquals(arr, 4);
 
     name = arr[0];
     idColumn = arr[1];
-    setRowCount(BeeUtils.toInt(arr[2]));
+    versionColumn = arr[2];
+    setRowCount(BeeUtils.toInt(arr[3]));
   }
 
   @Override
@@ -71,13 +75,17 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo> {
     return rowCount;
   }
 
+  public String getVersionColumn() {
+    return versionColumn;
+  }
+
   @Override
   public int hashCode() {
     return BeeUtils.normalize(getName()).hashCode();
   }
 
   public String serialize() {
-    return Codec.beeSerializeAll(getName(), getIdColumn(), getRowCount());
+    return Codec.beeSerializeAll(getName(), getIdColumn(), getVersionColumn(), getRowCount());
   }
 
   public void setRowCount(int rowCount) {

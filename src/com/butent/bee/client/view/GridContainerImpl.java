@@ -24,7 +24,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
-import com.butent.bee.shared.ui.BeeGrid;
+import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
@@ -70,7 +70,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
   public GridContainerImpl(String style, int splitterSize) {
     super(style, splitterSize);
   }
-  
+
   public void bind() {
     if (hasHeader()) {
       getContent().getGrid().addLoadingStateChangeHandler(getHeader());
@@ -81,16 +81,19 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
   }
 
   public void create(String caption, List<BeeColumn> dataColumns, int rowCount, BeeRowSet rowSet,
-      BeeGrid descr) {
-    int minRows = BeeUtils.unbox((descr == null) ? minPagingRows : descr.getPagingThreshold());
+      GridDescription gridDescription) {
+    int minRows = BeeUtils.unbox((gridDescription == null) 
+        ? minPagingRows : gridDescription.getPagingThreshold());
     setHasPaging(rowCount >= minRows);
 
-    minRows = BeeUtils.unbox((descr == null) ? minSearchRows : descr.getSearchThreshold());
+    minRows = BeeUtils.unbox((gridDescription == null)
+        ? minSearchRows : gridDescription.getSearchThreshold());
     setHasSearch(rowCount >= minRows);
-    
+
     int pageSize;
     if (hasPaging()) {
-      pageSize = BeeUtils.unbox((descr == null) ? defaultPageSize : descr.getPageSize());
+      pageSize = BeeUtils.unbox((gridDescription == null) 
+          ? defaultPageSize : gridDescription.getPageSize());
       pageSize = Math.max(pageSize, 1);
     } else {
       pageSize = rowCount;
@@ -100,7 +103,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     header.create(caption);
 
     GridView content = new CellGridImpl();
-    content.create(dataColumns, rowCount, rowSet, descr, hasSearch());
+    content.create(dataColumns, rowCount, rowSet, gridDescription, hasSearch());
 
     DataFooterView footer;
     ScrollPager scroller;
@@ -135,7 +138,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
       add(content.asWidget(), ScrollBars.BOTH);
     }
   }
-  
+
   @Override
   public void createId() {
     DomUtils.createId(this, "grid-container");

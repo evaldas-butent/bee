@@ -7,7 +7,7 @@ import com.butent.bee.client.view.edit.HasEditEndHandlers;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.view.RowInfo;
-import com.butent.bee.shared.ui.BeeGrid;
+import com.butent.bee.shared.ui.GridDescription;
 
 import java.util.Collection;
 import java.util.List;
@@ -20,8 +20,8 @@ public interface GridView extends View, HasEditEndHandlers, NotificationListener
   
   void applyOptions(String options);
 
-  void create(List<BeeColumn> dataColumns, int rowCount, BeeRowSet rowSet, BeeGrid descr,
-      boolean hasSearch);
+  void create(List<BeeColumn> dataColumns, int rowCount, BeeRowSet rowSet,
+      GridDescription gridDescription, boolean hasSearch);
 
   int estimatePageSize(int containerWidth, int containerHeight);
 

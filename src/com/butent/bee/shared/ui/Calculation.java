@@ -52,6 +52,14 @@ public class Calculation implements BeeSerializable, HasInfo {
     setFunction(BeeUtils.isEmpty(arr[2]) ? null : Codec.decodeBase64(arr[2]));
   }
 
+  public String getExpression() {
+    return expression;
+  }
+
+  public String getFunction() {
+    return function;
+  }
+
   public List<Property> getInfo() {
     List<Property> info = Lists.newArrayList();
     
@@ -72,6 +80,10 @@ public class Calculation implements BeeSerializable, HasInfo {
     return info;
   }
 
+  public ValueType getType() {
+    return type;
+  }
+
   public boolean isEmpty() {
     return BeeUtils.allEmpty(getExpression(), getFunction());
   }
@@ -82,18 +94,6 @@ public class Calculation implements BeeSerializable, HasInfo {
     String func = BeeUtils.isEmpty(getFunction()) ? null : Codec.encodeBase64(getFunction());
     
     return Codec.beeSerializeAll(tp, expr, func);
-  }
-
-  private String getExpression() {
-    return expression;
-  }
-
-  private String getFunction() {
-    return function;
-  }
-
-  private ValueType getType() {
-    return type;
   }
 
   private void setExpression(String expression) {

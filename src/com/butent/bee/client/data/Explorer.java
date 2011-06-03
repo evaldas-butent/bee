@@ -27,7 +27,7 @@ import com.butent.bee.shared.data.event.HandlesDeleteEvents;
 import com.butent.bee.shared.data.event.MultiDeleteEvent;
 import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.view.DataInfo;
-import com.butent.bee.shared.ui.BeeGrid;
+import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -186,14 +186,15 @@ public class Explorer implements HandlesDeleteEvents {
         BeeKeeper.getUi().notifyWarning(reason);
         getInitialRowSet(dataInfo, null);
       }
-      public void onSuccess(BeeGrid result) {
+      public void onSuccess(GridDescription result) {
         getInitialRowSet(dataInfo, result);
       }
     });
   }
   
-  private void getInitialRowSet(final DataInfo dataInfo, final BeeGrid grid) {
-    Integer asyncThreshold = (grid == null) ? defaultAsyncThreshold : grid.getAsyncThreshold();
+  private void getInitialRowSet(final DataInfo dataInfo, final GridDescription gridDescription) {
+    Integer asyncThreshold = 
+      (gridDescription == null) ? defaultAsyncThreshold : gridDescription.getAsyncThreshold();
     int limit = BeeUtils.unbox(asyncThreshold);
     int rc = dataInfo.getRowCount();
 
@@ -215,7 +216,7 @@ public class Explorer implements HandlesDeleteEvents {
           public void onFailure(String reason) {
           }
           public void onSuccess(final BeeRowSet rowSet) {
-            showView(dataInfo, rowSet, async, grid);
+            showView(dataInfo, rowSet, async, gridDescription);
           }
         });
   }
@@ -224,8 +225,9 @@ public class Explorer implements HandlesDeleteEvents {
     this.dataInfoWidget = dataInfoWidget;
   }
   
-  private void showView(DataInfo dataInfo, BeeRowSet rowSet, boolean async, BeeGrid grid) {
-    GridPresenter presenter = new GridPresenter(dataInfo, rowSet, async, grid);
+  private void showView(DataInfo dataInfo, BeeRowSet rowSet, boolean async,
+      GridDescription gridDescription) {
+    GridPresenter presenter = new GridPresenter(dataInfo, rowSet, async, gridDescription);
     BeeKeeper.getUi().updateActivePanel(presenter.getWidget());
   }
 }

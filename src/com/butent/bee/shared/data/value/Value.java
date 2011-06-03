@@ -40,8 +40,6 @@ public abstract class Value implements Comparable<Value>, Transformable, BeeSeri
         return LongValue.getNullValue();
       case DECIMAL:
         return DecimalValue.getNullValue();
-      default:
-        Assert.unsupported("Unsupported value type: " + type);
     }
     return null;
   }

@@ -52,9 +52,13 @@ public class HeaderCell extends AbstractCell<String> {
   private final String sortInfoId;
   private final String captionId;
   private final String widthInfoId;
+  
+  private final boolean showWidth;
 
-  public HeaderCell() {
+  public HeaderCell(boolean showWidth) {
     super(EventUtils.EVENT_TYPE_CLICK);
+    this.showWidth = showWidth;
+
     if (template == null) {
       template = GWT.create(Template.class);
     }
@@ -141,8 +145,10 @@ public class HeaderCell extends AbstractCell<String> {
               StyleUtils.buildClasses(STYLE_SORT_INFO, STYLE_SORTABLE)));
         }
       }
-
-      sb.append(template.widthInfo(widthInfoId, grid.getColumnWidth(label)));
+      
+      if (showWidth) {
+        sb.append(template.widthInfo(widthInfoId, grid.getColumnWidth(label)));
+      }
     }
   }
 }

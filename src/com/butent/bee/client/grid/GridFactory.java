@@ -32,7 +32,7 @@ import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.IsTable;
 import com.butent.bee.shared.data.value.ValueType;
-import com.butent.bee.shared.ui.BeeGrid;
+import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.Property;
@@ -49,7 +49,7 @@ import java.util.Map;
 
 public class GridFactory {
 
-  public interface GridCallback extends Callback<BeeGrid, String[]> {
+  public interface GridCallback extends Callback<GridDescription, String[]> {
   }
 
   /**
@@ -131,7 +131,7 @@ public class GridFactory {
     }
   }
 
-  private static final Map<String, BeeGrid> gridCache = Maps.newHashMap();
+  private static final Map<String, GridDescription> descriptionCache = Maps.newHashMap();
 
   public static Widget cellTable(Object data, CellType cellType, String... columnLabels) {
     Assert.notNull(data);
@@ -168,8 +168,8 @@ public class GridFactory {
     return grid;
   }
 
-  public static void clearCache() {
-    gridCache.clear();
+  public static void clearDescriptionCache() {
+    descriptionCache.clear();
   }
 
   public static CellColumn<?> createColumn(IsColumn dataColumn, int index) {
@@ -210,21 +210,21 @@ public class GridFactory {
     Assert.notEmpty(name);
     Assert.notNull(callback);
 
-    if (!reload && isGridCached(name)) {
-      callback.onSuccess(gridCache.get(gridKey(name)));
+    if (!reload && isGridDescriptionCached(name)) {
+      callback.onSuccess(descriptionCache.get(gridDescriptionKey(name)));
       return;
     }
 
     BeeKeeper.getRpc().sendText(Service.GET_GRID, name, new ResponseCallback() {
       public void onResponse(JsArrayString respArr) {
         if (respArr.length() >= 2
-            && BeeUtils.same(respArr.get(1), BeeUtils.getClassName(BeeGrid.class))) {
-          BeeGrid grd = BeeGrid.restore(respArr.get(0));
-          callback.onSuccess(grd);
-          gridCache.put(gridKey(name), grd);
+            && BeeUtils.same(respArr.get(1), BeeUtils.getClassName(GridDescription.class))) {
+          GridDescription gridDescription = GridDescription.restore(respArr.get(0));
+          callback.onSuccess(gridDescription);
+          descriptionCache.put(gridDescriptionKey(name), gridDescription);
         } else {
           callback.onFailure(Codec.beeDeserialize(respArr.get(0)));
-          gridCache.put(gridKey(name), null);
+          descriptionCache.put(gridDescriptionKey(name), null);
         }
       }
     });
@@ -274,29 +274,30 @@ public class GridFactory {
   }
 
   public static void showGridInfo(String name) {
-    if (gridCache.isEmpty()) {
-      BeeKeeper.getLog().warning("grid cache is empty");
+    if (descriptionCache.isEmpty()) {
+      BeeKeeper.getLog().warning("grid description cache is empty");
       return;
     }
 
     if (!BeeUtils.isEmpty(name)) {
-      if (isGridCached(name)) {
-        BeeGrid grid = gridCache.get(gridKey(name));
-        if (grid != null) {
-          BeeKeeper.getUi().showGrid(grid.getInfo());
+      if (isGridDescriptionCached(name)) {
+        GridDescription gridDescription = descriptionCache.get(gridDescriptionKey(name));
+        if (gridDescription != null) {
+          BeeKeeper.getUi().showGrid(gridDescription.getInfo());
           return;
         } else {
-          BeeKeeper.getLog().warning("grid", name, "was not found");
+          BeeKeeper.getLog().warning("grid", name, "description was not found");
         }
       } else {
-        BeeKeeper.getLog().warning("grid", name, "not in cache");
+        BeeKeeper.getLog().warning("grid", name, "description not in cache");
       }
     }
 
     List<Property> info = Lists.newArrayList();
-    for (Map.Entry<String, BeeGrid> entry : gridCache.entrySet()) {
-      BeeGrid grid = entry.getValue();
-      String cc = (grid == null) ? BeeConst.STRING_MINUS : BeeUtils.toString(grid.getColumnCount());
+    for (Map.Entry<String, GridDescription> entry : descriptionCache.entrySet()) {
+      GridDescription gridDescription = entry.getValue();
+      String cc = (gridDescription == null) ? BeeConst.STRING_MINUS 
+          : BeeUtils.toString(gridDescription.getColumnCount());
       info.add(new Property(entry.getKey(), cc));
     }
 
@@ -329,7 +330,9 @@ public class GridFactory {
     for (int i = 0; i < c; i++) {
       column = createColumn(table.getColumn(i), i);
       column.setSortable(true);
-      grid.addColumn(table.getColumnLabel(i), i, column, new ColumnHeader(table.getColumn(i)));
+
+      String label = table.getColumnLabel(i);
+      grid.addColumn(label, i, column, new ColumnHeader(label, false));
     }
 
     @SuppressWarnings("unused")
@@ -362,16 +365,16 @@ public class GridFactory {
     return cell;
   }
   
-  private static String gridKey(String name) {
+  private static String gridDescriptionKey(String name) {
     Assert.notEmpty(name);
     return name.trim().toLowerCase();
   }
 
-  private static boolean isGridCached(String name) {
+  private static boolean isGridDescriptionCached(String name) {
     if (BeeUtils.isEmpty(name)) {
       return false;
     }
-    return gridCache.containsKey(gridKey(name));
+    return descriptionCache.containsKey(gridDescriptionKey(name));
   }
 
   private GridFactory() {

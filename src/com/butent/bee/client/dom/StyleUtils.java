@@ -173,9 +173,11 @@ public class StyleUtils {
   public static final String STYLE_OVERFLOW_X = "overflowX";
   public static final String STYLE_OVERFLOW_Y = "overflowY";
 
-  public static final String STYLE_FONT_FAMILY = "fontFamily";
-  public static final String STYLE_FONT_SIZE = "fontSize";
+  public static final String STYLE_FONT_STYLE = "fontStyle";
   public static final String STYLE_FONT_VARIANT = "fontVariant";
+  public static final String STYLE_FONT_WEIGHT = "fontWeight";
+  public static final String STYLE_FONT_SIZE = "fontSize";
+  public static final String STYLE_FONT_FAMILY = "fontFamily";
 
   public static final String STYLE_WHITE_SPACE = "whiteSpace";
 
@@ -231,8 +233,8 @@ public class StyleUtils {
   public static final String BORDER_COLLAPSE = "collapse";
   public static final String BORDER_SEPARATE = "separate";
 
-  public static final char DEFINITION_SEPARATOR = ';';
-  public static final char NAME_VALUE_SEPARATOR = ':';
+  public static final String DEFINITION_SEPARATOR = ";";
+  public static final String NAME_VALUE_SEPARATOR = ":";
 
   public static final String CSS_BORDER_WIDTH = "border-width";
   public static final String CSS_BORDER_LEFT_WIDTH = "border-left-width";
@@ -243,11 +245,11 @@ public class StyleUtils {
   public static final String CSS_TEXT_ALIGN = "text-align";
   public static final String CSS_Z_INDEX = "z-index";
 
-  public static final String CSS_FONT_FAMILY = "font-family";
   public static final String CSS_FONT_STYLE = "font-style";
-  public static final String CSS_FONT_SIZE = "font-size";
   public static final String CSS_FONT_VARIANT = "font-variant";
   public static final String CSS_FONT_WEIGHT = "font-weight";
+  public static final String CSS_FONT_SIZE = "font-size";
+  public static final String CSS_FONT_FAMILY = "font-family";
   
   private static final char CLASS_NAME_SEPARATOR = ' ';
   private static final Splitter CLASS_NAME_SPLITTER =
@@ -560,6 +562,20 @@ public class StyleUtils {
       return;
     }
     copyBox(src.getStyle(), dst.getStyle());
+  }
+
+  public static void copyFont(Element src, Element dst) {
+    Assert.notNull(src);
+    Assert.notNull(dst);
+    if (src.equals(dst)) {
+      return;
+    }
+    copyFont(src.getStyle(), dst.getStyle());
+  }
+  
+  public static void copyFont(Style src, Style dst) {
+    copyProperties(src, dst, STYLE_FONT_STYLE, STYLE_FONT_VARIANT, STYLE_FONT_WEIGHT,
+        STYLE_FONT_SIZE, STYLE_FONT_FAMILY);
   }
   
   public static void copyMargin(Style src, Style dst) {
@@ -1558,6 +1574,15 @@ public class StyleUtils {
   public static String toCssLength(double value, Unit unit) {
     Assert.notNull(unit);
     return BeeUtils.toString(value) + unit.getType();
+  }
+  
+  public static SafeStyles toSafeStyles(String s) {
+    Assert.notEmpty(s);
+    if (s.trim().endsWith(DEFINITION_SEPARATOR)) {
+      return SafeStylesUtils.fromTrustedString(s.trim()); 
+    } else {
+      return SafeStylesUtils.fromTrustedString(s.trim() + DEFINITION_SEPARATOR); 
+    }
   }
 
   public static void unhideDisplay(Element el) {

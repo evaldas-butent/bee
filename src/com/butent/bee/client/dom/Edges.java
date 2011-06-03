@@ -92,7 +92,7 @@ public class Edges {
       return null;
     }
     Edges edges = new Edges();
-    edges.setFromCssLength(s.trim());
+    edges.setFromString(s.trim());
     return edges;
   }
 
@@ -466,7 +466,7 @@ public class Edges {
     this.topValue = topValue;
   }
 
-  private void setFromCssLength(String s) {
+  private void setFromString(String s) {
     if (BeeUtils.isEmpty(s)) {
       return;
     }
@@ -480,10 +480,18 @@ public class Edges {
     }
 
     int cnt = 0;
+    Double v;
+    Unit u;
+    
     for (String cssLength : CSS_SPLITTER.split(s)) {
-      Pair<Double, Unit> pair = StyleUtils.parseCssLength(cssLength);
-      Double v = pair.getA();
-      Unit u = pair.getB();
+      if (BeeUtils.isDigit(cssLength)) {
+        v = BeeUtils.toDouble(cssLength);
+        u = DEFAULT_UNIT;
+      } else {
+        Pair<Double, Unit> pair = StyleUtils.parseCssLength(cssLength);
+        v = pair.getA();
+        u = pair.getB();
+      }
 
       switch (cnt) {
         case 0:
@@ -527,6 +535,6 @@ public class Edges {
     Assert.notNull(style);
     Assert.notEmpty(propertyName);
 
-    setFromCssLength(style.getProperty(propertyName));
+    setFromString(style.getProperty(propertyName));
   }
 }

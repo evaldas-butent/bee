@@ -21,7 +21,7 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
-import com.butent.bee.shared.ui.BeeGrid;
+import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.ui.UiComponent;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -239,7 +239,7 @@ public class UiServiceBean {
       return ResponseObject.error("Which grid?");
     }
     if (grd.isGrid(gridName)) {
-      return ResponseObject.response(grd.getGrid(gridName)).setType(BeeGrid.class);
+      return ResponseObject.response(grd.getGrid(gridName)).setType(GridDescription.class);
     }
     return ResponseObject.response(BeeUtils.concat(1, "grid", gridName, "not found"));
   }

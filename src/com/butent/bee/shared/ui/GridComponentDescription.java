@@ -13,7 +13,7 @@ import com.butent.bee.shared.utils.PropertyUtils;
 import java.util.List;
 import java.util.Map;
 
-public class GridComponent implements BeeSerializable, HasInfo {
+public class GridComponentDescription implements BeeSerializable, HasInfo {
   
   private enum SerializationMember {
     STYLE, HEIGHT, MIN_HEIGHT, MAX_HEIGHT, PADDING, BORDER_WIDTH, MARGIN
@@ -28,11 +28,11 @@ public class GridComponent implements BeeSerializable, HasInfo {
   
   private static final String ATTR_MARGIN = "margin";
 
-  public static GridComponent restore(String s) {
+  public static GridComponentDescription restore(String s) {
     if (BeeUtils.isEmpty(s)) {
       return null;
     }
-    GridComponent component = new GridComponent();
+    GridComponentDescription component = new GridComponentDescription();
     component.deserialize(s);
     return component;
   }
@@ -47,16 +47,16 @@ public class GridComponent implements BeeSerializable, HasInfo {
   private String borderWidth = null;
   private String margin = null;
 
-  public GridComponent(Integer height) {
+  public GridComponentDescription(Integer height) {
     setHeight(height);
   }
   
-  public GridComponent(StyleDeclaration style, Map<String, String> attributes) {
+  public GridComponentDescription(StyleDeclaration style, Map<String, String> attributes) {
     setStyle(style);
     setAttributes(attributes);
   }
 
-  private GridComponent() {
+  private GridComponentDescription() {
   }
   
   public void deserialize(String s) {

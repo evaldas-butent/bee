@@ -12,16 +12,16 @@ import com.butent.bee.shared.utils.PropertyUtils;
 
 import java.util.List;
 
-public class ConditionalStyle implements BeeSerializable, HasInfo {
+public class ConditionalStyleDeclaration implements BeeSerializable, HasInfo {
 
   public static final String TAG_STYLE = "style";
   public static final String TAG_CONDITION = "condition";
   
-  public static ConditionalStyle restore(String s) {
+  public static ConditionalStyleDeclaration restore(String s) {
     if (BeeUtils.isEmpty(s)) {
       return null;
     }
-    ConditionalStyle cs = new ConditionalStyle();
+    ConditionalStyleDeclaration cs = new ConditionalStyleDeclaration();
     cs.deserialize(s);
     return cs;
   }
@@ -29,12 +29,12 @@ public class ConditionalStyle implements BeeSerializable, HasInfo {
   private StyleDeclaration style;
   private Calculation condition;
 
-  public ConditionalStyle(StyleDeclaration style, Calculation condition) {
+  public ConditionalStyleDeclaration(StyleDeclaration style, Calculation condition) {
     this.style = style;
     this.condition = condition;
   }
 
-  private ConditionalStyle() {
+  private ConditionalStyleDeclaration() {
   }
 
   public void deserialize(String s) {
@@ -43,6 +43,10 @@ public class ConditionalStyle implements BeeSerializable, HasInfo {
 
     setStyle(StyleDeclaration.restore(arr[0]));
     setCondition(Calculation.restore(arr[1]));
+  }
+
+  public Calculation getCondition() {
+    return condition;
   }
 
   public List<Property> getInfo() {
@@ -63,6 +67,10 @@ public class ConditionalStyle implements BeeSerializable, HasInfo {
     return info;
   }
 
+  public StyleDeclaration getStyle() {
+    return style;
+  }
+
   public String serialize() {
     return Codec.beeSerializeAll(getStyle(), getCondition());
   }
@@ -70,14 +78,6 @@ public class ConditionalStyle implements BeeSerializable, HasInfo {
   public boolean validState() {
     return getStyle() != null && !getStyle().isEmpty()
         && getCondition() != null && !getCondition().isEmpty();
-  }
-
-  private Calculation getCondition() {
-    return condition;
-  }
-
-  private StyleDeclaration getStyle() {
-    return style;
   }
 
   private void setCondition(Calculation condition) {

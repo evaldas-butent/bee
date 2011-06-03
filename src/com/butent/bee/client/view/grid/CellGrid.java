@@ -27,8 +27,6 @@ import com.google.gwt.safehtml.shared.SafeHtmlUtils;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.Header;
 import com.google.gwt.user.cellview.client.LoadingStateChangeEvent;
-import com.google.gwt.user.cellview.client.SafeHtmlHeader;
-import com.google.gwt.user.cellview.client.TextHeader;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment.HorizontalAlignmentConstant;
@@ -51,6 +49,7 @@ import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.Modifiers;
 import com.butent.bee.client.grid.CellContext;
+import com.butent.bee.client.ui.ConditionalStyle;
 import com.butent.bee.client.ui.StyleDescriptor;
 import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.edit.EditorFactory;
@@ -66,8 +65,9 @@ import com.butent.bee.shared.data.event.SelectionCountChangeEvent;
 import com.butent.bee.shared.data.event.SortEvent;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
-import com.butent.bee.shared.ui.ConditionalStyle;
-import com.butent.bee.shared.ui.GridComponent;
+import com.butent.bee.shared.ui.ColumnDescription;
+import com.butent.bee.shared.ui.ConditionalStyleDeclaration;
+import com.butent.bee.shared.ui.GridComponentDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
@@ -210,53 +210,52 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
   }
 
   private class ColumnInfo {
-    private Font bodyFont = null;
-    private int bodyWidth = BeeConst.UNDEF;
-    private final Column<IsRow, ?> column;
     private final String columnId;
     private final int dataIndex;
 
-    private final Header<?> footer;
-    private Font footerFont = null;
-    private int footerWidth = BeeConst.UNDEF;
+    private final Column<IsRow, ?> column;
     private final Header<?> header;
+    private final Header<?> footer;
 
-    private Font headerFont = null;
-    private int headerWidth = BeeConst.UNDEF;
     private int width = BeeConst.UNDEF;
+    private int minWidth = BeeConst.UNDEF;
+    private int maxWidth = BeeConst.UNDEF;
 
-    private ColumnInfo(String columnId, int dataIndex, Column<IsRow, ?> column) {
-      this(columnId, dataIndex, column, null, null, BeeConst.UNDEF);
-    }
+    private int headerWidth = BeeConst.UNDEF;
+    private int bodyWidth = BeeConst.UNDEF;
+    private int footerWidth = BeeConst.UNDEF;
 
-    private ColumnInfo(String columnId, int dataIndex, Column<IsRow, ?> column, Header<?> header) {
-      this(columnId, dataIndex, column, header, null, BeeConst.UNDEF);
-    }
+    private StyleDescriptor headerStyle = null;
+    private StyleDescriptor bodyStyle = null;
+    private StyleDescriptor footerStyle = null;
+
+    private Collection<ConditionalStyle> dynStyles = null;
+
+    private boolean colReadOnly = false;
 
     private ColumnInfo(String columnId, int dataIndex, Column<IsRow, ?> column,
         Header<?> header, Header<?> footer) {
-      this(columnId, dataIndex, column, header, footer, BeeConst.UNDEF);
-    }
-
-    private ColumnInfo(String columnId, int dataIndex, Column<IsRow, ?> column,
-        Header<?> header, Header<?> footer, int width) {
       this.columnId = columnId;
       this.dataIndex = dataIndex;
       this.column = column;
       this.header = header;
       this.footer = footer;
-      this.width = width;
     }
 
-    private ColumnInfo(String columnId, int dataIndex, Column<IsRow, ?> column, Header<?> header,
-        int width) {
-      this(columnId, dataIndex, column, header, null, width);
-    }
+    private void buildSafeStyles(SafeStylesBuilder stylesBuilder, ComponentType componentType) {
+      StyleDescriptor sd = getStyleDescriptor(componentType);
+      if (sd == null) {
+        return;
+      }
 
-    private ColumnInfo(String columnId, int dataIndex, Column<IsRow, ?> column, int width) {
-      this(columnId, dataIndex, column, null, null, width);
+      if (sd.getSafeStyles() != null) {
+        stylesBuilder.append(sd.getSafeStyles());
+      }
+      if (sd.getFont() != null) {
+        stylesBuilder.append(sd.getFont().buildCss());
+      }
     }
-
+    
     private void ensureBodyWidth(int w) {
       if (w > 0) {
         setBodyWidth(Math.max(getBodyWidth(), w));
@@ -276,11 +275,26 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     }
 
     private Font getBodyFont() {
-      return bodyFont;
+      if (getBodyStyle() == null) {
+        return null;
+      }
+      return getBodyStyle().getFont();
+    }
+
+    private StyleDescriptor getBodyStyle() {
+      return bodyStyle;
     }
 
     private int getBodyWidth() {
       return bodyWidth;
+    }
+    
+    private String getClassName(ComponentType componentType) {
+      StyleDescriptor sd = getStyleDescriptor(componentType);
+      if (sd == null) {
+        return null;
+      }
+      return sd.getClassName();
     }
 
     private Column<IsRow, ?> getColumn() {
@@ -294,17 +308,34 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     private int getColumnWidth() {
       if (getWidth() > 0) {
         return getWidth();
-      } else if (getBodyWidth() > 0) {
-        return limitCellWidth(getBodyWidth());
-      } else if (getHeaderWidth() > 0) {
-        return limitCellWidth(getHeaderWidth());
-      } else {
-        return limitCellWidth(getFooterWidth());
       }
+
+      int w;
+      if (getBodyWidth() > 0) {
+        w = getBodyWidth();
+      } else if (getHeaderWidth() > 0) {
+        w = getHeaderWidth();
+      } else {
+        w = getFooterWidth();
+      }
+      
+      int minW = getMinWidth();
+      if (minW <= 0) {
+        minW = getMinCellWidth();
+      }
+      int maxW = getMaxWidth();
+      if (maxW <= 0) {
+        maxW = getMaxCellWidth();
+      }
+      return BeeUtils.limit(w, minW, maxW);
     }
 
     private int getDataIndex() {
       return dataIndex;
+    }
+
+    private Collection<ConditionalStyle> getDynStyles() {
+      return dynStyles;
     }
 
     private Header<?> getFooter() {
@@ -312,7 +343,14 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     }
 
     private Font getFooterFont() {
-      return footerFont;
+      if (getFooterStyle() == null) {
+        return null;
+      }
+      return getFooterStyle().getFont();
+    }
+
+    private StyleDescriptor getFooterStyle() {
+      return footerStyle;
     }
 
     private int getFooterWidth() {
@@ -322,13 +360,40 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     private Header<?> getHeader() {
       return header;
     }
-
+    
     private Font getHeaderFont() {
-      return headerFont;
+      if (getHeaderStyle() == null) {
+        return null;
+      }
+      return getHeaderStyle().getFont();
+    }
+
+    private StyleDescriptor getHeaderStyle() {
+      return headerStyle;
     }
 
     private int getHeaderWidth() {
       return headerWidth;
+    }
+
+    private int getMaxWidth() {
+      return maxWidth;
+    }
+
+    private int getMinWidth() {
+      return minWidth;
+    }
+
+    private StyleDescriptor getStyleDescriptor(ComponentType componentType) {
+      switch (componentType) {
+        case HEADER:
+          return getHeaderStyle();
+        case BODY:
+          return getBodyStyle();
+        case FOOTER:
+          return getFooterStyle();
+      }
+      return null;
     }
 
     private int getWidth() {
@@ -339,28 +404,78 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
       return BeeUtils.same(getColumnId(), id);
     }
 
-    private void setBodyFont(Font bodyFont) {
-      this.bodyFont = bodyFont;
+    private boolean isColReadOnly() {
+      return colReadOnly;
+    }
+
+    private void setBodyFont(String fontDeclaration) {
+      if (getBodyStyle() == null) {
+        if (!BeeUtils.isEmpty(fontDeclaration)) {
+          setBodyStyle(new StyleDescriptor(null, null, fontDeclaration));
+        }
+      } else {
+        getBodyStyle().setFontDeclaration(fontDeclaration);
+      }
+    }
+
+    private void setBodyStyle(StyleDescriptor bodyStyle) {
+      this.bodyStyle = bodyStyle;
     }
 
     private void setBodyWidth(int bodyWidth) {
       this.bodyWidth = bodyWidth;
     }
 
-    private void setFooterFont(Font footerFont) {
-      this.footerFont = footerFont;
+    private void setColReadOnly(boolean colReadOnly) {
+      this.colReadOnly = colReadOnly;
+    }
+
+    private void setDynStyles(Collection<ConditionalStyle> dynStyles) {
+      this.dynStyles = dynStyles;
+    }
+
+    private void setFooterFont(String fontDeclaration) {
+      if (getFooterStyle() == null) {
+        if (!BeeUtils.isEmpty(fontDeclaration)) {
+          setFooterStyle(new StyleDescriptor(null, null, fontDeclaration));
+        }
+      } else {
+        getFooterStyle().setFontDeclaration(fontDeclaration);
+      }
+    }
+
+    private void setFooterStyle(StyleDescriptor footerStyle) {
+      this.footerStyle = footerStyle;
     }
 
     private void setFooterWidth(int footerWidth) {
       this.footerWidth = footerWidth;
     }
 
-    private void setHeaderFont(Font headerFont) {
-      this.headerFont = headerFont;
+    private void setHeaderFont(String fontDeclaration) {
+      if (getHeaderStyle() == null) {
+        if (!BeeUtils.isEmpty(fontDeclaration)) {
+          setHeaderStyle(new StyleDescriptor(null, null, fontDeclaration));
+        }
+      } else {
+        getHeaderStyle().setFontDeclaration(fontDeclaration);
+      }
+    }
+
+    private void setHeaderStyle(StyleDescriptor headerStyle) {
+      this.headerStyle = headerStyle;
     }
 
     private void setHeaderWidth(int headerWidth) {
       this.headerWidth = headerWidth;
+    }
+
+    private void setMaxWidth(int maxWidth) {
+      this.maxWidth = maxWidth;
+    }
+
+    private void setMinWidth(int minWidth) {
+      this.minWidth = minWidth;
     }
 
     private void setWidth(int width) {
@@ -378,10 +493,9 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     private Edges padding = null;
     private Edges borderWidth = null;
     private Edges margin = null;
-    
-    private Component(StyleDescriptor style, int cellHeight, int minHeight, int maxHeight,
+
+    private Component(int cellHeight, int minHeight, int maxHeight,
         Edges padding, Edges borderWidth, Edges margin) {
-      this.style = style;
       this.cellHeight = cellHeight;
       this.minHeight = minHeight;
       this.maxHeight = maxHeight;
@@ -389,7 +503,16 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
       this.borderWidth = borderWidth;
       this.margin = margin;
     }
-    
+
+    private void buildSafeStyles(SafeStylesBuilder stylesBuilder) {
+      if (getSafeStyles() != null) {
+        stylesBuilder.append(getSafeStyles());
+      }
+      if (getFont() != null) {
+        stylesBuilder.append(getFont().buildCss());
+      }
+    }
+
     private Edges getBorderWidth() {
       return borderWidth;
     }
@@ -397,61 +520,89 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     private int getCellHeight() {
       return cellHeight;
     }
-    
+
     private String getClassName() {
       if (getStyle() == null) {
         return null;
       }
       return getStyle().getClassName();
     }
-    
+
+    private Font getFont() {
+      if (getStyle() == null) {
+        return null;
+      }
+      return getStyle().getFont();
+    }
+
     private Edges getMargin() {
       return margin;
     }
-    
+
     private int getMaxHeight() {
       return maxHeight;
     }
-    
+
     private int getMinHeight() {
       return minHeight;
     }
-    
+
     private Edges getPadding() {
       return padding;
     }
-    
+
+    private SafeStyles getSafeStyles() {
+      if (getStyle() == null) {
+        return null;
+      }
+      return getStyle().getSafeStyles();
+    }
+
     private StyleDescriptor getStyle() {
       return style;
     }
-    
+
     private void setBorderWidth(Edges borderWidth) {
       this.borderWidth = borderWidth;
     }
-    
+
     private void setCellHeight(int cellHeight) {
       this.cellHeight = cellHeight;
     }
     
+    private void setFont(String fontDeclaration) {
+      if (getStyle() == null) {
+        if (!BeeUtils.isEmpty(fontDeclaration)) {
+          setStyle(new StyleDescriptor(null, null, fontDeclaration));
+        }
+      } else {
+        getStyle().setFontDeclaration(fontDeclaration);
+      }
+    }
+
     private void setMargin(Edges margin) {
       this.margin = margin;
     }
-    
+
     private void setMaxHeight(int maxHeight) {
       this.maxHeight = maxHeight;
     }
-    
+
     private void setMinHeight(int minHeight) {
       this.minHeight = minHeight;
     }
-    
+
     private void setPadding(Edges padding) {
       this.padding = padding;
     }
-    
+
     private void setStyle(StyleDescriptor style) {
       this.style = style;
     }
+  }
+
+  private enum ComponentType {
+    HEADER, BODY, FOOTER;
   }
 
   private class ResizerMoveTimer extends Timer {
@@ -580,7 +731,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
       schedule(millis);
     }
   }
-  
+
   /**
    * Lists possible grid elements for parameter management.
    */
@@ -588,7 +739,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
   private enum TargetType {
     CONTAINER, RESIZER, HEADER, BODY, FOOTER;
   }
-
+  
   public static int defaultBodyCellHeight = 24;
   public static Edges defaultBodyCellPadding = new Edges(2, 3);
   public static Edges defaultBodyBorderWidth = new Edges(1);
@@ -645,22 +796,22 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
   private static Template template = null;
 
   private final List<ColumnInfo> columns = Lists.newArrayList();
-  
-  private final Component headerComponent = new Component(new StyleDescriptor(STYLE_HEADER),
-      defaultHeaderCellHeight, defaultMinCellHeight, defaultMaxCellHeight,
-      defaultHeaderCellPadding, defaultHeaderBorderWidth, defaultHeaderCellMargin);
 
-  private final Component bodyComponent = new Component(new StyleDescriptor(STYLE_BODY),
-      defaultBodyCellHeight, defaultMinCellHeight, defaultMaxCellHeight,
-      defaultBodyCellPadding, defaultBodyBorderWidth, defaultBodyCellMargin);
+  private final Component headerComponent =
+      new Component(defaultHeaderCellHeight, defaultMinCellHeight, defaultMaxCellHeight,
+          defaultHeaderCellPadding, defaultHeaderBorderWidth, defaultHeaderCellMargin);
 
-  private final Component footerComponent = new Component(new StyleDescriptor(STYLE_FOOTER),
-      defaultFooterCellHeight, defaultMinCellHeight, defaultMaxCellHeight,
-      defaultFooterCellPadding, defaultFooterBorderWidth, defaultFooterCellMargin);
+  private final Component bodyComponent =
+      new Component(defaultBodyCellHeight, defaultMinCellHeight, defaultMaxCellHeight,
+          defaultBodyCellPadding, defaultBodyBorderWidth, defaultBodyCellMargin);
+
+  private final Component footerComponent =
+      new Component(defaultFooterCellHeight, defaultMinCellHeight, defaultMaxCellHeight,
+          defaultFooterCellPadding, defaultFooterBorderWidth, defaultFooterCellMargin);
 
   private int minCellWidth = defaultMinCellWidth;
   private int maxCellWidth = defaultMaxCellWidth;
-  
+
   private int activeRow = BeeConst.UNDEF;
   private int activeColumn = BeeConst.UNDEF;
 
@@ -706,7 +857,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
 
   private final Map<Long, Integer> resizedRows = Maps.newHashMap();
   private final Table<Long, String, CellInfo> resizedCells = HashBasedTable.create();
-  
+
   private boolean readOnly = false;
   private boolean editing = false;
 
@@ -732,35 +883,13 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     return addHandler(handler, CellPreviewEvent.getType());
   }
 
-  public void addColumn(String columnId, int dataIndex, Column<IsRow, ?> col) {
-    insertColumn(getColumnCount(), columnId, dataIndex, col);
-  }
-
   public void addColumn(String columnId, int dataIndex, Column<IsRow, ?> col, Header<?> header) {
-    insertColumn(getColumnCount(), columnId, dataIndex, col, header);
+    insertColumn(getColumnCount(), columnId, dataIndex, col, header, null);
   }
 
   public void addColumn(String columnId, int dataIndex, Column<IsRow, ?> col,
       Header<?> header, Header<?> footer) {
     insertColumn(getColumnCount(), columnId, dataIndex, col, header, footer);
-  }
-
-  public void addColumn(String columnId, int dataIndex, Column<IsRow, ?> col, SafeHtml headerHtml) {
-    insertColumn(getColumnCount(), columnId, dataIndex, col, headerHtml);
-  }
-
-  public void addColumn(String columnId, int dataIndex, Column<IsRow, ?> col,
-      SafeHtml headerHtml, SafeHtml footerHtml) {
-    insertColumn(getColumnCount(), columnId, dataIndex, col, headerHtml, footerHtml);
-  }
-
-  public void addColumn(String columnId, int dataIndex, Column<IsRow, ?> col, String headerString) {
-    insertColumn(getColumnCount(), columnId, dataIndex, col, headerString);
-  }
-
-  public void addColumn(String columnId, int dataIndex, Column<IsRow, ?> col,
-      String headerString, String footerString) {
-    insertColumn(getColumnCount(), columnId, dataIndex, col, headerString, footerString);
   }
 
   public HandlerRegistration addEditStartHandler(EditStartEvent.Handler handler) {
@@ -798,7 +927,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
       if (width <= 0) {
         continue;
       }
-      setColumnWidth(i, limitCellWidth(width));
+      setColumnWidth(i, limitCellWidth(width, i));
     }
 
     boolean pageSizeChanged = updatePageSize();
@@ -863,7 +992,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
 
     ColumnInfo columnInfo = getColumnInfo(col);
     Column<IsRow, ?> column = columnInfo.getColumn();
-    Font font = columnInfo.getBodyFont();
+    Font font = Font.merge(getBodyComponent().getFont(), columnInfo.getBodyFont());
 
     int width = 0;
     for (int i = 0; i < length; i++) {
@@ -904,7 +1033,8 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
       footer.render(context, cellBuilder);
       SafeHtml cellHtml = cellBuilder.toSafeHtml();
 
-      int cellWidth = Rulers.getLineWidth(cellHtml.asString(), columnInfo.getFooterFont());
+      Font font = Font.merge(getFooterComponent().getFont(), columnInfo.getFooterFont());
+      int cellWidth = Rulers.getLineWidth(cellHtml.asString(), font);
       if (cellWidth > 0) {
         columnInfo.ensureFooterWidth(cellWidth);
       }
@@ -923,7 +1053,8 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     header.render(context, cellBuilder);
     SafeHtml cellHtml = cellBuilder.toSafeHtml();
 
-    int width = Rulers.getLineWidth(cellHtml.asString(), columnInfo.getHeaderFont());
+    Font font = Font.merge(getHeaderComponent().getFont(), columnInfo.getHeaderFont());
+    int width = Rulers.getLineWidth(cellHtml.asString(), font);
     if (width > 0) {
       columnInfo.ensureHeaderWidth(width);
     }
@@ -1144,18 +1275,10 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     return getBodyComponent().getMaxHeight();
   }
 
-  public int getMaxCellWidth() {
-    return maxCellWidth;
-  }
-
   public int getMinBodyCellHeight() {
     return getBodyComponent().getMinHeight();
   }
-
-  public int getMinCellWidth() {
-    return minCellWidth;
-  }
-
+  
   public int getPageSize() {
     return pageSize;
   }
@@ -1167,7 +1290,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
   public int getRowCount() {
     return rowCount;
   }
-
+  
   public LinkedHashMap<Long, RowInfo> getSelectedRows() {
     return selectedRows;
   }
@@ -1311,19 +1434,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
   }
 
   public void insertColumn(int beforeIndex, String columnId, int dataIndex,
-      Column<IsRow, ?> column) {
-    insertColumn(beforeIndex, columnId, dataIndex, column, (Header<?>) null, (Header<?>) null);
-  }
-
-  public void insertColumn(int beforeIndex, String columnId, int dataIndex,
-      Column<IsRow, ?> column,
-      Header<?> header) {
-    insertColumn(beforeIndex, columnId, dataIndex, column, header, null);
-  }
-
-  public void insertColumn(int beforeIndex, String columnId, int dataIndex,
-      Column<IsRow, ?> column,
-      Header<?> header, Header<?> footer) {
+      Column<IsRow, ?> column, Header<?> header, Header<?> footer) {
     if (beforeIndex != getColumnCount()) {
       checkColumnBounds(beforeIndex);
     }
@@ -1353,32 +1464,6 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     if (!consumedEvents.isEmpty()) {
       sinkEvents(consumedEvents);
     }
-  }
-
-  public void insertColumn(int beforeIndex, String columnId, int dataIndex,
-      Column<IsRow, ?> column,
-      SafeHtml headerHtml) {
-    insertColumn(beforeIndex, columnId, dataIndex, column, new SafeHtmlHeader(headerHtml), null);
-  }
-
-  public void insertColumn(int beforeIndex, String columnId, int dataIndex,
-      Column<IsRow, ?> column,
-      SafeHtml headerHtml, SafeHtml footerHtml) {
-    insertColumn(beforeIndex, columnId, dataIndex, column,
-        new SafeHtmlHeader(headerHtml), new SafeHtmlHeader(footerHtml));
-  }
-
-  public void insertColumn(int beforeIndex, String columnId, int dataIndex,
-      Column<IsRow, ?> column,
-      String headerString) {
-    insertColumn(beforeIndex, columnId, dataIndex, column, new TextHeader(headerString), null);
-  }
-
-  public void insertColumn(int beforeIndex, String columnId, int dataIndex,
-      Column<IsRow, ?> column,
-      String headerString, String footerString) {
-    insertColumn(beforeIndex, columnId, dataIndex, column,
-        new TextHeader(headerString), new TextHeader(footerString));
   }
 
   public boolean isEditing() {
@@ -1579,7 +1664,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     long version = event.getVersion();
     String columnId = event.getColumnId();
     String value = event.getValue();
-    
+
     RowInfo selectedRowInfo = getSelectedRows().get(rowId);
     if (selectedRowInfo != null) {
       selectedRowInfo.setVersion(version);
@@ -1756,15 +1841,19 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     getBodyComponent().setPadding(padding);
   }
 
-  public void setBodyComponent(GridComponent src) {
+  public void setBodyComponent(GridComponentDescription src) {
     updateComponent(src, getBodyComponent());
   }
 
-  public void setColumnBodyFont(String columnId, Font font) {
+  public void setBodyFont(String fontDeclaration) {
+    getBodyComponent().setFont(fontDeclaration);
+  }
+
+  public void setColumnBodyFont(String columnId, String fontDeclaration) {
     ColumnInfo info = getColumnInfo(columnId);
     Assert.notNull(info);
 
-    info.setBodyFont(font);
+    info.setBodyFont(fontDeclaration);
   }
 
   public void setColumnBodyWidth(String columnId, int width) {
@@ -1774,11 +1863,11 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     info.setBodyWidth(width);
   }
 
-  public void setColumnFooterFont(String columnId, Font font) {
+  public void setColumnFooterFont(String columnId, String fontDeclaration) {
     ColumnInfo info = getColumnInfo(columnId);
     Assert.notNull(info);
 
-    info.setFooterFont(font);
+    info.setFooterFont(fontDeclaration);
   }
 
   public void setColumnFooterWidth(String columnId, int width) {
@@ -1788,18 +1877,62 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     info.setFooterWidth(width);
   }
 
-  public void setColumnHeaderFont(String columnId, Font font) {
+  public void setColumnHeaderFont(String columnId, String fontDeclaration) {
     ColumnInfo info = getColumnInfo(columnId);
     Assert.notNull(info);
 
-    info.setHeaderFont(font);
+    info.setHeaderFont(fontDeclaration);
   }
-
+  
   public void setColumnHeaderWidth(String columnId, int width) {
     ColumnInfo info = getColumnInfo(columnId);
     Assert.notNull(info);
 
     info.setHeaderWidth(width);
+  }
+  
+  public void setColumnInfo(String columnId, ColumnDescription columnDescription) {
+    ColumnInfo columnInfo = getColumnInfo(columnId);
+    Assert.notNull(columnInfo);
+    Assert.notNull(columnDescription);
+
+    if (BeeUtils.isTrue(columnDescription.isReadOnly())) {
+      columnInfo.setColReadOnly(true);
+    }
+
+    if (columnDescription.getWidth() != null) {
+      columnInfo.setWidth(columnDescription.getWidth());
+    }
+    if (columnDescription.getMinWidth() != null) {
+      columnInfo.setMinWidth(columnDescription.getMinWidth());
+    }
+    if (columnDescription.getMaxWidth() != null) {
+      columnInfo.setMaxWidth(columnDescription.getMaxWidth());
+    }
+
+    if (columnDescription.getHeaderStyle() != null) {
+      columnInfo.setHeaderStyle(StyleDescriptor.copyOf(columnDescription.getHeaderStyle()));
+    }
+    if (columnDescription.getBodyStyle() != null) {
+      columnInfo.setBodyStyle(StyleDescriptor.copyOf(columnDescription.getBodyStyle()));
+    }
+    if (columnDescription.getFooterStyle() != null) {
+      columnInfo.setFooterStyle(StyleDescriptor.copyOf(columnDescription.getFooterStyle()));
+    }
+
+    if (columnDescription.getDynStyles() != null) {
+      List<ConditionalStyle> dynStyles = Lists.newArrayList();
+      for (ConditionalStyleDeclaration csd : columnDescription.getDynStyles()) {
+        ConditionalStyle conditionalStyle = ConditionalStyle.create(csd);
+        if (conditionalStyle != null) {
+          dynStyles.add(conditionalStyle);
+        }
+      }
+
+      if (!dynStyles.isEmpty()) {
+        columnInfo.setDynStyles(dynStyles);
+      }
+    }
   }
 
   public void setColumnWidth(int col, int width) {
@@ -1843,8 +1976,12 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     getFooterComponent().setPadding(padding);
   }
 
-  public void setFooterComponent(GridComponent src) {
+  public void setFooterComponent(GridComponentDescription src) {
     updateComponent(src, getFooterComponent());
+  }
+
+  public void setFooterFont(String fontDeclaration) {
+    getFooterComponent().setFont(fontDeclaration);
   }
 
   public void setHeaderBorderWidth(Edges borderWidth) {
@@ -1863,8 +2000,12 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     getHeaderComponent().setPadding(padding);
   }
 
-  public void setHeaderComponent(GridComponent src) {
+  public void setHeaderComponent(GridComponentDescription src) {
     updateComponent(src, getHeaderComponent());
+  }
+
+  public void setHeaderFont(String fontDeclaration) {
+    getHeaderComponent().setFont(fontDeclaration);
   }
 
   public void setId(String id) {
@@ -2540,6 +2681,30 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     return getHeightIncrement(padding) + getHeightIncrement(border) + getHeightIncrement(margin);
   }
 
+  private int getMaxCellWidth() {
+    return maxCellWidth;
+  }
+
+  private int getMaxColumnWidth(int col) {
+    int maxWidth = getColumnInfo(col).getMaxWidth();
+    if (maxWidth > 0) {
+      return maxWidth;
+    }
+    return getMaxCellWidth();
+  }
+
+  private int getMinCellWidth() {
+    return minCellWidth;
+  }
+
+  private int getMinColumnWidth(int col) {
+    int minWidth = getColumnInfo(col).getMinWidth();
+    if (minWidth > 0) {
+      return minWidth;
+    }
+    return getMinCellWidth();
+  }
+
   private Table<Long, String, CellInfo> getResizedCells() {
     return resizedCells;
   }
@@ -3028,13 +3193,16 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     return h;
   }
 
-  private int limitCellWidth(int width) {
+  private int limitCellWidth(int width, int col) {
     int w = width;
-    if (getMinCellWidth() > 0) {
-      w = Math.max(w, getMinCellWidth());
+    int minWidth = getMinColumnWidth(col);
+    int maxWidth = getMaxColumnWidth(col);
+    
+    if (minWidth > 0) {
+      w = Math.max(w, minWidth);
     }
-    if (getMaxCellWidth() > 0 && getMaxCellWidth() > getMinCellWidth()) {
-      w = Math.min(w, getMaxCellWidth());
+    if (maxWidth > 0 && maxWidth > minWidth) {
+      w = Math.min(w, maxWidth);
     }
     return w;
   }
@@ -3096,7 +3264,8 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     int actRow = getActiveRow();
     int actCol = getActiveColumn();
 
-    String classes = StyleUtils.buildClasses(STYLE_CELL, getBodyComponent().getClassName());
+    String classes =
+        StyleUtils.buildClasses(STYLE_CELL, STYLE_BODY, getBodyComponent().getClassName());
 
     Edges padding = getBodyCellPadding();
     Edges borderWidth = getBodyBorderWidth();
@@ -3109,6 +3278,8 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     boolean collapseBorders = (cellBorders != null);
 
     SafeStylesBuilder stylesBuilder = new SafeStylesBuilder();
+    getBodyComponent().buildSafeStyles(stylesBuilder);
+
     stylesBuilder.append(StyleUtils.buildMargin(getCssValue(margin)));
     if (!collapseBorders) {
       stylesBuilder.append(defaultPaddingStyle);
@@ -3141,10 +3312,10 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
       }
 
       if (rowStyles != null) {
-//        String extraRowStyles = rowStyles.getStyleNames(value, i);
-//        if (extraRowStyles != null) {
-//          rowClasses = StyleUtils.buildClasses(rowClasses, extraRowStyles);
-//        }
+        // String extraRowStyles = rowStyles.getStyleNames(value, i);
+        // if (extraRowStyles != null) {
+        // rowClasses = StyleUtils.buildClasses(rowClasses, extraRowStyles);
+        // }
       }
 
       SafeHtmlBuilder trBuilder = new SafeHtmlBuilder();
@@ -3162,7 +3333,8 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
       for (ColumnInfo columnInfo : columns) {
         Column<IsRow, ?> column = columnInfo.getColumn();
 
-        String cellClasses = rowClasses;
+        String cellClasses = StyleUtils.buildClasses(rowClasses,
+            columnInfo.getClassName(ComponentType.BODY));
         if (isActive && col == actCol) {
           cellClasses = StyleUtils.buildClasses(cellClasses, STYLE_ACTIVE_CELL);
         }
@@ -3173,6 +3345,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
         SafeHtml cellHtml = cellBuilder.toSafeHtml();
 
         SafeStylesBuilder extraStylesBuilder = new SafeStylesBuilder();
+        columnInfo.buildSafeStyles(extraStylesBuilder, ComponentType.BODY);
 
         if (collapseBorders) {
           Edges borders = cellBorders[i][col];
@@ -3190,10 +3363,6 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
             }
             extraStylesBuilder.append(StyleUtils.buildBorderWidth(getCssValue(borders)));
           }
-        }
-
-        if (columnInfo.getBodyFont() != null) {
-          extraStylesBuilder.append(columnInfo.getBodyFont().buildCss());
         }
 
         int columnWidth = columnInfo.getColumnWidth();
@@ -3276,15 +3445,20 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
       return;
     }
     int columnCount = getColumnCount();
-    
+
     Component component = isHeader ? getHeaderComponent() : getFooterComponent();
-    String classes = StyleUtils.buildClasses(STYLE_CELL, component.getClassName());
+    ComponentType componentType = isHeader ? ComponentType.HEADER : ComponentType.FOOTER;
+
+    String classes = StyleUtils.buildClasses(STYLE_CELL,
+        isHeader ? STYLE_HEADER : STYLE_FOOTER, component.getClassName());
 
     Edges padding = component.getPadding();
     Edges borderWidth = Edges.copyOf(component.getBorderWidth());
     Edges margin = component.getMargin();
 
     SafeStylesBuilder stylesBuilder = new SafeStylesBuilder();
+    component.buildSafeStyles(stylesBuilder);
+
     stylesBuilder.append(StyleUtils.buildPadding(getCssValue(padding)));
     stylesBuilder.append(StyleUtils.buildMargin(getCssValue(margin)));
 
@@ -3346,19 +3520,18 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
       widthIncr = (i == 0) ? firstColumnWidthIncr
           : (i == columnCount - 1) ? lastColumnWidthIncr : defaultColumnWidthIncr;
 
+      String cellClasses = StyleUtils.buildClasses(classes, columnInfo.getClassName(componentType));
+      
       SafeStylesBuilder extraStylesBuilder = new SafeStylesBuilder();
+      columnInfo.buildSafeStyles(extraStylesBuilder, componentType);
+      
       SafeStyles extraStyles = (i == 0) ? firstColumnStyles
           : (i == columnCount - 1) ? lastColumnStyles : defaultColumnStyles;
       if (extraStyles != null) {
         extraStylesBuilder.append(extraStyles);
       }
 
-      Font font = isHeader ? columnInfo.getHeaderFont() : columnInfo.getFooterFont();
-      if (font != null) {
-        extraStylesBuilder.append(font.buildCss());
-      }
-
-      SafeHtml contents = renderCell(rowIdx, i, classes, left, top,
+      SafeHtml contents = renderCell(rowIdx, i, cellClasses, left, top,
           width + xIncr - widthIncr, cellHeight, styles, extraStylesBuilder.toSafeStyles(), null,
           headerBuilder.toSafeHtml(), false);
       sb.append(contents);
@@ -3420,7 +3593,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
           break;
       }
 
-      newWidth = limitCellWidth(newWidth);
+      newWidth = limitCellWidth(newWidth, col);
       newHeight = limitCellHeight(newHeight, getBodyComponent());
       if (newWidth <= 0) {
         newWidth = oldWidth;
@@ -3446,7 +3619,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
       return BeeConst.UNDEF;
     }
 
-    int newWidth = limitCellWidth(oldWidth + incr);
+    int newWidth = limitCellWidth(oldWidth + incr, col);
     if (newWidth <= 0 || !BeeUtils.sameSign(newWidth - oldWidth, incr)) {
       return BeeConst.UNDEF;
     }
@@ -3833,8 +4006,8 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
 
     int absLeft = cellElement.getAbsoluteLeft();
     int cellWidth = cellElement.getOffsetWidth();
-    int min = absLeft + Math.min(Math.max(getMinCellWidth(), 0), cellWidth);
-    int max = absLeft + Math.max(getMaxCellWidth(), cellWidth);
+    int min = absLeft + Math.min(Math.max(getMinColumnWidth(col), 0), cellWidth);
+    int max = absLeft + Math.max(getMaxColumnWidth(col), cellWidth);
     setResizerBounds(min, max);
 
     StyleUtils.unhideDisplay(resizerElement);
@@ -3882,7 +4055,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
 
     int absTop = cellElement.getAbsoluteTop();
     int cellHeight = cellElement.getOffsetHeight();
-    
+
     Component component = getComponent(rowIdx);
     if (component != null) {
       int min = absTop + Math.min(Math.max(component.getMinHeight(), 0), cellHeight);
@@ -3913,7 +4086,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
   }
 
   private void startEditing(IsRow rowValue, int col, Element cellElement, int charCode) {
-    if (!isReadOnly()) {
+    if (!isReadOnly() && !getColumnInfo(col).isColReadOnly()) {
       fireEvent(new EditStartEvent(rowValue, getColumnId(col), cellElement, charCode));
     }
   }
@@ -3928,7 +4101,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     getResizerMoveTimer().reset();
     setResizing(true);
   }
-  
+
   private void stopResizing() {
     getResizerMoveTimer().stop();
     setResizing(false);
@@ -3936,7 +4109,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
 
     setResizerModifiers(null);
   }
-  
+
   private void updateCell(int visibleIndex, int col) {
     IsRow rowValue = getVisibleItem(visibleIndex);
     Assert.notNull(rowValue);
@@ -3952,15 +4125,15 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     cellElement.setInnerHTML(cellHtml.asString());
   }
 
-  private void updateComponent(GridComponent src, Component dst) {
+  private void updateComponent(GridComponentDescription src, Component dst) {
     if (src == null || dst == null) {
       return;
     }
-    
+
     if (src.getStyle() != null) {
-      dst.setStyle(StyleDescriptor.copyOf(dst.getStyle()));
+      dst.setStyle(StyleDescriptor.copyOf(src.getStyle()));
     }
-    
+
     if (src.getHeight() != null) {
       dst.setCellHeight(src.getHeight());
     }
@@ -3970,7 +4143,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     if (src.getMaxHeight() != null) {
       dst.setMaxHeight(src.getMaxHeight());
     }
-    
+
     if (!BeeUtils.isEmpty(src.getPadding())) {
       dst.setPadding(Edges.parse(src.getPadding()));
     }
@@ -3981,7 +4154,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
       dst.setMargin(Edges.parse(src.getMargin()));
     }
   }
-  
+
   private void updateOrder(String columnId, boolean hasModifiers) {
     Assert.notEmpty(columnId);
     Order ord = getSortOrder();
@@ -4026,7 +4199,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
       ord.clear();
     }
   }
-  
+
   private boolean updatePageSize() {
     if (hasPaging()) {
       int newPageSize = estimatePageSize();

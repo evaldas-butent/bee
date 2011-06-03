@@ -13,7 +13,7 @@ import com.butent.bee.shared.utils.PropertyUtils;
 import java.util.Collection;
 import java.util.List;
 
-public class GridColumn implements BeeSerializable, HasInfo {
+public class ColumnDescription implements BeeSerializable, HasInfo {
 
   public enum ColType {
     DATA("BeeDataColumn"),
@@ -51,11 +51,11 @@ public class GridColumn implements BeeSerializable, HasInfo {
     CALC, HEADER_STYLE, BODY_STYLE, FOOTER_STYLE, DYN_STYLES
   }
 
-  public static GridColumn restore(String s) {
+  public static ColumnDescription restore(String s) {
     if (BeeUtils.isEmpty(s)) {
       return null;
     }
-    GridColumn column = new GridColumn();
+    ColumnDescription column = new ColumnDescription();
     column.deserialize(s);
     return column;
   }
@@ -96,16 +96,16 @@ public class GridColumn implements BeeSerializable, HasInfo {
   private StyleDeclaration bodyStyle = null;
   private StyleDeclaration footerStyle = null;
 
-  private Collection<ConditionalStyle> dynStyles = null;
+  private Collection<ConditionalStyleDeclaration> dynStyles = null;
 
-  public GridColumn(ColType type, String name) {
+  public ColumnDescription(ColType type, String name) {
     Assert.notEmpty(type);
     Assert.notEmpty(name);
     this.type = type;
     this.name = name;
   }
 
-  private GridColumn() {
+  private ColumnDescription() {
   }
 
   @Override
@@ -196,9 +196,9 @@ public class GridColumn implements BeeSerializable, HasInfo {
             setDynStyles(null);
           } else {
             String[] scs = Codec.beeDeserialize(value);
-            List<ConditionalStyle> lst = Lists.newArrayList();
+            List<ConditionalStyleDeclaration> lst = Lists.newArrayList();
             for (String z : scs) {
-              lst.add(ConditionalStyle.restore(z));
+              lst.add(ConditionalStyleDeclaration.restore(z));
             }
             setDynStyles(lst);
           }
@@ -213,8 +213,28 @@ public class GridColumn implements BeeSerializable, HasInfo {
     }
   }
 
+  public StyleDeclaration getBodyStyle() {
+    return bodyStyle;
+  }
+
   public Calculation getCalc() {
     return calc;
+  }
+
+  public String getCaption() {
+    return caption;
+  }
+
+  public Collection<ConditionalStyleDeclaration> getDynStyles() {
+    return dynStyles;
+  }
+
+  public StyleDeclaration getFooterStyle() {
+    return footerStyle;
+  }
+
+  public StyleDeclaration getHeaderStyle() {
+    return headerStyle;
   }
 
   public List<Property> getInfo() {
@@ -266,7 +286,7 @@ public class GridColumn implements BeeSerializable, HasInfo {
       int cnt = getDynStyles().size();
       info.add(new Property("Dyn Styles", BeeUtils.bracket(cnt)));
       int i = 0;
-      for (ConditionalStyle conditionalStyle : getDynStyles()) {
+      for (ConditionalStyleDeclaration conditionalStyle : getDynStyles()) {
         i++;
         if (conditionalStyle != null) {
           PropertyUtils.appendChildrenToProperties(info, "Dyn Style " + BeeUtils.progress(i, cnt),
@@ -277,6 +297,14 @@ public class GridColumn implements BeeSerializable, HasInfo {
 
     PropertyUtils.addWhenEmpty(info, getClass());
     return info;
+  }
+
+  public Integer getMaxWidth() {
+    return maxWidth;
+  }
+
+  public Integer getMinWidth() {
+    return minWidth;
   }
 
   public String getName() {
@@ -293,6 +321,26 @@ public class GridColumn implements BeeSerializable, HasInfo {
 
   public ColType getType() {
     return type;
+  }
+
+  public Integer getWidth() {
+    return width;
+  }
+
+  public Boolean hasFooter() {
+    return hasFooter;
+  }
+
+  public Boolean isReadOnly() {
+    return readOnly;
+  }
+
+  public Boolean isSortable() {
+    return sortable;
+  }
+
+  public Boolean isVisible() {
+    return visible;
   }
 
   @Override
@@ -405,7 +453,7 @@ public class GridColumn implements BeeSerializable, HasInfo {
     this.carry = carry;
   }
 
-  public void setDynStyles(Collection<ConditionalStyle> dynStyles) {
+  public void setDynStyles(Collection<ConditionalStyleDeclaration> dynStyles) {
     this.dynStyles = dynStyles;
   }
 
@@ -489,20 +537,12 @@ public class GridColumn implements BeeSerializable, HasInfo {
     this.width = width;
   }
 
-  private StyleDeclaration getBodyStyle() {
-    return bodyStyle;
-  }
-
-  private String getCaption() {
-    return caption;
+  public Boolean showWidth() {
+    return showWidth;
   }
 
   private Calculation getCarry() {
     return carry;
-  }
-
-  private Collection<ConditionalStyle> getDynStyles() {
-    return dynStyles;
   }
 
   private Calculation getEditable() {
@@ -513,32 +553,16 @@ public class GridColumn implements BeeSerializable, HasInfo {
     return editor;
   }
 
-  private StyleDeclaration getFooterStyle() {
-    return footerStyle;
-  }
-
   private String getFormat() {
     return format;
-  }
-
-  private StyleDeclaration getHeaderStyle() {
-    return headerStyle;
   }
 
   private String getMaxValue() {
     return maxValue;
   }
 
-  private Integer getMaxWidth() {
-    return maxWidth;
-  }
-
   private String getMinValue() {
     return minValue;
-  }
-
-  private Integer getMinWidth() {
-    return minWidth;
   }
 
   private String getRelTable() {
@@ -553,35 +577,11 @@ public class GridColumn implements BeeSerializable, HasInfo {
     return validation;
   }
 
-  private Integer getWidth() {
-    return width;
-  }
-
-  private Boolean hasFooter() {
-    return hasFooter;
-  }
-
-  private Boolean isReadOnly() {
-    return readOnly;
-  }
-
-  private Boolean isSortable() {
-    return sortable;
-  }
-
-  private Boolean isVisible() {
-    return visible;
-  }
-
   private void setName(String name) {
     this.name = name;
   }
 
   private void setType(ColType type) {
     this.type = type;
-  }
-
-  private Boolean showWidth() {
-    return showWidth;
   }
 }
