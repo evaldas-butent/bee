@@ -21,6 +21,7 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Edges;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.event.EventUtils;
+import com.butent.bee.client.grid.CalculatedIntegerColumn;
 import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
 import com.butent.bee.client.grid.GridFactory;
@@ -48,6 +49,7 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.BooleanValue;
+import com.butent.bee.shared.data.value.IntegerValue;
 import com.butent.bee.shared.data.value.TextValue;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.RowInfo;
@@ -604,6 +606,8 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
           break;
           
         case CALCULATED:
+          column = new CalculatedIntegerColumn(columnId,
+              Evaluator.<IntegerValue>create(columnDescription.getCalc()), dataCols);
           break;
       }
       

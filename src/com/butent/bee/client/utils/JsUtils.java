@@ -2,6 +2,7 @@ package com.butent.bee.client.utils;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArrayString;
+import com.google.gwt.core.client.JsDate;
 import com.google.gwt.json.client.JSONObject;
 
 /**
@@ -229,10 +230,26 @@ public class JsUtils {
     arr.splice(index, 0);
   }-*/;
 
+  public static native void setProperty(JavaScriptObject obj, String p, boolean value) /*-{
+    obj[p] = value;
+  }-*/;
+
+  public static native void setProperty(JavaScriptObject obj, String p, double value) /*-{
+    obj[p] = value;
+  }-*/;
+
+  public static native void setProperty(JavaScriptObject obj, String p, JsDate value) /*-{
+    obj[p] = value;
+  }-*/;
+  
   public static native void setProperty(JavaScriptObject obj, String p, String value) /*-{
     obj[p] = value;
   }-*/;
 
+  public static native void setPropertyToNull(JavaScriptObject obj, String p) /*-{
+    obj[p] = null;
+  }-*/;
+  
   public static native JsArrayString slice(JsArrayString src, int start, int end) /*-{
     if (src == null) {
       return null;
