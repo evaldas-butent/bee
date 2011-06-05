@@ -10,6 +10,7 @@ import com.google.gwt.i18n.shared.DateTimeFormat.PredefinedFormat;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.utils.BeeUtils;
 
 public class Format {
@@ -172,12 +173,45 @@ public class Format {
   public static NumberFormat getDefaultLongFormat() {
     return defaultLongFormat;
   }
+  
+  public static NumberFormat getDefaultNumberFormat(ValueType type, int scale) {
+    Assert.notNull(type);
+    NumberFormat format;
+    
+    switch (type) {
+      case DECIMAL:
+        format = getDecimalFormat(scale);
+        break;
+      case INTEGER:
+        format = getDefaultIntegerFormat();
+        break;
+      case LONG:
+        format = getDefaultLongFormat();
+        break;
+      case NUMBER:
+        format = getDefaultDoubleFormat();
+        break;
+      default:
+        format = null;
+    }
+    return format;
+  }
 
   public static NumberFormat getNumberFormat(String pattern) {
     Assert.notEmpty(pattern);
     return new NumberFormatter(pattern);
   }
 
+  public static DateTimeFormat getPredefinedFormat(String name) {
+    Assert.notNull(name);
+    for (DateTimeFormat.PredefinedFormat predef : DateTimeFormat.PredefinedFormat.values()) {
+      if (BeeUtils.same(name, predef.name())) {
+        return DateTimeFormat.getFormat(predef);
+      }
+    }
+    return null;
+  }
+  
   public static void setDefaultCurrencyFormat(NumberFormat defaultCurrencyFormat) {
     Format.defaultCurrencyFormat = defaultCurrencyFormat;
   }

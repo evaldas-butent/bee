@@ -2743,7 +2743,7 @@ public class BeeUtils {
   }
 
   public static String toString(char c) {
-    return new String(new char[] {c});
+    return String.valueOf(c);
   }
 
   /**

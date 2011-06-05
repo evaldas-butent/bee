@@ -13,7 +13,7 @@ import com.butent.bee.shared.data.IsRow;
  * Implements date type column, enables to get value for a specified row or index point.
  */
 
-public class DateColumn extends CellColumn<JustDate> implements HasDateTimeFormat {
+public class DateColumn extends DataColumn<JustDate> implements HasDateTimeFormat {
 
   public DateColumn(int index, IsColumn dataColumn) {
     this(Format.getDefaultDateFormat(), index, dataColumn);

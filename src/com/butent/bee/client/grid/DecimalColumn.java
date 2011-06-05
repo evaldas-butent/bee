@@ -8,7 +8,7 @@ import com.butent.bee.shared.data.IsRow;
 
 import java.math.BigDecimal;
 
-public class DecimalColumn extends AbstractNumberColumn<BigDecimal> {
+public class DecimalColumn extends NumberColumn<BigDecimal> {
 
   public DecimalColumn(int index, IsColumn dataColumn) {
     this(Format.getDecimalFormat(dataColumn.getScale()), index, dataColumn);

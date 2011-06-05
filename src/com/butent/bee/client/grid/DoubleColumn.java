@@ -6,7 +6,7 @@ import com.butent.bee.client.i18n.Format;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 
-public class DoubleColumn extends AbstractNumberColumn<Double> {
+public class DoubleColumn extends NumberColumn<Double> {
   
   public DoubleColumn(int index, IsColumn dataColumn) {
     this(Format.getDefaultDoubleFormat(), index, dataColumn);

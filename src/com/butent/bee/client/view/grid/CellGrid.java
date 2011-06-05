@@ -24,7 +24,6 @@ import com.google.gwt.safehtml.client.SafeHtmlTemplates;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.google.gwt.safehtml.shared.SafeHtmlUtils;
-import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.Header;
 import com.google.gwt.user.cellview.client.LoadingStateChangeEvent;
 import com.google.gwt.user.client.Event;
@@ -48,6 +47,7 @@ import com.butent.bee.client.dom.Selectors;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.Modifiers;
+import com.butent.bee.client.grid.AbstractColumn;
 import com.butent.bee.client.grid.CellContext;
 import com.butent.bee.client.ui.ConditionalStyle;
 import com.butent.bee.client.ui.StyleDescriptor;
@@ -57,6 +57,7 @@ import com.butent.bee.client.view.edit.HasEditStartHandlers;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasId;
+import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
 import com.butent.bee.shared.data.event.MultiDeleteEvent;
@@ -66,11 +67,9 @@ import com.butent.bee.shared.data.event.SortEvent;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.ui.ColumnDescription;
-import com.butent.bee.shared.ui.ConditionalStyleDeclaration;
 import com.butent.bee.shared.ui.GridComponentDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 
-import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -213,7 +212,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     private final String columnId;
     private final int dataIndex;
 
-    private final Column<IsRow, ?> column;
+    private final AbstractColumn<?> column;
     private final Header<?> header;
     private final Header<?> footer;
 
@@ -229,14 +228,15 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     private StyleDescriptor bodyStyle = null;
     private StyleDescriptor footerStyle = null;
 
-    private Collection<ConditionalStyle> dynStyles = null;
+    private ConditionalStyle dynStyles = null;
 
     private boolean colReadOnly = false;
 
-    private ColumnInfo(String columnId, int dataIndex, Column<IsRow, ?> column,
-        Header<?> header, Header<?> footer) {
+    private ColumnInfo(String columnId, int dataIndex,
+        AbstractColumn<?> column, Header<?> header, Header<?> footer) {
       this.columnId = columnId;
       this.dataIndex = dataIndex;
+
       this.column = column;
       this.header = header;
       this.footer = footer;
@@ -247,15 +247,9 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
       if (sd == null) {
         return;
       }
-
-      if (sd.getSafeStyles() != null) {
-        stylesBuilder.append(sd.getSafeStyles());
-      }
-      if (sd.getFont() != null) {
-        stylesBuilder.append(sd.getFont().buildCss());
-      }
+      sd.buildSafeStyles(stylesBuilder);
     }
-    
+
     private void ensureBodyWidth(int w) {
       if (w > 0) {
         setBodyWidth(Math.max(getBodyWidth(), w));
@@ -288,7 +282,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     private int getBodyWidth() {
       return bodyWidth;
     }
-    
+
     private String getClassName(ComponentType componentType) {
       StyleDescriptor sd = getStyleDescriptor(componentType);
       if (sd == null) {
@@ -297,7 +291,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
       return sd.getClassName();
     }
 
-    private Column<IsRow, ?> getColumn() {
+    private AbstractColumn<?> getColumn() {
       return column;
     }
 
@@ -318,7 +312,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
       } else {
         w = getFooterWidth();
       }
-      
+
       int minW = getMinWidth();
       if (minW <= 0) {
         minW = getMinCellWidth();
@@ -334,7 +328,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
       return dataIndex;
     }
 
-    private Collection<ConditionalStyle> getDynStyles() {
+    private ConditionalStyle getDynStyles() {
       return dynStyles;
     }
 
@@ -360,7 +354,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     private Header<?> getHeader() {
       return header;
     }
-    
+
     private Font getHeaderFont() {
       if (getHeaderStyle() == null) {
         return null;
@@ -430,7 +424,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
       this.colReadOnly = colReadOnly;
     }
 
-    private void setDynStyles(Collection<ConditionalStyle> dynStyles) {
+    private void setDynStyles(ConditionalStyle dynStyles) {
       this.dynStyles = dynStyles;
     }
 
@@ -569,7 +563,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     private void setCellHeight(int cellHeight) {
       this.cellHeight = cellHeight;
     }
-    
+
     private void setFont(String fontDeclaration) {
       if (getStyle() == null) {
         if (!BeeUtils.isEmpty(fontDeclaration)) {
@@ -739,7 +733,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
   private enum TargetType {
     CONTAINER, RESIZER, HEADER, BODY, FOOTER;
   }
-  
+
   public static int defaultBodyCellHeight = 24;
   public static Edges defaultBodyCellPadding = new Edges(2, 3);
   public static Edges defaultBodyBorderWidth = new Edges(1);
@@ -823,7 +817,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
 
   private final List<IsRow> rowData = Lists.newArrayList();
 
-  private Collection<ConditionalStyle> rowStyles = null;
+  private ConditionalStyle rowStyles = null;
 
   private SelectionModel<? super IsRow> selectionModel;
   private final LinkedHashMap<Long, RowInfo> selectedRows = Maps.newLinkedHashMap();
@@ -883,12 +877,12 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     return addHandler(handler, CellPreviewEvent.getType());
   }
 
-  public void addColumn(String columnId, int dataIndex, Column<IsRow, ?> col, Header<?> header) {
+  public void addColumn(String columnId, int dataIndex, AbstractColumn<?> col, Header<?> header) {
     insertColumn(getColumnCount(), columnId, dataIndex, col, header, null);
   }
 
-  public void addColumn(String columnId, int dataIndex, Column<IsRow, ?> col,
-      Header<?> header, Header<?> footer) {
+  public void addColumn(String columnId, int dataIndex,
+      AbstractColumn<?> col, Header<?> header, Header<?> footer) {
     insertColumn(getColumnCount(), columnId, dataIndex, col, header, footer);
   }
 
@@ -991,7 +985,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     Assert.notNull(values);
 
     ColumnInfo columnInfo = getColumnInfo(col);
-    Column<IsRow, ?> column = columnInfo.getColumn();
+    AbstractColumn<?> column = columnInfo.getColumn();
     Font font = Font.merge(getBodyComponent().getFont(), columnInfo.getBodyFont());
 
     int width = 0;
@@ -1150,11 +1144,11 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     return width;
   }
 
-  public Column<IsRow, ?> getColumn(int col) {
+  public AbstractColumn<?> getColumn(int col) {
     return getColumnInfo(col).getColumn();
   }
 
-  public Column<IsRow, ?> getColumn(String columnId) {
+  public AbstractColumn<?> getColumn(String columnId) {
     ColumnInfo info = getColumnInfo(columnId);
     if (info == null) {
       return null;
@@ -1278,7 +1272,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
   public int getMinBodyCellHeight() {
     return getBodyComponent().getMinHeight();
   }
-  
+
   public int getPageSize() {
     return pageSize;
   }
@@ -1290,7 +1284,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
   public int getRowCount() {
     return rowCount;
   }
-  
+
   public LinkedHashMap<Long, RowInfo> getSelectedRows() {
     return selectedRows;
   }
@@ -1434,7 +1428,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
   }
 
   public void insertColumn(int beforeIndex, String columnId, int dataIndex,
-      Column<IsRow, ?> column, Header<?> header, Header<?> footer) {
+      AbstractColumn<?> column, Header<?> header, Header<?> footer) {
     if (beforeIndex != getColumnCount()) {
       checkColumnBounds(beforeIndex);
     }
@@ -1644,7 +1638,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
         return;
       }
 
-      Column<IsRow, ?> column = getColumn(col);
+      AbstractColumn<?> column = getColumn(col);
       CellContext context = new CellContext(row, col, getRowId(rowValue), this);
 
       if (hasCellPreview()) {
@@ -1728,7 +1722,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     int dataIndex = getColumnInfo(col).getDataIndex();
     rowValue.setValue(dataIndex, value);
 
-    Column<IsRow, ?> column = getColumn(col);
+    AbstractColumn<?> column = getColumn(col);
 
     SafeHtmlBuilder cellBuilder = new SafeHtmlBuilder();
     CellContext context = new CellContext(row, col, rowId, this);
@@ -1883,15 +1877,16 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
 
     info.setHeaderFont(fontDeclaration);
   }
-  
+
   public void setColumnHeaderWidth(String columnId, int width) {
     ColumnInfo info = getColumnInfo(columnId);
     Assert.notNull(info);
 
     info.setHeaderWidth(width);
   }
-  
-  public void setColumnInfo(String columnId, ColumnDescription columnDescription) {
+
+  public void setColumnInfo(String columnId, ColumnDescription columnDescription,
+      List<? extends IsColumn> dataColumns) {
     ColumnInfo columnInfo = getColumnInfo(columnId);
     Assert.notNull(columnInfo);
     Assert.notNull(columnDescription);
@@ -1921,15 +1916,9 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     }
 
     if (columnDescription.getDynStyles() != null) {
-      List<ConditionalStyle> dynStyles = Lists.newArrayList();
-      for (ConditionalStyleDeclaration csd : columnDescription.getDynStyles()) {
-        ConditionalStyle conditionalStyle = ConditionalStyle.create(csd);
-        if (conditionalStyle != null) {
-          dynStyles.add(conditionalStyle);
-        }
-      }
-
-      if (!dynStyles.isEmpty()) {
+      ConditionalStyle dynStyles = ConditionalStyle.create(columnDescription.getDynStyles(),
+          columnId, dataColumns);
+      if (dynStyles != null) {
         columnInfo.setDynStyles(dynStyles);
       }
     }
@@ -2083,7 +2072,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     setRowData(0, values);
   }
 
-  public void setRowStyles(Collection<ConditionalStyle> rowStyles) {
+  public void setRowStyles(ConditionalStyle rowStyles) {
     this.rowStyles = rowStyles;
   }
 
@@ -2364,7 +2353,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
   }
 
   private int estimateBodyCellWidth(int visibleIndex, int col, IsRow rowValue,
-      Column<IsRow, ?> column, Font font) {
+      AbstractColumn<?> column, Font font) {
     SafeHtmlBuilder cellBuilder = new SafeHtmlBuilder();
     CellContext context = new CellContext(visibleIndex, col, getRowId(rowValue), this);
     column.render(context, rowValue, cellBuilder);
@@ -2374,7 +2363,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
   }
 
   private <C> void fireEventToCell(Event event, String eventType,
-      Element parentElem, IsRow value, CellContext context, Column<IsRow, C> column) {
+      Element parentElem, IsRow value, CellContext context, AbstractColumn<C> column) {
     Cell<C> cell = column.getCell();
     if (cellConsumesEventType(cell, eventType)) {
       column.onBrowserEvent(context, parentElem, value, event);
@@ -2821,6 +2810,10 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     return Selectors.attributeEquals(DomUtils.ATTRIBUTE_DATA_ROW, rowIdx);
   }
 
+  private ConditionalStyle getRowStyles() {
+    return rowStyles;
+  }
+
   private int getRowWidth(String rowIdx) {
     int col = getColumnCount() - 1;
     if (col < 0) {
@@ -3197,7 +3190,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     int w = width;
     int minWidth = getMinColumnWidth(col);
     int maxWidth = getMaxColumnWidth(col);
-    
+
     if (minWidth > 0) {
       w = Math.max(w, minWidth);
     }
@@ -3258,7 +3251,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     getHeaderCellElement(col).setInnerHTML(builder.toSafeHtml().asString());
   }
 
-  private void renderBody(SafeHtmlBuilder sb, List<IsRow> values) {
+  private void renderBody(SafeHtmlBuilder sb, List<IsRow> rowValues) {
     int size = getVisibleItemCount();
     int start = getPageStart();
     int actRow = getActiveRow();
@@ -3274,7 +3267,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     SafeStyles defaultPaddingStyle = StyleUtils.buildPadding(getCssValue(padding));
     SafeStyles defaultBorderWidthStyle = StyleUtils.buildBorderWidth(getCssValue(borderWidth));
 
-    Edges[][] cellBorders = getBorders(values, borderWidth, margin);
+    Edges[][] cellBorders = getBorders(rowValues, borderWidth, margin);
     boolean collapseBorders = (cellBorders != null);
 
     SafeStylesBuilder stylesBuilder = new SafeStylesBuilder();
@@ -3296,10 +3289,10 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     int top = getHeaderHeight();
 
     for (int i = 0; i < size; i++) {
-      IsRow value = values.get(i);
-      Assert.notNull(value);
+      IsRow rowValue = rowValues.get(i);
+      Assert.notNull(rowValue);
 
-      boolean isSelected = isRowSelected(value);
+      boolean isSelected = isRowSelected(rowValue);
       boolean isActive = i == actRow;
 
       String rowClasses = StyleUtils.buildClasses(classes,
@@ -3311,11 +3304,22 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
         rowClasses = StyleUtils.buildClasses(rowClasses, STYLE_SELECTED_ROW);
       }
 
-      if (rowStyles != null) {
-        // String extraRowStyles = rowStyles.getStyleNames(value, i);
-        // if (extraRowStyles != null) {
-        // rowClasses = StyleUtils.buildClasses(rowClasses, extraRowStyles);
-        // }
+      SafeStyles extraRowStyles = null;
+      if (getRowStyles() != null) {
+        StyleDescriptor dynRowStyle =
+            getRowStyles().getStyleDescriptor(rowValue, i, BeeConst.UNDEF);
+        if (dynRowStyle != null) {
+          String dynRowClass = dynRowStyle.getClassName();
+          if (!BeeUtils.isEmpty(dynRowClass)) {
+            rowClasses = StyleUtils.buildClasses(rowClasses, dynRowClass);
+          }
+
+          if (dynRowStyle.hasSafeStylesOrFont()) {
+            SafeStylesBuilder extraRowstylesBuilder = new SafeStylesBuilder();
+            dynRowStyle.buildSafeStyles(extraRowstylesBuilder);
+            extraRowStyles = extraRowstylesBuilder.toSafeStyles();
+          }
+        }
       }
 
       SafeHtmlBuilder trBuilder = new SafeHtmlBuilder();
@@ -3324,14 +3328,14 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
       int left = 0;
 
       String rowIdx = BeeUtils.toString(i);
-      long valueId = value.getId();
+      long valueId = rowValue.getId();
       int rowHeight = getRowHeightById(valueId);
 
       int cellWidth;
       int cellHeight;
 
       for (ColumnInfo columnInfo : columns) {
-        Column<IsRow, ?> column = columnInfo.getColumn();
+        AbstractColumn<?> column = columnInfo.getColumn();
 
         String cellClasses = StyleUtils.buildClasses(rowClasses,
             columnInfo.getClassName(ComponentType.BODY));
@@ -3340,12 +3344,26 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
         }
 
         SafeHtmlBuilder cellBuilder = new SafeHtmlBuilder();
-        CellContext context = new CellContext(i, col, getRowId(value), this);
-        column.render(context, value, cellBuilder);
+        CellContext context = new CellContext(i, col, getRowId(rowValue), this);
+        column.render(context, rowValue, cellBuilder);
         SafeHtml cellHtml = cellBuilder.toSafeHtml();
 
         SafeStylesBuilder extraStylesBuilder = new SafeStylesBuilder();
+        if (extraRowStyles != null) {
+          extraStylesBuilder.append(extraRowStyles);
+        }
         columnInfo.buildSafeStyles(extraStylesBuilder, ComponentType.BODY);
+
+        if (columnInfo.getDynStyles() != null) {
+          StyleDescriptor dynColStyle = columnInfo.getDynStyles().getStyleDescriptor(rowValue,
+              i, col, column.getValueType(), column.getString(context, rowValue));
+          if (dynColStyle != null) {
+            if (!BeeUtils.isEmpty(dynColStyle.getClassName())) {
+              cellClasses = StyleUtils.buildClasses(cellClasses, dynColStyle.getClassName());
+            }
+            dynColStyle.buildSafeStyles(extraStylesBuilder);
+          }
+        }
 
         if (collapseBorders) {
           Edges borders = cellBorders[i][col];
@@ -3521,10 +3539,10 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
           : (i == columnCount - 1) ? lastColumnWidthIncr : defaultColumnWidthIncr;
 
       String cellClasses = StyleUtils.buildClasses(classes, columnInfo.getClassName(componentType));
-      
+
       SafeStylesBuilder extraStylesBuilder = new SafeStylesBuilder();
       columnInfo.buildSafeStyles(extraStylesBuilder, componentType);
-      
+
       SafeStyles extraStyles = (i == 0) ? firstColumnStyles
           : (i == columnCount - 1) ? lastColumnStyles : defaultColumnStyles;
       if (extraStyles != null) {
@@ -4113,7 +4131,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
   private void updateCell(int visibleIndex, int col) {
     IsRow rowValue = getVisibleItem(visibleIndex);
     Assert.notNull(rowValue);
-    Column<IsRow, ?> column = getColumn(col);
+    AbstractColumn<?> column = getColumn(col);
 
     SafeHtmlBuilder cellBuilder = new SafeHtmlBuilder();
     CellContext context = new CellContext(visibleIndex, col, rowValue.getId(), this);

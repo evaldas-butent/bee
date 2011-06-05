@@ -1,12 +1,14 @@
 package com.butent.bee.shared.data;
 
+import com.butent.bee.shared.HasPrecision;
+import com.butent.bee.shared.HasScale;
 import com.butent.bee.shared.data.value.ValueType;
 
 /**
  * Contains necessary methods for column classes, for example {@code getLabel} or {@code setType}.
  */
 
-public interface IsColumn extends HasCustomProperties {
+public interface IsColumn extends HasCustomProperties, HasPrecision, HasScale {
 
   IsColumn clone();
 
@@ -16,10 +18,6 @@ public interface IsColumn extends HasCustomProperties {
 
   String getPattern();
 
-  int getPrecision();
-
-  int getScale();
-
   ValueType getType();
 
   void setId(String id);
@@ -27,10 +25,6 @@ public interface IsColumn extends HasCustomProperties {
   void setLabel(String label);
 
   void setPattern(String pattern);
-
-  void setPrecision(int precision);
-
-  void setScale(int scale);
-  
+ 
   void setType(ValueType type);
 }

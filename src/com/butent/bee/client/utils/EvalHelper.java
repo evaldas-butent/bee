@@ -26,18 +26,7 @@ public class EvalHelper {
     return jso;
   }
   
-  public static void toJso(List<? extends IsColumn> columns, IsRow row, JavaScriptObject jso) {
-    Assert.notNull(columns);
-    Assert.notNull(row);
-    Assert.notNull(jso);
-    
-    for (int i = 0; i < columns.size(); i++) {
-      IsColumn column = columns.get(i);
-      setJsoProperty(jso, column.getLabel(), column.getType(), row.getString(i));
-    }
-  }
-  
-  private static void setJsoProperty(JavaScriptObject jso, String name, ValueType type,
+  public static void setJsoProperty(JavaScriptObject jso, String name, ValueType type,
       String value) {
     if (value == null || value.trim().isEmpty()) {
       JsUtils.setPropertyToNull(jso, name);
@@ -90,18 +79,29 @@ public class EvalHelper {
     }
   }
   
-  private static JsDate toJs(JustDate date) {
-    if (date == null) {
-      return null;
+  public static void toJso(List<? extends IsColumn> columns, IsRow row, JavaScriptObject jso) {
+    Assert.notNull(columns);
+    Assert.notNull(row);
+    Assert.notNull(jso);
+    
+    for (int i = 0; i < columns.size(); i++) {
+      IsColumn column = columns.get(i);
+      setJsoProperty(jso, column.getLabel(), column.getType(), row.getString(i));
     }
-    return JsDate.create(date.getYear(), date.getMonth() - 1, date.getDom());
   }
-
+  
   private static JsDate toJs(DateTime date) {
     if (date == null) {
       return null;
     }
     return JsDate.create(date.getTime());
+  }
+
+  private static JsDate toJs(JustDate date) {
+    if (date == null) {
+      return null;
+    }
+    return JsDate.create(date.getYear(), date.getMonth() - 1, date.getDom());
   }
   
   private EvalHelper() {

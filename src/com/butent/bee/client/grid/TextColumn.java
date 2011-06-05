@@ -12,7 +12,7 @@ import com.butent.bee.shared.utils.BeeUtils;
  * display size.
  */
 
-public class TextColumn extends CellColumn<String> {
+public class TextColumn extends DataColumn<String> {
   private int maxDisplaySize;
 
   public TextColumn(int index, IsColumn dataColumn) {

@@ -1,6 +1,7 @@
 package com.butent.bee.client.ui;
 
 import com.google.gwt.safecss.shared.SafeStyles;
+import com.google.gwt.safecss.shared.SafeStylesBuilder;
 
 import com.butent.bee.client.dom.Font;
 import com.butent.bee.client.dom.StyleUtils;
@@ -26,6 +27,19 @@ public class StyleDescriptor extends StyleDeclaration {
   public StyleDescriptor(String className, String inline, String fontDeclaration) {
     super(className, inline, fontDeclaration);
   }
+  
+  public void buildSafeStyles(SafeStylesBuilder stylesBuilder) {
+    if (stylesBuilder == null) {
+      return;
+    }
+
+    if (getSafeStyles() != null) {
+      stylesBuilder.append(getSafeStyles());
+    }
+    if (getFont() != null) {
+      stylesBuilder.append(getFont().buildCss());
+    }
+  }
 
   public Font getFont() {
     return font;
@@ -33,6 +47,10 @@ public class StyleDescriptor extends StyleDeclaration {
   
   public SafeStyles getSafeStyles() {
     return safeStyles;
+  }
+  
+  public boolean hasSafeStylesOrFont() {
+    return getSafeStyles() != null || getFont() != null;
   }
 
   @Override

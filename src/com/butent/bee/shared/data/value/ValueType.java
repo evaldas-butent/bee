@@ -13,11 +13,16 @@ import java.util.Map;
  * {@code Object} type using {@link #createValue(Object)}.
  */
 public enum ValueType {
-  BOOLEAN("boolean"), NUMBER("double"), TEXT("string"),
-  DATE("date"), TIMEOFDAY("timeofday"), DATETIME("datetime"),
-  INTEGER("integer"), LONG("long"), DECIMAL("decimal");
+  BOOLEAN("boolean", 'b'), NUMBER("double", 'n'), TEXT("string", 's'),
+  DATE("date", 'd'), TIMEOFDAY("timeofday", 's'), DATETIME("datetime", 'd'),
+  INTEGER("integer", 'n'), LONG("long", 'n'), DECIMAL("decimal", 'n');
 
-  private static Map<String, ValueType> typeCodeToValueType;
+  private static final Map<String, ValueType> typeCodeToValueType;
+  
+  private static final char GROUP_BOOL = 'b'; 
+  private static final char GROUP_DT = 'd'; 
+  private static final char GROUP_NUM = 'n'; 
+  private static final char GROUP_STR = 's'; 
 
   static {
     typeCodeToValueType = Maps.newHashMap();
@@ -33,14 +38,40 @@ public enum ValueType {
     return typeCodeToValueType.get(code.trim().toLowerCase());
   }
 
-  public static boolean isNumber(ValueType type) {
-    return type == NUMBER;
+  public static boolean isBoolean(ValueType type) {
+    if (type == null) {
+      return false;
+    }
+    return type.getGroupCode() == GROUP_BOOL;
+  }
+  
+  public static boolean isDateOrDateTime(ValueType type) {
+    if (type == null) {
+      return false;
+    }
+    return type.getGroupCode() == GROUP_DT;
+  }
+  
+  public static boolean isNumeric(ValueType type) {
+    if (type == null) {
+      return false;
+    }
+    return type.getGroupCode() == GROUP_NUM;
   }
 
-  private String typeCode;
+  public static boolean isString(ValueType type) {
+    if (type == null) {
+      return false;
+    }
+    return type.getGroupCode() == GROUP_STR;
+  }
+  
+  private final String typeCode;
+  private final char groupCode;
 
-  ValueType(String typeCode) {
+  ValueType(String typeCode, char groupCode) {
     this.typeCode = typeCode;
+    this.groupCode = groupCode;
   }
 
   public Value createValue(Object value) {
@@ -70,6 +101,10 @@ public enum ValueType {
 
     Assert.notNull(ret, "Value type mismatch.");
     return ret;
+  }
+
+  public char getGroupCode() {
+    return groupCode;
   }
 
   public String getTypeCode() {

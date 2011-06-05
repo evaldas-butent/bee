@@ -9,7 +9,7 @@ import com.butent.bee.shared.data.IsRow;
  * Implements boolean type column, enables to get value for a specified row or index point.
  */
 
-public class BooleanColumn extends CellColumn<Boolean> {
+public class BooleanColumn extends DataColumn<Boolean> {
 
   public BooleanColumn(int index, IsColumn dataColumn) {
     this(new BooleanCell(), index, dataColumn);

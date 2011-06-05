@@ -6,7 +6,7 @@ import com.butent.bee.client.i18n.Format;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 
-public class LongColumn extends AbstractNumberColumn<Long> {
+public class LongColumn extends NumberColumn<Long> {
   
   public LongColumn(int index, IsColumn dataColumn) {
     this(Format.getDefaultLongFormat(), index, dataColumn);

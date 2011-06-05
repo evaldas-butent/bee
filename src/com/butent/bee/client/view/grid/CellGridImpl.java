@@ -11,7 +11,6 @@ import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
-import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.Header;
 import com.google.gwt.user.client.Element;
 
@@ -21,7 +20,8 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Edges;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.event.EventUtils;
-import com.butent.bee.client.grid.CalculatedIntegerColumn;
+import com.butent.bee.client.grid.AbstractColumn;
+import com.butent.bee.client.grid.CalculatedColumn;
 import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
 import com.butent.bee.client.grid.GridFactory;
@@ -49,13 +49,11 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.BooleanValue;
-import com.butent.bee.shared.data.value.IntegerValue;
-import com.butent.bee.shared.data.value.TextValue;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.RowInfo;
+import com.butent.bee.shared.ui.Calculation;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.ColumnDescription.ColType;
-import com.butent.bee.shared.ui.ConditionalStyleDeclaration;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -234,8 +232,8 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
   private final CellGrid grid = new CellGrid();
   private GridDescription gridDescription = null;
   
-  private Evaluator<TextValue> rowMessage = null;
-  private Evaluator<BooleanValue> rowEditable = null;
+  private Evaluator rowMessage = null;
+  private Evaluator rowEditable = null;
 
   private final Map<String, EditableColumn> editableColumns = Maps.newHashMap();
 
@@ -509,24 +507,18 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       }
 
       if (gridDescr.getRowStyles() != null) {
-        List<ConditionalStyle> rowStyles = Lists.newArrayList();
-        for (ConditionalStyleDeclaration csd : gridDescr.getRowStyles()) {
-          ConditionalStyle conditionalStyle = ConditionalStyle.create(csd);
-          if (conditionalStyle != null) {
-            rowStyles.add(conditionalStyle);
-          }
-        }
-
-        if (!rowStyles.isEmpty()) {
+        ConditionalStyle rowStyles = ConditionalStyle.create(gridDescr.getRowStyles(), null,
+            dataCols);
+        if (rowStyles != null) {
           getGrid().setRowStyles(rowStyles);
         }
       }
       
       if (gridDescr.getRowMessage() != null) {
-        setRowMessage(Evaluator.<TextValue>create(gridDescr.getRowMessage()));
+        setRowMessage(Evaluator.create(gridDescr.getRowMessage(), null, dataCols));
       }
       if (gridDescr.getRowEditable() != null) {
-        setRowEditable(Evaluator.<BooleanValue>create(gridDescr.getRowEditable()));
+        setRowEditable(Evaluator.create(gridDescr.getRowEditable(), null, dataCols));
       }
       
       columnDescriptions = gridDescr.getVisibleColumns();
@@ -566,7 +558,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       columnDescriptions.add(verCol);
     }
 
-    Column<IsRow, ?> column;
+    AbstractColumn<?> column;
     ColumnHeader header = null;
     ColumnFooter footer = null;
     int dataIndex;
@@ -606,8 +598,11 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
           break;
           
         case CALCULATED:
-          column = new CalculatedIntegerColumn(columnId,
-              Evaluator.<IntegerValue>create(columnDescription.getCalc()), dataCols);
+          Calculation calc = columnDescription.getCalc();
+          if (calc != null && !calc.isEmpty()) {
+            column = new CalculatedColumn(calc.getType(),
+                Evaluator.create(calc, columnId, dataCols));
+          }
           break;
       }
       
@@ -630,7 +625,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       }
 
       getGrid().addColumn(columnId, dataIndex, column, header, footer);
-      getGrid().setColumnInfo(columnId, columnDescription);
+      getGrid().setColumnInfo(columnId, columnDescription, dataCols);
     }
 
     getGrid().setRowCount(rowCount);
@@ -760,7 +755,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       editor = EditorFactory.createEditor(editableColumn.getDataColumn());
       editor.asWidget().addStyleName(STYLE_EDITOR);
 
-      Column<IsRow, ?> gridColumn = getGrid().getColumn(columnId);
+      AbstractColumn<?> gridColumn = getGrid().getColumn(columnId);
       LocaleUtils.copyDateTimeFormat(gridColumn, editor);
       LocaleUtils.copyNumberFormat(gridColumn, editor);
 
@@ -866,11 +861,11 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     return notification;
   }
 
-  private Evaluator<BooleanValue> getRowEditable() {
+  private Evaluator getRowEditable() {
     return rowEditable;
   }
 
-  private Evaluator<TextValue> getRowMessage() {
+  private Evaluator getRowMessage() {
     return rowMessage;
   }
 
@@ -878,11 +873,11 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     this.gridDescription = gridDescription;
   }
 
-  private void setRowEditable(Evaluator<BooleanValue> rowEditable) {
+  private void setRowEditable(Evaluator rowEditable) {
     this.rowEditable = rowEditable;
   }
 
-  private void setRowMessage(Evaluator<TextValue> rowMessage) {
+  private void setRowMessage(Evaluator rowMessage) {
     this.rowMessage = rowMessage;
   }
 

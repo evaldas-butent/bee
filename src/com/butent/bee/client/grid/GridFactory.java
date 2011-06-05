@@ -172,7 +172,7 @@ public class GridFactory {
     descriptionCache.clear();
   }
 
-  public static CellColumn<?> createColumn(IsColumn dataColumn, int index) {
+  public static DataColumn<?> createColumn(IsColumn dataColumn, int index) {
     ValueType type = dataColumn.getType();
     if (type == null) {
       return new TextColumn(index, dataColumn);
@@ -326,7 +326,7 @@ public class GridFactory {
     grid.addColumn(id, -1, idColumn, new TextHeader("Id"));
     grid.setColumnWidth(id, 40);
 
-    CellColumn<?> column;
+    DataColumn<?> column;
     for (int i = 0; i < c; i++) {
       column = createColumn(table.getColumn(i), i);
       column.setSortable(true);

@@ -7,15 +7,15 @@ import com.butent.bee.client.i18n.HasNumberFormat;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 
-public abstract class AbstractNumberColumn<C extends Number> extends CellColumn<C> implements
+public abstract class NumberColumn<C extends Number> extends DataColumn<C> implements
     HasNumberFormat {
 
-  public AbstractNumberColumn(Cell<C> cell, int index, IsColumn dataColumn) {
+  public NumberColumn(Cell<C> cell, int index, IsColumn dataColumn) {
     super(cell, index, dataColumn);
     setHorizontalAlignment(ALIGN_RIGHT);
   }
 
-  public AbstractNumberColumn(NumberFormat format, int index, IsColumn dataColumn) {
+  public NumberColumn(NumberFormat format, int index, IsColumn dataColumn) {
     this(new NumberCell<C>(format), index, dataColumn);
   }
 
