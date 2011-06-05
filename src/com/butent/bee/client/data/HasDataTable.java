@@ -7,6 +7,7 @@ import com.butent.bee.client.view.edit.HasEditState;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.HandlesDeleteEvents;
 import com.butent.bee.shared.data.event.HandlesUpdateEvents;
+import com.butent.bee.shared.data.event.HasActiveRowChangeHandlers;
 import com.butent.bee.shared.data.event.HasSelectionCountChangeHandlers;
 import com.butent.bee.shared.data.event.HasSortHandlers;
 
@@ -17,7 +18,8 @@ import java.util.List;
  */
 
 public interface HasDataTable extends HasData<IsRow>, HasLoadingState, HasSortHandlers,
-    HandlesDeleteEvents, HandlesUpdateEvents, HasSelectionCountChangeHandlers, HasEditState {
+    HandlesDeleteEvents, HandlesUpdateEvents, HasSelectionCountChangeHandlers, HasEditState,
+    HasActiveRowChangeHandlers {
 
   void setPageSize(int pageSize);
 

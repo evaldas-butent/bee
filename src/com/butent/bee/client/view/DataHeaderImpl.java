@@ -8,6 +8,7 @@ import com.google.gwt.user.cellview.client.LoadingStateChangeEvent;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.Global;
+import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.layout.Complex;
 import com.butent.bee.client.presenter.Action;
@@ -104,9 +105,12 @@ public class DataHeaderImpl extends Complex implements DataHeaderView {
   private Presenter viewPresenter = null;
   
   private String loadingIndicatorId = null;
+  
+  private final String captionId;
 
   public DataHeaderImpl() {
     super();
+    this.captionId = DomUtils.createUniqueId("caption"); 
   }
 
   public void create(String caption) {
@@ -115,6 +119,7 @@ public class DataHeaderImpl extends Complex implements DataHeaderView {
     addStyleName(style.container());
 
     BeeLabel label = new BeeLabel(caption);
+    label.setId(captionId);
     label.addStyleName(StyleUtils.WINDOW_CAPTION);
     addLeftTop(label, style.captionLeft(), style.captionTop());
 
@@ -161,6 +166,12 @@ public class DataHeaderImpl extends Complex implements DataHeaderView {
 
   public void setViewPresenter(Presenter viewPresenter) {
     this.viewPresenter = viewPresenter;
+  }
+  
+  public void updateCaption(String caption) {
+    if (!BeeUtils.isEmpty(caption)) {
+      DomUtils.setHtml(captionId, caption);
+    }
   }
 
   private Widget createControl(ImageResource image, Action action, String styleName) {

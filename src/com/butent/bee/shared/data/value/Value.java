@@ -85,7 +85,7 @@ public abstract class Value implements Comparable<Value>, Transformable, BeeSeri
     return val;
   }
 
-  public static Value parseValue(ValueType type, String value) {
+  public static Value parseValue(ValueType type, String value, boolean parseDates) {
     Assert.notNull(type, "value type not specified");
     if (value == null) {
       return getNullValueFromValueType(type);
@@ -101,17 +101,23 @@ public abstract class Value implements Comparable<Value>, Transformable, BeeSeri
       case TIMEOFDAY:
         return new TimeOfDayValue(value);
       case DATE:
-        return new DateValue(TimeUtils.toDateOrNull(value));
+        if (parseDates) {
+          return new DateValue(JustDate.parse(value));
+        } else {
+          return new DateValue(TimeUtils.toDateOrNull(value));
+        }
       case DATETIME:
-        return new DateTimeValue(TimeUtils.toDateTimeOrNull(value));
+        if (parseDates) {
+          return new DateTimeValue(DateTime.parse(value));
+        } else {
+          return new DateTimeValue(TimeUtils.toDateTimeOrNull(value));
+        }
       case INTEGER:
         return new IntegerValue(BeeUtils.toIntOrNull(value));
       case LONG:
         return new LongValue(BeeUtils.toLongOrNull(value));
       case DECIMAL:
         return new DecimalValue(BeeUtils.toDecimalOrNull(value));
-      default:
-        Assert.unsupported("Unsupported value type: " + type);
     }
     return null;
   }
@@ -125,7 +131,7 @@ public abstract class Value implements Comparable<Value>, Transformable, BeeSeri
     ValueType type = ValueType.getByTypeCode(clazz);
     Assert.notNull(type, "Unsupported value type: " + clazz);
 
-    return parseValue(type, data);
+    return parseValue(type, data, false);
   }
 
   public abstract int compareTo(Value o);

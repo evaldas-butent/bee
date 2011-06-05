@@ -10,6 +10,7 @@ import com.google.gwt.i18n.shared.DateTimeFormat.PredefinedFormat;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.data.value.HasValueType;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -246,6 +247,37 @@ public class Format {
 
   public static void setDefaultLongFormat(NumberFormat defaultLongFormat) {
     Format.defaultLongFormat = defaultLongFormat;
+  }
+  
+  public static void setFormat(HasValueType target, String pattern) {
+    Assert.notNull(target);
+    Assert.notEmpty(pattern);
+    
+    if (target instanceof HasDateTimeFormat) {
+      DateTimeFormat predefinedFormat = getPredefinedFormat(pattern);
+      if (predefinedFormat != null) {
+        ((HasDateTimeFormat) target).setDateTimeFormat(predefinedFormat);
+        return;
+      }
+    }
+    
+    boolean isDt = false;
+    boolean isNum = false;
+
+    if (target instanceof HasDateTimeFormat && target instanceof HasNumberFormat) {
+      ValueType type = target.getValueType();
+      isDt = ValueType.isDateOrDateTime(type);
+      isNum = ValueType.isNumeric(type);
+    } else {
+      isDt = (target instanceof HasDateTimeFormat);
+      isNum = (target instanceof HasNumberFormat);
+    }
+
+    if (isDt) {
+      ((HasDateTimeFormat) target).setDateTimeFormat(DateTimeFormat.getFormat(pattern));
+    } else if (isNum) {
+      ((HasNumberFormat) target).setNumberFormat(NumberFormat.getFormat(pattern));
+    }
   }
 
   private Format() {

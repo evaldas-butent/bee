@@ -5,9 +5,10 @@ import com.google.gwt.cell.client.Cell.Context;
 import com.google.gwt.user.cellview.client.Column;
 
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.value.HasValueType;
 import com.butent.bee.shared.data.value.ValueType;
 
-public abstract class AbstractColumn<C> extends Column<IsRow, C> {
+public abstract class AbstractColumn<C> extends Column<IsRow, C> implements HasValueType {
 
   public AbstractColumn(Cell<C> cell) {
     super(cell);

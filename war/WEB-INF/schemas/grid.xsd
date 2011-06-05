@@ -74,6 +74,9 @@
         <xs:sequence>
           <xs:element name="calc" type="bee:calcType" />
         </xs:sequence>
+        <xs:attribute name="type" type="bee:valueType" use="required" />
+        <xs:attribute name="precision" type="xs:positiveInteger" />
+        <xs:attribute name="scale" type="xs:nonNegativeInteger" />
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
@@ -91,10 +94,11 @@
     <xs:attribute name="sortable" type="xs:boolean" default="true" />
     <xs:attribute name="visible" type="xs:boolean" default="true" />
     <xs:attribute name="format" type="xs:normalizedString" />
+    <xs:attribute name="horizontalAlignment" type="bee:horizontalAlignmentType" />
     <xs:attribute name="hasFooter" type="xs:boolean" default="true" />
     <xs:attribute name="showWidth" type="xs:boolean" default="true" />
   </xs:complexType>
-  
+
   <xs:complexType name="columnStyle">
     <xs:sequence>
       <xs:element name="headerStyle" type="bee:styleType" minOccurs="0" />
@@ -179,15 +183,14 @@
       <xs:element name="expression" type="xs:normalizedString" />
       <xs:element name="function" type="xs:string" />
     </xs:choice>
-    <xs:attribute name="type" type="bee:valueType" />
   </xs:complexType>
-  
+
   <xs:complexType name="conditionalStyle">
     <xs:sequence>
       <xs:element name="style" type="bee:styleType" />
       <xs:element name="condition" type="bee:calcType" />
     </xs:sequence>
-  </xs:complexType>  
+  </xs:complexType>
 
   <xs:simpleType name="editorType">
     <xs:restriction base="xs:string">
@@ -203,6 +206,17 @@
       <xs:enumeration value="long" />
       <xs:enumeration value="suggest" />
       <xs:enumeration value="toggle" />
+    </xs:restriction>
+  </xs:simpleType>
+  
+  <xs:simpleType name="horizontalAlignmentType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="left" />
+      <xs:enumeration value="center" />
+      <xs:enumeration value="right" />
+      <xs:enumeration value="justify" />
+      <xs:enumeration value="start" />
+      <xs:enumeration value="end" />
     </xs:restriction>
   </xs:simpleType>
 

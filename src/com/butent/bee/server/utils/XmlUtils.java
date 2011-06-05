@@ -6,7 +6,6 @@ import com.google.common.collect.Maps;
 import com.butent.bee.server.io.FileUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.ui.Calculation;
 import com.butent.bee.shared.ui.ConditionalStyleDeclaration;
 import com.butent.bee.shared.ui.StyleDeclaration;
@@ -236,9 +235,7 @@ public class XmlUtils {
     if (BeeUtils.allEmpty(expr, func)) {
       return null;
     }
-
-    String typeCode = element.getAttribute(Calculation.ATTR_TYPE);
-    return new Calculation(ValueType.getByTypeCode(typeCode), expr, func);
+    return new Calculation(expr, func);
   }
 
   public static Calculation getCalculation(Element parent, String tagName) {

@@ -8,15 +8,15 @@ import com.google.gwt.user.cellview.client.Header;
 
 public class ColumnHeader extends Header<String> {
 
-  private final String caption;
+  private final String columnId;
 
-  public ColumnHeader(String caption, boolean showWidth) {
-    super(new HeaderCell(showWidth));
-    this.caption = caption;
+  public ColumnHeader(String columnId, String caption, boolean showWidth) {
+    super(new HeaderCell(caption, showWidth));
+    this.columnId = columnId;
   }
 
   @Override
   public String getValue() {
-    return caption;
+    return columnId;
   }
 }

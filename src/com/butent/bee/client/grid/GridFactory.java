@@ -332,7 +332,7 @@ public class GridFactory {
       column.setSortable(true);
 
       String label = table.getColumnLabel(i);
-      grid.addColumn(label, i, column, new ColumnHeader(label, false));
+      grid.addColumn(label, i, column, new ColumnHeader(label, label, false));
     }
 
     @SuppressWarnings("unused")

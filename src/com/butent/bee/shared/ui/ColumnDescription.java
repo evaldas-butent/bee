@@ -5,6 +5,7 @@ import com.google.common.collect.Lists;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.HasInfo;
+import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.Property;
@@ -16,11 +17,11 @@ import java.util.List;
 public class ColumnDescription implements BeeSerializable, HasInfo {
 
   public enum ColType {
-    DATA("BeeDataColumn"),
-    RELATED("BeeRelColumn"),
-    CALCULATED("BeeCalcColumn"),
-    ID("BeeIdColumn"),
-    VERSION("BeeVerColumn");
+    DATA("BeeDataColumn", false),
+    RELATED("BeeRelColumn", false),
+    CALCULATED("BeeCalcColumn", true),
+    ID("BeeIdColumn", true),
+    VERSION("BeeVerColumn", true);
 
     public static ColType getColType(String tagName) {
       if (!BeeUtils.isEmpty(tagName)) {
@@ -34,21 +35,28 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
     }
 
     private final String tagName;
+    private final boolean readOnly;
 
-    private ColType(String tagName) {
+    private ColType(String tagName, boolean readOnly) {
       this.tagName = tagName;
+      this.readOnly = readOnly;
     }
 
     public String getTagName() {
       return tagName;
     }
+
+    public boolean isReadOnly() {
+      return readOnly;
+    }
   }
 
   private enum SerializationMember {
-    TYPE, NAME, CAPTION, READ_ONLY, WIDTH, SOURCE, REL_TABLE, REL_FIELD,
-    MIN_WIDTH, MAX_WIDTH, SORTABLE, VISIBLE, FORMAT, HAS_FOOTER, SHOW_WIDTH,
+    COL_TYPE, NAME, CAPTION, READ_ONLY, WIDTH, SOURCE, REL_TABLE, REL_FIELD,
+    MIN_WIDTH, MAX_WIDTH, SORTABLE, VISIBLE, FORMAT, HOR_ALIGN, HAS_FOOTER, SHOW_WIDTH,
     VALIDATION, EDITABLE, CARRY, EDITOR, MIN_VALUE, MAX_VALUE, STEP_VALUE,
-    CALC, HEADER_STYLE, BODY_STYLE, FOOTER_STYLE, DYN_STYLES
+    CALC, VALUE_TYPE, PRECISION, SCALE,
+    HEADER_STYLE, BODY_STYLE, FOOTER_STYLE, DYN_STYLES
   }
 
   public static ColumnDescription restore(String s) {
@@ -60,7 +68,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
     return column;
   }
 
-  private ColType type;
+  private ColType colType;
   private String name;
   private String caption = null;
   private Boolean readOnly = null;
@@ -75,7 +83,9 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
 
   private Boolean sortable = null;
   private Boolean visible = null;
+
   private String format = null;
+  private String horAlign = null;
 
   private Boolean hasFooter = null;
   private Boolean showWidth = null;
@@ -91,6 +101,9 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
   private String stepValue = null;
 
   private Calculation calc = null;
+  private ValueType valueType = null;
+  private Integer precision = null;
+  private Integer scale = null;
 
   private StyleDeclaration headerStyle = null;
   private StyleDeclaration bodyStyle = null;
@@ -98,10 +111,10 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
 
   private Collection<ConditionalStyleDeclaration> dynStyles = null;
 
-  public ColumnDescription(ColType type, String name) {
-    Assert.notEmpty(type);
+  public ColumnDescription(ColType colType, String name) {
+    Assert.notEmpty(colType);
     Assert.notEmpty(name);
-    this.type = type;
+    this.colType = colType;
     this.name = name;
   }
 
@@ -117,10 +130,13 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
     for (int i = 0; i < members.length; i++) {
       SerializationMember member = members[i];
       String value = arr[i];
+      if (BeeUtils.isEmpty(value)) {
+        continue;
+      }
 
       switch (member) {
-        case TYPE:
-          setType(ColType.getColType(value));
+        case COL_TYPE:
+          setColType(ColType.getColType(value));
           break;
         case NAME:
           setName(value);
@@ -146,6 +162,15 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
         case CALC:
           setCalc(Calculation.restore(value));
           break;
+        case VALUE_TYPE:
+          setValueType(ValueType.getByTypeCode(value));
+          break;
+        case PRECISION:  
+          setPrecision(BeeUtils.toIntOrNull(value));
+          break;
+        case SCALE:
+          setScale(BeeUtils.toIntOrNull(value));
+          break;
         case CARRY:
           setCarry(Calculation.restore(value));
           break;
@@ -157,6 +182,9 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
           break;
         case FORMAT:
           setFormat(value);
+          break;
+        case HOR_ALIGN:
+          setHorAlign(value);
           break;
         case HAS_FOOTER:
           setHasFooter(BeeUtils.toBooleanOrNull(value));
@@ -225,21 +253,37 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
     return caption;
   }
 
+  public ColType getColType() {
+    return colType;
+  }
+
   public Collection<ConditionalStyleDeclaration> getDynStyles() {
     return dynStyles;
+  }
+
+  public Calculation getEditable() {
+    return editable;
   }
 
   public StyleDeclaration getFooterStyle() {
     return footerStyle;
   }
 
+  public String getFormat() {
+    return format;
+  }
+
   public StyleDeclaration getHeaderStyle() {
     return headerStyle;
   }
 
+  public String getHorAlign() {
+    return horAlign;
+  }
+
   public List<Property> getInfo() {
     List<Property> info = PropertyUtils.createProperties(
-        "Type", getType(),
+        "Col Type", getColType(),
         "Name", getName(),
         "Caption", getCaption(),
         "Read Only", isReadOnly(),
@@ -252,12 +296,16 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
         "Sortable", isSortable(),
         "Visible", isVisible(),
         "Format", getFormat(),
+        "Horizontal Alignment", getHorAlign(),
         "Has Footer", hasFooter(),
         "Show Width", showWidth(),
         "Min Value", getMinValue(),
         "Max Value", getMaxValue(),
         "Step Value", getStepValue(),
-        "Editor", getEditor());
+        "Editor", getEditor(),
+        "Value Type", getValueType(),
+        "Precision", getPrecision(),
+        "Scale", getScale());
 
     if (getValidation() != null) {
       PropertyUtils.appendChildrenToProperties(info, "Validation", getValidation().getInfo());
@@ -299,8 +347,16 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
     return info;
   }
 
+  public String getMaxValue() {
+    return maxValue;
+  }
+
   public Integer getMaxWidth() {
     return maxWidth;
+  }
+
+  public String getMinValue() {
+    return minValue;
   }
 
   public Integer getMinWidth() {
@@ -311,16 +367,32 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
     return name;
   }
 
+  public Integer getPrecision() {
+    return precision;
+  }
+
   public String getRelField() {
     return relField;
+  }
+
+  public Integer getScale() {
+    return scale;
   }
 
   public String getSource() {
     return source;
   }
 
-  public ColType getType() {
-    return type;
+  public String getStepValue() {
+    return stepValue;
+  }
+
+  public Calculation getValidation() {
+    return validation;
+  }
+
+  public ValueType getValueType() {
+    return valueType;
   }
 
   public Integer getWidth() {
@@ -351,8 +423,8 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
 
     for (SerializationMember member : members) {
       switch (member) {
-        case TYPE:
-          arr[i++] = (getType() == null) ? null : getType().getTagName();
+        case COL_TYPE:
+          arr[i++] = (getColType() == null) ? null : getColType().getTagName();
           break;
         case NAME:
           arr[i++] = getName();
@@ -378,6 +450,15 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
         case CALC:
           arr[i++] = getCalc();
           break;
+        case VALUE_TYPE:
+          arr[i++] = (getValueType() == null) ? null : getValueType().getTypeCode();
+          break;
+        case PRECISION:
+          arr[i++] = getPrecision();
+          break;
+        case SCALE:
+          arr[i++] = getScale();
+          break;
         case CARRY:
           arr[i++] = getCarry();
           break;
@@ -389,6 +470,9 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
           break;
         case FORMAT:
           arr[i++] = getFormat();
+          break;
+        case HOR_ALIGN:
+          arr[i++] = getHorAlign();
           break;
         case HAS_FOOTER:
           arr[i++] = hasFooter();
@@ -481,6 +565,10 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
     this.headerStyle = headerStyle;
   }
 
+  public void setHorAlign(String horAlign) {
+    this.horAlign = horAlign;
+  }
+
   public void setMaxValue(String maxValue) {
     this.maxValue = maxValue;
   }
@@ -497,6 +585,10 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
     this.minWidth = minWidth;
   }
 
+  public void setPrecision(Integer precision) {
+    this.precision = precision;
+  }
+
   public void setReadOnly(Boolean readOnly) {
     this.readOnly = readOnly;
   }
@@ -507,6 +599,10 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
 
   public void setRelTable(String relTable) {
     this.relTable = relTable;
+  }
+
+  public void setScale(Integer scale) {
+    this.scale = scale;
   }
 
   public void setShowWidth(Boolean showWidth) {
@@ -529,6 +625,10 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
     this.validation = validation;
   }
 
+  public void setValueType(ValueType valueType) {
+    this.valueType = valueType;
+  }
+
   public void setVisible(Boolean visible) {
     this.visible = visible;
   }
@@ -545,43 +645,19 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
     return carry;
   }
 
-  private Calculation getEditable() {
-    return editable;
-  }
-
   private String getEditor() {
     return editor;
-  }
-
-  private String getFormat() {
-    return format;
-  }
-
-  private String getMaxValue() {
-    return maxValue;
-  }
-
-  private String getMinValue() {
-    return minValue;
   }
 
   private String getRelTable() {
     return relTable;
   }
 
-  private String getStepValue() {
-    return stepValue;
-  }
-
-  private Calculation getValidation() {
-    return validation;
+  private void setColType(ColType colType) {
+    this.colType = colType;
   }
 
   private void setName(String name) {
     this.name = name;
-  }
-
-  private void setType(ColType type) {
-    this.type = type;
   }
 }

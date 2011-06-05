@@ -59,6 +59,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasId;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.event.ActiveRowChangeEvent;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
 import com.butent.bee.shared.data.event.MultiDeleteEvent;
 import com.butent.bee.shared.data.event.RowDeleteEvent;
@@ -872,6 +873,10 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     createId();
   }
 
+  public HandlerRegistration addActiveRowChangeHandler(ActiveRowChangeEvent.Handler handler) {
+    return addHandler(handler, ActiveRowChangeEvent.getType());
+  }
+  
   public HandlerRegistration addCellPreviewHandler(CellPreviewEvent.Handler<IsRow> handler) {
     setHasCellPreview(true);
     return addHandler(handler, CellPreviewEvent.getType());
@@ -1891,7 +1896,8 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     Assert.notNull(columnInfo);
     Assert.notNull(columnDescription);
 
-    if (BeeUtils.isTrue(columnDescription.isReadOnly())) {
+    if (columnDescription.getColType().isReadOnly()
+        || BeeUtils.isTrue(columnDescription.isReadOnly())) {
       columnInfo.setColReadOnly(true);
     }
 
@@ -3224,6 +3230,10 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
         } else {
           StyleUtils.removeClassName(rowElements, STYLE_ACTIVE_ROW);
         }
+      }
+      
+      if (activate && getActiveRow() < rowData.size()) {
+        fireEvent(new ActiveRowChangeEvent(rowData.get(getActiveRow())));
       }
     }
   }

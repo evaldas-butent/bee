@@ -53,10 +53,12 @@ public class HeaderCell extends AbstractCell<String> {
   private final String captionId;
   private final String widthInfoId;
   
+  private final String caption;
   private final boolean showWidth;
 
-  public HeaderCell(boolean showWidth) {
+  public HeaderCell(String caption, boolean showWidth) {
     super(EventUtils.EVENT_TYPE_CLICK);
+    this.caption = caption;
     this.showWidth = showWidth;
 
     if (template == null) {
@@ -121,21 +123,22 @@ public class HeaderCell extends AbstractCell<String> {
     }
   }
 
-  public void renderHeader(CellContext context, String label, SafeHtmlBuilder sb) {
-    if (label != null) {
+  public void renderHeader(CellContext context, String columnId, SafeHtmlBuilder sb) {
+    String label = BeeUtils.ifString(caption, columnId);
+    if (!BeeUtils.isEmpty(label)) {
       sb.append(template.caption(captionId, SafeHtmlUtils.fromString(label)));
     }
 
     CellGrid grid = context.getGrid();
-    if (grid != null && grid.contains(label)) {
+    if (grid != null && grid.contains(columnId)) {
 
       Order sortOrder = grid.getSortOrder();
       int size = (sortOrder == null) ? 0 : sortOrder.getSize();
 
-      if ((grid.getColumnCount() > 1 || size > 0) && grid.isSortable(label)) {
-        int sortIndex = (size > 0) ? sortOrder.getIndex(label) : BeeConst.UNDEF;
+      if ((grid.getColumnCount() > 1 || size > 0) && grid.isSortable(columnId)) {
+        int sortIndex = (size > 0) ? sortOrder.getIndex(columnId) : BeeConst.UNDEF;
         if (sortIndex >= 0) {
-          boolean ascending = sortOrder.isAscending(label);
+          boolean ascending = sortOrder.isAscending(columnId);
           String classes = StyleUtils.buildClasses(STYLE_SORT_INFO,
               ascending ? STYLE_ASCENDING : STYLE_DESCENDING);
           String sortInfo = (size > 1) ? BeeUtils.toString(sortIndex + 1) : BeeConst.STRING_EMPTY;
@@ -147,7 +150,7 @@ public class HeaderCell extends AbstractCell<String> {
       }
       
       if (showWidth) {
-        sb.append(template.widthInfo(widthInfoId, grid.getColumnWidth(label)));
+        sb.append(template.widthInfo(widthInfoId, grid.getColumnWidth(columnId)));
       }
     }
   }

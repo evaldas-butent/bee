@@ -222,7 +222,7 @@ public class Evaluator extends Calculation {
       return null;
     }
     
-    Evaluator evaluator = new Evaluator(calc.getType(), calc.getExpression(), calc.getFunction());
+    Evaluator evaluator = new Evaluator(calc.getExpression(), calc.getFunction());
     if (dataColumns != null && !dataColumns.isEmpty()) {
       evaluator.init(colName, dataColumns);
     }
@@ -243,8 +243,8 @@ public class Evaluator extends Calculation {
   
   private final JavaScriptObject interpeter;
 
-  private Evaluator(ValueType type, String expression, String function) {
-    super(type, expression, function);
+  private Evaluator(String expression, String function) {
+    super(expression, function);
 
     if (!BeeUtils.isEmpty(expression)) {
       this.interpeter = createExprInterpreter(expression);
@@ -365,6 +365,18 @@ public class Evaluator extends Calculation {
     }
     update(rowValue, rowIndex, colIndex);
     getParameters().setCellValue(type, value);
+  }
+
+  public void update(IsRow rowValue, int rowIndex, int colIndex, ValueType type,
+      String oldValue, String newValue) {
+    if (getParameters() == null) {
+      return;
+    }
+    update(rowValue, rowIndex, colIndex);
+
+    getParameters().setCellValue(type, newValue);
+    getParameters().setCellOldValue(type, oldValue);
+    getParameters().setCellNewValue(type, newValue);
   }
   
   private native String doEval(JavaScriptObject fnc, JavaScriptObject row, double rowId,

@@ -36,7 +36,8 @@ public abstract class ComparisonFilter extends Filter {
 
   public static Filter compareWithValue(IsColumn column, Operator op, String value) {
     Assert.notNull(column);
-    return new ColumnValueFilter(column.getId(), op, Value.parseValue(column.getType(), value));
+    return new ColumnValueFilter(column.getId(), op,
+        Value.parseValue(column.getType(), value, true));
   }
 
   private Operator operator;

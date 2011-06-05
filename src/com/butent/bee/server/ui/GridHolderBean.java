@@ -8,6 +8,7 @@ import com.butent.bee.server.data.BeeView;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.utils.XmlUtils;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.ui.Calculation;
 import com.butent.bee.shared.ui.ConditionalStyleDeclaration;
@@ -88,6 +89,7 @@ public class GridHolderBean {
   private static final String ATTR_SORTABLE = "sortable";
   private static final String ATTR_VISIBLE = "visible";
   private static final String ATTR_FORMAT = "format";
+  private static final String ATTR_HORIZONTAL_ALIGNMENT = "horizontalAlignment";
 
   private static final String ATTR_HAS_FOOTER = "hasFooter";
   private static final String ATTR_SHOW_WIDTH = "showWidth";
@@ -101,6 +103,10 @@ public class GridHolderBean {
 
   private static final String ATTR_RELATION = "relation";
 
+  private static final String ATTR_TYPE = "type"; 
+  private static final String ATTR_PRECISION = "precision"; 
+  private static final String ATTR_SCALE = "scale"; 
+  
   private static Logger logger = Logger.getLogger(GridHolderBean.class.getName());
 
   @EJB
@@ -164,7 +170,7 @@ public class GridHolderBean {
     String viewName = view.getName();
     String source = column.getSource();
 
-    switch (column.getType()) {
+    switch (column.getColType()) {
       case DATA:
         if (view.hasColumn(source)) {
           ok = true;
@@ -358,6 +364,8 @@ public class GridHolderBean {
           dst.setVisible(BeeUtils.toBooleanOrNull(value));
         } else if (BeeUtils.same(key, ATTR_FORMAT)) {
           dst.setFormat(value.trim());
+        } else if (BeeUtils.same(key, ATTR_HORIZONTAL_ALIGNMENT)) {
+          dst.setHorAlign(value.trim());
 
         } else if (BeeUtils.same(key, ATTR_HAS_FOOTER)) {
           dst.setHasFooter(BeeUtils.toBooleanOrNull(value));
@@ -378,6 +386,13 @@ public class GridHolderBean {
 
         } else if (BeeUtils.same(key, ATTR_RELATION)) {
           dst.setRelField(value.trim());
+
+        } else if (BeeUtils.same(key, ATTR_TYPE)) {
+          dst.setValueType(ValueType.getByTypeCode(value));
+        } else if (BeeUtils.same(key, ATTR_PRECISION)) {
+          dst.setPrecision(BeeUtils.toIntOrNull(value));
+        } else if (BeeUtils.same(key, ATTR_SCALE)) {
+          dst.setScale(BeeUtils.toIntOrNull(value));
         }
       }
     }

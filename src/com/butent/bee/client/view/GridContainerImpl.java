@@ -15,6 +15,7 @@ import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.layout.Direction;
 import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.presenter.Presenter;
+import com.butent.bee.client.utils.Evaluator;
 import com.butent.bee.client.view.grid.CellGridImpl;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.navigation.PagerView;
@@ -24,6 +25,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.event.ActiveRowChangeEvent;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -34,7 +36,8 @@ import java.util.List;
  * Implements design content for a grid container component.
  */
 
-public class GridContainerImpl extends Split implements GridContainerView, HasNavigation, HasSearch {
+public class GridContainerImpl extends Split implements GridContainerView, HasNavigation,
+    HasSearch, ActiveRowChangeEvent.Handler {
 
   public static Integer minPagingRows = 20;
   public static Integer minSearchRows = 2;
@@ -54,6 +57,8 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
 
   private boolean hasPaging = false;
   private boolean hasSearch = false;
+
+  private Evaluator rowMessage = null;
 
   public GridContainerImpl() {
     this(-1);
@@ -78,11 +83,15 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     if (hasFooter()) {
       getContent().getGrid().addSelectionCountChangeHandler(getFooter());
     }
+    
+    if (getRowMessage() != null) {
+      getContent().getGrid().addActiveRowChangeHandler(this);
+    }
   }
 
   public void create(String caption, List<BeeColumn> dataColumns, int rowCount, BeeRowSet rowSet,
       GridDescription gridDescription) {
-    int minRows = BeeUtils.unbox((gridDescription == null) 
+    int minRows = BeeUtils.unbox((gridDescription == null)
         ? minPagingRows : gridDescription.getPagingThreshold());
     setHasPaging(rowCount >= minRows);
 
@@ -92,7 +101,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
 
     int pageSize;
     if (hasPaging()) {
-      pageSize = BeeUtils.unbox((gridDescription == null) 
+      pageSize = BeeUtils.unbox((gridDescription == null)
           ? defaultPageSize : gridDescription.getPageSize());
       pageSize = Math.max(pageSize, 1);
     } else {
@@ -136,6 +145,10 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
       sinkEvents(Event.ONMOUSEWHEEL);
     } else {
       add(content.asWidget(), ScrollBars.BOTH);
+    }
+
+    if (gridDescription != null && gridDescription.getRowMessage() != null) {
+      setRowMessage(Evaluator.create(gridDescription.getRowMessage(), null, dataColumns));
     }
   }
 
@@ -233,6 +246,18 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
 
   public boolean hasScroller() {
     return scrollerDirection != null;
+  }
+
+  public void onActiveRowChange(ActiveRowChangeEvent event) {
+    if (event == null || event.getRowValue() == null || getRowMessage() == null) {
+      return;
+    }
+    getRowMessage().update(event.getRowValue());
+    String message = getRowMessage().evaluate();
+    
+    if (!BeeUtils.isEmpty(message)) {
+      getHeader().updateCaption(message);
+    }
   }
 
   @Override
@@ -391,6 +416,10 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     }
   }
 
+  private Evaluator getRowMessage() {
+    return rowMessage;
+  }
+
   private boolean hasPaging() {
     return hasPaging;
   }
@@ -405,6 +434,10 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
 
   private void setHasSearch(boolean hasSearch) {
     this.hasSearch = hasSearch;
+  }
+
+  private void setRowMessage(Evaluator rowMessage) {
+    this.rowMessage = rowMessage;
   }
 
   private void updatePageSize(GridView content, int pageSize, boolean init) {

@@ -1,11 +1,12 @@
 package com.butent.bee.shared.ui;
 
+import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.HasInfo;
-import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.Transformable;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.Property;
@@ -13,12 +14,10 @@ import com.butent.bee.shared.utils.PropertyUtils;
 
 import java.util.List;
 
-public class Calculation implements BeeSerializable, HasInfo {
+public class Calculation implements BeeSerializable, HasInfo, Transformable {
   
   public static final String TAG_EXPRESSION = "expression"; 
   public static final String TAG_FUNCTION = "function"; 
-  
-  public static final String ATTR_TYPE = "type"; 
   
   public static Calculation restore(String s) {
     if (BeeUtils.isEmpty(s)) {
@@ -29,13 +28,10 @@ public class Calculation implements BeeSerializable, HasInfo {
     return calculation;
   }
   
-  private ValueType type = null;
-  
   private String expression = null;
   private String function = null;
   
-  public Calculation(ValueType type, String expression, String function) {
-    this.type = type;
+  public Calculation(String expression, String function) {
     this.expression = expression;
     this.function = function;
   }
@@ -45,11 +41,10 @@ public class Calculation implements BeeSerializable, HasInfo {
 
   public void deserialize(String s) {
     String[] arr = Codec.beeDeserialize(s);
-    Assert.lengthEquals(arr, 3);
+    Assert.lengthEquals(arr, 2);
     
-    setType(BeeUtils.isEmpty(arr[0]) ? null : ValueType.getByTypeCode(arr[0]));
-    setExpression(BeeUtils.isEmpty(arr[1]) ? null : Codec.decodeBase64(arr[1]));
-    setFunction(BeeUtils.isEmpty(arr[2]) ? null : Codec.decodeBase64(arr[2]));
+    setExpression(BeeUtils.isEmpty(arr[0]) ? null : Codec.decodeBase64(arr[0]));
+    setFunction(BeeUtils.isEmpty(arr[1]) ? null : Codec.decodeBase64(arr[1]));
   }
 
   public String getExpression() {
@@ -68,9 +63,6 @@ public class Calculation implements BeeSerializable, HasInfo {
       return info;
     }
     
-    if (getType() != null) {
-      info.add(new Property("Type", getType().name()));
-    }
     if (!BeeUtils.isEmpty(getExpression())) {
       info.add(new Property("Expression", getExpression()));
     }
@@ -80,20 +72,28 @@ public class Calculation implements BeeSerializable, HasInfo {
     return info;
   }
 
-  public ValueType getType() {
-    return type;
-  }
-
   public boolean isEmpty() {
     return BeeUtils.allEmpty(getExpression(), getFunction());
   }
 
   public String serialize() {
-    String tp = (getType() == null) ? null : getType().getTypeCode();
     String expr = BeeUtils.isEmpty(getExpression()) ? null : Codec.encodeBase64(getExpression());
     String func = BeeUtils.isEmpty(getFunction()) ? null : Codec.encodeBase64(getFunction());
     
-    return Codec.beeSerializeAll(tp, expr, func);
+    return Codec.beeSerializeAll(expr, func);
+  }
+
+  public String transform() {
+    String expr = Strings.nullToEmpty(getExpression()).trim();
+    String func = Strings.nullToEmpty(getFunction()).trim();
+    
+    if (expr.isEmpty()) {
+      return func;
+    } else if (func.isEmpty()) {
+      return expr;
+    } else {
+      return BeeUtils.concat(1, "Expression:", expr, "Function:", func);
+    }
   }
 
   private void setExpression(String expression) {
@@ -102,9 +102,5 @@ public class Calculation implements BeeSerializable, HasInfo {
 
   private void setFunction(String function) {
     this.function = function;
-  }
-  
-  private void setType(ValueType type) {
-    this.type = type;
   }
 }

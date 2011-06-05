@@ -4,5 +4,4 @@ import com.google.gwt.event.shared.HandlerRegistration;
 
 public interface HasSelectionCountChangeHandlers {
   HandlerRegistration addSelectionCountChangeHandler(SelectionCountChangeEvent.Handler handler);
-
 }
