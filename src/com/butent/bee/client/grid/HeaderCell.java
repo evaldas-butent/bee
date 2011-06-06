@@ -92,22 +92,25 @@ public class HeaderCell extends AbstractCell<String> {
 
       } else if (parent != null && EventUtils.hasModifierKey(event)) {
         EventUtils.eatEvent(event);
-        int headerWidth = grid.estimateHeaderWidth(col);
+        int headerWidth = grid.estimateHeaderWidth(col, false);
 
         Element leftElement = DomUtils.getChildById(parent, sortInfoId);
         if (leftElement != null) {
           headerWidth += leftElement.getOffsetLeft() + leftElement.getOffsetWidth();
         }
-        Element rightElement = DomUtils.getChildById(parent, widthInfoId);
-        if (rightElement != null) {
-          headerWidth += parent.getOffsetWidth() - rightElement.getOffsetLeft();
+        
+        if (showWidth) {
+          Element rightElement = DomUtils.getChildById(parent, widthInfoId);
+          if (rightElement != null) {
+            headerWidth += parent.getOffsetWidth() - rightElement.getOffsetLeft();
+          }
         }
         
         if (headerWidth > grid.getColumnWidth(col)) {
           grid.resizeColumn(col, headerWidth);
         }
         
-      } else if (EventUtils.isTargetId(event.getEventTarget(), widthInfoId)) {
+      } else if (!showWidth || EventUtils.isTargetId(event.getEventTarget(), widthInfoId)) {
         EventUtils.eatEvent(event);
         grid.autoFitColumn(col);
       }

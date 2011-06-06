@@ -193,7 +193,8 @@ public class GridPresenter implements Presenter, EditEndEvent.Handler {
 
       case DELETE:
         RowInfo activeRowInfo = getView().getContent().getActiveRowInfo();
-        if (activeRowInfo != null) {
+        if (activeRowInfo != null
+            && getView().getContent().isRowEditable(activeRowInfo.getId(), true)) {
           if (getView().getContent().isRowSelected(activeRowInfo.getId())) {
             deleteRows(getView().getContent().getSelectedRows());
           } else {

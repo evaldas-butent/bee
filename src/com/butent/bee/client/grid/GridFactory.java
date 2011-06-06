@@ -9,7 +9,6 @@ import com.google.gwt.cell.client.TextInputCell;
 import com.google.gwt.core.client.Callback;
 import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.user.cellview.client.CellTable;
-import com.google.gwt.user.cellview.client.TextHeader;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.view.client.MultiSelectionModel;
 
@@ -323,7 +322,7 @@ public class GridFactory {
 
     RowIdColumn idColumn = new RowIdColumn();
     String id = "row-id";
-    grid.addColumn(id, -1, idColumn, new TextHeader("Id"));
+    grid.addColumn(id, -1, idColumn, new ColumnHeader(id, "Id", false));
     grid.setColumnWidth(id, 40);
 
     DataColumn<?> column;
@@ -341,7 +340,7 @@ public class GridFactory {
     grid.setHeaderCellHeight(23);
     grid.setBodyCellHeight(20);
     grid.estimateColumnWidths(table.getRows().getList(), Math.min(r, 20));
-    grid.estimateHeaderWidths();
+    grid.estimateHeaderWidths(true);
 
     grid.setRowData(table.getRows().getList());
     grid.setReadOnly(true);

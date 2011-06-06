@@ -31,6 +31,8 @@ public interface GridView extends View, HasEditEndHandlers, NotificationListener
   
   Collection<RowInfo> getSelectedRows();  
 
+  boolean isRowEditable(long rowId, boolean warn);
+  
   boolean isRowSelected(long rowId);
   
   void refreshCell(long rowId, String columnId);

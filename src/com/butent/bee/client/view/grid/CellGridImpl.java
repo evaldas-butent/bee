@@ -627,7 +627,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       idCol.setReadOnly(true);
       idCol.setSortable(false);
       idCol.setVisible(true);
-      idCol.setShowWidth(showColumnWidths);
+      idCol.setShowWidth(false);
       idCol.setHasFooter(hasFooters);
       columnDescriptions.add(idCol);
 
@@ -742,10 +742,9 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     getGrid().setRowCount(rowCount);
 
     if (rowSet != null) {
-      getGrid().estimateColumnWidths(rowSet.getRows().getList(),
-          Math.min(rowSet.getNumberOfRows(), 3));
+      getGrid().estimateColumnWidths(rowSet.getRows().getList());
     }
-    getGrid().estimateHeaderWidths();
+    getGrid().estimateHeaderWidths(true);
 
     getGrid().addEditStartHandler(this);
 
@@ -762,7 +761,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
   }
 
   public Filter getFilter(List<? extends IsColumn> columns) {
-    List<Header<?>> footers = getGrid().getFooters();
+    List<ColumnFooter> footers = getGrid().getFooters();
 
     if (footers == null || footers.size() <= 0) {
       return null;
@@ -818,10 +817,18 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     return getEditableColumns().containsKey(columnId);
   }
 
+  public boolean isRowEditable(long rowId, boolean warn) {
+    IsRow rowValue = getGrid().getRowById(rowId);
+    if (rowValue == null) {
+      return false;
+    }
+    return isRowEditable(rowValue, warn);
+  }
+
   public boolean isRowSelected(long rowId) {
     return getGrid().isRowSelected(rowId);
   }
-
+  
   public void notifyInfo(String... messages) {
     showNote(Level.INFO, messages);
   }
@@ -843,10 +850,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     }
 
     IsRow rowValue = event.getRowValue();
-    if (!isRowEditable(rowValue)) {
-      if (getRowEditable() != null) {
-        notifyWarning("Row is read only:", getRowEditable().transform());
-      }
+    if (!isRowEditable(rowValue, true)) {
       return;
     }
     if (!editableColumn.isCellEditable(rowValue, true)) {
@@ -982,7 +986,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     return rowEditable;
   }
   
-  private boolean isRowEditable(IsRow rowValue) {
+  private boolean isRowEditable(IsRow rowValue, boolean warn) {
     if (rowValue == null) {
       return false;
     }
@@ -990,7 +994,12 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       return true;
     }
     getRowEditable().update(rowValue);
-    return BeeUtils.toBoolean(getRowEditable().evaluate());
+    boolean ok = BeeUtils.toBoolean(getRowEditable().evaluate());
+    
+    if (!ok && warn) {
+      notifyWarning("Row is read only:", getRowEditable().transform());
+    }
+    return ok;
   }
 
   private void setRowEditable(Evaluator rowEditable) {

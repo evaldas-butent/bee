@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<BeeGrids xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../schemas/grid.xsd">
+
+  <BeeGrid name="DataTypes" viewName="DataTypes" maxColumnWidth="500" caption="Types"
+    asyncThreshold="50">
+    <header borderWidth="2">
+      <style>
+        <inline>background-color: #f6cef5;</inline>
+        <font>medium</font>
+      </style>
+    </header>
+    <body maxHeight="100" />
+    <footer height="30" />
+
+    <columns>
+      <BeeIdColumn name="id" caption="ID" showWidth="false" horizontalAlignment="left">
+        <style>
+          <headerStyle>
+            <class>bee-Button</class>
+          </headerStyle>
+          <bodyStyle>
+            <inline>background-color: lightgray;</inline>
+            <font>Courier</font>
+          </bodyStyle>
+          <dynStyle>
+            <style>
+              <inline>border-radius: [rowIndex]px;</inline>
+            </style>
+            <condition>
+              <expression>rowIndex != 0</expression>
+            </condition>
+          </dynStyle>
+        </style>
+      </BeeIdColumn>
+
+      <BeeVerColumn name="version" hasFooter="false">
+        <style>
+          <bodyStyle>
+            <inline>color: darkblue;</inline>
+            <font>small italic</font>
+          </bodyStyle>
+        </style>
+      </BeeVerColumn>
+
+      <BeeCalcColumn name="calc1" type="date" caption="Ver Dt" format="date_short" width="80">
+        <calc>
+          <expression>rowVersion</expression>
+        </calc>
+      </BeeCalcColumn>
+
+      <BeeDataColumn name="integer" source="Integer" maxWidth="120">
+        <editable>
+          <expression>cell.value &lt; row.Long</expression>
+        </editable>
+      </BeeDataColumn>
+
+      <BeeDataColumn name="long" source="Long" showWidth="false" minWidth="40"
+        minValue="-1024">
+        <style>
+          <dynStyle>
+            <style>
+              <inline>color: red</inline>
+            </style>
+            <condition>
+              <expression>row.Long &lt; 0</expression>
+            </condition>
+          </dynStyle>
+          <dynStyle>
+            <style>
+              <inline>color: green</inline>
+            </style>
+            <condition>
+              <function>
+                var z = cell.value;
+                return z &gt; 0;
+              </function>
+            </condition>
+          </dynStyle>
+        </style>
+      </BeeDataColumn>
+
+      <BeeCalcColumn name="calc2" type="decimal" caption="Math" scale="4">
+        <calc>
+          <expression>(row.Long &gt; 0) ? Math.log(row.Long) : row.Long / 1000</expression>
+        </calc>
+      </BeeCalcColumn>
+
+      <BeeDataColumn name="numeric" source="Numeric" format="0.0%" caption="Percent">
+        <validation>
+          <function>
+            var maxDiff = 1000;
+            if (Math.abs((cell.oldValue || 0) - (cell.newValue || 0)) > maxDiff) {
+              return "difference between old " + cell.oldValue + " and new " + cell.newValue + " cannot exceed " + maxDiff; 
+            } else {
+              return null;
+            }
+          </function>
+        </validation>
+      </BeeDataColumn>
+
+      <BeeDataColumn source="Currency" name="currency" readOnly="true">
+        <style>
+          <bodyStyle>
+            <inline>letter-spacing: 5px;</inline>
+          </bodyStyle>
+        </style>
+      </BeeDataColumn>
+
+      <BeeDataColumn name="string" source="String" sortable="false">
+        <validation>
+          <function>
+            if (cell.newValue == null || cell.newValue.length &lt; 3) {
+              return "must be at least 3 characters";
+            }
+            return null;
+          </function>
+        </validation>
+        <carry>
+          <expression>cell.value</expression>
+        </carry>
+      </BeeDataColumn>
+
+      <BeeDataColumn name="char" source="Char" visible="false" />
+
+      <BeeDataColumn name="memo" source="Memo" width="200" />
+
+      <BeeCalcColumn name="calc3" type="string" caption="typeof" width="100">
+        <calc>
+          <function>
+            var s = "";
+            for (var p in row) {
+              var z = row[p];
+              s = s + String(typeof(z)).charAt(0) + " ";
+            }
+            return s;
+          </function>
+        </calc>
+      </BeeCalcColumn>
+
+      <BeeDataColumn name="date" source="Date" minValue="2000 1 1" maxValue="2012 12 21"
+        horizontalAlignment="center">
+        <style>
+          <footerStyle>
+            <class>bee-afraid</class>
+          </footerStyle>
+        </style>
+      </BeeDataColumn>
+
+      <BeeDataColumn source="DateTime" name="dateTime" format="yyyy-MM-dd HH:mm:ss">
+        <style>
+          <bodyStyle>
+            <inline>-webkit-transform:rotateY(180deg);</inline>
+          </bodyStyle>
+        </style>
+      </BeeDataColumn>
+    </columns>
+
+    <rowStyle>
+      <style>
+        <inline>="color: rgb(" + rowIndex * 10 + "," + rowIndex * 5 + ",0)"</inline>
+      </style>
+      <condition>
+        <expression>new Date().getMinutes() % 5 != 0</expression>
+      </condition>
+    </rowStyle>
+    <rowStyle>
+      <style>
+        <inline>="opacity: " + 30 / (new Date().getSeconds() + 30)</inline>
+      </style>
+      <condition>
+        <expression>true</expression>
+      </condition>
+    </rowStyle>
+
+    <rowMessage>
+      <function>return String(rowId) + '  ' + String(rowVersion)</function>
+    </rowMessage>
+
+    <rowEditable>
+      <expression>row.Date &gt;= new Date(2010, 0, 1)</expression>
+    </rowEditable>
+
+  </BeeGrid>
+</BeeGrids>
