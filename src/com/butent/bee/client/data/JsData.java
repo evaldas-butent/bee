@@ -3,8 +3,8 @@ package com.butent.bee.client.data;
 import com.google.gwt.core.client.JsArrayString;
 
 import com.butent.bee.client.utils.JsUtils;
-import com.butent.bee.shared.ArraySequence;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.StringRowArray;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.StringMatrix;
 import com.butent.bee.shared.data.StringRow;
@@ -39,7 +39,7 @@ public class JsData<ColType extends IsColumn> extends StringMatrix<ColType> {
     Assert.isPositive(rowSize);
     int rc = (data.length() - start) / rowSize;
 
-    setRows(new ArraySequence<StringRow>(new StringRow[rc]));
+    setRows(new StringRowArray(new StringRow[rc]));
     for (int i = 0; i < rc; i++) {
       getRows().set(i, new StringRow(i + 1, new JsStringSequence(JsUtils.slice(data,
           start + i * rowSize, start + (i + 1) * rowSize))));

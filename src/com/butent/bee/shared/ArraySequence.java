@@ -9,7 +9,8 @@ import java.util.List;
  * 
  * @param <T> the object type of array
  */
-public class ArraySequence<T> extends AbstractSequence<T> {
+public abstract class ArraySequence<T> extends AbstractSequence<T> {
+
   private T[] values;
   private int length;
 
@@ -30,6 +31,8 @@ public class ArraySequence<T> extends AbstractSequence<T> {
   public void clear() {
     this.length = 0;
   }
+  
+  public abstract ArraySequence<T> clone();
 
   /**
    * Returns the object of array contains of the index.

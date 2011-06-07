@@ -758,6 +758,8 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
 
   public static int defaultResizerShowSensitivityMillis = 100;
   public static int defaultResizerMoveSensitivityMillis = 0;
+  
+  public static int pageSizeCalculationReserve = 3;
 
   public static String STYLE_GRID = "bee-CellGrid";
   public static String STYLE_EMPTY = "bee-CellGridEmpty";
@@ -1093,7 +1095,11 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
 
     int bodyRowHeight = getBodyCellHeight() + getBodyCellHeightIncrement();
     if (bodyRowHeight > 0 && availableBodyHeight >= bodyRowHeight) {
-      return availableBodyHeight / bodyRowHeight;
+      int ps = availableBodyHeight / bodyRowHeight;
+      if (ps > 1 && availableBodyHeight % bodyRowHeight < pageSizeCalculationReserve) {
+        ps--;
+      }
+      return ps;
     }
     return BeeConst.UNDEF;
   }

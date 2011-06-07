@@ -13,4 +13,18 @@ public class StringArray extends ArraySequence<String> {
   public StringArray(String[] values) {
     super(values);
   }
+
+  @Override
+  public StringArray clone() {
+    int len = getLength();
+    if (len <= 0) {
+      return new StringArray(new String[0]);
+    }
+    
+    String[] arr = new String[len];
+    for (int i = 0; i < len; i++) {
+      arr[i] = get(i);
+    }
+    return new StringArray(arr);
+  }
 }

@@ -10,6 +10,8 @@ public interface Sequence<T> extends HasLength, Iterable<T> {
   void add(T value);
 
   void clear();
+  
+  Sequence<T> clone();
 
   T get(int index);
 

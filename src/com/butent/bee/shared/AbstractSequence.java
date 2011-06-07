@@ -35,6 +35,8 @@ public abstract class AbstractSequence<T> implements Sequence<T> {
   public void add(T value) {
     insert(getLength(), value);
   }
+  
+  public abstract AbstractSequence<T> clone();
 
   /**
    * @return a new SequenceIterator

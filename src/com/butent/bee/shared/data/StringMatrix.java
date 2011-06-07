@@ -1,10 +1,10 @@
 package com.butent.bee.shared.data;
 
-import com.butent.bee.shared.ArraySequence;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.StringArray;
+import com.butent.bee.shared.StringRowArray;
 import com.butent.bee.shared.data.value.ValueType;
 
 import java.util.Arrays;
@@ -18,11 +18,11 @@ import java.util.List;
 
 public class StringMatrix<ColType extends IsColumn> extends AbstractTable<StringRow, ColType> {
 
-  private ArraySequence<StringRow> rows = null;
+  private StringRowArray rows = null;
 
   public StringMatrix(String[][] data, String... columnLabels) {
     super(columnLabels);
-    rows = new ArraySequence<StringRow>(new StringRow[data.length]);
+    rows = new StringRowArray(new StringRow[data.length]);
     for (int i = 0; i < data.length; i++) {
       rows.set(i, new StringRow(i + 1, new StringArray(data[i])));
     }
@@ -30,7 +30,7 @@ public class StringMatrix<ColType extends IsColumn> extends AbstractTable<String
 
   public StringMatrix(List<String[]> data, String... columnLabels) {
     super(columnLabels);
-    rows = new ArraySequence<StringRow>(new StringRow[data.size()]);
+    rows = new StringRowArray(new StringRow[data.size()]);
     for (int i = 0; i < data.size(); i++) {
       rows.set(i, new StringRow(i + 1, new StringArray(data.get(i))));
     }
@@ -38,7 +38,7 @@ public class StringMatrix<ColType extends IsColumn> extends AbstractTable<String
   
   protected StringMatrix() {
     super();
-    this.rows = new ArraySequence<StringRow>(new StringRow[0]);
+    this.rows = new StringRowArray(new StringRow[0]);
   }
 
   protected StringMatrix(ColType... columns) {
@@ -49,7 +49,7 @@ public class StringMatrix<ColType extends IsColumn> extends AbstractTable<String
     super(columnLabels);
   }
 
-  private StringMatrix(ArraySequence<StringRow> rows) {
+  private StringMatrix(StringRowArray rows) {
     super();
     this.rows = rows;
   }
@@ -88,7 +88,7 @@ public class StringMatrix<ColType extends IsColumn> extends AbstractTable<String
     return getRows().get(rowIndex);
   }
 
-  public ArraySequence<StringRow> getRows() {
+  public StringRowArray getRows() {
     return rows;
   }
 
@@ -145,7 +145,7 @@ public class StringMatrix<ColType extends IsColumn> extends AbstractTable<String
     getRows().insert(rowIndex, row);
   }
 
-  protected void setRows(ArraySequence<StringRow> rows) {
+  protected void setRows(StringRowArray rows) {
     this.rows = rows;
   }
 

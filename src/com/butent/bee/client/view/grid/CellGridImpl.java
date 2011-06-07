@@ -158,8 +158,6 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
         case KeyCodes.KEY_TAB:
         case KeyCodes.KEY_UP:
         case KeyCodes.KEY_DOWN:
-        case KeyCodes.KEY_PAGEDOWN:
-        case KeyCodes.KEY_PAGEUP:
           EventUtils.eatEvent(event.getNativeEvent());
           if (endEdit()) {
             getGrid().handleKeyboardNavigation(keyCode, EventUtils.hasModifierKey(nativeEvent));
