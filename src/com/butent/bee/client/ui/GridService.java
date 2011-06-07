@@ -9,8 +9,8 @@ import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.utils.XmlUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Service;
+import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRowSet;
-import com.butent.bee.shared.utils.BeeUtils;
 
 /**
  * Implements asynchronous creation of grids.
@@ -42,12 +42,15 @@ class GridService extends CompositeService {
         new ResponseCallback() {
           @Override
           public void onResponse(JsArrayString arr) {
-            Assert.notNull(arr);
-            Assert.parameterCount(arr.length(), 1);
-            String data = arr.get(0);
+            Assert.unsupported();
+          }
 
-            if (!BeeUtils.isEmpty(data)) {
-              destination.add(Global.scrollGrid(BeeRowSet.restore(data)));
+          @Override
+          public void onResponse(ResponseObject resp) {
+            Assert.notNull(resp);
+
+            if (resp.hasResponse(BeeRowSet.class)) {
+              destination.add(Global.scrollGrid(BeeRowSet.restore((String) resp.getResponse())));
             }
           }
         });

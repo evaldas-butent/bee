@@ -18,6 +18,7 @@ import com.butent.bee.client.widget.InputText;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
+import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -33,15 +34,15 @@ public class CliWidget extends InputText {
     super();
     sinkEvents(Event.ONKEYDOWN);
   }
-  
+
   @Override
   public void onBrowserEvent(Event event) {
-    if (event.getTypeInt() != Event.ONKEYDOWN || event.getKeyCode() != KeyCodes.KEY_ENTER 
+    if (event.getTypeInt() != Event.ONKEYDOWN || event.getKeyCode() != KeyCodes.KEY_ENTER
         || BeeUtils.isEmpty(getValue())) {
       super.onBrowserEvent(event);
       return;
     }
-    
+
     EventUtils.eatEvent(event);
 
     String v = getValue().trim();
@@ -148,18 +149,28 @@ public class CliWidget extends InputText {
     } else if (z.equals("sql")) {
       BeeKeeper.getRpc().sendText(Service.DO_SQL, v,
           new ResponseCallback() {
+            @SuppressWarnings("hiding")
             @Override
-            public void onResponse(JsArrayString respArr) {
-              BeeRowSet rs = BeeRowSet.restore(respArr.get(0));
+            public void onResponse(JsArrayString arr) {
+              Assert.unsupported();
+            }
 
-              if (rs.isEmpty()) {
-                BeeKeeper.getUi().updateActivePanel(new BeeLabel("RowSet is empty"));
-              } else {
-                BeeKeeper.getUi().showGrid(rs);
+            @Override
+            public void onResponse(ResponseObject response) {
+              Assert.notNull(response);
+
+              if (response.hasResponse(BeeRowSet.class)) {
+                BeeRowSet rs = BeeRowSet.restore((String) response.getResponse());
+
+                if (rs.isEmpty()) {
+                  BeeKeeper.getUi().updateActivePanel(new BeeLabel("RowSet is empty"));
+                } else {
+                  BeeKeeper.getUi().showGrid(rs);
+                }
               }
             }
           });
-      
+
     } else if (z.equals("stack")) {
       CliWorker.showStack();
     } else if (z.startsWith("stor")) {

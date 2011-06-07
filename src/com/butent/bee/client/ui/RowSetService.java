@@ -24,6 +24,7 @@ import com.butent.bee.shared.BeeWidget;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.Stage;
 import com.butent.bee.shared.communication.ContentType;
+import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.cache.CachingPolicy;
@@ -89,10 +90,15 @@ public class RowSetService extends CompositeService {
             new ResponseCallback() {
               @Override
               public void onResponse(JsArrayString arr) {
-                Assert.notNull(arr);
-                Assert.parameterCount(arr.length(), 1);
+                Assert.unsupported();
+              }
 
-                List<String> lst = Lists.newArrayList(Codec.beeDeserialize(arr.get(0)));
+              @Override
+              public void onResponse(ResponseObject response) {
+                Assert.notNull(response);
+
+                List<String> lst =
+                    Lists.newArrayList(Codec.beeDeserialize((String) response.getResponse()));
 
                 if (BeeUtils.isEmpty(lst)) {
                   Global.showError("NO TABLES");
@@ -143,14 +149,17 @@ public class RowSetService extends CompositeService {
               new ResponseCallback() {
                 @Override
                 public void onResponse(JsArrayString arr) {
-                  Assert.notNull(arr);
-                  Assert.parameterCount(arr.length(), 1);
-                  String data = arr.get(0);
+                  Assert.unsupported();
+                }
 
-                  if (BeeUtils.isEmpty(data)) {
-                    rs.rollback();
+                @Override
+                public void onResponse(ResponseObject response) {
+                  Assert.notNull(response);
+
+                  if (response.hasResponse(BeeRowSet.class)) {
+                    rs.commit(BeeRowSet.restore((String) response.getResponse()));
                   } else {
-                    rs.commit(BeeRowSet.restore(data));
+                    rs.rollback();
                   }
                   refresh();
                 }
@@ -181,10 +190,15 @@ public class RowSetService extends CompositeService {
               new ResponseCallback() {
                 @Override
                 public void onResponse(JsArrayString arr) {
-                  Assert.notNull(arr);
-                  Assert.parameterCount(arr.length(), 1);
+                  Assert.unsupported();
+                }
 
-                  List<String> res = Lists.newArrayList(Codec.beeDeserialize(arr.get(0)));
+                @Override
+                public void onResponse(ResponseObject response) {
+                  Assert.notNull(response);
+
+                  List<String> res =
+                      Lists.newArrayList(Codec.beeDeserialize((String) response.getResponse()));
                   int rc = res.size();
                   List<String> lst = new ArrayList<String>();
                   int x = 1;
@@ -223,10 +237,15 @@ public class RowSetService extends CompositeService {
               new ResponseCallback() {
                 @Override
                 public void onResponse(JsArrayString arr) {
-                  Assert.notNull(arr);
-                  Assert.parameterCount(arr.length(), 1);
+                  Assert.unsupported();
+                }
 
-                  List<String> lst = Lists.newArrayList(Codec.beeDeserialize(arr.get(0)));
+                @Override
+                public void onResponse(ResponseObject response) {
+                  Assert.notNull(response);
+
+                  List<String> lst =
+                      Lists.newArrayList(Codec.beeDeserialize((String) response.getResponse()));
 
                   if (BeeUtils.isEmpty(lst)) {
                     Global.showError("NO STATES");
@@ -256,12 +275,15 @@ public class RowSetService extends CompositeService {
               new ResponseCallback() {
                 @Override
                 public void onResponse(JsArrayString arr) {
-                  Assert.notNull(arr);
-                  Assert.parameterCount(arr.length(), 1);
-                  String data = arr.get(0);
+                  Assert.unsupported();
+                }
 
-                  if (!BeeUtils.isEmpty(data)) {
-                    rs = BeeRowSet.restore(data);
+                @Override
+                public void onResponse(ResponseObject response) {
+                  Assert.notNull(response);
+
+                  if (response.hasResponse(BeeRowSet.class)) {
+                    rs = BeeRowSet.restore((String) response.getResponse());
                     refresh();
                   }
                 }

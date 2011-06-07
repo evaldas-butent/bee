@@ -10,15 +10,19 @@ import com.butent.bee.server.i18n.I18nUtils;
 import com.butent.bee.server.i18n.Localized;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.LocalizableMessages;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.LogUtils;
 
+import java.io.IOException;
+import java.io.StringReader;
 import java.security.Principal;
-import java.util.Collection;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Properties;
 import java.util.logging.Logger;
 
 import javax.annotation.PreDestroy;
@@ -37,55 +41,21 @@ import javax.ejb.Singleton;
 @Lock(LockType.READ)
 public class UserServiceBean {
 
-  public class UserInfo {
-    private final String login;
-    private final long userId;
-    private final String firstName;
-    private final String lastName;
-    private final String position;
-    private Collection<Long> userRoles;
+  private class UserInfo {
+    private UserData userData;
     private boolean online = false;
     private Locale locale = Localized.defaultLocale;
 
-    public UserInfo(long userId, String login, String firstName, String lastName, String position) {
-      this.userId = userId;
-      this.login = login;
-      this.firstName = firstName;
-      this.lastName = lastName;
-      this.position = position;
-    }
-
-    public String getFirstName() {
-      return firstName;
-    }
-
-    public String getLastName() {
-      return lastName;
+    public UserInfo(UserData userData) {
+      this.userData = userData;
     }
 
     public Locale getLocale() {
       return locale;
     }
 
-    public String getLogin() {
-      return login;
-    }
-
-    public String getPosition() {
-      return position;
-    }
-
-    public Collection<Long> getRoles() {
-      return userRoles;
-    }
-
-    public long getUserId() {
-      return userId;
-    }
-
-    public String getUserSign() {
-      return BeeUtils.concat(1, getPosition(),
-          BeeUtils.concat(1, BeeUtils.ifString(getFirstName(), getLogin()), getLastName()));
+    public UserData getUserData() {
+      return userData;
     }
 
     public boolean isOnline() {
@@ -93,13 +63,21 @@ public class UserServiceBean {
     }
 
     private UserInfo setLocale(String locale) {
-      Locale loc = I18nUtils.toLocale(locale);
+      Locale loc = null;
+      UserData data = getUserData();
 
-      if (BeeUtils.isEmpty(loc)) {
-        LogUtils.warning(logger, getUserSign(), "Unknown user locale:", locale);
-      } else {
-        this.locale = loc;
+      if (!BeeUtils.isEmpty(locale)) {
+        loc = I18nUtils.toLocale(locale);
+
+        if (BeeUtils.isEmpty(loc)) {
+          LogUtils.warning(logger, data.getUserSign(), "Unknown user locale:", locale);
+        }
       }
+      if (BeeUtils.isEmpty(loc)) {
+        loc = Localized.defaultLocale;
+      }
+      data.setLocale(loc.toString());
+      this.locale = loc;
       return this;
     }
 
@@ -108,17 +86,42 @@ public class UserServiceBean {
       return this;
     }
 
-    private UserInfo setRoles(Collection<Long> userRoles) {
-      this.userRoles = userRoles;
+    private UserInfo setProperties(String properties) {
+      Map<String, String> props = null;
+
+      if (!BeeUtils.isEmpty(properties)) {
+        props = Maps.newHashMap();
+        Properties prp = new Properties();
+
+        try {
+          prp.load(new StringReader(properties));
+        } catch (IOException e) {
+          LogUtils.error(logger, e, properties);
+        }
+        for (String p : prp.stringPropertyNames()) {
+          props.put(p, prp.getProperty(p));
+        }
+      }
+      userData.setProperties(props);
       return this;
     }
   }
 
   private static Logger logger = Logger.getLogger(UserServiceBean.class.getName());
 
-  public static final String USER_TABLE = "Users";
-  public static final String ROLE_TABLE = "Roles";
-  public static final String USER_ROLES_TABLE = "UserRoles";
+  public static final String TBL_USERS = "Users";
+  public static final String TBL_ROLES = "Roles";
+  public static final String TBL_USER_ROLES = "UserRoles";
+
+  public static final String FLD_LOGIN = "Login";
+  public static final String FLD_PASSWORD = "Password";
+  public static final String FLD_FIRST_NAME = "FirstName";
+  public static final String FLD_LAST_NAME = "LastName";
+  public static final String FLD_POSITION = "Position";
+  public static final String FLD_PROPERTIES = "Properties";
+  public static final String FLD_ROLE_NAME = "Name";
+  public static final String FLD_USER = "User";
+  public static final String FLD_ROLE = "Role";
 
   @Resource
   EJBContext ctx;
@@ -167,7 +170,7 @@ public class UserServiceBean {
   }
 
   public long[] getUserRoles(long userId) {
-    return Longs.toArray(getUserInfo(userId).getRoles());
+    return Longs.toArray(getUserInfo(userId).getUserData().getRoles());
   }
 
   public Map<Long, String> getUsers() {
@@ -198,32 +201,35 @@ public class UserServiceBean {
   }
 
   @Lock(LockType.WRITE)
-  public String login(String locale) {
-    String sign = null;
+  public ResponseObject login(String locale) {
+    ResponseObject response = new ResponseObject();
     String user = getCurrentUser();
 
     if (isUser(user)) {
       UserInfo info = getUserInfo(user);
-      sign = user + " " + BeeUtils.parenthesize(info.getUserSign());
+      UserData data = info.getUserData();
       info.setOnline(true);
       info.setLocale(locale);
-      LogUtils.infoNow(logger, "User logged in:", sign);
+      response.setResponse(data).addInfo("User logged in:",
+          user + " " + BeeUtils.parenthesize(data.getUserSign()));
+      LogUtils.infoNow(logger, (Object[]) response.getNotifications());
 
     } else if (BeeUtils.isEmpty(getUsers())) {
-      sign = user;
-      LogUtils.warning(logger, "Anonymous user logged in:", sign);
+      response.addWarning("Anonymous user logged in:", user);
+      LogUtils.warning(logger, (Object[]) response.getWarnings());
 
     } else {
-      LogUtils.severe(logger, "Login attempt by an unauthorized user:", user);
+      response.addError("Login attempt by an unauthorized user:", user);
+      LogUtils.severe(logger, (Object[]) response.getErrors());
     }
-    return sign;
+    return response;
   }
 
   @Lock(LockType.WRITE)
   public void logout(String user) {
     if (isUser(user)) {
       UserInfo info = getUserInfo(user);
-      String sign = user + " " + BeeUtils.parenthesize(info.getUserSign());
+      String sign = user + " " + BeeUtils.parenthesize(info.getUserData().getUserSign());
 
       if (info.isOnline()) {
         info.setOnline(false);
@@ -231,7 +237,6 @@ public class UserServiceBean {
       } else {
         LogUtils.warning(logger, "User was not logged in:", sign);
       }
-
     } else if (BeeUtils.isEmpty(getUsers())) {
       LogUtils.warning(logger, "Anonymous user logged out:", user);
 
@@ -248,7 +253,7 @@ public class UserServiceBean {
       UserInfo info = getUserInfo(user);
 
       if (info.isOnline()) {
-        logout(info.getLogin());
+        logout(info.getUserData().getLogin());
       }
     }
   }
@@ -275,45 +280,48 @@ public class UserServiceBean {
     Map<String, UserInfo> expiredCache = infoCache;
     infoCache = Maps.newHashMap();
 
-    String userIdName = sys.getIdName(USER_TABLE);
-    String roleIdName = sys.getIdName(ROLE_TABLE);
+    String userIdName = sys.getIdName(TBL_USERS);
+    String roleIdName = sys.getIdName(TBL_ROLES);
 
     SqlSelect ss = new SqlSelect()
-        .addFields("r", roleIdName, "Name")
-        .addFrom(ROLE_TABLE, "r");
+        .addFields("r", roleIdName, FLD_ROLE_NAME)
+        .addFrom(TBL_ROLES, "r");
 
     for (Map<String, String> row : qs.getData(ss)) {
-      roleCache.put(BeeUtils.toLong(row.get(roleIdName)), row.get("Name"));
+      roleCache.put(BeeUtils.toLong(row.get(roleIdName)), row.get(FLD_ROLE_NAME));
     }
 
     ss = new SqlSelect()
-        .addFields("r", "User", "Role")
-        .addFrom(USER_ROLES_TABLE, "r");
+        .addFields("r", FLD_USER, FLD_ROLE)
+        .addFrom(TBL_USER_ROLES, "r");
 
     Multimap<Long, Long> userRoles = HashMultimap.create();
 
     for (Map<String, String> row : qs.getData(ss)) {
-      userRoles.put(BeeUtils.toLong(row.get("User")), BeeUtils.toLong(row.get("Role")));
+      userRoles.put(BeeUtils.toLong(row.get(FLD_USER)), BeeUtils.toLong(row.get(FLD_ROLE)));
     }
 
     ss = new SqlSelect()
-        .addFields("u", userIdName, "Login", "Position", "FirstName", "LastName")
-        .addFrom(USER_TABLE, "u");
+        .addFields("u", userIdName,
+            FLD_LOGIN, FLD_FIRST_NAME, FLD_LAST_NAME, FLD_POSITION, FLD_PROPERTIES)
+        .addFrom(TBL_USERS, "u");
 
     for (Map<String, String> row : qs.getData(ss)) {
       long userId = BeeUtils.toLong(row.get(userIdName));
-      String login = row.get("Login").toLowerCase();
+      String login = row.get(FLD_LOGIN).toLowerCase();
 
       userCache.put(userId, login);
 
-      UserInfo user = new UserInfo(userId, login,
-          row.get("FirstName"), row.get("LastName"), row.get("Position"))
-          .setRoles(userRoles.get(userId));
+      UserInfo user = new UserInfo(
+          new UserData(userId, login,
+              row.get(FLD_FIRST_NAME), row.get(FLD_LAST_NAME), row.get(FLD_POSITION))
+              .setRoles(userRoles.get(userId)))
+          .setProperties(row.get(FLD_PROPERTIES));
 
       UserInfo oldInfo = expiredCache.get(login);
 
       if (!BeeUtils.isEmpty(oldInfo)) {
-        user.setLocale(oldInfo.getLocale().toString())
+        user.setLocale(oldInfo.getUserData().getLocale())
             .setOnline(oldInfo.isOnline());
       }
       infoCache.put(login, user);

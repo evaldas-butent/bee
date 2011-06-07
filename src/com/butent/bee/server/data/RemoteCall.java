@@ -30,6 +30,7 @@ import javax.jws.soap.SOAPBinding.ParameterStyle;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -238,8 +239,8 @@ public class RemoteCall {
     Object ret = null;
 
     try {
-      JAXBContext c = JAXBContext.newInstance(clazz);
-      ret = c.createUnmarshaller().unmarshal(new StringReader(params));
+      Unmarshaller unmarshaller = JAXBContext.newInstance(clazz).createUnmarshaller();
+      ret = unmarshaller.unmarshal(new StringReader(params));
 
     } catch (JAXBException e) {
       String err;

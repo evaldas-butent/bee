@@ -21,6 +21,7 @@ import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
+import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.event.HandlesDeleteEvents;
@@ -44,17 +45,20 @@ public class Explorer implements HandlesDeleteEvents {
     }
 
     public void onResponse(JsArrayString arr) {
-      Assert.notNull(arr);
-      Assert.isTrue(arr.length() >= 1);
-      String[] info = Codec.beeDeserialize(arr.get(0));
+      Assert.unsupported();
+    }
+
+    public void onResponse(ResponseObject response) {
+      Assert.notNull(response);
+      String[] info = Codec.beeDeserialize((String) response.getResponse());
 
       getViews().clear();
       for (String s : info) {
         getViews().add(DataInfo.restore(s));
       }
-      
+
       if (getDataInfoWidget() == null) {
-        showDataInfo(); 
+        showDataInfo();
       } else {
         getDataInfoWidget().setRowData(getViews());
       }
@@ -73,7 +77,7 @@ public class Explorer implements HandlesDeleteEvents {
 
   public static Integer defaultAsyncThreshold = 100;
   private final int maxInitialRowSetSize = 50;
-  
+
   private final List<DataInfo> views = Lists.newArrayList();
   private final DataInfoCreator dataInfoCreator = new DataInfoCreator();
 
@@ -110,7 +114,7 @@ public class Explorer implements HandlesDeleteEvents {
       refresh();
     }
   }
-  
+
   public void refresh() {
     if (getDataInfoWidget() != null) {
       getDataInfoWidget().redraw();
@@ -157,10 +161,10 @@ public class Explorer implements HandlesDeleteEvents {
       }
     });
     grid.setSelectionModel(selector);
-    
+
     BeeKeeper.getUi().updateData(grid, true);
   }
-  
+
   private DataInfo getDataInfo(String name) {
     Assert.notNull(name);
     for (DataInfo dataInfo : getViews()) {
@@ -186,15 +190,16 @@ public class Explorer implements HandlesDeleteEvents {
         BeeKeeper.getUi().notifyWarning(reason);
         getInitialRowSet(dataInfo, null);
       }
+
       public void onSuccess(GridDescription result) {
         getInitialRowSet(dataInfo, result);
       }
     });
   }
-  
+
   private void getInitialRowSet(final DataInfo dataInfo, final GridDescription gridDescription) {
-    Integer asyncThreshold = 
-      (gridDescription == null) ? defaultAsyncThreshold : gridDescription.getAsyncThreshold();
+    Integer asyncThreshold =
+        (gridDescription == null) ? defaultAsyncThreshold : gridDescription.getAsyncThreshold();
     int limit = BeeUtils.unbox(asyncThreshold);
     int rc = dataInfo.getRowCount();
 
@@ -215,6 +220,7 @@ public class Explorer implements HandlesDeleteEvents {
         new Queries.RowSetCallback() {
           public void onFailure(String reason) {
           }
+
           public void onSuccess(final BeeRowSet rowSet) {
             showView(dataInfo, rowSet, async, gridDescription);
           }
@@ -224,7 +230,7 @@ public class Explorer implements HandlesDeleteEvents {
   private void setDataInfoWidget(CellTable<DataInfo> dataInfoWidget) {
     this.dataInfoWidget = dataInfoWidget;
   }
-  
+
   private void showView(DataInfo dataInfo, BeeRowSet rowSet, boolean async,
       GridDescription gridDescription) {
     GridPresenter presenter = new GridPresenter(dataInfo, rowSet, async, gridDescription);

@@ -7,6 +7,7 @@ import com.butent.bee.shared.BeeResource;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.CommUtils;
 import com.butent.bee.shared.communication.ContentType;
+import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.LogUtils;
@@ -82,91 +83,104 @@ public class BeeServlet extends HttpServlet {
 
     ResponseBuffer buff = new ResponseBuffer(sep);
     String sid = null;
+    ResponseObject response = null;
+    String s;
 
-    if (isAuthorized(req, reqInfo, resp, buff)) {
+    if (isAuthorized(req, reqInfo, resp)) {
       sid = req.getSession(false).getId();
 
       if (!BeeUtils.same(svc, Service.LOGIN)) {
-        dispatcher.doService(svc, dsn, reqInfo, buff);
+        response = dispatcher.doService(svc, dsn, reqInfo, buff);
       }
-    } else {
-      buff.addWarning("Not logged in");
     }
-
-    int respLen = buff.getSize();
-    int mc = buff.getMessageCount();
-    int pc = buff.getPartCount();
-
-    int cnt = buff.getCount();
-    int cc = buff.getColumnCount();
-
-    ContentType ctp = buff.getContentType();
-    if (ctp == null) {
-      ctp = (cc > 0) ? ContentType.TABLE : CommUtils.defaultResponseContentType;
-    }
-
     resp.setHeader(Service.RPC_VAR_SID, sid);
     resp.setHeader(Service.RPC_VAR_QID, rid);
-
-    if (!BeeUtils.isEmpty(sep) || !buff.isDefaultSeparator()) {
-      resp.setHeader(Service.RPC_VAR_SEP, buff.getHexSeparator());
-    }
-
-    if (cnt > 0) {
-      resp.setIntHeader(Service.RPC_VAR_CNT, cnt);
-    }
-    if (cc > 0) {
-      resp.setIntHeader(Service.RPC_VAR_COLS, cc);
-    }
-
-    if (mc > 0) {
-      resp.setIntHeader(Service.RPC_VAR_MSG_CNT, mc);
-      for (int i = 0; i < mc; i++) {
-        resp.setHeader(CommUtils.rpcMessageName(i), buff.getMessage(i).serialize());
-      }
-    }
-
-    resp.setHeader(Service.RPC_VAR_CTP, ctp.transform());
 
     resp.setHeader("Cache-Control", "no-cache");
     resp.setHeader("Pragma", "no-cache");
     resp.setHeader("Expires", "Thu, 01 Dec 1994 16:00:00 GMT");
 
-    String mt = BeeUtils.ifString(buff.getMediaType(), CommUtils.getMediaType(ctp));
-    if (!BeeUtils.isEmpty(mt)) {
-      resp.setContentType(mt);
-    }
+    if (response != null) {
+      resp.setHeader(Service.RPC_VAR_RESP, "1");
 
-    String ce = BeeUtils.ifString(buff.getCharacterEncoding(),
-          CommUtils.getCharacterEncoding(ctp));
-    if (!BeeUtils.isEmpty(ce)) {
-      resp.setCharacterEncoding(ce);
-    }
+      ContentType ctp = CommUtils.defaultResponseContentType;
 
-    String s;
-    if (respLen > 0) {
-      s = CommUtils.prepareContent(ctp, buff.getString());
+      resp.setContentType(CommUtils.getMediaType(ctp));
+      resp.setCharacterEncoding(CommUtils.getCharacterEncoding(ctp));
+      resp.setHeader(Service.RPC_VAR_CTP, ctp.transform());
 
-    } else if (pc > 0) {
-      resp.setIntHeader(Service.RPC_VAR_PART_CNT, pc);
-      StringBuilder sb = new StringBuilder();
-      int pn = 0;
+      s = CommUtils.prepareContent(ctp, Codec.beeSerialize(response));
 
-      for (BeeResource br : buff.getParts()) {
-        String part = br.serialize();
-        sb.append(part);
-        resp.setIntHeader(CommUtils.rpcPartName(pn++), part.length());
-      }
-      s = sb.toString();
+      LogUtils.infoNow(logger, BeeUtils.elapsedSeconds(start), rid, "response",
+          ctp, resp.getContentType(), s.length());
 
-    } else if (mc > 0) {
-      s = "Messages " + BeeUtils.bracket(mc);
     } else {
-      s = BeeConst.EMPTY;
-    }
+      int respLen = buff.getSize();
+      int mc = buff.getMessageCount();
+      int pc = buff.getPartCount();
 
-    LogUtils.infoNow(logger, BeeUtils.elapsedSeconds(start), rid, "response",
+      int cnt = buff.getCount();
+      int cc = buff.getColumnCount();
+
+      ContentType ctp = buff.getContentType();
+      if (ctp == null) {
+        ctp = (cc > 0) ? ContentType.TABLE : CommUtils.defaultResponseContentType;
+      }
+
+      if (!BeeUtils.isEmpty(sep) || !buff.isDefaultSeparator()) {
+        resp.setHeader(Service.RPC_VAR_SEP, buff.getHexSeparator());
+      }
+
+      if (cnt > 0) {
+        resp.setIntHeader(Service.RPC_VAR_CNT, cnt);
+      }
+      if (cc > 0) {
+        resp.setIntHeader(Service.RPC_VAR_COLS, cc);
+      }
+
+      if (mc > 0) {
+        resp.setIntHeader(Service.RPC_VAR_MSG_CNT, mc);
+        for (int i = 0; i < mc; i++) {
+          resp.setHeader(CommUtils.rpcMessageName(i), buff.getMessage(i).serialize());
+        }
+      }
+
+      resp.setHeader(Service.RPC_VAR_CTP, ctp.transform());
+
+      String mt = BeeUtils.ifString(buff.getMediaType(), CommUtils.getMediaType(ctp));
+      if (!BeeUtils.isEmpty(mt)) {
+        resp.setContentType(mt);
+      }
+
+      String ce = BeeUtils.ifString(buff.getCharacterEncoding(),
+          CommUtils.getCharacterEncoding(ctp));
+      if (!BeeUtils.isEmpty(ce)) {
+        resp.setCharacterEncoding(ce);
+      }
+
+      if (respLen > 0) {
+        s = CommUtils.prepareContent(ctp, buff.getString());
+
+      } else if (pc > 0) {
+        resp.setIntHeader(Service.RPC_VAR_PART_CNT, pc);
+        StringBuilder sb = new StringBuilder();
+        int pn = 0;
+
+        for (BeeResource br : buff.getParts()) {
+          String part = br.serialize();
+          sb.append(part);
+          resp.setIntHeader(CommUtils.rpcPartName(pn++), part.length());
+        }
+        s = sb.toString();
+
+      } else if (mc > 0) {
+        s = "Messages " + BeeUtils.bracket(mc);
+      } else {
+        s = BeeConst.EMPTY;
+      }
+      LogUtils.infoNow(logger, BeeUtils.elapsedSeconds(start), rid, "response",
           ctp, resp.getContentType(), cnt, cc, mc, pc, s.length());
+    }
 
     try {
       PrintWriter out = resp.getWriter();
@@ -178,8 +192,9 @@ public class BeeServlet extends HttpServlet {
   }
 
   private boolean isAuthorized(HttpServletRequest req, RequestInfo reqInfo,
-      HttpServletResponse resp, ResponseBuffer buff) {
+      HttpServletResponse resp) {
 
+    ResponseObject response = new ResponseObject();
     HttpSession session = req.getSession(false);
     String svc = reqInfo.getService();
     boolean loggedIn = !BeeUtils.isEmpty(session);
@@ -192,13 +207,12 @@ public class BeeServlet extends HttpServlet {
         req.logout();
         session.invalidate();
         loggedIn = false;
-        buff.addWarning("Logout successful");
+        response.addInfo("Logout successful");
 
       } catch (ServletException e) {
-        buff.addSevere(e.getMessage());
+        response.addError(e);
       }
     }
-
     if (!loggedIn && !BeeUtils.same(svc, Service.LOGOUT)) {
       String usr = BeeUtils.ifString(reqInfo.getParameter(Service.VAR_LOGIN),
           Config.getProperty("DefaultUser"));
@@ -208,10 +222,12 @@ public class BeeServlet extends HttpServlet {
       if (BeeUtils.allNotEmpty(usr, pwd)) {
         try {
           req.login(usr, pwd);
-          usr = dispatcher.doLogin(reqInfo.getDsn(), reqInfo.getLocale());
+          ResponseObject ro = dispatcher.doLogin(reqInfo.getDsn(), reqInfo.getLocale());
 
-          if (BeeUtils.isEmpty(usr)) {
-            buff.addSevere("User not authorized:", req.getRemoteUser());
+          if (ro.hasErrors()) {
+            for (String error : ro.getErrors()) {
+              response.addError(error);
+            }
             req.logout();
             session = req.getSession(false);
 
@@ -219,17 +235,31 @@ public class BeeServlet extends HttpServlet {
               session.invalidate();
             }
           } else {
+            loggedIn = true;
             session = req.getSession(true);
             session.setAttribute(Service.VAR_LOGIN, req.getRemoteUser());
 
-            resp.setHeader(Service.VAR_USER_SIGN, Codec.encodeBase64(usr));
-            loggedIn = true;
-            buff.addWarning("Login successful");
+            if (ro.hasWarnings()) {
+              for (String warning : ro.getWarnings()) {
+                response.addWarning(warning);
+              }
+            }
+            if (ro.hasNotifications()) {
+              for (String note : ro.getNotifications()) {
+                response.addInfo(note);
+              }
+            }
+            response.setResponse(ro.getResponse());
           }
         } catch (ServletException e) {
-          buff.addSevere(e.getMessage());
+          response.addError(e);
         }
+      } else {
+        response.addWarning("Not logged in");
       }
+    }
+    if (!response.isEmpty()) {
+      resp.setHeader(Service.VAR_AUTH_DATA, Codec.encodeBase64(Codec.beeSerialize(response)));
     }
     return loggedIn;
   }

@@ -1,6 +1,6 @@
 package com.butent.bee.client;
 
-import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.data.UserData;
 
 /**
  * gets user login status, session ID and stores them.
@@ -11,7 +11,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 public class UserInfo implements Module {
 
   private String sessionId = null;
-  private String userSign = null;
+  private UserData userData = null;
 
   public void end() {
   }
@@ -38,22 +38,25 @@ public class UserInfo implements Module {
   }
 
   public String getUserSign() {
-    return userSign;
+    if (isLoggedIn()) {
+      return userData.getUserSign();
+    }
+    return null;
   }
 
   public void init() {
   }
 
   public boolean isLoggedIn() {
-    return !BeeUtils.isEmpty(getUserSign());
+    return userData != null;
   }
 
   public void setSessionId(String sessionId) {
     this.sessionId = sessionId;
   }
 
-  public void setUserSign(String userSign) {
-    this.userSign = userSign;
+  public void setUserData(UserData userData) {
+    this.userData = userData;
   }
 
   public void start() {

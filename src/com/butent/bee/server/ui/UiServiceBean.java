@@ -21,7 +21,6 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
-import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.ui.UiComponent;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -239,9 +238,9 @@ public class UiServiceBean {
       return ResponseObject.error("Which grid?");
     }
     if (grd.isGrid(gridName)) {
-      return ResponseObject.response(grd.getGrid(gridName)).setType(GridDescription.class);
+      return ResponseObject.response(grd.getGrid(gridName));
     }
-    return ResponseObject.response(BeeUtils.concat(1, "grid", gridName, "not found"));
+    return ResponseObject.error("grid", gridName, "not found");
   }
 
   private ResponseObject getStates(RequestInfo reqInfo) {
@@ -454,8 +453,10 @@ public class UiServiceBean {
     rs.addRow(rowId, version, new String[] {oldValue});
     rs.setValue(0, 0, newValue);
 
-    ResponseObject result = sys.updateRow(rs, false);
-    if (result.getResponse() instanceof IsRow) {
+    ResponseObject result = sys.updateRow(rs,
+        BeeUtils.toBoolean(reqInfo.getParameter(Service.VAR_VIEW_FULL_ROW)));
+
+    if (result.hasResponse(IsRow.class)) {
       long newVersion = ((IsRow) result.getResponse()).getVersion();
       result.setResponse(newVersion);
     }

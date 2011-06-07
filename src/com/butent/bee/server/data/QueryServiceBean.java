@@ -318,15 +318,21 @@ public class QueryServiceBean {
 
   public BeeRowSet rsToBeeRowSet(ResultSet rs, BeeView view) throws SQLException {
     BeeColumn[] rsCols = JdbcUtils.getColumns(rs);
-    int cols = BeeUtils.isEmpty(view) ? rsCols.length : view.getColumnCount();
+    int cols = rsCols.length;
+    String idName = null;
+    String versionName = null;
+
+    if (!BeeUtils.isEmpty(view)) {
+      cols = view.getColumnCount();
+      idName = sys.getIdName(view.getSource());
+      versionName = sys.getVersionName(view.getSource());
+    }
     BeeColumn[] columns = new BeeColumn[cols];
 
     int idIndex = -1;
     int versionIndex = -1;
-    String idName = sys.getIdName(view.getSource());
-    String versionName = sys.getVersionName(view.getSource());
-
     int j = 0;
+
     for (BeeColumn col : rsCols) {
       if (!BeeUtils.isEmpty(view)) {
         String colName = col.getId();

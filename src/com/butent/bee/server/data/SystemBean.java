@@ -291,8 +291,8 @@ public class SystemBean {
       response.addInfo("Update count:", c);
       response.setResponse(changes);
 
-      if (BeeUtils.inList(tblName, UserServiceBean.USER_TABLE, UserServiceBean.ROLE_TABLE,
-          UserServiceBean.USER_ROLES_TABLE)) {
+      if (BeeUtils.inList(tblName, UserServiceBean.TBL_USERS, UserServiceBean.TBL_ROLES,
+          UserServiceBean.TBL_USER_ROLES)) {
         usr.invalidateCache();
       }
     }
@@ -403,8 +403,8 @@ public class SystemBean {
         res = qs.updateData(new SqlDelete(tblName).setWhere(wh));
 
         if (res > 0
-            && BeeUtils.inList(tblName, UserServiceBean.USER_TABLE, UserServiceBean.ROLE_TABLE,
-                UserServiceBean.USER_ROLES_TABLE)) {
+            && BeeUtils.inList(tblName, UserServiceBean.TBL_USERS, UserServiceBean.TBL_ROLES,
+                UserServiceBean.TBL_USER_ROLES)) {
           usr.invalidateCache();
         }
       }
@@ -875,8 +875,8 @@ public class SystemBean {
           response.setResponse(newRow);
           response.addInfo("Insert count:", c);
 
-          if (BeeUtils.inList(tblName, UserServiceBean.USER_TABLE, UserServiceBean.ROLE_TABLE,
-              UserServiceBean.USER_ROLES_TABLE)) {
+          if (BeeUtils.inList(tblName, UserServiceBean.TBL_USERS, UserServiceBean.TBL_ROLES,
+              UserServiceBean.TBL_USER_ROLES)) {
             usr.invalidateCache();
           }
         }
@@ -1105,8 +1105,8 @@ public class SystemBean {
           response.setResponse(newRow);
           response.addInfo("Update count:", c);
 
-          if (BeeUtils.inList(tblName, UserServiceBean.USER_TABLE, UserServiceBean.ROLE_TABLE,
-              UserServiceBean.USER_ROLES_TABLE)) {
+          if (BeeUtils.inList(tblName, UserServiceBean.TBL_USERS, UserServiceBean.TBL_ROLES,
+              UserServiceBean.TBL_USER_ROLES)) {
             usr.invalidateCache();
           }
         }
@@ -1445,14 +1445,12 @@ public class SystemBean {
     Element root = xml.getDocumentElement();
     NodeList tables = root.getElementsByTagName("BeeTable");
 
-    String defaultVersionColumn = Config.getProperty("DefaultVersionColumn"); // TODO: ZAP
-
     for (int i = 0; i < tables.getLength(); i++) {
       Element table = (Element) tables.item(i);
 
       BeeTable tbl = new BeeTable(table.getAttribute("name")
           , table.getAttribute("idName")
-          , BeeUtils.ifString(table.getAttribute("versionName"), defaultVersionColumn));
+          , table.getAttribute("versionName"));
 
       String[] states = BeeUtils.split(table.getAttribute("states"), ",");
       for (String state : states) {

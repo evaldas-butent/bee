@@ -19,7 +19,9 @@ import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.CommUtils;
 import com.butent.bee.shared.communication.ContentType;
 import com.butent.bee.shared.communication.ResponseMessage;
+import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.LogUtils;
@@ -72,16 +74,21 @@ public class AsyncCallback implements RequestCallback {
       }
       finalizeResponse();
       return;
-    } else {
-      String sid = resp.getHeader(Service.RPC_VAR_SID);
-      String usr = resp.getHeader(Service.VAR_USER_SIGN);
-      BeeKeeper.getUser().setSessionId(sid);
 
-      if (BeeUtils.isEmpty(sid) || !BeeUtils.isEmpty(usr)) {
-        if (!BeeUtils.isEmpty(usr)) {
-          usr = Codec.decodeBase64(usr);
+    } else {
+      BeeKeeper.getUser().setSessionId(resp.getHeader(Service.RPC_VAR_SID));
+      String auth = resp.getHeader(Service.VAR_AUTH_DATA);
+
+      if (!BeeUtils.isEmpty(auth)) {
+        auth = Codec.decodeBase64(auth);
+        ResponseObject response = ResponseObject.restore(auth);
+        dispatchMessages(response.getMessages());
+        UserData data = null;
+
+        if (response.hasResponse(UserData.class)) {
+          data = UserData.restore((String) response.getResponse());
         }
-        BeeKeeper.getUser().setUserSign(usr);
+        BeeKeeper.getUser().setUserData(data);
         BeeKeeper.getUi().updateSignature();
       }
     }
@@ -138,7 +145,7 @@ public class AsyncCallback implements RequestCallback {
       for (int i = 0; i < mc; i++) {
         messages[i] = new ResponseMessage(resp.getHeader(CommUtils.rpcMessageName(i)), true);
       }
-      dispatchMessages(mc, messages);
+      dispatchMessages(messages);
     }
 
     int[] partSizes = null;
@@ -154,7 +161,22 @@ public class AsyncCallback implements RequestCallback {
     }
 
     BeeDuration duration = new BeeDuration();
-    if (len == 0) {
+
+    if (!BeeUtils.isEmpty(resp.getHeader(Service.RPC_VAR_RESP))) {
+      ResponseObject response = ResponseObject.restore(txt);
+      dispatchMessages(response.getMessages());
+      ResponseCallback callback = null;
+
+      if (info != null) {
+        callback = info.getRespCallback();
+      }
+      if (callback != null) {
+        callback.onResponse(response);
+      } else {
+        BeeKeeper.getLog().warning("No callback available");
+      }
+
+    } else if (len == 0) {
       if (mc == 0) {
         BeeKeeper.getLog().warning("response empty");
       }
@@ -217,25 +239,27 @@ public class AsyncCallback implements RequestCallback {
     }
   }
 
-  private void dispatchMessages(int mc, ResponseMessage[] messages) {
-    for (int i = 0; i < mc; i++) {
-      Level level = messages[i].getLevel();
-      if (LogUtils.isOff(level)) {
-        continue;
-      }
+  private void dispatchMessages(ResponseMessage[] messages) {
+    if (!BeeUtils.isEmpty(messages)) {
+      for (ResponseMessage message : messages) {
+        Level level = message.getLevel();
+        if (LogUtils.isOff(level)) {
+          continue;
+        }
 
-      DateTime date = messages[i].getDate();
-      String msg;
-      if (date == null) {
-        msg = messages[i].getMessage();
-      } else {
-        msg = BeeUtils.concat(1, date.toTimeString(), messages[i].getMessage());
-      }
+        DateTime date = message.getDate();
+        String msg;
+        if (date == null) {
+          msg = message.getMessage();
+        } else {
+          msg = BeeUtils.concat(1, date.toTimeString(), message.getMessage());
+        }
 
-      if (level == null) {
-        BeeKeeper.getLog().info(msg);
-      } else {
-        BeeKeeper.getLog().log(level, msg);
+        if (level == null) {
+          BeeKeeper.getLog().info(msg);
+        } else {
+          BeeKeeper.getLog().log(level, msg);
+        }
       }
     }
   }

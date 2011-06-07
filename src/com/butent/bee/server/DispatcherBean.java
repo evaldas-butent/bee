@@ -11,16 +11,11 @@ import com.butent.bee.server.ui.UiServiceBean;
 import com.butent.bee.server.utils.Reflection;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.BeeType;
 import com.butent.bee.shared.Service;
-import com.butent.bee.shared.communication.ResponseMessage;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.LogUtils;
 
-import java.util.EnumSet;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.ejb.EJB;
@@ -52,7 +47,7 @@ public class DispatcherBean {
   @EJB
   SystemBean sys;
 
-  public String doLogin(String dsn, String locale) {
+  public ResponseObject doLogin(String dsn, String locale) {
     if (!BeeUtils.same(SqlBuilderFactory.getEngine(), BeeConst.getDsType(dsn))) {
       ig.destroy();
       sys.initDatabase(dsn);
@@ -64,9 +59,10 @@ public class DispatcherBean {
     usrBean.logout(user);
   }
 
-  public void doService(String svc, String dsn, RequestInfo reqInfo, ResponseBuffer buff) {
+  public ResponseObject doService(String svc, String dsn, RequestInfo reqInfo, ResponseBuffer buff) {
     Assert.notEmpty(svc);
     Assert.notNull(buff);
+    ResponseObject response = null;
 
     if (Service.isDbService(svc)) {
       dataBean.doService(svc, dsn, reqInfo, buff);
@@ -82,32 +78,13 @@ public class DispatcherBean {
       Reflection.invoke(invBean, reqInfo.getParameter(Service.RPC_VAR_METH), reqInfo, buff);
 
     } else if (Service.isDataService(svc)) {
-      ResponseObject resp = uiBean.doService(reqInfo);
+      response = uiBean.doService(reqInfo);
 
-      for (ResponseMessage msg : resp.getMessages()) {
-        Level lvl = msg.getLevel();
-
-        if (BeeUtils.equals(lvl, Level.SEVERE)) {
-          buff.addSevere(msg);
-        } else if (BeeUtils.equals(lvl, Level.WARNING)) {
-          buff.addWarning(msg);
-        } else {
-          buff.addMessage(msg);
-        }
-      }
-      Object obj = resp.getResponse();
-      String type = resp.getType();
-
-      if (!BeeUtils.isEmpty(obj, EnumSet.of(BeeType.NUMBER)) || !BeeUtils.isEmpty(type)) {
-        buff.add(Codec.beeSerialize(obj));
-        if (!BeeUtils.isEmpty(type)) {
-          buff.add(type);
-        }
-      }
     } else {
       String msg = BeeUtils.concat(1, svc, "service type not recognized");
       LogUtils.warning(logger, msg);
       buff.addWarning(msg);
     }
+    return response;
   }
 }

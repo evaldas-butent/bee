@@ -26,6 +26,7 @@ import com.butent.bee.client.view.grid.CellGrid;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
+import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
@@ -33,7 +34,6 @@ import com.butent.bee.shared.data.IsTable;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.Property;
 
 import java.util.ArrayList;
@@ -215,14 +215,21 @@ public class GridFactory {
     }
 
     BeeKeeper.getRpc().sendText(Service.GET_GRID, name, new ResponseCallback() {
-      public void onResponse(JsArrayString respArr) {
-        if (respArr.length() >= 2
-            && BeeUtils.same(respArr.get(1), BeeUtils.getClassName(GridDescription.class))) {
-          GridDescription gridDescription = GridDescription.restore(respArr.get(0));
+      @Override
+      public void onResponse(JsArrayString arr) {
+        Assert.unsupported();
+      }
+
+      public void onResponse(ResponseObject response) {
+        Assert.notNull(response);
+
+        if (response.hasResponse(GridDescription.class)) {
+          GridDescription gridDescription =
+              GridDescription.restore((String) response.getResponse());
           callback.onSuccess(gridDescription);
           descriptionCache.put(gridDescriptionKey(name), gridDescription);
         } else {
-          callback.onFailure(Codec.beeDeserialize(respArr.get(0)));
+          callback.onFailure(response.getErrors());
           descriptionCache.put(gridDescriptionKey(name), null);
         }
       }
@@ -295,7 +302,7 @@ public class GridFactory {
     List<Property> info = Lists.newArrayList();
     for (Map.Entry<String, GridDescription> entry : descriptionCache.entrySet()) {
       GridDescription gridDescription = entry.getValue();
-      String cc = (gridDescription == null) ? BeeConst.STRING_MINUS 
+      String cc = (gridDescription == null) ? BeeConst.STRING_MINUS
           : BeeUtils.toString(gridDescription.getColumnCount());
       info.add(new Property(entry.getKey(), cc));
     }
@@ -347,7 +354,7 @@ public class GridFactory {
 
     return grid;
   }
-  
+
   private static Cell<String> createCell(CellType type) {
     Cell<String> cell;
 
@@ -363,7 +370,7 @@ public class GridFactory {
     }
     return cell;
   }
-  
+
   private static String gridDescriptionKey(String name) {
     Assert.notEmpty(name);
     return name.trim().toLowerCase();

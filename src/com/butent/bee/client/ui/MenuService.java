@@ -10,7 +10,9 @@ import com.butent.bee.client.tree.BeeTree;
 import com.butent.bee.client.tree.BeeTreeItem;
 import com.butent.bee.client.utils.XmlUtils;
 import com.butent.bee.client.widget.BeeListBox;
+import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Service;
+import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.menu.MenuConstants;
 import com.butent.bee.shared.ui.UiComponent;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -85,8 +87,15 @@ public class MenuService extends CompositeService {
           new ResponseCallback() {
             @Override
             public void onResponse(JsArrayString arr) {
-              if (!BeeUtils.isEmpty(arr.get(0))) {
-                UiComponent c = UiComponent.restore(arr.get(0));
+              Assert.unsupported();
+            }
+
+            @Override
+            public void onResponse(ResponseObject response) {
+              Assert.notNull(response);
+
+              if (response.hasResponse()) {
+                UiComponent c = UiComponent.restore((String) response.getResponse());
                 BeeKeeper.getUi().updateActivePanel(buidComponentTree(c));
                 BeeKeeper.getUi().updateMenu((Widget) c.createInstance());
               }

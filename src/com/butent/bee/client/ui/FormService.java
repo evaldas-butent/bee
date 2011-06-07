@@ -15,6 +15,7 @@ import com.butent.bee.shared.BeeType;
 import com.butent.bee.shared.BeeWidget;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.Stage;
+import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.ui.UiComponent;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -57,10 +58,15 @@ public class FormService extends CompositeService {
             new ResponseCallback() {
               @Override
               public void onResponse(JsArrayString arr) {
-                Assert.notNull(arr);
-                Assert.parameterCount(arr.length(), 1);
+                Assert.unsupported();
+              }
 
-                List<String> lst = Lists.newArrayList(Codec.beeDeserialize(arr.get(0)));
+              @Override
+              public void onResponse(ResponseObject response) {
+                Assert.notNull(response);
+
+                List<String> lst =
+                    Lists.newArrayList(Codec.beeDeserialize((String) response.getResponse()));
 
                 if (BeeUtils.isEmpty(lst)) {
                   Global.showError("NO FORMS");
@@ -93,12 +99,15 @@ public class FormService extends CompositeService {
               new ResponseCallback() {
                 @Override
                 public void onResponse(JsArrayString arr) {
-                  Assert.notNull(arr);
-                  Assert.parameterCount(arr.length(), 1);
-                  String data = arr.get(0);
+                  Assert.unsupported();
+                }
 
-                  if (!BeeUtils.isEmpty(data)) {
-                    UiComponent c = UiComponent.restore(data);
+                @Override
+                public void onResponse(ResponseObject response) {
+                  Assert.notNull(response);
+
+                  if (response.hasResponse()) {
+                    UiComponent c = UiComponent.restore((String) response.getResponse());
                     BeeKeeper.getUi().updateMenu(MenuService.buidComponentTree(c));
                     BeeKeeper.getUi()
                         .updateActivePanel((Panel) c.createInstance(), ScrollBars.BOTH);
