@@ -2,7 +2,6 @@ package com.butent.bee.client.data;
 
 import com.google.common.collect.Lists;
 import com.google.gwt.cell.client.NumberCell;
-import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.TextColumn;
@@ -42,10 +41,6 @@ public class Explorer implements HandlesDeleteEvents {
 
   private class DataInfoCallback implements ResponseCallback {
     private DataInfoCallback() {
-    }
-
-    public void onResponse(JsArrayString arr) {
-      Assert.unsupported();
     }
 
     public void onResponse(ResponseObject response) {

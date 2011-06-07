@@ -3,7 +3,6 @@ package com.butent.bee.client.data;
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import com.google.gwt.core.client.Callback;
-import com.google.gwt.core.client.JsArrayString;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
@@ -83,11 +82,6 @@ public class Queries {
         RpcParameter.SECTION.DATA, lst),
         new ResponseCallback() {
           @Override
-          public void onResponse(JsArrayString arr) {
-            Assert.unsupported();
-          }
-
-          @Override
           public void onResponse(ResponseObject response) {
             Assert.notNull(response);
             String s = (String) response.getResponse();
@@ -136,11 +130,6 @@ public class Queries {
     BeeKeeper.getRpc().makePostRequest(new ParameterList(Service.COUNT_ROWS,
         RpcParameter.SECTION.DATA, lst),
         new ResponseCallback() {
-          @Override
-          public void onResponse(JsArrayString arr) {
-            Assert.unsupported();
-          }
-
           @Override
           public void onResponse(ResponseObject response) {
             Assert.notNull(response);
@@ -214,11 +203,6 @@ public class Queries {
         RpcParameter.SECTION.DATA, lst),
         new ResponseCallback() {
           @Override
-          public void onResponse(JsArrayString arr) {
-            Assert.unsupported();
-          }
-
-          @Override
           public void onResponse(ResponseObject response) {
             Assert.notNull(response);
 
@@ -278,11 +262,6 @@ public class Queries {
         RpcParameter.SECTION.DATA, lst),
         new ResponseCallback() {
           @Override
-          public void onResponse(JsArrayString arr) {
-            Assert.unsupported();
-          }
-
-          @Override
           public void onResponse(ResponseObject response) {
             Assert.notNull(response);
             String s = (String) response.getResponse();
@@ -310,11 +289,6 @@ public class Queries {
 
     BeeKeeper.getRpc().sendText(Service.UPDATE_ROW, Codec.beeSerialize(rs),
         new ResponseCallback() {
-          @Override
-          public void onResponse(JsArrayString arr) {
-            Assert.unsupported();
-          }
-
           @Override
           public void onResponse(ResponseObject response) {
             Assert.notNull(response);

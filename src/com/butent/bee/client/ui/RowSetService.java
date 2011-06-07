@@ -1,7 +1,6 @@
 package com.butent.bee.client.ui;
 
 import com.google.common.collect.Lists;
-import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.event.shared.GwtEvent;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HasWidgets;
@@ -89,11 +88,6 @@ public class RowSetService extends CompositeService {
         BeeKeeper.getRpc().makeGetRequest(Service.GET_TABLE_LIST,
             new ResponseCallback() {
               @Override
-              public void onResponse(JsArrayString arr) {
-                Assert.unsupported();
-              }
-
-              @Override
               public void onResponse(ResponseObject response) {
                 Assert.notNull(response);
 
@@ -148,11 +142,6 @@ public class RowSetService extends CompositeService {
           BeeKeeper.getRpc().makePostRequest(Service.COMMIT, ContentType.BINARY, upd.serialize(),
               new ResponseCallback() {
                 @Override
-                public void onResponse(JsArrayString arr) {
-                  Assert.unsupported();
-                }
-
-                @Override
                 public void onResponse(ResponseObject response) {
                   Assert.notNull(response);
 
@@ -188,11 +177,6 @@ public class RowSetService extends CompositeService {
           BeeKeeper.getRpc().makePostRequest(Service.GET_STATES,
               XmlUtils.createString(Service.XML_TAG_DATA, tbl, table),
               new ResponseCallback() {
-                @Override
-                public void onResponse(JsArrayString arr) {
-                  Assert.unsupported();
-                }
-
                 @Override
                 public void onResponse(ResponseObject response) {
                   Assert.notNull(response);
@@ -236,11 +220,6 @@ public class RowSetService extends CompositeService {
               XmlUtils.createString(Service.XML_TAG_DATA, tbl, table),
               new ResponseCallback() {
                 @Override
-                public void onResponse(JsArrayString arr) {
-                  Assert.unsupported();
-                }
-
-                @Override
                 public void onResponse(ResponseObject response) {
                   Assert.notNull(response);
 
@@ -273,11 +252,6 @@ public class RowSetService extends CompositeService {
                   , tbl, Global.getVarValue(tbl)
                   , stt, states),
               new ResponseCallback() {
-                @Override
-                public void onResponse(JsArrayString arr) {
-                  Assert.unsupported();
-                }
-
                 @Override
                 public void onResponse(ResponseObject response) {
                   Assert.notNull(response);

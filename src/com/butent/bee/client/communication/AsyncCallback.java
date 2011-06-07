@@ -194,19 +194,8 @@ public class AsyncCallback implements RequestCallback {
       BeeKeeper.getLog().info("response", id, "text", txt);
 
     } else {
-
       JsArrayString arr = splitResponse(txt, sep, cnt);
-
-      ResponseCallback callback = null;
-      if (info != null) {
-        callback = info.getRespCallback();
-      }
-
-      if (callback != null) {
-        callback.onResponse(arr);
-      } else {
-        dispatchResponse(svc, cc, arr);
-      }
+      dispatchResponse(svc, cc, arr);
     }
     duration.finish();
 

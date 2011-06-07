@@ -1,6 +1,5 @@
 package com.butent.bee.client.ui;
 
-import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
@@ -85,11 +84,6 @@ public class MenuService extends CompositeService {
           XmlUtils.createString(Service.XML_TAG_DATA, "menu_name", "rootMenu",
               "root_layout", getLayout(rl), "item_layout", getLayout(il)),
           new ResponseCallback() {
-            @Override
-            public void onResponse(JsArrayString arr) {
-              Assert.unsupported();
-            }
-
             @Override
             public void onResponse(ResponseObject response) {
               Assert.notNull(response);

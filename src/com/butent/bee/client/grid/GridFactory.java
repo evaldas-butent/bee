@@ -7,7 +7,6 @@ import com.google.gwt.cell.client.EditTextCell;
 import com.google.gwt.cell.client.TextCell;
 import com.google.gwt.cell.client.TextInputCell;
 import com.google.gwt.core.client.Callback;
-import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.view.client.MultiSelectionModel;
@@ -215,11 +214,6 @@ public class GridFactory {
     }
 
     BeeKeeper.getRpc().sendText(Service.GET_GRID, name, new ResponseCallback() {
-      @Override
-      public void onResponse(JsArrayString arr) {
-        Assert.unsupported();
-      }
-
       public void onResponse(ResponseObject response) {
         Assert.notNull(response);
 

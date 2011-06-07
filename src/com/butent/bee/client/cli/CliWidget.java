@@ -1,6 +1,5 @@
 package com.butent.bee.client.cli;
 
-import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.Event;
@@ -149,12 +148,6 @@ public class CliWidget extends InputText {
     } else if (z.equals("sql")) {
       BeeKeeper.getRpc().sendText(Service.DO_SQL, v,
           new ResponseCallback() {
-            @SuppressWarnings("hiding")
-            @Override
-            public void onResponse(JsArrayString arr) {
-              Assert.unsupported();
-            }
-
             @Override
             public void onResponse(ResponseObject response) {
               Assert.notNull(response);

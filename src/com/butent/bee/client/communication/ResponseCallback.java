@@ -1,7 +1,5 @@
 package com.butent.bee.client.communication;
 
-import com.google.gwt.core.client.JsArrayString;
-
 import com.butent.bee.shared.communication.ResponseObject;
 
 /**
@@ -10,7 +8,5 @@ import com.butent.bee.shared.communication.ResponseObject;
  */
 
 public interface ResponseCallback {
-  void onResponse(JsArrayString arr);
-
   void onResponse(ResponseObject response);
 }

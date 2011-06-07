@@ -1,6 +1,5 @@
 package com.butent.bee.client.ui;
 
-import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.user.client.ui.Panel;
 
 import com.butent.bee.client.BeeKeeper;
@@ -40,11 +39,6 @@ class GridService extends CompositeService {
         XmlUtils.createString(Service.XML_TAG_DATA, "grid_name",
             grd.replaceFirst("['\\[\"](\\w+)['\\]\"][,].*", "$1")),
         new ResponseCallback() {
-          @Override
-          public void onResponse(JsArrayString arr) {
-            Assert.unsupported();
-          }
-
           @Override
           public void onResponse(ResponseObject resp) {
             Assert.notNull(resp);
