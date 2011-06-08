@@ -1,15 +1,22 @@
 package com.butent.bee.client.utils;
 
+import com.google.common.collect.Lists;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.core.client.JsDate;
 import com.google.gwt.json.client.JSONObject;
+
+import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.utils.Property;
+
+import java.util.List;
 
 /**
  * Contains javascript related utility functions, like array operations or type conversions.
  */
 
 public class JsUtils {
+
   public static native void clearProperty(JavaScriptObject obj, String p) /*-{
     if (typeof (obj) != "object") {
       return;
@@ -111,7 +118,25 @@ public class JsUtils {
     }
     return arr;
   }-*/;
+  
+  public static List<Property> getInfo(JavaScriptObject obj) {
+    List<Property> info = Lists.newArrayList();
+    JsArrayString arr = getProperties(obj);
+    if (arr == null || arr.length() < 3) {
+      return info;
+    }
+    
+    for (int i = 0; i < arr.length(); i += 3) {
+      info.add(new Property(arr.get(i), arr.get(i + 2)));
+    }
+    return info;
+  }
 
+  public static JsArrayString getProperties(JavaScriptObject obj) {
+    Assert.notNull(obj);
+    return getProperties(obj, null);
+  }
+  
   public static native JsArrayString getProperties(JavaScriptObject obj, String pattern) /*-{
     var arr = new Array();
     var i = 0;
@@ -119,10 +144,10 @@ public class JsUtils {
     var tp = null;
     var ok = true;
 
-    for ( var p in obj) {
+    for (var p in obj) {
       try {
         v = obj[p];
-        tp = typeof (v);
+        tp = typeof(v);
         ok = true;
       } catch (err) {
         arr[i] = p;

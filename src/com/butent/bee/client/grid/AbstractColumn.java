@@ -7,12 +7,15 @@ import com.google.gwt.user.cellview.client.Column;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.value.HasValueType;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.ui.ColumnDescription.ColType;
 
 public abstract class AbstractColumn<C> extends Column<IsRow, C> implements HasValueType {
 
   public AbstractColumn(Cell<C> cell) {
     super(cell);
   }
+  
+  public abstract ColType getColType();
 
   public abstract String getString(Context context, IsRow row);
 

@@ -7,6 +7,7 @@ import com.butent.bee.client.i18n.HasDateTimeFormat;
 import com.butent.bee.shared.DateTime;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.ui.ColumnDescription.ColType;
 import com.butent.bee.shared.utils.BeeUtils;
 
 public class RowVersionColumn extends AbstractColumn<DateTime> implements HasDateTimeFormat {
@@ -21,6 +22,11 @@ public class RowVersionColumn extends AbstractColumn<DateTime> implements HasDat
     super(new DateTimeCell(format));
   }
 
+  @Override
+  public ColType getColType() {
+    return ColType.VERSION;
+  }
+  
   public DateTimeFormat getDateTimeFormat() {
     if (getCell() instanceof HasDateTimeFormat) {
       return ((HasDateTimeFormat) getCell()).getDateTimeFormat();

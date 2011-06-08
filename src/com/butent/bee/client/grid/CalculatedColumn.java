@@ -18,6 +18,7 @@ import com.butent.bee.shared.HasScale;
 import com.butent.bee.shared.JustDate;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.ui.ColumnDescription.ColType;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.TimeUtils;
 
@@ -43,6 +44,11 @@ public class CalculatedColumn extends AbstractColumn<String> implements HasDateT
 
   public CalculatedColumn(ValueType valueType, Evaluator evaluator) {
     this(new CalculatedCell(), valueType, evaluator);
+  }
+
+  @Override
+  public ColType getColType() {
+    return ColType.CALCULATED;
   }
 
   public DateTimeFormat getDateTimeFormat() {

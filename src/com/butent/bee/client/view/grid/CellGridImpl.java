@@ -940,8 +940,8 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
         BeeUtils.toChar(event.getCharCode()));
   }
 
-  public void refreshCell(long rowId, String columnId) {
-    getGrid().refreshCell(rowId, columnId);
+  public void refreshCellContent(long rowId, String columnId) {
+    getGrid().refreshCellContent(rowId, columnId);
   }
 
   public void setViewPresenter(Presenter presenter) {

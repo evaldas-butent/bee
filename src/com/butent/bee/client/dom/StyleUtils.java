@@ -1,6 +1,7 @@
 package com.butent.bee.client.dom;
 
 import com.google.common.base.Splitter;
+import com.google.common.collect.Lists;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.dom.client.Style;
@@ -14,10 +15,14 @@ import com.google.gwt.safecss.shared.SafeStylesBuilder;
 import com.google.gwt.safecss.shared.SafeStylesUtils;
 import com.google.gwt.user.client.ui.UIObject;
 
+import com.butent.bee.client.utils.JsUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Property;
+
+import java.util.List;
 
 /**
  * Contains utility functions used for working with Cascade Style Sheets (CSS).
@@ -166,8 +171,13 @@ public class StyleUtils {
   public static final String STYLE_BORDER_STYLE = "borderStyle";
   public static final String STYLE_BORDER_COLOR = "borderColor";
 
+  public static final String STYLE_OUTLINE_WIDTH = "outlineWidth";
+  public static final String STYLE_OUTLINE_STYLE = "outlineStyle";
+  public static final String STYLE_OUTLINE_COLOR = "outlineColor";
+  
   public static final String STYLE_BORDER_COLLAPSE = "borderCollapse";
   public static final String STYLE_TABLE_LAYOUT = "tableLayout";
+  public static final String STYLE_VERTICAL_ALIGN = "verticalAlign";
 
   public static final String STYLE_OVERFLOW = "overflow";
   public static final String STYLE_OVERFLOW_X = "overflowX";
@@ -195,6 +205,20 @@ public class StyleUtils {
 
   public static final String STYLE_Z_INDEX = "zIndex";
 
+  public static final String STYLE_POSITION = "position";
+
+  public static final String STYLE_BACKGROUND_IMAGE = "backgroundImage";
+  public static final String STYLE_BACKGROUND_COLOR = "backgroundColor";
+  public static final String STYLE_COLOR = "color";
+
+  public static final String STYLE_CURSOR = "cursor";
+
+  public static final String STYLE_TEXT_DECORATION = "textDecoration";
+
+  public static final String STYLE_LIST_IMAGE = "listStyleImage";
+  public static final String STYLE_LIST_POSITION = "listStylePosition";
+  public static final String STYLE_LIST_TYPE = "listStyleType";
+  
   public static final String VALUE_AUTO = "auto";
   public static final String VALUE_FIXED = "fixed";
   public static final String VALUE_HIDDEN = "hidden";
@@ -233,9 +257,8 @@ public class StyleUtils {
   public static final String BORDER_COLLAPSE = "collapse";
   public static final String BORDER_SEPARATE = "separate";
 
-  public static final String DEFINITION_SEPARATOR = ";";
-  public static final String NAME_VALUE_SEPARATOR = ":";
-
+  public static final String POSITION_ABSOLUTE = "absolute";
+  
   public static final String CSS_BORDER_WIDTH = "border-width";
   public static final String CSS_BORDER_LEFT_WIDTH = "border-left-width";
   public static final String CSS_BORDER_RIGHT_WIDTH = "border-right-width";
@@ -251,9 +274,20 @@ public class StyleUtils {
   public static final String CSS_FONT_SIZE = "font-size";
   public static final String CSS_FONT_FAMILY = "font-family";
   
+  public static final SafeStyles PREFAB_POSITION_ABSOLUTE =
+      buildStyle(STYLE_POSITION, POSITION_ABSOLUTE);
+  
   private static final char CLASS_NAME_SEPARATOR = ' ';
   private static final Splitter CLASS_NAME_SPLITTER =
       Splitter.on(CLASS_NAME_SEPARATOR).omitEmptyStrings().trimResults();
+
+  private static final String DEFINITION_SEPARATOR = ";";
+  private static final String NAME_VALUE_SEPARATOR = ":";
+  
+  private static final Splitter DEFINITION_SPLITTER =
+    Splitter.on(DEFINITION_SEPARATOR).omitEmptyStrings().trimResults();
+  
+  private static final String PROPERTY_CSS_TEXT = "cssText";
 
   public static int addClassName(NodeList<Element> nodes, String className) {
     Assert.notNull(nodes);
@@ -282,6 +316,15 @@ public class StyleUtils {
   public static void alwaysScroll(UIObject obj, ScrollBars scroll) {
     Assert.notNull(obj);
     alwaysScroll(obj.getElement(), scroll);
+  }
+  
+  public static void apply(Style st, String styles) {
+    List<Property> properties = parseStyles(styles);
+    if (properties != null) {
+      for (Property property : properties) {
+        st.setProperty(property.getName(), property.getValue());
+      }
+    }
   }
 
   public static void autoHeight(Element el) {
@@ -489,7 +532,7 @@ public class StyleUtils {
   public static SafeStyles buildZIndex(int value) {
     return buildStyle(CSS_Z_INDEX, value);
   }
-
+  
   public static void clearDisplay(Element el) {
     Assert.notNull(el);
     if (!BeeUtils.isEmpty(el.getStyle().getDisplay())) {
@@ -700,6 +743,25 @@ public class StyleUtils {
     fullWidth(obj.getElement());
   }
 
+  public static String getCssText(Element el) {
+    Assert.notNull(el);
+    return getCssText(el.getStyle());
+  }
+
+  public static String getCssText(Style st) {
+    Assert.notNull(st);
+    return st.getProperty(PROPERTY_CSS_TEXT);
+  }
+
+  public static String getCssText(String id) {
+    return getCssText(DomUtils.getElement(id));
+  }
+
+  public static String getCssText(UIObject obj) {
+    Assert.notNull(obj);
+    return getCssText(obj.getElement());
+  }
+  
   public static int getHeight(Element el) {
     Assert.notNull(el);
     return getHeight(el.getStyle());
@@ -782,6 +844,10 @@ public class StyleUtils {
     return getScroll(obj.getElement());
   }
 
+  public static List<Property> getStyleInfo(Style st) {
+    return JsUtils.getInfo(st);
+  }
+  
   public static String getStylePrimaryName(Element el) {
     Assert.notNull(el);
     String className = el.getClassName();
@@ -1080,6 +1146,26 @@ public class StyleUtils {
     setBorderTopWidth(obj.getElement(), px);
   }
 
+  public static void setCssText(Element el, String text) {
+    Assert.notNull(el);
+    setCssText(el.getStyle(), text);
+  }
+
+  public static void setCssText(Style st, String text) {
+    Assert.notNull(st);
+    Assert.notNull(text);
+    st.setProperty(PROPERTY_CSS_TEXT, text);
+  }
+
+  public static void setCssText(String id, String text) {
+    setCssText(DomUtils.getElement(id), text);
+  }
+
+  public static void setCssText(UIObject obj, String text) {
+    Assert.notNull(obj);
+    setCssText(obj.getElement(), text);
+  }
+  
   public static void setDisplay(Element el, Display value) {
     Assert.notNull(el);
     el.getStyle().setDisplay(value);
@@ -1708,6 +1794,20 @@ public class StyleUtils {
       }
     }
     return ok;
+  }
+  
+  private static List<Property> parseStyles(String styles) {
+    Assert.notEmpty(styles);
+    List<Property> result = Lists.newArrayList();
+    
+    for (String style : DEFINITION_SPLITTER.split(styles)) {
+      String name = BeeUtils.getPrefix(style, NAME_VALUE_SEPARATOR);
+      String value = BeeUtils.getSuffix(style, NAME_VALUE_SEPARATOR);
+      if (!BeeUtils.isEmpty(name) && !BeeUtils.isEmpty(value)) {
+        result.add(new Property(name, value));
+      }
+    }
+    return result;
   }
 
   private static void setFontSize(Style st, String value) {

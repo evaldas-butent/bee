@@ -231,7 +231,7 @@ public class GridPresenter implements Presenter, EditEndEvent.Handler {
     Queries.updateRow(rs,
         new Queries.RowCallback() {
           public void onFailure(String reason) {
-            getView().getContent().refreshCell(rowId, columnId);
+            getView().getContent().refreshCellContent(rowId, columnId);
             showFailure("Update Row", reason);
           }
 

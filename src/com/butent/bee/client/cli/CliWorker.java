@@ -1356,7 +1356,12 @@ public class CliWorker {
         return;
       }
 
-      List<Property> lst = DomUtils.getStyleInfo(elem.getStyle());
+      List<Property> lst;
+      if (elem.getStyle() == null) {
+        lst = null;
+      } else {
+        lst = StyleUtils.getStyleInfo(elem.getStyle());
+      }  
       if (BeeUtils.isEmpty(lst)) {
         Global.showDialog("element id", arr[1], "has no style");
       } else {

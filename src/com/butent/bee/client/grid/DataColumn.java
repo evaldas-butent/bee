@@ -6,6 +6,7 @@ import com.google.gwt.cell.client.Cell.Context;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.ui.ColumnDescription.ColType;
 
 /**
  * Is an abstract class for specific type implementing columns, requires them to have methods for
@@ -24,6 +25,11 @@ public abstract class DataColumn<C> extends AbstractColumn<C> {
     this.dataColumn = dataColumn;
   }
 
+  @Override
+  public ColType getColType() {
+    return ColType.DATA;
+  }
+  
   public IsColumn getDataColumn() {
     return dataColumn;
   }

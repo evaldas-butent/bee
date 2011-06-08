@@ -921,50 +921,6 @@ public class DomUtils {
     return getAttribute(w, ATTRIBUTE_STAGE);
   }
 
-  public static List<Property> getStyleInfo(Style st) {
-    Assert.notNull(st);
-    List<Property> lst = new ArrayList<Property>();
-
-    PropertyUtils.addProperties(lst,
-        "Background Color", st.getBackgroundColor(),
-        "Background Image", st.getBackgroundImage(),
-        "Border Color", st.getBorderColor(),
-        "Border Style", st.getBorderStyle(),
-        "Border Width", st.getBorderWidth(),
-        "Bottom", st.getBottom(),
-        "Color", st.getColor(),
-        "Cursor", st.getCursor(),
-        "Display", st.getDisplay(),
-        "Font Size", st.getFontSize(),
-        "Font Style", st.getFontStyle(),
-        "Font Weight", st.getFontWeight(),
-        "Height", st.getHeight(),
-        "Left", st.getLeft(),
-        "List Style Type", st.getListStyleType(),
-        "Margin", st.getMargin(),
-        "Margin Bottom", st.getMarginBottom(),
-        "Margin Left", st.getMarginLeft(),
-        "Margin Right", st.getMarginRight(),
-        "Margin Top", st.getMarginTop(),
-        "Opacity", st.getOpacity(),
-        "Overflow", st.getOverflow(),
-        "Padding", st.getPadding(),
-        "Padding Bottom", st.getPaddingBottom(),
-        "Padding Left", st.getPaddingLeft(),
-        "Padding Right", st.getPaddingRight(),
-        "Padding Top", st.getPaddingTop(),
-        "Position", st.getPosition(),
-        "Right", st.getRight(),
-        "Text Decoration", st.getTextDecoration(),
-        "Top", st.getTop(),
-        "Vertical Align", st.getVerticalAlign(),
-        "Visibility", st.getVisibility(),
-        "Width", st.getWidth(),
-        "Z Index", st.getZIndex());
-
-    return lst;
-  }
-
   public static int getTabIndex(Element el) {
     Assert.notNull(el);
     return el.getTabIndex();
@@ -1022,7 +978,7 @@ public class DomUtils {
     Style st = el.getStyle();
     if (st != null) {
       PropertyUtils.appendChildrenToExtended(lst, BeeUtils.concat(1, prefix, "Style"),
-          getStyleInfo(st));
+          StyleUtils.getStyleInfo(st));
     }
     PropertyUtils.appendChildrenToExtended(lst, BeeUtils.concat(1, prefix, "Node"),
         getNodeInfo(el));
