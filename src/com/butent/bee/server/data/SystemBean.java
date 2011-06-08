@@ -387,29 +387,28 @@ public class SystemBean {
     return c;
   }
 
-  public int deleteRow(String viewName, RowInfo row) {
-    int res = -1;
+  public ResponseObject deleteRow(String viewName, RowInfo row) {
+    Assert.notEmpty(viewName);
+    Assert.notNull(row);
+    BeeView view = getView(viewName);
 
-    if (!BeeUtils.isEmpty(viewName) && row != null) {
-      BeeView view = getView(viewName);
-
-      if (!view.isReadOnly()) {
-        String tblName = view.getSource();
-        IsCondition wh = SqlUtils.equal(tblName, getIdName(tblName), row.getId());
-
-        if (!BeeUtils.isEmpty(row.getVersion())) {
-          wh = SqlUtils.and(wh, SqlUtils.equal(tblName, getVersionName(tblName), row.getVersion()));
-        }
-        res = qs.updateData(new SqlDelete(tblName).setWhere(wh));
-
-        if (res > 0
-            && BeeUtils.inList(tblName, UserServiceBean.TBL_USERS, UserServiceBean.TBL_ROLES,
-                UserServiceBean.TBL_USER_ROLES)) {
-          usr.invalidateCache();
-        }
-      }
+    if (view.isReadOnly()) {
+      return ResponseObject.error("View", view.getName(), "is read only.");
     }
-    return res;
+    String tblName = view.getSource();
+    IsCondition wh = SqlUtils.equal(tblName, getIdName(tblName), row.getId());
+
+    if (!BeeUtils.isEmpty(row.getVersion())) {
+      wh = SqlUtils.and(wh, SqlUtils.equal(tblName, getVersionName(tblName), row.getVersion()));
+    }
+    ResponseObject response = qs.updateDataWithResponse(new SqlDelete(tblName).setWhere(wh));
+
+    if (!response.hasErrors()
+        && BeeUtils.inList(tblName, UserServiceBean.TBL_USERS, UserServiceBean.TBL_ROLES,
+            UserServiceBean.TBL_USER_ROLES)) {
+      usr.invalidateCache();
+    }
+    return response;
   }
 
   public ResponseObject editStateRoles(String tblName, String stateName) {

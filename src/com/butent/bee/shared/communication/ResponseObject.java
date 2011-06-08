@@ -6,10 +6,12 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
+import com.butent.bee.shared.utils.LogUtils;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Used to tansport data with messages between various layers.
@@ -22,6 +24,10 @@ public class ResponseObject implements BeeSerializable {
   }
 
   public static ResponseObject error(Object... err) {
+    return new ResponseObject().addError(err);
+  }
+
+  public static ResponseObject error(Throwable err) {
     return new ResponseObject().addError(err);
   }
 
@@ -112,6 +118,35 @@ public class ResponseObject implements BeeSerializable {
 
   public Object getResponse() {
     return response;
+  }
+
+  @SuppressWarnings("unchecked")
+  public <T> T getResponse(T def, Logger logger) {
+    T res = def;
+
+    if (!hasErrors()) {
+      if (hasResponse(def.getClass())) {
+        res = (T) getResponse();
+
+      } else if (logger != null) {
+        LogUtils.warning(logger, "Unknown result type:", getResponse().getClass());
+      }
+    }
+    if (logger != null) {
+      for (ResponseMessage message : getMessages()) {
+        Level lvl = message.getLevel();
+        String msg = message.getMessage();
+
+        if (lvl == Level.SEVERE) {
+          LogUtils.severe(logger, msg);
+        } else if (lvl == Level.WARNING) {
+          LogUtils.warning(logger, msg);
+        } else {
+          LogUtils.info(logger, msg);
+        }
+      }
+    }
+    return res;
   }
 
   public String getType() {

@@ -151,15 +151,20 @@ public class UiServiceBean {
     } else {
       for (String s : Codec.beeDeserialize(rows)) {
         RowInfo row = RowInfo.restore(s);
-        int res = sys.deleteRow(viewName, row);
+        ResponseObject resp = sys.deleteRow(viewName, row);
+        int res = resp.getResponse(-1, logger);
 
         switch (res) {
           case -1:
             response.addError("Error deleting row:", row.getId());
+
+            for (String err : resp.getErrors()) {
+              response.addError(err);
+            }
             break;
 
           case 0:
-            response.addError("Optimistic lock exception:", row.getId());
+            response.addError("Optimistic lock exception deleting row:", row.getId());
             break;
 
           default:

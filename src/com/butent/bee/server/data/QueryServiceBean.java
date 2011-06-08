@@ -11,6 +11,7 @@ import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.DateTime;
 import com.butent.bee.shared.JustDate;
+import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.SimpleRowSet;
@@ -284,6 +285,10 @@ public class QueryServiceBean {
   }
 
   public long insertData(SqlInsert si) {
+    return insertDataWithResponse(si).getResponse(-1L, logger);
+  }
+
+  public ResponseObject insertDataWithResponse(SqlInsert si) {
     Assert.notNull(si);
 
     String source = (String) si.getTarget().getSource();
@@ -300,15 +305,19 @@ public class QueryServiceBean {
       }
       String idFld = sys.getIdName(source);
 
-      if (!si.hasField(idFld)) {
+      if (si.hasField(idFld)) {
+        id = (Long) si.getValue(idFld).getValue();
+      } else {
         id = ig.getId(source);
         si.addConstant(idFld, id);
       }
     }
-    if (BeeUtils.isEmpty(updateData(si))) {
-      id = -1;
+    ResponseObject response = updateDataWithResponse(si);
+
+    if (!response.hasErrors()) {
+      response.setResponse(id);
     }
-    return id;
+    return response;
   }
 
   public boolean isDbTable(String dbName, String dbSchema, String table) {
@@ -427,33 +436,34 @@ public class QueryServiceBean {
   }
 
   public int updateData(IsQuery query) {
+    return updateDataWithResponse(query).getResponse(-1, logger);
+  }
+
+  public ResponseObject updateDataWithResponse(IsQuery query) {
     Assert.notNull(query);
     Assert.state(!query.isEmpty());
 
     activateTables(query);
 
-    Integer res = processSql(query.getQuery(), new SqlHandler<Integer>() {
+    ResponseObject res = processSql(query.getQuery(), new SqlHandler<ResponseObject>() {
       @Override
-      public Integer processError(SQLException ex) {
-        LogUtils.error(logger, ex);
-        return -1;
+      public ResponseObject processError(SQLException ex) {
+        return ResponseObject.error(ex);
       }
 
       @Override
-      public Integer processResultSet(ResultSet rs) throws SQLException {
-        LogUtils.warning(logger, "Data modification query must not return a ResultSet");
-        return -1;
+      public ResponseObject processResultSet(ResultSet rs) throws SQLException {
+        return ResponseObject.error("Data modification query must not return a ResultSet");
       }
 
       @Override
-      public Integer processUpdateCount(int updateCount) {
-        LogUtils.info(logger, "Affected rows:", updateCount);
-        return updateCount;
+      public ResponseObject processUpdateCount(int updateCount) {
+        return ResponseObject.response(updateCount);
       }
     });
 
     if (res == null) {
-      res = 0;
+      res = ResponseObject.error("System error. Check server log for more details");
     }
     return res;
   }

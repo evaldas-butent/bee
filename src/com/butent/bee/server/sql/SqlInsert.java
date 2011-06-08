@@ -12,8 +12,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Builds an INSERT SQL statement for a given target using specified field and 
- * value lists.
+ * Builds an INSERT SQL statement for a given target using specified field and value lists.
  */
 
 public class SqlInsert extends SqlQuery<SqlInsert> {
@@ -24,8 +23,8 @@ public class SqlInsert extends SqlQuery<SqlInsert> {
   private SqlSelect dataSource;
 
   /**
-   * Creates an SqlInserte statement with a specified target {@code target}. 
-   * Target type is FromSingle.
+   * Creates an SqlInserte statement with a specified target {@code target}. Target type is
+   * FromSingle.
    * 
    * @param target the FromSingle target
    */
@@ -35,6 +34,7 @@ public class SqlInsert extends SqlQuery<SqlInsert> {
 
   /**
    * Adds a constant value expression in a field for an SqlInsert statement.
+   * 
    * @param field the field's name
    * @param value the field's value
    * @return object's SqlInsert instance.
@@ -48,6 +48,7 @@ public class SqlInsert extends SqlQuery<SqlInsert> {
 
   /**
    * Adds an expression for an SqlInsert statement.
+   * 
    * @param field the field to add
    * @param value the expression to add
    * @return object's SqlInsert instance.
@@ -89,8 +90,7 @@ public class SqlInsert extends SqlQuery<SqlInsert> {
   }
 
   /**
-   * Counts how many fields are in the field list {@code fieldList} and 
-   * returns the amount.
+   * Counts how many fields are in the field list {@code fieldList} and returns the amount.
    * 
    * @return the amount of fields
    */
@@ -111,7 +111,7 @@ public class SqlInsert extends SqlQuery<SqlInsert> {
   }
 
   /**
-   * Returns a list of sources found in the {@code dataSource}. 
+   * Returns a list of sources found in the {@code dataSource}.
    * 
    * @returns a list of sources found in the {@code dataSource}.
    */
@@ -126,9 +126,8 @@ public class SqlInsert extends SqlQuery<SqlInsert> {
   }
 
   /**
-   * Returns a list of parameters found in the {@code dataSource} and 
-   * {@code valueList} . For more  details see {@link com.butent.bee.shared.
-   * sql.SqlSelect#getParams()}. 
+   * Returns a list of parameters found in the {@code dataSource} and {@code valueList} . For more
+   * details see {@link com.butent.bee.shared. sql.SqlSelect#getParams()}.
    * 
    * @returns a list of parameters found in the {@code dataSource}.
    */
@@ -151,8 +150,8 @@ public class SqlInsert extends SqlQuery<SqlInsert> {
   /**
    * @param builder the builder to use
    * @param paramMode sets param mode on or off
-   * @return a generated SqlInsert query with a specified SqlBuilder 
-   * {@code builder} and parameter mode {@code paramMode}.
+   * @return a generated SqlInsert query with a specified SqlBuilder {@code builder} and parameter
+   *         mode {@code paramMode}.
    */
   @Override
   public String getSqlString(SqlBuilder builder, boolean paramMode) {
@@ -168,6 +167,25 @@ public class SqlInsert extends SqlQuery<SqlInsert> {
   }
 
   /**
+   * @param field the field, which value must be returned
+   * @return value of the given field.
+   */
+  public IsExpression getValue(String field) {
+    Assert.isNull(dataSource);
+    Assert.notEmpty(field);
+    int x = 0;
+
+    for (String fld : fieldList) {
+      if (BeeUtils.same(fld, field)) {
+        return valueList.get(x);
+      }
+      x++;
+    }
+    Assert.untouchable();
+    return null;
+  }
+
+  /**
    * @return the current value list.
    */
   public List<IsExpression> getValues() {
@@ -177,7 +195,7 @@ public class SqlInsert extends SqlQuery<SqlInsert> {
   /**
    * Checks if a field name {@code field} is already in a field list.
    * 
-   * @param field teh field to check
+   * @param field the field to check
    * @return true if the field exist in the list, otherwise false.
    */
   public boolean hasField(String field) {
@@ -211,8 +229,8 @@ public class SqlInsert extends SqlQuery<SqlInsert> {
   }
 
   /**
-   * If there are no values in the {@code valueList} created sets the 
-   * {@code dataSource} from an SqlSelect query {@code query}.
+   * If there are no values in the {@code valueList} created sets the {@code dataSource} from an
+   * SqlSelect query {@code query}.
    * 
    * @param query the query to use for setting the dataSource
    * @return object's SqlInsert instance
