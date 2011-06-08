@@ -9,6 +9,8 @@ import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.utils.XmlUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.ui.EditorDescription;
+import com.butent.bee.shared.ui.EditorType;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.ui.Calculation;
 import com.butent.bee.shared.ui.ConditionalStyleDeclaration;
@@ -67,6 +69,9 @@ public class GridHolderBean {
 
   private static final String TAG_CALC = "calc";
 
+  private static final String TAG_EDITOR = "editor";
+  private static final String TAG_ITEM = "item";
+
   private static final String ATTR_VIEW_NAME = "viewName";
   private static final String ATTR_NAME = "name";
   private static final String ATTR_CAPTION = "caption";
@@ -95,11 +100,9 @@ public class GridHolderBean {
   private static final String ATTR_SHOW_WIDTH = "showWidth";
 
   private static final String ATTR_SOURCE = "source";
-  private static final String ATTR_EDITOR = "editor";
 
   private static final String ATTR_MIN_VALUE = "minValue";
   private static final String ATTR_MAX_VALUE = "maxValue";
-  private static final String ATTR_STEP_VALUE = "stepValue";
 
   private static final String ATTR_RELATION = "relation";
 
@@ -151,6 +154,41 @@ public class GridHolderBean {
     return new GridComponentDescription(style, attributes);
   }
 
+  private EditorDescription getEditor(Element parent) {
+    Assert.notNull(parent);
+
+    Element element = XmlUtils.getFirstChildElement(parent, TAG_EDITOR);
+    if (element == null) {
+      return null;
+    }
+    String typeCode = element.getAttribute(ATTR_TYPE);
+    if (BeeUtils.isEmpty(typeCode)) {
+      return null;
+    }
+    EditorType editorType = EditorType.getByTypeCode(typeCode);
+    if (editorType == null) {
+      return null;
+    }
+    
+    EditorDescription editor = new EditorDescription(editorType);
+    editor.setAttributes(XmlUtils.getAttributes(element));
+
+    NodeList itemNodes = element.getElementsByTagName(TAG_ITEM);
+    if (itemNodes != null && itemNodes.getLength() > 0) {
+      List<String> items = Lists.newArrayList();
+      for (int i = 0; i < itemNodes.getLength(); i++) {
+        String item = itemNodes.item(i).getTextContent();
+        if (!BeeUtils.isEmpty(item)) {
+          items.add(item);
+        }
+      }
+      if (!items.isEmpty()) {
+        editor.setItems(items);
+      }
+    }
+    return editor;
+  }
+  
   private String gridKey(String gridName) {
     Assert.notEmpty(gridName);
     return gridName.trim().toLowerCase();
@@ -374,15 +412,11 @@ public class GridHolderBean {
 
         } else if (BeeUtils.same(key, ATTR_SOURCE)) {
           dst.setSource(value.trim());
-        } else if (BeeUtils.same(key, ATTR_EDITOR)) {
-          dst.setEditor(value.trim());
 
         } else if (BeeUtils.same(key, ATTR_MIN_VALUE)) {
           dst.setMinValue(value.trim());
         } else if (BeeUtils.same(key, ATTR_MAX_VALUE)) {
           dst.setMaxValue(value.trim());
-        } else if (BeeUtils.same(key, ATTR_STEP_VALUE)) {
-          dst.setStepValue(value.trim());
 
         } else if (BeeUtils.same(key, ATTR_RELATION)) {
           dst.setRelField(value.trim());
@@ -443,6 +477,11 @@ public class GridHolderBean {
     Calculation calc = XmlUtils.getCalculation(src, TAG_CALC);
     if (calc != null) {
       dst.setCalc(calc);
+    }
+    
+    EditorDescription editor = getEditor(src);
+    if (editor != null) {
+      dst.setEditor(editor);
     }
   }
 

@@ -261,7 +261,8 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo {
     int i = 0;
     for (ColumnDescription column : getColumns()) {
       i++;
-      PropertyUtils.appendChildrenToExtended(info, "Column " + BeeUtils.progress(i, cc),
+      PropertyUtils.appendChildrenToExtended(info,
+          BeeUtils.concat(1, "Column", BeeUtils.progress(i, cc), column.getName()),
           column.getInfo());
     }
     return info;

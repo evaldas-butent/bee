@@ -9,7 +9,12 @@ import com.butent.bee.shared.HasStringValue;
  */
 
 public class InputSpinner extends InputInteger {
+
   private static String inputType = "number";
+  
+  public InputSpinner() {
+    super();
+  }
 
   public InputSpinner(int value, int min, int max, int step) {
     super(value, inputType, min, max, step);

@@ -42,10 +42,10 @@
         <xs:sequence>
           <xs:element name="validation" type="bee:calcType" minOccurs="0" />
           <xs:element name="editable" type="bee:calcType" minOccurs="0" />
+          <xs:element name="editor" type="bee:editor" minOccurs="0" />
           <xs:element name="carry" type="bee:calcType" minOccurs="0" />
         </xs:sequence>
         <xs:attribute name="source" type="bee:nameType" use="required" />
-        <xs:attribute name="editor" type="bee:editorType" />
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
@@ -55,7 +55,6 @@
       <xs:extension base="bee:baseColumn">
         <xs:attribute name="minValue" type="xs:normalizedString" />
         <xs:attribute name="maxValue" type="xs:normalizedString" />
-        <xs:attribute name="stepValue" type="xs:normalizedString" />
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
@@ -192,11 +191,24 @@
     </xs:sequence>
   </xs:complexType>
 
+  <xs:complexType name="editor">
+    <xs:sequence>
+      <xs:element name="item" type="xs:normalizedString" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+    <xs:attribute name="type" type="bee:editorType" use="required" />
+    <xs:attribute name="stepValue" type="xs:positiveInteger" />
+    <xs:attribute name="characterWidth" type="xs:positiveInteger" />
+    <xs:attribute name="visibleLines" type="xs:positiveInteger" />
+    <xs:attribute name="format" type="xs:normalizedString" />
+  </xs:complexType>  
+
   <xs:simpleType name="editorType">
     <xs:restriction base="xs:string">
       <xs:enumeration value="list" />
+      <xs:enumeration value="picker" />
       <xs:enumeration value="area" />
       <xs:enumeration value="date" />
+      <xs:enumeration value="datetime" />
       <xs:enumeration value="text" />
       <xs:enumeration value="rich" />
       <xs:enumeration value="number" />

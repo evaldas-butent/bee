@@ -1453,21 +1453,6 @@ public class BeeUtils {
   }
 
   /**
-   * Checks if an Object is a positive number.
-   * 
-   * @param x the object to be checked
-   * @return true if a number is greater than 0, false otherwise
-   */
-  public static <T extends Comparable<T>> boolean isPositive(T x) {
-    if (x instanceof Number) {
-      T z = zero(x);
-      return x.compareTo(z) > 0;
-    } else {
-      return false;
-    }
-  }
-
-  /**
    * Checks if the first character in a CharSequence is a prefix.
    * 
    * @param src sequence to ceck

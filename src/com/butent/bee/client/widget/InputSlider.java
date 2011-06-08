@@ -9,7 +9,12 @@ import com.butent.bee.shared.HasStringValue;
  */
 
 public class InputSlider extends InputInteger {
+
   private static String inputType = "range";
+
+  public InputSlider() {
+    super();
+  }
 
   public InputSlider(int value, int min, int max, int step) {
     super(value, inputType, min, max, step);
@@ -36,5 +41,4 @@ public class InputSlider extends InputInteger {
   public String getDefaultStyleName() {
     return "bee-InputSlider";
   }
-
 }

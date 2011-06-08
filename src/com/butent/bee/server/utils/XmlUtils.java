@@ -73,6 +73,7 @@ import javax.xml.validation.SchemaFactory;
  */
 
 public class XmlUtils {
+
   public static String defaultXmlExtension = "xml";
   public static String defaultXslExtension = "xsl";
 

@@ -54,7 +54,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
   private enum SerializationMember {
     COL_TYPE, NAME, CAPTION, READ_ONLY, WIDTH, SOURCE, REL_TABLE, REL_FIELD,
     MIN_WIDTH, MAX_WIDTH, SORTABLE, VISIBLE, FORMAT, HOR_ALIGN, HAS_FOOTER, SHOW_WIDTH,
-    VALIDATION, EDITABLE, CARRY, EDITOR, MIN_VALUE, MAX_VALUE, STEP_VALUE,
+    VALIDATION, EDITABLE, CARRY, EDITOR, MIN_VALUE, MAX_VALUE,
     CALC, VALUE_TYPE, PRECISION, SCALE,
     HEADER_STYLE, BODY_STYLE, FOOTER_STYLE, DYN_STYLES
   }
@@ -94,11 +94,10 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
   private Calculation editable = null;
   private Calculation carry = null;
 
-  private String editor = null;
+  private EditorDescription editor = null;
 
   private String minValue = null;
   private String maxValue = null;
-  private String stepValue = null;
 
   private Calculation calc = null;
   private ValueType valueType = null;
@@ -178,7 +177,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
           setEditable(Calculation.restore(value));
           break;
         case EDITOR:
-          setEditor(value);
+          setEditor(EditorDescription.restore(value));
           break;
         case FORMAT:
           setFormat(value);
@@ -206,9 +205,6 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
           break;
         case SORTABLE:
           setSortable(BeeUtils.toBooleanOrNull(value));
-          break;
-        case STEP_VALUE:
-          setStepValue(value);
           break;
         case VALIDATION:
           setValidation(Calculation.restore(value));
@@ -265,6 +261,10 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
     return editable;
   }
 
+  public EditorDescription getEditor() {
+    return editor;
+  }
+
   public StyleDeclaration getFooterStyle() {
     return footerStyle;
   }
@@ -301,8 +301,6 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
         "Show Width", showWidth(),
         "Min Value", getMinValue(),
         "Max Value", getMaxValue(),
-        "Step Value", getStepValue(),
-        "Editor", getEditor(),
         "Value Type", getValueType(),
         "Precision", getPrecision(),
         "Scale", getScale());
@@ -312,6 +310,9 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
     }
     if (getEditable() != null) {
       PropertyUtils.appendChildrenToProperties(info, "Editable", getEditable().getInfo());
+    }
+    if (getEditor() != null) {
+      PropertyUtils.appendChildrenToProperties(info, "Editor", getEditor().getInfo());
     }
     if (getCarry() != null) {
       PropertyUtils.appendChildrenToProperties(info, "Carry", getCarry().getInfo());
@@ -381,10 +382,6 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
 
   public String getSource() {
     return source;
-  }
-
-  public String getStepValue() {
-    return stepValue;
   }
 
   public Calculation getValidation() {
@@ -495,9 +492,6 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
         case SORTABLE:
           arr[i++] = isSortable();
           break;
-        case STEP_VALUE:
-          arr[i++] = getStepValue();
-          break;
         case VALIDATION:
           arr[i++] = getValidation();
           break;
@@ -545,7 +539,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
     this.editable = editable;
   }
 
-  public void setEditor(String editor) {
+  public void setEditor(EditorDescription editor) {
     this.editor = editor;
   }
 
@@ -617,10 +611,6 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
     this.source = source;
   }
 
-  public void setStepValue(String stepValue) {
-    this.stepValue = stepValue;
-  }
-
   public void setValidation(Calculation validation) {
     this.validation = validation;
   }
@@ -643,10 +633,6 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
 
   private Calculation getCarry() {
     return carry;
-  }
-
-  private String getEditor() {
-    return editor;
   }
 
   private String getRelTable() {

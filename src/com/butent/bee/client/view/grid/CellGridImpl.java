@@ -57,6 +57,7 @@ import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.ui.Calculation;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.ColumnDescription.ColType;
+import com.butent.bee.shared.ui.EditorDescription;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -81,7 +82,8 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     
     private final String minValue;
     private final String maxValue;
-    private final String stepValue;
+
+    private final EditorDescription editorDescription;
 
     private Editor editor = null;
     private IsRow rowValue = null;
@@ -97,14 +99,14 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
         this.validation = null;
         this.minValue = null;
         this.maxValue = null;
-        this.stepValue = null;
+        this.editorDescription = null;
       } else {
         String columnId = this.dataColumn.getLabel(); 
         this.editable = Evaluator.create(columnDescr.getEditable(), columnId, dataColumns);
         this.validation = Evaluator.create(columnDescr.getValidation(), columnId, dataColumns);
         this.minValue = columnDescr.getMinValue();
         this.maxValue = columnDescr.getMaxValue();
-        this.stepValue = columnDescr.getStepValue();
+        this.editorDescription = columnDescr.getEditor();
       }
     }
 
@@ -220,6 +222,10 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       return editor;
     }
 
+    private EditorDescription getEditorDescription() {
+      return editorDescription;
+    }
+
     private String getMaxValue() {
       return maxValue;
     }
@@ -234,10 +240,6 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
 
     private State getState() {
       return state;
-    }
-
-    private String getStepValue() {
-      return stepValue;
     }
 
     private Evaluator getValidation() {
@@ -875,7 +877,12 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
 
     Editor editor = editableColumn.getEditor();
     if (editor == null) {
-      editor = EditorFactory.createEditor(editableColumn.getDataColumn());
+      if (editableColumn.getEditorDescription() != null) {
+        editor = EditorFactory.getEditor(editableColumn.getEditorDescription());
+      }
+      if (editor == null) {
+        editor = EditorFactory.createEditor(editableColumn.getDataColumn());
+      } 
       editor.asWidget().addStyleName(STYLE_EDITOR);
 
       AbstractColumn<?> gridColumn = getGrid().getColumn(columnId);
