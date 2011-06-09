@@ -16,15 +16,23 @@ import com.google.gwt.view.client.SelectionChangeEvent;
 import com.google.gwt.view.client.SingleSelectionModel;
 
 import com.butent.bee.client.dom.DomUtils;
-import com.butent.bee.client.view.edit.EditStopEvent.Handler;
 import com.butent.bee.client.view.edit.EditStopEvent;
+import com.butent.bee.client.view.edit.EditStopEvent.Handler;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
 
+/**
+ * Manages a user interface component for selecting text values from a cell list.
+ */
+
 public class StringPicker extends Composite implements HasConstrainedValue<String>, Editor {
+
+  /**
+   * Manages a single cell in a string picker component.
+   */
 
   private static class DefaultCell extends AbstractCell<String> {
     private DefaultCell() {
@@ -53,7 +61,7 @@ public class StringPicker extends Composite implements HasConstrainedValue<Strin
         setValue(smodel.getSelectedObject(), true);
       }
     });
-    
+
     createId();
   }
 

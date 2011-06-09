@@ -13,19 +13,27 @@ import com.butent.bee.shared.utils.PropertyUtils;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Manages grid component xml configurations.
+ */
+
 public class GridComponentDescription implements BeeSerializable, HasInfo {
-  
+
+  /**
+   * Contains serializable members of a grid user interface component.
+   */
+
   private enum SerializationMember {
     STYLE, HEIGHT, MIN_HEIGHT, MAX_HEIGHT, PADDING, BORDER_WIDTH, MARGIN
   }
-  
+
   public static final String TAG_STYLE = "style";
   private static final String ATTR_HEIGHT = "height";
   private static final String ATTR_MIN_HEIGHT = "minHeight";
   private static final String ATTR_MAX_HEIGHT = "maxHeight";
   private static final String ATTR_PADDING = "padding";
   private static final String ATTR_BORDER_WIDTH = "borderWidth";
-  
+
   private static final String ATTR_MARGIN = "margin";
 
   public static GridComponentDescription restore(String s) {
@@ -50,7 +58,7 @@ public class GridComponentDescription implements BeeSerializable, HasInfo {
   public GridComponentDescription(Integer height) {
     setHeight(height);
   }
-  
+
   public GridComponentDescription(StyleDeclaration style, Map<String, String> attributes) {
     setStyle(style);
     setAttributes(attributes);
@@ -58,7 +66,7 @@ public class GridComponentDescription implements BeeSerializable, HasInfo {
 
   private GridComponentDescription() {
   }
-  
+
   public void deserialize(String s) {
     SerializationMember[] members = SerializationMember.values();
     String[] arr = Codec.beeDeserialize(s);
@@ -104,15 +112,15 @@ public class GridComponentDescription implements BeeSerializable, HasInfo {
     if (getStyle() != null) {
       info.addAll(getStyle().getInfo());
     }
-    
+
     PropertyUtils.addProperties(info,
         "Height", getHeight(), "Min Height", getMinHeight(), "Max Height", getMaxHeight(),
         "Padding", getPadding(), "Border Width", getBorderWidth(), "Margin", getMargin());
-    
+
     PropertyUtils.addWhenEmpty(info, getClass());
     return info;
   }
-  
+
   public String getMargin() {
     return margin;
   }
@@ -182,7 +190,7 @@ public class GridComponentDescription implements BeeSerializable, HasInfo {
       if (BeeUtils.isEmpty(value)) {
         continue;
       }
-        
+
       if (BeeUtils.same(key, ATTR_HEIGHT)) {
         setHeight(BeeUtils.toIntOrNull(value));
       } else if (BeeUtils.same(key, ATTR_MIN_HEIGHT)) {

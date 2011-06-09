@@ -5,8 +5,12 @@ import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 
 import com.butent.bee.shared.utils.BeeUtils;
 
+/**
+ * Manages rendering of cells for calculated columns.
+ */
+
 public class CalculatedCell extends AbstractCell<String> {
-  
+
   public CalculatedCell() {
     super();
   }

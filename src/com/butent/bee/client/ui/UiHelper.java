@@ -10,16 +10,20 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
 
+/**
+ * Contains utility user interface creation functions like setting and getting horizontal alignment.
+ */
+
 public class UiHelper {
 
   private static final String TEXT_ALIGN_START = "start";
   private static final String TEXT_ALIGN_END = "end";
 
   private static final List<HorizontalAlignmentConstant> HORIZONTAL_ALIGNMENT_CONSTANTS =
-    Lists.newArrayList(HasHorizontalAlignment.ALIGN_LEFT, HasHorizontalAlignment.ALIGN_CENTER,
-        HasHorizontalAlignment.ALIGN_RIGHT, HasHorizontalAlignment.ALIGN_JUSTIFY,
-        HasHorizontalAlignment.ALIGN_LOCALE_START, HasHorizontalAlignment.ALIGN_LOCALE_END,
-        HasHorizontalAlignment.ALIGN_DEFAULT);
+      Lists.newArrayList(HasHorizontalAlignment.ALIGN_LEFT, HasHorizontalAlignment.ALIGN_CENTER,
+          HasHorizontalAlignment.ALIGN_RIGHT, HasHorizontalAlignment.ALIGN_JUSTIFY,
+          HasHorizontalAlignment.ALIGN_LOCALE_START, HasHorizontalAlignment.ALIGN_LOCALE_END,
+          HasHorizontalAlignment.ALIGN_DEFAULT);
 
   public static HorizontalAlignmentConstant getDefaultHorizontalAlignment(ValueType type) {
     if (type == null) {
@@ -54,9 +58,9 @@ public class UiHelper {
   public static void setHorizontalAlignment(HasHorizontalAlignment obj, String text) {
     Assert.notNull(obj);
     Assert.notEmpty(text);
-    
+
     HorizontalAlignmentConstant align = null;
-    
+
     if (BeeUtils.same(text, TEXT_ALIGN_START)) {
       align = HasHorizontalAlignment.ALIGN_LOCALE_START;
     } else if (BeeUtils.same(text, TEXT_ALIGN_END)) {
@@ -69,7 +73,7 @@ public class UiHelper {
         }
       }
     }
-    
+
     if (align != null) {
       obj.setHorizontalAlignment(align);
     }

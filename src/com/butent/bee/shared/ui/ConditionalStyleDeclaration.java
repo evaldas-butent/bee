@@ -12,11 +12,15 @@ import com.butent.bee.shared.utils.PropertyUtils;
 
 import java.util.List;
 
+/**
+ * Enables using different styles for user interface components depending on applied conditions.
+ */
+
 public class ConditionalStyleDeclaration implements BeeSerializable, HasInfo {
 
   public static final String TAG_STYLE = "style";
   public static final String TAG_CONDITION = "condition";
-  
+
   public static ConditionalStyleDeclaration restore(String s) {
     if (BeeUtils.isEmpty(s)) {
       return null;
@@ -51,14 +55,14 @@ public class ConditionalStyleDeclaration implements BeeSerializable, HasInfo {
 
   public List<Property> getInfo() {
     List<Property> info = Lists.newArrayList();
-    
+
     if (getStyle() != null) {
       info.addAll(getStyle().getInfo());
     }
     if (getCondition() != null) {
       info.addAll(getCondition().getInfo());
     }
-    
+
     if (info.isEmpty()) {
       PropertyUtils.addWhenEmpty(info, getClass());
     } else if (!validState()) {

@@ -8,6 +8,10 @@ import com.butent.bee.shared.data.IsRow;
 
 import java.math.BigDecimal;
 
+/**
+ * Enables using columns for decimal numbers type of data.
+ */
+
 public class DecimalColumn extends NumberColumn<BigDecimal> {
 
   public DecimalColumn(int index, IsColumn dataColumn) {

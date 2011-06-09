@@ -12,12 +12,16 @@ import com.butent.bee.shared.utils.PropertyUtils;
 
 import java.util.List;
 
+/**
+ * Enables describing CSS style settings for user interface components.
+ */
+
 public class StyleDeclaration implements BeeSerializable, HasInfo {
-  
+
   public static final String TAG_CLASS = "class";
   public static final String TAG_INLINE = "inline";
   public static final String TAG_FONT = "font";
-  
+
   public static StyleDeclaration restore(String s) {
     if (BeeUtils.isEmpty(s)) {
       return null;
@@ -26,11 +30,11 @@ public class StyleDeclaration implements BeeSerializable, HasInfo {
     style.deserialize(s);
     return style;
   }
-  
+
   private String className = null;
   private String inline = null;
   private String fontDeclaration = null;
-  
+
   public StyleDeclaration(String className) {
     this(className, null, null);
   }
@@ -47,7 +51,7 @@ public class StyleDeclaration implements BeeSerializable, HasInfo {
   public void deserialize(String s) {
     String[] arr = Codec.beeDeserialize(s);
     Assert.lengthEquals(arr, 3);
-    
+
     setClassName(arr[0]);
     setInline(arr[1]);
     setFontDeclaration(arr[2]);
@@ -63,12 +67,12 @@ public class StyleDeclaration implements BeeSerializable, HasInfo {
 
   public List<Property> getInfo() {
     List<Property> info = Lists.newArrayList();
-    
+
     if (isEmpty()) {
       PropertyUtils.addWhenEmpty(info, getClass());
       return info;
     }
-    
+
     if (!BeeUtils.isEmpty(getClassName())) {
       info.add(new Property("Class Name", getClassName()));
     }

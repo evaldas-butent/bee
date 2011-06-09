@@ -42,6 +42,10 @@ public class Queries {
   public interface IntCallback extends Callback<Integer, String> {
   }
 
+  /**
+   * Contains requirements for row callback managing classes.
+   */
+
   public interface RowCallback extends Callback<BeeRow, String> {
   }
 
@@ -51,6 +55,10 @@ public class Queries {
    */
   public interface RowSetCallback extends Callback<BeeRowSet, String> {
   }
+
+  /**
+   * Contains requirements for timestamp changes callback managing classes.
+   */
 
   public interface VersionCallback extends Callback<Long, String> {
   }

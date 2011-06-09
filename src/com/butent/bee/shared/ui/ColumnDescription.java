@@ -14,7 +14,15 @@ import com.butent.bee.shared.utils.PropertyUtils;
 import java.util.Collection;
 import java.util.List;
 
+/**
+ * Contains column properties and methods for managing them.
+ */
+
 public class ColumnDescription implements BeeSerializable, HasInfo {
+
+  /**
+   * Contains a list of possible column types.
+   */
 
   public enum ColType {
     DATA("BeeDataColumn", false),
@@ -50,6 +58,10 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
       return readOnly;
     }
   }
+
+  /**
+   * Contains a list of serializable members of column object.
+   */
 
   private enum SerializationMember {
     COL_TYPE, NAME, CAPTION, READ_ONLY, WIDTH, SOURCE, REL_TABLE, REL_FIELD,
@@ -164,7 +176,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
         case VALUE_TYPE:
           setValueType(ValueType.getByTypeCode(value));
           break;
-        case PRECISION:  
+        case PRECISION:
           setPrecision(BeeUtils.toIntOrNull(value));
           break;
         case SCALE:

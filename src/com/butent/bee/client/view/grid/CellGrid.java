@@ -21,6 +21,7 @@ import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.safecss.shared.SafeStyles;
 import com.google.gwt.safecss.shared.SafeStylesBuilder;
 import com.google.gwt.safehtml.client.SafeHtmlTemplates;
+import com.google.gwt.safehtml.client.SafeHtmlTemplates.Template;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.google.gwt.user.cellview.client.LoadingStateChangeEvent;
@@ -601,6 +602,10 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
       this.style = style;
     }
   }
+
+  /**
+   * Contains a list of grid components.
+   */
 
   private enum ComponentType {
     HEADER, BODY, FOOTER;
@@ -1764,7 +1769,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     rowValue.setVersion(version);
     int dataIndex = getColumnInfo(col).getDataIndex();
     rowValue.setValue(dataIndex, value);
-    
+
     boolean checkZindex = false;
     if (getRowStyles() != null) {
       refreshRow(row);
@@ -2310,12 +2315,12 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
   private void bringToFront(int row, int col) {
     Element cellElement = getCellElement(row, col);
     Assert.notNull(cellElement);
-    
+
     if (StyleUtils.getZIndex(cellElement) >= getZIndex()) {
       return;
     }
     cellElement.getStyle().setZIndex(incrementZIndex());
-    
+
     if (getActiveRow() >= 0 && getActiveColumn() >= 0 && !isCellActive(row, col)) {
       cellElement = getActiveCellElement();
       if (cellElement != null) {

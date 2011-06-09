@@ -7,15 +7,19 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasStringValue;
 import com.butent.bee.shared.utils.BeeUtils;
 
+/**
+ * Enables to use a component for input of number type values.
+ */
+
 public class InputNumber extends InputText {
-  
+
   private int precision = BeeConst.UNDEF;
   private int scale = BeeConst.UNDEF;
 
   private Number minValue = null;
   private Number maxValue = null;
   private Number stepValue = null;
-  
+
   public InputNumber() {
     super();
   }
@@ -58,7 +62,7 @@ public class InputNumber extends InputText {
     }
     return normalize(v);
   }
- 
+
   public Number getNumber() {
     return BeeUtils.toDoubleOrNull(BeeUtils.trim(getValue()));
   }
@@ -74,7 +78,7 @@ public class InputNumber extends InputText {
   public Number getStepValue() {
     return stepValue;
   }
-  
+
   public void setMaxValue(Number maxValue) {
     this.maxValue = maxValue;
   }
@@ -94,26 +98,26 @@ public class InputNumber extends InputText {
   public void setStepValue(Number stepValue) {
     this.stepValue = stepValue;
   }
-  
+
   @Override
   public String validate() {
     String msg = super.validate();
     if (!BeeUtils.isEmpty(msg)) {
       return msg;
     }
-    
+
     String v = BeeUtils.trim(getValue());
     if (BeeUtils.isEmpty(v)) {
       if (isNullable()) {
         return null;
       } else {
         return "Value must not be null";
-      }  
+      }
     }
     if (!checkType(v)) {
       return "Not a number";
     }
-    
+
     if (!checkBounds()) {
       StringBuilder sb = new StringBuilder("Value out of bounds:");
       if (getMinValue() != null) {
@@ -126,11 +130,11 @@ public class InputNumber extends InputText {
     }
     return null;
   }
-  
+
   protected boolean checkType(String v) {
     return BeeUtils.isDouble(v);
   }
-  
+
   @Override
   protected CharMatcher getDefaultCharMatcher() {
     return CharMatcher.anyOf("0123456789 ,.-eE");

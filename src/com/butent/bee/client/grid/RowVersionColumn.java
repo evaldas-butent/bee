@@ -10,8 +10,12 @@ import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.ui.ColumnDescription.ColType;
 import com.butent.bee.shared.utils.BeeUtils;
 
+/**
+ * Manages a column with a timestamp for the last edit time of particular row.
+ */
+
 public class RowVersionColumn extends AbstractColumn<DateTime> implements HasDateTimeFormat {
-  
+
   public static DateTimeFormat defaultFormat = DateTimeFormat.getFormat("yy-MM-dd HH:mm:ss.SSS");
 
   public RowVersionColumn() {
@@ -26,7 +30,7 @@ public class RowVersionColumn extends AbstractColumn<DateTime> implements HasDat
   public ColType getColType() {
     return ColType.VERSION;
   }
-  
+
   public DateTimeFormat getDateTimeFormat() {
     if (getCell() instanceof HasDateTimeFormat) {
       return ((HasDateTimeFormat) getCell()).getDateTimeFormat();

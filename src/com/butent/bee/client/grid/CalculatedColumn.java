@@ -22,15 +22,19 @@ import com.butent.bee.shared.ui.ColumnDescription.ColType;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.TimeUtils;
 
+/**
+ * Enables using columns which contain results of calculations with other columns.
+ */
+
 public class CalculatedColumn extends AbstractColumn<String> implements HasDateTimeFormat,
     HasNumberFormat, HasPrecision, HasScale {
 
   private final ValueType valueType;
   private final Evaluator evaluator;
-  
+
   private DateTimeFormat dateTimeformat = null;
   private NumberFormat numberFormat = null;
-  
+
   private int precision = BeeConst.UNDEF;
   private int scale = BeeConst.UNDEF;
 
@@ -66,7 +70,7 @@ public class CalculatedColumn extends AbstractColumn<String> implements HasDateT
   public int getScale() {
     return scale;
   }
-  
+
   @Override
   public String getString(Context context, IsRow row) {
     if (row == null) {
@@ -131,7 +135,7 @@ public class CalculatedColumn extends AbstractColumn<String> implements HasDateT
           return null;
         }
 
-        boolean isDate = ValueType.DATE.equals(getValueType()); 
+        boolean isDate = ValueType.DATE.equals(getValueType());
         DateTimeFormat df = getDateTimeFormat();
         if (df == null) {
           df = isDate ? Format.getDefaultDateFormat() : Format.getDefaultDateTimeFormat();
@@ -144,7 +148,7 @@ public class CalculatedColumn extends AbstractColumn<String> implements HasDateT
           }
         }
         return df.format(dt.getJava());
-        
+
       case DECIMAL:
         return formatNumber(BeeUtils.toDecimalOrNull(value));
       case INTEGER:
@@ -153,7 +157,7 @@ public class CalculatedColumn extends AbstractColumn<String> implements HasDateT
         return formatNumber(BeeUtils.toLongOrNull(value));
       case NUMBER:
         return formatNumber(BeeUtils.toDoubleOrNull(value));
-      
+
       case TEXT:
       case TIMEOFDAY:
         return BeeUtils.trimRight(value);
@@ -169,7 +173,7 @@ public class CalculatedColumn extends AbstractColumn<String> implements HasDateT
     if (format == null) {
       format = Format.getDefaultNumberFormat(getValueType(), getScale());
     }
-    
+
     if (format == null) {
       return value.toString();
     } else {

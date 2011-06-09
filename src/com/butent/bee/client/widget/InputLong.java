@@ -5,6 +5,10 @@ import com.google.gwt.dom.client.Element;
 import com.butent.bee.shared.HasStringValue;
 import com.butent.bee.shared.utils.BeeUtils;
 
+/**
+ * Enables to use a component for input of {@code Long} type values.
+ */
+
 public class InputLong extends InputNumber {
 
   public InputLong() {

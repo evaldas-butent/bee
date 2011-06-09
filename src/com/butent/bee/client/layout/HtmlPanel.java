@@ -6,6 +6,10 @@ import com.google.gwt.user.client.ui.HTMLPanel;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.shared.HasId;
 
+/**
+ * Manages a panel with HTML capabilities.
+ */
+
 public class HtmlPanel extends HTMLPanel implements HasId {
 
   public HtmlPanel(SafeHtml safeHtml) {
@@ -34,7 +38,7 @@ public class HtmlPanel extends HTMLPanel implements HasId {
   public void setId(String id) {
     DomUtils.setId(this, id);
   }
-  
+
   private void init() {
     createId();
   }

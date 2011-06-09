@@ -8,10 +8,14 @@ import com.butent.bee.shared.BeeConst;
 import java.util.Map;
 import java.util.MissingResourceException;
 
+/**
+ * Manages a settings array.
+ */
+
 public class Settings {
-  
+
   private static Dictionary settings = null;
-  
+
   public static Map<String, String> getSettings() {
     Map<String, String> result = Maps.newHashMap();
     if (checkSettings()) {
@@ -21,7 +25,7 @@ public class Settings {
     }
     return result;
   }
-  
+
   public static String getVersion() {
     if (checkSettings()) {
       return settings.get("version");
@@ -36,7 +40,7 @@ public class Settings {
     }
     return settings != null;
   }
-  
+
   private static void readSettings() {
     try {
       settings = Dictionary.getDictionary("BeeSettings");
@@ -44,7 +48,7 @@ public class Settings {
       settings = null;
     }
   }
-  
+
   private Settings() {
   }
 }

@@ -41,7 +41,14 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 @WebService
 @SOAPBinding(parameterStyle = ParameterStyle.BARE)
 @Stateless
+/**
+ * Enables to get data from the system using SOAP web service protocol.
+ */
 public class RemoteCall {
+
+  /**
+   * Contains field information - name and value.
+   */
 
   public static class FieldType {
     @XmlAttribute(required = true)
@@ -58,6 +65,10 @@ public class RemoteCall {
     }
   }
 
+  /**
+   * Contains a list of columns for a row.
+   */
+
   public static class RowType {
     @XmlElement(name = "col")
     public FieldType[] fields;
@@ -70,10 +81,18 @@ public class RemoteCall {
     }
   }
 
+  /**
+   * Contains a list of rows.
+   */
+
   public static class DataType {
     @XmlElement(name = "row")
     public RowType[] rows;
   }
+
+  /**
+   * Creates data for SOAP web service requests.
+   */
 
   public static class DataAdapter extends XmlAdapter<DataType, List<Map<String, String>>> {
     @Override
@@ -117,6 +136,9 @@ public class RemoteCall {
   }
 
   @XmlRootElement(name = "data")
+  /**
+   * Holds SOAP web service response data.
+   */
   public static class DataHolder {
     @XmlAttribute
     public String error;
@@ -129,6 +151,9 @@ public class RemoteCall {
   }
 
   @XmlRootElement(name = "params")
+  /**
+   * Holds such parameters for SOAP web service requests as view, fields, filter or orderBy.
+   */
   public static class ParamHolder {
     @XmlAttribute(required = true)
     public String view;

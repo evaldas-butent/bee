@@ -7,6 +7,10 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.math.BigDecimal;
 
+/**
+ * Represents a Decimal number value and enables conversions from and to this type.
+ */
+
 public class DecimalValue extends Value {
 
   private static final DecimalValue NULL_VALUE = new DecimalValue(null);
@@ -29,7 +33,7 @@ public class DecimalValue extends Value {
     }
     return diff;
   }
-  
+
   @Override
   public Boolean getBoolean() {
     if (isNull()) {

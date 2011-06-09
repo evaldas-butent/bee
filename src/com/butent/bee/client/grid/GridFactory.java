@@ -47,6 +47,10 @@ import java.util.Map;
 
 public class GridFactory {
 
+  /**
+   * Contains requirements for grid component callback methods.
+   */
+
   public interface GridCallback extends Callback<GridDescription, String[]> {
   }
 

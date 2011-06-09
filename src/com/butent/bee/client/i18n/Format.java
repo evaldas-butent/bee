@@ -14,7 +14,15 @@ import com.butent.bee.shared.data.value.HasValueType;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.utils.BeeUtils;
 
+/**
+ * Manages localized number and date formats.
+ */
+
 public class Format {
+
+  /**
+   * Handles default formatting values.
+   */
 
   private static class NumberConstantsImpl implements NumberConstants {
 
@@ -95,6 +103,10 @@ public class Format {
     }
   }
 
+  /**
+   * Creates custom number formats with supplied parameters.
+   */
+
   private static class NumberFormatter extends NumberFormat {
 
     private NumberFormatter(String pattern) {
@@ -124,12 +136,12 @@ public class Format {
   private static NumberFormat defaultCurrencyFormat = getNumberFormat("#,##0.00;(#)");
 
   private static String defaultDecimalPatternInteger = "#,##0";
-  
-  private static DateTimeFormat defaultDateFormat = 
-    DateTimeFormat.getFormat(PredefinedFormat.DATE_MEDIUM);
-  
+
+  private static DateTimeFormat defaultDateFormat =
+      DateTimeFormat.getFormat(PredefinedFormat.DATE_MEDIUM);
+
   private static DateTimeFormat defaultDateTimeFormat =
-    DateTimeFormat.getFormat(PredefinedFormat.DATE_TIME_MEDIUM);
+      DateTimeFormat.getFormat(PredefinedFormat.DATE_TIME_MEDIUM);
 
   public static NumberFormat getDecimalFormat(int scale) {
     if (scale <= 0) {
@@ -174,11 +186,11 @@ public class Format {
   public static NumberFormat getDefaultLongFormat() {
     return defaultLongFormat;
   }
-  
+
   public static NumberFormat getDefaultNumberFormat(ValueType type, int scale) {
     Assert.notNull(type);
     NumberFormat format;
-    
+
     switch (type) {
       case DECIMAL:
         format = getDecimalFormat(scale);
@@ -212,7 +224,7 @@ public class Format {
     }
     return null;
   }
-  
+
   public static void setDefaultCurrencyFormat(NumberFormat defaultCurrencyFormat) {
     Format.defaultCurrencyFormat = defaultCurrencyFormat;
   }
@@ -248,11 +260,11 @@ public class Format {
   public static void setDefaultLongFormat(NumberFormat defaultLongFormat) {
     Format.defaultLongFormat = defaultLongFormat;
   }
-  
+
   public static void setFormat(HasValueType target, String pattern) {
     Assert.notNull(target);
     Assert.notEmpty(pattern);
-    
+
     if (target instanceof HasDateTimeFormat) {
       DateTimeFormat predefinedFormat = getPredefinedFormat(pattern);
       if (predefinedFormat != null) {
@@ -260,7 +272,7 @@ public class Format {
         return;
       }
     }
-    
+
     boolean isDt = false;
     boolean isNum = false;
 

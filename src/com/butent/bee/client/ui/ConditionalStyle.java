@@ -13,12 +13,16 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.Collection;
 import java.util.List;
 
+/**
+ * Enables using conditional CSS styles for elements of user interface.
+ */
+
 public class ConditionalStyle {
-  
+
   private class Entry {
     private final StyleDescriptor styleDescriptor;
     private final Evaluator evaluator;
-    
+
     private final JavaScriptObject styleInterpreter;
 
     private Entry(StyleDescriptor styleDescriptor, Evaluator evaluator) {
@@ -38,11 +42,11 @@ public class ConditionalStyle {
     private JavaScriptObject getStyleInterpreter() {
       return styleInterpreter;
     }
-    
+
     private boolean hasStyleInterpreter() {
       return getStyleInterpreter() != null;
     }
-    
+
     private boolean hasStyleReplacement() {
       if (getStyleDescriptor() == null) {
         return false;
@@ -150,7 +154,7 @@ public class ConditionalStyle {
       String replaced;
       if (entry.hasStyleInterpreter()) {
         replaced = entry.getEvaluator().evaluate(entry.getStyleInterpreter());
-      } else {  
+      } else {
         replaced = entry.getEvaluator().replace(copy.getInline());
       }
       copy.setInline(replaced);

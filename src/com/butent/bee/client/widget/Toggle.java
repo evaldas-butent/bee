@@ -10,8 +10,8 @@ import com.google.gwt.user.client.ui.Image;
 
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
-import com.butent.bee.client.view.edit.EditStopEvent.Handler;
 import com.butent.bee.client.view.edit.EditStopEvent;
+import com.butent.bee.client.view.edit.EditStopEvent.Handler;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.edit.HasEditState;
 import com.butent.bee.shared.BeeConst;
@@ -20,14 +20,18 @@ import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.utils.BeeUtils;
 
+/**
+ * Enables to use a user interface component for visibly switching values on and off.
+ */
+
 public class Toggle extends CustomButton implements Editor, HasEditState {
- 
+
   private HasBooleanValue source = null;
 
   private boolean nullable = true;
-  
+
   private boolean editing = false;
-  
+
   public Toggle() {
     super();
     init();
@@ -87,7 +91,7 @@ public class Toggle extends CustomButton implements Editor, HasEditState {
   public String getValue() {
     return BooleanValue.pack(isDown());
   }
-  
+
   @Override
   public boolean isDown() {
     return super.isDown();
@@ -135,7 +139,7 @@ public class Toggle extends CustomButton implements Editor, HasEditState {
     boolean oldValue = isDown();
     boolean newValue = BeeUtils.toBoolean(value);
     setDown(newValue);
-    
+
     if (fireEvents && oldValue != newValue) {
       ValueChangeEvent.fire(this, value);
     }
@@ -145,11 +149,11 @@ public class Toggle extends CustomButton implements Editor, HasEditState {
     setValue(oldValue);
     setEditing(true);
   }
-  
+
   public String validate() {
     return null;
   }
-  
+
   @Override
   protected void onClick() {
     setDown(!isDown());

@@ -6,24 +6,32 @@ import com.google.gwt.event.shared.GwtEvent;
 
 import com.butent.bee.shared.data.IsRow;
 
-public class EditStartEvent extends GwtEvent<EditStartEvent.Handler> { 
-  
+/**
+ * Manages edit start event, gets column id, type, row value and other necessary parameters.
+ */
+
+public class EditStartEvent extends GwtEvent<EditStartEvent.Handler> {
+
+  /**
+   * Requires implementing methods to have a method to handle edit start.
+   */
+
   public interface Handler extends EventHandler {
     void onEditStart(EditStartEvent event);
   }
-  
+
   private static final Type<Handler> TYPE = new Type<Handler>();
-  
+
   public static Type<Handler> getType() {
     return TYPE;
   }
-  
+
   private final IsRow rowValue;
   private final String columnId;
 
   private final Element sourceElement;
   private final int charCode;
-  
+
   public EditStartEvent(IsRow rowValue, String columnId, Element sourceElement, int charCode) {
     this.rowValue = rowValue;
     this.columnId = columnId;
@@ -47,7 +55,7 @@ public class EditStartEvent extends GwtEvent<EditStartEvent.Handler> {
   public IsRow getRowValue() {
     return rowValue;
   }
-  
+
   public Element getSourceElement() {
     return sourceElement;
   }

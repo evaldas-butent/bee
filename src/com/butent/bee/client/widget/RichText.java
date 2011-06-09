@@ -6,13 +6,17 @@ import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.ui.RichTextArea;
 
 import com.butent.bee.client.dom.DomUtils;
-import com.butent.bee.client.view.edit.EditStopEvent.Handler;
 import com.butent.bee.client.view.edit.EditStopEvent;
+import com.butent.bee.client.view.edit.EditStopEvent.Handler;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.shared.utils.BeeUtils;
 
+/**
+ * Enables to use a component for input of rich text type values.
+ */
+
 public class RichText extends RichTextArea implements Editor {
-  
+
   private boolean nullable = true;
 
   public RichText() {

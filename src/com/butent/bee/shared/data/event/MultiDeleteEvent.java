@@ -11,8 +11,16 @@ import com.butent.bee.shared.data.view.RowInfo;
 import java.util.Collection;
 import java.util.Set;
 
+/**
+ * Handles deletion of multiple rows event.
+ */
+
 public class MultiDeleteEvent extends Event<MultiDeleteEvent.Handler> {
-  
+
+  /**
+   * Requires implementing classes to have a method to handle multiple row deletion event.
+   */
+
   public interface Handler {
     void onMultiDelete(MultiDeleteEvent event);
   }
@@ -24,13 +32,13 @@ public class MultiDeleteEvent extends Event<MultiDeleteEvent.Handler> {
     Assert.notNull(handler);
     return eventBus.addHandler(TYPE, handler);
   }
-  
+
   private final String viewName;
   private final Set<RowInfo> rows;
 
   public MultiDeleteEvent(String viewName, Collection<RowInfo> rows) {
     this.viewName = viewName;
-    this.rows = Sets.newHashSet(rows); 
+    this.rows = Sets.newHashSet(rows);
   }
 
   @Override

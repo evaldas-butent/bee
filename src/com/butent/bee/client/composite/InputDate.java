@@ -35,6 +35,10 @@ import com.butent.bee.shared.utils.TimeUtils;
 
 import java.util.Date;
 
+/**
+ * Manages user interface component for entering dates.
+ */
+
 public class InputDate extends Composite implements Editor, HasDateTimeFormat {
 
   public static final String DEFAULT_STYLENAME = "bee-DateBox";
@@ -221,7 +225,7 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat {
     AbstractDate oldValue = getDate();
     AbstractDate newValue = AbstractDate.restore(value, getDateType());
     setValue(newValue);
-    
+
     if (fireEvents && !TimeUtils.equals(oldValue, newValue)) {
       ValueChangeEvent.fire(this, value);
     }
@@ -386,7 +390,7 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat {
               new DateTime(oldDate.getDateTime().getTime() + incr * TimeUtils.MILLIS_PER_MINUTE);
         }
         break;
-        
+
       case 'm':
         newDate = TimeUtils.startOfMonth(baseDate, 0);
         if (TimeUtils.sameDate(newDate, oldDate)) {

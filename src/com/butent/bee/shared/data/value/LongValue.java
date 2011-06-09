@@ -8,6 +8,10 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.math.BigDecimal;
 
+/**
+ * Represents a Long number value and enables conversions from and to this type.
+ */
+
 public class LongValue extends Value {
 
   private static final LongValue NULL_VALUE = new LongValue(null);
@@ -30,7 +34,7 @@ public class LongValue extends Value {
     }
     return diff;
   }
-  
+
   @Override
   public Boolean getBoolean() {
     if (isNull()) {

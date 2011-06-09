@@ -25,7 +25,16 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 
+/**
+ * Enables using popup notifications with different levels of information (warnings, info messages,
+ * errors etc).
+ */
+
 public class Notification extends Composite implements NativePreviewHandler {
+
+  /**
+   * Manages notification message and it's level and text.
+   */
 
   private class Message {
     private final Level level;
@@ -65,6 +74,10 @@ public class Notification extends Composite implements NativePreviewHandler {
     }
   }
 
+  /**
+   * Enables size related animations for notification messages.
+   */
+
   private class MoleAnimation extends Animation {
     private int startSize;
     private int endSize;
@@ -97,6 +110,10 @@ public class Notification extends Composite implements NativePreviewHandler {
       }
     }
   }
+
+  /**
+   * Contains a list of possible notification states
+   */
 
   private enum State {
     PENDING, OPENING, SHOWING, CLOSING

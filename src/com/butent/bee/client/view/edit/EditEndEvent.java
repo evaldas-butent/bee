@@ -6,7 +6,15 @@ import com.google.gwt.event.shared.GwtEvent;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 
+/**
+ * Handles edit event ending, gets old and new values of edited data.
+ */
+
 public class EditEndEvent extends GwtEvent<EditEndEvent.Handler> {
+
+  /**
+   * Requires implementing methods to have a method to handle edit end.
+   */
 
   public interface Handler extends EventHandler {
     void onEditEnd(EditEndEvent event);

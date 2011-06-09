@@ -7,8 +7,12 @@ import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.butent.bee.client.i18n.HasDateTimeFormat;
 import com.butent.bee.shared.JustDate;
 
+/**
+ * Enables using columns which contain date type data.
+ */
+
 public class DateCell extends AbstractCell<JustDate> implements HasDateTimeFormat {
-  
+
   private DateTimeFormat format;
 
   public DateCell(DateTimeFormat format) {

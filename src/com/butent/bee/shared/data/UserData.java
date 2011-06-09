@@ -13,7 +13,15 @@ import com.butent.bee.shared.utils.Codec;
 import java.util.Collection;
 import java.util.Map;
 
+/**
+ * Contains core user data like login, first and last names, user id etc.
+ */
+
 public class UserData implements BeeSerializable {
+
+  /**
+   * Contains serializable members of user data (login, first and last names, position etc).
+   */
 
   private enum SerializationMember {
     LOGIN, USER_ID, FIRST_NAME, LAST_NAME, POSITION, ROLES, LOCALE, PROPERTIES

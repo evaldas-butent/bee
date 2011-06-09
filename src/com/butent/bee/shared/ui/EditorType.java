@@ -2,6 +2,10 @@ package com.butent.bee.shared.ui;
 
 import com.butent.bee.shared.utils.BeeUtils;
 
+/**
+ * Contains a list of possible data editing user interface components.
+ */
+
 public enum EditorType {
   LIST("list"),
   PICKER("picker"),
@@ -17,7 +21,7 @@ public enum EditorType {
   LONG("long"),
   SUGGEST("suggest"),
   TOGGLE("toggle");
-  
+
   public static EditorType getByTypeCode(String code) {
     if (code == null || code.isEmpty()) {
       return null;
@@ -29,7 +33,7 @@ public enum EditorType {
     }
     return null;
   }
-  
+
   private final String typeCode;
 
   private EditorType(String typeCode) {

@@ -13,17 +13,25 @@ import com.butent.bee.shared.utils.PropertyUtils;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Handles xml descriptions of editor type user interface components.
+ */
+
 public class EditorDescription implements BeeSerializable, HasInfo {
-  
+
+  /**
+   * Contains serializable members of a editor type user interface components.
+   */
+
   private enum SerializationMember {
     TYPE, STEP_VALUE, CHARACTER_WIDTH, VISIBLE_LINES, FORMAT, ITEMS
   }
-  
+
   private static final String ATTR_STEP_VALUE = "stepValue";
   private static final String ATTR_CHARACTER_WIDTH = "characterWidth";
   private static final String ATTR_VISIBLE_LINES = "visibleLines";
   private static final String ATTR_FORMAT = "format";
-  
+
   public static EditorDescription restore(String s) {
     if (BeeUtils.isEmpty(s)) {
       return null;
@@ -35,22 +43,22 @@ public class EditorDescription implements BeeSerializable, HasInfo {
     }
     return editor;
   }
-  
+
   private EditorType type;
-  
+
   private Integer stepValue = null;
-  
+
   private Integer characterWidth = null;
   private Integer visibleLines = null;
-  
+
   private String format = null;
-  
+
   private List<String> items = null;
-  
+
   public EditorDescription(EditorType type) {
     this.type = type;
   }
-  
+
   private EditorDescription() {
   }
 
@@ -73,7 +81,7 @@ public class EditorDescription implements BeeSerializable, HasInfo {
         case STEP_VALUE:
           setStepValue(BeeUtils.toIntOrNull(value));
           break;
-        case CHARACTER_WIDTH:  
+        case CHARACTER_WIDTH:
           setCharacterWidth(BeeUtils.toIntOrNull(value));
           break;
         case VISIBLE_LINES:
@@ -104,12 +112,12 @@ public class EditorDescription implements BeeSerializable, HasInfo {
 
   public List<Property> getInfo() {
     List<Property> info = PropertyUtils.createProperties(
-      "Type", getType(),
-      "Step Value", getStepValue(),
-      "Character Width", getCharacterWidth(),
-      "Visible Lines", getVisibleLines(),
-      "Format", getFormat());
-    
+        "Type", getType(),
+        "Step Value", getStepValue(),
+        "Character Width", getCharacterWidth(),
+        "Visible Lines", getVisibleLines(),
+        "Format", getFormat());
+
     if (getItems() != null) {
       info.add(new Property("Items", BeeUtils.bracket(getItems().size())));
       for (int i = 0; i < getItems().size(); i++) {
@@ -123,7 +131,7 @@ public class EditorDescription implements BeeSerializable, HasInfo {
     }
     return info;
   }
-  
+
   public List<String> getItems() {
     return items;
   }
@@ -180,7 +188,7 @@ public class EditorDescription implements BeeSerializable, HasInfo {
       if (BeeUtils.isEmpty(value)) {
         continue;
       }
-        
+
       if (BeeUtils.same(key, ATTR_STEP_VALUE)) {
         setStepValue(BeeUtils.toIntOrNull(value));
       } else if (BeeUtils.same(key, ATTR_CHARACTER_WIDTH)) {

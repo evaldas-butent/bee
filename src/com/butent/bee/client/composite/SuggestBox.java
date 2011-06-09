@@ -44,12 +44,26 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.Collection;
 import java.util.List;
 
+/**
+ * Enables using user interface component for entering text entries while the system is suggesting
+ * possible matching values from the list
+ */
+
 public class SuggestBox extends Composite implements HasText, HasAllKeyHandlers,
     HasSelectionHandlers<Suggestion>, Editor {
+
+  /**
+   * Requires for implementing methods to have an event to handle situations when a suggestion is
+   * selected.
+   */
 
   public static interface SuggestionCallback {
     void onSuggestionSelected(Suggestion suggestion);
   }
+
+  /**
+   * Handles animation events of of suggestion box popup menu.
+   */
 
   public static class SuggestionDisplay implements HasAnimation {
 
@@ -174,6 +188,10 @@ public class SuggestBox extends Composite implements HasText, HasAllKeyHandlers,
     }
   }
 
+  /**
+   * Handles suggestion menu items list.
+   */
+
   private static class SuggestionMenu extends MenuBar {
 
     public SuggestionMenu(boolean vertical) {
@@ -200,6 +218,10 @@ public class SuggestBox extends Composite implements HasText, HasAllKeyHandlers,
     }
   }
 
+  /**
+   * Manages a single suggestion box list entry.
+   */
+
   private static class SuggestionMenuItem extends MenuItem {
     private Suggestion suggestion;
 
@@ -225,7 +247,7 @@ public class SuggestBox extends Composite implements HasText, HasAllKeyHandlers,
   private String currentText;
 
   private SuggestOracle oracle;
-  
+
   private final SuggestionDisplay display;
   private final InputText box;
 
@@ -272,7 +294,7 @@ public class SuggestBox extends Composite implements HasText, HasAllKeyHandlers,
   public HandlerRegistration addEditStopHandler(EditStopEvent.Handler handler) {
     return addHandler(handler, EditStopEvent.getType());
   }
-  
+
   public HandlerRegistration addKeyDownHandler(KeyDownHandler handler) {
     return addDomHandler(handler, KeyDownEvent.getType());
   }
@@ -312,7 +334,7 @@ public class SuggestBox extends Composite implements HasText, HasAllKeyHandlers,
   public SuggestionDisplay getSuggestionDisplay() {
     return display;
   }
-  
+
   public SuggestOracle getSuggestOracle() {
     return oracle;
   }
@@ -438,7 +460,7 @@ public class SuggestBox extends Composite implements HasText, HasAllKeyHandlers,
     events.addKeyHandlersTo(box);
     box.addValueChangeHandler(events);
   }
-  
+
   private void fireSuggestionEvent(Suggestion selectedSuggestion) {
     SelectionEvent.fire(this, selectedSuggestion);
   }

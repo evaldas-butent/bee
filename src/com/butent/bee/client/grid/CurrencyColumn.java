@@ -5,8 +5,12 @@ import com.google.gwt.i18n.client.NumberFormat;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.shared.data.IsColumn;
 
+/**
+ * Enables using columns for currency expressions.
+ */
+
 public class CurrencyColumn extends DecimalColumn {
-  
+
   public CurrencyColumn(int index, IsColumn dataColumn) {
     this(Format.getDefaultCurrencyFormat(), index, dataColumn);
   }

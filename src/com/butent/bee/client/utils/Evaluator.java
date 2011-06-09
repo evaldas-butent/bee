@@ -16,27 +16,35 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
 
+/**
+ * Implements management of an old and new values for cells in user interface.
+ */
+
 public class Evaluator extends Calculation {
-  
+
+  /**
+   * Manages default values for such parameters as rowId, rowVersion or CellValue.
+   */
+
   public class DefaultParameters implements Parameters {
-    
+
     private final List<? extends IsColumn> dataColumns;
-    
+
     private final JavaScriptObject rowValues;
     private double rowId;
     private JsDate rowVersion;
     private double rowIndex;
-    
+
     private final String colName;
     private double colIndex;
-    
+
     private final JavaScriptObject cellValues;
-    
+
     private IsRow lastRow = null;
     private String lastCellValue = null;
     private String lastOldValue = null;
     private String lastNewValue = null;
-    
+
     {
       cellValues = JavaScriptObject.createObject();
       JsUtils.setPropertyToNull(cellValues, PROPERTY_VALUE);
@@ -77,7 +85,7 @@ public class Evaluator extends Calculation {
     public String getLastOldValue() {
       return lastOldValue;
     }
-    
+
     public IsRow getLastRow() {
       return lastRow;
     }
@@ -89,7 +97,7 @@ public class Evaluator extends Calculation {
     public double getRowIndex() {
       return rowIndex;
     }
-    
+
     public JavaScriptObject getRowValues() {
       return rowValues;
     }
@@ -129,7 +137,7 @@ public class Evaluator extends Calculation {
 
       setRowId(row.getId());
       setRowVersion(JsDate.create(row.getVersion()));
-      
+
       EvalHelper.toJso(dataColumns, row, rowValues);
     }
 
@@ -161,7 +169,7 @@ public class Evaluator extends Calculation {
   public interface Parameters {
 
     JavaScriptObject getCellValues();
-    
+
     double getColIndex();
 
     String getColName();
@@ -171,29 +179,29 @@ public class Evaluator extends Calculation {
     String getLastCellValue();
 
     String getLastNewValue();
-    
+
     String getLastOldValue();
-    
+
     IsRow getLastRow();
-    
+
     double getRowId();
-    
+
     double getRowIndex();
-    
+
     JavaScriptObject getRowValues();
 
     JsDate getRowVersion();
 
     void setCellNewValue(ValueType type, String newValue);
-    
+
     void setCellOldValue(ValueType type, String oldValue);
 
     void setCellValue(ValueType type, String value);
-    
+
     void setColIndex(double colIndex);
 
     void setRowIndex(double rowIndex);
-    
+
     void updateRow(IsRow rowValue);
   }
 
@@ -207,40 +215,40 @@ public class Evaluator extends Calculation {
 
   public static final String VAR_ROW_ID = "rowId";
   public static final String VAR_ROW_VERSION = "rowVersion";
-  
-  public static final String VAR_ROW_INDEX = "rowIndex";    
+
+  public static final String VAR_ROW_INDEX = "rowIndex";
 
   public static final String VAR_COL_INDEX = "colIndex";
-  
+
   public static final String DEFAULT_REPLACE_PREFIX = "[";
   public static final String DEFAULT_REPLACE_SUFFIX = "]";
   public static final String PROPERTY_SEPARATOR = ".";
-  
+
   public static Evaluator create(Calculation calc, String colName,
       List<? extends IsColumn> dataColumns) {
     if (calc == null || calc.isEmpty()) {
       return null;
     }
-    
+
     Evaluator evaluator = new Evaluator(calc.getExpression(), calc.getFunction());
     if (dataColumns != null && !dataColumns.isEmpty()) {
       evaluator.init(colName, dataColumns);
     }
     return evaluator;
   }
-  
+
   public static native JavaScriptObject createExprInterpreter(String xpr) /*-{
-    return new Function("row", "rowId", "rowVersion", "rowIndex",
-      "colName", "colIndex", "cell", "return eval(" + xpr + ");");
+    return new Function("row", "rowId", "rowVersion", "rowIndex", "colName", "colIndex", "cell",
+        "return eval(" + xpr + ");");
   }-*/;
-  
+
   public static native JavaScriptObject createFuncInterpreter(String fnc) /*-{
-    return new Function("row", "rowId", "rowVersion", "rowIndex",
-      "colName", "colIndex", "cell", fnc);
+    return new Function("row", "rowId", "rowVersion", "rowIndex", "colName", "colIndex", "cell",
+        fnc);
   }-*/;
 
   private Parameters parameters = null;
-  
+
   private final JavaScriptObject interpeter;
 
   private Evaluator(String expression, String function) {
@@ -258,16 +266,16 @@ public class Evaluator extends Calculation {
   public String evaluate() {
     return evaluate(getInterpeter());
   }
-  
+
   public String evaluate(JavaScriptObject fnc) {
     if (getParameters() == null || fnc == null) {
       return null;
     }
-    
+
     String s;
     try {
       s = doEval(fnc, getParameters().getRowValues(), getParameters().getRowId(),
-          getParameters().getRowVersion(), getParameters().getRowIndex(), 
+          getParameters().getRowVersion(), getParameters().getRowIndex(),
           getParameters().getColName(), getParameters().getColIndex(),
           getParameters().getCellValues());
     } catch (JavaScriptException ex) {
@@ -276,7 +284,7 @@ public class Evaluator extends Calculation {
     }
     return s;
   }
-  
+
   public void init(String colName, List<? extends IsColumn> dataColumns) {
     Assert.notNull(dataColumns);
     setParameters(new DefaultParameters(colName, dataColumns));
@@ -285,30 +293,30 @@ public class Evaluator extends Calculation {
   public String replace(String src) {
     return replace(src, DEFAULT_REPLACE_PREFIX, DEFAULT_REPLACE_SUFFIX);
   }
-  
+
   public String replace(String src, String prefix, String suffix) {
     if (BeeUtils.isEmpty(src) || getParameters() == null) {
       return src;
     }
     String pfx = Strings.nullToEmpty(prefix);
     String sfx = Strings.nullToEmpty(suffix);
-    
+
     if (pfx.length() > 0 && !src.contains(pfx)) {
       return src;
     }
     if (sfx.length() > 0 && !src.contains(sfx)) {
       return src;
     }
-    
+
     String result = src.trim();
     String value;
-    
+
     IsRow row = getParameters().getLastRow();
     if (row != null) {
       result = BeeUtils.replace(result, pfx + VAR_ROW_ID + sfx, BeeUtils.toString(row.getId()));
-      result = BeeUtils.replace(result, pfx + VAR_ROW_VERSION + sfx, 
+      result = BeeUtils.replace(result, pfx + VAR_ROW_VERSION + sfx,
           BeeUtils.toString(row.getVersion()));
-      
+
       List<? extends IsColumn> columns = getParameters().getDataColumns();
       for (int i = 0; i < columns.size(); i++) {
         IsColumn column = columns.get(i);
@@ -335,7 +343,7 @@ public class Evaluator extends Calculation {
     value = BeeUtils.ifString(getParameters().getLastNewValue(), BeeConst.NULL);
     result = BeeUtils.replace(result,
         pfx + CELL_OBJECT + PROPERTY_SEPARATOR + PROPERTY_NEW_VALUE + sfx, value);
-    
+
     return result;
   }
 
@@ -378,7 +386,7 @@ public class Evaluator extends Calculation {
     getParameters().setCellOldValue(type, oldValue);
     getParameters().setCellNewValue(type, newValue);
   }
-  
+
   private native String doEval(JavaScriptObject fnc, JavaScriptObject row, double rowId,
       JsDate rowVersion, double rowIndex, String colName, double colIndex,
       JavaScriptObject cell) /*-{
@@ -395,8 +403,8 @@ public class Evaluator extends Calculation {
   private JavaScriptObject getInterpeter() {
     return interpeter;
   }
-  
+
   private Parameters getParameters() {
     return parameters;
-  }    
+  }
 }

@@ -3,6 +3,10 @@ package com.butent.bee.client.utils;
 import com.google.gwt.core.client.Duration;
 import com.google.gwt.user.client.Timer;
 
+/**
+ * Contains methods for starting, running and canceling animations in user interface.
+ */
+
 public abstract class Animation {
 
   public static final int DEFAULT_FRAME_DELAY = 25;

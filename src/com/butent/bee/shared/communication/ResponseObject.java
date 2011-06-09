@@ -18,6 +18,10 @@ import java.util.logging.Logger;
  */
 public class ResponseObject implements BeeSerializable {
 
+  /**
+   * Contains a list of serializable members of response object.
+   */
+
   private enum SerializationMember {
     MESSAGES, RESPONSE_TYPE, RESPONSE
   }

@@ -8,6 +8,10 @@ import com.google.gwt.text.shared.SimpleSafeHtmlRenderer;
 
 import com.butent.bee.client.i18n.HasNumberFormat;
 
+/**
+ * Manages rendering and format of a number type cell.
+ */
+
 public class NumberCell<C extends Number> extends AbstractCell<C> implements HasNumberFormat {
 
   public static SafeHtmlRenderer<String> renderer = SimpleSafeHtmlRenderer.getInstance();

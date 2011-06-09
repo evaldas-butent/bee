@@ -8,6 +8,10 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.math.BigDecimal;
 
+/**
+ * Represents a Integer number value and enables conversions from and to this type.
+ */
+
 public class IntegerValue extends Value {
 
   private static final IntegerValue NULL_VALUE = new IntegerValue(null);
@@ -30,7 +34,7 @@ public class IntegerValue extends Value {
     }
     return diff;
   }
-  
+
   @Override
   public Boolean getBoolean() {
     if (isNull()) {

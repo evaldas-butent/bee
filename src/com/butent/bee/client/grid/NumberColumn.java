@@ -7,6 +7,10 @@ import com.butent.bee.client.i18n.HasNumberFormat;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 
+/**
+ * Manages value and number format of a number type column.
+ */
+
 public abstract class NumberColumn<C extends Number> extends DataColumn<C> implements
     HasNumberFormat {
 

@@ -8,15 +8,19 @@ import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.shared.ui.StyleDeclaration;
 import com.butent.bee.shared.utils.BeeUtils;
 
+/**
+ * Handles font and other style properties of particular styles.
+ */
+
 public class StyleDescriptor extends StyleDeclaration {
-  
+
   public static StyleDescriptor copyOf(StyleDeclaration src) {
     if (src == null) {
       return null;
     }
     return new StyleDescriptor(src.getClassName(), src.getInline(), src.getFontDeclaration());
   }
-  
+
   private Font font = null;
   private SafeStyles safeStyles = null;
 
@@ -27,7 +31,7 @@ public class StyleDescriptor extends StyleDeclaration {
   public StyleDescriptor(String className, String inline, String fontDeclaration) {
     super(className, inline, fontDeclaration);
   }
-  
+
   public void buildSafeStyles(SafeStylesBuilder stylesBuilder) {
     if (stylesBuilder == null) {
       return;
@@ -44,11 +48,11 @@ public class StyleDescriptor extends StyleDeclaration {
   public Font getFont() {
     return font;
   }
-  
+
   public SafeStyles getSafeStyles() {
     return safeStyles;
   }
-  
+
   public boolean hasSafeStylesOrFont() {
     return getSafeStyles() != null || getFont() != null;
   }
@@ -58,7 +62,7 @@ public class StyleDescriptor extends StyleDeclaration {
     super.setFontDeclaration(fontDeclaration);
     setFont(Font.parse(fontDeclaration));
   }
-  
+
   @Override
   protected void setInline(String inline) {
     super.setInline(inline);

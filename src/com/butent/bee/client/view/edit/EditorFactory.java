@@ -5,14 +5,14 @@ import com.butent.bee.client.composite.StringPicker;
 import com.butent.bee.client.composite.SuggestBox;
 import com.butent.bee.client.widget.BeeListBox;
 import com.butent.bee.client.widget.InputArea;
-import com.butent.bee.client.widget.InputSlider;
-import com.butent.bee.client.widget.InputSpinner;
-import com.butent.bee.client.widget.RichText;
-import com.butent.bee.client.widget.Toggle;
+import com.butent.bee.client.widget.InputInteger;
 import com.butent.bee.client.widget.InputLong;
 import com.butent.bee.client.widget.InputNumber;
+import com.butent.bee.client.widget.InputSlider;
+import com.butent.bee.client.widget.InputSpinner;
 import com.butent.bee.client.widget.InputText;
-import com.butent.bee.client.widget.InputInteger;
+import com.butent.bee.client.widget.RichText;
+import com.butent.bee.client.widget.Toggle;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.value.ValueType;
@@ -20,14 +20,18 @@ import com.butent.bee.shared.ui.EditorDescription;
 import com.butent.bee.shared.ui.EditorType;
 import com.butent.bee.shared.utils.BeeUtils;
 
+/**
+ * Creates user interface components for editing values depending on a type of data needed to edit.
+ */
+
 public class EditorFactory {
-  
+
   public static final int START_MOUSE_CLICK = 1;
   public static final int START_KEY_ENTER = 2;
-  
+
   public static Editor createEditor(BeeColumn column) {
     Assert.notNull(column);
-    
+
     ValueType type = column.getType();
     if (type == null) {
       return new InputText();
@@ -35,9 +39,9 @@ public class EditorFactory {
 
     int precision = column.getPrecision();
     int scale = column.getScale();
-    
+
     Editor editor = null;
-    
+
     switch (type) {
       case BOOLEAN:
         editor = new Toggle();
@@ -47,11 +51,11 @@ public class EditorFactory {
       case DATETIME:
         editor = new InputDate(type);
         break;
-        
+
       case INTEGER:
         editor = new InputInteger();
         break;
-        
+
       case LONG:
         editor = new InputLong();
         break;
@@ -70,9 +74,9 @@ public class EditorFactory {
         break;
     }
     Assert.notNull(editor);
-    
+
     editor.setNullable(column.isNullable());
-    
+
     if (editor instanceof InputNumber) {
       ((InputNumber) editor).setPrecision(precision);
       ((InputNumber) editor).setScale(scale);
@@ -80,7 +84,7 @@ public class EditorFactory {
         ((InputNumber) editor).setMaxLength(precision + ((scale > 0) ? 2 : 1));
       }
     }
-    
+
     return editor;
   }
 
@@ -88,7 +92,7 @@ public class EditorFactory {
     Assert.notNull(description);
     EditorType type = description.getType();
     Assert.notNull(type);
-    
+
     Editor editor = null;
     switch (type) {
       case AREA:
@@ -104,7 +108,7 @@ public class EditorFactory {
       case DATE:
         editor = new InputDate(ValueType.DATE);
         break;
-      
+
       case DATETIME:
         editor = new InputDate(ValueType.DATETIME);
         break;
@@ -134,11 +138,11 @@ public class EditorFactory {
           ((StringPicker) editor).setAcceptableValues(description.getItems());
         }
         break;
-      
+
       case RICH:
         editor = new RichText();
         break;
-      
+
       case SLIDER:
         editor = new InputSlider();
         if (description.getStepValue() != null) {
@@ -152,11 +156,11 @@ public class EditorFactory {
           ((InputSpinner) editor).setStepValue(description.getStepValue());
         }
         break;
-      
+
       case SUGGEST:
         editor = new SuggestBox();
         break;
-      
+
       case TEXT:
         editor = new InputText();
         break;
@@ -165,10 +169,10 @@ public class EditorFactory {
         editor = new Toggle();
         break;
     }
-    
+
     return editor;
   }
-  
+
   private EditorFactory() {
   }
 }
