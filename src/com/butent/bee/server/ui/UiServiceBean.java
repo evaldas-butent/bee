@@ -154,22 +154,18 @@ public class UiServiceBean {
         ResponseObject resp = sys.deleteRow(viewName, row);
         int res = resp.getResponse(-1, logger);
 
-        switch (res) {
-          case -1:
-            response.addError("Error deleting row:", row.getId());
+        if (res > 0) {
+          cnt += res;
+        } else {
+          response.addError("Error deleting row:", row.getId());
 
+          if (res < 0) {
             for (String err : resp.getErrors()) {
               response.addError(err);
             }
-            break;
-
-          case 0:
-            response.addError("Optimistic lock exception deleting row:", row.getId());
-            break;
-
-          default:
-            cnt += res;
-            break;
+          } else {
+            response.addError("Optimistic lock exception");
+          }
         }
       }
     }

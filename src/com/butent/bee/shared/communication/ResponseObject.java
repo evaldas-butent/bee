@@ -14,9 +14,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Used to tansport data with messages between various layers.
+ * Used to transport data with messages between various layers.
  */
-
 public class ResponseObject implements BeeSerializable {
 
   private enum SerializationMember {
@@ -122,6 +121,7 @@ public class ResponseObject implements BeeSerializable {
 
   @SuppressWarnings("unchecked")
   public <T> T getResponse(T def, Logger logger) {
+    Assert.notNull(def);
     T res = def;
 
     if (!hasErrors()) {
@@ -129,7 +129,9 @@ public class ResponseObject implements BeeSerializable {
         res = (T) getResponse();
 
       } else if (logger != null) {
-        LogUtils.warning(logger, "Unknown result type:", getResponse().getClass());
+        LogUtils.warning(logger,
+            "Requested response type:", BeeUtils.bracket(def.getClass()),
+            "got:", BeeUtils.bracket(getResponse().getClass()));
       }
     }
     if (logger != null) {

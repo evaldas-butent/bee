@@ -616,7 +616,7 @@ public class SystemBean {
 
   public BeeState getState(String stateName) {
     Assert.state(isState(stateName), "Not a state: " + stateName);
-    return stateCache.get(stateName.toLowerCase());
+    return stateCache.get(cacheKey(stateName));
   }
 
   public Collection<String> getTableNames() {
@@ -643,7 +643,7 @@ public class SystemBean {
 
   public BeeView getView(String viewName) {
     Assert.state(isView(viewName) || isTable(viewName), "Not a view: " + viewName);
-    BeeView view = viewCache.get(viewName.toLowerCase());
+    BeeView view = viewCache.get(cacheKey(viewName));
 
     if (BeeUtils.isEmpty(view)) {
       view = getDefaultView(viewName, true);
@@ -840,10 +840,15 @@ public class SystemBean {
                   baseUpdate.get(col)[idxNewValue]);
           }
           si.addConstant(table.getVersionName(), version);
-          id = qs.insertData(si);
+          ResponseObject resp = qs.insertDataWithResponse(si);
+          id = resp.getResponse(-1L, logger);
 
           if (id < 0) {
-            response.addError("Error inserting data");
+            response.addError("Error inserting row");
+
+            for (String err : resp.getErrors()) {
+              response.addError(err);
+            }
           }
         }
         if (!response.hasErrors() && !BeeUtils.isEmpty(extUpdate)) {
@@ -885,15 +890,15 @@ public class SystemBean {
   }
 
   public boolean isState(String stateName) {
-    return !BeeUtils.isEmpty(stateName) && stateCache.containsKey(stateName.toLowerCase());
+    return !BeeUtils.isEmpty(stateName) && stateCache.containsKey(cacheKey(stateName));
   }
 
   public boolean isTable(String tblName) {
-    return !BeeUtils.isEmpty(tblName) && tableCache.containsKey(tblName.toLowerCase());
+    return !BeeUtils.isEmpty(tblName) && tableCache.containsKey(cacheKey(tblName));
   }
 
   public boolean isView(String viewName) {
-    return !BeeUtils.isEmpty(viewName) && viewCache.containsKey(viewName.toLowerCase());
+    return !BeeUtils.isEmpty(viewName) && viewCache.containsKey(cacheKey(viewName));
   }
 
   public String joinExtField(HasFrom<?> query, String tblName, String tblAlias, String fldName) {
@@ -1035,8 +1040,9 @@ public class SystemBean {
 
           if (res < 0) {
             response.addError("Error updating extended fields");
+          } else {
+            c += res;
           }
-          c += res;
         }
         if (!response.hasErrors() && !BeeUtils.isEmpty(translationUpdate)) {
           int res = commitTranslationChanges(table, id, translationUpdate,
@@ -1044,8 +1050,9 @@ public class SystemBean {
 
           if (res < 0) {
             response.addError("Error updating translation fields");
+          } else {
+            c += res;
           }
-          c += res;
         }
         if (!response.hasErrors() && !BeeUtils.isEmpty(baseUpdate)) {
           newRow.setVersion(System.currentTimeMillis());
@@ -1057,8 +1064,10 @@ public class SystemBean {
             su.addConstant((String) baseUpdate.get(col)[idxField],
                   baseUpdate.get(col)[idxNewValue]);
           }
-          int res = qs.updateData(su.setWhere(SqlUtils.and(wh,
+          ResponseObject resp = qs.updateDataWithResponse(su.setWhere(SqlUtils.and(wh,
               SqlUtils.equal(tblName, table.getVersionName(), oldVersion))));
+
+          int res = resp.getResponse(-1, logger);
 
           if (res == 0) { // Optimistic lock exception
             BeeRowSet newRs = getViewData(view.getName(), wh, new Order(), 0, 0);
@@ -1084,16 +1093,23 @@ public class SystemBean {
                 response.setResponse(newRs.getRow(0));
               } else {
                 newRow.setValues(newRs.getRow(0).getValues());
-                res = qs.updateData(su.setWhere(wh));
+                resp = qs.updateDataWithResponse(su.setWhere(wh));
+                res = resp.getResponse(-1, logger);
               }
             }
           }
           if (res > 0) {
             c += res;
-          } else if (res < 0) {
-            response.addError("Error updating data");
           } else {
-            response.addError("Optimistic lock exception");
+            response.addError("Error updating row:", id);
+
+            if (res < 0) {
+              for (String err : resp.getErrors()) {
+                response.addError(err);
+              }
+            } else {
+              response.addError("Optimistic lock exception");
+            }
           }
         }
         if (!response.hasErrors()) {
@@ -1136,6 +1152,11 @@ public class SystemBean {
       }
     }
     return query;
+  }
+
+  private String cacheKey(String objectName) {
+    Assert.notEmpty(objectName);
+    return objectName.trim().toLowerCase();
   }
 
   @Lock(LockType.WRITE)
@@ -1255,7 +1276,7 @@ public class SystemBean {
 
   private BeeTable getTable(String tblName) {
     Assert.state(isTable(tblName), "Not a base table: " + tblName);
-    return tableCache.get(tblName.toLowerCase());
+    return tableCache.get(cacheKey(tblName));
   }
 
   private BeeField getTableField(String tblName, String fldName) {
@@ -1631,19 +1652,19 @@ public class SystemBean {
 
   private void registerState(BeeState state) {
     if (!BeeUtils.isEmpty(state)) {
-      stateCache.put(state.getName().toLowerCase(), state);
+      stateCache.put(cacheKey(state.getName()), state);
     }
   }
 
   private void registerTable(BeeTable table) {
     if (!BeeUtils.isEmpty(table)) {
-      tableCache.put(table.getName().toLowerCase(), table);
+      tableCache.put(cacheKey(table.getName()), table);
     }
   }
 
   private void registerView(BeeView view) {
     if (!BeeUtils.isEmpty(view)) {
-      viewCache.put(view.getName().toLowerCase(), view);
+      viewCache.put(cacheKey(view.getName()), view);
     }
   }
 }
