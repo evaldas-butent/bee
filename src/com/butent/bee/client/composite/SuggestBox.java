@@ -46,7 +46,7 @@ import java.util.List;
 
 /**
  * Enables using user interface component for entering text entries while the system is suggesting
- * possible matching values from the list
+ * possible matching values from the list.
  */
 
 public class SuggestBox extends Composite implements HasText, HasAllKeyHandlers,
@@ -351,8 +351,16 @@ public class SuggestBox extends Composite implements HasText, HasAllKeyHandlers,
     return box.getValue();
   }
 
+  public boolean handlesKey(int keyCode) {
+    return false;
+  }
+
   public boolean isAutoSelectEnabled() {
     return selectsFirstItem;
+  }
+
+  public boolean isEditing() {
+    return box.isEditing();
   }
 
   public boolean isNullable() {
@@ -365,6 +373,10 @@ public class SuggestBox extends Composite implements HasText, HasAllKeyHandlers,
 
   public void setAutoSelectEnabled(boolean selectsFirstItem) {
     this.selectsFirstItem = selectsFirstItem;
+  }
+
+  public void setEditing(boolean editing) {
+    box.setEditing(editing);
   }
 
   public void setFocus(boolean focused) {

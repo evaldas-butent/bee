@@ -3,6 +3,7 @@ package com.butent.bee.client.view.grid;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.gwt.cell.client.ValueUpdater;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.event.dom.client.BlurEvent;
 import com.google.gwt.event.dom.client.BlurHandler;
@@ -12,11 +13,9 @@ import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.cellview.client.Header;
-import com.google.gwt.user.client.Element;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.dialog.Notification;
-import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Edges;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.event.EventUtils;
@@ -42,6 +41,7 @@ import com.butent.bee.client.view.edit.EditorFactory;
 import com.butent.bee.client.view.search.SearchView;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.HasNumberBounds;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -58,6 +58,7 @@ import com.butent.bee.shared.ui.Calculation;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.ColumnDescription.ColType;
 import com.butent.bee.shared.ui.EditorDescription;
+import com.butent.bee.shared.ui.EditorType;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -101,9 +102,9 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
         this.maxValue = null;
         this.editorDescription = null;
       } else {
-        String columnId = this.dataColumn.getLabel(); 
-        this.editable = Evaluator.create(columnDescr.getEditable(), columnId, dataColumns);
-        this.validation = Evaluator.create(columnDescr.getValidation(), columnId, dataColumns);
+        String source = this.dataColumn.getLabel(); 
+        this.editable = Evaluator.create(columnDescr.getEditable(), source, dataColumns);
+        this.validation = Evaluator.create(columnDescr.getValidation(), source, dataColumns);
         this.minValue = columnDescr.getMinValue();
         this.maxValue = columnDescr.getMaxValue();
         this.editorDescription = columnDescr.getEditor();
@@ -144,6 +145,9 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
 
     public void onKeyDown(KeyDownEvent event) {
       int keyCode = event.getNativeKeyCode();
+      if (getEditor() == null || getEditor().handlesKey(keyCode)) {
+        return;
+      }
       NativeEvent nativeEvent = event.getNativeEvent();
 
       switch (keyCode) {
@@ -170,6 +174,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
 
     private void closeEditor() {
       setState(State.CLOSED);
+      getEditor().setEditing(false);
       StyleUtils.hideDisplay(getEditor().asWidget());
 
       getGrid().refocus();
@@ -244,6 +249,24 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
 
     private Evaluator getValidation() {
       return validation;
+    }
+    
+    private void initEditor() {
+      if (getEditor() == null) {
+        return;
+      }
+      getEditor().addKeyDownHandler(this);
+      getEditor().addBlurHandler(this);
+      getEditor().addEditStopHandler(this);
+      
+      if (getEditor() instanceof HasNumberBounds) {
+        if (BeeUtils.isDouble(getMinValue())) {
+          ((HasNumberBounds) getEditor()).setMinValue(BeeUtils.toDoubleOrNull(getMinValue()));
+        }
+        if (BeeUtils.isDouble(getMaxValue())) {
+          ((HasNumberBounds) getEditor()).setMaxValue(BeeUtils.toDoubleOrNull(getMaxValue()));
+        }
+      }
     }
 
     private boolean isCellEditable(IsRow row, boolean warn) {
@@ -681,7 +704,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
         case RELATED:
           for (int i = 0; i < dataCols.size(); i++) {
             BeeColumn dataColumn = dataCols.get(i);
-            if (BeeUtils.same(columnId, dataColumn.getLabel())) {
+            if (BeeUtils.same(source, dataColumn.getLabel())) {
               column = GridFactory.createColumn(dataColumn, i);
               getEditableColumns().put(columnId, new EditableColumn(dataCols, i, columnDescr));
               if (columnDescr.isSortable()) {
@@ -717,7 +740,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       }
 
       if (!BeeUtils.isEmpty(columnDescr.getFormat())) {
-        Format.setFormat(column, columnDescr.getFormat());
+        Format.setFormat(column, column.getValueType(), columnDescr.getFormat());
       }
       if (!BeeUtils.isEmpty(columnDescr.getHorAlign())) {
         UiHelper.setHorizontalAlignment(column, columnDescr.getHorAlign());
@@ -857,6 +880,23 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       return;
     }
 
+    if (event.getCharCode() == EditorFactory.START_KEY_DELETE) {
+      BeeColumn dataColumn = editableColumn.getDataColumn();
+      if (!dataColumn.isNullable()) {
+        return;
+      }  
+
+      String oldValue = rowValue.getString(editableColumn.getColIndex());
+      ValueType valueType = dataColumn.getType();
+      String newValue = Value.getNullString(valueType);
+      if (BeeUtils.isEmpty(oldValue) || BeeUtils.same(oldValue, newValue)) {
+        return;
+      }
+
+      updateCell(rowValue, dataColumn, oldValue, newValue);
+      return;
+    }
+    
     if (ValueType.BOOLEAN.equals(editableColumn.getDataColumn().getType())
         && BeeUtils.inList(event.getCharCode(), EditorFactory.START_MOUSE_CLICK,
             EditorFactory.START_KEY_ENTER)) {
@@ -877,78 +917,47 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
 
     Editor editor = editableColumn.getEditor();
     if (editor == null) {
+      String format = null;
       if (editableColumn.getEditorDescription() != null) {
         editor = EditorFactory.getEditor(editableColumn.getEditorDescription());
+        format = editableColumn.getEditorDescription().getFormat();
       }
       if (editor == null) {
         editor = EditorFactory.createEditor(editableColumn.getDataColumn());
       } 
       editor.asWidget().addStyleName(STYLE_EDITOR);
-
-      AbstractColumn<?> gridColumn = getGrid().getColumn(columnId);
-      LocaleUtils.copyDateTimeFormat(gridColumn, editor);
-      LocaleUtils.copyNumberFormat(gridColumn, editor);
-
-      editor.addKeyDownHandler(editableColumn);
-      editor.addBlurHandler(editableColumn);
-      editor.addEditStopHandler(editableColumn);
-
-      add(editor);
+      
+      if (BeeUtils.isEmpty(format)) {
+        AbstractColumn<?> gridColumn = getGrid().getColumn(columnId);
+        LocaleUtils.copyDateTimeFormat(gridColumn, editor);
+        LocaleUtils.copyNumberFormat(gridColumn, editor);
+      } else {
+        Format.setFormat(editor, editableColumn.getDataColumn().getType(), format);
+      }
 
       editableColumn.setEditor(editor);
+      editableColumn.initEditor();
+
+      add(editor);
     }
 
     editableColumn.setRowValue(rowValue);
     editableColumn.setState(State.OPEN);
 
     Element editorElement = editor.asWidget().getElement();
-    if (event.getSourceElement() != null) {
-      StyleUtils.copyBox(event.getSourceElement(), editorElement);
-      StyleUtils.copyFont(event.getSourceElement(), editorElement);
-
-      int x = getGrid().getElement().getScrollLeft();
-      int left = StyleUtils.getLeft(editorElement);
-      int width = StyleUtils.getWidth(editorElement);
-      int margins = event.getSourceElement().getOffsetWidth() - width;
-      int maxWidth = getGrid().getElement().getClientWidth();
-
-      if (x > 0 || left + width + margins > maxWidth) {
-        left -= x;
-        int newWidth = width;
-        if (left < 0) {
-          newWidth += left;
-          left = 0;
-        }
-        if (left + newWidth + margins > maxWidth) {
-          if (left > 0) {
-            left = Math.max(0, maxWidth - newWidth - margins);
-          }
-          if (left + newWidth + margins > maxWidth) {
-            newWidth = maxWidth - left - margins;
-          }
-        }
-        StyleUtils.setLeft(editorElement, left);
-        if (newWidth > 0 && newWidth != width) {
-          StyleUtils.setWidth(editorElement, newWidth);
-        }
-      }
-
-      int y = getGrid().getElement().getScrollTop();
-      if (y > 0) {
-        DomUtils.moveVerticalBy(editorElement, -y);
-      }
-    }
+    adjustEditor(event.getSourceElement(), editorElement, editableColumn.getEditorDescription());
 
     StyleUtils.setZIndex(editorElement, getGrid().getZIndex() + 1);
     StyleUtils.unhideDisplay(editorElement);
     editor.setFocus(true);
-
+    
+    editor.setEditing(true);
     editor.startEdit(rowValue.getString(editableColumn.getColIndex()),
         BeeUtils.toChar(event.getCharCode()));
   }
 
-  public void refreshCellContent(long rowId, String columnId) {
-    getGrid().refreshCellContent(rowId, columnId);
+  public void refreshCellContent(long rowId, String columnSource) {
+    getGrid().refreshCellContent(rowId, columnSource);
   }
 
   public void setViewPresenter(Presenter presenter) {
@@ -969,6 +978,119 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       }
     } else {
       getGrid().setVisibleRange(getGrid().getPageStart(), pageSize);
+    }
+  }
+  
+  private void adjustEditor(Element sourceElement, Element editorElement,
+      EditorDescription editorDescription) {
+    if (sourceElement != null) {
+      StyleUtils.copyBox(sourceElement, editorElement);
+      StyleUtils.copyFont(sourceElement, editorElement);
+    }
+    
+    if (editorDescription != null) {
+      int editorWidth = BeeConst.UNDEF;
+      int editorHeight = BeeConst.UNDEF;
+      int editorMinWidth = BeeConst.UNDEF;
+      int editorMinHeight = BeeConst.UNDEF;
+
+      EditorType editorType = editorDescription.getType();
+      if (editorType != null) {
+        if (BeeUtils.isPositive(editorType.getDefaultWidth())) {
+          editorWidth = editorType.getDefaultWidth();
+        }
+        if (BeeUtils.isPositive(editorType.getDefaultHeight())) {
+          editorHeight = editorType.getDefaultHeight();
+        }
+        if (BeeUtils.isPositive(editorType.getMinWidth())) {
+          editorMinWidth = editorType.getMinWidth();
+        }
+        if (BeeUtils.isPositive(editorType.getMinHeight())) {
+          editorMinHeight = editorType.getMinHeight();
+        }
+      }
+
+      if (BeeUtils.isPositive(editorDescription.getWidth())) {
+        editorWidth = editorDescription.getWidth();
+      }
+      if (BeeUtils.isPositive(editorDescription.getHeight())) {
+        editorHeight = editorDescription.getHeight();
+      }
+      if (BeeUtils.isPositive(editorDescription.getMinWidth())) {
+        editorMinWidth = editorDescription.getMinWidth();
+      }
+      if (BeeUtils.isPositive(editorDescription.getMinHeight())) {
+        editorMinHeight = editorDescription.getMinHeight();
+      }
+
+      int currentWidth = StyleUtils.getWidth(editorElement);
+      int currentHeight = StyleUtils.getHeight(editorElement);
+      
+      if (editorWidth > currentWidth) {
+        StyleUtils.setWidth(editorElement, editorWidth);
+      } else if (editorMinWidth > currentWidth) {
+        StyleUtils.setWidth(editorElement, editorMinWidth);
+      }
+
+      if (editorHeight > currentHeight) {
+        StyleUtils.setHeight(editorElement, editorHeight);
+      } else if (editorMinHeight > currentHeight) {
+        StyleUtils.setHeight(editorElement, editorMinHeight);
+      }
+    }
+
+    int x = getGrid().getElement().getScrollLeft();
+    int left = StyleUtils.getLeft(editorElement);
+    int width = StyleUtils.getWidth(editorElement);
+    int horMargins = (sourceElement == null) ? 0 : sourceElement.getOffsetWidth() - width;
+    int maxWidth = getGrid().getElement().getClientWidth();
+
+    if (x > 0 || left + width + horMargins > maxWidth) {
+      left -= x;
+      int newWidth = width;
+      if (left < 0) {
+        newWidth += left;
+        left = 0;
+      }
+      if (left + newWidth + horMargins > maxWidth) {
+        if (left > 0) {
+          left = Math.max(0, maxWidth - newWidth - horMargins);
+        }
+        if (left + newWidth + horMargins > maxWidth) {
+          newWidth = maxWidth - left - horMargins;
+        }
+      }
+      StyleUtils.setLeft(editorElement, left);
+      if (newWidth > 0 && newWidth != width) {
+        StyleUtils.setWidth(editorElement, newWidth);
+      }
+    }
+
+    int y = getGrid().getElement().getScrollTop();
+    int top = StyleUtils.getTop(editorElement);
+    int height = StyleUtils.getHeight(editorElement);
+    int vertMargins = (sourceElement == null) ? 0 : sourceElement.getOffsetHeight() - height;
+    int maxHeight = getGrid().getElement().getClientHeight();
+
+    if (y > 0 || top + height + vertMargins > maxHeight) {
+      top -= y;
+      int newHeight = height;
+      if (top < 0) {
+        newHeight += top;
+        top = 0;
+      }
+      if (top + newHeight + vertMargins > maxHeight) {
+        if (top > 0) {
+          top = Math.max(0, maxHeight - newHeight - vertMargins);
+        }
+        if (top + newHeight + vertMargins > maxHeight) {
+          newHeight = maxHeight - top - vertMargins;
+        }
+      }
+      StyleUtils.setTop(editorElement, top);
+      if (newHeight > 0 && newHeight != height) {
+        StyleUtils.setHeight(editorElement, newHeight);
+      }
     }
   }
 

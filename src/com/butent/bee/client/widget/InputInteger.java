@@ -62,23 +62,31 @@ public class InputInteger extends InputNumber {
     return BeeUtils.toIntOrNull(BeeUtils.trim(getValue()));
   }
 
-  public void setMaxValue(int maxValue) {
+  @Override
+  public void setMaxValue(Number maxValue) {
     super.setMaxValue(maxValue);
-    DomUtils.setMax(this, maxValue);
+    if (maxValue != null) {
+      DomUtils.setMax(this, maxValue.intValue());
+    }
   }
 
-  public void setMinValue(int minValue) {
+  @Override
+  public void setMinValue(Number minValue) {
     super.setMinValue(minValue);
-    DomUtils.setMin(this, minValue);
+    if (minValue != null) {
+      DomUtils.setMin(this, minValue.intValue());
+    }
   }
 
-  public void setStepValue(int stepValue) {
+  @Override
+  public void setStepValue(Number stepValue) {
     super.setStepValue(stepValue);
-
-    if (stepValue == 0) {
+    
+    int step = (stepValue == null) ? 0 : stepValue.intValue();
+    if (step == 0) {
       DomUtils.removeStep(this);
     } else {
-      DomUtils.setStep(this, stepValue);
+      DomUtils.setStep(this, step);
     }
   }
 

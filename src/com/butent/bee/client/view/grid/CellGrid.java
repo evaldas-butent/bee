@@ -21,7 +21,6 @@ import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.safecss.shared.SafeStyles;
 import com.google.gwt.safecss.shared.SafeStylesBuilder;
 import com.google.gwt.safehtml.client.SafeHtmlTemplates;
-import com.google.gwt.safehtml.client.SafeHtmlTemplates.Template;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.google.gwt.user.cellview.client.LoadingStateChangeEvent;
@@ -219,6 +218,8 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     private final AbstractColumn<?> column;
     private final ColumnHeader header;
     private final ColumnFooter footer;
+    
+    private String source = null;
 
     private int width = BeeConst.UNDEF;
     private int minWidth = BeeConst.UNDEF;
@@ -382,6 +383,10 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
       return minWidth;
     }
 
+    private String getSource() {
+      return source;
+    }
+
     private StyleDescriptor getStyleDescriptor(ComponentType componentType) {
       switch (componentType) {
         case HEADER:
@@ -478,6 +483,10 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
 
     private void setMinWidth(int minWidth) {
       this.minWidth = minWidth;
+    }
+
+    private void setSource(String source) {
+      this.source = source;
     }
 
     private void setWidth(int width) {
@@ -1256,6 +1265,17 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     return BeeConst.UNDEF;
   }
 
+  public int getColumnIndexBySource(String source) {
+    Assert.notEmpty(source);
+    for (int i = 0; i < getColumnCount(); i++) {
+      if (BeeUtils.same(columns.get(i).getSource(), source)) {
+        return i;
+      }
+    }
+    BeeKeeper.getLog().warning("column source", source, "not found");
+    return BeeConst.UNDEF;
+  }
+  
   public int getColumnWidth(int col) {
     return getColumnInfo(col).getColumnWidth();
   }
@@ -1708,9 +1728,18 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
         }
 
         int keyCode = event.getKeyCode();
-        if (keyCode == KeyCodes.KEY_ENTER) {
-          startEditing(rowValue, col, target, EditorFactory.START_KEY_ENTER);
+        if (keyCode == KeyCodes.KEY_ENTER || keyCode == KeyCodes.KEY_DELETE) {
+          int startKey = BeeConst.UNDEF;
+          switch (keyCode) {
+            case KeyCodes.KEY_ENTER:
+              startKey = EditorFactory.START_KEY_ENTER;
+              break;
+            case KeyCodes.KEY_DELETE:
+              startKey = EditorFactory.START_KEY_DELETE;
+              break;
+          }
           EventUtils.eatEvent(event);
+          startEditing(rowValue, col, target, startKey);
         } else if (handleKey(keyCode, EventUtils.hasModifierKey(event), row, col, target)) {
           EventUtils.eatEvent(event);
         }
@@ -1746,7 +1775,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     Assert.notNull(event);
     long rowId = event.getRowId();
     long version = event.getVersion();
-    String columnId = event.getColumnId();
+    String source = event.getColumnId();
     String value = event.getValue();
 
     RowInfo selectedRowInfo = getSelectedRows().get(rowId);
@@ -1760,7 +1789,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
       return;
     }
 
-    int col = getColumnIndex(columnId);
+    int col = getColumnIndexBySource(source);
     if (!isColumnWithinBounds(col)) {
       return;
     }
@@ -1805,13 +1834,13 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     setRowCount(getRowCount() - 1);
   }
 
-  public void preliminaryUpdate(long rowId, String columnId, String value) {
+  public void preliminaryUpdate(long rowId, String source, String value) {
     int row = getRowIndex(rowId);
     if (!isRowWithinBounds(row)) {
       return;
     }
 
-    int col = getColumnIndex(columnId);
+    int col = getColumnIndexBySource(source);
     if (!isColumnWithinBounds(col)) {
       return;
     }
@@ -1878,14 +1907,14 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     }
   }
 
-  public void refreshCellContent(long rowId, String columnId) {
+  public void refreshCellContent(long rowId, String source) {
     int row = getRowIndex(rowId);
     if (!isRowWithinBounds(row)) {
       BeeKeeper.getLog().warning("refreshCell: row id", rowId, "is not visible");
       return;
     }
 
-    int col = getColumnIndex(columnId);
+    int col = getColumnIndexBySource(source);
     if (!isColumnWithinBounds(col)) {
       return;
     }
@@ -1999,6 +2028,10 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     Assert.notNull(columnInfo);
     Assert.notNull(columnDescription);
 
+    if (columnDescription.getSource() != null) {
+      columnInfo.setSource(columnDescription.getSource());
+    }
+    
     if (columnDescription.getColType().isReadOnly()
         || BeeUtils.isTrue(columnDescription.isReadOnly())) {
       columnInfo.setColReadOnly(true);

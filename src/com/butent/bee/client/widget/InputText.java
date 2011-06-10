@@ -28,6 +28,8 @@ public class InputText extends TextBox implements Editor, HasBeeValueChangeHandl
   
   private boolean nullable = true;
 
+  private boolean editing = false;
+  
   public InputText() {
     super();
     init();
@@ -79,10 +81,18 @@ public class InputText extends TextBox implements Editor, HasBeeValueChangeHandl
     return source;
   }
 
+  public boolean handlesKey(int keyCode) {
+    return false;
+  }
+
+  public boolean isEditing() {
+    return editing;
+  }
+  
   public boolean isNullable() {
     return nullable;
   }
-  
+
   @Override
   public void onBrowserEvent(Event event) {
     if (event.getTypeInt() == Event.ONKEYPRESS && !acceptChar((char) event.getCharCode())) {
@@ -103,10 +113,14 @@ public class InputText extends TextBox implements Editor, HasBeeValueChangeHandl
     this.charMatcher = charMatcher;
   }
 
+  public void setEditing(boolean editing) {
+    this.editing = editing;
+  }
+
   public void setId(String id) {
     DomUtils.setId(this, id);
   }
-
+  
   public void setNullable(boolean nullable) {
     this.nullable = nullable;
   }
@@ -114,23 +128,20 @@ public class InputText extends TextBox implements Editor, HasBeeValueChangeHandl
   public void setSource(HasStringValue source) {
     this.source = source;
   }
-  
+
   public void startEdit(String oldValue, char charCode) {
     if (acceptChar(charCode)) {
       setValue(BeeUtils.toString(charCode));
     } else {
       String v = BeeUtils.trimRight(oldValue);
       setValue(v);
-      if (!BeeUtils.isEmpty(v)) {
-        setSelectionRange(0, v.length());
-      }
     }
   }
 
   public String validate() {
     return null;
   }
-
+  
   protected boolean acceptChar(char charCode) {
     if (getCharMatcher() == null) {
       return true;
@@ -138,15 +149,15 @@ public class InputText extends TextBox implements Editor, HasBeeValueChangeHandl
       return getCharMatcher().matches(charCode);
     }
   }
-
+  
   protected CharMatcher getDefaultCharMatcher() {
     return CharMatcher.inRange(BeeConst.CHAR_SPACE, Character.MAX_VALUE);
   }
-  
+
   protected String getDefaultIdPrefix() {
     return "txt";
   }
-  
+
   protected String getDefaultStyleName() {
     return "bee-InputText";
   }

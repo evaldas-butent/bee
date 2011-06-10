@@ -9,11 +9,11 @@ import com.butent.bee.shared.utils.BeeUtils;
 public enum EditorType {
   LIST("list"),
   PICKER("picker"),
-  AREA("area"),
+  AREA("area", 300, 100),
   DATE("date"),
   DATETIME("datetime"),
   TEXT("text"),
-  RICH("rich"),
+  RICH("rich", 400, 200, 200, 150),
   NUMBER("number"),
   INTEGER("integer"),
   SLIDER("slider"),
@@ -35,9 +35,43 @@ public enum EditorType {
   }
 
   private final String typeCode;
+  
+  private final Integer defaultWidth;
+  private final Integer defaultHeight;
+  private final Integer minWidth;
+  private final Integer minHeight;
 
   private EditorType(String typeCode) {
+    this(typeCode, null, null, null, null);
+  }
+
+  private EditorType(String typeCode, Integer defaultWidth, Integer defaultHeight) {
+    this(typeCode, defaultWidth, defaultHeight, null, null);
+  }
+  
+  private EditorType(String typeCode, Integer defaultWidth, Integer defaultHeight,
+      Integer minWidth, Integer minHeight) {
     this.typeCode = typeCode;
+    this.defaultWidth = defaultWidth;
+    this.defaultHeight = defaultHeight;
+    this.minWidth = minWidth;
+    this.minHeight = minHeight;
+  }
+
+  public Integer getDefaultHeight() {
+    return defaultHeight;
+  }
+
+  public Integer getDefaultWidth() {
+    return defaultWidth;
+  }
+
+  public Integer getMinHeight() {
+    return minHeight;
+  }
+
+  public Integer getMinWidth() {
+    return minWidth;
   }
 
   public String getTypeCode() {

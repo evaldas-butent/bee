@@ -10,7 +10,6 @@ import com.google.gwt.i18n.shared.DateTimeFormat.PredefinedFormat;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.data.value.HasValueType;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -225,6 +224,20 @@ public class Format {
     return null;
   }
 
+  public static Double parseQuietly(NumberFormat format, String s) {
+    if (format == null || BeeUtils.isEmpty(s)) {
+      return null;
+    }
+
+    Double d;
+    try {
+      d = format.parse(s.trim());
+    } catch (NumberFormatException ex) {
+      d = null;
+    }
+    return d;
+  }
+  
   public static void setDefaultCurrencyFormat(NumberFormat defaultCurrencyFormat) {
     Format.defaultCurrencyFormat = defaultCurrencyFormat;
   }
@@ -261,7 +274,7 @@ public class Format {
     Format.defaultLongFormat = defaultLongFormat;
   }
 
-  public static void setFormat(HasValueType target, String pattern) {
+  public static void setFormat(Object target, ValueType type, String pattern) {
     Assert.notNull(target);
     Assert.notEmpty(pattern);
 
@@ -277,7 +290,6 @@ public class Format {
     boolean isNum = false;
 
     if (target instanceof HasDateTimeFormat && target instanceof HasNumberFormat) {
-      ValueType type = target.getValueType();
       isDt = ValueType.isDateOrDateTime(type);
       isNum = ValueType.isNumeric(type);
     } else {

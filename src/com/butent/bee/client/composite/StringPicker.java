@@ -3,6 +3,7 @@ package com.butent.bee.client.composite;
 import com.google.gwt.cell.client.AbstractCell;
 import com.google.gwt.event.dom.client.BlurEvent;
 import com.google.gwt.event.dom.client.BlurHandler;
+import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
@@ -11,7 +12,6 @@ import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.google.gwt.user.cellview.client.CellList;
 import com.google.gwt.user.client.ui.Composite;
-import com.google.gwt.user.client.ui.HasConstrainedValue;
 import com.google.gwt.view.client.SelectionChangeEvent;
 import com.google.gwt.view.client.SingleSelectionModel;
 
@@ -19,16 +19,13 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.view.edit.EditStopEvent.Handler;
 import com.butent.bee.client.view.edit.Editor;
+import com.butent.bee.shared.HasAcceptableValues;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
 
-/**
- * Manages a user interface component for selecting text values from a cell list.
- */
-
-public class StringPicker extends Composite implements HasConstrainedValue<String>, Editor {
+public class StringPicker extends Composite implements Editor, HasAcceptableValues {
 
   /**
    * Manages a single cell in a string picker component.
@@ -50,8 +47,11 @@ public class StringPicker extends Composite implements HasConstrainedValue<Strin
   private final SingleSelectionModel<String> smodel = new SingleSelectionModel<String>();
 
   private String value;
+
   private boolean nullable = true;
 
+  private boolean editing = false;
+  
   public StringPicker() {
     initWidget(cellList);
     cellList.setSelectionModel(smodel);
@@ -111,6 +111,14 @@ public class StringPicker extends Composite implements HasConstrainedValue<Strin
     return value;
   }
 
+  public boolean handlesKey(int keyCode) {
+    return keyCode == KeyCodes.KEY_UP || keyCode == KeyCodes.KEY_DOWN; 
+  }
+
+  public boolean isEditing() {
+    return editing;
+  }
+
   public boolean isNullable() {
     return nullable;
   }
@@ -121,6 +129,10 @@ public class StringPicker extends Composite implements HasConstrainedValue<Strin
 
   public void setAccessKey(char key) {
     cellList.setAccessKey(key);
+  }
+
+  public void setEditing(boolean editing) {
+    this.editing = editing;
   }
 
   public void setFocus(boolean focused) {

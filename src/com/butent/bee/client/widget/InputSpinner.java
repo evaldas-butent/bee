@@ -14,6 +14,7 @@ public class InputSpinner extends InputInteger {
   
   public InputSpinner() {
     super();
+    DomUtils.setInputType(this, inputType);
   }
 
   public InputSpinner(int value, int min, int max, int step) {

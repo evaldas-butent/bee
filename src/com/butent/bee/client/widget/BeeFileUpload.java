@@ -44,11 +44,10 @@ public class BeeFileUpload extends FileUpload implements HasId, HasBeeChangeHand
     return source;
   }
 
-  public boolean onChange() {
+  public void onChange() {
     if (getSource() != null) {
       getSource().setValue(getFilename());
     }
-    return true;
   }
 
   public void setId(String id) {

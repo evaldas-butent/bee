@@ -3,6 +3,7 @@ package com.butent.bee.client.view.edit;
 import com.butent.bee.client.composite.InputDate;
 import com.butent.bee.client.composite.StringPicker;
 import com.butent.bee.client.composite.SuggestBox;
+import com.butent.bee.client.richtext.RichText;
 import com.butent.bee.client.widget.BeeListBox;
 import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.client.widget.InputInteger;
@@ -11,9 +12,10 @@ import com.butent.bee.client.widget.InputNumber;
 import com.butent.bee.client.widget.InputSlider;
 import com.butent.bee.client.widget.InputSpinner;
 import com.butent.bee.client.widget.InputText;
-import com.butent.bee.client.widget.RichText;
 import com.butent.bee.client.widget.Toggle;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.HasAcceptableValues;
+import com.butent.bee.shared.HasNumberStep;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.ui.EditorDescription;
@@ -28,7 +30,8 @@ public class EditorFactory {
 
   public static final int START_MOUSE_CLICK = 1;
   public static final int START_KEY_ENTER = 2;
-
+  public static final int START_KEY_DELETE = 3;
+  
   public static Editor createEditor(BeeColumn column) {
     Assert.notNull(column);
 
@@ -119,9 +122,6 @@ public class EditorFactory {
 
       case LIST:
         editor = new BeeListBox();
-        if (description.getItems() != null) {
-          ((BeeListBox) editor).addItems(description.getItems());
-        }
         break;
 
       case LONG:
@@ -134,9 +134,6 @@ public class EditorFactory {
 
       case PICKER:
         editor = new StringPicker();
-        if (description.getItems() != null) {
-          ((StringPicker) editor).setAcceptableValues(description.getItems());
-        }
         break;
 
       case RICH:
@@ -145,16 +142,10 @@ public class EditorFactory {
 
       case SLIDER:
         editor = new InputSlider();
-        if (description.getStepValue() != null) {
-          ((InputSlider) editor).setStepValue(description.getStepValue());
-        }
         break;
 
       case SPINNER:
         editor = new InputSpinner();
-        if (description.getStepValue() != null) {
-          ((InputSpinner) editor).setStepValue(description.getStepValue());
-        }
         break;
 
       case SUGGEST:
@@ -170,6 +161,12 @@ public class EditorFactory {
         break;
     }
 
+    if (editor instanceof HasNumberStep && description.getStepValue() != null) {
+      ((HasNumberStep) editor).setStepValue(description.getStepValue());
+    }
+    if (editor instanceof HasAcceptableValues && description.getItems() != null) {
+      ((HasAcceptableValues) editor).setAcceptableValues(description.getItems());
+    }
     return editor;
   }
 

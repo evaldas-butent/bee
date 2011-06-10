@@ -1,4 +1,4 @@
-package com.butent.bee.client.widget;
+package com.butent.bee.client.richtext;
 
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
@@ -6,21 +6,20 @@ import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.ui.RichTextArea;
 
 import com.butent.bee.client.dom.DomUtils;
-import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.view.edit.EditStopEvent.Handler;
+import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.shared.utils.BeeUtils;
 
-/**
- * Enables to use a component for input of rich text type values.
- */
-
 public class RichText extends RichTextArea implements Editor {
-
+  
   private boolean nullable = true;
 
+  private boolean editing = false;
+  
   public RichText() {
     super();
+    createId();
   }
 
   public HandlerRegistration addEditStopHandler(Handler handler) {
@@ -50,8 +49,20 @@ public class RichText extends RichTextArea implements Editor {
     return getText();
   }
 
+  public boolean handlesKey(int keyCode) {
+    return true;
+  }
+
+  public boolean isEditing() {
+    return editing;
+  }
+
   public boolean isNullable() {
     return nullable;
+  }
+
+  public void setEditing(boolean editing) {
+    this.editing = editing;
   }
 
   public void setId(String id) {

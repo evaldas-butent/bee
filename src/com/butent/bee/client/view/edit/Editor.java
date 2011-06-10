@@ -13,9 +13,11 @@ import com.butent.bee.shared.HasId;
  */
 
 public interface Editor extends HasId, IsWidget, HasValue<String>, Focusable, HasBlurHandlers,
-    HasKeyDownHandlers, HasEditStopHandlers {
+    HasKeyDownHandlers, HasEditState, HasEditStopHandlers {
 
   String getNormalizedValue();
+  
+  boolean handlesKey(int keyCode);
 
   boolean isNullable();
 

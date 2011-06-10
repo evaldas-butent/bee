@@ -200,6 +200,10 @@
     <xs:attribute name="characterWidth" type="xs:positiveInteger" />
     <xs:attribute name="visibleLines" type="xs:positiveInteger" />
     <xs:attribute name="format" type="xs:normalizedString" />
+    <xs:attribute name="width" type="xs:positiveInteger" />
+    <xs:attribute name="height" type="xs:positiveInteger" />
+    <xs:attribute name="minWidth" type="xs:positiveInteger" />
+    <xs:attribute name="minHeight" type="xs:positiveInteger" />
   </xs:complexType>  
 
   <xs:simpleType name="editorType">
@@ -229,6 +233,20 @@
       <xs:enumeration value="justify" />
       <xs:enumeration value="start" />
       <xs:enumeration value="end" />
+    </xs:restriction>
+  </xs:simpleType>
+  
+  <xs:simpleType name="cssUnit">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="%"></xs:enumeration>
+      <xs:enumeration value="in"></xs:enumeration>
+      <xs:enumeration value="cm"></xs:enumeration>
+      <xs:enumeration value="mm"></xs:enumeration>
+      <xs:enumeration value="em"></xs:enumeration>
+      <xs:enumeration value="ex"></xs:enumeration>
+      <xs:enumeration value="pt"></xs:enumeration>
+      <xs:enumeration value="pc"></xs:enumeration>
+      <xs:enumeration value="px"></xs:enumeration>
     </xs:restriction>
   </xs:simpleType>
 

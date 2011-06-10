@@ -14,6 +14,10 @@ body, select {
   user-select: none;
 }
 
+.contentBox {
+  box-sizing: content-box;
+}
+
 .bee-RadioButton input:checked + label {
   text-transform: uppercase;
 }

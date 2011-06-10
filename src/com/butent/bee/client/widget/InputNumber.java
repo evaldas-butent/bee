@@ -2,16 +2,18 @@ package com.butent.bee.client.widget;
 
 import com.google.common.base.CharMatcher;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.i18n.client.NumberFormat;
 
+import com.butent.bee.client.i18n.Format;
+import com.butent.bee.client.i18n.HasNumberFormat;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.HasNumberBounds;
+import com.butent.bee.shared.HasNumberStep;
 import com.butent.bee.shared.HasStringValue;
 import com.butent.bee.shared.utils.BeeUtils;
 
-/**
- * Enables to use a component for input of number type values.
- */
-
-public class InputNumber extends InputText {
+public class InputNumber extends InputText implements HasNumberBounds, HasNumberStep,
+    HasNumberFormat {
 
   private int precision = BeeConst.UNDEF;
   private int scale = BeeConst.UNDEF;
@@ -19,6 +21,8 @@ public class InputNumber extends InputText {
   private Number minValue = null;
   private Number maxValue = null;
   private Number stepValue = null;
+
+  private NumberFormat format = null;
 
   public InputNumber() {
     super();
@@ -60,11 +64,23 @@ public class InputNumber extends InputText {
     if (BeeUtils.isEmpty(v) && isNullable()) {
       return null;
     }
+    
+    if (getNumberFormat() != null) {
+      Double d = Format.parseQuietly(getNumberFormat(), v);
+      if (d == null) {
+        return null;
+      }
+      v = BeeUtils.toString(d);
+    }
     return normalize(v);
   }
 
   public Number getNumber() {
-    return BeeUtils.toDoubleOrNull(BeeUtils.trim(getValue()));
+    return BeeUtils.toDoubleOrNull(getNormalizedValue());
+  }
+
+  public NumberFormat getNumberFormat() {
+    return format;
   }
 
   public int getPrecision() {
@@ -87,16 +103,39 @@ public class InputNumber extends InputText {
     this.minValue = minValue;
   }
 
+  public void setNumberFormat(NumberFormat format) {
+    this.format = format;
+  }
+
   public void setPrecision(int precision) {
     this.precision = precision;
   }
-
+  
   public void setScale(int scale) {
     this.scale = scale;
   }
-
+  
   public void setStepValue(Number stepValue) {
     this.stepValue = stepValue;
+  }
+
+  public void setValue(Number value) {
+    if (value == null) {
+      setValue(BeeConst.STRING_EMPTY);
+    } else if (getNumberFormat() != null) {
+      setValue(getNumberFormat().format(value));
+    } else {
+      setValue(BeeUtils.toString(value.doubleValue()));
+    }
+  }
+
+  @Override
+  public void startEdit(String oldValue, char charCode) {
+    if (BeeUtils.isEmpty(oldValue) || acceptChar(charCode) || getNumberFormat() == null) {
+      super.startEdit(oldValue, charCode);
+    } else {
+      setValue(getNumberFormat().format(BeeUtils.toDouble(oldValue)));
+    }
   }
 
   @Override
@@ -113,6 +152,14 @@ public class InputNumber extends InputText {
       } else {
         return "Value must not be null";
       }
+    }
+    
+    if (getNumberFormat() != null) {
+      Double d = Format.parseQuietly(getNumberFormat(), v);
+      if (d == null) {
+        return "Number format exception " + getNumberFormat().getPattern();
+      }
+      v = normalize(BeeUtils.toString(d));
     }
     if (!checkType(v)) {
       return "Not a number";

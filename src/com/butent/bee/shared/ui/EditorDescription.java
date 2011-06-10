@@ -24,14 +24,19 @@ public class EditorDescription implements BeeSerializable, HasInfo {
    */
 
   private enum SerializationMember {
-    TYPE, STEP_VALUE, CHARACTER_WIDTH, VISIBLE_LINES, FORMAT, ITEMS
+    TYPE, STEP_VALUE, CHARACTER_WIDTH, VISIBLE_LINES, FORMAT,
+    WIDTH, HEIGHT, MIN_WIDTH, MIN_HEIGHT, ITEMS
   }
 
   private static final String ATTR_STEP_VALUE = "stepValue";
   private static final String ATTR_CHARACTER_WIDTH = "characterWidth";
   private static final String ATTR_VISIBLE_LINES = "visibleLines";
   private static final String ATTR_FORMAT = "format";
-
+  private static final String ATTR_WIDTH = "width";
+  private static final String ATTR_HEIGHT = "height";
+  private static final String ATTR_MIN_WIDTH = "minWidth";
+  private static final String ATTR_MIN_HEIGHT = "minHeight";
+  
   public static EditorDescription restore(String s) {
     if (BeeUtils.isEmpty(s)) {
       return null;
@@ -52,6 +57,12 @@ public class EditorDescription implements BeeSerializable, HasInfo {
   private Integer visibleLines = null;
 
   private String format = null;
+
+  private Integer width = null;
+  private Integer height = null;
+  
+  private Integer minWidth = null;
+  private Integer minHeight = null;
 
   private List<String> items = null;
 
@@ -90,6 +101,18 @@ public class EditorDescription implements BeeSerializable, HasInfo {
         case FORMAT:
           setFormat(value.trim());
           break;
+        case WIDTH:
+          setWidth(BeeUtils.toIntOrNull(value));
+          break;
+        case HEIGHT:
+          setHeight(BeeUtils.toIntOrNull(value));
+          break;
+        case MIN_WIDTH:
+          setMinWidth(BeeUtils.toIntOrNull(value));
+          break;
+        case MIN_HEIGHT:
+          setMinHeight(BeeUtils.toIntOrNull(value));
+          break;
         case ITEMS:
           if (BeeUtils.isEmpty(value)) {
             setItems(null);
@@ -110,14 +133,22 @@ public class EditorDescription implements BeeSerializable, HasInfo {
     return format;
   }
 
+  public Integer getHeight() {
+    return height;
+  }
+  
   public List<Property> getInfo() {
     List<Property> info = PropertyUtils.createProperties(
-        "Type", getType(),
-        "Step Value", getStepValue(),
-        "Character Width", getCharacterWidth(),
-        "Visible Lines", getVisibleLines(),
-        "Format", getFormat());
-
+      "Type", getType(),
+      "Step Value", getStepValue(),
+      "Character Width", getCharacterWidth(),
+      "Visible Lines", getVisibleLines(),
+      "Format", getFormat(),
+      "Width", getWidth(),
+      "Height", getHeight(),
+      "Min Width", getMinWidth(),
+      "Min Height", getMinHeight());
+    
     if (getItems() != null) {
       info.add(new Property("Items", BeeUtils.bracket(getItems().size())));
       for (int i = 0; i < getItems().size(); i++) {
@@ -136,6 +167,14 @@ public class EditorDescription implements BeeSerializable, HasInfo {
     return items;
   }
 
+  public Integer getMinHeight() {
+    return minHeight;
+  }
+
+  public Integer getMinWidth() {
+    return minWidth;
+  }
+
   public Integer getStepValue() {
     return stepValue;
   }
@@ -146,6 +185,10 @@ public class EditorDescription implements BeeSerializable, HasInfo {
 
   public Integer getVisibleLines() {
     return visibleLines;
+  }
+
+  public Integer getWidth() {
+    return width;
   }
 
   public String serialize() {
@@ -168,6 +211,18 @@ public class EditorDescription implements BeeSerializable, HasInfo {
           break;
         case FORMAT:
           arr[i] = getFormat();
+          break;
+        case WIDTH:
+          arr[i] = getWidth();
+          break;
+        case HEIGHT:
+          arr[i] = getHeight();
+          break;
+        case MIN_WIDTH:
+          arr[i] = getMinWidth();
+          break;
+        case MIN_HEIGHT:
+          arr[i] = getMinHeight();
           break;
         case ITEMS:
           arr[i] = getItems();
@@ -197,6 +252,14 @@ public class EditorDescription implements BeeSerializable, HasInfo {
         setVisibleLines(BeeUtils.toIntOrNull(value));
       } else if (BeeUtils.same(key, ATTR_FORMAT)) {
         setFormat(value.trim());
+      } else if (BeeUtils.same(key, ATTR_WIDTH)) {
+        setWidth(BeeUtils.toIntOrNull(value));
+      } else if (BeeUtils.same(key, ATTR_HEIGHT)) {
+        setHeight(BeeUtils.toIntOrNull(value));
+      } else if (BeeUtils.same(key, ATTR_MIN_WIDTH)) {
+        setMinWidth(BeeUtils.toIntOrNull(value));
+      } else if (BeeUtils.same(key, ATTR_MIN_HEIGHT)) {
+        setMinHeight(BeeUtils.toIntOrNull(value));
       }
     }
   }
@@ -217,6 +280,18 @@ public class EditorDescription implements BeeSerializable, HasInfo {
     this.format = format;
   }
 
+  private void setHeight(Integer height) {
+    this.height = height;
+  }
+
+  private void setMinHeight(Integer minHeight) {
+    this.minHeight = minHeight;
+  }
+
+  private void setMinWidth(Integer minWidth) {
+    this.minWidth = minWidth;
+  }
+
   private void setStepValue(Integer stepValue) {
     this.stepValue = stepValue;
   }
@@ -227,5 +302,9 @@ public class EditorDescription implements BeeSerializable, HasInfo {
 
   private void setVisibleLines(Integer visibleLines) {
     this.visibleLines = visibleLines;
+  }
+
+  private void setWidth(Integer width) {
+    this.width = width;
   }
 }

@@ -50,6 +50,8 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat {
   private final ValueType dateType;
   private DateTimeFormat format;
 
+  private boolean editing = false;
+  
   public InputDate(AbstractDate date) {
     this(date, null);
   }
@@ -159,6 +161,14 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat {
     return getBox().getValue();
   }
 
+  public boolean handlesKey(int keyCode) {
+    return false;
+  }
+
+  public boolean isEditing() {
+    return editing;
+  }
+
   public boolean isNullable() {
     return getBox().isNullable();
   }
@@ -201,6 +211,10 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat {
     this.format = format;
   }
 
+  public void setEditing(boolean editing) {
+    this.editing = editing;
+  }
+
   public void setFocus(boolean focused) {
     getBox().setFocus(focused);
   }
@@ -230,7 +244,7 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat {
       ValueChangeEvent.fire(this, value);
     }
   }
-
+  
   public void startEdit(String oldValue, char charCode) {
     setValue(oldValue);
     handleChar(charCode);

@@ -225,6 +225,10 @@ public class EventUtils {
     return isEventType(type, EVENT_TYPE_KEY_PRESS);
   }
 
+  public static boolean isKeyUp(String type) {
+    return isEventType(type, EVENT_TYPE_KEY_UP);
+  }
+  
   public static boolean isMouseDown(String type) {
     return isEventType(type, EVENT_TYPE_MOUSE_DOWN);
   }
@@ -235,6 +239,10 @@ public class EventUtils {
   
   public static boolean isMouseOut(String type) {
     return isEventType(type, EVENT_TYPE_MOUSE_OUT);
+  }
+
+  public static boolean isMouseOver(String type) {
+    return isEventType(type, EVENT_TYPE_MOUSE_OVER);
   }
   
   public static boolean isMouseUp(String type) {

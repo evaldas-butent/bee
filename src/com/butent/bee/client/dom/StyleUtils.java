@@ -231,6 +231,7 @@ public class StyleUtils {
   public static final String NAME_FOCUSED = "focused";
 
   public static final String NAME_UNSELECTABLE = "unselectable";
+  public static final String NAME_CONTENT_BOX = "contentBox";
   public static final String NAME_SCARY = "bee-afraid";
   public static final String NAME_SUPER_SCARY = "bee-very-afraid";
 

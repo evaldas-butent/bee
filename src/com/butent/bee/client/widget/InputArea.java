@@ -30,6 +30,8 @@ public class InputArea extends TextArea implements Editor, HasBeeValueChangeHand
 
   private boolean nullable = true;
 
+  private boolean editing = false;
+  
   public InputArea() {
     super();
     init();
@@ -93,6 +95,14 @@ public class InputArea extends TextArea implements Editor, HasBeeValueChangeHand
     return source;
   }
 
+  public boolean handlesKey(int keyCode) {
+    return true;
+  }
+
+  public boolean isEditing() {
+    return editing;
+  }
+
   public boolean isNullable() {
     return nullable;
   }
@@ -127,6 +137,10 @@ public class InputArea extends TextArea implements Editor, HasBeeValueChangeHand
 
   public void setDigest(String digest) {
     this.digest = digest;
+  }
+
+  public void setEditing(boolean editing) {
+    this.editing = editing;
   }
 
   public void setId(String id) {

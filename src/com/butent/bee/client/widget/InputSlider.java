@@ -14,6 +14,7 @@ public class InputSlider extends InputInteger {
 
   public InputSlider() {
     super();
+    DomUtils.setInputType(this, inputType);
   }
 
   public InputSlider(int value, int min, int max, int step) {

@@ -13,18 +13,13 @@ import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.view.edit.EditStopEvent.Handler;
 import com.butent.bee.client.view.edit.Editor;
-import com.butent.bee.client.view.edit.HasEditState;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasBooleanValue;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.utils.BeeUtils;
 
-/**
- * Enables to use a user interface component for visibly switching values on and off.
- */
-
-public class Toggle extends CustomButton implements Editor, HasEditState {
+public class Toggle extends CustomButton implements Editor {
 
   private HasBooleanValue source = null;
 
@@ -92,6 +87,10 @@ public class Toggle extends CustomButton implements Editor, HasEditState {
     return BooleanValue.pack(isDown());
   }
 
+  public boolean handlesKey(int keyCode) {
+    return false;
+  }
+
   @Override
   public boolean isDown() {
     return super.isDown();
@@ -147,7 +146,6 @@ public class Toggle extends CustomButton implements Editor, HasEditState {
 
   public void startEdit(String oldValue, char charCode) {
     setValue(oldValue);
-    setEditing(true);
   }
 
   public String validate() {
