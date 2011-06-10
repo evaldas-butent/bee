@@ -18,6 +18,7 @@ import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.HasBeeChangeHandler;
 import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.view.edit.Editor;
+import com.butent.bee.client.view.edit.EditorFactory;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasAcceptableValues;
@@ -35,7 +36,7 @@ import java.util.Collection;
 public class BeeListBox extends ListBox implements Editor, HasAcceptableValues,
     HasBeeChangeHandler {
   
-  public static int changeTimeout = 500;
+  public static int changeTimeout = 200;
 
   private HasStringValue source = null;
 
@@ -50,6 +51,8 @@ public class BeeListBox extends ListBox implements Editor, HasAcceptableValues,
   private boolean changePending = false;
   
   private Timer changeTimer = null;
+  
+  private int startChar = 0; 
 
   public BeeListBox() {
     super();
@@ -154,7 +157,7 @@ public class BeeListBox extends ListBox implements Editor, HasAcceptableValues,
   }
 
   public boolean handlesKey(int keyCode) {
-    return true;
+    return keyCode != KeyCodes.KEY_TAB;
   }
 
   public boolean isEditing() {
@@ -167,11 +170,20 @@ public class BeeListBox extends ListBox implements Editor, HasAcceptableValues,
 
   @Override
   public void onBrowserEvent(Event event) {
-    if (isEditing() && EventUtils.isKeyUp(event.getType())
-        && event.getKeyCode() == KeyCodes.KEY_ESCAPE) {
-      setChangePending(false);
-      fireEvent(new EditStopEvent(State.CANCELED));
-      return;
+    if (isEditing() && EventUtils.isKeyUp(event.getType())) {
+      switch (event.getKeyCode()) {
+        case KeyCodes.KEY_ESCAPE:
+          setChangePending(false);
+          fireEvent(new EditStopEvent(State.CANCELED));
+          return;
+        case KeyCodes.KEY_ENTER:
+          if (getStartChar() == EditorFactory.START_KEY_ENTER) {
+            setStartChar(0);
+          } else if (!isChangePending()) {
+            fireEvent(new EditStopEvent(State.CHANGED));
+            return;
+          }
+      }
     }
     super.onBrowserEvent(event);
   }
@@ -235,11 +247,13 @@ public class BeeListBox extends ListBox implements Editor, HasAcceptableValues,
   }
 
   public void startEdit(String oldValue, char charCode) {
+    setStartChar(charCode);
+    setChangePending(false);
+
     if (!isEditorInitialized()) {
       initEditor();
       setEditorInitialized(true);
     }
-    setChangePending(false);
 
     if (charCode > BeeConst.CHAR_SPACE) {
       for (int i = 0; i < getItemCount(); i++) {
@@ -258,6 +272,10 @@ public class BeeListBox extends ListBox implements Editor, HasAcceptableValues,
 
   private void addDefaultHandlers() {
     BeeKeeper.getBus().addVch(this);
+  }
+
+  private int getStartChar() {
+    return startChar;
   }
 
   private void init() {
@@ -305,5 +323,9 @@ public class BeeListBox extends ListBox implements Editor, HasAcceptableValues,
 
   private void setEditorInitialized(boolean editorInitialized) {
     this.editorInitialized = editorInitialized;
+  }
+
+  private void setStartChar(int startChar) {
+    this.startChar = startChar;
   }
 }

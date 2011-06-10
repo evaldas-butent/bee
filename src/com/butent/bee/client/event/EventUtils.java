@@ -4,6 +4,7 @@ import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.EventTarget;
 import com.google.gwt.dom.client.NativeEvent;
+import com.google.gwt.dom.client.Node;
 import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.event.logical.shared.CloseEvent;
 import com.google.gwt.user.client.Event;
@@ -104,6 +105,13 @@ public class EventUtils {
     Assert.notNull(ev);
     ev.preventDefault();
     ev.stopPropagation();
+  }
+  
+  public static boolean equalsOrIsChild(Element parent, EventTarget target) {
+    if (parent == null || target == null) {
+      return false;
+    }
+    return parent.isOrHasChild(Node.as(target));
   }
 
   public static void focus(Element elem) {

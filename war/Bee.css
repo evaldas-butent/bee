@@ -569,7 +569,23 @@ body, select {
 }  
 .bee-Toggle-down-hovering {
   color: green;
-}  
+}
+
+.bee-StringPicker-item {
+  margin-bottom: 2px;
+  outline: none;
+  cursor: pointer;
+}
+.bee-StringPicker-item:hover {
+  background: LightCyan;
+}
+
+.bee-StringPicker-selected {
+  margin-bottom: 2px;
+  background-color: #628cd5 !important;
+  color: white;
+  cursor: pointer;
+}
 
 .gwt-TreeItem-selected {
   background-color: #ffffaa;
@@ -617,7 +633,6 @@ body, select {
   margin-left: 4px;
   padding: 4px 8px 4px 8px;
   cursor: pointer;
-  cursor: hand;
   color: white;
   font-weight: normal;
   text-align: center;
@@ -664,7 +679,6 @@ body, select {
 }
 .datePickerDay {
   padding: 4px 7px;
-  cursor: hand;
   cursor: pointer;
 }
 .datePickerDayIsToday {
@@ -709,7 +723,6 @@ td.datePickerMonth {
   font-size: 120%;
   line-height: 1em;
   color: #3a6aad;
-  cursor: hand;
   cursor: pointer;
   font-weight: bold;
   padding: 0px 4px;

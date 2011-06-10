@@ -8,7 +8,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 public enum EditorType {
   LIST("list"),
-  PICKER("picker"),
+  PICKER("picker", null, 100),
   AREA("area", 300, 100),
   DATE("date"),
   DATETIME("datetime"),
