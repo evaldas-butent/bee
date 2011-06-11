@@ -10,7 +10,7 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.client.cli.CliWidget;
 import com.butent.bee.client.composite.ButtonGroup;
 import com.butent.bee.client.composite.RadioGroup;
-import com.butent.bee.client.composite.TextEditor;
+import com.butent.bee.client.composite.ResourceEditor;
 import com.butent.bee.client.composite.ValueSpinner;
 import com.butent.bee.client.composite.VolumeSlider;
 import com.butent.bee.client.dialog.Notification;
@@ -313,7 +313,7 @@ public class BeeUi implements Module, NotificationListener {
 
   public void showResource(BeeResource resource) {
     Assert.notNull(resource);
-    updateActivePanel(new TextEditor(resource));
+    updateActivePanel(new ResourceEditor(resource));
   }
 
   public void start() {

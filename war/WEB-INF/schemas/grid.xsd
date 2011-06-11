@@ -210,9 +210,10 @@
     <xs:restriction base="xs:string">
       <xs:enumeration value="list" />
       <xs:enumeration value="picker" />
-      <xs:enumeration value="area" />
       <xs:enumeration value="date" />
       <xs:enumeration value="datetime" />
+      <xs:enumeration value="string" />
+      <xs:enumeration value="area" />
       <xs:enumeration value="text" />
       <xs:enumeration value="rich" />
       <xs:enumeration value="number" />

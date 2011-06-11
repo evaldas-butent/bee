@@ -1,137 +1,177 @@
 package com.butent.bee.client.composite;
 
-import com.google.gwt.dom.client.Style.Unit;
-import com.google.gwt.layout.client.Layout;
-import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.event.dom.client.BlurEvent;
+import com.google.gwt.event.dom.client.BlurHandler;
+import com.google.gwt.event.dom.client.KeyDownHandler;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
+import com.google.gwt.event.shared.HandlerRegistration;
+import com.google.gwt.user.client.Event;
 
-import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
-import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.dom.DomUtils;
-import com.butent.bee.client.layout.BeeLayoutPanel;
-import com.butent.bee.client.utils.BeeCommand;
-import com.butent.bee.client.utils.JsUtils;
-import com.butent.bee.client.widget.BeeButton;
-import com.butent.bee.client.widget.BeeLabel;
+import com.butent.bee.client.event.EventUtils;
+import com.butent.bee.client.layout.Absolute;
+import com.butent.bee.client.ui.HasTextDimensions;
+import com.butent.bee.client.view.edit.EditStopEvent;
+import com.butent.bee.client.view.edit.EditStopEvent.Handler;
+import com.butent.bee.client.view.edit.Editor;
+import com.butent.bee.client.view.edit.EditorFactory;
+import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.InputArea;
-import com.butent.bee.shared.BeeResource;
-import com.butent.bee.shared.HasId;
-import com.butent.bee.shared.Service;
-import com.butent.bee.shared.communication.ContentType;
+import com.butent.bee.shared.State;
 import com.butent.bee.shared.utils.BeeUtils;
 
-/**
- * Implements a text area editor user interface component.
- */
-public class TextEditor extends Composite implements HasId {
+public class TextEditor extends Absolute implements Editor, HasTextDimensions {
 
-  protected class SaveCommand extends BeeCommand {
-    @Override
-    public void execute() {
-      InputArea area = getTextArea();
-      if (!area.isValueChanged()) {
-        Global.inform("Value has not changed", area.getDigest());
-        return;
-      }
+  private final InputArea area;
+  private final String acceptId;
+  private final String noesId;
+  
+  public TextEditor() {
+    super();
+    this.area = new InputArea();
+    area.addStyleName("bee-TextEditor-area");
 
-      String v = area.getValue();
-      if (BeeUtils.isEmpty(v)) {
-        Global.inform("Value is empty, not saved");
-        return;
-      }
-
-      String path = getUri();
-      if (BeeUtils.isEmpty(path)) {
-        Global.showError("Unknown URI");
-        return;
-      }
-
-      int len = v.length();
-      if (!Global.nativeConfirm("Save " + BeeUtils.bracket(len), path)) {
-        return;
-      }
-
-      String digest = JsUtils.md5(v);
-
-      ParameterList params = new ParameterList(Service.SAVE_RESOURCE);
-      params.addHeaderItem(Service.RPC_VAR_URI, path);
-      params.addHeaderItem(Service.RPC_VAR_MD5, digest);
-
-      BeeKeeper.getRpc().makePostRequest(params, ContentType.RESOURCE, v);
-      area.onAfterSave(digest);
-
-      Global.inform("Sent to", path, digest);
-    }
+    BeeImage accept = new BeeImage(Global.getImages().accept(), new EditorFactory.Accept(area));
+    accept.addStyleName("bee-TextEditor-accept");
+    this.acceptId = accept.getId();
+    
+    BeeImage noes = new BeeImage(Global.getImages().noes(), new EditorFactory.Cancel(area));
+    noes.addStyleName("bee-TextEditor-noes");
+    this.noesId = noes.getId();
+    
+    add(area);
+    add(accept);
+    add(noes);
+    
+    addStyleName("bee-TextEditor");
+    sinkEvents(Event.ONMOUSEDOWN);
   }
 
-  private InputArea textArea = null;
-  private String uri = null;
-
-  public TextEditor(BeeResource resource) {
-    BeeLayoutPanel p = new BeeLayoutPanel();
-    double top = 0;
-    double bottom = 0;
-
-    String caption = BeeUtils.ifString(resource.getName(), resource.getUri());
-
-    if (!BeeUtils.isEmpty(caption)) {
-      BeeLabel label = new BeeLabel(caption);
-      p.add(label);
-      p.setWidgetVerticalPosition(label, Layout.Alignment.BEGIN);
-      p.setWidgetLeftRight(label, 10, Unit.PCT, 10, Unit.PX);
-      top = 2;
-    }
-
-    if (resource.isReadOnly()) {
-      BeeLabel rd = new BeeLabel("read only");
-      p.add(rd);
-      p.setWidgetVerticalPosition(rd, Layout.Alignment.END);
-      p.setWidgetHorizontalPosition(rd, Layout.Alignment.END);
-      bottom = 1.5;
-    } else if (!BeeUtils.isEmpty(resource.getUri())) {
-      BeeButton button = new BeeButton("Save", new SaveCommand());
-      p.add(button);
-      p.setWidgetVerticalPosition(button, Layout.Alignment.END);
-      p.setWidgetLeftWidth(button, 42, Unit.PCT, 16, Unit.PCT);
-      bottom = 2;
-    }
-
-    InputArea area = new InputArea(resource);
-    p.add(area);
-    p.setWidgetTopBottom(area, top, Unit.EM, bottom, Unit.EM);
-
-    initWidget(p);
-
-    setTextArea(area);
-    setUri(resource.getUri());
-    createId();
+  public HandlerRegistration addBlurHandler(BlurHandler handler) {
+    return getArea().addDomHandler(handler, BlurEvent.getType());
   }
 
+  public HandlerRegistration addEditStopHandler(Handler handler) {
+    return getArea().addEditStopHandler(handler);
+  }
+
+  public HandlerRegistration addKeyDownHandler(KeyDownHandler handler) {
+    return getArea().addKeyDownHandler(handler);
+  }
+
+  public HandlerRegistration addValueChangeHandler(ValueChangeHandler<String> handler) {
+    return getArea().addValueChangeHandler(handler);
+  }
+
+  @Override
   public void createId() {
-    DomUtils.createId(this, "texteditor");
+    DomUtils.createId(this, "text-editor");
   }
 
-  public String getId() {
-    return DomUtils.getId(this);
+  public int getCharacterWidth() {
+    return getArea().getCharacterWidth();
   }
 
-  public InputArea getTextArea() {
-    return textArea;
+  public String getNormalizedValue() {
+    return getArea().getNormalizedValue();
   }
 
-  public String getUri() {
-    return uri;
+  public int getTabIndex() {
+    return getArea().getTabIndex();
   }
 
-  public void setId(String id) {
-    DomUtils.setId(this, id);
+  public String getValue() {
+    return getArea().getValue();
   }
 
-  public void setTextArea(InputArea textArea) {
-    this.textArea = textArea;
+  public int getVisibleLines() {
+    return getArea().getVisibleLines();
   }
 
-  public void setUri(String uri) {
-    this.uri = uri;
+  public boolean handlesKey(int keyCode) {
+    return getArea().handlesKey(keyCode);
+  }
+
+  public boolean isEditing() {
+    return getArea().isEditing();
+  }
+
+  public boolean isNullable() {
+    return getArea().isNullable();
+  }
+
+  @Override
+  public void onBrowserEvent(Event event) {
+    if (EventUtils.isMouseDown(event.getType())) {
+      String id = EventUtils.getTargetId(event.getEventTarget());
+      if (BeeUtils.same(id, getId())) {
+        EventUtils.eatEvent(event);
+        return;
+      }
+      if (BeeUtils.inListSame(id, getAcceptId(), getNoesId())) {
+        EventUtils.eatEvent(event);
+        State state = BeeUtils.same(id, getAcceptId()) ? State.CHANGED : State.CANCELED;
+        getArea().fireEvent(new EditStopEvent(state));
+        return;
+      }
+    }
+    super.onBrowserEvent(event);
+  }
+
+  public void setAccessKey(char key) {
+    getArea().setAccessKey(key);
+  }
+
+  public void setCharacterWidth(int width) {
+    getArea().setCharacterWidth(width);
+  }
+
+  public void setEditing(boolean editing) {
+    getArea().setEditing(editing);
+  }
+
+  public void setFocus(boolean focused) {
+    getArea().setFocus(focused);
+  }
+
+  public void setNullable(boolean nullable) {
+    getArea().setNullable(nullable);
+  }
+
+  public void setTabIndex(int index) {
+    getArea().setTabIndex(index);
+  }
+
+  public void setValue(String value) {
+    getArea().setValue(value);
+  }
+
+  public void setValue(String value, boolean fireEvents) {
+    getArea().setValue(value, fireEvents);
+  }
+
+  public void setVisibleLines(int lines) {
+    getArea().setVisibleLines(lines);
+  }
+
+  public void startEdit(String oldValue, char charCode) {
+    getArea().startEdit(oldValue, charCode);
+  }
+
+  public String validate() {
+    return getArea().validate();
+  }
+
+  private String getAcceptId() {
+    return acceptId;
+  }
+
+  private InputArea getArea() {
+    return area;
+  }
+
+  private String getNoesId() {
+    return noesId;
   }
 }

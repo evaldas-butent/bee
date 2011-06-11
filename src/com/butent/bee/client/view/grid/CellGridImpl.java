@@ -987,6 +987,15 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       StyleUtils.copyBox(sourceElement, editorElement);
       StyleUtils.copyFont(sourceElement, editorElement);
     }
+
+    int left = StyleUtils.getLeft(editorElement);
+    int width = StyleUtils.getWidth(editorElement);
+
+    int top = StyleUtils.getTop(editorElement);
+    int height = StyleUtils.getHeight(editorElement);
+
+    int horMargins = 10;
+    int vertMargins = 10;
     
     if (editorDescription != null) {
       int editorWidth = BeeConst.UNDEF;
@@ -1023,26 +1032,24 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
         editorMinHeight = editorDescription.getMinHeight();
       }
 
-      int currentWidth = StyleUtils.getWidth(editorElement);
-      int currentHeight = StyleUtils.getHeight(editorElement);
-      
-      if (editorWidth > currentWidth) {
+      if (editorWidth > width) {
         StyleUtils.setWidth(editorElement, editorWidth);
-      } else if (editorMinWidth > currentWidth) {
+        width = editorWidth;
+      } else if (editorMinWidth > width) {
         StyleUtils.setWidth(editorElement, editorMinWidth);
+        width = editorMinWidth;
       }
 
-      if (editorHeight > currentHeight) {
+      if (editorHeight > height) {
         StyleUtils.setHeight(editorElement, editorHeight);
-      } else if (editorMinHeight > currentHeight) {
+        height = editorHeight;
+      } else if (editorMinHeight > height) {
         StyleUtils.setHeight(editorElement, editorMinHeight);
+        height = editorMinHeight;
       }
     }
 
     int x = getGrid().getElement().getScrollLeft();
-    int left = StyleUtils.getLeft(editorElement);
-    int width = StyleUtils.getWidth(editorElement);
-    int horMargins = (sourceElement == null) ? 0 : sourceElement.getOffsetWidth() - width;
     int maxWidth = getGrid().getElement().getClientWidth();
 
     if (x > 0 || left + width + horMargins > maxWidth) {
@@ -1067,9 +1074,6 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     }
 
     int y = getGrid().getElement().getScrollTop();
-    int top = StyleUtils.getTop(editorElement);
-    int height = StyleUtils.getHeight(editorElement);
-    int vertMargins = (sourceElement == null) ? 0 : sourceElement.getOffsetHeight() - height;
     int maxHeight = getGrid().getElement().getClientHeight();
 
     if (y > 0 || top + height + vertMargins > maxHeight) {

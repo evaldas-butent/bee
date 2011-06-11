@@ -1,9 +1,14 @@
 package com.butent.bee.client.view.edit;
 
+import com.google.gwt.event.shared.HasHandlers;
+
 import com.butent.bee.client.composite.InputDate;
 import com.butent.bee.client.composite.StringPicker;
 import com.butent.bee.client.composite.SuggestBox;
+import com.butent.bee.client.composite.TextEditor;
 import com.butent.bee.client.richtext.RichText;
+import com.butent.bee.client.ui.HasTextDimensions;
+import com.butent.bee.client.utils.BeeCommand;
 import com.butent.bee.client.widget.BeeListBox;
 import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.client.widget.InputInteger;
@@ -16,6 +21,9 @@ import com.butent.bee.client.widget.Toggle;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.HasAcceptableValues;
 import com.butent.bee.shared.HasNumberStep;
+import com.butent.bee.shared.HasPrecision;
+import com.butent.bee.shared.HasScale;
+import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.ui.EditorDescription;
@@ -31,7 +39,36 @@ public class EditorFactory {
   public static final int START_MOUSE_CLICK = 1;
   public static final int START_KEY_ENTER = 2;
   public static final int START_KEY_DELETE = 3;
-  
+
+  private static class StopCommand extends BeeCommand {
+    private final HasHandlers editor;
+    private final State state;
+
+    private StopCommand(HasHandlers editor, State state) {
+      super();
+      this.editor = editor;
+      this.state = state;
+    }
+
+    public void execute() {
+      if (editor != null) {
+        editor.fireEvent(new EditStopEvent(state));
+      }
+    }
+  }
+
+  public static class Accept extends StopCommand {
+    public Accept(HasHandlers editor) {
+      super(editor, State.CHANGED);
+    }
+  }
+
+  public static class Cancel extends StopCommand {
+    public Cancel(HasHandlers editor) {
+      super(editor, State.CANCELED);
+    }
+  }
+
   public static Editor createEditor(BeeColumn column) {
     Assert.notNull(column);
 
@@ -69,6 +106,16 @@ public class EditorFactory {
         break;
 
       case TEXT:
+        if (precision > 100) {
+          editor = new InputArea();
+        } else {
+          editor = new InputText();
+          if (precision > 0) {
+            ((InputText) editor).setMaxLength(precision);
+          }
+        }
+        break;
+
       case TIMEOFDAY:
         editor = new InputText();
         if (precision > 0) {
@@ -80,12 +127,15 @@ public class EditorFactory {
 
     editor.setNullable(column.isNullable());
 
-    if (editor instanceof InputNumber) {
-      ((InputNumber) editor).setPrecision(precision);
-      ((InputNumber) editor).setScale(scale);
-      if (precision > 0 && precision > scale) {
-        ((InputNumber) editor).setMaxLength(precision + ((scale > 0) ? 2 : 1));
-      }
+    if (editor instanceof HasPrecision) {
+      ((HasPrecision) editor).setPrecision(precision);
+    }
+    if (editor instanceof HasScale) {
+      ((HasScale) editor).setScale(scale);
+    }
+    if (editor instanceof InputNumber && precision > 0 && precision > scale) {
+      ((InputNumber) editor).setMaxLength(precision + (precision - scale) / 3
+          + ((scale > 0) ? 2 : 1));
     }
 
     return editor;
@@ -100,12 +150,6 @@ public class EditorFactory {
     switch (type) {
       case AREA:
         editor = new InputArea();
-        if (BeeUtils.isPositive(description.getCharacterWidth())) {
-          ((InputArea) editor).setCharacterWidth(description.getCharacterWidth());
-        }
-        if (BeeUtils.isPositive(description.getVisibleLines())) {
-          ((InputArea) editor).setVisibleLines(description.getVisibleLines());
-        }
         break;
 
       case DATE:
@@ -152,10 +196,14 @@ public class EditorFactory {
         editor = new SuggestBox();
         break;
 
-      case TEXT:
+      case STRING:
         editor = new InputText();
         break;
 
+      case TEXT:
+        editor = new TextEditor();
+        break;
+        
       case TOGGLE:
         editor = new Toggle();
         break;
@@ -167,6 +215,16 @@ public class EditorFactory {
     if (editor instanceof HasAcceptableValues && description.getItems() != null) {
       ((HasAcceptableValues) editor).setAcceptableValues(description.getItems());
     }
+
+    if (editor instanceof HasTextDimensions) {
+      if (BeeUtils.isPositive(description.getCharacterWidth())) {
+        ((HasTextDimensions) editor).setCharacterWidth(description.getCharacterWidth());
+      }
+      if (BeeUtils.isPositive(description.getVisibleLines())) {
+        ((HasTextDimensions) editor).setVisibleLines(description.getVisibleLines());
+      }
+    }
+
     return editor;
   }
 

@@ -441,7 +441,6 @@ body, select {
   background-color: #e0ffe0 !important;
   outline: goldenrod solid 2px !important;
   outline-offset: -1px;
-  overflow: auto;
   resize: both;
 }
 
@@ -585,6 +584,32 @@ body, select {
   background-color: #628cd5 !important;
   color: white;
   cursor: pointer;
+}
+
+.bee-TextEditor {
+  resize: both;
+}
+
+.bee-TextEditor-area {
+  position: absolute;
+  left: 0px;
+  right: 0px;
+  top: 0px;
+  bottom: 20px;
+  resize: none;
+  background-color: inherit;
+  border-width: 0px 0px 1px;
+}
+
+.bee-TextEditor-accept {
+  position: absolute;
+  left: 35%;
+  bottom: 3px;
+}
+.bee-TextEditor-noes {
+  position: absolute;
+  right: 35%;
+  bottom: 3px;
 }
 
 .gwt-TreeItem-selected {

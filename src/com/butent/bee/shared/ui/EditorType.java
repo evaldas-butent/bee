@@ -9,10 +9,11 @@ import com.butent.bee.shared.utils.BeeUtils;
 public enum EditorType {
   LIST("list"),
   PICKER("picker", null, 100),
-  AREA("area", 300, 100),
   DATE("date"),
   DATETIME("datetime"),
-  TEXT("text"),
+  STRING("string"),
+  AREA("area", 300, 100),
+  TEXT("text", 300, 120),
   RICH("rich", 400, 200, 200, 150),
   NUMBER("number"),
   INTEGER("integer"),

@@ -9,11 +9,13 @@ import com.butent.bee.client.i18n.HasNumberFormat;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasNumberBounds;
 import com.butent.bee.shared.HasNumberStep;
+import com.butent.bee.shared.HasPrecision;
+import com.butent.bee.shared.HasScale;
 import com.butent.bee.shared.HasStringValue;
 import com.butent.bee.shared.utils.BeeUtils;
 
 public class InputNumber extends InputText implements HasNumberBounds, HasNumberStep,
-    HasNumberFormat {
+    HasNumberFormat, HasPrecision, HasScale {
 
   private int precision = BeeConst.UNDEF;
   private int scale = BeeConst.UNDEF;

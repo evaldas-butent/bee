@@ -1,18 +1,24 @@
 package com.butent.bee.client.widget;
 
+import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.Element;
+import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.TextArea;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.HasAfterSaveHandler;
 import com.butent.bee.client.event.HasBeeValueChangeHandler;
+import com.butent.bee.client.ui.HasTextDimensions;
+import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.utils.JsUtils;
 import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.shared.BeeResource;
 import com.butent.bee.shared.HasStringValue;
+import com.butent.bee.shared.State;
 import com.butent.bee.shared.utils.BeeUtils;
 
 /**
@@ -20,7 +26,7 @@ import com.butent.bee.shared.utils.BeeUtils;
  */
 
 public class InputArea extends TextArea implements Editor, HasBeeValueChangeHandler<String>,
-    HasAfterSaveHandler {
+    HasAfterSaveHandler, HasTextDimensions {
 
   private HasStringValue source = null;
 
@@ -31,6 +37,8 @@ public class InputArea extends TextArea implements Editor, HasBeeValueChangeHand
   private boolean nullable = true;
 
   private boolean editing = false;
+  
+  private boolean editorInitialized = false;
   
   public InputArea() {
     super();
@@ -96,7 +104,7 @@ public class InputArea extends TextArea implements Editor, HasBeeValueChangeHand
   }
 
   public boolean handlesKey(int keyCode) {
-    return true;
+    return !BeeUtils.inList(keyCode, KeyCodes.KEY_ESCAPE, KeyCodes.KEY_TAB);
   }
 
   public boolean isEditing() {
@@ -126,6 +134,16 @@ public class InputArea extends TextArea implements Editor, HasBeeValueChangeHand
     } else {
       setDigest(opt);
     }
+  }
+
+  @Override
+  public void onBrowserEvent(Event event) {
+    if (isEditing() && UiHelper.isSave(event)) {
+      EventUtils.eatEvent(event);
+      fireEvent(new EditStopEvent(State.CHANGED));
+      return;
+    }
+    super.onBrowserEvent(event);
   }
 
   public boolean onValueChange(String value) {
@@ -166,14 +184,17 @@ public class InputArea extends TextArea implements Editor, HasBeeValueChangeHand
   }
 
   public void startEdit(String oldValue, char charCode) {
-    if (Character.isLetterOrDigit(charCode) && BeeUtils.length(oldValue) < 20) {
+    if (!isEditorInitialized()) {
+      initEditor();
+      setEditorInitialized(true);
+    }
+
+    if (Character.isLetterOrDigit(charCode) && BeeUtils.length(oldValue) < 10) {
       setValue(BeeUtils.toString(charCode));
     } else {
       String v = BeeUtils.trimRight(oldValue);
       setValue(v);
-      if (!BeeUtils.isEmpty(v)) {
-        setSelectionRange(0, v.length());
-      }
+      setCursorPos(0);
     }
   }
 
@@ -202,5 +223,17 @@ public class InputArea extends TextArea implements Editor, HasBeeValueChangeHand
     setStyleName("bee-InputArea");
     createId();
     addDefaultHandlers();
+  }
+
+  private void initEditor() {
+    UiHelper.registerSave(this);
+  }
+
+  private boolean isEditorInitialized() {
+    return editorInitialized;
+  }
+  
+  private void setEditorInitialized(boolean editorInitialized) {
+    this.editorInitialized = editorInitialized;
   }
 }

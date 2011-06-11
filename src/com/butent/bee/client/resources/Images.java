@@ -9,6 +9,10 @@ import com.google.gwt.resources.client.ImageResource.ImageOptions;
  */
 
 public interface Images extends ClientBundle {
+  
+  @Source("accept.png")
+  ImageResource accept();
+
   @Source("add.png")
   ImageResource add();
 
@@ -108,6 +112,9 @@ public interface Images extends ClientBundle {
 
   @Source("next.png")
   ImageResource next();
+
+  @Source("noes.png")
+  ImageResource noes();
   
   @Source("ok.png")
   ImageResource ok();

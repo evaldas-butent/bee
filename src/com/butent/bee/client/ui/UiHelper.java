@@ -1,9 +1,13 @@
 package com.butent.bee.client.ui;
 
 import com.google.common.collect.Lists;
+import com.google.gwt.event.dom.client.KeyCodes;
+import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment.HorizontalAlignmentConstant;
+import com.google.gwt.user.client.ui.UIObject;
 
+import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -45,6 +49,19 @@ public class UiHelper {
         align = null;
     }
     return align;
+  }
+
+  public static boolean isSave(Event event) {
+    if (event == null) {
+      return false;
+    }
+    return EventUtils.isKeyDown(event.getType()) && event.getKeyCode() == KeyCodes.KEY_ENTER
+        && EventUtils.hasModifierKey(event);
+  }
+
+  public static void registerSave(UIObject obj) {
+    Assert.notNull(obj);
+    obj.sinkEvents(Event.ONKEYDOWN);
   }
 
   public static void setDefaultHorizontalAlignment(HasHorizontalAlignment obj, ValueType type) {
