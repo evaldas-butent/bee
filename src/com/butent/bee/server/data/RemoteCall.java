@@ -202,7 +202,7 @@ public class RemoteCall {
           order = new Order();
 
           for (String ord : prm.orderBy) {
-            order.add(BeeUtils.removePrefix(ord, prfx), !BeeUtils.isPrefix(ord, prfx));
+            order.add(ord, BeeUtils.removePrefix(ord, prfx), !BeeUtils.isPrefix(ord, prfx));
           }
         }
         rs = sys.getViewData(prm.view, sys.getViewCondition(prm.view, filter), order,

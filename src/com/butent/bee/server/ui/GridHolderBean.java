@@ -218,25 +218,31 @@ public class GridHolderBean {
         break;
 
       case RELATED:
-        if (view.hasColumn(source)) {
-          String relTable = sys.getRelation(view.getTable(source), view.getField(source));
-
-          if (!BeeUtils.isEmpty(relTable)) {
-            String relField = column.getRelField();
-
-            if (sys.hasField(relTable, relField)) {
-              column.setRelTable(relTable);
-              ok = true;
-            } else {
-              LogUtils
-                  .warning(logger, viewName, "unrecognized relation field:", relTable, relField);
-            }
-          } else {
-            LogUtils.warning(logger, viewName, "not a relation column:", source);
-          }
-        } else {
+        if (!view.hasColumn(source)) {
           LogUtils.warning(logger, viewName, "unrecognized view column:", source);
+          return ok;
         }
+
+        String relTable = sys.getRelation(view.getTable(source), view.getField(source));
+        if (BeeUtils.isEmpty(relTable)) {
+          LogUtils.warning(logger, viewName, "not a relation column:", source);
+          return ok;
+        }
+        String relField = column.getRelField();
+        if (!sys.hasField(relTable, relField)) {
+          LogUtils.warning(logger, viewName, "unrecognized relation field:", relTable, relField);
+          return ok;
+        }
+        
+        String relSource = BeeUtils.trim(source) + BeeUtils.trim(relField);
+        if (!view.hasColumn(relSource)) {
+          LogUtils.warning(logger, viewName, "unrecognized relation column:", relSource);
+          return ok;
+        }
+        
+        column.setSource(relSource);
+        column.setRelTable(relTable);
+        ok = true;
         break;
 
       case CALCULATED:

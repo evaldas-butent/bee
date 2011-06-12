@@ -39,6 +39,9 @@ import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.HasOptions;
+import com.butent.bee.shared.data.view.HasRelationInfo;
+import com.butent.bee.shared.data.view.RelationInfo;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
@@ -50,7 +53,7 @@ import java.util.List;
  */
 
 public class SuggestBox extends Composite implements HasText, HasAllKeyHandlers,
-    HasSelectionHandlers<Suggestion>, Editor {
+    HasSelectionHandlers<Suggestion>, Editor, HasRelationInfo, HasOptions {
 
   /**
    * Requires for implementing methods to have an event to handle situations when a suggestion is
@@ -263,6 +266,9 @@ public class SuggestBox extends Composite implements HasText, HasAllKeyHandlers,
       setNewSelection(suggestion);
     }
   };
+  
+  private RelationInfo relationInfo = null;
+  private String options = null;
 
   public SuggestBox() {
     this(new MultiWordSuggestOracle());
@@ -331,6 +337,14 @@ public class SuggestBox extends Composite implements HasText, HasAllKeyHandlers,
     return getBox().getNormalizedValue();
   }
 
+  public String getOptions() {
+    return options;
+  }
+
+  public RelationInfo getRelationInfo() {
+    return relationInfo;
+  }
+
   public SuggestionDisplay getSuggestionDisplay() {
     return display;
   }
@@ -393,6 +407,14 @@ public class SuggestBox extends Composite implements HasText, HasAllKeyHandlers,
 
   public void setNullable(boolean nullable) {
     getBox().setNullable(nullable);
+  }
+
+  public void setOptions(String options) {
+    this.options = options;
+  }
+
+  public void setRelationInfo(RelationInfo relationInfo) {
+    this.relationInfo = relationInfo;
   }
 
   public void setTabIndex(int index) {

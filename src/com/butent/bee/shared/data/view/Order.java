@@ -8,6 +8,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.Transformable;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
 
 import java.util.List;
 
@@ -17,17 +18,24 @@ import java.util.List;
 
 public class Order implements BeeSerializable, Transformable {
 
-  public class Column implements Transformable {
-    private final String label;
+  public class Column implements BeeSerializable, Transformable {
+
+    private final String name;
+    private final String source;
     private boolean ascending;
 
-    private Column(String label) {
-      this(label, true);
+    private Column(String name, String source) {
+      this(name, source, true);
     }
 
-    private Column(String label, boolean ascending) {
-      this.label = label;
+    private Column(String name, String source, boolean ascending) {
+      this.name = name;
+      this.source = source;
       this.ascending = ascending;
+    }
+
+    public void deserialize(String s) {
+      Assert.untouchable();
     }
 
     @Override
@@ -38,20 +46,28 @@ public class Order implements BeeSerializable, Transformable {
       if (!(obj instanceof Column)) {
         return false;
       }
-      return BeeUtils.same(label, ((Column) obj).label) && ascending == ((Column) obj).ascending;
+      return BeeUtils.same(name, ((Column) obj).name) && ascending == ((Column) obj).ascending;
     }
 
-    public String getLabel() {
-      return label;
+    public String getName() {
+      return name;
+    }
+
+    public String getSource() {
+      return source;
     }
 
     @Override
     public int hashCode() {
-      return Objects.hashCode(label, ascending);
+      return Objects.hashCode(name, ascending);
     }
 
     public boolean isAscending() {
       return ascending;
+    }
+
+    public String serialize() {
+      return Codec.beeSerializeAll(name, source, ascending);
     }
 
     public void setAscending(boolean ascending) {
@@ -59,20 +75,13 @@ public class Order implements BeeSerializable, Transformable {
     }
 
     public String transform() {
-      if (ascending) {
-        return BeeUtils.transform(label);
-      } else {
-        return BeeUtils.transform(label) + DESC;
-      }
+      return BeeUtils.concat(1, name, source, ascending);
     }
 
     private boolean is(String id) {
-      return BeeUtils.same(this.label, id);
+      return BeeUtils.same(this.name, id);
     }
   }
-
-  private static final char DESC = '-';
-  private static final char COL_SEP = ' ';
 
   public static Order restore(String s) {
     Order order = new Order();
@@ -86,14 +95,14 @@ public class Order implements BeeSerializable, Transformable {
     super();
   }
 
-  public void add(String label, boolean ascending) {
-    Assert.notEmpty(label);
+  public void add(String name, String source, boolean ascending) {
+    Assert.notEmpty(name);
 
-    Column found = find(label);
+    Column found = find(name);
     if (found != null) {
       columns.remove(found);
     }
-    columns.add(new Column(label.trim(), ascending));
+    columns.add(new Column(name.trim(), source, ascending));
   }
 
   public void clear() {
@@ -108,18 +117,10 @@ public class Order implements BeeSerializable, Transformable {
       return;
     }
 
-    String[] arr = BeeUtils.split(s, COL_SEP);
-    String lbl;
-    boolean asc;
-    for (String z : arr) {
-      if (BeeUtils.isPrefixOrSuffix(z, DESC)) {
-        lbl = BeeUtils.removePrefixAndSuffix(z, DESC);
-        asc = false;
-      } else {
-        lbl = z;
-        asc = true;
-      }
-      add(lbl, asc);
+    for (String col : Codec.beeDeserialize(s)) {
+      String[] arr = Codec.beeDeserialize(col);
+      Assert.lengthEquals(arr, 3);
+      add(BeeUtils.trim(arr[0]), BeeUtils.trim(arr[1]), BeeUtils.toBoolean(arr[2]));
     }
   }
 
@@ -138,11 +139,10 @@ public class Order implements BeeSerializable, Transformable {
     return columns;
   }
 
-  public int getIndex(String label) {
-    Assert.notNull(label);
-
+  public int getIndex(String name) {
+    Assert.notNull(name);
     for (int i = 0; i < getSize(); i++) {
-      if (columns.get(i).is(label)) {
+      if (columns.get(i).is(name)) {
         return i;
       }
     }
@@ -158,21 +158,21 @@ public class Order implements BeeSerializable, Transformable {
     return columns.hashCode();
   }
 
-  public boolean isAscending(String label) {
-    Assert.notNull(label);
+  public boolean isAscending(String name) {
+    Assert.notNull(name);
 
     for (Column col : columns) {
-      if (col.is(label)) {
+      if (col.is(name)) {
         return col.isAscending();
       }
     }
     return false;
   }
 
-  public boolean remove(String label) {
-    Assert.notEmpty(label);
+  public boolean remove(String name) {
+    Assert.notEmpty(name);
 
-    Column found = find(label);
+    Column found = find(name);
     if (found != null) {
       columns.remove(found);
       return true;
@@ -182,19 +182,12 @@ public class Order implements BeeSerializable, Transformable {
   }
 
   public String serialize() {
-    StringBuilder sb = new StringBuilder();
-    for (Column col : columns) {
-      if (sb.length() > 0) {
-        sb.append(COL_SEP);
-      }
-      sb.append(col.transform());
-    }
-    return sb.toString();
+    return Codec.beeSerialize(columns);
   }
 
-  public void setAscending(String label, boolean ascending) {
-    Assert.notNull(label);
-    Column col = find(label);
+  public void setAscending(String name, boolean ascending) {
+    Assert.notNull(name);
+    Column col = find(name);
     Assert.notNull(col);
     col.setAscending(ascending);
   }
@@ -208,12 +201,12 @@ public class Order implements BeeSerializable, Transformable {
     return serialize();
   }
 
-  private Column find(String label) {
-    if (BeeUtils.isEmpty(label)) {
+  private Column find(String name) {
+    if (BeeUtils.isEmpty(name)) {
       return null;
     }
     for (Column col : columns) {
-      if (col.is(label)) {
+      if (col.is(name)) {
         return col;
       }
     }

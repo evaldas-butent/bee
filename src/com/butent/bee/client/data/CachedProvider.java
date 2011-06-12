@@ -115,9 +115,9 @@ public class CachedProvider extends Provider {
       List<Pair<Integer, Boolean>> sortList = Lists.newArrayList();
 
       for (Order.Column sortInfo : order.getColumns()) {
-        int index = getTable().getColumnIndex(sortInfo.getLabel());
+        int index = getTable().getColumnIndex(sortInfo.getName());
         if (index < 0 || index > getTable().getNumberOfColumns()) {
-          BeeKeeper.getLog().warning("onSort: column id", sortInfo.getLabel(), "not found");
+          BeeKeeper.getLog().warning("onSort: column id", sortInfo.getName(), "not found");
         }
         sortList.add(new Pair<Integer, Boolean>(index, sortInfo.isAscending()));
       }

@@ -41,6 +41,7 @@ public class RichTextEditor extends Flow implements Editor, AdjustmentListener,
     super();
     this.area = new RichTextArea();
     this.area.setStyleName("bee-RichTextArea");
+    DomUtils.createId(this.area, "rt-area");
 
     this.toolbar = new RichTextToolbar(this, this.area);
     this.toolbar.setStyleName("bee-RichTextToolbar");
@@ -107,9 +108,8 @@ public class RichTextEditor extends Flow implements Editor, AdjustmentListener,
   }
 
   public void onPreviewNativeEvent(NativePreviewEvent event) {
-    if (EventUtils.isMouseDown(event.getNativeEvent().getType())
+    if (isEditing() && EventUtils.isMouseDown(event.getNativeEvent().getType())
         && !EventUtils.equalsOrIsChild(getElement(), event.getNativeEvent().getEventTarget())) {
-      closePreview();
       fireEvent(new EditStopEvent(State.CANCELED));
     }
   }
@@ -127,6 +127,7 @@ public class RichTextEditor extends Flow implements Editor, AdjustmentListener,
       }
     } else {
       closePreview();
+      setFocus(false);
     }
   }
 
@@ -158,7 +159,6 @@ public class RichTextEditor extends Flow implements Editor, AdjustmentListener,
         StyleUtils.setHeight(getArea(), getElement().getClientHeight()
             - getArea().getElement().getOffsetTop());
         getToolbar().updateStatus();
-        getArea().setFocus(true);
       }
     });
   }

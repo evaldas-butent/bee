@@ -5,6 +5,7 @@ import com.google.common.collect.Lists;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.HasInfo;
+import com.butent.bee.shared.HasOptions;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.Property;
@@ -17,7 +18,7 @@ import java.util.Map;
  * Handles xml descriptions of editor type user interface components.
  */
 
-public class EditorDescription implements BeeSerializable, HasInfo {
+public class EditorDescription implements BeeSerializable, HasInfo, HasOptions {
 
   /**
    * Contains serializable members of a editor type user interface components.
@@ -25,7 +26,7 @@ public class EditorDescription implements BeeSerializable, HasInfo {
 
   private enum SerializationMember {
     TYPE, STEP_VALUE, CHARACTER_WIDTH, VISIBLE_LINES, FORMAT,
-    WIDTH, HEIGHT, MIN_WIDTH, MIN_HEIGHT, ITEMS
+    WIDTH, HEIGHT, MIN_WIDTH, MIN_HEIGHT, OPTIONS, ITEMS
   }
 
   private static final String ATTR_STEP_VALUE = "stepValue";
@@ -36,6 +37,7 @@ public class EditorDescription implements BeeSerializable, HasInfo {
   private static final String ATTR_HEIGHT = "height";
   private static final String ATTR_MIN_WIDTH = "minWidth";
   private static final String ATTR_MIN_HEIGHT = "minHeight";
+  private static final String ATTR_OPTIONS = "options";
   
   public static EditorDescription restore(String s) {
     if (BeeUtils.isEmpty(s)) {
@@ -63,6 +65,8 @@ public class EditorDescription implements BeeSerializable, HasInfo {
   
   private Integer minWidth = null;
   private Integer minHeight = null;
+  
+  private String options = null;
 
   private List<String> items = null;
 
@@ -113,6 +117,9 @@ public class EditorDescription implements BeeSerializable, HasInfo {
         case MIN_HEIGHT:
           setMinHeight(BeeUtils.toIntOrNull(value));
           break;
+        case OPTIONS:
+          setOptions(value.trim());
+          break;
         case ITEMS:
           if (BeeUtils.isEmpty(value)) {
             setItems(null);
@@ -147,7 +154,8 @@ public class EditorDescription implements BeeSerializable, HasInfo {
       "Width", getWidth(),
       "Height", getHeight(),
       "Min Width", getMinWidth(),
-      "Min Height", getMinHeight());
+      "Min Height", getMinHeight(),
+      "Options", getOptions());
     
     if (getItems() != null) {
       info.add(new Property("Items", BeeUtils.bracket(getItems().size())));
@@ -173,6 +181,10 @@ public class EditorDescription implements BeeSerializable, HasInfo {
 
   public Integer getMinWidth() {
     return minWidth;
+  }
+
+  public String getOptions() {
+    return options;
   }
 
   public Integer getStepValue() {
@@ -224,6 +236,9 @@ public class EditorDescription implements BeeSerializable, HasInfo {
         case MIN_HEIGHT:
           arr[i] = getMinHeight();
           break;
+        case OPTIONS:
+          arr[i] = getOptions();
+          break;
         case ITEMS:
           arr[i] = getItems();
           break;
@@ -260,12 +275,18 @@ public class EditorDescription implements BeeSerializable, HasInfo {
         setMinWidth(BeeUtils.toIntOrNull(value));
       } else if (BeeUtils.same(key, ATTR_MIN_HEIGHT)) {
         setMinHeight(BeeUtils.toIntOrNull(value));
+      } else if (BeeUtils.same(key, ATTR_OPTIONS)) {
+        setOptions(value.trim());
       }
     }
   }
 
   public void setItems(List<String> items) {
     this.items = items;
+  }
+
+  public void setOptions(String options) {
+    this.options = options;
   }
 
   private boolean isEmpty() {

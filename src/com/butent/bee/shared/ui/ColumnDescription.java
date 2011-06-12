@@ -388,6 +388,10 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
     return relField;
   }
 
+  public String getRelTable() {
+    return relTable;
+  }
+
   public Integer getScale() {
     return scale;
   }
@@ -645,10 +649,6 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
 
   private Calculation getCarry() {
     return carry;
-  }
-
-  private String getRelTable() {
-    return relTable;
   }
 
   private void setColType(ColType colType) {

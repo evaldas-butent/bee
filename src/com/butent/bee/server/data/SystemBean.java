@@ -673,10 +673,10 @@ public class SystemBean {
       boolean hasId = false;
 
       for (Order.Column col : order.getColumns()) {
-        String als = view.getAlias(col.getLabel());
+        String als = view.getAlias(col.getSource());
 
         if (!BeeUtils.isEmpty(als)) {
-          String fld = view.getField(col.getLabel());
+          String fld = view.getField(col.getSource());
 
           if (col.isAscending()) {
             ss.addOrder(als, fld);

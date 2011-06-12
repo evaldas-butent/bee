@@ -1275,6 +1275,16 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     BeeKeeper.getLog().warning("column source", source, "not found");
     return BeeConst.UNDEF;
   }
+
+  public String getColumnSource(String columnId) {
+    Assert.notEmpty(columnId);
+    for (ColumnInfo columnInfo : columns) {
+      if (columnInfo.is(columnId)) {
+        return columnInfo.getSource();
+      }
+    }
+    return null;
+  }
   
   public int getColumnWidth(int col) {
     return getColumnInfo(col).getColumnWidth();
@@ -1401,10 +1411,6 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
 
   public SelectionModel<? super IsRow> getSelectionModel() {
     return selectionModel;
-  }
-
-  public int getSortIndex(String columnId) {
-    return getSortOrder().getIndex(columnId);
   }
 
   public Order getSortOrder() {
@@ -4403,11 +4409,13 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
 
   private void updateOrder(String columnId, boolean hasModifiers) {
     Assert.notEmpty(columnId);
+    String source = getColumnSource(columnId);
+
     Order ord = getSortOrder();
     int size = ord.getSize();
 
     if (size <= 0) {
-      ord.add(columnId, true);
+      ord.add(columnId, source, true);
       return;
     }
 
@@ -4416,7 +4424,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
       if (!hasModifiers) {
         ord.clear();
       }
-      ord.add(columnId, true);
+      ord.add(columnId, source, true);
       return;
     }
 
@@ -4433,12 +4441,12 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
         }
       } else {
         ord.remove(columnId);
-        ord.add(columnId, true);
+        ord.add(columnId, source, true);
       }
 
     } else if (size > 1) {
       ord.clear();
-      ord.add(columnId, true);
+      ord.add(columnId, source, true);
     } else if (asc) {
       ord.setAscending(columnId, !asc);
     } else {
