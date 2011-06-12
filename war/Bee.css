@@ -612,6 +612,30 @@ body, select {
   bottom: 3px;
 }
 
+.bee-RichTextEditor {
+}
+
+.bee-RichTextToolbar {
+  width: 100%;
+  background-color: #e3e8f3;
+  border-bottom: 1px solid #bbb;
+  padding: 3px;
+  margin: 0px;
+}  
+
+.bee-RichTextToolbar-row {
+  width: 100%;
+}
+.bee-RichTextToolbar-row .bee-Toggle-down, .bee-RichTextToolbar-row .bee-Toggle-down-hovering {
+  background-color: #faac58;
+}
+
+.bee-RichTextArea {
+  width: 100%;
+  border: 0px;
+  background-color: white;
+}
+
 .gwt-TreeItem-selected {
   background-color: #ffffaa;
 }

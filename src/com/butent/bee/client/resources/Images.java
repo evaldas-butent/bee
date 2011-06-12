@@ -104,6 +104,9 @@ public interface Images extends ClientBundle {
   @Source("forward.png")
   ImageResource forward();
 
+  @Source("html.png")
+  ImageResource html();
+  
   @Source("last.png")
   ImageResource last();
 
@@ -122,6 +125,9 @@ public interface Images extends ClientBundle {
   @Source("previous.png")
   ImageResource previous();
 
+  @Source("redo.png")
+  ImageResource redo();
+  
   @Source("refresh.png")
   ImageResource refresh();
 
@@ -142,4 +148,7 @@ public interface Images extends ClientBundle {
 
   @Source("sliderSliding.gif")
   ImageResource sliderSliding();
+
+  @Source("undo.png")
+  ImageResource undo();
 }

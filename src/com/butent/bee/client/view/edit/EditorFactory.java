@@ -6,7 +6,7 @@ import com.butent.bee.client.composite.InputDate;
 import com.butent.bee.client.composite.StringPicker;
 import com.butent.bee.client.composite.SuggestBox;
 import com.butent.bee.client.composite.TextEditor;
-import com.butent.bee.client.richtext.RichText;
+import com.butent.bee.client.richtext.RichTextEditor;
 import com.butent.bee.client.ui.HasTextDimensions;
 import com.butent.bee.client.utils.BeeCommand;
 import com.butent.bee.client.widget.BeeListBox;
@@ -181,7 +181,7 @@ public class EditorFactory {
         break;
 
       case RICH:
-        editor = new RichText();
+        editor = new RichTextEditor();
         break;
 
       case SLIDER:

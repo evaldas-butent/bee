@@ -631,6 +631,15 @@ public class StyleUtils {
     copyProperties(src, dst, STYLE_PADDING,
         STYLE_PADDING_LEFT, STYLE_PADDING_RIGHT, STYLE_PADDING_TOP, STYLE_PADDING_BOTTOM);
   }
+
+  public static void copyProperties(Element src, Element dst, String... names) {
+    Assert.notNull(src);
+    Assert.notNull(dst);
+    if (src.equals(dst)) {
+      return;
+    }
+    copyProperties(src.getStyle(), dst.getStyle(), names);
+  }
   
   public static void copyProperties(Style src, Style dst, String... names) {
     Assert.notNull(src);
@@ -648,6 +657,15 @@ public class StyleUtils {
     }
   }
 
+  public static void copyRectangle(Element src, Element dst) {
+    Assert.notNull(src);
+    Assert.notNull(dst);
+    if (src.equals(dst)) {
+      return;
+    }
+    copyRectangle(src.getStyle(), dst.getStyle());
+  }
+  
   public static void copyRectangle(Style src, Style dst) {
     copyProperties(src, dst, STYLE_LEFT, STYLE_RIGHT, STYLE_TOP, STYLE_BOTTOM,
         STYLE_WIDTH, STYLE_HEIGHT);

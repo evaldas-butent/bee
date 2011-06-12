@@ -1,6 +1,7 @@
 package com.butent.bee.client.ui;
 
 import com.google.common.collect.Lists;
+import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
@@ -51,7 +52,7 @@ public class UiHelper {
     return align;
   }
 
-  public static boolean isSave(Event event) {
+  public static boolean isSave(NativeEvent event) {
     if (event == null) {
       return false;
     }

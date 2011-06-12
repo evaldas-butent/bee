@@ -14,7 +14,7 @@ public enum EditorType {
   STRING("string"),
   AREA("area", 300, 100),
   TEXT("text", 300, 120),
-  RICH("rich", 400, 200, 200, 150),
+  RICH("rich", 500, 200, 500, 150),
   NUMBER("number"),
   INTEGER("integer"),
   SLIDER("slider"),

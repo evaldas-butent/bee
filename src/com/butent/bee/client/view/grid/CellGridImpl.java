@@ -33,6 +33,7 @@ import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.ui.ConditionalStyle;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.utils.Evaluator;
+import com.butent.bee.client.view.edit.AdjustmentListener;
 import com.butent.bee.client.view.edit.EditEndEvent;
 import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.edit.EditStopEvent;
@@ -177,8 +178,8 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       getEditor().setEditing(false);
       StyleUtils.hideDisplay(getEditor().asWidget());
 
-      getGrid().refocus();
       getGrid().setEditing(false);
+      getGrid().refocus();
     }
 
     private boolean endEdit() {
@@ -945,7 +946,8 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     editableColumn.setState(State.OPEN);
 
     Element editorElement = editor.asWidget().getElement();
-    adjustEditor(event.getSourceElement(), editorElement, editableColumn.getEditorDescription());
+    adjustEditor(event.getSourceElement(), editor, editorElement, 
+        editableColumn.getEditorDescription());
 
     StyleUtils.setZIndex(editorElement, getGrid().getZIndex() + 1);
     StyleUtils.unhideDisplay(editorElement);
@@ -981,11 +983,15 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     }
   }
   
-  private void adjustEditor(Element sourceElement, Element editorElement,
+  private void adjustEditor(Element sourceElement, Editor editor, Element editorElement,
       EditorDescription editorDescription) {
     if (sourceElement != null) {
-      StyleUtils.copyBox(sourceElement, editorElement);
-      StyleUtils.copyFont(sourceElement, editorElement);
+      if (editor instanceof AdjustmentListener) {
+        ((AdjustmentListener) editor).adjust(sourceElement);
+      } else {
+        StyleUtils.copyBox(sourceElement, editorElement);
+        StyleUtils.copyFont(sourceElement, editorElement);
+      }
     }
 
     int left = StyleUtils.getLeft(editorElement);

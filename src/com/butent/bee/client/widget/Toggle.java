@@ -45,11 +45,16 @@ public class Toggle extends CustomButton implements Editor {
     }
   }
 
+  public Toggle(Image upImage) {
+    super(upImage);
+    init();
+  }
+
   public Toggle(Image upImage, Image downImage) {
     super(upImage, downImage);
     init();
   }
-
+  
   public Toggle(String upText, String downText) {
     super(upText, downText);
     init();
@@ -112,6 +117,11 @@ public class Toggle extends CustomButton implements Editor {
       return;
     }
     super.onBrowserEvent(event);
+  }
+
+  @Override
+  public void setDown(boolean down) {
+    super.setDown(down);
   }
 
   public void setEditing(boolean editing) {
