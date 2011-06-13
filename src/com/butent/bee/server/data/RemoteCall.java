@@ -205,7 +205,7 @@ public class RemoteCall {
             order.add(ord, BeeUtils.removePrefix(ord, prfx), !BeeUtils.isPrefix(ord, prfx));
           }
         }
-        rs = sys.getViewData(prm.view, sys.getViewCondition(prm.view, filter), order,
+        rs = sys.getViewData(prm.view, null, sys.getViewCondition(prm.view, filter), order,
             BeeUtils.toNonNegativeInt(prm.limit), BeeUtils.toNonNegativeInt(prm.offset));
       }
     }

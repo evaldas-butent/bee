@@ -145,7 +145,14 @@ public class MenuBar extends Widget implements HasId, HasAfterAddHandler,
   
   public void clearItems() {
     closeAll();
-    
+
+    selectItem(null);
+
+    Element container = getItemContainerElement();
+    while (DOM.getChildCount(container) > 0) {
+      DOM.removeChild(container, DOM.getChild(container, 0));
+    }
+
     items.clear();
     allItems.clear();
   }

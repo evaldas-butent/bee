@@ -15,6 +15,7 @@ import com.butent.bee.shared.data.event.HandlesDeleteEvents;
 import com.butent.bee.shared.data.event.HandlesUpdateEvents;
 import com.butent.bee.shared.data.event.MultiDeleteEvent;
 import com.butent.bee.shared.data.event.RowDeleteEvent;
+import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
@@ -90,7 +91,19 @@ public class CacheManager implements HandlesDeleteEvents, HandlesUpdateEvents {
         query.add(p++, row.getId());
       }
     }
+    
+    private void checkColumnUpdate(String columnId) {
+    for (Iterator<CachedQuery> it = queries.iterator(); it.hasNext(); ) {
+      CachedQuery query = it.next();
+      if (query.containsColumn(columnId)) {
+        BeeKeeper.getLog().info("Cache", viewName, "update column", columnId);
+        BeeKeeper.getLog().info("invalidated query", query.getStrFilter(), query.getStrOrder());
 
+        query.invalidate();
+        it.remove();
+      }
+    }}
+    
     private void clearHistory() {
       data.clearHistory();
       for (CachedQuery query : queries) {
@@ -198,16 +211,30 @@ public class CacheManager implements HandlesDeleteEvents, HandlesUpdateEvents {
         BeeKeeper.getLog().warning("Cache", viewName, "column", columnId, "not found");
         return ok;
       }
+      
+      checkColumnUpdate(columnId);
+      return ok;
+    }
 
-      for (Iterator<CachedQuery> it = queries.iterator(); it.hasNext(); ) {
-        CachedQuery query = it.next();
-        if (query.containsColumn(columnId)) {
-          BeeKeeper.getLog().info("Cache", viewName, "update column", columnId);
-          BeeKeeper.getLog().info("invalidated query", query.getStrFilter(), query.getStrOrder());
-
-          query.invalidate();
-          it.remove();
+    private boolean updateRow(BeeRow newRow) {
+      boolean ok = false;
+      if (newRow == null) {
+        return ok;
+      }
+      BeeRow oldRow = data.get(newRow.getId());
+      if (oldRow == null) {
+        return ok;
+      }
+      oldRow.setVersion(newRow.getVersion());
+      
+      for (int i = 0; i < columns.size(); i++) {
+        if (BeeUtils.equalsTrimRight(oldRow.getString(i), newRow.getString(i))) {
+          continue;
         }
+        oldRow.setValue(i, newRow.getString(i));
+        ok = true;
+
+        checkColumnUpdate(columns.get(i).getLabel());
       }
       return ok;
     }
@@ -371,6 +398,21 @@ public class CacheManager implements HandlesDeleteEvents, HandlesUpdateEvents {
     Assert.notNull(event);
     if (deleteRow(event.getViewName(), event.getRowId())) {
       BeeKeeper.getLog().info("Cache", event.getViewName(), "deleted row id:", event.getRowId());
+    }
+  }
+
+  public void onRowUpdate(RowUpdateEvent event) {
+    Assert.notNull(event);
+    String key = event.getViewName();
+    if (!contains(key)) {
+      return;
+    }
+
+    Entry entry = get(key);
+    BeeRow row = event.getRow();
+    
+    if (entry.updateRow(row)) {
+      BeeKeeper.getLog().info("Cache", key, "updated row", row.getId());
     }
   }
   

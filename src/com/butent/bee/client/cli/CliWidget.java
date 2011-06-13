@@ -184,6 +184,8 @@ public class CliWidget extends InputText {
       CliWorker.showVars(arr);
     } else if (z.equals("video")) {
       CliWorker.playVideo(arr);
+    } else if (z.startsWith("view")) {
+      CliWorker.showView(args);
     } else if (z.startsWith("viz")) {
       Showcase.open();
     } else if (z.equals("vm")) {

@@ -216,7 +216,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
 
         closeEditor();
         if (!BeeUtils.equalsTrimRight(oldValue, newValue)) {
-          updateCell(getRowValue(), getDataColumn(), oldValue, newValue);
+          updateCell(getRowValue(), getDataColumn(), getRelationInfo(), oldValue, newValue);
         }
         return true;
       }
@@ -917,7 +917,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
         return;
       }
 
-      updateCell(rowValue, dataColumn, oldValue, newValue);
+      updateCell(rowValue, dataColumn, editableColumn.getRelationInfo(), oldValue, newValue);
       return;
     }
 
@@ -933,7 +933,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       }
       String newValue = BooleanValue.pack(b);
 
-      updateCell(rowValue, dataColumn, oldValue, newValue);
+      updateCell(rowValue, dataColumn, editableColumn.getRelationInfo(), oldValue, newValue);
       return;
     }
 
@@ -1175,8 +1175,9 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     getNotification().show(level, messages);
   }
 
-  private void updateCell(IsRow rowValue, IsColumn dataColumn, String oldValue, String newValue) {
+  private void updateCell(IsRow rowValue, IsColumn dataColumn, RelationInfo relationInfo,
+      String oldValue, String newValue) {
     getGrid().preliminaryUpdate(rowValue.getId(), dataColumn.getLabel(), newValue);
-    fireEvent(new EditEndEvent(rowValue, dataColumn, oldValue, newValue));
+    fireEvent(new EditEndEvent(rowValue, dataColumn, relationInfo, oldValue, newValue));
   }
 }

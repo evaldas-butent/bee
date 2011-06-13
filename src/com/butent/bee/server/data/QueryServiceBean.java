@@ -132,7 +132,7 @@ public class QueryServiceBean {
 
       @Override
       public Object processResultSet(ResultSet rs) throws SQLException {
-        return rsToBeeRowSet(rs, null);
+        return rsToBeeRowSet(rs, null, null);
       }
 
       @Override
@@ -251,7 +251,7 @@ public class QueryServiceBean {
     return res.getValues(0);
   }
 
-  public BeeRowSet getViewData(IsQuery query, final BeeView view) {
+  public BeeRowSet getViewData(IsQuery query, final BeeView view, final Integer columnCount) {
     Assert.notNull(query);
     Assert.state(!query.isEmpty());
 
@@ -273,7 +273,7 @@ public class QueryServiceBean {
 
       @Override
       public BeeRowSet processResultSet(ResultSet rs) throws SQLException {
-        return rsToBeeRowSet(rs, view);
+        return rsToBeeRowSet(rs, view, columnCount);
       }
 
       @Override
@@ -325,7 +325,8 @@ public class QueryServiceBean {
     return !BeeUtils.isEmpty(dbTables(dbName, dbSchema, table));
   }
 
-  public BeeRowSet rsToBeeRowSet(ResultSet rs, BeeView view) throws SQLException {
+  public BeeRowSet rsToBeeRowSet(ResultSet rs, BeeView view, Integer columnCount)
+      throws SQLException {
     BeeColumn[] rsCols = JdbcUtils.getColumns(rs);
     int cols = rsCols.length;
     String idName = null;
@@ -335,6 +336,9 @@ public class QueryServiceBean {
       cols = view.getColumnCount();
       idName = sys.getIdName(view.getSource());
       versionName = sys.getVersionName(view.getSource());
+    }
+    if (BeeUtils.isPositive(columnCount)) {
+      cols = columnCount;
     }
     BeeColumn[] columns = new BeeColumn[cols];
 

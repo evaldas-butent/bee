@@ -77,6 +77,9 @@ public class DispatcherBean {
     } else if (BeeUtils.same(svc, Service.INVOKE)) {
       Reflection.invoke(invBean, reqInfo.getParameter(Service.RPC_VAR_METH), reqInfo, buff);
 
+    } else if (BeeUtils.same(svc, Service.GET_VIEW_INFO)) {
+      buff.addExtendedProperties(uiBean.getViewInfo(reqInfo));
+      
     } else if (Service.isDataService(svc)) {
       response = uiBean.doService(reqInfo);
 

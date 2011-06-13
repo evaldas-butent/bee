@@ -10,6 +10,7 @@ import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.communication.RpcParameter;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
@@ -120,6 +121,54 @@ public class Queries {
               if (callback != null) {
                 callback.onFailure(s);
               }
+            }
+          }
+        });
+  }
+
+  public static int getColumnValues(String tableName, String columnName,
+      Filter filter, boolean ascending, RowSetCallback callback) {
+    return getColumnValues(tableName, columnName, filter,
+        new Order(columnName, ascending), callback);
+  }
+  
+  public static int getColumnValues(String tableName, String columnName,
+      Filter filter, Order order, RowSetCallback callback) {
+    return getColumnValues(tableName, columnName, filter, order, BeeConst.UNDEF, BeeConst.UNDEF,
+        callback);
+  }
+
+  public static int getColumnValues(String tableName, String columnName,
+      final Filter filter, final Order order, final int offset, final int limit,
+      final RowSetCallback callback) {
+    Assert.notEmpty(tableName);
+    Assert.notEmpty(columnName);
+    Assert.notNull(callback);
+
+    List<Property> lst = PropertyUtils.createProperties(Service.VAR_VIEW_NAME, tableName,
+        Service.VAR_VIEW_COLUMN, columnName);
+
+    if (filter != null) {
+      PropertyUtils.addProperties(lst, Service.VAR_VIEW_WHERE, filter.serialize());
+    }
+    if (order != null) {
+      PropertyUtils.addProperties(lst, Service.VAR_VIEW_ORDER, order.serialize());
+    }
+    if (offset >= 0 && limit > 0) {
+      PropertyUtils.addProperties(lst, Service.VAR_VIEW_OFFSET, offset,
+          Service.VAR_VIEW_LIMIT, limit);
+    }
+
+    return BeeKeeper.getRpc().makePostRequest(new ParameterList(Service.QUERY,
+        RpcParameter.SECTION.DATA, lst),
+        new ResponseCallback() {
+          @Override
+          public void onResponse(ResponseObject response) {
+            Assert.notNull(response);
+
+            if (response.hasResponse(BeeRowSet.class)) {
+              BeeRowSet rs = BeeRowSet.restore((String) response.getResponse());
+              callback.onSuccess(rs);
             }
           }
         });
@@ -292,10 +341,11 @@ public class Queries {
         });
   }
 
-  public static void updateRow(final BeeRowSet rs, final RowCallback callback) {
+  public static void updateRow(final BeeRowSet rs, boolean isRelation, final RowCallback callback) {
     Assert.notNull(rs);
+    String service = isRelation ? Service.UPDATE_RELATION : Service.UPDATE_ROW;
 
-    BeeKeeper.getRpc().sendText(Service.UPDATE_ROW, Codec.beeSerialize(rs),
+    BeeKeeper.getRpc().sendText(service, Codec.beeSerialize(rs),
         new ResponseCallback() {
           @Override
           public void onResponse(ResponseObject response) {

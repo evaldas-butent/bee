@@ -1249,6 +1249,14 @@ public class CliWorker {
       Global.showVars();
     }
   }
+  
+  public static void showView(String args) {
+    ParameterList params = BeeKeeper.getRpc().createParameters(Service.GET_VIEW_INFO);
+    if (!BeeUtils.isEmpty(args)) {
+      params.addPositionalHeader(args.trim());
+    }
+    BeeKeeper.getRpc().makeGetRequest(params);
+  }
 
   public static void showWidgetInfo(String[] arr) {
     String id = ArrayUtils.getQuietly(arr, 1);

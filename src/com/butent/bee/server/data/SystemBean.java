@@ -233,7 +233,7 @@ public class SystemBean {
             int res = qs.updateData(su.setWhere(wh));
 
             if (res == 0) { // Optimistic lock exception
-              BeeRowSet rs = getViewData(view.getName(), idWh, null, 0, 0);
+              BeeRowSet rs = getViewData(view.getName(), null, idWh, null, 0, 0);
 
               if (!rs.isEmpty()) {
                 BeeRow r = rs.getRow(0);
@@ -476,7 +476,7 @@ public class SystemBean {
     if (BeeUtils.isEmpty(union)) {
       return ResponseObject.error("No tables support state: ", stateName);
     }
-    return ResponseObject.response(qs.getViewData(union, null));
+    return ResponseObject.response(qs.getViewData(union, null, null));
   }
 
   public ResponseObject generateData(String tblName, int rowCount) {
@@ -656,11 +656,22 @@ public class SystemBean {
     return getView(viewName).getCondition(filter);
   }
 
-  public BeeRowSet getViewData(String viewName, IsCondition condition, Order order,
-      int limit, int offset, String... states) {
+  public BeeRowSet getViewData(String viewName, String columnName, IsCondition condition,
+      Order order, int limit, int offset, String... states) {
 
-    SqlSelect ss = getViewQuery(viewName);
     BeeView view = getView(viewName);
+    String source = view.getSource();
+
+    SqlSelect ss;
+    Integer columnCount;
+    
+    if (BeeUtils.isEmpty(columnName)) {
+      ss = getViewQuery(viewName);
+      columnCount = null;
+    } else {
+      ss = new SqlSelect().addFields(source, columnName).addFrom(source);
+      columnCount = 1;
+    }
 
     if (!BeeUtils.isEmpty(condition)) {
       ss.setWhere(SqlUtils.and(ss.getWhere(), condition));
@@ -668,7 +679,6 @@ public class SystemBean {
 
     if (order != null) {
       ss.resetOrder();
-      String source = view.getSource();
       String idCol = getIdName(source);
       boolean hasId = false;
 
@@ -703,11 +713,11 @@ public class SystemBean {
     if (offset > 0) {
       ss.setOffset(offset);
     }
-
-    return qs.getViewData(ss, view);
+    
+    return qs.getViewData(ss, view, columnCount);
   }
 
-  public List<DataInfo> getViewInfo() {
+  public List<DataInfo> getViewList() {
     List<DataInfo> lst = Lists.newArrayList();
     Set<String> views = Sets.newHashSet(getViewNames());
     views.addAll(getTableNames());
@@ -872,7 +882,7 @@ public class SystemBean {
           BeeRow newRow = new BeeRow(id, version);
 
           if (returnAllFields) {
-            BeeRowSet newRs = getViewData(view.getName(),
+            BeeRowSet newRs = getViewData(view.getName(), null, 
                 SqlUtils.equal(tblName, table.getIdName(), id), new Order(), 0, 0);
             newRow.setValues(newRs.getRow(0).getValues());
           }
@@ -1070,7 +1080,7 @@ public class SystemBean {
           int res = resp.getResponse(-1, logger);
 
           if (res == 0) { // Optimistic lock exception
-            BeeRowSet newRs = getViewData(view.getName(), wh, new Order(), 0, 0);
+            BeeRowSet newRs = getViewData(view.getName(), null, wh, new Order(), 0, 0);
 
             if (!newRs.isEmpty()) {
               boolean collision = false;
@@ -1114,7 +1124,7 @@ public class SystemBean {
         }
         if (!response.hasErrors()) {
           if (returnAllFields && BeeUtils.isEmpty(newRow.getValues())) {
-            BeeRowSet newRs = getViewData(view.getName(), wh, new Order(), 0, 0);
+            BeeRowSet newRs = getViewData(view.getName(), null, wh, new Order(), 0, 0);
             newRow.setValues(newRs.getRow(0).getValues());
           }
           response.setResponse(newRow);

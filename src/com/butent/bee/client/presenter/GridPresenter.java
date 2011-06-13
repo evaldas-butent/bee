@@ -31,6 +31,7 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
 import com.butent.bee.shared.data.event.MultiDeleteEvent;
 import com.butent.bee.shared.data.event.RowDeleteEvent;
+import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.DataInfo;
@@ -227,8 +228,10 @@ public class GridPresenter implements Presenter, EditEndEvent.Handler {
     rs.setViewName(viewName);
     rs.addRow(rowId, version, new String[]{event.getOldValue()});
     rs.setValue(0, 0, newValue);
+    
+    final boolean isRelation = event.getRelationInfo() != null;
 
-    Queries.updateRow(rs,
+    Queries.updateRow(rs, isRelation, 
         new Queries.RowCallback() {
           public void onFailure(String reason) {
             getView().getContent().refreshCellContent(rowId, columnId);
@@ -237,8 +240,12 @@ public class GridPresenter implements Presenter, EditEndEvent.Handler {
 
           public void onSuccess(BeeRow row) {
             BeeKeeper.getLog().info("cell updated:", viewName, rowId, columnId, newValue);
-            BeeKeeper.getBus().fireEvent(
-                new CellUpdateEvent(viewName, rowId, row.getVersion(), columnId, newValue));
+            if (isRelation) {
+              BeeKeeper.getBus().fireEvent(new RowUpdateEvent(viewName, row));
+            } else {
+              BeeKeeper.getBus().fireEvent(
+                  new CellUpdateEvent(viewName, rowId, row.getVersion(), columnId, newValue));
+            }
           }
         });
   }

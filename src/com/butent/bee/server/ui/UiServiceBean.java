@@ -1,5 +1,7 @@
 package com.butent.bee.server.ui;
 
+import com.google.common.collect.Lists;
+
 import com.butent.bee.server.Config;
 import com.butent.bee.server.data.BeeView;
 import com.butent.bee.server.data.IdGeneratorBean;
@@ -7,16 +9,20 @@ import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
+import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.SqlBuilderFactory;
 import com.butent.bee.server.sql.SqlSelect;
+import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.Order;
@@ -25,8 +31,12 @@ import com.butent.bee.shared.ui.UiComponent;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
+import com.butent.bee.shared.utils.ExtendedProperty;
+import com.butent.bee.shared.utils.LogUtils;
+import com.butent.bee.shared.utils.PropertyUtils;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
 
@@ -104,7 +114,7 @@ public class UiServiceBean {
         response = commitChanges(reqInfo);
 
       } else if (BeeUtils.same(svc, Service.GET_VIEW_LIST)) {
-        response = getViewInfo();
+        response = getViewList();
       } else if (BeeUtils.same(svc, Service.GENERATE)) {
         response = generateData(reqInfo);
       } else if (BeeUtils.same(svc, Service.COUNT_ROWS)) {
@@ -115,6 +125,8 @@ public class UiServiceBean {
         response = updateCell(reqInfo);
       } else if (BeeUtils.same(svc, Service.UPDATE_ROW)) {
         response = updateRow(reqInfo);
+      } else if (BeeUtils.same(svc, Service.UPDATE_RELATION)) {
+        response = updateRelation(reqInfo);
       } else if (BeeUtils.same(svc, Service.INSERT_ROW)) {
         response = insertRow(reqInfo);
 
@@ -125,6 +137,19 @@ public class UiServiceBean {
       }
     }
     return response;
+  }
+
+  public List<ExtendedProperty> getViewInfo(RequestInfo reqInfo) {
+    String viewName = reqInfo.getParameter(0);
+    if (!BeeUtils.isEmpty(viewName) && sys.isView(viewName)) {
+      return sys.getView(viewName).getInfo();
+    }
+
+    List<ExtendedProperty> info = Lists.newArrayList();
+    for (String name : sys.getViewNames()) {
+      PropertyUtils.appendWithPrefix(info, name, sys.getView(name).getInfo());
+    }
+    return info;
   }
 
   private ResponseObject commitChanges(RequestInfo reqInfo) {
@@ -270,6 +295,8 @@ public class UiServiceBean {
 
   private ResponseObject getViewData(RequestInfo reqInfo) {
     String viewName = reqInfo.getParameter(Service.VAR_VIEW_NAME);
+    String columnName = reqInfo.getParameter(Service.VAR_VIEW_COLUMN);
+
     int limit = BeeUtils.toInt(reqInfo.getParameter(Service.VAR_VIEW_LIMIT));
     int offset = BeeUtils.toInt(reqInfo.getParameter(Service.VAR_VIEW_OFFSET));
     String where = reqInfo.getParameter(Service.VAR_VIEW_WHERE);
@@ -291,13 +318,13 @@ public class UiServiceBean {
       stt = states.split(" ");
     }
 
-    BeeRowSet res = sys.getViewData(viewName, sys.getViewCondition(viewName, filter),
+    BeeRowSet res = sys.getViewData(viewName, columnName, sys.getViewCondition(viewName, filter),
         order, limit, offset, stt);
     return ResponseObject.response(res);
   }
 
-  private ResponseObject getViewInfo() {
-    return ResponseObject.response(sys.getViewInfo());
+  private ResponseObject getViewList() {
+    return ResponseObject.response(sys.getViewList());
   }
 
   private ResponseObject getViewSize(RequestInfo reqInfo) {
@@ -451,7 +478,7 @@ public class UiServiceBean {
 
     BeeRowSet rs = new BeeRowSet(new BeeColumn(ValueType.getByTypeCode(columnType), columnId));
     rs.setViewName(viewName);
-    rs.addRow(rowId, version, new String[] {oldValue});
+    rs.addRow(rowId, version, new String[]{oldValue});
     rs.setValue(0, 0, newValue);
 
     ResponseObject result = sys.updateRow(rs,
@@ -462,6 +489,45 @@ public class UiServiceBean {
       result.setResponse(newVersion);
     }
     return result;
+  }
+
+  private ResponseObject updateRelation(RequestInfo reqInfo) {
+    BeeRowSet reqRs = BeeRowSet.restore(reqInfo.getContent());
+    String viewName = reqRs.getViewName();
+    String source = reqRs.getColumn(0).getLabel();
+    BeeRow reqRow = reqRs.getRow(0);
+    long rowId = reqRow.getId();
+    String reqValue = reqRs.getString(reqRow, source);
+
+    BeeView view = sys.getView(viewName);
+    String relTable = view.getTable(source);
+    String relField = view.getField(source);
+
+    String relSource = BeeUtils.getPrefix(view.getExpression(source), '>');
+    String relId = sys.getIdName(relTable);
+    String tableName = view.getTable(relSource);
+
+    IsCondition idWh = SqlUtils.equal(tableName, sys.getIdName(tableName), rowId);
+
+    SqlUpdate su = new SqlUpdate(tableName).addConstant(sys.getVersionName(tableName),
+        System.currentTimeMillis());
+
+    if (BeeUtils.isEmpty(reqValue)) {
+      su.addConstant(relSource, null);
+    } else {
+      SimpleRowSet relRs =
+          qs.getData(new SqlSelect().addFrom(relTable).addFields(relTable, relId).setWhere(
+              SqlUtils.equal(relTable, relField, reqValue)));
+      if (relRs == null || relRs.getNumberOfRows() != 1 || relRs.getNumberOfColumns() != 1) {
+        LogUtils.warning(logger, relTable, relField, "related value", reqValue, "not found");
+        return ResponseObject.error("Value not found");
+      }
+      Long id = relRs.getLong(0, 0);
+      su.addConstant(relSource, id);
+    }
+    qs.updateData(su.setWhere(idWh));
+
+    return ResponseObject.response(sys.getViewData(viewName, null, idWh, null, -1, -1));
   }
 
   private ResponseObject updateRow(RequestInfo reqInfo) {

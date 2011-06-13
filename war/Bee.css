@@ -630,6 +630,14 @@ body, select {
   background-color: #faac58;
 }
 
+.bee-SuggestBoxPopup {
+  background: #eee;
+  border: 1px solid LightGrey;
+  box-shadow: 6px 6px 5px DarkGray;
+  -webkit-box-shadow: 6px 6px 5px DarkGray;
+  -moz-box-shadow: 6px 6px 5px DarkGray;
+}
+
 .bee-RichTextArea {
   width: 100%;
   border: 0px;

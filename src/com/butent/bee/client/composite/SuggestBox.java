@@ -20,14 +20,13 @@ import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HasAnimation;
 import com.google.gwt.user.client.ui.HasText;
-import com.google.gwt.user.client.ui.MultiWordSuggestOracle;
 import com.google.gwt.user.client.ui.SuggestOracle;
 import com.google.gwt.user.client.ui.SuggestOracle.Callback;
 import com.google.gwt.user.client.ui.SuggestOracle.Request;
 import com.google.gwt.user.client.ui.SuggestOracle.Response;
 import com.google.gwt.user.client.ui.SuggestOracle.Suggestion;
-import com.google.gwt.user.client.ui.Widget;
 
+import com.butent.bee.client.data.SelectionOracle;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
@@ -37,7 +36,6 @@ import com.butent.bee.client.menu.MenuItem;
 import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.widget.InputText;
-import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasOptions;
 import com.butent.bee.shared.data.view.HasRelationInfo;
@@ -68,7 +66,7 @@ public class SuggestBox extends Composite implements HasText, HasAllKeyHandlers,
    * Handles animation events of of suggestion box popup menu.
    */
 
-  public static class SuggestionDisplay implements HasAnimation {
+  private static class Display implements HasAnimation {
 
     private final SuggestionMenu suggestionMenu;
     private final Popup suggestionPopup;
@@ -77,10 +75,10 @@ public class SuggestBox extends Composite implements HasText, HasAllKeyHandlers,
 
     private boolean hideWhenEmpty = true;
 
-    public SuggestionDisplay() {
+    public Display() {
       suggestionMenu = new SuggestionMenu(true);
       suggestionPopup = createPopup();
-      suggestionPopup.setWidget(decorateSuggestionList(suggestionMenu));
+      suggestionPopup.setWidget(suggestionMenu);
     }
 
     public void hideSuggestions() {
@@ -91,24 +89,12 @@ public class SuggestBox extends Composite implements HasText, HasAllKeyHandlers,
       return suggestionPopup.isAnimationEnabled();
     }
 
-    public boolean isSuggestionListHiddenWhenEmpty() {
-      return hideWhenEmpty;
-    }
-
     public boolean isSuggestionListShowing() {
       return suggestionPopup.isShowing();
     }
 
     public void setAnimationEnabled(boolean enable) {
       suggestionPopup.setAnimationEnabled(enable);
-    }
-
-    public void setPopupStyleName(String style) {
-      suggestionPopup.setStyleName(style);
-    }
-
-    public void setSuggestionListHiddenWhenEmpty(boolean hideWhenEmpty) {
-      this.hideWhenEmpty = hideWhenEmpty;
     }
 
     protected Popup createPopup() {
@@ -118,20 +104,12 @@ public class SuggestBox extends Composite implements HasText, HasAllKeyHandlers,
       return p;
     }
 
-    protected Widget decorateSuggestionList(Widget suggestionList) {
-      return suggestionList;
-    }
-
     protected Suggestion getCurrentSelection() {
       if (!isSuggestionListShowing()) {
         return null;
       }
       MenuItem item = suggestionMenu.getSelectedItem();
       return item == null ? null : ((SuggestionMenuItem) item).getSuggestion();
-    }
-
-    protected Popup getPopupPanel() {
-      return suggestionPopup;
     }
 
     protected void moveSelectionDown() {
@@ -245,13 +223,13 @@ public class SuggestBox extends Composite implements HasText, HasAllKeyHandlers,
 
   private static final String STYLENAME_DEFAULT = "bee-SuggestBox";
 
-  private int limit = 20;
+  private int limit = 12;
   private boolean selectsFirstItem = true;
   private String currentText;
 
   private SuggestOracle oracle;
 
-  private final SuggestionDisplay display;
+  private final Display display;
   private final InputText box;
 
   private final Callback callback = new Callback() {
@@ -271,25 +249,19 @@ public class SuggestBox extends Composite implements HasText, HasAllKeyHandlers,
   private String options = null;
 
   public SuggestBox() {
-    this(new MultiWordSuggestOracle());
+    this(new InputText());
   }
 
-  public SuggestBox(SuggestOracle oracle) {
-    this(oracle, new InputText());
+  public SuggestBox(InputText box) {
+    this(box, new Display());
   }
 
-  public SuggestBox(SuggestOracle oracle, InputText box) {
-    this(oracle, box, new SuggestionDisplay());
-  }
-
-  public SuggestBox(SuggestOracle oracle, InputText box, SuggestionDisplay suggestDisplay) {
+  public SuggestBox(InputText box, Display display) {
     this.box = box;
-    this.display = suggestDisplay;
+    this.display = display;
     initWidget(box);
 
     addEventsToTextBox();
-
-    setOracle(oracle);
     setStyleName(STYLENAME_DEFAULT);
   }
 
@@ -325,6 +297,10 @@ public class SuggestBox extends Composite implements HasText, HasAllKeyHandlers,
     DomUtils.createId(this, "suggest");
   }
 
+  public Display getDisplay() {
+    return display;
+  }
+
   public String getId() {
     return DomUtils.getId(this);
   }
@@ -341,16 +317,12 @@ public class SuggestBox extends Composite implements HasText, HasAllKeyHandlers,
     return options;
   }
 
+  public SuggestOracle getOracle() {
+    return oracle;
+  }
+
   public RelationInfo getRelationInfo() {
     return relationInfo;
-  }
-
-  public SuggestionDisplay getSuggestionDisplay() {
-    return display;
-  }
-
-  public SuggestOracle getSuggestOracle() {
-    return oracle;
   }
 
   public int getTabIndex() {
@@ -366,7 +338,7 @@ public class SuggestBox extends Composite implements HasText, HasAllKeyHandlers,
   }
 
   public boolean handlesKey(int keyCode) {
-    return false;
+    return !BeeUtils.inList(keyCode, KeyCodes.KEY_UP, KeyCodes.KEY_DOWN);
   }
 
   public boolean isAutoSelectEnabled() {
@@ -413,8 +385,15 @@ public class SuggestBox extends Composite implements HasText, HasAllKeyHandlers,
     this.options = options;
   }
 
+  public void setOracle(SuggestOracle oracle) {
+    this.oracle = oracle;
+  }
+
   public void setRelationInfo(RelationInfo relationInfo) {
     this.relationInfo = relationInfo;
+    if (relationInfo != null && getOracle() == null) {
+      setOracle(new SelectionOracle(relationInfo.getRelTable(), relationInfo.getRelField()));
+    }
   }
 
   public void setTabIndex(int index) {
@@ -514,15 +493,10 @@ public class SuggestBox extends Composite implements HasText, HasAllKeyHandlers,
   }
 
   private void setNewSelection(Suggestion curSuggestion) {
-    Assert.notNull(curSuggestion, "suggestion cannot be null");
     currentText = curSuggestion.getReplacementString();
     setText(currentText);
     display.hideSuggestions();
     fireSuggestionEvent(curSuggestion);
-  }
-
-  private void setOracle(SuggestOracle oracle) {
-    this.oracle = oracle;
   }
 
   private void showSuggestions(String query) {

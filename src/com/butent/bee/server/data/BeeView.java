@@ -11,6 +11,8 @@ import com.butent.bee.server.sql.IsExpression;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.HasExtendedInfo;
 import com.butent.bee.shared.data.filter.ColumnColumnFilter;
 import com.butent.bee.shared.data.filter.ColumnIsEmptyFilter;
 import com.butent.bee.shared.data.filter.ColumnValueFilter;
@@ -20,7 +22,9 @@ import com.butent.bee.shared.data.filter.NegationFilter;
 import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.ExtendedProperty;
 import com.butent.bee.shared.utils.LogUtils;
+import com.butent.bee.shared.utils.PropertyUtils;
 
 import java.util.Collection;
 import java.util.List;
@@ -31,7 +35,7 @@ import java.util.Map;
  * for doing operations with them.
  */
 
-public class BeeView {
+public class BeeView implements HasExtendedInfo {
 
   private class ViewField {
 
@@ -133,33 +137,6 @@ public class BeeView {
     return cols;
   }
 
-  public IsCondition getCondition(ColumnValueFilter filter) {
-    IsCondition condition = null;
-    String colName = filter.getColumn();
-    String als = getAlias(colName);
-
-    if (!BeeUtils.isEmpty(als)) {
-      IsExpression src = SqlUtils.field(als, getField(colName));
-      Operator op = filter.getOperator();
-      Value value = filter.getValue();
-
-      if (Operator.LIKE == op) {
-        String val = value.getString();
-
-        if (filter.hasLikeCharacters(val)) { // TODO: create LIKE and CONTAINS operators
-          condition = SqlUtils.like(src, val);
-        } else {
-          condition = SqlUtils.contains(src, val);
-        }
-      } else {
-        condition = SqlUtils.compare(src, op, SqlUtils.constant(value));
-      }
-    } else {
-      LogUtils.warning(LogUtils.getDefaultLogger(), "Column " + colName + " is not initialized");
-    }
-    return condition;
-  }
-
   public IsCondition getCondition(ColumnColumnFilter filter) {
     IsCondition condition = null;
     String firstName = filter.getFirstColumn().toLowerCase();
@@ -204,8 +181,31 @@ public class BeeView {
     return condition;
   }
 
-  public IsCondition getCondition(NegationFilter filter) {
-    return SqlUtils.not(getCondition(filter.getSubFilter()));
+  public IsCondition getCondition(ColumnValueFilter filter) {
+    IsCondition condition = null;
+    String colName = filter.getColumn();
+    String als = getAlias(colName);
+
+    if (!BeeUtils.isEmpty(als)) {
+      IsExpression src = SqlUtils.field(als, getField(colName));
+      Operator op = filter.getOperator();
+      Value value = filter.getValue();
+
+      if (Operator.LIKE == op) {
+        String val = value.getString();
+
+        if (filter.hasLikeCharacters(val)) { // TODO: create LIKE and CONTAINS operators
+          condition = SqlUtils.like(src, val);
+        } else {
+          condition = SqlUtils.contains(src, val);
+        }
+      } else {
+        condition = SqlUtils.compare(src, op, SqlUtils.constant(value));
+      }
+    } else {
+      LogUtils.warning(LogUtils.getDefaultLogger(), "Column " + colName + " is not initialized");
+    }
+    return condition;
   }
 
   public IsCondition getCondition(CompoundFilter filter) {
@@ -257,12 +257,74 @@ public class BeeView {
     return null;
   }
 
+  public IsCondition getCondition(NegationFilter filter) {
+    return SqlUtils.not(getCondition(filter.getSubFilter()));
+  }
+
   public String getExpression(String colName) {
     return getColumnInfo(colName)[EXPRESSION];
   }
 
   public String getField(String colName) {
     return getViewField(colName).getField();
+  }
+
+  public List<ExtendedProperty> getInfo() {
+    List<ExtendedProperty> info = Lists.newArrayList();
+    PropertyUtils.addProperties(info, false, "Name", getName(), "Source", getSource(),
+        "Source Id Name", sourceIdName, "Read Only", isReadOnly(), "Query", query.getQuery(),
+        "Columns", columns.size());
+    
+    String sub;
+    int i = 0;
+    for (Map.Entry<String, String[]> entry : columns.entrySet()) {
+      String key = BeeUtils.concat(1, "Column", ++i, entry.getKey());
+
+      int j = 0;
+      for (String value : entry.getValue()) {
+        switch (j++) {
+          case NAME:
+            sub = "name";
+            break;
+          case EXPRESSION:
+            sub = "expression";
+            break;
+          case LOCALE:
+            sub = "locale";
+            break;
+          case LOCALE_ALIAS:
+            sub = "locale alias";
+            break;
+          default:
+            sub = null;
+        }
+        info.add(new ExtendedProperty(key, sub, value));
+      }
+    }
+
+    info.add(new ExtendedProperty("Expressions", BeeUtils.toString(expressions.size())));
+
+    i = 0;
+    for (Map.Entry<String, ViewField> entry : expressions.entrySet()) {
+      String key = BeeUtils.concat(1, "Expression", ++i, entry.getKey());
+      ViewField fld = entry.getValue();
+      if (fld == null) {
+        continue;
+      }
+      
+      PropertyUtils.addChildren(info, key, "Table", fld.getTable(), "Alias", fld.getAlias(),
+          "Field", fld.getField(), "Type", fld.getType(), "Not Null", fld.isNotNull(),
+          "Editable", fld.isEditable(), "Target Alias", fld.getTargetAlias());
+    }
+
+    info.add(new ExtendedProperty("Orders", BeeUtils.toString(orders.size())));
+    i = 0;
+    for (Map.Entry<String, Boolean> entry : orders.entrySet()) {
+      info.add(new ExtendedProperty(BeeUtils.concat(1, "Order", ++i), entry.getKey(),
+          BeeConst.STRING_EMPTY + entry.getValue()));
+    }
+    
+    return info;
   }
 
   public String getLocale(String colName) {

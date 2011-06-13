@@ -48,15 +48,17 @@
           <expression>rowVersion</expression>
         </calc>
       </BeeCalcColumn>
+      
+      <BeeDataColumn name="bbb" source="Boolean" />
 
-      <BeeDataColumn name="integer" source="Integer" maxWidth="120">
+      <BeeDataColumn name="iii" source="Integer" minValue="-10000" maxValue="1e6" >
         <editable>
           <expression>cell.value &lt; row.Long</expression>
         </editable>
+        <editor type="spinner" stepValue="100" />
       </BeeDataColumn>
 
-      <BeeDataColumn name="long" source="Long" showWidth="false" minWidth="40"
-        minValue="-1024">
+      <BeeDataColumn name="lll" source="Long" showWidth="false" minWidth="40">
         <style>
           <dynStyle>
             <style>
@@ -86,7 +88,7 @@
         </calc>
       </BeeCalcColumn>
 
-      <BeeDataColumn name="numeric" source="Numeric" format="0.0%" caption="Percent">
+      <BeeDataColumn name="nnn" source="Numeric" format="0.0%" caption="Percent">
         <validation>
           <function>
             var maxDiff = 1000;
@@ -97,9 +99,10 @@
             }
           </function>
         </validation>
+        <editor type="number" format="#.000"/>
       </BeeDataColumn>
 
-      <BeeDataColumn source="Currency" name="currency" readOnly="true">
+      <BeeDataColumn name="dec" source="Currency" readOnly="true" width="168">
         <style>
           <bodyStyle>
             <inline>letter-spacing: 5px;</inline>
@@ -107,7 +110,7 @@
         </style>
       </BeeDataColumn>
 
-      <BeeDataColumn name="string" source="String" sortable="false">
+      <BeeDataColumn name="sss" source="String" sortable="false">
         <validation>
           <function>
             if (cell.newValue == null || cell.newValue.length &lt; 3) {
@@ -116,14 +119,27 @@
             return null;
           </function>
         </validation>
+        <editor type="picker" height="60">
+          <item>123 www</item>
+          <item>uuu 888</item>
+          <item>ccc ddd</item>
+        </editor>
         <carry>
           <expression>cell.value</expression>
         </carry>
       </BeeDataColumn>
 
-      <BeeDataColumn name="char" source="Char" visible="false" />
+      <BeeDataColumn name="char" source="Char">
+        <editor type="list">
+          <item>abc</item>
+          <item>def</item>
+          <item>xyz</item>
+        </editor>
+      </BeeDataColumn>
 
-      <BeeDataColumn name="memo" source="Memo" width="200" />
+      <BeeDataColumn name="mmm" source="Memo" width="200">
+        <editor type="rich" />
+      </BeeDataColumn>
 
       <BeeCalcColumn name="calc3" type="string" caption="typeof" width="100">
         <calc>
@@ -138,7 +154,7 @@
         </calc>
       </BeeCalcColumn>
 
-      <BeeDataColumn name="date" source="Date" minValue="2000 1 1" maxValue="2012 12 21"
+      <BeeDataColumn name="ddd" source="Date" minValue="2000 1 1" maxValue="2012 12 21"
         horizontalAlignment="center">
         <style>
           <footerStyle>
@@ -147,7 +163,7 @@
         </style>
       </BeeDataColumn>
 
-      <BeeDataColumn source="DateTime" name="dateTime" format="yyyy-MM-dd HH:mm:ss">
+      <BeeDataColumn name="ttt" source="DateTime" format="yyyy-MM-dd HH:mm:ss">
         <style>
           <bodyStyle>
             <inline>-webkit-transform:rotateY(180deg);</inline>
@@ -161,7 +177,7 @@
         <inline>="color: rgb(" + rowIndex * 10 + "," + rowIndex * 5 + ",0)"</inline>
       </style>
       <condition>
-        <expression>new Date().getMinutes() % 5 != 0</expression>
+        <expression>new Date().getMinutes() % 15 != 0</expression>
       </condition>
     </rowStyle>
     <rowStyle>
@@ -178,7 +194,7 @@
     </rowMessage>
 
     <rowEditable>
-      <expression>row.Date &gt;= new Date(2010, 0, 1)</expression>
+      <expression>row.Date &gt;= new Date(2008, 0, 1)</expression>
     </rowEditable>
 
   </BeeGrid>

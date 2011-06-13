@@ -279,7 +279,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
   }
 
   /**
-   * Adds multiple fields {@code fields} to a specified source tabel {@code  source}.
+   * Adds multiple fields {@code fields} to a specified source table {@code  source}.
    * 
    * @param source the source table to add to
    * @param fields the fields to add

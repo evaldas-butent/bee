@@ -61,11 +61,13 @@ public class Service {
   public static final String GET_STATE_TABLE = DATA_SERVICE_PREFIX + "state_table";
   public static final String COMMIT = DATA_SERVICE_PREFIX + "commit";
   public static final String GET_VIEW_LIST = DATA_SERVICE_PREFIX + "view_list";
+  public static final String GET_VIEW_INFO = DATA_SERVICE_PREFIX + "view_info";
   public static final String GENERATE = DATA_SERVICE_PREFIX + "generate";
   public static final String COUNT_ROWS = DATA_SERVICE_PREFIX + "row_count";
   public static final String DELETE_ROWS = DATA_SERVICE_PREFIX + "delete_rows";
   public static final String UPDATE_CELL = DATA_SERVICE_PREFIX + "update_cell";
   public static final String UPDATE_ROW = DATA_SERVICE_PREFIX + "update_row";
+  public static final String UPDATE_RELATION = DATA_SERVICE_PREFIX + "update_relation";
   public static final String INSERT_ROW = DATA_SERVICE_PREFIX + "insert_row";
   public static final String GET_GRID = DATA_SERVICE_PREFIX + "get_grid";
 

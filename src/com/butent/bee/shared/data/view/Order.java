@@ -94,6 +94,11 @@ public class Order implements BeeSerializable, Transformable {
   public Order() {
     super();
   }
+  
+  public Order(String name, boolean ascending) {
+    this();
+    add(name, name, ascending);
+  }
 
   public void add(String name, String source, boolean ascending) {
     Assert.notEmpty(name);

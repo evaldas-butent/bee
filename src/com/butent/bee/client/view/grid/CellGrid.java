@@ -63,6 +63,7 @@ import com.butent.bee.shared.data.event.ActiveRowChangeEvent;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
 import com.butent.bee.shared.data.event.MultiDeleteEvent;
 import com.butent.bee.shared.data.event.RowDeleteEvent;
+import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.event.SelectionCountChangeEvent;
 import com.butent.bee.shared.data.event.SortEvent;
 import com.butent.bee.shared.data.view.Order;
@@ -1838,6 +1839,39 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     Assert.notNull(event);
     deleteRow(event.getRowId());
     setRowCount(getRowCount() - 1);
+  }
+
+  public void onRowUpdate(RowUpdateEvent event) {
+    Assert.notNull(event);
+    IsRow newRow = event.getRow();
+    Assert.notNull(newRow);
+    long rowId = newRow.getId();
+
+    RowInfo selectedRowInfo = getSelectedRows().get(rowId);
+    if (selectedRowInfo != null) {
+      selectedRowInfo.setVersion(newRow.getVersion());
+    }
+
+    int row = getRowIndex(rowId);
+    if (!isRowWithinBounds(row)) {
+      BeeKeeper.getLog().warning("onRowUpdate: row id", rowId, "is not visible");
+      return;
+    }
+
+    IsRow rowValue = getVisibleItem(row);
+    rowValue.setVersion(newRow.getVersion());
+    
+    for (ColumnInfo columnInfo : columns) {
+      int dataIndex = columnInfo.getDataIndex();
+      if (dataIndex >= 0) {
+        rowValue.setValue(dataIndex, newRow.getString(dataIndex));
+      }
+    }
+
+    refreshRow(row);
+    if (getActiveRow() == row && getActiveColumn() >= 0) {
+      bringToFront(row, getActiveColumn());
+    }
   }
 
   public void preliminaryUpdate(long rowId, String source, String value) {
