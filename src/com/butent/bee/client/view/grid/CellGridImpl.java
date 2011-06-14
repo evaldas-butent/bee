@@ -2,6 +2,7 @@ package com.butent.bee.client.view.grid;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.gwt.cell.client.Cell;
 import com.google.gwt.cell.client.ValueUpdater;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
@@ -20,6 +21,7 @@ import com.butent.bee.client.dom.Edges;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.grid.AbstractColumn;
+import com.butent.bee.client.grid.CalculatedCell;
 import com.butent.bee.client.grid.CalculatedColumn;
 import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
@@ -60,6 +62,7 @@ import com.butent.bee.shared.data.view.RelationInfo;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.ui.Calculation;
 import com.butent.bee.shared.ui.ColumnDescription;
+import com.butent.bee.shared.ui.ColumnDescription.CellType;
 import com.butent.bee.shared.ui.ColumnDescription.ColType;
 import com.butent.bee.shared.ui.EditorDescription;
 import com.butent.bee.shared.ui.EditorType;
@@ -283,7 +286,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
           ((HasNumberBounds) getEditor()).setMaxValue(BeeUtils.toDoubleOrNull(getMaxValue()));
         }
       }
-      
+
       if (getEditor() instanceof HasRelationInfo) {
         ((HasRelationInfo) getEditor()).setRelationInfo(getRelationInfo());
       }
@@ -712,6 +715,8 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
 
       String source = columnDescr.getSource();
       dataIndex = BeeConst.UNDEF;
+
+      CellType cellType = columnDescr.getCellType();
       column = null;
 
       switch (colType) {
@@ -728,7 +733,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
           for (int i = 0; i < dataCols.size(); i++) {
             BeeColumn dataColumn = dataCols.get(i);
             if (BeeUtils.same(source, dataColumn.getLabel())) {
-              column = GridFactory.createColumn(dataColumn, i);
+              column = GridFactory.createColumn(dataColumn, i, cellType);
               getEditableColumns().put(columnId, new EditableColumn(dataCols, i, columnDescr));
               if (columnDescr.isSortable()) {
                 column.setSortable(true);
@@ -742,8 +747,11 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
         case CALCULATED:
           Calculation calc = columnDescr.getCalc();
           if (calc != null && !calc.isEmpty()) {
-            CalculatedColumn calcColumn = new CalculatedColumn(columnDescr.getValueType(),
+            Cell<String> cell =
+                (cellType == null) ? new CalculatedCell() : GridFactory.createCell(cellType);
+            CalculatedColumn calcColumn = new CalculatedColumn(cell, columnDescr.getValueType(),
                 Evaluator.create(calc, columnId, dataCols));
+
             if (columnDescr.getPrecision() != null) {
               calcColumn.setPrecision(columnDescr.getPrecision());
             }
@@ -940,10 +948,12 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     getGrid().setEditing(true);
 
     Editor editor = editableColumn.getEditor();
+    EditorDescription editorDescription = editableColumn.getEditorDescription();
+
     if (editor == null) {
       String format = null;
-      if (editableColumn.getEditorDescription() != null) {
-        editor = EditorFactory.getEditor(editableColumn.getEditorDescription());
+      if (editorDescription != null) {
+        editor = EditorFactory.getEditor(editorDescription);
         format = editableColumn.getEditorDescription().getFormat();
       }
       if (editor == null) {
@@ -970,7 +980,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
 
     Element sourceElement = event.getSourceElement();
     Element editorElement = editor.asWidget().getElement();
-    adjustEditor(sourceElement, editor, editorElement, editableColumn.getEditorDescription());
+    adjustEditor(sourceElement, editor, editorElement, editorDescription);
 
     if (sourceElement != null) {
       sourceElement.blur();
@@ -982,7 +992,8 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
 
     editor.setEditing(true);
     editor.startEdit(rowValue.getString(editableColumn.getColIndex()),
-        BeeUtils.toChar(event.getCharCode()));
+        BeeUtils.toChar(event.getCharCode()),
+        editorDescription == null ? null : editorDescription.getOnEntry());
   }
 
   public void refreshCellContent(long rowId, String columnSource) {

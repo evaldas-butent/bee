@@ -26,7 +26,7 @@ public class EditorDescription implements BeeSerializable, HasInfo, HasOptions {
 
   private enum SerializationMember {
     TYPE, STEP_VALUE, CHARACTER_WIDTH, VISIBLE_LINES, FORMAT,
-    WIDTH, HEIGHT, MIN_WIDTH, MIN_HEIGHT, OPTIONS, ITEMS
+    WIDTH, HEIGHT, MIN_WIDTH, MIN_HEIGHT, ON_ENTRY, OPTIONS, ITEMS
   }
 
   private static final String ATTR_STEP_VALUE = "stepValue";
@@ -37,6 +37,7 @@ public class EditorDescription implements BeeSerializable, HasInfo, HasOptions {
   private static final String ATTR_HEIGHT = "height";
   private static final String ATTR_MIN_WIDTH = "minWidth";
   private static final String ATTR_MIN_HEIGHT = "minHeight";
+  private static final String ATTR_ON_ENTRY = "onEntry";
   private static final String ATTR_OPTIONS = "options";
   
   public static EditorDescription restore(String s) {
@@ -65,6 +66,8 @@ public class EditorDescription implements BeeSerializable, HasInfo, HasOptions {
   
   private Integer minWidth = null;
   private Integer minHeight = null;
+  
+  private EditorAction onEntry = null;
   
   private String options = null;
 
@@ -117,6 +120,9 @@ public class EditorDescription implements BeeSerializable, HasInfo, HasOptions {
         case MIN_HEIGHT:
           setMinHeight(BeeUtils.toIntOrNull(value));
           break;
+        case ON_ENTRY:
+          setOnEntry(EditorAction.getByCode(value));
+          break;
         case OPTIONS:
           setOptions(value.trim());
           break;
@@ -155,6 +161,7 @@ public class EditorDescription implements BeeSerializable, HasInfo, HasOptions {
       "Height", getHeight(),
       "Min Width", getMinWidth(),
       "Min Height", getMinHeight(),
+      "On Entry", getOnEntry(),
       "Options", getOptions());
     
     if (getItems() != null) {
@@ -181,6 +188,10 @@ public class EditorDescription implements BeeSerializable, HasInfo, HasOptions {
 
   public Integer getMinWidth() {
     return minWidth;
+  }
+
+  public EditorAction getOnEntry() {
+    return onEntry;
   }
 
   public String getOptions() {
@@ -236,6 +247,9 @@ public class EditorDescription implements BeeSerializable, HasInfo, HasOptions {
         case MIN_HEIGHT:
           arr[i] = getMinHeight();
           break;
+        case ON_ENTRY:
+          arr[i] = (getOnEntry() == null) ? null : getOnEntry().getCode();
+          break;
         case OPTIONS:
           arr[i] = getOptions();
           break;
@@ -275,6 +289,8 @@ public class EditorDescription implements BeeSerializable, HasInfo, HasOptions {
         setMinWidth(BeeUtils.toIntOrNull(value));
       } else if (BeeUtils.same(key, ATTR_MIN_HEIGHT)) {
         setMinHeight(BeeUtils.toIntOrNull(value));
+      } else if (BeeUtils.same(key, ATTR_ON_ENTRY)) {
+        setOnEntry(EditorAction.getByCode(value));
       } else if (BeeUtils.same(key, ATTR_OPTIONS)) {
         setOptions(value.trim());
       }
@@ -311,6 +327,10 @@ public class EditorDescription implements BeeSerializable, HasInfo, HasOptions {
 
   private void setMinWidth(Integer minWidth) {
     this.minWidth = minWidth;
+  }
+
+  private void setOnEntry(EditorAction onEntry) {
+    this.onEntry = onEntry;
   }
 
   private void setStepValue(Integer stepValue) {

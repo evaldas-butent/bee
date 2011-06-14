@@ -1,14 +1,26 @@
 package com.butent.bee.shared.utils;
 
+import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.Transformable;
 
 /**
  * Used for creating Properties.
  */
-public class Property implements Comparable<Property>, Transformable {
+public class Property implements Comparable<Property>, Transformable, BeeSerializable {
+  
   public static String[] HEADERS = new String[]{"Property", "Value"};
   public static int HEADER_COUNT = HEADERS.length;
+  
+  public static Property restore(String s) {
+    if (BeeUtils.isEmpty(s)) {
+      return null;
+    }
+    Property property = new Property();
+    property.deserialize(s);
+    return property;
+  }
 
   private String name;
   private String value;
@@ -24,6 +36,9 @@ public class Property implements Comparable<Property>, Transformable {
     this.value = value;
   }
 
+  protected Property() {
+  }
+
   /**
    * Compares {@code oth} with the current Property. Only names are compared.
    * 
@@ -35,6 +50,14 @@ public class Property implements Comparable<Property>, Transformable {
       return BeeConst.COMPARE_MORE;
     }
     return BeeUtils.compare(getName(), oth.getName());
+  }
+
+  public void deserialize(String s) {
+    String[] arr = Codec.beeDeserialize(s);
+    Assert.lengthEquals(arr, HEADER_COUNT);
+    
+    setName(arr[0]);
+    setValue(arr[1]);
   }
 
   /**
@@ -49,6 +72,10 @@ public class Property implements Comparable<Property>, Transformable {
    */
   public String getValue() {
     return value;
+  }
+
+  public String serialize() {
+    return Codec.beeSerializeAll(getName(), getValue());
   }
 
   /**
@@ -68,7 +95,7 @@ public class Property implements Comparable<Property>, Transformable {
   public void setValue(String value) {
     this.value = value;
   }
-
+  
   /**
    * @return a String representation of the current Property. Name and value are separated with a
    *         default value separator "=".

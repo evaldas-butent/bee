@@ -2,12 +2,19 @@
 <BeeGrids xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.butent.com/bee ../../schemas/grid.xsd">
 
-  <BeeGrid name="Cities" viewName="Cities" caption="Miestai" maxColumnWidth="250"
+  <BeeGrid name="Cities" viewName="Cities" caption="Miestai" maxColumnWidth="300"
     showColumnWidths="false">
     <columns>
       <BeeIdColumn name="Id" caption="ID" />
 
-      <BeeDataColumn name="city" source="Name" caption="Miestas" />
+      <BeeDataColumn name="city" source="Name" caption="Miestas">
+        <style>
+          <bodyStyle>
+            <inline>white-space: pre-wrap;</inline>
+          </bodyStyle>
+        </style>
+      </BeeDataColumn>
+
       <BeeDataColumn name="population" source="Population" caption="Gyventojai" />
 
       <BeeRelColumn name="country" source="Country" relation="Name" caption="Šalis">

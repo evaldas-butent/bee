@@ -7,10 +7,15 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment.HorizontalAlignmentConstant;
 import com.google.gwt.user.client.ui.UIObject;
+import com.google.gwt.user.client.ui.ValueBoxBase;
 
 import com.butent.bee.client.event.EventUtils;
+import com.butent.bee.client.view.edit.Editor;
+import com.butent.bee.client.view.edit.HasCharacterFilter;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.ui.EditorAction;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
@@ -29,6 +34,66 @@ public class UiHelper {
           HasHorizontalAlignment.ALIGN_RIGHT, HasHorizontalAlignment.ALIGN_JUSTIFY,
           HasHorizontalAlignment.ALIGN_LOCALE_START, HasHorizontalAlignment.ALIGN_LOCALE_END,
           HasHorizontalAlignment.ALIGN_DEFAULT);
+
+  public static void doEditorAction(Editor widget, String value, char charCode,
+      EditorAction action) {
+    Assert.notNull(widget);
+
+    boolean acceptChar;
+    if (widget instanceof HasCharacterFilter) {
+      acceptChar = ((HasCharacterFilter) widget).acceptChar(charCode);
+    } else {
+      acceptChar = Character.isLetterOrDigit(charCode);
+    }
+    String charValue = acceptChar ? BeeUtils.toString(charCode) : BeeConst.STRING_EMPTY;  
+
+    String v;
+
+    if (BeeUtils.isEmpty(value)) {
+      v = charValue;
+    } else if (!acceptChar) {
+      v = value;
+    } else if (action == null || action == EditorAction.REPLACE) {
+      v = charValue;
+    } else if (action == EditorAction.ADD_FIRST) {
+      v = charValue + BeeUtils.trim(value);
+    } else if (action == EditorAction.ADD_LAST) {
+      v = BeeUtils.trimRight(value) + charValue;
+    } else {
+      v = value;
+    }
+    widget.setValue(BeeUtils.trimRight(v));
+
+    if (widget instanceof ValueBoxBase && !BeeUtils.isEmpty(value) && action != null) {
+      ValueBoxBase<?> box = (ValueBoxBase<?>) widget;
+      int p = BeeConst.UNDEF;
+      int len = box.getText().length();
+
+      switch (action) {
+        case ADD_FIRST:
+          p = acceptChar ? 1 : 0;
+          break;
+        case ADD_LAST:
+          p = len;
+          break;
+        case END:
+          p = len;
+          break;
+        case HOME:
+          p = 0;
+          break;
+        case REPLACE:
+          p = len;
+          break;
+        case SELECT:
+          box.selectAll();
+          break;
+      }
+      if (p >= 0 && p <= len) {
+        box.setCursorPos(p);
+      }
+    }
+  }
 
   public static HorizontalAlignmentConstant getDefaultHorizontalAlignment(ValueType type) {
     if (type == null) {

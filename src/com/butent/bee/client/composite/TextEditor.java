@@ -19,6 +19,7 @@ import com.butent.bee.client.view.edit.EditorFactory;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.shared.State;
+import com.butent.bee.shared.ui.EditorAction;
 import com.butent.bee.shared.utils.BeeUtils;
 
 public class TextEditor extends Absolute implements Editor, HasTextDimensions {
@@ -155,8 +156,8 @@ public class TextEditor extends Absolute implements Editor, HasTextDimensions {
     getArea().setVisibleLines(lines);
   }
 
-  public void startEdit(String oldValue, char charCode) {
-    getArea().startEdit(oldValue, charCode);
+  public void startEdit(String oldValue, char charCode, EditorAction onEntry) {
+    getArea().startEdit(oldValue, charCode, onEntry);
   }
 
   public String validate() {

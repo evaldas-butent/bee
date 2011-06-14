@@ -20,6 +20,7 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.i18n.HasDateTimeFormat;
+import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.widget.InputText;
@@ -30,6 +31,7 @@ import com.butent.bee.shared.DateTime;
 import com.butent.bee.shared.JustDate;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.ui.EditorAction;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.TimeUtils;
 
@@ -51,7 +53,7 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat {
   private DateTimeFormat format;
 
   private boolean editing = false;
-  
+
   public InputDate(AbstractDate date) {
     this(date, null);
   }
@@ -244,10 +246,15 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat {
       ValueChangeEvent.fire(this, value);
     }
   }
-  
-  public void startEdit(String oldValue, char charCode) {
+
+  public void startEdit(String oldValue, char charCode, EditorAction onEntry) {
     setValue(oldValue);
-    handleChar(charCode);
+    if (handleChar(charCode)) {
+      return;
+    }
+
+    EditorAction action = (onEntry == null) ? EditorAction.REPLACE : onEntry;
+    UiHelper.doEditorAction(getBox(), getBox().getValue(), charCode, action);
   }
 
   public String validate() {
@@ -378,30 +385,31 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat {
 
       case 'h':
       case 'H':
-        if (!ValueType.DATETIME.equals(getDateType())) {
-          newDate = new JustDate(baseDate.getDay());
-        } else if (oldDate == null) {
-          DateTime now = new DateTime();
-          newDate = new DateTime(now.getYear(), now.getMonth(), now.getDom(), now.getHour(), 0, 0);
-        } else {
-          int incr = (charCode == 'h') ? -1 : 1;
-          newDate =
-              new DateTime(oldDate.getDateTime().getTime() + incr * TimeUtils.MILLIS_PER_HOUR);
+        if (ValueType.DATETIME.equals(getDateType())) {
+          if (oldDate == null) {
+            DateTime now = new DateTime();
+            newDate =
+                new DateTime(now.getYear(), now.getMonth(), now.getDom(), now.getHour(), 0, 0);
+          } else {
+            int incr = (charCode == 'h') ? -1 : 1;
+            newDate =
+                new DateTime(oldDate.getDateTime().getTime() + incr * TimeUtils.MILLIS_PER_HOUR);
+          }
         }
         break;
 
       case 'i':
       case 'I':
-        if (!ValueType.DATETIME.equals(getDateType())) {
-          newDate = new JustDate(baseDate.getDay());
-        } else if (oldDate == null) {
-          DateTime now = new DateTime();
-          newDate = new DateTime(now.getYear(), now.getMonth(), now.getDom(), now.getHour(),
-              now.getMinute(), 0);
-        } else {
-          int incr = (charCode == 'i') ? -1 : 1;
-          newDate =
-              new DateTime(oldDate.getDateTime().getTime() + incr * TimeUtils.MILLIS_PER_MINUTE);
+        if (ValueType.DATETIME.equals(getDateType())) {
+          if (oldDate == null) {
+            DateTime now = new DateTime();
+            newDate = new DateTime(now.getYear(), now.getMonth(), now.getDom(), now.getHour(),
+                now.getMinute(), 0);
+          } else {
+            int incr = (charCode == 'i') ? -1 : 1;
+            newDate =
+                new DateTime(oldDate.getDateTime().getTime() + incr * TimeUtils.MILLIS_PER_MINUTE);
+          }
         }
         break;
 
@@ -471,16 +479,16 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat {
 
       case 'x':
       case 'X':
-        if (!ValueType.DATETIME.equals(getDateType())) {
-          newDate = new JustDate(baseDate.getDay());
-        } else if (oldDate == null) {
-          DateTime now = new DateTime();
-          newDate = new DateTime(now.getYear(), now.getMonth(), now.getDom(), now.getHour(),
-              now.getMinute(), now.getSecond());
-        } else {
-          int incr = (charCode == 'x') ? -1 : 1;
-          newDate =
-              new DateTime(oldDate.getDateTime().getTime() + incr * TimeUtils.MILLIS_PER_SECOND);
+        if (ValueType.DATETIME.equals(getDateType())) {
+          if (oldDate == null) {
+            DateTime now = new DateTime();
+            newDate = new DateTime(now.getYear(), now.getMonth(), now.getDom(), now.getHour(),
+                now.getMinute(), now.getSecond());
+          } else {
+            int incr = (charCode == 'x') ? -1 : 1;
+            newDate =
+                new DateTime(oldDate.getDateTime().getTime() + incr * TimeUtils.MILLIS_PER_SECOND);
+          }
         }
         break;
 

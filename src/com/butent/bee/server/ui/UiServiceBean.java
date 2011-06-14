@@ -129,6 +129,8 @@ public class UiServiceBean {
         response = updateRelation(reqInfo);
       } else if (BeeUtils.same(svc, Service.INSERT_ROW)) {
         response = insertRow(reqInfo);
+      } else if (BeeUtils.same(svc, Service.GET_VIEW_INFO)) {
+        response = getViewInfo(reqInfo);
 
       } else {
         String msg = BeeUtils.concat(1, svc, "loader service not recognized");
@@ -139,17 +141,18 @@ public class UiServiceBean {
     return response;
   }
 
-  public List<ExtendedProperty> getViewInfo(RequestInfo reqInfo) {
+  public ResponseObject getViewInfo(RequestInfo reqInfo) {
     String viewName = reqInfo.getParameter(0);
-    if (!BeeUtils.isEmpty(viewName) && sys.isView(viewName)) {
-      return sys.getView(viewName).getInfo();
-    }
-
     List<ExtendedProperty> info = Lists.newArrayList();
-    for (String name : sys.getViewNames()) {
-      PropertyUtils.appendWithPrefix(info, name, sys.getView(name).getInfo());
+
+    if (!BeeUtils.isEmpty(viewName) && sys.isView(viewName)) {
+      info.addAll(sys.getView(viewName).getInfo());
+    } else {
+      for (String name : sys.getViewNames()) {
+        PropertyUtils.appendWithPrefix(info, name, sys.getView(name).getInfo());
+      }
     }
-    return info;
+    return ResponseObject.response(info);
   }
 
   private ResponseObject commitChanges(RequestInfo reqInfo) {

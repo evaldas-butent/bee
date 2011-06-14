@@ -472,7 +472,7 @@ public class XmlUtils {
     Document doc = fromFileName(fileName);
     if (doc == null) {
       LogUtils.warning(logger, fileName, "cannot parse xml");
-      return PropertyUtils.EMPTY_EXTENDED_LIST;
+      return null;
     }
     return getTreeInfo(doc, "0");
   }
@@ -859,7 +859,7 @@ public class XmlUtils {
 
     Document doc = xsltToDom(src, xsl);
     if (doc == null) {
-      return PropertyUtils.EMPTY_EXTENDED_LIST;
+      return null;
     } else {
       return getTreeInfo(doc, "0");
     }

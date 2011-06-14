@@ -25,6 +25,7 @@ import com.butent.bee.shared.HasAcceptableValues;
 import com.butent.bee.shared.HasStringValue;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.Variable;
+import com.butent.bee.shared.ui.EditorAction;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
@@ -246,7 +247,7 @@ public class BeeListBox extends ListBox implements Editor, HasAcceptableValues,
     }
   }
 
-  public void startEdit(String oldValue, char charCode) {
+  public void startEdit(String oldValue, char charCode, EditorAction onEntry) {
     setStartChar(charCode);
     setChangePending(false);
 
@@ -257,13 +258,13 @@ public class BeeListBox extends ListBox implements Editor, HasAcceptableValues,
 
     if (charCode > BeeConst.CHAR_SPACE) {
       for (int i = 0; i < getItemCount(); i++) {
-        if (getValue(i).trim().charAt(0) == charCode) {
+        if (BeeUtils.startsWith(getValue(i), charCode)) {
           setSelectedIndex(i);
           return;
         }
       }
     }
-    setValue(oldValue);
+    setSelectedIndex(Math.max(getIndex(oldValue), 0));
   }
 
   public String validate() {

@@ -1,5 +1,6 @@
 package com.butent.bee.client.widget;
 
+import com.google.gwt.event.dom.client.DomEvent;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
@@ -17,6 +18,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasBooleanValue;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.value.BooleanValue;
+import com.butent.bee.shared.ui.EditorAction;
 import com.butent.bee.shared.utils.BeeUtils;
 
 public class Toggle extends CustomButton implements Editor {
@@ -111,11 +113,31 @@ public class Toggle extends CustomButton implements Editor {
 
   @Override
   public void onBrowserEvent(Event event) {
-    if (EventUtils.isKeyDown(event.getType()) && event.getKeyCode() == KeyCodes.KEY_ENTER) {
-      EventUtils.eatEvent(event);
-      onClick();
+    int type = event.getTypeInt();
+
+    if (EventUtils.isKeyEvent(type)) {
+      if (type == Event.ONKEYDOWN) {
+        switch (event.getKeyCode()) {
+          case KeyCodes.KEY_ENTER:
+            EventUtils.eatEvent(event);
+            onClick();
+            break;
+          case KeyCodes.KEY_ESCAPE:
+            if (isEditing()) {
+              EventUtils.eatEvent(event);
+              fireEvent(new EditStopEvent(State.CANCELED));
+            }
+        }
+      } else if (type == Event.ONKEYPRESS && event.getCharCode() >= BeeConst.CHAR_SPACE) {
+        EventUtils.eatEvent(event);
+        setDown(!isDown());
+        return;
+      } else {
+        DomEvent.fireNativeEvent(event, this, this.getElement());
+      }
       return;
     }
+    
     super.onBrowserEvent(event);
   }
 
@@ -154,7 +176,7 @@ public class Toggle extends CustomButton implements Editor {
     }
   }
 
-  public void startEdit(String oldValue, char charCode) {
+  public void startEdit(String oldValue, char charCode, EditorAction onEntry) {
     setValue(oldValue);
   }
 
@@ -164,9 +186,6 @@ public class Toggle extends CustomButton implements Editor {
 
   @Override
   protected void onClick() {
-    setDown(!isDown());
-    super.onClick();
-
     updateSource();
     if (isEditing()) {
       fireEvent(new EditStopEvent(State.CHANGED));

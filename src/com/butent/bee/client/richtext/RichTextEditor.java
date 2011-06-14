@@ -18,11 +18,13 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.layout.Flow;
+import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.edit.AdjustmentListener;
 import com.butent.bee.client.view.edit.EditStopEvent.Handler;
 import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.shared.State;
+import com.butent.bee.shared.ui.EditorAction;
 import com.butent.bee.shared.utils.BeeUtils;
 
 public class RichTextEditor extends Flow implements Editor, AdjustmentListener,
@@ -151,8 +153,9 @@ public class RichTextEditor extends Flow implements Editor, AdjustmentListener,
     getArea().setHTML(value);
   }
 
-  public void startEdit(String oldValue, char charCode) {
-    setValue(BeeUtils.trimRight(oldValue));
+  public void startEdit(String oldValue, char charCode, EditorAction onEntry) {
+    EditorAction action = (onEntry == null) ? EditorAction.ADD_LAST : onEntry;
+    UiHelper.doEditorAction(this, oldValue, charCode, action);
 
     Scheduler.get().scheduleDeferred(new ScheduledCommand() {
       public void execute() {

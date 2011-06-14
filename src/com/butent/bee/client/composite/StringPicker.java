@@ -19,6 +19,7 @@ import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.safehtml.client.SafeHtmlTemplates;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
+import com.google.gwt.safehtml.shared.SafeHtmlUtils;
 import com.google.gwt.user.cellview.client.CellList;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.view.client.SelectionModel;
@@ -32,6 +33,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasAcceptableValues;
 import com.butent.bee.shared.State;
+import com.butent.bee.shared.ui.EditorAction;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
@@ -62,7 +64,6 @@ public class StringPicker extends CellList<String> implements Editor, HasAccepta
   /**
    * Manages a single cell in a string picker component.
    */
-
   private static class DefaultCell extends AbstractCell<String> {
     private DefaultCell() {
     }
@@ -70,10 +71,12 @@ public class StringPicker extends CellList<String> implements Editor, HasAccepta
     @Override
     public void render(Context context, String value, SafeHtmlBuilder sb) {
       if (!BeeUtils.isEmpty(value)) {
-        sb.appendEscaped(value);
+        sb.append(SafeHtmlUtils.fromTrustedString(value));
       }
     }
   }
+  
+  public static String displaySeparator = ";";
 
   private static final RenderTemplate RENDER_TEMPLATE = GWT.create(RenderTemplate.class);
 
@@ -91,7 +94,7 @@ public class StringPicker extends CellList<String> implements Editor, HasAccepta
   private HandlerRegistration blurRegistration = null;
   
   private boolean selectionPending = false;
-
+  
   public StringPicker() {
     super(new DefaultCell());
 
@@ -191,7 +194,7 @@ public class StringPicker extends CellList<String> implements Editor, HasAccepta
       }
 
     } else if (EventUtils.isKeyPress(type)) {
-      int charCode = event.getCharCode();
+      char charCode = (char) event.getCharCode();
       if (selectByChar(charCode, getSelectedIndex())) {
         EventUtils.eatEvent(event);
       }
@@ -201,7 +204,7 @@ public class StringPicker extends CellList<String> implements Editor, HasAccepta
       for (int i = 0; i < getChildContainer().getChildCount(); i++) {
         if (EventUtils.equalsOrIsChild(getChildElement(i), target)) {
           EventUtils.eatEvent(event);
-          setValue(getVisibleItem(i));
+          setValue(getItemValue(i));
           fireEvent(new EditStopEvent(State.CHANGED));
           break;
         }
@@ -243,7 +246,7 @@ public class StringPicker extends CellList<String> implements Editor, HasAccepta
     }
   }
 
-  public void startEdit(String oldValue, char charCode) {
+  public void startEdit(String oldValue, char charCode, EditorAction onEntry) {
     String v;
 
     if (selectByChar(charCode, BeeConst.UNDEF)) {
@@ -251,7 +254,7 @@ public class StringPicker extends CellList<String> implements Editor, HasAccepta
     } else if (contains(oldValue)) {
       v = BeeUtils.trimRight(oldValue);
     } else {
-      v = getVisibleItem(0);
+      v = getItemValue(0);
     }
 
     if (!BeeUtils.isEmpty(v)) {
@@ -292,15 +295,16 @@ public class StringPicker extends CellList<String> implements Editor, HasAccepta
 
     for (int i = start; i < end; i++) {
       String item = values.get(i - start);
+      String displayValue = BeeUtils.ifString(BeeUtils.getSuffix(item, displaySeparator), item);
 
       SafeHtmlBuilder cellBuilder = new SafeHtmlBuilder();
       Context context = new Context(i, 0, getValueKey(item));
-      getCell().render(context, item, cellBuilder);
+      getCell().render(context, displayValue, cellBuilder);
       SafeHtml cellContent = cellBuilder.toSafeHtml();
 
       String id = DomUtils.createUniqueId("picker-cell");
 
-      if (BeeUtils.same(item, getValue())) {
+      if (BeeUtils.same(getItemData(item), getValue())) {
         sb.append(RENDER_TEMPLATE.divSelected(id, STYLE_SELECTED, tabIdx, cellContent));
       } else {
         sb.append(RENDER_TEMPLATE.divItem(id, STYLE_ITEM, tabIdx, cellContent));
@@ -312,13 +316,10 @@ public class StringPicker extends CellList<String> implements Editor, HasAccepta
     return getItemIndex(item) >= 0;
   }
 
-  private String findByChar(int startIndex, int endIndex, int charCode) {
+  private String findByChar(int startIndex, int endIndex, char charCode) {
     for (int i = startIndex; i < endIndex; i++) {
-      String item = getVisibleItem(i);
-      if (BeeUtils.isEmpty(item)) {
-        continue;
-      }
-      if (item.trim().charAt(0) == charCode) {
+      String item = getItemValue(i);
+      if (BeeUtils.startsWith(item, charCode)) {
         return item;
       }
     }
@@ -340,6 +341,10 @@ public class StringPicker extends CellList<String> implements Editor, HasAccepta
       return null;
     }
   }
+  
+  private String getItemData(String item) {
+    return BeeUtils.ifString(BeeUtils.getPrefix(item, displaySeparator), item);
+  }
 
   private int getItemIndex(String item) {
     int index = BeeConst.UNDEF;
@@ -348,12 +353,16 @@ public class StringPicker extends CellList<String> implements Editor, HasAccepta
     }
 
     for (int i = 0; i < getVisibleItemCount(); i++) {
-      if (BeeUtils.same(getVisibleItem(i), item)) {
+      if (BeeUtils.same(getItemValue(i), item)) {
         index = i;
         break;
       }
     }
     return index;
+  }
+  
+  private String getItemValue(int index) {
+    return getItemData(getVisibleItem(index));
   }
 
   private int getSelectedIndex() {
@@ -402,7 +411,7 @@ public class StringPicker extends CellList<String> implements Editor, HasAccepta
 
     newIndex = BeeUtils.limit(newIndex, 0, itemCount - 1);
     if (newIndex != oldIndex) {
-      setValue(getVisibleItem(newIndex));
+      setValue(getItemValue(newIndex));
       ok = true;
     }
     return ok;
@@ -416,7 +425,7 @@ public class StringPicker extends CellList<String> implements Editor, HasAccepta
     }
   }
 
-  private boolean selectByChar(int charCode, int currentIndex) {
+  private boolean selectByChar(char charCode, int currentIndex) {
     boolean ok = false;
     if (charCode <= BeeConst.CHAR_SPACE) {
       return ok;

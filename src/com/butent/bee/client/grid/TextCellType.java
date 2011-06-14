@@ -6,10 +6,10 @@ import com.butent.bee.shared.Transformable;
  * Contains a list of available cell types.
  */
 
-public enum CellType implements Transformable {
+public enum TextCellType implements Transformable {
   TEXT(false), TEXT_EDIT(true), TEXT_INPUT(true);
 
-  public static CellType get(int idx) {
+  public static TextCellType get(int idx) {
     if (idx >= 0 && idx < size()) {
       return values()[idx];
     } else {
@@ -23,7 +23,7 @@ public enum CellType implements Transformable {
 
   private boolean editable;
 
-  CellType(boolean editable) {
+  TextCellType(boolean editable) {
     this.editable = editable;
   }
 

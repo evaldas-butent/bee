@@ -18,7 +18,7 @@ import com.butent.bee.client.dialog.NotificationListener;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.dom.StyleUtils.ScrollBars;
-import com.butent.bee.client.grid.CellType;
+import com.butent.bee.client.grid.TextCellType;
 import com.butent.bee.client.grid.FlexTable;
 import com.butent.bee.client.layout.BeeLayoutPanel;
 import com.butent.bee.client.layout.BlankTile;
@@ -181,8 +181,8 @@ public class BeeUi implements Module, NotificationListener {
     return dataPanel;
   }
 
-  public CellType getDefaultCellType() {
-    return CellType.get(RadioGroup.getValue(getElCell()));
+  public TextCellType getDefaultCellType() {
+    return TextCellType.get(RadioGroup.getValue(getElCell()));
   }
 
   public int getDefaultGridType() {
@@ -521,7 +521,7 @@ public class BeeUi implements Module, NotificationListener {
     p.add(new RadioGroup(getElGrid(), true, BeeKeeper.getStorage().checkInt(getElGrid(), 2),
         "simple", "scroll", "cell"));
     p.add(new RadioGroup(getElCell(), true, BeeKeeper.getStorage().checkEnum(getElCell(),
-        CellType.TEXT_EDIT), CellType.values()));
+        TextCellType.TEXT_EDIT), TextCellType.values()));
 
     Complex panel = new Complex();
     panel.addLeftTop(p, 1, Unit.EM, 4, Unit.PX);

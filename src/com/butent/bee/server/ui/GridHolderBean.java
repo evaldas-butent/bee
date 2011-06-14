@@ -16,6 +16,7 @@ import com.butent.bee.shared.ui.Calculation;
 import com.butent.bee.shared.ui.ConditionalStyleDeclaration;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.GridComponentDescription;
+import com.butent.bee.shared.ui.ColumnDescription.CellType;
 import com.butent.bee.shared.ui.ColumnDescription.ColType;
 import com.butent.bee.shared.ui.StyleDeclaration;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -109,6 +110,8 @@ public class GridHolderBean {
   private static final String ATTR_TYPE = "type"; 
   private static final String ATTR_PRECISION = "precision"; 
   private static final String ATTR_SCALE = "scale"; 
+
+  private static final String ATTR_CELL = "cell"; 
   
   private static Logger logger = Logger.getLogger(GridHolderBean.class.getName());
 
@@ -433,6 +436,9 @@ public class GridHolderBean {
           dst.setPrecision(BeeUtils.toIntOrNull(value));
         } else if (BeeUtils.same(key, ATTR_SCALE)) {
           dst.setScale(BeeUtils.toIntOrNull(value));
+
+        } else if (BeeUtils.same(key, ATTR_CELL)) {
+          dst.setCellType(CellType.getByCode(value));
         }
       }
     }

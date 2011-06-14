@@ -7,7 +7,7 @@ import com.google.web.bindery.event.shared.Event;
 import com.butent.bee.client.data.Explorer;
 import com.butent.bee.client.dialog.InputBoxes;
 import com.butent.bee.client.dialog.MessageBoxes;
-import com.butent.bee.client.grid.CellType;
+import com.butent.bee.client.grid.TextCellType;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.resources.Images;
 import com.butent.bee.shared.Assert;
@@ -54,7 +54,7 @@ public class Global implements Module {
     msgBoxen.alert(obj);
   }
 
-  public static Widget cellTable(Object data, CellType cellType, String... columnLabels) {
+  public static Widget cellTable(Object data, TextCellType cellType, String... columnLabels) {
     return GridFactory.cellTable(data, cellType, columnLabels);
   }
 

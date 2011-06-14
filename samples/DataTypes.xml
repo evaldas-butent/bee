@@ -55,7 +55,7 @@
         <editable>
           <expression>cell.value &lt; row.Long</expression>
         </editable>
-        <editor type="spinner" stepValue="100" />
+        <editor type="spinner" stepValue="100" onEntry="addFirst" />
       </BeeDataColumn>
 
       <BeeDataColumn name="lll" source="Long" showWidth="false" minWidth="40">
@@ -80,6 +80,7 @@
             </condition>
           </dynStyle>
         </style>
+        <editor type="long" onEntry="addLast" />
       </BeeDataColumn>
 
       <BeeCalcColumn name="calc2" type="decimal" caption="Math" scale="4">
@@ -99,30 +100,24 @@
             }
           </function>
         </validation>
-        <editor type="number" format="#.000"/>
+        <editor type="number" format="#.000" onEntry="select" />
       </BeeDataColumn>
 
-      <BeeDataColumn name="dec" source="Currency" readOnly="true" width="168">
+      <BeeDataColumn name="dec" source="Currency" width="168">
         <style>
           <bodyStyle>
             <inline>letter-spacing: 5px;</inline>
           </bodyStyle>
         </style>
+        <editor type="number" onEntry="home" />
       </BeeDataColumn>
 
       <BeeDataColumn name="sss" source="String" sortable="false">
-        <validation>
-          <function>
-            if (cell.newValue == null || cell.newValue.length &lt; 3) {
-              return "must be at least 3 characters";
-            }
-            return null;
-          </function>
-        </validation>
         <editor type="picker" height="60">
           <item>123 www</item>
-          <item>uuu 888</item>
+          <item>Bitinas ; &lt;img src="test.png"&gt;</item>
           <item>ccc ddd</item>
+          <item>beehive ; &lt;a href="http://www.butent.com"&gt;Būtent&lt;/a&gt;</item>
         </editor>
         <carry>
           <expression>cell.value</expression>
@@ -137,7 +132,7 @@
         </editor>
       </BeeDataColumn>
 
-      <BeeDataColumn name="mmm" source="Memo" width="200">
+      <BeeDataColumn name="mmm" source="Memo" width="200" cell="html">
         <editor type="rich" />
       </BeeDataColumn>
 
@@ -161,6 +156,7 @@
             <class>bee-afraid</class>
           </footerStyle>
         </style>
+        <editor type="date" minWidth="100" onEntry="select" />
       </BeeDataColumn>
 
       <BeeDataColumn name="ttt" source="DateTime" format="yyyy-MM-dd HH:mm:ss">
@@ -169,6 +165,7 @@
             <inline>-webkit-transform:rotateY(180deg);</inline>
           </bodyStyle>
         </style>
+        <editor type="datetime" onEntry="home" />
       </BeeDataColumn>
     </columns>
 

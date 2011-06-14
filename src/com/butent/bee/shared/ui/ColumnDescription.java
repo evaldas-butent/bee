@@ -23,6 +23,31 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
   /**
    * Contains a list of possible column types.
    */
+  
+  public enum CellType {
+    HTML("html");
+    
+    public static CellType getByCode(String code) {
+      if (!BeeUtils.isEmpty(code)) {
+        for (CellType type : CellType.values()) {
+          if (BeeUtils.same(type.getCode(), code)) {
+            return type;
+          }
+        }
+      }
+      return null;
+    }
+    
+    private String code;
+    
+    private CellType(String code) {
+      this.code = code;
+    }
+    
+    public String getCode() {
+      return code;
+    }
+  }
 
   public enum ColType {
     DATA("BeeDataColumn", false),
@@ -68,7 +93,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
     MIN_WIDTH, MAX_WIDTH, SORTABLE, VISIBLE, FORMAT, HOR_ALIGN, HAS_FOOTER, SHOW_WIDTH,
     VALIDATION, EDITABLE, CARRY, EDITOR, MIN_VALUE, MAX_VALUE,
     CALC, VALUE_TYPE, PRECISION, SCALE,
-    HEADER_STYLE, BODY_STYLE, FOOTER_STYLE, DYN_STYLES
+    HEADER_STYLE, BODY_STYLE, FOOTER_STYLE, DYN_STYLES, CELL_TYPE
   }
 
   public static ColumnDescription restore(String s) {
@@ -121,6 +146,8 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
   private StyleDeclaration footerStyle = null;
 
   private Collection<ConditionalStyleDeclaration> dynStyles = null;
+
+  private CellType cellType = null;
 
   public ColumnDescription(ColType colType, String name) {
     Assert.notEmpty(colType);
@@ -245,6 +272,9 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
         case HEADER_STYLE:
           setHeaderStyle(StyleDeclaration.restore(value));
           break;
+        case CELL_TYPE:
+          setCellType(CellType.getByCode(value));
+          break;
       }
     }
   }
@@ -259,6 +289,10 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
 
   public String getCaption() {
     return caption;
+  }
+
+  public CellType getCellType() {
+    return cellType;
   }
 
   public ColType getColType() {
@@ -315,7 +349,8 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
         "Max Value", getMaxValue(),
         "Value Type", getValueType(),
         "Precision", getPrecision(),
-        "Scale", getScale());
+        "Scale", getScale(),
+        "Cell Type", getCellType());
 
     if (getValidation() != null) {
       PropertyUtils.appendChildrenToProperties(info, "Validation", getValidation().getInfo());
@@ -526,6 +561,9 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
         case HEADER_STYLE:
           arr[i++] = getHeaderStyle();
           break;
+        case CELL_TYPE:
+          arr[i++] = (getCellType() == null) ? null : getCellType().getCode();
+          break;
       }
     }
     return Codec.beeSerializeAll(arr);
@@ -545,6 +583,10 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
 
   public void setCarry(Calculation carry) {
     this.carry = carry;
+  }
+
+  public void setCellType(CellType cellType) {
+    this.cellType = cellType;
   }
 
   public void setDynStyles(Collection<ConditionalStyleDeclaration> dynStyles) {

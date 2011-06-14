@@ -96,6 +96,7 @@
     <xs:attribute name="horizontalAlignment" type="bee:horizontalAlignmentType" />
     <xs:attribute name="hasFooter" type="xs:boolean" default="true" />
     <xs:attribute name="showWidth" type="xs:boolean" default="true" />
+    <xs:attribute name="cell" type="bee:cellType" />
   </xs:complexType>
 
   <xs:complexType name="columnStyle">
@@ -177,6 +178,12 @@
     </xs:restriction>
   </xs:simpleType>
 
+  <xs:simpleType name="cellType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="html" />
+    </xs:restriction>
+  </xs:simpleType>
+
   <xs:complexType name="calcType">
     <xs:choice>
       <xs:element name="expression" type="xs:normalizedString" />
@@ -204,6 +211,7 @@
     <xs:attribute name="height" type="xs:positiveInteger" />
     <xs:attribute name="minWidth" type="xs:positiveInteger" />
     <xs:attribute name="minHeight" type="xs:positiveInteger" />
+    <xs:attribute name="onEntry" type="bee:editorAction" />
     <xs:attribute name="options" type="xs:normalizedString" />
   </xs:complexType>  
 
@@ -235,6 +243,17 @@
       <xs:enumeration value="justify" />
       <xs:enumeration value="start" />
       <xs:enumeration value="end" />
+    </xs:restriction>
+  </xs:simpleType>
+  
+  <xs:simpleType name="editorAction">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="replace"></xs:enumeration>
+      <xs:enumeration value="select"></xs:enumeration>
+      <xs:enumeration value="home"></xs:enumeration>
+      <xs:enumeration value="end"></xs:enumeration>
+      <xs:enumeration value="addFirst"></xs:enumeration>
+      <xs:enumeration value="addLast"></xs:enumeration>
     </xs:restriction>
   </xs:simpleType>
   

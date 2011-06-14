@@ -1,9 +1,10 @@
 package com.butent.bee.shared.utils;
 
+import com.google.common.collect.Lists;
+
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -11,9 +12,6 @@ import java.util.List;
  * Contains methods for processing (removing, creating, adding) Property objects.
  */
 public class PropertyUtils {
-  public static final List<Property> EMPTY_PROPERTIES_LIST = new ArrayList<Property>();
-  public static final List<ExtendedProperty> EMPTY_EXTENDED_LIST =
-      new ArrayList<ExtendedProperty>();
 
   /**
    * Adds children to the specified {@code lst}. {@code root} is the name and {@code x} the sub and
@@ -315,7 +313,7 @@ public class PropertyUtils {
    * @return a new list of Properties
    */
   public static List<Property> createProperties(Object... obj) {
-    List<Property> lst = new ArrayList<Property>();
+    List<Property> lst = Lists.newArrayList();
     if (obj != null && obj.length > 0) {
       addProperties(lst, obj);
     }
@@ -332,7 +330,7 @@ public class PropertyUtils {
    */
   public static List<Property> createProperties(String prefix, String[] values) {
     Assert.notEmpty(values);
-    List<Property> lst = new ArrayList<Property>();
+    List<Property> lst = Lists.newArrayList();
 
     int n = values.length;
     String name = BeeUtils.isEmpty(prefix) ? BeeConst.STRING_EMPTY :
@@ -386,6 +384,36 @@ public class PropertyUtils {
       arr[i][1] = el.getValue();
     }
     return arr;
+  }
+
+  public static List<ExtendedProperty> restoreExtended(String s) {
+    if (BeeUtils.isEmpty(s)) {
+      return null;
+    }
+    List<ExtendedProperty> lst = Lists.newArrayList();
+    for (String prop : Codec.beeDeserialize(s)) {
+      lst.add(ExtendedProperty.restore(prop));
+    }
+    return lst;
+  }
+  
+  public static List<Property> restoreProperties(String s) {
+    if (BeeUtils.isEmpty(s)) {
+      return null;
+    }
+    List<Property> lst = Lists.newArrayList();
+    for (String prop : Codec.beeDeserialize(s)) {
+      lst.add(Property.restore(prop));
+    }
+    return lst;
+  }
+  
+  public static String serializeExtended(Collection<ExtendedProperty> src) {
+    return Codec.beeSerialize(src);
+  }
+  
+  public static String serializeProperties(Collection<Property> src) {
+    return Codec.beeSerialize(src);
   }
 
   /**

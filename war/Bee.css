@@ -570,6 +570,10 @@ body, select {
   color: green;
 }
 
+.bee-StringPicker {
+  overflow: auto;
+}  
+
 .bee-StringPicker-item {
   margin-bottom: 2px;
   outline: none;

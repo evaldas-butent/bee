@@ -19,6 +19,7 @@ import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.shared.BeeResource;
 import com.butent.bee.shared.HasStringValue;
 import com.butent.bee.shared.State;
+import com.butent.bee.shared.ui.EditorAction;
 import com.butent.bee.shared.utils.BeeUtils;
 
 /**
@@ -183,19 +184,14 @@ public class InputArea extends TextArea implements Editor, HasBeeValueChangeHand
     updateDigest(getValue());
   }
 
-  public void startEdit(String oldValue, char charCode) {
+  public void startEdit(String oldValue, char charCode, EditorAction onEntry) {
     if (!isEditorInitialized()) {
       initEditor();
       setEditorInitialized(true);
     }
 
-    if (Character.isLetterOrDigit(charCode) && BeeUtils.length(oldValue) < 10) {
-      setValue(BeeUtils.toString(charCode));
-    } else {
-      String v = BeeUtils.trimRight(oldValue);
-      setValue(v);
-      setCursorPos(0);
-    }
+    EditorAction action = (onEntry == null) ? EditorAction.ADD_LAST : onEntry;
+    UiHelper.doEditorAction(this, oldValue, charCode, action);
   }
 
   public String updateDigest() {

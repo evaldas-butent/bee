@@ -10,7 +10,7 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
-import com.butent.bee.client.grid.CellType;
+import com.butent.bee.client.grid.TextCellType;
 import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.layout.Vertical;
 import com.butent.bee.client.tree.BeeTree;
@@ -160,7 +160,7 @@ public class MessageBoxes {
 
   public void showGrid(String cap, Object data, String... columnLabels) {
     Assert.notNull(data);
-    showInfo(cap, Global.cellTable(data, CellType.TEXT, columnLabels));
+    showInfo(cap, Global.cellTable(data, TextCellType.TEXT, columnLabels));
   }
 
   public void showInfo(Object... x) {

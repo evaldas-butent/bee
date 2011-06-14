@@ -31,6 +31,7 @@ import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.IsTable;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.ui.ColumnDescription.CellType;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Property;
@@ -135,7 +136,7 @@ public class GridFactory {
 
   private static final Map<String, GridDescription> descriptionCache = Maps.newHashMap();
 
-  public static Widget cellTable(Object data, CellType cellType, String... columnLabels) {
+  public static Widget cellTable(Object data, TextCellType cellType, String... columnLabels) {
     Assert.notNull(data);
 
     IsTable<?, ?> table = DataUtils.createTable(data, columnLabels);
@@ -174,7 +175,25 @@ public class GridFactory {
     descriptionCache.clear();
   }
 
+  public static Cell<String> createCell(CellType cellType) {
+    Assert.notNull(cellType);
+
+    switch (cellType) {
+      case HTML:
+        return new HtmlCell();
+    }
+    return null;
+  }
+  
   public static DataColumn<?> createColumn(IsColumn dataColumn, int index) {
+    return createColumn(dataColumn, index, null);
+  }
+
+  public static DataColumn<?> createColumn(IsColumn dataColumn, int index, CellType cellType) {
+    if (cellType != null) {
+      return new TextColumn(createCell(cellType), index, dataColumn);
+    }
+
     ValueType type = dataColumn.getType();
     if (type == null) {
       return new TextColumn(index, dataColumn);
@@ -353,7 +372,7 @@ public class GridFactory {
     return grid;
   }
 
-  private static Cell<String> createCell(CellType type) {
+  private static Cell<String> createCell(TextCellType type) {
     Cell<String> cell;
 
     switch (type) {

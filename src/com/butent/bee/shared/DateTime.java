@@ -33,6 +33,10 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
    * Separator for field of milliseconds separate.
    */
   public static final char MILLIS_SEPARATOR = '.';
+  
+  public static long deserializeTime(String s) {
+    return BeeUtils.toLong(s);
+  }
 
   /**
    * Parsing {@code String s} to date format. If the {@code s} a number expression is converted to a
@@ -53,6 +57,13 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
     }
 
     return new DateTime(arr[0], arr[1], arr[2], arr[3], arr[4], arr[5], arr[6]);
+  }
+  
+  public static DateTime restore(String s) {
+    if (BeeUtils.isEmpty(s)) {
+      return null;
+    }
+    return new DateTime(deserializeTime(s));
   }
 
   private long time;
@@ -166,7 +177,7 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
    */
   @Override
   public void deserialize(String s) {
-    setTime(Long.parseLong(s));
+    setTime(deserializeTime(s));
   }
 
   /**

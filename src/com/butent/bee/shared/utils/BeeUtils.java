@@ -2355,6 +2355,13 @@ public class BeeUtils {
     return s1.trim().equalsIgnoreCase(s2.trim());
   }
 
+  public static boolean same(char c1, char c2) {
+    if (c1 == c2) {
+      return true;
+    }
+    return Character.toLowerCase(c1) == Character.toLowerCase(c2);
+  }
+  
   public static boolean sameSign(int i1, int i2) {
     return Integer.signum(i1) == Integer.signum(i2);
   }
@@ -2452,6 +2459,13 @@ public class BeeUtils {
     }
   }
 
+  public static boolean startsWith(String s, char c) {
+    if (s == null || s.trim().length() <= 0) {
+      return false;
+    }
+    return same(s.trim().charAt(0), c);
+  }
+  
   /**
    * Checks if {@code x} is a Boolean value.
    * 

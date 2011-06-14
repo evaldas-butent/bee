@@ -40,6 +40,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasOptions;
 import com.butent.bee.shared.data.view.HasRelationInfo;
 import com.butent.bee.shared.data.view.RelationInfo;
+import com.butent.bee.shared.ui.EditorAction;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
@@ -419,7 +420,7 @@ public class SuggestBox extends Composite implements HasText, HasAllKeyHandlers,
     }
   }
 
-  public void startEdit(String oldValue, char charCode) {
+  public void startEdit(String oldValue, char charCode, EditorAction onEntry) {
     if (Character.isLetterOrDigit(charCode)) {
       setValue(BeeUtils.toString(charCode));
     } else {

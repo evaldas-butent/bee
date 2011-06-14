@@ -12,6 +12,7 @@ import com.butent.bee.shared.HasNumberStep;
 import com.butent.bee.shared.HasPrecision;
 import com.butent.bee.shared.HasScale;
 import com.butent.bee.shared.HasStringValue;
+import com.butent.bee.shared.ui.EditorAction;
 import com.butent.bee.shared.utils.BeeUtils;
 
 public class InputNumber extends InputText implements HasNumberBounds, HasNumberStep,
@@ -132,11 +133,14 @@ public class InputNumber extends InputText implements HasNumberBounds, HasNumber
   }
 
   @Override
-  public void startEdit(String oldValue, char charCode) {
+  public void startEdit(String oldValue, char charCode, EditorAction onEntry) {
     if (BeeUtils.isEmpty(oldValue) || acceptChar(charCode) || getNumberFormat() == null) {
-      super.startEdit(oldValue, charCode);
+      super.startEdit(oldValue, charCode, onEntry);
     } else {
       setValue(getNumberFormat().format(BeeUtils.toDouble(oldValue)));
+      if (onEntry != null) {
+        super.startEdit(getValue(), charCode, onEntry);
+      }
     }
   }
 

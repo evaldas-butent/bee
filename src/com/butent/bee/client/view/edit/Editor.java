@@ -7,6 +7,7 @@ import com.google.gwt.user.client.ui.HasValue;
 import com.google.gwt.user.client.ui.IsWidget;
 
 import com.butent.bee.shared.HasId;
+import com.butent.bee.shared.ui.EditorAction;
 
 /**
  * Contains requirements for user interface components which are able to edit data values.
@@ -23,7 +24,7 @@ public interface Editor extends HasId, IsWidget, HasValue<String>, Focusable, Ha
 
   void setNullable(boolean nullable);
 
-  void startEdit(String oldValue, char charCode);
+  void startEdit(String oldValue, char charCode, EditorAction onEntry);
 
   String validate();
 }

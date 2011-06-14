@@ -29,6 +29,7 @@ import com.butent.bee.client.ajaxloader.AjaxKeyRepository;
 import com.butent.bee.client.ajaxloader.AjaxLoader;
 import com.butent.bee.client.ajaxloader.ClientLocation;
 import com.butent.bee.client.communication.ParameterList;
+import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.communication.RpcList;
 import com.butent.bee.client.composite.SliderBar;
 import com.butent.bee.client.data.JsData;
@@ -68,6 +69,7 @@ import com.butent.bee.shared.DateTime;
 import com.butent.bee.shared.JustDate;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ContentType;
+import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.utils.ArrayUtils;
@@ -1255,7 +1257,11 @@ public class CliWorker {
     if (!BeeUtils.isEmpty(args)) {
       params.addPositionalHeader(args.trim());
     }
-    BeeKeeper.getRpc().makeGetRequest(params);
+    BeeKeeper.getRpc().makeGetRequest(params, new ResponseCallback() {
+      public void onResponse(ResponseObject response) {
+        BeeKeeper.getUi().showGrid(PropertyUtils.restoreExtended((String) response.getResponse()));
+      }
+    });
   }
 
   public static void showWidgetInfo(String[] arr) {
