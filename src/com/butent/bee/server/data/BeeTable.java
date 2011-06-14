@@ -136,7 +136,7 @@ class BeeTable implements HasExtFields, HasStates, HasTranslations {
       Assert.notEmpty(refTable);
 
       this.tblName = tblName;
-      this.name = FOREIGN_KEY_PREFIX + Codec.crc32(getTable() + keyField);
+      this.name = FOREIGN_KEY_PREFIX + Codec.crc32(getTable() + keyField + refTable);
       this.keyField = keyField;
       this.refTable = refTable;
       this.action = action;
@@ -188,15 +188,10 @@ class BeeTable implements HasExtFields, HasStates, HasTranslations {
       Assert.notEmpty(keyFields);
 
       this.tblName = tblName;
-
-      String[] flds = new String[keyFields.length];
       String keyName = getTable();
 
-      for (int i = 0; i < keyFields.length; i++) {
-        String fld = keyFields[i];
-        Assert.notEmpty(fld);
-        flds[i] = fld.trim();
-        keyName += flds[i];
+      for (String fld : keyFields) {
+        keyName += fld;
       }
       keyName = Codec.crc32(keyName);
 
@@ -210,13 +205,10 @@ class BeeTable implements HasExtFields, HasStates, HasTranslations {
         case INDEX:
           keyName = INDEX_KEY_PREFIX + keyName;
           break;
-        default:
-          Assert.untouchable();
-          break;
       }
       this.name = keyName;
       this.keyType = keyType;
-      this.keyFields = flds;
+      this.keyFields = keyFields;
     }
 
     public String[] getKeyFields() {
@@ -499,7 +491,7 @@ class BeeTable implements HasExtFields, HasStates, HasTranslations {
 
       if (!BeeUtils.isEmpty(flds)) {
         for (String fld : flds) {
-          if (fld.matches(state.getName() + "\\d+_\\d+")) {
+          if (fld.matches(BeeUtils.concat("_", state.getName(), "[0-9]+", "[0-9]+"))) {
             fldList.add(fld);
           }
         }
@@ -591,9 +583,9 @@ class BeeTable implements HasExtFields, HasStates, HasTranslations {
       long to = from + bitCount - 1;
 
       if (bit < 0) {
-        return state.getName() + to + "_" + from; // User field
+        return BeeUtils.concat("_", state.getName(), to, from); // User field
       } else {
-        return state.getName() + from + "_" + to; // Role field
+        return BeeUtils.concat("_", state.getName(), from, to); // Role field
       }
     }
 

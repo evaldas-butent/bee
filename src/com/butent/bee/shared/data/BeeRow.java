@@ -186,14 +186,14 @@ public class BeeRow extends StringRow implements BeeSerializable {
   public void setValue(int col, String value) {
     String oldValue = getString(col);
 
-    if (!BeeUtils.equalsTrim(value, oldValue)) {
+    if (!BeeUtils.equalsTrimRight(value, oldValue)) {
       if (shadow == null) {
         shadow = new HashMap<Integer, String>();
       }
       if (!shadow.containsKey(col)) {
         shadow.put(col, oldValue);
       } else {
-        if (BeeUtils.equalsTrim(shadow.get(col), value)) {
+        if (BeeUtils.equalsTrimRight(shadow.get(col), value)) {
           shadow.remove(col);
 
           if (BeeUtils.isEmpty(shadow) && !isMarkedForInsert()) {

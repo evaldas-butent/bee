@@ -27,7 +27,7 @@
     <BeeFields>
       <BeeField name="User" type="LONG" notNull="true" relation="Users" cascade="true" />
       <BeeField name="Role" type="LONG" notNull="true" relation="Roles" cascade="true" />
-      <BeeKey fields="User, Role" unique="true" />
+      <BeeKey fields="User,Role" unique="true" />
     </BeeFields>
   </BeeTable>
   <BeeTable name="Countries" idName="CountryID" versionName="LastLock">
@@ -39,7 +39,7 @@
       <BeeField name="Currency" type="STRING" precision="50" />
     </BeeFields>
   </BeeTable>
-  <BeeTable name="Cities" idName="CityID" states="Marked, Unused">
+  <BeeTable name="Cities" idName="CityID" states="Marked,Unused">
     <BeeFields>
       <BeeField name="Name" type="STRING" precision="100" notNull="true" unique="true" />
       <BeeField name="Population" type="INTEGER" />

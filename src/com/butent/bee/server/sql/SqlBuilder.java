@@ -16,8 +16,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Is an abstract class for all SQL server specific SQL builders, contains core 
- * requirements for SQL statements.
+ * Is an abstract class for all SQL server specific SQL builders, contains core requirements for SQL
+ * statements.
  */
 
 public abstract class SqlBuilder {
@@ -29,8 +29,7 @@ public abstract class SqlBuilder {
 
       case CREATE_INDEX:
         return BeeUtils.concat(1,
-            "CREATE", (Boolean) params.get("unique") ? "UNIQUE" : "",
-            "INDEX", params.get("name"),
+            "CREATE INDEX", params.get("name"),
             "ON", params.get("table"),
             BeeUtils.parenthesize(params.get("fields")));
 
@@ -40,14 +39,16 @@ public abstract class SqlBuilder {
             "ADD CONSTRAINT", params.get("name"),
             sqlKeyword((Keyword) params.get("type"), params));
 
-      case PRIMARYKEY:
-        return BeeUtils.concat(1,
-            "PRIMARY KEY", BeeUtils.parenthesize(params.get("fields")));
+      case PRIMARY_KEY:
+        return BeeUtils.concat(1, "PRIMARY KEY", BeeUtils.parenthesize(params.get("fields")));
 
-      case FOREIGNKEY:
+      case UNIQUE_KEY:
+        return BeeUtils.concat(1, "UNIQUE", BeeUtils.parenthesize(params.get("fields")));
+
+      case FOREIGN_KEY:
         String foreign = BeeUtils.concat(1,
-            "FOREIGN KEY", BeeUtils.parenthesize(params.get("field")),
-            "REFERENCES", params.get("refTable"), BeeUtils.parenthesize(params.get("refField")));
+            "FOREIGN KEY", BeeUtils.parenthesize(params.get("fields")),
+            "REFERENCES", params.get("refTable"), BeeUtils.parenthesize(params.get("refFields")));
 
         Keyword action = (Keyword) params.get("action");
         if (!BeeUtils.isEmpty(action)) {
@@ -89,6 +90,88 @@ public abstract class SqlBuilder {
             .setWhere(wh)
             .getQuery(this);
 
+      case DB_FIELDS:
+        wh = null;
+
+        prm = params.get("dbName");
+        if (!BeeUtils.isEmpty(prm)) {
+          wh = SqlUtils.equal("c", "table_catalog", prm);
+        }
+        prm = params.get("dbSchema");
+        if (!BeeUtils.isEmpty(prm)) {
+          wh = SqlUtils.and(wh, SqlUtils.equal("c", "table_schema", prm));
+        }
+        prm = params.get("table");
+        if (!BeeUtils.isEmpty(prm)) {
+          wh = SqlUtils.and(wh, SqlUtils.equal("c", "table_name", prm));
+        }
+        return new SqlSelect()
+            .addField("c", "table_name", BeeConstants.TBL_NAME)
+            .addField("c", "column_name", BeeConstants.FLD_NAME)
+            .addField("c", "is_nullable", BeeConstants.FLD_NULL)
+            .addField("c", "data_type", BeeConstants.FLD_TYPE)
+            .addField("c", "character_maximum_length", BeeConstants.FLD_LENGTH)
+            .addField("c", "numeric_precision", BeeConstants.FLD_PRECISION)
+            .addField("c", "numeric_scale", BeeConstants.FLD_SCALE)
+            .addFrom("information_schema.columns", "c")
+            .setWhere(wh)
+            .addOrder("c", "ordinal_position")
+            .getQuery(this);
+
+      case DB_KEYS:
+        wh = null;
+
+        prm = params.get("dbName");
+        if (!BeeUtils.isEmpty(prm)) {
+          wh = SqlUtils.equal("k", "constraint_catalog", prm);
+        }
+        prm = params.get("dbSchema");
+        if (!BeeUtils.isEmpty(prm)) {
+          wh = SqlUtils.and(wh, SqlUtils.equal("k", "constraint_schema", prm));
+        }
+        prm = params.get("table");
+        if (!BeeUtils.isEmpty(prm)) {
+          wh = SqlUtils.and(wh, SqlUtils.equal("k", "table_name", prm));
+        }
+        prm = params.get("keyTypes");
+        if (!BeeUtils.isEmpty(prm)) {
+          IsCondition typeWh = null;
+
+          for (Keyword type : (Keyword[]) prm) {
+            String tp;
+
+            switch (type) {
+              case PRIMARY_KEY:
+                tp = "PRIMARY KEY";
+                break;
+
+              case UNIQUE_KEY:
+                tp = "UNIQUE";
+                break;
+
+              case FOREIGN_KEY:
+                tp = "FOREIGN KEY";
+                break;
+
+              default:
+                tp = null;
+            }
+            if (!BeeUtils.isEmpty(tp)) {
+              typeWh = SqlUtils.or(typeWh, SqlUtils.equal("k", "constraint_type", tp));
+            }
+          }
+          if (!BeeUtils.isEmpty(typeWh)) {
+            wh = SqlUtils.and(wh, typeWh);
+          }
+        }
+        return new SqlSelect()
+            .addField("k", "table_name", BeeConstants.TBL_NAME)
+            .addField("k", "constraint_name", BeeConstants.KEY_NAME)
+            .addField("k", "constraint_type", BeeConstants.KEY_TYPE)
+            .addFrom("information_schema.table_constraints", "k")
+            .setWhere(wh)
+            .getQuery(this);
+
       case DB_FOREIGNKEYS:
         wh = null;
 
@@ -113,8 +196,8 @@ public abstract class SqlBuilder {
           wh = SqlUtils.and(wh, SqlUtils.equal("r", "table_name", prm));
         }
         return new SqlSelect()
-            .addField("c", "constraint_name", BeeConstants.FK_NAME)
-            .addField("t", "table_name", BeeConstants.FK_TABLE)
+            .addField("c", "constraint_name", BeeConstants.KEY_NAME)
+            .addField("t", "table_name", BeeConstants.TBL_NAME)
             .addField("r", "table_name", BeeConstants.FK_REF_TABLE)
             .addFrom("information_schema.referential_constraints", "c")
             .addFromInner("information_schema.table_constraints", "t",
@@ -131,6 +214,10 @@ public abstract class SqlBuilder {
         return BeeUtils.concat(1,
             "ALTER TABLE", params.get("table"),
             "DROP CONSTRAINT", params.get("name"));
+
+      case RENAME_TABLE:
+        return BeeUtils.concat(1,
+            "ALTER TABLE", params.get("nameFrom"), "RENAME TO", params.get("nameTo"));
 
       case TEMPORARY:
         return "TEMPORARY ";
@@ -173,11 +260,9 @@ public abstract class SqlBuilder {
             sqlType((DataType) params.get("type")
                 , (Integer) params.get("precision")
                 , (Integer) params.get("scale")) + ")");
-
-      default:
-        Assert.unsupported("Unsupported keyword: " + option);
-        return null;
     }
+    Assert.untouchable();
+    return null;
   }
 
   protected abstract String sqlQuote(String value);
@@ -247,8 +332,7 @@ public abstract class SqlBuilder {
   }
 
   /**
-   * Forms a String from an SqlCommand {@code sc} using the specified {@code
-   * paramMode}.
+   * Forms a String from an SqlCommand {@code sc} using the specified {@code paramMode}.
    * 
    * @param sc the SqlCommand to use for forming
    * @param paramMode defines if parameter mode is true or false.
@@ -275,10 +359,9 @@ public abstract class SqlBuilder {
   }
 
   /**
-   * Generates an SQL CREATE query from the specified argument {@code sc}.
-   * There are two ways to generate the query. First: by defining a {@code 
-   * dataSource}. Second: describing the fields manually. Only one at an 
-   * instance of the SqlCreate object is possible. 
+   * Generates an SQL CREATE query from the specified argument {@code sc}. There are two ways to
+   * generate the query. First: by defining a {@code  dataSource}. Second: describing the fields
+   * manually. Only one at an instance of the SqlCreate object is possible.
    * 
    * @param sc the SqlCreate object
    * @param paramMode sets the parameter mode
@@ -322,8 +405,8 @@ public abstract class SqlBuilder {
   }
 
   /**
-   * Generates an SQL DELETE query from the specified argument {@code sd}.
-   * {@code sd} must have From and Where contitions set.
+   * Generates an SQL DELETE query from the specified argument {@code sd}. {@code sd} must have From
+   * and Where contitions set.
    * 
    * @param sd the SqlDelete object to use for generating
    * @param paramMode sets the parameter mode
@@ -355,10 +438,9 @@ public abstract class SqlBuilder {
   }
 
   /**
-   * Generates an SQL INSERT query from the specified argument {@code si}.
-   * There are two ways to generate the query. First: by defining a {@code 
-   * dataSource}. Second: describing the fields manually. Only one at an 
-   * instance of the SqlInsert object is possible. 
+   * Generates an SQL INSERT query from the specified argument {@code si}. There are two ways to
+   * generate the query. First: by defining a {@code  dataSource}. Second: describing the fields
+   * manually. Only one at an instance of the SqlInsert object is possible.
    * 
    * @param si the SqlInsert object
    * @param paramMode sets the parameter mode
@@ -407,8 +489,8 @@ public abstract class SqlBuilder {
   }
 
   /**
-   * Generates an SQL SELECT query from the specified argument {@code ss}.
-   * From value must be defined in order to generate the query. 
+   * Generates an SQL SELECT query from the specified argument {@code ss}. From value must be
+   * defined in order to generate the query.
    * 
    * @param ss the SqlSelect object
    * @param paramMode sets the parameter mode
@@ -504,8 +586,8 @@ public abstract class SqlBuilder {
   }
 
   /**
-   * Generates an SQL UPDATE query from the specified argument {@code su}.
-   * A target table and at least one expression must be defined.
+   * Generates an SQL UPDATE query from the specified argument {@code su}. A target table and at
+   * least one expression must be defined.
    * 
    * @param su the SqlUpdate object.
    * @param paramMode sets teh parameter mode

@@ -2,6 +2,7 @@ package com.butent.bee.server.data;
 
 import com.butent.bee.server.DataSourceBean;
 import com.butent.bee.server.jdbc.JdbcUtils;
+import com.butent.bee.server.sql.BeeConstants.Keyword;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.IsQuery;
 import com.butent.bee.server.sql.SqlBuilderFactory;
@@ -67,17 +68,17 @@ public class QueryServiceBean {
   @EJB
   SystemBean sys;
 
-  public String[] dbFields(String table) {
-    SimpleRowSet res = getData(new SqlSelect()
-        .addAllFields(table).addFrom(table).setWhere(SqlUtils.sqlFalse()));
-    Assert.notNull(res);
-
-    return res.getColumnNames();
+  public SimpleRowSet dbFields(String dbName, String dbSchema, String table) {
+    return getData(SqlUtils.dbFields(dbName, dbSchema, table));
   }
 
   public SimpleRowSet dbForeignKeys(String dbName, String dbSchema, String table,
       String refTable) {
     return getData(SqlUtils.dbForeignKeys(dbName, dbSchema, table, refTable));
+  }
+
+  public SimpleRowSet dbKeys(String dbName, String dbSchema, String table, Keyword... types) {
+    return getData(SqlUtils.dbKeys(dbName, dbSchema, table, types));
   }
 
   public String dbName() {
@@ -529,7 +530,8 @@ public class QueryServiceBean {
         rs = stmt.getResultSet();
         result = callback.processResultSet(rs);
       } else {
-        result = callback.processUpdateCount(stmt.getUpdateCount());
+        int cnt = stmt.getUpdateCount();
+        result = callback.processUpdateCount(cnt < 0 ? 0 : cnt);
       }
 
     } catch (SQLException ex) {

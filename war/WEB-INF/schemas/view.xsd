@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.butent.com/bee"
   xmlns:bee="http://www.butent.com/bee" elementFormDefault="qualified">
+  
+  <xs:include schemaLocation="types.xsd"/>
 
   <xs:element name="BeeViews">
     <xs:complexType>
@@ -15,8 +17,8 @@
       <xs:element name="BeeColumns" type="bee:columns" minOccurs="1" maxOccurs="1" />
       <xs:element name="BeeOrder" type="bee:orders" minOccurs="0" maxOccurs="1" />
     </xs:sequence>
-    <xs:attribute name="name" type="xs:string" use="required" />
-    <xs:attribute name="source" type="xs:string" use="required" />
+    <xs:attribute name="name" type="bee:nameType" use="required" />
+    <xs:attribute name="source" type="bee:tableNameType" use="required" />
     <xs:attribute name="readOnly" type="xs:boolean" />
   </xs:complexType>
 
@@ -33,8 +35,8 @@
   </xs:complexType>
 
   <xs:complexType name="columnType">
-    <xs:attribute name="name" type="bee:nameType" use="required" />
-    <xs:attribute name="expression" type="xs:string" use="required" />
+    <xs:attribute name="name" type="bee:fieldNameType" use="required" />
+    <xs:attribute name="expression" type="bee:expressionType" use="required" />
     <xs:attribute name="locale">
       <xs:simpleType>
         <xs:restriction base="xs:string">
@@ -45,14 +47,13 @@
   </xs:complexType>
 
   <xs:complexType name="orderType">
-    <xs:attribute name="name" type="bee:nameType" use="required" />
+    <xs:attribute name="name" type="bee:fieldNameType" use="required" />
     <xs:attribute name="descending" type="xs:boolean" />
   </xs:complexType>
 
-  <xs:simpleType name="nameType">
+  <xs:simpleType name="expressionType">
     <xs:restriction base="xs:string">
-      <xs:maxLength value="30" />
+      <xs:pattern value="[A-Z][a-zA-Z0-9]{0,29}([->][A-Z][a-zA-Z0-9]{0,29})*"/>
     </xs:restriction>
   </xs:simpleType>
-
 </xs:schema>

@@ -81,7 +81,7 @@ public class SqlCreate extends SqlQuery<SqlCreate> {
     }
   }
 
-  private final IsFrom target;
+  private IsFrom target;
   private final boolean temporary;
   private List<SqlField> fieldList = new ArrayList<SqlField>();
 
@@ -105,7 +105,7 @@ public class SqlCreate extends SqlQuery<SqlCreate> {
    * @param temporary the temporary keyword value
    */
   public SqlCreate(String target, boolean temporary) {
-    this.target = FromJoin.fromSingle(target, null);
+    setTarget(target);
     this.temporary = temporary;
   }
 
@@ -369,6 +369,17 @@ public class SqlCreate extends SqlQuery<SqlCreate> {
     dataSource = query;
 
     return getReference();
+  }
+
+  /**
+   * Sets the name of a table, to be created.
+   * 
+   * @param target table to create
+   * @return object's SqlCreate instance
+   */
+  public SqlCreate setTarget(String target) {
+    this.target = FromJoin.fromSingle(target, null);
+    return this;
   }
 
   @Override

@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.butent.com/bee"
   xmlns:bee="http://www.butent.com/bee" elementFormDefault="qualified">
+  
+  <xs:include schemaLocation="types.xsd"/>
 
   <xs:element name="BeeTables">
     <xs:complexType>
@@ -17,10 +19,10 @@
         <xs:element name="BeeExtended" type="bee:fields" minOccurs="0" maxOccurs="1" />
       </xs:choice>
     </xs:sequence>
-    <xs:attribute name="name" type="xs:string" use="required" />
-    <xs:attribute name="idName" type="xs:string" default="ID" />
-    <xs:attribute name="versionName" type="xs:string" default="VERSION" />
-    <xs:attribute name="states" type="xs:string" />
+    <xs:attribute name="name" type="bee:tableNameType" use="required" />
+    <xs:attribute name="idName" type="bee:fieldNameType" default="ID" />
+    <xs:attribute name="versionName" type="bee:fieldNameType" default="VERSION" />
+    <xs:attribute name="states" type="bee:stateListType" />
   </xs:complexType>
 
   <xs:complexType name="fields">
@@ -31,13 +33,7 @@
   </xs:complexType>
 
   <xs:complexType name="fieldType">
-    <xs:attribute name="name" use="required">
-      <xs:simpleType>
-        <xs:restriction base="xs:string">
-          <xs:maxLength value="30" />
-        </xs:restriction>
-      </xs:simpleType>
-    </xs:attribute>
+    <xs:attribute name="name" use="required" type="bee:fieldNameType" />
     <xs:attribute name="type" type="bee:dataType" use="required" />
     <xs:attribute name="precision" type="xs:integer" />
     <xs:attribute name="scale" type="xs:byte" />
@@ -48,21 +44,7 @@
   </xs:complexType>
 
   <xs:complexType name="keyType">
-    <xs:attribute name="fields" type="xs:string" use="required" />
+    <xs:attribute name="fields" type="bee:fieldListType" use="required" />
     <xs:attribute name="unique" type="xs:boolean" />
   </xs:complexType>
-
-  <xs:simpleType name="dataType">
-    <xs:restriction base="xs:string">
-      <xs:enumeration value="BOOLEAN" />
-      <xs:enumeration value="INTEGER" />
-      <xs:enumeration value="LONG" />
-      <xs:enumeration value="DOUBLE" />
-      <xs:enumeration value="DECIMAL" />
-      <xs:enumeration value="CHAR" />
-      <xs:enumeration value="STRING" />
-      <xs:enumeration value="DATE" />
-      <xs:enumeration value="DATETIME" />
-    </xs:restriction>
-  </xs:simpleType>
 </xs:schema>

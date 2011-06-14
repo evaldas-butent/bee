@@ -5,6 +5,6 @@
   <BeeState name="Visible" mode="ROLE" checked="true" />
   <BeeState name="Marked" mode="USER" />
   <BeeState name="Unused" checked="true" />
-  <BeeState name="pyp" />
-  <BeeState name="pop" />
+  <BeeState name="Pyp" />
+  <BeeState name="Pop" />
 </BeeStates>

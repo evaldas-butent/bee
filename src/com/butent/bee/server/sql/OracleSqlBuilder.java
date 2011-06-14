@@ -7,8 +7,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.Map;
 
 /**
- * Contains specific requirements for SQL statement building for Oracle SQL 
- * server.
+ * Contains specific requirements for SQL statement building for Oracle SQL server.
  */
 
 class OracleSqlBuilder extends SqlBuilder {
@@ -36,6 +35,80 @@ class OracleSqlBuilder extends SqlBuilder {
             .setWhere(wh)
             .getQuery(this);
 
+      case DB_FIELDS:
+        wh = null;
+
+        prm = params.get("dbSchema");
+        if (!BeeUtils.isEmpty(prm)) {
+          wh = SqlUtils.equal("c", "OWNER", prm);
+        }
+        prm = params.get("table");
+        if (!BeeUtils.isEmpty(prm)) {
+          wh = SqlUtils.and(wh, SqlUtils.equal("c", "TABLE_NAME", prm));
+        }
+        return new SqlSelect()
+            .addField("c", "TABLE_NAME", BeeConstants.TBL_NAME)
+            .addField("c", "COLUMN_NAME", BeeConstants.FLD_NAME)
+            .addField("c", "NULLABLE", BeeConstants.FLD_NULL)
+            .addField("c", "DATA_TYPE", BeeConstants.FLD_TYPE)
+            .addField("c", "DATA_LENGTH", BeeConstants.FLD_LENGTH)
+            .addField("c", "DATA_PRECISION", BeeConstants.FLD_PRECISION)
+            .addField("c", "DATA_SCALE", BeeConstants.FLD_SCALE)
+            .addFrom("ALL_TAB_COLUMNS", "c")
+            .setWhere(wh)
+            .addOrder("c", "COLUMN_ID")
+            .getQuery(this);
+
+      case DB_KEYS:
+        wh = null;
+
+        prm = params.get("dbSchema");
+        if (!BeeUtils.isEmpty(prm)) {
+          wh = SqlUtils.equal("k", "OWNER", prm);
+        }
+        prm = params.get("table");
+        if (!BeeUtils.isEmpty(prm)) {
+          wh = SqlUtils.and(wh, SqlUtils.equal("k", "TABLE_NAME", prm));
+        }
+        prm = params.get("keyTypes");
+        if (!BeeUtils.isEmpty(prm)) {
+          IsCondition typeWh = null;
+
+          for (Keyword type : (Keyword[]) prm) {
+            String tp;
+
+            switch (type) {
+              case PRIMARY_KEY:
+                tp = "P";
+                break;
+
+              case UNIQUE_KEY:
+                tp = "U";
+                break;
+
+              case FOREIGN_KEY:
+                tp = "R";
+                break;
+
+              default:
+                tp = null;
+            }
+            if (!BeeUtils.isEmpty(tp)) {
+              typeWh = SqlUtils.or(typeWh, SqlUtils.equal("k", "CONSTRAINT_TYPE", tp));
+            }
+          }
+          if (!BeeUtils.isEmpty(typeWh)) {
+            wh = SqlUtils.and(wh, typeWh);
+          }
+        }
+        return new SqlSelect()
+            .addField("k", "TABLE_NAME", BeeConstants.TBL_NAME)
+            .addField("k", "CONSTRAINT_NAME", BeeConstants.KEY_NAME)
+            .addField("k", "CONSTRAINT_TYPE", BeeConstants.KEY_TYPE)
+            .addFrom("ALL_CONSTRAINTS", "k")
+            .setWhere(wh)
+            .getQuery(this);
+
       case DB_FOREIGNKEYS:
         wh = SqlUtils.equal("c", "CONSTRAINT_TYPE", "R");
 
@@ -54,8 +127,8 @@ class OracleSqlBuilder extends SqlBuilder {
           wh = SqlUtils.and(wh, SqlUtils.equal("r", "TABLE_NAME", prm));
         }
         return new SqlSelect()
-            .addField("c", "CONSTRAINT_NAME", BeeConstants.FK_NAME)
-            .addField("c", "TABLE_NAME", BeeConstants.FK_TABLE)
+            .addField("c", "CONSTRAINT_NAME", BeeConstants.KEY_NAME)
+            .addField("c", "TABLE_NAME", BeeConstants.TBL_NAME)
             .addField("r", "TABLE_NAME", BeeConstants.FK_REF_TABLE)
             .addFrom("ALL_CONSTRAINTS", "c")
             .addFromInner("ALL_CONSTRAINTS", "r",

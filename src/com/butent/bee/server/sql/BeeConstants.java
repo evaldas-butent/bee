@@ -4,8 +4,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.utils.BeeUtils;
 
 /**
- * Contains constants lists, such as keywords, datatypes and empty values for 
- * each of them.
+ * Contains constants lists, such as keywords, datatypes and empty values for each of them.
  */
 
 public final class BeeConstants {
@@ -76,14 +75,25 @@ public final class BeeConstants {
    */
 
   public enum Keyword {
-    DB_NAME, DB_SCHEMA, DB_TABLES, DB_FOREIGNKEYS,
-    DROP_TABLE, DROP_FOREIGNKEY, CREATE_INDEX, ADD_CONSTRAINT, PRIMARYKEY, FOREIGNKEY,
+    DB_NAME, DB_SCHEMA, DB_TABLES, DB_FIELDS, DB_KEYS, DB_FOREIGNKEYS,
+    RENAME_TABLE, DROP_TABLE, DROP_FOREIGNKEY, CREATE_INDEX,
+    ADD_CONSTRAINT, PRIMARY_KEY, UNIQUE_KEY, FOREIGN_KEY,
     TEMPORARY, TEMPORARY_NAME, NOT_NULL, CASCADE, SET_NULL,
     BITAND, IF, CASE, CAST
   }
 
-  public static final String FK_NAME = "fkName";
-  public static final String FK_TABLE = "fkTable";
+  public static final String TBL_NAME = "tblName";
+
+  public static final String FLD_NAME = "fldName";
+  public static final String FLD_TYPE = "fldType";
+  public static final String FLD_NULL = "fldNullable";
+  public static final String FLD_LENGTH = "fldLength";
+  public static final String FLD_PRECISION = "fldPrecision";
+  public static final String FLD_SCALE = "fldScale";
+
+  public static final String KEY_NAME = "keyName";
+  public static final String KEY_TYPE = "keyType";
+
   public static final String FK_REF_TABLE = "fkRefTable";
 
   private BeeConstants() {

@@ -19,11 +19,6 @@ class MySqlBuilder extends SqlBuilder {
       case DB_SCHEMA:
         return "SELECT schema() AS " + sqlQuote("dbSchema");
 
-      case DROP_FOREIGNKEY:
-        return BeeUtils.concat(1,
-            "ALTER TABLE", params.get("table"),
-            "DROP FOREIGN KEY", params.get("name"));
-
       case DB_TABLES:
         String sql = "SHOW TABLES";
 
@@ -61,14 +56,19 @@ class MySqlBuilder extends SqlBuilder {
           wh = SqlUtils.and(wh, SqlUtils.equal("c", "referenced_table_name", prm));
         }
         return new SqlSelect()
-            .addField("c", "constraint_name", BeeConstants.FK_NAME)
-            .addField("t", "table_name", BeeConstants.FK_TABLE)
+            .addField("c", "constraint_name", BeeConstants.KEY_NAME)
+            .addField("t", "table_name", BeeConstants.TBL_NAME)
             .addField("c", "referenced_table_name", BeeConstants.FK_REF_TABLE)
             .addFrom("information_schema.referential_constraints", "c")
             .addFromInner("information_schema.table_constraints", "t",
                 SqlUtils.joinUsing("c", "t", "constraint_name"))
             .setWhere(wh)
             .getQuery(this);
+
+      case DROP_FOREIGNKEY:
+        return BeeUtils.concat(1,
+            "ALTER TABLE", params.get("table"),
+            "DROP FOREIGN KEY", params.get("name"));
 
       case CAST:
         sql = "CAST(" + params.get("expression");

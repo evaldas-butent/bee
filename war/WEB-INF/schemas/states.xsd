@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.butent.com/bee"
   xmlns:bee="http://www.butent.com/bee" elementFormDefault="qualified">
+  
+  <xs:include schemaLocation="types.xsd"/>
 
   <xs:element name="BeeStates">
     <xs:complexType>
@@ -11,13 +13,7 @@
   </xs:element>
 
   <xs:complexType name="stateType">
-    <xs:attribute name="name" use="required">
-      <xs:simpleType>
-        <xs:restriction base="xs:string">
-          <xs:maxLength value="10" />
-        </xs:restriction>
-      </xs:simpleType>
-    </xs:attribute>
+    <xs:attribute name="name" use="required" type="bee:stateNameType" />
     <xs:attribute name="mode">
       <xs:simpleType>
         <xs:restriction base="xs:string">

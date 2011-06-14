@@ -8,8 +8,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.Map;
 
 /**
- * Contains specific requirements for SQL statement building for Microsoft SQL 
- * server.
+ * Contains specific requirements for SQL statement building for Microsoft SQL server.
  */
 
 class MsSqlBuilder extends SqlBuilder {
@@ -28,6 +27,10 @@ class MsSqlBuilder extends SqlBuilder {
 
       case TEMPORARY_NAME:
         return "#" + params.get("name");
+
+      case RENAME_TABLE:
+        return BeeUtils.concat(1,
+            "sp_rename", params.get("nameFrom"), ",", params.get("nameTo"));
 
       default:
         return super.sqlKeyword(option, params);
