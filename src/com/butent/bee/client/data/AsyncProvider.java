@@ -32,7 +32,7 @@ public class AsyncProvider extends Provider {
       this.updateActiveRow = updateActiveRow;
     }
 
-    public void onFailure(String reason) {
+    public void onFailure(String[] reason) {
     }
 
     public void onSuccess(BeeRowSet rowSet) {

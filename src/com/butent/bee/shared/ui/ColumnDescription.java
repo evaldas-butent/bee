@@ -89,7 +89,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
    */
 
   private enum SerializationMember {
-    COL_TYPE, NAME, CAPTION, READ_ONLY, WIDTH, SOURCE, REL_TABLE, REL_FIELD,
+    COL_TYPE, NAME, CAPTION, READ_ONLY, WIDTH, SOURCE, REL_SOURCE, REL_TABLE, REL_FIELD,
     MIN_WIDTH, MAX_WIDTH, SORTABLE, VISIBLE, FORMAT, HOR_ALIGN, HAS_FOOTER, SHOW_WIDTH,
     VALIDATION, EDITABLE, CARRY, EDITOR, MIN_VALUE, MAX_VALUE,
     CALC, VALUE_TYPE, PRECISION, SCALE,
@@ -112,6 +112,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
   private Integer width = null;
 
   private String source = null;
+  private String relSource = null;
   private String relTable = null;
   private String relField = null;
 
@@ -190,6 +191,9 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
           break;
         case SOURCE:
           setSource(value);
+          break;
+        case REL_SOURCE:
+          setRelSource(value);
           break;
         case REL_TABLE:
           setRelTable(value);
@@ -335,6 +339,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
         "Read Only", isReadOnly(),
         "Width", getWidth(),
         "Source", getSource(),
+        "Rel Source", getRelSource(),
         "Rel Table", getRelTable(),
         "Rel Field", getRelField(),
         "Min Width", getMinWidth(),
@@ -423,6 +428,10 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
     return relField;
   }
 
+  public String getRelSource() {
+    return relSource;
+  }
+
   public String getRelTable() {
     return relTable;
   }
@@ -488,6 +497,9 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
           break;
         case SOURCE:
           arr[i++] = getSource();
+          break;
+        case REL_SOURCE:
+          arr[i++] = getRelSource();
           break;
         case REL_TABLE:
           arr[i++] = getRelTable();
@@ -647,6 +659,10 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
 
   public void setRelField(String relField) {
     this.relField = relField;
+  }
+
+  public void setRelSource(String relSource) {
+    this.relSource = relSource;
   }
 
   public void setRelTable(String relTable) {

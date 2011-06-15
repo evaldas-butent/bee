@@ -200,7 +200,7 @@ public class CachedProvider extends Provider {
     final int oldTableSize = getTable().getNumberOfRows();
 
     Queries.getRowSet(name, getOrder(), new Queries.RowSetCallback() {
-      public void onFailure(String reason) {
+      public void onFailure(String[] reason) {
       }
 
       public void onSuccess(BeeRowSet rowSet) {

@@ -144,7 +144,7 @@ public abstract class Provider implements SortEvent.Handler, HandlesDeleteEvents
 
     final Filter flt = getFilter();
     Queries.getRowCount(getViewName(), flt, new Queries.IntCallback() {
-      public void onFailure(String reason) {
+      public void onFailure(String[] reason) {
       }
 
       public void onSuccess(Integer result) {

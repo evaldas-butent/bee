@@ -90,7 +90,7 @@ public class SelectionOracle extends SuggestOracle {
   
   private void initValues() {
     Queries.getColumnValues(getTable(), getField(), null, true, new Queries.RowSetCallback() {
-      public void onFailure(String reason) {
+      public void onFailure(String[] reason) {
       }
       
       public void onSuccess(BeeRowSet result) {

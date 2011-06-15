@@ -1252,6 +1252,8 @@ public class BeeUtils {
       ok = ArrayUtils.length(x) <= 0;
     } else if (x instanceof Enumeration) {
       ok = !((Enumeration<?>) x).hasMoreElements();
+    } else if (x instanceof HasLength) {
+      ok = ((HasLength) x).getLength() <= 0;
     } else {
       ok = false;
     }

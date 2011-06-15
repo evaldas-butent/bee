@@ -5,7 +5,6 @@ import com.google.gwt.event.shared.GwtEvent;
 
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.data.view.RelationInfo;
 
 /**
  * Handles edit event ending, gets old and new values of edited data.
@@ -29,18 +28,19 @@ public class EditEndEvent extends GwtEvent<EditEndEvent.Handler> {
 
   private final IsRow rowValue;
   private final IsColumn column;
-  private final RelationInfo relationInfo;
 
   private final String oldValue;
   private final String newValue;
 
-  public EditEndEvent(IsRow rowValue, IsColumn column, RelationInfo relationInfo,
-      String oldValue, String newValue) {
+  private final boolean rowMode;
+
+  public EditEndEvent(IsRow rowValue, IsColumn column, String oldValue, String newValue,
+      boolean rowMode) {
     this.rowValue = rowValue;
     this.column = column;
-    this.relationInfo = relationInfo;
     this.oldValue = oldValue;
     this.newValue = newValue;
+    this.rowMode = rowMode;
   }
 
   @Override
@@ -60,12 +60,12 @@ public class EditEndEvent extends GwtEvent<EditEndEvent.Handler> {
     return oldValue;
   }
 
-  public RelationInfo getRelationInfo() {
-    return relationInfo;
-  }
-
   public IsRow getRowValue() {
     return rowValue;
+  }
+
+  public boolean isRowMode() {
+    return rowMode;
   }
 
   @Override

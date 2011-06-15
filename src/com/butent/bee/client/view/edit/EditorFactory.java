@@ -71,6 +71,11 @@ public class EditorFactory {
 
   public static Editor createEditor(BeeColumn column) {
     Assert.notNull(column);
+    return createEditor(column, column.isNullable());
+  }
+  
+  public static Editor createEditor(BeeColumn column, boolean nullable) {
+    Assert.notNull(column);
 
     ValueType type = column.getType();
     if (type == null) {
@@ -124,8 +129,7 @@ public class EditorFactory {
         break;
     }
     Assert.notNull(editor);
-
-    editor.setNullable(column.isNullable());
+    editor.setNullable(nullable);
 
     if (editor instanceof HasPrecision) {
       ((HasPrecision) editor).setPrecision(precision);
@@ -141,7 +145,7 @@ public class EditorFactory {
     return editor;
   }
 
-  public static Editor getEditor(EditorDescription description) {
+  public static Editor getEditor(EditorDescription description, boolean nullable) {
     Assert.notNull(description);
     EditorType type = description.getType();
     Assert.notNull(type);
@@ -208,6 +212,8 @@ public class EditorFactory {
         editor = new Toggle();
         break;
     }
+    Assert.notNull(editor);
+    editor.setNullable(nullable);
 
     if (editor instanceof HasNumberStep && description.getStepValue() != null) {
       ((HasNumberStep) editor).setStepValue(description.getStepValue());

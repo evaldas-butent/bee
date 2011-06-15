@@ -75,7 +75,7 @@ public class GridPresenter implements Presenter, EditEndEvent.Handler {
         long version = rowInfo.getVersion();
 
         Queries.deleteRow(getDataName(), rowId, version, new Queries.IntCallback() {
-          public void onFailure(String reason) {
+          public void onFailure(String[] reason) {
             showFailure("Delete Row", reason);
             setLoadingState(LoadingStateChangeEvent.LoadingState.LOADED);
           }
@@ -87,7 +87,7 @@ public class GridPresenter implements Presenter, EditEndEvent.Handler {
 
       } else if (count > 1) {
         Queries.deleteRows(getDataName(), rows, new Queries.IntCallback() {
-          public void onFailure(String reason) {
+          public void onFailure(String[] reason) {
             showFailure("Delete Rows", reason);
             setLoadingState(LoadingStateChangeEvent.LoadingState.LOADED);
           }
@@ -108,7 +108,7 @@ public class GridPresenter implements Presenter, EditEndEvent.Handler {
       this.filter = filter;
     }
 
-    public void onFailure(String reason) {
+    public void onFailure(String[] reason) {
       showFailure("Filter", reason);
     }
 
@@ -229,18 +229,18 @@ public class GridPresenter implements Presenter, EditEndEvent.Handler {
     rs.addRow(rowId, version, new String[]{event.getOldValue()});
     rs.setValue(0, 0, newValue);
     
-    final boolean isRelation = event.getRelationInfo() != null;
+    final boolean rowMode = event.isRowMode();
 
-    Queries.updateRow(rs, isRelation, 
+    Queries.update(rs, rowMode, 
         new Queries.RowCallback() {
-          public void onFailure(String reason) {
+          public void onFailure(String[] reason) {
             getView().getContent().refreshCellContent(rowId, columnId);
-            showFailure("Update Row", reason);
+            showFailure("Update Cell", reason);
           }
 
           public void onSuccess(BeeRow row) {
             BeeKeeper.getLog().info("cell updated:", viewName, rowId, columnId, newValue);
-            if (isRelation) {
+            if (rowMode) {
               BeeKeeper.getBus().fireEvent(new RowUpdateEvent(viewName, row));
             } else {
               BeeKeeper.getBus().fireEvent(
@@ -347,8 +347,12 @@ public class GridPresenter implements Presenter, EditEndEvent.Handler {
     }
   }
 
-  private void showFailure(String activity, String reason) {
-    getView().getContent().notifySevere(activity, reason);
+  private void showFailure(String activity, String... reasons) {
+    List<String> messages = Lists.newArrayList(activity);
+    if (reasons != null) {
+      messages.addAll(Lists.newArrayList(reasons));
+    }
+    getView().getContent().notifySevere(messages.toArray(new String[0]));
   }
 
   private void showInfo(String... messages) {

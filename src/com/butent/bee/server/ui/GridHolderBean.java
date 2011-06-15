@@ -244,6 +244,7 @@ public class GridHolderBean {
         }
         
         column.setSource(relSource);
+        column.setRelSource(source);
         column.setRelTable(relTable);
         ok = true;
         break;

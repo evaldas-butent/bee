@@ -9,20 +9,15 @@ import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
-import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.SqlBuilderFactory;
 import com.butent.bee.server.sql.SqlSelect;
-import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
-import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
-import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.Order;
@@ -32,7 +27,6 @@ import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.ExtendedProperty;
-import com.butent.bee.shared.utils.LogUtils;
 import com.butent.bee.shared.utils.PropertyUtils;
 
 import java.util.HashSet;
@@ -125,8 +119,6 @@ public class UiServiceBean {
         response = updateCell(reqInfo);
       } else if (BeeUtils.same(svc, Service.UPDATE_ROW)) {
         response = updateRow(reqInfo);
-      } else if (BeeUtils.same(svc, Service.UPDATE_RELATION)) {
-        response = updateRelation(reqInfo);
       } else if (BeeUtils.same(svc, Service.INSERT_ROW)) {
         response = insertRow(reqInfo);
       } else if (BeeUtils.same(svc, Service.GET_VIEW_INFO)) {
@@ -464,77 +456,11 @@ public class UiServiceBean {
     return response;
   }
 
-  @Deprecated
   private ResponseObject updateCell(RequestInfo reqInfo) {
-    String viewName = reqInfo.getParameter(Service.VAR_VIEW_NAME);
-    String rowId = reqInfo.getParameter(Service.VAR_VIEW_ROW_ID);
-    String version = reqInfo.getParameter(Service.VAR_VIEW_VERSION);
-    String columnId = reqInfo.getParameter(Service.VAR_VIEW_COLUMN);
-    String columnType = reqInfo.getParameter(Service.VAR_VIEW_TYPE);
-    String oldValue = reqInfo.getParameter(Service.VAR_VIEW_OLD_VALUE);
-    String newValue = reqInfo.getParameter(Service.VAR_VIEW_NEW_VALUE);
-
-    Assert.notEmpty(viewName, "updateCell: viewName not specified");
-    Assert.notEmpty(rowId, "updateCell: row id not specified");
-    Assert.notEmpty(columnId, "updateCell: column id not specified");
-    Assert.notEmpty(columnType, "updateCell: column type not specified");
-
-    BeeRowSet rs = new BeeRowSet(new BeeColumn(ValueType.getByTypeCode(columnType), columnId));
-    rs.setViewName(viewName);
-    rs.addRow(rowId, version, new String[]{oldValue});
-    rs.setValue(0, 0, newValue);
-
-    ResponseObject result = sys.updateRow(rs,
-        BeeUtils.toBoolean(reqInfo.getParameter(Service.VAR_VIEW_FULL_ROW)));
-
-    if (result.hasResponse(IsRow.class)) {
-      long newVersion = ((IsRow) result.getResponse()).getVersion();
-      result.setResponse(newVersion);
-    }
-    return result;
-  }
-
-  private ResponseObject updateRelation(RequestInfo reqInfo) {
-    BeeRowSet reqRs = BeeRowSet.restore(reqInfo.getContent());
-    String viewName = reqRs.getViewName();
-    String source = reqRs.getColumn(0).getLabel();
-    BeeRow reqRow = reqRs.getRow(0);
-    long rowId = reqRow.getId();
-    String reqValue = reqRs.getString(reqRow, source);
-
-    BeeView view = sys.getView(viewName);
-    String relTable = view.getTable(source);
-    String relField = view.getField(source);
-
-    String relSource = BeeUtils.getPrefix(view.getExpression(source), '>');
-    String relId = sys.getIdName(relTable);
-    String tableName = view.getTable(relSource);
-
-    IsCondition idWh = SqlUtils.equal(tableName, sys.getIdName(tableName), rowId);
-
-    SqlUpdate su = new SqlUpdate(tableName).addConstant(sys.getVersionName(tableName),
-        System.currentTimeMillis());
-
-    if (BeeUtils.isEmpty(reqValue)) {
-      su.addConstant(relSource, null);
-    } else {
-      SimpleRowSet relRs =
-          qs.getData(new SqlSelect().addFrom(relTable).addFields(relTable, relId).setWhere(
-              SqlUtils.equal(relTable, relField, reqValue)));
-      if (relRs == null || relRs.getNumberOfRows() != 1 || relRs.getNumberOfColumns() != 1) {
-        LogUtils.warning(logger, relTable, relField, "related value", reqValue, "not found");
-        return ResponseObject.error("Value not found");
-      }
-      Long id = relRs.getLong(0, 0);
-      su.addConstant(relSource, id);
-    }
-    qs.updateData(su.setWhere(idWh));
-
-    return ResponseObject.response(sys.getViewData(viewName, null, idWh, null, -1, -1));
+    return sys.updateRow(BeeRowSet.restore(reqInfo.getContent()), false);
   }
 
   private ResponseObject updateRow(RequestInfo reqInfo) {
-    return sys.updateRow(BeeRowSet.restore(reqInfo.getContent()),
-        BeeUtils.toBoolean(reqInfo.getParameter(Service.VAR_VIEW_FULL_ROW)));
+    return sys.updateRow(BeeRowSet.restore(reqInfo.getContent()), true);
   }
 }

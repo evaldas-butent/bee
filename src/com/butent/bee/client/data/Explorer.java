@@ -213,7 +213,7 @@ public class Explorer implements HandlesDeleteEvents {
 
     Queries.getRowSet(dataInfo.getName(), null, null, 0, limit, CachingPolicy.FULL,
         new Queries.RowSetCallback() {
-          public void onFailure(String reason) {
+          public void onFailure(String[] reason) {
           }
 
           public void onSuccess(final BeeRowSet rowSet) {
