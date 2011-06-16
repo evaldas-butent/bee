@@ -183,25 +183,7 @@ public class TestSqlSelect {
     sql.addEmptyBoolean("bool1");
 
     assertEquals(
-        "SELECT Table1.field11, CAST(0 AS BIT) AS bool1 FROM Table1",
-        sql.getQuery());
-
-    sql = new SqlSelect();
-    sql.addFields("Table1", "field11");
-    sql.addFrom("Table1");
-
-    sql.addEmptyBoolean("");
-
-    assertEquals("SELECT Table1.field11, CAST(0 AS BIT) FROM Table1",
-        sql.getQuery());
-
-    sql = new SqlSelect();
-    sql.addFields("Table1", "field11");
-    sql.addFrom("Table1");
-
-    sql.addEmptyBoolean(null);
-
-    assertEquals("SELECT Table1.field11, CAST(0 AS BIT) FROM Table1",
+        "SELECT Table1.field11, CAST(null AS BIT) AS bool1 FROM Table1",
         sql.getQuery());
   }
 
@@ -441,7 +423,7 @@ public class TestSqlSelect {
     select2.setWhere(SqlUtils.sqlTrue());
 
     Object[] a = select.getSqlParams().toArray();
-    Object[] rez = {"%Petr%", 1.0};
+    Object[] rez = {"%Petr%", 1};
 
     assertArrayEquals(rez, a);
   }

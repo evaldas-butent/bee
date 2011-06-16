@@ -1,6 +1,6 @@
 package com.butent.bee.shared.testutils;
 
-import com.butent.bee.shared.IntValue;
+import com.butent.bee.shared.data.value.IntegerValue;
 
 import static org.junit.Assert.assertEquals;
 
@@ -23,12 +23,8 @@ public class TestIntValue {
 
   @Test
   public final void testIntValue() {
-    IntValue iv = new IntValue(10);
+    IntegerValue iv = new IntegerValue(10);
 
-    assertEquals(10, iv.getInt());
-
-    iv.setValue(-98511);
-
-    assertEquals(-98511, iv.getInt());
+    assertEquals((Integer) 10, iv.getInteger());
   }
 }

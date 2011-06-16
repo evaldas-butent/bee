@@ -73,14 +73,14 @@ public class TestLogUtils {
   @Test
   public final void testDateToLogBeeDate() {
     assertEquals("10:13:08.227", LogUtils.dateToLog(BDDate1));
-    assertEquals("02:00:00", LogUtils.dateToLog(BDDate2));
+    assertEquals("03:00:00", LogUtils.dateToLog(BDDate2));
     assertEquals("18:47:04.192", LogUtils.dateToLog(BDDate3));
   }
 
   @Test
   public final void testDateToLogLong() {
     assertEquals("10:13:08.227", LogUtils.dateToLog(1298362388227L));
-    assertEquals("02:00:00", LogUtils.dateToLog(0));
+    assertEquals("03:00:00", LogUtils.dateToLog(0));
     assertEquals("18:47:04.192", LogUtils.dateToLog(Long.MIN_VALUE));
   }
 

@@ -125,25 +125,25 @@ public class TestJustDate {
   public final void testGetDoy() {
     JustDate jd = new JustDate(2011, 2, 22);
     assertEquals(53, jd.getDoy());
-  
+
     jd = new JustDate(2011, 2, 22);
     assertEquals(53, jd.getDoy());
-  
+
     jd = new JustDate(2011, 03, 30);
     assertEquals(89, jd.getDoy());
-  
+
     jd = new JustDate(2011, 03, 6);
     assertEquals(65, jd.getDoy());
-  
+
     jd = new JustDate(2011, 03, 19);
     assertEquals(78, jd.getDoy());
-  
+
     jd = new JustDate(2011, 01, 01);
     assertEquals(1, jd.getDoy());
-  
+
     jd = new JustDate(2011, 12, 31);
     assertEquals(365, jd.getDoy());
-  
+
     jd = new JustDate(2012, 12, 31);
     assertEquals(366, jd.getDoy());
   }
@@ -208,7 +208,7 @@ public class TestJustDate {
 
     try {
       JustDate dtf = new JustDate((Date) null);
-      assertEquals(-7200000, dtf.getDateTime().getTime());
+      assertEquals(-10800000, dtf.getDateTime().getTime());
     } catch (BeeRuntimeException e) {
       assertTrue(true);
     } catch (Exception e) {
@@ -234,7 +234,7 @@ public class TestJustDate {
 
     try {
       JustDate dtf = new JustDate((DateTime) null);
-      assertEquals(-7200000, dtf.getDateTime().getTime());
+      assertEquals(-10800000, dtf.getDateTime().getTime());
     } catch (BeeRuntimeException e) {
       assertTrue(true);
     } catch (Exception e) {
@@ -288,33 +288,12 @@ public class TestJustDate {
 
   @Test
   public final void testParse() {
-
-    try {
-      String str = "";
-      JustDate.parse(str);
-      fail("Exceptions not works!");
-    } catch (BeeRuntimeException e) {
-      assertTrue(true);
-    } catch (Exception e) {
-      fail("Need BeeRuntimeException: " + e.getMessage());
-    }
-
-    try {
-      String str = null;
-      JustDate.parse(str);
-      fail("Exceptions not works!");
-    } catch (BeeRuntimeException e) {
-      assertTrue(true);
-    } catch (Exception e) {
-      fail("Need BeeRuntimeException: " + e.getMessage());
-    }
-
     String str = "46";
     JustDate jd = JustDate.parse(str);
 
-    assertEquals(1970, jd.getYear());
-    assertEquals(2, jd.getMonth());
-    assertEquals(16, jd.getDom());
+    assertEquals(46, jd.getYear());
+    assertEquals(1, jd.getMonth());
+    assertEquals(1, jd.getDom());
 
     str = "2011-04-06";
 

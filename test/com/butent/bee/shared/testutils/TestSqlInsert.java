@@ -109,7 +109,7 @@ public class TestSqlInsert {
     insert2.addConstant("field", 5);
     insert2.addConstant("field2", 10);
 
-    Object[] expectedStr = {5.0, 10.0};
+    Object[] expectedStr = {5, 10};
 
     for (int i = 0; i < insert2.getSqlParams().size(); i++) {
       assertEquals(expectedStr[i], insert2.getSqlParams().toArray()[i]);

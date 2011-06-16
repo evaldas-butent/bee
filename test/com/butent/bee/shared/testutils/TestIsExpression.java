@@ -267,7 +267,7 @@ public class TestIsExpression {
     s.addFields("Table1", "field1");
     s.addFrom("Table1");
     s.addExpr(SqlUtils.cast(SqlUtils.field("Table1", "field2"),
-        DataType.NUMERIC, 5, 10), "TB1");
+        DataType.DECIMAL, 5, 10), "TB1");
 
     assertEquals(
         "SELECT Table1.field1, CAST(Table1.field2 AS NUMERIC(5, 10)) AS TB1 FROM Table1",
@@ -358,7 +358,7 @@ public class TestIsExpression {
     s.addFields("Table1", "field1");
     s.addFrom("Table1");
     s.addExpr(SqlUtils.cast(SqlUtils.field("Table1", "field2"),
-        DataType.NUMERIC, 5, 10), "TB1");
+        DataType.DECIMAL, 5, 10), "TB1");
 
     assertEquals(
         "SELECT `Table1`.`field1`, CAST(`Table1`.`field2` AS DECIMAL(5, 10)) AS `TB1` FROM `Table1`",
@@ -449,7 +449,7 @@ public class TestIsExpression {
     s.addFields("Table1", "field1");
     s.addFrom("Table1");
     s.addExpr(SqlUtils.cast(SqlUtils.field("Table1", "field2"),
-        DataType.NUMERIC, 5, 10), "TB1");
+        DataType.DECIMAL, 5, 10), "TB1");
 
     assertEquals(
         "SELECT [Table1].[field1], CAST([Table1].[field2] AS NUMERIC(5, 10)) AS [TB1] FROM [Table1]",
@@ -540,7 +540,7 @@ public class TestIsExpression {
     s.addFields("Table1", "field1");
     s.addFrom("Table1");
     s.addExpr(SqlUtils.cast(SqlUtils.field("Table1", "field2"),
-        DataType.NUMERIC, 5, 10), "TB1");
+        DataType.DECIMAL, 5, 10), "TB1");
 
     assertEquals(
         "SELECT \"Table1\".\"field1\", CAST(\"Table1\".\"field2\" AS NUMERIC(5, 10)) AS \"TB1\" FROM \"Table1\"",
@@ -633,7 +633,7 @@ public class TestIsExpression {
     s.addFields("Table1", "field1");
     s.addFrom("Table1");
     s.addExpr(SqlUtils.cast(SqlUtils.field("Table1", "field2"),
-        DataType.NUMERIC, 5, 10), "TB1");
+        DataType.DECIMAL, 5, 10), "TB1");
 
     assertEquals(
         "SELECT \"Table1\".\"field1\", CAST(\"Table1\".\"field2\" AS NUMERIC(5, 10)) AS \"TB1\" FROM \"Table1\"",
@@ -785,15 +785,15 @@ public class TestIsExpression {
     IsExpression ce = SqlUtils.expression(1, "string", 5.0);
     assertEquals("1string5.0",
         ce.getSqlString(SqlBuilderFactory.getBuilder(), false));
-  
+
     SqlSelect select = new SqlSelect();
     select.addField("users", "username", "vardas");
     select.addFrom("users");
-  
+
     IsExpression ce2 = SqlUtils.expression(select);
     assertEquals("SELECT [users].[username] AS [vardas] FROM [users]",
         ce2.getSqlString(SqlBuilderFactory.getBuilder(), false));
-  
+
     SqlSelect select2 = new SqlSelect();
     select2.addField("phones", "phone_names", "tel_vardai");
     select2.addFrom("phones");
@@ -801,14 +801,14 @@ public class TestIsExpression {
     assertEquals(
         "SELECT [phones].[phone_names] AS [tel_vardai] FROM [phones]",
         ce3.getSqlString(SqlBuilderFactory.getBuilder(), false));
-  
+
     select.addFrom(select2, "alias2");
-  
+
     IsExpression ce4 = SqlUtils.expression(select);
     assertEquals(
         "SELECT [users].[username] AS [vardas] FROM [users], (SELECT [phones].[phone_names] AS [tel_vardai] FROM [phones]) [alias2]",
         ce4.getSqlString(SqlBuilderFactory.getBuilder(), false));
-  
+
     select2 = select2.reset();
     select2.addField("JUnit", "method_names", "klases");
     select2.setDistinctMode(true);

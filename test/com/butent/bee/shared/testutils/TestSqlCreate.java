@@ -119,9 +119,9 @@ public class TestSqlCreate {
     create3.addDate("data");
     create3.addDateTime("datetime");
     create3.addDouble("double value");
-    create3.addInt("int field", Keyword.NOT_NULL);
+    create3.addInteger("int field", Keyword.NOT_NULL);
     create3.addLong("long field");
-    create3.addNumeric("numeric field", 10, 10);
+    create3.addDecimal("numeric field", 10, 10);
     create3.addString("string field", 7);
 
     assertEquals(
@@ -149,7 +149,7 @@ public class TestSqlCreate {
     create.addBoolean("arIvykdyta", Keyword.SET_NULL);
     create.addDouble("kaina");
     create.addDate("data");
-    create.addInt("kiek");
+    create.addInteger("kiek");
     create.addLong("millis");
     create.addDateTime("dateTime");
     create.addString("pav", 10);
@@ -181,7 +181,7 @@ public class TestSqlCreate {
     create4.addDateTime("datetime");
     create4.addDouble("double value");
     create4.addLong("long field");
-    create4.addNumeric("numeric field", 10, 10);
+    create4.addDecimal("numeric field", 10, 10);
     create4.addString("string field", 7);
 
     assertEquals(

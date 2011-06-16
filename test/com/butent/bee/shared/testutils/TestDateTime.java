@@ -317,17 +317,17 @@ public class TestDateTime {
     assertEquals(53, varDate.getUtcDoy());
     varDate = new DateTime(2011, 2, 22, 8, 13, 8, 446);
     assertEquals(53, varDate.getUtcDoy());
-  
+
     varDate = new DateTime(2011, 2, 22, 0, 0, 0, 0);
     assertEquals(52, varDate.getUtcDoy());
-  
+
     varDate = new DateTime(2011, 03, 30, 2, 1, 2);
     assertEquals(23, varDate.getUtcHour());
     assertEquals(88, varDate.getUtcDoy());
-  
+
     varDate = new DateTime(2011, 03, 6, 5, 1, 45);
     assertEquals(65, varDate.getUtcDoy());
-  
+
     varDate = new DateTime(2011, 03, 19, 5, 1, 45);
     assertEquals(78, varDate.getUtcDoy());
   }
@@ -360,16 +360,16 @@ public class TestDateTime {
     assertEquals(446, varDate.getUtcMillis());
     varDate = new DateTime(2011, 03, 6, 5, 1, 45);
     assertEquals(0, varDate.getUtcMillis());
-  
+
     varDate = new DateTime(2011, 03, 19, 5, 1, 45);
     assertEquals(0, varDate.getUtcMillis());
-  
+
     varDate = new DateTime(2011, 2, 22, 0, 0, 0, 0);
     assertEquals(0, varDate.getUtcMillis());
     varDate = new DateTime(2011, 03, 27, 4, 1, 45);
     assertEquals(0, varDate.getUtcMillis());
     assertEquals(0, varDate.getUtcMillis());
-  
+
     varDate = new DateTime(2011, 03, 30, 2, 1, 2);
     assertEquals(0, varDate.getUtcMillis());
     assertEquals(0, varDate.getUtcMillis());
@@ -382,16 +382,16 @@ public class TestDateTime {
     assertEquals(13, varDate.getUtcMinute());
     varDate = new DateTime(2011, 03, 6, 5, 1, 45);
     assertEquals(1, varDate.getUtcMinute());
-  
+
     varDate = new DateTime(2011, 03, 19, 5, 1, 45);
     assertEquals(1, varDate.getUtcMinute());
-  
+
     varDate = new DateTime(2011, 2, 22, 0, 0, 0, 0);
     assertEquals(0, varDate.getUtcMinute());
     varDate = new DateTime(2011, 03, 27, 4, 1, 45);
     assertEquals(1, varDate.getUtcMinute());
     assertEquals(1, varDate.getUtcMinute());
-  
+
     varDate = new DateTime(2011, 03, 30, 2, 1, 2);
     assertEquals(1, varDate.getUtcMinute());
     assertEquals(1, varDate.getUtcMinute());
@@ -404,24 +404,24 @@ public class TestDateTime {
     assertEquals(2, varDate.getUtcMonth());
     varDate = new DateTime(2011, 03, 6, 5, 1, 45);
     assertEquals(3, varDate.getUtcMonth());
-  
+
     varDate = new DateTime(2011, 03, 19, 5, 1, 45);
     assertEquals(3, varDate.getUtcMonth());
-  
+
     varDate = new DateTime(2011, 2, 22, 0, 0, 0, 0);
     assertEquals(2, varDate.getUtcMonth());
     varDate = new DateTime(2011, 03, 27, 4, 1, 45);
     assertEquals(3, varDate.getUtcMonth());
     assertEquals(3, varDate.getUtcMonth());
-  
+
     varDate = new DateTime(2011, 03, 30, 2, 1, 2);
     assertEquals(3, varDate.getUtcMonth());
     assertEquals(3, varDate.getUtcMonth());
-  
+
     varDate = new DateTime(2011, 01, 30, 2, 1, 2);
     assertEquals(1, varDate.getUtcMonth());
     assertEquals(1, varDate.getUtcMonth());
-  
+
     varDate = new DateTime(2011, 12, 30, 2, 1, 2);
     assertEquals(12, varDate.getUtcMonth());
     assertEquals(12, varDate.getUtcMonth());
@@ -434,21 +434,21 @@ public class TestDateTime {
     assertEquals(8, varDate.getUtcSecond());
     varDate = new DateTime(2011, 03, 6, 5, 1, 45);
     assertEquals(45, varDate.getUtcSecond());
-  
+
     varDate = new DateTime(2011, 03, 19, 5, 1, 45);
     assertEquals(45, varDate.getUtcSecond());
-  
+
     varDate = new DateTime(2011, 2, 22, 0, 0, 0, 0);
     assertEquals(0, varDate.getUtcSecond());
     varDate = new DateTime(2011, 03, 27, 4, 1, 45);
     assertEquals(45, varDate.getUtcSecond());
-  
+
     varDate = new DateTime(2011, 03, 30, 2, 1, 2);
     assertEquals(2, varDate.getUtcSecond());
-  
+
     varDate = new DateTime(2011, 01, 30, 2, 1, 2);
     assertEquals(2, varDate.getUtcSecond());
-  
+
     varDate = new DateTime(2011, 12, 30, 2, 1, 2);
     assertEquals(2, varDate.getUtcSecond());
   }
@@ -469,11 +469,11 @@ public class TestDateTime {
   public final void testGetYear() {
     java.util.Date dt = new java.util.Date(1298362388227L);
     assertEquals(2011, varDate.getYear());
-  
+
     varDate = new DateTime(2011, 2, 22, 8, 13, 8, 446);
     dt = new java.util.Date(1298362388446L);
     assertEquals(2011, varDate.getYear());
-  
+
     varDate = new DateTime(2011, 2, 22, 0, 0, 0, 0);
     dt = new java.util.Date(1298332800000L);
     assertEquals(2011, varDate.getYear());
@@ -493,56 +493,10 @@ public class TestDateTime {
     assertEquals(dt.hashCode(), varDate.hashCode());
   }
 
-  @SuppressWarnings("unused")
   @Test
   public final void testParse() {
-    try {
-      DateTime d1 = DateTime.parse("");
-      fail("Exceptions not works");
-    } catch (BeeRuntimeException e) {
-      assertTrue(true);
-    } catch (Exception e) {
-      fail("Java lang exception, need BeeRuntime exception: "
-          + e.getMessage());
-    }
-
-    try {
-      DateTime d1 = DateTime.parse(null);
-      fail("Exceptions not works");
-    } catch (BeeRuntimeException e) {
-      assertTrue(true);
-    } catch (Exception e) {
-      fail("Java lang exception, need BeeRuntime exception: "
-          + e.getMessage());
-    }
-
-    try {
-      DateTime d1 = DateTime.parse("0:0:0 0:0:0:,0");
-      fail("Exceptions not works" + d1.toDateString() + d1.toTimeString());
-    } catch (BeeRuntimeException e) {
-      assertTrue(true);
-    } catch (Exception e) {
-      fail("Java lang exception, need BeeRuntime exception: "
-          + e.getMessage());
-    }
-
-    String s1 = "1298362388227";
+    String s1 = "2011-02-22";
     DateTime d1 = DateTime.parse(s1);
-    varDate1 = new DateTime(2011, 2, 22, 10, 13, 8, 227);
-    assertEquals(d1.getTime(), varDate1.getTime());
-
-    s1 = "1298362388446";
-    d1 = DateTime.parse(s1);
-    varDate1 = new DateTime(2011, 2, 22, 10, 13, 8, 446);
-    assertEquals(d1.getTime(), varDate1.getTime());
-
-    s1 = "1298332800000";
-    d1 = DateTime.parse(s1);
-    varDate1 = new DateTime(2011, 2, 22, 2, 0, 0, 0);
-    assertEquals(d1.getTime(), varDate1.getTime());
-
-    s1 = "2011-02-22";
-    d1 = DateTime.parse(s1);
     varDate1 = new DateTime(2011, 02, 22);
 
     assertEquals(d1.getTime(), varDate1.getTime());

@@ -183,6 +183,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
    */
   public SqlSelect addEmptyField(String alias, DataType type, int precision, int scale,
       boolean notNull) {
+    Assert.notEmpty(alias);
     Assert.notNull(type);
     Object emptyValue = null;
 

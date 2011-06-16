@@ -43,7 +43,7 @@ public class TestValueType {
     assertEquals(new DateTimeValue(2011, 02, 22, 10, 13, 8), ValueType.valueOf("DATETIME")
         .createValue(new DateTime(2011, 02, 22, 10, 13, 8)));
     assertEquals(new TimeOfDayValue(10, 13, 8, 227), ValueType.valueOf("TIMEOFDAY").createValue(
-        new DateTime(1298362388227L)));
+        "1298362388227"));
   }
 
   @Test
@@ -51,7 +51,7 @@ public class TestValueType {
     assertEquals(ValueType.BOOLEAN, ValueType.getByTypeCode("boolean"));
     assertEquals(ValueType.DATETIME, ValueType.getByTypeCode("Datetime"));
     assertEquals(ValueType.DATE, ValueType.getByTypeCode(" date "));
-    assertEquals(ValueType.NUMBER, ValueType.getByTypeCode("Number"));
+    assertEquals(ValueType.NUMBER, ValueType.getByTypeCode("double"));
     assertEquals(null, ValueType.getByTypeCode("TEXT"));
     assertEquals(ValueType.TEXT, ValueType.getByTypeCode("STRING"));
     assertEquals(ValueType.TIMEOFDAY, ValueType.getByTypeCode("timeofday"));
@@ -61,14 +61,14 @@ public class TestValueType {
   @Test
   public final void testGetTypeCode() {
     assertEquals("boolean", ValueType.valueOf("BOOLEAN").getTypeCode());
-    assertEquals("number", ValueType.valueOf("NUMBER").getTypeCode());
+    assertEquals("double", ValueType.valueOf("NUMBER").getTypeCode());
     assertEquals("string", ValueType.valueOf("TEXT").getTypeCode());
   }
 
   @Test
   public final void testIsNumber() {
-    assertEquals(false, ValueType.isNumber(ValueType.getByTypeCode("boolean")));
-    assertEquals(false, ValueType.isNumber(null));
-    assertEquals(true, ValueType.isNumber(ValueType.getByTypeCode("number")));
+    assertEquals(false, ValueType.isNumeric(ValueType.getByTypeCode("boolean")));
+    assertEquals(false, ValueType.isNumeric(null));
+    assertEquals(true, ValueType.isNumeric(ValueType.getByTypeCode("decimal")));
   }
 }

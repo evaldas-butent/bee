@@ -1,6 +1,6 @@
 package com.butent.bee.shared.testutils;
 
-import com.butent.bee.shared.LongValue;
+import com.butent.bee.shared.data.value.LongValue;
 
 import static org.junit.Assert.assertEquals;
 
@@ -22,25 +22,10 @@ public class TestLongValue {
   }
 
   @Test
-  public final void testGetInt() {
-    LongValue lv = new LongValue(1298362388446L);
-    assertEquals(1282265054, lv.getInt());
-
-    lv.setValue(10L);
-    assertEquals(10, lv.getInt());
-
-    lv.setValue(-999);
-    assertEquals(-999, lv.getInt());
-  }
-
-  @Test
   public final void testLongValue() {
     LongValue lv = new LongValue(5L);
 
-    assertEquals(5, lv.getLong());
-    lv.setValue(1298362388446L);
-
-    assertEquals(1298362388446L, lv.getLong());
+    assertEquals((Long) 5L, lv.getLong());
   }
 
 }
