@@ -14,8 +14,8 @@ public class RelationInfo {
       return null;
     }
     String relSrc = descr.getRelSource();
-    if (BeeUtils.isEmpty(relSrc) || BeeUtils.isEmpty(descr.getRelTable())
-        || BeeUtils.isEmpty(descr.getRelField())) {
+    if (BeeUtils.isEmpty(relSrc) || BeeUtils.isEmpty(descr.getRelView())
+        || BeeUtils.isEmpty(descr.getRelColumn())) {
       return null;
     }
     
@@ -30,7 +30,7 @@ public class RelationInfo {
       return null;
     }
     
-    return new RelationInfo(descr.getSource(), relSrc, descr.getRelTable(), descr.getRelField(),
+    return new RelationInfo(descr.getSource(), relSrc, descr.getRelView(), descr.getRelColumn(),
         columns.get(relIdx), relIdx);
   }
 

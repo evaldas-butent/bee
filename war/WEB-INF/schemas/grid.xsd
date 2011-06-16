@@ -62,7 +62,9 @@
   <xs:complexType name="relatedColumn">
     <xs:complexContent>
       <xs:extension base="bee:baseColumn">
-        <xs:attribute name="relation" type="bee:nameType" use="required" />
+        <xs:attribute name="relSource" type="bee:nameType" use="required" />
+        <xs:attribute name="relView" type="bee:nameType" />
+        <xs:attribute name="relColumn" type="bee:nameType" use="required" />
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>

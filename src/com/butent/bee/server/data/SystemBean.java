@@ -218,7 +218,7 @@ public class SystemBean {
             int res = qs.updateData(su.setWhere(wh));
 
             if (res == 0) { // Optimistic lock exception
-              BeeRowSet rs = getViewData(view.getName(), null, idWh, null, 0, 0);
+              BeeRowSet rs = getViewData(view.getName(), idWh, null, 0, 0);
 
               if (!rs.isEmpty()) {
                 BeeRow r = rs.getRow(0);
@@ -461,7 +461,7 @@ public class SystemBean {
     if (BeeUtils.isEmpty(union)) {
       return ResponseObject.error("No tables support state: ", stateName);
     }
-    return ResponseObject.response(qs.getViewData(union, null, null));
+    return ResponseObject.response(qs.getViewData(union, null));
   }
 
   public ResponseObject generateData(String tblName, int rowCount) {
@@ -627,7 +627,7 @@ public class SystemBean {
   }
 
   public BeeView getView(String viewName) {
-    Assert.state(isView(viewName) || isTable(viewName), "Not a view: " + viewName);
+    Assert.state(isView(viewName), "Not a view: " + viewName);
     BeeView view = viewCache.get(cacheKey(viewName));
 
     if (BeeUtils.isEmpty(view)) {
@@ -641,21 +641,20 @@ public class SystemBean {
     return getView(viewName).getCondition(filter);
   }
 
-  public BeeRowSet getViewData(String viewName, String columnName, IsCondition condition,
-      Order order, int limit, int offset, String... states) {
+  public BeeRowSet getViewData(String viewName, IsCondition condition,
+      Order order, int limit, int offset, String... columns) {
 
     BeeView view = getView(viewName);
     String source = view.getSource();
 
-    SqlSelect ss;
-    Integer columnCount;
+    SqlSelect ss = getViewQuery(viewName);
 
-    if (BeeUtils.isEmpty(columnName)) {
-      ss = getViewQuery(viewName);
-      columnCount = null;
-    } else {
-      ss = new SqlSelect().addFields(source, columnName).addFrom(source);
-      columnCount = 1;
+    if (!BeeUtils.isEmpty(columns)) {
+      ss.resetFields();
+
+      for (String col : columns) {
+        ss.addField(view.getAlias(col), view.getField(col), col);
+      }
     }
 
     if (!BeeUtils.isEmpty(condition)) {
@@ -687,11 +686,6 @@ public class SystemBean {
         ss.addOrder(source, idCol);
       }
     }
-
-    if (!BeeUtils.isEmpty(states)) {
-      ss = verifyStates(ss, view.getSource(), null, states);
-    }
-
     if (limit > 0) {
       ss.setLimit(limit);
     }
@@ -699,7 +693,7 @@ public class SystemBean {
       ss.setOffset(offset);
     }
 
-    return qs.getViewData(ss, view, columnCount);
+    return qs.getViewData(ss, view);
   }
 
   public List<DataInfo> getViewList() {
@@ -865,7 +859,7 @@ public class SystemBean {
           BeeRow newRow = new BeeRow(id, version);
 
           if (returnAllFields) {
-            BeeRowSet newRs = getViewData(view.getName(), null,
+            BeeRowSet newRs = getViewData(view.getName(),
                 SqlUtils.equal(tblName, table.getIdName(), id), new Order(), 0, 0);
             newRow.setValues(newRs.getRow(0).getValues());
           }
@@ -891,7 +885,8 @@ public class SystemBean {
   }
 
   public boolean isView(String viewName) {
-    return !BeeUtils.isEmpty(viewName) && viewCache.containsKey(cacheKey(viewName));
+    return !BeeUtils.isEmpty(viewName)
+        && (viewCache.containsKey(cacheKey(viewName)) || isTable(viewName));
   }
 
   public String joinExtField(HasFrom<?> query, String tblName, String tblAlias, String fldName) {
@@ -1035,7 +1030,7 @@ public class SystemBean {
           int res = resp.getResponse(-1, logger);
 
           if (res == 0) { // Optimistic lock exception
-            BeeRowSet newRs = getViewData(view.getName(), null, wh, new Order(), 0, 0);
+            BeeRowSet newRs = getViewData(view.getName(), wh, new Order(), 0, 0);
 
             if (!newRs.isEmpty()) {
               boolean collision = false;
@@ -1079,7 +1074,7 @@ public class SystemBean {
         }
         if (!response.hasErrors()) {
           if (returnAllFields && BeeUtils.isEmpty(newRow.getValues())) {
-            BeeRowSet newRs = getViewData(view.getName(), null, wh, new Order(), 0, 0);
+            BeeRowSet newRs = getViewData(view.getName(), wh, new Order(), 0, 0);
             newRow.setValues(newRs.getRow(0).getValues());
           }
           response.setResponse(newRow);
@@ -1464,7 +1459,7 @@ public class SystemBean {
       if (view.isEmpty()) {
         LogUtils.warning(logger, resource, "View", viewName, "has no columns defined");
         continue;
-      } else if (isView(viewName)) {
+      } else if (!isTable(viewName) && isView(viewName)) {
         if (mainMode) {
           LogUtils.warning(logger, resource, "Dublicate view name:", viewName);
           continue;

@@ -143,7 +143,7 @@ public class Queries {
     Assert.notNull(callback);
 
     List<Property> lst = PropertyUtils.createProperties(Service.VAR_VIEW_NAME, tableName,
-        Service.VAR_VIEW_COLUMN, columnName);
+        Service.VAR_VIEW_COLUMNS, columnName);
 
     if (filter != null) {
       PropertyUtils.addProperties(lst, Service.VAR_VIEW_WHERE, filter.serialize());

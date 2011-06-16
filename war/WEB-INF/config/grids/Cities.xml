@@ -17,7 +17,7 @@
 
       <BeeDataColumn name="population" source="Population" caption="Gyventojai" />
 
-      <BeeRelColumn name="country" source="Country" relation="Name" caption="Šalis">
+      <BeeRelColumn name="country" source="CountryName" relSource="Country" relColumn="Name" caption="Šalis">
         <editor type="suggest"></editor>
       </BeeRelColumn>
 

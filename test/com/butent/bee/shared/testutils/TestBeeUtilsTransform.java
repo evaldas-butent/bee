@@ -613,7 +613,7 @@ public class TestBeeUtilsTransform extends TestCase implements ILogger {
     assertEquals(false, beeUtils.isPositive("5"));
     assertEquals(false, beeUtils.isPositive("-5"));
     assertEquals(false, beeUtils.isPositive(-5));
-    assertEquals(true, beeUtils.isPositive((Object) 5));
+    assertEquals(true, beeUtils.isPositive(5));
     assertEquals(true, beeUtils.isPositive((Object) 5.0));
     assertEquals(false, beeUtils.isPositive((Object) 0.0));
   }

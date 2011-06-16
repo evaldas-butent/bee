@@ -137,7 +137,7 @@ public class UiServiceBean {
     String viewName = reqInfo.getParameter(0);
     List<ExtendedProperty> info = Lists.newArrayList();
 
-    if (!BeeUtils.isEmpty(viewName) && sys.isView(viewName)) {
+    if (sys.isView(viewName)) {
       info.addAll(sys.getView(viewName).getInfo());
     } else {
       for (String name : sys.getViewNames()) {
@@ -290,13 +290,12 @@ public class UiServiceBean {
 
   private ResponseObject getViewData(RequestInfo reqInfo) {
     String viewName = reqInfo.getParameter(Service.VAR_VIEW_NAME);
-    String columnName = reqInfo.getParameter(Service.VAR_VIEW_COLUMN);
+    String columns = reqInfo.getParameter(Service.VAR_VIEW_COLUMNS);
 
     int limit = BeeUtils.toInt(reqInfo.getParameter(Service.VAR_VIEW_LIMIT));
     int offset = BeeUtils.toInt(reqInfo.getParameter(Service.VAR_VIEW_OFFSET));
     String where = reqInfo.getParameter(Service.VAR_VIEW_WHERE);
     String sort = reqInfo.getParameter(Service.VAR_VIEW_ORDER);
-    String states = reqInfo.getParameter(Service.VAR_VIEW_STATES);
 
     Filter filter = null;
     if (!BeeUtils.isEmpty(where)) {
@@ -308,13 +307,13 @@ public class UiServiceBean {
       order = Order.restore(sort);
     }
 
-    String[] stt = new String[0];
-    if (!BeeUtils.isEmpty(states)) {
-      stt = states.split(" ");
+    String[] cols = new String[0];
+    if (!BeeUtils.isEmpty(columns)) {
+      cols = columns.split(" ");
     }
 
-    BeeRowSet res = sys.getViewData(viewName, columnName, sys.getViewCondition(viewName, filter),
-        order, limit, offset, stt);
+    BeeRowSet res = sys.getViewData(viewName, sys.getViewCondition(viewName, filter),
+        order, limit, offset, cols);
     return ResponseObject.response(res);
   }
 

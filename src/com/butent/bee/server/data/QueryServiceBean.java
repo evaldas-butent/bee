@@ -1,5 +1,7 @@
 package com.butent.bee.server.data;
 
+import com.google.common.collect.Lists;
+
 import com.butent.bee.server.DataSourceBean;
 import com.butent.bee.server.jdbc.JdbcUtils;
 import com.butent.bee.server.sql.BeeConstants.Keyword;
@@ -27,6 +29,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -133,7 +136,7 @@ public class QueryServiceBean {
 
       @Override
       public Object processResultSet(ResultSet rs) throws SQLException {
-        return rsToBeeRowSet(rs, null, null);
+        return rsToBeeRowSet(rs, null);
       }
 
       @Override
@@ -252,7 +255,7 @@ public class QueryServiceBean {
     return res.getValues(0);
   }
 
-  public BeeRowSet getViewData(IsQuery query, final BeeView view, final Integer columnCount) {
+  public BeeRowSet getViewData(IsQuery query, final BeeView view) {
     Assert.notNull(query);
     Assert.state(!query.isEmpty());
 
@@ -274,7 +277,7 @@ public class QueryServiceBean {
 
       @Override
       public BeeRowSet processResultSet(ResultSet rs) throws SQLException {
-        return rsToBeeRowSet(rs, view, columnCount);
+        return rsToBeeRowSet(rs, view);
       }
 
       @Override
@@ -326,26 +329,18 @@ public class QueryServiceBean {
     return !BeeUtils.isEmpty(dbTables(dbName, dbSchema, table));
   }
 
-  public BeeRowSet rsToBeeRowSet(ResultSet rs, BeeView view, Integer columnCount)
-      throws SQLException {
+  public BeeRowSet rsToBeeRowSet(ResultSet rs, BeeView view) throws SQLException {
     BeeColumn[] rsCols = JdbcUtils.getColumns(rs);
-    int cols = rsCols.length;
     String idName = null;
     String versionName = null;
 
     if (!BeeUtils.isEmpty(view)) {
-      cols = view.getColumnCount();
       idName = sys.getIdName(view.getSource());
       versionName = sys.getVersionName(view.getSource());
     }
-    if (BeeUtils.isPositive(columnCount)) {
-      cols = columnCount;
-    }
-    BeeColumn[] columns = new BeeColumn[cols];
-
+    List<BeeColumn> columns = Lists.newArrayList();
     int idIndex = -1;
     int versionIndex = -1;
-    int j = 0;
 
     for (BeeColumn col : rsCols) {
       if (!BeeUtils.isEmpty(view)) {
@@ -373,8 +368,9 @@ public class QueryServiceBean {
           continue;
         }
       }
-      columns[j++] = col;
+      columns.add(col);
     }
+    int cols = columns.size();
     BeeRowSet result = new BeeRowSet(columns);
     long idx = 0;
 
@@ -382,22 +378,25 @@ public class QueryServiceBean {
       String[] row = new String[cols];
 
       for (int i = 0; i < cols; i++) {
-        switch (columns[i].getType()) {
+        BeeColumn column = columns.get(i);
+        int colIndex = column.getIndex();
+
+        switch (column.getType()) {
           case BOOLEAN:
-            row[i] = BooleanValue.pack(rs.getBoolean(columns[i].getIndex()));
+            row[i] = BooleanValue.pack(rs.getBoolean(colIndex));
             if (rs.wasNull()) {
               row[i] = BooleanValue.S_NULL;
             }
             break;
           case NUMBER:
           case DECIMAL:
-            if (columns[i].getScale() > 0) {
-              row[i] = BeeUtils.removeTrailingZeros(rs.getString(columns[i].getIndex()));
+            if (column.getScale() > 0) {
+              row[i] = BeeUtils.removeTrailingZeros(rs.getString(colIndex));
               break;
             }
             //$FALL-THROUGH$
           default:
-            row[i] = rs.getString(columns[i].getIndex());
+            row[i] = rs.getString(colIndex);
         }
       }
       if (idIndex < 0) {

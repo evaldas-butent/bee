@@ -6,7 +6,7 @@
     <columns>
       <BeeDataColumn name="UserID" source="User" caption="Vartotojo ID" />
       <BeeDataColumn name="Login" source="UserLogin" caption="Prisijungimo vardas" readOnly="true" />
-      <BeeRelColumn name="Position" source="User" relation="Position" caption="Pareigos" />
+      <BeeRelColumn name="Position" source="UserPosition" relSource="User" relColumn="Position" caption="Pareigos" />
       <BeeDataColumn name="RoleID" source="Role" caption="Rolės ID" />
       <BeeDataColumn name="Role" source="RoleName" caption="Rolė" readOnly="true" />
       <BeeIdColumn name="Id" caption="ID" />

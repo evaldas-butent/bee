@@ -89,7 +89,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
    */
 
   private enum SerializationMember {
-    COL_TYPE, NAME, CAPTION, READ_ONLY, WIDTH, SOURCE, REL_SOURCE, REL_TABLE, REL_FIELD,
+    COL_TYPE, NAME, CAPTION, READ_ONLY, WIDTH, SOURCE, REL_SOURCE, REL_VIEW, REL_COLUMN,
     MIN_WIDTH, MAX_WIDTH, SORTABLE, VISIBLE, FORMAT, HOR_ALIGN, HAS_FOOTER, SHOW_WIDTH,
     VALIDATION, EDITABLE, CARRY, EDITOR, MIN_VALUE, MAX_VALUE,
     CALC, VALUE_TYPE, PRECISION, SCALE,
@@ -113,8 +113,8 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
 
   private String source = null;
   private String relSource = null;
-  private String relTable = null;
-  private String relField = null;
+  private String relView = null;
+  private String relColumn = null;
 
   private Integer minWidth = null;
   private Integer maxWidth = null;
@@ -195,11 +195,11 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
         case REL_SOURCE:
           setRelSource(value);
           break;
-        case REL_TABLE:
-          setRelTable(value);
+        case REL_VIEW:
+          setRelView(value);
           break;
-        case REL_FIELD:
-          setRelField(value);
+        case REL_COLUMN:
+          setRelColumn(value);
           break;
         case CALC:
           setCalc(Calculation.restore(value));
@@ -340,8 +340,8 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
         "Width", getWidth(),
         "Source", getSource(),
         "Rel Source", getRelSource(),
-        "Rel Table", getRelTable(),
-        "Rel Field", getRelField(),
+        "Rel View", getRelView(),
+        "Rel Column", getRelColumn(),
         "Min Width", getMinWidth(),
         "Max Width", getMaxWidth(),
         "Sortable", isSortable(),
@@ -424,16 +424,16 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
     return precision;
   }
 
-  public String getRelField() {
-    return relField;
+  public String getRelColumn() {
+    return relColumn;
   }
 
   public String getRelSource() {
     return relSource;
   }
 
-  public String getRelTable() {
-    return relTable;
+  public String getRelView() {
+    return relView;
   }
 
   public Integer getScale() {
@@ -501,11 +501,11 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
         case REL_SOURCE:
           arr[i++] = getRelSource();
           break;
-        case REL_TABLE:
-          arr[i++] = getRelTable();
+        case REL_VIEW:
+          arr[i++] = getRelView();
           break;
-        case REL_FIELD:
-          arr[i++] = getRelField();
+        case REL_COLUMN:
+          arr[i++] = getRelColumn();
           break;
         case CALC:
           arr[i++] = getCalc();
@@ -657,16 +657,16 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
     this.readOnly = readOnly;
   }
 
-  public void setRelField(String relField) {
-    this.relField = relField;
+  public void setRelColumn(String relColumn) {
+    this.relColumn = relColumn;
   }
 
   public void setRelSource(String relSource) {
     this.relSource = relSource;
   }
 
-  public void setRelTable(String relTable) {
-    this.relTable = relTable;
+  public void setRelView(String relView) {
+    this.relView = relView;
   }
 
   public void setScale(Integer scale) {

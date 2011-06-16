@@ -9,15 +9,15 @@ import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.utils.XmlUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.value.ValueType;
-import com.butent.bee.shared.ui.EditorDescription;
-import com.butent.bee.shared.ui.EditorType;
-import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.ui.Calculation;
-import com.butent.bee.shared.ui.ConditionalStyleDeclaration;
 import com.butent.bee.shared.ui.ColumnDescription;
-import com.butent.bee.shared.ui.GridComponentDescription;
 import com.butent.bee.shared.ui.ColumnDescription.CellType;
 import com.butent.bee.shared.ui.ColumnDescription.ColType;
+import com.butent.bee.shared.ui.ConditionalStyleDeclaration;
+import com.butent.bee.shared.ui.EditorDescription;
+import com.butent.bee.shared.ui.EditorType;
+import com.butent.bee.shared.ui.GridComponentDescription;
+import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.ui.StyleDeclaration;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.LogUtils;
@@ -105,14 +105,16 @@ public class GridHolderBean {
   private static final String ATTR_MIN_VALUE = "minValue";
   private static final String ATTR_MAX_VALUE = "maxValue";
 
-  private static final String ATTR_RELATION = "relation";
+  private static final String ATTR_REL_SOURCE = "relSource";
+  private static final String ATTR_REL_VIEW = "relView";
+  private static final String ATTR_REL_COLUMN = "relColumn";
 
-  private static final String ATTR_TYPE = "type"; 
-  private static final String ATTR_PRECISION = "precision"; 
-  private static final String ATTR_SCALE = "scale"; 
+  private static final String ATTR_TYPE = "type";
+  private static final String ATTR_PRECISION = "precision";
+  private static final String ATTR_SCALE = "scale";
 
-  private static final String ATTR_CELL = "cell"; 
-  
+  private static final String ATTR_CELL = "cell";
+
   private static Logger logger = Logger.getLogger(GridHolderBean.class.getName());
 
   @EJB
@@ -172,7 +174,7 @@ public class GridHolderBean {
     if (editorType == null) {
       return null;
     }
-    
+
     EditorDescription editor = new EditorDescription(editorType);
     editor.setAttributes(XmlUtils.getAttributes(element));
 
@@ -191,7 +193,7 @@ public class GridHolderBean {
     }
     return editor;
   }
-  
+
   private String gridKey(String gridName) {
     Assert.notEmpty(gridName);
     return gridName.trim().toLowerCase();
@@ -225,27 +227,39 @@ public class GridHolderBean {
           LogUtils.warning(logger, viewName, "unrecognized view column:", source);
           return ok;
         }
-
-        String relTable = sys.getRelation(view.getTable(source), view.getField(source));
-        if (BeeUtils.isEmpty(relTable)) {
-          LogUtils.warning(logger, viewName, "not a relation column:", source);
-          return ok;
-        }
-        String relField = column.getRelField();
-        if (!sys.hasField(relTable, relField)) {
-          LogUtils.warning(logger, viewName, "unrecognized relation field:", relTable, relField);
-          return ok;
-        }
-        
-        String relSource = BeeUtils.trim(source) + BeeUtils.trim(relField);
+        String relSource = column.getRelSource();
         if (!view.hasColumn(relSource)) {
           LogUtils.warning(logger, viewName, "unrecognized relation column:", relSource);
           return ok;
         }
-        
-        column.setSource(relSource);
-        column.setRelSource(source);
-        column.setRelTable(relTable);
+        String relTable = sys.getRelation(view.getTable(relSource), view.getField(relSource));
+        if (BeeUtils.isEmpty(relTable)) {
+          LogUtils.warning(logger, viewName, "not a relation column:", relSource);
+          return ok;
+        }
+        String relView = column.getRelView();
+        if (BeeUtils.isEmpty(relView)) {
+          relView = relTable;
+          column.setRelView(relView);
+
+        } else if (!sys.isView(relView)) {
+          LogUtils.warning(logger, "unrecognized relation view name:", relView);
+          return ok;
+
+        } else {
+          String table = sys.getView(relView).getSource();
+
+          if (!BeeUtils.same(table, relTable)) {
+            LogUtils.warning(logger, "relation column and relation view sources doesn't match:",
+                relTable, "!=", table);
+            return ok;
+          }
+        }
+        String relColumn = column.getRelColumn();
+        if (!sys.getView(relView).hasColumn(relColumn)) {
+          LogUtils.warning(logger, relView, "unrecognized related column:", relColumn);
+          return ok;
+        }
         ok = true;
         break;
 
@@ -316,7 +330,7 @@ public class GridHolderBean {
         LogUtils.warning(logger, "Grid attribute", ATTR_NAME, "not found");
         continue;
       }
-      if (!sys.isView(viewName) && !sys.isTable(viewName)) {
+      if (!sys.isView(viewName)) {
         LogUtils.warning(logger, "Grid", gridName, "unrecognized view name:", viewName);
         continue;
       }
@@ -366,7 +380,7 @@ public class GridHolderBean {
           grid.addColumn(column);
         }
       }
-      
+
       if (grid.isEmpty()) {
         LogUtils.warning(logger, "Grid", gridName, "has no columns");
         continue;
@@ -428,8 +442,12 @@ public class GridHolderBean {
         } else if (BeeUtils.same(key, ATTR_MAX_VALUE)) {
           dst.setMaxValue(value.trim());
 
-        } else if (BeeUtils.same(key, ATTR_RELATION)) {
-          dst.setRelField(value.trim());
+        } else if (BeeUtils.same(key, ATTR_REL_SOURCE)) {
+          dst.setRelSource(value.trim());
+        } else if (BeeUtils.same(key, ATTR_REL_VIEW)) {
+          dst.setRelView(value.trim());
+        } else if (BeeUtils.same(key, ATTR_REL_COLUMN)) {
+          dst.setRelColumn(value.trim());
 
         } else if (BeeUtils.same(key, ATTR_TYPE)) {
           dst.setValueType(ValueType.getByTypeCode(value));
@@ -463,7 +481,8 @@ public class GridHolderBean {
       if (dynStyleNodes != null && dynStyleNodes.getLength() > 0) {
         List<ConditionalStyleDeclaration> dynStyles = Lists.newArrayList();
         for (int i = 0; i < dynStyleNodes.getLength(); i++) {
-          ConditionalStyleDeclaration cs = XmlUtils.getConditionalStyle((Element) dynStyleNodes.item(i));
+          ConditionalStyleDeclaration cs =
+              XmlUtils.getConditionalStyle((Element) dynStyleNodes.item(i));
           if (cs != null) {
             dynStyles.add(cs);
           }
@@ -491,7 +510,7 @@ public class GridHolderBean {
     if (calc != null) {
       dst.setCalc(calc);
     }
-    
+
     EditorDescription editor = getEditor(src);
     if (editor != null) {
       dst.setEditor(editor);
@@ -572,7 +591,8 @@ public class GridHolderBean {
     if (rowStyleNodes != null && rowStyleNodes.getLength() > 0) {
       List<ConditionalStyleDeclaration> rowStyles = Lists.newArrayList();
       for (int i = 0; i < rowStyleNodes.getLength(); i++) {
-        ConditionalStyleDeclaration cs = XmlUtils.getConditionalStyle((Element) rowStyleNodes.item(i));
+        ConditionalStyleDeclaration cs =
+            XmlUtils.getConditionalStyle((Element) rowStyleNodes.item(i));
         if (cs != null) {
           rowStyles.add(cs);
         }

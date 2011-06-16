@@ -38,28 +38,27 @@ import javax.xml.bind.annotation.XmlValue;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
-@WebService
-@SOAPBinding(parameterStyle = ParameterStyle.BARE)
-@Stateless
 /**
  * Enables to get data from the system using SOAP web service protocol.
  */
+@WebService
+@SOAPBinding(parameterStyle = ParameterStyle.BARE)
+@Stateless
 public class RemoteCall {
 
   /**
-   * Contains field information - name and value.
+   * Contains column information - name and value.
    */
-
-  public static class FieldType {
+  public static class ColType {
     @XmlAttribute(required = true)
     public String name;
     @XmlValue
     public String value;
 
-    public FieldType() {
+    public ColType() {
     }
 
-    public FieldType(String name, String value) {
+    public ColType(String name, String value) {
       this.name = name;
       this.value = value;
     }
@@ -68,23 +67,21 @@ public class RemoteCall {
   /**
    * Contains a list of columns for a row.
    */
-
   public static class RowType {
     @XmlElement(name = "col")
-    public FieldType[] fields;
+    public ColType[] columns;
 
     public RowType() {
     }
 
-    public RowType(FieldType[] fields) {
-      this.fields = fields;
+    public RowType(ColType[] columns) {
+      this.columns = columns;
     }
   }
 
   /**
    * Contains a list of rows.
    */
-
   public static class DataType {
     @XmlElement(name = "row")
     public RowType[] rows;
@@ -93,7 +90,6 @@ public class RemoteCall {
   /**
    * Creates data for SOAP web service requests.
    */
-
   public static class DataAdapter extends XmlAdapter<DataType, List<Map<String, String>>> {
     @Override
     public DataType marshal(List<Map<String, String>> source) throws Exception {
@@ -104,13 +100,13 @@ public class RemoteCall {
         RowType[] rows = new RowType[source.size()];
 
         for (Map<String, String> row : source) {
-          FieldType[] fields = new FieldType[row.size()];
-          int fCnt = 0;
+          ColType[] columns = new ColType[row.size()];
+          int cCnt = 0;
 
           for (String name : row.keySet()) {
-            fields[fCnt++] = new FieldType(name, row.get(name));
+            columns[cCnt++] = new ColType(name, row.get(name));
           }
-          rows[rCnt++] = new RowType(fields);
+          rows[rCnt++] = new RowType(columns);
         }
         data.rows = rows;
       }
@@ -125,8 +121,8 @@ public class RemoteCall {
         for (RowType r : data.rows) {
           HashMap<String, String> row = Maps.newHashMap();
 
-          for (FieldType field : r.fields) {
-            row.put(field.name, field.value);
+          for (ColType column : r.columns) {
+            row.put(column.name, column.value);
           }
           rows.add(row);
         }
@@ -135,10 +131,10 @@ public class RemoteCall {
     }
   }
 
-  @XmlRootElement(name = "data")
   /**
    * Holds SOAP web service response data.
    */
+  @XmlRootElement(name = "data")
   public static class DataHolder {
     @XmlAttribute
     public String error;
@@ -150,15 +146,15 @@ public class RemoteCall {
     public List<Map<String, String>> rows;
   }
 
-  @XmlRootElement(name = "params")
   /**
-   * Holds such parameters for SOAP web service requests as view, fields, filter or orderBy.
+   * Holds such parameters for SOAP web service requests as view, columns, filter or orderBy.
    */
+  @XmlRootElement(name = "params")
   public static class ParamHolder {
     @XmlAttribute(required = true)
     public String view;
     @XmlAttribute
-    public String[] fields;
+    public String[] columns;
     @XmlElement
     public String filter;
     @XmlAttribute
@@ -181,7 +177,7 @@ public class RemoteCall {
     if (rs instanceof ParamHolder) {
       prm = (ParamHolder) rs;
 
-      if (!sys.isView(prm.view) && !sys.isTable(prm.view)) {
+      if (!sys.isView(prm.view)) {
         rs = "Not a view: " + prm.view;
       } else {
         Filter filter = null;
@@ -205,7 +201,7 @@ public class RemoteCall {
             order.add(ord, BeeUtils.removePrefix(ord, prfx), !BeeUtils.isPrefix(ord, prfx));
           }
         }
-        rs = sys.getViewData(prm.view, null, sys.getViewCondition(prm.view, filter), order,
+        rs = sys.getViewData(prm.view, sys.getViewCondition(prm.view, filter), order,
             BeeUtils.toNonNegativeInt(prm.limit), BeeUtils.toNonNegativeInt(prm.offset));
       }
     }
@@ -219,19 +215,15 @@ public class RemoteCall {
 
       for (int i = 0; i < rowSet.getNumberOfColumns(); i++) {
         String col = rowSet.getColumnId(i);
-
-        if (!BeeUtils.isEmpty(prm.fields) && !ArrayUtils.contains(col, prm.fields)) {
-          continue;
-        }
         data.columns.add(col);
       }
       if (!BeeUtils.isEmpty(data.columns)) {
         boolean idMode = true;
         boolean versionMode = true;
 
-        if (!BeeUtils.isEmpty(prm.fields)) {
-          idMode = ArrayUtils.contains(BeeTable.DEFAULT_ID_FIELD, prm.fields);
-          versionMode = ArrayUtils.contains(BeeTable.DEFAULT_VERSION_FIELD, prm.fields);
+        if (!BeeUtils.isEmpty(prm.columns)) {
+          idMode = ArrayUtils.contains(BeeTable.DEFAULT_ID_FIELD, prm.columns);
+          versionMode = ArrayUtils.contains(BeeTable.DEFAULT_VERSION_FIELD, prm.columns);
         }
         for (BeeRow r : rowSet.getRows()) {
           HashMap<String, String> row = Maps.newLinkedHashMap();
