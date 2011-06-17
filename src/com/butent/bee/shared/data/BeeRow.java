@@ -138,6 +138,28 @@ public class BeeRow extends StringRow implements BeeSerializable {
     return getId() < 0;
   }
 
+  public void preliminaryUpdate(int col, String value) {
+    String oldValue = getString(col);
+  
+    if (!BeeUtils.equalsTrimRight(value, oldValue)) {
+      if (shadow == null) {
+        shadow = new HashMap<Integer, String>();
+      }
+      if (!shadow.containsKey(col)) {
+        shadow.put(col, oldValue);
+      } else {
+        if (BeeUtils.equalsTrimRight(shadow.get(col), value)) {
+          shadow.remove(col);
+  
+          if (BeeUtils.isEmpty(shadow) && !isMarkedForInsert()) {
+            setNewId(-1); // TODO: dummy for Delete
+          }
+        }
+      }
+      super.setValue(col, value);
+    }
+  }
+
   public void reset() {
     setShadow(null);
     newId = 0;
@@ -180,29 +202,6 @@ public class BeeRow extends StringRow implements BeeSerializable {
 
   public void setNewId(long newId) {
     this.newId = newId;
-  }
-
-  @Override
-  public void setValue(int col, String value) {
-    String oldValue = getString(col);
-
-    if (!BeeUtils.equalsTrimRight(value, oldValue)) {
-      if (shadow == null) {
-        shadow = new HashMap<Integer, String>();
-      }
-      if (!shadow.containsKey(col)) {
-        shadow.put(col, oldValue);
-      } else {
-        if (BeeUtils.equalsTrimRight(shadow.get(col), value)) {
-          shadow.remove(col);
-
-          if (BeeUtils.isEmpty(shadow) && !isMarkedForInsert()) {
-            setNewId(-1); // TODO: dummy for Delete
-          }
-        }
-      }
-      super.setValue(col, value);
-    }
   }
 
   private void setShadow(Map<Integer, String> shadow) {

@@ -231,7 +231,7 @@ public class SystemBean {
                     collision = true;
                     break;
                   }
-                  rs.setValue(r, fld, changes.getString(row, fld));
+                  r.setValue(rs.getColumnIndex(fld), changes.getString(row, fld));
                 }
                 if (!collision) {
                   row.setValues(r.getValues());
@@ -294,10 +294,10 @@ public class SystemBean {
     for (String col : updates.keySet()) {
       BeeField field = table.getField((String) updates.get(col)[idxField]);
       Object value = updates.get(col)[idxValue];
-      String extTable = field.getTable();
+      String extTable = table.getExtTable(field);
 
       if (!queryMap.containsKey(extTable)) {
-        queryMap.put(extTable, new IsQuery[2]);
+        queryMap.put(extTable, new IsQuery[Ints.max(idxInsQuery, idxUpdQuery) + 1]);
       }
       IsQuery[] queries = queryMap.get(extTable);
       SqlInsert insQuery = (SqlInsert) queries[idxInsQuery];
@@ -306,6 +306,24 @@ public class SystemBean {
       if (updateMode) {
         SqlUpdate updQuery = (SqlUpdate) queries[idxUpdQuery];
         queries[idxUpdQuery] = table.updateExtField(updQuery, id, field, value);
+      }
+    }
+    for (BeeField field : table.getFields()) {
+      IsQuery[] queries = queryMap.get(table.getExtTable(field));
+
+      if (queries != null && field.isExtended() && field.isNotNull()) {
+        boolean found = false;
+
+        for (Object[] col : updates.values()) {
+          if (BeeUtils.same(field.getName(), (String) col[idxField])) {
+            found = true;
+            break;
+          }
+        }
+        if (!found) {
+          queries[idxInsQuery] = table.insertExtField((SqlInsert) queries[idxInsQuery],
+              id, field, field.getType().getEmptyValue());
+        }
       }
     }
     for (IsQuery[] queries : queryMap.values()) {
@@ -332,26 +350,49 @@ public class SystemBean {
     int idxInsQuery = 0;
     int idxUpdQuery = 1;
     Map<String, IsQuery[]> queryMap = Maps.newHashMap();
+    Set<String> locales = Sets.newHashSet();
 
     for (String col : updates.keySet()) {
       BeeField field = table.getField((String) updates.get(col)[idxField]);
       String locale = (String) updates.get(col)[idxLocale];
+      locales.add(locale);
       Object value = updates.get(col)[idxValue];
-      String translationTable = table.getTranslationTable(field);
+      String translationKey = table.getTranslationTable(field) + BeeUtils.parenthesize(locale);
 
-      if (table.updateTranslationActive(field, locale)) {
-        rebuild(table);
+      if (!queryMap.containsKey(translationKey)) {
+        queryMap.put(translationKey, new IsQuery[Ints.max(idxInsQuery, idxUpdQuery) + 1]);
       }
-      if (!queryMap.containsKey(translationTable)) {
-        queryMap.put(translationTable, new IsQuery[2]);
-      }
-      IsQuery[] queries = queryMap.get(translationTable);
+      IsQuery[] queries = queryMap.get(translationKey);
       SqlInsert insQuery = (SqlInsert) queries[idxInsQuery];
       queries[idxInsQuery] = table.insertTranslationField(insQuery, id, field, locale, value);
 
       if (updateMode) {
         SqlUpdate updQuery = (SqlUpdate) queries[idxUpdQuery];
         queries[idxUpdQuery] = table.updateTranslationField(updQuery, id, field, locale, value);
+      }
+    }
+    for (BeeField field : table.getFields()) {
+      if (field.isTranslatable() && field.isNotNull()) {
+        for (String locale : locales) {
+          String translationKey = table.getTranslationTable(field) + BeeUtils.parenthesize(locale);
+          IsQuery[] queries = queryMap.get(translationKey);
+          if (queries == null) {
+            continue;
+          }
+          boolean found = false;
+
+          for (Object[] col : updates.values()) {
+            if (BeeUtils.same(field.getName(), (String) col[idxField])
+                && BeeUtils.same(locale, (String) col[idxLocale])) {
+              found = true;
+              break;
+            }
+          }
+          if (!found) {
+            queries[idxInsQuery] = table.insertTranslationField((SqlInsert) queries[idxInsQuery],
+                id, field, locale, field.getType().getEmptyValue());
+          }
+        }
       }
     }
     for (IsQuery[] queries : queryMap.values()) {
@@ -601,7 +642,7 @@ public class SystemBean {
 
   public BeeState getState(String stateName) {
     Assert.state(isState(stateName), "Not a state: " + stateName);
-    return stateCache.get(cacheKey(stateName));
+    return stateCache.get(BeeUtils.normalize(stateName));
   }
 
   public Collection<String> getTableNames() {
@@ -628,7 +669,7 @@ public class SystemBean {
 
   public BeeView getView(String viewName) {
     Assert.state(isView(viewName), "Not a view: " + viewName);
-    BeeView view = viewCache.get(cacheKey(viewName));
+    BeeView view = viewCache.get(BeeUtils.normalize(viewName));
 
     if (BeeUtils.isEmpty(view)) {
       view = getDefaultView(viewName, true);
@@ -723,7 +764,7 @@ public class SystemBean {
   }
 
   public SqlSelect getViewQuery(String viewName) {
-    return getView(viewName).getQuery(tableCache);
+    return getView(viewName).getQuery();
   }
 
   public int getViewSize(String viewName, IsCondition condition) {
@@ -760,18 +801,8 @@ public class SystemBean {
         }
         table.setStateActive(state, tableFields.get(tblName));
       }
-      for (BeeField field : table.getFields()) {
-        String tblName = table.getTranslationTable(field);
-
-        if (BeeUtils.inListSame(tblName, dbTables) && !tableFields.containsKey(tblName)) {
-          tableFields.put(tblName,
-              qs.dbFields(getDbName(), getDbSchema(), tblName).getColumn(BeeConstants.FLD_NAME));
-        }
-        table.setTranslationActive(field, tableFields.get(tblName));
-      }
     }
     usr.invalidateCache();
-    initViews(true);
   }
 
   public void initStates() {
@@ -877,16 +908,16 @@ public class SystemBean {
   }
 
   public boolean isState(String stateName) {
-    return !BeeUtils.isEmpty(stateName) && stateCache.containsKey(cacheKey(stateName));
+    return !BeeUtils.isEmpty(stateName) && stateCache.containsKey(BeeUtils.normalize(stateName));
   }
 
   public boolean isTable(String tblName) {
-    return !BeeUtils.isEmpty(tblName) && tableCache.containsKey(cacheKey(tblName));
+    return !BeeUtils.isEmpty(tblName) && tableCache.containsKey(BeeUtils.normalize(tblName));
   }
 
   public boolean isView(String viewName) {
     return !BeeUtils.isEmpty(viewName)
-        && (viewCache.containsKey(cacheKey(viewName)) || isTable(viewName));
+        && (viewCache.containsKey(BeeUtils.normalize(viewName)) || isTable(viewName));
   }
 
   public String joinExtField(HasFrom<?> query, String tblName, String tblAlias, String fldName) {
@@ -1041,7 +1072,7 @@ public class SystemBean {
                 if (BeeUtils.equals(newRs.getString(0, colIndex),
                     baseUpdate.get(col)[idxOldValue])) {
 
-                  newRs.setValue(0, colIndex,
+                  newRs.getRow(0).setValue(colIndex,
                       BeeUtils.transformNoTrim(baseUpdate.get(col)[idxNewValue]));
                 } else {
                   collision = true;
@@ -1114,11 +1145,6 @@ public class SystemBean {
     return query;
   }
 
-  private String cacheKey(String objectName) {
-    Assert.notEmpty(objectName);
-    return objectName.trim().toLowerCase();
-  }
-
   private void createForeignKeys(Collection<BeeForeignKey> fKeys) {
     for (BeeForeignKey fKey : fKeys) {
       String refTblName = fKey.getRefTable();
@@ -1168,11 +1194,13 @@ public class SystemBean {
             .addField(field.getName(), field.getType(), field.getPrecision(), field.getScale(),
                 field.isNotNull() ? Keyword.NOT_NULL : null);
       }
-      tblName = table.getTranslationTable(field);
-      SqlCreate sc = table.createTranslationTable(newTables.get(tblName), field);
+      if (field.isTranslatable()) {
+        tblName = table.getTranslationTable(field);
+        SqlCreate sc = table.createTranslationTable(newTables.get(tblName), field);
 
-      if (!BeeUtils.isEmpty(sc)) {
-        newTables.put(tblName, sc);
+        if (!BeeUtils.isEmpty(sc)) {
+          newTables.put(tblName, sc);
+        }
       }
     }
     for (BeeState state : table.getStates()) {
@@ -1319,7 +1347,7 @@ public class SystemBean {
 
   private BeeTable getTable(String tblName) {
     Assert.state(isTable(tblName), "Not a base table: " + tblName);
-    return tableCache.get(cacheKey(tblName));
+    return tableCache.get(BeeUtils.normalize(tblName));
   }
 
   private BeeField getTableField(String tblName, String fldName) {
@@ -1337,8 +1365,10 @@ public class SystemBean {
   @SuppressWarnings("unused")
   @PostConstruct
   private void init() {
+    initDatabase(BeeUtils.ifString(Config.getProperty("DefaultEngine"), BeeConst.MYSQL));
     initStates(true);
     initTables(true);
+    initViews(true);
   }
 
   @Lock(LockType.WRITE)
@@ -1478,7 +1508,6 @@ public class SystemBean {
     }
   }
 
-  @Lock(LockType.WRITE)
   private Collection<BeeState> loadStates(String resource, String schema) {
     Document xml = XmlUtils.getXmlResource(resource, schema);
     if (BeeUtils.isEmpty(xml)) {
@@ -1491,14 +1520,13 @@ public class SystemBean {
     for (int i = 0; i < states.getLength(); i++) {
       Element state = (Element) states.item(i);
 
-      data.add(new BeeState(state.getAttribute("name")
-          , state.getAttribute("mode")
-          , BeeUtils.toBoolean(state.getAttribute("checked"))));
+      data.add(new BeeState(state.getAttribute("name"),
+          state.getAttribute("mode"),
+          BeeUtils.toBoolean(state.getAttribute("checked"))));
     }
     return data;
   }
 
-  @Lock(LockType.WRITE)
   private Collection<BeeTable> loadTables(String resource, String schema) {
     Document xml = XmlUtils.getXmlResource(resource, schema);
     if (BeeUtils.isEmpty(xml)) {
@@ -1517,6 +1545,10 @@ public class SystemBean {
 
       String[] states = BeeUtils.split(table.getAttribute("states"), ",");
       for (String state : states) {
+        if (!isState(state)) {
+          LogUtils.warning(logger, "State is not valid:", state);
+          continue;
+        }
         tbl.addState(getState(state));
       }
       for (int x = 0; x < 2; x++) {
@@ -1535,11 +1567,12 @@ public class SystemBean {
             String relation = field.getAttribute("relation");
             boolean cascade = BeeUtils.toBoolean(field.getAttribute("cascade"));
 
-            tbl.addField(fldName
-                , DataType.valueOf(field.getAttribute("type"))
-                , BeeUtils.toInt(field.getAttribute("precision"))
-                , BeeUtils.toInt(field.getAttribute("scale"))
-                , notNull, unique, relation, cascade)
+            tbl.addField(fldName,
+                DataType.valueOf(field.getAttribute("type")),
+                BeeUtils.toInt(field.getAttribute("precision")),
+                BeeUtils.toInt(field.getAttribute("scale")),
+                notNull, unique, relation, cascade)
+                .setTranslatable(BeeUtils.toBoolean(field.getAttribute("translatable")))
                 .setExtended(extMode);
 
             String tblName = tbl.getField(fldName).getTable();
@@ -1569,7 +1602,6 @@ public class SystemBean {
     return data;
   }
 
-  @Lock(LockType.WRITE)
   private Collection<BeeView> loadViews(String resource, String schema) {
     Document xml = XmlUtils.getXmlResource(resource, schema);
     if (BeeUtils.isEmpty(xml)) {
@@ -1587,9 +1619,9 @@ public class SystemBean {
         LogUtils.warning(logger, "View source is not valid:", src);
         continue;
       }
-      BeeView vw = new BeeView(view.getAttribute("name")
-          , getTable(src).getName(), getIdName(src)
-          , BeeUtils.toBoolean(view.getAttribute("readOnly")));
+      BeeView vw = new BeeView(view.getAttribute("name"),
+          getTable(src).getName(), getIdName(src),
+          BeeUtils.toBoolean(view.getAttribute("readOnly")));
 
       NodeList nodeRoot = view.getElementsByTagName("BeeColumns");
 
@@ -1603,10 +1635,10 @@ public class SystemBean {
           if (BeeUtils.inListSame(name, getIdName(src), getVersionName(src))) {
             LogUtils.warning(logger, "Attempt to use reserved column name:", vw.getName(), name);
           } else {
-            vw.addField(name
-                , col.getAttribute("expression")
-                , col.getAttribute("locale")
-                , tableCache);
+            vw.addField(name,
+                col.getAttribute("expression"),
+                col.getAttribute("locale"),
+                tableCache);
           }
         }
       }
@@ -1617,8 +1649,13 @@ public class SystemBean {
 
         for (int j = 0; j < orders.getLength(); j++) {
           Element order = (Element) orders.item(j);
-          vw.addOrder(order.getAttribute("name")
-              , BeeUtils.toBoolean(order.getAttribute("descending")));
+
+          String ord = order.getAttribute("name");
+          if (!vw.hasColumn(ord)) {
+            LogUtils.warning(logger, "Unrecognized order column name:", vw.getName(), ord);
+            continue;
+          }
+          vw.addOrder(ord, BeeUtils.toBoolean(order.getAttribute("descending")));
         }
       }
       data.add(vw);
@@ -1735,19 +1772,19 @@ public class SystemBean {
 
   private void registerState(BeeState state) {
     if (!BeeUtils.isEmpty(state)) {
-      stateCache.put(cacheKey(state.getName()), state);
+      stateCache.put(BeeUtils.normalize(state.getName()), state);
     }
   }
 
   private void registerTable(BeeTable table) {
     if (!BeeUtils.isEmpty(table)) {
-      tableCache.put(cacheKey(table.getName()), table);
+      tableCache.put(BeeUtils.normalize(table.getName()), table);
     }
   }
 
   private void registerView(BeeView view) {
     if (!BeeUtils.isEmpty(view)) {
-      viewCache.put(cacheKey(view.getName()), view);
+      viewCache.put(BeeUtils.normalize(view.getName()), view);
     }
   }
 }

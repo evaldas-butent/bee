@@ -280,14 +280,6 @@ public class BeeRowSet extends RowList<BeeRow, BeeColumn> implements BeeSerializ
     return Codec.beeSerializeAll(arr);
   }
 
-  public void setValue(int rowIndex, int colIndex, String value) {
-    getRow(rowIndex).setValue(colIndex, value);
-  }
-
-  public void setValue(BeeRow row, String columnId, String value) {
-    row.setValue(getColumnIndex(columnId), value);
-  }
-
   public void setViewName(String viewName) {
     this.viewName = viewName;
   }

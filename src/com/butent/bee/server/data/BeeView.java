@@ -2,6 +2,7 @@ package com.butent.bee.server.data;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.primitives.Ints;
 
 import com.butent.bee.server.data.BeeTable.BeeField;
 import com.butent.bee.server.sql.BeeConstants.DataType;
@@ -94,7 +95,6 @@ public class BeeView implements HasExtendedInfo {
   private static final int NAME = 0;
   private static final int EXPRESSION = 1;
   private static final int LOCALE = 2;
-  private static final int LOCALE_ALIAS = 3;
 
   private final String name;
   private final String source;
@@ -118,10 +118,7 @@ public class BeeView implements HasExtendedInfo {
   }
 
   public String getAlias(String colName) {
-    if (BeeUtils.isEmpty(getLocale(colName))) {
-      return getViewField(colName).getAlias();
-    }
-    return getLocaleAlias(colName);
+    return getViewField(colName).getAlias();
   }
 
   public int getColumnCount() {
@@ -274,7 +271,7 @@ public class BeeView implements HasExtendedInfo {
     PropertyUtils.addProperties(info, false, "Name", getName(), "Source", getSource(),
         "Source Id Name", sourceIdName, "Read Only", isReadOnly(), "Query", query.getQuery(),
         "Columns", columns.size());
-    
+
     String sub;
     int i = 0;
     for (Map.Entry<String, String[]> entry : columns.entrySet()) {
@@ -292,9 +289,6 @@ public class BeeView implements HasExtendedInfo {
           case LOCALE:
             sub = "locale";
             break;
-          case LOCALE_ALIAS:
-            sub = "locale alias";
-            break;
           default:
             sub = null;
         }
@@ -311,7 +305,7 @@ public class BeeView implements HasExtendedInfo {
       if (fld == null) {
         continue;
       }
-      
+
       PropertyUtils.addChildren(info, key, "Table", fld.getTable(), "Alias", fld.getAlias(),
           "Field", fld.getField(), "Type", fld.getType(), "Not Null", fld.isNotNull(),
           "Editable", fld.isEditable(), "Target Alias", fld.getTargetAlias());
@@ -321,9 +315,9 @@ public class BeeView implements HasExtendedInfo {
     i = 0;
     for (Map.Entry<String, Boolean> entry : orders.entrySet()) {
       info.add(new ExtendedProperty(BeeUtils.concat(1, "Order", ++i), entry.getKey(),
-          BeeConst.STRING_EMPTY + entry.getValue()));
+          BeeConst.STRING_EMPTY + (entry.getValue() ? "desc" : "")));
     }
-    
+
     return info;
   }
 
@@ -335,17 +329,13 @@ public class BeeView implements HasExtendedInfo {
     return name;
   }
 
-  public SqlSelect getQuery(Map<String, BeeTable> tables) {
-    Assert.state(!isEmpty());
+  public String getName(String colName) {
+    return getColumnInfo(colName)[NAME];
+  }
 
-    for (String colName : columns.keySet()) {
-      if (query.isEmpty()
-          || (!BeeUtils.isEmpty(getLocale(colName)) && BeeUtils.isEmpty(getLocaleAlias(colName)))) {
-        rebuildQuery(tables);
-        break;
-      }
-    }
-    return query.copyOf();
+  public SqlSelect getQuery() {
+    Assert.state(!isEmpty());
+    return query.copyOf().addOrder(getSource(), sourceIdName);
   }
 
   public String getSource() {
@@ -361,7 +351,7 @@ public class BeeView implements HasExtendedInfo {
   }
 
   public boolean hasColumn(String colName) {
-    return !BeeUtils.isEmpty(colName) && columns.containsKey(colName.toLowerCase());
+    return !BeeUtils.isEmpty(colName) && columns.containsKey(BeeUtils.normalize(colName));
   }
 
   public boolean isEditable(String colName) {
@@ -381,38 +371,50 @@ public class BeeView implements HasExtendedInfo {
   }
 
   void addField(String colName, String expression, String locale, Map<String, BeeTable> tables) {
+    Assert.notEmpty(colName);
     Assert.notEmpty(expression);
     Assert.state(!hasColumn(colName),
         BeeUtils.concat(1, "Dublicate column name:", getName(), colName));
 
-    String[] colInfo = new String[4];
+    String[] colInfo = new String[Ints.max(NAME, EXPRESSION, LOCALE) + 1];
     colInfo[NAME] = colName;
-    colInfo[EXPRESSION] = expression;
+    colInfo[EXPRESSION] = expressionKey(expression, locale);
     colInfo[LOCALE] = locale;
-    columns.put(colName.toLowerCase(), colInfo);
-    loadField(expression, tables);
+    columns.put(BeeUtils.normalize(colName), colInfo);
+
+    loadField(expression, locale, tables);
+    query.addField(getAlias(colName), getField(colName), colName);
   }
 
   void addOrder(String colName, boolean descending) {
     Assert.state(hasColumn(colName));
-    orders.put(colName, descending);
+    orders.put(getName(colName), descending);
+
+    String als = getAlias(colName);
+    String fld = getField(colName);
+
+    if (descending) {
+      query.addOrderDesc(als, fld);
+    } else {
+      query.addOrder(als, fld);
+    }
+  }
+
+  private String expressionKey(String expression, String locale) {
+    return BeeUtils.normalize(BeeUtils.concat(0, expression, BeeUtils.parenthesize(locale)));
   }
 
   private String[] getColumnInfo(String colName) {
     Assert.state(hasColumn(colName), "Unknown view column: " + getName() + " " + colName);
-    return columns.get(colName.toLowerCase());
-  }
-
-  private String getLocaleAlias(String colName) {
-    return getColumnInfo(colName)[LOCALE_ALIAS];
+    return columns.get(BeeUtils.normalize(colName));
   }
 
   private ViewField getViewField(String colName) {
-    return expressions.get(getExpression(colName).toLowerCase());
+    return expressions.get(BeeUtils.normalize(getExpression(colName)));
   }
 
-  private void loadField(String expression, Map<String, BeeTable> tables) {
-    if (expressions.containsKey(expression.toLowerCase())) {
+  private void loadField(String expression, String locale, Map<String, BeeTable> tables) {
+    if (expressions.containsKey(expressionKey(expression, locale))) {
       return;
     }
     char joinMode = 0;
@@ -439,10 +441,10 @@ public class BeeView implements HasExtendedInfo {
       tbl = getSource();
       als = tbl;
     } else {
-      loadField(xpr, tables);
-      ViewField vf = expressions.get(xpr.toLowerCase());
+      loadField(xpr, locale, tables);
+      ViewField vf = expressions.get(expressionKey(xpr, locale));
       als = vf.getTargetAlias();
-      tbl = tables.get(vf.getTable().toLowerCase()).getField(vf.getField()).getRelation();
+      tbl = tables.get(BeeUtils.normalize(vf.getTable())).getField(vf.getField()).getRelation();
       Assert.notEmpty(tbl,
           BeeUtils.concat(1, "Not a relation field:", vf.getTable(), vf.getField()));
 
@@ -475,56 +477,17 @@ public class BeeView implements HasExtendedInfo {
         }
       }
     }
-    BeeTable table = tables.get(tbl.toLowerCase());
+    BeeTable table = tables.get(BeeUtils.normalize(tbl));
     BeeField field = table.getField(fld);
 
-    if (field.isExtended()) {
+    if (!BeeUtils.isEmpty(locale)) {
+      als = table.joinTranslationField(query, als, field, locale);
+
+    } else if (field.isExtended()) {
       als = table.joinExtField(query, als, field);
     }
-    expressions.put(expression.toLowerCase(), new ViewField(tbl, als, fld, field.getType(),
-        field.isNotNull(), BeeUtils.isEmpty(xpr)));
-  }
-
-  private synchronized void rebuildQuery(Map<String, BeeTable> tables) {
-    query.resetFields();
-    query.resetOrder();
-
-    for (String colName : getColumns()) {
-      String als = getAlias(colName);
-      String fld = getField(colName);
-
-      if (BeeUtils.isEmpty(als)) {
-        if (BeeUtils.isEmpty(tables)) {
-          continue;
-        }
-        BeeTable table = tables.get(getTable(colName).toLowerCase());
-        BeeField field = table.getField(fld);
-        String locale = getLocale(colName);
-        als = table.joinTranslationField(query, getViewField(colName).getAlias(), field, locale);
-        fld = table.getTranslationField(field, locale);
-
-        if (BeeUtils.isEmpty(als)) {
-          query.addEmptyField(colName, field.getType(), field.getPrecision(), field.getScale(),
-              field.isNotNull());
-          continue;
-        }
-        getColumnInfo(colName)[LOCALE_ALIAS] = als;
-      }
-      query.addField(als, fld, colName);
-    }
-    for (String colName : orders.keySet()) {
-      String als = getAlias(colName);
-
-      if (!BeeUtils.isEmpty(als)) {
-        String fld = getField(colName);
-
-        if (orders.get(colName)) {
-          query.addOrderDesc(als, fld);
-        } else {
-          query.addOrder(als, fld);
-        }
-      }
-    }
-    query.addOrder(getSource(), sourceIdName);
+    expressions.put(expressionKey(expression, locale),
+        new ViewField(table.getName(), als, field.getName(), field.getType(), field.isNotNull(),
+            BeeUtils.isEmpty(xpr)));
   }
 }

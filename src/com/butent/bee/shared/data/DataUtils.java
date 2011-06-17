@@ -37,7 +37,7 @@ public class DataUtils {
 
     } else if (data instanceof String[][]) {
       table = new StringMatrix<TableColumn>((String[][]) data, columnLabels);
-    
+
     } else if (data instanceof JsArrayString) {
       table = new JsData<TableColumn>((JsArrayString) data, columnLabels);
 
@@ -51,7 +51,7 @@ public class DataUtils {
       } else if (el instanceof String[]) {
         table = new StringMatrix<TableColumn>((List<String[]>) data, columnLabels);
       }
-    
+
     } else if (data instanceof Map) {
       table = new PropertiesData((Map<?, ?>) data, columnLabels);
     }
@@ -89,7 +89,13 @@ public class DataUtils {
       }
       if (!BeeUtils.isEmpty(flt)) {
         for (String part : parts) {
-          ((CompoundFilter) flt).add(parseCondition(part, columns));
+          Filter ff = parseCondition(part, columns);
+
+          if (ff == null) {
+            flt = null;
+            break;
+          }
+          ((CompoundFilter) flt).add(ff);
         }
       } else {
         String s = parts.get(0);

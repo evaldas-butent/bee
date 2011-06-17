@@ -245,7 +245,6 @@ public class MenuProvider {
   @PostConstruct
   private void init() {
     loadXml(resource, transformation);
-    sys.initDatabase(BeeUtils.ifString(Config.getProperty("DefaultEngine"), BeeConst.MYSQL));
   }
 
   private boolean isParentVisible(MenuEntry entry) {

@@ -41,6 +41,7 @@
     <xs:attribute name="unique" type="xs:boolean" />
     <xs:attribute name="relation" type="xs:string" />
     <xs:attribute name="cascade" type="xs:boolean" />
+    <xs:attribute name="translatable" type="xs:boolean" />
   </xs:complexType>
 
   <xs:complexType name="keyType">

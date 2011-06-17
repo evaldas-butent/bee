@@ -70,65 +70,53 @@ public class UiServiceBean {
     ResponseObject response = null;
 
     String svc = reqInfo.getService();
-    String dsn = reqInfo.getDsn();
 
-    if (BeeUtils.isEmpty(dsn)) {
-      String msg = "DSN not specified";
-      logger.severe(msg);
-      response = ResponseObject.error(msg);
+    if (BeeUtils.same(svc, Service.GET_FORM)) {
+      response = formInfo(reqInfo);
+    } else if (BeeUtils.same(svc, Service.GET_FORM_LIST)) {
+      response = formList();
+    } else if (BeeUtils.same(svc, Service.GET_MENU)) {
+      response = menuInfo(reqInfo);
+    } else if (BeeUtils.same(svc, Service.GET_X_GRID)) {
+      response = gridInfo(reqInfo);
+    } else if (BeeUtils.same(svc, Service.GET_GRID)) {
+      response = getGrid(reqInfo);
+    } else if (BeeUtils.same(svc, Service.REBUILD)) {
+      response = rebuildData(reqInfo);
+    } else if (BeeUtils.same(svc, Service.DO_SQL)) {
+      response = doSql(reqInfo);
+    } else if (BeeUtils.same(svc, Service.GET_TABLE_LIST)) {
+      response = getTables();
+    } else if (BeeUtils.same(svc, Service.QUERY)) {
+      response = getViewData(reqInfo);
+    } else if (BeeUtils.same(svc, Service.GET_STATES)) {
+      response = getStates(reqInfo);
+    } else if (BeeUtils.same(svc, Service.GET_STATE_TABLE)) {
+      response = getStateTable(reqInfo);
+    } else if (BeeUtils.same(svc, Service.COMMIT)) {
+      response = commitChanges(reqInfo);
+
+    } else if (BeeUtils.same(svc, Service.GET_VIEW_LIST)) {
+      response = getViewList();
+    } else if (BeeUtils.same(svc, Service.GENERATE)) {
+      response = generateData(reqInfo);
+    } else if (BeeUtils.same(svc, Service.COUNT_ROWS)) {
+      response = getViewSize(reqInfo);
+    } else if (BeeUtils.same(svc, Service.DELETE_ROWS)) {
+      response = deleteRows(reqInfo);
+    } else if (BeeUtils.same(svc, Service.UPDATE_CELL)) {
+      response = updateCell(reqInfo);
+    } else if (BeeUtils.same(svc, Service.UPDATE_ROW)) {
+      response = updateRow(reqInfo);
+    } else if (BeeUtils.same(svc, Service.INSERT_ROW)) {
+      response = insertRow(reqInfo);
+    } else if (BeeUtils.same(svc, Service.GET_VIEW_INFO)) {
+      response = getViewInfo(reqInfo);
+
     } else {
-      if (!BeeUtils.same(SqlBuilderFactory.getEngine(), BeeConst.getDsType(dsn))) {
-        ig.destroy();
-        sys.initDatabase(dsn);
-      }
-
-      if (BeeUtils.same(svc, Service.GET_FORM)) {
-        response = formInfo(reqInfo);
-      } else if (BeeUtils.same(svc, Service.GET_FORM_LIST)) {
-        response = formList();
-      } else if (BeeUtils.same(svc, Service.GET_MENU)) {
-        response = menuInfo(reqInfo);
-      } else if (BeeUtils.same(svc, Service.GET_X_GRID)) {
-        response = gridInfo(reqInfo);
-      } else if (BeeUtils.same(svc, Service.GET_GRID)) {
-        response = getGrid(reqInfo);
-      } else if (BeeUtils.same(svc, Service.REBUILD)) {
-        response = rebuildData(reqInfo);
-      } else if (BeeUtils.same(svc, Service.DO_SQL)) {
-        response = doSql(reqInfo);
-      } else if (BeeUtils.same(svc, Service.GET_TABLE_LIST)) {
-        response = getTables();
-      } else if (BeeUtils.same(svc, Service.QUERY)) {
-        response = getViewData(reqInfo);
-      } else if (BeeUtils.same(svc, Service.GET_STATES)) {
-        response = getStates(reqInfo);
-      } else if (BeeUtils.same(svc, Service.GET_STATE_TABLE)) {
-        response = getStateTable(reqInfo);
-      } else if (BeeUtils.same(svc, Service.COMMIT)) {
-        response = commitChanges(reqInfo);
-
-      } else if (BeeUtils.same(svc, Service.GET_VIEW_LIST)) {
-        response = getViewList();
-      } else if (BeeUtils.same(svc, Service.GENERATE)) {
-        response = generateData(reqInfo);
-      } else if (BeeUtils.same(svc, Service.COUNT_ROWS)) {
-        response = getViewSize(reqInfo);
-      } else if (BeeUtils.same(svc, Service.DELETE_ROWS)) {
-        response = deleteRows(reqInfo);
-      } else if (BeeUtils.same(svc, Service.UPDATE_CELL)) {
-        response = updateCell(reqInfo);
-      } else if (BeeUtils.same(svc, Service.UPDATE_ROW)) {
-        response = updateRow(reqInfo);
-      } else if (BeeUtils.same(svc, Service.INSERT_ROW)) {
-        response = insertRow(reqInfo);
-      } else if (BeeUtils.same(svc, Service.GET_VIEW_INFO)) {
-        response = getViewInfo(reqInfo);
-
-      } else {
-        String msg = BeeUtils.concat(1, svc, "loader service not recognized");
-        logger.warning(msg);
-        response = ResponseObject.error(msg);
-      }
+      String msg = BeeUtils.concat(1, "data service not recognized:", svc);
+      logger.warning(msg);
+      response = ResponseObject.error(msg);
     }
     return response;
   }
@@ -414,11 +402,13 @@ public class UiServiceBean {
     } else if (BeeUtils.same(cmd, "states")) {
       sys.initStates();
       sys.initTables();
+      sys.initViews();
       sys.initDatabase(SqlBuilderFactory.getEngine());
       response.addInfo("Extensions OK");
 
     } else if (BeeUtils.same(cmd, "tables")) {
       sys.initTables();
+      sys.initViews();
       sys.initDatabase(SqlBuilderFactory.getEngine());
       response.addInfo("Extensions OK");
 

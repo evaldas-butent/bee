@@ -48,10 +48,7 @@ public class DispatcherBean {
   SystemBean sys;
 
   public ResponseObject doLogin(String dsn, String locale) {
-    if (!BeeUtils.same(SqlBuilderFactory.getEngine(), BeeConst.getDsType(dsn))) {
-      ig.destroy();
-      sys.initDatabase(dsn);
-    }
+    initDb(dsn);
     return usrBean.login(locale);
   }
 
@@ -63,6 +60,7 @@ public class DispatcherBean {
     Assert.notEmpty(svc);
     Assert.notNull(buff);
     ResponseObject response = null;
+    initDb(dsn);
 
     if (Service.isDbService(svc)) {
       dataBean.doService(svc, dsn, reqInfo, buff);
@@ -86,5 +84,12 @@ public class DispatcherBean {
       buff.addWarning(msg);
     }
     return response;
+  }
+
+  private void initDb(String dsn) {
+    if (!BeeUtils.same(SqlBuilderFactory.getEngine(), BeeConst.getDsType(dsn))) {
+      ig.destroy();
+      sys.initDatabase(dsn);
+    }
   }
 }

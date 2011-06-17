@@ -23,10 +23,6 @@ public interface HasTranslations {
 
   String joinTranslationField(HasFrom<?> query, String tblAlias, BeeField field, String locale);
 
-  void setTranslationActive(BeeField field, String... flds);
-
-  boolean updateTranslationActive(BeeField field, String locale);
-
   SqlUpdate updateTranslationField(SqlUpdate query, long rootId, BeeField field, String locale,
       Object newValue);
 }

@@ -231,7 +231,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
    * Creates an empty STRING type field with specified precision {@code precision} and adds it.
    * 
    * @param alias the alias to use
-   * @param precision the precition
+   * @param precision the precision
    * @return object's SqlSelect instance
    */
   public SqlSelect addEmptyString(String alias, int precision) {

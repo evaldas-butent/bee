@@ -1274,7 +1274,7 @@ public class BeeUtils {
       return isEmpty(x);
     }
   }
-  
+
   public static boolean isFalse(Boolean b) {
     return Boolean.FALSE.equals(b);
   }
@@ -1939,7 +1939,7 @@ public class BeeUtils {
       return BeeConst.STRING_LEFT_PARENTHESIS + s + BeeConst.STRING_RIGHT_PARENTHESIS;
     }
   }
-  
+
   public static <T> T peek(Iterable<T> container) {
     if (container == null) {
       return null;
@@ -2363,7 +2363,7 @@ public class BeeUtils {
     }
     return Character.toLowerCase(c1) == Character.toLowerCase(c2);
   }
-  
+
   public static boolean sameSign(int i1, int i2) {
     return Integer.signum(i1) == Integer.signum(i2);
   }
@@ -2467,7 +2467,7 @@ public class BeeUtils {
     }
     return same(s.trim().charAt(0), c);
   }
-  
+
   /**
    * Checks if {@code x} is a Boolean value.
    * 

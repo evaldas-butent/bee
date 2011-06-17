@@ -226,12 +226,12 @@ public class GridPresenter implements Presenter, EditEndEvent.Handler {
 
     BeeRowSet rs = new BeeRowSet(new BeeColumn(event.getColumn().getType(), columnId));
     rs.setViewName(viewName);
-    rs.addRow(rowId, version, new String[]{event.getOldValue()});
-    rs.setValue(0, 0, newValue);
-    
+    rs.addRow(rowId, version, new String[] {event.getOldValue()});
+    rs.getRow(0).preliminaryUpdate(0, newValue);
+
     final boolean rowMode = event.isRowMode();
 
-    Queries.update(rs, rowMode, 
+    Queries.update(rs, rowMode,
         new Queries.RowCallback() {
           public void onFailure(String[] reason) {
             getView().getContent().refreshCellContent(rowId, columnId);

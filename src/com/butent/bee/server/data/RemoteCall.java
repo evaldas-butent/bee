@@ -2,8 +2,8 @@ package com.butent.bee.server.data;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 
+import com.butent.bee.shared.DateTime;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -12,7 +12,6 @@ import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.Order;
-import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.io.StringReader;
@@ -20,7 +19,6 @@ import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -119,7 +117,7 @@ public class RemoteCall {
 
       if (!BeeUtils.isEmpty(data)) {
         for (RowType r : data.rows) {
-          HashMap<String, String> row = Maps.newHashMap();
+          HashMap<String, String> row = Maps.newLinkedHashMap();
 
           for (ColType column : r.columns) {
             row.put(column.name, column.value);
@@ -141,7 +139,7 @@ public class RemoteCall {
     @XmlAttribute
     public Integer affected;
     @XmlAttribute
-    public Set<String> columns;
+    public List<String> columns;
     @XmlJavaTypeAdapter(DataAdapter.class)
     public List<Map<String, String>> rows;
   }
@@ -163,6 +161,10 @@ public class RemoteCall {
     public Integer limit;
     @XmlAttribute
     public Integer offset;
+    @XmlAttribute
+    public String idName;
+    @XmlAttribute
+    public String versionName;
   }
 
   @EJB
@@ -179,7 +181,17 @@ public class RemoteCall {
 
       if (!sys.isView(prm.view)) {
         rs = "Not a view: " + prm.view;
+
+      } else if (!BeeUtils.isEmpty(prm.idName) && sys.getView(prm.view).hasColumn(prm.idName)) {
+        rs = "Id column name conflict: " + prm.idName;
+
+      } else if (!BeeUtils.isEmpty(prm.versionName)
+          && (sys.getView(prm.view).hasColumn(prm.versionName)
+              || BeeUtils.same(prm.idName, prm.versionName))) {
+        rs = "Version column name conflict: " + prm.versionName;
+
       } else {
+        rs = null;
         Filter filter = null;
 
         if (!BeeUtils.isEmpty(prm.filter)) {
@@ -190,19 +202,26 @@ public class RemoteCall {
             columns.add(new BeeColumn(ValueType.getByTypeCode(view.getType(col).toString()), col));
           }
           filter = DataUtils.parseCondition(prm.filter, columns);
-        }
-        Order order = null;
 
-        if (!BeeUtils.isEmpty(prm.orderBy)) {
-          char prfx = '-';
-          order = new Order();
-
-          for (String ord : prm.orderBy) {
-            order.add(ord, BeeUtils.removePrefix(ord, prfx), !BeeUtils.isPrefix(ord, prfx));
+          if (filter == null) {
+            rs = "Wrong filter: " + prm.filter;
           }
         }
-        rs = sys.getViewData(prm.view, sys.getViewCondition(prm.view, filter), order,
-            BeeUtils.toNonNegativeInt(prm.limit), BeeUtils.toNonNegativeInt(prm.offset));
+        if (rs == null) {
+          Order order = null;
+
+          if (!BeeUtils.isEmpty(prm.orderBy)) {
+            char prfx = '-';
+            order = new Order();
+
+            for (String ord : prm.orderBy) {
+              order.add(ord, BeeUtils.removePrefix(ord, prfx), !BeeUtils.isPrefix(ord, prfx));
+            }
+          }
+          rs = sys.getViewData(prm.view, sys.getViewCondition(prm.view, filter), order,
+              BeeUtils.toNonNegativeInt(prm.limit), BeeUtils.toNonNegativeInt(prm.offset),
+              prm.columns);
+        }
       }
     }
     DataHolder data = new DataHolder();
@@ -211,39 +230,22 @@ public class RemoteCall {
       BeeRowSet rowSet = (BeeRowSet) rs;
       data.affected = rowSet.getNumberOfRows();
       data.rows = Lists.newArrayList();
-      data.columns = Sets.newLinkedHashSet();
+      data.columns = Lists.newArrayList(rowSet.getColumnLabels());
 
-      for (int i = 0; i < rowSet.getNumberOfColumns(); i++) {
-        String col = rowSet.getColumnId(i);
-        data.columns.add(col);
-      }
       if (!BeeUtils.isEmpty(data.columns)) {
-        boolean idMode = true;
-        boolean versionMode = true;
-
-        if (!BeeUtils.isEmpty(prm.columns)) {
-          idMode = ArrayUtils.contains(BeeTable.DEFAULT_ID_FIELD, prm.columns);
-          versionMode = ArrayUtils.contains(BeeTable.DEFAULT_VERSION_FIELD, prm.columns);
-        }
         for (BeeRow r : rowSet.getRows()) {
           HashMap<String, String> row = Maps.newLinkedHashMap();
 
           for (String col : data.columns) {
             row.put(rowSet.getColumn(col).getId(), rowSet.getString(r, col));
           }
-          if (idMode) {
-            row.put(BeeTable.DEFAULT_ID_FIELD, BeeUtils.transform(r.getId()));
+          if (!BeeUtils.isEmpty(prm.idName)) {
+            row.put(prm.idName, BeeUtils.transform(r.getId()));
           }
-          if (versionMode) {
-            row.put(BeeTable.DEFAULT_VERSION_FIELD, BeeUtils.transform(r.getVersion()));
+          if (!BeeUtils.isEmpty(prm.versionName)) {
+            row.put(prm.versionName, BeeUtils.transform(new DateTime(r.getVersion())));
           }
           data.rows.add(row);
-        }
-        if (idMode) {
-          data.columns.add(BeeTable.DEFAULT_ID_FIELD);
-        }
-        if (versionMode) {
-          data.columns.add(BeeTable.DEFAULT_VERSION_FIELD);
         }
       }
     } else {

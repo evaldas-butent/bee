@@ -19,7 +19,7 @@ public class CellUpdater implements FieldUpdater<IsRow, String> {
   @Override
   public void update(int index, IsRow object, String value) {
     if (object instanceof BeeRow) {
-      ((BeeRow) object).setValue(column, value);
+      ((BeeRow) object).preliminaryUpdate(column, value);
     }
   }
 }
