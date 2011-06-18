@@ -21,7 +21,7 @@ import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.edit.EditorFactory;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.HasAcceptableValues;
+import com.butent.bee.shared.HasItems;
 import com.butent.bee.shared.HasStringValue;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.Variable;
@@ -34,7 +34,7 @@ import java.util.Collection;
  * Implements a list box user interface component that presents a list of choices to the user.
  */
 
-public class BeeListBox extends ListBox implements Editor, HasAcceptableValues,
+public class BeeListBox extends ListBox implements Editor, HasItems,
     HasBeeChangeHandler {
   
   public static int changeTimeout = 200;
@@ -203,15 +203,6 @@ public class BeeListBox extends ListBox implements Editor, HasAcceptableValues,
     }
   }
 
-  public void setAcceptableValues(Collection<String> values) {
-    if (values != null) {
-      if (getItemCount() > 0) {
-        clear();
-      }
-      addItems(values);
-    }
-  }
-
   public void setAllVisible() {
     int cnt = getItemCount();
     if (cnt > 0) {
@@ -225,6 +216,15 @@ public class BeeListBox extends ListBox implements Editor, HasAcceptableValues,
 
   public void setId(String id) {
     DomUtils.setId(this, id);
+  }
+
+  public void setItems(Collection<String> items) {
+    if (items != null) {
+      if (getItemCount() > 0) {
+        clear();
+      }
+      addItems(items);
+    }
   }
 
   public void setNullable(boolean nullable) {

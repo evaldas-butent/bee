@@ -232,7 +232,7 @@
       <xs:enumeration value="slider" />
       <xs:enumeration value="spinner" />
       <xs:enumeration value="long" />
-      <xs:enumeration value="suggest" />
+      <xs:enumeration value="selector" />
       <xs:enumeration value="toggle" />
     </xs:restriction>
   </xs:simpleType>

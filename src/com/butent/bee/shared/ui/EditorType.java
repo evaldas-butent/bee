@@ -20,7 +20,7 @@ public enum EditorType {
   SLIDER("slider"),
   SPINNER("spinner"),
   LONG("long"),
-  SUGGEST("suggest"),
+  SELECTOR("selector", null, null, 120, null),
   TOGGLE("toggle");
 
   public static EditorType getByTypeCode(String code) {

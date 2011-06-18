@@ -72,7 +72,7 @@ public class DataUtils {
     return "Column " + index;
   }
 
-  public static Filter parseCondition(String cond, List<? extends IsColumn> columns) {
+  public static Filter parseCondition(String cond, List<? extends IsColumn> columns, boolean warn) {
     Filter flt = null;
 
     if (!BeeUtils.isEmpty(cond)) {
@@ -89,7 +89,7 @@ public class DataUtils {
       }
       if (!BeeUtils.isEmpty(flt)) {
         for (String part : parts) {
-          Filter ff = parseCondition(part, columns);
+          Filter ff = parseCondition(part, columns, warn);
 
           if (ff == null) {
             flt = null;
@@ -102,20 +102,21 @@ public class DataUtils {
         String ptrn = "^\\s*" + CompoundType.NOT.toTextString() + "\\s*\\(\\s*(.*)\\s*\\)\\s*$";
 
         if (s.matches(ptrn)) {
-          flt = parseCondition(s.replaceFirst(ptrn, "$1"), columns);
+          flt = parseCondition(s.replaceFirst(ptrn, "$1"), columns, warn);
 
           if (!BeeUtils.isEmpty(flt)) {
             flt = new NegationFilter(flt);
           }
         } else {
-          flt = parseExpression(s, columns);
+          flt = parseExpression(s, columns, warn);
         }
       }
     }
     return flt;
   }
 
-  public static Filter parseExpression(String expr, List<? extends IsColumn> columns) {
+  public static Filter parseExpression(String expr, List<? extends IsColumn> columns,
+      boolean warn) {
     Filter flt = null;
 
     if (!BeeUtils.isEmpty(expr)) {
@@ -161,7 +162,7 @@ public class DataUtils {
         if (notMode && flt != null) {
           flt = new NegationFilter(flt);
         }
-      } else {
+      } else if (warn) {
         LogUtils.warning(LogUtils.getDefaultLogger(), "Unknown column in expression: " + expr);
       }
     }

@@ -26,6 +26,7 @@ import java.util.Set;
  * Contains base methods for developement.
  */
 public class BeeUtils {
+
   private static int nameCounter = 0;
 
   /**
@@ -754,7 +755,49 @@ public class BeeUtils {
     String c = cls.getName();
     return c.substring(c.lastIndexOf(".") + 1);
   }
+  
+  public static <E extends Enum<?>> E getConstant(Class<E> clazz, String name) {
+    Assert.notNull(clazz);
+    Assert.notEmpty(name);
 
+    E result = null;
+  
+    for (int i = 0; i < 3; i++) {
+      for (E constant : clazz.getEnumConstants()) {
+        if (i == 0) {
+          if (same(constant.name(), name)) {
+            result = constant;
+            break;
+          }
+
+        } else if (i == 1) {
+          if (startsSame(constant.name(), name)) {
+            if (result == null) {
+              result = constant;
+            } else {
+              result = null;
+              break;
+            }
+          }
+
+        } else {
+          if (context(name, constant.name())) {
+            if (result == null) {
+              result = constant;
+            } else {
+              result = null;
+              break;
+            }
+          }
+        }
+      }
+      if (result != null) {
+        break;
+      }
+    }
+    return result;
+  }
+  
   /**
    * If any {@code src} Collection element contains {@code ctxt} (case is ignored), than that
    * element is added to the new Collection and returned after all elements from {@code src}
@@ -777,7 +820,7 @@ public class BeeUtils {
     }
     return lst;
   }
-
+  
   /**
    * Gets the key of the value from the specified Map when the Mmap contains the value.
    * 

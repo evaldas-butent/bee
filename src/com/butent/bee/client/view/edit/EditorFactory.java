@@ -4,11 +4,12 @@ import com.google.gwt.event.shared.HasHandlers;
 
 import com.butent.bee.client.composite.InputDate;
 import com.butent.bee.client.composite.StringPicker;
-import com.butent.bee.client.composite.SuggestBox;
+import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.composite.TextEditor;
 import com.butent.bee.client.richtext.RichTextEditor;
 import com.butent.bee.client.ui.HasTextDimensions;
 import com.butent.bee.client.utils.BeeCommand;
+import com.butent.bee.client.utils.JsonUtils;
 import com.butent.bee.client.widget.BeeListBox;
 import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.client.widget.InputInteger;
@@ -19,13 +20,14 @@ import com.butent.bee.client.widget.InputSpinner;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.client.widget.Toggle;
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.HasAcceptableValues;
+import com.butent.bee.shared.HasItems;
 import com.butent.bee.shared.HasNumberStep;
 import com.butent.bee.shared.HasPrecision;
 import com.butent.bee.shared.HasScale;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.data.view.RelationInfo;
 import com.butent.bee.shared.ui.EditorDescription;
 import com.butent.bee.shared.ui.EditorType;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -145,7 +147,8 @@ public class EditorFactory {
     return editor;
   }
 
-  public static Editor getEditor(EditorDescription description, boolean nullable) {
+  public static Editor getEditor(EditorDescription description, boolean nullable,
+      RelationInfo relationInfo) {
     Assert.notNull(description);
     EditorType type = description.getType();
     Assert.notNull(type);
@@ -196,8 +199,8 @@ public class EditorFactory {
         editor = new InputSpinner();
         break;
 
-      case SUGGEST:
-        editor = new SuggestBox();
+      case SELECTOR:
+        editor = new DataSelector(relationInfo, JsonUtils.toJson(description.getOptions()));
         break;
 
       case STRING:
@@ -218,8 +221,8 @@ public class EditorFactory {
     if (editor instanceof HasNumberStep && description.getStepValue() != null) {
       ((HasNumberStep) editor).setStepValue(description.getStepValue());
     }
-    if (editor instanceof HasAcceptableValues && description.getItems() != null) {
-      ((HasAcceptableValues) editor).setAcceptableValues(description.getItems());
+    if (editor instanceof HasItems && description.getItems() != null) {
+      ((HasItems) editor).setItems(description.getItems());
     }
 
     if (editor instanceof HasTextDimensions) {

@@ -45,7 +45,6 @@ import com.butent.bee.client.view.search.SearchView;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasNumberBounds;
-import com.butent.bee.shared.HasOptions;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -57,7 +56,6 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.value.ValueType;
-import com.butent.bee.shared.data.view.HasRelationInfo;
 import com.butent.bee.shared.data.view.RelationInfo;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.ui.Calculation;
@@ -198,7 +196,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
 
     private boolean endEdit() {
       if (State.OPEN.equals(getState())) {
-        String oldValue = getOldValueForUpdate();
+        String oldValue = getOldValueForUpdate(getRowValue());
         String editorValue = getEditor().getValue();
 
         if (BeeUtils.equalsTrimRight(oldValue, editorValue)) {
@@ -258,9 +256,9 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       return minValue;
     }
 
-    private String getOldValueForUpdate() {
+    private String getOldValueForUpdate(IsRow row) {
       int index = (getRelationInfo() == null) ? getColIndex() : getRelationInfo().getDataIndex();
-      return getRowValue().getString(index);
+      return row.getString(index);
     }
 
     private RelationInfo getRelationInfo() {
@@ -298,13 +296,6 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
         if (BeeUtils.isDouble(getMaxValue())) {
           ((HasNumberBounds) getEditor()).setMaxValue(BeeUtils.toDoubleOrNull(getMaxValue()));
         }
-      }
-
-      if (getEditor() instanceof HasRelationInfo) {
-        ((HasRelationInfo) getEditor()).setRelationInfo(getRelationInfo());
-      }
-      if (getEditor() instanceof HasOptions && getEditorDescription() != null) {
-        ((HasOptions) getEditor()).setOptions(getEditorDescription().getOptions());
       }
     }
 
@@ -858,7 +849,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       if (BeeUtils.isEmpty(source)) {
         continue;
       }
-      Filter flt = DataUtils.parseExpression(source + " " + input, columns);
+      Filter flt = DataUtils.parseExpression(source + " " + input, columns, true);
 
       if (flt == null) {
         continue;
@@ -940,28 +931,16 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
         return;
       }
 
-      BeeColumn dataColumn;
-      int dataIndex;
-      boolean rowMode;
+      BeeColumn dataColumn = editableColumn.getColumnForUpdate();
+      String oldValue = editableColumn.getOldValueForUpdate(rowValue);
 
-      if (editableColumn.getRelationInfo() == null) {
-        dataColumn = editableColumn.getDataColumn();
-        dataIndex = editableColumn.getColIndex();
-        rowMode = false;
-      } else {
-        dataColumn = editableColumn.getRelationInfo().getDataColumn();
-        dataIndex = editableColumn.getRelationInfo().getDataIndex();
-        rowMode = true;
-      }
-
-      String oldValue = rowValue.getString(dataIndex);
       ValueType valueType = dataColumn.getType();
       String newValue = Value.getNullString(valueType);
       if (BeeUtils.isEmpty(oldValue) || BeeUtils.same(oldValue, newValue)) {
         return;
       }
 
-      updateCell(rowValue, dataColumn, oldValue, newValue, rowMode);
+      updateCell(rowValue, dataColumn, oldValue, newValue, editableColumn.getRowModeForUpdate());
       return;
     }
 
@@ -990,7 +969,8 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       String format = null;
 
       if (editorDescription != null) {
-        editor = EditorFactory.getEditor(editorDescription, nullable);
+        editor = EditorFactory.getEditor(editorDescription, nullable,
+            editableColumn.getRelationInfo());
         format = editableColumn.getEditorDescription().getFormat();
       } else {
         editor = EditorFactory.createEditor(editableColumn.getDataColumn(), nullable);

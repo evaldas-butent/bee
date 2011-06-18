@@ -12,6 +12,7 @@ import com.butent.bee.shared.HasId;
  */
 
 public class Absolute extends AbsolutePanel implements HasId {
+
   public Absolute() {
     createId();
   }

@@ -132,8 +132,8 @@ public class AsyncProvider extends Provider {
     CachingPolicy caching = isCacheEnabled() ? getCachingPolicy() : CachingPolicy.NONE;
     Callback callback = new Callback(range, updateActiveRow);    
 
-    int rpcId = Queries.getRowSet(getViewName(), flt, ord, range.getStart(), range.getLength(),
-        caching, callback);
+    int rpcId = Queries.getRowSet(getViewName(), null, flt, ord,
+        range.getStart(), range.getLength(), caching, callback);
 
     if (!Queries.isResponseFromCache(rpcId)) {
       callback.setRpcId(rpcId);

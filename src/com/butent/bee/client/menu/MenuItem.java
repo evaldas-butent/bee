@@ -49,6 +49,10 @@ public class MenuItem extends UIObject implements HasId {
     setCommand(cmd);
   }
 
+  protected MenuItem(MenuBar parent, String text) {
+    init(parent, text, getDefaultType(parent));
+  }
+  
   public void createId() {
     DomUtils.createId(this, "menuitem");
   }
@@ -74,7 +78,7 @@ public class MenuItem extends UIObject implements HasId {
   }
 
   public void setCommand(MenuCommand cmd) {
-    command = cmd;
+    this.command = cmd;
   }
 
   public void setId(String id) {

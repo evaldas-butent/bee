@@ -271,11 +271,6 @@ public class EventUtils {
     return BeeUtils.same(getTargetTagName(et), tagName);
   }
 
-  public static void logCloseEvent(CloseEvent<?> ev) {
-    Assert.notNull(ev);
-    BeeKeeper.getLog().info(transformCloseEvent(ev));
-  }
-
   public static void logEvent(NativeEvent ev) {
     logEvent(ev, false, null);
   }
@@ -287,18 +282,18 @@ public class EventUtils {
   public static void logEvent(NativeEvent ev, boolean detailed, String title) {
     Assert.notNull(ev);
     if (!BeeUtils.isEmpty(title)) {
-      BeeKeeper.getLog().info(title);
+      BeeKeeper.getLog().debug(title);
     }
 
     if (detailed) {
       List<Property> lst = getEventInfo(ev);
       for (Property el : lst) {
-        BeeKeeper.getLog().info(el.getName(), el.getValue());
+        BeeKeeper.getLog().debug(el.getName(), el.getValue());
       }
 
       BeeKeeper.getLog().addSeparator();
     } else {
-      BeeKeeper.getLog().info(transformEvent(ev));
+      BeeKeeper.getLog().debug(transformEvent(ev));
     }
   }
 

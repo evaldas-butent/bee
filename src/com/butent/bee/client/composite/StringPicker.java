@@ -31,7 +31,7 @@ import com.butent.bee.client.view.edit.EditStopEvent.Handler;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.HasAcceptableValues;
+import com.butent.bee.shared.HasItems;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.ui.EditorAction;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -41,7 +41,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-public class StringPicker extends CellList<String> implements Editor, HasAcceptableValues,
+public class StringPicker extends CellList<String> implements Editor, HasItems,
     BlurHandler {
 
   public interface RenderTemplate extends SafeHtmlTemplates {
@@ -212,10 +212,6 @@ public class StringPicker extends CellList<String> implements Editor, HasAccepta
     }
   }
 
-  public void setAcceptableValues(Collection<String> values) {
-    setRowData(0, new ArrayList<String>(values));
-  }
-
   public void setEditing(boolean editing) {
     this.editing = editing;
   }
@@ -224,8 +220,12 @@ public class StringPicker extends CellList<String> implements Editor, HasAccepta
     DomUtils.setId(this, id);
   }
 
+  public void setItems(Collection<String> items) {
+    setRowData(0, new ArrayList<String>(items));
+  }
+
   public void setNullable(boolean nullable) {
-    setNullable(nullable);
+    this.nullable = nullable;
   }
 
   public void setValue(String value) {

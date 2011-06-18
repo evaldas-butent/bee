@@ -38,8 +38,8 @@ public class LogUtils {
    * 
    * @param obj the Object to log
    */
-  public static void debug(Object... obj) {
-    log(Level.CONFIG, obj);
+  public static void debug(Logger logger, Object... obj) {
+    logger.config(BeeUtils.concat(1, obj));
   }
 
   /**

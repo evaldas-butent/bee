@@ -1365,10 +1365,10 @@ public class SystemBean {
   @SuppressWarnings("unused")
   @PostConstruct
   private void init() {
-    initDatabase(BeeUtils.ifString(Config.getProperty("DefaultEngine"), BeeConst.MYSQL));
     initStates(true);
     initTables(true);
     initViews(true);
+    initDatabase(BeeUtils.ifString(Config.getProperty("DefaultEngine"), BeeConst.MYSQL));
   }
 
   @Lock(LockType.WRITE)

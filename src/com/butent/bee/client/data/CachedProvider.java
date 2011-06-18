@@ -199,7 +199,7 @@ public class CachedProvider extends Provider {
     final int oldPageSize = getPageSize();
     final int oldTableSize = getTable().getNumberOfRows();
 
-    Queries.getRowSet(name, getOrder(), new Queries.RowSetCallback() {
+    Queries.getRowSet(name, null, getOrder(), new Queries.RowSetCallback() {
       public void onFailure(String[] reason) {
       }
 

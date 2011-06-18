@@ -211,7 +211,7 @@ public class Explorer implements HandlesDeleteEvents {
       limit = -1;
     }
 
-    Queries.getRowSet(dataInfo.getName(), null, null, 0, limit, CachingPolicy.FULL,
+    Queries.getRowSet(dataInfo.getName(), null, null, null, 0, limit, CachingPolicy.FULL,
         new Queries.RowSetCallback() {
           public void onFailure(String[] reason) {
           }

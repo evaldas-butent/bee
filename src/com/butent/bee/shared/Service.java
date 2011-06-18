@@ -147,6 +147,8 @@ public class Service {
   public static final String VAR_VIEW_FULL_ROW = RPC_VAR_PREFIX + "full_row";
 
   public static final String XML_TAG_DATA = RPC_VAR_PREFIX + "data";
+  
+  public static final String VIEW_COLUMN_SEPARATOR = " ";
 
   /**
    * Returns true if {@code svc} value starts with {@link #COMPOSITE_SERVICE_PREFIX}.

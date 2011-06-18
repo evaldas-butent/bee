@@ -171,6 +171,9 @@ body, select {
 .bee-LogRecord-warning {
   color: darkorange;
 }
+.bee-LogRecord-config {
+  color: green;
+}
 
 .bee-Tree, .bee-CellTree {
   overflow: auto;
@@ -634,12 +637,33 @@ body, select {
   background-color: #faac58;
 }
 
-.bee-SuggestBoxPopup {
+.bee-DataSelector-input {
+  left: 2px;
+  background-color: inherit;
+  border-style: none;
+}  
+
+.bee-DataSelector-type {
+  font-size: medium;
+}  
+
+.bee-DataSelector-limit {
+  width: 36px;
+  background-color: inherit;
+  border-style: none;
+  outline-style: none;
+}  
+
+.bee-DataSelector-popup {
   background: #eee;
   border: 1px solid LightGrey;
   box-shadow: 6px 6px 5px DarkGray;
   -webkit-box-shadow: 6px 6px 5px DarkGray;
   -moz-box-shadow: 6px 6px 5px DarkGray;
+}
+
+.bee-DataSelector-navigationCell {
+  text-align: center;
 }
 
 .bee-RichTextArea {

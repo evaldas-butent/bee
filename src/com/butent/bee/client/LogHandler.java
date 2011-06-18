@@ -41,6 +41,10 @@ public class LogHandler implements Module {
     getArea().clear();
   }
 
+  public void debug(Object... obj) {
+    LogUtils.debug(getLogger(), obj);
+  }
+  
   public void end() {
   }
 

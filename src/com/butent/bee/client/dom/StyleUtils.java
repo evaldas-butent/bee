@@ -9,6 +9,7 @@ import com.google.gwt.dom.client.Style.Display;
 import com.google.gwt.dom.client.Style.FontStyle;
 import com.google.gwt.dom.client.Style.FontWeight;
 import com.google.gwt.dom.client.Style.HasCssName;
+import com.google.gwt.dom.client.Style.Position;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.safecss.shared.SafeStyles;
 import com.google.gwt.safecss.shared.SafeStylesBuilder;
@@ -1026,6 +1027,20 @@ public class StyleUtils {
     return ok;
   }
 
+  public static void makeAbsolute(Element el) {
+    Assert.notNull(el);
+    el.getStyle().setPosition(Position.ABSOLUTE);
+  }
+
+  public static void makeAbsolute(String id) {
+    makeAbsolute(DomUtils.getElement(id));
+  }
+
+  public static void makeAbsolute(UIObject obj) {
+    Assert.notNull(obj);
+    makeAbsolute(obj.getElement());
+  }
+  
   public static Pair<Double, Unit> parseCssLength(String input) {
     Assert.notEmpty(input);
     Double value = null;

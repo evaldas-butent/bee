@@ -93,7 +93,7 @@ public class EvalHelper {
       setJsoProperty(jso, column.getLabel(), column.getType(), row.getString(i));
     }
   }
-
+  
   private static JsDate toJs(DateTime date) {
     if (date == null) {
       return null;

@@ -37,19 +37,19 @@ public class RelationInfo {
   private final String source;
   private final String relSource;
 
-  private final String relTable;
-  private final String relField;
+  private final String relView;
+  private final String relColumn;
   
   private final BeeColumn dataColumn;
   private final int dataIndex;
 
-  private RelationInfo(String source, String relSource, String relTable, String relField,
+  private RelationInfo(String source, String relSource, String relView, String relColumn,
       BeeColumn dataColumn, int dataIndex) {
     super();
     this.source = source;
     this.relSource = relSource;
-    this.relTable = relTable;
-    this.relField = relField;
+    this.relView = relView;
+    this.relColumn = relColumn;
     this.dataColumn = dataColumn;
     this.dataIndex = dataIndex;
   }
@@ -62,16 +62,16 @@ public class RelationInfo {
     return dataIndex;
   }
 
-  public String getRelField() {
-    return relField;
+  public String getRelColumn() {
+    return relColumn;
   }
 
   public String getRelSource() {
     return relSource;
   }
 
-  public String getRelTable() {
-    return relTable;
+  public String getRelView() {
+    return relView;
   }
 
   public String getSource() {

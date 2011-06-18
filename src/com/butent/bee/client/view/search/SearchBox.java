@@ -33,7 +33,7 @@ public class SearchBox extends InputText implements SearchView {
   }
 
   public Filter getFilter(List<? extends IsColumn> columns) {
-    return DataUtils.parseCondition(getValue(), columns);
+    return DataUtils.parseCondition(getValue(), columns, true);
   }
 
   public Presenter getViewPresenter() {

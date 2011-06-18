@@ -78,7 +78,7 @@ public class MenuBar extends Widget implements HasId, HasAfterAddHandler,
 
   private MenuBar parentMenu;
   private MenuPopup popup;
-  private MenuItem selectedItem;
+  private MenuItem selectedItem = null;
   private MenuBar childMenu;
 
   private int level;
@@ -174,6 +174,18 @@ public class MenuBar extends Widget implements HasId, HasAfterAddHandler,
   public String getId() {
     return DomUtils.getId(this);
   }
+  
+  public MenuItem getItem(int index) {
+    if (index >= 0 && index < items.size()) {
+      return items.get(index);
+    } else {
+      return null;
+    }
+  }
+  
+  public int getItemCount() {
+    return items.size(); 
+  }
 
   public List<MenuItem> getItems() {
     return items;
@@ -193,6 +205,66 @@ public class MenuBar extends Widget implements HasId, HasAfterAddHandler,
 
   public boolean isVertical() {
     return vertical;
+  }
+
+  public void moveDown() {
+    if (selectFirstItemIfNoneSelected()) {
+      return;
+    }
+
+    if (vertical) {
+      selectNextItem();
+    } else if (hasSubMenu(selectedItem)) {
+      activateSubMenu(selectedItem);
+    } else if (parentMenu != null) {
+      parentMenu.focus();
+      parentMenu.selectNextItem();
+    }
+  }
+
+  public void moveLeft() {
+    if (selectFirstItemIfNoneSelected()) {
+      return;
+    }
+
+    if (!vertical) {
+      selectPrevItem();
+    } else if (parentMenu != null) {
+      parentMenu.focus();
+      parentMenu.selectPrevItem();
+    } else if (hasSubMenu(selectedItem)) {
+      activateSubMenu(selectedItem, true);
+    }
+  }
+
+  public void moveRight() {
+    if (selectFirstItemIfNoneSelected()) {
+      return;
+    }
+
+    if (!vertical) {
+      selectNextItem();
+    } else if (hasSubMenu(selectedItem)) {
+      activateSubMenu(selectedItem);
+    } else if (parentMenu != null) {
+      parentMenu.focus();
+      parentMenu.selectNextItem();
+    }
+  }
+
+  public void moveUp() {
+    if (selectFirstItemIfNoneSelected()) {
+      return;
+    }
+
+    if (vertical) {
+      selectPrevItem();
+    } else if (parentMenu != null) {
+      parentMenu.focus();
+      parentMenu.selectPrevItem();
+    } else if (hasSubMenu(selectedItem)) {
+      activateSubMenu(selectedItem, true);
+    }
   }
 
   public void onAfterAdd(HasWidgets parent) {
@@ -658,51 +730,6 @@ public class MenuBar extends Widget implements HasId, HasAfterAddHandler,
     }
   }
 
-  private void moveDown() {
-    if (selectFirstItemIfNoneSelected()) {
-      return;
-    }
-
-    if (vertical) {
-      selectNextItem();
-    } else if (hasSubMenu(selectedItem)) {
-      activateSubMenu(selectedItem);
-    } else if (parentMenu != null) {
-      parentMenu.focus();
-      parentMenu.selectNextItem();
-    }
-  }
-
-  private void moveLeft() {
-    if (selectFirstItemIfNoneSelected()) {
-      return;
-    }
-
-    if (!vertical) {
-      selectPrevItem();
-    } else if (parentMenu != null) {
-      parentMenu.focus();
-      parentMenu.selectPrevItem();
-    } else if (hasSubMenu(selectedItem)) {
-      activateSubMenu(selectedItem, true);
-    }
-  }
-
-  private void moveRight() {
-    if (selectFirstItemIfNoneSelected()) {
-      return;
-    }
-
-    if (!vertical) {
-      selectNextItem();
-    } else if (hasSubMenu(selectedItem)) {
-      activateSubMenu(selectedItem);
-    } else if (parentMenu != null) {
-      parentMenu.focus();
-      parentMenu.selectNextItem();
-    }
-  }
-
   private boolean moveTo(int code) {
     boolean ok = false;
     if (code <= BeeConst.CHAR_SPACE) {
@@ -743,21 +770,6 @@ public class MenuBar extends Widget implements HasId, HasAfterAddHandler,
       selectItem(idx);
     }
     return ok;
-  }
-
-  private void moveUp() {
-    if (selectFirstItemIfNoneSelected()) {
-      return;
-    }
-
-    if (vertical) {
-      selectPrevItem();
-    } else if (parentMenu != null) {
-      parentMenu.focus();
-      parentMenu.selectPrevItem();
-    } else if (hasSubMenu(selectedItem)) {
-      activateSubMenu(selectedItem, true);
-    }
   }
 
   private void openPopup(MenuItem item) {

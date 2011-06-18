@@ -297,7 +297,7 @@ public class UiServiceBean {
 
     String[] cols = new String[0];
     if (!BeeUtils.isEmpty(columns)) {
-      cols = columns.split(" ");
+      cols = columns.split(Service.VIEW_COLUMN_SEPARATOR);
     }
 
     BeeRowSet res = sys.getViewData(viewName, sys.getViewCondition(viewName, filter),
