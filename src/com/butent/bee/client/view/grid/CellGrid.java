@@ -219,8 +219,9 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     private final AbstractColumn<?> column;
     private final ColumnHeader header;
     private final ColumnFooter footer;
-    
+
     private String source = null;
+    private String caption = null;
 
     private int width = BeeConst.UNDEF;
     private int minWidth = BeeConst.UNDEF;
@@ -287,6 +288,10 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
 
     private int getBodyWidth() {
       return bodyWidth;
+    }
+    
+    private String getCaption() {
+      return caption;
     }
 
     private String getClassName(ComponentType componentType) {
@@ -432,6 +437,10 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
 
     private void setBodyWidth(int bodyWidth) {
       this.bodyWidth = bodyWidth;
+    }
+
+    private void setCaption(String caption) {
+      this.caption = caption;
     }
 
     private void setColReadOnly(boolean colReadOnly) {
@@ -1247,6 +1256,14 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     return info.getColumn();
   }
 
+  public String getColumnCaption(String columnId) {
+    ColumnInfo info = getColumnInfo(columnId);
+    if (info == null) {
+      return columnId;
+    }
+    return BeeUtils.ifString(info.getCaption(), columnId);
+  }
+  
   public int getColumnCount() {
     return columns.size();
   }
@@ -1286,7 +1303,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     }
     return null;
   }
-  
+
   public int getColumnWidth(int col) {
     return getColumnInfo(col).getColumnWidth();
   }
@@ -1577,6 +1594,14 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     }
   }
 
+  public boolean isColumnReadOnly(String columnId) {
+    ColumnInfo info = getColumnInfo(columnId);
+    if (info == null) {
+      return false;
+    }
+    return info.isColReadOnly();
+  }
+  
   public boolean isEditing() {
     return editing;
   }
@@ -1860,7 +1885,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
 
     IsRow rowValue = getVisibleItem(row);
     rowValue.setVersion(newRow.getVersion());
-    
+
     for (ColumnInfo columnInfo : columns) {
       int dataIndex = columnInfo.getDataIndex();
       if (dataIndex >= 0) {
@@ -2071,7 +2096,10 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     if (columnDescription.getSource() != null) {
       columnInfo.setSource(columnDescription.getSource());
     }
-    
+    if (columnDescription.getCaption() != null) {
+      columnInfo.setCaption(columnDescription.getCaption());
+    }
+
     if (columnDescription.getColType().isReadOnly()
         || BeeUtils.isTrue(columnDescription.isReadOnly())) {
       columnInfo.setColReadOnly(true);

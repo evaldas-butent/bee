@@ -83,7 +83,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     if (hasFooter()) {
       getContent().getGrid().addSelectionCountChangeHandler(getFooter());
     }
-    
+
     if (getRowMessage() != null) {
       getContent().getGrid().addActiveRowChangeHandler(this);
     }
@@ -108,8 +108,11 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
       pageSize = rowCount;
     }
 
+    boolean readOnly =
+        (gridDescription == null) ? false : BeeUtils.isTrue(gridDescription.isReadOnly());
+
     DataHeaderView header = new DataHeaderImpl();
-    header.create(caption);
+    header.create(caption, readOnly);
 
     GridView content = new CellGridImpl();
     content.create(dataColumns, rowCount, rowSet, gridDescription, hasSearch());
@@ -254,7 +257,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     }
     getRowMessage().update(event.getRowValue());
     String message = getRowMessage().evaluate();
-    
+
     if (!BeeUtils.isEmpty(message)) {
       getHeader().updateCaption(message);
     }

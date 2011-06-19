@@ -113,7 +113,7 @@ public class DataHeaderImpl extends Complex implements DataHeaderView {
     this.captionId = DomUtils.createUniqueId("caption"); 
   }
 
-  public void create(String caption) {
+  public void create(String caption, boolean readOnly) {
     Style style = getDefaultStyle();
     addStyleName(StyleUtils.WINDOW_HEADER);
     addStyleName(style.container());
@@ -132,8 +132,10 @@ public class DataHeaderImpl extends Complex implements DataHeaderView {
     addRightTop(createControl(Global.getImages().configure(), Action.CONFIGURE, cst), x, y);
     addRightTop(createControl(Global.getImages().save(), Action.SAVE, cst), x += w, y);
     addRightTop(createControl(Global.getImages().bookmarkAdd(), Action.BOOKMARK, cst), x += w, y);
-    addRightTop(createControl(Global.getImages().editDelete(), Action.DELETE, cst), x += w, y);
-    addRightTop(createControl(Global.getImages().editAdd(), Action.ADD, cst), x += w, y);
+    if (!readOnly) {
+      addRightTop(createControl(Global.getImages().editDelete(), Action.DELETE, cst), x += w, y);
+      addRightTop(createControl(Global.getImages().editAdd(), Action.ADD, cst), x += w, y);
+    }
     addRightTop(createControl(Global.getImages().reload(), Action.REFRESH, cst), x += w, y);
     
     BeeImage loadingIndicator = new BeeImage(Global.getImages().loading());

@@ -207,6 +207,10 @@ public class GridPresenter implements Presenter, EditEndEvent.Handler {
       case REFRESH:
         getDataProvider().refresh();
         break;
+        
+      case ADD:
+        getView().getContent().addRow();
+        break;
 
       default:
         BeeKeeper.getLog().info(action, "not implemented");

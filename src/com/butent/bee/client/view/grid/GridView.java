@@ -18,6 +18,8 @@ import java.util.List;
 
 public interface GridView extends View, HasEditEndHandlers, NotificationListener {
   
+  void addRow();
+  
   void applyOptions(String options);
 
   void create(List<BeeColumn> dataColumns, int rowCount, BeeRowSet rowSet,

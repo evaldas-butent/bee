@@ -12,12 +12,18 @@ public class ColumnHeader extends Header<String> {
   public static int defaultWidthInfoHorizontalSize = 20;
 
   private final String columnId;
+  private final String caption;
   private final boolean hasWidthInfo;
 
   public ColumnHeader(String columnId, String caption, boolean showWidth) {
     super(new HeaderCell(caption, showWidth));
     this.columnId = columnId;
+    this.caption = caption;
     this.hasWidthInfo = showWidth;
+  }
+
+  public String getCaption() {
+    return caption;
   }
 
   @Override

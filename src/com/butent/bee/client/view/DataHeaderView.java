@@ -8,7 +8,7 @@ import com.google.gwt.user.cellview.client.LoadingStateChangeEvent;
 
 public interface DataHeaderView extends View, LoadingStateChangeEvent.Handler {
   
-  void create(String caption);
+  void create(String caption, boolean readOnly);
   
   void updateCaption(String caption);
 }
