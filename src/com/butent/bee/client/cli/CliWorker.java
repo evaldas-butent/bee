@@ -12,6 +12,8 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.dom.client.StyleInjector;
+import com.google.gwt.event.dom.client.ErrorEvent;
+import com.google.gwt.event.dom.client.ErrorHandler;
 import com.google.gwt.i18n.client.LocaleInfo;
 import com.google.gwt.i18n.shared.DateTimeFormat;
 import com.google.gwt.i18n.shared.DateTimeFormat.PredefinedFormat;
@@ -51,7 +53,6 @@ import com.butent.bee.client.language.Translation;
 import com.butent.bee.client.language.TranslationCallback;
 import com.butent.bee.client.layout.Absolute;
 import com.butent.bee.client.layout.Direction;
-import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.layout.TilePanel;
 import com.butent.bee.client.tree.BeeTree;
@@ -363,14 +364,13 @@ public class CliWorker {
     BeeKeeper.getRpc().makeGetRequest(params);
   }
   
-  public static void playAudio(String[] arr) {
-    String src = ArrayUtils.getQuietly(arr, 1);
+  public static void playAudio(final String src) {
     if (BeeUtils.isEmpty(src)) {
       BeeKeeper.getLog().warning("source not specified");
       return;
     }
 
-    Audio widget = Audio.createIfSupported();
+    final Audio widget = Audio.createIfSupported();
     if (widget == null) {
       BeeKeeper.getLog().severe("audio not supported");
       return;
@@ -378,26 +378,36 @@ public class CliWorker {
 
     widget.getAudioElement().setSrc(src);
     widget.getAudioElement().setControls(true);
+    
+    widget.addDomHandler(new ErrorHandler() {
+      public void onError(ErrorEvent event) {
+        BeeKeeper.getUi().notifyWarning(src, EventUtils.transformMediaError(widget.getError()));
+      }
+    }, ErrorEvent.getType());
 
     BeeKeeper.getUi().updateActivePanel(widget, ScrollBars.BOTH);
   }
 
-  public static void playVideo(String[] arr) {
+  public static void playVideo(String args) {
     if (!Video.isSupported()) {
       BeeKeeper.getLog().severe("video not supported");
       return;
     }
 
-    String src = ArrayUtils.getQuietly(arr, 1);
-    if (BeeUtils.isEmpty(src)) {
-      src = "http://people.opera.com/shwetankd/webm/sunflower.webm";
-    }
+    final String src = BeeUtils.ifString(args, 
+        "http://people.opera.com/shwetankd/webm/sunflower.webm");
 
-    Video widget = Video.createIfSupported();
+    final Video widget = Video.createIfSupported();
     Assert.notNull(widget);
     widget.getVideoElement().setSrc(src);
     widget.getVideoElement().setControls(true);
 
+    widget.addDomHandler(new ErrorHandler() {
+      public void onError(ErrorEvent event) {
+        BeeKeeper.getUi().notifyWarning(src, EventUtils.transformMediaError(widget.getError()));
+      }
+    }, ErrorEvent.getType());
+    
     BeeKeeper.getUi().updateActivePanel(widget, ScrollBars.BOTH);
   }
 
@@ -1154,20 +1164,75 @@ public class CliWorker {
     BeeKeeper.getUi().showGrid(Features.getInfo());
   }
 
-  public static void showSvg(String[] arr) {
-    if (!Features.supportsSvgInline()) {
+  public static void showSvg() {
+    if (!Features.supportsSvg()) {
       BeeKeeper.getLog().severe("svg not supported");
       return;
     }
+    if (!Features.supportsSvgInline()) {
+      BeeKeeper.getLog().severe("inline svg not supported");
+      return;
+    }
+    
+    int type = BeeUtils.randomInt(0, 3);
+
+    int width = BeeKeeper.getUi().getActivePanelWidth();
+    int height = BeeKeeper.getUi().getActivePanelHeight();
+    
+    int rMin = Math.min(width, height) / 50;
+    int rMax = (type == 0) ? Math.min(width, height) / 2 : rMin * 10;
 
     Svg widget = new Svg();
-    Flow panel = new Flow();
-    panel.add(widget);
-    BeeKeeper.getUi().updateActivePanel(panel);
+    Element parent = widget.getElement();
+    
+    Element child;
+    int colorStep = 16;
+    
+    for (int i = 0; i < BeeUtils.randomInt(10, 100); i++) {
+      String x = BeeUtils.toString(BeeUtils.randomInt(0, width));
+      String y = BeeUtils.toString(BeeUtils.randomInt(0, height));
+      String rx = BeeUtils.toString(BeeUtils.randomInt(rMin, rMax));
+      String ry = BeeUtils.toString(BeeUtils.randomInt(rMin, rMax));
+      
+      switch (type) {
+        case 0:
+          child = DomUtils.createSvg("rect");
+          child.setAttribute("x", x);
+          child.setAttribute("y", y);
+          child.setAttribute("width", rx);
+          child.setAttribute("height", ry);
+          break;
+        case 1:
+          child = DomUtils.createSvg("circle");
+          child.setAttribute("cx", x);
+          child.setAttribute("cy", y);
+          child.setAttribute("r", rx);
+          break;
+        case 2:
+          child = DomUtils.createSvg("ellipse");
+          child.setAttribute("cx", x);
+          child.setAttribute("cy", y);
+          child.setAttribute("rx", rx);
+          child.setAttribute("ry", ry);
+          break;
+        default:
+          child = null;
+      }
+      if (child == null) {
+        continue;
+      }
+      
+      int r = Math.min(BeeUtils.randomInt(0, colorStep + 1) * colorStep, 255);
+      int g = Math.min(BeeUtils.randomInt(0, colorStep + 1) * colorStep, 255);
+      int b = Math.min(BeeUtils.randomInt(0, colorStep + 1) * colorStep, 255);
 
-    if (ArrayUtils.length(arr) <= 1) {
-      sampleSvg(widget.getElement());
+      child.setAttribute("fill", "rgb(" + r + "," + g + "," + b + ")");
+      child.setAttribute("opacity", BeeUtils.toString(0.5 + Math.random() / 2));
+
+      parent.appendChild(child);    
     }
+
+    BeeKeeper.getUi().updateActivePanel(widget);
   }
 
   public static void showTiles() {
@@ -1629,11 +1694,6 @@ public class CliWorker {
       }
     }
   }-*/;
-
-  private static void sampleSvg(Element el) {
-    el.setInnerHTML("<circle cx=\"100\" cy=\"75\" r=\"50\" fill=\"blue\" stroke=\"firebrick\" "
-        + "stroke-width=\"3\"></circle><text x=\"60\" y=\"155\">Hello Svg</text>");
-  }
 
   private CliWorker() {
   }

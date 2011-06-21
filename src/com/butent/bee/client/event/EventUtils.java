@@ -7,6 +7,7 @@ import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.dom.client.Node;
 import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.event.logical.shared.CloseEvent;
+import com.google.gwt.media.dom.client.MediaError;
 import com.google.gwt.user.client.Event;
 
 import com.butent.bee.client.BeeKeeper;
@@ -470,6 +471,24 @@ public class EventUtils {
       }
     }
     return sb.toString();
+  }
+  
+  public static String transformMediaError(MediaError error) {
+    if (error == null) {
+      return BeeConst.STRING_EMPTY;
+    }
+    
+    switch (error.getCode()) {
+      case MediaError.MEDIA_ERR_ABORTED:
+        return "playback aborted";
+      case MediaError.MEDIA_ERR_DECODE:
+        return "decoding error";
+      case MediaError.MEDIA_ERR_NETWORK:
+        return "network error";
+      case MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED:
+        return "source not supported";
+    }
+    return "unknown error";
   }
 
   private static boolean dispatchDnd(DndEvent evt) {

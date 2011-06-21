@@ -13,7 +13,7 @@ public class Svg extends Widget implements HasId {
   public Svg() {
     super();
 
-    setElement(DomUtils.createElement(DomUtils.TAG_SVG));
+    setElement(DomUtils.createSvg(DomUtils.TAG_SVG));
     init();
   }
 

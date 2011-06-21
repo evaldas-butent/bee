@@ -153,6 +153,8 @@ public class DomUtils {
   private static int checkBoxClientWidth = -1;
   private static int checkBoxClientHeight = -1;
 
+  private static final String SVG_NAMESPACE = "http://www.w3.org/2000/svg";
+  
   public static void allowSelection(Element elem) {
     Assert.notNull(elem);
     elem.removeClassName(StyleUtils.NAME_UNSELECTABLE);
@@ -413,6 +415,10 @@ public class DomUtils {
     return elem;
   }
 
+  public static Element createSvg(String tag) {
+    return createElementNs(SVG_NAMESPACE, tag);
+  }
+  
   public static Element createTableCell(String text) {
     return createTableCell(text, false, null);
   }

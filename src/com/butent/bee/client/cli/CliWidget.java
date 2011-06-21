@@ -56,7 +56,7 @@ public class CliWidget extends InputText {
     } else if (z.startsWith("ajaxk") || z.startsWith("apik") || z.startsWith("gook")) {
       CliWorker.doAjaxKeys(arr);
     } else if (z.equals("audio")) {
-      CliWorker.playAudio(arr);
+      CliWorker.playAudio(args);
     } else if (z.equals("browser") || z.startsWith("wind")) {
       CliWorker.showBrowser(arr);
     } else if (z.equals("cache")) {
@@ -171,7 +171,7 @@ public class CliWidget extends InputText {
     } else if (z.equals("style")) {
       CliWorker.style(v, arr);
     } else if (z.equals("svg")) {
-      CliWorker.showSvg(arr);
+      CliWorker.showSvg();
     } else if (z.equals("tiles")) {
       CliWorker.showTiles();
     } else if (z.startsWith("tran") || z.startsWith("detec")) {
@@ -183,7 +183,7 @@ public class CliWidget extends InputText {
     } else if (z.equals("vars")) {
       CliWorker.showVars(arr);
     } else if (z.equals("video")) {
-      CliWorker.playVideo(arr);
+      CliWorker.playVideo(args);
     } else if (z.startsWith("view")) {
       CliWorker.showView(args);
     } else if (z.startsWith("viz")) {
