@@ -3,6 +3,9 @@ package com.butent.bee.client.view.grid;
 import com.butent.bee.client.data.HasDataTable;
 import com.butent.bee.client.dialog.NotificationListener;
 import com.butent.bee.client.view.View;
+import com.butent.bee.client.view.add.HasAddEndHandlers;
+import com.butent.bee.client.view.add.HasAddStartHandlers;
+import com.butent.bee.client.view.add.HasReadyForInsertHandlers;
 import com.butent.bee.client.view.edit.HasEditEndHandlers;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -16,10 +19,11 @@ import java.util.List;
  * Specifies necessary methods for grid view user interface component.
  */
 
-public interface GridView extends View, HasEditEndHandlers, NotificationListener {
-  
+public interface GridView extends View, HasEditEndHandlers, NotificationListener,
+    HasAddStartHandlers, HasAddEndHandlers, HasReadyForInsertHandlers {
+
   void addRow();
-  
+
   void applyOptions(String options);
 
   void create(List<BeeColumn> dataColumns, int rowCount, BeeRowSet rowSet,
@@ -28,16 +32,16 @@ public interface GridView extends View, HasEditEndHandlers, NotificationListener
   int estimatePageSize(int containerWidth, int containerHeight);
 
   RowInfo getActiveRowInfo();
-  
+
   HasDataTable getGrid();
-  
-  Collection<RowInfo> getSelectedRows();  
+
+  Collection<RowInfo> getSelectedRows();
 
   boolean isRowEditable(long rowId, boolean warn);
-  
+
   boolean isRowSelected(long rowId);
-  
+
   void refreshCellContent(long rowId, String columnSource);
-  
-  void updatePageSize(int pageSize, boolean init); 
+
+  void updatePageSize(int pageSize, boolean init);
 }

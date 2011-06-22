@@ -14,6 +14,7 @@ import com.butent.bee.shared.data.event.HandlesDeleteEvents;
 import com.butent.bee.shared.data.event.HandlesUpdateEvents;
 import com.butent.bee.shared.data.event.MultiDeleteEvent;
 import com.butent.bee.shared.data.event.RowDeleteEvent;
+import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.event.SortEvent;
 import com.butent.bee.shared.data.filter.Filter;
@@ -27,7 +28,7 @@ import java.util.List;
  */
 
 public abstract class Provider implements SortEvent.Handler, HandlesDeleteEvents,
-    HandlesUpdateEvents {
+    HandlesUpdateEvents, RowInsertEvent.Handler {
 
   private final HasDataTable display;
 
@@ -58,6 +59,8 @@ public abstract class Provider implements SortEvent.Handler, HandlesDeleteEvents
 
     this.handlerRegistry.add(BeeKeeper.getBus().registerCellUpdateHandler(this));
     this.handlerRegistry.add(BeeKeeper.getBus().registerRowUpdateHandler(this));
+
+    this.handlerRegistry.add(BeeKeeper.getBus().registerRowInsertHandler(this));
   }
 
   public void disableCache() {
@@ -121,6 +124,8 @@ public abstract class Provider implements SortEvent.Handler, HandlesDeleteEvents
       enableCache();
     }
   }
+
+  public abstract void onRowInsert(RowInsertEvent event);
 
   public void onRowUpdate(RowUpdateEvent event) {
     if (BeeUtils.same(getViewName(), event.getViewName())) {

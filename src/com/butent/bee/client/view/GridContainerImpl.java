@@ -16,6 +16,8 @@ import com.butent.bee.client.layout.Direction;
 import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.utils.Evaluator;
+import com.butent.bee.client.view.add.AddEndEvent;
+import com.butent.bee.client.view.add.AddStartEvent;
 import com.butent.bee.client.view.grid.CellGridImpl;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.navigation.PagerView;
@@ -37,7 +39,7 @@ import java.util.List;
  */
 
 public class GridContainerImpl extends Split implements GridContainerView, HasNavigation,
-    HasSearch, ActiveRowChangeEvent.Handler {
+    HasSearch, ActiveRowChangeEvent.Handler, AddStartEvent.Handler, AddEndEvent.Handler {
 
   public static Integer minPagingRows = 20;
   public static Integer minSearchRows = 2;
@@ -59,6 +61,8 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
   private boolean hasSearch = false;
 
   private Evaluator rowMessage = null;
+  
+  private boolean adding = false;
 
   public GridContainerImpl() {
     this(-1);
@@ -87,6 +91,9 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     if (getRowMessage() != null) {
       getContent().getGrid().addActiveRowChangeHandler(this);
     }
+    
+    getContent().addAddStartHandler(this);
+    getContent().addAddEndHandler(this);
   }
 
   public void create(String caption, List<BeeColumn> dataColumns, int rowCount, BeeRowSet rowSet,
@@ -133,17 +140,17 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
       scroller = null;
     }
 
-    addNorth(header.asWidget(), headerHeight);
-    headerDirection = Direction.NORTH;
+    addNorth(header.asWidget(), getHeaderHeight());
+    setHeaderDirection(Direction.NORTH);
 
     if (footer != null) {
-      addSouth(footer.asWidget(), footerHeight);
-      footerDirection = Direction.SOUTH;
+      addSouth(footer.asWidget(), getFooterHeight());
+      setFooterDirection(Direction.SOUTH);
     }
 
     if (scroller != null) {
-      addEast(scroller, scrollerWidth);
-      scrollerDirection = Direction.EAST;
+      addEast(scroller, getScrollerWidth());
+      setScrollerDirection(Direction.EAST);
       add(content.asWidget(), ScrollBars.HORIZONTAL);
       sinkEvents(Event.ONMOUSEWHEEL);
     } else {
@@ -168,10 +175,10 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
   }
 
   public DataFooterView getFooter() {
-    if (footerDirection == null) {
+    if (getFooterDirection() == null) {
       return null;
     }
-    for (Widget widget : getDirectionChildren(footerDirection)) {
+    for (Widget widget : getDirectionChildren(getFooterDirection())) {
       if (widget instanceof DataFooterView) {
         return (DataFooterView) widget;
       }
@@ -184,10 +191,10 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
   }
 
   public DataHeaderView getHeader() {
-    if (headerDirection == null) {
+    if (getHeaderDirection() == null) {
       return null;
     }
-    for (Widget widget : getDirectionChildren(headerDirection)) {
+    for (Widget widget : getDirectionChildren(getHeaderDirection())) {
       if (widget instanceof DataHeaderView) {
         return (DataHeaderView) widget;
       }
@@ -208,10 +215,10 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
   }
 
   public ScrollPager getScroller() {
-    if (scrollerDirection == null) {
+    if (getScrollerDirection() == null) {
       return null;
     }
-    for (Widget widget : getDirectionChildren(scrollerDirection)) {
+    for (Widget widget : getDirectionChildren(getScrollerDirection())) {
       if (widget instanceof ScrollPager) {
         return (ScrollPager) widget;
       }
@@ -240,15 +247,15 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
   }
 
   public boolean hasFooter() {
-    return footerDirection != null;
+    return getFooterDirection() != null;
   }
 
   public boolean hasHeader() {
-    return headerDirection != null;
+    return getHeaderDirection() != null;
   }
 
   public boolean hasScroller() {
-    return scrollerDirection != null;
+    return getScrollerDirection() != null;
   }
 
   public void onActiveRowChange(ActiveRowChangeEvent event) {
@@ -263,9 +270,40 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     }
   }
 
+  public void onAddEnd(AddEndEvent event) {
+    if (hasHeader()) {
+      setDirectionSize(getHeaderDirection(), getHeaderHeight());
+    }
+    if (hasFooter()) {
+      setDirectionSize(getFooterDirection(), getFooterHeight());
+    }
+    if (hasScroller()) {
+      setDirectionSize(getScrollerDirection(), getScrollerWidth());
+    }
+    
+    setAdding(false);
+  }
+
+  public void onAddStart(AddStartEvent event) {
+    setAdding(true);
+
+    if (hasHeader()) {
+      setDirectionSize(getHeaderDirection(), 0);
+    }
+    if (hasFooter()) {
+      setDirectionSize(getFooterDirection(), 0);
+    }
+    if (hasScroller()) {
+      setDirectionSize(getScrollerDirection(), 0);
+    }
+  }
+  
   @Override
   public void onBrowserEvent(Event event) {
     super.onBrowserEvent(event);
+    if (isAdding()) {
+      return;
+    }
 
     if (event.getTypeInt() == Event.ONMOUSEWHEEL) {
       int y = event.getMouseWheelVelocityY();
@@ -411,6 +449,14 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     return BeeConst.SIZE_UNKNOWN;
   }
 
+  private Direction getFooterDirection() {
+    return footerDirection;
+  }
+
+  private Direction getHeaderDirection() {
+    return headerDirection;
+  }
+
   private int getPageSize(GridView content) {
     if (content == null) {
       return BeeConst.SIZE_UNKNOWN;
@@ -423,12 +469,28 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     return rowMessage;
   }
 
+  private Direction getScrollerDirection() {
+    return scrollerDirection;
+  }
+
   private boolean hasPaging() {
     return hasPaging;
   }
 
   private boolean hasSearch() {
     return hasSearch;
+  }
+
+  private boolean isAdding() {
+    return adding;
+  }
+
+  private void setAdding(boolean adding) {
+    this.adding = adding;
+  }
+
+  private void setFooterDirection(Direction footerDirection) {
+    this.footerDirection = footerDirection;
   }
 
   private void setHasPaging(boolean hasPaging) {
@@ -439,8 +501,16 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     this.hasSearch = hasSearch;
   }
 
+  private void setHeaderDirection(Direction headerDirection) {
+    this.headerDirection = headerDirection;
+  }
+
   private void setRowMessage(Evaluator rowMessage) {
     this.rowMessage = rowMessage;
+  }
+
+  private void setScrollerDirection(Direction scrollerDirection) {
+    this.scrollerDirection = scrollerDirection;
   }
 
   private void updatePageSize(GridView content, int pageSize, boolean init) {

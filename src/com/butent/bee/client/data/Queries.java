@@ -11,6 +11,7 @@ import com.butent.bee.client.communication.RpcParameter;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.cache.CachingPolicy;
@@ -252,12 +253,36 @@ public class Queries {
   public static int getRowSet(String viewName, List<String> columns, RowSetCallback callback) {
     return getRowSet(viewName, columns, null, null, callback);
   }
+  
+  public static void insert(String viewName, List<BeeColumn> columns, List<String> values,
+      final RowCallback callback) {
+    Assert.notEmpty(viewName);
+    Assert.notEmpty(columns);
+    Assert.notEmpty(values);
+    Assert.isTrue(columns.size() == values.size());
+    
+    BeeRowSet rs = new BeeRowSet(columns);
+    rs.setViewName(viewName);
+    rs.addRow(0, values.toArray(new String[0]));
+    
+    BeeKeeper.getRpc().sendText(Service.INSERT_ROW, Codec.beeSerialize(rs), new ResponseCallback() {
+      public void onResponse(ResponseObject response) {
+        if (response.hasErrors()) {
+          if (callback != null) {
+            callback.onFailure(response.getErrors());
+          }
+        } else if (callback != null && response.hasResponse(BeeRow.class)) {
+          callback.onSuccess(BeeRow.restore((String) response.getResponse()));
+        }
+      }
+    });
+  }
 
   public static boolean isResponseFromCache(int id) {
     return id == RESPONSE_FROM_CACHE;
   }
 
-  public static void update(final BeeRowSet rs, boolean rowMode, final RowCallback callback) {
+  public static void update(BeeRowSet rs, boolean rowMode, final RowCallback callback) {
     Assert.notNull(rs);
     String service = rowMode ? Service.UPDATE_ROW : Service.UPDATE_CELL;
 

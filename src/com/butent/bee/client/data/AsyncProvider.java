@@ -8,6 +8,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.cache.CachingPolicy;
+import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.SortEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.DataInfo;
@@ -81,6 +82,10 @@ public class AsyncProvider extends Provider {
 
   public DataInfo getDataInfo() {
     return dataInfo;
+  }
+  
+  @Override
+  public void onRowInsert(RowInsertEvent event) {
   }
 
   @Override

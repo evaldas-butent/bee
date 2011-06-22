@@ -213,31 +213,6 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
     return addRow(fillRow(createRow()));
   }
 
-  public int addRow(Object... cells) {
-    Assert.notNull(cells);
-    Assert.parameterCount(cells.length, 1, getNumberOfColumns());
-    RowType row = createRow();
-
-    for (int i = 0; i < getNumberOfColumns(); i++) {
-      ValueType type = getColumnType(i);
-
-      if (i >= cells.length) {
-        row.addCell(new TableCell(Value.getNullValueFromValueType(type)));
-      } else if (cells[i] instanceof IsCell) {
-        row.addCell((IsCell) cells[i]);
-      } else if (cells[i] instanceof Value) {
-        if (((Value) cells[i]).getType().equals(type)) {
-          row.addCell((Value) cells[i]);
-        } else {
-          row.addCell(type.createValue(((Value) cells[i]).getObjectValue()));
-        }
-      } else {
-        row.addCell(type.createValue(cells[i]));
-      }
-    }
-    return addRow(row);
-  }
-
   public int addRow(RowType row) {
     getRows().add(row);
     return getNumberOfRows() - 1;

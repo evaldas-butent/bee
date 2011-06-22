@@ -14,6 +14,7 @@ import com.butent.bee.shared.data.IsTable;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
 import com.butent.bee.shared.data.event.MultiDeleteEvent;
 import com.butent.bee.shared.data.event.RowDeleteEvent;
+import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.event.SortEvent;
 import com.butent.bee.shared.data.filter.Filter;
@@ -100,6 +101,14 @@ public class CachedProvider extends Provider {
     if (BeeUtils.same(event.getViewName(), getViewName())) {
       deleteRow(event.getRowId());
       super.onRowDelete(event);
+    }
+  }
+
+  @Override
+  public void onRowInsert(RowInsertEvent event) {
+    if (BeeUtils.same(event.getViewName(), getViewName()) && getTable() instanceof BeeRowSet) {
+      ((BeeRowSet) getTable()).addRow(event.getRow());
+      applyFilter(getFilter());
     }
   }
 

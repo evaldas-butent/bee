@@ -867,6 +867,8 @@ public class SystemBean {
             for (String err : resp.getErrors()) {
               response.addError(err);
             }
+          } else {
+            c++;
           }
         }
         if (!response.hasErrors() && !BeeUtils.isEmpty(extUpdate)) {
@@ -1680,7 +1682,7 @@ public class SystemBean {
         String fldName = view.getField(colName);
         String locale = view.getLocale(colName);
         BeeField field = getTableField(view.getSource(), fldName);
-        String oldValue = row.getShadow().get(i);
+        String oldValue = (row.getShadow() == null) ? null : row.getShadow().get(i);
         Object newValue = Value.parseValue(colType, row.getString(i), false).getObjectValue();
 
         Object[] arr = new Object[Ints.max(idxField, idxLocale, idxOldValue, idxNewValue) + 1];

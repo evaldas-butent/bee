@@ -26,6 +26,7 @@ import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.event.HandlesDeleteEvents;
 import com.butent.bee.shared.data.event.MultiDeleteEvent;
 import com.butent.bee.shared.data.event.RowDeleteEvent;
+import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -37,7 +38,7 @@ import java.util.List;
  * Implements usage of data views in user interface.
  */
 
-public class Explorer implements HandlesDeleteEvents {
+public class Explorer implements HandlesDeleteEvents, RowInsertEvent.Handler {
 
   private class DataInfoCallback implements ResponseCallback {
     private DataInfoCallback() {
@@ -106,6 +107,14 @@ public class Explorer implements HandlesDeleteEvents {
     DataInfo dataInfo = getDataInfo(event.getViewName());
     if (dataInfo != null) {
       dataInfo.setRowCount(dataInfo.getRowCount() - 1);
+      refresh();
+    }
+  }
+
+  public void onRowInsert(RowInsertEvent event) {
+    DataInfo dataInfo = getDataInfo(event.getViewName());
+    if (dataInfo != null) {
+      dataInfo.setRowCount(dataInfo.getRowCount() + 1);
       refresh();
     }
   }

@@ -154,7 +154,12 @@ public class BeeListBox extends ListBox implements Editor, HasItems,
   }
 
   public String getValue() {
-    return getValue(getSelectedIndex());
+    int index = getSelectedIndex();
+    if (isIndex(index)) {
+      return getValue(index);
+    } else {
+      return null;
+    }
   }
 
   public boolean handlesKey(int keyCode) {
@@ -316,6 +321,10 @@ public class BeeListBox extends ListBox implements Editor, HasItems,
 
   private boolean isEditorInitialized() {
     return editorInitialized;
+  }
+  
+  private boolean isIndex(int index) {
+    return index >= 0 && index < getItemCount();
   }
 
   private void setChangePending(boolean changePending) {

@@ -365,8 +365,7 @@ public class UiServiceBean {
   }
 
   private ResponseObject insertRow(RequestInfo reqInfo) {
-    return sys.insertRow(BeeRowSet.restore(reqInfo.getContent()),
-        BeeUtils.toBoolean(reqInfo.getParameter(Service.VAR_VIEW_FULL_ROW)));
+    return sys.insertRow(BeeRowSet.restore(reqInfo.getContent()), true);
   }
 
   private ResponseObject menuInfo(RequestInfo reqInfo) {

@@ -311,11 +311,15 @@ public class Global implements Module {
 
     BeeKeeper.getBus().registerCellUpdateHandler(getCache());
     BeeKeeper.getBus().registerRowUpdateHandler(getCache());
+
+    BeeKeeper.getBus().registerRowInsertHandler(getCache());
   }
 
   private void initDataExplorer() {
     BeeKeeper.getBus().registerRowDeleteHandler(getDataExplorer());
     BeeKeeper.getBus().registerMultiDeleteHandler(getDataExplorer());
+
+    BeeKeeper.getBus().registerRowInsertHandler(getDataExplorer());
   }
   
   private void initVars() {

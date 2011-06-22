@@ -1,7 +1,10 @@
 package com.butent.bee.shared.data;
 
+import com.google.common.collect.Lists;
+
 import com.butent.bee.shared.ListSequence;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Property;
 
 import java.util.List;
@@ -22,8 +25,9 @@ public class PropertiesData extends RowList<StringRow, TableColumn> {
     createColumns(columnLabels);
     
     if (data != null) {
+      long id = 0;
       for (Property property : data) {
-        addRow(property.getName(), property.getValue());
+        addRow(++id, property.getName(), property.getValue());
       }
     }
   }
@@ -33,8 +37,9 @@ public class PropertiesData extends RowList<StringRow, TableColumn> {
     createColumns(columnLabels);
     
     if (data != null) {
+      long id = 0;
       for (Map.Entry<?, ?> entry : data.entrySet()) {
-        addRow(entry.getKey(), entry.getValue());
+        addRow(++id, BeeUtils.transform(entry.getKey()), BeeUtils.transform(entry.getValue()));
       }
     }
   }
@@ -60,6 +65,12 @@ public class PropertiesData extends RowList<StringRow, TableColumn> {
   @Override
   public StringRow createRow(long id) {
     return new StringRow(id, new ListSequence<String>(0));
+  }
+  
+  private void addRow(long id, String name, String value) {
+    ListSequence<String> values = new ListSequence<String>(Lists.newArrayList(name, value));
+    StringRow row = new StringRow(id, values);
+    addRow(row);
   }
   
   private void createColumns(String... columnLabels) {

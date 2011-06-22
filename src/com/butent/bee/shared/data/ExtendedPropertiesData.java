@@ -1,5 +1,6 @@
 package com.butent.bee.shared.data;
 
+import com.butent.bee.shared.data.value.TextValue;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.utils.ExtendedProperty;
 
@@ -24,10 +25,16 @@ public class ExtendedPropertiesData extends RowList<TableRow, TableColumn> {
       label = (pc > 0 && i < pc) ? columnLabels[i] : ExtendedProperty.COLUMN_HEADERS[i];
       addColumn(ValueType.TEXT, label);
     }
-
+    
+    long rowId = 0;
     for (ExtendedProperty property : data) {
-      addRow(property.getName(), property.getSub(), property.getValue(),
-          property.getDate().toTimeString());
+      TableRow row = new TableRow(++rowId);
+      row.addCell(new TextValue(property.getName()));
+      row.addCell(new TextValue(property.getSub()));
+      row.addCell(new TextValue(property.getValue()));
+      row.addCell(new TextValue(property.getDate().toTimeString()));
+      
+      addRow(row);
     }
   }
 

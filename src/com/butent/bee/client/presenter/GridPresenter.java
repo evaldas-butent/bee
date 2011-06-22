@@ -21,6 +21,7 @@ import com.butent.bee.client.utils.BeeCommand;
 import com.butent.bee.client.view.GridContainerImpl;
 import com.butent.bee.client.view.GridContainerView;
 import com.butent.bee.client.view.HasSearch;
+import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.EditEndEvent;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.search.SearchView;
@@ -31,6 +32,7 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
 import com.butent.bee.shared.data.event.MultiDeleteEvent;
 import com.butent.bee.shared.data.event.RowDeleteEvent;
+import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
@@ -48,7 +50,7 @@ import java.util.Set;
  * content etc).
  */
 
-public class GridPresenter implements Presenter, EditEndEvent.Handler {
+public class GridPresenter implements Presenter, EditEndEvent.Handler, ReadyForInsertEvent.Handler {
 
   private class DeleteCallback extends BeeCommand {
     private final Collection<RowInfo> rows;
@@ -254,6 +256,18 @@ public class GridPresenter implements Presenter, EditEndEvent.Handler {
         });
   }
 
+  public void onReadyForInsert(ReadyForInsertEvent event) {
+    Queries.insert(getDataName(), event.getColumns(), event.getValues(), new Queries.RowCallback() {
+      public void onFailure(String[] reason) {
+        showFailure("Insert Row", reason);
+      }
+      
+      public void onSuccess(BeeRow result) {
+        BeeKeeper.getBus().fireEvent(new RowInsertEvent(getDataName(), result));
+      }
+    });
+  }
+
   public void onViewUnload() {
     if (BeeKeeper.getUi().isTemporaryDetach()) {
       return;
@@ -285,6 +299,7 @@ public class GridPresenter implements Presenter, EditEndEvent.Handler {
     }
 
     view.getContent().addEditEndHandler(this);
+    view.getContent().addReadyForInsertHandler(this);
   }
 
   private Provider createProvider(GridContainerView view, DataInfo info, BeeRowSet rowSet,

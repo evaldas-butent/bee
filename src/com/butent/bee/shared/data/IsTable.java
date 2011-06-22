@@ -31,8 +31,6 @@ public interface IsTable<RowType extends IsRow, ColType extends IsColumn> extend
 
   int addRow(RowType row);
 
-  int addRow(Object... cells);
-
   int addRows(Collection<RowType> rowsToAdd);
 
   int addRows(int rowCount);
