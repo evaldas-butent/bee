@@ -1,7 +1,7 @@
 package com.butent.bee.shared.testutils;
 
 import com.butent.bee.server.sql.BeeConstants.DataType;
-import com.butent.bee.server.sql.BeeConstants.Keyword;
+import com.butent.bee.server.sql.BeeConstants.SqlKeyword;
 import com.butent.bee.server.sql.IsExpression;
 import com.butent.bee.server.sql.SqlBuilder;
 import com.butent.bee.server.sql.SqlBuilderFactory;
@@ -64,7 +64,7 @@ public class TestSqlCreate {
 
     SqlCreate create = new SqlCreate("Target", true);
 
-    create.addBoolean("arIvykdyta", Keyword.SET_NULL);
+    create.addBoolean("arIvykdyta", SqlKeyword.SET_NULL);
     create.getSqlString(builder, false);
     assertEquals("CREATE TEMPORARY TABLE Target (arIvykdyta BIT SET NULL)", create.getSqlString(
         builder, false));
@@ -74,7 +74,7 @@ public class TestSqlCreate {
 
     create = new SqlCreate("Target", true);
 
-    create.addBoolean("arIvykdyta", Keyword.SET_NULL);
+    create.addBoolean("arIvykdyta", SqlKeyword.SET_NULL);
     create.addField("field2", DataType.INTEGER, 5, 6);
     create.getSqlString(builder, false);
     assertEquals("CREATE TABLE [Target] ([arIvykdyta] BIT SET NULL, [field2] INTEGER)", create
@@ -85,7 +85,7 @@ public class TestSqlCreate {
 
     create = new SqlCreate("Target", true);
 
-    create.addBoolean("arIvykdyta", Keyword.SET_NULL);
+    create.addBoolean("arIvykdyta", SqlKeyword.SET_NULL);
     create.addField("field2", DataType.INTEGER, 5, 6);
     create.getSqlString(builder, false);
     assertEquals(
@@ -114,12 +114,12 @@ public class TestSqlCreate {
     select3.addFields("Table1", "field1", "field2");
     select3.addFrom("Table1");
 
-    create3.addBoolean("boolean field", Keyword.SET_NULL);
-    create3.addChar("char", 25, Keyword.NOT_NULL);
+    create3.addBoolean("boolean field", SqlKeyword.SET_NULL);
+    create3.addChar("char", 25, SqlKeyword.NOT_NULL);
     create3.addDate("data");
     create3.addDateTime("datetime");
     create3.addDouble("double value");
-    create3.addInteger("int field", Keyword.NOT_NULL);
+    create3.addInteger("int field", SqlKeyword.NOT_NULL);
     create3.addLong("long field");
     create3.addDecimal("numeric field", 10, 10);
     create3.addString("string field", 7);
@@ -133,7 +133,7 @@ public class TestSqlCreate {
 
     create = new SqlCreate("Target", true);
 
-    create.addBoolean("arIvykdyta", Keyword.SET_NULL);
+    create.addBoolean("arIvykdyta", SqlKeyword.SET_NULL);
     create.addDouble("kaina");
     create.addDate("data");
     create.getSqlString(builder, false);
@@ -146,7 +146,7 @@ public class TestSqlCreate {
 
     create = new SqlCreate("Target", true);
 
-    create.addBoolean("arIvykdyta", Keyword.SET_NULL);
+    create.addBoolean("arIvykdyta", SqlKeyword.SET_NULL);
     create.addDouble("kaina");
     create.addDate("data");
     create.addInteger("kiek");
@@ -175,7 +175,7 @@ public class TestSqlCreate {
     select4.addFields("Table1", "field1");
     select4.addFrom("Table1");
 
-    create4.addBoolean("boolean field", Keyword.SET_NULL);
+    create4.addBoolean("boolean field", SqlKeyword.SET_NULL);
 
     create4.addDate("data");
     create4.addDateTime("datetime");

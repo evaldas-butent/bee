@@ -1,13 +1,13 @@
 package com.butent.bee.server.sql;
 
-import com.google.common.collect.Maps;
-
 import com.butent.bee.server.sql.BeeConstants.DataType;
-import com.butent.bee.server.sql.BeeConstants.Keyword;
+import com.butent.bee.server.sql.BeeConstants.Function;
+import com.butent.bee.server.sql.BeeConstants.SqlKeyword;
 import com.butent.bee.server.sql.SqlCreate.SqlField;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.DateTime;
 import com.butent.bee.shared.JustDate;
+import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -22,7 +22,131 @@ import java.util.Map;
 
 public abstract class SqlBuilder {
 
-  protected String sqlKeyword(Keyword option, Map<String, Object> params) {
+  protected String sqlCondition(Operator operator, Map<String, String> params) {
+    String expression = params.get("expression");
+    String value = params.get("value" + 0);
+
+    switch (operator) {
+      case IS_NULL:
+      case NOT_NULL:
+        return BeeUtils.concat(1,
+            expression, "IS", (operator == Operator.NOT_NULL ? "NOT" : ""), "NULL");
+
+      case IN:
+        return BeeUtils.concat(1, expression, "IN", value);
+
+      case EQ:
+      case NE:
+      case LT:
+      case GT:
+      case LE:
+      case GE:
+        return BeeUtils.concat(1, expression, operator.toTextString(), value);
+
+      case STARTS:
+      case ENDS:
+      case CONTAINS:
+      case MATCHES:
+        value = value.replace("|", "||").replace("%", "|%").replace("_", "|_");
+
+        if (operator == Operator.MATCHES) {
+          value = value.replace(Operator.CHAR_ANY, "%").replace(Operator.CHAR_ONE, "_");
+        } else {
+          value = value.replaceFirst("^(" + sqlTransform(")(.*)(") + ")$",
+              "$1" + (operator != Operator.STARTS ? "%" : "")
+                  + "$2" + (operator != Operator.ENDS ? "%" : "") + "$3");
+        }
+        return BeeUtils.concat(1, expression, "LIKE", value, "ESCAPE '|'");
+    }
+    Assert.untouchable();
+    return null;
+  }
+
+  protected String sqlFunction(Function function, Map<String, Object> params) {
+    switch (function) {
+      case BITAND:
+        return "(" + params.get("expression") + "&" + params.get("value") + ")";
+
+      case IF:
+        return BeeUtils.concat(1,
+            "CASE WHEN", params.get("condition"),
+            "THEN", params.get("ifTrue"),
+            "ELSE", params.get("ifFalse"),
+            "END");
+
+      case CASE:
+        StringBuilder xpr = new StringBuilder("CASE ")
+            .append(params.get("expression"));
+
+        int cnt = (params.size() - 2) / 2;
+
+        for (int i = 0; i < cnt; i++) {
+          xpr.append(" WHEN ")
+              .append(params.get("case" + i))
+              .append(" THEN ")
+              .append(params.get("value" + i));
+        }
+        xpr.append(" ELSE ")
+            .append(params.get("caseElse"))
+            .append(" END");
+
+        return xpr.toString();
+
+      case CAST:
+        return BeeUtils.concat(1,
+            "CAST(" + params.get("expression"),
+            "AS",
+            sqlType((DataType) params.get("type"),
+                (Integer) params.get("precision"),
+                (Integer) params.get("scale")) + ")");
+
+      case MIN:
+      case MAX:
+      case SUM:
+      case AVG:
+      case COUNT:
+        String expression = (String) params.get("expression");
+        if (BeeUtils.isEmpty(expression)) {
+          expression = "*";
+        }
+        return function +
+            "(" + ((Boolean) params.get("distinct") ? "DISTINCT " : "") + expression + ")";
+
+      case PLUS:
+      case MINUS:
+      case MULTIPLY:
+      case DIVIDE:
+      case BULK:
+        xpr = new StringBuilder((String) params.get("member" + 0));
+        String op;
+
+        switch (function) {
+          case PLUS:
+            op = "+";
+            break;
+          case MINUS:
+            op = "-";
+            break;
+          case MULTIPLY:
+            op = "*";
+            break;
+          case DIVIDE:
+            op = "/";
+            break;
+          default:
+            op = "";
+            break;
+        }
+        for (int i = 1; i < params.size(); i++) {
+          xpr.append(op).append(params.get("member" + i));
+        }
+        return BeeUtils.parenthesize(xpr.toString());
+    }
+    Assert.untouchable();
+    return null;
+  }
+
+  protected String sqlKeyword(SqlKeyword option, Map<String, Object> params) {
     switch (option) {
       case NOT_NULL:
         return "NOT NULL";
@@ -37,7 +161,7 @@ public abstract class SqlBuilder {
         return BeeUtils.concat(1,
             "ALTER TABLE", params.get("table"),
             "ADD CONSTRAINT", params.get("name"),
-            sqlKeyword((Keyword) params.get("type"), params));
+            sqlKeyword((SqlKeyword) params.get("type"), params));
 
       case PRIMARY_KEY:
         return BeeUtils.concat(1, "PRIMARY KEY", BeeUtils.parenthesize(params.get("fields")));
@@ -50,7 +174,7 @@ public abstract class SqlBuilder {
             "FOREIGN KEY", BeeUtils.parenthesize(params.get("fields")),
             "REFERENCES", params.get("refTable"), BeeUtils.parenthesize(params.get("refFields")));
 
-        Keyword action = (Keyword) params.get("action");
+        SqlKeyword action = (SqlKeyword) params.get("action");
         if (!BeeUtils.isEmpty(action)) {
           foreign = BeeUtils.concat(1,
               foreign, "ON DELETE", sqlKeyword(action, null));
@@ -137,7 +261,7 @@ public abstract class SqlBuilder {
         if (!BeeUtils.isEmpty(prm)) {
           IsCondition typeWh = null;
 
-          for (Keyword type : (Keyword[]) prm) {
+          for (SqlKeyword type : (SqlKeyword[]) prm) {
             String tp;
 
             switch (type) {
@@ -224,42 +348,6 @@ public abstract class SqlBuilder {
 
       case TEMPORARY_NAME:
         return (String) params.get("name");
-
-      case BITAND:
-        return "(" + params.get("expression") + "&" + params.get("value") + ")";
-
-      case IF:
-        return BeeUtils.concat(1,
-            "CASE WHEN", params.get("condition"),
-            "THEN", params.get("ifTrue"),
-            "ELSE", params.get("ifFalse"),
-            "END");
-
-      case CASE:
-        StringBuilder xpr = new StringBuilder("CASE ")
-            .append(params.get("expression"));
-
-        int cnt = (params.size() - 2) / 2;
-
-        for (int i = 0; i < cnt; i++) {
-          xpr.append(" WHEN ")
-              .append(params.get("case" + i))
-              .append(" THEN ")
-              .append(params.get("value" + i));
-        }
-        xpr.append(" ELSE ")
-            .append(params.get("caseElse"))
-            .append(" END");
-
-        return xpr.toString();
-
-      case CAST:
-        return BeeUtils.concat(1,
-            "CAST(" + params.get("expression"),
-            "AS",
-            sqlType((DataType) params.get("type")
-                , (Integer) params.get("precision")
-                , (Integer) params.get("scale")) + ")");
     }
     Assert.untouchable();
     return null;
@@ -325,37 +413,9 @@ public abstract class SqlBuilder {
         return "CHAR(" + precision + ")";
       case STRING:
         return "VARCHAR(" + precision + ")";
-      default:
-        Assert.unsupported("Unsupported data type: " + type.name());
-        return null;
     }
-  }
-
-  /**
-   * Forms a String from an SqlCommand {@code sc} using the specified {@code paramMode}.
-   * 
-   * @param sc the SqlCommand to use for forming
-   * @param paramMode defines if parameter mode is true or false.
-   * @return a formed String from the SqlCommand
-   */
-  String getCommand(SqlCommand sc, boolean paramMode) {
-    Assert.notNull(sc);
-    Assert.state(!sc.isEmpty());
-
-    Map<String, Object> params = Maps.newHashMap();
-    Map<String, Object> paramMap = sc.getParameters();
-
-    if (!BeeUtils.isEmpty(paramMap)) {
-      for (String prm : paramMap.keySet()) {
-        Object value = paramMap.get(prm);
-
-        if (value instanceof IsSql) {
-          value = ((IsSql) value).getSqlString(this, paramMode);
-        }
-        params.put(prm, value);
-      }
-    }
-    return sqlKeyword(sc.getCommand(), params);
+    Assert.untouchable();
+    return null;
   }
 
   /**
@@ -374,7 +434,7 @@ public abstract class SqlBuilder {
     StringBuilder query = new StringBuilder("CREATE ");
 
     if (sc.isTemporary()) {
-      query.append(sqlKeyword(Keyword.TEMPORARY, null));
+      query.append(sqlKeyword(SqlKeyword.TEMPORARY, null));
     }
     query.append("TABLE ");
 
@@ -395,7 +455,7 @@ public abstract class SqlBuilder {
         query.append(field.getName().getSqlString(this, paramMode))
             .append(" ").append(sqlType(field.getType(), field.getPrecision(), field.getScale()));
 
-        for (Keyword opt : field.getOptions()) {
+        for (SqlKeyword opt : field.getOptions()) {
           query.append(" ").append(sqlKeyword(opt, null));
         }
       }

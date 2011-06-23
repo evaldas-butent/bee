@@ -34,7 +34,7 @@ public class ColumnValueFilter extends ComparisonFilter {
   }
 
   protected ColumnValueFilter(String column, Operator operator, Value value) {
-    super(operator == Operator.LIKE && value.getType() != ValueType.TEXT ? Operator.EQ : operator);
+    super(value.getType() != ValueType.TEXT && operator.isStringOperator() ? Operator.EQ : operator);
     Assert.notEmpty(column);
     Assert.notNull(value);
     this.column = column;

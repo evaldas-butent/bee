@@ -194,7 +194,7 @@ public class TestSqlSelect {
 
     SqlSelect select = new SqlSelect();
     select.addFrom("from_table");
-    select.addExpr("kazkas", "expr_alias");
+    select.addExpr(SqlUtils.expression("kazkas"), "expr_alias");
 
     assertEquals("SELECT kazkas AS expr_alias FROM from_table",
         select.getSqlString(builder, false));

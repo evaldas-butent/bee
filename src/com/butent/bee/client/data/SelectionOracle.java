@@ -5,7 +5,6 @@ import com.google.common.collect.Lists;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.view.search.SearchType;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeColumn;
@@ -23,7 +22,7 @@ import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
-import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RelationInfo;
 import com.butent.bee.shared.data.view.RowInfo;
@@ -41,12 +40,12 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
   public static class Request {
 
     private final String query;
-    private final SearchType searchType;
+    private final Operator searchType;
 
     private final int offset;
     private final int limit;
 
-    public Request(String query, SearchType searchType, int offset, int limit) {
+    public Request(String query, Operator searchType, int offset, int limit) {
       this.query = query;
       this.searchType = searchType;
       this.offset = offset;
@@ -76,7 +75,7 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
       return query;
     }
 
-    public SearchType getSearchType() {
+    public Operator getSearchType() {
       return searchType;
     }
 
@@ -340,60 +339,28 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
     return cachingThreshold;
   }
 
-  private ValueType getColType(String colName) {
-    if (BeeUtils.isEmpty(colName)) {
-      return null;
-    }
-    for (BeeColumn column : getDataColumns()) {
-      if (BeeUtils.same(column.getId(), colName)) {
-        return column.getType();
-      }
-    }
-    return null;
-  }
-
   private List<BeeColumn> getDataColumns() {
     return dataColumns;
   }
 
-  private Filter getFilter(String query, SearchType searchType) {
-    if (BeeUtils.isEmpty(query) || searchType == null) {
+  private Filter getFilter(String query, Operator searchType) {
+    if (BeeUtils.isEmpty(query)) {
       return null;
     }
-
     Filter filter = null;
 
-    if (searchType == SearchType.FILTER) {
-      for (BeeColumn column : getDataColumns()) {
-        if (BeeUtils.context(column.getId(), query)) {
-          filter = DataUtils.parseCondition(query, getDataColumns(), true);
-          break;
-        }
+    for (Integer index : getSearchColumns()) {
+      Filter flt = DataUtils.parseExpression(BeeUtils.concat(1,
+          getViewColumns().get(index), searchType == null ? "" : searchType.toTextString(), query),
+          getDataColumns(), true);
+
+      if (flt == null) {
+        continue;
       }
       if (filter == null) {
-        filter = DataUtils.parseExpression(BeeUtils.concat(1, getRelColumn(), query),
-            getDataColumns(), true);
-      }
-
-    } else {
-      for (Integer index : getSearchColumns()) {
-        String colName = getViewColumns().get(index);
-        ValueType colType = getColType(colName);
-        if (ValueType.isNumeric(colType) && !BeeUtils.isDouble(query)) {
-          continue;
-        }
-
-        Filter flt = DataUtils.parseExpression(BeeUtils.concat(1, colName, query),
-            getDataColumns(), true);
-        if (flt == null) {
-          continue;
-        }
-
-        if (filter == null) {
-          filter = flt;
-        } else {
-          filter = CompoundFilter.or(filter, flt);
-        }
+        filter = flt;
+      } else {
+        filter = CompoundFilter.or(filter, flt);
       }
     }
     return filter;
@@ -413,10 +380,6 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
 
   private RelationInfo getRelationInfo() {
     return relationInfo;
-  }
-
-  private String getRelColumn() {
-    return getRelationInfo().getRelColumn();
   }
 
   private BeeRowSet getRequestData() {
@@ -508,38 +471,6 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
         && getCaching() == Caching.FULL;
   }
 
-  private boolean match(BeeRow row, String query, SearchType searchType) {
-    if (row == null || searchType == null) {
-      return false;
-    }
-    if (BeeUtils.isEmpty(query)) {
-      return true;
-    }
-
-    boolean ok = false;
-    for (int index : getSearchColumns()) {
-      String value = row.getString(index);
-      if (BeeUtils.isEmpty(value)) {
-        continue;
-      }
-
-      switch (searchType) {
-        case CONTAINS:
-          ok = BeeUtils.context(query, value);
-          break;
-        case STARTS:
-          ok = value.trim().toLowerCase().startsWith(query.trim().toLowerCase());
-          break;
-        case FILTER:
-          ok = true;
-      }
-      if (ok) {
-        break;
-      }
-    }
-    return ok;
-  }
-
   private boolean prepareData(final Request request) {
     if (getLastRequest() != null) {
       if (isCachingEnabled()) {
@@ -552,11 +483,13 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
       }
     }
 
-    String query = request.getQuery();
-    SearchType searchType = request.getSearchType();
+    final Filter filter = getFilter(request.getQuery(), request.getSearchType());
+    if (filter == null && !isCachingEnabled()) {
+      setRequestData(null);
+      return true;
+    }
 
-    if (getCaching() == Caching.FULL
-        && (BeeUtils.isEmpty(query) || searchType != SearchType.FILTER)) {
+    if (getCaching() == Caching.FULL) {
       if (getViewData() == null) {
         return false;
       }
@@ -567,16 +500,10 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
       }
 
       for (BeeRow row : getViewData().getRows()) {
-        if (match(row, query, searchType)) {
+        if (filter == null || filter.isMatch(getDataColumns(), row)) {
           getRequestData().addRow(row);
         }
       }
-      return true;
-    }
-
-    final Filter filter = getFilter(query, searchType);
-    if (filter == null && !isCachingEnabled()) {
-      setRequestData(null);
       return true;
     }
 

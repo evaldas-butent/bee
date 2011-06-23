@@ -1,13 +1,16 @@
 package com.butent.bee.server.sql;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 import com.butent.bee.server.sql.BeeConstants.DataType;
+import com.butent.bee.server.sql.BeeConstants.Function;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Generates SELECT SQL statements and their full range of elements (inc. formation of WHERE and
@@ -58,7 +61,8 @@ public class SqlSelect extends HasFrom<SqlSelect> {
    * @return object's SqlSelect instance.
    */
   public SqlSelect addAvg(IsExpression expr, String alias) {
-    addAggregate("AVG", expr, alias);
+    Assert.notNull(expr);
+    addAggregate(Function.AVG, expr, false, alias);
     return getReference();
   }
 
@@ -87,6 +91,19 @@ public class SqlSelect extends HasFrom<SqlSelect> {
   }
 
   /**
+   * Adds an AVG function with a specified distinct expression {@code expr} and alias {@code alias}.
+   * 
+   * @param expr the expression
+   * @param alias the alias name
+   * @return object's SqlSelect instance.
+   */
+  public SqlSelect addAvgDistinct(IsExpression expr, String alias) {
+    Assert.notNull(expr);
+    addAggregate(Function.AVG, expr, true, alias);
+    return getReference();
+  }
+
+  /**
    * Creates a constant expression.
    * 
    * @param constant the constant value.
@@ -106,18 +123,56 @@ public class SqlSelect extends HasFrom<SqlSelect> {
    * @return object's SqlSelect instance.
    */
   public SqlSelect addCount(IsExpression expr, String alias) {
-    addAggregate("COUNT", expr, alias);
+    addAggregate(Function.COUNT, expr, false, alias);
     return getReference();
   }
 
   /**
-   * Adds a COUNT function wihtout any defined expressions.
+   * Adds an COUNT function for {@code source} table and field {@code field}.
+   * 
+   * @param source the source's name
+   * @param field the field's name
+   * @return object's SqlSelect instance.
+   */
+  public SqlSelect addCount(String source, String field) {
+    return addCount(SqlUtils.field(source, field), field);
+  }
+
+  /**
+   * Adds an COUNT function for {@code source} table and field {@code field} using an alias
+   * {@code alias}.
+   * 
+   * @param source the source's name
+   * @param field the field's name
+   * @param alias the alias name.
+   * @return object's SqlSelect instance.
+   */
+  public SqlSelect addCount(String source, String field, String alias) {
+    return addCount(SqlUtils.field(source, field), alias);
+  }
+
+  /**
+   * Adds a COUNT function without any defined expressions.
    * 
    * @param alias the alias name.
    * @return object's SqlSelect instance.
    */
   public SqlSelect addCount(String alias) {
-    return addCount(SqlUtils.expression("*"), alias);
+    return addCount((IsExpression) null, alias);
+  }
+
+  /**
+   * Adds a COUNT function with a specified distinct expression {@code expr} and alias {@code alias}
+   * .
+   * 
+   * @param expr the expression
+   * @param alias the alias name
+   * @return object's SqlSelect instance.
+   */
+  public SqlSelect addCountDistinct(IsExpression expr, String alias) {
+    Assert.notNull(expr);
+    addAggregate(Function.COUNT, expr, true, alias);
+    return getReference();
   }
 
   /**
@@ -246,22 +301,10 @@ public class SqlSelect extends HasFrom<SqlSelect> {
    * @return object's SqlSelect instance
    */
   public SqlSelect addExpr(IsExpression expr, String alias) {
-    Assert.notEmpty(expr);
+    Assert.notNull(expr);
     Assert.notEmpty(alias);
 
     addField(expr, alias);
-    return getReference();
-  }
-
-  /**
-   * Adds an expression {@code expr} with the specified alias name.
-   * 
-   * @param expr the expression to add
-   * @param alias the alias name
-   * @return object's SqlSelect instance.
-   */
-  public SqlSelect addExpr(String expr, String alias) {
-    addExpr(SqlUtils.expression(expr), alias);
     return getReference();
   }
 
@@ -315,7 +358,8 @@ public class SqlSelect extends HasFrom<SqlSelect> {
    * @return object's SqlSelect instance.
    */
   public SqlSelect addMax(IsExpression expr, String alias) {
-    addAggregate("MAX", expr, alias);
+    Assert.notNull(expr);
+    addAggregate(Function.MAX, expr, false, alias);
     return getReference();
   }
 
@@ -344,6 +388,19 @@ public class SqlSelect extends HasFrom<SqlSelect> {
   }
 
   /**
+   * Adds a MAX function with a specified distinct expression {@code expr} and alias {@code alias}.
+   * 
+   * @param expr the expression
+   * @param alias the alias name
+   * @return object's SqlSelect instance.
+   */
+  public SqlSelect addMaxDistinct(IsExpression expr, String alias) {
+    Assert.notNull(expr);
+    addAggregate(Function.MAX, expr, true, alias);
+    return getReference();
+  }
+
+  /**
    * Adds a MIN function with a specified expression {@code expr} and alias {@code alias}.
    * 
    * @param expr the expression
@@ -351,7 +408,8 @@ public class SqlSelect extends HasFrom<SqlSelect> {
    * @return object's SqlSelect instance.
    */
   public SqlSelect addMin(IsExpression expr, String alias) {
-    addAggregate("MIN", expr, alias);
+    Assert.notNull(expr);
+    addAggregate(Function.MIN, expr, false, alias);
     return getReference();
   }
 
@@ -377,6 +435,19 @@ public class SqlSelect extends HasFrom<SqlSelect> {
    */
   public SqlSelect addMin(String source, String field, String alias) {
     return addMin(SqlUtils.field(source, field), alias);
+  }
+
+  /**
+   * Adds a MIN function with a specified distinct expression {@code expr} and alias {@code alias}.
+   * 
+   * @param expr the expression
+   * @param alias the alias name
+   * @return object's SqlSelect instance.
+   */
+  public SqlSelect addMinDistinct(IsExpression expr, String alias) {
+    Assert.notNull(expr);
+    addAggregate(Function.MIN, expr, true, alias);
+    return getReference();
   }
 
   /**
@@ -411,7 +482,8 @@ public class SqlSelect extends HasFrom<SqlSelect> {
    * @return object's SqlSelect instance.
    */
   public SqlSelect addSum(IsExpression expr, String alias) {
-    addAggregate("SUM", expr, alias);
+    Assert.notNull(expr);
+    addAggregate(Function.SUM, expr, false, alias);
     return getReference();
   }
 
@@ -437,6 +509,19 @@ public class SqlSelect extends HasFrom<SqlSelect> {
    */
   public SqlSelect addSum(String source, String field, String alias) {
     return addSum(SqlUtils.field(source, field), alias);
+  }
+
+  /**
+   * Adds a SUM function with a specified distinct expression {@code expr} and alias {@code alias}.
+   * 
+   * @param expr the expression
+   * @param alias the alias name
+   * @return object's SqlSelect instance.
+   */
+  public SqlSelect addSumDistinct(IsExpression expr, String alias) {
+    Assert.notNull(expr);
+    addAggregate(Function.SUM, expr, true, alias);
+    return getReference();
   }
 
   /**
@@ -789,9 +874,12 @@ public class SqlSelect extends HasFrom<SqlSelect> {
     return this;
   }
 
-  private void addAggregate(String fnc, IsExpression expr, String alias) {
-    Assert.notEmpty(expr);
-    addExpr(SqlUtils.expression(fnc, "(", expr, ")"), alias);
+  private void addAggregate(Function fnc, IsExpression expr, boolean distinct, String alias) {
+    Map<String, Object> params = Maps.newHashMap();
+    params.put("expression", expr);
+    params.put("distinct", distinct);
+
+    addExpr(new FunctionExpression(fnc, params), alias);
   }
 
   private void addField(IsExpression expr, String alias) {

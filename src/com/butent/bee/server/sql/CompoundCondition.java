@@ -13,7 +13,7 @@ import java.util.List;
  * requirements.
  */
 
-public class CompoundCondition implements IsCondition {
+class CompoundCondition implements HasConditions {
 
   static CompoundCondition and(IsCondition... conditions) {
     return new CompoundCondition(CompoundType.AND, conditions);
@@ -31,6 +31,7 @@ public class CompoundCondition implements IsCondition {
     add(conditions);
   }
 
+  @Override
   public void add(IsCondition... conditions) {
     if (!BeeUtils.isEmpty(conditions)) {
       for (IsCondition cond : conditions) {

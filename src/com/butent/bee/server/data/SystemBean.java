@@ -13,7 +13,7 @@ import com.butent.bee.server.data.BeeTable.BeeForeignKey;
 import com.butent.bee.server.data.BeeTable.BeeKey;
 import com.butent.bee.server.sql.BeeConstants;
 import com.butent.bee.server.sql.BeeConstants.DataType;
-import com.butent.bee.server.sql.BeeConstants.Keyword;
+import com.butent.bee.server.sql.BeeConstants.SqlKeyword;
 import com.butent.bee.server.sql.HasFrom;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.IsExpression;
@@ -94,7 +94,7 @@ public class SystemBean {
     BeeTable table = getTable(tblName);
 
     if (!table.isActive()) {
-      rebuild(table);
+      rebuildTable(table);
     }
   }
 
@@ -284,7 +284,7 @@ public class SystemBean {
     return response;
   }
 
-  public int commitExtChanges(BeeTable table, long id, Map<String, Object[]> updates,
+  public ResponseObject commitExtChanges(BeeTable table, long id, Map<String, Object[]> updates,
       int idxField, int idxValue, boolean updateMode) {
     int c = 0;
     int idxInsQuery = 0;
@@ -308,54 +308,37 @@ public class SystemBean {
         queries[idxUpdQuery] = table.updateExtField(updQuery, id, field, value);
       }
     }
-    for (BeeField field : table.getFields()) {
-      IsQuery[] queries = queryMap.get(table.getExtTable(field));
-
-      if (queries != null && field.isExtended() && field.isNotNull()) {
-        boolean found = false;
-
-        for (Object[] col : updates.values()) {
-          if (BeeUtils.same(field.getName(), (String) col[idxField])) {
-            found = true;
-            break;
-          }
-        }
-        if (!found) {
-          queries[idxInsQuery] = table.insertExtField((SqlInsert) queries[idxInsQuery],
-              id, field, field.getType().getEmptyValue());
-        }
-      }
-    }
     for (IsQuery[] queries : queryMap.values()) {
+      ResponseObject resp = new ResponseObject();
       int res = 0;
       IsQuery updQuery = queries[idxUpdQuery];
 
       if (!BeeUtils.isEmpty(updQuery)) {
-        res = qs.updateData(updQuery);
+        resp = qs.updateDataWithResponse(updQuery);
+        res = resp.getResponse(-1, logger);
       }
       if (res == 0) {
-        res = qs.updateData(queries[idxInsQuery]);
+        resp = qs.updateDataWithResponse(queries[idxInsQuery]);
+        res = resp.getResponse(-1, logger);
       }
       if (res < 0) {
-        return -1;
+        return resp;
       }
       c += res;
     }
-    return c;
+    return ResponseObject.response(c);
   }
 
-  public int commitTranslationChanges(BeeTable table, long id, Map<String, Object[]> updates,
-      int idxField, int idxLocale, int idxValue, boolean updateMode) {
+  public ResponseObject commitTranslationChanges(BeeTable table, long id,
+      Map<String, Object[]> updates, int idxField, int idxLocale, int idxValue, boolean updateMode) {
     int c = 0;
     int idxInsQuery = 0;
     int idxUpdQuery = 1;
     Map<String, IsQuery[]> queryMap = Maps.newHashMap();
-    Set<String> locales = Sets.newHashSet();
 
     for (String col : updates.keySet()) {
       BeeField field = table.getField((String) updates.get(col)[idxField]);
       String locale = (String) updates.get(col)[idxLocale];
-      locales.add(locale);
       Object value = updates.get(col)[idxValue];
       String translationKey = table.getTranslationTable(field) + BeeUtils.parenthesize(locale);
 
@@ -371,46 +354,25 @@ public class SystemBean {
         queries[idxUpdQuery] = table.updateTranslationField(updQuery, id, field, locale, value);
       }
     }
-    for (BeeField field : table.getFields()) {
-      if (field.isTranslatable() && field.isNotNull()) {
-        for (String locale : locales) {
-          String translationKey = table.getTranslationTable(field) + BeeUtils.parenthesize(locale);
-          IsQuery[] queries = queryMap.get(translationKey);
-          if (queries == null) {
-            continue;
-          }
-          boolean found = false;
-
-          for (Object[] col : updates.values()) {
-            if (BeeUtils.same(field.getName(), (String) col[idxField])
-                && BeeUtils.same(locale, (String) col[idxLocale])) {
-              found = true;
-              break;
-            }
-          }
-          if (!found) {
-            queries[idxInsQuery] = table.insertTranslationField((SqlInsert) queries[idxInsQuery],
-                id, field, locale, field.getType().getEmptyValue());
-          }
-        }
-      }
-    }
     for (IsQuery[] queries : queryMap.values()) {
+      ResponseObject resp = new ResponseObject();
       int res = 0;
       IsQuery updQuery = queries[idxUpdQuery];
 
       if (!BeeUtils.isEmpty(updQuery)) {
-        res = qs.updateData(updQuery);
+        resp = qs.updateDataWithResponse(updQuery);
+        res = resp.getResponse(-1, logger);
       }
       if (res == 0) {
-        res = qs.updateData(queries[idxInsQuery]);
+        resp = qs.updateDataWithResponse(queries[idxInsQuery]);
+        res = resp.getResponse(-1, logger);
       }
       if (res < 0) {
-        return -1;
+        return resp;
       }
       c += res;
     }
-    return c;
+    return ResponseObject.response(c);
   }
 
   public ResponseObject deleteRow(String viewName, RowInfo row) {
@@ -616,7 +578,10 @@ public class SystemBean {
       if (id < 0) {
         return ResponseObject.error(tblName, si.getQuery(), "Error inserting data");
       } else {
-        commitExtChanges(table, id, extUpdate, 0, 1, false);
+        ResponseObject resp = commitExtChanges(table, id, extUpdate, 0, 1, false);
+        if (resp.hasErrors()) {
+          return resp;
+        }
       }
       si.reset();
       extUpdate.clear();
@@ -872,21 +837,34 @@ public class SystemBean {
           }
         }
         if (!response.hasErrors() && !BeeUtils.isEmpty(extUpdate)) {
-          int res = commitExtChanges(table, id, extUpdate, idxField, idxNewValue, false);
+          ResponseObject resp =
+              commitExtChanges(table, id, extUpdate, idxField, idxNewValue, false);
+          int res = resp.getResponse(-1, null);
 
           if (res < 0) {
             response.addError("Error inserting extended fields");
+
+            for (String err : resp.getErrors()) {
+              response.addError(err);
+            }
+          } else {
+            c += res;
           }
-          c += res;
         }
         if (!response.hasErrors() && !BeeUtils.isEmpty(translationUpdate)) {
-          int res = commitTranslationChanges(table, id, translationUpdate,
-                idxField, idxLocale, idxNewValue, false);
+          ResponseObject resp = commitTranslationChanges(table, id, translationUpdate,
+              idxField, idxLocale, idxNewValue, false);
+          int res = resp.getResponse(-1, null);
 
           if (res < 0) {
             response.addError("Error inserting translation fields");
+
+            for (String err : resp.getErrors()) {
+              response.addError(err);
+            }
+          } else {
+            c += res;
           }
-          c += res;
         }
         if (!response.hasErrors()) {
           BeeRow newRow = new BeeRow(id, version);
@@ -958,13 +936,13 @@ public class SystemBean {
   public void rebuildActiveTables() {
     for (BeeTable table : getTables()) {
       if (table.isActive()) {
-        rebuild(table);
+        rebuildTable(table);
       }
     }
   }
 
   public void rebuildTable(String tblName) {
-    rebuild(getTable(tblName));
+    rebuildTable(getTable(tblName));
   }
 
   public void setState(String tblName, long id, String stateName, long... bits) {
@@ -983,7 +961,7 @@ public class SystemBean {
         bitMap.put(bit, Longs.contains(bits, bit));
       }
       if (table.updateStateActive(state, Longs.toArray(bitMap.keySet()))) {
-        rebuild(table);
+        rebuildTable(table);
       }
       SqlUpdate su = table.updateState(id, state, bitMap);
 
@@ -1029,20 +1007,30 @@ public class SystemBean {
         IsCondition wh = SqlUtils.equal(tblName, table.getIdName(), id);
 
         if (!response.hasErrors() && !BeeUtils.isEmpty(extUpdate)) {
-          int res = commitExtChanges(table, id, extUpdate, idxField, idxNewValue, true);
+          ResponseObject resp = commitExtChanges(table, id, extUpdate, idxField, idxNewValue, true);
+          int res = resp.getResponse(-1, null);
 
           if (res < 0) {
             response.addError("Error updating extended fields");
+
+            for (String err : resp.getErrors()) {
+              response.addError(err);
+            }
           } else {
             c += res;
           }
         }
         if (!response.hasErrors() && !BeeUtils.isEmpty(translationUpdate)) {
-          int res = commitTranslationChanges(table, id, translationUpdate,
-                idxField, idxLocale, idxNewValue, true);
+          ResponseObject resp = commitTranslationChanges(table, id, translationUpdate,
+              idxField, idxLocale, idxNewValue, true);
+          int res = resp.getResponse(-1, null);
 
           if (res < 0) {
             response.addError("Error updating translation fields");
+
+            for (String err : resp.getErrors()) {
+              response.addError(err);
+            }
           } else {
             c += res;
           }
@@ -1150,8 +1138,8 @@ public class SystemBean {
   private void createForeignKeys(Collection<BeeForeignKey> fKeys) {
     for (BeeForeignKey fKey : fKeys) {
       String refTblName = fKey.getRefTable();
-      Assert.nonNegative(qs.updateData(SqlUtils.createForeignKey(fKey.getTable(), fKey.getName(),
-          fKey.getKeyField(), refTblName, getIdName(refTblName), fKey.getAction())));
+      makeStructureChanges(SqlUtils.createForeignKey(fKey.getTable(), fKey.getName(),
+          fKey.getKeyField(), refTblName, getIdName(refTblName), fKey.getAction()));
     }
   }
 
@@ -1170,7 +1158,7 @@ public class SystemBean {
       } else {
         index = SqlUtils.createIndex(tblName, keyName, keyFields);
       }
-      Assert.nonNegative(qs.updateData(index));
+      makeStructureChanges(index);
     }
   }
 
@@ -1179,8 +1167,8 @@ public class SystemBean {
     Map<String, SqlCreate> newTables = Maps.newHashMap();
 
     newTables.put(tblName, new SqlCreate(tblName, false)
-        .addLong(table.getIdName(), Keyword.NOT_NULL)
-        .addLong(table.getVersionName(), Keyword.NOT_NULL));
+        .addLong(table.getIdName(), SqlKeyword.NOT_NULL)
+        .addLong(table.getVersionName(), SqlKeyword.NOT_NULL));
 
     for (BeeField field : table.getFields()) {
       tblName = field.getTable();
@@ -1194,7 +1182,7 @@ public class SystemBean {
       } else {
         newTables.get(tblName)
             .addField(field.getName(), field.getType(), field.getPrecision(), field.getScale(),
-                field.isNotNull() ? Keyword.NOT_NULL : null);
+                field.isNotNull() ? SqlKeyword.NOT_NULL : null);
       }
       if (field.isTranslatable()) {
         tblName = table.getTranslationTable(field);
@@ -1221,11 +1209,11 @@ public class SystemBean {
       boolean update = !qs.isDbTable(getDbName(), getDbSchema(), tblName);
 
       if (update) {
-        Assert.nonNegative(qs.updateData(sc));
+        makeStructureChanges(sc);
       } else {
         tblBackup = tblName + "_BAK";
         int c = 0;
-        String[] keys = qs.dbKeys(getDbName(), getDbSchema(), tblName, Keyword.UNIQUE_KEY)
+        String[] keys = qs.dbKeys(getDbName(), getDbSchema(), tblName, SqlKeyword.UNIQUE_KEY)
             .getColumn(BeeConstants.KEY_NAME);
 
         for (BeeKey key : table.getKeys()) {
@@ -1234,6 +1222,7 @@ public class SystemBean {
               c++;
             } else {
               update = true;
+              LogUtils.warning(logger, key.getName(), "NOT IN", keys);
               break;
             }
           }
@@ -1256,6 +1245,7 @@ public class SystemBean {
               c++;
             } else {
               update = true;
+              LogUtils.warning(logger, fKey.getName(), "NOT IN", fKeys);
               break;
             }
           }
@@ -1266,9 +1256,9 @@ public class SystemBean {
       }
       if (!BeeUtils.isEmpty(tblBackup)) {
         if (qs.isDbTable(getDbName(), getDbSchema(), tblBackup)) {
-          Assert.nonNegative(qs.updateData(SqlUtils.dropTable(tblBackup)));
+          makeStructureChanges(SqlUtils.dropTable(tblBackup));
         }
-        Assert.nonNegative(qs.updateData(sc.setTarget(tblBackup)));
+        makeStructureChanges(sc.setTarget(tblBackup));
 
         SimpleRowSet oldFields = qs.dbFields(getDbName(), getDbSchema(), tblName);
         SimpleRowSet newFields = qs.dbFields(getDbName(), getDbSchema(), tblBackup);
@@ -1285,6 +1275,8 @@ public class SystemBean {
               if (!BeeUtils.same(info, BeeConstants.TBL_NAME)
                   && !BeeUtils.equals(oldFieldInfo.get(info), newFieldInfo.get(info))) {
                 update = true;
+                LogUtils.warning(logger, oldFieldInfo.get(BeeConstants.FLD_NAME) + ":", info,
+                    oldFieldInfo.get(info), "!=", newFieldInfo.get(info));
                 break;
               }
             }
@@ -1315,7 +1307,7 @@ public class SystemBean {
             Assert.state(res instanceof Number, "Error inserting data");
           }
         } else {
-          Assert.nonNegative(qs.updateData(SqlUtils.dropTable(tblBackup)));
+          makeStructureChanges(SqlUtils.dropTable(tblBackup));
         }
       }
       if (update) {
@@ -1369,8 +1361,8 @@ public class SystemBean {
   private void init() {
     initStates(true);
     initTables(true);
-    initViews(true);
     initDatabase(BeeUtils.ifString(Config.getProperty("DefaultEngine"), BeeConst.MYSQL));
+    initViews(true);
   }
 
   @Lock(LockType.WRITE)
@@ -1541,9 +1533,9 @@ public class SystemBean {
     for (int i = 0; i < tables.getLength(); i++) {
       Element table = (Element) tables.item(i);
 
-      BeeTable tbl = new BeeTable(table.getAttribute("name")
-          , table.getAttribute("idName")
-          , table.getAttribute("versionName"));
+      BeeTable tbl = new BeeTable(table.getAttribute("name"),
+          table.getAttribute("idName"),
+          table.getAttribute("versionName"));
 
       String[] states = BeeUtils.split(table.getAttribute("states"), ",");
       for (String state : states) {
@@ -1565,6 +1557,11 @@ public class SystemBean {
 
             String fldName = field.getAttribute("name");
             boolean notNull = BeeUtils.toBoolean(field.getAttribute("notNull"));
+            if (notNull && extMode) {
+              LogUtils.warning(logger, "Extendend fields must bee nullable:",
+                  tbl.getName(), fldName);
+              notNull = false;
+            }
             boolean unique = BeeUtils.toBoolean(field.getAttribute("unique"));
             String relation = field.getAttribute("relation");
             boolean cascade = BeeUtils.toBoolean(field.getAttribute("cascade"));
@@ -1581,7 +1578,7 @@ public class SystemBean {
 
             if (!BeeUtils.isEmpty(relation)) {
               tbl.addForeignKey(tblName, fldName, relation,
-                  cascade ? (notNull ? Keyword.CASCADE : Keyword.SET_NULL) : null);
+                  cascade ? (notNull ? SqlKeyword.CASCADE : SqlKeyword.SET_NULL) : null);
             }
             if (unique) {
               tbl.addKey(true, tblName, fldName);
@@ -1665,6 +1662,12 @@ public class SystemBean {
     return data;
   }
 
+  private void makeStructureChanges(IsQuery query) {
+    if (qs.updateData(query) < 0) {
+      Assert.untouchable();
+    }
+  }
+
   private void prepareRow(BeeRowSet rs, ResponseObject response, Map<String, Object[]> baseUpdate,
       Map<String, Object[]> extUpdate, Map<String, Object[]> translationUpdate,
       int idxField, int idxLocale, int idxOldValue, int idxNewValue) {
@@ -1703,73 +1706,87 @@ public class SystemBean {
   }
 
   @Lock(LockType.WRITE)
-  private void rebuild(BeeTable table) {
+  private void rebuildTable(BeeTable table) {
     table.setActive(false);
     String tblMain = table.getName();
     Map<String, String> rebuilds = createTable(table);
 
     if (rebuilds.containsKey(tblMain)) {
-      rebuildTable(table, tblMain, rebuilds.get(tblMain));
-    }
-    table.setActive(true);
+      Collection<BeeKey> keys = Lists.newArrayList();
 
-    for (String tbl : rebuilds.keySet()) {
-      if (!BeeUtils.same(tbl, tblMain)) {
-        rebuildTable(table, tbl, rebuilds.get(tbl));
-      }
-    }
-  }
-
-  private void rebuildTable(BeeTable table, String tblName, String tblBackup) {
-    boolean mainMode = BeeUtils.same(tblName, table.getName());
-
-    if (!BeeUtils.isEmpty(tblBackup)) {
-      if (mainMode) {
-        for (Map<String, String> fKeys : qs
-            .dbForeignKeys(getDbName(), getDbSchema(), null, tblName)) {
-          String fk = fKeys.get(BeeConstants.KEY_NAME);
-          String tbl = fKeys.get(BeeConstants.TBL_NAME);
-          Assert.nonNegative(qs.updateData(SqlUtils.dropForeignKey(tbl, fk)));
+      for (BeeKey key : table.getKeys()) {
+        if (BeeUtils.same(key.getTable(), tblMain)) {
+          keys.add(key);
         }
       }
-      Assert.nonNegative(qs.updateData(SqlUtils.dropTable(tblName)));
-      Assert.nonNegative(qs.updateData(SqlUtils.renameTable(tblBackup, tblName)));
-    }
-    Collection<BeeKey> keys = Lists.newArrayList();
+      Collection<BeeForeignKey> foreignKeys = Lists.newArrayList();
 
-    for (BeeKey key : table.getKeys()) {
-      if (BeeUtils.same(key.getTable(), tblName)) {
-        keys.add(key);
+      for (BeeForeignKey fKey : table.getForeignKeys()) {
+        String refTable = fKey.getRefTable();
+
+        if ((BeeUtils.same(refTable, tblMain) && !rebuilds.containsKey(fKey.getTable()))
+            || (BeeUtils.same(fKey.getTable(), tblMain)
+                && (BeeUtils.same(refTable, tblMain) || getTable(refTable).isActive()))) {
+
+          foreignKeys.add(fKey);
+        }
       }
-    }
-    createKeys(keys);
-    Collection<BeeForeignKey> fKeys = Lists.newArrayList();
-
-    for (BeeForeignKey fKey : table.getForeignKeys()) {
-      if (BeeUtils.same(fKey.getRefTable(), tblName)
-          || (BeeUtils.same(fKey.getTable(), tblName)
-              && getTable(fKey.getRefTable()).isActive())) {
-
-        fKeys.add(fKey);
-      }
-    }
-    createForeignKeys(fKeys);
-
-    if (mainMode) {
-      fKeys.clear();
-
       for (BeeTable other : getTables()) {
-        if (BeeUtils.same(other.getName(), tblName) || !other.isActive()) {
-          continue;
-        }
-        for (BeeForeignKey fKey : other.getForeignKeys()) {
-          if (BeeUtils.same(fKey.getRefTable(), tblName)) {
-            fKeys.add(fKey);
+        if (!BeeUtils.same(other.getName(), tblMain) && other.isActive()) {
+          for (BeeForeignKey fKey : other.getForeignKeys()) {
+            if (BeeUtils.same(fKey.getRefTable(), tblMain)) {
+              foreignKeys.add(fKey);
+            }
           }
         }
       }
-      createForeignKeys(fKeys);
+      String tblBackup = rebuilds.get(tblMain);
+
+      if (!BeeUtils.isEmpty(tblBackup)) {
+        for (Map<String, String> fKeys : qs
+            .dbForeignKeys(getDbName(), getDbSchema(), null, tblMain)) {
+          String fk = fKeys.get(BeeConstants.KEY_NAME);
+          String tbl = fKeys.get(BeeConstants.TBL_NAME);
+          makeStructureChanges(SqlUtils.dropForeignKey(tbl, fk));
+        }
+        makeStructureChanges(SqlUtils.dropTable(tblMain));
+        makeStructureChanges(SqlUtils.renameTable(tblBackup, tblMain));
+      }
+      createKeys(keys);
+      createForeignKeys(foreignKeys);
     }
+
+    for (String tbl : rebuilds.keySet()) {
+      if (!BeeUtils.same(tbl, tblMain)) {
+        Collection<BeeKey> keys = Lists.newArrayList();
+
+        for (BeeKey key : table.getKeys()) {
+          if (BeeUtils.same(key.getTable(), tbl)) {
+            keys.add(key);
+          }
+        }
+        Collection<BeeForeignKey> foreignKeys = Lists.newArrayList();
+
+        for (BeeForeignKey fKey : table.getForeignKeys()) {
+          String refTable = fKey.getRefTable();
+
+          if (BeeUtils.same(fKey.getTable(), tbl)
+              && (BeeUtils.same(refTable, tblMain) || getTable(refTable).isActive())) {
+
+            foreignKeys.add(fKey);
+          }
+        }
+        String tblBackup = rebuilds.get(tbl);
+
+        if (!BeeUtils.isEmpty(tblBackup)) {
+          makeStructureChanges(SqlUtils.dropTable(tbl));
+          makeStructureChanges(SqlUtils.renameTable(tblBackup, tbl));
+        }
+        createKeys(keys);
+        createForeignKeys(foreignKeys);
+      }
+    }
+    table.setActive(true);
   }
 
   private void registerState(BeeState state) {

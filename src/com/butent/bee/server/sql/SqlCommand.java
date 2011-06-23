@@ -1,6 +1,8 @@
 package com.butent.bee.server.sql;
 
-import com.butent.bee.server.sql.BeeConstants.Keyword;
+import com.google.common.collect.Maps;
+
+import com.butent.bee.server.sql.BeeConstants.SqlKeyword;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -9,23 +11,23 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Enables to form any SQL statement with specified parameters, mainly used for 
- * rarer SQL commands like dropping indexes.
+ * Enables to form any SQL statement with specified parameters, mainly used for rarer SQL commands
+ * like dropping indexes.
  */
 
 class SqlCommand extends SqlQuery<SqlCommand> {
 
-  private final Keyword command;
+  private final SqlKeyword command;
   private final Map<String, Object> parameters;
 
-  public SqlCommand(Keyword command, Map<String, Object> parameters) {
+  public SqlCommand(SqlKeyword command, Map<String, Object> parameters) {
     Assert.notEmpty(command);
 
     this.command = command;
     this.parameters = parameters;
   }
 
-  public Keyword getCommand() {
+  public SqlKeyword getCommand() {
     return command;
   }
 
@@ -55,7 +57,19 @@ class SqlCommand extends SqlQuery<SqlCommand> {
   @Override
   public String getSqlString(SqlBuilder builder, boolean paramMode) {
     Assert.notEmpty(builder);
-    return builder.getCommand(this, paramMode);
+    Map<String, Object> params = Maps.newHashMap();
+
+    if (!BeeUtils.isEmpty(parameters)) {
+      for (String prm : parameters.keySet()) {
+        Object value = parameters.get(prm);
+
+        if (value instanceof IsSql) {
+          value = ((IsSql) value).getSqlString(builder, paramMode);
+        }
+        params.put(prm, value);
+      }
+    }
+    return builder.sqlKeyword(command, params);
   }
 
   @Override

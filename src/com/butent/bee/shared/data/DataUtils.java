@@ -127,11 +127,11 @@ public class DataUtils {
         String colName = column.getId();
         String value = s.substring(colName.length()).trim();
 
-        String pattern = "^" + CompoundType.NOT.toTextString() + "\\s*\\(\\s*(.*)\\s*\\)$";
+        String pattern = "^" + CompoundType.NOT.toTextString() + "\\s*\\((.*)\\)$";
         boolean notMode = value.matches(pattern);
 
         if (notMode) {
-          value = value.replaceFirst(pattern, "$1");
+          value = value.replaceFirst(pattern, "$1").trim();
         }
         Operator operator = Operator.detectOperator(value);
 
@@ -139,7 +139,7 @@ public class DataUtils {
           value = value.replaceFirst("^\\" + operator.toTextString() + "\\s*", "");
         } else {
           if (ValueType.TEXT == column.getType()) {
-            operator = Operator.LIKE;
+            operator = Operator.CONTAINS;
           } else {
             operator = Operator.EQ;
           }

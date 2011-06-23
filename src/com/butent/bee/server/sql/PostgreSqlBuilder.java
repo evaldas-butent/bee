@@ -1,7 +1,7 @@
 package com.butent.bee.server.sql;
 
 import com.butent.bee.server.sql.BeeConstants.DataType;
-import com.butent.bee.server.sql.BeeConstants.Keyword;
+import com.butent.bee.server.sql.BeeConstants.SqlKeyword;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -15,7 +15,7 @@ import java.util.Map;
 class PostgreSqlBuilder extends SqlBuilder {
 
   @Override
-  protected String sqlKeyword(Keyword option, Map<String, Object> params) {
+  protected String sqlKeyword(SqlKeyword option, Map<String, Object> params) {
     switch (option) {
       case DB_NAME:
         return "SELECT current_database() as " + sqlQuote("dbName");

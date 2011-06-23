@@ -1,6 +1,6 @@
 package com.butent.bee.shared.testutils;
 
-import com.butent.bee.server.sql.BeeConstants.Keyword;
+import com.butent.bee.server.sql.BeeConstants.SqlKeyword;
 import com.butent.bee.server.sql.SqlBuilder;
 import com.butent.bee.server.sql.SqlBuilderFactory;
 import com.butent.bee.server.sql.SqlSelect;
@@ -36,7 +36,7 @@ public class TestSqlUtilsIsQuery {
     assertEquals(
         "ALTER TABLE Table1 ADD CONSTRAINT name FOREIGN KEY (field1) REFERENCES refTable (refField1) ON DELETE CASCADE",
         SqlUtils.createForeignKey("Table1", "name", "field1",
-            "refTable", "refField1", Keyword.CASCADE).getQuery());
+            "refTable", "refField1", SqlKeyword.CASCADE).getQuery());
     assertEquals(
         "ALTER TABLE Table1 ADD CONSTRAINT name FOREIGN KEY (field1) REFERENCES refTable (refField1)",
         SqlUtils.createForeignKey("Table1", "name", "field1",

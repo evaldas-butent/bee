@@ -71,15 +71,24 @@ public final class BeeConstants {
   }
 
   /**
+   * Contains a list of SQL functions used by the system.
+   */
+
+  public enum Function {
+    BITAND, IF, CASE, CAST,
+    PLUS, MINUS, MULTIPLY, DIVIDE, BULK,
+    MIN, MAX, SUM, AVG, COUNT
+  }
+
+  /**
    * Contains a list of SQL keywords used by the system.
    */
 
-  public enum Keyword {
+  public enum SqlKeyword {
     DB_NAME, DB_SCHEMA, DB_TABLES, DB_FIELDS, DB_KEYS, DB_FOREIGNKEYS,
     RENAME_TABLE, DROP_TABLE, DROP_FOREIGNKEY, CREATE_INDEX,
     ADD_CONSTRAINT, PRIMARY_KEY, UNIQUE_KEY, FOREIGN_KEY,
-    TEMPORARY, TEMPORARY_NAME, NOT_NULL, CASCADE, SET_NULL,
-    BITAND, IF, CASE, CAST
+    TEMPORARY, TEMPORARY_NAME, NOT_NULL, CASCADE, SET_NULL
   }
 
   public static final String TBL_NAME = "tblName";

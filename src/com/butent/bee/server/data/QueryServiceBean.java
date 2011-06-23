@@ -4,7 +4,7 @@ import com.google.common.collect.Lists;
 
 import com.butent.bee.server.DataSourceBean;
 import com.butent.bee.server.jdbc.JdbcUtils;
-import com.butent.bee.server.sql.BeeConstants.Keyword;
+import com.butent.bee.server.sql.BeeConstants.SqlKeyword;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.IsQuery;
 import com.butent.bee.server.sql.SqlBuilderFactory;
@@ -80,7 +80,7 @@ public class QueryServiceBean {
     return getData(SqlUtils.dbForeignKeys(dbName, dbSchema, table, refTable));
   }
 
-  public SimpleRowSet dbKeys(String dbName, String dbSchema, String table, Keyword... types) {
+  public SimpleRowSet dbKeys(String dbName, String dbSchema, String table, SqlKeyword... types) {
     return getData(SqlUtils.dbKeys(dbName, dbSchema, table, types));
   }
 

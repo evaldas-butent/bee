@@ -5,7 +5,8 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 import com.butent.bee.server.sql.BeeConstants.DataType;
-import com.butent.bee.server.sql.BeeConstants.Keyword;
+import com.butent.bee.server.sql.BeeConstants.Function;
+import com.butent.bee.server.sql.BeeConstants.SqlKeyword;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.value.Value;
@@ -23,13 +24,13 @@ import java.util.Map;
 
 public class SqlUtils {
 
-  public static CompoundCondition and(IsCondition... conditions) {
+  public static HasConditions and(IsCondition... conditions) {
     return CompoundCondition.and(conditions);
   }
 
   public static <T> IsExpression bitAnd(IsExpression expr, T value) {
-    return expression(new SqlCommand(Keyword.BITAND,
-        ImmutableMap.of("expression", expr, "value", value)));
+    return new FunctionExpression(Function.BITAND,
+        ImmutableMap.of("expression", expr, "value", value));
   }
 
   public static <T> IsExpression bitAnd(String source, String field, T value) {
@@ -37,12 +38,12 @@ public class SqlUtils {
   }
 
   public static IsExpression cast(IsExpression expr, DataType type, int precision, int scale) {
-    return expression(new SqlCommand(Keyword.CAST,
-        ImmutableMap.of("expression", expr, "type", type, "precision", precision, "scale", scale)));
+    return new FunctionExpression(Function.CAST,
+        ImmutableMap.of("expression", expr, "type", type, "precision", precision, "scale", scale));
   }
 
   public static IsCondition compare(IsExpression expr, Operator op, IsExpression value) {
-    return new ComparisonCondition(expr, op, value);
+    return new ComparisonCondition(op, expr, value);
   }
 
   public static IsExpression constant(Object constant) {
@@ -50,7 +51,7 @@ public class SqlUtils {
   }
 
   public static IsCondition contains(IsExpression expr, String value) {
-    return like(expr, "%" + value + "%");
+    return compare(expr, Operator.CONTAINS, constant(value));
   }
 
   public static IsCondition contains(String source, String field, String value) {
@@ -58,29 +59,29 @@ public class SqlUtils {
   }
 
   public static IsQuery createForeignKey(String table, String name, String field,
-      String refTable, String refField, Keyword action) {
+      String refTable, String refField, SqlKeyword action) {
 
-    Map<String, Object> params = getConstraintMap(Keyword.FOREIGN_KEY, table, name, field);
+    Map<String, Object> params = getConstraintMap(SqlKeyword.FOREIGN_KEY, table, name, field);
     params.put("refTable", name(refTable));
     params.put("refFields", name(refField));
     params.put("action", action);
 
-    return new SqlCommand(Keyword.ADD_CONSTRAINT, params);
+    return new SqlCommand(SqlKeyword.ADD_CONSTRAINT, params);
   }
 
   public static IsQuery createIndex(String table, String name, String... fields) {
-    return new SqlCommand(Keyword.CREATE_INDEX,
-        getConstraintMap(Keyword.CREATE_INDEX, table, name, fields));
+    return new SqlCommand(SqlKeyword.CREATE_INDEX,
+        getConstraintMap(SqlKeyword.CREATE_INDEX, table, name, fields));
   }
 
   public static IsQuery createPrimaryKey(String table, String name, String... fields) {
-    return new SqlCommand(Keyword.ADD_CONSTRAINT,
-        getConstraintMap(Keyword.PRIMARY_KEY, table, name, fields));
+    return new SqlCommand(SqlKeyword.ADD_CONSTRAINT,
+        getConstraintMap(SqlKeyword.PRIMARY_KEY, table, name, fields));
   }
 
   public static IsQuery createUniqueKey(String table, String name, String... fields) {
-    return new SqlCommand(Keyword.ADD_CONSTRAINT,
-        getConstraintMap(Keyword.UNIQUE_KEY, table, name, fields));
+    return new SqlCommand(SqlKeyword.ADD_CONSTRAINT,
+        getConstraintMap(SqlKeyword.UNIQUE_KEY, table, name, fields));
   }
 
   public static IsQuery dbFields(String dbName, String dbSchema, String table) {
@@ -89,7 +90,7 @@ public class SqlUtils {
     params.put("dbSchema", dbSchema);
     params.put("table", table);
 
-    return new SqlCommand(Keyword.DB_FIELDS, params);
+    return new SqlCommand(SqlKeyword.DB_FIELDS, params);
   }
 
   public static IsQuery dbForeignKeys(String dbName, String dbSchema, String table, String refTable) {
@@ -99,25 +100,25 @@ public class SqlUtils {
     params.put("table", table);
     params.put("refTable", refTable);
 
-    return new SqlCommand(Keyword.DB_FOREIGNKEYS, params);
+    return new SqlCommand(SqlKeyword.DB_FOREIGNKEYS, params);
   }
 
-  public static IsQuery dbKeys(String dbName, String dbSchema, String table, Keyword... types) {
+  public static IsQuery dbKeys(String dbName, String dbSchema, String table, SqlKeyword... types) {
     Map<String, Object> params = Maps.newHashMap();
     params.put("dbName", dbName);
     params.put("dbSchema", dbSchema);
     params.put("table", table);
     params.put("keyTypes", types);
 
-    return new SqlCommand(Keyword.DB_KEYS, params);
+    return new SqlCommand(SqlKeyword.DB_KEYS, params);
   }
 
   public static IsQuery dbName() {
-    return new SqlCommand(Keyword.DB_NAME, null);
+    return new SqlCommand(SqlKeyword.DB_NAME, null);
   }
 
   public static IsQuery dbSchema() {
-    return new SqlCommand(Keyword.DB_SCHEMA, null);
+    return new SqlCommand(SqlKeyword.DB_SCHEMA, null);
   }
 
   public static IsQuery dbTables(String dbName, String dbSchema, String table) {
@@ -126,20 +127,26 @@ public class SqlUtils {
     params.put("dbSchema", dbSchema);
     params.put("table", table);
 
-    return new SqlCommand(Keyword.DB_TABLES, params);
+    return new SqlCommand(SqlKeyword.DB_TABLES, params);
+  }
+
+  public static IsExpression divide(IsExpression... members) {
+    Assert.minLength(members, 2);
+    Assert.noNulls((Object[]) members);
+    return new FunctionExpression(Function.DIVIDE, getMemberMap((Object[]) members));
   }
 
   public static IsQuery dropForeignKey(String table, String name) {
-    return new SqlCommand(Keyword.DROP_FOREIGNKEY,
+    return new SqlCommand(SqlKeyword.DROP_FOREIGNKEY,
         ImmutableMap.of("table", (Object) name(table), "name", name(name)));
   }
 
   public static IsQuery dropTable(String table) {
-    return new SqlCommand(Keyword.DROP_TABLE, ImmutableMap.of("table", (Object) name(table)));
+    return new SqlCommand(SqlKeyword.DROP_TABLE, ImmutableMap.of("table", (Object) name(table)));
   }
 
   public static IsCondition endsWith(IsExpression expr, String value) {
-    return like(expr, "%" + value);
+    return compare(expr, Operator.ENDS, constant(value));
   }
 
   public static IsCondition endsWith(String source, String field, String value) {
@@ -154,8 +161,10 @@ public class SqlUtils {
     return equal(field(source, field), value);
   }
 
-  public static IsExpression expression(Object... expr) {
-    return new CompoundExpression(expr);
+  public static IsExpression expression(Object... members) {
+    Assert.minLength(members, 1);
+    Assert.noNulls(members);
+    return new FunctionExpression(Function.BULK, getMemberMap(members));
   }
 
   public static IsExpression field(String source, String field) {
@@ -177,7 +186,8 @@ public class SqlUtils {
   }
 
   public static IsCondition in(String src, String fld, SqlSelect query) {
-    return new ComparisonCondition(field(src, fld), Operator.IN, query);
+    Assert.notNull(query);
+    return new ComparisonCondition(Operator.IN, field(src, fld), query);
   }
 
   public static IsCondition in(String src, String fld, String dst, String dFld, IsCondition clause) {
@@ -192,7 +202,7 @@ public class SqlUtils {
 
   public static IsCondition inList(IsExpression expr, Object... values) {
     Assert.minLength(values, 1);
-    CompoundCondition cond = or();
+    HasConditions cond = or();
 
     for (Object value : values) {
       cond.add(equal(expr, value));
@@ -205,7 +215,7 @@ public class SqlUtils {
   }
 
   public static IsCondition isNull(IsExpression expr) {
-    return compare(expr, Operator.IS, expression("NULL"));
+    return new ComparisonCondition(Operator.IS_NULL, expr);
   }
 
   public static IsCondition isNull(String src, String fld) {
@@ -242,7 +252,7 @@ public class SqlUtils {
     IsCondition cond = null;
 
     if (flds.length > 1) {
-      CompoundCondition cb = and();
+      HasConditions cb = and();
 
       for (String fld : flds) {
         cb.add(join(src1, fld, src2, fld));
@@ -272,12 +282,18 @@ public class SqlUtils {
     return lessEqual(field(source, field), value);
   }
 
-  public static IsCondition like(IsExpression expr, String value) {
-    return compare(expr, Operator.LIKE, constant(value));
+  public static IsCondition matches(IsExpression expr, String value) {
+    return compare(expr, Operator.MATCHES, constant(value));
   }
 
-  public static IsCondition like(String source, String field, String value) {
-    return like(field(source, field), value);
+  public static IsCondition matches(String source, String field, String value) {
+    return matches(field(source, field), value);
+  }
+
+  public static IsExpression minus(IsExpression... members) {
+    Assert.minLength(members, 2);
+    Assert.noNulls((Object[]) members);
+    return new FunctionExpression(Function.MINUS, getMemberMap((Object[]) members));
   }
 
   public static IsCondition more(IsExpression expr, Object value) {
@@ -294,6 +310,12 @@ public class SqlUtils {
 
   public static IsCondition moreEqual(String source, String field, Object value) {
     return moreEqual(field(source, field), value);
+  }
+
+  public static IsExpression multiply(IsExpression... members) {
+    Assert.minLength(members, 2);
+    Assert.noNulls((Object[]) members);
+    return new FunctionExpression(Function.MULTIPLY, getMemberMap((Object[]) members));
   }
 
   public static IsExpression name(String name) {
@@ -313,19 +335,25 @@ public class SqlUtils {
   }
 
   public static IsCondition notNull(IsExpression expr) {
-    return compare(expr, Operator.IS, expression("NOT NULL"));
+    return new ComparisonCondition(Operator.NOT_NULL, expr);
   }
 
   public static IsCondition notNull(String src, String fld) {
     return notNull(field(src, fld));
   }
 
-  public static CompoundCondition or(IsCondition... conditions) {
+  public static HasConditions or(IsCondition... conditions) {
     return CompoundCondition.or(conditions);
   }
 
+  public static IsExpression plus(IsExpression... members) {
+    Assert.minLength(members, 2);
+    Assert.noNulls((Object[]) members);
+    return new FunctionExpression(Function.PLUS, getMemberMap((Object[]) members));
+  }
+
   public static IsQuery renameTable(String from, String to) {
-    return new SqlCommand(Keyword.RENAME_TABLE,
+    return new SqlCommand(SqlKeyword.RENAME_TABLE,
         ImmutableMap.of("nameFrom", (Object) name(from), "nameTo", name(to)));
   }
 
@@ -342,7 +370,7 @@ public class SqlUtils {
       params.put("case" + i, constant(pairs[i * 2]));
       params.put("value" + i, pairs[i * 2 + 1]);
     }
-    return expression(new SqlCommand(Keyword.CASE, params));
+    return new FunctionExpression(Function.CASE, params);
   }
 
   public static IsCondition sqlFalse() {
@@ -350,8 +378,8 @@ public class SqlUtils {
   }
 
   public static IsExpression sqlIf(IsCondition cond, Object ifTrue, Object ifFalse) {
-    return expression(new SqlCommand(Keyword.IF,
-        ImmutableMap.of("condition", cond, "ifTrue", ifTrue, "ifFalse", ifFalse)));
+    return new FunctionExpression(Function.IF,
+        ImmutableMap.of("condition", cond, "ifTrue", ifTrue, "ifFalse", ifFalse));
   }
 
   public static IsCondition sqlTrue() {
@@ -359,7 +387,7 @@ public class SqlUtils {
   }
 
   public static IsCondition startsWith(IsExpression expr, String value) {
-    return like(expr, value + "%");
+    return compare(expr, Operator.STARTS, constant(value));
   }
 
   public static IsCondition startsWith(String source, String field, String value) {
@@ -375,14 +403,14 @@ public class SqlUtils {
     if (BeeUtils.isEmpty(tmp)) {
       return temporaryName();
     }
-    return new SqlCommand(Keyword.TEMPORARY_NAME, ImmutableMap.of("name", (Object) tmp)).getQuery();
+    return new SqlCommand(SqlKeyword.TEMPORARY_NAME, ImmutableMap.of("name", (Object) tmp))
+        .getQuery();
   }
 
   public static String uniqueName() {
     return BeeUtils.randomString(3, 3, 'a', 'z');
   }
 
-  // TODO to BeeUtils.join(...)
   static <T> Collection<T> addCollection(Collection<T> destination, Collection<T> source) {
     if (!BeeUtils.isEmpty(source)) {
       if (BeeUtils.isEmpty(destination)) {
@@ -394,7 +422,7 @@ public class SqlUtils {
     return destination;
   }
 
-  private static Map<String, Object> getConstraintMap(Keyword type, String table, String name,
+  private static Map<String, Object> getConstraintMap(SqlKeyword type, String table, String name,
       String... fields) {
     IsExpression fldList;
 
@@ -415,6 +443,17 @@ public class SqlUtils {
     params.put("name", name(name));
     params.put("type", type);
     params.put("fields", fldList);
+    return params;
+  }
+
+  private static Map<String, Object> getMemberMap(Object... members) {
+    Map<String, Object> params = Maps.newHashMap();
+
+    if (!BeeUtils.isEmpty(members)) {
+      for (int i = 0; i < members.length; i++) {
+        params.put("member" + i, members[i]);
+      }
+    }
     return params;
   }
 

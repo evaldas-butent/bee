@@ -41,13 +41,13 @@ import com.butent.bee.client.ui.HasTextDimensions;
 import com.butent.bee.client.utils.JsonUtils;
 import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.view.edit.Editor;
-import com.butent.bee.client.view.search.SearchType;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.client.widget.InputSpinner;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.cache.CachingPolicy;
+import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.view.RelationInfo;
 import com.butent.bee.shared.ui.EditorAction;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -106,7 +106,7 @@ public class DataSelector extends Complex implements Editor, HasTextDimensions {
     private void cancelSelection() {
       getMenu().selectItem(null);
     }
-    
+
     private MenuBar getMenu() {
       return menu;
     }
@@ -145,11 +145,11 @@ public class DataSelector extends Complex implements Editor, HasTextDimensions {
       item.getCommand().execute();
       return true;
     }
-    
+
     private void hide() {
       getPopup().hide();
     }
-    
+
     private boolean isItemSelected() {
       if (isShowing()) {
         return getMenu().getSelectedItem() != null;
@@ -223,7 +223,7 @@ public class DataSelector extends Complex implements Editor, HasTextDimensions {
 
       getPopup().showRelativeTo(target);
     }
-    
+
     private void start() {
       getPopup().show();
       getPopup().setVisible(false);
@@ -234,7 +234,7 @@ public class DataSelector extends Complex implements Editor, HasTextDimensions {
 
     public void onKeyDown(KeyDownEvent event) {
       boolean hasModifiers = EventUtils.hasModifierKey(event.getNativeEvent());
-      
+
       switch (event.getNativeKeyCode()) {
         case KeyCodes.KEY_DOWN:
           EventUtils.eatEvent(event.getNativeEvent());
@@ -289,7 +289,7 @@ public class DataSelector extends Complex implements Editor, HasTextDimensions {
             exit(true);
           }
           break;
-          
+
         case 113:
           EventUtils.eatEvent(event.getNativeEvent());
           getOracle().rotateCaching();
@@ -351,16 +351,21 @@ public class DataSelector extends Complex implements Editor, HasTextDimensions {
 
   private class SearchTypeEvents implements ClickHandler {
     public void onClick(ClickEvent event) {
-      SearchType[] constants = SearchType.class.getEnumConstants();
-      SearchType oldType = getSearchType();
+      Operator[] constants = Operator.class.getEnumConstants();
+      Operator oldType = getSearchType();
+      int index = -1;
+      int start = 0;
 
-      int index;
-      if (oldType == null || oldType.ordinal() >= constants.length - 1) {
-        index = 0;
-      } else {
-        index = oldType.ordinal() + 1;
+      if (oldType != null) {
+        start = oldType.ordinal() + 1;
       }
-      setSearchType(constants[index]);
+      for (int i = start; i < constants.length; i++) {
+        if (!BeeUtils.isEmpty(constants[i].toTextString())) {
+          index = i;
+          break;
+        }
+      }
+      setSearchType(index < 0 ? null : constants[index]);
 
       if (event.getSource() instanceof UIObject) {
         ((UIObject) event.getSource()).getElement().setInnerHTML(getSearchSymbol());
@@ -392,7 +397,7 @@ public class DataSelector extends Complex implements Editor, HasTextDimensions {
       return rowId;
     }
   }
-  
+
   private static final String ITEM_PREV = String.valueOf('\u25b2');
 
   private static final String ITEM_NEXT = String.valueOf('\u25bc');
@@ -413,7 +418,7 @@ public class DataSelector extends Complex implements Editor, HasTextDimensions {
   private static final int DEFAULT_VISIBLE_LINES = 10;
   private static final int DEFAULT_CHARACTER_WIDTH = -1;
 
-  private static final SearchType DEFAULT_SEARCH_TYPE = SearchType.CONTAINS;
+  private static final Operator DEFAULT_SEARCH_TYPE = Operator.CONTAINS;
 
   private static final CachingPolicy DEFAULT_CACHING_POLICY = CachingPolicy.FULL;
   private static final int DEFAULT_CACHING_THRESHOLD = 1000;
@@ -434,7 +439,7 @@ public class DataSelector extends Complex implements Editor, HasTextDimensions {
 
   private int characterWidth = DEFAULT_CHARACTER_WIDTH;
 
-  private SearchType searchType = DEFAULT_SEARCH_TYPE;
+  private Operator searchType = DEFAULT_SEARCH_TYPE;
 
   private CachingPolicy cachingPolicy = DEFAULT_CACHING_POLICY;
   private int cachingThreshold = DEFAULT_CACHING_THRESHOLD;
@@ -458,7 +463,7 @@ public class DataSelector extends Complex implements Editor, HasTextDimensions {
   private Request lastRequest = null;
   private int offset = 0;
   private boolean hasMore = false;
-  
+
   public DataSelector(RelationInfo relationInfo, JSONObject options) {
     super();
 
@@ -475,7 +480,7 @@ public class DataSelector extends Complex implements Editor, HasTextDimensions {
     this.input = new InputText();
     this.display = new Display(this);
     this.limitWidget = new InputSpinner(DEFAULT_VISIBLE_LINES, 1, 99);
-    
+
     input.addStyleName(STYLE_INPUT);
     add(input);
 
@@ -506,7 +511,7 @@ public class DataSelector extends Complex implements Editor, HasTextDimensions {
 
     inputEvents.addKeyHandlersTo(input);
     input.addMouseWheelHandler(inputEvents);
-    
+
     label.addClickHandler(typeEvents);
   }
 
@@ -611,7 +616,7 @@ public class DataSelector extends Complex implements Editor, HasTextDimensions {
 
     setLastRequest(null);
     setOffset(0);
-    
+
     getDisplay().start();
     getInput().setFocus(true);
 
@@ -641,7 +646,7 @@ public class DataSelector extends Complex implements Editor, HasTextDimensions {
 
   private void askOracle() {
     String query = BeeUtils.trim(getInput().getText());
-    SearchType type = getSearchType();
+    Operator type = getSearchType();
     int start = getOffset();
     int size = getVisibleLines();
 
@@ -712,12 +717,12 @@ public class DataSelector extends Complex implements Editor, HasTextDimensions {
 
   private String getSearchSymbol() {
     if (getSearchType() == null) {
-      return BeeConst.STRING_EMPTY;
+      return "?";
     }
-    return String.valueOf(getSearchType().getSymbol());
+    return getSearchType().toTextString();
   }
 
-  private SearchType getSearchType() {
+  private Operator getSearchType() {
     return searchType;
   }
 
@@ -737,7 +742,7 @@ public class DataSelector extends Complex implements Editor, HasTextDimensions {
     if (options.containsKey(OPTION_SEARCH_TYPE)) {
       String search = JsonUtils.getString(options, OPTION_SEARCH_TYPE);
       if (!BeeUtils.isEmpty(search)) {
-        SearchType type = BeeUtils.getConstant(SearchType.class, search);
+        Operator type = BeeUtils.getConstant(Operator.class, search);
         if (type != null) {
           setSearchType(type);
         }
@@ -807,11 +812,11 @@ public class DataSelector extends Complex implements Editor, HasTextDimensions {
   }
 
   private boolean isInstant() {
-    SearchType type = getSearchType();
+    Operator type = getSearchType();
     if (type == null) {
       return false;
     } else {
-      return type == SearchType.CONTAINS || type == SearchType.STARTS;
+      return type.isStringOperator();
     }
   }
 
@@ -821,7 +826,7 @@ public class DataSelector extends Complex implements Editor, HasTextDimensions {
       askOracle();
     }
   }
-  
+
   private void nextPage() {
     if (hasMore()) {
       setOffset(getOffset() + getVisibleLines());
@@ -863,10 +868,10 @@ public class DataSelector extends Complex implements Editor, HasTextDimensions {
     this.offset = offset;
   }
 
-  private void setSearchType(SearchType searchType) {
+  private void setSearchType(Operator searchType) {
     this.searchType = searchType;
   }
-  
+
   private void setSelectedValue(String selectedValue) {
     this.selectedValue = selectedValue;
   }

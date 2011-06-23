@@ -6,7 +6,7 @@ import com.google.common.primitives.Ints;
 
 import com.butent.bee.server.data.BeeTable.BeeField;
 import com.butent.bee.server.sql.BeeConstants.DataType;
-import com.butent.bee.server.sql.CompoundCondition;
+import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.IsExpression;
 import com.butent.bee.server.sql.SqlSelect;
@@ -20,11 +20,8 @@ import com.butent.bee.shared.data.filter.ColumnValueFilter;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.NegationFilter;
-import com.butent.bee.shared.data.filter.Operator;
-import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.ExtendedProperty;
-import com.butent.bee.shared.utils.LogUtils;
 import com.butent.bee.shared.utils.PropertyUtils;
 
 import java.util.Collection;
@@ -135,78 +132,35 @@ public class BeeView implements HasExtendedInfo {
   }
 
   public IsCondition getCondition(ColumnColumnFilter filter) {
-    IsCondition condition = null;
-    String firstName = filter.getFirstColumn().toLowerCase();
-    String secondName = filter.getSecondColumn().toLowerCase();
-    String err = null;
-    String als = getAlias(firstName);
+    String firstName = filter.getFirstColumn();
+    String secondName = filter.getSecondColumn();
+    IsExpression firstSrc = SqlUtils.field(getAlias(firstName), getField(firstName));
+    IsExpression secondSrc = SqlUtils.field(getAlias(secondName), getField(secondName));
 
-    if (!BeeUtils.isEmpty(als)) {
-      IsExpression firstSrc = SqlUtils.field(als, getField(firstName));
-      als = getAlias(secondName);
-
-      if (!BeeUtils.isEmpty(als)) {
-        IsExpression secondSrc = SqlUtils.field(als, getField(secondName));
-        condition = SqlUtils.compare(firstSrc, filter.getOperator(), secondSrc);
-      } else {
-        err = secondName;
-      }
-    } else {
-      err = firstName;
-    }
-    if (!BeeUtils.isEmpty(err)) {
-      LogUtils.warning(LogUtils.getDefaultLogger(), "Column " + err + " is not initialized");
-    }
-    return condition;
+    return SqlUtils.compare(firstSrc, filter.getOperator(), secondSrc);
   }
 
   public IsCondition getCondition(ColumnIsEmptyFilter filter) {
-    IsCondition condition = null;
     String colName = filter.getColumn();
     String als = getAlias(colName);
+    String fld = getField(colName);
+    IsCondition condition = SqlUtils.equal(als, fld, getType(colName).getEmptyValue());
 
-    if (!BeeUtils.isEmpty(als)) {
-      String fld = getField(colName);
-      condition = SqlUtils.equal(als, fld, getType(colName).getEmptyValue());
-
-      if (!isNotNull(colName)) {
-        condition = SqlUtils.or(SqlUtils.isNull(als, fld), condition);
-      }
-    } else {
-      condition = SqlUtils.sqlTrue();
+    if (!isNotNull(colName)) {
+      condition = SqlUtils.or(SqlUtils.isNull(als, fld), condition);
     }
     return condition;
   }
 
   public IsCondition getCondition(ColumnValueFilter filter) {
-    IsCondition condition = null;
     String colName = filter.getColumn();
-    String als = getAlias(colName);
 
-    if (!BeeUtils.isEmpty(als)) {
-      IsExpression src = SqlUtils.field(als, getField(colName));
-      Operator op = filter.getOperator();
-      Value value = filter.getValue();
-
-      if (Operator.LIKE == op) {
-        String val = value.getString();
-
-        if (filter.hasLikeCharacters(val)) { // TODO: create LIKE and CONTAINS operators
-          condition = SqlUtils.like(src, val);
-        } else {
-          condition = SqlUtils.contains(src, val);
-        }
-      } else {
-        condition = SqlUtils.compare(src, op, SqlUtils.constant(value));
-      }
-    } else {
-      LogUtils.warning(LogUtils.getDefaultLogger(), "Column " + colName + " is not initialized");
-    }
-    return condition;
+    return SqlUtils.compare(SqlUtils.field(getAlias(colName), getField(colName)),
+        filter.getOperator(), SqlUtils.constant(filter.getValue()));
   }
 
   public IsCondition getCondition(CompoundFilter filter) {
-    CompoundCondition condition = null;
+    HasConditions condition = null;
     List<Filter> subFilters = filter.getSubFilters();
 
     if (!BeeUtils.isEmpty(subFilters)) {
@@ -451,9 +405,8 @@ public class BeeView implements HasExtendedInfo {
       if (BeeUtils.isEmpty(als)) {
         als = SqlUtils.uniqueName();
         vf.setTargetAlias(als);
-        IsCondition join =
-            SqlUtils.join(vf.getAlias(), vf.getField(), als,
-                tables.get(tbl.toLowerCase()).getIdName());
+        IsCondition join = SqlUtils.join(vf.getAlias(), vf.getField(), als,
+            tables.get(BeeUtils.normalize(tbl)).getIdName());
 
         switch (joinMode) {
           case '<':

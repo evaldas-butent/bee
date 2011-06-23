@@ -1,10 +1,14 @@
 package com.butent.bee.server.sql;
 
+import com.google.common.collect.Maps;
+
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.filter.Operator;
+import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Generates comparison condition parts for SQL statements depending on specific SQL server
@@ -14,49 +18,62 @@ import java.util.List;
 
 class ComparisonCondition implements IsCondition {
 
-  private final IsExpression leftExpression;
   private final Operator operator;
-  private final Object rightExpression;
+  private final IsExpression expression;
+  private final IsSql[] values;
 
-  public ComparisonCondition(IsExpression left, Operator op, IsExpression right) {
-    Assert.noNulls(left, op, right);
+  public ComparisonCondition(Operator operator, IsExpression expression, IsSql... values) {
+    Assert.noNulls(operator, expression);
 
-    leftExpression = left;
-    operator = op;
-    rightExpression = right;
-  }
-
-  public ComparisonCondition(IsExpression left, Operator op, SqlSelect right) {
-    Assert.noNulls(left, op, right);
-    Assert.state(!right.isEmpty());
-
-    leftExpression = left;
-    operator = op;
-    rightExpression = right;
+    this.operator = operator;
+    this.expression = expression;
+    this.values = values;
   }
 
   @Override
   public Collection<String> getSources() {
     Collection<String> sources = null;
 
-    if (rightExpression instanceof HasSource) {
-      sources = ((HasSource) rightExpression).getSources();
+    if (!BeeUtils.isEmpty(values)) {
+      for (IsSql value : values) {
+        if (value instanceof HasSource) {
+          sources = SqlUtils.addCollection(sources, ((HasSource) value).getSources());
+        }
+      }
     }
     return sources;
   }
 
   @Override
   public List<Object> getSqlParams() {
-    return ((IsSql) rightExpression).getSqlParams();
+    List<Object> paramList = null;
+
+    if (!BeeUtils.isEmpty(values)) {
+      for (IsSql value : values) {
+        paramList = (List<Object>) SqlUtils.addCollection(paramList, value.getSqlParams());
+      }
+    }
+    return paramList;
   }
 
   @Override
   public String getSqlString(SqlBuilder builder, boolean paramMode) {
-    String expr = ((IsSql) rightExpression).getSqlString(builder, paramMode);
+    Assert.notEmpty(builder);
+    Map<String, String> params = Maps.newHashMap();
+    params.put("expression", expression.getSqlString(builder, false));
 
-    if (rightExpression instanceof SqlSelect) {
-      expr = "(" + expr + ")";
+    if (!BeeUtils.isEmpty(values)) {
+      int i = 0;
+
+      for (IsSql value : values) {
+        String val = value.getSqlString(builder, paramMode);
+
+        if (value instanceof SqlSelect) {
+          val = BeeUtils.parenthesize(val);
+        }
+        params.put("value" + i++, val);
+      }
     }
-    return leftExpression.getSqlString(builder, false) + operator.toSqlString() + expr;
+    return builder.sqlCondition(operator, params);
   }
 }

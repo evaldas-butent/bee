@@ -3,7 +3,7 @@ package com.butent.bee.shared.data.filter;
 import com.butent.bee.shared.utils.BeeUtils;
 
 /**
- * Contains a list of possible comparison operators, like equals, more, less, like, in, is.
+ * Contains a list of possible comparison operators.
  */
 
 public enum Operator {
@@ -13,9 +13,16 @@ public enum Operator {
   GT(">"),
   LE("<="),
   GE(">="),
-  LIKE("$", " LIKE "),
-  IN(null, " IN "),
-  IS(null, " IS ");
+  STARTS("^"),
+  ENDS("*"),
+  CONTAINS("$"),
+  MATCHES("~"),
+  IN,
+  IS_NULL,
+  NOT_NULL;
+
+  public static final String CHAR_ANY = "*";
+  public static final String CHAR_ONE = "?";
 
   public static Operator detectOperator(String expr) {
     Operator op = null;
@@ -46,19 +53,20 @@ public enum Operator {
   }
 
   private String textString;
-  private String sqlString;
+
+  Operator() {
+    this.textString = null;
+  }
 
   Operator(String textString) {
-    this(textString, null);
-  }
-
-  Operator(String textString, String sqlString) {
     this.textString = textString;
-    this.sqlString = sqlString;
   }
 
-  public String toSqlString() {
-    return BeeUtils.ifString(sqlString, textString);
+  public boolean isStringOperator() {
+    return this == Operator.STARTS
+        || this == Operator.ENDS
+        || this == Operator.CONTAINS
+        || this == Operator.MATCHES;
   }
 
   public String toTextString() {

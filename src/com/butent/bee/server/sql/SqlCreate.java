@@ -1,7 +1,7 @@
 package com.butent.bee.server.sql;
 
 import com.butent.bee.server.sql.BeeConstants.DataType;
-import com.butent.bee.server.sql.BeeConstants.Keyword;
+import com.butent.bee.server.sql.BeeConstants.SqlKeyword;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -21,9 +21,9 @@ public class SqlCreate extends SqlQuery<SqlCreate> {
     private final DataType type;
     private final int precision;
     private final int scale;
-    private final Keyword[] options;
+    private final SqlKeyword[] options;
 
-    private SqlField(String name, DataType type, int precision, int scale, Keyword... options) {
+    private SqlField(String name, DataType type, int precision, int scale, SqlKeyword... options) {
       Assert.notEmpty(name);
       Assert.notEmpty(type);
 
@@ -32,14 +32,14 @@ public class SqlCreate extends SqlQuery<SqlCreate> {
       this.precision = precision;
       this.scale = scale;
 
-      List<Keyword> opts = new ArrayList<Keyword>();
+      List<SqlKeyword> opts = new ArrayList<SqlKeyword>();
 
-      for (Keyword opt : options) {
+      for (SqlKeyword opt : options) {
         if (!BeeUtils.isEmpty(opt)) {
           opts.add(opt);
         }
       }
-      this.options = opts.toArray(new Keyword[0]);
+      this.options = opts.toArray(new SqlKeyword[0]);
     }
 
     /**
@@ -55,7 +55,7 @@ public class SqlCreate extends SqlQuery<SqlCreate> {
     /**
      * @return a Keyword list as a Keyword array
      */
-    public Keyword[] getOptions() {
+    public SqlKeyword[] getOptions() {
       return options;
     }
 
@@ -116,7 +116,7 @@ public class SqlCreate extends SqlQuery<SqlCreate> {
    * @param options additional Keywords
    * @return the object's SqlCreate instance
    */
-  public SqlCreate addBoolean(String field, Keyword... options) {
+  public SqlCreate addBoolean(String field, SqlKeyword... options) {
     return addField(field, DataType.BOOLEAN, 0, 0, options);
   }
 
@@ -129,7 +129,7 @@ public class SqlCreate extends SqlQuery<SqlCreate> {
    * @param options additional Keywords
    * @return object's SqlCreate instance
    */
-  public SqlCreate addChar(String field, int precision, Keyword... options) {
+  public SqlCreate addChar(String field, int precision, SqlKeyword... options) {
     Assert.isPositive(precision);
     return addField(field, DataType.CHAR, precision, 0, options);
   }
@@ -141,7 +141,7 @@ public class SqlCreate extends SqlQuery<SqlCreate> {
    * @param options additional Keywords
    * @return object's SqlCreate instance
    */
-  public SqlCreate addDate(String field, Keyword... options) {
+  public SqlCreate addDate(String field, SqlKeyword... options) {
     return addField(field, DataType.DATE, 0, 0, options);
   }
 
@@ -152,7 +152,7 @@ public class SqlCreate extends SqlQuery<SqlCreate> {
    * @param options additional Keywords
    * @return object's SqlCreate instance
    */
-  public SqlCreate addDateTime(String field, Keyword... options) {
+  public SqlCreate addDateTime(String field, SqlKeyword... options) {
     return addField(field, DataType.DATETIME, 0, 0, options);
   }
 
@@ -166,7 +166,7 @@ public class SqlCreate extends SqlQuery<SqlCreate> {
    * @param options additional Keywords
    * @return object's SqlCreate instance
    */
-  public SqlCreate addDecimal(String field, int precision, int scale, Keyword... options) {
+  public SqlCreate addDecimal(String field, int precision, int scale, SqlKeyword... options) {
     Assert.isPositive(precision);
     Assert.nonNegative(scale);
     return addField(field, DataType.DECIMAL, precision, scale, options);
@@ -179,7 +179,7 @@ public class SqlCreate extends SqlQuery<SqlCreate> {
    * @param options additional Keywords
    * @return object's SqlCreate instance
    */
-  public SqlCreate addDouble(String field, Keyword... options) {
+  public SqlCreate addDouble(String field, SqlKeyword... options) {
     return addField(field, DataType.DOUBLE, 0, 0, options);
   }
 
@@ -196,7 +196,7 @@ public class SqlCreate extends SqlQuery<SqlCreate> {
    * @return object's SqlCreate instance
    */
   public SqlCreate addField(String field, DataType type, int precision, int scale,
-      Keyword... options) {
+      SqlKeyword... options) {
     Assert.state(BeeUtils.isEmpty(dataSource));
     Assert.notEmpty(field);
     Assert.state(!hasField(field), "Field " + field + " already exist");
@@ -213,7 +213,7 @@ public class SqlCreate extends SqlQuery<SqlCreate> {
    * @param options additional Keywords
    * @return object's SqlCreate instance
    */
-  public SqlCreate addInteger(String field, Keyword... options) {
+  public SqlCreate addInteger(String field, SqlKeyword... options) {
     return addField(field, DataType.INTEGER, 0, 0, options);
   }
 
@@ -224,7 +224,7 @@ public class SqlCreate extends SqlQuery<SqlCreate> {
    * @param options additional Keywords
    * @return object's SqlCreate instance
    */
-  public SqlCreate addLong(String field, Keyword... options) {
+  public SqlCreate addLong(String field, SqlKeyword... options) {
     return addField(field, DataType.LONG, 0, 0, options);
   }
 
@@ -237,7 +237,7 @@ public class SqlCreate extends SqlQuery<SqlCreate> {
    * @param options additional Keywords
    * @return object's SqlCreate instance
    */
-  public SqlCreate addString(String field, int precision, Keyword... options) {
+  public SqlCreate addString(String field, int precision, SqlKeyword... options) {
     Assert.isPositive(precision);
     return addField(field, DataType.STRING, precision, 0, options);
   }

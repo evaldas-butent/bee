@@ -1,7 +1,8 @@
 package com.butent.bee.server.sql;
 
 import com.butent.bee.server.sql.BeeConstants.DataType;
-import com.butent.bee.server.sql.BeeConstants.Keyword;
+import com.butent.bee.server.sql.BeeConstants.Function;
+import com.butent.bee.server.sql.BeeConstants.SqlKeyword;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Map;
@@ -12,7 +13,19 @@ import java.util.Map;
 
 class OracleSqlBuilder extends SqlBuilder {
 
-  protected String sqlKeyword(Keyword option, Map<String, Object> params) {
+  @Override
+  protected String sqlFunction(Function function, Map<String, Object> params) {
+    switch (function) {
+      case BITAND:
+        return "BITAND(" + params.get("expression") + ", " + params.get("value") + ")";
+
+      default:
+        return super.sqlFunction(function, params);
+    }
+  }
+
+  @Override
+  protected String sqlKeyword(SqlKeyword option, Map<String, Object> params) {
     switch (option) {
       case DB_SCHEMA:
         return "SELECT sys_context('USERENV', 'CURRENT_SCHEMA') AS " + sqlQuote("dbSchema")
@@ -74,7 +87,7 @@ class OracleSqlBuilder extends SqlBuilder {
         if (!BeeUtils.isEmpty(prm)) {
           IsCondition typeWh = null;
 
-          for (Keyword type : (Keyword[]) prm) {
+          for (SqlKeyword type : (SqlKeyword[]) prm) {
             String tp;
 
             switch (type) {
@@ -138,9 +151,6 @@ class OracleSqlBuilder extends SqlBuilder {
 
       case TEMPORARY:
         return "";
-
-      case BITAND:
-        return "BITAND(" + params.get("expression") + ", " + params.get("value") + ")";
 
       default:
         return super.sqlKeyword(option, params);

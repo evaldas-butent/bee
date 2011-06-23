@@ -1054,7 +1054,7 @@ public class TestIsCondition {
     select.addFields("Table1", "field11", "field12");
     select.addFrom("Table1");
 
-    select.setWhere(SqlUtils.like("Table2", "field21", "val22"));
+    select.setWhere(SqlUtils.matches("Table2", "field21", "val22"));
 
     assertEquals(query + "Table2.field21 LIKE 'val22'", select.getQuery());
 
@@ -1062,7 +1062,7 @@ public class TestIsCondition {
     select.addFields("Table1", "field11", "field12");
     select.addFrom("Table1");
 
-    select.setWhere(SqlUtils.like("Table2", "field21", ""));
+    select.setWhere(SqlUtils.matches("Table2", "field21", ""));
 
     assertEquals(query + "Table2.field21 LIKE ''", select.getQuery());
 
@@ -1070,7 +1070,7 @@ public class TestIsCondition {
     select.addFields("Table1", "field11", "field12");
     select.addFrom("Table1");
 
-    select.setWhere(SqlUtils.like("Table2", "field21", null));
+    select.setWhere(SqlUtils.matches("Table2", "field21", null));
 
     assertEquals(query + "Table2.field21 LIKE null", select.getQuery());
 
@@ -1079,7 +1079,7 @@ public class TestIsCondition {
       select.addFields("Table1", "field11", "field12");
       select.addFrom("Table1");
 
-      select.setWhere(SqlUtils.like("Table2", "", "val22"));
+      select.setWhere(SqlUtils.matches("Table2", "", "val22"));
 
       fail("Exceptions not work: " + select.getQuery());
 
@@ -1095,7 +1095,7 @@ public class TestIsCondition {
       select.addFields("Table1", "field11", "field12");
       select.addFrom("Table1");
 
-      select.setWhere(SqlUtils.like("Table2", null, "val22"));
+      select.setWhere(SqlUtils.matches("Table2", null, "val22"));
 
       fail("Exceptions not work: " + select.getQuery());
 
@@ -1111,7 +1111,7 @@ public class TestIsCondition {
       select.addFields("Table1", "field11", "field12");
       select.addFrom("Table1");
 
-      select.setWhere(SqlUtils.like("", "field21", "val22"));
+      select.setWhere(SqlUtils.matches("", "field21", "val22"));
 
       fail("Exceptions not work: " + select.getQuery());
 
@@ -1127,7 +1127,7 @@ public class TestIsCondition {
       select.addFields("Table1", "field11", "field12");
       select.addFrom("Table1");
 
-      select.setWhere(SqlUtils.like(null, "field21", "val22"));
+      select.setWhere(SqlUtils.matches(null, "field21", "val22"));
 
       fail("Exceptions not work: " + select.getQuery());
 

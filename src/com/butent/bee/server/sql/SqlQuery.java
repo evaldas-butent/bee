@@ -7,8 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Is an abstract class for SQL queries forming classes and indicates to use SQL 
- * builder classes.
+ * Is an abstract class for SQL queries forming classes and indicates to use SQL builder classes.
  * 
  * @param <T> used for reference getting.
  */
@@ -34,8 +33,7 @@ abstract class SqlQuery<T> implements IsQuery {
   }
 
   /**
-   * @return a query using the specified builder {@code builder} and parameter 
-   * mode
+   * @return a query using the specified builder {@code builder} and parameter mode
    */
   @Override
   public String getQuery(SqlBuilder builder) {
@@ -43,8 +41,8 @@ abstract class SqlQuery<T> implements IsQuery {
   }
 
   /**
-   * Returns a map with parameters listed from the beggining to the end.
-   * E.g {1 = "table1", 2 = '5'}.
+   * Returns a map with parameters listed from the beginning to the end. E.g {1 = "table1", 2 =
+   * '5'}.
    * 
    * @return a parameter map.
    */

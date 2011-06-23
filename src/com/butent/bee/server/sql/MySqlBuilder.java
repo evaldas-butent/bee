@@ -1,7 +1,8 @@
 package com.butent.bee.server.sql;
 
 import com.butent.bee.server.sql.BeeConstants.DataType;
-import com.butent.bee.server.sql.BeeConstants.Keyword;
+import com.butent.bee.server.sql.BeeConstants.Function;
+import com.butent.bee.server.sql.BeeConstants.SqlKeyword;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -14,7 +15,54 @@ import java.util.Map;
 class MySqlBuilder extends SqlBuilder {
 
   @Override
-  protected String sqlKeyword(Keyword option, Map<String, Object> params) {
+  protected String sqlFunction(Function function, Map<String, Object> params) {
+    switch (function) {
+      case CAST:
+        String sql = "CAST(" + params.get("expression");
+        String dataType;
+        DataType type = (DataType) params.get("type");
+        int precision = (Integer) params.get("precision");
+        int scale = (Integer) params.get("scale");
+
+        switch (type) {
+          case BOOLEAN:
+            dataType = "DECIMAL(1)";
+            break;
+
+          case INTEGER:
+          case DATE:
+            dataType = "DECIMAL(10)";
+            break;
+
+          case LONG:
+          case DATETIME:
+            dataType = "DECIMAL(19)";
+            break;
+
+          case DOUBLE:
+            dataType = "DECIMAL(65, 30)";
+            break;
+
+          case DECIMAL:
+            dataType = "DECIMAL(" + precision + ", " + scale + ")";
+            break;
+
+          case STRING:
+            dataType = "CHAR(" + precision + ")";
+            break;
+
+          default:
+            dataType = super.sqlType(type, precision, scale);
+        }
+        return BeeUtils.concat(1, sql, "AS", dataType + ")");
+
+      default:
+        return super.sqlFunction(function, params);
+    }
+  }
+
+  @Override
+  protected String sqlKeyword(SqlKeyword option, Map<String, Object> params) {
     switch (option) {
       case DB_SCHEMA:
         return "SELECT schema() AS " + sqlQuote("dbSchema");
@@ -69,45 +117,6 @@ class MySqlBuilder extends SqlBuilder {
         return BeeUtils.concat(1,
             "ALTER TABLE", params.get("table"),
             "DROP FOREIGN KEY", params.get("name"));
-
-      case CAST:
-        sql = "CAST(" + params.get("expression");
-        String dataType;
-        DataType type = (DataType) params.get("type");
-        int precision = (Integer) params.get("precision");
-        int scale = (Integer) params.get("scale");
-
-        switch (type) {
-          case BOOLEAN:
-            dataType = "DECIMAL(1)";
-            break;
-
-          case INTEGER:
-          case DATE:
-            dataType = "DECIMAL(10)";
-            break;
-
-          case LONG:
-          case DATETIME:
-            dataType = "DECIMAL(19)";
-            break;
-
-          case DOUBLE:
-            dataType = "DECIMAL(65, 30)";
-            break;
-
-          case DECIMAL:
-            dataType = "DECIMAL(" + precision + ", " + scale + ")";
-            break;
-
-          case STRING:
-            dataType = "CHAR(" + precision + ")";
-            break;
-
-          default:
-            dataType = super.sqlType(type, precision, scale);
-        }
-        return BeeUtils.concat(1, sql, "AS", dataType + ")");
 
       default:
         return super.sqlKeyword(option, params);

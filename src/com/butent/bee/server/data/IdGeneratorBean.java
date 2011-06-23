@@ -62,7 +62,10 @@ public class IdGeneratorBean {
 
         lastId = BeeUtils.unbox(qs.getLong(new SqlSelect().addMax(source, idFld).addFrom(source)));
 
-        qs.updateData(new SqlUpdate(ID_TABLE).addConstant(ID_LAST, lastId).setWhere(wh));
+        qs.updateData(new SqlUpdate(ID_TABLE)
+            .addConstant(sys.getIdName(ID_TABLE), System.currentTimeMillis())
+            .addConstant(ID_LAST, lastId)
+            .setWhere(wh));
       }
     }
     idCache.clear();
@@ -84,8 +87,8 @@ public class IdGeneratorBean {
     IsCondition wh = SqlUtils.equal(ID_TABLE, ID_KEY, source);
 
     SqlUpdate su = new SqlUpdate(ID_TABLE)
-        .addExpression(ID_LAST,
-            SqlUtils.expression(SqlUtils.name(ID_LAST), "+", SqlUtils.constant(idChunk)))
+        .addConstant(sys.getIdName(ID_TABLE), System.currentTimeMillis())
+        .addExpression(ID_LAST, SqlUtils.plus(SqlUtils.name(ID_LAST), SqlUtils.constant(idChunk)))
         .setWhere(wh);
 
     long lastId;

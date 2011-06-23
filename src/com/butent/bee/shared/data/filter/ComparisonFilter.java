@@ -24,7 +24,7 @@ public abstract class ComparisonFilter extends Filter {
     String rightColumn = right.getId();
     ValueType rightType = right.getType();
 
-    if (leftType != rightType) {
+    if (!BeeUtils.same(leftType.getGroupCode(), rightType.getGroupCode())) {
       LogUtils.warning(LogUtils.getDefaultLogger(),
           "Incompatible column types: " +
               leftColumn + BeeUtils.parenthesize(leftType) + " AND " +
@@ -36,6 +36,11 @@ public abstract class ComparisonFilter extends Filter {
 
   public static Filter compareWithValue(IsColumn column, Operator op, String value) {
     Assert.notNull(column);
+
+    if (ValueType.isNumeric(column.getType()) && !BeeUtils.isDouble(value)) {
+      LogUtils.warning(LogUtils.getDefaultLogger(), "Not a numeric value: " + value);
+      return null;
+    }
     return new ColumnValueFilter(column.getId(), op,
         Value.parseValue(column.getType(), value, true));
   }
@@ -82,10 +87,6 @@ public abstract class ComparisonFilter extends Filter {
     return result;
   }
 
-  public boolean hasLikeCharacters(String xpr) {
-    return xpr.matches("^.*[%_].*$");
-  }
-
   protected boolean isOperatorMatch(Value v1, Value v2) {
     if (v1.isNull() || v2.isNull()) {
       return false;
@@ -103,13 +104,15 @@ public abstract class ComparisonFilter extends Filter {
         return (v1.compareTo(v2) <= 0);
       case GE:
         return (v1.compareTo(v2) >= 0);
-      case LIKE:
-        String val = v2.toString();
+      case STARTS:
+        return v1.toString().toLowerCase().startsWith(v2.toString().toLowerCase());
+      case ENDS:
+        return v1.toString().toLowerCase().endsWith(v2.toString().toLowerCase());
+      case CONTAINS:
+        return v1.toString().toLowerCase().contains(v2.toString().toLowerCase());
+      case MATCHES:
+        return isLike(v1.toString().toLowerCase(), v2.toString().toLowerCase());
 
-        if (hasLikeCharacters(val)) {
-          return isLike(v1.toString(), val);
-        }
-        return v1.toString().contains(val);
       default:
         Assert.unsupported();
     }
@@ -121,18 +124,21 @@ public abstract class ComparisonFilter extends Filter {
   }
 
   private boolean isLike(String s1, String s2) {
-    StringTokenizer tokenizer = new StringTokenizer(s2, "%_", true);
+    StringTokenizer tokenizer =
+        new StringTokenizer(s2, Operator.CHAR_ANY + Operator.CHAR_ONE, true);
     StringBuilder regexp = new StringBuilder();
 
     while (tokenizer.hasMoreTokens()) {
       String s = tokenizer.nextToken();
 
-      if (s.equals("%")) {
+      if (s.equals(Operator.CHAR_ANY)) {
         regexp.append(".*");
-      } else if (s.equals("_")) {
+      } else if (s.equals(Operator.CHAR_ONE)) {
         regexp.append(".");
       } else {
-        regexp.append(s.replace(".", "\\.").replace("*", "\\*"));
+        for (char c : s.toCharArray()) {
+          regexp.append("\\").append(c);
+        }
       }
     }
     return s1.matches(regexp.toString());

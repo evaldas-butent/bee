@@ -8,8 +8,8 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Forms a logically negative expression for a given one according to 
- * requirements of specific SQL servers.
+ * Forms a logically negative condition for a given one according to requirements of specific SQL
+ * servers.
  */
 
 class NegationCondition implements IsCondition {
