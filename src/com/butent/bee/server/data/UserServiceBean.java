@@ -192,6 +192,10 @@ public class UserServiceBean {
     return false;
   }
 
+  public boolean isUserTable(String tblName) {
+    return BeeUtils.inList(tblName, TBL_USERS, TBL_ROLES, TBL_USER_ROLES);
+  }
+
   public LocalizableConstants localConstants() {
     return Localized.getConstants(getCurrentUserInfo().getLocale());
   }

@@ -140,7 +140,7 @@ public abstract class SqlBuilder {
         for (int i = 1; i < params.size(); i++) {
           xpr.append(op).append(params.get("member" + i));
         }
-        return BeeUtils.parenthesize(xpr.toString());
+        return function != Function.BULK ? BeeUtils.parenthesize(xpr.toString()) : xpr.toString();
     }
     Assert.untouchable();
     return null;

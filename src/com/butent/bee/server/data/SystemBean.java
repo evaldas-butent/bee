@@ -276,8 +276,7 @@ public class SystemBean {
       response.addInfo("Update count:", c);
       response.setResponse(changes);
 
-      if (BeeUtils.inList(tblName, UserServiceBean.TBL_USERS, UserServiceBean.TBL_ROLES,
-          UserServiceBean.TBL_USER_ROLES)) {
+      if (usr.isUserTable(tblName)) {
         usr.invalidateCache();
       }
     }
@@ -391,9 +390,7 @@ public class SystemBean {
     }
     ResponseObject response = qs.updateDataWithResponse(new SqlDelete(tblName).setWhere(wh));
 
-    if (!response.hasErrors()
-        && BeeUtils.inList(tblName, UserServiceBean.TBL_USERS, UserServiceBean.TBL_ROLES,
-            UserServiceBean.TBL_USER_ROLES)) {
+    if (!response.hasErrors() && usr.isUserTable(tblName)) {
       usr.invalidateCache();
     }
     return response;
@@ -753,12 +750,13 @@ public class SystemBean {
     String[] dbTables = qs.dbTables(dbName, dbSchema, null);
 
     for (BeeTable table : getTables()) {
-      table.setActive(BeeUtils.inListSame(table.getName(), dbTables));
+      String tblName = table.getName();
+      table.setActive(!usr.isUserTable(tblName) && BeeUtils.inListSame(tblName, dbTables));
 
       Map<String, String[]> tableFields = Maps.newHashMap();
 
       for (BeeState state : table.getStates()) {
-        String tblName = table.getStateTable(state);
+        tblName = table.getStateTable(state);
 
         if (BeeUtils.inListSame(tblName, dbTables) && !tableFields.containsKey(tblName)) {
           tableFields.put(tblName,
@@ -877,8 +875,7 @@ public class SystemBean {
           response.setResponse(newRow);
           response.addInfo("Insert count:", c);
 
-          if (BeeUtils.inList(tblName, UserServiceBean.TBL_USERS, UserServiceBean.TBL_ROLES,
-              UserServiceBean.TBL_USER_ROLES)) {
+          if (usr.isUserTable(tblName)) {
             usr.invalidateCache();
           }
         }
@@ -1101,8 +1098,7 @@ public class SystemBean {
           response.setResponse(newRow);
           response.addInfo("Update count:", c);
 
-          if (BeeUtils.inList(tblName, UserServiceBean.TBL_USERS, UserServiceBean.TBL_ROLES,
-              UserServiceBean.TBL_USER_ROLES)) {
+          if (usr.isUserTable(tblName)) {
             usr.invalidateCache();
           }
         }
