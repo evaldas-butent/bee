@@ -15,7 +15,7 @@ import java.util.Set;
  * Handles deletion of multiple rows event.
  */
 
-public class MultiDeleteEvent extends Event<MultiDeleteEvent.Handler> {
+public class MultiDeleteEvent extends Event<MultiDeleteEvent.Handler> implements DataEvent {
 
   /**
    * Requires implementing classes to have a method to handle multiple row deletion event.

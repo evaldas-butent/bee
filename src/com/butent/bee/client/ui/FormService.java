@@ -81,7 +81,7 @@ public class FormService extends CompositeService {
 
       case SHOW_FORM:
         GwtEvent<?> event = (GwtEvent<?>) params[0];
-        String fName = Global.getVarValue(fld);
+        String fName = BeeUtils.trim(Global.getVarValue(fld));
 
         if (BeeUtils.isEmpty(fName)) {
           Global.showError("Form name not specified");

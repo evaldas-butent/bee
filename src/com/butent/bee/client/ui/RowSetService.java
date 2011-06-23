@@ -240,7 +240,7 @@ public class RowSetService extends CompositeService {
 
       case REQUEST_STATETABLE:
         event = (GwtEvent<?>) params[0];
-        String states = Global.getVarValue(stt);
+        String states = BeeUtils.trim(Global.getVarValue(stt));
 
         if (BeeUtils.isEmpty(states)) {
           Global.showError("State name not specified");
@@ -249,7 +249,7 @@ public class RowSetService extends CompositeService {
           Global.closeDialog(event);
           BeeKeeper.getRpc().makePostRequest(Service.GET_STATE_TABLE,
               XmlUtils.createString(Service.XML_TAG_DATA
-                  , tbl, Global.getVarValue(tbl)
+                  , tbl, BeeUtils.trim(Global.getVarValue(tbl))
                   , stt, states),
               new ResponseCallback() {
                 @Override

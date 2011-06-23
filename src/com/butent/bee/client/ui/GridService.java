@@ -10,6 +10,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.utils.BeeUtils;
 
 /**
  * Implements asynchronous creation of grids.
@@ -33,7 +34,7 @@ class GridService extends CompositeService {
     boolean ok = true;
 
     final Panel destination = (Panel) params[0];
-    String grd = (String) params[1];
+    String grd = BeeUtils.trim((String) params[1]);
 
     BeeKeeper.getRpc().makePostRequest(Service.GET_X_GRID,
         XmlUtils.createString(Service.XML_TAG_DATA, "grid_name",

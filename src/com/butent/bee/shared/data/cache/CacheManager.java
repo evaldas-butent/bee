@@ -11,8 +11,7 @@ import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
-import com.butent.bee.shared.data.event.HandlesDeleteEvents;
-import com.butent.bee.shared.data.event.HandlesUpdateEvents;
+import com.butent.bee.shared.data.event.HandlesAllDataEvents;
 import com.butent.bee.shared.data.event.MultiDeleteEvent;
 import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.event.RowInsertEvent;
@@ -33,8 +32,7 @@ import java.util.Set;
  * Enables operations within cache, adding and removing cached objects.
  */
 
-public class CacheManager implements HandlesDeleteEvents, HandlesUpdateEvents,
-    RowInsertEvent.Handler {
+public class CacheManager implements HandlesAllDataEvents {
 
   /**
    * Handles single cache entry, contains it's attributes and methods for changing them.

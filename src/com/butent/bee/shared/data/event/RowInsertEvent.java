@@ -11,7 +11,7 @@ import com.butent.bee.shared.data.BeeRow;
  * Handles an event when a row value is inserted in table based user interface components.
  */
 
-public class RowInsertEvent extends Event<RowInsertEvent.Handler> {
+public class RowInsertEvent extends Event<RowInsertEvent.Handler> implements DataEvent {
 
   /**
    * Requires implementing classes to have a method to handle row insert event.

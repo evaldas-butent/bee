@@ -633,6 +633,12 @@ public class DataSelector extends Complex implements Editor, HasTextDimensions {
     return null;
   }
 
+  @Override
+  protected void onUnload() {
+    getOracle().onUnload();
+    super.onUnload();
+  }
+
   private void askOracle() {
     String query = BeeUtils.trim(getInput().getText());
     SearchType type = getSearchType();

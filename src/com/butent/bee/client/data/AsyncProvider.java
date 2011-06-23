@@ -85,6 +85,11 @@ public class AsyncProvider extends Provider {
   }
   
   @Override
+  public String getViewName() {
+    return getDataInfo().getName();
+  }
+
+  @Override
   public void onRowInsert(RowInsertEvent event) {
   }
 
@@ -94,11 +99,11 @@ public class AsyncProvider extends Provider {
     setOrder(event.getOrder());
     goTop();
   }
-
+  
   public void setCachingPolicy(CachingPolicy cachingPolicy) {
     this.cachingPolicy = cachingPolicy;
   }
-  
+
   public void updateDisplay(int start, int length, BeeRowSet data, boolean updateActiveRow) {
     int rowCount = data.getNumberOfRows();
 
@@ -117,11 +122,6 @@ public class AsyncProvider extends Provider {
       getDisplay().updateActiveRow(rowValues);
     }
     getDisplay().setRowData(start, rowValues);
-  }
-
-  @Override
-  protected String getViewName() {
-    return getDataInfo().getName();
   }
 
   @Override

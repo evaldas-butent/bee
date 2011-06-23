@@ -5,6 +5,7 @@ import com.google.common.collect.Lists;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.HasExtendedInfo;
+import com.butent.bee.shared.data.HasViewName;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.ExtendedProperty;
@@ -17,7 +18,7 @@ import java.util.List;
  * Implementation of a grid user interface component.
  */
 
-public class GridDescription implements BeeSerializable, HasExtendedInfo {
+public class GridDescription implements BeeSerializable, HasExtendedInfo, HasViewName {
 
   /**
    * Contains a list of grid parameters.
@@ -308,6 +309,10 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo {
     return searchThreshold;
   }
 
+  public String getViewName() {
+    return viewName;
+  }
+
   public List<ColumnDescription> getVisibleColumns() {
     List<ColumnDescription> result = Lists.newArrayList();
     for (ColumnDescription column : getColumns()) {
@@ -498,10 +503,6 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo {
 
   private List<ColumnDescription> getColumns() {
     return columns;
-  }
-
-  private String getViewName() {
-    return viewName;
   }
 
   private void setName(String name) {

@@ -15,13 +15,6 @@ import com.butent.bee.shared.utils.BeeUtils;
  */
 
 public class XmlUtils {
-  public static String createSimple(String rootName, Object... nodes) {
-    Assert.notEmpty(rootName);
-    Assert.notNull(nodes);
-    Assert.parameterCount(nodes.length + 1, 3);
-
-    return transformDocument(createDoc(rootName, nodes), null);
-  }
 
   public static String createString(String rootName, Object... nodes) {
     Assert.notEmpty(rootName);
@@ -39,7 +32,7 @@ public class XmlUtils {
     Object[] nodes = new Object[names.length * 2];
     for (int i = 0; i < names.length; i++) {
       nodes[i * 2] = names[i];
-      nodes[i * 2 + 1] = Global.getVarValue(names[i]);
+      nodes[i * 2 + 1] = BeeUtils.trim(Global.getVarValue(names[i]));
     }
 
     return transformDocument(createDoc(rootName, nodes));
@@ -97,7 +90,7 @@ public class XmlUtils {
     if (obj == null) {
       return BeeConst.STRING_EMPTY;
     } else if (obj instanceof String) {
-      return ((String) obj).trim();
+      return (String) obj;
     } else {
       return BeeUtils.transform(obj);
     }

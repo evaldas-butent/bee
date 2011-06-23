@@ -10,7 +10,7 @@ import com.butent.bee.shared.Assert;
  * Handles an event when a cell value is updated in table based user interface components.
  */
 
-public class CellUpdateEvent extends Event<CellUpdateEvent.Handler> {
+public class CellUpdateEvent extends Event<CellUpdateEvent.Handler> implements DataEvent {
 
   /**
    * Requires implementing classes to have a method to handle cell update event.

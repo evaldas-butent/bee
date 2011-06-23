@@ -9,9 +9,9 @@ import com.google.web.bindery.event.shared.HandlerRegistration;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.data.HasViewName;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
-import com.butent.bee.shared.data.event.HandlesDeleteEvents;
-import com.butent.bee.shared.data.event.HandlesUpdateEvents;
+import com.butent.bee.shared.data.event.HandlesAllDataEvents;
 import com.butent.bee.shared.data.event.MultiDeleteEvent;
 import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.event.RowInsertEvent;
@@ -27,8 +27,7 @@ import java.util.List;
  * Enables to manage ranges of data shown in user interface tables.
  */
 
-public abstract class Provider implements SortEvent.Handler, HandlesDeleteEvents,
-    HandlesUpdateEvents, RowInsertEvent.Handler {
+public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvents, HasViewName {
 
   private final HasDataTable display;
 
@@ -53,14 +52,7 @@ public abstract class Provider implements SortEvent.Handler, HandlesDeleteEvents
     }));
 
     this.handlerRegistry.add(display.addSortHandler(this));
-
-    this.handlerRegistry.add(BeeKeeper.getBus().registerRowDeleteHandler(this));
-    this.handlerRegistry.add(BeeKeeper.getBus().registerMultiDeleteHandler(this));
-
-    this.handlerRegistry.add(BeeKeeper.getBus().registerCellUpdateHandler(this));
-    this.handlerRegistry.add(BeeKeeper.getBus().registerRowUpdateHandler(this));
-
-    this.handlerRegistry.add(BeeKeeper.getBus().registerRowInsertHandler(this));
+    this.handlerRegistry.addAll(BeeKeeper.getBus().registerDataHandler(this));
   }
 
   public void disableCache() {
@@ -86,6 +78,8 @@ public abstract class Provider implements SortEvent.Handler, HandlesDeleteEvents
   public Order getOrder() {
     return order;
   }
+
+  public abstract String getViewName();
 
   public boolean isCacheEnabled() {
     return cacheEnabled;
@@ -126,13 +120,13 @@ public abstract class Provider implements SortEvent.Handler, HandlesDeleteEvents
   }
 
   public abstract void onRowInsert(RowInsertEvent event);
-
+  
   public void onRowUpdate(RowUpdateEvent event) {
     if (BeeUtils.same(getViewName(), event.getViewName())) {
       getDisplay().onRowUpdate(event);
     }
   }
-  
+
   public abstract void onSort(SortEvent event);
 
   public void onUnload() {
@@ -189,8 +183,6 @@ public abstract class Provider implements SortEvent.Handler, HandlesDeleteEvents
   protected Range getRange() {
     return getDisplay().getVisibleRange();
   }
-
-  protected abstract String getViewName();
 
   protected void goTop() {
     getDisplay().setPageStart(0);

@@ -413,6 +413,19 @@ public class BeeUtils {
     }
     return ok;
   }
+  
+  public static boolean containsSame(Collection<String> col, String s) {
+    if (isEmpty(col)) {
+      return false;
+    }
+    
+    for (String entry : col) {
+      if (same(entry, s)) {
+        return true;
+      }
+    }
+    return false;
+  }
 
   public static boolean containsWhitespace(CharSequence cs) {
     if (cs == null) {

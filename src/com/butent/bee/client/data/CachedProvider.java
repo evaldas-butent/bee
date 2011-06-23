@@ -58,6 +58,10 @@ public class CachedProvider extends Provider {
     return table;
   }
 
+  public String getViewName() {
+    return viewName;
+  }
+
   @Override
   public void onCellUpdate(CellUpdateEvent event) {
     if (BeeUtils.same(event.getViewName(), getViewName())) {
@@ -72,7 +76,7 @@ public class CachedProvider extends Provider {
       super.onCellUpdate(event);
     }
   }
-
+  
   @Override
   public void onFilterChanged(Filter newFilter, int rowCount) {
     applyFilter(newFilter);
@@ -85,7 +89,7 @@ public class CachedProvider extends Provider {
     }
     super.onFilterChanged(newFilter, rowCount);
   }
-  
+
   @Override
   public void onMultiDelete(MultiDeleteEvent event) {
     if (BeeUtils.same(event.getViewName(), getViewName())) {
@@ -111,7 +115,7 @@ public class CachedProvider extends Provider {
       applyFilter(getFilter());
     }
   }
-
+  
   @Override
   public void onRowUpdate(RowUpdateEvent event) {
     if (BeeUtils.same(event.getViewName(), getViewName())) {
@@ -130,7 +134,7 @@ public class CachedProvider extends Provider {
       super.onRowUpdate(event);
     }
   }
-  
+
   @Override
   public void onSort(SortEvent event) {
     if (getTable().getNumberOfRows() <= 1) {
@@ -144,9 +148,9 @@ public class CachedProvider extends Provider {
       List<Pair<Integer, Boolean>> sortList = Lists.newArrayList();
 
       for (Order.Column sortInfo : order.getColumns()) {
-        int index = getTable().getColumnIndex(sortInfo.getName());
+        int index = getTable().getColumnIndex(sortInfo.getSource());
         if (index < 0 || index > getTable().getNumberOfColumns()) {
-          BeeKeeper.getLog().warning("onSort: column id", sortInfo.getName(), "not found");
+          BeeKeeper.getLog().warning("onSort: column id", sortInfo.getSource(), "not found");
         }
         sortList.add(new Pair<Integer, Boolean>(index, sortInfo.isAscending()));
       }
@@ -187,10 +191,6 @@ public class CachedProvider extends Provider {
       getDisplay().updateActiveRow(rowValues);
     }
     getDisplay().setRowData(start, rowValues);
-  }
-
-  protected String getViewName() {
-    return viewName;
   }
   
   @Override

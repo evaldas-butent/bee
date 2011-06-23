@@ -10,7 +10,7 @@ import com.butent.bee.shared.Assert;
  * Handles single row deletion event.
  */
 
-public class RowDeleteEvent extends Event<RowDeleteEvent.Handler> {
+public class RowDeleteEvent extends Event<RowDeleteEvent.Handler> implements DataEvent {
 
   /**
    * Requires implementing classes to have a method to handle single row deletion event.

@@ -21,7 +21,7 @@ import java.util.logging.Logger;
  * columns and rows.
  */
 
-public class BeeRowSet extends RowList<BeeRow, BeeColumn> implements BeeSerializable {
+public class BeeRowSet extends RowList<BeeRow, BeeColumn> implements BeeSerializable, HasViewName {
 
   /**
    * Contains a list of items for serialization.

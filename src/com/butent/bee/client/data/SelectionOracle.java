@@ -2,6 +2,7 @@ package com.butent.bee.client.data;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
+import com.google.web.bindery.event.shared.HandlerRegistration;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.view.search.SearchType;
@@ -11,18 +12,27 @@ import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.HasViewName;
 import com.butent.bee.shared.data.cache.CachingPolicy;
+import com.butent.bee.shared.data.event.CellUpdateEvent;
+import com.butent.bee.shared.data.event.DataEvent;
+import com.butent.bee.shared.data.event.HandlesAllDataEvents;
+import com.butent.bee.shared.data.event.MultiDeleteEvent;
+import com.butent.bee.shared.data.event.RowDeleteEvent;
+import com.butent.bee.shared.data.event.RowInsertEvent;
+import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RelationInfo;
+import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
 import java.util.List;
 
-public class SelectionOracle {
+public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
 
   public interface Callback {
     void onSuggestionsReady(Request request, Response response);
@@ -180,6 +190,8 @@ public class SelectionOracle {
 
   private final List<BeeColumn> dataColumns = Lists.newArrayList();
 
+  private final List<HandlerRegistration> handlerRegistry = Lists.newArrayList();
+
   public SelectionOracle(RelationInfo relationInfo, List<SelectionColumn> cols,
       CachingPolicy cachingPolicy, int cachingThreshold) {
     Assert.notNull(relationInfo);
@@ -194,7 +206,7 @@ public class SelectionOracle {
     if (cols != null) {
       for (SelectionColumn column : cols) {
         String name = column.getName();
-        if (!getViewColumns().contains(name)) {
+        if (!BeeUtils.containsSame(getViewColumns(), name)) {
           getViewColumns().add(name);
           if (column.isSearchable()) {
             getSearchColumns().add(getViewColumns().size() - 1);
@@ -210,6 +222,58 @@ public class SelectionOracle {
 
     initColumns();
     initCaching();
+
+    this.handlerRegistry.addAll(BeeKeeper.getBus().registerDataHandler(this));
+  }
+
+  public String getViewName() {
+    return getRelationInfo().getRelView();
+  }
+
+  public void onCellUpdate(CellUpdateEvent event) {
+    if (isEventRelevant(event) && BeeUtils.containsSame(getViewColumns(), event.getColumnId())) {
+      initViewData();
+    }
+  }
+
+  public void onMultiDelete(MultiDeleteEvent event) {
+    if (isEventRelevant(event)) {
+      for (RowInfo rowInfo : event.getRows()) {
+        int index = getViewData().getRowIndex(rowInfo.getId());
+        if (index >= 0) {
+          getViewData().removeRow(index);
+        }
+      }
+    }
+  }
+
+  public void onRowDelete(RowDeleteEvent event) {
+    if (isEventRelevant(event)) {
+      int index = getViewData().getRowIndex(event.getRowId());
+      if (index >= 0) {
+        getViewData().removeRow(index);
+      }
+    }
+  }
+
+  public void onRowInsert(RowInsertEvent event) {
+    if (isEventRelevant(event)) {
+      initViewData();
+    }
+  }
+
+  public void onRowUpdate(RowUpdateEvent event) {
+    if (isEventRelevant(event)) {
+      initViewData();
+    }
+  }
+
+  public void onUnload() {
+    for (HandlerRegistration entry : getHandlerRegistry()) {
+      if (entry != null) {
+        entry.removeHandler();
+      }
+    }
   }
 
   public void requestSuggestions(Request request, Callback callback) {
@@ -236,13 +300,13 @@ public class SelectionOracle {
     } else {
       index++;
     }
-    
+
     Caching value = Caching.values()[index];
     BeeKeeper.getLog().debug("caching", value);
     setCaching(value);
     setLastRequest(null);
   }
-  
+
   private void checkPendingRequest() {
     if (getPendingRequest() != null) {
       Request request = getPendingRequest().getRequest();
@@ -335,6 +399,10 @@ public class SelectionOracle {
     return filter;
   }
 
+  private List<HandlerRegistration> getHandlerRegistry() {
+    return handlerRegistry;
+  }
+
   private Request getLastRequest() {
     return lastRequest;
   }
@@ -365,10 +433,6 @@ public class SelectionOracle {
 
   private BeeRowSet getViewData() {
     return viewData;
-  }
-
-  private String getViewName() {
-    return getRelationInfo().getRelView();
   }
 
   private Order getViewOrder() {
@@ -439,6 +503,11 @@ public class SelectionOracle {
     return getCaching() != null && getCaching() != Caching.NONE;
   }
 
+  private boolean isEventRelevant(DataEvent event) {
+    return event != null && BeeUtils.same(event.getViewName(), getViewName())
+        && getCaching() == Caching.FULL;
+  }
+
   private boolean match(BeeRow row, String query, SearchType searchType) {
     if (row == null || searchType == null) {
       return false;
@@ -504,13 +573,13 @@ public class SelectionOracle {
       }
       return true;
     }
-    
+
     final Filter filter = getFilter(query, searchType);
     if (filter == null && !isCachingEnabled()) {
       setRequestData(null);
       return true;
     }
-    
+
     int offset = request.getOffset();
     int limit = request.getLimit();
     if (isCachingEnabled()) {

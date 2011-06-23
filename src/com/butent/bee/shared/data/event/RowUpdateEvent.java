@@ -11,7 +11,7 @@ import com.butent.bee.shared.data.BeeRow;
  * Handles an event when a row value is updated in table based user interface components.
  */
 
-public class RowUpdateEvent extends Event<RowUpdateEvent.Handler> {
+public class RowUpdateEvent extends Event<RowUpdateEvent.Handler> implements DataEvent {
 
   /**
    * Requires implementing classes to have a method to handle row update event.

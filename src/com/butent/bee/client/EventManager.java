@@ -1,5 +1,6 @@
 package com.butent.bee.client;
 
+import com.google.common.collect.Lists;
 import com.google.gwt.event.dom.client.BlurEvent;
 import com.google.gwt.event.dom.client.HasChangeHandlers;
 import com.google.gwt.event.dom.client.HasClickHandlers;
@@ -20,11 +21,15 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.Stage;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
+import com.butent.bee.shared.data.event.HandlesAllDataEvents;
 import com.butent.bee.shared.data.event.MultiDeleteEvent;
 import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.utils.BeeUtils;
+
+import java.util.Collection;
+import java.util.List;
 
 /**
  * creates handlers for events such as mouse and keyboard actions or server responses.
@@ -152,6 +157,19 @@ public class EventManager implements Module {
     return CellUpdateEvent.register(eventBus, handler);
   }
   
+  public Collection<HandlerRegistration> registerDataHandler(HandlesAllDataEvents handler) {
+    Assert.notNull(handler);
+    
+    List<HandlerRegistration> registry = Lists.newArrayList();
+    registry.add(registerCellUpdateHandler(handler));
+    registry.add(registerMultiDeleteHandler(handler));
+    registry.add(registerRowDeleteHandler(handler));
+    registry.add(registerRowInsertHandler(handler));
+    registry.add(registerRowUpdateHandler(handler));
+    
+    return registry;
+  }
+  
   public HandlerRegistration registerMultiDeleteHandler(MultiDeleteEvent.Handler handler) {
     return MultiDeleteEvent.register(eventBus, handler);
   }
@@ -183,12 +201,12 @@ public class EventManager implements Module {
             "Class Info", Service.VAR_CLASS_NAME, Service.VAR_PACKAGE_LIST);
         ok = true;
       } else if (stg.equals(Stage.STAGE_CONFIRM)) {
-        String cls = Global.getVarValue(Service.VAR_CLASS_NAME);
-        String pck = Global.getVarValue(Service.VAR_PACKAGE_LIST);
+        String cls = BeeUtils.trim(Global.getVarValue(Service.VAR_CLASS_NAME));
+        String pck = BeeUtils.trim(Global.getVarValue(Service.VAR_PACKAGE_LIST));
 
         if (BeeUtils.isEmpty(cls)) {
           Global.showError("Class name not specified");
-        } else if (cls.trim().length() < 2) {
+        } else if (cls.length() < 2) {
           Global.showError("Class name", cls, "too short");
         } else {
           Global.closeDialog(event);
@@ -286,8 +304,8 @@ public class EventManager implements Module {
         ok = true;
 
       } else if (stg.equals(Stage.STAGE_CONFIRM)) {
-        String usr = Global.getVarValue(Service.VAR_LOGIN);
-        String pwd = Global.getVarValue(Service.VAR_PASSWORD);
+        String usr = BeeUtils.trim(Global.getVarValue(Service.VAR_LOGIN));
+        String pwd = BeeUtils.trim(Global.getVarValue(Service.VAR_PASSWORD));
 
         if (BeeUtils.isEmpty(usr)) {
           Global.showError("Login name not specified");
