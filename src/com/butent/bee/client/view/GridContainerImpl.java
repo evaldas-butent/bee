@@ -45,6 +45,8 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
   public static Integer minSearchRows = 2;
 
   public static Integer defaultPageSize = 15;
+  
+  public static String newRowCaption = "New Row";
 
   private Presenter viewPresenter = null;
 
@@ -63,7 +65,10 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
   private Evaluator rowMessage = null;
   
   private boolean adding = false;
-
+  private boolean enabled = true;
+  
+  private String currentCaption = null;
+  
   public GridContainerImpl() {
     this(-1);
   }
@@ -258,6 +263,10 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     return getScrollerDirection() != null;
   }
 
+  public boolean isEnabled() {
+    return enabled;
+  }
+
   public void onActiveRowChange(ActiveRowChangeEvent event) {
     if (event == null || event.getRowValue() == null || getRowMessage() == null) {
       return;
@@ -266,13 +275,13 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     String message = getRowMessage().evaluate();
 
     if (!BeeUtils.isEmpty(message)) {
-      getHeader().updateCaption(message);
+      getHeader().setCaption(message);
     }
   }
-
+  
   public void onAddEnd(AddEndEvent event) {
     if (hasHeader()) {
-      setDirectionSize(getHeaderDirection(), getHeaderHeight());
+      getHeader().setCaption(getCurrentCaption());
     }
     if (hasFooter()) {
       setDirectionSize(getFooterDirection(), getFooterHeight());
@@ -281,14 +290,17 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
       setDirectionSize(getScrollerDirection(), getScrollerWidth());
     }
     
+    setEnabled(true);
     setAdding(false);
   }
 
   public void onAddStart(AddStartEvent event) {
     setAdding(true);
-
+    setEnabled(false);
+    
     if (hasHeader()) {
-      setDirectionSize(getHeaderDirection(), 0);
+      setCurrentCaption(getHeader().getCaption());
+      getHeader().setCaption(newRowCaption);
     }
     if (hasFooter()) {
       setDirectionSize(getFooterDirection(), 0);
@@ -297,11 +309,11 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
       setDirectionSize(getScrollerDirection(), 0);
     }
   }
-  
+
   @Override
   public void onBrowserEvent(Event event) {
     super.onBrowserEvent(event);
-    if (isAdding()) {
+    if (isAdding() || !isEnabled()) {
       return;
     }
 
@@ -347,13 +359,21 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
       }
     }
   }
-
+  
   @Override
   public void onResize() {
     if (isAttached()) {
       super.onResize();
       adapt(false);
     }
+  }
+
+  public void setEnabled(boolean enabled) {
+    if (enabled == isEnabled()) {
+      return;
+    }
+    this.enabled = enabled;
+    DomUtils.enableChildren(this, enabled);
   }
 
   public void setFooterHeight(int footerHeight) {
@@ -449,6 +469,10 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     return BeeConst.SIZE_UNKNOWN;
   }
 
+  private String getCurrentCaption() {
+    return currentCaption;
+  }
+
   private Direction getFooterDirection() {
     return footerDirection;
   }
@@ -487,6 +511,10 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
 
   private void setAdding(boolean adding) {
     this.adding = adding;
+  }
+
+  private void setCurrentCaption(String currentCaption) {
+    this.currentCaption = currentCaption;
   }
 
   private void setFooterDirection(Direction footerDirection) {

@@ -53,6 +53,10 @@ public class SimplePager extends AbstractPagerImpl {
 
     @Override
     public void execute() {
+      if (!isEnabled()) {
+        return;
+      }
+
       switch (goTo) {
         case FIRST:
           getDisplay().setVisibleRange(0, getDisplay().getVisibleRange().getLength());

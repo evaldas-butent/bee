@@ -7,7 +7,6 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeType;
 import com.butent.bee.shared.HasLength;
 import com.butent.bee.shared.Transformable;
-import com.butent.bee.shared.data.value.BooleanValue;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -2548,7 +2547,7 @@ public class BeeUtils {
   }
 
   public static Boolean toBooleanOrNull(String s) {
-    if (isEmpty(s) || same(s, BooleanValue.S_NULL)) {
+    if (isEmpty(s)) {
       return null;
     }
     return toBoolean(s);

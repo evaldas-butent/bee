@@ -12,7 +12,9 @@ import com.butent.bee.client.presenter.Presenter;
  */
 
 public abstract class AbstractPagerImpl extends AbstractPager implements PagerView {
+
   private Presenter viewPresenter = null;
+  private boolean enabled = true;
 
   public Presenter getViewPresenter() {
     return viewPresenter;
@@ -20,6 +22,14 @@ public abstract class AbstractPagerImpl extends AbstractPager implements PagerVi
 
   public String getWidgetId() {
     return DomUtils.getId(getWidget());
+  }
+
+  public boolean isEnabled() {
+    return enabled;
+  }
+
+  public void setEnabled(boolean enabled) {
+    this.enabled = enabled;
   }
 
   public void setViewPresenter(Presenter viewPresenter) {

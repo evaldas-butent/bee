@@ -385,7 +385,7 @@ public class QueryServiceBean {
           case BOOLEAN:
             row[i] = BooleanValue.pack(rs.getBoolean(colIndex));
             if (rs.wasNull()) {
-              row[i] = BooleanValue.S_NULL;
+              row[i] = null;
             }
             break;
           case NUMBER:

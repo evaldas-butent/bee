@@ -18,6 +18,7 @@ import com.butent.bee.shared.utils.BeeUtils;
  */
 
 public class ScrollPager extends AbstractPagerImpl implements RequiresResize {
+
   public static int maxHeight = 10000;
 
   private static final int UNKNOWN = -1;
@@ -43,6 +44,9 @@ public class ScrollPager extends AbstractPagerImpl implements RequiresResize {
       public void onScroll(ScrollEvent event) {
         if (isUpdating) {
           isUpdating = false;
+          return;
+        }
+        if (!isEnabled()) {
           return;
         }
 

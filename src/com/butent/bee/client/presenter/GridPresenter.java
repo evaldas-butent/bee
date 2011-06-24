@@ -78,8 +78,8 @@ public class GridPresenter implements Presenter, EditEndEvent.Handler, ReadyForI
 
         Queries.deleteRow(getDataName(), rowId, version, new Queries.IntCallback() {
           public void onFailure(String[] reason) {
-            showFailure("Delete Row", reason);
             setLoadingState(LoadingStateChangeEvent.LoadingState.LOADED);
+            showFailure("Delete Row", reason);
           }
 
           public void onSuccess(Integer result) {
@@ -211,7 +211,7 @@ public class GridPresenter implements Presenter, EditEndEvent.Handler, ReadyForI
         break;
         
       case ADD:
-        getView().getContent().addRow();
+        getView().getContent().startNewRow();
         break;
 
       default:
@@ -257,13 +257,18 @@ public class GridPresenter implements Presenter, EditEndEvent.Handler, ReadyForI
   }
 
   public void onReadyForInsert(ReadyForInsertEvent event) {
+    setLoadingState(LoadingStateChangeEvent.LoadingState.LOADING);
+
     Queries.insert(getDataName(), event.getColumns(), event.getValues(), new Queries.RowCallback() {
       public void onFailure(String[] reason) {
+        setLoadingState(LoadingStateChangeEvent.LoadingState.LOADED);
         showFailure("Insert Row", reason);
+        getView().getContent().finishNewRow(null);
       }
       
       public void onSuccess(BeeRow result) {
         BeeKeeper.getBus().fireEvent(new RowInsertEvent(getDataName(), result));
+        getView().getContent().finishNewRow(result);
       }
     });
   }

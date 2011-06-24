@@ -18,7 +18,6 @@ public class BooleanValue extends Value {
 
   public static final String S_TRUE = "t";
   public static final String S_FALSE = "f";
-  public static final String S_NULL = "n";
   
   public static final BooleanValue TRUE = new BooleanValue(true);
   public static final BooleanValue FALSE = new BooleanValue(false);
@@ -37,7 +36,7 @@ public class BooleanValue extends Value {
 
   public static String pack(Boolean value) {
     if (value == null) {
-      return S_NULL;
+      return null;
     }
     return value ? S_TRUE : S_FALSE;
   }

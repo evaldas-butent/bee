@@ -89,6 +89,8 @@ public class DataFooterImpl extends Absolute implements DataFooterView, HasNavig
 
   private boolean adjusted = false;
 
+  private boolean enabled = true;
+  
   public DataFooterImpl() {
     super();
     addStyleName(StyleUtils.WINDOW_FOOTER);
@@ -155,6 +157,10 @@ public class DataFooterImpl extends Absolute implements DataFooterView, HasNavig
     return getId();
   }
 
+  public boolean isEnabled() {
+    return enabled;
+  }
+
   public void onSelectionCountChange(SelectionCountChangeEvent event) {
     Assert.notNull(event);
     if (selectionCounterId != null) {
@@ -162,6 +168,14 @@ public class DataFooterImpl extends Absolute implements DataFooterView, HasNavig
       String text = (cnt > 0) ? BeeUtils.toString(cnt) : BeeConst.STRING_EMPTY;
       DomUtils.setText(selectionCounterId, text);
     }
+  }
+
+  public void setEnabled(boolean enabled) {
+    if (enabled == isEnabled()) {
+      return;
+    }
+    this.enabled = enabled;
+    DomUtils.enableChildren(this, enabled);
   }
 
   public void setViewPresenter(Presenter viewPresenter) {

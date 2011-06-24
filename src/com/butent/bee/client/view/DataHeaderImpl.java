@@ -1,10 +1,12 @@
 package com.butent.bee.client.view;
 
+import com.google.common.collect.Sets;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.CssResource;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.cellview.client.LoadingStateChangeEvent;
+import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.Global;
@@ -17,7 +19,10 @@ import com.butent.bee.client.utils.BeeCommand;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.HasId;
 import com.butent.bee.shared.utils.BeeUtils;
+
+import java.util.Set;
 
 /**
  * Implements styling and user command capture for data headers.
@@ -108,6 +113,9 @@ public class DataHeaderImpl extends Complex implements DataHeaderView {
   
   private final String captionId;
 
+  private boolean enabled = true;
+  private final Set<String> actionControls = Sets.newHashSet();
+  
   public DataHeaderImpl() {
     super();
     this.captionId = DomUtils.createUniqueId("caption"); 
@@ -148,6 +156,10 @@ public class DataHeaderImpl extends Complex implements DataHeaderView {
         style.closeRight(), style.closeTop());
   }
 
+  public String getCaption() {
+    return DomUtils.getHtml(captionId);
+  }
+
   public Presenter getViewPresenter() {
     return viewPresenter;
   }
@@ -156,6 +168,10 @@ public class DataHeaderImpl extends Complex implements DataHeaderView {
     return getId();
   }
   
+  public boolean isEnabled() {
+    return enabled;
+  }
+
   @Override
   public void onLoadingStateChanged(LoadingStateChangeEvent event) {
     Assert.notNull(event);
@@ -166,21 +182,49 @@ public class DataHeaderImpl extends Complex implements DataHeaderView {
     }
   }
 
+  public void setCaption(String caption) {
+    DomUtils.setHtml(captionId, BeeUtils.trim(caption));
+  }
+
+  public void setEnabled(boolean enabled) {
+    if (enabled == isEnabled()) {
+      return;
+    }
+    this.enabled = enabled;
+    
+    for (int i = 0; i < getWidgetCount(); i++) {
+      Widget child = getWidget(i);
+      if (child instanceof HasId 
+          && BeeUtils.containsSame(getActionControls(), ((HasId) child).getId())) {
+        if (child instanceof HasEnabled) {
+          ((HasEnabled) child).setEnabled(enabled);
+        }
+        if (enabled) {
+          StyleUtils.unhideDisplay(child);
+        } else {
+          StyleUtils.hideDisplay(child);
+        }
+      }
+    }
+  }
+  
   public void setViewPresenter(Presenter viewPresenter) {
     this.viewPresenter = viewPresenter;
   }
   
-  public void updateCaption(String caption) {
-    if (!BeeUtils.isEmpty(caption)) {
-      DomUtils.setHtml(captionId, caption);
-    }
-  }
-
   private Widget createControl(ImageResource image, Action action, String styleName) {
-    Widget control = new BeeImage(image, new ActionListener(action));
+    BeeImage control = new BeeImage(image, new ActionListener(action));
     if (!BeeUtils.isEmpty(styleName)) {
       control.addStyleName(styleName);
     }
+    
+    if (action != null && action != Action.CLOSE) {
+      getActionControls().add(control.getId());
+    }
     return control;
+  }
+
+  private Set<String> getActionControls() {
+    return actionControls;
   }
 }

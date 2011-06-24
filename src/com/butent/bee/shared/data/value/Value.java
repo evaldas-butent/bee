@@ -20,14 +20,6 @@ import java.util.Date;
  */
 public abstract class Value implements Comparable<Value>, Transformable, BeeSerializable {
   
-  public static String getNullString(ValueType type) {
-    if (ValueType.BOOLEAN.equals(type)) {
-      return BooleanValue.S_NULL;
-    } else {
-      return null;
-    }
-  }
-
   public static Value getNullValueFromValueType(ValueType type) {
     switch (type) {
       case BOOLEAN:

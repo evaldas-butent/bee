@@ -22,6 +22,7 @@ import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.dom.client.Style.Visibility;
 import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.user.client.DOM;
+import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.HasOneWidget;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.PopupPanel;
@@ -460,6 +461,15 @@ public class DomUtils {
 
   public static String createUniqueName() {
     return BeeUtils.createUniqueName(DEFAULT_NAME_PREFIX);
+  }
+  
+  public static void enableChildren(HasWidgets parent, boolean enabled) {
+    Assert.notNull(parent);
+    for (Widget child : parent) {
+      if (child instanceof HasEnabled) {
+        ((HasEnabled) child).setEnabled(enabled);
+      }
+    }
   }
 
   public static String ensureId(Element elem, String prefix) {

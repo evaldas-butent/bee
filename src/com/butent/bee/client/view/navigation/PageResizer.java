@@ -13,6 +13,7 @@ import com.butent.bee.shared.utils.BeeUtils;
  */
 
 public class PageResizer extends AbstractPagerImpl {
+
   public static int minPageSize = 2;
   public static int maxPageSize = 100;
   public static int defaultStep = 1;
@@ -29,12 +30,18 @@ public class PageResizer extends AbstractPagerImpl {
       public void onChange(ChangeEvent event) {
         HasRows display = getDisplay();
         int pageSize = getValue();
-        if (display != null && pageSize > 0) {
+        if (display != null && pageSize > 0 && isEnabled()) {
           Range range = display.getVisibleRange();
           display.setVisibleRange(range.getStart(), pageSize);
         }
       }
     });
+  }
+
+  @Override
+  public void setEnabled(boolean enabled) {
+    super.setEnabled(enabled);
+    ((InputSpinner) getWidget()).setEnabled(enabled);
   }
 
   @Override

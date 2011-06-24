@@ -13,6 +13,7 @@ import com.butent.bee.shared.utils.BeeUtils;
  */
 
 public class RangeInfo extends AbstractPagerImpl {
+
   public RangeInfo() {
     initWidget(new BeeLabel());
   }

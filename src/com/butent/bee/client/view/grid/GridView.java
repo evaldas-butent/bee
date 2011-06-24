@@ -9,6 +9,7 @@ import com.butent.bee.client.view.add.HasReadyForInsertHandlers;
 import com.butent.bee.client.view.edit.HasEditEndHandlers;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.ui.GridDescription;
 
@@ -22,14 +23,14 @@ import java.util.List;
 public interface GridView extends View, HasEditEndHandlers, NotificationListener,
     HasAddStartHandlers, HasAddEndHandlers, HasReadyForInsertHandlers {
 
-  void addRow();
-
   void applyOptions(String options);
 
   void create(List<BeeColumn> dataColumns, int rowCount, BeeRowSet rowSet,
       GridDescription gridDescription, boolean hasSearch);
 
   int estimatePageSize(int containerWidth, int containerHeight);
+  
+  void finishNewRow(IsRow row);
 
   RowInfo getActiveRowInfo();
 
@@ -42,6 +43,8 @@ public interface GridView extends View, HasEditEndHandlers, NotificationListener
   boolean isRowSelected(long rowId);
 
   void refreshCellContent(long rowId, String columnSource);
+
+  void startNewRow();
 
   void updatePageSize(int pageSize, boolean init);
 }

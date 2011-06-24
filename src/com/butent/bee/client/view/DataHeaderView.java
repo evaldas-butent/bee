@@ -10,5 +10,7 @@ public interface DataHeaderView extends View, LoadingStateChangeEvent.Handler {
   
   void create(String caption, boolean readOnly);
   
-  void updateCaption(String caption);
+  String getCaption();
+  
+  void setCaption(String caption);
 }

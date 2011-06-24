@@ -1593,6 +1593,50 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
       sinkEvents(consumedEvents);
     }
   }
+  
+  public void insertRow(IsRow rowValue) {
+    Assert.notNull(rowValue);
+
+    int rc = getRowCount();
+    int ps = getPageSize();
+    int ar = getActiveRow();
+    
+    int nr = BeeConst.UNDEF;
+    
+    if (rc <= ps || ps <= 0) {
+      if (ar >= 0 && ar < rc - 1) {
+        getVisibleItems().add(ar + 1, rowValue);
+        nr = ar + 1;
+      } else {
+        getVisibleItems().add(rowValue);
+        nr = getVisibleItems().size() - 1;
+      }
+    } else if (ar >= 0 && ar < ps - 1) {
+      getVisibleItems().add(ar + 1, rowValue);
+      nr = ar + 1;
+      if (getVisibleItems().size() > ps) {
+        getVisibleItems().remove(getVisibleItems().size() - 1);
+      }
+    } else {
+      if (getVisibleItems().size() >= ps) {
+        getVisibleItems().remove(0);
+        setPageStart(getPageStart() + 1);
+      }
+      getVisibleItems().add(rowValue);
+      nr = getVisibleItems().size() - 1;
+    }
+    
+    if (ps > 0 && ps == rc) {
+      setPageSize(ps + 1);
+    }
+    setRowCount(rc + 1);
+    
+    this.activeRow = nr;
+    if (getActiveColumn() < 0) {
+      this.activeColumn = 0;
+    }
+    redraw();
+  }
 
   public boolean isColumnReadOnly(String columnId) {
     ColumnInfo info = getColumnInfo(columnId);
@@ -2253,6 +2297,10 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
 
     if (getPageStart() > 0 && getPageSize() > 0 && getPageStart() + getPageSize() > count) {
       setPageStart(Math.max(count - getPageSize(), 0));
+    }
+    if (getActiveRow() >= count) {
+      this.activeRow = BeeConst.UNDEF;
+      this.activeColumn = BeeConst.UNDEF;
     }
 
     RowCountChangeEvent.fire(this, count, isExact);
