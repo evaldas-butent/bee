@@ -2,12 +2,11 @@ package com.butent.bee.server.sql;
 
 import com.google.common.collect.Maps;
 
-import com.butent.bee.server.sql.BeeConstants.SqlKeyword;
+import com.butent.bee.server.sql.SqlConstants.SqlKeyword;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -50,12 +49,7 @@ class SqlCommand extends SqlQuery<SqlCommand> {
   }
 
   @Override
-  public List<Object> getSqlParams() {
-    return null;
-  }
-
-  @Override
-  public String getSqlString(SqlBuilder builder, boolean paramMode) {
+  public String getSqlString(SqlBuilder builder) {
     Assert.notEmpty(builder);
     Map<String, Object> params = Maps.newHashMap();
 
@@ -64,7 +58,7 @@ class SqlCommand extends SqlQuery<SqlCommand> {
         Object value = parameters.get(prm);
 
         if (value instanceof IsSql) {
-          value = ((IsSql) value).getSqlString(builder, paramMode);
+          value = ((IsSql) value).getSqlString(builder);
         }
         params.put(prm, value);
       }
@@ -75,10 +69,5 @@ class SqlCommand extends SqlQuery<SqlCommand> {
   @Override
   public boolean isEmpty() {
     return BeeUtils.isEmpty(command);
-  }
-
-  @Override
-  protected SqlCommand getReference() {
-    return this;
   }
 }

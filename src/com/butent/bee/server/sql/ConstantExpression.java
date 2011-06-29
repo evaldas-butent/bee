@@ -1,14 +1,9 @@
 package com.butent.bee.server.sql;
 
-import com.google.common.collect.Lists;
-
 import com.butent.bee.shared.data.value.Value;
 
-import java.util.List;
-
 /**
- * Transforms given constant expressions for compliance to specific SQL server 
- * requirements.
+ * Transforms given constant expressions for compliance to specific SQL server requirements.
  * 
  */
 
@@ -21,18 +16,8 @@ class ConstantExpression implements IsExpression {
   }
 
   @Override
-  public List<Object> getSqlParams() {
-    List<Object> param = Lists.newArrayList();
-
-    if (constant != null) {
-      param.add(constant.getObjectValue());
-    }
-    return param;
-  }
-
-  @Override
-  public String getSqlString(SqlBuilder builder, boolean paramMode) {
-    return paramMode ? "?" : builder.sqlTransform(constant);
+  public String getSqlString(SqlBuilder builder) {
+    return builder.sqlTransform(constant);
   }
 
   @Override

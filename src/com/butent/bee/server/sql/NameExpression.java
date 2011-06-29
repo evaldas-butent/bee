@@ -3,11 +3,8 @@ package com.butent.bee.server.sql;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.utils.BeeUtils;
 
-import java.util.List;
-
 /**
- * Generates expressions for table and field names depending on specific SQL 
- * server requirements.
+ * Generates expressions for table and field names depending on specific SQL server requirements.
  */
 class NameExpression implements IsExpression {
 
@@ -19,12 +16,7 @@ class NameExpression implements IsExpression {
   }
 
   @Override
-  public List<Object> getSqlParams() {
-    return null;
-  }
-
-  @Override
-  public String getSqlString(SqlBuilder builder, boolean paramMode) {
+  public String getSqlString(SqlBuilder builder) {
     StringBuilder s = new StringBuilder();
     String[] arr = name.split("\\.");
 

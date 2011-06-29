@@ -4,7 +4,7 @@ import com.google.common.collect.Lists;
 
 import com.butent.bee.server.DataSourceBean;
 import com.butent.bee.server.jdbc.JdbcUtils;
-import com.butent.bee.server.sql.BeeConstants.SqlKeyword;
+import com.butent.bee.server.sql.SqlConstants.SqlKeyword;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.IsQuery;
 import com.butent.bee.server.sql.SqlBuilderFactory;

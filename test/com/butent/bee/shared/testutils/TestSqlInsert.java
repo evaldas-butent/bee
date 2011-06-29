@@ -43,7 +43,7 @@ public class TestSqlInsert {
 
     assertEquals(
         "INSERT INTO TableName (username, pass) VALUES ('Petras', 'slaptasPass')",
-        insert.getSqlString(builder, false));
+        insert.getSqlString(builder));
   }
 
   @Test
@@ -58,7 +58,7 @@ public class TestSqlInsert {
 
     assertEquals(
         "INSERT INTO TableName (field1, field2, field3, field4) VALUES ('slaptasPass')",
-        insert.getSqlString(builder, false));
+        insert.getSqlString(builder));
   }
 
   @Test
@@ -99,38 +99,6 @@ public class TestSqlInsert {
     Object[] expected = {"Table2", "TableName", "Table1"};
 
     assertArrayEquals(expected, rez);
-  }
-
-  @Test
-  public final void testGetSqlParams() {
-    SqlBuilderFactory.setDefaultEngine("Generic");
-    SqlInsert insert2 = new SqlInsert("Target");
-
-    insert2.addConstant("field", 5);
-    insert2.addConstant("field2", 10);
-
-    Object[] expectedStr = {5, 10};
-
-    for (int i = 0; i < insert2.getSqlParams().size(); i++) {
-      assertEquals(expectedStr[i], insert2.getSqlParams().toArray()[i]);
-    }
-
-    insert2.reset();
-
-    SqlSelect select2 = new SqlSelect();
-    select2.addFields("Table1", "field1", "field2");
-    select2.addFrom("Table1");
-    select2.addSum(SqlUtils.constant("constant"), "consant_alias");
-    select2.addGroup("table1", "field2");
-
-    insert2.addFields("field1");
-    insert2.setDataSource(select2);
-
-    Object[] expectedStr2 = {"constant", 10};
-
-    for (int i = 0; i < insert2.getSqlParams().size(); i++) {
-      assertEquals(expectedStr2[i], insert2.getSqlParams().toArray()[i]);
-    }
   }
 
   @Test

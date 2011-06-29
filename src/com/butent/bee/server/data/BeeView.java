@@ -5,7 +5,7 @@ import com.google.common.collect.Maps;
 import com.google.common.primitives.Ints;
 
 import com.butent.bee.server.data.BeeTable.BeeField;
-import com.butent.bee.server.sql.BeeConstants.DataType;
+import com.butent.bee.server.sql.SqlConstants.SqlDataType;
 import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.IsExpression;
@@ -40,12 +40,12 @@ public class BeeView implements HasExtendedInfo {
     private final String table;
     private final String alias;
     private final String field;
-    private final DataType type;
+    private final SqlDataType type;
     private final boolean notNull;
     private boolean editable;
     private String targetAlias;
 
-    public ViewField(String tbl, String als, String fld, DataType type, boolean notNull,
+    public ViewField(String tbl, String als, String fld, SqlDataType type, boolean notNull,
         boolean editable) {
       this.table = tbl;
       this.alias = als;
@@ -71,7 +71,7 @@ public class BeeView implements HasExtendedInfo {
       return targetAlias;
     }
 
-    public DataType getType() {
+    public SqlDataType getType() {
       return type;
     }
 
@@ -300,7 +300,7 @@ public class BeeView implements HasExtendedInfo {
     return getViewField(colName).getTable();
   }
 
-  public DataType getType(String colName) {
+  public SqlDataType getType(String colName) {
     return getViewField(colName).getType();
   }
 

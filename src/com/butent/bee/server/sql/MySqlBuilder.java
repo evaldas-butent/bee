@@ -1,8 +1,8 @@
 package com.butent.bee.server.sql;
 
-import com.butent.bee.server.sql.BeeConstants.DataType;
-import com.butent.bee.server.sql.BeeConstants.Function;
-import com.butent.bee.server.sql.BeeConstants.SqlKeyword;
+import com.butent.bee.server.sql.SqlConstants.SqlDataType;
+import com.butent.bee.server.sql.SqlConstants.SqlFunction;
+import com.butent.bee.server.sql.SqlConstants.SqlKeyword;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -15,12 +15,39 @@ import java.util.Map;
 class MySqlBuilder extends SqlBuilder {
 
   @Override
-  protected String sqlFunction(Function function, Map<String, Object> params) {
+  protected String getCreate(SqlCreate sc) {
+    String sql = super.getCreate(sc);
+
+    if (BeeUtils.isEmpty(sc.getDataSource())) {
+      sql += " ENGINE=InnoDB";
+    }
+    return sql;
+  }
+
+  @Override
+  protected String getSelect(SqlSelect ss) {
+    int limit = ss.getLimit();
+    int offset = ss.getOffset();
+    String sql = super.getSelect(ss);
+
+    if (BeeUtils.isPositive(limit)) {
+      sql += " LIMIT " + limit;
+    } else if (BeeUtils.isPositive(offset)) {
+      sql += " LIMIT " + (int) 1e9;
+    }
+    if (BeeUtils.isPositive(offset)) {
+      sql += " OFFSET " + offset;
+    }
+    return sql;
+  }
+
+  @Override
+  protected String sqlFunction(SqlFunction function, Map<String, Object> params) {
     switch (function) {
       case CAST:
         String sql = "CAST(" + params.get("expression");
         String dataType;
-        DataType type = (DataType) params.get("type");
+        SqlDataType type = (SqlDataType) params.get("type");
         int precision = (Integer) params.get("precision");
         int scale = (Integer) params.get("scale");
 
@@ -104,14 +131,14 @@ class MySqlBuilder extends SqlBuilder {
           wh = SqlUtils.and(wh, SqlUtils.equal("c", "referenced_table_name", prm));
         }
         return new SqlSelect()
-            .addField("c", "constraint_name", BeeConstants.KEY_NAME)
-            .addField("t", "table_name", BeeConstants.TBL_NAME)
-            .addField("c", "referenced_table_name", BeeConstants.FK_REF_TABLE)
+            .addField("c", "constraint_name", SqlConstants.KEY_NAME)
+            .addField("t", "table_name", SqlConstants.TBL_NAME)
+            .addField("c", "referenced_table_name", SqlConstants.FK_REF_TABLE)
             .addFrom("information_schema.referential_constraints", "c")
             .addFromInner("information_schema.table_constraints", "t",
                 SqlUtils.joinUsing("c", "t", "constraint_name"))
             .setWhere(wh)
-            .getQuery(this);
+            .getSqlString(this);
 
       case DROP_FOREIGNKEY:
         return BeeUtils.concat(1,
@@ -143,32 +170,5 @@ class MySqlBuilder extends SqlBuilder {
       s = s.replace("\\", "\\\\");
     }
     return s;
-  }
-
-  @Override
-  String getCreate(SqlCreate sc, boolean paramMode) {
-    String sql = super.getCreate(sc, paramMode);
-
-    if (BeeUtils.isEmpty(sc.getDataSource())) {
-      sql += " ENGINE=InnoDB";
-    }
-    return sql;
-  }
-
-  @Override
-  String getQuery(SqlSelect ss, boolean paramMode) {
-    int limit = ss.getLimit();
-    int offset = ss.getOffset();
-    String sql = super.getQuery(ss, paramMode);
-
-    if (BeeUtils.isPositive(limit)) {
-      sql += " LIMIT " + limit;
-    } else if (BeeUtils.isPositive(offset)) {
-      sql += " LIMIT " + (int) 1e9;
-    }
-    if (BeeUtils.isPositive(offset)) {
-      sql += " OFFSET " + offset;
-    }
-    return sql;
   }
 }

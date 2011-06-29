@@ -287,7 +287,7 @@ public class UiServiceBean {
     String where = reqInfo.getParameter(Service.VAR_VIEW_WHERE);
     String rowId = reqInfo.getParameter(Service.VAR_VIEW_ROW_ID);
     String sort = reqInfo.getParameter(Service.VAR_VIEW_ORDER);
-    
+
     IsCondition condition = null;
     if (BeeUtils.isLong(rowId)) {
       String tblName = sys.getView(viewName).getSource();
@@ -331,8 +331,8 @@ public class UiServiceBean {
     String grid = gName;
 
     SqlSelect ss = new SqlSelect();
-    ss.addFields("g", "properties").addFrom("grids", "g").setWhere(
-        SqlUtils.equal("g", "table", gName));
+    ss.addFields("g", "properties").addFrom("grids", "g")
+        .setWhere(SqlUtils.equal("g", "table", gName));
 
     String x = qs.getValue(ss);
 

@@ -6,11 +6,10 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
-import java.util.List;
 
 /**
- * Generates FROM part of a SQL statement depending on requirements of a 
- * specific SQL server, supports alias names.
+ * Generates FROM part of a SQL statement depending on requirements of a specific SQL server,
+ * supports alias names.
  */
 
 class FromSource implements IsFrom {
@@ -59,27 +58,19 @@ class FromSource implements IsFrom {
   }
 
   @Override
-  public List<Object> getSqlParams() {
-    List<Object> paramList = null;
-
-    if (source instanceof SqlSelect) {
-      paramList = ((SqlSelect) source).getSqlParams();
-    }
-    return paramList;
-  }
-
-  @Override
-  public String getSqlString(SqlBuilder builder, boolean paramMode) {
+  public String getSqlString(SqlBuilder builder) {
     StringBuilder from = new StringBuilder();
 
     if (source instanceof SqlSelect) {
-      from.append("(").append(((SqlSelect) source).getSqlString(builder, paramMode)).append(")");
+      from.append("(").append(((SqlSelect) source).getSqlString(builder)).append(")");
+    } else if (source instanceof String) {
+      from.append(SqlUtils.name((String) source).getSqlString(builder));
     } else {
-      from.append(SqlUtils.name((String) source).getSqlString(builder, paramMode));
+      Assert.untouchable();
     }
 
     if (!BeeUtils.isEmpty(alias)) {
-      from.append(" ").append(SqlUtils.name(alias).getSqlString(builder, paramMode));
+      from.append(" ").append(SqlUtils.name(alias).getSqlString(builder));
     }
     return from.toString();
   }

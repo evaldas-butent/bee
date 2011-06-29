@@ -46,7 +46,7 @@ public class TestIsCondition {
 
     select.setWhere(clause01);
     assertEquals(
-        "SELECT Table1.field1, Table1.field2, Table1.field3 FROM Table1 WHERE field1='Something val'",
+        "SELECT Table1.field1, Table1.field2, Table1.field3 FROM Table1 WHERE field1 = 'Something val'",
         select.getQuery());
 
     SqlSelect select1 = new SqlSelect();
@@ -58,7 +58,7 @@ public class TestIsCondition {
             SqlUtils.name("field2"), "sv2"));
     select1.setWhere(clause1);
     assertEquals(
-        "SELECT Table1.field1, Table1.field2, Table1.field3 FROM Table1 WHERE field1='Something val' AND field2='sv2'",
+        "SELECT Table1.field1, Table1.field2, Table1.field3 FROM Table1 WHERE field1 = 'Something val' AND field2 = 'sv2'",
         select1.getQuery());
 
     SqlSelect select2 = new SqlSelect();
@@ -83,7 +83,8 @@ public class TestIsCondition {
     IsCondition clause = SqlUtils.contains(SqlUtils.expression("field2"), "value");
     select.setWhere(clause);
 
-    assertEquals("SELECT Table1.field1, Table1.field2 FROM Table1 WHERE field2 LIKE '%value%'",
+    assertEquals(
+        "SELECT Table1.field1, Table1.field2 FROM Table1 WHERE field2 LIKE '%value%' ESCAPE '|'",
         select.getQuery());
 
     SqlSelect select3 = new SqlSelect();
@@ -95,23 +96,24 @@ public class TestIsCondition {
     select3.setWhere(clause3);
 
     assertEquals(
-        "SELECT Table1.field1, Table1.field2 FROM Table1 WHERE field2 OR field1 LIKE '%value%'",
+        "SELECT Table1.field1, Table1.field2 FROM Table1 WHERE field2 OR field1 LIKE '%value%' ESCAPE '|'",
         select3.getQuery());
 
     SqlSelect select1 = new SqlSelect();
     select1.addFields("Table1", "field1", "field2");
     select1.addFrom("Table1");
 
-    IsCondition clause1 = SqlUtils.contains(SqlUtils.expression("field2"), null);
-    select1.setWhere(clause1);
-
-    assertEquals("SELECT Table1.field1, Table1.field2 FROM Table1 WHERE field2 LIKE '%null%'",
-        select1.getQuery());
-
     SqlSelect select2 = new SqlSelect();
     select2.addFields("Table1", "field1", "field2");
     select2.addFrom("Table1");
     try {
+      IsCondition clause1 = SqlUtils.contains(SqlUtils.expression("field2"), null);
+      select1.setWhere(clause1);
+
+      assertEquals(
+          "SELECT Table1.field1, Table1.field2 FROM Table1 WHERE field2 LIKE '%null%' ESCAPE '|'",
+          select1.getQuery());
+
       IsCondition clause2 = SqlUtils.contains(SqlUtils.expression((Object) null), null);
       fail("Runtime error not works. May be woeks NULL conversantion");
     } catch (BeeRuntimeException e) {
@@ -134,23 +136,16 @@ public class TestIsCondition {
     select.setWhere(SqlUtils.contains("Table2", "field21", "value22"));
 
     assertEquals(
-        "SELECT Table1.field1, Table1.field2 FROM Table1 WHERE Table2.field21 LIKE '%value22%'",
+        "SELECT Table1.field1, Table1.field2 FROM Table1 WHERE Table2.field21 LIKE '%value22%' ESCAPE '|'",
          select.getQuery());
 
-    select = new SqlSelect();
-    select.addFields("Table1", "field1", "field2");
-    select.addFrom("Table1");
-    select.setWhere(SqlUtils.contains("Table2", "field21", null));
-
-    assertEquals(query + "Table2.field21 LIKE '%null%'", select.getQuery());
-    select = new SqlSelect();
-    select.addFields("Table1", "field1", "field2");
-    select.addFrom("Table1");
-    select.setWhere(SqlUtils.contains("Table2", "field21", ""));
-
-    assertEquals(query + "Table2.field21 LIKE '%%'", select.getQuery());
-
     try {
+      select = new SqlSelect();
+      select.addFields("Table1", "field1", "field2");
+      select.addFrom("Table1");
+      select.setWhere(SqlUtils.contains("Table2", "field21", ""));
+      assertEquals(query + "Table2.field21 LIKE '%%'", select.getQuery());
+
       select = new SqlSelect();
       select.addFields("Table1", "field1", "field2");
       select.addFrom("Table1");
@@ -214,23 +209,23 @@ public class TestIsCondition {
     select.addFrom("Table1");
     select.setWhere(SqlUtils.endsWith(SqlUtils.name("field2"), "val"));
 
-    assertEquals(query + "field2 LIKE '%val'", select.getQuery());
-
-    select = new SqlSelect();
-    select.addFields("Table1", "field11", "field12");
-    select.addFrom("Table1");
-    select.setWhere(SqlUtils.endsWith(SqlUtils.name("field2"), null));
-
-    assertEquals(query + "field2 LIKE '%null'", select.getQuery());
-
-    select = new SqlSelect();
-    select.addFields("Table1", "field11", "field12");
-    select.addFrom("Table1");
-    select.setWhere(SqlUtils.endsWith(SqlUtils.name("field2"), ""));
-
-    assertEquals(query + "field2 LIKE '%'", select.getQuery());
+    assertEquals(query + "field2 LIKE '%val' ESCAPE '|'", select.getQuery());
 
     try {
+      select = new SqlSelect();
+      select.addFields("Table1", "field11", "field12");
+      select.addFrom("Table1");
+      select.setWhere(SqlUtils.endsWith(SqlUtils.name("field2"), null));
+
+      assertEquals(query + "field2 LIKE '%null'", select.getQuery());
+
+      select = new SqlSelect();
+      select.addFields("Table1", "field11", "field12");
+      select.addFrom("Table1");
+      select.setWhere(SqlUtils.endsWith(SqlUtils.name("field2"), ""));
+
+      assertEquals(query + "field2 LIKE '%'", select.getQuery());
+
       select = new SqlSelect();
       select.addFields("Table1", "field11", "field12");
       select.addFrom("Table1");
@@ -255,21 +250,7 @@ public class TestIsCondition {
     select.addFrom("Table1");
     select.setWhere(SqlUtils.endsWith("Table2", "field21", "val22"));
 
-    assertEquals(query + "Table2.field21 LIKE '%val22'", select.getQuery());
-
-    select = new SqlSelect();
-    select.addFields("Table1", "field11", "field12");
-    select.addFrom("Table1");
-    select.setWhere(SqlUtils.endsWith("Table2", "field21", null));
-
-    assertEquals(query + "Table2.field21 LIKE '%null'", select.getQuery());
-
-    select = new SqlSelect();
-    select.addFields("Table1", "field11", "field12");
-    select.addFrom("Table1");
-    select.setWhere(SqlUtils.endsWith("Table2", "field21", ""));
-
-    assertEquals(query + "Table2.field21 LIKE '%'", select.getQuery());
+    assertEquals(query + "Table2.field21 LIKE '%val22' ESCAPE '|'", select.getQuery());
 
     try {
       select = new SqlSelect();
@@ -285,6 +266,20 @@ public class TestIsCondition {
     }
 
     try {
+      select = new SqlSelect();
+      select.addFields("Table1", "field11", "field12");
+      select.addFrom("Table1");
+      select.setWhere(SqlUtils.endsWith("Table2", "field21", null));
+
+      assertEquals(query + "Table2.field21 LIKE '%null'", select.getQuery());
+
+      select = new SqlSelect();
+      select.addFields("Table1", "field11", "field12");
+      select.addFrom("Table1");
+      select.setWhere(SqlUtils.endsWith("Table2", "field21", ""));
+
+      assertEquals(query + "Table2.field21 LIKE '%'", select.getQuery());
+
       select = new SqlSelect();
       select.addFields("Table1", "field11", "field12");
       select.addFrom("Table1");
@@ -334,7 +329,7 @@ public class TestIsCondition {
     IsCondition clause = SqlUtils.equal("Table1", "field1", "val");
     select.setWhere(clause);
 
-    assertEquals("SELECT Table1.field1, Table1.field2 FROM Table1 WHERE Table1.field1='val'",
+    assertEquals("SELECT Table1.field1, Table1.field2 FROM Table1 WHERE Table1.field1 = 'val'",
         select.getQuery());
     SqlSelect select3 = new SqlSelect();
     select3.addFields("Table1", "field1", "field2");
@@ -343,8 +338,9 @@ public class TestIsCondition {
     IsCondition clause3 = SqlUtils.equal("Table1", "field1", 25);
     select3.setWhere(clause3);
 
-    assertEquals("SELECT Table1.field1, Table1.field2 FROM Table1 WHERE Table1.field1=25", select3
-        .getQuery());
+    assertEquals("SELECT Table1.field1, Table1.field2 FROM Table1 WHERE Table1.field1 = 25",
+        select3
+            .getQuery());
     SqlSelect select4 = new SqlSelect();
     select4.addFields("Table1", "field1", "field2");
     select4.addFrom("Table1");
@@ -352,7 +348,7 @@ public class TestIsCondition {
     IsCondition clause4 = SqlUtils.equal("Table1", "field1", true);
     select4.setWhere(clause4);
 
-    assertEquals("SELECT Table1.field1, Table1.field2 FROM Table1 WHERE Table1.field1=1", select4
+    assertEquals("SELECT Table1.field1, Table1.field2 FROM Table1 WHERE Table1.field1 = 1", select4
         .getQuery());
     SqlSelect select5 = new SqlSelect();
     select5.addFields("Table1", "field1", "field2");
@@ -361,7 +357,7 @@ public class TestIsCondition {
     IsCondition clause5 = SqlUtils.equal("Table1", "field1", null);
     select5.setWhere(clause5);
 
-    assertEquals("SELECT Table1.field1, Table1.field2 FROM Table1 WHERE Table1.field1=null",
+    assertEquals("SELECT Table1.field1, Table1.field2 FROM Table1 WHERE Table1.field1 = null",
         select5.getQuery());
     SqlSelect select6 = new SqlSelect();
     select6.addFields("Table1", "field1", "field2");
@@ -370,7 +366,7 @@ public class TestIsCondition {
     IsCondition clause6 = SqlUtils.equal("Table1", "field1", "");
     select6.setWhere(clause6);
 
-    assertEquals("SELECT Table1.field1, Table1.field2 FROM Table1 WHERE Table1.field1=''",
+    assertEquals("SELECT Table1.field1, Table1.field2 FROM Table1 WHERE Table1.field1 = ''",
         select6.getQuery());
     try {
       SqlUtils.equal(null, "field1", null);
@@ -419,7 +415,7 @@ public class TestIsCondition {
     IsCondition clause = SqlUtils.inList(SqlUtils.bitAnd("Table2", "field21", "val21"), "val1");
     select.setWhere(clause);
     assertEquals(
-        "SELECT Table1.field1, Table1.field2 FROM Table1 WHERE ((Table2.field21&val21)='val1')",
+        "SELECT Table1.field1, Table1.field2 FROM Table1 WHERE ((Table2.field21 & val21) = 'val1')",
         select.getQuery());
     SqlSelect select1 = new SqlSelect();
     select1.addFields("Table1", "field1", "field2");
@@ -429,7 +425,7 @@ public class TestIsCondition {
         SqlUtils.inList(SqlUtils.bitAnd("Table2", "field21", "val21"), "val1", 1, null, false);
     select1.setWhere(clause1);
     assertEquals(
-        "SELECT Table1.field1, Table1.field2 FROM Table1 WHERE ((Table2.field21&val21)='val1' OR (Table2.field21&val21)=1 OR (Table2.field21&val21)=null OR (Table2.field21&val21)=0)",
+        "SELECT Table1.field1, Table1.field2 FROM Table1 WHERE ((Table2.field21 & val21) = 'val1' OR (Table2.field21 & val21) = 1 OR (Table2.field21 & val21) = null OR (Table2.field21 & val21) = 0)",
         select1.getQuery());
 
     try {
@@ -459,7 +455,7 @@ public class TestIsCondition {
     IsCondition clause = SqlUtils.inList("Table2", "field21", "val1");
     select.setWhere(clause);
 
-    assertEquals("SELECT Table1.field1, Table1.field2 FROM Table1 WHERE (Table2.field21='val1')",
+    assertEquals("SELECT Table1.field1, Table1.field2 FROM Table1 WHERE (Table2.field21 = 'val1')",
         select.getQuery());
     SqlSelect select1 = new SqlSelect();
     select1.addFields("Table1", "field1", "field2");
@@ -468,7 +464,7 @@ public class TestIsCondition {
     select1.setWhere(clause1);
 
     assertEquals(
-        "SELECT Table1.field1, Table1.field2 FROM Table1 WHERE (Table2.field21='val1' OR Table2.field21=0 OR Table2.field21=-5 OR Table2.field21=null OR Table2.field21='')",
+        "SELECT Table1.field1, Table1.field2 FROM Table1 WHERE (Table2.field21 = 'val1' OR Table2.field21 = 0 OR Table2.field21 = -5 OR Table2.field21 = null OR Table2.field21 = '')",
         select1.getQuery());
   }
 
@@ -489,16 +485,13 @@ public class TestIsCondition {
     select.setWhere(clause);
 
     String b[] = {"Tablen"};
-    String c[] = {"5"};
     Object a[] = clause.getSources().toArray();
 
     assertArrayEquals(inselect.getSources().toArray(), a);
     assertArrayEquals(b, a);
 
-    assertArrayEquals(inselect.getSqlParams().toArray(), clause.getSqlParams().toArray());
-    assertArrayEquals(c, clause.getSqlParams().toArray());
     assertEquals(
-        "SELECT Table1.field1, Table1.field2 FROM Table1 WHERE Table1.field2 IN (SELECT Tablen.fieldn1 FROM Tablen WHERE Fieldn='5')",
+        "SELECT Table1.field1, Table1.field2 FROM Table1 WHERE Table1.field2 IN (SELECT Tablen.fieldn1 FROM Tablen WHERE Fieldn = '5')",
         select.getQuery());
     try {
       IsCondition clause1 = SqlUtils.in("  Table1  ", "field2", null);
@@ -571,7 +564,7 @@ public class TestIsCondition {
     select1.setWhere(clause1);
 
     assertEquals(
-        "SELECT Table1.field1, Table1.field2 FROM Table1 WHERE Table1.field1 IN (SELECT DISTINCT Table2.field21 FROM Table2 WHERE Table1.field2='val1' AND Table2.field21='val2')",
+        "SELECT Table1.field1, Table1.field2 FROM Table1 WHERE Table1.field1 IN (SELECT DISTINCT Table2.field21 FROM Table2 WHERE Table1.field2 = 'val1' AND Table2.field21 = 'val2')",
         select1.getQuery());
     try {
       IsCondition clause2 = SqlUtils.in("\t\t\r", "field1", "Table2", "field21", null);
@@ -651,7 +644,7 @@ public class TestIsCondition {
     select.setWhere(clause);
 
     assertEquals(
-        "SELECT Table1.field1, Table1.field2 FROM Table1 WHERE (Table2.field21&val21) IS NOT NULL",
+        "SELECT Table1.field1, Table1.field2 FROM Table1 WHERE (Table2.field21 & val21) IS NOT NULL",
         select.getQuery());
     try {
       IsCondition clause1 = SqlUtils.notNull(null);
@@ -688,7 +681,7 @@ public class TestIsCondition {
     select.setWhere(clause);
 
     assertEquals(
-        "SELECT Table1.field1, Table1.field2 FROM Table1 WHERE (Table2.field21&val21) IS NULL",
+        "SELECT Table1.field1, Table1.field2 FROM Table1 WHERE (Table2.field21 & val21) IS NULL",
         select.getQuery());
   }
 
@@ -718,7 +711,7 @@ public class TestIsCondition {
     select.setWhere(clause);
 
     assertEquals(
-        "SELECT Table1.field1, Table1.field2 FROM Table1 WHERE Table1.field1<=Table2.field21",
+        "SELECT Table1.field1, Table1.field2 FROM Table1 WHERE Table1.field1 <= Table2.field21",
         select.getQuery());
   }
 
@@ -734,7 +727,7 @@ public class TestIsCondition {
     select.setWhere(clause);
 
     assertEquals(
-        "SELECT Table1.field1, Table1.field2 FROM Table1 WHERE Table1.field1<Table2.field21",
+        "SELECT Table1.field1, Table1.field2 FROM Table1 WHERE Table1.field1 < Table2.field21",
         select.getQuery());
   }
 
@@ -750,7 +743,7 @@ public class TestIsCondition {
     select.setWhere(clause);
 
     assertEquals(
-        "SELECT Table1.field1, Table1.field2 FROM Table1 WHERE Table1.field1>=Table2.field21",
+        "SELECT Table1.field1, Table1.field2 FROM Table1 WHERE Table1.field1 >= Table2.field21",
         select.getQuery());
   }
 
@@ -766,7 +759,7 @@ public class TestIsCondition {
     select.setWhere(clause);
 
     assertEquals(
-        "SELECT Table1.field1, Table1.field2 FROM Table1 WHERE Table1.field1>Table2.field21",
+        "SELECT Table1.field1, Table1.field2 FROM Table1 WHERE Table1.field1 > Table2.field21",
         select.getQuery());
   }
 
@@ -783,14 +776,14 @@ public class TestIsCondition {
 
     try {
       assertEquals(
-          "SELECT Table1.field1, Table1.field2 FROM Table1 WHERE Table1.field1<>Table2.field21",
+          "SELECT Table1.field1, Table1.field2 FROM Table1 WHERE Table1.field1 <> Table2.field21",
           select.getQuery());
     } catch (AssertionError e) {
       e.printStackTrace();
       System.out
           .println("[INFO] TestIsCondition.testJoinNorEqualStringStringStringStringGeneric: Runs alternative test 1");
       assertEquals(
-          "SELECT Table1.field1, Table1.field2 FROM Table1 WHERE Table1.field1!=Table2.field21",
+          "SELECT Table1.field1, Table1.field2 FROM Table1 WHERE Table1.field1 != Table2.field21",
           select.getQuery());
     }
   }
@@ -807,7 +800,7 @@ public class TestIsCondition {
     select.setWhere(clause);
 
     assertEquals(
-        "SELECT Table1.field1, Table1.field2 FROM Table1 WHERE Table1.field1=Table2.field21",
+        "SELECT Table1.field1, Table1.field2 FROM Table1 WHERE Table1.field1 = Table2.field21",
         select.getQuery());
   }
 
@@ -824,7 +817,7 @@ public class TestIsCondition {
     select.setWhere(clause);
 
     assertEquals(
-        "SELECT Table1.field1, Table1.field2 FROM Table1 WHERE Table1.field1=Table2.field1",
+        "SELECT Table1.field1, Table1.field2 FROM Table1 WHERE Table1.field1 = Table2.field1",
         select.getQuery());
     SqlSelect select1 = new SqlSelect();
     select1.addFields("Table1", "field1", "field2");
@@ -834,7 +827,7 @@ public class TestIsCondition {
     select1.setWhere(clause1);
 
     assertEquals(
-        "SELECT Table1.field1, Table1.field2 FROM Table1 WHERE Table1.field1=Table2.field1 AND Table1.field21=Table2.field21",
+        "SELECT Table1.field1, Table1.field2 FROM Table1 WHERE Table1.field1 = Table2.field1 AND Table1.field21 = Table2.field21",
         select1.getQuery());
     try {
       IsCondition clause2 = SqlUtils.joinUsing("Table1", "Table2");
@@ -857,7 +850,7 @@ public class TestIsCondition {
     select.setWhere(clause);
 
     assertEquals(
-        "SELECT Table1.field1, Table1.field2 FROM Table1 WHERE (Table2.field21&val21)<='value'",
+        "SELECT Table1.field1, Table1.field2 FROM Table1 WHERE (Table2.field21 & val21) <= 'value'",
         select.getQuery());
     SqlSelect select1 = new SqlSelect();
     select1.addFields("Table1", "field1", "field2");
@@ -868,12 +861,12 @@ public class TestIsCondition {
 
     try {
       assertEquals(
-          "SELECT Table1.field1, Table1.field2 FROM Table1 WHERE (Table2.field21&val21)<=10",
+          "SELECT Table1.field1, Table1.field2 FROM Table1 WHERE (Table2.field21 & val21) <= 10",
           select1.getQuery());
     } catch (AssertionError e) {
       System.out.println("Alternatyvus testas ");
       assertEquals(
-          "SELECT Table1.field1, Table1.field2 FROM Table1 WHERE (Table2.field21&val21)<=10.0",
+          "SELECT Table1.field1, Table1.field2 FROM Table1 WHERE (Table2.field21 & val21) <= 10.0",
           select1.getQuery());
     }
     SqlSelect select2 = new SqlSelect();
@@ -883,7 +876,8 @@ public class TestIsCondition {
     IsCondition clause2 = SqlUtils.lessEqual(SqlUtils.bitAnd("Table2", "field21", "val21"), false);
     select2.setWhere(clause2);
 
-    assertEquals("SELECT Table1.field1, Table1.field2 FROM Table1 WHERE (Table2.field21&val21)<=0",
+    assertEquals(
+        "SELECT Table1.field1, Table1.field2 FROM Table1 WHERE (Table2.field21 & val21) <= 0",
         select2.getQuery());
     SqlSelect select3 = new SqlSelect();
     select3.addFields("Table1", "field1", "field2");
@@ -893,7 +887,7 @@ public class TestIsCondition {
     select3.setWhere(clause3);
 
     assertEquals(
-        "SELECT Table1.field1, Table1.field2 FROM Table1 WHERE (Table2.field21&val21)<=null",
+        "SELECT Table1.field1, Table1.field2 FROM Table1 WHERE (Table2.field21 & val21) <= null",
         select3.getQuery());
   }
 
@@ -907,7 +901,8 @@ public class TestIsCondition {
     IsCondition clause = SqlUtils.lessEqual("Table2", "field21", "value1");
     select.setWhere(clause);
 
-    assertEquals("SELECT Table1.field1, Table1.field2 FROM Table1 WHERE Table2.field21<='value1'",
+    assertEquals(
+        "SELECT Table1.field1, Table1.field2 FROM Table1 WHERE Table2.field21 <= 'value1'",
         select.getQuery());
     SqlSelect select1 = new SqlSelect();
     select1.addFields("Table1", "field1", "field2");
@@ -917,10 +912,10 @@ public class TestIsCondition {
     select1.setWhere(clause1);
 
     try {
-      assertEquals("SELECT Table1.field1, Table1.field2 FROM Table1 WHERE Table2.field21<=5",
+      assertEquals("SELECT Table1.field1, Table1.field2 FROM Table1 WHERE Table2.field21 <= 5",
           select1.getQuery());
     } catch (AssertionError e) {
-      assertEquals("SELECT Table1.field1, Table1.field2 FROM Table1 WHERE Table2.field21<=5.0",
+      assertEquals("SELECT Table1.field1, Table1.field2 FROM Table1 WHERE Table2.field21 <= 5.0",
           select1.getQuery());
     }
 
@@ -931,7 +926,7 @@ public class TestIsCondition {
     IsCondition clause3 = SqlUtils.lessEqual("Table2", "field21", true);
     select3.setWhere(clause3);
 
-    assertEquals("SELECT Table1.field1, Table1.field2 FROM Table1 WHERE Table2.field21<=1",
+    assertEquals("SELECT Table1.field1, Table1.field2 FROM Table1 WHERE Table2.field21 <= 1",
         select3.getQuery());
     SqlSelect select4 = new SqlSelect();
     select4.addFields("Table1", "field1", "field2");
@@ -940,7 +935,7 @@ public class TestIsCondition {
     IsCondition clause4 = SqlUtils.lessEqual("Table2", "field21", null);
     select4.setWhere(clause4);
 
-    assertEquals("SELECT Table1.field1, Table1.field2 FROM Table1 WHERE Table2.field21<=null",
+    assertEquals("SELECT Table1.field1, Table1.field2 FROM Table1 WHERE Table2.field21 <= null",
         select4.getQuery());
   }
 
@@ -955,7 +950,7 @@ public class TestIsCondition {
     select.setWhere(clause);
 
     assertEquals(
-        "SELECT Table1.field1, Table1.field2 FROM Table1 WHERE (Table2.field21&val21)<'value'",
+        "SELECT Table1.field1, Table1.field2 FROM Table1 WHERE (Table2.field21 & val21) < 'value'",
         select.getQuery());
     SqlSelect select1 = new SqlSelect();
     select1.addFields("Table1", "field1", "field2");
@@ -965,13 +960,13 @@ public class TestIsCondition {
     select1.setWhere(clause1);
     try {
       assertEquals(
-          "SELECT Table1.field1, Table1.field2 FROM Table1 WHERE (Table2.field21&val21)<100.0",
+          "SELECT Table1.field1, Table1.field2 FROM Table1 WHERE (Table2.field21 & val21) < 100.0",
           select1.getQuery());
     } catch (AssertionError e) {
       System.out
           .println("[INFO]TestIscondition.testLessExpressionObjectGeneric: Alternative test 1");
       assertEquals(
-          "SELECT Table1.field1, Table1.field2 FROM Table1 WHERE (Table2.field21&val21)<100",
+          "SELECT Table1.field1, Table1.field2 FROM Table1 WHERE (Table2.field21 & val21) < 100",
           select1.getQuery());
     }
     SqlSelect select2 = new SqlSelect();
@@ -981,7 +976,8 @@ public class TestIsCondition {
     IsCondition clause2 = SqlUtils.less(SqlUtils.bitAnd("Table2", "field21", "val21"), false);
     select2.setWhere(clause2);
 
-    assertEquals("SELECT Table1.field1, Table1.field2 FROM Table1 WHERE (Table2.field21&val21)<0",
+    assertEquals(
+        "SELECT Table1.field1, Table1.field2 FROM Table1 WHERE (Table2.field21 & val21) < 0",
         select2.getQuery());
     SqlSelect select3 = new SqlSelect();
     select3.addFields("Table1", "field1", "field2");
@@ -991,7 +987,7 @@ public class TestIsCondition {
     select3.setWhere(clause3);
 
     assertEquals(
-        "SELECT Table1.field1, Table1.field2 FROM Table1 WHERE (Table2.field21&val21)<null",
+        "SELECT Table1.field1, Table1.field2 FROM Table1 WHERE (Table2.field21 & val21) < null",
         select3.getQuery());
   }
 
@@ -1005,7 +1001,7 @@ public class TestIsCondition {
     IsCondition clause = SqlUtils.less("Table2", "field21", "value1");
     select.setWhere(clause);
 
-    assertEquals("SELECT Table1.field1, Table1.field2 FROM Table1 WHERE Table2.field21<'value1'",
+    assertEquals("SELECT Table1.field1, Table1.field2 FROM Table1 WHERE Table2.field21 < 'value1'",
         select.getQuery());
     SqlSelect select1 = new SqlSelect();
     select1.addFields("Table1", "field1", "field2");
@@ -1015,11 +1011,11 @@ public class TestIsCondition {
     select1.setWhere(clause1);
 
     try {
-      assertEquals("SELECT Table1.field1, Table1.field2 FROM Table1 WHERE Table2.field21<5",
+      assertEquals("SELECT Table1.field1, Table1.field2 FROM Table1 WHERE Table2.field21 < 5",
           select1.getQuery());
     } catch (AssertionError e) {
       System.out.println("TestIsCondition.testLessStringStringObjectGeneric: Alternative test1");
-      assertEquals("SELECT Table1.field1, Table1.field2 FROM Table1 WHERE Table2.field21<5.0",
+      assertEquals("SELECT Table1.field1, Table1.field2 FROM Table1 WHERE Table2.field21 < 5.0",
           select1.getQuery());
     }
 
@@ -1030,7 +1026,7 @@ public class TestIsCondition {
     IsCondition clause3 = SqlUtils.less("Table2", "field21", true);
     select3.setWhere(clause3);
 
-    assertEquals("SELECT Table1.field1, Table1.field2 FROM Table1 WHERE Table2.field21<1",
+    assertEquals("SELECT Table1.field1, Table1.field2 FROM Table1 WHERE Table2.field21 < 1",
         select3.getQuery());
 
     SqlSelect select4 = new SqlSelect();
@@ -1040,7 +1036,7 @@ public class TestIsCondition {
     IsCondition clause4 = SqlUtils.less("Table2", "field21", null);
     select4.setWhere(clause4);
 
-    assertEquals("SELECT Table1.field1, Table1.field2 FROM Table1 WHERE Table2.field21<null",
+    assertEquals("SELECT Table1.field1, Table1.field2 FROM Table1 WHERE Table2.field21 < null",
         select4.getQuery());
   }
 
@@ -1056,25 +1052,25 @@ public class TestIsCondition {
 
     select.setWhere(SqlUtils.matches("Table2", "field21", "val22"));
 
-    assertEquals(query + "Table2.field21 LIKE 'val22'", select.getQuery());
-
-    select = new SqlSelect();
-    select.addFields("Table1", "field11", "field12");
-    select.addFrom("Table1");
-
-    select.setWhere(SqlUtils.matches("Table2", "field21", ""));
-
-    assertEquals(query + "Table2.field21 LIKE ''", select.getQuery());
-
-    select = new SqlSelect();
-    select.addFields("Table1", "field11", "field12");
-    select.addFrom("Table1");
-
-    select.setWhere(SqlUtils.matches("Table2", "field21", null));
-
-    assertEquals(query + "Table2.field21 LIKE null", select.getQuery());
+    assertEquals(query + "Table2.field21 LIKE 'val22' ESCAPE '|'", select.getQuery());
 
     try {
+      select = new SqlSelect();
+      select.addFields("Table1", "field11", "field12");
+      select.addFrom("Table1");
+
+      select.setWhere(SqlUtils.matches("Table2", "field21", null));
+
+      assertEquals(query + "Table2.field21 LIKE null", select.getQuery());
+
+      select = new SqlSelect();
+      select.addFields("Table1", "field11", "field12");
+      select.addFrom("Table1");
+
+      select.setWhere(SqlUtils.matches("Table2", "field21", ""));
+
+      assertEquals(query + "Table2.field21 LIKE '' ESCAPE '|'", select.getQuery());
+
       select = new SqlSelect();
       select.addFields("Table1", "field11", "field12");
       select.addFrom("Table1");
@@ -1151,7 +1147,7 @@ public class TestIsCondition {
     select.setWhere(clause);
 
     assertEquals(
-        "SELECT Table1.field1, Table1.field2 FROM Table1 WHERE (Table2.field21&val21)>='value'",
+        "SELECT Table1.field1, Table1.field2 FROM Table1 WHERE (Table2.field21 & val21) >= 'value'",
         select.getQuery());
     SqlSelect select1 = new SqlSelect();
     select1.addFields("Table1", "field1", "field2");
@@ -1161,11 +1157,11 @@ public class TestIsCondition {
     select1.setWhere(clause1);
     try {
       assertEquals(
-          "SELECT Table1.field1, Table1.field2 FROM Table1 WHERE (Table2.field21&val21)>=10",
+          "SELECT Table1.field1, Table1.field2 FROM Table1 WHERE (Table2.field21 & val21) >= 10",
           select1.getQuery());
     } catch (AssertionError e) {
       assertEquals(
-          "SELECT Table1.field1, Table1.field2 FROM Table1 WHERE (Table2.field21&val21)>=10.0",
+          "SELECT Table1.field1, Table1.field2 FROM Table1 WHERE (Table2.field21 & val21) >= 10.0",
           select1.getQuery());
     }
     SqlSelect select2 = new SqlSelect();
@@ -1175,7 +1171,8 @@ public class TestIsCondition {
     IsCondition clause2 = SqlUtils.moreEqual(SqlUtils.bitAnd("Table2", "field21", "val21"), false);
     select2.setWhere(clause2);
 
-    assertEquals("SELECT Table1.field1, Table1.field2 FROM Table1 WHERE (Table2.field21&val21)>=0",
+    assertEquals(
+        "SELECT Table1.field1, Table1.field2 FROM Table1 WHERE (Table2.field21 & val21) >= 0",
         select2.getQuery());
     SqlSelect select3 = new SqlSelect();
     select3.addFields("Table1", "field1", "field2");
@@ -1185,7 +1182,7 @@ public class TestIsCondition {
     select3.setWhere(clause3);
 
     assertEquals(
-        "SELECT Table1.field1, Table1.field2 FROM Table1 WHERE (Table2.field21&val21)>=null",
+        "SELECT Table1.field1, Table1.field2 FROM Table1 WHERE (Table2.field21 & val21) >= null",
         select3.getQuery());
   }
 
@@ -1199,7 +1196,8 @@ public class TestIsCondition {
     IsCondition clause = SqlUtils.moreEqual("Table2", "field21", "value1");
     select.setWhere(clause);
 
-    assertEquals("SELECT Table1.field1, Table1.field2 FROM Table1 WHERE Table2.field21>='value1'",
+    assertEquals(
+        "SELECT Table1.field1, Table1.field2 FROM Table1 WHERE Table2.field21 >= 'value1'",
         select.getQuery());
     SqlSelect select1 = new SqlSelect();
     select1.addFields("Table1", "field1", "field2");
@@ -1209,7 +1207,7 @@ public class TestIsCondition {
     select1.setWhere(clause1);
 
     try {
-      assertEquals("SELECT Table1.field1, Table1.field2 FROM Table1 WHERE Table2.field21>=5",
+      assertEquals("SELECT Table1.field1, Table1.field2 FROM Table1 WHERE Table2.field21 >= 5",
           select1.getQuery());
     } catch (AssertionError e) {
       assertEquals("SELECT Table1.field1, Table1.field2 FROM Table1 WHERE Table2.field21>=5.0",
@@ -1222,7 +1220,7 @@ public class TestIsCondition {
     IsCondition clause3 = SqlUtils.moreEqual("Table2", "field21", true);
     select3.setWhere(clause3);
 
-    assertEquals("SELECT Table1.field1, Table1.field2 FROM Table1 WHERE Table2.field21>=1",
+    assertEquals("SELECT Table1.field1, Table1.field2 FROM Table1 WHERE Table2.field21 >= 1",
         select3.getQuery());
     SqlSelect select4 = new SqlSelect();
     select4.addFields("Table1", "field1", "field2");
@@ -1231,7 +1229,7 @@ public class TestIsCondition {
     IsCondition clause4 = SqlUtils.moreEqual("Table2", "field21", null);
     select4.setWhere(clause4);
 
-    assertEquals("SELECT Table1.field1, Table1.field2 FROM Table1 WHERE Table2.field21>=null",
+    assertEquals("SELECT Table1.field1, Table1.field2 FROM Table1 WHERE Table2.field21 >= null",
         select4.getQuery());
   }
 
@@ -1246,7 +1244,7 @@ public class TestIsCondition {
     select.setWhere(clause);
 
     assertEquals(
-        "SELECT Table1.field1, Table1.field2 FROM Table1 WHERE (Table2.field21&val21)>'value'",
+        "SELECT Table1.field1, Table1.field2 FROM Table1 WHERE (Table2.field21 & val21) > 'value'",
         select.getQuery());
 
     SqlSelect select1 = new SqlSelect();
@@ -1258,11 +1256,11 @@ public class TestIsCondition {
 
     try {
       assertEquals(
-          "SELECT Table1.field1, Table1.field2 FROM Table1 WHERE (Table2.field21&val21)>10",
+          "SELECT Table1.field1, Table1.field2 FROM Table1 WHERE (Table2.field21 & val21) > 10",
           select1.getQuery());
     } catch (AssertionError e) {
       assertEquals(
-          "SELECT Table1.field1, Table1.field2 FROM Table1 WHERE (Table2.field21&val21)>10.0",
+          "SELECT Table1.field1, Table1.field2 FROM Table1 WHERE (Table2.field21 & val21) > 10.0",
           select1.getQuery());
     }
 
@@ -1273,7 +1271,8 @@ public class TestIsCondition {
     IsCondition clause2 = SqlUtils.more(SqlUtils.bitAnd("Table2", "field21", "val21"), false);
     select2.setWhere(clause2);
 
-    assertEquals("SELECT Table1.field1, Table1.field2 FROM Table1 WHERE (Table2.field21&val21)>0",
+    assertEquals(
+        "SELECT Table1.field1, Table1.field2 FROM Table1 WHERE (Table2.field21 & val21) > 0",
         select2.getQuery());
 
     SqlSelect select3 = new SqlSelect();
@@ -1284,7 +1283,7 @@ public class TestIsCondition {
     select3.setWhere(clause3);
 
     assertEquals(
-        "SELECT Table1.field1, Table1.field2 FROM Table1 WHERE (Table2.field21&val21)>null",
+        "SELECT Table1.field1, Table1.field2 FROM Table1 WHERE (Table2.field21 & val21) > null",
         select3.getQuery());
   }
 
@@ -1299,7 +1298,7 @@ public class TestIsCondition {
     IsCondition clause = SqlUtils.more("Table2", "field21", "value1");
     select.setWhere(clause);
 
-    assertEquals("SELECT Table1.field1, Table1.field2 FROM Table1 WHERE Table2.field21>'value1'",
+    assertEquals("SELECT Table1.field1, Table1.field2 FROM Table1 WHERE Table2.field21 > 'value1'",
         select.getQuery());
 
     SqlSelect select1 = new SqlSelect();
@@ -1310,10 +1309,10 @@ public class TestIsCondition {
     select1.setWhere(clause1);
 
     try {
-      assertEquals("SELECT Table1.field1, Table1.field2 FROM Table1 WHERE Table2.field21>5",
+      assertEquals("SELECT Table1.field1, Table1.field2 FROM Table1 WHERE Table2.field21 > 5",
           select1.getQuery());
     } catch (AssertionError e) {
-      assertEquals("SELECT Table1.field1, Table1.field2 FROM Table1 WHERE Table2.field21>5.0",
+      assertEquals("SELECT Table1.field1, Table1.field2 FROM Table1 WHERE Table2.field21 > 5.0",
           select1.getQuery());
     }
     SqlSelect select3 = new SqlSelect();
@@ -1323,7 +1322,7 @@ public class TestIsCondition {
     IsCondition clause3 = SqlUtils.more("Table2", "field21", true);
     select3.setWhere(clause3);
 
-    assertEquals("SELECT Table1.field1, Table1.field2 FROM Table1 WHERE Table2.field21>1",
+    assertEquals("SELECT Table1.field1, Table1.field2 FROM Table1 WHERE Table2.field21 > 1",
         select3.getQuery());
     SqlSelect select4 = new SqlSelect();
     select4.addFields("Table1", "field1", "field2");
@@ -1332,7 +1331,7 @@ public class TestIsCondition {
     IsCondition clause4 = SqlUtils.more("Table2", "field21", null);
     select4.setWhere(clause4);
 
-    assertEquals("SELECT Table1.field1, Table1.field2 FROM Table1 WHERE Table2.field21>null",
+    assertEquals("SELECT Table1.field1, Table1.field2 FROM Table1 WHERE Table2.field21 > null",
         select4.getQuery());
   }
 
@@ -1348,13 +1347,13 @@ public class TestIsCondition {
 
     try {
       assertEquals(
-          "SELECT Table1.field1, Table1.field2 FROM Table1 WHERE (Table2.field21&val21)<>'value'",
+          "SELECT Table1.field1, Table1.field2 FROM Table1 WHERE (Table2.field21 & val21) <> 'value'",
           select.getQuery());
     } catch (AssertionError e) {
       System.out
           .println("[INFO] TestIsCondition.testNotEqualIsExpressionObjectGeneric: Alternative test 1");
       assertEquals(
-          "SELECT Table1.field1, Table1.field2 FROM Table1 WHERE (Table2.field21&val21)!='value'",
+          "SELECT Table1.field1, Table1.field2 FROM Table1 WHERE (Table2.field21 & val21) != 'value'",
           select.getQuery());
     }
     SqlSelect select1 = new SqlSelect();
@@ -1366,13 +1365,13 @@ public class TestIsCondition {
 
     try {
       assertEquals(
-          "SELECT Table1.field1, Table1.field2 FROM Table1 WHERE (Table2.field21&val21)<>10",
+          "SELECT Table1.field1, Table1.field2 FROM Table1 WHERE (Table2.field21&val21) <> 10",
           select1.getQuery());
     } catch (AssertionError e) {
       System.out
           .println("TestIsCondition.testNotEqualIsExpressionObjectGeneric: Alternative test 2");
       assertEquals(
-          "SELECT Table1.field1, Table1.field2 FROM Table1 WHERE (Table2.field21&val21)!=10",
+          "SELECT Table1.field1, Table1.field2 FROM Table1 WHERE (Table2.field21 & val21) != 10",
           select1.getQuery());
     }
     SqlSelect select2 = new SqlSelect();
@@ -1384,13 +1383,13 @@ public class TestIsCondition {
 
     try {
       assertEquals(
-          "SELECT Table1.field1, Table1.field2 FROM Table1 WHERE (Table2.field21&val21)<>0",
+          "SELECT Table1.field1, Table1.field2 FROM Table1 WHERE (Table2.field21 & val21) <> 0",
           select2.getQuery());
     } catch (AssertionError e) {
       System.out
           .println("TestIsCondition.testNotEqualIsExpressionObjectGeneric: Alternative test 3");
       assertEquals(
-          "SELECT Table1.field1, Table1.field2 FROM Table1 WHERE (Table2.field21&val21)!=0",
+          "SELECT Table1.field1, Table1.field2 FROM Table1 WHERE (Table2.field21 & val21) != 0",
           select2.getQuery());
     }
     SqlSelect select3 = new SqlSelect();
@@ -1402,13 +1401,13 @@ public class TestIsCondition {
 
     try {
       assertEquals(
-          "SELECT Table1.field1, Table1.field2 FROM Table1 WHERE (Table2.field21&val21)<>null",
+          "SELECT Table1.field1, Table1.field2 FROM Table1 WHERE (Table2.field21 & val21) <> null",
           select3.getQuery());
     } catch (AssertionError e) {
       System.out
           .println("TestIsCondition.testNotEqualIsExpressionObjectGeneric: Alternative test 4");
       assertEquals(
-          "SELECT Table1.field1, Table1.field2 FROM Table1 WHERE (Table2.field21&val21)!=null",
+          "SELECT Table1.field1, Table1.field2 FROM Table1 WHERE (Table2.field21 & val21) != null",
           select3.getQuery());
     }
   }
@@ -1426,13 +1425,13 @@ public class TestIsCondition {
 
     try {
       assertEquals(
-          "SELECT Table1.field1, Table1.field2 FROM Table1 WHERE Table2.field21<>'value1'",
+          "SELECT Table1.field1, Table1.field2 FROM Table1 WHERE Table2.field21 <> 'value1'",
           select.getQuery());
     } catch (AssertionError e) {
       System.out
           .println("[INFO] TestIsCondition.testNotEqualStringStringObjectGeneric(): Alternative test 1");
       assertEquals(
-          "SELECT Table1.field1, Table1.field2 FROM Table1 WHERE Table2.field21!='value1'",
+          "SELECT Table1.field1, Table1.field2 FROM Table1 WHERE Table2.field21 != 'value1'",
           select.getQuery());
     }
     SqlSelect select1 = new SqlSelect();
@@ -1443,12 +1442,12 @@ public class TestIsCondition {
     select1.setWhere(clause1);
 
     try {
-      assertEquals("SELECT Table1.field1, Table1.field2 FROM Table1 WHERE Table2.field21<>5",
+      assertEquals("SELECT Table1.field1, Table1.field2 FROM Table1 WHERE Table2.field21 <> 5",
           select1.getQuery());
     } catch (AssertionError e) {
       System.out
           .println("[INFO] TestIsCondition.testNotEqualStringStringObjectGeneric(): Alternative test 2");
-      assertEquals("SELECT Table1.field1, Table1.field2 FROM Table1 WHERE Table2.field21!=5",
+      assertEquals("SELECT Table1.field1, Table1.field2 FROM Table1 WHERE Table2.field21 != 5",
           select1.getQuery());
     }
     SqlSelect select3 = new SqlSelect();
@@ -1459,12 +1458,12 @@ public class TestIsCondition {
     select3.setWhere(clause3);
 
     try {
-      assertEquals("SELECT Table1.field1, Table1.field2 FROM Table1 WHERE Table2.field21<>1",
+      assertEquals("SELECT Table1.field1, Table1.field2 FROM Table1 WHERE Table2.field21 <> 1",
           select3.getQuery());
     } catch (AssertionError e) {
       System.out
           .println("[INFO] TestIsCondition.testNotEqualStringStringObjectGeneric(): Alternative test 3");
-      assertEquals("SELECT Table1.field1, Table1.field2 FROM Table1 WHERE Table2.field21!=1",
+      assertEquals("SELECT Table1.field1, Table1.field2 FROM Table1 WHERE Table2.field21 != 1",
           select3.getQuery());
     }
 
@@ -1476,12 +1475,12 @@ public class TestIsCondition {
     select4.setWhere(clause4);
 
     try {
-      assertEquals("SELECT Table1.field1, Table1.field2 FROM Table1 WHERE Table2.field21<>null",
+      assertEquals("SELECT Table1.field1, Table1.field2 FROM Table1 WHERE Table2.field21 <> null",
           select4.getQuery());
     } catch (AssertionError e) {
       System.out
           .println("[INFO] TestIsCondition.testNotEqualStringStringObjectGeneric(): Alternative test 4");
-      assertEquals("SELECT Table1.field1, Table1.field2 FROM Table1 WHERE Table2.field21!=null",
+      assertEquals("SELECT Table1.field1, Table1.field2 FROM Table1 WHERE Table2.field21 != null",
           select4.getQuery());
     }
   }
@@ -1530,7 +1529,7 @@ public class TestIsCondition {
 
     select.setWhere(clause01);
     assertEquals(
-        "SELECT Table1.field1, Table1.field2, Table1.field3 FROM Table1 WHERE (field1='Something val')",
+        "SELECT Table1.field1, Table1.field2, Table1.field3 FROM Table1 WHERE (field1 = 'Something val')",
         select.getQuery());
     SqlSelect select1 = new SqlSelect();
     select1.addFields("Table1", "field1", "field2", "field3");
@@ -1541,7 +1540,7 @@ public class TestIsCondition {
             SqlUtils.name("field2"), "sv2"));
     select1.setWhere(clause1);
     assertEquals(
-        "SELECT Table1.field1, Table1.field2, Table1.field3 FROM Table1 WHERE (field1='Something val' OR field2='sv2')",
+        "SELECT Table1.field1, Table1.field2, Table1.field3 FROM Table1 WHERE (field1 = 'Something val' OR field2 = 'sv2')",
         select1.getQuery());
 
     SqlSelect select2 = new SqlSelect();
@@ -1565,8 +1564,9 @@ public class TestIsCondition {
 
     select.setWhere(clause);
 
-    assertEquals("SELECT Table1.field1, Table1.field2, Table1.field3 FROM Table1 WHERE 1=0", select
-        .getQuery());
+    assertEquals("SELECT Table1.field1, Table1.field2, Table1.field3 FROM Table1 WHERE 1 = 0",
+        select
+            .getQuery());
   }
 
   @Test
@@ -1578,8 +1578,9 @@ public class TestIsCondition {
     IsCondition clause = SqlUtils.sqlTrue();
 
     select.setWhere(clause);
-    assertEquals("SELECT Table1.field1, Table1.field2, Table1.field3 FROM Table1 WHERE 1=1", select
-        .getQuery());
+    assertEquals("SELECT Table1.field1, Table1.field2, Table1.field3 FROM Table1 WHERE 1 = 1",
+        select
+            .getQuery());
   }
 
   @Test
@@ -1593,23 +1594,23 @@ public class TestIsCondition {
     select.addFrom("Table1");
     select.setWhere(SqlUtils.startsWith(SqlUtils.name("Table2"), "val2"));
 
-    assertEquals(query + "Table2 LIKE 'val2%'", select.getQuery());
-
-    select = new SqlSelect();
-    select.addFields("Table1", "field11", "field12");
-    select.addFrom("Table1");
-    select.setWhere(SqlUtils.startsWith(SqlUtils.name("Table2"), ""));
-
-    assertEquals(query + "Table2 LIKE '%'", select.getQuery());
-
-    select = new SqlSelect();
-    select.addFields("Table1", "field11", "field12");
-    select.addFrom("Table1");
-    select.setWhere(SqlUtils.startsWith(SqlUtils.name("Table2"), null));
-
-    assertEquals(query + "Table2 LIKE 'null%'", select.getQuery());
+    assertEquals(query + "Table2 LIKE 'val2%' ESCAPE '|'", select.getQuery());
 
     try {
+      select = new SqlSelect();
+      select.addFields("Table1", "field11", "field12");
+      select.addFrom("Table1");
+      select.setWhere(SqlUtils.startsWith(SqlUtils.name("Table2"), ""));
+
+      assertEquals(query + "Table2 LIKE '%'", select.getQuery());
+
+      select = new SqlSelect();
+      select.addFields("Table1", "field11", "field12");
+      select.addFrom("Table1");
+      select.setWhere(SqlUtils.startsWith(SqlUtils.name("Table2"), null));
+
+      assertEquals(query + "Table2 LIKE 'null%'", select.getQuery());
+
       select = new SqlSelect();
       select.addFields("Table1", "field11", "field12");
       select.addFrom("Table1");
@@ -1634,19 +1635,7 @@ public class TestIsCondition {
     select.addFields("Table1", "field11", "field12");
     select.addFrom("Table1");
     select.setWhere(SqlUtils.startsWith("Table2", "field21", "val2"));
-    assertEquals(query + "Table2.field21 LIKE 'val2%'", select.getQuery());
-
-    select = new SqlSelect();
-    select.addFields("Table1", "field11", "field12");
-    select.addFrom("Table1");
-    select.setWhere(SqlUtils.startsWith("Table2", "field21", ""));
-    assertEquals(query + "Table2.field21 LIKE '%'", select.getQuery());
-
-    select = new SqlSelect();
-    select.addFields("Table1", "field11", "field12");
-    select.addFrom("Table1");
-    select.setWhere(SqlUtils.startsWith("Table2", "field21", null));
-    assertEquals(query + "Table2.field21 LIKE 'null%'", select.getQuery());
+    assertEquals(query + "Table2.field21 LIKE 'val2%' ESCAPE '|'", select.getQuery());
 
     try {
       select = new SqlSelect();
@@ -1662,6 +1651,18 @@ public class TestIsCondition {
     }
 
     try {
+      select = new SqlSelect();
+      select.addFields("Table1", "field11", "field12");
+      select.addFrom("Table1");
+      select.setWhere(SqlUtils.startsWith("Table2", "field21", ""));
+      assertEquals(query + "Table2.field21 LIKE '%'", select.getQuery());
+
+      select = new SqlSelect();
+      select.addFields("Table1", "field11", "field12");
+      select.addFrom("Table1");
+      select.setWhere(SqlUtils.startsWith("Table2", "field21", null));
+      assertEquals(query + "Table2.field21 LIKE 'null%'", select.getQuery());
+
       select = new SqlSelect();
       select.addFields("Table1", "field11", "field12");
       select.addFrom("Table1");

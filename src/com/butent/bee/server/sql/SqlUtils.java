@@ -4,9 +4,9 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
-import com.butent.bee.server.sql.BeeConstants.DataType;
-import com.butent.bee.server.sql.BeeConstants.Function;
-import com.butent.bee.server.sql.BeeConstants.SqlKeyword;
+import com.butent.bee.server.sql.SqlConstants.SqlDataType;
+import com.butent.bee.server.sql.SqlConstants.SqlFunction;
+import com.butent.bee.server.sql.SqlConstants.SqlKeyword;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.value.Value;
@@ -29,7 +29,7 @@ public class SqlUtils {
   }
 
   public static <T> IsExpression bitAnd(IsExpression expr, T value) {
-    return new FunctionExpression(Function.BITAND,
+    return new FunctionExpression(SqlFunction.BITAND,
         ImmutableMap.of("expression", expr, "value", value));
   }
 
@@ -37,8 +37,8 @@ public class SqlUtils {
     return bitAnd(field(source, field), value);
   }
 
-  public static IsExpression cast(IsExpression expr, DataType type, int precision, int scale) {
-    return new FunctionExpression(Function.CAST,
+  public static IsExpression cast(IsExpression expr, SqlDataType type, int precision, int scale) {
+    return new FunctionExpression(SqlFunction.CAST,
         ImmutableMap.of("expression", expr, "type", type, "precision", precision, "scale", scale));
   }
 
@@ -51,6 +51,7 @@ public class SqlUtils {
   }
 
   public static IsCondition contains(IsExpression expr, String value) {
+    Assert.notEmpty(value);
     return compare(expr, Operator.CONTAINS, constant(value));
   }
 
@@ -59,12 +60,13 @@ public class SqlUtils {
   }
 
   public static IsQuery createForeignKey(String table, String name, String field,
-      String refTable, String refField, SqlKeyword action) {
+      String refTable, String refField, boolean cascade, boolean cascadeDelete) {
 
     Map<String, Object> params = getConstraintMap(SqlKeyword.FOREIGN_KEY, table, name, field);
     params.put("refTable", name(refTable));
     params.put("refFields", name(refField));
-    params.put("action", action);
+    params.put("cascade", cascade);
+    params.put("cascadeDelete", cascadeDelete);
 
     return new SqlCommand(SqlKeyword.ADD_CONSTRAINT, params);
   }
@@ -133,7 +135,7 @@ public class SqlUtils {
   public static IsExpression divide(IsExpression... members) {
     Assert.minLength(members, 2);
     Assert.noNulls((Object[]) members);
-    return new FunctionExpression(Function.DIVIDE, getMemberMap((Object[]) members));
+    return new FunctionExpression(SqlFunction.DIVIDE, getMemberMap((Object[]) members));
   }
 
   public static IsQuery dropForeignKey(String table, String name) {
@@ -146,6 +148,7 @@ public class SqlUtils {
   }
 
   public static IsCondition endsWith(IsExpression expr, String value) {
+    Assert.notEmpty(value);
     return compare(expr, Operator.ENDS, constant(value));
   }
 
@@ -164,7 +167,7 @@ public class SqlUtils {
   public static IsExpression expression(Object... members) {
     Assert.minLength(members, 1);
     Assert.noNulls(members);
-    return new FunctionExpression(Function.BULK, getMemberMap(members));
+    return new FunctionExpression(SqlFunction.BULK, getMemberMap(members));
   }
 
   public static IsExpression field(String source, String field) {
@@ -283,6 +286,7 @@ public class SqlUtils {
   }
 
   public static IsCondition matches(IsExpression expr, String value) {
+    Assert.notEmpty(value);
     return compare(expr, Operator.MATCHES, constant(value));
   }
 
@@ -293,7 +297,7 @@ public class SqlUtils {
   public static IsExpression minus(IsExpression... members) {
     Assert.minLength(members, 2);
     Assert.noNulls((Object[]) members);
-    return new FunctionExpression(Function.MINUS, getMemberMap((Object[]) members));
+    return new FunctionExpression(SqlFunction.MINUS, getMemberMap((Object[]) members));
   }
 
   public static IsCondition more(IsExpression expr, Object value) {
@@ -315,7 +319,7 @@ public class SqlUtils {
   public static IsExpression multiply(IsExpression... members) {
     Assert.minLength(members, 2);
     Assert.noNulls((Object[]) members);
-    return new FunctionExpression(Function.MULTIPLY, getMemberMap((Object[]) members));
+    return new FunctionExpression(SqlFunction.MULTIPLY, getMemberMap((Object[]) members));
   }
 
   public static IsExpression name(String name) {
@@ -349,7 +353,7 @@ public class SqlUtils {
   public static IsExpression plus(IsExpression... members) {
     Assert.minLength(members, 2);
     Assert.noNulls((Object[]) members);
-    return new FunctionExpression(Function.PLUS, getMemberMap((Object[]) members));
+    return new FunctionExpression(SqlFunction.PLUS, getMemberMap((Object[]) members));
   }
 
   public static IsQuery renameTable(String from, String to) {
@@ -370,7 +374,7 @@ public class SqlUtils {
       params.put("case" + i, constant(pairs[i * 2]));
       params.put("value" + i, pairs[i * 2 + 1]);
     }
-    return new FunctionExpression(Function.CASE, params);
+    return new FunctionExpression(SqlFunction.CASE, params);
   }
 
   public static IsCondition sqlFalse() {
@@ -378,7 +382,7 @@ public class SqlUtils {
   }
 
   public static IsExpression sqlIf(IsCondition cond, Object ifTrue, Object ifFalse) {
-    return new FunctionExpression(Function.IF,
+    return new FunctionExpression(SqlFunction.IF,
         ImmutableMap.of("condition", cond, "ifTrue", ifTrue, "ifFalse", ifFalse));
   }
 
@@ -387,6 +391,7 @@ public class SqlUtils {
   }
 
   public static IsCondition startsWith(IsExpression expr, String value) {
+    Assert.notEmpty(value);
     return compare(expr, Operator.STARTS, constant(value));
   }
 

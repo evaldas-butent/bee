@@ -1,7 +1,6 @@
 package com.butent.bee.server.sql;
 
-import com.butent.bee.server.sql.BeeConstants.DataType;
-import com.butent.bee.server.sql.BeeConstants.SqlKeyword;
+import com.butent.bee.server.sql.SqlConstants.SqlDataType;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -18,12 +17,12 @@ public class SqlCreate extends SqlQuery<SqlCreate> {
 
   public class SqlField {
     private final String name;
-    private final DataType type;
+    private final SqlDataType type;
     private final int precision;
     private final int scale;
-    private final SqlKeyword[] options;
+    private final boolean notNull;
 
-    private SqlField(String name, DataType type, int precision, int scale, SqlKeyword... options) {
+    private SqlField(String name, SqlDataType type, int precision, int scale, boolean notNull) {
       Assert.notEmpty(name);
       Assert.notEmpty(type);
 
@@ -31,15 +30,7 @@ public class SqlCreate extends SqlQuery<SqlCreate> {
       this.type = type;
       this.precision = precision;
       this.scale = scale;
-
-      List<SqlKeyword> opts = new ArrayList<SqlKeyword>();
-
-      for (SqlKeyword opt : options) {
-        if (!BeeUtils.isEmpty(opt)) {
-          opts.add(opt);
-        }
-      }
-      this.options = opts.toArray(new SqlKeyword[0]);
+      this.notNull = notNull;
     }
 
     /**
@@ -50,13 +41,6 @@ public class SqlCreate extends SqlQuery<SqlCreate> {
      */
     public IsExpression getName() {
       return SqlUtils.name(name);
-    }
-
-    /**
-     * @return a Keyword list as a Keyword array
-     */
-    public SqlKeyword[] getOptions() {
-      return options;
     }
 
     /**
@@ -76,8 +60,15 @@ public class SqlCreate extends SqlQuery<SqlCreate> {
     /**
      * @return the type of the field
      */
-    public DataType getType() {
+    public SqlDataType getType() {
       return type;
+    }
+
+    /**
+     * @return can field store null values
+     */
+    public boolean isNotNull() {
+      return notNull;
     }
   }
 
@@ -110,136 +101,136 @@ public class SqlCreate extends SqlQuery<SqlCreate> {
   }
 
   /**
-   * Adds a BOOLEAN type field with a field name {@code field} and Keywords {@code options}.
+   * Adds a BOOLEAN type field with a field name {@code field} and notNull {@code notNull}.
    * 
    * @param field the field's name
-   * @param options additional Keywords
+   * @param notNull field's not null
    * @return the object's SqlCreate instance
    */
-  public SqlCreate addBoolean(String field, SqlKeyword... options) {
-    return addField(field, DataType.BOOLEAN, 0, 0, options);
+  public SqlCreate addBoolean(String field, boolean notNull) {
+    return addField(field, SqlDataType.BOOLEAN, 0, 0, notNull);
   }
 
   /**
-   * Adds a CHAR type field with a field name {@code field}, precision {@code precision} and
-   * Keywords {@code options}.
+   * Adds a CHAR type field with a field name {@code field}, precision {@code precision} and notNull
+   * {@code notNull}.
    * 
    * @param field the field's name
    * @param precision the field's precision
-   * @param options additional Keywords
+   * @param notNull field's not null
    * @return object's SqlCreate instance
    */
-  public SqlCreate addChar(String field, int precision, SqlKeyword... options) {
+  public SqlCreate addChar(String field, int precision, boolean notNull) {
     Assert.isPositive(precision);
-    return addField(field, DataType.CHAR, precision, 0, options);
+    return addField(field, SqlDataType.CHAR, precision, 0, notNull);
   }
 
   /**
-   * Adds a DATE type field with a field name {@code field} and Keywords {@code options}.
+   * Adds a DATE type field with a field name {@code field} and notNull {@code notNull}.
    * 
    * @param field the field's name
-   * @param options additional Keywords
+   * @param notNull field's not null
    * @return object's SqlCreate instance
    */
-  public SqlCreate addDate(String field, SqlKeyword... options) {
-    return addField(field, DataType.DATE, 0, 0, options);
+  public SqlCreate addDate(String field, boolean notNull) {
+    return addField(field, SqlDataType.DATE, 0, 0, notNull);
   }
 
   /**
-   * Adds a DATETIME type field with a field name {@code field} and Keywords {@code options}.
+   * Adds a DATETIME type field with a field name {@code field} and notNull {@code notNull}.
    * 
    * @param field the field's name
-   * @param options additional Keywords
+   * @param notNull field's not null
    * @return object's SqlCreate instance
    */
-  public SqlCreate addDateTime(String field, SqlKeyword... options) {
-    return addField(field, DataType.DATETIME, 0, 0, options);
+  public SqlCreate addDateTime(String field, boolean notNull) {
+    return addField(field, SqlDataType.DATETIME, 0, 0, notNull);
   }
 
   /**
    * Adds a DECIMAL type field with a field name {@code field}, precision {@code precision}, scale
-   * {@code scale} and Keywords {@code options}.
+   * {@code scale} and notNull {@code notNull}.
    * 
    * @param field the field's name
    * @param precision the field's precision
    * @param scale the field's scale
-   * @param options additional Keywords
+   * @param notNull field's not null
    * @return object's SqlCreate instance
    */
-  public SqlCreate addDecimal(String field, int precision, int scale, SqlKeyword... options) {
+  public SqlCreate addDecimal(String field, int precision, int scale, boolean notNull) {
     Assert.isPositive(precision);
     Assert.nonNegative(scale);
-    return addField(field, DataType.DECIMAL, precision, scale, options);
+    return addField(field, SqlDataType.DECIMAL, precision, scale, notNull);
   }
 
   /**
-   * Adds a DATETIME type field with a field name {@code field} and Keywords {@code options}.
+   * Adds a DATETIME type field with a field name {@code field} and notNull {@code notNull}.
    * 
    * @param field the field's name
-   * @param options additional Keywords
+   * @param notNull field's not null
    * @return object's SqlCreate instance
    */
-  public SqlCreate addDouble(String field, SqlKeyword... options) {
-    return addField(field, DataType.DOUBLE, 0, 0, options);
+  public SqlCreate addDouble(String field, boolean notNull) {
+    return addField(field, SqlDataType.DOUBLE, 0, 0, notNull);
   }
 
   /**
    * Adds a specified type {@code type} field with a field name {@code field}, precision
-   * {@code precision}, scale {@code scale} and Keywords {@code options}. Note: a field name
+   * {@code precision}, scale {@code scale} and notNull {@code notNull}. Note: a field name
    * {@code field} must not exist, and dataSource must be empty.
    * 
    * @param field the field's name
    * @param type the field's type
    * @param precision he field's precision
    * @param scale he field's scale
-   * @param options additional Keywords
+   * @param notNull field's not null
    * @return object's SqlCreate instance
    */
-  public SqlCreate addField(String field, DataType type, int precision, int scale,
-      SqlKeyword... options) {
+  public SqlCreate addField(String field, SqlDataType type, int precision, int scale,
+      boolean notNull) {
     Assert.state(BeeUtils.isEmpty(dataSource));
     Assert.notEmpty(field);
     Assert.state(!hasField(field), "Field " + field + " already exist");
 
-    fieldList.add(new SqlField(field, type, precision, scale, options));
+    fieldList.add(new SqlField(field, type, precision, scale, notNull));
 
     return getReference();
   }
 
   /**
-   * Adds an INTEGER type field with a field name {@code field} and Keywords {@code options}.
+   * Adds an INTEGER type field with a field name {@code field} and notNull {@code notNull}.
    * 
    * @param field the field's name
-   * @param options additional Keywords
+   * @param notNull field's not null
    * @return object's SqlCreate instance
    */
-  public SqlCreate addInteger(String field, SqlKeyword... options) {
-    return addField(field, DataType.INTEGER, 0, 0, options);
+  public SqlCreate addInteger(String field, boolean notNull) {
+    return addField(field, SqlDataType.INTEGER, 0, 0, notNull);
   }
 
   /**
-   * Adds a LONG type field with a field name {@code field} and Keywords {@code options}.
+   * Adds a LONG type field with a field name {@code field} and notNull {@code notNull}.
    * 
    * @param field the field's name
-   * @param options additional Keywords
+   * @param notNull field's not null
    * @return object's SqlCreate instance
    */
-  public SqlCreate addLong(String field, SqlKeyword... options) {
-    return addField(field, DataType.LONG, 0, 0, options);
+  public SqlCreate addLong(String field, boolean notNull) {
+    return addField(field, SqlDataType.LONG, 0, 0, notNull);
   }
 
   /**
    * Adds a STRING type field with a field name {@code field}, precision {@code precision} and
-   * Keywords {@code options}.
+   * notNull {@code notNull}.
    * 
    * @param field the field's name
    * @param precision the field's precision
-   * @param options additional Keywords
+   * @param notNull field's not null
    * @return object's SqlCreate instance
    */
-  public SqlCreate addString(String field, int precision, SqlKeyword... options) {
+  public SqlCreate addString(String field, int precision, boolean notNull) {
     Assert.isPositive(precision);
-    return addField(field, DataType.STRING, precision, 0, options);
+    return addField(field, SqlDataType.STRING, precision, 0, notNull);
   }
 
   /**
@@ -288,36 +279,6 @@ public class SqlCreate extends SqlQuery<SqlCreate> {
   }
 
   /**
-   * Returns a list of parameters found in the {@code dataSource}. For more details see
-   * {@link com.butent.bee.shared.sql.SqlSelect#getParams()}.
-   * 
-   * @returns a list of parameters found in the {@code dataSource}.
-   */
-  @Override
-  public List<Object> getSqlParams() {
-    Assert.state(!isEmpty());
-
-    List<Object> paramList = null;
-
-    if (!BeeUtils.isEmpty(dataSource)) {
-      paramList = dataSource.getSqlParams();
-    }
-    return paramList;
-  }
-
-  /**
-   * @param builder the builder to use
-   * @param paramMode sets param mode on or off
-   * @return a generated SqlCreate query with a specified SqlBuilder {@code builder} and parameter
-   *         mode {@code paramMode}.
-   */
-  @Override
-  public String getSqlString(SqlBuilder builder, boolean paramMode) {
-    Assert.notEmpty(builder);
-    return builder.getCreate(this, paramMode);
-  }
-
-  /**
    * @return the current target {@code target}
    */
   public IsFrom getTarget() {
@@ -335,7 +296,7 @@ public class SqlCreate extends SqlQuery<SqlCreate> {
   }
 
   /**
-   * Checks if teh current SqlCreate instance is empty.
+   * Checks if the current SqlCreate instance is empty.
    * 
    * @return true if it is empty, otherwise false.
    */
@@ -379,11 +340,6 @@ public class SqlCreate extends SqlQuery<SqlCreate> {
    */
   public SqlCreate setTarget(String target) {
     this.target = FromJoin.fromSingle(target, null);
-    return this;
-  }
-
-  @Override
-  protected SqlCreate getReference() {
     return this;
   }
 }

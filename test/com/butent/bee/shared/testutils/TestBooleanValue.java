@@ -76,7 +76,7 @@ public class TestBooleanValue {
   @SuppressWarnings("static-access")
   @Test
   public final void testPack() {
-    assertEquals("n", BooleanValue.pack(null));
+    assertEquals(null, BooleanValue.pack(null));
     assertEquals("f", BooleanValue.pack(false));
     assertEquals("t", BooleanValue.pack(true));
     assertEquals("t", ((BooleanValue) null).pack(true));

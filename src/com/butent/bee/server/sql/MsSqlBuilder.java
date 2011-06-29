@@ -1,7 +1,7 @@
 package com.butent.bee.server.sql;
 
-import com.butent.bee.server.sql.BeeConstants.DataType;
-import com.butent.bee.server.sql.BeeConstants.SqlKeyword;
+import com.butent.bee.server.sql.SqlConstants.SqlDataType;
+import com.butent.bee.server.sql.SqlConstants.SqlKeyword;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -14,61 +14,22 @@ import java.util.Map;
 class MsSqlBuilder extends SqlBuilder {
 
   @Override
-  protected String sqlKeyword(SqlKeyword option, Map<String, Object> params) {
-    switch (option) {
-      case DB_NAME:
-        return "SELECT db_name() AS " + sqlQuote("dbName");
-
-      case DB_SCHEMA:
-        return "SELECT schema_name() AS " + sqlQuote("dbSchema");
-
-      case TEMPORARY:
-        return "";
-
-      case TEMPORARY_NAME:
-        return "#" + params.get("name");
-
-      case RENAME_TABLE:
-        return BeeUtils.concat(1,
-            "sp_rename", params.get("nameFrom"), ",", params.get("nameTo"));
-
-      default:
-        return super.sqlKeyword(option, params);
-    }
-  }
-
-  @Override
-  protected String sqlQuote(String value) {
-    return "[" + value + "]";
-  }
-
-  @Override
-  protected String sqlType(DataType type, int precision, int scale) {
-    switch (type) {
-      case DOUBLE:
-        return "FLOAT";
-      default:
-        return super.sqlType(type, precision, scale);
-    }
-  }
-
-  @Override
-  String getCreate(SqlCreate sc, boolean paramMode) {
+  protected String getCreate(SqlCreate sc) {
     if (BeeUtils.isEmpty(sc.getDataSource())) {
-      return super.getCreate(sc, paramMode);
+      return super.getCreate(sc);
     }
     Assert.notNull(sc);
     Assert.state(!sc.isEmpty());
 
-    return sc.getDataSource().getSqlString(this, paramMode).replace(" FROM ",
-        " INTO " + sc.getTarget().getSqlString(this, paramMode) + " FROM ");
+    return sc.getDataSource().getSqlString(this).replace(" FROM ",
+        " INTO " + sc.getTarget().getSqlString(this) + " FROM ");
   }
 
   @Override
-  String getQuery(SqlSelect ss, boolean paramMode) {
+  protected String getSelect(SqlSelect ss) {
     int limit = ss.getLimit();
     int offset = ss.getOffset();
-    String sql = super.getQuery(ss, paramMode);
+    String sql = super.getSelect(ss);
 
     if (BeeUtils.allEmpty(limit, offset)) {
       return sql;
@@ -113,5 +74,44 @@ class MsSqlBuilder extends SqlBuilder {
           "WHERE", queryAlias + "." + idAlias, ">", offset);
     }
     return sql;
+  }
+
+  @Override
+  protected String sqlKeyword(SqlKeyword option, Map<String, Object> params) {
+    switch (option) {
+      case DB_NAME:
+        return "SELECT db_name() AS " + sqlQuote("dbName");
+
+      case DB_SCHEMA:
+        return "SELECT schema_name() AS " + sqlQuote("dbSchema");
+
+      case TEMPORARY:
+        return "";
+
+      case TEMPORARY_NAME:
+        return "#" + params.get("name");
+
+      case RENAME_TABLE:
+        return BeeUtils.concat(1,
+            "sp_rename", params.get("nameFrom"), ",", params.get("nameTo"));
+
+      default:
+        return super.sqlKeyword(option, params);
+    }
+  }
+
+  @Override
+  protected String sqlQuote(String value) {
+    return "[" + value + "]";
+  }
+
+  @Override
+  protected String sqlType(SqlDataType type, int precision, int scale) {
+    switch (type) {
+      case DOUBLE:
+        return "FLOAT";
+      default:
+        return super.sqlType(type, precision, scale);
+    }
   }
 }

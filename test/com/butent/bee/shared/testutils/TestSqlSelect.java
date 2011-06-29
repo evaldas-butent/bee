@@ -15,8 +15,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.Map;
-
 /**
  * Tests {@link com.butent.bee.server.sql.SqlSelect}.
  */
@@ -41,30 +39,30 @@ public class TestSqlSelect {
     select.addAllFields("Source_table");
 
     assertEquals("SELECT Source_table.* FROM from_table",
-        select.getSqlString(builder, false));
+        select.getSqlString(builder));
     SqlBuilderFactory.setDefaultEngine(BeeConst.MSSQL);
     builder = SqlBuilderFactory.getBuilder();
     assertEquals("SELECT [Source_table].* FROM [from_table]",
-        select.getSqlString(builder, false));
+        select.getSqlString(builder));
     select.setLimit(30);
     assertEquals("SELECT TOP 30 [Source_table].* FROM [from_table]",
-        select.getSqlString(builder, false));
+        select.getSqlString(builder));
     select.setOffset(10);
     select.addOrder("Table1", "field2");
 
     assertEquals(true,
-        select.getSqlString(builder, false).contains("SELECT ["));
+        select.getSqlString(builder).contains("SELECT ["));
     assertEquals(
         true,
-        select.getSqlString(builder, false)
+        select.getSqlString(builder)
             .contains(
                 "].* FROM (SELECT TOP 40 ROW_NUMBER() OVER (ORDER BY [Table1].[field2]) AS ["));
     assertEquals(
         true,
-        select.getSqlString(builder, false).contains(
+        select.getSqlString(builder).contains(
             "], [Source_table].* FROM [from_table]) ["));
     assertEquals(true,
-        select.getSqlString(builder, false).contains("] WHERE ["));
+        select.getSqlString(builder).contains("] WHERE ["));
 
     SqlSelect select1 = new SqlSelect();
     select1.addFrom("Table1");
@@ -78,11 +76,11 @@ public class TestSqlSelect {
     select.addOrder("Table22", "field21");
 
     assertEquals(true,
-        select.getSqlString(builder, false).contains("SELECT TOP 9 ["));
+        select.getSqlString(builder).contains("SELECT TOP 9 ["));
     assertEquals(
         true,
         select
-            .getSqlString(builder, false)
+            .getSqlString(builder)
             .contains(
                 "].* FROM (SELECT [Source_table].* FROM [from_table] UNION ALL (SELECT [Table12].* FROM [Table1]) ORDER BY [field21]) ["));
   }
@@ -97,7 +95,7 @@ public class TestSqlSelect {
     select.addFrom("from_table");
     select.addAvg(SqlUtils.name("salary"), "atlygio_vidurkis");
     assertEquals("SELECT AVG(salary) AS atlygio_vidurkis FROM from_table",
-        select.getSqlString(builder, false));
+        select.getSqlString(builder));
   }
 
   @Test
@@ -110,7 +108,7 @@ public class TestSqlSelect {
     select.addFrom("from_table");
     select.addAvg("from_table", "salary");
     assertEquals("SELECT AVG(from_table.salary) AS salary FROM from_table",
-        select.getSqlString(builder, false));
+        select.getSqlString(builder));
   }
 
   @Test
@@ -124,7 +122,7 @@ public class TestSqlSelect {
     select.addAvg("from_table", "salary", "atlygio_vidurkis");
     assertEquals(
         "SELECT AVG(from_table.salary) AS atlygio_vidurkis FROM from_table",
-        select.getSqlString(builder, false));
+        select.getSqlString(builder));
   }
 
   @Test
@@ -136,12 +134,12 @@ public class TestSqlSelect {
     select.addFrom("from_table");
     select.addConstant("name", "const_alias");
     assertEquals("SELECT 'name' AS const_alias FROM from_table",
-        select.getSqlString(builder, false));
+        select.getSqlString(builder));
 
     select.addConstant(true, "const_alias2");
     assertEquals(
         "SELECT 'name' AS const_alias, 1 AS const_alias2 FROM from_table",
-        select.getSqlString(builder, false));
+        select.getSqlString(builder));
   }
 
   @Test
@@ -155,7 +153,7 @@ public class TestSqlSelect {
     select.addCount(SqlUtils.name("name"), "name_alias");
 
     assertEquals("SELECT COUNT(name) AS name_alias FROM from_table",
-        select.getSqlString(builder, false));
+        select.getSqlString(builder));
   }
 
   @Test
@@ -168,7 +166,7 @@ public class TestSqlSelect {
     select.addCount("count_alias");
 
     assertEquals("SELECT COUNT(*) AS count_alias FROM from_table",
-        select.getSqlString(builder, false));
+        select.getSqlString(builder));
   }
 
   @Test
@@ -197,7 +195,7 @@ public class TestSqlSelect {
     select.addExpr(SqlUtils.expression("kazkas"), "expr_alias");
 
     assertEquals("SELECT kazkas AS expr_alias FROM from_table",
-        select.getSqlString(builder, false));
+        select.getSqlString(builder));
   }
 
   @Test
@@ -210,7 +208,7 @@ public class TestSqlSelect {
     select.addMax(SqlUtils.expression("salary"), "highest_salary");
 
     assertEquals("SELECT MAX(salary) AS highest_salary FROM employees",
-        select.getSqlString(builder, false));
+        select.getSqlString(builder));
   }
 
   @Test
@@ -223,7 +221,7 @@ public class TestSqlSelect {
     select.addMax("employees", "salary");
 
     assertEquals("SELECT MAX(employees.salary) AS salary FROM employees",
-        select.getSqlString(builder, false));
+        select.getSqlString(builder));
   }
 
   @Test
@@ -237,7 +235,7 @@ public class TestSqlSelect {
 
     assertEquals(
         "SELECT MAX(employees.salary) AS highest_salary FROM employees",
-        select.getSqlString(builder, false));
+        select.getSqlString(builder));
   }
 
   @Test
@@ -250,7 +248,7 @@ public class TestSqlSelect {
     select.addMin(SqlUtils.expression("salary"), "lowest_salary");
 
     assertEquals("SELECT MIN(salary) AS lowest_salary FROM employees",
-        select.getSqlString(builder, false));
+        select.getSqlString(builder));
   }
 
   @Test
@@ -263,7 +261,7 @@ public class TestSqlSelect {
     select.addMin("employees", "salary");
 
     assertEquals("SELECT MIN(employees.salary) AS salary FROM employees",
-        select.getSqlString(builder, false));
+        select.getSqlString(builder));
   }
 
   @Test
@@ -277,7 +275,7 @@ public class TestSqlSelect {
 
     assertEquals(
         "SELECT MIN(employees.salary) AS lowest_salary FROM employees",
-        select.getSqlString(builder, false));
+        select.getSqlString(builder));
   }
 
   @Test
@@ -292,7 +290,7 @@ public class TestSqlSelect {
 
     assertEquals(
         "SELECT employees.name FROM employees ORDER BY employees.salary, employees.hours",
-        select.getSqlString(builder, false));
+        select.getSqlString(builder));
   }
 
   @Test
@@ -307,7 +305,7 @@ public class TestSqlSelect {
 
     assertEquals(
         "SELECT employees.name FROM employees ORDER BY employees.salary DESC, employees.hours DESC",
-        select.getSqlString(builder, false));
+        select.getSqlString(builder));
   }
 
   @Test
@@ -328,7 +326,7 @@ public class TestSqlSelect {
 
     assertEquals(
         "SELECT Table.name AS vardai FROM employees_Butent_Kaunas UNION ALL (SELECT Table2.name2 AS vardai2 FROM employees_Butent_Vilnius)",
-        select.getSqlString(builder, false));
+        select.getSqlString(builder));
   }
 
   @Test
@@ -397,35 +395,6 @@ public class TestSqlSelect {
     select3.addFrom("Table2");
     select3.addFields("Table2", "field21");
     select3.setWhere(SqlUtils.equal(SqlUtils.name("field31"), "val1"));
-    Map<Integer, Object> ss = select3.getQueryParams();
-    assertEquals("val1", ss.get(1));
-  }
-
-  @Test
-  public final void testGetSqlParams() {
-    SqlBuilderFactory.setDefaultEngine("Generic");
-    SqlSelect select = new SqlSelect();
-    select.addField("Table", "name", "vardai");
-    select.addFrom("employees_Butent_Kaunas");
-
-    SqlSelect select2 = new SqlSelect();
-    select2.addField("Table2", "name2", "vardai2");
-    select2.addFrom("employees_Butent_Vilnius");
-    select2.setWhere(SqlUtils.sqlTrue()); // getSqlParams returns 1
-
-    select.addUnion(select2);
-    select.addOrder("Table", "name");
-    select.addGroup("Table", "name");
-    select.setHaving(SqlUtils.contains(SqlUtils.expression("name"), "Petr")); // getSqlParams
-    // returns
-    // %Petr%
-    select.setDistinctMode(false);
-    select2.setWhere(SqlUtils.sqlTrue());
-
-    Object[] a = select.getSqlParams().toArray();
-    Object[] rez = {"%Petr%", 1};
-
-    assertArrayEquals(rez, a);
   }
 
   @Test
@@ -481,12 +450,12 @@ public class TestSqlSelect {
     select.setOffset(10);
     assertEquals(
         "SELECT `table1`.`field1` FROM `table1` LIMIT 1000000000 OFFSET 10",
-        select.getSqlString(builder, false));
+        select.getSqlString(builder));
 
     select.setLimit(10);
     assertEquals(
         "SELECT `table1`.`field1` FROM `table1` LIMIT 10 OFFSET 10",
-        select.getSqlString(builder, false));
+        select.getSqlString(builder));
 
     SqlBuilderFactory.setDefaultEngine(BeeConst.PGSQL);
     builder = SqlBuilderFactory.getBuilder();
@@ -497,12 +466,12 @@ public class TestSqlSelect {
 
     select2.setOffset(10);
     assertEquals("SELECT \"table1\".\"field1\" FROM \"table1\" OFFSET 10",
-        select2.getSqlString(builder, false));
+        select2.getSqlString(builder));
 
     select2.setLimit(10);
     assertEquals(
         "SELECT \"table1\".\"field1\" FROM \"table1\" LIMIT 10 OFFSET 10",
-        select2.getSqlString(builder, false));
+        select2.getSqlString(builder));
 
     SqlBuilderFactory.setDefaultEngine(BeeConst.ORACLE);
     builder = SqlBuilderFactory.getBuilder();
@@ -513,41 +482,41 @@ public class TestSqlSelect {
 
     select3.setOffset(10);
     assertEquals(true,
-        select3.getSqlString(builder, false).contains("SELECT "));
+        select3.getSqlString(builder).contains("SELECT "));
     assertEquals(
         true,
-        select3.getSqlString(builder, false).contains(
+        select3.getSqlString(builder).contains(
             ".* FROM (SELECT ROWNUM AS "));
-    assertEquals(true, select3.getSqlString(builder, false).contains(", "));
+    assertEquals(true, select3.getSqlString(builder).contains(", "));
     assertEquals(
         true,
-        select3.getSqlString(builder, false)
+        select3.getSqlString(builder)
             .contains(
                 ".* FROM (SELECT \"table1\".\"field1\" FROM \"table1\") "));
     assertEquals(true,
-        select3.getSqlString(builder, false).contains(" > 10"));
+        select3.getSqlString(builder).contains(" > 10"));
 
     select3.setLimit(10);
     assertEquals(true,
-        select3.getSqlString(builder, false).contains("SELECT "));
+        select3.getSqlString(builder).contains("SELECT "));
     assertEquals(
         true,
-        select3.getSqlString(builder, false).contains(
+        select3.getSqlString(builder).contains(
             ".* FROM (SELECT /*+ FIRST_ROWS(20) */ ROWNUM AS "));
-    assertEquals(true, select3.getSqlString(builder, false).contains(", "));
+    assertEquals(true, select3.getSqlString(builder).contains(", "));
     assertEquals(
         true,
-        select3.getSqlString(builder, false)
+        select3.getSqlString(builder)
             .contains(
                 ".* FROM (SELECT \"table1\".\"field1\" FROM \"table1\") "));
     assertEquals(
         true,
-        select3.getSqlString(builder, false).contains(
+        select3.getSqlString(builder).contains(
             " WHERE ROWNUM <= 20) "));
     assertEquals(true,
-        select3.getSqlString(builder, false).contains(" WHERE "));
+        select3.getSqlString(builder).contains(" WHERE "));
     assertEquals(true,
-        select3.getSqlString(builder, false).contains(" > 10"));
+        select3.getSqlString(builder).contains(" > 10"));
   }
 
   @Test
@@ -560,7 +529,7 @@ public class TestSqlSelect {
     select.addSum(SqlUtils.expression("salary"), "all_salaries");
 
     assertEquals("SELECT SUM(salary) AS all_salaries FROM employees",
-        select.getSqlString(builder, false));
+        select.getSqlString(builder));
   }
 
   @Test
@@ -573,7 +542,7 @@ public class TestSqlSelect {
     select.addSum("employees", "salary");
 
     assertEquals("SELECT SUM(employees.salary) AS salary FROM employees",
-        select.getSqlString(builder, false));
+        select.getSqlString(builder));
   }
 
   @Test
@@ -588,6 +557,6 @@ public class TestSqlSelect {
 
     assertEquals(
         "SELECT SUM(employees.salary) AS all_salaries FROM employees WHERE employees.salary IS NOT NULL",
-        select.getSqlString(builder, false));
+        select.getSqlString(builder));
   }
 }

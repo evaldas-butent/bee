@@ -53,21 +53,11 @@ class CompoundCondition implements HasConditions {
   }
 
   @Override
-  public List<Object> getSqlParams() {
-    List<Object> paramList = null;
-
-    for (IsCondition cond : subConditions) {
-      paramList = (List<Object>) SqlUtils.addCollection(paramList, cond.getSqlParams());
-    }
-    return paramList;
-  }
-
-  @Override
-  public String getSqlString(SqlBuilder builder, boolean paramMode) {
+  public String getSqlString(SqlBuilder builder) {
     StringBuilder sb = new StringBuilder();
 
     for (IsCondition cond : subConditions) {
-      String expr = cond.getSqlString(builder, paramMode);
+      String expr = cond.getSqlString(builder);
 
       if (!BeeUtils.isEmpty(expr) && sb.length() > 0) {
         sb.append(joinType.toSqlString());

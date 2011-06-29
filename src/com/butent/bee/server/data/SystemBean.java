@@ -11,14 +11,14 @@ import com.butent.bee.server.Config;
 import com.butent.bee.server.data.BeeTable.BeeField;
 import com.butent.bee.server.data.BeeTable.BeeForeignKey;
 import com.butent.bee.server.data.BeeTable.BeeKey;
-import com.butent.bee.server.sql.BeeConstants;
-import com.butent.bee.server.sql.BeeConstants.DataType;
-import com.butent.bee.server.sql.BeeConstants.SqlKeyword;
 import com.butent.bee.server.sql.HasFrom;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.IsExpression;
 import com.butent.bee.server.sql.IsQuery;
 import com.butent.bee.server.sql.SqlBuilderFactory;
+import com.butent.bee.server.sql.SqlConstants;
+import com.butent.bee.server.sql.SqlConstants.SqlDataType;
+import com.butent.bee.server.sql.SqlConstants.SqlKeyword;
 import com.butent.bee.server.sql.SqlCreate;
 import com.butent.bee.server.sql.SqlDelete;
 import com.butent.bee.server.sql.SqlInsert;
@@ -760,7 +760,7 @@ public class SystemBean {
 
         if (BeeUtils.inListSame(tblName, dbTables) && !tableFields.containsKey(tblName)) {
           tableFields.put(tblName,
-              qs.dbFields(getDbName(), getDbSchema(), tblName).getColumn(BeeConstants.FLD_NAME));
+              qs.dbFields(getDbName(), getDbSchema(), tblName).getColumn(SqlConstants.FLD_NAME));
         }
         table.setStateActive(state, tableFields.get(tblName));
       }
@@ -1135,7 +1135,8 @@ public class SystemBean {
     for (BeeForeignKey fKey : fKeys) {
       String refTblName = fKey.getRefTable();
       makeStructureChanges(SqlUtils.createForeignKey(fKey.getTable(), fKey.getName(),
-          fKey.getKeyField(), refTblName, getIdName(refTblName), fKey.getAction()));
+          fKey.getKeyField(), refTblName, getIdName(refTblName),
+          fKey.isCascade(), fKey.isCascadeDelete()));
     }
   }
 
@@ -1163,8 +1164,8 @@ public class SystemBean {
     Map<String, SqlCreate> newTables = Maps.newHashMap();
 
     newTables.put(tblName, new SqlCreate(tblName, false)
-        .addLong(table.getIdName(), SqlKeyword.NOT_NULL)
-        .addLong(table.getVersionName(), SqlKeyword.NOT_NULL));
+        .addLong(table.getIdName(), true)
+        .addLong(table.getVersionName(), true));
 
     for (BeeField field : table.getFields()) {
       tblName = field.getTable();
@@ -1178,7 +1179,7 @@ public class SystemBean {
       } else {
         newTables.get(tblName)
             .addField(field.getName(), field.getType(), field.getPrecision(), field.getScale(),
-                field.isNotNull() ? SqlKeyword.NOT_NULL : null);
+                field.isNotNull());
       }
       if (field.isTranslatable()) {
         tblName = table.getTranslationTable(field);
@@ -1210,7 +1211,7 @@ public class SystemBean {
         tblBackup = tblName + "_BAK";
         int c = 0;
         String[] keys = qs.dbKeys(getDbName(), getDbSchema(), tblName, SqlKeyword.UNIQUE_KEY)
-            .getColumn(BeeConstants.KEY_NAME);
+            .getColumn(SqlConstants.KEY_NAME);
 
         for (BeeKey key : table.getKeys()) {
           if (BeeUtils.same(key.getTable(), tblName) && key.isUnique()) {
@@ -1218,19 +1219,20 @@ public class SystemBean {
               c++;
             } else {
               update = true;
-              LogUtils.warning(logger, key.getName(), "NOT IN", keys);
+              LogUtils.warning(logger, "UNIQUE KEY", key.getName(), "NOT IN", keys);
               break;
             }
           }
         }
-        if (!update) {
-          update = (keys.length != c);
+        if (!update && keys.length > c) {
+          update = true;
+          LogUtils.warning(logger, "TOO MANY KEYS");
         }
       }
       if (!update) {
         int c = 0;
         String[] fKeys = qs.dbForeignKeys(getDbName(), getDbSchema(), tblName, null)
-            .getColumn(BeeConstants.KEY_NAME);
+            .getColumn(SqlConstants.KEY_NAME);
 
         for (BeeForeignKey fKey : table.getForeignKeys()) {
           if (BeeUtils.same(fKey.getTable(), tblName)
@@ -1241,13 +1243,14 @@ public class SystemBean {
               c++;
             } else {
               update = true;
-              LogUtils.warning(logger, fKey.getName(), "NOT IN", fKeys);
+              LogUtils.warning(logger, "FOREIGN KEY", fKey.getName(), "NOT IN", fKeys);
               break;
             }
           }
         }
-        if (!update) {
-          update = (fKeys.length != c);
+        if (!update && fKeys.length > c) {
+          update = true;
+          LogUtils.warning(logger, "TOO MANY FOREIGN KEYS");
         }
       }
       if (!BeeUtils.isEmpty(tblBackup)) {
@@ -1268,11 +1271,11 @@ public class SystemBean {
             Map<String, String> newFieldInfo = newFields.getRow(i++);
 
             for (String info : oldFieldInfo.keySet()) {
-              if (!BeeUtils.same(info, BeeConstants.TBL_NAME)
+              if (!BeeUtils.same(info, SqlConstants.TBL_NAME)
                   && !BeeUtils.equals(oldFieldInfo.get(info), newFieldInfo.get(info))) {
                 update = true;
-                LogUtils.warning(logger, oldFieldInfo.get(BeeConstants.FLD_NAME) + ":", info,
-                    oldFieldInfo.get(info), "!=", newFieldInfo.get(info));
+                LogUtils.warning(logger, "FIELD", oldFieldInfo.get(SqlConstants.FLD_NAME) + ":",
+                    info, oldFieldInfo.get(info), "!=", newFieldInfo.get(info));
                 break;
               }
             }
@@ -1283,9 +1286,9 @@ public class SystemBean {
         }
         if (update) {
           Map<String, String> updFlds = Maps.newLinkedHashMap();
-          String[] oldList = oldFields.getColumn(BeeConstants.FLD_NAME);
+          String[] oldList = oldFields.getColumn(SqlConstants.FLD_NAME);
 
-          for (String newFld : newFields.getColumn(BeeConstants.FLD_NAME)) {
+          for (String newFld : newFields.getColumn(SqlConstants.FLD_NAME)) {
             for (String oldFld : oldList) {
               if (BeeUtils.same(newFld, oldFld)) {
                 updFlds.put(newFld, oldFld);
@@ -1563,7 +1566,7 @@ public class SystemBean {
             boolean cascade = BeeUtils.toBoolean(field.getAttribute("cascade"));
 
             tbl.addField(fldName,
-                DataType.valueOf(field.getAttribute("type")),
+                SqlDataType.valueOf(field.getAttribute("type")),
                 BeeUtils.toInt(field.getAttribute("precision")),
                 BeeUtils.toInt(field.getAttribute("scale")),
                 notNull, unique, relation, cascade)
@@ -1573,8 +1576,7 @@ public class SystemBean {
             String tblName = tbl.getField(fldName).getTable();
 
             if (!BeeUtils.isEmpty(relation)) {
-              tbl.addForeignKey(tblName, fldName, relation,
-                  cascade ? (notNull ? SqlKeyword.CASCADE : SqlKeyword.SET_NULL) : null);
+              tbl.addForeignKey(tblName, fldName, relation, cascade, cascade && notNull);
             }
             if (unique) {
               tbl.addKey(true, tblName, fldName);
@@ -1741,8 +1743,8 @@ public class SystemBean {
       if (!BeeUtils.isEmpty(tblBackup)) {
         for (Map<String, String> fKeys : qs
             .dbForeignKeys(getDbName(), getDbSchema(), null, tblMain)) {
-          String fk = fKeys.get(BeeConstants.KEY_NAME);
-          String tbl = fKeys.get(BeeConstants.TBL_NAME);
+          String fk = fKeys.get(SqlConstants.KEY_NAME);
+          String tbl = fKeys.get(SqlConstants.TBL_NAME);
           makeStructureChanges(SqlUtils.dropForeignKey(tbl, fk));
         }
         makeStructureChanges(SqlUtils.dropTable(tblMain));

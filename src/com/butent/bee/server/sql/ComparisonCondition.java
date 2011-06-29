@@ -7,7 +7,6 @@ import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -45,28 +44,16 @@ class ComparisonCondition implements IsCondition {
   }
 
   @Override
-  public List<Object> getSqlParams() {
-    List<Object> paramList = null;
-
-    if (!BeeUtils.isEmpty(values)) {
-      for (IsSql value : values) {
-        paramList = (List<Object>) SqlUtils.addCollection(paramList, value.getSqlParams());
-      }
-    }
-    return paramList;
-  }
-
-  @Override
-  public String getSqlString(SqlBuilder builder, boolean paramMode) {
+  public String getSqlString(SqlBuilder builder) {
     Assert.notEmpty(builder);
     Map<String, String> params = Maps.newHashMap();
-    params.put("expression", expression.getSqlString(builder, false));
+    params.put("expression", expression.getSqlString(builder));
 
     if (!BeeUtils.isEmpty(values)) {
       int i = 0;
 
       for (IsSql value : values) {
-        String val = value.getSqlString(builder, paramMode);
+        String val = value.getSqlString(builder);
 
         if (value instanceof SqlSelect) {
           val = BeeUtils.parenthesize(val);

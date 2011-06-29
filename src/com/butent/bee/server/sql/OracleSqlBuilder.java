@@ -1,8 +1,8 @@
 package com.butent.bee.server.sql;
 
-import com.butent.bee.server.sql.BeeConstants.DataType;
-import com.butent.bee.server.sql.BeeConstants.Function;
-import com.butent.bee.server.sql.BeeConstants.SqlKeyword;
+import com.butent.bee.server.sql.SqlConstants.SqlDataType;
+import com.butent.bee.server.sql.SqlConstants.SqlFunction;
+import com.butent.bee.server.sql.SqlConstants.SqlKeyword;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Map;
@@ -14,7 +14,41 @@ import java.util.Map;
 class OracleSqlBuilder extends SqlBuilder {
 
   @Override
-  protected String sqlFunction(Function function, Map<String, Object> params) {
+  protected String getSelect(SqlSelect ss) {
+    int limit = ss.getLimit();
+    int offset = ss.getOffset();
+    String sql = super.getSelect(ss);
+
+    if (BeeUtils.allEmpty(limit, offset)) {
+      return sql;
+    }
+    String idAlias = sqlQuote(SqlUtils.uniqueName());
+    String queryAlias = sqlQuote(SqlUtils.uniqueName());
+
+    sql = BeeUtils.concat(1,
+        "ROWNUM AS", idAlias + ",", queryAlias + ".*",
+        "FROM", BeeUtils.parenthesize(sql), queryAlias);
+
+    if (BeeUtils.isPositive(limit)) {
+      sql = BeeUtils.concat(1,
+          "/*+ FIRST_ROWS" + BeeUtils.parenthesize(offset + limit), "*/", sql,
+          "WHERE ROWNUM <=", offset + limit);
+    }
+    sql = "SELECT " + sql;
+
+    if (BeeUtils.isPositive(offset)) {
+      queryAlias = sqlQuote(SqlUtils.uniqueName());
+
+      sql = BeeUtils.concat(1,
+          "SELECT", queryAlias + ".*",
+          "FROM", BeeUtils.parenthesize(sql), queryAlias,
+          "WHERE", queryAlias + "." + idAlias, ">", offset);
+    }
+    return sql;
+  }
+
+  @Override
+  protected String sqlFunction(SqlFunction function, Map<String, Object> params) {
     switch (function) {
       case BITAND:
         return "BITAND(" + params.get("expression") + ", " + params.get("value") + ")";
@@ -46,7 +80,7 @@ class OracleSqlBuilder extends SqlBuilder {
             .addFields("t", "TABLE_NAME")
             .addFrom("ALL_TABLES", "t")
             .setWhere(wh)
-            .getQuery(this);
+            .getSqlString(this);
 
       case DB_FIELDS:
         wh = null;
@@ -60,17 +94,17 @@ class OracleSqlBuilder extends SqlBuilder {
           wh = SqlUtils.and(wh, SqlUtils.equal("c", "TABLE_NAME", prm));
         }
         return new SqlSelect()
-            .addField("c", "TABLE_NAME", BeeConstants.TBL_NAME)
-            .addField("c", "COLUMN_NAME", BeeConstants.FLD_NAME)
-            .addField("c", "NULLABLE", BeeConstants.FLD_NULL)
-            .addField("c", "DATA_TYPE", BeeConstants.FLD_TYPE)
-            .addField("c", "DATA_LENGTH", BeeConstants.FLD_LENGTH)
-            .addField("c", "DATA_PRECISION", BeeConstants.FLD_PRECISION)
-            .addField("c", "DATA_SCALE", BeeConstants.FLD_SCALE)
+            .addField("c", "TABLE_NAME", SqlConstants.TBL_NAME)
+            .addField("c", "COLUMN_NAME", SqlConstants.FLD_NAME)
+            .addField("c", "NULLABLE", SqlConstants.FLD_NULL)
+            .addField("c", "DATA_TYPE", SqlConstants.FLD_TYPE)
+            .addField("c", "DATA_LENGTH", SqlConstants.FLD_LENGTH)
+            .addField("c", "DATA_PRECISION", SqlConstants.FLD_PRECISION)
+            .addField("c", "DATA_SCALE", SqlConstants.FLD_SCALE)
             .addFrom("ALL_TAB_COLUMNS", "c")
             .setWhere(wh)
             .addOrder("c", "COLUMN_ID")
-            .getQuery(this);
+            .getSqlString(this);
 
       case DB_KEYS:
         wh = null;
@@ -115,12 +149,12 @@ class OracleSqlBuilder extends SqlBuilder {
           }
         }
         return new SqlSelect()
-            .addField("k", "TABLE_NAME", BeeConstants.TBL_NAME)
-            .addField("k", "CONSTRAINT_NAME", BeeConstants.KEY_NAME)
-            .addField("k", "CONSTRAINT_TYPE", BeeConstants.KEY_TYPE)
+            .addField("k", "TABLE_NAME", SqlConstants.TBL_NAME)
+            .addField("k", "CONSTRAINT_NAME", SqlConstants.KEY_NAME)
+            .addField("k", "CONSTRAINT_TYPE", SqlConstants.KEY_TYPE)
             .addFrom("ALL_CONSTRAINTS", "k")
             .setWhere(wh)
-            .getQuery(this);
+            .getSqlString(this);
 
       case DB_FOREIGNKEYS:
         wh = SqlUtils.equal("c", "CONSTRAINT_TYPE", "R");
@@ -140,14 +174,14 @@ class OracleSqlBuilder extends SqlBuilder {
           wh = SqlUtils.and(wh, SqlUtils.equal("r", "TABLE_NAME", prm));
         }
         return new SqlSelect()
-            .addField("c", "CONSTRAINT_NAME", BeeConstants.KEY_NAME)
-            .addField("c", "TABLE_NAME", BeeConstants.TBL_NAME)
-            .addField("r", "TABLE_NAME", BeeConstants.FK_REF_TABLE)
+            .addField("c", "CONSTRAINT_NAME", SqlConstants.KEY_NAME)
+            .addField("c", "TABLE_NAME", SqlConstants.TBL_NAME)
+            .addField("r", "TABLE_NAME", SqlConstants.FK_REF_TABLE)
             .addFrom("ALL_CONSTRAINTS", "c")
             .addFromInner("ALL_CONSTRAINTS", "r",
                 SqlUtils.join("c", "R_CONSTRAINT_NAME", "r", "CONSTRAINT_NAME"))
             .setWhere(wh)
-            .getQuery(this);
+            .getSqlString(this);
 
       case TEMPORARY:
         return "";
@@ -163,7 +197,7 @@ class OracleSqlBuilder extends SqlBuilder {
   }
 
   @Override
-  protected String sqlType(DataType type, int precision, int scale) {
+  protected String sqlType(SqlDataType type, int precision, int scale) {
     switch (type) {
       case BOOLEAN:
         return "NUMERIC(1)";
@@ -180,39 +214,5 @@ class OracleSqlBuilder extends SqlBuilder {
       default:
         return super.sqlType(type, precision, scale);
     }
-  }
-
-  @Override
-  String getQuery(SqlSelect ss, boolean paramMode) {
-    int limit = ss.getLimit();
-    int offset = ss.getOffset();
-    String sql = super.getQuery(ss, paramMode);
-
-    if (BeeUtils.allEmpty(limit, offset)) {
-      return sql;
-    }
-    String idAlias = sqlQuote(SqlUtils.uniqueName());
-    String queryAlias = sqlQuote(SqlUtils.uniqueName());
-
-    sql = BeeUtils.concat(1,
-        "ROWNUM AS", idAlias + ",", queryAlias + ".*",
-        "FROM", BeeUtils.parenthesize(sql), queryAlias);
-
-    if (BeeUtils.isPositive(limit)) {
-      sql = BeeUtils.concat(1,
-          "/*+ FIRST_ROWS" + BeeUtils.parenthesize(offset + limit), "*/", sql,
-          "WHERE ROWNUM <=", offset + limit);
-    }
-    sql = "SELECT " + sql;
-
-    if (BeeUtils.isPositive(offset)) {
-      queryAlias = sqlQuote(SqlUtils.uniqueName());
-
-      sql = BeeUtils.concat(1,
-          "SELECT", queryAlias + ".*",
-          "FROM", BeeUtils.parenthesize(sql), queryAlias,
-          "WHERE", queryAlias + "." + idAlias, ">", offset);
-    }
-    return sql;
   }
 }

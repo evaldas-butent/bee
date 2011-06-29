@@ -1,8 +1,8 @@
 package com.butent.bee.server.sql;
 
-import com.butent.bee.server.sql.BeeConstants.DataType;
-import com.butent.bee.server.sql.BeeConstants.Function;
-import com.butent.bee.server.sql.BeeConstants.SqlKeyword;
+import com.butent.bee.server.sql.SqlConstants.SqlDataType;
+import com.butent.bee.server.sql.SqlConstants.SqlFunction;
+import com.butent.bee.server.sql.SqlConstants.SqlKeyword;
 import com.butent.bee.server.sql.SqlCreate.SqlField;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.DateTime;
@@ -21,6 +21,301 @@ import java.util.Map;
  */
 
 public abstract class SqlBuilder {
+
+  final String getQuery(IsQuery query) {
+    if (query instanceof SqlCreate) {
+      return getCreate((SqlCreate) query);
+
+    } else if (query instanceof SqlDelete) {
+      return getDelete((SqlDelete) query);
+
+    } else if (query instanceof SqlInsert) {
+      return getInsert((SqlInsert) query);
+
+    } else if (query instanceof SqlSelect) {
+      return getSelect((SqlSelect) query);
+
+    } else if (query instanceof SqlUpdate) {
+      return getUpdate((SqlUpdate) query);
+
+    } else {
+      Assert.unsupported("Unsupported class name: " + BeeUtils.getClassName(query.getClass()));
+    }
+    return null;
+  }
+
+  /**
+   * Generates an SQL CREATE query from the specified argument {@code sc}. There are two ways to
+   * generate the query. First: by defining a {@code  dataSource}. Second: describing the fields
+   * manually. Only one at an instance of the SqlCreate object is possible.
+   * 
+   * @param sc the SqlCreate object
+   * @return a generated SQL CREATE query
+   */
+  protected String getCreate(SqlCreate sc) {
+    Assert.notNull(sc);
+    Assert.state(!sc.isEmpty());
+
+    StringBuilder query = new StringBuilder("CREATE ");
+
+    if (sc.isTemporary()) {
+      query.append(sqlKeyword(SqlKeyword.TEMPORARY, null));
+    }
+    query.append("TABLE ");
+
+    query.append(sc.getTarget().getSqlString(this));
+
+    List<SqlField> fieldList = sc.getFields();
+
+    if (!BeeUtils.isEmpty(sc.getDataSource())) {
+      query.append(" AS ").append(sc.getDataSource().getSqlString(this));
+    } else {
+      query.append(" (");
+
+      for (int i = 0; i < fieldList.size(); i++) {
+        if (i > 0) {
+          query.append(", ");
+        }
+        SqlField field = fieldList.get(i);
+        query.append(field.getName().getSqlString(this))
+            .append(" ").append(sqlType(field.getType(), field.getPrecision(), field.getScale()));
+
+        if (field.isNotNull()) {
+          query.append(" NOT NULL");
+        }
+      }
+      query.append(")");
+    }
+    return query.toString();
+  }
+
+  /**
+   * Generates an SQL DELETE query from the specified argument {@code sd}. {@code sd} must have From
+   * and Where conditions set.
+   * 
+   * @param sd the SqlDelete object to use for generating
+   * @return a generated SQL DELETE query
+   */
+  protected String getDelete(SqlDelete sd) {
+    Assert.notNull(sd);
+    Assert.state(!sd.isEmpty());
+
+    StringBuilder query = new StringBuilder("DELETE FROM ");
+
+    query.append(sd.getTarget().getSqlString(this));
+
+    List<IsFrom> fromList = sd.getFrom();
+
+    if (!BeeUtils.isEmpty(fromList)) {
+      query.append(" FROM ");
+
+      for (IsFrom from : fromList) {
+        query.append(from.getSqlString(this));
+      }
+    }
+    String wh = sd.getWhere().getSqlString(this);
+
+    if (!BeeUtils.isEmpty(wh)) {
+      query.append(" WHERE ").append(wh);
+    }
+    return query.toString();
+  }
+
+  /**
+   * Generates an SQL INSERT query from the specified argument {@code si}. There are two ways to
+   * generate the query. First: by defining a {@code  dataSource}. Second: describing the fields
+   * manually. Only one at an instance of the SqlInsert object is possible.
+   * 
+   * @param si the SqlInsert object
+   * @return a generated SQL INSERT query
+   */
+  protected String getInsert(SqlInsert si) {
+    Assert.notNull(si);
+    Assert.state(!si.isEmpty());
+
+    StringBuilder query = new StringBuilder("INSERT INTO ");
+
+    query.append(si.getTarget().getSqlString(this));
+
+    List<IsExpression> fieldList = si.getFields();
+
+    query.append(" (");
+
+    for (int i = 0; i < fieldList.size(); i++) {
+      if (i > 0) {
+        query.append(", ");
+      }
+      IsExpression field = fieldList.get(i);
+      query.append(field.getSqlString(this));
+    }
+    query.append(") ");
+
+    if (!BeeUtils.isEmpty(si.getDataSource())) {
+      query.append(si.getDataSource().getSqlString(this));
+    } else {
+      List<IsExpression> valueList = si.getValues();
+
+      if (!BeeUtils.isEmpty(valueList)) {
+        query.append("VALUES (");
+
+        for (int i = 0; i < valueList.size(); i++) {
+          if (i > 0) {
+            query.append(", ");
+          }
+          IsExpression value = valueList.get(i);
+          query.append(value.getSqlString(this));
+        }
+        query.append(")");
+      }
+    }
+    return query.toString();
+  }
+
+  /**
+   * Generates an SQL SELECT query from the specified argument {@code ss}. From value must be
+   * defined in order to generate the query.
+   * 
+   * @param ss the SqlSelect object
+   * @return a generated SQL SELECT query
+   */
+  protected String getSelect(SqlSelect ss) {
+    Assert.notNull(ss);
+    Assert.state(!ss.isEmpty());
+
+    StringBuilder query = new StringBuilder("SELECT ");
+
+    if (ss.isDistinctMode()) {
+      query.append("DISTINCT ");
+    }
+    List<IsExpression[]> fieldList = ss.getFields();
+
+    for (int i = 0; i < fieldList.size(); i++) {
+      if (i > 0) {
+        query.append(", ");
+      }
+      IsExpression[] fldEntry = fieldList.get(i);
+      IsExpression field = fldEntry[SqlSelect.FIELD_EXPR];
+      query.append(field.getSqlString(this));
+
+      IsExpression alias = fldEntry[SqlSelect.FIELD_ALIAS];
+
+      if (!BeeUtils.isEmpty(alias)) {
+        query.append(" AS ").append(alias.getSqlString(this));
+      }
+    }
+    List<IsFrom> fromList = ss.getFrom();
+
+    query.append(" FROM ");
+
+    for (IsFrom from : fromList) {
+      query.append(from.getSqlString(this));
+    }
+    IsCondition whereClause = ss.getWhere();
+
+    if (!BeeUtils.isEmpty(whereClause)) {
+      String wh = whereClause.getSqlString(this);
+
+      if (!BeeUtils.isEmpty(wh)) {
+        query.append(" WHERE ").append(wh);
+      }
+    }
+    List<IsExpression> groupList = ss.getGroupBy();
+
+    if (!BeeUtils.isEmpty(groupList)) {
+      query.append(" GROUP BY ");
+
+      for (int i = 0; i < groupList.size(); i++) {
+        if (i > 0) {
+          query.append(", ");
+        }
+        String group = groupList.get(i).getSqlString(this);
+        query.append(group);
+      }
+    }
+    IsCondition havingClause = ss.getHaving();
+
+    if (!BeeUtils.isEmpty(havingClause)) {
+      query.append(" HAVING ")
+          .append(havingClause.getSqlString(this));
+    }
+    List<SqlSelect> unionList = ss.getUnion();
+
+    if (!BeeUtils.isEmpty(unionList)) {
+      for (SqlSelect union : unionList) {
+        query.append(ss.isUnionAllMode() ? " UNION ALL " : " UNION ")
+            .append("(").append(union.getSqlString(this)).append(")");
+      }
+    }
+    List<String[]> orderList = ss.getOrderBy();
+
+    if (!BeeUtils.isEmpty(orderList)) {
+      query.append(" ORDER BY ");
+
+      for (int i = 0; i < orderList.size(); i++) {
+        if (i > 0) {
+          query.append(", ");
+        }
+        String[] orderEntry = orderList.get(i);
+        IsExpression order = BeeUtils.isEmpty(ss.getUnion())
+            ? SqlUtils.field(orderEntry[SqlSelect.ORDER_SRC], orderEntry[SqlSelect.ORDER_FLD])
+            : SqlUtils.name(orderEntry[SqlSelect.ORDER_FLD]);
+
+        query.append(order.getSqlString(this)).append(orderEntry[SqlSelect.ORDER_DESC]);
+      }
+    }
+    return query.toString();
+  }
+
+  /**
+   * Generates an SQL UPDATE query from the specified argument {@code su}. A target table and at
+   * least one expression must be defined.
+   * 
+   * @param su the SqlUpdate object.
+   * @return a generated SQL UPDATE query
+   */
+  protected String getUpdate(SqlUpdate su) {
+    Assert.notNull(su);
+    Assert.state(!su.isEmpty());
+
+    StringBuilder query = new StringBuilder("UPDATE ");
+
+    query.append(su.getTarget().getSqlString(this));
+
+    List<IsExpression[]> updates = su.getUpdates();
+
+    query.append(" SET ");
+
+    for (int i = 0; i < updates.size(); i++) {
+      if (i > 0) {
+        query.append(", ");
+      }
+      IsExpression[] updateEntry = updates.get(i);
+      IsExpression field = updateEntry[SqlUpdate.FIELD];
+      query.append(field.getSqlString(this));
+
+      IsExpression value = updateEntry[SqlUpdate.VALUE];
+      query.append("=").append(value.getSqlString(this));
+    }
+    List<IsFrom> fromList = su.getFrom();
+
+    if (!BeeUtils.isEmpty(fromList)) {
+      query.append(" FROM ");
+
+      for (IsFrom from : fromList) {
+        query.append(from.getSqlString(this));
+      }
+    }
+    IsCondition whereClause = su.getWhere();
+
+    if (!BeeUtils.isEmpty(whereClause)) {
+      String wh = whereClause.getSqlString(this);
+
+      if (!BeeUtils.isEmpty(wh)) {
+        query.append(" WHERE ").append(wh);
+      }
+    }
+    return query.toString();
+  }
 
   protected String sqlCondition(Operator operator, Map<String, String> params) {
     String expression = params.get("expression");
@@ -62,10 +357,10 @@ public abstract class SqlBuilder {
     return null;
   }
 
-  protected String sqlFunction(Function function, Map<String, Object> params) {
+  protected String sqlFunction(SqlFunction function, Map<String, Object> params) {
     switch (function) {
       case BITAND:
-        return "(" + params.get("expression") + "&" + params.get("value") + ")";
+        return "(" + params.get("expression") + " & " + params.get("value") + ")";
 
       case IF:
         return BeeUtils.concat(1,
@@ -96,7 +391,7 @@ public abstract class SqlBuilder {
         return BeeUtils.concat(1,
             "CAST(" + params.get("expression"),
             "AS",
-            sqlType((DataType) params.get("type"),
+            sqlType((SqlDataType) params.get("type"),
                 (Integer) params.get("precision"),
                 (Integer) params.get("scale")) + ")");
 
@@ -117,7 +412,7 @@ public abstract class SqlBuilder {
       case MULTIPLY:
       case DIVIDE:
       case BULK:
-        xpr = new StringBuilder((String) params.get("member" + 0));
+        xpr = new StringBuilder(BeeUtils.transform(params.get("member" + 0)));
         String op;
 
         switch (function) {
@@ -140,7 +435,8 @@ public abstract class SqlBuilder {
         for (int i = 1; i < params.size(); i++) {
           xpr.append(op).append(params.get("member" + i));
         }
-        return function != Function.BULK ? BeeUtils.parenthesize(xpr.toString()) : xpr.toString();
+        return function != SqlFunction.BULK
+            ? BeeUtils.parenthesize(xpr.toString()) : xpr.toString();
     }
     Assert.untouchable();
     return null;
@@ -148,9 +444,6 @@ public abstract class SqlBuilder {
 
   protected String sqlKeyword(SqlKeyword option, Map<String, Object> params) {
     switch (option) {
-      case NOT_NULL:
-        return "NOT NULL";
-
       case CREATE_INDEX:
         return BeeUtils.concat(1,
             "CREATE INDEX", params.get("name"),
@@ -174,18 +467,12 @@ public abstract class SqlBuilder {
             "FOREIGN KEY", BeeUtils.parenthesize(params.get("fields")),
             "REFERENCES", params.get("refTable"), BeeUtils.parenthesize(params.get("refFields")));
 
-        SqlKeyword action = (SqlKeyword) params.get("action");
-        if (!BeeUtils.isEmpty(action)) {
+        if (!BeeUtils.isEmpty(params.get("cascade"))) {
           foreign = BeeUtils.concat(1,
-              foreign, "ON DELETE", sqlKeyword(action, null));
+              foreign, "ON DELETE",
+              BeeUtils.isEmpty(params.get("cascadeDelete")) ? "SET NULL" : "CASCADE");
         }
         return foreign;
-
-      case CASCADE:
-        return "CASCADE";
-
-      case SET_NULL:
-        return "SET NULL";
 
       case DB_NAME:
         return "";
@@ -212,7 +499,7 @@ public abstract class SqlBuilder {
             .addFields("t", "table_name")
             .addFrom("information_schema.tables", "t")
             .setWhere(wh)
-            .getQuery(this);
+            .getSqlString(this);
 
       case DB_FIELDS:
         wh = null;
@@ -230,17 +517,17 @@ public abstract class SqlBuilder {
           wh = SqlUtils.and(wh, SqlUtils.equal("c", "table_name", prm));
         }
         return new SqlSelect()
-            .addField("c", "table_name", BeeConstants.TBL_NAME)
-            .addField("c", "column_name", BeeConstants.FLD_NAME)
-            .addField("c", "is_nullable", BeeConstants.FLD_NULL)
-            .addField("c", "data_type", BeeConstants.FLD_TYPE)
-            .addField("c", "character_maximum_length", BeeConstants.FLD_LENGTH)
-            .addField("c", "numeric_precision", BeeConstants.FLD_PRECISION)
-            .addField("c", "numeric_scale", BeeConstants.FLD_SCALE)
+            .addField("c", "table_name", SqlConstants.TBL_NAME)
+            .addField("c", "column_name", SqlConstants.FLD_NAME)
+            .addField("c", "is_nullable", SqlConstants.FLD_NULL)
+            .addField("c", "data_type", SqlConstants.FLD_TYPE)
+            .addField("c", "character_maximum_length", SqlConstants.FLD_LENGTH)
+            .addField("c", "numeric_precision", SqlConstants.FLD_PRECISION)
+            .addField("c", "numeric_scale", SqlConstants.FLD_SCALE)
             .addFrom("information_schema.columns", "c")
             .setWhere(wh)
             .addOrder("c", "ordinal_position")
-            .getQuery(this);
+            .getSqlString(this);
 
       case DB_KEYS:
         wh = null;
@@ -289,12 +576,12 @@ public abstract class SqlBuilder {
           }
         }
         return new SqlSelect()
-            .addField("k", "table_name", BeeConstants.TBL_NAME)
-            .addField("k", "constraint_name", BeeConstants.KEY_NAME)
-            .addField("k", "constraint_type", BeeConstants.KEY_TYPE)
+            .addField("k", "table_name", SqlConstants.TBL_NAME)
+            .addField("k", "constraint_name", SqlConstants.KEY_NAME)
+            .addField("k", "constraint_type", SqlConstants.KEY_TYPE)
             .addFrom("information_schema.table_constraints", "k")
             .setWhere(wh)
-            .getQuery(this);
+            .getSqlString(this);
 
       case DB_FOREIGNKEYS:
         wh = null;
@@ -320,16 +607,16 @@ public abstract class SqlBuilder {
           wh = SqlUtils.and(wh, SqlUtils.equal("r", "table_name", prm));
         }
         return new SqlSelect()
-            .addField("c", "constraint_name", BeeConstants.KEY_NAME)
-            .addField("t", "table_name", BeeConstants.TBL_NAME)
-            .addField("r", "table_name", BeeConstants.FK_REF_TABLE)
+            .addField("c", "constraint_name", SqlConstants.KEY_NAME)
+            .addField("t", "table_name", SqlConstants.TBL_NAME)
+            .addField("r", "table_name", SqlConstants.FK_REF_TABLE)
             .addFrom("information_schema.referential_constraints", "c")
             .addFromInner("information_schema.table_constraints", "t",
                 SqlUtils.joinUsing("c", "t", "constraint_name"))
             .addFromInner("information_schema.table_constraints", "r",
                 SqlUtils.join("c", "unique_constraint_name", "r", "constraint_name"))
             .setWhere(wh)
-            .getQuery(this);
+            .getSqlString(this);
 
       case DROP_TABLE:
         return "DROP TABLE " + params.get("table");
@@ -395,7 +682,7 @@ public abstract class SqlBuilder {
     return s;
   }
 
-  protected String sqlType(DataType type, int precision, int scale) {
+  protected String sqlType(SqlDataType type, int precision, int scale) {
     switch (type) {
       case BOOLEAN:
         return "BIT";
@@ -416,284 +703,5 @@ public abstract class SqlBuilder {
     }
     Assert.untouchable();
     return null;
-  }
-
-  /**
-   * Generates an SQL CREATE query from the specified argument {@code sc}. There are two ways to
-   * generate the query. First: by defining a {@code  dataSource}. Second: describing the fields
-   * manually. Only one at an instance of the SqlCreate object is possible.
-   * 
-   * @param sc the SqlCreate object
-   * @param paramMode sets the parameter mode
-   * @return a generated SQL CREATE query
-   */
-  String getCreate(SqlCreate sc, boolean paramMode) {
-    Assert.notNull(sc);
-    Assert.state(!sc.isEmpty());
-
-    StringBuilder query = new StringBuilder("CREATE ");
-
-    if (sc.isTemporary()) {
-      query.append(sqlKeyword(SqlKeyword.TEMPORARY, null));
-    }
-    query.append("TABLE ");
-
-    query.append(sc.getTarget().getSqlString(this, paramMode));
-
-    List<SqlField> fieldList = sc.getFields();
-
-    if (!BeeUtils.isEmpty(sc.getDataSource())) {
-      query.append(" AS ").append(sc.getDataSource().getSqlString(this, paramMode));
-    } else {
-      query.append(" (");
-
-      for (int i = 0; i < fieldList.size(); i++) {
-        if (i > 0) {
-          query.append(", ");
-        }
-        SqlField field = fieldList.get(i);
-        query.append(field.getName().getSqlString(this, paramMode))
-            .append(" ").append(sqlType(field.getType(), field.getPrecision(), field.getScale()));
-
-        for (SqlKeyword opt : field.getOptions()) {
-          query.append(" ").append(sqlKeyword(opt, null));
-        }
-      }
-      query.append(")");
-    }
-    return query.toString();
-  }
-
-  /**
-   * Generates an SQL DELETE query from the specified argument {@code sd}. {@code sd} must have From
-   * and Where contitions set.
-   * 
-   * @param sd the SqlDelete object to use for generating
-   * @param paramMode sets the parameter mode
-   * @return a generated SQL DELETE query
-   */
-  String getDelete(SqlDelete sd, boolean paramMode) {
-    Assert.notNull(sd);
-    Assert.state(!sd.isEmpty());
-
-    StringBuilder query = new StringBuilder("DELETE FROM ");
-
-    query.append(sd.getTarget().getSqlString(this, paramMode));
-
-    List<IsFrom> fromList = sd.getFrom();
-
-    if (!BeeUtils.isEmpty(fromList)) {
-      query.append(" FROM ");
-
-      for (IsFrom from : fromList) {
-        query.append(from.getSqlString(this, paramMode));
-      }
-    }
-    String wh = sd.getWhere().getSqlString(this, paramMode);
-
-    if (!BeeUtils.isEmpty(wh)) {
-      query.append(" WHERE ").append(wh);
-    }
-    return query.toString();
-  }
-
-  /**
-   * Generates an SQL INSERT query from the specified argument {@code si}. There are two ways to
-   * generate the query. First: by defining a {@code  dataSource}. Second: describing the fields
-   * manually. Only one at an instance of the SqlInsert object is possible.
-   * 
-   * @param si the SqlInsert object
-   * @param paramMode sets the parameter mode
-   * @return a generated SQL INSERT query
-   */
-  String getInsert(SqlInsert si, boolean paramMode) {
-    Assert.notNull(si);
-    Assert.state(!si.isEmpty());
-
-    StringBuilder query = new StringBuilder("INSERT INTO ");
-
-    query.append(si.getTarget().getSqlString(this, paramMode));
-
-    List<IsExpression> fieldList = si.getFields();
-
-    query.append(" (");
-
-    for (int i = 0; i < fieldList.size(); i++) {
-      if (i > 0) {
-        query.append(", ");
-      }
-      IsExpression field = fieldList.get(i);
-      query.append(field.getSqlString(this, paramMode));
-    }
-    query.append(") ");
-
-    if (!BeeUtils.isEmpty(si.getDataSource())) {
-      query.append(si.getDataSource().getSqlString(this, paramMode));
-    } else {
-      List<IsExpression> valueList = si.getValues();
-
-      if (!BeeUtils.isEmpty(valueList)) {
-        query.append("VALUES (");
-
-        for (int i = 0; i < valueList.size(); i++) {
-          if (i > 0) {
-            query.append(", ");
-          }
-          IsExpression value = valueList.get(i);
-          query.append(value.getSqlString(this, paramMode));
-        }
-        query.append(")");
-      }
-    }
-    return query.toString();
-  }
-
-  /**
-   * Generates an SQL SELECT query from the specified argument {@code ss}. From value must be
-   * defined in order to generate the query.
-   * 
-   * @param ss the SqlSelect object
-   * @param paramMode sets the parameter mode
-   * @return a generated SQL SELECT query
-   */
-  String getQuery(SqlSelect ss, boolean paramMode) {
-    Assert.notNull(ss);
-    Assert.state(!ss.isEmpty());
-
-    StringBuilder query = new StringBuilder("SELECT ");
-
-    if (ss.isDistinctMode()) {
-      query.append("DISTINCT ");
-    }
-    List<IsExpression[]> fieldList = ss.getFields();
-
-    for (int i = 0; i < fieldList.size(); i++) {
-      if (i > 0) {
-        query.append(", ");
-      }
-      IsExpression[] fldEntry = fieldList.get(i);
-      IsExpression field = fldEntry[SqlSelect.FIELD_EXPR];
-      query.append(field.getSqlString(this, paramMode));
-
-      IsExpression alias = fldEntry[SqlSelect.FIELD_ALIAS];
-
-      if (!BeeUtils.isEmpty(alias)) {
-        query.append(" AS ").append(alias.getSqlString(this, paramMode));
-      }
-    }
-    List<IsFrom> fromList = ss.getFrom();
-
-    query.append(" FROM ");
-
-    for (IsFrom from : fromList) {
-      query.append(from.getSqlString(this, paramMode));
-    }
-    IsCondition whereClause = ss.getWhere();
-
-    if (!BeeUtils.isEmpty(whereClause)) {
-      String wh = whereClause.getSqlString(this, paramMode);
-
-      if (!BeeUtils.isEmpty(wh)) {
-        query.append(" WHERE ").append(wh);
-      }
-    }
-    List<IsExpression> groupList = ss.getGroupBy();
-
-    if (!BeeUtils.isEmpty(groupList)) {
-      query.append(" GROUP BY ");
-
-      for (int i = 0; i < groupList.size(); i++) {
-        if (i > 0) {
-          query.append(", ");
-        }
-        String group = groupList.get(i).getSqlString(this, paramMode);
-        query.append(group);
-      }
-    }
-    IsCondition havingClause = ss.getHaving();
-
-    if (!BeeUtils.isEmpty(havingClause)) {
-      query.append(" HAVING ")
-          .append(havingClause.getSqlString(this, paramMode));
-    }
-    List<SqlSelect> unionList = ss.getUnion();
-
-    if (!BeeUtils.isEmpty(unionList)) {
-      for (SqlSelect union : unionList) {
-        query.append(ss.isUnionAllMode() ? " UNION ALL " : " UNION ")
-            .append("(").append(union.getSqlString(this, paramMode)).append(")");
-      }
-    }
-    List<String[]> orderList = ss.getOrderBy();
-
-    if (!BeeUtils.isEmpty(orderList)) {
-      query.append(" ORDER BY ");
-
-      for (int i = 0; i < orderList.size(); i++) {
-        if (i > 0) {
-          query.append(", ");
-        }
-        String[] orderEntry = orderList.get(i);
-        IsExpression order = BeeUtils.isEmpty(ss.getUnion())
-            ? SqlUtils.field(orderEntry[SqlSelect.ORDER_SRC], orderEntry[SqlSelect.ORDER_FLD])
-            : SqlUtils.name(orderEntry[SqlSelect.ORDER_FLD]);
-
-        query.append(order.getSqlString(this, paramMode))
-            .append(orderEntry[SqlSelect.ORDER_DESC]);
-      }
-    }
-    return query.toString();
-  }
-
-  /**
-   * Generates an SQL UPDATE query from the specified argument {@code su}. A target table and at
-   * least one expression must be defined.
-   * 
-   * @param su the SqlUpdate object.
-   * @param paramMode sets teh parameter mode
-   * @return a generated SQL UPDATE query
-   */
-  String getUpdate(SqlUpdate su, boolean paramMode) {
-    Assert.notNull(su);
-    Assert.state(!su.isEmpty());
-
-    StringBuilder query = new StringBuilder("UPDATE ");
-
-    query.append(su.getTarget().getSqlString(this, paramMode));
-
-    List<IsExpression[]> updates = su.getUpdates();
-
-    query.append(" SET ");
-
-    for (int i = 0; i < updates.size(); i++) {
-      if (i > 0) {
-        query.append(", ");
-      }
-      IsExpression[] updateEntry = updates.get(i);
-      IsExpression field = updateEntry[SqlUpdate.FIELD];
-      query.append(field.getSqlString(this, paramMode));
-
-      IsExpression value = updateEntry[SqlUpdate.VALUE];
-      query.append("=").append(value.getSqlString(this, paramMode));
-    }
-    List<IsFrom> fromList = su.getFrom();
-
-    if (!BeeUtils.isEmpty(fromList)) {
-      query.append(" FROM ");
-
-      for (IsFrom from : fromList) {
-        query.append(from.getSqlString(this, paramMode));
-      }
-    }
-    IsCondition whereClause = su.getWhere();
-
-    if (!BeeUtils.isEmpty(whereClause)) {
-      String wh = whereClause.getSqlString(this, paramMode);
-
-      if (!BeeUtils.isEmpty(wh)) {
-        query.append(" WHERE ").append(wh);
-      }
-    }
-    return query.toString();
   }
 }

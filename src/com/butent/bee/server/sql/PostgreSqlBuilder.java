@@ -1,18 +1,32 @@
 package com.butent.bee.server.sql;
 
-import com.butent.bee.server.sql.BeeConstants.DataType;
-import com.butent.bee.server.sql.BeeConstants.SqlKeyword;
+import com.butent.bee.server.sql.SqlConstants.SqlDataType;
+import com.butent.bee.server.sql.SqlConstants.SqlKeyword;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Map;
 
 /**
- * Contains specific requirements for SQL statement building for PostgreSQL 
- * server.
+ * Contains specific requirements for SQL statement building for PostgreSQL server.
  */
 
 class PostgreSqlBuilder extends SqlBuilder {
+
+  @Override
+  protected String getSelect(SqlSelect ss) {
+    int limit = ss.getLimit();
+    int offset = ss.getOffset();
+    String sql = super.getSelect(ss);
+  
+    if (BeeUtils.isPositive(limit)) {
+      sql += " LIMIT " + limit;
+    }
+    if (BeeUtils.isPositive(offset)) {
+      sql += " OFFSET " + offset;
+    }
+    return sql;
+  }
 
   @Override
   protected String sqlKeyword(SqlKeyword option, Map<String, Object> params) {
@@ -51,7 +65,7 @@ class PostgreSqlBuilder extends SqlBuilder {
   }
 
   @Override
-  protected String sqlType(DataType type, int precision, int scale) {
+  protected String sqlType(SqlDataType type, int precision, int scale) {
     switch (type) {
       case BOOLEAN:
         return "NUMERIC(1)";
@@ -60,20 +74,5 @@ class PostgreSqlBuilder extends SqlBuilder {
       default:
         return super.sqlType(type, precision, scale);
     }
-  }
-
-  @Override
-  String getQuery(SqlSelect ss, boolean paramMode) {
-    int limit = ss.getLimit();
-    int offset = ss.getOffset();
-    String sql = super.getQuery(ss, paramMode);
-
-    if (BeeUtils.isPositive(limit)) {
-      sql += " LIMIT " + limit;
-    }
-    if (BeeUtils.isPositive(offset)) {
-      sql += " OFFSET " + offset;
-    }
-    return sql;
   }
 }

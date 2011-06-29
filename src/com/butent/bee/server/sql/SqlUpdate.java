@@ -2,15 +2,13 @@ package com.butent.bee.server.sql;
 
 import com.google.common.collect.Lists;
 
-import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
 import java.util.List;
 
 /**
- * Generates UPDATE SQL statements for specified target, update values and WHERE 
- * condition.
+ * Generates UPDATE SQL statements for specified target, update values and WHERE condition.
  */
 
 public class SqlUpdate extends HasFrom<SqlUpdate> {
@@ -23,8 +21,8 @@ public class SqlUpdate extends HasFrom<SqlUpdate> {
   private IsCondition whereClause;
 
   /**
-   * Creates an SqlUpdate statement with a specified target {@code target}. 
-   * Target type is FromSingle.
+   * Creates an SqlUpdate statement with a specified target {@code target}. Target type is
+   * FromSingle.
    * 
    * @param target the FromSingle target
    */
@@ -33,8 +31,8 @@ public class SqlUpdate extends HasFrom<SqlUpdate> {
   }
 
   /**
-   * Creates an SqlUpdate statement with a specified target {@code target} and
-   * alias {@code alias}. Target type is FromSingle.
+   * Creates an SqlUpdate statement with a specified target {@code target} and alias {@code alias}.
+   * Target type is FromSingle.
    * 
    * @param target the target
    * @param alias the alias to use
@@ -45,6 +43,7 @@ public class SqlUpdate extends HasFrom<SqlUpdate> {
 
   /**
    * Adds a constant value expression in a field for an SqlUpdate statement.
+   * 
    * @param field the field's name
    * @param value the field's value
    * @return object's SqlInsert instance.
@@ -55,6 +54,7 @@ public class SqlUpdate extends HasFrom<SqlUpdate> {
 
   /**
    * Adds an expression for an SqlUpdate statement.
+   * 
    * @param field the field to add
    * @param value the expression to add
    * @return object's SqlInsert instance.
@@ -73,7 +73,7 @@ public class SqlUpdate extends HasFrom<SqlUpdate> {
   }
 
   /**
-   *  @return a list of sources found in the target and Where clause. 
+   * @return a list of sources found in the target and Where clause.
    */
   @Override
   public Collection<String> getSources() {
@@ -83,42 +83,6 @@ public class SqlUpdate extends HasFrom<SqlUpdate> {
       sources = SqlUtils.addCollection(sources, whereClause.getSources());
     }
     return sources;
-  }
-
-  /**
-   * Returns a list of parameters found in the {@code updates}, 
-   * {@code whereClause} and From list .  
-   * 
-   * @returns a list of parameters
-   */
-  @Override
-  public List<Object> getSqlParams() {
-    Assert.state(!isEmpty());
-
-    List<Object> paramList = null;
-
-    for (Object[] update : updates) {
-      IsExpression val = (IsExpression) update[VALUE];
-      paramList = (List<Object>) SqlUtils.addCollection(paramList, val.getSqlParams());
-    }
-    paramList = (List<Object>) SqlUtils.addCollection(paramList, super.getSqlParams());
-
-    if (!BeeUtils.isEmpty(whereClause)) {
-      paramList = (List<Object>) SqlUtils.addCollection(paramList, whereClause.getSqlParams());
-    }
-    return paramList;
-  }
-
-  /**
-   * @param builder the builder to use
-   * @param paramMode sets param mode on or off
-   * @return a generated SqlUpdate query with a specified SqlBuilder 
-   * {@code builder} and parameter mode {@code paramMode}.
-   */
-  @Override
-  public String getSqlString(SqlBuilder builder, boolean paramMode) {
-    Assert.notEmpty(builder);
-    return builder.getUpdate(this, paramMode);
   }
 
   /**
@@ -143,8 +107,8 @@ public class SqlUpdate extends HasFrom<SqlUpdate> {
   }
 
   /**
-   * Checks if the current instance of SqlUpdate is empty. Checks if the target
-   * and {@code updates} list are empty.
+   * Checks if the current instance of SqlUpdate is empty. Checks if the target and {@code updates}
+   * list are empty.
    * 
    * @returns true if it is empty, otherwise false.
    */
@@ -169,6 +133,7 @@ public class SqlUpdate extends HasFrom<SqlUpdate> {
 
   /**
    * Sets the Where clause to the specified clause {@code clause}.
+   * 
    * @param clause a clause to set Where to.
    * 
    * @return object's SqlUpdate instance
@@ -176,10 +141,5 @@ public class SqlUpdate extends HasFrom<SqlUpdate> {
   public SqlUpdate setWhere(IsCondition clause) {
     whereClause = clause;
     return getReference();
-  }
-
-  @Override
-  protected SqlUpdate getReference() {
-    return this;
   }
 }

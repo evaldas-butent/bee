@@ -5,7 +5,6 @@ import com.butent.bee.shared.data.filter.CompoundType;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
-import java.util.List;
 
 /**
  * Forms a logically negative condition for a given one according to requirements of specific SQL
@@ -27,13 +26,7 @@ class NegationCondition implements IsCondition {
   }
 
   @Override
-  public List<Object> getSqlParams() {
-    return condition.getSqlParams();
-  }
-
-  @Override
-  public String getSqlString(SqlBuilder builder, boolean paramMode) {
-    return CompoundType.NOT.toSqlString()
-        + BeeUtils.parenthesize(condition.getSqlString(builder, paramMode));
+  public String getSqlString(SqlBuilder builder) {
+    return CompoundType.NOT.toSqlString() + BeeUtils.parenthesize(condition.getSqlString(builder));
   }
 }

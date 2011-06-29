@@ -227,13 +227,6 @@ public class TestBeeUtilsTransform extends TestCase implements ILogger {
   }
 
   @Test
-  public void testCreateUniqueName() {
-    assertEquals("1", beeUtils.createUniqueName());
-    assertEquals("2", beeUtils.createUniqueName(null));
-    assertEquals("Unique Name3", beeUtils.createUniqueName("Unique Name"));
-  }
-
-  @Test
   public void testDelete() {
     assertEquals("", beeUtils.delete(null, 0, 5));
     assertEquals("", beeUtils.delete("", 0, 5));

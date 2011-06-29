@@ -3,8 +3,8 @@ package com.butent.bee.server.sql;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
-import com.butent.bee.server.sql.BeeConstants.DataType;
-import com.butent.bee.server.sql.BeeConstants.Function;
+import com.butent.bee.server.sql.SqlConstants.SqlDataType;
+import com.butent.bee.server.sql.SqlConstants.SqlFunction;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -62,7 +62,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
    */
   public SqlSelect addAvg(IsExpression expr, String alias) {
     Assert.notNull(expr);
-    addAggregate(Function.AVG, expr, false, alias);
+    addAggregate(SqlFunction.AVG, expr, false, alias);
     return getReference();
   }
 
@@ -99,7 +99,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
    */
   public SqlSelect addAvgDistinct(IsExpression expr, String alias) {
     Assert.notNull(expr);
-    addAggregate(Function.AVG, expr, true, alias);
+    addAggregate(SqlFunction.AVG, expr, true, alias);
     return getReference();
   }
 
@@ -123,7 +123,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
    * @return object's SqlSelect instance.
    */
   public SqlSelect addCount(IsExpression expr, String alias) {
-    addAggregate(Function.COUNT, expr, false, alias);
+    addAggregate(SqlFunction.COUNT, expr, false, alias);
     return getReference();
   }
 
@@ -171,7 +171,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
    */
   public SqlSelect addCountDistinct(IsExpression expr, String alias) {
     Assert.notNull(expr);
-    addAggregate(Function.COUNT, expr, true, alias);
+    addAggregate(SqlFunction.COUNT, expr, true, alias);
     return getReference();
   }
 
@@ -182,7 +182,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
    * @return object's SqlSelect instance.
    */
   public SqlSelect addEmptyBoolean(String alias) {
-    return addEmptyField(alias, DataType.BOOLEAN, 0, 0, false);
+    return addEmptyField(alias, SqlDataType.BOOLEAN, 0, 0, false);
   }
 
   /**
@@ -193,7 +193,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
    * @return object's SqlSelect instance.
    */
   public SqlSelect addEmptyChar(String alias, int precision) {
-    return addEmptyField(alias, DataType.CHAR, precision, 0, false);
+    return addEmptyField(alias, SqlDataType.CHAR, precision, 0, false);
   }
 
   /**
@@ -203,7 +203,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
    * @return object's SqlSelect instance.
    */
   public SqlSelect addEmptyDate(String alias) {
-    return addEmptyField(alias, DataType.DATE, 0, 0, false);
+    return addEmptyField(alias, SqlDataType.DATE, 0, 0, false);
   }
 
   /**
@@ -213,7 +213,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
    * @return object's SqlSelect instance.
    */
   public SqlSelect addEmptyDateTime(String alias) {
-    return addEmptyField(alias, DataType.DATETIME, 0, 0, false);
+    return addEmptyField(alias, SqlDataType.DATETIME, 0, 0, false);
   }
 
   /**
@@ -223,7 +223,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
    * @return object's SqlSelect instance.
    */
   public SqlSelect addEmptyDouble(String alias) {
-    return addEmptyField(alias, DataType.DOUBLE, 0, 0, false);
+    return addEmptyField(alias, SqlDataType.DOUBLE, 0, 0, false);
   }
 
   /**
@@ -236,7 +236,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
    * @param notNull field's default value is not null
    * @return object's SqlSelect instance.
    */
-  public SqlSelect addEmptyField(String alias, DataType type, int precision, int scale,
+  public SqlSelect addEmptyField(String alias, SqlDataType type, int precision, int scale,
       boolean notNull) {
     Assert.notEmpty(alias);
     Assert.notNull(type);
@@ -256,7 +256,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
    * @return object's SqlSelect instance
    */
   public SqlSelect addEmptyInt(String alias) {
-    return addEmptyField(alias, DataType.INTEGER, 0, 0, false);
+    return addEmptyField(alias, SqlDataType.INTEGER, 0, 0, false);
   }
 
   /**
@@ -266,7 +266,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
    * @return object's SqlSelect instance
    */
   public SqlSelect addEmptyLong(String alias) {
-    return addEmptyField(alias, DataType.LONG, 0, 0, false);
+    return addEmptyField(alias, SqlDataType.LONG, 0, 0, false);
   }
 
   /**
@@ -279,7 +279,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
    * @return object's SqlSelect instance
    */
   public SqlSelect addEmptyNumeric(String alias, int precision, int scale) {
-    return addEmptyField(alias, DataType.DECIMAL, precision, scale, false);
+    return addEmptyField(alias, SqlDataType.DECIMAL, precision, scale, false);
   }
 
   /**
@@ -290,7 +290,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
    * @return object's SqlSelect instance
    */
   public SqlSelect addEmptyString(String alias, int precision) {
-    return addEmptyField(alias, DataType.STRING, precision, 0, false);
+    return addEmptyField(alias, SqlDataType.STRING, precision, 0, false);
   }
 
   /**
@@ -359,7 +359,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
    */
   public SqlSelect addMax(IsExpression expr, String alias) {
     Assert.notNull(expr);
-    addAggregate(Function.MAX, expr, false, alias);
+    addAggregate(SqlFunction.MAX, expr, false, alias);
     return getReference();
   }
 
@@ -396,7 +396,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
    */
   public SqlSelect addMaxDistinct(IsExpression expr, String alias) {
     Assert.notNull(expr);
-    addAggregate(Function.MAX, expr, true, alias);
+    addAggregate(SqlFunction.MAX, expr, true, alias);
     return getReference();
   }
 
@@ -409,7 +409,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
    */
   public SqlSelect addMin(IsExpression expr, String alias) {
     Assert.notNull(expr);
-    addAggregate(Function.MIN, expr, false, alias);
+    addAggregate(SqlFunction.MIN, expr, false, alias);
     return getReference();
   }
 
@@ -446,7 +446,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
    */
   public SqlSelect addMinDistinct(IsExpression expr, String alias) {
     Assert.notNull(expr);
-    addAggregate(Function.MIN, expr, true, alias);
+    addAggregate(SqlFunction.MIN, expr, true, alias);
     return getReference();
   }
 
@@ -483,7 +483,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
    */
   public SqlSelect addSum(IsExpression expr, String alias) {
     Assert.notNull(expr);
-    addAggregate(Function.SUM, expr, false, alias);
+    addAggregate(SqlFunction.SUM, expr, false, alias);
     return getReference();
   }
 
@@ -520,7 +520,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
    */
   public SqlSelect addSumDistinct(IsExpression expr, String alias) {
     Assert.notNull(expr);
-    addAggregate(Function.SUM, expr, true, alias);
+    addAggregate(SqlFunction.SUM, expr, true, alias);
     return getReference();
   }
 
@@ -646,54 +646,6 @@ public class SqlSelect extends HasFrom<SqlSelect> {
       }
     }
     return sources;
-  }
-
-  /**
-   * Returns a list of parameters found in the this object.
-   * 
-   * @returns a list of parameters.
-   */
-  @Override
-  public List<Object> getSqlParams() {
-    Assert.state(!isEmpty());
-
-    List<Object> paramList = null;
-
-    for (IsExpression[] field : fieldList) {
-      paramList =
-          (List<Object>) SqlUtils.addCollection(paramList, field[FIELD_EXPR].getSqlParams());
-    }
-    paramList = (List<Object>) SqlUtils.addCollection(paramList, super.getSqlParams());
-
-    if (!BeeUtils.isEmpty(whereClause)) {
-      paramList = (List<Object>) SqlUtils.addCollection(paramList, whereClause.getSqlParams());
-    }
-    if (!BeeUtils.isEmpty(groupList)) {
-      for (IsExpression group : groupList) {
-        paramList = (List<Object>) SqlUtils.addCollection(paramList, group.getSqlParams());
-      }
-    }
-    if (!BeeUtils.isEmpty(havingClause)) {
-      paramList = (List<Object>) SqlUtils.addCollection(paramList, havingClause.getSqlParams());
-    }
-    if (!BeeUtils.isEmpty(unionList)) {
-      for (SqlSelect union : unionList) {
-        paramList = (List<Object>) SqlUtils.addCollection(paramList, union.getSqlParams());
-      }
-    }
-    return paramList;
-  }
-
-  /**
-   * @param builder the builder to use
-   * @param paramMode sets param mode on or off
-   * @return a generated SqlCreate query with a specified SqlBuilder {@code builder} and parameter
-   *         mode {@code paramMode}.
-   */
-  @Override
-  public String getSqlString(SqlBuilder builder, boolean paramMode) {
-    Assert.notEmpty(builder);
-    return builder.getQuery(this, paramMode);
   }
 
   /**
@@ -869,12 +821,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
     return getReference();
   }
 
-  @Override
-  protected SqlSelect getReference() {
-    return this;
-  }
-
-  private void addAggregate(Function fnc, IsExpression expr, boolean distinct, String alias) {
+  private void addAggregate(SqlFunction fnc, IsExpression expr, boolean distinct, String alias) {
     Map<String, Object> params = Maps.newHashMap();
     params.put("expression", expr);
     params.put("distinct", distinct);

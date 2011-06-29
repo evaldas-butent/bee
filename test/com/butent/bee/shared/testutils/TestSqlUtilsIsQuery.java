@@ -1,6 +1,5 @@
 package com.butent.bee.shared.testutils;
 
-import com.butent.bee.server.sql.BeeConstants.SqlKeyword;
 import com.butent.bee.server.sql.SqlBuilder;
 import com.butent.bee.server.sql.SqlBuilderFactory;
 import com.butent.bee.server.sql.SqlSelect;
@@ -36,11 +35,19 @@ public class TestSqlUtilsIsQuery {
     assertEquals(
         "ALTER TABLE Table1 ADD CONSTRAINT name FOREIGN KEY (field1) REFERENCES refTable (refField1) ON DELETE CASCADE",
         SqlUtils.createForeignKey("Table1", "name", "field1",
-            "refTable", "refField1", SqlKeyword.CASCADE).getQuery());
+            "refTable", "refField1", true, true).getQuery());
+    assertEquals(
+        "ALTER TABLE Table1 ADD CONSTRAINT name FOREIGN KEY (field1) REFERENCES refTable (refField1) ON DELETE SET NULL",
+        SqlUtils.createForeignKey("Table1", "name", "field1",
+            "refTable", "refField1", true, false).getQuery());
     assertEquals(
         "ALTER TABLE Table1 ADD CONSTRAINT name FOREIGN KEY (field1) REFERENCES refTable (refField1)",
         SqlUtils.createForeignKey("Table1", "name", "field1",
-            "refTable", "refField1", null).getQuery());
+            "refTable", "refField1", false, false).getQuery());
+    assertEquals(
+        "ALTER TABLE Table1 ADD CONSTRAINT name FOREIGN KEY (field1) REFERENCES refTable (refField1)",
+        SqlUtils.createForeignKey("Table1", "name", "field1",
+            "refTable", "refField1", false, true).getQuery());
   }
 
   @Test
@@ -109,63 +116,63 @@ public class TestSqlUtilsIsQuery {
     SqlBuilderFactory.setDefaultEngine("Generic");
 
     assertEquals(
-        "SELECT c.constraint_name AS keyName, t.table_name AS tblName, r.table_name AS fkRefTable FROM information_schema.referential_constraints c INNER JOIN information_schema.table_constraints t ON c.constraint_name=t.constraint_name INNER JOIN information_schema.table_constraints r ON c.unique_constraint_name=r.constraint_name WHERE c.constraint_catalog='MyDB' AND t.table_catalog='MyDB' AND c.constraint_schema='MyDbSchema' AND t.table_schema='MyDbSchema' AND t.table_name='Table1' AND r.table_name='RefTable1'",
+        "SELECT c.constraint_name AS keyName, t.table_name AS tblName, r.table_name AS fkRefTable FROM information_schema.referential_constraints c INNER JOIN information_schema.table_constraints t ON c.constraint_name = t.constraint_name INNER JOIN information_schema.table_constraints r ON c.unique_constraint_name = r.constraint_name WHERE c.constraint_catalog = 'MyDB' AND t.table_catalog = 'MyDB' AND c.constraint_schema = 'MyDbSchema' AND t.table_schema = 'MyDbSchema' AND t.table_name = 'Table1' AND r.table_name = 'RefTable1'",
         SqlUtils.dbForeignKeys("MyDB", "MyDbSchema", "Table1",
             "RefTable1").getQuery());
     assertEquals(
-        "SELECT c.constraint_name AS keyName, t.table_name AS tblName, r.table_name AS fkRefTable FROM information_schema.referential_constraints c INNER JOIN information_schema.table_constraints t ON c.constraint_name=t.constraint_name INNER JOIN information_schema.table_constraints r ON c.unique_constraint_name=r.constraint_name WHERE c.constraint_catalog='MyDB' AND t.table_catalog='MyDB' AND c.constraint_schema='MyDbSchema' AND t.table_schema='MyDbSchema' AND t.table_name='Table1'",
+        "SELECT c.constraint_name AS keyName, t.table_name AS tblName, r.table_name AS fkRefTable FROM information_schema.referential_constraints c INNER JOIN information_schema.table_constraints t ON c.constraint_name = t.constraint_name INNER JOIN information_schema.table_constraints r ON c.unique_constraint_name = r.constraint_name WHERE c.constraint_catalog = 'MyDB' AND t.table_catalog = 'MyDB' AND c.constraint_schema = 'MyDbSchema' AND t.table_schema = 'MyDbSchema' AND t.table_name = 'Table1'",
         SqlUtils.dbForeignKeys("MyDB", "MyDbSchema", "Table1", null)
             .getQuery());
     assertEquals(
-        "SELECT c.constraint_name AS keyName, t.table_name AS tblName, r.table_name AS fkRefTable FROM information_schema.referential_constraints c INNER JOIN information_schema.table_constraints t ON c.constraint_name=t.constraint_name INNER JOIN information_schema.table_constraints r ON c.unique_constraint_name=r.constraint_name WHERE c.constraint_catalog='MyDB' AND t.table_catalog='MyDB' AND c.constraint_schema='MyDbSchema' AND t.table_schema='MyDbSchema'",
+        "SELECT c.constraint_name AS keyName, t.table_name AS tblName, r.table_name AS fkRefTable FROM information_schema.referential_constraints c INNER JOIN information_schema.table_constraints t ON c.constraint_name = t.constraint_name INNER JOIN information_schema.table_constraints r ON c.unique_constraint_name = r.constraint_name WHERE c.constraint_catalog = 'MyDB' AND t.table_catalog = 'MyDB' AND c.constraint_schema = 'MyDbSchema' AND t.table_schema = 'MyDbSchema'",
         SqlUtils.dbForeignKeys("MyDB", "MyDbSchema", null, null)
             .getQuery());
     assertEquals(
-        "SELECT c.constraint_name AS keyName, t.table_name AS tblName, r.table_name AS fkRefTable FROM information_schema.referential_constraints c INNER JOIN information_schema.table_constraints t ON c.constraint_name=t.constraint_name INNER JOIN information_schema.table_constraints r ON c.unique_constraint_name=r.constraint_name WHERE c.constraint_catalog='MyDB' AND t.table_catalog='MyDB'",
+        "SELECT c.constraint_name AS keyName, t.table_name AS tblName, r.table_name AS fkRefTable FROM information_schema.referential_constraints c INNER JOIN information_schema.table_constraints t ON c.constraint_name = t.constraint_name INNER JOIN information_schema.table_constraints r ON c.unique_constraint_name = r.constraint_name WHERE c.constraint_catalog = 'MyDB' AND t.table_catalog = 'MyDB'",
         SqlUtils.dbForeignKeys("MyDB", null, null, null).getQuery());
     assertEquals(
-        "SELECT c.constraint_name AS keyName, t.table_name AS tblName, r.table_name AS fkRefTable FROM information_schema.referential_constraints c INNER JOIN information_schema.table_constraints t ON c.constraint_name=t.constraint_name INNER JOIN information_schema.table_constraints r ON c.unique_constraint_name=r.constraint_name",
+        "SELECT c.constraint_name AS keyName, t.table_name AS tblName, r.table_name AS fkRefTable FROM information_schema.referential_constraints c INNER JOIN information_schema.table_constraints t ON c.constraint_name = t.constraint_name INNER JOIN information_schema.table_constraints r ON c.unique_constraint_name = r.constraint_name",
         SqlUtils.dbForeignKeys(null, null, null, null).getQuery());
 
     SqlBuilderFactory.setDefaultEngine(BeeConst.MYSQL);
     assertEquals(
-        "SELECT `c`.`constraint_name` AS `keyName`, `t`.`table_name` AS `tblName`, `c`.`referenced_table_name` AS `fkRefTable` FROM `information_schema`.`referential_constraints` `c` INNER JOIN `information_schema`.`table_constraints` `t` ON `c`.`constraint_name`=`t`.`constraint_name` WHERE `c`.`constraint_catalog`='MyDB' AND `t`.`table_catalog`='MyDB' AND `c`.`constraint_schema`='MyDbSchema' AND `t`.`table_schema`='MyDbSchema' AND `t`.`table_name`='Table1' AND `c`.`referenced_table_name`='RefTable1'",
+        "SELECT `c`.`constraint_name` AS `keyName`, `t`.`table_name` AS `tblName`, `c`.`referenced_table_name` AS `fkRefTable` FROM `information_schema`.`referential_constraints` `c` INNER JOIN `information_schema`.`table_constraints` `t` ON `c`.`constraint_name` = `t`.`constraint_name` WHERE `c`.`constraint_catalog` = 'MyDB' AND `t`.`table_catalog` = 'MyDB' AND `c`.`constraint_schema` = 'MyDbSchema' AND `t`.`table_schema` = 'MyDbSchema' AND `t`.`table_name` = 'Table1' AND `c`.`referenced_table_name` = 'RefTable1'",
         SqlUtils.dbForeignKeys("MyDB", "MyDbSchema", "Table1",
             "RefTable1").getQuery());
     assertEquals(
-        "SELECT `c`.`constraint_name` AS `keyName`, `t`.`table_name` AS `tblName`, `c`.`referenced_table_name` AS `fkRefTable` FROM `information_schema`.`referential_constraints` `c` INNER JOIN `information_schema`.`table_constraints` `t` ON `c`.`constraint_name`=`t`.`constraint_name` WHERE `c`.`constraint_catalog`='MyDB' AND `t`.`table_catalog`='MyDB' AND `c`.`constraint_schema`='MyDbSchema' AND `t`.`table_schema`='MyDbSchema' AND `t`.`table_name`='Table1'",
+        "SELECT `c`.`constraint_name` AS `keyName`, `t`.`table_name` AS `tblName`, `c`.`referenced_table_name` AS `fkRefTable` FROM `information_schema`.`referential_constraints` `c` INNER JOIN `information_schema`.`table_constraints` `t` ON `c`.`constraint_name` = `t`.`constraint_name` WHERE `c`.`constraint_catalog` = 'MyDB' AND `t`.`table_catalog` = 'MyDB' AND `c`.`constraint_schema` = 'MyDbSchema' AND `t`.`table_schema` = 'MyDbSchema' AND `t`.`table_name` = 'Table1'",
         SqlUtils.dbForeignKeys("MyDB", "MyDbSchema", "Table1", null)
             .getQuery());
     assertEquals(
-        "SELECT `c`.`constraint_name` AS `keyName`, `t`.`table_name` AS `tblName`, `c`.`referenced_table_name` AS `fkRefTable` FROM `information_schema`.`referential_constraints` `c` INNER JOIN `information_schema`.`table_constraints` `t` ON `c`.`constraint_name`=`t`.`constraint_name` WHERE `c`.`constraint_catalog`='MyDB' AND `t`.`table_catalog`='MyDB' AND `c`.`constraint_schema`='MyDbSchema' AND `t`.`table_schema`='MyDbSchema'",
+        "SELECT `c`.`constraint_name` AS `keyName`, `t`.`table_name` AS `tblName`, `c`.`referenced_table_name` AS `fkRefTable` FROM `information_schema`.`referential_constraints` `c` INNER JOIN `information_schema`.`table_constraints` `t` ON `c`.`constraint_name` = `t`.`constraint_name` WHERE `c`.`constraint_catalog` = 'MyDB' AND `t`.`table_catalog` = 'MyDB' AND `c`.`constraint_schema` = 'MyDbSchema' AND `t`.`table_schema` = 'MyDbSchema'",
         SqlUtils.dbForeignKeys("MyDB", "MyDbSchema", null, null)
             .getQuery());
     assertEquals(
-        "SELECT `c`.`constraint_name` AS `keyName`, `t`.`table_name` AS `tblName`, `c`.`referenced_table_name` AS `fkRefTable` FROM `information_schema`.`referential_constraints` `c` INNER JOIN `information_schema`.`table_constraints` `t` ON `c`.`constraint_name`=`t`.`constraint_name` WHERE `c`.`constraint_catalog`='MyDB' AND `t`.`table_catalog`='MyDB'",
+        "SELECT `c`.`constraint_name` AS `keyName`, `t`.`table_name` AS `tblName`, `c`.`referenced_table_name` AS `fkRefTable` FROM `information_schema`.`referential_constraints` `c` INNER JOIN `information_schema`.`table_constraints` `t` ON `c`.`constraint_name` = `t`.`constraint_name` WHERE `c`.`constraint_catalog` = 'MyDB' AND `t`.`table_catalog` = 'MyDB'",
         SqlUtils.dbForeignKeys("MyDB", null, null, null).getQuery());
     assertEquals(
-        "SELECT `c`.`constraint_name` AS `keyName`, `t`.`table_name` AS `tblName`, `c`.`referenced_table_name` AS `fkRefTable` FROM `information_schema`.`referential_constraints` `c` INNER JOIN `information_schema`.`table_constraints` `t` ON `c`.`constraint_name`=`t`.`constraint_name`",
+        "SELECT `c`.`constraint_name` AS `keyName`, `t`.`table_name` AS `tblName`, `c`.`referenced_table_name` AS `fkRefTable` FROM `information_schema`.`referential_constraints` `c` INNER JOIN `information_schema`.`table_constraints` `t` ON `c`.`constraint_name` = `t`.`constraint_name`",
         SqlUtils.dbForeignKeys(null, null, null, null).getQuery());
 
     SqlBuilderFactory.setDefaultEngine(BeeConst.ORACLE);
 
     assertEquals(
-        "SELECT \"c\".\"CONSTRAINT_NAME\" AS \"keyName\", \"c\".\"TABLE_NAME\" AS \"tblName\", \"r\".\"TABLE_NAME\" AS \"fkRefTable\" FROM \"ALL_CONSTRAINTS\" \"c\" INNER JOIN \"ALL_CONSTRAINTS\" \"r\" ON \"c\".\"R_CONSTRAINT_NAME\"=\"r\".\"CONSTRAINT_NAME\" WHERE \"c\".\"CONSTRAINT_TYPE\"='R' AND \"c\".\"OWNER\"='MyDbSchema' AND \"r\".\"OWNER\"='MyDbSchema' AND \"c\".\"TABLE_NAME\"='Table1' AND \"r\".\"TABLE_NAME\"='RefTable1'",
+        "SELECT \"c\".\"CONSTRAINT_NAME\" AS \"keyName\", \"c\".\"TABLE_NAME\" AS \"tblName\", \"r\".\"TABLE_NAME\" AS \"fkRefTable\" FROM \"ALL_CONSTRAINTS\" \"c\" INNER JOIN \"ALL_CONSTRAINTS\" \"r\" ON \"c\".\"R_CONSTRAINT_NAME\" = \"r\".\"CONSTRAINT_NAME\" WHERE \"c\".\"CONSTRAINT_TYPE\" = 'R' AND \"c\".\"OWNER\" = 'MyDbSchema' AND \"r\".\"OWNER\" = 'MyDbSchema' AND \"c\".\"TABLE_NAME\" = 'Table1' AND \"r\".\"TABLE_NAME\" = 'RefTable1'",
         SqlUtils.dbForeignKeys("MyDB", "MyDbSchema", "Table1",
             "RefTable1").getQuery());
     assertEquals(
-        "SELECT \"c\".\"CONSTRAINT_NAME\" AS \"keyName\", \"c\".\"TABLE_NAME\" AS \"tblName\", \"r\".\"TABLE_NAME\" AS \"fkRefTable\" FROM \"ALL_CONSTRAINTS\" \"c\" INNER JOIN \"ALL_CONSTRAINTS\" \"r\" ON \"c\".\"R_CONSTRAINT_NAME\"=\"r\".\"CONSTRAINT_NAME\" WHERE \"c\".\"CONSTRAINT_TYPE\"='R' AND \"c\".\"OWNER\"='MyDbSchema' AND \"r\".\"OWNER\"='MyDbSchema' AND \"c\".\"TABLE_NAME\"='Table1'",
+        "SELECT \"c\".\"CONSTRAINT_NAME\" AS \"keyName\", \"c\".\"TABLE_NAME\" AS \"tblName\", \"r\".\"TABLE_NAME\" AS \"fkRefTable\" FROM \"ALL_CONSTRAINTS\" \"c\" INNER JOIN \"ALL_CONSTRAINTS\" \"r\" ON \"c\".\"R_CONSTRAINT_NAME\" = \"r\".\"CONSTRAINT_NAME\" WHERE \"c\".\"CONSTRAINT_TYPE\" = 'R' AND \"c\".\"OWNER\" = 'MyDbSchema' AND \"r\".\"OWNER\" = 'MyDbSchema' AND \"c\".\"TABLE_NAME\" = 'Table1'",
         SqlUtils.dbForeignKeys("MyDB", "MyDbSchema", "Table1", null)
             .getQuery());
     assertEquals(
-        "SELECT \"c\".\"CONSTRAINT_NAME\" AS \"keyName\", \"c\".\"TABLE_NAME\" AS \"tblName\", \"r\".\"TABLE_NAME\" AS \"fkRefTable\" FROM \"ALL_CONSTRAINTS\" \"c\" INNER JOIN \"ALL_CONSTRAINTS\" \"r\" ON \"c\".\"R_CONSTRAINT_NAME\"=\"r\".\"CONSTRAINT_NAME\" WHERE \"c\".\"CONSTRAINT_TYPE\"='R' AND \"c\".\"OWNER\"='MyDbSchema' AND \"r\".\"OWNER\"='MyDbSchema'",
+        "SELECT \"c\".\"CONSTRAINT_NAME\" AS \"keyName\", \"c\".\"TABLE_NAME\" AS \"tblName\", \"r\".\"TABLE_NAME\" AS \"fkRefTable\" FROM \"ALL_CONSTRAINTS\" \"c\" INNER JOIN \"ALL_CONSTRAINTS\" \"r\" ON \"c\".\"R_CONSTRAINT_NAME\" = \"r\".\"CONSTRAINT_NAME\" WHERE \"c\".\"CONSTRAINT_TYPE\" = 'R' AND \"c\".\"OWNER\" = 'MyDbSchema' AND \"r\".\"OWNER\" = 'MyDbSchema'",
         SqlUtils.dbForeignKeys("MyDB", "MyDbSchema", null, null)
             .getQuery());
     assertEquals(
-        "SELECT \"c\".\"CONSTRAINT_NAME\" AS \"keyName\", \"c\".\"TABLE_NAME\" AS \"tblName\", \"r\".\"TABLE_NAME\" AS \"fkRefTable\" FROM \"ALL_CONSTRAINTS\" \"c\" INNER JOIN \"ALL_CONSTRAINTS\" \"r\" ON \"c\".\"R_CONSTRAINT_NAME\"=\"r\".\"CONSTRAINT_NAME\" WHERE \"c\".\"CONSTRAINT_TYPE\"='R'",
+        "SELECT \"c\".\"CONSTRAINT_NAME\" AS \"keyName\", \"c\".\"TABLE_NAME\" AS \"tblName\", \"r\".\"TABLE_NAME\" AS \"fkRefTable\" FROM \"ALL_CONSTRAINTS\" \"c\" INNER JOIN \"ALL_CONSTRAINTS\" \"r\" ON \"c\".\"R_CONSTRAINT_NAME\" = \"r\".\"CONSTRAINT_NAME\" WHERE \"c\".\"CONSTRAINT_TYPE\" = 'R'",
         SqlUtils.dbForeignKeys("MyDB", null, null, null).getQuery());
     assertEquals(
-        "SELECT \"c\".\"CONSTRAINT_NAME\" AS \"keyName\", \"c\".\"TABLE_NAME\" AS \"tblName\", \"r\".\"TABLE_NAME\" AS \"fkRefTable\" FROM \"ALL_CONSTRAINTS\" \"c\" INNER JOIN \"ALL_CONSTRAINTS\" \"r\" ON \"c\".\"R_CONSTRAINT_NAME\"=\"r\".\"CONSTRAINT_NAME\" WHERE \"c\".\"CONSTRAINT_TYPE\"='R'",
+        "SELECT \"c\".\"CONSTRAINT_NAME\" AS \"keyName\", \"c\".\"TABLE_NAME\" AS \"tblName\", \"r\".\"TABLE_NAME\" AS \"fkRefTable\" FROM \"ALL_CONSTRAINTS\" \"c\" INNER JOIN \"ALL_CONSTRAINTS\" \"r\" ON \"c\".\"R_CONSTRAINT_NAME\" = \"r\".\"CONSTRAINT_NAME\" WHERE \"c\".\"CONSTRAINT_TYPE\" = 'R'",
         SqlUtils.dbForeignKeys(null, null, null, null).getQuery());
   }
 
@@ -207,25 +214,25 @@ public class TestSqlUtilsIsQuery {
   public final void testDbTables() {
     SqlBuilderFactory.setDefaultEngine("Generic");
     assertEquals(
-        "SELECT t.table_name FROM information_schema.tables t WHERE t.table_catalog='MyDB' AND t.table_schema='MyDBSchema' AND t.table_name='table1'",
+        "SELECT t.table_name FROM information_schema.tables t WHERE t.table_catalog = 'MyDB' AND t.table_schema = 'MyDBSchema' AND t.table_name = 'table1'",
         SqlUtils.dbTables("MyDB", "MyDBSchema", "table1").getQuery());
     assertEquals(
-        "SELECT t.table_name FROM information_schema.tables t WHERE t.table_catalog='MyDB' AND t.table_schema='MyDBSchema'",
+        "SELECT t.table_name FROM information_schema.tables t WHERE t.table_catalog = 'MyDB' AND t.table_schema = 'MyDBSchema'",
         SqlUtils.dbTables("MyDB", "MyDBSchema", null).getQuery());
     assertEquals(
-        "SELECT t.table_name FROM information_schema.tables t WHERE t.table_catalog='MyDB'",
+        "SELECT t.table_name FROM information_schema.tables t WHERE t.table_catalog = 'MyDB'",
         SqlUtils.dbTables("MyDB", null, null).getQuery());
     assertEquals("SELECT t.table_name FROM information_schema.tables t",
         SqlUtils.dbTables(null, null, null).getQuery());
     SqlBuilderFactory.setDefaultEngine(BeeConst.PGSQL);
     assertEquals(
-        "SELECT \"t\".\"table_name\" FROM \"information_schema\".\"tables\" \"t\" WHERE \"t\".\"table_catalog\"='MyDB' AND \"t\".\"table_schema\"='MyDBSchema' AND \"t\".\"table_name\"='table1'",
+        "SELECT \"t\".\"table_name\" FROM \"information_schema\".\"tables\" \"t\" WHERE \"t\".\"table_catalog\" = 'MyDB' AND \"t\".\"table_schema\" = 'MyDBSchema' AND \"t\".\"table_name\" = 'table1'",
         SqlUtils.dbTables("MyDB", "MyDBSchema", "table1").getQuery());
     assertEquals(
-        "SELECT \"t\".\"table_name\" FROM \"information_schema\".\"tables\" \"t\" WHERE \"t\".\"table_catalog\"='MyDB' AND \"t\".\"table_schema\"='MyDBSchema'",
+        "SELECT \"t\".\"table_name\" FROM \"information_schema\".\"tables\" \"t\" WHERE \"t\".\"table_catalog\" = 'MyDB' AND \"t\".\"table_schema\" = 'MyDBSchema'",
         SqlUtils.dbTables("MyDB", "MyDBSchema", null).getQuery());
     assertEquals(
-        "SELECT \"t\".\"table_name\" FROM \"information_schema\".\"tables\" \"t\" WHERE \"t\".\"table_catalog\"='MyDB'",
+        "SELECT \"t\".\"table_name\" FROM \"information_schema\".\"tables\" \"t\" WHERE \"t\".\"table_catalog\" = 'MyDB'",
         SqlUtils.dbTables("MyDB", null, null).getQuery());
     assertEquals(
         "SELECT \"t\".\"table_name\" FROM \"information_schema\".\"tables\" \"t\"",
@@ -241,10 +248,10 @@ public class TestSqlUtilsIsQuery {
         .getQuery());
     SqlBuilderFactory.setDefaultEngine(BeeConst.ORACLE);
     assertEquals(
-        "SELECT \"t\".\"TABLE_NAME\" FROM \"ALL_TABLES\" \"t\" WHERE \"t\".\"OWNER\"='MyDBSchema' AND \"t\".\"TABLE_NAME\"='table1'",
+        "SELECT \"t\".\"TABLE_NAME\" FROM \"ALL_TABLES\" \"t\" WHERE \"t\".\"OWNER\" = 'MyDBSchema' AND \"t\".\"TABLE_NAME\" = 'table1'",
         SqlUtils.dbTables("MyDB", "MyDBSchema", "table1").getQuery());
     assertEquals(
-        "SELECT \"t\".\"TABLE_NAME\" FROM \"ALL_TABLES\" \"t\" WHERE \"t\".\"OWNER\"='MyDBSchema'",
+        "SELECT \"t\".\"TABLE_NAME\" FROM \"ALL_TABLES\" \"t\" WHERE \"t\".\"OWNER\" = 'MyDBSchema'",
         SqlUtils.dbTables("MyDB", "MyDBSchema", null).getQuery());
     assertEquals("SELECT \"t\".\"TABLE_NAME\" FROM \"ALL_TABLES\" \"t\"",
         SqlUtils.dbTables("MyDB", null, null).getQuery());
@@ -275,8 +282,7 @@ public class TestSqlUtilsIsQuery {
     SqlBuilderFactory.setDefaultEngine(BeeConst.MYSQL);
     SqlBuilder builder = SqlBuilderFactory.getBuilder();
     assertEquals("ALTER TABLE `Table1` DROP FOREIGN KEY `foreignkey_name`",
-        SqlUtils.dropForeignKey("Table1", "foreignkey_name")
-            .getSqlString(builder, false));
+        SqlUtils.dropForeignKey("Table1", "foreignkey_name").getSqlString(builder));
 
     try {
       assertEquals("ALTER TABLE Table1 DROP FOREIGN KEY foreignkey_name",
@@ -321,7 +327,7 @@ public class TestSqlUtilsIsQuery {
     select.addFrom("Source_table");
     select.addFields("Source_table", "name");
     assertEquals(
-        "SELECT [Source_table].[name] FROM [Source_table] WHERE '#temp value' LIKE '%5%'",
-        select.getSqlString(builder, false));
+        "SELECT [Source_table].[name] FROM [Source_table] WHERE '#temp value' LIKE '%5%' ESCAPE '|'",
+        select.getSqlString(builder));
   }
 }

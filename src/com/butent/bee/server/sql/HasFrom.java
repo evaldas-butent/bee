@@ -9,8 +9,7 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * An abstract class, contains an engine for generation of FROM parts for SQL 
- * statements.
+ * An abstract class, contains an engine for generation of FROM parts for SQL statements.
  */
 
 public abstract class HasFrom<T> extends SqlQuery<T> {
@@ -114,18 +113,6 @@ public abstract class HasFrom<T> extends SqlQuery<T> {
       }
     }
     return sources;
-  }
-
-  @Override
-  public List<Object> getSqlParams() {
-    List<Object> paramList = null;
-
-    if (!BeeUtils.isEmpty(fromList)) {
-      for (IsFrom from : fromList) {
-        paramList = (List<Object>) SqlUtils.addCollection(paramList, from.getSqlParams());
-      }
-    }
-    return paramList;
   }
 
   @Override

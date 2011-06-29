@@ -2,11 +2,10 @@ package com.butent.bee.server.sql;
 
 import com.google.common.collect.Maps;
 
-import com.butent.bee.server.sql.BeeConstants.Function;
+import com.butent.bee.server.sql.SqlConstants.SqlFunction;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.utils.BeeUtils;
 
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -15,27 +14,22 @@ import java.util.Map;
 
 class FunctionExpression implements IsExpression {
 
-  private final Function function;
+  private final SqlFunction function;
   private final Map<String, Object> parameters;
 
-  public FunctionExpression(Function function, Map<String, Object> parameters) {
+  public FunctionExpression(SqlFunction function, Map<String, Object> parameters) {
     Assert.notEmpty(function);
 
     this.function = function;
     this.parameters = parameters;
   }
 
-  public Function getFunction() {
+  public SqlFunction getFunction() {
     return function;
   }
 
   @Override
-  public List<Object> getSqlParams() {
-    return null;
-  }
-
-  @Override
-  public String getSqlString(SqlBuilder builder, boolean paramMode) {
+  public String getSqlString(SqlBuilder builder) {
     Assert.notEmpty(builder);
     Map<String, Object> params = Maps.newHashMap();
 
@@ -44,7 +38,7 @@ class FunctionExpression implements IsExpression {
         Object value = parameters.get(prm);
 
         if (value instanceof IsSql) {
-          value = ((IsSql) value).getSqlString(builder, paramMode);
+          value = ((IsSql) value).getSqlString(builder);
         }
         params.put(prm, value);
       }

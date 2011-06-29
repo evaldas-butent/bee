@@ -45,43 +45,6 @@ public class TestSqlDelete {
   }
 
   @Test
-  public final void testGetSqlParams() {
-
-    SqlBuilderFactory.setDefaultEngine("Generic");
-    SqlBuilder builder = SqlBuilderFactory.getBuilder();
-
-    SqlDelete delete = new SqlDelete("Target_table", "target_alias");
-    delete.addFrom("From_source1");
-    delete.addFrom("From_source2");
-
-    try {
-      delete.setWhere(SqlUtils.equal("Target_table", "field", 'c'));
-
-      Object[] a = delete.getSqlParams().toArray();
-      Object[] rez = {'c'};
-
-      assertArrayEquals(rez, a);
-
-      assertEquals(
-          "DELETE FROM Target_table target_alias FROM From_source1, From_source2 WHERE Target_table.field=c",
-          delete.getSqlString(builder, false));
-    } catch (BeeRuntimeException e) {
-      assertTrue(true);
-    }
-
-    delete.setWhere(SqlUtils.equal("Target_table", "field", "c"));
-
-    Object[] a1 = delete.getSqlParams().toArray();
-    Object[] rez1 = {"c"};
-
-    assertArrayEquals(rez1, a1);
-
-    assertEquals(
-        "DELETE FROM Target_table target_alias FROM From_source1, From_source2 WHERE Target_table.field='c'",
-        delete.getSqlString(builder, false));
-  }
-
-  @Test
   public final void testGetSqlString() {
     SqlBuilderFactory.setDefaultEngine("Generic");
     SqlBuilder builder = SqlBuilderFactory.getBuilder();
@@ -93,8 +56,8 @@ public class TestSqlDelete {
     delete.setWhere(SqlUtils.equal(SqlUtils.name("username"), "root"));
 
     assertEquals(
-        "DELETE FROM Target_table FROM From_source1, From_source2 WHERE username='root'",
-        delete.getSqlString(builder, false));
+        "DELETE FROM Target_table FROM From_source1, From_source2 WHERE username = 'root'",
+        delete.getSqlString(builder));
   }
 
   @Test
@@ -109,8 +72,8 @@ public class TestSqlDelete {
     delete.setWhere(SqlUtils.equal(SqlUtils.name("username"), "root"));
 
     assertEquals(
-        "DELETE FROM Target_table target_alias FROM From_source1, From_source2 WHERE username='root'",
-        delete.getSqlString(builder, false));
+        "DELETE FROM Target_table target_alias FROM From_source1, From_source2 WHERE username = 'root'",
+        delete.getSqlString(builder));
   }
 
   @SuppressWarnings("unused")

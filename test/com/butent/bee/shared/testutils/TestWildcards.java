@@ -351,27 +351,11 @@ public class TestWildcards {
   }
 
   @Test
-  public final void testSetDefaultAny() {
-    Wildcards.setDefaultAny('1');
-    assertEquals(Wildcards.getDefaultAny(), '1');
-    Wildcards.setDefaultAny('%');
-    assertEquals(Wildcards.getDefaultAny(), '%');
-  }
-
-  @Test
   public final void testSetDefaultCaseSensitivity() {
     Wildcards.setDefaultCaseSensitivity(true);
     assertEquals(Wildcards.isDefaultCaseSensitive(), true);
     Wildcards.setDefaultCaseSensitivity(false);
     assertEquals(Wildcards.isDefaultCaseSensitive(), false);
-  }
-
-  @Test
-  public final void testSetDefaultOne() {
-    Wildcards.setDefaultOne('1');
-    assertEquals(Wildcards.getDefaultOne(), '1');
-    Wildcards.setDefaultOne('%');
-    assertEquals(Wildcards.getDefaultOne(), '%');
   }
 
   @Test

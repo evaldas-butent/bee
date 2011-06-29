@@ -126,40 +126,6 @@ public class SqlInsert extends SqlQuery<SqlInsert> {
   }
 
   /**
-   * Returns a list of parameters found in the {@code dataSource} and {@code valueList} . For more
-   * details see {@link com.butent.bee.shared. sql.SqlSelect#getParams()}.
-   * 
-   * @returns a list of parameters found in the {@code dataSource}.
-   */
-  @Override
-  public List<Object> getSqlParams() {
-    Assert.state(!isEmpty());
-
-    List<Object> paramList = null;
-
-    if (!BeeUtils.isEmpty(dataSource)) {
-      paramList = (List<Object>) SqlUtils.addCollection(paramList, dataSource.getSqlParams());
-    } else {
-      for (IsExpression value : valueList) {
-        paramList = (List<Object>) SqlUtils.addCollection(paramList, value.getSqlParams());
-      }
-    }
-    return paramList;
-  }
-
-  /**
-   * @param builder the builder to use
-   * @param paramMode sets param mode on or off
-   * @return a generated SqlInsert query with a specified SqlBuilder {@code builder} and parameter
-   *         mode {@code paramMode}.
-   */
-  @Override
-  public String getSqlString(SqlBuilder builder, boolean paramMode) {
-    Assert.notEmpty(builder);
-    return builder.getInsert(this, paramMode);
-  }
-
-  /**
    * @return the current target {@code target}
    */
   public IsFrom getTarget() {
@@ -243,11 +209,6 @@ public class SqlInsert extends SqlQuery<SqlInsert> {
     dataSource = query;
 
     return getReference();
-  }
-
-  @Override
-  protected SqlInsert getReference() {
-    return this;
   }
 
   private void addField(String field) {

@@ -4,16 +4,16 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.utils.BeeUtils;
 
 /**
- * Contains constants lists, such as keywords, datatypes and empty values for each of them.
+ * Contains constants lists, such as keywords, data types and empty values for each of them.
  */
 
-public final class BeeConstants {
+public final class SqlConstants {
 
   /**
    * Contains a list of supported data types.
    */
 
-  public enum DataType {
+  public enum SqlDataType {
     BOOLEAN, INTEGER, LONG, DOUBLE, DECIMAL, CHAR, STRING, DATE, DATETIME;
 
     public Object getEmptyValue() {
@@ -74,7 +74,7 @@ public final class BeeConstants {
    * Contains a list of SQL functions used by the system.
    */
 
-  public enum Function {
+  public enum SqlFunction {
     BITAND, IF, CASE, CAST,
     PLUS, MINUS, MULTIPLY, DIVIDE, BULK,
     MIN, MAX, SUM, AVG, COUNT
@@ -88,7 +88,7 @@ public final class BeeConstants {
     DB_NAME, DB_SCHEMA, DB_TABLES, DB_FIELDS, DB_KEYS, DB_FOREIGNKEYS,
     RENAME_TABLE, DROP_TABLE, DROP_FOREIGNKEY, CREATE_INDEX,
     ADD_CONSTRAINT, PRIMARY_KEY, UNIQUE_KEY, FOREIGN_KEY,
-    TEMPORARY, TEMPORARY_NAME, NOT_NULL, CASCADE, SET_NULL
+    TEMPORARY, TEMPORARY_NAME
   }
 
   public static final String TBL_NAME = "tblName";
@@ -105,6 +105,6 @@ public final class BeeConstants {
 
   public static final String FK_REF_TABLE = "fkRefTable";
 
-  private BeeConstants() {
+  private SqlConstants() {
   }
 }

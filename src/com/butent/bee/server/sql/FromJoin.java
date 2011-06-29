@@ -4,11 +4,9 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
-import java.util.List;
 
 /**
- * Implements support for left, right, inner and full joins and lists for 
- * SQL statements.
+ * Implements support for left, right, inner and full joins and lists for SQL statements.
  */
 
 class FromJoin extends FromSource {
@@ -121,22 +119,12 @@ class FromJoin extends FromSource {
   }
 
   @Override
-  public List<Object> getSqlParams() {
-    List<Object> params = super.getSqlParams();
-
-    if (!BeeUtils.isEmpty(on)) {
-      params = (List<Object>) SqlUtils.addCollection(params, on.getSqlParams());
-    }
-    return params;
-  }
-
-  @Override
-  public String getSqlString(SqlBuilder builder, boolean queryMode) {
+  public String getSqlString(SqlBuilder builder) {
     StringBuilder from = new StringBuilder(join.toSqlString())
-        .append(super.getSqlString(builder, queryMode));
+        .append(super.getSqlString(builder));
 
     if (!BeeUtils.isEmpty(on)) {
-      from.append(" ON ").append(on.getSqlString(builder, queryMode));
+      from.append(" ON ").append(on.getSqlString(builder));
     }
     return from.toString();
   }
