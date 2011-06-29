@@ -500,7 +500,7 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
       }
 
       for (BeeRow row : getViewData().getRows()) {
-        if (filter == null || filter.isMatch(getDataColumns(), row)) {
+        if (filter == null || filter.isMatch(getViewData().getColumns(), row)) {
           getRequestData().addRow(row);
         }
       }

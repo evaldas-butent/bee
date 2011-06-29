@@ -2,17 +2,28 @@
 <BeeGrids xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.butent.com/bee ../../schemas/grid.xsd">
 
-  <BeeGrid name="UserRoles" viewName="UserRoles">
+  <BeeGrid name="UserRoles" viewName="UserRoles" newRowColumns="Login, LastName, RoleName">
     <columns>
-      <BeeDataColumn name="UserID" source="User" caption="Vartotojo ID"  readOnly="true" />
-      <BeeRelColumn name="Login" source="UserLogin" relSource="User" relColumn="Login" caption="Prisijungimo vardas">
+      <BeeDataColumn name="UserID" source="User" caption="Vartotojo ID" readOnly="true" />
+
+      <BeeRelColumn name="Login" source="UserLogin" relSource="User" relColumn="Login"
+        caption="Prisijungimo vardas">
         <editor type="selector"></editor>
       </BeeRelColumn>
-      <BeeRelColumn name="LastName" source="UserLastName" relSource="User" relColumn="LastName" caption="Pavardė" />
-      <BeeDataColumn name="RoleID" source="Role" caption="Rolės ID"  readOnly="true" />
-      <BeeRelColumn name="RoleName" source="RoleName" relSource="Role" relColumn="Name" caption="Rolė">
+
+      <BeeRelColumn name="LastName" source="UserLastName" relSource="User" relColumn="LastName"
+        caption="Pavardė">
+        <editor type="selector"
+          options="{&quot;columns&quot;: [&quot;FirstName&quot;, &quot;LastName&quot;, &quot;Position&quot;]}" />
+      </BeeRelColumn>
+
+      <BeeDataColumn name="RoleID" source="Role" caption="Rolės ID" readOnly="true" />
+
+      <BeeRelColumn name="RoleName" source="RoleName" relSource="Role" relColumn="Name"
+        caption="Rolė">
         <editor type="selector"></editor>
       </BeeRelColumn>
+
       <BeeIdColumn name="Id" caption="ID" />
     </columns>
   </BeeGrid>

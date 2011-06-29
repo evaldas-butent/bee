@@ -586,7 +586,7 @@ public class RowEditor extends FlexTable implements HasEditState, EditEndEvent.H
         StyleUtils.getZIndex(this) + 1, getRow(), BeeUtils.toChar(charCode), this);
   }
 
-  private void updateCell(String columnId, String value) {
+  private void updateCell(final String columnId, String value) {
     int index = getDataIndex(columnId);
     getRow().setValue(index, value);
     
@@ -638,7 +638,8 @@ public class RowEditor extends FlexTable implements HasEditState, EditEndEvent.H
           public void onSuccess(BeeRow viewRow) {
             for (int viewIndex = 0; viewIndex < viewColumns.size(); viewIndex++) {
               for (RelationInfo relationInfo : getRelations()) {
-                if (BeeUtils.same(relationInfo.getRelColumn(), viewColumns.get(viewIndex))) {
+                if (BeeUtils.same(relationInfo.getRelSource(), columnId)
+                    && BeeUtils.same(relationInfo.getRelColumn(), viewColumns.get(viewIndex))) {
                   String sourceId = relationInfo.getSource();
                   String viewValue = viewRow.getString(viewIndex);
                   getRow().setValue(getDataIndex(sourceId), viewValue);

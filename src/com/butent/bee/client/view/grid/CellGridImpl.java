@@ -962,12 +962,6 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
           getNewRowColumns().add(id);
         }
       }
-    } else {
-      for (Map.Entry<String, EditableColumn> entry : getEditableColumns().entrySet()) {
-        if (!entry.getValue().isNullable()) {
-          getNewRowColumns().add(entry.getKey());
-        }
-      }
     }
   }
 
