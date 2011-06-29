@@ -15,6 +15,7 @@ import com.google.gwt.safecss.shared.SafeStyles;
 import com.google.gwt.safecss.shared.SafeStylesBuilder;
 import com.google.gwt.safecss.shared.SafeStylesUtils;
 import com.google.gwt.user.client.ui.UIObject;
+import com.google.gwt.user.client.ui.HasHorizontalAlignment.HorizontalAlignmentConstant;
 
 import com.butent.bee.client.utils.JsUtils;
 import com.butent.bee.shared.Assert;
@@ -214,6 +215,7 @@ public class StyleUtils {
 
   public static final String STYLE_CURSOR = "cursor";
 
+  public static final String STYLE_TEXT_ALIGN = "textAlign";
   public static final String STYLE_TEXT_DECORATION = "textDecoration";
 
   public static final String STYLE_LIST_IMAGE = "listStyleImage";
@@ -551,6 +553,41 @@ public class StyleUtils {
     clearDisplay(obj.getElement());
   }
 
+  public static void clearFont(Element el) {
+    Assert.notNull(el);
+    clearFont(el.getStyle());
+  }
+  
+  public static void clearFont(Style st) {
+    Assert.notNull(st);
+
+    if (!BeeUtils.isEmpty(st.getFontStyle())) {
+      st.clearFontStyle();
+    }
+    if (hasProperty(st, STYLE_FONT_VARIANT)) {
+      st.clearProperty(STYLE_FONT_VARIANT);
+    }
+    if (!BeeUtils.isEmpty(st.getFontWeight())) {
+      st.clearFontWeight();
+    }
+
+    if (!BeeUtils.isEmpty(st.getFontSize())) {
+      st.clearFontSize();
+    }
+    if (hasProperty(st, STYLE_FONT_FAMILY)) {
+      st.clearProperty(StyleUtils.STYLE_FONT_FAMILY);
+    }
+  }
+
+  public static void clearFont(String id) {
+    clearFont(DomUtils.getElement(id));
+  }
+
+  public static void clearFont(UIObject obj) {
+    Assert.notNull(obj);
+    clearFont(obj.getElement());
+  }
+  
   public static void clearTableLayout(Element el) {
     Assert.notNull(el);
     clearTableLayout(el.getStyle());
@@ -670,6 +707,19 @@ public class StyleUtils {
   public static void copyRectangle(Style src, Style dst) {
     copyProperties(src, dst, STYLE_LEFT, STYLE_RIGHT, STYLE_TOP, STYLE_BOTTOM,
         STYLE_WIDTH, STYLE_HEIGHT);
+  }
+
+  public static void copySize(Element src, Element dst) {
+    Assert.notNull(src);
+    Assert.notNull(dst);
+    if (src.equals(dst)) {
+      return;
+    }
+    copySize(src.getStyle(), dst.getStyle());
+  }
+
+  public static void copySize(Style src, Style dst) {
+    copyProperties(src, dst, STYLE_WIDTH, STYLE_HEIGHT);
   }
   
   public static void fillHorizontal(Element el) {
@@ -1604,6 +1654,26 @@ public class StyleUtils {
     return setStyleProperty(nodes, name, value, Unit.PX);
   }
 
+  public static void setTextAlign(Element el, HorizontalAlignmentConstant align) {
+    Assert.notNull(el);
+    setTextAlign(el.getStyle(), align);
+  }
+
+  public static void setTextAlign(Style st, HorizontalAlignmentConstant align) {
+    Assert.notNull(st);
+    Assert.notNull(align);
+    st.setProperty(STYLE_TEXT_ALIGN, align.getTextAlignString());
+  }
+
+  public static void setTextAlign(String id, HorizontalAlignmentConstant align) {
+    setTextAlign(DomUtils.getElement(id), align);
+  }
+
+  public static void setTextAlign(UIObject obj, HorizontalAlignmentConstant align) {
+    Assert.notNull(obj);
+    setTextAlign(obj.getElement(), align);
+  }
+  
   public static void setTop(Element el, int px) {
     Assert.notNull(el);
     setTop(el.getStyle(), px);

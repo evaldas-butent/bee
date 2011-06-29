@@ -9,6 +9,7 @@ import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
+import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.SqlBuilderFactory;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
@@ -282,12 +283,17 @@ public class UiServiceBean {
 
     int limit = BeeUtils.toInt(reqInfo.getParameter(Service.VAR_VIEW_LIMIT));
     int offset = BeeUtils.toInt(reqInfo.getParameter(Service.VAR_VIEW_OFFSET));
-    String where = reqInfo.getParameter(Service.VAR_VIEW_WHERE);
-    String sort = reqInfo.getParameter(Service.VAR_VIEW_ORDER);
 
-    Filter filter = null;
-    if (!BeeUtils.isEmpty(where)) {
-      filter = Filter.restore(where);
+    String where = reqInfo.getParameter(Service.VAR_VIEW_WHERE);
+    String rowId = reqInfo.getParameter(Service.VAR_VIEW_ROW_ID);
+    String sort = reqInfo.getParameter(Service.VAR_VIEW_ORDER);
+    
+    IsCondition condition = null;
+    if (BeeUtils.isLong(rowId)) {
+      String tblName = sys.getView(viewName).getSource();
+      condition = SqlUtils.equal(tblName, sys.getIdName(tblName), BeeUtils.toLong(rowId));
+    } else if (!BeeUtils.isEmpty(where)) {
+      condition = sys.getViewCondition(viewName, Filter.restore(where));
     }
 
     Order order = null;
@@ -300,8 +306,7 @@ public class UiServiceBean {
       cols = columns.split(Service.VIEW_COLUMN_SEPARATOR);
     }
 
-    BeeRowSet res = sys.getViewData(viewName, sys.getViewCondition(viewName, filter),
-        order, limit, offset, cols);
+    BeeRowSet res = sys.getViewData(viewName, condition, order, limit, offset, cols);
     return ResponseObject.response(res);
   }
 

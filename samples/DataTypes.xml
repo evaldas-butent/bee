@@ -55,7 +55,7 @@
         <editable>
           <expression>cell.value &lt; row.Long</expression>
         </editable>
-        <editor type="spinner" stepValue="100" onEntry="addFirst" />
+        <editor type="spinner" stepValue="100" />
       </BeeDataColumn>
 
       <BeeDataColumn name="lll" source="Long" showWidth="false" minWidth="40">
@@ -80,7 +80,7 @@
             </condition>
           </dynStyle>
         </style>
-        <editor type="long" onEntry="addLast" />
+        <editor type="long" />
       </BeeDataColumn>
 
       <BeeCalcColumn name="calc2" type="decimal" caption="Math" scale="4">
@@ -90,6 +90,7 @@
       </BeeCalcColumn>
 
       <BeeDataColumn name="nnn" source="Numeric" format="0.0%" caption="Percent">
+        <editor type="number" format="#.000" onEntry="select" />
         <validation>
           <function>
             var maxDiff = 1000;
@@ -100,7 +101,6 @@
             }
           </function>
         </validation>
-        <editor type="number" format="#.000" onEntry="select" />
       </BeeDataColumn>
 
       <BeeDataColumn name="dec" source="Currency" width="168">
@@ -109,18 +109,18 @@
             <inline>letter-spacing: 5px;</inline>
           </bodyStyle>
         </style>
-        <editor type="number" onEntry="home" />
+        <editor type="number" />
       </BeeDataColumn>
 
       <BeeDataColumn name="sss" source="String" sortable="false">
-        <editor type="picker" height="60">
+        <editor type="picker" height="116">
           <item>123 www</item>
           <item>Bitinas ; &lt;img src="test.png"&gt;</item>
           <item>ccc ddd</item>
           <item>beehive ; &lt;a href="http://www.butent.com"&gt;Būtent&lt;/a&gt;</item>
         </editor>
         <carry>
-          <expression>cell.value</expression>
+          <expression>'cell.value'</expression>
         </carry>
       </BeeDataColumn>
 
@@ -156,7 +156,10 @@
             <class>bee-afraid</class>
           </footerStyle>
         </style>
-        <editor type="date" minWidth="100" onEntry="select" />
+        <editor type="date" minWidth="100" />
+        <carry>
+          <function>return new Date();</function>
+        </carry>
       </BeeDataColumn>
 
       <BeeDataColumn name="ttt" source="DateTime" format="yyyy-MM-dd HH:mm:ss">
@@ -191,8 +194,17 @@
     </rowMessage>
 
     <rowEditable>
-      <expression>row.Date &gt;= new Date(2008, 0, 1)</expression>
+      <expression>row.Date == null || row.Date &gt;= new Date(2008, 0, 1)</expression>
     </rowEditable>
+    
+    <rowValidation>
+      <function>
+        if (row.Integer + row.Long + row.Double &gt; 0) {
+          return null;
+        }
+        return "sum 'Integer+Long+Double' must be positive";
+      </function>
+    </rowValidation>
 
   </BeeGrid>
 </BeeGrids>

@@ -14,14 +14,14 @@ public class RelationInfo {
       return null;
     }
     String relSrc = descr.getRelSource();
-    if (BeeUtils.isEmpty(relSrc) || BeeUtils.isEmpty(descr.getRelView())
-        || BeeUtils.isEmpty(descr.getRelColumn())) {
+    if (BeeUtils.isEmpty(relSrc) || BeeUtils.same(relSrc, descr.getSource())
+        || BeeUtils.isEmpty(descr.getRelView()) || BeeUtils.isEmpty(descr.getRelColumn())) {
       return null;
     }
     
     int relIdx = BeeConst.UNDEF;
     for (int i = 0; i < columns.size(); i++) {
-      if (BeeUtils.same(columns.get(i).getLabel(), relSrc)) {
+      if (BeeUtils.same(columns.get(i).getId(), relSrc)) {
         relIdx = i;
         break;
       }
@@ -54,6 +54,14 @@ public class RelationInfo {
     this.dataIndex = dataIndex;
   }
 
+  @Override
+  public boolean equals(Object obj) {
+    if (!(obj instanceof RelationInfo)) {
+      return false;
+    }
+    return BeeUtils.same(getSource(), ((RelationInfo) obj).getSource());
+  }
+
   public BeeColumn getDataColumn() {
     return dataColumn;
   }
@@ -76,6 +84,11 @@ public class RelationInfo {
 
   public String getSource() {
     return source;
+  }
+
+  @Override
+  public int hashCode() {
+    return BeeUtils.normalize(getSource()).hashCode();
   }
 
   public boolean isNullable() {

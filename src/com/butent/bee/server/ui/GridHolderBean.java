@@ -57,6 +57,7 @@ public class GridHolderBean {
   private static final String TAG_ROW_STYLE = "rowStyle";
   private static final String TAG_ROW_MESSAGE = "rowMessage";
   private static final String TAG_ROW_EDITABLE = "rowEditable";
+  private static final String TAG_ROW_VALIDATION = "rowValidation";
 
   private static final String TAG_STYLE = "style";
   private static final String TAG_HEADER_STYLE = "headerStyle";
@@ -606,10 +607,13 @@ public class GridHolderBean {
     if (rowMessage != null) {
       dst.setRowMessage(rowMessage);
     }
-
     Calculation rowEditable = XmlUtils.getCalculation(src, TAG_ROW_EDITABLE);
     if (rowEditable != null) {
       dst.setRowEditable(rowEditable);
+    }
+    Calculation rowValidation = XmlUtils.getCalculation(src, TAG_ROW_VALIDATION);
+    if (rowValidation != null) {
+      dst.setRowValidation(rowValidation);
     }
   }
 }

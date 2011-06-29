@@ -289,7 +289,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     private int getBodyWidth() {
       return bodyWidth;
     }
-    
+
     private String getCaption() {
       return caption;
     }
@@ -1263,7 +1263,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     }
     return BeeUtils.ifString(info.getCaption(), columnId);
   }
-  
+
   public int getColumnCount() {
     return columns.size();
   }
@@ -1593,16 +1593,16 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
       sinkEvents(consumedEvents);
     }
   }
-  
+
   public void insertRow(IsRow rowValue) {
     Assert.notNull(rowValue);
 
     int rc = getRowCount();
     int ps = getPageSize();
     int ar = getActiveRow();
-    
+
     int nr = BeeConst.UNDEF;
-    
+
     if (rc <= ps || ps <= 0) {
       if (ar >= 0 && ar < rc - 1) {
         getVisibleItems().add(ar + 1, rowValue);
@@ -1625,12 +1625,12 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
       getVisibleItems().add(rowValue);
       nr = getVisibleItems().size() - 1;
     }
-    
+
     if (ps > 0 && ps == rc) {
       setPageSize(ps + 1);
     }
     setRowCount(rc + 1);
-    
+
     this.activeRow = nr;
     if (getActiveColumn() < 0) {
       this.activeColumn = 0;
@@ -1645,7 +1645,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     }
     return info.isColReadOnly();
   }
-  
+
   public boolean isEditing() {
     return editing;
   }
@@ -1805,17 +1805,8 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
 
         int keyCode = event.getKeyCode();
         if (keyCode == KeyCodes.KEY_ENTER || keyCode == KeyCodes.KEY_DELETE) {
-          int startKey = BeeConst.UNDEF;
-          switch (keyCode) {
-            case KeyCodes.KEY_ENTER:
-              startKey = EditorFactory.START_KEY_ENTER;
-              break;
-            case KeyCodes.KEY_DELETE:
-              startKey = EditorFactory.START_KEY_DELETE;
-              break;
-          }
           EventUtils.eatEvent(event);
-          startEditing(rowValue, col, target, startKey);
+          startEditing(rowValue, col, target, EditorFactory.getStartKey(keyCode));
         } else if (handleKey(keyCode, EventUtils.hasModifierKey(event), row, col, target)) {
           EventUtils.eatEvent(event);
         }
@@ -1828,7 +1819,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
         if (charCode == BeeConst.CHAR_SPACE) {
           selectRow(row, rowValue);
         } else {
-          startEditing(rowValue, col, target, event.getCharCode());
+          startEditing(rowValue, col, target, charCode);
         }
         return;
       }
@@ -1982,7 +1973,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     fireLoadingStateChange(LoadingStateChangeEvent.LoadingState.PARTIALLY_LOADED);
 
     SafeHtmlBuilder sb = new SafeHtmlBuilder();
-    if (rowData == null || rowData.isEmpty()) {
+    if (rowData.isEmpty()) {
       sb.append(template.emptiness(STYLE_EMPTY, BeeConst.STRING_EMPTY));
     } else {
       renderData(sb, rowData);
@@ -1994,16 +1985,22 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
 
     setZIndex(0);
 
-    if (getActiveRow() >= 0 && getActiveColumn() >= 0) {
-      Scheduler.get().scheduleDeferred(new ScheduledCommand() {
-        public void execute() {
-          Element cellElement = getActiveCellElement();
-          if (cellElement != null) {
-            cellElement.getStyle().setZIndex(incrementZIndex());
-            cellElement.focus();
+    if (getActiveRow() >= 0) {
+      if (getActiveRow() < rowData.size()) {
+        fireEvent(new ActiveRowChangeEvent(rowData.get(getActiveRow())));
+      }
+
+      if (getActiveColumn() >= 0) {
+        Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+          public void execute() {
+            Element cellElement = getActiveCellElement();
+            if (cellElement != null) {
+              cellElement.getStyle().setZIndex(incrementZIndex());
+              cellElement.focus();
+            }
           }
-        }
-      });
+        });
+      }
     }
   }
 
@@ -2299,8 +2296,12 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
       setPageStart(Math.max(count - getPageSize(), 0));
     }
     if (getActiveRow() >= count) {
-      this.activeRow = BeeConst.UNDEF;
-      this.activeColumn = BeeConst.UNDEF;
+      if (count <= 0) {
+        this.activeRow = BeeConst.UNDEF;
+        this.activeColumn = BeeConst.UNDEF;
+      } else {
+        this.activeRow = count - 1;
+      }
     }
 
     RowCountChangeEvent.fire(this, count, isExact);

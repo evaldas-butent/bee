@@ -1,5 +1,6 @@
 package com.butent.bee.client.view.edit;
 
+import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.shared.HasHandlers;
 
 import com.butent.bee.client.composite.InputDate;
@@ -20,6 +21,7 @@ import com.butent.bee.client.widget.InputSpinner;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.client.widget.Toggle;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasItems;
 import com.butent.bee.shared.HasNumberStep;
 import com.butent.bee.shared.HasPrecision;
@@ -235,6 +237,21 @@ public class EditorFactory {
     }
 
     return editor;
+  }
+  
+  public static int getStartKey(int keyCode) {
+    int startKey;
+    switch (keyCode) {
+      case KeyCodes.KEY_ENTER:
+        startKey = START_KEY_ENTER;
+        break;
+      case KeyCodes.KEY_DELETE:
+        startKey = START_KEY_DELETE;
+        break;
+      default:
+       startKey = BeeConst.UNDEF;
+    }
+    return startKey;
   }
 
   private EditorFactory() {

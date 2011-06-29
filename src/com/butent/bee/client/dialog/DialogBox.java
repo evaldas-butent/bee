@@ -3,6 +3,7 @@ package com.butent.bee.client.dialog;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.EventTarget;
 import com.google.gwt.dom.client.NativeEvent;
+import com.google.gwt.dom.client.Style.Position;
 import com.google.gwt.event.dom.client.MouseDownEvent;
 import com.google.gwt.event.dom.client.MouseDownHandler;
 import com.google.gwt.event.dom.client.MouseMoveEvent;
@@ -81,7 +82,7 @@ public class DialogBox extends PopupPanel implements HasId, HasHTML, HasSafeHtml
   private static final String STYLE_CONTENT = "Content";
   private static final String STYLE_CLOSE = "Close";
 
-  private final Complex container = new Complex();
+  private final Complex container = new Complex(Position.RELATIVE);
   private final Vertical layout = new Vertical();
   private final Caption caption;
 

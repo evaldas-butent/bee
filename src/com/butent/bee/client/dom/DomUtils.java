@@ -891,7 +891,47 @@ public class DomUtils {
     }
     return lst;
   }
+  
+  public static int getRelativeLeft(Element parent, Element child) {
+    Assert.notNull(parent);
+    Assert.notNull(child);
+    Assert.isTrue(parent.isOrHasChild(child), "Parent does not contain child");
+    if (parent == child) {
+      return 0;
+    }
+    
+    int left = 0;
+    Element elem = child;
+    while (elem != null) {
+      left += elem.getOffsetLeft();
+      elem = elem.getOffsetParent();
+      if (elem == null || elem == parent || !elem.isOrHasChild(child)) {
+        break;
+      }
+    }
+    return left;
+  }
 
+  public static int getRelativeTop(Element parent, Element child) {
+    Assert.notNull(parent);
+    Assert.notNull(child);
+    Assert.isTrue(parent.isOrHasChild(child), "Parent does not contain child");
+    if (parent == child) {
+      return 0;
+    }
+    
+    int top = 0;
+    Element elem = child;
+    while (elem != null) {
+      top += elem.getOffsetTop();
+      elem = elem.getOffsetParent();
+      if (elem == null || elem == parent || !elem.isOrHasChild(child)) {
+        break;
+      }
+    }
+    return top;
+  }
+  
   public static int getRowSpan(Element elem) {
     if (isTableCellElement(elem)) {
       return elem.getPropertyInt(ATTRIBUTE_ROW_SPAN);
@@ -1517,6 +1557,15 @@ public class DomUtils {
     TableCellElement.as(elem).setColSpan(span);
   }
 
+  public static void setDataColumn(Element elem, int col) {
+    Assert.notNull(elem);
+    elem.setAttribute(ATTRIBUTE_DATA_COLUMN, Integer.toString(col));
+  }
+
+  public static void setDataColumn(UIObject obj, int col) {
+    setAttribute(obj, ATTRIBUTE_DATA_COLUMN, col);
+  }
+  
   public static void setDraggable(Element elem) {
     Assert.notNull(elem);
     elem.setAttribute(ATTRIBUTE_DRAGGABLE, VALUE_TRUE);

@@ -123,6 +123,50 @@ public class Queries {
         });
   }
 
+  public static void getRow(String viewName, long rowId, RowCallback callback) {
+    getRow(viewName, rowId, null, callback);
+  }
+  
+  public static void getRow(final String viewName, final long rowId, List<String> columns,
+      final RowCallback callback) {
+    Assert.notEmpty(viewName);
+    Assert.notNull(callback);
+
+    final String columnNames;
+    if (BeeUtils.isEmpty(columns)) {
+      columnNames = null;
+    } else {
+      columnNames = BeeUtils.transform(columns, Service.VIEW_COLUMN_SEPARATOR);
+    }
+
+    List<Property> lst = PropertyUtils.createProperties(Service.VAR_VIEW_NAME, viewName,
+        Service.VAR_VIEW_ROW_ID, rowId);
+    if (!BeeUtils.isEmpty(columnNames)) {
+      PropertyUtils.addProperties(lst, Service.VAR_VIEW_COLUMNS, columnNames);
+    }
+
+    BeeKeeper.getRpc().makePostRequest(new ParameterList(Service.QUERY,
+        RpcParameter.SECTION.DATA, lst),
+        new ResponseCallback() {
+          @Override
+          public void onResponse(ResponseObject response) {
+            Assert.notNull(response);
+
+            if (response.hasErrors()) {
+              callback.onFailure(response.getErrors());
+            } else if (response.hasResponse(BeeRowSet.class)) {
+              BeeRowSet rs = BeeRowSet.restore((String) response.getResponse());
+              if (rs.getNumberOfRows() == 1) {
+                callback.onSuccess(rs.getRow(0));
+              } else {
+                callback.onFailure(new String[] {"Get Row: " + viewName + " id " + rowId,
+                    "response number of rows: " + rs.getNumberOfRows()});
+              }
+            }
+          }
+        });
+  }
+  
   public static void getRowCount(final String viewName, final Filter filter,
       final IntCallback callback) {
     Assert.notEmpty(viewName);

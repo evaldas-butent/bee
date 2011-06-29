@@ -36,7 +36,7 @@ public class StringRow extends AbstractRow {
   @Override
   public void clearCell(int index) {
     assertIndex(index);
-    values.set(index, BeeConst.STRING_EMPTY);
+    values.set(index, null);
   }
 
   @Override

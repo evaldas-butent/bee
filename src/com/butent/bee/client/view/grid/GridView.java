@@ -6,7 +6,7 @@ import com.butent.bee.client.view.View;
 import com.butent.bee.client.view.add.HasAddEndHandlers;
 import com.butent.bee.client.view.add.HasAddStartHandlers;
 import com.butent.bee.client.view.add.HasReadyForInsertHandlers;
-import com.butent.bee.client.view.edit.HasEditEndHandlers;
+import com.butent.bee.client.view.edit.HasReadyForUpdateHandlers;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.IsRow;
@@ -20,8 +20,8 @@ import java.util.List;
  * Specifies necessary methods for grid view user interface component.
  */
 
-public interface GridView extends View, HasEditEndHandlers, NotificationListener,
-    HasAddStartHandlers, HasAddEndHandlers, HasReadyForInsertHandlers {
+public interface GridView extends View, NotificationListener,
+    HasAddStartHandlers, HasAddEndHandlers, HasReadyForInsertHandlers, HasReadyForUpdateHandlers {
 
   void applyOptions(String options);
 

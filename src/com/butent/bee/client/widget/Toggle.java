@@ -97,6 +97,10 @@ public class Toggle extends CustomButton implements Editor {
   public boolean handlesKey(int keyCode) {
     return false;
   }
+  
+  public void invert() {
+    setDown(!isDown());
+  }
 
   @Override
   public boolean isDown() {
@@ -130,11 +134,16 @@ public class Toggle extends CustomButton implements Editor {
         }
       } else if (type == Event.ONKEYPRESS && event.getCharCode() >= BeeConst.CHAR_SPACE) {
         EventUtils.eatEvent(event);
-        setDown(!isDown());
+        invert();
         return;
       } else {
         DomEvent.fireNativeEvent(event, this, this.getElement());
       }
+      return;
+    }
+
+    if (EventUtils.isClick(event)) {
+      DomEvent.fireNativeEvent(event, this, this.getElement());
       return;
     }
     

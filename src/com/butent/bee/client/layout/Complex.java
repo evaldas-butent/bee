@@ -19,10 +19,16 @@ import com.butent.bee.shared.HasId;
 public class Complex extends ComplexPanel implements HasId {
 
   public Complex() {
+    this(Position.ABSOLUTE);
+  }
+  
+  public Complex(Position position) {
     super();
     setElement(DOM.createDiv());
-
-    getElement().getStyle().setPosition(Position.RELATIVE);
+    
+    if (position != null) {
+      getElement().getStyle().setPosition(position);
+    }
     getElement().getStyle().setOverflow(Overflow.HIDDEN);
 
     init();

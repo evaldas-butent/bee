@@ -19,6 +19,7 @@
       <xs:element name="rowStyle" type="bee:conditionalStyle" minOccurs="0" maxOccurs="unbounded" />
       <xs:element name="rowMessage" type="bee:calcType" minOccurs="0" />
       <xs:element name="rowEditable" type="bee:calcType" minOccurs="0" />
+      <xs:element name="rowValidation" type="bee:calcType" minOccurs="0" />
     </xs:sequence>
     <xs:attribute name="name" type="bee:nameType" use="required" />
     <xs:attribute name="viewName" type="bee:nameType" use="required" />
@@ -40,9 +41,9 @@
     <xs:complexContent>
       <xs:extension base="bee:column">
         <xs:sequence>
-          <xs:element name="validation" type="bee:calcType" minOccurs="0" />
           <xs:element name="editable" type="bee:calcType" minOccurs="0" />
           <xs:element name="editor" type="bee:editor" minOccurs="0" />
+          <xs:element name="validation" type="bee:calcType" minOccurs="0" />
           <xs:element name="carry" type="bee:calcType" minOccurs="0" />
         </xs:sequence>
         <xs:attribute name="source" type="bee:nameType" use="required" />

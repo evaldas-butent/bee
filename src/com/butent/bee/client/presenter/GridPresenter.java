@@ -22,7 +22,7 @@ import com.butent.bee.client.view.GridContainerImpl;
 import com.butent.bee.client.view.GridContainerView;
 import com.butent.bee.client.view.HasSearch;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
-import com.butent.bee.client.view.edit.EditEndEvent;
+import com.butent.bee.client.view.edit.ReadyForUpdateEvent;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.search.SearchView;
 import com.butent.bee.shared.Assert;
@@ -50,7 +50,7 @@ import java.util.Set;
  * content etc).
  */
 
-public class GridPresenter implements Presenter, EditEndEvent.Handler, ReadyForInsertEvent.Handler {
+public class GridPresenter implements Presenter, ReadyForInsertEvent.Handler, ReadyForUpdateEvent.Handler {
 
   private class DeleteCallback extends BeeCommand {
     private final Collection<RowInfo> rows;
@@ -223,7 +223,7 @@ public class GridPresenter implements Presenter, EditEndEvent.Handler, ReadyForI
     return async;
   }
 
-  public void onEditEnd(EditEndEvent event) {
+  public void onReadyForUpdate(ReadyForUpdateEvent event) {
     final String viewName = getDataName();
     final long rowId = event.getRowValue().getId();
     final long version = event.getRowValue().getVersion();
@@ -303,7 +303,7 @@ public class GridPresenter implements Presenter, EditEndEvent.Handler, ReadyForI
       }
     }
 
-    view.getContent().addEditEndHandler(this);
+    view.getContent().addReadyForUpdateHandler(this);
     view.getContent().addReadyForInsertHandler(this);
   }
 

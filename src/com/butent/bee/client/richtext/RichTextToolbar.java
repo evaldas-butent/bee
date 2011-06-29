@@ -99,16 +99,22 @@ public class RichTextToolbar extends Vertical {
       Widget sender = (Widget) event.getSource();
 
       if (sender == bold) {
+        bold.invert();
         formatter.toggleBold();
       } else if (sender == italic) {
+        italic.invert();
         formatter.toggleItalic();
       } else if (sender == underline) {
+        underline.invert();
         formatter.toggleUnderline();
       } else if (sender == subscript) {
+        subscript.invert();
         formatter.toggleSubscript();
       } else if (sender == superscript) {
+        superscript.invert();
         formatter.toggleSuperscript();
       } else if (sender == strikethrough) {
+        strikethrough.invert();
         formatter.toggleStrikethrough();
 
       } else if (sender == indent) {

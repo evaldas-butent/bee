@@ -295,6 +295,10 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
     return caption;
   }
 
+  public Calculation getCarry() {
+    return carry;
+  }
+
   public CellType getCellType() {
     return cellType;
   }
@@ -703,10 +707,6 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
 
   public Boolean showWidth() {
     return showWidth;
-  }
-
-  private Calculation getCarry() {
-    return carry;
   }
 
   private void setColType(ColType colType) {

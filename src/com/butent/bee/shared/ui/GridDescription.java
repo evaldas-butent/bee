@@ -29,7 +29,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
     ASYNC_THRESHOLD, PAGING_THRESHOLD, SEARCH_THRESHOLD, PAGE_SIZE,
     NEW_ROW_COLUMNS, SHOW_COLUMN_WIDTHS,
     HEADER, BODY, FOOTER,
-    ROW_STYLES, ROW_MESSAGE, ROW_EDITABLE,
+    ROW_STYLES, ROW_MESSAGE, ROW_EDITABLE, ROW_VALIDATION,
     MIN_COLUMN_WIDTH, MAX_COLUMN_WIDTH, COLUMNS
   }
 
@@ -67,6 +67,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
 
   private Calculation rowMessage = null;
   private Calculation rowEditable = null;
+  private Calculation rowValidation = null;
 
   private Integer minColumnWidth = null;
   private Integer maxColumnWidth = null;
@@ -162,6 +163,9 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         case ROW_MESSAGE:
           setRowMessage(Calculation.restore(value));
           break;
+        case ROW_VALIDATION:
+          setRowValidation(Calculation.restore(value));
+          break;
         case ROW_STYLES:
           if (BeeUtils.isEmpty(value)) {
             setRowStyles(null);
@@ -255,6 +259,9 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
     if (getRowEditable() != null) {
       PropertyUtils.appendChildrenToExtended(info, "Row Editable", getRowEditable().getInfo());
     }
+    if (getRowValidation() != null) {
+      PropertyUtils.appendChildrenToExtended(info, "Row Validation", getRowValidation().getInfo());
+    }
 
     int cc = getColumnCount();
     PropertyUtils.addExtended(info, "Column Count", BeeUtils.bracket(cc));
@@ -303,6 +310,10 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
 
   public Collection<ConditionalStyleDeclaration> getRowStyles() {
     return rowStyles;
+  }
+
+  public Calculation getRowValidation() {
+    return rowValidation;
   }
 
   public Integer getSearchThreshold() {
@@ -411,6 +422,9 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         case ROW_MESSAGE:
           arr[i++] = getRowMessage();
           break;
+        case ROW_VALIDATION:
+          arr[i++] = getRowValidation();
+          break;
         case ROW_STYLES:
           arr[i++] = getRowStyles();
           break;
@@ -489,10 +503,14 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
     this.rowStyles = rowStyles;
   }
 
+  public void setRowValidation(Calculation rowValidation) {
+    this.rowValidation = rowValidation;
+  }
+
   public void setSearchThreshold(Integer searchThreshold) {
     this.searchThreshold = searchThreshold;
   }
-
+  
   public void setShowColumnWidths(Boolean showColumnWidths) {
     this.showColumnWidths = showColumnWidths;
   }

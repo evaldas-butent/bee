@@ -6,6 +6,7 @@
     <BeeColumns>
       <BeeColumn name="User" expression="User" />
       <BeeColumn name="UserLogin" expression="User-Login" />
+      <BeeColumn name="UserLastName" expression="User-LastName" />
       <BeeColumn name="Role" expression="Role" />
       <BeeColumn name="RoleName" expression="Role>Name" />
     </BeeColumns>

@@ -4,11 +4,15 @@
 
   <BeeGrid name="UserRoles" viewName="UserRoles">
     <columns>
-      <BeeDataColumn name="UserID" source="User" caption="Vartotojo ID" />
-      <BeeDataColumn name="Login" source="UserLogin" caption="Prisijungimo vardas" readOnly="true" />
-      <BeeRelColumn name="Position" source="UserPosition" relSource="User" relColumn="Position" caption="Pareigos" />
-      <BeeDataColumn name="RoleID" source="Role" caption="Rolės ID" />
-      <BeeDataColumn name="Role" source="RoleName" caption="Rolė" readOnly="true" />
+      <BeeDataColumn name="UserID" source="User" caption="Vartotojo ID"  readOnly="true" />
+      <BeeRelColumn name="Login" source="UserLogin" relSource="User" relColumn="Login" caption="Prisijungimo vardas">
+        <editor type="selector"></editor>
+      </BeeRelColumn>
+      <BeeRelColumn name="LastName" source="UserLastName" relSource="User" relColumn="LastName" caption="Pavardė" />
+      <BeeDataColumn name="RoleID" source="Role" caption="Rolės ID"  readOnly="true" />
+      <BeeRelColumn name="RoleName" source="RoleName" relSource="Role" relColumn="Name" caption="Rolė">
+        <editor type="selector"></editor>
+      </BeeRelColumn>
       <BeeIdColumn name="Id" caption="ID" />
     </columns>
   </BeeGrid>

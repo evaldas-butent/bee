@@ -672,6 +672,40 @@ body, select {
   background-color: white;
 }
 
+.bee-RowEditor {
+  border-collapse: collapse;
+}  
+
+.bee-RowEditor tr:nth-child(odd) {
+  background: #ffe;
+}
+.bee-RowEditor tr:nth-child(even) {
+  background: #f3f7fb;
+}
+.bee-RowEditor tr:last-of-type {
+  background: inherit;
+}
+
+.bee-RowEditorLabel {
+  padding-left: 0.5em;
+  padding-right: 0.5em;
+}
+
+.bee-RowEditorCell {
+  padding-left: 0.5em;
+  padding-right: 0.5em;
+}
+
+.bee-RowEditorActiveLabel {
+  color: #00c;
+  text-decoration: underline;
+}
+
+.bee-RowEditorActiveCell {
+  outline: goldenrod solid 2px;
+  outline-offset: -1px;
+}
+
 .gwt-TreeItem-selected {
   background-color: #ffffaa;
 }
@@ -796,7 +830,7 @@ body, select {
   padding: 1px 0 5px 0;
   background: #fff;
 }
-td.datePickerMonth {
+.datePickerMonth {
   text-align: center;
   vertical-align: middle;
   white-space: nowrap;

@@ -6,18 +6,10 @@ import com.google.gwt.event.shared.GwtEvent;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 
-/**
- * Handles edit event ending, gets old and new values of edited data.
- */
-
-public class EditEndEvent extends GwtEvent<EditEndEvent.Handler> {
-
-  /**
-   * Requires implementing methods to have a method to handle edit end.
-   */
+public class ReadyForUpdateEvent extends GwtEvent<ReadyForUpdateEvent.Handler> {
 
   public interface Handler extends EventHandler {
-    void onEditEnd(EditEndEvent event);
+    void onReadyForUpdate(ReadyForUpdateEvent event);
   }
 
   private static final Type<Handler> TYPE = new Type<Handler>();
@@ -33,20 +25,14 @@ public class EditEndEvent extends GwtEvent<EditEndEvent.Handler> {
   private final String newValue;
 
   private final boolean rowMode;
-  
-  private final Integer keyCode;
-  private final boolean hasModifiers;
 
-  public EditEndEvent(IsRow rowValue, IsColumn column, String oldValue, String newValue,
-      boolean rowMode, Integer keyCode, boolean hasModifiers) {
+  public ReadyForUpdateEvent(IsRow rowValue, IsColumn column, String oldValue, String newValue,
+      boolean rowMode) {
     this.rowValue = rowValue;
     this.column = column;
     this.oldValue = oldValue;
     this.newValue = newValue;
     this.rowMode = rowMode;
-    
-    this.keyCode = keyCode;
-    this.hasModifiers = hasModifiers;
   }
 
   @Override
@@ -56,10 +42,6 @@ public class EditEndEvent extends GwtEvent<EditEndEvent.Handler> {
 
   public IsColumn getColumn() {
     return column;
-  }
-
-  public Integer getKeyCode() {
-    return keyCode;
   }
 
   public String getNewValue() {
@@ -74,16 +56,12 @@ public class EditEndEvent extends GwtEvent<EditEndEvent.Handler> {
     return rowValue;
   }
 
-  public boolean hasModifiers() {
-    return hasModifiers;
-  }
-
   public boolean isRowMode() {
     return rowMode;
   }
 
   @Override
   protected void dispatch(Handler handler) {
-    handler.onEditEnd(this);
+    handler.onReadyForUpdate(this);
   }
 }
