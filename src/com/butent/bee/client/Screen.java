@@ -1,6 +1,6 @@
 package com.butent.bee.client;
 
-import com.google.gwt.user.client.ui.HasWidgets;
+import com.google.gwt.user.client.ui.LayoutPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.dialog.NotificationListener;
@@ -32,7 +32,7 @@ public interface Screen extends Module, NotificationListener {
 
   boolean isTemporaryDetach();
 
-  void setRootPanel(HasWidgets rootPanel);
+  void setRootPanel(LayoutPanel rootPanel);
 
   void showGrid(Object data, String... cols);
 
@@ -44,7 +44,7 @@ public interface Screen extends Module, NotificationListener {
 
   void updateActiveQuietly(Widget w, ScrollBars scroll);
 
-  void updateData(Widget w, boolean scroll);
+  void updateData(Widget w);
 
   void updateMenu(Widget w);
 

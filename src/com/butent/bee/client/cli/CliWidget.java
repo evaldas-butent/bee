@@ -172,6 +172,8 @@ public class CliWidget extends InputText {
       CliWorker.style(v, arr);
     } else if (z.equals("svg")) {
       CliWorker.showSvg();
+    } else if (z.equals("tables")) {
+      BeeKeeper.getRpc().makeGetRequest(Service.DB_TABLES);
     } else if (z.equals("tiles")) {
       CliWorker.showTiles();
     } else if (z.startsWith("tran") || z.startsWith("detec")) {

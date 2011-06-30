@@ -5,6 +5,7 @@ import com.google.gwt.layout.client.Layout;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HasWidgets;
+import com.google.gwt.user.client.ui.LayoutPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
@@ -83,16 +84,17 @@ public class ScreenImpl implements Screen {
     }
   }
 
-  private HasWidgets rootPanel;
+  private LayoutPanel rootPanel;
 
   private int minTileSize = 20;
   private boolean temporaryDetach = false;
 
   private Split screenPanel = null;
   private TilePanel activePanel = null;
-  private BeeLayoutPanel menuPanel = null;
-  private BeeLayoutPanel dataPanel = null;
-  private BeeLayoutPanel signature = null;
+  private HasWidgets menuPanel = null;
+  private HasWidgets dataPanel = null;
+
+  private Widget signature = null;
 
   private final String elDsn = "el-data-source";
   private final String elGrid = "el-grid-type";
@@ -133,7 +135,7 @@ public class ScreenImpl implements Screen {
     
     TilePanel panel = getPanel(widget);
     if (panel == null) {
-      BeeKeeper.getLog().warning("closeView: panel not found");
+      notifyWarning("closeView: panel not found");
       return;
     }
     
@@ -195,18 +197,24 @@ public class ScreenImpl implements Screen {
   }
 
   public void notifyInfo(String... messages) {
-    notification.info(messages);
+    if (getNotification() != null) {
+      getNotification().info(messages);
+    }
   }
 
   public void notifySevere(String... messages) {
-    notification.severe(messages);
+    if (getNotification() != null) {
+      getNotification().severe(messages);
+    }
   }
 
   public void notifyWarning(String... messages) {
-    notification.warning(messages);
+    if (getNotification() != null) {
+      getNotification().warning(messages);
+    }
   }
 
-  public void setRootPanel(HasWidgets rootPanel) {
+  public void setRootPanel(LayoutPanel rootPanel) {
     this.rootPanel = rootPanel;
   }
 
@@ -264,24 +272,26 @@ public class ScreenImpl implements Screen {
     }
   }
 
-  public void updateData(Widget w, boolean scroll) {
-    updatePanel(getDataPanel(), w, scroll);
+  public void updateData(Widget w) {
+    updatePanel(getDataPanel(), w);
   }
 
   public void updateMenu(Widget w) {
-    updatePanel(getMenuPanel(), w, false);
+    updatePanel(getMenuPanel(), w);
   }
 
   public void updateSignature() {
-    signature.clear();
-    String usr = BeeKeeper.getUser().getUserSign();
+    if (getSignature() == null) {
+      return;
+    }
 
+    String usr = BeeKeeper.getUser().getUserSign();
     if (!BeeUtils.isEmpty(usr)) {
       usr = BeeUtils.concat(1, Global.constants.user() + ":", usr);
     } else {
       usr = Global.constants.notLoggedIn();
     }
-    signature.add(new BeeLabel(usr));
+    getSignature().getElement().setInnerHTML(usr);
   }
 
   protected void createUi() {
@@ -318,6 +328,30 @@ public class ScreenImpl implements Screen {
     setScreenPanel(p);
   }
   
+  protected HasWidgets getDataPanel() {
+    return dataPanel;
+  }
+
+  protected TextCellType getDefaultCellType() {
+    return TextCellType.get(RadioGroup.getValue(getElCell()));
+  }
+
+  protected int getDefaultGridType() {
+    return RadioGroup.getValue(getElGrid());
+  }
+
+  protected Notification getNotification() {
+    return notification;
+  }
+
+  protected LayoutPanel getRootPanel() {
+    return rootPanel;
+  }
+
+  protected Widget getSignature() {
+    return signature;
+  }
+
   protected Widget initCenter() {
     TilePanel p = new TilePanel();
     p.add(new BlankTile());
@@ -364,8 +398,8 @@ public class ScreenImpl implements Screen {
     BeeImage bee = new BeeImage(Global.getImages().bee());
     panel.addRightBottom(bee, 10, 1);
     
-    notification = new Notification();
-    panel.addRightTop(notification, 80, 0);
+    setNotification(new Notification());
+    panel.addRightTop(getNotification(), 80, 0);
 
     return panel;
   }
@@ -391,19 +425,23 @@ public class ScreenImpl implements Screen {
 
     p.add(hor);
 
-    BeeLabel ver = new BeeLabel(BeeUtils.concat(1, Settings.getVersion(), getName()));
+    BeeLabel ver = new BeeLabel(Settings.getVersion());
     p.add(ver);
 
     p.setWidgetLeftWidth(cli, 1, Unit.EM, 50, Unit.PCT);
     p.setWidgetVerticalPosition(cli, Layout.Alignment.BEGIN);
 
-    p.setWidgetLeftWidth(hor, 60, Unit.PCT, 200, Unit.PX);
+    p.setWidgetLeftWidth(hor, 55, Unit.PCT, 200, Unit.PX);
 
     p.setWidgetRightWidth(ver, 1, Unit.EM, 10, Unit.EM);
+    p.setWidgetHorizontalPosition(ver, Layout.Alignment.END);
 
-    signature = new BeeLayoutPanel();
-    p.add(signature);
-    p.setWidgetLeftRight(signature, 74, Unit.PCT, 6, Unit.EM);
+    BeeLabel user = new BeeLabel();
+    p.add(user);
+    p.setWidgetRightWidth(user, 11, Unit.EM, 20, Unit.EM);
+    p.setWidgetHorizontalPosition(user, Layout.Alignment.END);
+
+    setSignature(user);
     updateSignature();
 
     return p;
@@ -453,6 +491,22 @@ public class ScreenImpl implements Screen {
     setMenuPanel(mp);
 
     return spl;
+  }
+
+  protected void setDataPanel(HasWidgets dataPanel) {
+    this.dataPanel = dataPanel;
+  }
+
+  protected void setNotification(Notification notification) {
+    this.notification = notification;
+  }
+
+  protected void setScreenPanel(Split screenPanel) {
+    this.screenPanel = screenPanel;
+  }
+
+  protected void setSignature(Widget signature) {
+    this.signature = signature;
   }
 
   private void closePanel() {
@@ -547,19 +601,7 @@ public class ScreenImpl implements Screen {
 
     setActivePanel(null);
   }
-
-  private BeeLayoutPanel getDataPanel() {
-    return dataPanel;
-  }
-
-  private TextCellType getDefaultCellType() {
-    return TextCellType.get(RadioGroup.getValue(getElCell()));
-  }
-
-  private int getDefaultGridType() {
-    return RadioGroup.getValue(getElGrid());
-  }
-
+  
   private String getElCell() {
     return elCell;
   }
@@ -572,7 +614,7 @@ public class ScreenImpl implements Screen {
     return elGrid;
   }
 
-  private BeeLayoutPanel getMenuPanel() {
+  private HasWidgets getMenuPanel() {
     return menuPanel;
   }
 
@@ -588,10 +630,6 @@ public class ScreenImpl implements Screen {
     }
     return null;
   }
-
-  private HasWidgets getRootPanel() {
-    return rootPanel;
-  }
   
   private boolean isRootTile(TilePanel p) {
     if (p == null) {
@@ -605,27 +643,25 @@ public class ScreenImpl implements Screen {
     activePanel = p;
   }
 
-  private void setDataPanel(BeeLayoutPanel dataPanel) {
-    this.dataPanel = dataPanel;
-  }
-
-  private void setMenuPanel(BeeLayoutPanel menuPanel) {
+  private void setMenuPanel(HasWidgets menuPanel) {
     this.menuPanel = menuPanel;
-  }
-
-  private void setScreenPanel(Split screenPanel) {
-    this.screenPanel = screenPanel;
   }
 
   private void setTemporaryDetach(boolean temporaryDetach) {
     this.temporaryDetach = temporaryDetach;
   }
-  
-  private void updatePanel(BeeLayoutPanel p, Widget w, boolean scroll) {
-    Assert.notNull(p);
-    Assert.notNull(w);
+
+  private void updatePanel(HasWidgets p, Widget w) {
+    if (p == null) {
+      notifyWarning("updatePanel: panel is null");
+      return;
+    }
+    if (w == null) {
+      notifyWarning("updatePanel: widget is null");
+      return;
+    }
 
     p.clear();
-    p.add(w, scroll);
+    p.add(w);
   }
 }

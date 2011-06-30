@@ -184,7 +184,7 @@ public class GridFactory {
     }
     return null;
   }
-  
+
   public static DataColumn<?> createColumn(IsColumn dataColumn, int index) {
     return createColumn(dataColumn, index, null);
   }
@@ -375,15 +375,19 @@ public class GridFactory {
   private static Cell<String> createCell(TextCellType type) {
     Cell<String> cell;
 
-    switch (type) {
-      case TEXT_EDIT:
-        cell = new EditTextCell();
-        break;
-      case TEXT_INPUT:
-        cell = new TextInputCell();
-        break;
-      default:
-        cell = new TextCell();
+    if (type == null) {
+      cell = new TextCell();
+    } else {
+      switch (type) {
+        case TEXT_EDIT:
+          cell = new EditTextCell();
+          break;
+        case TEXT_INPUT:
+          cell = new TextInputCell();
+          break;
+        default:
+          cell = new TextCell();
+      }
     }
     return cell;
   }

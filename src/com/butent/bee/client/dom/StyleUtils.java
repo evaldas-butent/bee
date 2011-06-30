@@ -1359,6 +1359,45 @@ public class StyleUtils {
     setHeight(obj.getElement(), px);
   }
 
+  public static void setHorizontalPadding(Element el, int px) {
+    Assert.notNull(el);
+    setHorizontalPadding(el.getStyle(), px);
+  }
+  
+  public static void setHorizontalPadding(Element el, double value, Unit unit) {
+    Assert.notNull(el);
+    setHorizontalPadding(el.getStyle(), value, unit);
+  }
+
+  public static void setHorizontalPadding(Style st, int px) {
+    setHorizontalPadding(st, px, Unit.PX);
+  }
+
+  public static void setHorizontalPadding(Style st, double value, Unit unit) {
+    Assert.notNull(st);
+    Assert.notNull(unit);
+    st.setPaddingLeft(value, unit);
+    st.setPaddingRight(value, unit);
+  }
+
+  public static void setHorizontalPadding(String id, int px) {
+    setHorizontalPadding(DomUtils.getElement(id), px);
+  }
+
+  public static void setHorizontalPadding(String id, double value, Unit unit) {
+    setHorizontalPadding(DomUtils.getElement(id), value, unit);
+  }
+
+  public static void setHorizontalPadding(UIObject obj, int px) {
+    Assert.notNull(obj);
+    setHorizontalPadding(obj.getElement(), px);
+  }
+
+  public static void setHorizontalPadding(UIObject obj, double value, Unit unit) {
+    Assert.notNull(obj);
+    setHorizontalPadding(obj.getElement(), value, unit);
+  }
+  
   public static void setLeft(Element el, int px) {
     Assert.notNull(el);
     setLeft(el.getStyle(), px);

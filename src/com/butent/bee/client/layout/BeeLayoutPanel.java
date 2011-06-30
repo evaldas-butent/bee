@@ -52,6 +52,33 @@ public class BeeLayoutPanel extends LayoutPanel implements HasId {
     }
   }
 
+  public String addLeftRight(Widget widget, int left, int right) {
+    return addLeftRight(widget, left, Unit.PX, right, Unit.PX);
+  }
+  
+  public String addLeftRight(Widget widget, double left, Unit leftUnit,
+      double right, Unit rightUnit) {
+    add(widget);
+    setWidgetLeftRight(widget, left, leftUnit, right, rightUnit);
+
+    return DomUtils.getId(widget);
+  }
+  
+  public String addLeftRightTop(Widget widget, int left, int right, int top) {
+    return addLeftRightTop(widget, left, Unit.PX, right, Unit.PX, top, Unit.PX);
+  }
+
+  public String addLeftRightTop(Widget widget, double left, Unit leftUnit,
+      double right, Unit rightUnit, double top, Unit topUnit) {
+    add(widget);
+    setWidgetLeftRight(widget, left, leftUnit, right, rightUnit);
+
+    setWidgetTopBottom(widget, top, topUnit, 0, Unit.PX);
+    setWidgetVerticalPosition(widget, Alignment.BEGIN);
+
+    return DomUtils.getId(widget);
+  }
+
   public String addLeftTop(Widget widget, int left, int top) {
     return addLeftTop(widget, left, Unit.PX, top, Unit.PX);
   }

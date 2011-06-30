@@ -6,6 +6,7 @@ import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.TextColumn;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
+import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.view.client.SelectionChangeEvent;
 import com.google.gwt.view.client.SingleSelectionModel;
 
@@ -65,7 +66,7 @@ public class Explorer implements HandlesDeleteEvents, RowInsertEvent.Handler {
     @Override
     public void execute() {
       if (getDataInfoWidget() == null) {
-        BeeKeeper.getScreen().updateData(new BeeImage(Global.getImages().loading()), false);
+        BeeKeeper.getScreen().updateData(ensureLoadingWidget());
       }
       loadDataInfo();
     }
@@ -78,9 +79,14 @@ public class Explorer implements HandlesDeleteEvents, RowInsertEvent.Handler {
   private final DataInfoCreator dataInfoCreator = new DataInfoCreator();
 
   private CellTable<DataInfo> dataInfoWidget = null;
+  private Widget loadingWidget = null;
 
   public Explorer() {
     super();
+  }
+  
+  public void create() {
+    getDataInfoCreator().execute();
   }
 
   public DataInfoCreator getDataInfoCreator() {
@@ -119,6 +125,26 @@ public class Explorer implements HandlesDeleteEvents, RowInsertEvent.Handler {
     }
   }
 
+  public void openView(final DataInfo dataInfo) {
+    if (dataInfo.getRowCount() < 0) {
+      BeeKeeper.getLog().info(dataInfo.getName(), "not active");
+      return;
+    }
+    
+    BeeKeeper.getScreen().updateActivePanel(ensureLoadingWidget());
+
+    GridFactory.getGrid(dataInfo.getName(), new GridFactory.GridCallback() {
+      public void onFailure(String[] reason) {
+        BeeKeeper.getScreen().notifyWarning(reason);
+        getInitialRowSet(dataInfo, null);
+      }
+
+      public void onSuccess(GridDescription result) {
+        getInitialRowSet(dataInfo, result);
+      }
+    });
+  }
+
   public void refresh() {
     if (getDataInfoWidget() != null) {
       getDataInfoWidget().redraw();
@@ -127,7 +153,7 @@ public class Explorer implements HandlesDeleteEvents, RowInsertEvent.Handler {
 
   public void showDataInfo() {
     if (getViews().isEmpty()) {
-      BeeKeeper.getScreen().updateData(new BeeLabel("Data not available"), false);
+      BeeKeeper.getScreen().updateData(new BeeLabel("Data not available"));
       return;
     }
 
@@ -166,7 +192,14 @@ public class Explorer implements HandlesDeleteEvents, RowInsertEvent.Handler {
     });
     grid.setSelectionModel(selector);
 
-    BeeKeeper.getScreen().updateData(grid, true);
+    BeeKeeper.getScreen().updateData(grid);
+  }
+
+  private Widget ensureLoadingWidget() {
+    if (getLoadingWidget() == null) {
+      setLoadingWidget(new BeeImage(Global.getImages().loading()));
+    }
+    return getLoadingWidget();
   }
 
   private DataInfo getDataInfo(String name) {
@@ -181,24 +214,6 @@ public class Explorer implements HandlesDeleteEvents, RowInsertEvent.Handler {
 
   private CellTable<DataInfo> getDataInfoWidget() {
     return dataInfoWidget;
-  }
-
-  private void openView(final DataInfo dataInfo) {
-    if (dataInfo.getRowCount() < 0) {
-      BeeKeeper.getLog().info(dataInfo.getName(), "not active");
-      return;
-    }
-
-    GridFactory.getGrid(dataInfo.getName(), new GridFactory.GridCallback() {
-      public void onFailure(String[] reason) {
-        BeeKeeper.getScreen().notifyWarning(reason);
-        getInitialRowSet(dataInfo, null);
-      }
-
-      public void onSuccess(GridDescription result) {
-        getInitialRowSet(dataInfo, result);
-      }
-    });
   }
 
   private void getInitialRowSet(final DataInfo dataInfo, final GridDescription gridDescription) {
@@ -231,10 +246,18 @@ public class Explorer implements HandlesDeleteEvents, RowInsertEvent.Handler {
         });
   }
 
+  private Widget getLoadingWidget() {
+    return loadingWidget;
+  }
+
   private void setDataInfoWidget(CellTable<DataInfo> dataInfoWidget) {
     this.dataInfoWidget = dataInfoWidget;
   }
 
+  private void setLoadingWidget(Widget loadingWidget) {
+    this.loadingWidget = loadingWidget;
+  }
+  
   private void showView(DataInfo dataInfo, BeeRowSet rowSet, boolean async,
       GridDescription gridDescription) {
     GridPresenter presenter = new GridPresenter(dataInfo, rowSet, async, gridDescription);

@@ -1,7 +1,7 @@
 package com.butent.bee.client;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.user.client.ui.HasWidgets;
+import com.google.gwt.user.client.ui.LayoutPanel;
 
 import com.butent.bee.shared.utils.RowComparator;
 
@@ -54,7 +54,7 @@ public class BeeKeeper {
 
   private Module[] modules;
 
-  public BeeKeeper(HasWidgets root, String url) {
+  public BeeKeeper(LayoutPanel root, String url) {
     SCREEN = GWT.create(Screen.class);
     SCREEN.setRootPanel(root);
 

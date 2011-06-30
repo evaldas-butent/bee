@@ -16,6 +16,13 @@ public class UserInfo implements Module {
   public void end() {
   }
 
+  public String getLogin() {
+    if (isLoggedIn()) {
+      return userData.getLogin();
+    }
+    return null;
+  }
+  
   public String getName() {
     return getClass().getName();
   }
