@@ -7,9 +7,7 @@
       <BeeDataColumn name="UserID" source="User" caption="Vartotojo ID" readOnly="true" />
 
       <BeeRelColumn name="Login" source="UserLogin" relSource="User" relColumn="Login"
-        caption="Prisijungimo vardas">
-        <editor type="selector"></editor>
-      </BeeRelColumn>
+        caption="Prisijungimo vardas" />
 
       <BeeRelColumn name="LastName" source="UserLastName" relSource="User" relColumn="LastName"
         caption="Pavardė">
@@ -20,9 +18,7 @@
       <BeeDataColumn name="RoleID" source="Role" caption="Rolės ID" readOnly="true" />
 
       <BeeRelColumn name="RoleName" source="RoleName" relSource="Role" relColumn="Name"
-        caption="Rolė">
-        <editor type="selector"></editor>
-      </BeeRelColumn>
+        caption="Rolė" />
 
       <BeeIdColumn name="Id" caption="ID" />
     </columns>

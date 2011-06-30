@@ -1,5 +1,6 @@
 package com.butent.bee.client;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.ui.HasWidgets;
 
 import com.butent.bee.shared.utils.RowComparator;
@@ -8,11 +9,12 @@ import java.util.Arrays;
 
 /**
  * starts and stops core system modules.
- * <code>BeeUi, RpcFactory, EventManager, LogHandler, UserInfo, Global, Storage, MenuManager
+ * <code>Screen, RpcFactory, EventManager, LogHandler, UserInfo, Global, Storage, MenuManager
  */
 
 public class BeeKeeper {
-  private static BeeUi UI;
+
+  private static Screen SCREEN;
   private static RpcFactory RPC;
   private static EventManager BUS;
 
@@ -38,12 +40,12 @@ public class BeeKeeper {
     return RPC;
   }
 
-  public static Storage getStorage() {
-    return STOR;
+  public static Screen getScreen() {
+    return SCREEN;
   }
 
-  public static BeeUi getUi() {
-    return UI;
+  public static Storage getStorage() {
+    return STOR;
   }
 
   public static UserInfo getUser() {
@@ -53,17 +55,18 @@ public class BeeKeeper {
   private Module[] modules;
 
   public BeeKeeper(HasWidgets root, String url) {
-    UI = new BeeUi(root);
+    SCREEN = GWT.create(Screen.class);
+    SCREEN.setRootPanel(root);
+
     BUS = new EventManager();
     RPC = new RpcFactory(url);
-
     LOG = new LogHandler();
     USER = new UserInfo();
     GLOB = new Global();
     STOR = new Storage();
     MENU = new MenuManager();
 
-    modules = new Module[] {UI, BUS, RPC, LOG, USER, GLOB, STOR, MENU};
+    modules = new Module[] {SCREEN, BUS, RPC, LOG, USER, GLOB, STOR, MENU};
   }
 
   public void end() {

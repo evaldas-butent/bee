@@ -184,7 +184,7 @@ public class GridPresenter implements Presenter, ReadyForInsertEvent.Handler, Re
 
     switch (action) {
       case CLOSE:
-        BeeKeeper.getUi().closeView(getView());
+        BeeKeeper.getScreen().closeView(getView());
         break;
 
       case CONFIGURE:
@@ -274,7 +274,7 @@ public class GridPresenter implements Presenter, ReadyForInsertEvent.Handler, Re
   }
 
   public void onViewUnload() {
-    if (BeeKeeper.getUi().isTemporaryDetach()) {
+    if (BeeKeeper.getScreen().isTemporaryDetach()) {
       return;
     }
     getView().setViewPresenter(null);

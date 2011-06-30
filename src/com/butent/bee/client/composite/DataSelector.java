@@ -464,6 +464,10 @@ public class DataSelector extends Complex implements Editor, HasTextDimensions {
   private int offset = 0;
   private boolean hasMore = false;
 
+  public DataSelector(RelationInfo relationInfo) {
+    this(relationInfo, null);
+  }
+  
   public DataSelector(RelationInfo relationInfo, JSONObject options) {
     super();
 

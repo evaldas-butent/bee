@@ -1,4 +1,4 @@
-package com.butent.bee.client;
+package com.butent.bee.client.screen;
 
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.layout.client.Layout;
@@ -7,6 +7,10 @@ import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Widget;
 
+import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Global;
+import com.butent.bee.client.Screen;
+import com.butent.bee.client.Settings;
 import com.butent.bee.client.cli.CliWidget;
 import com.butent.bee.client.composite.ButtonGroup;
 import com.butent.bee.client.composite.RadioGroup;
@@ -14,7 +18,6 @@ import com.butent.bee.client.composite.ResourceEditor;
 import com.butent.bee.client.composite.ValueSpinner;
 import com.butent.bee.client.composite.VolumeSlider;
 import com.butent.bee.client.dialog.Notification;
-import com.butent.bee.client.dialog.NotificationListener;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.dom.StyleUtils.ScrollBars;
@@ -51,10 +54,10 @@ import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 /**
- * manages the main browser window and it's main containing elements (f.e. panels).
+ * default (desktop) Screen implementation.
  */
 
-public class BeeUi implements Module, NotificationListener {
+public class ScreenImpl implements Screen {
 
   private class SplitCommand extends BeeCommand {
     Direction direction = null;
@@ -80,7 +83,7 @@ public class BeeUi implements Module, NotificationListener {
     }
   }
 
-  private final HasWidgets rootPanel;
+  private HasWidgets rootPanel;
 
   private int minTileSize = 20;
   private boolean temporaryDetach = false;
@@ -89,7 +92,6 @@ public class BeeUi implements Module, NotificationListener {
   private TilePanel activePanel = null;
   private BeeLayoutPanel menuPanel = null;
   private BeeLayoutPanel dataPanel = null;
-  private BeeLayoutPanel viewPanel = null;
   private BeeLayoutPanel signature = null;
 
   private final String elDsn = "el-data-source";
@@ -98,8 +100,7 @@ public class BeeUi implements Module, NotificationListener {
   
   private Notification notification = null;
 
-  public BeeUi(HasWidgets rootPanel) {
-    this.rootPanel = rootPanel;
+  public ScreenImpl() {
   }
 
   public void activatePanel(TilePanel np) {
@@ -124,7 +125,7 @@ public class BeeUi implements Module, NotificationListener {
 
     setActivePanel(np);
   }
-  
+
   public void closeView(View view) {
     Assert.notNull(view, "closeView: view is null");
     Widget widget = view.asWidget();
@@ -141,23 +142,7 @@ public class BeeUi implements Module, NotificationListener {
     }
     closePanel();
   }
-
-  public void deactivatePanel() {
-    TilePanel op = getActivePanel();
-
-    if (op != null && !isRootTile(op)) {
-      Widget w = op.getCenter();
-
-      if (w instanceof BlankTile) {
-        w.removeStyleName(StyleUtils.ACTIVE_BLANK);
-      } else if (w != null) {
-        op.getWidgetContainerElement(w).removeClassName(StyleUtils.ACTIVE_CONTENT);
-      }
-    }
-
-    setActivePanel(null);
-  }
-
+  
   public void end() {
   }
 
@@ -177,44 +162,12 @@ public class BeeUi implements Module, NotificationListener {
     return p.getOffsetWidth();
   }
 
-  public BeeLayoutPanel getDataPanel() {
-    return dataPanel;
-  }
-
-  public TextCellType getDefaultCellType() {
-    return TextCellType.get(RadioGroup.getValue(getElCell()));
-  }
-
-  public int getDefaultGridType() {
-    return RadioGroup.getValue(getElGrid());
-  }
-
   public String getDsn() {
     return ArrayUtils.getQuietly(BeeConst.DS_TYPES, RadioGroup.getValue(getElDsn()));
   }
 
-  public String getElCell() {
-    return elCell;
-  }
-
-  public String getElDsn() {
-    return elDsn;
-  }
-
-  public String getElGrid() {
-    return elGrid;
-  }
-
-  public BeeLayoutPanel getMenuPanel() {
-    return menuPanel;
-  }
-
-  public int getMinTileSize() {
-    return minTileSize;
-  }
-
   public String getName() {
-    return getClass().getName();
+    return BeeUtils.getClassName(getClass());
   }
 
   public int getPriority(int p) {
@@ -230,16 +183,8 @@ public class BeeUi implements Module, NotificationListener {
     }
   }
 
-  public HasWidgets getRootPanel() {
-    return rootPanel;
-  }
-
   public Split getScreenPanel() {
     return screenPanel;
-  }
-
-  public BeeLayoutPanel getViewPanel() {
-    return viewPanel;
   }
 
   public void init() {
@@ -260,33 +205,9 @@ public class BeeUi implements Module, NotificationListener {
   public void notifyWarning(String... messages) {
     notification.warning(messages);
   }
-  
-  public void setActivePanel(TilePanel p) {
-    activePanel = p;
-  }
 
-  public void setDataPanel(BeeLayoutPanel dataPanel) {
-    this.dataPanel = dataPanel;
-  }
-
-  public void setMenuPanel(BeeLayoutPanel menuPanel) {
-    this.menuPanel = menuPanel;
-  }
-
-  public void setMinTileSize(int minTileSize) {
-    this.minTileSize = minTileSize;
-  }
-
-  public void setScreenPanel(Split screenPanel) {
-    this.screenPanel = screenPanel;
-  }
-
-  public void setTemporaryDetach(boolean temporaryDetach) {
-    this.temporaryDetach = temporaryDetach;
-  }
-
-  public void setViewPanel(BeeLayoutPanel viewPanel) {
-    this.viewPanel = viewPanel;
+  public void setRootPanel(HasWidgets rootPanel) {
+    this.rootPanel = rootPanel;
   }
 
   public void showGrid(Object data, String... cols) {
@@ -361,6 +282,177 @@ public class BeeUi implements Module, NotificationListener {
       usr = Global.constants.notLoggedIn();
     }
     signature.add(new BeeLabel(usr));
+  }
+
+  protected void createUi() {
+    Widget w;
+    Split p = new Split();
+
+    w = initNorth();
+    if (w != null) {
+      p.addNorth(w, 70);
+    }
+
+    w = initSouth();
+    if (w != null) {
+      p.addSouth(w, 32);
+    }
+
+    w = initWest();
+    if (w != null) {
+      p.addWest(w, 256);
+    }
+
+    w = initEast();
+    if (w != null) {
+      p.addEast(w, 256, ScrollBars.BOTH);
+    }
+
+    w = initCenter();
+    if (w != null) {
+      p.add(w, ScrollBars.BOTH);
+    }
+
+    getRootPanel().add(p);
+
+    setScreenPanel(p);
+  }
+  
+  protected Widget initCenter() {
+    TilePanel p = new TilePanel();
+    p.add(new BlankTile());
+
+    setActivePanel(p);
+    return p;
+  }
+
+  protected Widget initEast() {
+    return BeeKeeper.getLog().getArea();
+  }
+
+  protected Widget initNorth() {
+    Horizontal p = new Horizontal();
+    p.setSpacing(5);
+
+    p.add(new RadioGroup(getElDsn(), BeeKeeper.getStorage().checkInt(getElDsn(), 0),
+        BeeConst.DS_TYPES));
+
+    p.add(new ButtonGroup("Ping", Service.DB_PING,
+        "Info", Service.DB_INFO,
+        Global.constants.tables(), Service.DB_TABLES));
+
+    p.add(new BeeButton(Global.constants.clazz(), Service.GET_CLASS, Stage.STAGE_GET_PARAMETERS));
+    p.add(new BeeButton("Xml", Service.GET_XML, Stage.STAGE_GET_PARAMETERS));
+    p.add(new BeeButton("Jdbc", Service.GET_DATA, Stage.STAGE_GET_PARAMETERS));
+
+    p.add(new BeeButton(Global.constants.login(), Service.GET_LOGIN, Stage.STAGE_GET_PARAMETERS));
+    p.add(new BeeButton(Global.constants.logout(), Service.LOGOUT));
+
+    p.add(new BeeCheckBox(Global.getVar(Global.VAR_DEBUG)));
+
+    p.add(new BeeButton("North land", FormService.NAME, FormService.Stages.CHOOSE_FORM.name()));
+    p.add(new BeeButton("CRUD", RowSetService.NAME, RowSetService.Stages.CHOOSE_TABLE.name()));
+
+    p.add(new RadioGroup(getElGrid(), true, BeeKeeper.getStorage().checkInt(getElGrid(), 2),
+        "simple", "scroll", "cell"));
+    p.add(new RadioGroup(getElCell(), true, BeeKeeper.getStorage().checkEnum(getElCell(),
+        TextCellType.TEXT_EDIT), TextCellType.values()));
+
+    Complex panel = new Complex();
+    panel.addLeftTop(p, 1, Unit.EM, 4, Unit.PX);
+
+    BeeImage bee = new BeeImage(Global.getImages().bee());
+    panel.addRightBottom(bee, 10, 1);
+    
+    notification = new Notification();
+    panel.addRightTop(notification, 80, 0);
+
+    return panel;
+  }
+
+  protected Widget initSouth() {
+    BeeLayoutPanel p = new BeeLayoutPanel();
+
+    CliWidget cli = new CliWidget();
+    p.add(cli);
+
+    Horizontal hor = new Horizontal();
+    hor.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
+
+    hor.add(new BeeButton("N", new SplitCommand(Direction.NORTH)));
+    hor.add(new BeeButton("S", new SplitCommand(Direction.SOUTH)));
+    hor.add(new BeeButton("E", new SplitCommand(Direction.EAST)));
+    hor.add(new BeeButton("W", new SplitCommand(Direction.WEST)));
+
+    BeeImage close = new BeeImage(Global.getImages().close(), new SplitCommand(true));
+    hor.add(close);
+    hor.setCellWidth(close, "32px");
+    hor.setCellHorizontalAlignment(close, HasHorizontalAlignment.ALIGN_RIGHT);
+
+    p.add(hor);
+
+    BeeLabel ver = new BeeLabel(BeeUtils.concat(1, Settings.getVersion(), getName()));
+    p.add(ver);
+
+    p.setWidgetLeftWidth(cli, 1, Unit.EM, 50, Unit.PCT);
+    p.setWidgetVerticalPosition(cli, Layout.Alignment.BEGIN);
+
+    p.setWidgetLeftWidth(hor, 60, Unit.PCT, 200, Unit.PX);
+
+    p.setWidgetRightWidth(ver, 1, Unit.EM, 10, Unit.EM);
+
+    signature = new BeeLayoutPanel();
+    p.add(signature);
+    p.setWidgetLeftRight(signature, 74, Unit.PCT, 6, Unit.EM);
+    updateSignature();
+
+    return p;
+  }
+
+  protected Widget initWest() {
+    FlexTable fp = new FlexTable();
+    fp.setCellSpacing(3);
+
+    int r = MenuConstants.MAX_MENU_DEPTH;
+    String name;
+
+    for (int i = MenuConstants.ROOT_MENU_INDEX; i < r; i++) {
+      name = MenuConstants.varMenuLayout(i);
+      fp.setWidget(i, 0, new BeeListBox(Global.getVar(name)));
+
+      name = MenuConstants.varMenuBarType(i);
+      fp.setWidget(i, 1, new SimpleBoolean(Global.getVar(name)));
+    }
+
+    ValueSpinner spinner = new ValueSpinner(Global.getVar(MenuConstants.VAR_ROOT_LIMIT), 0, 30, 3);
+    DomUtils.setWidth(spinner, 60);
+    fp.setWidget(r, 0, spinner);
+
+    VolumeSlider slider = new VolumeSlider(Global.getVar(MenuConstants.VAR_ITEM_LIMIT), 0, 50, 5);
+    slider.setPixelSize(80, 20);
+    fp.setWidget(r + 1, 0, slider);
+
+    fp.setWidget(r, 1, new BeeButton(Global.constants.refresh(), Service.REFRESH_MENU));
+    fp.setWidget(r + 1, 1, new BeeButton("BEE", MenuService.NAME, "stage_dummy"));
+
+    TabbedPages tp = new TabbedPages(3, Unit.EX);
+    tp.add(fp, Global.constants.menu());
+
+    BeeLayoutPanel dp = new BeeLayoutPanel();
+    tp.add(dp, Global.constants.data(), Global.getDataExplorer().getDataInfoCreator());
+    setDataPanel(dp);
+
+    BeeLayoutPanel vp = new BeeLayoutPanel();
+    tp.add(vp, new BeeImage(Global.getImages().bookmark()));
+
+    Split spl = new Split();
+    spl.addNorth(tp, 200);
+
+    BeeLayoutPanel mp = new BeeLayoutPanel();
+    spl.add(mp);
+    setMenuPanel(mp);
+
+    return spl;
   }
 
   private void closePanel() {
@@ -440,38 +532,52 @@ public class BeeUi implements Module, NotificationListener {
     activatePanel(tp);
   }
 
-  private void createUi() {
-    Widget w;
-    Split p = new Split();
+  private void deactivatePanel() {
+    TilePanel op = getActivePanel();
 
-    w = initNorth();
-    if (w != null) {
-      p.addNorth(w, 70);
+    if (op != null && !isRootTile(op)) {
+      Widget w = op.getCenter();
+
+      if (w instanceof BlankTile) {
+        w.removeStyleName(StyleUtils.ACTIVE_BLANK);
+      } else if (w != null) {
+        op.getWidgetContainerElement(w).removeClassName(StyleUtils.ACTIVE_CONTENT);
+      }
     }
 
-    w = initSouth();
-    if (w != null) {
-      p.addSouth(w, 32);
-    }
+    setActivePanel(null);
+  }
 
-    w = initWest();
-    if (w != null) {
-      p.addWest(w, 256);
-    }
+  private BeeLayoutPanel getDataPanel() {
+    return dataPanel;
+  }
 
-    w = initEast();
-    if (w != null) {
-      p.addEast(w, 256, ScrollBars.BOTH);
-    }
+  private TextCellType getDefaultCellType() {
+    return TextCellType.get(RadioGroup.getValue(getElCell()));
+  }
 
-    w = initCenter();
-    if (w != null) {
-      p.add(w, ScrollBars.BOTH);
-    }
+  private int getDefaultGridType() {
+    return RadioGroup.getValue(getElGrid());
+  }
 
-    getRootPanel().add(p);
+  private String getElCell() {
+    return elCell;
+  }
 
-    setScreenPanel(p);
+  private String getElDsn() {
+    return elDsn;
+  }
+
+  private String getElGrid() {
+    return elGrid;
+  }
+
+  private BeeLayoutPanel getMenuPanel() {
+    return menuPanel;
+  }
+
+  private int getMinTileSize() {
+    return minTileSize;
   }
 
   private TilePanel getPanel(Widget w) {
@@ -482,151 +588,37 @@ public class BeeUi implements Module, NotificationListener {
     }
     return null;
   }
+
+  private HasWidgets getRootPanel() {
+    return rootPanel;
+  }
   
-  private Widget initCenter() {
-    TilePanel p = new TilePanel();
-    p.add(new BlankTile());
-
-    setActivePanel(p);
-    return p;
-  }
-
-  private Widget initEast() {
-    return BeeKeeper.getLog().getArea();
-  }
-
-  private Widget initNorth() {
-    Horizontal p = new Horizontal();
-    p.setSpacing(5);
-
-    p.add(new RadioGroup(getElDsn(), BeeKeeper.getStorage().checkInt(getElDsn(), 0),
-        BeeConst.DS_TYPES));
-
-    p.add(new ButtonGroup("Ping", Service.DB_PING,
-        "Info", Service.DB_INFO,
-        Global.constants.tables(), Service.DB_TABLES));
-
-    p.add(new BeeButton(Global.constants.clazz(), Service.GET_CLASS, Stage.STAGE_GET_PARAMETERS));
-    p.add(new BeeButton("Xml", Service.GET_XML, Stage.STAGE_GET_PARAMETERS));
-    p.add(new BeeButton("Jdbc", Service.GET_DATA, Stage.STAGE_GET_PARAMETERS));
-
-    p.add(new BeeButton(Global.constants.login(), Service.GET_LOGIN, Stage.STAGE_GET_PARAMETERS));
-    p.add(new BeeButton(Global.constants.logout(), Service.LOGOUT));
-
-    p.add(new BeeCheckBox(Global.getVar(Global.VAR_DEBUG)));
-
-    p.add(new BeeButton("North land", FormService.NAME, FormService.Stages.CHOOSE_FORM.name()));
-    p.add(new BeeButton("CRUD", RowSetService.NAME, RowSetService.Stages.CHOOSE_TABLE.name()));
-
-    p.add(new RadioGroup(getElGrid(), true, BeeKeeper.getStorage().checkInt(getElGrid(), 2),
-        "simple", "scroll", "cell"));
-    p.add(new RadioGroup(getElCell(), true, BeeKeeper.getStorage().checkEnum(getElCell(),
-        TextCellType.TEXT_EDIT), TextCellType.values()));
-
-    Complex panel = new Complex();
-    panel.addLeftTop(p, 1, Unit.EM, 4, Unit.PX);
-
-    BeeImage bee = new BeeImage(Global.getImages().bee());
-    panel.addRightBottom(bee, 10, 1);
-    
-    notification = new Notification();
-    panel.addRightTop(notification, 80, 0);
-
-    return panel;
-  }
-
-  private Widget initSouth() {
-    BeeLayoutPanel p = new BeeLayoutPanel();
-
-    CliWidget cli = new CliWidget();
-    p.add(cli);
-
-    Horizontal hor = new Horizontal();
-    hor.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
-
-    hor.add(new BeeButton("N", new SplitCommand(Direction.NORTH)));
-    hor.add(new BeeButton("S", new SplitCommand(Direction.SOUTH)));
-    hor.add(new BeeButton("E", new SplitCommand(Direction.EAST)));
-    hor.add(new BeeButton("W", new SplitCommand(Direction.WEST)));
-
-    BeeImage close = new BeeImage(Global.getImages().close(), new SplitCommand(true));
-    hor.add(close);
-    hor.setCellWidth(close, "32px");
-    hor.setCellHorizontalAlignment(close, HasHorizontalAlignment.ALIGN_RIGHT);
-
-    p.add(hor);
-
-    BeeLabel ver = new BeeLabel(Settings.getVersion());
-    p.add(ver);
-
-    p.setWidgetLeftWidth(cli, 1, Unit.EM, 50, Unit.PCT);
-    p.setWidgetVerticalPosition(cli, Layout.Alignment.BEGIN);
-
-    p.setWidgetLeftWidth(hor, 60, Unit.PCT, 200, Unit.PX);
-
-    p.setWidgetRightWidth(ver, 1, Unit.EM, 5, Unit.EM);
-
-    signature = new BeeLayoutPanel();
-    p.add(signature);
-    p.setWidgetLeftRight(signature, 74, Unit.PCT, 6, Unit.EM);
-    updateSignature();
-
-    return p;
-  }
-
-  private Widget initWest() {
-    FlexTable fp = new FlexTable();
-    fp.setCellSpacing(3);
-
-    int r = MenuConstants.MAX_MENU_DEPTH;
-    String name;
-
-    for (int i = MenuConstants.ROOT_MENU_INDEX; i < r; i++) {
-      name = MenuConstants.varMenuLayout(i);
-      fp.setWidget(i, 0, new BeeListBox(Global.getVar(name)));
-
-      name = MenuConstants.varMenuBarType(i);
-      fp.setWidget(i, 1, new SimpleBoolean(Global.getVar(name)));
-    }
-
-    ValueSpinner spinner = new ValueSpinner(Global.getVar(MenuConstants.VAR_ROOT_LIMIT), 0, 30, 3);
-    DomUtils.setWidth(spinner, 60);
-    fp.setWidget(r, 0, spinner);
-
-    VolumeSlider slider = new VolumeSlider(Global.getVar(MenuConstants.VAR_ITEM_LIMIT), 0, 50, 5);
-    slider.setPixelSize(80, 20);
-    fp.setWidget(r + 1, 0, slider);
-
-    fp.setWidget(r, 1, new BeeButton(Global.constants.refresh(), Service.REFRESH_MENU));
-    fp.setWidget(r + 1, 1, new BeeButton("BEE", MenuService.NAME, "stage_dummy"));
-
-    TabbedPages tp = new TabbedPages(3, Unit.EX);
-    tp.add(fp, Global.constants.menu());
-
-    BeeLayoutPanel dp = new BeeLayoutPanel();
-    tp.add(dp, Global.constants.data(), Global.getDataExplorer().getDataInfoCreator());
-    setDataPanel(dp);
-
-    BeeLayoutPanel vp = new BeeLayoutPanel();
-    tp.add(vp, new BeeImage(Global.getImages().bookmark()));
-    setViewPanel(dp);
-
-    Split spl = new Split();
-    spl.addNorth(tp, 200);
-
-    BeeLayoutPanel mp = new BeeLayoutPanel();
-    spl.add(mp);
-    setMenuPanel(mp);
-
-    return spl;
-  }
-
   private boolean isRootTile(TilePanel p) {
     if (p == null) {
       return false;
     } else {
       return !(p.getParent() instanceof TilePanel);
     }
+  }
+
+  private void setActivePanel(TilePanel p) {
+    activePanel = p;
+  }
+
+  private void setDataPanel(BeeLayoutPanel dataPanel) {
+    this.dataPanel = dataPanel;
+  }
+
+  private void setMenuPanel(BeeLayoutPanel menuPanel) {
+    this.menuPanel = menuPanel;
+  }
+
+  private void setScreenPanel(Split screenPanel) {
+    this.screenPanel = screenPanel;
+  }
+
+  private void setTemporaryDetach(boolean temporaryDetach) {
+    this.temporaryDetach = temporaryDetach;
   }
   
   private void updatePanel(BeeLayoutPanel p, Widget w, boolean scroll) {

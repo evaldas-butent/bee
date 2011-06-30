@@ -81,7 +81,7 @@ public class MenuManager implements Module {
 
     boolean ok = (w != null);
     if (ok) {
-      BeeKeeper.getUi().updateMenu(w);
+      BeeKeeper.getScreen().updateMenu(w);
     } else {
       BeeKeeper.getLog().severe("error creating menu");
     }
@@ -235,7 +235,7 @@ public class MenuManager implements Module {
       arr[i][j++] = entry.getKeyName();
       arr[i][j++] = BeeUtils.toString(entry.isVisible());
     }
-    BeeKeeper.getUi().showGrid(arr, cols);
+    BeeKeeper.getScreen().showGrid(arr, cols);
   }
 
   public void start() {

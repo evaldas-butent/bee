@@ -313,14 +313,14 @@ public class RowSetService extends CompositeService {
   }
 
   private void refresh() {
-    BeeKeeper.getUi().updateMenu(getTree(rs));
+    BeeKeeper.getScreen().updateMenu(getTree(rs));
 
     if (rs.isEmpty()) {
-      BeeKeeper.getUi().updateActivePanel(new BeeLabel("RowSet is empty"));
+      BeeKeeper.getScreen().updateActivePanel(new BeeLabel("RowSet is empty"));
     } else {
-      BeeKeeper.getUi().showGrid(rs);
+      BeeKeeper.getScreen().showGrid(rs);
     }
-    HasWidgets panel = BeeKeeper.getUi().getActivePanel();
+    HasWidgets panel = BeeKeeper.getScreen().getActivePanel();
 
     FlowPanel buttons = new FlowPanel();
     buttons.add(new BeeButton("NEW", self(), Stages.INSERT.name()));
@@ -332,6 +332,6 @@ public class RowSetService extends CompositeService {
     Split root = new Split();
     root.addNorth(buttons, 25);
     root.add(panel.iterator().next(), ScrollBars.BOTH);
-    BeeKeeper.getUi().updateActiveQuietly(root, ScrollBars.BOTH);
+    BeeKeeper.getScreen().updateActiveQuietly(root, ScrollBars.BOTH);
   }
 }

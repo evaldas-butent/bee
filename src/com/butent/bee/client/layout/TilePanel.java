@@ -156,7 +156,7 @@ public class TilePanel extends Split {
   @Override
   public void onBrowserEvent(Event ev) {
     if (ev.getTypeInt() == Event.ONMOUSEDOWN && isLeaf()) {
-      BeeKeeper.getUi().activatePanel(this);
+      BeeKeeper.getScreen().activatePanel(this);
       ev.stopPropagation();
     }
     super.onBrowserEvent(ev);

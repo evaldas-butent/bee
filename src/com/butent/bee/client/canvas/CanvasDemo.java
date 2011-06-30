@@ -57,7 +57,7 @@ public class CanvasDemo {
     backBuffer.setCoordinateSpaceWidth(width);
     backBuffer.setCoordinateSpaceHeight(height);
 
-    BeeKeeper.getUi().updateActivePanel(canvas);
+    BeeKeeper.getScreen().updateActivePanel(canvas);
 
     context = canvas.getContext2d();
     backBufferContext = backBuffer.getContext2d();

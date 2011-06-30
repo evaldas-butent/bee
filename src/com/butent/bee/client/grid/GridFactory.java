@@ -306,7 +306,7 @@ public class GridFactory {
       if (isGridDescriptionCached(name)) {
         GridDescription gridDescription = descriptionCache.get(gridDescriptionKey(name));
         if (gridDescription != null) {
-          BeeKeeper.getUi().showGrid(gridDescription.getInfo());
+          BeeKeeper.getScreen().showGrid(gridDescription.getInfo());
           return;
         } else {
           BeeKeeper.getLog().warning("grid", name, "description was not found");
@@ -324,7 +324,7 @@ public class GridFactory {
       info.add(new Property(entry.getKey(), cc));
     }
 
-    BeeKeeper.getUi().showGrid(info, "Grid Name", "Column Count");
+    BeeKeeper.getScreen().showGrid(info, "Grid Name", "Column Count");
   }
 
   public static Widget simpleGrid(Object data, String... columnLabels) {

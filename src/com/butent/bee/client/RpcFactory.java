@@ -76,7 +76,7 @@ public class RpcFactory implements Module {
   }
 
   public String getDsn() {
-    return BeeKeeper.getUi().getDsn();
+    return BeeKeeper.getScreen().getDsn();
   }
 
   public String getName() {

@@ -89,7 +89,7 @@ public class AsyncCallback implements RequestCallback {
           data = UserData.restore((String) response.getResponse());
         }
         BeeKeeper.getUser().setUserData(data);
-        BeeKeeper.getUi().updateSignature();
+        BeeKeeper.getScreen().updateSignature();
       }
     }
 
@@ -262,7 +262,7 @@ public class AsyncCallback implements RequestCallback {
   }
 
   private void dispatchResource(String src) {
-    BeeKeeper.getUi().showResource(new BeeResource(src));
+    BeeKeeper.getScreen().showResource(new BeeResource(src));
   }
 
   private void dispatchResponse(String svc, int cc, JsArrayString arr) {
@@ -276,7 +276,7 @@ public class AsyncCallback implements RequestCallback {
       }
 
       ResponseData table = new ResponseData(arr, columns);
-      BeeKeeper.getUi().showGrid(table);
+      BeeKeeper.getScreen().showGrid(table);
 
     } else {
       for (int i = 0; i < arr.length(); i++) {

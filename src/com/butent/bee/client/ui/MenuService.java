@@ -90,8 +90,8 @@ public class MenuService extends CompositeService {
 
               if (response.hasResponse()) {
                 UiComponent c = UiComponent.restore((String) response.getResponse());
-                BeeKeeper.getUi().updateActivePanel(buidComponentTree(c));
-                BeeKeeper.getUi().updateMenu((Widget) c.createInstance());
+                BeeKeeper.getScreen().updateActivePanel(buidComponentTree(c));
+                BeeKeeper.getScreen().updateMenu((Widget) c.createInstance());
               }
             }
           });

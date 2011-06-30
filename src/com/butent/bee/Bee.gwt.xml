@@ -7,6 +7,8 @@
   
   <inherits name='com.google.common.collect.Collect'/>
   
+  <inherits name='com.butent.bee.Screen'/>
+  
   <set-property name='gwt.logging.popupHandler' value='DISABLED'/>
   <set-property name='gwt.logging.consoleHandler' value='DISABLED'/>
   <set-property name='gwt.logging.developmentModeHandler' value='DISABLED'/>
@@ -27,7 +29,26 @@
 <!--   <set-property-fallback name='locale' value='en'/> -->
 
   <entry-point class='com.butent.bee.client.Bee'/>
-  
+
+  <replace-with class='com.butent.bee.client.screen.ScreenImpl'>
+    <when-type-is class='com.butent.bee.client.Screen'/>
+  </replace-with>
+
+  <replace-with class='com.butent.bee.client.screen.Mobile'>
+    <when-type-is class='com.butent.bee.client.Screen'/>
+    <when-property-is name='screen' value='mobile'/> 
+  </replace-with>
+
+  <replace-with class='com.butent.bee.client.screen.Tablet'>
+    <when-type-is class='com.butent.bee.client.Screen'/>
+    <when-property-is name='screen' value='tablet'/> 
+  </replace-with>
+
+  <replace-with class='com.butent.bee.client.screen.Hello'>
+    <when-type-is class='com.butent.bee.client.Screen'/>
+    <when-property-is name='screen' value='hello'/> 
+  </replace-with>
+   
   <source path='client'/>
   <source path='shared'/>
   <super-source path='translatable'/> 

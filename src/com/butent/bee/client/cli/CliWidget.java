@@ -60,7 +60,7 @@ public class CliWidget extends InputText {
     } else if (z.equals("browser") || z.startsWith("wind")) {
       CliWorker.showBrowser(arr);
     } else if (z.equals("cache")) {
-      BeeKeeper.getUi().showGrid(Global.getCache().getInfo());
+      BeeKeeper.getScreen().showGrid(Global.getCache().getInfo());
     } else if (z.equals("canvas")) {
       new CanvasDemo().start();
     } else if (BeeUtils.inList(z, "center", "east", "north", "south", "screen", "west")) {
@@ -140,7 +140,7 @@ public class CliWidget extends InputText {
     } else if (z.startsWith("serv") || z.startsWith("sys")) {
       BeeKeeper.getRpc().invoke("systemInfo");
     } else if (z.equals("settings")) {
-      BeeKeeper.getUi().showGrid(Settings.getSettings());
+      BeeKeeper.getScreen().showGrid(Settings.getSettings());
     } else if (z.equals("size") && arr.length >= 2) {
       CliWorker.showSize(arr);
     } else if (z.equals("slider")) {
@@ -156,9 +156,9 @@ public class CliWidget extends InputText {
                 BeeRowSet rs = BeeRowSet.restore((String) response.getResponse());
 
                 if (rs.isEmpty()) {
-                  BeeKeeper.getUi().updateActivePanel(new BeeLabel("RowSet is empty"));
+                  BeeKeeper.getScreen().updateActivePanel(new BeeLabel("RowSet is empty"));
                 } else {
-                  BeeKeeper.getUi().showGrid(rs);
+                  BeeKeeper.getScreen().showGrid(rs);
                 }
               }
             }

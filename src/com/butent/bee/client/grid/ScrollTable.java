@@ -1089,7 +1089,7 @@ public class ScrollTable extends ComplexPanel implements
 
   @Override
   protected void onUnload() {
-    if (!BeeKeeper.getUi().isTemporaryDetach()) {
+    if (!BeeKeeper.getScreen().isTemporaryDetach()) {
       EventUtils.removeDndHandler(dndWorker);
     }
     super.onUnload();

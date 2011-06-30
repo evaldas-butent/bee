@@ -33,11 +33,11 @@ public class ResponseHandler {
     }
 
     if (pc <= 1) {
-      BeeKeeper.getUi().showResource(resources[0]);
+      BeeKeeper.getScreen().showResource(resources[0]);
       return;
     }
 
-    int h = BeeKeeper.getUi().getActivePanelHeight();
+    int h = BeeKeeper.getScreen().getActivePanelHeight();
 
     Split panel = new Split();
     panel.addNorth(new ResourceEditor(resources[0]), h / pc);
@@ -49,7 +49,7 @@ public class ResponseHandler {
       panel.add(new ResourceEditor(resources[1]));
     }
 
-    BeeKeeper.getUi().updateActivePanel(panel);
+    BeeKeeper.getScreen().updateActivePanel(panel);
   }
 
   public static void unicodeTest(RpcInfo info, String respTxt, int mc, ResponseMessage[] messages) {

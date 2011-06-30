@@ -97,8 +97,8 @@ public class FormService extends CompositeService {
 
                   if (response.hasResponse()) {
                     UiComponent c = UiComponent.restore((String) response.getResponse());
-                    BeeKeeper.getUi().updateMenu(MenuService.buidComponentTree(c));
-                    BeeKeeper.getUi()
+                    BeeKeeper.getScreen().updateMenu(MenuService.buidComponentTree(c));
+                    BeeKeeper.getScreen()
                         .updateActivePanel((Panel) c.createInstance(), ScrollBars.BOTH);
                   }
                 }

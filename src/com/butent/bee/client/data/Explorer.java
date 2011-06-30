@@ -65,7 +65,7 @@ public class Explorer implements HandlesDeleteEvents, RowInsertEvent.Handler {
     @Override
     public void execute() {
       if (getDataInfoWidget() == null) {
-        BeeKeeper.getUi().updateData(new BeeImage(Global.getImages().loading()), false);
+        BeeKeeper.getScreen().updateData(new BeeImage(Global.getImages().loading()), false);
       }
       loadDataInfo();
     }
@@ -127,7 +127,7 @@ public class Explorer implements HandlesDeleteEvents, RowInsertEvent.Handler {
 
   public void showDataInfo() {
     if (getViews().isEmpty()) {
-      BeeKeeper.getUi().updateData(new BeeLabel("Data not available"), false);
+      BeeKeeper.getScreen().updateData(new BeeLabel("Data not available"), false);
       return;
     }
 
@@ -166,7 +166,7 @@ public class Explorer implements HandlesDeleteEvents, RowInsertEvent.Handler {
     });
     grid.setSelectionModel(selector);
 
-    BeeKeeper.getUi().updateData(grid, true);
+    BeeKeeper.getScreen().updateData(grid, true);
   }
 
   private DataInfo getDataInfo(String name) {
@@ -191,7 +191,7 @@ public class Explorer implements HandlesDeleteEvents, RowInsertEvent.Handler {
 
     GridFactory.getGrid(dataInfo.getName(), new GridFactory.GridCallback() {
       public void onFailure(String[] reason) {
-        BeeKeeper.getUi().notifyWarning(reason);
+        BeeKeeper.getScreen().notifyWarning(reason);
         getInitialRowSet(dataInfo, null);
       }
 
@@ -238,6 +238,6 @@ public class Explorer implements HandlesDeleteEvents, RowInsertEvent.Handler {
   private void showView(DataInfo dataInfo, BeeRowSet rowSet, boolean async,
       GridDescription gridDescription) {
     GridPresenter presenter = new GridPresenter(dataInfo, rowSet, async, gridDescription);
-    BeeKeeper.getUi().updateActivePanel(presenter.getWidget());
+    BeeKeeper.getScreen().updateActivePanel(presenter.getWidget());
   }
 }
