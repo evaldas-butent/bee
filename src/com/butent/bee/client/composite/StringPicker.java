@@ -41,6 +41,10 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Manages a user interface component for selecting text values from a cell list.
+ */
+
 public class StringPicker extends CellList<String> implements Editor, HasItems,
     BlurHandler {
 
@@ -60,7 +64,7 @@ public class StringPicker extends CellList<String> implements Editor, HasItems,
       getBlurHandlers().remove(this);
     }
   }
-  
+
   /**
    * Manages a single cell in a string picker component.
    */
@@ -75,7 +79,7 @@ public class StringPicker extends CellList<String> implements Editor, HasItems,
       }
     }
   }
-  
+
   public static String displaySeparator = ";";
 
   private static final RenderTemplate RENDER_TEMPLATE = GWT.create(RenderTemplate.class);
@@ -89,12 +93,12 @@ public class StringPicker extends CellList<String> implements Editor, HasItems,
   private boolean nullable = true;
 
   private boolean editing = false;
-  
+
   private final Map<HandlerRegistration, BlurHandler> blurHandlers = Maps.newHashMap();
   private HandlerRegistration blurRegistration = null;
-  
+
   private boolean selectionPending = false;
-  
+
   public StringPicker() {
     super(new DefaultCell());
 
@@ -272,7 +276,7 @@ public class StringPicker extends CellList<String> implements Editor, HasItems,
   public String validate() {
     return null;
   }
-  
+
   @Override
   protected boolean isKeyboardNavigationSuppressed() {
     return true;
@@ -341,7 +345,7 @@ public class StringPicker extends CellList<String> implements Editor, HasItems,
       return null;
     }
   }
-  
+
   private String getItemData(String item) {
     return BeeUtils.ifString(BeeUtils.getPrefix(item, displaySeparator), item);
   }
@@ -360,7 +364,7 @@ public class StringPicker extends CellList<String> implements Editor, HasItems,
     }
     return index;
   }
-  
+
   private String getItemValue(int index) {
     return getItemData(getVisibleItem(index));
   }

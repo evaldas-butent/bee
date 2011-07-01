@@ -22,12 +22,16 @@ import com.butent.bee.shared.State;
 import com.butent.bee.shared.ui.EditorAction;
 import com.butent.bee.shared.utils.BeeUtils;
 
+/**
+ * Implements a component used for making changes to multiple lines of text.
+ */
+
 public class TextEditor extends Absolute implements Editor, HasTextDimensions {
 
   private final InputArea area;
   private final String acceptId;
   private final String noesId;
-  
+
   public TextEditor() {
     super();
     this.area = new InputArea();
@@ -36,15 +40,15 @@ public class TextEditor extends Absolute implements Editor, HasTextDimensions {
     BeeImage accept = new BeeImage(Global.getImages().accept(), new EditorFactory.Accept(area));
     accept.addStyleName("bee-TextEditor-accept");
     this.acceptId = accept.getId();
-    
+
     BeeImage noes = new BeeImage(Global.getImages().noes(), new EditorFactory.Cancel(area));
     noes.addStyleName("bee-TextEditor-noes");
     this.noesId = noes.getId();
-    
+
     add(area);
     add(accept);
     add(noes);
-    
+
     addStyleName("bee-TextEditor");
     sinkEvents(Event.ONMOUSEDOWN);
   }
