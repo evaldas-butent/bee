@@ -7,7 +7,15 @@ import com.butent.bee.shared.data.BeeColumn;
 
 import java.util.List;
 
+/**
+ * Gets handler type for ready for insertion event and registers the handler.
+ */
+
 public class ReadyForInsertEvent extends GwtEvent<ReadyForInsertEvent.Handler> {
+
+  /**
+   * Requires implementing classes to have a method for ready for insertion event.
+   */
 
   public interface Handler extends EventHandler {
     void onReadyForInsert(ReadyForInsertEvent event);
@@ -18,7 +26,7 @@ public class ReadyForInsertEvent extends GwtEvent<ReadyForInsertEvent.Handler> {
   public static Type<Handler> getType() {
     return TYPE;
   }
-  
+
   private final List<BeeColumn> columns;
   private final List<String> values;
 

@@ -48,6 +48,10 @@ import java.util.Map;
 public class StringPicker extends CellList<String> implements Editor, HasItems,
     BlurHandler {
 
+  /**
+   * Contains {@code SafeHtml} templates for string picker screen presentations.
+   */
+
   public interface RenderTemplate extends SafeHtmlTemplates {
     @Template("<div id=\"{0}\" class=\"{1}\" tabindex=\"{2}\">{3}</div>")
     SafeHtml divItem(String id, String classes, int tabIndex, SafeHtml cellContent);

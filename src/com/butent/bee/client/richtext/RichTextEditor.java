@@ -20,12 +20,16 @@ import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.edit.AdjustmentListener;
-import com.butent.bee.client.view.edit.EditStopEvent.Handler;
 import com.butent.bee.client.view.edit.EditStopEvent;
+import com.butent.bee.client.view.edit.EditStopEvent.Handler;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.ui.EditorAction;
 import com.butent.bee.shared.utils.BeeUtils;
+
+/**
+ * Enables usage of formatted text editor user interface component.
+ */
 
 public class RichTextEditor extends Flow implements Editor, AdjustmentListener,
     NativePreviewHandler {
@@ -38,7 +42,7 @@ public class RichTextEditor extends Flow implements Editor, AdjustmentListener,
   private boolean editing = false;
 
   private HandlerRegistration previewRegistration = null;
-  
+
   public RichTextEditor() {
     super();
     this.area = new RichTextArea();
@@ -122,7 +126,7 @@ public class RichTextEditor extends Flow implements Editor, AdjustmentListener,
 
   public void setEditing(boolean editing) {
     this.editing = editing;
-    
+
     if (editing) {
       if (getPreviewRegistration() == null) {
         setPreviewRegistration(Event.addNativePreviewHandler(this));
@@ -182,7 +186,7 @@ public class RichTextEditor extends Flow implements Editor, AdjustmentListener,
       setPreviewRegistration(null);
     }
   }
-  
+
   private RichTextArea getArea() {
     return area;
   }

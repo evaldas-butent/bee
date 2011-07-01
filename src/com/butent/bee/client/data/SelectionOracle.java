@@ -31,11 +31,24 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.Collection;
 import java.util.List;
 
+/**
+ * Provides suggestions data management functionality for data changing events.
+ */
+
 public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
+
+  /**
+   * Requires implementing classes to have a method to handle suggestions events with requests and
+   * responses.
+   */
 
   public interface Callback {
     void onSuggestionsReady(Request request, Response response);
   }
+
+  /**
+   * Contains fields and methods to handle suggestion related data queries.
+   */
 
   public static class Request {
 
@@ -85,6 +98,10 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
     }
   }
 
+  /**
+   * Contains fields and methods to handle suggestion related data responses.
+   */
+
   public static class Response {
 
     private final Collection<Suggestion> suggestions;
@@ -103,6 +120,10 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
       return moreSuggestions;
     }
   }
+
+  /**
+   * Manages suggestion columns and their searchability.
+   */
 
   public static class SelectionColumn {
 
@@ -127,6 +148,10 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
     }
   }
 
+  /**
+   * Handles a single row of suggestions.
+   */
+
   public static class Suggestion {
 
     private final String displayString;
@@ -146,9 +171,18 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
     }
   }
 
+  /**
+   * Contains a list of possible caching settings for selections, from none to full.
+   */
+
   private enum Caching {
     NONE, QUERY, FULL
   }
+
+  /**
+   * Manages suggestion requests, which are not yet processed, stores their request and callback
+   * information.
+   */
 
   private class PendingRequest {
     private final Request request;

@@ -34,7 +34,16 @@ import com.butent.bee.client.widget.Toggle;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.utils.BeeUtils;
 
+/**
+ * Handles a rich text editor toolbar with all the buttons for formatting the text.
+ */
+
 public class RichTextToolbar extends Vertical {
+
+  /**
+   * Contains a list of necessary methods for text editing functions (bold, italic, justify,
+   * hyperlink etc.
+   */
 
   public interface Images extends ClientBundle {
 
@@ -181,7 +190,7 @@ public class RichTextToolbar extends Vertical {
     }
   }
 
-  private static final RichTextArea.FontSize[] fontSizesConstants = new RichTextArea.FontSize[]{
+  private static final RichTextArea.FontSize[] fontSizesConstants = new RichTextArea.FontSize[] {
       RichTextArea.FontSize.XX_SMALL, RichTextArea.FontSize.X_SMALL,
       RichTextArea.FontSize.SMALL, RichTextArea.FontSize.MEDIUM,
       RichTextArea.FontSize.LARGE, RichTextArea.FontSize.X_LARGE,
@@ -223,13 +232,13 @@ public class RichTextToolbar extends Vertical {
   private BeeListBox foreColors;
   private BeeListBox fonts;
   private BeeListBox fontSizes;
-  
+
   private final BeeCommand accept;
 
   public RichTextToolbar(Editor editor, RichTextArea richText) {
     this.area = richText;
     this.formatter = richText.getFormatter();
-    
+
     this.accept = new EditorFactory.Accept(editor);
 
     firstRow.add(new BeeImage(Global.getImages().save(), this.accept));
@@ -247,7 +256,7 @@ public class RichTextToolbar extends Vertical {
     firstRow.add(superscript = createToggle(images.superscript(), "Toggle Superscript"));
     firstRow.add(strikethrough = createToggle(images.strikeThrough(), "Toggle Strikethrough"));
     firstRow.add(createSpacer());
-    
+
     firstRow.add(justifyLeft = createButton(images.justifyLeft(), "Left Justify"));
     firstRow.add(justifyCenter = createButton(images.justifyCenter(), "Center"));
     firstRow.add(justifyRight = createButton(images.justifyRight(), "Right Justify"));
@@ -277,7 +286,7 @@ public class RichTextToolbar extends Vertical {
     add(secondRow);
     firstRow.setStyleName("bee-RichTextToolbar-row");
     secondRow.setStyleName("bee-RichTextToolbar-row");
-    
+
     richText.addKeyDownHandler(handler);
     richText.addKeyUpHandler(handler);
     richText.addClickHandler(handler);
@@ -345,7 +354,7 @@ public class RichTextToolbar extends Vertical {
     lb.addItem("XX-Large");
     return lb;
   }
-  
+
   private Widget createSpacer() {
     return createSpacer(5.0, Unit.PX);
   }

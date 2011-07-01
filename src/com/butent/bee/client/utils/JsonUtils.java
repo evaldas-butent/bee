@@ -6,20 +6,24 @@ import com.google.gwt.json.client.JSONValue;
 
 import com.butent.bee.shared.utils.BeeUtils;
 
+/**
+ * Contains methods for transforming data into and from {@code JSON} type data structure.
+ */
+
 public class JsonUtils {
-  
+
   public static String getString(JSONObject obj, String key) {
     if (obj == null || BeeUtils.isEmpty(key)) {
       return null;
     }
     return toString(obj.get(key));
   }
-  
+
   public static boolean isEmpty(JSONValue value) {
     if (value == null) {
       return true;
     }
-    
+
     if (value.isBoolean() != null) {
       return !value.isBoolean().booleanValue();
     } else if (value.isNumber() != null) {
@@ -45,12 +49,12 @@ public class JsonUtils {
     }
     return value.isObject();
   }
-  
+
   public static String toString(JSONValue value) {
     if (value == null) {
       return null;
     }
-  
+
     if (value.isString() != null) {
       return value.isString().stringValue();
     } else if (value.isBoolean() != null) {
@@ -61,7 +65,7 @@ public class JsonUtils {
       return null;
     }
   }
-  
+
   private JsonUtils() {
   }
 }

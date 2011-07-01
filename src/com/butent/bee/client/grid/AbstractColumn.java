@@ -9,18 +9,23 @@ import com.butent.bee.shared.data.value.HasValueType;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.ui.ColumnDescription.ColType;
 
+/**
+ * Is an abstract class for column classes, requires to have methods for get column type, value type
+ * and value.
+ */
+
 public abstract class AbstractColumn<C> extends Column<IsRow, C> implements HasValueType {
 
   public AbstractColumn(Cell<C> cell) {
     super(cell);
   }
-  
+
   public abstract ColType getColType();
 
   public abstract String getString(Context context, IsRow row);
 
   @Override
   public abstract C getValue(IsRow row);
-  
+
   public abstract ValueType getValueType();
 }

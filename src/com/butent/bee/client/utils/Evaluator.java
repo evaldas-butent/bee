@@ -166,6 +166,11 @@ public class Evaluator extends Calculation {
     }
   }
 
+  /**
+   * Requires implementing classes to have methods for getting and setting value change related
+   * information like old and new values, row and column value etc.
+   */
+
   public interface Parameters {
 
     JavaScriptObject getCellValues();

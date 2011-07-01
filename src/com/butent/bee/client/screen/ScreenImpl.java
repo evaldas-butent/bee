@@ -22,8 +22,8 @@ import com.butent.bee.client.dialog.Notification;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.dom.StyleUtils.ScrollBars;
-import com.butent.bee.client.grid.TextCellType;
 import com.butent.bee.client.grid.FlexTable;
+import com.butent.bee.client.grid.TextCellType;
 import com.butent.bee.client.layout.BeeLayoutPanel;
 import com.butent.bee.client.layout.BlankTile;
 import com.butent.bee.client.layout.Complex;
@@ -55,7 +55,7 @@ import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 /**
- * default (desktop) Screen implementation.
+ * Handles default (desktop) screen implementation.
  */
 
 public class ScreenImpl implements Screen {
@@ -99,7 +99,7 @@ public class ScreenImpl implements Screen {
   private final String elDsn = "el-data-source";
   private final String elGrid = "el-grid-type";
   private final String elCell = "el-cell-type";
-  
+
   private Notification notification = null;
 
   public ScreenImpl() {
@@ -132,19 +132,19 @@ public class ScreenImpl implements Screen {
     Assert.notNull(view, "closeView: view is null");
     Widget widget = view.asWidget();
     Assert.notNull(widget, "closeView: view widget is null");
-    
+
     TilePanel panel = getPanel(widget);
     if (panel == null) {
       notifyWarning("closeView: panel not found");
       return;
     }
-    
+
     if (panel != getActivePanel()) {
       activatePanel(panel);
     }
     closePanel();
   }
-  
+
   public void end() {
   }
 
@@ -327,7 +327,7 @@ public class ScreenImpl implements Screen {
 
     setScreenPanel(p);
   }
-  
+
   protected HasWidgets getDataPanel() {
     return dataPanel;
   }
@@ -397,7 +397,7 @@ public class ScreenImpl implements Screen {
 
     BeeImage bee = new BeeImage(Global.getImages().bee());
     panel.addRightBottom(bee, 10, 1);
-    
+
     setNotification(new Notification());
     panel.addRightTop(getNotification(), 80, 0);
 
@@ -601,7 +601,7 @@ public class ScreenImpl implements Screen {
 
     setActivePanel(null);
   }
-  
+
   private String getElCell() {
     return elCell;
   }
@@ -630,7 +630,7 @@ public class ScreenImpl implements Screen {
     }
     return null;
   }
-  
+
   private boolean isRootTile(TilePanel p) {
     if (p == null) {
       return false;

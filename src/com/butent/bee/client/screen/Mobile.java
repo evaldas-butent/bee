@@ -34,8 +34,12 @@ import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
+/**
+ * Handles mobile phone size screen implementation.
+ */
+
 public class Mobile extends ScreenImpl {
-  
+
   private class OpenViewCommand extends BeeCommand {
     private final DataInfo dataInfo;
 
@@ -51,7 +55,7 @@ public class Mobile extends ScreenImpl {
   }
 
   private Widget loadingWidget = null;
-  
+
   public Mobile() {
     super();
   }
@@ -145,7 +149,7 @@ public class Mobile extends ScreenImpl {
 
     CliWidget cli = new CliWidget();
     p.addLeftWidthTop(cli, 3, Unit.PX, 40, Unit.PCT, 3, Unit.PX);
-    
+
     Horizontal hor = new Horizontal();
 
     hor.add(new BeeButton(Global.constants.login(), Service.GET_LOGIN, Stage.STAGE_GET_PARAMETERS));
@@ -158,13 +162,13 @@ public class Mobile extends ScreenImpl {
     updateSignature();
 
     hor.add(new BeeButton(Global.constants.logout(), Service.LOGOUT));
-    
+
     p.addLeftRightTop(hor, 43, Unit.PCT, 80, Unit.PX, 1, Unit.PX);
-    
+
     final Toggle log = new Toggle("Hide Log", "Show Log");
     StyleUtils.setFontSize(log, FontSize.SMALL);
     StyleUtils.setHorizontalPadding(log, 2);
-    
+
     log.addClickHandler(new ClickHandler() {
       public void onClick(ClickEvent event) {
         if (log.isDown()) {
@@ -197,13 +201,13 @@ public class Mobile extends ScreenImpl {
   private Widget getLoadingWidget() {
     return loadingWidget;
   }
-  
+
   private void loadDataInfo() {
     final HasWidgets panel = getDataPanel();
     panel.clear();
     panel.add(new BeeLabel("Loading data info..."));
     panel.add(ensureLoadingWidget());
-    
+
     BeeKeeper.getRpc().makeGetRequest(Service.GET_VIEW_LIST, new ResponseCallback() {
       @Override
       public void onResponse(ResponseObject response) {
@@ -220,7 +224,7 @@ public class Mobile extends ScreenImpl {
       }
     });
   }
-  
+
   private void setLoadingWidget(Widget loadingWidget) {
     this.loadingWidget = loadingWidget;
   }
