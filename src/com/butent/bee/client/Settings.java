@@ -45,6 +45,15 @@ public class Settings {
     }
   }
 
+  public static long getPropertyLong(String name) {
+    String value = getProperty(name);
+    if (BeeUtils.isLong(value)) {
+      return BeeUtils.toLong(value);
+    } else {
+      return BeeConst.UNDEF;
+    }
+  }
+  
   public static Map<String, String> getSettings() {
     Map<String, String> result = Maps.newHashMap();
     if (checkSettings()) {
@@ -55,6 +64,10 @@ public class Settings {
     return result;
   }
   
+  public static long getStartMillis() {
+    return getPropertyLong("startMillis");
+  }
+
   public static String getVersion() {
     return getProperty("version");
   }

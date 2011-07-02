@@ -138,6 +138,9 @@ body, select {
   background: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#fcf), to(#ffc));
   background: -moz-linear-gradient(top, yellow, greenyellow);
 }
+.bee-Button:focus {
+  background: LightCyan;
+}
 
 .bee-LayoutContainer > .bee-InputArea {
   width: 100%;

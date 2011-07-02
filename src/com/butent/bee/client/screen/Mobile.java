@@ -3,7 +3,9 @@ package com.butent.bee.client.screen;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.touch.client.TouchScroller;
 import com.google.gwt.user.client.ui.HasWidgets;
+import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
@@ -16,10 +18,10 @@ import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.dom.StyleUtils.FontSize;
 import com.butent.bee.client.dom.StyleUtils.ScrollBars;
 import com.butent.bee.client.grid.TextCellType;
-import com.butent.bee.client.layout.Absolute;
 import com.butent.bee.client.layout.BeeLayoutPanel;
 import com.butent.bee.client.layout.Complex;
 import com.butent.bee.client.layout.Horizontal;
+import com.butent.bee.client.layout.Scroll;
 import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.utils.BeeCommand;
 import com.butent.bee.client.widget.BeeButton;
@@ -68,6 +70,19 @@ public class Mobile extends ScreenImpl {
   public void start() {
     createUi();
     loadDataInfo();
+    
+    notifyInfo("Start Time (ms)",
+        BeeUtils.toString(System.currentTimeMillis() - Settings.getStartMillis()));
+    notifyInfo("Touch Supported", BeeUtils.toString(TouchScroller.isSupported()));
+  }
+
+  @Override
+  public void updateActivePanel(Widget w, ScrollBars scroll) {
+    if (scroll == null || scroll == ScrollBars.NONE || w instanceof ScrollPanel) {
+      super.updateActivePanel(w, scroll);
+    } else {
+      super.updateActivePanel(new Scroll(w), ScrollBars.NONE);
+    }
   }
 
   @Override
@@ -133,7 +148,7 @@ public class Mobile extends ScreenImpl {
   protected Widget initNorth() {
     Complex p = new Complex();
 
-    Absolute data = new Absolute();
+    Horizontal data = new Horizontal();
     setDataPanel(data);
     p.addLeftTop(data, 1, Unit.EM, 4, Unit.PX);
 

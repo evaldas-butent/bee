@@ -34,8 +34,7 @@ import java.util.Collection;
  * Implements a list box user interface component that presents a list of choices to the user.
  */
 
-public class BeeListBox extends ListBox implements Editor, HasItems,
-    HasBeeChangeHandler {
+public class BeeListBox extends ListBox implements Editor, HasItems, HasBeeChangeHandler {
   
   public static int changeTimeout = 200;
 

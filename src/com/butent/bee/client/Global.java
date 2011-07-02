@@ -321,7 +321,8 @@ public class Global implements Module {
     createVar(Service.VAR_PACKAGE_LIST, "Default Packages");
 
     createVar(Service.VAR_LOGIN, "Login");
-    createVar(Service.VAR_PASSWORD, "Password");
+    createVar(Service.VAR_PASSWORD, "Password", BeeType.STRING, BeeConst.STRING_EMPTY,
+        BeeWidget.PASSWORD);
 
     createVar(Service.VAR_XML_SOURCE, "source");
     createVar(Service.VAR_XML_TRANSFORM, "transform");

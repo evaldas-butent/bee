@@ -1,6 +1,7 @@
 package com.butent.bee.client.dom;
 
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
 import com.google.gwt.dom.client.ButtonElement;
@@ -22,6 +23,7 @@ import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.dom.client.Style.Visibility;
 import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.user.client.DOM;
+import com.google.gwt.user.client.ui.Focusable;
 import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.HasOneWidget;
 import com.google.gwt.user.client.ui.HasWidgets;
@@ -741,6 +743,24 @@ public class DomUtils {
     return $doc.getElementsByName(name);
   }-*/;
 
+  public static List<Widget> getFocusableChildren(Widget parent) {
+    List<Widget> result = Lists.newArrayList();
+    if (parent == null) {
+      return result;
+    }
+
+    if (parent instanceof Focusable) {
+      result.add(parent);
+    } else if (parent instanceof HasOneWidget) {
+      result.addAll(getFocusableChildren(((HasOneWidget) parent).getWidget()));
+    } else if (parent instanceof HasWidgets) {
+      for (Widget child : (HasWidgets) parent) {
+        result.addAll(getFocusableChildren(child));
+      }
+    }
+    return result;
+  }
+  
   public static HeadElement getHead() {
     NodeList<Element> nodes = Document.get().getElementsByTagName(TAG_HEAD);
     if (nodes != null && nodes.getLength() > 0) {
@@ -1109,16 +1129,17 @@ public class DomUtils {
     if (root instanceof HasOneWidget) {
       return getWidget(((HasOneWidget) root).getWidget(), elem);
     }
+    if (!(root instanceof HasWidgets)) {
+      return root;
+    }
 
     Widget ret = null;
-    if (root instanceof HasWidgets) {
-      Widget found;
-      for (Widget child : (HasWidgets) root) {
-        found = getWidget(child, elem);
-        if (found != null) {
-          ret = found;
-          break;
-        }
+    Widget found;
+    for (Widget child : (HasWidgets) root) {
+      found = getWidget(child, elem);
+      if (found != null) {
+        ret = found;
+        break;
       }
     }
     return ret;

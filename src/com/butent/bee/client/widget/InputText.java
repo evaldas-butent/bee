@@ -1,10 +1,12 @@
 package com.butent.bee.client.widget;
 
 import com.google.common.base.CharMatcher;
+import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.InputElement;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.Event;
-import com.google.gwt.user.client.ui.TextBox;
+import com.google.gwt.user.client.ui.TextBoxBase;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.dom.DomUtils;
@@ -23,7 +25,7 @@ import com.butent.bee.shared.utils.BeeUtils;
  * Implements a text box that allows a single line of text to be entered.
  */
 
-public class InputText extends TextBox implements Editor, HasBeeValueChangeHandler<String>,
+public class InputText extends TextBoxBase implements Editor, HasBeeValueChangeHandler<String>,
     HasCharacterFilter {
 
   private HasStringValue source = null;
@@ -35,7 +37,7 @@ public class InputText extends TextBox implements Editor, HasBeeValueChangeHandl
   private boolean editing = false;
 
   public InputText() {
-    super();
+    super(Document.get().createTextInputElement());
     init();
   }
 
@@ -46,14 +48,7 @@ public class InputText extends TextBox implements Editor, HasBeeValueChangeHandl
 
   public InputText(HasStringValue source) {
     this();
-
-    if (source != null) {
-      setSource(source);
-      String v = source.getString();
-      if (!BeeUtils.isEmpty(v)) {
-        setValue(v);
-      }
-    }
+    initSource(source);
   }
 
   public boolean acceptChar(char charCode) {
@@ -80,6 +75,10 @@ public class InputText extends TextBox implements Editor, HasBeeValueChangeHandl
     return DomUtils.getId(this);
   }
 
+  public int getMaxLength() {
+    return getInputElement().getMaxLength();
+  }
+
   public String getNormalizedValue() {
     String v = getValue();
     if (BeeUtils.isEmpty(v) && isNullable()) {
@@ -91,6 +90,10 @@ public class InputText extends TextBox implements Editor, HasBeeValueChangeHandl
 
   public HasStringValue getSource() {
     return source;
+  }
+
+  public int getVisibleLength() {
+    return getInputElement().getSize();
   }
 
   public boolean handlesKey(int keyCode) {
@@ -133,12 +136,20 @@ public class InputText extends TextBox implements Editor, HasBeeValueChangeHandl
     DomUtils.setId(this, id);
   }
 
+  public void setMaxLength(int length) {
+    getInputElement().setMaxLength(length);
+  }
+
   public void setNullable(boolean nullable) {
     this.nullable = nullable;
   }
 
   public void setSource(HasStringValue source) {
     this.source = source;
+  }
+  
+  public void setVisibleLength(int length) {
+    getInputElement().setSize(length);
   }
 
   public void startEdit(String oldValue, char charCode, EditorAction onEntry) {
@@ -161,13 +172,27 @@ public class InputText extends TextBox implements Editor, HasBeeValueChangeHandl
   protected String getDefaultIdPrefix() {
     return "txt";
   }
-
+  
   protected String getDefaultStyleName() {
     return "bee-InputText";
   }
 
+  protected void initSource(HasStringValue src) {
+    if (src != null) {
+      setSource(src);
+      String v = src.getString();
+      if (!BeeUtils.isEmpty(v)) {
+        setValue(v);
+      }
+    }
+  }
+
   private void addDefaultHandlers() {
     BeeKeeper.getBus().addStringVch(this);
+  }
+
+  private InputElement getInputElement() {
+    return getElement().cast();
   }
 
   private void init() {

@@ -4520,7 +4520,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
 
   private void updateOrder(String columnId, boolean hasModifiers) {
     Assert.notEmpty(columnId);
-    String source = getColumnSource(columnId);
+    String source = BeeUtils.ifString(getColumnSource(columnId), columnId);
 
     Order ord = getSortOrder();
     int size = ord.getSize();

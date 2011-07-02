@@ -1,11 +1,13 @@
 package com.butent.bee.client.event;
 
 import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.EventTarget;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.dom.client.Node;
 import com.google.gwt.dom.client.NodeList;
+import com.google.gwt.event.dom.client.HasNativeEvent;
 import com.google.gwt.event.logical.shared.CloseEvent;
 import com.google.gwt.media.dom.client.MediaError;
 import com.google.gwt.user.client.Event;
@@ -101,7 +103,24 @@ public class EventUtils {
     Assert.notNull(elem);
     elem.blur();
   }
+  
+  public static NativeEvent createKeyDown(int keyCode) {
+    return Document.get().createKeyDownEvent(false, false, false, false, keyCode);
+  }
 
+  public static NativeEvent createKeyPress(int charCode) {
+    return Document.get().createKeyPressEvent(false, false, false, false, charCode);
+  }
+  
+  public static NativeEvent createKeyUp(int keyCode) {
+    return Document.get().createKeyUpEvent(false, false, false, false, keyCode);
+  }
+
+  public static void eatEvent(HasNativeEvent ev) {
+    Assert.notNull(ev);
+    eatEvent(ev.getNativeEvent());
+  }  
+  
   public static void eatEvent(NativeEvent ev) {
     Assert.notNull(ev);
     ev.preventDefault();
@@ -115,6 +134,36 @@ public class EventUtils {
     return parent.isOrHasChild(Node.as(target));
   }
 
+  public static void fireKeyDown(Element target, int keyCode) {
+    Assert.notNull(target);
+    target.dispatchEvent(createKeyDown(keyCode));
+  }
+
+  public static void fireKeyDown(EventTarget target, int keyCode) {
+    Assert.notNull(target);
+    fireKeyDown(Element.as(target), keyCode);
+  }
+  
+  public static void fireKeyPress(Element target, int charCode) {
+    Assert.notNull(target);
+    target.dispatchEvent(createKeyPress(charCode));
+  }
+
+  public static void fireKeyPress(EventTarget target, int charCode) {
+    Assert.notNull(target);
+    fireKeyPress(Element.as(target), charCode);
+  }
+  
+  public static void fireKeyUp(Element target, int keyCode) {
+    Assert.notNull(target);
+    target.dispatchEvent(createKeyUp(keyCode));
+  }
+
+  public static void fireKeyUp(EventTarget target, int keyCode) {
+    Assert.notNull(target);
+    fireKeyUp(Element.as(target), keyCode);
+  }
+  
   public static void focus(Element elem) {
     Assert.notNull(elem);
     elem.focus();
@@ -143,6 +192,16 @@ public class EventUtils {
         "Type Int", getTypeInt(ev));
   }
 
+  public static Element getEventTargetElement(HasNativeEvent ev) {
+    Assert.notNull(ev);
+    return getEventTargetElement(ev.getNativeEvent());
+  }
+  
+  public static Element getEventTargetElement(NativeEvent ev) {
+    Assert.notNull(ev);
+    return Element.as(ev.getEventTarget());
+  }
+  
   public static String getEventTargetId(NativeEvent ev) {
     Assert.notNull(ev);
     EventTarget target = ev.getEventTarget();

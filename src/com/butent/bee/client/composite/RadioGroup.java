@@ -22,6 +22,7 @@ import java.util.List;
  * Enables to use a user interface component, consisting of a group of radio buttons.
  */
 public class RadioGroup extends Span implements HasService {
+
   public static int getValue(String name) {
     int v = BeeConst.SELECTION_UNKNOWN;
     if (BeeUtils.isEmpty(name)) {

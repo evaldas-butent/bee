@@ -99,6 +99,11 @@ public class EventManager implements Module {
     w.addChangeHandler(ensureVch());
   }
 
+  public boolean dispatchService(Stage stage, Event<?> event) {
+    Assert.notNull(stage);
+    return dispatchService(stage.getService(), stage.getStage(), event);
+  }
+  
   public boolean dispatchService(String svc, String stg, Event<?> event) {
     Assert.notEmpty(svc);
 

@@ -5,6 +5,9 @@
     <meta name="gwt:property" content="locale=en">
     <meta name="gwt:property" content="screen=mobile">
 
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="viewport" content="width=device-width, user-scalable=yes">
+
     <link type="text/css" rel="stylesheet" href="Bee.css">
     
     <style type="text/css">
@@ -19,7 +22,8 @@
       var BeeSettings = {
         version: "0.4.0.mobile",
         dsn: "pg",
-        gridType: "0"
+        gridType: 2,
+        startMillis: new Date().getTime()
       };
     </script>
     

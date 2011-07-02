@@ -13,6 +13,7 @@ import com.butent.bee.shared.HasService;
  */
 
 public class BeeRadioButton extends RadioButton implements HasId, HasService, HasCommand {
+  
   private BeeCommand command = null;
 
   public BeeRadioButton(String name) {
