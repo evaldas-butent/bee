@@ -280,7 +280,7 @@ public class ScreenImpl implements Screen {
     updatePanel(getMenuPanel(), w);
   }
 
-  public void updateSignature() {
+  public void updateSignature(boolean init) {
     if (getSignature() == null) {
       return;
     }
@@ -292,6 +292,47 @@ public class ScreenImpl implements Screen {
       usr = Global.constants.notLoggedIn();
     }
     getSignature().getElement().setInnerHTML(usr);
+  }
+
+  protected void closePanel() {
+    TilePanel op = getActivePanel();
+    Assert.notNull(op, "active panel not available");
+
+    if (!(op.getCenter() instanceof BlankTile)) {
+      deactivatePanel();
+      op.clear();
+      op.add(new BlankTile());
+      activatePanel(op);
+      return;
+    }
+
+    if (!(op.getParent() instanceof TilePanel)) {
+      return;
+    }
+
+    TilePanel parent = (TilePanel) op.getParent();
+    TilePanel np = null;
+
+    for (TilePanel w : parent.getPanels()) {
+      if (w != op) {
+        np = w;
+        break;
+      }
+    }
+
+    Assert.notNull(np, "sibling panel not found");
+
+    deactivatePanel();
+
+    setTemporaryDetach(true);
+    np.move(parent);
+    setTemporaryDetach(false);
+
+    while (parent.getCenter() instanceof TilePanel) {
+      parent = (TilePanel) parent.getCenter();
+    }
+
+    activatePanel(parent);
   }
 
   protected void createUi() {
@@ -442,7 +483,7 @@ public class ScreenImpl implements Screen {
     p.setWidgetHorizontalPosition(user, Layout.Alignment.END);
 
     setSignature(user);
-    updateSignature();
+    updateSignature(true);
 
     return p;
   }
@@ -507,47 +548,6 @@ public class ScreenImpl implements Screen {
 
   protected void setSignature(Widget signature) {
     this.signature = signature;
-  }
-
-  private void closePanel() {
-    TilePanel op = getActivePanel();
-    Assert.notNull(op, "active panel not available");
-
-    if (!(op.getCenter() instanceof BlankTile)) {
-      deactivatePanel();
-      op.clear();
-      op.add(new BlankTile());
-      activatePanel(op);
-      return;
-    }
-
-    if (!(op.getParent() instanceof TilePanel)) {
-      return;
-    }
-
-    TilePanel parent = (TilePanel) op.getParent();
-    TilePanel np = null;
-
-    for (TilePanel w : parent.getPanels()) {
-      if (w != op) {
-        np = w;
-        break;
-      }
-    }
-
-    Assert.notNull(np, "sibling panel not found");
-
-    deactivatePanel();
-
-    setTemporaryDetach(true);
-    np.move(parent);
-    setTemporaryDetach(false);
-
-    while (parent.getCenter() instanceof TilePanel) {
-      parent = (TilePanel) parent.getCenter();
-    }
-
-    activatePanel(parent);
   }
 
   private void createPanel(Direction direction) {

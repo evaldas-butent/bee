@@ -26,6 +26,13 @@ public class BeeButton extends Button implements HasId, HasService, HasStage, Ha
     init();
   }
 
+  public BeeButton(boolean addHandler) {
+    this();
+    if (addHandler) {
+      addDefaultHandler();
+    }
+  }
+  
   public BeeButton(Element element) {
     super(element);
     init();
@@ -41,7 +48,7 @@ public class BeeButton extends Button implements HasId, HasService, HasStage, Ha
 
     if (cmnd != null) {
       setCommand(cmnd);
-      BeeKeeper.getBus().addClickHandler(this);
+      addDefaultHandler();
     }
   }
 
@@ -59,7 +66,7 @@ public class BeeButton extends Button implements HasId, HasService, HasStage, Ha
 
     if (!BeeUtils.isEmpty(svc)) {
       setService(svc);
-      BeeKeeper.getBus().addClickHandler(this);
+      addDefaultHandler();
     }
   }
 
@@ -105,6 +112,10 @@ public class BeeButton extends Button implements HasId, HasService, HasStage, Ha
 
   public void setStage(String stg) {
     DomUtils.setStage(this, stg);
+  }
+  
+  private void addDefaultHandler() {
+    BeeKeeper.getBus().addClickHandler(this);
   }
 
   private void init() {

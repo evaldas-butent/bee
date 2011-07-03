@@ -1,6 +1,12 @@
 package com.butent.bee.client;
 
+import com.google.common.collect.Maps;
+
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.UserData;
+import com.butent.bee.shared.utils.BeeUtils;
+
+import java.util.Map;
 
 /**
  * gets user login status, session ID and stores them.
@@ -49,6 +55,35 @@ public class UserInfo implements Module {
       return userData.getUserSign();
     }
     return null;
+  }
+  
+  public Map<String, String> getViews() {
+    if (userData == null) {
+      return null;
+    }
+
+    String views = userData.getProperty("views");
+    if (BeeUtils.isEmpty(views)) {
+      views = Settings.getProperty("views");
+    }
+    if (BeeUtils.isEmpty(views)) {
+      return null;
+    }
+    
+    Map<String, String> result = Maps.newLinkedHashMap();
+    for (String view : BeeUtils.split(views, BeeConst.STRING_COMMA)) {
+      if (BeeUtils.isEmpty(view)) {
+        continue;
+      }
+      
+      String name = BeeUtils.getPrefix(view, BeeConst.CHAR_COLON);
+      if (BeeUtils.isEmpty(name)) {
+        result.put(view, view);
+      } else {
+        result.put(name, BeeUtils.getSuffix(view, BeeConst.CHAR_COLON));
+      }
+    }
+    return result;
   }
 
   public void init() {

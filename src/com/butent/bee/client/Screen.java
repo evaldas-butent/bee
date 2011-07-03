@@ -48,5 +48,5 @@ public interface Screen extends Module, NotificationListener {
 
   void updateMenu(Widget w);
 
-  void updateSignature();
+  void updateSignature(boolean init);
 }

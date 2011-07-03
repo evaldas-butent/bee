@@ -615,7 +615,10 @@ public class CliWorker {
 
   public static void showDimensions() {
     Global.modalGrid("Dimensions",
-        PropertyUtils.createProperties("TextBox client width", DomUtils.getTextBoxClientWidth(),
+        PropertyUtils.createProperties(
+            "Viewport width", DomUtils.getClientWidth(),
+            "Viewport height", DomUtils.getClientHeight(),
+            "TextBox client width", DomUtils.getTextBoxClientWidth(),
             "TextBox client height", DomUtils.getTextBoxClientHeight(),
             "TextBox offset width", DomUtils.getTextBoxOffsetWidth(),
             "TextBox offset height", DomUtils.getTextBoxOffsetHeight(),

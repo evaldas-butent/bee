@@ -31,13 +31,8 @@ public class Toggle extends CustomButton implements Editor {
 
   public Toggle() {
     super();
-    init();
+    init(null);
     setDefaultFaces();
-  }
-
-  public Toggle(boolean value) {
-    this();
-    setDown(value);
   }
 
   public Toggle(HasBooleanValue source) {
@@ -49,17 +44,17 @@ public class Toggle extends CustomButton implements Editor {
 
   public Toggle(Image upImage) {
     super(upImage);
-    init();
+    init(null);
   }
 
   public Toggle(Image upImage, Image downImage) {
     super(upImage, downImage);
-    init();
+    init(null);
   }
   
-  public Toggle(String upText, String downText) {
+  public Toggle(String upText, String downText, String styleName) {
     super(upText, downText);
-    init();
+    init(styleName);
   }
 
   public HandlerRegistration addEditStopHandler(Handler handler) {
@@ -203,9 +198,9 @@ public class Toggle extends CustomButton implements Editor {
     }
   }
 
-  private void init() {
+  private void init(String styleName) {
     createId();
-    setStyleName("bee-Toggle");
+    setStyleName(BeeUtils.ifString(styleName, "bee-Toggle"));
   }
 
   private void initSource(HasBooleanValue src) {

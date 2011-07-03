@@ -2,6 +2,7 @@ package com.butent.bee.client.dialog;
 
 import com.google.common.collect.Lists;
 import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.PopupPanel;
@@ -174,7 +175,7 @@ public class MessageBoxes {
       if (x[i] instanceof Widget) {
         vp.add((Widget) x[i]);
 
-        if (x[i] instanceof CellGrid) {
+        if (x[i] instanceof CellGrid || x[i] instanceof CellTable) {
           vp.setCellHeight((Widget) x[i], "200px");
           vp.setCellWidth((Widget) x[i], "400px");
         } else if (x[i] instanceof BeeTree) {

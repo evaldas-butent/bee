@@ -1,9 +1,11 @@
 package com.butent.bee.client.screen;
 
+import com.google.common.collect.Lists;
+import com.google.gwt.dom.client.Document;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.touch.client.TouchScroller;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.Widget;
@@ -14,6 +16,7 @@ import com.butent.bee.client.Settings;
 import com.butent.bee.client.cli.CliWidget;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.dialog.Notification;
+import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.dom.StyleUtils.FontSize;
 import com.butent.bee.client.dom.StyleUtils.ScrollBars;
@@ -36,6 +39,9 @@ import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
+import java.util.List;
+import java.util.Map;
+
 /**
  * Handles mobile phone size screen implementation.
  */
@@ -57,6 +63,7 @@ public class Mobile extends ScreenImpl {
   }
 
   private Widget loadingWidget = null;
+  private BeeButton authButton = null;
 
   public Mobile() {
     super();
@@ -68,12 +75,14 @@ public class Mobile extends ScreenImpl {
   }
 
   public void start() {
+    Element loading = DomUtils.getElement("loading");
+    if (loading != null) {
+      Document.get().getBody().removeChild(loading);
+    }
+
     createUi();
-    loadDataInfo();
-    
-    notifyInfo("Start Time (ms)",
-        BeeUtils.toString(System.currentTimeMillis() - Settings.getStartMillis()));
-    notifyInfo("Touch Supported", BeeUtils.toString(TouchScroller.isSupported()));
+    notifyInfo(BeeUtils.concat(1, "Start Time:", 
+        System.currentTimeMillis() - Settings.getStartMillis(), "ms"));
   }
 
   @Override
@@ -86,15 +95,24 @@ public class Mobile extends ScreenImpl {
   }
 
   @Override
-  public void updateSignature() {
+  public void updateSignature(boolean init) {
     if (getSignature() == null) {
       return;
     }
 
     String usr = BeeKeeper.getUser().getLogin();
     if (BeeUtils.isEmpty(usr)) {
+      updateAuthWidget(true);
       usr = Global.constants.notLoggedIn();
+      if (!init) {
+        getDataPanel().clear();
+        closePanel();
+      }
+    } else {
+      updateAuthWidget(false);
+      loadDataInfo();
     }
+
     getSignature().getElement().setInnerHTML(usr);
   }
 
@@ -115,12 +133,12 @@ public class Mobile extends ScreenImpl {
 
     w = initWest();
     if (w != null) {
-      p.addWest(w, 100);
+      p.addWest(w, BeeUtils.limit(DomUtils.getClientWidth() / 5, 100, 200));
     }
 
     w = initEast();
     if (w != null) {
-      p.addEast(w, 128, ScrollBars.BOTH);
+      p.addEast(w, BeeUtils.limit(DomUtils.getClientWidth() / 5, 128, 300), ScrollBars.BOTH);
     }
 
     w = initCenter();
@@ -166,21 +184,22 @@ public class Mobile extends ScreenImpl {
     p.addLeftWidthTop(cli, 3, Unit.PX, 40, Unit.PCT, 3, Unit.PX);
 
     Horizontal hor = new Horizontal();
-
-    hor.add(new BeeButton(Global.constants.login(), Service.GET_LOGIN, Stage.STAGE_GET_PARAMETERS));
+    
+    BeeButton auth = new BeeButton(true);
+    auth.setId("auth-button");
+    hor.add(auth);
+    setAuthButton(auth);
 
     BeeLabel user = new BeeLabel();
     StyleUtils.setHorizontalPadding(user, 5);
     hor.add(user);
-
     setSignature(user);
-    updateSignature();
 
-    hor.add(new BeeButton(Global.constants.logout(), Service.LOGOUT));
+    updateSignature(true);
 
     p.addLeftRightTop(hor, 43, Unit.PCT, 80, Unit.PX, 1, Unit.PX);
 
-    final Toggle log = new Toggle("Hide Log", "Show Log");
+    final Toggle log = new Toggle("Hide Log", "Show Log", "toggleLog");
     StyleUtils.setFontSize(log, FontSize.SMALL);
     StyleUtils.setHorizontalPadding(log, 2);
 
@@ -206,6 +225,12 @@ public class Mobile extends ScreenImpl {
     return null;
   }
 
+  private Widget createViewWidget(String caption, DataInfo info) {
+    BeeButton button = new BeeButton(caption, new OpenViewCommand(info));
+    button.setStyleName("viewButton");
+    return button;
+  }
+
   private Widget ensureLoadingWidget() {
     if (getLoadingWidget() == null) {
       setLoadingWidget(new BeeImage(Global.getImages().loading()));
@@ -213,12 +238,16 @@ public class Mobile extends ScreenImpl {
     return getLoadingWidget();
   }
 
+  private BeeButton getAuthButton() {
+    return authButton;
+  }
+
   private Widget getLoadingWidget() {
     return loadingWidget;
   }
 
   private void loadDataInfo() {
-    final HasWidgets panel = getDataPanel();
+    HasWidgets panel = getDataPanel();
     panel.clear();
     panel.add(new BeeLabel("Loading data info..."));
     panel.add(ensureLoadingWidget());
@@ -228,19 +257,71 @@ public class Mobile extends ScreenImpl {
       public void onResponse(ResponseObject response) {
         Assert.notNull(response);
         String[] arr = Codec.beeDeserialize((String) response.getResponse());
-        panel.clear();
 
+        List<DataInfo> dataInfos = Lists.newArrayList();
         for (String s : arr) {
           DataInfo info = DataInfo.restore(s);
           if (info != null && info.getRowCount() >= 0) {
-            panel.add(new BeeButton(info.getName(), new OpenViewCommand(info)));
+            dataInfos.add(info);
           }
         }
+        showViews(dataInfos);
       }
     });
   }
 
+  private void setAuthButton(BeeButton authButton) {
+    this.authButton = authButton;
+  }
+  
   private void setLoadingWidget(Widget loadingWidget) {
     this.loadingWidget = loadingWidget;
+  }
+  
+  private void showViews(List<DataInfo> dataInfos) {
+    HasWidgets panel = getDataPanel();
+    if (panel == null) {
+      return;
+    }
+    panel.clear();
+    if (BeeUtils.isEmpty(dataInfos)) {
+      return;
+    }
+    
+    Map<String, String> userViews = BeeKeeper.getUser().getViews();
+    if (BeeUtils.isEmpty(userViews)) {
+      for (DataInfo info : dataInfos) {
+        panel.add(createViewWidget(info.getName(), info));
+      }
+    } else {
+      for (Map.Entry<String, String> entry : userViews.entrySet()) {
+        String name = entry.getKey();
+        if (BeeUtils.isEmpty(name)) {
+          continue;
+        }
+        String caption = BeeUtils.ifString(entry.getValue(), name);
+        
+        boolean found = false;
+        for (DataInfo info : dataInfos) {
+          if (BeeUtils.same(info.getName(), name)) {
+            panel.add(createViewWidget(caption, info));
+            found = true;
+            break;
+          }
+        }
+        if (!found) {
+          BeeKeeper.getLog().warning("user view", name, caption, "not found");
+        }
+      }
+    }
+  }
+  
+  private void updateAuthWidget(boolean login) {
+    if (getAuthButton() == null) {
+      return;
+    }
+    getAuthButton().setHTML(login ? Global.constants.login() : Global.constants.logout());
+    getAuthButton().setService(login ? Service.GET_LOGIN : Service.LOGOUT);
+    getAuthButton().setStage(login ? Stage.STAGE_GET_PARAMETERS : null);
   }
 }

@@ -30,7 +30,7 @@ public class Settings {
   public static String getProperty(String name) {
     Assert.notEmpty(name);
     if (checkSettings()) {
-      return settings.get(name);
+      return getQuietly(name);
     } else {
       return BeeConst.STRING_EMPTY;
     }
@@ -67,7 +67,7 @@ public class Settings {
   public static long getStartMillis() {
     return getPropertyLong("startMillis");
   }
-
+  
   public static String getVersion() {
     return getProperty("version");
   }
@@ -78,6 +78,16 @@ public class Settings {
       initialized = true;
     }
     return settings != null;
+  }
+
+  private static String getQuietly(String name) {
+    String value;
+    try {
+      value = settings.get(name);
+    } catch (MissingResourceException ex) {
+      value = BeeConst.STRING_EMPTY;
+    }
+    return value;
   }
 
   private static void readSettings() {

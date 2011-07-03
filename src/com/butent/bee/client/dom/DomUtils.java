@@ -1687,11 +1687,19 @@ public class DomUtils {
   }
 
   public static void setService(Widget w, String svc) {
-    setAttribute(w, ATTRIBUTE_SERVICE, svc);
+    if (BeeUtils.isEmpty(svc)) {
+      removeAttribute(w, ATTRIBUTE_SERVICE);
+    } else {
+      setAttribute(w, ATTRIBUTE_SERVICE, svc);
+    }
   }
 
   public static void setStage(Widget w, String stg) {
-    setAttribute(w, ATTRIBUTE_STAGE, stg);
+    if (BeeUtils.isEmpty(stg)) {
+      removeAttribute(w, ATTRIBUTE_STAGE);
+    } else {
+      setAttribute(w, ATTRIBUTE_STAGE, stg);
+    }
   }
 
   public static void setStep(UIObject obj, int step) {

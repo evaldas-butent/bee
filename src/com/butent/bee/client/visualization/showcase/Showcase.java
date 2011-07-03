@@ -2,6 +2,7 @@ package com.butent.bee.client.visualization.showcase;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.dom.StyleUtils.ScrollBars;
 import com.butent.bee.client.visualization.AbstractDataTable.ColumnType;
 import com.butent.bee.client.visualization.DataTable;
 import com.butent.bee.client.visualization.VisualizationUtils;
@@ -66,7 +67,7 @@ public class Showcase {
         panel.add(new TableDemo(), "Table");
 
         panel.init("AreaChart");
-        BeeKeeper.getScreen().updateActivePanel(panel);
+        BeeKeeper.getScreen().updateActivePanel(panel, ScrollBars.BOTH);
         BeeKeeper.getLog().info(BeeUtils.elapsedSeconds(start), "showcase ready");
       }
     }, AnnotatedTimeLine.PACKAGE, CoreChart.PACKAGE, Gauge.PACKAGE, GeoMap.PACKAGE,
