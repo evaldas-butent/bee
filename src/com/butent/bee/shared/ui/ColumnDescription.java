@@ -23,10 +23,10 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
   /**
    * Contains a list of possible column types.
    */
-  
+
   public enum CellType {
     HTML("html");
-    
+
     public static CellType getByCode(String code) {
       if (!BeeUtils.isEmpty(code)) {
         for (CellType type : CellType.values()) {
@@ -37,17 +37,21 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
       }
       return null;
     }
-    
+
     private String code;
-    
+
     private CellType(String code) {
       this.code = code;
     }
-    
+
     public String getCode() {
       return code;
     }
   }
+
+  /**
+   * Contains a list of possible column types (data, related, calculated etc).
+   */
 
   public enum ColType {
     DATA("BeeDataColumn", false),

@@ -3,9 +3,9 @@ package com.butent.bee.client.view.edit;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.shared.HasHandlers;
 
+import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.composite.InputDate;
 import com.butent.bee.client.composite.StringPicker;
-import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.composite.TextEditor;
 import com.butent.bee.client.richtext.RichTextEditor;
 import com.butent.bee.client.ui.HasTextDimensions;
@@ -44,6 +44,10 @@ public class EditorFactory {
   public static final int START_KEY_ENTER = 2;
   public static final int START_KEY_DELETE = 3;
 
+  /**
+   * Executes edit stop event.
+   */
+
   private static class StopCommand extends BeeCommand {
     private final HasHandlers editor;
     private final State state;
@@ -61,11 +65,19 @@ public class EditorFactory {
     }
   }
 
+  /**
+   * Changes the editor state to changed.
+   */
+
   public static class Accept extends StopCommand {
     public Accept(HasHandlers editor) {
       super(editor, State.CHANGED);
     }
   }
+
+  /**
+   * Changes the editor state to canceled.
+   */
 
   public static class Cancel extends StopCommand {
     public Cancel(HasHandlers editor) {
@@ -77,7 +89,7 @@ public class EditorFactory {
     Assert.notNull(column);
     return createEditor(column, column.isNullable());
   }
-  
+
   public static Editor createEditor(BeeColumn column, boolean nullable) {
     Assert.notNull(column);
 
@@ -212,7 +224,7 @@ public class EditorFactory {
       case TEXT:
         editor = new TextEditor();
         break;
-        
+
       case TOGGLE:
         editor = new Toggle();
         break;
@@ -238,7 +250,7 @@ public class EditorFactory {
 
     return editor;
   }
-  
+
   public static int getStartKey(int keyCode) {
     int startKey;
     switch (keyCode) {
@@ -249,7 +261,7 @@ public class EditorFactory {
         startKey = START_KEY_DELETE;
         break;
       default:
-       startKey = BeeConst.UNDEF;
+        startKey = BeeConst.UNDEF;
     }
     return startKey;
   }

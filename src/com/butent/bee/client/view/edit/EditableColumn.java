@@ -40,6 +40,11 @@ import com.butent.bee.shared.utils.TimeUtils;
 
 import java.util.List;
 
+/**
+ * Enables using data editing in grids, ensures validations, contains information about editor type
+ * etc.
+ */
+
 public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEvent.Handler {
 
   private static final String STYLE_EDITOR = "bee-CellGridEditor";
@@ -122,14 +127,14 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
     if (BeeUtils.isEmpty(value)) {
       return null;
     }
-    
+
     switch (getDataType()) {
       case BOOLEAN:
         return BooleanValue.pack(BeeUtils.toBooleanOrNull(value));
 
       case DATE:
         if (BeeUtils.isLong(value)) {
-          return BeeUtils.toString(new JustDate(TimeUtils.toDateTimeOrNull(value)).getDay()); 
+          return BeeUtils.toString(new JustDate(TimeUtils.toDateTimeOrNull(value)).getDay());
         } else {
           return null;
         }
@@ -196,7 +201,7 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
   public boolean getRowModeForUpdate() {
     return getRelationInfo() != null;
   }
-  
+
   public AbstractColumn<?> getUiColumn() {
     return uiColumn;
   }
@@ -209,7 +214,7 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
   public int hashCode() {
     return getColIndex();
   }
-  
+
   public boolean isCellEditable(IsRow row, boolean warn) {
     if (row == null) {
       return false;
@@ -391,7 +396,7 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
         maxWidth += x;
         x = 0;
       }
-          
+
       if (x > 0 || left + width + horMargins > maxWidth) {
         left -= x;
         int newWidth = width;
@@ -419,7 +424,7 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
         maxHeight += y;
         y = 0;
       }
-          
+
       if (y > 0 || top + height + vertMargins > maxHeight) {
         top -= y;
         int newHeight = height;
@@ -521,7 +526,7 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
     Assert.notNull(editorContainer);
     editorContainer.add(getEditor().asWidget());
   }
-  
+
   private Evaluator getCarry() {
     return carry;
   }

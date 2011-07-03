@@ -6,7 +6,15 @@ import com.google.gwt.event.shared.GwtEvent;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 
+/**
+ * Remembers old and new values of the field being updated to make further validations with them.
+ */
+
 public class ReadyForUpdateEvent extends GwtEvent<ReadyForUpdateEvent.Handler> {
+
+  /**
+   * Requires to have a method to handle read for update event.
+   */
 
   public interface Handler extends EventHandler {
     void onReadyForUpdate(ReadyForUpdateEvent event);

@@ -7,8 +7,12 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
 
+/**
+ * Enables using relations between two data sources.
+ */
+
 public class RelationInfo {
-  
+
   public static RelationInfo create(List<BeeColumn> columns, ColumnDescription descr) {
     if (columns == null || descr == null) {
       return null;
@@ -18,7 +22,7 @@ public class RelationInfo {
         || BeeUtils.isEmpty(descr.getRelView()) || BeeUtils.isEmpty(descr.getRelColumn())) {
       return null;
     }
-    
+
     int relIdx = BeeConst.UNDEF;
     for (int i = 0; i < columns.size(); i++) {
       if (BeeUtils.same(columns.get(i).getId(), relSrc)) {
@@ -29,7 +33,7 @@ public class RelationInfo {
     if (BeeConst.isUndef(relIdx)) {
       return null;
     }
-    
+
     return new RelationInfo(descr.getSource(), relSrc, descr.getRelView(), descr.getRelColumn(),
         columns.get(relIdx), relIdx);
   }
@@ -39,7 +43,7 @@ public class RelationInfo {
 
   private final String relView;
   private final String relColumn;
-  
+
   private final BeeColumn dataColumn;
   private final int dataIndex;
 

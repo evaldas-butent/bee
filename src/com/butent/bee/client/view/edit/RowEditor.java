@@ -40,7 +40,15 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * Implements a data editing functionality for table rows.
+ */
+
 public class RowEditor extends FlexTable implements HasEditState, EditEndEvent.Handler {
+
+  /**
+   * Requires implementing classes to handle confirm and cancel situations.
+   */
 
   public interface Callback {
 
@@ -68,7 +76,7 @@ public class RowEditor extends FlexTable implements HasEditState, EditEndEvent.H
 
   public static int maxCellHeight = 100;
   public static int minCellWidth = 25;
-  
+
   private static final String STYLE_ROW_EDITOR = "bee-RowEditor";
   private static final String STYLE_LABEL = "bee-RowEditorLabel";
 
@@ -96,7 +104,7 @@ public class RowEditor extends FlexTable implements HasEditState, EditEndEvent.H
   private int activeIndex = BeeConst.UNDEF;
 
   private boolean editing = false;
-  
+
   public RowEditor(List<BeeColumn> dataColumns, Set<RelationInfo> relations,
       List<EditableColumn> editableColumns, Callback callback,
       HasWidgets editorContainer, Element containerElement,
@@ -540,7 +548,7 @@ public class RowEditor extends FlexTable implements HasEditState, EditEndEvent.H
   private void setRow(IsRow row) {
     this.row = row;
   }
-  
+
   private void startEdit(int index, Element sourceElement, int charCode) {
     EditableColumn editableColumn = getEditableColumn(index);
 
@@ -558,7 +566,8 @@ public class RowEditor extends FlexTable implements HasEditState, EditEndEvent.H
     }
 
     if (ValueType.BOOLEAN.equals(editableColumn.getDataType())
-        && BeeUtils.inList(charCode, EditorFactory.START_MOUSE_CLICK, EditorFactory.START_KEY_ENTER)
+        && BeeUtils
+            .inList(charCode, EditorFactory.START_MOUSE_CLICK, EditorFactory.START_KEY_ENTER)
         && editableColumn.getRelationInfo() == null) {
 
       String oldValue = getRow().getString(editableColumn.getColIndex());
@@ -577,9 +586,9 @@ public class RowEditor extends FlexTable implements HasEditState, EditEndEvent.H
     StyleUtils.copySize(sourceElement, getEditorBox());
     StyleUtils.setLeft(getEditorBox(),
         DomUtils.getRelativeLeft(getContainerElement(), sourceElement));
-    StyleUtils.setTop(getEditorBox(), 
+    StyleUtils.setTop(getEditorBox(),
         DomUtils.getRelativeTop(getContainerElement(), sourceElement));
-    
+
     sourceElement.blur();
 
     editableColumn.openEditor(getEditorContainer(), getEditorBox(), getContainerElement(),
@@ -589,12 +598,12 @@ public class RowEditor extends FlexTable implements HasEditState, EditEndEvent.H
   private void updateCell(final String columnId, String value) {
     int index = getDataIndex(columnId);
     getRow().setValue(index, value);
-    
+
     index = getCellIndex(columnId);
     if (isIndex(index)) {
       renderCell(index, value);
     }
-    
+
     if (isRelSource(columnId)) {
       if (BeeUtils.isEmpty(value)) {
         for (RelationInfo relationInfo : getRelations()) {
@@ -613,7 +622,7 @@ public class RowEditor extends FlexTable implements HasEditState, EditEndEvent.H
       } else {
         String viewName = null;
         final List<String> viewColumns = Lists.newArrayList();
-        
+
         for (RelationInfo relationInfo : getRelations()) {
           if (BeeUtils.same(relationInfo.getRelSource(), columnId)) {
             if (viewName == null) {
@@ -626,7 +635,7 @@ public class RowEditor extends FlexTable implements HasEditState, EditEndEvent.H
             }
           }
         }
-        
+
         Assert.notEmpty(viewColumns, "related columns not available");
         Queries.getRow(viewName, BeeUtils.toLong(value), viewColumns, new Queries.RowCallback() {
           public void onFailure(String[] reason) {
@@ -634,7 +643,7 @@ public class RowEditor extends FlexTable implements HasEditState, EditEndEvent.H
               getNotificationListener().notifySevere(reason);
             }
           }
-          
+
           public void onSuccess(BeeRow viewRow) {
             for (int viewIndex = 0; viewIndex < viewColumns.size(); viewIndex++) {
               for (RelationInfo relationInfo : getRelations()) {
