@@ -256,7 +256,7 @@ public class CliWorker {
       return;
     }
 
-    Level[] levels = new Level[] {Level.FINEST, Level.FINER, Level.FINE, Level.CONFIG, Level.INFO,
+    Level[] levels = new Level[]{Level.FINEST, Level.FINER, Level.FINE, Level.CONFIG, Level.INFO,
         Level.WARNING, Level.SEVERE};
     for (Level lvl : levels) {
       BeeKeeper.getLog().log(lvl, lvl.getName().toLowerCase());
@@ -363,7 +363,7 @@ public class CliWorker {
 
     BeeKeeper.getRpc().makeGetRequest(params);
   }
-  
+
   public static void playAudio(final String src) {
     if (BeeUtils.isEmpty(src)) {
       BeeKeeper.getLog().warning("source not specified");
@@ -378,7 +378,7 @@ public class CliWorker {
 
     widget.getAudioElement().setSrc(src);
     widget.getAudioElement().setControls(true);
-    
+
     widget.addDomHandler(new ErrorHandler() {
       public void onError(ErrorEvent event) {
         BeeKeeper.getScreen().notifyWarning(src, EventUtils.transformMediaError(widget.getError()));
@@ -394,7 +394,7 @@ public class CliWorker {
       return;
     }
 
-    final String src = BeeUtils.ifString(args, 
+    final String src = BeeUtils.ifString(args,
         "http://people.opera.com/shwetankd/webm/sunflower.webm");
 
     final Video widget = Video.createIfSupported();
@@ -407,7 +407,7 @@ public class CliWorker {
         BeeKeeper.getScreen().notifyWarning(src, EventUtils.transformMediaError(widget.getError()));
       }
     }, ErrorEvent.getType());
-    
+
     BeeKeeper.getScreen().updateActivePanel(widget, ScrollBars.BOTH);
   }
 
@@ -458,7 +458,7 @@ public class CliWorker {
           DomUtils.transformElement(nodes.getItem(i))));
     }
 
-    if (cnt <= 16) {
+    if (showModal(cnt)) {
       Global.modalGrid("Selectors", info);
     } else {
       BeeKeeper.getScreen().showGrid(info);
@@ -604,7 +604,7 @@ public class CliWorker {
     for (DateTimeFormat.PredefinedFormat dtf : DateTimeFormat.PredefinedFormat.values()) {
       data[i][0] = dtf.toString();
 
-      DateTimeFormat format = DateTimeFormat.getFormat(dtf);      
+      DateTimeFormat format = DateTimeFormat.getFormat(dtf);
       data[i][1] = format.getPattern();
       data[i][2] = format.format(d);
       i++;
@@ -614,20 +614,26 @@ public class CliWorker {
   }
 
   public static void showDimensions() {
-    Global.modalGrid("Dimensions",
-        PropertyUtils.createProperties(
-            "Viewport width", DomUtils.getClientWidth(),
-            "Viewport height", DomUtils.getClientHeight(),
-            "TextBox client width", DomUtils.getTextBoxClientWidth(),
-            "TextBox client height", DomUtils.getTextBoxClientHeight(),
-            "TextBox offset width", DomUtils.getTextBoxOffsetWidth(),
-            "TextBox offset height", DomUtils.getTextBoxOffsetHeight(),
-            "CheckBox client width", DomUtils.getCheckBoxClientWidth(),
-            "CheckBox client height", DomUtils.getCheckBoxClientHeight(),
-            "CheckBox offset width", DomUtils.getCheckBoxOffsetWidth(),
-            "CheckBox offset height", DomUtils.getCheckBoxOffsetHeight(),
-            "Scrollbar width", DomUtils.getScrollbarWidth(),
-            "Scrollbar height", DomUtils.getScrollbarHeight()));
+    String caption = "Dimensions";
+    List<Property> data = PropertyUtils.createProperties(
+        "Viewport width", DomUtils.getClientWidth(),
+        "Viewport height", DomUtils.getClientHeight(),
+        "TextBox client width", DomUtils.getTextBoxClientWidth(),
+        "TextBox client height", DomUtils.getTextBoxClientHeight(),
+        "TextBox offset width", DomUtils.getTextBoxOffsetWidth(),
+        "TextBox offset height", DomUtils.getTextBoxOffsetHeight(),
+        "CheckBox client width", DomUtils.getCheckBoxClientWidth(),
+        "CheckBox client height", DomUtils.getCheckBoxClientHeight(),
+        "CheckBox offset width", DomUtils.getCheckBoxOffsetWidth(),
+        "CheckBox offset height", DomUtils.getCheckBoxOffsetHeight(),
+        "Scrollbar width", DomUtils.getScrollbarWidth(),
+        "Scrollbar height", DomUtils.getScrollbarHeight());
+
+    if (showModal(data.size())) {
+      Global.modalGrid(caption, data);
+    } else {
+      BeeKeeper.getScreen().showGrid(data);
+    }
   }
 
   public static void showDnd() {
@@ -639,7 +645,7 @@ public class CliWorker {
     List<Property> lst = EventUtils.showDnd();
     if (BeeUtils.isEmpty(lst)) {
       Global.showDialog("dnd mappings empty");
-    } else if (lst.size() <= 30) {
+    } else if (showModal(lst.size())) {
       Global.modalGrid(BeeUtils.concat(1, "Dnd", BeeUtils.bracket(lst.size())), lst);
     } else {
       BeeKeeper.getScreen().showGrid(lst);
@@ -669,7 +675,7 @@ public class CliWorker {
     JsData<?> table = (JsData<?>) DataUtils.createTable(prp, "property", "type", "value");
     table.sort(0);
 
-    if (table.getNumberOfRows() <= 20) {
+    if (showModal(table.getNumberOfRows())) {
       Global.modalGrid(v, table);
     } else {
       BeeKeeper.getScreen().showGrid(table);
@@ -708,7 +714,7 @@ public class CliWorker {
     JsData<?> table = (JsData<?>) DataUtils.createTable(fnc, "function");
     table.sort(0);
 
-    if (BeeUtils.same(arr[0], "f") && table.getNumberOfRows() <= 20) {
+    if (BeeUtils.same(arr[0], "f") && showModal(table.getNumberOfRows())) {
       Global.modalGrid(v, table);
     } else {
       BeeKeeper.getScreen().showGrid(table);
@@ -722,24 +728,30 @@ public class CliWorker {
   }
 
   public static void showGwt() {
-    Global.modalGrid("GWT",
-        PropertyUtils.createProperties("Host Page Base URL", GWT.getHostPageBaseURL(),
-            "Module Base URL", GWT.getModuleBaseURL(),
-            "Module Name", GWT.getModuleName(),
-            "Permutation Strong Name", GWT.getPermutationStrongName(),
-            "Uncaught Exception Handler", GWT.getUncaughtExceptionHandler(),
-            "Unique Thread Id", GWT.getUniqueThreadId(),
-            "Version", GWT.getVersion(),
-            "Is Client", GWT.isClient(),
-            "Is Prod Mode", GWT.isProdMode(),
-            "Is Script", GWT.isScript()));
+    List<Property> data = PropertyUtils.createProperties(
+        "Host Page Base URL", GWT.getHostPageBaseURL(),
+        "Module Base URL", GWT.getModuleBaseURL(),
+        "Module Name", GWT.getModuleName(),
+        "Permutation Strong Name", GWT.getPermutationStrongName(),
+        "Uncaught Exception Handler", GWT.getUncaughtExceptionHandler(),
+        "Unique Thread Id", GWT.getUniqueThreadId(),
+        "Version", GWT.getVersion(),
+        "Is Client", GWT.isClient(),
+        "Is Prod Mode", GWT.isProdMode(),
+        "Is Script", GWT.isScript());
+
+    if (showModal(data.size())) {
+      Global.modalGrid("GWT", data);
+    } else {
+      BeeKeeper.getScreen().showGrid(data);
+    }
   }
 
   public static void showInput() {
     FlexTable table = new FlexTable();
     table.setCellSpacing(3);
 
-    String[] types = new String[] {
+    String[] types = new String[]{
         "search", "tel", "url", "email", "datetime", "date", "month", "week", "time",
         "datetime-local", "number", "range", "color"};
     TextBox widget;
@@ -872,13 +884,13 @@ public class CliWorker {
     }
     BeeKeeper.getScreen().updateActivePanel(table, ScrollBars.BOTH);
   }
-  
+
   public static void showNotes(String args) {
     if (BeeUtils.isEmpty(args)) {
       Global.sayHuh(args);
       return;
     }
-    
+
     for (String msg : Splitter.on(';').omitEmptyStrings().trimResults().split(args)) {
       List<String> lst = Lists.newArrayList();
       for (String line : Splitter.on(',').trimResults().split(msg)) {
@@ -888,7 +900,7 @@ public class CliWorker {
       if (c <= 0) {
         continue;
       }
-      
+
       String lvl = lst.get(0);
       String[] arr = new String[0];
       if (c > 1 && BeeUtils.inListSame(lvl, "w", "e", "s")) {
@@ -993,7 +1005,7 @@ public class CliWorker {
     JsData<?> table = (JsData<?>) DataUtils.createTable(prp, "property", "type", "value");
     table.sort(0);
 
-    if (BeeUtils.same(arr[0], "p") && table.getNumberOfRows() <= 20) {
+    if (BeeUtils.same(arr[0], "p") && showModal(table.getNumberOfRows())) {
       Global.modalGrid(v, table);
     } else {
       BeeKeeper.getScreen().showGrid(table);
@@ -1176,27 +1188,27 @@ public class CliWorker {
       BeeKeeper.getLog().severe("inline svg not supported");
       return;
     }
-    
+
     int type = BeeUtils.randomInt(0, 3);
 
     int width = BeeKeeper.getScreen().getActivePanelWidth();
     int height = BeeKeeper.getScreen().getActivePanelHeight();
-    
+
     int rMin = Math.min(width, height) / 50;
     int rMax = (type == 0) ? Math.min(width, height) / 2 : rMin * 10;
 
     Svg widget = new Svg();
     Element parent = widget.getElement();
-    
+
     Element child;
     int colorStep = 16;
-    
+
     for (int i = 0; i < BeeUtils.randomInt(10, 100); i++) {
       String x = BeeUtils.toString(BeeUtils.randomInt(0, width));
       String y = BeeUtils.toString(BeeUtils.randomInt(0, height));
       String rx = BeeUtils.toString(BeeUtils.randomInt(rMin, rMax));
       String ry = BeeUtils.toString(BeeUtils.randomInt(rMin, rMax));
-      
+
       switch (type) {
         case 0:
           child = DomUtils.createSvg("rect");
@@ -1224,7 +1236,7 @@ public class CliWorker {
       if (child == null) {
         continue;
       }
-      
+
       int r = Math.min(BeeUtils.randomInt(0, colorStep + 1) * colorStep, 255);
       int g = Math.min(BeeUtils.randomInt(0, colorStep + 1) * colorStep, 255);
       int b = Math.min(BeeUtils.randomInt(0, colorStep + 1) * colorStep, 255);
@@ -1232,7 +1244,7 @@ public class CliWorker {
       child.setAttribute("fill", "rgb(" + r + "," + g + "," + b + ")");
       child.setAttribute("opacity", BeeUtils.toString(0.5 + Math.random() / 2));
 
-      parent.appendChild(child);    
+      parent.appendChild(child);
     }
 
     BeeKeeper.getScreen().updateActivePanel(widget);
@@ -1304,7 +1316,11 @@ public class CliWorker {
       info.add(new Property(u.getType(), BeeUtils.toString(px)));
     }
 
-    Global.modalGrid("Pixels", info);
+    if (showModal(info.size())) {
+      Global.modalGrid("Pixels", info);
+    } else {
+      BeeKeeper.getScreen().showGrid(info);
+    }
   }
 
   public static void showVars(String[] arr) {
@@ -1319,7 +1335,7 @@ public class CliWorker {
       Global.showVars();
     }
   }
-  
+
   public static void showView(String args) {
     ParameterList params = BeeKeeper.getRpc().createParameters(Service.GET_VIEW_INFO);
     if (!BeeUtils.isEmpty(args)) {
@@ -1327,7 +1343,8 @@ public class CliWorker {
     }
     BeeKeeper.getRpc().makeGetRequest(params, new ResponseCallback() {
       public void onResponse(ResponseObject response) {
-        BeeKeeper.getScreen().showGrid(PropertyUtils.restoreExtended((String) response.getResponse()));
+        BeeKeeper.getScreen().showGrid(
+            PropertyUtils.restoreExtended((String) response.getResponse()));
       }
     });
   }
@@ -1443,7 +1460,7 @@ public class CliWorker {
         lst = null;
       } else {
         lst = StyleUtils.getStyleInfo(elem.getStyle());
-      }  
+      }
       if (BeeUtils.isEmpty(lst)) {
         Global.showDialog("element id", arr[1], "has no style");
       } else {
@@ -1697,6 +1714,27 @@ public class CliWorker {
       }
     }
   }-*/;
+
+  private static boolean showModal(int rowCount) {
+    if (rowCount <= 1) {
+      return true;
+    }
+    if (rowCount > 50) {
+      return false;
+    }
+    
+    int h = rowCount * 20 + 70;
+    int vph = DomUtils.getClientHeight();
+    int aph = BeeKeeper.getScreen().getActivePanelHeight();
+    
+    if (vph > 0 && h > vph - 20) {
+      return false;
+    }
+    if (aph > 0 && aph < 80) {
+      return true;
+    }
+    return rowCount <= 15;
+  }
 
   private CliWorker() {
   }

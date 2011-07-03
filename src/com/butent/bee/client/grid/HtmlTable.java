@@ -16,6 +16,7 @@ import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.impl.ElementMapperImpl;
+import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment.HorizontalAlignmentConstant;
 import com.google.gwt.user.client.ui.HasVerticalAlignment.VerticalAlignmentConstant;
 import com.google.gwt.user.client.ui.Panel;
@@ -310,6 +311,18 @@ public abstract class HtmlTable extends Panel implements HasClickHandlers,
     return addDomHandler(handler, DoubleClickEvent.getType());
   }
 
+  public void alignCenter(int row, int column) {
+    getCellFormatter().setHorizontalAlignment(row, column, HasHorizontalAlignment.ALIGN_CENTER);
+  }
+
+  public void alignLeft(int row, int column) {
+    getCellFormatter().setHorizontalAlignment(row, column, HasHorizontalAlignment.ALIGN_LEFT);
+  }
+
+  public void alignRight(int row, int column) {
+    getCellFormatter().setHorizontalAlignment(row, column, HasHorizontalAlignment.ALIGN_RIGHT);
+  }
+  
   @Override
   public void clear() {
     clear(false);

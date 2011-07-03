@@ -1,7 +1,7 @@
 package com.butent.bee.shared.data.view;
 
 /**
- * Contains necessary methods for data relations classes (getting and setting them)
+ * Contains necessary methods for data relations classes (getting and setting them).
  */
 
 public interface HasRelationInfo {

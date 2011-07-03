@@ -2,19 +2,18 @@ package com.butent.bee.client.dialog;
 
 import com.google.common.collect.Lists;
 import com.google.gwt.dom.client.Style.Unit;
-import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.Widget;
 
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
-import com.butent.bee.client.grid.TextCellType;
+import com.butent.bee.client.grid.FlexTable;
 import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.layout.Vertical;
-import com.butent.bee.client.tree.BeeTree;
 import com.butent.bee.client.utils.BeeCommand;
 import com.butent.bee.client.view.grid.CellGrid;
 import com.butent.bee.client.widget.BeeImage;
@@ -22,6 +21,9 @@ import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.client.widget.Html;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.IsTable;
+import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -161,7 +163,65 @@ public class MessageBoxes {
 
   public void showGrid(String cap, Object data, String... columnLabels) {
     Assert.notNull(data);
-    showInfo(cap, Global.cellTable(data, TextCellType.TEXT, columnLabels));
+    IsTable<?, ?> table = DataUtils.createTable(data, columnLabels);
+    Assert.notNull(table);
+
+    int c = table.getNumberOfColumns();
+    Assert.isPositive(c);
+
+    int r = table.getNumberOfRows();
+    if (r <= 0) {
+      BeeKeeper.getLog().warning(cap, "data table empty");
+      return;
+    }
+    
+    FlexTable grid = new FlexTable();
+    int index = 0;
+    
+    if (!BeeUtils.isEmpty(cap)) {
+      grid.setHTML(index, 0, cap.trim());
+      grid.alignCenter(index, 0);
+      if (c > 1) {
+        grid.getFlexCellFormatter().setColSpan(index, 0, c);
+      }
+      index++;
+    }
+    
+    for (int j = 0; j < c; j++) {
+      grid.setHTML(index, j, table.getColumnLabel(j));
+      grid.alignCenter(index, j);
+    }
+    index++;
+    
+    for (int i = 0; i < r; i++) {
+      for (int j = 0; j < c; j++) {
+        String value = table.getString(i, j);
+        if (!BeeUtils.isEmpty(value)) {
+          grid.setHTML(index, j, value);
+          if (ValueType.isNumeric(table.getColumnType(j))) {
+            grid.alignRight(index, j);
+          }
+        }
+      }
+      grid.getRowFormatter().setStyleName(index,
+          (index % 2 == 0) ? CellGrid.STYLE_EVEN_ROW : CellGrid.STYLE_ODD_ROW);
+      index++;
+    }
+    
+    CloseButton close = new CloseButton("ok");
+    grid.setWidget(index, 0, close);
+    grid.alignCenter(index, 0);
+    if (c > 1) {
+      grid.getFlexCellFormatter().setColSpan(index, 0, c);
+    }
+
+    Popup box = new Popup();
+    box.setAnimationEnabled(true);
+
+    box.setWidget(grid);
+
+    box.center();
+    close.setFocus(true);
   }
 
   public void showInfo(Object... x) {
@@ -174,15 +234,6 @@ public class MessageBoxes {
     for (int i = 0; i < n; i++) {
       if (x[i] instanceof Widget) {
         vp.add((Widget) x[i]);
-
-        if (x[i] instanceof CellGrid || x[i] instanceof CellTable) {
-          vp.setCellHeight((Widget) x[i], "200px");
-          vp.setCellWidth((Widget) x[i], "400px");
-        } else if (x[i] instanceof BeeTree) {
-          vp.setCellHeight((Widget) x[i], "500px");
-          vp.setCellWidth((Widget) x[i], "400px");
-        }
-
       } else if (x[i] instanceof String) {
         vp.add(new BeeLabel((String) x[i]));
       } else if (x[i] instanceof Collection) {
