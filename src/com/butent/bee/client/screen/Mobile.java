@@ -4,8 +4,8 @@ import com.google.common.collect.Lists;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style.Unit;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.Widget;
@@ -19,7 +19,6 @@ import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.dialog.Notification;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
-import com.butent.bee.client.dom.StyleUtils.FontSize;
 import com.butent.bee.client.dom.StyleUtils.ScrollBars;
 import com.butent.bee.client.grid.TextCellType;
 import com.butent.bee.client.layout.BeeLayoutPanel;
@@ -29,10 +28,11 @@ import com.butent.bee.client.layout.Scroll;
 import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.utils.BeeCommand;
 import com.butent.bee.client.widget.BeeButton;
+import com.butent.bee.client.widget.BeeCheckBox;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.BeeLabel;
-import com.butent.bee.client.widget.Toggle;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.Stage;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -104,7 +104,7 @@ public class Mobile extends ScreenImpl {
     String usr = BeeKeeper.getUser().getLogin();
     if (BeeUtils.isEmpty(usr)) {
       updateAuthWidget(true);
-      usr = Global.constants.notLoggedIn();
+      usr = BeeConst.STRING_EMPTY;
       if (!init) {
         getDataPanel().clear();
         closePanel();
@@ -117,6 +117,23 @@ public class Mobile extends ScreenImpl {
     getSignature().getElement().setInnerHTML(usr);
   }
 
+  protected int addLogToggle(BeeLayoutPanel panel) {
+    final BeeCheckBox toggle = new BeeCheckBox("Log");
+    
+    toggle.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
+      public void onValueChange(ValueChangeEvent<Boolean> event) {
+        if (event.getValue()) {
+          BeeKeeper.getLog().show();
+        } else {
+          BeeKeeper.getLog().hide();
+        }
+      }
+    });
+    
+    panel.addRightWidthTop(toggle, 3, 48, 2);
+    return 50;
+  }
+  
   @Override
   protected void createUi() {
     Widget w;
@@ -180,9 +197,12 @@ public class Mobile extends ScreenImpl {
   @Override
   protected Widget initSouth() {
     BeeLayoutPanel p = new BeeLayoutPanel();
+    
+    int width = DomUtils.getClientWidth();
+    int pct = BeeUtils.toInt(BeeUtils.rescale(width, 320, 800, 28, 50));
 
     final CliWidget cli = new CliWidget();
-    p.addLeftWidthTop(cli, 3, Unit.PX, 30, Unit.PCT, 3, Unit.PX);
+    p.addLeftWidthTop(cli, 3, Unit.PX, pct, Unit.PCT, 3, Unit.PX);
     
     BeeImage play = new BeeImage(Global.getImages().play(), new BeeCommand() {
       @Override
@@ -190,7 +210,7 @@ public class Mobile extends ScreenImpl {
         CliWorker.execute(cli.getValue());
       }
     });
-    p.addLeftTop(play, 33, Unit.PCT, 2, Unit.PX);
+    p.addLeftTop(play, pct + 4, Unit.PCT, 2, Unit.PX);
 
     Horizontal hor = new Horizontal();
     
@@ -206,29 +226,12 @@ public class Mobile extends ScreenImpl {
 
     updateSignature(true);
 
-    p.addLeftRightTop(hor, 40, Unit.PCT, 80, Unit.PX, 1, Unit.PX);
-
-    final Toggle log = new Toggle("Hide Log", "Show Log", "toggleLog");
-    StyleUtils.setFontSize(log, FontSize.SMALL);
-    StyleUtils.setHorizontalPadding(log, 2);
-
-    log.addClickHandler(new ClickHandler() {
-      public void onClick(ClickEvent event) {
-        if (log.isDown()) {
-          BeeKeeper.getLog().show();
-        } else {
-          BeeKeeper.getLog().hide();
-        }
-        log.invert();
-      }
-    });
-
-    p.addRightWidthTop(log, 3, 76, 1);
-    log.setDown(true);
-
+    int right = addLogToggle(p);
+    p.addLeftRightTop(hor, pct + 12, Unit.PCT, right, Unit.PX, 1, Unit.PX);
+    
     return p;
   }
-
+  
   @Override
   protected Widget initWest() {
     return null;

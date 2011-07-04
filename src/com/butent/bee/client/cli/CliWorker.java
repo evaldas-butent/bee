@@ -454,7 +454,7 @@ public class CliWorker {
     } else if (z.equals("style")) {
       style(v, arr);
     } else if (z.equals("svg")) {
-      showSvg();
+      showSvg(arr);
     } else if (z.equals("tables")) {
       BeeKeeper.getRpc().makeGetRequest(Service.DB_TABLES);
     } else if (z.equals("tiles")) {
@@ -1346,31 +1346,105 @@ public class CliWorker {
     BeeKeeper.getScreen().showGrid(Features.getInfo());
   }
 
-  public static void showSvg() {
+  public static void showSvg(String[] arr) {
     if (!Features.supportsSvg()) {
-      BeeKeeper.getLog().severe("svg not supported");
+      BeeKeeper.getScreen().notifySevere("svg not supported");
       return;
     }
-    if (!Features.supportsSvgInline()) {
-      BeeKeeper.getLog().severe("inline svg not supported");
-      return;
-    }
-
-    int type = BeeUtils.randomInt(0, 3);
 
     int width = BeeKeeper.getScreen().getActivePanelWidth();
     int height = BeeKeeper.getScreen().getActivePanelHeight();
 
+    int type = BeeUtils.randomInt(0, 3);
+
     int rMin = Math.min(width, height) / 50;
-    int rMax = (type == 0) ? Math.min(width, height) / 2 : rMin * 10;
+    int rMax = rMin * 10;
+    
+    int cntMin = 10;
+    int cntMax = 100;
+
+    int colorStep = 16;
+
+    double minOpacity = 0.5;
+    double maxOpacity = 1;
+    
+    int len = ArrayUtils.length(arr);
+    if (len > 1) {
+      for (int i = 1; i < len; i++) {
+        String s = BeeUtils.trim(arr[i]);
+        if (BeeUtils.isEmpty(s) || s.length() < 2) {
+          continue;
+        }
+        
+        char pName = s.charAt(0);
+        String pMin = BeeUtils.getPrefix(s.substring(1), BeeConst.CHAR_MINUS); 
+        String pMax = BeeUtils.getSuffix(s.substring(1), BeeConst.CHAR_MINUS);
+        if (BeeUtils.isEmpty(pMin)) {
+          pMin = s.substring(1);
+        }
+
+        if (BeeUtils.isDouble(pMin) || BeeUtils.isDouble(pMax)) {
+          switch (pName) {
+            case 't':
+              if (BeeUtils.isDigit(pMin)) {
+                type = BeeUtils.toInt(pMin);
+              } else if (BeeUtils.isDigit(pMax)) {
+                type = BeeUtils.toInt(pMax);
+              }
+              BeeKeeper.getLog().info(s, "type", type);
+              break;
+
+            case 'r':
+              if (BeeUtils.isDigit(pMin)) {
+                rMin = BeeUtils.toInt(pMin);
+                BeeKeeper.getLog().info(s, "rMin", rMin);
+              }
+              if (BeeUtils.isDigit(pMax)) {
+                rMax = BeeUtils.toInt(pMax);
+                BeeKeeper.getLog().info(s, "rMax", rMax);
+              }
+              break;
+
+            case 'c':
+              if (BeeUtils.isDigit(pMin)) {
+                cntMin = BeeUtils.toInt(pMin);
+                BeeKeeper.getLog().info(s, "cntMin", cntMin);
+              }
+              if (BeeUtils.isDigit(pMax)) {
+                cntMax = BeeUtils.toInt(pMax);
+                BeeKeeper.getLog().info(s, "cntMax", cntMax);
+              }
+              break;
+              
+            case 's':  
+              if (BeeUtils.isDigit(pMin)) {
+                colorStep = BeeUtils.toInt(pMin);
+              } else if (BeeUtils.isDigit(pMax)) {
+                colorStep = BeeUtils.toInt(pMax);
+              }
+              BeeKeeper.getLog().info(s, "colorStep", colorStep);
+              break;
+
+            case 'o':
+              if (BeeUtils.isDouble(pMin)) {
+                minOpacity = BeeUtils.toDouble(pMin);
+                BeeKeeper.getLog().info(s, "minOpacity", minOpacity);
+              }
+              if (BeeUtils.isDouble(pMax)) {
+                maxOpacity = BeeUtils.toDouble(pMax);
+                BeeKeeper.getLog().info(s, "maxOpacity", maxOpacity);
+              }
+              break;
+          }
+        }
+      }
+    }
 
     Svg widget = new Svg();
     Element parent = widget.getElement();
-
     Element child;
-    int colorStep = 16;
 
-    for (int i = 0; i < BeeUtils.randomInt(10, 100); i++) {
+    for (int i = 0; i < BeeUtils.randomInt(cntMin, cntMax); i++) {
       String x = BeeUtils.toString(BeeUtils.randomInt(0, width));
       String y = BeeUtils.toString(BeeUtils.randomInt(0, height));
       String rx = BeeUtils.toString(BeeUtils.randomInt(rMin, rMax));
@@ -1390,26 +1464,21 @@ public class CliWorker {
           child.setAttribute("cy", y);
           child.setAttribute("r", rx);
           break;
-        case 2:
+        default:
           child = DomUtils.createSvg("ellipse");
           child.setAttribute("cx", x);
           child.setAttribute("cy", y);
           child.setAttribute("rx", rx);
           child.setAttribute("ry", ry);
-          break;
-        default:
-          child = null;
-      }
-      if (child == null) {
-        continue;
       }
 
-      int r = Math.min(BeeUtils.randomInt(0, colorStep + 1) * colorStep, 255);
-      int g = Math.min(BeeUtils.randomInt(0, colorStep + 1) * colorStep, 255);
-      int b = Math.min(BeeUtils.randomInt(0, colorStep + 1) * colorStep, 255);
+      int r = Math.min(BeeUtils.randomInt(0, colorStep + 1) * 256 / colorStep, 255);
+      int g = Math.min(BeeUtils.randomInt(0, colorStep + 1) * 256 / colorStep, 255);
+      int b = Math.min(BeeUtils.randomInt(0, colorStep + 1) * 256 / colorStep, 255);
 
       child.setAttribute("fill", "rgb(" + r + "," + g + "," + b + ")");
-      child.setAttribute("opacity", BeeUtils.toString(0.5 + Math.random() / 2));
+      child.setAttribute("opacity",
+          BeeUtils.toString(BeeUtils.randomDouble(minOpacity, maxOpacity)));
 
       parent.appendChild(child);
     }
@@ -1894,13 +1963,13 @@ public class CliWorker {
     int vph = DomUtils.getClientHeight();
     int aph = BeeKeeper.getScreen().getActivePanelHeight();
     
-    if (vph > 0 && h > vph - 20) {
+    if (vph > 0 && h > vph / 2) {
       return false;
     }
     if (aph > 0 && aph < 80) {
       return true;
     }
-    return rowCount <= 15;
+    return rowCount <= 12;
   }
 
   private CliWorker() {

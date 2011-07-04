@@ -1889,7 +1889,24 @@ public class BeeUtils {
     }
     return s.trim().toLowerCase();
   }
-
+  
+  public static double normalize(double x, double min, double max) {
+    double z;
+    
+    if (min > max) {
+      z = 1.0 - normalize(x, max, min);
+    } else if (min == max) {
+      z = 0;
+    } else if (x <= min) {
+      z = 0;
+    } else if (x >= max) {
+      z = 1;
+    } else {
+      z = (x - min) / (max - min);
+    }
+    return z;
+  }
+  
   /**
    * Returns an Object as a separator. If an Object is a number it's returned spaces quantity equal
    * to the numeric value. String, Char and CharSequence type Objects are transformed to String
@@ -2084,6 +2101,11 @@ public class BeeUtils {
     return z.toString();
   }
 
+  public static double randomDouble(double min, double max) {
+    Assert.isTrue(max > min);
+    return min + Math.random() * (max - min);
+  }
+  
   /**
    * Generates a random Integer value in range of the specified {@code min} and {@code max} values.
    * 
@@ -2092,8 +2114,7 @@ public class BeeUtils {
    * @return a generated Integer value
    */
   public static int randomInt(int min, int max) {
-    Assert.isTrue(max > min + 1);
-
+    Assert.isTrue(max > min);
     Double z = Math.floor(Math.random() * (max - min));
     return min + z.intValue();
   }
@@ -2106,8 +2127,7 @@ public class BeeUtils {
    * @return a generated value
    */
   public static long randomLong(long min, long max) {
-    Assert.isTrue(max > min + 1);
-
+    Assert.isTrue(max > min);
     Double z = Math.floor(Math.random() * (max - min));
     return min + z.longValue();
   }
@@ -2356,7 +2376,11 @@ public class BeeUtils {
     Arrays.fill(arr, z);
     return new String(arr);
   }
-
+  
+  public static double rescale(double x, double frMin, double frMax, double toMin, double toMax) {
+    return scaleNormalizedToRange(normalize(x, frMin, frMax), toMin, toMax);
+  }
+  
   /**
    * Rounds {@code x} with a specified scale {@code dec}.
    * 
@@ -2421,6 +2445,23 @@ public class BeeUtils {
 
   public static boolean sameSign(int i1, int i2) {
     return Integer.signum(i1) == Integer.signum(i2);
+  }
+  
+  public static double scaleNormalizedToRange(double x, double min, double max) {
+    double z;
+    
+    if (min == max) {
+      z = min;
+    } else if (x <= 0) {
+      z = min;
+    } else if (x >= 1) {
+      z = max;
+    } else if (min > max) {
+      z = (1 - x) * (min - max) + max;
+    } else {
+      z = x * (max - min) + min;
+    }
+    return z;
   }
 
   /**
