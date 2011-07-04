@@ -15,6 +15,7 @@ import com.google.gwt.dom.client.StyleInjector;
 import com.google.gwt.event.dom.client.ErrorEvent;
 import com.google.gwt.event.dom.client.ErrorHandler;
 import com.google.gwt.i18n.client.LocaleInfo;
+import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.i18n.shared.DateTimeFormat;
 import com.google.gwt.i18n.shared.DateTimeFormat.PredefinedFormat;
 import com.google.gwt.media.client.Audio;
@@ -27,9 +28,11 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
+import com.butent.bee.client.Settings;
 import com.butent.bee.client.ajaxloader.AjaxKeyRepository;
 import com.butent.bee.client.ajaxloader.AjaxLoader;
 import com.butent.bee.client.ajaxloader.ClientLocation;
+import com.butent.bee.client.canvas.CanvasDemo;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.communication.RpcList;
@@ -45,6 +48,7 @@ import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.dom.StyleUtils.ScrollBars;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.grid.FlexTable;
+import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.i18n.LocaleUtils;
 import com.butent.bee.client.language.DetectionCallback;
 import com.butent.bee.client.language.DetectionResult;
@@ -58,6 +62,7 @@ import com.butent.bee.client.layout.TilePanel;
 import com.butent.bee.client.tree.BeeTree;
 import com.butent.bee.client.utils.Browser;
 import com.butent.bee.client.utils.JsUtils;
+import com.butent.bee.client.visualization.showcase.Showcase;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.client.widget.Html;
 import com.butent.bee.client.widget.InlineHtml;
@@ -71,6 +76,7 @@ import com.butent.bee.shared.JustDate;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ContentType;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.utils.ArrayUtils;
@@ -313,6 +319,167 @@ public class CliWorker {
       Global.sayHuh(v);
     } else {
       Global.showDialog(xpr, JsUtils.evalToString(xpr));
+    }
+  }
+  
+  public static void execute(String line) {
+    if (BeeUtils.isEmpty(line)) {
+      return;
+    }
+
+    String v = line.trim();
+    String[] arr = BeeUtils.split(v, BeeConst.STRING_SPACE);
+    Assert.notEmpty(arr);
+
+    String z = arr[0].toLowerCase();
+    String args = (arr.length > 1) ? v.substring(z.length()).trim() : BeeConst.STRING_EMPTY;
+
+    if (z.equals("?")) {
+      whereAmI();
+    } else if (z.startsWith("ajaxk") || z.startsWith("apik") || z.startsWith("gook")) {
+      doAjaxKeys(arr);
+    } else if (z.equals("audio")) {
+      playAudio(args);
+    } else if (z.equals("browser") || z.startsWith("wind")) {
+      showBrowser(arr);
+    } else if (z.equals("cache")) {
+      BeeKeeper.getScreen().showGrid(Global.getCache().getInfo());
+    } else if (z.equals("canvas")) {
+      new CanvasDemo().start();
+    } else if (BeeUtils.inList(z, "center", "east", "north", "south", "screen", "west")) {
+      doScreen(arr);
+    } else if (z.equals("charset")) {
+      getCharsets();
+    } else if (z.equals("clear")) {
+      clearLog();
+    } else if (z.startsWith("client")) {
+      showClientLocation();
+    } else if (z.startsWith("conf")) {
+      BeeKeeper.getRpc().invoke("configInfo");
+    } else if (z.startsWith("conn") || z.equals("http")) {
+      BeeKeeper.getRpc().invoke("connectionInfo");
+    } else if (z.equals("cornify")) {
+      cornify(arr);
+    } else if (z.equals("df")) {
+      showDateFormat();
+    } else if (z.startsWith("dim")) {
+      showDimensions();
+    } else if (z.equals("dnd")) {
+      showDnd();
+    } else if (z.equals("dt")) {
+      showDate(arr);
+    } else if (BeeUtils.inList(z, "dir", "file", "get", "download", "src")) {
+      getResource(arr);
+    } else if (z.equals("eval")) {
+      eval(v, arr);
+    } else if (BeeUtils.inList(z, "f", "func")) {
+      showFunctions(v, arr);
+    } else if (z.equals("fs")) {
+      getFs();
+    } else if (z.equals("gen") && BeeUtils.isDigit(ArrayUtils.getQuietly(arr, 2))) {
+      BeeKeeper.getRpc().sendText(Service.GENERATE, BeeUtils.concat(1, arr[1], arr[2]));
+    } else if (z.equals("geo")) {
+      showGeo();
+    } else if (z.startsWith("grid")) {
+      GridFactory.showGridInfo(args);
+    } else if (z.equals("gwt")) {
+      showGwt();
+    } else if (BeeUtils.inList(z, "h5", "html5", "supp", "support")) {
+      showSupport();
+    } else if (z.equals("id")) {
+      showElement(v, arr);
+    } else if (BeeUtils.inList(z, "inp", "input")) {
+      showInput();
+    } else if (BeeUtils.inList(z, "keys", "pk")) {
+      getKeys(arr);
+    } else if (z.startsWith("like") && arr.length >= 3) {
+      doLike(arr);
+    } else if (z.equals("loaders")) {
+      BeeKeeper.getRpc().invoke("loaderInfo");
+    } else if (z.equals("locale")) {
+      doLocale(arr);
+    } else if (z.equals("log")) {
+      doLog(arr);
+    } else if (z.equals("menu")) {
+      doMenu(arr);
+    } else if (z.equals("meter")) {
+      showMeter(arr);
+    } else if (z.equals("md5")) {
+      digest(v);
+    } else if (z.equals("nf") && arr.length >= 3) {
+      BeeKeeper.getLog().info(NumberFormat.getFormat(arr[1]).format(BeeUtils.toDouble(arr[2])));
+    } else if (z.equals("notify") && arr.length >= 2) {
+      showNotes(args);
+    } else if (BeeUtils.inList(z, "p", "prop")) {
+      showProperties(v, arr);
+    } else if (z.equals("progress")) {
+      showProgress(arr);
+    } else if (z.equals("rebuild")) {
+      BeeKeeper.getRpc().sendText(Service.REBUILD, v);
+    } else if (z.equals("rpc")) {
+      showRpc();
+    } else if (z.startsWith("selector") && arr.length >= 2) {
+      querySelector(z, args);
+    } else if (z.startsWith("serv") || z.startsWith("sys")) {
+      BeeKeeper.getRpc().invoke("systemInfo");
+    } else if (z.equals("settings")) {
+      BeeKeeper.getScreen().showGrid(Settings.getSettings());
+    } else if (z.equals("size") && arr.length >= 2) {
+      showSize(arr);
+    } else if (z.equals("slider")) {
+      showSlider(arr);
+    } else if (z.equals("sql")) {
+      BeeKeeper.getRpc().sendText(Service.DO_SQL, v,
+          new ResponseCallback() {
+            @Override
+            public void onResponse(ResponseObject response) {
+              Assert.notNull(response);
+
+              if (response.hasResponse(BeeRowSet.class)) {
+                BeeRowSet rs = BeeRowSet.restore((String) response.getResponse());
+
+                if (rs.isEmpty()) {
+                  BeeKeeper.getScreen().updateActivePanel(new BeeLabel("RowSet is empty"));
+                } else {
+                  BeeKeeper.getScreen().showGrid(rs);
+                }
+              }
+            }
+          });
+
+    } else if (z.equals("stack")) {
+      showStack();
+    } else if (z.startsWith("stor")) {
+      storage(arr);
+    } else if (z.equals("style")) {
+      style(v, arr);
+    } else if (z.equals("svg")) {
+      showSvg();
+    } else if (z.equals("tables")) {
+      BeeKeeper.getRpc().makeGetRequest(Service.DB_TABLES);
+    } else if (z.equals("tiles")) {
+      showTiles();
+    } else if (z.startsWith("tran") || z.startsWith("detec")) {
+      translate(arr, z.startsWith("detec"));
+    } else if (z.equals("uc") || "unicode".startsWith(z)) {
+      unicode(arr);
+    } else if (z.startsWith("unit")) {
+      showUnits(arr);
+    } else if (z.equals("vars")) {
+      showVars(arr);
+    } else if (z.equals("video")) {
+      playVideo(args);
+    } else if (z.startsWith("view")) {
+      showView(args);
+    } else if (z.startsWith("viz")) {
+      Showcase.open();
+    } else if (z.equals("vm")) {
+      BeeKeeper.getRpc().invoke("vmInfo");
+    } else if (z.equals("widget") && arr.length >= 2) {
+      showWidgetInfo(arr);
+
+    } else {
+      Global.showDialog("wtf", v);
     }
   }
 

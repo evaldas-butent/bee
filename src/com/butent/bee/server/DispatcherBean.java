@@ -87,7 +87,8 @@ public class DispatcherBean {
   }
 
   private void initDb(String dsn) {
-    if (!BeeUtils.same(SqlBuilderFactory.getEngine(), BeeConst.getDsType(dsn))) {
+    if (!BeeUtils.isEmpty(dsn)
+        && !BeeUtils.same(SqlBuilderFactory.getEngine(), BeeConst.getDsType(dsn))) {
       ig.destroy();
       sys.initDatabase(dsn);
     }

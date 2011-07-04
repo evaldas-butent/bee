@@ -28,10 +28,12 @@ import javax.sql.DataSource;
 @Startup
 @Lock(LockType.READ)
 public class DataSourceBean {
+
   private static final String PROPERTY_DSN = "DataSourceName";
   private static Logger logger = Logger.getLogger(DataSourceBean.class.getName());
 
   private List<BeeDataSource> bds = new ArrayList<BeeDataSource>();
+  private int defaultDataSourceIndex = -1;
 
   @PreDestroy
   public void destroy() {
@@ -49,6 +51,14 @@ public class DataSourceBean {
     }
   }
 
+  public BeeDataSource getDefaultDs() {
+    if (defaultDataSourceIndex >= 0) {
+      return bds.get(defaultDataSourceIndex);
+    } else {
+      return null;
+    }
+  }
+  
   public BeeDataSource locateDs(String dsn) {
     Assert.notEmpty(dsn);
     BeeDataSource z = null;
@@ -76,13 +86,20 @@ public class DataSourceBean {
     }
 
     String[] arr = dsn.split(",");
+    char defChar = '*';
 
     String tp, nm;
     DataSource ds;
     boolean ok;
+    boolean isDef;
 
     for (String z : arr) {
       nm = z.trim();
+      isDef = BeeUtils.isPrefixOrSuffix(nm, defChar);
+      if (isDef) {
+        nm = BeeUtils.removePrefixAndSuffix(nm, defChar);
+      }
+
       tp = BeeConst.getDsType(nm);
       if (BeeUtils.isEmpty(tp)) {
         LogUtils.warning(logger, "dsn", z, "not recognized");
@@ -105,6 +122,9 @@ public class DataSourceBean {
 
       if (ok) {
         bds.add(new BeeDataSource(tp, ds));
+        if (isDef) {
+          defaultDataSourceIndex = bds.size() - 1;
+        }
       }
     }
   }

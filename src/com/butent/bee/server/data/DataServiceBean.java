@@ -64,22 +64,26 @@ public class DataServiceBean {
   }
 
   private BeeDataSource checkDs(String dsn, ResponseBuffer buff) {
+    BeeDataSource z;
+
     if (BeeUtils.isEmpty(dsn)) {
-      buff.addWarning("dsn not specified");
-      return null;
+      z = dsb.getDefaultDs();
+      if (z == null) {
+        buff.addWarning("dsn not specified");
+        return null;
+      }
+    } else {
+      z = dsb.locateDs(dsn);
+      if (z == null) {
+        buff.addSevere(dsn, "not found");
+        return null;
+      }
     }
 
-    BeeDataSource z = dsb.locateDs(dsn);
-
-    if (z == null) {
-      buff.addSevere(dsn, "not found");
-      return null;
-    }
     if (!z.check()) {
       buff.addSevere("cannot open", dsn, z.getErrors());
       return null;
     }
-
     return z;
   }
 

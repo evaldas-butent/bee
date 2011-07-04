@@ -122,6 +122,9 @@ public interface Images extends ClientBundle {
   @Source("ok.png")
   ImageResource ok();
 
+  @Source("play.png")
+  ImageResource play();
+  
   @Source("previous.png")
   ImageResource previous();
 

@@ -14,6 +14,7 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.Settings;
 import com.butent.bee.client.cli.CliWidget;
+import com.butent.bee.client.cli.CliWorker;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.dialog.Notification;
 import com.butent.bee.client.dom.DomUtils;
@@ -180,8 +181,16 @@ public class Mobile extends ScreenImpl {
   protected Widget initSouth() {
     BeeLayoutPanel p = new BeeLayoutPanel();
 
-    CliWidget cli = new CliWidget();
-    p.addLeftWidthTop(cli, 3, Unit.PX, 40, Unit.PCT, 3, Unit.PX);
+    final CliWidget cli = new CliWidget();
+    p.addLeftWidthTop(cli, 3, Unit.PX, 30, Unit.PCT, 3, Unit.PX);
+    
+    BeeImage play = new BeeImage(Global.getImages().play(), new BeeCommand() {
+      @Override
+      public void execute() {
+        CliWorker.execute(cli.getValue());
+      }
+    });
+    p.addLeftTop(play, 33, Unit.PCT, 2, Unit.PX);
 
     Horizontal hor = new Horizontal();
     
@@ -197,7 +206,7 @@ public class Mobile extends ScreenImpl {
 
     updateSignature(true);
 
-    p.addLeftRightTop(hor, 43, Unit.PCT, 80, Unit.PX, 1, Unit.PX);
+    p.addLeftRightTop(hor, 40, Unit.PCT, 80, Unit.PX, 1, Unit.PX);
 
     final Toggle log = new Toggle("Hide Log", "Show Log", "toggleLog");
     StyleUtils.setFontSize(log, FontSize.SMALL);
