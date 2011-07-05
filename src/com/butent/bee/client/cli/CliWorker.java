@@ -1391,28 +1391,37 @@ public class CliWorker {
               } else if (BeeUtils.isDigit(pMax)) {
                 type = BeeUtils.toInt(pMax);
               }
-              BeeKeeper.getLog().info(s, "type", type);
               break;
 
             case 'r':
               if (BeeUtils.isDigit(pMin)) {
                 rMin = BeeUtils.toInt(pMin);
-                BeeKeeper.getLog().info(s, "rMin", rMin);
               }
               if (BeeUtils.isDigit(pMax)) {
                 rMax = BeeUtils.toInt(pMax);
-                BeeKeeper.getLog().info(s, "rMax", rMax);
+              }
+              if (rMax == rMin) {
+                rMax = rMin + 1;
+              } else if (rMax < rMin) {
+                int z = rMax;
+                rMax = rMin;
+                rMin = z;
               }
               break;
 
             case 'c':
               if (BeeUtils.isDigit(pMin)) {
                 cntMin = BeeUtils.toInt(pMin);
-                BeeKeeper.getLog().info(s, "cntMin", cntMin);
               }
               if (BeeUtils.isDigit(pMax)) {
                 cntMax = BeeUtils.toInt(pMax);
-                BeeKeeper.getLog().info(s, "cntMax", cntMax);
+              }
+              if (cntMax == cntMin) {
+                cntMax = cntMin + 1;
+              } else if (cntMax < cntMin) {
+                int z = cntMax;
+                cntMax = cntMin;
+                cntMin = z;
               }
               break;
               
@@ -1422,17 +1431,19 @@ public class CliWorker {
               } else if (BeeUtils.isDigit(pMax)) {
                 colorStep = BeeUtils.toInt(pMax);
               }
-              BeeKeeper.getLog().info(s, "colorStep", colorStep);
               break;
 
             case 'o':
               if (BeeUtils.isDouble(pMin)) {
                 minOpacity = BeeUtils.toDouble(pMin);
-                BeeKeeper.getLog().info(s, "minOpacity", minOpacity);
               }
               if (BeeUtils.isDouble(pMax)) {
                 maxOpacity = BeeUtils.toDouble(pMax);
-                BeeKeeper.getLog().info(s, "maxOpacity", maxOpacity);
+              }
+              if (maxOpacity < minOpacity) {
+                double z = maxOpacity;
+                maxOpacity = minOpacity;
+                minOpacity = z;
               }
               break;
           }
@@ -1477,8 +1488,8 @@ public class CliWorker {
       int b = Math.min(BeeUtils.randomInt(0, colorStep + 1) * 256 / colorStep, 255);
 
       child.setAttribute("fill", "rgb(" + r + "," + g + "," + b + ")");
-      child.setAttribute("opacity",
-          BeeUtils.toString(BeeUtils.randomDouble(minOpacity, maxOpacity)));
+      child.setAttribute("opacity", BeeUtils.toString((minOpacity == maxOpacity)
+          ? minOpacity : BeeUtils.randomDouble(minOpacity, maxOpacity)));
 
       parent.appendChild(child);
     }

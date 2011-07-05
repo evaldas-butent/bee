@@ -17,6 +17,7 @@ import com.butent.bee.shared.utils.ValueUtils;
  */
 
 public class VolumeSlider extends Absolute implements RequiresResize {
+
   private class VolumeSpinner extends SpinnerBase {
     private VolumeSpinner(SpinnerListener spinnerListener, long value, long min, long max,
         int minStep, int maxStep, boolean constrained) {
@@ -123,6 +124,10 @@ public class VolumeSlider extends Absolute implements RequiresResize {
 
   public VolumeSpinner getSpinner() {
     return spinner;
+  }
+  
+  public long getValue() {
+    return spinner.getValue();
   }
 
   public boolean isEnabled() {

@@ -151,7 +151,7 @@ public class Mobile extends ScreenImpl {
 
     w = initWest();
     if (w != null) {
-      p.addWest(w, BeeUtils.limit(DomUtils.getClientWidth() / 5, 100, 200));
+      p.addWest(w, getWestWidth());
     }
 
     w = initEast();
@@ -178,6 +178,10 @@ public class Mobile extends ScreenImpl {
   @Override
   protected int getDefaultGridType() {
     return Settings.getGridType();
+  }
+  
+  protected int getWestWidth() {
+    return BeeUtils.limit(DomUtils.getClientWidth() / 5, 100, 200);    
   }
 
   @Override
