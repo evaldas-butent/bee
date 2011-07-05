@@ -1,10 +1,13 @@
 package com.butent.bee.shared.data.filter;
 
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.DateTime;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.LogUtils;
 
 import java.util.StringTokenizer;
@@ -14,11 +17,39 @@ import java.util.StringTokenizer;
  * filters.
 
  */
-
 public abstract class ComparisonFilter extends Filter {
 
+  /**
+   * Contains a list of filter parts which go through serialization.
+   */
+  private enum SerializationMembers {
+    COLUMN, OPERATOR, VALUE
+  }
+
+  public static Filter compareId(long value) {
+    return new IdFilter(DataUtils.DEFAULT_ID_NAME, Operator.EQ, value);
+  }
+
+  public static Filter compareId(String column, Operator op, String value) {
+    Assert.notEmpty(column);
+    Assert.notNull(op);
+
+    if (!BeeUtils.isLong(value)) {
+      LogUtils.warning(LogUtils.getDefaultLogger(), "Not an ID value:", value);
+      return null;
+    }
+    return new IdFilter(column, op, BeeUtils.toLong(value));
+  }
+
+  public static Filter compareVersion(String column, Operator op, String value) {
+    Assert.notEmpty(column);
+    Assert.notNull(op);
+    Assert.notEmpty(value);
+    return new VersionFilter(column, op, DateTime.parse(value).getTime());
+  }
+
   public static Filter compareWithColumn(IsColumn left, Operator op, IsColumn right) {
-    Assert.noNulls(left, right);
+    Assert.noNulls(left, op, right);
     String leftColumn = left.getId();
     ValueType leftType = left.getType();
     String rightColumn = right.getId();
@@ -35,7 +66,7 @@ public abstract class ComparisonFilter extends Filter {
   }
 
   public static Filter compareWithValue(IsColumn column, Operator op, String value) {
-    Assert.notNull(column);
+    Assert.noNulls(column, op, value);
 
     if (ValueType.isNumeric(column.getType()) && !BeeUtils.isDouble(value)) {
       LogUtils.warning(LogUtils.getDefaultLogger(), "Not a numeric value: " + value);
@@ -45,15 +76,44 @@ public abstract class ComparisonFilter extends Filter {
         Value.parseValue(column.getType(), value, true));
   }
 
+  private String column;
   private Operator operator;
+  private Object value;
 
   protected ComparisonFilter() {
     super();
   }
 
-  protected ComparisonFilter(Operator operator) {
-    Assert.notEmpty(operator);
+  protected ComparisonFilter(String column, Operator operator, Object value) {
+    this.column = column;
     this.operator = operator;
+    this.value = value;
+  }
+
+  @Override
+  public void deserialize(String s) {
+    setSafe();
+    SerializationMembers[] members = SerializationMembers.values();
+    String[] arr = Codec.beeDeserialize(s);
+
+    Assert.lengthEquals(arr, members.length);
+
+    for (int i = 0; i < members.length; i++) {
+      SerializationMembers member = members[i];
+      String xpr = arr[i];
+
+      switch (member) {
+        case COLUMN:
+          column = xpr;
+          break;
+        case OPERATOR:
+          operator = Operator.valueOf(xpr);
+          break;
+        case VALUE:
+          value = restoreValue(xpr);
+          break;
+      }
+    }
   }
 
   @Override
@@ -69,22 +129,65 @@ public abstract class ComparisonFilter extends Filter {
     }
     ComparisonFilter other = (ComparisonFilter) obj;
 
+    if (!column.equals(other.column)) {
+      return false;
+    }
     if (!operator.equals(other.operator)) {
       return false;
     }
+    if (!value.equals(other.value)) {
+      return false;
+    }
     return true;
+  }
+
+  public String getColumn() {
+    return column;
   }
 
   public Operator getOperator() {
     return operator;
   }
 
+  public Object getValue() {
+    return value;
+  }
+
   @Override
   public int hashCode() {
     final int prime = 31;
     int result = 1;
+    result = prime * result + column.hashCode();
     result = prime * result + operator.hashCode();
+    result = prime * result + value.hashCode();
     return result;
+  }
+
+  @Override
+  public String serialize() {
+    SerializationMembers[] members = SerializationMembers.values();
+    Object[] arr = new Object[members.length];
+    int i = 0;
+
+    for (SerializationMembers member : members) {
+      switch (member) {
+        case COLUMN:
+          arr[i++] = column;
+          break;
+        case OPERATOR:
+          arr[i++] = operator;
+          break;
+        case VALUE:
+          arr[i++] = value;
+          break;
+      }
+    }
+    return Codec.beeSerializeAll(BeeUtils.getClassName(this.getClass()), arr);
+  }
+
+  @Override
+  public String toString() {
+    return BeeUtils.concat(0, column, operator.toTextString(), value);
   }
 
   protected boolean isOperatorMatch(Value v1, Value v2) {
@@ -119,9 +222,7 @@ public abstract class ComparisonFilter extends Filter {
     return false;
   }
 
-  protected void setOperator(Operator operator) {
-    this.operator = operator;
-  }
+  protected abstract Object restoreValue(String s);
 
   private boolean isLike(String s1, String s2) {
     StringTokenizer tokenizer =

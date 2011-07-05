@@ -386,7 +386,7 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
     for (Integer index : getSearchColumns()) {
       Filter flt = DataUtils.parseExpression(BeeUtils.concat(1,
           getViewColumns().get(index), searchType == null ? "" : searchType.toTextString(), query),
-          getDataColumns(), true);
+          getDataColumns());
 
       if (flt == null) {
         continue;

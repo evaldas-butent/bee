@@ -27,6 +27,9 @@ import java.util.Map;
 
 public class DataUtils {
 
+  public static final String DEFAULT_ID_NAME = "_ID_";
+  public static final String DEFAULT_VERSION_NAME = "_VERSION_";
+
   @SuppressWarnings("unchecked")
   public static IsTable<?, ?> createTable(Object data, String... columnLabels) {
     Assert.notNull(data);
@@ -72,7 +75,12 @@ public class DataUtils {
     return "Column " + index;
   }
 
-  public static Filter parseCondition(String cond, List<? extends IsColumn> columns, boolean warn) {
+  public static Filter parseCondition(String cond, List<? extends IsColumn> columns) {
+    return parseCondition(cond, columns, DEFAULT_ID_NAME, DEFAULT_VERSION_NAME);
+  }
+
+  public static Filter parseCondition(String cond, List<? extends IsColumn> columns,
+      String idColumn, String versionColumn) {
     Filter flt = null;
 
     if (!BeeUtils.isEmpty(cond)) {
@@ -89,7 +97,7 @@ public class DataUtils {
       }
       if (!BeeUtils.isEmpty(flt)) {
         for (String part : parts) {
-          Filter ff = parseCondition(part, columns, warn);
+          Filter ff = parseCondition(part, columns, idColumn, versionColumn);
 
           if (ff == null) {
             flt = null;
@@ -102,26 +110,30 @@ public class DataUtils {
         String ptrn = "^\\s*" + CompoundType.NOT.toTextString() + "\\s*\\(\\s*(.*)\\s*\\)\\s*$";
 
         if (s.matches(ptrn)) {
-          flt = parseCondition(s.replaceFirst(ptrn, "$1"), columns, warn);
+          flt = parseCondition(s.replaceFirst(ptrn, "$1"), columns, idColumn, versionColumn);
 
           if (!BeeUtils.isEmpty(flt)) {
             flt = new NegationFilter(flt);
           }
         } else {
-          flt = parseExpression(s, columns, warn);
+          flt = parseExpression(s, columns, idColumn, versionColumn);
         }
       }
     }
     return flt;
   }
 
+  public static Filter parseExpression(String expr, List<? extends IsColumn> columns) {
+    return parseExpression(expr, columns, DEFAULT_ID_NAME, DEFAULT_VERSION_NAME);
+  }
+
   public static Filter parseExpression(String expr, List<? extends IsColumn> columns,
-      boolean warn) {
+      String idColumn, String versionColumn) {
     Filter flt = null;
 
     if (!BeeUtils.isEmpty(expr)) {
       String s = expr.trim();
-      IsColumn column = detectColumn(s, columns);
+      IsColumn column = detectColumn(s, columns, idColumn, versionColumn);
 
       if (!BeeUtils.isEmpty(column)) {
         String colName = column.getId();
@@ -138,7 +150,7 @@ public class DataUtils {
         if (!BeeUtils.isEmpty(operator)) {
           value = value.replaceFirst("^\\" + operator.toTextString() + "\\s*", "");
         } else {
-          if (ValueType.TEXT == column.getType()) {
+          if (ValueType.isString(column.getType())) {
             operator = Operator.CONTAINS;
           } else {
             operator = Operator.EQ;
@@ -146,7 +158,13 @@ public class DataUtils {
         }
         IsColumn column2 = isColumn(value, columns);
 
-        if (column2 != null) {
+        if (BeeUtils.same(colName, idColumn)) {
+          flt = ComparisonFilter.compareId(idColumn, operator, value);
+
+        } else if (BeeUtils.same(colName, versionColumn)) {
+          flt = ComparisonFilter.compareVersion(versionColumn, operator, value);
+
+        } else if (column2 != null) {
           flt = ComparisonFilter.compareWithColumn(column, operator, column2);
 
         } else {
@@ -162,24 +180,35 @@ public class DataUtils {
         if (notMode && flt != null) {
           flt = new NegationFilter(flt);
         }
-      } else if (warn) {
+      } else {
         LogUtils.warning(LogUtils.getDefaultLogger(), "Unknown column in expression: " + expr);
       }
     }
     return flt;
   }
 
-  private static IsColumn detectColumn(String expr, List<? extends IsColumn> columns) {
+  private static IsColumn detectColumn(String expr, List<? extends IsColumn> columns,
+      String idColumn, String versionColumn) {
     IsColumn column = null;
 
-    if (!BeeUtils.isEmpty(expr) && !BeeUtils.isEmpty(columns)) {
-      for (IsColumn col : columns) {
-        String s = col.getId();
+    if (!BeeUtils.isEmpty(expr)) {
+      if (!BeeUtils.isEmpty(columns)) {
+        for (IsColumn col : columns) {
+          String s = col.getId();
 
-        if (expr.toLowerCase().startsWith(s.toLowerCase())
-            && (column == null || s.length() > column.getId().length())) {
-          column = col;
+          if (expr.toLowerCase().startsWith(s.toLowerCase())
+              && (column == null || s.length() > column.getId().length())) {
+            column = col;
+          }
         }
+      }
+      if (column == null && !BeeUtils.isEmpty(idColumn)
+          && expr.toLowerCase().startsWith(idColumn.toLowerCase())) {
+        column = new BeeColumn(ValueType.LONG, idColumn);
+      }
+      if (column == null && !BeeUtils.isEmpty(versionColumn)
+          && expr.toLowerCase().startsWith(versionColumn.toLowerCase())) {
+        column = new BeeColumn(ValueType.DATETIME, versionColumn);
       }
     }
     return column;

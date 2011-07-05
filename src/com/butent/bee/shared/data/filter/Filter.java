@@ -50,6 +50,12 @@ public abstract class Filter implements BeeSerializable, Transformable, RowFilte
     } else if (BeeUtils.getClassName(CompoundFilter.class).equals(clazz)) {
       flt = new CompoundFilter();
 
+    } else if (BeeUtils.getClassName(IdFilter.class).equals(clazz)) {
+      flt = new IdFilter();
+
+    } else if (BeeUtils.getClassName(VersionFilter.class).equals(clazz)) {
+      flt = new VersionFilter();
+
     } else {
       Assert.unsupported("Unsupported class name: " + clazz);
     }

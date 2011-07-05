@@ -5,10 +5,10 @@ import com.google.common.collect.Maps;
 import com.google.common.primitives.Ints;
 
 import com.butent.bee.server.data.BeeTable.BeeField;
-import com.butent.bee.server.sql.SqlConstants.SqlDataType;
 import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.IsExpression;
+import com.butent.bee.server.sql.SqlConstants.SqlDataType;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.Assert;
@@ -19,7 +19,9 @@ import com.butent.bee.shared.data.filter.ColumnIsEmptyFilter;
 import com.butent.bee.shared.data.filter.ColumnValueFilter;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.filter.IdFilter;
 import com.butent.bee.shared.data.filter.NegationFilter;
+import com.butent.bee.shared.data.filter.VersionFilter;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.ExtendedProperty;
 import com.butent.bee.shared.utils.PropertyUtils;
@@ -96,20 +98,23 @@ public class BeeView implements HasExtendedInfo {
   private final String name;
   private final String source;
   private final String sourceIdName;
+  private final String sourceVersionName;
   private final boolean readOnly;
   private final SqlSelect query;
   private final Map<String, String[]> columns = Maps.newLinkedHashMap();
   private final Map<String, ViewField> expressions = Maps.newHashMap();
   private final Map<String, Boolean> orders = Maps.newLinkedHashMap();
 
-  BeeView(String name, String source, String idName, boolean readOnly) {
+  BeeView(String name, String source, String idName, String versionName, boolean readOnly) {
     Assert.notEmpty(name);
     Assert.notEmpty(source);
     Assert.notEmpty(idName);
+    Assert.notEmpty(versionName);
 
     this.name = name;
     this.source = source;
     this.sourceIdName = idName;
+    this.sourceVersionName = versionName;
     this.readOnly = readOnly;
     this.query = new SqlSelect().addFrom(source);
   }
@@ -132,8 +137,8 @@ public class BeeView implements HasExtendedInfo {
   }
 
   public IsCondition getCondition(ColumnColumnFilter filter) {
-    String firstName = filter.getFirstColumn();
-    String secondName = filter.getSecondColumn();
+    String firstName = filter.getColumn();
+    String secondName = filter.getValue();
     IsExpression firstSrc = SqlUtils.field(getAlias(firstName), getField(firstName));
     IsExpression secondSrc = SqlUtils.field(getAlias(secondName), getField(secondName));
 
@@ -201,6 +206,12 @@ public class BeeView implements HasExtendedInfo {
       } else if (BeeUtils.getClassName(CompoundFilter.class).equals(clazz)) {
         return getCondition((CompoundFilter) filter);
 
+      } else if (BeeUtils.getClassName(IdFilter.class).equals(clazz)) {
+        return getCondition((IdFilter) filter);
+
+      } else if (BeeUtils.getClassName(VersionFilter.class).equals(clazz)) {
+        return getCondition((VersionFilter) filter);
+
       } else {
         Assert.unsupported("Unsupported class name: " + clazz);
       }
@@ -208,8 +219,18 @@ public class BeeView implements HasExtendedInfo {
     return null;
   }
 
+  public IsCondition getCondition(IdFilter filter) {
+    return SqlUtils.compare(SqlUtils.field(source, sourceIdName),
+        filter.getOperator(), SqlUtils.constant(filter.getValue()));
+  }
+
   public IsCondition getCondition(NegationFilter filter) {
     return SqlUtils.not(getCondition(filter.getSubFilter()));
+  }
+
+  public IsCondition getCondition(VersionFilter filter) {
+    return SqlUtils.compare(SqlUtils.field(source, sourceVersionName),
+        filter.getOperator(), SqlUtils.constant(filter.getValue()));
   }
 
   public String getExpression(String colName) {
@@ -223,8 +244,8 @@ public class BeeView implements HasExtendedInfo {
   public List<ExtendedProperty> getInfo() {
     List<ExtendedProperty> info = Lists.newArrayList();
     PropertyUtils.addProperties(info, false, "Name", getName(), "Source", getSource(),
-        "Source Id Name", sourceIdName, "Read Only", isReadOnly(), "Query", query.getQuery(),
-        "Columns", columns.size());
+        "Source Id Name", sourceIdName, "Source Version Name", sourceVersionName,
+        "Read Only", isReadOnly(), "Query", query.getQuery(), "Columns", columns.size());
 
     String sub;
     int i = 0;

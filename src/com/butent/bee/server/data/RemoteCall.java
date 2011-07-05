@@ -201,7 +201,7 @@ public class RemoteCall {
           for (String col : view.getColumns()) {
             columns.add(new BeeColumn(ValueType.getByTypeCode(view.getType(col).toString()), col));
           }
-          filter = DataUtils.parseCondition(prm.filter, columns, true);
+          filter = DataUtils.parseCondition(prm.filter, columns, prm.idName, prm.versionName);
 
           if (filter == null) {
             rs = "Wrong filter: " + prm.filter;

@@ -10,7 +10,6 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
 import java.util.List;
-import java.util.logging.Logger;
 
 /**
  * Implements complex filters, containing more than one condition.
@@ -25,8 +24,6 @@ public class CompoundFilter extends Filter {
   private enum SerializationMembers {
     JOINTYPE, SUBFILTERS
   }
-
-  private static Logger logger = Logger.getLogger(CompoundFilter.class.getName());
 
   public static Filter and(Filter... filters) {
     return new CompoundFilter(CompoundType.AND, filters);
@@ -79,9 +76,6 @@ public class CompoundFilter extends Filter {
           for (String flt : Codec.beeDeserialize(xpr)) {
             add(Filter.restore(flt));
           }
-          break;
-        default:
-          logger.severe("Unhandled serialization member: " + member);
           break;
       }
     }
@@ -167,9 +161,6 @@ public class CompoundFilter extends Filter {
           break;
         case SUBFILTERS:
           arr[i++] = subFilters;
-          break;
-        default:
-          logger.severe("Unhandled serialization member: " + member);
           break;
       }
     }

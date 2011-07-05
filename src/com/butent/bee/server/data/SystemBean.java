@@ -1319,8 +1319,8 @@ public class SystemBean {
   private BeeView getDefaultView(String tblName, boolean allFields) {
     BeeTable table = getTable(tblName);
     Collection<BeeField> fields = allFields ? table.getFields() : table.getMainFields();
-
-    BeeView view = new BeeView(tblName, tblName, getIdName(tblName), false);
+    BeeView view =
+        new BeeView(tblName, table.getName(), table.getIdName(), table.getVersionName(), false);
 
     for (BeeField field : fields) {
       String fld = field.getName();
@@ -1617,7 +1617,7 @@ public class SystemBean {
         continue;
       }
       BeeView vw = new BeeView(view.getAttribute("name"),
-          getTable(src).getName(), getIdName(src),
+          getTable(src).getName(), getIdName(src), getVersionName(src),
           BeeUtils.toBoolean(view.getAttribute("readOnly")));
 
       NodeList nodeRoot = view.getElementsByTagName("BeeColumns");

@@ -138,16 +138,10 @@ public class Service {
   public static final String VAR_VIEW_LIMIT = RPC_VAR_PREFIX + "view_limit";
   public static final String VAR_VIEW_STATES = RPC_VAR_PREFIX + "view_states";
   public static final String VAR_VIEW_ROWS = RPC_VAR_PREFIX + "view_rows";
-  public static final String VAR_VIEW_ROW_ID = RPC_VAR_PREFIX + "view_row_id";
-  public static final String VAR_VIEW_VERSION = RPC_VAR_PREFIX + "view_version";
   public static final String VAR_VIEW_COLUMNS = RPC_VAR_PREFIX + "view_columns";
-  public static final String VAR_VIEW_TYPE = RPC_VAR_PREFIX + "view_type";
-  public static final String VAR_VIEW_OLD_VALUE = RPC_VAR_PREFIX + "view_old";
-  public static final String VAR_VIEW_NEW_VALUE = RPC_VAR_PREFIX + "view_new";
-  public static final String VAR_VIEW_FULL_ROW = RPC_VAR_PREFIX + "full_row";
 
   public static final String XML_TAG_DATA = RPC_VAR_PREFIX + "data";
-  
+
   public static final String VIEW_COLUMN_SEPARATOR = " ";
 
   /**

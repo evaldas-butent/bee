@@ -1,33 +1,31 @@
 <domain>
   <resources>
-    <jdbc-resource pool-name="MySQL" jndi-name="jdbc/my"></jdbc-resource>
-    <jdbc-connection-pool driver-classname="com.mysql.jdbc.Driver"
-      datasource-classname="com.mysql.jdbc.Driver" res-type="java.sql.Driver" name="MySQL">
-      <property name="URL"
-        value="jdbc:mysql://localhost:3306/pypas?user=mysql&amp;password=mysql&amp;characterEncoding=utf8"></property>
+    <jdbc-connection-pool driver-classname="com.mysql.jdbc.Driver" datasource-classname="com.mysql.jdbc.Driver" res-type="java.sql.Driver" name="MySQL">
+      <property name="URL" value="jdbc:mysql://192.168.0.245:3306/pypas?user=root&amp;password=root&amp;characterEncoding=utf8"></property>
     </jdbc-connection-pool>
-
-    <jdbc-resource pool-name="PostgreSQL" description="" jndi-name="jdbc/pg"></jdbc-resource>
-    <jdbc-connection-pool driver-classname="org.postgresql.Driver"
-      datasource-classname="" res-type="java.sql.Driver" description="" name="PostgreSQL">
-      <property name="URL"
-        value="jdbc:postgresql://127.0.0.1:5432/postgres?user=postgres&amp;password=admin"></property>
+    <jdbc-connection-pool driver-classname="org.postgresql.Driver" datasource-classname="" res-type="java.sql.Driver" description="" name="PostgreSQL">
+      <property name="URL" value="jdbc:postgresql://192.168.0.245:5444/javaDB?user=javaUser&amp;password=javaUser"></property>
     </jdbc-connection-pool>
-
-    <jdbc-resource pool-name="MsSQL" description="" jndi-name="jdbc/ms"></jdbc-resource>
-    <jdbc-connection-pool driver-classname="com.microsoft.sqlserver.jdbc.SQLServerDriver"
-      res-type="java.sql.Driver" name="MsSQL">
-      <property name="URL"
-        value="jdbc:sqlserver://192.168.0.211\SQLEXPRESS;databaseName=pypas;user=sa;password=butent9;"></property>
+    <jdbc-connection-pool driver-classname="com.microsoft.sqlserver.jdbc.SQLServerDriver" res-type="java.sql.Driver" name="MsSQL">
+      <property name="URL" value="jdbc:sqlserver://192.168.0.245\SQLEXPRESS;databaseName=pypas;user=sa;password=butent9;"></property>
     </jdbc-connection-pool>
-
+    <jdbc-connection-pool driver-classname="oracle.jdbc.driver.OracleDriver" datasource-classname="" res-type="java.sql.Driver" description="" name="OracleSQL">
+      <property name="URL" value="jdbc:oracle:thin:user/user@192.168.0.245:1521:XE"></property>
+    </jdbc-connection-pool>
     <jdbc-resource pool-name="OracleSQL" description="" jndi-name="jdbc/OracleXE"></jdbc-resource>
-    <jdbc-connection-pool driver-classname="oracle.jdbc.driver.OracleDriver"
-      datasource-classname="" res-type="java.sql.Driver" description="" name="OracleSQL">
-      <property name="URL" value="jdbc:oracle:thin:user/user@127.0.0.1:1521:XE"></property>
-    </jdbc-connection-pool>
+    <jdbc-resource pool-name="MySQL" description="" jndi-name="jdbc/my"></jdbc-resource>
+    <jdbc-resource pool-name="MsSQL" description="" jndi-name="jdbc/ms"></jdbc-resource>
+    <jdbc-resource pool-name="PostgreSQL" description="" jndi-name="jdbc/pg"></jdbc-resource>
   </resources>
-  <configs>
+  <servers>
+    <server name="server" config-ref="server-config">
+      <application-ref ref="__admingui" virtual-servers="__asadmin"></application-ref>
+      <resource-ref ref="jdbc/OracleXE"></resource-ref>
+      <resource-ref ref="jdbc/my"></resource-ref>
+      <resource-ref ref="jdbc/ms"></resource-ref>
+      <resource-ref ref="jdbc/pg"></resource-ref>
+    </server>
+  </servers>   <configs>
     <config name="server-config">
       <security-service>
         <auth-realm name="DBRealm" classname="com.sun.enterprise.security.auth.realm.jdbc.JDBCRealm">

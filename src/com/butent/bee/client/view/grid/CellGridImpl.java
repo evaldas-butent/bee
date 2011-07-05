@@ -617,7 +617,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       if (BeeUtils.isEmpty(source)) {
         continue;
       }
-      Filter flt = DataUtils.parseExpression(source + " " + input, columns, true);
+      Filter flt = DataUtils.parseExpression(source + " " + input, columns);
 
       if (flt == null) {
         continue;
@@ -808,7 +808,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
           oldRow = createEmptyRow();
         }
       }
-      
+
       String carry = editableColumn.getCarryValue(oldRow);
       if (!BeeUtils.isEmpty(carry)) {
         newRow.setValue(editableColumn.getColIndex(), carry);

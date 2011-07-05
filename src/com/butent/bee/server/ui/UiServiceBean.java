@@ -285,14 +285,10 @@ public class UiServiceBean {
     int offset = BeeUtils.toInt(reqInfo.getParameter(Service.VAR_VIEW_OFFSET));
 
     String where = reqInfo.getParameter(Service.VAR_VIEW_WHERE);
-    String rowId = reqInfo.getParameter(Service.VAR_VIEW_ROW_ID);
     String sort = reqInfo.getParameter(Service.VAR_VIEW_ORDER);
 
     IsCondition condition = null;
-    if (BeeUtils.isLong(rowId)) {
-      String tblName = sys.getView(viewName).getSource();
-      condition = SqlUtils.equal(tblName, sys.getIdName(tblName), BeeUtils.toLong(rowId));
-    } else if (!BeeUtils.isEmpty(where)) {
+    if (!BeeUtils.isEmpty(where)) {
       condition = sys.getViewCondition(viewName, Filter.restore(where));
     }
 

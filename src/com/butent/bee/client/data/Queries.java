@@ -15,6 +15,7 @@ import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.cache.CachingPolicy;
+import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
@@ -126,7 +127,7 @@ public class Queries {
   public static void getRow(String viewName, long rowId, RowCallback callback) {
     getRow(viewName, rowId, null, callback);
   }
-  
+
   public static void getRow(final String viewName, final long rowId, List<String> columns,
       final RowCallback callback) {
     Assert.notEmpty(viewName);
@@ -140,7 +141,7 @@ public class Queries {
     }
 
     List<Property> lst = PropertyUtils.createProperties(Service.VAR_VIEW_NAME, viewName,
-        Service.VAR_VIEW_ROW_ID, rowId);
+        Service.VAR_VIEW_WHERE, ComparisonFilter.compareId(rowId).serialize());
     if (!BeeUtils.isEmpty(columnNames)) {
       PropertyUtils.addProperties(lst, Service.VAR_VIEW_COLUMNS, columnNames);
     }
@@ -166,7 +167,7 @@ public class Queries {
           }
         });
   }
-  
+
   public static void getRowCount(final String viewName, final Filter filter,
       final IntCallback callback) {
     Assert.notEmpty(viewName);
@@ -222,7 +223,7 @@ public class Queries {
       final CachingPolicy cachingPolicy, final RowSetCallback callback) {
     Assert.notEmpty(viewName);
     Assert.notNull(callback);
-    
+
     final String columnNames;
     if (BeeUtils.isEmpty(columns)) {
       columnNames = null;
@@ -297,18 +298,18 @@ public class Queries {
   public static int getRowSet(String viewName, List<String> columns, RowSetCallback callback) {
     return getRowSet(viewName, columns, null, null, callback);
   }
-  
+
   public static void insert(String viewName, List<BeeColumn> columns, List<String> values,
       final RowCallback callback) {
     Assert.notEmpty(viewName);
     Assert.notEmpty(columns);
     Assert.notEmpty(values);
     Assert.isTrue(columns.size() == values.size());
-    
+
     BeeRowSet rs = new BeeRowSet(columns);
     rs.setViewName(viewName);
     rs.addRow(0, values.toArray(new String[0]));
-    
+
     BeeKeeper.getRpc().sendText(Service.INSERT_ROW, Codec.beeSerialize(rs), new ResponseCallback() {
       public void onResponse(ResponseObject response) {
         if (response.hasErrors()) {
