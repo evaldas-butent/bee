@@ -15,6 +15,10 @@ import com.butent.bee.shared.HasStringValue;
 import com.butent.bee.shared.ui.EditorAction;
 import com.butent.bee.shared.utils.BeeUtils;
 
+/**
+ * Implements a user interface component for inserting number type values.
+ */
+
 public class InputNumber extends InputText implements HasNumberBounds, HasNumberStep,
     HasNumberFormat, HasPrecision, HasScale {
 
@@ -67,7 +71,7 @@ public class InputNumber extends InputText implements HasNumberBounds, HasNumber
     if (BeeUtils.isEmpty(v) && isNullable()) {
       return null;
     }
-    
+
     if (getNumberFormat() != null) {
       Double d = Format.parseQuietly(getNumberFormat(), v);
       if (d == null) {
@@ -113,11 +117,11 @@ public class InputNumber extends InputText implements HasNumberBounds, HasNumber
   public void setPrecision(int precision) {
     this.precision = precision;
   }
-  
+
   public void setScale(int scale) {
     this.scale = scale;
   }
-  
+
   public void setStepValue(Number stepValue) {
     this.stepValue = stepValue;
   }
@@ -159,7 +163,7 @@ public class InputNumber extends InputText implements HasNumberBounds, HasNumber
         return "Value must not be null";
       }
     }
-    
+
     if (getNumberFormat() != null) {
       Double d = Format.parseQuietly(getNumberFormat(), v);
       if (d == null) {

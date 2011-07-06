@@ -21,6 +21,10 @@ import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.ui.EditorAction;
 import com.butent.bee.shared.utils.BeeUtils;
 
+/**
+ * Implements a user interface component for visibly switching values on and off.
+ */
+
 public class Toggle extends CustomButton implements Editor {
 
   private HasBooleanValue source = null;
@@ -51,7 +55,7 @@ public class Toggle extends CustomButton implements Editor {
     super(upImage, downImage);
     init(null);
   }
-  
+
   public Toggle(String upText, String downText, String styleName) {
     super(upText, downText);
     init(styleName);
@@ -92,7 +96,7 @@ public class Toggle extends CustomButton implements Editor {
   public boolean handlesKey(int keyCode) {
     return false;
   }
-  
+
   public void invert() {
     setDown(!isDown());
   }
@@ -141,7 +145,7 @@ public class Toggle extends CustomButton implements Editor {
       DomEvent.fireNativeEvent(event, this, this.getElement());
       return;
     }
-    
+
     super.onBrowserEvent(event);
   }
 
