@@ -29,6 +29,7 @@ public class DataUtils {
 
   public static final String DEFAULT_ID_NAME = "_ID_";
   public static final String DEFAULT_VERSION_NAME = "_VERSION_";
+  public static final String DEFAULT_NAMESPACE = "http://www.butent.com/bee";
 
   @SuppressWarnings("unchecked")
   public static IsTable<?, ?> createTable(Object data, String... columnLabels) {

@@ -19,6 +19,7 @@ import com.butent.bee.server.sql.IsExpression;
 import com.butent.bee.server.sql.IsQuery;
 import com.butent.bee.server.sql.SqlBuilderFactory;
 import com.butent.bee.server.sql.SqlConstants;
+import com.butent.bee.server.sql.SqlConstants.SqlDataType;
 import com.butent.bee.server.sql.SqlConstants.SqlKeyword;
 import com.butent.bee.server.sql.SqlCreate;
 import com.butent.bee.server.sql.SqlDelete;
@@ -771,7 +772,7 @@ public class SystemBean {
 
     for (BeeTable table : getTables()) {
       String tblName = table.getName();
-      table.setActive(!usr.isUserTable(tblName) && BeeUtils.inListSame(tblName, dbTables));
+      table.setActive(BeeUtils.inListSame(tblName, dbTables));
 
       Map<String, String[]> tableFields = Maps.newHashMap();
 
@@ -1320,8 +1321,9 @@ public class SystemBean {
         SimpleRowSet oldFields = qs.dbFields(getDbName(), getDbSchema(), tblName);
         SimpleRowSet newFields = qs.dbFields(getDbName(), getDbSchema(), tblBackup);
 
-        if (!update) {
-          update = (oldFields.getNumberOfRows() != newFields.getNumberOfRows());
+        if (!update && oldFields.getNumberOfRows() != newFields.getNumberOfRows()) {
+          update = true;
+          LogUtils.warning(logger, "FIELD COUNT DOESN'T MATCH");
         }
         if (!update) {
           int i = 0;
@@ -1541,7 +1543,8 @@ public class SystemBean {
                 LogUtils.warning(logger, "Extendend fields must bee nullable:", tbl, fldName);
                 notNull = false;
               }
-              table.addField(fldName, field.type, field.precision, field.scale, notNull,
+              table.addField(fldName, SqlDataType.valueOf(field.type),
+                  field.precision, field.scale, notNull,
                   field.unique, field.relation, field.cascade)
                   .setTranslatable(field.translatable)
                   .setExtended(extMode);

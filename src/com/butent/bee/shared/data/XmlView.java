@@ -1,7 +1,5 @@
 package com.butent.bee.shared.data;
 
-import com.butent.bee.server.Config;
-
 import java.util.Collection;
 
 import javax.xml.bind.annotation.XmlAttribute;
@@ -9,10 +7,10 @@ import javax.xml.bind.annotation.XmlElementRef;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 
-@XmlRootElement(name = "BeeView", namespace = Config.DEFAULT_NAMESPACE)
+@XmlRootElement(name = "BeeView", namespace = DataUtils.DEFAULT_NAMESPACE)
 public class XmlView {
 
-  @XmlRootElement(name = "BeeColumn", namespace = Config.DEFAULT_NAMESPACE)
+  @XmlRootElement(name = "BeeColumn", namespace = DataUtils.DEFAULT_NAMESPACE)
   public static class XmlColumn {
     @XmlAttribute
     public String name;
@@ -22,7 +20,7 @@ public class XmlView {
     public String locale;
   }
 
-  @XmlRootElement(name = "OrderBy", namespace = Config.DEFAULT_NAMESPACE)
+  @XmlRootElement(name = "OrderBy", namespace = DataUtils.DEFAULT_NAMESPACE)
   public static class XmlOrder {
     @XmlAttribute
     public String column;
@@ -38,10 +36,10 @@ public class XmlView {
   public boolean readOnly;
 
   @XmlElementRef
-  @XmlElementWrapper(name = "BeeColumns", namespace = Config.DEFAULT_NAMESPACE)
+  @XmlElementWrapper(name = "BeeColumns", namespace = DataUtils.DEFAULT_NAMESPACE)
   public Collection<XmlColumn> columns;
 
   @XmlElementRef
-  @XmlElementWrapper(name = "BeeOrder", namespace = Config.DEFAULT_NAMESPACE)
+  @XmlElementWrapper(name = "BeeOrder", namespace = DataUtils.DEFAULT_NAMESPACE)
   public Collection<XmlOrder> orders;
 }

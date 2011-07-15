@@ -1,8 +1,5 @@
 package com.butent.bee.shared.data;
 
-import com.butent.bee.server.Config;
-import com.butent.bee.server.sql.SqlConstants.SqlDataType;
-
 import java.util.Collection;
 
 import javax.xml.bind.annotation.XmlAttribute;
@@ -11,15 +8,15 @@ import javax.xml.bind.annotation.XmlElementRef;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 
-@XmlRootElement(name = "BeeTable", namespace = Config.DEFAULT_NAMESPACE)
+@XmlRootElement(name = "BeeTable", namespace = DataUtils.DEFAULT_NAMESPACE)
 public class XmlTable {
 
-  @XmlRootElement(name = "BeeField", namespace = Config.DEFAULT_NAMESPACE)
+  @XmlRootElement(name = "BeeField", namespace = DataUtils.DEFAULT_NAMESPACE)
   public static class XmlField {
     @XmlAttribute
     public String name;
     @XmlAttribute
-    public SqlDataType type;
+    public String type;
     @XmlAttribute
     public int precision;
     @XmlAttribute
@@ -36,11 +33,11 @@ public class XmlTable {
     public boolean translatable;
   }
 
-  @XmlRootElement(name = "BeeKey", namespace = Config.DEFAULT_NAMESPACE)
+  @XmlRootElement(name = "BeeKey", namespace = DataUtils.DEFAULT_NAMESPACE)
   public static class XmlKey {
     @XmlAttribute
     public boolean unique;
-    @XmlElement(name = "KeyField", namespace = Config.DEFAULT_NAMESPACE)
+    @XmlElement(name = "KeyField", namespace = DataUtils.DEFAULT_NAMESPACE)
     public Collection<String> fields;
   }
 
@@ -52,18 +49,18 @@ public class XmlTable {
   public String versionName;
 
   @XmlElementRef
-  @XmlElementWrapper(name = "BeeFields", namespace = Config.DEFAULT_NAMESPACE)
+  @XmlElementWrapper(name = "BeeFields", namespace = DataUtils.DEFAULT_NAMESPACE)
   public Collection<XmlField> fields;
 
   @XmlElementRef
-  @XmlElementWrapper(name = "BeeExtended", namespace = Config.DEFAULT_NAMESPACE)
+  @XmlElementWrapper(name = "BeeExtended", namespace = DataUtils.DEFAULT_NAMESPACE)
   public Collection<XmlField> extFields;
 
-  @XmlElement(name = "BeeState", namespace = Config.DEFAULT_NAMESPACE)
-  @XmlElementWrapper(name = "BeeStates", namespace = Config.DEFAULT_NAMESPACE)
+  @XmlElement(name = "BeeState", namespace = DataUtils.DEFAULT_NAMESPACE)
+  @XmlElementWrapper(name = "BeeStates", namespace = DataUtils.DEFAULT_NAMESPACE)
   public Collection<String> states;
 
   @XmlElementRef
-  @XmlElementWrapper(name = "BeeKeys", namespace = Config.DEFAULT_NAMESPACE)
+  @XmlElementWrapper(name = "BeeKeys", namespace = DataUtils.DEFAULT_NAMESPACE)
   public Collection<XmlKey> keys;
 }

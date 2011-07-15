@@ -2,6 +2,7 @@ package com.butent.bee.server.data;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
@@ -43,7 +44,6 @@ class BeeTable implements HasExtFields, HasStates, HasTranslations {
     private final boolean unique;
     private final String relation;
     private final boolean cascade;
-    private boolean custom = false;
     private boolean extended = false;
     private boolean translatable = false;
 
@@ -94,10 +94,6 @@ class BeeTable implements HasExtFields, HasStates, HasTranslations {
       return cascade;
     }
 
-    public boolean isCustom() {
-      return custom;
-    }
-
     public boolean isExtended() {
       return extended;
     }
@@ -123,11 +119,6 @@ class BeeTable implements HasExtFields, HasStates, HasTranslations {
       this.translatable = translatable;
       return this;
     }
-
-    private BeeField setCustom() {
-      this.custom = true;
-      return this;
-    }
   }
 
   public class BeeForeignKey {
@@ -137,7 +128,6 @@ class BeeTable implements HasExtFields, HasStates, HasTranslations {
     private final String refTable;
     private final boolean cascade;
     private final boolean cascadeDelete;
-    private boolean custom = false;
 
     private BeeForeignKey(String tblName, String keyField, String refTable,
         boolean cascade, boolean cascadeDelete) {
@@ -180,15 +170,6 @@ class BeeTable implements HasExtFields, HasStates, HasTranslations {
     public boolean isCascadeDelete() {
       return cascadeDelete;
     }
-
-    public boolean isCustom() {
-      return custom;
-    }
-
-    private BeeForeignKey setCustom() {
-      this.custom = true;
-      return this;
-    }
   }
 
   public class BeeKey {
@@ -196,7 +177,6 @@ class BeeTable implements HasExtFields, HasStates, HasTranslations {
     private final String name;
     private final KeyTypes keyType;
     private final String[] keyFields;
-    private boolean custom = false;
 
     private BeeKey(KeyTypes keyType, String tblName, String... keyFields) {
       Assert.notEmpty(tblName);
@@ -242,21 +222,12 @@ class BeeTable implements HasExtFields, HasStates, HasTranslations {
       return tblName;
     }
 
-    public boolean isCustom() {
-      return custom;
-    }
-
     public boolean isPrimary() {
       return keyType.equals(KeyTypes.PRIMARY);
     }
 
     public boolean isUnique() {
       return keyType.equals(KeyTypes.UNIQUE);
-    }
-
-    private BeeKey setCustom() {
-      this.custom = true;
-      return this;
     }
   }
 
@@ -285,8 +256,8 @@ class BeeTable implements HasExtFields, HasStates, HasTranslations {
             .addLong(extIdName, true)
             .addLong(extVersionName, true);
 
-        addKey(true, tblName, extIdName).setCustom();
-        addForeignKey(tblName, extIdName, getName(), true, true).setCustom();
+        addKey(true, tblName, extIdName);
+        addForeignKey(tblName, extIdName, getName(), true, true);
       }
       sc.addField(field.getName(), field.getType(), field.getPrecision(), field.getScale(),
           field.isNotNull());
@@ -422,8 +393,8 @@ class BeeTable implements HasExtFields, HasStates, HasTranslations {
               .addLong(stateIdName, true)
               .addLong(stateVersionName, true);
 
-          addKey(true, tblName, stateIdName).setCustom();
-          addForeignKey(tblName, stateIdName, getName(), true, true).setCustom();
+          addKey(true, tblName, stateIdName);
+          addForeignKey(tblName, stateIdName, getName(), true, true);
         }
         for (String col : stateFields.get(state)) {
           if (bitCount <= Integer.SIZE) {
@@ -627,8 +598,8 @@ class BeeTable implements HasExtFields, HasStates, HasTranslations {
             .addLong(translationVersionName, true)
             .addString(translationLocaleName, 2, true);
 
-        addKey(true, tblName, translationIdName, translationLocaleName).setCustom();
-        addForeignKey(tblName, translationIdName, getName(), true, true).setCustom();
+        addKey(true, tblName, translationIdName, translationLocaleName);
+        addForeignKey(tblName, translationIdName, getName(), true, true);
       }
       sc.addField(field.getName(), field.getType(), field.getPrecision(), field.getScale(), false);
 
@@ -744,14 +715,13 @@ class BeeTable implements HasExtFields, HasStates, HasTranslations {
   private final Map<String, BeeField> fields = Maps.newLinkedHashMap();
   private final Map<String, BeeForeignKey> foreignKeys = Maps.newLinkedHashMap();
   private final Map<String, BeeKey> keys = Maps.newLinkedHashMap();
-  private final Map<BeeState, Boolean> states = Maps.newLinkedHashMap();
+  private final Set<BeeState> states = Sets.newHashSet();
 
   private final HasExtFields extSource;
   private final HasStates stateSource;
   private final HasTranslations translationSource;
 
   private boolean active = false;
-  private boolean custom = false;
 
   BeeTable(String name, String idName, String versionName) {
     Assert.notEmpty(name);
@@ -837,7 +807,7 @@ class BeeTable implements HasExtFields, HasStates, HasTranslations {
   }
 
   public Collection<BeeState> getStates() {
-    return ImmutableList.copyOf(states.keySet());
+    return ImmutableSet.copyOf(states);
   }
 
   @Override
@@ -871,7 +841,7 @@ class BeeTable implements HasExtFields, HasStates, HasTranslations {
   }
 
   public boolean hasState(BeeState state) {
-    return states.containsKey(state);
+    return states.contains(state);
   }
 
   @Override
@@ -892,10 +862,6 @@ class BeeTable implements HasExtFields, HasStates, HasTranslations {
 
   public boolean isActive() {
     return active;
-  }
-
-  public boolean isCustom() {
-    return custom;
   }
 
   public boolean isEmpty() {
@@ -977,11 +943,13 @@ class BeeTable implements HasExtFields, HasStates, HasTranslations {
   }
 
   BeeState addState(BeeState state) {
-    return addState(state, false);
+    Assert.state(!hasState(state),
+        BeeUtils.concat(1, "Dublicate state:", getName(), state.getName()));
+    states.add(state);
+    return state;
   }
 
   int applyChanges(BeeTable extension) {
-    dropCustom();
     int cnt = 0;
 
     for (BeeField fld : extension.getFields()) {
@@ -994,8 +962,7 @@ class BeeTable implements HasExtFields, HasStates, HasTranslations {
           fld.getRelation(),
           fld.isCascade())
           .setTranslatable(fld.isTranslatable())
-          .setExtended(fld.isExtended())
-          .setCustom();
+          .setExtended(fld.isExtended());
       cnt++;
     }
     for (BeeForeignKey fKey : extension.getForeignKeys()) {
@@ -1003,19 +970,17 @@ class BeeTable implements HasExtFields, HasStates, HasTranslations {
           fKey.getKeyField(),
           fKey.getRefTable(),
           fKey.isCascade(),
-          fKey.isCascadeDelete())
-          .setCustom();
+          fKey.isCascadeDelete());
       cnt++;
     }
     for (BeeKey key : extension.getKeys()) {
       if (!key.isPrimary()) {
-        addKey(key.isUnique(), key.getTable(), key.getKeyFields())
-            .setCustom();
+        addKey(key.isUnique(), key.getTable(), key.getKeyFields());
         cnt++;
       }
     }
     for (BeeState state : extension.getStates()) {
-      addState(state, true);
+      addState(state);
       cnt++;
     }
     return cnt;
@@ -1023,39 +988,5 @@ class BeeTable implements HasExtFields, HasStates, HasTranslations {
 
   void setActive(boolean active) {
     this.active = active;
-  }
-
-  void setCustom() {
-    this.custom = true;
-  }
-
-  private BeeState addState(BeeState state, boolean custom) {
-    Assert.state(!hasState(state),
-        BeeUtils.concat(1, "Dublicate state:", getName(), state.getName()));
-    states.put(state, custom);
-    return state;
-  }
-
-  private void dropCustom() {
-    for (BeeField field : Lists.newArrayList(getFields())) {
-      if (field.isCustom()) {
-        fields.remove(BeeUtils.normalize(field.getName()));
-      }
-    }
-    for (BeeKey key : Lists.newArrayList(getKeys())) {
-      if (key.isCustom()) {
-        keys.remove(BeeUtils.normalize(key.getName()));
-      }
-    }
-    for (BeeForeignKey fKey : Lists.newArrayList(getForeignKeys())) {
-      if (fKey.isCustom()) {
-        foreignKeys.remove(BeeUtils.normalize(fKey.getName()));
-      }
-    }
-    for (BeeState state : Lists.newArrayList(getStates())) {
-      if (states.get(state)) { // isCustom
-        states.remove(state);
-      }
-    }
   }
 }

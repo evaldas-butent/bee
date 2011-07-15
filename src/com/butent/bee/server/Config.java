@@ -28,8 +28,6 @@ import java.util.logging.Logger;
 public class Config {
   private static Logger logger = Logger.getLogger(Config.class.getName());
 
-  public static final String DEFAULT_NAMESPACE = "http://www.butent.com/bee";
-
   public static final File WAR_DIR;
   public static final File SOURCE_DIR;
   public static final File SCHEMA_DIR;
