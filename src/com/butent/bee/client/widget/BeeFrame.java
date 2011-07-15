@@ -1,24 +1,19 @@
 package com.butent.bee.client.widget;
 
-import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.user.client.ui.Frame;
 
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.shared.HasId;
 
-/**
- * Handles a component for using scalable vector graphics.
- */
-public class Svg extends Widget implements HasId {
+public class BeeFrame extends Frame implements HasId {
 
-  public Svg() {
-    super();
-
-    setElement(DomUtils.createSvg(DomUtils.TAG_SVG));
+  public BeeFrame(String url) {
+    super(url);
     init();
   }
 
   public void createId() {
-    DomUtils.createId(this, "svg");
+    DomUtils.createId(this, "frame");
   }
 
   public String getId() {
@@ -31,5 +26,6 @@ public class Svg extends Widget implements HasId {
 
   private void init() {
     createId();
+    setStyleName("bee-Frame");
   }
 }

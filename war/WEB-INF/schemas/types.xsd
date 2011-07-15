@@ -16,6 +16,20 @@
     </xs:restriction>
   </xs:simpleType>
 
+  <xs:simpleType name="valueType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="boolean" />
+      <xs:enumeration value="date" />
+      <xs:enumeration value="datetime" />
+      <xs:enumeration value="decimal" />
+      <xs:enumeration value="integer" />
+      <xs:enumeration value="long" />
+      <xs:enumeration value="double" />
+      <xs:enumeration value="string" />
+      <xs:enumeration value="timeofday" />
+    </xs:restriction>
+  </xs:simpleType>
+
   <xs:simpleType name="nameType">
     <xs:restriction base="xs:string">
       <xs:pattern value="[A-Z][a-zA-Z0-9]*"/>
@@ -37,6 +51,12 @@
   <xs:simpleType name="stateNameType">
     <xs:restriction base="bee:nameType">
       <xs:maxLength value="20"></xs:maxLength>
+    </xs:restriction>
+  </xs:simpleType>
+  
+  <xs:simpleType name="positiveDecimal">
+    <xs:restriction base="xs:decimal">
+      <xs:minExclusive value="0" />
     </xs:restriction>
   </xs:simpleType>
 </xs:schema>

@@ -15,6 +15,7 @@ import com.butent.bee.shared.utils.BeeUtils;
  */
 
 public class Html extends HTML implements HasId, HasCommand {
+
   private BeeCommand command = null;
 
   public Html() {

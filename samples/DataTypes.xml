@@ -14,7 +14,7 @@
     <footer height="30" />
 
     <columns>
-      <BeeIdColumn name="id" caption="ID" showWidth="false" horizontalAlignment="left">
+      <BeeIdColumn name="Id" caption="ID" showWidth="false" horizontalAlignment="left">
         <style>
           <headerStyle>
             <class>bee-Button</class>
@@ -34,7 +34,7 @@
         </style>
       </BeeIdColumn>
 
-      <BeeVerColumn name="version" hasFooter="false">
+      <BeeVerColumn name="Version" hasFooter="false">
         <style>
           <bodyStyle>
             <inline>color: darkblue;</inline>
@@ -43,22 +43,22 @@
         </style>
       </BeeVerColumn>
 
-      <BeeCalcColumn name="calc1" type="date" caption="Ver Dt" format="date_short" width="80">
+      <BeeCalcColumn name="Calc1" type="date" caption="Ver Dt" format="date_short" width="80">
         <calc>
           <expression>rowVersion</expression>
         </calc>
       </BeeCalcColumn>
       
-      <BeeDataColumn name="bbb" source="Boolean" />
+      <BeeDataColumn name="Bbb" source="Boolean" />
 
-      <BeeDataColumn name="iii" source="Integer" minValue="-10000" maxValue="1e6" >
+      <BeeDataColumn name="Iii" source="Integer" minValue="-10000" maxValue="1e6" >
         <editable>
           <expression>cell.value &lt; row.Long</expression>
         </editable>
         <editor type="spinner" stepValue="100" />
       </BeeDataColumn>
 
-      <BeeDataColumn name="lll" source="Long" showWidth="false" minWidth="40">
+      <BeeDataColumn name="Lll" source="Long" showWidth="false" minWidth="40">
         <style>
           <dynStyle>
             <style>
@@ -83,13 +83,13 @@
         <editor type="long" />
       </BeeDataColumn>
 
-      <BeeCalcColumn name="calc2" type="decimal" caption="Math" scale="4">
+      <BeeCalcColumn name="Calc2" type="decimal" caption="Math" scale="4">
         <calc>
           <expression>(row.Long &gt; 0) ? Math.log(row.Long) : row.Long / 1000</expression>
         </calc>
       </BeeCalcColumn>
 
-      <BeeDataColumn name="nnn" source="Numeric" format="0.0%" caption="Percent">
+      <BeeDataColumn name="Nnn" source="Numeric" format="0.0%" caption="Percent">
         <editor type="number" format="#.000" onEntry="select" />
         <validation>
           <function>
@@ -103,7 +103,7 @@
         </validation>
       </BeeDataColumn>
 
-      <BeeDataColumn name="dec" source="Currency" width="168">
+      <BeeDataColumn name="Dec" source="Currency" width="168">
         <style>
           <bodyStyle>
             <inline>letter-spacing: 5px;</inline>
@@ -112,7 +112,7 @@
         <editor type="number" />
       </BeeDataColumn>
 
-      <BeeDataColumn name="sss" source="String" sortable="false">
+      <BeeDataColumn name="Sss" source="String" sortable="false">
         <editor type="picker" height="116">
           <item>123 www</item>
           <item>Bitinas ; &lt;img src="test.png"&gt;</item>
@@ -124,7 +124,7 @@
         </carry>
       </BeeDataColumn>
 
-      <BeeDataColumn name="char" source="Char">
+      <BeeDataColumn name="Char" source="Char">
         <editor type="list">
           <item>abc</item>
           <item>def</item>
@@ -132,11 +132,11 @@
         </editor>
       </BeeDataColumn>
 
-      <BeeDataColumn name="mmm" source="Memo" width="200" cell="html">
+      <BeeDataColumn name="Mmm" source="Memo" width="200" cell="html">
         <editor type="rich" />
       </BeeDataColumn>
 
-      <BeeCalcColumn name="calc3" type="string" caption="typeof" width="100">
+      <BeeCalcColumn name="Calc3" type="string" caption="typeof" width="100">
         <calc>
           <function>
             var s = "";
@@ -149,7 +149,7 @@
         </calc>
       </BeeCalcColumn>
 
-      <BeeDataColumn name="ddd" source="Date" minValue="2000 1 1" maxValue="2012 12 21"
+      <BeeDataColumn name="Ddd" source="Date" minValue="2000 1 1" maxValue="2012 12 21"
         horizontalAlignment="center">
         <style>
           <footerStyle>
@@ -162,7 +162,7 @@
         </carry>
       </BeeDataColumn>
 
-      <BeeDataColumn name="ttt" source="DateTime" format="yyyy-MM-dd HH:mm:ss">
+      <BeeDataColumn name="Ttt" source="DateTime" format="yyyy-MM-dd HH:mm:ss">
         <style>
           <bodyStyle>
             <inline>-webkit-transform:rotateY(180deg);</inline>
@@ -190,7 +190,7 @@
     </rowStyle>
 
     <rowMessage>
-      <function>return String(rowId) + '  ' + String(rowVersion)</function>
+      <function>return String(rowId) + '  ' + rowVersion.toLocaleTimeString()</function>
     </rowMessage>
 
     <rowEditable>

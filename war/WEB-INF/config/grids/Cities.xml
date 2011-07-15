@@ -7,7 +7,7 @@
     <columns>
       <BeeIdColumn name="Id" caption="ID" />
 
-      <BeeDataColumn name="city" source="Name" caption="Miestas">
+      <BeeDataColumn name="City" source="Name" caption="Miestas">
         <style>
           <bodyStyle>
             <inline>white-space: pre-wrap;</inline>
@@ -15,17 +15,17 @@
         </style>
       </BeeDataColumn>
 
-      <BeeDataColumn name="population" source="Population" caption="Gyventojai" />
+      <BeeDataColumn name="Population" source="Population" caption="Gyventojai" />
 
-      <BeeRelColumn name="country" source="CountryName" relSource="Country" relColumn="Name"
+      <BeeRelColumn name="Country" source="CountryName" relSource="Country" relColumn="Name"
         caption="Šalis">
         <editor type="selector" width="200" visibleLines="12"
           options="{&quot;showLimit&quot;: true, &quot;columns&quot;: [&quot;area-&quot;], &quot;searchType&quot;: &quot;contains&quot;}" />
       </BeeRelColumn>
 
-      <BeeDataColumn name="countryId" source="Country" caption="Šalies ID" readOnly="true" />
+      <BeeDataColumn name="CountryId" source="Country" caption="Šalies ID" readOnly="true" />
 
-      <BeeVerColumn name="version" caption="Versija" />
+      <BeeVerColumn name="Version" caption="Versija" />
     </columns>
   </BeeGrid>
 </BeeGrids>

@@ -15,6 +15,7 @@ import com.butent.bee.shared.utils.BeeUtils;
  */
 
 public class BeeLabel extends Label implements HasId, HasCommand {
+
   private BeeCommand command = null;
 
   public BeeLabel() {
@@ -32,7 +33,8 @@ public class BeeLabel extends Label implements HasId, HasCommand {
   }
 
   public BeeLabel(String text) {
-    super(text);
+    this();
+    setText(text);
     init();
   }
 
@@ -51,7 +53,8 @@ public class BeeLabel extends Label implements HasId, HasCommand {
   }
 
   public BeeLabel(String text, boolean wordWrap) {
-    super(text, wordWrap);
+    this(text);
+    setWordWrap(wordWrap);
     init();
   }
 

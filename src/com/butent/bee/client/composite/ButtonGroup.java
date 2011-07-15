@@ -16,6 +16,7 @@ import java.util.List;
  */
 
 public class ButtonGroup extends Span implements HasService, HasStage {
+
   private List<BeeButton> buttons = new ArrayList<BeeButton>();
 
   public ButtonGroup() {
@@ -83,5 +84,4 @@ public class ButtonGroup extends Span implements HasService, HasStage {
     super.add(b);
     buttons.add(b);
   }
-
 }

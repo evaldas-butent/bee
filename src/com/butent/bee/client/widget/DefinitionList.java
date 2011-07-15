@@ -16,6 +16,7 @@ import java.util.List;
  */
 
 public class DefinitionList extends Widget implements HasId {
+
   private static final int INSERT_AT_END = -1;
   private List<Element> items = new ArrayList<Element>();
 
@@ -122,5 +123,4 @@ public class DefinitionList extends Widget implements HasId {
   private void checkIndex(int index) {
     Assert.isIndex(items, index);
   }
-
 }

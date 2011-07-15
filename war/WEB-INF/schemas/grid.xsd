@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.butent.com/bee"
   xmlns:bee="http://www.butent.com/bee" elementFormDefault="qualified">
+  
+  <xs:include schemaLocation="types.xsd" />
+  <xs:include schemaLocation="ui.xsd" />
 
   <xs:element name="BeeGrids">
     <xs:complexType>
@@ -111,12 +114,6 @@
     </xs:sequence>
   </xs:complexType>
 
-  <xs:simpleType name="nameType">
-    <xs:restriction base="xs:token">
-      <xs:maxLength value="30" />
-    </xs:restriction>
-  </xs:simpleType>
-
   <xs:simpleType name="widthType">
     <xs:restriction base="xs:positiveInteger">
       <xs:minInclusive value="16" />
@@ -130,14 +127,6 @@
       <xs:maxExclusive value="400" />
     </xs:restriction>
   </xs:simpleType>
-
-  <xs:complexType name="styleType">
-    <xs:sequence>
-      <xs:element name="class" type="xs:normalizedString" minOccurs="0" />
-      <xs:element name="inline" type="xs:normalizedString" minOccurs="0" />
-      <xs:element name="font" type="xs:normalizedString" minOccurs="0" />
-    </xs:sequence>
-  </xs:complexType>
 
   <xs:complexType name="componentType">
     <xs:sequence>
@@ -160,118 +149,4 @@
       <xs:element name="BeeVerColumn" type="bee:column" />
     </xs:choice>
   </xs:complexType>
-
-  <xs:simpleType name="edges">
-    <xs:restriction base="xs:string">
-      <xs:pattern value="[0-9]( [0-9]){0,3}" />
-    </xs:restriction>
-  </xs:simpleType>
-
-  <xs:simpleType name="valueType">
-    <xs:restriction base="xs:string">
-      <xs:enumeration value="boolean" />
-      <xs:enumeration value="date" />
-      <xs:enumeration value="datetime" />
-      <xs:enumeration value="decimal" />
-      <xs:enumeration value="integer" />
-      <xs:enumeration value="long" />
-      <xs:enumeration value="double" />
-      <xs:enumeration value="string" />
-      <xs:enumeration value="timeofday" />
-    </xs:restriction>
-  </xs:simpleType>
-
-  <xs:simpleType name="cellType">
-    <xs:restriction base="xs:string">
-      <xs:enumeration value="html" />
-    </xs:restriction>
-  </xs:simpleType>
-
-  <xs:complexType name="calcType">
-    <xs:choice>
-      <xs:element name="expression" type="xs:normalizedString" />
-      <xs:element name="function" type="xs:string" />
-    </xs:choice>
-  </xs:complexType>
-
-  <xs:complexType name="conditionalStyle">
-    <xs:sequence>
-      <xs:element name="style" type="bee:styleType" />
-      <xs:element name="condition" type="bee:calcType" />
-    </xs:sequence>
-  </xs:complexType>
-
-  <xs:complexType name="editor">
-    <xs:sequence>
-      <xs:element name="item" type="xs:normalizedString" minOccurs="0" maxOccurs="unbounded"/>
-    </xs:sequence>
-    <xs:attribute name="type" type="bee:editorType" use="required" />
-    <xs:attribute name="stepValue" type="xs:positiveInteger" />
-    <xs:attribute name="characterWidth" type="xs:positiveInteger" />
-    <xs:attribute name="visibleLines" type="xs:positiveInteger" />
-    <xs:attribute name="format" type="xs:normalizedString" />
-    <xs:attribute name="width" type="xs:positiveInteger" />
-    <xs:attribute name="height" type="xs:positiveInteger" />
-    <xs:attribute name="minWidth" type="xs:positiveInteger" />
-    <xs:attribute name="minHeight" type="xs:positiveInteger" />
-    <xs:attribute name="onEntry" type="bee:editorAction" />
-    <xs:attribute name="options" type="xs:normalizedString" />
-  </xs:complexType>  
-
-  <xs:simpleType name="editorType">
-    <xs:restriction base="xs:string">
-      <xs:enumeration value="list" />
-      <xs:enumeration value="picker" />
-      <xs:enumeration value="date" />
-      <xs:enumeration value="datetime" />
-      <xs:enumeration value="string" />
-      <xs:enumeration value="area" />
-      <xs:enumeration value="text" />
-      <xs:enumeration value="rich" />
-      <xs:enumeration value="number" />
-      <xs:enumeration value="integer" />
-      <xs:enumeration value="slider" />
-      <xs:enumeration value="spinner" />
-      <xs:enumeration value="long" />
-      <xs:enumeration value="selector" />
-      <xs:enumeration value="toggle" />
-    </xs:restriction>
-  </xs:simpleType>
-  
-  <xs:simpleType name="horizontalAlignmentType">
-    <xs:restriction base="xs:string">
-      <xs:enumeration value="left" />
-      <xs:enumeration value="center" />
-      <xs:enumeration value="right" />
-      <xs:enumeration value="justify" />
-      <xs:enumeration value="start" />
-      <xs:enumeration value="end" />
-    </xs:restriction>
-  </xs:simpleType>
-  
-  <xs:simpleType name="editorAction">
-    <xs:restriction base="xs:string">
-      <xs:enumeration value="replace"></xs:enumeration>
-      <xs:enumeration value="select"></xs:enumeration>
-      <xs:enumeration value="home"></xs:enumeration>
-      <xs:enumeration value="end"></xs:enumeration>
-      <xs:enumeration value="addFirst"></xs:enumeration>
-      <xs:enumeration value="addLast"></xs:enumeration>
-    </xs:restriction>
-  </xs:simpleType>
-  
-  <xs:simpleType name="cssUnit">
-    <xs:restriction base="xs:string">
-      <xs:enumeration value="%"></xs:enumeration>
-      <xs:enumeration value="in"></xs:enumeration>
-      <xs:enumeration value="cm"></xs:enumeration>
-      <xs:enumeration value="mm"></xs:enumeration>
-      <xs:enumeration value="em"></xs:enumeration>
-      <xs:enumeration value="ex"></xs:enumeration>
-      <xs:enumeration value="pt"></xs:enumeration>
-      <xs:enumeration value="pc"></xs:enumeration>
-      <xs:enumeration value="px"></xs:enumeration>
-    </xs:restriction>
-  </xs:simpleType>
-
 </xs:schema>

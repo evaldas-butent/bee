@@ -44,5 +44,4 @@ public class Span extends ComplexPanel implements InsertPanel, HasId {
   public void setId(String id) {
     DomUtils.setId(this, id);
   }
-
 }
