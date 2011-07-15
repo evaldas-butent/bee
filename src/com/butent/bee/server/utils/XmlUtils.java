@@ -51,6 +51,9 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 import javax.xml.XMLConstants;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -84,6 +87,8 @@ public class XmlUtils {
   private static DocumentBuilder domBuilder;
 
   private static TransformerFactory xsltFactory;
+
+  private static SchemaFactory schemaFactory;
 
   private static Map<Short, String> nodeTypes = new HashMap<Short, String>();
 
@@ -123,6 +128,15 @@ public class XmlUtils {
       LogUtils.error(logger, ex);
     }
     xsltFactory = tf;
+
+    SchemaFactory sf = null;
+
+    try {
+      sf = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+    } catch (Exception ex) {
+      LogUtils.error(logger, ex);
+    }
+    schemaFactory = sf;
   }
 
   public static Document fromFileName(String fileName) {
@@ -751,7 +765,6 @@ public class XmlUtils {
     }
     Document ret = null;
     String error = null;
-    SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
     DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
     builderFactory.setNamespaceAware(true);
 
@@ -819,6 +832,35 @@ public class XmlUtils {
       ok = false;
     }
     return ok;
+  }
+
+  @SuppressWarnings("unchecked")
+  public static <T> T unmarshal(Class<T> clazz, String resource, String resourceSchema) {
+    Assert.notEmpty(resource);
+    T result = null;
+
+    try {
+      Unmarshaller unmarshaller = JAXBContext.newInstance(clazz).createUnmarshaller();
+
+      if (BeeUtils.isEmpty(resourceSchema)) {
+        result = (T) unmarshaller.unmarshal(new File(resource));
+      } else {
+        DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
+        builderFactory.setNamespaceAware(true);
+        builderFactory.setSchema(schemaFactory.newSchema(new File(resourceSchema)));
+        DocumentBuilder builder = builderFactory.newDocumentBuilder();
+        result = (T) unmarshaller.unmarshal(builder.parse(new File(resource)));
+      }
+    } catch (JAXBException e) {
+      LogUtils.error(logger, e);
+    } catch (SAXException e) {
+      LogUtils.error(logger, e);
+    } catch (ParserConfigurationException e) {
+      LogUtils.error(logger, e);
+    } catch (IOException e) {
+      LogUtils.error(logger, e);
+    }
+    return result;
   }
 
   public static Document xsltToDom(String src, String xsl) {

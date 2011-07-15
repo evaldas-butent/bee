@@ -11,13 +11,14 @@ import com.butent.bee.server.Config;
 import com.butent.bee.server.data.BeeTable.BeeField;
 import com.butent.bee.server.data.BeeTable.BeeForeignKey;
 import com.butent.bee.server.data.BeeTable.BeeKey;
+import com.butent.bee.server.io.FileUtils;
+import com.butent.bee.server.io.NameUtils;
 import com.butent.bee.server.sql.HasFrom;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.IsExpression;
 import com.butent.bee.server.sql.IsQuery;
 import com.butent.bee.server.sql.SqlBuilderFactory;
 import com.butent.bee.server.sql.SqlConstants;
-import com.butent.bee.server.sql.SqlConstants.SqlDataType;
 import com.butent.bee.server.sql.SqlConstants.SqlKeyword;
 import com.butent.bee.server.sql.SqlCreate;
 import com.butent.bee.server.sql.SqlDelete;
@@ -34,6 +35,13 @@ import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.SimpleRowSet;
+import com.butent.bee.shared.data.XmlState;
+import com.butent.bee.shared.data.XmlTable;
+import com.butent.bee.shared.data.XmlTable.XmlField;
+import com.butent.bee.shared.data.XmlTable.XmlKey;
+import com.butent.bee.shared.data.XmlView;
+import com.butent.bee.shared.data.XmlView.XmlColumn;
+import com.butent.bee.shared.data.XmlView.XmlOrder;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.value.ValueType;
@@ -45,10 +53,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.LogUtils;
 import com.butent.bee.shared.utils.TimeUtils;
 
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
-
+import java.io.File;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -73,9 +78,24 @@ import javax.ejb.Startup;
 @Startup
 @Lock(LockType.READ)
 public class SystemBean {
-  public static final String STATE_SCHEMA = "states.xsd";
-  public static final String STRUCTURE_SCHEMA = "structure.xsd";
-  public static final String VIEW_SCHEMA = "view.xsd";
+
+  public enum SysObject {
+    STATE("states"), TABLE("tables"), VIEW("views");
+
+    private String path;
+
+    private SysObject(String path) {
+      this.path = path;
+    }
+
+    public String getPath() {
+      return path + "/";
+    }
+
+    public String getSchema() {
+      return name().toLowerCase() + ".xsd";
+    }
+  }
 
   private static Logger logger = Logger.getLogger(SystemBean.class.getName());
 
@@ -768,16 +788,54 @@ public class SystemBean {
     usr.invalidateCache();
   }
 
+  @Lock(LockType.WRITE)
+  public boolean initState(String stateName) {
+    Assert.notEmpty(stateName);
+    SysObject obj = SysObject.STATE;
+
+    return initState(stateName,
+        Config.getPath(BeeUtils.concat(0, obj.getPath(), stateName, ".", obj.name()), true));
+  }
+
+  @Lock(LockType.WRITE)
   public void initStates() {
-    initStates(false);
+    initObjects(SysObject.STATE);
+    initTables();
   }
 
+  @Lock(LockType.WRITE)
+  public boolean initTable(String tableName) {
+    Assert.notEmpty(tableName);
+    SysObject obj = SysObject.TABLE;
+
+    return initTable(tableName,
+        Config.getPath(BeeUtils.concat(0, obj.getPath(), tableName, ".", obj.name()), true));
+  }
+
+  @Lock(LockType.WRITE)
   public void initTables() {
-    initTables(false);
+    initObjects(SysObject.TABLE);
+
+    String engine = SqlBuilderFactory.getEngine();
+    if (BeeUtils.isEmpty(engine)) {
+      engine = BeeUtils.ifString(Config.getProperty("DefaultEngine"), BeeConst.MYSQL);
+    }
+    initDatabase(engine);
+    initViews();
   }
 
+  @Lock(LockType.WRITE)
+  public boolean initView(String viewName) {
+    Assert.notEmpty(viewName);
+    SysObject obj = SysObject.VIEW;
+
+    return initView(viewName,
+        Config.getPath(BeeUtils.concat(0, obj.getPath(), viewName, ".", obj.name()), true));
+  }
+
+  @Lock(LockType.WRITE)
   public void initViews() {
-    initViews(false);
+    initObjects(SysObject.VIEW);
   }
 
   public ResponseObject insertRow(BeeRowSet rs, boolean returnAllFields) {
@@ -1324,14 +1382,14 @@ public class SystemBean {
 
     for (BeeField field : fields) {
       String fld = field.getName();
-      view.addField(fld, fld, null, tableCache);
+      view.addColumn(fld, fld, null, tableCache);
       String relTbl = field.getRelation();
 
       if (!BeeUtils.isEmpty(relTbl) && !BeeUtils.same(relTbl, tblName)) {
         BeeView vw = getDefaultView(relTbl, false);
 
         for (String colName : vw.getColumns()) {
-          view.addField(fld + colName, fld + ">" + vw.getExpression(colName), null, tableCache);
+          view.addColumn(fld + colName, fld + ">" + vw.getExpression(colName), null, tableCache);
         }
       }
     }
@@ -1358,306 +1416,284 @@ public class SystemBean {
   @SuppressWarnings("unused")
   @PostConstruct
   private void init() {
-    initStates(true);
-    initTables(true);
-    initDatabase(BeeUtils.ifString(Config.getProperty("DefaultEngine"), BeeConst.MYSQL));
-    initViews(true);
+    initStates();
   }
 
-  @Lock(LockType.WRITE)
-  private void initStates(boolean mainMode) {
-    if (mainMode) {
-      stateCache.clear();
-    }
-    String resource =
-        mainMode ? Config.getConfigPath("states.xml") : Config.getUserPath("states.xml");
+  private void initObjects(SysObject obj) {
+    Assert.notEmpty(obj);
 
-    Collection<BeeState> states = loadStates(resource, Config.getSchemaPath(STATE_SCHEMA));
-
-    if (BeeUtils.isEmpty(states)) {
-      if (mainMode) {
-        LogUtils.warning(logger, resource, "No states defined");
-      }
-      return;
+    switch (obj) {
+      case STATE:
+        stateCache.clear();
+        break;
+      case TABLE:
+        tableCache.clear();
+        break;
+      case VIEW:
+        viewCache.clear();
+        break;
     }
     int cNew = 0;
     int cUpd = 0;
+    Collection<File> paths = Lists.newArrayList();
 
-    for (BeeState state : states) {
-      String stateName = state.getName();
+    File path = FileUtils.getDirectory(Config.CONFIG_DIR, obj.getPath());
+    if (path != null) {
+      paths.add(path);
+    }
+    path = FileUtils.getDirectory(Config.USER_DIR, obj.getPath());
+    if (path != null) {
+      paths.add(path);
+    }
+    if (!BeeUtils.isEmpty(paths)) {
+      List<File> resources =
+          FileUtils.findFiles("*", paths, null, obj.name(), true, true);
 
-      if (isState(stateName)) {
-        if (mainMode) {
-          LogUtils.warning(logger, resource, "Dublicate state name:", stateName);
-          continue;
+      if (!BeeUtils.isEmpty(resources)) {
+        for (File resource : resources) {
+          String resourcePath = resource.getPath();
+          String objectName = NameUtils.getBaseName(resourcePath);
+          boolean isNew = false;
+          boolean isOk = false;
+
+          switch (obj) {
+            case STATE:
+              isNew = !isState(objectName);
+              isOk = initState(objectName, resourcePath);
+              break;
+            case TABLE:
+              isNew = !isTable(objectName);
+              isOk = initTable(objectName, resourcePath);
+              break;
+            case VIEW:
+              isNew = !isView(objectName);
+              isOk = initView(objectName, resourcePath);
+              break;
+          }
+          if (isOk) {
+            if (isNew) {
+              cNew++;
+            } else {
+              cUpd++;
+            }
+          }
         }
-        cUpd++;
-      } else {
-        cNew++;
       }
+    }
+    if (BeeUtils.isEmpty(cNew + cUpd)) {
+      LogUtils.severe(logger, obj.name() + ":", "No descriptions found");
+    } else {
+      LogUtils.infoNow(logger, obj.name() + ":",
+          "Loaded", cNew, "and updated", cUpd, "descriptions");
+    }
+  }
+
+  private boolean initState(String stateName, String resource) {
+    Assert.notEmpty(stateName);
+    Assert.notEmpty(resource);
+    BeeState state = null;
+
+    XmlState xmlState = loadState(resource);
+
+    if (xmlState != null) {
+      if (!BeeUtils.same(xmlState.name, stateName)) {
+        LogUtils.warning(logger, "State name doesn't match resource name:",
+            xmlState.name, resource);
+      } else {
+        state = new BeeState(xmlState.name, xmlState.mode, xmlState.checked);
+      }
+    }
+    if (state != null) {
       registerState(state);
+      LogUtils.info(logger, "Loaded state", BeeUtils.bracket(state.getName()),
+          "description from", resource);
+    } else {
+      unregisterState(stateName);
     }
-    LogUtils.infoNow(logger, "Loaded", cNew + (mainMode ? "" : " and updated " + cUpd),
-        "states descriptions from", resource);
-
-    if (mainMode) {
-      initStates();
-    }
+    return state != null;
   }
 
-  @Lock(LockType.WRITE)
-  private void initTables(boolean mainMode) {
-    if (mainMode) {
-      tableCache.clear();
-    }
-    String resource =
-        mainMode ? Config.getConfigPath("structure.xml") : Config.getUserPath("structure.xml");
+  private boolean initTable(String tableName, String resource) {
+    Assert.notEmpty(tableName);
+    Assert.notEmpty(resource);
+    BeeTable table = null;
 
-    Collection<BeeTable> tables = loadTables(resource, Config.getSchemaPath(STRUCTURE_SCHEMA));
+    XmlTable xmlTable = loadTable(resource);
 
-    if (BeeUtils.isEmpty(tables)) {
-      if (mainMode) {
-        LogUtils.severe(logger, resource, "No tables defined");
-      }
-      return;
-    }
-    int cNew = 0;
-    int cUpd = 0;
+    if (xmlTable != null) {
+      if (!BeeUtils.same(xmlTable.name, tableName)) {
+        LogUtils.warning(logger, "Table name doesn't match resource name:",
+            xmlTable.name, resource);
+      } else {
+        table = new BeeTable(xmlTable.name, xmlTable.idName, xmlTable.versionName);
+        String tbl = table.getName();
 
-    for (BeeTable table : tables) {
-      String tblName = table.getName();
-      boolean isCustom = !mainMode && (!isTable(tblName) || getTable(tblName).isCustom());
+        for (int i = 0; i < 2; i++) {
+          boolean extMode = (i > 0);
+          Collection<XmlField> fields = extMode ? xmlTable.extFields : xmlTable.fields;
 
-      if (mainMode && isTable(tblName)) {
-        LogUtils.warning(logger, resource, "Dublicate table name:", tblName);
-        continue;
+          if (!BeeUtils.isEmpty(fields)) {
+            for (XmlField field : fields) {
+              String fldName = field.name;
+              boolean notNull = field.notNull;
 
-      } else if (mainMode || isCustom) {
+              if (notNull && extMode) {
+                LogUtils.warning(logger, "Extendend fields must bee nullable:", tbl, fldName);
+                notNull = false;
+              }
+              table.addField(fldName, field.type, field.precision, field.scale, notNull,
+                  field.unique, field.relation, field.cascade)
+                  .setTranslatable(field.translatable)
+                  .setExtended(extMode);
+
+              String tblName = table.getField(fldName).getTable();
+
+              if (!BeeUtils.isEmpty(field.relation)) {
+                table.addForeignKey(tblName, fldName, field.relation, field.cascade,
+                    field.cascade && notNull);
+              }
+              if (field.unique) {
+                table.addKey(true, tblName, fldName);
+              }
+            }
+          }
+        }
+        if (!BeeUtils.isEmpty(xmlTable.states)) {
+          for (String state : xmlTable.states) {
+            if (!isState(state)) {
+              LogUtils.warning(logger, "Unrecognized state:", tbl, state);
+            } else {
+              table.addState(getState(state));
+            }
+          }
+        }
+        if (!BeeUtils.isEmpty(xmlTable.keys)) {
+          for (XmlKey key : xmlTable.keys) {
+            String firstTbl = null;
+            String firstFld = null;
+            boolean ok = !BeeUtils.isEmpty(key.fields);
+
+            if (ok) {
+              for (String fld : key.fields) {
+                if (table.hasField(fld)) {
+                  String keyTbl = table.getField(fld).getTable();
+                  String keyFld = table.getField(fld).getName();
+
+                  if (BeeUtils.isEmpty(firstTbl)) {
+                    firstTbl = keyTbl;
+                    firstFld = keyFld;
+
+                  } else if (!BeeUtils.same(firstTbl, keyTbl)) {
+                    LogUtils.warning(logger,
+                        "Key expression contains fields from different sources:",
+                        firstTbl + "." + firstFld, "and", keyTbl + "." + keyFld);
+                    ok = false;
+                    break;
+                  }
+                } else {
+                  LogUtils.warning(logger, "Unrecognized key field:", tbl, fld);
+                  ok = false;
+                  break;
+                }
+              }
+            }
+            if (ok) {
+              table.addKey(key.unique, firstTbl, key.fields.toArray(new String[0]));
+            }
+          }
+        }
         if (table.isEmpty()) {
-          LogUtils.warning(logger, resource, "Table", tblName, "has no fields defined");
-          continue;
+          LogUtils.warning(logger, resource, "Table has no fields defined:", tbl);
+          table = null;
         }
-        if (isCustom) {
-          table.setCustom();
-        }
+      }
+    }
+    if (table != null) {
+      String tbl = table.getName();
+
+      if (isTable(tbl)) {
+        getTable(tbl).applyChanges(table);
+        LogUtils.info(logger, "Updated table", BeeUtils.bracket(tbl), "description from", resource);
+      } else {
         registerTable(table);
-        cNew++;
-
-      } else {
-        if (getTable(tblName).applyChanges(table) > 0) {
-          cUpd++;
-        }
+        LogUtils.info(logger, "Loaded table", BeeUtils.bracket(tbl), "description from", resource);
       }
+    } else {
+      unregisterTable(tableName);
     }
-    LogUtils.infoNow(logger, "Loaded", cNew + (mainMode ? "" : " and updated " + cUpd),
-        "tables descriptions from", resource);
-
-    if (mainMode) {
-      initTables();
-    }
+    return table != null;
   }
 
-  @Lock(LockType.WRITE)
-  private void initViews(boolean mainMode) {
-    if (mainMode) {
-      viewCache.clear();
-    }
-    String resource =
-        mainMode ? Config.getConfigPath("views.xml") : Config.getUserPath("views.xml");
+  private boolean initView(String viewName, String resource) {
+    Assert.notEmpty(viewName);
+    Assert.notEmpty(resource);
+    BeeView view = null;
 
-    Collection<BeeView> views = loadViews(resource, Config.getSchemaPath(VIEW_SCHEMA));
+    XmlView xmlView = loadView(resource);
 
-    if (BeeUtils.isEmpty(views)) {
-      if (mainMode) {
-        LogUtils.severe(logger, resource, "No views defined");
-      }
-      return;
-    }
-    int cNew = 0;
-    int cUpd = 0;
-
-    for (BeeView view : views) {
-      String viewName = view.getName();
-
-      if (view.isEmpty()) {
-        LogUtils.warning(logger, resource, "View", viewName, "has no columns defined");
-        continue;
-      } else if (!isTable(viewName) && isView(viewName)) {
-        if (mainMode) {
-          LogUtils.warning(logger, resource, "Dublicate view name:", viewName);
-          continue;
-        }
-        cUpd++;
+    if (xmlView != null) {
+      if (!BeeUtils.same(xmlView.name, viewName)) {
+        LogUtils.warning(logger, "View name doesn't match resource name:", xmlView.name, resource);
       } else {
-        cNew++;
+        String src = xmlView.source;
+
+        if (!isTable(src)) {
+          LogUtils.warning(logger, "Unrecognized view source:", xmlView.name, src);
+        } else {
+          String idName = getIdName(src);
+          String versionName = getVersionName(src);
+          view = new BeeView(xmlView.name, getTable(src).getName(), idName, versionName,
+              xmlView.readOnly);
+          String vw = view.getName();
+
+          if (!BeeUtils.isEmpty(xmlView.columns)) {
+            for (XmlColumn col : xmlView.columns) {
+              if (BeeUtils.inListSame(col.name, idName, versionName)) {
+                LogUtils.warning(logger, "Attempt to use reserved column name:", vw, col.name);
+              } else {
+                view.addColumn(col.name, col.expression, col.locale, tableCache);
+              }
+            }
+          }
+          if (!BeeUtils.isEmpty(xmlView.orders)) {
+            for (XmlOrder order : xmlView.orders) {
+              if (!view.hasColumn(order.column)) {
+                LogUtils.warning(logger, "Unrecognized order column:", vw, order.column);
+              } else {
+                view.addOrder(order.column, order.descending);
+              }
+            }
+          }
+          if (view.isEmpty()) {
+            LogUtils.warning(logger, resource, "View has no columns defined:", vw);
+            view = null;
+          }
+        }
       }
+    }
+    if (view != null) {
       registerView(view);
+      LogUtils.info(logger, "Loaded view", BeeUtils.bracket(view.getName()),
+          "description from", resource);
+    } else {
+      unregisterView(viewName);
     }
-    LogUtils.infoNow(logger, "Loaded", cNew + (mainMode ? "" : " and updated " + cUpd),
-        "views descriptions from", resource);
-
-    if (mainMode) {
-      initViews();
-    }
+    return view != null;
   }
 
-  private Collection<BeeState> loadStates(String resource, String schema) {
-    Document xml = XmlUtils.getXmlResource(resource, schema);
-    if (BeeUtils.isEmpty(xml)) {
-      return null;
-    }
-    Collection<BeeState> data = Lists.newArrayList();
-    Element root = xml.getDocumentElement();
-    NodeList states = root.getElementsByTagName("BeeState");
-
-    for (int i = 0; i < states.getLength(); i++) {
-      Element state = (Element) states.item(i);
-
-      data.add(new BeeState(state.getAttribute("name"),
-          state.getAttribute("mode"),
-          BeeUtils.toBoolean(state.getAttribute("checked"))));
-    }
-    return data;
+  private XmlState loadState(String resource) {
+    return XmlUtils.unmarshal(XmlState.class, resource,
+        Config.getSchemaPath(SysObject.STATE.getSchema()));
   }
 
-  private Collection<BeeTable> loadTables(String resource, String schema) {
-    Document xml = XmlUtils.getXmlResource(resource, schema);
-    if (BeeUtils.isEmpty(xml)) {
-      return null;
-    }
-    Collection<BeeTable> data = Lists.newArrayList();
-    Element root = xml.getDocumentElement();
-    NodeList tables = root.getElementsByTagName("BeeTable");
-
-    for (int i = 0; i < tables.getLength(); i++) {
-      Element table = (Element) tables.item(i);
-
-      BeeTable tbl = new BeeTable(table.getAttribute("name"),
-          table.getAttribute("idName"),
-          table.getAttribute("versionName"));
-
-      String[] states = BeeUtils.split(table.getAttribute("states"), ",");
-      for (String state : states) {
-        if (!isState(state)) {
-          LogUtils.warning(logger, "State is not valid:", state);
-          continue;
-        }
-        tbl.addState(getState(state));
-      }
-      for (int x = 0; x < 2; x++) {
-        boolean extMode = (x > 0);
-        NodeList nodeRoot = table.getElementsByTagName(extMode ? "BeeExtended" : "BeeFields");
-
-        if (nodeRoot.getLength() > 0) {
-          NodeList fields = ((Element) nodeRoot.item(0)).getElementsByTagName("BeeField");
-
-          for (int j = 0; j < fields.getLength(); j++) {
-            Element field = (Element) fields.item(j);
-
-            String fldName = field.getAttribute("name");
-            boolean notNull = BeeUtils.toBoolean(field.getAttribute("notNull"));
-            if (notNull && extMode) {
-              LogUtils.warning(logger, "Extendend fields must bee nullable:",
-                  tbl.getName(), fldName);
-              notNull = false;
-            }
-            boolean unique = BeeUtils.toBoolean(field.getAttribute("unique"));
-            String relation = field.getAttribute("relation");
-            boolean cascade = BeeUtils.toBoolean(field.getAttribute("cascade"));
-
-            tbl.addField(fldName,
-                SqlDataType.valueOf(field.getAttribute("type")),
-                BeeUtils.toInt(field.getAttribute("precision")),
-                BeeUtils.toInt(field.getAttribute("scale")),
-                notNull, unique, relation, cascade)
-                .setTranslatable(BeeUtils.toBoolean(field.getAttribute("translatable")))
-                .setExtended(extMode);
-
-            String tblName = tbl.getField(fldName).getTable();
-
-            if (!BeeUtils.isEmpty(relation)) {
-              tbl.addForeignKey(tblName, fldName, relation, cascade, cascade && notNull);
-            }
-            if (unique) {
-              tbl.addKey(true, tblName, fldName);
-            }
-          }
-          NodeList keys = ((Element) nodeRoot.item(0)).getElementsByTagName("BeeKey");
-
-          for (int j = 0; j < keys.getLength(); j++) {
-            Element key = (Element) keys.item(j);
-
-            String[] keyFields = key.getAttribute("fields").split(",");
-            String tblName = tbl.getField(keyFields[0]).getTable();
-
-            tbl.addKey(BeeUtils.toBoolean(key.getAttribute("unique")), tblName, keyFields);
-          }
-        }
-      }
-      data.add(tbl);
-    }
-    return data;
+  private XmlTable loadTable(String resource) {
+    return XmlUtils.unmarshal(XmlTable.class, resource,
+        Config.getSchemaPath(SysObject.TABLE.getSchema()));
   }
 
-  private Collection<BeeView> loadViews(String resource, String schema) {
-    Document xml = XmlUtils.getXmlResource(resource, schema);
-    if (BeeUtils.isEmpty(xml)) {
-      return null;
-    }
-    Collection<BeeView> data = Lists.newArrayList();
-    Element root = xml.getDocumentElement();
-    NodeList views = root.getElementsByTagName("BeeView");
-
-    for (int i = 0; i < views.getLength(); i++) {
-      Element view = (Element) views.item(i);
-
-      String src = view.getAttribute("source");
-      if (!isTable(src)) {
-        LogUtils.warning(logger, "View source is not valid:", src);
-        continue;
-      }
-      BeeView vw = new BeeView(view.getAttribute("name"),
-          getTable(src).getName(), getIdName(src), getVersionName(src),
-          BeeUtils.toBoolean(view.getAttribute("readOnly")));
-
-      NodeList nodeRoot = view.getElementsByTagName("BeeColumns");
-
-      if (nodeRoot.getLength() > 0) {
-        NodeList cols = ((Element) nodeRoot.item(0)).getElementsByTagName("BeeColumn");
-
-        for (int j = 0; j < cols.getLength(); j++) {
-          Element col = (Element) cols.item(j);
-          String name = col.getAttribute("name");
-
-          if (BeeUtils.inListSame(name, getIdName(src), getVersionName(src))) {
-            LogUtils.warning(logger, "Attempt to use reserved column name:", vw.getName(), name);
-          } else {
-            vw.addField(name,
-                col.getAttribute("expression"),
-                col.getAttribute("locale"),
-                tableCache);
-          }
-        }
-      }
-      nodeRoot = view.getElementsByTagName("BeeOrder");
-
-      if (nodeRoot.getLength() > 0) {
-        NodeList orders = ((Element) nodeRoot.item(0)).getElementsByTagName("OrderBy");
-
-        for (int j = 0; j < orders.getLength(); j++) {
-          Element order = (Element) orders.item(j);
-
-          String ord = order.getAttribute("name");
-          if (!vw.hasColumn(ord)) {
-            LogUtils.warning(logger, "Unrecognized order column name:", vw.getName(), ord);
-            continue;
-          }
-          vw.addOrder(ord, BeeUtils.toBoolean(order.getAttribute("descending")));
-        }
-      }
-      data.add(vw);
-    }
-    return data;
+  private XmlView loadView(String resource) {
+    return XmlUtils.unmarshal(XmlView.class, resource,
+        Config.getSchemaPath(SysObject.VIEW.getSchema()));
   }
 
   private void makeStructureChanges(IsQuery query) {
@@ -1802,6 +1838,24 @@ public class SystemBean {
   private void registerView(BeeView view) {
     if (!BeeUtils.isEmpty(view)) {
       viewCache.put(BeeUtils.normalize(view.getName()), view);
+    }
+  }
+
+  private void unregisterState(String stateName) {
+    if (!BeeUtils.isEmpty(stateName)) {
+      stateCache.remove(BeeUtils.normalize(stateName));
+    }
+  }
+
+  private void unregisterTable(String tableName) {
+    if (!BeeUtils.isEmpty(tableName)) {
+      tableCache.remove(BeeUtils.normalize(tableName));
+    }
+  }
+
+  private void unregisterView(String viewName) {
+    if (!BeeUtils.isEmpty(viewName)) {
+      viewCache.remove(BeeUtils.normalize(viewName));
     }
   }
 }

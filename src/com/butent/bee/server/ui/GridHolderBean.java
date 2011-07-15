@@ -128,6 +128,38 @@ public class GridHolderBean {
     return gridCache.get(gridKey(gridName));
   }
 
+  @Lock(LockType.WRITE)
+  public void initGrid(String gridName) {
+    String resource =
+        Config.getPath(GRID_PATH + gridName + "." + XmlUtils.defaultXmlExtension, false);
+
+    if (!BeeUtils.isEmpty(resource)) {
+      boolean loaded = false;
+      Collection<GridDescription> grids = loadGrids(resource, Config.getSchemaPath(GRID_SCHEMA));
+
+      if (!BeeUtils.isEmpty(grids)) {
+        for (GridDescription grid : grids) {
+          if (!BeeUtils.same(grid.getName(), gridName)) {
+            LogUtils.warning(logger, "Grid name doesn't match resource name:", gridName, resource);
+          } else if (loaded) {
+            LogUtils.warning(logger, resource, "Dublicate grid name:", gridName);
+          } else if (grid.isEmpty()) {
+            LogUtils.warning(logger, resource, "Grid has no columns defined:", gridName);
+          } else {
+            loaded = true;
+            registerGrid(grid);
+          }
+        }
+      }
+      if (loaded) {
+        LogUtils.info(logger, "Loaded grid [", gridName, "] description from", resource);
+      } else {
+        unregisterGrid(gridName);
+        LogUtils.warning(logger, resource, "Grid description not found:", gridName);
+      }
+    }
+  }
+
   public void initGrids() {
     gridCache.clear();
   }
@@ -280,37 +312,6 @@ public class GridHolderBean {
     return ok;
   }
 
-  @Lock(LockType.WRITE)
-  private void initGrid(String gridName) {
-    String resource = Config.getPath(GRID_PATH + gridName + ".xml", false);
-
-    if (!BeeUtils.isEmpty(resource)) {
-      boolean loaded = false;
-      Collection<GridDescription> grids = loadGrids(resource, Config.getSchemaPath(GRID_SCHEMA));
-
-      if (!BeeUtils.isEmpty(grids)) {
-        for (GridDescription grid : grids) {
-          if (BeeUtils.same(grid.getName(), gridName)) {
-            if (loaded) {
-              LogUtils.warning(logger, resource, "Dublicate grid name:", gridName);
-            } else if (grid.isEmpty()) {
-              LogUtils.warning(logger, resource, "Grid has no columns defined:", gridName);
-            } else {
-              loaded = true;
-              registerGrid(grid);
-            }
-          }
-        }
-      }
-      if (loaded) {
-        LogUtils.info(logger, "Loaded grid [", gridName, "] description from", resource);
-      } else {
-        LogUtils.warning(logger, resource, "Grid description not found:", gridName);
-      }
-    }
-  }
-
-  @Lock(LockType.WRITE)
   private Collection<GridDescription> loadGrids(String resource, String schema) {
     Document xml = XmlUtils.getXmlResource(resource, schema);
     if (BeeUtils.isEmpty(xml)) {
@@ -394,6 +395,12 @@ public class GridHolderBean {
   private void registerGrid(GridDescription grid) {
     if (!BeeUtils.isEmpty(grid)) {
       gridCache.put(gridKey(grid.getName()), grid);
+    }
+  }
+
+  private void unregisterGrid(String gridName) {
+    if (!BeeUtils.isEmpty(gridName)) {
+      gridCache.remove(gridKey(gridName));
     }
   }
 

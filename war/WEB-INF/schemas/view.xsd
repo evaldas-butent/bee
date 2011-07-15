@@ -4,13 +4,7 @@
   
   <xs:include schemaLocation="types.xsd"/>
 
-  <xs:element name="BeeViews">
-    <xs:complexType>
-      <xs:sequence>
-        <xs:element name="BeeView" type="bee:view" minOccurs="1" maxOccurs="unbounded" />
-      </xs:sequence>
-    </xs:complexType>
-  </xs:element>
+  <xs:element name="BeeView" type="bee:view" />
 
   <xs:complexType name="view">
     <xs:sequence>
@@ -47,7 +41,7 @@
   </xs:complexType>
 
   <xs:complexType name="orderType">
-    <xs:attribute name="name" type="bee:fieldNameType" use="required" />
+    <xs:attribute name="column" type="bee:fieldNameType" use="required" />
     <xs:attribute name="descending" type="xs:boolean" />
   </xs:complexType>
 

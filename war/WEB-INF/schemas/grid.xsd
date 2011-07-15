@@ -156,8 +156,8 @@
       <xs:element name="BeeDataColumn" type="bee:dataColumn" />
       <xs:element name="BeeRelColumn" type="bee:relatedColumn" />
       <xs:element name="BeeCalcColumn" type="bee:calculatedColumn" />
-      <xs:element name="BeeIdColumn" type="bee:column" maxOccurs="1" />
-      <xs:element name="BeeVerColumn" type="bee:column" maxOccurs="1" />
+      <xs:element name="BeeIdColumn" type="bee:column" />
+      <xs:element name="BeeVerColumn" type="bee:column" />
     </xs:choice>
   </xs:complexType>
 

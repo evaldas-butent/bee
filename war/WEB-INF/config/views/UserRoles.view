@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BeeView xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../schemas/view.xsd"
+
+  name="UserRoles"
+  source="UserRoles"
+  >
+  <BeeColumns>
+    <BeeColumn name="User" expression="User" />
+    <BeeColumn name="UserLogin" expression="User-Login" />
+    <BeeColumn name="UserLastName" expression="User-LastName" />
+    <BeeColumn name="Role" expression="Role" />
+    <BeeColumn name="RoleName" expression="Role>Name" />
+  </BeeColumns>
+  <BeeOrder>
+    <OrderBy column="User" />
+    <OrderBy column="RoleName" descending="true" />
+  </BeeOrder>
+</BeeView>
+ 

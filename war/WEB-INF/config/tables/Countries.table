@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<BeeTable xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../schemas/table.xsd"
+
+  name="Countries"
+  idName="CountryID"
+  versionName="LastLock"
+  >
+  <BeeFields>
+    <BeeField name="Name" type="STRING" precision="100" notNull="true" unique="true" />
+    <BeeField name="Area" type="DECIMAL" precision="10" scale="2" />
+    <BeeField name="SeaPort" type="LONG" relation="Cities" />
+    <BeeField name="Neighbour" type="LONG" relation="Countries" />
+    <BeeField name="Currency" type="STRING" precision="50" />
+  </BeeFields>
+  <BeeStates>
+    <BeeState>Visible</BeeState>
+    <BeeState>Marked</BeeState>
+  </BeeStates>
+</BeeTable>

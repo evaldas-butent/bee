@@ -4,10 +4,10 @@ import com.google.common.collect.Lists;
 
 import com.butent.bee.server.DataSourceBean;
 import com.butent.bee.server.jdbc.JdbcUtils;
-import com.butent.bee.server.sql.SqlConstants.SqlKeyword;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.IsQuery;
 import com.butent.bee.server.sql.SqlBuilderFactory;
+import com.butent.bee.server.sql.SqlConstants.SqlKeyword;
 import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
@@ -257,9 +257,6 @@ public class QueryServiceBean {
 
   public BeeRowSet getViewData(IsQuery query, final BeeView view) {
     Assert.notNull(query);
-    Assert.state(!query.isEmpty());
-
-    activateTables(query);
 
     if (!BeeUtils.isEmpty(view)) {
       Assert.state(query instanceof SqlSelect);
@@ -268,6 +265,9 @@ public class QueryServiceBean {
       ((SqlSelect) query)
           .addFields(tableName, sys.getIdName(tableName), sys.getVersionName(tableName));
     }
+    Assert.state(!query.isEmpty());
+    activateTables(query);
+
     return processSql(query.getQuery(), new SqlHandler<BeeRowSet>() {
       @Override
       public BeeRowSet processError(SQLException ex) {

@@ -24,6 +24,7 @@ import com.butent.bee.shared.data.filter.NegationFilter;
 import com.butent.bee.shared.data.filter.VersionFilter;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.ExtendedProperty;
+import com.butent.bee.shared.utils.LogUtils;
 import com.butent.bee.shared.utils.PropertyUtils;
 
 import java.util.Collection;
@@ -345,20 +346,21 @@ public class BeeView implements HasExtendedInfo {
     return readOnly;
   }
 
-  void addField(String colName, String expression, String locale, Map<String, BeeTable> tables) {
+  void addColumn(String colName, String expression, String locale, Map<String, BeeTable> tables) {
     Assert.notEmpty(colName);
     Assert.notEmpty(expression);
     Assert.state(!hasColumn(colName),
         BeeUtils.concat(1, "Dublicate column name:", getName(), colName));
 
-    String[] colInfo = new String[Ints.max(NAME, EXPRESSION, LOCALE) + 1];
-    colInfo[NAME] = colName;
-    colInfo[EXPRESSION] = expressionKey(expression, locale);
-    colInfo[LOCALE] = locale;
-    columns.put(BeeUtils.normalize(colName), colInfo);
+    if (loadExpression(expression, locale, tables)) {
+      String[] colInfo = new String[Ints.max(NAME, EXPRESSION, LOCALE) + 1];
+      colInfo[NAME] = colName;
+      colInfo[EXPRESSION] = expressionKey(expression, locale);
+      colInfo[LOCALE] = locale;
+      columns.put(BeeUtils.normalize(colName), colInfo);
 
-    loadField(expression, locale, tables);
-    query.addField(getAlias(colName), getField(colName), colName);
+      query.addField(getAlias(colName), getField(colName), colName);
+    }
   }
 
   void addOrder(String colName, boolean descending) {
@@ -388,9 +390,9 @@ public class BeeView implements HasExtendedInfo {
     return expressions.get(BeeUtils.normalize(getExpression(colName)));
   }
 
-  private void loadField(String expression, String locale, Map<String, BeeTable> tables) {
+  private boolean loadExpression(String expression, String locale, Map<String, BeeTable> tables) {
     if (expressions.containsKey(expressionKey(expression, locale))) {
-      return;
+      return true;
     }
     char joinMode = 0;
     int pos = -1;
@@ -416,13 +418,23 @@ public class BeeView implements HasExtendedInfo {
       tbl = getSource();
       als = tbl;
     } else {
-      loadField(xpr, locale, tables);
+      if (!loadExpression(xpr, locale, tables)) {
+        return false;
+      }
       ViewField vf = expressions.get(expressionKey(xpr, locale));
       als = vf.getTargetAlias();
       tbl = tables.get(BeeUtils.normalize(vf.getTable())).getField(vf.getField()).getRelation();
-      Assert.notEmpty(tbl,
-          BeeUtils.concat(1, "Not a relation field:", vf.getTable(), vf.getField()));
 
+      if (BeeUtils.isEmpty(tbl)) {
+        LogUtils.warning(LogUtils.getDefaultLogger(),
+            "Not a relation field:", vf.getTable() + "." + vf.getField());
+        return false;
+
+      } else if (!tables.containsKey(BeeUtils.normalize(tbl))) {
+        LogUtils.warning(LogUtils.getDefaultLogger(),
+            "Unknown relation table:", tbl, vf.getTable() + "." + vf.getField());
+        return false;
+      }
       if (BeeUtils.isEmpty(als)) {
         als = SqlUtils.uniqueName();
         vf.setTargetAlias(als);
@@ -463,5 +475,6 @@ public class BeeView implements HasExtendedInfo {
     expressions.put(expressionKey(expression, locale),
         new ViewField(table.getName(), als, field.getName(), field.getType(), field.isNotNull(),
             BeeUtils.isEmpty(xpr)));
+    return true;
   }
 }

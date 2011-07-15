@@ -801,6 +801,10 @@ class BeeTable implements HasExtFields, HasStates, HasTranslations {
     return fields.get(BeeUtils.normalize(fldName));
   }
 
+  public int getFieldCount() {
+    return fields.size();
+  }
+
   public Collection<BeeField> getFields() {
     return ImmutableList.copyOf(fields.values());
   }
@@ -895,7 +899,7 @@ class BeeTable implements HasExtFields, HasStates, HasTranslations {
   }
 
   public boolean isEmpty() {
-    return BeeUtils.isEmpty(getFields());
+    return BeeUtils.isEmpty(getFieldCount());
   }
 
   @Override

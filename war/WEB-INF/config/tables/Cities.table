@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<BeeTable xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../schemas/table.xsd"
+
+  name="Cities"
+  idName="CityID"
+  >
+  <BeeFields>
+    <BeeField name="Name" type="STRING" precision="100" notNull="true" unique="true" />
+    <BeeField name="Population" type="INTEGER" />
+    <BeeField name="Country" type="LONG" relation="Countries" />
+  </BeeFields>
+  <BeeStates>
+    <BeeState>Visible</BeeState>
+    <BeeState>Marked</BeeState>
+  </BeeStates>
+</BeeTable>

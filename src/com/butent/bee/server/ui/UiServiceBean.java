@@ -10,7 +10,6 @@ import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.sql.IsCondition;
-import com.butent.bee.server.sql.SqlBuilderFactory;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.Assert;
@@ -401,20 +400,19 @@ public class UiServiceBean {
 
     } else if (BeeUtils.same(cmd, "states")) {
       sys.initStates();
-      sys.initTables();
-      sys.initViews();
-      sys.initDatabase(SqlBuilderFactory.getEngine());
       response.addInfo("Extensions OK");
 
     } else if (BeeUtils.same(cmd, "tables")) {
       sys.initTables();
-      sys.initViews();
-      sys.initDatabase(SqlBuilderFactory.getEngine());
       response.addInfo("Extensions OK");
 
     } else if (BeeUtils.same(cmd, "views")) {
       sys.initViews();
       response.addInfo("Views OK");
+
+    } else if (BeeUtils.same(cmd, "grids")) {
+      grd.initGrids();
+      response.addInfo("Grids OK");
 
     } else if (BeeUtils.startsSame(cmd, "setState")) {
       String[] xArr = cmd.split(" ", 5);

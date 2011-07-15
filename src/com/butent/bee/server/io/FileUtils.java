@@ -265,6 +265,17 @@ public class FileUtils {
     return lst;
   }
 
+  public static File getDirectory(File parent, String child) {
+    Assert.notNull(parent);
+    Assert.notEmpty(child);
+    File dir = new File(parent, child);
+  
+    if (isDirectory(dir)) {
+      return dir;
+    }
+    return null;
+  }
+
   public static List<Property> getFileInfo(File fl) {
     Assert.notNull(fl);
 
@@ -340,6 +351,21 @@ public class FileUtils {
       lst.addAll(getFileInfo(roots[i]));
     }
     return lst;
+  }
+
+  public static boolean isDirectory(File dir) {
+    if (dir == null) {
+      return false;
+    } else {
+      return dir.exists() && dir.isDirectory();
+    }
+  }
+
+  public static boolean isDirectory(String dirName) {
+    Assert.notEmpty(dirName);
+    File dir = new File(dirName);
+
+    return isDirectory(dir);
   }
 
   public static boolean isFile(String name) {

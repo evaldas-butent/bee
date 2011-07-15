@@ -4,13 +4,7 @@
   
   <xs:include schemaLocation="types.xsd"/>
 
-  <xs:element name="BeeStates">
-    <xs:complexType>
-      <xs:sequence>
-        <xs:element name="BeeState" type="bee:stateType" minOccurs="0" maxOccurs="unbounded" />
-      </xs:sequence>
-    </xs:complexType>
-  </xs:element>
+  <xs:element name="BeeState" type="bee:stateType" />
 
   <xs:complexType name="stateType">
     <xs:attribute name="name" use="required" type="bee:stateNameType" />

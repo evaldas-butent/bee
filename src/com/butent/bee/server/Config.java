@@ -28,6 +28,8 @@ import java.util.logging.Logger;
 public class Config {
   private static Logger logger = Logger.getLogger(Config.class.getName());
 
+  public static final String DEFAULT_NAMESPACE = "http://www.butent.com/bee";
+
   public static final File WAR_DIR;
   public static final File SOURCE_DIR;
   public static final File SCHEMA_DIR;
@@ -77,12 +79,12 @@ public class Config {
   public static List<File> getDefaultSearchDirectories() {
     return Lists.newArrayList(USER_DIR, CONFIG_DIR, SCHEMA_DIR, WAR_DIR, SOURCE_DIR);
   }
-  
+
   public static List<File> getDirectories(String pfx) {
     if (BeeUtils.isEmpty(pfx)) {
       return null;
     }
-    
+
     List<File> directories = Lists.newArrayList();
     File dir;
 
@@ -176,7 +178,7 @@ public class Config {
   public static String getPath(String resource) {
     return getPath(resource, true);
   }
-  
+
   public static String getPath(String resource, boolean warn) {
     Assert.notEmpty(resource);
 

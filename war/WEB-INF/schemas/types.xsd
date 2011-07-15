@@ -34,21 +34,9 @@
     </xs:restriction>
   </xs:simpleType>
 
-  <xs:simpleType name="fieldListType">
-    <xs:restriction base="xs:string">
-      <xs:pattern value="[A-Z][a-zA-Z0-9]{0,29}(,[A-Z][a-zA-Z0-9]{0,29})*"/>
-    </xs:restriction>
-  </xs:simpleType>
-
   <xs:simpleType name="stateNameType">
     <xs:restriction base="bee:nameType">
       <xs:maxLength value="20"></xs:maxLength>
-    </xs:restriction>
-  </xs:simpleType>
-
-  <xs:simpleType name="stateListType">
-    <xs:restriction base="xs:string">
-      <xs:pattern value="[A-Z][a-zA-Z0-9]{0,19}(,[A-Z][a-zA-Z0-9]{0,19})*"/>
     </xs:restriction>
   </xs:simpleType>
 </xs:schema>

@@ -1,7 +1,6 @@
 package com.butent.bee.server.data;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 
 import com.butent.bee.shared.DateTime;
 import com.butent.bee.shared.data.BeeColumn;
@@ -16,9 +15,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -31,10 +28,10 @@ import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElementRef;
+import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlValue;
-import javax.xml.bind.annotation.adapters.XmlAdapter;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
  * Enables to get data from the system using SOAP web service protocol.
@@ -47,85 +44,34 @@ public class RemoteCall {
   /**
    * Contains column information - name and value.
    */
-  public static class ColType {
-    @XmlAttribute(required = true)
+  @XmlRootElement(name = "col")
+  public static class DataColumn {
+    @XmlAttribute
     public String name;
     @XmlValue
     public String value;
-
-    public ColType() {
-    }
-
-    public ColType(String name, String value) {
-      this.name = name;
-      this.value = value;
-    }
   }
 
   /**
    * Contains a list of columns for a row.
    */
-  public static class RowType {
-    @XmlElement(name = "col")
-    public ColType[] columns;
+  @XmlRootElement(name = "row")
+  public static class DataRow {
+    @XmlAttribute
+    public String id;
+    @XmlAttribute
+    public String version;
+    @XmlElementRef
+    public List<DataColumn> columns;
 
-    public RowType() {
-    }
-
-    public RowType(ColType[] columns) {
-      this.columns = columns;
-    }
-  }
-
-  /**
-   * Contains a list of rows.
-   */
-  public static class DataType {
-    @XmlElement(name = "row")
-    public RowType[] rows;
-  }
-
-  /**
-   * Creates data for SOAP web service requests.
-   */
-  public static class DataAdapter extends XmlAdapter<DataType, List<Map<String, String>>> {
-    @Override
-    public DataType marshal(List<Map<String, String>> source) throws Exception {
-      DataType data = new DataType();
-
-      if (!BeeUtils.isEmpty(source)) {
-        int rCnt = 0;
-        RowType[] rows = new RowType[source.size()];
-
-        for (Map<String, String> row : source) {
-          ColType[] columns = new ColType[row.size()];
-          int cCnt = 0;
-
-          for (String name : row.keySet()) {
-            columns[cCnt++] = new ColType(name, row.get(name));
-          }
-          rows[rCnt++] = new RowType(columns);
-        }
-        data.rows = rows;
+    public void addColumn(String name, String value) {
+      if (columns == null) {
+        columns = Lists.newArrayList();
       }
-      return data;
-    }
-
-    @Override
-    public List<Map<String, String>> unmarshal(DataType data) throws Exception {
-      List<Map<String, String>> rows = Lists.newArrayList();
-
-      if (!BeeUtils.isEmpty(data)) {
-        for (RowType r : data.rows) {
-          HashMap<String, String> row = Maps.newLinkedHashMap();
-
-          for (ColType column : r.columns) {
-            row.put(column.name, column.value);
-          }
-          rows.add(row);
-        }
-      }
-      return rows;
+      DataColumn col = new DataColumn();
+      col.name = name;
+      col.value = value;
+      columns.add(col);
     }
   }
 
@@ -140,8 +86,9 @@ public class RemoteCall {
     public Integer affected;
     @XmlAttribute
     public List<String> columns;
-    @XmlJavaTypeAdapter(DataAdapter.class)
-    public List<Map<String, String>> rows;
+    @XmlElementRef
+    @XmlElementWrapper
+    public List<DataRow> rows;
   }
 
   /**
@@ -149,7 +96,7 @@ public class RemoteCall {
    */
   @XmlRootElement(name = "params")
   public static class ParamHolder {
-    @XmlAttribute(required = true)
+    @XmlAttribute
     public String view;
     @XmlAttribute
     public String[] columns;
@@ -162,9 +109,11 @@ public class RemoteCall {
     @XmlAttribute
     public Integer offset;
     @XmlAttribute
-    public String idName;
+    public boolean showId;
     @XmlAttribute
-    public String versionName;
+    public boolean showVersion;
+    @XmlAttribute
+    public boolean skipColumns;
   }
 
   @EJB
@@ -182,42 +131,47 @@ public class RemoteCall {
       if (!sys.isView(prm.view)) {
         rs = "Not a view: " + prm.view;
 
-      } else if (!BeeUtils.isEmpty(prm.idName) && sys.getView(prm.view).hasColumn(prm.idName)) {
-        rs = "Id column name conflict: " + prm.idName;
-
-      } else if (!BeeUtils.isEmpty(prm.versionName)
-          && (sys.getView(prm.view).hasColumn(prm.versionName)
-              || BeeUtils.same(prm.idName, prm.versionName))) {
-        rs = "Version column name conflict: " + prm.versionName;
-
       } else {
         rs = null;
         Filter filter = null;
+        Order order = null;
+        BeeView view = sys.getView(prm.view);
 
-        if (!BeeUtils.isEmpty(prm.filter)) {
+        if (!BeeUtils.isEmpty(prm.columns)) {
+          for (String col : prm.columns) {
+            if (!view.hasColumn(col)) {
+              rs = "Unrecognized view column: " + col;
+              break;
+            }
+          }
+        }
+        if (rs == null && !BeeUtils.isEmpty(prm.filter)) {
           List<IsColumn> columns = Lists.newArrayList();
-          BeeView view = sys.getView(prm.view);
 
           for (String col : view.getColumns()) {
             columns.add(new BeeColumn(ValueType.getByTypeCode(view.getType(col).toString()), col));
           }
-          filter = DataUtils.parseCondition(prm.filter, columns, prm.idName, prm.versionName);
+          filter = DataUtils.parseCondition(prm.filter, columns);
 
           if (filter == null) {
             rs = "Wrong filter: " + prm.filter;
           }
         }
-        if (rs == null) {
-          Order order = null;
+        if (rs == null && !BeeUtils.isEmpty(prm.orderBy)) {
+          char prfx = '-';
+          order = new Order();
 
-          if (!BeeUtils.isEmpty(prm.orderBy)) {
-            char prfx = '-';
-            order = new Order();
+          for (String ord : prm.orderBy) {
+            String col = BeeUtils.removePrefix(ord, prfx);
 
-            for (String ord : prm.orderBy) {
-              order.add(ord, BeeUtils.removePrefix(ord, prfx), !BeeUtils.isPrefix(ord, prfx));
+            if (!view.hasColumn(col)) {
+              rs = "Unrecognized order column: " + col;
+              break;
             }
+            order.add(ord, col, !BeeUtils.isPrefix(ord, prfx));
           }
+        }
+        if (rs == null) {
           rs = sys.getViewData(prm.view, sys.getViewCondition(prm.view, filter), order,
               BeeUtils.toNonNegativeInt(prm.limit), BeeUtils.toNonNegativeInt(prm.offset),
               prm.columns);
@@ -229,21 +183,23 @@ public class RemoteCall {
     if (rs instanceof BeeRowSet) {
       BeeRowSet rowSet = (BeeRowSet) rs;
       data.affected = rowSet.getNumberOfRows();
-      data.rows = Lists.newArrayList();
       data.columns = Lists.newArrayList(rowSet.getColumnLabels());
+      data.rows = Lists.newArrayList();
 
-      if (!BeeUtils.isEmpty(data.columns)) {
+      if (prm.showId || prm.showVersion || !prm.skipColumns) {
         for (BeeRow r : rowSet.getRows()) {
-          HashMap<String, String> row = Maps.newLinkedHashMap();
+          DataRow row = new DataRow();
 
-          for (String col : data.columns) {
-            row.put(rowSet.getColumn(col).getId(), rowSet.getString(r, col));
+          if (prm.showId) {
+            row.id = BeeUtils.transform(r.getId());
           }
-          if (!BeeUtils.isEmpty(prm.idName)) {
-            row.put(prm.idName, BeeUtils.transform(r.getId()));
+          if (prm.showVersion) {
+            row.version = BeeUtils.transform(new DateTime(r.getVersion()));
           }
-          if (!BeeUtils.isEmpty(prm.versionName)) {
-            row.put(prm.versionName, BeeUtils.transform(new DateTime(r.getVersion())));
+          if (!prm.skipColumns) {
+            for (String col : data.columns) {
+              row.addColumn(rowSet.getColumn(col).getId(), rowSet.getString(r, col));
+            }
           }
           data.rows.add(row);
         }
@@ -296,6 +252,8 @@ public class RemoteCall {
         err = e.getMessage();
       }
       ret = err;
+    } catch (Exception e) {
+      ret = e.getMessage();
     }
     return ret;
   }
