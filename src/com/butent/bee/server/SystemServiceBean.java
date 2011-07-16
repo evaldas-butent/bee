@@ -15,6 +15,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.CommUtils;
 import com.butent.bee.shared.communication.ContentType;
+import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -41,9 +42,10 @@ import javax.ejb.Stateless;
 public class SystemServiceBean {
   private static Logger logger = Logger.getLogger(SystemServiceBean.class.getName());
 
-  public void doService(String svc, RequestInfo reqInfo, ResponseBuffer buff) {
+  public ResponseObject doService(String svc, RequestInfo reqInfo, ResponseBuffer buff) {
     Assert.notEmpty(svc);
     Assert.notNull(buff);
+    ResponseObject response = null;
 
     if (BeeUtils.same(svc, Service.GET_CLASS_INFO)) {
       classInfo(reqInfo, buff);
@@ -51,7 +53,7 @@ public class SystemServiceBean {
       xmlInfo(reqInfo, buff);
 
     } else if (BeeUtils.same(svc, Service.GET_RESOURCE)) {
-      getResource(reqInfo, buff);
+      response = getResource(reqInfo, buff);
     } else if (BeeUtils.same(svc, Service.SAVE_RESOURCE)) {
       saveResource(reqInfo, buff);
 
@@ -63,6 +65,7 @@ public class SystemServiceBean {
       LogUtils.warning(logger, msg);
       buff.addWarning(msg);
     }
+    return response;
   }
 
   private void classInfo(RequestInfo reqInfo, ResponseBuffer buff) {
@@ -122,23 +125,23 @@ public class SystemServiceBean {
     buff.addMessage(BeeConst.SERVER, Codec.md5(src));
   }
 
-  private void getResource(RequestInfo reqInfo, ResponseBuffer buff) {
+  private ResponseObject getResource(RequestInfo reqInfo, ResponseBuffer buff) {
     String mode = reqInfo.getParameter(0);
     if (BeeUtils.same(mode, "cs")) {
       buff.addExtendedProperties(FileUtils.getCharsets());
-      return;
+      return null;
     }
     if (BeeUtils.same(mode, "fs")) {
       buff.addProperties(PropertyUtils.createProperties("Path Separator",
           File.pathSeparator, "Separator", File.separator));
       buff.addProperties(FileUtils.getRootsInfo());
-      return;
+      return null;
     }
 
     String search = reqInfo.getParameter(1);
     if (BeeUtils.isEmpty(search)) {
       buff.addSevere("resource name ( parameter", CommUtils.rpcParamName(1), ") not specified");
-      return;
+      return null;
     }
 
     File resFile = null;
@@ -163,12 +166,14 @@ public class SystemServiceBean {
       String defaultExtension = null;
       if (BeeUtils.same(mode, "src")) {
         defaultExtension = FileUtils.EXT_JAVA;
+      } else if (BeeUtils.same(mode, "xml")) {
+        defaultExtension = XmlUtils.defaultXmlExtension;
       }
 
       List<File> files = FileUtils.findFiles(search, roots, filters, defaultExtension, true, false);
       if (BeeUtils.isEmpty(files)) {
         buff.addWarning("resource", search, "not found");
-        return;
+        return null;
       }
 
       if (files.size() > 1) {
@@ -200,7 +205,7 @@ public class SystemServiceBean {
         buff.add(0, mode, search, totSize, lastMod);
 
         buff.addMessage(mode, search, "found", files.size(), "files");
-        return;
+        return null;
       }
       resFile = files.get(0);
     }
@@ -209,11 +214,11 @@ public class SystemServiceBean {
     String resPath = resFile.getPath();
     if (!resFile.exists()) {
       buff.addWarning("file", resPath, "does not exist");
-      return;
+      return null;
     }
     buff.addMessage(mode, search, "found", resPath);
 
-    if (BeeUtils.inListSame(mode, "get", "src")) {
+    if (BeeUtils.inListSame(mode, "get", "src", "xml")) {
       if (!FileUtils.isInputFile(resFile)) {
         buff.addWarning(resPath, "is not readable");
       } else if (!Config.isText(resFile)) {
@@ -225,6 +230,9 @@ public class SystemServiceBean {
 
         if (s == null || s.length() == 0) {
           buff.addWarning(resPath, "no content found");
+          
+        } else if (BeeUtils.same(mode, "xml")) {
+          return ResponseObject.response(s);
 
         } else {
           buff.addResource(resPath, s, ContentType.RESOURCE);
@@ -237,7 +245,7 @@ public class SystemServiceBean {
           if (!BeeUtils.isEmpty(ce)) {
             buff.setCharacterEncoding(ce);
           }
-          return;
+          return null;
         }
       }
     }
@@ -254,6 +262,7 @@ public class SystemServiceBean {
         buff.addWarning("no files found");
       }
     }
+    return null;
   }
 
   private void saveResource(RequestInfo reqInfo, ResponseBuffer buff) {

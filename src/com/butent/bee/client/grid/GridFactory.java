@@ -31,7 +31,7 @@ import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.IsTable;
 import com.butent.bee.shared.data.value.ValueType;
-import com.butent.bee.shared.ui.ColumnDescription.CellType;
+import com.butent.bee.shared.ui.CellType;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Property;
@@ -181,8 +181,9 @@ public class GridFactory {
     switch (cellType) {
       case HTML:
         return new HtmlCell();
+      default:
+        return new TextCell();
     }
-    return null;
   }
 
   public static DataColumn<?> createColumn(IsColumn dataColumn, int index) {

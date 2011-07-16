@@ -1,0 +1,28 @@
+package com.butent.bee.shared.ui;
+
+import com.butent.bee.shared.utils.BeeUtils;
+
+public enum CellType {
+  HTML("html"), INPUT("input"), DIV("div");
+
+  public static CellType getByCode(String code) {
+    if (!BeeUtils.isEmpty(code)) {
+      for (CellType type : CellType.values()) {
+        if (BeeUtils.same(type.getCode(), code)) {
+          return type;
+        }
+      }
+    }
+    return null;
+  }
+
+  private String code;
+
+  private CellType(String code) {
+    this.code = code;
+  }
+
+  public String getCode() {
+    return code;
+  }
+}

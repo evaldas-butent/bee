@@ -26,7 +26,6 @@
     <xs:choice minOccurs="0" maxOccurs="unbounded">
       <xs:element name="dynStyle" type="bee:conditionalStyle" />
     </xs:choice>
-    <xs:attribute name="name" type="xs:token" />
     <xs:attributeGroup ref="bee:appearance" />
     <xs:attribute name="title" type="xs:string" />
     <xs:attribute name="html" type="xs:string" />
@@ -220,6 +219,7 @@
           <xs:choice minOccurs="2" maxOccurs="unbounded">
             <xs:element name="option" type="xs:normalizedString" />
           </xs:choice>
+          <xs:attribute name="name" type="xs:token" use="required" />
           <xs:attribute name="vertical" type="xs:boolean" default="false" />
         </xs:extension>
       </xs:complexContent>
@@ -467,5 +467,8 @@
 
   <xs:element name="InputDate" type="bee:editableWidget" substitutionGroup="bee:widget" />  
   <xs:element name="InputDateTime" type="bee:editableWidget" substitutionGroup="bee:widget" />  
+
+  <xs:element name="Spinner" type="bee:editableWidget" substitutionGroup="bee:widget" />  
+  <xs:element name="Slider" type="bee:editableWidget" substitutionGroup="bee:widget" />  
  
 </xs:schema>

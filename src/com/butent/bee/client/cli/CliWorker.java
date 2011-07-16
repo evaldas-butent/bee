@@ -62,6 +62,7 @@ import com.butent.bee.client.layout.TilePanel;
 import com.butent.bee.client.tree.BeeTree;
 import com.butent.bee.client.utils.Browser;
 import com.butent.bee.client.utils.JsUtils;
+import com.butent.bee.client.utils.XmlUtils;
 import com.butent.bee.client.visualization.showcase.Showcase;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.client.widget.Html;
@@ -477,6 +478,8 @@ public class CliWorker {
       BeeKeeper.getRpc().invoke("vmInfo");
     } else if (z.equals("widget") && arr.length >= 2) {
       showWidgetInfo(arr);
+    } else if (z.equals("xml") && arr.length >= 2) {
+      showXmlInfo(arr);
 
     } else {
       Global.showDialog("wtf", v);
@@ -1614,6 +1617,17 @@ public class CliWorker {
 
     List<ExtendedProperty> info = DomUtils.getInfo(widget, id, depth);
     BeeKeeper.getScreen().showGrid(info);
+  }
+
+  public static void showXmlInfo(String[] arr) {
+    ParameterList params = BeeKeeper.getRpc().createParameters(Service.GET_RESOURCE);
+    params.addPositionalHeader(arr);
+
+    BeeKeeper.getRpc().makeGetRequest(params, new ResponseCallback() {
+      public void onResponse(ResponseObject response) {
+        BeeKeeper.getScreen().showGrid(XmlUtils.getInfo((String) response.getResponse()));
+      }
+    });
   }
 
   public static void storage(String[] arr) {

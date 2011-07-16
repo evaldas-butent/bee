@@ -65,7 +65,7 @@ public class DispatcherBean {
     if (Service.isDbService(svc)) {
       dataBean.doService(svc, dsn, reqInfo, buff);
     } else if (Service.isSysService(svc)) {
-      sysBean.doService(svc, reqInfo, buff);
+      response = sysBean.doService(svc, reqInfo, buff);
 
     } else if (BeeUtils.same(svc, Service.LOAD_MENU)) {
       menu.getMenu(reqInfo, buff);

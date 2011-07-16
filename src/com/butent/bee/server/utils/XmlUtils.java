@@ -232,14 +232,12 @@ public class XmlUtils {
 
   public static List<Property> getAttrInfo(Attr attr) {
     Assert.notNull(attr);
-    List<Property> lst = new ArrayList<Property>();
-
-    PropertyUtils.addProperties(lst, "Name", attr.getName(), "Value", attr.getValue(),
+    return PropertyUtils.createProperties("Name", attr.getName(),
+        "Value", attr.getValue(),
         "Owner Element", transformElement(attr.getOwnerElement()),
         "Schema Type Info", transformTypeInfo(attr.getSchemaTypeInfo()),
-        "Specified", attr.getSpecified(), "Is Id", attr.isId(),
-        "To String", attr.toString());
-    return lst;
+        "Specified", attr.getSpecified(),
+        "Is Id", attr.isId());
   }
 
   public static Calculation getCalculation(Element element) {
@@ -600,7 +598,7 @@ public class XmlUtils {
     PropertyUtils.appendChildrenToExtended(lst, "Document Node", getNodeInfo(doc));
 
     NodeList nodes = doc.getElementsByTagName(ALL_TAGS);
-    int c = (nodes == null ? 0 : nodes.getLength());
+    int c = (nodes == null) ? 0 : nodes.getLength();
     PropertyUtils.addExtended(lst, root, "ElementsByTagName " + ALL_TAGS, BeeUtils.bracket(c));
 
     if (c > 0) {
