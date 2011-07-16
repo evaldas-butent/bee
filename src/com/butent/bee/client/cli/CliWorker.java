@@ -60,6 +60,7 @@ import com.butent.bee.client.layout.Direction;
 import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.layout.TilePanel;
 import com.butent.bee.client.tree.BeeTree;
+import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.utils.Browser;
 import com.butent.bee.client.utils.JsUtils;
 import com.butent.bee.client.utils.XmlUtils;
@@ -375,6 +376,8 @@ public class CliWorker {
       eval(v, arr);
     } else if (BeeUtils.inList(z, "f", "func")) {
       showFunctions(v, arr);
+    } else if (z.equals("form") && arr.length == 2) {
+      FormFactory.getForm(arr[1]);
     } else if (z.equals("fs")) {
       getFs();
     } else if (z.equals("gen") && BeeUtils.isDigit(ArrayUtils.getQuietly(arr, 2))) {
@@ -492,7 +495,7 @@ public class CliWorker {
 
     BeeKeeper.getRpc().makeGetRequest(params);
   }
-
+  
   public static void getFs() {
     ParameterList params = BeeKeeper.getRpc().createParameters(Service.GET_RESOURCE);
     params.addPositionalHeader("fs");

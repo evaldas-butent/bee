@@ -9,9 +9,11 @@ import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
+import com.butent.bee.server.io.FileUtils;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
+import com.butent.bee.server.utils.XmlUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
@@ -71,9 +73,9 @@ public class UiServiceBean {
 
     String svc = reqInfo.getService();
 
-    if (BeeUtils.same(svc, Service.GET_FORM)) {
+    if (BeeUtils.same(svc, Service.GET_X_FORM)) {
       response = formInfo(reqInfo);
-    } else if (BeeUtils.same(svc, Service.GET_FORM_LIST)) {
+    } else if (BeeUtils.same(svc, Service.GET_X_FORM_LIST)) {
       response = formList();
     } else if (BeeUtils.same(svc, Service.GET_MENU)) {
       response = menuInfo(reqInfo);
@@ -81,6 +83,9 @@ public class UiServiceBean {
       response = gridInfo(reqInfo);
     } else if (BeeUtils.same(svc, Service.GET_GRID)) {
       response = getGrid(reqInfo);
+    } else if (BeeUtils.same(svc, Service.GET_FORM)) {
+      response = getForm(reqInfo);
+
     } else if (BeeUtils.same(svc, Service.REBUILD)) {
       response = rebuildData(reqInfo);
     } else if (BeeUtils.same(svc, Service.DO_SQL)) {
@@ -241,6 +246,27 @@ public class UiServiceBean {
     return response;
   }
 
+  private ResponseObject getForm(RequestInfo reqInfo) {
+    String formName = reqInfo.getContent();
+    if (BeeUtils.isEmpty(formName)) {
+      return ResponseObject.error("Form name not specified");
+    }
+    
+    String formPath = "forms/";
+    String formExt = XmlUtils.defaultXmlExtension;
+    
+    String fileName = Config.getPath(formPath + formName + "." + formExt);
+    String xml = null;
+    if (!BeeUtils.isEmpty(fileName)) {
+      xml = FileUtils.fileToString(fileName);
+    }
+    
+    if (!BeeUtils.isEmpty(xml)) {
+      return ResponseObject.response(xml);
+    }
+    return ResponseObject.error("form", formName, "not found");
+  }
+
   private ResponseObject getGrid(RequestInfo reqInfo) {
     String gridName = reqInfo.getContent();
     if (BeeUtils.isEmpty(gridName)) {
@@ -251,7 +277,7 @@ public class UiServiceBean {
     }
     return ResponseObject.error("grid", gridName, "not found");
   }
-
+  
   private ResponseObject getStates(RequestInfo reqInfo) {
     String table = reqInfo.getParameter(Service.VAR_VIEW_NAME);
     Set<String> states = new HashSet<String>();

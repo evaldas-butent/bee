@@ -53,7 +53,7 @@ public class FormService extends CompositeService {
 
     switch (stage) {
       case CHOOSE_FORM:
-        BeeKeeper.getRpc().makeGetRequest(Service.GET_FORM_LIST,
+        BeeKeeper.getRpc().makeGetRequest(Service.GET_X_FORM_LIST,
             new ResponseCallback() {
               @Override
               public void onResponse(ResponseObject response) {
@@ -88,7 +88,7 @@ public class FormService extends CompositeService {
           ok = false;
         } else {
           Global.closeDialog(event);
-          BeeKeeper.getRpc().makePostRequest(Service.GET_FORM,
+          BeeKeeper.getRpc().makePostRequest(Service.GET_X_FORM,
               XmlUtils.createString(Service.XML_TAG_DATA, fld, fName),
               new ResponseCallback() {
                 @Override

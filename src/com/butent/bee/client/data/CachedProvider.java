@@ -33,16 +33,14 @@ import java.util.Set;
 
 public class CachedProvider extends Provider {
 
-  private final String viewName;
   private IsTable<?, ?> table;
 
   private final Set<Long> filteredRowIds = Sets.newHashSet();
   private final List<IsRow> viewRows = Lists.newArrayList();
 
   public CachedProvider(HasDataTable display, String viewName, IsTable<?, ?> table) {
-    super(display);
+    super(display, viewName);
     Assert.notNull(table);
-    this.viewName = viewName;
     this.table = table;
   }
 
@@ -56,10 +54,6 @@ public class CachedProvider extends Provider {
 
   public IsTable<?, ?> getTable() {
     return table;
-  }
-
-  public String getViewName() {
-    return viewName;
   }
 
   @Override

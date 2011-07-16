@@ -119,10 +119,12 @@
     <xs:complexContent>
       <xs:extension base="bee:widgetType">
         <xs:sequence>
-          <xs:element name="north" type="bee:splitDirection" minOccurs="0" />
-          <xs:element name="south" type="bee:splitDirection" minOccurs="0" />
-          <xs:element name="west" type="bee:splitDirection" minOccurs="0" />
-          <xs:element name="east" type="bee:splitDirection" minOccurs="0" />
+          <xs:choice minOccurs="1" maxOccurs="unbounded">
+            <xs:element name="north" type="bee:splitDirection" />
+            <xs:element name="south" type="bee:splitDirection" />
+            <xs:element name="west" type="bee:splitDirection" />
+            <xs:element name="east" type="bee:splitDirection" />
+          </xs:choice>
           <xs:element name="center" type="bee:childWidget" />
         </xs:sequence>
         <xs:attribute name="splitterSize" type="xs:nonNegativeInteger" />

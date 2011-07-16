@@ -30,6 +30,7 @@ import java.util.List;
 public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvents, HasViewName {
 
   private final HasDataTable display;
+  private final String viewName;
 
   private final List<HandlerRegistration> handlerRegistry = Lists.newArrayList();
 
@@ -39,9 +40,11 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
   private Filter filter = null;
   private Order order = null;
 
-  protected Provider(HasDataTable display) {
+  protected Provider(HasDataTable display, String viewName) {
     Assert.notNull(display);
+    Assert.notEmpty(viewName);
     this.display = display;
+    this.viewName = viewName;
 
     this.handlerRegistry.add(display.addRangeChangeHandler(new RangeChangeEvent.Handler() {
       public void onRangeChange(RangeChangeEvent event) {
@@ -79,7 +82,9 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
     return order;
   }
 
-  public abstract String getViewName();
+  public String getViewName() {
+    return viewName;
+  }
 
   public boolean isCacheEnabled() {
     return cacheEnabled;

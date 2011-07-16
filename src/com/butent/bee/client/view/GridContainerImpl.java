@@ -8,6 +8,7 @@ import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 
+import com.butent.bee.client.data.DataHelper;
 import com.butent.bee.client.data.HasDataTable;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils.ScrollBars;
@@ -42,7 +43,6 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     HasSearch, ActiveRowChangeEvent.Handler, AddStartEvent.Handler, AddEndEvent.Handler {
 
   public static Integer minPagingRows = 20;
-  public static Integer minSearchRows = 2;
 
   public static Integer defaultPageSize = 15;
   
@@ -108,7 +108,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     setHasPaging(rowCount >= minRows);
 
     minRows = BeeUtils.unbox((gridDescription == null)
-        ? minSearchRows : gridDescription.getSearchThreshold());
+        ? DataHelper.getDefaultSearchThreshold() : gridDescription.getSearchThreshold());
     setHasSearch(rowCount >= minRows);
 
     int pageSize;

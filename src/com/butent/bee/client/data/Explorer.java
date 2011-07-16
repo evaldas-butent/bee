@@ -72,9 +72,6 @@ public class Explorer implements HandlesDeleteEvents, RowInsertEvent.Handler {
     }
   }
 
-  public static Integer defaultAsyncThreshold = 100;
-  private final int maxInitialRowSetSize = 50;
-
   private final List<DataInfo> views = Lists.newArrayList();
   private final DataInfoCreator dataInfoCreator = new DataInfoCreator();
 
@@ -87,6 +84,16 @@ public class Explorer implements HandlesDeleteEvents, RowInsertEvent.Handler {
   
   public void create() {
     getDataInfoCreator().execute();
+  }
+
+  public DataInfo getDataInfo(String name) {
+    Assert.notNull(name);
+    for (DataInfo dataInfo : getViews()) {
+      if (BeeUtils.same(dataInfo.getName(), name)) {
+        return dataInfo;
+      }
+    }
+    return null;
   }
 
   public DataInfoCreator getDataInfoCreator() {
@@ -202,33 +209,23 @@ public class Explorer implements HandlesDeleteEvents, RowInsertEvent.Handler {
     return getLoadingWidget();
   }
 
-  private DataInfo getDataInfo(String name) {
-    Assert.notNull(name);
-    for (DataInfo dataInfo : getViews()) {
-      if (BeeUtils.same(dataInfo.getName(), name)) {
-        return dataInfo;
-      }
-    }
-    return null;
-  }
-
   private CellTable<DataInfo> getDataInfoWidget() {
     return dataInfoWidget;
   }
 
   private void getInitialRowSet(final DataInfo dataInfo, final GridDescription gridDescription) {
-    Integer asyncThreshold =
-        (gridDescription == null) ? defaultAsyncThreshold : gridDescription.getAsyncThreshold();
+    Integer asyncThreshold = (gridDescription == null) ?
+        DataHelper.getDefaultAsyncThreshold() : gridDescription.getAsyncThreshold();
     int limit = BeeUtils.unbox(asyncThreshold);
     int rc = dataInfo.getRowCount();
 
     final boolean async;
     if (rc >= limit) {
       async = true;
-      if (rc <= maxInitialRowSetSize) {
+      if (rc <= DataHelper.getMaxInitialRowSetSize()) {
         limit = -1;
       } else {
-        limit = maxInitialRowSetSize;
+        limit = DataHelper.getMaxInitialRowSetSize();
       }
     } else {
       async = false;

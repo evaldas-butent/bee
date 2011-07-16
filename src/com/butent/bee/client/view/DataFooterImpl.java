@@ -116,12 +116,14 @@ public class DataFooterImpl extends Absolute implements DataFooterView, HasNavig
       add(pager, left, top);
       left += pagerWidth + spacing;
       pagerId = pager.getWidgetId();
-
-      PageResizer pageResizer = new PageResizer(pageSize);
-      pageResizer.addStyleName(style.pageResizer());
-      add(pageResizer, left, top);
-      left += resizerWidth + spacing;
-      resizerId = pageResizer.getWidgetId();
+      
+      if (pageSize > 0) {
+        PageResizer pageResizer = new PageResizer(pageSize);
+        pageResizer.addStyleName(style.pageResizer());
+        add(pageResizer, left, top);
+        left += resizerWidth + spacing;
+        resizerId = pageResizer.getWidgetId();
+      }
     }
 
     if (addSearch) {

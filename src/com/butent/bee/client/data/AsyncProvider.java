@@ -11,7 +11,6 @@ import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.SortEvent;
 import com.butent.bee.shared.data.filter.Filter;
-import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.Order;
 
 import java.util.List;
@@ -65,28 +64,16 @@ public class AsyncProvider extends Provider {
     }
   }
 
-  private final DataInfo dataInfo;
   private CachingPolicy cachingPolicy = CachingPolicy.FULL;
   
   private final List<Integer> pendingRequests = Lists.newArrayList();
 
-  public AsyncProvider(HasDataTable display, DataInfo dataInfo) {
-    super(display);
-    Assert.notNull(dataInfo);
-    this.dataInfo = dataInfo;
+  public AsyncProvider(HasDataTable display, String viewName) {
+    super(display, viewName);
   }
 
   public CachingPolicy getCachingPolicy() {
     return cachingPolicy;
-  }
-
-  public DataInfo getDataInfo() {
-    return dataInfo;
-  }
-  
-  @Override
-  public String getViewName() {
-    return getDataInfo().getName();
   }
 
   @Override
