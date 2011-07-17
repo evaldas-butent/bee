@@ -709,6 +709,15 @@ body, select {
   outline-offset: -1px;
 }
 
+.bee-Form {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  overflow: auto;
+}  
+
 .gwt-TreeItem-selected {
   background-color: #ffffaa;
 }

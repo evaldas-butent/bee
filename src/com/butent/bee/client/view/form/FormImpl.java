@@ -5,6 +5,7 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.cellview.client.LoadingStateChangeEvent;
@@ -24,17 +25,16 @@ import com.butent.bee.client.dom.StyleUtils.ScrollBars;
 import com.butent.bee.client.layout.Absolute;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.ui.FormDescription;
+import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.utils.Evaluator;
 import com.butent.bee.client.view.add.AddEndEvent;
 import com.butent.bee.client.view.add.AddStartEvent;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.EditEndEvent;
-import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.edit.EditableColumn;
 import com.butent.bee.client.view.edit.EditorFactory;
 import com.butent.bee.client.view.edit.ReadyForUpdateEvent;
 import com.butent.bee.client.view.edit.RowEditor;
-import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeColumn;
@@ -62,8 +62,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 
-public class FormImpl extends Absolute implements FormView, EditStartEvent.Handler,
-    EditEndEvent.Handler, HasDataTable {
+public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler, HasDataTable {
 
   private class NewRowCallback implements RowEditor.Callback {
     public void onCancel() {
@@ -179,7 +178,9 @@ public class FormImpl extends Absolute implements FormView, EditStartEvent.Handl
     setRowCount(rc);
     setReadOnly(formDescription.isReadOnly());
     
-    setFormWidget(new BeeLabel("test"));
+    setFormWidget(FormFactory.createForm(formDescription));
+    StyleUtils.makeAbsolute(getFormWidget());
+    getFormWidget().addStyleName("bee-Form");
 
     add(getFormWidget());
     add(getNotification());
@@ -305,62 +306,6 @@ public class FormImpl extends Absolute implements FormView, EditStartEvent.Handl
 //      handleKeyboardNavigation(keyCode, event.hasModifiers());
       }
     }
-  }
-
-  public void onEditStart(EditStartEvent event) {
-    Assert.notNull(event);
-    String columnId = event.getColumnId();
-    EditableColumn editableColumn = getEditableColumn(columnId);
-    if (editableColumn == null) {
-      return;
-    }
-
-    IsRow rowValue = event.getRowValue();
-    if (!isRowEditable(rowValue, true)) {
-      return;
-    }
-    if (!editableColumn.isCellEditable(rowValue, true)) {
-      return;
-    }
-
-    if (event.getCharCode() == EditorFactory.START_KEY_DELETE) {
-      if (!editableColumn.isNullable()) {
-        return;
-      }
-
-      String oldValue = editableColumn.getOldValueForUpdate(rowValue);
-      if (BeeUtils.isEmpty(oldValue)) {
-        return;
-      }
-
-      updateCell(rowValue, editableColumn.getColumnForUpdate(), oldValue, null,
-          editableColumn.getRowModeForUpdate());
-      return;
-    }
-
-    if (ValueType.BOOLEAN.equals(editableColumn.getDataType())
-        && BeeUtils.inList(event.getCharCode(), EditorFactory.START_MOUSE_CLICK,
-            EditorFactory.START_KEY_ENTER) && editableColumn.getRelationInfo() == null) {
-
-      String oldValue = rowValue.getString(editableColumn.getColIndex());
-      Boolean b = !BeeUtils.toBoolean(oldValue);
-      if (!b && editableColumn.isNullable()) {
-        b = null;
-      }
-      String newValue = BooleanValue.pack(b);
-
-      updateCell(rowValue, editableColumn.getDataColumn(), oldValue, newValue, false);
-      return;
-    }
-
-    setEditing(true);
-    if (event.getSourceElement() != null) {
-      event.getSourceElement().blur();
-    }
-
-    editableColumn.openEditor(this, event.getSourceElement(), getFormWidget().getElement(),
-        StyleUtils.getZIndex(getFormWidget()) + 1, rowValue, BeeUtils.toChar(event.getCharCode()),
-        this);
   }
 
   public void onMultiDelete(MultiDeleteEvent event) {
@@ -691,6 +636,59 @@ public class FormImpl extends Absolute implements FormView, EditStartEvent.Handl
   private void showNote(Level level, String... messages) {
     StyleUtils.setZIndex(getNotification(), StyleUtils.getZIndex(getFormWidget()) + 1);
     getNotification().show(level, messages);
+  }
+
+  private void startEdit(String columnId, int charCode, Element sourceElement) {
+    EditableColumn editableColumn = getEditableColumn(columnId);
+    if (editableColumn == null) {
+      return;
+    }
+
+    IsRow rowValue = getRowData();
+    if (!isRowEditable(rowValue, true)) {
+      return;
+    }
+    if (!editableColumn.isCellEditable(rowValue, true)) {
+      return;
+    }
+
+    if (charCode == EditorFactory.START_KEY_DELETE) {
+      if (!editableColumn.isNullable()) {
+        return;
+      }
+
+      String oldValue = editableColumn.getOldValueForUpdate(rowValue);
+      if (BeeUtils.isEmpty(oldValue)) {
+        return;
+      }
+
+      updateCell(rowValue, editableColumn.getColumnForUpdate(), oldValue, null,
+          editableColumn.getRowModeForUpdate());
+      return;
+    }
+
+    if (ValueType.BOOLEAN.equals(editableColumn.getDataType())
+        && BeeUtils.inList(charCode, EditorFactory.START_MOUSE_CLICK,
+            EditorFactory.START_KEY_ENTER) && editableColumn.getRelationInfo() == null) {
+
+      String oldValue = rowValue.getString(editableColumn.getColIndex());
+      Boolean b = !BeeUtils.toBoolean(oldValue);
+      if (!b && editableColumn.isNullable()) {
+        b = null;
+      }
+      String newValue = BooleanValue.pack(b);
+
+      updateCell(rowValue, editableColumn.getDataColumn(), oldValue, newValue, false);
+      return;
+    }
+
+    setEditing(true);
+    if (sourceElement != null) {
+      sourceElement.blur();
+    }
+
+    editableColumn.openEditor(this, sourceElement, getFormWidget().getElement(),
+        StyleUtils.getZIndex(getFormWidget()) + 1, rowValue, BeeUtils.toChar(charCode), this);
   }
 
   private void updateCell(IsRow rowValue, IsColumn dataColumn, String oldValue, String newValue,

@@ -1152,6 +1152,17 @@ public class StyleUtils {
     return null;
   }
 
+  public static Unit parseUnit(String input, Unit defUnit) {
+    if (BeeUtils.isEmpty(input)) {
+      return defUnit;
+    }
+    Unit unit = parseUnit(input);
+    if (unit == null) {
+      return defUnit;
+    }
+    return unit;
+  }
+  
   public static int removeClassName(NodeList<Element> nodes, String className) {
     Assert.notNull(nodes);
     Assert.notEmpty(className);

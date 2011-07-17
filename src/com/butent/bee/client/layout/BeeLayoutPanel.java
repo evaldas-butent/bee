@@ -11,12 +11,15 @@ import com.butent.bee.client.event.HasAfterAddHandler;
 import com.butent.bee.client.event.HasBeforeAddHandler;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.HasId;
+import com.butent.bee.shared.utils.BeeUtils;
 
 /**
  * Implements NSEW (North, South, East, West) management element.
  */
 
 public class BeeLayoutPanel extends LayoutPanel implements HasId {
+  
+  public static Unit defaultUnit = Unit.PX;
 
   public BeeLayoutPanel() {
     createId();
@@ -52,10 +55,6 @@ public class BeeLayoutPanel extends LayoutPanel implements HasId {
     }
   }
 
-  public String addLeftRight(Widget widget, int left, int right) {
-    return addLeftRight(widget, left, Unit.PX, right, Unit.PX);
-  }
-  
   public String addLeftRight(Widget widget, double left, Unit leftUnit,
       double right, Unit rightUnit) {
     add(widget);
@@ -64,10 +63,10 @@ public class BeeLayoutPanel extends LayoutPanel implements HasId {
     return DomUtils.getId(widget);
   }
   
-  public String addLeftRightTop(Widget widget, int left, int right, int top) {
-    return addLeftRightTop(widget, left, Unit.PX, right, Unit.PX, top, Unit.PX);
+  public String addLeftRight(Widget widget, int left, int right) {
+    return addLeftRight(widget, left, defaultUnit, right, defaultUnit);
   }
-
+  
   public String addLeftRightTop(Widget widget, double left, Unit leftUnit,
       double right, Unit rightUnit, double top, Unit topUnit) {
     add(widget);
@@ -79,8 +78,8 @@ public class BeeLayoutPanel extends LayoutPanel implements HasId {
     return DomUtils.getId(widget);
   }
 
-  public String addLeftTop(Widget widget, int left, int top) {
-    return addLeftTop(widget, left, Unit.PX, top, Unit.PX);
+  public String addLeftRightTop(Widget widget, int left, int right, int top) {
+    return addLeftRightTop(widget, left, defaultUnit, right, defaultUnit, top, defaultUnit);
   }
 
   public String addLeftTop(Widget widget, double left, Unit leftUnit, double top, Unit topUnit) {
@@ -94,8 +93,8 @@ public class BeeLayoutPanel extends LayoutPanel implements HasId {
     return DomUtils.getId(widget);
   }
 
-  public String addLeftWidthTop(Widget widget, int left, int width, int top) {
-    return addLeftWidthTop(widget, left, Unit.PX, width, Unit.PX, top, Unit.PX);
+  public String addLeftTop(Widget widget, int left, int top) {
+    return addLeftTop(widget, left, defaultUnit, top, defaultUnit);
   }
 
   public String addLeftWidthTop(Widget widget, double left, Unit leftUnit,
@@ -109,8 +108,8 @@ public class BeeLayoutPanel extends LayoutPanel implements HasId {
     return DomUtils.getId(widget);
   }
 
-  public String addRightWidthTop(Widget widget, int right, int width, int top) {
-    return addRightWidthTop(widget, right, Unit.PX, width, Unit.PX, top, Unit.PX);
+  public String addLeftWidthTop(Widget widget, int left, int width, int top) {
+    return addLeftWidthTop(widget, left, defaultUnit, width, defaultUnit, top, defaultUnit);
   }
 
   public String addRightWidthTop(Widget widget, double right, Unit rightUnit,
@@ -125,6 +124,10 @@ public class BeeLayoutPanel extends LayoutPanel implements HasId {
     return DomUtils.getId(widget);
   }
 
+  public String addRightWidthTop(Widget widget, int right, int width, int top) {
+    return addRightWidthTop(widget, right, defaultUnit, width, defaultUnit, top, defaultUnit);
+  }
+
   public void createId() {
     DomUtils.createId(this, "layout");
   }
@@ -133,7 +136,64 @@ public class BeeLayoutPanel extends LayoutPanel implements HasId {
     return DomUtils.getId(this);
   }
 
+  public void setHorizontalLayout(Widget widget, Double left, Unit leftUnit,
+      Double right, Unit rightUnit, Double width, Unit widthUnit) {
+    Assert.notNull(widget);
+    
+    boolean hasLeft = (left != null);
+    boolean hasRight = (right != null);
+    boolean hasWidth = BeeUtils.isPositive(width);
+    
+    if (hasLeft && hasRight) {
+      setWidgetLeftRight(widget, left, normalizeUnit(leftUnit), right, normalizeUnit(rightUnit));
+    } else if (hasLeft && hasWidth) {
+      setWidgetLeftWidth(widget, left, normalizeUnit(leftUnit), width, normalizeUnit(widthUnit));
+    } else if (hasRight && hasWidth) {
+      setWidgetRightWidth(widget, right, normalizeUnit(rightUnit), width, normalizeUnit(widthUnit));
+      setWidgetHorizontalPosition(widget, Alignment.END);
+
+    } else if (hasLeft) {
+      setWidgetLeftRight(widget, left, normalizeUnit(leftUnit), 0, Unit.PX);
+    } else if (hasRight) {
+      setWidgetLeftRight(widget, 0, Unit.PX, right, normalizeUnit(rightUnit));
+      setWidgetHorizontalPosition(widget, Alignment.END);
+    } else if (hasWidth) {
+      setWidgetLeftWidth(widget, 0, Unit.PX, width, normalizeUnit(widthUnit));
+    }
+  }
+  
   public void setId(String id) {
     DomUtils.setId(this, id);
+  }
+
+  public void setVerticalLayout(Widget widget, Double top, Unit topUnit,
+      Double bottom, Unit bottomUnit, Double height, Unit heightUnit) {
+    Assert.notNull(widget);
+    
+    boolean hasTop = (top != null);
+    boolean hasBottom = (bottom != null);
+    boolean hasHeight = BeeUtils.isPositive(height);
+    
+    if (hasTop && hasBottom) {
+      setWidgetTopBottom(widget, top, normalizeUnit(topUnit), bottom, normalizeUnit(bottomUnit));
+    } else if (hasTop && hasHeight) {
+      setWidgetTopHeight(widget, top, normalizeUnit(topUnit), height, normalizeUnit(heightUnit));
+    } else if (hasBottom && hasHeight) {
+      setWidgetBottomHeight(widget, bottom, normalizeUnit(bottomUnit),
+          height, normalizeUnit(heightUnit));
+      setWidgetVerticalPosition(widget, Alignment.END);
+
+    } else if (hasTop) {
+      setWidgetTopBottom(widget, top, normalizeUnit(topUnit), 0, Unit.PX);
+    } else if (hasBottom) {
+      setWidgetTopBottom(widget, 0, Unit.PX, bottom, normalizeUnit(bottomUnit));
+      setWidgetVerticalPosition(widget, Alignment.END);
+    } else if (hasHeight) {
+      setWidgetTopHeight(widget, 0, Unit.PX, height, normalizeUnit(heightUnit));
+    }
+  }
+  
+  private Unit normalizeUnit(Unit unit) {
+    return (unit == null) ? defaultUnit : unit;
   }
 }

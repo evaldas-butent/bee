@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.butent.com/bee"
   xmlns:bee="http://www.butent.com/bee" elementFormDefault="qualified">
 
@@ -37,7 +38,7 @@
   <xs:complexType name="focusableWidget">
     <xs:complexContent>
       <xs:extension base="bee:widgetType">
-        <xs:attribute name="tabindex" type="xs:int" default="0" />
+        <xs:attribute name="tabIndex" type="xs:int" default="0" />
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
@@ -55,7 +56,7 @@
         <xs:attribute name="readOnly" type="xs:boolean" />
         <xs:attribute name="format" type="xs:normalizedString" />
         <xs:attribute name="horizontalAlignment" type="bee:horizontalAlignmentType" />
-        <xs:attribute name="cell" type="bee:cellType" />
+        <xs:attribute name="cellType" type="bee:cellType" />
         <xs:attribute name="minValue" type="xs:normalizedString" />
         <xs:attribute name="maxValue" type="xs:normalizedString" />
         <xs:attribute name="relSource" type="bee:nameType" />
@@ -247,7 +248,7 @@
     <xs:complexType>
       <xs:complexContent>
         <xs:extension base="bee:focusableWidget">
-          <xs:attribute name="href" type="xs:anyURI" use="required" />
+          <xs:attribute name="url" type="xs:anyURI" use="required" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -370,7 +371,7 @@
   </xs:complexType>
 
   <xs:element name="FlowPanel" type="bee:hasChildren" substitutionGroup="bee:widget" />
-  <xs:element name="Span" type="bee:hasChildren" substitutionGroup="bee:widget" />
+  <xs:element name="SpanPanel" type="bee:hasChildren" substitutionGroup="bee:widget" />
 
   <xs:element name="FlexTable" substitutionGroup="bee:widget">
     <xs:complexType>

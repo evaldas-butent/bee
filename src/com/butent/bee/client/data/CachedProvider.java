@@ -38,6 +38,10 @@ public class CachedProvider extends Provider {
   private final Set<Long> filteredRowIds = Sets.newHashSet();
   private final List<IsRow> viewRows = Lists.newArrayList();
 
+  public CachedProvider(HasDataTable display, IsTable<?, ?> table) {
+    this(display, null, table);
+  }
+
   public CachedProvider(HasDataTable display, String viewName, IsTable<?, ?> table) {
     super(display, viewName);
     Assert.notNull(table);

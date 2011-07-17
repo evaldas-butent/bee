@@ -2,6 +2,7 @@ package com.butent.bee.client.utils;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.xml.client.Attr;
 import com.google.gwt.xml.client.CDATASection;
 import com.google.gwt.xml.client.Comment;
@@ -17,6 +18,7 @@ import com.google.gwt.xml.client.impl.DOMParseException;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
+import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.ui.Calculation;
@@ -81,6 +83,12 @@ public class XmlUtils {
     return BeeUtils.toBooleanOrNull(element.getAttribute(name));
   }
 
+  public static Double getAttributeDouble(Element element, String name) {
+    Assert.notNull(element);
+    Assert.notEmpty(name);
+    return BeeUtils.toDoubleOrNull(element.getAttribute(name));
+  }
+  
   public static Integer getAttributeInteger(Element element, String name) {
     Assert.notNull(element);
     Assert.notEmpty(name);
@@ -102,6 +110,16 @@ public class XmlUtils {
       result.put(attr.getName(), attr.getValue());
     }
     return result;
+  }
+  
+  public static Unit getAttributeUnit(Element element, String name) {
+    return getAttributeUnit(element, name, null);
+  }
+  
+  public static Unit getAttributeUnit(Element element, String name, Unit defUnit) {
+    Assert.notNull(element);
+    Assert.notEmpty(name);
+    return StyleUtils.parseUnit(element.getAttribute(name), defUnit);
   }
 
   public static List<Property> getAttrInfo(Attr attr) {

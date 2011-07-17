@@ -2,6 +2,8 @@
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.butent.com/bee"
   xmlns:bee="http://www.butent.com/bee" elementFormDefault="qualified">
 
+  <xs:include schemaLocation="types.xsd" />
+
   <xs:complexType name="styleType">
     <xs:sequence>
       <xs:element name="class" type="xs:normalizedString" minOccurs="0" />
@@ -73,15 +75,21 @@
   </xs:simpleType>
   
   <xs:attributeGroup name="dimension">
-    <xs:attribute name="width" type="xs:string" />
-    <xs:attribute name="height" type="xs:string" />
+    <xs:attribute name="width" type="bee:positiveDecimal" />
+    <xs:attribute name="widthUnit" type="bee:cssUnit" />
+    <xs:attribute name="height" type="bee:positiveDecimal" />
+    <xs:attribute name="heightUnit" type="bee:cssUnit" />
   </xs:attributeGroup>
   
   <xs:attributeGroup name="positioning">
-    <xs:attribute name="left" type="xs:string" />
-    <xs:attribute name="right" type="xs:string" />
-    <xs:attribute name="top" type="xs:string" />
-    <xs:attribute name="bottom" type="xs:string" />
+    <xs:attribute name="left" type="xs:decimal" />
+    <xs:attribute name="leftUnit" type="bee:cssUnit" />
+    <xs:attribute name="right" type="xs:decimal" />
+    <xs:attribute name="rightUnit" type="bee:cssUnit" />
+    <xs:attribute name="top" type="xs:decimal" />
+    <xs:attribute name="topUnit" type="bee:cssUnit" />
+    <xs:attribute name="bottom" type="xs:decimal" />
+    <xs:attribute name="bottomUnit" type="bee:cssUnit" />
   </xs:attributeGroup>
   
   <xs:attributeGroup name="appearance">

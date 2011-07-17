@@ -30,8 +30,7 @@ public class Stack extends StackLayoutPanel implements HasId {
   }
 
   @Override
-  public void insert(Widget child, Widget header, double headerSize,
-      int beforeIndex) {
+  public void insert(Widget child, Widget header, double headerSize, int beforeIndex) {
     Widget cw = child;
     if (cw instanceof HasBeforeAddHandler) {
       cw = ((HasBeforeAddHandler) cw).onBeforeAdd(this);
@@ -54,5 +53,4 @@ public class Stack extends StackLayoutPanel implements HasId {
   public void setId(String id) {
     DomUtils.setId(this, id);
   }
-
 }

@@ -15,8 +15,8 @@ public class FormDescription implements HasViewName {
   private static final String TAG_ROW_EDITABLE = "rowEditable";
   private static final String TAG_ROW_VALIDATION = "rowValidation";
 
-  private static final String ATTR_VIEW_NAME = "viewName";
   private static final String ATTR_NAME = "name";
+  private static final String ATTR_VIEW_NAME = "viewName";
   private static final String ATTR_CAPTION = "caption";
   private static final String ATTR_READ_ONLY = "readOnly";
 
@@ -83,7 +83,7 @@ public class FormDescription implements HasViewName {
     return readOnly;
   }
 
-  private Element getFormElement() {
+  Element getFormElement() {
     return formElement;
   }
 }

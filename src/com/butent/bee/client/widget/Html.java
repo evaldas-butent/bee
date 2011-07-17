@@ -20,7 +20,7 @@ public class Html extends HTML implements HasId, HasCommand {
 
   public Html() {
     super();
-    createId();
+    init();
   }
 
   public Html(Element element) {
@@ -32,7 +32,7 @@ public class Html extends HTML implements HasId, HasCommand {
 
   public Html(String html) {
     super(html);
-    createId();
+    init();
   }
 
   public Html(String html, BeeCommand cmnd) {
@@ -46,7 +46,7 @@ public class Html extends HTML implements HasId, HasCommand {
 
   public Html(String html, boolean wordWrap) {
     super(html, wordWrap);
-    createId();
+    init();
   }
 
   public void createId() {
@@ -67,5 +67,10 @@ public class Html extends HTML implements HasId, HasCommand {
 
   public void setId(String id) {
     DomUtils.setId(this, id);
+  }
+  
+  private void init() {
+    createId();
+    setStyleName("bee-Html");
   }
 }

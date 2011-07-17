@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<BeeForm
+  xmlns="http://www.butent.com/bee"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../schemas/form.xsd"
+  
+  name="Users" viewName="Users" caption="Vartotojai">
+  
+  <LayoutPanel>
+    <layer left="1" leftUnit="%" top="1" topUnit="ex" width="50" widthUnit="%">
+      <FlexTable cellSpacing="5">
+        <row>
+          <cell><Label html="Login" /></cell>
+          <cell><InputText source="Login" /></cell>
+        </row>
+        <row>
+          <cell><Html html="Password" /></cell>
+          <cell><TextLabel source="Password" /></cell>
+        </row>
+        <row>
+          <cell><Label html="Vardas" /></cell>
+          <cell><InputText source="FirstName" /></cell>
+        </row>
+        <row>
+          <cell><Label html="Pavardė" /></cell>
+          <cell><InputText source="LastName" /></cell>
+        </row>
+        <row>
+          <cell><Label html="Pareigos" /></cell>
+          <cell><InputText source="Position" /></cell>
+        </row>
+      </FlexTable>
+    </layer>
+    
+    <layer left="55" leftUnit="%" top="1" topUnit="ex" right="1" rightUnit="%">
+      <FlowPanel>
+        <Label html="Properties" />
+        <InputArea source="Properties" style="bottom: 1ex;" />
+      </FlowPanel>
+    </layer>
+  </LayoutPanel>
+</BeeForm>  

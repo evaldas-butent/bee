@@ -1,5 +1,6 @@
 package com.butent.bee.client.ui;
 
+import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.xml.client.Document;
 import com.google.gwt.xml.client.Element;
 
@@ -19,7 +20,42 @@ import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.List;
+
 public class FormFactory {
+  
+  public static Widget createForm(FormDescription formDescription) {
+    Assert.notNull(formDescription);
+    List<Element> children = XmlUtils.getChildrenElements(formDescription.getFormElement());
+    if (BeeUtils.isEmpty(children)) {
+      BeeKeeper.getLog().severe("createForm: form element has no children");
+      return null;
+    }
+    
+    Element root = null;
+    FormWidget formWidget = null;
+    int count = 0;
+
+    for (Element child : children) {
+      FormWidget fw = FormWidget.getByTagName(child.getTagName());
+      if (fw != null) {
+        root = child;
+        formWidget = fw;
+        count++;
+      }
+    }
+    
+    if (count <= 0) {
+      BeeKeeper.getLog().severe("createForm: root widget not found");
+      return null;
+    }
+    if (count > 1) {
+      BeeKeeper.getLog().severe("createForm: form element has", count, "root widgets");
+      return null;
+    }
+    
+    return formWidget.create(root);
+  }
   
   public static void getForm(String name) {
     Assert.notEmpty(name);

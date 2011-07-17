@@ -42,7 +42,6 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
 
   protected Provider(HasDataTable display, String viewName) {
     Assert.notNull(display);
-    Assert.notEmpty(viewName);
     this.display = display;
     this.viewName = viewName;
 
