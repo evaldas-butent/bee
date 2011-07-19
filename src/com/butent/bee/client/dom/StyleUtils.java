@@ -1141,6 +1141,28 @@ public class StyleUtils {
     return parseCssName(FontWeight.class, input);
   }
 
+  public static ScrollBars parseScrollBars(String input) {
+    Assert.notEmpty(input);
+
+    for (ScrollBars sb : ScrollBars.values()) {
+      if (BeeUtils.same(sb.name(), input)) {
+        return sb;
+      }
+    }
+    return null;
+  }
+
+  public static ScrollBars parseScrollBars(String input, ScrollBars def) {
+    if (BeeUtils.isEmpty(input)) {
+      return def;
+    }
+    ScrollBars sb = parseScrollBars(input);
+    if (sb == null) {
+      return def;
+    }
+    return sb;
+  }
+  
   public static Unit parseUnit(String input) {
     Assert.notEmpty(input);
 

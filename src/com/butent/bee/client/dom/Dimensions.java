@@ -214,6 +214,12 @@ public class Dimensions implements HasInfo {
     return widthValue;
   }
 
+  public boolean isEmpty() {
+    return getWidthValue() == null && getHeightValue() == null 
+        && getMinWidthValue() == null && getMinHeightValue() == null
+        && getMaxWidthValue() == null && getMaxHeightValue() == null;
+  }
+  
   public void removeFrom(Element el) {
     Assert.notNull(el);
     removeFrom(el.getStyle());

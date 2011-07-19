@@ -16,6 +16,7 @@ import com.butent.bee.shared.HasId;
  * Implements an image holding user interface component, that displays the image at a given URL.
  */
 public class BeeImage extends Image implements HasEnabled, HasCommand, HasId {
+
   private BeeCommand command = null;
   private boolean enabled = true;
   private String styleDisabled = null;

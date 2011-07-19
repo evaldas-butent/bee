@@ -22,6 +22,7 @@ public class BeeLayoutPanel extends LayoutPanel implements HasId {
   public static Unit defaultUnit = Unit.PX;
 
   public BeeLayoutPanel() {
+    super();
     createId();
   }
 

@@ -19,6 +19,7 @@ import com.google.gwt.xml.client.impl.DOMParseException;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.dom.StyleUtils;
+import com.butent.bee.client.dom.StyleUtils.ScrollBars;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.ui.Calculation;
@@ -110,6 +111,12 @@ public class XmlUtils {
       result.put(attr.getName(), attr.getValue());
     }
     return result;
+  }
+
+  public static ScrollBars getAttributeScrollBars(Element element, String name, ScrollBars def) {
+    Assert.notNull(element);
+    Assert.notEmpty(name);
+    return StyleUtils.parseScrollBars(element.getAttribute(name), def);
   }
   
   public static Unit getAttributeUnit(Element element, String name) {

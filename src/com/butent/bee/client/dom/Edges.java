@@ -189,6 +189,33 @@ public class Edges {
     setFromStyleProperty(uiObject.getElement().getStyle(), propertyName);
   }
 
+  public void applyPosition(Element el) {
+    Assert.notNull(el);
+    applyPosition(el.getStyle());
+  }
+  
+  public void applyPosition(Style st) {
+    Assert.notNull(st);
+    
+    if (getLeftValue() != null) {
+      st.setLeft(getLeftValue(), normalizeUnit(getLeftUnit()));
+    }
+    if (getRightValue() != null) {
+      st.setRight(getRightValue(), normalizeUnit(getRightUnit()));
+    }
+    if (getTopValue() != null) {
+      st.setTop(getTopValue(), normalizeUnit(getTopUnit()));
+    }
+    if (getBottomValue() != null) {
+      st.setBottom(getBottomValue(), normalizeUnit(getBottomUnit()));
+    }
+  }
+
+  public void applyPosition(UIObject obj) {
+    Assert.notNull(obj);
+    applyPosition(obj.getElement());
+  }
+  
   public void applyTo(Element el, String propertyName) {
     Assert.notNull(el);
     applyTo(el.getStyle(), propertyName);
@@ -466,6 +493,10 @@ public class Edges {
     this.topValue = topValue;
   }
 
+  private Unit normalizeUnit(Unit unit) {
+    return (unit == null) ? DEFAULT_UNIT : unit;
+  }
+  
   private void setFromString(String s) {
     if (BeeUtils.isEmpty(s)) {
       return;

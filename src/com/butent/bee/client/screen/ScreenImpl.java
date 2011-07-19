@@ -1,5 +1,6 @@
 package com.butent.bee.client.screen;
 
+import com.google.common.collect.Lists;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.layout.client.Layout;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
@@ -410,7 +411,7 @@ public class ScreenImpl implements Screen {
     p.setSpacing(5);
 
     p.add(new RadioGroup(getElDsn(), BeeKeeper.getStorage().checkInt(getElDsn(), 0),
-        BeeConst.DS_TYPES));
+        Lists.newArrayList(BeeConst.DS_TYPES)));
 
     p.add(new ButtonGroup("Ping", Service.DB_PING,
         "Info", Service.DB_INFO,
@@ -429,7 +430,7 @@ public class ScreenImpl implements Screen {
     p.add(new BeeButton("CRUD", RowSetService.NAME, RowSetService.Stages.CHOOSE_TABLE.name()));
 
     p.add(new RadioGroup(getElGrid(), true, BeeKeeper.getStorage().checkInt(getElGrid(), 2),
-        "simple", "scroll", "cell"));
+        Lists.newArrayList("simple", "scroll", "cell")));
     p.add(new RadioGroup(getElCell(), true, BeeKeeper.getStorage().checkEnum(getElCell(),
         TextCellType.TEXT_EDIT), TextCellType.values()));
 

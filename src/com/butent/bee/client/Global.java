@@ -35,10 +35,11 @@ import java.util.Set;
  */
 
 public class Global implements Module {
+
   public static final String VAR_DEBUG = "debug";
 
-  public static LocalizableConstants constants = GWT.create(LocalizableConstants.class);
-  public static LocalizableMessages messages = GWT.create(LocalizableMessages.class);
+  public static final LocalizableConstants constants = GWT.create(LocalizableConstants.class);
+  public static final LocalizableMessages messages = GWT.create(LocalizableMessages.class);
 
   private static final MessageBoxes msgBoxen = new MessageBoxes();
   private static final InputBoxes inpBoxen = new InputBoxes();
@@ -48,7 +49,7 @@ public class Global implements Module {
   
   private static final CacheManager cache = new CacheManager();
 
-  private static Images images = GWT.create(Images.class);
+  private static final Images.Resources images = Images.createResources();
 
   public static void alert(Object... obj) {
     msgBoxen.alert(obj);
@@ -93,7 +94,7 @@ public class Global implements Module {
     return dataExplorer;
   }
 
-  public static Images getImages() {
+  public static Images.Resources getImages() {
     return images;
   }
 
@@ -300,6 +301,7 @@ public class Global implements Module {
     initCache();
     initDataExplorer();
     initVars();
+    initImages();
   }
 
   public void start() {
@@ -314,6 +316,10 @@ public class Global implements Module {
     BeeKeeper.getBus().registerMultiDeleteHandler(getDataExplorer());
 
     BeeKeeper.getBus().registerRowInsertHandler(getDataExplorer());
+  }
+  
+  private void initImages() {
+    Images.init(getImages());
   }
   
   private void initVars() {

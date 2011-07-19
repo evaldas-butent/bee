@@ -1,5 +1,6 @@
 package com.butent.bee.client.layout;
 
+import com.google.gwt.dom.client.Style.Position;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.AbsolutePanel;
 import com.google.gwt.user.client.ui.Widget;
@@ -15,12 +16,12 @@ public class Absolute extends AbsolutePanel implements HasId {
 
   public Absolute() {
     super();
-    createId();
+    init();
   }
 
   public Absolute(Element elem) {
     super(elem);
-    createId();
+    init();
   }
 
   public String append(Widget w, int left, int top) {
@@ -44,5 +45,10 @@ public class Absolute extends AbsolutePanel implements HasId {
 
   public void setId(String id) {
     DomUtils.setId(this, id);
+  }
+  
+  private void init() {
+    createId();
+    getElement().getStyle().setPosition(Position.ABSOLUTE);
   }
 }

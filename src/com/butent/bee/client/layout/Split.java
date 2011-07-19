@@ -55,13 +55,24 @@ public class Split extends ComplexPanel implements AnimatedLayout,
 
   private static String defaultStyleName = "bee-split";
   private static int defaultSplitterSize = 8;
-
+  
+  public static boolean validDirection(Direction direction, boolean allowCenter) {
+    if (direction == null) {
+      return false;
+    }
+    if (direction == Direction.CENTER) {
+      return allowCenter;
+    }
+    return EnumSet.of(Direction.EAST, Direction.NORTH, Direction.SOUTH, Direction.WEST).contains(
+        direction);
+  }
+  
   private final Unit unit = Unit.PX;
   private Widget center;
   private final Layout layout;
   private final LayoutCommand layoutCmd;
 
-  private int splitterSize;
+  private final int splitterSize;
 
   public Split() {
     this(defaultStyleName, defaultSplitterSize);
@@ -95,6 +106,17 @@ public class Split extends ComplexPanel implements AnimatedLayout,
     insert(widget, Direction.CENTER, 0, null, scroll, -1);
   }
 
+  public void add(Widget widget, Direction direction, Integer size, ScrollBars scrollBars,
+      Integer splSize) {
+    Assert.notNull(widget);
+    Assert.isTrue(validDirection(direction, false));
+    Assert.notNull(size);
+    Assert.isPositive(size.doubleValue());
+    
+    int z = (splSize == null) ? getSplitterSize() : BeeUtils.unbox(splSize);
+    insert(widget, direction, size.doubleValue(), null, scrollBars, z);
+  }
+  
   public void addEast(Widget widget, double size) {
     addEast(widget, size, ScrollBars.NONE);
   }
@@ -475,17 +497,6 @@ public class Split extends ComplexPanel implements AnimatedLayout,
       remove(w);
     }
     add(widget, scroll);
-  }
-
-  public boolean validDirection(Direction direction, boolean allowCenter) {
-    if (direction == null) {
-      return false;
-    }
-    if (direction == Direction.CENTER) {
-      return allowCenter;
-    }
-    return EnumSet.of(Direction.EAST, Direction.NORTH, Direction.SOUTH, Direction.WEST).contains(
-        direction);
   }
 
   protected Unit getUnit() {

@@ -43,6 +43,34 @@
     </xs:complexContent>
   </xs:complexType>
 
+  <xs:complexType name="labelType">
+    <xs:complexContent>
+      <xs:extension base="bee:widgetType">
+        <xs:attribute name="horizontalAlignment" type="bee:horizontalAlignmentType" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="display">
+    <xs:complexContent>
+      <xs:extension base="bee:labelType">
+        <xs:choice minOccurs="0" maxOccurs="1">
+          <xs:element name="calc" type="bee:calcType" />
+        </xs:choice>
+        <xs:attribute name="source" type="bee:nameType" />
+        <xs:attribute name="format" type="xs:normalizedString" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="focusableDisplay">
+    <xs:complexContent>
+      <xs:extension base="bee:display">
+        <xs:attribute name="tabIndex" type="xs:int" default="0" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
   <xs:complexType name="editableWidget">
     <xs:complexContent>
       <xs:extension base="bee:focusableWidget">
@@ -53,6 +81,7 @@
           <xs:element name="carry" type="bee:calcType" minOccurs="0" />
         </xs:sequence>
         <xs:attribute name="source" type="bee:nameType" use="required" />
+        <xs:attribute name="caption" type="xs:string" />
         <xs:attribute name="readOnly" type="xs:boolean" />
         <xs:attribute name="format" type="xs:normalizedString" />
         <xs:attribute name="horizontalAlignment" type="bee:horizontalAlignmentType" />
@@ -64,6 +93,12 @@
         <xs:attribute name="relColumn" type="bee:nameType" />
       </xs:extension>
     </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="childWidget">
+    <xs:sequence>
+      <xs:element ref="bee:widget" />
+    </xs:sequence>
   </xs:complexType>
   
   <xs:complexType name="tableCell">
@@ -83,7 +118,7 @@
           <xs:element name="cell" type="bee:tableCell" />
         </xs:choice>
         <xs:attribute name="borderWidth" type="xs:nonNegativeInteger" />
-        <xs:attribute name="spacing" type="xs:nonNegativeInteger" />
+        <xs:attribute name="cellSpacing" type="xs:nonNegativeInteger" />
         <xs:attribute name="horizontalAlignment" type="bee:horizontalAlignmentType" />
         <xs:attribute name="verticalAlignment" type="bee:verticalAlignmentType" />
       </xs:extension>
@@ -109,9 +144,8 @@
   </xs:complexType>
 
   <xs:complexType name="buttonFace">
-    <xs:sequence>
-      <xs:element name="image" type="xs:string" minOccurs="0" />
-    </xs:sequence>
+    <xs:attribute name="html" type="xs:string" />
+    <xs:attribute name="image" type="xs:string" />
   </xs:complexType>
 
   <xs:element name="Toggle" type="bee:customButton" substitutionGroup="bee:widget" />
@@ -126,7 +160,14 @@
             <xs:element name="west" type="bee:splitDirection" />
             <xs:element name="east" type="bee:splitDirection" />
           </xs:choice>
-          <xs:element name="center" type="bee:childWidget" />
+          <xs:element name="center">
+            <xs:complexType>
+              <xs:sequence>
+                <xs:element ref="bee:widget" />
+              </xs:sequence>
+              <xs:attribute name="scrollBars" type="bee:scrollBarsType" />
+            </xs:complexType>
+          </xs:element>
         </xs:sequence>
         <xs:attribute name="splitterSize" type="xs:nonNegativeInteger" />
       </xs:extension>  
@@ -140,12 +181,6 @@
     <xs:attribute name="size" type="xs:positiveInteger" use="required" />
     <xs:attribute name="splitterSize" type="xs:nonNegativeInteger" />
     <xs:attribute name="scrollBars" type="bee:scrollBarsType" />
-  </xs:complexType>
-
-  <xs:complexType name="childWidget">
-    <xs:sequence>
-      <xs:element ref="bee:widget" />
-    </xs:sequence>
   </xs:complexType>
 
   <xs:element name="SplitPanel" type="bee:splitPanel" substitutionGroup="bee:widget" />
@@ -188,10 +223,10 @@
 
   <xs:complexType name="stackElement">
     <xs:sequence>
-      <xs:element name="header" type="xs:normalizedString" />
+      <xs:element ref="bee:widget" />
       <xs:element ref="bee:widget" />
     </xs:sequence>
-    <xs:attribute name="headerSize" type="bee:positiveDecimal" />
+    <xs:attribute name="headerSize" type="bee:positiveDecimal" use="required" />
   </xs:complexType>
 
   <xs:element name="TabbedPages" substitutionGroup="bee:widget">
@@ -202,7 +237,7 @@
             <xs:element name="page">
               <xs:complexType>
                 <xs:sequence>
-                  <xs:element name="header" type="bee:childWidget" />
+                  <xs:element ref="bee:widget" />
                   <xs:element ref="bee:widget" />
                 </xs:sequence>
               </xs:complexType>
@@ -244,11 +279,11 @@
     </xs:complexType>
   </xs:element>
   
-  <xs:element name="Anchor" substitutionGroup="bee:widget">
+  <xs:element name="Link" substitutionGroup="bee:widget">
     <xs:complexType>
       <xs:complexContent>
-        <xs:extension base="bee:focusableWidget">
-          <xs:attribute name="url" type="xs:anyURI" use="required" />
+        <xs:extension base="bee:focusableDisplay">
+          <xs:attribute name="url" type="xs:anyURI" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -257,7 +292,7 @@
   <xs:element name="Button" substitutionGroup="bee:widget">
     <xs:complexType>
       <xs:complexContent>
-        <xs:extension base="bee:focusableWidget">
+        <xs:extension base="bee:focusableDisplay">
           <xs:attribute name="service" type="xs:token" />
           <xs:attribute name="stage" type="xs:token" />
         </xs:extension>
@@ -268,7 +303,7 @@
   <xs:element name="Image" substitutionGroup="bee:widget">
     <xs:complexType>
       <xs:complexContent>
-        <xs:extension base="bee:focusableWidget">
+        <xs:extension base="bee:focusableDisplay">
           <xs:attribute name="url" type="xs:anyURI" use="required" />
         </xs:extension>
       </xs:complexContent>
@@ -291,28 +326,8 @@
   <xs:element name="Hyperlink" type="bee:internalLink" substitutionGroup="bee:widget" />
   <xs:element name="InlineHyperlink" type="bee:internalLink" substitutionGroup="bee:widget" />
 
-  <xs:complexType name="labelType">
-    <xs:complexContent>
-      <xs:extension base="bee:widgetType">
-        <xs:attribute name="horizontalAlignment" type="bee:horizontalAlignmentType" />
-      </xs:extension>
-    </xs:complexContent>
-  </xs:complexType>
-
   <xs:element name="Label" type="bee:labelType" substitutionGroup="bee:widget" />  
   <xs:element name="InlineLabel" type="bee:labelType" substitutionGroup="bee:widget" />  
-
-  <xs:complexType name="display">
-    <xs:complexContent>
-      <xs:extension base="bee:labelType">
-        <xs:choice minOccurs="0" maxOccurs="1">
-          <xs:element name="calc" type="bee:calcType" />
-        </xs:choice>
-        <xs:attribute name="source" type="bee:nameType" />
-        <xs:attribute name="format" type="xs:normalizedString" />
-      </xs:extension>
-    </xs:complexContent>
-  </xs:complexType>
 
   <xs:element name="TextLabel" type="bee:display" substitutionGroup="bee:widget" />  
 
