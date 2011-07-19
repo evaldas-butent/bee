@@ -12,12 +12,15 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.dom.client.StyleInjector;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.ErrorEvent;
 import com.google.gwt.event.dom.client.ErrorHandler;
 import com.google.gwt.i18n.client.LocaleInfo;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.i18n.shared.DateTimeFormat;
 import com.google.gwt.i18n.shared.DateTimeFormat.PredefinedFormat;
+import com.google.gwt.layout.client.Layout;
 import com.google.gwt.media.client.Audio;
 import com.google.gwt.media.client.Video;
 import com.google.gwt.user.client.DOM;
@@ -56,6 +59,7 @@ import com.butent.bee.client.language.Language;
 import com.butent.bee.client.language.Translation;
 import com.butent.bee.client.language.TranslationCallback;
 import com.butent.bee.client.layout.Absolute;
+import com.butent.bee.client.layout.BeeLayoutPanel;
 import com.butent.bee.client.layout.Direction;
 import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.layout.TilePanel;
@@ -65,14 +69,17 @@ import com.butent.bee.client.utils.Browser;
 import com.butent.bee.client.utils.JsUtils;
 import com.butent.bee.client.utils.XmlUtils;
 import com.butent.bee.client.visualization.showcase.Showcase;
+import com.butent.bee.client.widget.BeeButton;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.client.widget.Html;
 import com.butent.bee.client.widget.InlineHtml;
+import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.client.widget.Meter;
 import com.butent.bee.client.widget.Progress;
 import com.butent.bee.client.widget.Svg;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.BeeResource;
 import com.butent.bee.shared.DateTime;
 import com.butent.bee.shared.JustDate;
 import com.butent.bee.shared.Service;
@@ -264,7 +271,7 @@ public class CliWorker {
       return;
     }
 
-    Level[] levels = new Level[]{Level.FINEST, Level.FINER, Level.FINE, Level.CONFIG, Level.INFO,
+    Level[] levels = new Level[] {Level.FINEST, Level.FINER, Level.FINE, Level.CONFIG, Level.INFO,
         Level.WARNING, Level.SEVERE};
     for (Level lvl : levels) {
       BeeKeeper.getLog().log(lvl, lvl.getName().toLowerCase());
@@ -323,7 +330,7 @@ public class CliWorker {
       Global.showDialog(xpr, JsUtils.evalToString(xpr));
     }
   }
-  
+
   public static void execute(String line) {
     if (BeeUtils.isEmpty(line)) {
       return;
@@ -419,7 +426,7 @@ public class CliWorker {
     } else if (z.equals("progress")) {
       showProgress(arr);
     } else if (z.equals("rebuild")) {
-      BeeKeeper.getRpc().sendText(Service.REBUILD, v);
+      rebuildSomething(args);
     } else if (z.equals("rpc")) {
       showRpc();
     } else if (z.startsWith("selector") && arr.length >= 2) {
@@ -433,24 +440,7 @@ public class CliWorker {
     } else if (z.equals("slider")) {
       showSlider(arr);
     } else if (z.equals("sql")) {
-      BeeKeeper.getRpc().sendText(Service.DO_SQL, v,
-          new ResponseCallback() {
-            @Override
-            public void onResponse(ResponseObject response) {
-              Assert.notNull(response);
-
-              if (response.hasResponse(BeeRowSet.class)) {
-                BeeRowSet rs = BeeRowSet.restore((String) response.getResponse());
-
-                if (rs.isEmpty()) {
-                  BeeKeeper.getScreen().updateActivePanel(new BeeLabel("RowSet is empty"));
-                } else {
-                  BeeKeeper.getScreen().showGrid(rs);
-                }
-              }
-            }
-          });
-
+      doSql(args);
     } else if (z.equals("stack")) {
       showStack();
     } else if (z.startsWith("stor")) {
@@ -489,13 +479,33 @@ public class CliWorker {
     }
   }
 
+  public static void doSql(String sql) {
+    BeeKeeper.getRpc().sendText(Service.DO_SQL, sql,
+        new ResponseCallback() {
+          @Override
+          public void onResponse(ResponseObject response) {
+            Assert.notNull(response);
+
+            if (response.hasResponse(BeeRowSet.class)) {
+              BeeRowSet rs = BeeRowSet.restore((String) response.getResponse());
+
+              if (rs.isEmpty()) {
+                BeeKeeper.getScreen().updateActivePanel(new BeeLabel("RowSet is empty"));
+              } else {
+                BeeKeeper.getScreen().showGrid(rs);
+              }
+            }
+          }
+        });
+  }
+
   public static void getCharsets() {
     ParameterList params = BeeKeeper.getRpc().createParameters(Service.GET_RESOURCE);
     params.addPositionalHeader("cs");
 
     BeeKeeper.getRpc().makeGetRequest(params);
   }
-  
+
   public static void getFs() {
     ParameterList params = BeeKeeper.getRpc().createParameters(Service.GET_RESOURCE);
     params.addPositionalHeader("fs");
@@ -636,6 +646,40 @@ public class CliWorker {
     } else {
       BeeKeeper.getScreen().showGrid(info);
     }
+  }
+
+  public static void rebuildSomething(String args) {
+    BeeKeeper.getRpc().sendText(Service.REBUILD, args, new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+        Assert.notNull(response);
+
+        if (response.hasResponse(BeeResource.class)) {
+          BeeLayoutPanel p = new BeeLayoutPanel();
+
+          final InputArea area = new InputArea(new BeeResource((String) response.getResponse()));
+          p.add(area);
+          p.setWidgetTopBottom(area, 0, Unit.EM, 2, Unit.EM);
+
+          BeeButton button = new BeeButton("Save schema", new ClickHandler() {
+            @Override
+            public void onClick(ClickEvent event) {
+              if (area.isValueChanged()) {
+                BeeKeeper.getRpc().sendText(Service.REBUILD, "schema " + area.getValue());
+                BeeKeeper.getScreen().getActivePanel().clear();
+              } else {
+                Global.inform("Value has not changed", area.getDigest());
+              }
+            }
+          });
+          p.add(button);
+          p.setWidgetVerticalPosition(button, Layout.Alignment.END);
+          p.setWidgetLeftWidth(button, 42, Unit.PCT, 16, Unit.PCT);
+
+          BeeKeeper.getScreen().updateActivePanel(p);
+        }
+      }
+    });
   }
 
   public static void showBrowser(String[] arr) {
@@ -924,7 +968,7 @@ public class CliWorker {
     FlexTable table = new FlexTable();
     table.setCellSpacing(3);
 
-    String[] types = new String[]{
+    String[] types = new String[] {
         "search", "tel", "url", "email", "datetime", "date", "month", "week", "time",
         "datetime-local", "number", "range", "color"};
     TextBox widget;
@@ -1365,7 +1409,7 @@ public class CliWorker {
 
     int rMin = Math.min(width, height) / 50;
     int rMax = rMin * 10;
-    
+
     int cntMin = 10;
     int cntMax = 100;
 
@@ -1373,7 +1417,7 @@ public class CliWorker {
 
     double minOpacity = 0.5;
     double maxOpacity = 1;
-    
+
     int len = ArrayUtils.length(arr);
     if (len > 1) {
       for (int i = 1; i < len; i++) {
@@ -1381,9 +1425,9 @@ public class CliWorker {
         if (BeeUtils.isEmpty(s) || s.length() < 2) {
           continue;
         }
-        
+
         char pName = s.charAt(0);
-        String pMin = BeeUtils.getPrefix(s.substring(1), BeeConst.CHAR_MINUS); 
+        String pMin = BeeUtils.getPrefix(s.substring(1), BeeConst.CHAR_MINUS);
         String pMax = BeeUtils.getSuffix(s.substring(1), BeeConst.CHAR_MINUS);
         if (BeeUtils.isEmpty(pMin)) {
           pMin = s.substring(1);
@@ -1430,8 +1474,8 @@ public class CliWorker {
                 cntMin = z;
               }
               break;
-              
-            case 's':  
+
+            case 's':
               if (BeeUtils.isDigit(pMin)) {
                 colorStep = BeeUtils.toInt(pMin);
               } else if (BeeUtils.isDigit(pMax)) {
@@ -1986,11 +2030,11 @@ public class CliWorker {
     if (rowCount > 50) {
       return false;
     }
-    
+
     int h = rowCount * 20 + 70;
     int vph = DomUtils.getClientHeight();
     int aph = BeeKeeper.getScreen().getActivePanelHeight();
-    
+
     if (vph > 0 && h > vph / 2) {
       return false;
     }

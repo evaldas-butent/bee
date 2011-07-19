@@ -1,12 +1,11 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <BeeTable xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.butent.com/bee ../../schemas/table.xsd"
 
-  name="Sequences"
-  idName="SequenceID"
+  name="Roles"
+  idName="RoleID"
   >
   <BeeFields>
     <BeeField name="Name" type="STRING" precision="30" notNull="true" unique="true" />
-    <BeeField name="LastValue" type="LONG" notNull="true" />
   </BeeFields>
 </BeeTable>

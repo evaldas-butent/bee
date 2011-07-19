@@ -89,6 +89,12 @@ public class SystemBean {
       this.path = path;
     }
 
+    public String getFileName(String objName) {
+      Assert.notEmpty(objName);
+      return getPath() +
+          BeeUtils.concat(".", objName, name().toLowerCase(), XmlUtils.defaultXmlExtension);
+    }
+
     public String getPath() {
       return path + "/";
     }
@@ -759,6 +765,32 @@ public class SystemBean {
     return qs.dbRowCount(ss);
   }
 
+  public XmlTable getXmlTable(String tableName) {
+    Assert.notEmpty(tableName);
+
+    XmlTable xmlTable = getXmlTable(tableName, false);
+    XmlTable userTable = getXmlTable(tableName, true);
+
+    if (xmlTable == null) {
+      xmlTable = userTable;
+    } else {
+      xmlTable.protect().merge(userTable);
+    }
+    return xmlTable;
+  }
+
+  public XmlTable getXmlTable(String tableName, boolean userMode) {
+    Assert.notEmpty(tableName);
+    String resource = SysObject.TABLE.getFileName(tableName);
+
+    if (userMode) {
+      resource = Config.getUserPath(resource);
+    } else {
+      resource = Config.getConfigPath(resource);
+    }
+    return loadTable(resource);
+  }
+
   public boolean hasField(String tblName, String fldName) {
     return getTable(tblName).hasField(fldName);
   }
@@ -791,11 +823,7 @@ public class SystemBean {
 
   @Lock(LockType.WRITE)
   public boolean initState(String stateName) {
-    Assert.notEmpty(stateName);
-    SysObject obj = SysObject.STATE;
-
-    return initState(stateName,
-        Config.getPath(BeeUtils.concat(0, obj.getPath(), stateName, ".", obj.name()), true));
+    return initState(stateName, Config.getPath(SysObject.STATE.getFileName(stateName), true));
   }
 
   @Lock(LockType.WRITE)
@@ -806,11 +834,7 @@ public class SystemBean {
 
   @Lock(LockType.WRITE)
   public boolean initTable(String tableName) {
-    Assert.notEmpty(tableName);
-    SysObject obj = SysObject.TABLE;
-
-    return initTable(tableName,
-        Config.getPath(BeeUtils.concat(0, obj.getPath(), tableName, ".", obj.name()), true));
+    return initTable(tableName, Config.getPath(SysObject.TABLE.getFileName(tableName), true));
   }
 
   @Lock(LockType.WRITE)
@@ -827,11 +851,7 @@ public class SystemBean {
 
   @Lock(LockType.WRITE)
   public boolean initView(String viewName) {
-    Assert.notEmpty(viewName);
-    SysObject obj = SysObject.VIEW;
-
-    return initView(viewName,
-        Config.getPath(BeeUtils.concat(0, obj.getPath(), viewName, ".", obj.name()), true));
+    return initView(viewName, Config.getPath(SysObject.VIEW.getFileName(viewName), true));
   }
 
   @Lock(LockType.WRITE)
@@ -1439,22 +1459,21 @@ public class SystemBean {
     int cUpd = 0;
     Collection<File> paths = Lists.newArrayList();
 
-    File path = FileUtils.getDirectory(Config.CONFIG_DIR, obj.getPath());
-    if (path != null) {
-      paths.add(path);
+    if (Config.CONFIG_DIR != null) {
+      paths.add(Config.CONFIG_DIR);
     }
-    path = FileUtils.getDirectory(Config.USER_DIR, obj.getPath());
-    if (path != null) {
-      paths.add(path);
+    if (Config.USER_DIR != null) {
+      paths.add(Config.USER_DIR);
     }
     if (!BeeUtils.isEmpty(paths)) {
       List<File> resources =
-          FileUtils.findFiles("*", paths, null, obj.name(), true, true);
+          FileUtils.findFiles(obj.getFileName("*"), paths, null, null, true, true);
 
       if (!BeeUtils.isEmpty(resources)) {
         for (File resource : resources) {
           String resourcePath = resource.getPath();
           String objectName = NameUtils.getBaseName(resourcePath);
+          objectName = objectName.substring(0, objectName.length() - obj.name().length() - 1);
           boolean isNew = false;
           boolean isOk = false;
 

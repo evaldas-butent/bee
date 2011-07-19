@@ -39,8 +39,11 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -53,6 +56,7 @@ import java.util.logging.Logger;
 import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -814,6 +818,21 @@ public class XmlUtils {
     return lst;
   }
 
+  public static String marshal(Object obj) {
+    Assert.notNull(obj);
+    StringWriter result = new StringWriter();
+
+    try {
+      Marshaller marshaller = JAXBContext.newInstance(obj.getClass()).createMarshaller();
+      marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+      marshaller.marshal(obj, result);
+
+    } catch (JAXBException e) {
+      LogUtils.error(logger, e);
+    }
+    return result.toString();
+  }
+
   public static boolean saveNode(Node node, String dst) {
     boolean ok = true;
 
@@ -834,29 +853,37 @@ public class XmlUtils {
 
   @SuppressWarnings("unchecked")
   public static <T> T unmarshal(Class<T> clazz, String resource, String resourceSchema) {
-    Assert.notEmpty(resource);
     T result = null;
 
-    try {
-      Unmarshaller unmarshaller = JAXBContext.newInstance(clazz).createUnmarshaller();
+    if (!BeeUtils.isEmpty(resource)) {
+      try {
+        Unmarshaller unmarshaller = JAXBContext.newInstance(clazz).createUnmarshaller();
+        InputStream source;
 
-      if (BeeUtils.isEmpty(resourceSchema)) {
-        result = (T) unmarshaller.unmarshal(new File(resource));
-      } else {
-        DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
-        builderFactory.setNamespaceAware(true);
-        builderFactory.setSchema(schemaFactory.newSchema(new File(resourceSchema)));
-        DocumentBuilder builder = builderFactory.newDocumentBuilder();
-        result = (T) unmarshaller.unmarshal(builder.parse(new File(resource)));
+        if (FileUtils.isFile(resource)) {
+          source = new FileInputStream(resource);
+        } else {
+          source = new ByteArrayInputStream(resource.getBytes());
+        }
+
+        if (BeeUtils.isEmpty(resourceSchema)) {
+          result = (T) unmarshaller.unmarshal(source);
+        } else {
+          DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
+          builderFactory.setNamespaceAware(true);
+          builderFactory.setSchema(schemaFactory.newSchema(new File(resourceSchema)));
+          DocumentBuilder builder = builderFactory.newDocumentBuilder();
+          result = (T) unmarshaller.unmarshal(builder.parse(source));
+        }
+      } catch (JAXBException e) {
+        LogUtils.error(logger, e);
+      } catch (SAXException e) {
+        LogUtils.error(logger, e);
+      } catch (ParserConfigurationException e) {
+        LogUtils.error(logger, e);
+      } catch (IOException e) {
+        LogUtils.error(logger, e);
       }
-    } catch (JAXBException e) {
-      LogUtils.error(logger, e);
-    } catch (SAXException e) {
-      LogUtils.error(logger, e);
-    } catch (ParserConfigurationException e) {
-      LogUtils.error(logger, e);
-    } catch (IOException e) {
-      LogUtils.error(logger, e);
     }
     return result;
   }
