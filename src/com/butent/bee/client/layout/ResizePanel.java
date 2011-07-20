@@ -9,15 +9,15 @@ public class ResizePanel extends ResizeLayoutPanel implements HasId {
 
   public ResizePanel() {
     super();
-    createId();
-  }
-
-  public void createId() {
-    DomUtils.createId(this, "resizer");
+    DomUtils.createId(this, getIdPrefix());
   }
 
   public String getId() {
     return DomUtils.getId(this);
+  }
+
+  public String getIdPrefix() {
+    return "resizer";
   }
 
   public void setId(String id) {

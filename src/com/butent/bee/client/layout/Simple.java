@@ -13,15 +13,15 @@ public class Simple extends SimplePanel implements HasId {
 
   public Simple() {
     super();
-    createId();
-  }
-
-  public void createId() {
-    DomUtils.createId(this, "simple");
+    DomUtils.createId(this, getIdPrefix());
   }
 
   public String getId() {
     return DomUtils.getId(this);
+  }
+
+  public String getIdPrefix() {
+    return "simple";
   }
 
   public void setId(String id) {

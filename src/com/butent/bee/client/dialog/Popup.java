@@ -10,6 +10,7 @@ import com.butent.bee.shared.HasId;
  */
 
 public class Popup extends PopupPanel implements HasId {
+  
   public Popup() {
     super(true);
     init();
@@ -25,10 +26,6 @@ public class Popup extends PopupPanel implements HasId {
     init();
   }
 
-  public void createId() {
-    DomUtils.createId(this, "popup");
-  }
-
   public void enableGlass() {
     setGlassStyleName("bee-PopupGlass");
     setGlassEnabled(true);
@@ -38,12 +35,16 @@ public class Popup extends PopupPanel implements HasId {
     return DomUtils.getId(this);
   }
 
+  public String getIdPrefix() {
+    return "popup";
+  }
+
   public void setId(String id) {
     DomUtils.setId(this, id);
   }
 
   private void init() {
-    createId();
+    DomUtils.createId(this, getIdPrefix());
     setStyleName("bee-Popup");
   }
 }

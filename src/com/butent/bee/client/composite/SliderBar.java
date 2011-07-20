@@ -133,13 +133,13 @@ public class SliderBar extends Focus implements RequiresResize {
     sinkEvents(Event.MOUSEEVENTS | Event.ONMOUSEWHEEL | Event.KEYEVENTS | Event.FOCUSEVENTS);
   }
 
-  @Override
-  public void createId() {
-    DomUtils.createId(this, "slider");
-  }
-
   public double getCurrentValue() {
     return curValue;
+  }
+
+  @Override
+  public String getIdPrefix() {
+    return "slider";
   }
 
   public LabelFormatter getLabelFormatter() {

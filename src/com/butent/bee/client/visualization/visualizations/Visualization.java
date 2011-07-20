@@ -27,17 +27,13 @@ public abstract class Visualization<OptionsType extends AbstractDrawOptions> ext
     jso = createJso(div);
     setElement(div);
     setStyleName("viz-container");
-    createId();
+    DomUtils.createId(this, getIdPrefix());
   }
 
   public Visualization(AbstractDataTable data, OptionsType options) {
     this();
     this.options = options;
     this.dataTable = data;
-  }
-
-  public void createId() {
-    DomUtils.createId(this, "viz");
   }
 
   public final native void draw(AbstractDataTable data) /*-{
@@ -56,6 +52,10 @@ public abstract class Visualization<OptionsType extends AbstractDrawOptions> ext
     return DomUtils.getId(this);
   }
 
+  public String getIdPrefix() {
+    return "viz";
+  }
+  
   public JavaScriptObject getJso() {
     return jso;
   }

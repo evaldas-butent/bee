@@ -13,6 +13,7 @@ import com.butent.bee.shared.utils.BeeUtils;
  */
 
 public class BeeTreeItem extends TreeItem implements HasId {
+
   public BeeTreeItem() {
     super();
   }
@@ -36,12 +37,12 @@ public class BeeTreeItem extends TreeItem implements HasId {
     addItem(BeeUtils.concat(1, obj));
   }
 
-  public void createId() {
-    DomUtils.createId(this, "treeitem");
-  }
-
   public String getId() {
     return DomUtils.getId(this);
+  }
+
+  public String getIdPrefix() {
+    return "treeitem";
   }
 
   public void setId(String id) {

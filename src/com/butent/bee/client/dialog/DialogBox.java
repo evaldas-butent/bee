@@ -125,7 +125,7 @@ public class DialogBox extends PopupPanel implements HasId, HasHTML, HasSafeHtml
     close.addStyleName(STYLE_CLOSE);
     this.container.add(close);
 
-    createId();
+    DomUtils.createId(this, getIdPrefix());
     setStyleName(STYLE_CONTAINER);
 
     windowWidth = Window.getClientWidth();
@@ -146,10 +146,6 @@ public class DialogBox extends PopupPanel implements HasId, HasHTML, HasSafeHtml
     this(new CaptionImpl(html));
   }
 
-  public void createId() {
-    DomUtils.createId(this, "dialog");
-  }
-
   public Caption getCaption() {
     return caption;
   }
@@ -160,6 +156,10 @@ public class DialogBox extends PopupPanel implements HasId, HasHTML, HasSafeHtml
 
   public String getId() {
     return DomUtils.getId(this);
+  }
+
+  public String getIdPrefix() {
+    return "dialog";
   }
 
   public String getText() {

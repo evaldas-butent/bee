@@ -20,6 +20,7 @@ import java.util.Map;
  */
 
 public class TabbedPages extends TabLayoutPanel implements HasId {
+
   private Map<String, BeeCommand> pageCommands = Maps.newHashMap();
 
   private class PageHandler implements BeforeSelectionHandler<Integer> {
@@ -37,7 +38,7 @@ public class TabbedPages extends TabLayoutPanel implements HasId {
 
   public TabbedPages(double barHeight, Unit barUnit) {
     super(barHeight, barUnit);
-    createId();
+    DomUtils.createId(this, getIdPrefix());
   }
 
   public void add(Widget child, String text, BeeCommand onPage) {
@@ -50,12 +51,12 @@ public class TabbedPages extends TabLayoutPanel implements HasId {
     addCommand(child, onPage);
   }
 
-  public void createId() {
-    DomUtils.createId(this, "tabbed");
-  }
-
   public String getId() {
     return DomUtils.getId(this);
+  }
+
+  public String getIdPrefix() {
+    return "tabbed";
   }
 
   public void setId(String id) {

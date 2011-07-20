@@ -14,6 +14,7 @@ import com.butent.bee.shared.HasId;
  */
 
 public class SimpleBoolean extends SimpleCheckBox implements HasId, HasBeeClickHandler {
+
   private HasBooleanValue source = null;
 
   public SimpleBoolean() {
@@ -34,12 +35,12 @@ public class SimpleBoolean extends SimpleCheckBox implements HasId, HasBeeClickH
     }
   }
 
-  public void createId() {
-    DomUtils.createId(this, "bool");
-  }
-
   public String getId() {
     return DomUtils.getId(this);
+  }
+
+  public String getIdPrefix() {
+    return "bool";
   }
 
   public HasBooleanValue getSource() {
@@ -64,7 +65,7 @@ public class SimpleBoolean extends SimpleCheckBox implements HasId, HasBeeClickH
   }
 
   private void init() {
-    createId();
+    DomUtils.createId(this, getIdPrefix());
     setStyleName("bee-SimpleBoolean");
   }
 

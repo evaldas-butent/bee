@@ -16,7 +16,7 @@ public class Span extends ComplexPanel implements InsertPanel, HasId {
 
   public Span() {
     setElement(DOM.createSpan());
-    createId();
+    DomUtils.createId(this, getIdPrefix());
     setStyleName(getDefaultStyleName());
   }
 
@@ -25,16 +25,16 @@ public class Span extends ComplexPanel implements InsertPanel, HasId {
     super.add(w, getElement());
   }
 
-  public void createId() {
-    DomUtils.createId(this, "span");
-  }
-
   public String getDefaultStyleName() {
     return "bee-Span";
   }
 
   public String getId() {
     return DomUtils.getId(this);
+  }
+
+  public String getIdPrefix() {
+    return "span";
   }
 
   public void insert(Widget w, int beforeIndex) {

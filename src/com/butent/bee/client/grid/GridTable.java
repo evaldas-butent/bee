@@ -3,7 +3,6 @@ package com.butent.bee.client.grid;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Element;
 
-import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 
@@ -47,17 +46,17 @@ public class GridTable extends HtmlTable {
   }
 
   @Override
-  public void createId() {
-    DomUtils.createId(this, "grid");
-  }
-
-  @Override
   public int getCellCount(int row) {
     return numColumns;
   }
 
   public int getColumnCount() {
     return numColumns;
+  }
+
+  @Override
+  public String getIdPrefix() {
+    return "grid";
   }
 
   public int getNumColumns() {

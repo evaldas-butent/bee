@@ -300,7 +300,7 @@ public class Format {
     if (isDt) {
       ((HasDateTimeFormat) target).setDateTimeFormat(DateTimeFormat.getFormat(pattern));
     } else if (isNum) {
-      ((HasNumberFormat) target).setNumberFormat(NumberFormat.getFormat(pattern));
+      ((HasNumberFormat) target).setNumberFormat(new NumberFormatter(pattern));
     }
   }
 

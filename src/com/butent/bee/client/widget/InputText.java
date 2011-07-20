@@ -63,16 +63,16 @@ public class InputText extends TextBoxBase implements Editor, HasBeeValueChangeH
     return addHandler(handler, EditStopEvent.getType());
   }
 
-  public void createId() {
-    DomUtils.createId(this, getDefaultIdPrefix());
-  }
-
   public CharMatcher getCharMatcher() {
     return charMatcher;
   }
 
   public String getId() {
     return DomUtils.getId(this);
+  }
+
+  public String getIdPrefix() {
+    return "txt";
   }
 
   public int getMaxLength() {
@@ -169,10 +169,6 @@ public class InputText extends TextBoxBase implements Editor, HasBeeValueChangeH
     return EditorAction.REPLACE;
   }
 
-  protected String getDefaultIdPrefix() {
-    return "txt";
-  }
-  
   protected String getDefaultStyleName() {
     return "bee-InputText";
   }
@@ -196,8 +192,8 @@ public class InputText extends TextBoxBase implements Editor, HasBeeValueChangeH
   }
 
   private void init() {
+    DomUtils.createId(this, getIdPrefix());
     setStyleName(getDefaultStyleName());
-    createId();
     addDefaultHandlers();
 
     setCharMatcher(getDefaultCharMatcher());

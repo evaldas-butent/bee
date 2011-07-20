@@ -11,6 +11,7 @@ import com.butent.bee.shared.HasId;
  */
 
 public class Progress extends Widget implements HasId {
+
   public Progress() {
     super();
 
@@ -29,12 +30,12 @@ public class Progress extends Widget implements HasId {
     setValue(value);
   }
 
-  public void createId() {
-    DomUtils.createId(this, "progress");
-  }
-
   public String getId() {
     return DomUtils.getId(this);
+  }
+
+  public String getIdPrefix() {
+    return "progress";
   }
 
   public double getMax() {
@@ -62,7 +63,7 @@ public class Progress extends Widget implements HasId {
   }
 
   private void init() {
-    createId();
+    DomUtils.createId(this, getIdPrefix());
     setStyleName("bee-Progress");
   }
 }

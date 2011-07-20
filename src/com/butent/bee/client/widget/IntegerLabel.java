@@ -13,4 +13,8 @@ public class IntegerLabel extends NumberLabel<Integer> {
   public IntegerLabel(NumberFormat format) {
     super(format);
   }
+
+  public IntegerLabel(String pattern) {
+    super(pattern);
+  }
 }

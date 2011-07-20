@@ -26,7 +26,7 @@ public class Html extends HTML implements HasId, HasCommand {
   public Html(Element element) {
     super(element);
     if (element == null || BeeUtils.isEmpty(element.getId())) {
-      createId();
+      DomUtils.createId(this, getIdPrefix());
     }
   }
 
@@ -49,16 +49,16 @@ public class Html extends HTML implements HasId, HasCommand {
     init();
   }
 
-  public void createId() {
-    DomUtils.createId(this, DomUtils.HTML_ID_PREFIX);
-  }
-
   public BeeCommand getCommand() {
     return command;
   }
 
   public String getId() {
     return DomUtils.getId(this);
+  }
+
+  public String getIdPrefix() {
+    return DomUtils.HTML_ID_PREFIX;
   }
 
   public void setCommand(BeeCommand command) {
@@ -70,7 +70,7 @@ public class Html extends HTML implements HasId, HasCommand {
   }
   
   private void init() {
-    createId();
+    DomUtils.createId(this, getIdPrefix());
     setStyleName("bee-Html");
   }
 }

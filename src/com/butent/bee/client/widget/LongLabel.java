@@ -13,4 +13,9 @@ public class LongLabel extends NumberLabel<Long> {
   public LongLabel(NumberFormat format) {
     super(format);
   }
+
+  public LongLabel(String pattern) {
+    super(pattern);
+  }
 }
+

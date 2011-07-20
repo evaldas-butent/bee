@@ -18,6 +18,7 @@ import com.butent.bee.shared.utils.BeeUtils;
  * made and how much is still left to be done.
  */
 public class ProgressBar extends Widget implements HasId, RequiresResize {
+
   /**
    * Requires classes implementing this interface to have TextFormatter method.
    */
@@ -87,12 +88,12 @@ public class ProgressBar extends Widget implements HasId, RequiresResize {
     setProgress(curProgress);
   }
 
-  public void createId() {
-    DomUtils.createId(this, "progress");
-  }
-
   public String getId() {
     return DomUtils.getId(this);
+  }
+
+  public String getIdPrefix() {
+    return "progress";
   }
 
   public double getMaxProgress() {

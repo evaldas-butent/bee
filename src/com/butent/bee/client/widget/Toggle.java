@@ -69,12 +69,12 @@ public class Toggle extends CustomButton implements Editor {
     return addHandler(handler, ValueChangeEvent.getType());
   }
 
-  public void createId() {
-    DomUtils.createId(this, "toggle");
-  }
-
   public String getId() {
     return DomUtils.getId(this);
+  }
+
+  public String getIdPrefix() {
+    return "toggle";
   }
 
   public String getNormalizedValue() {
@@ -203,7 +203,7 @@ public class Toggle extends CustomButton implements Editor {
   }
 
   private void init(String styleName) {
-    createId();
+    DomUtils.createId(this, getIdPrefix());
     setStyleName(BeeUtils.ifString(styleName, "bee-Toggle"));
   }
 

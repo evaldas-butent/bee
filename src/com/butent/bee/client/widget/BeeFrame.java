@@ -7,17 +7,22 @@ import com.butent.bee.shared.HasId;
 
 public class BeeFrame extends Frame implements HasId {
 
+  public BeeFrame() {
+    super();
+    init();
+  }
+
   public BeeFrame(String url) {
     super(url);
     init();
   }
 
-  public void createId() {
-    DomUtils.createId(this, "frame");
-  }
-
   public String getId() {
     return DomUtils.getId(this);
+  }
+
+  public String getIdPrefix() {
+    return "frame";
   }
 
   public void setId(String id) {
@@ -25,7 +30,7 @@ public class BeeFrame extends Frame implements HasId {
   }
 
   private void init() {
-    createId();
+    DomUtils.createId(this, getIdPrefix());
     setStyleName("bee-Frame");
   }
 }

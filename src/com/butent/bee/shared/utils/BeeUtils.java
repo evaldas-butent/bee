@@ -1180,8 +1180,7 @@ public class BeeUtils {
     if (s == null) {
       return false;
     } else {
-      return same(s, BeeConst.STRING_TRUE) || same(s, BeeConst.YES)
-          || same(s, BeeConst.STRING_FALSE) || same(s, BeeConst.NO);
+      return BeeConst.isTrue(s) || BeeConst.isFalse(s);
     }
   }
 
@@ -2584,7 +2583,7 @@ public class BeeUtils {
     if (isEmpty(s)) {
       return false;
     }
-    return BeeConst.isTrue(s.trim().charAt(0));
+    return BeeConst.isTrue(s);
   }
 
   public static Boolean toBooleanOrNull(String s) {

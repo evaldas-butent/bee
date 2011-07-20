@@ -17,12 +17,12 @@ public class Svg extends Widget implements HasId {
     init();
   }
 
-  public void createId() {
-    DomUtils.createId(this, "svg");
-  }
-
   public String getId() {
     return DomUtils.getId(this);
+  }
+
+  public String getIdPrefix() {
+    return "svg";
   }
 
   public void setId(String id) {
@@ -30,6 +30,6 @@ public class Svg extends Widget implements HasId {
   }
 
   private void init() {
-    createId();
+    DomUtils.createId(this, getIdPrefix());
   }
 }

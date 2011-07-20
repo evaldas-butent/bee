@@ -18,6 +18,7 @@ import com.butent.bee.shared.HasId;
  */
 
 public abstract class Splitter extends Widget implements HasId, HasLayoutCallback {
+
   private Widget target;
   private Element targetContainer;
 
@@ -37,11 +38,7 @@ public abstract class Splitter extends Widget implements HasId, HasLayoutCallbac
 
     setElement(Document.get().createDivElement());
     sinkEvents(Event.ONMOUSEDOWN | Event.ONMOUSEUP | Event.ONMOUSEMOVE | Event.ONDBLCLICK);
-    createId();
-  }
-
-  public void createId() {
-    DomUtils.createId(this, "splitter");
+    DomUtils.createId(this, getIdPrefix());
   }
 
   public abstract int getAbsolutePosition();
@@ -51,6 +48,8 @@ public abstract class Splitter extends Widget implements HasId, HasLayoutCallbac
   public String getId() {
     return DomUtils.getId(this);
   }
+  
+  public abstract String getIdPrefix();
 
   public LayoutCommand getLayoutCommand() {
     return layoutCommand;

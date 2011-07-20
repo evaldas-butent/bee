@@ -13,15 +13,15 @@ import com.butent.bee.shared.HasId;
 public class Horizontal extends HorizontalPanel implements HasId {
 
   public Horizontal() {
-    createId();
-  }
-
-  public void createId() {
-    DomUtils.createId(this, "hor");
+    DomUtils.createId(this, getIdPrefix());
   }
 
   public String getId() {
     return DomUtils.getId(this);
+  }
+
+  public String getIdPrefix() {
+    return "hor";
   }
 
   public void setId(String id) {

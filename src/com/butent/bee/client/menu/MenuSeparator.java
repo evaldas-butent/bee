@@ -12,6 +12,7 @@ import com.butent.bee.shared.HasId;
  */
 
 public class MenuSeparator extends UIObject implements HasId {
+
   private static final String STYLENAME_DEFAULT = "bee-MenuItemSeparator";
 
   private MenuBar parentMenu;
@@ -21,15 +22,15 @@ public class MenuSeparator extends UIObject implements HasId {
     setElement(elem);
 
     setStyleName(elem, STYLENAME_DEFAULT);
-    createId();
-  }
-
-  public void createId() {
-    DomUtils.createId(this, "sep");
+    DomUtils.createId(this, getIdPrefix());
   }
 
   public String getId() {
     return DomUtils.getId(this);
+  }
+
+  public String getIdPrefix() {
+    return "sep";
   }
 
   public MenuBar getParentMenu() {
@@ -43,5 +44,4 @@ public class MenuSeparator extends UIObject implements HasId {
   void setParentMenu(MenuBar parentMenu) {
     this.parentMenu = parentMenu;
   }
-
 }

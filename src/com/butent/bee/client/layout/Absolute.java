@@ -35,12 +35,12 @@ public class Absolute extends AbsolutePanel implements HasId {
     return DomUtils.getId(w);
   }
 
-  public void createId() {
-    DomUtils.createId(this, "absolute");
-  }
-
   public String getId() {
     return DomUtils.getId(this);
+  }
+
+  public String getIdPrefix() {
+    return "absolute";
   }
 
   public void setId(String id) {
@@ -48,7 +48,7 @@ public class Absolute extends AbsolutePanel implements HasId {
   }
   
   private void init() {
-    createId();
+    DomUtils.createId(this, getIdPrefix());
     getElement().getStyle().setPosition(Position.ABSOLUTE);
   }
 }

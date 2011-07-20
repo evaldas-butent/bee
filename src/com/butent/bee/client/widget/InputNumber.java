@@ -57,6 +57,11 @@ public class InputNumber extends InputText implements HasNumberBounds, HasNumber
     return true;
   }
 
+  @Override
+  public String getIdPrefix() {
+    return "number";
+  }
+  
   public Number getMaxValue() {
     return maxValue;
   }
@@ -195,11 +200,6 @@ public class InputNumber extends InputText implements HasNumberBounds, HasNumber
   @Override
   protected CharMatcher getDefaultCharMatcher() {
     return CharMatcher.anyOf("0123456789 ,.-eE");
-  }
-
-  @Override
-  protected String getDefaultIdPrefix() {
-    return "number";
   }
 
   @Override

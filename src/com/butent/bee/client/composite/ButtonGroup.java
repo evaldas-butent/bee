@@ -55,13 +55,13 @@ public class ButtonGroup extends Span implements HasService, HasStage {
   }
 
   @Override
-  public void createId() {
-    DomUtils.createId(this, "bg");
+  public String getDefaultStyleName() {
+    return "bee-ButtonGroup";
   }
 
   @Override
-  public String getDefaultStyleName() {
-    return "bee-ButtonGroup";
+  public String getIdPrefix() {
+    return "bg";
   }
 
   public String getService() {

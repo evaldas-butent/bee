@@ -23,7 +23,7 @@ public class BeeLayoutPanel extends LayoutPanel implements HasId {
 
   public BeeLayoutPanel() {
     super();
-    createId();
+    DomUtils.createId(this, getIdPrefix());
   }
 
   public BeeLayoutPanel(Widget widget) {
@@ -129,14 +129,14 @@ public class BeeLayoutPanel extends LayoutPanel implements HasId {
     return addRightWidthTop(widget, right, defaultUnit, width, defaultUnit, top, defaultUnit);
   }
 
-  public void createId() {
-    DomUtils.createId(this, "layout");
-  }
-
   public String getId() {
     return DomUtils.getId(this);
   }
 
+  public String getIdPrefix() {
+    return "layout";
+  }
+  
   public void setHorizontalLayout(Widget widget, Double left, Unit leftUnit,
       Double right, Unit rightUnit, Double width, Unit widthUnit) {
     Assert.notNull(widget);

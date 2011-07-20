@@ -304,7 +304,8 @@
     <xs:complexType>
       <xs:complexContent>
         <xs:extension base="bee:focusableDisplay">
-          <xs:attribute name="url" type="xs:anyURI" use="required" />
+          <xs:attribute name="name" type="xs:token" />
+          <xs:attribute name="url" type="xs:anyURI" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -312,13 +313,10 @@
 
   <xs:element name="CheckBox" type="bee:editableWidget" substitutionGroup="bee:widget" />
 
-  <xs:element name="Html" type="bee:widgetType" substitutionGroup="bee:widget" />
-  <xs:element name="InlineHtml" type="bee:widgetType" substitutionGroup="bee:widget" />
-
   <xs:complexType name="internalLink">
     <xs:complexContent>
       <xs:extension base="bee:focusableWidget">
-        <xs:attribute name="target" type="xs:token" use="required" />
+        <xs:attribute name="historyToken" type="xs:token" use="required" />
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
@@ -329,17 +327,21 @@
   <xs:element name="Label" type="bee:labelType" substitutionGroup="bee:widget" />  
   <xs:element name="InlineLabel" type="bee:labelType" substitutionGroup="bee:widget" />  
 
+  <xs:element name="Html" type="bee:labelType" substitutionGroup="bee:widget" />
+  <xs:element name="InlineHtml" type="bee:labelType" substitutionGroup="bee:widget" />
+
   <xs:element name="TextLabel" type="bee:display" substitutionGroup="bee:widget" />  
 
   <xs:element name="IntegerLabel" type="bee:display" substitutionGroup="bee:widget" />  
   <xs:element name="LongLabel" type="bee:display" substitutionGroup="bee:widget" />  
   <xs:element name="DoubleLabel" type="bee:display" substitutionGroup="bee:widget" />  
+  <xs:element name="CurrencyLabel" type="bee:display" substitutionGroup="bee:widget" />  
 
   <xs:element name="DecimalLabel" substitutionGroup="bee:widget">
     <xs:complexType>
       <xs:complexContent>
         <xs:extension base="bee:display">
-          <xs:attribute name="scale" type="xs:nonNegativeInteger" use="required" />
+          <xs:attribute name="scale" type="xs:nonNegativeInteger" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -393,17 +395,35 @@
       <xs:complexContent>
         <xs:extension base="bee:widgetType">
           <xs:choice minOccurs="1" maxOccurs="unbounded">
+            <xs:element name="col">
+              <xs:complexType>
+                <xs:attribute name="index" type="xs:nonNegativeInteger" use="required" />
+                <xs:attribute name="width" type="bee:positiveDecimal" />
+                <xs:attribute name="widthUnit" type="bee:cssUnit" />
+                <xs:attributeGroup ref="bee:appearance" />
+              </xs:complexType>
+            </xs:element>
             <xs:element name="row">
               <xs:complexType>
                 <xs:choice minOccurs="1" maxOccurs="unbounded">
-                  <xs:element name="cell" type="bee:tableCell" />
+                  <xs:element name="cell">
+                    <xs:complexType>
+                      <xs:complexContent>
+                        <xs:extension base="bee:tableCell">
+                          <xs:attribute name="colSpan" type="xs:positiveInteger" />
+                          <xs:attribute name="rowSpan" type="xs:positiveInteger" />
+                          <xs:attribute name="wordWrap" type="xs:boolean" />
+                        </xs:extension>
+                      </xs:complexContent>
+                    </xs:complexType>
+                  </xs:element>
                 </xs:choice>
+                <xs:attribute name="verticalAlignment" type="bee:verticalAlignmentType" />
                 <xs:attributeGroup ref="bee:appearance" />
-                <xs:attribute name="colSpan" type="xs:positiveInteger" />
-                <xs:attribute name="rowSpan" type="xs:positiveInteger" />
               </xs:complexType>
             </xs:element>
           </xs:choice>
+          <xs:attribute name="borderWidth" type="xs:nonNegativeInteger" />
           <xs:attribute name="cellPadding" type="xs:nonNegativeInteger" />
           <xs:attribute name="cellSpacing" type="xs:nonNegativeInteger" />
         </xs:extension>
@@ -439,22 +459,13 @@
   
   <xs:element name="ResizePanel" type="bee:hasOneChild" substitutionGroup="bee:widget" />
 
-  <xs:element name="ScrollPanel" substitutionGroup="bee:widget">
-    <xs:complexType>
-      <xs:complexContent>
-        <xs:extension base="bee:hasOneChild">
-          <xs:attribute name="scrollBars" type="bee:scrollBarsType" default="both" />
-        </xs:extension>
-      </xs:complexContent>
-    </xs:complexType>
-  </xs:element>
+  <xs:element name="ScrollPanel" type="bee:hasOneChild" substitutionGroup="bee:widget" />
 
   <xs:element name="Frame" substitutionGroup="bee:widget">
     <xs:complexType>
       <xs:complexContent>
-        <xs:extension base="bee:widgetType">
-          <xs:attribute name="url" type="xs:anyURI" use="required" />
-          <xs:attributeGroup ref="bee:dimension" /> 
+        <xs:extension base="bee:display">
+          <xs:attribute name="url" type="xs:anyURI" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>

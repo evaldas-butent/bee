@@ -82,8 +82,8 @@ public class RichTextEditor extends Flow implements Editor, AdjustmentListener,
   }
 
   @Override
-  public void createId() {
-    DomUtils.createId(this, "rt-editor");
+  public String getIdPrefix() {
+    return "rt-editor";
   }
 
   public String getNormalizedValue() {

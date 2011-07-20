@@ -51,8 +51,8 @@ public class Dimensions implements HasInfo {
 
   public Dimensions(double width, double height, double minWidth, double minHeight,
       double maxWidth, double maxHeight) {
-    this(width, DEFAULT_UNIT, height, DEFAULT_UNIT, minWidth, DEFAULT_UNIT, minHeight,
-        DEFAULT_UNIT,
+    this(width, DEFAULT_UNIT, height, DEFAULT_UNIT,
+        minWidth, DEFAULT_UNIT, minHeight, DEFAULT_UNIT,
         maxWidth, DEFAULT_UNIT, maxHeight, DEFAULT_UNIT);
   }
 
@@ -130,6 +130,22 @@ public class Dimensions implements HasInfo {
   public void applyTo(UIObject obj) {
     Assert.notNull(obj);
     applyTo(obj.getElement());
+  }
+
+  public String getCssHeight() {
+    if (hasHeight()) {
+      return toCssLength(getHeightValue(), normalizeUnit(getHeightUnit()));
+    } else {
+      return BeeConst.STRING_EMPTY;
+    }
+  }
+  
+  public String getCssWidth() {
+    if (hasWidth()) {
+      return toCssLength(getWidthValue(), normalizeUnit(getWidthUnit()));
+    } else {
+      return BeeConst.STRING_EMPTY;
+    }
   }
 
   public Unit getHeightUnit() {
@@ -212,6 +228,14 @@ public class Dimensions implements HasInfo {
 
   public Double getWidthValue() {
     return widthValue;
+  }
+  
+  public boolean hasHeight() {
+    return BeeUtils.isPositive(getHeightValue());
+  }
+
+  public boolean hasWidth() {
+    return BeeUtils.isPositive(getWidthValue());
   }
 
   public boolean isEmpty() {
@@ -303,6 +327,10 @@ public class Dimensions implements HasInfo {
     this.widthValue = widthValue;
   }
 
+  private Unit normalizeUnit(Unit unit) {
+    return (unit == null) ? DEFAULT_UNIT : unit;
+  }
+  
   private void setFromStyle(Style style) {
     Assert.notNull(style);
 

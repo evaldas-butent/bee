@@ -78,16 +78,16 @@ public class BeeButton extends Button implements HasId, HasService, HasStage, Ha
     }
   }
 
-  public void createId() {
-    DomUtils.createId(this, DomUtils.BUTTON_ID_PREFIX);
-  }
-
   public BeeCommand getCommand() {
     return command;
   }
 
   public String getId() {
     return DomUtils.getId(this);
+  }
+
+  public String getIdPrefix() {
+    return DomUtils.BUTTON_ID_PREFIX;
   }
 
   public String getService() {
@@ -119,7 +119,7 @@ public class BeeButton extends Button implements HasId, HasService, HasStage, Ha
   }
 
   private void init() {
+    DomUtils.createId(this, getIdPrefix());
     setStyleName("bee-Button");
-    createId();
   }
 }

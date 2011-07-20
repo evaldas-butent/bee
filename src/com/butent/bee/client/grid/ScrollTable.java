@@ -542,7 +542,7 @@ public class ScrollTable extends ComplexPanel implements
     mainElem.getStyle().setPadding(0, Unit.PX);
     mainElem.getStyle().setOverflow(Overflow.HIDDEN);
     mainElem.getStyle().setPosition(Position.RELATIVE);
-    createId();
+    DomUtils.createId(this, getIdPrefix());
 
     absoluteElem = DOM.createDiv();
     absoluteElem.getStyle().setPosition(Position.ABSOLUTE);
@@ -584,10 +584,6 @@ public class ScrollTable extends ComplexPanel implements
 
   public void createFooterTable() {
     setFooterTable(new FixedWidthFlexTable(defaultColumnWidth));
-  }
-
-  public void createId() {
-    DomUtils.createId(this, "scroll-table");
   }
 
   public void fillWidth() {
@@ -678,6 +674,10 @@ public class ScrollTable extends ComplexPanel implements
 
   public String getId() {
     return DomUtils.getId(this);
+  }
+
+  public String getIdPrefix() {
+    return "scroll-table";
   }
 
   public int getMaxColumnWidth() {

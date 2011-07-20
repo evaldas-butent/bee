@@ -21,4 +21,8 @@ public class ValueLabel<T> extends BeeLabel implements TakesValue<T> {
     this.value = value;
     setText(renderer.render(value));
   }
+
+  protected Renderer<? super T> getRenderer() {
+    return renderer;
+  }
 }

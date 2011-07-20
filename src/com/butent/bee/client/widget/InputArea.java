@@ -75,16 +75,16 @@ public class InputArea extends TextArea implements Editor, HasBeeValueChangeHand
     return addHandler(handler, EditStopEvent.getType());
   }
 
-  public void createId() {
-    DomUtils.createId(this, "area");
-  }
-
   public String getDigest() {
     return digest;
   }
 
   public String getId() {
     return DomUtils.getId(this);
+  }
+
+  public String getIdPrefix() {
+    return "area";
   }
 
   public String getNormalizedValue() {
@@ -216,8 +216,8 @@ public class InputArea extends TextArea implements Editor, HasBeeValueChangeHand
   }
 
   private void init() {
+    DomUtils.createId(this, getIdPrefix());
     setStyleName("bee-InputArea");
-    createId();
     addDefaultHandlers();
   }
 

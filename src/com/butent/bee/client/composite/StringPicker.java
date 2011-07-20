@@ -106,7 +106,7 @@ public class StringPicker extends CellList<String> implements Editor, HasItems,
   public StringPicker() {
     super(new DefaultCell());
 
-    createId();
+    DomUtils.createId(this, getIdPrefix());
     setStyleName(STYLE_CONTAINER);
     sinkEvents(Event.ONKEYDOWN + Event.ONKEYPRESS + Event.ONMOUSEDOWN + Event.ONBLUR);
   }
@@ -142,12 +142,12 @@ public class StringPicker extends CellList<String> implements Editor, HasItems,
     return this;
   }
 
-  public void createId() {
-    DomUtils.createId(this, "string-picker");
-  }
-
   public String getId() {
     return DomUtils.getId(this);
+  }
+
+  public String getIdPrefix() {
+    return "string-picker";
   }
 
   public String getNormalizedValue() {

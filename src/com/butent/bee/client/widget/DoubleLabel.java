@@ -13,4 +13,8 @@ public class DoubleLabel extends NumberLabel<Double> {
   public DoubleLabel(NumberFormat format) {
     super(format);
   }
+
+  public DoubleLabel(String pattern) {
+    super(pattern);
+  }
 }

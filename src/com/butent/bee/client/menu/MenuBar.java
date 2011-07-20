@@ -112,7 +112,7 @@ public class MenuBar extends Widget implements HasId, HasAfterAddHandler,
 
   public MenuBar(int level, boolean vert, BAR_TYPE bt, ITEM_TYPE it, boolean hover) {
     init(level, vert, bt, it, hover);
-    createId();
+    DomUtils.createId(this, getIdPrefix());
   }
 
   public MenuItem addItem(MenuItem item) {
@@ -163,10 +163,6 @@ public class MenuBar extends Widget implements HasId, HasAfterAddHandler,
     }
   }
 
-  public void createId() {
-    DomUtils.createId(this, "menubar");
-  }
-
   public ITEM_TYPE getDefaultItemType() {
     return defaultItemType;
   }
@@ -174,7 +170,11 @@ public class MenuBar extends Widget implements HasId, HasAfterAddHandler,
   public String getId() {
     return DomUtils.getId(this);
   }
-  
+
+  public String getIdPrefix() {
+    return "menubar";
+  }
+
   public MenuItem getItem(int index) {
     if (index >= 0 && index < items.size()) {
       return items.get(index);

@@ -62,10 +62,6 @@ public class BeeImage extends Image implements HasEnabled, HasCommand, HasId {
     this.styleDisabled = styleDisabled;
   }
 
-  public void createId() {
-    DomUtils.createId(this, "img");
-  }
-
   public BeeCommand getCommand() {
     return command;
   }
@@ -74,6 +70,10 @@ public class BeeImage extends Image implements HasEnabled, HasCommand, HasId {
     return DomUtils.getId(this);
   }
 
+  public String getIdPrefix() {
+    return "img";
+  }
+  
   public boolean isEnabled() {
     return enabled;
   }
@@ -109,7 +109,7 @@ public class BeeImage extends Image implements HasEnabled, HasCommand, HasId {
   }
 
   private void init() {
-    createId();
+    DomUtils.createId(this, getIdPrefix());
     setStyleName("bee-Image");
   }
 

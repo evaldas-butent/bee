@@ -1,13 +1,13 @@
 package com.butent.bee.client.menu;
 
 import com.butent.bee.client.dialog.Popup;
-import com.butent.bee.client.dom.DomUtils;
 
 /**
  * Implements a menu element in style of {@code BeePopupPanel}.
  */
 
 public class MenuPopup extends Popup {
+
   private static final String STYLENAME_DEFAULT = "bee-MenuPopup";
 
   private MenuBar parentMenu = null;
@@ -25,8 +25,8 @@ public class MenuPopup extends Popup {
   }
 
   @Override
-  public void createId() {
-    DomUtils.createId(this, "menupopup");
+  public String getIdPrefix() {
+    return "menupopup";
   }
 
   public MenuItem getParentItem() {
@@ -44,5 +44,4 @@ public class MenuPopup extends Popup {
   public void setParentMenu(MenuBar parentMenu) {
     this.parentMenu = parentMenu;
   }
-
 }

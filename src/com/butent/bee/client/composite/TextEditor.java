@@ -8,7 +8,6 @@ import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.Event;
 
 import com.butent.bee.client.Global;
-import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.layout.Absolute;
 import com.butent.bee.client.ui.HasTextDimensions;
@@ -68,16 +67,16 @@ public class TextEditor extends Absolute implements Editor, HasTextDimensions {
   public HandlerRegistration addValueChangeHandler(ValueChangeHandler<String> handler) {
     return getArea().addValueChangeHandler(handler);
   }
-
-  @Override
-  public void createId() {
-    DomUtils.createId(this, "text-editor");
-  }
-
+  
   public int getCharacterWidth() {
     return getArea().getCharacterWidth();
   }
 
+  @Override
+  public String getIdPrefix() {
+    return "text-editor";
+  }
+  
   public String getNormalizedValue() {
     return getArea().getNormalizedValue();
   }

@@ -167,11 +167,6 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     }
   }
 
-  @Override
-  public void createId() {
-    DomUtils.createId(this, "grid-container");
-  }
-
   public GridView getContent() {
     if (getCenter() == null) {
       return null;
@@ -209,6 +204,11 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
 
   public int getHeaderHeight() {
     return headerHeight;
+  }
+
+  @Override
+  public String getIdPrefix() {
+    return "grid-container";
   }
 
   public Collection<PagerView> getPagers() {

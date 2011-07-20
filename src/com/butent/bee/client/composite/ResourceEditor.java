@@ -104,15 +104,15 @@ public class ResourceEditor extends Composite implements HasId {
 
     setTextArea(area);
     setUri(resource.getUri());
-    createId();
-  }
-
-  public void createId() {
-    DomUtils.createId(this, "texteditor");
+    DomUtils.createId(this, getIdPrefix());
   }
 
   public String getId() {
     return DomUtils.getId(this);
+  }
+
+  public String getIdPrefix() {
+    return "resource-editor";
   }
 
   public InputArea getTextArea() {

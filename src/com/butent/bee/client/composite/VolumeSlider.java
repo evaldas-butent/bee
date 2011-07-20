@@ -105,9 +105,10 @@ public class VolumeSlider extends Absolute implements RequiresResize {
 
     sinkEvents(Event.ONMOUSEWHEEL);
   }
-
-  public void createId() {
-    DomUtils.createId(this, "volume-slider");
+  
+  @Override
+  public String getIdPrefix() {
+    return "volume-slider";
   }
 
   public int getPadding() {

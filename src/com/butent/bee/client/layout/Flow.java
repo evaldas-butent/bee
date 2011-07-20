@@ -10,16 +10,17 @@ import com.butent.bee.shared.HasId;
  */
 
 public class Flow extends FlowPanel implements HasId {
-  public Flow() {
-    createId();
-  }
 
-  public void createId() {
-    DomUtils.createId(this, "flow");
+  public Flow() {
+    DomUtils.createId(this, getIdPrefix());
   }
 
   public String getId() {
     return DomUtils.getId(this);
+  }
+
+  public String getIdPrefix() {
+    return "flow";
   }
 
   public void setId(String id) {

@@ -92,9 +92,9 @@ public class Split extends ComplexPanel implements AnimatedLayout,
     layoutCmd = new DockAnimateCommand(layout);
 
     this.splitterSize = splitterSize;
-    setStyleName(style);
 
-    createId();
+    DomUtils.createId(this, getIdPrefix());
+    setStyleName(style);
   }
 
   @Override
@@ -173,10 +173,6 @@ public class Split extends ComplexPanel implements AnimatedLayout,
     layoutCmd.schedule(duration, callback);
   }
 
-  public void createId() {
-    DomUtils.createId(this, "split");
-  }
-
   public void forceLayout() {
     layoutCmd.cancel();
     doLayout();
@@ -249,6 +245,10 @@ public class Split extends ComplexPanel implements AnimatedLayout,
 
   public String getId() {
     return DomUtils.getId(this);
+  }
+
+  public String getIdPrefix() {
+    return "split";
   }
 
   @Override

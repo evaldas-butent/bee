@@ -9,15 +9,15 @@ public class HeaderContentFooter extends HeaderPanel implements HasId {
 
   public HeaderContentFooter() {
     super();
-    createId();
-  }
-
-  public void createId() {
-    DomUtils.createId(this, "hcf");
+    DomUtils.createId(this, getIdPrefix());
   }
 
   public String getId() {
     return DomUtils.getId(this);
+  }
+
+  public String getIdPrefix() {
+    return "hcf";
   }
 
   public void setId(String id) {

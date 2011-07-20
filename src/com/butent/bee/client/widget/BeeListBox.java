@@ -116,12 +116,12 @@ public class BeeListBox extends ListBox implements Editor, HasItems, HasBeeChang
     return addHandler(handler, ValueChangeEvent.getType());
   }
 
-  public void createId() {
-    DomUtils.createId(this, "list");
-  }
-
   public String getId() {
     return DomUtils.getId(this);
+  }
+
+  public String getIdPrefix() {
+    return "list";
   }
 
   public int getIndex(String text) {
@@ -284,7 +284,7 @@ public class BeeListBox extends ListBox implements Editor, HasItems, HasBeeChang
   }
 
   private void init() {
-    createId();
+    DomUtils.createId(this, getIdPrefix());
     setStyleName("bee-ListBox");
     addDefaultHandlers();
   }

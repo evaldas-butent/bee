@@ -18,15 +18,15 @@ public class Stack extends StackLayoutPanel implements HasId {
 
   public Stack(Unit unit) {
     super(unit);
-    createId();
-  }
-
-  public void createId() {
-    DomUtils.createId(this, "stack");
+    DomUtils.createId(this, getIdPrefix());
   }
 
   public String getId() {
     return DomUtils.getId(this);
+  }
+
+  public String getIdPrefix() {
+    return "stack";
   }
 
   @Override

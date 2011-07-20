@@ -1,11 +1,13 @@
 package com.butent.bee.client.ui;
 
-import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment.HorizontalAlignmentConstant;
+import com.google.gwt.user.client.ui.HasVerticalAlignment;
+import com.google.gwt.user.client.ui.HasVerticalAlignment.VerticalAlignmentConstant;
 import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.ValueBoxBase;
 
@@ -18,7 +20,7 @@ import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.ui.EditorAction;
 import com.butent.bee.shared.utils.BeeUtils;
 
-import java.util.List;
+import java.util.Set;
 
 /**
  * Contains utility user interface creation functions like setting and getting horizontal alignment.
@@ -26,15 +28,20 @@ import java.util.List;
 
 public class UiHelper {
 
-  private static final String TEXT_ALIGN_START = "start";
-  private static final String TEXT_ALIGN_END = "end";
-
-  private static final List<HorizontalAlignmentConstant> HORIZONTAL_ALIGNMENT_CONSTANTS =
-      Lists.newArrayList(HasHorizontalAlignment.ALIGN_LEFT, HasHorizontalAlignment.ALIGN_CENTER,
+  private static final String ALIGN_START = "start";
+  private static final String ALIGN_CENTER = "center";
+  private static final String ALIGN_END = "end";
+  
+  private static final Set<HorizontalAlignmentConstant> HORIZONTAL_ALIGNMENT_CONSTANTS =
+      Sets.newHashSet(HasHorizontalAlignment.ALIGN_LEFT, HasHorizontalAlignment.ALIGN_CENTER,
           HasHorizontalAlignment.ALIGN_RIGHT, HasHorizontalAlignment.ALIGN_JUSTIFY,
           HasHorizontalAlignment.ALIGN_LOCALE_START, HasHorizontalAlignment.ALIGN_LOCALE_END,
           HasHorizontalAlignment.ALIGN_DEFAULT);
 
+  private static final Set<VerticalAlignmentConstant> VERTICAL_ALIGNMENT_CONSTANTS =
+    Sets.newHashSet(HasVerticalAlignment.ALIGN_TOP, HasVerticalAlignment.ALIGN_MIDDLE,
+        HasVerticalAlignment.ALIGN_BOTTOM);
+  
   public static void doEditorAction(Editor widget, String value, char charCode,
       EditorAction action) {
     Assert.notNull(widget);
@@ -125,6 +132,53 @@ public class UiHelper {
         && EventUtils.hasModifierKey(event);
   }
 
+  public static HorizontalAlignmentConstant parseHorizontalAlignment(String text) {
+    if (BeeUtils.isEmpty(text)) {
+      return null;
+    }
+    HorizontalAlignmentConstant align = null;
+
+    if (BeeUtils.same(text, ALIGN_START)) {
+      align = HasHorizontalAlignment.ALIGN_LOCALE_START;
+    } else if (BeeUtils.same(text, ALIGN_CENTER)) {
+      align = HasHorizontalAlignment.ALIGN_CENTER;
+    } else if (BeeUtils.same(text, ALIGN_END)) {
+      align = HasHorizontalAlignment.ALIGN_LOCALE_END;
+    } else {
+      for (HorizontalAlignmentConstant hac : HORIZONTAL_ALIGNMENT_CONSTANTS) {
+        if (BeeUtils.same(text, hac.getTextAlignString())) {
+          align = hac;
+          break;
+        }
+      }
+    }
+    return align;
+  }
+
+  public static VerticalAlignmentConstant parseVerticalAlignment(String text) {
+    if (BeeUtils.isEmpty(text)) {
+      return null;
+    }
+
+    VerticalAlignmentConstant align = null;
+
+    if (BeeUtils.same(text, ALIGN_START)) {
+      align = HasVerticalAlignment.ALIGN_TOP;
+    } else if (BeeUtils.same(text, ALIGN_CENTER)) {
+      align = HasVerticalAlignment.ALIGN_MIDDLE;
+    } else if (BeeUtils.same(text, ALIGN_END)) {
+      align = HasVerticalAlignment.ALIGN_BOTTOM;
+    } else {
+      for (VerticalAlignmentConstant vac : VERTICAL_ALIGNMENT_CONSTANTS) {
+        if (BeeUtils.same(text, vac.getVerticalAlignString())) {
+          align = vac;
+          break;
+        }
+      }
+    }
+    return align;
+  }
+  
   public static void registerSave(UIObject obj) {
     Assert.notNull(obj);
     obj.sinkEvents(Event.ONKEYDOWN);
@@ -142,26 +196,22 @@ public class UiHelper {
     Assert.notNull(obj);
     Assert.notEmpty(text);
 
-    HorizontalAlignmentConstant align = null;
-
-    if (BeeUtils.same(text, TEXT_ALIGN_START)) {
-      align = HasHorizontalAlignment.ALIGN_LOCALE_START;
-    } else if (BeeUtils.same(text, TEXT_ALIGN_END)) {
-      align = HasHorizontalAlignment.ALIGN_LOCALE_END;
-    } else {
-      for (HorizontalAlignmentConstant hac : HORIZONTAL_ALIGNMENT_CONSTANTS) {
-        if (BeeUtils.same(text, hac.getTextAlignString())) {
-          align = hac;
-          break;
-        }
-      }
-    }
-
+    HorizontalAlignmentConstant align = parseHorizontalAlignment(text);
     if (align != null) {
       obj.setHorizontalAlignment(align);
     }
   }
 
+  public static void setVerticalAlignment(HasVerticalAlignment obj, String text) {
+    Assert.notNull(obj);
+    Assert.notEmpty(text);
+
+    VerticalAlignmentConstant align = parseVerticalAlignment(text);
+    if (align != null) {
+      obj.setVerticalAlignment(align);
+    }
+  }
+  
   private UiHelper() {
   }
 }

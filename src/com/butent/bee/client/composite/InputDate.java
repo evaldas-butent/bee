@@ -135,16 +135,16 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat {
     return addHandler(handler, ValueChangeEvent.getType());
   }
 
-  public void createId() {
-    DomUtils.createId(this, "date-box");
-  }
-
   public DateTimeFormat getDateTimeFormat() {
     return format;
   }
 
   public String getId() {
     return DomUtils.getId(this);
+  }
+
+  public String getIdPrefix() {
+    return "date-box";
   }
 
   public String getNormalizedValue() {

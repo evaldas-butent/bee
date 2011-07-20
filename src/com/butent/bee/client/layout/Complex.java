@@ -90,12 +90,12 @@ public class Complex extends ComplexPanel implements HasId {
     add(child);
   }
 
-  public void createId() {
-    DomUtils.createId(this, "complex");
-  }
-
   public String getId() {
     return DomUtils.getId(this);
+  }
+
+  public String getIdPrefix() {
+    return "complex";
   }
 
   public void setId(String id) {
@@ -103,7 +103,7 @@ public class Complex extends ComplexPanel implements HasId {
   }
 
   private void init() {
-    createId();
+    DomUtils.createId(this, getIdPrefix());
   }
 
   private void setChildBottom(Widget child, double value, Unit unit) {

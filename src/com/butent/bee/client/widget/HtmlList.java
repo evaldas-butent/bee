@@ -16,6 +16,7 @@ import java.util.List;
  */
 
 public class HtmlList extends Widget implements HasId {
+
   private static final int INSERT_AT_END = -1;
   private boolean ordered = false;
 
@@ -33,7 +34,7 @@ public class HtmlList extends Widget implements HasId {
     }
 
     setStyleName("bee-HtmlList");
-    createId();
+    DomUtils.createId(this, getIdPrefix());
 
     this.ordered = ordered;
   }
@@ -53,12 +54,12 @@ public class HtmlList extends Widget implements HasId {
     items.clear();
   }
 
-  public void createId() {
-    DomUtils.createId(this, "list");
-  }
-
   public String getId() {
     return DomUtils.getId(this);
+  }
+
+  public String getIdPrefix() {
+    return "html-list";
   }
 
   public LIElement getItem(int index) {
@@ -124,5 +125,4 @@ public class HtmlList extends Widget implements HasId {
   private void checkIndex(int index) {
     Assert.isIndex(items, index);
   }
-
 }

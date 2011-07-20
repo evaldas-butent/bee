@@ -14,23 +14,27 @@ public class Scroll extends ScrollPanel implements HasId {
 
   public Scroll() {
     super();
-    createId();
+    init();
   }
 
   public Scroll(Widget child) {
     super(child);
-    createId();
-  }
-
-  public void createId() {
-    DomUtils.createId(this, "scroll");
+    init();
   }
 
   public String getId() {
     return DomUtils.getId(this);
   }
 
+  public String getIdPrefix() {
+    return "scroll";
+  }
+
   public void setId(String id) {
     DomUtils.setId(this, id);
+  }
+  
+  private void init() {
+    DomUtils.createId(this, getIdPrefix());
   }
 }

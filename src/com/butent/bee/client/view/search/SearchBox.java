@@ -14,17 +14,13 @@ import java.util.List;
  */
 
 public class SearchBox extends InputText implements SearchView {
+
   private Presenter presenter = null;
 
   public SearchBox() {
     super();
     DomUtils.setSearch(this);
     DomUtils.setPlaceholder(this, "filter...");
-  }
-
-  @Override
-  public void createId() {
-    DomUtils.createId(this, "search");
   }
 
   @Override
@@ -36,6 +32,11 @@ public class SearchBox extends InputText implements SearchView {
     return DataUtils.parseCondition(getValue(), columns);
   }
 
+  @Override
+  public String getIdPrefix() {
+    return "search";
+  }
+  
   public Presenter getViewPresenter() {
     return presenter;
   }

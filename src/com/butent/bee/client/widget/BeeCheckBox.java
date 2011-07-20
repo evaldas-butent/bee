@@ -17,6 +17,7 @@ import com.butent.bee.shared.utils.BeeUtils;
  */
 
 public class BeeCheckBox extends CheckBox implements HasId, HasBeeValueChangeHandler<Boolean> {
+
   private HasBooleanValue source = null;
 
   private String checkedCaption = null;
@@ -70,16 +71,16 @@ public class BeeCheckBox extends CheckBox implements HasId, HasBeeValueChangeHan
     setText(source.getCaption());
   }
 
-  public void createId() {
-    DomUtils.createId(this, "c");
-  }
-
   public String getCheckedCaption() {
     return checkedCaption;
   }
 
   public String getId() {
     return DomUtils.getId(this);
+  }
+
+  public String getIdPrefix() {
+    return "cb";
   }
 
   public HasBooleanValue getSource() {
@@ -118,7 +119,7 @@ public class BeeCheckBox extends CheckBox implements HasId, HasBeeValueChangeHan
   }
 
   private void init() {
-    createId();
+    DomUtils.createId(this, getIdPrefix());
     setStyleName("bee-CheckBox");
   }
 

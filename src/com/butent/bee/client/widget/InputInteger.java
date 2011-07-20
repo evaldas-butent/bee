@@ -53,6 +53,11 @@ public class InputInteger extends InputNumber {
     return "bee-InputInteger";
   }
 
+  @Override
+  public String getIdPrefix() {
+    return "int";
+  }
+  
   public int getIntValue() {
     return BeeUtils.toInt(getValue());
   }
@@ -97,11 +102,6 @@ public class InputInteger extends InputNumber {
   @Override
   protected boolean checkType(String v) {
     return BeeUtils.isInt(v);
-  }
-
-  @Override
-  protected String getDefaultIdPrefix() {
-    return "int";
   }
 
   protected void initAttributes(String type, int min, int max, int step) {

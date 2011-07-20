@@ -341,8 +341,6 @@ public abstract class HtmlTable extends Panel implements HasClickHandlers,
     return internalClearCell(td, true);
   }
 
-  public abstract void createId();
-
   public Element getBodyElement() {
     return bodyElem;
   }
@@ -408,6 +406,8 @@ public abstract class HtmlTable extends Panel implements HasClickHandlers,
   public String getId() {
     return DomUtils.getId(this);
   }
+
+  public abstract String getIdPrefix();
 
   public Element getRow(int row) {
     return rowFormatter.getRow(bodyElem, row);
@@ -709,6 +709,6 @@ public abstract class HtmlTable extends Panel implements HasClickHandlers,
   }
 
   private void init() {
-    createId();
+    DomUtils.createId(this, getIdPrefix());
   }
 }

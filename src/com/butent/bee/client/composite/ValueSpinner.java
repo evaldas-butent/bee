@@ -206,8 +206,8 @@ public class ValueSpinner extends Absolute implements RequiresResize {
   }
 
   @Override
-  public void createId() {
-    DomUtils.createId(this, "spin-container");
+  public String getIdPrefix() {
+    return "spin-container";
   }
 
   public SpinnerBase getSpinner() {

@@ -535,10 +535,6 @@ public class DataSelector extends Complex implements Editor, HasTextDimensions {
     return addHandler(handler, ValueChangeEvent.getType());
   }
 
-  public void createId() {
-    DomUtils.createId(this, "select");
-  }
-
   public Callback getCallback() {
     return callback;
   }
@@ -549,6 +545,11 @@ public class DataSelector extends Complex implements Editor, HasTextDimensions {
 
   public Display getDisplay() {
     return display;
+  }
+
+  @Override
+  public String getIdPrefix() {
+    return "selector";
   }
 
   public String getNormalizedValue() {

@@ -37,15 +37,15 @@ public class BlankTile extends Composite implements HasAfterAddHandler, HasId, R
     p.setWidgetLeftRight(caption, 10, Unit.PX, 10, Unit.PX);
 
     initWidget(p);
-    createId();
-  }
-
-  public void createId() {
-    DomUtils.createId(this, "blank");
+    DomUtils.createId(this, getIdPrefix());
   }
 
   public String getId() {
     return DomUtils.getId(this);
+  }
+
+  public String getIdPrefix() {
+    return "blank";
   }
 
   public void onAfterAdd(HasWidgets parent) {

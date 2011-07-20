@@ -135,13 +135,13 @@ public class RadioGroup extends Span {
   }
   
   @Override
-  public void createId() {
-    DomUtils.createId(this, "rg");
+  public String getDefaultStyleName() {
+    return "bee-RadioGroup";
   }
 
   @Override
-  public String getDefaultStyleName() {
-    return "bee-RadioGroup";
+  public String getIdPrefix() {
+    return "rg";
   }
 
   public String getName() {

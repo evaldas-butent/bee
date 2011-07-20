@@ -14,15 +14,15 @@ public class BeeCellList<T> extends CellList<T> implements HasId {
 
   public BeeCellList(Cell<T> cell) {
     super(cell);
-    createId();
-  }
-
-  public void createId() {
-    DomUtils.createId(this, "celllist");
+    DomUtils.createId(this, getIdPrefix());
   }
 
   public String getId() {
     return DomUtils.getId(this);
+  }
+
+  public String getIdPrefix() {
+    return "celllist";
   }
 
   public void setId(String id) {

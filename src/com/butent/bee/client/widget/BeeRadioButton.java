@@ -36,16 +36,16 @@ public class BeeRadioButton extends RadioButton implements HasId, HasService, Ha
     init();
   }
 
-  public void createId() {
-    DomUtils.createId(this, DomUtils.RADIO_ID_PREFIX);
-  }
-
   public BeeCommand getCommand() {
     return command;
   }
 
   public String getId() {
     return DomUtils.getId(this);
+  }
+
+  public String getIdPrefix() {
+    return DomUtils.RADIO_ID_PREFIX;
   }
 
   public String getService() {
@@ -65,7 +65,7 @@ public class BeeRadioButton extends RadioButton implements HasId, HasService, Ha
   }
 
   private void init() {
-    createId();
+    DomUtils.createId(this, getIdPrefix());
     setStyleName("bee-RadioButton");
   }
 }

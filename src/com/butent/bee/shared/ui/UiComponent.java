@@ -131,10 +131,6 @@ public abstract class UiComponent implements HasId, BeeSerializable {
     child.setParent(this);
   }
 
-  @Override
-  public void createId() {
-  }
-
   public Object createInstance() {
     return createInstance(uiCreator);
   }
@@ -226,6 +222,11 @@ public abstract class UiComponent implements HasId, BeeSerializable {
   @Override
   public String getId() {
     return id;
+  }
+
+  @Override
+  public String getIdPrefix() {
+    return "ui";
   }
 
   public UiComponent getParent() {

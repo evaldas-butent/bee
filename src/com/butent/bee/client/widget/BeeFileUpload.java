@@ -15,6 +15,7 @@ import com.butent.bee.shared.HasStringValue;
  */
 
 public class BeeFileUpload extends FileUpload implements HasId, HasBeeChangeHandler {
+
   private HasStringValue source = null;
 
   public BeeFileUpload() {
@@ -32,12 +33,12 @@ public class BeeFileUpload extends FileUpload implements HasId, HasBeeChangeHand
     this.source = source;
   }
 
-  public void createId() {
-    DomUtils.createId(this, "upload");
-  }
-
   public String getId() {
     return DomUtils.getId(this);
+  }
+
+  public String getIdPrefix() {
+    return "upload";
   }
 
   public HasStringValue getSource() {
@@ -63,7 +64,7 @@ public class BeeFileUpload extends FileUpload implements HasId, HasBeeChangeHand
   }
 
   private void init() {
-    createId();
+    DomUtils.createId(this, getIdPrefix());
     addDefaultHandlers();
   }
 }

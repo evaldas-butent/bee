@@ -34,12 +34,12 @@ public class InlineHtml extends InlineHTML implements HasId {
     init();
   }
 
-  public void createId() {
-    DomUtils.createId(this, "inline");
-  }
-
   public String getId() {
     return DomUtils.getId(this);
+  }
+
+  public String getIdPrefix() {
+    return "inline";
   }
 
   public void setId(String id) {
@@ -47,7 +47,7 @@ public class InlineHtml extends InlineHTML implements HasId {
   }
 
   private void init() {
-    createId();
+    DomUtils.createId(this, getIdPrefix());
     setWordWrap(false);
   }
 }

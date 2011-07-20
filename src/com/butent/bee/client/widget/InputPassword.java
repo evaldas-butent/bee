@@ -20,7 +20,7 @@ public class InputPassword extends InputText {
   }
 
   @Override
-  protected String getDefaultIdPrefix() {
+  public String getIdPrefix() {
     return "pswd";
   }
 

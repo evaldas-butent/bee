@@ -951,7 +951,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     sinkEvents(eventTypes);
 
     setStyleName(STYLE_GRID);
-    createId();
+    DomUtils.createId(this, getIdPrefix());
   }
 
   public HandlerRegistration addActiveRowChangeHandler(ActiveRowChangeEvent.Handler handler) {
@@ -1048,10 +1048,6 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
       }
     }
     return false;
-  }
-
-  public void createId() {
-    DomUtils.createId(this, "cell-grid");
   }
 
   public <T extends IsRow> int estimateColumnWidth(int col) {
@@ -1392,6 +1388,10 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
 
   public String getId() {
     return DomUtils.getId(this);
+  }
+
+  public String getIdPrefix() {
+    return "cell-grid";
   }
 
   public int getMaxBodyCellHeight() {

@@ -63,10 +63,6 @@ public class BeeLabel extends Label implements HasId, HasCommand {
     setHorizontalAlignment(align);
   }
 
-  public void createId() {
-    DomUtils.createId(this, DomUtils.LABEL_ID_PREFIX);
-  }
-
   public BeeCommand getCommand() {
     return command;
   }
@@ -75,6 +71,10 @@ public class BeeLabel extends Label implements HasId, HasCommand {
     return DomUtils.getId(this);
   }
 
+  public String getIdPrefix() {
+    return DomUtils.LABEL_ID_PREFIX;
+  }
+  
   public void setCommand(BeeCommand command) {
     this.command = command;
   }
@@ -84,7 +84,7 @@ public class BeeLabel extends Label implements HasId, HasCommand {
   }
 
   private void init() {
-    createId();
+    DomUtils.createId(this, getIdPrefix());
     setStyleName("bee-Label");
   }
 }

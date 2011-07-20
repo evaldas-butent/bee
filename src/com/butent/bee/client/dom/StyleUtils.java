@@ -1199,7 +1199,27 @@ public class StyleUtils {
   public static void removeStyleDependentName(Element el, String style) {
     setStyleDependentName(el, style, false);
   }
+  
+  public static void setAppearance(Element el, String className, String styles) {
+    Assert.notNull(el);
 
+    if (!BeeUtils.isEmpty(className)) {
+      el.addClassName(className);
+    }
+    if (!BeeUtils.isEmpty(styles)) {
+      apply(el.getStyle(), styles);
+    }
+  }
+
+  public static void setAppearance(String id, String className, String styles) {
+    setAppearance(DomUtils.getElement(id), className, styles);
+  }
+  
+  public static void setAppearance(UIObject obj, String className, String styles) {
+    Assert.notNull(obj);
+    setAppearance(obj.getElement(), className, styles);
+  }
+  
   public static void setBorderBottomWidth(Element el, int px) {
     Assert.notNull(el);
     setBorderBottomWidth(el.getStyle(), px);

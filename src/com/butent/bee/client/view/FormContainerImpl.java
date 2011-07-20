@@ -119,11 +119,6 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
     }
   }
 
-  @Override
-  public void createId() {
-    DomUtils.createId(this, "form-container");
-  }
-
   public FormView getContent() {
     if (getCenter() == null) {
       return null;
@@ -161,6 +156,11 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
 
   public int getHeaderHeight() {
     return headerHeight;
+  }
+
+  @Override
+  public String getIdPrefix() {
+    return "form-container";
   }
 
   public Collection<PagerView> getPagers() {

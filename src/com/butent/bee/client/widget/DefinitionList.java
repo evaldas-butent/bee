@@ -22,9 +22,9 @@ public class DefinitionList extends Widget implements HasId {
 
   public DefinitionList() {
     setElement(Document.get().createDLElement());
-    setStyleName("bee-DefinitionList");
 
-    createId();
+    DomUtils.createId(this, getIdPrefix());
+    setStyleName("bee-DefinitionList");
   }
 
   public void addDefinition(String text) {
@@ -50,12 +50,12 @@ public class DefinitionList extends Widget implements HasId {
     items.clear();
   }
 
-  public void createId() {
-    DomUtils.createId(this, "d-list");
-  }
-
   public String getId() {
     return DomUtils.getId(this);
+  }
+
+  public String getIdPrefix() {
+    return "d-list";
   }
 
   public Element getItem(int index) {

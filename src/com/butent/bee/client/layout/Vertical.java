@@ -13,15 +13,15 @@ import com.butent.bee.shared.HasId;
 public class Vertical extends VerticalPanel implements HasId {
 
   public Vertical() {
-    createId();
-  }
-
-  public void createId() {
-    DomUtils.createId(this, "vert");
+    DomUtils.createId(this, getIdPrefix());
   }
 
   public String getId() {
     return DomUtils.getId(this);
+  }
+
+  public String getIdPrefix() {
+    return "vert";
   }
 
   public void setId(String id) {

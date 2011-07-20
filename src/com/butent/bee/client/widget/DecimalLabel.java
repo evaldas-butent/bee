@@ -15,4 +15,8 @@ public class DecimalLabel extends NumberLabel<BigDecimal> {
   public DecimalLabel(NumberFormat format) {
     super(format);
   }
+
+  public DecimalLabel(String pattern) {
+    super(pattern);
+  }
 }

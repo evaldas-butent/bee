@@ -66,12 +66,12 @@ public class Link extends Anchor implements HasId {
     init();
   }
 
-  public void createId() {
-    DomUtils.createId(this, "anchor");
-  }
-
   public String getId() {
     return DomUtils.getId(this);
+  }
+
+  public String getIdPrefix() {
+    return "link";
   }
 
   public void setId(String id) {
@@ -79,8 +79,8 @@ public class Link extends Anchor implements HasId {
   }
 
   private void init() {
-    createId();
-    setStyleName("bee-Anchor");
+    DomUtils.createId(this, getIdPrefix());
+    setStyleName("bee-Link");
 
     if (BeeUtils.isEmpty(getTarget())) {
       setTarget(DEFAULT_TARGET);

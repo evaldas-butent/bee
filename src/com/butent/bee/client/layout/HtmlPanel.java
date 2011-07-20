@@ -27,12 +27,12 @@ public class HtmlPanel extends HTMLPanel implements HasId {
     init();
   }
 
-  public void createId() {
-    DomUtils.createId(this, "html-panel");
-  }
-
   public String getId() {
     return DomUtils.getId(this);
+  }
+
+  public String getIdPrefix() {
+    return "html-panel";
   }
 
   public void setId(String id) {
@@ -40,6 +40,6 @@ public class HtmlPanel extends HTMLPanel implements HasId {
   }
 
   private void init() {
-    createId();
+    DomUtils.createId(this, getIdPrefix());
   }
 }

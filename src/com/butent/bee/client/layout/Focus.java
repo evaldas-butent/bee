@@ -11,16 +11,18 @@ import com.butent.bee.shared.HasId;
  */
 
 public class Focus extends FocusPanel implements HasId {
+  
   public Focus() {
-    createId();
-  }
-
-  public void createId() {
-    DomUtils.createId(this, "focus");
+    DomUtils.createId(this, getIdPrefix());
   }
 
   public String getId() {
     return DomUtils.getId(this);
+  }
+
+  @Override
+  public String getIdPrefix() {
+    return "focus";
   }
 
   public void setId(String id) {

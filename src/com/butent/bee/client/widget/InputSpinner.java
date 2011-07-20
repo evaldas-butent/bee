@@ -34,12 +34,12 @@ public class InputSpinner extends InputInteger {
   }
 
   @Override
-  public void createId() {
-    DomUtils.createId(this, "inp-spin");
+  public String getDefaultStyleName() {
+    return "bee-InputSpinner";
   }
 
   @Override
-  public String getDefaultStyleName() {
-    return "bee-InputSpinner";
+  public String getIdPrefix() {
+    return "inp-spin";
   }
 }

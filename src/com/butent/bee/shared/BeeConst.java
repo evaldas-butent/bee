@@ -4,6 +4,7 @@ package com.butent.bee.shared;
  * Stores all default values (databases, boolean, separators etc.).
  */
 public class BeeConst {
+
   public static final String MYSQL = "MySql";
   public static final String MSSQL = "MsSql";
   public static final String ORACLE = "Oracle";
@@ -223,6 +224,17 @@ public class BeeConst {
     return CHAR_FALSE.indexOf(c) >= 0;
   }
 
+  public static boolean isFalse(String s) {
+    if (s == null) {
+      return false;
+    } else if (s.trim().length() == 1) {
+      return isFalse(s.trim().charAt(0));
+    } else {
+      return s.trim().toLowerCase().equals(STRING_FALSE.toLowerCase())
+          || s.trim().toLowerCase().equals(NO.toLowerCase());
+    }
+  }
+  
   /**
    * Returns the state of server.
    * 
@@ -243,6 +255,17 @@ public class BeeConst {
     return CHAR_TRUE.indexOf(c) >= 0;
   }
 
+  public static boolean isTrue(String s) {
+    if (s == null) {
+      return false;
+    } else if (s.trim().length() == 1) {
+      return isTrue(s.trim().charAt(0));
+    } else {
+      return s.trim().toLowerCase().equals(STRING_TRUE.toLowerCase())
+          || s.trim().toLowerCase().equals(YES.toLowerCase());
+    }
+  }
+  
   public static boolean isUndef(int x) {
     return x == UNDEF;
   }

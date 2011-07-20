@@ -51,11 +51,6 @@ public class FlexTable extends HtmlTable {
   }
 
   @Override
-  public void createId() {
-    DomUtils.createId(this, "flex");
-  }
-
-  @Override
   public int getCellCount(int row) {
     checkRowBounds(row);
     return getDOMCellCount(getBodyElement(), row);
@@ -68,6 +63,11 @@ public class FlexTable extends HtmlTable {
 
   public FlexCellFormatter getFlexCellFormatter() {
     return (FlexCellFormatter) getCellFormatter();
+  }
+
+  @Override
+  public String getIdPrefix() {
+    return "flex";
   }
 
   @Override

@@ -23,14 +23,10 @@ import java.util.Map;
  */
 
 public class TilePanel extends Split {
+  
   public TilePanel() {
     super("bee-tile", 5);
     sinkEvents(Event.ONMOUSEDOWN);
-  }
-
-  @Override
-  public void createId() {
-    DomUtils.createId(this, "tilepanel");
   }
 
   public Widget getChildById(String id) {
@@ -53,6 +49,11 @@ public class TilePanel extends Split {
     return child;
   }
 
+  @Override
+  public String getIdPrefix() {
+    return "tilepanel";
+  }
+  
   public List<TilePanel> getPanels() {
     List<TilePanel> lst = new ArrayList<TilePanel>();
 

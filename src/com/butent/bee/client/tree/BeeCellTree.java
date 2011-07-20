@@ -11,6 +11,7 @@ import com.butent.bee.shared.HasId;
  */
 
 public class BeeCellTree extends CellTree implements HasId {
+
   public <T> BeeCellTree(TreeViewModel viewModel, T rootValue) {
     super(viewModel, rootValue);
     init();
@@ -21,20 +22,20 @@ public class BeeCellTree extends CellTree implements HasId {
     init();
   }
 
-  public void createId() {
-    DomUtils.createId(this, "celltree");
-  }
-
   public String getId() {
     return DomUtils.getId(this);
   }
 
+  public String getIdPrefix() {
+    return "celltree";
+  }
+  
   public void setId(String id) {
     DomUtils.setId(this, id);
   }
 
   private void init() {
-    createId();
+    DomUtils.createId(this, getIdPrefix());
     setStyleName("bee-CellTree");
   }
 }

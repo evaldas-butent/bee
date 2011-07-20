@@ -42,12 +42,12 @@ public class SimpleInline extends Panel implements HasOneWidget, HasId {
     setWidget(w);
   }
 
-  public void createId() {
-    DomUtils.createId(this, "simple-inline");
-  }
-
   public String getId() {
     return DomUtils.getId(this);
+  }
+
+  public String getIdPrefix() {
+    return "simple-inline";
   }
 
   public Widget getWidget() {
@@ -123,6 +123,6 @@ public class SimpleInline extends Panel implements HasOneWidget, HasId {
   }
 
   private void init() {
-    createId();
+    DomUtils.createId(this, getIdPrefix());
   }
 }

@@ -10,6 +10,7 @@ import com.butent.bee.shared.HasId;
  */
 
 public class Meter extends Widget implements HasId {
+
   public Meter() {
     super();
     setElement(DomUtils.createElement(DomUtils.TAG_METER));
@@ -33,16 +34,16 @@ public class Meter extends Widget implements HasId {
     setOptimum(optimum);
   }
 
-  public void createId() {
-    DomUtils.createId(this, "meter");
-  }
-
   public double getHigh() {
     return getElement().getPropertyDouble(DomUtils.ATTRIBUTE_HIGH);
   }
 
   public String getId() {
     return DomUtils.getId(this);
+  }
+
+  public String getIdPrefix() {
+    return "meter";
   }
 
   public double getLow() {
@@ -94,7 +95,7 @@ public class Meter extends Widget implements HasId {
   }
 
   private void init() {
-    createId();
+    DomUtils.createId(this, getIdPrefix());
     setStyleName("bee-Meter");
   }
 }

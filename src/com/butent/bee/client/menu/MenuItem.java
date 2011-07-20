@@ -53,16 +53,16 @@ public class MenuItem extends UIObject implements HasId {
     init(parent, text, getDefaultType(parent));
   }
   
-  public void createId() {
-    DomUtils.createId(this, "menuitem");
-  }
-
   public MenuCommand getCommand() {
     return command;
   }
 
   public String getId() {
     return DomUtils.getId(this);
+  }
+
+  public String getIdPrefix() {
+    return "menuitem";
   }
 
   public ITEM_TYPE getItemType() {
@@ -169,7 +169,7 @@ public class MenuItem extends UIObject implements HasId {
     setStyleName(STYLENAME_DEFAULT);
     addStyleDependentName(type.toString().toLowerCase());
 
-    createId();
+    DomUtils.createId(this, getIdPrefix());
 
     setParentMenu(parent);
     setItemType(type);

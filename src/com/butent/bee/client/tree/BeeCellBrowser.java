@@ -15,25 +15,27 @@ public class BeeCellBrowser extends CellBrowser implements HasId {
 
   public <T> BeeCellBrowser(TreeViewModel viewModel, T rootValue) {
     super(viewModel, rootValue);
-    createId();
+    init();
   }
 
-  public <T> BeeCellBrowser(TreeViewModel viewModel, T rootValue,
-      Resources resources) {
+  public <T> BeeCellBrowser(TreeViewModel viewModel, T rootValue, Resources resources) {
     super(viewModel, rootValue, resources);
-    createId();
-  }
-
-  public void createId() {
-    DomUtils.createId(this, "cellbrowser");
+    init();
   }
 
   public String getId() {
     return DomUtils.getId(this);
   }
 
+  public String getIdPrefix() {
+    return "cellbrowser";
+  }
+
   public void setId(String id) {
     DomUtils.setId(this, id);
   }
-
+  
+  private void init() {
+    DomUtils.createId(this, getIdPrefix());
+  }
 }

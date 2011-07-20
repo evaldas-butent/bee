@@ -24,6 +24,11 @@ public class InputLong extends InputNumber {
   }
 
   @Override
+  public String getIdPrefix() {
+    return "long";
+  }
+
+  @Override
   public Number getNumber() {
     return BeeUtils.toLongOrNull(BeeUtils.trim(getValue()));
   }
@@ -31,11 +36,6 @@ public class InputLong extends InputNumber {
   @Override
   protected boolean checkType(String v) {
     return BeeUtils.isLong(v);
-  }
-
-  @Override
-  protected String getDefaultIdPrefix() {
-    return "long";
   }
 
   @Override

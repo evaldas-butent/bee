@@ -34,12 +34,12 @@ public class InputSlider extends InputInteger {
   }
 
   @Override
-  public void createId() {
-    DomUtils.createId(this, "inp-slider");
+  public String getDefaultStyleName() {
+    return "bee-InputSlider";
   }
 
   @Override
-  public String getDefaultStyleName() {
-    return "bee-InputSlider";
+  public String getIdPrefix() {
+    return "inp-slider";
   }
 }
