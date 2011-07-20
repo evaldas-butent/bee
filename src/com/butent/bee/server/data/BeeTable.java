@@ -943,8 +943,6 @@ class BeeTable implements HasExtFields, HasStates, HasTranslations {
   }
 
   BeeState addState(BeeState state) {
-    Assert.state(!hasState(state),
-        BeeUtils.concat(1, "Dublicate state:", getName(), state.getName()));
     states.add(state);
     return state;
   }

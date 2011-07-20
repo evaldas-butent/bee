@@ -6,6 +6,7 @@ import com.google.common.collect.Maps;
 import com.butent.bee.server.io.FileUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.exceptions.BeeRuntimeException;
 import com.butent.bee.shared.ui.Calculation;
 import com.butent.bee.shared.ui.ConditionalStyleDeclaration;
 import com.butent.bee.shared.ui.StyleDeclaration;
@@ -818,17 +819,24 @@ public class XmlUtils {
     return lst;
   }
 
-  public static String marshal(Object obj) {
+  public static String marshal(Object obj, String schemaPath) {
     Assert.notNull(obj);
     StringWriter result = new StringWriter();
 
     try {
       Marshaller marshaller = JAXBContext.newInstance(obj.getClass()).createMarshaller();
       marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+
+      if (!BeeUtils.isEmpty(schemaPath)) {
+        marshaller.setSchema(schemaFactory.newSchema(new File(schemaPath)));
+      }
       marshaller.marshal(obj, result);
 
     } catch (JAXBException e) {
-      LogUtils.error(logger, e);
+      throw new BeeRuntimeException(e.getLinkedException() == null ? e : e.getLinkedException());
+
+    } catch (SAXException e) {
+      throw new BeeRuntimeException(e.getException() == null ? e : e.getException());
     }
     return result.toString();
   }
@@ -852,7 +860,7 @@ public class XmlUtils {
   }
 
   @SuppressWarnings("unchecked")
-  public static <T> T unmarshal(Class<T> clazz, String resource, String resourceSchema) {
+  public static <T> T unmarshal(Class<T> clazz, String resource, String schemaPath) {
     T result = null;
 
     if (!BeeUtils.isEmpty(resource)) {
@@ -866,23 +874,26 @@ public class XmlUtils {
           source = new ByteArrayInputStream(resource.getBytes());
         }
 
-        if (BeeUtils.isEmpty(resourceSchema)) {
+        if (BeeUtils.isEmpty(schemaPath)) {
           result = (T) unmarshaller.unmarshal(source);
         } else {
           DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
           builderFactory.setNamespaceAware(true);
-          builderFactory.setSchema(schemaFactory.newSchema(new File(resourceSchema)));
+          builderFactory.setSchema(schemaFactory.newSchema(new File(schemaPath)));
           DocumentBuilder builder = builderFactory.newDocumentBuilder();
           result = (T) unmarshaller.unmarshal(builder.parse(source));
         }
       } catch (JAXBException e) {
-        LogUtils.error(logger, e);
+        throw new BeeRuntimeException(e.getLinkedException() == null ? e : e.getLinkedException());
+
       } catch (SAXException e) {
-        LogUtils.error(logger, e);
+        throw new BeeRuntimeException(e.getException() == null ? e : e.getException());
+
       } catch (ParserConfigurationException e) {
-        LogUtils.error(logger, e);
+        throw new BeeRuntimeException(e);
+
       } catch (IOException e) {
-        LogUtils.error(logger, e);
+        throw new BeeRuntimeException(e);
       }
     }
     return result;

@@ -655,7 +655,7 @@ public class CliWorker {
         Assert.notNull(response);
 
         if (response.hasResponse(BeeResource.class)) {
-          BeeLayoutPanel p = new BeeLayoutPanel();
+          final BeeLayoutPanel p = new BeeLayoutPanel();
 
           final InputArea area = new InputArea(new BeeResource((String) response.getResponse()));
           p.add(area);
@@ -665,8 +665,25 @@ public class CliWorker {
             @Override
             public void onClick(ClickEvent event) {
               if (area.isValueChanged()) {
-                BeeKeeper.getRpc().sendText(Service.REBUILD, "schema " + area.getValue());
-                BeeKeeper.getScreen().getActivePanel().clear();
+                BeeKeeper.getRpc().sendText(Service.REBUILD, "schema " + area.getValue(),
+                    new ResponseCallback() {
+                      @Override
+                      public void onResponse(ResponseObject resp) {
+                        Assert.notNull(resp);
+
+                        if (resp.hasResponse(BeeResource.class)) {
+                          p.getWidget(1).removeFromParent();
+                          InputArea res =
+                              new InputArea(new BeeResource((String) resp.getResponse()));
+                          p.add(res);
+                          p.setWidgetLeftRight(res, 50, Unit.PCT, 0, Unit.EM);
+                          p.setWidgetTopBottom(area, 0, Unit.EM, 0, Unit.EM);
+                          p.setWidgetLeftRight(area, 0, Unit.EM, 50, Unit.PCT);
+                        } else {
+                          Global.showError("Wrong response received");
+                        }
+                      }
+                    });
               } else {
                 Global.inform("Value has not changed", area.getDigest());
               }

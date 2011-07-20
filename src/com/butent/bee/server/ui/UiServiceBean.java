@@ -7,6 +7,7 @@ import com.butent.bee.server.data.BeeView;
 import com.butent.bee.server.data.IdGeneratorBean;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
+import com.butent.bee.server.data.SystemBean.SysObject;
 import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.io.FileUtils;
@@ -14,13 +15,8 @@ import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.SqlConstants.SqlDataType;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
-import com.butent.bee.server.ui.XmlSqlDesigner.DataField;
-import com.butent.bee.server.ui.XmlSqlDesigner.DataKey;
-import com.butent.bee.server.ui.XmlSqlDesigner.DataRelation;
-import com.butent.bee.server.ui.XmlSqlDesigner.DataTable;
 import com.butent.bee.server.ui.XmlSqlDesigner.DataType;
 import com.butent.bee.server.ui.XmlSqlDesigner.DataTypeGroup;
-import com.butent.bee.server.ui.XmlSqlDesigner.KeyType;
 import com.butent.bee.server.utils.XmlUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -31,11 +27,11 @@ import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.XmlTable;
 import com.butent.bee.shared.data.XmlTable.XmlField;
-import com.butent.bee.shared.data.XmlTable.XmlKey;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
+import com.butent.bee.shared.exceptions.BeeRuntimeException;
 import com.butent.bee.shared.ui.UiComponent;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -155,29 +151,40 @@ public class UiServiceBean {
 
   private ResponseObject buildSchema() {
     XmlSqlDesigner designer = new XmlSqlDesigner();
-    DataTypeGroup typeGroup = new DataTypeGroup();
-    typeGroup.label = "SQL types";
-    typeGroup.types = Lists.newArrayList();
-    designer.types = Lists.newArrayList(typeGroup);
+    designer.types = Lists.newArrayList();
     designer.tables = Lists.newArrayList();
 
-    for (SqlDataType type : SqlDataType.values()) {
-      DataType dataType = new DataType();
-      dataType.sql = type;
-      dataType.label = dataType.sql.name();
-      typeGroup.types.add(dataType);
+    for (int i = 0; i < 2; i++) {
+      boolean extMode = (i > 0);
+      DataTypeGroup typeGroup = new DataTypeGroup();
+      typeGroup.label = BeeUtils.concat(1, "SQL", extMode ? "extended" : "", "types");
+      typeGroup.color = (extMode ? "rgb(0,255,0)" : "rgb(255,255,255)");
+      typeGroup.types = Lists.newArrayList();
+
+      for (SqlDataType type : SqlDataType.values()) {
+        String typeName = type.name();
+        DataType dataType = new DataType();
+        dataType.label = (extMode ? "Extended " : "") + typeName;
+        dataType.sql = typeName + (extMode ? XmlSqlDesigner.EXT : "");
+        typeGroup.types.add(dataType);
+      }
+      designer.types.add(typeGroup);
     }
+    DataTypeGroup typeGroup = new DataTypeGroup();
+    typeGroup.label = "Table states";
+    typeGroup.color = "rgb(255,0,0)";
+
+    DataType dataType = new DataType();
+    dataType.label = "STATE";
+    dataType.sql = XmlSqlDesigner.STATE;
+    typeGroup.types = Lists.newArrayList(dataType);
+
+    designer.types.add(typeGroup);
+
     for (String tableName : sys.getTableNames()) {
       XmlTable xmlTable = sys.getXmlTable(tableName);
 
       if (xmlTable != null) {
-        DataTable table = new DataTable();
-        table.name = xmlTable.name;
-        table.fields = Lists.newArrayList(
-            new DataField(xmlTable.idName, SqlDataType.LONG.name(), true,
-                xmlTable.isProtected()));
-        table.keys = Lists.newArrayList(new DataKey(KeyType.PRIMARY, xmlTable.idName));
-
         Collection<XmlField> fields = Lists.newArrayList();
 
         if (!BeeUtils.isEmpty(xmlTable.fields)) {
@@ -187,39 +194,14 @@ public class UiServiceBean {
           fields.addAll(xmlTable.extFields);
         }
         for (XmlField xmlField : fields) {
-          String type = xmlField.type;
-
-          if (BeeUtils.isPositive(xmlField.precision)) {
-            type = type + "(" + xmlField.precision;
-
-            if (BeeUtils.isPositive(xmlField.scale)) {
-              type = type + "," + xmlField.scale;
-            }
-            type = type + ")";
-          }
-          DataField field =
-              new DataField(xmlField.name, type, xmlField.notNull, xmlField.isProtected());
-
           if (!BeeUtils.isEmpty(xmlField.relation)) {
-            field.relation =
-                new DataRelation(xmlField.relation, sys.getIdName(xmlField.relation));
-          }
-          table.fields.add(field);
-
-          if (xmlField.unique) {
-            table.keys.add(new DataKey(KeyType.UNIQUE, xmlField.name));
+            xmlField.relationField = sys.getIdName(xmlField.relation);
           }
         }
-        if (!BeeUtils.isEmpty(xmlTable.keys)) {
-          for (XmlKey xmlKey : xmlTable.keys) {
-            table.keys.add(new DataKey(xmlKey.unique ? KeyType.UNIQUE : KeyType.INDEX,
-                xmlKey.fields.toArray(new String[0])));
-          }
-        }
-        designer.tables.add(table);
+        designer.tables.add(xmlTable);
       }
     }
-    return ResponseObject.response(new BeeResource(null, XmlUtils.marshal(designer)));
+    return ResponseObject.response(new BeeResource(null, XmlUtils.marshal(designer, null)));
   }
 
   private ResponseObject commitChanges(RequestInfo reqInfo) {
@@ -533,7 +515,7 @@ public class UiServiceBean {
       response.addInfo("Toggle OK");
 
     } else if (BeeUtils.startsSame(cmd, "schema")) {
-      String schema = cmd.substring("schema".length());
+      String schema = cmd.substring("schema".length()).trim();
 
       if (BeeUtils.isEmpty(schema)) {
         response = buildSchema();
@@ -552,7 +534,33 @@ public class UiServiceBean {
   }
 
   private ResponseObject saveSchema(String schema) {
-    return ResponseObject.warning(schema);
+    XmlSqlDesigner designer = null;
+    ResponseObject response = new ResponseObject();
+
+    try {
+      designer = XmlUtils.unmarshal(XmlSqlDesigner.class, schema, null);
+    } catch (BeeRuntimeException e) {
+      response.addError(e);
+    }
+    if (designer == null || BeeUtils.isEmpty(designer.tables)) {
+      response.addError("No tables defined");
+    } else {
+      for (XmlTable xmlTable : designer.tables) {
+        if (BeeUtils.isEmpty(xmlTable.idName)) {
+          response.addError(BeeUtils.bracket(xmlTable.name), "Primary key is missing/invalid");
+        } else {
+          try {
+            XmlUtils.marshal(xmlTable, Config.getSchemaPath(SysObject.TABLE.getSchema()));
+          } catch (BeeRuntimeException e) {
+            response.addError(e);
+          }
+        }
+      }
+    }
+    if (!response.hasErrors()) {
+      response.setResponse(new BeeResource(null, XmlUtils.marshal(designer, null)));
+    }
+    return response;
   }
 
   private ResponseObject updateCell(RequestInfo reqInfo) {

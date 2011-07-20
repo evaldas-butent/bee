@@ -13,6 +13,7 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 @XmlRootElement(name = "BeeTable", namespace = DataUtils.DEFAULT_NAMESPACE)
 public class XmlTable {
@@ -32,6 +33,8 @@ public class XmlTable {
     public boolean unique;
     @XmlAttribute
     public String relation;
+    @XmlTransient
+    public String relationField;
     @XmlAttribute
     public boolean cascade;
     @XmlAttribute
