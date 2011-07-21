@@ -5,7 +5,6 @@ import com.google.common.collect.Sets;
 
 import com.butent.bee.shared.utils.BeeUtils;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -82,7 +81,7 @@ public class XmlTable {
     @XmlAttribute
     public boolean unique;
     @XmlElement(name = "KeyField", namespace = DataUtils.DEFAULT_NAMESPACE)
-    public Collection<String> fields;
+    public List<String> fields;
 
     @Override
     public boolean equals(Object obj) {
@@ -145,21 +144,22 @@ public class XmlTable {
 
   private boolean safe = false;
 
-  public boolean isProtected() {
-    return safe;
-  }
+  public XmlTable getChanges(XmlTable otherTable) {
+    XmlTable diff = null;
 
-  public void merge(XmlTable otherTable) {
-    if (otherTable != null) {
+    if (otherTable != null && BeeUtils.same(name, otherTable.name)) {
+      diff = new XmlTable();
+      diff.name = otherTable.name;
+
       if (!BeeUtils.isEmpty(otherTable.fields)) {
         for (XmlField field : otherTable.fields) {
           if ((fields == null || !fields.contains(field))
               && (extFields == null || !extFields.contains(field))) {
 
-            if (fields == null) {
-              fields = Lists.newArrayList(field);
+            if (diff.fields == null) {
+              diff.fields = Lists.newArrayList(field);
             } else {
-              fields.add(field);
+              diff.fields.add(field);
             }
           }
         }
@@ -167,29 +167,76 @@ public class XmlTable {
       if (!BeeUtils.isEmpty(otherTable.extFields)) {
         for (XmlField field : otherTable.extFields) {
           if ((fields == null || !fields.contains(field))
-              && (extFields == null || !extFields.contains(field))) {
+                && (extFields == null || !extFields.contains(field))) {
 
-            if (extFields == null) {
-              extFields = Lists.newArrayList(field);
+            if (diff.extFields == null) {
+              diff.extFields = Lists.newArrayList(field);
             } else {
-              extFields.add(field);
+              diff.extFields.add(field);
             }
           }
         }
       }
       if (!BeeUtils.isEmpty(otherTable.states)) {
-        if (states == null) {
-          states = Sets.newHashSet(otherTable.states);
-        } else {
-          states.addAll(otherTable.states);
-        }
-        if (!BeeUtils.isEmpty(otherTable.keys)) {
-          if (keys == null) {
-            keys = Sets.newHashSet(otherTable.keys);
-          } else {
-            keys.addAll(otherTable.keys);
+        for (String state : otherTable.states) {
+          if (states == null || !states.contains(state)) {
+            if (diff.states == null) {
+              diff.states = Sets.newHashSet(state);
+            } else {
+              diff.states.add(state);
+            }
           }
         }
+      }
+      if (!BeeUtils.isEmpty(otherTable.keys)) {
+        for (XmlKey key : otherTable.keys) {
+          if (keys == null || !keys.contains(key)) {
+            if (diff.keys == null) {
+              diff.keys = Sets.newHashSet(key);
+            } else {
+              diff.keys.add(key);
+            }
+          }
+        }
+      }
+      if (BeeUtils.allEmpty(diff.fields, diff.extFields, diff.states, diff.keys)) {
+        diff = null;
+      }
+    }
+    return diff;
+  }
+
+  public boolean isProtected() {
+    return safe;
+  }
+
+  public void merge(XmlTable otherTable) {
+    XmlTable diff = getChanges(otherTable);
+
+    if (diff != null) {
+      if (!BeeUtils.isEmpty(diff.fields)) {
+        if (fields == null) {
+          fields = Lists.newArrayList();
+        }
+        fields.addAll(diff.fields);
+      }
+      if (!BeeUtils.isEmpty(diff.extFields)) {
+        if (extFields == null) {
+          extFields = Lists.newArrayList();
+        }
+        extFields.addAll(diff.extFields);
+      }
+      if (!BeeUtils.isEmpty(diff.states)) {
+        if (states == null) {
+          states = Sets.newHashSet();
+        }
+        states.addAll(diff.states);
+      }
+      if (!BeeUtils.isEmpty(diff.keys)) {
+        if (keys == null) {
+          keys = Sets.newHashSet();
+        }
+        keys.addAll(diff.keys);
       }
     }
   }

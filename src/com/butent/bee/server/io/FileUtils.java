@@ -80,6 +80,17 @@ public class FileUtils {
     }
   }
 
+  public static boolean deleteFile(String name) {
+    Assert.notEmpty(name);
+    File fl = new File(name);
+    boolean ok = !fl.exists();
+
+    if (!ok && fl.isFile()) {
+      ok = fl.delete();
+    }
+    return ok;
+  }
+
   public static String fileToString(File fl) {
     return fileToString(fl, defaultCharset);
   }
@@ -269,7 +280,7 @@ public class FileUtils {
     Assert.notNull(parent);
     Assert.notEmpty(child);
     File dir = new File(parent, child);
-  
+
     if (isDirectory(dir)) {
       return dir;
     }

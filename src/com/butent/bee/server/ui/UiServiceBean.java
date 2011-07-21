@@ -1,6 +1,7 @@
 package com.butent.bee.server.ui;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 import com.butent.bee.server.Config;
 import com.butent.bee.server.data.BeeView;
@@ -39,9 +40,11 @@ import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.ExtendedProperty;
 import com.butent.bee.shared.utils.PropertyUtils;
 
+import java.io.File;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
@@ -149,7 +152,7 @@ public class UiServiceBean {
     return ResponseObject.response(info);
   }
 
-  private ResponseObject buildSchema() {
+  private ResponseObject buildDbSchema() {
     XmlSqlDesigner designer = new XmlSqlDesigner();
     designer.types = Lists.newArrayList();
     designer.tables = Lists.newArrayList();
@@ -518,9 +521,9 @@ public class UiServiceBean {
       String schema = cmd.substring("schema".length()).trim();
 
       if (BeeUtils.isEmpty(schema)) {
-        response = buildSchema();
+        response = buildDbSchema();
       } else {
-        response = saveSchema(schema);
+        response = saveDbSchema(schema);
       }
     } else {
       if (sys.isTable(cmd)) {
@@ -533,12 +536,14 @@ public class UiServiceBean {
     return response;
   }
 
-  private ResponseObject saveSchema(String schema) {
+  private ResponseObject saveDbSchema(String dbSchema) {
+    String schemaPath = SysObject.TABLE.getSchemaPath();
     XmlSqlDesigner designer = null;
     ResponseObject response = new ResponseObject();
+    Map<String, XmlTable> updates = Maps.newHashMap();
 
     try {
-      designer = XmlUtils.unmarshal(XmlSqlDesigner.class, schema, null);
+      designer = XmlUtils.unmarshal(XmlSqlDesigner.class, dbSchema, null);
     } catch (BeeRuntimeException e) {
       response.addError(e);
     }
@@ -546,18 +551,58 @@ public class UiServiceBean {
       response.addError("No tables defined");
     } else {
       for (XmlTable xmlTable : designer.tables) {
+        String tblName = xmlTable.name;
+
         if (BeeUtils.isEmpty(xmlTable.idName)) {
-          response.addError(BeeUtils.bracket(xmlTable.name), "Primary key is missing/invalid");
+          response.addError(BeeUtils.bracket(tblName), "Primary key is missing/invalid");
         } else {
           try {
-            XmlUtils.marshal(xmlTable, Config.getSchemaPath(SysObject.TABLE.getSchema()));
+            XmlTable configTable = sys.getXmlTable(tblName, false);
+            XmlTable userTable = sys.loadXmlTable(XmlUtils.marshal(xmlTable, schemaPath));
+            XmlTable diffTable = null;
+
+            if (configTable == null) {
+              diffTable = userTable;
+            } else {
+              diffTable = configTable.protect().getChanges(userTable);
+            }
+            updates.put(BeeUtils.normalize(tblName), diffTable);
+
           } catch (BeeRuntimeException e) {
-            response.addError(e);
+            response.addError(BeeUtils.bracket(tblName), e);
           }
+        }
+      }
+      for (String tbl : sys.getTableNames()) {
+        String tblName = BeeUtils.normalize(tbl);
+
+        if (!updates.containsKey(tblName)) {
+          updates.put(tblName, null);
         }
       }
     }
     if (!response.hasErrors()) {
+      for (String tblName : updates.keySet()) {
+        String path = new File(Config.USER_DIR, SysObject.TABLE.getFilePath(tblName)).getPath();
+        XmlTable diffTable = updates.get(tblName);
+
+        if (diffTable == null) {
+          if (!FileUtils.deleteFile(path)) {
+            response.addError("Can't delete file:", path);
+          }
+        } else {
+          boolean ok = false;
+          try {
+            ok = FileUtils.saveToFile(XmlUtils.marshal(diffTable, schemaPath), path);
+          } catch (BeeRuntimeException e) {
+            response.addError(BeeUtils.bracket(tblName), e);
+          }
+          if (!ok) {
+            response.addError("Can't save file:", path);
+          }
+        }
+      }
+      sys.initTables();
       response.setResponse(new BeeResource(null, XmlUtils.marshal(designer, null)));
     }
     return response;

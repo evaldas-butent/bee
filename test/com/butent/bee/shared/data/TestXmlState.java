@@ -10,8 +10,8 @@ import org.junit.Test;
 public class TestXmlState {
   @Test
   public void testRead() {
-    String resource = Config.getPath(SysObject.STATE.getFileName("Visible"), true);
-    String schemaSource = Config.getSchemaPath(SysObject.STATE.getSchema());
+    String resource = Config.getPath(SysObject.STATE.getFilePath("Visible"), true);
+    String schemaSource = SysObject.STATE.getSchemaPath();
 
     if (!BeeUtils.isEmpty(resource)) {
       XmlState state = XmlUtils.unmarshal(XmlState.class, resource, schemaSource);

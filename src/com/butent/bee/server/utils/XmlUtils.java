@@ -82,6 +82,23 @@ import javax.xml.validation.SchemaFactory;
 
 public class XmlUtils {
 
+  private static class SAXErrorHandler implements ErrorHandler {
+    @Override
+    public void error(SAXParseException exception) throws SAXException {
+      throw exception;
+    }
+
+    @Override
+    public void fatalError(SAXParseException exception) throws SAXException {
+      throw exception;
+    }
+
+    @Override
+    public void warning(SAXParseException exception) throws SAXException {
+      throw exception;
+    }
+  }
+
   public static String defaultXmlExtension = "xml";
   public static String defaultXslExtension = "xsl";
 
@@ -775,22 +792,7 @@ public class XmlUtils {
       Schema schema = schemaFactory.newSchema(new StreamSource(resourceSchema));
       builderFactory.setSchema(schema);
       DocumentBuilder builder = builderFactory.newDocumentBuilder();
-      builder.setErrorHandler(new ErrorHandler() {
-        @Override
-        public void error(SAXParseException exception) throws SAXException {
-          throw exception;
-        }
-
-        @Override
-        public void fatalError(SAXParseException exception) throws SAXException {
-          throw exception;
-        }
-
-        @Override
-        public void warning(SAXParseException exception) throws SAXException {
-          throw exception;
-        }
-      });
+      builder.setErrorHandler(new SAXErrorHandler());
       ret = builder.parse(new InputSource(resource));
     } catch (SAXException e) {
       error = e.getMessage();
@@ -881,6 +883,7 @@ public class XmlUtils {
           builderFactory.setNamespaceAware(true);
           builderFactory.setSchema(schemaFactory.newSchema(new File(schemaPath)));
           DocumentBuilder builder = builderFactory.newDocumentBuilder();
+          builder.setErrorHandler(new SAXErrorHandler());
           result = (T) unmarshaller.unmarshal(builder.parse(source));
         }
       } catch (JAXBException e) {

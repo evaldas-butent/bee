@@ -10,6 +10,7 @@ import com.butent.bee.shared.data.XmlTable.XmlKey;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
+import java.util.List;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
@@ -90,7 +91,7 @@ public class XmlSqlDesigner {
     @XmlAttribute
     private KeyType type;
     @XmlElement(name = "part")
-    private Collection<String> parts;
+    private List<String> parts;
 
     private DataKey() {
     }
@@ -167,9 +168,6 @@ public class XmlSqlDesigner {
 
           if (!BeeUtils.isEmpty(fields)) {
             for (XmlField xmlField : fields) {
-              if (BeeUtils.same(xmlField.name, table.getPrimaryKeyField())) {
-                continue;
-              }
               String type = xmlField.type + (extMode ? EXT : "");
 
               if (BeeUtils.isPositive(xmlField.precision)) {
@@ -228,7 +226,8 @@ public class XmlSqlDesigner {
                 xmlTable.states = Sets.newHashSet();
               }
               xmlTable.states.add(field.name);
-            } else {
+
+            } else if (!BeeUtils.same(field.name, xmlTable.idName)) {
               XmlField xmlField = new XmlField();
               xmlField.name = field.name;
               xmlField.notNull = BeeUtils.isEmpty(field.isNull);

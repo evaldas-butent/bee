@@ -89,7 +89,7 @@ public class SystemBean {
       this.path = path;
     }
 
-    public String getFileName(String objName) {
+    public String getFilePath(String objName) {
       Assert.notEmpty(objName);
       return getPath() +
           BeeUtils.concat(".", objName, name().toLowerCase(), XmlUtils.defaultXmlExtension);
@@ -99,8 +99,8 @@ public class SystemBean {
       return path + "/";
     }
 
-    public String getSchema() {
-      return name().toLowerCase() + ".xsd";
+    public String getSchemaPath() {
+      return Config.getSchemaPath(name().toLowerCase() + ".xsd");
     }
   }
 
@@ -781,14 +781,14 @@ public class SystemBean {
 
   public XmlTable getXmlTable(String tableName, boolean userMode) {
     Assert.notEmpty(tableName);
-    String resource = SysObject.TABLE.getFileName(tableName);
+    String resource = SysObject.TABLE.getFilePath(tableName);
 
     if (userMode) {
       resource = Config.getUserPath(resource);
     } else {
       resource = Config.getConfigPath(resource);
     }
-    return loadTable(resource);
+    return loadXmlTable(resource);
   }
 
   public boolean hasField(String tblName, String fldName) {
@@ -823,7 +823,7 @@ public class SystemBean {
 
   @Lock(LockType.WRITE)
   public boolean initState(String stateName) {
-    return initState(stateName, Config.getPath(SysObject.STATE.getFileName(stateName), true));
+    return initState(stateName, Config.getPath(SysObject.STATE.getFilePath(stateName), true));
   }
 
   @Lock(LockType.WRITE)
@@ -834,7 +834,7 @@ public class SystemBean {
 
   @Lock(LockType.WRITE)
   public boolean initTable(String tableName) {
-    return initTable(tableName, Config.getPath(SysObject.TABLE.getFileName(tableName), true));
+    return initTable(tableName, Config.getPath(SysObject.TABLE.getFilePath(tableName), true));
   }
 
   @Lock(LockType.WRITE)
@@ -851,7 +851,7 @@ public class SystemBean {
 
   @Lock(LockType.WRITE)
   public boolean initView(String viewName) {
-    return initView(viewName, Config.getPath(SysObject.VIEW.getFileName(viewName), true));
+    return initView(viewName, Config.getPath(SysObject.VIEW.getFilePath(viewName), true));
   }
 
   @Lock(LockType.WRITE)
@@ -1007,6 +1007,10 @@ public class SystemBean {
     BeeField field = table.getField(fldName);
 
     return table.joinTranslationField(query, tblAlias, field, locale);
+  }
+
+  public XmlTable loadXmlTable(String resource) {
+    return XmlUtils.unmarshal(XmlTable.class, resource, SysObject.TABLE.getSchemaPath());
   }
 
   public void rebuildActiveTables() {
@@ -1467,7 +1471,7 @@ public class SystemBean {
     }
     if (!BeeUtils.isEmpty(paths)) {
       List<File> resources =
-          FileUtils.findFiles(obj.getFileName("*"), paths, null, null, true, true);
+          FileUtils.findFiles(obj.getFilePath("*"), paths, null, null, true, true);
 
       if (!BeeUtils.isEmpty(resources)) {
         for (File resource : resources) {
@@ -1539,7 +1543,7 @@ public class SystemBean {
     Assert.notEmpty(resource);
     BeeTable table = null;
 
-    XmlTable xmlTable = loadTable(resource);
+    XmlTable xmlTable = loadXmlTable(resource);
 
     if (xmlTable != null) {
       if (!BeeUtils.same(xmlTable.name, tableName)) {
@@ -1558,24 +1562,28 @@ public class SystemBean {
               String fldName = field.name;
               boolean notNull = field.notNull;
 
-              if (notNull && extMode) {
-                LogUtils.warning(logger, "Extendend fields must bee nullable:", tbl, fldName);
-                notNull = false;
-              }
-              table.addField(fldName, SqlDataType.valueOf(field.type),
-                  field.precision, field.scale, notNull,
-                  field.unique, field.relation, field.cascade)
-                  .setTranslatable(field.translatable)
-                  .setExtended(extMode);
+              if (table.hasField(fldName)) {
+                LogUtils.warning(logger, "Dublicate field name:", tbl, fldName);
+              } else {
+                if (notNull && extMode) {
+                  LogUtils.warning(logger, "Extendend fields must bee nullable:", tbl, fldName);
+                  notNull = false;
+                }
+                table.addField(fldName, SqlDataType.valueOf(field.type),
+                    field.precision, field.scale, notNull,
+                    field.unique, field.relation, field.cascade)
+                    .setTranslatable(field.translatable)
+                    .setExtended(extMode);
 
-              String tblName = table.getField(fldName).getTable();
+                String tblName = table.getField(fldName).getTable();
 
-              if (!BeeUtils.isEmpty(field.relation)) {
-                table.addForeignKey(tblName, fldName, field.relation, field.cascade,
-                    field.cascade && notNull);
-              }
-              if (field.unique) {
-                table.addKey(true, tblName, fldName);
+                if (!BeeUtils.isEmpty(field.relation)) {
+                  table.addForeignKey(tblName, fldName, field.relation, field.cascade,
+                      field.cascade && notNull);
+                }
+                if (field.unique) {
+                  table.addKey(true, tblName, fldName);
+                }
               }
             }
           }
@@ -1704,18 +1712,11 @@ public class SystemBean {
   }
 
   private XmlState loadState(String resource) {
-    return XmlUtils.unmarshal(XmlState.class, resource,
-        Config.getSchemaPath(SysObject.STATE.getSchema()));
-  }
-
-  private XmlTable loadTable(String resource) {
-    return XmlUtils.unmarshal(XmlTable.class, resource,
-        Config.getSchemaPath(SysObject.TABLE.getSchema()));
+    return XmlUtils.unmarshal(XmlState.class, resource, SysObject.STATE.getSchemaPath());
   }
 
   private XmlView loadView(String resource) {
-    return XmlUtils.unmarshal(XmlView.class, resource,
-        Config.getSchemaPath(SysObject.VIEW.getSchema()));
+    return XmlUtils.unmarshal(XmlView.class, resource, SysObject.VIEW.getSchemaPath());
   }
 
   private void makeStructureChanges(IsQuery query) {

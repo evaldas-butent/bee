@@ -10,8 +10,8 @@ import org.junit.Test;
 public class TestXmlTable {
   @Test
   public void testRead() {
-    String resource = Config.getConfigPath(SysObject.TABLE.getFileName("Cities"));
-    String schemaSource = Config.getSchemaPath(SysObject.TABLE.getSchema());
+    String resource = Config.getConfigPath(SysObject.TABLE.getFilePath("Cities"));
+    String schemaSource = SysObject.TABLE.getSchemaPath();
 
     if (!BeeUtils.isEmpty(resource)) {
       XmlTable table = XmlUtils.unmarshal(XmlTable.class, resource, schemaSource);
