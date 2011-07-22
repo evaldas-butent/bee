@@ -2,8 +2,14 @@ package com.butent.bee.client.ui;
 
 import com.google.gwt.canvas.client.Canvas;
 import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.media.client.Audio;
+import com.google.gwt.media.client.MediaBase;
+import com.google.gwt.media.client.Video;
+import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.ui.CellPanel;
+import com.google.gwt.user.client.ui.CustomButton;
+import com.google.gwt.user.client.ui.CustomButton.Face;
 import com.google.gwt.user.client.ui.FocusWidget;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment.HorizontalAlignmentConstant;
@@ -11,14 +17,20 @@ import com.google.gwt.user.client.ui.HasOneWidget;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment.VerticalAlignmentConstant;
 import com.google.gwt.user.client.ui.HasWidgets;
+import com.google.gwt.user.client.ui.InlineHTML;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.xml.client.Element;
 
 import com.butent.bee.client.composite.InputDate;
 import com.butent.bee.client.composite.RadioGroup;
+import com.butent.bee.client.composite.SliderBar;
+import com.butent.bee.client.composite.StringPicker;
+import com.butent.bee.client.composite.ValueSpinner;
+import com.butent.bee.client.composite.VolumeSlider;
 import com.butent.bee.client.dom.Dimensions;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Edges;
+import com.butent.bee.client.dom.Features;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.dom.StyleUtils.ScrollBars;
 import com.butent.bee.client.grid.FlexTable;
@@ -53,13 +65,14 @@ import com.butent.bee.client.widget.DateTimeLabel;
 import com.butent.bee.client.widget.DecimalLabel;
 import com.butent.bee.client.widget.DoubleLabel;
 import com.butent.bee.client.widget.Html;
-import com.butent.bee.client.widget.InlineHtml;
 import com.butent.bee.client.widget.InlineInternalLink;
 import com.butent.bee.client.widget.InlineLabel;
 import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.client.widget.InputInteger;
 import com.butent.bee.client.widget.InputLong;
 import com.butent.bee.client.widget.InputNumber;
+import com.butent.bee.client.widget.InputSlider;
+import com.butent.bee.client.widget.InputSpinner;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.client.widget.IntegerLabel;
 import com.butent.bee.client.widget.InternalLink;
@@ -72,6 +85,7 @@ import com.butent.bee.client.widget.Svg;
 import com.butent.bee.client.widget.TextLabel;
 import com.butent.bee.client.widget.Toggle;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasService;
 import com.butent.bee.shared.HasStage;
 import com.butent.bee.shared.Pair;
@@ -85,8 +99,9 @@ import java.util.Set;
 
 public enum FormWidget {
   ABSOLUTE_PANEL("AbsolutePanel", EnumSet.of(Type.HAS_LAYERS)),
+  AUDIO("Audio", EnumSet.of(Type.DISPLAY)),
   BUTTON("Button", EnumSet.of(Type.FOCUSABLE, Type.DISPLAY)),
-  CANVAS("Canvas", EnumSet.of(Type.DISPLAY, Type.SPECIFIC)),
+  CANVAS("Canvas", EnumSet.of(Type.DISPLAY)),
   CHECK_BOX("CheckBox", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE)),
   COMPLEX_PANEL("ComplexPanel", EnumSet.of(Type.HAS_LAYERS)),
   CURRENCY_LABEL("CurrencyLabel", EnumSet.of(Type.DISPLAY)),
@@ -98,12 +113,10 @@ public enum FormWidget {
   FLOW_PANEL("FlowPanel", EnumSet.of(Type.HAS_CHILDREN)),
   FRAME("Frame", EnumSet.of(Type.DISPLAY)),
   GRID("Grid", EnumSet.of(Type.IS_GRID)),
-  HEADER_CONTENT_FOOTER("HeaderContentFooter", EnumSet.of(Type.SPECIFIC)),
+  HEADER_CONTENT_FOOTER("HeaderContentFooter", EnumSet.of(Type.PANEL)),
   HORIZONTAL_PANEL("HorizontalPanel", EnumSet.of(Type.CELL_VECTOR)),
   HYPERLINK("Hyperlink", EnumSet.of(Type.FOCUSABLE, Type.DISPLAY)),
-  HTML("Html", EnumSet.of(Type.IS_LABEL)),
   IMAGE("Image", EnumSet.of(Type.FOCUSABLE, Type.DISPLAY)),
-  INLINE_HTML("InlineHtml", EnumSet.of(Type.IS_LABEL)),
   INLINE_HYPERLINK("InlineHyperlink", EnumSet.of(Type.FOCUSABLE)),
   INLINE_LABEL("InlineLabel", EnumSet.of(Type.IS_LABEL)),
   INPUT_AREA("InputArea", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE, Type.INPUT)),
@@ -114,34 +127,90 @@ public enum FormWidget {
   INPUT_DOUBLE("InputDouble", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE, Type.INPUT)),
   INPUT_INTEGER("InputInteger", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE, Type.INPUT)),
   INPUT_LONG("InputLong", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE, Type.INPUT)),
+  INPUT_SLIDER("InputSlider", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE, Type.INPUT)),
+  INPUT_SPINNER("InputSpinner", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE, Type.INPUT)),
   INPUT_TEXT("InputText", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE, Type.INPUT)),
   INTEGER_LABEL("IntegerLabel", EnumSet.of(Type.DISPLAY)),
   LABEL("Label", EnumSet.of(Type.IS_LABEL)),
   LAYOUT_PANEL("LayoutPanel", EnumSet.of(Type.HAS_LAYERS)),
   LINK("Link", EnumSet.of(Type.FOCUSABLE, Type.DISPLAY)),
-  LIST_BOX("ListBox", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE, Type.SPECIFIC)),
+  LIST_BOX("ListBox", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE)),
   LONG_LABEL("LongLabel", EnumSet.of(Type.DISPLAY)),
-  METER("Meter", EnumSet.of(Type.DISPLAY, Type.SPECIFIC)),
-  PROGRESS("Progress", EnumSet.of(Type.DISPLAY, Type.SPECIFIC)),
-  RADIO("Radio", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE, Type.SPECIFIC)),
+  METER("Meter", EnumSet.of(Type.DISPLAY)),
+  PROGRESS("Progress", EnumSet.of(Type.DISPLAY)),
+  RADIO("Radio", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE)),
   RESIZE_PANEL("ResizePanel", EnumSet.of(Type.HAS_ONE_CHILD)),
   SCROLL_PANEL("ScrollPanel", EnumSet.of(Type.HAS_ONE_CHILD)),
   SIMPLE_INLINE_PANEL("SimpleInlinePanel", EnumSet.of(Type.HAS_ONE_CHILD)),
   SIMPLE_PANEL("SimplePanel", EnumSet.of(Type.HAS_ONE_CHILD)),
-  SLIDER("Slider", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE)),
+  SLIDER_BAR("SliderBar", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE)),
   SPAN_PANEL("SpanPanel", EnumSet.of(Type.HAS_CHILDREN)),
-  SPINNER("Spinner", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE)),
-  SPLIT_PANEL("SplitPanel", EnumSet.of(Type.SPECIFIC)),
-  STACK_PANEL("StackPanel", EnumSet.of(Type.SPECIFIC)),
-  SVG("Svg", EnumSet.of(Type.DISPLAY, Type.SPECIFIC)),
-  TABBED_PAGES("TabbedPages", EnumSet.of(Type.SPECIFIC)),
+  SPLIT_PANEL("SplitPanel", EnumSet.of(Type.PANEL)),
+  STACK_PANEL("StackPanel", EnumSet.of(Type.PANEL)),
+  STRING_PICKER("StringPicker", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE)),
+  SVG("Svg", EnumSet.of(Type.DISPLAY)),
+  TABBED_PAGES("TabbedPages", EnumSet.of(Type.PANEL)),
   TEXT_LABEL("TextLabel", EnumSet.of(Type.DISPLAY)),
-  TOGGLE("Toggle", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE ,Type.SPECIFIC)),
-  VERTICAL_PANEL("VerticalPanel", EnumSet.of(Type.CELL_VECTOR));
+  TOGGLE("Toggle", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE)),
+  VALUE_SPINNER("ValueSpinner", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE)),
+  VERTICAL_PANEL("VerticalPanel", EnumSet.of(Type.CELL_VECTOR)),
+  VIDEO("Video", EnumSet.of(Type.DISPLAY)),
+  VOLUME_SLIDER("VolumeSlider", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE));
   
   private enum Type {
     FOCUSABLE, EDITABLE, IS_LABEL, DISPLAY, HAS_ONE_CHILD, HAS_CHILDREN, HAS_LAYERS,
-    TABLE, IS_GRID, SPECIFIC, CELL_VECTOR, INPUT
+    TABLE, IS_GRID, PANEL, CELL_VECTOR, INPUT
+  }
+  
+  private class HeaderAndContent {
+    private final String headerTag;
+    private final String headerString;
+    private final Widget headerWidget;
+    private final Widget content;
+
+    private HeaderAndContent(String headerTag, String headerString, Widget headerWidget,
+        Widget content) {
+      this.headerTag = headerTag;
+      this.headerString = headerString;
+      this.headerWidget = headerWidget;
+      this.content = content;
+    }
+
+    private Widget getContent() {
+      return content;
+    }
+    
+    private String getHeaderString() {
+      return headerString;
+    }
+    
+    private String getHeaderTag() {
+      return headerTag;
+    }
+
+    private Widget getHeaderWidget() {
+      return headerWidget;
+    }
+    
+    private boolean isHeaderHtml() {
+      return BeeUtils.same(getHeaderTag(), TAG_HTML);
+    }
+
+    private boolean isHeaderText() {
+      return BeeUtils.same(getHeaderTag(), TAG_TEXT);
+    }
+
+    private boolean isValid() {
+      if (getContent() == null) {
+        return false;
+      }
+      
+      if (isHeaderHtml() || isHeaderText()) {
+        return !BeeUtils.isEmpty(getHeaderString());
+      } else {
+        return getHeaderWidget() != null;
+      }
+    }
   }
   
   private static final String ATTR_CLASS = "class";
@@ -194,17 +263,46 @@ public enum FormWidget {
   private static final String ATTR_HEADER_SIZE = "headerSize";
 
   private static final String ATTR_NAME = "name";
+  private static final String ATTR_RESOURCE = "resource";
   private static final String ATTR_VERTICAL = "vertical";
 
   private static final String ATTR_MULTI_SELECT = "multiSelect";
   private static final String ATTR_ALL_ITEMS_VISIBLE = "allItemsVisible";
   private static final String ATTR_VISIBLE_ITEM_COUNT = "visibleItemCount";
 
+  private static final String ATTR_MIN = "min";
+  private static final String ATTR_MAX = "max";
+  private static final String ATTR_STEP = "step";
+
+  private static final String ATTR_MIN_STEP = "minStep";
+  private static final String ATTR_MAX_STEP = "maxStep";
+  private static final String ATTR_CONSTRAINED = "constrained";
+
+  private static final String ATTR_HIGH = "high";
+  private static final String ATTR_LOW = "low";
+  private static final String ATTR_OPTIMUM = "optimum";
+
+  private static final String ATTR_NUM_LABELS = "numLabels";
+  private static final String ATTR_NUM_TICKS = "numTicks";
+  
+  private static final String ATTR_AUTOPLAY = "autoplay";
+  private static final String ATTR_CONTROLS = "controls";
+  private static final String ATTR_CURRENT_TIME = "currentTime";
+  private static final String ATTR_DEFAULT_PLAYBACK_RATE = "defaultPlaybackRate";
+  private static final String ATTR_LOOP = "loop";
+  private static final String ATTR_MUTED = "muted";
+  private static final String ATTR_PLAYBACK_RATE = "playbackRate";
+  private static final String ATTR_PRELOAD = "preload";
+  private static final String ATTR_VOLUME = "volume";
+  
   private static final String ATTR_SOURCE = "source";
   
   private static final String TAG_DYN_STYLE = "dynStyle";
   private static final String TAG_CALC = "calc";
 
+  private static final String TAG_HTML = "html";
+  private static final String TAG_TEXT = "text";
+  
   private static final String TAG_ITEM = "item";
   private static final String TAG_LAYER = "layer";
   private static final String TAG_ROW = "row";
@@ -217,6 +315,13 @@ public enum FormWidget {
   private static final String TAG_PAGE = "page";
   private static final String TAG_OPTION = "option";
 
+  private static final String TAG_UP_FACE = "upFace";
+  private static final String TAG_DOWN_FACE = "downFace";
+  private static final String TAG_UP_HOVERING_FACE = "upHoveringFace";
+  private static final String TAG_DOWN_HOVERING_FACE = "downHoveringFace";
+  private static final String TAG_UP_DISABLED_FACE = "upDisabledFace";
+  private static final String TAG_DOWN_DISABLED_FACE = "downDisabledFace";
+  
   public static FormWidget getByTagName(String tagName) {
     if (!BeeUtils.isEmpty(tagName)) {
       for (FormWidget widget : FormWidget.values()) {
@@ -227,6 +332,7 @@ public enum FormWidget {
     }
     return null;
   }
+
   public static boolean isFormWidget(String tagName) {
     return getByTagName(tagName) != null;
   }
@@ -252,12 +358,23 @@ public enum FormWidget {
     String name;
     String url;
     String format;
+    String min;
+    String max;
+    String step;
     
     Widget widget = null;
 
     switch (this) {
       case ABSOLUTE_PANEL:
         widget = new Absolute();
+        break;
+      
+      case AUDIO:
+        widget = Audio.createIfSupported();
+        if (widget != null) {
+          DomUtils.createId(widget, "audio");
+          initMedia((Audio) widget, attributes);
+        }
         break;
 
       case BUTTON:
@@ -266,6 +383,9 @@ public enum FormWidget {
       
       case CANVAS:
         widget = Canvas.createIfSupported();
+        if (widget != null) {
+          DomUtils.createId(widget, "canvas");
+        }
         break;
       
       case CHECK_BOX:
@@ -290,11 +410,21 @@ public enum FormWidget {
         break;
       
       case DATE_LABEL:
-        widget = new DateLabel();
+        format = attributes.get(ATTR_FORMAT);
+        if (BeeUtils.isEmpty(format)) {
+          widget = new DateLabel();
+        } else {
+          widget = new DateLabel(format);
+        }
         break;
       
       case DATE_TIME_LABEL:
-        widget = new DateTimeLabel();
+        format = attributes.get(ATTR_FORMAT);
+        if (BeeUtils.isEmpty(format)) {
+          widget = new DateTimeLabel();
+        } else {
+          widget = new DateTimeLabel(format);
+        }
         break;
 
       case DECIMAL_LABEL:
@@ -343,10 +473,6 @@ public enum FormWidget {
         widget = new Horizontal();
         break;
 
-      case HTML:
-        widget = new Html(html);
-        break;
-
       case HYPERLINK:
         url = attributes.get(ATTR_HISTORY_TOKEN);
         if (!BeeUtils.isEmpty(url)) {
@@ -355,7 +481,7 @@ public enum FormWidget {
         break;
 
       case IMAGE:
-        name = attributes.get(ATTR_NAME);
+        name = attributes.get(ATTR_RESOURCE);
         if (!BeeUtils.isEmpty(name)) {
           widget = new BeeImage(Images.get(name));
         } else {
@@ -368,10 +494,6 @@ public enum FormWidget {
         }
         break;
         
-      case INLINE_HTML:
-        widget = new InlineHtml(html);
-        break;
-
       case INLINE_HYPERLINK:
         url = attributes.get(ATTR_HISTORY_TOKEN);
         if (!BeeUtils.isEmpty(url)) {
@@ -389,32 +511,62 @@ public enum FormWidget {
 
       case INPUT_CURRENCY:
         widget = new InputNumber();
+        ((InputNumber) widget).setNumberFormat(Format.getNumberFormat(attributes.get(ATTR_FORMAT),
+            Format.getDefaultCurrencyFormat()));
         break;
 
       case INPUT_DATE:
-        widget = new InputDate(ValueType.DATE);
+        format = attributes.get(ATTR_FORMAT);
+        widget = new InputDate(ValueType.DATE, Format.getDateTimeFormat(format,
+            Format.getDefaultDateFormat()));
         break;
 
       case INPUT_DATE_TIME:
-        widget = new InputDate(ValueType.DATETIME);
+        format = attributes.get(ATTR_FORMAT);
+        widget = new InputDate(ValueType.DATETIME, Format.getDateTimeFormat(format,
+            Format.getDefaultDateTimeFormat()));
         break;
       
       case INPUT_DECIMAL:
         widget = new InputNumber();
+        ((InputNumber) widget).setNumberFormat(Format.getNumberFormat(attributes.get(ATTR_FORMAT),
+            Format.getDecimalFormat(BeeUtils.toInt(attributes.get(ATTR_SCALE)))));
         break;
 
       case INPUT_DOUBLE:
         widget = new InputNumber();
+        ((InputNumber) widget).setNumberFormat(Format.getNumberFormat(attributes.get(ATTR_FORMAT),
+            Format.getDefaultDoubleFormat()));
         break;
 
       case INPUT_INTEGER:
         widget = new InputInteger();
+        ((InputInteger) widget).setNumberFormat(Format.getNumberFormat(attributes.get(ATTR_FORMAT),
+            Format.getDefaultIntegerFormat()));
         break;
 
       case INPUT_LONG:
         widget = new InputLong();
+        ((InputLong) widget).setNumberFormat(Format.getNumberFormat(attributes.get(ATTR_FORMAT),
+            Format.getDefaultLongFormat()));
         break;
 
+      case INPUT_SLIDER:
+        widget = new InputSlider();
+        format = attributes.get(ATTR_FORMAT);
+        if (!BeeUtils.isEmpty(format)) {
+          ((InputSlider) widget).setNumberFormat(Format.getNumberFormat(format));
+        }
+        break;
+
+      case INPUT_SPINNER:
+        widget = new InputSpinner();
+        format = attributes.get(ATTR_FORMAT);
+        if (!BeeUtils.isEmpty(format)) {
+          ((InputSpinner) widget).setNumberFormat(Format.getNumberFormat(format));
+        }
+        break;
+        
       case INPUT_TEXT:
         widget = new InputText();
         break;
@@ -461,11 +613,35 @@ public enum FormWidget {
         break;
 
       case METER:
-        widget = new Meter();
+        min = attributes.get(ATTR_MIN);
+        max = attributes.get(ATTR_MAX);
+        
+        if (Features.supportsElementMeter() && BeeUtils.isDouble(min) && BeeUtils.isDouble(max)
+            && BeeUtils.toDouble(min) < BeeUtils.toDouble(max)) {
+          widget = new Meter();
+          ((Meter) widget).setMin(BeeUtils.toDouble(min));
+          ((Meter) widget).setMax(BeeUtils.toDouble(max));
+          
+          String z = attributes.get(ATTR_LOW);
+          if (BeeUtils.isDouble(z)) {
+            ((Meter) widget).setLow(BeeUtils.toDouble(z));
+          }
+          z = attributes.get(ATTR_HIGH);
+          if (BeeUtils.isDouble(z)) {
+            ((Meter) widget).setHigh(BeeUtils.toDouble(z));
+          }
+          z = attributes.get(ATTR_OPTIMUM);
+          if (BeeUtils.isDouble(z)) {
+            ((Meter) widget).setOptimum(BeeUtils.toDouble(z));
+          }
+        }
         break;
 
       case PROGRESS:
-        widget = new Progress(BeeUtils.toDouble(attributes.get(DomUtils.ATTRIBUTE_MAX)));
+        max = attributes.get(ATTR_MAX);
+        if (Features.supportsElementProgress() && BeeUtils.isPositiveDouble(max)) {
+          widget = new Progress(BeeUtils.toDouble(max));
+        }
         break;
       
       case RADIO:
@@ -487,18 +663,33 @@ public enum FormWidget {
         widget = new SimpleInline();
         break;
 
-      case SLIDER:
-        break;
-      
       case SIMPLE_PANEL:
         widget = new Simple();
         break;
       
+      case SLIDER_BAR:
+        min = attributes.get(ATTR_MIN);
+        max = attributes.get(ATTR_MAX);
+        step = attributes.get(ATTR_STEP);
+        
+        if (BeeUtils.isDouble(min) && BeeUtils.isDouble(max) && BeeUtils.isDouble(step)
+            && BeeUtils.toLong(min) < BeeUtils.toLong(max) && BeeUtils.isPositiveDouble(step)) {
+          widget = new SliderBar(null, BeeUtils.toDouble(min), BeeUtils.toDouble(max),
+              BeeUtils.toDouble(step));
+
+          String z = attributes.get(ATTR_NUM_LABELS);
+          if (BeeUtils.isDigit(z)) {
+            ((SliderBar) widget).setNumLabels(BeeUtils.toInt(z));
+          }
+          z = attributes.get(ATTR_NUM_TICKS);
+          if (BeeUtils.isDigit(z)) {
+            ((SliderBar) widget).setNumTicks(BeeUtils.toInt(z));
+          }
+        }
+        break;
+      
       case SPAN_PANEL:
         widget = new Span();
-        break;
-
-      case SPINNER:
         break;
 
       case SPLIT_PANEL:
@@ -514,13 +705,26 @@ public enum FormWidget {
         widget = new Stack(StyleUtils.parseUnit(attributes.get(ATTR_UNIT), Unit.PX));
         break;
         
+      case STRING_PICKER:
+        List<String> items = XmlUtils.getChildrenText(description, TAG_ITEM);
+        if (!BeeUtils.isEmpty(items)) {
+          widget = new StringPicker();
+          ((StringPicker) widget).setItems(items);
+        }
+        break;
+        
       case SVG:
-        widget = new Svg();
+        if (Features.supportsSvg()) {
+          widget = new Svg();
+        }
         break;
 
       case TABBED_PAGES:
-        widget = new TabbedPages(BeeUtils.toDouble(attributes.get(ATTR_BAR_HEIGHT)),
-            StyleUtils.parseUnit(attributes.get(ATTR_BAR_UNIT), Unit.PX));
+        String barHeight = attributes.get(ATTR_BAR_HEIGHT);
+        if (BeeUtils.isPositiveDouble(barHeight)) {
+          widget = new TabbedPages(BeeUtils.toDouble(barHeight),
+              StyleUtils.parseUnit(attributes.get(ATTR_BAR_UNIT), Unit.PX));
+        }
         break;
         
       case TEXT_LABEL:
@@ -530,9 +734,88 @@ public enum FormWidget {
       case TOGGLE:
         widget = new Toggle();
         break;
-      
+
+      case VALUE_SPINNER:
+        min = attributes.get(ATTR_MIN);
+        max = attributes.get(ATTR_MAX);
+        
+        if (BeeUtils.isLong(min) && BeeUtils.isLong(max)
+            && BeeUtils.toLong(min) < BeeUtils.toLong(max)) {
+          step = attributes.get(ATTR_STEP); 
+          String minStep = attributes.get(ATTR_MIN_STEP); 
+          String maxStep = attributes.get(ATTR_MAX_STEP); 
+          String constrained = attributes.get(ATTR_CONSTRAINED);
+          
+          Object pSrc = null;
+          long pMin = BeeUtils.toLong(min);
+          long pMax = BeeUtils.toLong(max);
+          
+          boolean hasStep = BeeUtils.isInt(step) && BeeUtils.toInt(step) > 0;
+          boolean hasStepBounds = BeeUtils.isInt(minStep) && BeeUtils.isInt(maxStep)
+              && BeeUtils.toInt(minStep) > 0 && BeeUtils.toInt(maxStep) >= BeeUtils.toInt(minStep); 
+          
+          if (BeeUtils.isBoolean(constrained)) {
+            boolean pConstr = BeeUtils.toBoolean(constrained);
+            if (hasStepBounds) {
+              widget = new ValueSpinner(pSrc, pMin, pMax,
+                  BeeUtils.toInt(minStep), BeeUtils.toInt(maxStep), pConstr);
+            } else if (hasStep) {
+              int z = BeeUtils.toInt(step);
+              widget = new ValueSpinner(pSrc, pMin, pMax, z, z, pConstr);
+            } else {
+              widget = new ValueSpinner(pSrc, pMin, pMax, pConstr);
+            }
+            
+          } else if (hasStepBounds) {
+            widget = new ValueSpinner(pSrc, pMin, pMax,
+                BeeUtils.toInt(minStep), BeeUtils.toInt(maxStep));
+          } else if (hasStep) {
+            widget = new ValueSpinner(pSrc, pMin, pMax, BeeUtils.toInt(step));
+          } else {
+            widget = new ValueSpinner(pSrc, pMin, pMax);
+          }
+        }
+        break;
+        
       case VERTICAL_PANEL:
         widget = new Vertical();
+        break;
+        
+      case VIDEO:
+        widget = Video.createIfSupported();
+        if (widget != null) {
+          DomUtils.createId(widget, "video");
+          initMedia((Video) widget, attributes);
+        }
+        break;
+
+      case VOLUME_SLIDER:
+        min = attributes.get(ATTR_MIN);
+        max = attributes.get(ATTR_MAX);
+        
+        if (BeeUtils.isLong(min) && BeeUtils.isLong(max)
+            && BeeUtils.toLong(min) < BeeUtils.toLong(max)) {
+          step = attributes.get(ATTR_STEP); 
+          String minStep = attributes.get(ATTR_MIN_STEP); 
+          String maxStep = attributes.get(ATTR_MAX_STEP); 
+          
+          Object pSrc = null;
+          long pMin = BeeUtils.toLong(min);
+          long pMax = BeeUtils.toLong(max);
+          
+          boolean hasStep = BeeUtils.isInt(step) && BeeUtils.toInt(step) > 0;
+          boolean hasStepBounds = BeeUtils.isInt(minStep) && BeeUtils.isInt(maxStep)
+              && BeeUtils.toInt(minStep) > 0 && BeeUtils.toInt(maxStep) >= BeeUtils.toInt(minStep); 
+          
+          if (hasStepBounds) {
+            widget = new VolumeSlider(pSrc, pMin, pMax,
+                BeeUtils.toInt(minStep), BeeUtils.toInt(maxStep));
+          } else if (hasStep) {
+            widget = new VolumeSlider(pSrc, pMin, pMax, BeeUtils.toInt(step));
+          } else {
+            widget = new VolumeSlider(pSrc, pMin, pMax);
+          }
+        }
         break;
     }
     
@@ -566,6 +849,46 @@ public enum FormWidget {
 
     return widget;
   }
+
+  private HeaderAndContent createHeaderAndContent(Element parent) {
+    String headerTag = null;
+    String headerString = null;
+    Widget headerWidget = null;
+    Widget content = null;
+    
+    for (Element child : XmlUtils.getChildrenElements(parent)) {
+      if (BeeUtils.same(child.getTagName(), TAG_TEXT)) {
+        String text = XmlUtils.getText(child);
+        if (!BeeUtils.isEmpty(text)) {
+          headerTag = TAG_TEXT;
+          headerString = text;
+        }
+        continue;
+      }
+
+      if (BeeUtils.same(child.getTagName(), TAG_HTML)) {
+        String html = XmlUtils.getText(child);
+        if (!BeeUtils.isEmpty(html)) {
+          headerTag = TAG_HTML;
+          headerString = html;
+        }
+        continue;
+      }
+
+      Widget w = createIfWidget(child);
+      if (w == null) {
+        continue;
+      }
+
+      if (headerTag == null && headerWidget == null) {
+        headerWidget = w;
+      } else {
+        content = w;
+        break;
+      }
+    }
+    return new HeaderAndContent(headerTag, headerString, headerWidget, content);
+  }
   
   private Widget createIfWidget(Element description) {
     if (description == null) {
@@ -587,31 +910,6 @@ public enum FormWidget {
     }
     return null; 
   }
-  
-  private Pair<Widget, Widget> createPair(Element parent) {
-    Widget first = null;
-    Widget second = null;
-    
-    for (Element child : XmlUtils.getChildrenElements(parent)) {
-      Widget w = createIfWidget(child);
-      if (w == null) {
-        continue;
-      }
-
-      if (first == null) {
-        first = w;
-      } else {
-        second = w;
-        break;
-      }
-    }
-    
-    if (first == null || second == null) {
-      return null;
-    } else {
-      return new Pair<Widget, Widget>(first, second);
-    }
-  }
 
   private Dimensions getDimensions(Element description) {
     return new Dimensions(XmlUtils.getAttributeDouble(description, ATTR_WIDTH),
@@ -629,6 +927,26 @@ public enum FormWidget {
         XmlUtils.getAttributeUnit(description, ATTR_BOTTOM_UNIT),
         XmlUtils.getAttributeDouble(description, ATTR_LEFT),
         XmlUtils.getAttributeUnit(description, ATTR_LEFT_UNIT));
+  }
+  
+  private Pair<String, BeeImage> getFaceOptions(Element description) {
+    String html = description.getAttribute(ATTR_HTML);
+    BeeImage image = null;
+
+    String name = description.getAttribute(ATTR_RESOURCE);
+    if (!BeeUtils.isEmpty(name)) {
+      ImageResource resource = Images.get(name);
+      if (resource != null) {
+        image = new BeeImage(resource);
+      }
+    }
+    if (image == null) {
+      String url = description.getAttribute(ATTR_URL);
+      if (!BeeUtils.isEmpty(url)) {
+        image = new BeeImage(url);
+      }
+    }
+    return new Pair<String, BeeImage>(html, image);
   }
 
   private String getTagName() {
@@ -657,15 +975,65 @@ public enum FormWidget {
     }
     return getTypes().contains(type);
   }
+
+  private void initMedia(MediaBase widget, Map<String, String> attributes) {
+    if (attributes == null || attributes.size() <= 0) {
+      widget.setAutoplay(false);
+      widget.setControls(true);
+      return;
+    }
+    
+    String value = attributes.get(ATTR_AUTOPLAY);
+    widget.setAutoplay(BeeConst.isTrue(value));
+
+    value = attributes.get(ATTR_CONTROLS);
+    widget.setControls(BeeUtils.isBoolean(value) ? BeeUtils.toBoolean(value) : true);
+
+    value = attributes.get(ATTR_PRELOAD);
+    if (!BeeUtils.isEmpty(value)) {
+      widget.setPreload(value);
+    }
+
+    value = attributes.get(ATTR_DEFAULT_PLAYBACK_RATE);
+    if (BeeUtils.isPositiveDouble(value)) {
+      widget.setDefaultPlaybackRate(BeeUtils.toDouble(value));
+    }
+    
+    value = attributes.get(ATTR_URL);
+    if (!BeeUtils.isEmpty(value)) {
+      widget.setSrc(value);
+    }
+    
+    value = attributes.get(ATTR_CURRENT_TIME);
+    if (BeeUtils.isPositiveDouble(value)) {
+      widget.setCurrentTime(BeeUtils.toDouble(value));
+    }
+    
+    value = attributes.get(ATTR_PLAYBACK_RATE);
+    if (BeeUtils.isPositiveDouble(value)) {
+      widget.setPlaybackRate(BeeUtils.toDouble(value));
+    }
+
+    value = attributes.get(ATTR_LOOP);
+    if (BeeUtils.isBoolean(value)) {
+      widget.setLoop(BeeUtils.toBoolean(value));
+    }  
+    
+    value = attributes.get(ATTR_MUTED);
+    if (BeeUtils.isBoolean(value)) {
+      widget.setMuted(BeeUtils.toBoolean(value));
+    }  
+    
+    value = attributes.get(ATTR_VOLUME);
+    if (BeeUtils.isDouble(value, BeeConst.DOUBLE_ZERO, true, BeeConst.DOUBLE_ONE, true)) {
+      widget.setCurrentTime(BeeUtils.toDouble(value));
+    }
+  }
   
   private boolean isCellVector() {
     return hasType(Type.CELL_VECTOR);
   }
-  
-  private boolean isFocusable() {
-    return hasType(Type.FOCUSABLE);
-  }
-  
+ 
   private boolean isTable() {
     return hasType(Type.TABLE);
   }
@@ -698,6 +1066,7 @@ public enum FormWidget {
                 dimensions.getHeightValue(), dimensions.getHeightUnit());
           } else {
             if (!edges.isEmpty()) {
+              StyleUtils.makeAbsolute(w);
               edges.applyPosition(w);
             }
             if (!dimensions.isEmpty()) {
@@ -731,9 +1100,31 @@ public enum FormWidget {
           if (!BeeUtils.same(cell.getTagName(), TAG_CELL)) {
             continue;
           }
-          Widget w = createOneChild(cell);
-          if (w != null) {
-            ((HtmlTable) parent).setWidget(r, c, w);
+
+          for (Element cellContent : XmlUtils.getChildrenElements(cell)) {
+            if (BeeUtils.same(cellContent.getTagName(), TAG_TEXT)) {
+              String text = XmlUtils.getText(cellContent);
+              if (!BeeUtils.isEmpty(text)) {
+                ((HtmlTable) parent).setText(r, c, text);
+                break;
+              }
+              continue;
+            }
+
+            if (BeeUtils.same(cellContent.getTagName(), TAG_HTML)) {
+              String html = XmlUtils.getText(cellContent);
+              if (!BeeUtils.isEmpty(html)) {
+                ((HtmlTable) parent).setHTML(r, c, html);
+                break;
+              }
+              continue;
+            }
+
+            Widget w = createIfWidget(cellContent);
+            if (w != null) {
+              ((HtmlTable) parent).setWidget(r, c, w);
+              break;
+            }
           }
           
           String z = cell.getAttribute(ATTR_HORIZONTAL_ALIGNMENT);
@@ -797,7 +1188,33 @@ public enum FormWidget {
 
     } else if (isCellVector()) {
       if (BeeUtils.same(childTag, TAG_CELL) && parent instanceof HasWidgets) {
-        Widget w = createOneChild(child);
+        Widget w = null;
+
+        for (Element cellContent : XmlUtils.getChildrenElements(child)) {
+          if (BeeUtils.same(cellContent.getTagName(), TAG_TEXT)) {
+            String text = XmlUtils.getText(cellContent);
+            if (!BeeUtils.isEmpty(text)) {
+              w = new InlineHTML(text);
+              break;
+            }
+            continue;
+          }
+
+          if (BeeUtils.same(cellContent.getTagName(), TAG_HTML)) {
+            String html = XmlUtils.getText(cellContent);
+            if (!BeeUtils.isEmpty(html)) {
+              w = new Html(html);
+              break;
+            }
+            continue;
+          }
+
+          w = createIfWidget(cellContent);
+          if (w != null) {
+            break;
+          }
+        }
+        
         if (w != null) {
           ((HasWidgets) parent).add(w);
         
@@ -865,15 +1282,27 @@ public enum FormWidget {
     
     } else if (this == STACK_PANEL && BeeUtils.same(childTag, TAG_STACK)) {
       Double headerSize = XmlUtils.getAttributeDouble(child, ATTR_HEADER_SIZE);
-      Pair<Widget,Widget> pair = createPair(child);
-      if (BeeUtils.isPositive(headerSize) && pair != null && parent instanceof Stack) {
-        ((Stack) parent).add(pair.getB(), pair.getA(), headerSize);
+      HeaderAndContent hc = createHeaderAndContent(child);
+
+      if (BeeUtils.isPositive(headerSize) && hc != null && hc.isValid()
+          && parent instanceof Stack) {
+        if (hc.isHeaderText() || hc.isHeaderHtml()) {
+          ((Stack) parent).add(hc.getContent(), hc.getHeaderString(), hc.isHeaderHtml(),
+              headerSize);
+        } else {
+          ((Stack) parent).add(hc.getContent(), hc.getHeaderWidget(), headerSize);
+        }  
       }
 
     } else if (this == TABBED_PAGES && BeeUtils.same(childTag, TAG_PAGE)) {
-      Pair<Widget,Widget> pair = createPair(child);
-      if (pair != null && parent instanceof TabbedPages) {
-        ((TabbedPages) parent).add(pair.getB(), pair.getA());
+      HeaderAndContent hc = createHeaderAndContent(child);
+
+      if (hc != null && hc.isValid() && parent instanceof TabbedPages) {
+        if (hc.isHeaderText() || hc.isHeaderHtml()) {
+          ((TabbedPages) parent).add(hc.getContent(), hc.getHeaderString(), hc.isHeaderHtml());
+        } else {
+          ((TabbedPages) parent).add(hc.getContent(), hc.getHeaderWidget());
+        }  
       }
 
     } else if (this == RADIO && BeeUtils.same(childTag, TAG_OPTION)) {
@@ -889,7 +1318,7 @@ public enum FormWidget {
       }
       
     } else if (this == HEADER_CONTENT_FOOTER) {
-      Widget w = createIfWidget(child);
+      Widget w = createOneChild(child);
       if (w != null && parent instanceof HeaderContentFooter) {
         if (BeeUtils.same(childTag, TAG_HEADER)) {
           ((HeaderContentFooter) parent).setHeaderWidget(w);
@@ -899,6 +1328,11 @@ public enum FormWidget {
           ((HeaderContentFooter) parent).setFooterWidget(w);
         }
       }
+
+    } else if (this == TOGGLE && parent instanceof CustomButton 
+        && BeeUtils.inListSame(childTag, TAG_UP_FACE, TAG_DOWN_FACE, TAG_UP_HOVERING_FACE,
+            TAG_DOWN_HOVERING_FACE, TAG_UP_DISABLED_FACE, TAG_DOWN_DISABLED_FACE)) {
+      setFace((CustomButton) parent, childTag, child);
     }
   }
   
@@ -911,7 +1345,7 @@ public enum FormWidget {
       }
       
       if (BeeUtils.same(name, ATTR_CLASS)) {
-        widget.addStyleName(value);
+        StyleUtils.updateClasses(widget, value);
       } else if (BeeUtils.same(name, ATTR_STYLE)) {
         StyleUtils.apply(widget.getElement().getStyle(), value);
       } else if (BeeUtils.same(name, ATTR_TITLE)) {
@@ -957,7 +1391,58 @@ public enum FormWidget {
         if (widget instanceof HasStage) {
           ((HasStage) widget).setStage(value);
         }
+        
+      } else if (BeeUtils.same(name, ATTR_MIN)) {
+        if (widget instanceof InputInteger && BeeUtils.isInt(value)) {
+          ((InputInteger) widget).setMinValue(BeeUtils.toInt(value));
+        }
+      } else if (BeeUtils.same(name, ATTR_MAX)) {
+        if (widget instanceof InputInteger && BeeUtils.isInt(value)) {
+          ((InputInteger) widget).setMaxValue(BeeUtils.toInt(value));
+        }
+      } else if (BeeUtils.same(name, ATTR_STEP)) {
+        if (widget instanceof InputInteger && BeeUtils.isDigit(value) 
+            && BeeUtils.toInt(value) > 0) {
+          ((InputInteger) widget).setStepValue(BeeUtils.toInt(value));
+        }
       }
+    }
+  }
+  
+  private void setFace(CustomButton button, String faceName, Element description) {
+    Pair<String, BeeImage> options = getFaceOptions(description);
+    if (options == null) {
+      return;
+    }
+    
+    String html = options.getA();
+    BeeImage image = options.getB();
+    if (BeeUtils.isEmpty(html) && image == null) {
+      return;
+    }
+    
+    Face face = null;
+    if (BeeUtils.same(faceName, TAG_UP_FACE)) {
+      face = button.getUpFace();
+    } else if (BeeUtils.same(faceName, TAG_DOWN_FACE)) {
+      face = button.getDownFace();
+    } else if (BeeUtils.same(faceName, TAG_UP_HOVERING_FACE)) {
+      face = button.getUpHoveringFace();
+    } else if (BeeUtils.same(faceName, TAG_DOWN_HOVERING_FACE)) {
+      face = button.getDownHoveringFace();
+    } else if (BeeUtils.same(faceName, TAG_UP_DISABLED_FACE)) {
+      face = button.getUpDisabledFace();
+    } else if (BeeUtils.same(faceName, TAG_DOWN_DISABLED_FACE)) {
+      face = button.getDownDisabledFace();
+    }
+    if (face == null) {
+      return;
+    }
+    
+    if (image != null) {
+      face.setImage(image);
+    } else if (!BeeUtils.isEmpty(face)) {
+      face.setHTML(html);
     }
   }
 }

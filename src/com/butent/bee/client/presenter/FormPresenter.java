@@ -195,7 +195,9 @@ public class FormPresenter implements Presenter, ReadyForInsertEvent.Handler,
         break;
 
       case REFRESH:
-        getDataProvider().refresh();
+        if (getDataProvider() != null) {
+          getDataProvider().refresh();
+        }
         break;
 
       case ADD:
@@ -270,8 +272,10 @@ public class FormPresenter implements Presenter, ReadyForInsertEvent.Handler,
       hr.removeHandler();
     }
     filterChangeHandlers.clear();
-
-    getDataProvider().onUnload();
+    
+    if (getDataProvider() != null) {
+      getDataProvider().onUnload();
+    }
   }
 
   private void bind() {
@@ -315,7 +319,6 @@ public class FormPresenter implements Presenter, ReadyForInsertEvent.Handler,
     FormContainerView view = new FormContainerImpl();
 
     view.create(formDescription, columns, rowCount, rowSet);
-
     return view;
   }
 

@@ -81,7 +81,7 @@
         </xs:sequence>
         <xs:attribute name="type" type="bee:valueType" use="required" />
         <xs:attribute name="precision" type="xs:positiveInteger" />
-        <xs:attribute name="scale" type="xs:nonNegativeInteger" />
+        <xs:attribute name="scale" type="xs:unsignedByte" />
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>

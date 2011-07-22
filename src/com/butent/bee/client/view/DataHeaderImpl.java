@@ -67,12 +67,12 @@ public class DataHeaderImpl extends Complex implements DataHeaderView {
     int controlWidth();
 
     String loadingIndicator();
-    
+
     int loadingIndicatorRightMargin();
 
     int loadingIndicatorTop();
   }
-  
+
   private class ActionListener extends BeeCommand {
     private final Action action;
 
@@ -88,7 +88,7 @@ public class DataHeaderImpl extends Complex implements DataHeaderView {
       }
     }
   }
-  
+
   private static Resources defaultResources = null;
   private static Style defaultStyle = null;
 
@@ -108,20 +108,20 @@ public class DataHeaderImpl extends Complex implements DataHeaderView {
   }
 
   private Presenter viewPresenter = null;
-  
+
   private String loadingIndicatorId = null;
-  
+
   private final String captionId;
 
   private boolean enabled = true;
   private final Set<String> actionControls = Sets.newHashSet();
-  
+
   public DataHeaderImpl() {
     super();
-    this.captionId = DomUtils.createUniqueId("caption"); 
+    this.captionId = DomUtils.createUniqueId("caption");
   }
 
-  public void create(String caption, boolean readOnly) {
+  public void create(String caption, boolean hasData, boolean readOnly) {
     Style style = getDefaultStyle();
     addStyleName(StyleUtils.WINDOW_HEADER);
     addStyleName(style.container());
@@ -140,17 +140,20 @@ public class DataHeaderImpl extends Complex implements DataHeaderView {
     addRightTop(createControl(Global.getImages().configure(), Action.CONFIGURE, cst), x, y);
     addRightTop(createControl(Global.getImages().save(), Action.SAVE, cst), x += w, y);
     addRightTop(createControl(Global.getImages().bookmarkAdd(), Action.BOOKMARK, cst), x += w, y);
-    if (!readOnly) {
-      addRightTop(createControl(Global.getImages().editDelete(), Action.DELETE, cst), x += w, y);
-      addRightTop(createControl(Global.getImages().editAdd(), Action.ADD, cst), x += w, y);
+
+    if (hasData) {
+      if (!readOnly) {
+        addRightTop(createControl(Global.getImages().editDelete(), Action.DELETE, cst), x += w, y);
+        addRightTop(createControl(Global.getImages().editAdd(), Action.ADD, cst), x += w, y);
+      }
+      addRightTop(createControl(Global.getImages().reload(), Action.REFRESH, cst), x += w, y);
+
+      BeeImage loadingIndicator = new BeeImage(Global.getImages().loading());
+      setLoadingIndicatorId(loadingIndicator.getId());
+      loadingIndicator.addStyleName(style.loadingIndicator());
+      addRightTop(loadingIndicator,
+          x + style.loadingIndicatorRightMargin(), style.loadingIndicatorTop());
     }
-    addRightTop(createControl(Global.getImages().reload(), Action.REFRESH, cst), x += w, y);
-    
-    BeeImage loadingIndicator = new BeeImage(Global.getImages().loading());
-    this.loadingIndicatorId = loadingIndicator.getId();
-    loadingIndicator.addStyleName(style.loadingIndicator());
-    addRightTop(loadingIndicator,
-        x + style.loadingIndicatorRightMargin(), style.loadingIndicatorTop());
 
     addRightTop(createControl(Global.getImages().close(), Action.CLOSE, style.close()),
         style.closeRight(), style.closeTop());
@@ -167,18 +170,22 @@ public class DataHeaderImpl extends Complex implements DataHeaderView {
   public String getWidgetId() {
     return getId();
   }
-  
+
   public boolean isEnabled() {
     return enabled;
   }
 
   @Override
   public void onLoadingStateChanged(LoadingStateChangeEvent event) {
+    if (BeeUtils.isEmpty(getLoadingIndicatorId())) {
+      return;
+    }
     Assert.notNull(event);
+
     if (LoadingStateChangeEvent.LoadingState.LOADED.equals(event.getLoadingState())) {
-      StyleUtils.hideDisplay(loadingIndicatorId);
+      StyleUtils.hideDisplay(getLoadingIndicatorId());
     } else {
-      StyleUtils.unhideDisplay(loadingIndicatorId);
+      StyleUtils.unhideDisplay(getLoadingIndicatorId());
     }
   }
 
@@ -191,10 +198,10 @@ public class DataHeaderImpl extends Complex implements DataHeaderView {
       return;
     }
     this.enabled = enabled;
-    
+
     for (int i = 0; i < getWidgetCount(); i++) {
       Widget child = getWidget(i);
-      if (child instanceof HasId 
+      if (child instanceof HasId
           && BeeUtils.containsSame(getActionControls(), ((HasId) child).getId())) {
         if (child instanceof HasEnabled) {
           ((HasEnabled) child).setEnabled(enabled);
@@ -207,17 +214,17 @@ public class DataHeaderImpl extends Complex implements DataHeaderView {
       }
     }
   }
-  
+
   public void setViewPresenter(Presenter viewPresenter) {
     this.viewPresenter = viewPresenter;
   }
-  
+
   private Widget createControl(ImageResource image, Action action, String styleName) {
     BeeImage control = new BeeImage(image, new ActionListener(action));
     if (!BeeUtils.isEmpty(styleName)) {
       control.addStyleName(styleName);
     }
-    
+
     if (action != null && action != Action.CLOSE) {
       getActionControls().add(control.getId());
     }
@@ -226,5 +233,13 @@ public class DataHeaderImpl extends Complex implements DataHeaderView {
 
   private Set<String> getActionControls() {
     return actionControls;
+  }
+
+  private String getLoadingIndicatorId() {
+    return loadingIndicatorId;
+  }
+
+  private void setLoadingIndicatorId(String loadingIndicatorId) {
+    this.loadingIndicatorId = loadingIndicatorId;
   }
 }

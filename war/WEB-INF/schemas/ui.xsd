@@ -50,7 +50,7 @@
       <xs:enumeration value="bottom" />
     </xs:restriction>
   </xs:simpleType>
-  
+
   <xs:simpleType name="cssUnit">
     <xs:restriction base="xs:string">
       <xs:enumeration value="%"></xs:enumeration>
@@ -73,14 +73,14 @@
       <xs:enumeration value="both" />
     </xs:restriction>
   </xs:simpleType>
-  
+
   <xs:attributeGroup name="dimension">
     <xs:attribute name="width" type="bee:positiveDecimal" />
     <xs:attribute name="widthUnit" type="bee:cssUnit" />
     <xs:attribute name="height" type="bee:positiveDecimal" />
     <xs:attribute name="heightUnit" type="bee:cssUnit" />
   </xs:attributeGroup>
-  
+
   <xs:attributeGroup name="positioning">
     <xs:attribute name="left" type="xs:decimal" />
     <xs:attribute name="leftUnit" type="bee:cssUnit" />
@@ -91,7 +91,7 @@
     <xs:attribute name="bottom" type="xs:decimal" />
     <xs:attribute name="bottomUnit" type="bee:cssUnit" />
   </xs:attributeGroup>
-  
+
   <xs:attributeGroup name="appearance">
     <xs:attribute name="class" type="xs:normalizedString" />
     <xs:attribute name="style" type="xs:string" />
@@ -120,7 +120,7 @@
     <xs:attribute name="minHeight" type="xs:positiveInteger" />
     <xs:attribute name="onEntry" type="bee:editorAction" />
     <xs:attribute name="options" type="xs:normalizedString" />
-  </xs:complexType>  
+  </xs:complexType>
 
   <xs:simpleType name="editorType">
     <xs:restriction base="xs:string">
@@ -152,4 +152,58 @@
       <xs:enumeration value="addLast"></xs:enumeration>
     </xs:restriction>
   </xs:simpleType>
+
+  <xs:simpleType name="imageResource">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="accept" />
+      <xs:enumeration value="add" />
+      <xs:enumeration value="arrowDown" />
+      <xs:enumeration value="arrowDownDisabled" />
+      <xs:enumeration value="arrowDownHover" />
+      <xs:enumeration value="arrowDownPressed" />
+      <xs:enumeration value="arrowLeft" />
+      <xs:enumeration value="arrowLeftDisabled" />
+      <xs:enumeration value="arrowLeftHover" />
+      <xs:enumeration value="arrowLeftPressed" />
+      <xs:enumeration value="arrowRight" />
+      <xs:enumeration value="arrowRightDisabled" />
+      <xs:enumeration value="arrowRightHover" />
+      <xs:enumeration value="arrowRightPressed" />
+      <xs:enumeration value="arrowUp" />
+      <xs:enumeration value="arrowUpDisabled" />
+      <xs:enumeration value="arrowUpHover" />
+      <xs:enumeration value="arrowUpPressed" />
+      <xs:enumeration value="ascending" />
+      <xs:enumeration value="bee" />
+      <xs:enumeration value="bookmark" />
+      <xs:enumeration value="bookmark_add" />
+      <xs:enumeration value="cancel" />
+      <xs:enumeration value="close" />
+      <xs:enumeration value="configure" />
+      <xs:enumeration value="delete" />
+      <xs:enumeration value="descending" />
+      <xs:enumeration value="edit_add" />
+      <xs:enumeration value="edit_delete" />
+      <xs:enumeration value="first" />
+      <xs:enumeration value="forward" />
+      <xs:enumeration value="html" />
+      <xs:enumeration value="last" />
+      <xs:enumeration value="loading" />
+      <xs:enumeration value="next" />
+      <xs:enumeration value="noes" />
+      <xs:enumeration value="ok" />
+      <xs:enumeration value="play" />
+      <xs:enumeration value="previous" />
+      <xs:enumeration value="redo" />
+      <xs:enumeration value="refresh" />
+      <xs:enumeration value="reload" />
+      <xs:enumeration value="rewind" />
+      <xs:enumeration value="save" />
+      <xs:enumeration value="slider" />
+      <xs:enumeration value="sliderDisabled" />
+      <xs:enumeration value="sliderSliding" />
+      <xs:enumeration value="undo" />
+    </xs:restriction>
+  </xs:simpleType>
+
 </xs:schema>

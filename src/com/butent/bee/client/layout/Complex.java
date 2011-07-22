@@ -5,6 +5,8 @@ import com.google.gwt.dom.client.Style.Position;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.ui.ComplexPanel;
+import com.google.gwt.user.client.ui.ProvidesResize;
+import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.dom.DomUtils;
@@ -16,7 +18,7 @@ import com.butent.bee.shared.HasId;
  * at the specific areas of the layout.
  */
 
-public class Complex extends ComplexPanel implements HasId {
+public class Complex extends ComplexPanel implements HasId, ProvidesResize, RequiresResize {
 
   public Complex() {
     this(Position.ABSOLUTE);
@@ -98,6 +100,14 @@ public class Complex extends ComplexPanel implements HasId {
     return "complex";
   }
 
+  public void onResize() {
+    for (Widget child : getChildren()) {
+      if (child instanceof RequiresResize) {
+        ((RequiresResize) child).onResize();
+      }
+    }
+  }
+  
   public void setId(String id) {
     DomUtils.setId(this, id);
   }

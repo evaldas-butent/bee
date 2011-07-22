@@ -253,6 +253,9 @@ body, select {
   background: pink;
 }
 
+.bee-ValueSpinner {
+  width: 60px;
+}  
 .bee-ValueSpinner .valueBox {
   text-align: right;
   margin: 0;
@@ -262,6 +265,7 @@ body, select {
 
 .bee-VolumeSlider {
   border: 1px solid #7f9db9;
+  height: 18px;
 }
 .bee-VolumeSlider:hover {
   border: 1px dashed blue;
@@ -718,6 +722,11 @@ body, select {
   overflow: auto;
 }  
 
+.bee-Frame {
+  width: 100%;
+  height: 100%;
+}
+
 .gwt-TreeItem-selected {
   background-color: #ffffaa;
 }
@@ -728,26 +737,21 @@ body, select {
 }
 
 .gwt-StackLayoutPanel {
-  border-bottom: 1px solid #bbbbbb;
 }
 
 .gwt-StackLayoutPanel .gwt-StackLayoutPanelHeader {
   cursor: hand;
   padding-left: 5px;
-  border: 1px solid #bbbbbb;
-  border-bottom: 0px;
-  background-color: #d3def6;
+  border-top: 1px solid #bbb;
+  background-color: #e4e4e4;
 }
 
 .gwt-StackLayoutPanel .gwt-StackLayoutPanelContent {
-  border: 1px solid #bbbbbb;
-  border-bottom: 0px;
-  background: white;
-  padding: 2px 2px 10px 5px;
+  padding: 2px;
 }
 
 .gwt-TabLayoutPanel .gwt-TabLayoutPanelTabs {
-  background: #ccc;
+  background: #eee;
   padding-top: 6px;
   padding-left: 5px;
 }
@@ -758,7 +762,7 @@ body, select {
 }
 .gwt-TabLayoutPanel .gwt-TabLayoutPanelContent {
   overflow: hidden;
-  padding: 6px;
+  padding: 2px;
 }
 .gwt-TabLayoutPanel .gwt-TabLayoutPanelTab {
   margin-left: 4px;

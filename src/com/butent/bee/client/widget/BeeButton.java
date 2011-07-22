@@ -19,7 +19,9 @@ import com.butent.bee.shared.utils.BeeUtils;
  */
 
 public class BeeButton extends Button implements HasId, HasService, HasStage, HasCommand {
+
   private BeeCommand command = null;
+  private boolean defaultHandlerInitialized = false;
 
   public BeeButton() {
     super();
@@ -45,11 +47,7 @@ public class BeeButton extends Button implements HasId, HasService, HasStage, Ha
 
   public BeeButton(String html, BeeCommand cmnd) {
     this(html);
-
-    if (cmnd != null) {
-      setCommand(cmnd);
-      addDefaultHandler();
-    }
+    setCommand(cmnd);
   }
 
   public BeeButton(String html, Stage bst) {
@@ -63,16 +61,13 @@ public class BeeButton extends Button implements HasId, HasService, HasStage, Ha
 
   public BeeButton(String html, String svc) {
     this(html);
-
     if (!BeeUtils.isEmpty(svc)) {
       setService(svc);
-      addDefaultHandler();
     }
   }
 
   public BeeButton(String html, String svc, String stg) {
     this(html, svc);
-
     if (!BeeUtils.isEmpty(stg)) {
       setStage(stg);
     }
@@ -100,6 +95,9 @@ public class BeeButton extends Button implements HasId, HasService, HasStage, Ha
 
   public void setCommand(BeeCommand command) {
     this.command = command;
+    if (command != null) {
+      addDefaultHandler();
+    }
   }
 
   public void setId(String id) {
@@ -108,6 +106,9 @@ public class BeeButton extends Button implements HasId, HasService, HasStage, Ha
 
   public void setService(String svc) {
     DomUtils.setService(this, svc);
+    if (!BeeUtils.isEmpty(svc)) {
+      addDefaultHandler();
+    }
   }
 
   public void setStage(String stg) {
@@ -115,11 +116,22 @@ public class BeeButton extends Button implements HasId, HasService, HasStage, Ha
   }
   
   private void addDefaultHandler() {
-    BeeKeeper.getBus().addClickHandler(this);
+    if (!isDefaultHandlerInitialized()) {
+      BeeKeeper.getBus().addClickHandler(this);
+      setDefaultHandlerInitialized(true);
+    }
   }
 
   private void init() {
     DomUtils.createId(this, getIdPrefix());
     setStyleName("bee-Button");
+  }
+
+  private boolean isDefaultHandlerInitialized() {
+    return defaultHandlerInitialized;
+  }
+
+  private void setDefaultHandlerInitialized(boolean defaultHandlerInitialized) {
+    this.defaultHandlerInitialized = defaultHandlerInitialized;
   }
 }

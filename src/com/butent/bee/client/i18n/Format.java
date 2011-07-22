@@ -141,7 +141,24 @@ public class Format {
 
   private static DateTimeFormat defaultDateTimeFormat =
       DateTimeFormat.getFormat(PredefinedFormat.DATE_TIME_MEDIUM);
+  
+  public static DateTimeFormat getDateTimeFormat(String pattern) {
+    Assert.notEmpty(pattern);
+    DateTimeFormat format = getPredefinedFormat(pattern);
+    if (format == null) {
+      format = DateTimeFormat.getFormat(pattern);
+    }
+    return format;
+  }
 
+  public static DateTimeFormat getDateTimeFormat(String pattern, DateTimeFormat defaultFormat) {
+    if (BeeUtils.isEmpty(pattern)) {
+      return defaultFormat;
+    } else {
+      return getDateTimeFormat(pattern);
+    }
+  }
+  
   public static NumberFormat getDecimalFormat(int scale) {
     if (scale <= 0) {
       return getNumberFormat(defaultDecimalPatternInteger);
@@ -214,6 +231,14 @@ public class Format {
     return new NumberFormatter(pattern);
   }
 
+  public static NumberFormat getNumberFormat(String pattern, NumberFormat defaultFormat) {
+    if (BeeUtils.isEmpty(pattern)) {
+      return defaultFormat;
+    } else {
+      return getNumberFormat(pattern);
+    }
+  }
+  
   public static DateTimeFormat getPredefinedFormat(String name) {
     Assert.notNull(name);
     for (DateTimeFormat.PredefinedFormat predef : DateTimeFormat.PredefinedFormat.values()) {

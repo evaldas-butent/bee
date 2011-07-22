@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<BeeForm xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../schemas/form.xsd" name="Widgets" caption="Layouts and Widgets">
+
+  <SplitPanel splitterSize="3">
+    <north size="50" splitterSize="1">
+      <AbsolutePanel>
+        <layer left="1" leftUnit="em">
+          <HorizontalPanel cellSpacing="5">
+            <cell>
+              <Button html="Login" service="comp_get_login" stage="stage_get" style="background: Aquamarine;" />
+            </cell>
+            <cell>
+              <Button html="Logout" service="rpc_logout" class="-" />
+            </cell>
+          </HorizontalPanel>
+        </layer>
+
+        <layer right="1" rightUnit="em" top="3" topUnit="px">
+          <Link html="Būtent" url="http://www.butent.com" style="fontSize: x-large;" />
+        </layer>
+      </AbsolutePanel>
+    </north>
+
+    <west size="100">
+      <StackPanel>
+        <stack headerSize="30">
+          <html>&lt;big style="color: red;"&gt;Images&lt;/big&gt;</html>
+          <VerticalPanel cellSpacing="10" horizontalAlignment="center">
+            <cell>
+              <html>url</html>
+            </cell>
+            <cell>
+              <Image url="test.png" />
+            </cell>
+            <cell>
+              <html>resource</html>
+            </cell>
+            <cell>
+              <Image resource="play" />
+            </cell>
+          </VerticalPanel>
+        </stack>
+
+        <stack headerSize="25">
+          <InlineLabel html="absolute panel" title="headerSize 25" />
+          <AbsolutePanel style="paddingLeft: 5px;">
+            <layer top="2" topUnit="em">
+              <VolumeSlider source="X" min="0" max="10000" minStep="10" maxStep="100" />
+            </layer>
+            <layer top="20" topUnit="%">
+              <ValueSpinner source="X" min="-10" max="30" />
+            </layer>
+            <layer top="50" topUnit="%">
+              <ListBox source="X" allItemsVisible="true">
+                <item>item 1</item>
+                <item>item 2</item>
+                <item>item 3</item>
+                <item>item 4</item>
+                <item>item 5</item>
+              </ListBox>
+            </layer>
+            <layer bottom="60">
+              <Meter min="-50" max="100" />
+            </layer>
+            <layer bottom="30">
+              <Progress max="500" style="width: 80px" />
+            </layer>
+          </AbsolutePanel>
+        </stack>
+
+        <stack headerSize="25">
+          <text>string picker</text>
+          <StringPicker source="X">
+            <item>Item 1</item>
+            <item>Item 2 ; &lt;img src="test.png"&gt;</item>
+            <item>Item 3</item>
+            <item>Item 4 ; &lt;a href="http://www.zombo.com"&gt;zombo&lt;/a&gt;</item>
+          </StringPicker>
+        </stack>
+
+        <stack headerSize="40">
+          <html>header content footer</html>
+          <HeaderContentFooter>
+            <header>
+              <Label html="Header" />
+            </header>
+            <content>
+              <Label html="Content" />
+            </content>
+            <footer>
+              <Label html="Footer" />
+            </footer>
+          </HeaderContentFooter>
+        </stack>
+      </StackPanel>
+    </west>
+
+    <center>
+      <TabbedPages barHeight="28" barUnit="px">
+        <page>
+          <SpanPanel>
+            <InlineLabel html="Input" />
+            <Image resource="bookmark" />
+          </SpanPanel>
+
+          <ScrollPanel>
+            <FlexTable borderWidth="1" cellPadding="3" style="borderCollapse: collapse;">
+              <col index="0" width="20" widthUnit="%" />
+
+              <row>
+                <cell>
+                  <CheckBox source="X" />
+                </cell>
+                <cell>
+                  <CheckBox source="X" html="Check" />
+                </cell>
+              </row>
+              <row>
+                <cell>
+                  <Radio name="radioOne" vertical="true" source="X">
+                    <option>Option 1</option>
+                    <option>Option 2</option>
+                    <option>Option 3</option>
+                  </Radio>
+                </cell>
+                <cell>
+                  <Radio name="radioTwo" vertical="false" source="X">
+                    <option>Option A</option>
+                    <option>Option B</option>
+                    <option>Option C</option>
+                  </Radio>
+                </cell>
+              </row>
+
+              <row>
+                <cell>
+                  <text>Area</text>
+                </cell>
+                <cell>
+                  <InputArea source="X" />
+                </cell>
+              </row>
+              <row>
+                <cell>
+                  <html>Currency</html>
+                </cell>
+                <cell>
+                  <InputCurrency source="X" />
+                </cell>
+              </row>
+              <row>
+                <cell>
+                  <html>Date</html>
+                </cell>
+                <cell>
+                  <InputDate source="X" format="date_short" />
+                </cell>
+              </row>
+              <row>
+                <cell>
+                  <html>DateTime</html>
+                </cell>
+                <cell>
+                  <InputDateTime source="X" />
+                </cell>
+              </row>
+              <row>
+                <cell horizontalAlignment="end">
+                  <html>Decimal</html>
+                </cell>
+                <cell>
+                  <InputDecimal scale="3" source="X" />
+                </cell>
+              </row>
+              <row>
+                <cell horizontalAlignment="end">
+                  <html>Double</html>
+                </cell>
+                <cell>
+                  <InputDouble source="X" />
+                </cell>
+              </row>
+              <row>
+                <cell horizontalAlignment="end">
+                  <html>Integer</html>
+                </cell>
+                <cell>
+                  <InputInteger source="X" />
+                </cell>
+              </row>
+              <row>
+                <cell horizontalAlignment="end">
+                  <html>Long</html>
+                </cell>
+                <cell>
+                  <InputLong source="X" />
+                </cell>
+              </row>
+              <row>
+                <cell>
+                  <html>Slider</html>
+                </cell>
+                <cell>
+                  <InputSlider source="X" />
+                </cell>
+              </row>
+              <row>
+                <cell horizontalAlignment="end">
+                  <html>Spinner</html>
+                </cell>
+                <cell>
+                  <InputSpinner source="X" />
+                </cell>
+              </row>
+              <row>
+                <cell>
+                  <html>Text</html>
+                </cell>
+                <cell>
+                  <InputText source="X" />
+                </cell>
+              </row>
+            </FlexTable>
+          </ScrollPanel>
+        </page>
+
+        <page>
+          <InlineLabel html="Frame" />
+          <ResizePanel>
+            <Frame url="http://www.google.com" />
+          </ResizePanel>
+        </page>
+
+        <page>
+          <html>Media</html>
+          <SplitPanel splitterSize="1">
+            <north size="30">
+              <Label html="Audio" horizontalAlignment="center" />
+            </north>
+            <north size="50">
+              <Audio url="http://www.drchinese.com/wav/Snowball.mp3" />
+            </north>
+            <center>
+              <Video url="http://people.opera.com/shwetankd/webm/sunflower.webm" />
+            </center>
+          </SplitPanel>
+        </page>
+
+        <page>
+          <text>Var</text>
+          <ComplexPanel>
+            <layer left="10" top="20" width="80" widthUnit="%">
+              <SliderBar source="X" min="-100" max="200" step="50" numLabels="10"
+                numTicks="20" />
+            </layer>
+            <layer right="20" bottom="20">
+              <Toggle source="X">
+                <upFace resource="cancel" />
+                <downFace resource="ok" />
+              </Toggle>
+            </layer>
+          </ComplexPanel>
+        </page>
+
+        <page>
+          <text>iPad</text>
+          <ResizePanel>
+            <Frame url="http://butent.lt:8888/Bee/tablet.html" />
+          </ResizePanel>
+        </page>
+
+      </TabbedPages>
+    </center>
+
+  </SplitPanel>
+
+</BeeForm>

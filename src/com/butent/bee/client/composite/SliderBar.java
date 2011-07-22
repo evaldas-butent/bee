@@ -15,7 +15,10 @@ import com.google.gwt.user.client.ui.RequiresResize;
 
 import com.butent.bee.client.Global;
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.dom.Font;
+import com.butent.bee.client.dom.Rulers;
 import com.butent.bee.client.dom.StyleUtils;
+import com.butent.bee.client.dom.StyleUtils.FontSize;
 import com.butent.bee.client.layout.Focus;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -193,6 +196,7 @@ public class SliderBar extends Focus implements RequiresResize {
   @Override
   public void onBrowserEvent(Event event) {
     super.onBrowserEvent(event);
+
     if (enabled) {
       switch (event.getTypeInt()) {
         case Event.ONBLUR:
@@ -297,20 +301,20 @@ public class SliderBar extends Focus implements RequiresResize {
   }
 
   public void onResize() {
-    redraw();
+    redraw(false);
   }
 
-  public void redraw() {
-    if (isAttached()) {
-      int width = getElement().getClientWidth();
-      int lineWidth = lineElement.getOffsetWidth();
-
+  public void redraw(boolean force) {
+    if (force || isReady()) {
+      int width = getShellWidth();
+      int lineWidth = getLineWidth();
+      
       lineLeftOffset = (width / 2) - (lineWidth / 2);
       StyleUtils.setLeft(lineElement, lineLeftOffset);
 
-      drawLabels();
-      drawTicks();
-      drawKnob();
+      drawLabels(force);
+      drawTicks(force);
+      drawKnob(force);
     }
   }
 
@@ -323,8 +327,7 @@ public class SliderBar extends Focus implements RequiresResize {
       this.curValue += stepSize;
     }
 
-    drawKnob();
-
+    drawKnob(false);
     source = ValueUtils.setDouble(source, this.curValue);
   }
 
@@ -337,7 +340,7 @@ public class SliderBar extends Focus implements RequiresResize {
       knobImage.setResource(knobDisabled());
       StyleUtils.addStyleDependentName(lineElement, StyleUtils.NAME_DISABLED);
     }
-    redraw();
+    redraw(false);
   }
 
   public void setLabelFormatter(LabelFormatter labelFormatter) {
@@ -346,24 +349,22 @@ public class SliderBar extends Focus implements RequiresResize {
 
   public void setMaxValue(double maxValue) {
     this.maxValue = maxValue;
-    drawLabels();
+    drawLabels(false);
     resetCurrentValue();
   }
 
   public void setMinValue(double minValue) {
     this.minValue = minValue;
-    drawLabels();
+    drawLabels(false);
     resetCurrentValue();
   }
 
   public void setNumLabels(int numLabels) {
     this.numLabels = numLabels;
-    drawLabels();
   }
 
   public void setNumTicks(int numTicks) {
     this.numTicks = numTicks;
-    drawTicks();
   }
 
   public void setStepSize(double stepSize) {
@@ -398,38 +399,36 @@ public class SliderBar extends Focus implements RequiresResize {
 
   @Override
   protected void onLoad() {
+    super.onLoad();
+    
     Scheduler.get().scheduleDeferred(new ScheduledCommand() {
-      @Override
       public void execute() {
-        redraw();
+        redraw(true);
       }
     });
-    super.onLoad();
   }
 
-  private void drawKnob() {
-    if (!isAttached()) {
-      return;
+  private void drawKnob(boolean force) {
+    if (force || isReady()) {
+      int lineWidth = getLineWidth();
+      int knobWidth = getKnobWidth();
+
+      int knobLeftOffset = (int) (lineLeftOffset + (getKnobPercent() * lineWidth)
+          - (knobWidth / 2));
+      knobLeftOffset = Math.min(knobLeftOffset, lineLeftOffset + lineWidth - (knobWidth / 2) - 1);
+      StyleUtils.setLeft(knobImage.getElement(), knobLeftOffset);
     }
-
-    Element knobElement = knobImage.getElement();
-    int lineWidth = lineElement.getOffsetWidth();
-    int knobWidth = knobElement.getOffsetWidth();
-
-    int knobLeftOffset = (int) (lineLeftOffset + (getKnobPercent() * lineWidth) - (knobWidth / 2));
-    knobLeftOffset = Math.min(knobLeftOffset, lineLeftOffset + lineWidth - (knobWidth / 2) - 1);
-    StyleUtils.setLeft(knobElement, knobLeftOffset);
   }
 
-  private void drawLabels() {
-    if (!isAttached()) {
+  private void drawLabels(boolean force) {
+    if (!force && !isReady()) {
       return;
     }
     if (numLabels > 0) {
-      int shellWidth = getElement().getClientWidth();
-      int lineWidth = lineElement.getOffsetWidth();
-      Element label;
+      int shellWidth = getShellWidth();
+      int lineWidth = getLineWidth();
 
+      Element label;
       for (int i = 0; i <= numLabels; i++) {
         if (i < labelElements.size()) {
           label = labelElements.get(i);
@@ -453,6 +452,10 @@ public class SliderBar extends Focus implements RequiresResize {
 
         StyleUtils.zeroLeft(label);
         int labelWidth = label.getOffsetWidth();
+        if (labelWidth <= 0) {
+          labelWidth = Rulers.getLineWidth(label.getInnerHTML(), new Font(FontSize.X_SMALL));
+        }
+
         int labelLeftOffset = lineLeftOffset + (lineWidth * i / numLabels) - (labelWidth / 2);
         labelLeftOffset = Math.min(labelLeftOffset, shellWidth - labelWidth - 1);
         labelLeftOffset = Math.max(labelLeftOffset, 1);
@@ -470,12 +473,12 @@ public class SliderBar extends Focus implements RequiresResize {
     }
   }
 
-  private void drawTicks() {
-    if (!isAttached()) {
+  private void drawTicks(boolean force) {
+    if (!force && !isReady()) {
       return;
     }
 
-    int lineWidth = lineElement.getOffsetWidth();
+    int lineWidth = getLineWidth();
     if (numTicks > 0) {
       Element tick;
       for (int i = 0; i <= numTicks; i++) {
@@ -498,6 +501,10 @@ public class SliderBar extends Focus implements RequiresResize {
         tick.getStyle().setVisibility(Visibility.HIDDEN);
         tick.getStyle().clearDisplay();
         int tickWidth = tick.getOffsetWidth();
+        if (tickWidth <= 0) {
+          tickWidth = 1;
+        }
+
         int tickLeftOffset = lineLeftOffset + (lineWidth * i / numTicks) - (tickWidth / 2);
         tickLeftOffset = Math.min(tickLeftOffset, lineLeftOffset + lineWidth - tickWidth);
         StyleUtils.setLeft(tick, tickLeftOffset);
@@ -514,8 +521,36 @@ public class SliderBar extends Focus implements RequiresResize {
     }
   }
 
+  private int getKnobWidth() {
+    int width = knobImage.getElement().getOffsetWidth();
+    if (width <= 0) {
+      width = 11;
+    }
+    return width;
+  }
+  
+  private int getLineWidth() {
+    int width = lineElement.getOffsetWidth();
+    if (width <= 0) {
+      width = getShellWidth() * 95 / 100;
+    }
+    return width;
+  }
+  
+  private int getShellWidth() {
+    int width = getElement().getClientWidth();
+    if (width <= 0) {
+      width = 400;
+    }
+    return width;
+  }
+
   private void highlight() {
     addStyleDependentName(StyleUtils.NAME_FOCUSED);
+  }
+  
+  private boolean isReady() {
+    return isAttached() && getElement().getClientWidth() > 0 && lineElement.getOffsetWidth() > 0;
   }
 
   private void resetCurrentValue() {
@@ -525,7 +560,7 @@ public class SliderBar extends Focus implements RequiresResize {
   private void slideKnob(Event event) {
     int x = event.getClientX();
     if (x > 0) {
-      int lineWidth = lineElement.getOffsetWidth();
+      int lineWidth = getLineWidth();
       int lineLeft = lineElement.getAbsoluteLeft();
       double percent = (double) (x - lineLeft) / lineWidth * 1.0;
       setCurrentValue(getTotalRange() * percent + minValue);

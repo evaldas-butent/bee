@@ -27,6 +27,7 @@ import com.butent.bee.shared.utils.ValueUtils;
  */
 
 public class ValueSpinner extends Absolute implements RequiresResize {
+
   private static final String STYLENAME_DEFAULT = "bee-ValueSpinner";
 
   private SpinnerBase spinner;
@@ -160,23 +161,24 @@ public class ValueSpinner extends Absolute implements RequiresResize {
     }
   };
 
-  public ValueSpinner(Object source) {
-    this(source, 0, 0, 1, 99, false);
+  public ValueSpinner(Object source, long min, long max) {
+    this(source, min, max, true);
   }
 
-  public ValueSpinner(Object source, int min, int max) {
-    this(source, min, max, 1, 99, true);
+  public ValueSpinner(Object source, long min, long max, boolean constrained) {
+    this(source, min, max, 1, 99, constrained);
   }
-
-  public ValueSpinner(Object source, int min, int max, int step) {
+  
+  public ValueSpinner(Object source, long min, long max, int step) {
     this(source, min, max, step, step, true);
   }
 
-  public ValueSpinner(Object source, int min, int max, int minStep, int maxStep) {
+  public ValueSpinner(Object source, long min, long max, int minStep, int maxStep) {
     this(source, min, max, minStep, maxStep, true);
   }
 
-  public ValueSpinner(Object source, int min, int max, int minStep, int maxStep, boolean constr) {
+  public ValueSpinner(Object source, long min, long max, int minStep, int maxStep,
+      boolean constrained) {
     super();
     setStylePrimaryName(STYLENAME_DEFAULT);
 
@@ -196,7 +198,7 @@ public class ValueSpinner extends Absolute implements RequiresResize {
     add(valueBox);
 
     spinner = new SpinnerBase(spinnerListener, getSourceValue(),
-        min, max, minStep, maxStep, constr);
+        min, max, minStep, maxStep, constrained);
     add(spinner.getIncrementArrow());
     add(spinner.getDecrementArrow());
   }

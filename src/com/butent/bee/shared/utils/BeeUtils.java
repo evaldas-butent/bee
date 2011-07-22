@@ -1160,6 +1160,22 @@ public class BeeUtils {
     }
   }
 
+  public static boolean isBetween(Double d, Double min, boolean minInclusive,
+      Double max, boolean maxInclusive) {
+    if (!isDouble(d)) {
+      return false;
+    }
+    
+    boolean ok = true;
+    if (isDouble(min)) {
+      ok = minInclusive ? (d >= min) : (d > min);
+    }
+    if (ok && isDouble(max)) {
+      ok = maxInclusive ? (d <= max) : (d > max);
+    }
+    return ok;
+  }
+  
   /**
    * Checks if {@code x} is a Boolean value (0 or 1).
    * 
@@ -1278,6 +1294,26 @@ public class BeeUtils {
     return ok;
   }
 
+  public static boolean isDouble(String s, Double min, boolean minInclusive) {
+    return isDouble(s, min, minInclusive, null, false);
+  }
+  
+  public static boolean isDouble(String s, Double min, boolean minInclusive,
+      Double max, boolean maxInclusive) {
+    if (isEmpty(s)) {
+      return false;
+    }
+
+    boolean ok;
+    try {
+      double d = Double.parseDouble(s);
+      ok = isBetween(d, min, minInclusive, max, maxInclusive);
+    } catch (NumberFormatException ex) {
+      ok = false;
+    }
+    return ok;
+  }
+  
   /**
    * Checks if an Object is empty.
    * 
@@ -1472,6 +1508,10 @@ public class BeeUtils {
     }
   }
 
+  public static boolean isNonNegativeDouble(String s) {
+    return isDouble(s, BeeConst.DOUBLE_ZERO, true);
+  }
+  
   /**
    * @param clazz the class to check for Enum constants
    * @param idx the index to check
@@ -1508,6 +1548,10 @@ public class BeeUtils {
     }
   }
 
+  public static boolean isPositiveDouble(String s) {
+    return isDouble(s, BeeConst.DOUBLE_ZERO, false);
+  }
+  
   /**
    * Checks if the first character in a CharSequence is a prefix.
    * 

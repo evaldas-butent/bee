@@ -83,18 +83,18 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
       BeeRowSet rowSet) {
     Assert.notNull(formDescription);
 
-    setHasSearch(rowCount >= formDescription.getSearchThreshold());
+    boolean hasData = !BeeUtils.isEmpty(dataColumns);
+
+    setHasSearch(hasData && rowCount >= formDescription.getSearchThreshold());
 
     DataHeaderView header = new DataHeaderImpl();
-    header.create(formDescription.getCaption(), formDescription.isReadOnly());
-    
-    boolean hasView = !BeeUtils.isEmpty(dataColumns);
+    header.create(formDescription.getCaption(), hasData, formDescription.isReadOnly());
 
     FormView content = new FormImpl();
     content.create(formDescription, dataColumns, rowCount, rowSet);
 
     DataFooterView footer;
-    if (hasView) {
+    if (hasData) {
       footer = new DataFooterImpl();
       footer.create(rowCount, BeeConst.UNDEF, true, hasSearch());
     } else {
@@ -111,7 +111,7 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
 
     add(content.asWidget(), ScrollBars.BOTH);
 
-    if (hasView) {
+    if (hasData) {
       Calculation rmc = formDescription.getRowMessage();
       if (rmc != null) {
         setRowMessage(Evaluator.create(rmc, null, dataColumns));

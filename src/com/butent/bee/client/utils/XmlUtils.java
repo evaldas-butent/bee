@@ -180,6 +180,25 @@ public class XmlUtils {
     return result;
   }
 
+  public static List<String> getChildrenText(Element parent, String tagName) {
+    Assert.notNull(parent);
+    Assert.notEmpty(tagName);
+    List<String> result = Lists.newArrayList();
+
+    NodeList children = parent.getElementsByTagName(tagName.trim());
+    if (children == null || children.getLength() <= 0) {
+      return null;
+    }
+
+    for (int i = 0; i < children.getLength(); i++) {
+      String text = getText((Element) children.item(i));
+      if (!BeeUtils.isEmpty(text)) {
+        result.add(text);
+      }
+    }
+    return result;
+  }
+  
   public static List<Property> getCommentInfo(Comment comm) {
     Assert.notNull(comm);
     return PropertyUtils.createProperties("Length", comm.getLength(), "Data", comm.getData());

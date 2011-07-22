@@ -272,9 +272,8 @@ public class MenuManager implements Module {
 
     } else if (rw instanceof Stack) {
       if (cw != null) {
-        double header = BeeUtils.iif(itemCnt <= 10, 2.0, itemCnt >= 18, 1.2,
-            (30.0 - itemCnt) / 10.0);
-        ((Stack) rw).add(cw, txt, header);
+        double header = BeeUtils.rescale(itemCnt, 10, 30, 25, 15);
+        ((Stack) rw).add(cw, txt, Math.ceil(header));
       }
     } else if (rw instanceof TabbedPages) {
       if (cw != null) {
@@ -350,7 +349,7 @@ public class MenuManager implements Module {
       w = new MenuBar(level, true, getBarType(opt), MenuItem.ITEM_TYPE.LABEL, opt);
 
     } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_STACK)) {
-      w = new Stack(Unit.EM);
+      w = new Stack(Unit.PX);
     } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_TAB)) {
       w = new TabbedPages(20, Unit.PX);
 

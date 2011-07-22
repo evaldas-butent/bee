@@ -10,11 +10,11 @@
     <layer left="1" leftUnit="%" top="1" topUnit="ex" width="50" widthUnit="%">
       <FlexTable cellSpacing="5">
         <row>
-          <cell><Label html="Login" /></cell>
+          <cell><text>Login</text></cell>
           <cell><InputText source="Login" /></cell>
         </row>
         <row>
-          <cell><Html html="Password" /></cell>
+          <cell><html>Password</html></cell>
           <cell><TextLabel source="Password" /></cell>
         </row>
         <row>

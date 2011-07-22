@@ -124,7 +124,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
         (gridDescription == null) ? false : BeeUtils.isTrue(gridDescription.isReadOnly());
 
     DataHeaderView header = new DataHeaderImpl();
-    header.create(caption, readOnly);
+    header.create(caption, true, readOnly);
 
     GridView content = new CellGridImpl();
     content.create(dataColumns, rowCount, rowSet, gridDescription, hasSearch());

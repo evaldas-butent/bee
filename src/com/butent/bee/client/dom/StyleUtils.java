@@ -284,6 +284,10 @@ public class StyleUtils {
   private static final char CLASS_NAME_SEPARATOR = ' ';
   private static final Splitter CLASS_NAME_SPLITTER =
       Splitter.on(CLASS_NAME_SEPARATOR).omitEmptyStrings().trimResults();
+  
+  private static final char ADD_CLASS = '+';
+  private static final char REMOVE_CLASS = '-';
+  private static final char REPLACE_CLASS = '=';
 
   private static final String DEFINITION_SEPARATOR = ";";
   private static final String NAME_VALUE_SEPARATOR = ":";
@@ -1200,11 +1204,11 @@ public class StyleUtils {
     setStyleDependentName(el, style, false);
   }
   
-  public static void setAppearance(Element el, String className, String styles) {
+  public static void setAppearance(Element el, String classes, String styles) {
     Assert.notNull(el);
 
-    if (!BeeUtils.isEmpty(className)) {
-      el.addClassName(className);
+    if (!BeeUtils.isEmpty(classes)) {
+      updateClasses(el, classes);
     }
     if (!BeeUtils.isEmpty(styles)) {
       apply(el.getStyle(), styles);
@@ -1881,6 +1885,49 @@ public class StyleUtils {
   public static void unhideDisplay(UIObject obj) {
     Assert.notNull(obj);
     unhideDisplay(obj.getElement());
+  }
+  
+  public static void updateClasses(Element el, String classes) {
+    Assert.notNull(el);
+    Assert.notNull(classes);
+    
+    if (BeeUtils.same(classes, String.valueOf(REMOVE_CLASS))) {
+      if (!BeeUtils.isEmpty(el.getClassName())) {
+        el.setClassName(BeeConst.STRING_EMPTY);
+      }
+      return;
+    }
+    
+    if (BeeUtils.isPrefixOrSuffix(classes, REPLACE_CLASS)) {
+      el.setClassName(BeeUtils.removePrefixAndSuffix(classes, REPLACE_CLASS));
+      return;
+    }
+
+    for (String name : CLASS_NAME_SPLITTER.split(classes.trim())) {
+      if (BeeUtils.isPrefixOrSuffix(name, ADD_CLASS)) {
+        String z = BeeUtils.removePrefixAndSuffix(name, ADD_CLASS);
+        if (!BeeUtils.isEmpty(z)) {
+          el.addClassName(z);
+        }
+
+      } else if (BeeUtils.isPrefixOrSuffix(name, REMOVE_CLASS)) {
+          String z = BeeUtils.removePrefixAndSuffix(name, REMOVE_CLASS);
+          if (!BeeUtils.isEmpty(z)) {
+            el.removeClassName(z);
+          }
+  
+      } else if (BeeUtils.isPrefixOrSuffix(name, REPLACE_CLASS)) {
+        el.setClassName(BeeUtils.removePrefixAndSuffix(name, REPLACE_CLASS));
+
+      } else {
+        el.addClassName(name);
+      }
+    }
+  }
+
+  public static void updateClasses(UIObject obj, String classes) {
+    Assert.notNull(obj);
+    updateClasses(obj.getElement(), classes);
   }
   
   public static void zeroLeft(Element el) {
