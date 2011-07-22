@@ -136,7 +136,8 @@ class BeeTable implements HasExtFields, HasStates, HasTranslations {
       Assert.notEmpty(refTable);
 
       this.tblName = tblName;
-      this.name = FOREIGN_KEY_PREFIX + Codec.crc32(getTable() + keyField + refTable);
+      this.name = (cascade ? FOREIGN_CASCADE_PREFIX : FOREIGN_KEY_PREFIX) +
+          Codec.crc32(getTable() + keyField + refTable);
       this.keyField = keyField;
       this.refTable = refTable;
       this.cascade = cascade;
@@ -707,6 +708,7 @@ class BeeTable implements HasExtFields, HasStates, HasTranslations {
   private static final String UNIQUE_KEY_PREFIX = "UK_";
   private static final String INDEX_KEY_PREFIX = "IK_";
   private static final String FOREIGN_KEY_PREFIX = "FK_";
+  private static final String FOREIGN_CASCADE_PREFIX = "FC_";
 
   private final String name;
   private final String idName;
@@ -945,43 +947,6 @@ class BeeTable implements HasExtFields, HasStates, HasTranslations {
   BeeState addState(BeeState state) {
     states.add(state);
     return state;
-  }
-
-  int applyChanges(BeeTable extension) {
-    int cnt = 0;
-
-    for (BeeField fld : extension.getFields()) {
-      addField(fld.getName(),
-          fld.getType(),
-          fld.getPrecision(),
-          fld.getScale(),
-          fld.isNotNull(),
-          fld.isUnique(),
-          fld.getRelation(),
-          fld.isCascade())
-          .setTranslatable(fld.isTranslatable())
-          .setExtended(fld.isExtended());
-      cnt++;
-    }
-    for (BeeForeignKey fKey : extension.getForeignKeys()) {
-      addForeignKey(fKey.getTable(),
-          fKey.getKeyField(),
-          fKey.getRefTable(),
-          fKey.isCascade(),
-          fKey.isCascadeDelete());
-      cnt++;
-    }
-    for (BeeKey key : extension.getKeys()) {
-      if (!key.isPrimary()) {
-        addKey(key.isUnique(), key.getTable(), key.getKeyFields());
-        cnt++;
-      }
-    }
-    for (BeeState state : extension.getStates()) {
-      addState(state);
-      cnt++;
-    }
-    return cnt;
   }
 
   void setActive(boolean active) {

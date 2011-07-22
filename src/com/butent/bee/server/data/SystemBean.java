@@ -765,6 +765,32 @@ public class SystemBean {
     return qs.dbRowCount(ss);
   }
 
+  public XmlState getXmlState(String stateName) {
+    Assert.notEmpty(stateName);
+
+    XmlState xmlState = getXmlState(stateName, false);
+    XmlState userState = getXmlState(stateName, true);
+
+    if (xmlState == null) {
+      xmlState = userState;
+    } else {
+      xmlState.protect().merge(userState);
+    }
+    return xmlState;
+  }
+
+  public XmlState getXmlState(String stateName, boolean userMode) {
+    Assert.notEmpty(stateName);
+    String resource = SysObject.STATE.getFilePath(stateName);
+
+    if (userMode) {
+      resource = Config.getUserPath(resource);
+    } else {
+      resource = Config.getConfigPath(resource);
+    }
+    return loadXmlState(resource);
+  }
+
   public XmlTable getXmlTable(String tableName) {
     Assert.notEmpty(tableName);
 
@@ -789,6 +815,30 @@ public class SystemBean {
       resource = Config.getConfigPath(resource);
     }
     return loadXmlTable(resource);
+  }
+
+  public XmlView getXmlView(String viewName) {
+    Assert.notEmpty(viewName);
+
+    XmlView xmlView = getXmlView(viewName, false);
+    XmlView userView = getXmlView(viewName, true);
+
+    if (userView != null) {
+      xmlView = userView;
+    }
+    return xmlView;
+  }
+
+  public XmlView getXmlView(String viewName, boolean userMode) {
+    Assert.notEmpty(viewName);
+    String resource = SysObject.VIEW.getFilePath(viewName);
+
+    if (userMode) {
+      resource = Config.getUserPath(resource);
+    } else {
+      resource = Config.getConfigPath(resource);
+    }
+    return loadXmlView(resource);
   }
 
   public boolean hasField(String tblName, String fldName) {
@@ -822,19 +872,9 @@ public class SystemBean {
   }
 
   @Lock(LockType.WRITE)
-  public boolean initState(String stateName) {
-    return initState(stateName, Config.getPath(SysObject.STATE.getFilePath(stateName), true));
-  }
-
-  @Lock(LockType.WRITE)
   public void initStates() {
     initObjects(SysObject.STATE);
     initTables();
-  }
-
-  @Lock(LockType.WRITE)
-  public boolean initTable(String tableName) {
-    return initTable(tableName, Config.getPath(SysObject.TABLE.getFilePath(tableName), true));
   }
 
   @Lock(LockType.WRITE)
@@ -847,11 +887,6 @@ public class SystemBean {
     }
     initDatabase(engine);
     initViews();
-  }
-
-  @Lock(LockType.WRITE)
-  public boolean initView(String viewName) {
-    return initView(viewName, Config.getPath(SysObject.VIEW.getFilePath(viewName), true));
   }
 
   @Lock(LockType.WRITE)
@@ -1009,8 +1044,16 @@ public class SystemBean {
     return table.joinTranslationField(query, tblAlias, field, locale);
   }
 
+  public XmlState loadXmlState(String resource) {
+    return XmlUtils.unmarshal(XmlState.class, resource, SysObject.STATE.getSchemaPath());
+  }
+
   public XmlTable loadXmlTable(String resource) {
     return XmlUtils.unmarshal(XmlTable.class, resource, SysObject.TABLE.getSchemaPath());
+  }
+
+  public XmlView loadXmlView(String resource) {
+    return XmlUtils.unmarshal(XmlView.class, resource, SysObject.VIEW.getSchemaPath());
   }
 
   public void rebuildActiveTables() {
@@ -1459,8 +1502,7 @@ public class SystemBean {
         viewCache.clear();
         break;
     }
-    int cNew = 0;
-    int cUpd = 0;
+    int cnt = 0;
     Collection<File> paths = Lists.newArrayList();
 
     if (Config.CONFIG_DIR != null) {
@@ -1474,81 +1516,70 @@ public class SystemBean {
           FileUtils.findFiles(obj.getFilePath("*"), paths, null, null, true, true);
 
       if (!BeeUtils.isEmpty(resources)) {
+        Set<String> objects = Sets.newHashSet();
+
         for (File resource : resources) {
           String resourcePath = resource.getPath();
           String objectName = NameUtils.getBaseName(resourcePath);
           objectName = objectName.substring(0, objectName.length() - obj.name().length() - 1);
-          boolean isNew = false;
+          objects.add(objectName);
+        }
+        for (String objectName : objects) {
           boolean isOk = false;
 
           switch (obj) {
             case STATE:
-              isNew = !isState(objectName);
-              isOk = initState(objectName, resourcePath);
+              isOk = initState(objectName);
               break;
             case TABLE:
-              isNew = !isTable(objectName);
-              isOk = initTable(objectName, resourcePath);
+              isOk = initTable(objectName);
               break;
             case VIEW:
-              isNew = !isView(objectName);
-              isOk = initView(objectName, resourcePath);
+              isOk = initView(objectName);
               break;
           }
           if (isOk) {
-            if (isNew) {
-              cNew++;
-            } else {
-              cUpd++;
-            }
+            cnt++;
           }
         }
       }
     }
-    if (BeeUtils.isEmpty(cNew + cUpd)) {
-      LogUtils.severe(logger, obj.name() + ":", "No descriptions found");
+    if (BeeUtils.isEmpty(cnt)) {
+      LogUtils.severe(logger, "No", obj.name(), "descriptions found");
     } else {
-      LogUtils.infoNow(logger, obj.name() + ":",
-          "Loaded", cNew, "and updated", cUpd, "descriptions");
+      LogUtils.infoNow(logger, "Loaded", cnt, obj.name(), "descriptions");
     }
   }
 
-  private boolean initState(String stateName, String resource) {
+  private boolean initState(String stateName) {
     Assert.notEmpty(stateName);
-    Assert.notEmpty(resource);
     BeeState state = null;
-
-    XmlState xmlState = loadState(resource);
+    XmlState xmlState = getXmlState(stateName);
 
     if (xmlState != null) {
       if (!BeeUtils.same(xmlState.name, stateName)) {
-        LogUtils.warning(logger, "State name doesn't match resource name:",
-            xmlState.name, resource);
+        LogUtils.warning(logger, "State name doesn't match resource name:", xmlState.name);
       } else {
         state = new BeeState(xmlState.name, xmlState.mode, xmlState.checked);
       }
     }
     if (state != null) {
       registerState(state);
-      LogUtils.info(logger, "Loaded state", BeeUtils.bracket(state.getName()),
-          "description from", resource);
+      LogUtils.info(logger, "Registered state", BeeUtils.bracket(state.getName()));
     } else {
       unregisterState(stateName);
     }
     return state != null;
   }
 
-  private boolean initTable(String tableName, String resource) {
+  private boolean initTable(String tableName) {
     Assert.notEmpty(tableName);
-    Assert.notEmpty(resource);
     BeeTable table = null;
-
-    XmlTable xmlTable = loadXmlTable(resource);
+    XmlTable xmlTable = getXmlTable(tableName);
 
     if (xmlTable != null) {
       if (!BeeUtils.same(xmlTable.name, tableName)) {
-        LogUtils.warning(logger, "Table name doesn't match resource name:",
-            xmlTable.name, resource);
+        LogUtils.warning(logger, "Table name doesn't match resource name:", xmlTable.name);
       } else {
         table = new BeeTable(xmlTable.name, xmlTable.idName, xmlTable.versionName);
         String tbl = table.getName();
@@ -1633,37 +1664,28 @@ public class SystemBean {
           }
         }
         if (table.isEmpty()) {
-          LogUtils.warning(logger, resource, "Table has no fields defined:", tbl);
+          LogUtils.warning(logger, "Table has no fields defined:", tbl);
           table = null;
         }
       }
     }
     if (table != null) {
-      String tbl = table.getName();
-
-      if (isTable(tbl)) {
-        getTable(tbl).applyChanges(table);
-        LogUtils.info(logger, "Updated table", BeeUtils.bracket(tbl), "description from", resource);
-      } else {
-        registerTable(table);
-        LogUtils.info(logger, "Loaded table", BeeUtils.bracket(tbl), "description from", resource);
-      }
+      registerTable(table);
+      LogUtils.info(logger, "Registered table", BeeUtils.bracket(table.getName()));
     } else {
       unregisterTable(tableName);
     }
     return table != null;
   }
 
-  private boolean initView(String viewName, String resource) {
+  private boolean initView(String viewName) {
     Assert.notEmpty(viewName);
-    Assert.notEmpty(resource);
     BeeView view = null;
-
-    XmlView xmlView = loadView(resource);
+    XmlView xmlView = getXmlView(viewName);
 
     if (xmlView != null) {
       if (!BeeUtils.same(xmlView.name, viewName)) {
-        LogUtils.warning(logger, "View name doesn't match resource name:", xmlView.name, resource);
+        LogUtils.warning(logger, "View name doesn't match resource name:", xmlView.name);
       } else {
         String src = xmlView.source;
 
@@ -1695,7 +1717,7 @@ public class SystemBean {
             }
           }
           if (view.isEmpty()) {
-            LogUtils.warning(logger, resource, "View has no columns defined:", vw);
+            LogUtils.warning(logger, "View has no columns defined:", vw);
             view = null;
           }
         }
@@ -1703,20 +1725,11 @@ public class SystemBean {
     }
     if (view != null) {
       registerView(view);
-      LogUtils.info(logger, "Loaded view", BeeUtils.bracket(view.getName()),
-          "description from", resource);
+      LogUtils.info(logger, "Registered view", BeeUtils.bracket(view.getName()));
     } else {
       unregisterView(viewName);
     }
     return view != null;
-  }
-
-  private XmlState loadState(String resource) {
-    return XmlUtils.unmarshal(XmlState.class, resource, SysObject.STATE.getSchemaPath());
-  }
-
-  private XmlView loadView(String resource) {
-    return XmlUtils.unmarshal(XmlView.class, resource, SysObject.VIEW.getSchemaPath());
   }
 
   private void makeStructureChanges(IsQuery query) {

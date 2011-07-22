@@ -538,6 +538,7 @@ public class UiServiceBean {
 
   private ResponseObject saveDbSchema(String dbSchema) {
     String schemaPath = SysObject.TABLE.getSchemaPath();
+    StringBuilder xmlResponse = new StringBuilder();
     XmlSqlDesigner designer = null;
     ResponseObject response = new ResponseObject();
     Map<String, XmlTable> updates = Maps.newHashMap();
@@ -557,8 +558,10 @@ public class UiServiceBean {
           response.addError(BeeUtils.bracket(tblName), "Primary key is missing/invalid");
         } else {
           try {
+            String xml = XmlUtils.marshal(xmlTable, schemaPath);
+            xmlResponse.append(xml).append("\n");
+            XmlTable userTable = sys.loadXmlTable(xml);
             XmlTable configTable = sys.getXmlTable(tblName, false);
-            XmlTable userTable = sys.loadXmlTable(XmlUtils.marshal(xmlTable, schemaPath));
             XmlTable diffTable = null;
 
             if (configTable == null) {
@@ -603,7 +606,7 @@ public class UiServiceBean {
         }
       }
       sys.initTables();
-      response.setResponse(new BeeResource(null, XmlUtils.marshal(designer, null)));
+      response.setResponse(new BeeResource(null, xmlResponse.toString()));
     }
     return response;
   }
