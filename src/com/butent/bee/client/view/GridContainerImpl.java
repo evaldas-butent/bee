@@ -134,7 +134,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
 
     if (hasPaging() || hasSearch()) {
       footer = new DataFooterImpl();
-      footer.create(rowCount, pageSize, hasPaging(), hasSearch());
+      footer.create(rowCount, pageSize, hasPaging(), true, hasSearch());
     } else {
       footer = null;
     }

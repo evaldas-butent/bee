@@ -13,7 +13,6 @@ public class FormDescription implements HasViewName {
 
   private static final String TAG_ROW_MESSAGE = "rowMessage";
   private static final String TAG_ROW_EDITABLE = "rowEditable";
-  private static final String TAG_ROW_VALIDATION = "rowValidation";
 
   private static final String ATTR_NAME = "name";
   private static final String ATTR_VIEW_NAME = "viewName";
@@ -22,7 +21,6 @@ public class FormDescription implements HasViewName {
 
   private static final String ATTR_ASYNC_THRESHOLD = "asyncThreshold";
   private static final String ATTR_SEARCH_THRESHOLD = "searchThreshold";
-  private static final String ATTR_NEW_ROW_COLUMNS = "newRowColumns";
 
   private final Element formElement;
 
@@ -47,10 +45,6 @@ public class FormDescription implements HasViewName {
     return BeeUtils.trim(caption);
   }
   
-  public String getNewRowColumns() {
-    return getFormElement().getAttribute(ATTR_NEW_ROW_COLUMNS);
-  }
-  
   public Calculation getRowEditable() {
     return XmlUtils.getCalculation(getFormElement(), TAG_ROW_EDITABLE);
   }
@@ -59,10 +53,6 @@ public class FormDescription implements HasViewName {
     return XmlUtils.getCalculation(getFormElement(), TAG_ROW_MESSAGE);
   }
 
-  public Calculation getRowValidation() {
-    return XmlUtils.getCalculation(getFormElement(), TAG_ROW_VALIDATION);
-  }
-  
   public int getSearchThreshold() {
     Integer searchThreshold = XmlUtils.getAttributeInteger(getFormElement(), ATTR_SEARCH_THRESHOLD);
     if (searchThreshold == null) {

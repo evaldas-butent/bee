@@ -1,15 +1,9 @@
 package com.butent.bee.client.view.form;
 
-import com.google.common.base.CharMatcher;
-import com.google.common.base.Splitter;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.cellview.client.LoadingStateChangeEvent;
-import com.google.gwt.user.cellview.client.LoadingStateChangeEvent.LoadingState;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.view.client.CellPreviewEvent;
 import com.google.gwt.view.client.Range;
@@ -20,26 +14,27 @@ import com.google.gwt.view.client.SelectionModel;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.data.HasDataTable;
 import com.butent.bee.client.dialog.Notification;
+import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
-import com.butent.bee.client.dom.StyleUtils.ScrollBars;
 import com.butent.bee.client.layout.Absolute;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory;
+import com.butent.bee.client.ui.FormWidget;
+import com.butent.bee.client.ui.WidgetDescription;
+import com.butent.bee.client.ui.FormFactory.WidgetCallback;
 import com.butent.bee.client.utils.Evaluator;
 import com.butent.bee.client.view.add.AddEndEvent;
 import com.butent.bee.client.view.add.AddStartEvent;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.EditEndEvent;
-import com.butent.bee.client.view.edit.EditableColumn;
-import com.butent.bee.client.view.edit.EditorFactory;
+import com.butent.bee.client.view.edit.EditableWidget;
+import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.edit.ReadyForUpdateEvent;
-import com.butent.bee.client.view.edit.RowEditor;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
-import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.ActiveRowChangeEvent;
@@ -49,53 +44,64 @@ import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.event.SelectionCountChangeEvent;
 import com.butent.bee.shared.data.event.SortEvent;
-import com.butent.bee.shared.data.value.BooleanValue;
-import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.Order;
-import com.butent.bee.shared.data.view.RelationInfo;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.ui.Calculation;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 
 public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler, HasDataTable {
 
-  private class NewRowCallback implements RowEditor.Callback {
-    public void onCancel() {
-      finishNewRow(null);
+  private class CreationCallback implements WidgetCallback {
+    public void onFailure(String[] reason) {
+      BeeKeeper.getLog().severe(ArrayUtils.join(reason, 1));
+      BeeKeeper.getScreen().notifySevere(reason);
     }
 
-    public void onConfirm(IsRow row) {
-      if (checkNewRow(row)) {
-        prepareForInsert(row);
+    public void onSuccess(WidgetDescription result) {
+      if (result == null) {
+        onFailure(new String[] {"widget description is null"});
+        return;
+      }
+      FormWidget type = result.getWidgetType();
+      if (type == null) {
+        onFailure(new String[] {"widget type is null"});
+        return;
+      }
+      
+      if (type.isDisplay()) {
+        getDisplayWidgets().add(result);
+      }
+
+      if (type.isEditable()) {
+        String source = result.getSource();
+        int index = getDataIndex(source);
+        
+        if (index >= 0) {
+          getEditableWidgets().add(new EditableWidget(getDataColumns(), index, null, result));
+        } else {
+          onFailure(new String[] {"source column not found", source, result.getWidgetId()});
+        }
       }
     }
   }
 
   private Presenter viewPresenter = null;
   
-  private Widget formWidget = null;
+  private Widget rootWidget = null;
 
   private Evaluator rowEditable = null;
-  private Evaluator rowValidation = null;
-
-  private final Map<String, EditableColumn> editableColumns = Maps.newLinkedHashMap();
 
   private final Notification notification = new Notification();
 
-  private final List<String> newRowColumns = Lists.newArrayList();
-
-  private RowEditor newRowWidget = null;
-  private final NewRowCallback newRowCallback = new NewRowCallback();
-
   private boolean enabled = true;
-
+  
+  private boolean hasData = false;
   private List<BeeColumn> dataColumns = null;
-  private final Set<RelationInfo> relations = Sets.newHashSet();
   
   private boolean editing = false;
 
@@ -105,6 +111,11 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
   private IsRow rowData = null;
   
   private boolean readOnly = false;
+  
+  private final CreationCallback creationCallback = new CreationCallback();
+  
+  private final Set<WidgetDescription> displayWidgets = Sets.newHashSet();
+  private final Set<EditableWidget> editableWidgets = Sets.newHashSet();
 
   public FormImpl() {
     super();
@@ -127,11 +138,11 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
   }
 
   public HandlerRegistration addLoadingStateChangeHandler(LoadingStateChangeEvent.Handler handler) {
-    return null;
+    return addHandler(handler, LoadingStateChangeEvent.TYPE);
   }
 
   public HandlerRegistration addRangeChangeHandler(RangeChangeEvent.Handler handler) {
-    return null;
+    return addHandler(handler, RangeChangeEvent.getType());
   }
 
   public HandlerRegistration addReadyForInsertHandler(ReadyForInsertEvent.Handler handler) {
@@ -143,7 +154,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
   }
 
   public HandlerRegistration addRowCountChangeHandler(RowCountChangeEvent.Handler handler) {
-    return null;
+    return addHandler(handler, RowCountChangeEvent.getType());
   }
 
   public HandlerRegistration addSelectionCountChangeHandler(SelectionCountChangeEvent.Handler handler) {
@@ -157,41 +168,35 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
   public void applyOptions(String options) {
   }
 
-  public void create(FormDescription formDescription, List<BeeColumn> dataCols, int rc,
-      BeeRowSet rowSet) {
+  public void create(FormDescription formDescription, List<BeeColumn> dataCols) {
     Assert.notNull(formDescription);
     setDataColumns(dataCols);
-    
-    boolean hasView = !BeeUtils.isEmpty(dataCols);
-    if (hasView) {
+    setHasData(!BeeUtils.isEmpty(dataCols));
+
+    if (hasData()) {
       Calculation rec = formDescription.getRowEditable();
       if (rec != null) {
         setRowEditable(Evaluator.create(rec, null, dataCols));
       }
-      Calculation rvc = formDescription.getRowValidation();
-      if (rvc != null) {
-        setRowValidation(Evaluator.create(rvc, null, dataCols));
-      }
-      initNewRowColumns(formDescription.getNewRowColumns());
     }
 
-    setRowCount(rc);
     setReadOnly(formDescription.isReadOnly());
     
-    setFormWidget(FormFactory.createForm(formDescription));
-    StyleUtils.makeAbsolute(getFormWidget());
-    getFormWidget().addStyleName("bee-Form");
+    Widget root = FormFactory.createForm(formDescription, getCreationCallback());
+    if (root == null) {
+      return;
+    }
 
-    add(getFormWidget());
+    StyleUtils.makeAbsolute(root);
+    root.addStyleName("bee-Form");
+    setRootWidget(root);
+
+    add(root);
     add(getNotification());
   }
 
   public void finishNewRow(IsRow row) {
-    StyleUtils.hideDisplay(getNewRowWidget());
     fireEvent(new AddEndEvent());
-
-    StyleUtils.hideScroll(this, ScrollBars.BOTH);
-    StyleUtils.unhideDisplay(getFormWidget());
     setEditing(false);
 
     if (row != null) {
@@ -199,7 +204,10 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     }
   }
 
-  public void fireLoadingStateChange(LoadingState loadingState) {
+  public void fireLoadingStateChange(LoadingStateChangeEvent.LoadingState loadingState) {
+    if (loadingState != null) {
+      fireEvent(new LoadingStateChangeEvent(loadingState));
+    }
   }
 
   public RowInfo getActiveRowInfo() {
@@ -249,13 +257,6 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     return getId();
   }
 
-  public boolean isColumnEditable(String columnId) {
-    if (BeeUtils.isEmpty(columnId)) {
-      return false;
-    }
-    return getEditableColumns().containsKey(columnId);
-  }
-
   public boolean isEditing() {
     return editing;
   }
@@ -269,7 +270,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
   }
 
   public boolean isRowEditable(boolean warn) {
-    if (getRowData() == null) {
+    if (getRowData() == null || isReadOnly()) {
       return false;
     }
     return isRowEditable(getRowData(), warn);
@@ -336,62 +337,66 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
   }
 
   public void setRowCount(int count) {
-    this.rowCount = count;
+    setRowCount(count, isRowCountExact());
   }
 
   public void setRowCount(int count, boolean isExact) {
-    setRowCount(count);
+    Assert.nonNegative(count);
+    if (count == getRowCount()) {
+      return;
+    }
+    this.rowCount = count;
+
+    if (getPageStart() >= count) {
+      setPageStart(Math.max(count - 1, 0));
+    }
+    RowCountChangeEvent.fire(this, count, isExact);
   }
 
   public void setRowData(int start, List<? extends IsRow> values) {
-    setRowData(values.get(0));
+    if (!BeeUtils.isEmpty(values)) {
+      setRowData(values.get(0));
+      refreshData();
+    }  
   }
-
+  
   public void setSelectionModel(SelectionModel<? super IsRow> selectionModel) {
   }
-
+  
   public void setViewPresenter(Presenter presenter) {
     this.viewPresenter = presenter;
   }
 
   public void setVisibleRange(int start, int length) {
-    setPageStart(start);
+    setVisibleRow(start, false);
   }
 
   public void setVisibleRange(Range range) {
-    setPageStart(range.getStart());
+    setVisibleRow(range.getStart(), false);
   }
 
   public void setVisibleRangeAndClearData(Range range, boolean forceRangeChangeEvent) {
+    setVisibleRow(range.getStart(), forceRangeChangeEvent);
+  }
+
+  public void start(int count) {
+    if (hasData()) {
+      setRowCount(count);
+      if (count > 0) {
+        RangeChangeEvent.fire(this, getVisibleRange());
+      }
+    }
   }
 
   public void startNewRow() {
-    if (getNewRowColumns().isEmpty()) {
-      return;
-    }
-
     setEditing(true);
-    StyleUtils.hideDisplay(getFormWidget());
-    StyleUtils.autoScroll(this, ScrollBars.BOTH);
-
     fireEvent(new AddStartEvent());
-
-    if (getNewRowWidget() == null) {
-      List<EditableColumn> columns = Lists.newArrayList();
-      for (String columnId : getNewRowColumns()) {
-        columns.add(getEditableColumn(columnId));
-      }
-
-      setNewRowWidget(new RowEditor(getDataColumns(), getRelations(), columns,
-          getNewRowCallback(), this, getElement(), this));
-      add(getNewRowWidget());
-    }
 
     IsRow oldRow = null;
     IsRow newRow = createEmptyRow();
 
-    for (EditableColumn editableColumn : getEditableColumns().values()) {
-      if (!editableColumn.hasCarry()) {
+    for (EditableWidget editableWidget : getEditableWidgets()) {
+      if (!editableWidget.hasCarry()) {
         continue;
       }
       if (oldRow == null) {
@@ -402,85 +407,53 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
         }
       }
 
-      String carry = editableColumn.getCarryValue(oldRow);
+      String carry = editableWidget.getCarryValue(oldRow);
       if (!BeeUtils.isEmpty(carry)) {
-        newRow.setValue(editableColumn.getColIndex(), carry);
+        newRow.setValue(editableWidget.getDataIndex(), carry);
       }
     }
-
-    getNewRowWidget().start(newRow);
-    StyleUtils.unhideDisplay(getNewRowWidget());
+    
+    setRowData(newRow);
+    refreshData();
   }
-
+  
   public void updateActiveRow(List<? extends IsRow> values) {
-  }
-
-  private boolean checkNewRow(IsRow row) {
-    boolean ok = true;
-    int count = 0;
-
-    for (String columnId : getNewRowColumns()) {
-      EditableColumn editableColumn = getEditableColumn(columnId);
-      String value = row.getString(editableColumn.getColIndex());
-      if (BeeUtils.isEmpty(value)) {
-        if (!editableColumn.isNullable()) {
-//          notifySevere(getColumnCaption(columnId), "Value required");
-          ok = false;
-        }
-      } else {
-        count++;
-      }
-    }
-
-    if (ok && count <= 0) {
-      notifySevere("New Row", "all columns cannot be empty");
-      ok = false;
-    }
-    if (ok && getRowValidation() != null) {
-      getRowValidation().update(row);
-      String message = getRowValidation().evaluate();
-      if (!BeeUtils.isEmpty(message)) {
-        notifySevere(message);
-        ok = false;
-      }
-    }
-    return ok;
   }
 
   private IsRow createEmptyRow() {
     String[] arr = new String[getDataColumns().size()];
     return new BeeRow(0, arr);
   }
+  
+  private CreationCallback getCreationCallback() {
+    return creationCallback;
+  }
 
   private List<BeeColumn> getDataColumns() {
     return dataColumns;
   }
 
-  private EditableColumn getEditableColumn(String columnId) {
-    if (BeeUtils.isEmpty(columnId)) {
-      return null;
+  private int getDataIndex(String source) {
+    int index = BeeConst.UNDEF;
+    if (BeeUtils.isEmpty(source) || getDataColumns() == null) {
+      return index;
     }
-    return getEditableColumns().get(columnId);
+    
+    for (int i = 0; i < getDataColumns().size(); i++) {
+      if (BeeUtils.same(source, getDataColumns().get(i).getId())) {
+        index = i;
+        break;
+      }
+    }
+    return index;
   }
 
-  private Map<String, EditableColumn> getEditableColumns() {
-    return editableColumns;
+  private Set<WidgetDescription> getDisplayWidgets() {
+    return displayWidgets;
   }
 
-  private Widget getFormWidget() {
-    return formWidget;
-  }
-
-  private NewRowCallback getNewRowCallback() {
-    return newRowCallback;
-  }
-
-  private List<String> getNewRowColumns() {
-    return newRowColumns;
-  }
-
-  private RowEditor getNewRowWidget() {
-    return newRowWidget;
+  private Set<EditableWidget> getEditableWidgets() {
+    return editableWidgets;
   }
 
   private Notification getNotification() {
@@ -491,8 +464,8 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     return pageStart;
   }
 
-  private Set<RelationInfo> getRelations() {
-    return relations;
+  private Widget getRootWidget() {
+    return rootWidget;
   }
 
   private IsRow getRowData() {
@@ -503,70 +476,20 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     return rowEditable;
   }
 
-  private Evaluator getRowValidation() {
-    return rowValidation;
+  private Widget getWidget(String id) {
+    if (isAttached()) {
+      return DomUtils.getWidget(this, id);
+    } else {
+      return null;
+    }
   }
 
-  private void initNewRowColumns(String columnNames) {
-    getNewRowColumns().clear();
-    if (isReadOnly() || getEditableColumns().isEmpty()) {
-      return;
-    }
-
-    if (!BeeUtils.isEmpty(columnNames)) {
-      Splitter splitter = Splitter.on(CharMatcher.anyOf(" ,;")).trimResults().omitEmptyStrings();
-      for (String colName : splitter.split(columnNames)) {
-        if (BeeUtils.isEmpty(colName)) {
-          continue;
-        }
-
-        String id = null;
-        if (getEditableColumns().containsKey(colName)) {
-          id = colName;
-        } else {
-          for (String columnId : getEditableColumns().keySet()) {
-            if (BeeUtils.same(columnId, colName)) {
-              id = columnId;
-              break;
-            }
-          }
-        }
-        if (BeeUtils.isEmpty(id)) {
-          BeeKeeper.getLog().warning("newRowColumn", colName, "is not editable");
-          continue;
-        }
-
-        if (!BeeUtils.containsSame(getNewRowColumns(), id)) {
-          getNewRowColumns().add(id);
-        }
-      }
-    }
-
-    if (getNewRowColumns().isEmpty()) {
-      for (Map.Entry<String, EditableColumn> entry : getEditableColumns().entrySet()) {
-        String id = entry.getKey();
-//        if (!entry.getValue().isNullable() || !isColumnReadOnly(id)) {
-          getNewRowColumns().add(id);
-//        }
-      }
-    }
+  private boolean hasData() {
+    return hasData;
   }
 
   private boolean isReadOnly() {
     return readOnly;
-  }
-
-  private boolean isRelated(String columnId) {
-    if (BeeUtils.isEmpty(columnId) || BeeUtils.isEmpty(getRelations())) {
-      return false;
-    }
-
-    for (RelationInfo relationInfo : getRelations()) {
-      if (BeeUtils.same(relationInfo.getSource(), columnId)) {
-        return true;
-      }
-    }
-    return false;
   }
 
   private boolean isRowEditable(IsRow rowValue, boolean warn) {
@@ -585,40 +508,35 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     return ok;
   }
 
-  private void prepareForInsert(IsRow row) {
-    List<BeeColumn> columns = Lists.newArrayList();
-    List<String> values = Lists.newArrayList();
-
-    for (int i = 0; i < getDataColumns().size(); i++) {
-      String value = row.getString(i);
-      if (BeeUtils.isEmpty(value)) {
-        continue;
-      }
-
-      if (!isRelated(getDataColumns().get(i).getId())) {
-        columns.add(getDataColumns().get(i));
-        values.add(value);
+  private void refreshData() {
+    fireLoadingStateChange(LoadingStateChangeEvent.LoadingState.PARTIALLY_LOADED);
+    
+    for (EditableWidget editableWidget : getEditableWidgets()) {
+      Widget widget = getWidget(editableWidget.getWidgetId());
+      String value = getRowData().getString(editableWidget.getDataIndex());
+      
+      if (widget instanceof Editor) {
+        ((Editor) widget).setValue(BeeUtils.trimRight(value));
       }
     }
-
-    Assert.notEmpty(columns);
-    fireEvent(new ReadyForInsertEvent(columns, values));
+    
+    fireLoadingStateChange(LoadingStateChangeEvent.LoadingState.LOADED);
   }
 
   private void setDataColumns(List<BeeColumn> dataColumns) {
     this.dataColumns = dataColumns;
   }
 
-  private void setFormWidget(Widget formWidget) {
-    this.formWidget = formWidget;
-  }
-
-  private void setNewRowWidget(RowEditor newRowWidget) {
-    this.newRowWidget = newRowWidget;
+  private void setHasData(boolean hasData) {
+    this.hasData = hasData;
   }
 
   private void setReadOnly(boolean readOnly) {
     this.readOnly = readOnly;
+  }
+
+  private void setRootWidget(Widget rootWidget) {
+    this.rootWidget = rootWidget;
   }
 
   private void setRowData(IsRow rowData) {
@@ -629,68 +547,23 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     this.rowEditable = rowEditable;
   }
 
-  private void setRowValidation(Evaluator rowValidation) {
-    this.rowValidation = rowValidation;
+  private void setVisibleRow(int index, boolean forceRangeChangeEvent) {
+    Assert.nonNegative(index);
+
+    boolean changed = (index != getPageStart());
+    if (changed) {
+      setPageStart(index);
+    }
+    if (changed || forceRangeChangeEvent) {
+      RangeChangeEvent.fire(this, getVisibleRange());
+    }
   }
 
   private void showNote(Level level, String... messages) {
-    StyleUtils.setZIndex(getNotification(), StyleUtils.getZIndex(getFormWidget()) + 1);
+    StyleUtils.setZIndex(getNotification(), StyleUtils.getZIndex(getRootWidget()) + 1);
     getNotification().show(level, messages);
   }
-
-  private void startEdit(String columnId, int charCode, Element sourceElement) {
-    EditableColumn editableColumn = getEditableColumn(columnId);
-    if (editableColumn == null) {
-      return;
-    }
-
-    IsRow rowValue = getRowData();
-    if (!isRowEditable(rowValue, true)) {
-      return;
-    }
-    if (!editableColumn.isCellEditable(rowValue, true)) {
-      return;
-    }
-
-    if (charCode == EditorFactory.START_KEY_DELETE) {
-      if (!editableColumn.isNullable()) {
-        return;
-      }
-
-      String oldValue = editableColumn.getOldValueForUpdate(rowValue);
-      if (BeeUtils.isEmpty(oldValue)) {
-        return;
-      }
-
-      updateCell(rowValue, editableColumn.getColumnForUpdate(), oldValue, null,
-          editableColumn.getRowModeForUpdate());
-      return;
-    }
-
-    if (ValueType.BOOLEAN.equals(editableColumn.getDataType())
-        && BeeUtils.inList(charCode, EditorFactory.START_MOUSE_CLICK,
-            EditorFactory.START_KEY_ENTER) && editableColumn.getRelationInfo() == null) {
-
-      String oldValue = rowValue.getString(editableColumn.getColIndex());
-      Boolean b = !BeeUtils.toBoolean(oldValue);
-      if (!b && editableColumn.isNullable()) {
-        b = null;
-      }
-      String newValue = BooleanValue.pack(b);
-
-      updateCell(rowValue, editableColumn.getDataColumn(), oldValue, newValue, false);
-      return;
-    }
-
-    setEditing(true);
-    if (sourceElement != null) {
-      sourceElement.blur();
-    }
-
-    editableColumn.openEditor(this, sourceElement, getFormWidget().getElement(),
-        StyleUtils.getZIndex(getFormWidget()) + 1, rowValue, BeeUtils.toChar(charCode), this);
-  }
-
+  
   private void updateCell(IsRow rowValue, IsColumn dataColumn, String oldValue, String newValue,
       boolean rowMode) {
 //    preliminaryUpdate(rowValue.getId(), dataColumn.getId(), newValue);

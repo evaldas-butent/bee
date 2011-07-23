@@ -1,5 +1,6 @@
 package com.butent.bee.client.ui;
 
+import com.google.common.collect.Lists;
 import com.google.gwt.canvas.client.Canvas;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.media.client.Audio;
@@ -53,6 +54,7 @@ import com.butent.bee.client.layout.Stack;
 import com.butent.bee.client.layout.TabbedPages;
 import com.butent.bee.client.layout.Vertical;
 import com.butent.bee.client.resources.Images;
+import com.butent.bee.client.ui.FormFactory.WidgetCallback;
 import com.butent.bee.client.utils.XmlUtils;
 import com.butent.bee.client.widget.BeeButton;
 import com.butent.bee.client.widget.BeeCheckBox;
@@ -86,10 +88,14 @@ import com.butent.bee.client.widget.TextLabel;
 import com.butent.bee.client.widget.Toggle;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.HasId;
 import com.butent.bee.shared.HasService;
 import com.butent.bee.shared.HasStage;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.ui.Calculation;
+import com.butent.bee.shared.ui.ConditionalStyleDeclaration;
+import com.butent.bee.shared.ui.EditorDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.EnumSet;
@@ -295,11 +301,13 @@ public enum FormWidget {
   private static final String ATTR_PRELOAD = "preload";
   private static final String ATTR_VOLUME = "volume";
   
-  private static final String ATTR_SOURCE = "source";
-  
   private static final String TAG_DYN_STYLE = "dynStyle";
   private static final String TAG_CALC = "calc";
-
+  private static final String TAG_VALIDATION = "validation";
+  private static final String TAG_EDITABLE = "editable";
+  private static final String TAG_CARRY = "carry";
+  private static final String TAG_EDITOR = "editor";
+  
   private static final String TAG_HTML = "html";
   private static final String TAG_TEXT = "text";
   
@@ -345,8 +353,10 @@ public enum FormWidget {
     this.types = types;
   }
   
-  public Widget create(Element description) {
+  public Widget create(Element description, WidgetCallback callback) {
     Assert.notNull(description);
+    Assert.notNull(callback);
+
     if (BeeUtils.isFalse(XmlUtils.getAttributeBoolean(description, ATTR_VISIBLE))) {
       return null;
     }
@@ -820,17 +830,69 @@ public enum FormWidget {
     }
     
     if (widget == null) {
+      callback.onFailure(new String[] {"cannot create widget", getTagName()});
       return null;
     }
     
+    WidgetDescription widgetDescription = new WidgetDescription(this,
+        (widget instanceof HasId) ? ((HasId) widget).getId() : DomUtils.getId(widget));
+    
     if (attributes.size() > 0) {
       setAttributes(widget, attributes);
+      widgetDescription.setAttributes(attributes);
     }
     
+    List<ConditionalStyleDeclaration> dynStyles = Lists.newArrayList();
+    Calculation calc;
+
     if (children.size() > 0) {
       for (Element child : children) {
-        processChild(widget, child);
+        String childTag = child.getTagName();
+
+        if (BeeUtils.same(childTag, TAG_DYN_STYLE)) {
+          ConditionalStyleDeclaration csd = XmlUtils.getConditionalStyle(child);
+          if (csd != null) {
+            dynStyles.add(csd);
+          }
+
+        } else if (BeeUtils.same(childTag, TAG_CALC)) {
+          calc = XmlUtils.getCalculation(child);
+          if (calc != null) {
+            widgetDescription.setCalculation(calc);
+          }
+
+        } else if (BeeUtils.same(childTag, TAG_EDITABLE)) {
+          calc = XmlUtils.getCalculation(child);
+          if (calc != null) {
+            widgetDescription.setEditable(calc);
+          }
+
+        } else if (BeeUtils.same(childTag, TAG_VALIDATION)) {
+          calc = XmlUtils.getCalculation(child);
+          if (calc != null) {
+            widgetDescription.setValidation(calc);
+          }
+
+        } else if (BeeUtils.same(childTag, TAG_CARRY)) {
+          calc = XmlUtils.getCalculation(child);
+          if (calc != null) {
+            widgetDescription.setCarry(calc);
+          }
+
+        } else if (BeeUtils.same(childTag, TAG_EDITOR)) {
+          EditorDescription editor = FormFactory.getEditorDescription(child);
+          if (editor != null) {
+            widgetDescription.setEditor(editor);
+          }
+          
+        } else {
+          processChild(widget, child, callback);
+        }
       }
+    }
+    
+    if (dynStyles.size() > 0) {
+      widgetDescription.setDynStyles(dynStyles);
     }
     
     if (attributes.size() > 0) {
@@ -846,11 +908,20 @@ public enum FormWidget {
         }
       }
     }
-
+    
+    callback.onSuccess(widgetDescription);
     return widget;
   }
 
-  private HeaderAndContent createHeaderAndContent(Element parent) {
+  public boolean isDisplay() {
+    return hasType(Type.DISPLAY);
+  }
+
+  public boolean isEditable() {
+    return hasType(Type.EDITABLE);
+  }
+  
+  private HeaderAndContent createHeaderAndContent(Element parent, WidgetCallback callback) {
     String headerTag = null;
     String headerString = null;
     Widget headerWidget = null;
@@ -875,7 +946,7 @@ public enum FormWidget {
         continue;
       }
 
-      Widget w = createIfWidget(child);
+      Widget w = createIfWidget(child, callback);
       if (w == null) {
         continue;
       }
@@ -890,7 +961,7 @@ public enum FormWidget {
     return new HeaderAndContent(headerTag, headerString, headerWidget, content);
   }
   
-  private Widget createIfWidget(Element description) {
+  private Widget createIfWidget(Element description, WidgetCallback callback) {
     if (description == null) {
       return null;
     }
@@ -898,12 +969,12 @@ public enum FormWidget {
     if (fw == null) {
       return null;
     }
-    return fw.create(description);
+    return fw.create(description, callback);
   }
 
-  private Widget createOneChild(Element parent) {
+  private Widget createOneChild(Element parent, WidgetCallback callback) {
     for (Element child : XmlUtils.getChildrenElements(parent)) {
-      Widget widget = createIfWidget(child);
+      Widget widget = createIfWidget(child, callback);
       if (widget != null) {
         return widget;
       }
@@ -1038,16 +1109,12 @@ public enum FormWidget {
     return hasType(Type.TABLE);
   }
 
-  private void processChild(Widget parent, Element child) {
+  private void processChild(Widget parent, Element child, WidgetCallback callback) {
     String childTag = child.getTagName();
-    
-    if (BeeUtils.same(childTag, TAG_DYN_STYLE)) {
-      return;
-    }
     
     if (hasLayers()) {
       if (BeeUtils.same(childTag, TAG_LAYER) && parent instanceof HasWidgets) {
-        Widget w = createOneChild(child);
+        Widget w = createOneChild(child, callback);
 
         if (w != null) {
           ((HasWidgets) parent).add(w);
@@ -1120,7 +1187,7 @@ public enum FormWidget {
               continue;
             }
 
-            Widget w = createIfWidget(cellContent);
+            Widget w = createIfWidget(cellContent, callback);
             if (w != null) {
               ((HtmlTable) parent).setWidget(r, c, w);
               break;
@@ -1209,7 +1276,7 @@ public enum FormWidget {
             continue;
           }
 
-          w = createIfWidget(cellContent);
+          w = createIfWidget(cellContent, callback);
           if (w != null) {
             break;
           }
@@ -1252,19 +1319,19 @@ public enum FormWidget {
       }
       
     } else if (hasOneChild()) {
-      Widget w = createIfWidget(child);
+      Widget w = createIfWidget(child, callback);
       if (w != null && parent instanceof HasOneWidget) {
         ((HasOneWidget) parent).setWidget(w);
       }
       
     } else if (hasChildren()) {
-      Widget w = createIfWidget(child);
+      Widget w = createIfWidget(child, callback);
       if (w != null && parent instanceof HasWidgets) {
         ((HasWidgets) parent).add(w);
       }
     
     } else if (this == SPLIT_PANEL) {
-      Widget w = createOneChild(child);
+      Widget w = createOneChild(child, callback);
       if (w != null && parent instanceof Split) {
         ScrollBars sb = XmlUtils.getAttributeScrollBars(child, ATTR_SCROLL_BARS, ScrollBars.NONE);
         Direction direction = BeeUtils.getConstant(Direction.class, childTag);
@@ -1282,7 +1349,7 @@ public enum FormWidget {
     
     } else if (this == STACK_PANEL && BeeUtils.same(childTag, TAG_STACK)) {
       Double headerSize = XmlUtils.getAttributeDouble(child, ATTR_HEADER_SIZE);
-      HeaderAndContent hc = createHeaderAndContent(child);
+      HeaderAndContent hc = createHeaderAndContent(child, callback);
 
       if (BeeUtils.isPositive(headerSize) && hc != null && hc.isValid()
           && parent instanceof Stack) {
@@ -1295,7 +1362,7 @@ public enum FormWidget {
       }
 
     } else if (this == TABBED_PAGES && BeeUtils.same(childTag, TAG_PAGE)) {
-      HeaderAndContent hc = createHeaderAndContent(child);
+      HeaderAndContent hc = createHeaderAndContent(child, callback);
 
       if (hc != null && hc.isValid() && parent instanceof TabbedPages) {
         if (hc.isHeaderText() || hc.isHeaderHtml()) {
@@ -1318,7 +1385,7 @@ public enum FormWidget {
       }
       
     } else if (this == HEADER_CONTENT_FOOTER) {
-      Widget w = createOneChild(child);
+      Widget w = createOneChild(child, callback);
       if (w != null && parent instanceof HeaderContentFooter) {
         if (BeeUtils.same(childTag, TAG_HEADER)) {
           ((HeaderContentFooter) parent).setHeaderWidget(w);

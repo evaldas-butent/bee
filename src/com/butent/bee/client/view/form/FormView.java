@@ -9,7 +9,6 @@ import com.butent.bee.client.view.add.HasAddStartHandlers;
 import com.butent.bee.client.view.add.HasReadyForInsertHandlers;
 import com.butent.bee.client.view.edit.HasReadyForUpdateHandlers;
 import com.butent.bee.shared.data.BeeColumn;
-import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.view.RowInfo;
 
@@ -20,8 +19,7 @@ public interface FormView extends View, NotificationListener,
 
   void applyOptions(String options);
 
-  void create(FormDescription formDescription, List<BeeColumn> dataColumns, int rowCount,
-      BeeRowSet rowSet);
+  void create(FormDescription formDescription, List<BeeColumn> dataColumns);
 
   void finishNewRow(IsRow row);
 
@@ -33,5 +31,7 @@ public interface FormView extends View, NotificationListener,
 
   void refreshCellContent(String columnSource);
 
+  void start(int rowCount);
+  
   void startNewRow();
 }

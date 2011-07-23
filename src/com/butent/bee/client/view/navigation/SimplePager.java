@@ -53,7 +53,7 @@ public class SimplePager extends AbstractPagerImpl {
 
     @Override
     public void execute() {
-      if (!isEnabled()) {
+      if (!isEnabled() || getDisplay() == null) {
         return;
       }
 
@@ -124,16 +124,24 @@ public class SimplePager extends AbstractPagerImpl {
   private final BeeImage widgetLast;
 
   private final Html widgetInfo = new Html();
+  
+  private final boolean showPageSize;
 
   public SimplePager(int maxRowCount) {
-    this(maxRowCount, maxRowCount >= minRowCountForFastNavigation);
+    this(maxRowCount, true);
+  }
+  
+  public SimplePager(int maxRowCount, boolean showPageSize) {
+    this(maxRowCount, showPageSize, maxRowCount >= minRowCountForFastNavigation);
   }
 
-  public SimplePager(int maxRowCount, boolean showFastNavigation) {
-    this(maxRowCount, showFastNavigation, getDefaultStyle());
+  public SimplePager(int maxRowCount, boolean showPageSize, boolean showFastNavigation) {
+    this(maxRowCount, showPageSize, showFastNavigation, getDefaultStyle());
   }
 
-  public SimplePager(int maxRowCount, boolean showFastNavigation, Style style) {
+  public SimplePager(int maxRowCount, boolean showPageSize, boolean showFastNavigation,
+      Style style) {
+
     String s = style.disabledButton();
     widgetFirst = new BeeImage(Global.getImages().first(), new GoCommand(Navigation.FIRST), s);
     widgetPrev = new BeeImage(Global.getImages().previous(), new GoCommand(Navigation.PREV), s);
@@ -147,6 +155,8 @@ public class SimplePager extends AbstractPagerImpl {
       widgetRewind = null;
       widgetForw = null;
     }
+    
+    this.showPageSize = showPageSize;
 
     Horizontal layout = new Horizontal();
     initWidget(layout);
@@ -212,7 +222,12 @@ public class SimplePager extends AbstractPagerImpl {
   }
 
   private String createText(int start, int end, int rowCount) {
-    return format(start) + positionSeparator + format(end) + rowCountSeparator + format(rowCount);
+    StringBuilder sb = new StringBuilder(format(start));
+    if (showPageSize) {
+      sb.append(positionSeparator).append(format(end));
+    }
+    sb.append(rowCountSeparator).append(format(rowCount));
+    return sb.toString();
   }
 
   private String format(int x) {

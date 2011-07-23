@@ -96,7 +96,8 @@ public class DataFooterImpl extends Absolute implements DataFooterView, HasNavig
     addStyleName(StyleUtils.WINDOW_FOOTER);
   }
 
-  public void create(int rowCount, int pageSize, boolean addPaging, boolean addSearch) {
+  public void create(int rowCount, int pageSize, boolean addPaging, boolean showPageSize,
+      boolean addSearch) {
     Style style = getDefaultStyle();
     addStyleName(style.container());
 
@@ -111,7 +112,7 @@ public class DataFooterImpl extends Absolute implements DataFooterView, HasNavig
     int left = margin;
 
     if (addPaging) {
-      SimplePager pager = new SimplePager(rowCount);
+      SimplePager pager = new SimplePager(rowCount, showPageSize);
       pager.addStyleName(style.simplePager());
       add(pager, left, top);
       left += pagerWidth + spacing;

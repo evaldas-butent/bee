@@ -177,7 +177,7 @@ public class DataHeaderImpl extends Complex implements DataHeaderView {
 
   @Override
   public void onLoadingStateChanged(LoadingStateChangeEvent event) {
-    if (BeeUtils.isEmpty(getLoadingIndicatorId())) {
+    if (!isAttached() || BeeUtils.isEmpty(getLoadingIndicatorId())) {
       return;
     }
     Assert.notNull(event);

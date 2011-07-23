@@ -134,14 +134,14 @@ public class FormPresenter implements Presenter, ReadyForInsertEvent.Handler,
 
   private final Set<HandlerRegistration> filterChangeHandlers = Sets.newHashSet();
   private Filter lastFilter = null;
-
+  
   public FormPresenter(FormDescription formDescription, String viewName, int rowCount,
       BeeRowSet rowSet, boolean async) {
     this.viewName = viewName;
     this.async = async;
     this.dataColumns = (rowSet == null) ? null : rowSet.getColumns();
 
-    this.formContainer = createView(formDescription, dataColumns, rowCount, rowSet);
+    this.formContainer = createView(formDescription, dataColumns, rowCount);
     this.dataProvider = createProvider(formContainer, viewName, rowSet, async);
 
     bind();
@@ -277,25 +277,27 @@ public class FormPresenter implements Presenter, ReadyForInsertEvent.Handler,
       getDataProvider().onUnload();
     }
   }
-
+  
   private void bind() {
     FormContainerView view = getView();
     view.setViewPresenter(this);
     view.bind();
-
-    Collection<SearchView> searchers = getSearchers();
-    if (searchers != null) {
-      for (SearchView search : searchers) {
-        filterChangeHandlers.add(search.addChangeHandler(new ChangeHandler() {
-          public void onChange(ChangeEvent event) {
-            updateFilter();
-          }
-        }));
+    
+    if (hasData()) {
+      Collection<SearchView> searchers = getSearchers();
+      if (searchers != null) {
+        for (SearchView search : searchers) {
+          filterChangeHandlers.add(search.addChangeHandler(new ChangeHandler() {
+            public void onChange(ChangeEvent event) {
+              updateFilter();
+            }
+          }));
+        }
       }
-    }
 
-    view.getContent().addReadyForUpdateHandler(this);
-    view.getContent().addReadyForInsertHandler(this);
+      view.getContent().addReadyForUpdateHandler(this);
+      view.getContent().addReadyForInsertHandler(this);
+    }
   }
 
   private Provider createProvider(FormContainerView view, String dataName, BeeRowSet rowSet,
@@ -315,10 +317,10 @@ public class FormPresenter implements Presenter, ReadyForInsertEvent.Handler,
   }
 
   private FormContainerView createView(FormDescription formDescription,
-      List<BeeColumn> columns, int rowCount, BeeRowSet rowSet) {
+      List<BeeColumn> columns, int rowCount) {
     FormContainerView view = new FormContainerImpl();
 
-    view.create(formDescription, columns, rowCount, rowSet);
+    view.create(formDescription, columns, rowCount);
     return view;
   }
 
@@ -336,6 +338,10 @@ public class FormPresenter implements Presenter, ReadyForInsertEvent.Handler,
       searchers = null;
     }
     return searchers;
+  }
+  
+  private boolean hasData() {
+    return !BeeUtils.isEmpty(getViewName());
   }
 
   private void setLoadingState(LoadingStateChangeEvent.LoadingState loadingState) {

@@ -12,7 +12,6 @@
       <xs:element ref="bee:widget" />
       <xs:element name="rowMessage" type="bee:calcType" minOccurs="0" />
       <xs:element name="rowEditable" type="bee:calcType" minOccurs="0" />
-      <xs:element name="rowValidation" type="bee:calcType" minOccurs="0" />
     </xs:sequence>
     <xs:attribute name="name" type="bee:nameType" use="required" />
     <xs:attribute name="viewName" type="bee:nameType" />
@@ -20,7 +19,6 @@
     <xs:attribute name="readOnly" type="xs:boolean" />
     <xs:attribute name="asyncThreshold" type="xs:nonNegativeInteger" default="100" />
     <xs:attribute name="searchThreshold" type="xs:nonNegativeInteger" default="2" />
-    <xs:attribute name="newRowColumns" type="xs:normalizedString" />
   </xs:complexType>
 
   <xs:element name="html" type="xs:string" />

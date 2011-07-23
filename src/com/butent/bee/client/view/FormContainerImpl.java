@@ -18,7 +18,6 @@ import com.butent.bee.client.view.search.SearchView;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeColumn;
-import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.event.ActiveRowChangeEvent;
 import com.butent.bee.shared.ui.Calculation;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -46,6 +45,9 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
   private boolean enabled = true;
   
   private String currentCaption = null;
+  
+  private boolean hasData = false;
+  private int initialRowCount = BeeConst.UNDEF;
   
   public FormContainerImpl() {
     this(-1);
@@ -79,24 +81,24 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
     getContent().addAddEndHandler(this);
   }
 
-  public void create(FormDescription formDescription, List<BeeColumn> dataColumns, int rowCount,
-      BeeRowSet rowSet) {
+  public void create(FormDescription formDescription, List<BeeColumn> dataColumns, int rowCount) {
     Assert.notNull(formDescription);
 
-    boolean hasData = !BeeUtils.isEmpty(dataColumns);
+    setHasData(!BeeUtils.isEmpty(dataColumns));
+    setInitialRowCount(rowCount);
 
-    setHasSearch(hasData && rowCount >= formDescription.getSearchThreshold());
+    setHasSearch(hasData() && rowCount >= formDescription.getSearchThreshold());
 
     DataHeaderView header = new DataHeaderImpl();
-    header.create(formDescription.getCaption(), hasData, formDescription.isReadOnly());
+    header.create(formDescription.getCaption(), hasData(), formDescription.isReadOnly());
 
     FormView content = new FormImpl();
-    content.create(formDescription, dataColumns, rowCount, rowSet);
+    content.create(formDescription, dataColumns);
 
     DataFooterView footer;
-    if (hasData) {
+    if (hasData()) {
       footer = new DataFooterImpl();
-      footer.create(rowCount, BeeConst.UNDEF, true, hasSearch());
+      footer.create(rowCount, BeeConst.UNDEF, true, false, hasSearch());
     } else {
       footer = null;
     }
@@ -111,7 +113,7 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
 
     add(content.asWidget(), ScrollBars.BOTH);
 
-    if (hasData) {
+    if (hasData()) {
       Calculation rmc = formDescription.getRowMessage();
       if (rmc != null) {
         setRowMessage(Evaluator.create(rmc, null, dataColumns));
@@ -164,7 +166,11 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
   }
 
   public Collection<PagerView> getPagers() {
-    return ViewHelper.getPagers(this);
+    if (hasData()) {
+      return ViewHelper.getPagers(this);
+    } else {
+      return null;
+    }
   }
 
   public Collection<SearchView> getSearchers() {
@@ -245,7 +251,7 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
   public void setHeaderHeight(int headerHeight) {
     this.headerHeight = headerHeight;
   }
-
+  
   public void setViewPresenter(Presenter viewPresenter) {
     this.viewPresenter = viewPresenter;
     for (Widget child : getChildren()) {
@@ -253,6 +259,25 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
         ((View) child).setViewPresenter(viewPresenter);
       }
     }
+  }
+
+  public void start(int rowCount) {
+    if (getContent() != null && hasData() && rowCount >= 0) {
+      getContent().start(rowCount);
+
+      Collection<PagerView> pagers = getPagers();
+      if (pagers != null) {
+        for (PagerView pager : pagers) {
+          pager.start(getContent().getDisplay());
+        }
+      }
+    }
+  }
+  
+  @Override
+  protected void onLoad() {
+    super.onLoad();
+    start(getInitialRowCount());
   }
 
   @Override
@@ -275,8 +300,16 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
     return headerDirection;
   }
 
+  private int getInitialRowCount() {
+    return initialRowCount;
+  }
+
   private Evaluator getRowMessage() {
     return rowMessage;
+  }
+
+  private boolean hasData() {
+    return hasData;
   }
 
   private boolean hasSearch() {
@@ -291,12 +324,20 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
     this.footerDirection = footerDirection;
   }
 
+  private void setHasData(boolean hasData) {
+    this.hasData = hasData;
+  }
+
   private void setHasSearch(boolean hasSearch) {
     this.hasSearch = hasSearch;
   }
 
   private void setHeaderDirection(Direction headerDirection) {
     this.headerDirection = headerDirection;
+  }
+
+  private void setInitialRowCount(int initialRowCount) {
+    this.initialRowCount = initialRowCount;
   }
 
   private void setRowMessage(Evaluator rowMessage) {

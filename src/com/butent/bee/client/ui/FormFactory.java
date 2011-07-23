@@ -1,5 +1,6 @@
 package com.butent.bee.client.ui;
 
+import com.google.gwt.core.client.Callback;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.xml.client.Document;
 import com.google.gwt.xml.client.Element;
@@ -18,14 +19,25 @@ import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.view.DataInfo;
+import com.butent.bee.shared.ui.EditorDescription;
+import com.butent.bee.shared.ui.EditorType;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
 
 public class FormFactory {
+
+  private static final String ATTR_TYPE = "type";
+
+  private static final String TAG_ITEM = "item";
   
-  public static Widget createForm(FormDescription formDescription) {
+  public interface WidgetCallback extends Callback<WidgetDescription, String[]> {
+  }
+  
+  public static Widget createForm(FormDescription formDescription, WidgetCallback callback) {
     Assert.notNull(formDescription);
+    Assert.notNull(callback);
+
     List<Element> children = XmlUtils.getChildrenElements(formDescription.getFormElement());
     if (BeeUtils.isEmpty(children)) {
       BeeKeeper.getLog().severe("createForm: form element has no children");
@@ -54,7 +66,33 @@ public class FormFactory {
       return null;
     }
     
-    return formWidget.create(root);
+    Widget form = formWidget.create(root, callback);
+    if (form == null) {
+      BeeKeeper.getLog().severe("createForm: cannot create root widget", formWidget);
+    }
+    return form;
+  }
+
+  public static EditorDescription getEditorDescription(Element element) {
+    Assert.notNull(element);
+
+    String typeCode = element.getAttribute(ATTR_TYPE);
+    if (BeeUtils.isEmpty(typeCode)) {
+      return null;
+    }
+    EditorType editorType = EditorType.getByTypeCode(typeCode);
+    if (editorType == null) {
+      return null;
+    }
+
+    EditorDescription editor = new EditorDescription(editorType);
+    editor.setAttributes(XmlUtils.getAttributes(element));
+    
+    List<String> items = XmlUtils.getChildrenText(element, TAG_ITEM);
+    if (!BeeUtils.isEmpty(items)) {
+      editor.setItems(items);
+    }
+    return editor;
   }
   
   public static void getForm(String name) {
