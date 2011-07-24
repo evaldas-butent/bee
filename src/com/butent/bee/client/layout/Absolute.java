@@ -1,5 +1,6 @@
 package com.butent.bee.client.layout;
 
+import com.google.gwt.dom.client.Style.Overflow;
 import com.google.gwt.dom.client.Style.Position;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.AbsolutePanel;
@@ -50,5 +51,6 @@ public class Absolute extends AbsolutePanel implements HasId {
   private void init() {
     DomUtils.createId(this, getIdPrefix());
     getElement().getStyle().setPosition(Position.ABSOLUTE);
+    getElement().getStyle().setOverflow(Overflow.AUTO);
   }
 }

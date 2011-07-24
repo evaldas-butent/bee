@@ -101,6 +101,8 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat {
 
         hideDatePicker();
         getBox().setFocus(true);
+        
+        ValueChangeEvent.fire(InputDate.this, getNormalizedValue());
         fireEvent(new EditStopEvent(State.CHANGED));
       }
     });

@@ -342,6 +342,7 @@
   <xs:element name="InlineLabel" type="bee:labelType" substitutionGroup="bee:widget" />
 
   <xs:element name="TextLabel" type="bee:display" substitutionGroup="bee:widget" />
+  <xs:element name="HtmlLabel" type="bee:display" substitutionGroup="bee:widget" />
 
   <xs:element name="IntegerLabel" type="bee:display" substitutionGroup="bee:widget" />
   <xs:element name="LongLabel" type="bee:display" substitutionGroup="bee:widget" />

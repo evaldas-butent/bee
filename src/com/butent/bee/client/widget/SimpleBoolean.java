@@ -7,13 +7,12 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.HasBeeClickHandler;
 import com.butent.bee.shared.HasBooleanValue;
-import com.butent.bee.shared.HasId;
 
 /**
  * Implements a checkbox user interface component without label.
  */
 
-public class SimpleBoolean extends SimpleCheckBox implements HasId, HasBeeClickHandler {
+public class SimpleBoolean extends SimpleCheckBox implements BooleanWidget, HasBeeClickHandler {
 
   private HasBooleanValue source = null;
 

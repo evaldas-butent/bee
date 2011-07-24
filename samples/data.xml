@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<BeeForm xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../schemas/form.xsd"
+  name="Data" caption="Data Binding" viewName="DataTypes">
+
+  <FlexTable borderWidth="1" cellPadding="5" style="borderCollapse: collapse;">
+    <row>
+      <cell>
+        <CheckBox source="Boolean" />
+      </cell>
+      <cell>
+        <CheckBox source="Boolean" html="Boolean" />
+      </cell>
+      <cell>
+        <Toggle source="Boolean" />
+      </cell>
+    </row>
+
+    <row>
+      <cell>
+        <InputInteger source="Integer" />
+      </cell>
+      <cell>
+        <InputSlider source="Integer" min="-10" max="10" />
+      </cell>
+      <cell>
+        <IntegerLabel source="Integer" />
+      </cell>
+    </row>
+
+    <row>
+      <cell colSpan="2">
+        <Radio name="radioInteger" source="Integer">
+          <option>0</option>
+          <option>1</option>
+          <option>2</option>
+          <option>3</option>
+          <option>4</option>
+          <option>5</option>
+          <option>6</option>
+          <option>7</option>
+          <option>8</option>
+          <option>9</option>
+        </Radio>
+      </cell>
+      <cell horizontalAlignment="right">
+        <InputSpinner source="Integer" />
+      </cell>
+    </row>
+
+    <row>
+      <cell>
+        <InputCurrency source="Currency" />
+      </cell>
+      <cell>
+        <CurrencyLabel source="Currency" />
+      </cell>
+      <cell>
+        <CurrencyLabel source="Currency" format="#,##0.00&#160;&#164;" />
+      </cell>
+    </row>
+
+    <row>
+      <cell>
+        <InputDate source="Date" format="date_short" />
+      </cell>
+      <cell>
+        <DateLabel source="Date" />
+      </cell>
+      <cell>
+        <DateLabel source="Date" format="yy.MM.dd" />
+      </cell>
+    </row>
+
+    <row>
+      <cell>
+        <InputDateTime source="DateTime" />
+      </cell>
+      <cell>
+        <DateTimeLabel source="DateTime" />
+      </cell>
+      <cell>
+        <DateTimeLabel source="DateTime" format="iso_8601" />
+      </cell>
+    </row>
+
+    <row>
+      <cell>
+        <InputDecimal scale="3" source="Numeric" />
+      </cell>
+      <cell>
+        <DecimalLabel scale="0" source="Numeric"/>
+      </cell>
+      <cell>
+        <DecimalLabel scale="5" source="Numeric"/>
+      </cell>
+    </row>
+
+    <row>
+      <cell>
+        <InputDouble source="Double" />
+      </cell>
+      <cell>
+        <DoubleLabel source="Double" />
+      </cell>
+      <cell>
+        <DoubleLabel source="Double" format="#.000" />
+      </cell>
+    </row>
+
+    <row>
+      <cell>
+        <InputLong source="Long" />
+      </cell>
+      <cell>
+        <LongLabel source="Long" />
+      </cell>
+      <cell>
+        <Progress max="1000">
+          <calc>
+            <function>
+              if (row.Long &gt; 0) {
+                return Math.min(Math.sqrt(row.Long), 900);
+              }
+              return 0;
+            </function>
+          </calc>
+        </Progress>
+      </cell>
+    </row>
+
+    <row>
+      <cell>
+        <InputText source="Char" />
+      </cell>
+      <cell>
+        <ListBox source="Char">
+          <item>abc</item>
+          <item>def</item>
+          <item>xyz</item>
+        </ListBox>
+      </cell>
+      <cell>
+        <Button source="Char" />
+      </cell>
+    </row>
+
+    <row>
+      <cell>
+        <InputText source="String" />
+      </cell>
+      <cell>
+        <TextLabel>
+          <calc>
+            <function>
+              return "length " + String(row.String).length;
+            </function>
+          </calc>
+        </TextLabel>
+      </cell>
+      <cell>
+        <Meter min="0" max="30" source="String">
+          <calc>
+            <expression>String(cell.value).length</expression>
+          </calc>
+        </Meter>
+      </cell>
+    </row>
+
+    <row>
+      <cell colSpan="3">
+        <InputArea source="Memo" style="width: 500px; height: 60px;" />
+      </cell>
+    </row>
+    <row>
+      <cell colSpan="3">
+        <HtmlLabel source="Memo" style="width: 500px; overflow: auto; border: 1px solid gray;" />
+      </cell>
+    </row>
+    
+    <row>
+      <cell>
+        <text>id, version</text>
+      </cell>
+      <cell>
+        <LongLabel>
+          <calc>
+            <expression>rowId</expression>
+          </calc>
+        </LongLabel>
+      </cell>
+      <cell>
+        <DateTimeLabel>
+          <calc>
+            <expression>rowVersion</expression>
+          </calc>
+        </DateTimeLabel>
+      </cell>
+    </row>
+    
+  </FlexTable>
+
+</BeeForm>

@@ -1179,6 +1179,17 @@ public class DomUtils {
     return lst;
   }
 
+  public static Widget getWidgetQuietly(Widget root, String id) {
+    if (root == null || BeeUtils.isEmpty(id)) {
+      return null;
+    }
+    Element el = DOM.getElementById(id);
+    if (el == null) {
+      return null;
+    }
+    return getWidget(root, el);
+  }
+
   public static boolean idEquals(Element el, String id) {
     if (el == null) {
       return false;

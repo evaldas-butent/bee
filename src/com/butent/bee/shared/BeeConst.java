@@ -90,7 +90,6 @@ public class BeeConst {
 
   public static final int SIZE_UNKNOWN = -1;
   public static final int TIME_UNKNOWN = -1;
-  public static final int SELECTION_UNKNOWN = -1;
   public static final int INDEX_UNKNOWN = -1;
 
   public static final int COMPARE_UNKNOWN = -2;

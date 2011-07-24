@@ -22,6 +22,7 @@ import com.google.gwt.user.client.ui.InlineHTML;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.xml.client.Element;
 
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.composite.InputDate;
 import com.butent.bee.client.composite.RadioGroup;
 import com.butent.bee.client.composite.SliderBar;
@@ -57,7 +58,6 @@ import com.butent.bee.client.resources.Images;
 import com.butent.bee.client.ui.FormFactory.WidgetCallback;
 import com.butent.bee.client.utils.XmlUtils;
 import com.butent.bee.client.widget.BeeButton;
-import com.butent.bee.client.widget.BeeCheckBox;
 import com.butent.bee.client.widget.BeeFrame;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.BeeLabel;
@@ -70,6 +70,7 @@ import com.butent.bee.client.widget.Html;
 import com.butent.bee.client.widget.InlineInternalLink;
 import com.butent.bee.client.widget.InlineLabel;
 import com.butent.bee.client.widget.InputArea;
+import com.butent.bee.client.widget.InputBoolean;
 import com.butent.bee.client.widget.InputInteger;
 import com.butent.bee.client.widget.InputLong;
 import com.butent.bee.client.widget.InputNumber;
@@ -82,7 +83,6 @@ import com.butent.bee.client.widget.Link;
 import com.butent.bee.client.widget.LongLabel;
 import com.butent.bee.client.widget.Meter;
 import com.butent.bee.client.widget.Progress;
-import com.butent.bee.client.widget.SimpleBoolean;
 import com.butent.bee.client.widget.Svg;
 import com.butent.bee.client.widget.TextLabel;
 import com.butent.bee.client.widget.Toggle;
@@ -97,6 +97,7 @@ import com.butent.bee.shared.ui.Calculation;
 import com.butent.bee.shared.ui.ConditionalStyleDeclaration;
 import com.butent.bee.shared.ui.EditorDescription;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.TimeUtils;
 
 import java.util.EnumSet;
 import java.util.List;
@@ -121,9 +122,10 @@ public enum FormWidget {
   GRID("Grid", EnumSet.of(Type.IS_GRID)),
   HEADER_CONTENT_FOOTER("HeaderContentFooter", EnumSet.of(Type.PANEL)),
   HORIZONTAL_PANEL("HorizontalPanel", EnumSet.of(Type.CELL_VECTOR)),
+  HTML_LABEL("HtmlLabel", EnumSet.of(Type.DISPLAY)),
   HYPERLINK("Hyperlink", EnumSet.of(Type.FOCUSABLE, Type.DISPLAY)),
   IMAGE("Image", EnumSet.of(Type.FOCUSABLE, Type.DISPLAY)),
-  INLINE_HYPERLINK("InlineHyperlink", EnumSet.of(Type.FOCUSABLE)),
+  INLINE_HYPERLINK("InlineHyperlink", EnumSet.of(Type.FOCUSABLE, Type.DISPLAY)),
   INLINE_LABEL("InlineLabel", EnumSet.of(Type.IS_LABEL)),
   INPUT_AREA("InputArea", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE, Type.INPUT)),
   INPUT_CURRENCY("InputCurrency", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE, Type.INPUT)),
@@ -399,11 +401,7 @@ public enum FormWidget {
         break;
       
       case CHECK_BOX:
-        if (BeeUtils.isEmpty(html)) {
-          widget = new SimpleBoolean();
-        } else {
-          widget = new BeeCheckBox(html);
-        }
+        widget = new InputBoolean(html);
         break;
       
       case COMPLEX_PANEL:
@@ -483,6 +481,14 @@ public enum FormWidget {
         widget = new Horizontal();
         break;
 
+      case HTML_LABEL:
+        if (BeeUtils.isEmpty(html)) {
+          widget = new Html();
+        } else {
+          widget = new Html(html);
+        }
+        break;
+        
       case HYPERLINK:
         url = attributes.get(ATTR_HISTORY_TOKEN);
         if (!BeeUtils.isEmpty(url)) {
@@ -919,6 +925,151 @@ public enum FormWidget {
 
   public boolean isEditable() {
     return hasType(Type.EDITABLE);
+  }
+  
+  public void updateDisplay(Widget root, String id, String value) {
+    Assert.notNull(root);
+    Assert.notEmpty(id);
+    
+    Widget widget = DomUtils.getWidget(root, id);
+    if (widget == null) {
+      BeeKeeper.getLog().warning("update display:", id, "widget not found");
+      return;
+    }
+    
+    switch (this) {
+      case AUDIO:
+        if (!BeeUtils.isEmpty(value) && widget instanceof Audio) {
+          ((Audio) widget).setSrc(value);
+        }
+        break;
+
+      case BUTTON:
+        if (!BeeUtils.isEmpty(value) && widget instanceof BeeButton) {
+          ((BeeButton) widget).setHTML(value);
+        }
+        break;
+
+      case CURRENCY_LABEL:
+        if (widget instanceof DecimalLabel) {
+          ((DecimalLabel) widget).setValue(BeeUtils.toDecimalOrNull(value));
+        }
+        break;
+
+      case DATE_LABEL:
+        if (widget instanceof DateLabel) {
+          ((DateLabel) widget).setValue(TimeUtils.toDateOrNull(value));
+        }
+        break;
+
+      case DATE_TIME_LABEL:
+        if (widget instanceof DateTimeLabel) {
+          ((DateTimeLabel) widget).setValue(TimeUtils.toDateTimeOrNull(value));
+        }
+        break;
+
+      case DECIMAL_LABEL:
+        if (widget instanceof DecimalLabel) {
+          ((DecimalLabel) widget).setValue(BeeUtils.toDecimalOrNull(value));
+        }
+        break;
+
+      case DOUBLE_LABEL:
+        if (widget instanceof DoubleLabel) {
+          ((DoubleLabel) widget).setValue(BeeUtils.toDoubleOrNull(value));
+        }
+        break;
+
+      case FRAME:
+        if (!BeeUtils.isEmpty(value) && widget instanceof BeeFrame) {
+          ((BeeFrame) widget).setUrl(value);
+        }
+        break;
+
+      case HYPERLINK:
+        if (!BeeUtils.isEmpty(value) && widget instanceof InternalLink) {
+          ((InternalLink) widget).update(value);
+        }
+        break;
+
+      case HTML_LABEL:
+        if (widget instanceof Html) {
+          ((Html) widget).setHTML(BeeUtils.trim(value));
+        }
+        break;
+        
+      case IMAGE:
+        if (!BeeUtils.isEmpty(value) && widget instanceof BeeImage) {
+          ImageResource resource = Images.get(value);
+          if (resource == null) {
+            ((BeeImage) widget).setUrl(value);
+          } else {
+            ((BeeImage) widget).setResource(resource);
+          }
+        }
+        break;
+
+      case INLINE_HYPERLINK:
+        if (!BeeUtils.isEmpty(value) && widget instanceof InlineInternalLink) {
+          ((InlineInternalLink) widget).update(value);
+        }
+        break;
+
+      case INTEGER_LABEL:
+        if (widget instanceof IntegerLabel) {
+          ((IntegerLabel) widget).setValue(BeeUtils.toIntOrNull(value));
+        }
+        break;
+
+      case LINK:
+        if (!BeeUtils.isEmpty(value) && widget instanceof Link) {
+          ((Link) widget).update(value);
+        }
+        break;
+
+      case LONG_LABEL:
+        if (widget instanceof LongLabel) {
+          ((LongLabel) widget).setValue(BeeUtils.toLongOrNull(value));
+        }
+        break;
+
+      case METER:
+        if (widget instanceof Meter) {
+          if (BeeUtils.isDouble(value)) {
+            ((Meter) widget).setValue(BeeUtils.toDouble(value));
+          } else {
+            ((Meter) widget).setValue(((Meter) widget).getMin());
+          }
+        }
+        break;
+
+      case PROGRESS:
+        if (widget instanceof Progress) {
+          if (BeeUtils.isPositiveDouble(value)) {
+            ((Progress) widget).setValue(BeeUtils.toDouble(value));
+          } else {
+            ((Progress) widget).setValue(BeeConst.DOUBLE_ZERO);
+          }
+        }
+        break;
+
+      case TEXT_LABEL:
+        if (widget instanceof TextLabel) {
+          ((TextLabel) widget).setValue(value);
+        }
+        break;
+
+      case VIDEO:
+        if (!BeeUtils.isEmpty(value) && widget instanceof Video) {
+          ((Video) widget).setSrc(value);
+        }
+        break;
+
+      case CANVAS:
+      case SVG:
+      default:
+        BeeKeeper.getLog().warning("update display:", getTagName(), "not supported");
+    }
   }
   
   private HeaderAndContent createHeaderAndContent(Element parent, WidgetCallback callback) {

@@ -7,7 +7,6 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.HasBeeValueChangeHandler;
 import com.butent.bee.shared.HasBooleanValue;
-import com.butent.bee.shared.HasId;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Variable;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -16,7 +15,8 @@ import com.butent.bee.shared.utils.BeeUtils;
  * Implements a standard check box user interface component.
  */
 
-public class BeeCheckBox extends CheckBox implements HasId, HasBeeValueChangeHandler<Boolean> {
+public class BeeCheckBox extends CheckBox implements BooleanWidget,
+    HasBeeValueChangeHandler<Boolean> {
 
   private HasBooleanValue source = null;
 
