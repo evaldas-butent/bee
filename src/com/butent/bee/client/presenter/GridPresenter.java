@@ -141,7 +141,7 @@ public class GridPresenter implements Presenter, ReadyForInsertEvent.Handler,
   private Filter lastFilter = null;
 
   public GridPresenter(DataInfo dataInfo, BeeRowSet rowSet, boolean async,
-      GridDescription gridDescription) {
+      GridDescription gridDescription, boolean isChild) {
     this.dataInfo = dataInfo;
     this.async = async;
     this.dataColumns = rowSet.getColumns();
@@ -149,7 +149,7 @@ public class GridPresenter implements Presenter, ReadyForInsertEvent.Handler,
     int rowCount = async ? dataInfo.getRowCount() : rowSet.getNumberOfRows();
 
     this.gridContainer = createView(dataInfo.getName(), dataColumns, rowCount, rowSet,
-        gridDescription);
+        gridDescription, isChild);
     this.dataProvider = createProvider(gridContainer, dataInfo.getName(), rowSet, async);
 
     bind();
@@ -322,12 +322,12 @@ public class GridPresenter implements Presenter, ReadyForInsertEvent.Handler,
   }
 
   private GridContainerView createView(String dataName, List<BeeColumn> columns, int rc,
-      BeeRowSet rowSet, GridDescription gridDescription) {
+      BeeRowSet rowSet, GridDescription gridDescription, boolean isChild) {
     GridContainerView view = new GridContainerImpl();
 
     String caption = (gridDescription == null)
         ? dataName : BeeUtils.ifString(gridDescription.getCaption(), dataName);
-    view.create(caption, columns, rc, rowSet, gridDescription);
+    view.create(caption, columns, rc, rowSet, gridDescription, isChild);
 
     return view;
   }

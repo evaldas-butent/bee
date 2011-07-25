@@ -7,8 +7,9 @@
   name="Users" viewName="Users" caption="Vartotojai">
   
   <LayoutPanel>
-    <layer left="1" leftUnit="%" top="1" topUnit="ex" width="50" widthUnit="%">
-      <FlexTable cellSpacing="5">
+    <layer left="1" leftUnit="%" width="50" widthUnit="%"
+           top="10" topUnit="px" height="250" heightUnit="px">
+      <FlexTable cellSpacing="10">
         <row>
           <cell><text>Login</text></cell>
           <cell><InputText source="Login" /></cell>
@@ -32,11 +33,20 @@
       </FlexTable>
     </layer>
     
-    <layer left="55" leftUnit="%" top="1" topUnit="ex" right="1" rightUnit="%">
-      <FlowPanel>
-        <Label html="Properties" />
-        <InputArea source="Properties" style="bottom: 1ex;" />
-      </FlowPanel>
+    <layer left="55" leftUnit="%" right="1" rightUnit="%"
+            top="10" topUnit="px" height="25" heightUnit="px">
+      <Label html="Properties" horizontalAlignment="center" />
     </layer>
+
+    <layer left="55" leftUnit="%" right="1" rightUnit="%"
+            top="40" topUnit="px" height="240" heightUnit="px">
+      <InputArea source="Properties" />
+    </layer>
+    
+    <layer left="1" leftUnit="%" right="1" rightUnit="%"
+           top="300" topUnit="px" bottom="1" bottomUnit="ex">
+      <Grid viewName="ChildRoles" relSource="User" />
+    </layer>
+    
   </LayoutPanel>
 </BeeForm>  

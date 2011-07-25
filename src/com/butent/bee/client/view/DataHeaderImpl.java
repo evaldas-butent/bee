@@ -121,17 +121,19 @@ public class DataHeaderImpl extends Complex implements DataHeaderView {
     this.captionId = DomUtils.createUniqueId("caption");
   }
 
-  public void create(String caption, boolean hasData, boolean readOnly) {
+  public void create(String caption, boolean hasData, boolean readOnly, boolean isChild) {
     Style style = getDefaultStyle();
     addStyleName(StyleUtils.WINDOW_HEADER);
     addStyleName(style.container());
 
     BeeLabel label = new BeeLabel(caption);
     label.setId(captionId);
-    label.addStyleName(StyleUtils.WINDOW_CAPTION);
+    if (!isChild) {
+      label.addStyleName(StyleUtils.WINDOW_CAPTION);
+    }
     addLeftTop(label, style.captionLeft(), style.captionTop());
 
-    int x = style.controlsRight();
+    int x = isChild ? style.closeRight() : style.controlsRight();
     int y = style.controlTop();
     int w = style.controlWidth();
 
@@ -139,7 +141,9 @@ public class DataHeaderImpl extends Complex implements DataHeaderView {
 
     addRightTop(createControl(Global.getImages().configure(), Action.CONFIGURE, cst), x, y);
     addRightTop(createControl(Global.getImages().save(), Action.SAVE, cst), x += w, y);
-    addRightTop(createControl(Global.getImages().bookmarkAdd(), Action.BOOKMARK, cst), x += w, y);
+    if (!isChild) {
+      addRightTop(createControl(Global.getImages().bookmarkAdd(), Action.BOOKMARK, cst), x += w, y);
+    }
 
     if (hasData) {
       if (!readOnly) {
@@ -154,9 +158,11 @@ public class DataHeaderImpl extends Complex implements DataHeaderView {
       addRightTop(loadingIndicator,
           x + style.loadingIndicatorRightMargin(), style.loadingIndicatorTop());
     }
-
-    addRightTop(createControl(Global.getImages().close(), Action.CLOSE, style.close()),
-        style.closeRight(), style.closeTop());
+    
+    if (!isChild) {
+      addRightTop(createControl(Global.getImages().close(), Action.CLOSE, style.close()),
+          style.closeRight(), style.closeTop());
+    }
   }
 
   public String getCaption() {

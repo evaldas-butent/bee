@@ -17,7 +17,7 @@ public class ColumnValueFilter extends ComparisonFilter {
     super();
   }
 
-  protected ColumnValueFilter(String column, Operator operator, Value value) {
+  public ColumnValueFilter(String column, Operator operator, Value value) {
     super(column,
         operator.isStringOperator() && !ValueType.isString(value.getType())
             ? Operator.EQ

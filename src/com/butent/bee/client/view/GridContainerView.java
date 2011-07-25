@@ -17,7 +17,7 @@ public interface GridContainerView extends View {
   void bind();
 
   void create(String caption, List<BeeColumn> dataColumns, int rowCount, BeeRowSet rowSet,
-      GridDescription gridDescription);
+      GridDescription gridDescription, boolean isChild);
 
   GridView getContent();
 }

@@ -69,6 +69,8 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
   
   private String currentCaption = null;
   
+  private boolean child = false;
+  
   public GridContainerImpl() {
     this(-1);
   }
@@ -102,14 +104,15 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
   }
 
   public void create(String caption, List<BeeColumn> dataColumns, int rowCount, BeeRowSet rowSet,
-      GridDescription gridDescription) {
+      GridDescription gridDescription, boolean isChild) {
+    setChild(isChild);
     int minRows = BeeUtils.unbox((gridDescription == null)
         ? minPagingRows : gridDescription.getPagingThreshold());
-    setHasPaging(rowCount >= minRows);
+    setHasPaging(!isChild && rowCount >= minRows);
 
     minRows = BeeUtils.unbox((gridDescription == null)
         ? DataHelper.getDefaultSearchThreshold() : gridDescription.getSearchThreshold());
-    setHasSearch(rowCount >= minRows);
+    setHasSearch(!isChild && rowCount >= minRows);
 
     int pageSize;
     if (hasPaging()) {
@@ -124,7 +127,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
         (gridDescription == null) ? false : BeeUtils.isTrue(gridDescription.isReadOnly());
 
     DataHeaderView header = new DataHeaderImpl();
-    header.create(caption, true, readOnly);
+    header.create(caption, true, readOnly, isChild);
 
     GridView content = new CellGridImpl();
     content.create(dataColumns, rowCount, rowSet, gridDescription, hasSearch());
@@ -390,9 +393,9 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
 
   public void setViewPresenter(Presenter viewPresenter) {
     this.viewPresenter = viewPresenter;
-    for (Widget child : getChildren()) {
-      if (child instanceof View) {
-        ((View) child).setViewPresenter(viewPresenter);
+    for (Widget widget : getChildren()) {
+      if (widget instanceof View) {
+        ((View) widget).setViewPresenter(viewPresenter);
       }
     }
   }
@@ -443,7 +446,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
           }
         }
       }
-    } else if (init) {
+    } else if (init && !isChild()) {
       int rc = content.getGrid().getRowCount();
       int pageSize = (rc > 0) ? rc : 10;
       getContent().updatePageSize(pageSize, init);
@@ -509,8 +512,16 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     return adding;
   }
 
+  private boolean isChild() {
+    return child;
+  }
+  
   private void setAdding(boolean adding) {
     this.adding = adding;
+  }
+
+  private void setChild(boolean child) {
+    this.child = child;
   }
 
   private void setCurrentCaption(String currentCaption) {

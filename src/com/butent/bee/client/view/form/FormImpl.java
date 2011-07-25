@@ -15,6 +15,7 @@ import com.butent.bee.client.data.HasDataTable;
 import com.butent.bee.client.dialog.Notification;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
+import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.layout.Absolute;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.ui.FormDescription;
@@ -115,6 +116,10 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
           onFailure(new String[] {"editable source not found", source, id});
         }
       }
+      
+      if (type.isGrid() && hasData()) {
+        getGridWidgets().add(result);
+      }
     }
   }
   
@@ -201,6 +206,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
   
   private final Set<DisplayWidget> displayWidgets = Sets.newHashSet();
   private final Set<EditableWidget> editableWidgets = Sets.newHashSet();
+  private final Set<WidgetDescription> gridWidgets = Sets.newHashSet();
 
   public FormImpl() {
     super();
@@ -571,6 +577,10 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     return editableWidgets;
   }
 
+  private Set<WidgetDescription> getGridWidgets() {
+    return gridWidgets;
+  }
+  
   private Notification getNotification() {
     return notification;
   }
@@ -636,6 +646,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     }
     
     refreshDisplayWidgets();
+    refreshGridWidgets(getRowData().getId());
     
     fireLoadingStateChange(LoadingStateChangeEvent.LoadingState.LOADED);
   }
@@ -647,6 +658,15 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     }
   }
 
+  private void refreshGridWidgets(long rowId) {
+    for (WidgetDescription widgetDescription : getGridWidgets()) {
+      Widget widget = getWidget(widgetDescription.getWidgetId());
+      if (widget instanceof ChildGrid) {
+        ((ChildGrid) widget).refresh(rowId);
+      }
+    }
+  }
+  
   private void setDataColumns(List<BeeColumn> dataColumns) {
     this.dataColumns = dataColumns;
   }

@@ -35,6 +35,7 @@ import com.butent.bee.client.dom.Edges;
 import com.butent.bee.client.dom.Features;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.dom.StyleUtils.ScrollBars;
+import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.grid.FlexTable;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.Format;
@@ -302,6 +303,9 @@ public enum FormWidget {
   private static final String ATTR_PLAYBACK_RATE = "playbackRate";
   private static final String ATTR_PRELOAD = "preload";
   private static final String ATTR_VOLUME = "volume";
+
+  private static final String ATTR_VIEW_NAME = "viewName";
+  private static final String ATTR_REL_SOURCE = "relSource";
   
   private static final String TAG_DYN_STYLE = "dynStyle";
   private static final String TAG_CALC = "calc";
@@ -471,6 +475,7 @@ public enum FormWidget {
         break;
 
       case GRID:
+        widget = new ChildGrid(attributes.get(ATTR_VIEW_NAME), attributes.get(ATTR_REL_SOURCE));
         break;
       
       case HEADER_CONTENT_FOOTER:
@@ -925,6 +930,10 @@ public enum FormWidget {
 
   public boolean isEditable() {
     return hasType(Type.EDITABLE);
+  }
+
+  public boolean isGrid() {
+    return hasType(Type.IS_GRID);
   }
   
   public void updateDisplay(Widget root, String id, String value) {

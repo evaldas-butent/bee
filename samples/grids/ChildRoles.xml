@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<BeeGrids xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../schemas/grid.xsd">
+
+  <BeeGrid name="ChildRoles" viewName="ChildRoles" showColumnWidths="false">
+    <columns>
+      <BeeDataColumn name="UserID" source="User" caption="Vartotojo ID" readOnly="true"
+        sortable="false" />
+
+      <BeeDataColumn name="RoleID" source="Role" caption="Rolės ID" readOnly="true" />
+
+      <BeeRelColumn name="RoleName" source="RoleName" relSource="Role" relColumn="Name"
+        caption="Rolė" />
+
+      <BeeIdColumn name="Id" caption="ID" />
+      <BeeVerColumn name="Version" caption="Versija" />
+    </columns>
+  </BeeGrid>
+</BeeGrids>

@@ -257,7 +257,7 @@ public class Explorer implements HandlesDeleteEvents, RowInsertEvent.Handler {
   
   private void showView(DataInfo dataInfo, BeeRowSet rowSet, boolean async,
       GridDescription gridDescription) {
-    GridPresenter presenter = new GridPresenter(dataInfo, rowSet, async, gridDescription);
+    GridPresenter presenter = new GridPresenter(dataInfo, rowSet, async, gridDescription, false);
     BeeKeeper.getScreen().updateActivePanel(presenter.getWidget());
   }
 }

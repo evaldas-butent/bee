@@ -484,8 +484,6 @@
         <xs:extension base="bee:widgetType">
           <xs:attribute name="viewName" type="bee:nameType" use="required" />
           <xs:attribute name="relSource" type="bee:nameType" use="required" />
-          <xs:attribute name="parentView" type="bee:nameType" />
-          <xs:attribute name="parentColumn" type="bee:nameType" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
