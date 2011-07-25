@@ -2,7 +2,6 @@ package com.butent.bee.client.layout;
 
 import com.google.gwt.dom.client.Style.Overflow;
 import com.google.gwt.dom.client.Style.Position;
-import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.AbsolutePanel;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -16,13 +15,20 @@ import com.butent.bee.shared.HasId;
 public class Absolute extends AbsolutePanel implements HasId {
 
   public Absolute() {
-    super();
-    init();
+    this(Position.ABSOLUTE, Overflow.AUTO);
   }
 
-  public Absolute(Element elem) {
-    super(elem);
-    init();
+  public Absolute(Position position) {
+    this(position, null);
+  }
+  
+  public Absolute(Overflow overflow) {
+    this(null, overflow);
+  }
+  
+  public Absolute(Position position, Overflow overflow) {
+    super();
+    init(position, overflow);
   }
 
   public String append(Widget w, int left, int top) {
@@ -48,9 +54,13 @@ public class Absolute extends AbsolutePanel implements HasId {
     DomUtils.setId(this, id);
   }
   
-  private void init() {
+  private void init(Position position, Overflow overflow) {
     DomUtils.createId(this, getIdPrefix());
-    getElement().getStyle().setPosition(Position.ABSOLUTE);
-    getElement().getStyle().setOverflow(Overflow.AUTO);
+    if (position != null) {
+      getElement().getStyle().setPosition(position);
+    }
+    if (overflow != null) {
+      getElement().getStyle().setOverflow(overflow);
+    }
   }
 }

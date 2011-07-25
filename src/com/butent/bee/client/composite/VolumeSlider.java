@@ -1,5 +1,6 @@
 package com.butent.bee.client.composite;
 
+import com.google.gwt.dom.client.Style.Overflow;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.RequiresResize;
@@ -88,6 +89,7 @@ public class VolumeSlider extends Absolute implements RequiresResize {
   }
 
   public VolumeSlider(Object source, long min, long max, int minStep, int maxStep) {
+    super(Overflow.HIDDEN);
     setStyleName("bee-VolumeSlider");
 
     this.source = source;

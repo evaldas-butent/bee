@@ -92,14 +92,13 @@ public class AsyncProvider extends Provider {
   }
 
   public void updateDisplay(int start, int length, BeeRowSet data, boolean updateActiveRow) {
-    int rowCount = data.getNumberOfRows();
-
     Assert.nonNegative(start);
-    Assert.isPositive(length);
-    Assert.isPositive(rowCount);
+    int rowCount = data.getNumberOfRows();
     
     List<? extends IsRow> rowValues; 
-    if (length >= rowCount) {
+    if (length <= 0 || rowCount <= 0) {
+      rowValues = Lists.newArrayList();
+    } else if (length >= rowCount) {
       rowValues = data.getRows().getList();
     } else {
       rowValues = data.getRows().getList().subList(0, length);

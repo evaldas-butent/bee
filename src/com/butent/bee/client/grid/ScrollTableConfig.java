@@ -1,6 +1,7 @@
 package com.butent.bee.client.grid;
 
 import com.google.common.primitives.Ints;
+import com.google.gwt.dom.client.Style.Position;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.DoubleClickEvent;
@@ -544,7 +545,7 @@ public class ScrollTableConfig {
   public void show() {
     Assert.isPositive(columnCount);
 
-    Absolute panel = new Absolute();
+    Absolute panel = new Absolute(Position.RELATIVE);
     int xMrg = 8;
     int yMrg = 4;
     int x = xMrg;

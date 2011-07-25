@@ -179,7 +179,9 @@ public class CachedProvider extends Provider {
     int rowCount = getRowCount();
 
     List<? extends IsRow> rowValues;
-    if (start == 0 && length >= rowCount) {
+    if (length <= 0 || rowCount <= 0) {
+      rowValues = Lists.newArrayList();
+    } else if (start == 0 && length >= rowCount) {
       rowValues = getRowList();
     } else {
       rowValues = getRowList().subList(start, BeeUtils.min(start + length, rowCount));
