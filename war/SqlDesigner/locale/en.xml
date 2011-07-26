@@ -35,7 +35,7 @@
 	<string name="def">Default</string>
 	<string name="notnull">NOT NULL</string>
 	<string name="null">NULL</string>
-	<string name="ai">Autoincrement</string>
+	<string name="ai">Translatable</string>
 	<string name="comment">Edit comment</string>
 	<string name="commenttext">Enter comment for this field</string>
 	
