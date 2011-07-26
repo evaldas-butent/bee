@@ -66,6 +66,7 @@ import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.TransformerFactoryConfigurationError;
@@ -160,6 +161,10 @@ public class XmlUtils {
     }
     schemaFactory = sf;
   }
+  
+  public static Document createDocument() {
+    return domBuilder.newDocument();
+  }
 
   public static Document fromFileName(String fileName) {
     File fl = new File(fileName);
@@ -172,6 +177,11 @@ public class XmlUtils {
     return doc;
   }
 
+  public static Document fromString(String xml) {
+    Document doc = createDocument(new StringReader(xml));
+    return doc;
+  }
+  
   public static Boolean getAttributeBoolean(Element element, String name) {
     Assert.notNull(element);
     Assert.notEmpty(name);
@@ -843,22 +853,29 @@ public class XmlUtils {
     return result.toString();
   }
 
-  public static boolean saveNode(Node node, String dst) {
-    boolean ok = true;
-
+  public static String toString(Document doc, boolean indent) {
+    Transformer transformer;
     try {
-      Transformer transformer = xsltFactory.newTransformer();
+      transformer = xsltFactory.newTransformer();
+    } catch (TransformerConfigurationException ex) {
+      LogUtils.severe(logger, ex);
+      transformer = null;
+    }
+    if (transformer == null) {
+      return null;
+    }
 
-      DOMSource source = new DOMSource(node);
-      StreamResult result = new StreamResult(dst);
+    if (indent) {
+      transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+    }
 
-      transformer.transform(source, result);
-
+    StringWriter writer = new StringWriter();
+    try {
+      transformer.transform(new DOMSource(doc), new StreamResult(writer));
     } catch (TransformerException ex) {
       LogUtils.severe(logger, ex);
-      ok = false;
     }
-    return ok;
+    return writer.getBuffer().toString();    
   }
 
   @SuppressWarnings("unchecked")
@@ -1015,11 +1032,6 @@ public class XmlUtils {
       ok = false;
     }
     return ok;
-  }
-
-  private static Document fromString(String xml) {
-    Document doc = createDocument(new StringReader(xml));
-    return doc;
   }
 
   private static List<Property> getDOMConfigurationInfo(DOMConfiguration cfg) {

@@ -12,6 +12,7 @@ import com.butent.bee.server.data.SystemBean.SysObject;
 import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.io.FileUtils;
+import com.butent.bee.server.io.NameUtils;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.SqlConstants.SqlDataType;
 import com.butent.bee.server.sql.SqlSelect;
@@ -38,7 +39,12 @@ import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.ExtendedProperty;
+import com.butent.bee.shared.utils.LogUtils;
 import com.butent.bee.shared.utils.PropertyUtils;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
 import java.io.File;
 import java.util.Collection;
@@ -150,6 +156,167 @@ public class UiServiceBean {
       }
     }
     return ResponseObject.response(info);
+  }
+  
+  public ResponseObject importForm(String formName, String design) {
+    if (BeeUtils.isEmpty(formName)) {
+      return ResponseObject.error("form name not specified");
+    }
+    Document srcDoc = XmlUtils.fromString(design);
+    if (srcDoc == null) {
+      return ResponseObject.error("error parsing design xml");
+    }
+    
+    NodeList nodes = srcDoc.getElementsByTagName("control");
+    if (nodes == null || nodes.getLength() <= 0) {
+      return ResponseObject.error("no controls found in design xml");
+    }
+    
+    Document dstDoc = XmlUtils.createDocument();
+    Element formElement = dstDoc.createElement("BeeForm");
+    formElement.setAttribute("xmlns", "http://www.butent.com/bee");
+    formElement.setAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
+    formElement.setAttribute("xsi:schemaLocation",
+        "http://www.butent.com/bee ../../schemas/form.xsd");
+    dstDoc.appendChild(formElement);
+    
+    Element rootElement = dstDoc.createElement("LayoutPanel");
+    formElement.appendChild(rootElement);
+    
+    BeeView view = null;
+    
+    for (int i = 0; i < nodes.getLength(); i++) {
+      Element control = (Element) nodes.item(i);
+      
+      String srcType = control.getAttribute("controlTypeID");
+      if (BeeUtils.isEmpty(srcType)) {
+        continue;
+      }
+      String dstType = BeeUtils.getSuffix(srcType, "::");
+      if (BeeUtils.isEmpty(dstType)) {
+        continue;
+      }
+      
+      String srcLeft = control.getAttribute("x");
+      String srcTop = control.getAttribute("y");
+      String srcWidth = control.getAttribute("w");
+      String srcHeight = control.getAttribute("h");
+      
+      String text = null;
+      Element propElement = XmlUtils.getFirstChildElement(control, "controlProperties");
+      if (propElement != null) {
+        Element textElement = XmlUtils.getFirstChildElement(propElement, "text");
+        if (textElement != null) {
+          text = XmlUtils.getTextQuietly(textElement);
+        }
+      }
+      if (BeeUtils.isEmpty(text)) {
+        continue;
+      }
+
+      text = BeeUtils.replace(text, "%20", " ");
+      text = BeeUtils.replace(text, "%3A", ":");
+      text = BeeUtils.replace(text, "%2C", ",");
+      
+      String source;
+      String label;
+      if (BeeUtils.context(":", text)) {
+        source = BeeUtils.getPrefix(text, ":");
+        label = BeeUtils.getSuffix(text, ":");
+      } else if (BeeUtils.same(dstType, "Label")) {
+        source = null;
+        label = text;
+      } else {
+        source = text;
+        label = null;
+      }
+      
+      if (BeeUtils.same(dstType, "TitleWindow")) {
+        if (!BeeUtils.isEmpty(source)) {
+          formElement.setAttribute("name", source);
+          formElement.setAttribute("viewName", source);
+          view = sys.getView(source);
+        }
+        if (!BeeUtils.isEmpty(label)) {
+          formElement.setAttribute("caption", label);
+        }
+        continue;
+      }
+      
+      if (BeeUtils.same(dstType, "TextInput")) {
+        dstType = "InputText";
+      } else if (BeeUtils.same(dstType, "TextArea")) {
+        dstType = "InputArea";
+      } else if (BeeUtils.same(dstType, "RadioButton")) {
+        dstType = "InputArea";
+      } else if (BeeUtils.same(dstType, "ComboBox")) {
+        if (text.contains(".")) {
+          dstType = "DataSelector";
+        } else {
+          dstType = "ListBox";
+        }
+      }
+      
+      Element layerElement = dstDoc.createElement("layer");
+      layerElement.setAttribute("left", srcLeft);
+      layerElement.setAttribute("top", srcTop);
+      if (BeeUtils.isDigit(srcWidth)) {
+        layerElement.setAttribute("width", srcWidth);
+      }
+      if (BeeUtils.isDigit(srcHeight)) {
+        layerElement.setAttribute("height", srcHeight);
+      }
+      
+      rootElement.appendChild(layerElement);
+      
+      Element widgetElement = dstDoc.createElement(dstType.trim());
+
+      if (!BeeUtils.isEmpty(source)) {
+        if (BeeUtils.same(dstType, "DataSelector") && view != null) {
+          String relSource = BeeUtils.getPrefix(source, '.');
+          String relColumn = BeeUtils.getSuffix(source, '.');
+
+          widgetElement.setAttribute("source", relSource + relColumn);
+          widgetElement.setAttribute("relSource", relSource);
+
+          String relView = sys.getRelation(view.getTable(relSource), view.getField(relSource));
+          if (!BeeUtils.isEmpty(relView)) {
+            widgetElement.setAttribute("relView", relView);
+          }
+          widgetElement.setAttribute("relColumn", relColumn);
+          
+        } else {
+          widgetElement.setAttribute("source", source);
+        }
+      }
+
+      if (!BeeUtils.isEmpty(label)) {
+        if (BeeUtils.same(dstType, "ListBox")) {
+          for (String item : BeeUtils.split(label, ",")) {
+            Element itemElement = dstDoc.createElement("item");
+            itemElement.setTextContent(item);
+            widgetElement.appendChild(itemElement);
+          }
+          
+        } else {
+          widgetElement.setAttribute("html", label);
+        }
+      }
+
+      layerElement.appendChild(widgetElement);
+    }
+    
+    String result = XmlUtils.toString(dstDoc, true);
+    if (BeeUtils.isEmpty(result)) {
+      return ResponseObject.error("xml problem");
+    }
+    
+    String path = new File(new File(Config.USER_DIR, "forms"),
+        NameUtils.defaultExtension(formName, XmlUtils.defaultXmlExtension)).getPath();
+    LogUtils.infoNow(logger, "saving", path);
+    FileUtils.saveToFile(result, path);
+    
+    return ResponseObject.response(result);
   }
 
   private ResponseObject buildDbSchema() {
