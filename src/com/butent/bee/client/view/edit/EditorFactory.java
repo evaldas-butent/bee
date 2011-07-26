@@ -214,7 +214,7 @@ public class EditorFactory {
         break;
 
       case SELECTOR:
-        editor = new DataSelector(relationInfo, JsonUtils.toJson(description.getOptions()));
+        editor = new DataSelector(relationInfo, false, JsonUtils.toJson(description.getOptions()));
         break;
 
       case STRING:

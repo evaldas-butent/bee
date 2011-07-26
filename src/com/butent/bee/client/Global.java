@@ -340,7 +340,7 @@ public class Global implements Module {
     setVarWidth(Service.VAR_XML_TRANSFORM, "300px");
     setVarWidth(Service.VAR_XML_TARGET, "300px");
 
-    createVar(Service.VAR_FILE_NAME, null, BeeType.FILE, BeeConst.STRING_EMPTY);
+    createVar(Service.VAR_FORM_NAME, "Form name");
 
     createVar(Service.VAR_JDBC_QUERY, "Jdbc Query");
     setVarWidth(Service.VAR_JDBC_QUERY, "500px");

@@ -108,6 +108,7 @@ import java.util.logging.Level;
  */
 
 public class CliWorker {
+
   private static boolean cornified = false;
 
   public static void clearLog() {
@@ -399,6 +400,8 @@ public class CliWorker {
       showSupport();
     } else if (z.equals("id")) {
       showElement(v, arr);
+    } else if (z.equals("import")) {
+      FormFactory.importForm(args);
     } else if (BeeUtils.inList(z, "inp", "input")) {
       showInput();
     } else if (BeeUtils.inList(z, "keys", "pk")) {

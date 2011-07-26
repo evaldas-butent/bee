@@ -1,6 +1,11 @@
 package com.butent.bee.client.ui;
 
 import com.google.gwt.core.client.Callback;
+import com.google.gwt.core.client.GWT;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.ui.FormPanel;
+import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.xml.client.Document;
 import com.google.gwt.xml.client.Element;
@@ -10,12 +15,19 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.DataHelper;
 import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.dialog.DialogBox;
+import com.butent.bee.client.grid.FlexTable;
 import com.butent.bee.client.presenter.FormPresenter;
 import com.butent.bee.client.utils.XmlUtils;
+import com.butent.bee.client.widget.BeeButton;
+import com.butent.bee.client.widget.BeeFileUpload;
+import com.butent.bee.client.widget.BeeLabel;
+import com.butent.bee.client.widget.InputText;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.view.DataInfo;
@@ -34,7 +46,8 @@ public class FormFactory {
   public interface WidgetCallback extends Callback<WidgetDescription, String[]> {
   }
   
-  public static Widget createForm(FormDescription formDescription, WidgetCallback callback) {
+  public static Widget createForm(FormDescription formDescription, WidgetCallback callback,
+      List<BeeColumn> columns) {
     Assert.notNull(formDescription);
     Assert.notNull(callback);
 
@@ -66,7 +79,7 @@ public class FormFactory {
       return null;
     }
     
-    Widget form = formWidget.create(root, callback);
+    Widget form = formWidget.create(root, callback, columns);
     if (form == null) {
       BeeKeeper.getLog().severe("createForm: cannot create root widget", formWidget);
     }
@@ -106,6 +119,70 @@ public class FormFactory {
         }
       }
     });
+  }
+
+  public static void importForm(String name) {
+    if (!BeeUtils.isEmpty(name)) {
+      Global.setVarValue(Service.VAR_FORM_NAME, BeeUtils.trim(name));
+    }
+
+    final FormPanel formPanel = new FormPanel();
+    formPanel.setAction(GWT.getModuleBaseURL() + "upload");
+
+    formPanel.setEncoding(FormPanel.ENCODING_MULTIPART);
+    formPanel.setMethod(FormPanel.METHOD_POST);
+
+    FlexTable container = new FlexTable();
+    formPanel.setWidget(container);
+    
+    container.setCellSpacing(10);
+    
+    container.setWidget(0, 0, new BeeLabel("Form Name"));
+    final InputText inputName = new InputText(Global.getVar(Service.VAR_FORM_NAME));
+    inputName.setName(Service.VAR_FORM_NAME);
+    container.setWidget(0, 1, inputName);
+
+    container.setWidget(1, 0, new BeeLabel("Design File"));
+    final BeeFileUpload upload = new BeeFileUpload();
+    upload.setName(Service.VAR_FILE_NAME);
+    container.setWidget(1, 1, upload);
+
+    BeeButton submit = new BeeButton("Submit", new ClickHandler() {
+      public void onClick(ClickEvent event) {
+        formPanel.submit();
+      }
+    });
+    
+    container.setWidget(2, 0, submit);
+    container.getCellFormatter().setHorizontalAlignment(2, 0, HasHorizontalAlignment.ALIGN_CENTER);
+    container.getFlexCellFormatter().setColSpan(2, 0, 2);
+    
+    formPanel.addSubmitHandler(new FormPanel.SubmitHandler() {
+      public void onSubmit(FormPanel.SubmitEvent event) {
+        if (BeeUtils.isEmpty(inputName.getValue())) {
+          Global.showError("Form name not specified");
+          event.cancel();
+        } else if (BeeUtils.isEmpty(upload.getFilename())) {
+          Global.showError("Select design file");
+          event.cancel();
+        }
+      }
+    });
+
+    formPanel.addSubmitCompleteHandler(new FormPanel.SubmitCompleteHandler() {
+      public void onSubmitComplete(FormPanel.SubmitCompleteEvent event) {
+        BeeKeeper.getLog().debug(event.getResults());
+      }
+    });
+    
+    DialogBox dialog = new DialogBox();
+    dialog.setText("Import Form Design");
+    dialog.setAnimationEnabled(true);
+
+    dialog.setWidget(formPanel);
+    dialog.center();
+    
+    inputName.setFocus(true);
   }
   
   public static void openForm(String xml) {

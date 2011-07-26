@@ -46,6 +46,7 @@ import com.butent.bee.shared.data.event.SelectionCountChangeEvent;
 import com.butent.bee.shared.data.event.SortEvent;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.Order;
+import com.butent.bee.shared.data.view.RelationInfo;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.ui.Calculation;
 import com.butent.bee.shared.utils.ArrayUtils;
@@ -111,7 +112,13 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
         int index = getDataIndex(source);
         
         if (index >= 0) {
-          getEditableWidgets().add(new EditableWidget(getDataColumns(), index, null, result));
+          RelationInfo relationInfo = null;
+          if (type.isSelector()) {
+            relationInfo = RelationInfo.create(getDataColumns(), source, result.getRelSource(),
+                result.getRelView(), result.getRelColumn());
+          }
+          getEditableWidgets().add(new EditableWidget(getDataColumns(), index,
+              relationInfo, result));
         } else {
           onFailure(new String[] {"editable source not found", source, id});
         }
@@ -273,7 +280,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
 
     setReadOnly(formDescription.isReadOnly());
     
-    Widget root = FormFactory.createForm(formDescription, getCreationCallback());
+    Widget root = FormFactory.createForm(formDescription, getCreationCallback(), dataCols);
     if (root == null) {
       return;
     }

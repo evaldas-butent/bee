@@ -16,10 +16,12 @@ import com.butent.bee.shared.utils.Wildcards;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
@@ -101,28 +103,13 @@ public class FileUtils {
       LogUtils.warning(logger, fl.getAbsolutePath(), "file not found");
       return null;
     }
-
-    InputStreamReader fr = null;
-    StringBuilder sb = new StringBuilder();
-
-    int size = defaultBufferSize;
-    char[] arr = new char[size];
-    int len;
-
+    
     try {
-      fr = new InputStreamReader(new FileInputStream(fl), cs);
-      do {
-        len = fr.read(arr, 0, size);
-        if (len > 0) {
-          sb.append(arr, 0, len);
-        }
-      } while (len > 0);
-    } catch (IOException ex) {
-      LogUtils.error(logger, ex, fl.getAbsolutePath());
+      return streamToString(new FileInputStream(fl), cs);
+    } catch (FileNotFoundException ex) {
+      LogUtils.severe(logger, ex);
+      return null;
     }
-
-    closeQuietly(fr);
-    return sb.toString();
   }
 
   public static String fileToString(String fileName) {
@@ -483,6 +470,37 @@ public class FileUtils {
     return ok;
   }
 
+  public static String streamToString(InputStream stream) {
+    return streamToString(stream, defaultCharset);
+  }
+  
+  public static String streamToString(InputStream stream, Charset cs) {
+    Assert.notNull(stream);
+    Assert.notNull(cs);
+
+    InputStreamReader fr = null;
+    StringBuilder sb = new StringBuilder();
+
+    int size = defaultBufferSize;
+    char[] arr = new char[size];
+    int len;
+
+    try {
+      fr = new InputStreamReader(stream, cs);
+      do {
+        len = fr.read(arr, 0, size);
+        if (len > 0) {
+          sb.append(arr, 0, len);
+        }
+      } while (len > 0);
+    } catch (IOException ex) {
+      LogUtils.error(logger, ex);
+    }
+
+    closeQuietly(fr);
+    return sb.toString();
+  }
+  
   public static File toFile(Class<?> clazz) {
     Assert.notNull(clazz);
     return toFile(clazz.getResource(NameUtils.addExtension(clazz.getSimpleName(), EXT_CLASS)));

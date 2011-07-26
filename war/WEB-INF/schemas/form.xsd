@@ -89,9 +89,6 @@
         <xs:attribute name="cellType" type="bee:cellType" />
         <xs:attribute name="minValue" type="xs:normalizedString" />
         <xs:attribute name="maxValue" type="xs:normalizedString" />
-        <xs:attribute name="relSource" type="bee:nameType" />
-        <xs:attribute name="relView" type="bee:nameType" />
-        <xs:attribute name="relColumn" type="bee:nameType" />
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
@@ -482,8 +479,8 @@
     <xs:complexType>
       <xs:complexContent>
         <xs:extension base="bee:widgetType">
-          <xs:attribute name="viewName" type="bee:nameType" use="required" />
-          <xs:attribute name="relSource" type="bee:nameType" use="required" />
+          <xs:attribute name="relView" type="bee:nameType" use="required" />
+          <xs:attribute name="relColumn" type="bee:nameType" use="required" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -603,6 +600,19 @@
           <xs:choice minOccurs="2" maxOccurs="unbounded">
             <xs:element name="item" type="xs:normalizedString" />
           </xs:choice>
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="DataSelector" substitutionGroup="bee:widget">
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="bee:editableWidget">
+          <xs:attribute name="relSource" type="bee:nameType" use="required" />
+          <xs:attribute name="relView" type="bee:nameType" use="required" />
+          <xs:attribute name="relColumn" type="bee:nameType" use="required" />
+          <xs:attribute name="options" type="xs:normalizedString" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>

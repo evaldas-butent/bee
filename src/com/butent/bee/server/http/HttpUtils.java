@@ -1,6 +1,7 @@
 package com.butent.bee.server.http;
 
 import com.butent.bee.server.concurrency.Counter;
+import com.butent.bee.server.io.FileUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -14,8 +15,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 
+import javax.servlet.ServletException;
 import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.Part;
 
 /**
  * Contains utility HTTP request related functions like getting header information or execute binary
@@ -23,6 +26,7 @@ import javax.servlet.http.HttpServletRequest;
  */
 
 public class HttpUtils {
+
   private static Logger logger = Logger.getLogger(HttpUtils.class.getName());
 
   public static String counterInfo(String name, Object obj) {
@@ -177,6 +181,24 @@ public class HttpUtils {
     return sb.toString();
   }
 
+  public static String readPart(HttpServletRequest req, String name) {
+    Assert.notNull(req);
+    Assert.notEmpty(name);
+    
+    String content = null;
+    try {
+      Part part = req.getPart(name);
+      if (part != null) {
+        content = FileUtils.streamToString(part.getInputStream());
+      }
+    } catch (IOException ex) {
+      LogUtils.error(logger, ex);
+    } catch (ServletException ex) {
+      LogUtils.error(logger, ex);
+    }
+    return content;
+  }
+  
   private HttpUtils() {
   }
 }

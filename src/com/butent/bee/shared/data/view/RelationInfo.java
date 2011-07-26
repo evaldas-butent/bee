@@ -13,19 +13,19 @@ import java.util.List;
 
 public class RelationInfo {
 
-  public static RelationInfo create(List<BeeColumn> columns, ColumnDescription descr) {
-    if (columns == null || descr == null) {
+  public static RelationInfo create(List<BeeColumn> columns, String source, String relSource,
+      String relView, String relColumn) {
+    if (columns == null) {
       return null;
     }
-    String relSrc = descr.getRelSource();
-    if (BeeUtils.isEmpty(relSrc) || BeeUtils.same(relSrc, descr.getSource())
-        || BeeUtils.isEmpty(descr.getRelView()) || BeeUtils.isEmpty(descr.getRelColumn())) {
+    if (BeeUtils.isEmpty(relSource) || BeeUtils.same(relSource, source)
+        || BeeUtils.isEmpty(relView) || BeeUtils.isEmpty(relColumn)) {
       return null;
     }
 
     int relIdx = BeeConst.UNDEF;
     for (int i = 0; i < columns.size(); i++) {
-      if (BeeUtils.same(columns.get(i).getId(), relSrc)) {
+      if (BeeUtils.same(columns.get(i).getId(), relSource)) {
         relIdx = i;
         break;
       }
@@ -34,8 +34,15 @@ public class RelationInfo {
       return null;
     }
 
-    return new RelationInfo(descr.getSource(), relSrc, descr.getRelView(), descr.getRelColumn(),
-        columns.get(relIdx), relIdx);
+    return new RelationInfo(source, relSource, relView, relColumn, columns.get(relIdx), relIdx);
+  }
+  
+  public static RelationInfo create(List<BeeColumn> columns, ColumnDescription descr) {
+    if (descr == null) {
+      return null;
+    }
+    return create(columns, descr.getSource(), descr.getRelSource(),
+        descr.getRelView(), descr.getRelColumn());
   }
 
   private final String source;

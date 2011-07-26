@@ -2,6 +2,7 @@ package com.butent.bee.client.composite;
 
 import com.google.common.collect.Lists;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.Style.Position;
 import com.google.gwt.event.dom.client.BlurHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -233,6 +234,10 @@ public class DataSelector extends Complex implements Editor, HasTextDimensions {
   private class InputEvents extends HandlesAllKeyEvents implements MouseWheelHandler {
 
     public void onKeyDown(KeyDownEvent event) {
+      if (isEmbedded() && !getDisplay().isShowing()) {
+        return;
+      }
+
       boolean hasModifiers = EventUtils.hasModifierKey(event.getNativeEvent());
 
       switch (event.getNativeKeyCode()) {
@@ -302,6 +307,9 @@ public class DataSelector extends Complex implements Editor, HasTextDimensions {
     }
 
     public void onKeyUp(KeyUpEvent event) {
+      if (isEmbedded() && event.getNativeKeyCode() == KeyCodes.KEY_TAB) {
+        return;
+      }
       if (isInstant() || event.getNativeKeyCode() == KeyCodes.KEY_ENTER) {
         askOracle();
       }
@@ -403,6 +411,7 @@ public class DataSelector extends Complex implements Editor, HasTextDimensions {
   private static final String ITEM_NEXT = String.valueOf('\u25bc');
 
   private static final String STYLE_CONTAINER = "bee-DataSelector";
+  private static final String STYLE_EMBEDDED = "bee-DataSelector-embedded";
 
   private static final String STYLE_INPUT = "bee-DataSelector-input";
   private static final String STYLE_TYPE = "bee-DataSelector-type";
@@ -457,6 +466,8 @@ public class DataSelector extends Complex implements Editor, HasTextDimensions {
   private final RelationInfo relationInfo;
 
   private final List<SelectionColumn> columns = Lists.newArrayList();
+  
+  private final boolean embedded;
 
   private String selectedValue = null;
 
@@ -464,14 +475,15 @@ public class DataSelector extends Complex implements Editor, HasTextDimensions {
   private int offset = 0;
   private boolean hasMore = false;
 
-  public DataSelector(RelationInfo relationInfo) {
-    this(relationInfo, null);
+  public DataSelector(RelationInfo relationInfo, boolean embedded) {
+    this(relationInfo, embedded, null);
   }
   
-  public DataSelector(RelationInfo relationInfo, JSONObject options) {
-    super();
+  public DataSelector(RelationInfo relationInfo, boolean embedded, JSONObject options) {
+    super(embedded ? Position.RELATIVE : Position.ABSOLUTE);
 
     this.relationInfo = relationInfo;
+    this.embedded = embedded;
 
     boolean showLimit = false;
     if (options != null) {
@@ -511,12 +523,17 @@ public class DataSelector extends Complex implements Editor, HasTextDimensions {
     StyleUtils.makeAbsolute(input);
     StyleUtils.setRight(input, right + 16);
 
-    setStyleName(STYLE_CONTAINER);
+    setStyleName(embedded ? STYLE_EMBEDDED : STYLE_CONTAINER);
 
     inputEvents.addKeyHandlersTo(input);
     input.addMouseWheelHandler(inputEvents);
 
     label.addClickHandler(typeEvents);
+    
+    if (embedded) {
+      getDisplay().start();
+      setEditing(true);
+    }
   }
 
   public HandlerRegistration addBlurHandler(BlurHandler handler) {
@@ -814,6 +831,10 @@ public class DataSelector extends Complex implements Editor, HasTextDimensions {
         }
       }
     }
+  }
+
+  private boolean isEmbedded() {
+    return embedded;
   }
 
   private boolean isInstant() {

@@ -502,7 +502,7 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
       setEditor(EditorFactory.getEditor(getEditorDescription(), isNullable(), getRelationInfo()));
       format = getEditorDescription().getFormat();
     } else if (getRelationInfo() != null) {
-      setEditor(new DataSelector(getRelationInfo()));
+      setEditor(new DataSelector(getRelationInfo(), false));
       getEditor().setNullable(isNullable());
     } else {
       setEditor(EditorFactory.createEditor(getDataColumn(), isNullable()));
