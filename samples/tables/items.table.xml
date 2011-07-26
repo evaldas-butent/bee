@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<BeeTable name="Items" idName="ItemID" versionName="VERSION" xmlns="http://www.butent.com/bee">
+    <BeeFields>
+        <BeeField name="Name" type="STRING" precision="100" scale="0" notNull="true" unique="false" cascade="false" translatable="false"/>
+        <BeeField name="Article" type="STRING" precision="100" scale="0" notNull="true" unique="true" cascade="false" translatable="false"/>
+    </BeeFields>
+</BeeTable>
