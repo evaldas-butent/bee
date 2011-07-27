@@ -32,7 +32,6 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.HasViewName;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
-import com.butent.bee.shared.data.event.MultiDeleteEvent;
 import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
@@ -49,53 +48,28 @@ public class FormPresenter implements Presenter, ReadyForInsertEvent.Handler,
     ReadyForUpdateEvent.Handler, HasViewName {
 
   private class DeleteCallback extends BeeCommand {
-    private final Collection<RowInfo> rows;
-
-    private DeleteCallback(Collection<RowInfo> rows) {
-      this.rows = rows;
-    }
+    private final long rowId;
+    private final long version;
 
     private DeleteCallback(long rowId, long version) {
-      this(Lists.newArrayList(new RowInfo(rowId, version)));
+      this.rowId = rowId;
+      this.version = version;
     }
 
     @Override
     public void execute() {
-      Assert.notNull(rows);
-      int count = rows.size();
-      Assert.isPositive(count);
-
       setLoadingState(LoadingStateChangeEvent.LoadingState.LOADING);
 
-      if (count == 1) {
-        RowInfo rowInfo = BeeUtils.peek(rows);
-        final long rowId = rowInfo.getId();
-        long version = rowInfo.getVersion();
+      Queries.deleteRow(getViewName(), rowId, version, new Queries.IntCallback() {
+        public void onFailure(String[] reason) {
+          setLoadingState(LoadingStateChangeEvent.LoadingState.LOADED);
+          showFailure("Delete Row", reason);
+        }
 
-        Queries.deleteRow(getViewName(), rowId, version, new Queries.IntCallback() {
-          public void onFailure(String[] reason) {
-            setLoadingState(LoadingStateChangeEvent.LoadingState.LOADED);
-            showFailure("Delete Row", reason);
-          }
-
-          public void onSuccess(Integer result) {
-            BeeKeeper.getBus().fireEvent(new RowDeleteEvent(getViewName(), rowId));
-          }
-        });
-
-      } else if (count > 1) {
-        Queries.deleteRows(getViewName(), rows, new Queries.IntCallback() {
-          public void onFailure(String[] reason) {
-            showFailure("Delete Rows", reason);
-            setLoadingState(LoadingStateChangeEvent.LoadingState.LOADED);
-          }
-
-          public void onSuccess(Integer result) {
-            BeeKeeper.getBus().fireEvent(new MultiDeleteEvent(getViewName(), rows));
-            showInfo("Deleted " + result + " rows");
-          }
-        });
-      }
+        public void onSuccess(Integer result) {
+          BeeKeeper.getBus().fireEvent(new RowDeleteEvent(getViewName(), rowId));
+        }
+      });
     }
   }
 
@@ -134,7 +108,7 @@ public class FormPresenter implements Presenter, ReadyForInsertEvent.Handler,
 
   private final Set<HandlerRegistration> filterChangeHandlers = Sets.newHashSet();
   private Filter lastFilter = null;
-  
+
   public FormPresenter(FormDescription formDescription, String viewName, int rowCount,
       BeeRowSet rowSet, boolean async) {
     this.viewName = viewName;
@@ -272,17 +246,17 @@ public class FormPresenter implements Presenter, ReadyForInsertEvent.Handler,
       hr.removeHandler();
     }
     filterChangeHandlers.clear();
-    
+
     if (getDataProvider() != null) {
       getDataProvider().onUnload();
     }
   }
-  
+
   private void bind() {
     FormContainerView view = getView();
     view.setViewPresenter(this);
     view.bind();
-    
+
     if (hasData()) {
       Collection<SearchView> searchers = getSearchers();
       if (searchers != null) {
@@ -339,7 +313,7 @@ public class FormPresenter implements Presenter, ReadyForInsertEvent.Handler,
     }
     return searchers;
   }
-  
+
   private boolean hasData() {
     return !BeeUtils.isEmpty(getViewName());
   }
@@ -356,10 +330,6 @@ public class FormPresenter implements Presenter, ReadyForInsertEvent.Handler,
       messages.addAll(Lists.newArrayList(reasons));
     }
     getView().getContent().notifySevere(messages.toArray(new String[0]));
-  }
-
-  private void showInfo(String... messages) {
-    getView().getContent().notifyInfo(messages);
   }
 
   private void showWarning(String... messages) {

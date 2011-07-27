@@ -726,7 +726,16 @@ body, select {
   top: 0;
   bottom: 0;
   overflow: auto;
-}  
+  background-color: AliceBlue;
+}
+
+.bee-Form .bee-Label {
+  color: #008;
+}
+
+.bee-Form input, .bee-Form select {
+  font-size: medium;
+}
 
 .bee-Frame {
   width: 100%;

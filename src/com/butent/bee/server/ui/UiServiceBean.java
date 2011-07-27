@@ -254,7 +254,7 @@ public class UiServiceBean {
       if (BeeUtils.context(":", text)) {
         source = BeeUtils.getPrefix(text, ":");
         label = BeeUtils.getSuffix(text, ":");
-      } else if (BeeUtils.same(dstType, "Label")) {
+      } else if (BeeUtils.inListSame(dstType, "Label", "Button")) {
         source = null;
         label = text;
       } else {

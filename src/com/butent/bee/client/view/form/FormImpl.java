@@ -428,9 +428,11 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
   }
 
   public void onMultiDelete(MultiDeleteEvent event) {
+    setRowCount(getRowCount() - event.getRows().size());
   }
 
   public void onRowDelete(RowDeleteEvent event) {
+    setRowCount(getRowCount() - 1);
   }
 
   public void onRowUpdate(RowUpdateEvent event) {
