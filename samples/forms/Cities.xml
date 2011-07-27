@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<BeeForm
+  xmlns="http://www.butent.com/bee"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../schemas/form.xsd"
+  
+  name="Cities" viewName="Cities" caption="Miestai">
+  
+  <FlexTable cellSpacing="10">
+    <row>
+      <cell><text>Miestas</text></cell>
+      <cell><InputText source="Name" /></cell>
+    </row>
+
+    <row>
+      <cell><text>Gyventojai</text></cell>
+      <cell><InputInteger source="Population" /></cell>
+    </row>
+
+    <row>
+      <cell><text>Šalis</text></cell>
+      <cell>
+        <DataSelector source="CountryName" relSource="Country"
+          relView="Countries" relColumn="Name" />
+      </cell>
+    </row>
+
+    <row>
+      <cell><text>Šalies ID</text></cell>
+      <cell><LongLabel source="Country" /></cell>
+    </row>
+
+    <row>
+      <cell><text>Miesto Id</text></cell>
+      <cell>
+        <LongLabel>
+          <calc>
+            <expression>rowId</expression>
+          </calc>
+        </LongLabel>
+      </cell>
+    </row>
+
+    <row>
+      <cell><text>Versija</text></cell>
+      <cell>
+        <DateTimeLabel>
+          <calc>
+            <expression>rowVersion</expression>
+          </calc>
+        </DateTimeLabel>
+      </cell>
+    </row>
+    
+  </FlexTable>
+
+</BeeForm>  

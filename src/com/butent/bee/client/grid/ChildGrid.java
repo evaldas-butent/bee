@@ -42,12 +42,12 @@ public class ChildGrid extends ResizePanel {
     return "child-grid";
   }
   
-  public void refresh(long parentId) {
+  public void refresh(final long parentId) {
     if (getPresenter() == null || getPresenter().getDataProvider() == null) {
       setPendingId(parentId);
       return;
     }
-    
+
     final Filter filter = new ColumnValueFilter(getRelSource(), Operator.EQ,
         new LongValue(parentId));
     Queries.getRowCount(getViewName(), filter, new Queries.IntCallback() {
@@ -55,6 +55,7 @@ public class ChildGrid extends ResizePanel {
       }
       
       public void onSuccess(Integer result) {
+        getPresenter().getView().getContent().setRelId(parentId);
         getPresenter().getView().getContent().getGrid().setRowCount(result);
         getPresenter().getView().getContent().getGrid().setPageSize(result);
         getPresenter().getDataProvider().onFilterChanged(filter, result);
@@ -74,6 +75,7 @@ public class ChildGrid extends ResizePanel {
                 gridDescription, true);
             setWidget(gp.getWidget());
             setPresenter(gp);
+            gp.getView().getContent().setRelColumn(getRelSource());
             
             if (getPendingId() != null) {
               refresh(getPendingId());

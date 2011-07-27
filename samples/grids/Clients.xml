@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<BeeGrids xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../schemas/grid.xsd">
+
+  <BeeGrid name="Clients" viewName="Clients" caption="Klientai" showColumnWidths="false">
+    <columns>
+      <BeeIdColumn name="Id" caption="ID" />
+
+      <BeeDataColumn name="Name" source="Name" caption="Pavadinimas" />
+      <BeeDataColumn name="Code" source="Code" caption="Kodas" />
+      <BeeDataColumn name="VatCode" source="VatCode" caption="Pvm Kodas" />
+      <BeeDataColumn name="Group" source="Group" caption="Grupė" />
+      <BeeDataColumn name="Activity" source="Activity" caption="Veikla" />
+      <BeeDataColumn name="Buyer" source="Buyer" caption="Pirkėjas" />
+      <BeeDataColumn name="Supplier" source="Supplier" caption="Tiekėjas" />
+      <BeeDataColumn name="Manufacturer" source="Manufacturer" caption="Gamintojas" />
+      <BeeDataColumn name="Address" source="Address" caption="Adresas" />
+
+      <BeeRelColumn name="Country" source="CountryName" relSource="Country" relColumn="Name"
+        caption="Šalis">
+      </BeeRelColumn>
+      <BeeDataColumn name="CountryId" source="Country" caption="Šalies ID" readOnly="true" />
+
+      <BeeDataColumn name="CEO" source="CEO" caption="Vadovas" />
+      <BeeDataColumn name="CFO" source="CFO" caption="Vyr. finansininkas" />
+      <BeeDataColumn name="Notes" source="Notes" caption="Pastabos" />
+
+      <BeeVerColumn name="Version" caption="Versija" />
+    </columns>
+  </BeeGrid>
+</BeeGrids>

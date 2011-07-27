@@ -318,6 +318,10 @@ public class BeeView implements HasExtendedInfo {
     return source;
   }
 
+  public String getSourceIdName() {
+    return sourceIdName;
+  }
+
   public String getTable(String colName) {
     return getViewField(colName).getTable();
   }

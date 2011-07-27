@@ -121,7 +121,7 @@ public class FormFactory {
     });
   }
 
-  public static void importForm(String name) {
+  public static void importForm(final String name) {
     if (!BeeUtils.isEmpty(name)) {
       Global.setVarValue(Service.VAR_FORM_NAME, BeeUtils.trim(name));
     }
@@ -156,6 +156,8 @@ public class FormFactory {
     container.setWidget(2, 0, submit);
     container.getCellFormatter().setHorizontalAlignment(2, 0, HasHorizontalAlignment.ALIGN_CENTER);
     container.getFlexCellFormatter().setColSpan(2, 0, 2);
+
+    final DialogBox dialog = new DialogBox();
     
     formPanel.addSubmitHandler(new FormPanel.SubmitHandler() {
       public void onSubmit(FormPanel.SubmitEvent event) {
@@ -171,11 +173,16 @@ public class FormFactory {
 
     formPanel.addSubmitCompleteHandler(new FormPanel.SubmitCompleteHandler() {
       public void onSubmitComplete(FormPanel.SubmitCompleteEvent event) {
-        BeeKeeper.getLog().debug(event.getResults());
+        String results = event.getResults();
+        if (BeeUtils.context("BeeForm", results)) {
+          getForm(name);
+          dialog.hide();
+        } else {
+          BeeKeeper.getLog().debug(results);
+        }
       }
     });
     
-    DialogBox dialog = new DialogBox();
     dialog.setText("Import Form Design");
     dialog.setAnimationEnabled(true);
 

@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<BeeForm xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" caption="Klientai" name="Clients" viewName="Clients" xsi:schemaLocation="http://www.butent.com/bee ../../schemas/form.xsd">
+<AbsolutePanel>
+<layer left="48" top="13">
+<Label html="Pavadinimas"/>
+</layer>
+<layer left="129" top="55" width="184">
+<InputText source="Code"/>
+</layer>
+<layer left="84" top="56">
+<Label html="Kodas"/>
+</layer>
+<layer left="437" top="56">
+<Label html="PVM kodas"/>
+</layer>
+<layer left="515" top="55" width="246">
+<InputText source="VatCode"/>
+</layer>
+<layer left="517" top="98">
+<CheckBox html="Pirkėjas" source="Buyer"/>
+</layer>
+<layer left="515" top="129">
+<CheckBox html="Tiekėjas" source="Supplier"/>
+</layer>
+<layer left="515" top="158">
+<CheckBox html="Gamintojas" source="Manufacturer"/>
+</layer>
+<layer left="84" top="96">
+<Label html="Grupė"/>
+</layer>
+<layer left="128" top="143">
+<ListBox source="Activity">
+<item>Gamyba</item>
+<item>Komercija</item>
+<item>Paslaugos</item>
+</ListBox>
+</layer>
+<layer left="80" top="142">
+<Label html="Veikla"/>
+</layer>
+<layer left="127" top="191" width="634">
+<InputText source="Address"/>
+</layer>
+<layer left="128" top="278" width="634">
+<InputText source="CEO"/>
+</layer>
+<layer left="128" top="323" width="634">
+<InputText source="CFO"/>
+</layer>
+<layer left="130" top="235" width="162">
+<DataSelector relColumn="Name" relSource="Country" relView="Countries" source="CountryName"/>
+</layer>
+<layer left="68" top="192">
+<Label html="Adresas"/>
+</layer>
+<layer left="88" top="235">
+<Label html="Šalis"/>
+</layer>
+<layer left="68" top="279">
+<Label html="Vadovas"/>
+</layer>
+<layer left="10" top="324">
+<Label html="Vyr. finansininkas"/>
+</layer>
+<layer left="65" top="366">
+<Label html="Pastabos"/>
+</layer>
+<layer height="121" left="128" top="365" width="634">
+<InputArea source="Notes"/>
+</layer>
+<layer left="129" top="98">
+<Radio name="radio5797" source="Group">
+<option>VIP</option>
+<option>premium</option>
+<option>normal</option>
+</Radio>
+</layer>
+<layer left="129" top="10" width="632">
+<InputText source="Name"/>
+</layer>
+</AbsolutePanel>
+</BeeForm>

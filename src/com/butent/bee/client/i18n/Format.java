@@ -137,7 +137,7 @@ public class Format {
   private static String defaultDecimalPatternInteger = "#,##0";
 
   private static DateTimeFormat defaultDateFormat =
-      DateTimeFormat.getFormat(PredefinedFormat.DATE_MEDIUM);
+      DateTimeFormat.getFormat(PredefinedFormat.DATE_SHORT);
 
   private static DateTimeFormat defaultDateTimeFormat =
       DateTimeFormat.getFormat(PredefinedFormat.DATE_TIME_MEDIUM);

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<BeeGrids xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../schemas/grid.xsd">
+
+  <BeeGrid name="Orders" viewName="Orders" showColumnWidths="false">
+    <columns>
+      <BeeIdColumn name="Id" caption="ID" />
+
+      <BeeDataColumn name="Date" source="Date" />
+      <BeeDataColumn name="Document" source="Document" />
+      <BeeDataColumn name="Series" source="Series" />
+      <BeeDataColumn name="Invoice" source="Invoice" />
+
+      <BeeRelColumn name="Buyer" source="BuyerName" relSource="Buyer" relColumn="Name">
+      </BeeRelColumn>
+      <BeeRelColumn name="Manager" source="ManagerName" relSource="Manager" relColumn="Name">
+      </BeeRelColumn>
+
+      <BeeDataColumn name="Warehouse" source="Warehouse" />
+      <BeeDataColumn name="Operation" source="Operation" />
+
+      <BeeVerColumn name="Version" />
+    </columns>
+  </BeeGrid>
+</BeeGrids>

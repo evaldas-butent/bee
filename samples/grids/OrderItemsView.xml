@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<BeeGrids xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../schemas/grid.xsd">
+
+  <BeeGrid name="OrderItemsView" viewName="OrderItemsView" caption="*" showColumnWidths="false">
+    <columns>
+      <BeeRelColumn name="Name" source="ItemIDName" relSource="ItemID" relColumn="Name"
+        caption="Pavadinimas">
+      </BeeRelColumn>
+      <BeeRelColumn name="Article" source="ItemIDArticle" relSource="ItemID" relColumn="Article"
+        caption="Artikulas">
+      </BeeRelColumn>
+
+      <BeeDataColumn name="Amount" source="Amount" caption="Kiekis" />
+      <BeeDataColumn name="UnitOfMsr" source="UnitOfMsr" caption="M.v." />
+      <BeeDataColumn name="Price" source="Price" caption="Kaina" />
+
+      <BeeCalcColumn name="Total" type="decimal" caption="Suma">
+        <calc>
+          <expression>row.Amount * row.Price</expression>
+        </calc>
+      </BeeCalcColumn> 
+
+    </columns>
+  </BeeGrid>
+</BeeGrids>

@@ -45,7 +45,7 @@
     
     <layer left="1" leftUnit="%" right="1" rightUnit="%"
            top="300" topUnit="px" bottom="1" bottomUnit="ex">
-      <Grid viewName="ChildRoles" relSource="User" />
+      <Grid relView="ChildRoles" relColumn="User" />
     </layer>
     
   </LayoutPanel>

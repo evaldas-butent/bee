@@ -119,6 +119,9 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
 
   private List<BeeColumn> dataColumns = null;
   private final Set<RelationInfo> relations = Sets.newHashSet();
+  
+  private String relColumn = null;
+  private long relId = BeeConst.UNDEF;
 
   public CellGridImpl() {
     super();
@@ -635,6 +638,14 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     return grid;
   }
 
+  public String getRelColumn() {
+    return relColumn;
+  }
+
+  public long getRelId() {
+    return relId;
+  }
+
   public Collection<RowInfo> getSelectedRows() {
     return getGrid().getSelectedRows().values();
   }
@@ -761,6 +772,14 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
 
   public void setEnabled(boolean enabled) {
     this.enabled = enabled;
+  }
+
+  public void setRelColumn(String relColumn) {
+    this.relColumn = relColumn;
+  }
+
+  public void setRelId(long relId) {
+    this.relId = relId;
   }
 
   public void setViewPresenter(Presenter presenter) {
@@ -999,6 +1018,13 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     List<String> values = Lists.newArrayList();
 
     for (int i = 0; i < getDataColumns().size(); i++) {
+      if (!BeeUtils.isEmpty(getRelColumn()) 
+          && BeeUtils.same(getRelColumn(), getDataColumns().get(i).getId())) {
+        columns.add(getDataColumns().get(i));
+        values.add(BeeUtils.toString(getRelId()));
+        continue;
+      }
+
       String value = row.getString(i);
       if (BeeUtils.isEmpty(value)) {
         continue;

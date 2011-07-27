@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BeeView xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../schemas/view.xsd"
+
+  name="OrderItemsView"
+  source="OrderItems"
+  >
+  <BeeColumns>
+    <BeeColumn name="ItemIDName" expression="ItemID>Name" />
+    <BeeColumn name="ItemIDArticle" expression="ItemID>Article" />
+    <BeeColumn name="Amount" expression="Amount" />
+    <BeeColumn name="UnitOfMsr" expression="UnitOfMsr" />
+    <BeeColumn name="Price" expression="Price" />
+    <BeeColumn name="OrderID" expression="OrderID" />
+    <BeeColumn name="ItemID" expression="ItemID" />
+  </BeeColumns>
+  <BeeOrder>
+    <OrderBy column="ItemIDName" />
+  </BeeOrder>
+</BeeView>
+ 
