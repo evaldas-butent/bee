@@ -20,7 +20,7 @@ Create a variable named "GWT_ROOT" pointing to your "trunk" folder.
 Window->Preferences->Java->Build Path->Classpath Variables
 Create a variable named "GWT_TOOLS" pointing to your "tools" folder.
 Create a variable named "JDK_HOME" pointing to the root of your JDK install
-  (for example, C:\Program Files\jdk1.5.0_05 or /usr/lib/j2sdk1.5-sun)
+  (for example, C:\Program Files\jdk1.6 or /usr/lib/j2sdk1.6-sun)
 
 ---------------- Spelling -----------------
 
@@ -71,7 +71,7 @@ alphabetically.
 
 ------------ Compiler settings ------------
 Window->Preferences->Java->Compiler
-Set the compiler compliance level to 1.5.
+Set the compiler compliance level to 1.6.
 
 ------- Compiler errors & warnings --------
 Window->Preferences->Java->Compiler->Errors/Warnings
@@ -100,6 +100,18 @@ Generic types: all except "Generic type parameter declared with final type bound
 Annotations:
 - Annotation is used as super interface
 - Enable @SuppressWarnings annotations
+
+------- Annotation Processor --------
+
+Some components of GWT (RequestFactory) use annotation processing.
+
+Select project 'gwt-user'
+
+Project->Preferences->Java Compiler->AnnotationProcessor
+- Check Enable project specific settings
+- Check Enable annotation processing
+
+This adds a directory named '.apt-generated' to the source path.
 
 == Checkstyle ==
 
@@ -169,7 +181,16 @@ Description can be left blank.
     - DynaTable: uses RPC
   Then press the Finish button.
 
-2) Dismiss the welcome tab if you are setting up an Eclipse workspace
+2) If you are using the Google Plugin for Eclipse 
+  (http://code.google.com/eclipse), enable it for 'gwt-user'
+
+  Right click the 'gwt-user' project and go to properties. Select 
+  Google->Web Toolkit, and check the box for 'Use Google Web Toolkit'.
+
+  Then, select Google->Web Application, and uncheck 'This project has a WAR
+  directory'. Then press the "Apply" button.
+
+3) Dismiss the welcome tab if you are setting up an Eclipse workspace
   for the first time.
 
   You should now have several new projects in your Eclipse workspace.
@@ -183,7 +204,7 @@ Description can be left blank.
 
   Then refresh each project.
 
-3) Finally, drop to the command line and build the project
+4) Finally, drop to the command line and build the project
   using 'ant'. You may need to first download ant from the web:
 
     http://ant.apache.org/
@@ -241,7 +262,7 @@ This section captures the process used to create the original 'Hello.launch'
  Project->Preferences...->Projects Tab->Add...
  Add 'gwt-user' as a project dependency.
 
-2) Create a new launch configuration
+3) Create a new launch configuration
 
   Select the project in the tree on the left of the Main Window
   Open the Run... dialog

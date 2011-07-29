@@ -118,14 +118,14 @@ public class JsUtils {
     }
     return arr;
   }-*/;
-  
+
   public static List<Property> getInfo(JavaScriptObject obj) {
     List<Property> info = Lists.newArrayList();
     JsArrayString arr = getProperties(obj);
     if (arr == null || arr.length() < 3) {
       return info;
     }
-    
+
     for (int i = 0; i < arr.length(); i += 3) {
       info.add(new Property(arr.get(i), arr.get(i + 2)));
     }
@@ -136,7 +136,7 @@ public class JsUtils {
     Assert.notNull(obj);
     return getProperties(obj, null);
   }
-  
+
   public static native JsArrayString getProperties(JavaScriptObject obj, String pattern) /*-{
     var arr = new Array();
     var i = 0;
@@ -144,10 +144,10 @@ public class JsUtils {
     var tp = null;
     var ok = true;
 
-    for (var p in obj) {
+    for ( var p in obj) {
       try {
         v = obj[p];
-        tp = typeof(v);
+        tp = typeof (v);
         ok = true;
       } catch (err) {
         arr[i] = p;
@@ -266,7 +266,7 @@ public class JsUtils {
   public static native void setProperty(JavaScriptObject obj, String p, JsDate value) /*-{
     obj[p] = value;
   }-*/;
-  
+
   public static native void setProperty(JavaScriptObject obj, String p, String value) /*-{
     obj[p] = value;
   }-*/;
@@ -274,7 +274,7 @@ public class JsUtils {
   public static native void setPropertyToNull(JavaScriptObject obj, String p) /*-{
     obj[p] = null;
   }-*/;
-  
+
   public static native JsArrayString slice(JsArrayString src, int start, int end) /*-{
     if (src == null) {
       return null;

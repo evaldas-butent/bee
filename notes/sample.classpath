@@ -1,22 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry excluding="**/translatable/**" kind="src" path="src"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="C:/glassfish31/glassfish/modules/javax.servlet.jar" sourcepath="C:/sources"/>
-	<classpathentry kind="lib" path="C:/glassfish31/glassfish/modules/javax.ejb.jar" sourcepath="C:/sources"/>
-	<classpathentry kind="lib" path="C:/eclipse64/plugins/com.google.gwt.eclipse.sdkbundle_2.3.0.ms1_r36v201103311806/gwt-2.3.0-m1/validation-api-1.0.0.GA-sources.jar"/>
-	<classpathentry kind="lib" path="C:/eclipse64/plugins/com.google.gwt.eclipse.sdkbundle_2.3.0.ms1_r36v201103311806/gwt-2.3.0-m1/validation-api-1.0.0.GA.jar"/>
-	<classpathentry kind="lib" path="C:/eclipse64/plugins/com.google.gwt.eclipse.sdkbundle_2.3.0.ms1_r36v201103311806/gwt-2.3.0-m1/gwt-user.jar">
-		<attributes>
-			<attribute name="javadoc_location" value="file:/C:/eclipse64/plugins/com.google.gwt.eclipse.sdkbundle_2.3.0.ms1_r36v201103311806/gwt-2.3.0-m1/doc/javadoc/"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="lib" path="C:/eclipse64/plugins/com.google.gwt.eclipse.sdkbundle_2.3.0.ms1_r36v201103311806/gwt-2.3.0-m1/gwt-dev.jar">
-		<attributes>
-			<attribute name="javadoc_location" value="file:/C:/eclipse64/plugins/com.google.gwt.eclipse.sdkbundle_2.3.0.ms1_r36v201103311806/gwt-2.3.0-m1/doc/javadoc/"/>
-		</attributes>
-	</classpathentry>
+	<classpathentry kind="var" path="JRE_LIB" sourcepath="/JRE_SRC"/>
 	<classpathentry kind="lib" path="war/WEB-INF/lib/guava-r09.jar" sourcepath="C:/sources"/>
 	<classpathentry kind="lib" path="lib/guava-r09-gwt.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jst.server.core.container/com.sun.enterprise.jst.server.runtimeTarget/GlassFish 3.1">
+		<attributes>
+			<attribute name="owner.project.facets" value="jst.web"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="con" path="com.google.gwt.eclipse.core.GWT_CONTAINER"/>
 	<classpathentry kind="output" path="war/WEB-INF/classes"/>
 </classpath>
