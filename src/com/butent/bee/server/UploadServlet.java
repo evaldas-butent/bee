@@ -2,8 +2,9 @@ package com.butent.bee.server;
 
 import com.butent.bee.server.http.HttpUtils;
 import com.butent.bee.server.ui.UiServiceBean;
-import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Service;
+import com.butent.bee.shared.communication.CommUtils;
+import com.butent.bee.shared.communication.ContentType;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.LogUtils;
@@ -21,7 +22,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 @SuppressWarnings("serial")
-@WebServlet(name = "UploadServlet", urlPatterns = {"/bee/upload/*"})
+@WebServlet(name = "UploadServlet", urlPatterns = {"/bee/upload"})
 @MultipartConfig
 public class UploadServlet extends HttpServlet {
 
@@ -29,6 +30,22 @@ public class UploadServlet extends HttpServlet {
 
   @EJB
   UiServiceBean uiBean;
+
+  private ResponseObject dispatch(String service, HttpServletRequest req) {
+    ResponseObject responseObject;
+    
+    if (BeeUtils.same(service, Service.IMPORT_FORM)) {
+      String formName = HttpUtils.readPart(req, Service.VAR_FORM_NAME);
+      String design = HttpUtils.readPart(req, Service.VAR_FILE_NAME);
+      responseObject = uiBean.importForm(formName, BeeUtils.trim(design));
+    } else {
+      String msg = BeeUtils.concat(1, service, "service not recognized");
+      LogUtils.warning(logger, msg);
+      responseObject = ResponseObject.error(msg);
+    }
+
+    return responseObject;
+  }
   
   @Override
   protected void doGet(HttpServletRequest req, HttpServletResponse resp)
@@ -43,27 +60,37 @@ public class UploadServlet extends HttpServlet {
   }
 
   private void doService(HttpServletRequest req, HttpServletResponse resp) {
-    String formName = HttpUtils.readPart(req, Service.VAR_FORM_NAME);
-    String design = HttpUtils.readPart(req, Service.VAR_FILE_NAME);
+    long start = System.currentTimeMillis();
+    String service = HttpUtils.readPart(req, Service.NAME_SERVICE);
+    String prefix = getClass().getSimpleName() + ":";
+
+    ResponseObject responseObject;
+    if (BeeUtils.isEmpty(service)) {
+      String msg = BeeUtils.concat(1, prefix, "service name not specified");
+      LogUtils.severe(logger, msg);
+      responseObject = ResponseObject.error(msg);
+    } else {
+      LogUtils.infoNow(logger, prefix, "request", service);
+      responseObject = dispatch(service, req);
+      if (responseObject == null) {
+        String msg = BeeUtils.concat(1, prefix, service, "response empty");
+        LogUtils.warning(logger, msg);
+        responseObject = ResponseObject.warning(msg);
+      }
+    }
     
-    ResponseObject response = uiBean.importForm(formName, BeeUtils.trim(design));
-    Assert.notNull(response);
-    
-    resp.setContentType("text/html;charset=UTF-8");
+    ContentType ctp = CommUtils.formResponseContentType;
+    resp.setContentType(CommUtils.getMediaType(ctp));
+    resp.setCharacterEncoding(CommUtils.getCharacterEncoding(ctp));
+
+    String content = CommUtils.prepareContent(ctp, responseObject.serialize());
+
+    LogUtils.infoNow(logger, prefix, BeeUtils.elapsedSeconds(start), "response",
+        resp.getContentType(), content.length());
     
     try {
       PrintWriter writer = resp.getWriter();    
-
-      if (response.hasErrors()) {
-        for (String message : response.getErrors()) {
-          writer.println(message);
-        }
-      } else if (response.hasResponse(String.class)) {
-        writer.print((String) response.getResponse());
-      } else {
-        writer.println("unknown response type");
-      }
-      
+      writer.print(content);
       writer.flush();    
     } catch (IOException ex) {
       LogUtils.stack(logger, ex);

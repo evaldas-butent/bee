@@ -9,6 +9,7 @@ import com.butent.bee.shared.BeeResource;
 import com.butent.bee.shared.communication.ResponseMessage;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.logging.Level;
 
@@ -52,11 +53,11 @@ public class ResponseHandler {
     BeeKeeper.getScreen().updateActivePanel(panel);
   }
 
-  public static void unicodeTest(RpcInfo info, String respTxt, int mc, ResponseMessage[] messages) {
+  public static void unicodeTest(RpcInfo info, String respTxt,
+      Collection<ResponseMessage> messages) {
     Assert.notNull(info);
     Assert.notEmpty(respTxt);
-    Assert.isPositive(mc);
-    Assert.lengthEquals(messages, mc);
+    Assert.notEmpty(messages);
 
     Map<String, String> reqData = info.getUserData();
     Assert.notEmpty(reqData);
@@ -109,10 +110,10 @@ public class ResponseHandler {
     String[] arr;
     String k, v, z;
 
-    for (int i = 0; i < mc; i++) {
-      arr = BeeUtils.split(messages[i].getMessage(), BeeConst.STRING_SPACE);
+    for (ResponseMessage message : messages) {
+      arr = BeeUtils.split(message.getMessage(), BeeConst.STRING_SPACE);
       if (BeeUtils.length(arr) != 2) {
-        BeeKeeper.getLog().warning(BeeUtils.length(arr), messages[i]);
+        BeeKeeper.getLog().warning(BeeUtils.length(arr), message);
         continue;
       }
 

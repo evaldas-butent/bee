@@ -3,6 +3,8 @@ package com.butent.bee.client;
 import com.google.common.collect.Maps;
 
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Service;
+import com.butent.bee.shared.Stage;
 import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -18,6 +20,14 @@ public class UserInfo implements Module {
 
   private String sessionId = null;
   private UserData userData = null;
+
+  public boolean checkLoggedIn() {
+    if (isLoggedIn()) {
+      return true;
+    }
+    BeeKeeper.getBus().dispatchService(Service.GET_LOGIN, Stage.STAGE_GET_PARAMETERS, null);
+    return false;
+  }
 
   public void end() {
   }
@@ -88,7 +98,7 @@ public class UserInfo implements Module {
 
   public void init() {
   }
-
+  
   public boolean isLoggedIn() {
     return userData != null;
   }

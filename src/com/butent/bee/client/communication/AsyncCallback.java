@@ -1,5 +1,6 @@
 package com.butent.bee.client.communication;
 
+import com.google.common.collect.Lists;
 import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.http.client.Header;
 import com.google.gwt.http.client.Request;
@@ -14,7 +15,6 @@ import com.butent.bee.client.utils.BeeDuration;
 import com.butent.bee.client.utils.JsUtils;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeResource;
-import com.butent.bee.shared.DateTime;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.CommUtils;
 import com.butent.bee.shared.communication.ContentType;
@@ -24,9 +24,8 @@ import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
-import com.butent.bee.shared.utils.LogUtils;
 
-import java.util.logging.Level;
+import java.util.Collection;
 
 /**
  * Manages responses to RPC calls on the client side.
@@ -82,7 +81,7 @@ public class AsyncCallback implements RequestCallback {
       if (!BeeUtils.isEmpty(auth)) {
         auth = Codec.decodeBase64(auth);
         ResponseObject response = ResponseObject.restore(auth);
-        dispatchMessages(response.getMessages());
+        RpcUtils.dispatchMessages(response);
         UserData data = null;
 
         if (response.hasResponse(UserData.class)) {
@@ -139,13 +138,13 @@ public class AsyncCallback implements RequestCallback {
       }
     }
 
-    ResponseMessage[] messages = null;
+    Collection<ResponseMessage> messages = null;
     if (mc > 0) {
-      messages = new ResponseMessage[mc];
+      messages = Lists.newArrayList();
       for (int i = 0; i < mc; i++) {
-        messages[i] = new ResponseMessage(resp.getHeader(CommUtils.rpcMessageName(i)), true);
+        messages.add(new ResponseMessage(resp.getHeader(CommUtils.rpcMessageName(i)), true));
       }
-      dispatchMessages(messages);
+      RpcUtils.dispatchMessages(messages);
     }
 
     int[] partSizes = null;
@@ -164,7 +163,7 @@ public class AsyncCallback implements RequestCallback {
 
     if (!BeeUtils.isEmpty(resp.getHeader(Service.RPC_VAR_RESP))) {
       ResponseObject response = ResponseObject.restore(txt);
-      dispatchMessages(response.getMessages());
+      RpcUtils.dispatchMessages(response);
       ResponseCallback callback = null;
 
       if (info != null) {
@@ -206,7 +205,7 @@ public class AsyncCallback implements RequestCallback {
   }
 
   private void dispatchInvocation(String svc, RpcInfo info, String txt, int mc,
-      ResponseMessage[] messages, int cc, int cnt, String sep) {
+      Collection<ResponseMessage> messages, int cc, int cnt, String sep) {
     if (info == null) {
       BeeKeeper.getLog().severe("rpc info not available");
       return;
@@ -219,37 +218,12 @@ public class AsyncCallback implements RequestCallback {
     }
 
     if (BeeUtils.same(method, "stringInfo")) {
-      ResponseHandler.unicodeTest(info, txt, mc, messages);
+      ResponseHandler.unicodeTest(info, txt, messages);
     } else if (cnt > 0) {
       JsArrayString arr = splitResponse(txt, sep, cnt);
       dispatchResponse(svc, cc, arr);
     } else if (mc <= 0) {
       BeeKeeper.getLog().warning("unknown invocation method", method);
-    }
-  }
-
-  private void dispatchMessages(ResponseMessage[] messages) {
-    if (!BeeUtils.isEmpty(messages)) {
-      for (ResponseMessage message : messages) {
-        Level level = message.getLevel();
-        if (LogUtils.isOff(level)) {
-          continue;
-        }
-
-        DateTime date = message.getDate();
-        String msg;
-        if (date == null) {
-          msg = message.getMessage();
-        } else {
-          msg = BeeUtils.concat(1, date.toTimeString(), message.getMessage());
-        }
-
-        if (level == null) {
-          BeeKeeper.getLog().info(msg);
-        } else {
-          BeeKeeper.getLog().log(level, msg);
-        }
-      }
     }
   }
 

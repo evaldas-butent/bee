@@ -111,8 +111,8 @@ public class ResponseObject implements BeeSerializable {
     return getMessageArray(Level.SEVERE);
   }
 
-  public ResponseMessage[] getMessages() {
-    return messages.toArray(new ResponseMessage[0]);
+  public Collection<ResponseMessage> getMessages() {
+    return messages;
   }
 
   public String[] getNotifications() {
@@ -167,6 +167,10 @@ public class ResponseObject implements BeeSerializable {
     return hasMessages(Level.SEVERE);
   }
 
+  public boolean hasMessages() {
+    return !messages.isEmpty();
+  }
+  
   public boolean hasNotifications() {
     return hasMessages(Level.INFO);
   }

@@ -200,7 +200,7 @@ public class Codec {
    * {@code 15hello12ab13abc}
    * 
    * @param obj an Object to serialize
-   * @return a String represenration of the serialized Object for deserialization.
+   * @return a String representation of the serialized Object for deserialization.
    */
   public static String beeSerialize(Object obj) {
     StringBuilder sb = new StringBuilder();

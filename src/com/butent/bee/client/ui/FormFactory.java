@@ -6,6 +6,7 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.FormPanel;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
+import com.google.gwt.user.client.ui.Hidden;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.xml.client.Document;
 import com.google.gwt.xml.client.Element;
@@ -13,6 +14,7 @@ import com.google.gwt.xml.client.Element;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.communication.RpcUtils;
 import com.butent.bee.client.data.DataHelper;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.dialog.DialogBox;
@@ -26,6 +28,7 @@ import com.butent.bee.client.widget.InputText;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
+import com.butent.bee.shared.communication.CommUtils;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -122,12 +125,15 @@ public class FormFactory {
   }
 
   public static void importForm(final String name) {
+    if (!BeeKeeper.getUser().checkLoggedIn()) {
+      return;
+    }
     if (!BeeUtils.isEmpty(name)) {
       Global.setVarValue(Service.VAR_FORM_NAME, BeeUtils.trim(name));
     }
 
     final FormPanel formPanel = new FormPanel();
-    formPanel.setAction(GWT.getModuleBaseURL() + "upload");
+    formPanel.setAction(GWT.getModuleBaseURL() + Service.UPLOAD_URL);
 
     formPanel.setEncoding(FormPanel.ENCODING_MULTIPART);
     formPanel.setMethod(FormPanel.METHOD_POST);
@@ -137,15 +143,20 @@ public class FormFactory {
     
     container.setCellSpacing(10);
     
-    container.setWidget(0, 0, new BeeLabel("Form Name"));
+    int row = 0;
+    container.setWidget(row, 0, new BeeLabel("Form Name"));
     final InputText inputName = new InputText(Global.getVar(Service.VAR_FORM_NAME));
     inputName.setName(Service.VAR_FORM_NAME);
-    container.setWidget(0, 1, inputName);
-
-    container.setWidget(1, 0, new BeeLabel("Design File"));
+    container.setWidget(row, 1, inputName);
+    
+    row++;
+    container.setWidget(row, 0, new BeeLabel("Design File"));
     final BeeFileUpload upload = new BeeFileUpload();
     upload.setName(Service.VAR_FILE_NAME);
-    container.setWidget(1, 1, upload);
+    container.setWidget(row, 1, upload);
+    
+    row++;
+    container.setWidget(row, 0, new Hidden(Service.NAME_SERVICE, Service.IMPORT_FORM));
 
     BeeButton submit = new BeeButton("Submit", new ClickHandler() {
       public void onClick(ClickEvent event) {
@@ -153,9 +164,11 @@ public class FormFactory {
       }
     });
     
-    container.setWidget(2, 0, submit);
-    container.getCellFormatter().setHorizontalAlignment(2, 0, HasHorizontalAlignment.ALIGN_CENTER);
-    container.getFlexCellFormatter().setColSpan(2, 0, 2);
+    row++;
+    container.setWidget(row, 0, submit);
+    container.getCellFormatter().setHorizontalAlignment(row, 0,
+        HasHorizontalAlignment.ALIGN_CENTER);
+    container.getFlexCellFormatter().setColSpan(row, 0, 2);
 
     final DialogBox dialog = new DialogBox();
     
@@ -173,12 +186,13 @@ public class FormFactory {
 
     formPanel.addSubmitCompleteHandler(new FormPanel.SubmitCompleteHandler() {
       public void onSubmitComplete(FormPanel.SubmitCompleteEvent event) {
-        String results = event.getResults();
-        if (BeeUtils.context("BeeForm", results)) {
-          getForm(name);
+        ResponseObject response = CommUtils.getFormResonse(event.getResults());
+        RpcUtils.dispatchMessages(response);
+        if (response.hasResponse(String.class)) {
+          openForm((String) response.getResponse());
           dialog.hide();
         } else {
-          BeeKeeper.getLog().debug(results);
+          BeeKeeper.getLog().warning("unknown response type", response.getType());
         }
       }
     });

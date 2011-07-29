@@ -96,7 +96,7 @@ public class RpcInfo {
   private int respSize = BeeConst.SIZE_UNKNOWN;
 
   private int respMsgCnt = BeeConst.SIZE_UNKNOWN;
-  private ResponseMessage[] respMessages = null;
+  private Collection<ResponseMessage> respMessages = null;
   private int respPartCnt = BeeConst.SIZE_UNKNOWN;
   private int[] respPartSize = null;
 
@@ -155,7 +155,7 @@ public class RpcInfo {
   }
 
   public int end(ContentType ctp, String data, int size, int rows,
-      int cols, int msgCnt, ResponseMessage[] messages, int partCnt, int[] partSizes) {
+      int cols, int msgCnt, Collection<ResponseMessage> messages, int partCnt, int[] partSizes) {
     int r = done();
     setState(State.CLOSED);
 
@@ -302,7 +302,7 @@ public class RpcInfo {
     return BeeUtils.transformCollection(getRespInfo(), BeeConst.DEFAULT_ROW_SEPARATOR);
   }
 
-  public ResponseMessage[] getRespMessages() {
+  public Collection<ResponseMessage> getRespMessages() {
     return respMessages;
   }
 
@@ -449,7 +449,7 @@ public class RpcInfo {
     this.respInfo = respInfo;
   }
 
-  public void setRespMessages(ResponseMessage[] respMessages) {
+  public void setRespMessages(Collection<ResponseMessage> respMessages) {
     this.respMessages = respMessages;
   }
 

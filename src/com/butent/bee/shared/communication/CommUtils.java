@@ -11,6 +11,7 @@ import com.butent.bee.shared.utils.Codec;
  */
 
 public class CommUtils {
+
   public static final char DEFAULT_INFORMATION_SEPARATOR = '\u001d';
 
   public static final String QUERY_STRING_SEPARATOR = "?";
@@ -24,6 +25,8 @@ public class CommUtils {
 
   public static ContentType defaultRequestContentType = ContentType.XML;
   public static ContentType defaultResponseContentType = ContentType.TEXT;
+  
+  public static ContentType formResponseContentType = ContentType.HTML;
 
   public static String buildContentType(String type) {
     return buildContentType(type, getCharacterEncoding(getContentType(type)));
@@ -55,7 +58,7 @@ public class CommUtils {
   }
 
   public static String getContent(ContentType type, String data) {
-    if (isBinary(type) && BeeUtils.length(data) > 0) {
+    if ((isBinary(type) || isHtml(type)) && BeeUtils.length(data) > 0) {
       return Codec.decodeBase64(data);
     } else {
       return data;
@@ -76,6 +79,13 @@ public class CommUtils {
     }
     return ctp;
   }
+  
+  public static ResponseObject getFormResonse(String result) {
+    if (BeeUtils.isEmpty(result)) {
+      return null;
+    }
+    return ResponseObject.restore(getContent(formResponseContentType, result));
+  }
 
   public static String getMediaType(ContentType ctp) {
     String mt;
@@ -86,6 +96,9 @@ public class CommUtils {
         break;
       case XML:
         mt = "text/xml";
+        break;
+      case HTML:
+        mt = "text/html";
         break;
       case ZIP:
         mt = "application/zip";
@@ -100,6 +113,10 @@ public class CommUtils {
     return ctp == ContentType.BINARY;
   }
 
+  public static boolean isHtml(ContentType ctp) {
+    return ctp == ContentType.HTML;
+  }
+  
   public static boolean isReservedParameter(String name) {
     Assert.notEmpty(name);
     return BeeUtils.startsSame(name, Service.RPC_VAR_SYS_PREFIX);
@@ -123,7 +140,7 @@ public class CommUtils {
   }
 
   public static String prepareContent(ContentType type, String data) {
-    if (isBinary(type) && BeeUtils.length(data) > 0) {
+    if ((isBinary(type) || isHtml(type)) && BeeUtils.length(data) > 0) {
       return Codec.encodeBase64(data);
     } else {
       return data;
