@@ -265,8 +265,13 @@ public class UiServiceBean {
       if (BeeUtils.same(dstType, "TitleWindow")) {
         if (!BeeUtils.isEmpty(source)) {
           formElement.setAttribute("name", source);
-          formElement.setAttribute("viewName", source);
-          view = sys.getView(source);
+          if (sys.isView(source)) {
+            formElement.setAttribute("viewName", source);
+            view = sys.getView(source);
+          } else {
+            LogUtils.warning(logger, "import form", formName,
+                "view name", source, "not recognized");
+          }
         }
         if (!BeeUtils.isEmpty(label)) {
           formElement.setAttribute("caption", label);
@@ -279,7 +284,7 @@ public class UiServiceBean {
           dstType = "ListBox";
         } else {
           SqlDataType type = null;
-          if (view != null && !BeeUtils.isEmpty(source)) {
+          if (view != null && view.hasColumn(source)) {
             type = view.getType(source);
           }
           if (type != null) {
@@ -358,6 +363,7 @@ public class UiServiceBean {
       rootElement.appendChild(layerElement);
 
       Element widgetElement = dstDoc.createElement(dstType.trim());
+      boolean isColumn = false;
 
       if (!BeeUtils.isEmpty(source)) {
         if (BeeUtils.same(dstType, "DataSelector") && view != null) {
@@ -366,19 +372,60 @@ public class UiServiceBean {
 
           widgetElement.setAttribute("source", relSource + relColumn);
           widgetElement.setAttribute("relSource", relSource);
-
-          String relView = sys.getRelation(view.getTable(relSource), view.getField(relSource));
-          if (!BeeUtils.isEmpty(relView)) {
-            widgetElement.setAttribute("relView", relView);
+          
+          String relView = null;
+          if (view.hasColumn(relSource)) {
+            relView = sys.getRelation(view.getTable(relSource), view.getField(relSource));
+            if (!BeeUtils.isEmpty(relView)) {
+              widgetElement.setAttribute("relView", relView);
+              isColumn = true;
+            } else {
+              LogUtils.warning(logger, "import form", formName, "widget", dstType,
+                  "source", source, "relSource", relSource, "has no relation");
+            }
+          } else {
+            LogUtils.warning(logger, "import form", formName, "widget", dstType,
+                "source", source, "relSource", relSource, "not a view column");
           }
+          
           widgetElement.setAttribute("relColumn", relColumn);
+          if (sys.isView(relView) && !sys.getView(relView).hasColumn(relColumn)) {
+            LogUtils.warning(logger, "import form", formName, "widget", dstType,
+                "source", source, "relView", relView, "relColumn", relColumn, "not a view column");
+          }
         
         } else if (BeeUtils.same(dstType, "Grid") && view != null) {
+          String relColumn = view.getSourceIdName();
           widgetElement.setAttribute("relView", source);
-          widgetElement.setAttribute("relColumn", view.getSourceIdName());
+          widgetElement.setAttribute("relColumn", relColumn);
+          
+          if (!sys.isView(source)) {
+            LogUtils.warning(logger, "import form", formName, "widget", dstType,
+                "source", source, "not a view");
+          } else if (!sys.getView(source).hasColumn(relColumn)) {
+            LogUtils.warning(logger, "import form", formName, "widget", dstType,
+                "view", source, "relColumn", relColumn, "not a view column");
+          } else {
+            isColumn = true;
+          }
 
         } else {
           widgetElement.setAttribute("source", source);
+          if (view != null) {
+            if (!view.hasColumn(source)) {
+              LogUtils.warning(logger, "import form", formName, "widget", dstType,
+                  "source", source, "not a view column");
+            } else {
+              isColumn = true;
+            }
+          }
+        }
+      }
+      
+      if (isColumn && BeeUtils.same(dstType, "InputDecimal")) {
+        int scale = sys.getScale(view.getTable(source), view.getField(source));
+        if (scale > 0) {
+          widgetElement.setAttribute("scale", BeeUtils.toString(scale));
         }
       }
 

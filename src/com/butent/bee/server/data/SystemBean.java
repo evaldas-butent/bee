@@ -629,6 +629,10 @@ public class SystemBean {
     return getTableField(tblName, fldName).getRelation();
   }
 
+  public int getScale(String tblName, String fldName) {
+    return getTableField(tblName, fldName).getScale();
+  }
+  
   public BeeState getState(String stateName) {
     Assert.state(isState(stateName), "Not a state: " + stateName);
     return stateCache.get(BeeUtils.normalize(stateName));
