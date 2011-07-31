@@ -8,7 +8,6 @@ import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.client.data.DataHelper;
 import com.butent.bee.client.data.HasDataTable;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils.ScrollBars;
@@ -28,6 +27,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.event.ActiveRowChangeEvent;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -42,10 +42,6 @@ import java.util.List;
 public class GridContainerImpl extends Split implements GridContainerView, HasNavigation,
     HasSearch, ActiveRowChangeEvent.Handler, AddStartEvent.Handler, AddEndEvent.Handler {
 
-  public static Integer minPagingRows = 20;
-
-  public static Integer defaultPageSize = 15;
-  
   public static String newRowCaption = "New Row";
 
   private Presenter viewPresenter = null;
@@ -106,25 +102,25 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
   public void create(String caption, List<BeeColumn> dataColumns, int rowCount, BeeRowSet rowSet,
       GridDescription gridDescription, boolean isChild) {
     setChild(isChild);
-    int minRows = BeeUtils.unbox((gridDescription == null)
-        ? minPagingRows : gridDescription.getPagingThreshold());
+    int minRows = (gridDescription == null) ? DataUtils.getDefaultPagingThreshold()
+        : BeeUtils.unbox(gridDescription.getPagingThreshold());
     setHasPaging(!isChild && rowCount >= minRows);
 
-    minRows = BeeUtils.unbox((gridDescription == null)
-        ? DataHelper.getDefaultSearchThreshold() : gridDescription.getSearchThreshold());
+    minRows = (gridDescription == null) ? DataUtils.getDefaultSearchThreshold()
+        : BeeUtils.unbox(gridDescription.getSearchThreshold());
     setHasSearch(!isChild && rowCount >= minRows);
 
     int pageSize;
     if (hasPaging()) {
-      pageSize = BeeUtils.unbox((gridDescription == null)
-          ? defaultPageSize : gridDescription.getPageSize());
+      pageSize = (gridDescription == null) ? DataUtils.getDefaultPageSize()
+          : BeeUtils.unbox(gridDescription.getPageSize());
       pageSize = Math.max(pageSize, 1);
     } else {
       pageSize = rowCount;
     }
 
-    boolean readOnly =
-        (gridDescription == null) ? false : BeeUtils.isTrue(gridDescription.isReadOnly());
+    boolean readOnly = (gridDescription == null) ? false 
+        : BeeUtils.isTrue(gridDescription.isReadOnly());
 
     DataHeaderView header = new DataHeaderImpl();
     header.create(caption, true, readOnly, isChild);

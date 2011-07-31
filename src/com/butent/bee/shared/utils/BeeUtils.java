@@ -1597,6 +1597,18 @@ public class BeeUtils {
     return src.charAt(len - 1) == sfx;
   }
 
+  public static boolean isSuffix(String src, String sfx) {
+    if (src == null || sfx == null) {
+      return false;
+    }
+    int srcLen = src.length();
+    int sfxLen = sfx.length();
+    if (sfxLen <= 0 || srcLen <= sfxLen) {
+      return false;
+    }
+    return same(right(src, sfxLen), sfx);
+  }
+  
   /**
    * Checks if the specified value is true.
    * 
@@ -2270,6 +2282,13 @@ public class BeeUtils {
     return str;
   }
 
+  public static String removeSuffix(String str, String sfx) {
+    if (isSuffix(str, sfx)) {
+      return left(str, str.length() - sfx.length());
+    }
+    return str;
+  }
+  
   /**
    * Removes all trailing zeros.
    * 
@@ -2422,6 +2441,18 @@ public class BeeUtils {
   
   public static double rescale(double x, double frMin, double frMax, double toMin, double toMax) {
     return scaleNormalizedToRange(normalize(x, frMin, frMax), toMin, toMax);
+  }
+  
+  public static String right(String s, int n) {
+    if (s == null) {
+      return null;
+    } else if (n <= 0) {
+      return BeeConst.STRING_EMPTY;
+    } else if (s.length() <= n) {
+      return s;
+    } else {
+      return s.substring(s.length() - n);
+    }
   }
   
   /**

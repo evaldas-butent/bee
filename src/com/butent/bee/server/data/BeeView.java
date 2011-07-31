@@ -245,7 +245,7 @@ public class BeeView implements HasExtendedInfo {
   public List<ExtendedProperty> getInfo() {
     List<ExtendedProperty> info = Lists.newArrayList();
     PropertyUtils.addProperties(info, false, "Name", getName(), "Source", getSource(),
-        "Source Id Name", sourceIdName, "Source Version Name", sourceVersionName,
+        "Source Id Name", getSourceIdName(), "Source Version Name", getSourceVersionName(),
         "Read Only", isReadOnly(), "Query", query.getQuery(), "Columns", columns.size());
 
     String sub;
@@ -313,6 +313,20 @@ public class BeeView implements HasExtendedInfo {
     Assert.state(!isEmpty());
     return query.copyOf().addOrder(getSource(), sourceIdName);
   }
+  
+  public String getRelSource(String colName) {
+    if (!hasColumn(colName)) {
+      return null;
+    }
+    
+    String colSource = getName(colName);
+    String relColumn = getField(colName);
+    if (BeeUtils.isSuffix(colSource, relColumn)) {
+      return BeeUtils.trim(BeeUtils.removeSuffix(colSource, relColumn));
+    } else {
+      return null;
+    }
+  }
 
   public String getSource() {
     return source;
@@ -320,6 +334,10 @@ public class BeeView implements HasExtendedInfo {
 
   public String getSourceIdName() {
     return sourceIdName;
+  }
+
+  public String getSourceVersionName() {
+    return sourceVersionName;
   }
 
   public String getTable(String colName) {
@@ -389,7 +407,7 @@ public class BeeView implements HasExtendedInfo {
     Assert.state(hasColumn(colName), "Unknown view column: " + getName() + " " + colName);
     return columns.get(BeeUtils.normalize(colName));
   }
-
+  
   private ViewField getViewField(String colName) {
     return expressions.get(BeeUtils.normalize(getExpression(colName)));
   }

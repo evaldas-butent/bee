@@ -132,6 +132,11 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
     this.name = name;
   }
 
+  public ColumnDescription(ColType colType, String name, boolean visible) {
+    this(colType, name);
+    setVisible(visible);
+  }
+  
   private ColumnDescription() {
   }
 

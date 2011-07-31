@@ -2,9 +2,9 @@ package com.butent.bee.client.ui;
 
 import com.google.gwt.xml.client.Element;
 
-import com.butent.bee.client.data.DataHelper;
 import com.butent.bee.client.utils.XmlUtils;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.HasViewName;
 import com.butent.bee.shared.ui.Calculation;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -32,7 +32,7 @@ public class FormDescription implements HasViewName {
   public int getAsyncThreshold() {
     Integer asyncThreshold = XmlUtils.getAttributeInteger(getFormElement(), ATTR_ASYNC_THRESHOLD);
     if (asyncThreshold == null) {
-      asyncThreshold = DataHelper.getDefaultAsyncThreshold();
+      asyncThreshold = DataUtils.getDefaultAsyncThreshold();
     }
     return asyncThreshold;
   }
@@ -56,7 +56,7 @@ public class FormDescription implements HasViewName {
   public int getSearchThreshold() {
     Integer searchThreshold = XmlUtils.getAttributeInteger(getFormElement(), ATTR_SEARCH_THRESHOLD);
     if (searchThreshold == null) {
-      searchThreshold = DataHelper.getDefaultSearchThreshold();
+      searchThreshold = DataUtils.getDefaultSearchThreshold();
     }
     return searchThreshold;
   }

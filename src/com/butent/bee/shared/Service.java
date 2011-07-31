@@ -63,6 +63,7 @@ public class Service {
   public static final String COMMIT = DATA_SERVICE_PREFIX + "commit";
   public static final String GET_VIEW_LIST = DATA_SERVICE_PREFIX + "view_list";
   public static final String GET_VIEW_INFO = DATA_SERVICE_PREFIX + "view_info";
+  public static final String GET_TABLE_INFO = DATA_SERVICE_PREFIX + "table_info";
   public static final String GENERATE = DATA_SERVICE_PREFIX + "generate";
   public static final String COUNT_ROWS = DATA_SERVICE_PREFIX + "row_count";
   public static final String DELETE_ROWS = DATA_SERVICE_PREFIX + "delete_rows";

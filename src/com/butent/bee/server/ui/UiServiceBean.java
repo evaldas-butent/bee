@@ -135,6 +135,8 @@ public class UiServiceBean {
       response = insertRow(reqInfo);
     } else if (BeeUtils.same(svc, Service.GET_VIEW_INFO)) {
       response = getViewInfo(reqInfo);
+    } else if (BeeUtils.same(svc, Service.GET_TABLE_INFO)) {
+      response = getTableInfo(reqInfo);
 
     } else {
       String msg = BeeUtils.concat(1, "data service not recognized:", svc);
@@ -142,20 +144,6 @@ public class UiServiceBean {
       response = ResponseObject.error(msg);
     }
     return response;
-  }
-
-  public ResponseObject getViewInfo(RequestInfo reqInfo) {
-    String viewName = reqInfo.getParameter(0);
-    List<ExtendedProperty> info = Lists.newArrayList();
-
-    if (sys.isView(viewName)) {
-      info.addAll(sys.getView(viewName).getInfo());
-    } else {
-      for (String name : sys.getViewNames()) {
-        PropertyUtils.appendWithPrefix(info, name, sys.getView(name).getInfo());
-      }
-    }
-    return ResponseObject.response(info);
   }
 
   public ResponseObject importForm(String formName, String design) {
@@ -648,9 +636,14 @@ public class UiServiceBean {
     if (BeeUtils.isEmpty(gridName)) {
       return ResponseObject.error("Which grid?");
     }
+
     if (grd.isGrid(gridName)) {
       return ResponseObject.response(grd.getGrid(gridName));
     }
+    if (sys.isView(gridName)) {
+      return ResponseObject.response(grd.getDefaultGrid(sys.getView(gridName), true));
+    }
+    
     return ResponseObject.error("grid", gridName, "not found");
   }
 
@@ -674,6 +667,20 @@ public class UiServiceBean {
     return sys.editStateRoles(table, states);
   }
 
+  private ResponseObject getTableInfo(RequestInfo reqInfo) {
+    String tableName = reqInfo.getParameter(0);
+    List<ExtendedProperty> info = Lists.newArrayList();
+
+    if (sys.isTable(tableName)) {
+      info.addAll(sys.getTableInfo(tableName));
+    } else {
+      for (String name : sys.getTableNames()) {
+        PropertyUtils.appendWithPrefix(info, name, sys.getTableInfo(name));
+      }
+    }
+    return ResponseObject.response(info);
+  }
+  
   private ResponseObject getTables() {
     return ResponseObject.response(sys.getTableNames());
   }
@@ -705,6 +712,20 @@ public class UiServiceBean {
 
     BeeRowSet res = sys.getViewData(viewName, condition, order, limit, offset, cols);
     return ResponseObject.response(res);
+  }
+
+  private ResponseObject getViewInfo(RequestInfo reqInfo) {
+    String viewName = reqInfo.getParameter(0);
+    List<ExtendedProperty> info = Lists.newArrayList();
+
+    if (sys.isView(viewName)) {
+      info.addAll(sys.getView(viewName).getInfo());
+    } else {
+      for (String name : sys.getViewNames()) {
+        PropertyUtils.appendWithPrefix(info, name, sys.getView(name).getInfo());
+      }
+    }
+    return ResponseObject.response(info);
   }
 
   private ResponseObject getViewList() {

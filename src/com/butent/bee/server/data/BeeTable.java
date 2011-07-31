@@ -20,10 +20,15 @@ import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.HasExtendedInfo;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
+import com.butent.bee.shared.utils.ExtendedProperty;
+import com.butent.bee.shared.utils.PropertyUtils;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -33,7 +38,7 @@ import java.util.Set;
  */
 
 @SuppressWarnings("hiding")
-class BeeTable implements HasExtFields, HasStates, HasTranslations {
+class BeeTable implements HasExtFields, HasStates, HasTranslations, HasExtendedInfo {
 
   public class BeeField {
     private final String name;
@@ -789,6 +794,62 @@ class BeeTable implements HasExtFields, HasStates, HasTranslations {
     return idName;
   }
 
+  public List<ExtendedProperty> getInfo() {
+    List<ExtendedProperty> info = Lists.newArrayList();
+    PropertyUtils.addProperties(info, false, "Name", getName(),
+        "Id Name", getIdName(), "Version Name", getVersionName(), "active", isActive());
+
+    info.add(new ExtendedProperty("Fields", BeeUtils.toString(fields.size())));
+    int i = 0;
+    for (Map.Entry<String, BeeField> entry : fields.entrySet()) {
+      String key = BeeUtils.concat(1, "Field", ++i, entry.getKey());
+      BeeField field = entry.getValue();
+      
+      PropertyUtils.addChildren(info, key, "Name", field.getName(), "Type", field.getType(),
+          "Precision", field.getPrecision(), "Scale", field.getScale(),
+          "Not Null", field.isNotNull(), "Unique", field.isUnique(),
+          "Relation", field.getRelation(), "Cascade", field.isCascade(),
+          "Extended", field.isExtended(), "Translatable", field.isTranslatable());
+    }
+
+    info.add(new ExtendedProperty("Foreign Keys", BeeUtils.toString(foreignKeys.size())));
+    i = 0;
+    for (Map.Entry<String, BeeForeignKey> entry : foreignKeys.entrySet()) {
+      String key = BeeUtils.concat(1, "Foreign Key", ++i, entry.getKey());
+      BeeForeignKey fk = entry.getValue();
+
+      PropertyUtils.addChildren(info, key, "Table", fk.getTable(), "Name", fk.getName(),
+          "Key Field", fk.getKeyField(), "Ref Table", fk.getRefTable(),
+          "Cascade", fk.isCascade(), "Cascade Delete", fk.isCascadeDelete());
+    }
+
+    info.add(new ExtendedProperty("Keys", BeeUtils.toString(keys.size())));
+    i = 0;
+    for (Map.Entry<String, BeeKey> entry : keys.entrySet()) {
+      String key = BeeUtils.concat(1, "Key", ++i, entry.getKey());
+      BeeKey bk = entry.getValue();
+
+      PropertyUtils.addChildren(info, key, "Table", bk.getTable(), "Name", bk.getName(),
+          "Type", bk.keyType);
+      String[] keyFields = bk.getKeyFields();
+      int cnt = ArrayUtils.length(keyFields);
+      for (int k = 0; k < cnt; k++) {
+        info.add(new ExtendedProperty(key, BeeUtils.concat(1, "Key Field", 
+            BeeUtils.progress(k + 1, cnt)), keyFields[k]));
+      }
+    }
+
+    info.add(new ExtendedProperty("States", BeeUtils.toString(states.size())));
+    i = 0;
+    for (BeeState state : states) {
+      String key = BeeUtils.concat(1, "State", ++i);
+      PropertyUtils.addChildren(info, key, "Name", state.getName(), "Mode", state.getMode(),
+          "Checked", state.isChecked());
+    }
+    
+    return info;
+  }
+
   public Collection<BeeKey> getKeys() {
     return ImmutableList.copyOf(keys.values());
   }
@@ -797,7 +858,7 @@ class BeeTable implements HasExtFields, HasStates, HasTranslations {
     Collection<BeeField> flds = Lists.newArrayList();
 
     for (BeeField field : getFields()) {
-      if (field.isUnique()) {
+      if (field.isUnique() || field.isNotNull()) {
         flds.add(field);
       }
     }

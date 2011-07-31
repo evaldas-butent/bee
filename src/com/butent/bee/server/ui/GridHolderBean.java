@@ -2,6 +2,7 @@ package com.butent.bee.server.ui;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 
 import com.butent.bee.server.Config;
 import com.butent.bee.server.data.BeeView;
@@ -29,6 +30,7 @@ import org.w3c.dom.NodeList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
@@ -122,6 +124,78 @@ public class GridHolderBean {
   SystemBean sys;
 
   private Map<String, GridDescription> gridCache = Maps.newHashMap();
+  
+  public boolean contains(String name) {
+    if (BeeUtils.isEmpty(name)) {
+      return false;
+    }
+    return gridCache.containsKey(gridKey(name));
+  }
+  
+  public GridDescription getDefaultGrid(BeeView view, boolean register) {
+    Assert.notNull(view);
+    String name = view.getName();
+    if (register && contains(name)) {
+      return getGrid(name);
+    }
+    
+    GridDescription gridDescription = new GridDescription(name, name);
+    gridDescription.setDefaults();
+    if (view.isReadOnly()) {
+      gridDescription.setReadOnly(true);
+    }
+    
+    gridDescription.addColumn(new ColumnDescription(ColType.ID, view.getSourceIdName(), true));
+    
+    Map<String, ColumnDescription> columns = Maps.newLinkedHashMap();
+    Set<String> relSources = Sets.newHashSet();
+    
+    ColumnDescription columnDescription;
+    for (String colName : view.getColumns()) {
+      String tblName = view.getTable(colName);
+      
+      if (BeeUtils.same(tblName, view.getSource())) {
+        columnDescription = new ColumnDescription(ColType.DATA, colName, true);
+      } else {
+        columnDescription = new ColumnDescription(ColType.RELATED, colName, true);
+        String relSource = view.getRelSource(colName);
+        relSources.add(relSource);
+
+        columnDescription.setRelSource(relSource);
+        columnDescription.setRelView(tblName);
+        columnDescription.setRelColumn(view.getField(colName));
+
+        if (!BeeUtils.same(view.getTable(relSource), view.getSource())) {
+          columnDescription.setReadOnly(true);
+        }
+      }
+      
+      columnDescription.setSortable(true);
+      columnDescription.setHasFooter(true);
+      columnDescription.setSource(colName);
+
+      columns.put(BeeUtils.normalize(colName), columnDescription);
+    }
+    
+    if (!relSources.isEmpty()) {
+      for (String relSource : relSources) {
+        columnDescription = columns.get(BeeUtils.normalize(relSource));
+        if (columnDescription != null) {
+          columnDescription.setReadOnly(true);
+        }
+      }
+    }
+    
+    gridDescription.getColumns().addAll(columns.values());
+
+    gridDescription.addColumn(new ColumnDescription(ColType.VERSION, view.getSourceVersionName(),
+        true));
+
+    if (register) {
+      registerGrid(gridDescription);
+    }
+    return gridDescription;
+  }
 
   public GridDescription getGrid(String gridName) {
     Assert.state(isGrid(gridName), "Not a grid: " + gridName);
@@ -168,10 +242,10 @@ public class GridHolderBean {
     if (BeeUtils.isEmpty(gridName)) {
       return false;
     }
-    if (!gridCache.containsKey(gridKey(gridName))) {
+    if (!contains(gridName)) {
       initGrid(gridName);
     }
-    return gridCache.containsKey(gridKey(gridName));
+    return contains(gridName);
   }
 
   private GridComponentDescription getComponent(Element parent, String tagName) {
@@ -399,7 +473,7 @@ public class GridHolderBean {
   }
 
   private void unregisterGrid(String gridName) {
-    if (!BeeUtils.isEmpty(gridName)) {
+    if (contains(gridName)) {
       gridCache.remove(gridKey(gridName));
     }
   }

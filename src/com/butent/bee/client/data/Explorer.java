@@ -23,6 +23,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.event.HandlesDeleteEvents;
 import com.butent.bee.shared.data.event.MultiDeleteEvent;
@@ -214,18 +215,17 @@ public class Explorer implements HandlesDeleteEvents, RowInsertEvent.Handler {
   }
 
   private void getInitialRowSet(final DataInfo dataInfo, final GridDescription gridDescription) {
-    Integer asyncThreshold = (gridDescription == null) ?
-        DataHelper.getDefaultAsyncThreshold() : gridDescription.getAsyncThreshold();
-    int limit = BeeUtils.unbox(asyncThreshold);
+    int limit = (gridDescription == null) ? DataUtils.getDefaultAsyncThreshold()
+        : BeeUtils.unbox(gridDescription.getAsyncThreshold());
     int rc = dataInfo.getRowCount();
 
     final boolean async;
     if (rc >= limit) {
       async = true;
-      if (rc <= DataHelper.getMaxInitialRowSetSize()) {
+      if (rc <= DataUtils.getMaxInitialRowSetSize()) {
         limit = -1;
       } else {
-        limit = DataHelper.getMaxInitialRowSetSize();
+        limit = DataUtils.getMaxInitialRowSetSize();
       }
     } else {
       async = false;

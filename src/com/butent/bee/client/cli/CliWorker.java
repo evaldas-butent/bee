@@ -452,6 +452,8 @@ public class CliWorker {
       style(v, arr);
     } else if (z.equals("svg")) {
       showSvg(arr);
+    } else if (z.equals("table")) {
+      showTableInfo(args);
     } else if (z.equals("tables")) {
       BeeKeeper.getRpc().makeGetRequest(Service.DB_TABLES);
     } else if (z.equals("tiles")) {
@@ -467,7 +469,7 @@ public class CliWorker {
     } else if (z.equals("video")) {
       playVideo(args);
     } else if (z.startsWith("view")) {
-      showView(args);
+      showViewInfo(args);
     } else if (z.startsWith("viz")) {
       Showcase.open();
     } else if (z.equals("vm")) {
@@ -1567,6 +1569,19 @@ public class CliWorker {
     BeeKeeper.getScreen().updateActivePanel(widget);
   }
 
+  public static void showTableInfo(String args) {
+    ParameterList params = BeeKeeper.getRpc().createParameters(Service.GET_TABLE_INFO);
+    if (!BeeUtils.isEmpty(args)) {
+      params.addPositionalHeader(args.trim());
+    }
+    BeeKeeper.getRpc().makeGetRequest(params, new ResponseCallback() {
+      public void onResponse(ResponseObject response) {
+        BeeKeeper.getScreen().showGrid(
+            PropertyUtils.restoreExtended((String) response.getResponse()));
+      }
+    });
+  }
+  
   public static void showTiles() {
     Widget tiles = BeeKeeper.getScreen().getScreenPanel().getCenter();
     if (!(tiles instanceof TilePanel)) {
@@ -1653,7 +1668,7 @@ public class CliWorker {
     }
   }
 
-  public static void showView(String args) {
+  public static void showViewInfo(String args) {
     ParameterList params = BeeKeeper.getRpc().createParameters(Service.GET_VIEW_INFO);
     if (!BeeUtils.isEmpty(args)) {
       params.addPositionalHeader(args.trim());

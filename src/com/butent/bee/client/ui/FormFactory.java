@@ -15,7 +15,6 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.communication.RpcUtils;
-import com.butent.bee.client.data.DataHelper;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.grid.FlexTable;
@@ -32,6 +31,7 @@ import com.butent.bee.shared.communication.CommUtils;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.ui.EditorDescription;
@@ -248,10 +248,10 @@ public class FormFactory {
     final boolean async;
     if (rowCount >= limit) {
       async = true;
-      if (rowCount <= DataHelper.getMaxInitialRowSetSize()) {
+      if (rowCount <= DataUtils.getMaxInitialRowSetSize()) {
         limit = -1;
       } else {
-        limit = DataHelper.getMaxInitialRowSetSize();
+        limit = DataUtils.getMaxInitialRowSetSize();
       }
     } else {
       async = false;

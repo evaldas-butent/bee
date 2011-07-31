@@ -51,6 +51,7 @@ import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.ExtendedProperty;
 import com.butent.bee.shared.utils.LogUtils;
 import com.butent.bee.shared.utils.TimeUtils;
 
@@ -637,6 +638,10 @@ public class SystemBean {
     Assert.state(isState(stateName), "Not a state: " + stateName);
     return stateCache.get(BeeUtils.normalize(stateName));
   }
+  
+  public List<ExtendedProperty> getTableInfo(String tblName) {
+    return getTable(tblName).getInfo();
+  }
 
   public Collection<String> getTableNames() {
     Collection<String> tables = Lists.newArrayList();
@@ -665,7 +670,7 @@ public class SystemBean {
     BeeView view = viewCache.get(BeeUtils.normalize(viewName));
 
     if (BeeUtils.isEmpty(view)) {
-      view = getDefaultView(viewName, true);
+      view = getDefaultView(viewName);
       registerView(view);
     }
     return view;
@@ -1447,7 +1452,11 @@ public class SystemBean {
     return rebuilds;
   }
 
-  private BeeView getDefaultView(String tblName, boolean allFields) {
+  private BeeView getDefaultView(String tblName) {
+    return getDefaultView(tblName, true, Sets.newHashSet(BeeUtils.normalize(tblName)));
+  }
+  
+  private BeeView getDefaultView(String tblName, boolean allFields, Collection<String> roots) {
     BeeTable table = getTable(tblName);
     Collection<BeeField> fields = allFields ? table.getFields() : table.getMainFields();
     BeeView view =
@@ -1458,8 +1467,10 @@ public class SystemBean {
       view.addColumn(fld, fld, null, tableCache);
       String relTbl = field.getRelation();
 
-      if (!BeeUtils.isEmpty(relTbl) && !BeeUtils.same(relTbl, tblName)) {
-        BeeView vw = getDefaultView(relTbl, false);
+      if (!BeeUtils.isEmpty(relTbl) && !roots.contains(BeeUtils.normalize(relTbl))) {
+        Set<String> set = Sets.newHashSet(roots);
+        set.add(BeeUtils.normalize(relTbl));
+        BeeView vw = getDefaultView(relTbl, false, set);
 
         for (String colName : vw.getColumns()) {
           view.addColumn(fld + colName, fld + ">" + vw.getExpression(colName), null, tableCache);

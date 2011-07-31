@@ -5,6 +5,7 @@ import com.google.common.collect.Lists;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.HasExtendedInfo;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.HasViewName;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -203,6 +204,10 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
     return getColumns().size();
   }
 
+  public List<ColumnDescription> getColumns() {
+    return columns;
+  }
+  
   public GridComponentDescription getFooter() {
     return footer;
   }
@@ -450,6 +455,17 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   public void setCaption(String caption) {
     this.caption = caption;
   }
+  
+  public void setDefaults() {
+    setHasHeaders(true);
+    setHasFooters(true);
+    
+    setAsyncThreshold(DataUtils.getDefaultAsyncThreshold());
+    setSearchThreshold(DataUtils.getDefaultSearchThreshold());
+    setPagingThreshold(DataUtils.getDefaultPagingThreshold());
+    
+    setPageSize(DataUtils.getDefaultPageSize());
+  }
 
   public void setFooter(GridComponentDescription footer) {
     this.footer = footer;
@@ -517,10 +533,6 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
 
   public Boolean showColumnWidths() {
     return showColumnWidths;
-  }
-
-  private List<ColumnDescription> getColumns() {
-    return columns;
   }
 
   private void setName(String name) {

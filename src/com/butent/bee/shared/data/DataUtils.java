@@ -31,6 +31,13 @@ public class DataUtils {
   public static final String DEFAULT_VERSION_NAME = "_VERSION_";
   public static final String DEFAULT_NAMESPACE = "http://www.butent.com/bee";
 
+  private static int defaultAsyncThreshold = 100;
+  private static int defaultSearchThreshold = 2;
+  private static int defaultPagingThreshold = 20;
+  private static int defaultPageSize = 15;
+
+  private static int maxInitialRowSetSize = 50;
+  
   @SuppressWarnings("unchecked")
   public static IsTable<?, ?> createTable(Object data, String... columnLabels) {
     Assert.notNull(data);
@@ -74,6 +81,26 @@ public class DataUtils {
 
   public static String defaultColumnLabel(int index) {
     return "Column " + index;
+  }
+
+  public static int getDefaultAsyncThreshold() {
+    return defaultAsyncThreshold;
+  }
+
+  public static int getDefaultPageSize() {
+    return defaultPageSize;
+  }
+
+  public static int getDefaultPagingThreshold() {
+    return defaultPagingThreshold;
+  }
+
+  public static int getDefaultSearchThreshold() {
+    return defaultSearchThreshold;
+  }
+
+  public static int getMaxInitialRowSetSize() {
+    return maxInitialRowSetSize;
   }
 
   public static Filter parseCondition(String cond, List<? extends IsColumn> columns) {
