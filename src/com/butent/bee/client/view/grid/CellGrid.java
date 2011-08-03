@@ -1626,7 +1626,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
       nr = getVisibleItems().size() - 1;
     }
 
-    if (ps > 0 && ps == rc) {
+    if (ps >= 0 && ps == rc) {
       setPageSize(ps + 1);
     }
     setRowCount(rc + 1);

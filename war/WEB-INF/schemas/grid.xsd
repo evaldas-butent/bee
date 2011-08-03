@@ -37,7 +37,7 @@
     <xs:attribute name="searchThreshold" type="xs:nonNegativeInteger" default="2" />
     <xs:attribute name="pageSize" type="xs:positiveInteger" default="15" />
     <xs:attribute name="newRowColumns" type="xs:normalizedString" />
-    <xs:attribute name="showColumnWidths" type="xs:boolean" default="true" />
+    <xs:attribute name="showColumnWidths" type="xs:boolean" />
   </xs:complexType>
 
   <xs:complexType name="baseColumn">
@@ -101,7 +101,7 @@
     <xs:attribute name="format" type="xs:normalizedString" />
     <xs:attribute name="horizontalAlignment" type="bee:horizontalAlignmentType" />
     <xs:attribute name="hasFooter" type="xs:boolean" default="true" />
-    <xs:attribute name="showWidth" type="xs:boolean" default="true" />
+    <xs:attribute name="showWidth" type="xs:boolean" />
     <xs:attribute name="cell" type="bee:cellType" />
   </xs:complexType>
 

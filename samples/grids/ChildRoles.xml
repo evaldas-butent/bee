@@ -2,7 +2,7 @@
 <BeeGrids xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.butent.com/bee ../../schemas/grid.xsd">
 
-  <BeeGrid name="ChildRoles" viewName="ChildRoles" showColumnWidths="false">
+  <BeeGrid name="ChildRoles" viewName="ChildRoles">
     <columns>
       <BeeDataColumn name="UserID" source="User" caption="Vartotojo ID" readOnly="true"
         sortable="false" />

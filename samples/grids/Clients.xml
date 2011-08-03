@@ -2,7 +2,7 @@
 <BeeGrids xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.butent.com/bee ../../schemas/grid.xsd">
 
-  <BeeGrid name="Clients" viewName="Clients" caption="Klientai" showColumnWidths="false">
+  <BeeGrid name="Clients" viewName="Clients" caption="Klientai">
     <columns>
       <BeeIdColumn name="Id" caption="ID" />
 

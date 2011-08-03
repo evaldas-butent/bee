@@ -2,9 +2,7 @@ package com.butent.bee.client.ui;
 
 import com.butent.bee.shared.HasInfo;
 import com.butent.bee.shared.ui.Calculation;
-import com.butent.bee.shared.ui.CellType;
 import com.butent.bee.shared.ui.ConditionalStyleDeclaration;
-import com.butent.bee.shared.ui.EditorDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
@@ -27,8 +25,6 @@ public class WidgetDescription implements HasInfo {
   private static final String ATTR_REL_VIEW = "relView";
   private static final String ATTR_REL_COLUMN = "relColumn";
 
-  private static final String ATTR_CELL = "cell";
-  
   private final FormWidget widgetType;
   private final String widgetId;
   
@@ -48,12 +44,8 @@ public class WidgetDescription implements HasInfo {
   private Calculation editable = null;
   private Calculation carry = null;
 
-  private EditorDescription editor = null;
-
   private String minValue = null;
   private String maxValue = null;
-
-  private CellType cellType = null;
 
   public WidgetDescription(FormWidget widgetType, String widgetId) {
     this.widgetType = widgetType;
@@ -81,20 +73,12 @@ public class WidgetDescription implements HasInfo {
     return carry;
   }
 
-  public CellType getCellType() {
-    return cellType;
-  }
-
   public Collection<ConditionalStyleDeclaration> getDynStyles() {
     return dynStyles;
   }
 
   public Calculation getEditable() {
     return editable;
-  }
-
-  public EditorDescription getEditor() {
-    return editor;
   }
 
   public List<Property> getInfo() {
@@ -108,17 +92,13 @@ public class WidgetDescription implements HasInfo {
         "Rel View", getRelView(),
         "Rel Column", getRelColumn(),
         "Min Value", getMinValue(),
-        "Max Value", getMaxValue(),
-        "Cell Type", getCellType());
+        "Max Value", getMaxValue());
 
     if (getValidation() != null) {
       PropertyUtils.appendChildrenToProperties(info, "Validation", getValidation().getInfo());
     }
     if (getEditable() != null) {
       PropertyUtils.appendChildrenToProperties(info, "Editable", getEditable().getInfo());
-    }
-    if (getEditor() != null) {
-      PropertyUtils.appendChildrenToProperties(info, "Editor", getEditor().getInfo());
     }
     if (getCarry() != null) {
       PropertyUtils.appendChildrenToProperties(info, "Carry", getCarry().getInfo());
@@ -219,9 +199,6 @@ public class WidgetDescription implements HasInfo {
         setRelView(value.trim());
       } else if (BeeUtils.same(key, ATTR_REL_COLUMN)) {
         setRelColumn(value.trim());
-
-      } else if (BeeUtils.same(key, ATTR_CELL)) {
-        setCellType(CellType.getByCode(value));
       }
     }
   }
@@ -238,20 +215,12 @@ public class WidgetDescription implements HasInfo {
     this.carry = carry;
   }
 
-  public void setCellType(CellType cellType) {
-    this.cellType = cellType;
-  }
-
   public void setDynStyles(Collection<ConditionalStyleDeclaration> dynStyles) {
     this.dynStyles = dynStyles;
   }
 
   public void setEditable(Calculation editable) {
     this.editable = editable;
-  }
-
-  public void setEditor(EditorDescription editor) {
-    this.editor = editor;
   }
 
   public void setMaxValue(String maxValue) {

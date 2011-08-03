@@ -100,7 +100,6 @@ import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.RelationInfo;
 import com.butent.bee.shared.ui.Calculation;
 import com.butent.bee.shared.ui.ConditionalStyleDeclaration;
-import com.butent.bee.shared.ui.EditorDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.TimeUtils;
 
@@ -321,7 +320,6 @@ public enum FormWidget {
   private static final String TAG_VALIDATION = "validation";
   private static final String TAG_EDITABLE = "editable";
   private static final String TAG_CARRY = "carry";
-  private static final String TAG_EDITOR = "editor";
   
   private static final String TAG_HTML = "html";
   private static final String TAG_TEXT = "text";
@@ -913,12 +911,6 @@ public enum FormWidget {
             widgetDescription.setCarry(calc);
           }
 
-        } else if (BeeUtils.same(childTag, TAG_EDITOR)) {
-          EditorDescription editor = FormFactory.getEditorDescription(child);
-          if (editor != null) {
-            widgetDescription.setEditor(editor);
-          }
-          
         } else {
           processChild(widget, child, callback, columns);
         }

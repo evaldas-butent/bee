@@ -3,7 +3,7 @@
   xsi:schemaLocation="http://www.butent.com/bee ../../schemas/grid.xsd">
 
   <BeeGrid name="DataTypes" viewName="DataTypes" maxColumnWidth="500" caption="Types"
-    asyncThreshold="50">
+    asyncThreshold="50" showColumnWidths="true">
     <header borderWidth="2">
       <style>
         <inline>background-color: #f6cef5;</inline>

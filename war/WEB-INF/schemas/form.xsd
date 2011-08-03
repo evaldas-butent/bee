@@ -77,7 +77,6 @@
       <xs:extension base="bee:focusableWidget">
         <xs:sequence>
           <xs:element name="editable" type="bee:calcType" minOccurs="0" />
-          <xs:element name="editor" type="bee:editor" minOccurs="0" />
           <xs:element name="validation" type="bee:calcType" minOccurs="0" />
           <xs:element name="carry" type="bee:calcType" minOccurs="0" />
         </xs:sequence>
@@ -86,7 +85,6 @@
         <xs:attribute name="readOnly" type="xs:boolean" />
         <xs:attribute name="format" type="xs:normalizedString" />
         <xs:attribute name="horizontalAlignment" type="bee:horizontalAlignmentType" />
-        <xs:attribute name="cellType" type="bee:cellType" />
         <xs:attribute name="minValue" type="xs:normalizedString" />
         <xs:attribute name="maxValue" type="xs:normalizedString" />
       </xs:extension>

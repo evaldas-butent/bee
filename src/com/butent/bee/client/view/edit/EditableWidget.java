@@ -16,7 +16,6 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.RelationInfo;
-import com.butent.bee.shared.ui.EditorDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.TimeUtils;
 
@@ -37,10 +36,6 @@ public class EditableWidget implements ValueChangeHandler<String> {
   private final String minValue;
   private final String maxValue;
 
-  private final EditorDescription editorDescription;
-
-  private Editor editor = null;
-  
   private EditEndEvent.Handler editEndHandler = null;
   private boolean initialized = false;
 
@@ -60,7 +55,6 @@ public class EditableWidget implements ValueChangeHandler<String> {
     this.carry = Evaluator.create(widgetDescription.getCarry(), source, dataColumns);
     this.minValue = widgetDescription.getMinValue();
     this.maxValue = widgetDescription.getMaxValue();
-    this.editorDescription = widgetDescription.getEditor();
   }
 
   public void bind(Widget rootWidget, EditEndEvent.Handler handler) {
@@ -160,14 +154,6 @@ public class EditableWidget implements ValueChangeHandler<String> {
 
   public ValueType getDataType() {
     return getDataColumn().getType();
-  }
-
-  public Editor getEditor() {
-    return editor;
-  }
-
-  public EditorDescription getEditorDescription() {
-    return editorDescription;
   }
 
   public String getOldValueForUpdate(IsRow row) {

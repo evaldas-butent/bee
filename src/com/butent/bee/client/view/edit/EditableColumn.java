@@ -166,7 +166,7 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
   }
 
   public BeeColumn getColumnForUpdate() {
-    return (getRelationInfo() == null) ? getDataColumn() : getRelationInfo().getDataColumn();
+    return isForeign() ? getRelationInfo().getDataColumn() : getDataColumn();
   }
 
   public String getColumnId() {
@@ -190,7 +190,7 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
   }
 
   public String getOldValueForUpdate(IsRow row) {
-    int index = (getRelationInfo() == null) ? getColIndex() : getRelationInfo().getDataIndex();
+    int index = isForeign() ? getRelationInfo().getDataIndex() : getColIndex();
     return row.getString(index);
   }
 
@@ -199,7 +199,7 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
   }
 
   public boolean getRowModeForUpdate() {
-    return getRelationInfo() != null;
+    return isForeign();
   }
 
   public AbstractColumn<?> getUiColumn() {
@@ -214,7 +214,7 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
   public int hashCode() {
     return getColIndex();
   }
-
+  
   public boolean isCellEditable(IsRow row, boolean warn) {
     if (row == null) {
       return false;
@@ -232,9 +232,13 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
     }
     return ok;
   }
+  
+  public boolean isForeign() {
+    return getRelationInfo() != null;
+  }
 
   public boolean isNullable() {
-    if (getRelationInfo() != null) {
+    if (isForeign()) {
       return getRelationInfo().isNullable();
     } else if (getDataColumn() != null) {
       return getDataColumn().isNullable();
@@ -501,7 +505,7 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
     if (getEditorDescription() != null) {
       setEditor(EditorFactory.getEditor(getEditorDescription(), isNullable(), getRelationInfo()));
       format = getEditorDescription().getFormat();
-    } else if (getRelationInfo() != null) {
+    } else if (isForeign()) {
       setEditor(new DataSelector(getRelationInfo(), false));
       getEditor().setNullable(isNullable());
     } else {
