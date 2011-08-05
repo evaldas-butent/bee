@@ -1612,17 +1612,14 @@ public class BeeUtils {
   /**
    * Checks if the specified value is true.
    * 
-   * @param obj value to check
-   * @return true if the Object is a Boolean, otherwise false.
+   * @param b value to check
+   * @return true if the Object is a Boolean.TRUE, otherwise false.
    */
-  public static boolean isTrue(Object obj) {
-    if (obj == null) {
-      return false;
-    } else if (obj instanceof Boolean) {
-      return Boolean.TRUE.equals(obj);
-    } else {
+  public static boolean isTrue(Boolean b) {
+    if (b == null) {
       return false;
     }
+    return b.booleanValue();
   }
 
   public static boolean isWhitespace(char ch) {

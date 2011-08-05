@@ -1,5 +1,7 @@
 package com.butent.bee.client.grid;
 
+import com.google.gwt.user.client.ui.HasEnabled;
+
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.layout.ResizePanel;
 import com.butent.bee.client.presenter.GridPresenter;
@@ -12,7 +14,7 @@ import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.ui.GridDescription;
 
-public class ChildGrid extends ResizePanel {
+public class ChildGrid extends ResizePanel implements HasEnabled {
   
   private final String viewName;
   private final String relSource;
@@ -20,6 +22,7 @@ public class ChildGrid extends ResizePanel {
   private GridPresenter presenter = null;
   
   private Long pendingId = null;
+  private Boolean pendingEnabled = null;
 
   public ChildGrid(String viewName, String relSource) {
     super();
@@ -42,9 +45,19 @@ public class ChildGrid extends ResizePanel {
     return "child-grid";
   }
   
-  public void refresh(final long parentId) {
+  public boolean isEnabled() {
+    if (getPresenter() == null) {
+      return false;
+    }
+    return getPresenter().getView().isEnabled();
+  }
+
+  public void refresh(final long parentId, final Boolean parentEnabled) {
     if (getPresenter() == null || getPresenter().getDataProvider() == null) {
       setPendingId(parentId);
+      if (parentEnabled != null) {
+        setPendingEnabled(parentEnabled);
+      }
       return;
     }
 
@@ -59,8 +72,18 @@ public class ChildGrid extends ResizePanel {
         getPresenter().getView().getContent().getGrid().setRowCount(result);
         getPresenter().getView().getContent().getGrid().setPageSize(result);
         getPresenter().getDataProvider().onFilterChanged(filter, result);
+        
+        if (parentEnabled != null) {
+          setEnabled(parentEnabled);
+        }
       }
     });
+  }
+  
+  public void setEnabled(boolean enabled) {
+    if (getPresenter() != null) {
+      getPresenter().getView().setEnabled(enabled);
+    }
   }
 
   private void getInitialRowSet(final GridDescription gridDescription) {
@@ -78,13 +101,18 @@ public class ChildGrid extends ResizePanel {
             gp.getView().getContent().setRelColumn(getRelSource());
             
             if (getPendingId() != null) {
-              refresh(getPendingId());
+              refresh(getPendingId(), getPendingEnabled());
               setPendingId(null);
+              setPendingEnabled(null);
             }
           }
         });
   }
-  
+
+  private Boolean getPendingEnabled() {
+    return pendingEnabled;
+  }
+
   private Long getPendingId() {
     return pendingId;
   }
@@ -99,6 +127,10 @@ public class ChildGrid extends ResizePanel {
 
   private String getViewName() {
     return viewName;
+  }
+
+  private void setPendingEnabled(Boolean pendingEnabled) {
+    this.pendingEnabled = pendingEnabled;
   }
 
   private void setPendingId(Long pendingId) {

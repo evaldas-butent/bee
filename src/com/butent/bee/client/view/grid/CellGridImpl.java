@@ -710,6 +710,9 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
   }
 
   public void onEditStart(EditStartEvent event) {
+    if (!isEnabled()) {
+      return;
+    }
     Assert.notNull(event);
     String columnId = event.getColumnId();
     EditableColumn editableColumn = getEditableColumn(columnId);
@@ -789,9 +792,10 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
   }
 
   public void startNewRow() {
-    if (getGrid().isReadOnly()) {
+    if (!isEnabled() || getGrid().isReadOnly()) {
       return;
     }
+
     if (getNewRowColumns() == null) {
       List<String> columnList = Lists.newArrayList();
       boolean ok;

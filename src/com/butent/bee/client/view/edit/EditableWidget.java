@@ -35,6 +35,8 @@ public class EditableWidget implements ValueChangeHandler<String> {
 
   private final String minValue;
   private final String maxValue;
+  
+  private final boolean readOnly;
 
   private EditEndEvent.Handler editEndHandler = null;
   private boolean initialized = false;
@@ -55,6 +57,7 @@ public class EditableWidget implements ValueChangeHandler<String> {
     this.carry = Evaluator.create(widgetDescription.getCarry(), source, dataColumns);
     this.minValue = widgetDescription.getMinValue();
     this.maxValue = widgetDescription.getMaxValue();
+    this.readOnly = BeeUtils.isTrue(widgetDescription.isReadOnly());
   }
 
   public void bind(Widget rootWidget, EditEndEvent.Handler handler) {
@@ -182,6 +185,19 @@ public class EditableWidget implements ValueChangeHandler<String> {
     return getWidgetDescription().hashCode();
   }
 
+  public boolean isEditable(IsRow row) {
+    if (row == null) {
+      return false;
+    }
+    if (getEditable() == null) {
+      return true;
+    }
+
+    getEditable().update(row, BeeConst.UNDEF, getDataIndex(), getDataType(),
+        row.getString(getDataIndex()));
+    return BeeUtils.toBoolean(getEditable().evaluate());
+  }
+  
   public boolean isNullable() {
     if (getRelationInfo() != null) {
       return getRelationInfo().isNullable();
@@ -190,6 +206,10 @@ public class EditableWidget implements ValueChangeHandler<String> {
     } else {
       return true;
     }
+  }
+
+  public boolean isReadOnly() {
+    return readOnly;
   }
 
   public void onValueChange(ValueChangeEvent<String> event) {
@@ -201,8 +221,24 @@ public class EditableWidget implements ValueChangeHandler<String> {
     return carry;
   }
 
+  private Evaluator getEditable() {
+    return editable;
+  }
+
   private EditEndEvent.Handler getEditEndHandler() {
     return editEndHandler;
+  }
+
+  private String getMaxValue() {
+    return maxValue;
+  }
+
+  private String getMinValue() {
+    return minValue;
+  }
+
+  private Evaluator getValidation() {
+    return validation;
   }
 
   private WidgetDescription getWidgetDescription() {

@@ -3,6 +3,7 @@ package com.butent.bee.client.view.form;
 import com.google.common.collect.Sets;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.cellview.client.LoadingStateChangeEvent;
+import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.view.client.CellPreviewEvent;
 import com.google.gwt.view.client.Range;
@@ -409,6 +410,34 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
       }
     }
     
+    if (!isReadOnly() && isEnabled()) {
+      boolean rowEnabled = isRowEditable(rowValue, false);
+
+      for (EditableWidget editableWidget : getEditableWidgets()) {
+        if (editableWidget.isReadOnly()) {
+          continue;
+        }
+        Widget widget = getWidget(editableWidget.getWidgetId());
+        if (!(widget instanceof Editor)) {
+          continue;
+        }
+      
+        boolean editable = rowEnabled && editableWidget.isEditable(rowValue);
+        if (editable != ((Editor) widget).isEnabled()) {
+          ((Editor) widget).setEnabled(editable);
+        }
+      }
+      
+      if (getRowEditable() != null && hasGrids()) {
+        for (WidgetDescription widgetDescription : getGridWidgets()) {
+          Widget widget = getWidget(widgetDescription.getWidgetId());
+          if (widget instanceof HasEnabled && rowEnabled != ((HasEnabled) widget).isEnabled()) {
+            ((HasEnabled) widget).setEnabled(rowEnabled);
+          }
+        }
+      }
+    }
+
     refreshDisplayWidgets();
   }
 
@@ -453,6 +482,20 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
 
   public void setEnabled(boolean enabled) {
     this.enabled = enabled;
+    
+    for (EditableWidget editableWidget : getEditableWidgets()) {
+      Widget widget = getWidget(editableWidget.getWidgetId());
+      if (widget instanceof Editor && ((Editor) widget).isEnabled() != enabled) {
+        ((Editor) widget).setEnabled(enabled);
+      }
+    }
+
+    for (WidgetDescription widgetDescription : getGridWidgets()) {
+      Widget widget = getWidget(widgetDescription.getWidgetId());
+      if (widget instanceof HasEnabled && enabled != ((HasEnabled) widget).isEnabled()) {
+        ((HasEnabled) widget).setEnabled(enabled);
+      }
+    }
   }
 
   public void setPageSize(int pageSize) {
@@ -621,6 +664,10 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
   private boolean hasData() {
     return hasData;
   }
+  
+  private boolean hasGrids() {
+    return !getGridWidgets().isEmpty();
+  }
 
   private boolean isReadOnly() {
     return readOnly;
@@ -645,15 +692,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
   private void refreshData() {
     fireLoadingStateChange(LoadingStateChangeEvent.LoadingState.PARTIALLY_LOADED);
     
-    for (EditableWidget editableWidget : getEditableWidgets()) {
-      Widget widget = getWidget(editableWidget.getWidgetId());
-      String value = getRowData().getString(editableWidget.getDataIndex());
-      
-      if (widget instanceof Editor) {
-        ((Editor) widget).setValue(BeeUtils.trimRight(value));
-      }
-    }
-    
+    refreshEditableWidgets();
     refreshDisplayWidgets();
     refreshGridWidgets(getRowData().getId());
     
@@ -667,11 +706,47 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     }
   }
 
+  private void refreshEditableWidgets() {
+    boolean rowEnabled = isRowEditable(getRowData(), false);
+
+    for (EditableWidget editableWidget : getEditableWidgets()) {
+      Widget widget = getWidget(editableWidget.getWidgetId());
+      if (!(widget instanceof Editor)) {
+        continue;
+      }
+      Editor editor = (Editor) widget;
+      
+      String value;
+      boolean editable; 
+      
+      if (getRowData() == null) {
+        value = BeeConst.STRING_EMPTY;
+        editable = false;
+      } else {
+        value = BeeUtils.trimRight(getRowData().getString(editableWidget.getDataIndex()));
+        editable = !isReadOnly() && isEnabled() && !editableWidget.isReadOnly() && rowEnabled;
+        if (editable) {
+          editable = editableWidget.isEditable(getRowData());
+        }
+      }
+
+      editor.setValue(value);
+      if (editable != editor.isEnabled()) {
+        editor.setEnabled(editable);
+      }
+    }
+  }
+  
   private void refreshGridWidgets(long rowId) {
+    if (!hasGrids()) {
+      return;
+    }
+    boolean rowEnabled = !isReadOnly() && isEnabled() && isRowEditable(getRowData(), false);
+    
     for (WidgetDescription widgetDescription : getGridWidgets()) {
       Widget widget = getWidget(widgetDescription.getWidgetId());
       if (widget instanceof ChildGrid) {
-        ((ChildGrid) widget).refresh(rowId);
+        ((ChildGrid) widget).refresh(rowId, rowEnabled);
       }
     }
   }

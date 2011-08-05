@@ -8,6 +8,7 @@ import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.Event;
 
 import com.butent.bee.client.Global;
+import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.layout.Absolute;
 import com.butent.bee.client.ui.HasTextDimensions;
@@ -101,6 +102,10 @@ public class TextEditor extends Absolute implements Editor, HasTextDimensions {
     return getArea().isEditing();
   }
 
+  public boolean isEnabled() {
+    return getArea().isEnabled();
+  }
+
   public boolean isNullable() {
     return getArea().isNullable();
   }
@@ -133,6 +138,10 @@ public class TextEditor extends Absolute implements Editor, HasTextDimensions {
 
   public void setEditing(boolean editing) {
     getArea().setEditing(editing);
+  }
+
+  public void setEnabled(boolean enabled) {
+    DomUtils.enableChildren(this, enabled);
   }
 
   public void setFocus(boolean focused) {

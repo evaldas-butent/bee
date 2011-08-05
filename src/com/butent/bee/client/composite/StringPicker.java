@@ -95,8 +95,8 @@ public class StringPicker extends CellList<String> implements Editor, HasItems,
   private String value = null;
 
   private boolean nullable = true;
-
   private boolean editing = false;
+  private boolean enabled = true;
 
   private final Map<HandlerRegistration, BlurHandler> blurHandlers = Maps.newHashMap();
   private HandlerRegistration blurRegistration = null;
@@ -171,6 +171,10 @@ public class StringPicker extends CellList<String> implements Editor, HasItems,
     return editing;
   }
 
+  public boolean isEnabled() {
+    return enabled;
+  }
+
   public boolean isNullable() {
     return nullable;
   }
@@ -188,6 +192,10 @@ public class StringPicker extends CellList<String> implements Editor, HasItems,
 
   @Override
   public void onBrowserEvent2(Event event) {
+    if (!isEnabled()) {
+      return;
+    }
+
     String type = event.getType();
     if (EventUtils.isKeyDown(type)) {
       int keyCode = event.getKeyCode();
@@ -222,6 +230,10 @@ public class StringPicker extends CellList<String> implements Editor, HasItems,
 
   public void setEditing(boolean editing) {
     this.editing = editing;
+  }
+
+  public void setEnabled(boolean enabled) {
+    this.enabled = enabled;
   }
 
   public void setId(String id) {

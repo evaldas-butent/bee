@@ -116,6 +116,9 @@ public class Toggle extends CustomButton implements Editor {
 
   @Override
   public void onBrowserEvent(Event event) {
+    if (!isEnabled()) {
+      return;
+    }
     int type = event.getTypeInt();
 
     if (EventUtils.isKeyEvent(type)) {

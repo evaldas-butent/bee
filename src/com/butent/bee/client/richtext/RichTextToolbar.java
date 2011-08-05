@@ -13,12 +13,14 @@ import com.google.gwt.event.dom.client.KeyUpHandler;
 import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.RichTextArea;
 import com.google.gwt.user.client.ui.RichTextArea.Formatter;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.Global;
+import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.layout.Horizontal;
@@ -38,7 +40,7 @@ import com.butent.bee.shared.utils.BeeUtils;
  * Handles a rich text editor toolbar with all the buttons for formatting the text.
  */
 
-public class RichTextToolbar extends Vertical {
+public class RichTextToolbar extends Vertical implements HasEnabled {
 
   /**
    * Contains a list of necessary methods for text editing functions (bold, italic, justify,
@@ -290,6 +292,14 @@ public class RichTextToolbar extends Vertical {
     richText.addKeyDownHandler(handler);
     richText.addKeyUpHandler(handler);
     richText.addClickHandler(handler);
+  }
+
+  public boolean isEnabled() {
+    return DomUtils.isEnabled(this);
+  }
+
+  public void setEnabled(boolean enabled) {
+    DomUtils.enableChildren(this, enabled);
   }
 
   public void updateStatus() {

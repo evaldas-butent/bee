@@ -96,6 +96,10 @@ public class InputBoolean extends Composite implements Editor {
     return false;
   }
 
+  public boolean isEnabled() {
+    return getCheckBox().isEnabled();
+  }
+
   public boolean isNullable() {
     return nullable;
   }
@@ -105,6 +109,10 @@ public class InputBoolean extends Composite implements Editor {
   }
 
   public void setEditing(boolean editing) {
+  }
+
+  public void setEnabled(boolean enabled) {
+    getCheckBox().setEnabled(enabled);
   }
 
   public void setFocus(boolean focused) {

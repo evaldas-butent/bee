@@ -289,13 +289,11 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
       setDirectionSize(getScrollerDirection(), getScrollerWidth());
     }
     
-    setEnabled(true);
     setAdding(false);
   }
 
   public void onAddStart(AddStartEvent event) {
     setAdding(true);
-    setEnabled(false);
     
     if (hasHeader()) {
       setCurrentCaption(getHeader().getCaption());

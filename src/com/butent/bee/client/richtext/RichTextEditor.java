@@ -109,6 +109,10 @@ public class RichTextEditor extends Flow implements Editor, AdjustmentListener,
     return editing;
   }
 
+  public boolean isEnabled() {
+    return getArea().isEnabled();
+  }
+
   public boolean isNullable() {
     return nullable;
   }
@@ -135,6 +139,10 @@ public class RichTextEditor extends Flow implements Editor, AdjustmentListener,
       closePreview();
       setFocus(false);
     }
+  }
+
+  public void setEnabled(boolean enabled) {
+    DomUtils.enableChildren(this, enabled);
   }
 
   public void setFocus(boolean focused) {

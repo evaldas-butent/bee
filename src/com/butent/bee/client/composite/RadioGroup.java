@@ -211,6 +211,16 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
     return false;
   }
 
+  public boolean isEnabled() {
+    for (int i = 0; i < getWidgetCount(); i++) {
+      Widget widget = getWidget(i);
+      if (widget instanceof BeeRadioButton) {
+        return ((BeeRadioButton) widget).isEnabled();
+      }
+    }
+    return false;
+  }
+
   public boolean isNullable() {
     return false;
   }
@@ -243,6 +253,10 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
   public void setEditing(boolean editing) {
   }
 
+  public void setEnabled(boolean enabled) {
+    DomUtils.enableChildren(this, enabled);
+  }
+
   public void setFocus(boolean focused) {
   }
 
@@ -255,7 +269,7 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
   public void setValue(String value) {
     setValue(value, false);
   }
-
+  
   public void setValue(String value, boolean fireEvents) {
     int oldIndex = getSelectedIndex();
     int newIndex = BeeConst.UNDEF;
@@ -274,14 +288,14 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
       }
     }
   }
-
+  
   public void startEdit(String oldValue, char charCode, EditorAction onEntry) {
   }
-  
+
   public String validate() {
     return null;
   }
-  
+
   private void addButtons(List<String> opt, int value) {
     Assert.notNull(opt);
 
@@ -290,7 +304,7 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
       addOption(s, false, idx++ == value);
     }
   }
-
+  
   private BeeRadioButton getOption(int index) {
     if (isIndex(index)) {
       for (int i = 0; i < getWidgetCount(); i++) {
@@ -308,7 +322,7 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
   private int getOptionCount() {
     return optionCount;
   }
-  
+
   private Variable getVariable() {
     return variable;
   }

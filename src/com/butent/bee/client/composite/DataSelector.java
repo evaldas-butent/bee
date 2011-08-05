@@ -234,6 +234,9 @@ public class DataSelector extends Complex implements Editor, HasTextDimensions {
   private class InputEvents extends HandlesAllKeyEvents implements MouseWheelHandler {
 
     public void onKeyDown(KeyDownEvent event) {
+      if (!isEnabled()) {
+        return;
+      }
       if (isEmbedded() && !getDisplay().isShowing()) {
         return;
       }
@@ -307,6 +310,9 @@ public class DataSelector extends Complex implements Editor, HasTextDimensions {
     }
 
     public void onKeyUp(KeyUpEvent event) {
+      if (!isEnabled()) {
+        return;
+      }
       if (isEmbedded() && event.getNativeKeyCode() == KeyCodes.KEY_TAB) {
         return;
       }
@@ -316,6 +322,9 @@ public class DataSelector extends Complex implements Editor, HasTextDimensions {
     }
 
     public void onMouseWheel(MouseWheelEvent event) {
+      if (!isEnabled()) {
+        return;
+      }
       int y = event.getDeltaY();
       if (y > 0) {
         nextOffset();
@@ -327,7 +336,9 @@ public class DataSelector extends Complex implements Editor, HasTextDimensions {
 
   private class LimitEvents implements ValueChangeHandler<String> {
     public void onValueChange(ValueChangeEvent<String> event) {
-      askOracle();
+      if (isEnabled()) {
+        askOracle();
+      }
     }
   }
 
@@ -359,6 +370,9 @@ public class DataSelector extends Complex implements Editor, HasTextDimensions {
 
   private class SearchTypeEvents implements ClickHandler {
     public void onClick(ClickEvent event) {
+      if (!isEnabled()) {
+        return;
+      }
       Operator[] constants = Operator.class.getEnumConstants();
       Operator oldType = getSearchType();
       int index = -1;
@@ -447,6 +461,7 @@ public class DataSelector extends Complex implements Editor, HasTextDimensions {
   };
 
   private int characterWidth = DEFAULT_CHARACTER_WIDTH;
+  private int visibleLines = DEFAULT_VISIBLE_LINES;
 
   private Operator searchType = DEFAULT_SEARCH_TYPE;
 
@@ -474,7 +489,7 @@ public class DataSelector extends Complex implements Editor, HasTextDimensions {
   private Request lastRequest = null;
   private int offset = 0;
   private boolean hasMore = false;
-
+  
   public DataSelector(RelationInfo relationInfo, boolean embedded) {
     this(relationInfo, embedded, null);
   }
@@ -495,7 +510,6 @@ public class DataSelector extends Complex implements Editor, HasTextDimensions {
 
     this.input = new InputText();
     this.display = new Display(this);
-    this.limitWidget = new InputSpinner(DEFAULT_VISIBLE_LINES, 1, 99);
 
     input.addStyleName(STYLE_INPUT);
     add(input);
@@ -507,6 +521,7 @@ public class DataSelector extends Complex implements Editor, HasTextDimensions {
     int right = 2;
 
     if (showLimit) {
+      this.limitWidget = new InputSpinner(DEFAULT_VISIBLE_LINES, 1, 99);
       limitWidget.addStyleName(STYLE_LIMIT);
       add(limitWidget);
 
@@ -515,6 +530,8 @@ public class DataSelector extends Complex implements Editor, HasTextDimensions {
       right += 40;
 
       limitWidget.addValueChangeHandler(limitEvents);
+    } else {
+      this.limitWidget = null;
     }
 
     StyleUtils.makeAbsolute(label);
@@ -582,6 +599,9 @@ public class DataSelector extends Complex implements Editor, HasTextDimensions {
   }
 
   public int getVisibleLines() {
+    if (getLimitWidget() == null) {
+      return visibleLines;
+    }
     return getLimitWidget().getIntValue();
   }
 
@@ -591,6 +611,10 @@ public class DataSelector extends Complex implements Editor, HasTextDimensions {
 
   public boolean isEditing() {
     return getInput().isEditing();
+  }
+
+  public boolean isEnabled() {
+    return getInput().isEnabled();
   }
 
   public boolean isNullable() {
@@ -607,6 +631,10 @@ public class DataSelector extends Complex implements Editor, HasTextDimensions {
 
   public void setEditing(boolean editing) {
     getInput().setEditing(editing);
+  }
+
+  public void setEnabled(boolean enabled) {
+    DomUtils.enableChildren(this, enabled);
   }
 
   public void setFocus(boolean focused) {
@@ -630,7 +658,11 @@ public class DataSelector extends Complex implements Editor, HasTextDimensions {
   }
 
   public void setVisibleLines(int lines) {
-    getLimitWidget().setValue(lines);
+    if (getLimitWidget() == null) {
+      this.visibleLines = lines;
+    } else {
+      getLimitWidget().setValue(lines);
+    }
   }
 
   public void startEdit(String oldValue, char charCode, EditorAction onEntry) {

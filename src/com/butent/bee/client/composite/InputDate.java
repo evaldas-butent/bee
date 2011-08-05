@@ -173,6 +173,10 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat {
     return editing;
   }
 
+  public boolean isEnabled() {
+    return getBox().isEnabled();
+  }
+
   public boolean isNullable() {
     return getBox().isNullable();
   }
@@ -217,6 +221,10 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat {
 
   public void setEditing(boolean editing) {
     this.editing = editing;
+  }
+
+  public void setEnabled(boolean enabled) {
+    getBox().setEnabled(enabled);
   }
 
   public void setFocus(boolean focused) {

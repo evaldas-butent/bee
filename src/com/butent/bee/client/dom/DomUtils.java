@@ -1253,6 +1253,16 @@ public class DomUtils {
     }
   }
 
+  public static boolean isEnabled(HasWidgets parent) {
+    Assert.notNull(parent);
+    for (Widget child : parent) {
+      if (child instanceof HasEnabled) {
+        return ((HasEnabled) child).isEnabled();
+      }
+    }
+    return false;
+  }
+  
   public static boolean isInputElement(Element el) {
     if (el == null) {
       return false;

@@ -196,13 +196,15 @@ public class GridPresenter implements Presenter, ReadyForInsertEvent.Handler,
         break;
 
       case DELETE:
-        RowInfo activeRowInfo = getView().getContent().getActiveRowInfo();
-        if (activeRowInfo != null
-            && getView().getContent().isRowEditable(activeRowInfo.getId(), true)) {
-          if (getView().getContent().isRowSelected(activeRowInfo.getId())) {
-            deleteRows(getView().getContent().getSelectedRows());
-          } else {
-            deleteRow(activeRowInfo.getId(), activeRowInfo.getVersion());
+        if (getView().isEnabled()) {
+          RowInfo activeRowInfo = getView().getContent().getActiveRowInfo();
+          if (activeRowInfo != null
+              && getView().getContent().isRowEditable(activeRowInfo.getId(), true)) {
+            if (getView().getContent().isRowSelected(activeRowInfo.getId())) {
+              deleteRows(getView().getContent().getSelectedRows());
+            } else {
+              deleteRow(activeRowInfo.getId(), activeRowInfo.getVersion());
+            }
           }
         }
         break;
@@ -212,7 +214,9 @@ public class GridPresenter implements Presenter, ReadyForInsertEvent.Handler,
         break;
 
       case ADD:
-        getView().getContent().startNewRow();
+        if (getView().isEnabled()) {
+          getView().getContent().startNewRow();
+        }
         break;
 
       default:
@@ -233,7 +237,7 @@ public class GridPresenter implements Presenter, ReadyForInsertEvent.Handler,
 
     BeeRowSet rs = new BeeRowSet(new BeeColumn(event.getColumn().getType(), columnId));
     rs.setViewName(viewName);
-    rs.addRow(rowId, version, new String[]{event.getOldValue()});
+    rs.addRow(rowId, version, new String[] {event.getOldValue()});
     rs.getRow(0).preliminaryUpdate(0, newValue);
 
     final boolean rowMode = event.isRowMode();
