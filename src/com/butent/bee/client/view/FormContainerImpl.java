@@ -25,6 +25,10 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.Collection;
 import java.util.List;
 
+/**
+ * Handles such visible components of forms as header and footer.
+ */
+
 public class FormContainerImpl extends Split implements FormContainerView, HasNavigation,
     HasSearch, ActiveRowChangeEvent.Handler, AddStartEvent.Handler, AddEndEvent.Handler {
 
@@ -41,14 +45,14 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
   private boolean hasSearch = false;
 
   private Evaluator rowMessage = null;
-  
+
   private boolean enabled = true;
-  
+
   private String currentCaption = null;
-  
+
   private boolean hasData = false;
   private int initialRowCount = BeeConst.UNDEF;
-  
+
   public FormContainerImpl() {
     this(-1);
   }
@@ -76,7 +80,7 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
     if (getRowMessage() != null) {
       getContent().getDisplay().addActiveRowChangeHandler(this);
     }
-    
+
     getContent().addAddStartHandler(this);
     getContent().addAddEndHandler(this);
   }
@@ -212,7 +216,7 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
       getHeader().setCaption(message);
     }
   }
-  
+
   public void onAddEnd(AddEndEvent event) {
     if (hasHeader()) {
       getHeader().setCaption(getCurrentCaption());
@@ -220,13 +224,13 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
     if (hasFooter()) {
       setDirectionSize(getFooterDirection(), getFooterHeight());
     }
-    
+
     setEnabled(true);
   }
 
   public void onAddStart(AddStartEvent event) {
     setEnabled(false);
-    
+
     if (hasHeader()) {
       setCurrentCaption(getHeader().getCaption());
       getHeader().setCaption(newRowCaption);
@@ -235,7 +239,7 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
       setDirectionSize(getFooterDirection(), 0);
     }
   }
-  
+
   public void setEnabled(boolean enabled) {
     if (enabled == isEnabled()) {
       return;
@@ -251,7 +255,7 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
   public void setHeaderHeight(int headerHeight) {
     this.headerHeight = headerHeight;
   }
-  
+
   public void setViewPresenter(Presenter viewPresenter) {
     this.viewPresenter = viewPresenter;
     for (Widget child : getChildren()) {
@@ -273,7 +277,7 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
       }
     }
   }
-  
+
   @Override
   protected void onLoad() {
     super.onLoad();

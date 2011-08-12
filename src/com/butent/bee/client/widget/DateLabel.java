@@ -6,6 +6,10 @@ import com.butent.bee.client.i18n.DateRenderer;
 import com.butent.bee.client.i18n.HasDateTimeFormat;
 import com.butent.bee.shared.JustDate;
 
+/**
+ * Enables using date label user interface component.
+ */
+
 public class DateLabel extends ValueLabel<JustDate> implements HasDateTimeFormat {
 
   public DateLabel() {
@@ -15,7 +19,7 @@ public class DateLabel extends ValueLabel<JustDate> implements HasDateTimeFormat
   public DateLabel(DateTimeFormat format) {
     super(new DateRenderer(format));
   }
-  
+
   public DateLabel(String pattern) {
     super(new DateRenderer(pattern));
   }

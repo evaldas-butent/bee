@@ -7,6 +7,10 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.DateTime;
 import com.butent.bee.shared.utils.BeeUtils;
 
+/**
+ * Handles specific regional formatting of datetime values.
+ */
+
 public class DateTimeRenderer extends AbstractRenderer<DateTime> implements HasDateTimeFormat {
 
   private DateTimeFormat format;
@@ -14,7 +18,7 @@ public class DateTimeRenderer extends AbstractRenderer<DateTime> implements HasD
   public DateTimeRenderer() {
     this(Format.getDefaultDateTimeFormat());
   }
-  
+
   public DateTimeRenderer(DateTimeFormat format) {
     this.format = format;
   }
@@ -22,7 +26,7 @@ public class DateTimeRenderer extends AbstractRenderer<DateTime> implements HasD
   public DateTimeRenderer(String pattern) {
     this.format = BeeUtils.isEmpty(pattern) ? null : Format.getDateTimeFormat(pattern);
   }
-  
+
   public DateTimeFormat getDateTimeFormat() {
     return format;
   }

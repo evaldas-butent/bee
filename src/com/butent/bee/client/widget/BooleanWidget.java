@@ -7,6 +7,10 @@ import com.google.gwt.user.client.ui.HasEnabled;
 
 import com.butent.bee.shared.HasId;
 
+/**
+ * Determines which classes have to be extended for boolean widget implementing classes.
+ */
+
 public interface BooleanWidget extends Focusable, TakesValue<Boolean>, HasId, HasClickHandlers,
     HasEnabled {
 }

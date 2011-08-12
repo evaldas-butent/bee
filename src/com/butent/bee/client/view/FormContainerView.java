@@ -6,6 +6,10 @@ import com.butent.bee.shared.data.BeeColumn;
 
 import java.util.List;
 
+/**
+ * Requires implementing classes to have methods for creating forms and getting their content.
+ */
+
 public interface FormContainerView extends View {
 
   void bind();

@@ -12,25 +12,29 @@ import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.ui.Composite;
 
 import com.butent.bee.client.dom.DomUtils;
-import com.butent.bee.client.view.edit.EditStopEvent.Handler;
 import com.butent.bee.client.view.edit.EditStopEvent;
+import com.butent.bee.client.view.edit.EditStopEvent.Handler;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.ui.EditorAction;
 import com.butent.bee.shared.utils.BeeUtils;
 
+/**
+ * Implements checkbox user interface component.
+ */
+
 public class InputBoolean extends Composite implements Editor {
-  
+
   private final BooleanWidget checkBox;
   private boolean nullable = true;
 
   public InputBoolean(String label) {
     this(label, false);
   }
-  
+
   public InputBoolean(String label, boolean asHTML) {
     super();
-    
+
     if (BeeUtils.isEmpty(label)) {
       SimpleBoolean simpleBoolean = new SimpleBoolean();
       this.checkBox = simpleBoolean;
@@ -40,7 +44,7 @@ public class InputBoolean extends Composite implements Editor {
       this.checkBox = beeCheckBox;
       initWidget(beeCheckBox);
     }
-    
+
     checkBox.addClickHandler(new ClickHandler() {
       public void onClick(ClickEvent event) {
         ValueChangeEvent.fire(InputBoolean.this, getValue());

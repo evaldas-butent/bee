@@ -5,6 +5,10 @@ import com.google.gwt.user.client.ui.Frame;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.shared.HasId;
 
+/**
+ * Handles id and prefix of frame elements.
+ */
+
 public class BeeFrame extends Frame implements HasId {
 
   public BeeFrame() {

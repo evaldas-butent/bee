@@ -9,8 +9,12 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasId;
 import com.butent.bee.shared.utils.BeeUtils;
 
+/**
+ * Enables using hyperlink user interface component with {@code_blank} parameter.
+ */
+
 public class Link extends Anchor implements HasId {
-  
+
   private static final String DEFAULT_TARGET = "_blank";
 
   public Link() {
@@ -83,7 +87,7 @@ public class Link extends Anchor implements HasId {
   public void update(String value) {
     update(value, BeeConst.DEFAULT_VALUE_SEPARATOR);
   }
-  
+
   public void update(String value, Object separator) {
     Assert.notEmpty(value);
     String sep = BeeUtils.normSep(separator, BeeConst.DEFAULT_VALUE_SEPARATOR);

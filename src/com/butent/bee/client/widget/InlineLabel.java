@@ -2,6 +2,10 @@ package com.butent.bee.client.widget;
 
 import com.google.gwt.dom.client.Document;
 
+/**
+ * Enables using inline label user interface component.
+ */
+
 public class InlineLabel extends BeeLabel {
 
   public InlineLabel() {

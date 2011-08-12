@@ -21,6 +21,10 @@ import com.butent.bee.shared.utils.TimeUtils;
 
 import java.util.List;
 
+/**
+ * Enables user interface components to handle data values.
+ */
+
 public class EditableWidget implements ValueChangeHandler<String> {
 
   private final int dataIndex;
@@ -35,7 +39,7 @@ public class EditableWidget implements ValueChangeHandler<String> {
 
   private final String minValue;
   private final String maxValue;
-  
+
   private final boolean readOnly;
 
   private EditEndEvent.Handler editEndHandler = null;
@@ -45,11 +49,11 @@ public class EditableWidget implements ValueChangeHandler<String> {
       WidgetDescription widgetDescription) {
     Assert.isIndex(dataColumns, dataIndex);
     Assert.notNull(widgetDescription);
-    
+
     this.dataIndex = dataIndex;
     this.dataColumn = dataColumns.get(dataIndex);
     this.relationInfo = relationInfo;
-    this.widgetDescription = widgetDescription;    
+    this.widgetDescription = widgetDescription;
 
     String source = this.dataColumn.getId();
     this.editable = Evaluator.create(widgetDescription.getEditable(), source, dataColumns);
@@ -64,10 +68,10 @@ public class EditableWidget implements ValueChangeHandler<String> {
     if (isInitialized()) {
       return;
     }
-    
+
     Assert.notNull(rootWidget);
     Assert.notNull(handler);
-    
+
     Widget widget = DomUtils.getWidgetQuietly(rootWidget, getWidgetId());
     if (widget instanceof Editor) {
       ((Editor) widget).addValueChangeHandler(this);
@@ -167,7 +171,7 @@ public class EditableWidget implements ValueChangeHandler<String> {
   public RelationInfo getRelationInfo() {
     return relationInfo;
   }
-  
+
   public boolean getRowModeForUpdate() {
     return getRelationInfo() != null;
   }
@@ -179,7 +183,7 @@ public class EditableWidget implements ValueChangeHandler<String> {
   public boolean hasCarry() {
     return getCarry() != null;
   }
-  
+
   @Override
   public int hashCode() {
     return getWidgetDescription().hashCode();
@@ -197,7 +201,7 @@ public class EditableWidget implements ValueChangeHandler<String> {
         row.getString(getDataIndex()));
     return BeeUtils.toBoolean(getEditable().evaluate());
   }
-  
+
   public boolean isNullable() {
     if (getRelationInfo() != null) {
       return getRelationInfo().isNullable();

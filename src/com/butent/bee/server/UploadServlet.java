@@ -21,6 +21,10 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+/**
+ * Implements upload servlet functionality.
+ */
+
 @SuppressWarnings("serial")
 @WebServlet(name = "UploadServlet", urlPatterns = {"/bee/upload"})
 @MultipartConfig
@@ -33,7 +37,7 @@ public class UploadServlet extends HttpServlet {
 
   private ResponseObject dispatch(String service, HttpServletRequest req) {
     ResponseObject responseObject;
-    
+
     if (BeeUtils.same(service, Service.IMPORT_FORM)) {
       String formName = HttpUtils.readPart(req, Service.VAR_FORM_NAME);
       String design = HttpUtils.readPart(req, Service.VAR_FILE_NAME);
@@ -46,7 +50,7 @@ public class UploadServlet extends HttpServlet {
 
     return responseObject;
   }
-  
+
   @Override
   protected void doGet(HttpServletRequest req, HttpServletResponse resp)
       throws ServletException, IOException {
@@ -78,7 +82,7 @@ public class UploadServlet extends HttpServlet {
         responseObject = ResponseObject.warning(msg);
       }
     }
-    
+
     ContentType ctp = CommUtils.formResponseContentType;
     resp.setContentType(CommUtils.getMediaType(ctp));
     resp.setCharacterEncoding(CommUtils.getCharacterEncoding(ctp));
@@ -87,11 +91,11 @@ public class UploadServlet extends HttpServlet {
 
     LogUtils.infoNow(logger, prefix, BeeUtils.elapsedSeconds(start), "response",
         resp.getContentType(), content.length());
-    
+
     try {
-      PrintWriter writer = resp.getWriter();    
+      PrintWriter writer = resp.getWriter();
       writer.print(content);
-      writer.flush();    
+      writer.flush();
     } catch (IOException ex) {
       LogUtils.stack(logger, ex);
     }

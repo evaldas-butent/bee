@@ -5,6 +5,10 @@ import com.google.gwt.user.client.ui.ResizeLayoutPanel;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.shared.HasId;
 
+/**
+ * Handles id and prefix of resizable panel layout element.
+ */
+
 public class ResizePanel extends ResizeLayoutPanel implements HasId {
 
   public ResizePanel() {

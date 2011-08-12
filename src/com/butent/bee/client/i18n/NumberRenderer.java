@@ -6,6 +6,10 @@ import com.google.gwt.text.shared.AbstractRenderer;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.utils.BeeUtils;
 
+/**
+ * Handles specific regional formatting of number values.
+ */
+
 public class NumberRenderer extends AbstractRenderer<Number> implements HasNumberFormat {
 
   private NumberFormat format;
@@ -21,7 +25,7 @@ public class NumberRenderer extends AbstractRenderer<Number> implements HasNumbe
   public NumberRenderer(String pattern) {
     this.format = BeeUtils.isEmpty(pattern) ? null : Format.getNumberFormat(pattern);
   }
-  
+
   public NumberFormat getNumberFormat() {
     return format;
   }

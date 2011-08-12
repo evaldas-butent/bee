@@ -6,6 +6,10 @@ import com.butent.bee.client.i18n.DateTimeRenderer;
 import com.butent.bee.client.i18n.HasDateTimeFormat;
 import com.butent.bee.shared.DateTime;
 
+/**
+ * Enables using datetime type label user interface component.
+ */
+
 public class DateTimeLabel extends ValueLabel<DateTime> implements HasDateTimeFormat {
 
   public DateTimeLabel() {

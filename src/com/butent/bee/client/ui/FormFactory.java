@@ -40,15 +40,23 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
 
+/**
+ * Creates and handles user interface forms.
+ */
+
 public class FormFactory {
 
   private static final String ATTR_TYPE = "type";
 
   private static final String TAG_ITEM = "item";
-  
+
+  /**
+   * Requires implementing classes to provide widget description and parameters string.
+   */
+
   public interface WidgetCallback extends Callback<WidgetDescription, String[]> {
   }
-  
+
   public static Widget createForm(FormDescription formDescription, WidgetCallback callback,
       List<BeeColumn> columns) {
     Assert.notNull(formDescription);
@@ -59,7 +67,7 @@ public class FormFactory {
       BeeKeeper.getLog().severe("createForm: form element has no children");
       return null;
     }
-    
+
     Element root = null;
     FormWidget formWidget = null;
     int count = 0;
@@ -72,7 +80,7 @@ public class FormFactory {
         count++;
       }
     }
-    
+
     if (count <= 0) {
       BeeKeeper.getLog().severe("createForm: root widget not found");
       return null;
@@ -81,7 +89,7 @@ public class FormFactory {
       BeeKeeper.getLog().severe("createForm: form element has", count, "root widgets");
       return null;
     }
-    
+
     Widget form = formWidget.create(root, callback, columns);
     if (form == null) {
       BeeKeeper.getLog().severe("createForm: cannot create root widget", formWidget);
@@ -103,17 +111,17 @@ public class FormFactory {
 
     EditorDescription editor = new EditorDescription(editorType);
     editor.setAttributes(XmlUtils.getAttributes(element));
-    
+
     List<String> items = XmlUtils.getChildrenText(element, TAG_ITEM);
     if (!BeeUtils.isEmpty(items)) {
       editor.setItems(items);
     }
     return editor;
   }
-  
+
   public static void getForm(String name) {
     Assert.notEmpty(name);
-    
+
     BeeKeeper.getRpc().sendText(Service.GET_FORM, BeeUtils.trim(name), new ResponseCallback() {
       @Override
       public void onResponse(ResponseObject response) {
@@ -140,21 +148,21 @@ public class FormFactory {
 
     FlexTable container = new FlexTable();
     formPanel.setWidget(container);
-    
+
     container.setCellSpacing(10);
-    
+
     int row = 0;
     container.setWidget(row, 0, new BeeLabel("Form Name"));
     final InputText inputName = new InputText(Global.getVar(Service.VAR_FORM_NAME));
     inputName.setName(Service.VAR_FORM_NAME);
     container.setWidget(row, 1, inputName);
-    
+
     row++;
     container.setWidget(row, 0, new BeeLabel("Design File"));
     final BeeFileUpload upload = new BeeFileUpload();
     upload.setName(Service.VAR_FILE_NAME);
     container.setWidget(row, 1, upload);
-    
+
     row++;
     container.setWidget(row, 0, new Hidden(Service.NAME_SERVICE, Service.IMPORT_FORM));
 
@@ -163,7 +171,7 @@ public class FormFactory {
         formPanel.submit();
       }
     });
-    
+
     row++;
     container.setWidget(row, 0, submit);
     container.getCellFormatter().setHorizontalAlignment(row, 0,
@@ -171,7 +179,7 @@ public class FormFactory {
     container.getFlexCellFormatter().setColSpan(row, 0, 2);
 
     final DialogBox dialog = new DialogBox();
-    
+
     formPanel.addSubmitHandler(new FormPanel.SubmitHandler() {
       public void onSubmit(FormPanel.SubmitEvent event) {
         if (BeeUtils.isEmpty(inputName.getValue())) {
@@ -196,19 +204,19 @@ public class FormFactory {
         }
       }
     });
-    
+
     dialog.setText("Import Form Design");
     dialog.setAnimationEnabled(true);
 
     dialog.setWidget(formPanel);
     dialog.center();
-    
+
     inputName.setFocus(true);
   }
-  
+
   public static void openForm(String xml) {
     Assert.notEmpty(xml);
-    
+
     Document xmlDoc = XmlUtils.parse(xml);
     if (xmlDoc == null) {
       return;
@@ -218,27 +226,28 @@ public class FormFactory {
       BeeKeeper.getLog().severe("xml form element not found");
       return;
     }
-    
+
     final FormDescription formDescription = new FormDescription(formElement);
     final String viewName = formDescription.getViewName();
     if (BeeUtils.isEmpty(viewName)) {
       showForm(formDescription);
       return;
-    }  
+    }
 
     DataInfo dataInfo = Global.getDataExplorer().getDataInfo(viewName);
     if (dataInfo != null) {
       getInitialRowSet(viewName, dataInfo.getRowCount(), formDescription);
       return;
-    }  
+    }
 
     Queries.getRowCount(viewName, new Queries.IntCallback() {
-        public void onFailure(String[] reason) {
-        }
-        public void onSuccess(Integer result) {
-          getInitialRowSet(viewName, result, formDescription);
-        }
-      });
+      public void onFailure(String[] reason) {
+      }
+
+      public void onSuccess(Integer result) {
+        getInitialRowSet(viewName, result, formDescription);
+      }
+    });
   }
 
   private static void getInitialRowSet(final String viewName, final int rowCount,
@@ -272,13 +281,13 @@ public class FormFactory {
   private static void showForm(FormDescription formDescription) {
     showForm(formDescription, null, BeeConst.UNDEF, null, false);
   }
-  
+
   private static void showForm(FormDescription formDescription, String viewName, int rowCount,
       BeeRowSet rowSet, boolean async) {
     FormPresenter presenter = new FormPresenter(formDescription, viewName, rowCount, rowSet, async);
     BeeKeeper.getScreen().updateActivePanel(presenter.getWidget());
   }
-  
+
   private FormFactory() {
   }
 }

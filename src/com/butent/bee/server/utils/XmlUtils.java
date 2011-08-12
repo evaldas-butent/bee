@@ -83,6 +83,10 @@ import javax.xml.validation.SchemaFactory;
 
 public class XmlUtils {
 
+  /**
+   * Handles XML parsing errors.
+   */
+
   private static class SAXErrorHandler implements ErrorHandler {
     @Override
     public void error(SAXParseException exception) throws SAXException {
@@ -161,7 +165,7 @@ public class XmlUtils {
     }
     schemaFactory = sf;
   }
-  
+
   public static Document createDocument() {
     return domBuilder.newDocument();
   }
@@ -181,7 +185,7 @@ public class XmlUtils {
     Document doc = createDocument(new StringReader(xml));
     return doc;
   }
-  
+
   public static Boolean getAttributeBoolean(Element element, String name) {
     Assert.notNull(element);
     Assert.notEmpty(name);
@@ -875,7 +879,7 @@ public class XmlUtils {
     } catch (TransformerException ex) {
       LogUtils.severe(logger, ex);
     }
-    return writer.getBuffer().toString();    
+    return writer.getBuffer().toString();
   }
 
   @SuppressWarnings("unchecked")

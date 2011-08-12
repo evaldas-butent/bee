@@ -81,6 +81,10 @@ import javax.ejb.Startup;
 @Lock(LockType.READ)
 public class SystemBean {
 
+  /**
+   * Contains a list of system objects, like state or table.
+   */
+
   public enum SysObject {
     STATE("states"), TABLE("tables"), VIEW("views");
 
@@ -633,12 +637,12 @@ public class SystemBean {
   public int getScale(String tblName, String fldName) {
     return getTableField(tblName, fldName).getScale();
   }
-  
+
   public BeeState getState(String stateName) {
     Assert.state(isState(stateName), "Not a state: " + stateName);
     return stateCache.get(BeeUtils.normalize(stateName));
   }
-  
+
   public List<ExtendedProperty> getTableInfo(String tblName) {
     return getTable(tblName).getInfo();
   }
@@ -1455,7 +1459,7 @@ public class SystemBean {
   private BeeView getDefaultView(String tblName) {
     return getDefaultView(tblName, true, Sets.newHashSet(BeeUtils.normalize(tblName)));
   }
-  
+
   private BeeView getDefaultView(String tblName, boolean allFields, Collection<String> roots) {
     BeeTable table = getTable(tblName);
     Collection<BeeField> fields = allFields ? table.getFields() : table.getMainFields();

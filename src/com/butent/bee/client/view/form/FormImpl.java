@@ -21,9 +21,9 @@ import com.butent.bee.client.layout.Absolute;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory;
+import com.butent.bee.client.ui.FormFactory.WidgetCallback;
 import com.butent.bee.client.ui.FormWidget;
 import com.butent.bee.client.ui.WidgetDescription;
-import com.butent.bee.client.ui.FormFactory.WidgetCallback;
 import com.butent.bee.client.utils.Evaluator;
 import com.butent.bee.client.view.add.AddEndEvent;
 import com.butent.bee.client.view.add.AddStartEvent;
@@ -57,6 +57,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 
+/**
+ * Handles such form events like warnings, deletions, visibility of elements etc.
+ */
+
 public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler, HasDataTable {
 
   private class CreationCallback implements WidgetCallback {
@@ -69,22 +73,22 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
         onFailure(new String[] {"widget description is null"});
         return;
       }
-      
+
       String id = result.getWidgetId();
       FormWidget type = result.getWidgetType();
       if (type == null) {
         onFailure(new String[] {"widget type is null", id});
         return;
       }
-      
+
       if (type.isDisplay()) {
         String source = result.getSource();
         int index = BeeConst.UNDEF;
         ValueType valueType = null;
         Evaluator evaluator = null;
-        
+
         boolean ok = true;
-        
+
         if (!BeeUtils.isEmpty(source) && hasData()) {
           index = getDataIndex(source);
           if (index >= 0) {
@@ -94,13 +98,13 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
             ok = false;
           }
         }
-        
+
         if (ok) {
           Calculation calc = result.getCalculation();
           if (calc != null) {
             evaluator = Evaluator.create(calc, source, getDataColumns());
           }
-        
+
           ok = (index >= 0 || evaluator != null);
           if (ok) {
             getDisplayWidgets().add(new DisplayWidget(index, valueType, evaluator, result));
@@ -111,7 +115,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
       if (type.isEditable() && hasData()) {
         String source = result.getSource();
         int index = getDataIndex(source);
-        
+
         if (index >= 0) {
           RelationInfo relationInfo = null;
           if (type.isSelector()) {
@@ -124,19 +128,19 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
           onFailure(new String[] {"editable source not found", source, id});
         }
       }
-      
+
       if (type.isGrid() && hasData()) {
         getGridWidgets().add(result);
       }
     }
   }
-  
+
   private class DisplayWidget {
     private final int dataIndex;
     private final ValueType valueType;
 
     private final Evaluator evaluator;
-    
+
     private final WidgetDescription widgetDescription;
 
     private DisplayWidget(int dataIndex, ValueType valueType, Evaluator evaluator,
@@ -154,7 +158,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     private Evaluator getEvaluator() {
       return evaluator;
     }
-    
+
     private String getValue(IsRow row) {
       if (getEvaluator() != null) {
         if (row != null && getDataIndex() >= 0 && getValueType() != null) {
@@ -174,7 +178,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     private ValueType getValueType() {
       return valueType;
     }
-    
+
     private WidgetDescription getWidgetDescription() {
       return widgetDescription;
     }
@@ -189,7 +193,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
   }
 
   private Presenter viewPresenter = null;
-  
+
   private Widget rootWidget = null;
 
   private Evaluator rowEditable = null;
@@ -197,21 +201,21 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
   private final Notification notification = new Notification();
 
   private boolean enabled = true;
-  
+
   private boolean hasData = false;
   private List<BeeColumn> dataColumns = null;
-  
+
   private boolean editing = false;
 
   private int pageStart = 0;
   private int rowCount = BeeConst.UNDEF;
-  
+
   private IsRow rowData = null;
-  
+
   private boolean readOnly = false;
-  
+
   private final CreationCallback creationCallback = new CreationCallback();
-  
+
   private final Set<DisplayWidget> displayWidgets = Sets.newHashSet();
   private final Set<EditableWidget> editableWidgets = Sets.newHashSet();
   private final Set<WidgetDescription> gridWidgets = Sets.newHashSet();
@@ -256,7 +260,8 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     return addHandler(handler, RowCountChangeEvent.getType());
   }
 
-  public HandlerRegistration addSelectionCountChangeHandler(SelectionCountChangeEvent.Handler handler) {
+  public HandlerRegistration addSelectionCountChangeHandler(
+      SelectionCountChangeEvent.Handler handler) {
     return null;
   }
 
@@ -280,7 +285,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     }
 
     setReadOnly(formDescription.isReadOnly());
-    
+
     Widget root = FormFactory.createForm(formDescription, getCreationCallback(), dataCols);
     if (root == null) {
       return;
@@ -397,19 +402,19 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     rowValue.setVersion(version);
     int dataIndex = getDataIndex(source);
     rowValue.setValue(dataIndex, value);
-  
+
     for (EditableWidget editableWidget : getEditableWidgets()) {
       if (!BeeUtils.same(source, editableWidget.getColumnId())) {
         continue;
       }
 
       Widget widget = getWidget(editableWidget.getWidgetId());
-      if (widget instanceof Editor 
+      if (widget instanceof Editor
           && !BeeUtils.equalsTrimRight(value, ((Editor) widget).getNormalizedValue())) {
         ((Editor) widget).setValue(BeeUtils.trimRight(value));
       }
     }
-    
+
     if (!isReadOnly() && isEnabled()) {
       boolean rowEnabled = isRowEditable(rowValue, false);
 
@@ -421,13 +426,13 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
         if (!(widget instanceof Editor)) {
           continue;
         }
-      
+
         boolean editable = rowEnabled && editableWidget.isEditable(rowValue);
         if (editable != ((Editor) widget).isEnabled()) {
           ((Editor) widget).setEnabled(editable);
         }
       }
-      
+
       if (getRowEditable() != null && hasGrids()) {
         for (WidgetDescription widgetDescription : getGridWidgets()) {
           Widget widget = getWidget(widgetDescription.getWidgetId());
@@ -446,7 +451,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
 
     IsRow rowValue = getRowData();
     IsColumn column = event.getColumn();
-    
+
     int index = getDataIndex(column.getId());
     String oldValue = rowValue.getString(index);
     String newValue = event.getNewValue();
@@ -482,7 +487,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
 
   public void setEnabled(boolean enabled) {
     this.enabled = enabled;
-    
+
     for (EditableWidget editableWidget : getEditableWidgets()) {
       Widget widget = getWidget(editableWidget.getWidgetId());
       if (widget instanceof Editor && ((Editor) widget).isEnabled() != enabled) {
@@ -526,12 +531,12 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     if (!BeeUtils.isEmpty(values)) {
       setRowData(values.get(0));
       refreshData();
-    }  
+    }
   }
-  
+
   public void setSelectionModel(SelectionModel<? super IsRow> selectionModel) {
   }
-  
+
   public void setViewPresenter(Presenter presenter) {
     this.viewPresenter = presenter;
   }
@@ -553,7 +558,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
       for (EditableWidget editableWidget : getEditableWidgets()) {
         editableWidget.bind(this, this);
       }
-      
+
       setRowCount(count);
       if (count > 0) {
         RangeChangeEvent.fire(this, getVisibleRange());
@@ -585,11 +590,11 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
         newRow.setValue(editableWidget.getDataIndex(), carry);
       }
     }
-    
+
     setRowData(newRow);
     refreshData();
   }
-  
+
   public void updateActiveRow(List<? extends IsRow> values) {
   }
 
@@ -597,7 +602,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     String[] arr = new String[getDataColumns().size()];
     return new BeeRow(0, arr);
   }
-  
+
   private CreationCallback getCreationCallback() {
     return creationCallback;
   }
@@ -611,7 +616,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     if (BeeUtils.isEmpty(source) || getDataColumns() == null) {
       return index;
     }
-    
+
     for (int i = 0; i < getDataColumns().size(); i++) {
       if (BeeUtils.same(source, getDataColumns().get(i).getId())) {
         index = i;
@@ -632,7 +637,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
   private Set<WidgetDescription> getGridWidgets() {
     return gridWidgets;
   }
-  
+
   private Notification getNotification() {
     return notification;
   }
@@ -664,7 +669,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
   private boolean hasData() {
     return hasData;
   }
-  
+
   private boolean hasGrids() {
     return !getGridWidgets().isEmpty();
   }
@@ -691,14 +696,14 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
 
   private void refreshData() {
     fireLoadingStateChange(LoadingStateChangeEvent.LoadingState.PARTIALLY_LOADED);
-    
+
     refreshEditableWidgets();
     refreshDisplayWidgets();
     refreshGridWidgets(getRowData().getId());
-    
+
     fireLoadingStateChange(LoadingStateChangeEvent.LoadingState.LOADED);
   }
-  
+
   private void refreshDisplayWidgets() {
     for (DisplayWidget displayWidget : getDisplayWidgets()) {
       displayWidget.getWidgetType().updateDisplay(this, displayWidget.getWidgetId(),
@@ -715,10 +720,10 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
         continue;
       }
       Editor editor = (Editor) widget;
-      
+
       String value;
-      boolean editable; 
-      
+      boolean editable;
+
       if (getRowData() == null) {
         value = BeeConst.STRING_EMPTY;
         editable = false;
@@ -736,13 +741,13 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
       }
     }
   }
-  
+
   private void refreshGridWidgets(long rowId) {
     if (!hasGrids()) {
       return;
     }
     boolean rowEnabled = !isReadOnly() && isEnabled() && isRowEditable(getRowData(), false);
-    
+
     for (WidgetDescription widgetDescription : getGridWidgets()) {
       Widget widget = getWidget(widgetDescription.getWidgetId());
       if (widget instanceof ChildGrid) {
@@ -750,7 +755,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
       }
     }
   }
-  
+
   private void setDataColumns(List<BeeColumn> dataColumns) {
     this.dataColumns = dataColumns;
   }

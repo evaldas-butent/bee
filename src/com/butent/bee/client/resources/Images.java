@@ -11,10 +11,14 @@ import com.butent.bee.shared.Assert;
 import java.util.Map;
 
 /**
- * Contains a list of images used in the system.
+ * Handles a list of images used in the system.
  */
 
 public class Images {
+
+  /**
+   * Contains a list of images used in the system.
+   */
 
   public interface Resources extends ClientBundle {
 
@@ -163,13 +167,13 @@ public class Images {
     @Source("undo.png")
     ImageResource undo();
   }
-  
+
   private static final Map<String, ImageResource> map = Maps.newHashMap();
-  
+
   public static Resources createResources() {
     return GWT.create(Resources.class);
   }
-  
+
   public static ImageResource get(String name) {
     Assert.notEmpty(name);
     return map.get(key(name));
@@ -182,7 +186,7 @@ public class Images {
     }
 
     map.put(key("accept"), resources.accept());
-    
+
     map.put(key("add"), resources.add());
 
     map.put(key("arrowDown"), resources.arrowDown());
@@ -194,7 +198,7 @@ public class Images {
     map.put(key("arrowLeftDisabled"), resources.arrowLeftDisabled());
     map.put(key("arrowLeftHover"), resources.arrowLeftHover());
     map.put(key("arrowLeftPressed"), resources.arrowLeftPressed());
-    
+
     map.put(key("arrowRight"), resources.arrowRight());
     map.put(key("arrowRightDisabled"), resources.arrowRightDisabled());
     map.put(key("arrowRightHover"), resources.arrowRightHover());
@@ -206,9 +210,9 @@ public class Images {
     map.put(key("arrowUpPressed"), resources.arrowUpPressed());
 
     map.put(key("ascending"), resources.ascending());
-    
+
     map.put(key("bee"), resources.bee());
-    
+
     map.put(key("bookmark"), resources.bookmark());
     map.put(key("bookmark_add"), resources.bookmarkAdd());
 
@@ -216,7 +220,7 @@ public class Images {
     map.put(key("close"), resources.close());
 
     map.put(key("configure"), resources.configure());
-    
+
     map.put(key("delete"), resources.delete());
 
     map.put(key("descending"), resources.descending());
@@ -259,11 +263,11 @@ public class Images {
 
     map.put(key("undo"), resources.undo());
   }
-  
+
   private static String key(String name) {
     return name.trim().toLowerCase();
   }
-  
+
   private Images() {
   }
 }

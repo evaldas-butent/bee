@@ -10,6 +10,10 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasId;
 import com.butent.bee.shared.utils.BeeUtils;
 
+/**
+ * Enables using internal link user interface component.
+ */
+
 public class InternalLink extends Hyperlink implements HasId {
 
   public InternalLink(SafeHtml html, String targetHistoryToken) {
@@ -43,11 +47,11 @@ public class InternalLink extends Hyperlink implements HasId {
   public void setId(String id) {
     DomUtils.setId(this, id);
   }
-  
+
   public void update(String value) {
     update(value, BeeConst.DEFAULT_VALUE_SEPARATOR);
   }
-  
+
   public void update(String value, Object separator) {
     Assert.notEmpty(value);
     String sep = BeeUtils.normSep(separator, BeeConst.DEFAULT_VALUE_SEPARATOR);
@@ -64,7 +68,7 @@ public class InternalLink extends Hyperlink implements HasId {
     setHTML(BeeUtils.trim(html));
     setTargetHistoryToken(BeeUtils.trim(token));
   }
-  
+
   protected String getDefaultStyleName() {
     return "bee-InternalLink";
   }

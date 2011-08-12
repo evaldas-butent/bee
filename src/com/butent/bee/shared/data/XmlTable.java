@@ -14,8 +14,16 @@ import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
+/**
+ * Handles data table information storage in XML structure.
+ */
+
 @XmlRootElement(name = "BeeTable", namespace = DataUtils.DEFAULT_NAMESPACE)
 public class XmlTable {
+
+  /**
+   * Handles data field information storage in XML structure.
+   */
 
   public static class XmlField {
     @XmlAttribute
@@ -76,6 +84,10 @@ public class XmlTable {
       return safe;
     }
   }
+
+  /**
+   * Handles table key information storage in XML structure.
+   */
 
   public static class XmlKey {
     @XmlAttribute

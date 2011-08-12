@@ -9,6 +9,10 @@ import com.butent.bee.shared.data.HasViewName;
 import com.butent.bee.shared.ui.Calculation;
 import com.butent.bee.shared.utils.BeeUtils;
 
+/**
+ * Manages xml descriptions of forms.
+ */
+
 public class FormDescription implements HasViewName {
 
   private static final String TAG_ROW_MESSAGE = "rowMessage";
@@ -28,7 +32,7 @@ public class FormDescription implements HasViewName {
     Assert.notNull(formElement);
     this.formElement = formElement;
   }
-  
+
   public int getAsyncThreshold() {
     Integer asyncThreshold = XmlUtils.getAttributeInteger(getFormElement(), ATTR_ASYNC_THRESHOLD);
     if (asyncThreshold == null) {
@@ -44,7 +48,7 @@ public class FormDescription implements HasViewName {
     }
     return BeeUtils.trim(caption);
   }
-  
+
   public Calculation getRowEditable() {
     return XmlUtils.getCalculation(getFormElement(), TAG_ROW_EDITABLE);
   }
@@ -60,7 +64,7 @@ public class FormDescription implements HasViewName {
     }
     return searchThreshold;
   }
-  
+
   public String getViewName() {
     return getFormElement().getAttribute(ATTR_VIEW_NAME);
   }

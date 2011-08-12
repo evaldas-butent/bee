@@ -2,6 +2,10 @@ package com.butent.bee.client.widget;
 
 import com.google.gwt.safehtml.shared.SafeHtml;
 
+/**
+ * Enables using hyperlink user interface component.
+ */
+
 public class InlineInternalLink extends InternalLink {
 
   public InlineInternalLink(SafeHtml html, String targetHistoryToken) {

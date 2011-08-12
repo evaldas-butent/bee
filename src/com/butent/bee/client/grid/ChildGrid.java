@@ -14,13 +14,17 @@ import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.ui.GridDescription;
 
+/**
+ * Enables using data grids with data related to another source.
+ */
+
 public class ChildGrid extends ResizePanel implements HasEnabled {
-  
+
   private final String viewName;
   private final String relSource;
-  
+
   private GridPresenter presenter = null;
-  
+
   private Long pendingId = null;
   private Boolean pendingEnabled = null;
 
@@ -44,7 +48,7 @@ public class ChildGrid extends ResizePanel implements HasEnabled {
   public String getIdPrefix() {
     return "child-grid";
   }
-  
+
   public boolean isEnabled() {
     if (getPresenter() == null) {
       return false;
@@ -66,20 +70,20 @@ public class ChildGrid extends ResizePanel implements HasEnabled {
     Queries.getRowCount(getViewName(), filter, new Queries.IntCallback() {
       public void onFailure(String[] reason) {
       }
-      
+
       public void onSuccess(Integer result) {
         getPresenter().getView().getContent().setRelId(parentId);
         getPresenter().getView().getContent().getGrid().setRowCount(result);
         getPresenter().getView().getContent().getGrid().setPageSize(result);
         getPresenter().getDataProvider().onFilterChanged(filter, result);
-        
+
         if (parentEnabled != null) {
           setEnabled(parentEnabled);
         }
       }
     });
   }
-  
+
   public void setEnabled(boolean enabled) {
     if (getPresenter() != null) {
       getPresenter().getView().setEnabled(enabled);
@@ -99,7 +103,7 @@ public class ChildGrid extends ResizePanel implements HasEnabled {
             setWidget(gp.getWidget());
             setPresenter(gp);
             gp.getView().getContent().setRelColumn(getRelSource());
-            
+
             if (getPendingId() != null) {
               refresh(getPendingId(), getPendingEnabled());
               setPendingId(null);

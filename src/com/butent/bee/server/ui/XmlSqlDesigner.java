@@ -20,7 +20,7 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
- * http://ondras.zarovi.cz/sql/demo Online designer.
+ * Enables to design system database using graphical tool.
  */
 
 @XmlRootElement(name = "sql")
@@ -29,9 +29,17 @@ public class XmlSqlDesigner {
   public static final String EXT = "_EXT";
   public static final String STATE = "STATE";
 
+  /**
+   * Contains a list of possible key types.
+   */
+
   private enum KeyType {
     PRIMARY, UNIQUE, INDEX
   }
+
+  /**
+   * Handles xml elements containing information about data types.
+   */
 
   public static class DataType {
     @XmlAttribute
@@ -39,6 +47,10 @@ public class XmlSqlDesigner {
     @XmlAttribute
     public String sql;
   }
+
+  /**
+   * Handles xml elements containing information about data type groups.
+   */
 
   public static class DataTypeGroup {
     @XmlAttribute
@@ -49,12 +61,20 @@ public class XmlSqlDesigner {
     public Collection<DataType> types;
   }
 
+  /**
+   * Handles xml elements containing information about data relations.
+   */
+
   private static class DataRelation {
     @XmlAttribute
     private String table;
     @XmlAttribute(name = "row")
     private String field;
   }
+
+  /**
+   * Handles xml elements containing information about data fields.
+   */
 
   private static class DataField {
     @XmlAttribute
@@ -87,6 +107,10 @@ public class XmlSqlDesigner {
     }
   }
 
+  /**
+   * Handles xml elements containing information about data keys.
+   */
+
   private static class DataKey {
     @XmlAttribute
     private KeyType type;
@@ -101,6 +125,10 @@ public class XmlSqlDesigner {
       this.parts = Lists.newArrayList(parts);
     }
   }
+
+  /**
+   * Handles xml elements containing information about data tables.
+   */
 
   private static class DataTable {
     @XmlAttribute
@@ -148,6 +176,10 @@ public class XmlSqlDesigner {
       return unique;
     }
   }
+
+  /**
+   * Enables transforming xml information about tables into objects.
+   */
 
   private static class XmlTableAdapter extends XmlAdapter<DataTable, XmlTable> {
     @Override

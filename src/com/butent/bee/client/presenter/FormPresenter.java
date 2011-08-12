@@ -44,6 +44,11 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * Contains necessary methods for implementing form presentation on the client side (filter, view
+ * name, widgets etc).
+ */
+
 public class FormPresenter implements Presenter, ReadyForInsertEvent.Handler,
     ReadyForUpdateEvent.Handler, HasViewName {
 
@@ -212,7 +217,7 @@ public class FormPresenter implements Presenter, ReadyForInsertEvent.Handler,
 
     BeeRowSet rs = new BeeRowSet(new BeeColumn(event.getColumn().getType(), columnId));
     rs.setViewName(getViewName());
-    rs.addRow(rowId, version, new String[]{event.getOldValue()});
+    rs.addRow(rowId, version, new String[] {event.getOldValue()});
     rs.getRow(0).preliminaryUpdate(0, newValue);
 
     final boolean rowMode = event.isRowMode();

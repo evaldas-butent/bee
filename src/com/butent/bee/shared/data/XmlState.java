@@ -5,6 +5,10 @@ import com.butent.bee.shared.utils.BeeUtils;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 
+/**
+ * Handles state information storage in XML structure.
+ */
+
 @XmlRootElement(name = "BeeState", namespace = DataUtils.DEFAULT_NAMESPACE)
 public class XmlState {
 

@@ -6,6 +6,10 @@ import com.butent.bee.client.i18n.Format;
 
 import java.math.BigDecimal;
 
+/**
+ * Enables using decimal type label user interface component.
+ */
+
 public class DecimalLabel extends NumberLabel<BigDecimal> {
 
   public DecimalLabel(int scale) {

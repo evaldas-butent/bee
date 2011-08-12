@@ -14,6 +14,10 @@ import com.butent.bee.shared.data.view.RowInfo;
 
 import java.util.List;
 
+/**
+ * Contains necessary methods for form implementing classes.
+ */
+
 public interface FormView extends View, NotificationListener,
     HasAddStartHandlers, HasAddEndHandlers, HasReadyForInsertHandlers, HasReadyForUpdateHandlers {
 
@@ -24,7 +28,7 @@ public interface FormView extends View, NotificationListener,
   void finishNewRow(IsRow row);
 
   RowInfo getActiveRowInfo();
-  
+
   HasDataTable getDisplay();
 
   boolean isRowEditable(boolean warn);
@@ -32,6 +36,6 @@ public interface FormView extends View, NotificationListener,
   void refreshCellContent(String columnSource);
 
   void start(int rowCount);
-  
+
   void startNewRow();
 }

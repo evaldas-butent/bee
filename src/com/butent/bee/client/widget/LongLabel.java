@@ -4,6 +4,10 @@ import com.google.gwt.i18n.client.NumberFormat;
 
 import com.butent.bee.client.i18n.Format;
 
+/**
+ * Enables using long number label user interface component.
+ */
+
 public class LongLabel extends NumberLabel<Long> {
 
   public LongLabel() {
@@ -18,4 +22,3 @@ public class LongLabel extends NumberLabel<Long> {
     super(pattern);
   }
 }
-

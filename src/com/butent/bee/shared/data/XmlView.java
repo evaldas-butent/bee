@@ -7,8 +7,16 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 
+/**
+ * Handles views information storage in XML structure.
+ */
+
 @XmlRootElement(name = "BeeView", namespace = DataUtils.DEFAULT_NAMESPACE)
 public class XmlView {
+
+  /**
+   * Handles data column information storage in XML structure.
+   */
 
   public static class XmlColumn {
     @XmlAttribute
@@ -18,6 +26,10 @@ public class XmlView {
     @XmlAttribute
     public String locale;
   }
+
+  /**
+   * Handles data ordering information storage in XML structure.
+   */
 
   public static class XmlOrder {
     @XmlAttribute

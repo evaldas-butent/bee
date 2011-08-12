@@ -2,6 +2,10 @@ package com.butent.bee.shared.ui;
 
 import com.butent.bee.shared.utils.BeeUtils;
 
+/**
+ * Contains a list of possible cell types.
+ */
+
 public enum CellType {
   HTML("html"), INPUT("input"), DIV("div");
 
