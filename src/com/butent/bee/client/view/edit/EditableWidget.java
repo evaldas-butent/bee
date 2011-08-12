@@ -27,6 +27,10 @@ import com.butent.bee.shared.utils.TimeUtils;
 
 import java.util.List;
 
+/**
+ * Enables user interface components to handle data values.
+ */
+
 public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String> {
 
   private final int dataIndex;
