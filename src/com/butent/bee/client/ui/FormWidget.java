@@ -11,7 +11,7 @@ import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.ui.CellPanel;
 import com.google.gwt.user.client.ui.CustomButton;
 import com.google.gwt.user.client.ui.CustomButton.Face;
-import com.google.gwt.user.client.ui.FocusWidget;
+import com.google.gwt.user.client.ui.Focusable;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment.HorizontalAlignmentConstant;
 import com.google.gwt.user.client.ui.HasOneWidget;
@@ -115,9 +115,9 @@ import java.util.Set;
 public enum FormWidget {
   ABSOLUTE_PANEL("AbsolutePanel", EnumSet.of(Type.HAS_LAYERS)),
   AUDIO("Audio", EnumSet.of(Type.DISPLAY)),
-  BUTTON("Button", EnumSet.of(Type.FOCUSABLE, Type.DISPLAY)),
+  BUTTON("Button", EnumSet.of(Type.DISPLAY)),
   CANVAS("Canvas", EnumSet.of(Type.DISPLAY)),
-  CHECK_BOX("CheckBox", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE)),
+  CHECK_BOX("CheckBox", EnumSet.of(Type.EDITABLE)),
   COMPLEX_PANEL("ComplexPanel", EnumSet.of(Type.HAS_LAYERS)),
   CURRENCY_LABEL("CurrencyLabel", EnumSet.of(Type.DISPLAY)),
   DATA_SELECTOR("DataSelector", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE, Type.SELECTOR)),
@@ -132,9 +132,9 @@ public enum FormWidget {
   HEADER_CONTENT_FOOTER("HeaderContentFooter", EnumSet.of(Type.PANEL)),
   HORIZONTAL_PANEL("HorizontalPanel", EnumSet.of(Type.CELL_VECTOR)),
   HTML_LABEL("HtmlLabel", EnumSet.of(Type.DISPLAY)),
-  HYPERLINK("Hyperlink", EnumSet.of(Type.FOCUSABLE, Type.DISPLAY)),
-  IMAGE("Image", EnumSet.of(Type.FOCUSABLE, Type.DISPLAY)),
-  INLINE_HYPERLINK("InlineHyperlink", EnumSet.of(Type.FOCUSABLE, Type.DISPLAY)),
+  HYPERLINK("Hyperlink", EnumSet.of(Type.DISPLAY)),
+  IMAGE("Image", EnumSet.of(Type.DISPLAY)),
+  INLINE_HYPERLINK("InlineHyperlink", EnumSet.of(Type.DISPLAY)),
   INLINE_LABEL("InlineLabel", EnumSet.of(Type.IS_LABEL)),
   INPUT_AREA("InputArea", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE, Type.INPUT)),
   INPUT_CURRENCY("InputCurrency", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE, Type.INPUT)),
@@ -144,35 +144,35 @@ public enum FormWidget {
   INPUT_DOUBLE("InputDouble", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE, Type.INPUT)),
   INPUT_INTEGER("InputInteger", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE, Type.INPUT)),
   INPUT_LONG("InputLong", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE, Type.INPUT)),
-  INPUT_SLIDER("InputSlider", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE, Type.INPUT)),
+  INPUT_SLIDER("InputSlider", EnumSet.of(Type.EDITABLE, Type.INPUT)),
   INPUT_SPINNER("InputSpinner", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE, Type.INPUT)),
   INPUT_TEXT("InputText", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE, Type.INPUT)),
   INTEGER_LABEL("IntegerLabel", EnumSet.of(Type.DISPLAY)),
   LABEL("Label", EnumSet.of(Type.IS_LABEL)),
   LAYOUT_PANEL("LayoutPanel", EnumSet.of(Type.HAS_LAYERS)),
-  LINK("Link", EnumSet.of(Type.FOCUSABLE, Type.DISPLAY)),
-  LIST_BOX("ListBox", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE)),
+  LINK("Link", EnumSet.of(Type.DISPLAY)),
+  LIST_BOX("ListBox", EnumSet.of(Type.EDITABLE)),
   LONG_LABEL("LongLabel", EnumSet.of(Type.DISPLAY)),
   METER("Meter", EnumSet.of(Type.DISPLAY)),
   PROGRESS("Progress", EnumSet.of(Type.DISPLAY)),
-  RADIO("Radio", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE)),
+  RADIO("Radio", EnumSet.of(Type.EDITABLE)),
   RESIZE_PANEL("ResizePanel", EnumSet.of(Type.HAS_ONE_CHILD)),
   SCROLL_PANEL("ScrollPanel", EnumSet.of(Type.HAS_ONE_CHILD)),
   SIMPLE_INLINE_PANEL("SimpleInlinePanel", EnumSet.of(Type.HAS_ONE_CHILD)),
   SIMPLE_PANEL("SimplePanel", EnumSet.of(Type.HAS_ONE_CHILD)),
-  SLIDER_BAR("SliderBar", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE)),
+  SLIDER_BAR("SliderBar", EnumSet.of(Type.EDITABLE)),
   SPAN_PANEL("SpanPanel", EnumSet.of(Type.HAS_CHILDREN)),
   SPLIT_PANEL("SplitPanel", EnumSet.of(Type.PANEL)),
   STACK_PANEL("StackPanel", EnumSet.of(Type.PANEL)),
-  STRING_PICKER("StringPicker", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE)),
+  STRING_PICKER("StringPicker", EnumSet.of(Type.EDITABLE)),
   SVG("Svg", EnumSet.of(Type.DISPLAY)),
   TABBED_PAGES("TabbedPages", EnumSet.of(Type.PANEL)),
   TEXT_LABEL("TextLabel", EnumSet.of(Type.DISPLAY)),
-  TOGGLE("Toggle", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE)),
-  VALUE_SPINNER("ValueSpinner", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE)),
+  TOGGLE("Toggle", EnumSet.of(Type.EDITABLE)),
+  VALUE_SPINNER("ValueSpinner", EnumSet.of(Type.EDITABLE)),
   VERTICAL_PANEL("VerticalPanel", EnumSet.of(Type.CELL_VECTOR)),
   VIDEO("Video", EnumSet.of(Type.DISPLAY)),
-  VOLUME_SLIDER("VolumeSlider", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE));
+  VOLUME_SLIDER("VolumeSlider", EnumSet.of(Type.EDITABLE));
 
   /**
    * Contains a list of possible form element parameters like editable or focusable.
@@ -955,6 +955,10 @@ public enum FormWidget {
     return hasType(Type.EDITABLE);
   }
 
+  public boolean isFocusable() {
+    return hasType(Type.FOCUSABLE);
+  }
+  
   public boolean isGrid() {
     return hasType(Type.IS_GRID);
   }
@@ -1609,8 +1613,8 @@ public enum FormWidget {
         widget.setTitle(value);
 
       } else if (BeeUtils.same(name, ATTR_TAB_INDEX)) {
-        if (widget instanceof FocusWidget) {
-          ((FocusWidget) widget).setTabIndex(BeeUtils.toInt(value));
+        if (widget instanceof Focusable) {
+          ((Focusable) widget).setTabIndex(BeeUtils.toInt(value));
         }
 
       } else if (BeeUtils.same(name, ATTR_HORIZONTAL_ALIGNMENT)) {

@@ -68,7 +68,7 @@ public class FormPresenter implements Presenter, ReadyForInsertEvent.Handler,
       Queries.deleteRow(getViewName(), rowId, version, new Queries.IntCallback() {
         public void onFailure(String[] reason) {
           setLoadingState(LoadingStateChangeEvent.LoadingState.LOADED);
-          showFailure("Delete Row", reason);
+          showFailure("Delete Record", reason);
         }
 
         public void onSuccess(Integer result) {
@@ -304,7 +304,7 @@ public class FormPresenter implements Presenter, ReadyForInsertEvent.Handler,
   }
 
   private void deleteRow(long rowId, long version) {
-    Global.getMsgBoxen().confirm("Delete Row ?", new DeleteCallback(rowId, version),
+    Global.getMsgBoxen().confirm("Delete Record ?", new DeleteCallback(rowId, version),
         StyleUtils.NAME_SCARY);
   }
 

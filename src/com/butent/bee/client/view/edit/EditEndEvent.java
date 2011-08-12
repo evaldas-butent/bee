@@ -36,9 +36,11 @@ public class EditEndEvent extends GwtEvent<EditEndEvent.Handler> {
   
   private final Integer keyCode;
   private final boolean hasModifiers;
+  
+  private final String widgetId;
 
   public EditEndEvent(IsRow rowValue, IsColumn column, String oldValue, String newValue,
-      boolean rowMode, Integer keyCode, boolean hasModifiers) {
+      boolean rowMode, Integer keyCode, boolean hasModifiers, String widgetId) {
     this.rowValue = rowValue;
     this.column = column;
     this.oldValue = oldValue;
@@ -47,6 +49,7 @@ public class EditEndEvent extends GwtEvent<EditEndEvent.Handler> {
     
     this.keyCode = keyCode;
     this.hasModifiers = hasModifiers;
+    this.widgetId = widgetId;
   }
 
   @Override
@@ -72,6 +75,10 @@ public class EditEndEvent extends GwtEvent<EditEndEvent.Handler> {
 
   public IsRow getRowValue() {
     return rowValue;
+  }
+
+  public String getWidgetId() {
+    return widgetId;
   }
 
   public boolean hasModifiers() {

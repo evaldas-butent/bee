@@ -2,12 +2,15 @@ package com.butent.bee.client.view;
 
 import com.google.gwt.user.client.ui.Widget;
 
+import com.butent.bee.client.Global;
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.dom.StyleUtils.ScrollBars;
-import com.butent.bee.client.layout.Direction;
+import com.butent.bee.client.layout.Absolute;
 import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.ui.FormDescription;
+import com.butent.bee.client.utils.BeeCommand;
 import com.butent.bee.client.utils.Evaluator;
 import com.butent.bee.client.view.add.AddEndEvent;
 import com.butent.bee.client.view.add.AddStartEvent;
@@ -15,6 +18,7 @@ import com.butent.bee.client.view.form.FormImpl;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.navigation.PagerView;
 import com.butent.bee.client.view.search.SearchView;
+import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeColumn;
@@ -36,11 +40,13 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
 
   private Presenter viewPresenter = null;
 
-  private Direction footerDirection = null;
-  private Direction headerDirection = null;
+  private String headerId = null;
+  private String footerId = null;
+  private String commandId = null;
 
   private int headerHeight = 22;
   private int footerHeight = 32;
+  private int commandHeight = 36;
 
   private boolean hasSearch = false;
 
@@ -108,13 +114,42 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
     }
 
     addNorth(header.asWidget(), getHeaderHeight());
-    setHeaderDirection(Direction.NORTH);
+    setHeaderId(header.getWidgetId());
 
     if (footer != null) {
       addSouth(footer.asWidget(), getFooterHeight());
-      setFooterDirection(Direction.SOUTH);
+      setFooterId(footer.getWidgetId());
     }
+    
+    if (hasData()) {
+      BeeImage confirm = new BeeImage(Global.getImages().ok(), new BeeCommand() {
+        @Override
+        public void execute() {
+          getContent().prepareForInsert();
+        }
+      });
 
+      BeeImage cancel = new BeeImage(Global.getImages().cancel(), new BeeCommand() {
+        @Override
+        public void execute() {
+          getContent().finishNewRow(null);
+        }
+      });
+    
+      Absolute panel = new Absolute();
+      panel.add(confirm);
+      panel.add(cancel);
+    
+      StyleUtils.setLeft(confirm, 10);
+      StyleUtils.setRight(cancel, 10);
+      StyleUtils.makeAbsolute(confirm);
+      StyleUtils.makeAbsolute(cancel);
+    
+      addSouth(panel, 0);
+      setCommandId(panel.getId());
+      panel.setVisible(false);
+    }
+    
     add(content.asWidget(), ScrollBars.BOTH);
 
     if (hasData()) {
@@ -125,6 +160,22 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
     }
   }
 
+  public int getCommandHeight() {
+    return commandHeight;
+  }
+  
+  public Widget getCommandPanel() {
+    if (BeeUtils.isEmpty(getCommandId())) {
+      return null;
+    }
+    for (Widget widget : getChildren()) {
+      if (BeeUtils.same(DomUtils.getId(widget), getCommandId())) {
+        return widget;
+      }
+    }
+    return null;
+  }
+
   public FormView getContent() {
     if (getCenter() == null) {
       return null;
@@ -133,10 +184,10 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
   }
 
   public DataFooterView getFooter() {
-    if (getFooterDirection() == null) {
+    if (BeeUtils.isEmpty(getFooterId())) {
       return null;
     }
-    for (Widget widget : getDirectionChildren(getFooterDirection())) {
+    for (Widget widget : getChildren()) {
       if (widget instanceof DataFooterView) {
         return (DataFooterView) widget;
       }
@@ -149,10 +200,10 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
   }
 
   public DataHeaderView getHeader() {
-    if (getHeaderDirection() == null) {
+    if (BeeUtils.isEmpty(getHeaderId())) {
       return null;
     }
-    for (Widget widget : getDirectionChildren(getHeaderDirection())) {
+    for (Widget widget : getChildren()) {
       if (widget instanceof DataHeaderView) {
         return (DataHeaderView) widget;
       }
@@ -194,17 +245,17 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
   }
 
   public boolean hasFooter() {
-    return getFooterDirection() != null;
+    return !BeeUtils.isEmpty(getFooterId());
   }
 
   public boolean hasHeader() {
-    return getHeaderDirection() != null;
+    return !BeeUtils.isEmpty(getHeaderId());
   }
 
   public boolean isEnabled() {
     return enabled;
   }
-
+  
   public void onActiveRowChange(ActiveRowChangeEvent event) {
     if (event == null || event.getRowValue() == null || getRowMessage() == null) {
       return;
@@ -220,24 +271,34 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
   public void onAddEnd(AddEndEvent event) {
     if (hasHeader()) {
       getHeader().setCaption(getCurrentCaption());
+      getHeader().setEnabled(true);
     }
     if (hasFooter()) {
-      setDirectionSize(getFooterDirection(), getFooterHeight());
+      setWidgetSize(getFooter().asWidget(), getFooterHeight());
+      getFooter().asWidget().setVisible(true);
+      getFooter().setEnabled(true);
     }
 
-    setEnabled(true);
+    showNewRowCommands(false);
   }
-
+  
   public void onAddStart(AddStartEvent event) {
-    setEnabled(false);
-
     if (hasHeader()) {
+      getHeader().setEnabled(false);
       setCurrentCaption(getHeader().getCaption());
       getHeader().setCaption(newRowCaption);
     }
     if (hasFooter()) {
-      setDirectionSize(getFooterDirection(), 0);
+      getFooter().setEnabled(false);
+      getFooter().asWidget().setVisible(false);
+      setWidgetSize(getFooter().asWidget(), 0);
     }
+    
+    showNewRowCommands(true);
+  }
+
+  public void setCommandHeight(int commandHeight) {
+    this.commandHeight = commandHeight;
   }
 
   public void setEnabled(boolean enabled) {
@@ -247,7 +308,7 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
     this.enabled = enabled;
     DomUtils.enableChildren(this, enabled);
   }
-
+  
   public void setFooterHeight(int footerHeight) {
     this.footerHeight = footerHeight;
   }
@@ -292,16 +353,20 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
     super.onUnload();
   }
 
+  private String getCommandId() {
+    return commandId;
+  }
+
   private String getCurrentCaption() {
     return currentCaption;
   }
 
-  private Direction getFooterDirection() {
-    return footerDirection;
+  private String getFooterId() {
+    return footerId;
   }
 
-  private Direction getHeaderDirection() {
-    return headerDirection;
+  private String getHeaderId() {
+    return headerId;
   }
 
   private int getInitialRowCount() {
@@ -320,12 +385,16 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
     return hasSearch;
   }
 
+  private void setCommandId(String commandId) {
+    this.commandId = commandId;
+  }
+
   private void setCurrentCaption(String currentCaption) {
     this.currentCaption = currentCaption;
   }
 
-  private void setFooterDirection(Direction footerDirection) {
-    this.footerDirection = footerDirection;
+  private void setFooterId(String footerId) {
+    this.footerId = footerId;
   }
 
   private void setHasData(boolean hasData) {
@@ -336,8 +405,8 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
     this.hasSearch = hasSearch;
   }
 
-  private void setHeaderDirection(Direction headerDirection) {
-    this.headerDirection = headerDirection;
+  private void setHeaderId(String headerId) {
+    this.headerId = headerId;
   }
 
   private void setInitialRowCount(int initialRowCount) {
@@ -346,5 +415,13 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
 
   private void setRowMessage(Evaluator rowMessage) {
     this.rowMessage = rowMessage;
+  }
+  
+  private void showNewRowCommands(boolean show) {
+    Widget widget = getCommandPanel();
+    if (widget != null) {
+      setWidgetSize(widget, show ? getCommandHeight() : 0);
+      widget.setVisible(show);
+    }
   }
 }

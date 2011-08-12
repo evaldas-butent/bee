@@ -995,6 +995,19 @@ public class BeeUtils {
     return Integer.toString(toInt(s) + 1);
   }
 
+  public static int indexOf(List<String> lst, String s) {
+    if (isEmpty(lst)) {
+      return BeeConst.UNDEF;
+    }
+    
+    for (int i = 0; i < lst.size(); i++) {
+      if (same(lst.get(i), s)) {
+        return i;
+      }
+    }
+    return BeeConst.UNDEF;
+  }
+  
   public static boolean inList(int x, int... lst) {
     Assert.notNull(lst);
     boolean ok = false;

@@ -1,8 +1,11 @@
 package com.butent.bee.client.view.form;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.cellview.client.LoadingStateChangeEvent;
+import com.google.gwt.user.client.ui.Focusable;
 import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.view.client.CellPreviewEvent;
@@ -53,6 +56,7 @@ import com.butent.bee.shared.ui.Calculation;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
@@ -192,6 +196,40 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     }
   }
 
+  private class TabEntry implements Comparable<TabEntry> {
+    private final int tabIndex;
+    private final int order;
+    private final String widgetId;
+
+    private TabEntry(int tabIndex, int order, String widgetId) {
+      this.tabIndex = tabIndex;
+      this.order = order;
+      this.widgetId = widgetId;
+    }
+
+    public int compareTo(TabEntry o) {
+      Assert.notNull(o);
+
+      int res = Integer.valueOf(getTabIndex()).compareTo(o.getTabIndex());
+      if (res == BeeConst.COMPARE_EQUAL) {
+        res = Integer.valueOf(getOrder()).compareTo(o.getOrder());
+      }
+      return res;
+    }
+
+    private int getOrder() {
+      return order;
+    }
+
+    private int getTabIndex() {
+      return tabIndex;
+    }
+
+    private String getWidgetId() {
+      return widgetId;
+    }
+  }
+
   private Presenter viewPresenter = null;
 
   private Widget rootWidget = null;
@@ -206,19 +244,23 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
   private List<BeeColumn> dataColumns = null;
 
   private boolean editing = false;
+  private boolean adding = false;
 
   private int pageStart = 0;
   private int rowCount = BeeConst.UNDEF;
 
   private IsRow rowData = null;
+  private IsRow rowBuffer = null;
 
   private boolean readOnly = false;
 
   private final CreationCallback creationCallback = new CreationCallback();
 
   private final Set<DisplayWidget> displayWidgets = Sets.newHashSet();
-  private final Set<EditableWidget> editableWidgets = Sets.newHashSet();
+  private final List<EditableWidget> editableWidgets = Lists.newArrayList();
   private final Set<WidgetDescription> gridWidgets = Sets.newHashSet();
+
+  private final List<TabEntry> tabOrder = Lists.newArrayList();
 
   public FormImpl() {
     super();
@@ -301,11 +343,23 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
 
   public void finishNewRow(IsRow row) {
     fireEvent(new AddEndEvent());
-    setEditing(false);
 
     if (row != null) {
       setRowData(row);
+    } else {
+      setRowData(getRowBuffer());
     }
+
+    refreshData(true);
+    showGrids(true);
+    
+    if (row != null) {
+      int rc = getRowCount();
+      setPageStart(rc);
+      setRowCount(rc + 1);
+    }
+    
+    setAdding(false);
   }
 
   public void fireLoadingStateChange(LoadingStateChangeEvent.LoadingState loadingState) {
@@ -374,7 +428,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
   }
 
   public boolean isRowEditable(boolean warn) {
-    if (getRowData() == null || isReadOnly()) {
+    if (getRowData() == null || isReadOnly() || !isEnabled()) {
       return false;
     }
     return isRowEditable(getRowData(), warn);
@@ -408,10 +462,9 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
         continue;
       }
 
-      Widget widget = getWidget(editableWidget.getWidgetId());
-      if (widget instanceof Editor
-          && !BeeUtils.equalsTrimRight(value, ((Editor) widget).getNormalizedValue())) {
-        ((Editor) widget).setValue(BeeUtils.trimRight(value));
+      Editor editor = editableWidget.getEditor();
+      if (editor != null && !BeeUtils.equalsTrimRight(value, editor.getNormalizedValue())) {
+        editableWidget.setValue(rowValue);
       }
     }
 
@@ -422,14 +475,14 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
         if (editableWidget.isReadOnly()) {
           continue;
         }
-        Widget widget = getWidget(editableWidget.getWidgetId());
-        if (!(widget instanceof Editor)) {
+        Editor editor = editableWidget.getEditor();
+        if (editor == null) {
           continue;
         }
 
         boolean editable = rowEnabled && editableWidget.isEditable(rowValue);
-        if (editable != ((Editor) widget).isEnabled()) {
-          ((Editor) widget).setEnabled(editable);
+        if (editable != editor.isEnabled()) {
+          editor.setEnabled(editable);
         }
       }
 
@@ -457,7 +510,31 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     String newValue = event.getNewValue();
 
     if (!BeeUtils.equalsTrimRight(oldValue, newValue)) {
-      fireEvent(new ReadyForUpdateEvent(rowValue, column, oldValue, newValue, event.isRowMode()));
+      if (isAdding()) {
+        rowValue.setValue(index, newValue);
+      } else {
+        fireEvent(new ReadyForUpdateEvent(rowValue, column, oldValue, newValue, event.isRowMode()));
+      }
+    }
+
+    Integer keyCode = event.getKeyCode();
+    String widgetId = event.getWidgetId();
+
+    if (keyCode != null && !BeeUtils.isEmpty(widgetId) && getTabOrder().size() > 1) {
+      switch (BeeUtils.unbox(keyCode)) {
+        case KeyCodes.KEY_ENTER:
+        case KeyCodes.KEY_DOWN:
+          navigate(widgetId, true);
+          break;
+
+        case KeyCodes.KEY_TAB:
+          navigate(widgetId, !event.hasModifiers());
+          break;
+
+        case KeyCodes.KEY_UP:
+          navigate(widgetId, false);
+          break;
+      }
     }
   }
 
@@ -475,7 +552,31 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     Assert.notNull(newRow);
 
     setRowData(newRow);
-    refreshData();
+    refreshData(false);
+  }
+
+  public void prepareForInsert() {
+    if (!checkNewRow(getRowData())) {
+      return;
+    }
+
+    List<BeeColumn> columns = Lists.newArrayList();
+    List<String> values = Lists.newArrayList();
+
+    for (int i = 0; i < getDataColumns().size(); i++) {
+      String value = getRowData().getString(i);
+      if (BeeUtils.isEmpty(value)) {
+        continue;
+      }
+      
+      if (!isForeign(getDataColumns().get(i).getId())) {
+        columns.add(getDataColumns().get(i));
+        values.add(value);
+      }
+    }
+
+    Assert.notEmpty(columns);
+    fireEvent(new ReadyForInsertEvent(columns, values));
   }
 
   public void refreshCellContent(String columnSource) {
@@ -489,9 +590,9 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     this.enabled = enabled;
 
     for (EditableWidget editableWidget : getEditableWidgets()) {
-      Widget widget = getWidget(editableWidget.getWidgetId());
-      if (widget instanceof Editor && ((Editor) widget).isEnabled() != enabled) {
-        ((Editor) widget).setEnabled(enabled);
+      Editor editor = editableWidget.getEditor();
+      if (editor != null && editor.isEnabled() != enabled) {
+        editor.setEnabled(enabled);
       }
     }
 
@@ -530,7 +631,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
   public void setRowData(int start, List<? extends IsRow> values) {
     if (!BeeUtils.isEmpty(values)) {
       setRowData(values.get(0));
-      refreshData();
+      refreshData(true);
     }
   }
 
@@ -557,6 +658,18 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     if (hasData()) {
       for (EditableWidget editableWidget : getEditableWidgets()) {
         editableWidget.bind(this, this);
+
+        if (editableWidget.isFocusable() && editableWidget.getEditor() != null) {
+          int tabIndex = editableWidget.getEditor().getTabIndex();
+          if (tabIndex >= 0) {
+            getTabOrder().add(new TabEntry(tabIndex, getTabOrder().size(),
+                editableWidget.getWidgetId()));
+          }
+        }
+      }
+
+      if (getTabOrder().size() > 1) {
+        Collections.sort(getTabOrder());
       }
 
       setRowCount(count);
@@ -567,22 +680,19 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
   }
 
   public void startNewRow() {
-    setEditing(true);
+    setAdding(true);
     fireEvent(new AddStartEvent());
 
-    IsRow oldRow = null;
+    IsRow oldRow = getRowData();
+    setRowBuffer(oldRow);
+    if (oldRow == null) {
+      oldRow = createEmptyRow();
+    }
     IsRow newRow = createEmptyRow();
 
     for (EditableWidget editableWidget : getEditableWidgets()) {
       if (!editableWidget.hasCarry()) {
         continue;
-      }
-      if (oldRow == null) {
-        if (getRowData() != null) {
-          oldRow = getRowData();
-        } else {
-          oldRow = createEmptyRow();
-        }
       }
 
       String carry = editableWidget.getCarryValue(oldRow);
@@ -592,15 +702,99 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     }
 
     setRowData(newRow);
-    refreshData();
+    refreshData(true);
+    showGrids(false);
   }
 
   public void updateActiveRow(List<? extends IsRow> values) {
+  }
+  
+  private boolean checkNewRow(IsRow row) {
+    boolean ok = true;
+    int count = 0;
+
+    if (getEditableWidgets().isEmpty()) {
+      notifySevere("New Row", "columns not available");
+      ok = false;
+    }
+
+    if (ok) {
+      List<String> captions = Lists.newArrayList();
+      for (EditableWidget editableWidget : getEditableWidgets()) {
+        String value = row.getString(editableWidget.getIndexForUpdate());
+        if (BeeUtils.isEmpty(value)) {
+          if (!editableWidget.isNullable()) {
+            captions.add(editableWidget.getCaption());
+            ok = false;
+          }
+        } else {
+          count++;
+        }
+      }
+      if (!ok) {
+        notifySevere(BeeUtils.transformCollection(captions), "Value required");
+      }
+    }
+
+    if (ok && count <= 0) {
+      notifySevere("New Row", "all columns cannot be empty");
+      ok = false;
+    }
+    return ok;
   }
 
   private IsRow createEmptyRow() {
     String[] arr = new String[getDataColumns().size()];
     return new BeeRow(0, arr);
+  }
+
+  private void focus(int index, boolean forward, boolean cycle) {
+    if (!BeeUtils.isIndex(getTabOrder(), index)) {
+      return;
+    }
+    if (!isRowEditable(false)) {
+      return;
+    }
+
+    Widget widget = getWidget(getTabOrder().get(index).getWidgetId());
+    boolean ok = widget instanceof Focusable;
+    if (ok && widget instanceof HasEnabled) {
+      ok = ((HasEnabled) widget).isEnabled();
+    }
+    if (ok) {
+      ((Focusable) widget).setFocus(true);
+      return;
+    }
+    
+    int size = getTabOrder().size();
+    if (size <= 1) {
+      return;
+    }
+    
+    int i;
+    boolean md;
+    
+    if (forward) {
+      if (index < size - 1) {
+        i = index + 1;
+        md = true;
+      } else {
+        i = 0;
+        md = false;
+      }
+    } else {
+      if (index > 0) {
+        i = index - 1;
+        md = true;
+      } else {
+        i = size - 1;
+        md = false;
+      }
+    }
+    
+    if (cycle || md) {
+      focus(i, forward, cycle && md);
+    }
   }
 
   private CreationCallback getCreationCallback() {
@@ -630,7 +824,16 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     return displayWidgets;
   }
 
-  private Set<EditableWidget> getEditableWidgets() {
+  private EditableWidget getEditableWidget(String columnId) {
+    for (EditableWidget editableWidget : getEditableWidgets()) {
+      if (BeeUtils.same(columnId, editableWidget.getColumnId())) {
+        return editableWidget;
+      }
+    }
+    return null;
+  }
+
+  private List<EditableWidget> getEditableWidgets() {
     return editableWidgets;
   }
 
@@ -650,12 +853,20 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     return rootWidget;
   }
 
+  private IsRow getRowBuffer() {
+    return rowBuffer;
+  }
+
   private IsRow getRowData() {
     return rowData;
   }
 
   private Evaluator getRowEditable() {
     return rowEditable;
+  }
+
+  private List<TabEntry> getTabOrder() {
+    return tabOrder;
   }
 
   private Widget getWidget(String id) {
@@ -665,7 +876,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
       return null;
     }
   }
-
+  
   private boolean hasData() {
     return hasData;
   }
@@ -674,6 +885,22 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     return !getGridWidgets().isEmpty();
   }
 
+  private boolean isAdding() {
+    return adding;
+  }
+
+  private boolean isForeign(String columnId) {
+    if (BeeUtils.isEmpty(columnId)) {
+      return false;
+    }
+    EditableWidget editableWidget = getEditableWidget(columnId);
+    if (editableWidget == null) {
+      return false;
+    } else {
+      return editableWidget.isForeign();
+    }
+  }
+  
   private boolean isReadOnly() {
     return readOnly;
   }
@@ -694,7 +921,49 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     return ok;
   }
 
-  private void refreshData() {
+  private void navigate(String widgetId, boolean forward) {
+    if (BeeUtils.isEmpty(widgetId)) {
+      return;
+    }
+    int cnt = getTabOrder().size();
+    if (cnt <= 1) {
+      return;
+    }
+    
+    int idx = BeeConst.UNDEF;
+    for (int i = 0; i < cnt; i++) {
+      if (BeeUtils.same(getTabOrder().get(i).getWidgetId(), widgetId)) {
+        idx = i;
+        break;
+      }
+    }
+    if (BeeConst.isUndef(idx)) {
+      return;
+    }
+    
+    boolean cycle;
+    if (forward) {
+      if (idx < cnt - 1) {
+        idx++;
+        cycle = true;
+      } else {
+        idx = 0;
+        cycle = false;
+      }
+    } else {
+      if (idx > 0) {
+        idx--;
+        cycle = true;
+      } else {
+        idx = cnt - 1;
+        cycle = false;
+      }
+    }
+
+    focus(idx, forward, cycle);
+  }
+
+  private void refreshData(boolean focus) {
     fireLoadingStateChange(LoadingStateChangeEvent.LoadingState.PARTIALLY_LOADED);
 
     refreshEditableWidgets();
@@ -702,6 +971,10 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     refreshGridWidgets(getRowData().getId());
 
     fireLoadingStateChange(LoadingStateChangeEvent.LoadingState.LOADED);
+    
+    if (focus) {
+      focus(0, true, false);
+    }
   }
 
   private void refreshDisplayWidgets() {
@@ -712,30 +985,26 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
   }
 
   private void refreshEditableWidgets() {
-    boolean rowEnabled = isRowEditable(getRowData(), false);
+    boolean rowEnabled = isRowEditable(false);
 
     for (EditableWidget editableWidget : getEditableWidgets()) {
-      Widget widget = getWidget(editableWidget.getWidgetId());
-      if (!(widget instanceof Editor)) {
+      Editor editor = editableWidget.getEditor();
+      if (editor == null) {
         continue;
       }
-      Editor editor = (Editor) widget;
 
-      String value;
       boolean editable;
 
       if (getRowData() == null) {
-        value = BeeConst.STRING_EMPTY;
         editable = false;
       } else {
-        value = BeeUtils.trimRight(getRowData().getString(editableWidget.getDataIndex()));
-        editable = !isReadOnly() && isEnabled() && !editableWidget.isReadOnly() && rowEnabled;
+        editable = rowEnabled && !editableWidget.isReadOnly();
         if (editable) {
           editable = editableWidget.isEditable(getRowData());
         }
       }
 
-      editor.setValue(value);
+      editableWidget.setValue(getRowData());
       if (editable != editor.isEnabled()) {
         editor.setEnabled(editable);
       }
@@ -756,6 +1025,10 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     }
   }
 
+  private void setAdding(boolean adding) {
+    this.adding = adding;
+  }
+
   private void setDataColumns(List<BeeColumn> dataColumns) {
     this.dataColumns = dataColumns;
   }
@@ -767,9 +1040,13 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
   private void setReadOnly(boolean readOnly) {
     this.readOnly = readOnly;
   }
-
+  
   private void setRootWidget(Widget rootWidget) {
     this.rootWidget = rootWidget;
+  }
+
+  private void setRowBuffer(IsRow rowBuffer) {
+    this.rowBuffer = rowBuffer;
   }
 
   private void setRowData(IsRow rowData) {
@@ -791,7 +1068,13 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
       RangeChangeEvent.fire(this, getVisibleRange());
     }
   }
-
+  
+  private void showGrids(boolean show) {
+    for (WidgetDescription widgetDescription : getGridWidgets()) {
+      getWidget(widgetDescription.getWidgetId()).setVisible(show);
+    }
+  }
+  
   private void showNote(Level level, String... messages) {
     StyleUtils.setZIndex(getNotification(), StyleUtils.getZIndex(getRootWidget()) + 1);
     getNotification().show(level, messages);

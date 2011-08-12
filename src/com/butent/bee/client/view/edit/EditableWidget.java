@@ -1,11 +1,17 @@
 package com.butent.bee.client.view.edit;
 
+import com.google.gwt.dom.client.NativeEvent;
+import com.google.gwt.event.dom.client.KeyCodes;
+import com.google.gwt.event.dom.client.KeyDownEvent;
+import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.ui.WidgetDescription;
 import com.butent.bee.client.utils.Evaluator;
 import com.butent.bee.shared.Assert;
@@ -21,11 +27,7 @@ import com.butent.bee.shared.utils.TimeUtils;
 
 import java.util.List;
 
-/**
- * Enables user interface components to handle data values.
- */
-
-public class EditableWidget implements ValueChangeHandler<String> {
+public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String> {
 
   private final int dataIndex;
   private final BeeColumn dataColumn;
@@ -44,6 +46,9 @@ public class EditableWidget implements ValueChangeHandler<String> {
 
   private EditEndEvent.Handler editEndHandler = null;
   private boolean initialized = false;
+  
+  private Editor editor = null;
+  private IsRow rowValue = null;
 
   public EditableWidget(List<BeeColumn> dataColumns, int dataIndex, RelationInfo relationInfo,
       WidgetDescription widgetDescription) {
@@ -74,7 +79,15 @@ public class EditableWidget implements ValueChangeHandler<String> {
 
     Widget widget = DomUtils.getWidgetQuietly(rootWidget, getWidgetId());
     if (widget instanceof Editor) {
-      ((Editor) widget).addValueChangeHandler(this);
+      setEditor((Editor) widget);
+      getEditor().setNullable(isNullable());
+      
+      if (isFocusable()) {
+        getEditor().addKeyDownHandler(this);
+      } else {
+        getEditor().addValueChangeHandler(this);
+      }
+
       setEditEndHandler(handler);
       setInitialized(true);
     } else {
@@ -144,7 +157,7 @@ public class EditableWidget implements ValueChangeHandler<String> {
   }
 
   public BeeColumn getColumnForUpdate() {
-    return (getRelationInfo() == null) ? getDataColumn() : getRelationInfo().getDataColumn();
+    return isForeign() ? getRelationInfo().getDataColumn() : getDataColumn();
   }
 
   public String getColumnId() {
@@ -163,23 +176,26 @@ public class EditableWidget implements ValueChangeHandler<String> {
     return getDataColumn().getType();
   }
 
-  public String getOldValueForUpdate(IsRow row) {
-    int index = (getRelationInfo() == null) ? getDataIndex() : getRelationInfo().getDataIndex();
-    return row.getString(index);
+  public Editor getEditor() {
+    return editor;
   }
 
+  public int getIndexForUpdate() {
+    return isForeign() ? getRelationInfo().getDataIndex() : getDataIndex();
+  }
+  
   public RelationInfo getRelationInfo() {
     return relationInfo;
   }
 
   public boolean getRowModeForUpdate() {
-    return getRelationInfo() != null;
+    return isForeign();
   }
 
   public String getWidgetId() {
     return getWidgetDescription().getWidgetId();
   }
-
+  
   public boolean hasCarry() {
     return getCarry() != null;
   }
@@ -188,7 +204,7 @@ public class EditableWidget implements ValueChangeHandler<String> {
   public int hashCode() {
     return getWidgetDescription().hashCode();
   }
-
+  
   public boolean isEditable(IsRow row) {
     if (row == null) {
       return false;
@@ -202,8 +218,19 @@ public class EditableWidget implements ValueChangeHandler<String> {
     return BeeUtils.toBoolean(getEditable().evaluate());
   }
 
+  public boolean isFocusable() {
+    if (getWidgetDescription().getWidgetType() != null) {
+      return getWidgetDescription().getWidgetType().isFocusable();
+    }
+    return false;
+  }
+
+  public boolean isForeign() {
+    return getRelationInfo() != null;
+  }
+  
   public boolean isNullable() {
-    if (getRelationInfo() != null) {
+    if (isForeign()) {
       return getRelationInfo().isNullable();
     } else if (getDataColumn() != null) {
       return getDataColumn().isNullable();
@@ -216,9 +243,62 @@ public class EditableWidget implements ValueChangeHandler<String> {
     return readOnly;
   }
 
+  public void onKeyDown(KeyDownEvent event) {
+    int keyCode = event.getNativeKeyCode();
+    if (getEditor() == null || getEditor().handlesKey(keyCode)) {
+      return;
+    }
+
+    NativeEvent nativeEvent = event.getNativeEvent();
+
+    switch (keyCode) {
+      case KeyCodes.KEY_ESCAPE:
+        EventUtils.eatEvent(nativeEvent);
+        setValue(getRowValue());
+        break;
+
+      case KeyCodes.KEY_ENTER:
+      case KeyCodes.KEY_TAB:
+      case KeyCodes.KEY_UP:
+      case KeyCodes.KEY_DOWN:
+        EventUtils.eatEvent(nativeEvent);
+        getEditEndHandler().onEditEnd(new EditEndEvent(null, getColumnForUpdate(), null,
+            getEditor().getNormalizedValue(), getRowModeForUpdate(), nativeEvent.getKeyCode(),
+            EventUtils.hasModifierKey(nativeEvent), getWidgetId()));
+        break;
+    }
+  }
+
   public void onValueChange(ValueChangeEvent<String> event) {
     getEditEndHandler().onEditEnd(new EditEndEvent(null, getColumnForUpdate(), null,
-        event.getValue(), getRowModeForUpdate(), 0, false));
+        event.getValue(), getRowModeForUpdate(), null, false, getWidgetId()));
+  }
+
+  public void setValue(IsRow row) {
+    setRowValue(row);
+
+    if (getEditor() != null) {
+      String value;
+      if (row == null) {
+        value = BeeConst.STRING_EMPTY;
+      } else {
+        value = BeeUtils.trimRight(row.getString(getDataIndex()));
+      }
+      
+      getEditor().setValue(value);
+      
+      if (isForeign()) {
+        if (row == null) {
+          value = null;
+        } else {
+          value = row.getString(getRelationInfo().getDataIndex());
+        }
+        
+        if (getEditor() instanceof DataSelector) {
+          ((DataSelector) getEditor()).setSelectedValue(value);
+        }
+      }
+    }
   }
 
   private Evaluator getCarry() {
@@ -241,6 +321,10 @@ public class EditableWidget implements ValueChangeHandler<String> {
     return minValue;
   }
 
+  private IsRow getRowValue() {
+    return rowValue;
+  }
+
   private Evaluator getValidation() {
     return validation;
   }
@@ -257,7 +341,15 @@ public class EditableWidget implements ValueChangeHandler<String> {
     this.editEndHandler = editEndHandler;
   }
 
+  private void setEditor(Editor editor) {
+    this.editor = editor;
+  }
+
   private void setInitialized(boolean initialized) {
     this.initialized = initialized;
+  }
+  
+  private void setRowValue(IsRow rowValue) {
+    this.rowValue = rowValue;
   }
 }

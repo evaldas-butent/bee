@@ -483,7 +483,7 @@ body, select {
   color: teal;
 }
 .bee-CellGridEmpty:before {
-  content: "You ain't seen nothing yet"; 
+  content: "No Data"; 
 }
 
 .bee-CellGridEditor {
@@ -646,8 +646,7 @@ body, select {
 
 .bee-DataSelector-embedded {
   width: 200px;
-  height: 22px;
-  outline: 1px solid blue;
+  height: 28px;
 }
 
 .bee-DataSelector-input {
@@ -656,11 +655,18 @@ body, select {
   border-style: none;
 }  
 
+.bee-DataSelector-embedded-input {
+  left: 2px;
+  top: 1px;
+  margin: 0px;
+  font-style: italic;
+}  
+
 .bee-DataSelector-type {
   font-size: medium;
 }  
 
-.bee-DataSelector-limit {
+.bee-DataSelector-limit, .bee-DataSelector-embedded-limit {
   width: 36px;
   background-color: inherit;
   border-style: none;

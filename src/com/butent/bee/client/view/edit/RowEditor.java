@@ -350,8 +350,8 @@ public class RowEditor extends FlexTable implements HasEditState, EditEndEvent.H
     }
 
     BeeImage confirm = new BeeImage(Global.getImages().ok(), new ConfirmCommand());
-    confirm.addStyleName(STYLE_CONFIRM);
     BeeImage cancel = new BeeImage(Global.getImages().cancel(), new CancelCommand());
+    confirm.addStyleName(STYLE_CONFIRM);
     cancel.addStyleName(STYLE_CANCEL);
 
     int r = getSize();

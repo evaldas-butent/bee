@@ -54,25 +54,13 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat {
 
   private boolean editing = false;
 
-  public InputDate(AbstractDate date) {
-    this(date, null);
-  }
-
-  public InputDate(AbstractDate date, DateTimeFormat format) {
-    this(date, date.getType(), format);
-  }
-
   public InputDate(ValueType type) {
     this(type, null);
   }
 
   public InputDate(ValueType type, DateTimeFormat format) {
-    this(null, type, format);
-  }
-
-  private InputDate(AbstractDate date, ValueType type, DateTimeFormat format) {
     Assert.notNull(type, "input date: type not specified");
-    Assert.isTrue(type == ValueType.DATE || type == ValueType.DATETIME,
+    Assert.isTrue(ValueType.isDateOrDateTime(type),
         "input date: invalid type " + type.getTypeCode());
 
     this.box = new InputText();
@@ -102,7 +90,6 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat {
         hideDatePicker();
         getBox().setFocus(true);
         
-        ValueChangeEvent.fire(InputDate.this, getNormalizedValue());
         fireEvent(new EditStopEvent(State.CHANGED));
       }
     });
@@ -116,9 +103,7 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat {
       }
     });
 
-    sinkEvents(Event.ONCLICK + Event.ONKEYPRESS);
-
-    setValue(date);
+    sinkEvents(Event.ONCLICK + Event.ONKEYDOWN + Event.ONKEYPRESS);
   }
 
   public HandlerRegistration addBlurHandler(BlurHandler handler) {
@@ -199,13 +184,15 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat {
       return;
     }
 
-    if (dp && EventUtils.isKeyDown(type)) {
-      hideDatePicker();
-    }
-
-    if (EventUtils.isKeyPress(type) && handleChar(event.getCharCode())) {
-      EventUtils.eatEvent(event);
-      return;
+    if (EventUtils.isKeyDown(type)) {
+      if (dp) {
+        hideDatePicker();
+      }
+    } else if (EventUtils.isKeyPress(type)) {
+      if (handleChar(event.getCharCode())) {
+        EventUtils.eatEvent(event);
+        return;
+      }
     }
 
     super.onBrowserEvent(event);

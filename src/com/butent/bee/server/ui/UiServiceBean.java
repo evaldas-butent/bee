@@ -48,6 +48,8 @@ import org.w3c.dom.NodeList;
 
 import java.io.File;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -196,6 +198,8 @@ public class UiServiceBean {
 
     int shiftLeft = minLeft - 10;
     int shiftTop = minTop - 10;
+    
+    List<Element> layers = Lists.newArrayList();
 
     for (int i = 0; i < nodes.getLength(); i++) {
       Element control = (Element) nodes.item(i);
@@ -347,8 +351,8 @@ public class UiServiceBean {
       if (BeeUtils.isDigit(srcHeight)) {
         layerElement.setAttribute("height", srcHeight);
       }
-
-      rootElement.appendChild(layerElement);
+      
+      layers.add(layerElement);
 
       Element widgetElement = dstDoc.createElement(dstType.trim());
       boolean isColumn = false;
@@ -440,7 +444,34 @@ public class UiServiceBean {
 
       layerElement.appendChild(widgetElement);
     }
+    
+    if (layers.size() > 1) {
+      Collections.sort(layers, new Comparator<Element>() {
+        public int compare(Element o1, Element o2) {
+          if (o1 == null) {
+            return (o2 == null) ? BeeConst.COMPARE_EQUAL : BeeConst.COMPARE_LESS;
+          }
+          if (o2 == null) {
+            return BeeConst.COMPARE_MORE;
+          }
 
+          int t1 = BeeUtils.toInt(o1.getAttribute("top"));
+          int t2 = BeeUtils.toInt(o2.getAttribute("top"));
+          
+          int res = (Math.abs(t1 - t2) < 5) ? BeeConst.COMPARE_EQUAL : BeeUtils.compare(t1, t2);
+          if (res == BeeConst.COMPARE_EQUAL) {
+            res = BeeUtils.compare(BeeUtils.toInt(o1.getAttribute("left")),
+                BeeUtils.toInt(o2.getAttribute("left")));
+          }
+          return res;
+        }
+      });
+    }
+    
+    for (Element layer : layers) {
+      rootElement.appendChild(layer);
+    }
+    
     String result = XmlUtils.toString(dstDoc, true);
     if (BeeUtils.isEmpty(result)) {
       return ResponseObject.error("xml problem");

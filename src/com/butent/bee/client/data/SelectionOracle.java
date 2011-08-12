@@ -156,14 +156,20 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
 
     private final String displayString;
     private final long rowId;
+    private final String relValue;
 
-    public Suggestion(String displayString, long rowId) {
+    public Suggestion(String displayString, long rowId, String relValue) {
       this.displayString = displayString;
       this.rowId = rowId;
+      this.relValue = relValue;
     }
 
     public String getDisplayString() {
       return displayString;
+    }
+
+    public String getRelValue() {
+      return relValue;
     }
 
     public long getRowId() {
@@ -205,6 +211,8 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
   private final RelationInfo relationInfo;
 
   private final List<String> viewColumns = Lists.newArrayList();
+  private final int relIndex;
+  
   private final List<Integer> searchColumns = Lists.newArrayList();
 
   private final Order viewOrder;
@@ -247,6 +255,8 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
         }
       }
     }
+    
+    this.relIndex = BeeUtils.indexOf(getViewColumns(), relColumn);
 
     this.viewOrder = new Order(relColumn, true);
 
@@ -414,6 +424,10 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
 
   private RelationInfo getRelationInfo() {
     return relationInfo;
+  }
+
+  private int getRelIndex() {
+    return relIndex;
   }
 
   private BeeRowSet getRequestData() {
@@ -589,7 +603,8 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
       if (start < end) {
         for (int i = start; i < end; i++) {
           BeeRow row = getRequestData().getRow(i);
-          suggestions.add(new Suggestion(toDisplay(row), row.getId()));
+          suggestions.add(new Suggestion(toDisplay(row), row.getId(),
+              row.getString(getRelIndex())));
         }
         hasMore = end < rowCount;
       }

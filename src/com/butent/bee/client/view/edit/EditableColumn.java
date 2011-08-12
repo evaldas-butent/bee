@@ -463,7 +463,7 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
     StyleUtils.hideDisplay(getEditor().asWidget());
 
     getCloseHandler().onEditEnd(new EditEndEvent(getRowValue(), column, oldValue, newValue,
-        rowMode, keyCode, hasModifiers));
+        rowMode, keyCode, hasModifiers, getEditor().getId()));
   }
 
   private boolean endEdit(Integer keyCode, boolean hasModifiers) {
