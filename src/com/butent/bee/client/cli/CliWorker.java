@@ -23,6 +23,8 @@ import com.google.gwt.i18n.shared.DateTimeFormat.PredefinedFormat;
 import com.google.gwt.layout.client.Layout;
 import com.google.gwt.media.client.Audio;
 import com.google.gwt.media.client.Video;
+import com.google.gwt.storage.client.Storage;
+import com.google.gwt.storage.client.StorageEvent;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
@@ -272,7 +274,7 @@ public class CliWorker {
       return;
     }
 
-    Level[] levels = new Level[] {Level.FINEST, Level.FINER, Level.FINE, Level.CONFIG, Level.INFO,
+    Level[] levels = new Level[]{Level.FINEST, Level.FINER, Level.FINE, Level.CONFIG, Level.INFO,
         Level.WARNING, Level.SEVERE};
     for (Level lvl : levels) {
       BeeKeeper.getLog().log(lvl, lvl.getName().toLowerCase());
@@ -698,7 +700,43 @@ public class CliWorker {
           p.setWidgetVerticalPosition(button, Layout.Alignment.END);
           p.setWidgetLeftWidth(button, 42, Unit.PCT, 16, Unit.PCT);
 
-          BeeKeeper.getScreen().updateActivePanel(p);
+          Storage stor = Storage.getSessionStorageIfSupported();
+
+          if (stor == null) {
+            BeeKeeper.getScreen().updateActivePanel(p);
+          } else {
+            final String tmpKey = BeeUtils.randomString(5, 5, 'a', 'z');
+            stor.setItem(tmpKey, area.getValue());
+
+            Storage.addStorageEventHandler(new StorageEvent.Handler() {
+              @Override
+              public void onStorageChange(StorageEvent event) {
+                BeeKeeper.getLog().info(tmpKey, event.getKey());
+
+                if (BeeUtils.same(event.getKey(), tmpKey)) {
+                  BeeKeeper.getRpc().sendText(Service.REBUILD, "schema " + event.getNewValue(),
+                      new ResponseCallback() {
+                        @Override
+                        public void onResponse(ResponseObject resp) {
+                          Assert.notNull(resp);
+
+                          if (resp.hasResponse(BeeResource.class)) {
+                            InputArea res =
+                                new InputArea(new BeeResource((String) resp.getResponse()));
+                            Global.inform(res.getValue());
+                          } else {
+                            Global.showError("Wrong response received");
+                          }
+                        }
+                      });
+                  Storage.removeStorageEventHandler(this);
+                }
+              }
+            });
+            String url = GWT.getHostPageBaseURL() + "SqlDesigner/index.html?keyword=" + tmpKey;
+            FormFactory.openForm("<BeeForm><ResizePanel><Frame url=\"" + url
+                + "\" /></ResizePanel></BeeForm>");
+          }
         }
       }
     });
@@ -990,7 +1028,7 @@ public class CliWorker {
     FlexTable table = new FlexTable();
     table.setCellSpacing(3);
 
-    String[] types = new String[] {
+    String[] types = new String[]{
         "search", "tel", "url", "email", "datetime", "date", "month", "week", "time",
         "datetime-local", "number", "range", "color"};
     TextBox widget;
@@ -1581,7 +1619,7 @@ public class CliWorker {
       }
     });
   }
-  
+
   public static void showTiles() {
     Widget tiles = BeeKeeper.getScreen().getScreenPanel().getCenter();
     if (!(tiles instanceof TilePanel)) {
@@ -1647,7 +1685,6 @@ public class CliWorker {
       int px = Rulers.getIntPixels(value, u, font, BeeUtils.unbox(containerSize));
       info.add(new Property(u.getType(), BeeUtils.toString(px)));
     }
-
     if (showModal(info.size())) {
       Global.modalGrid("Pixels", info);
     } else {

@@ -5,6 +5,7 @@
   name="Countries"
   idName="CountryID"
   versionName="LastLock"
+  x="320" y="100"
   >
   <BeeFields>
     <BeeField name="Name" type="STRING" precision="100" notNull="true" unique="true" />

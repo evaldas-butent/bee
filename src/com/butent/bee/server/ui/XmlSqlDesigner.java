@@ -133,6 +133,10 @@ public class XmlSqlDesigner {
   private static class DataTable {
     @XmlAttribute
     private String name;
+    @XmlAttribute
+    private int x;
+    @XmlAttribute
+    private int y;
 
     @XmlElement(name = "row")
     private Collection<DataField> fields;
@@ -189,6 +193,8 @@ public class XmlSqlDesigner {
       if (xmlTable != null) {
         table = new DataTable();
         table.name = xmlTable.name;
+        table.x = xmlTable.x;
+        table.y = xmlTable.y;
         table.fields = Lists.newArrayList(
             new DataField(xmlTable.idName, SqlDataType.LONG.name(), true, false,
                 xmlTable.isProtected()));
@@ -250,6 +256,8 @@ public class XmlSqlDesigner {
         xmlTable = new XmlTable();
         xmlTable.name = table.name;
         xmlTable.idName = table.getPrimaryKeyField();
+        xmlTable.x = table.x;
+        xmlTable.y = table.y;
 
         if (!BeeUtils.isEmpty(table.fields)) {
           for (DataField field : table.fields) {

@@ -137,6 +137,10 @@ public class XmlTable {
   public String idName;
   @XmlAttribute
   public String versionName;
+  @XmlAttribute
+  public int x;
+  @XmlAttribute
+  public int y;
 
   @XmlElementWrapper(name = "BeeFields", namespace = DataUtils.DEFAULT_NAMESPACE)
   @XmlElement(name = "BeeField", namespace = DataUtils.DEFAULT_NAMESPACE)
@@ -162,6 +166,8 @@ public class XmlTable {
     if (otherTable != null && BeeUtils.same(name, otherTable.name)) {
       diff = new XmlTable();
       diff.name = otherTable.name;
+      diff.x = otherTable.x;
+      diff.y = otherTable.y;
 
       if (!BeeUtils.isEmpty(otherTable.fields)) {
         for (XmlField field : otherTable.fields) {

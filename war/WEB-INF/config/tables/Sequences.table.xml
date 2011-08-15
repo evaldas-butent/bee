@@ -4,6 +4,7 @@
 
   name="Sequences"
   idName="SequenceID"
+  x="10" y="220"
   >
   <BeeFields>
     <BeeField name="Name" type="STRING" precision="30" notNull="true" unique="true" />

@@ -4,6 +4,7 @@
 
   name="Users"
   idName="UserID"
+  x="10" y="10"
   >
   <BeeFields>
     <BeeField name="Login" type="STRING" precision="30" notNull="true" unique="true" />

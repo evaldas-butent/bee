@@ -616,7 +616,6 @@ public class TestBeeUtilsTransform extends TestCase implements ILogger {
     assertEquals(false, beeUtils.isTrue(null));
     assertEquals(true, beeUtils.isTrue(true));
     assertEquals(false, beeUtils.isTrue(false));
-    assertEquals(false, beeUtils.isTrue(5));
   }
 
   @Test

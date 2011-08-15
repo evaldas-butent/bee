@@ -4,6 +4,7 @@
 
   name="UserRoles"
   idName="UserRoleID"
+  x="160" y="10"
   >
   <BeeFields>
     <BeeField name="User" type="LONG" notNull="true" relation="Users" cascade="true" />

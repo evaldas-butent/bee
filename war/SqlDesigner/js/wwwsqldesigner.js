@@ -2219,7 +2219,7 @@ SQL.Options.prototype.build = function() {
   }
 
   
-  OZ.Event.add(this.dom.btn, "click", this.bind(this.click));
+//*--- VTI  OZ.Event.add(this.dom.btn, "click", this.bind(this.click));
   
   this.dom.container.parentNode.removeChild(this.dom.container);
 }
@@ -2368,6 +2368,41 @@ SQL.Designer.prototype.dbResponse = function(xmlDoc) {
   if (!this.flag) { this.init2(); }
 }
 
+//*--- VTI {
+SQL.Designer.prototype.storagesave = function() {
+  var url = window.location.href;
+  var r = url.match(/keyword=([^&]+)/);
+  if (r) {
+    var keyword = r[1];
+    window.sessionStorage.setItem(keyword, this.toXML());
+    this.options.dom.btn.disabled = true;
+    this.options.dom.btn.value = "SAVED ALREADY";
+    }
+}
+
+SQL.Designer.prototype.storageload = function(keyword) {
+  var name = keyword;
+  if (!name) { return; }
+  var xml = window.sessionStorage.getItem(keyword);
+  if (!xml) { return; }
+  try {
+    if (window.DOMParser) {
+      var parser = new DOMParser();
+      var xmlDoc = parser.parseFromString(xml, "text/xml");
+    } else if (window.ActiveXObject) {
+      var xmlDoc = new ActiveXObject("Microsoft.XMLDOM");
+      xmlDoc.loadXML(xml);
+    } else {
+      throw new Error("No XML parser available.");
+    }
+  } catch(e) { 
+    alert(_("xmlerror")+': '+e.message);
+    return;
+  }
+  this.io.fromXML(xmlDoc);
+}
+//*---}
+
 SQL.Designer.prototype.init2 = function() { /* secondary init, after locale & datatypes were retrieved */
   this.map = new SQL.Map(this);
   this.rubberband = new SQL.Rubberband(this);
@@ -2386,7 +2421,11 @@ SQL.Designer.prototype.init2 = function() { /* secondary init, after locale & da
   var r = url.match(/keyword=([^&]+)/);
   if (r) {
     var keyword = r[1];
-    this.io.serverload(false, keyword);
+    //*--- VTI {
+    this.storageload(keyword);
+    OZ.Event.add(this.options.dom.btn, "click", this.bind(this.storagesave));
+    this.options.dom.btn.value = "SAVE";
+    //*--- }
   }
   document.body.style.visibility = "visible";
 }
