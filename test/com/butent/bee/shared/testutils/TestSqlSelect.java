@@ -4,7 +4,7 @@ import com.butent.bee.server.sql.SqlBuilder;
 import com.butent.bee.server.sql.SqlBuilderFactory;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
-import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.BeeConst.SqlEngine;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -31,7 +31,7 @@ public class TestSqlSelect {
   @Test
   public final void testAddAllFields() {
 
-    SqlBuilderFactory.setDefaultEngine("Generic");
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
     SqlBuilder builder = SqlBuilderFactory.getBuilder();
 
     SqlSelect select = new SqlSelect();
@@ -40,7 +40,7 @@ public class TestSqlSelect {
 
     assertEquals("SELECT Source_table.* FROM from_table",
         select.getSqlString(builder));
-    SqlBuilderFactory.setDefaultEngine(BeeConst.MSSQL);
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.MSSQL);
     builder = SqlBuilderFactory.getBuilder();
     assertEquals("SELECT [Source_table].* FROM [from_table]",
         select.getSqlString(builder));
@@ -88,7 +88,7 @@ public class TestSqlSelect {
   @Test
   public final void testAddAvgExprString() {
 
-    SqlBuilderFactory.setDefaultEngine("Generic");
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
     SqlBuilder builder = SqlBuilderFactory.getBuilder();
 
     SqlSelect select = new SqlSelect();
@@ -101,7 +101,7 @@ public class TestSqlSelect {
   @Test
   public final void testAddAvgStringString() {
 
-    SqlBuilderFactory.setDefaultEngine("Generic");
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
     SqlBuilder builder = SqlBuilderFactory.getBuilder();
 
     SqlSelect select = new SqlSelect();
@@ -114,7 +114,7 @@ public class TestSqlSelect {
   @Test
   public final void testAddAvgStringStringString() {
 
-    SqlBuilderFactory.setDefaultEngine("Generic");
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
     SqlBuilder builder = SqlBuilderFactory.getBuilder();
 
     SqlSelect select = new SqlSelect();
@@ -127,7 +127,7 @@ public class TestSqlSelect {
 
   @Test
   public final void testAddConstant() {
-    SqlBuilderFactory.setDefaultEngine("Generic");
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
     SqlBuilder builder = SqlBuilderFactory.getBuilder();
 
     SqlSelect select = new SqlSelect();
@@ -144,7 +144,7 @@ public class TestSqlSelect {
 
   @Test
   public final void testAddCountExprString() {
-    SqlBuilderFactory.setDefaultEngine("Generic");
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
     SqlBuilder builder = SqlBuilderFactory.getBuilder();
 
     SqlSelect select = new SqlSelect();
@@ -158,7 +158,7 @@ public class TestSqlSelect {
 
   @Test
   public final void testAddCountString() {
-    SqlBuilderFactory.setDefaultEngine("Generic");
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
     SqlBuilder builder = SqlBuilderFactory.getBuilder();
 
     SqlSelect select = new SqlSelect();
@@ -172,7 +172,7 @@ public class TestSqlSelect {
   @Test
   public final void testAddEmptyBoolean() {
     SqlSelect sql;
-    SqlBuilderFactory.setDefaultEngine(BeeConst.UNKNOWN);
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
 
     sql = new SqlSelect();
     sql.addFields("Table1", "field11");
@@ -187,7 +187,7 @@ public class TestSqlSelect {
 
   @Test
   public final void testAddExprStringString() {
-    SqlBuilderFactory.setDefaultEngine("Generic");
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
     SqlBuilder builder = SqlBuilderFactory.getBuilder();
 
     SqlSelect select = new SqlSelect();
@@ -200,7 +200,7 @@ public class TestSqlSelect {
 
   @Test
   public final void testAddMaxExprString() {
-    SqlBuilderFactory.setDefaultEngine("Generic");
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
     SqlBuilder builder = SqlBuilderFactory.getBuilder();
 
     SqlSelect select = new SqlSelect();
@@ -213,7 +213,7 @@ public class TestSqlSelect {
 
   @Test
   public final void testAddMaxStringString() {
-    SqlBuilderFactory.setDefaultEngine("Generic");
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
     SqlBuilder builder = SqlBuilderFactory.getBuilder();
 
     SqlSelect select = new SqlSelect();
@@ -226,7 +226,7 @@ public class TestSqlSelect {
 
   @Test
   public final void testAddMaxStringStringString() {
-    SqlBuilderFactory.setDefaultEngine("Generic");
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
     SqlBuilder builder = SqlBuilderFactory.getBuilder();
 
     SqlSelect select = new SqlSelect();
@@ -240,7 +240,7 @@ public class TestSqlSelect {
 
   @Test
   public final void testAddMinExprString() {
-    SqlBuilderFactory.setDefaultEngine("Generic");
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
     SqlBuilder builder = SqlBuilderFactory.getBuilder();
 
     SqlSelect select = new SqlSelect();
@@ -253,7 +253,7 @@ public class TestSqlSelect {
 
   @Test
   public final void testAddMinStringString() {
-    SqlBuilderFactory.setDefaultEngine("Generic");
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
     SqlBuilder builder = SqlBuilderFactory.getBuilder();
 
     SqlSelect select = new SqlSelect();
@@ -266,7 +266,7 @@ public class TestSqlSelect {
 
   @Test
   public final void testAddMinStringStringString() {
-    SqlBuilderFactory.setDefaultEngine("Generic");
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
     SqlBuilder builder = SqlBuilderFactory.getBuilder();
 
     SqlSelect select = new SqlSelect();
@@ -280,7 +280,7 @@ public class TestSqlSelect {
 
   @Test
   public final void testAddOrder() {
-    SqlBuilderFactory.setDefaultEngine("Generic");
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
     SqlBuilder builder = SqlBuilderFactory.getBuilder();
 
     SqlSelect select = new SqlSelect();
@@ -295,7 +295,7 @@ public class TestSqlSelect {
 
   @Test
   public final void testAddOrderDesc() {
-    SqlBuilderFactory.setDefaultEngine("Generic");
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
     SqlBuilder builder = SqlBuilderFactory.getBuilder();
 
     SqlSelect select = new SqlSelect();
@@ -311,7 +311,7 @@ public class TestSqlSelect {
   @Test
   public final void testAddUnion() {
 
-    SqlBuilderFactory.setDefaultEngine("Generic");
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
     SqlBuilder builder = SqlBuilderFactory.getBuilder();
 
     SqlSelect select = new SqlSelect();
@@ -331,7 +331,7 @@ public class TestSqlSelect {
 
   @Test
   public final void testCopyOf() {
-    SqlBuilderFactory.setDefaultEngine("Generic");
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
     SqlSelect select = new SqlSelect();
 
     select.addFields("Table1", "field1", "field2");
@@ -370,7 +370,7 @@ public class TestSqlSelect {
   @Test
   public final void testGetSources() {
 
-    SqlBuilderFactory.setDefaultEngine("Generic");
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
     SqlSelect select = new SqlSelect();
     select.addField("Table", "name", "vardai");
     select.addFrom("employees_Butent_Kaunas");
@@ -399,7 +399,7 @@ public class TestSqlSelect {
 
   @Test
   public final void testIsEmpty() {
-    SqlBuilderFactory.setDefaultEngine("Generic");
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
     SqlSelect select = new SqlSelect();
     assertTrue(select.isEmpty());
 
@@ -413,7 +413,7 @@ public class TestSqlSelect {
   @Test
   public final void testReset() {
 
-    SqlBuilderFactory.setDefaultEngine("Generic");
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
     SqlSelect select = new SqlSelect();
     select.addField("Table", "name", "vardai");
     select.addFrom("employees_Butent_Kaunas");
@@ -440,7 +440,7 @@ public class TestSqlSelect {
 
   @Test
   public final void testSqlLimitOffset() {
-    SqlBuilderFactory.setDefaultEngine(BeeConst.MYSQL);
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.MYSQL);
     SqlBuilder builder = SqlBuilderFactory.getBuilder();
 
     SqlSelect select = new SqlSelect();
@@ -457,7 +457,7 @@ public class TestSqlSelect {
         "SELECT `table1`.`field1` FROM `table1` LIMIT 10 OFFSET 10",
         select.getSqlString(builder));
 
-    SqlBuilderFactory.setDefaultEngine(BeeConst.PGSQL);
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.POSTGRESQL);
     builder = SqlBuilderFactory.getBuilder();
 
     SqlSelect select2 = new SqlSelect();
@@ -473,7 +473,7 @@ public class TestSqlSelect {
         "SELECT \"table1\".\"field1\" FROM \"table1\" LIMIT 10 OFFSET 10",
         select2.getSqlString(builder));
 
-    SqlBuilderFactory.setDefaultEngine(BeeConst.ORACLE);
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.ORACLE);
     builder = SqlBuilderFactory.getBuilder();
 
     SqlSelect select3 = new SqlSelect();
@@ -521,7 +521,7 @@ public class TestSqlSelect {
 
   @Test
   public final void testSumMinExprString() {
-    SqlBuilderFactory.setDefaultEngine("Generic");
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
     SqlBuilder builder = SqlBuilderFactory.getBuilder();
 
     SqlSelect select = new SqlSelect();
@@ -534,7 +534,7 @@ public class TestSqlSelect {
 
   @Test
   public final void testSumMinStringString() {
-    SqlBuilderFactory.setDefaultEngine("Generic");
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
     SqlBuilder builder = SqlBuilderFactory.getBuilder();
 
     SqlSelect select = new SqlSelect();
@@ -547,7 +547,7 @@ public class TestSqlSelect {
 
   @Test
   public final void testSumMinStringStringString() {
-    SqlBuilderFactory.setDefaultEngine("Generic");
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
     SqlBuilder builder = SqlBuilderFactory.getBuilder();
 
     SqlSelect select = new SqlSelect();

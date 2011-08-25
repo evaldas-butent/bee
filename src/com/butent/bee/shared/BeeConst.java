@@ -1,16 +1,36 @@
 package com.butent.bee.shared;
 
+import com.butent.bee.shared.utils.BeeUtils;
+
 /**
  * Stores all default values (databases, boolean, separators etc.).
  */
 public class BeeConst {
+  public enum SqlEngine {
+    MYSQL("MySQL"), MSSQL("Microsoft SQL Server"), ORACLE("Oracle"), POSTGRESQL("PostgreSQL"),
+    GENERIC(null);
 
-  public static final String MYSQL = "MySql";
-  public static final String MSSQL = "MsSql";
-  public static final String ORACLE = "Oracle";
-  public static final String PGSQL = "PostgreSql";
+    public static SqlEngine detectEngine(String expr) {
+      if (!BeeUtils.isEmpty(expr)) {
+        for (SqlEngine engine : SqlEngine.values()) {
+          if (BeeUtils.same(expr, engine.alias)) {
+            return engine;
+          }
+        }
+      }
+      return null;
+    }
 
-  public static final String[] DS_TYPES = {MYSQL, MSSQL, ORACLE, PGSQL};
+    private String alias;
+
+    SqlEngine(String alias) {
+      if (BeeUtils.isEmpty(alias)) {
+        this.alias = name();
+      } else {
+        this.alias = alias;
+      }
+    }
+  }
 
   public static final String NO = "no";
   public static final String YES = "yes";
@@ -141,46 +161,6 @@ public class BeeConst {
   private static String home = SERVER;
 
   /**
-   * Returns the name of database system by {@code dsn} phrase.
-   * 
-   * @param dsn phrase of database system
-   * @return the name of database system
-   */
-  public static String getDsType(String dsn) {
-    if (dsn == null) {
-      return null;
-    }
-
-    String name = dsn.trim().toLowerCase();
-    if (name.isEmpty()) {
-      return null;
-    }
-    char c = name.charAt(0);
-    String tp;
-
-    if (name.indexOf("my") == 0) {
-      tp = MYSQL;
-    } else if (c == 'm' && !name.contains("my")) {
-      tp = MSSQL;
-    } else if (c == 'o') {
-      tp = ORACLE;
-    } else if (c == 'p') {
-      tp = PGSQL;
-    } else if (name.contains("my")) {
-      tp = MYSQL;
-    } else if (name.contains("ms") || name.contains("micros")) {
-      tp = BeeConst.MSSQL;
-    } else if (name.contains("or")) {
-      tp = BeeConst.ORACLE;
-    } else if (name.contains("pg") || name.contains("postg")) {
-      tp = BeeConst.PGSQL;
-    } else {
-      tp = null;
-    }
-    return tp;
-  }
-
-  /**
    * Returns the state of client.
    * 
    * @return {@code true} if state is client, {@code false} otherwise
@@ -234,7 +214,7 @@ public class BeeConst {
           || s.trim().toLowerCase().equals(NO.toLowerCase());
     }
   }
-  
+
   /**
    * Returns the state of server.
    * 
@@ -265,7 +245,7 @@ public class BeeConst {
           || s.trim().toLowerCase().equals(YES.toLowerCase());
     }
   }
-  
+
   public static boolean isUndef(int x) {
     return x == UNDEF;
   }
@@ -286,28 +266,6 @@ public class BeeConst {
    */
   public static void setServer() {
     home = SERVER;
-  }
-
-  /**
-   * Returns is string the {@code tp} value of database system.
-   * 
-   * @param tp database system name
-   * @return {@code true} if the {@code tp} is of datebase system
-   * @see #getDsType(String)
-   */
-  public static boolean validDsType(String tp) {
-    boolean ok = false;
-    if (tp == null || tp.isEmpty()) {
-      return ok;
-    }
-
-    for (int i = 0; i < DS_TYPES.length; i++) {
-      if (tp.equals(DS_TYPES[i])) {
-        ok = true;
-        break;
-      }
-    }
-    return ok;
   }
 
   /**

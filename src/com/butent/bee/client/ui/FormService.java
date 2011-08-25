@@ -13,7 +13,6 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeType;
 import com.butent.bee.shared.BeeWidget;
 import com.butent.bee.shared.Service;
-import com.butent.bee.shared.Stage;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.ui.UiComponent;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -32,17 +31,6 @@ public class FormService extends CompositeService {
    */
   public enum Stages {
     CHOOSE_FORM, SHOW_FORM
-  }
-
-  public static final String NAME = PREFIX + "form";
-
-  protected FormService(String... serviceId) {
-    super(serviceId);
-  }
-
-  @Override
-  protected CompositeService create(String svcId) {
-    return new FormService(NAME, svcId);
   }
 
   @Override
@@ -73,7 +61,7 @@ public class FormService extends CompositeService {
                   Global.getVar(fld).setItems(lst);
                   Global.getVar(fld).setValue(lst.get(0));
 
-                  Global.inputVars(new Stage(self(), Stages.SHOW_FORM.name()), "Load form", fld);
+                  Global.inputVars(getStage(Stages.SHOW_FORM.name()), "Load form", fld);
                 }
               }
             });
@@ -117,7 +105,7 @@ public class FormService extends CompositeService {
   }
 
   @Override
-  protected String getName() {
-    return NAME;
+  protected CompositeService getInstance() {
+    return new FormService();
   }
 }

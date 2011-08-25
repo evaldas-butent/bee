@@ -32,13 +32,20 @@ public class UserInfo implements Module {
   public void end() {
   }
 
+  public String getDsn() {
+    if (isLoggedIn()) {
+      return userData.getProperty("dsn");
+    }
+    return null;
+  }
+
   public String getLogin() {
     if (isLoggedIn()) {
       return userData.getLogin();
     }
     return null;
   }
-  
+
   public String getName() {
     return getClass().getName();
   }
@@ -66,7 +73,7 @@ public class UserInfo implements Module {
     }
     return null;
   }
-  
+
   public Map<String, String> getViews() {
     if (userData == null) {
       return null;
@@ -79,13 +86,13 @@ public class UserInfo implements Module {
     if (BeeUtils.isEmpty(views)) {
       return null;
     }
-    
+
     Map<String, String> result = Maps.newLinkedHashMap();
     for (String view : BeeUtils.split(views, BeeConst.STRING_COMMA)) {
       if (BeeUtils.isEmpty(view)) {
         continue;
       }
-      
+
       String name = BeeUtils.getPrefix(view, BeeConst.CHAR_COLON);
       if (BeeUtils.isEmpty(name)) {
         result.put(view, view);
@@ -98,9 +105,15 @@ public class UserInfo implements Module {
 
   public void init() {
   }
-  
+
   public boolean isLoggedIn() {
     return userData != null;
+  }
+
+  public void setDsn(String dsn) {
+    if (isLoggedIn()) {
+      userData.setProperty("dsn", dsn);
+    }
   }
 
   public void setSessionId(String sessionId) {

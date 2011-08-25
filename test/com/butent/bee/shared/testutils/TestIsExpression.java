@@ -7,7 +7,7 @@ import com.butent.bee.server.sql.SqlBuilderFactory;
 import com.butent.bee.server.sql.SqlConstants.SqlDataType;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
-import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.BeeConst.SqlEngine;
 import com.butent.bee.shared.DateTime;
 import com.butent.bee.shared.JustDate;
 import com.butent.bee.shared.exceptions.BeeRuntimeException;
@@ -33,7 +33,7 @@ public class TestIsExpression {
 
   @Test
   public final void sqlCaseIsExpressionObjectArr() {
-    SqlBuilderFactory.setDefaultEngine(BeeConst.UNKNOWN);
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
     SqlSelect sql;
 
     sql = new SqlSelect();
@@ -209,7 +209,7 @@ public class TestIsExpression {
 
   @Test
   public final void testBitAndStringStringObjectGeneric() {
-    SqlBuilderFactory.setDefaultEngine(BeeConst.UNKNOWN);
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
     SqlSelect select = new SqlSelect();
     select.addFields("Table1", "field1", "field2", "field3");
     select.addFrom("Table1");
@@ -226,7 +226,7 @@ public class TestIsExpression {
 
   @Test
   public final void testBitAndStringStringObjectOracle() {
-    SqlBuilderFactory.setDefaultEngine(BeeConst.ORACLE);
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.ORACLE);
     SqlSelect select = new SqlSelect();
     select.addFields("Table1", "field1", "field2", "field3");
     select.addFrom("Table1");
@@ -242,7 +242,7 @@ public class TestIsExpression {
 
   @Test
   public final void testCast() {
-    SqlBuilderFactory.setDefaultEngine(BeeConst.UNKNOWN);
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
     SqlSelect s = new SqlSelect();
     s.addFields("Table1", "field1");
     s.addFrom("Table1");
@@ -333,7 +333,7 @@ public class TestIsExpression {
         "SELECT Table1.field1, CAST(Table1.field2 AS VARCHAR(-5)) AS TB1 FROM Table1",
         s.getQuery());
 
-    SqlBuilderFactory.setDefaultEngine(BeeConst.MYSQL);
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.MYSQL);
     s = new SqlSelect();
     s.addFields("Table1", "field1");
     s.addFrom("Table1");
@@ -424,7 +424,7 @@ public class TestIsExpression {
         "SELECT `Table1`.`field1`, CAST(`Table1`.`field2` AS CHAR(-5)) AS `TB1` FROM `Table1`",
         s.getQuery());
 
-    SqlBuilderFactory.setDefaultEngine(BeeConst.MSSQL);
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.MSSQL);
     s = new SqlSelect();
     s.addFields("Table1", "field1");
     s.addFrom("Table1");
@@ -515,7 +515,7 @@ public class TestIsExpression {
         "SELECT [Table1].[field1], CAST([Table1].[field2] AS VARCHAR(-5)) AS [TB1] FROM [Table1]",
         s.getQuery());
 
-    SqlBuilderFactory.setDefaultEngine(BeeConst.ORACLE);
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.ORACLE);
     s = new SqlSelect();
     s.addFields("Table1", "field1");
     s.addFrom("Table1");
@@ -608,7 +608,7 @@ public class TestIsExpression {
 
     /* PODTGRE SQL */
 
-    SqlBuilderFactory.setDefaultEngine(BeeConst.PGSQL);
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.POSTGRESQL);
     s = new SqlSelect();
     s.addFields("Table1", "field1");
     s.addFrom("Table1");
@@ -703,7 +703,7 @@ public class TestIsExpression {
   @Test
   public void testComplexExpressionGeneric() {
 
-    SqlBuilderFactory.setDefaultEngine("unknown");
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
     IsExpression ce = SqlUtils.expression(1, "string", 5.0);
     assertEquals("1string5.0",
         ce.getSqlString(SqlBuilderFactory.getBuilder()));
@@ -742,7 +742,7 @@ public class TestIsExpression {
 
   @Test
   public void testComplexExpressionMSSQL() {
-    SqlBuilderFactory.setDefaultEngine(BeeConst.MSSQL);
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.MSSQL);
     IsExpression ce = SqlUtils.expression(1, "string", 5.0);
     assertEquals("1string5.0",
         ce.getSqlString(SqlBuilderFactory.getBuilder()));
@@ -782,7 +782,7 @@ public class TestIsExpression {
 
   @Test
   public void testComplexExpressionMYSQL() {
-    SqlBuilderFactory.setDefaultEngine(BeeConst.MYSQL);
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.MYSQL);
     IsExpression ce = SqlUtils.expression(1, "string", 5.0);
     assertEquals("1string5.0",
         ce.getSqlString(SqlBuilderFactory.getBuilder()));
@@ -822,7 +822,7 @@ public class TestIsExpression {
 
   @Test
   public void testComplexExpressionOracle() {
-    SqlBuilderFactory.setDefaultEngine(BeeConst.ORACLE);
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.ORACLE);
     IsExpression ce = SqlUtils.expression(1, "string", 5.0);
     assertEquals("1string5.0",
         ce.getSqlString(SqlBuilderFactory.getBuilder()));
@@ -863,7 +863,7 @@ public class TestIsExpression {
 
   @Test
   public void testComplexExpressionPGSql() {
-    SqlBuilderFactory.setDefaultEngine(BeeConst.PGSQL);
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.POSTGRESQL);
     IsExpression ce = SqlUtils.expression(1, "string", 5.0);
     assertEquals("1string5.0",
         ce.getSqlString(SqlBuilderFactory.getBuilder()));
@@ -908,7 +908,7 @@ public class TestIsExpression {
     JustDate jd = new JustDate(1298362388227L);
     DateTime dt = new DateTime(1298362388227L);
 
-    SqlBuilderFactory.setDefaultEngine("unknown");
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
     IsExpression ce = SqlUtils.constant(null);
     assertEquals("null",
         ce.getSqlString(SqlBuilderFactory.getBuilder()));
@@ -944,7 +944,7 @@ public class TestIsExpression {
 
   @Test
   public void testConstantExpressionMsSql() {
-    SqlBuilderFactory.setDefaultEngine(BeeConst.MSSQL);
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.MSSQL);
     IsExpression ce7 = SqlUtils.constant(" 'from' ");
     assertEquals("' ''from'' '",
         ce7.getSqlString(SqlBuilderFactory.getBuilder()));
@@ -952,7 +952,7 @@ public class TestIsExpression {
 
   @Test
   public void testConstantExpressionMySql() {
-    SqlBuilderFactory.setDefaultEngine(BeeConst.MYSQL);
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.MYSQL);
     IsExpression ce7 = SqlUtils.constant(" \\abc ");
     assertEquals("com.butent.bee.server.sql.MySqlBuilder",
         SqlBuilderFactory.getBuilder().getClass().getCanonicalName());
@@ -966,7 +966,7 @@ public class TestIsExpression {
     Date d = new Date(1298362388227L);
     JustDate jd = new JustDate(1298362388227L);
     DateTime dt = new DateTime(1298362388227L);
-    SqlBuilderFactory.setDefaultEngine(BeeConst.ORACLE);
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.ORACLE);
     IsExpression ce7 = SqlUtils.constant(" \from' ");
     assertEquals("' \from'' '",
         ce7.getSqlString(SqlBuilderFactory.getBuilder()));
@@ -974,7 +974,7 @@ public class TestIsExpression {
 
   @Test
   public void testConstantExpressionPostGre() {
-    SqlBuilderFactory.setDefaultEngine(BeeConst.PGSQL);
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.POSTGRESQL);
     IsExpression ce7 = SqlUtils.constant(" \\from\\ ");
     assertEquals("' \\\\from\\\\ '",
         ce7.getSqlString(SqlBuilderFactory.getBuilder()));
@@ -982,7 +982,7 @@ public class TestIsExpression {
 
   @Test
   public final void testFields() {
-    SqlBuilderFactory.setDefaultEngine("Generic");
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
     SqlBuilder builder = SqlBuilderFactory.getBuilder();
 
     IsExpression[] expressions = SqlUtils.fields("Table1", "field1",
@@ -1000,7 +1000,7 @@ public class TestIsExpression {
     IsExpression ie = SqlUtils.name("A longer name");
     assertEquals("A longer name", ie.getValue());
 
-    SqlBuilderFactory.setDefaultEngine("unknown");
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
     assertEquals("A longer name",
         ie.getSqlString(SqlBuilderFactory.getBuilder()));
     IsExpression ie2 = SqlUtils.name("A.longer.name");
@@ -1011,7 +1011,7 @@ public class TestIsExpression {
         ie3.getSqlString(SqlBuilderFactory.getBuilder()));
 
     IsExpression iemysql = SqlUtils.name("A longer name");
-    SqlBuilderFactory.setDefaultEngine(BeeConst.MYSQL);
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.MYSQL);
     assertEquals("`A longer name`",
         iemysql.getSqlString(SqlBuilderFactory.getBuilder()));
 
@@ -1029,7 +1029,7 @@ public class TestIsExpression {
         ie4mysql.getSqlString(SqlBuilderFactory.getBuilder()));
 
     IsExpression iemssql = SqlUtils.name("A longer name");
-    SqlBuilderFactory.setDefaultEngine(BeeConst.MSSQL);
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.MSSQL);
     assertEquals("[A longer name]",
         iemssql.getSqlString(SqlBuilderFactory.getBuilder()));
 
@@ -1047,7 +1047,7 @@ public class TestIsExpression {
         ie4mssql.getSqlString(SqlBuilderFactory.getBuilder()));
 
     IsExpression ieoracle = SqlUtils.name("A longer name");
-    SqlBuilderFactory.setDefaultEngine(BeeConst.ORACLE);
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.ORACLE);
     assertEquals("\"A longer name\"",
         ieoracle.getSqlString(SqlBuilderFactory.getBuilder()));
 
@@ -1065,7 +1065,7 @@ public class TestIsExpression {
         ie4oracle.getSqlString(SqlBuilderFactory.getBuilder()));
 
     IsExpression iepg = SqlUtils.name("A longer name");
-    SqlBuilderFactory.setDefaultEngine(BeeConst.PGSQL);
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.POSTGRESQL);
     assertEquals("\"A longer name\"",
         iepg.getSqlString(SqlBuilderFactory.getBuilder()));
 
@@ -1084,27 +1084,9 @@ public class TestIsExpression {
   }
 
   @Test
-  public final void testSetDefaultEngine() {
-    SqlBuilderFactory.setDefaultEngine("unknown");
-    assertEquals("unknown", SqlBuilderFactory.getEngine());
-
-    SqlBuilderFactory.setDefaultEngine("MySql");
-    assertEquals(BeeConst.MYSQL, SqlBuilderFactory.getEngine());
-
-    SqlBuilderFactory.setDefaultEngine("MsSql");
-    assertEquals(BeeConst.MSSQL, SqlBuilderFactory.getEngine());
-
-    SqlBuilderFactory.setDefaultEngine("Oracle");
-    assertEquals(BeeConst.ORACLE, SqlBuilderFactory.getEngine());
-
-    SqlBuilderFactory.setDefaultEngine("PostgreSql");
-    assertEquals(BeeConst.PGSQL, SqlBuilderFactory.getEngine());
-  }
-
-  @Test
   public final void testSqlIf() {
 
-    SqlBuilderFactory.setDefaultEngine("Generic");
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
     SqlSelect select = new SqlSelect();
     select.addFields("Table1", "field1");
     select.addFrom("Table1");

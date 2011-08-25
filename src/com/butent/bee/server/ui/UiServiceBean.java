@@ -3,7 +3,9 @@ package com.butent.bee.server.ui;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
+import com.butent.bee.client.ui.DsnService;
 import com.butent.bee.server.Config;
+import com.butent.bee.server.DataSourceBean;
 import com.butent.bee.server.data.BeeView;
 import com.butent.bee.server.data.IdGeneratorBean;
 import com.butent.bee.server.data.QueryServiceBean;
@@ -85,6 +87,8 @@ public class UiServiceBean {
   UserServiceBean usr;
   @EJB
   GridHolderBean grd;
+  @EJB
+  DataSourceBean dsb;
   @Resource
   EJBContext ctx;
 
@@ -139,6 +143,11 @@ public class UiServiceBean {
       response = getViewInfo(reqInfo);
     } else if (BeeUtils.same(svc, Service.GET_TABLE_INFO)) {
       response = getTableInfo(reqInfo);
+
+    } else if (BeeUtils.same(svc, DsnService.SVC_GET_DSNS)) {
+      response = getDsns();
+    } else if (BeeUtils.same(svc, DsnService.SVC_SWITCH_DSN)) {
+      response = switchDsn(reqInfo.getParameter(DsnService.VAR_DSN));
 
     } else {
       String msg = BeeUtils.concat(1, "data service not recognized:", svc);
@@ -198,7 +207,7 @@ public class UiServiceBean {
 
     int shiftLeft = minLeft - 10;
     int shiftTop = minTop - 10;
-    
+
     List<Element> layers = Lists.newArrayList();
 
     for (int i = 0; i < nodes.getLength(); i++) {
@@ -314,7 +323,7 @@ public class UiServiceBean {
         dstType = "Radio";
         srcWidth = null;
         srcHeight = null;
-      
+
       } else if (BeeUtils.same(dstType, "ComboBox")) {
         if (text.contains(".")) {
           dstType = "DataSelector";
@@ -351,7 +360,7 @@ public class UiServiceBean {
       if (BeeUtils.isDigit(srcHeight)) {
         layerElement.setAttribute("height", srcHeight);
       }
-      
+
       layers.add(layerElement);
 
       Element widgetElement = dstDoc.createElement(dstType.trim());
@@ -364,7 +373,7 @@ public class UiServiceBean {
 
           widgetElement.setAttribute("source", relSource + relColumn);
           widgetElement.setAttribute("relSource", relSource);
-          
+
           String relView = null;
           if (view.hasColumn(relSource)) {
             relView = sys.getRelation(view.getTable(relSource), view.getField(relSource));
@@ -379,18 +388,18 @@ public class UiServiceBean {
             LogUtils.warning(logger, "import form", formName, "widget", dstType,
                 "source", source, "relSource", relSource, "not a view column");
           }
-          
+
           widgetElement.setAttribute("relColumn", relColumn);
           if (sys.isView(relView) && !sys.getView(relView).hasColumn(relColumn)) {
             LogUtils.warning(logger, "import form", formName, "widget", dstType,
                 "source", source, "relView", relView, "relColumn", relColumn, "not a view column");
           }
-        
+
         } else if (BeeUtils.same(dstType, "Grid") && view != null) {
           String relColumn = view.getSourceIdName();
           widgetElement.setAttribute("relView", source);
           widgetElement.setAttribute("relColumn", relColumn);
-          
+
           if (!sys.isView(source)) {
             LogUtils.warning(logger, "import form", formName, "widget", dstType,
                 "source", source, "not a view");
@@ -413,7 +422,7 @@ public class UiServiceBean {
           }
         }
       }
-      
+
       if (isColumn && BeeUtils.same(dstType, "InputDecimal")) {
         int scale = sys.getScale(view.getTable(source), view.getField(source));
         if (scale > 0) {
@@ -444,7 +453,7 @@ public class UiServiceBean {
 
       layerElement.appendChild(widgetElement);
     }
-    
+
     if (layers.size() > 1) {
       Collections.sort(layers, new Comparator<Element>() {
         public int compare(Element o1, Element o2) {
@@ -457,7 +466,7 @@ public class UiServiceBean {
 
           int t1 = BeeUtils.toInt(o1.getAttribute("top"));
           int t2 = BeeUtils.toInt(o2.getAttribute("top"));
-          
+
           int res = (Math.abs(t1 - t2) < 5) ? BeeConst.COMPARE_EQUAL : BeeUtils.compare(t1, t2);
           if (res == BeeConst.COMPARE_EQUAL) {
             res = BeeUtils.compare(BeeUtils.toInt(o1.getAttribute("left")),
@@ -467,11 +476,11 @@ public class UiServiceBean {
         }
       });
     }
-    
+
     for (Element layer : layers) {
       rootElement.appendChild(layer);
     }
-    
+
     String result = XmlUtils.toString(dstDoc, true);
     if (BeeUtils.isEmpty(result)) {
       return ResponseObject.error("xml problem");
@@ -641,6 +650,10 @@ public class UiServiceBean {
     return response;
   }
 
+  private ResponseObject getDsns() {
+    return ResponseObject.response(dsb.getDsns());
+  }
+
   private ResponseObject getForm(RequestInfo reqInfo) {
     String formName = reqInfo.getContent();
     if (BeeUtils.isEmpty(formName)) {
@@ -674,7 +687,7 @@ public class UiServiceBean {
     if (sys.isView(gridName)) {
       return ResponseObject.response(grd.getDefaultGrid(sys.getView(gridName), true));
     }
-    
+
     return ResponseObject.error("grid", gridName, "not found");
   }
 
@@ -711,7 +724,7 @@ public class UiServiceBean {
     }
     return ResponseObject.response(info);
   }
-  
+
   private ResponseObject getTables() {
     return ResponseObject.response(sys.getTableNames());
   }
@@ -975,6 +988,15 @@ public class UiServiceBean {
       response.setResponse(new BeeResource(null, xmlResponse.toString()));
     }
     return response;
+  }
+
+  private ResponseObject switchDsn(String dsn) {
+    if (!BeeUtils.isEmpty(dsn)) {
+      ig.destroy();
+      sys.initDatabase(dsn);
+      return ResponseObject.response(dsn);
+    }
+    return ResponseObject.error("DSN not specified");
   }
 
   private ResponseObject updateCell(RequestInfo reqInfo) {

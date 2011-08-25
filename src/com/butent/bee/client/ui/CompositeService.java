@@ -3,18 +3,17 @@ package com.butent.bee.client.ui;
 import com.google.common.collect.Maps;
 
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.Service;
+import com.butent.bee.shared.Stage;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Map;
 
 /**
- * Is an abstract class for menu, grid, form and row set service classes, registers and creates
- * services with comp_ui prefix.
+ * Is an abstract class for composite service handling.
  */
 
 public abstract class CompositeService {
-
-  public static final String PREFIX = "comp_ui_";
 
   private static Map<String, CompositeService> registeredServices = Maps.newHashMap();
   private static Map<String, CompositeService> pendingServices = Maps.newHashMap();
@@ -24,6 +23,7 @@ public abstract class CompositeService {
     registerService(new GridService());
     registerService(new MenuService());
     registerService(new RowSetService());
+    registerService(new DsnService());
   }
 
   public static boolean doService(String svc, String stg, Object... parameters) {
@@ -35,70 +35,61 @@ public abstract class CompositeService {
   }
 
   public static boolean isRegistered(String svc) {
-    String svcId = extractId(svc);
-
-    if (!BeeUtils.isEmpty(svcId)) {
-      return pendingServices.containsKey(svcId);
-    } else {
-      return registeredServices.containsKey(svc);
+    if (!registeredServices.containsKey(svc)) {
+      return pendingServices.containsKey(svc);
     }
+    return true;
   }
 
-  public static void registerService(CompositeService service) {
-    String svc = service.getName();
-    Assert.state(!isRegistered(svc), "Service already registered: " + svc);
-    registeredServices.put(svc, service);
+  public static <T extends CompositeService> String name(Class<T> clazz) {
+    Assert.notNull(clazz);
+    Assert.state(!clazz.equals(CompositeService.class));
+    return Service.COMPOSITE_SERVICE_PREFIX + BeeUtils.getClassName(clazz);
   }
 
   private static CompositeService createService(String svc) {
     Assert.contains(registeredServices, svc);
 
-    String svcId = BeeUtils.createUniqueName("svc");
-    CompositeService service = registeredServices.get(svc).create(svcId);
-
-    pendingServices.put(svcId, service);
-
+    CompositeService service = registeredServices.get(svc).getInstance();
+    Assert.notNull(service);
+    service.serviceId = svc + "_" + BeeUtils.createUniqueName();
+    pendingServices.put(service.getId(), service);
     return service;
-  }
-
-  private static String extractId(String svc) {
-    if (svc.indexOf(":") > 0) {
-      String[] arr = svc.split(":");
-      return arr[arr.length - 1];
-    }
-    return "";
   }
 
   private static CompositeService getService(String svc) {
     CompositeService service;
-    String svcId = extractId(svc);
 
-    if (BeeUtils.isEmpty(svcId)) {
-      service = createService(svc);
+    if (pendingServices.containsKey(svc)) {
+      service = pendingServices.get(svc);
     } else {
-      Assert.contains(pendingServices, svcId);
-      service = pendingServices.get(svcId);
+      service = createService(svc);
     }
     return service;
   }
 
-  private String serviceId;
-
-  protected CompositeService(String... svcId) {
-    serviceId = BeeUtils.concat(":", svcId);
+  private static void registerService(CompositeService service) {
+    String svc = name(service.getClass());
+    Assert.state(!isRegistered(svc), "Service already registered: " + svc);
+    registeredServices.put(svc, service);
   }
 
-  protected abstract CompositeService create(String svcId);
+  private String serviceId;
+
+  protected abstract CompositeService getInstance();
 
   protected void destroy() {
-    pendingServices.remove(self());
+    pendingServices.remove(getId());
   }
 
   protected abstract boolean doStage(String stg, Object... params);
 
-  protected abstract String getName();
-
-  protected String self() {
+  protected String getId() {
     return serviceId;
+  }
+
+  protected Stage getStage(String stg) {
+    Assert.notEmpty(stg);
+    return new Stage(getId(), stg);
   }
 }

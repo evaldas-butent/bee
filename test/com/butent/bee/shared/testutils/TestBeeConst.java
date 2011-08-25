@@ -4,7 +4,6 @@ import com.butent.bee.shared.BeeConst;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.After;
@@ -22,27 +21,6 @@ public class TestBeeConst {
 
   @After
   public void tearDown() throws Exception {
-  }
-
-  @Test
-  public final void testGetDsType() {
-    assertNull(BeeConst.getDsType(null));
-    assertNull(BeeConst.getDsType(""));
-    assertNull(BeeConst.getDsType("\0 \n \r \t \t \t \n \n\r \t"));
-    assertNull(BeeConst.getDsType("jUnitTest"));
-
-    assertEquals(BeeConst.MYSQL, BeeConst.getDsType("   \0 \n \r MY"));
-    assertEquals(BeeConst.MSSQL, BeeConst.getDsType("m"));
-    assertEquals(BeeConst.MSSQL, BeeConst.getDsType("marketing"));
-    assertEquals(BeeConst.MYSQL, BeeConst.getDsType("abcmy"));
-    assertEquals(BeeConst.ORACLE, BeeConst.getDsType("o"));
-    assertEquals(BeeConst.ORACLE, BeeConst.getDsType("one, two"));
-    assertEquals(BeeConst.PGSQL, BeeConst.getDsType("power"));
-    assertEquals(BeeConst.MSSQL, BeeConst.getDsType("1992: Microsoft Windows 3.11"));
-    assertEquals(BeeConst.MSSQL, BeeConst.getDsType("sms"));
-    assertEquals(BeeConst.ORACLE, BeeConst.getDsType("To bee or not to be"));
-    assertEquals(BeeConst.PGSQL, BeeConst.getDsType("The printer printing 1 pg. of 2"));
-    assertEquals(BeeConst.PGSQL, BeeConst.getDsType("the postgre  data system"));
   }
 
   @Test
@@ -120,19 +98,5 @@ public class TestBeeConst {
     assertFalse(BeeConst.isClient());
     assertTrue(BeeConst.isServer());
     assertEquals(BeeConst.SERVER, BeeConst.whereAmI());
-  }
-
-  @Test
-  public final void testValidDsType() {
-    assertFalse(BeeConst.validDsType(null));
-    assertFalse(BeeConst.validDsType(""));
-    assertFalse(BeeConst.validDsType("\n \r \t \0 \t \t"));
-    assertFalse(BeeConst.validDsType("microsoft sql"));
-    assertFalse(BeeConst.validDsType("\0\0\tMySql"));
-    assertFalse(BeeConst.validDsType("\0tMySql\0"));
-    assertTrue(BeeConst.validDsType("MySql"));
-    assertTrue(BeeConst.validDsType("MsSql"));
-    assertTrue(BeeConst.validDsType("Oracle"));
-    assertTrue(BeeConst.validDsType("PostgreSql"));
   }
 }

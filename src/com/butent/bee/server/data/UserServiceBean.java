@@ -8,6 +8,7 @@ import com.google.common.primitives.Longs;
 
 import com.butent.bee.server.i18n.I18nUtils;
 import com.butent.bee.server.i18n.Localized;
+import com.butent.bee.server.sql.SqlBuilderFactory;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -211,9 +212,12 @@ public class UserServiceBean {
 
     if (isUser(user)) {
       UserInfo info = getUserInfo(user);
-      UserData data = info.getUserData();
       info.setOnline(true);
       info.setLocale(locale);
+
+      UserData data = info.getUserData();
+      data.setProperty("dsn", SqlBuilderFactory.getDsn());
+
       response.setResponse(data).addInfo("User logged in:",
           user + " " + BeeUtils.parenthesize(data.getUserSign()));
       LogUtils.infoNow(logger, (Object[]) response.getNotifications());

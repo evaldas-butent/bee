@@ -8,6 +8,7 @@ import com.google.common.primitives.Ints;
 import com.google.common.primitives.Longs;
 
 import com.butent.bee.server.Config;
+import com.butent.bee.server.DataSourceBean;
 import com.butent.bee.server.data.BeeTable.BeeField;
 import com.butent.bee.server.data.BeeTable.BeeForeignKey;
 import com.butent.bee.server.data.BeeTable.BeeKey;
@@ -111,6 +112,8 @@ public class SystemBean {
 
   private static Logger logger = Logger.getLogger(SystemBean.class.getName());
 
+  @EJB
+  DataSourceBean dsb;
   @EJB
   QueryServiceBean qs;
   @EJB
@@ -859,12 +862,14 @@ public class SystemBean {
   }
 
   @Lock(LockType.WRITE)
-  public void initDatabase(String engine) {
-    SqlBuilderFactory.setDefaultEngine(BeeConst.getDsType(engine));
-    dbName = qs.dbName();
-    dbSchema = qs.dbSchema();
-    String[] dbTables = qs.dbTables(dbName, dbSchema, null);
+  public void initDatabase(String dsn) {
+    String[] dbTables = new String[0];
 
+    if (SqlBuilderFactory.setDefaultBuilder(qs.dbEngine(dsn), dsn)) {
+      dbName = qs.dbName();
+      dbSchema = qs.dbSchema();
+      dbTables = qs.dbTables(dbName, dbSchema, null);
+    }
     for (BeeTable table : getTables()) {
       String tblName = table.getName();
       table.setActive(BeeUtils.inListSame(tblName, dbTables));
@@ -893,12 +898,7 @@ public class SystemBean {
   @Lock(LockType.WRITE)
   public void initTables() {
     initObjects(SysObject.TABLE);
-
-    String engine = SqlBuilderFactory.getEngine();
-    if (BeeUtils.isEmpty(engine)) {
-      engine = BeeUtils.ifString(Config.getProperty("DefaultEngine"), BeeConst.MYSQL);
-    }
-    initDatabase(engine);
+    initDatabase(BeeUtils.ifString(SqlBuilderFactory.getDsn(), dsb.getDefaultDsn()));
     initViews();
   }
 

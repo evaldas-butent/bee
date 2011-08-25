@@ -44,16 +44,16 @@ public class RpcFactory implements Module {
       info.addUserData(obj);
     }
   }
-  
+
   public boolean cancelRequest(int id) {
     RpcInfo info = getRpcInfo(id);
     if (info == null) {
       return false;
     }
-    
+
     Set<State> states = info.getStates();
     boolean ok = info.cancel();
-    
+
     if (ok) {
       BeeKeeper.getLog().info("request", id, "canceled");
       BeeKeeper.getLog().addSeparator();
@@ -63,7 +63,7 @@ public class RpcFactory implements Module {
         BeeKeeper.getLog().info("States:", states);
       }
     }
-    
+
     return ok;
   }
 
@@ -76,7 +76,7 @@ public class RpcFactory implements Module {
   }
 
   public String getDsn() {
-    return BeeKeeper.getScreen().getDsn();
+    return BeeKeeper.getUser().getDsn();
   }
 
   public String getName() {

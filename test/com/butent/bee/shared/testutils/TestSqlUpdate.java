@@ -6,6 +6,7 @@ import com.butent.bee.server.sql.SqlBuilder;
 import com.butent.bee.server.sql.SqlBuilderFactory;
 import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
+import com.butent.bee.shared.BeeConst.SqlEngine;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -31,7 +32,7 @@ public class TestSqlUpdate {
 
   @Test
   public final void testGetSources() {
-    SqlBuilderFactory.setDefaultEngine("Generic");
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
     SqlUpdate update2 = new SqlUpdate("Source1", "alias1");
     IsCondition where = SqlUtils.equal("Source2", "name", "John");
     update2.addConstant("name", "Petras");
@@ -48,7 +49,7 @@ public class TestSqlUpdate {
 
   @Test
   public final void testGetSqlString() {
-    SqlBuilderFactory.setDefaultEngine("Generic");
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
     SqlBuilder builder = SqlBuilderFactory.getBuilder();
 
     SqlUpdate update = new SqlUpdate("Source1");

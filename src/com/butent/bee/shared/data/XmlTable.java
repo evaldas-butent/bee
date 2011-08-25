@@ -17,14 +17,12 @@ import javax.xml.bind.annotation.XmlTransient;
 /**
  * Handles data table information storage in XML structure.
  */
-
 @XmlRootElement(name = "BeeTable", namespace = DataUtils.DEFAULT_NAMESPACE)
 public class XmlTable {
 
   /**
    * Handles data field information storage in XML structure.
    */
-
   public static class XmlField {
     @XmlAttribute
     public String name;
@@ -88,7 +86,6 @@ public class XmlTable {
   /**
    * Handles table key information storage in XML structure.
    */
-
   public static class XmlKey {
     @XmlAttribute
     public boolean unique;
@@ -163,35 +160,46 @@ public class XmlTable {
   public XmlTable getChanges(XmlTable otherTable) {
     XmlTable diff = null;
 
-    if (otherTable != null && BeeUtils.same(name, otherTable.name)) {
+    if (otherTable != null) {
+      boolean upd = false;
       diff = new XmlTable();
-      diff.name = otherTable.name;
-      diff.x = otherTable.x;
-      diff.y = otherTable.y;
+      diff.name = name;
+      diff.x = x;
+      diff.y = y;
 
+      if (!isProtected()) {
+        if (!BeeUtils.equals(x, otherTable.x)) {
+          diff.x = otherTable.x;
+          upd = true;
+        }
+        if (!BeeUtils.equals(y, otherTable.y)) {
+          diff.y = otherTable.y;
+          upd = true;
+        }
+      }
       if (!BeeUtils.isEmpty(otherTable.fields)) {
         for (XmlField field : otherTable.fields) {
-          if ((fields == null || !fields.contains(field))
-              && (extFields == null || !extFields.contains(field))) {
-
+          if (!isProtected(field)) {
             if (diff.fields == null) {
               diff.fields = Lists.newArrayList(field);
-            } else {
+
+            } else if (diff.findField(field) == null) {
               diff.fields.add(field);
             }
+            upd = true;
           }
         }
       }
       if (!BeeUtils.isEmpty(otherTable.extFields)) {
         for (XmlField field : otherTable.extFields) {
-          if ((fields == null || !fields.contains(field))
-                && (extFields == null || !extFields.contains(field))) {
-
+          if (!isProtected(field)) {
             if (diff.extFields == null) {
               diff.extFields = Lists.newArrayList(field);
-            } else {
+
+            } else if (diff.findField(field) == null) {
               diff.extFields.add(field);
             }
+            upd = true;
           }
         }
       }
@@ -203,6 +211,7 @@ public class XmlTable {
             } else {
               diff.states.add(state);
             }
+            upd = true;
           }
         }
       }
@@ -214,10 +223,11 @@ public class XmlTable {
             } else {
               diff.keys.add(key);
             }
+            upd = true;
           }
         }
       }
-      if (BeeUtils.allEmpty(diff.fields, diff.extFields, diff.states, diff.keys)) {
+      if (!upd) {
         diff = null;
       }
     }
@@ -228,10 +238,22 @@ public class XmlTable {
     return safe;
   }
 
+  public boolean isProtected(XmlField field) {
+    XmlField fld = findField(field);
+
+    if (fld != null) {
+      return fld.isProtected();
+    }
+    return false;
+  }
+
   public void merge(XmlTable otherTable) {
     XmlTable diff = getChanges(otherTable);
 
     if (diff != null) {
+      x = diff.x;
+      y = diff.y;
+
       if (!BeeUtils.isEmpty(diff.fields)) {
         if (fields == null) {
           fields = Lists.newArrayList();
@@ -272,5 +294,23 @@ public class XmlTable {
     }
     this.safe = true;
     return this;
+  }
+
+  private XmlField findField(XmlField field) {
+    if (!BeeUtils.isEmpty(fields)) {
+      for (XmlField fld : fields) {
+        if (BeeUtils.equals(field, fld)) {
+          return fld;
+        }
+      }
+    }
+    if (!BeeUtils.isEmpty(extFields)) {
+      for (XmlField fld : extFields) {
+        if (BeeUtils.equals(field, fld)) {
+          return fld;
+        }
+      }
+    }
+    return null;
   }
 }

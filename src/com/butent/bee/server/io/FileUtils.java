@@ -103,7 +103,7 @@ public class FileUtils {
       LogUtils.warning(logger, fl.getAbsolutePath(), "file not found");
       return null;
     }
-    
+
     try {
       return streamToString(new FileInputStream(fl), cs);
     } catch (FileNotFoundException ex) {
@@ -456,9 +456,14 @@ public class FileUtils {
 
     OutputStreamWriter fw = null;
     boolean ok;
+    File file = new File(dst);
 
     try {
-      fw = new OutputStreamWriter(new FileOutputStream(dst), cs);
+      File parent = file.getParentFile();
+      if (parent != null && !parent.exists()) {
+        parent.mkdirs();
+      }
+      fw = new OutputStreamWriter(new FileOutputStream(file), cs);
       fw.append(src);
       ok = true;
     } catch (IOException ex) {
@@ -473,7 +478,7 @@ public class FileUtils {
   public static String streamToString(InputStream stream) {
     return streamToString(stream, defaultCharset);
   }
-  
+
   public static String streamToString(InputStream stream, Charset cs) {
     Assert.notNull(stream);
     Assert.notNull(cs);
@@ -500,7 +505,7 @@ public class FileUtils {
     closeQuietly(fr);
     return sb.toString();
   }
-  
+
   public static File toFile(Class<?> clazz) {
     Assert.notNull(clazz);
     return toFile(clazz.getResource(NameUtils.addExtension(clazz.getSimpleName(), EXT_CLASS)));

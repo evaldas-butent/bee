@@ -11,7 +11,9 @@ import com.butent.bee.server.sql.SqlConstants.SqlKeyword;
 import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
+import com.butent.bee.server.utils.BeeDataSource;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst.SqlEngine;
 import com.butent.bee.shared.DateTime;
 import com.butent.bee.shared.JustDate;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -38,7 +40,6 @@ import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
-import javax.sql.DataSource;
 
 /**
  * Manages SQL related requests from client side.
@@ -70,6 +71,35 @@ public class QueryServiceBean {
   IdGeneratorBean ig;
   @EJB
   SystemBean sys;
+
+  public SqlEngine dbEngine(String dsn) {
+    SqlEngine sqlEngine = null;
+
+    if (!BeeUtils.isEmpty(dsn)) {
+      BeeDataSource bds = dsb.locateDs(dsn);
+
+      if (bds != null) {
+        String engine = null;
+        Connection con = null;
+        try {
+          con = bds.getDs().getConnection();
+          engine = con.getMetaData().getDatabaseProductName();
+
+        } catch (SQLException e) {
+          LogUtils.error(logger, e);
+          engine = null;
+        } finally {
+          JdbcUtils.closeConnection(con);
+        }
+        sqlEngine = SqlEngine.detectEngine(engine);
+
+        if (sqlEngine == null) {
+          LogUtils.severe(logger, "DSN:", dsn, "Unknown SQL engine:", engine);
+        }
+      }
+    }
+    return sqlEngine;
+  }
 
   public SimpleRowSet dbFields(String dbName, String dbSchema, String table) {
     return getData(SqlUtils.dbFields(dbName, dbSchema, table));
@@ -510,8 +540,6 @@ public class QueryServiceBean {
     Assert.notEmpty(sql);
     Assert.notEmpty(callback);
 
-    DataSource ds = dsb.locateDs(SqlBuilderFactory.getEngine()).getDs();
-
     Connection con = null;
     Statement stmt = null;
     ResultSet rs = null;
@@ -520,7 +548,13 @@ public class QueryServiceBean {
     LogUtils.info(logger, "SQL:", sql);
 
     try {
-      con = ds.getConnection();
+      String dsn = SqlBuilderFactory.getDsn();
+      BeeDataSource bds = dsb.locateDs(dsn);
+
+      if (bds == null) {
+        throw new SQLException("Data source name [" + dsn + "] not found");
+      }
+      con = bds.getDs().getConnection();
       stmt = con.createStatement();
 
       boolean isResultSet = stmt.execute(sql);

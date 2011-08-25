@@ -4,7 +4,7 @@ import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.SqlBuilderFactory;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
-import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.BeeConst.SqlEngine;
 import com.butent.bee.shared.exceptions.BeeRuntimeException;
 
 import static org.junit.Assert.assertArrayEquals;
@@ -31,7 +31,7 @@ public class TestIsCondition {
 
   @Test
   public final void testAndConditionGeneric() {
-    SqlBuilderFactory.setDefaultEngine("firebird");
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
     SqlSelect select = new SqlSelect();
     select.addFields("Table1", "field1", "field2", "field3");
     select.addFrom("Table1");
@@ -74,7 +74,7 @@ public class TestIsCondition {
   @SuppressWarnings("unused")
   @Test
   public final void testContainsGeneric() {
-    SqlBuilderFactory.setDefaultEngine(BeeConst.UNKNOWN);
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
 
     SqlSelect select = new SqlSelect();
     select.addFields("Table1", "field1", "field2");
@@ -126,7 +126,7 @@ public class TestIsCondition {
   @Test
   public final void testContainsStringStringString() {
     final String query = "SELECT Table1.field1, Table1.field2 FROM Table1 WHERE ";
-    SqlBuilderFactory.setDefaultEngine(BeeConst.UNKNOWN);
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
 
     SqlSelect select = new SqlSelect();
 
@@ -202,7 +202,7 @@ public class TestIsCondition {
   public final void testEndsWithIsExpressionString() {
     final String query = "SELECT Table1.field11, Table1.field12 FROM Table1 WHERE ";
     SqlSelect select;
-    SqlBuilderFactory.setDefaultEngine(BeeConst.UNKNOWN);
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
 
     select = new SqlSelect();
     select.addFields("Table1", "field11", "field12");
@@ -243,7 +243,7 @@ public class TestIsCondition {
   public final void testEndsWithStringStringString() {
     final String query = "SELECT Table1.field11, Table1.field12 FROM Table1 WHERE ";
     SqlSelect select;
-    SqlBuilderFactory.setDefaultEngine(BeeConst.UNKNOWN);
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
 
     select = new SqlSelect();
     select.addFields("Table1", "field11", "field12");
@@ -321,7 +321,7 @@ public class TestIsCondition {
 
   @Test
   public final void testEqualStringStringOject() {
-    SqlBuilderFactory.setDefaultEngine(BeeConst.UNKNOWN);
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
     SqlSelect select = new SqlSelect();
     select.addFields("Table1", "field1", "field2");
     select.addFrom("Table1");
@@ -407,7 +407,7 @@ public class TestIsCondition {
   @SuppressWarnings("unused")
   @Test
   public final void testInListIsExpressionObjectArrGeneric() {
-    SqlBuilderFactory.setDefaultEngine(BeeConst.UNKNOWN);
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
     SqlSelect select = new SqlSelect();
     select.addFields("Table1", "field1", "field2");
     select.addFrom("Table1");
@@ -448,7 +448,7 @@ public class TestIsCondition {
 
   @Test
   public final void testInListStringStringObjectArrGeneric() {
-    SqlBuilderFactory.setDefaultEngine(BeeConst.UNKNOWN);
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
     SqlSelect select = new SqlSelect();
     select.addFields("Table1", "field1", "field2");
     select.addFrom("Table1");
@@ -471,7 +471,7 @@ public class TestIsCondition {
   @SuppressWarnings("unused")
   @Test
   public final void testInStringStringSqlSelectGeneric() {
-    SqlBuilderFactory.setDefaultEngine(BeeConst.UNKNOWN);
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
     SqlSelect select = new SqlSelect();
     select.addFields("Table1", "field1", "field2");
     select.addFrom("Table1");
@@ -542,7 +542,7 @@ public class TestIsCondition {
   @SuppressWarnings("unused")
   @Test
   public final void testInStringStringStringStringIsConditionGeneric() {
-    SqlBuilderFactory.setDefaultEngine(BeeConst.UNKNOWN);
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
     SqlSelect select = new SqlSelect();
     select.addFields("Table1", "field1", "field2");
     select.addFrom("Table1");
@@ -635,7 +635,7 @@ public class TestIsCondition {
   @SuppressWarnings("unused")
   @Test
   public final void testIsNotNullIsExpressionGeneric() {
-    SqlBuilderFactory.setDefaultEngine(BeeConst.UNKNOWN);
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
     SqlSelect select = new SqlSelect();
     select.addFields("Table1", "field1", "field2");
     select.addFrom("Table1");
@@ -658,7 +658,7 @@ public class TestIsCondition {
 
   @Test
   public final void testIsNotNullStringString() {
-    SqlBuilderFactory.setDefaultEngine(BeeConst.UNKNOWN);
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
 
     SqlSelect select = new SqlSelect();
     select.addFields("Table1", "field1", "field2");
@@ -672,7 +672,7 @@ public class TestIsCondition {
 
   @Test
   public final void testIsNullIsExpressionGeneric() {
-    SqlBuilderFactory.setDefaultEngine(BeeConst.UNKNOWN);
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
     SqlSelect select = new SqlSelect();
     select.addFields("Table1", "field1", "field2");
     select.addFrom("Table1");
@@ -687,7 +687,7 @@ public class TestIsCondition {
 
   @Test
   public final void testIsNullStringStringGeneric() {
-    SqlBuilderFactory.setDefaultEngine(BeeConst.UNKNOWN);
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
 
     SqlSelect select = new SqlSelect();
     select.addFields("Table1", "field1", "field2");
@@ -702,7 +702,7 @@ public class TestIsCondition {
 
   @Test
   public final void testJoinLessEqualStringStringStringStringGeneric() {
-    SqlBuilderFactory.setDefaultEngine(BeeConst.UNKNOWN);
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
     SqlSelect select = new SqlSelect();
     select.addFields("Table1", "field1", "field2");
     select.addFrom("Table1");
@@ -717,7 +717,7 @@ public class TestIsCondition {
 
   @Test
   public final void testJoinLessStringStringStringStringGeneric() {
-    SqlBuilderFactory.setDefaultEngine(BeeConst.UNKNOWN);
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
 
     SqlSelect select = new SqlSelect();
     select.addFields("Table1", "field1", "field2");
@@ -733,7 +733,7 @@ public class TestIsCondition {
 
   @Test
   public final void testJoinMoreEqualStringStringStringStringGeneric() {
-    SqlBuilderFactory.setDefaultEngine(BeeConst.UNKNOWN);
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
 
     SqlSelect select = new SqlSelect();
     select.addFields("Table1", "field1", "field2");
@@ -749,7 +749,7 @@ public class TestIsCondition {
 
   @Test
   public final void testJoinMoreStringStringstringStringGeneric() {
-    SqlBuilderFactory.setDefaultEngine(BeeConst.UNKNOWN);
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
 
     SqlSelect select = new SqlSelect();
     select.addFields("Table1", "field1", "field2");
@@ -765,7 +765,7 @@ public class TestIsCondition {
 
   @Test
   public final void testJoinNorEqualStringStringStringStringGeneric() {
-    SqlBuilderFactory.setDefaultEngine(BeeConst.UNKNOWN);
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
 
     SqlSelect select = new SqlSelect();
     select.addFields("Table1", "field1", "field2");
@@ -790,7 +790,7 @@ public class TestIsCondition {
 
   @Test
   public final void testJoinStringStrinStringStringGeneric() {
-    SqlBuilderFactory.setDefaultEngine(BeeConst.UNKNOWN);
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
 
     SqlSelect select = new SqlSelect();
     select.addFields("Table1", "field1", "field2");
@@ -807,7 +807,7 @@ public class TestIsCondition {
   @SuppressWarnings("unused")
   @Test
   public final void testJoinUsingStringStringStringArr() {
-    SqlBuilderFactory.setDefaultEngine(BeeConst.UNKNOWN);
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
     // Phase1
     SqlSelect select = new SqlSelect();
     select.addFields("Table1", "field1", "field2");
@@ -841,7 +841,7 @@ public class TestIsCondition {
 
   @Test
   public final void testLessEqualIsExpressionObject() {
-    SqlBuilderFactory.setDefaultEngine(BeeConst.UNKNOWN);
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
     SqlSelect select = new SqlSelect();
     select.addFields("Table1", "field1", "field2");
     select.addFrom("Table1");
@@ -893,7 +893,7 @@ public class TestIsCondition {
 
   @Test
   public final void testLessEqualStringStringObjectGeneric() {
-    SqlBuilderFactory.setDefaultEngine(BeeConst.UNKNOWN);
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
     SqlSelect select = new SqlSelect();
     select.addFields("Table1", "field1", "field2");
     select.addFrom("Table1");
@@ -941,7 +941,7 @@ public class TestIsCondition {
 
   @Test
   public final void testLessExpressionObjectGeneric() {
-    SqlBuilderFactory.setDefaultEngine(BeeConst.UNKNOWN);
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
     SqlSelect select = new SqlSelect();
     select.addFields("Table1", "field1", "field2");
     select.addFrom("Table1");
@@ -993,7 +993,7 @@ public class TestIsCondition {
 
   @Test
   public final void testLessStringStringObjectGeneric() {
-    SqlBuilderFactory.setDefaultEngine(BeeConst.UNKNOWN);
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
     SqlSelect select = new SqlSelect();
     select.addFields("Table1", "field1", "field2");
     select.addFrom("Table1");
@@ -1044,7 +1044,7 @@ public class TestIsCondition {
   public void testLikeStringStringString() {
     final String query = "SELECT Table1.field11, Table1.field12 FROM Table1 WHERE ";
     SqlSelect select;
-    SqlBuilderFactory.setDefaultEngine(BeeConst.UNKNOWN);
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
 
     select = new SqlSelect();
     select.addFields("Table1", "field11", "field12");
@@ -1137,7 +1137,7 @@ public class TestIsCondition {
 
   @Test
   public final void testMoreEqualIsExpressionObjectGeneric() {
-    SqlBuilderFactory.setDefaultEngine(BeeConst.UNKNOWN);
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
 
     SqlSelect select = new SqlSelect();
     select.addFields("Table1", "field1", "field2");
@@ -1188,7 +1188,7 @@ public class TestIsCondition {
 
   @Test
   public final void testMoreEqualStringStringObjectGeneric() {
-    SqlBuilderFactory.setDefaultEngine(BeeConst.UNKNOWN);
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
     SqlSelect select = new SqlSelect();
     select.addFields("Table1", "field1", "field2");
     select.addFrom("Table1");
@@ -1235,7 +1235,7 @@ public class TestIsCondition {
 
   @Test
   public final void testMoreIsExpressionObjectGeneric() {
-    SqlBuilderFactory.setDefaultEngine(BeeConst.UNKNOWN);
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
     SqlSelect select = new SqlSelect();
     select.addFields("Table1", "field1", "field2");
     select.addFrom("Table1");
@@ -1289,7 +1289,7 @@ public class TestIsCondition {
 
   @Test
   public final void testMoreStringStringObjectGeneric() {
-    SqlBuilderFactory.setDefaultEngine(BeeConst.UNKNOWN);
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
 
     SqlSelect select = new SqlSelect();
     select.addFields("Table1", "field1", "field2");
@@ -1337,7 +1337,7 @@ public class TestIsCondition {
 
   @Test
   public final void testNotEqualIsExpressionObjectGeneric() {
-    SqlBuilderFactory.setDefaultEngine(BeeConst.UNKNOWN);
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
     SqlSelect select = new SqlSelect();
     select.addFields("Table1", "field1", "field2");
     select.addFrom("Table1");
@@ -1414,7 +1414,7 @@ public class TestIsCondition {
 
   @Test
   public final void testNotEqualStringStringObjectGeneric() {
-    SqlBuilderFactory.setDefaultEngine(BeeConst.UNKNOWN);
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
     // Phase1
     SqlSelect select = new SqlSelect();
     select.addFields("Table1", "field1", "field2");
@@ -1489,7 +1489,7 @@ public class TestIsCondition {
   public final void testNotIsCondition() {
     final String query = "SELECT Table1.field11, Table1.field12 FROM Table1 WHERE ";
     SqlSelect select;
-    SqlBuilderFactory.setDefaultEngine(BeeConst.UNKNOWN);
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
 
     select = new SqlSelect();
     select.addFields("Table1", "field11", "field12");
@@ -1514,7 +1514,7 @@ public class TestIsCondition {
 
   @Test
   public final void testOrIsConditionArrGeneric() {
-    SqlBuilderFactory.setDefaultEngine(BeeConst.UNKNOWN);
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
     SqlSelect select = new SqlSelect();
     select.addFields("Table1", "field1", "field2", "field3");
     select.addFrom("Table1");
@@ -1555,7 +1555,7 @@ public class TestIsCondition {
 
   @Test
   public final void testSqlFalseGeneric() {
-    SqlBuilderFactory.setDefaultEngine(BeeConst.UNKNOWN);
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
     SqlSelect select = new SqlSelect();
     select.addFields("Table1", "field1", "field2", "field3");
     select.addFrom("Table1");
@@ -1571,7 +1571,7 @@ public class TestIsCondition {
 
   @Test
   public final void testSqlTrueGeneric() {
-    SqlBuilderFactory.setDefaultEngine(BeeConst.UNKNOWN);
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
     SqlSelect select = new SqlSelect();
     select.addFields("Table1", "field1", "field2", "field3");
     select.addFrom("Table1");
@@ -1587,7 +1587,7 @@ public class TestIsCondition {
   public final void testStartsWithIsExpressionString() {
     final String query = "SELECT Table1.field11, Table1.field12 FROM Table1 WHERE ";
     SqlSelect select;
-    SqlBuilderFactory.setDefaultEngine(BeeConst.UNKNOWN);
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
 
     select = new SqlSelect();
     select.addFields("Table1", "field11", "field12");
@@ -1629,7 +1629,7 @@ public class TestIsCondition {
   public final void testStartsWithStringString() {
     final String query = "SELECT Table1.field11, Table1.field12 FROM Table1 WHERE ";
     SqlSelect select;
-    SqlBuilderFactory.setDefaultEngine(BeeConst.UNKNOWN);
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
 
     select = new SqlSelect();
     select.addFields("Table1", "field11", "field12");

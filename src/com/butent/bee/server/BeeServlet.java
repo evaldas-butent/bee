@@ -222,7 +222,7 @@ public class BeeServlet extends HttpServlet {
       if (BeeUtils.allNotEmpty(usr, pwd)) {
         try {
           req.login(usr, pwd);
-          ResponseObject ro = dispatcher.doLogin(reqInfo.getDsn(), reqInfo.getLocale());
+          ResponseObject ro = dispatcher.doLogin(reqInfo.getLocale());
 
           if (ro.hasErrors()) {
             for (String error : ro.getErrors()) {

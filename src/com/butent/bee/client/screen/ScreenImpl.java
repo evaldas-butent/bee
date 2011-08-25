@@ -33,6 +33,8 @@ import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.layout.TabbedPages;
 import com.butent.bee.client.layout.TilePanel;
+import com.butent.bee.client.ui.CompositeService;
+import com.butent.bee.client.ui.DsnService;
 import com.butent.bee.client.ui.FormService;
 import com.butent.bee.client.ui.GwtUiCreator;
 import com.butent.bee.client.ui.MenuService;
@@ -46,13 +48,11 @@ import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.client.widget.BeeListBox;
 import com.butent.bee.client.widget.SimpleBoolean;
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeResource;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.Stage;
 import com.butent.bee.shared.menu.MenuConstants;
 import com.butent.bee.shared.ui.UiComponent;
-import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 /**
@@ -97,7 +97,6 @@ public class ScreenImpl implements Screen {
 
   private Widget signature = null;
 
-  private final String elDsn = "el-data-source";
   private final String elGrid = "el-grid-type";
   private final String elCell = "el-cell-type";
 
@@ -163,10 +162,6 @@ public class ScreenImpl implements Screen {
     TilePanel p = getActivePanel();
     Assert.notNull(p);
     return p.getOffsetWidth();
-  }
-
-  public String getDsn() {
-    return ArrayUtils.getQuietly(BeeConst.DS_TYPES, RadioGroup.getValue(getElDsn()));
   }
 
   public String getName() {
@@ -410,8 +405,7 @@ public class ScreenImpl implements Screen {
     Horizontal p = new Horizontal();
     p.setSpacing(5);
 
-    p.add(new RadioGroup(getElDsn(), BeeKeeper.getStorage().checkInt(getElDsn(), 0),
-        Lists.newArrayList(BeeConst.DS_TYPES)));
+    p.add(new BeeButton("DSN", CompositeService.name(DsnService.class), DsnService.SVC_GET_DSNS));
 
     p.add(new ButtonGroup("Ping", Service.DB_PING,
         "Info", Service.DB_INFO,
@@ -426,8 +420,10 @@ public class ScreenImpl implements Screen {
 
     p.add(new BeeCheckBox(Global.getVar(Global.VAR_DEBUG)));
 
-    p.add(new BeeButton("North land", FormService.NAME, FormService.Stages.CHOOSE_FORM.name()));
-    p.add(new BeeButton("CRUD", RowSetService.NAME, RowSetService.Stages.CHOOSE_TABLE.name()));
+    p.add(new BeeButton("North land", CompositeService.name(FormService.class),
+        FormService.Stages.CHOOSE_FORM.name()));
+    p.add(new BeeButton("CRUD", CompositeService.name(RowSetService.class),
+        RowSetService.Stages.CHOOSE_TABLE.name()));
 
     p.add(new RadioGroup(getElGrid(), true, BeeKeeper.getStorage().checkInt(getElGrid(), 2),
         Lists.newArrayList("simple", "scroll", "cell")));
@@ -513,7 +509,8 @@ public class ScreenImpl implements Screen {
     fp.setWidget(r + 1, 0, slider);
 
     fp.setWidget(r, 1, new BeeButton(Global.constants.refresh(), Service.REFRESH_MENU));
-    fp.setWidget(r + 1, 1, new BeeButton("BEE", MenuService.NAME, "stage_dummy"));
+    fp.setWidget(r + 1, 1, new BeeButton("BEE", CompositeService.name(MenuService.class),
+        "stage_dummy"));
 
     TabbedPages tp = new TabbedPages(3, Unit.EX);
     tp.add(fp, Global.constants.menu());
@@ -605,10 +602,6 @@ public class ScreenImpl implements Screen {
 
   private String getElCell() {
     return elCell;
-  }
-
-  private String getElDsn() {
-    return elDsn;
   }
 
   private String getElGrid() {

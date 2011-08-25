@@ -23,8 +23,6 @@ import java.util.Map.Entry;
  */
 public class MenuService extends CompositeService {
 
-  public static final String NAME = PREFIX + "menu";
-
   public static Widget buidComponentTree(UiComponent c) {
     BeeTree root = new BeeTree();
     BeeTreeItem item = new BeeTreeItem(c.getId());
@@ -63,15 +61,6 @@ public class MenuService extends CompositeService {
     }
   }
 
-  protected MenuService(String... serviceId) {
-    super(serviceId);
-  }
-
-  @Override
-  protected CompositeService create(String svcId) {
-    return new MenuService(self(), svcId);
-  }
-
   @Override
   protected boolean doStage(String stg, Object... params) {
     boolean ok = true;
@@ -104,8 +93,8 @@ public class MenuService extends CompositeService {
   }
 
   @Override
-  protected String getName() {
-    return NAME;
+  protected CompositeService getInstance() {
+    return new MenuService();
   }
 
   private String getLayout(String layout) {

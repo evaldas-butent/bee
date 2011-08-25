@@ -4,7 +4,7 @@ import com.butent.bee.server.sql.SqlBuilder;
 import com.butent.bee.server.sql.SqlBuilderFactory;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
-import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.BeeConst.SqlEngine;
 import com.butent.bee.shared.exceptions.BeeRuntimeException;
 
 import static org.junit.Assert.assertEquals;
@@ -31,7 +31,7 @@ public class TestSqlUtilsIsQuery {
   @Test
   public final void testCreateForeignKey() {
 
-    SqlBuilderFactory.setDefaultEngine("Generic");
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
     assertEquals(
         "ALTER TABLE Table1 ADD CONSTRAINT name FOREIGN KEY (field1) REFERENCES refTable (refField1) ON DELETE CASCADE",
         SqlUtils.createForeignKey("Table1", "name", "field1",
@@ -53,7 +53,7 @@ public class TestSqlUtilsIsQuery {
   @Test
   public final void testCreateIndex() {
 
-    SqlBuilderFactory.setDefaultEngine("Generic");
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
 
     assertEquals("CREATE INDEX indexName ON Table1 (field1, field2)",
         SqlUtils.createIndex("Table1", "indexName", "field1", "field2")
@@ -83,7 +83,7 @@ public class TestSqlUtilsIsQuery {
   @Test
   public final void testCreatePrimaryKey() {
 
-    SqlBuilderFactory.setDefaultEngine("Generic");
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
     assertEquals(
         "ALTER TABLE Table1 ADD CONSTRAINT constraint_name PRIMARY KEY (User_ID, Username)",
         SqlUtils.createPrimaryKey("Table1", "constraint_name",
@@ -113,7 +113,7 @@ public class TestSqlUtilsIsQuery {
   @Test
   public final void testDBForeignKeys() {
 
-    SqlBuilderFactory.setDefaultEngine("Generic");
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
 
     assertEquals(
         "SELECT c.constraint_name AS keyName, t.table_name AS tblName, r.table_name AS fkRefTable FROM information_schema.referential_constraints c INNER JOIN information_schema.table_constraints t ON c.constraint_name = t.constraint_name INNER JOIN information_schema.table_constraints r ON c.unique_constraint_name = r.constraint_name WHERE c.constraint_catalog = 'MyDB' AND t.table_catalog = 'MyDB' AND c.constraint_schema = 'MyDbSchema' AND t.table_schema = 'MyDbSchema' AND t.table_name = 'Table1' AND r.table_name = 'RefTable1'",
@@ -134,7 +134,7 @@ public class TestSqlUtilsIsQuery {
         "SELECT c.constraint_name AS keyName, t.table_name AS tblName, r.table_name AS fkRefTable FROM information_schema.referential_constraints c INNER JOIN information_schema.table_constraints t ON c.constraint_name = t.constraint_name INNER JOIN information_schema.table_constraints r ON c.unique_constraint_name = r.constraint_name",
         SqlUtils.dbForeignKeys(null, null, null, null).getQuery());
 
-    SqlBuilderFactory.setDefaultEngine(BeeConst.MYSQL);
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.MYSQL);
     assertEquals(
         "SELECT `c`.`constraint_name` AS `keyName`, `t`.`table_name` AS `tblName`, `c`.`referenced_table_name` AS `fkRefTable` FROM `information_schema`.`referential_constraints` `c` INNER JOIN `information_schema`.`table_constraints` `t` ON `c`.`constraint_name` = `t`.`constraint_name` WHERE `c`.`constraint_catalog` = 'MyDB' AND `t`.`table_catalog` = 'MyDB' AND `c`.`constraint_schema` = 'MyDbSchema' AND `t`.`table_schema` = 'MyDbSchema' AND `t`.`table_name` = 'Table1' AND `c`.`referenced_table_name` = 'RefTable1'",
         SqlUtils.dbForeignKeys("MyDB", "MyDbSchema", "Table1",
@@ -154,7 +154,7 @@ public class TestSqlUtilsIsQuery {
         "SELECT `c`.`constraint_name` AS `keyName`, `t`.`table_name` AS `tblName`, `c`.`referenced_table_name` AS `fkRefTable` FROM `information_schema`.`referential_constraints` `c` INNER JOIN `information_schema`.`table_constraints` `t` ON `c`.`constraint_name` = `t`.`constraint_name`",
         SqlUtils.dbForeignKeys(null, null, null, null).getQuery());
 
-    SqlBuilderFactory.setDefaultEngine(BeeConst.ORACLE);
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.ORACLE);
 
     assertEquals(
         "SELECT \"c\".\"CONSTRAINT_NAME\" AS \"keyName\", \"c\".\"TABLE_NAME\" AS \"tblName\", \"r\".\"TABLE_NAME\" AS \"fkRefTable\" FROM \"ALL_CONSTRAINTS\" \"c\" INNER JOIN \"ALL_CONSTRAINTS\" \"r\" ON \"c\".\"R_CONSTRAINT_NAME\" = \"r\".\"CONSTRAINT_NAME\" WHERE \"c\".\"CONSTRAINT_TYPE\" = 'R' AND \"c\".\"OWNER\" = 'MyDbSchema' AND \"r\".\"OWNER\" = 'MyDbSchema' AND \"c\".\"TABLE_NAME\" = 'Table1' AND \"r\".\"TABLE_NAME\" = 'RefTable1'",
@@ -178,33 +178,33 @@ public class TestSqlUtilsIsQuery {
 
   @Test
   public final void testDbName() {
-    SqlBuilderFactory.setDefaultEngine("Generic");
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
     assertEquals("", SqlUtils.dbName().getQuery());
-    SqlBuilderFactory.setDefaultEngine(BeeConst.PGSQL);
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.POSTGRESQL);
     assertEquals("SELECT current_database() as \"dbName\"", SqlUtils
         .dbName().getQuery());
-    SqlBuilderFactory.setDefaultEngine(BeeConst.MYSQL);
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.MYSQL);
     assertEquals("", SqlUtils.dbName().getQuery());
-    SqlBuilderFactory.setDefaultEngine(BeeConst.MSSQL);
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.MSSQL);
     assertEquals("SELECT db_name() AS [dbName]", SqlUtils.dbName()
         .getQuery());
   }
 
   @Test
   public final void testDbSchema() {
-    SqlBuilderFactory.setDefaultEngine("Generic");
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
     assertEquals("", SqlUtils.dbSchema().getQuery());
-    SqlBuilderFactory.setDefaultEngine(BeeConst.PGSQL);
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.POSTGRESQL);
     assertEquals("SELECT current_schema() as \"dbSchema\"", SqlUtils
         .dbSchema().getQuery());
-    SqlBuilderFactory.setDefaultEngine(BeeConst.MYSQL);
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.MYSQL);
     assertEquals("SELECT schema() AS `dbSchema`", SqlUtils.dbSchema()
         .getQuery());
-    SqlBuilderFactory.setDefaultEngine(BeeConst.MSSQL);
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.MSSQL);
     assertEquals("SELECT schema_name() AS [dbSchema]", SqlUtils.dbSchema()
         .getQuery());
 
-    SqlBuilderFactory.setDefaultEngine(BeeConst.ORACLE);
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.ORACLE);
     assertEquals(
         "SELECT sys_context('USERENV', 'CURRENT_SCHEMA') AS \"dbSchema\" FROM dual",
         SqlUtils.dbSchema().getQuery());
@@ -212,7 +212,7 @@ public class TestSqlUtilsIsQuery {
 
   @Test
   public final void testDbTables() {
-    SqlBuilderFactory.setDefaultEngine("Generic");
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
     assertEquals(
         "SELECT t.table_name FROM information_schema.tables t WHERE t.table_catalog = 'MyDB' AND t.table_schema = 'MyDBSchema' AND t.table_name = 'table1'",
         SqlUtils.dbTables("MyDB", "MyDBSchema", "table1").getQuery());
@@ -224,7 +224,7 @@ public class TestSqlUtilsIsQuery {
         SqlUtils.dbTables("MyDB", null, null).getQuery());
     assertEquals("SELECT t.table_name FROM information_schema.tables t",
         SqlUtils.dbTables(null, null, null).getQuery());
-    SqlBuilderFactory.setDefaultEngine(BeeConst.PGSQL);
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.POSTGRESQL);
     assertEquals(
         "SELECT \"t\".\"table_name\" FROM \"information_schema\".\"tables\" \"t\" WHERE \"t\".\"table_catalog\" = 'MyDB' AND \"t\".\"table_schema\" = 'MyDBSchema' AND \"t\".\"table_name\" = 'table1'",
         SqlUtils.dbTables("MyDB", "MyDBSchema", "table1").getQuery());
@@ -237,7 +237,7 @@ public class TestSqlUtilsIsQuery {
     assertEquals(
         "SELECT \"t\".\"table_name\" FROM \"information_schema\".\"tables\" \"t\"",
         SqlUtils.dbTables(null, null, null).getQuery());
-    SqlBuilderFactory.setDefaultEngine(BeeConst.MYSQL);
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.MYSQL);
     assertEquals("SHOW TABLES IN `MyDBSchema` LIKE 'table1'", SqlUtils
         .dbTables("MyDB", "MyDBSchema", "table1").getQuery());
     assertEquals("SHOW TABLES IN `MyDBSchema`",
@@ -246,7 +246,7 @@ public class TestSqlUtilsIsQuery {
         .getQuery());
     assertEquals("SHOW TABLES", SqlUtils.dbTables(null, null, null)
         .getQuery());
-    SqlBuilderFactory.setDefaultEngine(BeeConst.ORACLE);
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.ORACLE);
     assertEquals(
         "SELECT \"t\".\"TABLE_NAME\" FROM \"ALL_TABLES\" \"t\" WHERE \"t\".\"OWNER\" = 'MyDBSchema' AND \"t\".\"TABLE_NAME\" = 'table1'",
         SqlUtils.dbTables("MyDB", "MyDBSchema", "table1").getQuery());
@@ -261,7 +261,7 @@ public class TestSqlUtilsIsQuery {
 
   @Test
   public final void testDropForeignKey() {
-    SqlBuilderFactory.setDefaultEngine(BeeConst.UNKNOWN);
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
     assertEquals("ALTER TABLE Table1 DROP CONSTRAINT foreignkey_name",
         SqlUtils.dropForeignKey("Table1", "foreignkey_name").getQuery());
 
@@ -279,7 +279,7 @@ public class TestSqlUtilsIsQuery {
       fail("Java runtime error. Need BeeRuntimeException !!!");
     }
 
-    SqlBuilderFactory.setDefaultEngine(BeeConst.MYSQL);
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.MYSQL);
     SqlBuilder builder = SqlBuilderFactory.getBuilder();
     assertEquals("ALTER TABLE `Table1` DROP FOREIGN KEY `foreignkey_name`",
         SqlUtils.dropForeignKey("Table1", "foreignkey_name").getSqlString(builder));
@@ -301,7 +301,7 @@ public class TestSqlUtilsIsQuery {
 
   @Test
   public final void testDropTable() {
-    SqlBuilderFactory.setDefaultEngine(BeeConst.MYSQL);
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.MYSQL);
     assertEquals("DROP TABLE `Table1`", SqlUtils.dropTable("Table1")
         .getQuery());
     try {
@@ -319,7 +319,7 @@ public class TestSqlUtilsIsQuery {
 
   @Test
   public void testTemporaryName() {
-    SqlBuilderFactory.setDefaultEngine(BeeConst.MSSQL);
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.MSSQL);
     SqlBuilder builder = SqlBuilderFactory.getBuilder();
     SqlSelect select = new SqlSelect();
     select.setWhere(SqlUtils.contains(

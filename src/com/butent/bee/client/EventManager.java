@@ -70,7 +70,7 @@ public class EventManager implements Module {
     Assert.notNull(w);
     w.addClickHandler(ensureClickHandler());
   }
-  
+
   public <H> HandlerRegistration addHandler(Type<H> type, H handler) {
     Assert.notNull(type);
     Assert.notNull(handler);
@@ -83,7 +83,7 @@ public class EventManager implements Module {
     Assert.notNull(handler);
     return eventBus.addHandlerToSource(type, source, handler);
   }
-  
+
   public void addIntVch(HasValueChangeHandlers<Integer> w) {
     Assert.notNull(w);
     w.addValueChangeHandler(ensureIntVch());
@@ -103,11 +103,14 @@ public class EventManager implements Module {
     Assert.notNull(stage);
     return dispatchService(stage.getService(), stage.getStage(), event);
   }
-  
+
   public boolean dispatchService(String svc, String stg, Event<?> event) {
     Assert.notEmpty(svc);
 
-    if (Service.isRpcService(svc)) {
+    if (CompositeService.isRegistered(svc)) {
+      return CompositeService.doService(svc, stg, event);
+
+    } else if (Service.isRpcService(svc)) {
       BeeKeeper.getRpc().makeGetRequest(svc);
       return true;
     } else if (Service.isUiService(svc)) {
@@ -133,7 +136,7 @@ public class EventManager implements Module {
     Assert.notNull(source);
     eventBus.fireEventFromSource(event, source);
   }
-  
+
   public String getName() {
     return getClass().getName();
   }
@@ -161,24 +164,24 @@ public class EventManager implements Module {
   public HandlerRegistration registerCellUpdateHandler(CellUpdateEvent.Handler handler) {
     return CellUpdateEvent.register(eventBus, handler);
   }
-  
+
   public Collection<HandlerRegistration> registerDataHandler(HandlesAllDataEvents handler) {
     Assert.notNull(handler);
-    
+
     List<HandlerRegistration> registry = Lists.newArrayList();
     registry.add(registerCellUpdateHandler(handler));
     registry.add(registerMultiDeleteHandler(handler));
     registry.add(registerRowDeleteHandler(handler));
     registry.add(registerRowInsertHandler(handler));
     registry.add(registerRowUpdateHandler(handler));
-    
+
     return registry;
   }
-  
+
   public HandlerRegistration registerMultiDeleteHandler(MultiDeleteEvent.Handler handler) {
     return MultiDeleteEvent.register(eventBus, handler);
   }
-  
+
   public HandlerRegistration registerRowDeleteHandler(RowDeleteEvent.Handler handler) {
     return RowDeleteEvent.register(eventBus, handler);
   }
@@ -186,11 +189,11 @@ public class EventManager implements Module {
   public HandlerRegistration registerRowInsertHandler(RowInsertEvent.Handler handler) {
     return RowInsertEvent.register(eventBus, handler);
   }
-  
+
   public HandlerRegistration registerRowUpdateHandler(RowUpdateEvent.Handler handler) {
     return RowUpdateEvent.register(eventBus, handler);
   }
-  
+
   public void start() {
   }
 
@@ -328,9 +331,6 @@ public class EventManager implements Module {
       } else {
         Global.showError("Unknown composite service stage", svc, stg);
       }
-
-    } else if (CompositeService.isRegistered(svc)) {
-      CompositeService.doService(svc, stg, event);
 
     } else {
       Global.showError("Unknown composite service", svc, stg);

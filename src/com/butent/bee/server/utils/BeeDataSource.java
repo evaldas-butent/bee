@@ -30,15 +30,15 @@ public class BeeDataSource implements Transformable {
   public static final int STATUS_OPEN = 1;
   public static final int STATUS_CLOSED = 2;
 
-  private String tp = null;
+  private String dsn = null;
   private DataSource ds = null;
   private Connection conn = null;
 
   private int status = STATUS_UNKNOWN;
   private List<SQLException> errors = new ArrayList<SQLException>();
 
-  public BeeDataSource(String tp, DataSource ds) {
-    this.tp = tp;
+  public BeeDataSource(String dsn, DataSource ds) {
+    this.dsn = dsn;
     this.ds = ds;
   }
 
@@ -468,16 +468,16 @@ public class BeeDataSource implements Transformable {
     return ds;
   }
 
+  public String getDsn() {
+    return dsn;
+  }
+
   public List<SQLException> getErrors() {
     return errors;
   }
 
   public int getStatus() {
     return status;
-  }
-
-  public String getTp() {
-    return tp;
   }
 
   public boolean isOpen() {
@@ -505,7 +505,7 @@ public class BeeDataSource implements Transformable {
 
   @Override
   public String toString() {
-    return BeeUtils.concat(1, "Type", tp, "DataSource", ds, "Connection", conn);
+    return BeeUtils.concat(1, "Dsn", dsn, "DataSource", ds, "Connection", conn);
   }
 
   public String transform() {

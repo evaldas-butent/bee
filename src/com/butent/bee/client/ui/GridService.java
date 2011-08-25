@@ -18,17 +18,6 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 class GridService extends CompositeService {
 
-  public static final String NAME = PREFIX + "grid";
-
-  protected GridService(String... serviceId) {
-    super(serviceId);
-  }
-
-  @Override
-  protected CompositeService create(String svcId) {
-    return new GridService(NAME, svcId);
-  }
-
   @Override
   protected boolean doStage(String stg, Object... params) {
     boolean ok = true;
@@ -54,7 +43,7 @@ class GridService extends CompositeService {
   }
 
   @Override
-  protected String getName() {
-    return NAME;
+  protected CompositeService getInstance() {
+    return new GridService();
   }
 }

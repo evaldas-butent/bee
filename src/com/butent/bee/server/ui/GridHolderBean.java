@@ -124,41 +124,41 @@ public class GridHolderBean {
   SystemBean sys;
 
   private Map<String, GridDescription> gridCache = Maps.newHashMap();
-  
+
   public boolean contains(String name) {
     if (BeeUtils.isEmpty(name)) {
       return false;
     }
     return gridCache.containsKey(gridKey(name));
   }
-  
+
   public GridDescription getDefaultGrid(BeeView view, boolean register) {
     Assert.notNull(view);
     String name = view.getName();
     if (register && contains(name)) {
       return getGrid(name);
     }
-    
+
     GridDescription gridDescription = new GridDescription(name, name);
     gridDescription.setDefaults();
     if (view.isReadOnly()) {
       gridDescription.setReadOnly(true);
     }
-    
+
     gridDescription.addColumn(new ColumnDescription(ColType.ID, view.getSourceIdName(), true));
-    
+
     Map<String, ColumnDescription> columns = Maps.newLinkedHashMap();
     Set<String> relSources = Sets.newHashSet();
-    
+
     ColumnDescription columnDescription;
     for (String colName : view.getColumns()) {
       String tblName = view.getTable(colName);
-      
+
       if (BeeUtils.same(tblName, view.getSource())) {
         columnDescription = new ColumnDescription(ColType.DATA, colName, true);
       } else {
         columnDescription = new ColumnDescription(ColType.RELATED, colName, true);
-        String relSource = view.getRelSource(colName);
+        String relSource = view.getRelSource(colName); // TODO ???
         relSources.add(relSource);
 
         columnDescription.setRelSource(relSource);
@@ -169,14 +169,14 @@ public class GridHolderBean {
           columnDescription.setReadOnly(true);
         }
       }
-      
+
       columnDescription.setSortable(true);
       columnDescription.setHasFooter(true);
       columnDescription.setSource(colName);
 
       columns.put(BeeUtils.normalize(colName), columnDescription);
     }
-    
+
     if (!relSources.isEmpty()) {
       for (String relSource : relSources) {
         columnDescription = columns.get(BeeUtils.normalize(relSource));
@@ -185,7 +185,7 @@ public class GridHolderBean {
         }
       }
     }
-    
+
     gridDescription.getColumns().addAll(columns.values());
 
     gridDescription.addColumn(new ColumnDescription(ColType.VERSION, view.getSourceVersionName(),

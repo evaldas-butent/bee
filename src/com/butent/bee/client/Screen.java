@@ -17,7 +17,7 @@ import com.butent.bee.shared.BeeResource;
 public interface Screen extends Module, NotificationListener {
 
   void activatePanel(TilePanel np);
-  
+
   void closeView(View view);
 
   TilePanel getActivePanel();
@@ -25,8 +25,6 @@ public interface Screen extends Module, NotificationListener {
   int getActivePanelHeight();
 
   int getActivePanelWidth();
-
-  String getDsn();
 
   Split getScreenPanel();
 

@@ -5,6 +5,7 @@ import com.butent.bee.server.sql.IsFrom;
 import com.butent.bee.server.sql.SqlBuilderFactory;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
+import com.butent.bee.shared.BeeConst.SqlEngine;
 import com.butent.bee.shared.exceptions.BeeRuntimeException;
 
 import static org.junit.Assert.assertArrayEquals;
@@ -23,7 +24,7 @@ public class TestHasFrom {
 
   @Before
   public void setUp() throws Exception {
-    SqlBuilderFactory.setDefaultEngine("Generic");
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
   }
 
   @After

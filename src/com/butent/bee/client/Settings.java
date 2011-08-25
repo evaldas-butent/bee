@@ -19,14 +19,10 @@ public class Settings {
   private static Dictionary settings = null;
   private static boolean initialized = false;
 
-  public static String getDsn() {
-    return BeeConst.getDsType(getProperty("dsn"));
-  }
-
   public static int getGridType() {
     return getPropertyInt("gridType");
   }
-  
+
   public static String getProperty(String name) {
     Assert.notEmpty(name);
     if (checkSettings()) {
@@ -35,7 +31,7 @@ public class Settings {
       return BeeConst.STRING_EMPTY;
     }
   }
-  
+
   public static int getPropertyInt(String name) {
     String value = getProperty(name);
     if (BeeUtils.isInt(value)) {
@@ -53,7 +49,7 @@ public class Settings {
       return BeeConst.UNDEF;
     }
   }
-  
+
   public static Map<String, String> getSettings() {
     Map<String, String> result = Maps.newHashMap();
     if (checkSettings()) {
@@ -63,11 +59,11 @@ public class Settings {
     }
     return result;
   }
-  
+
   public static long getStartMillis() {
     return getPropertyLong("startMillis");
   }
-  
+
   public static String getVersion() {
     return getProperty("version");
   }

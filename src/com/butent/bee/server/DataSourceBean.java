@@ -1,8 +1,9 @@
 package com.butent.bee.server;
 
+import com.google.common.collect.Lists;
+
 import com.butent.bee.server.utils.BeeDataSource;
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.LogUtils;
 
@@ -42,7 +43,7 @@ public class DataSourceBean {
         if (z.isOpen()) {
           try {
             z.close();
-            LogUtils.info(logger, "closed", z.getTp());
+            LogUtils.info(logger, "closed", z.getDsn());
           } catch (Exception ex) {
             LogUtils.warning(logger, ex);
           }
@@ -58,13 +59,33 @@ public class DataSourceBean {
       return null;
     }
   }
-  
+
+  public String getDefaultDsn() {
+    BeeDataSource ds = getDefaultDs();
+
+    if (ds == null) {
+      return null;
+    }
+    return ds.getDsn();
+  }
+
+  public List<String> getDsns() {
+    List<String> dsns = Lists.newArrayList();
+
+    if (!bds.isEmpty()) {
+      for (BeeDataSource z : bds) {
+        dsns.add(z.getDsn());
+      }
+    }
+    return dsns;
+  }
+
   public BeeDataSource locateDs(String dsn) {
     Assert.notEmpty(dsn);
     BeeDataSource z = null;
 
     for (BeeDataSource k : bds) {
-      if (dsn.equals(k.getTp())) {
+      if (dsn.equals(k.getDsn())) {
         z = k;
         break;
       }
@@ -88,7 +109,7 @@ public class DataSourceBean {
     String[] arr = dsn.split(",");
     char defChar = '*';
 
-    String tp, nm;
+    String nm;
     DataSource ds;
     boolean ok;
     boolean isDef;
@@ -99,13 +120,6 @@ public class DataSourceBean {
       if (isDef) {
         nm = BeeUtils.removePrefixAndSuffix(nm, defChar);
       }
-
-      tp = BeeConst.getDsType(nm);
-      if (BeeUtils.isEmpty(tp)) {
-        LogUtils.warning(logger, "dsn", z, "not recognized");
-        continue;
-      }
-
       try {
         ds = (DataSource) InitialContext.doLookup("jdbc/" + nm);
         ok = true;
@@ -121,9 +135,12 @@ public class DataSourceBean {
       }
 
       if (ok) {
-        bds.add(new BeeDataSource(tp, ds));
+        bds.add(new BeeDataSource(nm, ds));
         if (isDef) {
           defaultDataSourceIndex = bds.size() - 1;
+
+        } else if (defaultDataSourceIndex < 0) {
+          defaultDataSourceIndex = 0;
         }
       }
     }

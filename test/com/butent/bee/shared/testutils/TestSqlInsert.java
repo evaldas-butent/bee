@@ -6,6 +6,7 @@ import com.butent.bee.server.sql.SqlBuilderFactory;
 import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
+import com.butent.bee.shared.BeeConst.SqlEngine;
 import com.butent.bee.shared.exceptions.BeeRuntimeException;
 
 import static org.junit.Assert.assertArrayEquals;
@@ -33,7 +34,7 @@ public class TestSqlInsert {
 
   @Test
   public final void testAddConstant() {
-    SqlBuilderFactory.setDefaultEngine("Generic");
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
     SqlBuilder builder = SqlBuilderFactory.getBuilder();
 
     SqlInsert insert = new SqlInsert("TableName");
@@ -48,7 +49,7 @@ public class TestSqlInsert {
 
   @Test
   public final void testAddFields() {
-    SqlBuilderFactory.setDefaultEngine("Generic");
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
     SqlBuilder builder = SqlBuilderFactory.getBuilder();
 
     SqlInsert insert = new SqlInsert("TableName");
@@ -63,7 +64,7 @@ public class TestSqlInsert {
 
   @Test
   public final void testGetFieldCount() {
-    SqlBuilderFactory.setDefaultEngine("Generic");
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
     SqlInsert insert = new SqlInsert("TableName");
 
     insert.addFields("field1", "field2", "field3");
@@ -85,7 +86,7 @@ public class TestSqlInsert {
   @Test
   public final void testGetSources() {
 
-    SqlBuilderFactory.setDefaultEngine("Generic");
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
     SqlInsert insert = new SqlInsert("TableName");
 
     SqlSelect select = new SqlSelect();
@@ -112,7 +113,7 @@ public class TestSqlInsert {
   @Test
   public final void testReset() {
 
-    SqlBuilderFactory.setDefaultEngine("Generic");
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
     SqlInsert insert = new SqlInsert("TableName");
 
     SqlSelect select = new SqlSelect();

@@ -70,11 +70,6 @@ public class Mobile extends ScreenImpl {
     super();
   }
 
-  @Override
-  public String getDsn() {
-    return Settings.getDsn();
-  }
-
   public void start() {
     Element loading = DomUtils.getElement("loading");
     if (loading != null) {
@@ -82,7 +77,7 @@ public class Mobile extends ScreenImpl {
     }
 
     createUi();
-    notifyInfo(BeeUtils.concat(1, "Start Time:", 
+    notifyInfo(BeeUtils.concat(1, "Start Time:",
         System.currentTimeMillis() - Settings.getStartMillis(), "ms"));
   }
 
@@ -119,7 +114,7 @@ public class Mobile extends ScreenImpl {
 
   protected int addLogToggle(BeeLayoutPanel panel) {
     final BeeCheckBox toggle = new BeeCheckBox("Log");
-    
+
     toggle.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
       public void onValueChange(ValueChangeEvent<Boolean> event) {
         if (event.getValue()) {
@@ -129,11 +124,11 @@ public class Mobile extends ScreenImpl {
         }
       }
     });
-    
+
     panel.addRightWidthTop(toggle, 3, 48, 2);
     return 50;
   }
-  
+
   @Override
   protected void createUi() {
     Widget w;
@@ -179,9 +174,9 @@ public class Mobile extends ScreenImpl {
   protected int getDefaultGridType() {
     return Settings.getGridType();
   }
-  
+
   protected int getWestWidth() {
-    return BeeUtils.limit(DomUtils.getClientWidth() / 5, 100, 200);    
+    return BeeUtils.limit(DomUtils.getClientWidth() / 5, 100, 200);
   }
 
   @Override
@@ -201,13 +196,13 @@ public class Mobile extends ScreenImpl {
   @Override
   protected Widget initSouth() {
     BeeLayoutPanel p = new BeeLayoutPanel();
-    
+
     int width = DomUtils.getClientWidth();
     int pct = BeeUtils.toInt(BeeUtils.rescale(width, 320, 800, 28, 50));
 
     final CliWidget cli = new CliWidget();
     p.addLeftWidthTop(cli, 3, Unit.PX, pct, Unit.PCT, 3, Unit.PX);
-    
+
     BeeImage play = new BeeImage(Global.getImages().play(), new BeeCommand() {
       @Override
       public void execute() {
@@ -217,7 +212,7 @@ public class Mobile extends ScreenImpl {
     p.addLeftTop(play, pct + 4, Unit.PCT, 2, Unit.PX);
 
     Horizontal hor = new Horizontal();
-    
+
     BeeButton auth = new BeeButton(true);
     auth.setId("auth-button");
     hor.add(auth);
@@ -232,10 +227,10 @@ public class Mobile extends ScreenImpl {
 
     int right = addLogToggle(p);
     p.addLeftRightTop(hor, pct + 12, Unit.PCT, right, Unit.PX, 1, Unit.PX);
-    
+
     return p;
   }
-  
+
   @Override
   protected Widget initWest() {
     return null;
@@ -289,11 +284,11 @@ public class Mobile extends ScreenImpl {
   private void setAuthButton(BeeButton authButton) {
     this.authButton = authButton;
   }
-  
+
   private void setLoadingWidget(Widget loadingWidget) {
     this.loadingWidget = loadingWidget;
   }
-  
+
   private void showViews(List<DataInfo> dataInfos) {
     HasWidgets panel = getDataPanel();
     if (panel == null) {
@@ -303,7 +298,7 @@ public class Mobile extends ScreenImpl {
     if (BeeUtils.isEmpty(dataInfos)) {
       return;
     }
-    
+
     Map<String, String> userViews = BeeKeeper.getUser().getViews();
     if (BeeUtils.isEmpty(userViews)) {
       for (DataInfo info : dataInfos) {
@@ -316,7 +311,7 @@ public class Mobile extends ScreenImpl {
           continue;
         }
         String caption = BeeUtils.ifString(entry.getValue(), name);
-        
+
         boolean found = false;
         for (DataInfo info : dataInfos) {
           if (BeeUtils.same(info.getName(), name)) {
@@ -331,7 +326,7 @@ public class Mobile extends ScreenImpl {
       }
     }
   }
-  
+
   private void updateAuthWidget(boolean login) {
     if (getAuthButton() == null) {
       return;

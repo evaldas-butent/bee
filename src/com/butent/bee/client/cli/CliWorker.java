@@ -274,7 +274,7 @@ public class CliWorker {
       return;
     }
 
-    Level[] levels = new Level[]{Level.FINEST, Level.FINER, Level.FINE, Level.CONFIG, Level.INFO,
+    Level[] levels = new Level[] {Level.FINEST, Level.FINER, Level.FINE, Level.CONFIG, Level.INFO,
         Level.WARNING, Level.SEVERE};
     for (Level lvl : levels) {
       BeeKeeper.getLog().log(lvl, lvl.getName().toLowerCase());
@@ -711,8 +711,6 @@ public class CliWorker {
             Storage.addStorageEventHandler(new StorageEvent.Handler() {
               @Override
               public void onStorageChange(StorageEvent event) {
-                BeeKeeper.getLog().info(tmpKey, event.getKey());
-
                 if (BeeUtils.same(event.getKey(), tmpKey)) {
                   BeeKeeper.getRpc().sendText(Service.REBUILD, "schema " + event.getNewValue(),
                       new ResponseCallback() {
@@ -1028,7 +1026,7 @@ public class CliWorker {
     FlexTable table = new FlexTable();
     table.setCellSpacing(3);
 
-    String[] types = new String[]{
+    String[] types = new String[] {
         "search", "tel", "url", "email", "datetime", "date", "month", "week", "time",
         "datetime-local", "number", "range", "color"};
     TextBox widget;

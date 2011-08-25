@@ -36,7 +36,7 @@ public class TestVariable {
     var = new Variable();
     var.setValue("10");
 
-    assertTrue(var.getBoolean());
+    assertFalse(var.getBoolean());
     var.setValue(true);
     assertTrue(var.getBoolean());
 

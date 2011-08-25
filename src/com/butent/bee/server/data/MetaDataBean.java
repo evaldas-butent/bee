@@ -66,7 +66,7 @@ public class MetaDataBean {
 
     if (prp.isEmpty()) {
       if (ok) {
-        buff.addLine(ds.getTp(), "no info available");
+        buff.addLine(ds.getDsn(), "no info available");
       }
       return;
     }

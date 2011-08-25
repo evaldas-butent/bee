@@ -21,7 +21,6 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeType;
 import com.butent.bee.shared.BeeWidget;
 import com.butent.bee.shared.Service;
-import com.butent.bee.shared.Stage;
 import com.butent.bee.shared.communication.ContentType;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
@@ -48,23 +47,12 @@ public class RowSetService extends CompositeService {
     FILTER_STATES, SHOW_STATE, REQUEST_STATETABLE
   }
 
-  public static final String NAME = PREFIX + "rowset";
-
   private String tbl = Service.VAR_VIEW_NAME;
   private String limit = Service.VAR_VIEW_LIMIT;
   private String offset = Service.VAR_VIEW_OFFSET;
   private String stt = Service.VAR_VIEW_STATES;
 
   private BeeRowSet rs;
-
-  protected RowSetService(String... svcId) {
-    super(svcId);
-  }
-
-  @Override
-  protected CompositeService create(String svcId) {
-    return new RowSetService(NAME, svcId);
-  }
 
   @Override
   protected boolean doStage(String stg, Object... params) {
@@ -101,7 +89,7 @@ public class RowSetService extends CompositeService {
                   Global.getVar(tbl).setItems(lst);
                   Global.getVar(tbl).setValue(lst.get(0));
 
-                  Global.inputVars(new Stage(self(), Stages.REQUEST_TABLE.name()), "ALL TABLES",
+                  Global.inputVars(getStage(Stages.REQUEST_TABLE.name()), "ALL TABLES",
                       tbl, limit, offset);
                 }
               }
@@ -204,7 +192,7 @@ public class RowSetService extends CompositeService {
                   } else {
                     Global.getVar(stt).setItems(lst);
                     Global.getVar(stt).setValue(lst.get(0));
-                    Global.inputVars(new Stage(self(), Stages.REQUEST_TABLE.name()),
+                    Global.inputVars(getStage(Stages.REQUEST_TABLE.name()),
                         Global.getVarValue(tbl), stt);
                   }
                 }
@@ -231,7 +219,7 @@ public class RowSetService extends CompositeService {
                   } else {
                     Global.getVar(stt).setItems(lst);
                     Global.getVar(stt).setValue(lst.get(0));
-                    Global.inputVars(new Stage(self(), Stages.REQUEST_STATETABLE.name()),
+                    Global.inputVars(getStage(Stages.REQUEST_STATETABLE.name()),
                         BeeUtils.ifString(Global.getVarValue(tbl), "ALL TABLES"), stt);
                   }
                 }
@@ -277,8 +265,8 @@ public class RowSetService extends CompositeService {
   }
 
   @Override
-  protected String getName() {
-    return NAME;
+  protected CompositeService getInstance() {
+    return new RowSetService();
   }
 
   private Widget getTree(BeeRowSet brs) {
@@ -323,11 +311,11 @@ public class RowSetService extends CompositeService {
     HasWidgets panel = BeeKeeper.getScreen().getActivePanel();
 
     FlowPanel buttons = new FlowPanel();
-    buttons.add(new BeeButton("NEW", self(), Stages.INSERT.name()));
-    buttons.add(new BeeButton("SAVE", self(), Stages.SAVE.name()));
-    buttons.add(new BeeButton("CANCEL", self(), Stages.CANCEL.name()));
-    buttons.add(new BeeButton("FILTER STATES", self(), Stages.FILTER_STATES.name()));
-    buttons.add(new BeeButton("SHOW STATE", self(), Stages.SHOW_STATE.name()));
+    buttons.add(new BeeButton("NEW", getId(), Stages.INSERT.name()));
+    buttons.add(new BeeButton("SAVE", getId(), Stages.SAVE.name()));
+    buttons.add(new BeeButton("CANCEL", getId(), Stages.CANCEL.name()));
+    buttons.add(new BeeButton("FILTER STATES", getId(), Stages.FILTER_STATES.name()));
+    buttons.add(new BeeButton("SHOW STATE", getId(), Stages.SHOW_STATE.name()));
 
     Split root = new Split();
     root.addNorth(buttons, 25);

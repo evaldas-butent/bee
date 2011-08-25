@@ -4,6 +4,7 @@ import com.butent.bee.server.sql.SqlBuilder;
 import com.butent.bee.server.sql.SqlBuilderFactory;
 import com.butent.bee.server.sql.SqlDelete;
 import com.butent.bee.server.sql.SqlUtils;
+import com.butent.bee.shared.BeeConst.SqlEngine;
 import com.butent.bee.shared.exceptions.BeeRuntimeException;
 
 import static org.junit.Assert.assertArrayEquals;
@@ -31,7 +32,7 @@ public class TestSqlDelete {
 
   @Test
   public final void testGetSources() {
-    SqlBuilderFactory.setDefaultEngine("Generic");
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
 
     SqlDelete delete = new SqlDelete("Target_table", "target_alias");
     delete.addFrom("From_source1");
@@ -46,7 +47,7 @@ public class TestSqlDelete {
 
   @Test
   public final void testGetSqlString() {
-    SqlBuilderFactory.setDefaultEngine("Generic");
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
     SqlBuilder builder = SqlBuilderFactory.getBuilder();
 
     SqlDelete delete = new SqlDelete("Target_table");
@@ -62,7 +63,7 @@ public class TestSqlDelete {
 
   @Test
   public final void testGetSqlStringAlias() {
-    SqlBuilderFactory.setDefaultEngine("Generic");
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
     SqlBuilder builder = SqlBuilderFactory.getBuilder();
 
     SqlDelete delete = new SqlDelete("Target_table", "target_alias");

@@ -8,7 +8,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 /**
  * Handles state information storage in XML structure.
  */
-
 @XmlRootElement(name = "BeeState", namespace = DataUtils.DEFAULT_NAMESPACE)
 public class XmlState {
 
@@ -24,7 +23,7 @@ public class XmlState {
   public XmlState getChanges(XmlState otherState) {
     XmlState diff = null;
 
-    if (otherState != null && BeeUtils.same(name, otherState.name)) {
+    if (otherState != null) {
       boolean upd = false;
       diff = new XmlState();
       diff.name = name;

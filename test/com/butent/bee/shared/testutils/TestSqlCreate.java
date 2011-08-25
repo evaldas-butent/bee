@@ -6,7 +6,7 @@ import com.butent.bee.server.sql.SqlBuilderFactory;
 import com.butent.bee.server.sql.SqlConstants.SqlDataType;
 import com.butent.bee.server.sql.SqlCreate;
 import com.butent.bee.server.sql.SqlSelect;
-import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.BeeConst.SqlEngine;
 import com.butent.bee.shared.exceptions.BeeRuntimeException;
 
 import static org.junit.Assert.assertEquals;
@@ -57,7 +57,7 @@ public class TestSqlCreate {
   @Test
   public final void testSqlCreate() {
 
-    SqlBuilderFactory.setDefaultEngine("Generic");
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
     SqlBuilder builder = SqlBuilderFactory.getBuilder();
 
     SqlCreate create = new SqlCreate("Target", true);
@@ -67,7 +67,7 @@ public class TestSqlCreate {
     assertEquals("CREATE TEMPORARY TABLE Target (arIvykdyta BIT NOT NULL)", create.getSqlString(
         builder));
 
-    SqlBuilderFactory.setDefaultEngine(BeeConst.MSSQL);
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.MSSQL);
     builder = SqlBuilderFactory.getBuilder();
 
     create = new SqlCreate("Target", true);
@@ -78,7 +78,7 @@ public class TestSqlCreate {
     assertEquals("CREATE TABLE [Target] ([arIvykdyta] BIT NOT NULL, [field2] INTEGER)", create
         .getSqlString(builder));
 
-    SqlBuilderFactory.setDefaultEngine(BeeConst.MYSQL);
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.MYSQL);
     builder = SqlBuilderFactory.getBuilder();
 
     create = new SqlCreate("Target", true);
@@ -90,7 +90,7 @@ public class TestSqlCreate {
         "CREATE TEMPORARY TABLE `Target` (`arIvykdyta` BIT NOT NULL, `field2` INTEGER) ENGINE=InnoDB",
         create.getSqlString(builder));
 
-    SqlBuilderFactory.setDefaultEngine("Generic");
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
     SqlBuilder builder2 = SqlBuilderFactory.getBuilder();
 
     SqlCreate create2 = new SqlCreate("Target", true);
@@ -126,7 +126,7 @@ public class TestSqlCreate {
         "CREATE TEMPORARY TABLE Target (boolean field BIT NOT NULL, char CHAR(25) NOT NULL, data INTEGER, datetime BIGINT, double value DOUBLE, int field INTEGER NOT NULL, long field BIGINT, numeric field NUMERIC(10, 10), string field VARCHAR(7))",
         create3.getSqlString(builder3));
 
-    SqlBuilderFactory.setDefaultEngine(BeeConst.PGSQL);
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.POSTGRESQL);
     builder = SqlBuilderFactory.getBuilder();
 
     create = new SqlCreate("Target", true);
@@ -139,7 +139,7 @@ public class TestSqlCreate {
         "CREATE TEMPORARY TABLE \"Target\" (\"arIvykdyta\" NUMERIC(1) NOT NULL, \"kaina\" DOUBLE PRECISION, \"data\" INTEGER)",
         create.getSqlString(builder));
 
-    SqlBuilderFactory.setDefaultEngine(BeeConst.ORACLE);
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.ORACLE);
     builder = SqlBuilderFactory.getBuilder();
 
     create = new SqlCreate("Target", true);
@@ -161,7 +161,7 @@ public class TestSqlCreate {
 
   @Test
   public final void testSqlCreateDataSource() {
-    SqlBuilderFactory.setDefaultEngine("Generic");
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
     SqlBuilder builder4 = SqlBuilderFactory.getBuilder();
 
     SqlCreate create4 = new SqlCreate("Target");
@@ -192,7 +192,7 @@ public class TestSqlCreate {
 
   @Test
   public final void testSqlCreateGetSources() {
-    SqlBuilderFactory.setDefaultEngine("Generic");
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
     SqlCreate create2 = new SqlCreate("Target", true);
 
     SqlSelect select2 = new SqlSelect();

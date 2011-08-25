@@ -27,7 +27,7 @@ import javax.ejb.TransactionAttributeType;
 
 @Singleton
 // TODO: waiting for JBoss bugfix http://community.jboss.org/thread/161844
-// @TransactionAttribute(TransactionAttributeType.MANDATORY)
+@TransactionAttribute(TransactionAttributeType.MANDATORY)
 public class IdGeneratorBean {
 
   private static Logger logger = Logger.getLogger(IdGeneratorBean.class.getName());

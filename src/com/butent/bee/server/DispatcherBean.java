@@ -2,8 +2,6 @@ package com.butent.bee.server;
 
 import com.butent.bee.server.communication.ResponseBuffer;
 import com.butent.bee.server.data.DataServiceBean;
-import com.butent.bee.server.data.IdGeneratorBean;
-import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.sql.SqlBuilderFactory;
@@ -42,13 +40,11 @@ public class DispatcherBean {
   Invocation invBean;
   @EJB
   UserServiceBean usrBean;
-  @EJB
-  IdGeneratorBean ig;
-  @EJB
-  SystemBean sys;
 
-  public ResponseObject doLogin(String dsn, String locale) {
-    initDb(dsn);
+  public ResponseObject doLogin(String locale) {
+    if (BeeUtils.isEmpty(SqlBuilderFactory.getDsn())) {
+      return ResponseObject.error("DSN not specified");
+    }
     return usrBean.login(locale);
   }
 
@@ -60,37 +56,32 @@ public class DispatcherBean {
     Assert.notEmpty(svc);
     Assert.notNull(buff);
     ResponseObject response = null;
-    initDb(dsn);
 
-    if (Service.isDbService(svc)) {
-      dataBean.doService(svc, dsn, reqInfo, buff);
-    } else if (Service.isSysService(svc)) {
-      response = sysBean.doService(svc, reqInfo, buff);
-
-    } else if (BeeUtils.same(svc, Service.LOAD_MENU)) {
-      menu.getMenu(reqInfo, buff);
-    } else if (BeeUtils.same(svc, Service.WHERE_AM_I)) {
-      buff.addLine(buff.now(), BeeConst.whereAmI());
-
-    } else if (BeeUtils.same(svc, Service.INVOKE)) {
-      Reflection.invoke(invBean, reqInfo.getParameter(Service.RPC_VAR_METH), reqInfo, buff);
-
-    } else if (Service.isDataService(svc)) {
-      response = uiBean.doService(reqInfo);
-
+    if (!BeeUtils.isEmpty(dsn) && !BeeUtils.same(SqlBuilderFactory.getDsn(), dsn)) {
+      response = ResponseObject.error("DSN mismatch:", SqlBuilderFactory.getDsn(), "!=", dsn);
     } else {
-      String msg = BeeUtils.concat(1, svc, "service type not recognized");
-      LogUtils.warning(logger, msg);
-      buff.addWarning(msg);
+      if (Service.isDbService(svc)) {
+        dataBean.doService(svc, dsn, reqInfo, buff);
+      } else if (Service.isSysService(svc)) {
+        response = sysBean.doService(svc, reqInfo, buff);
+
+      } else if (BeeUtils.same(svc, Service.LOAD_MENU)) {
+        menu.getMenu(reqInfo, buff);
+      } else if (BeeUtils.same(svc, Service.WHERE_AM_I)) {
+        buff.addLine(buff.now(), BeeConst.whereAmI());
+
+      } else if (BeeUtils.same(svc, Service.INVOKE)) {
+        Reflection.invoke(invBean, reqInfo.getParameter(Service.RPC_VAR_METH), reqInfo, buff);
+
+      } else if (Service.isDataService(svc)) {
+        response = uiBean.doService(reqInfo);
+
+      } else {
+        String msg = BeeUtils.concat(1, svc, "service type not recognized");
+        LogUtils.warning(logger, msg);
+        buff.addWarning(msg);
+      }
     }
     return response;
-  }
-
-  private void initDb(String dsn) {
-    if (!BeeUtils.isEmpty(dsn)
-        && !BeeUtils.same(SqlBuilderFactory.getEngine(), BeeConst.getDsType(dsn))) {
-      ig.destroy();
-      sys.initDatabase(dsn);
-    }
   }
 }

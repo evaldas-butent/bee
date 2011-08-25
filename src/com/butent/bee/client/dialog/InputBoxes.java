@@ -22,10 +22,10 @@ import com.butent.bee.client.widget.BeeCheckBox;
 import com.butent.bee.client.widget.BeeFileUpload;
 import com.butent.bee.client.widget.BeeListBox;
 import com.butent.bee.client.widget.BeeRadioButton;
-import com.butent.bee.client.widget.InputPassword;
-import com.butent.bee.client.widget.SimpleBoolean;
-import com.butent.bee.client.widget.InputText;
 import com.butent.bee.client.widget.InputInteger;
+import com.butent.bee.client.widget.InputPassword;
+import com.butent.bee.client.widget.InputText;
+import com.butent.bee.client.widget.SimpleBoolean;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeType;
@@ -43,7 +43,7 @@ import java.util.List;
  */
 
 public class InputBoxes {
-  
+
   private class KeyboardHandler implements KeyDownHandler {
 
     private final DialogBox dialog;
@@ -78,7 +78,7 @@ public class InputBoxes {
             }
             break;
           }
-          
+
           if (widget instanceof InputText || widget instanceof ListBox) {
             if (navigate(EventUtils.getEventTargetElement(event), true)) {
               EventUtils.eatEvent(event);
@@ -90,7 +90,7 @@ public class InputBoxes {
             }
           }
           break;
-        
+
         case KeyCodes.KEY_DOWN:
         case KeyCodes.KEY_UP:
           if (!(getWidget(event) instanceof ListBox)) {
@@ -110,11 +110,11 @@ public class InputBoxes {
     private Stage getStage() {
       return stage;
     }
-    
+
     private Widget getWidget(HasNativeEvent event) {
       return DomUtils.getWidget(getDialog(), EventUtils.getEventTargetElement(event));
     }
-    
+
     private boolean navigate(Element current, boolean forward) {
       if (current == null) {
         return false;
@@ -123,7 +123,7 @@ public class InputBoxes {
       if (children == null || children.size() <= 1) {
         return false;
       }
-      
+
       int index = BeeConst.UNDEF;
       for (int i = 0; i < children.size(); i++) {
         if (children.get(i).getElement().isOrHasChild(current)) {
@@ -134,13 +134,13 @@ public class InputBoxes {
       if (BeeConst.isUndef(index)) {
         return false;
       }
-      
+
       if (forward) {
         index++;
       } else {
         index--;
       }
-      
+
       if (index >= 0 && index < children.size()) {
         Widget child = children.get(index);
         if (child instanceof FocusWidget) {
@@ -154,7 +154,7 @@ public class InputBoxes {
       }
     }
   }
-  
+
   public void inputVars(Stage bst, String cap, Variable... vars) {
     Assert.notNull(vars);
     Assert.parameterCount(vars.length + 1, 2);

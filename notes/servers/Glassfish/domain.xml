@@ -1,6 +1,6 @@
 <domain>
   <resources>
-    <jdbc-connection-pool driver-classname="com.mysql.jdbc.Driver" datasource-classname="com.mysql.jdbc.Driver" res-type="java.sql.Driver" name="MySQL">
+    <jdbc-connection-pool driver-classname="com.mysql.jdbc.Driver" datasource-classname="" res-type="java.sql.Driver" name="MySQL">
       <property name="URL" value="jdbc:mysql://192.168.0.245:3306/pypas?user=root&amp;password=root&amp;characterEncoding=utf8"></property>
     </jdbc-connection-pool>
     <jdbc-connection-pool driver-classname="org.postgresql.Driver" datasource-classname="" res-type="java.sql.Driver" description="" name="PostgreSQL">
