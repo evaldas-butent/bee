@@ -24,6 +24,7 @@ public abstract class CompositeService {
     registerService(new MenuService());
     registerService(new RowSetService());
     registerService(new DsnService());
+    registerService(new StateService());
   }
 
   public static boolean doService(String svc, String stg, Object... parameters) {

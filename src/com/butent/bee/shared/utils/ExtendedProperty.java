@@ -9,7 +9,7 @@ import com.butent.bee.shared.DateTime;
  */
 public class ExtendedProperty extends Property {
 
-  public static String[] COLUMN_HEADERS = new String[]{"Name", "Sub", "Value", "Date"};
+  public static String[] COLUMN_HEADERS = new String[] {"Name", "Sub", "Value", "Date"};
   public static int COLUMN_COUNT = COLUMN_HEADERS.length;
 
   public static ExtendedProperty restore(String s) {
@@ -20,10 +20,10 @@ public class ExtendedProperty extends Property {
     ep.deserialize(s);
     return ep;
   }
-  
+
   private String sub;
   private DateTime date = new DateTime();
-  
+
   /**
    * Creates an ExtendedProperty from another specified ExtendedProperty {@code sp}. Name, Sub and
    * Value are copied from {@code sp}.
@@ -62,9 +62,9 @@ public class ExtendedProperty extends Property {
 
   @Override
   public void deserialize(String s) {
-    String[] arr = Codec.beeDeserialize(s);
+    String[] arr = Codec.beeDeserializeCollection(s);
     Assert.lengthEquals(arr, COLUMN_COUNT);
-    
+
     int i = 0;
     setName(arr[i++]);
     setSub(arr[i++]);
@@ -89,7 +89,7 @@ public class ExtendedProperty extends Property {
 
   @Override
   public String serialize() {
-    return Codec.beeSerializeAll(getName(), getSub(), getValue(), getDate());
+    return Codec.beeSerialize(new Object[] {getName(), getSub(), getValue(), getDate()});
   }
 
   /**

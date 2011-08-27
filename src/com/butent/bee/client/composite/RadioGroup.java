@@ -12,12 +12,11 @@ import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.Global;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.layout.Span;
-import com.butent.bee.client.view.edit.EditStopEvent.Handler;
 import com.butent.bee.client.view.edit.EditStopEvent;
+import com.butent.bee.client.view.edit.EditStopEvent.Handler;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.widget.BeeRadioButton;
 import com.butent.bee.shared.Assert;
@@ -33,7 +32,7 @@ import java.util.List;
  */
 
 public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boolean> {
-  
+
   public static int getValue(String name) {
     int v = BeeConst.UNDEF;
     if (BeeUtils.isEmpty(name)) {
@@ -66,9 +65,9 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
   private final String name;
   private final boolean vertical;
   private int optionCount = 0;
-  
+
   private Variable variable = null;
-  
+
   public RadioGroup(String name, boolean vertical) {
     super();
     Assert.notEmpty(name);
@@ -114,7 +113,7 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
   }
 
   public RadioGroup(Variable var, boolean vertical) {
-    this(Global.getVarName(var), vertical);
+    this(BeeUtils.createUniqueName("optiongroup"), vertical); // TODO: Global.getVarName(var)
     setVariable(var);
 
     List<String> opt = var.getItems();
@@ -132,11 +131,11 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
   public HandlerRegistration addEditStopHandler(Handler handler) {
     return addHandler(handler, EditStopEvent.getType());
   }
-  
+
   public HandlerRegistration addKeyDownHandler(KeyDownHandler handler) {
     return null;
   }
-  
+
   public void addOption(String label) {
     addOption(label, false, false);
   }
@@ -151,14 +150,14 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
 
     BeeRadioButton rb = new BeeRadioButton(getName(), label, asHtml);
     add(rb);
-    
+
     rb.setFormValue(BeeUtils.toString(index));
     rb.addStyleDependentName(isVertical() ? StyleUtils.NAME_VERTICAL : StyleUtils.NAME_HORIZONTAL);
     if (selected) {
       rb.setValue(true);
     }
     rb.addValueChangeHandler(this);
-    
+
     setOptionCount(index + 1);
   }
 
@@ -235,7 +234,7 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
     if (source instanceof BeeRadioButton && BeeUtils.isTrue(event.getValue())) {
       BeeRadioButton rb = (BeeRadioButton) source;
       int index = BeeUtils.toInt(rb.getFormValue());
-      
+
       if (getVariable() != null) {
         getVariable().setValue(getVariable().getItems().get(index));
       }
@@ -269,14 +268,14 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
   public void setValue(String value) {
     setValue(value, false);
   }
-  
+
   public void setValue(String value, boolean fireEvents) {
     int oldIndex = getSelectedIndex();
     int newIndex = BeeConst.UNDEF;
     if (BeeUtils.isDigit(BeeUtils.trim(value)) && isIndex(BeeUtils.toInt(value))) {
       newIndex = BeeUtils.toInt(value);
     }
-    
+
     if (newIndex != oldIndex) {
       if (isIndex(newIndex)) {
         getOption(newIndex).setValue(true);
@@ -288,7 +287,7 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
       }
     }
   }
-  
+
   public void startEdit(String oldValue, char charCode, EditorAction onEntry) {
   }
 
@@ -304,7 +303,7 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
       addOption(s, false, idx++ == value);
     }
   }
-  
+
   private BeeRadioButton getOption(int index) {
     if (isIndex(index)) {
       for (int i = 0; i < getWidgetCount(); i++) {

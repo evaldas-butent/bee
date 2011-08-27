@@ -24,7 +24,7 @@ public class EditorDescription implements BeeSerializable, HasInfo, HasOptions {
    * Contains serializable members of a editor type user interface components.
    */
 
-  private enum SerializationMember {
+  private enum Serial {
     TYPE, STEP_VALUE, CHARACTER_WIDTH, VISIBLE_LINES, FORMAT,
     WIDTH, HEIGHT, MIN_WIDTH, MIN_HEIGHT, ON_ENTRY, OPTIONS, ITEMS
   }
@@ -39,7 +39,7 @@ public class EditorDescription implements BeeSerializable, HasInfo, HasOptions {
   private static final String ATTR_MIN_HEIGHT = "minHeight";
   private static final String ATTR_ON_ENTRY = "onEntry";
   private static final String ATTR_OPTIONS = "options";
-  
+
   public static EditorDescription restore(String s) {
     if (BeeUtils.isEmpty(s)) {
       return null;
@@ -63,12 +63,12 @@ public class EditorDescription implements BeeSerializable, HasInfo, HasOptions {
 
   private Integer width = null;
   private Integer height = null;
-  
+
   private Integer minWidth = null;
   private Integer minHeight = null;
-  
+
   private EditorAction onEntry = null;
-  
+
   private String options = null;
 
   private List<String> items = null;
@@ -81,12 +81,12 @@ public class EditorDescription implements BeeSerializable, HasInfo, HasOptions {
   }
 
   public void deserialize(String s) {
-    SerializationMember[] members = SerializationMember.values();
-    String[] arr = Codec.beeDeserialize(s);
+    String[] arr = Codec.beeDeserializeCollection(s);
+    Serial[] members = Serial.values();
     Assert.lengthEquals(arr, members.length);
 
     for (int i = 0; i < members.length; i++) {
-      SerializationMember member = members[i];
+      Serial member = members[i];
       String value = arr[i];
       if (BeeUtils.isEmpty(value)) {
         continue;
@@ -127,11 +127,12 @@ public class EditorDescription implements BeeSerializable, HasInfo, HasOptions {
           setOptions(value.trim());
           break;
         case ITEMS:
-          if (BeeUtils.isEmpty(value)) {
+          String[] data = Codec.beeDeserializeCollection(value);
+
+          if (BeeUtils.isEmpty(data)) {
             setItems(null);
           } else {
-            List<String> lst = Lists.newArrayList(Codec.beeDeserialize(value));
-            setItems(lst);
+            setItems(Lists.newArrayList(data));
           }
           break;
       }
@@ -149,21 +150,21 @@ public class EditorDescription implements BeeSerializable, HasInfo, HasOptions {
   public Integer getHeight() {
     return height;
   }
-  
+
   public List<Property> getInfo() {
     List<Property> info = PropertyUtils.createProperties(
-      "Type", getType(),
-      "Step Value", getStepValue(),
-      "Character Width", getCharacterWidth(),
-      "Visible Lines", getVisibleLines(),
-      "Format", getFormat(),
-      "Width", getWidth(),
-      "Height", getHeight(),
-      "Min Width", getMinWidth(),
-      "Min Height", getMinHeight(),
-      "On Entry", getOnEntry(),
-      "Options", getOptions());
-    
+        "Type", getType(),
+        "Step Value", getStepValue(),
+        "Character Width", getCharacterWidth(),
+        "Visible Lines", getVisibleLines(),
+        "Format", getFormat(),
+        "Width", getWidth(),
+        "Height", getHeight(),
+        "Min Width", getMinWidth(),
+        "Min Height", getMinHeight(),
+        "On Entry", getOnEntry(),
+        "Options", getOptions());
+
     if (getItems() != null) {
       info.add(new Property("Items", BeeUtils.bracket(getItems().size())));
       for (int i = 0; i < getItems().size(); i++) {
@@ -215,7 +216,7 @@ public class EditorDescription implements BeeSerializable, HasInfo, HasOptions {
   }
 
   public String serialize() {
-    SerializationMember[] members = SerializationMember.values();
+    Serial[] members = Serial.values();
     Object[] arr = new Object[members.length];
 
     for (int i = 0; i < members.length; i++) {
@@ -258,7 +259,7 @@ public class EditorDescription implements BeeSerializable, HasInfo, HasOptions {
           break;
       }
     }
-    return Codec.beeSerializeAll(arr);
+    return Codec.beeSerialize(arr);
   }
 
   public void setAttributes(Map<String, String> attributes) {

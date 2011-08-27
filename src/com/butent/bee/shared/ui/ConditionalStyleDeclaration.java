@@ -42,7 +42,7 @@ public class ConditionalStyleDeclaration implements BeeSerializable, HasInfo {
   }
 
   public void deserialize(String s) {
-    String[] arr = Codec.beeDeserialize(s);
+    String[] arr = Codec.beeDeserializeCollection(s);
     Assert.lengthEquals(arr, 2);
 
     setStyle(StyleDeclaration.restore(arr[0]));
@@ -76,7 +76,7 @@ public class ConditionalStyleDeclaration implements BeeSerializable, HasInfo {
   }
 
   public String serialize() {
-    return Codec.beeSerializeAll(getStyle(), getCondition());
+    return Codec.beeSerialize(new Object[] {getStyle(), getCondition()});
   }
 
   public boolean validState() {

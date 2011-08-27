@@ -646,6 +646,15 @@ public class SystemBean {
     return stateCache.get(BeeUtils.normalize(stateName));
   }
 
+  public Collection<String> getStateNames() {
+    Collection<String> states = Lists.newArrayList();
+
+    for (BeeState state : getStates()) {
+      states.add(state.getName());
+    }
+    return states;
+  }
+
   public List<ExtendedProperty> getTableInfo(String tblName) {
     return getTable(tblName).getInfo();
   }
@@ -1482,6 +1491,10 @@ public class SystemBean {
       }
     }
     return view;
+  }
+
+  private Collection<BeeState> getStates() {
+    return ImmutableList.copyOf(stateCache.values());
   }
 
   private BeeTable getTable(String tblName) {

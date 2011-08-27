@@ -6,7 +6,6 @@ import com.google.common.collect.Maps;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeSerializable;
-import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -23,7 +22,7 @@ public class UserData implements BeeSerializable {
    * Contains serializable members of user data (login, first and last names, position etc).
    */
 
-  private enum SerializationMember {
+  private enum Serial {
     LOGIN, USER_ID, FIRST_NAME, LAST_NAME, POSITION, ROLES, LOCALE, PROPERTIES
   }
 
@@ -55,12 +54,12 @@ public class UserData implements BeeSerializable {
 
   @Override
   public void deserialize(String s) {
-    SerializationMember[] members = SerializationMember.values();
-    String[] arr = Codec.beeDeserialize(s);
+    String[] arr = Codec.beeDeserializeCollection(s);
+    Serial[] members = Serial.values();
     Assert.lengthEquals(arr, members.length);
 
     for (int i = 0; i < members.length; i++) {
-      SerializationMember member = members[i];
+      Serial member = members[i];
       String value = arr[i];
 
       switch (member) {
@@ -80,11 +79,12 @@ public class UserData implements BeeSerializable {
           this.position = value;
           break;
         case ROLES:
-          if (!BeeUtils.isEmpty(value)) {
-            userRoles = Lists.newArrayList();
-            String[] cArr = Codec.beeDeserialize(value);
+          String[] roles = Codec.beeDeserializeCollection(value);
 
-            for (String role : cArr) {
+          if (!BeeUtils.isEmpty(roles)) {
+            userRoles = Lists.newArrayList();
+
+            for (String role : roles) {
               userRoles.add(BeeUtils.toLong(role));
             }
           }
@@ -93,14 +93,13 @@ public class UserData implements BeeSerializable {
           this.locale = value;
           break;
         case PROPERTIES:
-          if (!BeeUtils.isEmpty(value)) {
-            properties = Maps.newHashMap();
-            String[] props = Codec.beeDeserialize(value);
+          String[] props = Codec.beeDeserializeCollection(value);
 
-            if (ArrayUtils.length(props) > 1) {
-              for (int j = 0; j < props.length; j += 2) {
-                properties.put(props[j], props[j + 1]);
-              }
+          if (!BeeUtils.isEmpty(props)) {
+            properties = Maps.newHashMap();
+
+            for (int j = 0; j < props.length; j += 2) {
+              properties.put(props[j], props[j + 1]);
             }
           }
           break;
@@ -154,11 +153,11 @@ public class UserData implements BeeSerializable {
 
   @Override
   public String serialize() {
-    SerializationMember[] members = SerializationMember.values();
+    Serial[] members = Serial.values();
     Object[] arr = new Object[members.length];
     int i = 0;
 
-    for (SerializationMember member : members) {
+    for (Serial member : members) {
       switch (member) {
         case LOGIN:
           arr[i++] = login;
@@ -186,7 +185,7 @@ public class UserData implements BeeSerializable {
           break;
       }
     }
-    return Codec.beeSerializeAll(arr);
+    return Codec.beeSerialize(arr);
   }
 
   public UserData setLocale(String locale) {

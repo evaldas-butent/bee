@@ -267,7 +267,7 @@ public class Mobile extends ScreenImpl {
       @Override
       public void onResponse(ResponseObject response) {
         Assert.notNull(response);
-        String[] arr = Codec.beeDeserialize((String) response.getResponse());
+        String[] arr = Codec.beeDeserializeCollection((String) response.getResponse());
 
         List<DataInfo> dataInfos = Lists.newArrayList();
         for (String s : arr) {

@@ -5,7 +5,6 @@ import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.Codec;
 
 import java.util.List;
 
@@ -77,7 +76,7 @@ public class ColumnIsEmptyFilter extends Filter {
 
   @Override
   public String serialize() {
-    return Codec.beeSerializeAll(BeeUtils.getClassName(this.getClass()), column);
+    return super.serialize(column);
   }
 
   @Override

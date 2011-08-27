@@ -23,7 +23,7 @@ public class GridComponentDescription implements BeeSerializable, HasInfo {
    * Contains serializable members of a grid user interface component.
    */
 
-  private enum SerializationMember {
+  private enum Serial {
     STYLE, HEIGHT, MIN_HEIGHT, MAX_HEIGHT, PADDING, BORDER_WIDTH, MARGIN
   }
 
@@ -68,8 +68,8 @@ public class GridComponentDescription implements BeeSerializable, HasInfo {
   }
 
   public void deserialize(String s) {
-    SerializationMember[] members = SerializationMember.values();
-    String[] arr = Codec.beeDeserialize(s);
+    String[] arr = Codec.beeDeserializeCollection(s);
+    Serial[] members = Serial.values();
     Assert.lengthEquals(arr, members.length);
 
     for (int i = 0; i < members.length; i++) {
@@ -148,7 +148,7 @@ public class GridComponentDescription implements BeeSerializable, HasInfo {
   }
 
   public String serialize() {
-    SerializationMember[] members = SerializationMember.values();
+    Serial[] members = Serial.values();
     Object[] arr = new Object[members.length];
 
     for (int i = 0; i < members.length; i++) {
@@ -176,7 +176,7 @@ public class GridComponentDescription implements BeeSerializable, HasInfo {
           break;
       }
     }
-    return Codec.beeSerializeAll(arr);
+    return Codec.beeSerialize(arr);
   }
 
   public void setAttributes(Map<String, String> attributes) {

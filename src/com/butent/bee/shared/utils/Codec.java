@@ -9,7 +9,6 @@ import com.butent.bee.shared.Pair;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
 
@@ -18,14 +17,14 @@ import java.util.Map;
  */
 public class Codec {
   private static final String SERIALIZATION_SEPARATOR = ";";
-  private static final char[] HEX_CHARS = new char[]{
+  private static final char[] HEX_CHARS = new char[] {
       '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd',
       'e', 'f'};
 
   private static final MessageDigest MD5;
   private static int mdChunk = 0;
 
-  private static final char[] base64Chars = new char[]{
+  private static final char[] base64Chars = new char[] {
       'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N',
       'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b',
       'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p',
@@ -161,105 +160,130 @@ public class Codec {
   }
 
   /**
-   * Deserializes the String {@code ser}.
+   * Deserializes the string {@code s}.
+   * 
+   * @param s a value to deserialize
+   * @return a deserialized String.
+   */
+  public static String beeDeserialize(String s) {
+    String res = null;
+
+    if (!BeeUtils.isEmpty(s)) {
+      int pos = 0;
+      int n = BeeUtils.toInt(s.substring(pos, ++pos));
+
+      if (n > 0) {
+        int l = BeeUtils.toInt(s.substring(pos, pos += n));
+
+        if (l > 0) {
+          res = s.substring(pos, pos += l);
+        } else {
+          res = BeeConst.STRING_EMPTY;
+        }
+      }
+      if (pos < s.length()) {
+        res = null;
+      }
+    }
+    return res;
+  }
+
+  /**
+   * Deserializes the collection string {@code ser}.
    * 
    * @param ser a value to deserialize
    * @return a deserialized String array.
    */
-  public static String[] beeDeserialize(String ser) {
-    Assert.notNull(ser);
+  public static String[] beeDeserializeCollection(String ser) {
+    String[] res = null;
+    String s;
 
-    ArrayList<String> res = new ArrayList<String>();
-    int pos = 0;
-
-    while (pos < ser.length()) {
-      String digit = ser.substring(pos, ++pos);
-      if (!BeeUtils.isDigit(digit)) {
-        break;
-      }
-      int n = BeeUtils.toInt(digit);
-      if (BeeUtils.isEmpty(n)) {
-        res.add(null);
-        continue;
-      }
-      int l = BeeUtils.toInt(ser.substring(pos, pos += n));
-      if (BeeUtils.isEmpty(l)) {
-        res.add(BeeConst.STRING_EMPTY);
-        continue;
-      }
-      res.add(ser.substring(pos, pos += l));
+    if (BeeUtils.isEmpty(ser) || ser.startsWith("c")) {
+      s = ser;
+    } else {
+      s = beeDeserialize(ser);
     }
-    return res.toArray(new String[res.size()]);
+    if (!BeeUtils.isEmpty(s) && s.startsWith("c")) {
+      int pos = 1;
+      int n = BeeUtils.toInt(s.substring(pos, ++pos));
+
+      if (n > 0) {
+        int l = BeeUtils.toInt(s.substring(pos, pos += n));
+        res = new String[l];
+
+        for (int i = 0; i < l; i++) {
+          int start = pos;
+          n = BeeUtils.toInt(s.substring(pos, ++pos));
+
+          if (n > 0) {
+            int c = BeeUtils.toInt(s.substring(pos, pos += n));
+            pos += c;
+          }
+          res[i] = beeDeserialize(s.substring(start, pos));
+        }
+        if (pos < s.length()) {
+          res = null;
+        }
+      }
+    }
+    return res;
   }
 
   /**
    * Serializes an Object {@code obj}. The method wraps the Object, if the object is an array, the
    * array itself is wrapped too. This method also serializes the length of each object.
    * <p>
-   * E.g we are serializing: {@code arr[] = "hello", "ab", "abc"} , the output is
-   * {@code 15hello12ab13abc}
+   * Example: <br>
+   * <code>beeSerialize("hello") = "15hello"
+   * <br>
+   * beeSerialize(new String[]{"hello", "ab", "abc"}) = "220c11315hello12ab13abc"
+   * </code>
    * 
    * @param obj an Object to serialize
    * @return a String representation of the serialized Object for deserialization.
    */
   public static String beeSerialize(Object obj) {
+    int items = -1;
     StringBuilder sb = new StringBuilder();
 
     if (obj == null) {
       sb.append(0);
 
     } else if (ArrayUtils.isArray(obj)) {
+      items = 0;
       for (int i = 0; i < ArrayUtils.length(obj); i++) {
-        sb.append(beeSerializeAll(ArrayUtils.get(obj, i)));
+        items++;
+        sb.append(beeSerialize(ArrayUtils.get(obj, i)));
       }
 
     } else if (obj instanceof Map) {
+      items = 0;
       for (Map.Entry<?, ?> ob : ((Map<?, ?>) obj).entrySet()) {
-        sb.append(beeSerializeAll(ob.getKey(), ob.getValue()));
+        items++;
+        sb.append(beeSerialize(ob.getKey())).append(beeSerialize(ob.getValue()));
       }
 
     } else if (obj instanceof Collection) {
+      items = 0;
       for (Object ob : (Collection<?>) obj) {
-        sb.append(beeSerializeAll(ob));
+        items++;
+        sb.append(beeSerialize(ob));
       }
 
     } else if (obj instanceof BeeSerializable) {
-      sb.append(((BeeSerializable) obj).serialize());
+      sb.append(beeSerialize("w" + ((BeeSerializable) obj).serialize()));
 
     } else {
       String s = BeeUtils.transformNoTrim(obj);
       String l = BeeUtils.transform(s.length());
       sb.append(l.length()).append(l).append(s);
     }
-    return sb.toString();
-  }
-
-  /**
-   * Serializes all Objects {@code obj}. The method wraps each element in the object, if the object
-   * is an array, the array itself is wrapped too.
-   * 
-   * @see #beeSerialize(Object)
-   * @param obj Objects to serialize
-   * @return
-   */
-  public static String beeSerializeAll(Object... obj) {
-    Assert.parameterCount((obj == null) ? 0 : obj.length, 1);
-    StringBuilder sb = new StringBuilder();
-
-    for (Object o : obj) {
-      String s = beeSerialize(o);
-
-      if (ArrayUtils.isArray(o)
-          || o instanceof Map
-          || o instanceof Collection
-          || o instanceof BeeSerializable) {
-
-        sb.append(beeSerialize(s));
-      } else {
-        sb.append(s);
-      }
+    if (items < 0) {
+      return sb.toString();
+    } else {
+      String s = BeeUtils.transform(items);
+      return beeSerialize("c" + BeeUtils.transform(s.length()) + s + sb.toString());
     }
-    return sb.toString();
   }
 
   /**

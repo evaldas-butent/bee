@@ -19,7 +19,7 @@ import java.util.Date;
  * {@code TimeOfDayValue} has {@code Value} as a superclass.
  */
 public abstract class Value implements Comparable<Value>, Transformable, BeeSerializable {
-  
+
   public static Value getNullValueFromValueType(ValueType type) {
     switch (type) {
       case BOOLEAN:
@@ -123,7 +123,7 @@ public abstract class Value implements Comparable<Value>, Transformable, BeeSeri
   }
 
   public static Value restore(String s) {
-    String[] arr = Codec.beeDeserialize(s);
+    String[] arr = Codec.beeDeserializeCollection(s);
     Assert.lengthEquals(arr, 2);
     String clazz = arr[0];
     String data = arr[1];
@@ -189,7 +189,7 @@ public abstract class Value implements Comparable<Value>, Transformable, BeeSeri
         value = ((DateTime) value).getTime();
       }
     }
-    return Codec.beeSerializeAll(getType().getTypeCode(), value);
+    return Codec.beeSerialize(new Object[] {getType().getTypeCode(), value});
   }
 
   public abstract String transform();

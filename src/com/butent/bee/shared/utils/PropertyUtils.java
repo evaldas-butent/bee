@@ -219,11 +219,11 @@ public class PropertyUtils {
     }
     return r;
   }
-  
+
   public static void addWhenEmpty(Collection<Property> dst, Class<?> clazz) {
     Assert.notNull(dst);
     Assert.notNull(clazz);
-    
+
     if (dst.isEmpty()) {
       dst.add(new Property(BeeUtils.getClassName(clazz), "instance is empty"));
     }
@@ -391,27 +391,27 @@ public class PropertyUtils {
       return null;
     }
     List<ExtendedProperty> lst = Lists.newArrayList();
-    for (String prop : Codec.beeDeserialize(s)) {
+    for (String prop : Codec.beeDeserializeCollection(s)) {
       lst.add(ExtendedProperty.restore(prop));
     }
     return lst;
   }
-  
+
   public static List<Property> restoreProperties(String s) {
     if (BeeUtils.isEmpty(s)) {
       return null;
     }
     List<Property> lst = Lists.newArrayList();
-    for (String prop : Codec.beeDeserialize(s)) {
+    for (String prop : Codec.beeDeserializeCollection(s)) {
       lst.add(Property.restore(prop));
     }
     return lst;
   }
-  
+
   public static String serializeExtended(Collection<ExtendedProperty> src) {
     return Codec.beeSerialize(src);
   }
-  
+
   public static String serializeProperties(Collection<Property> src) {
     return Codec.beeSerialize(src);
   }

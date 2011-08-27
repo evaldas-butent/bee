@@ -63,7 +63,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
    * Contains a list of serializable members of column object.
    */
 
-  private enum SerializationMember {
+  private enum Serial {
     COL_TYPE, NAME, CAPTION, READ_ONLY, WIDTH, SOURCE, REL_SOURCE, REL_VIEW, REL_COLUMN,
     MIN_WIDTH, MAX_WIDTH, SORTABLE, VISIBLE, FORMAT, HOR_ALIGN, HAS_FOOTER, SHOW_WIDTH,
     VALIDATION, EDITABLE, CARRY, EDITOR, MIN_VALUE, MAX_VALUE,
@@ -136,18 +136,18 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
     this(colType, name);
     setVisible(visible);
   }
-  
+
   private ColumnDescription() {
   }
 
   @Override
   public void deserialize(String s) {
-    SerializationMember[] members = SerializationMember.values();
-    String[] arr = Codec.beeDeserialize(s);
+    String[] arr = Codec.beeDeserializeCollection(s);
+    Serial[] members = Serial.values();
     Assert.lengthEquals(arr, members.length);
 
     for (int i = 0; i < members.length; i++) {
-      SerializationMember member = members[i];
+      Serial member = members[i];
       String value = arr[i];
       if (BeeUtils.isEmpty(value)) {
         continue;
@@ -239,11 +239,13 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
           setBodyStyle(StyleDeclaration.restore(value));
           break;
         case DYN_STYLES:
-          if (BeeUtils.isEmpty(value)) {
+          String[] scs = Codec.beeDeserializeCollection(value);
+
+          if (BeeUtils.isEmpty(scs)) {
             setDynStyles(null);
           } else {
-            String[] scs = Codec.beeDeserialize(value);
             List<ConditionalStyleDeclaration> lst = Lists.newArrayList();
+
             for (String z : scs) {
               lst.add(ConditionalStyleDeclaration.restore(z));
             }
@@ -458,11 +460,11 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
 
   @Override
   public String serialize() {
-    SerializationMember[] members = SerializationMember.values();
+    Serial[] members = Serial.values();
     Object[] arr = new Object[members.length];
     int i = 0;
 
-    for (SerializationMember member : members) {
+    for (Serial member : members) {
       switch (member) {
         case COL_TYPE:
           arr[i++] = (getColType() == null) ? null : getColType().getTagName();
@@ -562,7 +564,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
           break;
       }
     }
-    return Codec.beeSerializeAll(arr);
+    return Codec.beeSerialize(arr);
   }
 
   public void setBodyStyle(StyleDeclaration bodyStyle) {

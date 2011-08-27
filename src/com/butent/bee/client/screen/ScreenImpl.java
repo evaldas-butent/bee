@@ -39,6 +39,7 @@ import com.butent.bee.client.ui.FormService;
 import com.butent.bee.client.ui.GwtUiCreator;
 import com.butent.bee.client.ui.MenuService;
 import com.butent.bee.client.ui.RowSetService;
+import com.butent.bee.client.ui.StateService;
 import com.butent.bee.client.utils.BeeCommand;
 import com.butent.bee.client.view.View;
 import com.butent.bee.client.widget.BeeButton;
@@ -406,6 +407,8 @@ public class ScreenImpl implements Screen {
     p.setSpacing(5);
 
     p.add(new BeeButton("DSN", CompositeService.name(DsnService.class), DsnService.SVC_GET_DSNS));
+    p.add(new BeeButton("States", CompositeService.name(StateService.class),
+        StateService.SVC_GET_STATES));
 
     p.add(new ButtonGroup("Ping", Service.DB_PING,
         "Info", Service.DB_INFO,

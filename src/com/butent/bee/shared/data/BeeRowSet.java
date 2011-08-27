@@ -14,7 +14,6 @@ import com.butent.bee.shared.utils.Codec;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.logging.Logger;
 
 /**
  * Extends {@code RowList} class and enables using row set objects which are chunks of data put in
@@ -27,11 +26,9 @@ public class BeeRowSet extends RowList<BeeRow, BeeColumn> implements BeeSerializ
    * Contains a list of items for serialization.
    */
 
-  private enum SerializationMembers {
+  private enum Serial {
     VIEW, COLUMNS, ROWS
   }
-
-  private static Logger logger = Logger.getLogger(BeeRowSet.class.getName());
 
   public static BeeRowSet restore(String s) {
     BeeRowSet rs = new BeeRowSet();
@@ -132,12 +129,12 @@ public class BeeRowSet extends RowList<BeeRow, BeeColumn> implements BeeSerializ
   public void deserialize(String s) {
     Assert.isTrue(getNumberOfColumns() == 0);
 
-    SerializationMembers[] members = SerializationMembers.values();
-    String[] arr = Codec.beeDeserialize(s);
+    String[] arr = Codec.beeDeserializeCollection(s);
+    Serial[] members = Serial.values();
     Assert.lengthEquals(arr, members.length);
 
     for (int i = 0; i < members.length; i++) {
-      SerializationMembers member = members[i];
+      Serial member = members[i];
       String value = arr[i];
 
       switch (member) {
@@ -146,25 +143,26 @@ public class BeeRowSet extends RowList<BeeRow, BeeColumn> implements BeeSerializ
           break;
 
         case COLUMNS:
-          String[] cArr = Codec.beeDeserialize(value);
-          List<BeeColumn> columns = Lists.newArrayList();
-          for (int j = 0; j < cArr.length; j++) {
-            columns.add(BeeColumn.restore(cArr[j]));
+          String[] cArr = Codec.beeDeserializeCollection(value);
+
+          if (!BeeUtils.isEmpty(cArr)) {
+            List<BeeColumn> columns = Lists.newArrayList();
+
+            for (String col : cArr) {
+              columns.add(BeeColumn.restore(col));
+            }
+            setColumns(columns);
           }
-          setColumns(columns);
           break;
 
         case ROWS:
-          if (!BeeUtils.isEmpty(value)) {
-            String[] data = Codec.beeDeserialize(value);
+          String[] data = Codec.beeDeserializeCollection(value);
 
+          if (!BeeUtils.isEmpty(data)) {
             for (String r : data) {
               addRow(BeeRow.restore(r));
             }
           }
-          break;
-        default:
-          logger.severe("Unhandled serialization member: " + member);
           break;
       }
     }
@@ -254,11 +252,11 @@ public class BeeRowSet extends RowList<BeeRow, BeeColumn> implements BeeSerializ
 
   @Override
   public String serialize() {
-    SerializationMembers[] members = SerializationMembers.values();
+    Serial[] members = Serial.values();
     Object[] arr = new Object[members.length];
     int i = 0;
 
-    for (SerializationMembers member : members) {
+    for (Serial member : members) {
       switch (member) {
         case VIEW:
           arr[i++] = getViewName();
@@ -271,13 +269,9 @@ public class BeeRowSet extends RowList<BeeRow, BeeColumn> implements BeeSerializ
         case ROWS:
           arr[i++] = getRows().getList();
           break;
-
-        default:
-          logger.severe("Unhandled serialization member: " + member);
-          break;
       }
     }
-    return Codec.beeSerializeAll(arr);
+    return Codec.beeSerialize(arr);
   }
 
   public void setViewName(String viewName) {

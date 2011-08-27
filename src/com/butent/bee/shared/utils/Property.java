@@ -9,10 +9,10 @@ import com.butent.bee.shared.Transformable;
  * Used for creating Properties.
  */
 public class Property implements Comparable<Property>, Transformable, BeeSerializable {
-  
-  public static String[] HEADERS = new String[]{"Property", "Value"};
+
+  public static String[] HEADERS = new String[] {"Property", "Value"};
   public static int HEADER_COUNT = HEADERS.length;
-  
+
   public static Property restore(String s) {
     if (BeeUtils.isEmpty(s)) {
       return null;
@@ -53,9 +53,9 @@ public class Property implements Comparable<Property>, Transformable, BeeSeriali
   }
 
   public void deserialize(String s) {
-    String[] arr = Codec.beeDeserialize(s);
+    String[] arr = Codec.beeDeserializeCollection(s);
     Assert.lengthEquals(arr, HEADER_COUNT);
-    
+
     setName(arr[0]);
     setValue(arr[1]);
   }
@@ -75,7 +75,7 @@ public class Property implements Comparable<Property>, Transformable, BeeSeriali
   }
 
   public String serialize() {
-    return Codec.beeSerializeAll(getName(), getValue());
+    return Codec.beeSerialize(new Object[] {getName(), getValue()});
   }
 
   /**
@@ -95,7 +95,7 @@ public class Property implements Comparable<Property>, Transformable, BeeSeriali
   public void setValue(String value) {
     this.value = value;
   }
-  
+
   /**
    * @return a String representation of the current Property. Name and value are separated with a
    *         default value separator "=".

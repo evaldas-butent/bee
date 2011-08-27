@@ -1,6 +1,5 @@
 package com.butent.bee.client.ui;
 
-import com.google.common.collect.Lists;
 import com.google.gwt.event.shared.GwtEvent;
 
 import com.butent.bee.client.BeeKeeper;
@@ -15,8 +14,6 @@ import com.butent.bee.shared.Variable;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
-
-import java.util.List;
 
 public class DsnService extends CompositeService {
 
@@ -36,14 +33,14 @@ public class DsnService extends CompositeService {
             @Override
             public void onResponse(ResponseObject response) {
               Assert.notNull(response);
-              List<String> lst = null;
+              String[] dsns = null;
 
               if (response.hasResponse()) {
-                lst = Lists.newArrayList(Codec.beeDeserialize((String) response.getResponse()));
+                dsns = Codec.beeDeserializeCollection((String) response.getResponse());
               }
-              if (!BeeUtils.isEmpty(lst)) {
+              if (!BeeUtils.isEmpty(dsns)) {
                 dsn = new Variable("Choose DSN", BeeType.STRING, BeeKeeper.getUser().getDsn(),
-                    BeeWidget.LIST, lst.toArray(new String[0]));
+                    BeeWidget.LIST, dsns);
 
                 Global.inputVars(getStage(SVC_SWITCH_DSN), "Available DSN's", dsn);
               } else {

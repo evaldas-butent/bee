@@ -44,7 +44,7 @@ public class Calculation implements BeeSerializable, HasInfo, Transformable {
   }
 
   public void deserialize(String s) {
-    String[] arr = Codec.beeDeserialize(s);
+    String[] arr = Codec.beeDeserializeCollection(s);
     Assert.lengthEquals(arr, 2);
 
     setExpression(BeeUtils.isEmpty(arr[0]) ? null : Codec.decodeBase64(arr[0]));
@@ -84,7 +84,7 @@ public class Calculation implements BeeSerializable, HasInfo, Transformable {
     String expr = BeeUtils.isEmpty(getExpression()) ? null : Codec.encodeBase64(getExpression());
     String func = BeeUtils.isEmpty(getFunction()) ? null : Codec.encodeBase64(getFunction());
 
-    return Codec.beeSerializeAll(expr, func);
+    return Codec.beeSerialize(new Object[] {expr, func});
   }
 
   public String transform() {

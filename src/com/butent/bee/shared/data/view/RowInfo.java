@@ -28,7 +28,7 @@ public class RowInfo implements BeeSerializable, Comparable<RowInfo>, Transforma
     setId(id);
     setVersion(version);
   }
-  
+
   public RowInfo(IsRow row) {
     this(row.getId(), row.getVersion());
   }
@@ -49,7 +49,7 @@ public class RowInfo implements BeeSerializable, Comparable<RowInfo>, Transforma
 
   @Override
   public void deserialize(String s) {
-    String[] arr = Codec.beeDeserialize(s);
+    String[] arr = Codec.beeDeserializeCollection(s);
     Assert.lengthEquals(arr, 2);
     setId(BeeUtils.toLong(arr[0]));
     setVersion(BeeUtils.toLong(arr[1]));
@@ -85,13 +85,13 @@ public class RowInfo implements BeeSerializable, Comparable<RowInfo>, Transforma
 
   @Override
   public String serialize() {
-    return Codec.beeSerializeAll(getId(), getVersion());
+    return Codec.beeSerialize(new Object[] {getId(), getVersion()});
   }
 
   public void setVersion(long version) {
     this.version = version;
   }
-  
+
   @Override
   public String toString() {
     return BeeUtils.concat(0, "ID=", getId(), ", VERSION=" + getVersion());

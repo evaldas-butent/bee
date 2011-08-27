@@ -19,7 +19,7 @@ import java.util.List;
 public abstract class Filter implements BeeSerializable, Transformable, RowFilter {
 
   public static Filter restore(String s) {
-    String[] arr = Codec.beeDeserialize(s);
+    String[] arr = Codec.beeDeserializeCollection(s);
     Assert.lengthEquals(arr, 2);
     String clazz = arr[0];
     String data = arr[1];
@@ -85,6 +85,10 @@ public abstract class Filter implements BeeSerializable, Transformable, RowFilte
       }
     }
     return -1;
+  }
+
+  protected String serialize(Object obj) {
+    return Codec.beeSerialize(new Object[] {BeeUtils.getClassName(this.getClass()), obj});
   }
 
   protected void setSafe() {

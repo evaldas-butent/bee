@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 import com.butent.bee.client.ui.DsnService;
+import com.butent.bee.client.ui.StateService;
 import com.butent.bee.server.Config;
 import com.butent.bee.server.DataSourceBean;
 import com.butent.bee.server.data.BeeView;
@@ -29,6 +30,7 @@ import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.XmlState;
 import com.butent.bee.shared.data.XmlTable;
 import com.butent.bee.shared.data.XmlTable.XmlField;
 import com.butent.bee.shared.data.filter.Filter;
@@ -148,6 +150,9 @@ public class UiServiceBean {
       response = getDsns();
     } else if (BeeUtils.same(svc, DsnService.SVC_SWITCH_DSN)) {
       response = switchDsn(reqInfo.getParameter(DsnService.VAR_DSN));
+
+    } else if (BeeUtils.same(svc, StateService.SVC_GET_STATES)) {
+      response = getStates();
 
     } else {
       String msg = BeeUtils.concat(1, "data service not recognized:", svc);
@@ -560,8 +565,8 @@ public class UiServiceBean {
 
   private ResponseObject deleteRows(RequestInfo reqInfo) {
     String viewName = reqInfo.getParameter(Service.VAR_VIEW_NAME);
-    String rows = reqInfo.getParameter(Service.VAR_VIEW_ROWS);
     Assert.notEmpty(viewName);
+    String[] rows = Codec.beeDeserializeCollection(reqInfo.getParameter(Service.VAR_VIEW_ROWS));
     Assert.notEmpty(rows);
 
     ResponseObject response = new ResponseObject();
@@ -571,7 +576,7 @@ public class UiServiceBean {
     if (view.isReadOnly()) {
       response.addError("View", view.getName(), "is read only.");
     } else {
-      for (String s : Codec.beeDeserialize(rows)) {
+      for (String s : rows) {
         RowInfo row = RowInfo.restore(s);
         ResponseObject resp = sys.deleteRow(viewName, row);
         int res = resp.getResponse(-1, logger);
@@ -689,6 +694,19 @@ public class UiServiceBean {
     }
 
     return ResponseObject.error("grid", gridName, "not found");
+  }
+
+  private ResponseObject getStates() {
+    List<XmlState> states = Lists.newArrayList();
+
+    for (String stateName : sys.getStateNames()) {
+      XmlState xmlState = sys.getXmlState(stateName);
+
+      if (xmlState != null) {
+        states.add(xmlState);
+      }
+    }
+    return ResponseObject.response(states);
   }
 
   private ResponseObject getStates(RequestInfo reqInfo) {

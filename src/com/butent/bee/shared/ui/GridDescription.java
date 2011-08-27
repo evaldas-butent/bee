@@ -50,11 +50,11 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
 
   private Boolean hasHeaders = null;
   private Boolean hasFooters = null;
-  
+
   private Integer asyncThreshold = null;
   private Integer pagingThreshold = null;
   private Integer searchThreshold = null;
-  
+
   private Integer pageSize = null;
 
   private String newRowColumns = null;
@@ -97,7 +97,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   @Override
   public void deserialize(String s) {
     SerializationMember[] members = SerializationMember.values();
-    String[] arr = Codec.beeDeserialize(s);
+    String[] arr = Codec.beeDeserializeCollection(s);
     Assert.lengthEquals(arr, members.length);
 
     for (int i = 0; i < members.length; i++) {
@@ -119,8 +119,10 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
           break;
         case COLUMNS:
           getColumns().clear();
-          if (!BeeUtils.isEmpty(value)) {
-            for (String z : Codec.beeDeserialize(value)) {
+          String[] cols = Codec.beeDeserializeCollection(value);
+
+          if (!BeeUtils.isEmpty(cols)) {
+            for (String z : cols) {
               addColumn(ColumnDescription.restore(z));
             }
           }
@@ -168,11 +170,13 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
           setRowValidation(Calculation.restore(value));
           break;
         case ROW_STYLES:
-          if (BeeUtils.isEmpty(value)) {
+          String[] styles = Codec.beeDeserializeCollection(value);
+
+          if (BeeUtils.isEmpty(styles)) {
             setRowStyles(null);
           } else {
             List<ConditionalStyleDeclaration> lst = Lists.newArrayList();
-            for (String cs : Codec.beeDeserialize(value)) {
+            for (String cs : styles) {
               lst.add(ConditionalStyleDeclaration.restore(cs));
             }
             setRowStyles(lst);
@@ -207,7 +211,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   public List<ColumnDescription> getColumns() {
     return columns;
   }
-  
+
   public GridComponentDescription getFooter() {
     return footer;
   }
@@ -441,7 +445,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
           break;
       }
     }
-    return Codec.beeSerializeAll(arr);
+    return Codec.beeSerialize(arr);
   }
 
   public void setAsyncThreshold(Integer asyncThreshold) {
@@ -455,15 +459,15 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   public void setCaption(String caption) {
     this.caption = caption;
   }
-  
+
   public void setDefaults() {
     setHasHeaders(true);
     setHasFooters(true);
-    
+
     setAsyncThreshold(DataUtils.getDefaultAsyncThreshold());
     setSearchThreshold(DataUtils.getDefaultSearchThreshold());
     setPagingThreshold(DataUtils.getDefaultPagingThreshold());
-    
+
     setPageSize(DataUtils.getDefaultPageSize());
   }
 
@@ -526,7 +530,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   public void setSearchThreshold(Integer searchThreshold) {
     this.searchThreshold = searchThreshold;
   }
-  
+
   public void setShowColumnWidths(Boolean showColumnWidths) {
     this.showColumnWidths = showColumnWidths;
   }
@@ -538,7 +542,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   private void setName(String name) {
     this.name = name;
   }
-  
+
   private void setViewName(String viewName) {
     this.viewName = viewName;
   }

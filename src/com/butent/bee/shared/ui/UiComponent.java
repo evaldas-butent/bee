@@ -3,7 +3,6 @@ package com.butent.bee.shared.ui;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.HasId;
-import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -25,7 +24,7 @@ public abstract class UiComponent implements HasId, BeeSerializable {
    * Contains a list of component's parts going through serialization.
    */
 
-  private enum SerializationMembers {
+  private enum Serial {
     ID, CAPTION, PROPERTIES, CHILDS
   }
 
@@ -43,7 +42,7 @@ public abstract class UiComponent implements HasId, BeeSerializable {
   }
 
   public static UiComponent restore(String s) {
-    String[] arr = Codec.beeDeserialize(s);
+    String[] arr = Codec.beeDeserializeCollection(s);
     Assert.lengthEquals(arr, 2);
 
     UiComponent root = createComponent(arr[0]);
@@ -139,13 +138,12 @@ public abstract class UiComponent implements HasId, BeeSerializable {
 
   @Override
   public void deserialize(String s) {
-    SerializationMembers[] members = SerializationMembers.values();
-    String[] arr = Codec.beeDeserialize(s);
-
+    String[] arr = Codec.beeDeserializeCollection(s);
+    Serial[] members = Serial.values();
     Assert.lengthEquals(arr, members.length);
 
     for (int i = 0; i < members.length; i++) {
-      SerializationMembers member = members[i];
+      Serial member = members[i];
       String value = arr[i];
 
       switch (member) {
@@ -156,20 +154,18 @@ public abstract class UiComponent implements HasId, BeeSerializable {
           setCaption(value);
           break;
         case PROPERTIES:
-          if (!BeeUtils.isEmpty(value)) {
-            String[] props = Codec.beeDeserialize(value);
+          String[] props = Codec.beeDeserializeCollection(value);
 
-            if (ArrayUtils.length(props) > 1) {
-              for (int j = 0; j < props.length; j += 2) {
-                setProperty(props[j], props[j + 1]);
-              }
+          if (!BeeUtils.isEmpty(props)) {
+            for (int j = 0; j < props.length; j += 2) {
+              setProperty(props[j], props[j + 1]);
             }
           }
           break;
         case CHILDS:
-          if (!BeeUtils.isEmpty(value)) {
-            String[] chlds = Codec.beeDeserialize(value);
+          String[] chlds = Codec.beeDeserializeCollection(value);
 
+          if (!BeeUtils.isEmpty(chlds)) {
             for (String chld : chlds) {
               UiComponent c = restore(chld);
               addChild(c);
@@ -270,11 +266,11 @@ public abstract class UiComponent implements HasId, BeeSerializable {
 
   @Override
   public String serialize() {
-    SerializationMembers[] members = SerializationMembers.values();
+    Serial[] members = Serial.values();
     Object[] arr = new Object[members.length];
     int i = 0;
 
-    for (SerializationMembers member : members) {
+    for (Serial member : members) {
       switch (member) {
         case ID:
           arr[i++] = id;
@@ -293,7 +289,7 @@ public abstract class UiComponent implements HasId, BeeSerializable {
           break;
       }
     }
-    return Codec.beeSerializeAll(BeeUtils.getClassName(this.getClass()), arr);
+    return Codec.beeSerialize(new Object[] {BeeUtils.getClassName(this.getClass()), arr});
   }
 
   public void setCaption(String caption) {

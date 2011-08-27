@@ -5,7 +5,6 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.StringArray;
 import com.butent.bee.shared.data.value.ValueType;
-import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -24,7 +23,7 @@ public class BeeRow extends StringRow implements BeeSerializable {
    * Contains a list of parameters for row serialization.
    */
 
-  private enum SerializationMembers {
+  private enum Serial {
     ID, VERSION, VALUES, NEWID, SHADOW
   }
 
@@ -49,12 +48,12 @@ public class BeeRow extends StringRow implements BeeSerializable {
   }
 
   public void deserialize(String s) {
-    SerializationMembers[] members = SerializationMembers.values();
-    String[] arr = Codec.beeDeserialize(s);
+    String[] arr = Codec.beeDeserializeCollection(s);
+    Serial[] members = Serial.values();
     Assert.lengthEquals(arr, members.length);
 
     for (int i = 0; i < members.length; i++) {
-      SerializationMembers member = members[i];
+      Serial member = members[i];
       String value = arr[i];
 
       switch (member) {
@@ -67,7 +66,11 @@ public class BeeRow extends StringRow implements BeeSerializable {
           break;
 
         case VALUES:
-          setValues(new StringArray(Codec.beeDeserialize(value)));
+          String[] vals = Codec.beeDeserializeCollection(value);
+
+          if (!BeeUtils.isEmpty(vals)) {
+            setValues(new StringArray(vals));
+          }
           break;
 
         case NEWID:
@@ -76,9 +79,9 @@ public class BeeRow extends StringRow implements BeeSerializable {
 
         case SHADOW:
           if (!BeeUtils.isEmpty(value)) {
-            String[] shArr = Codec.beeDeserialize(value);
+            String[] shArr = Codec.beeDeserializeCollection(value);
 
-            if (ArrayUtils.length(shArr) > 1) {
+            if (!BeeUtils.isEmpty(shArr)) {
               Map<Integer, String> shMap = new HashMap<Integer, String>(shArr.length / 2);
 
               for (int j = 0; j < shArr.length; j += 2) {
@@ -140,7 +143,7 @@ public class BeeRow extends StringRow implements BeeSerializable {
 
   public void preliminaryUpdate(int col, String value) {
     String oldValue = getString(col);
-  
+
     if (!BeeUtils.equalsTrimRight(value, oldValue)) {
       if (shadow == null) {
         shadow = new HashMap<Integer, String>();
@@ -150,7 +153,7 @@ public class BeeRow extends StringRow implements BeeSerializable {
       } else {
         if (BeeUtils.equalsTrimRight(shadow.get(col), value)) {
           shadow.remove(col);
-  
+
           if (BeeUtils.isEmpty(shadow) && !isMarkedForInsert()) {
             setNewId(-1); // TODO: dummy for Delete
           }
@@ -166,11 +169,11 @@ public class BeeRow extends StringRow implements BeeSerializable {
   }
 
   public String serialize() {
-    SerializationMembers[] members = SerializationMembers.values();
+    Serial[] members = Serial.values();
     Object[] arr = new Object[members.length];
     int i = 0;
 
-    for (SerializationMembers member : members) {
+    for (Serial member : members) {
       switch (member) {
         case ID:
           arr[i++] = getId();
@@ -191,13 +194,9 @@ public class BeeRow extends StringRow implements BeeSerializable {
         case SHADOW:
           arr[i++] = getShadow();
           break;
-
-        default:
-          logger.severe("Unhandled serialization member: " + member);
-          break;
       }
     }
-    return Codec.beeSerializeAll(arr);
+    return Codec.beeSerialize(arr);
   }
 
   public void setNewId(long newId) {

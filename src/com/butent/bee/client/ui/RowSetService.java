@@ -79,15 +79,14 @@ public class RowSetService extends CompositeService {
               public void onResponse(ResponseObject response) {
                 Assert.notNull(response);
 
-                List<String> lst =
-                    Lists.newArrayList(Codec.beeDeserialize((String) response.getResponse()));
+                String[] lst = Codec.beeDeserializeCollection((String) response.getResponse());
 
                 if (BeeUtils.isEmpty(lst)) {
                   Global.showError("NO TABLES");
                   destroy();
                 } else {
-                  Global.getVar(tbl).setItems(lst);
-                  Global.getVar(tbl).setValue(lst.get(0));
+                  Global.getVar(tbl).setItems(Lists.newArrayList(lst));
+                  Global.getVar(tbl).setValue(lst[0]);
 
                   Global.inputVars(getStage(Stages.REQUEST_TABLE.name()), "ALL TABLES",
                       tbl, limit, offset);
@@ -169,21 +168,20 @@ public class RowSetService extends CompositeService {
                 public void onResponse(ResponseObject response) {
                   Assert.notNull(response);
 
-                  List<String> res =
-                      Lists.newArrayList(Codec.beeDeserialize((String) response.getResponse()));
-                  int rc = res.size();
+                  String[] res = Codec.beeDeserializeCollection((String) response.getResponse());
+                  int rc = res.length;
                   List<String> lst = new ArrayList<String>();
                   int x = 1;
 
                   for (int i = 0; i < rc; i++) {
-                    String current = res.get(i);
+                    String current = res[i];
                     lst.add(current);
 
                     for (int j = x; j < rc; j++) {
                       for (int k = j; k < rc; k++) {
-                        lst.add(current + " " + res.get(k));
+                        lst.add(current + " " + res[k]);
                       }
-                      current += " " + res.get(j);
+                      current += " " + res[j];
                     }
                     x++;
                   }
@@ -211,14 +209,13 @@ public class RowSetService extends CompositeService {
                 public void onResponse(ResponseObject response) {
                   Assert.notNull(response);
 
-                  List<String> lst =
-                      Lists.newArrayList(Codec.beeDeserialize((String) response.getResponse()));
+                  String[] lst = Codec.beeDeserializeCollection((String) response.getResponse());
 
                   if (BeeUtils.isEmpty(lst)) {
                     Global.showError("NO STATES");
                   } else {
-                    Global.getVar(stt).setItems(lst);
-                    Global.getVar(stt).setValue(lst.get(0));
+                    Global.getVar(stt).setItems(Lists.newArrayList(lst));
+                    Global.getVar(stt).setValue(lst[0]);
                     Global.inputVars(getStage(Stages.REQUEST_STATETABLE.name()),
                         BeeUtils.ifString(Global.getVarValue(tbl), "ALL TABLES"), stt);
                   }

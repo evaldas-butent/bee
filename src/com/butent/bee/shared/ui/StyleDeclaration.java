@@ -49,7 +49,7 @@ public class StyleDeclaration implements BeeSerializable, HasInfo {
   }
 
   public void deserialize(String s) {
-    String[] arr = Codec.beeDeserialize(s);
+    String[] arr = Codec.beeDeserializeCollection(s);
     Assert.lengthEquals(arr, 3);
 
     setClassName(arr[0]);
@@ -94,7 +94,7 @@ public class StyleDeclaration implements BeeSerializable, HasInfo {
   }
 
   public String serialize() {
-    return Codec.beeSerializeAll(getClassName(), getInline(), getFontDeclaration());
+    return Codec.beeSerialize(new Object[] {getClassName(), getInline(), getFontDeclaration()});
   }
 
   protected void setFontDeclaration(String fontDeclaration) {

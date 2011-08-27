@@ -11,7 +11,6 @@ import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
 
 import java.util.List;
-import java.util.logging.Logger;
 
 /**
  * Extends {@code TableColumn} class, handles core column object's requirements like serialization,
@@ -24,15 +23,13 @@ public class BeeColumn extends TableColumn implements BeeSerializable, Transform
    * Contains a list of parameters for column serialization.
    */
 
-  private enum SerializationMembers {
+  private enum Serial {
     ID, NAME, LABEL, VALUE_TYPE, PRECISION, SCALE, ISNULL
   }
 
   public static final int NO_NULLS = 0;
   public static final int NULLABLE = 1;
   public static final int NULLABLE_UNKNOWN = 2;
-
-  private static Logger logger = Logger.getLogger(BeeColumn.class.getName());
 
   public static BeeColumn restore(String s) {
     BeeColumn c = new BeeColumn();
@@ -119,13 +116,12 @@ public class BeeColumn extends TableColumn implements BeeSerializable, Transform
   }
 
   public void deserialize(String s) {
-    SerializationMembers[] members = SerializationMembers.values();
-    String[] arr = Codec.beeDeserialize(s);
-
+    String[] arr = Codec.beeDeserializeCollection(s);
+    Serial[] members = Serial.values();
     Assert.lengthEquals(arr, members.length);
 
     for (int i = 0; i < members.length; i++) {
-      SerializationMembers member = members[i];
+      Serial member = members[i];
       String value = arr[i];
 
       switch (member) {
@@ -149,9 +145,6 @@ public class BeeColumn extends TableColumn implements BeeSerializable, Transform
           break;
         case ISNULL:
           setNullable(BeeUtils.toInt(value));
-          break;
-        default:
-          logger.severe("Unhandled serialization member: " + member);
           break;
       }
     }
@@ -240,7 +233,7 @@ public class BeeColumn extends TableColumn implements BeeSerializable, Transform
   public boolean isDefinitelyWritable() {
     return definitelyWritable;
   }
-  
+
   public boolean isNullable() {
     return getNullable() == NULLABLE;
   }
@@ -277,11 +270,11 @@ public class BeeColumn extends TableColumn implements BeeSerializable, Transform
   public String serialize() {
     Assert.state(validState());
 
-    SerializationMembers[] members = SerializationMembers.values();
+    Serial[] members = Serial.values();
     Object[] arr = new Object[members.length];
     int i = 0;
 
-    for (SerializationMembers member : SerializationMembers.values()) {
+    for (Serial member : Serial.values()) {
       switch (member) {
         case ID:
           arr[i++] = getId();
@@ -304,11 +297,9 @@ public class BeeColumn extends TableColumn implements BeeSerializable, Transform
         case ISNULL:
           arr[i++] = getNullable();
           break;
-        default:
-          Assert.untouchable("Unhandled serialization member: " + member);
       }
     }
-    return Codec.beeSerializeAll(arr);
+    return Codec.beeSerialize(arr);
   }
 
   public void setAutoIncrement(boolean autoIncrement) {

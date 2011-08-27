@@ -67,7 +67,7 @@ public class Order implements BeeSerializable, Transformable {
     }
 
     public String serialize() {
-      return Codec.beeSerializeAll(name, source, ascending);
+      return Codec.beeSerialize(new Object[] {name, source, ascending});
     }
 
     public void setAscending(boolean ascending) {
@@ -94,7 +94,7 @@ public class Order implements BeeSerializable, Transformable {
   public Order() {
     super();
   }
-  
+
   public Order(String name, boolean ascending) {
     this();
     add(name, name, ascending);
@@ -118,12 +118,13 @@ public class Order implements BeeSerializable, Transformable {
     if (columns.size() > 0) {
       columns.clear();
     }
-    if (BeeUtils.isEmpty(s)) {
+    String[] cols = Codec.beeDeserializeCollection(s);
+
+    if (BeeUtils.isEmpty(cols)) {
       return;
     }
-
-    for (String col : Codec.beeDeserialize(s)) {
-      String[] arr = Codec.beeDeserialize(col);
+    for (String col : cols) {
+      String[] arr = Codec.beeDeserializeCollection(col);
       Assert.lengthEquals(arr, 3);
       add(BeeUtils.trim(arr[0]), BeeUtils.trim(arr[1]), BeeUtils.toBoolean(arr[2]));
     }

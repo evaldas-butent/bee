@@ -18,8 +18,6 @@ import com.butent.bee.shared.ui.UiComponent;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
-import java.util.List;
-
 /**
  * Implements asynchronous creation of forms.
  */
@@ -47,8 +45,7 @@ public class FormService extends CompositeService {
               public void onResponse(ResponseObject response) {
                 Assert.notNull(response);
 
-                List<String> lst =
-                    Lists.newArrayList(Codec.beeDeserialize((String) response.getResponse()));
+                String[] lst = Codec.beeDeserializeCollection((String) response.getResponse());
 
                 if (BeeUtils.isEmpty(lst)) {
                   Global.showError("NO FORMS");
@@ -58,8 +55,8 @@ public class FormService extends CompositeService {
                     Global.createVar(fld, "Form name", BeeType.STRING, null);
                     Global.getVar(fld).setWidget(BeeWidget.LIST);
                   }
-                  Global.getVar(fld).setItems(lst);
-                  Global.getVar(fld).setValue(lst.get(0));
+                  Global.getVar(fld).setItems(Lists.newArrayList(lst));
+                  Global.getVar(fld).setValue(lst[0]);
 
                   Global.inputVars(getStage(Stages.SHOW_FORM.name()), "Load form", fld);
                 }

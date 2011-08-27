@@ -22,7 +22,7 @@ public class ResponseObject implements BeeSerializable {
    * Contains a list of serializable members of response object.
    */
 
-  private enum SerializationMember {
+  private enum Serial {
     MESSAGES, RESPONSE_TYPE, RESPONSE
   }
 
@@ -78,21 +78,23 @@ public class ResponseObject implements BeeSerializable {
 
   @Override
   public void deserialize(String s) {
-    SerializationMember[] members = SerializationMember.values();
-    String[] arr = Codec.beeDeserialize(s);
+    Serial[] members = Serial.values();
+    String[] arr = Codec.beeDeserializeCollection(s);
     Assert.lengthEquals(arr, members.length);
 
     for (int i = 0; i < members.length; i++) {
-      SerializationMember member = members[i];
+      Serial member = members[i];
       String value = arr[i];
 
       switch (member) {
         case MESSAGES:
           messages.clear();
-          String[] cArr = Codec.beeDeserialize(value);
+          String[] cArr = Codec.beeDeserializeCollection(value);
 
-          for (String msg : cArr) {
-            messages.add(new ResponseMessage(msg, true));
+          if (!BeeUtils.isEmpty(cArr)) {
+            for (String msg : cArr) {
+              messages.add(new ResponseMessage(msg, true));
+            }
           }
           break;
 
@@ -170,7 +172,7 @@ public class ResponseObject implements BeeSerializable {
   public boolean hasMessages() {
     return !messages.isEmpty();
   }
-  
+
   public boolean hasNotifications() {
     return hasMessages(Level.INFO);
   }
@@ -198,11 +200,11 @@ public class ResponseObject implements BeeSerializable {
 
   @Override
   public String serialize() {
-    SerializationMember[] members = SerializationMember.values();
+    Serial[] members = Serial.values();
     Object[] arr = new Object[members.length];
     int i = 0;
 
-    for (SerializationMember member : members) {
+    for (Serial member : members) {
       switch (member) {
         case MESSAGES:
           arr[i++] = messages;
@@ -217,7 +219,7 @@ public class ResponseObject implements BeeSerializable {
           break;
       }
     }
-    return Codec.beeSerializeAll(arr);
+    return Codec.beeSerialize(arr);
   }
 
   public ResponseObject setResponse(Object response) {

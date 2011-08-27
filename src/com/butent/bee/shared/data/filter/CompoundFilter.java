@@ -20,8 +20,7 @@ public class CompoundFilter extends Filter {
   /**
    * Contains a list of filter parts which go through serialization.
    */
-
-  private enum SerializationMembers {
+  private enum Serial {
     JOINTYPE, SUBFILTERS
   }
 
@@ -59,22 +58,25 @@ public class CompoundFilter extends Filter {
   @Override
   public void deserialize(String s) {
     setSafe();
-    SerializationMembers[] members = SerializationMembers.values();
-    String[] arr = Codec.beeDeserialize(s);
-
+    String[] arr = Codec.beeDeserializeCollection(s);
+    Serial[] members = Serial.values();
     Assert.lengthEquals(arr, members.length);
 
     for (int i = 0; i < members.length; i++) {
-      SerializationMembers member = members[i];
-      String xpr = arr[i];
+      Serial member = members[i];
+      String value = arr[i];
 
       switch (member) {
         case JOINTYPE:
-          joinType = CompoundType.valueOf(arr[0]);
+          joinType = CompoundType.valueOf(value);
           break;
         case SUBFILTERS:
-          for (String flt : Codec.beeDeserialize(xpr)) {
-            add(Filter.restore(flt));
+          String[] filters = Codec.beeDeserializeCollection(value);
+
+          if (!BeeUtils.isEmpty(filters)) {
+            for (String flt : filters) {
+              add(Filter.restore(flt));
+            }
           }
           break;
       }
@@ -150,11 +152,11 @@ public class CompoundFilter extends Filter {
 
   @Override
   public String serialize() {
-    SerializationMembers[] members = SerializationMembers.values();
+    Serial[] members = Serial.values();
     Object[] arr = new Object[members.length];
     int i = 0;
 
-    for (SerializationMembers member : members) {
+    for (Serial member : members) {
       switch (member) {
         case JOINTYPE:
           arr[i++] = joinType;
@@ -164,7 +166,7 @@ public class CompoundFilter extends Filter {
           break;
       }
     }
-    return Codec.beeSerializeAll(BeeUtils.getClassName(this.getClass()), arr);
+    return super.serialize(arr);
   }
 
   @Override

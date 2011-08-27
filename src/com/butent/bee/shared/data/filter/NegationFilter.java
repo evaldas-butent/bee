@@ -4,7 +4,6 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.Codec;
 
 import java.util.List;
 
@@ -74,7 +73,7 @@ public class NegationFilter extends Filter {
 
   @Override
   public String serialize() {
-    return Codec.beeSerializeAll(BeeUtils.getClassName(this.getClass()), subFilter);
+    return super.serialize(subFilter);
   }
 
   @Override

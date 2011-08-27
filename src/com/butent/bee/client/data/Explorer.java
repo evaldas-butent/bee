@@ -48,7 +48,7 @@ public class Explorer implements HandlesDeleteEvents, RowInsertEvent.Handler {
 
     public void onResponse(ResponseObject response) {
       Assert.notNull(response);
-      String[] info = Codec.beeDeserialize((String) response.getResponse());
+      String[] info = Codec.beeDeserializeCollection((String) response.getResponse());
 
       getViews().clear();
       for (String s : info) {
@@ -82,7 +82,7 @@ public class Explorer implements HandlesDeleteEvents, RowInsertEvent.Handler {
   public Explorer() {
     super();
   }
-  
+
   public void create() {
     getDataInfoCreator().execute();
   }
@@ -138,7 +138,7 @@ public class Explorer implements HandlesDeleteEvents, RowInsertEvent.Handler {
       BeeKeeper.getLog().info(dataInfo.getName(), "not active");
       return;
     }
-    
+
     BeeKeeper.getScreen().updateActivePanel(ensureLoadingWidget());
 
     GridFactory.getGrid(dataInfo.getName(), new GridFactory.GridCallback() {
@@ -254,7 +254,7 @@ public class Explorer implements HandlesDeleteEvents, RowInsertEvent.Handler {
   private void setLoadingWidget(Widget loadingWidget) {
     this.loadingWidget = loadingWidget;
   }
-  
+
   private void showView(DataInfo dataInfo, BeeRowSet rowSet, boolean async,
       GridDescription gridDescription) {
     GridPresenter presenter = new GridPresenter(dataInfo, rowSet, async, gridDescription, false);

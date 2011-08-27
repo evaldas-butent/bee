@@ -29,7 +29,7 @@ public class SimpleRowSet implements Iterable<Map<String, String>>, BeeSerializa
    * Contains a list of items for serialization.
    */
 
-  private enum SerializationMembers {
+  private enum Serial {
     COLUMNS, ROWS
   }
 
@@ -84,38 +84,36 @@ public class SimpleRowSet implements Iterable<Map<String, String>>, BeeSerializa
   public void deserialize(String s) {
     Assert.isTrue(getNumberOfColumns() == 0);
 
-    SerializationMembers[] members = SerializationMembers.values();
-    String[] arr = Codec.beeDeserialize(s);
+    String[] arr = Codec.beeDeserializeCollection(s);
+    Serial[] members = Serial.values();
     Assert.lengthEquals(arr, members.length);
 
     for (int i = 0; i < members.length; i++) {
-      SerializationMembers member = members[i];
+      Serial member = members[i];
       String value = arr[i];
 
       switch (member) {
         case COLUMNS:
-          String[] colData = Codec.beeDeserialize(value);
-          columns = HashBiMap.create(colData.length / 2);
+          String[] colData = Codec.beeDeserializeCollection(value);
 
-          for (int j = 0; j < colData.length; j += 2) {
-            columns.put(colData[j], BeeUtils.toInt(colData[j + 1]));
+          if (!BeeUtils.isEmpty(colData)) {
+            columns = HashBiMap.create(colData.length / 2);
+
+            for (int j = 0; j < colData.length; j += 2) {
+              columns.put(colData[j], BeeUtils.toInt(colData[j + 1]));
+            }
           }
           break;
 
         case ROWS:
           rows = Lists.newArrayList();
+          String[] rowData = Codec.beeDeserializeCollection(value);
 
-          if (!BeeUtils.isEmpty(value)) {
-            String[] rowData = Codec.beeDeserialize(value);
-
+          if (!BeeUtils.isEmpty(rowData)) {
             for (String r : rowData) {
-              rows.add(Codec.beeDeserialize(r));
+              rows.add(Codec.beeDeserializeCollection(r));
             }
           }
-          break;
-
-        default:
-          Assert.untouchable("Unhandled serialization member: " + member);
           break;
       }
     }
@@ -352,11 +350,11 @@ public class SimpleRowSet implements Iterable<Map<String, String>>, BeeSerializa
 
   @Override
   public String serialize() {
-    SerializationMembers[] members = SerializationMembers.values();
+    Serial[] members = Serial.values();
     Object[] arr = new Object[members.length];
     int i = 0;
 
-    for (SerializationMembers member : members) {
+    for (Serial member : members) {
       switch (member) {
         case COLUMNS:
           arr[i++] = columns;
@@ -365,12 +363,8 @@ public class SimpleRowSet implements Iterable<Map<String, String>>, BeeSerializa
         case ROWS:
           arr[i++] = rows;
           break;
-
-        default:
-          Assert.untouchable("Unhandled serialization member: " + member);
-          break;
       }
     }
-    return Codec.beeSerializeAll(arr);
+    return Codec.beeSerialize(arr);
   }
 }

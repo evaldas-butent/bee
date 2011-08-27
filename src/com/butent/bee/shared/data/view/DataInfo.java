@@ -43,7 +43,7 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo> {
   }
 
   public void deserialize(String s) {
-    String[] arr = Codec.beeDeserialize(s);
+    String[] arr = Codec.beeDeserializeCollection(s);
     Assert.lengthEquals(arr, 4);
 
     name = arr[0];
@@ -85,7 +85,8 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo> {
   }
 
   public String serialize() {
-    return Codec.beeSerializeAll(getName(), getIdColumn(), getVersionColumn(), getRowCount());
+    return Codec.beeSerialize(
+        new Object[] {getName(), getIdColumn(), getVersionColumn(), getRowCount()});
   }
 
   public void setRowCount(int rowCount) {
