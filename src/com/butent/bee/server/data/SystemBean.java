@@ -1592,7 +1592,7 @@ public class SystemBean {
       if (!BeeUtils.same(xmlState.name, stateName)) {
         LogUtils.warning(logger, "State name doesn't match resource name:", xmlState.name);
       } else {
-        state = new BeeState(xmlState.name, xmlState.mode, xmlState.checked);
+        state = new BeeState(xmlState.name, xmlState.userMode, xmlState.roleMode, xmlState.checked);
       }
     }
     if (state != null) {

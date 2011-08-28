@@ -3,5 +3,5 @@
   xsi:schemaLocation="http://www.butent.com/bee ../../schemas/state.xsd"
 
   name="Marked"
-  mode="USER"
+  userMode="true"
 />

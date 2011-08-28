@@ -153,6 +153,8 @@ public class UiServiceBean {
 
     } else if (BeeUtils.same(svc, StateService.SVC_GET_STATES)) {
       response = getStates();
+    } else if (BeeUtils.same(svc, StateService.SVC_SAVE_STATES)) {
+      response = saveStates(reqInfo.getContent());
 
     } else {
       String msg = BeeUtils.concat(1, "data service not recognized:", svc);
@@ -973,6 +975,8 @@ public class UiServiceBean {
           }
         }
       }
+    }
+    if (!response.hasErrors()) {
       for (String tbl : sys.getTableNames()) {
         String tblName = BeeUtils.normalize(tbl);
 
@@ -980,8 +984,6 @@ public class UiServiceBean {
           updates.put(tblName, null);
         }
       }
-    }
-    if (!response.hasErrors()) {
       for (String tblName : updates.keySet()) {
         String path = new File(Config.USER_DIR, SysObject.TABLE.getFilePath(tblName)).getPath();
         XmlTable diffTable = updates.get(tblName);
@@ -1004,6 +1006,82 @@ public class UiServiceBean {
       }
       sys.initTables();
       response.setResponse(new BeeResource(null, xmlResponse.toString()));
+    }
+    return response;
+  }
+
+  private ResponseObject saveStates(String data) {
+    String schemaPath = SysObject.STATE.getSchemaPath();
+    ResponseObject response = new ResponseObject();
+    Map<String, XmlState> updates = Maps.newHashMap();
+    String[] arr = Codec.beeDeserializeCollection(data);
+
+    if (!BeeUtils.isEmpty(arr)) {
+      for (String state : arr) {
+        XmlState xmlState = XmlState.restore(state);
+        String stateName = xmlState.name;
+
+        if (updates.containsKey(BeeUtils.normalize(stateName))) {
+          response.addError("Dublicate state name:", BeeUtils.bracket(stateName));
+        } else {
+          try {
+            XmlState userState = sys.loadXmlState(XmlUtils.marshal(xmlState, schemaPath));
+            XmlState configState = sys.getXmlState(stateName, false);
+            XmlState diffState = null;
+
+            if (configState == null) {
+              diffState = userState;
+            } else {
+              diffState = configState.protect().getChanges(userState);
+            }
+            updates.put(BeeUtils.normalize(stateName), diffState);
+
+          } catch (BeeRuntimeException e) {
+            response.addError(BeeUtils.bracket(stateName), e);
+          }
+        }
+      }
+    }
+    if (!response.hasErrors()) {
+      for (String tbl : sys.getTableNames()) {
+        for (String tblState : sys.getTableStates(tbl)) {
+          if (!updates.containsKey(BeeUtils.normalize(tblState))) {
+            response.addError("State", BeeUtils.bracket(tblState),
+                  "is used in table", BeeUtils.bracket(tbl));
+          }
+        }
+      }
+    }
+    if (!response.hasErrors()) {
+      for (String state : sys.getStateNames()) {
+        String stateName = BeeUtils.normalize(state);
+
+        if (!updates.containsKey(stateName)) {
+          updates.put(stateName, null);
+        }
+      }
+      for (String stateName : updates.keySet()) {
+        String path = new File(Config.USER_DIR, SysObject.STATE.getFilePath(stateName)).getPath();
+        XmlState diffState = updates.get(stateName);
+
+        if (diffState == null) {
+          if (!FileUtils.deleteFile(path)) {
+            response.addError("Can't delete file:", path);
+          }
+        } else {
+          boolean ok = false;
+          try {
+            ok = FileUtils.saveToFile(XmlUtils.marshal(diffState, schemaPath), path);
+          } catch (BeeRuntimeException e) {
+            response.addError(BeeUtils.bracket(stateName), e);
+          }
+          if (!ok) {
+            response.addError("Can't save file:", path);
+          }
+        }
+      }
+      sys.initStates();
+      response.addInfo("States OK");
     }
     return response;
   }

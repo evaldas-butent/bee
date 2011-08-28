@@ -8,14 +8,8 @@
 
   <xs:complexType name="stateType">
     <xs:attribute name="name" use="required" type="bee:stateNameType" />
-    <xs:attribute name="mode">
-      <xs:simpleType>
-        <xs:restriction base="xs:string">
-          <xs:enumeration value="ROLE" />
-          <xs:enumeration value="USER" />
-        </xs:restriction>
-      </xs:simpleType>
-    </xs:attribute>
+    <xs:attribute name="userMode" type="xs:boolean" />
+    <xs:attribute name="roleMode" type="xs:boolean" />
     <xs:attribute name="checked" type="xs:boolean" />
   </xs:complexType>
 </xs:schema>

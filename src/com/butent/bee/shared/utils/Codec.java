@@ -10,12 +10,14 @@ import com.butent.bee.shared.Pair;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Collection;
+import java.util.Enumeration;
 import java.util.Map;
 
 /**
  * Contains methods for encypting/decrypting data using various algorithms.
  */
 public class Codec {
+  private static final String SERIALIZATION_COLLECTION = "c";
   private static final String SERIALIZATION_SEPARATOR = ";";
   private static final char[] HEX_CHARS = new char[] {
       '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd',
@@ -162,27 +164,31 @@ public class Codec {
   /**
    * Deserializes the string {@code s}.
    * 
-   * @param s a value to deserialize
+   * @param data a value to deserialize
    * @return a deserialized String.
    */
-  public static String beeDeserialize(String s) {
+  public static String beeDeserialize(String data) {
     String res = null;
 
-    if (!BeeUtils.isEmpty(s)) {
-      int pos = 0;
-      int n = BeeUtils.toInt(s.substring(pos, ++pos));
+    if (!BeeUtils.isEmpty(data)) {
+      if (data.startsWith(SERIALIZATION_COLLECTION)) {
+        res = data;
+      } else {
+        int pos = 0;
+        int n = BeeUtils.toInt(data.substring(pos, ++pos));
 
-      if (n > 0) {
-        int l = BeeUtils.toInt(s.substring(pos, pos += n));
+        if (n > 0) {
+          int l = BeeUtils.toInt(data.substring(pos, pos += n));
 
-        if (l > 0) {
-          res = s.substring(pos, pos += l);
-        } else {
-          res = BeeConst.STRING_EMPTY;
+          if (l > 0) {
+            res = data.substring(pos, pos += l);
+          } else {
+            res = BeeConst.STRING_EMPTY;
+          }
         }
-      }
-      if (pos < s.length()) {
-        res = null;
+        if (pos < data.length()) {
+          res = null;
+        }
       }
     }
     return res;
@@ -191,20 +197,16 @@ public class Codec {
   /**
    * Deserializes the collection string {@code ser}.
    * 
-   * @param ser a value to deserialize
+   * @param data a value to deserialize
    * @return a deserialized String array.
    */
-  public static String[] beeDeserializeCollection(String ser) {
+  public static String[] beeDeserializeCollection(String data) {
     String[] res = null;
-    String s;
+    String s = beeDeserialize(data);
 
-    if (BeeUtils.isEmpty(ser) || ser.startsWith("c")) {
-      s = ser;
-    } else {
-      s = beeDeserialize(ser);
-    }
-    if (!BeeUtils.isEmpty(s) && s.startsWith("c")) {
-      int pos = 1;
+    if (!BeeUtils.isEmpty(s) && s.startsWith(SERIALIZATION_COLLECTION)) {
+      s = beeDeserialize(s.substring(1));
+      int pos = 0;
       int n = BeeUtils.toInt(s.substring(pos, ++pos));
 
       if (n > 0) {
@@ -213,6 +215,9 @@ public class Codec {
 
         for (int i = 0; i < l; i++) {
           int start = pos;
+          if (s.substring(start, start + 1).equals(SERIALIZATION_COLLECTION)) {
+            pos++;
+          }
           n = BeeUtils.toInt(s.substring(pos, ++pos));
 
           if (n > 0) {
@@ -230,13 +235,13 @@ public class Codec {
   }
 
   /**
-   * Serializes an Object {@code obj}. The method wraps the Object, if the object is an array, the
-   * array itself is wrapped too. This method also serializes the length of each object.
+   * Serializes an Object {@code obj}. The method wraps the Object, if the object is any type of
+   * collection, itself is wrapped too. This method also serializes the length of each object.
    * <p>
    * Example: <br>
    * <code>beeSerialize("hello") = "15hello"
    * <br>
-   * beeSerialize(new String[]{"hello", "ab", "abc"}) = "220c11315hello12ab13abc"
+   * beeSerialize(new String[]{"hello", "ab", "abc"}) = "c2181315hello12ab13abc"
    * </code>
    * 
    * @param obj an Object to serialize
@@ -259,7 +264,7 @@ public class Codec {
     } else if (obj instanceof Map) {
       items = 0;
       for (Map.Entry<?, ?> ob : ((Map<?, ?>) obj).entrySet()) {
-        items++;
+        items += 2;
         sb.append(beeSerialize(ob.getKey())).append(beeSerialize(ob.getValue()));
       }
 
@@ -270,8 +275,15 @@ public class Codec {
         sb.append(beeSerialize(ob));
       }
 
+    } else if (obj instanceof Enumeration) {
+      items = 0;
+      while (((Enumeration<?>) obj).hasMoreElements()) {
+        items++;
+        sb.append(beeSerialize(((Enumeration<?>) obj).nextElement()));
+      }
+
     } else if (obj instanceof BeeSerializable) {
-      sb.append(beeSerialize("w" + ((BeeSerializable) obj).serialize()));
+      sb.append(beeSerialize(((BeeSerializable) obj).serialize()));
 
     } else {
       String s = BeeUtils.transformNoTrim(obj);
@@ -282,7 +294,7 @@ public class Codec {
       return sb.toString();
     } else {
       String s = BeeUtils.transform(items);
-      return beeSerialize("c" + BeeUtils.transform(s.length()) + s + sb.toString());
+      return SERIALIZATION_COLLECTION + beeSerialize(s.length() + s + sb.toString());
     }
   }
 

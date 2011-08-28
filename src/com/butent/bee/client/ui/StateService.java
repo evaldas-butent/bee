@@ -4,14 +4,15 @@ import com.google.common.collect.Lists;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
-import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
-import com.butent.bee.client.composite.RadioGroup;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.grid.FlexTable;
+import com.butent.bee.client.layout.Scroll;
 import com.butent.bee.client.utils.BeeCommand;
 import com.butent.bee.client.widget.BeeButton;
+import com.butent.bee.client.widget.BeeCheckBox;
 import com.butent.bee.client.widget.BeeImage;
+import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.client.widget.SimpleBoolean;
 import com.butent.bee.shared.Assert;
@@ -35,8 +36,9 @@ public class StateService extends CompositeService {
   private static final String STG_CANCEL = "cancel";
 
   private static final int NAME = 0;
-  private static final int MODE = 1;
-  private static final int CHECKED = 2;
+  private static final int USER = 1;
+  private static final int ROLE = 2;
+  private static final int CHECKED = 3;
 
   List<Pair<XmlState, Variable[]>> lst;
 
@@ -59,8 +61,10 @@ public class StateService extends CompositeService {
                   XmlState state = XmlState.restore(xml);
                   Variable[] vars = new Variable[3];
                   vars[NAME] = new Variable(BeeType.STRING, state.name);
-                  vars[MODE] = new Variable(BeeType.STRING, state.mode);
-                  vars[MODE].setItems(Lists.newArrayList("USER", "ROLE", "USER and ROLE"));
+                  vars[USER] = new Variable("USER", BeeType.BOOLEAN,
+                      BeeUtils.toString(state.userMode));
+                  vars[ROLE] = new Variable("ROLE", BeeType.BOOLEAN,
+                      BeeUtils.toString(state.roleMode));
                   vars[CHECKED] = new Variable(BeeType.BOOLEAN, BeeUtils.toString(state.checked));
                   lst.add(new Pair<XmlState, Variable[]>(state, vars));
                 }
@@ -81,8 +85,8 @@ public class StateService extends CompositeService {
     } else if (stg.equals(STG_NEW)) {
       Variable[] vars = new Variable[3];
       vars[NAME] = new Variable(BeeType.STRING);
-      vars[MODE] = new Variable(BeeType.STRING, "ROLE");
-      vars[MODE].setItems(Lists.newArrayList("USER", "ROLE", "USER and ROLE"));
+      vars[USER] = new Variable("USER", BeeType.BOOLEAN);
+      vars[ROLE] = new Variable("ROLE", BeeType.BOOLEAN);
       vars[CHECKED] = new Variable(BeeType.BOOLEAN);
       lst.add(new Pair<XmlState, Variable[]>(new XmlState(), vars));
       refresh();
@@ -95,14 +99,12 @@ public class StateService extends CompositeService {
         XmlState state = pair.getA();
         Variable[] vars = pair.getB();
         state.name = vars[NAME].getValue();
-        state.mode = vars[MODE].getValue();
+        state.userMode = vars[USER].getBoolean();
+        state.roleMode = vars[ROLE].getBoolean();
         state.checked = vars[CHECKED].getBoolean();
         states.add(state);
       }
-      ParameterList args = BeeKeeper.getRpc().createParameters(stg);
-      args.addPositionalData(Codec.beeSerialize(states));
-
-      BeeKeeper.getRpc().makeGetRequest(args);
+      BeeKeeper.getRpc().sendText(stg, Codec.beeSerialize(states));
       return ok;
 
     } else if (stg.equals(STG_CANCEL)) {
@@ -125,48 +127,55 @@ public class StateService extends CompositeService {
     FlexTable ft = new FlexTable();
     ft.setBorderWidth(1);
     int r = 0;
-    ft.setText(r, NAME, "State name");
-    ft.setText(r, MODE, "Applies to");
-    ft.setText(r, CHECKED, "Checked by default");
-    ft.alignCenter(r, NAME);
-    ft.alignCenter(r, MODE);
-    ft.alignCenter(r, CHECKED);
+    ft.setText(r, 0, "State name");
+    ft.setText(r, 1, "Applies to");
+    ft.setText(r, 2, "Checked by default");
+    ft.alignCenter(r, 0);
+    ft.alignCenter(r, 1);
+    ft.alignCenter(r, 2);
 
     for (int i = 0; i < lst.size(); i++) {
       Variable[] vars = lst.get(i).getB();
       r++;
-      ft.setWidget(r, NAME, new InputText(vars[NAME]));
-      ft.setWidget(r, MODE, new RadioGroup(vars[MODE], true));
-      ft.setWidget(r, CHECKED, new SimpleBoolean(vars[CHECKED]));
-      ft.alignCenter(r, NAME);
-      ft.alignCenter(r, MODE);
-      ft.alignCenter(r, CHECKED);
-      final int idx = r - 1;
-      ft.setWidget(r, 3, new BeeImage(Global.getImages().editDelete(), new BeeCommand() {
-        @Override
-        public void execute() {
-          Global.getMsgBoxen().confirm("Delete State ?", new BeeCommand() {
-            @Override
-            public void execute() {
-              doStage(STG_DELETE, idx);
-            }
-          }, StyleUtils.NAME_SCARY);
-        }
-      }));
+      FlexTable mw = new FlexTable();
+      mw.setWidget(0, 0, new BeeCheckBox(vars[USER]));
+      mw.setWidget(1, 0, new BeeCheckBox(vars[ROLE]));
+      ft.setWidget(r, 1, mw);
+      ft.setWidget(r, 2, new SimpleBoolean(vars[CHECKED]));
+      ft.alignCenter(r, 1);
+      ft.alignCenter(r, 2);
+
+      if (lst.get(i).getA().isProtected()) {
+        ft.setWidget(r, 0, new BeeLabel(vars[NAME].getValue()));
+      } else {
+        ft.setWidget(r, 0, new InputText(vars[NAME]));
+        final int idx = r - 1;
+        ft.setWidget(r, 3, new BeeImage(Global.getImages().editDelete(), new BeeCommand() {
+          @Override
+          public void execute() {
+            Global.getMsgBoxen().confirm("Delete State ?", new BeeCommand() {
+              @Override
+              public void execute() {
+                doStage(STG_DELETE, idx);
+              }
+            }, StyleUtils.NAME_SCARY);
+          }
+        }));
+      }
     }
     r++;
-    ft.setWidget(r, NAME, new BeeButton("SAVE", getStage(SVC_SAVE_STATES)));
-    ft.alignLeft(r, NAME);
-    ft.setWidget(r, MODE, new BeeImage(Global.getImages().editAdd(), new BeeCommand() {
+    ft.setWidget(r, 0, new BeeButton("SAVE", getStage(SVC_SAVE_STATES)));
+    ft.alignLeft(r, 0);
+    ft.setWidget(r, 1, new BeeImage(Global.getImages().editAdd(), new BeeCommand() {
       @Override
       public void execute() {
         doStage(STG_NEW);
       }
     }));
-    ft.alignCenter(r, MODE);
-    ft.setWidget(r, CHECKED, new BeeButton("CANCEL", getStage(STG_CANCEL)));
-    ft.alignRight(r, CHECKED);
+    ft.alignCenter(r, 1);
+    ft.setWidget(r, 2, new BeeButton("CANCEL", getStage(STG_CANCEL)));
+    ft.alignRight(r, 2);
 
-    BeeKeeper.getScreen().updateActivePanel(ft);
+    BeeKeeper.getScreen().updateActivePanel(new Scroll(ft));
   }
 }

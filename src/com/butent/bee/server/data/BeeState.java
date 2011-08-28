@@ -1,30 +1,23 @@
 package com.butent.bee.server.data;
 
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.utils.BeeUtils;
 
 /**
  * Enables usage of user, role, checked or unchecked related states.
  */
-
 public class BeeState {
-  private static final String USER_MODE = "USER";
-  private static final String ROLE_MODE = "ROLE";
-
   private final String name;
-  private final String mode;
+  private final boolean userMode;
+  private final boolean roleMode;
   private final boolean checked;
 
-  public BeeState(String name, String mode, boolean checked) {
+  public BeeState(String name, boolean userMode, boolean roleMode, boolean checked) {
     Assert.notEmpty(name);
 
     this.name = name;
-    this.mode = mode;
+    this.userMode = userMode;
+    this.roleMode = roleMode;
     this.checked = checked;
-  }
-
-  public String getMode() {
-    return mode;
   }
 
   public String getName() {
@@ -36,10 +29,10 @@ public class BeeState {
   }
 
   public boolean supportsRoles() {
-    return BeeUtils.isEmpty(mode) || BeeUtils.same(mode, ROLE_MODE);
+    return roleMode;
   }
 
   public boolean supportsUsers() {
-    return BeeUtils.isEmpty(mode) || BeeUtils.same(mode, USER_MODE);
+    return userMode;
   }
 }

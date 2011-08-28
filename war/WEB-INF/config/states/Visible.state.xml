@@ -3,6 +3,6 @@
   xsi:schemaLocation="http://www.butent.com/bee ../../schemas/state.xsd"
 
   name="Visible"
-  mode="ROLE"
+  roleMode="true"
   checked="true"
 />

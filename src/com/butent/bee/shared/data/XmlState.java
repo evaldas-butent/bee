@@ -15,7 +15,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class XmlState implements BeeSerializable {
 
   private enum SerializationMembers {
-    NAME, MODE, CHECKED, SAFE
+    NAME, USER_MODE, ROLE_MODE, CHECKED, SAFE
   }
 
   public static XmlState restore(String s) {
@@ -27,7 +27,9 @@ public class XmlState implements BeeSerializable {
   @XmlAttribute
   public String name;
   @XmlAttribute
-  public String mode;
+  public boolean userMode;
+  @XmlAttribute
+  public boolean roleMode;
   @XmlAttribute
   public boolean checked;
 
@@ -48,8 +50,11 @@ public class XmlState implements BeeSerializable {
         case NAME:
           name = value;
           break;
-        case MODE:
-          mode = value;
+        case USER_MODE:
+          userMode = BeeUtils.toBoolean(value);
+          break;
+        case ROLE_MODE:
+          roleMode = BeeUtils.toBoolean(value);
           break;
         case CHECKED:
           checked = BeeUtils.toBoolean(value);
@@ -69,13 +74,19 @@ public class XmlState implements BeeSerializable {
       diff = new XmlState();
       diff.name = name;
 
-      if (isProtected() || BeeUtils.equals(mode, otherState.mode)) {
-        diff.mode = mode;
+      if (BeeUtils.equals(userMode, otherState.userMode)) {
+        diff.userMode = userMode;
       } else {
-        diff.mode = otherState.mode;
+        diff.userMode = otherState.userMode;
         upd = true;
       }
-      if (isProtected() || BeeUtils.equals(checked, otherState.checked)) {
+      if (BeeUtils.equals(roleMode, otherState.roleMode)) {
+        diff.roleMode = roleMode;
+      } else {
+        diff.roleMode = otherState.roleMode;
+        upd = true;
+      }
+      if (BeeUtils.equals(checked, otherState.checked)) {
         diff.checked = checked;
       } else {
         diff.checked = otherState.checked;
@@ -96,7 +107,8 @@ public class XmlState implements BeeSerializable {
     XmlState diff = getChanges(otherState);
 
     if (diff != null) {
-      this.mode = diff.mode;
+      this.userMode = diff.userMode;
+      this.roleMode = diff.roleMode;
       this.checked = diff.checked;
     }
   }
@@ -117,8 +129,11 @@ public class XmlState implements BeeSerializable {
         case NAME:
           arr[i++] = name;
           break;
-        case MODE:
-          arr[i++] = mode;
+        case USER_MODE:
+          arr[i++] = userMode;
+          break;
+        case ROLE_MODE:
+          arr[i++] = roleMode;
           break;
         case CHECKED:
           arr[i++] = checked;

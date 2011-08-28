@@ -1,21 +1,22 @@
 package com.butent.bee.shared.utils;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
-import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.BeeSerializable;
 
 import org.junit.Test;
 
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.Map;
 
 public class TestCodec {
   @Test
   public void testBeeSerializeDeserialize() {
-    Object[] arr =
-        new Object[] {
-            null, "", "c10", 5, -26543.735, 'y', true, false, Calendar.getInstance().getTime()};
+    Object[] arr = new Object[] {
+        null, "", "ac10", 5, -26543.735, 'y', true, false, Calendar.getInstance().getTime()};
 
     for (Object obj : arr) {
       String s = Codec.beeSerialize(obj);
@@ -25,26 +26,53 @@ public class TestCodec {
       org.junit.Assert.assertNull(Codec.beeDeserializeCollection(s));
     }
 
-    Object[][] multiArr = new Object[][] {
+    BeeSerializable ser = new BeeSerializable() {
+      @Override
+      public void deserialize(String s) {
+      }
+
+      @Override
+      public String serialize() {
+        return "SomeSerialzedText";
+      }
+    };
+    org.junit.Assert.assertEquals(Codec.beeDeserialize(Codec.beeSerialize(ser)), ser.serialize());
+    org.junit.Assert.assertArrayEquals(
+        Codec.beeDeserializeCollection(Codec.beeSerialize(new Object[] {ser, ser, ser})),
+        new Object[] {ser.serialize(), ser.serialize(), ser.serialize()});
+
+    String[] values = new String[] {"aaa", "", "vv", null, "x", "1234623"};
+
+    Map<String, String> valueMap = Maps.newLinkedHashMap();
+    for (int i = 0; i < values.length; i += 2) {
+      valueMap.put(values[i], values[i + 1]);
+    }
+
+    Object[] mArr = new Object[] {
+        null,
         new String[0],
         new String[] {null},
         new String[] {""},
-        new String[] {"aaa", "", "vv", null, "x"}};
+        values,
+        Lists.newArrayList(values),
+        Sets.newLinkedHashSet(Lists.newArrayList(values)),
+        valueMap};
 
-    for (Object[] obj : multiArr) {
-      org.junit.Assert.assertArrayEquals(obj,
-          Codec.beeDeserializeCollection(Codec.beeSerialize(obj)));
+    String[] res = Codec.beeDeserializeCollection(Codec.beeSerialize(mArr));
+    org.junit.Assert.assertNotNull(res);
+    org.junit.Assert.assertEquals(res.length, mArr.length);
 
-      Collection<Object> ob = Lists.newArrayList(obj);
+    for (int i = 0; i < mArr.length; i++) {
+      String[] obj;
 
-      org.junit.Assert.assertArrayEquals(obj,
-          Codec.beeDeserializeCollection(Codec.beeSerialize(ob)));
-
-      org.junit.Assert.assertArrayEquals(obj,
-          Codec.beeDeserializeCollection(Codec.beeSerialize(Sets.newLinkedHashSet(ob))));
+      if (mArr[i] instanceof Collection) {
+        obj = ((Collection<?>) mArr[i]).toArray(new String[0]);
+      } else if (mArr[i] instanceof Map) {
+        obj = values;
+      } else {
+        obj = (String[]) mArr[i];
+      }
+      org.junit.Assert.assertArrayEquals(obj, Codec.beeDeserializeCollection(res[i]));
     }
-    System.out.println(Codec.beeSerialize(ResponseObject.response("pyp").addWarning("bum")));
-    System.out.println(Codec.beeSerialize(new Object[] {
-        new String[] {"aa", "", "b"}, new int[] {1, 2, -1}}));
   }
 }

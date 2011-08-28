@@ -804,7 +804,7 @@ class BeeTable implements HasExtFields, HasStates, HasTranslations, HasExtendedI
     for (Map.Entry<String, BeeField> entry : fields.entrySet()) {
       String key = BeeUtils.concat(1, "Field", ++i, entry.getKey());
       BeeField field = entry.getValue();
-      
+
       PropertyUtils.addChildren(info, key, "Name", field.getName(), "Type", field.getType(),
           "Precision", field.getPrecision(), "Scale", field.getScale(),
           "Not Null", field.isNotNull(), "Unique", field.isUnique(),
@@ -834,7 +834,7 @@ class BeeTable implements HasExtFields, HasStates, HasTranslations, HasExtendedI
       String[] keyFields = bk.getKeyFields();
       int cnt = ArrayUtils.length(keyFields);
       for (int k = 0; k < cnt; k++) {
-        info.add(new ExtendedProperty(key, BeeUtils.concat(1, "Key Field", 
+        info.add(new ExtendedProperty(key, BeeUtils.concat(1, "Key Field",
             BeeUtils.progress(k + 1, cnt)), keyFields[k]));
       }
     }
@@ -843,10 +843,12 @@ class BeeTable implements HasExtFields, HasStates, HasTranslations, HasExtendedI
     i = 0;
     for (BeeState state : states) {
       String key = BeeUtils.concat(1, "State", ++i);
-      PropertyUtils.addChildren(info, key, "Name", state.getName(), "Mode", state.getMode(),
+      PropertyUtils.addChildren(info, key, "Name", state.getName(),
+          "UserMode", state.supportsUsers(),
+          "RoleMode", state.supportsRoles(),
           "Checked", state.isChecked());
     }
-    
+
     return info;
   }
 
