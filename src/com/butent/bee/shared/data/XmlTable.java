@@ -164,19 +164,13 @@ public class XmlTable {
       boolean upd = false;
       diff = new XmlTable();
       diff.name = name;
-      diff.x = x;
-      diff.y = y;
 
-      if (!isProtected()) {
-        if (!BeeUtils.equals(x, otherTable.x)) {
-          diff.x = otherTable.x;
-          upd = true;
-        }
-        if (!BeeUtils.equals(y, otherTable.y)) {
-          diff.y = otherTable.y;
-          upd = true;
-        }
-      }
+      upd = upd || !BeeUtils.equals(x, otherTable.x);
+      diff.x = otherTable.x;
+
+      upd = upd || !BeeUtils.equals(y, otherTable.y);
+      diff.y = otherTable.y;
+
       if (!BeeUtils.isEmpty(otherTable.fields)) {
         for (XmlField field : otherTable.fields) {
           if (!isProtected(field)) {
@@ -258,13 +252,19 @@ public class XmlTable {
         if (fields == null) {
           fields = Lists.newArrayList();
         }
-        fields.addAll(diff.fields);
+        for (XmlField field : diff.fields) {
+          removeField(field);
+          fields.add(field);
+        }
       }
       if (!BeeUtils.isEmpty(diff.extFields)) {
         if (extFields == null) {
           extFields = Lists.newArrayList();
         }
-        extFields.addAll(diff.extFields);
+        for (XmlField field : diff.extFields) {
+          removeField(field);
+          extFields.add(field);
+        }
       }
       if (!BeeUtils.isEmpty(diff.states)) {
         if (states == null) {
@@ -312,5 +312,14 @@ public class XmlTable {
       }
     }
     return null;
+  }
+
+  private void removeField(XmlField field) {
+    if (!BeeUtils.isEmpty(fields)) {
+      fields.remove(field);
+    }
+    if (!BeeUtils.isEmpty(extFields)) {
+      extFields.remove(field);
+    }
   }
 }

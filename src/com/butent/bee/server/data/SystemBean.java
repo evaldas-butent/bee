@@ -1554,7 +1554,7 @@ public class SystemBean {
           String resourcePath = resource.getPath();
           String objectName = NameUtils.getBaseName(resourcePath);
           objectName = objectName.substring(0, objectName.length() - obj.name().length() - 1);
-          objects.add(objectName);
+          objects.add(BeeUtils.normalize(objectName));
         }
         for (String objectName : objects) {
           boolean isOk = false;

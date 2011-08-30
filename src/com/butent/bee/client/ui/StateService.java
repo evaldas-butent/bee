@@ -59,7 +59,7 @@ public class StateService extends CompositeService {
               if (response.hasResponse()) {
                 for (String xml : Codec.beeDeserializeCollection((String) response.getResponse())) {
                   XmlState state = XmlState.restore(xml);
-                  Variable[] vars = new Variable[3];
+                  Variable[] vars = new Variable[BeeUtils.max(NAME, USER, ROLE, CHECKED)];
                   vars[NAME] = new Variable(BeeType.STRING, state.name);
                   vars[USER] = new Variable("USER", BeeType.BOOLEAN,
                       BeeUtils.toString(state.userMode));
@@ -83,7 +83,7 @@ public class StateService extends CompositeService {
       return ok;
 
     } else if (stg.equals(STG_NEW)) {
-      Variable[] vars = new Variable[3];
+      Variable[] vars = new Variable[BeeUtils.max(NAME, USER, ROLE, CHECKED)];
       vars[NAME] = new Variable(BeeType.STRING);
       vars[USER] = new Variable("USER", BeeType.BOOLEAN);
       vars[ROLE] = new Variable("ROLE", BeeType.BOOLEAN);

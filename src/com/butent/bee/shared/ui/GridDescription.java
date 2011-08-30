@@ -25,7 +25,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
    * Contains a list of grid parameters.
    */
 
-  private enum SerializationMember {
+  private enum Serial {
     NAME, VIEW, CAPTION, READONLY, HAS_HEADERS, HAS_FOOTERS,
     ASYNC_THRESHOLD, PAGING_THRESHOLD, SEARCH_THRESHOLD, PAGE_SIZE,
     NEW_ROW_COLUMNS, SHOW_COLUMN_WIDTHS,
@@ -96,12 +96,12 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
 
   @Override
   public void deserialize(String s) {
-    SerializationMember[] members = SerializationMember.values();
     String[] arr = Codec.beeDeserializeCollection(s);
+    Serial[] members = Serial.values();
     Assert.lengthEquals(arr, members.length);
 
     for (int i = 0; i < members.length; i++) {
-      SerializationMember member = members[i];
+      Serial member = members[i];
       String value = arr[i];
 
       switch (member) {
@@ -371,11 +371,11 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
 
   @Override
   public String serialize() {
-    SerializationMember[] members = SerializationMember.values();
+    Serial[] members = Serial.values();
     Object[] arr = new Object[members.length];
     int i = 0;
 
-    for (SerializationMember member : members) {
+    for (Serial member : members) {
       switch (member) {
         case NAME:
           arr[i++] = getName();

@@ -4,15 +4,13 @@
 
   name="Cities"
   idName="CityID"
-  x="160" y="150"
+  x="330" y="240"
   >
   <BeeFields>
-    <BeeField name="Name" type="STRING" precision="100" notNull="true" unique="true" />
-    <BeeField name="Population" type="INTEGER" />
-    <BeeField name="Country" type="LONG" relation="Countries" />
+    <BeeField name="Name" type="STRING" precision="30" notNull="true" unique="true" translatable="true" />
+    <BeeField name="Country" type="LONG" notNull="true" relation="Countries" />
   </BeeFields>
   <BeeStates>
-    <BeeState>Visible</BeeState>
     <BeeState>Marked</BeeState>
   </BeeStates>
 </BeeTable>

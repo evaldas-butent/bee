@@ -14,8 +14,6 @@
         </style>
       </BeeDataColumn>
 
-      <BeeDataColumn name="Population" source="Population" caption="Gyventojai" />
-
       <BeeRelColumn name="Country" source="CountryName" relSource="Country" relColumn="Name"
         caption="Šalis">
         <editor type="selector" width="200" visibleLines="12"

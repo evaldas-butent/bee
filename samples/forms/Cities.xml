@@ -13,11 +13,6 @@
     </row>
 
     <row>
-      <cell><text>Gyventojai</text></cell>
-      <cell><InputInteger source="Population" /></cell>
-    </row>
-
-    <row>
       <cell><text>Šalis</text></cell>
       <cell>
         <DataSelector source="CountryName" relSource="Country"

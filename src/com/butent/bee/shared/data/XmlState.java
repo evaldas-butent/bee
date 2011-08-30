@@ -14,7 +14,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement(name = "BeeState", namespace = DataUtils.DEFAULT_NAMESPACE)
 public class XmlState implements BeeSerializable {
 
-  private enum SerializationMembers {
+  private enum Serial {
     NAME, USER_MODE, ROLE_MODE, CHECKED, SAFE
   }
 
@@ -37,13 +37,12 @@ public class XmlState implements BeeSerializable {
 
   @Override
   public void deserialize(String s) {
-    SerializationMembers[] members = SerializationMembers.values();
     String[] arr = Codec.beeDeserializeCollection(s);
-
+    Serial[] members = Serial.values();
     Assert.lengthEquals(arr, members.length);
 
     for (int i = 0; i < members.length; i++) {
-      SerializationMembers member = members[i];
+      Serial member = members[i];
       String value = arr[i];
 
       switch (member) {
@@ -74,24 +73,15 @@ public class XmlState implements BeeSerializable {
       diff = new XmlState();
       diff.name = name;
 
-      if (BeeUtils.equals(userMode, otherState.userMode)) {
-        diff.userMode = userMode;
-      } else {
-        diff.userMode = otherState.userMode;
-        upd = true;
-      }
-      if (BeeUtils.equals(roleMode, otherState.roleMode)) {
-        diff.roleMode = roleMode;
-      } else {
-        diff.roleMode = otherState.roleMode;
-        upd = true;
-      }
-      if (BeeUtils.equals(checked, otherState.checked)) {
-        diff.checked = checked;
-      } else {
-        diff.checked = otherState.checked;
-        upd = true;
-      }
+      upd = upd || !BeeUtils.equals(userMode, otherState.userMode);
+      diff.userMode = otherState.userMode;
+
+      upd = upd || !BeeUtils.equals(roleMode, otherState.roleMode);
+      diff.roleMode = otherState.roleMode;
+
+      upd = upd || !BeeUtils.equals(checked, otherState.checked);
+      diff.checked = otherState.checked;
+
       if (!upd) {
         diff = null;
       }
@@ -120,11 +110,11 @@ public class XmlState implements BeeSerializable {
 
   @Override
   public String serialize() {
-    SerializationMembers[] members = SerializationMembers.values();
+    Serial[] members = Serial.values();
     Object[] arr = new Object[members.length];
     int i = 0;
 
-    for (SerializationMembers member : SerializationMembers.values()) {
+    for (Serial member : Serial.values()) {
       switch (member) {
         case NAME:
           arr[i++] = name;

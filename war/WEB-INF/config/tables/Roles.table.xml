@@ -4,7 +4,7 @@
 
   name="Roles"
   idName="RoleID"
-  x="340" y="10"
+  x="10" y="10"
   >
   <BeeFields>
     <BeeField name="Name" type="STRING" precision="30" notNull="true" unique="true" />

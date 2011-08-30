@@ -6,6 +6,11 @@ import com.google.common.collect.Sets;
 
 import com.butent.bee.shared.BeeSerializable;
 
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+
 import org.junit.Test;
 
 import java.util.Calendar;
@@ -21,9 +26,9 @@ public class TestCodec {
     for (Object obj : arr) {
       String s = Codec.beeSerialize(obj);
 
-      org.junit.Assert.assertEquals((obj == null) ? obj : BeeUtils.transform(obj),
+      assertEquals((obj == null) ? obj : BeeUtils.transform(obj),
           Codec.beeDeserialize(s));
-      org.junit.Assert.assertNull(Codec.beeDeserializeCollection(s));
+      assertNull(Codec.beeDeserializeCollection(s));
     }
 
     BeeSerializable ser = new BeeSerializable() {
@@ -36,8 +41,8 @@ public class TestCodec {
         return "SomeSerialzedText";
       }
     };
-    org.junit.Assert.assertEquals(Codec.beeDeserialize(Codec.beeSerialize(ser)), ser.serialize());
-    org.junit.Assert.assertArrayEquals(
+    assertEquals(Codec.beeDeserialize(Codec.beeSerialize(ser)), ser.serialize());
+    assertArrayEquals(
         Codec.beeDeserializeCollection(Codec.beeSerialize(new Object[] {ser, ser, ser})),
         new Object[] {ser.serialize(), ser.serialize(), ser.serialize()});
 
@@ -59,8 +64,8 @@ public class TestCodec {
         valueMap};
 
     String[] res = Codec.beeDeserializeCollection(Codec.beeSerialize(mArr));
-    org.junit.Assert.assertNotNull(res);
-    org.junit.Assert.assertEquals(res.length, mArr.length);
+    assertNotNull(res);
+    assertEquals(res.length, mArr.length);
 
     for (int i = 0; i < mArr.length; i++) {
       String[] obj;
@@ -72,7 +77,7 @@ public class TestCodec {
       } else {
         obj = (String[]) mArr[i];
       }
-      org.junit.Assert.assertArrayEquals(obj, Codec.beeDeserializeCollection(res[i]));
+      assertArrayEquals(obj, Codec.beeDeserializeCollection(res[i]));
     }
   }
 }
