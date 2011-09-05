@@ -382,6 +382,10 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
   public int getRowCount() {
     return rowCount;
   }
+  
+  public IsRow getRowData() {
+    return rowData;
+  }
 
   public SelectionModel<? super IsRow> getSelectionModel() {
     return null;
@@ -657,7 +661,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
   public void start(int count) {
     if (hasData()) {
       for (EditableWidget editableWidget : getEditableWidgets()) {
-        editableWidget.bind(this, this);
+        editableWidget.bind(this, this, this);
 
         if (editableWidget.isFocusable() && editableWidget.getEditor() != null) {
           int tabIndex = editableWidget.getEditor().getTabIndex();
@@ -855,10 +859,6 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
 
   private IsRow getRowBuffer() {
     return rowBuffer;
-  }
-
-  private IsRow getRowData() {
-    return rowData;
   }
 
   private Evaluator getRowEditable() {

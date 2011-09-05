@@ -31,6 +31,8 @@ public interface FormView extends View, NotificationListener,
 
   HasDataTable getDisplay();
 
+  IsRow getRowData();
+  
   boolean isRowEditable(boolean warn);
   
   void prepareForInsert();

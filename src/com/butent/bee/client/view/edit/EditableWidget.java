@@ -12,8 +12,10 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
+import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.WidgetDescription;
 import com.butent.bee.client.utils.Evaluator;
+import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.JustDate;
@@ -52,7 +54,7 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
   private boolean initialized = false;
   
   private Editor editor = null;
-  private IsRow rowValue = null;
+  private FormView form = null;
 
   public EditableWidget(List<BeeColumn> dataColumns, int dataIndex, RelationInfo relationInfo,
       WidgetDescription widgetDescription) {
@@ -73,13 +75,15 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
     this.readOnly = BeeUtils.isTrue(widgetDescription.isReadOnly());
   }
 
-  public void bind(Widget rootWidget, EditEndEvent.Handler handler) {
+  public void bind(Widget rootWidget, EditEndEvent.Handler handler, FormView formView) {
     if (isInitialized()) {
       return;
     }
 
     Assert.notNull(rootWidget);
     Assert.notNull(handler);
+    
+    setForm(formView);
 
     Widget widget = DomUtils.getWidgetQuietly(rootWidget, getWidgetId());
     if (widget instanceof Editor) {
@@ -191,7 +195,7 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
   public RelationInfo getRelationInfo() {
     return relationInfo;
   }
-
+  
   public boolean getRowModeForUpdate() {
     return isForeign();
   }
@@ -199,16 +203,16 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
   public String getWidgetId() {
     return getWidgetDescription().getWidgetId();
   }
-  
+
   public boolean hasCarry() {
     return getCarry() != null;
   }
-
+  
   @Override
   public int hashCode() {
     return getWidgetDescription().hashCode();
   }
-  
+
   public boolean isEditable(IsRow row) {
     if (row == null) {
       return false;
@@ -221,7 +225,7 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
         row.getString(getDataIndex()));
     return BeeUtils.toBoolean(getEditable().evaluate());
   }
-
+  
   public boolean isFocusable() {
     if (getWidgetDescription().getWidgetType() != null) {
       return getWidgetDescription().getWidgetType().isFocusable();
@@ -232,7 +236,7 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
   public boolean isForeign() {
     return getRelationInfo() != null;
   }
-  
+
   public boolean isNullable() {
     if (isForeign()) {
       return getRelationInfo().isNullable();
@@ -242,7 +246,7 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
       return true;
     }
   }
-
+  
   public boolean isReadOnly() {
     return readOnly;
   }
@@ -258,7 +262,7 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
     switch (keyCode) {
       case KeyCodes.KEY_ESCAPE:
         EventUtils.eatEvent(nativeEvent);
-        setValue(getRowValue());
+        reset();
         break;
 
       case KeyCodes.KEY_ENTER:
@@ -266,21 +270,32 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
       case KeyCodes.KEY_UP:
       case KeyCodes.KEY_DOWN:
         EventUtils.eatEvent(nativeEvent);
-        getEditEndHandler().onEditEnd(new EditEndEvent(null, getColumnForUpdate(), null,
-            getEditor().getNormalizedValue(), getRowModeForUpdate(), nativeEvent.getKeyCode(),
-            EventUtils.hasModifierKey(nativeEvent), getWidgetId()));
+
+        String oldValue = getOldValueForUpdate();
+        String newValue = getEditor().getNormalizedValue();
+
+        if (validate(oldValue, newValue)) {
+          getEditEndHandler().onEditEnd(new EditEndEvent(getRowValue(), getColumnForUpdate(),
+              oldValue, newValue, getRowModeForUpdate(), keyCode,
+              EventUtils.hasModifierKey(nativeEvent), getWidgetId()));
+        }
         break;
     }
   }
 
   public void onValueChange(ValueChangeEvent<String> event) {
-    getEditEndHandler().onEditEnd(new EditEndEvent(null, getColumnForUpdate(), null,
-        event.getValue(), getRowModeForUpdate(), null, false, getWidgetId()));
+    String oldValue = getOldValueForUpdate();
+    String newValue = event.getValue();
+
+    if (validate(oldValue, newValue)) {
+      getEditEndHandler().onEditEnd(new EditEndEvent(getRowValue(), getColumnForUpdate(),
+          oldValue, newValue, getRowModeForUpdate(), null, false, getWidgetId()));
+    } else {
+      reset();
+    }
   }
 
   public void setValue(IsRow row) {
-    setRowValue(row);
-
     if (getEditor() != null) {
       String value;
       if (row == null) {
@@ -317,6 +332,10 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
     return editEndHandler;
   }
 
+  private FormView getForm() {
+    return form;
+  }
+
   private String getMaxValue() {
     return maxValue;
   }
@@ -325,8 +344,18 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
     return minValue;
   }
 
+  private String getOldValueForUpdate() {
+    if (getRowValue() == null) {
+      return null;
+    }
+    return getRowValue().getString(getIndexForUpdate());
+  }
+
   private IsRow getRowValue() {
-    return rowValue;
+    if (getForm() == null) {
+      return null;
+    }
+    return getForm().getRowData();
   }
 
   private Evaluator getValidation() {
@@ -341,19 +370,28 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
     return initialized;
   }
 
+  private void reset() {
+    setValue(getRowValue());
+  }
+
   private void setEditEndHandler(EditEndEvent.Handler editEndHandler) {
     this.editEndHandler = editEndHandler;
   }
-
+  
   private void setEditor(Editor editor) {
     this.editor = editor;
   }
 
+  private void setForm(FormView form) {
+    this.form = form;
+  }
+  
   private void setInitialized(boolean initialized) {
     this.initialized = initialized;
   }
-  
-  private void setRowValue(IsRow rowValue) {
-    this.rowValue = rowValue;
+
+  private boolean validate(String oldValue, String newValue) {
+    return UiHelper.validate(oldValue, newValue, getValidation(), getRowValue(),
+        getIndexForUpdate(), getDataType(), getMinValue(), getMaxValue(), getForm());
   }
 }

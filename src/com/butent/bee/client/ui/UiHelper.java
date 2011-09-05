@@ -11,11 +11,16 @@ import com.google.gwt.user.client.ui.HasVerticalAlignment.VerticalAlignmentConst
 import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.ValueBoxBase;
 
+import com.butent.bee.client.dialog.NotificationListener;
 import com.butent.bee.client.event.EventUtils;
+import com.butent.bee.client.utils.Evaluator;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.edit.HasCharacterFilter;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.HasNumberBounds;
+import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.ui.EditorAction;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -201,6 +206,16 @@ public class UiHelper {
       obj.setHorizontalAlignment(align);
     }
   }
+  
+  public static void setNumberBounds(HasNumberBounds obj, String min, String max) {
+    Assert.notNull(obj);
+    if (BeeUtils.isDouble(min)) {
+      obj.setMinValue(BeeUtils.toDoubleOrNull(min));
+    }
+    if (BeeUtils.isDouble(max)) {
+      obj.setMaxValue(BeeUtils.toDoubleOrNull(max));
+    }
+  }
 
   public static void setVerticalAlignment(HasVerticalAlignment obj, String text) {
     Assert.notNull(obj);
@@ -209,6 +224,45 @@ public class UiHelper {
     VerticalAlignmentConstant align = parseVerticalAlignment(text);
     if (align != null) {
       obj.setVerticalAlignment(align);
+    }
+  }
+  
+  public static boolean validate(String oldValue, String newValue, Evaluator validation,
+      IsRow row, int colIndex, ValueType type, String minValue, String maxValue,
+      NotificationListener notificationListener) {
+    if (BeeUtils.equalsTrimRight(oldValue, newValue)) {
+      return true;
+    }
+    String errorMessage = null;
+
+    if (validation != null) {
+      validation.update(row, BeeConst.UNDEF, colIndex, type, oldValue, newValue);
+      String msg = validation.evaluate();
+      if (!BeeUtils.isEmpty(msg)) {
+        errorMessage = msg;
+      }
+    }
+
+    if (errorMessage == null && (!BeeUtils.isEmpty(minValue) || !BeeUtils.isEmpty(maxValue))) {
+      Value value = Value.parseValue(type, newValue, false);
+
+      if (!BeeUtils.isEmpty(minValue)
+          && value.compareTo(Value.parseValue(type, minValue, true)) < 0) {
+        errorMessage = BeeUtils.concat(1, errorMessage, "Min value:", minValue);
+      }
+      if (!BeeUtils.isEmpty(maxValue)
+          && value.compareTo(Value.parseValue(type, maxValue, true)) > 0) {
+        errorMessage = BeeUtils.concat(1, errorMessage, "Max value:", maxValue);
+      }
+    }
+
+    if (errorMessage == null) {
+      return true;
+    } else {
+      if (notificationListener != null) {
+        notificationListener.notifySevere(errorMessage);
+      }
+      return false;
     }
   }
   

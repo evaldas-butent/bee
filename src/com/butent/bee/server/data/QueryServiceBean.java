@@ -79,7 +79,7 @@ public class QueryServiceBean {
       BeeDataSource bds = dsb.locateDs(dsn);
 
       if (bds != null) {
-        String engine = null;
+        String engine;
         Connection con = null;
         try {
           con = bds.getDs().getConnection();

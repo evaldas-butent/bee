@@ -92,6 +92,7 @@ import com.butent.bee.client.widget.Toggle;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasId;
+import com.butent.bee.shared.HasNumberBounds;
 import com.butent.bee.shared.HasService;
 import com.butent.bee.shared.HasStage;
 import com.butent.bee.shared.Pair;
@@ -880,6 +881,11 @@ public enum FormWidget {
     if (attributes.size() > 0) {
       setAttributes(widget, attributes);
       widgetDescription.setAttributes(attributes);
+
+      if (widget instanceof HasNumberBounds) {
+        UiHelper.setNumberBounds((HasNumberBounds) widget, widgetDescription.getMinValue(),
+            widgetDescription.getMaxValue());
+      }
     }
 
     List<ConditionalStyleDeclaration> dynStyles = Lists.newArrayList();

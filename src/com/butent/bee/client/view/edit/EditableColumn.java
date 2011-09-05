@@ -18,6 +18,7 @@ import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.i18n.HasDateTimeFormat;
 import com.butent.bee.client.i18n.HasNumberFormat;
 import com.butent.bee.client.i18n.LocaleUtils;
+import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.utils.Evaluator;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -28,7 +29,6 @@ import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.value.BooleanValue;
-import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.RelationInfo;
 import com.butent.bee.shared.ui.ColumnDescription;
@@ -576,12 +576,7 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
     getEditor().addEditStopHandler(this);
 
     if (getEditor() instanceof HasNumberBounds) {
-      if (BeeUtils.isDouble(getMinValue())) {
-        ((HasNumberBounds) getEditor()).setMinValue(BeeUtils.toDoubleOrNull(getMinValue()));
-      }
-      if (BeeUtils.isDouble(getMaxValue())) {
-        ((HasNumberBounds) getEditor()).setMaxValue(BeeUtils.toDoubleOrNull(getMaxValue()));
-      }
+      UiHelper.setNumberBounds((HasNumberBounds) getEditor(), getMinValue(), getMaxValue());
     }
   }
 
@@ -602,42 +597,7 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
   }
 
   private boolean validate(String oldValue, String newValue) {
-    if (BeeUtils.equalsTrimRight(oldValue, newValue)) {
-      return true;
-    }
-    String errorMessage = null;
-
-    if (getValidation() != null) {
-      getValidation().update(getRowValue(), BeeConst.UNDEF, getColIndex(),
-          getDataType(), oldValue, newValue);
-      String msg = getValidation().evaluate();
-      if (!BeeUtils.isEmpty(msg)) {
-        errorMessage = msg;
-      }
-    }
-
-    if (errorMessage == null
-        && (!BeeUtils.isEmpty(getMinValue()) || !BeeUtils.isEmpty(getMaxValue()))) {
-      ValueType type = getDataType();
-      Value value = Value.parseValue(type, newValue, false);
-
-      if (!BeeUtils.isEmpty(getMinValue())
-          && value.compareTo(Value.parseValue(type, getMinValue(), true)) < 0) {
-        errorMessage = BeeUtils.concat(1, errorMessage, "Min value:", getMinValue());
-      }
-      if (!BeeUtils.isEmpty(getMaxValue())
-          && value.compareTo(Value.parseValue(type, getMaxValue(), true)) > 0) {
-        errorMessage = BeeUtils.concat(1, errorMessage, "Max value:", getMaxValue());
-      }
-    }
-
-    if (errorMessage == null) {
-      return true;
-    } else {
-      if (getNotificationListener() != null) {
-        getNotificationListener().notifySevere(errorMessage);
-      }
-      return false;
-    }
+    return UiHelper.validate(oldValue, newValue, getValidation(), getRowValue(), getColIndex(),
+        getDataType(), getMinValue(), getMaxValue(), getNotificationListener());
   }
 }
