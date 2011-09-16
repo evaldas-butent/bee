@@ -30,6 +30,7 @@ import com.butent.bee.shared.utils.PropertyUtils;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
 /**
  * Implements database view management - contains parameters for views and their fields and methods
@@ -38,24 +39,24 @@ import java.util.Map;
 
 public class BeeView implements HasExtendedInfo {
 
-  private class ViewField {
-
+  class ViewField {
     private final String table;
     private final String alias;
     private final String field;
     private final SqlDataType type;
     private final boolean notNull;
-    private boolean editable;
-    private String targetAlias;
+    private final String sourceExpression;
+    private final String owner;
 
-    public ViewField(String tbl, String als, String fld, SqlDataType type, boolean notNull,
-        boolean editable) {
+    private ViewField(String tbl, String als, String fld, SqlDataType type, boolean notNull,
+        String sourceExpression, String owner) {
       this.table = tbl;
       this.alias = als;
       this.field = fld;
       this.type = type;
       this.notNull = notNull;
-      this.editable = editable;
+      this.sourceExpression = sourceExpression;
+      this.owner = owner;
     }
 
     public String getAlias() {
@@ -66,32 +67,41 @@ public class BeeView implements HasExtendedInfo {
       return field;
     }
 
-    public String getTable() {
-      return table;
+    public String getOwner() {
+      return owner;
     }
 
-    public String getTargetAlias() {
-      return targetAlias;
+    public String getSourceExpression() {
+      return sourceExpression;
+    }
+
+    public String getTable() {
+      return table;
     }
 
     public SqlDataType getType() {
       return type;
     }
 
-    public boolean isEditable() {
-      return editable;
-    }
-
     public boolean isNotNull() {
       return notNull;
     }
-
-    public void setTargetAlias(String als) {
-      this.targetAlias = als;
-    }
   }
 
-  private static final String JOIN_MASK = "-<>+";
+  private enum JoinType {
+    INNER('-'), RIGHT('<'), LEFT('>'), FULL('+');
+
+    private final char joinChar;
+
+    private JoinType(char joinChar) {
+      this.joinChar = joinChar;
+    }
+
+    public char getJoinChar() {
+      return joinChar;
+    }
+  };
+
   private static final int NAME = 0;
   private static final int EXPRESSION = 1;
   private static final int LOCALE = 2;
@@ -121,7 +131,7 @@ public class BeeView implements HasExtendedInfo {
   }
 
   public String getAlias(String colName) {
-    return getViewField(colName).getAlias();
+    return getViewField(getExpression(colName)).getAlias();
   }
 
   public int getColumnCount() {
@@ -239,7 +249,7 @@ public class BeeView implements HasExtendedInfo {
   }
 
   public String getField(String colName) {
-    return getViewField(colName).getField();
+    return getViewField(getExpression(colName)).getField();
   }
 
   public List<ExtendedProperty> getInfo() {
@@ -284,7 +294,7 @@ public class BeeView implements HasExtendedInfo {
 
       PropertyUtils.addChildren(info, key, "Table", fld.getTable(), "Alias", fld.getAlias(),
           "Field", fld.getField(), "Type", fld.getType(), "Not Null", fld.isNotNull(),
-          "Editable", fld.isEditable(), "Target Alias", fld.getTargetAlias());
+          "Source Expression", fld.getSourceExpression(), "Owner", fld.getOwner());
     }
 
     info.add(new ExtendedProperty("Orders", BeeUtils.toString(orders.size())));
@@ -313,12 +323,12 @@ public class BeeView implements HasExtendedInfo {
     Assert.state(!isEmpty());
     return query.copyOf().addOrder(getSource(), sourceIdName);
   }
-  
+
   public String getRelSource(String colName) {
     if (!hasColumn(colName)) {
       return null;
     }
-    
+
     String colSource = getName(colName);
     String relColumn = getField(colName);
     if (BeeUtils.isSuffix(colSource, relColumn)) {
@@ -341,19 +351,19 @@ public class BeeView implements HasExtendedInfo {
   }
 
   public String getTable(String colName) {
-    return getViewField(colName).getTable();
+    return getViewField(getExpression(colName)).getTable();
   }
 
   public SqlDataType getType(String colName) {
-    return getViewField(colName).getType();
+    return getViewField(getExpression(colName)).getType();
+  }
+
+  public ViewField getViewField(String expression) {
+    return expressions.get(expression);
   }
 
   public boolean hasColumn(String colName) {
     return !BeeUtils.isEmpty(colName) && columns.containsKey(BeeUtils.normalize(colName));
-  }
-
-  public boolean isEditable(String colName) {
-    return getViewField(colName).isEditable();
   }
 
   public boolean isEmpty() {
@@ -361,7 +371,7 @@ public class BeeView implements HasExtendedInfo {
   }
 
   public boolean isNotNull(String colName) {
-    return getViewField(colName).isNotNull();
+    return getViewField(getExpression(colName)).isNotNull();
   }
 
   public boolean isReadOnly() {
@@ -407,26 +417,25 @@ public class BeeView implements HasExtendedInfo {
     Assert.state(hasColumn(colName), "Unknown view column: " + getName() + " " + colName);
     return columns.get(BeeUtils.normalize(colName));
   }
-  
-  private ViewField getViewField(String colName) {
-    return expressions.get(BeeUtils.normalize(getExpression(colName)));
-  }
 
   private boolean loadExpression(String expression, String locale, Map<String, BeeTable> tables) {
-    if (expressions.containsKey(expressionKey(expression, locale))) {
+    String keyExpr = expressionKey(expression, locale);
+    Logger logger = LogUtils.getDefaultLogger();
+
+    if (expressions.containsKey(keyExpr)) {
       return true;
     }
-    char joinMode = 0;
+    JoinType joinType = null;
     int pos = -1;
 
-    for (char c : BeeView.JOIN_MASK.toCharArray()) {
-      int idx = expression.lastIndexOf(c);
+    for (JoinType join : BeeView.JoinType.values()) {
+      int idx = expression.lastIndexOf(join.getJoinChar());
       if (idx > pos) {
-        joinMode = c;
+        joinType = join;
         pos = idx;
       }
     }
-    String xpr = "";
+    String xpr = null;
     String fld = expression;
 
     if (pos >= 0) {
@@ -434,69 +443,77 @@ public class BeeView implements HasExtendedInfo {
       fld = expression.substring(pos + 1);
     }
     String tbl;
-    String als;
+    String als = null;
+    String owner = null;
+    BeeTable table = null;
 
     if (BeeUtils.isEmpty(xpr)) {
       tbl = getSource();
       als = tbl;
+      table = tables.get(BeeUtils.normalize(tbl));
     } else {
-      if (!loadExpression(xpr, locale, tables)) {
+      if (!loadExpression(xpr, null, tables)) {
         return false;
       }
-      ViewField vf = expressions.get(expressionKey(xpr, locale));
-      als = vf.getTargetAlias();
-      tbl = tables.get(BeeUtils.normalize(vf.getTable())).getField(vf.getField()).getRelation();
+      xpr = expressionKey(xpr, null);
+      ViewField src = expressions.get(xpr);
+      tbl = tables.get(BeeUtils.normalize(src.getTable())).getField(src.getField()).getRelation();
 
       if (BeeUtils.isEmpty(tbl)) {
-        LogUtils.warning(LogUtils.getDefaultLogger(),
-            "Not a relation field:", vf.getTable() + "." + vf.getField());
+        LogUtils.warning(logger, "Not a relation field:", xpr, "View:", getName());
         return false;
+      }
+      table = tables.get(BeeUtils.normalize(tbl));
 
-      } else if (!tables.containsKey(BeeUtils.normalize(tbl))) {
-        LogUtils.warning(LogUtils.getDefaultLogger(),
-            "Unknown relation table:", tbl, vf.getTable() + "." + vf.getField());
+      if (table == null) {
+        LogUtils.warning(logger, "Unknown relation table:", tbl, "View:", getName(), xpr);
         return false;
+      }
+      for (ViewField v : expressions.values()) {
+        if (BeeUtils.same(v.getSourceExpression(), xpr)) {
+          als = v.getAlias();
+          break;
+        }
       }
       if (BeeUtils.isEmpty(als)) {
         als = SqlUtils.uniqueName();
-        vf.setTargetAlias(als);
-        IsCondition join = SqlUtils.join(vf.getAlias(), vf.getField(), als,
-            tables.get(BeeUtils.normalize(tbl)).getIdName());
+        IsCondition join = SqlUtils.join(src.getAlias(), src.getField(), als, table.getIdName());
 
-        switch (joinMode) {
-          case '<':
+        switch (joinType) {
+          case RIGHT:
             query.addFromRight(tbl, als, join);
             break;
 
-          case '>':
+          case LEFT:
             query.addFromLeft(tbl, als, join);
             break;
 
-          case '-':
+          case INNER:
             query.addFromInner(tbl, als, join);
             break;
 
-          case '+':
+          case FULL:
             query.addFromFull(tbl, als, join);
             break;
-
-          default:
-            Assert.untouchable("Unhandled join mode: " + joinMode);
         }
       }
     }
-    BeeTable table = tables.get(BeeUtils.normalize(tbl));
     BeeField field = table.getField(fld);
 
     if (!BeeUtils.isEmpty(locale)) {
-      als = table.joinTranslationField(query, als, field, locale);
-
+      if (field.isTranslatable()) {
+        owner = als;
+        als = table.joinTranslationField(query, owner, field, locale);
+      } else {
+        LogUtils.warning(logger, "Field is not translatable:", tbl + "." + fld, "View:", getName());
+        return false;
+      }
     } else if (field.isExtended()) {
-      als = table.joinExtField(query, als, field);
+      owner = als;
+      als = table.joinExtField(query, owner, field);
     }
-    expressions.put(expressionKey(expression, locale),
-        new ViewField(table.getName(), als, field.getName(), field.getType(), field.isNotNull(),
-            BeeUtils.isEmpty(xpr)));
+    expressions.put(keyExpr,
+        new ViewField(tbl, als, fld, field.getType(), field.isNotNull(), xpr, owner));
     return true;
   }
 }

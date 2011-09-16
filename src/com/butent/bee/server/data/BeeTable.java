@@ -38,7 +38,7 @@ import java.util.Set;
  */
 
 @SuppressWarnings("hiding")
-class BeeTable implements HasExtFields, HasStates, HasTranslations, HasExtendedInfo {
+public class BeeTable implements HasExtFields, HasStates, HasTranslations, HasExtendedInfo {
 
   public class BeeField {
     private final String name;

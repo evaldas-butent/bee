@@ -290,10 +290,9 @@ public class QueryServiceBean {
 
     if (!BeeUtils.isEmpty(view)) {
       Assert.state(query instanceof SqlSelect);
-      String tableName = view.getSource();
 
       ((SqlSelect) query)
-          .addFields(tableName, sys.getIdName(tableName), sys.getVersionName(tableName));
+          .addFields(view.getSource(), view.getSourceIdName(), view.getSourceVersionName());
     }
     Assert.state(!query.isEmpty());
     activateTables(query);
@@ -365,8 +364,8 @@ public class QueryServiceBean {
     String versionName = null;
 
     if (!BeeUtils.isEmpty(view)) {
-      idName = sys.getIdName(view.getSource());
-      versionName = sys.getVersionName(view.getSource());
+      idName = view.getSourceIdName();
+      versionName = view.getSourceVersionName();
     }
     List<BeeColumn> columns = Lists.newArrayList();
     int idIndex = -1;
@@ -389,12 +388,11 @@ public class QueryServiceBean {
               break;
             default:
           }
-        } else {
-          if (BeeUtils.same(colName, idName)) {
-            idIndex = col.getIndex();
-          } else if (BeeUtils.same(colName, versionName)) {
-            versionIndex = col.getIndex();
-          }
+        } else if (BeeUtils.same(colName, idName)) {
+          idIndex = col.getIndex();
+          continue;
+        } else if (BeeUtils.same(colName, versionName)) {
+          versionIndex = col.getIndex();
           continue;
         }
       }

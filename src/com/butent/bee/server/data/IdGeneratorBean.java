@@ -27,7 +27,7 @@ import javax.ejb.TransactionAttributeType;
 
 @Singleton
 // TODO: waiting for JBoss bugfix http://community.jboss.org/thread/161844
-@TransactionAttribute(TransactionAttributeType.MANDATORY)
+@TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
 public class IdGeneratorBean {
 
   private static Logger logger = Logger.getLogger(IdGeneratorBean.class.getName());
@@ -48,7 +48,6 @@ public class IdGeneratorBean {
   private Map<String, long[]> idCache = new HashMap<String, long[]>();
 
   @PreDestroy
-  @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
   public void destroy() {
     for (Entry<String, long[]> entry : idCache.entrySet()) {
       String source = entry.getKey();

@@ -165,7 +165,8 @@ public class GridHolderBean {
         columnDescription.setRelView(tblName);
         columnDescription.setRelColumn(view.getField(colName));
 
-        if (!BeeUtils.same(view.getTable(relSource), view.getSource())) {
+        if (!view.hasColumn(relSource)
+            || !BeeUtils.same(view.getTable(relSource), view.getSource())) {
           columnDescription.setReadOnly(true);
         }
       }

@@ -8,6 +8,7 @@ import com.butent.bee.client.ui.StateService;
 import com.butent.bee.server.Config;
 import com.butent.bee.server.DataSourceBean;
 import com.butent.bee.server.data.BeeView;
+import com.butent.bee.server.data.DataEditorBean;
 import com.butent.bee.server.data.IdGeneratorBean;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
@@ -85,6 +86,8 @@ public class UiServiceBean {
   IdGeneratorBean ig;
   @EJB
   SystemBean sys;
+  @EJB
+  DataEditorBean deb;
   @EJB
   UserServiceBean usr;
   @EJB
@@ -580,7 +583,7 @@ public class UiServiceBean {
     } else {
       for (String s : rows) {
         RowInfo row = RowInfo.restore(s);
-        ResponseObject resp = sys.deleteRow(viewName, row);
+        ResponseObject resp = deb.deleteRow(viewName, row);
         int res = resp.getResponse(-1, logger);
 
         if (res > 0) {
@@ -652,7 +655,7 @@ public class UiServiceBean {
     } else if (rowCount <= 0 || rowCount > 10000) {
       response = ResponseObject.error("Invalid row count:", rowCount);
     } else {
-      response = sys.generateData(tableName, rowCount);
+      response = deb.generateData(tableName, rowCount);
     }
     return response;
   }
@@ -852,7 +855,7 @@ public class UiServiceBean {
   }
 
   private ResponseObject insertRow(RequestInfo reqInfo) {
-    return sys.insertRow(BeeRowSet.restore(reqInfo.getContent()), true);
+    return deb.commitRow(BeeRowSet.restore(reqInfo.getContent()), true);
   }
 
   private ResponseObject menuInfo(RequestInfo reqInfo) {
@@ -913,7 +916,7 @@ public class UiServiceBean {
           bits[i] = BeeUtils.toLong(rArr[i]);
         }
       }
-      sys.setState(tbl, id, state, bits);
+      deb.setState(tbl, id, state, bits);
       response.addInfo("Toggle OK");
 
     } else if (BeeUtils.startsSame(cmd, "schema")) {
@@ -1096,10 +1099,10 @@ public class UiServiceBean {
   }
 
   private ResponseObject updateCell(RequestInfo reqInfo) {
-    return sys.updateRow(BeeRowSet.restore(reqInfo.getContent()), false);
+    return deb.commitRow(BeeRowSet.restore(reqInfo.getContent()), false);
   }
 
   private ResponseObject updateRow(RequestInfo reqInfo) {
-    return sys.updateRow(BeeRowSet.restore(reqInfo.getContent()), true);
+    return deb.commitRow(BeeRowSet.restore(reqInfo.getContent()), true);
   }
 }
