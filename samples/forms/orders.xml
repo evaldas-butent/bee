@@ -1,14 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <BeeForm xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" caption="Užsakymai" name="Orders" viewName="Orders" xsi:schemaLocation="http://www.butent.com/bee ../../schemas/form.xsd">
 <AbsolutePanel>
-<layer left="41" top="128">
-<Label html="Gavėjas"/>
+<layer left="59" top="12">
+<Label html="Data"/>
 </layer>
 <layer left="98" top="11" width="184">
 <InputDate source="Date"/>
-</layer>
-<layer left="59" top="12">
-<Label html="Data"/>
 </layer>
 <layer left="311" top="12">
 <Label html="Dokumento Nr."/>
@@ -16,20 +13,20 @@
 <layer left="414" top="10" width="246">
 <InputText source="Document"/>
 </layer>
-<layer left="37" top="163">
-<Label html="Sandėlis"/>
-</layer>
-<layer left="98" top="204" width="281">
-<DataSelector relColumn="Name" relSource="Manager" relView="Employees" source="ManagerName"/>
-</layer>
-<layer left="10" top="203">
-<Label html="Vadybininkas"/>
+<layer left="50" top="49">
+<Label html="Serija"/>
 </layer>
 <layer left="98" top="48" width="98">
 <InputText source="Series"/>
 </layer>
+<layer left="315" top="49">
+<Label html="Sąskaitos Nr."/>
+</layer>
 <layer left="414" top="47" width="246">
 <InputText source="Invoice"/>
+</layer>
+<layer left="24" top="85">
+<Label html="Operacija"/>
 </layer>
 <layer left="94" top="84" width="634">
 <ListBox source="Operation">
@@ -38,30 +35,33 @@
 <item>Vidinis</item>
 </ListBox>
 </layer>
-<layer left="50" top="49">
-<Label html="Serija"/>
-</layer>
-<layer left="315" top="49">
-<Label html="Sąskaitos Nr."/>
-</layer>
-<layer left="24" top="85">
-<Label html="Operacija"/>
+<layer left="41" top="128">
+<Label html="Gavėjas"/>
 </layer>
 <layer left="98" top="128" width="632">
 <DataSelector relColumn="Name" relSource="Buyer" relView="Clients" source="BuyerName"/>
 </layer>
-<layer height="206" left="98" top="244" width="626">
-<Grid relColumn="OrderID" relView="OrderItemsView"/>
-</layer>
-<layer left="41" top="244">
-<Label html="Prekės"/>
+<layer left="37" top="163">
+<Label html="Sandėlis"/>
 </layer>
 <layer left="100" top="166">
-<Radio name="radio1590" source="Warehouse">
+<Radio source="Warehouse">
 <option>S1</option>
 <option>S2</option>
 <option>S3</option>
 </Radio>
+</layer>
+<layer left="10" top="203">
+<Label html="Vadybininkas"/>
+</layer>
+<layer left="98" top="204" width="281">
+<DataSelector relColumn="Name" relSource="Manager" relView="Employees" source="ManagerName"/>
+</layer>
+<layer left="41" top="244">
+<Label html="Prekės"/>
+</layer>
+<layer height="206" left="98" top="244" width="626">
+<Grid relColumn="OrderID" relView="OrderItemsView"/>
 </layer>
 </AbsolutePanel>
 </BeeForm>

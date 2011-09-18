@@ -118,14 +118,14 @@
               </row>
               <row>
                 <cell>
-                  <Radio name="radioOne" vertical="true" source="X">
+                  <Radio vertical="true" source="X">
                     <option>Option 1</option>
                     <option>Option 2</option>
                     <option>Option 3</option>
                   </Radio>
                 </cell>
                 <cell>
-                  <Radio name="radioTwo" vertical="false" source="X">
+                  <Radio vertical="false" source="X">
                     <option>Option A</option>
                     <option>Option B</option>
                     <option>Option C</option>
@@ -239,10 +239,12 @@
               <Label html="Audio" horizontalAlignment="center" />
             </north>
             <north size="50">
-              <Audio url="http://www.drchinese.com/wav/Snowball.mp3" />
+<!--               <Audio url="http://www.drchinese.com/wav/Snowball.mp3" /> -->
+              <Audio />
             </north>
             <center>
-              <Video url="http://people.opera.com/shwetankd/webm/sunflower.webm" />
+<!--               <Video url="http://people.opera.com/shwetankd/webm/sunflower.webm" /> -->
+              <Video />
             </center>
           </SplitPanel>
         </page>

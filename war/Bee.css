@@ -134,10 +134,6 @@ body, select {
   list-style-type: lower-greek;
 }
 
-.bee-Button {
-  background: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#fcf), to(#ffc));
-  background: -moz-linear-gradient(top, yellow, greenyellow);
-}
 .bee-Button:focus {
   background: LightCyan;
 }
@@ -771,36 +767,34 @@ body, select {
   padding: 2px;
 }
 
-.gwt-TabLayoutPanel .gwt-TabLayoutPanelTabs {
+.gwt-TabLayoutPanelTabs {
   background: #eee;
-  padding-top: 6px;
-  padding-left: 5px;
+  top: 0px;
 }
-.gwt-TabLayoutPanel .gwt-TabLayoutPanelContentContainer {
+.gwt-TabLayoutPanelContentContainer {
   border-color: #ccc;
   border-style: solid;
   border-width: 0px 1px 1px;
 }
-.gwt-TabLayoutPanel .gwt-TabLayoutPanelContent {
+.gwt-TabLayoutPanelContent {
   overflow: hidden;
   padding: 2px;
 }
-.gwt-TabLayoutPanel .gwt-TabLayoutPanelTab {
-  margin-left: 4px;
-  padding: 4px 8px 4px 8px;
-  cursor: pointer;
+.gwt-TabLayoutPanelTab {
+  height: 100%;
+  margin-left: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
+  background: #8E8E8E;
   color: white;
   font-weight: normal;
-  text-align: center;
-  background: #8E8E8E;
-  -moz-border-radius: 3px 3px 0px 0px;
-  border-radius: 3px 3px 0px 0px;
+  cursor: pointer;
 }
-.gwt-TabLayoutPanel .gwt-TabLayoutPanelTab-selected {
-  cursor: default;
+.gwt-TabLayoutPanelTab-selected {
   background: white;
   color: #333;
   font-weight: bold;
+  cursor: default;
 }
 
 .gwt-DatePicker {

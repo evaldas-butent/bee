@@ -2,7 +2,7 @@
 <BeeForm xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.butent.com/bee ../../schemas/form.xsd"
   name="Data" caption="Data Binding" viewName="DataTypes">
-
+  
   <FlexTable borderWidth="1" cellPadding="5" style="borderCollapse: collapse;">
     <row>
       <cell>
@@ -18,7 +18,7 @@
 
     <row>
       <cell>
-        <InputInteger source="Integer" />
+        <InputInteger source="Integer" readOnly="true" />
       </cell>
       <cell>
         <InputSlider source="Integer" min="-10" max="10" />
@@ -30,7 +30,10 @@
 
     <row>
       <cell colSpan="2">
-        <Radio name="radioInteger" source="Integer">
+        <Radio source="Integer">
+          <validation>
+            <expression>(cell.newValue &gt; 1) ? null : '"too low"'</expression>
+          </validation>
           <option>0</option>
           <option>1</option>
           <option>2</option>
@@ -62,7 +65,7 @@
 
     <row>
       <cell>
-        <InputDate source="Date" format="date_short" />
+        <InputDate source="Date" format="date_short" minValue="2008 7 1" maxValue="2012 9 1" />
       </cell>
       <cell>
         <DateLabel source="Date" />
@@ -98,7 +101,17 @@
 
     <row>
       <cell>
-        <InputDouble source="Double" />
+        <InputDouble source="Double">
+          <validation>
+            <function>
+              if (Math.abs(cell.newValue) &lt; 1000) {
+                return null;
+              } else {
+                return "oh noes";
+              }
+            </function>
+          </validation>
+        </InputDouble>
       </cell>
       <cell>
         <DoubleLabel source="Double" />
@@ -110,7 +123,7 @@
 
     <row>
       <cell>
-        <InputLong source="Long" />
+        <InputLong source="Long" minValue="0" />
       </cell>
       <cell>
         <LongLabel source="Long" />
@@ -199,5 +212,9 @@
     </row>
     
   </FlexTable>
+
+  <rowEditable>
+    <expression>row.Date == null || row.Date &gt;= new Date(2005, 0, 1)</expression>
+  </rowEditable>
 
 </BeeForm>

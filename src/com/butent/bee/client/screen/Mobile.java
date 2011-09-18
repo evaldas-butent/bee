@@ -34,7 +34,6 @@ import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
-import com.butent.bee.shared.Stage;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -64,7 +63,6 @@ public class Mobile extends ScreenImpl {
   }
 
   private Widget loadingWidget = null;
-  private BeeButton authButton = null;
 
   public Mobile() {
     super();
@@ -91,7 +89,7 @@ public class Mobile extends ScreenImpl {
   }
 
   @Override
-  public void updateSignature(boolean init) {
+  public void updateUser(String service) {
     if (getSignature() == null) {
       return;
     }
@@ -100,7 +98,7 @@ public class Mobile extends ScreenImpl {
     if (BeeUtils.isEmpty(usr)) {
       updateAuthWidget(true);
       usr = BeeConst.STRING_EMPTY;
-      if (!init) {
+      if (!BeeUtils.isEmpty(service)) {
         getDataPanel().clear();
         closePanel();
       }
@@ -223,7 +221,7 @@ public class Mobile extends ScreenImpl {
     hor.add(user);
     setSignature(user);
 
-    updateSignature(true);
+    updateUser(null);
 
     int right = addLogToggle(p);
     p.addLeftRightTop(hor, pct + 12, Unit.PCT, right, Unit.PX, 1, Unit.PX);
@@ -247,10 +245,6 @@ public class Mobile extends ScreenImpl {
       setLoadingWidget(new BeeImage(Global.getImages().loading()));
     }
     return getLoadingWidget();
-  }
-
-  private BeeButton getAuthButton() {
-    return authButton;
   }
 
   private Widget getLoadingWidget() {
@@ -279,10 +273,6 @@ public class Mobile extends ScreenImpl {
         showViews(dataInfos);
       }
     });
-  }
-
-  private void setAuthButton(BeeButton authButton) {
-    this.authButton = authButton;
   }
 
   private void setLoadingWidget(Widget loadingWidget) {
@@ -325,14 +315,5 @@ public class Mobile extends ScreenImpl {
         }
       }
     }
-  }
-
-  private void updateAuthWidget(boolean login) {
-    if (getAuthButton() == null) {
-      return;
-    }
-    getAuthButton().setHTML(login ? Global.constants.login() : Global.constants.logout());
-    getAuthButton().setService(login ? Service.GET_LOGIN : Service.LOGOUT);
-    getAuthButton().setStage(login ? Stage.STAGE_GET_PARAMETERS : null);
   }
 }

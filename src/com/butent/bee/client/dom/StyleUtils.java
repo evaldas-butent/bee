@@ -1287,6 +1287,25 @@ public class StyleUtils {
     setBorderTopWidth(obj.getElement(), px);
   }
 
+  public static void setBottom(Element el, int px) {
+    Assert.notNull(el);
+    setBottom(el.getStyle(), px);
+  }
+
+  public static void setBottom(Style st, int px) {
+    Assert.notNull(st);
+    st.setBottom(px, Unit.PX);
+  }
+
+  public static void setBottom(String id, int px) {
+    setBottom(DomUtils.getElement(id), px);
+  }
+
+  public static void setBottom(UIObject obj, int px) {
+    Assert.notNull(obj);
+    setBottom(obj.getElement(), px);
+  }
+  
   public static void setCssText(Element el, String text) {
     Assert.notNull(el);
     setCssText(el.getStyle(), text);

@@ -449,7 +449,6 @@ public class UiServiceBean {
           }
 
         } else if (BeeUtils.same(dstType, "Radio")) {
-          widgetElement.setAttribute("name", "radio" + BeeUtils.randomInt(0, 10000));
           for (String item : BeeUtils.split(label, ",")) {
             Element itemElement = dstDoc.createElement("option");
             itemElement.setTextContent(item);

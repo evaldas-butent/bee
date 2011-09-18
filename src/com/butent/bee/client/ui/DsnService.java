@@ -24,7 +24,7 @@ public class DsnService extends CompositeService {
   private Variable dsn;
 
   @Override
-  protected boolean doStage(String stg, Object... params) {
+  protected boolean doStage(final String stg, Object... params) {
     boolean ok = true;
 
     if (stg.equals(SVC_GET_DSNS)) {
@@ -67,7 +67,7 @@ public class DsnService extends CompositeService {
 
                 if (response.hasResponse(String.class)) {
                   BeeKeeper.getUser().setDsn((String) response.getResponse());
-                  BeeKeeper.getScreen().updateSignature(false);
+                  BeeKeeper.getScreen().updateUser(stg);
                 }
               }
             });

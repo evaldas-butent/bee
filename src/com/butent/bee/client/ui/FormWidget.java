@@ -284,7 +284,6 @@ public enum FormWidget {
   private static final String ATTR_BAR_UNIT = "barUnit";
   private static final String ATTR_HEADER_SIZE = "headerSize";
 
-  private static final String ATTR_NAME = "name";
   private static final String ATTR_RESOURCE = "resource";
   private static final String ATTR_VERTICAL = "vertical";
 
@@ -696,10 +695,7 @@ public enum FormWidget {
         break;
 
       case RADIO:
-        name = attributes.get(ATTR_NAME);
-        if (!BeeUtils.isEmpty(name)) {
-          widget = new RadioGroup(name, BeeUtils.toBoolean(attributes.get(ATTR_VERTICAL)));
-        }
+        widget = new RadioGroup(BeeUtils.toBoolean(attributes.get(ATTR_VERTICAL)));
         break;
 
       case RESIZE_PANEL:

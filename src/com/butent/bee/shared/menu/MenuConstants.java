@@ -58,7 +58,7 @@ public class MenuConstants {
   public static final String LAYOUT_BUTTONS_HOR = "buttons horizontal";
   public static final String LAYOUT_BUTTONS_VERT = "buttons vertical";
 
-  public static String DEFAULT_ROOT_LAYOUT = LAYOUT_MENU_HOR;
+  public static String DEFAULT_ROOT_LAYOUT = LAYOUT_BUTTONS_HOR;
   public static String DEFAULT_ITEM_LAYOUT = LAYOUT_MENU_VERT;
 
   public static final int SEPARATOR_BEFORE = 1;

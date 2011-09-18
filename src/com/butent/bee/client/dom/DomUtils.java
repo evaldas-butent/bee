@@ -1253,6 +1253,13 @@ public class DomUtils {
     }
   }
 
+  public static boolean isEmpty(HasWidgets container) {
+    if (container == null) {
+      return true;
+    }
+    return !container.iterator().hasNext();
+  }
+  
   public static boolean isEnabled(HasWidgets parent) {
     Assert.notNull(parent);
     for (Widget child : parent) {

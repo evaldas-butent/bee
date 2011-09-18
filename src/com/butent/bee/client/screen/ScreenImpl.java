@@ -2,6 +2,8 @@ package com.butent.bee.client.screen;
 
 import com.google.common.collect.Lists;
 import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.layout.client.Layout;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
@@ -31,8 +33,10 @@ import com.butent.bee.client.layout.Complex;
 import com.butent.bee.client.layout.Direction;
 import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.layout.Split;
+import com.butent.bee.client.layout.Stack;
 import com.butent.bee.client.layout.TabbedPages;
 import com.butent.bee.client.layout.TilePanel;
+import com.butent.bee.client.layout.Vertical;
 import com.butent.bee.client.ui.CompositeService;
 import com.butent.bee.client.ui.DsnService;
 import com.butent.bee.client.ui.FormService;
@@ -96,6 +100,7 @@ public class ScreenImpl implements Screen {
   private HasWidgets menuPanel = null;
   private HasWidgets dataPanel = null;
 
+  private BeeButton authButton = null;
   private Widget signature = null;
 
   private final String elGrid = "el-grid-type";
@@ -277,17 +282,23 @@ public class ScreenImpl implements Screen {
     updatePanel(getMenuPanel(), w);
   }
 
-  public void updateSignature(boolean init) {
+  public void updateUser(String service) {
     if (getSignature() == null) {
       return;
     }
 
     String usr = BeeKeeper.getUser().getUserSign();
-    if (!BeeUtils.isEmpty(usr)) {
-      usr = BeeUtils.concat(1, Global.constants.user() + ":", usr);
-    } else {
+    if (BeeUtils.isEmpty(usr)) {
+      updateAuthWidget(true);
       usr = Global.constants.notLoggedIn();
+    } else {
+      updateAuthWidget(false);
+      if (BeeUtils.same(service, Service.LOGIN) && getMenuPanel() != null
+          && DomUtils.isEmpty(getMenuPanel())) {
+        BeeKeeper.getBus().dispatchService(Service.REFRESH_MENU, null, null);
+      }
     }
+    
     getSignature().getElement().setInnerHTML(usr);
   }
 
@@ -334,11 +345,11 @@ public class ScreenImpl implements Screen {
 
   protected void createUi() {
     Widget w;
-    Split p = new Split();
+    Split p = new Split(2);
 
     w = initNorth();
     if (w != null) {
-      p.addNorth(w, 70);
+      p.addNorth(w, 64);
     }
 
     w = initSouth();
@@ -348,7 +359,7 @@ public class ScreenImpl implements Screen {
 
     w = initWest();
     if (w != null) {
-      p.addWest(w, 256);
+      p.addWest(w, 280);
     }
 
     w = initEast();
@@ -403,53 +414,38 @@ public class ScreenImpl implements Screen {
   }
 
   protected Widget initNorth() {
-    Horizontal p = new Horizontal();
-    p.setSpacing(5);
+    Complex cp = new Complex();
+    
+    cp.addLeftTop(new BeeImage(Global.getImages().bee()), 1, 1);
+   
+    BeeButton auth = new BeeButton(true);
+    cp.addLeftTop(auth, 80, 4);
+    setAuthButton(auth);
 
-    p.add(new BeeButton("DSN", CompositeService.name(DsnService.class), DsnService.SVC_GET_DSNS));
-    p.add(new BeeButton("States", CompositeService.name(StateService.class),
-        StateService.SVC_GET_STATES));
+    BeeLabel user = new BeeLabel();
+    cp.addLeftTop(user, 80, 32);
+    setSignature(user);
+    
+    updateUser(null);
 
-    p.add(new ButtonGroup("Ping", Service.DB_PING,
-        "Info", Service.DB_INFO,
-        Global.constants.tables(), Service.DB_TABLES));
-
-    p.add(new BeeButton(Global.constants.clazz(), Service.GET_CLASS, Stage.STAGE_GET_PARAMETERS));
-    p.add(new BeeButton("Xml", Service.GET_XML, Stage.STAGE_GET_PARAMETERS));
-    p.add(new BeeButton("Jdbc", Service.GET_DATA, Stage.STAGE_GET_PARAMETERS));
-
-    p.add(new BeeButton(Global.constants.login(), Service.GET_LOGIN, Stage.STAGE_GET_PARAMETERS));
-    p.add(new BeeButton(Global.constants.logout(), Service.LOGOUT));
-
-    p.add(new BeeCheckBox(Global.getVar(Global.VAR_DEBUG)));
-
-    p.add(new BeeButton("North land", CompositeService.name(FormService.class),
-        FormService.Stages.CHOOSE_FORM.name()));
-    p.add(new BeeButton("CRUD", CompositeService.name(RowSetService.class),
-        RowSetService.Stages.CHOOSE_TABLE.name()));
-
-    p.add(new RadioGroup(getElGrid(), true, BeeKeeper.getStorage().checkInt(getElGrid(), 2),
-        Lists.newArrayList("simple", "scroll", "cell")));
-    p.add(new RadioGroup(getElCell(), true, BeeKeeper.getStorage().checkEnum(getElCell(),
-        TextCellType.TEXT_EDIT), TextCellType.values()));
-
-    Complex panel = new Complex();
-    panel.addLeftTop(p, 1, Unit.EM, 4, Unit.PX);
-
-    BeeImage bee = new BeeImage(Global.getImages().bee());
-    panel.addRightBottom(bee, 10, 1);
-
+    BeeLayoutPanel mp = new BeeLayoutPanel();
+    cp.addLeftTop(mp, 280, 2);
+    StyleUtils.setRight(mp, 1);
+    StyleUtils.setBottom(mp, 1);
+    
+    setMenuPanel(mp);
+    
     setNotification(new Notification());
-    panel.addRightTop(getNotification(), 80, 0);
+    cp.addRightTop(getNotification(), 0, 0);
 
-    return panel;
+    return cp;
   }
 
   protected Widget initSouth() {
     BeeLayoutPanel p = new BeeLayoutPanel();
 
     CliWidget cli = new CliWidget();
-    p.add(cli);
+    p.addLeftRightTop(cli, 1, Unit.EM, 500, Unit.PX, 3, Unit.PX);
 
     Horizontal hor = new Horizontal();
     hor.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
@@ -459,36 +455,46 @@ public class ScreenImpl implements Screen {
     hor.add(new BeeButton("E", new SplitCommand(Direction.EAST)));
     hor.add(new BeeButton("W", new SplitCommand(Direction.WEST)));
 
+    hor.add(new BeeButton("+"));
+
     BeeImage close = new BeeImage(Global.getImages().close(), new SplitCommand(true));
     hor.add(close);
     hor.setCellWidth(close, "32px");
     hor.setCellHorizontalAlignment(close, HasHorizontalAlignment.ALIGN_RIGHT);
 
     p.add(hor);
+    p.setWidgetRightWidth(hor, 240, Unit.PX, 200, Unit.PX);
 
     BeeLabel ver = new BeeLabel(Settings.getVersion());
     p.add(ver);
-
-    p.setWidgetLeftWidth(cli, 1, Unit.EM, 50, Unit.PCT);
-    p.setWidgetVerticalPosition(cli, Layout.Alignment.BEGIN);
-
-    p.setWidgetLeftWidth(hor, 55, Unit.PCT, 200, Unit.PX);
-
-    p.setWidgetRightWidth(ver, 1, Unit.EM, 10, Unit.EM);
+    p.setWidgetRightWidth(ver, 10, Unit.PX, 200, Unit.PX);
     p.setWidgetHorizontalPosition(ver, Layout.Alignment.END);
-
-    BeeLabel user = new BeeLabel();
-    p.add(user);
-    p.setWidgetRightWidth(user, 11, Unit.EM, 20, Unit.EM);
-    p.setWidgetHorizontalPosition(user, Layout.Alignment.END);
-
-    setSignature(user);
-    updateSignature(true);
 
     return p;
   }
 
   protected Widget initWest() {
+    TabbedPages tp = new TabbedPages(22, Unit.PX);
+    
+    Stack fav = new Stack(Unit.PX);
+    double h = 20;
+
+    fav.add(new BeeLabel(), "Menu", h);
+    fav.add(new BeeLabel(), "Records", h);
+    fav.add(new BeeLabel(), "Grids", h);
+    fav.add(new BeeLabel(), "Forms", h);
+    fav.add(new BeeLabel(), "Filters", h);
+    fav.add(new BeeLabel(), "Reports", h);
+    fav.add(new BeeLabel(), "Dashboards", h);
+    
+    tp.add(fav, new BeeImage(Global.getImages().bookmark()));
+    
+    tp.add(new BeeLabel(), "Recent");
+
+    BeeLayoutPanel dp = new BeeLayoutPanel();
+    tp.add(dp, Global.constants.data(), Global.getDataExplorer().getDataInfoCreator());
+    setDataPanel(dp);
+    
     FlexTable fp = new FlexTable();
     fp.setCellSpacing(3);
 
@@ -515,24 +521,55 @@ public class ScreenImpl implements Screen {
     fp.setWidget(r + 1, 1, new BeeButton("BEE", CompositeService.name(MenuService.class),
         "stage_dummy"));
 
-    TabbedPages tp = new TabbedPages(3, Unit.EX);
-    tp.add(fp, Global.constants.menu());
+    BeeCheckBox toggle = new BeeCheckBox("Log");
+    toggle.setValue(true);
+    toggle.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
+      public void onValueChange(ValueChangeEvent<Boolean> event) {
+        if (event.getValue()) {
+          BeeKeeper.getLog().show();
+        } else {
+          BeeKeeper.getLog().hide();
+        }
+      }
+    });
+    fp.setWidget(r + 2, 0, toggle);
+    
+    tp.add(fp, "Options");
 
-    BeeLayoutPanel dp = new BeeLayoutPanel();
-    tp.add(dp, Global.constants.data(), Global.getDataExplorer().getDataInfoCreator());
-    setDataPanel(dp);
+    Vertical adm = new Vertical();
+    adm.setSpacing(5);
 
-    BeeLayoutPanel vp = new BeeLayoutPanel();
-    tp.add(vp, new BeeImage(Global.getImages().bookmark()));
+    adm.add(new BeeButton("DSN", CompositeService.name(DsnService.class), DsnService.SVC_GET_DSNS));
+    adm.add(new BeeButton("States", CompositeService.name(StateService.class),
+        StateService.SVC_GET_STATES));
 
-    Split spl = new Split();
-    spl.addNorth(tp, 200);
+    adm.add(new ButtonGroup("Ping", Service.DB_PING,
+        "Info", Service.DB_INFO,
+        Global.constants.tables(), Service.DB_TABLES));
 
-    BeeLayoutPanel mp = new BeeLayoutPanel();
-    spl.add(mp);
-    setMenuPanel(mp);
+    adm.add(new BeeButton(Global.constants.clazz(), Service.GET_CLASS, Stage.STAGE_GET_PARAMETERS));
+    adm.add(new BeeButton("Xml", Service.GET_XML, Stage.STAGE_GET_PARAMETERS));
+    adm.add(new BeeButton("Jdbc", Service.GET_DATA, Stage.STAGE_GET_PARAMETERS));
 
-    return spl;
+    adm.add(new BeeCheckBox(Global.getVar(Global.VAR_DEBUG)));
+
+    adm.add(new BeeButton("North land", CompositeService.name(FormService.class),
+        FormService.Stages.CHOOSE_FORM.name()));
+    adm.add(new BeeButton("CRUD", CompositeService.name(RowSetService.class),
+        RowSetService.Stages.CHOOSE_TABLE.name()));
+
+    adm.add(new RadioGroup(getElGrid(), false, BeeKeeper.getStorage().checkInt(getElGrid(), 2),
+        Lists.newArrayList("simple", "scroll", "cell")));
+    adm.add(new RadioGroup(getElCell(), false, BeeKeeper.getStorage().checkEnum(getElCell(),
+        TextCellType.TEXT_EDIT), TextCellType.values()));
+    
+    tp.add(adm, "Admin");
+    
+    return tp;
+  }
+
+  protected void setAuthButton(BeeButton authButton) {
+    this.authButton = authButton;
   }
 
   protected void setDataPanel(HasWidgets dataPanel) {
@@ -551,6 +588,15 @@ public class ScreenImpl implements Screen {
     this.signature = signature;
   }
 
+  protected void updateAuthWidget(boolean login) {
+    if (getAuthButton() == null) {
+      return;
+    }
+    getAuthButton().setHTML(login ? Global.constants.login() : Global.constants.logout());
+    getAuthButton().setService(login ? Service.GET_LOGIN : Service.LOGOUT);
+    getAuthButton().setStage(login ? Stage.STAGE_GET_PARAMETERS : null);
+  }
+  
   private void createPanel(Direction direction) {
     TilePanel p = getActivePanel();
     Assert.notNull(p);
@@ -603,6 +649,10 @@ public class ScreenImpl implements Screen {
     setActivePanel(null);
   }
 
+  private BeeButton getAuthButton() {
+    return authButton;
+  }
+  
   private String getElCell() {
     return elCell;
   }

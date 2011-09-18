@@ -88,7 +88,7 @@ public class AsyncCallback implements RequestCallback {
           data = UserData.restore((String) response.getResponse());
         }
         BeeKeeper.getUser().setUserData(data);
-        BeeKeeper.getScreen().updateSignature(false);
+        BeeKeeper.getScreen().updateUser(svc);
       }
     }
 
