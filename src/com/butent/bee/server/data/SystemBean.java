@@ -126,6 +126,7 @@ public class SystemBean {
     }
   }
 
+  @Deprecated
   public ResponseObject commitChanges(BeeRowSet changes) {
     String err = "";
     int c = 0;

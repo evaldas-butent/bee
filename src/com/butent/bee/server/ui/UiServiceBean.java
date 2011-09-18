@@ -574,33 +574,32 @@ public class UiServiceBean {
     Assert.notEmpty(rows);
 
     ResponseObject response = new ResponseObject();
-    BeeView view = sys.getView(viewName);
     int cnt = 0;
 
-    if (view.isReadOnly()) {
-      response.addError("View", view.getName(), "is read only.");
-    } else {
-      for (String s : rows) {
-        RowInfo row = RowInfo.restore(s);
-        ResponseObject resp = deb.deleteRow(viewName, row);
-        int res = resp.getResponse(-1, logger);
+    for (String s : rows) {
+      RowInfo row = RowInfo.restore(s);
+      ResponseObject resp = deb.deleteRow(viewName, row);
+      int res = resp.getResponse(-1, logger);
 
-        if (res > 0) {
-          cnt += res;
-        } else {
-          response.addError("Error deleting row:", row.getId());
+      if (res > 0) {
+        cnt += res;
+      } else {
+        response.addError("Error deleting row:", row.getId());
 
-          if (res < 0) {
-            for (String err : resp.getErrors()) {
-              response.addError(err);
-            }
-          } else {
-            response.addError("Optimistic lock exception");
+        if (res < 0) {
+          for (String err : resp.getErrors()) {
+            response.addError(err);
           }
+        } else {
+          response.addError("Optimistic lock exception");
         }
+        break;
       }
     }
-    return response.setResponse(cnt);
+    if (!response.hasErrors()) {
+      response.setResponse(cnt);
+    }
+    return response;
   }
 
   private ResponseObject doSql(RequestInfo reqInfo) {
