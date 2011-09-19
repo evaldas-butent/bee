@@ -410,7 +410,7 @@ public class BeeView implements HasExtendedInfo {
   }
 
   private String expressionKey(String expression, String locale) {
-    return BeeUtils.normalize(BeeUtils.concat(0, expression, BeeUtils.parenthesize(locale)));
+    return BeeUtils.concat(0, expression, BeeUtils.parenthesize(BeeUtils.normalize(locale)));
   }
 
   private String[] getColumnInfo(String colName) {
@@ -470,7 +470,7 @@ public class BeeView implements HasExtendedInfo {
         return false;
       }
       for (ViewField v : expressions.values()) {
-        if (BeeUtils.same(v.getSourceExpression(), xpr)) {
+        if (BeeUtils.same(v.getSourceExpression(), xpr) && BeeUtils.isEmpty(v.getOwner())) {
           als = v.getAlias();
           break;
         }

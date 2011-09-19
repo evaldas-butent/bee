@@ -30,6 +30,7 @@ import com.butent.bee.shared.utils.LogUtils;
 import com.butent.bee.shared.utils.TimeUtils;
 
 import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -201,13 +202,13 @@ public class DataEditorBean {
     Assert.notEmpty(viewName);
     Assert.notNull(row);
     BeeView view = sys.getView(viewName);
-    ResponseObject response = null;
 
     if (view.isReadOnly()) {
       return ResponseObject.error("View", view.getName(), "is read only.");
     }
     String tblName = view.getSource();
-    Multimap<String, String[]> deletes = HashMultimap.create();
+    List<Multimap<String, Long>> ids = null;
+    LinkedHashMap<String, Multimap<String, String>> deletes = Maps.newLinkedHashMap();
     SqlSelect ss = new SqlSelect();
 
     String als = registerDelete(ss, null, null, tblName, deletes);
@@ -217,34 +218,45 @@ public class DataEditorBean {
           ss.setWhere(SqlUtils.equal(als, view.getSourceIdName(), row.getId())));
 
       if (res == null) {
-        response = ResponseObject.error("Optimistic lock exception");
-      } else {
-        Multimap<String, Long> ids = HashMultimap.create();
+        return ResponseObject.error("Optimistic lock exception");
+      }
+      ids = Lists.newArrayList();
 
-        for (String[] pair : deletes.values()) {
-          Long id = BeeUtils.toLongOrNull(res.get(pair[1]));
+      for (Multimap<String, String> cols : deletes.values()) {
+        Multimap<String, Long> tblIds = HashMultimap.create();
 
-          if (!BeeUtils.isEmpty(id)) {
-            ids.put(pair[0], id);
-          }
-        }
-        if (ids.size() > 0) {
-          for (String tbl : ids.keySet()) {
-            response = qs.updateDataWithResponse(new SqlDelete(tbl)
-                .setWhere(SqlUtils.inList(tbl, sys.getIdName(tbl), ids.get(tbl).toArray())));
+        for (String tbl : cols.keySet()) {
+          for (String col : cols.get(tbl)) {
+            Long id = BeeUtils.toLongOrNull(res.get(col));
 
-            if (response.hasErrors()) {
-              break;
+            if (!BeeUtils.isEmpty(id)) {
+              tblIds.put(tbl, id);
             }
           }
         }
+        if (tblIds.size() > 0) {
+          ids.add(tblIds);
+        }
       }
     }
-    if (response == null || !response.hasErrors()) {
-      response = qs.updateDataWithResponse(new SqlDelete(tblName)
-          .setWhere(SqlUtils.and(
-              SqlUtils.equal(tblName, view.getSourceIdName(), row.getId()),
-              SqlUtils.equal(tblName, view.getSourceVersionName(), row.getVersion()))));
+    ResponseObject response = qs.updateDataWithResponse(new SqlDelete(tblName)
+        .setWhere(SqlUtils.and(
+            SqlUtils.equal(tblName, view.getSourceIdName(), row.getId()),
+            SqlUtils.equal(tblName, view.getSourceVersionName(), row.getVersion()))));
+
+    if (!response.hasErrors() && !BeeUtils.isEmpty(ids)) {
+      for (Multimap<String, Long> tblIds : ids) {
+        for (String tbl : tblIds.keySet()) {
+          ResponseObject resp = qs.updateDataWithResponse(new SqlDelete(tbl)
+              .setWhere(SqlUtils.inList(tbl, sys.getIdName(tbl), tblIds.get(tbl).toArray())));
+
+          if (resp.hasErrors()) {
+            break;
+          } else {
+            response.addInfo("Deleted:", tbl, resp.getResponse());
+          }
+        }
+      }
     }
     if (response.hasErrors()) {
       ctx.setRollbackOnly();
@@ -647,11 +659,12 @@ public class DataEditorBean {
   }
 
   private String registerDelete(SqlSelect ss, String srcAlias, String srcField, String tblName,
-      Multimap<String, String[]> deletes) {
+      LinkedHashMap<String, Multimap<String, String>> deletes) {
 
     Assert.state(!deletes.containsKey(tblName), "Closed cycle recursion: " + tblName);
     BeeTable table = sys.getTable(tblName);
     String tblAlias = null;
+    Multimap<String, String> cols = null;
 
     for (BeeField field : table.getFields()) {
       if (field.isUnique()) {
@@ -664,18 +677,20 @@ public class DataEditorBean {
           if (BeeUtils.isEmpty(tblAlias)) {
             tblAlias = SqlUtils.uniqueName();
 
-            if (deletes.size() > 0) {
+            if (BeeUtils.isEmpty(deletes)) {
+              ss.addFrom(tblName, tblAlias);
+            } else {
               ss.addFromLeft(tblName, tblAlias,
                   SqlUtils.join(srcAlias, srcField, tblAlias, sys.getIdName(tblName)));
-            } else {
-              ss.addFrom(tblName, tblAlias);
             }
             if (field.isExtended()) {
               tblAlias = table.joinExtField(ss, tblAlias, field);
             }
+            cols = HashMultimap.create();
+            deletes.put(tblName, cols);
           }
           ss.addField(tblAlias, fldName, fldAlias);
-          deletes.put(tblName, new String[] {relTable, fldAlias});
+          cols.put(relTable, fldAlias);
           registerDelete(ss, tblAlias, fldName, relTable, deletes);
         }
       }

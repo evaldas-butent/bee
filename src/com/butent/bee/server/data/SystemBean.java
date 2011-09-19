@@ -749,6 +749,8 @@ public class SystemBean {
   }
 
   public void rebuildActiveTables() {
+    initTables();
+
     for (BeeTable table : getTables()) {
       if (table.isActive()) {
         rebuildTable(table);
