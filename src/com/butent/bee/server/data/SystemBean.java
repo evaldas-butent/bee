@@ -980,7 +980,7 @@ public class SystemBean {
     BeeTable table = getTable(tblName);
     Collection<BeeField> fields = allFields ? table.getFields() : table.getMainFields();
     BeeView view =
-        new BeeView(tblName, table.getName(), table.getIdName(), table.getVersionName(), false);
+        new BeeView(tblName, table.getName(), table.getIdName(), table.getVersionName(), true);
 
     for (BeeField field : fields) {
       String fld = field.getName();

@@ -209,13 +209,11 @@ public class DataEditorBean {
     String tblName = view.getSource();
     List<Multimap<String, Long>> ids = null;
     LinkedHashMap<String, Multimap<String, String>> deletes = Maps.newLinkedHashMap();
-    SqlSelect ss = new SqlSelect();
+    SqlSelect ss = registerDelete(null, null, null, tblName, deletes);
+    IsCondition wh = SqlUtils.equal(tblName, view.getSourceIdName(), row.getId());
 
-    String als = registerDelete(ss, null, null, tblName, deletes);
-
-    if (!BeeUtils.isEmpty(als)) {
-      Map<String, String> res = qs.getRow(
-          ss.setWhere(SqlUtils.equal(als, view.getSourceIdName(), row.getId())));
+    if (ss != null) {
+      Map<String, String> res = qs.getRow(ss.setWhere(wh));
 
       if (res == null) {
         return ResponseObject.error("Optimistic lock exception");
@@ -240,8 +238,7 @@ public class DataEditorBean {
       }
     }
     ResponseObject response = qs.updateDataWithResponse(new SqlDelete(tblName)
-        .setWhere(SqlUtils.and(
-            SqlUtils.equal(tblName, view.getSourceIdName(), row.getId()),
+        .setWhere(SqlUtils.and(wh,
             SqlUtils.equal(tblName, view.getSourceVersionName(), row.getVersion()))));
 
     if (!response.hasErrors() && !BeeUtils.isEmpty(ids)) {
@@ -658,13 +655,14 @@ public class DataEditorBean {
     return true;
   }
 
-  private String registerDelete(SqlSelect ss, String srcAlias, String srcField, String tblName,
+  private SqlSelect registerDelete(SqlSelect ss, String srcAlias, String srcField, String tblName,
       LinkedHashMap<String, Multimap<String, String>> deletes) {
 
     Assert.state(!deletes.containsKey(tblName), "Closed cycle recursion: " + tblName);
     BeeTable table = sys.getTable(tblName);
     String tblAlias = null;
     Multimap<String, String> cols = null;
+    SqlSelect query = ss;
 
     for (BeeField field : table.getFields()) {
       if (field.isUnique()) {
@@ -675,27 +673,29 @@ public class DataEditorBean {
           String fldAlias = SqlUtils.uniqueName();
 
           if (BeeUtils.isEmpty(tblAlias)) {
-            tblAlias = SqlUtils.uniqueName();
+            query = new SqlSelect();
 
             if (BeeUtils.isEmpty(deletes)) {
-              ss.addFrom(tblName, tblAlias);
+              tblAlias = tblName;
+              query.addFrom(tblName, tblAlias);
             } else {
-              ss.addFromLeft(tblName, tblAlias,
+              tblAlias = SqlUtils.uniqueName();
+              query.addFromLeft(tblName, tblAlias,
                   SqlUtils.join(srcAlias, srcField, tblAlias, sys.getIdName(tblName)));
             }
             if (field.isExtended()) {
-              tblAlias = table.joinExtField(ss, tblAlias, field);
+              tblAlias = table.joinExtField(query, tblAlias, field);
             }
             cols = HashMultimap.create();
             deletes.put(tblName, cols);
           }
-          ss.addField(tblAlias, fldName, fldAlias);
+          query.addField(tblAlias, fldName, fldAlias);
           cols.put(relTable, fldAlias);
-          registerDelete(ss, tblAlias, fldName, relTable, deletes);
+          registerDelete(query, tblAlias, fldName, relTable, deletes);
         }
       }
     }
-    return tblAlias;
+    return query;
   }
 
   private boolean registerField(ViewField colField, FieldInfo fldInfo,

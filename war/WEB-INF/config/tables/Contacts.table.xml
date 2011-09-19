@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BeeTable xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../schemas/table.xsd"
+  
+  name="Contacts"
+  idName="ContactID"
+  x="481" y="257"
+  >
+  <BeeFields>
+    <BeeField name="Phone" type="STRING" precision="50" />
+    <BeeField name="Mobile" type="STRING" precision="50" />
+    <BeeField name="Fax" type="STRING" precision="50" />
+    <BeeField name="Email" type="STRING" precision="50" />
+    <BeeField name="Website" type="STRING" precision="100" />
+    <BeeField name="Address" type="STRING" precision="100" />
+    <BeeField name="PostIndex" type="STRING" precision="20" />
+    <BeeField name="City" type="LONG" relation="Cities" />
+  </BeeFields>
+</BeeTable>
