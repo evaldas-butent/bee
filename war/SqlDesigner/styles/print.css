@@ -1,4 +1,4 @@
-﻿#bar, #background, #minimap {
+#bar, #background, #minimap {
 	display: none;
 }
 
@@ -20,3 +20,4 @@
 	font-size:115%;
 	background-color:none;
 }
+

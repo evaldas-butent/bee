@@ -53,7 +53,8 @@
 	<string name="optionpatternnotice">%T = primární tabulka, %R = primární klíč, %t = cizí tabulka</string>
 	<string name="hide">Schovat spojovníky při tažení tabulkou?</string>
 	<string name="vector">Vykreslovat oblé spojovníky (pakliže to prohlížeč podporuje)?</string>
-	
+	<string name="showsize">Zobrazovat velikost polí v tabulce?</string>
+	<string name="showtype">Zobrazovat datový typ polí v tabulce?</string>
 	
 	<!-- keys -->
 	<string name="tablekeys">Klíče</string>
@@ -77,6 +78,7 @@
 	<string name="clientsql">Generovat SQL</string>
 	<string name="backendlabel">Server backend:</string>
 	<string name="serversave">Uložit</string>
+	<string name="quicksave">Rychle uložit</string>
 	<string name="serverload">Načíst</string>
 	<string name="serverlist">Vypsat položky</string>
 	<string name="serverimport">Importovat z databáze</string>
