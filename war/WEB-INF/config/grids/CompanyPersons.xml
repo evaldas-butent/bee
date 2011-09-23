@@ -1,15 +1,14 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <BeeGrids xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.butent.com/bee ../../schemas/grid.xsd">
 
-  <BeeGrid name="Users" viewName="Users" readOnly="true">
+  <BeeGrid name="CompanyPersons" viewName="CompanyPersons" caption="Kontaktiniai asmenys">
     <columns>
-      <BeeIdColumn name="ID" />
-      <BeeDataColumn name="Login" source="Login" caption="Prisijungimo vardas" />
       <BeeDataColumn name="FirstName" source="FirstName" caption="Vardas" />
       <BeeDataColumn name="LasName" source="LastName" caption="Pavardė" />
       <BeeDataColumn name="Position" source="Position" caption="Pareigos" />
-      <BeeDataColumn name="CompanyName" source="CompanyName" caption="Įmonė" />
+      <BeeDataColumn name="Phone" source="Phone" caption="Tel." />
+      <BeeDataColumn name="Email" source="Email" caption="El. paštas" />
     </columns>
   </BeeGrid>
 </BeeGrids>

@@ -11,6 +11,7 @@ import com.butent.bee.server.DataSourceBean;
 import com.butent.bee.server.data.BeeTable.BeeField;
 import com.butent.bee.server.data.BeeTable.BeeForeignKey;
 import com.butent.bee.server.data.BeeTable.BeeKey;
+import com.butent.bee.server.data.BeeView.JoinType;
 import com.butent.bee.server.io.FileUtils;
 import com.butent.bee.server.io.NameUtils;
 import com.butent.bee.server.sql.HasFrom;
@@ -22,15 +23,12 @@ import com.butent.bee.server.sql.SqlConstants;
 import com.butent.bee.server.sql.SqlConstants.SqlDataType;
 import com.butent.bee.server.sql.SqlConstants.SqlKeyword;
 import com.butent.bee.server.sql.SqlCreate;
-import com.butent.bee.server.sql.SqlDelete;
 import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
-import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.server.utils.XmlUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.communication.ResponseObject;
-import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.XmlState;
@@ -109,8 +107,6 @@ public class SystemBean {
   QueryServiceBean qs;
   @EJB
   UserServiceBean usr;
-  @EJB
-  DataEditorBean deb;
 
   private String dbName;
   private String dbSchema;
@@ -124,190 +120,6 @@ public class SystemBean {
     if (!table.isActive()) {
       rebuildTable(table);
     }
-  }
-
-  @Deprecated
-  public ResponseObject commitChanges(BeeRowSet changes) {
-    String err = "";
-    int c = 0;
-
-    BeeView view = getView(changes.getViewName());
-    String tblName = view.getSource();
-    BeeTable table = getTable(tblName);
-    Map<String, BeeField> editableFields = Maps.newHashMap();
-
-    if (view.isReadOnly()) {
-      err = "View " + view.getName() + " is read only.";
-    } else {
-      for (String colName : view.getColumns()) {
-        editableFields.put(colName, getTableField(tblName, view.getField(colName)));
-      }
-    }
-    for (BeeRow row : changes.getRows()) {
-      if (!BeeUtils.isEmpty(err)) {
-        break;
-      }
-      Map<String, Object[]> baseUpdate = Maps.newHashMap();
-      Map<String, Object> extUpdate = Maps.newHashMap();
-      Map<String, Object[]> translationUpdate = Maps.newHashMap();
-
-      if (!BeeUtils.isEmpty(row.getShadow())) {
-        for (Integer col : row.getShadow().keySet()) {
-          String colId = changes.getColumnId(col);
-          BeeField field = editableFields.get(colId);
-
-          if (BeeUtils.isEmpty(field)) {
-            err = "Cannot update column " + colId + " (Unknown source).";
-            break;
-          }
-          String locale = view.getLocale(colId);
-          String fld = field.getName();
-          Object newValue = changes.getOriginal(row, col);
-          Object oldValue = row.getShadow().get(col);
-
-          if (!BeeUtils.isEmpty(locale)) {
-            translationUpdate.put(fld, new Object[] {locale, newValue});
-          } else if (field.isExtended()) {
-            extUpdate.put(fld, newValue);
-          } else {
-            baseUpdate.put(fld, new Object[] {newValue, oldValue});
-          }
-        }
-        if (!BeeUtils.isEmpty(err)) {
-          break;
-        }
-      }
-
-      if (row.isMarkedForInsert()) { // INSERT
-        SqlInsert si = new SqlInsert(tblName);
-
-        for (String fld : baseUpdate.keySet()) {
-          si.addConstant(fld, baseUpdate.get(fld)[0]);
-        }
-        long version = System.currentTimeMillis();
-        si.addConstant(table.getVersionName(), version);
-        row.setVersion(version);
-
-        long id = qs.insertData(si);
-
-        if (id < 0) {
-          err = "Error inserting data";
-          break;
-        }
-        c++;
-        row.setNewId(id);
-
-        if (!BeeUtils.isEmpty(extUpdate)) {
-          int res = -1;// commitExtChanges(table, id, extUpdate, false);
-
-          if (res < 0) {
-            err = "Error inserting extended fields";
-            break;
-          }
-          c += res;
-        }
-        if (!BeeUtils.isEmpty(translationUpdate)) {
-          int res = -1;// commitTranslationChanges(table, id, translationUpdate, false);
-
-          if (res < 0) {
-            err = "Error inserting translation fields";
-            break;
-          }
-          c += res;
-        }
-      } else {
-        long id = row.getId();
-        IsCondition idWh = SqlUtils.equal(tblName, table.getIdName(), id);
-        IsCondition wh = SqlUtils.and(idWh,
-            SqlUtils.equal(tblName, table.getVersionName(), row.getVersion()));
-
-        if (row.isMarkedForDelete()) { // DELETE
-          int res = qs.updateData(new SqlDelete(tblName).setWhere(wh));
-
-          if (res > 0) {
-            c += res;
-          } else {
-            err = (res < 0) ? "Error deleting data" : "Optimistic lock exception";
-            break;
-          }
-
-        } else { // UPDATE
-          if (!BeeUtils.isEmpty(baseUpdate)) {
-            SqlUpdate su = new SqlUpdate(tblName);
-
-            for (String fld : baseUpdate.keySet()) {
-              su.addConstant(fld, baseUpdate.get(fld)[0]);
-            }
-            long version = System.currentTimeMillis();
-            su.addConstant(table.getVersionName(), version);
-            row.setVersion(version);
-
-            int res = qs.updateData(su.setWhere(wh));
-
-            if (res == 0) { // Optimistic lock exception
-              BeeRowSet rs = getViewData(view.getName(), idWh, null, 0, 0);
-
-              if (!rs.isEmpty()) {
-                BeeRow r = rs.getRow(0);
-                boolean collision = false;
-
-                for (String fld : baseUpdate.keySet()) {
-                  if (!BeeUtils.equals(
-                      BeeUtils.transformNoTrim(rs.getOriginal(r, fld)),
-                      BeeUtils.transformNoTrim(baseUpdate.get(fld)[1]))) {
-                    collision = true;
-                    break;
-                  }
-                  r.setValue(rs.getColumnIndex(fld), changes.getString(row, fld));
-                }
-                if (!collision) {
-                  row.setValues(r.getValues());
-
-                  res = qs.updateData(su.setWhere(idWh));
-                }
-              }
-            }
-            if (res > 0) {
-              c += res;
-            } else {
-              err = (res < 0) ? "Error updating data" : "Optimistic lock exception";
-              break;
-            }
-          }
-          if (!BeeUtils.isEmpty(extUpdate)) {
-            int res = -1;// commitExtChanges(table, id, extUpdate, true);
-
-            if (res < 0) {
-              err = "Error updating extended fields";
-              break;
-            }
-            c += res;
-          }
-          if (!BeeUtils.isEmpty(translationUpdate)) {
-            int res = -1;// commitTranslationChanges(table, id, translationUpdate, true);
-
-            if (res < 0) {
-              err = "Error updating translation fields";
-              break;
-            }
-            c += res;
-          }
-        }
-      }
-    }
-    ResponseObject response = new ResponseObject();
-
-    if (!BeeUtils.isEmpty(err)) {
-      response.addError(err);
-    } else {
-      response.addInfo("Update count:", c);
-      response.setResponse(changes);
-
-      if (usr.isUserTable(tblName)) {
-        usr.invalidateCache();
-      }
-    }
-    return response;
   }
 
   public ResponseObject editStateRoles(String tblName, String stateName) {
@@ -991,9 +803,11 @@ public class SystemBean {
         Set<String> set = Sets.newHashSet(roots);
         set.add(BeeUtils.normalize(relTbl));
         BeeView vw = getDefaultView(relTbl, false, set);
+        char join = JoinType.LEFT.getJoinChar();
 
         for (String colName : vw.getColumns()) {
-          view.addColumn(fld + colName, fld + ">" + vw.getExpression(colName), null, tableCache);
+          view.addColumn(fld + colName, fld + join + vw.getExpression(colName).replace('.', join),
+              null, tableCache);
         }
       }
     }
@@ -1241,6 +1055,9 @@ public class SystemBean {
                 view.addOrder(order.column, order.descending);
               }
             }
+          }
+          if (!BeeUtils.isEmpty(xmlView.filter)) {
+            view.setFilter(xmlView.filter);
           }
           if (view.isEmpty()) {
             LogUtils.warning(logger, "View has no columns defined:", vw);

@@ -71,22 +71,22 @@ public class DataEditorBean {
   private static class TableInfo {
     private final String tableAlias;
     private final String tableName;
-    private final String keyAlias;
+    private final String relation;
     private final List<FieldInfo> fields = Lists.newArrayList();
     private Long id;
     private Long version;
 
-    private TableInfo(String tableAlias, String tableName, String keyAlias) {
+    private TableInfo(String tableAlias, String tableName, String relation) {
       this.tableAlias = tableAlias;
       this.tableName = tableName;
-      this.keyAlias = keyAlias;
+      this.relation = relation;
     }
 
     public String toString() {
       StringBuilder sb = new StringBuilder();
       sb.append(".\ntableAlias: " + tableAlias)
           .append("\ntableName: " + tableName)
-          .append("\nkeyAlias: " + keyAlias)
+          .append("\nrelation: " + relation)
           .append("\nid: " + id)
           .append("\nversion: " + version);
 
@@ -156,7 +156,7 @@ public class DataEditorBean {
       TableInfo tblInfo = null;
 
       for (TableInfo info : updates.values()) {
-        if (BeeUtils.isEmpty(info.keyAlias)) {
+        if (BeeUtils.isEmpty(info.relation)) {
           tblInfo = info;
           break;
         }
@@ -457,7 +457,8 @@ public class DataEditorBean {
         TableInfo relInfo = null;
 
         for (TableInfo info : updates.values()) {
-          if (BeeUtils.same(tblInfo.tableAlias, info.keyAlias)) {
+          if (BeeUtils.same(BeeUtils.concat(".", tblInfo.tableAlias, fldInfo.fieldName),
+              info.relation)) {
             relInfo = info;
             break;
           }
@@ -613,7 +614,7 @@ public class DataEditorBean {
     SqlSelect ss = view.getQuery().resetFields();
 
     for (TableInfo tblInfo : updates.values()) {
-      if (BeeUtils.allEmpty(id, tblInfo.keyAlias)) {
+      if (BeeUtils.allEmpty(id, tblInfo.relation)) {
         id = tblInfo.id;
       }
       String idName = sys.getIdName(tblInfo.tableName);
@@ -673,25 +674,25 @@ public class DataEditorBean {
           String fldAlias = SqlUtils.uniqueName();
 
           if (BeeUtils.isEmpty(tblAlias)) {
-            query = new SqlSelect();
-
-            if (BeeUtils.isEmpty(deletes)) {
+            if (query == null) {
               tblAlias = tblName;
-              query.addFrom(tblName, tblAlias);
+              query = new SqlSelect().addFrom(tblName, tblAlias);
             } else {
               tblAlias = SqlUtils.uniqueName();
               query.addFromLeft(tblName, tblAlias,
                   SqlUtils.join(srcAlias, srcField, tblAlias, sys.getIdName(tblName)));
             }
-            if (field.isExtended()) {
-              tblAlias = table.joinExtField(query, tblAlias, field);
-            }
             cols = HashMultimap.create();
             deletes.put(tblName, cols);
           }
-          query.addField(tblAlias, fldName, fldAlias);
+          String extAlias = tblAlias;
+
+          if (field.isExtended()) {
+            extAlias = table.joinExtField(query, tblAlias, field);
+          }
+          query.addField(extAlias, fldName, fldAlias);
           cols.put(relTable, fldAlias);
-          registerDelete(query, tblAlias, fldName, relTable, deletes);
+          registerDelete(query, extAlias, fldName, relTable, deletes);
         }
       }
     }
@@ -703,27 +704,28 @@ public class DataEditorBean {
 
     boolean ok = true;
     String tblAlias = colField.getOwner();
-    String keyAlias = null;
+    String relation = null;
     ViewField srcField = view.getViewField(colField.getSourceExpression());
 
     if (BeeUtils.isEmpty(tblAlias)) {
       tblAlias = colField.getAlias();
     } else {
-      String alias = colField.getAlias();
+      String als = colField.getAlias();
 
-      if (!updates.containsKey(alias)) {
-        updates.put(alias, new TableInfo(alias, colField.getTable(), BeeUtils.bracket(tblAlias)));
+      if (!updates.containsKey(als)) {
+        updates.put(als, new TableInfo(als, colField.getTable(), tblAlias));
       }
     }
     if (srcField != null) {
-      ok = registerField(srcField,
-          new FieldInfo(srcField.getAlias(), null, srcField.getField(), null, null, null),
+      String als = srcField.getAlias();
+      String fld = srcField.getField();
+      ok = registerField(srcField, new FieldInfo(als, null, fld, null, null, null),
           updates, view, response);
-      keyAlias = BeeUtils.ifString(srcField.getOwner(), srcField.getAlias());
+      relation = BeeUtils.concat(".", BeeUtils.ifString(srcField.getOwner(), als), fld);
     }
     if (ok) {
       if (!updates.containsKey(tblAlias)) {
-        updates.put(tblAlias, new TableInfo(tblAlias, colField.getTable(), keyAlias));
+        updates.put(tblAlias, new TableInfo(tblAlias, colField.getTable(), relation));
       }
       boolean found = false;
 

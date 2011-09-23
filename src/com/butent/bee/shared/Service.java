@@ -56,11 +56,7 @@ public class Service {
   public static final String GET_X_GRID = DATA_SERVICE_PREFIX + "x_grid";
   public static final String REBUILD = DATA_SERVICE_PREFIX + "rebuild";
   public static final String DO_SQL = DATA_SERVICE_PREFIX + "do_sql";
-  public static final String GET_TABLE_LIST = DATA_SERVICE_PREFIX + "table_list";
   public static final String QUERY = DATA_SERVICE_PREFIX + "query";
-  public static final String GET_STATES = DATA_SERVICE_PREFIX + "states";
-  public static final String GET_STATE_TABLE = DATA_SERVICE_PREFIX + "state_table";
-  public static final String COMMIT = DATA_SERVICE_PREFIX + "commit";
   public static final String GET_VIEW_LIST = DATA_SERVICE_PREFIX + "view_list";
   public static final String GET_VIEW_INFO = DATA_SERVICE_PREFIX + "view_info";
   public static final String GET_TABLE_INFO = DATA_SERVICE_PREFIX + "table_info";
@@ -149,7 +145,7 @@ public class Service {
   public static final String VIEW_COLUMN_SEPARATOR = " ";
 
   public static final String UPLOAD_URL = "upload";
-  
+
   public static final String NAME_SERVICE = "service";
   public static final String IMPORT_FORM = UPLOAD_SERVICE_PREFIX + "import_form";
 

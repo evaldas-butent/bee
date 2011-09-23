@@ -21,6 +21,7 @@ import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.value.BooleanValue;
+import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.LogUtils;
@@ -339,7 +340,7 @@ public class QueryServiceBean {
       String idFld = sys.getIdName(source);
 
       if (si.hasField(idFld)) {
-        id = (Long) si.getValue(idFld).getValue();
+        id = ((Value) si.getValue(idFld).getValue()).getLong();
       } else {
         id = ig.getId(source);
         si.addConstant(idFld, id);

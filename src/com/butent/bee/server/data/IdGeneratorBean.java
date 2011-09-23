@@ -26,7 +26,6 @@ import javax.ejb.TransactionAttributeType;
  */
 
 @Singleton
-// TODO: waiting for JBoss bugfix http://community.jboss.org/thread/161844
 @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
 public class IdGeneratorBean {
 
@@ -100,8 +99,9 @@ public class IdGeneratorBean {
       SqlInsert si = new SqlInsert(ID_TABLE);
 
       if (BeeUtils.same(source, ID_TABLE)) {
-        lastId++;
-        si.addConstant(idFld, lastId);
+        si.addConstant(idFld, ++lastId);
+      } else {
+        si.addConstant(sys.getIdName(ID_TABLE), getId(ID_TABLE));
       }
       si.addConstant(ID_KEY, source).addConstant(ID_LAST, lastId += idChunk);
       qs.insertData(si);

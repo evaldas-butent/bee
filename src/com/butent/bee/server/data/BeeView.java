@@ -14,6 +14,9 @@ import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasExtendedInfo;
+import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.filter.ColumnColumnFilter;
 import com.butent.bee.shared.data.filter.ColumnIsEmptyFilter;
 import com.butent.bee.shared.data.filter.ColumnValueFilter;
@@ -22,6 +25,7 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.IdFilter;
 import com.butent.bee.shared.data.filter.NegationFilter;
 import com.butent.bee.shared.data.filter.VersionFilter;
+import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.ExtendedProperty;
 import com.butent.bee.shared.utils.LogUtils;
@@ -88,7 +92,7 @@ public class BeeView implements HasExtendedInfo {
     }
   }
 
-  private enum JoinType {
+  enum JoinType {
     INNER('-'), RIGHT('<'), LEFT('>'), FULL('+');
 
     private final char joinChar;
@@ -110,6 +114,7 @@ public class BeeView implements HasExtendedInfo {
   private final String source;
   private final String sourceIdName;
   private final String sourceVersionName;
+  private String sourceFilter;
   private final boolean readOnly;
   private final SqlSelect query;
   private final Map<String, String[]> columns = Maps.newLinkedHashMap();
@@ -252,11 +257,16 @@ public class BeeView implements HasExtendedInfo {
     return getViewField(getExpression(colName)).getField();
   }
 
+  public String getFilter() {
+    return sourceFilter;
+  }
+
   public List<ExtendedProperty> getInfo() {
     List<ExtendedProperty> info = Lists.newArrayList();
     PropertyUtils.addProperties(info, false, "Name", getName(), "Source", getSource(),
         "Source Id Name", getSourceIdName(), "Source Version Name", getSourceVersionName(),
-        "Read Only", isReadOnly(), "Query", query.getQuery(), "Columns", columns.size());
+        "Filter", getFilter(), "Read Only", isReadOnly(), "Query", query.getQuery(),
+        "Columns", columns.size());
 
     String sub;
     int i = 0;
@@ -325,17 +335,16 @@ public class BeeView implements HasExtendedInfo {
   }
 
   public String getRelSource(String colName) {
-    if (!hasColumn(colName)) {
-      return null;
-    }
+    String relSource = getViewField(getExpression(colName)).getSourceExpression();
 
-    String colSource = getName(colName);
-    String relColumn = getField(colName);
-    if (BeeUtils.isSuffix(colSource, relColumn)) {
-      return BeeUtils.trim(BeeUtils.removeSuffix(colSource, relColumn));
-    } else {
-      return null;
+    if (!BeeUtils.isEmpty(relSource)) {
+      for (String[] colInfo : columns.values()) {
+        if (BeeUtils.equals(relSource, colInfo[EXPRESSION])) {
+          return colInfo[NAME];
+        }
+      }
     }
+    return null;
   }
 
   public String getSource() {
@@ -409,8 +418,34 @@ public class BeeView implements HasExtendedInfo {
     }
   }
 
+  void setFilter(String filter) {
+    String strFilter = null;
+
+    if (!BeeUtils.isEmpty(filter)) {
+      List<IsColumn> cols = Lists.newArrayListWithCapacity(columns.size());
+
+      for (String col : columns.keySet()) {
+        cols.add(new BeeColumn(ValueType.getByTypeCode(getType(col).toString()), col));
+      }
+      Filter flt = DataUtils.parseCondition(filter, cols);
+
+      if (flt != null) {
+        query.setWhere(getCondition(flt));
+        strFilter = flt.transform();
+      } else {
+        LogUtils.warning(LogUtils.getDefaultLogger(), "Error in filter expression:", filter);
+      }
+    }
+    this.sourceFilter = strFilter;
+  }
+
   private String expressionKey(String expression, String locale) {
-    return BeeUtils.concat(0, expression, BeeUtils.parenthesize(BeeUtils.normalize(locale)));
+    String xpr = expression;
+
+    for (JoinType join : JoinType.values()) {
+      xpr = xpr.replace(join.getJoinChar(), '.');
+    }
+    return BeeUtils.concat(0, xpr, BeeUtils.parenthesize(BeeUtils.normalize(locale)));
   }
 
   private String[] getColumnInfo(String colName) {

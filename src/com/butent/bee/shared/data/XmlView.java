@@ -43,6 +43,8 @@ public class XmlView {
   @XmlAttribute
   public String source;
   @XmlAttribute
+  public String filter;
+  @XmlAttribute
   public boolean readOnly;
 
   @XmlElementWrapper(name = "BeeColumns", namespace = DataUtils.DEFAULT_NAMESPACE)

@@ -42,7 +42,6 @@ import com.butent.bee.client.ui.DsnService;
 import com.butent.bee.client.ui.FormService;
 import com.butent.bee.client.ui.GwtUiCreator;
 import com.butent.bee.client.ui.MenuService;
-import com.butent.bee.client.ui.RowSetService;
 import com.butent.bee.client.ui.StateService;
 import com.butent.bee.client.utils.BeeCommand;
 import com.butent.bee.client.view.View;
@@ -298,7 +297,7 @@ public class ScreenImpl implements Screen {
         BeeKeeper.getBus().dispatchService(Service.REFRESH_MENU, null, null);
       }
     }
-    
+
     getSignature().getElement().setInnerHTML(usr);
   }
 
@@ -415,9 +414,9 @@ public class ScreenImpl implements Screen {
 
   protected Widget initNorth() {
     Complex cp = new Complex();
-    
+
     cp.addLeftTop(new BeeImage(Global.getImages().bee()), 1, 1);
-   
+
     BeeButton auth = new BeeButton(true);
     cp.addLeftTop(auth, 80, 4);
     setAuthButton(auth);
@@ -425,16 +424,16 @@ public class ScreenImpl implements Screen {
     BeeLabel user = new BeeLabel();
     cp.addLeftTop(user, 80, 32);
     setSignature(user);
-    
+
     updateUser(null);
 
     BeeLayoutPanel mp = new BeeLayoutPanel();
     cp.addLeftTop(mp, 280, 2);
     StyleUtils.setRight(mp, 1);
     StyleUtils.setBottom(mp, 1);
-    
+
     setMenuPanel(mp);
-    
+
     setNotification(new Notification());
     cp.addRightTop(getNotification(), 0, 0);
 
@@ -475,7 +474,7 @@ public class ScreenImpl implements Screen {
 
   protected Widget initWest() {
     TabbedPages tp = new TabbedPages(22, Unit.PX);
-    
+
     Stack fav = new Stack(Unit.PX);
     double h = 20;
 
@@ -486,15 +485,15 @@ public class ScreenImpl implements Screen {
     fav.add(new BeeLabel(), "Filters", h);
     fav.add(new BeeLabel(), "Reports", h);
     fav.add(new BeeLabel(), "Dashboards", h);
-    
+
     tp.add(fav, new BeeImage(Global.getImages().bookmark()));
-    
+
     tp.add(new BeeLabel(), "Recent");
 
     BeeLayoutPanel dp = new BeeLayoutPanel();
     tp.add(dp, Global.constants.data(), Global.getDataExplorer().getDataInfoCreator());
     setDataPanel(dp);
-    
+
     FlexTable fp = new FlexTable();
     fp.setCellSpacing(3);
 
@@ -533,7 +532,7 @@ public class ScreenImpl implements Screen {
       }
     });
     fp.setWidget(r + 2, 0, toggle);
-    
+
     tp.add(fp, "Options");
 
     Vertical adm = new Vertical();
@@ -553,18 +552,16 @@ public class ScreenImpl implements Screen {
 
     adm.add(new BeeCheckBox(Global.getVar(Global.VAR_DEBUG)));
 
-    adm.add(new BeeButton("North land", CompositeService.name(FormService.class),
+    adm.add(new BeeButton("Būtent", CompositeService.name(FormService.class),
         FormService.Stages.CHOOSE_FORM.name()));
-    adm.add(new BeeButton("CRUD", CompositeService.name(RowSetService.class),
-        RowSetService.Stages.CHOOSE_TABLE.name()));
 
     adm.add(new RadioGroup(getElGrid(), false, BeeKeeper.getStorage().checkInt(getElGrid(), 2),
         Lists.newArrayList("simple", "scroll", "cell")));
     adm.add(new RadioGroup(getElCell(), false, BeeKeeper.getStorage().checkEnum(getElCell(),
         TextCellType.TEXT_EDIT), TextCellType.values()));
-    
+
     tp.add(adm, "Admin");
-    
+
     return tp;
   }
 
@@ -596,7 +593,7 @@ public class ScreenImpl implements Screen {
     getAuthButton().setService(login ? Service.GET_LOGIN : Service.LOGOUT);
     getAuthButton().setStage(login ? Stage.STAGE_GET_PARAMETERS : null);
   }
-  
+
   private void createPanel(Direction direction) {
     TilePanel p = getActivePanel();
     Assert.notNull(p);
@@ -652,7 +649,7 @@ public class ScreenImpl implements Screen {
   private BeeButton getAuthButton() {
     return authButton;
   }
-  
+
   private String getElCell() {
     return elCell;
   }

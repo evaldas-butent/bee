@@ -8,14 +8,16 @@
   
   <LayoutPanel>
     <layer left="1" leftUnit="%" width="50" widthUnit="%"
-           top="10" topUnit="px" height="250" heightUnit="px">
+           top="10" topUnit="px" height="300" heightUnit="px">
       <FlexTable cellSpacing="10">
         <row>
           <cell><text>Prisijungimo vardas</text></cell>
           <cell><InputText source="Login" /></cell>
         </row>
         <row>
-          <cell colSpan="2"><Button html="Pakeisti slaptažodį" service="ChangePassword" /></cell>
+          <cell colSpan="2">
+            <Button html="Pakeisti slaptažodį" service="ChangePassword" />
+          </cell>
         </row>
         <row>
           <cell><Label html="Vardas" /></cell>
@@ -28,6 +30,12 @@
         <row>
           <cell><Label html="Pareigos" /></cell>
           <cell><InputText source="Position" /></cell>
+        </row>
+        <row>
+          <cell><Label html="Įmonė" /></cell>
+          <cell>
+            <DataSelector source="CompanyName" relSource="Company" relView="Companies" relColumn="Name" />
+          </cell>
         </row>
       </FlexTable>
     </layer>

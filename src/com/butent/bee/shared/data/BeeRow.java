@@ -24,7 +24,7 @@ public class BeeRow extends StringRow implements BeeSerializable {
    */
 
   private enum Serial {
-    ID, VERSION, VALUES, NEWID, SHADOW
+    ID, VERSION, VALUES, SHADOW
   }
 
   private static Logger logger = Logger.getLogger(BeeRow.class.getName());
@@ -35,7 +35,6 @@ public class BeeRow extends StringRow implements BeeSerializable {
     return row;
   }
 
-  private long newId = 0;
   private Map<Integer, String> shadow = null;
 
   public BeeRow(long id, long version) {
@@ -73,10 +72,6 @@ public class BeeRow extends StringRow implements BeeSerializable {
           }
           break;
 
-        case NEWID:
-          setNewId(BeeUtils.toLong(value));
-          break;
-
         case SHADOW:
           if (!BeeUtils.isEmpty(value)) {
             String[] shArr = Codec.beeDeserializeCollection(value);
@@ -97,10 +92,6 @@ public class BeeRow extends StringRow implements BeeSerializable {
           break;
       }
     }
-  }
-
-  public long getNewId() {
-    return newId;
   }
 
   public Object getOriginal(int index, ValueType type) {
@@ -133,14 +124,6 @@ public class BeeRow extends StringRow implements BeeSerializable {
     return shadow;
   }
 
-  public boolean isMarkedForDelete() {
-    return newId < 0;
-  }
-
-  public boolean isMarkedForInsert() {
-    return getId() < 0;
-  }
-
   public void preliminaryUpdate(int col, String value) {
     String oldValue = getString(col);
 
@@ -150,13 +133,12 @@ public class BeeRow extends StringRow implements BeeSerializable {
       }
       if (!shadow.containsKey(col)) {
         shadow.put(col, oldValue);
-      } else {
-        if (BeeUtils.equalsTrimRight(shadow.get(col), value)) {
-          shadow.remove(col);
 
-          if (BeeUtils.isEmpty(shadow) && !isMarkedForInsert()) {
-            setNewId(-1); // TODO: dummy for Delete
-          }
+      } else if (BeeUtils.equalsTrimRight(shadow.get(col), value)) {
+        shadow.remove(col);
+
+        if (BeeUtils.isEmpty(shadow)) {
+          reset();
         }
       }
       super.setValue(col, value);
@@ -165,7 +147,6 @@ public class BeeRow extends StringRow implements BeeSerializable {
 
   public void reset() {
     setShadow(null);
-    newId = 0;
   }
 
   public String serialize() {
@@ -187,20 +168,12 @@ public class BeeRow extends StringRow implements BeeSerializable {
           arr[i++] = getValueArray();
           break;
 
-        case NEWID:
-          arr[i++] = getNewId();
-          break;
-
         case SHADOW:
           arr[i++] = getShadow();
           break;
       }
     }
     return Codec.beeSerialize(arr);
-  }
-
-  public void setNewId(long newId) {
-    this.newId = newId;
   }
 
   private void setShadow(Map<Integer, String> shadow) {

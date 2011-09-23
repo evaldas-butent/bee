@@ -22,7 +22,6 @@ public abstract class CompositeService {
     registerService(new FormService());
     registerService(new GridService());
     registerService(new MenuService());
-    registerService(new RowSetService());
     registerService(new DsnService());
     registerService(new StateService());
   }

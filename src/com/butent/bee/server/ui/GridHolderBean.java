@@ -153,24 +153,18 @@ public class GridHolderBean {
     ColumnDescription columnDescription;
     for (String colName : view.getColumns()) {
       String tblName = view.getTable(colName);
+      String relSource = view.getRelSource(colName);
 
-      if (BeeUtils.same(tblName, view.getSource())) {
+      if (BeeUtils.isEmpty(relSource)) {
         columnDescription = new ColumnDescription(ColType.DATA, colName, true);
       } else {
         columnDescription = new ColumnDescription(ColType.RELATED, colName, true);
-        String relSource = view.getRelSource(colName); // TODO ???
         relSources.add(relSource);
 
         columnDescription.setRelSource(relSource);
         columnDescription.setRelView(tblName);
         columnDescription.setRelColumn(view.getField(colName));
-
-        if (!view.hasColumn(relSource)
-            || !BeeUtils.same(view.getTable(relSource), view.getSource())) {
-          columnDescription.setReadOnly(true);
-        }
       }
-
       columnDescription.setSortable(true);
       columnDescription.setHasFooter(true);
       columnDescription.setSource(colName);

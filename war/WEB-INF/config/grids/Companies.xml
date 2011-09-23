@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<BeeGrids xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../schemas/grid.xsd">
+
+  <BeeGrid name="Companies" viewName="Companies" caption="Įmonės" readOnly="true">
+    <columns>
+      <BeeDataColumn name="Name" source="Name" caption="Įmonė" />
+      <BeeDataColumn name="Code" source="Code" caption="Įm. kodas" />
+      <BeeDataColumn name="Phone" source="Phone" caption="Tel." />
+      <BeeDataColumn name="Email" source="Email" caption="El. paštas" />
+      <BeeDataColumn name="Address" source="Address" caption="Adresas" />
+      <BeeDataColumn name="City" source="CityName" caption="Miestas" />
+      <BeeDataColumn name="Country" source="CountryName" caption="Šalis" />
+    </columns>
+  </BeeGrid>
+</BeeGrids>

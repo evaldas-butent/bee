@@ -114,7 +114,7 @@ public class UserServiceBean {
   public static final String TBL_USERS = "Users";
   public static final String TBL_ROLES = "Roles";
   public static final String TBL_USER_ROLES = "UserRoles";
-  public static final String TBL_CONTACTS = "ClientContacts";
+  public static final String TBL_PERSONS = "Persons";
 
   public static final String FLD_LOGIN = "Login";
   public static final String FLD_PASSWORD = "Password";
@@ -125,7 +125,7 @@ public class UserServiceBean {
   public static final String FLD_ROLE_NAME = "Name";
   public static final String FLD_USER = "User";
   public static final String FLD_ROLE = "Role";
-  public static final String FLD_CONTACT = "ClientContact";
+  public static final String FLD_PERSON = "Person";
 
   @Resource
   EJBContext ctx;
@@ -293,7 +293,7 @@ public class UserServiceBean {
 
     String userIdName = sys.getIdName(TBL_USERS);
     String roleIdName = sys.getIdName(TBL_ROLES);
-    String contactIdName = sys.getIdName(TBL_CONTACTS);
+    String personIdName = sys.getIdName(TBL_PERSONS);
 
     SqlSelect ss = new SqlSelect()
         .addFields("r", roleIdName, FLD_ROLE_NAME)
@@ -316,8 +316,8 @@ public class UserServiceBean {
     ss = new SqlSelect()
         .addFields("u", userIdName, FLD_LOGIN, FLD_PROPERTIES)
         .addFields("cc", FLD_FIRST_NAME, FLD_LAST_NAME, FLD_POSITION)
-        .addFrom(TBL_USERS, "u").addFromLeft(TBL_CONTACTS, "cc",
-            SqlUtils.join("u", FLD_CONTACT, "cc", contactIdName));
+        .addFrom(TBL_USERS, "u").addFromLeft(TBL_PERSONS, "cc",
+            SqlUtils.join("u", FLD_PERSON, "cc", personIdName));
 
     for (Map<String, String> row : qs.getData(ss)) {
       long userId = BeeUtils.toLong(row.get(userIdName));

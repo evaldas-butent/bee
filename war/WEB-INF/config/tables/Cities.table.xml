@@ -4,7 +4,7 @@
 
   name="Cities"
   idName="CityID"
-  x="330" y="240"
+  x="288" y="322"
   >
   <BeeFields>
     <BeeField name="Name" type="STRING" precision="30" notNull="true" unique="true" translatable="true" />

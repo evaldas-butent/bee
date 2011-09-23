@@ -55,15 +55,11 @@ import java.io.File;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.logging.Logger;
 
-import javax.annotation.Resource;
 import javax.ejb.EJB;
-import javax.ejb.EJBContext;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
 
@@ -94,8 +90,6 @@ public class UiServiceBean {
   GridHolderBean grd;
   @EJB
   DataSourceBean dsb;
-  @Resource
-  EJBContext ctx;
 
   public ResponseObject doService(RequestInfo reqInfo) {
     ResponseObject response = null;
@@ -119,16 +113,8 @@ public class UiServiceBean {
       response = rebuildData(reqInfo);
     } else if (BeeUtils.same(svc, Service.DO_SQL)) {
       response = doSql(reqInfo);
-    } else if (BeeUtils.same(svc, Service.GET_TABLE_LIST)) {
-      response = getTables();
     } else if (BeeUtils.same(svc, Service.QUERY)) {
       response = getViewData(reqInfo);
-    } else if (BeeUtils.same(svc, Service.GET_STATES)) {
-      response = getStates(reqInfo);
-    } else if (BeeUtils.same(svc, Service.GET_STATE_TABLE)) {
-      response = getStateTable(reqInfo);
-    } else if (BeeUtils.same(svc, Service.COMMIT)) {
-      response = commitChanges(reqInfo);
 
     } else if (BeeUtils.same(svc, Service.GET_VIEW_LIST)) {
       response = getViewList();
@@ -558,15 +544,6 @@ public class UiServiceBean {
     return ResponseObject.response(new BeeResource(null, XmlUtils.marshal(designer, null)));
   }
 
-  private ResponseObject commitChanges(RequestInfo reqInfo) {
-    ResponseObject response = sys.commitChanges(BeeRowSet.restore(reqInfo.getContent()));
-
-    if (response.hasErrors()) {
-      ctx.setRollbackOnly();
-    }
-    return response;
-  }
-
   private ResponseObject deleteRows(RequestInfo reqInfo) {
     String viewName = reqInfo.getParameter(Service.VAR_VIEW_NAME);
     Assert.notEmpty(viewName);
@@ -712,26 +689,6 @@ public class UiServiceBean {
     return ResponseObject.response(states);
   }
 
-  private ResponseObject getStates(RequestInfo reqInfo) {
-    String table = reqInfo.getParameter(Service.VAR_VIEW_NAME);
-    Set<String> states = new HashSet<String>();
-
-    for (String tbl : sys.getTableNames()) {
-      if (BeeUtils.isEmpty(table) || BeeUtils.same(tbl, table)) {
-        for (String state : sys.getTableStates(tbl)) {
-          states.add(state);
-        }
-      }
-    }
-    return ResponseObject.response(states);
-  }
-
-  private ResponseObject getStateTable(RequestInfo reqInfo) {
-    String table = reqInfo.getParameter(Service.VAR_VIEW_NAME);
-    String states = reqInfo.getParameter(Service.VAR_VIEW_STATES);
-    return sys.editStateRoles(table, states);
-  }
-
   private ResponseObject getTableInfo(RequestInfo reqInfo) {
     String tableName = reqInfo.getParameter(0);
     List<ExtendedProperty> info = Lists.newArrayList();
@@ -744,10 +701,6 @@ public class UiServiceBean {
       }
     }
     return ResponseObject.response(info);
-  }
-
-  private ResponseObject getTables() {
-    return ResponseObject.response(sys.getTableNames());
   }
 
   private ResponseObject getViewData(RequestInfo reqInfo) {

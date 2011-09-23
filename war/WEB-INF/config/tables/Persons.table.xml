@@ -2,15 +2,15 @@
 <BeeTable xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.butent.com/bee ../../schemas/table.xsd"
   
-  name="ClientContacts"
-  idName="ClientContactID"
-  x="643" y="11"
+  name="Persons"
+  idName="PersonID"
+  x="517" y="21"
   >
   <BeeFields>
-    <BeeField name="Client" type="LONG" notNull="true" relation="Clients" cascade="true" />
+    <BeeField name="Company" type="LONG" relation="Companies" />
     <BeeField name="Contact" type="LONG" unique="true" relation="Contacts" />
     <BeeField name="FirstName" type="STRING" precision="30" />
     <BeeField name="LastName" type="STRING" precision="30" />
-    <BeeField name="Position" type="STRING" precision="30" />
+    <BeeField name="Position" type="STRING" precision="50" />
   </BeeFields>
 </BeeTable>
