@@ -1,13 +1,12 @@
 package com.butent.bee.server.data;
 
-import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Multimap;
 import com.google.common.primitives.Longs;
 
 import com.butent.bee.server.data.BeeTable.BeeField;
 import com.butent.bee.server.data.BeeView.ViewField;
+import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.IsQuery;
 import com.butent.bee.server.sql.SqlDelete;
@@ -30,7 +29,6 @@ import com.butent.bee.shared.utils.LogUtils;
 import com.butent.bee.shared.utils.TimeUtils;
 
 import java.util.Collection;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -145,8 +143,8 @@ public class DataEditorBean {
           ViewField colField = view.getViewField(view.getExpression(colName));
 
           if (!registerField(colField,
-                new FieldInfo(colField.getAlias(), colName, colField.getField(),
-                    oldValue, newValue, locale), updates, view, response)) {
+              new FieldInfo(colField.getAlias(), colName, colField.getField(),
+                  oldValue, newValue, locale), updates, view, response)) {
             break;
           }
         }
@@ -198,65 +196,33 @@ public class DataEditorBean {
     return response;
   }
 
-  public ResponseObject deleteRow(String viewName, RowInfo row) {
+  public ResponseObject deleteRows(String viewName, RowInfo[] rows) {
     Assert.notEmpty(viewName);
-    Assert.notNull(row);
+    Assert.noNulls((Object[]) rows);
     BeeView view = sys.getView(viewName);
+    String tblName = view.getSource();
+    HasConditions wh = SqlUtils.or();
 
     if (view.isReadOnly()) {
       return ResponseObject.error("View", view.getName(), "is read only.");
     }
-    String tblName = view.getSource();
-    List<Multimap<String, Long>> ids = null;
-    LinkedHashMap<String, Multimap<String, String>> deletes = Maps.newLinkedHashMap();
-    SqlSelect ss = registerDelete(null, null, null, tblName, deletes);
-    IsCondition wh = SqlUtils.equal(tblName, view.getSourceIdName(), row.getId());
-
-    if (ss != null) {
-      Map<String, String> res = qs.getRow(ss.setWhere(wh));
-
-      if (res == null) {
-        return ResponseObject.error("Optimistic lock exception");
-      }
-      ids = Lists.newArrayList();
-
-      for (Multimap<String, String> cols : deletes.values()) {
-        Multimap<String, Long> tblIds = HashMultimap.create();
-
-        for (String tbl : cols.keySet()) {
-          for (String col : cols.get(tbl)) {
-            Long id = BeeUtils.toLongOrNull(res.get(col));
-
-            if (!BeeUtils.isEmpty(id)) {
-              tblIds.put(tbl, id);
-            }
-          }
-        }
-        if (tblIds.size() > 0) {
-          ids.add(tblIds);
-        }
-      }
+    for (RowInfo row : rows) {
+      wh.add(SqlUtils.and(
+          SqlUtils.equal(tblName, view.getSourceIdName(), row.getId()),
+          SqlUtils.equal(tblName, view.getSourceVersionName(), row.getVersion())));
     }
-    ResponseObject response = qs.updateDataWithResponse(new SqlDelete(tblName)
-        .setWhere(SqlUtils.and(wh,
-            SqlUtils.equal(tblName, view.getSourceVersionName(), row.getVersion()))));
+    ResponseObject response = qs.updateDataWithResponse(new SqlDelete(tblName).setWhere(wh));
+    int cnt = response.getResponse(-1, logger);
 
-    if (!response.hasErrors() && !BeeUtils.isEmpty(ids)) {
-      for (Multimap<String, Long> tblIds : ids) {
-        for (String tbl : tblIds.keySet()) {
-          ResponseObject resp = qs.updateDataWithResponse(new SqlDelete(tbl)
-              .setWhere(SqlUtils.inList(tbl, sys.getIdName(tbl), tblIds.get(tbl).toArray())));
-
-          if (resp.hasErrors()) {
-            break;
-          } else {
-            response.addInfo("Deleted:", tbl, resp.getResponse());
-          }
-        }
+    if (cnt < rows.length) {
+      if (!response.hasErrors()) {
+        String err = "Optimistic lock exception";
+        LogUtils.severe(logger, err, "Deleted", cnt, "of", rows.length);
+        response.addError(err);
+        response.setResponse(0);
       }
-    }
-    if (response.hasErrors()) {
       ctx.setRollbackOnly();
+
     } else if (usr.isUserTable(tblName)) {
       usr.invalidateCache();
     }
@@ -654,49 +620,6 @@ public class DataEditorBean {
       }
     }
     return true;
-  }
-
-  private SqlSelect registerDelete(SqlSelect ss, String srcAlias, String srcField, String tblName,
-      LinkedHashMap<String, Multimap<String, String>> deletes) {
-
-    Assert.state(!deletes.containsKey(tblName), "Closed cycle recursion: " + tblName);
-    BeeTable table = sys.getTable(tblName);
-    String tblAlias = null;
-    Multimap<String, String> cols = null;
-    SqlSelect query = ss;
-
-    for (BeeField field : table.getFields()) {
-      if (field.isUnique()) {
-        String relTable = field.getRelation();
-
-        if (!BeeUtils.isEmpty(relTable)) {
-          String fldName = field.getName();
-          String fldAlias = SqlUtils.uniqueName();
-
-          if (BeeUtils.isEmpty(tblAlias)) {
-            if (query == null) {
-              tblAlias = tblName;
-              query = new SqlSelect().addFrom(tblName, tblAlias);
-            } else {
-              tblAlias = SqlUtils.uniqueName();
-              query.addFromLeft(tblName, tblAlias,
-                  SqlUtils.join(srcAlias, srcField, tblAlias, sys.getIdName(tblName)));
-            }
-            cols = HashMultimap.create();
-            deletes.put(tblName, cols);
-          }
-          String extAlias = tblAlias;
-
-          if (field.isExtended()) {
-            extAlias = table.joinExtField(query, tblAlias, field);
-          }
-          query.addField(extAlias, fldName, fldAlias);
-          cols.put(relTable, fldAlias);
-          registerDelete(query, extAlias, fldName, relTable, deletes);
-        }
-      }
-    }
-    return query;
   }
 
   private boolean registerField(ViewField colField, FieldInfo fldInfo,

@@ -81,6 +81,27 @@ public class SqlUtils {
         getConstraintMap(SqlKeyword.PRIMARY_KEY, table, name, fields));
   }
 
+  public static IsQuery[] createTrigger(String table, String name, Object content, String timing,
+      String event, String scope) {
+
+    Map<String, Object> params = Maps.newHashMap();
+    params.put("table", name(table));
+    params.put("name", name(name));
+    params.put("content", content);
+    params.put("timing", timing);
+    params.put("event", event);
+    params.put("scope", scope);
+
+    IsQuery function = new SqlCommand(SqlKeyword.CREATE_TRIGGER_FUNCTION, params);
+    IsQuery trigger = new SqlCommand(SqlKeyword.CREATE_TRIGGER, params);
+
+    if (BeeUtils.isEmpty(function.getQuery())) {
+      return new IsQuery[] {trigger};
+    } else {
+      return new IsQuery[] {function, trigger};
+    }
+  }
+
   public static IsQuery createUniqueKey(String table, String name, String... fields) {
     return new SqlCommand(SqlKeyword.ADD_CONSTRAINT,
         getConstraintMap(SqlKeyword.UNIQUE_KEY, table, name, fields));
@@ -130,6 +151,15 @@ public class SqlUtils {
     params.put("table", table);
 
     return new SqlCommand(SqlKeyword.DB_TABLES, params);
+  }
+
+  public static IsQuery dbTriggers(String dbName, String dbSchema, String table) {
+    Map<String, Object> params = Maps.newHashMap();
+    params.put("dbName", dbName);
+    params.put("dbSchema", dbSchema);
+    params.put("table", table);
+
+    return new SqlCommand(SqlKeyword.DB_TRIGGERS, params);
   }
 
   public static IsExpression divide(IsExpression... members) {

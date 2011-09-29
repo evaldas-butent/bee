@@ -11,6 +11,7 @@ import com.butent.bee.server.DataSourceBean;
 import com.butent.bee.server.data.BeeTable.BeeField;
 import com.butent.bee.server.data.BeeTable.BeeForeignKey;
 import com.butent.bee.server.data.BeeTable.BeeKey;
+import com.butent.bee.server.data.BeeTable.BeeTrigger;
 import com.butent.bee.server.data.BeeView.JoinType;
 import com.butent.bee.server.io.FileUtils;
 import com.butent.bee.server.io.NameUtils;
@@ -489,6 +490,7 @@ public class SystemBean {
   @Lock(LockType.WRITE)
   public void initTables() {
     initObjects(SysObject.TABLE);
+    initDbTriggers();
     initDatabase(BeeUtils.ifString(SqlBuilderFactory.getDsn(), dsb.getDefaultDsn()));
     initViews();
   }
@@ -676,6 +678,7 @@ public class SystemBean {
         makeStructureChanges(sc);
       } else {
         tblBackup = tblName + "_BAK";
+        LogUtils.info(logger, "Checking unique keys...");
         int c = 0;
         String[] keys = qs.dbKeys(getDbName(), getDbSchema(), tblName, SqlKeyword.UNIQUE_KEY)
             .getColumn(SqlConstants.KEY_NAME);
@@ -697,6 +700,7 @@ public class SystemBean {
         }
       }
       if (!update) {
+        LogUtils.info(logger, "Checking foreign keys...");
         int c = 0;
         String[] fKeys = qs.dbForeignKeys(getDbName(), getDbSchema(), tblName, null)
             .getColumn(SqlConstants.KEY_NAME);
@@ -704,7 +708,7 @@ public class SystemBean {
         for (BeeForeignKey fKey : table.getForeignKeys()) {
           if (BeeUtils.same(fKey.getTable(), tblName)
               && (BeeUtils.same(fKey.getRefTable(), table.getName())
-                  || getTable(fKey.getRefTable()).isActive())) {
+              || getTable(fKey.getRefTable()).isActive())) {
 
             if (ArrayUtils.contains(fKey.getName(), fKeys)) {
               c++;
@@ -718,6 +722,28 @@ public class SystemBean {
         if (!update && fKeys.length > c) {
           update = true;
           LogUtils.warning(logger, "TOO MANY FOREIGN KEYS");
+        }
+      }
+      if (!update) {
+        LogUtils.info(logger, "Checking triggers...");
+        int c = 0;
+        String[] triggers = qs.dbTriggers(getDbName(), getDbSchema(), tblName)
+            .getColumn(SqlConstants.TRIGGER_NAME);
+
+        for (BeeTrigger trigger : table.getTriggers()) {
+          if (BeeUtils.same(trigger.getTable(), tblName)) {
+            if (ArrayUtils.contains(trigger.getName(), triggers)) {
+              c++;
+            } else {
+              update = true;
+              LogUtils.warning(logger, "TRIGGER", trigger.getName(), "NOT IN", triggers);
+              break;
+            }
+          }
+        }
+        if (!update && triggers.length > c) {
+          update = true;
+          LogUtils.warning(logger, "TOO MANY TRIGGERS");
         }
       }
       if (!BeeUtils.isEmpty(tblBackup)) {
@@ -734,6 +760,7 @@ public class SystemBean {
           LogUtils.warning(logger, "FIELD COUNT DOESN'T MATCH");
         }
         if (!update) {
+          LogUtils.info(logger, "Checking fields...");
           int i = 0;
           for (Map<String, String> oldFieldInfo : oldFields) {
             Map<String, String> newFieldInfo = newFields.getRow(i++);
@@ -784,6 +811,13 @@ public class SystemBean {
     return rebuilds;
   }
 
+  private void createTriggers(Collection<BeeTrigger> triggers) {
+    for (BeeTrigger trigger : triggers) {
+      makeStructureChanges(SqlUtils.createTrigger(trigger.getTable(), trigger.getName(),
+          trigger.getContent(), trigger.getTiming(), trigger.getEvent(), trigger.getScope()));
+    }
+  }
+
   private BeeView getDefaultView(String tblName) {
     return getDefaultView(tblName, true, Sets.newHashSet(BeeUtils.normalize(tblName)));
   }
@@ -826,6 +860,50 @@ public class SystemBean {
   @PostConstruct
   private void init() {
     initStates();
+  }
+
+  private void initDbTriggers() {
+    for (BeeTable table : getTables()) {
+      Map<String, List<String[]>> tr = Maps.newHashMap();
+
+      for (BeeField field : table.getFields()) {
+        if (field.isUnique()) {
+          String relTable = field.getRelation();
+
+          if (!BeeUtils.isEmpty(relTable)) {
+            String tblName = field.getTable();
+            String fldName = field.getName();
+            String relField = getIdName(relTable);
+
+            List<String[]> entry = tr.get(tblName);
+
+            if (BeeUtils.isEmpty(entry)) {
+              entry = Lists.newArrayList();
+              tr.put(tblName, entry);
+            }
+            entry.add(new String[] {fldName, relTable, relField});
+            /*
+            <declare name="aa" value="<OLD/>.<name value="fldName"/>" />
+            <if>
+              <condition>
+                <var value="aa"/> IS NOT NULL
+              </condition>
+              <ifTrue>
+                <delete target="relTable">
+                  <where>
+                    <equal source="relTable" field="relField" value="" />
+                  </where>
+                </delete>
+              </ifTrue>
+            </if>
+            */
+          }
+        }
+      }
+      for (String tblName : tr.keySet()) {
+        table.addTrigger(tblName, tr.get(tblName), "AFTER", "DELETE", "FOR EACH ROW");
+      }
+    }
   }
 
   private void initObjects(SysObject obj) {
@@ -1003,6 +1081,7 @@ public class SystemBean {
             }
           }
         }
+        // TODO: xmlTable.triggers
         if (table.isEmpty()) {
           LogUtils.warning(logger, "Table has no fields defined:", tbl);
           table = null;
@@ -1075,9 +1154,13 @@ public class SystemBean {
     return view != null;
   }
 
-  private void makeStructureChanges(IsQuery query) {
-    if (qs.updateData(query) < 0) {
-      Assert.untouchable();
+  private void makeStructureChanges(IsQuery... queries) {
+    Assert.notNull(queries);
+
+    for (IsQuery query : queries) {
+      if (qs.updateData(query) < 0) {
+        Assert.untouchable();
+      }
     }
   }
 
@@ -1102,7 +1185,7 @@ public class SystemBean {
 
         if ((BeeUtils.same(refTable, tblMain) && !rebuilds.containsKey(fKey.getTable()))
             || (BeeUtils.same(fKey.getTable(), tblMain)
-                && (BeeUtils.same(refTable, tblMain) || getTable(refTable).isActive()))) {
+            && (BeeUtils.same(refTable, tblMain) || getTable(refTable).isActive()))) {
 
           foreignKeys.add(fKey);
         }
@@ -1114,6 +1197,13 @@ public class SystemBean {
               foreignKeys.add(fKey);
             }
           }
+        }
+      }
+      Collection<BeeTrigger> triggers = Lists.newArrayList();
+
+      for (BeeTrigger trigger : table.getTriggers()) {
+        if (BeeUtils.same(trigger.getTable(), tblMain)) {
+          triggers.add(trigger);
         }
       }
       String tblBackup = rebuilds.get(tblMain);
@@ -1130,6 +1220,7 @@ public class SystemBean {
       }
       createKeys(keys);
       createForeignKeys(foreignKeys);
+      createTriggers(triggers);
     }
 
     for (String tbl : rebuilds.keySet()) {
@@ -1152,6 +1243,13 @@ public class SystemBean {
             foreignKeys.add(fKey);
           }
         }
+        Collection<BeeTrigger> triggers = Lists.newArrayList();
+
+        for (BeeTrigger trigger : table.getTriggers()) {
+          if (BeeUtils.same(trigger.getTable(), tbl)) {
+            triggers.add(trigger);
+          }
+        }
         String tblBackup = rebuilds.get(tbl);
 
         if (!BeeUtils.isEmpty(tblBackup)) {
@@ -1160,6 +1258,7 @@ public class SystemBean {
         }
         createKeys(keys);
         createForeignKeys(foreignKeys);
+        createTriggers(triggers);
       }
     }
     table.setActive(true);

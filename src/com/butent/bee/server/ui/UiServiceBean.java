@@ -547,36 +547,14 @@ public class UiServiceBean {
   private ResponseObject deleteRows(RequestInfo reqInfo) {
     String viewName = reqInfo.getParameter(Service.VAR_VIEW_NAME);
     Assert.notEmpty(viewName);
-    String[] rows = Codec.beeDeserializeCollection(reqInfo.getParameter(Service.VAR_VIEW_ROWS));
-    Assert.notEmpty(rows);
+    String[] entries = Codec.beeDeserializeCollection(reqInfo.getParameter(Service.VAR_VIEW_ROWS));
+    Assert.notEmpty(entries);
+    RowInfo[] rows = new RowInfo[entries.length];
 
-    ResponseObject response = new ResponseObject();
-    int cnt = 0;
-
-    for (String s : rows) {
-      RowInfo row = RowInfo.restore(s);
-      ResponseObject resp = deb.deleteRow(viewName, row);
-      int res = resp.getResponse(-1, logger);
-
-      if (res > 0) {
-        cnt += res;
-      } else {
-        response.addError("Error deleting row:", row.getId());
-
-        if (res < 0) {
-          for (String err : resp.getErrors()) {
-            response.addError(err);
-          }
-        } else {
-          response.addError("Optimistic lock exception");
-        }
-        break;
-      }
+    for (int i = 0; i < entries.length; i++) {
+      rows[i] = RowInfo.restore(entries[i]);
     }
-    if (!response.hasErrors()) {
-      response.setResponse(cnt);
-    }
-    return response;
+    return deb.deleteRows(viewName, rows);
   }
 
   private ResponseObject doSql(RequestInfo reqInfo) {
@@ -778,7 +756,7 @@ public class UiServiceBean {
 
     ss = new SqlSelect();
     ss.addFields("c", "caption").addFrom("columns", "c").setWhere(
-          SqlUtils.equal("c", "table", grid)).addOrder("c", "order");
+        SqlUtils.equal("c", "table", grid)).addOrder("c", "order");
 
     String[] data = qs.getColumn(ss);
 
@@ -1001,7 +979,7 @@ public class UiServiceBean {
         for (String tblState : sys.getTableStates(tbl)) {
           if (!updates.containsKey(BeeUtils.normalize(tblState))) {
             response.addError("State", BeeUtils.bracket(tblState),
-                  "is used in table", BeeUtils.bracket(tbl));
+                "is used in table", BeeUtils.bracket(tbl));
           }
         }
       }

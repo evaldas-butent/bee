@@ -85,8 +85,9 @@ public final class SqlConstants {
    */
 
   public enum SqlKeyword {
-    DB_NAME, DB_SCHEMA, DB_TABLES, DB_FIELDS, DB_KEYS, DB_FOREIGNKEYS,
+    DB_NAME, DB_SCHEMA, DB_TABLES, DB_FIELDS, DB_KEYS, DB_FOREIGNKEYS, DB_TRIGGERS,
     RENAME_TABLE, DROP_TABLE, DROP_FOREIGNKEY, CREATE_INDEX,
+    CREATE_TRIGGER_FUNCTION, CREATE_TRIGGER,
     ADD_CONSTRAINT, PRIMARY_KEY, UNIQUE_KEY, FOREIGN_KEY,
     TEMPORARY, TEMPORARY_NAME
   }
@@ -104,6 +105,8 @@ public final class SqlConstants {
   public static final String KEY_TYPE = "keyType";
 
   public static final String FK_REF_TABLE = "fkRefTable";
+
+  public static final String TRIGGER_NAME = "triggerName";
 
   private SqlConstants() {
   }

@@ -94,23 +94,10 @@ class MySqlBuilder extends SqlBuilder {
       case DB_SCHEMA:
         return "SELECT schema() AS " + sqlQuote("dbSchema");
 
-      case DB_TABLES:
-        String sql = "SHOW TABLES";
-
-        Object prm = params.get("dbSchema");
-        if (!BeeUtils.isEmpty(prm)) {
-          sql = BeeUtils.concat(1, sql, "IN", sqlQuote((String) prm));
-        }
-        prm = params.get("table");
-        if (!BeeUtils.isEmpty(prm)) {
-          sql = BeeUtils.concat(1, sql, "LIKE", sqlTransform(prm));
-        }
-        return sql;
-
       case DB_FOREIGNKEYS:
         IsCondition wh = null;
 
-        prm = params.get("dbName");
+        Object prm = params.get("dbName");
         if (!BeeUtils.isEmpty(prm)) {
           wh = SqlUtils.and(wh,
               SqlUtils.equal("c", "constraint_catalog", prm),

@@ -5,6 +5,7 @@ import com.butent.bee.server.sql.SqlConstants.SqlKeyword;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -79,11 +80,46 @@ class MsSqlBuilder extends SqlBuilder {
   @Override
   protected String sqlKeyword(SqlKeyword option, Map<String, Object> params) {
     switch (option) {
+      case CREATE_TRIGGER:
+        List<String[]> content = (List<String[]>) params.get("content");
+        String text = "SET NOCOUNT ON;";
+
+        for (String[] entry : content) {
+          String fldName = entry[0];
+          String relTable = entry[1];
+          String relField = entry[2];
+
+          text = BeeUtils.concat(1, text,
+              new SqlDelete(relTable).addFrom("deleted")
+                  .setWhere(SqlUtils.join(relTable, relField, "deleted", fldName))
+                  .getQuery(),
+              ";");
+        }
+        return BeeUtils.concat(1,
+            "CREATE TRIGGER", params.get("name"),
+            "ON", params.get("table"), params.get("timing"), params.get("event"),
+            "AS BEGIN", text, "END;");
+
       case DB_NAME:
         return "SELECT db_name() AS " + sqlQuote("dbName");
 
       case DB_SCHEMA:
         return "SELECT schema_name() AS " + sqlQuote("dbSchema");
+
+      case DB_TRIGGERS:
+        IsCondition wh = null;
+
+        Object prm = params.get("table");
+        if (!BeeUtils.isEmpty(prm)) {
+          wh = SqlUtils.and(wh, SqlUtils.equal("o", "name", prm));
+        }
+        return new SqlSelect()
+            .addField("o", "name", SqlConstants.TBL_NAME)
+            .addField("t", "name", SqlConstants.TRIGGER_NAME)
+            .addFrom("sys.triggers", "t")
+            .addFromInner("sys.objects", "o", SqlUtils.join("t", "parent_id", "o", "object_id"))
+            .setWhere(wh)
+            .getSqlString(this);
 
       case TEMPORARY:
         return "";

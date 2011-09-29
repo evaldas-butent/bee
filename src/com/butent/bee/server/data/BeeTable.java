@@ -142,7 +142,7 @@ public class BeeTable implements HasExtFields, HasStates, HasTranslations, HasEx
 
       this.tblName = tblName;
       this.name = (cascade ? FOREIGN_CASCADE_PREFIX : FOREIGN_KEY_PREFIX) +
-          Codec.crc32(getTable() + keyField + refTable);
+          Codec.crc32(tblName + keyField + refTable);
       this.keyField = keyField;
       this.refTable = refTable;
       this.cascade = cascade;
@@ -234,6 +234,55 @@ public class BeeTable implements HasExtFields, HasStates, HasTranslations, HasEx
 
     public boolean isUnique() {
       return keyType.equals(KeyTypes.UNIQUE);
+    }
+  }
+
+  public class BeeTrigger {
+    private final String tblName;
+    private final String name;
+    private final Object content;
+    private final String timing;
+    private final String event;
+    private final String scope;
+
+    private BeeTrigger(String tblName, Object content, String timing, String event, String scope) {
+      this.tblName = tblName;
+      this.name =
+          TRIGGER_PREFIX
+              + Codec.crc32(tblName + BeeUtils.transformCollection((Collection<?>) content)
+                  + timing + event + scope);
+      this.content = content;
+      this.timing = timing;
+      this.event = event;
+      this.scope = scope;
+    }
+
+    public Object getContent() {
+      return content;
+    }
+
+    public String getEvent() {
+      return event;
+    }
+
+    public String getName() {
+      return name;
+    }
+
+    public BeeTable getOwner() {
+      return BeeTable.this;
+    }
+
+    public String getScope() {
+      return scope;
+    }
+
+    public String getTable() {
+      return tblName;
+    }
+
+    public String getTiming() {
+      return timing;
     }
   }
 
@@ -372,12 +421,12 @@ public class BeeTable implements HasExtFields, HasStates, HasTranslations, HasEx
 
         if (state.isChecked()) {
           wh = SqlUtils.and(wh,
-                  SqlUtils.or(SqlUtils.isNull(stateAlias, fld),
-                      SqlUtils.notEqual(SqlUtils.bitAnd(stateAlias, fld, mask), mask)));
+              SqlUtils.or(SqlUtils.isNull(stateAlias, fld),
+                  SqlUtils.notEqual(SqlUtils.bitAnd(stateAlias, fld, mask), mask)));
         } else {
           wh = SqlUtils.or(wh,
-                  SqlUtils.and(SqlUtils.notNull(stateAlias, fld),
-                      SqlUtils.notEqual(SqlUtils.bitAnd(stateAlias, fld, mask), 0)));
+              SqlUtils.and(SqlUtils.notNull(stateAlias, fld),
+                  SqlUtils.notEqual(SqlUtils.bitAnd(stateAlias, fld, mask), 0)));
         }
       }
       if (BeeUtils.isEmpty(wh)) {
@@ -714,6 +763,7 @@ public class BeeTable implements HasExtFields, HasStates, HasTranslations, HasEx
   private static final String INDEX_KEY_PREFIX = "IK_";
   private static final String FOREIGN_KEY_PREFIX = "FK_";
   private static final String FOREIGN_CASCADE_PREFIX = "FC_";
+  private static final String TRIGGER_PREFIX = "TR_";
 
   private final String name;
   private final String idName;
@@ -722,6 +772,7 @@ public class BeeTable implements HasExtFields, HasStates, HasTranslations, HasEx
   private final Map<String, BeeField> fields = Maps.newLinkedHashMap();
   private final Map<String, BeeForeignKey> foreignKeys = Maps.newLinkedHashMap();
   private final Map<String, BeeKey> keys = Maps.newLinkedHashMap();
+  private final Map<String, BeeTrigger> triggers = Maps.newLinkedHashMap();
   private final Set<BeeState> states = Sets.newHashSet();
 
   private final HasExtFields extSource;
@@ -849,6 +900,17 @@ public class BeeTable implements HasExtFields, HasStates, HasTranslations, HasEx
           "Checked", state.isChecked());
     }
 
+    info.add(new ExtendedProperty("Triggers", BeeUtils.toString(triggers.size())));
+    i = 0;
+    for (Map.Entry<String, BeeTrigger> entry : triggers.entrySet()) {
+      String key = BeeUtils.concat(1, "Trigger", ++i, entry.getKey());
+      BeeTrigger trigger = entry.getValue();
+
+      PropertyUtils.addChildren(info, key, "Table", trigger.getTable(), "Name", trigger.getName(),
+          "Timing", trigger.getTiming(), "Event", trigger.getEvent(), "Scope", trigger.getScope(),
+          "Content", BeeUtils.transformCollection((Collection<?>) trigger.getContent()));
+    }
+
     return info;
   }
 
@@ -888,6 +950,10 @@ public class BeeTable implements HasExtFields, HasStates, HasTranslations, HasEx
   @Override
   public String getTranslationTable(BeeField field) {
     return translationSource.getTranslationTable(field);
+  }
+
+  public Collection<BeeTrigger> getTriggers() {
+    return ImmutableList.copyOf(triggers.values());
   }
 
   public String getVersionName() {
@@ -1010,6 +1076,12 @@ public class BeeTable implements HasExtFields, HasStates, HasTranslations, HasEx
   BeeState addState(BeeState state) {
     states.add(state);
     return state;
+  }
+
+  BeeTrigger addTrigger(String tblName, Object content, String timing, String event, String scope) {
+    BeeTrigger trigger = new BeeTrigger(tblName, content, timing, event, scope);
+    triggers.put(BeeUtils.normalize(trigger.getName()), trigger);
+    return trigger;
   }
 
   void setActive(boolean active) {

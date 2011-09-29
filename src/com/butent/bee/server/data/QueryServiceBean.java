@@ -7,6 +7,7 @@ import com.butent.bee.server.jdbc.JdbcUtils;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.IsQuery;
 import com.butent.bee.server.sql.SqlBuilderFactory;
+import com.butent.bee.server.sql.SqlConstants;
 import com.butent.bee.server.sql.SqlConstants.SqlKeyword;
 import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
@@ -152,7 +153,11 @@ public class QueryServiceBean {
   }
 
   public String[] dbTables(String dbName, String dbSchema, String table) {
-    return getColumn(SqlUtils.dbTables(dbName, dbSchema, table));
+    return getData(SqlUtils.dbTables(dbName, dbSchema, table)).getColumn(SqlConstants.TBL_NAME);
+  }
+
+  public SimpleRowSet dbTriggers(String dbName, String dbSchema, String table) {
+    return getData(SqlUtils.dbTriggers(dbName, dbSchema, table));
   }
 
   public Object doSql(String sql) {

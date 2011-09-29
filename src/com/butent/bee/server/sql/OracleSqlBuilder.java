@@ -5,6 +5,7 @@ import com.butent.bee.server.sql.SqlConstants.SqlFunction;
 import com.butent.bee.server.sql.SqlConstants.SqlKeyword;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -61,6 +62,26 @@ class OracleSqlBuilder extends SqlBuilder {
   @Override
   protected String sqlKeyword(SqlKeyword option, Map<String, Object> params) {
     switch (option) {
+      case CREATE_TRIGGER:
+        List<String[]> content = (List<String[]>) params.get("content");
+        String text = null;
+
+        for (String[] entry : content) {
+          String fldName = entry[0];
+          String relTable = entry[1];
+          String relField = entry[2];
+          String var = ":OLD." + sqlQuote(fldName);
+
+          text = BeeUtils.concat(1, text, "IF", var, "IS NOT NULL THEN",
+              new SqlDelete(relTable).setWhere(SqlUtils.equal(relTable, relField, 69))
+                  .getQuery().replace("69", var),
+              "; END IF;");
+        }
+        return BeeUtils.concat(1,
+            "CREATE TRIGGER", params.get("name"), params.get("timing"), params.get("event"),
+            "ON", params.get("table"), params.get("scope"),
+            "BEGIN", text, "END;");
+
       case DB_SCHEMA:
         return "SELECT sys_context('USERENV', 'CURRENT_SCHEMA') AS " + sqlQuote("dbSchema")
             + " FROM dual";
@@ -77,7 +98,7 @@ class OracleSqlBuilder extends SqlBuilder {
           wh = SqlUtils.and(wh, SqlUtils.equal("t", "TABLE_NAME", prm));
         }
         return new SqlSelect()
-            .addFields("t", "TABLE_NAME")
+            .addField("t", "TABLE_NAME", SqlConstants.TBL_NAME)
             .addFrom("ALL_TABLES", "t")
             .setWhere(wh)
             .getSqlString(this);
@@ -180,6 +201,24 @@ class OracleSqlBuilder extends SqlBuilder {
             .addFrom("ALL_CONSTRAINTS", "c")
             .addFromInner("ALL_CONSTRAINTS", "r",
                 SqlUtils.join("c", "R_CONSTRAINT_NAME", "r", "CONSTRAINT_NAME"))
+            .setWhere(wh)
+            .getSqlString(this);
+
+      case DB_TRIGGERS:
+        wh = null;
+
+        prm = params.get("dbSchema");
+        if (!BeeUtils.isEmpty(prm)) {
+          wh = SqlUtils.equal("t", "OWNER", prm);
+        }
+        prm = params.get("table");
+        if (!BeeUtils.isEmpty(prm)) {
+          wh = SqlUtils.and(wh, SqlUtils.equal("t", "TABLE_NAME", prm));
+        }
+        return new SqlSelect()
+            .addField("t", "TABLE_NAME", SqlConstants.TBL_NAME)
+            .addField("t", "TRIGGER_NAME", SqlConstants.TRIGGER_NAME)
+            .addFrom("ALL_TRIGGERS", "t")
             .setWhere(wh)
             .getSqlString(this);
 

@@ -474,6 +474,29 @@ public abstract class SqlBuilder {
         }
         return foreign;
 
+      case CREATE_TRIGGER_FUNCTION:
+        return "";
+
+      case CREATE_TRIGGER:
+        List<String[]> content = (List<String[]>) params.get("content");
+        String text = null;
+
+        for (String[] entry : content) {
+          String fldName = entry[0];
+          String relTable = entry[1];
+          String relField = entry[2];
+          String var = "OLD." + sqlQuote(fldName);
+
+          text = BeeUtils.concat(1, text, "IF", var, "IS NOT NULL THEN",
+              new SqlDelete(relTable).setWhere(SqlUtils.equal(relTable, relField, 69))
+                  .getQuery().replace("69", var),
+              "; END IF;");
+        }
+        return BeeUtils.concat(1,
+            "CREATE TRIGGER", params.get("name"), params.get("timing"), params.get("event"),
+            "ON", params.get("table"), params.get("scope"),
+            "BEGIN", text, "END;");
+
       case DB_NAME:
         return "";
 
@@ -496,7 +519,7 @@ public abstract class SqlBuilder {
           wh = SqlUtils.and(wh, SqlUtils.equal("t", "table_name", prm));
         }
         return new SqlSelect()
-            .addFields("t", "table_name")
+            .addField("t", "table_name", SqlConstants.TBL_NAME)
             .addFrom("information_schema.tables", "t")
             .setWhere(wh)
             .getSqlString(this);
@@ -615,6 +638,32 @@ public abstract class SqlBuilder {
                 SqlUtils.joinUsing("c", "t", "constraint_name"))
             .addFromInner("information_schema.table_constraints", "r",
                 SqlUtils.join("c", "unique_constraint_name", "r", "constraint_name"))
+            .setWhere(wh)
+            .getSqlString(this);
+
+      case DB_TRIGGERS:
+        wh = null;
+
+        prm = params.get("dbName");
+        if (!BeeUtils.isEmpty(prm)) {
+          wh = SqlUtils.and(wh,
+              SqlUtils.equal("t", "trigger_catalog", prm),
+              SqlUtils.equal("t", "event_object_catalog", prm));
+        }
+        prm = params.get("dbSchema");
+        if (!BeeUtils.isEmpty(prm)) {
+          wh = SqlUtils.and(wh,
+              SqlUtils.equal("t", "trigger_schema", prm),
+              SqlUtils.equal("t", "event_object_schema", prm));
+        }
+        prm = params.get("table");
+        if (!BeeUtils.isEmpty(prm)) {
+          wh = SqlUtils.and(wh, SqlUtils.equal("t", "event_object_table", prm));
+        }
+        return new SqlSelect()
+            .addField("t", "event_object_table", SqlConstants.TBL_NAME)
+            .addField("t", "trigger_name", SqlConstants.TRIGGER_NAME)
+            .addFrom("information_schema.triggers", "t")
             .setWhere(wh)
             .getSqlString(this);
 
