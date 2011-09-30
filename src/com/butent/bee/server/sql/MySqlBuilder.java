@@ -78,6 +78,10 @@ class MySqlBuilder extends SqlBuilder {
             dataType = "CHAR(" + precision + ")";
             break;
 
+          case TEXT:
+            dataType = "CHAR(" + 1e9 + ")";
+            break;
+
           default:
             dataType = super.sqlType(type, precision, scale);
         }

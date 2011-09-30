@@ -229,9 +229,10 @@ public class DataEditorBean {
     return response;
   }
 
-  public ResponseObject generateData(String tblName, int rowCount) {
-    Assert.isTrue(sys.isTable(tblName), "Not a base table: " + tblName);
+  public ResponseObject generateData(String tbl, int rowCount) {
+    Assert.isTrue(sys.isTable(tbl), "Not a base table: " + tbl);
     Assert.isPositive(rowCount, "rowCount must be positive");
+    String tblName = sys.getTable(tbl).getName();
 
     Collection<BeeField> fields = sys.getTableFields(tblName);
     SqlInsert si = new SqlInsert(tblName);
@@ -250,7 +251,7 @@ public class DataEditorBean {
     chars.append(chars.toString().toUpperCase()).append(" ąčęėįšųūžĄČĘĖĮŠŲŪŽ");
 
     Random random = new Random();
-    Object v;
+    Object v = null;
 
     for (int row = 0; row < rowCount; row++) {
       for (BeeField field : fields) {
@@ -319,8 +320,9 @@ public class DataEditorBean {
               }
               v = BeeUtils.randomString(len, chars);
               break;
-            default:
-              v = null;
+            case TEXT:
+              v = BeeUtils.randomString(BeeUtils.randomInt(1, 2000), chars);
+              break;
           }
         }
         if (!field.isNotNull() && random.nextInt(7) == 0) {

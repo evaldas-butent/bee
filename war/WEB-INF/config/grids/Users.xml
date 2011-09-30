@@ -2,9 +2,9 @@
 <BeeGrids xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.butent.com/bee ../../schemas/grid.xsd">
 
-  <BeeGrid name="Users" viewName="Users" readOnly="true">
+  <BeeGrid name="Users" viewName="Users" caption="Vartotojai" readOnly="true">
     <columns>
-      <BeeIdColumn name="ID" />
+      <BeeIdColumn name="Id" caption="ID" />
       <BeeDataColumn name="Login" source="Login" caption="Prisijungimo vardas" />
       <BeeDataColumn name="FirstName" source="FirstName" caption="Vardas" />
       <BeeDataColumn name="LasName" source="LastName" caption="Pavardė" />

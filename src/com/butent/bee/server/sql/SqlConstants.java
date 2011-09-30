@@ -1,6 +1,6 @@
 package com.butent.bee.server.sql;
 
-import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.utils.BeeUtils;
 
 /**
@@ -14,7 +14,7 @@ public final class SqlConstants {
    */
 
   public enum SqlDataType {
-    BOOLEAN, INTEGER, LONG, DOUBLE, DECIMAL, CHAR, STRING, DATE, DATETIME;
+    BOOLEAN, INTEGER, LONG, DOUBLE, DECIMAL, CHAR, STRING, TEXT, DATE, DATETIME;
 
     public Object getEmptyValue() {
       Object value = null;
@@ -31,10 +31,8 @@ public final class SqlConstants {
           break;
         case CHAR:
         case STRING:
+        case TEXT:
           value = "";
-          break;
-        default:
-          Assert.unsupported();
           break;
       }
       return value;
@@ -62,11 +60,34 @@ public final class SqlConstants {
           return BeeUtils.toLongOrNull(s);
         case CHAR:
         case STRING:
+        case TEXT:
           return s;
-        default:
-          Assert.untouchable();
-          return null;
       }
+      return null;
+    }
+
+    public ValueType toValueType() {
+      switch (this) {
+        case BOOLEAN:
+          return ValueType.BOOLEAN;
+        case INTEGER:
+          return ValueType.INTEGER;
+        case LONG:
+          return ValueType.LONG;
+        case DOUBLE:
+          return ValueType.NUMBER;
+        case DECIMAL:
+          return ValueType.DECIMAL;
+        case DATE:
+          return ValueType.DATE;
+        case DATETIME:
+          return ValueType.DATETIME;
+        case CHAR:
+        case STRING:
+        case TEXT:
+          return ValueType.TEXT;
+      }
+      return null;
     }
   }
 

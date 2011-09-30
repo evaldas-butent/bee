@@ -294,6 +294,16 @@ public class SqlSelect extends HasFrom<SqlSelect> {
   }
 
   /**
+   * Creates an empty TEXT type field and adds it.
+   * 
+   * @param alias the alias to use
+   * @return object's SqlSelect instance
+   */
+  public SqlSelect addEmptyText(String alias) {
+    return addEmptyField(alias, SqlDataType.TEXT, 0, 0, false);
+  }
+
+  /**
    * Adds an expression {@code expr}.
    * 
    * @param expr the expression

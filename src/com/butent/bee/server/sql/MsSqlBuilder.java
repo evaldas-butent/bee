@@ -146,6 +146,8 @@ class MsSqlBuilder extends SqlBuilder {
     switch (type) {
       case DOUBLE:
         return "FLOAT";
+      case TEXT:
+        return "VARCHAR(MAX)";
       default:
         return super.sqlType(type, precision, scale);
     }

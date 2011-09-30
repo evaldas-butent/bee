@@ -9,7 +9,7 @@
   <BeeFields>
     <BeeField name="Login" type="STRING" precision="30" notNull="true" unique="true" />
     <BeeField name="Password" type="STRING" precision="64" />
-    <BeeField name="Properties" type="STRING" precision="2000" />
+    <BeeField name="Properties" type="TEXT" />
     <BeeField name="Person" type="LONG" unique="true" relation="Persons" />
   </BeeFields>
 </BeeTable>

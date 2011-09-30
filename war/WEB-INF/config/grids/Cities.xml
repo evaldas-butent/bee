@@ -4,8 +4,6 @@
 
   <BeeGrid name="Cities" viewName="Cities" caption="Miestai" maxColumnWidth="300">
     <columns>
-      <BeeIdColumn name="Id" caption="ID" />
-
       <BeeDataColumn name="City" source="Name" caption="Miestas">
         <style>
           <bodyStyle>
@@ -20,9 +18,7 @@
           options="{&quot;showLimit&quot;: true, &quot;searchType&quot;: &quot;contains&quot;}" />
       </BeeRelColumn>
 
-      <BeeDataColumn name="CountryId" source="Country" caption="Šalies ID" readOnly="true" />
-
-      <BeeVerColumn name="Version" caption="Versija" />
+      <BeeVerColumn name="Version" caption="Paskutinio koregavimo data" />
     </columns>
   </BeeGrid>
 </BeeGrids>

@@ -51,6 +51,23 @@ class OracleSqlBuilder extends SqlBuilder {
   @Override
   protected String sqlFunction(SqlFunction function, Map<String, Object> params) {
     switch (function) {
+      case CAST:
+        String sql = "CAST(" + params.get("expression");
+        String dataType;
+        SqlDataType type = (SqlDataType) params.get("type");
+        int precision = (Integer) params.get("precision");
+        int scale = (Integer) params.get("scale");
+
+        switch (type) {
+          case TEXT:
+            dataType = "NVARCHAR2(2000)";
+            break;
+
+          default:
+            dataType = super.sqlType(type, precision, scale);
+        }
+        return BeeUtils.concat(1, sql, "AS", dataType + ")");
+
       case BITAND:
         return "BITAND(" + params.get("expression") + ", " + params.get("value") + ")";
 
@@ -248,8 +265,12 @@ class OracleSqlBuilder extends SqlBuilder {
         return "NUMERIC(19)";
       case DOUBLE:
         return "BINARY_DOUBLE";
+      case CHAR:
+        return "NCHAR(" + precision + ")";
       case STRING:
         return "NVARCHAR2(" + precision + ")";
+      case TEXT:
+        return "NCLOB";
       default:
         return super.sqlType(type, precision, scale);
     }

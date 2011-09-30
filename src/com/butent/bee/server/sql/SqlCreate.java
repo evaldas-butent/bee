@@ -234,6 +234,17 @@ public class SqlCreate extends SqlQuery<SqlCreate> {
   }
 
   /**
+   * Adds a TEXT type field with a field name {@code field} and notNull {@code notNull}.
+   * 
+   * @param field the field's name
+   * @param notNull field's not null
+   * @return object's SqlCreate instance
+   */
+  public SqlCreate addText(String field, boolean notNull) {
+    return addField(field, SqlDataType.TEXT, 0, 0, notNull);
+  }
+
+  /**
    * @return the current {@code dataSource}.
    */
   public SqlSelect getDataSource() {

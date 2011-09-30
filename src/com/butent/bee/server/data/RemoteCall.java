@@ -9,7 +9,6 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.filter.Filter;
-import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -149,7 +148,7 @@ public class RemoteCall {
           List<IsColumn> columns = Lists.newArrayList();
 
           for (String col : view.getColumns()) {
-            columns.add(new BeeColumn(ValueType.getByTypeCode(view.getType(col).toString()), col));
+            columns.add(new BeeColumn(view.getType(col).toValueType(), col));
           }
           filter = DataUtils.parseCondition(prm.filter, columns);
 

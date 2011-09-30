@@ -749,6 +749,8 @@ public abstract class SqlBuilder {
         return "CHAR(" + precision + ")";
       case STRING:
         return "VARCHAR(" + precision + ")";
+      case TEXT:
+        return "TEXT";
     }
     Assert.untouchable();
     return null;

@@ -9,7 +9,7 @@
     <BeeField name="Currency" type="DECIMAL" precision="12" scale="2" />
     <BeeField name="Char" type="CHAR" precision="10" />
     <BeeField name="String" type="STRING" precision="30" />
-    <BeeField name="Memo" type="STRING" precision="400" />
+    <BeeField name="Memo" type="TEXT" />
     <BeeField name="Date" type="DATE" />
     <BeeField name="DateTime" type="DATETIME" />
   </BeeFields>

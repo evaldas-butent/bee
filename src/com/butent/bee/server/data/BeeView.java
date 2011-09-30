@@ -25,7 +25,6 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.IdFilter;
 import com.butent.bee.shared.data.filter.NegationFilter;
 import com.butent.bee.shared.data.filter.VersionFilter;
-import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.ExtendedProperty;
 import com.butent.bee.shared.utils.LogUtils;
@@ -425,7 +424,7 @@ public class BeeView implements HasExtendedInfo {
       List<IsColumn> cols = Lists.newArrayListWithCapacity(columns.size());
 
       for (String col : columns.keySet()) {
-        cols.add(new BeeColumn(ValueType.getByTypeCode(getType(col).toString()), col));
+        cols.add(new BeeColumn(getType(col).toValueType(), col));
       }
       Filter flt = DataUtils.parseCondition(filter, cols);
 

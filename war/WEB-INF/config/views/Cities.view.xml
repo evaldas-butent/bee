@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BeeView xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../schemas/view.xsd"
+
+  name="Cities"
+  source="Cities"
+  >
+  <BeeColumns>
+    <BeeColumn name="Name" expression="Name" />
+    <BeeColumn name="Country" expression="Country" />
+    <BeeColumn name="CountryName" expression="Country>Name" />
+  </BeeColumns>
+  <BeeOrder>
+    <OrderBy column="CountryName" />
+    <OrderBy column="Name" />
+  </BeeOrder>
+</BeeView>
+ 
