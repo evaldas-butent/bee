@@ -40,6 +40,14 @@ public class JsUtils {
     return arr;
   }-*/;
 
+  public static native JavaScriptObject createFunction(String body) /*-{
+    return new Function(body);
+  }-*/;
+
+  public static native JavaScriptObject createFunction(String params, String body) /*-{
+    return new Function(params, body);
+  }-*/;
+  
   public static native double currentTimeMillis() /*-{
     return (new Date()).getTime();
   }-*/;

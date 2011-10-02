@@ -61,6 +61,7 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
 
   private final String minValue;
   private final String maxValue;
+  private final Boolean required;
 
   private final EditorDescription editorDescription;
 
@@ -89,6 +90,7 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
       this.carry = null;
       this.minValue = null;
       this.maxValue = null;
+      this.required = false;
       this.editorDescription = null;
     } else {
       String source = this.dataColumn.getId();
@@ -97,6 +99,7 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
       this.carry = Evaluator.create(columnDescr.getCarry(), source, dataColumns);
       this.minValue = columnDescr.getMinValue();
       this.maxValue = columnDescr.getMaxValue();
+      this.required = columnDescr.isRequired();
       this.editorDescription = columnDescr.getEditor();
     }
   }
@@ -238,7 +241,9 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
   }
 
   public boolean isNullable() {
-    if (isForeign()) {
+    if (BeeUtils.unbox(isRequired())) {
+      return false;
+    } else if (isForeign()) {
       return getRelationInfo().isNullable();
     } else if (getDataColumn() != null) {
       return getDataColumn().isNullable();
@@ -578,6 +583,10 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
     if (getEditor() instanceof HasNumberBounds) {
       UiHelper.setNumberBounds((HasNumberBounds) getEditor(), getMinValue(), getMaxValue());
     }
+  }
+
+  private Boolean isRequired() {
+    return required;
   }
 
   private void setCloseHandler(EditEndEvent.Handler closeHandler) {

@@ -10,12 +10,16 @@ import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment.VerticalAlignmentConstant;
 import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.ValueBoxBase;
+import com.google.gwt.user.client.ui.Widget;
 
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.dialog.NotificationListener;
+import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.utils.Evaluator;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.edit.HasCharacterFilter;
+import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasNumberBounds;
@@ -129,6 +133,23 @@ public class UiHelper {
     return align;
   }
 
+  public static FormView getForm(Widget widget) {
+    Assert.notNull(widget);
+
+    Widget p = widget;
+    for (int i = 0; i < DomUtils.MAX_GENERATIONS; i++) {
+      if (p instanceof FormView) {
+        return (FormView) p;
+      }
+
+      p = p.getParent();
+      if (p == null) {
+        break;
+      }
+    }
+    return null;
+  }
+  
   public static boolean isSave(NativeEvent event) {
     if (event == null) {
       return false;
@@ -225,6 +246,25 @@ public class UiHelper {
     if (align != null) {
       obj.setVerticalAlignment(align);
     }
+  }
+  
+  public static void updateForm(String widgetId, String columnId, String value) {
+    Assert.notEmpty(widgetId);
+    Assert.notEmpty(columnId);
+    
+    Widget widget = DomUtils.getWidget(widgetId);
+    if (widget == null) {
+      BeeKeeper.getLog().severe("update form:", widgetId, "widget not found");
+      return;
+    }
+    
+    FormView form = getForm(widget);
+    if (form == null) {
+      BeeKeeper.getLog().severe("update form:", widgetId, columnId, value, "form not found");
+      return;
+    }
+    
+    form.updateCell(columnId, value);
   }
   
   public static boolean validate(String oldValue, String newValue, Evaluator validation,

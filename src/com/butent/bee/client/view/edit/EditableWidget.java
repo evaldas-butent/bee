@@ -47,7 +47,8 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
 
   private final String minValue;
   private final String maxValue;
-
+  
+  private final boolean required;
   private final boolean readOnly;
 
   private EditEndEvent.Handler editEndHandler = null;
@@ -70,8 +71,10 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
     this.editable = Evaluator.create(widgetDescription.getEditable(), source, dataColumns);
     this.validation = Evaluator.create(widgetDescription.getValidation(), source, dataColumns);
     this.carry = Evaluator.create(widgetDescription.getCarry(), source, dataColumns);
+
     this.minValue = widgetDescription.getMinValue();
     this.maxValue = widgetDescription.getMaxValue();
+    this.required = BeeUtils.isTrue(widgetDescription.isRequired());
     this.readOnly = BeeUtils.isTrue(widgetDescription.isReadOnly());
   }
 
@@ -238,7 +241,9 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
   }
 
   public boolean isNullable() {
-    if (isForeign()) {
+    if (isRequired()) {
+      return false;
+    } else if (isForeign()) {
       return getRelationInfo().isNullable();
     } else if (getDataColumn() != null) {
       return getDataColumn().isNullable();
@@ -368,6 +373,10 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
 
   private boolean isInitialized() {
     return initialized;
+  }
+
+  private boolean isRequired() {
+    return required;
   }
 
   private void reset() {

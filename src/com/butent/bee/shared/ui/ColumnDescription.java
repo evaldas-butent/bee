@@ -66,7 +66,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
   private enum Serial {
     COL_TYPE, NAME, CAPTION, READ_ONLY, WIDTH, SOURCE, REL_SOURCE, REL_VIEW, REL_COLUMN,
     MIN_WIDTH, MAX_WIDTH, SORTABLE, VISIBLE, FORMAT, HOR_ALIGN, HAS_FOOTER, SHOW_WIDTH,
-    VALIDATION, EDITABLE, CARRY, EDITOR, MIN_VALUE, MAX_VALUE,
+    VALIDATION, EDITABLE, CARRY, EDITOR, MIN_VALUE, MAX_VALUE, REQUIRED,
     CALC, VALUE_TYPE, PRECISION, SCALE,
     HEADER_STYLE, BODY_STYLE, FOOTER_STYLE, DYN_STYLES, CELL_TYPE
   }
@@ -111,6 +111,8 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
 
   private String minValue = null;
   private String maxValue = null;
+  
+  private Boolean required = null;
 
   private Calculation calc = null;
   private ValueType valueType = null;
@@ -219,6 +221,9 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
           break;
         case MIN_VALUE:
           setMinValue(value);
+          break;
+        case REQUIRED:
+          setRequired(BeeUtils.toBooleanOrNull(value));
           break;
         case MIN_WIDTH:
           setMinWidth(BeeUtils.toIntOrNull(value));
@@ -338,6 +343,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
         "Show Width", showWidth(),
         "Min Value", getMinValue(),
         "Max Value", getMaxValue(),
+        "Required", isRequired(),
         "Value Type", getValueType(),
         "Precision", getPrecision(),
         "Scale", getScale(),
@@ -449,6 +455,10 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
   public Boolean isReadOnly() {
     return readOnly;
   }
+  
+  public Boolean isRequired() {
+    return required;
+  }
 
   public Boolean isSortable() {
     return sortable;
@@ -531,6 +541,9 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
           break;
         case MIN_VALUE:
           arr[i++] = getMinValue();
+          break;
+        case REQUIRED:
+          arr[i++] = isRequired();
           break;
         case MIN_WIDTH:
           arr[i++] = getMinWidth();
@@ -653,6 +666,10 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
 
   public void setRelView(String relView) {
     this.relView = relView;
+  }
+  
+  public void setRequired(Boolean required) {
+    this.required = required;
   }
 
   public void setScale(Integer scale) {

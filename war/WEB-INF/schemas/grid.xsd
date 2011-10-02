@@ -50,6 +50,7 @@
           <xs:element name="carry" type="bee:calcType" minOccurs="0" />
         </xs:sequence>
         <xs:attribute name="source" type="bee:nameType" use="required" />
+        <xs:attribute name="required" type="xs:boolean" />
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>

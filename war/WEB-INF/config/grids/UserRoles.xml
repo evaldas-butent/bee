@@ -5,7 +5,7 @@
   <BeeGrid name="UserRoles" viewName="UserRoles" newRowColumns="RoleName" caption="Rolės" hasHeaders="false">
     <columns>
       <BeeRelColumn name="RoleName" source="RoleName" relSource="Role" relColumn="Name"
-      caption="Rolė" />
+      caption="Rolė" width="100" />
     </columns>
   </BeeGrid>
 </BeeGrids>

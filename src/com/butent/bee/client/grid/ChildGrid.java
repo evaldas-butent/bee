@@ -20,7 +20,7 @@ import com.butent.bee.shared.ui.GridDescription;
 
 public class ChildGrid extends ResizePanel implements HasEnabled {
 
-  private final String viewName;
+  private String viewName = null;
   private final String relSource;
 
   private GridPresenter presenter = null;
@@ -28,17 +28,18 @@ public class ChildGrid extends ResizePanel implements HasEnabled {
   private Long pendingId = null;
   private Boolean pendingEnabled = null;
 
-  public ChildGrid(String viewName, String relSource) {
+  public ChildGrid(final String gridName, String relSource) {
     super();
-    this.viewName = viewName;
     this.relSource = relSource;
 
-    GridFactory.getGrid(viewName, new GridFactory.GridCallback() {
+    GridFactory.getGrid(gridName, new GridFactory.GridCallback() {
       public void onFailure(String[] reason) {
+        setViewName(gridName);
         getInitialRowSet(null);
       }
 
       public void onSuccess(GridDescription result) {
+        setViewName(result == null ? gridName : result.getViewName());
         getInitialRowSet(result);
       }
     });
@@ -143,5 +144,9 @@ public class ChildGrid extends ResizePanel implements HasEnabled {
 
   private void setPresenter(GridPresenter presenter) {
     this.presenter = presenter;
+  }
+
+  private void setViewName(String viewName) {
+    this.viewName = viewName;
   }
 }

@@ -393,10 +393,17 @@ public class UiServiceBean {
 
         } else if (BeeUtils.same(dstType, "Grid") && view != null) {
           String relColumn = view.getSourceIdName();
-          widgetElement.setAttribute("relView", source);
+          widgetElement.setAttribute("name", source);
           widgetElement.setAttribute("relColumn", relColumn);
-
-          if (!sys.isView(source)) {
+          
+          if (grd.isGrid(source)) {
+            if (sys.getView(grd.getGrid(source).getViewName()).hasColumn(relColumn)) {
+              isColumn = true;
+            } else {
+              LogUtils.warning(logger, "import form", formName, "widget", dstType,
+                  "grid", source, "relColumn", relColumn, "not a view column");
+            }
+          } else if (!sys.isView(source)) {
             LogUtils.warning(logger, "import form", formName, "widget", dstType,
                 "source", source, "not a view");
           } else if (!sys.getView(source).hasColumn(relColumn)) {

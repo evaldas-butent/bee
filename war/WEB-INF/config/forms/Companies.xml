@@ -47,7 +47,7 @@
     </layer>
     
     <layer left="1" leftUnit="%" right="1" rightUnit="%" top="61" topUnit="%" bottom="1" bottomUnit="ex">
-      <Grid relView="CompanyPersons" relColumn="Company" />
+      <Grid name="CompanyPersons" relColumn="Company" />
     </layer>
     
   </LayoutPanel>

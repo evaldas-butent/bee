@@ -104,6 +104,7 @@ public class GridHolderBean {
   private static final String ATTR_SHOW_WIDTH = "showWidth";
 
   private static final String ATTR_SOURCE = "source";
+  private static final String ATTR_REQUIRED = "required";
 
   private static final String ATTR_MIN_VALUE = "minValue";
   private static final String ATTR_MAX_VALUE = "maxValue";
@@ -513,6 +514,8 @@ public class GridHolderBean {
 
         } else if (BeeUtils.same(key, ATTR_SOURCE)) {
           dst.setSource(value.trim());
+        } else if (BeeUtils.same(key, ATTR_REQUIRED)) {
+          dst.setRequired(BeeUtils.toBooleanOrNull(value));
 
         } else if (BeeUtils.same(key, ATTR_MIN_VALUE)) {
           dst.setMinValue(value.trim());

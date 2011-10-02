@@ -1,5 +1,6 @@
 package com.butent.bee.client.event;
 
+import com.google.common.collect.Maps;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
@@ -7,23 +8,133 @@ import com.google.gwt.dom.client.EventTarget;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.dom.client.Node;
 import com.google.gwt.dom.client.NodeList;
+import com.google.gwt.event.dom.client.BlurEvent;
+import com.google.gwt.event.dom.client.BlurHandler;
+import com.google.gwt.event.dom.client.CanPlayThroughEvent;
+import com.google.gwt.event.dom.client.CanPlayThroughHandler;
+import com.google.gwt.event.dom.client.ChangeEvent;
+import com.google.gwt.event.dom.client.ChangeHandler;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.ContextMenuEvent;
+import com.google.gwt.event.dom.client.ContextMenuHandler;
+import com.google.gwt.event.dom.client.DoubleClickEvent;
+import com.google.gwt.event.dom.client.DoubleClickHandler;
+import com.google.gwt.event.dom.client.DragEndEvent;
+import com.google.gwt.event.dom.client.DragEndHandler;
+import com.google.gwt.event.dom.client.DragEvent;
+import com.google.gwt.event.dom.client.DragHandler;
+import com.google.gwt.event.dom.client.DragLeaveEvent;
+import com.google.gwt.event.dom.client.DragLeaveHandler;
+import com.google.gwt.event.dom.client.DragOverEvent;
+import com.google.gwt.event.dom.client.DragOverHandler;
+import com.google.gwt.event.dom.client.DragStartEvent;
+import com.google.gwt.event.dom.client.DragStartHandler;
+import com.google.gwt.event.dom.client.DropEvent;
+import com.google.gwt.event.dom.client.DropHandler;
+import com.google.gwt.event.dom.client.EndedEvent;
+import com.google.gwt.event.dom.client.EndedHandler;
+import com.google.gwt.event.dom.client.ErrorEvent;
+import com.google.gwt.event.dom.client.ErrorHandler;
+import com.google.gwt.event.dom.client.FocusEvent;
+import com.google.gwt.event.dom.client.FocusHandler;
+import com.google.gwt.event.dom.client.GestureChangeEvent;
+import com.google.gwt.event.dom.client.GestureChangeHandler;
+import com.google.gwt.event.dom.client.GestureEndEvent;
+import com.google.gwt.event.dom.client.GestureEndHandler;
+import com.google.gwt.event.dom.client.GestureStartEvent;
+import com.google.gwt.event.dom.client.GestureStartHandler;
+import com.google.gwt.event.dom.client.HasBlurHandlers;
+import com.google.gwt.event.dom.client.HasCanPlayThroughHandlers;
+import com.google.gwt.event.dom.client.HasChangeHandlers;
+import com.google.gwt.event.dom.client.HasClickHandlers;
+import com.google.gwt.event.dom.client.HasContextMenuHandlers;
+import com.google.gwt.event.dom.client.HasDoubleClickHandlers;
+import com.google.gwt.event.dom.client.HasDragEndHandlers;
+import com.google.gwt.event.dom.client.HasDragEnterHandlers;
+import com.google.gwt.event.dom.client.HasDragHandlers;
+import com.google.gwt.event.dom.client.HasDragLeaveHandlers;
+import com.google.gwt.event.dom.client.HasDragOverHandlers;
+import com.google.gwt.event.dom.client.HasDragStartHandlers;
+import com.google.gwt.event.dom.client.HasDropHandlers;
+import com.google.gwt.event.dom.client.HasEndedHandlers;
+import com.google.gwt.event.dom.client.HasErrorHandlers;
+import com.google.gwt.event.dom.client.HasFocusHandlers;
+import com.google.gwt.event.dom.client.HasGestureChangeHandlers;
+import com.google.gwt.event.dom.client.HasGestureEndHandlers;
+import com.google.gwt.event.dom.client.HasGestureStartHandlers;
+import com.google.gwt.event.dom.client.HasKeyDownHandlers;
+import com.google.gwt.event.dom.client.HasKeyPressHandlers;
+import com.google.gwt.event.dom.client.HasKeyUpHandlers;
+import com.google.gwt.event.dom.client.HasLoadHandlers;
+import com.google.gwt.event.dom.client.HasLoseCaptureHandlers;
+import com.google.gwt.event.dom.client.HasMouseDownHandlers;
+import com.google.gwt.event.dom.client.HasMouseMoveHandlers;
+import com.google.gwt.event.dom.client.HasMouseOutHandlers;
+import com.google.gwt.event.dom.client.HasMouseOverHandlers;
+import com.google.gwt.event.dom.client.HasMouseUpHandlers;
+import com.google.gwt.event.dom.client.HasMouseWheelHandlers;
 import com.google.gwt.event.dom.client.HasNativeEvent;
+import com.google.gwt.event.dom.client.HasProgressHandlers;
+import com.google.gwt.event.dom.client.HasScrollHandlers;
+import com.google.gwt.event.dom.client.HasTouchCancelHandlers;
+import com.google.gwt.event.dom.client.HasTouchEndHandlers;
+import com.google.gwt.event.dom.client.HasTouchMoveHandlers;
+import com.google.gwt.event.dom.client.HasTouchStartHandlers;
+import com.google.gwt.event.dom.client.KeyDownEvent;
+import com.google.gwt.event.dom.client.KeyDownHandler;
+import com.google.gwt.event.dom.client.KeyPressEvent;
+import com.google.gwt.event.dom.client.KeyPressHandler;
+import com.google.gwt.event.dom.client.KeyUpEvent;
+import com.google.gwt.event.dom.client.KeyUpHandler;
+import com.google.gwt.event.dom.client.LoadEvent;
+import com.google.gwt.event.dom.client.LoadHandler;
+import com.google.gwt.event.dom.client.LoseCaptureEvent;
+import com.google.gwt.event.dom.client.LoseCaptureHandler;
+import com.google.gwt.event.dom.client.MouseDownEvent;
+import com.google.gwt.event.dom.client.MouseDownHandler;
+import com.google.gwt.event.dom.client.MouseMoveEvent;
+import com.google.gwt.event.dom.client.MouseMoveHandler;
+import com.google.gwt.event.dom.client.MouseOutEvent;
+import com.google.gwt.event.dom.client.MouseOutHandler;
+import com.google.gwt.event.dom.client.MouseOverEvent;
+import com.google.gwt.event.dom.client.MouseOverHandler;
+import com.google.gwt.event.dom.client.MouseUpEvent;
+import com.google.gwt.event.dom.client.MouseUpHandler;
+import com.google.gwt.event.dom.client.MouseWheelEvent;
+import com.google.gwt.event.dom.client.MouseWheelHandler;
+import com.google.gwt.event.dom.client.ProgressEvent;
+import com.google.gwt.event.dom.client.ProgressHandler;
+import com.google.gwt.event.dom.client.ScrollEvent;
+import com.google.gwt.event.dom.client.ScrollHandler;
+import com.google.gwt.event.dom.client.TouchCancelEvent;
+import com.google.gwt.event.dom.client.TouchCancelHandler;
+import com.google.gwt.event.dom.client.TouchEndEvent;
+import com.google.gwt.event.dom.client.TouchEndHandler;
+import com.google.gwt.event.dom.client.TouchMoveEvent;
+import com.google.gwt.event.dom.client.TouchMoveHandler;
+import com.google.gwt.event.dom.client.TouchStartEvent;
+import com.google.gwt.event.dom.client.TouchStartHandler;
 import com.google.gwt.event.logical.shared.CloseEvent;
 import com.google.gwt.media.dom.client.MediaError;
 import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Features;
 import com.butent.bee.client.event.DndEvent.TYPE;
+import com.butent.bee.client.ui.UiHelper;
+import com.butent.bee.client.utils.JsUtils;
+import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -45,11 +156,21 @@ public class EventUtils {
 
   public static final String EVENT_TYPE_DBL_CLICK = "dblclick";
 
+  public static final String EVENT_TYPE_DRAG = "drag";
+  public static final String EVENT_TYPE_DRAG_END = "dragend";
+  public static final String EVENT_TYPE_DRAG_ENTER = "dragenter";
+  public static final String EVENT_TYPE_DRAG_LEAVE = "dragleave";
+  public static final String EVENT_TYPE_DRAG_OVER = "dragover";
+  public static final String EVENT_TYPE_DRAG_START = "dragstart";
+  public static final String EVENT_TYPE_DROP = "drop";
+
   public static final String EVENT_TYPE_ENDED = "ended";
 
   public static final String EVENT_TYPE_ERROR = "error";
 
   public static final String EVENT_TYPE_FOCUS = "focus";
+  public static final String EVENT_TYPE_FOCUS_IN = "focusin";
+  public static final String EVENT_TYPE_FOCUS_OUT = "focusout";
 
   public static final String EVENT_TYPE_GESTURE_CHANGE = "gesturechange";
   public static final String EVENT_TYPE_GESTURE_END = "gestureend";
@@ -80,17 +201,17 @@ public class EventUtils {
   public static final String EVENT_TYPE_TOUCH_END = "touchend";
   public static final String EVENT_TYPE_TOUCH_MOVE = "touchmove";
   public static final String EVENT_TYPE_TOUCH_START = "touchstart";
-  
-  public static final int KEY_INSERT = 45;  
+
+  public static final int KEY_INSERT = 45;
 
   private static boolean dnd;
 
   private static JavaScriptObject onDnd;
 
-  private static Map<String, HasDragStartHandler> dndSources =
-      new HashMap<String, HasDragStartHandler>();
-  private static Map<String, HasDropHandler> dndTargets =
-      new HashMap<String, HasDropHandler>();
+  private static final Map<String, HasDragStartHandler> dndSources = Maps.newHashMap();
+  private static final Map<String, HasDropHandler> dndTargets = Maps.newHashMap();
+
+  private static final Map<String, JavaScriptObject> domHandlers = Maps.newHashMap();
 
   static {
     dnd = Features.supportsDnd() && Features.supportsDndEvents();
@@ -99,11 +220,383 @@ public class EventUtils {
     }
   }
 
+  public static boolean addDomHandler(final Widget widget, String type, String body) {
+    Assert.notNull(widget);
+    Assert.notEmpty(type);
+    Assert.notEmpty(body);
+
+    final JavaScriptObject handler = getDomHandler(body);
+    boolean ok = false;
+
+    if (BeeUtils.same(type, EVENT_TYPE_BLUR)) {
+      ok = widget instanceof HasBlurHandlers;
+      if (ok) {
+        ((HasBlurHandlers) widget).addBlurHandler(new BlurHandler() {
+          public void onBlur(BlurEvent event) {
+            dispatchDomHandler(widget, handler, event);
+          }
+        });
+      }
+
+    } else if (BeeUtils.same(type, EVENT_TYPE_CAN_PLAY_THROUGH)) {
+      ok = widget instanceof HasCanPlayThroughHandlers;
+      if (ok) {
+        ((HasCanPlayThroughHandlers) widget).addCanPlayThroughHandler(new CanPlayThroughHandler() {
+          public void onCanPlayThrough(CanPlayThroughEvent event) {
+            dispatchDomHandler(widget, handler, event);
+          }
+        });
+      }
+
+    } else if (BeeUtils.same(type, EVENT_TYPE_CHANGE)) {
+      ok = widget instanceof HasChangeHandlers;
+      if (ok) {
+        ((HasChangeHandlers) widget).addChangeHandler(new ChangeHandler() {
+          public void onChange(ChangeEvent event) {
+            dispatchDomHandler(widget, handler, event);
+          }
+        });
+      }
+ 
+    } else if (BeeUtils.same(type, EVENT_TYPE_CLICK)) {
+      ok = widget instanceof HasClickHandlers;
+      if (ok) {
+        ((HasClickHandlers) widget).addClickHandler(new ClickHandler() {
+          public void onClick(ClickEvent event) {
+            dispatchDomHandler(widget, handler, event);
+          }
+        });
+      }
+
+    } else if (BeeUtils.same(type, EVENT_TYPE_CONTEXT_MENU)) {
+      ok = widget instanceof HasContextMenuHandlers;
+      if (ok) {
+        ((HasContextMenuHandlers) widget).addContextMenuHandler(new ContextMenuHandler() {
+          public void onContextMenu(ContextMenuEvent event) {
+            dispatchDomHandler(widget, handler, event);
+          }
+        });
+      }
+
+    } else if (BeeUtils.same(type, EVENT_TYPE_DBL_CLICK)) {
+      ok = widget instanceof HasDoubleClickHandlers;
+      if (ok) {
+        ((HasDoubleClickHandlers) widget).addDoubleClickHandler(new DoubleClickHandler() {
+          public void onDoubleClick(DoubleClickEvent event) {
+            dispatchDomHandler(widget, handler, event);
+          }
+        });
+      }
+
+    } else if (BeeUtils.same(type, EVENT_TYPE_DRAG)) {
+      ok = widget instanceof HasDragHandlers;
+      if (ok) {
+        ((HasDragHandlers) widget).addDragHandler(new DragHandler() {
+          public void onDrag(DragEvent event) {
+            dispatchDomHandler(widget, handler, event);
+          }
+        });
+      }
+
+    } else if (BeeUtils.same(type, EVENT_TYPE_DRAG_END)) {
+      ok = widget instanceof HasDragEndHandlers;
+      if (ok) {
+        ((HasDragEndHandlers) widget).addDragEndHandler(new DragEndHandler() {
+          public void onDragEnd(DragEndEvent event) {
+            dispatchDomHandler(widget, handler, event);
+          }
+        });
+      }
+
+    } else if (BeeUtils.same(type, EVENT_TYPE_DRAG_ENTER)) {
+      ok = widget instanceof HasDragEnterHandlers;
+      if (ok) {
+        ((HasDragEndHandlers) widget).addDragEndHandler(new DragEndHandler() {
+          public void onDragEnd(DragEndEvent event) {
+            dispatchDomHandler(widget, handler, event);
+          }
+        });
+      }
+
+    } else if (BeeUtils.same(type, EVENT_TYPE_DRAG_LEAVE)) {
+      ok = widget instanceof HasDragLeaveHandlers;
+      if (ok) {
+        ((HasDragLeaveHandlers) widget).addDragLeaveHandler(new DragLeaveHandler() {
+          public void onDragLeave(DragLeaveEvent event) {
+            dispatchDomHandler(widget, handler, event);
+          }
+        });
+      }
+
+    } else if (BeeUtils.same(type, EVENT_TYPE_DRAG_OVER)) {
+      ok = widget instanceof HasDragOverHandlers;
+      if (ok) {
+        ((HasDragOverHandlers) widget).addDragOverHandler(new DragOverHandler() {
+          public void onDragOver(DragOverEvent event) {
+            dispatchDomHandler(widget, handler, event);
+          }
+        });
+      }
+
+    } else if (BeeUtils.same(type, EVENT_TYPE_DRAG_START)) {
+      ok = widget instanceof HasDragStartHandlers;
+      if (ok) {
+        ((HasDragStartHandlers) widget).addDragStartHandler(new DragStartHandler() {
+          public void onDragStart(DragStartEvent event) {
+            dispatchDomHandler(widget, handler, event);
+          }
+        });
+      }
+
+    } else if (BeeUtils.same(type, EVENT_TYPE_DROP)) {
+      ok = widget instanceof HasDropHandlers;
+      if (ok) {
+        ((HasDropHandlers) widget).addDropHandler(new DropHandler() {
+          public void onDrop(DropEvent event) {
+            dispatchDomHandler(widget, handler, event);
+          }
+        });
+      }
+
+    } else if (BeeUtils.same(type, EVENT_TYPE_ENDED)) {
+      ok = widget instanceof HasEndedHandlers;
+      if (ok) {
+        ((HasEndedHandlers) widget).addEndedHandler(new EndedHandler() {
+          public void onEnded(EndedEvent event) {
+            dispatchDomHandler(widget, handler, event);
+          }
+        });
+      }
+
+    } else if (BeeUtils.same(type, EVENT_TYPE_ERROR)) {
+      ok = widget instanceof HasErrorHandlers;
+      if (ok) {
+        ((HasErrorHandlers) widget).addErrorHandler(new ErrorHandler() {
+          public void onError(ErrorEvent event) {
+            dispatchDomHandler(widget, handler, event);
+          }
+        });
+      }
+
+    } else if (BeeUtils.same(type, EVENT_TYPE_FOCUS)) {
+      ok = widget instanceof HasFocusHandlers;
+      if (ok) {
+        ((HasFocusHandlers) widget).addFocusHandler(new FocusHandler() {
+          public void onFocus(FocusEvent event) {
+            dispatchDomHandler(widget, handler, event);
+          }
+        });
+      }
+
+    } else if (BeeUtils.same(type, EVENT_TYPE_GESTURE_CHANGE)) {
+      ok = widget instanceof HasGestureChangeHandlers;
+      if (ok) {
+        ((HasGestureChangeHandlers) widget).addGestureChangeHandler(new GestureChangeHandler() {
+          public void onGestureChange(GestureChangeEvent event) {
+            dispatchDomHandler(widget, handler, event);
+          }
+        });
+      }
+
+    } else if (BeeUtils.same(type, EVENT_TYPE_GESTURE_END)) {
+      ok = widget instanceof HasGestureEndHandlers;
+      if (ok) {
+        ((HasGestureEndHandlers) widget).addGestureEndHandler(new GestureEndHandler() {
+          public void onGestureEnd(GestureEndEvent event) {
+            dispatchDomHandler(widget, handler, event);
+          }
+        });
+      }
+
+    } else if (BeeUtils.same(type, EVENT_TYPE_GESTURE_START)) {
+      ok = widget instanceof HasGestureStartHandlers;
+      if (ok) {
+        ((HasGestureStartHandlers) widget).addGestureStartHandler(new GestureStartHandler() {
+          public void onGestureStart(GestureStartEvent event) {
+            dispatchDomHandler(widget, handler, event);
+          }
+        });
+      }
+
+    } else if (BeeUtils.same(type, EVENT_TYPE_KEY_DOWN)) {
+      ok = widget instanceof HasKeyDownHandlers;
+      if (ok) {
+        ((HasKeyDownHandlers) widget).addKeyDownHandler(new KeyDownHandler() {
+          public void onKeyDown(KeyDownEvent event) {
+            dispatchDomHandler(widget, handler, event);
+          }
+        });
+      }
+
+    } else if (BeeUtils.same(type, EVENT_TYPE_KEY_PRESS)) {
+      ok = widget instanceof HasKeyPressHandlers;
+      if (ok) {
+        ((HasKeyPressHandlers) widget).addKeyPressHandler(new KeyPressHandler() {
+          public void onKeyPress(KeyPressEvent event) {
+            dispatchDomHandler(widget, handler, event);
+          }
+        });
+      }
+
+    } else if (BeeUtils.same(type, EVENT_TYPE_KEY_UP)) {
+      ok = widget instanceof HasKeyUpHandlers;
+      if (ok) {
+        ((HasKeyUpHandlers) widget).addKeyUpHandler(new KeyUpHandler() {
+          public void onKeyUp(KeyUpEvent event) {
+            dispatchDomHandler(widget, handler, event);
+          }
+        });
+      }
+
+    } else if (BeeUtils.same(type, EVENT_TYPE_LOAD)) {
+      ok = widget instanceof HasLoadHandlers;
+      if (ok) {
+        ((HasLoadHandlers) widget).addLoadHandler(new LoadHandler() {
+          public void onLoad(LoadEvent event) {
+            dispatchDomHandler(widget, handler, event);
+          }
+        });
+      }
+
+    } else if (BeeUtils.same(type, EVENT_TYPE_LOSE_CAPTURE)) {
+      ok = widget instanceof HasLoseCaptureHandlers;
+      if (ok) {
+        ((HasLoseCaptureHandlers) widget).addLoseCaptureHandler(new LoseCaptureHandler() {
+          public void onLoseCapture(LoseCaptureEvent event) {
+            dispatchDomHandler(widget, handler, event);
+          }
+        });
+      }
+
+    } else if (BeeUtils.same(type, EVENT_TYPE_MOUSE_DOWN)) {
+      ok = widget instanceof HasMouseDownHandlers;
+      if (ok) {
+        ((HasMouseDownHandlers) widget).addMouseDownHandler(new MouseDownHandler() {
+          public void onMouseDown(MouseDownEvent event) {
+            dispatchDomHandler(widget, handler, event);
+          }
+        });
+      }
+
+    } else if (BeeUtils.same(type, EVENT_TYPE_MOUSE_MOVE)) {
+      ok = widget instanceof HasMouseMoveHandlers;
+      if (ok) {
+        ((HasMouseMoveHandlers) widget).addMouseMoveHandler(new MouseMoveHandler() {
+          public void onMouseMove(MouseMoveEvent event) {
+            dispatchDomHandler(widget, handler, event);
+          }
+        });
+      }
+
+    } else if (BeeUtils.same(type, EVENT_TYPE_MOUSE_OUT)) {
+      ok = widget instanceof HasMouseOutHandlers;
+      if (ok) {
+        ((HasMouseOutHandlers) widget).addMouseOutHandler(new MouseOutHandler() {
+          public void onMouseOut(MouseOutEvent event) {
+            dispatchDomHandler(widget, handler, event);
+          }
+        });
+      }
+
+    } else if (BeeUtils.same(type, EVENT_TYPE_MOUSE_OVER)) {
+      ok = widget instanceof HasMouseOverHandlers;
+      if (ok) {
+        ((HasMouseOverHandlers) widget).addMouseOverHandler(new MouseOverHandler() {
+          public void onMouseOver(MouseOverEvent event) {
+            dispatchDomHandler(widget, handler, event);
+          }
+        });
+      }
+
+    } else if (BeeUtils.same(type, EVENT_TYPE_MOUSE_UP)) {
+      ok = widget instanceof HasMouseUpHandlers;
+      if (ok) {
+        ((HasMouseUpHandlers) widget).addMouseUpHandler(new MouseUpHandler() {
+          public void onMouseUp(MouseUpEvent event) {
+            dispatchDomHandler(widget, handler, event);
+          }
+        });
+      }
+    
+    } else if (BeeUtils.same(type, EVENT_TYPE_MOUSE_WHEEL)) {
+      ok = widget instanceof HasMouseWheelHandlers;
+      if (ok) {
+        ((HasMouseWheelHandlers) widget).addMouseWheelHandler(new MouseWheelHandler() {
+          public void onMouseWheel(MouseWheelEvent event) {
+            dispatchDomHandler(widget, handler, event);
+          }
+        });
+      }
+
+    } else if (BeeUtils.same(type, EVENT_TYPE_PROGRESS)) {
+      ok = widget instanceof HasProgressHandlers;
+      if (ok) {
+        ((HasProgressHandlers) widget).addProgressHandler(new ProgressHandler() {
+          public void onProgress(ProgressEvent event) {
+            dispatchDomHandler(widget, handler, event);
+          }
+        });
+      }
+
+    } else if (BeeUtils.same(type, EVENT_TYPE_SCROLL)) {
+      ok = widget instanceof HasScrollHandlers;
+      if (ok) {
+        ((HasScrollHandlers) widget).addScrollHandler(new ScrollHandler() {
+          public void onScroll(ScrollEvent event) {
+            dispatchDomHandler(widget, handler, event);
+          }
+        });
+      }
+
+    } else if (BeeUtils.same(type, EVENT_TYPE_TOUCH_CANCEL)) {
+      ok = widget instanceof HasTouchCancelHandlers;
+      if (ok) {
+        ((HasTouchCancelHandlers) widget).addTouchCancelHandler(new TouchCancelHandler() {
+          public void onTouchCancel(TouchCancelEvent event) {
+            dispatchDomHandler(widget, handler, event);
+          }
+        });
+      }
+
+    } else if (BeeUtils.same(type, EVENT_TYPE_TOUCH_END)) {
+      ok = widget instanceof HasTouchEndHandlers;
+      if (ok) {
+        ((HasTouchEndHandlers) widget).addTouchEndHandler(new TouchEndHandler() {
+          public void onTouchEnd(TouchEndEvent event) {
+            dispatchDomHandler(widget, handler, event);
+          }
+        });
+      }
+
+    } else if (BeeUtils.same(type, EVENT_TYPE_TOUCH_MOVE)) {
+      ok = widget instanceof HasTouchMoveHandlers;
+      if (ok) {
+        ((HasTouchMoveHandlers) widget).addTouchMoveHandler(new TouchMoveHandler() {
+          public void onTouchMove(TouchMoveEvent event) {
+            dispatchDomHandler(widget, handler, event);
+          }
+        });
+      }
+
+    } else if (BeeUtils.same(type, EVENT_TYPE_TOUCH_START)) {
+      ok = widget instanceof HasTouchStartHandlers;
+      if (ok) {
+        ((HasTouchStartHandlers) widget).addTouchStartHandler(new TouchStartHandler() {
+          public void onTouchStart(TouchStartEvent event) {
+            dispatchDomHandler(widget, handler, event);
+          }
+        });
+      }
+    }
+
+    return ok;
+  }
+
   public static void blur(Element elem) {
     Assert.notNull(elem);
     elem.blur();
   }
-  
+
   public static NativeEvent createKeyDown(int keyCode) {
     return Document.get().createKeyDownEvent(false, false, false, false, keyCode);
   }
@@ -111,7 +604,7 @@ public class EventUtils {
   public static NativeEvent createKeyPress(int charCode) {
     return Document.get().createKeyPressEvent(false, false, false, false, charCode);
   }
-  
+
   public static NativeEvent createKeyUp(int keyCode) {
     return Document.get().createKeyUpEvent(false, false, false, false, keyCode);
   }
@@ -119,14 +612,14 @@ public class EventUtils {
   public static void eatEvent(HasNativeEvent ev) {
     Assert.notNull(ev);
     eatEvent(ev.getNativeEvent());
-  }  
-  
+  }
+
   public static void eatEvent(NativeEvent ev) {
     Assert.notNull(ev);
     ev.preventDefault();
     ev.stopPropagation();
   }
-  
+
   public static boolean equalsOrIsChild(Element parent, EventTarget target) {
     if (parent == null || target == null) {
       return false;
@@ -143,7 +636,7 @@ public class EventUtils {
     Assert.notNull(target);
     fireKeyDown(Element.as(target), keyCode);
   }
-  
+
   public static void fireKeyPress(Element target, int charCode) {
     Assert.notNull(target);
     target.dispatchEvent(createKeyPress(charCode));
@@ -153,7 +646,7 @@ public class EventUtils {
     Assert.notNull(target);
     fireKeyPress(Element.as(target), charCode);
   }
-  
+
   public static void fireKeyUp(Element target, int keyCode) {
     Assert.notNull(target);
     target.dispatchEvent(createKeyUp(keyCode));
@@ -163,7 +656,7 @@ public class EventUtils {
     Assert.notNull(target);
     fireKeyUp(Element.as(target), keyCode);
   }
-  
+
   public static void focus(Element elem) {
     Assert.notNull(elem);
     elem.focus();
@@ -196,12 +689,12 @@ public class EventUtils {
     Assert.notNull(ev);
     return getEventTargetElement(ev.getNativeEvent());
   }
-  
+
   public static Element getEventTargetElement(NativeEvent ev) {
     Assert.notNull(ev);
     return Element.as(ev.getEventTarget());
   }
-  
+
   public static String getEventTargetId(NativeEvent ev) {
     Assert.notNull(ev);
     EventTarget target = ev.getEventTarget();
@@ -247,7 +740,7 @@ public class EventUtils {
   public static boolean isChange(String type) {
     return isEventType(type, EVENT_TYPE_CHANGE);
   }
-  
+
   public static boolean isClick(NativeEvent ev) {
     if (ev == null) {
       return false;
@@ -268,7 +761,7 @@ public class EventUtils {
   public static boolean isFocus(String type) {
     return isEventType(type, EVENT_TYPE_FOCUS);
   }
-  
+
   public static boolean isInputElement(EventTarget et) {
     return isTargetTagName(et, DomUtils.TAG_INPUT);
   }
@@ -296,7 +789,7 @@ public class EventUtils {
   public static boolean isKeyUp(String type) {
     return isEventType(type, EVENT_TYPE_KEY_UP);
   }
-  
+
   public static boolean isMouseDown(String type) {
     return isEventType(type, EVENT_TYPE_MOUSE_DOWN);
   }
@@ -304,7 +797,7 @@ public class EventUtils {
   public static boolean isMouseMove(String type) {
     return isEventType(type, EVENT_TYPE_MOUSE_MOVE);
   }
-  
+
   public static boolean isMouseOut(String type) {
     return isEventType(type, EVENT_TYPE_MOUSE_OUT);
   }
@@ -312,11 +805,11 @@ public class EventUtils {
   public static boolean isMouseOver(String type) {
     return isEventType(type, EVENT_TYPE_MOUSE_OVER);
   }
-  
+
   public static boolean isMouseUp(String type) {
     return isEventType(type, EVENT_TYPE_MOUSE_UP);
   }
-  
+
   public static boolean isTargetId(EventTarget et, String id) {
     if (et == null || BeeUtils.isEmpty(id)) {
       return false;
@@ -531,12 +1024,12 @@ public class EventUtils {
     }
     return sb.toString();
   }
-  
+
   public static String transformMediaError(MediaError error) {
     if (error == null) {
       return BeeConst.STRING_EMPTY;
     }
-    
+
     switch (error.getCode()) {
       case MediaError.MEDIA_ERR_ABORTED:
         return "playback aborted";
@@ -549,6 +1042,10 @@ public class EventUtils {
     }
     return "unknown error";
   }
+
+  private static JavaScriptObject createDomHandler(String body) {
+    return JsUtils.createFunction("event, target, row, rowId, rowVersion", body);
+  };
 
   private static boolean dispatchDnd(DndEvent evt) {
     boolean ret = false;
@@ -629,6 +1126,58 @@ public class EventUtils {
       }
     }
     return ret;
+  }
+
+  private static void dispatchDomHandler(Widget widget, JavaScriptObject handler,
+      HasNativeEvent event) {
+    JavaScriptObject row;
+    double rowId;
+    double rowVersion;
+    
+    FormView form = UiHelper.getForm(widget);
+    IsRow data = (form == null) ? null : form.getRowData();
+    
+    if (data == null) {
+      row = null;
+      rowId = BeeConst.UNDEF;
+      rowVersion = BeeConst.UNDEF;
+    } else {
+      row = form.getRowJso();
+      rowId = data.getId();
+      rowVersion = data.getVersion();
+    }
+
+    String errorMessage = evalDomHandler(handler, event.getNativeEvent(),
+        event.getNativeEvent().getEventTarget(), row, rowId, rowVersion);
+    if (!BeeUtils.isEmpty(errorMessage)) {
+      BeeKeeper.getLog().severe(errorMessage);
+      BeeKeeper.getScreen().notifySevere(errorMessage);
+    }
+  }
+
+  private static String domHandlerKey(String body) {
+    return body;
+  }
+
+  private static native String evalDomHandler(JavaScriptObject handler, NativeEvent event,
+      JavaScriptObject target, JavaScriptObject row, double rowId, double rowVersion) /*-{
+    try {
+      handler(event, target, row, rowId, rowVersion);
+      return null;
+    } catch (err) {
+      return String(err);
+    }
+  }-*/;
+
+  private static JavaScriptObject getDomHandler(String body) {
+    String key = domHandlerKey(body);
+    JavaScriptObject handler = domHandlers.get(key);
+
+    if (handler == null) {
+      handler = createDomHandler(body);
+      domHandlers.put(key, handler);
+    }
+    return handler;
   }
 
   private static native void initDnd() /*-{

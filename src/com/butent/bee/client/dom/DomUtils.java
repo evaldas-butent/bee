@@ -133,11 +133,11 @@ public class DomUtils {
 
   public static final String VALUE_TRUE = "true";
 
+  public static final int MAX_GENERATIONS = 1000;
+
   private static final String DEFAULT_NAME_PREFIX = "b";
 
   private static final String ID_SEPARATOR = "-";
-
-  private static final int MAX_GENERATIONS = 100;
 
   private static final String ALL_TAGS = "*";
 
@@ -1115,6 +1115,10 @@ public class DomUtils {
     return getValueInt(obj.getElement());
   }
 
+  public static Widget getWidget(String id) {
+    return getWidget(BeeKeeper.getScreen().getScreenPanel(), id);
+  }
+  
   public static Widget getWidget(Widget root, Element elem) {
     if (root == null || elem == null) {
       return null;

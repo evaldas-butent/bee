@@ -302,10 +302,16 @@ public class Global implements Module {
     initDataExplorer();
     initVars();
     initImages();
+    
+    exportMethods();
   }
 
   public void start() {
   }
+  
+  private native void exportMethods() /*-{
+    $wnd.Bee_updateForm = $entry(@com.butent.bee.client.ui.UiHelper::updateForm(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;));
+  }-*/;
   
   private void initCache() {
     BeeKeeper.getBus().registerDataHandler(getCache());

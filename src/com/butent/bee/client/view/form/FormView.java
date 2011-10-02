@@ -1,5 +1,7 @@
 package com.butent.bee.client.view.form;
 
+import com.google.gwt.core.client.JavaScriptObject;
+
 import com.butent.bee.client.data.HasDataTable;
 import com.butent.bee.client.dialog.NotificationListener;
 import com.butent.bee.client.ui.FormDescription;
@@ -33,6 +35,8 @@ public interface FormView extends View, NotificationListener,
 
   IsRow getRowData();
   
+  JavaScriptObject getRowJso();
+  
   boolean isRowEditable(boolean warn);
   
   void prepareForInsert();
@@ -42,4 +46,6 @@ public interface FormView extends View, NotificationListener,
   void start(int rowCount);
 
   void startNewRow();
+  
+  void updateCell(String columnId, String newValue);  
 }

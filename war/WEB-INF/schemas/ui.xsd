@@ -205,5 +205,54 @@
       <xs:enumeration value="undo" />
     </xs:restriction>
   </xs:simpleType>
+  
+  <xs:simpleType name="eventType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="blur" />
+      <xs:enumeration value="canplaythrough" />
+      <xs:enumeration value="change" />
+      <xs:enumeration value="click" />
+      <xs:enumeration value="contextmenu" />
+      <xs:enumeration value="dblclick" />
+      <xs:enumeration value="drag" />
+      <xs:enumeration value="dragend" />
+      <xs:enumeration value="dragenter" />
+      <xs:enumeration value="dragleave" />
+      <xs:enumeration value="dragover" />
+      <xs:enumeration value="dragstart" />
+      <xs:enumeration value="drop" />
+      <xs:enumeration value="ended" />
+      <xs:enumeration value="error" />
+      <xs:enumeration value="focus" />
+      <xs:enumeration value="gesturechange" />
+      <xs:enumeration value="gestureend" />
+      <xs:enumeration value="gesturestart" />
+      <xs:enumeration value="keydown" />
+      <xs:enumeration value="keypress" />
+      <xs:enumeration value="keyup" />
+      <xs:enumeration value="load" />
+      <xs:enumeration value="losecapture" />
+      <xs:enumeration value="mousedown" />
+      <xs:enumeration value="mousemove" />
+      <xs:enumeration value="mouseout" />
+      <xs:enumeration value="mouseover" />
+      <xs:enumeration value="mouseup" />
+      <xs:enumeration value="mousewheel" />
+      <xs:enumeration value="progress" />
+      <xs:enumeration value="scroll" />
+      <xs:enumeration value="touchcancel" />
+      <xs:enumeration value="touchend" />
+      <xs:enumeration value="touchmove" />
+      <xs:enumeration value="touchstart" />
+    </xs:restriction>
+  </xs:simpleType>
+  
+  <xs:complexType name="eventHandler">
+    <xs:simpleContent>
+      <xs:extension base="xs:string">
+        <xs:attribute name="event" type="bee:eventType" use="required" />
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
 
 </xs:schema>

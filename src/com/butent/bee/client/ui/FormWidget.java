@@ -36,6 +36,7 @@ import com.butent.bee.client.dom.Edges;
 import com.butent.bee.client.dom.Features;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.dom.StyleUtils.ScrollBars;
+import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.grid.FlexTable;
 import com.butent.bee.client.grid.HtmlTable;
@@ -317,13 +318,19 @@ public enum FormWidget {
   private static final String ATTR_VOLUME = "volume";
 
   private static final String ATTR_SOURCE = "source";
+  private static final String ATTR_NAME = "name";
+
   private static final String ATTR_REL_SOURCE = "relSource";
   private static final String ATTR_REL_VIEW = "relView";
   private static final String ATTR_REL_COLUMN = "relColumn";
 
   private static final String ATTR_OPTIONS = "options";
 
+  private static final String ATTR_EVENT = "event";
+  
   private static final String TAG_DYN_STYLE = "dynStyle";
+  private static final String TAG_HANDLER = "handler";
+
   private static final String TAG_CALC = "calc";
   private static final String TAG_VALIDATION = "validation";
   private static final String TAG_EDITABLE = "editable";
@@ -350,7 +357,7 @@ public enum FormWidget {
   private static final String TAG_DOWN_HOVERING_FACE = "downHoveringFace";
   private static final String TAG_UP_DISABLED_FACE = "upDisabledFace";
   private static final String TAG_DOWN_DISABLED_FACE = "downDisabledFace";
-
+  
   public static FormWidget getByTagName(String tagName) {
     if (!BeeUtils.isEmpty(tagName)) {
       for (FormWidget widget : FormWidget.values()) {
@@ -504,7 +511,11 @@ public enum FormWidget {
         break;
 
       case GRID:
-        widget = new ChildGrid(attributes.get(ATTR_REL_VIEW), attributes.get(ATTR_REL_COLUMN));
+        name = attributes.get(ATTR_NAME);
+        String relColumn = attributes.get(ATTR_REL_COLUMN);
+        if (!BeeUtils.isEmpty(name) && !BeeUtils.isEmpty(relColumn)) {
+          widget = new ChildGrid(name, relColumn);
+        }
         break;
 
       case HEADER_CONTENT_FOOTER:
@@ -896,6 +907,9 @@ public enum FormWidget {
           if (csd != null) {
             dynStyles.add(csd);
           }
+          
+        } else if (BeeUtils.same(childTag, TAG_HANDLER)) {
+          addHandler(widget, child.getAttribute(ATTR_EVENT), XmlUtils.getText(child));
 
         } else if (BeeUtils.same(childTag, TAG_CALC)) {
           calc = XmlUtils.getCalculation(child);
@@ -1111,6 +1125,27 @@ public enum FormWidget {
       case SVG:
       default:
         BeeKeeper.getLog().warning("update display:", getTagName(), "not supported");
+    }
+  }
+  
+  private void addHandler(Widget widget, String event, String handler) {
+    Assert.notNull(widget);
+    
+    if (BeeUtils.isEmpty(event)) {
+      BeeKeeper.getLog().warning("add handler:", BeeUtils.getClassName(widget.getClass()),
+          DomUtils.getId(widget), "event type not specified");
+      return;
+    }
+    if (BeeUtils.isEmpty(handler)) {
+      BeeKeeper.getLog().warning("add handler:", BeeUtils.getClassName(widget.getClass()),
+          DomUtils.getId(widget), event, "event handler not specified");
+      return;
+    }
+    
+    boolean ok = EventUtils.addDomHandler(widget, event, handler);
+    if (!ok) {
+      BeeKeeper.getLog().warning("add handler:", BeeUtils.getClassName(widget.getClass()),
+          DomUtils.getId(widget), event, "event not supported");
     }
   }
 

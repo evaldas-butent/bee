@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <BeeForm xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.butent.com/bee ../../schemas/form.xsd"
-  name="Data" caption="Data Binding" viewName="DataTypes">
+  name="Data" caption="Data Binding, Events" viewName="DataTypes">
   
   <FlexTable borderWidth="1" cellPadding="5" style="borderCollapse: collapse;">
     <row>
@@ -89,7 +89,14 @@
 
     <row>
       <cell>
-        <InputDecimal scale="3" source="Numeric" />
+        <InputDecimal scale="3" source="Numeric">
+          <handler event="mousewheel">
+            var v = parseFloat(target.value);
+            if (v > 0) {
+              $wnd.Bee_updateForm(target.id, "Double", String(row.Double + v));
+            }
+          </handler>
+        </InputDecimal>
       </cell>
       <cell>
         <DecimalLabel scale="0" source="Numeric"/>
@@ -154,7 +161,11 @@
         </ListBox>
       </cell>
       <cell>
-        <Button source="Char" />
+        <Button source="Char">
+          <handler event="click">
+            alert(event.type + ", " + target.id + ", " + rowId + ", " + rowVersion);
+          </handler>
+        </Button>
       </cell>
     </row>
 

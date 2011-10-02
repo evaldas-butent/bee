@@ -25,7 +25,7 @@ public class EvalHelper {
 
     JavaScriptObject jso = JavaScriptObject.createObject();
     for (int i = 0; i < columns.size(); i++) {
-      JsUtils.setPropertyToNull(jso, columns.get(i).getLabel());
+      JsUtils.setPropertyToNull(jso, columns.get(i).getId());
     }
     return jso;
   }
@@ -90,7 +90,7 @@ public class EvalHelper {
 
     for (int i = 0; i < columns.size(); i++) {
       IsColumn column = columns.get(i);
-      setJsoProperty(jso, column.getLabel(), column.getType(), row.getString(i));
+      setJsoProperty(jso, column.getId(), column.getType(), row.getString(i));
     }
   }
   

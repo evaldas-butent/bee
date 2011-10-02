@@ -52,7 +52,7 @@
     
     <layer left="1" leftUnit="%" right="1" rightUnit="%"
            top="300" topUnit="px" bottom="1" bottomUnit="ex">
-      <Grid relView="UserRoles" relColumn="User" />
+      <Grid name="UserRoles" relColumn="User" />
     </layer>
     
   </LayoutPanel>

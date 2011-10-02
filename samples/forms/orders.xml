@@ -61,7 +61,7 @@
 <Label html="Prekės"/>
 </layer>
 <layer height="206" left="98" top="244" width="626">
-<Grid relColumn="OrderID" relView="OrderItemsView"/>
+<Grid relColumn="OrderID" name="OrderItemsView"/>
 </layer>
 </AbsolutePanel>
 </BeeForm>

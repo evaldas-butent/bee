@@ -20,6 +20,7 @@ public class WidgetDescription implements HasInfo {
 
   private static final String ATTR_MIN_VALUE = "minValue";
   private static final String ATTR_MAX_VALUE = "maxValue";
+  private static final String ATTR_REQUIRED = "required";
 
   private static final String ATTR_REL_SOURCE = "relSource";
   private static final String ATTR_REL_VIEW = "relView";
@@ -46,6 +47,7 @@ public class WidgetDescription implements HasInfo {
 
   private String minValue = null;
   private String maxValue = null;
+  private Boolean required = null;
 
   public WidgetDescription(FormWidget widgetType, String widgetId) {
     this.widgetType = widgetType;
@@ -92,7 +94,8 @@ public class WidgetDescription implements HasInfo {
         "Rel View", getRelView(),
         "Rel Column", getRelColumn(),
         "Min Value", getMinValue(),
-        "Max Value", getMaxValue());
+        "Max Value", getMaxValue(),
+        "Required", isRequired());
 
     if (getValidation() != null) {
       PropertyUtils.appendChildrenToProperties(info, "Validation", getValidation().getInfo());
@@ -169,6 +172,10 @@ public class WidgetDescription implements HasInfo {
     return readOnly;
   }
 
+  public Boolean isRequired() {
+    return required;
+  }
+
   public void setAttributes(Map<String, String> attributes) {
     if (attributes == null || attributes.isEmpty()) {
       return;
@@ -192,6 +199,8 @@ public class WidgetDescription implements HasInfo {
         setMinValue(value.trim());
       } else if (BeeUtils.same(key, ATTR_MAX_VALUE)) {
         setMaxValue(value.trim());
+      } else if (BeeUtils.same(key, ATTR_REQUIRED)) {
+        setRequired(BeeUtils.toBooleanOrNull(value));
 
       } else if (BeeUtils.same(key, ATTR_REL_SOURCE)) {
         setRelSource(value.trim());
@@ -245,6 +254,10 @@ public class WidgetDescription implements HasInfo {
 
   public void setRelView(String relView) {
     this.relView = relView;
+  }
+
+  public void setRequired(Boolean required) {
+    this.required = required;
   }
 
   public void setSource(String source) {

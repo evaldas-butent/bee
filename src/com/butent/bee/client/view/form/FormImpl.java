@@ -2,6 +2,7 @@ package com.butent.bee.client.view.form;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.cellview.client.LoadingStateChangeEvent;
@@ -27,6 +28,7 @@ import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormFactory.WidgetCallback;
 import com.butent.bee.client.ui.FormWidget;
 import com.butent.bee.client.ui.WidgetDescription;
+import com.butent.bee.client.utils.EvalHelper;
 import com.butent.bee.client.utils.Evaluator;
 import com.butent.bee.client.view.add.AddEndEvent;
 import com.butent.bee.client.view.add.AddStartEvent;
@@ -251,6 +253,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
 
   private IsRow rowData = null;
   private IsRow rowBuffer = null;
+  private JavaScriptObject rowJso = null;
 
   private boolean readOnly = false;
 
@@ -387,6 +390,19 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     return rowData;
   }
 
+  public JavaScriptObject getRowJso() {
+    if (!hasData() || getRowData() == null) {
+      return null;
+    }
+    
+    if (rowJso == null) {
+      setRowJso(EvalHelper.createJso(getDataColumns()));
+    }
+    EvalHelper.toJso(getDataColumns(), getRowData(), rowJso);
+    
+    return rowJso;
+  }
+  
   public SelectionModel<? super IsRow> getSelectionModel() {
     return null;
   }
@@ -713,6 +729,35 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
   public void updateActiveRow(List<? extends IsRow> values) {
   }
   
+  public void updateCell(String columnId, String newValue) {
+    Assert.notEmpty(columnId);
+    
+    IsRow rowValue = getRowData();
+    if (rowValue == null) {
+      notifySevere("update cell:", columnId, newValue, "form has no data");
+      return;
+    }
+
+    int index = getDataIndex(columnId);
+    if (BeeConst.isUndef(index)) {
+      notifySevere("update cell:", columnId, newValue, "column not found");
+      return;
+    }
+
+    String oldValue = rowValue.getString(index);
+
+    if (!BeeUtils.equalsTrimRight(oldValue, newValue)) {
+      if (isAdding()) {
+        rowValue.setValue(index, newValue);
+        refreshEditableWidget(index);
+        refreshDisplayWidgets();
+      } else {
+        fireEvent(new ReadyForUpdateEvent(rowValue, getDataColumns().get(index),
+            oldValue, newValue, isForeign(columnId)));
+      }
+    }
+  }
+  
   private boolean checkNewRow(IsRow row) {
     boolean ok = true;
     int count = 0;
@@ -984,6 +1029,14 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     }
   }
 
+  private void refreshEditableWidget(int dataIndex) {
+    for (EditableWidget editableWidget : getEditableWidgets()) {
+      if (editableWidget.getIndexForUpdate() == dataIndex) {
+        editableWidget.setValue(getRowData());
+      }
+    }
+  }
+  
   private void refreshEditableWidgets() {
     boolean rowEnabled = isRowEditable(false);
 
@@ -1055,6 +1108,10 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
 
   private void setRowEditable(Evaluator rowEditable) {
     this.rowEditable = rowEditable;
+  }
+
+  private void setRowJso(JavaScriptObject rowJso) {
+    this.rowJso = rowJso;
   }
 
   private void setVisibleRow(int index, boolean forceRangeChangeEvent) {
