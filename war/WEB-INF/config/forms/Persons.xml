@@ -7,49 +7,59 @@
   name="Persons" viewName="Persons" caption="Asmenys">
 
   <LayoutPanel>
-    <layer left="1" leftUnit="%" right="1" rightUnit="%" top="10" topUnit="px" height="60" heightUnit="%">
-      <FlexTable cellSpacing="10">
-        <row>
-          <cell><Label html="Vardas" /></cell>
-          <cell><InputText source="FirstName" /></cell>
-          <cell><Label html="Pavardė" /></cell>
-          <cell><InputText source="LastName" /></cell>
-        </row>
-        <row>
-          <cell><Label html="Pareigos" /></cell>
-          <cell><InputText source="Position" /></cell>
-          <cell><Label html="Asm. kodas" /></cell>
-          <cell><InputText source="Code" /></cell>
-        </row>
-        <row>
-          <cell><Label html="Telefonai" /></cell>
-          <cell><InputText source="Phone" /></cell>
-          <cell><Label html="El. paštas" /></cell>
-          <cell><InputText source="Email" /></cell>
-        </row>
-        <row>
-          <cell><Label html="Adresas" /></cell>
-          <cell colSpan="3"><InputText source="Address" style="width:100%" /></cell>
-        </row>
-        <row>
-          <cell><Label html="Pašto indeksas" /></cell>
-          <cell><InputText source="PostIndex" /></cell>
-          <cell><Label html="Interneto svetainė" /></cell>
-          <cell><InputText source="Website" /></cell>
-        </row>
-        <row>
-          <cell><Label html="Miestas" /></cell>
-          <cell>
-            <DataSelector source="CityName" relSource="City" relView="Cities" relColumn="Name" />
-          </cell>
-          <cell><Label html="Šalis" /></cell>
-          <cell><InputText source="CountryName" readOnly="true" /></cell>
-        </row>
-        <row>
-          <cell><Label html="Atstovaujama įmonė" /></cell>
-          <cell colSpan="3"><InputText source="Name" style="width:100%" /></cell>
-        </row>
-      </FlexTable>
+    <layer left="1" leftUnit="%" right="1" rightUnit="%" top="1" topUnit="%" height="60" heightUnit="%">
+      <ScrollPanel>
+        <FlexTable cellSpacing="10" style="width:100%">
+          <row>
+            <cell><Label html="Vardas" /></cell>
+            <cell><InputText style="width:100%" source="FirstName" /></cell>
+            <cell><Label html="Pavardė" horizontalAlignment="right" /></cell>
+            <cell><InputText style="width:100%" source="LastName" /></cell>
+          </row>
+          <row>
+            <cell><Label html="Pareigos" /></cell>
+            <cell><InputText source="Position" style="width:100%" /></cell>
+            <cell><Label html="Asm. kodas" horizontalAlignment="right" /></cell>
+            <cell><InputText source="Code" style="width:100%" /></cell>
+          </row>
+          <row>
+            <cell colSpan="4"><HtmlLabel html="KONTAKTINĖ INFORMACIJA&lt;hr&gt;" style="color:green" /></cell>
+          </row>
+          <row>
+            <cell><Label html="Telefonai" /></cell>
+            <cell><InputText source="Phone" style="width:100%" /></cell>
+            <cell><Label html="El. paštas" horizontalAlignment="right" /></cell>
+            <cell><InputText source="Email" style="width:100%" /></cell>
+          </row>
+          <row>
+            <cell><Label html="Adresas" /></cell>
+            <cell colSpan="3"><InputText source="Address" style="width:100%" /></cell>
+          </row>
+          <row>
+            <cell><Label html="Pašto indeksas" /></cell>
+            <cell><InputText source="PostIndex" style="width:100%" /></cell>
+            <cell><Label html="Interneto svetainė" horizontalAlignment="right" /></cell>
+            <cell><InputText source="Website" style="width:100%" /></cell>
+          </row>
+          <row>
+            <cell><Label html="Miestas" /></cell>
+            <cell>
+              <DataSelector source="CityName" relSource="City" relView="Cities" relColumn="Name"
+              style="width:100%" />
+            </cell>
+            <cell><Label html="Šalis" horizontalAlignment="right" /></cell>
+            <cell><TextLabel source="CountryName" /></cell>
+          </row>
+          <row>
+            <cell><Label html="Atstovaujama įmonė" /></cell>
+            <cell colSpan="3"><InputText source="Name" style="width:100%" /></cell>
+          </row>
+        </FlexTable>
+      </ScrollPanel>
+    </layer>
+
+    <layer left="1" leftUnit="%" right="1" rightUnit="%" top="61" topUnit="%" bottom="1" bottomUnit="%">
+      <Grid name="CompanyPersons" relColumn="Company" />
     </layer>
   </LayoutPanel>
 </BeeForm>  

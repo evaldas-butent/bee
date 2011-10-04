@@ -1,0 +1,91 @@
+<server xmlns="urn:jboss:domain:1.0">
+    <profile>
+        <subsystem xmlns="urn:jboss:domain:datasources:1.0">
+            <datasources>
+                <datasource jndi-name="jdbc/pg" pool-name="pg_Pool" enabled="true" jta="true" use-java-context="true" use-ccm="true">
+                    <connection-url>
+                        jdbc:postgresql://127.0.0.1:5432/postgres
+                    </connection-url>
+                    <driver>
+                        postgresql-9.1-901.jdbc4.jar
+                    </driver>
+                    <security>
+                        <user-name>
+                            postgres
+                        </user-name>
+                        <password>
+                            admin
+                        </password>
+                    </security>
+                </datasource>
+                <datasource jndi-name="jdbc/my" pool-name="my_Pool" enabled="true" jta="true" use-java-context="true" use-ccm="true">
+                    <connection-url>
+                        jdbc:mysql://192.168.0.245:3306/pypas?characterEncoding=utf8
+                    </connection-url>
+                    <driver>
+                        mysql-connector-java-5.1.17-bin.jar
+                    </driver>
+                    <security>
+                        <user-name>
+                            root
+                        </user-name>
+                        <password>
+                            root
+                        </password>
+                    </security>
+                </datasource>
+                <datasource jndi-name="jdbc/ms" pool-name="ms_Pool" enabled="true" jta="true" use-java-context="true" use-ccm="true">
+                    <connection-url>
+                        jdbc:sqlserver://192.168.0.211\SQLEXPRESS;databaseName=pypas
+                    </connection-url>
+                    <driver>
+                        sqljdbc4.jar
+                    </driver>
+                    <security>
+                        <user-name>
+                            sa
+                        </user-name>
+                        <password>
+                            butent9
+                        </password>
+                    </security>
+                </datasource>
+                <datasource jndi-name="jdbc/OracleXE" pool-name="OracleXE_Pool" enabled="true" jta="true" use-java-context="true" use-ccm="true">
+                    <connection-url>
+                        jdbc:oracle:thin:@192.168.0.245:1521:XE
+                    </connection-url>
+                    <driver>
+                        ojdbc6.jar
+                    </driver>
+                    <security>
+                        <user-name>
+                            user
+                        </user-name>
+                        <password>
+                            user
+                        </password>
+                    </security>
+                </datasource>
+            </datasources>
+        </subsystem>
+        <subsystem xmlns="urn:jboss:domain:security:1.0">
+            <security-domains>
+                <security-domain name="DBPolicy">
+                    <authentication>
+                        <login-module code="Database" flag="required">
+                            <module-option name="dsJndiName" value="jdbc/my"/>
+                            <module-option name="principalsQuery" value="select Password from Users where Login=?"/>
+                            <module-option name="rolesQuery" value="select 'BEEUser', 'Roles' from Users where Login=?"/>
+                        </login-module>
+                    </authentication>
+                </security-domain>
+                <security-domain name="other" cache-type="default">
+                    <authentication>
+                        <login-module code="UsersRoles" flag="required"/>
+                    </authentication>
+                </security-domain>
+            </security-domains>
+        </subsystem>
+    </profile>
+</server>
+        

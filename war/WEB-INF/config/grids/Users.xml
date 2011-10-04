@@ -10,6 +10,7 @@
       <BeeDataColumn name="LasName" source="LastName" caption="Pavardė" />
       <BeeDataColumn name="Position" source="Position" caption="Pareigos" />
       <BeeDataColumn name="CompanyName" source="CompanyName" caption="Įmonė" />
+      <BeeDataColumn name="LastLogin" source="LastLogin" caption="Paskutinis prisijungimas" />
     </columns>
   </BeeGrid>
 </BeeGrids>

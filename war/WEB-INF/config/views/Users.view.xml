@@ -8,9 +8,11 @@
   <BeeColumns>
     <BeeColumn name="Login" expression="Login" />
     <BeeColumn name="Password" expression="Password" />
+    <BeeColumn name="LastLogin" expression="LastLogin" />
     <BeeColumn name="FirstName" expression="Person>FirstName" />
     <BeeColumn name="LastName" expression="Person>LastName" />
     <BeeColumn name="Position" expression="Person>Position" />
+    <BeeColumn name="DateOfBirth" expression="Person>DateOfBirth" />
     <BeeColumn name="Properties" expression="Properties" />
     <BeeColumn name="Company" expression="Person>Company" />
     <BeeColumn name="CompanyName" expression="Person>Company>Name" />

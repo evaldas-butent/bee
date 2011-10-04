@@ -237,7 +237,10 @@ public abstract class ComparisonFilter extends Filter {
         regexp.append(".");
       } else {
         for (char c : s.toCharArray()) {
-          regexp.append("\\").append(c);
+          if (String.valueOf(c).matches("\\W")) {
+            regexp.append("\\");
+          }
+          regexp.append(c);
         }
       }
     }

@@ -12,5 +12,6 @@
     <BeeField name="FirstName" type="STRING" precision="30" />
     <BeeField name="LastName" type="STRING" precision="30" />
     <BeeField name="Position" type="STRING" precision="50" />
+    <BeeField name="DateOfBirth" type="DATE" />
   </BeeFields>
 </BeeTable>

@@ -11,5 +11,6 @@
     <BeeField name="Password" type="STRING" precision="64" />
     <BeeField name="Properties" type="TEXT" />
     <BeeField name="Person" type="LONG" unique="true" relation="Persons" />
+    <BeeField name="LastLogin" type="DATETIME" />
   </BeeFields>
 </BeeTable>

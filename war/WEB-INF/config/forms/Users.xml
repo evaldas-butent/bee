@@ -7,53 +7,43 @@
   name="Users" viewName="Users" caption="Vartotojai">
   
   <LayoutPanel>
-    <layer left="1" leftUnit="%" width="50" widthUnit="%"
-           top="10" topUnit="px" height="300" heightUnit="px">
-      <FlexTable cellSpacing="10">
+    <layer left="1" leftUnit="%" right="1" rightUnit="%" top="1" topUnit="%" bottom="41" bottomUnit="%">
+      <ScrollPanel>
+      <FlexTable cellSpacing="10" style="width:100%">
         <row>
-          <cell><text>Prisijungimo vardas</text></cell>
-          <cell><InputText source="Login" /></cell>
-        </row>
-        <row>
-          <cell colSpan="2">
+          <cell><Label html="Prisijungimo vardas" /></cell>
+          <cell><InputText source="Login" style="width:100%" /></cell>
+          <cell horizontalAlignment="center" colSpan="2">
             <Button html="Pakeisti slaptažodį" service="ChangePassword" />
           </cell>
+          <cell><Label html="Parametrai" /></cell>
         </row>
         <row>
           <cell><Label html="Vardas" /></cell>
-          <cell><InputText source="FirstName" /></cell>
-        </row>
-        <row>
-          <cell><Label html="Pavardė" /></cell>
-          <cell><InputText source="LastName" /></cell>
+          <cell><InputText source="FirstName" style="width:100%" /></cell>
+          <cell><Label html="Pavardė" horizontalAlignment="right" /></cell>
+          <cell><InputText source="LastName" style="width:100%" /></cell>
+          <cell rowSpan="3"><InputArea source="Properties" style="width:100%; height:100%" /></cell>
         </row>
         <row>
           <cell><Label html="Pareigos" /></cell>
-          <cell><InputText source="Position" /></cell>
+          <cell><InputText source="Position" style="width:100%" /></cell>
+          <cell><Label html="Gimimo data" horizontalAlignment="right" /></cell>
+          <cell><InputDate source="DateOfBirth" style="width:100%" /></cell>
         </row>
         <row>
           <cell><Label html="Įmonė" /></cell>
-          <cell>
-            <DataSelector source="CompanyName" relSource="Company" relView="Companies" relColumn="Name" />
+          <cell colSpan="3">
+            <DataSelector source="CompanyName" relSource="Company" relView="Companies" relColumn="Name"
+             style="width:100%" />
           </cell>
         </row>
       </FlexTable>
-    </layer>
-    
-    <layer left="55" leftUnit="%" right="1" rightUnit="%"
-            top="10" topUnit="px" height="25" heightUnit="px">
-      <Label html="Properties" horizontalAlignment="center" />
+      </ScrollPanel>
     </layer>
 
-    <layer left="55" leftUnit="%" right="1" rightUnit="%"
-            top="40" topUnit="px" height="240" heightUnit="px">
-      <InputArea source="Properties" />
-    </layer>
-    
-    <layer left="1" leftUnit="%" right="1" rightUnit="%"
-           top="300" topUnit="px" bottom="1" bottomUnit="ex">
+    <layer left="1" leftUnit="%" width="30" widthUnit="%" top="60" topUnit="%" bottom="1" bottomUnit="%">
       <Grid name="UserRoles" relColumn="User" />
     </layer>
-    
   </LayoutPanel>
 </BeeForm>  

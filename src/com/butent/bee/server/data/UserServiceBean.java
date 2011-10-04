@@ -10,6 +10,7 @@ import com.butent.bee.server.i18n.I18nUtils;
 import com.butent.bee.server.i18n.Localized;
 import com.butent.bee.server.sql.SqlBuilderFactory;
 import com.butent.bee.server.sql.SqlSelect;
+import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -220,6 +221,10 @@ public class UserServiceBean {
 
       UserData data = info.getUserData();
       data.setProperty("dsn", SqlBuilderFactory.getDsn());
+
+      qs.updateData(new SqlUpdate(TBL_USERS, "u")
+          .addConstant("LastLogin", System.currentTimeMillis())
+          .setWhere(SqlUtils.equal("u", sys.getIdName(TBL_USERS), getUserId(user))));
 
       response.setResponse(data).addInfo("User logged in:",
           user + " " + BeeUtils.parenthesize(data.getUserSign()));
