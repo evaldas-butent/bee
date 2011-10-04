@@ -604,8 +604,7 @@ public class SystemBean {
     for (BeeForeignKey fKey : fKeys) {
       String refTblName = fKey.getRefTable();
       makeStructureChanges(SqlUtils.createForeignKey(fKey.getTable(), fKey.getName(),
-          fKey.getKeyField(), refTblName, getIdName(refTblName),
-          fKey.isCascade(), fKey.isCascadeDelete()));
+          fKey.getKeyField(), refTblName, getIdName(refTblName), fKey.getCascade()));
     }
   }
 
@@ -883,20 +882,11 @@ public class SystemBean {
             }
             entry.add(new String[] {fldName, relTable, relField});
             /*
-            <declare name="aa" value="<OLD/>.<name value="fldName"/>" />
-            <if>
-              <condition>
-                <var value="aa"/> IS NOT NULL
-              </condition>
-              <ifTrue>
-                <delete target="relTable">
-                  <where>
-                    <equal source="relTable" field="relField" value="" />
-                  </where>
-                </delete>
-              </ifTrue>
-            </if>
-            */
+             * <declare name="aa" value="<OLD/>.<name value="fldName"/>" /> <if> <condition> <var
+             * value="aa"/> IS NOT NULL </condition> <ifTrue> <delete target="relTable"> <where>
+             * <equal source="relTable" field="relField" value="" /> </where> </delete> </ifTrue>
+             * </if>
+             */
           }
         }
       }
@@ -1018,19 +1008,19 @@ public class SystemBean {
                   LogUtils.warning(logger, "Extendend fields must bee nullable:", tbl, fldName);
                   notNull = false;
                 }
-                table.addField(fldName, SqlDataType.valueOf(field.type),
+                BeeField fld = table.addField(fldName, SqlDataType.valueOf(field.type),
                     field.precision, field.scale, notNull,
-                    field.unique, field.relation, field.cascade)
+                    field.unique, field.relation,
+                    field.cascade == null ? null : SqlKeyword.valueOf(field.cascade))
                     .setTranslatable(field.translatable)
                     .setExtended(extMode);
 
-                String tblName = table.getField(fldName).getTable();
+                String tblName = fld.getTable();
 
-                if (!BeeUtils.isEmpty(field.relation)) {
-                  table.addForeignKey(tblName, fldName, field.relation, field.cascade,
-                      field.cascade && notNull);
+                if (!BeeUtils.isEmpty(fld.getRelation())) {
+                  table.addForeignKey(tblName, fldName, fld.getRelation(), fld.getCascade());
                 }
-                if (field.unique) {
+                if (fld.isUnique()) {
                   table.addKey(true, tblName, fldName);
                 }
               }

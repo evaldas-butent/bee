@@ -35,7 +35,7 @@
           <cell><Label html="Įmonė" /></cell>
           <cell colSpan="3">
             <DataSelector source="CompanyName" relSource="Company" relView="Companies" relColumn="Name"
-             style="width:100%" />
+             required="true" style="width:100%" />
           </cell>
         </row>
       </FlexTable>

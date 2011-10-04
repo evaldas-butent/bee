@@ -14,6 +14,7 @@ import com.butent.bee.server.sql.IsFrom;
 import com.butent.bee.server.sql.SqlBuilder;
 import com.butent.bee.server.sql.SqlBuilderFactory;
 import com.butent.bee.server.sql.SqlConstants.SqlDataType;
+import com.butent.bee.server.sql.SqlConstants.SqlKeyword;
 import com.butent.bee.server.sql.SqlCreate;
 import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
@@ -48,12 +49,12 @@ public class BeeTable implements HasExtFields, HasStates, HasTranslations, HasEx
     private final boolean notNull;
     private final boolean unique;
     private final String relation;
-    private final boolean cascade;
+    private final SqlKeyword cascade;
     private boolean extended = false;
     private boolean translatable = false;
 
     private BeeField(String name, SqlDataType type, int precision, int scale,
-        boolean notNull, boolean unique, String relation, boolean cascade) {
+        boolean notNull, boolean unique, String relation, SqlKeyword cascade) {
       Assert.notEmpty(name);
       Assert.notEmpty(type);
 
@@ -65,6 +66,10 @@ public class BeeTable implements HasExtFields, HasStates, HasTranslations, HasEx
       this.unique = unique;
       this.relation = relation;
       this.cascade = cascade;
+    }
+
+    public SqlKeyword getCascade() {
+      return cascade;
     }
 
     public String getName() {
@@ -93,10 +98,6 @@ public class BeeTable implements HasExtFields, HasStates, HasTranslations, HasEx
 
     public SqlDataType getType() {
       return type;
-    }
-
-    public boolean isCascade() {
-      return cascade;
     }
 
     public boolean isExtended() {
@@ -131,22 +132,22 @@ public class BeeTable implements HasExtFields, HasStates, HasTranslations, HasEx
     private final String name;
     private final String keyField;
     private final String refTable;
-    private final boolean cascade;
-    private final boolean cascadeDelete;
+    private final SqlKeyword cascade;
 
-    private BeeForeignKey(String tblName, String keyField, String refTable,
-        boolean cascade, boolean cascadeDelete) {
+    private BeeForeignKey(String tblName, String keyField, String refTable, SqlKeyword cascade) {
       Assert.notEmpty(tblName);
       Assert.notEmpty(keyField);
       Assert.notEmpty(refTable);
 
       this.tblName = tblName;
-      this.name = (cascade ? FOREIGN_CASCADE_PREFIX : FOREIGN_KEY_PREFIX) +
-          Codec.crc32(tblName + keyField + refTable);
+      this.name = FOREIGN_KEY_PREFIX + Codec.crc32(tblName + keyField + refTable + cascade);
       this.keyField = keyField;
       this.refTable = refTable;
       this.cascade = cascade;
-      this.cascadeDelete = cascadeDelete;
+    }
+
+    public SqlKeyword getCascade() {
+      return cascade;
     }
 
     public String getKeyField() {
@@ -167,14 +168,6 @@ public class BeeTable implements HasExtFields, HasStates, HasTranslations, HasEx
 
     public String getTable() {
       return tblName;
-    }
-
-    public boolean isCascade() {
-      return cascade;
-    }
-
-    public boolean isCascadeDelete() {
-      return cascadeDelete;
     }
   }
 
@@ -312,7 +305,7 @@ public class BeeTable implements HasExtFields, HasStates, HasTranslations, HasEx
             .addLong(extVersionName, true);
 
         addKey(true, tblName, extIdName);
-        addForeignKey(tblName, extIdName, getName(), true, true);
+        addForeignKey(tblName, extIdName, getName(), SqlKeyword.DELETE);
       }
       sc.addField(field.getName(), field.getType(), field.getPrecision(), field.getScale(),
           field.isNotNull());
@@ -449,7 +442,7 @@ public class BeeTable implements HasExtFields, HasStates, HasTranslations, HasEx
               .addLong(stateVersionName, true);
 
           addKey(true, tblName, stateIdName);
-          addForeignKey(tblName, stateIdName, getName(), true, true);
+          addForeignKey(tblName, stateIdName, getName(), SqlKeyword.DELETE);
         }
         for (String col : stateFields.get(state)) {
           if (bitCount <= Integer.SIZE) {
@@ -654,7 +647,7 @@ public class BeeTable implements HasExtFields, HasStates, HasTranslations, HasEx
             .addString(translationLocaleName, 2, true);
 
         addKey(true, tblName, translationIdName, translationLocaleName);
-        addForeignKey(tblName, translationIdName, getName(), true, true);
+        addForeignKey(tblName, translationIdName, getName(), SqlKeyword.DELETE);
       }
       sc.addField(field.getName(), field.getType(), field.getPrecision(), field.getScale(), false);
 
@@ -762,7 +755,6 @@ public class BeeTable implements HasExtFields, HasStates, HasTranslations, HasEx
   private static final String UNIQUE_KEY_PREFIX = "UK_";
   private static final String INDEX_KEY_PREFIX = "IK_";
   private static final String FOREIGN_KEY_PREFIX = "FK_";
-  private static final String FOREIGN_CASCADE_PREFIX = "FC_";
   private static final String TRIGGER_PREFIX = "TR_";
 
   private final String name;
@@ -859,7 +851,7 @@ public class BeeTable implements HasExtFields, HasStates, HasTranslations, HasEx
       PropertyUtils.addChildren(info, key, "Name", field.getName(), "Type", field.getType(),
           "Precision", field.getPrecision(), "Scale", field.getScale(),
           "Not Null", field.isNotNull(), "Unique", field.isUnique(),
-          "Relation", field.getRelation(), "Cascade", field.isCascade(),
+          "Relation", field.getRelation(), "Cascade", field.getCascade(),
           "Extended", field.isExtended(), "Translatable", field.isTranslatable());
     }
 
@@ -870,8 +862,7 @@ public class BeeTable implements HasExtFields, HasStates, HasTranslations, HasEx
       BeeForeignKey fk = entry.getValue();
 
       PropertyUtils.addChildren(info, key, "Table", fk.getTable(), "Name", fk.getName(),
-          "Key Field", fk.getKeyField(), "Ref Table", fk.getRefTable(),
-          "Cascade", fk.isCascade(), "Cascade Delete", fk.isCascadeDelete());
+          "Key Field", fk.getKeyField(), "Ref Table", fk.getRefTable(), "Cascade", fk.getCascade());
     }
 
     info.add(new ExtendedProperty("Keys", BeeUtils.toString(keys.size())));
@@ -1047,7 +1038,7 @@ public class BeeTable implements HasExtFields, HasStates, HasTranslations, HasEx
   }
 
   BeeField addField(String name, SqlDataType type, int precision, int scale,
-      boolean notNull, boolean unique, String relation, boolean cascade) {
+      boolean notNull, boolean unique, String relation, SqlKeyword cascade) {
 
     BeeField field = new BeeField(name, type, precision, scale, notNull, unique, relation, cascade);
     String fieldName = field.getName();
@@ -1060,9 +1051,8 @@ public class BeeTable implements HasExtFields, HasStates, HasTranslations, HasEx
     return field;
   }
 
-  BeeForeignKey addForeignKey(String tblName, String keyField, String refTable,
-      boolean cascade, boolean cascadeDelete) {
-    BeeForeignKey fKey = new BeeForeignKey(tblName, keyField, refTable, cascade, cascadeDelete);
+  BeeForeignKey addForeignKey(String tblName, String keyField, String refTable, SqlKeyword cascade) {
+    BeeForeignKey fKey = new BeeForeignKey(tblName, keyField, refTable, cascade);
     foreignKeys.put(BeeUtils.normalize(fKey.getName()), fKey);
     return fKey;
   }

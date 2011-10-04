@@ -7,11 +7,11 @@
   x="517" y="21"
   >
   <BeeFields>
-    <BeeField name="Company" type="LONG" relation="Companies" />
-    <BeeField name="Contact" type="LONG" unique="true" relation="Contacts" />
-    <BeeField name="FirstName" type="STRING" precision="30" />
+    <BeeField name="FirstName" type="STRING" precision="30" notNull="true" />
     <BeeField name="LastName" type="STRING" precision="30" />
     <BeeField name="Position" type="STRING" precision="50" />
     <BeeField name="DateOfBirth" type="DATE" />
+    <BeeField name="Contact" type="LONG" unique="true" relation="Contacts" />
+    <BeeField name="Company" type="LONG" relation="Companies" cascade="DELETE" />
   </BeeFields>
 </BeeTable>

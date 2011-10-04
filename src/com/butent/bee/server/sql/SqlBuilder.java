@@ -468,9 +468,8 @@ public abstract class SqlBuilder {
             "REFERENCES", params.get("refTable"), BeeUtils.parenthesize(params.get("refFields")));
 
         if (!BeeUtils.isEmpty(params.get("cascade"))) {
-          foreign = BeeUtils.concat(1,
-              foreign, "ON DELETE",
-              BeeUtils.isEmpty(params.get("cascadeDelete")) ? "SET NULL" : "CASCADE");
+          foreign = BeeUtils.concat(1, foreign, "ON DELETE",
+              sqlKeyword((SqlKeyword) params.get("cascade"), params));
         }
         return foreign;
 
@@ -684,6 +683,12 @@ public abstract class SqlBuilder {
 
       case TEMPORARY_NAME:
         return (String) params.get("name");
+
+      case DELETE:
+        return "CASCADE";
+
+      case SET_NULL:
+        return "SET NULL";
     }
     Assert.untouchable();
     return null;

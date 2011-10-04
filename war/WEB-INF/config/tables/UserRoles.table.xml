@@ -7,8 +7,8 @@
   x="160" y="10"
   >
   <BeeFields>
-    <BeeField name="User" type="LONG" notNull="true" relation="Users" cascade="true" />
-    <BeeField name="Role" type="LONG" notNull="true" relation="Roles" cascade="true" />
+    <BeeField name="User" type="LONG" notNull="true" relation="Users" cascade="DELETE" />
+    <BeeField name="Role" type="LONG" notNull="true" relation="Roles" cascade="DELETE" />
   </BeeFields>
   <BeeKeys>
     <BeeKey unique="true">

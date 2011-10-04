@@ -60,13 +60,12 @@ public class SqlUtils {
   }
 
   public static IsQuery createForeignKey(String table, String name, String field,
-      String refTable, String refField, boolean cascade, boolean cascadeDelete) {
+      String refTable, String refField, SqlKeyword cascade) {
 
     Map<String, Object> params = getConstraintMap(SqlKeyword.FOREIGN_KEY, table, name, field);
     params.put("refTable", name(refTable));
     params.put("refFields", name(refField));
     params.put("cascade", cascade);
-    params.put("cascadeDelete", cascadeDelete);
 
     return new SqlCommand(SqlKeyword.ADD_CONSTRAINT, params);
   }

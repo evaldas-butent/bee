@@ -41,7 +41,7 @@ public class XmlTable {
     @XmlTransient
     public String relationField;
     @XmlAttribute
-    public boolean cascade;
+    public String cascade;
     @XmlAttribute
     public boolean translatable;
 

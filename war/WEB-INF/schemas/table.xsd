@@ -46,7 +46,7 @@
     <xs:attribute name="notNull" type="xs:boolean" />
     <xs:attribute name="unique" type="xs:boolean" />
     <xs:attribute name="relation" type="xs:string" />
-    <xs:attribute name="cascade" type="xs:boolean" />
+    <xs:attribute name="cascade" type="bee:cascadeType" />
     <xs:attribute name="translatable" type="xs:boolean" />
   </xs:complexType>
 
@@ -56,4 +56,11 @@
     </xs:sequence>
     <xs:attribute name="unique" type="xs:boolean" />
   </xs:complexType>
+
+  <xs:simpleType name="cascadeType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="DELETE" />
+      <xs:enumeration value="SET_NULL" />
+    </xs:restriction>
+  </xs:simpleType>
 </xs:schema>
