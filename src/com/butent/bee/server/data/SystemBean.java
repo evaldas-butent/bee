@@ -869,7 +869,7 @@ public class SystemBean {
         if (field.isUnique()) {
           String relTable = field.getRelation();
 
-          if (!BeeUtils.isEmpty(relTable)) {
+          if (!BeeUtils.isEmpty(relTable) && BeeUtils.isEmpty(field.getCascade())) {
             String tblName = field.getTable();
             String fldName = field.getName();
             String relField = getIdName(relTable);

@@ -75,7 +75,7 @@ public class DsnService extends CompositeService {
 
     } else {
       ok = false;
-      Global.showError("Unknown service", name(this.getClass()), "stage:", stg);
+      Global.showError("Unknown service [", name(), "] stage:", stg);
     }
     destroy();
     return ok;

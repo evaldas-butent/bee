@@ -27,6 +27,7 @@ import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
 
 import java.util.Collection;
 import java.util.List;
@@ -325,7 +326,7 @@ public class EventManager implements Module {
           Global.closeDialog(event);
           BeeKeeper.getRpc().makePostRequest(Service.LOGIN,
               XmlUtils.createString(Service.XML_TAG_DATA,
-                    Service.VAR_LOGIN, usr, Service.VAR_PASSWORD, pwd));
+                  Service.VAR_LOGIN, usr, Service.VAR_PASSWORD, Codec.md5(pwd)));
           ok = true;
         }
       } else {

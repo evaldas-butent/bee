@@ -32,14 +32,16 @@ public interface FormView extends View, NotificationListener,
 
   RowInfo getActiveRowInfo();
 
+  int getDataIndex(String source);
+
   HasDataTable getDisplay();
 
   IsRow getRowData();
-  
+
   JavaScriptObject getRowJso();
-  
+
   boolean isRowEditable(boolean warn);
-  
+
   void prepareForInsert();
 
   void refreshCellContent(String columnSource);
@@ -47,6 +49,6 @@ public interface FormView extends View, NotificationListener,
   void start(int rowCount);
 
   void startNewRow();
-  
-  void updateCell(String columnId, String newValue);  
+
+  void updateCell(String columnId, String newValue);
 }

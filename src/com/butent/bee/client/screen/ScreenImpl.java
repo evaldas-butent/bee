@@ -37,7 +37,6 @@ import com.butent.bee.client.layout.Stack;
 import com.butent.bee.client.layout.TabbedPages;
 import com.butent.bee.client.layout.TilePanel;
 import com.butent.bee.client.layout.Vertical;
-import com.butent.bee.client.ui.CompositeService;
 import com.butent.bee.client.ui.DsnService;
 import com.butent.bee.client.ui.FormService;
 import com.butent.bee.client.ui.GwtUiCreator;
@@ -517,8 +516,7 @@ public class ScreenImpl implements Screen {
     fp.setWidget(r + 1, 0, slider);
 
     fp.setWidget(r, 1, new BeeButton(Global.constants.refresh(), Service.REFRESH_MENU));
-    fp.setWidget(r + 1, 1, new BeeButton("BEE", CompositeService.name(MenuService.class),
-        "stage_dummy"));
+    fp.setWidget(r + 1, 1, new BeeButton("BEE", new MenuService().name(), "stage_dummy"));
 
     BeeCheckBox toggle = new BeeCheckBox("Log");
     toggle.setValue(true);
@@ -538,9 +536,8 @@ public class ScreenImpl implements Screen {
     Vertical adm = new Vertical();
     adm.setSpacing(5);
 
-    adm.add(new BeeButton("DSN", CompositeService.name(DsnService.class), DsnService.SVC_GET_DSNS));
-    adm.add(new BeeButton("States", CompositeService.name(StateService.class),
-        StateService.SVC_GET_STATES));
+    adm.add(new BeeButton("DSN", new DsnService().name(), DsnService.SVC_GET_DSNS));
+    adm.add(new BeeButton("States", new StateService().name(), StateService.SVC_GET_STATES));
 
     adm.add(new ButtonGroup("Ping", Service.DB_PING,
         "Info", Service.DB_INFO,
@@ -552,7 +549,7 @@ public class ScreenImpl implements Screen {
 
     adm.add(new BeeCheckBox(Global.getVar(Global.VAR_DEBUG)));
 
-    adm.add(new BeeButton("Būtent", CompositeService.name(FormService.class),
+    adm.add(new BeeButton("Būtent", new FormService().name(),
         FormService.Stages.CHOOSE_FORM.name()));
 
     adm.add(new RadioGroup(getElGrid(), false, BeeKeeper.getStorage().checkInt(getElGrid(), 2),

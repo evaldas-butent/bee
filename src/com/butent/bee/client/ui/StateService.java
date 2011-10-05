@@ -112,7 +112,7 @@ public class StateService extends CompositeService {
 
     } else {
       ok = false;
-      Global.showError("Unknown service [", getId(), "] stage:", stg);
+      Global.showError("Unknown service [", name(), "] stage:", stg);
     }
     destroy();
     return ok;

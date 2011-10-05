@@ -358,13 +358,13 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
 
     refreshData(true);
     showGrids(true);
-    
+
     if (row != null) {
       int rc = getRowCount();
       setPageStart(rc);
       setRowCount(rc + 1);
     }
-    
+
     setAdding(false);
   }
 
@@ -381,6 +381,21 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     return new RowInfo(getRowData());
   }
 
+  public int getDataIndex(String source) {
+    int index = BeeConst.UNDEF;
+    if (BeeUtils.isEmpty(source) || getDataColumns() == null) {
+      return index;
+    }
+
+    for (int i = 0; i < getDataColumns().size(); i++) {
+      if (BeeUtils.same(source, getDataColumns().get(i).getId())) {
+        index = i;
+        break;
+      }
+    }
+    return index;
+  }
+
   public HasDataTable getDisplay() {
     return this;
   }
@@ -388,7 +403,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
   public int getRowCount() {
     return rowCount;
   }
-  
+
   public IsRow getRowData() {
     return rowData;
   }
@@ -397,15 +412,15 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     if (!hasData() || getRowData() == null) {
       return null;
     }
-    
+
     if (rowJso == null) {
       setRowJso(EvalHelper.createJso(getDataColumns()));
     }
     EvalHelper.toJso(getDataColumns(), getRowData(), rowJso);
-    
+
     return rowJso;
   }
-  
+
   public SelectionModel<? super IsRow> getSelectionModel() {
     return null;
   }
@@ -591,7 +606,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
       if (BeeUtils.isEmpty(value)) {
         continue;
       }
-      
+
       if (!isForeign(getDataColumns().get(i).getId())) {
         columns.add(getDataColumns().get(i));
         values.add(value);
@@ -731,10 +746,10 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
 
   public void updateActiveRow(List<? extends IsRow> values) {
   }
-  
+
   public void updateCell(String columnId, String newValue) {
     Assert.notEmpty(columnId);
-    
+
     IsRow rowValue = getRowData();
     if (rowValue == null) {
       notifySevere("update cell:", columnId, newValue, "form has no data");
@@ -760,7 +775,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
       }
     }
   }
-  
+
   private boolean checkNewRow(IsRow row) {
     boolean ok = true;
     int count = 0;
@@ -817,15 +832,15 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
       ((Focusable) widget).setFocus(true);
       return;
     }
-    
+
     int size = getTabOrder().size();
     if (size <= 1) {
       return;
     }
-    
+
     int i;
     boolean md;
-    
+
     if (forward) {
       if (index < size - 1) {
         i = index + 1;
@@ -843,7 +858,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
         md = false;
       }
     }
-    
+
     if (cycle || md) {
       focus(i, forward, cycle && md);
     }
@@ -855,21 +870,6 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
 
   private List<BeeColumn> getDataColumns() {
     return dataColumns;
-  }
-
-  private int getDataIndex(String source) {
-    int index = BeeConst.UNDEF;
-    if (BeeUtils.isEmpty(source) || getDataColumns() == null) {
-      return index;
-    }
-
-    for (int i = 0; i < getDataColumns().size(); i++) {
-      if (BeeUtils.same(source, getDataColumns().get(i).getId())) {
-        index = i;
-        break;
-      }
-    }
-    return index;
   }
 
   private Set<DisplayWidget> getDisplayWidgets() {
@@ -924,7 +924,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
       return null;
     }
   }
-  
+
   private boolean hasData() {
     return hasData;
   }
@@ -948,7 +948,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
       return editableWidget.isForeign();
     }
   }
-  
+
   private boolean isReadOnly() {
     return readOnly;
   }
@@ -977,7 +977,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     if (cnt <= 1) {
       return;
     }
-    
+
     int idx = BeeConst.UNDEF;
     for (int i = 0; i < cnt; i++) {
       if (BeeUtils.same(getTabOrder().get(i).getWidgetId(), widgetId)) {
@@ -988,7 +988,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     if (BeeConst.isUndef(idx)) {
       return;
     }
-    
+
     boolean cycle;
     if (forward) {
       if (idx < cnt - 1) {
@@ -1019,7 +1019,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     refreshGridWidgets(getRowData().getId());
 
     fireLoadingStateChange(LoadingStateChangeEvent.LoadingState.LOADED);
-    
+
     if (focus) {
       focus(0, true, false);
     }
@@ -1039,7 +1039,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
       }
     }
   }
-  
+
   private void refreshEditableWidgets() {
     boolean rowEnabled = isRowEditable(false);
 
@@ -1096,7 +1096,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
   private void setReadOnly(boolean readOnly) {
     this.readOnly = readOnly;
   }
-  
+
   private void setRootWidget(Widget rootWidget) {
     this.rootWidget = rootWidget;
   }
@@ -1128,13 +1128,13 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
       RangeChangeEvent.fire(this, getVisibleRange());
     }
   }
-  
+
   private void showGrids(boolean show) {
     for (WidgetDescription widgetDescription : getGridWidgets()) {
       getWidget(widgetDescription.getWidgetId()).setVisible(show);
     }
   }
-  
+
   private void showNote(Level level, String... messages) {
     StyleUtils.setZIndex(getNotification(), StyleUtils.getZIndex(getRootWidget()) + 1);
     getNotification().show(level, messages);

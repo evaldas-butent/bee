@@ -18,14 +18,6 @@ public abstract class CompositeService {
   private static Map<String, CompositeService> registeredServices = Maps.newHashMap();
   private static Map<String, CompositeService> pendingServices = Maps.newHashMap();
 
-  static {
-    registerService(new FormService());
-    registerService(new GridService());
-    registerService(new MenuService());
-    registerService(new DsnService());
-    registerService(new StateService());
-  }
-
   public static boolean doService(String svc, String stg, Object... parameters) {
     Assert.notEmpty(svc);
     Assert.notEmpty(stg);
@@ -39,12 +31,6 @@ public abstract class CompositeService {
       return pendingServices.containsKey(svc);
     }
     return true;
-  }
-
-  public static <T extends CompositeService> String name(Class<T> clazz) {
-    Assert.notNull(clazz);
-    Assert.state(!clazz.equals(CompositeService.class));
-    return Service.COMPOSITE_SERVICE_PREFIX + BeeUtils.getClassName(clazz);
   }
 
   private static CompositeService createService(String svc) {
@@ -68,15 +54,19 @@ public abstract class CompositeService {
     return service;
   }
 
-  private static void registerService(CompositeService service) {
-    String svc = name(service.getClass());
-    Assert.state(!isRegistered(svc), "Service already registered: " + svc);
-    registeredServices.put(svc, service);
-  }
-
   private String serviceId;
 
-  protected abstract CompositeService getInstance();
+  protected CompositeService() {
+    String svc = name();
+
+    if (!registeredServices.containsKey(svc)) {
+      registeredServices.put(svc, this);
+    }
+  }
+
+  public String name() {
+    return Service.COMPOSITE_SERVICE_PREFIX + BeeUtils.getClassName(this.getClass());
+  }
 
   protected void destroy() {
     pendingServices.remove(getId());
@@ -87,6 +77,8 @@ public abstract class CompositeService {
   protected String getId() {
     return serviceId;
   }
+
+  protected abstract CompositeService getInstance();
 
   protected Stage getStage(String stg) {
     Assert.notEmpty(stg);

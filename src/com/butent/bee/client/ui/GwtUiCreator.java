@@ -124,7 +124,7 @@ public class GwtUiCreator implements UiCreator {
       widget.addNorth(label, 20);
     }
 
-    CompositeService.doService(CompositeService.name(GridService.class), "stage_dummy", widget,
+    CompositeService.doService(new GridService().name(), "stage_dummy", widget,
         uiGrid.getProperty("parameters"));
 
     return widget;

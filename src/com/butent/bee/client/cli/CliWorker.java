@@ -68,7 +68,9 @@ import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.layout.TilePanel;
 import com.butent.bee.client.tree.BeeTree;
 import com.butent.bee.client.ui.AbstractFormCallback;
+import com.butent.bee.client.ui.CompositeService;
 import com.butent.bee.client.ui.FormFactory;
+import com.butent.bee.client.ui.PasswordService;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.utils.Browser;
 import com.butent.bee.client.utils.JsUtils;
@@ -92,7 +94,6 @@ import com.butent.bee.shared.communication.ContentType;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
-import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -1695,18 +1696,17 @@ public class CliWorker {
       BeeKeeper.getScreen().showGrid(info);
     }
   }
-  
+
   public static void showUsers() {
     FormFactory.getForm("Users", new AbstractFormCallback() {
       @Override
       public void afterCreateWidget(String name, final Widget widget) {
         if (BeeUtils.same(name, "ChangePassword") && widget instanceof HasClickHandlers) {
           ((HasClickHandlers) widget).addClickHandler(new ClickHandler() {
+            @Override
             public void onClick(ClickEvent event) {
-              IsRow row = UiHelper.getForm(widget).getRowData();
-              if (row != null) {
-                Global.inform(row.getId(), row.getVersion());
-              }
+              CompositeService.doService(new PasswordService().name(),
+                  PasswordService.STG_GET_PASS, UiHelper.getForm(widget));
             }
           });
         }
@@ -2110,8 +2110,7 @@ public class CliWorker {
 
     for ( var i = 0; i < 6; i++) {
       for ( var j = 0; j < 6; j++) {
-        ctx.fillStyle = 'rgb(' + Math.floor(255 - 42.5 * i) + ', ' + Math.floor(255 - 42.5 * j)
-            + ', 0)';
+        ctx.fillStyle = 'rgb(' + Math.floor(255 - 42.5 * i) + ', ' + Math.floor(255 - 42.5 * j) + ', 0)';
         ctx.fillRect(j * 25, i * 25, 25, 25);
       }
     }
