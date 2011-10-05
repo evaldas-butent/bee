@@ -25,6 +25,7 @@ import com.butent.bee.client.layout.Absolute;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory;
+import com.butent.bee.client.ui.FormFactory.FormCallback;
 import com.butent.bee.client.ui.FormFactory.WidgetCallback;
 import com.butent.bee.client.ui.FormWidget;
 import com.butent.bee.client.ui.WidgetDescription;
@@ -317,7 +318,8 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
   public void applyOptions(String options) {
   }
 
-  public void create(FormDescription formDescription, List<BeeColumn> dataCols) {
+  public void create(FormDescription formDescription, List<BeeColumn> dataCols,
+      FormCallback formCallback) {
     Assert.notNull(formDescription);
     setDataColumns(dataCols);
     setHasData(!BeeUtils.isEmpty(dataCols));
@@ -331,7 +333,8 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
 
     setReadOnly(formDescription.isReadOnly());
 
-    Widget root = FormFactory.createForm(formDescription, getCreationCallback(), dataCols);
+    Widget root = FormFactory.createForm(formDescription, dataCols, getCreationCallback(),
+        formCallback);
     if (root == null) {
       return;
     }

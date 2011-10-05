@@ -10,6 +10,7 @@ import com.butent.bee.client.layout.Absolute;
 import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.ui.FormDescription;
+import com.butent.bee.client.ui.FormFactory.FormCallback;
 import com.butent.bee.client.utils.BeeCommand;
 import com.butent.bee.client.utils.Evaluator;
 import com.butent.bee.client.view.add.AddEndEvent;
@@ -91,7 +92,8 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
     getContent().addAddEndHandler(this);
   }
 
-  public void create(FormDescription formDescription, List<BeeColumn> dataColumns, int rowCount) {
+  public void create(FormDescription formDescription, List<BeeColumn> dataColumns, int rowCount,
+      FormCallback callback) {
     Assert.notNull(formDescription);
 
     setHasData(!BeeUtils.isEmpty(dataColumns));
@@ -103,7 +105,7 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
     header.create(formDescription.getCaption(), hasData(), formDescription.isReadOnly(), false);
 
     FormView content = new FormImpl();
-    content.create(formDescription, dataColumns);
+    content.create(formDescription, dataColumns, callback);
 
     DataFooterView footer;
     if (hasData()) {

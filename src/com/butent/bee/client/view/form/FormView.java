@@ -5,6 +5,7 @@ import com.google.gwt.core.client.JavaScriptObject;
 import com.butent.bee.client.data.HasDataTable;
 import com.butent.bee.client.dialog.NotificationListener;
 import com.butent.bee.client.ui.FormDescription;
+import com.butent.bee.client.ui.FormFactory.FormCallback;
 import com.butent.bee.client.view.View;
 import com.butent.bee.client.view.add.HasAddEndHandlers;
 import com.butent.bee.client.view.add.HasAddStartHandlers;
@@ -25,7 +26,7 @@ public interface FormView extends View, NotificationListener,
 
   void applyOptions(String options);
 
-  void create(FormDescription formDescription, List<BeeColumn> dataColumns);
+  void create(FormDescription formDescription, List<BeeColumn> dataColumns, FormCallback callback);
 
   void finishNewRow(IsRow row);
 

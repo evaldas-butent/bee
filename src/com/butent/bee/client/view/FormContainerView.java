@@ -1,6 +1,7 @@
 package com.butent.bee.client.view;
 
 import com.butent.bee.client.ui.FormDescription;
+import com.butent.bee.client.ui.FormFactory.FormCallback;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.shared.data.BeeColumn;
 
@@ -14,7 +15,8 @@ public interface FormContainerView extends View {
 
   void bind();
 
-  void create(FormDescription formDescription, List<BeeColumn> dataColumns, int rowCount);
+  void create(FormDescription formDescription, List<BeeColumn> dataColumns, int rowCount,
+      FormCallback callback);
 
   FormView getContent();
 }

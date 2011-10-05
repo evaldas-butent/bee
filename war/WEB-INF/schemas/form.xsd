@@ -30,6 +30,7 @@
       <xs:element name="handler" type="bee:eventHandler"/>
     </xs:choice>
     <xs:attributeGroup ref="bee:appearance" />
+    <xs:attribute name="name" type="bee:nameType" />
     <xs:attribute name="title" type="xs:string" />
     <xs:attribute name="html" type="xs:string" />
     <xs:attribute name="visible" type="xs:boolean" default="true" />
@@ -473,14 +474,21 @@
       </xs:complexContent>
     </xs:complexType>
   </xs:element>
+  
+  <xs:complexType name="childGrid">
+    <xs:complexContent>
+      <xs:extension base="bee:widgetType">
+        <xs:attribute name="relColumn" type="bee:nameType" use="required" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
 
   <xs:element name="Grid" substitutionGroup="bee:widget">
     <xs:complexType>
       <xs:complexContent>
-        <xs:extension base="bee:widgetType">
+        <xs:restriction base="bee:childGrid">
           <xs:attribute name="name" type="bee:nameType" use="required" />
-          <xs:attribute name="relColumn" type="bee:nameType" use="required" />
-        </xs:extension>
+        </xs:restriction>
       </xs:complexContent>
     </xs:complexType>
   </xs:element>

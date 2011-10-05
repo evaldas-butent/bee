@@ -14,7 +14,7 @@
           <cell><Label html="Prisijungimo vardas" /></cell>
           <cell><InputText source="Login" style="width:100%" /></cell>
           <cell horizontalAlignment="center" colSpan="2">
-            <Button html="Pakeisti slaptažodį" service="ChangePassword" />
+            <Button html="Pakeisti slaptažodį" name="ChangePassword" />
           </cell>
           <cell><Label html="Parametrai" /></cell>
         </row>

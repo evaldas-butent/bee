@@ -18,6 +18,7 @@ import com.butent.bee.client.data.Provider;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.ui.FormDescription;
+import com.butent.bee.client.ui.FormFactory.FormCallback;
 import com.butent.bee.client.utils.BeeCommand;
 import com.butent.bee.client.view.FormContainerImpl;
 import com.butent.bee.client.view.FormContainerView;
@@ -115,12 +116,12 @@ public class FormPresenter implements Presenter, ReadyForInsertEvent.Handler,
   private Filter lastFilter = null;
 
   public FormPresenter(FormDescription formDescription, String viewName, int rowCount,
-      BeeRowSet rowSet, boolean async) {
+      BeeRowSet rowSet, boolean async, FormCallback callback) {
     this.viewName = viewName;
     this.async = async;
     this.dataColumns = (rowSet == null) ? null : rowSet.getColumns();
 
-    this.formContainer = createView(formDescription, dataColumns, rowCount);
+    this.formContainer = createView(formDescription, dataColumns, rowCount, callback);
     this.dataProvider = createProvider(formContainer, viewName, rowSet, async);
 
     bind();
@@ -296,10 +297,10 @@ public class FormPresenter implements Presenter, ReadyForInsertEvent.Handler,
   }
 
   private FormContainerView createView(FormDescription formDescription,
-      List<BeeColumn> columns, int rowCount) {
+      List<BeeColumn> columns, int rowCount, FormCallback callback) {
     FormContainerView view = new FormContainerImpl();
 
-    view.create(formDescription, columns, rowCount);
+    view.create(formDescription, columns, rowCount, callback);
     return view;
   }
 

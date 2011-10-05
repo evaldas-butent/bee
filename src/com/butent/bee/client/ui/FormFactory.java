@@ -53,14 +53,24 @@ public class FormFactory {
   /**
    * Requires implementing classes to provide widget description and parameters string.
    */
+  
+  public interface FormCallback {
+    void afterCreateWidget(String name, Widget widget);
+
+    boolean beforeCreateWidget(String name, Element description);
+    
+    boolean onLoad(Element formElement);
+    
+    void onShow(FormPresenter presenter);
+  }
 
   public interface WidgetCallback extends Callback<WidgetDescription, String[]> {
   }
-
-  public static Widget createForm(FormDescription formDescription, WidgetCallback callback,
-      List<BeeColumn> columns) {
+  
+  public static Widget createForm(FormDescription formDescription, List<BeeColumn> columns,
+      WidgetCallback widgetCallback, FormCallback formCallback) {
     Assert.notNull(formDescription);
-    Assert.notNull(callback);
+    Assert.notNull(widgetCallback);
 
     List<Element> children = XmlUtils.getChildrenElements(formDescription.getFormElement());
     if (BeeUtils.isEmpty(children)) {
@@ -90,7 +100,7 @@ public class FormFactory {
       return null;
     }
 
-    Widget form = formWidget.create(root, callback, columns);
+    Widget form = formWidget.create(root, columns, widgetCallback, formCallback);
     if (form == null) {
       BeeKeeper.getLog().severe("createForm: cannot create root widget", formWidget);
     }
@@ -120,13 +130,17 @@ public class FormFactory {
   }
 
   public static void getForm(String name) {
+    getForm(name, null);
+  }
+  
+  public static void getForm(String name, final FormCallback callback) {
     Assert.notEmpty(name);
 
     BeeKeeper.getRpc().sendText(Service.GET_FORM, BeeUtils.trim(name), new ResponseCallback() {
       @Override
       public void onResponse(ResponseObject response) {
         if (response.hasResponse(String.class)) {
-          openForm((String) response.getResponse());
+          openForm((String) response.getResponse(), callback);
         }
       }
     });
@@ -215,6 +229,10 @@ public class FormFactory {
   }
 
   public static void openForm(String xml) {
+    openForm(xml, null);
+  }
+  
+  public static void openForm(String xml, final FormCallback callback) {
     Assert.notEmpty(xml);
 
     Document xmlDoc = XmlUtils.parse(xml);
@@ -226,17 +244,21 @@ public class FormFactory {
       BeeKeeper.getLog().severe("xml form element not found");
       return;
     }
+    
+    if (callback != null && !callback.onLoad(formElement)) {
+      return;
+    }
 
     final FormDescription formDescription = new FormDescription(formElement);
     final String viewName = formDescription.getViewName();
     if (BeeUtils.isEmpty(viewName)) {
-      showForm(formDescription);
+      showForm(formDescription, callback);
       return;
     }
 
     DataInfo dataInfo = Global.getDataExplorer().getDataInfo(viewName);
     if (dataInfo != null) {
-      getInitialRowSet(viewName, dataInfo.getRowCount(), formDescription);
+      getInitialRowSet(viewName, dataInfo.getRowCount(), formDescription, callback);
       return;
     }
 
@@ -245,13 +267,13 @@ public class FormFactory {
       }
 
       public void onSuccess(Integer result) {
-        getInitialRowSet(viewName, result, formDescription);
+        getInitialRowSet(viewName, result, formDescription, callback);
       }
     });
   }
 
   private static void getInitialRowSet(final String viewName, final int rowCount,
-      final FormDescription formDescription) {
+      final FormDescription formDescription, final FormCallback callback) {
     int limit = formDescription.getAsyncThreshold();
 
     final boolean async;
@@ -273,18 +295,22 @@ public class FormFactory {
           }
 
           public void onSuccess(final BeeRowSet rowSet) {
-            showForm(formDescription, viewName, rowCount, rowSet, async);
+            showForm(formDescription, viewName, rowCount, rowSet, async, callback);
           }
         });
   }
 
-  private static void showForm(FormDescription formDescription) {
-    showForm(formDescription, null, BeeConst.UNDEF, null, false);
+  private static void showForm(FormDescription formDescription, FormCallback callback) {
+    showForm(formDescription, null, BeeConst.UNDEF, null, false, callback);
   }
 
   private static void showForm(FormDescription formDescription, String viewName, int rowCount,
-      BeeRowSet rowSet, boolean async) {
-    FormPresenter presenter = new FormPresenter(formDescription, viewName, rowCount, rowSet, async);
+      BeeRowSet rowSet, boolean async, FormCallback callback) {
+    FormPresenter presenter = new FormPresenter(formDescription, viewName, rowCount, rowSet,
+        async, callback);
+    if (callback != null) {
+      callback.onShow(presenter);
+    }
     BeeKeeper.getScreen().updateActivePanel(presenter.getWidget());
   }
 
