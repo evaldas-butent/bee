@@ -28,7 +28,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   private enum Serial {
     NAME, VIEW, CAPTION, READONLY, HAS_HEADERS, HAS_FOOTERS,
     ASYNC_THRESHOLD, PAGING_THRESHOLD, SEARCH_THRESHOLD, PAGE_SIZE,
-    NEW_ROW_COLUMNS, SHOW_COLUMN_WIDTHS,
+    NEW_ROW_COLUMNS, SHOW_COLUMN_WIDTHS, FORM, EDIT_MODE,
     HEADER, BODY, FOOTER,
     ROW_STYLES, ROW_MESSAGE, ROW_EDITABLE, ROW_VALIDATION,
     MIN_COLUMN_WIDTH, MAX_COLUMN_WIDTH, COLUMNS
@@ -59,6 +59,9 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
 
   private String newRowColumns = null;
   private Boolean showColumnWidths = null;
+  
+  private String form = null;
+  private String editMode = null;
 
   private GridComponentDescription header = null;
   private GridComponentDescription body = null;
@@ -188,6 +191,12 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         case SHOW_COLUMN_WIDTHS:
           setShowColumnWidths(BeeUtils.toBooleanOrNull(value));
           break;
+        case FORM:
+          setForm(value);
+          break;
+        case EDIT_MODE:
+          setEditMode(value);
+          break;
       }
     }
   }
@@ -212,8 +221,16 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
     return columns;
   }
 
+  public String getEditMode() {
+    return editMode;
+  }
+
   public GridComponentDescription getFooter() {
     return footer;
+  }
+
+  public String getForm() {
+    return form;
   }
 
   public GridComponentDescription getHeader() {
@@ -235,6 +252,8 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         "Search Threshold", getSearchThreshold(),
         "Page Size", getPageSize(),
         "New Row Columns", getNewRowColumns(),
+        "Form", getForm(),
+        "Edit Mode", getEditMode(),
         "Show Column Widths", showColumnWidths(),
         "Min Column Width", getMinColumnWidth(),
         "Max Column Width", getMaxColumnWidth());
@@ -443,6 +462,12 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         case SHOW_COLUMN_WIDTHS:
           arr[i++] = showColumnWidths();
           break;
+        case FORM:
+          arr[i++] = getForm();
+          break;
+        case EDIT_MODE:
+          arr[i++] = getEditMode();
+          break;
       }
     }
     return Codec.beeSerialize(arr);
@@ -471,8 +496,16 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
     setPageSize(DataUtils.getDefaultPageSize());
   }
 
+  public void setEditMode(String editMode) {
+    this.editMode = editMode;
+  }
+
   public void setFooter(GridComponentDescription footer) {
     this.footer = footer;
+  }
+
+  public void setForm(String form) {
+    this.form = form;
   }
 
   public void setHasFooters(Boolean hasFooters) {

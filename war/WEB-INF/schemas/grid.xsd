@@ -38,6 +38,8 @@
     <xs:attribute name="pageSize" type="xs:positiveInteger" default="15" />
     <xs:attribute name="newRowColumns" type="xs:normalizedString" />
     <xs:attribute name="showColumnWidths" type="xs:boolean" />
+    <xs:attribute name="form" type="bee:nameType" />
+    <xs:attribute name="editMode" type="xs:normalizedString" />
   </xs:complexType>
 
   <xs:complexType name="baseColumn">

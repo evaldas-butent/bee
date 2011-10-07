@@ -190,11 +190,19 @@ public class SimplePager extends AbstractPagerImpl {
       return;
     }
 
-    int start = display.getVisibleRange().getStart();
-    int length = display.getVisibleRange().getLength();
-    int rowCount = display.getRowCount();
+    int start = BeeUtils.toNonNegativeInt(display.getVisibleRange().getStart());
+    int length = BeeUtils.toNonNegativeInt(display.getVisibleRange().getLength());
+    int rowCount = BeeUtils.toNonNegativeInt(display.getRowCount());
+    
+    if (start >= rowCount) {
+      start = Math.max(rowCount - 1, 0);
+    }
+    if (start + length > rowCount) {
+      length = Math.max(rowCount - length, 0);
+    }
 
-    widgetInfo.setText(createText(start + 1, Math.min(rowCount, start + length), rowCount));
+    widgetInfo.setText(createText(Math.min(start + 1, rowCount),
+        Math.min(rowCount, start + length), rowCount));
 
     widgetFirst.setEnabled(start > 0);
     widgetPrev.setEnabled(start > 0);

@@ -1579,6 +1579,18 @@ public class BeeUtils {
     return src.charAt(0) == pfx;
   }
 
+  public static boolean isPrefix(String src, String pfx) {
+    if (src == null || pfx == null) {
+      return false;
+    }
+    int srcLen = src.length();
+    int pfxLen = pfx.length();
+    if (pfxLen <= 0 || srcLen <= pfxLen) {
+      return false;
+    }
+    return same(left(src, pfxLen), pfx);
+  }
+  
   /**
    * Checks if the specified character is a prefix or a suffix.
    * 
@@ -2267,6 +2279,13 @@ public class BeeUtils {
     return str;
   }
 
+  public static String removePrefix(String str, String pfx) {
+    if (isPrefix(str, pfx)) {
+      return str.substring(pfx.length());
+    }
+    return str;
+  }
+  
   /**
    * Removes specified prefix and suffix from a String.
    * 

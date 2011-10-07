@@ -14,7 +14,8 @@ public class Bee implements EntryPoint {
   public void onModuleLoad() {
     BeeConst.setClient();
 
-    BeeKeeper bk = new BeeKeeper(RootLayoutPanel.get(), GWT.getModuleBaseURL() + "bee");
+    BeeKeeper bk = new BeeKeeper(RootLayoutPanel.get(), 
+        GWT.getModuleBaseURL() + GWT.getModuleName());
 
     bk.init();
     bk.start();

@@ -91,7 +91,9 @@ public class GridHolderBean {
   private static final String ATTR_PAGE_SIZE = "pageSize";
   private static final String ATTR_NEW_ROW_COLUMNS = "newRowColumns";
   private static final String ATTR_SHOW_COLUMN_WIDTHS = "showColumnWidths";
-
+  private static final String ATTR_FORM = "form";
+  private static final String ATTR_EDIT_MODE = "editMode";
+  
   private static final String ATTR_WIDTH = "width";
   private static final String ATTR_MIN_WIDTH = "minWidth";
   private static final String ATTR_MAX_WIDTH = "maxWidth";
@@ -652,6 +654,15 @@ public class GridHolderBean {
     String newRowColumns = src.getAttribute(ATTR_NEW_ROW_COLUMNS);
     if (!BeeUtils.isEmpty(newRowColumns)) {
       dst.setNewRowColumns(newRowColumns.trim());
+    }
+    
+    String form = src.getAttribute(ATTR_FORM);
+    if (!BeeUtils.isEmpty(form)) {
+      dst.setForm(form);
+    }
+    String editMode = src.getAttribute(ATTR_EDIT_MODE);
+    if (!BeeUtils.isEmpty(editMode)) {
+      dst.setEditMode(editMode);
     }
 
     GridComponentDescription header = getComponent(src, TAG_HEADER);

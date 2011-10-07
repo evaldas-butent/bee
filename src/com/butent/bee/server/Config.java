@@ -45,14 +45,11 @@ public class Config {
   static {
     Class<?> z = Config.class;
     String path = z.getResource(z.getSimpleName() + ".class").getPath();
+    
+    String sub = "/WEB-INF/";
+    String w = path.substring(path.indexOf('/'), path.indexOf(sub) + sub.length() - 1);
+    LogUtils.infoNow(logger, "web inf path:", w);
 
-    int idx = path.indexOf("/" + z.getName().replace('.', '/') + ".class");
-    String w;
-    if (idx > 0) {
-      w = path.substring(0, path.substring(0, idx).lastIndexOf('/'));
-    } else {
-      w = path.substring(0, path.indexOf("/classes/"));
-    }
     File dir = new File(w);
 
     WAR_DIR = dir.getParentFile();

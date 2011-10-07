@@ -407,7 +407,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
   public IsRow getRowData() {
     return rowData;
   }
-
+  
   public JavaScriptObject getRowJso() {
     if (!hasData() || getRowData() == null) {
       return null;
@@ -667,7 +667,10 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
   }
 
   public void setRowData(int start, List<? extends IsRow> values) {
-    if (!BeeUtils.isEmpty(values)) {
+    if (BeeUtils.isEmpty(values)) {
+      setRowData(null);
+      refreshData(false);
+    } else {  
       setRowData(values.get(0));
       refreshData(true);
     }
@@ -713,6 +716,8 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
       setRowCount(count);
       if (count > 0) {
         RangeChangeEvent.fire(this, getVisibleRange());
+      } else {
+        setRowData(0, null);
       }
     }
   }
@@ -912,6 +917,14 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
   private Evaluator getRowEditable() {
     return rowEditable;
   }
+  
+  private long getRowId() {
+    if (getRowData() == null) {
+      return 0;
+    } else {
+      return getRowData().getId();
+    }
+  }
 
   private List<TabEntry> getTabOrder() {
     return tabOrder;
@@ -1016,7 +1029,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
 
     refreshEditableWidgets();
     refreshDisplayWidgets();
-    refreshGridWidgets(getRowData().getId());
+    refreshGridWidgets(getRowId());
 
     fireLoadingStateChange(LoadingStateChangeEvent.LoadingState.LOADED);
 

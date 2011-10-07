@@ -10,4 +10,31 @@
     <auth-method>BASIC</auth-method>
     <realm-name>DBRealm</realm-name>
   </login-config>
+  
+  <servlet>
+    <servlet-name>BeeServlet</servlet-name>
+    <servlet-class>com.butent.bee.server.BeeServlet</servlet-class>
+  </servlet>
+  <servlet>
+    <servlet-name>FileServlet</servlet-name>
+    <servlet-class>com.butent.bee.server.FileServlet</servlet-class>
+  </servlet>
+  <servlet>
+    <servlet-name>UploadServlet</servlet-name>
+    <servlet-class>com.butent.bee.server.UploadServlet</servlet-class>
+  </servlet>
+
+  <servlet-mapping>
+    <servlet-name>BeeServlet</servlet-name>
+    <url-pattern>/bee/bee</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>FileServlet</servlet-name>
+    <url-pattern>/bee/file</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>UploadServlet</servlet-name>
+    <url-pattern>/bee/upload</url-pattern>
+  </servlet-mapping>
+ 
 </web-app>
