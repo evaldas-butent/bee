@@ -198,7 +198,7 @@ public class SimplePager extends AbstractPagerImpl {
       start = Math.max(rowCount - 1, 0);
     }
     if (start + length > rowCount) {
-      length = Math.max(rowCount - length, 0);
+      length = Math.max(rowCount - start, 0);
     }
 
     widgetInfo.setText(createText(Math.min(start + 1, rowCount),

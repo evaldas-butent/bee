@@ -23,6 +23,7 @@ import com.butent.bee.client.view.GridContainerView;
 import com.butent.bee.client.view.HasSearch;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.ReadyForUpdateEvent;
+import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.search.SearchView;
 import com.butent.bee.shared.Assert;
@@ -51,7 +52,7 @@ import java.util.Set;
  */
 
 public class GridPresenter implements Presenter, ReadyForInsertEvent.Handler,
-    ReadyForUpdateEvent.Handler {
+    ReadyForUpdateEvent.Handler, SaveChangesEvent.Handler {
 
   private class DeleteCallback extends BeeCommand {
     private final Collection<RowInfo> rows;
@@ -277,6 +278,23 @@ public class GridPresenter implements Presenter, ReadyForInsertEvent.Handler,
       }
     });
   }
+  
+  public void onSaveChanges(SaveChangesEvent event) {
+    final String viewName = getDataName();
+    final long rowId = event.getRowId();
+
+    Queries.update(viewName, rowId, event.getVersion(), event.getColumns(), event.getOldValues(),
+        event.getNewValues(), new Queries.RowCallback() {
+          public void onFailure(String[] reason) {
+            showFailure("Save Changes", reason);
+          }
+
+          public void onSuccess(BeeRow row) {
+            BeeKeeper.getLog().info("changes saved", viewName, rowId);
+            BeeKeeper.getBus().fireEvent(new RowUpdateEvent(viewName, row));
+          }
+        });
+  }
 
   public void onViewUnload() {
     if (BeeKeeper.getScreen().isTemporaryDetach()) {
@@ -310,6 +328,8 @@ public class GridPresenter implements Presenter, ReadyForInsertEvent.Handler,
 
     view.getContent().addReadyForUpdateHandler(this);
     view.getContent().addReadyForInsertHandler(this);
+
+    view.getContent().addSaveChangesHandler(this);
   }
 
   private Provider createProvider(GridContainerView view, String viewName, BeeRowSet rowSet,

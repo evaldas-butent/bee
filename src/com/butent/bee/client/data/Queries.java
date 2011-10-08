@@ -350,6 +350,28 @@ public class Queries {
           }
         });
   }
+  
+  public static void update(String viewName, long rowId, long version, List<BeeColumn> columns,
+      List<String> oldValues, List<String> newValues, RowCallback callback) {
+    Assert.notEmpty(viewName);
+    Assert.notNull(columns);
+    Assert.notNull(oldValues);
+    Assert.notNull(newValues);
+    
+    int cc = columns.size();
+    Assert.isPositive(cc);
+    Assert.isTrue(cc == oldValues.size());
+    Assert.isTrue(cc == newValues.size());
+    
+    BeeRowSet rs = new BeeRowSet(columns);
+    rs.setViewName(viewName);
+    rs.addRow(rowId, version, oldValues.toArray(new String[0]));
+    for (int i = 0; i < cc; i++) {
+      rs.getRow(0).preliminaryUpdate(i, newValues.get(i));
+    }
+    
+    update(rs, true, callback);
+  }
 
   private Queries() {
   }
