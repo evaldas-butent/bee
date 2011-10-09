@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BeeTable xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../schemas/table.xsd"
+
+  name="Tasks"
+  idName="TaskID"
+  x="10" y="10"
+  >
+  <BeeFields>
+    <BeeField name="Priority" type="STRING" precision="10" notNull="true" />
+    <BeeField name="State" type="STRING" precision="10" />
+    <BeeField name="Task" type="TEXT" notNull="true" />
+    <BeeField name="FinishTime" type="DATETIME" notNull="true" />
+    <BeeField name="CompletionTime" type="DATETIME" />
+    <BeeField name="ConfirmationTime" type="DATETIME" />
+    <BeeField name="Owner" type="LONG" notNull="true" relation="Users" />
+    <BeeField name="Executor" type="LONG" notNull="true" relation="Users" />
+    <BeeField name="Company" type="LONG" relation="Companies" />
+    <BeeField name="Person" type="LONG" relation="Persons" />
+  </BeeFields>
+</BeeTable>

@@ -4,10 +4,8 @@
 
   name="Companies"
   source="Companies"
-  filter="Person="
   >
   <BeeColumns>
-    <BeeColumn name="Person" expression="Person" />
     <BeeColumn name="Name" expression="Name" />
     <BeeColumn name="Code" expression="Code" />
     <BeeColumn name="VATCode" expression="VATCode" />
@@ -19,6 +17,9 @@
     <BeeColumn name="City" expression="Contact>City" />
     <BeeColumn name="CityName" expression="Contact>City>Name" />
     <BeeColumn name="CountryName" expression="Contact>City>Country>Name" />
+    <BeeColumn name="Person" expression="Person" />
+    <BeeColumn name="FirstName" expression="Person>FirstName" />
+    <BeeColumn name="LastName" expression="Person>LastName" />
   </BeeColumns>
   <BeeOrder>
     <OrderBy column="Name" />

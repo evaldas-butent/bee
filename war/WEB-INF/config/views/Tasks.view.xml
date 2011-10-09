@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BeeView xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../schemas/view.xsd"
+
+  name="Tasks"
+  source="Tasks"
+  >
+  <BeeColumns>
+    <BeeColumn name="Priority" expression="Priority" />
+    <BeeColumn name="State" expression="State" />
+    <BeeColumn name="Task" expression="Task" />
+    <BeeColumn name="FinishTime" expression="FinishTime" />
+    <BeeColumn name="CompletionTime" expression="CompletionTime" />
+    <BeeColumn name="ConfirmationTime" expression="ConfirmationTime" />
+    <BeeColumn name="Owner" expression="Owner" />
+    <BeeColumn name="Executor" expression="Executor" />
+    <BeeColumn name="ExecutorFirstName" expression="Executor>Person>FirstName" />
+    <BeeColumn name="ExecutorLastName" expression="Executor>Person>LastName" />
+    <BeeColumn name="Company" expression="Company" />
+    <BeeColumn name="CompanyName" expression="Company>Name" />
+    <BeeColumn name="Person" expression="Person" />
+    <BeeColumn name="PersonFirstName" expression="Person>FirstName" />
+    <BeeColumn name="PersonLastName" expression="Person>LastName" />
+  </BeeColumns>
+  <BeeOrder>
+    <OrderBy column="Name" />
+  </BeeOrder>
+</BeeView>
+ 

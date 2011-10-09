@@ -3,14 +3,12 @@
   xsi:schemaLocation="http://www.butent.com/bee ../../schemas/view.xsd"
 
   name="Persons"
-  source="Companies"
+  source="Persons"
   >
   <BeeColumns>
-    <BeeColumn name="FirstName" expression="Person-FirstName" />
-    <BeeColumn name="LastName" expression="Person-LastName" />
-    <BeeColumn name="Position" expression="Person-Position" />
-    <BeeColumn name="Name" expression="Name" />
-    <BeeColumn name="Code" expression="Code" />
+    <BeeColumn name="FirstName" expression="FirstName" />
+    <BeeColumn name="LastName" expression="LastName" />
+    <BeeColumn name="Position" expression="Position" />
     <BeeColumn name="Phone" expression="Contact>Phone" />
     <BeeColumn name="Email" expression="Contact>Email" />
     <BeeColumn name="Address" expression="Contact>Address" />
@@ -19,10 +17,11 @@
     <BeeColumn name="City" expression="Contact>City" />
     <BeeColumn name="CityName" expression="Contact>City>Name" />
     <BeeColumn name="CountryName" expression="Contact>City>Country>Name" />
+    <BeeColumn name="Company" expression="Company" />
+    <BeeColumn name="CompanyName" expression="Company-Name" />
   </BeeColumns>
   <BeeOrder>
     <OrderBy column="LastName" />
     <OrderBy column="FirstName" />
   </BeeOrder>
 </BeeView>
- 

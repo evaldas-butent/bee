@@ -2,13 +2,15 @@
 <BeeMenu>
   <item id="zin_menu" order="10" text="Žinynai" />
   <item id="miestai" parent="zin_menu" order="20" text="Miestai" service="grid" parameters="Cities" />
-  <item id="salys" parent="zin_menu" order="30" text="Šalys" service="grid" parameters="Countries" separators="*" />
+  <item id="salys" parent="zin_menu" order="30" text="Šalys" service="grid" parameters="Countries" />
 
-  <item id="companies" order="20" text="Įmonės" service="form" parameters="Companies" />
-  <item id="persons" order="30" text="Asmenys" service="grid" parameters="Persons" />
+  <item id="cont_menu" order="10" text="Kontaktai" />
+  <item id="clients" parent="cont_menu" order="10" text="Klientai" service="grid" parameters="Companies" />
+  <item id="persons" parent="cont_menu" order="20" text="Asmenys" service="grid" parameters="Persons" separators="*" />
+
+  <item id="tasks" order="20" text="Užduotys" service="form" parameters="Tasks" />
 
   <item id="adm_menu" order="200" text="Administravimas" />
   <item id="roles" parent="adm_menu" order="10" text="Rolės" service="grid" parameters="Roles" />
-  <item id="vartot" parent="adm_menu" order="20" text="Vartotojai" service="grid" parameters="Users" />
-  <item id="naudot" parent="adm_menu" order="30" text="Naudotojai" service="form" parameters="Users" />
+  <item id="users" parent="adm_menu" order="20" text="Vartotojai" service="grid" parameters="Users" />
 </BeeMenu>

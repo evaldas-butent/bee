@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BeeForm
+  xmlns="http://www.butent.com/bee"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../schemas/form.xsd"
+  
+  name="Tasks" viewName="Tasks" caption="Užduotys">
+
+  <LayoutPanel>
+    <layer left="1" leftUnit="%" right="1" rightUnit="%" top="1" topUnit="%" bottom="1" bottomUnit="%">
+      <ScrollPanel>
+        <FlexTable cellSpacing="10">
+          <row>
+            <cell><Label html="ID" /></cell>
+            <cell>
+              <LongLabel>
+                <calc>
+                  <expression>rowId</expression>
+                </calc>
+              </LongLabel>
+            </cell>
+            <cell><Label html="Prioritetas" horizontalAlignment="right" /></cell>
+            <cell>
+              <ListBox source="Priority">
+                <item>Aukštas</item>
+                <item>Vidutinis</item>
+                <item>Žemas</item>
+              </ListBox>
+            </cell>
+          </row>
+          <row>
+            <cell><Label html="Pabaigos data" /></cell>
+            <cell><InputDateTime source="FinishTime" /></cell>
+            <cell><Label html="Įmonė" horizontalAlignment="right" /></cell>
+            <cell>
+              <DataSelector source="CompanyName" relSource="Company" relView="Companies" relColumn="Name" />
+            </cell>
+          </row>
+          <row>
+            <cell><Label html="Vykdytojas" /></cell>
+            <cell>
+              <DataSelector source="ExecutorFirstName" relSource="Executor" relView="Users" relColumn="FirstName" />
+            </cell>
+            <cell><Label html="Asmuo" horizontalAlignment="right" /></cell>
+            <cell>
+              <DataSelector source="PersonFirstName" relSource="Person" relView="Persons" relColumn="FirstName" />
+            </cell>
+          </row>
+          <row>
+            <cell><Label html="Užduotis" /></cell>
+            <cell colSpan="3">
+              <InputArea source="Task" style="width: 500px; height: 60px;" />
+            </cell>
+          </row>
+        </FlexTable>
+      </ScrollPanel>
+    </layer>
+  </LayoutPanel>
+</BeeForm>  

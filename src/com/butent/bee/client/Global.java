@@ -7,8 +7,8 @@ import com.google.web.bindery.event.shared.Event;
 import com.butent.bee.client.data.Explorer;
 import com.butent.bee.client.dialog.InputBoxes;
 import com.butent.bee.client.dialog.MessageBoxes;
-import com.butent.bee.client.grid.TextCellType;
 import com.butent.bee.client.grid.GridFactory;
+import com.butent.bee.client.grid.TextCellType;
 import com.butent.bee.client.resources.Images;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -46,7 +46,7 @@ public class Global implements Module {
   private static final Explorer dataExplorer = new Explorer();
 
   private static final Map<String, Variable> vars = new HashMap<String, Variable>();
-  
+
   private static final CacheManager cache = new CacheManager();
 
   private static final Images.Resources images = Images.createResources();
@@ -101,7 +101,7 @@ public class Global implements Module {
   public static MessageBoxes getMsgBoxen() {
     return msgBoxen;
   }
-  
+
   public static Variable getVar(String name) {
     Assert.contains(vars, name);
     return vars.get(name);
@@ -302,17 +302,17 @@ public class Global implements Module {
     initDataExplorer();
     initVars();
     initImages();
-    
+
     exportMethods();
   }
 
   public void start() {
   }
-  
+
   private native void exportMethods() /*-{
     $wnd.Bee_updateForm = $entry(@com.butent.bee.client.ui.UiHelper::updateForm(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;));
   }-*/;
-  
+
   private void initCache() {
     BeeKeeper.getBus().registerDataHandler(getCache());
   }
@@ -323,11 +323,11 @@ public class Global implements Module {
 
     BeeKeeper.getBus().registerRowInsertHandler(getDataExplorer());
   }
-  
+
   private void initImages() {
     Images.init(getImages());
   }
-  
+
   private void initVars() {
     createVar(Service.VAR_CLASS_NAME, "Class name");
     createVar(Service.VAR_PACKAGE_LIST, "Default Packages");
@@ -426,7 +426,7 @@ public class Global implements Module {
       }
 
       createVar(MenuConstants.varMenuBarType(i), BeeConst.STRING_EMPTY,
-          BeeType.BOOLEAN, BeeUtils.toString(false));
+          BeeType.BOOLEAN, BeeUtils.toString(i > 0));
     }
 
     createVar(MenuConstants.VAR_ROOT_LIMIT, "Max  Roots", BeeType.INT,

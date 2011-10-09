@@ -12,6 +12,7 @@
       <BeeDataColumn name="Address" source="Address" caption="Adresas" />
       <BeeDataColumn name="City" source="CityName" caption="Miestas" />
       <BeeDataColumn name="Country" source="CountryName" caption="Šalis" />
+      <BeeDataColumn name="CompanyName" source="CompanyName" caption="Įmonė" />
     </columns>
   </BeeGrid>
 </BeeGrids>
