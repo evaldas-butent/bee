@@ -50,7 +50,6 @@ public class MenuManager implements Module {
 
   private List<String> layouts = new ArrayList<String>();
   private boolean[] options = null;
-  private int[] limits = null;
 
   public MenuManager() {
     super();
@@ -67,17 +66,12 @@ public class MenuManager implements Module {
     layouts.clear();
     options = new boolean[MenuConstants.MAX_MENU_DEPTH];
 
-    limits = new int[MenuConstants.MAX_MENU_DEPTH];
-    int rLim = Global.getVarInt(MenuConstants.VAR_ROOT_LIMIT);
-    int iLim = Global.getVarInt(MenuConstants.VAR_ITEM_LIMIT);
-
     for (int i = MenuConstants.ROOT_MENU_INDEX; i < MenuConstants.MAX_MENU_DEPTH; i++) {
       layouts.add(Global.getVarValue(MenuConstants.varMenuLayout(i)));
       options[i] = Global.getVarBoolean(MenuConstants.varMenuBarType(i));
-      limits[i] = MenuConstants.isRootLevel(i) ? rLim : iLim;
     }
 
-    Widget w = createMenu(0, MenuUtils.limitEntries(getRoots(), rLim), null);
+    Widget w = createMenu(0, getRoots(), null);
 
     boolean ok = (w != null);
     if (ok) {
@@ -315,7 +309,6 @@ public class MenuManager implements Module {
     Widget rw = createWidget(layout, opt, entries, level);
 
     boolean lastLevel = (level >= MenuConstants.MAX_MENU_DEPTH - 1);
-    int limit = lastLevel ? getLimit(level) : getLimit(level + 1);
 
     List<MenuEntry> children = null;
     Widget cw = null;
@@ -324,7 +317,7 @@ public class MenuManager implements Module {
 
     for (MenuEntry entry : entries) {
       if (!lastLevel) {
-        children = MenuUtils.getChildren(getItems(), entry.getId(), true, limit);
+        children = MenuUtils.getChildren(getItems(), entry.getId(), true);
       }
 
       if (BeeUtils.isEmpty(children)) {
@@ -358,10 +351,10 @@ public class MenuManager implements Module {
 
     } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_CELL_TREE)) {
       w = new BeeCellTree(new MenuTreeViewModel(new MenuDataProvider(entries),
-          new MenuDataProvider(getItems(), getItemLimit())), null);
+          new MenuDataProvider(getItems())), null);
     } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_CELL_BROWSER)) {
       w = new BeeCellBrowser(new MenuTreeViewModel(new MenuDataProvider(entries),
-          new MenuDataProvider(getItems(), getItemLimit())), null);
+          new MenuDataProvider(getItems())), null);
 
     } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_LIST)) {
       w = new MenuBar(level, true, MenuBar.BAR_TYPE.LIST, MenuItem.ITEM_TYPE.OPTION, opt);
@@ -397,18 +390,9 @@ public class MenuManager implements Module {
     return (getItems() == null) ? 0 : getItems().size();
   }
 
-  private int getItemLimit() {
-    return getLimit(MenuConstants.ROOT_MENU_INDEX + 1);
-  }
-
   private String getLayout(int idx) {
     Assert.isIndex(getLayouts(), idx);
     return getLayouts().get(idx);
-  }
-
-  private int getLimit(int idx) {
-    Assert.isIndex(limits, idx);
-    return limits[idx];
   }
 
   private boolean getOption(int idx) {

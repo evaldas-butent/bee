@@ -35,23 +35,14 @@ body, select {
   cursor: row-resize;
 }
 
-.bee-activeBlank {
-  background: azure;
-  background: -webkit-gradient(radial, 90% 5%, 15, 10% 90%, 45, from(Azure), color-stop(0.5, Honeydew), to(LavenderBlush));
-  background: -moz-radial-gradient(left top, cover, snow, aquamarine);
-}
-.bee-activeContent {
-  border: 3px solid red;
-  border-radius: 10px;
+.bee-activeBlank, .bee-activeContent {
+  border: 2px solid red;
 }
 
 .bee-MenuRoot, .bee-MenuBar {
   overflow: auto;
 }
 
-.bee-MenuRoot-flow {
-  border: 2px solid green;
-}
 .bee-MenuRoot ol {
   border: 4px groove LimeGreen;
   margin: 0;
@@ -82,6 +73,9 @@ body, select {
 
 .bee-MenuRoot-flow .bee-MenuItem-label {
   display: inline-block;
+  padding-top: 3px;
+  padding-bottom: 3px;
+  margin: 2px;
 }
 
 .bee-MenuItem-label {
@@ -692,7 +686,7 @@ body, select {
 
 .bee-RowEditor {
   border-collapse: collapse;
-}  
+}
 
 .bee-RowEditor tr:nth-child(odd) {
   background: #ffe;
@@ -742,12 +736,76 @@ body, select {
   top: 0;
   bottom: 0;
   overflow: auto;
-  background-color: AliceBlue;
 }
 
 .bee-Frame {
   width: 100%;
   height: 100%;
+}
+
+.bee-MainSearchBox {
+  width: 200px;
+}
+.bee-MainSearchOptions {
+  font-size: x-small;
+}
+
+.bee-SignIn-Popup {
+  background-color: whitesmoke;
+  border: 1px solid #e5e5e5;
+}
+.bee-SignIn-Panel {
+  width: 400px;
+  height: 320px;	
+}
+.bee-SignIn-Caption {
+  font-size: 16px;
+  color: #222;
+  position: absolute;
+  left: 20px;
+  top: 20px;
+}
+.bee-SignIn-Label {
+  font-size: 13px;
+  font-weight: bold;
+  color: #222;
+  position: absolute;
+  right: 220px;
+}
+.bee-SignIn-Input {
+  font-size: 15px;
+  height: 32px;
+  padding-left: 8px;
+  border: 1px solid #d9d9d9;
+  border-top: 1px solid silver;
+  background-color: #faffbd;
+  position: absolute;
+  left: 200px;
+  right: 20px;
+}
+.bee-SignIn-User {
+  top: 80px;
+}
+.bee-SignIn-Password {
+  top: 140px;
+}
+.bee-SignIn-Language {
+  font-size: 15px;
+  position: absolute;
+  left: 20px;
+  top: 220px;
+}
+.bee-SignIn-Button {
+  font-size: 13px;
+  font-weight: bold;
+  height: 32px;
+  padding-left: 8px;
+  padding-right: 8px;
+  color: white;
+  background-color: #4d90fe;
+  position: absolute;
+  right: 20px;
+  bottom: 20px;
 }
 
 .gwt-TreeItem-selected {
@@ -791,15 +849,14 @@ body, select {
   margin-left: 5px;
   padding-left: 5px;
   padding-right: 5px;
-  background: #8E8E8E;
-  color: white;
+  background: white;
+  color: #57574e;
   font-weight: normal;
   cursor: pointer;
 }
 .gwt-TabLayoutPanelTab-selected {
-  background: white;
-  color: #333;
-  font-weight: bold;
+  background: #d12421;
+  color: white;
   cursor: default;
 }
 

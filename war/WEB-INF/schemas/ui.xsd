@@ -200,6 +200,7 @@
       <xs:enumeration value="reload" />
       <xs:enumeration value="rewind" />
       <xs:enumeration value="save" />
+      <xs:enumeration value="search" />
       <xs:enumeration value="slider" />
       <xs:enumeration value="sliderDisabled" />
       <xs:enumeration value="sliderSliding" />

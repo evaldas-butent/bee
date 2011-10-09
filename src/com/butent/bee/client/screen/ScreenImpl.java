@@ -2,9 +2,11 @@ package com.butent.bee.client.screen;
 
 import com.google.common.collect.Lists;
 import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
-import com.google.gwt.layout.client.Layout;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HasWidgets;
@@ -19,8 +21,6 @@ import com.butent.bee.client.cli.CliWidget;
 import com.butent.bee.client.composite.ButtonGroup;
 import com.butent.bee.client.composite.RadioGroup;
 import com.butent.bee.client.composite.ResourceEditor;
-import com.butent.bee.client.composite.ValueSpinner;
-import com.butent.bee.client.composite.VolumeSlider;
 import com.butent.bee.client.dialog.Notification;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
@@ -44,11 +44,13 @@ import com.butent.bee.client.ui.MenuService;
 import com.butent.bee.client.ui.StateService;
 import com.butent.bee.client.utils.BeeCommand;
 import com.butent.bee.client.view.View;
+import com.butent.bee.client.view.search.SearchBox;
 import com.butent.bee.client.widget.BeeButton;
 import com.butent.bee.client.widget.BeeCheckBox;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.client.widget.BeeListBox;
+import com.butent.bee.client.widget.InternalLink;
 import com.butent.bee.client.widget.SimpleBoolean;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeResource;
@@ -177,7 +179,7 @@ public class ScreenImpl implements Screen {
       case PRIORITY_INIT:
         return DO_NOT_CALL;
       case PRIORITY_START:
-        return 10;
+        return DO_NOT_CALL;
       case PRIORITY_END:
         return DO_NOT_CALL;
       default:
@@ -369,10 +371,11 @@ public class ScreenImpl implements Screen {
     if (w != null) {
       p.add(w, ScrollBars.BOTH);
     }
-
+    
     getRootPanel().add(p);
-
     setScreenPanel(p);
+    
+    BeeKeeper.getLog().hide();
   }
 
   protected HasWidgets getDataPanel() {
@@ -413,25 +416,65 @@ public class ScreenImpl implements Screen {
 
   protected Widget initNorth() {
     Complex cp = new Complex();
+    cp.addStyleName("bee-NorthContainer");
 
-    cp.addLeftTop(new BeeImage(Global.getImages().bee()), 1, 1);
-
-    BeeButton auth = new BeeButton(true);
-    cp.addLeftTop(auth, 80, 4);
-    setAuthButton(auth);
-
-    BeeLabel user = new BeeLabel();
-    cp.addLeftTop(user, 80, 32);
-    setSignature(user);
-
-    updateUser(null);
+    BeeImage bee = new BeeImage(Global.getImages().bee());
+    String ver = Settings.getVersion();
+    if (!BeeUtils.isEmpty(ver)) {
+      bee.setTitle(ver);
+    }
+    bee.addClickHandler(new ClickHandler() {
+      public void onClick(ClickEvent event) {
+        Window.open("http://www.butent.com", "", "");
+      }
+    });
+    
+    cp.addLeftTop(bee, 4, 2);
+    
+    FlexTable searchContainer = new FlexTable();
+    searchContainer.addStyleName("bee-MainSearchContainer");
+    
+    SearchBox box = new SearchBox("search");
+    box.addStyleName("bee-MainSearchBox");
+    searchContainer.setWidget(0, 0, box);
+    
+    BeeImage go = new BeeImage(Global.getImages().search());
+    go.addStyleName("bee-MainSearchGo");
+    searchContainer.setWidget(0, 1, go);
+    
+    InternalLink opt = new InternalLink("search options", "");
+    opt.addStyleName("bee-MainSearchOptions");
+    searchContainer.setWidget(1, 0, opt);
+    
+    cp.addLeftTop(searchContainer, 100, 4);
 
     BeeLayoutPanel mp = new BeeLayoutPanel();
-    cp.addLeftTop(mp, 280, 2);
-    StyleUtils.setRight(mp, 1);
+    mp.addStyleName("bee-MainMenu");
+
+    cp.addLeftTop(mp, 400, 8);
+    StyleUtils.setRight(mp, 200);
     StyleUtils.setBottom(mp, 1);
 
     setMenuPanel(mp);
+    
+    BeeLabel user = new BeeLabel();
+    user.addStyleName("bee-UserSignature");
+
+    cp.addRightTop(user, 30, 4);
+    setSignature(user);
+
+    updateUser(null);
+    
+    BeeImage out = new BeeImage(Global.getImages().exit(), new BeeCommand() {
+      @Override
+      public void execute() {
+        if (Global.nativeConfirm("Sign out")) {
+          BeeKeeper.getBus().dispatchService(Service.LOGOUT, null, null);
+          Window.Location.reload();
+        }
+      }
+    });
+    cp.addRightTop(out, 2, 2);
 
     setNotification(new Notification());
     cp.addRightTop(getNotification(), 0, 0);
@@ -441,9 +484,6 @@ public class ScreenImpl implements Screen {
 
   protected Widget initSouth() {
     BeeLayoutPanel p = new BeeLayoutPanel();
-
-    CliWidget cli = new CliWidget();
-    p.addLeftRightTop(cli, 1, Unit.EM, 500, Unit.PX, 3, Unit.PX);
 
     Horizontal hor = new Horizontal();
     hor.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
@@ -463,11 +503,6 @@ public class ScreenImpl implements Screen {
     p.add(hor);
     p.setWidgetRightWidth(hor, 240, Unit.PX, 200, Unit.PX);
 
-    BeeLabel ver = new BeeLabel(Settings.getVersion());
-    p.add(ver);
-    p.setWidgetRightWidth(ver, 10, Unit.PX, 200, Unit.PX);
-    p.setWidgetHorizontalPosition(ver, Layout.Alignment.END);
-
     return p;
   }
 
@@ -479,13 +514,11 @@ public class ScreenImpl implements Screen {
 
     fav.add(new BeeLabel(), "Menu", h);
     fav.add(new BeeLabel(), "Records", h);
-    fav.add(new BeeLabel(), "Grids", h);
-    fav.add(new BeeLabel(), "Forms", h);
     fav.add(new BeeLabel(), "Filters", h);
     fav.add(new BeeLabel(), "Reports", h);
     fav.add(new BeeLabel(), "Dashboards", h);
 
-    tp.add(fav, new BeeImage(Global.getImages().bookmark()));
+    tp.add(fav, "Favorites");
 
     tp.add(new BeeLabel(), "Recent");
 
@@ -507,19 +540,11 @@ public class ScreenImpl implements Screen {
       fp.setWidget(i, 1, new SimpleBoolean(Global.getVar(name)));
     }
 
-    ValueSpinner spinner = new ValueSpinner(Global.getVar(MenuConstants.VAR_ROOT_LIMIT), 0, 30, 3);
-    DomUtils.setWidth(spinner, 60);
-    fp.setWidget(r, 0, spinner);
-
-    VolumeSlider slider = new VolumeSlider(Global.getVar(MenuConstants.VAR_ITEM_LIMIT), 0, 50, 5);
-    slider.setPixelSize(80, 20);
-    fp.setWidget(r + 1, 0, slider);
-
-    fp.setWidget(r, 1, new BeeButton(Global.constants.refresh(), Service.REFRESH_MENU));
-    fp.setWidget(r + 1, 1, new BeeButton("BEE", new MenuService().name(), "stage_dummy"));
+    fp.setWidget(r, 0, new BeeButton(Global.constants.refresh(), Service.REFRESH_MENU));
+    fp.setWidget(r, 1, new BeeButton("BEE", new MenuService().name(), "stage_dummy"));
 
     BeeCheckBox toggle = new BeeCheckBox("Log");
-    toggle.setValue(true);
+    toggle.setValue(false);
     toggle.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
       public void onValueChange(ValueChangeEvent<Boolean> event) {
         if (event.getValue()) {
@@ -529,7 +554,7 @@ public class ScreenImpl implements Screen {
         }
       }
     });
-    fp.setWidget(r + 2, 0, toggle);
+    fp.setWidget(r + 1, 0, toggle);
 
     tp.add(fp, "Options");
 
@@ -557,6 +582,8 @@ public class ScreenImpl implements Screen {
     adm.add(new RadioGroup(getElCell(), false, BeeKeeper.getStorage().checkEnum(getElCell(),
         TextCellType.TEXT_EDIT), TextCellType.values()));
 
+    adm.add(new CliWidget());
+    
     tp.add(adm, "Admin");
 
     return tp;

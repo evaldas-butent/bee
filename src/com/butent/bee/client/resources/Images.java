@@ -158,6 +158,9 @@ public class Images {
     @Source("save.png")
     ImageResource save();
 
+    @Source("search.png")
+    ImageResource search();
+    
     @Source("slider.gif")
     ImageResource slider();
 
@@ -261,6 +264,8 @@ public class Images {
     map.put(key("rewind"), resources.rewind());
 
     map.put(key("save"), resources.save());
+
+    map.put(key("search"), resources.search());
 
     map.put(key("slider"), resources.slider());
     map.put(key("sliderDisabled"), resources.sliderDisabled());

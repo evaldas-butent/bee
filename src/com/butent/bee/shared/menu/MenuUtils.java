@@ -12,7 +12,7 @@ import java.util.List;
 
 public class MenuUtils {
   public static List<MenuEntry> getChildren(List<MenuEntry> entries, String id,
-      boolean isOrdered, int limit) {
+      boolean isOrdered) {
     Assert.notNull(entries);
     Assert.notEmpty(id);
 
@@ -22,9 +22,6 @@ public class MenuUtils {
     for (MenuEntry entry : entries) {
       if (BeeUtils.same(entry.getParent(), id)) {
         lst.add(entry);
-        if (limit > 0 && lst.size() >= limit) {
-          break;
-        }
         if (isOrdered) {
           tg = true;
         }

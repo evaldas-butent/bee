@@ -12,7 +12,6 @@ import java.util.List;
  */
 
 public class MenuDataProvider extends ListDataProvider<MenuEntry> {
-  private int limit = 0;
 
   public MenuDataProvider() {
     super();
@@ -22,21 +21,7 @@ public class MenuDataProvider extends ListDataProvider<MenuEntry> {
     super(lst);
   }
 
-  public MenuDataProvider(List<MenuEntry> lst, int limit) {
-    this(lst);
-    this.limit = limit;
-  }
-
   public List<MenuEntry> getChildren(String id, boolean isOrdered) {
-    return MenuUtils.getChildren(getList(), id, isOrdered, getLimit());
+    return MenuUtils.getChildren(getList(), id, isOrdered);
   }
-
-  public int getLimit() {
-    return limit;
-  }
-
-  public void setLimit(int limit) {
-    this.limit = limit;
-  }
-
 }

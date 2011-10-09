@@ -6,6 +6,7 @@ import com.butent.bee.client.widget.InputText;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
 
@@ -18,11 +19,17 @@ public class SearchBox extends InputText implements SearchView {
   private Presenter presenter = null;
 
   public SearchBox() {
-    super();
-    DomUtils.setSearch(this);
-    DomUtils.setPlaceholder(this, "filter...");
+    this("filter...");
   }
 
+  public SearchBox(String placeholder) {
+    super();
+    DomUtils.setSearch(this);
+    if (!BeeUtils.isEmpty(placeholder)) {
+      DomUtils.setPlaceholder(this, placeholder);
+    }
+  }
+  
   @Override
   public String getDefaultStyleName() {
     return "bee-SearchBox";

@@ -428,10 +428,5 @@ public class Global implements Module {
       createVar(MenuConstants.varMenuBarType(i), BeeConst.STRING_EMPTY,
           BeeType.BOOLEAN, BeeUtils.toString(i > 0));
     }
-
-    createVar(MenuConstants.VAR_ROOT_LIMIT, "Max  Roots", BeeType.INT,
-        BeeUtils.transform(MenuConstants.DEFAULT_ROOT_LIMIT));
-    createVar(MenuConstants.VAR_ITEM_LIMIT, "Max  Items", BeeType.INT,
-        BeeUtils.transform(MenuConstants.DEFAULT_ITEM_LIMIT));
   }
 }

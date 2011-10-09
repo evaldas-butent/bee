@@ -59,6 +59,10 @@ public class Browser {
     }-*/;
   }
 
+  public static native void close() /*-{
+    $wnd.close();
+  }-*/;
+  
   public static List<Property> getLocationInfo() {
     List<Property> lst = PropertyUtils.createProperties(
         "Hash", Window.Location.getHash(),

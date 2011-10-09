@@ -127,6 +127,11 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
   public RadioGroup(boolean vertical) {
     this(BeeUtils.createUniqueName("optiongroup"), vertical);
   }
+
+  public RadioGroup(boolean vertical, int value, List<String> opt) {
+    this(vertical);
+    addButtons(opt, value);
+  }
   
   public HandlerRegistration addBlurHandler(BlurHandler handler) {
     return null;

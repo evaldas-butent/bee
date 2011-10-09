@@ -32,9 +32,6 @@ public class MenuConstants {
   public static int MAX_MENU_DEPTH = 3;
   public static int ROOT_MENU_INDEX = 0;
 
-  public static final String VAR_ROOT_LIMIT = "menu_root_limit";
-  public static final String VAR_ITEM_LIMIT = "menu_item_limit";
-
   public static int DEFAULT_ROOT_LIMIT = 0;
   public static int DEFAULT_ITEM_LIMIT = 0;
 
