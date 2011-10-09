@@ -109,6 +109,9 @@ public class Images {
 
     @Source("edit_delete.png")
     ImageResource editDelete();
+    
+    @Source("exit.png")
+    ImageResource exit();
 
     @Source("first.png")
     ImageResource first();
@@ -227,6 +230,8 @@ public class Images {
 
     map.put(key("edit_add"), resources.editAdd());
     map.put(key("edit_delete"), resources.editDelete());
+
+    map.put(key("exit"), resources.exit());
 
     map.put(key("first"), resources.first());
 

@@ -42,7 +42,7 @@ public class MenuProvider {
   SystemBean sys;
 
   private String resource = "menu.xml";
-  private String transformation = "menu.xsl";
+  private String transformation = null;
 
   private MenuEntry[] menu = null;
 
@@ -127,7 +127,7 @@ public class MenuProvider {
       xslPath = Config.getPath(xsl);
     }
 
-    Property[][] arr = XmlUtils.getAttributesFromFile(xmlPath, xslPath, "menu");
+    Property[][] arr = XmlUtils.getAttributesFromFile(xmlPath, xslPath, "item");
     if (arr == null) {
       return ok;
     }

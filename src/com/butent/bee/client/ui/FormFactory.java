@@ -117,7 +117,7 @@ public class FormFactory {
     Assert.notEmpty(name);
     Assert.notNull(viewCallback);
     
-    readForm(name, new ResponseCallback() {
+    getForm(name, new ResponseCallback() {
       public void onResponse(ResponseObject response) {
         if (response.hasResponse(String.class)) {
           FormDescription fd = getFormDescription((String) response.getResponse(), formCallback);
@@ -162,20 +162,6 @@ public class FormFactory {
     return editor;
   }
 
-  public static void getForm(String name) {
-    getForm(name, getFormCallback(name));
-  }
-  
-  public static void getForm(String name, final FormCallback formCallback) {
-    readForm(name, new ResponseCallback() {
-      public void onResponse(ResponseObject response) {
-        if (response.hasResponse(String.class)) {
-          openForm((String) response.getResponse(), formCallback);
-        }
-      }
-    });
-  }
-  
   public static void importForm(final String name) {
     if (!BeeKeeper.getUser().checkLoggedIn()) {
       return;
@@ -241,7 +227,7 @@ public class FormFactory {
         ResponseObject response = CommUtils.getFormResonse(event.getResults());
         RpcUtils.dispatchMessages(response);
         if (response.hasResponse(String.class)) {
-          openForm((String) response.getResponse());
+          parseForm((String) response.getResponse());
           dialog.hide();
         } else {
           BeeKeeper.getLog().warning("unknown response type", response.getType());
@@ -257,12 +243,26 @@ public class FormFactory {
 
     inputName.setFocus(true);
   }
-
-  public static void openForm(String xml) {
-    openForm(xml, null);
+  
+  public static void openForm(String name) {
+    openForm(name, getFormCallback(name));
+  }
+  
+  public static void openForm(String name, final FormCallback formCallback) {
+    getForm(name, new ResponseCallback() {
+      public void onResponse(ResponseObject response) {
+        if (response.hasResponse(String.class)) {
+          parseForm((String) response.getResponse(), formCallback);
+        }
+      }
+    });
   }
 
-  public static void openForm(String xml, final FormCallback callback) {
+  public static void parseForm(String xml) {
+    parseForm(xml, null);
+  }
+
+  public static void parseForm(String xml, final FormCallback callback) {
     final FormDescription formDescription = getFormDescription(xml, callback);
     if (formDescription == null) {
       return;
@@ -292,14 +292,21 @@ public class FormFactory {
   
   public static void registerFormCallback(String formName, FormCallback callback) {
     Assert.notEmpty(formName);
-    formCallbacks.put(formName, callback);
+    formCallbacks.put(BeeUtils.normalize(formName), callback);
   }
 
-  private static FormCallback getFormCallback(String formName) {
-    Assert.notEmpty(formName);
-    return formCallbacks.get(formName);
+  private static void getForm(String name, ResponseCallback responseCallback) {
+    Assert.notEmpty(name);
+    Assert.notNull(responseCallback);
+    
+    BeeKeeper.getRpc().sendText(Service.GET_FORM, BeeUtils.trim(name), responseCallback);
   }
   
+  private static FormCallback getFormCallback(String formName) {
+    Assert.notEmpty(formName);
+    return formCallbacks.get(BeeUtils.normalize(formName));
+  }
+
   private static FormDescription getFormDescription(String xml, FormCallback callback) {
     Assert.notEmpty(xml);
 
@@ -319,7 +326,7 @@ public class FormFactory {
 
     return new FormDescription(formElement);
   }
-
+  
   private static void getInitialRowSet(final String viewName, final int rowCount,
       final FormDescription formDescription, final FormCallback callback) {
     int limit = formDescription.getAsyncThreshold();
@@ -346,13 +353,6 @@ public class FormFactory {
             showForm(formDescription, viewName, rowCount, rowSet, async, callback);
           }
         });
-  }
-  
-  private static void readForm(String name, ResponseCallback responseCallback) {
-    Assert.notEmpty(name);
-    Assert.notNull(responseCallback);
-    
-    BeeKeeper.getRpc().sendText(Service.GET_FORM, BeeUtils.trim(name), responseCallback);
   }
 
   private static void showForm(FormDescription formDescription, FormCallback callback) {

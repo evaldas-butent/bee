@@ -16,7 +16,6 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.ErrorEvent;
 import com.google.gwt.event.dom.client.ErrorHandler;
-import com.google.gwt.event.dom.client.HasClickHandlers;
 import com.google.gwt.i18n.client.LocaleInfo;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.i18n.shared.DateTimeFormat;
@@ -67,11 +66,7 @@ import com.butent.bee.client.layout.Direction;
 import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.layout.TilePanel;
 import com.butent.bee.client.tree.BeeTree;
-import com.butent.bee.client.ui.AbstractFormCallback;
-import com.butent.bee.client.ui.CompositeService;
 import com.butent.bee.client.ui.FormFactory;
-import com.butent.bee.client.ui.PasswordService;
-import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.utils.Browser;
 import com.butent.bee.client.utils.JsUtils;
 import com.butent.bee.client.utils.XmlUtils;
@@ -392,14 +387,16 @@ public class CliWorker {
     } else if (BeeUtils.inList(z, "f", "func")) {
       showFunctions(v, arr);
     } else if (z.equals("form") && arr.length == 2) {
-      FormFactory.getForm(arr[1]);
+      FormFactory.openForm(arr[1]);
     } else if (z.equals("fs")) {
       getFs();
     } else if (z.equals("gen") && BeeUtils.isDigit(ArrayUtils.getQuietly(arr, 2))) {
       BeeKeeper.getRpc().sendText(Service.GENERATE, BeeUtils.concat(1, arr[1], arr[2]));
     } else if (z.equals("geo")) {
       showGeo();
-    } else if (z.startsWith("grid")) {
+    } else if (z.equals("grid") && arr.length == 2) {
+      GridFactory.openGrid(arr[1]);
+    } else if (z.startsWith("gridinf")) {
       GridFactory.showGridInfo(args);
     } else if (z.equals("gwt")) {
       showGwt();
@@ -471,8 +468,6 @@ public class CliWorker {
       unicode(arr);
     } else if (z.startsWith("unit")) {
       showUnits(arr);
-    } else if (z.equals("users")) {
-      showUsers();
     } else if (z.equals("vars")) {
       showVars(arr);
     } else if (z.equals("video")) {
@@ -739,7 +734,7 @@ public class CliWorker {
               }
             });
             String url = GWT.getHostPageBaseURL() + "SqlDesigner/index.html?keyword=" + tmpKey;
-            FormFactory.openForm("<BeeForm><ResizePanel><Frame url=\"" + url
+            FormFactory.parseForm("<BeeForm><ResizePanel><Frame url=\"" + url
                 + "\" /></ResizePanel></BeeForm>");
           }
         }
@@ -1695,23 +1690,6 @@ public class CliWorker {
     } else {
       BeeKeeper.getScreen().showGrid(info);
     }
-  }
-
-  public static void showUsers() {
-    FormFactory.getForm("Users", new AbstractFormCallback() {
-      @Override
-      public void afterCreateWidget(String name, final Widget widget) {
-        if (BeeUtils.same(name, "ChangePassword") && widget instanceof HasClickHandlers) {
-          ((HasClickHandlers) widget).addClickHandler(new ClickHandler() {
-            @Override
-            public void onClick(ClickEvent event) {
-              CompositeService.doService(new PasswordService().name(),
-                  PasswordService.STG_GET_PASS, UiHelper.getForm(widget));
-            }
-          });
-        }
-      }
-    });
   }
 
   public static void showVars(String[] arr) {

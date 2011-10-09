@@ -12,25 +12,32 @@ import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.view.client.MultiSelectionModel;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.CachedProvider;
 import com.butent.bee.client.data.KeyProvider;
+import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.grid.model.CachedTableModel;
 import com.butent.bee.client.grid.model.TableModel;
 import com.butent.bee.client.grid.model.TableModelHelper.Request;
 import com.butent.bee.client.grid.model.TableModelHelper.Response;
 import com.butent.bee.client.grid.render.FixedWidthGridBulkRenderer;
+import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.view.grid.CellGrid;
+import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.IsTable;
+import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.ui.CellType;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -136,6 +143,8 @@ public class GridFactory {
 
   private static final Map<String, GridDescription> descriptionCache = Maps.newHashMap();
 
+  private static Widget loadingWidget = null;
+  
   public static Widget cellTable(Object data, TextCellType cellType, String... columnLabels) {
     Assert.notNull(data);
 
@@ -253,7 +262,51 @@ public class GridFactory {
       }
     });
   }
+  
+  public static void openGrid(String gridName) {
+    Assert.notEmpty(gridName);
 
+    BeeKeeper.getScreen().updateActivePanel(ensureLoadingWidget());
+
+    getGrid(gridName, new GridCallback() {
+      public void onFailure(String[] reason) {
+        BeeKeeper.getScreen().notifySevere(reason);
+      }
+
+      public void onSuccess(final GridDescription result) {
+        final String viewName = result.getViewName();
+        Queries.getRowCount(viewName, new Queries.IntCallback() {
+          public void onFailure(String[] reason) {
+            BeeKeeper.getScreen().notifySevere(reason);
+          }
+          
+          public void onSuccess(Integer rowCount) {
+            getInitialRowSet(viewName, BeeUtils.unbox(rowCount), result);
+          }
+        });
+      }
+    });
+  }
+
+  public static void openGrid(final DataInfo dataInfo) {
+    if (dataInfo.getRowCount() < 0) {
+      BeeKeeper.getLog().info(dataInfo.getName(), "not active");
+      return;
+    }
+
+    BeeKeeper.getScreen().updateActivePanel(ensureLoadingWidget());
+
+    getGrid(dataInfo.getName(), new GridCallback() {
+      public void onFailure(String[] reason) {
+        BeeKeeper.getScreen().notifySevere(reason);
+      }
+
+      public void onSuccess(GridDescription result) {
+        getInitialRowSet(dataInfo.getName(), dataInfo.getRowCount(), result);
+      }
+    });
+  }
+  
   public static Widget scrollGrid(int width, Object data, String... columnLabels) {
     Assert.notNull(data);
 
@@ -393,6 +446,41 @@ public class GridFactory {
     return cell;
   }
 
+  private static Widget ensureLoadingWidget() {
+    if (loadingWidget == null) {
+      loadingWidget = new BeeImage(Global.getImages().loading());
+    }
+    return loadingWidget;
+  }
+  
+  private static void getInitialRowSet(final String viewName, final int rc,
+      final GridDescription gridDescription) {
+    int limit = BeeUtils.unbox(gridDescription.getAsyncThreshold());
+
+    final boolean async;
+    if (rc >= limit) {
+      async = true;
+      if (rc <= DataUtils.getMaxInitialRowSetSize()) {
+        limit = -1;
+      } else {
+        limit = DataUtils.getMaxInitialRowSetSize();
+      }
+    } else {
+      async = false;
+      limit = -1;
+    }
+
+    Queries.getRowSet(viewName, null, null, null, 0, limit, CachingPolicy.FULL,
+        new Queries.RowSetCallback() {
+          public void onFailure(String[] reason) {
+          }
+
+          public void onSuccess(final BeeRowSet rowSet) {
+            showGrid(viewName, rc, rowSet, async, gridDescription);
+          }
+        });
+  }
+  
   private static String gridDescriptionKey(String name) {
     Assert.notEmpty(name);
     return name.trim().toLowerCase();
@@ -405,6 +493,13 @@ public class GridFactory {
     return descriptionCache.containsKey(gridDescriptionKey(name));
   }
 
+  private static void showGrid(String viewName, int rc, BeeRowSet rowSet, boolean async,
+      GridDescription gridDescription) {
+    GridPresenter presenter = new GridPresenter(viewName, rc, rowSet, async, gridDescription,
+        false);
+    BeeKeeper.getScreen().updateActivePanel(presenter.getWidget());
+  }
+  
   private GridFactory() {
   }
 }

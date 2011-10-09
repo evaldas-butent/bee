@@ -20,6 +20,7 @@ import com.butent.bee.client.dialog.Notification;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.dom.StyleUtils.ScrollBars;
+import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.TextCellType;
 import com.butent.bee.client.layout.BeeLayoutPanel;
 import com.butent.bee.client.layout.Complex;
@@ -58,7 +59,7 @@ public class Mobile extends ScreenImpl {
 
     @Override
     public void execute() {
-      Global.getDataExplorer().openView(dataInfo);
+      GridFactory.openGrid(dataInfo);
     }
   }
 

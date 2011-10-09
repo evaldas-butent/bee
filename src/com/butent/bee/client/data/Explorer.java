@@ -14,7 +14,6 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.grid.GridFactory;
-import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.utils.BeeCommand;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.BeeLabel;
@@ -22,15 +21,11 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
-import com.butent.bee.shared.data.BeeRowSet;
-import com.butent.bee.shared.data.DataUtils;
-import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.event.HandlesDeleteEvents;
 import com.butent.bee.shared.data.event.MultiDeleteEvent;
 import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.view.DataInfo;
-import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -133,26 +128,6 @@ public class Explorer implements HandlesDeleteEvents, RowInsertEvent.Handler {
     }
   }
 
-  public void openView(final DataInfo dataInfo) {
-    if (dataInfo.getRowCount() < 0) {
-      BeeKeeper.getLog().info(dataInfo.getName(), "not active");
-      return;
-    }
-
-    BeeKeeper.getScreen().updateActivePanel(ensureLoadingWidget());
-
-    GridFactory.getGrid(dataInfo.getName(), new GridFactory.GridCallback() {
-      public void onFailure(String[] reason) {
-        BeeKeeper.getScreen().notifyWarning(reason);
-        getInitialRowSet(dataInfo, null);
-      }
-
-      public void onSuccess(GridDescription result) {
-        getInitialRowSet(dataInfo, result);
-      }
-    });
-  }
-
   public void refresh() {
     if (getDataInfoWidget() != null) {
       getDataInfoWidget().redraw();
@@ -193,7 +168,7 @@ public class Explorer implements HandlesDeleteEvents, RowInsertEvent.Handler {
       public void onSelectionChange(SelectionChangeEvent event) {
         DataInfo info = selector.getSelectedObject();
         if (info != null && selector.isSelected(info)) {
-          openView(info);
+          GridFactory.openGrid(info);
           selector.setSelected(info, false);
         }
       }
@@ -214,35 +189,6 @@ public class Explorer implements HandlesDeleteEvents, RowInsertEvent.Handler {
     return dataInfoWidget;
   }
 
-  private void getInitialRowSet(final DataInfo dataInfo, final GridDescription gridDescription) {
-    int limit = (gridDescription == null) ? DataUtils.getDefaultAsyncThreshold()
-        : BeeUtils.unbox(gridDescription.getAsyncThreshold());
-    int rc = dataInfo.getRowCount();
-
-    final boolean async;
-    if (rc >= limit) {
-      async = true;
-      if (rc <= DataUtils.getMaxInitialRowSetSize()) {
-        limit = -1;
-      } else {
-        limit = DataUtils.getMaxInitialRowSetSize();
-      }
-    } else {
-      async = false;
-      limit = -1;
-    }
-
-    Queries.getRowSet(dataInfo.getName(), null, null, null, 0, limit, CachingPolicy.FULL,
-        new Queries.RowSetCallback() {
-          public void onFailure(String[] reason) {
-          }
-
-          public void onSuccess(final BeeRowSet rowSet) {
-            showView(dataInfo, rowSet, async, gridDescription);
-          }
-        });
-  }
-
   private Widget getLoadingWidget() {
     return loadingWidget;
   }
@@ -255,9 +201,4 @@ public class Explorer implements HandlesDeleteEvents, RowInsertEvent.Handler {
     this.loadingWidget = loadingWidget;
   }
 
-  private void showView(DataInfo dataInfo, BeeRowSet rowSet, boolean async,
-      GridDescription gridDescription) {
-    GridPresenter presenter = new GridPresenter(dataInfo, rowSet, async, gridDescription, false);
-    BeeKeeper.getScreen().updateActivePanel(presenter.getWidget());
-  }
 }

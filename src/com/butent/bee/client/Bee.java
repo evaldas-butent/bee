@@ -23,5 +23,7 @@ public class Bee implements EntryPoint {
     if (GWT.isProdMode()) {
       GWT.setUncaughtExceptionHandler(new ExceptionHandler());
     }
+    
+    bk.register();
   }
 }

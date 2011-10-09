@@ -1,5 +1,5 @@
 body, select {
-  font-family: Arial Unicode MS, Arial, sans-serif;
+  font-family: Arial, sans-serif;
   font-size: small;
 }
 
@@ -164,6 +164,9 @@ body, select {
   background: MidnightBlue;
 }
 
+.bee-LogRecord-info {
+  color: #333;
+}
 .bee-LogRecord-severe {
   color: red;
 }

@@ -218,7 +218,7 @@ public class UiLoaderBean extends UiLoader {
     String itemLayout = (String) params[1];
     String resource = (String) params[2];
 
-    Property[][] arr = XmlUtils.getAttributesFromFile(resource, "menu");
+    Property[][] arr = XmlUtils.getAttributesFromFile(resource, "item");
     if (arr == null) {
       return null;
     }

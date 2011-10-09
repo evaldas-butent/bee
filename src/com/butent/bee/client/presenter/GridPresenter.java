@@ -37,7 +37,6 @@ import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
-import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -78,26 +77,26 @@ public class GridPresenter implements Presenter, ReadyForInsertEvent.Handler,
         final long rowId = rowInfo.getId();
         long version = rowInfo.getVersion();
 
-        Queries.deleteRow(getDataName(), rowId, version, new Queries.IntCallback() {
+        Queries.deleteRow(getViewName(), rowId, version, new Queries.IntCallback() {
           public void onFailure(String[] reason) {
             setLoadingState(LoadingStateChangeEvent.LoadingState.LOADED);
             showFailure("Delete Row", reason);
           }
 
           public void onSuccess(Integer result) {
-            BeeKeeper.getBus().fireEvent(new RowDeleteEvent(getDataName(), rowId));
+            BeeKeeper.getBus().fireEvent(new RowDeleteEvent(getViewName(), rowId));
           }
         });
 
       } else if (count > 1) {
-        Queries.deleteRows(getDataName(), rows, new Queries.IntCallback() {
+        Queries.deleteRows(getViewName(), rows, new Queries.IntCallback() {
           public void onFailure(String[] reason) {
             showFailure("Delete Rows", reason);
             setLoadingState(LoadingStateChangeEvent.LoadingState.LOADED);
           }
 
           public void onSuccess(Integer result) {
-            BeeKeeper.getBus().fireEvent(new MultiDeleteEvent(getDataName(), rows));
+            BeeKeeper.getBus().fireEvent(new MultiDeleteEvent(getViewName(), rows));
             showInfo("Deleted " + result + " rows");
           }
         });
@@ -131,7 +130,7 @@ public class GridPresenter implements Presenter, ReadyForInsertEvent.Handler,
     }
   }
 
-  private final DataInfo dataInfo;
+  private final String viewName;
   private final boolean async;
   private final List<BeeColumn> dataColumns;
 
@@ -141,27 +140,23 @@ public class GridPresenter implements Presenter, ReadyForInsertEvent.Handler,
   private final Set<HandlerRegistration> filterChangeHandlers = Sets.newHashSet();
   private Filter lastFilter = null;
 
-  public GridPresenter(DataInfo dataInfo, BeeRowSet rowSet, boolean async,
+  public GridPresenter(String viewName, int rc, BeeRowSet rowSet, boolean async,
       GridDescription gridDescription, boolean isChild) {
-    this.dataInfo = dataInfo;
+    this.viewName = viewName;
     this.async = async;
     this.dataColumns = rowSet.getColumns();
 
-    int rowCount = async ? dataInfo.getRowCount() : rowSet.getNumberOfRows();
+    int rowCount = async ? rc : rowSet.getNumberOfRows();
 
-    this.gridContainer = createView(dataInfo.getName(), dataColumns, rowCount, rowSet,
+    this.gridContainer = createView(viewName, dataColumns, rowCount, rowSet,
         gridDescription, isChild);
-    this.dataProvider = createProvider(gridContainer, dataInfo.getName(), rowSet, async);
+    this.dataProvider = createProvider(gridContainer, viewName, rowSet, async);
 
     bind();
   }
 
   public List<BeeColumn> getDataColumns() {
     return dataColumns;
-  }
-
-  public DataInfo getDataInfo() {
-    return dataInfo;
   }
 
   public Provider getDataProvider() {
@@ -230,14 +225,13 @@ public class GridPresenter implements Presenter, ReadyForInsertEvent.Handler,
   }
 
   public void onReadyForUpdate(ReadyForUpdateEvent event) {
-    final String viewName = getDataName();
     final long rowId = event.getRowValue().getId();
     final long version = event.getRowValue().getVersion();
     final String columnId = event.getColumn().getLabel();
     final String newValue = event.getNewValue();
 
     BeeRowSet rs = new BeeRowSet(new BeeColumn(event.getColumn().getType(), columnId));
-    rs.setViewName(viewName);
+    rs.setViewName(getViewName());
     rs.addRow(rowId, version, new String[] {event.getOldValue()});
     rs.getRow(0).preliminaryUpdate(0, newValue);
 
@@ -251,12 +245,12 @@ public class GridPresenter implements Presenter, ReadyForInsertEvent.Handler,
           }
 
           public void onSuccess(BeeRow row) {
-            BeeKeeper.getLog().info("cell updated:", viewName, rowId, columnId, newValue);
+            BeeKeeper.getLog().info("cell updated:", getViewName(), rowId, columnId, newValue);
             if (rowMode) {
-              BeeKeeper.getBus().fireEvent(new RowUpdateEvent(viewName, row));
+              BeeKeeper.getBus().fireEvent(new RowUpdateEvent(getViewName(), row));
             } else {
               BeeKeeper.getBus().fireEvent(
-                  new CellUpdateEvent(viewName, rowId, row.getVersion(), columnId, newValue));
+                  new CellUpdateEvent(getViewName(), rowId, row.getVersion(), columnId, newValue));
             }
           }
         });
@@ -265,7 +259,7 @@ public class GridPresenter implements Presenter, ReadyForInsertEvent.Handler,
   public void onReadyForInsert(ReadyForInsertEvent event) {
     setLoadingState(LoadingStateChangeEvent.LoadingState.LOADING);
 
-    Queries.insert(getDataName(), event.getColumns(), event.getValues(), new Queries.RowCallback() {
+    Queries.insert(getViewName(), event.getColumns(), event.getValues(), new Queries.RowCallback() {
       public void onFailure(String[] reason) {
         setLoadingState(LoadingStateChangeEvent.LoadingState.LOADED);
         showFailure("Insert Row", reason);
@@ -273,25 +267,24 @@ public class GridPresenter implements Presenter, ReadyForInsertEvent.Handler,
       }
 
       public void onSuccess(BeeRow result) {
-        BeeKeeper.getBus().fireEvent(new RowInsertEvent(getDataName(), result));
+        BeeKeeper.getBus().fireEvent(new RowInsertEvent(getViewName(), result));
         getView().getContent().finishNewRow(result);
       }
     });
   }
   
   public void onSaveChanges(SaveChangesEvent event) {
-    final String viewName = getDataName();
     final long rowId = event.getRowId();
 
-    Queries.update(viewName, rowId, event.getVersion(), event.getColumns(), event.getOldValues(),
-        event.getNewValues(), new Queries.RowCallback() {
+    Queries.update(getViewName(), rowId, event.getVersion(), event.getColumns(),
+        event.getOldValues(), event.getNewValues(), new Queries.RowCallback() {
           public void onFailure(String[] reason) {
             showFailure("Save Changes", reason);
           }
 
           public void onSuccess(BeeRow row) {
-            BeeKeeper.getLog().info("changes saved", viewName, rowId);
-            BeeKeeper.getBus().fireEvent(new RowUpdateEvent(viewName, row));
+            BeeKeeper.getLog().info("changes saved", getViewName(), rowId);
+            BeeKeeper.getBus().fireEvent(new RowUpdateEvent(getViewName(), row));
           }
         });
   }
@@ -375,10 +368,6 @@ public class GridPresenter implements Presenter, ReadyForInsertEvent.Handler,
         Lists.newArrayList("SRSLY ?"), new DeleteCallback(rows), StyleUtils.NAME_SUPER_SCARY);
   }
 
-  private String getDataName() {
-    return getDataInfo().getName();
-  }
-
   private Collection<SearchView> getSearchers() {
     Collection<SearchView> searchers;
 
@@ -390,6 +379,10 @@ public class GridPresenter implements Presenter, ReadyForInsertEvent.Handler,
     return searchers;
   }
 
+  private String getViewName() {
+    return viewName;
+  }
+  
   private void setLoadingState(LoadingStateChangeEvent.LoadingState loadingState) {
     if (loadingState != null) {
       getView().getContent().getGrid().fireLoadingStateChange(loadingState);
@@ -442,6 +435,6 @@ public class GridPresenter implements Presenter, ReadyForInsertEvent.Handler,
     }
 
     lastFilter = filter;
-    Queries.getRowCount(getDataName(), filter, new FilterCallback(filter));
+    Queries.getRowCount(getViewName(), filter, new FilterCallback(filter));
   }
 }

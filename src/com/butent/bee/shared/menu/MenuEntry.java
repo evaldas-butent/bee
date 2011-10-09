@@ -11,6 +11,7 @@ import com.butent.bee.shared.utils.Codec;
  */
 
 public class MenuEntry implements BeeSerializable {
+
   private String id = null;
   private String parent = null;
 
@@ -27,7 +28,7 @@ public class MenuEntry implements BeeSerializable {
 
   private String keyName = null;
 
-  private boolean visible = false;
+  private boolean visible = true;
 
   public MenuEntry() {
     super();
@@ -94,7 +95,7 @@ public class MenuEntry implements BeeSerializable {
   }
 
   public boolean isLeaf() {
-    return BeeUtils.same(getType(), "B");
+    return !BeeUtils.isEmpty(getService());
   }
 
   public boolean isRoot() {
@@ -157,5 +158,4 @@ public class MenuEntry implements BeeSerializable {
   public void setVisible(boolean visible) {
     this.visible = visible;
   }
-
 }

@@ -11,7 +11,6 @@ import com.butent.bee.shared.data.filter.ColumnValueFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.value.LongValue;
-import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.ui.GridDescription;
 
 /**
@@ -98,9 +97,8 @@ public class ChildGrid extends ResizePanel implements HasEnabled {
           }
 
           public void onSuccess(BeeRowSet rowSet) {
-            DataInfo dataInfo = new DataInfo(getViewName(), null, null, rowSet.getNumberOfRows());
-            GridPresenter gp = new GridPresenter(dataInfo, rowSet, true,
-                gridDescription, true);
+            GridPresenter gp = new GridPresenter(getViewName(), rowSet.getNumberOfRows(), 
+                rowSet, true, gridDescription, true);
             setWidget(gp.getWidget());
             setPresenter(gp);
             gp.getView().getContent().setRelColumn(getRelSource());
