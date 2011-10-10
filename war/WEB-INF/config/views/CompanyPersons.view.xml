@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BeeView xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../schemas/view.xsd"
+
+  name="CompanyPersons"
+  source="CompanyPersons"
+  >
+  <BeeColumns>
+    <BeeColumn name="Company" expression="Company" />
+    <BeeColumn name="Person" expression="Person" />
+    <BeeColumn name="Position" expression="Position" />
+    <BeeColumn name="CompanyName" expression="Company>Name" />
+    <BeeColumn name="FirstName" expression="Person>FirstName" />
+    <BeeColumn name="LastName" expression="Person>LastName" />
+    <BeeColumn name="Phone" expression="Contact>Phone" />
+    <BeeColumn name="Email" expression="Contact>Email" />
+  </BeeColumns>
+  <BeeOrder>
+    <OrderBy column="LastName" />
+    <OrderBy column="FirstName" />
+  </BeeOrder>
+</BeeView>

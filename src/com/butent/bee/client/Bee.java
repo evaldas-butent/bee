@@ -8,6 +8,7 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
 
+import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.RadioGroup;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.layout.Absolute;
@@ -18,6 +19,7 @@ import com.butent.bee.client.widget.InputPassword;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
+import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -29,7 +31,7 @@ public class Bee implements EntryPoint {
   public void onModuleLoad() {
     BeeConst.setClient();
 
-    BeeKeeper bk = new BeeKeeper(RootLayoutPanel.get(), 
+    BeeKeeper bk = new BeeKeeper(RootLayoutPanel.get(),
         GWT.getModuleBaseURL() + GWT.getModuleName());
 
     bk.init();
@@ -38,22 +40,22 @@ public class Bee implements EntryPoint {
     if (GWT.isProdMode()) {
       GWT.setUncaughtExceptionHandler(new ExceptionHandler());
     }
-    
+
     bk.register();
     signIn();
   }
-  
+
   private void signIn() {
     final Popup popup = new Popup(false, true);
     popup.setStyleName("bee-SignIn-Popup");
 
     Absolute panel = new Absolute(Position.RELATIVE);
     panel.addStyleName("bee-SignIn-Panel");
-    
+
     BeeLabel caption = new BeeLabel("Būtent CRM");
     caption.addStyleName("bee-SignIn-Caption");
     panel.add(caption);
-    
+
     BeeLabel userLabel = new BeeLabel("Prisijungimo vardas");
     userLabel.addStyleName("bee-SignIn-Label");
     userLabel.addStyleName("bee-SignIn-User");
@@ -73,16 +75,16 @@ public class Bee implements EntryPoint {
     pswdBox.addStyleName("bee-SignIn-Input");
     pswdBox.addStyleName("bee-SignIn-Password");
     panel.add(pswdBox);
-    
+
     final RadioGroup langWidget = new RadioGroup(false, 0,
         Lists.newArrayList("lt", "lv", "et", "en", "de", "ru"));
     langWidget.addStyleName("bee-SignIn-Language");
     panel.add(langWidget);
-    
+
     BeeButton button = new BeeButton("Prisijungti");
     button.setStyleName("bee-SignIn-Button");
     panel.add(button);
-    
+
     button.addClickHandler(new ClickHandler() {
       public void onClick(ClickEvent event) {
         String userName = userBox.getValue();
@@ -90,25 +92,39 @@ public class Bee implements EntryPoint {
           Global.showError("Įveskite prisijungimo vardą");
           return;
         }
-        
+
         String password = pswdBox.getValue();
         if (BeeUtils.isEmpty(password)) {
           Global.showError("Įveskite slaptažodį");
           return;
         }
-        
+
         BeeKeeper.getRpc().makePostRequest(Service.LOGIN,
             XmlUtils.createString(Service.XML_TAG_DATA,
-                Service.VAR_LOGIN, userName, Service.VAR_PASSWORD, Codec.md5(password)));
-        
+                Service.VAR_LOGIN, userName, Service.VAR_PASSWORD, Codec.md5(password)),
+            new ResponseCallback() {
+              @Override
+              public void onResponse(ResponseObject response) {
+                /*                if (response != null) {
+                                  if (response.hasErrors()) {
+                                    Global.showError((Object[]) response.getErrors());
+                                  } else {
+                                    popup.hide();
+                                    BeeKeeper.getScreen().start();
+                                  }
+                                } else {
+                                  Global.showError("Wrong server response");
+                                }
+                */}
+            });
         popup.hide();
         BeeKeeper.getScreen().start();
       }
     });
-    
+
     popup.setWidget(panel);
     popup.center();
-    
+
     userBox.setFocus(true);
   }
 }

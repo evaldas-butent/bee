@@ -52,7 +52,7 @@
                 </datasource>
                 <datasource jndi-name="jdbc/OracleXE" pool-name="OracleXE_Pool" enabled="true" jta="true" use-java-context="true" use-ccm="true">
                     <connection-url>
-                        jdbc:oracle:thin:@192.168.0.245:1521:XE
+                        jdbc:oracle:thin:@//192.168.0.245:1521/XE
                     </connection-url>
                     <driver>
                         ojdbc6.jar
@@ -73,15 +73,10 @@
                 <security-domain name="DBPolicy">
                     <authentication>
                         <login-module code="Database" flag="required">
-                            <module-option name="dsJndiName" value="jdbc/my"/>
-                            <module-option name="principalsQuery" value="select Password from Users where Login=?"/>
-                            <module-option name="rolesQuery" value="select 'BEEUser', 'Roles' from Users where Login=?"/>
+                            <module-option name="dsJndiName" value="jdbc/pg"/>
+                            <module-option name="principalsQuery" value="SELECT &quot;Password&quot; FROM &quot;Users&quot; WHERE &quot;Login&quot;=?"/>
+                            <module-option name="rolesQuery" value="SELECT 'BEEUser', 'Roles' FROM &quot;Users&quot; WHERE &quot;Login&quot;=?"/>
                         </login-module>
-                    </authentication>
-                </security-domain>
-                <security-domain name="other" cache-type="default">
-                    <authentication>
-                        <login-module code="UsersRoles" flag="required"/>
                     </authentication>
                 </security-domain>
             </security-domains>

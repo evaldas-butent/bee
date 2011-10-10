@@ -23,7 +23,7 @@ public class UserData implements BeeSerializable {
    */
 
   private enum Serial {
-    LOGIN, USER_ID, FIRST_NAME, LAST_NAME, POSITION, ROLES, LOCALE, PROPERTIES
+    LOGIN, USER_ID, FIRST_NAME, LAST_NAME, ROLES, LOCALE, PROPERTIES
   }
 
   public static UserData restore(String s) {
@@ -36,17 +36,15 @@ public class UserData implements BeeSerializable {
   private long userId;
   private String firstName;
   private String lastName;
-  private String position;
   private Collection<Long> userRoles;
   private String locale;
   private Map<String, String> properties;
 
-  public UserData(long userId, String login, String firstName, String lastName, String position) {
+  public UserData(long userId, String login, String firstName, String lastName) {
     this.userId = userId;
     this.login = login;
     this.firstName = firstName;
     this.lastName = lastName;
-    this.position = position;
   }
 
   private UserData() {
@@ -74,9 +72,6 @@ public class UserData implements BeeSerializable {
           break;
         case LAST_NAME:
           this.lastName = value;
-          break;
-        case POSITION:
-          this.position = value;
           break;
         case ROLES:
           String[] roles = Codec.beeDeserializeCollection(value);
@@ -123,10 +118,6 @@ public class UserData implements BeeSerializable {
     return login;
   }
 
-  public String getPosition() {
-    return position;
-  }
-
   public Map<String, String> getProperties() {
     return ImmutableMap.copyOf(properties);
   }
@@ -147,8 +138,7 @@ public class UserData implements BeeSerializable {
   }
 
   public String getUserSign() {
-    return BeeUtils.concat(1, getPosition(),
-        BeeUtils.concat(1, BeeUtils.ifString(getFirstName(), getLogin()), getLastName()));
+    return BeeUtils.concat(1, getFirstName(), getLastName());
   }
 
   @Override
@@ -170,9 +160,6 @@ public class UserData implements BeeSerializable {
           break;
         case LAST_NAME:
           arr[i++] = lastName;
-          break;
-        case POSITION:
-          arr[i++] = position;
           break;
         case ROLES:
           arr[i++] = userRoles;

@@ -10,7 +10,7 @@
       <property name="URL" value="jdbc:sqlserver://192.168.0.245\SQLEXPRESS;databaseName=pypas;user=sa;password=butent9;"></property>
     </jdbc-connection-pool>
     <jdbc-connection-pool driver-classname="oracle.jdbc.driver.OracleDriver" datasource-classname="" res-type="java.sql.Driver" description="" name="OracleSQL">
-      <property name="URL" value="jdbc:oracle:thin:user/user@192.168.0.245:1521:XE"></property>
+      <property name="URL" value="jdbc:oracle:thin:user/user@//192.168.0.245:1521/XE"></property>
     </jdbc-connection-pool>
     <jdbc-resource pool-name="OracleSQL" description="" jndi-name="jdbc/OracleXE"></jdbc-resource>
     <jdbc-resource pool-name="MySQL" description="" jndi-name="jdbc/my"></jdbc-resource>
@@ -29,12 +29,12 @@
     <config name="server-config">
       <security-service>
         <auth-realm name="DBRealm" classname="com.sun.enterprise.security.auth.realm.jdbc.JDBCRealm">
-          <property name="user-name-column" value="Login"></property>
-          <property name="password-column" value="Password"></property>
+          <property name="user-name-column" value="&quot;Login&quot;"></property>
+          <property name="password-column" value="&quot;Password&quot;"></property>
           <property name="group-name-column" value="'BEEUser'"></property>
-          <property name="group-table" value="Users"></property>
-          <property name="user-table" value="Users"></property>
-          <property name="datasource-jndi" value="jdbc/my"></property>
+          <property name="group-table" value="&quot;Users&quot;"></property>
+          <property name="user-table" value="&quot;Users&quot;"></property>
+          <property name="datasource-jndi" value="jdbc/pg"></property>
           <property name="jaas-context" value="jdbcRealm"></property>
           <property name="digest-algorithm" value="NONE"></property>
         </auth-realm>

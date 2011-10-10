@@ -6,13 +6,13 @@
   
   name="Users" viewName="Users" caption="Vartotojai">
   
-  <LayoutPanel>
-    <layer left="1" leftUnit="%" right="1" rightUnit="%" top="1" topUnit="%" bottom="41" bottomUnit="%">
-      <ScrollPanel>
-      <FlexTable cellSpacing="10" style="width:100%">
+  <SplitPanel>
+    <north size="170" splitterSize="1">
+    <ScrollPanel>
+      <FlexTable cellSpacing="10">
         <row>
           <cell><Label html="Prisijungimo vardas" /></cell>
-          <cell><InputText source="Login" style="width:100%" /></cell>
+          <cell><InputText source="Login" style="width:150px" /></cell>
           <cell horizontalAlignment="center" colSpan="2">
             <Button html="Pakeisti slaptažodį" name="ChangePassword" />
           </cell>
@@ -20,30 +20,20 @@
         </row>
         <row>
           <cell><Label html="Vardas" /></cell>
-          <cell><InputText source="FirstName" style="width:100%" /></cell>
+          <cell><InputText source="FirstName" style="width:150px" /></cell>
           <cell><Label html="Pavardė" horizontalAlignment="right" /></cell>
-          <cell><InputText source="LastName" style="width:100%" /></cell>
-          <cell rowSpan="3"><InputArea source="Properties" style="width:100%; height:100%" /></cell>
+          <cell><InputText source="LastName" style="width:150px" /></cell>
+          <cell rowSpan="3"><InputArea source="Properties" style="width:200px; height:100%" /></cell>
         </row>
         <row>
-          <cell><Label html="Pareigos" /></cell>
-          <cell><InputText source="Position" style="width:100%" /></cell>
           <cell><Label html="Gimimo data" horizontalAlignment="right" /></cell>
-          <cell><InputDate source="DateOfBirth" style="width:100%" /></cell>
-        </row>
-        <row>
-          <cell><Label html="Įmonė" /></cell>
-          <cell colSpan="3">
-            <DataSelector source="CompanyName" relSource="Company" relView="Companies" relColumn="Name"
-             required="true" style="width:100%" />
-          </cell>
+          <cell><InputDate source="DateOfBirth" /></cell>
         </row>
       </FlexTable>
-      </ScrollPanel>
-    </layer>
-
-    <layer left="1" leftUnit="%" width="30" widthUnit="%" top="60" topUnit="%" bottom="1" bottomUnit="%">
-      <Grid name="UserRoles" relColumn="User" />
-    </layer>
-  </LayoutPanel>
+    </ScrollPanel>
+    </north>
+    <center>
+      <Grid name="UserRoles" relColumn="User" style="width:300px" />
+    </center>
+  </SplitPanel>
 </BeeForm>  

@@ -7,7 +7,7 @@
   name="Companies" viewName="Companies" caption="Įmonės">
 
   <LayoutPanel>
-    <layer left="1" leftUnit="%" right="1" rightUnit="%" top="1" topUnit="%" height="60" heightUnit="%">
+    <layer height="60" heightUnit="%">
       <ScrollPanel>
         <FlexTable cellSpacing="10" style="width:100%">
           <row>
@@ -52,7 +52,7 @@
       </ScrollPanel>
     </layer>
 
-    <layer left="1" leftUnit="%" right="1" rightUnit="%" top="61" topUnit="%" bottom="1" bottomUnit="%">
+    <layer top="61" topUnit="%">
       <Grid name="CompanyPersons" relColumn="Company" />
     </layer>
   </LayoutPanel>

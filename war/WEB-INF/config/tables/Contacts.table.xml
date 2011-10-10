@@ -4,7 +4,7 @@
   
   name="Contacts"
   idName="ContactID"
-  x="537" y="232"
+  x="313" y="493"
   >
   <BeeFields>
     <BeeField name="Phone" type="STRING" precision="50" />

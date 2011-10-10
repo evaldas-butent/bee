@@ -17,9 +17,6 @@
     <BeeColumn name="City" expression="Contact>City" />
     <BeeColumn name="CityName" expression="Contact>City>Name" />
     <BeeColumn name="CountryName" expression="Contact>City>Country>Name" />
-    <BeeColumn name="Person" expression="Person" />
-    <BeeColumn name="FirstName" expression="Person>FirstName" />
-    <BeeColumn name="LastName" expression="Person>LastName" />
   </BeeColumns>
   <BeeOrder>
     <OrderBy column="Name" />

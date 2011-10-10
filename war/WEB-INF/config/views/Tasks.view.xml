@@ -18,12 +18,9 @@
     <BeeColumn name="ExecutorLastName" expression="Executor>Person>LastName" />
     <BeeColumn name="Company" expression="Company" />
     <BeeColumn name="CompanyName" expression="Company>Name" />
-    <BeeColumn name="Person" expression="Person" />
-    <BeeColumn name="PersonFirstName" expression="Person>FirstName" />
-    <BeeColumn name="PersonLastName" expression="Person>LastName" />
+    <BeeColumn name="CompanyPerson" expression="CompanyPerson" />
+    <BeeColumn name="PersonFirstName" expression="CompanyPerson>Person>FirstName" />
+    <BeeColumn name="PersonLastName" expression="CompanyPerson>Person>LastName" />
   </BeeColumns>
-  <BeeOrder>
-    <OrderBy column="Name" />
-  </BeeOrder>
 </BeeView>
  

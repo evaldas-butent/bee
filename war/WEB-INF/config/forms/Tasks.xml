@@ -7,13 +7,13 @@
   name="Tasks" viewName="Tasks" caption="Užduotys">
 
   <LayoutPanel>
-    <layer left="1" leftUnit="%" right="1" rightUnit="%" top="1" topUnit="%" bottom="1" bottomUnit="%">
+    <layer>
       <ScrollPanel>
         <FlexTable cellSpacing="10">
           <row>
             <cell><Label html="ID" /></cell>
             <cell>
-              <LongLabel>
+              <LongLabel horizontalAlignment="left">
                 <calc>
                   <expression>rowId</expression>
                 </calc>
@@ -43,13 +43,13 @@
             </cell>
             <cell><Label html="Asmuo" horizontalAlignment="right" /></cell>
             <cell>
-              <DataSelector source="PersonFirstName" relSource="Person" relView="Persons" relColumn="FirstName" />
+              <DataSelector source="PersonFirstName" relSource="CompanyPerson" relView="CompanyPersons" relColumn="FirstName" />
             </cell>
           </row>
           <row>
             <cell><Label html="Užduotis" /></cell>
             <cell colSpan="3">
-              <InputArea source="Task" style="width: 500px; height: 60px;" />
+              <InputArea source="Task" style="width: 100%; height: 60px;" />
             </cell>
           </row>
         </FlexTable>

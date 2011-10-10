@@ -4,7 +4,7 @@
 
   name="UserRoles"
   idName="UserRoleID"
-  x="160" y="10"
+   x="82" y="13"
   >
   <BeeFields>
     <BeeField name="User" type="LONG" notNull="true" relation="Users" cascade="DELETE" />

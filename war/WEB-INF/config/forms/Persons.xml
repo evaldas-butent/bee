@@ -7,7 +7,7 @@
   name="Persons" viewName="Persons" caption="Asmenys">
 
   <LayoutPanel>
-    <layer left="1" leftUnit="%" right="1" rightUnit="%" top="1" topUnit="%" bottom="1" bottomUnit="%">
+    <layer height="60" heightUnit="%">
       <ScrollPanel>
         <FlexTable cellSpacing="10" style="width:100%">
           <row>
@@ -15,10 +15,6 @@
             <cell><InputText style="width:100%" source="FirstName" /></cell>
             <cell><Label html="Pavardė" horizontalAlignment="right" /></cell>
             <cell><InputText style="width:100%" source="LastName" /></cell>
-          </row>
-          <row>
-            <cell><Label html="Pareigos" /></cell>
-            <cell><InputText source="Position" style="width:100%" /></cell>
           </row>
           <row>
             <cell colSpan="4"><HtmlLabel html="KONTAKTINĖ INFORMACIJA&lt;hr&gt;" style="color:green" /></cell>
@@ -48,12 +44,12 @@
             <cell><Label html="Šalis" horizontalAlignment="right" /></cell>
             <cell><TextLabel source="CountryName" /></cell>
           </row>
-          <row>
-            <cell><Label html="Atstovaujama įmonė" /></cell>
-            <cell colSpan="3"><InputText source="CompanyName" style="width:100%" /></cell>
-          </row>
         </FlexTable>
       </ScrollPanel>
+    </layer>
+
+    <layer top="61" topUnit="%">
+      <Grid name="PersonCompanies" relColumn="Person" />
     </layer>
   </LayoutPanel>
 </BeeForm>  

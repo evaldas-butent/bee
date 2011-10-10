@@ -121,7 +121,6 @@ public class UserServiceBean {
   public static final String FLD_PASSWORD = "Password";
   public static final String FLD_FIRST_NAME = "FirstName";
   public static final String FLD_LAST_NAME = "LastName";
-  public static final String FLD_POSITION = "Position";
   public static final String FLD_PROPERTIES = "Properties";
   public static final String FLD_ROLE_NAME = "Name";
   public static final String FLD_USER = "User";
@@ -231,7 +230,10 @@ public class UserServiceBean {
       LogUtils.infoNow(logger, (Object[]) response.getNotifications());
 
     } else if (BeeUtils.isEmpty(getUsers())) {
-      response.addWarning("Anonymous user logged in:", user);
+      response.setResponse(
+          new UserData(-1, user, null, null)
+              .setProperty("dsn", SqlBuilderFactory.getDsn()))
+          .addWarning("Anonymous user logged in:", user);
       LogUtils.warning(logger, (Object[]) response.getWarnings());
 
     } else {
@@ -320,7 +322,7 @@ public class UserServiceBean {
 
     ss = new SqlSelect()
         .addFields("u", userIdName, FLD_LOGIN, FLD_PROPERTIES)
-        .addFields("cc", FLD_FIRST_NAME, FLD_LAST_NAME, FLD_POSITION)
+        .addFields("cc", FLD_FIRST_NAME, FLD_LAST_NAME)
         .addFrom(TBL_USERS, "u").addFromLeft(TBL_PERSONS, "cc",
             SqlUtils.join("u", FLD_PERSON, "cc", personIdName));
 
@@ -331,8 +333,7 @@ public class UserServiceBean {
       userCache.put(userId, login);
 
       UserInfo user = new UserInfo(
-          new UserData(userId, login,
-              row.get(FLD_FIRST_NAME), row.get(FLD_LAST_NAME), row.get(FLD_POSITION))
+          new UserData(userId, login, row.get(FLD_FIRST_NAME), row.get(FLD_LAST_NAME))
               .setRoles(userRoles.get(userId)))
           .setProperties(row.get(FLD_PROPERTIES));
 

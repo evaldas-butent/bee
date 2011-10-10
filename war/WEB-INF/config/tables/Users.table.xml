@@ -4,7 +4,7 @@
 
   name="Users"
   idName="UserID"
-  x="330" y="10"
+  x="245" y="42"
   >
   <BeeFields>
     <BeeField name="Login" type="STRING" precision="30" notNull="true" unique="true" />

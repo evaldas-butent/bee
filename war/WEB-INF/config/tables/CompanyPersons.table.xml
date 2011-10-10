@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<BeeTable xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../schemas/table.xsd"
+  
+  name="CompanyPersons"
+  idName="CompanyPersonID"
+  x="501" y="339"
+  >
+  <BeeFields>
+    <BeeField name="Company" type="LONG" notNull="true" relation="Companies" cascade="DELETE" />
+    <BeeField name="Person" type="LONG" notNull="true" relation="Persons" cascade="DELETE" />
+    <BeeField name="Position" type="STRING" precision="50" />
+    <BeeField name="Contact" type="LONG" unique="true" relation="Contacts" />
+  </BeeFields>
+  <BeeKeys>
+    <BeeKey unique="true">
+      <KeyField>Company</KeyField>
+      <KeyField>Person</KeyField>
+    </BeeKey>
+  </BeeKeys>
+</BeeTable>
