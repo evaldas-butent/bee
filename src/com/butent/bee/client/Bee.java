@@ -77,7 +77,7 @@ public class Bee implements EntryPoint {
     panel.add(pswdBox);
 
     final RadioGroup langWidget = new RadioGroup(false, 0,
-        Lists.newArrayList("lt", "lv", "et", "en", "de", "ru"));
+        Lists.newArrayList("lt", "lv", "et", "en", "de", "ru", "pl"));
     langWidget.addStyleName("bee-SignIn-Language");
     panel.add(langWidget);
 

@@ -38,6 +38,8 @@ public interface FormView extends View, NotificationListener, HasEditState,
 
   HasDataTable getDisplay();
 
+  FormCallback getFormCallback();
+
   IsRow getRowData();
 
   JavaScriptObject getRowJso();

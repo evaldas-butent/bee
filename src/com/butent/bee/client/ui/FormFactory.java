@@ -35,6 +35,7 @@ import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.ui.EditorDescription;
@@ -57,7 +58,11 @@ public class FormFactory {
     
     boolean onLoad(Element formElement);
     
+    boolean onPrepareForInsert(FormView form, IsRow row);
+    
     void onShow(FormPresenter presenter);
+    
+    void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow);
   }
 
   public interface FormViewCallback extends Callback<FormView, String[]> {

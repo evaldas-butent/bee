@@ -942,6 +942,11 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     
     if (useForm) {
       showEditForm(true);
+      
+      if (getEditForm().getFormCallback() != null) {
+        getEditForm().getFormCallback().onStartNewRow(getEditForm(), oldRow, newRow);
+      }
+      
       getEditForm().showGrids(false);
       getEditForm().updateRowData(newRow);
     } else {
@@ -1082,6 +1087,10 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     IsRow row = getEditForm().getRowData();
 
     if (isAdding()) {
+      if (getEditForm().getFormCallback() != null 
+          && !getEditForm().getFormCallback().onPrepareForInsert(getEditForm(), row)) {
+        return;
+      }
 //      if (checkNewRow(row)) {
         prepareForInsert(row);
 //      }
