@@ -1,7 +1,9 @@
 package com.butent.bee.server.sql;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
+import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
@@ -16,29 +18,18 @@ public class SqlUpdate extends HasFrom<SqlUpdate> {
   static final int FIELD = 0;
   static final int VALUE = 1;
 
-  private final IsFrom target;
+  private final IsExpression target;
   private List<IsExpression[]> updates;
   private IsCondition whereClause;
 
   /**
-   * Creates an SqlUpdate statement with a specified target {@code target}. Target type is
-   * FromSingle.
+   * Creates an SqlUpdate statement with a specified target {@code target}.
    * 
-   * @param target the FromSingle target
+   * @param target the String target
    */
   public SqlUpdate(String target) {
-    this.target = FromJoin.fromSingle(target, null);
-  }
-
-  /**
-   * Creates an SqlUpdate statement with a specified target {@code target} and alias {@code alias}.
-   * Target type is FromSingle.
-   * 
-   * @param target the target
-   * @param alias the alias to use
-   */
-  public SqlUpdate(String target, String alias) {
-    this.target = FromJoin.fromSingle(target, alias);
+    Assert.notEmpty(target);
+    this.target = SqlUtils.name(target);
   }
 
   /**
@@ -77,7 +68,8 @@ public class SqlUpdate extends HasFrom<SqlUpdate> {
    */
   @Override
   public Collection<String> getSources() {
-    Collection<String> sources = SqlUtils.addCollection(target.getSources(), super.getSources());
+    Collection<String> sources =
+        SqlUtils.addCollection(Sets.newHashSet((String) target.getValue()), super.getSources());
 
     if (!BeeUtils.isEmpty(whereClause)) {
       sources = SqlUtils.addCollection(sources, whereClause.getSources());
@@ -88,7 +80,7 @@ public class SqlUpdate extends HasFrom<SqlUpdate> {
   /**
    * @return the current target {@code target}
    */
-  public IsFrom getTarget() {
+  public IsExpression getTarget() {
     return target;
   }
 

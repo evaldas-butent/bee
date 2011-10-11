@@ -618,10 +618,8 @@ public class SystemBean {
 
       if (key.isPrimary()) {
         index = SqlUtils.createPrimaryKey(tblName, keyName, keyFields);
-      } else if (key.isUnique()) {
-        index = SqlUtils.createUniqueKey(tblName, keyName, keyFields);
       } else {
-        index = SqlUtils.createIndex(tblName, keyName, keyFields);
+        index = SqlUtils.createIndex(key.isUnique(), tblName, keyName, keyFields);
       }
       makeStructureChanges(index);
     }
@@ -677,25 +675,25 @@ public class SystemBean {
         makeStructureChanges(sc);
       } else {
         tblBackup = tblName + "_BAK";
-        LogUtils.info(logger, "Checking unique keys...");
+        LogUtils.info(logger, "Checking indexes...");
         int c = 0;
-        String[] keys = qs.dbKeys(getDbName(), getDbSchema(), tblName, SqlKeyword.UNIQUE_KEY)
+        String[] keys = qs.dbIndexes(getDbName(), getDbSchema(), tblName)
             .getColumn(SqlConstants.KEY_NAME);
 
         for (BeeKey key : table.getKeys()) {
-          if (BeeUtils.same(key.getTable(), tblName) && key.isUnique()) {
+          if (BeeUtils.same(key.getTable(), tblName)) {
             if (ArrayUtils.contains(key.getName(), keys)) {
               c++;
             } else {
               update = true;
-              LogUtils.warning(logger, "UNIQUE KEY", key.getName(), "NOT IN", keys);
+              LogUtils.warning(logger, "INDEX", key.getName(), "NOT IN", keys);
               break;
             }
           }
         }
         if (!update && keys.length > c) {
           update = true;
-          LogUtils.warning(logger, "TOO MANY KEYS");
+          LogUtils.warning(logger, "TOO MANY INDEXES");
         }
       }
       if (!update) {

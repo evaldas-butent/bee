@@ -167,10 +167,6 @@ class OracleSqlBuilder extends SqlBuilder {
                 tp = "P";
                 break;
 
-              case UNIQUE_KEY:
-                tp = "U";
-                break;
-
               case FOREIGN_KEY:
                 tp = "R";
                 break;
@@ -212,12 +208,30 @@ class OracleSqlBuilder extends SqlBuilder {
           wh = SqlUtils.and(wh, SqlUtils.equal("r", "TABLE_NAME", prm));
         }
         return new SqlSelect()
-            .addField("c", "CONSTRAINT_NAME", SqlConstants.KEY_NAME)
             .addField("c", "TABLE_NAME", SqlConstants.TBL_NAME)
+            .addField("c", "CONSTRAINT_NAME", SqlConstants.KEY_NAME)
             .addField("r", "TABLE_NAME", SqlConstants.FK_REF_TABLE)
             .addFrom("ALL_CONSTRAINTS", "c")
             .addFromInner("ALL_CONSTRAINTS", "r",
                 SqlUtils.join("c", "R_CONSTRAINT_NAME", "r", "CONSTRAINT_NAME"))
+            .setWhere(wh)
+            .getSqlString(this);
+
+      case DB_INDEXES:
+        wh = null;
+
+        prm = params.get("dbSchema");
+        if (!BeeUtils.isEmpty(prm)) {
+          wh = SqlUtils.equal("i", "OWNER", prm);
+        }
+        prm = params.get("table");
+        if (!BeeUtils.isEmpty(prm)) {
+          wh = SqlUtils.and(wh, SqlUtils.equal("i", "TABLE_NAME", prm));
+        }
+        return new SqlSelect()
+            .addField("i", "TABLE_NAME", SqlConstants.TBL_NAME)
+            .addField("i", "INDEX_NAME", SqlConstants.KEY_NAME)
+            .addFrom("ALL_INDEXES", "i")
             .setWhere(wh)
             .getSqlString(this);
 

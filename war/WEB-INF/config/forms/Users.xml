@@ -26,6 +26,7 @@
           <cell rowSpan="3"><InputArea source="Properties" style="width:200px; height:100%" /></cell>
         </row>
         <row>
+          <cell colSpan="2"><Label html="" /></cell>
           <cell><Label html="Gimimo data" horizontalAlignment="right" /></cell>
           <cell><InputDate source="DateOfBirth" /></cell>
         </row>

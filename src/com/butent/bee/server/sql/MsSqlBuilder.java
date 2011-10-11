@@ -16,21 +16,21 @@ class MsSqlBuilder extends SqlBuilder {
 
   @Override
   protected String getCreate(SqlCreate sc) {
-    if (BeeUtils.isEmpty(sc.getDataSource())) {
-      return super.getCreate(sc);
-    }
     Assert.notNull(sc);
     Assert.state(!sc.isEmpty());
 
+    if (BeeUtils.isEmpty(sc.getDataSource())) {
+      return super.getCreate(sc);
+    }
     return sc.getDataSource().getSqlString(this).replace(" FROM ",
         " INTO " + sc.getTarget().getSqlString(this) + " FROM ");
   }
 
   @Override
   protected String getSelect(SqlSelect ss) {
+    String sql = super.getSelect(ss);
     int limit = ss.getLimit();
     int offset = ss.getOffset();
-    String sql = super.getSelect(ss);
 
     if (BeeUtils.allEmpty(limit, offset)) {
       return sql;
@@ -80,9 +80,18 @@ class MsSqlBuilder extends SqlBuilder {
   @Override
   protected String sqlKeyword(SqlKeyword option, Map<String, Object> params) {
     switch (option) {
+      case CREATE_INDEX:
+        String text = super.sqlKeyword(option, params);
+        String field = (String) params.get("fields");
+
+        if (!BeeUtils.isEmpty(params.get("isUnique")) && !field.contains(",")) {
+          text = BeeUtils.concat(1, text, "WHERE", field, "IS NOT NULL");
+        }
+        return text;
+
       case CREATE_TRIGGER:
         List<String[]> content = (List<String[]>) params.get("content");
-        String text = "SET NOCOUNT ON;";
+        text = "SET NOCOUNT ON;";
 
         for (String[] entry : content) {
           String fldName = entry[0];
@@ -106,10 +115,34 @@ class MsSqlBuilder extends SqlBuilder {
       case DB_SCHEMA:
         return "SELECT schema_name() AS " + sqlQuote("dbSchema");
 
-      case DB_TRIGGERS:
-        IsCondition wh = null;
+      case DB_INDEXES:
+        IsCondition wh = SqlUtils.notNull("i", "name");
 
-        Object prm = params.get("table");
+        Object prm = params.get("dbSchema");
+        if (!BeeUtils.isEmpty(prm)) {
+          wh = SqlUtils.and(wh, SqlUtils.equal("s", "name", prm));
+        }
+        prm = params.get("table");
+        if (!BeeUtils.isEmpty(prm)) {
+          wh = SqlUtils.and(wh, SqlUtils.equal("o", "name", prm));
+        }
+        return new SqlSelect()
+            .addField("o", "name", SqlConstants.TBL_NAME)
+            .addField("i", "name", SqlConstants.KEY_NAME)
+            .addFrom("sys.indexes", "i")
+            .addFromInner("sys.objects", "o", SqlUtils.joinUsing("i", "o", "object_id"))
+            .addFromInner("sys.schemas", "s", SqlUtils.joinUsing("o", "s", "schema_id"))
+            .setWhere(wh)
+            .getSqlString(this);
+
+      case DB_TRIGGERS:
+        wh = null;
+
+        prm = params.get("dbSchema");
+        if (!BeeUtils.isEmpty(prm)) {
+          wh = SqlUtils.and(wh, SqlUtils.equal("s", "name", prm));
+        }
+        prm = params.get("table");
         if (!BeeUtils.isEmpty(prm)) {
           wh = SqlUtils.and(wh, SqlUtils.equal("o", "name", prm));
         }
@@ -118,6 +151,7 @@ class MsSqlBuilder extends SqlBuilder {
             .addField("t", "name", SqlConstants.TRIGGER_NAME)
             .addFrom("sys.triggers", "t")
             .addFromInner("sys.objects", "o", SqlUtils.join("t", "parent_id", "o", "object_id"))
+            .addFromInner("sys.schemas", "s", SqlUtils.joinUsing("o", "s", "schema_id"))
             .setWhere(wh)
             .getSqlString(this);
 

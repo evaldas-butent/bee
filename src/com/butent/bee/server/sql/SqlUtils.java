@@ -70,9 +70,11 @@ public class SqlUtils {
     return new SqlCommand(SqlKeyword.ADD_CONSTRAINT, params);
   }
 
-  public static IsQuery createIndex(String table, String name, String... fields) {
-    return new SqlCommand(SqlKeyword.CREATE_INDEX,
-        getConstraintMap(SqlKeyword.CREATE_INDEX, table, name, fields));
+  public static IsQuery createIndex(boolean isUnique, String table, String name, String... fields) {
+    Map<String, Object> params = getConstraintMap(null, table, name, fields);
+    params.put("isUnique", isUnique);
+
+    return new SqlCommand(SqlKeyword.CREATE_INDEX, params);
   }
 
   public static IsQuery createPrimaryKey(String table, String name, String... fields) {
@@ -101,11 +103,6 @@ public class SqlUtils {
     }
   }
 
-  public static IsQuery createUniqueKey(String table, String name, String... fields) {
-    return new SqlCommand(SqlKeyword.ADD_CONSTRAINT,
-        getConstraintMap(SqlKeyword.UNIQUE_KEY, table, name, fields));
-  }
-
   public static IsQuery dbFields(String dbName, String dbSchema, String table) {
     Map<String, Object> params = Maps.newHashMap();
     params.put("dbName", dbName);
@@ -123,6 +120,15 @@ public class SqlUtils {
     params.put("refTable", refTable);
 
     return new SqlCommand(SqlKeyword.DB_FOREIGNKEYS, params);
+  }
+
+  public static IsQuery dbIndexes(String dbName, String dbSchema, String table) {
+    Map<String, Object> params = Maps.newHashMap();
+    params.put("dbName", dbName);
+    params.put("dbSchema", dbSchema);
+    params.put("table", table);
+
+    return new SqlCommand(SqlKeyword.DB_INDEXES, params);
   }
 
   public static IsQuery dbKeys(String dbName, String dbSchema, String table, SqlKeyword... types) {

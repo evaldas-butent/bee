@@ -446,7 +446,8 @@ public abstract class SqlBuilder {
     switch (option) {
       case CREATE_INDEX:
         return BeeUtils.concat(1,
-            "CREATE INDEX", params.get("name"),
+            "CREATE", BeeUtils.isEmpty(params.get("isUnique")) ? "" : "UNIQUE",
+            "INDEX", params.get("name"),
             "ON", params.get("table"),
             BeeUtils.parenthesize(params.get("fields")));
 
@@ -458,9 +459,6 @@ public abstract class SqlBuilder {
 
       case PRIMARY_KEY:
         return BeeUtils.concat(1, "PRIMARY KEY", BeeUtils.parenthesize(params.get("fields")));
-
-      case UNIQUE_KEY:
-        return BeeUtils.concat(1, "UNIQUE", BeeUtils.parenthesize(params.get("fields")));
 
       case FOREIGN_KEY:
         String foreign = BeeUtils.concat(1,
@@ -578,10 +576,6 @@ public abstract class SqlBuilder {
                 tp = "PRIMARY KEY";
                 break;
 
-              case UNIQUE_KEY:
-                tp = "UNIQUE";
-                break;
-
               case FOREIGN_KEY:
                 tp = "FOREIGN KEY";
                 break;
@@ -629,8 +623,8 @@ public abstract class SqlBuilder {
           wh = SqlUtils.and(wh, SqlUtils.equal("r", "table_name", prm));
         }
         return new SqlSelect()
-            .addField("c", "constraint_name", SqlConstants.KEY_NAME)
             .addField("t", "table_name", SqlConstants.TBL_NAME)
+            .addField("c", "constraint_name", SqlConstants.KEY_NAME)
             .addField("r", "table_name", SqlConstants.FK_REF_TABLE)
             .addFrom("information_schema.referential_constraints", "c")
             .addFromInner("information_schema.table_constraints", "t",
@@ -639,6 +633,9 @@ public abstract class SqlBuilder {
                 SqlUtils.join("c", "unique_constraint_name", "r", "constraint_name"))
             .setWhere(wh)
             .getSqlString(this);
+
+      case DB_INDEXES:
+        return "";
 
       case DB_TRIGGERS:
         wh = null;

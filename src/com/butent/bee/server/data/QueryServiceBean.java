@@ -112,6 +112,10 @@ public class QueryServiceBean {
     return getData(SqlUtils.dbForeignKeys(dbName, dbSchema, table, refTable));
   }
 
+  public SimpleRowSet dbIndexes(String dbName, String dbSchema, String table) {
+    return getData(SqlUtils.dbIndexes(dbName, dbSchema, table));
+  }
+
   public SimpleRowSet dbKeys(String dbName, String dbSchema, String table, SqlKeyword... types) {
     return getData(SqlUtils.dbKeys(dbName, dbSchema, table, types));
   }

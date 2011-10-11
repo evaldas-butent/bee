@@ -221,9 +221,9 @@ public class UserServiceBean {
       UserData data = info.getUserData();
       data.setProperty("dsn", SqlBuilderFactory.getDsn());
 
-      qs.updateData(new SqlUpdate(TBL_USERS, "u")
+      qs.updateData(new SqlUpdate(TBL_USERS)
           .addConstant("LastLogin", System.currentTimeMillis())
-          .setWhere(SqlUtils.equal("u", sys.getIdName(TBL_USERS), getUserId(user))));
+          .setWhere(SqlUtils.equal(TBL_USERS, sys.getIdName(TBL_USERS), getUserId(user))));
 
       response.setResponse(data).addInfo("User logged in:",
           user + " " + BeeUtils.parenthesize(data.getUserSign()));

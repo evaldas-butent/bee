@@ -122,12 +122,37 @@ class MySqlBuilder extends SqlBuilder {
           wh = SqlUtils.and(wh, SqlUtils.equal("c", "referenced_table_name", prm));
         }
         return new SqlSelect()
-            .addField("c", "constraint_name", SqlConstants.KEY_NAME)
             .addField("t", "table_name", SqlConstants.TBL_NAME)
+            .addField("c", "constraint_name", SqlConstants.KEY_NAME)
             .addField("c", "referenced_table_name", SqlConstants.FK_REF_TABLE)
             .addFrom("information_schema.referential_constraints", "c")
             .addFromInner("information_schema.table_constraints", "t",
                 SqlUtils.joinUsing("c", "t", "constraint_name"))
+            .setWhere(wh)
+            .getSqlString(this);
+
+      case DB_INDEXES:
+        wh = null;
+
+        prm = params.get("dbName");
+        if (!BeeUtils.isEmpty(prm)) {
+          wh = SqlUtils.and(wh, SqlUtils.equal("i", "table_catalog", prm));
+        }
+        prm = params.get("dbSchema");
+        if (!BeeUtils.isEmpty(prm)) {
+          wh = SqlUtils.and(wh,
+              SqlUtils.equal("i", "table_schema", prm),
+              SqlUtils.equal("i", "index_schema", prm));
+        }
+        prm = params.get("table");
+        if (!BeeUtils.isEmpty(prm)) {
+          wh = SqlUtils.and(wh, SqlUtils.equal("i", "table_name", prm));
+        }
+        return new SqlSelect()
+            .setDistinctMode(true)
+            .addField("i", "table_name", SqlConstants.TBL_NAME)
+            .addField("i", "index_name", SqlConstants.KEY_NAME)
+            .addFrom("information_schema.statistics", "i")
             .setWhere(wh)
             .getSqlString(this);
 
