@@ -7,12 +7,14 @@
   >
   <BeeColumns>
     <BeeColumn name="Priority" expression="Priority" />
-    <BeeColumn name="State" expression="State" />
     <BeeColumn name="Task" expression="Task" />
+    <BeeColumn name="StartTime" expression="StartTime" />
     <BeeColumn name="FinishTime" expression="FinishTime" />
-    <BeeColumn name="CompletionTime" expression="CompletionTime" />
-    <BeeColumn name="ConfirmationTime" expression="ConfirmationTime" />
+    <BeeColumn name="Event" expression="Event" />
+    <BeeColumn name="EventTime" expression="EventTime" />
     <BeeColumn name="Owner" expression="Owner" />
+    <BeeColumn name="OwnerFirstName" expression="Owner>Person>FirstName" />
+    <BeeColumn name="OwnerLastName" expression="Owner>Person>LastName" />
     <BeeColumn name="Executor" expression="Executor" />
     <BeeColumn name="ExecutorFirstName" expression="Executor>Person>FirstName" />
     <BeeColumn name="ExecutorLastName" expression="Executor>Person>LastName" />

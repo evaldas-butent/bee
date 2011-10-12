@@ -8,7 +8,9 @@ import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.shared.data.IsRow;
 
 public abstract class AbstractFormCallback implements FormFactory.FormCallback {
-  public abstract void afterCreateWidget(String name, Widget widget);
+
+  public void afterCreateWidget(String name, Widget widget) {
+  }
 
   public boolean beforeCreateWidget(String name, Element description) {
     return true;
@@ -17,7 +19,7 @@ public abstract class AbstractFormCallback implements FormFactory.FormCallback {
   public boolean onLoad(Element formElement) {
     return true;
   }
-  
+
   public boolean onPrepareForInsert(FormView form, IsRow row) {
     return true;
   }

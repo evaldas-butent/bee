@@ -33,17 +33,17 @@ public class UserInfo implements Module {
   }
 
   public String getDsn() {
-    if (isLoggedIn()) {
-      return userData.getProperty("dsn");
+    if (!isLoggedIn()) {
+      return null;
     }
-    return null;
+    return userData.getProperty("dsn");
   }
 
   public String getLogin() {
-    if (isLoggedIn()) {
-      return userData.getLogin();
+    if (!isLoggedIn()) {
+      return null;
     }
-    return null;
+    return userData.getLogin();
   }
 
   public String getName() {
@@ -67,15 +67,22 @@ public class UserInfo implements Module {
     return sessionId;
   }
 
-  public String getUserSign() {
-    if (isLoggedIn()) {
-      return userData.getUserSign();
+  public Long getUserId() {
+    if (!isLoggedIn()) {
+      return null;
     }
-    return null;
+    return userData.getUserId();
+  }
+
+  public String getUserSign() {
+    if (!isLoggedIn()) {
+      return null;
+    }
+    return userData.getUserSign();
   }
 
   public Map<String, String> getViews() {
-    if (userData == null) {
+    if (!isLoggedIn()) {
       return null;
     }
 

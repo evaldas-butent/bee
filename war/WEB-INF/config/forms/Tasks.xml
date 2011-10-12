@@ -20,27 +20,19 @@
               </LongLabel>
             </cell>
             <cell><Label html="Prioritetas" horizontalAlignment="right" /></cell>
-            <cell>
-              <ListBox source="Priority">
-                <item>Aukštas</item>
-                <item>Vidutinis</item>
-                <item>Žemas</item>
-              </ListBox>
-            </cell>
+            <cell horizontalAlignment="center"><Radio source="Priority" name="Priority" /></cell>
           </row>
           <row>
-            <cell><Label html="Pabaigos data" /></cell>
-            <cell><InputDateTime source="FinishTime" /></cell>
+            <cell><Label html="Pradžios data" /></cell>
+            <cell><InputDateTime source="StartTime" /></cell>
             <cell><Label html="Įmonė" horizontalAlignment="right" /></cell>
             <cell>
               <DataSelector source="CompanyName" relSource="Company" relView="Companies" relColumn="Name" />
             </cell>
           </row>
           <row>
-            <cell><Label html="Vykdytojas" /></cell>
-            <cell>
-              <DataSelector source="ExecutorFirstName" relSource="Executor" relView="Users" relColumn="FirstName" />
-            </cell>
+            <cell><Label html="Pabaigos data" /></cell>
+            <cell><InputDateTime source="FinishTime" /></cell>
             <cell><Label html="Asmuo" horizontalAlignment="right" /></cell>
             <cell>
               <DataSelector source="PersonFirstName" relSource="CompanyPerson" relView="CompanyPersons" relColumn="FirstName" />
@@ -50,6 +42,20 @@
             <cell><Label html="Užduotis" /></cell>
             <cell colSpan="3">
               <InputArea source="Task" style="width: 100%; height: 60px;" />
+            </cell>
+          </row>
+          <row>
+            <cell><Label html="Vykdytojas" /></cell>
+            <cell>
+              <DataSelector source="ExecutorFirstName" relSource="Executor" relView="Users" relColumn="FirstName" />
+            </cell>
+            <cell><Label html="Autorius" horizontalAlignment="right" /></cell>
+            <cell>
+              <TextLabel>
+                <calc>
+                  <function>return (row.OwnerFirstName || "") + " " + (row.OwnerLastName || "")</function>
+                </calc>
+              </TextLabel>
             </cell>
           </row>
         </FlexTable>

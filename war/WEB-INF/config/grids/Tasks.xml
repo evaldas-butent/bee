@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BeeGrids xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../schemas/grid.xsd">
+
+  <BeeGrid name="Tasks" viewName="Tasks" caption="Užduotys" form="Tasks">
+    <columns>
+      <BeeIdColumn name="Id"  caption="ID"></BeeIdColumn>
+      <BeeCalcColumn name="Priority" type="string" caption="Prioritetas">
+        <calc>
+          <function>
+            switch(row.Priority) {
+              case 0:
+                return "LOW";
+              case 1:
+                return "MEDIUM";
+              case 2:
+                return "HIGH";
+              default:
+                return "UNKNOWN";
+            }
+          </function>
+        </calc>
+      </BeeCalcColumn>
+      <BeeDataColumn name="Task" source="Task" caption="Užduotis" />
+      <BeeDataColumn name="CompanyName" source="CompanyName" caption="Įmonė" />
+      <BeeCalcColumn name="Status" type="string" caption="Būsena">
+        <calc>
+          <function>
+            switch(row.Event) {
+              case 1:
+                return "SUSPENDED";
+              case 2:
+                return "COMPLETED";
+              case 3:
+                return "APPROVED";
+              case 4:
+                return "CANCELED";
+              default:
+                return "ACTIVATED";
+            }
+          </function>
+        </calc>
+      </BeeCalcColumn>
+      <BeeCalcColumn name="Owner" type="string" caption="Vadovas">
+        <calc>
+          <function>return (row.OwnerFirstName || "") + " " + (row.OwnerLastName || "")</function>
+        </calc>
+      </BeeCalcColumn>
+      <BeeCalcColumn name="Executor" type="string" caption="Vykdytojas">
+        <calc>
+          <function>return (row.ExecutorFirstName || "") + " " + (row.ExecutorLastName || "")</function>
+        </calc>
+      </BeeCalcColumn>
+      <BeeDataColumn name="FinishTime" source="FinishTime" caption="Pabaigos laikas" />
+    </columns>
+  </BeeGrid>
+</BeeGrids>

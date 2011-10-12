@@ -4,19 +4,32 @@
 
   name="Tasks"
   idName="TaskID"
-  x="589" y="28"
+  x="741" y="101"
   >
   <BeeFields>
-    <BeeField name="Priority" type="STRING" precision="10" notNull="true" />
-    <BeeField name="State" type="STRING" precision="10" notNull="true" />
+    <BeeField name="Priority" type="INTEGER" notNull="true" />
     <BeeField name="Task" type="TEXT" notNull="true" />
-    <BeeField name="PublishTime" type="DATETIME" notNull="true" />
+    <BeeField name="StartTime" type="DATETIME" notNull="true" />
     <BeeField name="FinishTime" type="DATETIME" notNull="true" />
-    <BeeField name="CompletionTime" type="DATETIME" />
-    <BeeField name="ConfirmationTime" type="DATETIME" />
+    <BeeField name="Event" type="INTEGER" notNull="true" />
+    <BeeField name="EventTime" type="DATETIME" notNull="true" />
     <BeeField name="Owner" type="LONG" notNull="true" relation="Users" />
     <BeeField name="Executor" type="LONG" notNull="true" relation="Users" />
     <BeeField name="Company" type="LONG" relation="Companies" />
     <BeeField name="CompanyPerson" type="LONG" relation="CompanyPersons" />
   </BeeFields>
+  <BeeKeys>
+    <BeeKey>
+      <KeyField>Priority</KeyField>
+    </BeeKey>
+    <BeeKey>
+      <KeyField>StartTime</KeyField>
+    </BeeKey>
+    <BeeKey>
+      <KeyField>FinishTime</KeyField>
+    </BeeKey>
+    <BeeKey>
+      <KeyField>Event</KeyField>
+    </BeeKey>
+  </BeeKeys>
 </BeeTable>

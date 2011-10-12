@@ -266,7 +266,7 @@
     <xs:complexType>
       <xs:complexContent>
         <xs:extension base="bee:editableWidget">
-          <xs:choice minOccurs="2" maxOccurs="unbounded">
+          <xs:choice minOccurs="0" maxOccurs="unbounded">
             <xs:element name="option" type="xs:normalizedString" />
           </xs:choice>
           <xs:attribute name="vertical" type="xs:boolean" default="false" />
