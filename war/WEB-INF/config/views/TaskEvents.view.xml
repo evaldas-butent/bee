@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BeeView xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../schemas/view.xsd"
+
+  name="TaskEvents"
+  source="TaskEvents"
+  >
+  <BeeColumns>
+    <BeeColumn name="Task" expression="Task" />
+    <BeeColumn name="PublisherFirstName" expression="Publisher>Person>FirstName" />
+    <BeeColumn name="PublisherLastName" expression="Publisher>Person>LastName" />
+    <BeeColumn name="PublishTime" expression="PublishTime" />
+    <BeeColumn name="Comment" expression="Comment" />
+    <BeeColumn name="Event" expression="Event" />
+    <BeeColumn name="EventNote" expression="EventNote" />
+    <BeeColumn name="EventDuration" expression="EventDuration>DurationInMinutes" />
+    <BeeColumn name="DurationType" expression="EventDuration>DurationType>Name" />
+  </BeeColumns>
+</BeeView>
+ 

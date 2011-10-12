@@ -70,11 +70,7 @@ class PostgreSqlBuilder extends SqlBuilder {
       case DB_INDEXES:
         IsCondition wh = null;
 
-        Object prm = params.get("dbName");
-        if (!BeeUtils.isEmpty(prm)) {
-          wh = SqlUtils.and(wh, SqlUtils.equal("d", "rolname", prm));
-        }
-        prm = params.get("dbSchema");
+        Object prm = params.get("dbSchema");
         if (!BeeUtils.isEmpty(prm)) {
           wh = SqlUtils.and(wh, SqlUtils.equal("s", "nspname", prm));
         }
@@ -89,7 +85,6 @@ class PostgreSqlBuilder extends SqlBuilder {
             .addFromInner("pg_index", "j", SqlUtils.join("t", "oid", "j", "indrelid"))
             .addFromInner("pg_class", "i", SqlUtils.join("j", "indexrelid", "i", "oid"))
             .addFromInner("pg_namespace", "s", SqlUtils.join("i", "relnamespace", "s", "oid"))
-            .addFromInner("pg_authid", "d", SqlUtils.join("i", "relowner", "d", "oid"))
             .setWhere(wh)
             .getSqlString(this);
 

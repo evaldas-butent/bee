@@ -7,7 +7,7 @@
   name="Tasks" viewName="Tasks" caption="Užduotys">
 
   <LayoutPanel>
-    <layer>
+    <layer height="50" heightUnit="%">
       <ScrollPanel>
         <FlexTable cellSpacing="10">
           <row>
@@ -60,6 +60,20 @@
           </row>
         </FlexTable>
       </ScrollPanel>
+    </layer>
+
+    <layer top="51" topUnit="%">
+      <FlexTable>
+        <row>
+          <cell><Button name="Comment" html="Komentaras" /></cell>
+          <cell><Button name="Term" html="Keisti terminą" /></cell>
+        </row>
+        <row>
+          <cell colSpan="2">
+            <Grid name="TaskEvents" relColumn="Task"/>
+          </cell>
+        </row>
+      </FlexTable>
     </layer>
   </LayoutPanel>
 </BeeForm>  
