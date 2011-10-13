@@ -8,6 +8,7 @@ import com.google.gwt.user.client.ui.LayoutPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.composite.RadioGroup;
+import com.butent.bee.client.modules.crm.TaskEventHandler;
 import com.butent.bee.client.ui.AbstractFormCallback;
 import com.butent.bee.client.ui.CompositeService;
 import com.butent.bee.client.ui.FormFactory;
@@ -15,8 +16,8 @@ import com.butent.bee.client.ui.PasswordService;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.modules.CrmModule;
-import com.butent.bee.shared.modules.CrmModule.Priority;
+import com.butent.bee.shared.modules.crm.Constants.Priority;
+import com.butent.bee.shared.modules.crm.Constants.TaskEvent;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.RowComparator;
 
@@ -121,10 +122,27 @@ public class BeeKeeper {
     });
     FormFactory.registerFormCallback("Tasks", new AbstractFormCallback() {
       @Override
-      public void afterCreateWidget(String name, Widget widget) {
+      public void afterCreateWidget(final String name, final Widget widget) {
         if (BeeUtils.same(name, "Priority") && widget instanceof RadioGroup) {
-          for (Priority priority : CrmModule.Priority.values()) {
+          for (Priority priority : Priority.values()) {
             ((RadioGroup) widget).addOption(priority.name());
+          }
+
+        } else if (widget instanceof HasClickHandlers) {
+          TaskEvent ev;
+          try {
+            ev = TaskEvent.valueOf(name);
+          } catch (Exception e) {
+            ev = null;
+          }
+          if (ev != null) {
+            final TaskEvent taskEvent = ev;
+            ((HasClickHandlers) widget).addClickHandler(new ClickHandler() {
+              @Override
+              public void onClick(ClickEvent event) {
+                new TaskEventHandler(taskEvent, UiHelper.getForm(widget));
+              }
+            });
           }
         }
       }
@@ -136,7 +154,7 @@ public class BeeKeeper {
           return false;
         }
         form.updateCell("Owner", BeeUtils.toString(getUser().getUserId()));
-        form.updateCell("Event", BeeUtils.transform(CrmModule.TaskEvent.ACTIVATED));
+        form.updateCell("Event", BeeUtils.transform(TaskEvent.ACTIVATED));
         form.updateCell("EventTime", BeeUtils.toString(System.currentTimeMillis()));
         return true;
       }

@@ -6,74 +6,85 @@
   
   name="Tasks" viewName="Tasks" caption="Užduotys">
 
-  <LayoutPanel>
-    <layer height="50" heightUnit="%">
-      <ScrollPanel>
-        <FlexTable cellSpacing="10">
-          <row>
-            <cell><Label html="ID" /></cell>
-            <cell>
-              <LongLabel horizontalAlignment="left">
-                <calc>
-                  <expression>rowId</expression>
-                </calc>
-              </LongLabel>
-            </cell>
-            <cell><Label html="Prioritetas" horizontalAlignment="right" /></cell>
-            <cell horizontalAlignment="center"><Radio source="Priority" name="Priority" /></cell>
-          </row>
-          <row>
-            <cell><Label html="Pradžios data" /></cell>
-            <cell><InputDateTime source="StartTime" /></cell>
-            <cell><Label html="Įmonė" horizontalAlignment="right" /></cell>
-            <cell>
-              <DataSelector source="CompanyName" relSource="Company" relView="Companies" relColumn="Name" />
-            </cell>
-          </row>
-          <row>
-            <cell><Label html="Pabaigos data" /></cell>
-            <cell><InputDateTime source="FinishTime" /></cell>
-            <cell><Label html="Asmuo" horizontalAlignment="right" /></cell>
-            <cell>
-              <DataSelector source="PersonFirstName" relSource="CompanyPerson" relView="CompanyPersons" relColumn="FirstName" />
-            </cell>
-          </row>
-          <row>
-            <cell><Label html="Užduotis" /></cell>
-            <cell colSpan="3">
-              <InputArea source="Task" style="width: 100%; height: 60px;" />
-            </cell>
-          </row>
-          <row>
-            <cell><Label html="Vykdytojas" /></cell>
-            <cell>
-              <DataSelector source="ExecutorFirstName" relSource="Executor" relView="Users" relColumn="FirstName" />
-            </cell>
-            <cell><Label html="Autorius" horizontalAlignment="right" /></cell>
-            <cell>
-              <TextLabel>
-                <calc>
-                  <function>return (row.OwnerFirstName || "") + " " + (row.OwnerLastName || "")</function>
-                </calc>
-              </TextLabel>
-            </cell>
-          </row>
-        </FlexTable>
-      </ScrollPanel>
-    </layer>
-
-    <layer top="51" topUnit="%">
-      <FlexTable>
+  <SplitPanel splitterSize="2">
+    <north size="300" scrollBars="both">
+      <FlexTable cellSpacing="10">
         <row>
-          <cell><Button name="Comment" html="Komentaras" /></cell>
-          <cell><Button name="Term" html="Keisti terminą" /></cell>
+          <cell><Label html="ID" /></cell>
+          <cell>
+            <LongLabel horizontalAlignment="left">
+              <calc>
+                <expression>rowId</expression>
+              </calc>
+            </LongLabel>
+          </cell>
+          <cell><Label html="Prioritetas" horizontalAlignment="right" /></cell>
+          <cell horizontalAlignment="center"><Radio source="Priority" name="Priority" /></cell>
         </row>
         <row>
-          <cell colSpan="2">
-            <Grid name="TaskEvents" relColumn="Task"/>
+          <cell><Label html="Pradžios data" /></cell>
+          <cell><InputDateTime source="StartTime" /></cell>
+          <cell><Label html="Įmonė" horizontalAlignment="right" /></cell>
+          <cell>
+            <DataSelector source="CompanyName" relSource="Company" relView="Companies" relColumn="Name" />
+          </cell>
+        </row>
+        <row>
+          <cell><Label html="Pabaigos data" /></cell>
+          <cell><InputDateTime source="FinishTime" /></cell>
+          <cell><Label html="Asmuo" horizontalAlignment="right" /></cell>
+          <cell>
+            <DataSelector source="PersonFirstName" relSource="CompanyPerson" relView="CompanyPersons" relColumn="FirstName" />
+          </cell>
+        </row>
+        <row>
+          <cell><Label html="Užduotis" /></cell>
+          <cell colSpan="3">
+            <InputArea source="Task" style="width: 100%; height: 60px;" />
+          </cell>
+        </row>
+        <row>
+          <cell><Label html="Vykdytojas" /></cell>
+          <cell>
+            <DataSelector source="ExecutorFirstName" relSource="Executor" relView="Users" relColumn="FirstName" />
+          </cell>
+          <cell><Label html="Autorius" horizontalAlignment="right" /></cell>
+          <cell>
+            <TextLabel>
+              <calc>
+                <function>return (row.OwnerFirstName || "") + " " + (row.OwnerLastName || "")</function>
+              </calc>
+            </TextLabel>
           </cell>
         </row>
       </FlexTable>
-    </layer>
-  </LayoutPanel>
+    </north>
+    <center>
+    <SplitPanel>
+      <north size="25" splitterSize="0">
+        <FlowPanel>
+          <Button name="COMMENTED" html="Naujas komentaras" />
+          <Button name="FORWARDED" html="Persiųsti" />
+          <Button name="EXTENDED" html="Keisti terminą" />
+        </FlowPanel>
+      </north>
+      <south size="25" splitterSize="0">
+        <AbsolutePanel>
+          <layer right="0" rightUnit="px">
+            <HorizontalPanel>
+              <cell><Button name="SUSPENDED" html="Sustabdyti" /></cell>
+              <cell><Button name="CANCELED" html="Nutraukti" /></cell>
+              <cell><Button name="COMPLETED" html="Užbaigti" /></cell>
+              <cell><Button name="APPROVED" html="Patvirtinti" /></cell>
+              <cell><Button name="RENEWED" html="Grąžinti vykdymui" /></cell>
+            </HorizontalPanel>
+          </layer>
+        </AbsolutePanel>
+      </south>
+      <center>
+        <Grid name="TaskEvents" relColumn="Task"/>
+      </center>
+    </SplitPanel>
+    </center>
+  </SplitPanel>
 </BeeForm>  

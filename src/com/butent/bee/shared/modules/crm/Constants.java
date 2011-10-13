@@ -1,6 +1,6 @@
-package com.butent.bee.shared.modules;
+package com.butent.bee.shared.modules.crm;
 
-public class CrmModule {
+public class Constants {
   public static enum Priority {
     LOW, MEDIUM, HIGH
   }
