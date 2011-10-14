@@ -696,7 +696,8 @@ public class DataSelector extends Complex implements Editor, HasTextDimensions {
   }
 
   public void startEdit(String oldValue, char charCode, EditorAction onEntry) {
-    StyleUtils.setZIndex(getDisplay().getPopup(), StyleUtils.getZIndex(this) + 1);
+    StyleUtils.setZIndex(getDisplay().getPopup(),
+        StyleUtils.getParentZIndex(this, true) + 1);
 
     setLastRequest(null);
     setOffset(0);

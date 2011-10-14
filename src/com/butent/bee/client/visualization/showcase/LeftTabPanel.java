@@ -58,7 +58,7 @@ public class LeftTabPanel extends Composite {
   public void init(String name) {
     left.setAllVisible();
     if (!BeeUtils.isEmpty(name)) {
-      left.setSelectedIndex(left.getIndex(name));
+      left.setValue(name);
       setWidget(right, cogs.get(name));
     }
   }

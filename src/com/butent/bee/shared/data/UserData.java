@@ -138,7 +138,7 @@ public class UserData implements BeeSerializable {
   }
 
   public String getUserSign() {
-    return BeeUtils.concat(1, getFirstName(), getLastName());
+    return BeeUtils.ifString(BeeUtils.concat(1, getFirstName(), getLastName()), getLogin());
   }
 
   @Override

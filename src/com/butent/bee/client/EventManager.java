@@ -27,7 +27,6 @@ import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.Codec;
 
 import java.util.Collection;
 import java.util.List;
@@ -105,6 +104,10 @@ public class EventManager implements Module {
     return dispatchService(stage.getService(), stage.getStage(), event);
   }
 
+  public boolean dispatchService(String svc) {
+    return dispatchService(svc, null, null);
+  }
+  
   public boolean dispatchService(String svc, String stg, Event<?> event) {
     Assert.notEmpty(svc);
 
@@ -300,33 +303,6 @@ public class EventManager implements Module {
                   Service.VAR_RESULT_SET_FETCH_DIRECTION,
                   Service.VAR_RESULT_SET_FETCH_SIZE,
                   Service.VAR_JDBC_RETURN));
-          ok = true;
-        }
-      } else {
-        Global.showError("Unknown composite service stage", svc, stg);
-      }
-
-    } else if (svc.equals(Service.GET_LOGIN)) {
-      if (stg.equals(Stage.STAGE_GET_PARAMETERS)) {
-        Global.inputVars(new Stage(Service.GET_LOGIN, Stage.STAGE_CONFIRM),
-            "Login", Service.VAR_LOGIN, Service.VAR_PASSWORD);
-        ok = true;
-
-      } else if (stg.equals(Stage.STAGE_CONFIRM)) {
-        String usr = BeeUtils.trim(Global.getVarValue(Service.VAR_LOGIN));
-        String pwd = BeeUtils.trim(Global.getVarValue(Service.VAR_PASSWORD));
-
-        if (BeeUtils.isEmpty(usr)) {
-          Global.showError("Login name not specified");
-        } else if (BeeUtils.isEmpty(pwd)) {
-          Global.showError("Password not specified");
-        } else {
-          Global.setVarValue(Service.VAR_LOGIN, "");
-          Global.setVarValue(Service.VAR_PASSWORD, "");
-          Global.closeDialog(event);
-          BeeKeeper.getRpc().makePostRequest(Service.LOGIN,
-              XmlUtils.createString(Service.XML_TAG_DATA,
-                  Service.VAR_LOGIN, usr, Service.VAR_PASSWORD, Codec.md5(pwd)));
           ok = true;
         }
       } else {

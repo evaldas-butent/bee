@@ -52,7 +52,10 @@ public class BeeListBox extends ListBox implements Editor, HasItems, HasBeeChang
   
   private Timer changeTimer = null;
   
-  private int startChar = 0; 
+  private int startChar = 0;
+  
+  private boolean valueNumeric = false;
+  private int valueStartIndex = 0;
 
   public BeeListBox() {
     super();
@@ -124,21 +127,6 @@ public class BeeListBox extends ListBox implements Editor, HasItems, HasBeeChang
     return "list";
   }
 
-  public int getIndex(String text) {
-    int index = -1;
-    if (text == null) {
-      return index;
-    }
-
-    for (int i = 0; i < getItemCount(); i++) {
-      if (BeeUtils.same(getValue(i), text)) {
-        index = i;
-        break;
-      }
-    }
-    return index;
-  }
-
   public String getNormalizedValue() {
     String v = getValue();
     if (BeeUtils.isEmpty(v) && isNullable()) {
@@ -154,11 +142,17 @@ public class BeeListBox extends ListBox implements Editor, HasItems, HasBeeChang
 
   public String getValue() {
     int index = getSelectedIndex();
-    if (isIndex(index)) {
-      return getValue(index);
-    } else {
+    if (!isIndex(index)) {
       return null;
+    } else if (isValueNumeric()) {
+      return BeeUtils.toString(index + getValueStartIndex());
+    } else {
+      return getValue(index);
     }
+  }
+
+  public int getValueStartIndex() {
+    return valueStartIndex;
   }
 
   public boolean handlesKey(int keyCode) {
@@ -171,6 +165,10 @@ public class BeeListBox extends ListBox implements Editor, HasItems, HasBeeChang
 
   public boolean isNullable() {
     return nullable;
+  }
+
+  public boolean isValueNumeric() {
+    return valueNumeric;
   }
 
   @Override
@@ -251,6 +249,14 @@ public class BeeListBox extends ListBox implements Editor, HasItems, HasBeeChang
     }
   }
 
+  public void setValueNumeric(boolean valueNumeric) {
+    this.valueNumeric = valueNumeric;
+  }
+
+  public void setValueStartIndex(int valueStartIndex) {
+    this.valueStartIndex = valueStartIndex;
+  }
+
   public void startEdit(String oldValue, char charCode, EditorAction onEntry) {
     setStartChar(charCode);
     setChangePending(false);
@@ -277,6 +283,30 @@ public class BeeListBox extends ListBox implements Editor, HasItems, HasBeeChang
 
   private void addDefaultHandlers() {
     BeeKeeper.getBus().addVch(this);
+  }
+
+  private int getIndex(String text) {
+    int index = BeeConst.UNDEF;
+    if (text == null) {
+      return index;
+    }
+    
+    if (isValueNumeric()) {
+      if (BeeUtils.isDigit(BeeUtils.trim(text))) {
+        int z = BeeUtils.toInt(text) - getValueStartIndex();
+        if (isIndex(z)) {
+          index = z;
+        }
+      }
+    } else { 
+      for (int i = 0; i < getItemCount(); i++) {
+        if (BeeUtils.same(getValue(i), text)) {
+          index = i;
+          break;
+        }
+      }
+    }
+    return index;
   }
 
   private int getStartChar() {

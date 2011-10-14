@@ -270,6 +270,7 @@
             <xs:element name="option" type="xs:normalizedString" />
           </xs:choice>
           <xs:attribute name="vertical" type="xs:boolean" default="false" />
+          <xs:attribute name="valueStartIndex" type="xs:nonNegativeInteger" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -279,12 +280,14 @@
     <xs:complexType>
       <xs:complexContent>
         <xs:extension base="bee:editableWidget">
-          <xs:choice minOccurs="2" maxOccurs="unbounded">
+          <xs:choice minOccurs="0" maxOccurs="unbounded">
             <xs:element name="item" type="xs:normalizedString" />
           </xs:choice>
           <xs:attribute name="multiSelect" type="xs:boolean" default="false" />
           <xs:attribute name="allItemsVisible" type="xs:boolean" default="false" />
           <xs:attribute name="visibleItemCount" type="xs:positiveInteger" />
+          <xs:attribute name="valueNumeric" type="xs:boolean" default="false" />
+          <xs:attribute name="valueStartIndex" type="xs:nonNegativeInteger" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>

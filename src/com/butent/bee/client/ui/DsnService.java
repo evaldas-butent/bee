@@ -67,7 +67,6 @@ public class DsnService extends CompositeService {
 
                 if (response.hasResponse(String.class)) {
                   BeeKeeper.getUser().setDsn((String) response.getResponse());
-                  BeeKeeper.getScreen().updateUser(stg);
                 }
               }
             });

@@ -2783,7 +2783,9 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
           }
 
         } else {
-          if (j == 0) {
+          if (cc == 1) {
+            cellBorders = defaultCell;
+          } else if (j == 0) {
             cellBorders = firstColumn;
           } else if (j == cc - 1) {
             cellBorders = lastColumn;

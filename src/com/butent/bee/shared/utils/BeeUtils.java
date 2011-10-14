@@ -2931,6 +2931,14 @@ public class BeeUtils {
     return Long.toString(millis / 1000) + BeeConst.STRING_POINT
         + toLeadingZeroes((int) (millis % 1000), 3);
   }
+  
+  public static String toString(BigDecimal bd) {
+    if (bd == null) {
+      return null;
+    } else {
+      return bd.toString();
+    }
+  }
 
   /**
    * Converts a Boolean value {@code b} to a String value.

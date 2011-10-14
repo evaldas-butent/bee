@@ -2,6 +2,7 @@ package com.butent.bee.client.grid;
 
 import com.google.gwt.user.client.ui.HasEnabled;
 
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.layout.ResizePanel;
 import com.butent.bee.client.presenter.GridPresenter;
@@ -12,6 +13,7 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.ui.GridDescription;
+import com.butent.bee.shared.utils.BeeUtils;
 
 /**
  * Enables using data grids with data related to another source.
@@ -19,6 +21,8 @@ import com.butent.bee.shared.ui.GridDescription;
 
 public class ChildGrid extends ResizePanel implements HasEnabled {
 
+  public static int initialRowSetSize = 1;
+  
   private String viewName = null;
   private final String relSource;
 
@@ -27,18 +31,17 @@ public class ChildGrid extends ResizePanel implements HasEnabled {
   private Long pendingId = null;
   private Boolean pendingEnabled = null;
 
-  public ChildGrid(final String gridName, String relSource) {
+  public ChildGrid(String gridName, String relSource) {
     super();
     this.relSource = relSource;
 
     GridFactory.getGrid(gridName, new GridFactory.GridCallback() {
       public void onFailure(String[] reason) {
-        setViewName(gridName);
-        getInitialRowSet(null);
+        BeeKeeper.getScreen().notifySevere(reason);
       }
 
       public void onSuccess(GridDescription result) {
-        setViewName(result == null ? gridName : result.getViewName());
+        setViewName(result.getViewName());
         getInitialRowSet(result);
       }
     });
@@ -91,7 +94,12 @@ public class ChildGrid extends ResizePanel implements HasEnabled {
   }
 
   private void getInitialRowSet(final GridDescription gridDescription) {
-    Queries.getRowSet(getViewName(), null, null, null, 0, 1, CachingPolicy.NONE,
+    int limit = BeeUtils.unbox(gridDescription.getInitialRowSetSize());
+    if (limit <= 0) {
+      limit = initialRowSetSize;
+    }
+    
+    Queries.getRowSet(getViewName(), null, null, null, 0, limit, CachingPolicy.NONE,
         new Queries.RowSetCallback() {
           public void onFailure(String[] reason) {
           }

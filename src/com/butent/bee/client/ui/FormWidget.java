@@ -293,6 +293,9 @@ public enum FormWidget {
   private static final String ATTR_ALL_ITEMS_VISIBLE = "allItemsVisible";
   private static final String ATTR_VISIBLE_ITEM_COUNT = "visibleItemCount";
 
+  private static final String ATTR_VALUE_NUMERIC = "valueNumeric";
+  private static final String ATTR_VALUE_START_INDEX = "valueStartIndex";
+  
   private static final String ATTR_MIN = "min";
   private static final String ATTR_MAX = "max";
   private static final String ATTR_STEP = "step";
@@ -667,6 +670,10 @@ public enum FormWidget {
 
       case LIST_BOX:
         widget = new BeeListBox(BeeUtils.toBoolean(attributes.get(ATTR_MULTI_SELECT)));
+        String isNum = attributes.get(ATTR_VALUE_NUMERIC);
+        if (BeeUtils.isBoolean(isNum)) {
+          ((BeeListBox) widget).setValueNumeric(BeeUtils.toBoolean(isNum));
+        }
         break;
 
       case LONG_LABEL:
@@ -1712,6 +1719,13 @@ public enum FormWidget {
         if (widget instanceof InputInteger && BeeUtils.isDigit(value)
             && BeeUtils.toInt(value) > 0) {
           ((InputInteger) widget).setStepValue(BeeUtils.toInt(value));
+        }
+
+      } else if (BeeUtils.same(name, ATTR_VALUE_START_INDEX) && BeeUtils.isDigit(value)) {
+        if (widget instanceof RadioGroup) {
+          ((RadioGroup) widget).setValueStartIndex(BeeUtils.toInt(value));
+        } else if (widget instanceof BeeListBox) {
+          ((BeeListBox) widget).setValueStartIndex(BeeUtils.toInt(value));
         }
       }
     }

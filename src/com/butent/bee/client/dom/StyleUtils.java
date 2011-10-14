@@ -2,6 +2,7 @@ package com.butent.bee.client.dom;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
+import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.dom.client.Style;
@@ -237,6 +238,7 @@ public class StyleUtils {
   public static final String NAME_CONTENT_BOX = "contentBox";
   public static final String NAME_SCARY = "bee-afraid";
   public static final String NAME_SUPER_SCARY = "bee-very-afraid";
+  public static final String NAME_ERROR = "bee-error";
 
   public static final String FONT_SIZE_XX_SMALL = "xx-small";
   public static final String FONT_SIZE_X_SMALL = "x-small";
@@ -874,6 +876,15 @@ public class StyleUtils {
     return getLeft(obj.getElement());
   }
 
+  public static int getParentZIndex(Element el, boolean incl) {
+    return BeeUtils.toInt(getParentProperty(el, STYLE_Z_INDEX, incl));
+  }
+
+  public static int getParentZIndex(UIObject obj, boolean incl) {
+    Assert.notNull(obj);
+    return getParentZIndex(obj.getElement(), incl);
+  }
+  
   public static Rectangle getRectangle(Element el) {
     Assert.notNull(el);
     return getRectangle(el.getStyle());
@@ -2005,6 +2016,51 @@ public class StyleUtils {
     if (!BeeUtils.equalsTrim(value, dst.getProperty(name))) {
       dst.setProperty(name, value);
     }
+  }
+  
+  private static native JsArrayString getComputedStyles(Element el) /*-{
+    var arr = [];
+
+    if ('getComputedStyle' in $wnd) {
+      var cs = $wnd.getComputedStyle(el, null);
+      if (cs.length) {
+        for (var i = 0; i < cs.length; i++) {
+          arr.push(cs.item(i), cs.getPropertyValue(cs.item(i)));
+        }
+      } else {
+        for (var p in cs) {
+          if (cs.hasOwnProperty(p)) {
+            arr.push(p, cs[p]);
+          }
+        }
+      }
+
+    } else if ('currentStyle' in el) {
+      var cs = el.currentStyle;
+      for (var p in cs) {
+        arr.push(p, cs[p]);
+      }
+    }
+    
+    return arr;
+  }-*/;
+  
+  private static String getParentProperty(Element el, String name, boolean incl) {
+    Assert.notNull(el);
+    Assert.notEmpty(name);
+    
+    if (incl) {
+      String value = el.getStyle().getProperty(name);
+      if (!BeeUtils.isEmpty(value)) {
+        return value;
+      }
+    }
+
+    Element parent = el.getParentElement();
+    if (parent == null) {
+      return null;
+    }
+    return getParentProperty(parent, name, true);
   }
 
   private static boolean hasProperty(Style st, String name) {

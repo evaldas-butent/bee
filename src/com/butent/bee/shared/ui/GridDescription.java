@@ -27,7 +27,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
 
   private enum Serial {
     NAME, VIEW, CAPTION, READONLY, HAS_HEADERS, HAS_FOOTERS,
-    ASYNC_THRESHOLD, PAGING_THRESHOLD, SEARCH_THRESHOLD, PAGE_SIZE,
+    ASYNC_THRESHOLD, PAGING_THRESHOLD, SEARCH_THRESHOLD, INITIAL_ROW_SET_SIZE, PAGE_SIZE,
     NEW_ROW_COLUMNS, SHOW_COLUMN_WIDTHS, FORM, EDIT_MODE,
     HEADER, BODY, FOOTER,
     ROW_STYLES, ROW_MESSAGE, ROW_EDITABLE, ROW_VALIDATION,
@@ -54,6 +54,8 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   private Integer asyncThreshold = null;
   private Integer pagingThreshold = null;
   private Integer searchThreshold = null;
+  
+  private Integer initialRowSetSize = null;
 
   private Integer pageSize = null;
 
@@ -197,6 +199,9 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         case EDIT_MODE:
           setEditMode(value);
           break;
+        case INITIAL_ROW_SET_SIZE:
+          setInitialRowSetSize(BeeUtils.toIntOrNull(value));
+          break;
       }
     }
   }
@@ -250,6 +255,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         "Async Threshold", getAsyncThreshold(),
         "Paging Threshold", getPagingThreshold(),
         "Search Threshold", getSearchThreshold(),
+        "Initial Row Set Size", getInitialRowSetSize(),
         "Page Size", getPageSize(),
         "New Row Columns", getNewRowColumns(),
         "Form", getForm(),
@@ -302,6 +308,10 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
           column.getInfo());
     }
     return info;
+  }
+
+  public Integer getInitialRowSetSize() {
+    return initialRowSetSize;
   }
 
   public Integer getMaxColumnWidth() {
@@ -468,6 +478,9 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         case EDIT_MODE:
           arr[i++] = getEditMode();
           break;
+        case INITIAL_ROW_SET_SIZE:
+          arr[i++] = getInitialRowSetSize();
+          break;
       }
     }
     return Codec.beeSerialize(arr);
@@ -518,6 +531,10 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
 
   public void setHeader(GridComponentDescription header) {
     this.header = header;
+  }
+
+  public void setInitialRowSetSize(Integer initialRowSetSize) {
+    this.initialRowSetSize = initialRowSetSize;
   }
 
   public void setMaxColumnWidth(Integer maxColumnWidth) {

@@ -7,6 +7,7 @@ import com.google.gwt.http.client.Request;
 import com.google.gwt.http.client.RequestCallback;
 import com.google.gwt.http.client.RequestTimeoutException;
 import com.google.gwt.http.client.Response;
+import com.google.gwt.user.client.Window;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
@@ -21,9 +22,7 @@ import com.butent.bee.shared.communication.ContentType;
 import com.butent.bee.shared.communication.ResponseMessage;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
-import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.Codec;
 
 import java.util.Collection;
 
@@ -73,24 +72,10 @@ public class AsyncCallback implements RequestCallback {
       }
       finalizeResponse();
       return;
-
-    } else {
-      BeeKeeper.getUser().setSessionId(resp.getHeader(Service.RPC_VAR_SID));
-      String auth = resp.getHeader(Service.VAR_AUTH_DATA);
-
-      if (!BeeUtils.isEmpty(auth)) {
-        auth = Codec.decodeBase64(auth);
-        ResponseObject response = ResponseObject.restore(auth);
-        RpcUtils.dispatchMessages(response);
-        UserData data = null;
-
-        if (response.hasResponse(UserData.class)) {
-          data = UserData.restore((String) response.getResponse());
-        }
-        BeeKeeper.getUser().setUserData(data);
-        BeeKeeper.getScreen().updateUser(svc);
-      }
     }
+
+    String sid = resp.getHeader(Service.RPC_VAR_SID);
+    BeeKeeper.getUser().setSessionId(sid);
 
     ContentType ctp = CommUtils.getContentType(resp.getHeader(Service.RPC_VAR_CTP));
 
@@ -202,6 +187,10 @@ public class AsyncCallback implements RequestCallback {
         (info == null) ? BeeConst.STRING_EMPTY : BeeUtils.bracket(info.getCompletedTime()),
         BeeUtils.bracket(duration.getCompletedTime()));
     finalizeResponse();
+    
+    if (BeeUtils.same(sid, BeeConst.NULL)) {
+      Window.Location.reload();
+    }
   }
 
   private void dispatchInvocation(String svc, RpcInfo info, String txt, int mc,

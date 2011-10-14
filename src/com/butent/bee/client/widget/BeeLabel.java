@@ -5,7 +5,6 @@ import com.google.gwt.user.client.ui.Label;
 
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.shared.HasId;
-import com.butent.bee.shared.utils.BeeUtils;
 
 /**
  * Implements standard label user interface component.
@@ -21,10 +20,6 @@ public class BeeLabel extends Label implements HasId {
   public BeeLabel(Element element) {
     super(element);
     init();
-  }
-
-  public BeeLabel(Object obj) {
-    this(BeeUtils.transform(obj));
   }
 
   public BeeLabel(String text) {

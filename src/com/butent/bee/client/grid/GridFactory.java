@@ -460,10 +460,15 @@ public class GridFactory {
     final boolean async;
     if (rc >= limit) {
       async = true;
-      if (rc <= DataUtils.getMaxInitialRowSetSize()) {
+      int x = BeeUtils.unbox(gridDescription.getInitialRowSetSize());
+      if (x <= 0) {
+        x = DataUtils.getMaxInitialRowSetSize();
+      }
+
+      if (x <= 0 || rc <= x) {
         limit = -1;
       } else {
-        limit = DataUtils.getMaxInitialRowSetSize();
+        limit = x;
       }
     } else {
       async = false;

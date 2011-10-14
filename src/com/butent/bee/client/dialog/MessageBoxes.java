@@ -28,7 +28,6 @@ import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -158,7 +157,12 @@ public class MessageBoxes {
   }
 
   public void showError(Object... x) {
-    showInfo(x);
+    CloseButton b = new CloseButton("ok");
+    Popup box = createPopup(b, x);
+    box.addStyleName(StyleUtils.NAME_ERROR);
+
+    box.center();
+    b.setFocus(true);
   }
 
   public void showGrid(String cap, Object data, String... columnLabels) {
@@ -225,39 +229,8 @@ public class MessageBoxes {
   }
 
   public void showInfo(Object... x) {
-    Assert.notNull(x);
-    int n = x.length;
-    Assert.parameterCount(n, 1);
-
-    Vertical vp = new Vertical();
-
-    for (int i = 0; i < n; i++) {
-      if (x[i] instanceof Widget) {
-        vp.add((Widget) x[i]);
-      } else if (x[i] instanceof String) {
-        vp.add(new BeeLabel((String) x[i]));
-      } else if (x[i] instanceof Collection) {
-        for (Iterator<?> iter = ((Collection<?>) x[i]).iterator(); iter.hasNext();) {
-          vp.add(new BeeLabel(iter.next()));
-        }
-      } else if (ArrayUtils.isArray(x[i])) {
-        for (int j = 0; j < ArrayUtils.length(x[i]); j++) {
-          vp.add(new BeeLabel(ArrayUtils.get(x[i], j)));
-        }
-      } else if (x[i] != null) {
-        vp.add(new BeeLabel(x[i]));
-      }
-    }
-
     CloseButton b = new CloseButton("ok");
-
-    vp.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
-    vp.add(b);
-
-    Popup box = new Popup();
-    box.setAnimationEnabled(true);
-
-    box.setWidget(vp);
+    Popup box = createPopup(b, x);
 
     box.center();
     b.setFocus(true);
@@ -271,5 +244,42 @@ public class MessageBoxes {
 
     box.setWidget(widget);
     box.center();
+  }
+  
+  private Popup createPopup(Widget bottom, Object... obj) {
+    Assert.notNull(obj);
+    int n = obj.length;
+    Assert.parameterCount(n, 1);
+
+    Vertical vp = new Vertical();
+
+    for (int i = 0; i < n; i++) {
+      if (obj[i] instanceof Widget) {
+        vp.add((Widget) obj[i]);
+      } else if (obj[i] instanceof String) {
+        vp.add(new BeeLabel((String) obj[i]));
+      } else if (obj[i] instanceof Collection) {
+        for (Object item : (Collection<?>) obj[i]) {
+          vp.add(new BeeLabel(BeeUtils.transform(item)));
+        }
+      } else if (ArrayUtils.isArray(obj[i])) {
+        for (int j = 0; j < ArrayUtils.length(obj[i]); j++) {
+          vp.add(new BeeLabel(BeeUtils.transform(ArrayUtils.get(obj[i], j))));
+        }
+      } else if (obj[i] != null) {
+        vp.add(new BeeLabel(BeeUtils.transform(obj)));
+      }
+    }
+    
+    if (bottom != null) {
+      vp.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
+      vp.add(bottom);
+    }
+
+    Popup popup = new Popup();
+    popup.setAnimationEnabled(true);
+
+    popup.setWidget(vp);
+    return popup;
   }
 }

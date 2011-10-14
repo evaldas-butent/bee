@@ -88,6 +88,7 @@ public class GridHolderBean {
   private static final String ATTR_ASYNC_THRESHOLD = "asyncThreshold";
   private static final String ATTR_PAGING_THRESHOLD = "pagingThreshold";
   private static final String ATTR_SEARCH_THRESHOLD = "searchThreshold";
+  private static final String ATTR_INITIAL_ROW_SET_SIZE = "initialRowSetSize";
   private static final String ATTR_PAGE_SIZE = "pageSize";
   private static final String ATTR_NEW_ROW_COLUMNS = "newRowColumns";
   private static final String ATTR_SHOW_COLUMN_WIDTHS = "showColumnWidths";
@@ -646,11 +647,17 @@ public class GridHolderBean {
     if (searchThreshold != null) {
       dst.setSearchThreshold(searchThreshold);
     }
+
     Integer pageSize = XmlUtils.getAttributeInteger(src, ATTR_PAGE_SIZE);
     if (pageSize != null) {
       dst.setPageSize(pageSize);
     }
 
+    Integer initialRowSetSize = XmlUtils.getAttributeInteger(src, ATTR_INITIAL_ROW_SET_SIZE);
+    if (initialRowSetSize != null) {
+      dst.setInitialRowSetSize(initialRowSetSize);
+    }
+    
     String newRowColumns = src.getAttribute(ATTR_NEW_ROW_COLUMNS);
     if (!BeeUtils.isEmpty(newRowColumns)) {
       dst.setNewRowColumns(newRowColumns.trim());

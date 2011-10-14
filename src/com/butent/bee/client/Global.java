@@ -10,6 +10,7 @@ import com.butent.bee.client.dialog.MessageBoxes;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.TextCellType;
 import com.butent.bee.client.resources.Images;
+import com.butent.bee.client.utils.BeeCommand;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeType;
@@ -67,6 +68,22 @@ public class Global implements Module {
     }
   }
 
+  public static void confirm(String caption, String message, BeeCommand command) {
+    msgBoxen.confirm(caption, message, command);
+  }
+  
+  public static void confirm(String caption, List<String> messages, BeeCommand command) {
+    msgBoxen.confirm(caption, messages, command);
+  }
+
+  public static void confirm(String message, BeeCommand command) {
+    msgBoxen.confirm(message, command);
+  }
+  
+  public static void confirm(List<String> messages, BeeCommand command) {
+    msgBoxen.confirm(null, messages, command);
+  }
+  
   public static void createVar(String name, String caption) {
     createVar(name, caption, BeeType.STRING, BeeConst.STRING_EMPTY);
   }
@@ -331,10 +348,6 @@ public class Global implements Module {
   private void initVars() {
     createVar(Service.VAR_CLASS_NAME, "Class name");
     createVar(Service.VAR_PACKAGE_LIST, "Default Packages");
-
-    createVar(Service.VAR_LOGIN, "Login");
-    createVar(Service.VAR_PASSWORD, "Password", BeeType.STRING, BeeConst.STRING_EMPTY,
-        BeeWidget.PASSWORD);
 
     createVar(Service.VAR_XML_SOURCE, "source");
     createVar(Service.VAR_XML_TRANSFORM, "transform");

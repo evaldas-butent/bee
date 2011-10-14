@@ -8,7 +8,9 @@ import com.butent.bee.shared.DateTime;
 import com.butent.bee.shared.JustDate;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Sequence;
+import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.value.TextValue;
+import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.math.BigDecimal;
@@ -158,11 +160,67 @@ public class StringRow extends AbstractRow {
     }
   }
 
+  public void setValue(int index, BigDecimal value) {
+    setValue(index, BeeUtils.toString(value));
+  }
+
+  public void setValue(int index, Boolean value) {
+    setValue(index, BooleanValue.pack(value));
+  }
+
+  public void setValue(int index, DateTime value) {
+    if (value == null) {
+      clearCell(index);
+    } else {
+      setValue(index, BeeUtils.toString(value.getTime()));
+    }
+  }
+
+  public void setValue(int index, Double value) {
+    if (value == null) {
+      clearCell(index);
+    } else {
+      setValue(index, BeeUtils.toString(value));
+    }
+  }
+
+  public void setValue(int index, Integer value) {
+    if (value == null) {
+      clearCell(index);
+    } else {
+      setValue(index, BeeUtils.toString(value));
+    }
+  }
+
+  public void setValue(int index, JustDate value) {
+    if (value == null) {
+      clearCell(index);
+    } else {
+      setValue(index, BeeUtils.toString(value.getDay()));
+    }
+  }
+
+  public void setValue(int index, Long value) {
+    if (value == null) {
+      clearCell(index);
+    } else {
+      setValue(index, BeeUtils.toString(value));
+    }
+  }
+
   public void setValue(int index, String value) {
     assertIndex(index);
     values.set(index, value);
   }
 
+  public void setValue(int index, Value value) {
+    if (value == null) {
+      clearCell(index);
+    } else {
+      setValue(index, value.getString());
+    }
+  }
+  
   public void setValues(Sequence<String> values) {
     this.values = values;
   }

@@ -174,9 +174,9 @@
       <xs:enumeration value="arrowUpHover" />
       <xs:enumeration value="arrowUpPressed" />
       <xs:enumeration value="ascending" />
-      <xs:enumeration value="bee" />
       <xs:enumeration value="bookmark" />
       <xs:enumeration value="bookmark_add" />
+      <xs:enumeration value="butent" />
       <xs:enumeration value="cancel" />
       <xs:enumeration value="close" />
       <xs:enumeration value="configure" />

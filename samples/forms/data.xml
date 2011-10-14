@@ -31,9 +31,6 @@
     <row>
       <cell colSpan="2">
         <Radio source="Integer">
-          <validation>
-            <expression>(cell.newValue &gt; 1) ? null : '"too low"'</expression>
-          </validation>
           <option>0</option>
           <option>1</option>
           <option>2</option>
@@ -48,6 +45,45 @@
       </cell>
       <cell horizontalAlignment="right">
         <InputSpinner source="Integer" />
+      </cell>
+    </row>
+
+    <row>
+      <cell>
+        <Radio source="Integer" valueStartIndex="1">
+          <option>1</option>
+          <option>2</option>
+          <option>3</option>
+          <option>4</option>
+          <option>5</option>
+        </Radio>
+      </cell>
+      <cell>
+        <ListBox source="Integer" valueNumeric="true">
+          <item>aaa</item>
+          <item>bbb</item>
+          <item>ccc</item>
+          <item>ddd</item>
+          <item>eee</item>
+          <item>fff</item>
+          <item>ggg</item>
+          <item>hhh</item>
+          <item>iii</item>
+          <item>jjj</item>
+        </ListBox>
+      </cell>
+      <cell>
+        <ListBox source="Integer" valueNumeric="true" valueStartIndex="1">
+          <item>bbb</item>
+          <item>ccc</item>
+          <item>ddd</item>
+          <item>eee</item>
+          <item>fff</item>
+          <item>ggg</item>
+          <item>hhh</item>
+          <item>iii</item>
+          <item>jjj</item>
+        </ListBox>
       </cell>
     </row>
 

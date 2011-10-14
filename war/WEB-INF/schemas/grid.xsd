@@ -35,6 +35,7 @@
     <xs:attribute name="asyncThreshold" type="xs:nonNegativeInteger" default="100" />
     <xs:attribute name="pagingThreshold" type="xs:nonNegativeInteger" default="20" />
     <xs:attribute name="searchThreshold" type="xs:nonNegativeInteger" default="2" />
+    <xs:attribute name="initialRowSetSize" type="xs:positiveInteger" />
     <xs:attribute name="pageSize" type="xs:positiveInteger" default="15" />
     <xs:attribute name="newRowColumns" type="xs:normalizedString" />
     <xs:attribute name="showColumnWidths" type="xs:boolean" />

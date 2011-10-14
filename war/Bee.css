@@ -505,6 +505,10 @@ body, select {
   -webkit-animation: scary 100s linear infinite alternate;
 }
 
+.bee-error {
+  color: red;
+}
+
 .bee-DialogBox {
   border: 1px solid activeborder;
   border-radius: 2px;

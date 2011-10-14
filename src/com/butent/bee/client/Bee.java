@@ -19,9 +19,13 @@ import com.butent.bee.client.widget.InputPassword;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
+import com.butent.bee.shared.communication.ResponseMessage;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
+
+import java.util.List;
 
 /**
  * The entry point class of the application, initializes <code>BeeKeeper</code> class.
@@ -45,6 +49,15 @@ public class Bee implements EntryPoint {
     signIn();
   }
 
+  private void onSignIn(UserData userData) {
+    BeeKeeper.getScreen().start();
+
+    BeeKeeper.getUser().setUserData(userData);
+    BeeKeeper.getScreen().updateSignature(userData.getUserSign());
+
+    BeeKeeper.getBus().dispatchService(Service.REFRESH_MENU);
+  }
+  
   private void signIn() {
     final Popup popup = new Popup(false, true);
     popup.setStyleName("bee-SignIn-Popup");
@@ -103,22 +116,28 @@ public class Bee implements EntryPoint {
             XmlUtils.createString(Service.XML_TAG_DATA,
                 Service.VAR_LOGIN, userName, Service.VAR_PASSWORD, Codec.md5(password)),
             new ResponseCallback() {
-              @Override
               public void onResponse(ResponseObject response) {
-                /*                if (response != null) {
-                                  if (response.hasErrors()) {
-                                    Global.showError((Object[]) response.getErrors());
-                                  } else {
-                                    popup.hide();
-                                    BeeKeeper.getScreen().start();
-                                  }
-                                } else {
-                                  Global.showError("Wrong server response");
-                                }
-                */}
-            });
-        popup.hide();
-        BeeKeeper.getScreen().start();
+                if (response == null) {
+                  Global.showError("server error");
+                  return;
+                }
+                if (!response.hasResponse(UserData.class)) {
+                  if (response.hasMessages()) {
+                    List<String> messages = Lists.newArrayList();
+                    for (ResponseMessage msg : response.getMessages()) {
+                      messages.add(BeeUtils.concat(1, msg.getLevel(), msg.getMessage()));
+                    }
+                    Global.showError(messages);
+                  } else {
+                    Global.showError("Wrong server response");
+                  }
+                  return;
+                }
+                
+                popup.hide();
+                onSignIn(UserData.restore((String) response.getResponse()));
+              }
+        });
       }
     });
 

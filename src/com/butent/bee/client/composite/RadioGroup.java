@@ -68,6 +68,8 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
 
   private Variable variable = null;
 
+  private int valueStartIndex = 0;
+  
   public RadioGroup(String name, boolean vertical) {
     super();
     Assert.notEmpty(name);
@@ -175,6 +177,12 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
   }
 
   @Override
+  public void clear() {
+    super.clear();
+    setOptionCount(0);
+  }
+
+  @Override
   public String getDefaultStyleName() {
     return "bee-RadioGroup";
   }
@@ -208,9 +216,13 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
 
   public String getValue() {
     int index = getSelectedIndex();
-    return (index >= 0) ? BeeUtils.toString(index) : null;
+    return (index >= 0) ? BeeUtils.toString(index + getValueStartIndex()) : null;
   }
 
+  public int getValueStartIndex() {
+    return valueStartIndex;
+  }
+  
   public boolean handlesKey(int keyCode) {
     return false;
   }
@@ -242,7 +254,7 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
 
     if (source instanceof BeeRadioButton && BeeUtils.isTrue(event.getValue())) {
       BeeRadioButton rb = (BeeRadioButton) source;
-      int index = BeeUtils.toInt(rb.getFormValue());
+      int index = BeeUtils.toInt(rb.getFormValue()) + getValueStartIndex();
 
       if (getVariable() != null) {
         getVariable().setValue(getVariable().getItems().get(index));
@@ -281,8 +293,12 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
   public void setValue(String value, boolean fireEvents) {
     int oldIndex = getSelectedIndex();
     int newIndex = BeeConst.UNDEF;
-    if (BeeUtils.isDigit(BeeUtils.trim(value)) && isIndex(BeeUtils.toInt(value))) {
-      newIndex = BeeUtils.toInt(value);
+
+    if (BeeUtils.isDigit(BeeUtils.trim(value))) {
+      int z = BeeUtils.toInt(value) - getValueStartIndex();
+      if (isIndex(z)) {
+        newIndex = z;
+      }
     }
 
     if (newIndex != oldIndex) {
@@ -295,6 +311,10 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
         ValueChangeEvent.fire(this, isIndex(newIndex) ? BeeUtils.toString(newIndex) : null);
       }
     }
+  }
+
+  public void setValueStartIndex(int valueStartIndex) {
+    this.valueStartIndex = valueStartIndex;
   }
 
   public void startEdit(String oldValue, char charCode, EditorAction onEntry) {

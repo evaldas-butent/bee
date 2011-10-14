@@ -22,7 +22,6 @@ import com.butent.bee.client.composite.ButtonGroup;
 import com.butent.bee.client.composite.RadioGroup;
 import com.butent.bee.client.composite.ResourceEditor;
 import com.butent.bee.client.dialog.Notification;
-import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.dom.StyleUtils.ScrollBars;
 import com.butent.bee.client.grid.FlexTable;
@@ -43,6 +42,7 @@ import com.butent.bee.client.ui.GwtUiCreator;
 import com.butent.bee.client.ui.MenuService;
 import com.butent.bee.client.ui.StateService;
 import com.butent.bee.client.utils.BeeCommand;
+import com.butent.bee.client.utils.ServiceCommand;
 import com.butent.bee.client.view.View;
 import com.butent.bee.client.view.search.SearchBox;
 import com.butent.bee.client.widget.BeeButton;
@@ -100,7 +100,6 @@ public class ScreenImpl implements Screen {
   private HasWidgets menuPanel = null;
   private HasWidgets dataPanel = null;
 
-  private BeeButton authButton = null;
   private Widget signature = null;
 
   private final String elGrid = "el-grid-type";
@@ -282,24 +281,10 @@ public class ScreenImpl implements Screen {
     updatePanel(getMenuPanel(), w);
   }
 
-  public void updateUser(String service) {
-    if (getSignature() == null) {
-      return;
+  public void updateSignature(String userSign) {
+    if (getSignature() != null) {
+      getSignature().getElement().setInnerHTML(userSign);
     }
-
-    String usr = BeeKeeper.getUser().getUserSign();
-    if (BeeUtils.isEmpty(usr)) {
-      updateAuthWidget(true);
-      usr = Global.constants.notLoggedIn();
-    } else {
-      updateAuthWidget(false);
-      if (BeeUtils.same(service, Service.LOGIN) && getMenuPanel() != null
-          && DomUtils.isEmpty(getMenuPanel())) {
-        BeeKeeper.getBus().dispatchService(Service.REFRESH_MENU, null, null);
-      }
-    }
-
-    getSignature().getElement().setInnerHTML(usr);
   }
 
   protected void closePanel() {
@@ -349,7 +334,7 @@ public class ScreenImpl implements Screen {
 
     w = initNorth();
     if (w != null) {
-      p.addNorth(w, 64);
+      p.addNorth(w, 66);
     }
 
     w = initSouth();
@@ -418,18 +403,20 @@ public class ScreenImpl implements Screen {
     Complex cp = new Complex();
     cp.addStyleName("bee-NorthContainer");
 
-    BeeImage bee = new BeeImage(Global.getImages().bee());
+    BeeImage img = new BeeImage(Global.getImages().butent());
+    img.addStyleName("bee-Icon");
+
     String ver = Settings.getVersion();
     if (!BeeUtils.isEmpty(ver)) {
-      bee.setTitle(ver);
+      img.setTitle(ver);
     }
-    bee.addClickHandler(new ClickHandler() {
+    img.addClickHandler(new ClickHandler() {
       public void onClick(ClickEvent event) {
         Window.open("http://www.butent.com", "", "");
       }
     });
     
-    cp.addLeftTop(bee, 4, 2);
+    cp.addLeftTop(img, 4, 0);
     
     FlexTable searchContainer = new FlexTable();
     searchContainer.addStyleName("bee-MainSearchContainer");
@@ -463,15 +450,11 @@ public class ScreenImpl implements Screen {
     cp.addRightTop(user, 30, 4);
     setSignature(user);
 
-    updateUser(null);
-    
     BeeImage out = new BeeImage(Global.getImages().exit(), new BeeCommand() {
       @Override
       public void execute() {
-        if (Global.nativeConfirm("Sign out")) {
-          BeeKeeper.getBus().dispatchService(Service.LOGOUT, null, null);
-          Window.Location.reload();
-        }
+        Global.confirm(BeeKeeper.getUser().getUserSign(), "Sign out",
+            new ServiceCommand(Service.LOGOUT));
       }
     });
     cp.addRightTop(out, 2, 2);
@@ -589,10 +572,6 @@ public class ScreenImpl implements Screen {
     return tp;
   }
 
-  protected void setAuthButton(BeeButton authButton) {
-    this.authButton = authButton;
-  }
-
   protected void setDataPanel(HasWidgets dataPanel) {
     this.dataPanel = dataPanel;
   }
@@ -607,15 +586,6 @@ public class ScreenImpl implements Screen {
 
   protected void setSignature(Widget signature) {
     this.signature = signature;
-  }
-
-  protected void updateAuthWidget(boolean login) {
-    if (getAuthButton() == null) {
-      return;
-    }
-    getAuthButton().setHTML(login ? Global.constants.login() : Global.constants.logout());
-    getAuthButton().setService(login ? Service.GET_LOGIN : Service.LOGOUT);
-    getAuthButton().setStage(login ? Stage.STAGE_GET_PARAMETERS : null);
   }
 
   private void createPanel(Direction direction) {
@@ -668,10 +638,6 @@ public class ScreenImpl implements Screen {
     }
 
     setActivePanel(null);
-  }
-
-  private BeeButton getAuthButton() {
-    return authButton;
   }
 
   private String getElCell() {

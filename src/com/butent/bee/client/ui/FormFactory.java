@@ -168,9 +168,6 @@ public class FormFactory {
   }
 
   public static void importForm(final String name) {
-    if (!BeeKeeper.getUser().checkLoggedIn()) {
-      return;
-    }
     if (!BeeUtils.isEmpty(name)) {
       Global.setVarValue(Service.VAR_FORM_NAME, BeeUtils.trim(name));
     }

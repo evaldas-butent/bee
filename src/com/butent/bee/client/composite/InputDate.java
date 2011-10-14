@@ -359,6 +359,10 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat {
         break;
 
       case 'D':
+      case 'r':
+      case 'R':
+      case 'o':
+      case 'O':
         newDate = TimeUtils.today(1);
         break;
 
@@ -546,7 +550,7 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat {
     getDatePicker().setCurrentMonth(date);
     getDatePicker().setValue(date);
 
-    StyleUtils.setZIndex(getPopup(), StyleUtils.getZIndex(getBox()) + 1);
+    StyleUtils.setZIndex(getPopup(), StyleUtils.getParentZIndex(getBox(), true) + 1);
     getPopup().showRelativeTo(getBox());
   }
 }

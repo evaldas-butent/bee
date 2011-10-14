@@ -79,15 +79,15 @@ public class Images {
     @Source("ascending.gif")
     ImageResource ascending();
 
-    @Source("bee.png")
-    @ImageOptions(width = 60)
-    ImageResource bee();
-
     @Source("bookmark.png")
     ImageResource bookmark();
 
     @Source("bookmark_add.png")
     ImageResource bookmarkAdd();
+
+    @Source("butent.png")
+    @ImageOptions(width = 61)
+    ImageResource butent();
 
     @Source("cancel.png")
     ImageResource cancel();
@@ -217,10 +217,10 @@ public class Images {
 
     map.put(key("ascending"), resources.ascending());
 
-    map.put(key("bee"), resources.bee());
-
     map.put(key("bookmark"), resources.bookmark());
     map.put(key("bookmark_add"), resources.bookmarkAdd());
+
+    map.put(key("butent"), resources.butent());
 
     map.put(key("cancel"), resources.cancel());
     map.put(key("close"), resources.close());
