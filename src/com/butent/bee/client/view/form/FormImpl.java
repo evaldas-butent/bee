@@ -257,7 +257,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
   private JavaScriptObject rowJso = null;
 
   private boolean readOnly = false;
-  
+
   private FormCallback formCallback = null;
 
   private final CreationCallback creationCallback = new CreationCallback();
@@ -410,7 +410,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
   public int getRowCount() {
     return rowCount;
   }
-  
+
   public IsRow getRowData() {
     return rowData;
   }
@@ -451,7 +451,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
   public Iterable<IsRow> getVisibleItems() {
     return null;
   }
-  
+
   public Range getVisibleRange() {
     return new Range(getPageStart(), 1);
   }
@@ -690,7 +690,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     if (BeeUtils.isEmpty(values)) {
       setRowData(null);
       refreshData(false);
-    } else {  
+    } else {
       setRowData(values.get(0));
       refreshData(true);
     }
@@ -738,7 +738,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
       if (getTabOrder().size() > 1) {
         Collections.sort(getTabOrder());
       }
-      
+
       if (count != null) {
         setRowCount(count);
         if (count > 0) {
@@ -771,11 +771,11 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
         newRow.setValue(editableWidget.getDataIndex(), carry);
       }
     }
-    
+
     if (getFormCallback() != null) {
       getFormCallback().onStartNewRow(this, oldRow, newRow);
     }
-    
+
     setRowData(newRow);
     refreshData(true);
     showGrids(false);
@@ -783,7 +783,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
 
   public void updateActiveRow(List<? extends IsRow> values) {
   }
-  
+
   public void updateCell(String columnId, String newValue) {
     Assert.notEmpty(columnId);
 
@@ -949,7 +949,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
   private Widget getRootWidget() {
     return rootWidget;
   }
-  
+
   private IsRow getRowBuffer() {
     return rowBuffer;
   }

@@ -3,32 +3,66 @@
   xsi:schemaLocation="http://www.butent.com/bee ../../schemas/grid.xsd">
 
   <BeeGrid name="TaskEvents" viewName="TaskEvents" caption="Įvykių istorija" readOnly="true">
+    <body height="60" />
     <columns>
-      <BeeCalcColumn name="Publisher" type="string" caption="Paskelbta">
-        <calc>
-          <function>return (row.PublisherFirstName || "") + " " + (row.PublisherLastName || "")</function>
-        </calc>
-      </BeeCalcColumn>
-      <BeeDataColumn name="PublishTime" source="PublishTime" caption="Laikas" />
-      <BeeCalcColumn name="Event" type="string" caption="Įvykis">
+      <BeeCalcColumn name="Publisher" type="string" caption="Paskelbta" width="150">
+        <style>
+          <bodyStyle>
+            <inline>white-space: pre-wrap;</inline>
+          </bodyStyle>
+        </style>
         <calc>
           <function>
+            var s = row.PublishTime.toLocaleDateString() + "\n" + 
+              row.PublishTime.toLocaleTimeString() + "\n" +
+              (row.PublisherFirstName || "") + " " + (row.PublisherLastName || "");
+            var ev = "";
+            
             switch(row.Event) {
               case 1:
-                return "SUSPENDED";
+                ev = "SUSPENDED";
+                break;
               case 2:
-                return "COMPLETED";
+                ev = "COMPLETED";
+                break;
               case 3:
-                return "APPROVED";
+                ev = "APPROVED";
+                break;
               case 4:
-                return "CANCELED";
+                ev = "CANCELED";
+                break;
+              case 5:
+                ev = "FORWARDED";
+                break;
+              case 6:
+                ev = "EXTENDED";
+                break;
+              case 7:
+                ev = "RENEWED";
+                break;
+              case 8:
+                ev = "COMMENTED";
+                break;
               default:
-                return "ACTIVATED";
+                ev = "ACTIVATED";
+                break;
             }
+            s = s + "\n" + ev;
+            
+            if (row.EventNote) {
+              s = s + "\n" + row.EventNote;
+            }
+            return s;
           </function>
         </calc>
       </BeeCalcColumn>
-      <BeeDataColumn name="EventNote" source="EventNote" caption="Pastaba" />
+      <BeeDataColumn name="Comment" source="Comment" caption="Komentaras" minWidth="300">
+        <style>
+          <bodyStyle>
+            <inline>white-space: pre-wrap;</inline>
+          </bodyStyle>
+        </style>
+      </BeeDataColumn>
       <BeeDataColumn name="EventDuration" source="EventDuration" caption="Trukmė" />
       <BeeDataColumn name="DurationType" source="DurationType" caption="Tipas" />
     </columns>

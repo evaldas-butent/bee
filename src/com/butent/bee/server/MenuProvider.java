@@ -1,7 +1,6 @@
 package com.butent.bee.server;
 
 import com.butent.bee.server.communication.ResponseBuffer;
-import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.utils.XmlUtils;
 import com.butent.bee.shared.Assert;
@@ -19,7 +18,6 @@ import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.DependsOn;
-import javax.ejb.EJB;
 import javax.ejb.Lock;
 import javax.ejb.LockType;
 import javax.ejb.Singleton;
@@ -37,9 +35,6 @@ public class MenuProvider {
 
   private static final String NOT_AVAIL = "menu not available";
   private static Logger logger = Logger.getLogger(MenuProvider.class.getName());
-
-  @EJB
-  SystemBean sys;
 
   private String resource = "menu.xml";
   private String transformation = null;

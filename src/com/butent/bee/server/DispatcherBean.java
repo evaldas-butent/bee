@@ -4,6 +4,7 @@ import com.butent.bee.server.communication.ResponseBuffer;
 import com.butent.bee.server.data.DataServiceBean;
 import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
+import com.butent.bee.server.modules.ModuleHolderBean;
 import com.butent.bee.server.sql.SqlBuilderFactory;
 import com.butent.bee.server.ui.UiServiceBean;
 import com.butent.bee.server.utils.Reflection;
@@ -28,6 +29,8 @@ import javax.ejb.Stateless;
 public class DispatcherBean {
   private static Logger logger = Logger.getLogger(DispatcherBean.class.getName());
 
+  @EJB
+  ModuleHolderBean moduleBean;
   @EJB
   SystemServiceBean sysBean;
   @EJB
@@ -60,13 +63,18 @@ public class DispatcherBean {
     if (!BeeUtils.isEmpty(dsn) && !BeeUtils.same(SqlBuilderFactory.getDsn(), dsn)) {
       response = ResponseObject.error("DSN mismatch:", SqlBuilderFactory.getDsn(), "!=", dsn);
     } else {
-      if (Service.isDbService(svc)) {
+      if (moduleBean.hasModule(svc)) {
+        response = moduleBean.doModule(reqInfo);
+
+      } else if (Service.isDbService(svc)) {
         dataBean.doService(svc, dsn, reqInfo, buff);
+
       } else if (Service.isSysService(svc)) {
         response = sysBean.doService(svc, reqInfo, buff);
 
       } else if (BeeUtils.same(svc, Service.LOAD_MENU)) {
         menu.getMenu(reqInfo, buff);
+
       } else if (BeeUtils.same(svc, Service.WHERE_AM_I)) {
         buff.addLine(buff.now(), BeeConst.whereAmI());
 

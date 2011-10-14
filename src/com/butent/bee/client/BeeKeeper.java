@@ -16,8 +16,8 @@ import com.butent.bee.client.ui.PasswordService;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.modules.crm.Constants.Priority;
-import com.butent.bee.shared.modules.crm.Constants.TaskEvent;
+import com.butent.bee.shared.modules.crm.CrmConstants.Priority;
+import com.butent.bee.shared.modules.crm.CrmConstants.TaskEvent;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.RowComparator;
 
