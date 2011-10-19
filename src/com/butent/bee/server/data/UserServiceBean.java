@@ -182,6 +182,10 @@ public class UserServiceBean {
     return ImmutableMap.copyOf(userCache);
   }
 
+  public String getUserSign(long userId) {
+    return getUserInfo(userId).getUserData().getUserSign();
+  }
+
   @Lock(LockType.WRITE)
   public void invalidateCache() {
     cacheUpToDate = false;

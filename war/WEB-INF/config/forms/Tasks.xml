@@ -19,7 +19,7 @@
             </LongLabel>
           </cell>
           <cell><Label html="Prioritetas" horizontalAlignment="right" /></cell>
-          <cell horizontalAlignment="center"><Radio source="Priority" name="Priority" /></cell>
+          <cell horizontalAlignment="center"><ListBox source="Priority" name="Priority" valueNumeric="true" /></cell>
         </row>
         <row>
           <cell><Label html="Pradžios data" /></cell>

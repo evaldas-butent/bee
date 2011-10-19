@@ -16,5 +16,8 @@
     <BeeColumn name="EventDuration" expression="EventDuration>DurationInMinutes" />
     <BeeColumn name="DurationType" expression="EventDuration>DurationType>Name" />
   </BeeColumns>
+  <BeeOrder>
+    <OrderBy column="PublishTime" descending="true"/>
+  </BeeOrder>
 </BeeView>
  

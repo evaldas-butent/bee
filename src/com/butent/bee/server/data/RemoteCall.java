@@ -197,7 +197,7 @@ public class RemoteCall {
           }
           if (!prm.skipColumns) {
             for (String col : data.columns) {
-              row.addColumn(rowSet.getColumn(col).getId(), rowSet.getString(r, col));
+              row.addColumn(col, r.getString(rowSet.getColumnIndex(col)));
             }
           }
           data.rows.add(row);

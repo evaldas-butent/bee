@@ -5,7 +5,7 @@
   <BeeGrid name="TaskEvents" viewName="TaskEvents" caption="Įvykių istorija" readOnly="true">
     <body height="60" />
     <columns>
-      <BeeCalcColumn name="Publisher" type="string" caption="Paskelbta" width="150">
+      <BeeCalcColumn name="Publisher" type="string" caption="Paskelbta" width="170">
         <style>
           <bodyStyle>
             <inline>white-space: pre-wrap;</inline>

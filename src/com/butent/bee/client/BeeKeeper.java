@@ -7,7 +7,6 @@ import com.google.gwt.event.dom.client.HasClickHandlers;
 import com.google.gwt.user.client.ui.LayoutPanel;
 import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.client.composite.RadioGroup;
 import com.butent.bee.client.modules.crm.TaskEventHandler;
 import com.butent.bee.client.ui.AbstractFormCallback;
 import com.butent.bee.client.ui.CompositeService;
@@ -15,6 +14,7 @@ import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.PasswordService;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.form.FormView;
+import com.butent.bee.client.widget.BeeListBox;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.modules.crm.CrmConstants.Priority;
 import com.butent.bee.shared.modules.crm.CrmConstants.TaskEvent;
@@ -123,9 +123,9 @@ public class BeeKeeper {
     FormFactory.registerFormCallback("Tasks", new AbstractFormCallback() {
       @Override
       public void afterCreateWidget(final String name, final Widget widget) {
-        if (BeeUtils.same(name, "Priority") && widget instanceof RadioGroup) {
+        if (BeeUtils.same(name, "Priority") && widget instanceof BeeListBox) {
           for (Priority priority : Priority.values()) {
-            ((RadioGroup) widget).addOption(priority.name());
+            ((BeeListBox) widget).addItem(priority.name());
           }
 
         } else if (widget instanceof HasClickHandlers) {
@@ -161,8 +161,7 @@ public class BeeKeeper {
 
       @Override
       public void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow) {
-        newRow.setValue(form.getDataIndex("StartTime"),
-            BeeUtils.toString(System.currentTimeMillis()));
+        newRow.setValue(form.getDataIndex("StartTime"), System.currentTimeMillis());
       }
     });
   }

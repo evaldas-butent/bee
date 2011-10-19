@@ -137,7 +137,7 @@ public class DataEditorBean {
           response.addError("Unknown column:", BeeUtils.bracket(colName));
           break;
         } else {
-          String oldValue = (row.getShadow() == null) ? null : row.getShadow().get(i);
+          String oldValue = row.getShadowString(i);
           Object newValue = Value.parseValue(colType, row.getString(i), false).getObjectValue();
           String locale = view.getLocale(colName);
           ViewField colField = view.getViewField(view.getExpression(colName));
@@ -577,7 +577,6 @@ public class DataEditorBean {
   }
 
   private boolean refreshUpdates(Map<String, TableInfo> updates, BeeView view) {
-
     long id = 0;
     SqlSelect ss = view.getQuery().resetFields();
 

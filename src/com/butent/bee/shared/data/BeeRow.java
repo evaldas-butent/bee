@@ -4,30 +4,24 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.StringArray;
-import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Logger;
 
 /**
  * Extends {@code StringRow} class, handles core row object's requirements like serialization, id
  * and value management.
  */
-
 public class BeeRow extends StringRow implements BeeSerializable {
 
   /**
    * Contains a list of parameters for row serialization.
    */
-
   private enum Serial {
     ID, VERSION, VALUES, SHADOW
   }
-
-  private static Logger logger = Logger.getLogger(BeeRow.class.getName());
 
   public static BeeRow restore(String s) {
     BeeRow row = new BeeRow(0, 0);
@@ -44,6 +38,11 @@ public class BeeRow extends StringRow implements BeeSerializable {
 
   public BeeRow(long id, String[] row) {
     super(id, new StringArray(row));
+  }
+
+  public BeeRow(long id, long version, String[] row) {
+    super(id, new StringArray(row));
+    setVersion(version);
   }
 
   public void deserialize(String s) {
@@ -86,42 +85,15 @@ public class BeeRow extends StringRow implements BeeSerializable {
             }
           }
           break;
-
-        default:
-          logger.severe("Unhandled serialization member: " + member);
-          break;
       }
     }
   }
 
-  public Object getOriginal(int index, ValueType type) {
-    Assert.notNull(type, "value type not specified");
-
-    switch (type) {
-      case BOOLEAN:
-        return getBoolean(index);
-      case DATE:
-        return getDate(index);
-      case DATETIME:
-        return getDateTime(index);
-      case NUMBER:
-        return getDouble(index);
-      case TEXT:
-        return getString(index);
-      case TIMEOFDAY:
-        return getString(index);
-      case INTEGER:
-        return getInteger(index);
-      case LONG:
-        return getLong(index);
-      case DECIMAL:
-        return getDecimal(index);
+  public String getShadowString(int col) {
+    if (shadow != null) {
+      return shadow.get(col);
     }
     return null;
-  }
-
-  public Map<Integer, String> getShadow() {
-    return shadow;
   }
 
   public void preliminaryUpdate(int col, String value) {
@@ -169,7 +141,7 @@ public class BeeRow extends StringRow implements BeeSerializable {
           break;
 
         case SHADOW:
-          arr[i++] = getShadow();
+          arr[i++] = shadow;
           break;
       }
     }

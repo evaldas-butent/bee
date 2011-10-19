@@ -17,6 +17,6 @@ public class CrmConstants {
 
   public static final String VAR_TASK_ID = Service.RPC_VAR_PREFIX + "task_id";
   public static final String VAR_TASK_DATA = Service.RPC_VAR_PREFIX + "task_data";
-  public static final String VAR_TASK_TERM = Service.RPC_VAR_PREFIX + "task_term";
   public static final String VAR_TASK_COMMENT = Service.RPC_VAR_PREFIX + "task_comment";
+  public static final String VAR_TASK_OBSERVER = Service.RPC_VAR_PREFIX + "task_observer";
 }

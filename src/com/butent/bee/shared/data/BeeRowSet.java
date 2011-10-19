@@ -63,13 +63,12 @@ public class BeeRowSet extends RowList<BeeRow, BeeColumn> implements BeeSerializ
   }
 
   public int addRow(long id, String[] data) {
-    return addRow(new BeeRow(id, data));
+    int idx = addRow(id, 0, data);
+    return idx;
   }
 
   public int addRow(long id, long version, String[] data) {
-    int idx = addRow(id, data);
-    getRow(idx).setVersion(version);
-    return idx;
+    return addRow(new BeeRow(id, version, data));
   }
 
   @Override
@@ -145,19 +144,16 @@ public class BeeRowSet extends RowList<BeeRow, BeeColumn> implements BeeSerializ
     return arr;
   }
 
-  public Object getOriginal(BeeRow row, int colIndex) {
-    Assert.notNull(row);
-    assertColumnIndex(colIndex);
-    return row.getOriginal(colIndex, getColumn(colIndex).getType());
+  public String getShadowString(int rowIdx, int columnIdx) {
+    return getRow(rowIdx).getShadowString(columnIdx);
   }
 
-  public Object getOriginal(BeeRow row, String columnId) {
-    return getOriginal(row, getColumnIndex(columnId));
+  public String getShadowString(int rowIdx, String columnId) {
+    return getShadowString(rowIdx, getColumnIndex(columnId));
   }
 
-  public String getString(BeeRow row, String columnId) {
-    Assert.notNull(row);
-    return row.getString(getColumnIndex(columnId));
+  public String getString(int rowIdx, String columnId) {
+    return getString(rowIdx, getColumnIndex(columnId));
   }
 
   public String getViewName() {
@@ -166,6 +162,14 @@ public class BeeRowSet extends RowList<BeeRow, BeeColumn> implements BeeSerializ
 
   public boolean isEmpty() {
     return getNumberOfRows() <= 0;
+  }
+
+  public void preliminaryUpdate(int rowIdx, int columnIdx, String value) {
+    getRow(rowIdx).preliminaryUpdate(columnIdx, value);
+  }
+
+  public void preliminaryUpdate(int rowIdx, String columnId, String value) {
+    preliminaryUpdate(rowIdx, getColumnIndex(columnId), value);
   }
 
   @Override
