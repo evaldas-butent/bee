@@ -267,7 +267,7 @@ public class MessageBoxes {
           vp.add(new BeeLabel(BeeUtils.transform(ArrayUtils.get(obj[i], j))));
         }
       } else if (obj[i] != null) {
-        vp.add(new BeeLabel(BeeUtils.transform(obj)));
+        vp.add(new BeeLabel(BeeUtils.transform(obj[i])));
       }
     }
     

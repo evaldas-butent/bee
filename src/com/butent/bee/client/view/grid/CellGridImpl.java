@@ -776,8 +776,14 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     }
     Assert.notNull(event);
     String columnId = event.getColumnId();
+
+    boolean useForm = useFormForEdit(columnId);
+    if (!useForm && event.isReadOnly()) {
+      return;
+    }
+    
     EditableColumn editableColumn = getEditableColumn(columnId);
-    if (editableColumn == null) {
+    if (editableColumn == null && !useForm) {
       return;
     }
 
@@ -785,19 +791,21 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     if (!isRowEditable(rowValue, true)) {
       return;
     }
-    if (!editableColumn.isCellEditable(rowValue, true)) {
+    if (editableColumn != null && !editableColumn.isCellEditable(rowValue, true)) {
       return;
     }
     
-    if (useFormForEdit(columnId)) {
+    if (useForm) {
       fireEvent(new EditFormEvent(State.OPEN));
       showGrid(false);
       showEditForm(true);
       getEditForm().updateRowData(cloneRow(rowValue));
       
-      Widget widget = getEditForm().getWidgetBySource(editableColumn.getColumnId());
-      if (widget instanceof Focusable) {
-        ((Focusable) widget).setFocus(true);
+      if (editableColumn != null) {
+        Widget widget = getEditForm().getWidgetBySource(editableColumn.getColumnId());
+        if (widget instanceof Focusable) {
+          ((Focusable) widget).setFocus(true);
+        }
       }
       return;
     }

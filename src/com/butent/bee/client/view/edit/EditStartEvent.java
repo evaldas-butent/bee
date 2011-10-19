@@ -31,12 +31,16 @@ public class EditStartEvent extends GwtEvent<EditStartEvent.Handler> {
 
   private final Element sourceElement;
   private final int charCode;
+  
+  private final boolean readOnly;
 
-  public EditStartEvent(IsRow rowValue, String columnId, Element sourceElement, int charCode) {
+  public EditStartEvent(IsRow rowValue, String columnId, Element sourceElement, int charCode,
+      boolean readOnly) {
     this.rowValue = rowValue;
     this.columnId = columnId;
     this.sourceElement = sourceElement;
     this.charCode = charCode;
+    this.readOnly = readOnly;
   }
 
   @Override
@@ -58,6 +62,10 @@ public class EditStartEvent extends GwtEvent<EditStartEvent.Handler> {
 
   public Element getSourceElement() {
     return sourceElement;
+  }
+
+  public boolean isReadOnly() {
+    return readOnly;
   }
 
   @Override

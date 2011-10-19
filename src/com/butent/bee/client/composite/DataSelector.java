@@ -73,6 +73,7 @@ public class DataSelector extends Complex implements Editor, HasTextDimensions {
     private final Popup popup;
 
     private Boolean pendingSelection = null;
+    private boolean ready = false;
 
     private Display(UIObject partner) {
       this.menu = new MenuBar(0, true);
@@ -159,6 +160,10 @@ public class DataSelector extends Complex implements Editor, HasTextDimensions {
       }
     }
 
+    private boolean isReady() {
+      return ready;
+    }
+
     private boolean isShowing() {
       return getPopup().isShowing() && getPopup().isVisible();
     }
@@ -191,6 +196,10 @@ public class DataSelector extends Complex implements Editor, HasTextDimensions {
       this.pendingSelection = pendingSelection;
     }
 
+    private void setReady(boolean ready) {
+      this.ready = ready;
+    }
+
     private void showSuggestions(Response response, UIObject target) {
       Collection<Suggestion> suggestions = response.getSuggestions();
       if (BeeUtils.isEmpty(suggestions)) {
@@ -221,13 +230,18 @@ public class DataSelector extends Complex implements Editor, HasTextDimensions {
         }
         setPendingSelection(null);
       }
-
+      
+      if (!isReady()) {
+        initDisplay();
+        setReady(true);
+      }
       getPopup().showRelativeTo(target);
     }
 
     private void start() {
       getPopup().show();
       getPopup().setVisible(false);
+      setReady(false);
     }
   }
 
@@ -696,9 +710,6 @@ public class DataSelector extends Complex implements Editor, HasTextDimensions {
   }
 
   public void startEdit(String oldValue, char charCode, EditorAction onEntry) {
-    StyleUtils.setZIndex(getDisplay().getPopup(),
-        StyleUtils.getParentZIndex(this, true, true) + 1);
-
     setLastRequest(null);
     setOffset(0);
 
@@ -826,6 +837,11 @@ public class DataSelector extends Complex implements Editor, HasTextDimensions {
 
   private boolean hasMore() {
     return hasMore;
+  }
+  
+  private void initDisplay() {
+    StyleUtils.setZIndex(getDisplay().getPopup(),
+        StyleUtils.getParentZIndex(this, true, true) + 1);
   }
 
   private void initOptions(JSONObject options) {

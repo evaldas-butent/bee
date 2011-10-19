@@ -6,6 +6,9 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Position;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.KeyCodes;
+import com.google.gwt.event.dom.client.KeyUpEvent;
+import com.google.gwt.event.dom.client.KeyUpHandler;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
 
 import com.butent.bee.client.communication.ResponseCallback;
@@ -94,21 +97,39 @@ public class Bee implements EntryPoint {
     langWidget.addStyleName("bee-SignIn-Language");
     panel.add(langWidget);
 
-    BeeButton button = new BeeButton("Prisijungti");
+    final BeeButton button = new BeeButton("Prisijungti");
     button.setStyleName("bee-SignIn-Button");
     panel.add(button);
+    
+    userBox.addKeyUpHandler(new KeyUpHandler() {
+      public void onKeyUp(KeyUpEvent event) {
+        if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER) {
+          pswdBox.setFocus(true);
+        }
+      }
+    });
 
+    pswdBox.addKeyUpHandler(new KeyUpHandler() {
+      public void onKeyUp(KeyUpEvent event) {
+        if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER) {
+          button.setFocus(true);
+        }
+      }
+    });
+    
     button.addClickHandler(new ClickHandler() {
       public void onClick(ClickEvent event) {
         String userName = userBox.getValue();
         if (BeeUtils.isEmpty(userName)) {
           Global.showError("Įveskite prisijungimo vardą");
+          userBox.setFocus(true);
           return;
         }
 
         String password = pswdBox.getValue();
         if (BeeUtils.isEmpty(password)) {
           Global.showError("Įveskite slaptažodį");
+          pswdBox.setFocus(true);
           return;
         }
 

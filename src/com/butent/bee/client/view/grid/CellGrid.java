@@ -4451,9 +4451,8 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
   }
 
   private void startEditing(IsRow rowValue, int col, Element cellElement, int charCode) {
-    if (!isReadOnly() && !getColumnInfo(col).isColReadOnly()) {
-      fireEvent(new EditStartEvent(rowValue, getColumnId(col), cellElement, charCode));
-    }
+    fireEvent(new EditStartEvent(rowValue, getColumnId(col), cellElement, charCode,
+        isReadOnly() || getColumnInfo(col).isColReadOnly()));
   }
 
   private void startResizing(Event event) {
