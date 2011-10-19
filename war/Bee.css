@@ -859,7 +859,7 @@ body, select {
   cursor: pointer;
 }
 .gwt-TabLayoutPanelTab-selected {
-  background: #d12421;
+  background: #f90;
   color: white;
   cursor: default;
 }
@@ -907,7 +907,7 @@ body, select {
 }
 .datePickerDayIsFiller {
   color: #999;
-  font-weight:normal;
+  font-weight: normal;
 }
 .datePickerDayIsValue {
   background: #d7dfe8;

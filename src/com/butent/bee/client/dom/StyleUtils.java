@@ -2,7 +2,6 @@ package com.butent.bee.client.dom;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
-import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.dom.client.Style;
@@ -25,6 +24,7 @@ import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Property;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -226,6 +226,7 @@ public class StyleUtils {
   public static final String VALUE_AUTO = "auto";
   public static final String VALUE_FIXED = "fixed";
   public static final String VALUE_HIDDEN = "hidden";
+  public static final String VALUE_INHERIT = "inherit";
   public static final String VALUE_SCROLL = "scroll";
 
   public static final String NAME_HORIZONTAL = "horizontal";
@@ -876,13 +877,13 @@ public class StyleUtils {
     return getLeft(obj.getElement());
   }
 
-  public static int getParentZIndex(Element el, boolean incl) {
-    return BeeUtils.toInt(getParentProperty(el, STYLE_Z_INDEX, incl));
+  public static int getParentZIndex(Element el, boolean computed, boolean incl) {
+    return BeeUtils.toInt(getParentProperty(el, STYLE_Z_INDEX, computed, null, incl));
   }
 
-  public static int getParentZIndex(UIObject obj, boolean incl) {
+  public static int getParentZIndex(UIObject obj, boolean computed, boolean incl) {
     Assert.notNull(obj);
-    return getParentZIndex(obj.getElement(), incl);
+    return getParentZIndex(obj.getElement(), computed, incl);
   }
   
   public static Rectangle getRectangle(Element el) {
@@ -2018,40 +2019,29 @@ public class StyleUtils {
     }
   }
   
-  private static native JsArrayString getComputedStyles(Element el) /*-{
-    var arr = [];
-
-    if ('getComputedStyle' in $wnd) {
-      var cs = $wnd.getComputedStyle(el, null);
-      if (cs.length) {
-        for (var i = 0; i < cs.length; i++) {
-          arr.push(cs.item(i), cs.getPropertyValue(cs.item(i)));
-        }
-      } else {
-        for (var p in cs) {
-          if (cs.hasOwnProperty(p)) {
-            arr.push(p, cs[p]);
-          }
-        }
-      }
-
-    } else if ('currentStyle' in el) {
-      var cs = el.currentStyle;
-      for (var p in cs) {
-        arr.push(p, cs[p]);
-      }
-    }
-    
-    return arr;
-  }-*/;
-  
-  private static String getParentProperty(Element el, String name, boolean incl) {
+  private static String getParentProperty(Element el, String name, boolean computed,
+      Collection<String> ignore, boolean incl) {
     Assert.notNull(el);
     Assert.notEmpty(name);
     
     if (incl) {
       String value = el.getStyle().getProperty(name);
-      if (!BeeUtils.isEmpty(value)) {
+      boolean ok = !BeeUtils.isEmpty(value);
+      
+      if (!ok && computed) {
+        value = ComputedStyles.get(el, name);
+        ok = !BeeUtils.isEmpty(value);
+      }
+      
+      if (ok) {
+        if (BeeUtils.isEmpty(ignore)) {
+          ok = !BeeUtils.inListSame(value, VALUE_AUTO, VALUE_INHERIT);
+        } else {
+          ok = !ignore.contains(value);
+        }
+      }
+
+      if (ok) {
         return value;
       }
     }
@@ -2060,7 +2050,7 @@ public class StyleUtils {
     if (parent == null) {
       return null;
     }
-    return getParentProperty(parent, name, true);
+    return getParentProperty(parent, name, computed, ignore, true);
   }
 
   private static boolean hasProperty(Style st, String name) {

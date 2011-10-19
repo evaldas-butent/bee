@@ -177,6 +177,30 @@ public class BeeUtils {
       return BeeConst.STRING_LEFT_BRACKET + s + BeeConst.STRING_RIGHT_BRACKET;
     }
   }
+  
+  public static String camelize(String str, char sep) {
+    if (str == null || str.indexOf(sep) < 0) {
+      return str;
+    }
+
+    char[] arr = str.toCharArray();
+    int cnt = 0;
+    for (int i = 0; i < arr.length; i++) {
+      if (arr[i] != sep) {
+        if (cnt < i) {
+          arr[cnt] = arr[i];
+        }
+        cnt++;
+      } else if (i < arr.length - 1) {
+        arr[i] = Character.toUpperCase(arr[i]);
+      }
+    }
+    if (cnt > 0) {
+      return new String(arr, 0, cnt);
+    } else {
+      return BeeConst.STRING_EMPTY;
+    }
+  }
 
   /**
    * A string in the specified position is appended with "..." and the left string after the index
@@ -412,12 +436,12 @@ public class BeeUtils {
     }
     return ok;
   }
-  
+
   public static boolean containsSame(Collection<String> col, String s) {
     if (isEmpty(col)) {
       return false;
     }
-    
+
     for (String entry : col) {
       if (same(entry, s)) {
         return true;
@@ -547,6 +571,28 @@ public class BeeUtils {
     }
   }
 
+  public static String decamelize(String str, char sep) {
+    if (isEmpty(str)) {
+      return str;
+    }
+    if (str.equals(str.toLowerCase())) {
+      return str;
+    }
+    
+    StringBuilder sb = new StringBuilder();
+    char ch;
+    
+    for (int i = 0; i < str.length(); i++) {
+      ch = str.charAt(i);
+      if (Character.isUpperCase(ch)) {
+        sb.append(sep).append(Character.toLowerCase(ch));
+      } else {
+        sb.append(ch);
+      }
+    }
+    return sb.toString();
+  }
+  
   /**
    * Deletes a part of a String from specified {@code start} to {@code end}.
    * 
@@ -767,13 +813,13 @@ public class BeeUtils {
     String c = cls.getName();
     return c.substring(c.lastIndexOf(".") + 1);
   }
-  
+
   public static <E extends Enum<?>> E getConstant(Class<E> clazz, String name) {
     Assert.notNull(clazz);
     Assert.notEmpty(name);
 
     E result = null;
-  
+
     for (int i = 0; i < 3; i++) {
       for (E constant : clazz.getEnumConstants()) {
         if (i == 0) {
@@ -809,7 +855,7 @@ public class BeeUtils {
     }
     return result;
   }
-  
+
   /**
    * If any {@code src} Collection element contains {@code ctxt} (case is ignored), than that
    * element is added to the new Collection and returned after all elements from {@code src}
@@ -832,7 +878,7 @@ public class BeeUtils {
     }
     return lst;
   }
-  
+
   /**
    * Gets the key of the value from the specified Map when the Mmap contains the value.
    * 
@@ -999,7 +1045,7 @@ public class BeeUtils {
     if (isEmpty(lst)) {
       return BeeConst.UNDEF;
     }
-    
+
     for (int i = 0; i < lst.size(); i++) {
       if (same(lst.get(i), s)) {
         return i;
@@ -1007,7 +1053,7 @@ public class BeeUtils {
     }
     return BeeConst.UNDEF;
   }
-  
+
   public static boolean inList(int x, int... lst) {
     Assert.notNull(lst);
     boolean ok = false;
@@ -1178,7 +1224,7 @@ public class BeeUtils {
     if (!isDouble(d)) {
       return false;
     }
-    
+
     boolean ok = true;
     if (isDouble(min)) {
       ok = minInclusive ? (d >= min) : (d > min);
@@ -1188,7 +1234,7 @@ public class BeeUtils {
     }
     return ok;
   }
-  
+
   /**
    * Checks if {@code x} is a Boolean value (0 or 1).
    * 
@@ -1310,7 +1356,7 @@ public class BeeUtils {
   public static boolean isDouble(String s, Double min, boolean minInclusive) {
     return isDouble(s, min, minInclusive, null, false);
   }
-  
+
   public static boolean isDouble(String s, Double min, boolean minInclusive,
       Double max, boolean maxInclusive) {
     if (isEmpty(s)) {
@@ -1326,7 +1372,7 @@ public class BeeUtils {
     }
     return ok;
   }
-  
+
   /**
    * Checks if an Object is empty.
    * 
@@ -1524,7 +1570,7 @@ public class BeeUtils {
   public static boolean isNonNegativeDouble(String s) {
     return isDouble(s, BeeConst.DOUBLE_ZERO, true);
   }
-  
+
   /**
    * @param clazz the class to check for Enum constants
    * @param idx the index to check
@@ -1564,7 +1610,7 @@ public class BeeUtils {
   public static boolean isPositiveDouble(String s) {
     return isDouble(s, BeeConst.DOUBLE_ZERO, false);
   }
-  
+
   /**
    * Checks if the first character in a CharSequence is a prefix.
    * 
@@ -1590,7 +1636,7 @@ public class BeeUtils {
     }
     return same(left(src, pfxLen), pfx);
   }
-  
+
   /**
    * Checks if the specified character is a prefix or a suffix.
    * 
@@ -1633,7 +1679,7 @@ public class BeeUtils {
     }
     return same(right(src, sfxLen), sfx);
   }
-  
+
   /**
    * Checks if the specified value is true.
    * 
@@ -1966,10 +2012,10 @@ public class BeeUtils {
     }
     return s.trim().toLowerCase();
   }
-  
+
   public static double normalize(double x, double min, double max) {
     double z;
-    
+
     if (min > max) {
       z = 1.0 - normalize(x, max, min);
     } else if (min == max) {
@@ -1983,7 +2029,7 @@ public class BeeUtils {
     }
     return z;
   }
-  
+
   /**
    * Returns an Object as a separator. If an Object is a number it's returned spaces quantity equal
    * to the numeric value. String, Char and CharSequence type Objects are transformed to String
@@ -2182,7 +2228,7 @@ public class BeeUtils {
     Assert.isTrue(max > min);
     return min + Math.random() * (max - min);
   }
-  
+
   /**
    * Generates a random Integer value in range of the specified {@code min} and {@code max} values.
    * 
@@ -2265,6 +2311,29 @@ public class BeeUtils {
     return sb.toString();
   }
 
+  public static String remove(String str, char ch) {
+    if (str == null || str.indexOf(ch) < 0) {
+      return str;
+    }
+
+    char[] arr = str.toCharArray();
+    int cnt = 0;
+    for (int i = 0; i < arr.length; i++) {
+      if (arr[i] != ch) {
+        if (cnt < i) {
+          arr[cnt] = arr[i];
+        }
+        cnt++;
+      }
+    }
+
+    if (cnt > 0) {
+      return new String(arr, 0, cnt);
+    } else {
+      return BeeConst.STRING_EMPTY;
+    }
+  }
+
   /**
    * Removes the specified prefix from a String.
    * 
@@ -2285,7 +2354,7 @@ public class BeeUtils {
     }
     return str;
   }
-  
+
   /**
    * Removes specified prefix and suffix from a String.
    * 
@@ -2317,7 +2386,7 @@ public class BeeUtils {
     }
     return str;
   }
-  
+
   /**
    * Removes all trailing zeros.
    * 
@@ -2467,11 +2536,11 @@ public class BeeUtils {
     Arrays.fill(arr, z);
     return new String(arr);
   }
-  
+
   public static double rescale(double x, double frMin, double frMax, double toMin, double toMax) {
     return scaleNormalizedToRange(normalize(x, frMin, frMax), toMin, toMax);
   }
-  
+
   public static String right(String s, int n) {
     if (s == null) {
       return null;
@@ -2483,7 +2552,7 @@ public class BeeUtils {
       return s.substring(s.length() - n);
     }
   }
-  
+
   /**
    * Rounds {@code x} with a specified scale {@code dec}.
    * 
@@ -2549,10 +2618,10 @@ public class BeeUtils {
   public static boolean sameSign(int i1, int i2) {
     return Integer.signum(i1) == Integer.signum(i2);
   }
-  
+
   public static double scaleNormalizedToRange(double x, double min, double max) {
     double z;
-    
+
     if (min == max) {
       z = min;
     } else if (x <= 0) {
@@ -2931,7 +3000,7 @@ public class BeeUtils {
     return Long.toString(millis / 1000) + BeeConst.STRING_POINT
         + toLeadingZeroes((int) (millis % 1000), 3);
   }
-  
+
   public static String toString(BigDecimal bd) {
     if (bd == null) {
       return null;

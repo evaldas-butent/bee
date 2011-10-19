@@ -550,7 +550,7 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat {
     getDatePicker().setCurrentMonth(date);
     getDatePicker().setValue(date);
 
-    StyleUtils.setZIndex(getPopup(), StyleUtils.getParentZIndex(getBox(), true) + 1);
+    StyleUtils.setZIndex(getPopup(), StyleUtils.getParentZIndex(getBox(), true, true) + 1);
     getPopup().showRelativeTo(getBox());
   }
 }

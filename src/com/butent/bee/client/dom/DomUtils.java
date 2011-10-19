@@ -1056,6 +1056,9 @@ public class DomUtils {
       PropertyUtils.appendChildrenToExtended(lst, BeeUtils.concat(1, prefix, "Style"),
           StyleUtils.getStyleInfo(st));
     }
+    PropertyUtils.appendChildrenToExtended(lst, BeeUtils.concat(1, prefix, "Computed"),
+        new ComputedStyles(el).getInfo());
+
     PropertyUtils.appendChildrenToExtended(lst, BeeUtils.concat(1, prefix, "Node"),
         getNodeInfo(el));
 

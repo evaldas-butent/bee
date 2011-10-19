@@ -43,6 +43,7 @@ import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.communication.RpcList;
 import com.butent.bee.client.composite.SliderBar;
 import com.butent.bee.client.data.JsData;
+import com.butent.bee.client.dom.ComputedStyles;
 import com.butent.bee.client.dom.Dimensions;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Features;
@@ -1835,16 +1836,27 @@ public class CliWorker {
         return;
       }
 
-      List<Property> lst;
-      if (elem.getStyle() == null) {
-        lst = null;
-      } else {
+      List<Property> info = Lists.newArrayList();
+      List<Property> lst;      
+      
+      if (elem.getStyle() != null) {
         lst = StyleUtils.getStyleInfo(elem.getStyle());
+        if (!BeeUtils.isEmpty(lst)) {
+          info.add(new Property("element style", BeeUtils.bracket(lst.size())));
+          info.addAll(lst);
+        }
       }
-      if (BeeUtils.isEmpty(lst)) {
+      
+      lst = new ComputedStyles(elem).getInfo();
+      if (!BeeUtils.isEmpty(lst)) {
+        info.add(new Property("computed style", BeeUtils.bracket(lst.size())));
+        info.addAll(lst);
+      }
+
+      if (BeeUtils.isEmpty(info)) {
         Global.showDialog("element id", arr[1], "has no style");
       } else {
-        BeeKeeper.getScreen().showGrid(lst);
+        BeeKeeper.getScreen().showGrid(info);
       }
       return;
     }
