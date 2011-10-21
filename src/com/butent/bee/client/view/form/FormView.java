@@ -34,6 +34,8 @@ public interface FormView extends View, NotificationListener, HasEditState,
 
   RowInfo getActiveRowInfo();
 
+  List<BeeColumn> getDataColumns();
+
   int getDataIndex(String source);
 
   HasDataTable getDisplay();
@@ -45,7 +47,7 @@ public interface FormView extends View, NotificationListener, HasEditState,
   JavaScriptObject getRowJso();
 
   Widget getWidgetBySource(String source);
-  
+
   boolean isRowEditable(boolean warn);
 
   void prepareForInsert();
@@ -53,12 +55,12 @@ public interface FormView extends View, NotificationListener, HasEditState,
   void refreshCellContent(String columnSource);
 
   void showGrids(boolean show);
-  
+
   void start(Integer rowCount);
 
   void startNewRow();
 
   void updateCell(String columnId, String newValue);
 
-  void updateRowData(IsRow row);  
+  void updateRowData(IsRow row);
 }

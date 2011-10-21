@@ -384,6 +384,10 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     return new RowInfo(getRowData());
   }
 
+  public List<BeeColumn> getDataColumns() {
+    return dataColumns;
+  }
+
   public int getDataIndex(String source) {
     int index = BeeConst.UNDEF;
     if (BeeUtils.isEmpty(source) || getDataColumns() == null) {
@@ -911,10 +915,6 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
 
   private CreationCallback getCreationCallback() {
     return creationCallback;
-  }
-
-  private List<BeeColumn> getDataColumns() {
-    return dataColumns;
   }
 
   private Set<DisplayWidget> getDisplayWidgets() {

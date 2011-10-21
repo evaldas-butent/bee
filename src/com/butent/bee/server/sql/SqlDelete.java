@@ -24,17 +24,6 @@ public class SqlDelete extends HasFrom<SqlDelete> {
   }
 
   /**
-   * Creates an SqlDelete statement with a specified target {@code target} and alias {@code alias}.
-   * Target type is FromSingle.
-   * 
-   * @param target the target
-   * @param alias the alias to use
-   */
-  public SqlDelete(String target, String alias) {
-    this.target = FromJoin.fromSingle(target, alias);
-  }
-
-  /**
    * @return a list of sources found.
    */
   @Override

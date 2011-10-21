@@ -148,20 +148,10 @@ public class BeeKeeper {
       }
 
       @Override
-      public boolean onPrepareForInsert(FormView form, IsRow row) {
-        if (!getUser().isLoggedIn()) {
-          Global.showError("Not logged in");
-          return false;
-        }
-        form.updateCell("Owner", BeeUtils.toString(getUser().getUserId()));
-        form.updateCell("Event", BeeUtils.transform(TaskEvent.ACTIVATED));
-        form.updateCell("EventTime", BeeUtils.toString(System.currentTimeMillis()));
-        return true;
-      }
-
-      @Override
       public void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow) {
+        newRow.setValue(form.getDataIndex("Owner"), getUser().getUserId());
         newRow.setValue(form.getDataIndex("StartTime"), System.currentTimeMillis());
+        newRow.setValue(form.getDataIndex("Event"), TaskEvent.ACTIVATED.ordinal());
       }
     });
   }

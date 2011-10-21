@@ -1,9 +1,7 @@
 package com.butent.bee.server.sql;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 
-import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
@@ -18,7 +16,7 @@ public class SqlUpdate extends HasFrom<SqlUpdate> {
   static final int FIELD = 0;
   static final int VALUE = 1;
 
-  private final IsExpression target;
+  private final IsFrom target;
   private List<IsExpression[]> updates;
   private IsCondition whereClause;
 
@@ -28,8 +26,7 @@ public class SqlUpdate extends HasFrom<SqlUpdate> {
    * @param target the String target
    */
   public SqlUpdate(String target) {
-    Assert.notEmpty(target);
-    this.target = SqlUtils.name(target);
+    this.target = FromJoin.fromSingle(target, null);
   }
 
   /**
@@ -68,8 +65,7 @@ public class SqlUpdate extends HasFrom<SqlUpdate> {
    */
   @Override
   public Collection<String> getSources() {
-    Collection<String> sources =
-        SqlUtils.addCollection(Sets.newHashSet((String) target.getValue()), super.getSources());
+    Collection<String> sources = SqlUtils.addCollection(target.getSources(), super.getSources());
 
     if (!BeeUtils.isEmpty(whereClause)) {
       sources = SqlUtils.addCollection(sources, whereClause.getSources());
@@ -80,7 +76,7 @@ public class SqlUpdate extends HasFrom<SqlUpdate> {
   /**
    * @return the current target {@code target}
    */
-  public IsExpression getTarget() {
+  public IsFrom getTarget() {
     return target;
   }
 

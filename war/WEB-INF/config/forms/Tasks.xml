@@ -66,6 +66,7 @@
           <Button name="COMMENTED" html="Naujas komentaras" />
           <Button name="FORWARDED" html="Persiųsti" />
           <Button name="EXTENDED" html="Keisti terminą" />
+          <Button name="ACTIVATED" html="Sukurti užduotį" style="position:absolute; right:0px" />
         </FlowPanel>
       </north>
       <south size="25" splitterSize="0">
