@@ -940,6 +940,19 @@ public class BeeUtils {
     }
   }
 
+  public static String getSame(Collection<String> col, String s) {
+    if (isEmpty(col)) {
+      return null;
+    }
+
+    for (String entry : col) {
+      if (same(entry, s)) {
+        return entry;
+      }
+    }
+    return null;
+  }
+  
   /**
    * Separates a string with separator value. Returns a string that goes after the separator.
    * 

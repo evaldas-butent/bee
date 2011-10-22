@@ -76,10 +76,14 @@ public class GridHolderBean {
   private static final String TAG_EDITOR = "editor";
   private static final String TAG_ITEM = "item";
 
-  private static final String ATTR_VIEW_NAME = "viewName";
   private static final String ATTR_NAME = "name";
   private static final String ATTR_CAPTION = "caption";
-  private static final String ATTR_READ_ONLY = "readOnly";
+
+  private static final String ATTR_VIEW_NAME = "viewName";
+  private static final String ATTR_FILTER = "filter";
+  private static final String ATTR_ORDER = "order";
+
+  private static final String ATTR_SHOW_COLUMN_WIDTHS = "showColumnWidths";
   private static final String ATTR_MIN_COLUMN_WIDTH = "minColumnWidth";
   private static final String ATTR_MAX_COLUMN_WIDTH = "maxColumnWidth";
 
@@ -90,10 +94,13 @@ public class GridHolderBean {
   private static final String ATTR_SEARCH_THRESHOLD = "searchThreshold";
   private static final String ATTR_INITIAL_ROW_SET_SIZE = "initialRowSetSize";
   private static final String ATTR_PAGE_SIZE = "pageSize";
-  private static final String ATTR_NEW_ROW_COLUMNS = "newRowColumns";
-  private static final String ATTR_SHOW_COLUMN_WIDTHS = "showColumnWidths";
-  private static final String ATTR_FORM = "form";
+
+  private static final String ATTR_READ_ONLY = "readOnly";
   private static final String ATTR_EDIT_MODE = "editMode";
+  private static final String ATTR_NEW_ROW_FORM = "newRowForm";
+  private static final String ATTR_NEW_ROW_COLUMNS = "newRowColumns";
+  private static final String ATTR_EDIT_FORM = "editForm";
+  private static final String ATTR_EDIT_COLUMNS = "editColumns";
   
   private static final String ATTR_WIDTH = "width";
   private static final String ATTR_MIN_WIDTH = "minWidth";
@@ -120,6 +127,9 @@ public class GridHolderBean {
   private static final String ATTR_PRECISION = "precision";
   private static final String ATTR_SCALE = "scale";
 
+  private static final String ATTR_SEARCH_BY = "searchBy";
+  private static final String ATTR_SORT_BY = "sortBy";
+
   private static final String ATTR_CELL = "cell";
 
   private static Logger logger = Logger.getLogger(GridHolderBean.class.getName());
@@ -143,19 +153,22 @@ public class GridHolderBean {
       return getGrid(name);
     }
 
-    GridDescription gridDescription = new GridDescription(name, name);
+    GridDescription gridDescription = new GridDescription(name, name, view.getSourceIdName(),
+        view.getSourceVersionName());
     gridDescription.setDefaults();
     if (view.isReadOnly()) {
       gridDescription.setReadOnly(true);
     }
 
-    gridDescription.addColumn(new ColumnDescription(ColType.ID, view.getSourceIdName(), true));
+    ColumnDescription columnDescription =
+        new ColumnDescription(ColType.ID, view.getSourceIdName(), true);
+    columnDescription.setSource(view.getSourceIdName());
+    gridDescription.addColumn(columnDescription);
 
     Map<String, ColumnDescription> columns = Maps.newLinkedHashMap();
     Set<String> relSources = Sets.newHashSet();
 
-    ColumnDescription columnDescription;
-    for (String colName : view.getColumns()) {
+    for (String colName : view.getColumnNames()) {
       String tblName = view.getTable(colName);
       String relSource = view.getRelSource(colName);
 
@@ -187,8 +200,9 @@ public class GridHolderBean {
 
     gridDescription.getColumns().addAll(columns.values());
 
-    gridDescription.addColumn(new ColumnDescription(ColType.VERSION, view.getSourceVersionName(),
-        true));
+    columnDescription = new ColumnDescription(ColType.VERSION, view.getSourceVersionName(), true);
+    columnDescription.setSource(view.getSourceVersionName());
+    gridDescription.addColumn(columnDescription);
 
     if (register) {
       registerGrid(gridDescription);
@@ -320,6 +334,16 @@ public class GridHolderBean {
     String source = column.getSource();
 
     switch (column.getColType()) {
+      case ID:
+        column.setSource(view.getSourceIdName());
+        ok = true;
+        break;
+        
+      case VERSION:
+        column.setSource(view.getSourceVersionName());
+        ok = true;
+        break;
+        
       case DATA:
         if (view.hasColumn(source)) {
           ok = true;
@@ -377,9 +401,6 @@ public class GridHolderBean {
           ok = true;
         }
         break;
-
-      default:
-        ok = true;
     }
 
     return ok;
@@ -410,8 +431,11 @@ public class GridHolderBean {
         continue;
       }
 
-      GridDescription grid = new GridDescription(gridName, viewName);
-      xmlToGrid(gridElement, grid);
+      BeeView view = sys.getView(viewName);
+
+      GridDescription grid = new GridDescription(gridName, viewName, view.getSourceIdName(),
+          view.getSourceVersionName());
+      xmlToGrid(gridElement, grid, view);
 
       Element container = XmlUtils.getFirstChildElement(gridElement, TAG_COLUMNS);
       if (container == null) {
@@ -423,8 +447,6 @@ public class GridHolderBean {
         LogUtils.warning(logger, "Grid", gridName, "tag", TAG_COLUMNS, "has no children");
         continue;
       }
-
-      BeeView view = sys.getView(viewName);
 
       for (int j = 0; j < columns.size(); j++) {
         Element columnElement = columns.get(j);
@@ -538,6 +560,11 @@ public class GridHolderBean {
           dst.setPrecision(BeeUtils.toIntOrNull(value));
         } else if (BeeUtils.same(key, ATTR_SCALE)) {
           dst.setScale(BeeUtils.toIntOrNull(value));
+          
+        } else if (BeeUtils.same(key, ATTR_SEARCH_BY)) {
+          dst.setSearchBy(value.trim());
+        } else if (BeeUtils.same(key, ATTR_SORT_BY)) {
+          dst.setSortBy(value.trim());
 
         } else if (BeeUtils.same(key, ATTR_CELL)) {
           dst.setCellType(CellType.getByCode(value));
@@ -600,7 +627,7 @@ public class GridHolderBean {
     }
   }
 
-  private void xmlToGrid(Element src, GridDescription dst) {
+  private void xmlToGrid(Element src, GridDescription dst, BeeView view) {
     Assert.notNull(src);
     Assert.notNull(dst);
 
@@ -608,9 +635,14 @@ public class GridHolderBean {
     if (!BeeUtils.isEmpty(caption)) {
       dst.setCaption(caption.trim());
     }
-    Boolean readOnly = XmlUtils.getAttributeBoolean(src, ATTR_READ_ONLY);
-    if (readOnly != null) {
-      dst.setReadOnly(readOnly);
+    
+    String filter = src.getAttribute(ATTR_FILTER);
+    if (!BeeUtils.isEmpty(filter)) {
+      dst.setFilter(view.parseFilter(filter.trim()));
+    }
+    String order = src.getAttribute(ATTR_ORDER);
+    if (!BeeUtils.isEmpty(order)) {
+      dst.setOrder(view.parseOrder(order.trim()));
     }
 
     Integer minColumnWidth = XmlUtils.getAttributeInteger(src, ATTR_MIN_COLUMN_WIDTH);
@@ -657,19 +689,32 @@ public class GridHolderBean {
     if (initialRowSetSize != null) {
       dst.setInitialRowSetSize(initialRowSetSize);
     }
+
+    Boolean readOnly = XmlUtils.getAttributeBoolean(src, ATTR_READ_ONLY);
+    if (readOnly != null) {
+      dst.setReadOnly(readOnly);
+    }
+    String editMode = src.getAttribute(ATTR_EDIT_MODE);
+    if (!BeeUtils.isEmpty(editMode)) {
+      dst.setEditMode(editMode);
+    }
     
+    String newRowForm = src.getAttribute(ATTR_NEW_ROW_FORM);
+    if (!BeeUtils.isEmpty(newRowForm)) {
+      dst.setNewRowForm(newRowForm);
+    }
     String newRowColumns = src.getAttribute(ATTR_NEW_ROW_COLUMNS);
     if (!BeeUtils.isEmpty(newRowColumns)) {
       dst.setNewRowColumns(newRowColumns.trim());
     }
     
-    String form = src.getAttribute(ATTR_FORM);
-    if (!BeeUtils.isEmpty(form)) {
-      dst.setForm(form);
+    String editForm = src.getAttribute(ATTR_EDIT_FORM);
+    if (!BeeUtils.isEmpty(editForm)) {
+      dst.setEditForm(editForm);
     }
-    String editMode = src.getAttribute(ATTR_EDIT_MODE);
-    if (!BeeUtils.isEmpty(editMode)) {
-      dst.setEditMode(editMode);
+    String editColumns = src.getAttribute(ATTR_EDIT_COLUMNS);
+    if (!BeeUtils.isEmpty(editColumns)) {
+      dst.setEditColumns(editColumns.trim());
     }
 
     GridComponentDescription header = getComponent(src, TAG_HEADER);

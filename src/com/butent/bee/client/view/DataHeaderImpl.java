@@ -126,7 +126,7 @@ public class DataHeaderImpl extends Complex implements DataHeaderView {
     addStyleName(StyleUtils.WINDOW_HEADER);
     addStyleName(style.container());
 
-    BeeLabel label = new BeeLabel(caption);
+    BeeLabel label = new BeeLabel(BeeUtils.trim(caption));
     label.setId(captionId);
     if (!isChild) {
       label.addStyleName(StyleUtils.WINDOW_CAPTION);

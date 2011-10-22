@@ -105,10 +105,6 @@ public class FormPresenter implements Presenter, ReadyForInsertEvent.Handler,
     }
   }
 
-  private final String viewName;
-  private final boolean async;
-  private final List<BeeColumn> dataColumns;
-
   private final FormContainerView formContainer;
   private final Provider dataProvider;
 
@@ -117,18 +113,12 @@ public class FormPresenter implements Presenter, ReadyForInsertEvent.Handler,
 
   public FormPresenter(FormDescription formDescription, String viewName, int rowCount,
       BeeRowSet rowSet, boolean async, FormCallback callback) {
-    this.viewName = viewName;
-    this.async = async;
-    this.dataColumns = (rowSet == null) ? null : rowSet.getColumns();
+    List<BeeColumn> columns = (rowSet == null) ? null : rowSet.getColumns();
 
-    this.formContainer = createView(formDescription, dataColumns, rowCount, callback);
-    this.dataProvider = createProvider(formContainer, viewName, rowSet, async);
+    this.formContainer = createView(formDescription, columns, rowCount, callback);
+    this.dataProvider = createProvider(formContainer, viewName, columns, null, rowSet, async);
 
     bind();
-  }
-
-  public List<BeeColumn> getDataColumns() {
-    return dataColumns;
   }
 
   public Provider getDataProvider() {
@@ -144,7 +134,10 @@ public class FormPresenter implements Presenter, ReadyForInsertEvent.Handler,
   }
 
   public String getViewName() {
-    return viewName;
+    if (getDataProvider() == null) {
+      return null;
+    }
+    return getDataProvider().getViewName();
   }
 
   public Widget getWidget() {
@@ -187,10 +180,6 @@ public class FormPresenter implements Presenter, ReadyForInsertEvent.Handler,
       default:
         BeeKeeper.getLog().info(action, "not implemented");
     }
-  }
-
-  public boolean isAsync() {
-    return async;
   }
 
   public void onReadyForInsert(ReadyForInsertEvent event) {
@@ -280,8 +269,8 @@ public class FormPresenter implements Presenter, ReadyForInsertEvent.Handler,
     }
   }
 
-  private Provider createProvider(FormContainerView view, String dataName, BeeRowSet rowSet,
-      boolean isAsync) {
+  private Provider createProvider(FormContainerView view, String dataName, List<BeeColumn> columns,
+      Filter dataFilter, BeeRowSet rowSet, boolean isAsync) {
     if (BeeUtils.isEmpty(dataName)) {
       return null;
     }
@@ -289,9 +278,10 @@ public class FormPresenter implements Presenter, ReadyForInsertEvent.Handler,
     FormView content = view.getContent();
 
     if (isAsync) {
-      provider = new AsyncProvider(content.getDisplay(), dataName);
+      provider = new AsyncProvider(content.getDisplay(), dataName, columns, null, null, dataFilter);
     } else {
-      provider = new CachedProvider(content.getDisplay(), dataName, rowSet);
+      provider = new CachedProvider(content.getDisplay(), dataName, columns, null, null, 
+          dataFilter, rowSet);
     }
     return provider;
   }
@@ -321,7 +311,7 @@ public class FormPresenter implements Presenter, ReadyForInsertEvent.Handler,
   }
 
   private boolean hasData() {
-    return !BeeUtils.isEmpty(getViewName());
+    return getDataProvider() != null;
   }
 
   private void setLoadingState(LoadingStateChangeEvent.LoadingState loadingState) {
@@ -348,7 +338,7 @@ public class FormPresenter implements Presenter, ReadyForInsertEvent.Handler,
 
     List<Filter> filters = Lists.newArrayListWithCapacity(searchers.size());
     for (SearchView search : searchers) {
-      Filter flt = search.getFilter(getDataColumns());
+      Filter flt = search.getFilter(getDataProvider().getColumns(), null, null);
       if (flt != null && !filters.contains(flt)) {
         filters.add(flt);
       }

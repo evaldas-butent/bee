@@ -82,7 +82,7 @@ public class TableColumn implements HasInfo, IsColumn {
     return properties;
   }
   
-  public Object getProperty(String key) {
+  public String getProperty(String key) {
     Assert.notEmpty(key);
     if (properties == null) {
       return null;
@@ -118,7 +118,7 @@ public class TableColumn implements HasInfo, IsColumn {
     this.properties = properties;
   }
 
-  public void setProperty(String propertyKey, Object propertyValue) {
+  public void setProperty(String propertyKey, String propertyValue) {
     Assert.notEmpty(propertyKey);
     Assert.notNull(propertyValue);
     if (properties == null) {

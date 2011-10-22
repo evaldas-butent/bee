@@ -346,7 +346,7 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
     return getColumn(colIndex).getProperties();
   }
 
-  public Object getColumnProperty(int colIndex, String name) {
+  public String getColumnProperty(int colIndex, String name) {
     return getColumn(colIndex).getProperty(name);
   }
 
@@ -472,7 +472,7 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
     return getCell(rowIndex, colIndex).getProperties();
   }
 
-  public Object getProperty(int rowIndex, int colIndex, String name) {
+  public String getProperty(int rowIndex, int colIndex, String name) {
     return getCell(rowIndex, colIndex).getProperty(name);
   }
 
@@ -491,7 +491,7 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
     return getRow(rowIndex).getProperties();
   }
 
-  public Object getRowProperty(int rowIndex, String name) {
+  public String getRowProperty(int rowIndex, String name) {
     return getRow(rowIndex).getProperty(name);
   }
 
@@ -536,7 +536,7 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
     return properties;
   }
 
-  public Object getTableProperty(String key) {
+  public String getTableProperty(String key) {
     Assert.notEmpty(key);
     if (properties == null) {
       return null;
@@ -652,7 +652,7 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
     getColumn(colIndex).setProperties(properties);
   }
 
-  public void setColumnProperty(int colIndex, String name, Object value) {
+  public void setColumnProperty(int colIndex, String name, String value) {
     getColumn(colIndex).setProperty(name, value);
   }
 
@@ -668,7 +668,7 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
     getCell(rowIndex, colIndex).setProperties(properties);
   }
 
-  public void setProperty(int rowIndex, int colIndex, String name, Object value) {
+  public void setProperty(int rowIndex, int colIndex, String name, String value) {
     getCell(rowIndex, colIndex).setProperty(name, value);
   }
 
@@ -676,7 +676,7 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
     getRow(rowIndex).setProperties(properties);
   }
 
-  public void setRowProperty(int rowIndex, String name, Object value) {
+  public void setRowProperty(int rowIndex, String name, String value) {
     getRow(rowIndex).setProperty(name, value);
   }
 
@@ -689,7 +689,7 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
     this.properties = properties;
   }
 
-  public void setTableProperty(String propertyKey, Object propertyValue) {
+  public void setTableProperty(String propertyKey, String propertyValue) {
     Assert.notEmpty(propertyKey);
     Assert.notNull(propertyValue);
     if (properties == null) {

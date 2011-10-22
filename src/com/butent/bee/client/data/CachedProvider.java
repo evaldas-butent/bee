@@ -7,6 +7,7 @@ import com.google.gwt.view.client.Range;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Pair;
+import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
@@ -39,11 +40,12 @@ public class CachedProvider extends Provider {
   private final List<IsRow> viewRows = Lists.newArrayList();
 
   public CachedProvider(HasDataTable display, IsTable<?, ?> table) {
-    this(display, null, table);
+    this(display, null, null, null, null, null, table);
   }
 
-  public CachedProvider(HasDataTable display, String viewName, IsTable<?, ?> table) {
-    super(display, viewName);
+  public CachedProvider(HasDataTable display, String viewName, List<BeeColumn> columns,
+      String idColumnName, String versionColumnName, Filter dataFilter, IsTable<?, ?> table) {
+    super(display, viewName, columns, idColumnName, versionColumnName, dataFilter);
     Assert.notNull(table);
     this.table = table;
   }
@@ -110,7 +112,7 @@ public class CachedProvider extends Provider {
   public void onRowInsert(RowInsertEvent event) {
     if (BeeUtils.same(event.getViewName(), getViewName()) && getTable() instanceof BeeRowSet) {
       ((BeeRowSet) getTable()).addRow(event.getRow());
-      applyFilter(getFilter());
+      applyFilter(getUserFilter());
     }
   }
   
@@ -208,7 +210,7 @@ public class CachedProvider extends Provider {
     final int oldPageSize = getPageSize();
     final int oldTableSize = getTable().getNumberOfRows();
 
-    Queries.getRowSet(name, null, getOrder(), new Queries.RowSetCallback() {
+    Queries.getRowSet(name, null, getQueryFilter(null), getOrder(), new Queries.RowSetCallback() {
       public void onFailure(String[] reason) {
       }
 
@@ -216,7 +218,7 @@ public class CachedProvider extends Provider {
         Assert.notNull(rowSet);
         
         setTable(rowSet);
-        applyFilter(getFilter());
+        applyFilter(getUserFilter());
         
         int newTableSize = rowSet.getNumberOfRows();
         if (oldPageSize > 0 && oldPageSize >= oldTableSize && newTableSize != oldTableSize) {

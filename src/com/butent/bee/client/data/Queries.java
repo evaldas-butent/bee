@@ -15,7 +15,6 @@ import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.cache.CachingPolicy;
-import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
@@ -141,7 +140,7 @@ public class Queries {
     }
 
     List<Property> lst = PropertyUtils.createProperties(Service.VAR_VIEW_NAME, viewName,
-        Service.VAR_VIEW_WHERE, ComparisonFilter.compareId(rowId).serialize());
+        Service.VAR_VIEW_ROW_ID, BeeUtils.toString(rowId));
     if (!BeeUtils.isEmpty(columnNames)) {
       PropertyUtils.addProperties(lst, Service.VAR_VIEW_COLUMNS, columnNames);
     }
@@ -203,14 +202,18 @@ public class Queries {
     getRowCount(viewName, null, callback);
   }
 
+  public static int getRowSet(String viewName, List<String> columns, RowSetCallback callback) {
+    return getRowSet(viewName, columns, null, null, callback);
+  }
+  
   public static int getRowSet(String viewName, List<String> columns, Filter filter, Order order,
-      CachingPolicy cachingPolicy, RowSetCallback callback) {
-    return getRowSet(viewName, columns, filter, order, -1, -1, cachingPolicy, callback);
+      RowSetCallback callback) {
+    return getRowSet(viewName, columns, filter, order, CachingPolicy.NONE, callback);
   }
 
   public static int getRowSet(String viewName, List<String> columns, Filter filter, Order order,
-      int offset, int limit, CachingPolicy cachingPolicy, RowSetCallback callback) {
-    return getRowSet(viewName, columns, filter, order, offset, limit, null, cachingPolicy, callback);
+      CachingPolicy cachingPolicy, RowSetCallback callback) {
+    return getRowSet(viewName, columns, filter, order, -1, -1, cachingPolicy, callback);
   }
 
   public static int getRowSet(String viewName, List<String> columns, Filter filter, Order order,
@@ -218,9 +221,15 @@ public class Queries {
     return getRowSet(viewName, columns, filter, order, offset, limit, CachingPolicy.NONE, callback);
   }
 
+  public static int getRowSet(String viewName, List<String> columns, Filter filter, Order order,
+      int offset, int limit, CachingPolicy cachingPolicy, RowSetCallback callback) {
+    return getRowSet(viewName, columns, filter, order, offset, limit, cachingPolicy, null,
+        callback);
+  }
+
   public static int getRowSet(String viewName, List<String> columns, final Filter filter,
-      final Order order, final int offset, final int limit, String states,
-      final CachingPolicy cachingPolicy, final RowSetCallback callback) {
+      final Order order, final int offset, final int limit, final CachingPolicy cachingPolicy,
+      Collection<Property> options, final RowSetCallback callback) {
     Assert.notEmpty(viewName);
     Assert.notNull(callback);
 
@@ -231,7 +240,8 @@ public class Queries {
       columnNames = BeeUtils.transform(columns, Service.VIEW_COLUMN_SEPARATOR);
     }
 
-    if (cachingPolicy != null && cachingPolicy.doRead() && BeeUtils.isEmpty(columnNames)) {
+    if (cachingPolicy != null && cachingPolicy.doRead() && BeeUtils.isEmpty(columnNames)
+        && BeeUtils.isEmpty(options)) {
       BeeRowSet rowSet = Global.getCache().getRowSet(viewName, filter, order, offset, limit);
       if (rowSet != null) {
         callback.onSuccess(rowSet);
@@ -255,9 +265,9 @@ public class Queries {
       PropertyUtils.addProperties(lst, Service.VAR_VIEW_OFFSET, offset,
           Service.VAR_VIEW_LIMIT, limit);
     }
-
-    if (!BeeUtils.isEmpty(states)) {
-      PropertyUtils.addProperties(lst, Service.VAR_VIEW_STATES, states);
+    
+    if (!BeeUtils.isEmpty(options)) {
+      lst.addAll(options);
     }
 
     return BeeKeeper.getRpc().makePostRequest(new ParameterList(Service.QUERY,
@@ -278,25 +288,6 @@ public class Queries {
             }
           }
         });
-  }
-
-  public static int getRowSet(String viewName, List<String> columns, Filter filter, Order order,
-      RowSetCallback callback) {
-    return getRowSet(viewName, columns, filter, order, CachingPolicy.NONE, callback);
-  }
-
-  public static int getRowSet(String viewName, List<String> columns, Filter filter,
-      RowSetCallback callback) {
-    return getRowSet(viewName, columns, filter, null, callback);
-  }
-
-  public static int getRowSet(String viewName, List<String> columns, Order order,
-      RowSetCallback callback) {
-    return getRowSet(viewName, columns, null, order, callback);
-  }
-
-  public static int getRowSet(String viewName, List<String> columns, RowSetCallback callback) {
-    return getRowSet(viewName, columns, null, null, callback);
   }
 
   public static void insert(String viewName, List<BeeColumn> columns, List<String> values,

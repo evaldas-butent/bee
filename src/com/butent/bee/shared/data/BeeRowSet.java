@@ -23,7 +23,7 @@ public class BeeRowSet extends RowList<BeeRow, BeeColumn> implements BeeSerializ
    */
 
   private enum Serial {
-    VIEW, COLUMNS, ROWS
+    VIEW, COLUMNS, ROWS, PROPERTIES
   }
 
   public static BeeRowSet restore(String s) {
@@ -132,6 +132,12 @@ public class BeeRowSet extends RowList<BeeRow, BeeColumn> implements BeeSerializ
             }
           }
           break;
+          
+        case PROPERTIES:
+          if (!BeeUtils.isEmpty(value)) {
+            setTableProperties(CustomProperties.restore(value));
+          }
+          break;
       }
     }
   }
@@ -190,6 +196,10 @@ public class BeeRowSet extends RowList<BeeRow, BeeColumn> implements BeeSerializ
 
         case ROWS:
           arr[i++] = getRows().getList();
+          break;
+
+        case PROPERTIES:
+          arr[i++] = getTableProperties();
           break;
       }
     }

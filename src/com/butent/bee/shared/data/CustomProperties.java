@@ -2,9 +2,13 @@ package com.butent.bee.shared.data;
 
 import com.google.common.collect.Lists;
 
+import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.HasInfo;
 import com.butent.bee.shared.Transformable;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
 
@@ -17,18 +21,46 @@ import java.util.Map;
  */
 
 @SuppressWarnings("serial")
-public class CustomProperties extends HashMap<String, Object> implements HasInfo, Transformable {
+public class CustomProperties extends HashMap<String, String> implements HasInfo, Transformable,
+    BeeSerializable {
+
   public static CustomProperties create() {
     return new CustomProperties();
+  }
+  
+  public static CustomProperties restore(String s) {
+    if (BeeUtils.isEmpty(s)) {
+      return null;
+    }
+    
+    CustomProperties customProperties = new CustomProperties();
+    customProperties.deserialize(s);
+
+    return customProperties;
   }
 
   @Override
   public CustomProperties clone() {
     CustomProperties properties = create();
-    for (Map.Entry<String, Object> entry : entrySet()) {
+    for (Map.Entry<String, String> entry : entrySet()) {
       properties.put(entry.getKey(), entry.getValue());
     }
     return properties;
+  }
+
+  public void deserialize(String s) {
+    clear();
+    if (BeeUtils.isEmpty(s)) {
+      return;
+    }
+    
+    String[] arr = Codec.beeDeserializeCollection(s);
+    int c = ArrayUtils.length(arr);
+    Assert.isEven(c);
+    
+    for (int i = 0; i < c; i += 2) {
+      put(arr[i], arr[i + 1]);
+    }
   }
 
   public List<Property> getInfo() {
@@ -38,10 +70,14 @@ public class CustomProperties extends HashMap<String, Object> implements HasInfo
     }
 
     PropertyUtils.addProperty(lst, "Custom Properties", size());
-    for (Map.Entry<String, Object> entry : entrySet()) {
+    for (Map.Entry<String, String> entry : entrySet()) {
       PropertyUtils.addProperty(lst, entry.getKey(), entry.getValue());
     }
     return lst;
+  }
+
+  public String serialize() {
+    return Codec.beeSerialize(this);
   }
 
   public String transform() {

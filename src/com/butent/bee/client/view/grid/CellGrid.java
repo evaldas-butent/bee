@@ -1268,6 +1268,16 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     return getColumnInfo(col).getColumnId();
   }
 
+  public String getColumnIdBySource(String source) {
+    Assert.notEmpty(source);
+    for (int i = 0; i < getColumnCount(); i++) {
+      if (BeeUtils.same(columns.get(i).getSource(), source)) {
+        return columns.get(i).getColumnId();
+      }
+    }
+    return null;
+  }
+  
   public int getColumnIndex(String columnId) {
     Assert.notEmpty(columnId);
     for (int i = 0; i < getColumnCount(); i++) {

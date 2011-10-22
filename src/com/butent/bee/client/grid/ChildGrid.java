@@ -35,7 +35,7 @@ public class ChildGrid extends ResizePanel implements HasEnabled {
     super();
     this.relSource = relSource;
 
-    GridFactory.getGrid(gridName, new GridFactory.GridCallback() {
+    GridFactory.getGrid(gridName, new GridFactory.DescriptionCallback() {
       public void onFailure(String[] reason) {
         BeeKeeper.getScreen().notifySevere(reason);
       }
@@ -106,7 +106,7 @@ public class ChildGrid extends ResizePanel implements HasEnabled {
 
           public void onSuccess(BeeRowSet rowSet) {
             GridPresenter gp = new GridPresenter(getViewName(), rowSet.getNumberOfRows(), 
-                rowSet, true, gridDescription, true);
+                rowSet, true, gridDescription, null, true);
             setWidget(gp.getWidget());
             setPresenter(gp);
             gp.getView().getContent().setRelColumn(getRelSource());

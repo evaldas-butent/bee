@@ -35,8 +35,9 @@ public class SearchBox extends InputText implements SearchView {
     return "bee-SearchBox";
   }
 
-  public Filter getFilter(List<? extends IsColumn> columns) {
-    return DataUtils.parseCondition(getValue(), columns);
+  public Filter getFilter(List<? extends IsColumn> columns, String idColumnName,
+      String versionColumnName) {
+    return DataUtils.parseCondition(getValue(), columns, idColumnName, versionColumnName);
   }
 
   @Override

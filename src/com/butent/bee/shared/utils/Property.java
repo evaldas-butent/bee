@@ -1,5 +1,7 @@
 package com.butent.bee.shared.utils;
 
+import com.google.common.base.Objects;
+
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeSerializable;
@@ -60,6 +62,18 @@ public class Property implements Comparable<Property>, Transformable, BeeSeriali
     setValue(arr[1]);
   }
 
+  @Override
+  public boolean equals(Object obj) {
+    if (!(obj instanceof Property)) {
+      return false;
+    } else if (this == obj) {
+      return true;
+    } else {
+      return Objects.equal(getName(), ((Property) obj).getName())
+          && Objects.equal(getValue(), ((Property) obj).getValue());
+    }
+  }
+
   /**
    * @return the stored name in the Property.
    */
@@ -72,6 +86,11 @@ public class Property implements Comparable<Property>, Transformable, BeeSeriali
    */
   public String getValue() {
     return value;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hashCode(getName(), getValue());
   }
 
   public String serialize() {

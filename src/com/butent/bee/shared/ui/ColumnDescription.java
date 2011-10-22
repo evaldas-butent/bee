@@ -67,7 +67,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
     COL_TYPE, NAME, CAPTION, READ_ONLY, WIDTH, SOURCE, REL_SOURCE, REL_VIEW, REL_COLUMN,
     MIN_WIDTH, MAX_WIDTH, SORTABLE, VISIBLE, FORMAT, HOR_ALIGN, HAS_FOOTER, SHOW_WIDTH,
     VALIDATION, EDITABLE, CARRY, EDITOR, MIN_VALUE, MAX_VALUE, REQUIRED,
-    CALC, VALUE_TYPE, PRECISION, SCALE,
+    CALC, VALUE_TYPE, PRECISION, SCALE, SEARCH_BY, SORT_BY,
     HEADER_STYLE, BODY_STYLE, FOOTER_STYLE, DYN_STYLES, CELL_TYPE
   }
 
@@ -118,6 +118,9 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
   private ValueType valueType = null;
   private Integer precision = null;
   private Integer scale = null;
+  
+  private String searchBy = null;
+  private String sortBy = null;
 
   private StyleDeclaration headerStyle = null;
   private StyleDeclaration bodyStyle = null;
@@ -194,6 +197,12 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
           break;
         case SCALE:
           setScale(BeeUtils.toIntOrNull(value));
+          break;
+        case SEARCH_BY:
+          setSearchBy(value);
+          break;
+        case SORT_BY:
+          setSortBy(value);
           break;
         case CARRY:
           setCarry(Calculation.restore(value));
@@ -347,6 +356,8 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
         "Value Type", getValueType(),
         "Precision", getPrecision(),
         "Scale", getScale(),
+        "Search By", getSearchBy(),
+        "Sort By", getSortBy(),
         "Cell Type", getCellType());
 
     if (getValidation() != null) {
@@ -432,6 +443,14 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
     return scale;
   }
 
+  public String getSearchBy() {
+    return searchBy;
+  }
+
+  public String getSortBy() {
+    return sortBy;
+  }
+
   public String getSource() {
     return source;
   }
@@ -447,7 +466,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
   public Integer getWidth() {
     return width;
   }
-
+  
   public Boolean hasFooter() {
     return hasFooter;
   }
@@ -455,7 +474,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
   public Boolean isReadOnly() {
     return readOnly;
   }
-  
+
   public Boolean isRequired() {
     return required;
   }
@@ -514,6 +533,12 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
           break;
         case SCALE:
           arr[i++] = getScale();
+          break;
+        case SEARCH_BY:
+          arr[i++] = getSearchBy();
+          break;
+        case SORT_BY:
+          arr[i++] = getSortBy();
           break;
         case CARRY:
           arr[i++] = getCarry();
@@ -659,7 +684,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
   public void setRelColumn(String relColumn) {
     this.relColumn = relColumn;
   }
-
+  
   public void setRelSource(String relSource) {
     this.relSource = relSource;
   }
@@ -667,7 +692,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
   public void setRelView(String relView) {
     this.relView = relView;
   }
-  
+
   public void setRequired(Boolean required) {
     this.required = required;
   }
@@ -676,12 +701,20 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
     this.scale = scale;
   }
 
+  public void setSearchBy(String searchBy) {
+    this.searchBy = searchBy;
+  }
+
   public void setShowWidth(Boolean showWidth) {
     this.showWidth = showWidth;
   }
 
   public void setSortable(Boolean sortable) {
     this.sortable = sortable;
+  }
+
+  public void setSortBy(String sortBy) {
+    this.sortBy = sortBy;
   }
 
   public void setSource(String source) {

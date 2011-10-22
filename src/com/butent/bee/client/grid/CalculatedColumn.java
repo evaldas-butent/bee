@@ -22,6 +22,8 @@ import com.butent.bee.shared.ui.ColumnDescription.ColType;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.TimeUtils;
 
+import java.util.List;
+
 /**
  * Enables using columns which contain results of calculations with other columns.
  */
@@ -37,6 +39,9 @@ public class CalculatedColumn extends AbstractColumn<String> implements HasDateT
 
   private int precision = BeeConst.UNDEF;
   private int scale = BeeConst.UNDEF;
+  
+  private List<String> searchBy = null;
+  private List<String> sortBy = null;
 
   public CalculatedColumn(Cell<String> cell, ValueType valueType, Evaluator evaluator) {
     super(cell);
@@ -69,6 +74,14 @@ public class CalculatedColumn extends AbstractColumn<String> implements HasDateT
 
   public int getScale() {
     return scale;
+  }
+
+  public List<String> getSearchBy() {
+    return searchBy;
+  }
+
+  public List<String> getSortBy() {
+    return sortBy;
   }
 
   @Override
@@ -117,6 +130,14 @@ public class CalculatedColumn extends AbstractColumn<String> implements HasDateT
 
   public void setScale(int scale) {
     this.scale = scale;
+  }
+
+  public void setSearchBy(List<String> searchBy) {
+    this.searchBy = searchBy;
+  }
+
+  public void setSortBy(List<String> sortBy) {
+    this.sortBy = sortBy;
   }
 
   private String format(String value) {

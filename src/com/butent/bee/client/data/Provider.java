@@ -9,6 +9,7 @@ import com.google.web.bindery.event.shared.HandlerRegistration;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.HasViewName;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
 import com.butent.bee.shared.data.event.HandlesAllDataEvents;
@@ -17,6 +18,7 @@ import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.event.SortEvent;
+import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -30,20 +32,32 @@ import java.util.List;
 public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvents, HasViewName {
 
   private final HasDataTable display;
+
   private final String viewName;
+  private final String idColumnName;
+  private final String versionColumnName;
+  
+  private final List<BeeColumn> columns;
 
   private final List<HandlerRegistration> handlerRegistry = Lists.newArrayList();
 
   private boolean rangeChangeEnabled = true;
   private boolean cacheEnabled = true;
 
-  private Filter filter = null;
+  private final Filter dataFilter;
+  private Filter userFilter = null;
+
   private Order order = null;
 
-  protected Provider(HasDataTable display, String viewName) {
+  protected Provider(HasDataTable display, String viewName, List<BeeColumn> columns,
+      String idColumnName, String versionColumnName, Filter dataFilter) {
     Assert.notNull(display);
     this.display = display;
     this.viewName = viewName;
+    this.columns = columns;
+    this.idColumnName = idColumnName;
+    this.versionColumnName = versionColumnName;
+    this.dataFilter = dataFilter;
 
     this.handlerRegistry.add(display.addRangeChangeHandler(new RangeChangeEvent.Handler() {
       public void onRangeChange(RangeChangeEvent event) {
@@ -73,12 +87,34 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
     setRangeChangeEnabled(true);
   }
 
-  public Filter getFilter() {
-    return filter;
+  public List<BeeColumn> getColumns() {
+    return columns;
+  }
+  
+  public String getIdColumnName() {
+    return idColumnName;
   }
 
   public Order getOrder() {
     return order;
+  }
+
+  public Filter getQueryFilter(Filter filter) {
+    if (filter == null) {
+      return getDataFilter();
+    } else if (getDataFilter() == null) {
+      return filter;
+    } else {
+      return CompoundFilter.and(getDataFilter(), filter);
+    }
+  }
+
+  public Filter getUserFilter() {
+    return userFilter;
+  }
+
+  public String getVersionColumnName() {
+    return versionColumnName;
   }
 
   public String getViewName() {
@@ -98,9 +134,9 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
       getDisplay().onCellUpdate(event);
     }
   }
-
+  
   public void onFilterChanged(Filter newFilter, int rowCount) {
-    setFilter(newFilter);
+    setUserFilter(newFilter);
     getDisplay().setRowCount(rowCount);
     goTop();
   }
@@ -124,7 +160,7 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
   }
 
   public abstract void onRowInsert(RowInsertEvent event);
-  
+
   public void onRowUpdate(RowUpdateEvent event) {
     if (BeeUtils.same(getViewName(), event.getViewName())) {
       getDisplay().onRowUpdate(event);
@@ -164,10 +200,6 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
     this.cacheEnabled = cacheEnabled;
   }
 
-  public void setFilter(Filter filter) {
-    this.filter = filter;
-  }
-
   public void setOrder(Order order) {
     this.order = order;
   }
@@ -176,8 +208,16 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
     this.rangeChangeEnabled = rangeChangeEnabled;
   }
 
+  public void setUserFilter(Filter userFilter) {
+    this.userFilter = userFilter;
+  }
+
   protected HasDataTable getDisplay() {
     return display;
+  }
+  
+  protected Filter getFilter() {
+    return getQueryFilter(getUserFilter());
   }
 
   protected int getPageSize() {
@@ -199,5 +239,9 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
 
   protected void startLoading() {
     getDisplay().fireLoadingStateChange(LoadingStateChangeEvent.LoadingState.LOADING);
+  }
+
+  private Filter getDataFilter() {
+    return dataFilter;
   }
 }

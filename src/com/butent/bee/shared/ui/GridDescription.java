@@ -7,6 +7,8 @@ import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.HasExtendedInfo;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.HasViewName;
+import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.ExtendedProperty;
@@ -26,12 +28,12 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
    */
 
   private enum Serial {
-    NAME, VIEW, CAPTION, READONLY, HAS_HEADERS, HAS_FOOTERS,
+    NAME, CAPTION, VIEW, ID_NAME, VERSION_NAME, FILTER, ORDER, HAS_HEADERS, HAS_FOOTERS,
     ASYNC_THRESHOLD, PAGING_THRESHOLD, SEARCH_THRESHOLD, INITIAL_ROW_SET_SIZE, PAGE_SIZE,
-    NEW_ROW_COLUMNS, SHOW_COLUMN_WIDTHS, FORM, EDIT_MODE,
+    READONLY, NEW_ROW_FORM, NEW_ROW_COLUMNS, EDIT_FORM, EDIT_COLUMNS, EDIT_MODE,
     HEADER, BODY, FOOTER,
     ROW_STYLES, ROW_MESSAGE, ROW_EDITABLE, ROW_VALIDATION,
-    MIN_COLUMN_WIDTH, MAX_COLUMN_WIDTH, COLUMNS
+    SHOW_COLUMN_WIDTHS, MIN_COLUMN_WIDTH, MAX_COLUMN_WIDTH, COLUMNS
   }
 
   public static GridDescription restore(String s) {
@@ -44,9 +46,14 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   }
 
   private String name;
-  private String viewName;
   private String caption = null;
-  private Boolean readOnly = null;
+
+  private String viewName;
+  private String idName;
+  private String versionName;
+
+  private Filter filter = null;
+  private Order order = null;
 
   private Boolean hasHeaders = null;
   private Boolean hasFooters = null;
@@ -59,11 +66,13 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
 
   private Integer pageSize = null;
 
-  private String newRowColumns = null;
-  private Boolean showColumnWidths = null;
-  
-  private String form = null;
+  private Boolean readOnly = null;
   private String editMode = null;
+
+  private String newRowForm = null;
+  private String newRowColumns = null;
+  private String editForm = null;
+  private String editColumns = null;
 
   private GridComponentDescription header = null;
   private GridComponentDescription body = null;
@@ -75,17 +84,20 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   private Calculation rowEditable = null;
   private Calculation rowValidation = null;
 
+  private Boolean showColumnWidths = null;
   private Integer minColumnWidth = null;
   private Integer maxColumnWidth = null;
 
   private final List<ColumnDescription> columns = Lists.newArrayList();
 
-  public GridDescription(String name, String viewName) {
+  public GridDescription(String name, String viewName, String idName, String versionName) {
     Assert.notEmpty(name);
     Assert.notEmpty(viewName);
 
     this.name = name;
     this.viewName = viewName;
+    this.idName = idName;
+    this.versionName = versionName;
   }
 
   private GridDescription() {
@@ -193,14 +205,32 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         case SHOW_COLUMN_WIDTHS:
           setShowColumnWidths(BeeUtils.toBooleanOrNull(value));
           break;
-        case FORM:
-          setForm(value);
+        case NEW_ROW_FORM:
+          setNewRowForm(value);
+          break;
+        case EDIT_FORM:
+          setEditForm(value);
+          break;
+        case EDIT_COLUMNS:
+          setEditColumns(value);
           break;
         case EDIT_MODE:
           setEditMode(value);
           break;
         case INITIAL_ROW_SET_SIZE:
           setInitialRowSetSize(BeeUtils.toIntOrNull(value));
+          break;
+        case FILTER:
+          setFilter(Filter.restore(value));
+          break;
+        case ORDER:
+          setOrder(Order.restore(value));
+          break;
+        case ID_NAME:
+          setIdName(value);
+          break;
+        case VERSION_NAME:
+          setVersionName(value);
           break;
       }
     }
@@ -226,20 +256,32 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
     return columns;
   }
 
+  public String getEditColumns() {
+    return editColumns;
+  }
+
+  public String getEditForm() {
+    return editForm;
+  }
+
   public String getEditMode() {
     return editMode;
+  }
+
+  public Filter getFilter() {
+    return filter;
   }
 
   public GridComponentDescription getFooter() {
     return footer;
   }
 
-  public String getForm() {
-    return form;
-  }
-
   public GridComponentDescription getHeader() {
     return header;
+  }
+
+  public String getIdName() {
+    return idName;
   }
 
   public List<ExtendedProperty> getInfo() {
@@ -247,9 +289,12 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
 
     PropertyUtils.addProperties(info, false,
         "Name", getName(),
-        "View Name", getViewName(),
         "Caption", getCaption(),
-        "Read Only", isReadOnly(),
+        "View Name", getViewName(),
+        "Id Name", getIdName(),
+        "Version Name", getVersionName(),
+        "Filter", getFilter(),
+        "Order", getOrder(),
         "Has Headers", hasHeaders(),
         "Has Footers", hasFooters(),
         "Async Threshold", getAsyncThreshold(),
@@ -257,8 +302,11 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         "Search Threshold", getSearchThreshold(),
         "Initial Row Set Size", getInitialRowSetSize(),
         "Page Size", getPageSize(),
+        "Read Only", isReadOnly(),
+        "New Row Form", getNewRowForm(),
         "New Row Columns", getNewRowColumns(),
-        "Form", getForm(),
+        "Edit Form", getEditForm(),
+        "Edit Columns", getEditColumns(),
         "Edit Mode", getEditMode(),
         "Show Column Widths", showColumnWidths(),
         "Min Column Width", getMinColumnWidth(),
@@ -330,6 +378,14 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
     return newRowColumns;
   }
 
+  public String getNewRowForm() {
+    return newRowForm;
+  }
+
+  public Order getOrder() {
+    return order;
+  }
+
   public Integer getPageSize() {
     return pageSize;
   }
@@ -356,6 +412,10 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
 
   public Integer getSearchThreshold() {
     return searchThreshold;
+  }
+
+  public String getVersionName() {
+    return versionName;
   }
 
   public String getViewName() {
@@ -472,14 +532,32 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         case SHOW_COLUMN_WIDTHS:
           arr[i++] = showColumnWidths();
           break;
-        case FORM:
-          arr[i++] = getForm();
+        case NEW_ROW_FORM:
+          arr[i++] = getNewRowForm();
+          break;
+        case EDIT_FORM:
+          arr[i++] = getEditForm();
+          break;
+        case EDIT_COLUMNS:
+          arr[i++] = getEditColumns();
           break;
         case EDIT_MODE:
           arr[i++] = getEditMode();
           break;
         case INITIAL_ROW_SET_SIZE:
           arr[i++] = getInitialRowSetSize();
+          break;
+        case FILTER:
+          arr[i++] = getFilter();
+          break;
+        case ORDER:
+          arr[i++] = getOrder();
+          break;
+        case ID_NAME:
+          arr[i++] = getIdName();
+          break;
+        case VERSION_NAME:
+          arr[i++] = getVersionName();
           break;
       }
     }
@@ -505,20 +583,30 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
     setAsyncThreshold(DataUtils.getDefaultAsyncThreshold());
     setSearchThreshold(DataUtils.getDefaultSearchThreshold());
     setPagingThreshold(DataUtils.getDefaultPagingThreshold());
+    
+    setInitialRowSetSize(DataUtils.getMaxInitialRowSetSize());
 
     setPageSize(DataUtils.getDefaultPageSize());
+  }
+
+  public void setEditColumns(String editColumns) {
+    this.editColumns = editColumns;
+  }
+
+  public void setEditForm(String editForm) {
+    this.editForm = editForm;
   }
 
   public void setEditMode(String editMode) {
     this.editMode = editMode;
   }
 
-  public void setFooter(GridComponentDescription footer) {
-    this.footer = footer;
+  public void setFilter(Filter filter) {
+    this.filter = filter;
   }
 
-  public void setForm(String form) {
-    this.form = form;
+  public void setFooter(GridComponentDescription footer) {
+    this.footer = footer;
   }
 
   public void setHasFooters(Boolean hasFooters) {
@@ -547,6 +635,14 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
 
   public void setNewRowColumns(String newRowColumns) {
     this.newRowColumns = newRowColumns;
+  }
+
+  public void setNewRowForm(String newRowForm) {
+    this.newRowForm = newRowForm;
+  }
+
+  public void setOrder(Order order) {
+    this.order = order;
   }
 
   public void setPageSize(Integer pageSize) {
@@ -589,8 +685,16 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
     return showColumnWidths;
   }
 
+  private void setIdName(String idName) {
+    this.idName = idName;
+  }
+
   private void setName(String name) {
     this.name = name;
+  }
+
+  private void setVersionName(String versionName) {
+    this.versionName = versionName;
   }
 
   private void setViewName(String viewName) {

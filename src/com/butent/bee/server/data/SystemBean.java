@@ -836,7 +836,7 @@ public class SystemBean {
         BeeView vw = getDefaultView(relTbl, false, set);
         char join = JoinType.LEFT.getJoinChar();
 
-        for (String colName : vw.getColumns()) {
+        for (String colName : vw.getColumnNames()) {
           view.addColumn(fld + colName, fld + join + vw.getExpression(colName).replace('.', join),
               null, tableCache);
         }

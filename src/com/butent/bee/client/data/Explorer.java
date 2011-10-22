@@ -167,8 +167,8 @@ public class Explorer implements HandlesDeleteEvents, RowInsertEvent.Handler {
       @Override
       public void onSelectionChange(SelectionChangeEvent event) {
         DataInfo info = selector.getSelectedObject();
-        if (info != null && selector.isSelected(info)) {
-          GridFactory.openGrid(info);
+        if (info != null && selector.isSelected(info) && info.getRowCount() >= 0) {
+          GridFactory.openGrid(info.getName());
           selector.setSelected(info, false);
         }
       }

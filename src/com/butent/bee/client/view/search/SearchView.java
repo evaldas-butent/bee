@@ -13,5 +13,6 @@ import java.util.List;
  */
 
 public interface SearchView extends View, HasChangeHandlers {
-  Filter getFilter(List<? extends IsColumn> columns);
+
+  Filter getFilter(List<? extends IsColumn> columns, String idColumnName, String versionColumnName);
 }

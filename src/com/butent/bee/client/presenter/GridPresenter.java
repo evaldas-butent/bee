@@ -24,6 +24,7 @@ import com.butent.bee.client.view.HasSearch;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.ReadyForUpdateEvent;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
+import com.butent.bee.client.view.grid.GridCallback;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.search.SearchView;
 import com.butent.bee.shared.Assert;
@@ -130,33 +131,26 @@ public class GridPresenter implements Presenter, ReadyForInsertEvent.Handler,
     }
   }
 
-  private final String viewName;
-  private final boolean async;
-  private final List<BeeColumn> dataColumns;
-
   private final GridContainerView gridContainer;
   private final Provider dataProvider;
 
   private final Set<HandlerRegistration> filterChangeHandlers = Sets.newHashSet();
   private Filter lastFilter = null;
 
-  public GridPresenter(String viewName, int rc, BeeRowSet rowSet, boolean async,
-      GridDescription gridDescription, boolean isChild) {
-    this.viewName = viewName;
-    this.async = async;
-    this.dataColumns = rowSet.getColumns();
+  public GridPresenter(String viewName, int rowCount, BeeRowSet rowSet, boolean async,
+      GridDescription gridDescription, GridCallback gridCallback, boolean isChild) {
 
-    int rowCount = async ? rc : rowSet.getNumberOfRows();
-
-    this.gridContainer = createView(viewName, dataColumns, rowCount, rowSet,
-        gridDescription, isChild);
-    this.dataProvider = createProvider(gridContainer, viewName, rowSet, async);
+    this.gridContainer = createView(gridDescription, rowSet.getColumns(), rowCount, rowSet,
+        gridCallback, isChild);
+    this.dataProvider = createProvider(gridContainer, viewName, rowSet.getColumns(),
+        gridDescription.getIdName(), gridDescription.getVersionName(), gridDescription.getFilter(),
+        rowSet, async);
 
     bind();
   }
 
   public List<BeeColumn> getDataColumns() {
-    return dataColumns;
+    return getDataProvider().getColumns();
   }
 
   public Provider getDataProvider() {
@@ -218,10 +212,6 @@ public class GridPresenter implements Presenter, ReadyForInsertEvent.Handler,
       default:
         BeeKeeper.getLog().info(action, "not implemented");
     }
-  }
-
-  public boolean isAsync() {
-    return async;
   }
 
   public void onReadyForUpdate(ReadyForUpdateEvent event) {
@@ -325,26 +315,27 @@ public class GridPresenter implements Presenter, ReadyForInsertEvent.Handler,
     view.getContent().addSaveChangesHandler(this);
   }
 
-  private Provider createProvider(GridContainerView view, String viewName, BeeRowSet rowSet,
+  private Provider createProvider(GridContainerView view, String viewName, List<BeeColumn> columns,
+      String idColumnName, String versionColumnName, Filter dataFilter, BeeRowSet rowSet,
       boolean isAsync) {
     Provider provider;
     GridView display = view.getContent();
 
     if (isAsync) {
-      provider = new AsyncProvider(display.getGrid(), viewName);
+      provider = new AsyncProvider(display.getGrid(), viewName, columns, 
+          idColumnName, versionColumnName, dataFilter);
     } else {
-      provider = new CachedProvider(display.getGrid(), viewName, rowSet);
+      provider = new CachedProvider(display.getGrid(), viewName, columns, 
+          idColumnName, versionColumnName, dataFilter, rowSet);
     }
     return provider;
   }
 
-  private GridContainerView createView(String dataName, List<BeeColumn> columns, int rc,
-      BeeRowSet rowSet, GridDescription gridDescription, boolean isChild) {
-    GridContainerView view = new GridContainerImpl();
+  private GridContainerView createView(GridDescription gridDescription, List<BeeColumn> columns,
+      int rowCount, BeeRowSet rowSet, GridCallback gridCallback, boolean isChild) {
 
-    String caption = (gridDescription == null)
-        ? dataName : BeeUtils.ifString(gridDescription.getCaption(), dataName);
-    view.create(caption, columns, rc, rowSet, gridDescription, isChild);
+    GridContainerView view = new GridContainerImpl();
+    view.create(gridDescription, columns, rowCount, rowSet, gridCallback, isChild);
 
     return view;
   }
@@ -380,7 +371,7 @@ public class GridPresenter implements Presenter, ReadyForInsertEvent.Handler,
   }
 
   private String getViewName() {
-    return viewName;
+    return getDataProvider().getViewName();
   }
   
   private void setLoadingState(LoadingStateChangeEvent.LoadingState loadingState) {
@@ -411,7 +402,8 @@ public class GridPresenter implements Presenter, ReadyForInsertEvent.Handler,
 
     List<Filter> filters = Lists.newArrayListWithCapacity(searchers.size());
     for (SearchView search : searchers) {
-      Filter flt = search.getFilter(getDataColumns());
+      Filter flt = search.getFilter(getDataColumns(), getDataProvider().getIdColumnName(),
+          getDataProvider().getVersionColumnName());
       if (flt != null && !filters.contains(flt)) {
         filters.add(flt);
       }
@@ -435,6 +427,7 @@ public class GridPresenter implements Presenter, ReadyForInsertEvent.Handler,
     }
 
     lastFilter = filter;
-    Queries.getRowCount(getViewName(), filter, new FilterCallback(filter));
+    Queries.getRowCount(getViewName(), getDataProvider().getQueryFilter(filter),
+        new FilterCallback(filter));
   }
 }

@@ -106,7 +106,7 @@ public interface IsTable<RowType extends IsRow, ColType extends IsColumn> extend
 
   void setColumnProperties(int colIndex, CustomProperties properties);
 
-  void setColumnProperty(int colIndex, String name, Object value);
+  void setColumnProperty(int colIndex, String name, String value);
 
   void setColumns(List<ColType> columns);
 
@@ -114,17 +114,17 @@ public interface IsTable<RowType extends IsRow, ColType extends IsColumn> extend
 
   void setProperties(int rowIndex, int colIndex, CustomProperties properties);
 
-  void setProperty(int rowIndex, int colIndex, String name, Object value);
+  void setProperty(int rowIndex, int colIndex, String name, String value);
 
   void setRowProperties(int rowIndex, CustomProperties properties);
 
-  void setRowProperty(int rowIndex, String name, Object value);
+  void setRowProperty(int rowIndex, String name, String value);
 
   void setRows(Collection<RowType> rows);
 
   void setTableProperties(CustomProperties properterties);
 
-  void setTableProperty(String propertyKey, Object propertyValue);
+  void setTableProperty(String propertyKey, String propertyValue);
 
   void setValue(int rowIndex, int colIndex, Boolean value);
 

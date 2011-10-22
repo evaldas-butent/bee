@@ -29,7 +29,7 @@ public interface GridView extends View, NotificationListener,
   void applyOptions(String options);
 
   void create(List<BeeColumn> dataColumns, int rowCount, BeeRowSet rowSet,
-      GridDescription gridDescription, boolean hasSearch);
+      GridDescription gridDescription, GridCallback gridCallback, boolean hasSearch);
 
   int estimatePageSize(int containerWidth, int containerHeight);
   

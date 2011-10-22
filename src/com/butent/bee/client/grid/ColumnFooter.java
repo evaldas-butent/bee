@@ -3,18 +3,20 @@ package com.butent.bee.client.grid;
 import com.google.gwt.cell.client.ValueUpdater;
 import com.google.gwt.user.cellview.client.Header;
 
+import java.util.List;
+
 /**
  * Creates new footer cell.
  */
 
 public class ColumnFooter extends Header<String> {
 
-  private final String source;
+  private final List<String> sources;
   private String value = null;
 
-  public ColumnFooter(String source, final ValueUpdater<String> valueUpdater) {
+  public ColumnFooter(List<String> sources, final ValueUpdater<String> valueUpdater) {
     super(new FooterCell());
-    this.source = source;
+    this.sources = sources;
 
     setUpdater(new ValueUpdater<String>() {
       public void update(String newValue) {
@@ -26,8 +28,8 @@ public class ColumnFooter extends Header<String> {
     });
   }
 
-  public String getSource() {
-    return source;
+  public List<String> getSources() {
+    return sources;
   }
 
   @Override

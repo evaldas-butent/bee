@@ -5,6 +5,7 @@ import com.google.gwt.view.client.Range;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.cache.CachingPolicy;
@@ -68,8 +69,9 @@ public class AsyncProvider extends Provider {
   
   private final List<Integer> pendingRequests = Lists.newArrayList();
 
-  public AsyncProvider(HasDataTable display, String viewName) {
-    super(display, viewName);
+  public AsyncProvider(HasDataTable display, String viewName, List<BeeColumn> columns,
+      String idColumnName, String versionColumnName, Filter dataFilter) {
+    super(display, viewName, columns, idColumnName, versionColumnName, dataFilter);
   }
 
   public CachingPolicy getCachingPolicy() {

@@ -147,10 +147,11 @@ public class RemoteCall {
         if (rs == null && !BeeUtils.isEmpty(prm.filter)) {
           List<IsColumn> columns = Lists.newArrayList();
 
-          for (String col : view.getColumns()) {
+          for (String col : view.getColumnNames()) {
             columns.add(new BeeColumn(view.getType(col).toValueType(), col));
           }
-          filter = DataUtils.parseCondition(prm.filter, columns);
+          filter = DataUtils.parseCondition(prm.filter, columns, view.getSourceIdName(),
+              view.getSourceVersionName());
 
           if (filter == null) {
             rs = "Wrong filter: " + prm.filter;

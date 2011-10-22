@@ -698,8 +698,13 @@ public class UiServiceBean {
     String where = reqInfo.getParameter(Service.VAR_VIEW_WHERE);
     String sort = reqInfo.getParameter(Service.VAR_VIEW_ORDER);
 
+    String size = reqInfo.getParameter(Service.VAR_VIEW_SIZE);
+    String rowId = reqInfo.getParameter(Service.VAR_VIEW_ROW_ID);
+
     IsCondition condition = null;
-    if (!BeeUtils.isEmpty(where)) {
+    if (!BeeUtils.isEmpty(rowId)) {
+      condition = sys.getView(viewName).getRowCondition(BeeUtils.toLong(rowId)); 
+    } else if (!BeeUtils.isEmpty(where)) {
       condition = sys.getViewCondition(viewName, Filter.restore(where));
     }
 
@@ -712,8 +717,20 @@ public class UiServiceBean {
     if (!BeeUtils.isEmpty(columns)) {
       cols = columns.split(Service.VIEW_COLUMN_SEPARATOR);
     }
+    
+    int cnt = BeeConst.UNDEF;
+    if (!BeeUtils.isEmpty(size)) {
+      cnt = sys.getViewSize(viewName, condition);
+      if (cnt < BeeUtils.toInt(size)) {
+        limit = BeeConst.UNDEF;
+      }
+    }
 
     BeeRowSet res = sys.getViewData(viewName, condition, order, limit, offset, cols);
+    if (cnt >= 0 && res != null) {
+      res.setTableProperty(Service.VAR_VIEW_SIZE, BeeUtils.toString(cnt));
+    }
+
     return ResponseObject.response(res);
   }
 

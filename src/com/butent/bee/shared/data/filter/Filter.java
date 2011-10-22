@@ -19,6 +19,10 @@ import java.util.List;
 public abstract class Filter implements BeeSerializable, Transformable, RowFilter {
 
   public static Filter restore(String s) {
+    if (BeeUtils.isEmpty(s)) {
+      return null;
+    }
+
     String[] arr = Codec.beeDeserializeCollection(s);
     Assert.lengthEquals(arr, 2);
     String clazz = arr[0];

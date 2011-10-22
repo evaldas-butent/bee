@@ -2,6 +2,7 @@ package com.butent.bee.server.data;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.google.common.primitives.Ints;
 
 import com.butent.bee.server.data.BeeTable.BeeField;
@@ -25,6 +26,7 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.IdFilter;
 import com.butent.bee.shared.data.filter.NegationFilter;
 import com.butent.bee.shared.data.filter.VersionFilter;
+import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.ExtendedProperty;
 import com.butent.bee.shared.utils.LogUtils;
@@ -33,6 +35,7 @@ import com.butent.bee.shared.utils.PropertyUtils;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 
 /**
@@ -142,7 +145,7 @@ public class BeeView implements HasExtendedInfo {
     return columns.size();
   }
 
-  public Collection<String> getColumns() {
+  public Collection<String> getColumnNames() {
     Collection<String> cols = Lists.newArrayList();
 
     for (String[] col : columns.values()) {
@@ -346,6 +349,10 @@ public class BeeView implements HasExtendedInfo {
     return null;
   }
 
+  public IsCondition getRowCondition(long rowId) {
+    return SqlUtils.equal(source, sourceIdName, rowId);
+  }
+  
   public String getSource() {
     return source;
   }
@@ -386,6 +393,30 @@ public class BeeView implements HasExtendedInfo {
     return readOnly;
   }
 
+  public Filter parseFilter(String filter) {
+    Assert.notEmpty(filter);
+    
+    List<IsColumn> cols = Lists.newArrayListWithCapacity(columns.size());
+    for (String col : columns.keySet()) {
+      cols.add(new BeeColumn(getType(col).toValueType(), col));
+    }
+
+    Filter flt = DataUtils.parseCondition(filter, cols, getSourceIdName(), getSourceVersionName());
+    if (flt == null) {
+      LogUtils.warning(LogUtils.getDefaultLogger(), "Error in filter expression:", filter);
+    }
+    return flt;
+  }
+  
+  public Order parseOrder(String input) {
+    Assert.notEmpty(input);
+    
+    Set<String> colNames = Sets.newHashSet(getSourceIdName(), getSourceVersionName());
+    colNames.addAll(getColumnNames());
+    
+    return Order.parse(input, colNames);
+  }
+  
   void addColumn(String colName, String expression, String locale, Map<String, BeeTable> tables) {
     Assert.notEmpty(colName);
     Assert.notEmpty(expression);
@@ -421,18 +452,11 @@ public class BeeView implements HasExtendedInfo {
     String strFilter = null;
 
     if (!BeeUtils.isEmpty(filter)) {
-      List<IsColumn> cols = Lists.newArrayListWithCapacity(columns.size());
-
-      for (String col : columns.keySet()) {
-        cols.add(new BeeColumn(getType(col).toValueType(), col));
-      }
-      Filter flt = DataUtils.parseCondition(filter, cols);
+      Filter flt = parseFilter(filter);
 
       if (flt != null) {
         query.setWhere(getCondition(flt));
         strFilter = flt.transform();
-      } else {
-        LogUtils.warning(LogUtils.getDefaultLogger(), "Error in filter expression:", filter);
       }
     }
     this.sourceFilter = strFilter;

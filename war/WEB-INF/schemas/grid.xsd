@@ -25,11 +25,13 @@
       <xs:element name="rowValidation" type="bee:calcType" minOccurs="0" />
     </xs:sequence>
     <xs:attribute name="name" type="bee:nameType" use="required" />
-    <xs:attribute name="viewName" type="bee:nameType" use="required" />
     <xs:attribute name="caption" type="xs:string" />
-    <xs:attribute name="readOnly" type="xs:boolean" />
+    <xs:attribute name="viewName" type="bee:nameType" use="required" />
+    <xs:attribute name="filter" type="xs:normalizedString" />
+    <xs:attribute name="order" type="xs:normalizedString" />
     <xs:attribute name="minColumnWidth" type="bee:widthType" />
     <xs:attribute name="maxColumnWidth" type="bee:widthType" />
+    <xs:attribute name="showColumnWidths" type="xs:boolean" />
     <xs:attribute name="hasHeaders" type="xs:boolean" default="true" />
     <xs:attribute name="hasFooters" type="xs:boolean" default="true" />
     <xs:attribute name="asyncThreshold" type="xs:nonNegativeInteger" default="100" />
@@ -37,10 +39,12 @@
     <xs:attribute name="searchThreshold" type="xs:nonNegativeInteger" default="2" />
     <xs:attribute name="initialRowSetSize" type="xs:positiveInteger" />
     <xs:attribute name="pageSize" type="xs:positiveInteger" default="15" />
-    <xs:attribute name="newRowColumns" type="xs:normalizedString" />
-    <xs:attribute name="showColumnWidths" type="xs:boolean" />
-    <xs:attribute name="form" type="bee:nameType" />
+    <xs:attribute name="readOnly" type="xs:boolean" />
     <xs:attribute name="editMode" type="xs:normalizedString" />
+    <xs:attribute name="newRowForm" type="bee:nameType" />
+    <xs:attribute name="newRowColumns" type="xs:normalizedString" />
+    <xs:attribute name="editForm" type="bee:nameType" />
+    <xs:attribute name="editColumns" type="xs:normalizedString" />
   </xs:complexType>
 
   <xs:complexType name="baseColumn">
@@ -86,6 +90,8 @@
         <xs:attribute name="type" type="bee:valueType" use="required" />
         <xs:attribute name="precision" type="xs:positiveInteger" />
         <xs:attribute name="scale" type="xs:unsignedByte" />
+        <xs:attribute name="sortBy" type="xs:normalizedString" />
+        <xs:attribute name="searchBy" type="xs:normalizedString" />
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>

@@ -139,6 +139,9 @@ public class Service {
   public static final String VAR_VIEW_ROWS = RPC_VAR_PREFIX + "view_rows";
   public static final String VAR_VIEW_COLUMNS = RPC_VAR_PREFIX + "view_columns";
 
+  public static final String VAR_VIEW_SIZE = RPC_VAR_PREFIX + "view_size";
+  public static final String VAR_VIEW_ROW_ID = RPC_VAR_PREFIX + "view_row_id";
+
   public static final String XML_TAG_DATA = RPC_VAR_PREFIX + "data";
 
   public static final String VIEW_COLUMN_SEPARATOR = " ";

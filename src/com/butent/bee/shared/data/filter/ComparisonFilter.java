@@ -2,7 +2,6 @@ package com.butent.bee.shared.data.filter;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.DateTime;
-import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.value.ValueType;
@@ -24,10 +23,6 @@ public abstract class ComparisonFilter extends Filter {
    */
   private enum Serial {
     COLUMN, OPERATOR, VALUE
-  }
-
-  public static Filter compareId(long value) {
-    return new IdFilter(DataUtils.DEFAULT_ID_NAME, Operator.EQ, value);
   }
 
   public static Filter compareId(String column, Operator op, String value) {

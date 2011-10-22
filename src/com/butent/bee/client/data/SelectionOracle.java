@@ -396,7 +396,7 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
     for (Integer index : getSearchColumns()) {
       Filter flt = DataUtils.parseExpression(BeeUtils.concat(1,
           getViewColumns().get(index), searchType == null ? "" : searchType.toTextString(), query),
-          getDataColumns());
+          getDataColumns(), null, null);
 
       if (flt == null) {
         continue;
@@ -498,7 +498,7 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
   }
 
   private void initViewData() {
-    Queries.getRowSet(getViewName(), getViewColumns(), getViewOrder(),
+    Queries.getRowSet(getViewName(), getViewColumns(), null, getViewOrder(),
         new Queries.RowSetCallback() {
           public void onFailure(String[] reason) {
           }
