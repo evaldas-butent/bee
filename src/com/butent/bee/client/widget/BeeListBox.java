@@ -11,11 +11,9 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.ListBox;
 
-import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.event.EventUtils;
-import com.butent.bee.client.event.HasBeeChangeHandler;
 import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.edit.EditorFactory;
@@ -34,7 +32,7 @@ import java.util.Collection;
  * Implements a list box user interface component that presents a list of choices to the user.
  */
 
-public class BeeListBox extends ListBox implements Editor, HasItems, HasBeeChangeHandler {
+public class BeeListBox extends ListBox implements Editor, HasItems {
   
   public static int changeTimeout = 200;
 
@@ -187,22 +185,22 @@ public class BeeListBox extends ListBox implements Editor, HasItems, HasBeeChang
             return;
           }
       }
-    }
-    super.onBrowserEvent(event);
-  }
 
-  public void onChange() {
-    if (getSource() != null) {
-      getSource().setValue(getValue(getSelectedIndex()));
-    }
-    if (isEditing() && !isChangePending()) {
-      if (changeTimer != null && changeTimeout > 0) {
-        setChangePending(true);
-        changeTimer.schedule(changeTimeout);
-      } else {
-        fireEvent(new EditStopEvent(State.CHANGED));
+    } else if (EventUtils.isChange(event.getType())) {
+      if (getSource() != null) {
+        getSource().setValue(getValue(getSelectedIndex()));
+      }
+      if (isEditing() && !isChangePending()) {
+        if (changeTimer != null && changeTimeout > 0) {
+          setChangePending(true);
+          changeTimer.schedule(changeTimeout);
+        } else {
+          fireEvent(new EditStopEvent(State.CHANGED));
+        }
       }
     }
+    
+    super.onBrowserEvent(event);
   }
 
   public void setAllVisible() {
@@ -281,10 +279,6 @@ public class BeeListBox extends ListBox implements Editor, HasItems, HasBeeChang
     return null;
   }
 
-  private void addDefaultHandlers() {
-    BeeKeeper.getBus().addVch(this);
-  }
-
   private int getIndex(String text) {
     int index = BeeConst.UNDEF;
     if (text == null) {
@@ -316,7 +310,7 @@ public class BeeListBox extends ListBox implements Editor, HasItems, HasBeeChang
   private void init() {
     DomUtils.createId(this, getIdPrefix());
     setStyleName("bee-ListBox");
-    addDefaultHandlers();
+    sinkEvents(Event.ONCHANGE);
   }
 
   private void initEditor() {

@@ -288,6 +288,16 @@ public class BeeUtils {
     }
   }
 
+  public static int compare(long x1, long x2) {
+    if (x1 == x2) {
+      return BeeConst.COMPARE_EQUAL;
+    } else if (x1 < x2) {
+      return BeeConst.COMPARE_LESS;
+    } else {
+      return BeeConst.COMPARE_MORE;
+    }
+  }
+  
   /**
    * Compares objects {@code x1} and {@code x2}. This method allows to compare values even if one or
    * both of the specified values are {@code null}.

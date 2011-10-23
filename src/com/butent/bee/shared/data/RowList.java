@@ -57,7 +57,7 @@ public abstract class RowList<RowType extends IsRow, ColType extends IsColumn> e
     Assert.isTrue(sortInfo.size() >= 1);
 
     if (getNumberOfRows() > 1) {
-      Collections.sort(getRows().getList(), new RowOrdering(sortInfo));
+      Collections.sort(getRows().getList(), new RowOrdering<RowType>(getColumns(), sortInfo));
     }
   }
 

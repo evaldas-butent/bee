@@ -3,9 +3,7 @@ package com.butent.bee.client.widget;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.FileUpload;
 
-import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.dom.DomUtils;
-import com.butent.bee.client.event.HasBeeChangeHandler;
 import com.butent.bee.shared.HasId;
 import com.butent.bee.shared.HasStringValue;
 
@@ -14,7 +12,7 @@ import com.butent.bee.shared.HasStringValue;
  * file upload.
  */
 
-public class BeeFileUpload extends FileUpload implements HasId, HasBeeChangeHandler {
+public class BeeFileUpload extends FileUpload implements HasId {
 
   private HasStringValue source = null;
 
@@ -59,12 +57,7 @@ public class BeeFileUpload extends FileUpload implements HasId, HasBeeChangeHand
     this.source = source;
   }
 
-  private void addDefaultHandlers() {
-    BeeKeeper.getBus().addVch(this);
-  }
-
   private void init() {
     DomUtils.createId(this, getIdPrefix());
-    addDefaultHandlers();
   }
 }

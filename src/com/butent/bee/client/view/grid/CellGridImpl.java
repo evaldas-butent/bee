@@ -483,29 +483,35 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       }
 
       String caption = BeeUtils.ifString(columnDescr.getCaption(), columnId);
-      List<String> sources = Lists.newArrayList();
-      dataIndex = BeeConst.UNDEF;
+
+      String source = columnDescr.getSource();
+      if (!BeeUtils.isEmpty(source)) {
+        source = DataUtils.getColumnName(source, dataCols, idName, versionName);
+        if (BeeUtils.isEmpty(source)) {
+          BeeKeeper.getLog().warning("columnId:", columnId, "source:", columnDescr.getSource(),
+              "source not found");
+          continue;
+        }
+      }
       
-      boolean sortable = BeeUtils.unbox(columnDescr.isSortable());
       CellType cellType = columnDescr.getCellType();
 
+      dataIndex = BeeConst.UNDEF;
       column = null;
 
       switch (colType) {
         case ID:
           column = new RowIdColumn();
-          sources.add(idName);
+          source = idName;
           break;
 
         case VERSION:
           column = new RowVersionColumn();
-          sources.add(versionName);
+          source = versionName;
           break;
 
         case DATA:
         case RELATED:
-          String source = columnDescr.getSource();
-          
           for (int i = 0; i < dataCols.size(); i++) {
             BeeColumn dataColumn = dataCols.get(i);
             if (BeeUtils.same(source, dataColumn.getId())) {
@@ -527,7 +533,6 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
               }
 
               dataIndex = i;
-              sources.add(source);
               break;
             }
           }
@@ -550,23 +555,6 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
                 calcColumn.setNumberFormat(Format.getDecimalFormat(columnDescr.getScale()));
               }
             }
-            
-            if (!BeeUtils.isEmpty(columnDescr.getSearchBy())) {
-              calcColumn.setSearchBy(DataUtils.parseColumns(columnDescr.getSearchBy(), dataCols,
-                  idName, versionName));
-              if (calcColumn.getSearchBy() != null) {
-                sources.addAll(calcColumn.getSearchBy());
-              }
-            }
-
-            if (!BeeUtils.isEmpty(columnDescr.getSortBy())) {
-              calcColumn.setSortBy(DataUtils.parseColumns(columnDescr.getSearchBy(), dataCols,
-                  idName, versionName));
-            }
-            if (sortable) {
-              sortable = !BeeUtils.isEmpty(calcColumn.getSortBy());
-            }
-            
             column = calcColumn;
           }
           break;
@@ -577,7 +565,21 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
         continue;
       }
 
-      if (sortable) {
+      if (!BeeUtils.isEmpty(columnDescr.getSearchBy())) {
+        column.setSearchBy(DataUtils.parseColumns(columnDescr.getSearchBy(), dataCols,
+            idName, versionName));
+      } else if (!BeeUtils.isEmpty(source)) {
+        column.setSearchBy(Lists.newArrayList(source));
+      }
+
+      if (!BeeUtils.isEmpty(columnDescr.getSortBy())) {
+        column.setSortBy(DataUtils.parseColumns(columnDescr.getSortBy(), dataCols,
+            idName, versionName));
+      } else if (!BeeUtils.isEmpty(source)) {
+        column.setSortBy(Lists.newArrayList(source));
+      }
+      
+      if (BeeUtils.isTrue(columnDescr.isSortable()) && !BeeUtils.isEmpty(column.getSortBy())) {
         column.setSortable(true);
       }
       
@@ -597,8 +599,8 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       }
 
       if (hasFooters && BeeUtils.isTrue(columnDescr.hasFooter())
-          && !BeeUtils.isEmpty(sources)) {
-        footer = new ColumnFooter(sources, getFilterUpdater());
+          && !BeeUtils.isEmpty(column.getSearchBy())) {
+        footer = new ColumnFooter(column.getSearchBy(), getFilterUpdater());
       } else {
         footer = null;
       }
@@ -608,7 +610,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
         continue;
       }
       
-      getGrid().addColumn(columnId, dataIndex, column, header, footer);
+      getGrid().addColumn(columnId, dataIndex, source, column, header, footer);
       getGrid().setColumnInfo(columnId, columnDescr, dataCols);
     }
 
@@ -1266,9 +1268,9 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     }
     
     for (Order.Column oc : viewOrder.getColumns()) {
-      String columnId = getGrid().getColumnIdBySource(oc.getSource());
+      String columnId = getGrid().getColumnIdBySource(oc.getName());
       if (!BeeUtils.isEmpty(columnId)) {
-        gridOrder.add(columnId, oc.getSource(), oc.isAscending());
+        gridOrder.add(columnId, oc.getSources(), oc.isAscending());
       }
     }
   }

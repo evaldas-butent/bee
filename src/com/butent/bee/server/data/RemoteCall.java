@@ -168,7 +168,7 @@ public class RemoteCall {
               rs = "Unrecognized order column: " + col;
               break;
             }
-            order.add(ord, col, !BeeUtils.isPrefix(ord, prfx));
+            order.add(ord, !BeeUtils.isPrefix(ord, prfx));
           }
         }
         if (rs == null) {

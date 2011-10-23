@@ -8,10 +8,8 @@ import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.TextBoxBase;
 
-import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
-import com.butent.bee.client.event.HasBeeValueChangeHandler;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.view.edit.Editor;
@@ -25,8 +23,7 @@ import com.butent.bee.shared.utils.BeeUtils;
  * Implements a text box that allows a single line of text to be entered.
  */
 
-public class InputText extends TextBoxBase implements Editor, HasBeeValueChangeHandler<String>,
-    HasCharacterFilter {
+public class InputText extends TextBoxBase implements Editor, HasCharacterFilter {
 
   private HasStringValue source = null;
 
@@ -35,6 +32,8 @@ public class InputText extends TextBoxBase implements Editor, HasBeeValueChangeH
   private boolean nullable = true;
 
   private boolean editing = false;
+  
+  private String oldValue = null;
 
   public InputText() {
     super(Document.get().createTextInputElement());
@@ -88,6 +87,10 @@ public class InputText extends TextBoxBase implements Editor, HasBeeValueChangeH
     }
   }
 
+  public String getOldValue() {
+    return oldValue;
+  }
+
   public HasStringValue getSource() {
     return source;
   }
@@ -110,18 +113,19 @@ public class InputText extends TextBoxBase implements Editor, HasBeeValueChangeH
 
   @Override
   public void onBrowserEvent(Event event) {
-    if (event.getTypeInt() == Event.ONKEYPRESS && !acceptChar((char) event.getCharCode())) {
+    if (EventUtils.isKeyPress(event.getType()) && !acceptChar((char) event.getCharCode())) {
       EventUtils.eatEvent(event);
-    } else {
-      super.onBrowserEvent(event);
+      return;
     }
-  }
+    
+    super.onBrowserEvent(event);
 
-  public boolean onValueChange(String value) {
-    if (source != null) {
-      source.setValue(value);
+    if (EventUtils.isChange(event.getType())) {
+      if (getSource() != null) {
+        getSource().setValue(getValue());
+      }
+      setOldValue(getValue());
     }
-    return true;
   }
 
   public void setCharMatcher(CharMatcher charMatcher) {
@@ -143,18 +147,24 @@ public class InputText extends TextBoxBase implements Editor, HasBeeValueChangeH
   public void setNullable(boolean nullable) {
     this.nullable = nullable;
   }
-
+  
   public void setSource(HasStringValue source) {
     this.source = source;
   }
-  
+
+  @Override
+  public void setValue(String value, boolean fireEvents) {
+    super.setValue(value, fireEvents);
+    setOldValue(value);
+  }
+
   public void setVisibleLength(int length) {
     getInputElement().setSize(length);
   }
 
-  public void startEdit(String oldValue, char charCode, EditorAction onEntry) {
+  public void startEdit(String value, char charCode, EditorAction onEntry) {
     EditorAction action = (onEntry == null) ? getDefaultEntryAction() : onEntry;
-    UiHelper.doEditorAction(this, oldValue, charCode, action);
+    UiHelper.doEditorAction(this, value, charCode, action);
   }
 
   public String validate() {
@@ -164,11 +174,11 @@ public class InputText extends TextBoxBase implements Editor, HasBeeValueChangeH
   protected CharMatcher getDefaultCharMatcher() {
     return CharMatcher.inRange(BeeConst.CHAR_SPACE, Character.MAX_VALUE);
   }
-  
+
   protected EditorAction getDefaultEntryAction() {
     return EditorAction.REPLACE;
   }
-
+  
   protected String getDefaultStyleName() {
     return "bee-InputText";
   }
@@ -183,10 +193,6 @@ public class InputText extends TextBoxBase implements Editor, HasBeeValueChangeH
     }
   }
 
-  private void addDefaultHandlers() {
-    BeeKeeper.getBus().addStringVch(this);
-  }
-
   private InputElement getInputElement() {
     return getElement().cast();
   }
@@ -194,9 +200,12 @@ public class InputText extends TextBoxBase implements Editor, HasBeeValueChangeH
   private void init() {
     DomUtils.createId(this, getIdPrefix());
     setStyleName(getDefaultStyleName());
-    addDefaultHandlers();
 
     setCharMatcher(getDefaultCharMatcher());
-    sinkEvents(Event.ONKEYPRESS);
+    sinkEvents(Event.ONKEYPRESS | Event.ONCHANGE);
+  }
+
+  private void setOldValue(String oldValue) {
+    this.oldValue = oldValue;
   }
 }

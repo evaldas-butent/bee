@@ -2,9 +2,7 @@ package com.butent.bee.client;
 
 import com.google.common.collect.Lists;
 import com.google.gwt.event.dom.client.BlurEvent;
-import com.google.gwt.event.dom.client.HasChangeHandlers;
 import com.google.gwt.event.dom.client.HasClickHandlers;
-import com.google.gwt.event.logical.shared.HasValueChangeHandlers;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.web.bindery.event.shared.Event;
 import com.google.web.bindery.event.shared.Event.Type;
@@ -12,9 +10,7 @@ import com.google.web.bindery.event.shared.HandlerRegistration;
 import com.google.web.bindery.event.shared.SimpleEventBus;
 
 import com.butent.bee.client.event.BeeBlurHandler;
-import com.butent.bee.client.event.BeeChangeHandler;
 import com.butent.bee.client.event.BeeClickHandler;
-import com.butent.bee.client.event.BeeValueChangeHandler;
 import com.butent.bee.client.ui.CompositeService;
 import com.butent.bee.client.utils.XmlUtils;
 import com.butent.bee.shared.Assert;
@@ -36,14 +32,8 @@ import java.util.List;
  */
 
 public class EventManager implements Module {
+
   private BeeClickHandler clickHandler = null;
-
-  private BeeValueChangeHandler<Boolean> boolVch = null;
-  private BeeValueChangeHandler<String> stringVch = null;
-  private BeeValueChangeHandler<Integer> intVch = null;
-
-  private BeeChangeHandler vch = null;
-
   private BeeBlurHandler blurHandler = null;
 
   private final SimpleEventBus eventBus;
@@ -59,11 +49,6 @@ public class EventManager implements Module {
     } else {
       w.addHandler(ensureBlurHandler(), BlurEvent.getType());
     }
-  }
-
-  public void addBoolVch(HasValueChangeHandlers<Boolean> w) {
-    Assert.notNull(w);
-    w.addValueChangeHandler(ensureBoolVch());
   }
 
   public void addClickHandler(HasClickHandlers w) {
@@ -82,21 +67,6 @@ public class EventManager implements Module {
     Assert.notNull(source);
     Assert.notNull(handler);
     return eventBus.addHandlerToSource(type, source, handler);
-  }
-
-  public void addIntVch(HasValueChangeHandlers<Integer> w) {
-    Assert.notNull(w);
-    w.addValueChangeHandler(ensureIntVch());
-  }
-
-  public void addStringVch(HasValueChangeHandlers<String> w) {
-    Assert.notNull(w);
-    w.addValueChangeHandler(ensureStringVch());
-  }
-
-  public void addVch(HasChangeHandlers w) {
-    Assert.notNull(w);
-    w.addChangeHandler(ensureVch());
   }
 
   public boolean dispatchService(Stage stage, Event<?> event) {
@@ -338,38 +308,10 @@ public class EventManager implements Module {
     return blurHandler;
   }
 
-  private BeeValueChangeHandler<Boolean> ensureBoolVch() {
-    if (boolVch == null) {
-      boolVch = new BeeValueChangeHandler<Boolean>();
-    }
-    return boolVch;
-  }
-
   private BeeClickHandler ensureClickHandler() {
     if (clickHandler == null) {
       clickHandler = new BeeClickHandler();
     }
     return clickHandler;
-  }
-
-  private BeeValueChangeHandler<Integer> ensureIntVch() {
-    if (intVch == null) {
-      intVch = new BeeValueChangeHandler<Integer>();
-    }
-    return intVch;
-  }
-
-  private BeeValueChangeHandler<String> ensureStringVch() {
-    if (stringVch == null) {
-      stringVch = new BeeValueChangeHandler<String>();
-    }
-    return stringVch;
-  }
-
-  private BeeChangeHandler ensureVch() {
-    if (vch == null) {
-      vch = new BeeChangeHandler();
-    }
-    return vch;
   }
 }

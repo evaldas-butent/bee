@@ -301,22 +301,35 @@ public class SystemBean {
 
     if (order != null) {
       ss.resetOrder();
-      String idCol = getIdName(source);
+      String idCol = view.getSourceIdName();
+      String verCol = view.getSourceVersionName();
+      
+      String als;
+      String fld;
       boolean hasId = false;
 
-      for (Order.Column col : order.getColumns()) {
-        String als = view.getAlias(col.getSource());
+      for (Order.Column ordCol : order.getColumns()) {
+        for (String ordSrc : ordCol.getSources()) {
+          if (BeeUtils.same(ordSrc, idCol)) {
+            als = source;
+            fld = ordSrc;
+            hasId = true;
+          } else if (BeeUtils.same(ordSrc, verCol)) {
+            als = source;
+            fld = ordSrc;
+          } else if (view.hasColumn(ordSrc)) {
+            als = view.getAlias(ordSrc);
+            fld = view.getField(ordSrc);
+          } else {
+            LogUtils.warning(logger, "view: ", viewName, "order by:", ordSrc,
+                "column not reccognized");
+            continue;
+          }
 
-        if (!BeeUtils.isEmpty(als)) {
-          String fld = view.getField(col.getSource());
-
-          if (col.isAscending()) {
+          if (ordCol.isAscending()) {
             ss.addOrder(als, fld);
           } else {
             ss.addOrderDesc(als, fld);
-          }
-          if (!hasId) {
-            hasId = BeeUtils.same(fld, idCol) && BeeUtils.same(als, source);
           }
         }
       }
@@ -324,6 +337,7 @@ public class SystemBean {
         ss.addOrder(source, idCol);
       }
     }
+
     if (limit > 0) {
       ss.setLimit(limit);
     }

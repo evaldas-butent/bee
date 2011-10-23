@@ -215,12 +215,12 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
   private class ColumnInfo {
     private final String columnId;
     private final int dataIndex;
+    private final String source;
 
     private final AbstractColumn<?> column;
     private final ColumnHeader header;
     private final ColumnFooter footer;
 
-    private String source = null;
     private String caption = null;
 
     private int width = BeeConst.UNDEF;
@@ -239,10 +239,11 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
 
     private boolean colReadOnly = false;
 
-    private ColumnInfo(String columnId, int dataIndex,
+    private ColumnInfo(String columnId, int dataIndex, String source,
         AbstractColumn<?> column, ColumnHeader header, ColumnFooter footer) {
       this.columnId = columnId;
       this.dataIndex = dataIndex;
+      this.source = source;
 
       this.column = column;
       this.header = header;
@@ -388,6 +389,10 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     private int getMinWidth() {
       return minWidth;
     }
+    
+    private List<String> getSortBy() {
+      return getColumn().getSortBy();
+    }
 
     private String getSource() {
       return source;
@@ -493,10 +498,6 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
 
     private void setMinWidth(int minWidth) {
       this.minWidth = minWidth;
-    }
-
-    private void setSource(String source) {
-      this.source = source;
     }
 
     private void setWidth(int width) {
@@ -963,14 +964,14 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     return addHandler(handler, CellPreviewEvent.getType());
   }
 
-  public void addColumn(String columnId, int dataIndex, AbstractColumn<?> col,
-      ColumnHeader header) {
-    insertColumn(getColumnCount(), columnId, dataIndex, col, header, null);
+  public void addColumn(String columnId, int dataIndex, String source, 
+      AbstractColumn<?> col, ColumnHeader header) {
+    insertColumn(getColumnCount(), columnId, dataIndex, source, col, header, null);
   }
 
-  public void addColumn(String columnId, int dataIndex,
+  public void addColumn(String columnId, int dataIndex, String source,
       AbstractColumn<?> col, ColumnHeader header, ColumnFooter footer) {
-    insertColumn(getColumnCount(), columnId, dataIndex, col, header, footer);
+    insertColumn(getColumnCount(), columnId, dataIndex, source, col, header, footer);
   }
 
   public HandlerRegistration addEditStartHandler(EditStartEvent.Handler handler) {
@@ -1571,14 +1572,14 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     return getActiveRow() > 0 || getPageStart() > 0;
   }
 
-  public void insertColumn(int beforeIndex, String columnId, int dataIndex,
+  public void insertColumn(int beforeIndex, String columnId, int dataIndex, String source,
       AbstractColumn<?> column, ColumnHeader header, ColumnFooter footer) {
     if (beforeIndex != getColumnCount()) {
       checkColumnBounds(beforeIndex);
     }
     checkColumnId(columnId);
 
-    columns.add(beforeIndex, new ColumnInfo(columnId, dataIndex, column, header, footer));
+    columns.add(beforeIndex, new ColumnInfo(columnId, dataIndex, source, column, header, footer));
 
     Set<String> consumedEvents = Sets.newHashSet();
     {
@@ -2144,9 +2145,6 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     Assert.notNull(columnInfo);
     Assert.notNull(columnDescription);
 
-    if (columnDescription.getSource() != null) {
-      columnInfo.setSource(columnDescription.getSource());
-    }
     if (columnDescription.getCaption() != null) {
       columnInfo.setCaption(columnDescription.getCaption());
     }
@@ -4531,13 +4529,19 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
 
   private void updateOrder(String columnId, boolean hasModifiers) {
     Assert.notEmpty(columnId);
-    String source = BeeUtils.ifString(getColumnSource(columnId), columnId);
+    ColumnInfo columnInfo = getColumnInfo(columnId);
+    Assert.notNull(columnInfo);
+
+    List<String> sources = columnInfo.getSortBy();
+    if (BeeUtils.isEmpty(sources)) {
+      return;
+    }
 
     Order ord = getSortOrder();
     int size = ord.getSize();
 
     if (size <= 0) {
-      ord.add(columnId, source, true);
+      ord.add(columnId, sources, true);
       return;
     }
 
@@ -4546,7 +4550,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
       if (!hasModifiers) {
         ord.clear();
       }
-      ord.add(columnId, source, true);
+      ord.add(columnId, sources, true);
       return;
     }
 
@@ -4563,12 +4567,12 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
         }
       } else {
         ord.remove(columnId);
-        ord.add(columnId, source, true);
+        ord.add(columnId, sources, true);
       }
 
     } else if (size > 1) {
       ord.clear();
-      ord.add(columnId, source, true);
+      ord.add(columnId, sources, true);
     } else if (asc) {
       ord.setAscending(columnId, !asc);
     } else {

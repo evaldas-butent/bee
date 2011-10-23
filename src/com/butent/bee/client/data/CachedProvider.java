@@ -12,6 +12,7 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.IsTable;
+import com.butent.bee.shared.data.RowOrdering;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
 import com.butent.bee.shared.data.event.MultiDeleteEvent;
 import com.butent.bee.shared.data.event.RowDeleteEvent;
@@ -76,7 +77,7 @@ public class CachedProvider extends Provider {
       super.onCellUpdate(event);
     }
   }
-  
+
   @Override
   public void onFilterChanged(Filter newFilter, int rowCount) {
     applyFilter(newFilter);
@@ -115,13 +116,13 @@ public class CachedProvider extends Provider {
       applyFilter(getUserFilter());
     }
   }
-  
+
   @Override
   public void onRowUpdate(RowUpdateEvent event) {
     if (BeeUtils.same(event.getViewName(), getViewName())) {
       IsRow newRow = event.getRow();
       long id = newRow.getId();
-      
+
       for (IsRow oldRow : getTable().getRows()) {
         if (oldRow.getId() == id) {
           oldRow.setVersion(newRow.getVersion());
@@ -137,22 +138,33 @@ public class CachedProvider extends Provider {
 
   @Override
   public void onSort(SortEvent event) {
+    Order order = event.getOrder();
+    setOrder(order);
     if (getTable().getNumberOfRows() <= 1) {
       return;
     }
-    Order order = event.getOrder();
 
     if (order == null || order.getSize() <= 0) {
       getTable().sortByRowId(true);
     } else {
       List<Pair<Integer, Boolean>> sortList = Lists.newArrayList();
+      int index;
 
       for (Order.Column sortInfo : order.getColumns()) {
-        int index = getTable().getColumnIndex(sortInfo.getSource());
-        if (index < 0 || index > getTable().getNumberOfColumns()) {
-          BeeKeeper.getLog().warning("onSort: column id", sortInfo.getSource(), "not found");
+        for (String source : sortInfo.getSources()) {
+          if (BeeUtils.same(source, getIdColumnName())) {
+            index = RowOrdering.ID_INDEX;
+          } else if (BeeUtils.same(source, getVersionColumnName())) {
+            index = RowOrdering.VERSION_INDEX;
+          } else {
+            index = getTable().getColumnIndex(source);
+            if (index < 0) {
+              BeeKeeper.getLog().warning("onSort: source", source, "not found");
+              continue;
+            }
+          }
+          sortList.add(new Pair<Integer, Boolean>(index, sortInfo.isAscending()));
         }
-        sortList.add(new Pair<Integer, Boolean>(index, sortInfo.isAscending()));
       }
       if (!sortList.isEmpty()) {
         getTable().sort(sortList);
@@ -194,7 +206,7 @@ public class CachedProvider extends Provider {
     }
     getDisplay().setRowData(start, rowValues);
   }
-  
+
   @Override
   protected void onRangeChanged(boolean updateActiveRow) {
     updateDisplay(updateActiveRow);
@@ -206,7 +218,7 @@ public class CachedProvider extends Provider {
     if (BeeUtils.isEmpty(name)) {
       return;
     }
-    
+
     final int oldPageSize = getPageSize();
     final int oldTableSize = getTable().getNumberOfRows();
 
@@ -216,15 +228,15 @@ public class CachedProvider extends Provider {
 
       public void onSuccess(BeeRowSet rowSet) {
         Assert.notNull(rowSet);
-        
+
         setTable(rowSet);
         applyFilter(getUserFilter());
-        
+
         int newTableSize = rowSet.getNumberOfRows();
         if (oldPageSize > 0 && oldPageSize >= oldTableSize && newTableSize != oldTableSize) {
           getDisplay().setPageSize(newTableSize);
         }
-        
+
         updateDisplay(true);
       }
     });
@@ -244,12 +256,12 @@ public class CachedProvider extends Provider {
       }
     }
   }
-  
+
   private void deleteRow(long rowId) {
     getTable().removeRowById(rowId);
     if (filteredRowIds.contains(rowId)) {
       filteredRowIds.remove(rowId);
-      for (Iterator<IsRow> it = viewRows.iterator(); it.hasNext(); ) {
+      for (Iterator<IsRow> it = viewRows.iterator(); it.hasNext();) {
         if (it.next().getId() == rowId) {
           it.remove();
           break;
@@ -257,7 +269,7 @@ public class CachedProvider extends Provider {
       }
     }
   }
-  
+
   private Set<Long> getFilteredRowIds() {
     return filteredRowIds;
   }

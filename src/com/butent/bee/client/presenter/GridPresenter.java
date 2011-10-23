@@ -38,6 +38,7 @@ import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -143,8 +144,8 @@ public class GridPresenter implements Presenter, ReadyForInsertEvent.Handler,
     this.gridContainer = createView(gridDescription, rowSet.getColumns(), rowCount, rowSet,
         gridCallback, isChild);
     this.dataProvider = createProvider(gridContainer, viewName, rowSet.getColumns(),
-        gridDescription.getIdName(), gridDescription.getVersionName(), gridDescription.getFilter(),
-        rowSet, async);
+        gridDescription.getIdName(), gridDescription.getVersionName(),
+        gridDescription.getFilter(), gridDescription.getOrder(), rowSet, async);
 
     bind();
   }
@@ -316,8 +317,8 @@ public class GridPresenter implements Presenter, ReadyForInsertEvent.Handler,
   }
 
   private Provider createProvider(GridContainerView view, String viewName, List<BeeColumn> columns,
-      String idColumnName, String versionColumnName, Filter dataFilter, BeeRowSet rowSet,
-      boolean isAsync) {
+      String idColumnName, String versionColumnName, Filter dataFilter, Order order,
+      BeeRowSet rowSet, boolean isAsync) {
     Provider provider;
     GridView display = view.getContent();
 
@@ -328,6 +329,10 @@ public class GridPresenter implements Presenter, ReadyForInsertEvent.Handler,
       provider = new CachedProvider(display.getGrid(), viewName, columns, 
           idColumnName, versionColumnName, dataFilter, rowSet);
     }
+    if (order != null) {
+      provider.setOrder(order);
+    }
+
     return provider;
   }
 

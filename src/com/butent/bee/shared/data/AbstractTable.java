@@ -39,9 +39,9 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
     IsTable<RowType, ColType> {
 
   protected class IndexOrdering implements Comparator<Integer> {
-    private RowOrdering rowOrdering;
+    private RowOrdering<RowType> rowOrdering;
 
-    private IndexOrdering(RowOrdering rowOrdering) {
+    private IndexOrdering(RowOrdering<RowType> rowOrdering) {
       this.rowOrdering = rowOrdering;
     }
 
@@ -77,79 +77,6 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
       } else {
         return Longs.compare(row2.getId(), row1.getId());
       }
-    }
-  }
-
-  protected class RowOrdering implements Comparator<RowType> {
-    private List<Integer> indexes = Lists.newArrayList();
-    private List<Boolean> ascending = Lists.newArrayList();
-    private List<ValueType> types = Lists.newArrayList();
-
-    RowOrdering(List<Pair<Integer, Boolean>> sortInfo) {
-      Assert.notNull(sortInfo);
-      Assert.isTrue(sortInfo.size() >= 1);
-
-      for (int i = 0; i < sortInfo.size(); i++) {
-        Assert.notNull(sortInfo.get(i).getA());
-        int index = sortInfo.get(i).getA();
-        assertColumnIndex(index);
-
-        if (!containsIndex(index)) {
-          indexes.add(index);
-          ascending.add(BeeUtils.unbox(sortInfo.get(i).getB()));
-          types.add(getColumnType(index));
-        }
-      }
-    }
-
-    public int compare(RowType row1, RowType row2) {
-      if (row1 == row2) {
-        return BeeConst.COMPARE_EQUAL;
-      }
-      if (row1 == null) {
-        return ascending.get(0) ? BeeConst.COMPARE_LESS : BeeConst.COMPARE_MORE;
-      }
-      if (row2 == null) {
-        return ascending.get(0) ? BeeConst.COMPARE_MORE : BeeConst.COMPARE_LESS;
-      }
-
-      int z;
-      for (int i = 0; i < indexes.size(); i++) {
-        int index = indexes.get(i);
-        switch (types.get(i)) {
-          case BOOLEAN:
-            z = BeeUtils.compare(row1.getBoolean(index), row2.getBoolean(index));
-            break;
-          case DATE:
-            z = BeeUtils.compare(row1.getDate(index), row2.getDate(index));
-            break;
-          case DATETIME:
-            z = BeeUtils.compare(row1.getDateTime(index), row2.getDateTime(index));
-            break;
-          case NUMBER:
-            z = BeeUtils.compare(row1.getDouble(index), row2.getDouble(index));
-            break;
-          case INTEGER:
-            z = BeeUtils.compare(row1.getInteger(index), row2.getInteger(index));
-            break;
-          case LONG:
-            z = BeeUtils.compare(row1.getLong(index), row2.getLong(index));
-            break;
-          case DECIMAL:
-            z = BeeUtils.compare(row1.getDecimal(index), row2.getDecimal(index));
-            break;
-          default:
-            z = BeeUtils.compare(row1.getString(index), row2.getString(index));
-        }
-        if (z != BeeConst.COMPARE_EQUAL) {
-          return ascending.get(i) ? z : -z;
-        }
-      }
-      return BeeConst.COMPARE_EQUAL;
-    }
-
-    private boolean containsIndex(int index) {
-      return indexes.contains(index);
     }
   }
 
@@ -524,7 +451,8 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
       rowIndexes.add(i);
     }
 
-    Collections.sort(rowIndexes, new IndexOrdering(new RowOrdering(sortInfo)));
+    Collections.sort(rowIndexes, new IndexOrdering(new RowOrdering<RowType>(getColumns(),
+        sortInfo)));
     return Ints.toArray(rowIndexes);
   }
 

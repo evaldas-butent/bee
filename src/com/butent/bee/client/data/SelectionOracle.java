@@ -258,7 +258,8 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
     
     this.relIndex = BeeUtils.indexOf(getViewColumns(), relColumn);
 
-    this.viewOrder = new Order(relColumn, true);
+    this.viewOrder = new Order();
+    this.viewOrder.add(relColumn, true);
 
     this.cachingPolicy = cachingPolicy;
     this.cachingThreshold = cachingThreshold;

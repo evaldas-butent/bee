@@ -135,11 +135,8 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
     Assert.notEmpty(name);
     this.colType = colType;
     this.name = name;
-  }
-
-  public ColumnDescription(ColType colType, String name, boolean visible) {
-    this(colType, name);
-    setVisible(visible);
+    
+    setVisible(true);
   }
 
   private ColumnDescription() {

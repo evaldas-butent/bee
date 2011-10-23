@@ -160,30 +160,26 @@ public class GridHolderBean {
       gridDescription.setReadOnly(true);
     }
 
-    ColumnDescription columnDescription =
-        new ColumnDescription(ColType.ID, view.getSourceIdName(), true);
-    columnDescription.setSource(view.getSourceIdName());
-    gridDescription.addColumn(columnDescription);
+    gridDescription.addColumn(new ColumnDescription(ColType.ID, view.getSourceIdName()));
 
     Map<String, ColumnDescription> columns = Maps.newLinkedHashMap();
     Set<String> relSources = Sets.newHashSet();
 
+    ColumnDescription columnDescription;
     for (String colName : view.getColumnNames()) {
       String tblName = view.getTable(colName);
       String relSource = view.getRelSource(colName);
 
       if (BeeUtils.isEmpty(relSource)) {
-        columnDescription = new ColumnDescription(ColType.DATA, colName, true);
+        columnDescription = new ColumnDescription(ColType.DATA, colName);
       } else {
-        columnDescription = new ColumnDescription(ColType.RELATED, colName, true);
+        columnDescription = new ColumnDescription(ColType.RELATED, colName);
         relSources.add(relSource);
 
         columnDescription.setRelSource(relSource);
         columnDescription.setRelView(tblName);
         columnDescription.setRelColumn(view.getField(colName));
       }
-      columnDescription.setSortable(true);
-      columnDescription.setHasFooter(true);
       columnDescription.setSource(colName);
 
       columns.put(BeeUtils.normalize(colName), columnDescription);
@@ -200,10 +196,13 @@ public class GridHolderBean {
 
     gridDescription.getColumns().addAll(columns.values());
 
-    columnDescription = new ColumnDescription(ColType.VERSION, view.getSourceVersionName(), true);
-    columnDescription.setSource(view.getSourceVersionName());
-    gridDescription.addColumn(columnDescription);
-
+    gridDescription.addColumn(new ColumnDescription(ColType.VERSION, view.getSourceVersionName()));
+    
+    for (ColumnDescription cd : gridDescription.getColumns()) {
+      cd.setSortable(true);
+      cd.setHasFooter(true);
+    }
+    
     if (register) {
       registerGrid(gridDescription);
     }

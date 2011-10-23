@@ -3,7 +3,7 @@
   xsi:schemaLocation="http://www.butent.com/bee ../../schemas/grid.xsd">
 
   <BeeGrid name="DataTypes" viewName="DataTypes" maxColumnWidth="500" caption="Types"
-    asyncThreshold="50" showColumnWidths="true">
+    asyncThreshold="50" filter="Integer > 0" order="Integer desc, Version">
     <header borderWidth="2">
       <style>
         <inline>background-color: #f6cef5;</inline>
@@ -34,7 +34,7 @@
         </style>
       </BeeIdColumn>
 
-      <BeeVerColumn name="Version" hasFooter="false">
+      <BeeVerColumn name="Version">
         <style>
           <bodyStyle>
             <inline>color: darkblue;</inline>
@@ -43,7 +43,8 @@
         </style>
       </BeeVerColumn>
 
-      <BeeCalcColumn name="Calc1" type="date" caption="Ver Dt" format="date_short" width="80">
+      <BeeCalcColumn name="Calc1" type="date" caption="Ver Dt" format="date_short" width="80"
+        source="Version">
         <calc>
           <expression>rowVersion</expression>
         </calc>
@@ -83,7 +84,7 @@
         <editor type="long" />
       </BeeDataColumn>
 
-      <BeeCalcColumn name="Calc2" type="decimal" caption="Math" scale="4">
+      <BeeCalcColumn name="Calc2" type="decimal" caption="Math" scale="4" sortBy="Long, Date">
         <calc>
           <expression>(row.Long &gt; 0) ? Math.log(row.Long) : row.Long / 1000</expression>
         </calc>
@@ -136,7 +137,8 @@
         <editor type="rich" />
       </BeeDataColumn>
 
-      <BeeCalcColumn name="Calc3" type="string" caption="typeof" width="100">
+      <BeeCalcColumn name="Calc3" type="string" caption="typeof" width="100"
+        searchBy="String, Char">
         <calc>
           <function>
             var s = "";

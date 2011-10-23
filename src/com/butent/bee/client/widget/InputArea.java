@@ -6,18 +6,15 @@ import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.TextArea;
 
-import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.HasAfterSaveHandler;
-import com.butent.bee.client.event.HasBeeValueChangeHandler;
 import com.butent.bee.client.ui.HasTextDimensions;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.utils.JsUtils;
 import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.shared.BeeResource;
-import com.butent.bee.shared.HasStringValue;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.ui.EditorAction;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -26,10 +23,7 @@ import com.butent.bee.shared.utils.BeeUtils;
  * Implements a text area that allows multiple lines of text to be entered.
  */
 
-public class InputArea extends TextArea implements Editor, HasBeeValueChangeHandler<String>,
-    HasAfterSaveHandler, HasTextDimensions {
-
-  private HasStringValue source = null;
+public class InputArea extends TextArea implements Editor, HasAfterSaveHandler, HasTextDimensions {
 
   private BeeResource resource = null;
 
@@ -61,16 +55,6 @@ public class InputArea extends TextArea implements Editor, HasBeeValueChangeHand
     init();
   }
 
-  public InputArea(HasStringValue source) {
-    this();
-    setSource(source);
-
-    String v = source.getString();
-    if (!BeeUtils.isEmpty(v)) {
-      setValue(v);
-    }
-  }
-
   public HandlerRegistration addEditStopHandler(EditStopEvent.Handler handler) {
     return addHandler(handler, EditStopEvent.getType());
   }
@@ -98,10 +82,6 @@ public class InputArea extends TextArea implements Editor, HasBeeValueChangeHand
 
   public BeeResource getResource() {
     return resource;
-  }
-
-  public HasStringValue getSource() {
-    return source;
   }
 
   public boolean handlesKey(int keyCode) {
@@ -147,13 +127,6 @@ public class InputArea extends TextArea implements Editor, HasBeeValueChangeHand
     super.onBrowserEvent(event);
   }
 
-  public boolean onValueChange(String value) {
-    if (getSource() != null) {
-      getSource().setValue(value);
-    }
-    return true;
-  }
-
   public void setDigest(String digest) {
     this.digest = digest;
   }
@@ -172,10 +145,6 @@ public class InputArea extends TextArea implements Editor, HasBeeValueChangeHand
 
   public void setResource(BeeResource resource) {
     this.resource = resource;
-  }
-
-  public void setSource(HasStringValue source) {
-    this.source = source;
   }
 
   @Override
@@ -211,14 +180,9 @@ public class InputArea extends TextArea implements Editor, HasBeeValueChangeHand
     return null;
   }
 
-  private void addDefaultHandlers() {
-    BeeKeeper.getBus().addStringVch(this);
-  }
-
   private void init() {
     DomUtils.createId(this, getIdPrefix());
     setStyleName("bee-InputArea");
-    addDefaultHandlers();
   }
 
   private void initEditor() {

@@ -7,6 +7,7 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.EventTarget;
 import com.google.gwt.dom.client.InputElement;
 import com.google.gwt.dom.client.NativeEvent;
+import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.safehtml.client.SafeHtmlTemplates;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
@@ -33,6 +34,7 @@ public class FooterCell extends AbstractCell<String> {
   private static Template template;
 
   private boolean hasFocus = false;
+  private String oldValue = null;
 
   public FooterCell() {
     super(EventUtils.EVENT_TYPE_FOCUS, EventUtils.EVENT_TYPE_BLUR, EventUtils.EVENT_TYPE_CHANGE,
@@ -42,7 +44,7 @@ public class FooterCell extends AbstractCell<String> {
 
   @Override
   public boolean isEditing(Context context, Element parent, String value) {
-    return hasFocus;
+    return hasFocus();
   }
 
   @Override
@@ -58,13 +60,21 @@ public class FooterCell extends AbstractCell<String> {
 
     String type = event.getType();
 
-    if (BeeUtils.same(type, EventUtils.EVENT_TYPE_FOCUS)) {
-      hasFocus = true;
-    } else if (BeeUtils.same(type, EventUtils.EVENT_TYPE_BLUR)) {
-      hasFocus = false;
-    } else if (BeeUtils.same(type, EventUtils.EVENT_TYPE_CHANGE)) {
-      if (input != null && valueUpdater != null) {
-        valueUpdater.update(input.getValue());
+    if (EventUtils.isFocus(type)) {
+      setHasFocus(true);
+      setOldValue(getInputValue(input));
+    } else if (EventUtils.isBlur(type)) {
+      setHasFocus(false);
+
+    } else if (EventUtils.isChange(type)
+        || EventUtils.isKeyDown(type) && event.getKeyCode() == KeyCodes.KEY_ENTER) {
+      String newValue = getInputValue(input);
+      if (!BeeUtils.equalsTrim(getOldValue(), newValue) && valueUpdater != null) {
+        if (EventUtils.isKeyDown(type)) {
+          EventUtils.eatEvent(event);
+        }
+        setOldValue(newValue);
+        valueUpdater.update(newValue);
       }
     }
   }
@@ -78,9 +88,33 @@ public class FooterCell extends AbstractCell<String> {
     }
   }
 
+  private String getInputValue(InputElement input) {
+    if (input == null) {
+      return null;
+    } else {
+      return input.getValue();
+    }
+  }
+
+  private String getOldValue() {
+    return oldValue;
+  }
+
+  private boolean hasFocus() {
+    return hasFocus;
+  }
+
   private void init() {
     if (template == null) {
       template = GWT.create(Template.class);
     }
+  }
+
+  private void setHasFocus(boolean hasFocus) {
+    this.hasFocus = hasFocus;
+  }
+  
+  private void setOldValue(String oldValue) {
+    this.oldValue = oldValue;
   }
 }

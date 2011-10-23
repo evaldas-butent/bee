@@ -387,16 +387,17 @@ public class GridFactory {
 
     RowIdColumn idColumn = new RowIdColumn();
     String id = "row-id";
-    grid.addColumn(id, -1, idColumn, new ColumnHeader(id, "Id", false));
+    grid.addColumn(id, -1, null, idColumn, new ColumnHeader(id, "Id", false));
     grid.setColumnWidth(id, 40);
 
     DataColumn<?> column;
     for (int i = 0; i < c; i++) {
       column = createColumn(table.getColumn(i), i);
       column.setSortable(true);
+      column.setSortBy(Lists.newArrayList(table.getColumn(i).getId()));
 
       String label = table.getColumnLabel(i);
-      grid.addColumn(label, i, column, new ColumnHeader(label, label, false));
+      grid.addColumn(label, i, null, column, new ColumnHeader(label, label, false));
     }
 
     @SuppressWarnings("unused")

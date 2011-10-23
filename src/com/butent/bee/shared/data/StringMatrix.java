@@ -118,7 +118,7 @@ public class StringMatrix<ColType extends IsColumn> extends AbstractTable<String
     Assert.isTrue(sortInfo.size() >= 1);
 
     if (getNumberOfRows() > 1) {
-      sortRows(new RowOrdering(sortInfo));
+      sortRows(new RowOrdering<StringRow>(getColumns(), sortInfo));
     }
   }
 

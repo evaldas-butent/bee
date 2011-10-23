@@ -90,8 +90,7 @@
         <xs:attribute name="type" type="bee:valueType" use="required" />
         <xs:attribute name="precision" type="xs:positiveInteger" />
         <xs:attribute name="scale" type="xs:unsignedByte" />
-        <xs:attribute name="sortBy" type="xs:normalizedString" />
-        <xs:attribute name="searchBy" type="xs:normalizedString" />
+        <xs:attribute name="source" type="bee:nameType" />
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
@@ -107,12 +106,14 @@
     <xs:attribute name="minWidth" type="bee:widthType" />
     <xs:attribute name="maxWidth" type="bee:widthType" />
     <xs:attribute name="sortable" type="xs:boolean" default="true" />
-    <xs:attribute name="visible" type="xs:boolean" default="true" />
+    <xs:attribute name="visible" type="xs:boolean" />
     <xs:attribute name="format" type="xs:normalizedString" />
     <xs:attribute name="horizontalAlignment" type="bee:horizontalAlignmentType" />
     <xs:attribute name="hasFooter" type="xs:boolean" default="true" />
     <xs:attribute name="showWidth" type="xs:boolean" />
     <xs:attribute name="cell" type="bee:cellType" />
+    <xs:attribute name="sortBy" type="xs:normalizedString" />
+    <xs:attribute name="searchBy" type="xs:normalizedString" />
   </xs:complexType>
 
   <xs:complexType name="columnStyle">

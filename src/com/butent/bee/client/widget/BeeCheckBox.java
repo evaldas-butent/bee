@@ -1,11 +1,11 @@
 package com.butent.bee.client.widget;
 
 import com.google.gwt.user.client.Element;
+import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.CheckBox;
 
-import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.dom.DomUtils;
-import com.butent.bee.client.event.HasBeeValueChangeHandler;
+import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.shared.HasBooleanValue;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Variable;
@@ -15,8 +15,7 @@ import com.butent.bee.shared.utils.BeeUtils;
  * Implements a standard check box user interface component.
  */
 
-public class BeeCheckBox extends CheckBox implements BooleanWidget,
-    HasBeeValueChangeHandler<Boolean> {
+public class BeeCheckBox extends CheckBox implements BooleanWidget {
 
   private HasBooleanValue source = null;
 
@@ -36,7 +35,6 @@ public class BeeCheckBox extends CheckBox implements BooleanWidget,
   public BeeCheckBox(HasBooleanValue source, String label) {
     this();
     initSource(source);
-    addDefaultHandler();
 
     if (!BeeUtils.isEmpty(label)) {
       setText(label);
@@ -50,7 +48,6 @@ public class BeeCheckBox extends CheckBox implements BooleanWidget,
     setCheckedCaption(caption.getB());
 
     setCaption();
-    addDefaultHandler();
   }
 
   public BeeCheckBox(String label) {
@@ -66,7 +63,6 @@ public class BeeCheckBox extends CheckBox implements BooleanWidget,
   public BeeCheckBox(Variable source) {
     this();
     initSource(source);
-    addDefaultHandler();
 
     setText(source.getCaption());
   }
@@ -91,11 +87,15 @@ public class BeeCheckBox extends CheckBox implements BooleanWidget,
     return uncheckedCaption;
   }
 
-  public boolean onValueChange(Boolean v) {
-    setCaption(v);
-    updateSource(v);
+  @Override
+  public void onBrowserEvent(Event event) {
+    if (EventUtils.isChange(event.getType())) {
+      Boolean v = BeeUtils.unbox(getValue());
+      setCaption(v);
+      updateSource(v);
+    }
 
-    return true;
+    super.onBrowserEvent(event);
   }
 
   public void setCheckedCaption(String checkedCaption) {
@@ -114,13 +114,10 @@ public class BeeCheckBox extends CheckBox implements BooleanWidget,
     this.uncheckedCaption = uncheckedCaption;
   }
 
-  private void addDefaultHandler() {
-    BeeKeeper.getBus().addBoolVch(this);
-  }
-
   private void init() {
     DomUtils.createId(this, getIdPrefix());
     setStyleName("bee-CheckBox");
+    sinkEvents(Event.ONCHANGE);
   }
 
   private void initSource(HasBooleanValue src) {
