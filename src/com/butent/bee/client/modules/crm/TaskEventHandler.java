@@ -244,7 +244,7 @@ public class TaskEventHandler {
       String colName = column.getId();
       String value = data.getString(form.getDataIndex(colName));
 
-      if (!BeeUtils.isEmpty(value) || BeeUtils.same(colName, "EventTime")) {
+      if (!BeeUtils.isEmpty(value)) {
         columns.add(column);
         values.add(value);
       }
@@ -447,12 +447,10 @@ public class TaskEventHandler {
           Global.showError("Įveskite komentarą");
           return;
         }
-        BeeRowSet rs = new BeeRowSet(new BeeColumn(ValueType.INTEGER, "Event"),
-            new BeeColumn(ValueType.DATETIME, "EventTime"));
+        BeeRowSet rs = new BeeRowSet(new BeeColumn(ValueType.INTEGER, "Event"));
         rs.setViewName("Tasks");
 
-        rs.addRow(data.getId(), data.getVersion(),
-            new String[] {BeeUtils.toString(evOld), data.getString(form.getDataIndex("EventTime"))});
+        rs.addRow(data.getId(), data.getVersion(), new String[] {BeeUtils.toString(evOld)});
         rs.preliminaryUpdate(0, "Event", BeeUtils.toString(evNew));
 
         ParameterList args = createParams(TaskEvent.RENEWED.name());
@@ -484,12 +482,10 @@ public class TaskEventHandler {
           Global.showError("Įveskite komentarą");
           return;
         }
-        BeeRowSet rs = new BeeRowSet(new BeeColumn(ValueType.INTEGER, "Event"),
-            new BeeColumn(ValueType.DATETIME, "EventTime"));
+        BeeRowSet rs = new BeeRowSet(new BeeColumn(ValueType.INTEGER, "Event"));
         rs.setViewName("Tasks");
 
-        rs.addRow(data.getId(), data.getVersion(),
-            new String[] {BeeUtils.toString(evOld), data.getString(form.getDataIndex("EventTime"))});
+        rs.addRow(data.getId(), data.getVersion(), new String[] {BeeUtils.toString(evOld)});
         rs.preliminaryUpdate(0, "Event", BeeUtils.toString(TaskEvent.SUSPENDED.ordinal()));
 
         ParameterList args = createParams(TaskEvent.SUSPENDED.name());
@@ -521,12 +517,10 @@ public class TaskEventHandler {
           Global.showError("Įveskite komentarą");
           return;
         }
-        BeeRowSet rs = new BeeRowSet(new BeeColumn(ValueType.INTEGER, "Event"),
-            new BeeColumn(ValueType.DATETIME, "EventTime"));
+        BeeRowSet rs = new BeeRowSet(new BeeColumn(ValueType.INTEGER, "Event"));
         rs.setViewName("Tasks");
 
-        rs.addRow(data.getId(), data.getVersion(),
-            new String[] {BeeUtils.toString(evOld), data.getString(form.getDataIndex("EventTime"))});
+        rs.addRow(data.getId(), data.getVersion(), new String[] {BeeUtils.toString(evOld)});
         rs.preliminaryUpdate(0, "Event", BeeUtils.toString(TaskEvent.CANCELED.ordinal()));
 
         ParameterList args = createParams(TaskEvent.CANCELED.name());
@@ -573,14 +567,12 @@ public class TaskEventHandler {
           Global.showError("Įveskite atlikimo datą");
           return;
         }
-        BeeRowSet rs = new BeeRowSet(new BeeColumn(ValueType.INTEGER, "Event"),
-            new BeeColumn(ValueType.DATETIME, "EventTime"));
+        BeeRowSet rs = new BeeRowSet(new BeeColumn(ValueType.INTEGER, "Event"));
         rs.setViewName("Tasks");
 
         TaskEvent ev;
 
-        rs.addRow(data.getId(), data.getVersion(),
-            new String[] {BeeUtils.toString(evOld), data.getString(form.getDataIndex("EventTime"))});
+        rs.addRow(data.getId(), data.getVersion(), new String[] {BeeUtils.toString(evOld)});
 
         if (BeeUtils.equals(data.getLong(form.getDataIndex("Owner")),
             BeeKeeper.getUser().getUserId())) {
@@ -622,12 +614,10 @@ public class TaskEventHandler {
           Global.showError("Įveskite komentarą");
           return;
         }
-        BeeRowSet rs = new BeeRowSet(new BeeColumn(ValueType.INTEGER, "Event"),
-            new BeeColumn(ValueType.DATETIME, "EventTime"));
+        BeeRowSet rs = new BeeRowSet(new BeeColumn(ValueType.INTEGER, "Event"));
         rs.setViewName("Tasks");
 
-        rs.addRow(data.getId(), data.getVersion(),
-            new String[] {BeeUtils.toString(evOld), data.getString(form.getDataIndex("EventTime"))});
+        rs.addRow(data.getId(), data.getVersion(), new String[] {BeeUtils.toString(evOld)});
         rs.preliminaryUpdate(0, "Event", BeeUtils.toString(TaskEvent.APPROVED.ordinal()));
 
         ParameterList args = createParams(TaskEvent.APPROVED.name());

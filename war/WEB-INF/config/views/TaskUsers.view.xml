@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BeeView xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../schemas/view.xsd"
+
+  name="TaskUsers"
+  source="TaskUsers"
+  >
+  <BeeColumns>
+    <BeeColumn name="TaskID" expression="Task" />
+    <BeeColumn name="UserID" expression="User" />
+    <BeeColumn name="LastAccess" expression="LastAccess" />
+    <BeeColumn name="Priority" expression="Task-Priority" />
+    <BeeColumn name="Task" expression="Task-Task" />
+    <BeeColumn name="StartTime" expression="Task-StartTime" />
+    <BeeColumn name="FinishTime" expression="Task-FinishTime" />
+    <BeeColumn name="Event" expression="Task-Event" />
+    <BeeColumn name="EventTime" expression="Task-EventTime" />
+    <BeeColumn name="Owner" expression="Task-Owner" />
+    <BeeColumn name="OwnerFirstName" expression="Task-Owner>Person>FirstName" />
+    <BeeColumn name="OwnerLastName" expression="Task-Owner>Person>LastName" />
+    <BeeColumn name="Executor" expression="Task-Executor" />
+    <BeeColumn name="ExecutorFirstName" expression="Task-Executor>Person>FirstName" />
+    <BeeColumn name="ExecutorLastName" expression="Task-Executor>Person>LastName" />
+    <BeeColumn name="Company" expression="Task-Company" />
+    <BeeColumn name="CompanyName" expression="Task-Company>Name" />
+    <BeeColumn name="CompanyPerson" expression="Task-CompanyPerson" />
+    <BeeColumn name="PersonFirstName" expression="Task-CompanyPerson>Person>FirstName" />
+    <BeeColumn name="PersonLastName" expression="Task-CompanyPerson>Person>LastName" />
+  </BeeColumns>
+</BeeView>
+ 

@@ -74,12 +74,11 @@ public class CrmModuleBean implements BeeModule {
     switch (event) {
       case ACTIVATED:
         BeeRowSet rs = BeeRowSet.restore(reqInfo.getParameter(CrmConstants.VAR_TASK_DATA));
-        rs.preliminaryUpdate(0, "EventTime", BeeUtils.toString(time));
         response = deb.commitRow(rs, true);
 
         if (!response.hasErrors()) {
-          ResponseObject resp = registerTaskEvent(((BeeRow) response.getResponse()).getId(), time,
-              reqInfo, event, null);
+          long taskId = ((BeeRow) response.getResponse()).getId();
+          ResponseObject resp = registerTaskEvent(taskId, time, reqInfo, event, null);
 
           if (resp.hasErrors()) {
             response = resp;
@@ -103,7 +102,7 @@ public class CrmModuleBean implements BeeModule {
         response = deb.commitRow(rs, true);
 
         if (!response.hasErrors()) {
-          long taskId = rs.getRow(0).getId();
+          long taskId = ((BeeRow) response.getResponse()).getId();
           long oldUser = BeeUtils.toLong(rs.getShadowString(0, "Executor"));
           long newUser = BeeUtils.toLong(rs.getString(0, "Executor"));
 
@@ -126,10 +125,11 @@ public class CrmModuleBean implements BeeModule {
         response = deb.commitRow(rs, true);
 
         if (!response.hasErrors()) {
+          long taskId = ((BeeRow) response.getResponse()).getId();
           String oldTerm = rs.getShadowString(0, "FinishTime");
           String newTerm = rs.getString(0, "FinishTime");
 
-          ResponseObject resp = registerTaskEvent(rs.getRow(0).getId(), time, reqInfo, event,
+          ResponseObject resp = registerTaskEvent(taskId, time, reqInfo, event,
               BeeUtils.concat(" -> ",
                   TimeUtils.toDateTimeOrNull(oldTerm), TimeUtils.toDateTimeOrNull(newTerm)));
 
@@ -145,11 +145,11 @@ public class CrmModuleBean implements BeeModule {
       case APPROVED:
       case RENEWED:
         rs = BeeRowSet.restore(reqInfo.getParameter(CrmConstants.VAR_TASK_DATA));
-        rs.preliminaryUpdate(0, "EventTime", BeeUtils.toString(time));
         response = deb.commitRow(rs, true);
 
         if (!response.hasErrors()) {
-          ResponseObject resp = registerTaskEvent(rs.getRow(0).getId(), time, reqInfo, event, null);
+          long taskId = ((BeeRow) response.getResponse()).getId();
+          ResponseObject resp = registerTaskEvent(taskId, time, reqInfo, event, null);
 
           if (resp.hasErrors()) {
             response = resp;

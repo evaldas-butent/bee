@@ -12,7 +12,6 @@
     <BeeField name="StartTime" type="DATETIME" notNull="true" />
     <BeeField name="FinishTime" type="DATETIME" notNull="true" />
     <BeeField name="Event" type="INTEGER" notNull="true" />
-    <BeeField name="EventTime" type="DATETIME" notNull="true" />
     <BeeField name="Owner" type="LONG" notNull="true" relation="Users" />
     <BeeField name="Executor" type="LONG" notNull="true" relation="Users" />
     <BeeField name="Company" type="LONG" relation="Companies" />

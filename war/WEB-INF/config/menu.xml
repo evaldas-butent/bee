@@ -4,15 +4,18 @@
   <item id="miestai" parent="ref_menu" order="20" text="Miestai" service="grid" parameters="Cities" />
   <item id="salys" parent="ref_menu" order="30" text="Šalys" service="grid" parameters="Countries" />
 
-  <item id="cont_menu" order="10" text="Kontaktai" />
+  <item id="cont_menu" order="20" text="Kontaktai" />
   <item id="clients" parent="cont_menu" order="10" text="Klientai" service="grid" parameters="Companies" />
   <item id="persons" parent="cont_menu" order="20" text="Asmenys" service="grid" parameters="Persons" separators="*" />
 
-  <item id="task_menu" order="10" text="Užduotys" />
-  <item id="tasks" parent="task_menu" order="10" text="Gautos" service="grid" parameters="Tasks" />
-  <item id="tasks" parent="task_menu" order="20" text="Deleguotos" service="grid" parameters="Tasks" />
-  <item id="tasks" parent="task_menu" order="30" text="Stebimos" service="grid" parameters="Tasks" />
+  <item id="task_menu" order="30" text="Užduotys" />
+  <item id="tasks" parent="task_menu" order="10" text="Gautos" service="grid" parameters="AssignedTasks" />
+  <item id="tasks" parent="task_menu" order="20" text="Deleguotos" service="grid" parameters="DelegatedTasks" />
+  <item id="tasks" parent="task_menu" order="30" text="Stebimos" service="grid" parameters="ObservedTasks" />
   <item id="tasks" parent="task_menu" order="100" text="Darbų tipai" service="grid" parameters="DurationTypes" separators="*" />
+
+  <item id="process_menu" order="40" text="Procesai" />
+  <item id="tasks" parent="process_menu" order="10" text="Užduotys" service="grid" parameters="Tasks" />
 
   <item id="adm_menu" order="200" text="Administravimas" />
   <item id="roles" parent="adm_menu" order="10" text="Rolės" service="grid" parameters="Roles" />
