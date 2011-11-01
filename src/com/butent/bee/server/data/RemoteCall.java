@@ -148,7 +148,7 @@ public class RemoteCall {
           List<IsColumn> columns = Lists.newArrayList();
 
           for (String col : view.getColumnNames()) {
-            columns.add(new BeeColumn(view.getType(col).toValueType(), col));
+            columns.add(new BeeColumn(view.getColumnType(col).toValueType(), col));
           }
           filter = DataUtils.parseCondition(prm.filter, columns, view.getSourceIdName(),
               view.getSourceVersionName());

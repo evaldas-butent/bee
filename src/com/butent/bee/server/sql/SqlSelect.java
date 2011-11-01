@@ -398,19 +398,6 @@ public class SqlSelect extends HasFrom<SqlSelect> {
   }
 
   /**
-   * Adds a MAX function with a specified distinct expression {@code expr} and alias {@code alias}.
-   * 
-   * @param expr the expression
-   * @param alias the alias name
-   * @return object's SqlSelect instance.
-   */
-  public SqlSelect addMaxDistinct(IsExpression expr, String alias) {
-    Assert.notNull(expr);
-    addAggregate(SqlFunction.MAX, expr, true, alias);
-    return getReference();
-  }
-
-  /**
    * Adds a MIN function with a specified expression {@code expr} and alias {@code alias}.
    * 
    * @param expr the expression
@@ -445,19 +432,6 @@ public class SqlSelect extends HasFrom<SqlSelect> {
    */
   public SqlSelect addMin(String source, String field, String alias) {
     return addMin(SqlUtils.field(source, field), alias);
-  }
-
-  /**
-   * Adds a MIN function with a specified distinct expression {@code expr} and alias {@code alias}.
-   * 
-   * @param expr the expression
-   * @param alias the alias name
-   * @return object's SqlSelect instance.
-   */
-  public SqlSelect addMinDistinct(IsExpression expr, String alias) {
-    Assert.notNull(expr);
-    addAggregate(SqlFunction.MIN, expr, true, alias);
-    return getReference();
   }
 
   /**

@@ -6,13 +6,15 @@
   source="Users"
   >
   <BeeColumns>
-    <BeeColumn name="Login" expression="Login" />
-    <BeeColumn name="Password" expression="Password" />
-    <BeeColumn name="FirstName" expression="Person>FirstName" />
-    <BeeColumn name="LastName" expression="Person>LastName" />
-    <BeeColumn name="DateOfBirth" expression="Person>DateOfBirth" />
-    <BeeColumn name="Properties" expression="Properties" />
-    <BeeColumn name="LastLogin" expression="LastLogin" />
+    <BeeSimpleColumn expression="Login" />
+    <BeeSimpleColumn expression="Password" />
+    <BeeJoinColumn expression="Person" joinType="LEFT">
+      <BeeSimpleColumn expression="FirstName" />
+      <BeeSimpleColumn expression="LastName" />
+      <BeeSimpleColumn expression="DateOfBirth" />
+    </BeeJoinColumn>
+    <BeeSimpleColumn expression="Properties" />
+    <BeeSimpleColumn expression="LastLogin" />
   </BeeColumns>
   <BeeOrder>
     <OrderBy column="Login" />

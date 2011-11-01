@@ -282,7 +282,7 @@ public class UiServiceBean {
         } else {
           SqlDataType type = null;
           if (view != null && view.hasColumn(source)) {
-            type = view.getType(source);
+            type = view.getColumnType(source);
           }
           if (type != null) {
             switch (type) {
@@ -372,7 +372,7 @@ public class UiServiceBean {
 
           String relView = null;
           if (view.hasColumn(relSource)) {
-            relView = sys.getRelation(view.getTable(relSource), view.getField(relSource));
+            relView = sys.getRelation(view.getColumnTable(relSource), view.getColumnField(relSource));
             if (!BeeUtils.isEmpty(relView)) {
               widgetElement.setAttribute("relView", relView);
               isColumn = true;
@@ -427,7 +427,7 @@ public class UiServiceBean {
       }
 
       if (isColumn && BeeUtils.same(dstType, "InputDecimal")) {
-        int scale = sys.getScale(view.getTable(source), view.getField(source));
+        int scale = sys.getScale(view.getColumnTable(source), view.getColumnField(source));
         if (scale > 0) {
           widgetElement.setAttribute("scale", BeeUtils.toString(scale));
         }

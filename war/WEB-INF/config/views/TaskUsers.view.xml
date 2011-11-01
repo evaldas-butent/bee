@@ -3,29 +3,42 @@
   xsi:schemaLocation="http://www.butent.com/bee ../../schemas/view.xsd"
 
   name="TaskUsers"
-  source="TaskUsers"
+  source="Tasks"
   >
   <BeeColumns>
-    <BeeColumn name="TaskID" expression="Task" />
-    <BeeColumn name="UserID" expression="User" />
-    <BeeColumn name="LastAccess" expression="LastAccess" />
-    <BeeColumn name="Priority" expression="Task-Priority" />
-    <BeeColumn name="Task" expression="Task-Task" />
-    <BeeColumn name="StartTime" expression="Task-StartTime" />
-    <BeeColumn name="FinishTime" expression="Task-FinishTime" />
-    <BeeColumn name="Event" expression="Task-Event" />
-    <BeeColumn name="EventTime" expression="Task-EventTime" />
-    <BeeColumn name="Owner" expression="Task-Owner" />
-    <BeeColumn name="OwnerFirstName" expression="Task-Owner>Person>FirstName" />
-    <BeeColumn name="OwnerLastName" expression="Task-Owner>Person>LastName" />
-    <BeeColumn name="Executor" expression="Task-Executor" />
-    <BeeColumn name="ExecutorFirstName" expression="Task-Executor>Person>FirstName" />
-    <BeeColumn name="ExecutorLastName" expression="Task-Executor>Person>LastName" />
-    <BeeColumn name="Company" expression="Task-Company" />
-    <BeeColumn name="CompanyName" expression="Task-Company>Name" />
-    <BeeColumn name="CompanyPerson" expression="Task-CompanyPerson" />
-    <BeeColumn name="PersonFirstName" expression="Task-CompanyPerson>Person>FirstName" />
-    <BeeColumn name="PersonLastName" expression="Task-CompanyPerson>Person>LastName" />
+    <BeeSimpleColumn expression="Priority" />
+    <BeeSimpleColumn expression="Task" />
+    <BeeSimpleColumn expression="StartTime" />
+    <BeeSimpleColumn expression="FinishTime" />
+    <BeeSimpleColumn expression="Event" />
+    <BeeJoinColumn name="Owner" expression="Owner" joinType="LEFT">
+      <BeeJoinColumn expression="Person" joinType="LEFT">
+        <BeeSimpleColumn name="OwnerFirstName" expression="FirstName" />
+        <BeeSimpleColumn name="OwnerLastName" expression="LastName" />
+      </BeeJoinColumn>
+    </BeeJoinColumn>
+    <BeeJoinColumn name="Executor" expression="Executor" joinType="LEFT">
+      <BeeJoinColumn expression="Person" joinType="LEFT">
+        <BeeSimpleColumn name="ExecutorFirstName" expression="FirstName" />
+        <BeeSimpleColumn name="ExecutorLastName" expression="LastName" />
+      </BeeJoinColumn>
+    </BeeJoinColumn>
+    <BeeJoinColumn name="Company" expression="Company" joinType="LEFT">
+      <BeeSimpleColumn name="CompanyName" expression="Name" />
+    </BeeJoinColumn>
+    <BeeJoinColumn name="CompanyPerson" expression="CompanyPerson" joinType="LEFT">
+      <BeeJoinColumn expression="Person" joinType="LEFT">
+        <BeeSimpleColumn name="PersonFirstName" expression="FirstName" />
+        <BeeSimpleColumn name="PersonLastName" expression="LastName" />
+      </BeeJoinColumn>
+    </BeeJoinColumn>
+    <BeeJoinColumn source="TaskUsers" expression="Task" joinType="LEFT">
+        <BeeSimpleColumn expression="User" />
+        <BeeSimpleColumn expression="LastAccess" />
+    </BeeJoinColumn>
+    <BeeJoinColumn source="TaskEvents" expression="Task" joinType="LEFT">
+        <BeeSimpleColumn expression="PublishTime" />
+    </BeeJoinColumn>
   </BeeColumns>
 </BeeView>
  

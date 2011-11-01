@@ -2,6 +2,7 @@ package com.butent.bee.shared.testutils;
 
 import com.butent.bee.server.sql.SqlBuilder;
 import com.butent.bee.server.sql.SqlBuilderFactory;
+import com.butent.bee.server.sql.SqlConstants.SqlKeyword;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.BeeConst.SqlEngine;
@@ -35,19 +36,19 @@ public class TestSqlUtilsIsQuery {
     assertEquals(
         "ALTER TABLE Table1 ADD CONSTRAINT name FOREIGN KEY (field1) REFERENCES refTable (refField1) ON DELETE CASCADE",
         SqlUtils.createForeignKey("Table1", "name", "field1",
-            "refTable", "refField1", true, true).getQuery());
+            "refTable", "refField1", SqlKeyword.DELETE).getQuery());
     assertEquals(
         "ALTER TABLE Table1 ADD CONSTRAINT name FOREIGN KEY (field1) REFERENCES refTable (refField1) ON DELETE SET NULL",
         SqlUtils.createForeignKey("Table1", "name", "field1",
-            "refTable", "refField1", true, false).getQuery());
+            "refTable", "refField1", SqlKeyword.SET_NULL).getQuery());
     assertEquals(
         "ALTER TABLE Table1 ADD CONSTRAINT name FOREIGN KEY (field1) REFERENCES refTable (refField1)",
         SqlUtils.createForeignKey("Table1", "name", "field1",
-            "refTable", "refField1", false, false).getQuery());
+            "refTable", "refField1", null).getQuery());
     assertEquals(
         "ALTER TABLE Table1 ADD CONSTRAINT name FOREIGN KEY (field1) REFERENCES refTable (refField1)",
         SqlUtils.createForeignKey("Table1", "name", "field1",
-            "refTable", "refField1", false, true).getQuery());
+            "refTable", "refField1", null).getQuery());
   }
 
   @Test
@@ -56,20 +57,20 @@ public class TestSqlUtilsIsQuery {
     SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
 
     assertEquals("CREATE INDEX indexName ON Table1 (field1, field2)",
-        SqlUtils.createIndex("Table1", "indexName", "field1", "field2")
+        SqlUtils.createIndex(false, "Table1", "indexName", "field1", "field2")
             .getQuery());
     assertEquals("CREATE INDEX indexName ON Table1 (field1)", SqlUtils
-        .createIndex("Table1", "indexName", "field1").getQuery());
+        .createIndex(false, "Table1", "indexName", "field1").getQuery());
     assertEquals("CREATE INDEX indexName ON Table1 (indexName)", SqlUtils
-        .createIndex("Table1", "indexName").getQuery());
+        .createIndex(false, "Table1", "indexName").getQuery());
     assertEquals("ALTER TABLE Table1 ADD CONSTRAINT constraint_name UNIQUE (indexName)",
-        SqlUtils.createUniqueKey("Table1", "constraint_name", "indexName").getQuery());
+        SqlUtils.createIndex(true, "Table1", "constraint_name", "indexName").getQuery());
 
     try {
       assertEquals("CREATE INDEX indexName ON Table1 (indexName)",
-          SqlUtils.createIndex("Table1", null).getQuery());
+          SqlUtils.createIndex(false, "Table1", null).getQuery());
       assertEquals("CREATE INDEX indexName ON Table1 (indexName)",
-          SqlUtils.createIndex(null, "indexName").getQuery());
+          SqlUtils.createIndex(false, null, "indexName").getQuery());
       fail("BeeRuntimeException not works");
     } catch (BeeRuntimeException e) {
       assertTrue(true);

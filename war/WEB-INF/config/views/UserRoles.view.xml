@@ -6,9 +6,10 @@
   source="UserRoles"
   >
   <BeeColumns>
-    <BeeColumn name="User" expression="User" />
-    <BeeColumn name="Role" expression="Role" />
-    <BeeColumn name="RoleName" expression="Role-Name" />
+    <BeeSimpleColumn expression="User" />
+    <BeeJoinColumn name="Role" expression="Role" joinType="INNER">
+      <BeeSimpleColumn name="RoleName" expression="Name" />
+    </BeeJoinColumn>
   </BeeColumns>
   <BeeOrder>
     <OrderBy column="RoleName" />

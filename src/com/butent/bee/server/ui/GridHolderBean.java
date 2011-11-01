@@ -101,7 +101,7 @@ public class GridHolderBean {
   private static final String ATTR_NEW_ROW_COLUMNS = "newRowColumns";
   private static final String ATTR_EDIT_FORM = "editForm";
   private static final String ATTR_EDIT_COLUMNS = "editColumns";
-  
+
   private static final String ATTR_WIDTH = "width";
   private static final String ATTR_MIN_WIDTH = "minWidth";
   private static final String ATTR_MAX_WIDTH = "maxWidth";
@@ -167,8 +167,7 @@ public class GridHolderBean {
 
     ColumnDescription columnDescription;
     for (String colName : view.getColumnNames()) {
-      String tblName = view.getTable(colName);
-      String relSource = view.getRelSource(colName);
+      String relSource = view.getColumnParent(colName);
 
       if (BeeUtils.isEmpty(relSource)) {
         columnDescription = new ColumnDescription(ColType.DATA, colName);
@@ -177,8 +176,8 @@ public class GridHolderBean {
         relSources.add(relSource);
 
         columnDescription.setRelSource(relSource);
-        columnDescription.setRelView(tblName);
-        columnDescription.setRelColumn(view.getField(colName));
+        columnDescription.setRelView(view.getColumnTable(colName));
+        columnDescription.setRelColumn(view.getColumnField(colName));
       }
       columnDescription.setSource(colName);
 
@@ -197,12 +196,12 @@ public class GridHolderBean {
     gridDescription.getColumns().addAll(columns.values());
 
     gridDescription.addColumn(new ColumnDescription(ColType.VERSION, view.getSourceVersionName()));
-    
+
     for (ColumnDescription cd : gridDescription.getColumns()) {
       cd.setSortable(true);
       cd.setHasFooter(true);
     }
-    
+
     if (register) {
       registerGrid(gridDescription);
     }
@@ -337,12 +336,12 @@ public class GridHolderBean {
         column.setSource(view.getSourceIdName());
         ok = true;
         break;
-        
+
       case VERSION:
         column.setSource(view.getSourceVersionName());
         ok = true;
         break;
-        
+
       case DATA:
         if (view.hasColumn(source)) {
           ok = true;
@@ -361,7 +360,8 @@ public class GridHolderBean {
           LogUtils.warning(logger, viewName, "unrecognized relation column:", relSource);
           return ok;
         }
-        String relTable = sys.getRelation(view.getTable(relSource), view.getField(relSource));
+        String relTable =
+            sys.getRelation(view.getColumnTable(relSource), view.getColumnField(relSource));
         if (BeeUtils.isEmpty(relTable)) {
           LogUtils.warning(logger, viewName, "not a relation column:", relSource);
           return ok;
@@ -376,7 +376,7 @@ public class GridHolderBean {
           return ok;
 
         } else {
-          String table = sys.getView(relView).getSource();
+          String table = sys.getView(relView).getSourceName();
 
           if (!BeeUtils.same(table, relTable)) {
             LogUtils.warning(logger, "relation column and relation view sources doesn't match:",
@@ -559,7 +559,7 @@ public class GridHolderBean {
           dst.setPrecision(BeeUtils.toIntOrNull(value));
         } else if (BeeUtils.same(key, ATTR_SCALE)) {
           dst.setScale(BeeUtils.toIntOrNull(value));
-          
+
         } else if (BeeUtils.same(key, ATTR_SEARCH_BY)) {
           dst.setSearchBy(value.trim());
         } else if (BeeUtils.same(key, ATTR_SORT_BY)) {
@@ -634,7 +634,7 @@ public class GridHolderBean {
     if (!BeeUtils.isEmpty(caption)) {
       dst.setCaption(caption.trim());
     }
-    
+
     String filter = src.getAttribute(ATTR_FILTER);
     if (!BeeUtils.isEmpty(filter)) {
       dst.setFilter(view.parseFilter(filter.trim()));
@@ -697,7 +697,7 @@ public class GridHolderBean {
     if (!BeeUtils.isEmpty(editMode)) {
       dst.setEditMode(editMode);
     }
-    
+
     String newRowForm = src.getAttribute(ATTR_NEW_ROW_FORM);
     if (!BeeUtils.isEmpty(newRowForm)) {
       dst.setNewRowForm(newRowForm);
@@ -706,7 +706,7 @@ public class GridHolderBean {
     if (!BeeUtils.isEmpty(newRowColumns)) {
       dst.setNewRowColumns(newRowColumns.trim());
     }
-    
+
     String editForm = src.getAttribute(ATTR_EDIT_FORM);
     if (!BeeUtils.isEmpty(editForm)) {
       dst.setEditForm(editForm);

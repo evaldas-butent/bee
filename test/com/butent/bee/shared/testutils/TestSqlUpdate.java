@@ -33,7 +33,7 @@ public class TestSqlUpdate {
   @Test
   public final void testGetSources() {
     SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
-    SqlUpdate update2 = new SqlUpdate("Source1", "alias1");
+    SqlUpdate update2 = new SqlUpdate("Source1");
     IsCondition where = SqlUtils.equal("Source2", "name", "John");
     update2.addConstant("name", "Petras");
     update2.setWhere(where);
@@ -64,18 +64,18 @@ public class TestSqlUpdate {
 
     assertEquals("UPDATE Source1 SET field1=Sourceexpr.fieldexpr", update.getSqlString(builder));
 
-    SqlUpdate update2 = new SqlUpdate("Source1", "alias1");
+    SqlUpdate update2 = new SqlUpdate("Source1");
     IsCondition where = SqlUtils.equal("Source1", "name", "John");
     update2.addConstant("name", "Petras");
     update2.setWhere(where);
 
-    assertEquals("UPDATE Source1 alias1 SET name='Petras' WHERE Source1.name = 'John'", update2
+    assertEquals("UPDATE Source1 SET name='Petras' WHERE Source1.name = 'John'", update2
         .getSqlString(builder));
   }
 
   @Test
   public final void testIsEmpty() {
-    SqlUpdate update = new SqlUpdate("target", "trg");
+    SqlUpdate update = new SqlUpdate("target");
     assertTrue(update.isEmpty()); // nes neturi BeeUtils nepalaiko isFrom, bet tikrina ar jis nera
                                   // NULL ;
 

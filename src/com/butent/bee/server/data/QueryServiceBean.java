@@ -176,7 +176,7 @@ public class QueryServiceBean {
 
       @Override
       public Object processResultSet(ResultSet rs) throws SQLException {
-        return rsToBeeRowSet(rs, null);
+        return rsToBeeRowSet(rs, null, null, null);
       }
 
       @Override
@@ -297,12 +297,20 @@ public class QueryServiceBean {
 
   public BeeRowSet getViewData(IsQuery query, final BeeView view) {
     Assert.notNull(query);
+    final String idName;
+    final String versionName;
 
     if (!BeeUtils.isEmpty(view)) {
       Assert.state(query instanceof SqlSelect);
+      idName = SqlUtils.uniqueName();
+      versionName = SqlUtils.uniqueName();
 
       ((SqlSelect) query)
-          .addFields(view.getSource(), view.getSourceIdName(), view.getSourceVersionName());
+          .addField(view.getSourceName(), view.getSourceIdName(), idName)
+          .addField(view.getSourceName(), view.getSourceVersionName(), versionName);
+    } else {
+      idName = null;
+      versionName = null;
     }
     Assert.state(!query.isEmpty());
     activateTables(query);
@@ -316,7 +324,7 @@ public class QueryServiceBean {
 
       @Override
       public BeeRowSet processResultSet(ResultSet rs) throws SQLException {
-        return rsToBeeRowSet(rs, view);
+        return rsToBeeRowSet(rs, view, idName, versionName);
       }
 
       @Override
@@ -368,15 +376,9 @@ public class QueryServiceBean {
     return !BeeUtils.isEmpty(dbTables(dbName, dbSchema, table));
   }
 
-  public BeeRowSet rsToBeeRowSet(ResultSet rs, BeeView view) throws SQLException {
+  public BeeRowSet rsToBeeRowSet(ResultSet rs, BeeView view, String idName, String versionName)
+      throws SQLException {
     BeeColumn[] rsCols = JdbcUtils.getColumns(rs);
-    String idName = null;
-    String versionName = null;
-
-    if (!BeeUtils.isEmpty(view)) {
-      idName = view.getSourceIdName();
-      versionName = view.getSourceVersionName();
-    }
     List<BeeColumn> columns = Lists.newArrayList();
     int idIndex = -1;
     int versionIndex = -1;
@@ -386,7 +388,7 @@ public class QueryServiceBean {
         String colName = col.getId();
 
         if (view.hasColumn(colName)) {
-          switch (view.getType(colName)) {
+          switch (view.getColumnType(colName)) {
             case BOOLEAN:
               col.setType(ValueType.BOOLEAN);
               break;

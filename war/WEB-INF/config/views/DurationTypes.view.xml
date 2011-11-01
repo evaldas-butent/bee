@@ -6,7 +6,7 @@
   source="DurationTypes"
   >
   <BeeColumns>
-    <BeeColumn name="Name" expression="Name" />
+    <BeeSimpleColumn expression="Name" />
   </BeeColumns>
   <BeeOrder>
     <OrderBy column="Name" />

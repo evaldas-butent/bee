@@ -17,9 +17,13 @@
     <xs:attribute name="readOnly" type="xs:boolean" />
   </xs:complexType>
 
+  <xs:element name="column" type="bee:columnType" abstract="true" />
+  <xs:element name="BeeSimpleColumn" type="bee:simpleColumnType" substitutionGroup="bee:column" />
+  <xs:element name="BeeJoinColumn" type="bee:joinColumnType" substitutionGroup="bee:column" />
+
   <xs:complexType name="columns">
     <xs:sequence>
-      <xs:element name="BeeColumn" type="bee:columnType" maxOccurs="unbounded" />
+      <xs:element ref="bee:column" maxOccurs="unbounded" />
     </xs:sequence>
   </xs:complexType>
 
@@ -30,25 +34,38 @@
   </xs:complexType>
 
   <xs:complexType name="columnType">
-    <xs:attribute name="name" type="bee:fieldNameType" use="required" />
-    <xs:attribute name="expression" type="bee:expressionType" use="required" />
-    <xs:attribute name="locale">
-      <xs:simpleType>
-        <xs:restriction base="xs:string">
-          <xs:maxLength value="2" />
-        </xs:restriction>
-      </xs:simpleType>
-    </xs:attribute>
+        <xs:attribute name="name" type="bee:nameType" />
+    <xs:attribute name="expression" type="bee:fieldNameType" use="required" />
   </xs:complexType>
 
+  <xs:complexType name="simpleColumnType">
+    <xs:complexContent>
+      <xs:extension base="bee:columnType">
+        <xs:attribute name="locale">
+          <xs:simpleType>
+            <xs:restriction base="xs:string">
+              <xs:maxLength value="2" />
+            </xs:restriction>
+          </xs:simpleType>
+        </xs:attribute>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="joinColumnType">
+    <xs:complexContent>
+      <xs:extension base="bee:columnType">
+        <xs:sequence>
+          <xs:element ref="bee:column" maxOccurs="unbounded" />
+        </xs:sequence>
+        <xs:attribute name="source" type="bee:tableNameType" />
+        <xs:attribute name="joinType" type="bee:joinType" use="required" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  
   <xs:complexType name="orderType">
     <xs:attribute name="column" type="bee:fieldNameType" use="required" />
     <xs:attribute name="descending" type="xs:boolean" />
   </xs:complexType>
-
-  <xs:simpleType name="expressionType">
-    <xs:restriction base="xs:string">
-      <xs:pattern value="[A-Z][a-zA-Z0-9]{0,29}([->][A-Z][a-zA-Z0-9]{0,29})*"/>
-    </xs:restriction>
-  </xs:simpleType>
 </xs:schema>

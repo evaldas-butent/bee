@@ -9,7 +9,7 @@
   <item id="persons" parent="cont_menu" order="20" text="Asmenys" service="grid" parameters="Persons" separators="*" />
 
   <item id="task_menu" order="30" text="Užduotys" />
-  <item id="tasks" parent="task_menu" order="10" text="Gautos" service="grid" parameters="AssignedTasks" />
+  <item id="tasks" parent="task_menu" order="10" text="Gautos" service="grid" parameters="TaskUsers" />
   <item id="tasks" parent="task_menu" order="20" text="Deleguotos" service="grid" parameters="DelegatedTasks" />
   <item id="tasks" parent="task_menu" order="30" text="Stebimos" service="grid" parameters="ObservedTasks" />
   <item id="tasks" parent="task_menu" order="100" text="Darbų tipai" service="grid" parameters="DurationTypes" separators="*" />

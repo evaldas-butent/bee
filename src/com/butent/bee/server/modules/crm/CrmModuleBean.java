@@ -2,6 +2,7 @@ package com.butent.bee.server.modules.crm;
 
 import com.butent.bee.server.data.DataEditorBean;
 import com.butent.bee.server.data.QueryServiceBean;
+import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.BeeModule;
@@ -31,6 +32,8 @@ public class CrmModuleBean implements BeeModule {
 
   private static Logger logger = Logger.getLogger(CrmModuleBean.class.getName());
 
+  @EJB
+  SystemBean sys;
   @EJB
   DataEditorBean deb;
   @EJB

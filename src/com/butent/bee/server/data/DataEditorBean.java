@@ -5,7 +5,6 @@ import com.google.common.collect.Maps;
 import com.google.common.primitives.Longs;
 
 import com.butent.bee.server.data.BeeTable.BeeField;
-import com.butent.bee.server.data.BeeView.ViewField;
 import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.IsQuery;
@@ -139,11 +138,10 @@ public class DataEditorBean {
         } else {
           String oldValue = row.getShadowString(i);
           Object newValue = Value.parseValue(colType, row.getString(i), false).getObjectValue();
-          String locale = view.getLocale(colName);
-          ViewField colField = view.getViewField(view.getExpression(colName));
+          String locale = view.getColumnLocale(colName);
 
-          if (!registerField(colField,
-              new FieldInfo(colField.getAlias(), colName, colField.getField(),
+          if (!registerField(colName,
+              new FieldInfo(view.getColumnSource(colName), colName, view.getColumnField(colName),
                   oldValue, newValue, locale), updates, view, response)) {
             break;
           }
@@ -176,7 +174,7 @@ public class DataEditorBean {
       if (!response.hasErrors()) {
         if (returnAllFields) {
           BeeRowSet newRs = sys.getViewData(view.getName(),
-              SqlUtils.equal(view.getSource(), view.getSourceIdName(), id), null, 0, 0);
+              SqlUtils.equal(view.getSourceName(), view.getSourceIdName(), id), null, 0, 0);
 
           if (newRs.isEmpty()) {
             response.addError("Optimistic lock exception");
@@ -190,7 +188,7 @@ public class DataEditorBean {
     }
     if (response.hasErrors()) {
       ctx.setRollbackOnly();
-    } else if (usr.isUserTable(view.getSource())) {
+    } else if (usr.isUserTable(view.getSourceName())) {
       usr.invalidateCache();
     }
     return response;
@@ -200,7 +198,7 @@ public class DataEditorBean {
     Assert.notEmpty(viewName);
     Assert.noNulls((Object[]) rows);
     BeeView view = sys.getView(viewName);
-    String tblName = view.getSource();
+    String tblName = view.getSourceName();
     HasConditions wh = SqlUtils.or();
 
     if (view.isReadOnly()) {
@@ -598,7 +596,7 @@ public class DataEditorBean {
     }
     Assert.notEmpty(id);
     BeeRowSet res = qs.getViewData(
-        ss.setWhere(SqlUtils.equal(view.getSource(), view.getSourceIdName(), id)), view);
+        ss.setWhere(SqlUtils.equal(view.getSourceName(), view.getSourceIdName(), id)), view);
 
     if (res.isEmpty()) {
       return false;
@@ -623,33 +621,33 @@ public class DataEditorBean {
     return true;
   }
 
-  private boolean registerField(ViewField colField, FieldInfo fldInfo,
+  private boolean registerField(String colName, FieldInfo fldInfo,
       Map<String, TableInfo> updates, BeeView view, ResponseObject response) {
 
     boolean ok = true;
-    String tblAlias = colField.getOwner();
+    String tblAlias = view.getColumnOwner(colName);
     String relation = null;
-    ViewField srcField = view.getViewField(colField.getSourceExpression());
+    String srcName = view.getColumnParent(colName);
 
     if (BeeUtils.isEmpty(tblAlias)) {
-      tblAlias = colField.getAlias();
+      tblAlias = view.getColumnSource(colName);
     } else {
-      String als = colField.getAlias();
+      String als = view.getColumnSource(colName);
 
       if (!updates.containsKey(als)) {
-        updates.put(als, new TableInfo(als, colField.getTable(), tblAlias));
+        updates.put(als, new TableInfo(als, view.getColumnTable(colName), tblAlias));
       }
     }
-    if (srcField != null) {
-      String als = srcField.getAlias();
-      String fld = srcField.getField();
-      ok = registerField(srcField, new FieldInfo(als, null, fld, null, null, null),
+    if (srcName != null) {
+      String als = view.getColumnSource(srcName);
+      String fld = view.getColumnSource(srcName);
+      ok = registerField(srcName, new FieldInfo(als, null, fld, null, null, null),
           updates, view, response);
-      relation = BeeUtils.concat(".", BeeUtils.ifString(srcField.getOwner(), als), fld);
+      relation = BeeUtils.concat(".", BeeUtils.ifString(view.getColumnOwner(srcName), als), fld);
     }
     if (ok) {
       if (!updates.containsKey(tblAlias)) {
-        updates.put(tblAlias, new TableInfo(tblAlias, colField.getTable(), relation));
+        updates.put(tblAlias, new TableInfo(tblAlias, view.getColumnTable(colName), relation));
       }
       boolean found = false;
 

@@ -4,13 +4,7 @@
 
   <BeeGrid name="Cities" viewName="Cities" caption="Miestai" maxColumnWidth="300">
     <columns>
-      <BeeDataColumn name="City" source="Name" caption="Miestas">
-        <style>
-          <bodyStyle>
-            <inline>white-space: pre-wrap;</inline>
-          </bodyStyle>
-        </style>
-      </BeeDataColumn>
+      <BeeDataColumn name="City" source="Name" caption="Miestas" />
 
       <BeeRelColumn name="Country" source="CountryName" relSource="Country" relColumn="Name"
         caption="Šalis">

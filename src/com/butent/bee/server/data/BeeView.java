@@ -3,7 +3,6 @@ package com.butent.bee.server.data;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.google.common.primitives.Ints;
 
 import com.butent.bee.server.data.BeeTable.BeeField;
 import com.butent.bee.server.sql.HasConditions;
@@ -18,6 +17,9 @@ import com.butent.bee.shared.HasExtendedInfo;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
+import com.butent.bee.shared.data.XmlView.XmlColumn;
+import com.butent.bee.shared.data.XmlView.XmlJoinColumn;
+import com.butent.bee.shared.data.XmlView.XmlSimpleColumn;
 import com.butent.bee.shared.data.filter.ColumnColumnFilter;
 import com.butent.bee.shared.data.filter.ColumnIsEmptyFilter;
 import com.butent.bee.shared.data.filter.ColumnValueFilter;
@@ -36,7 +38,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Logger;
 
 /**
  * Implements database view management - contains parameters for views and their fields and methods
@@ -45,164 +46,116 @@ import java.util.logging.Logger;
 
 public class BeeView implements HasExtendedInfo {
 
-  class ViewField {
-    private final String table;
+  private class ColumnInfo {
+    private final String colName;
     private final String alias;
-    private final String field;
-    private final SqlDataType type;
-    private final boolean notNull;
-    private final String sourceExpression;
-    private final String owner;
+    private final BeeField field;
+    private final String locale;
+    private final String parentName;
+    private final String ownerAlias;
 
-    private ViewField(String tbl, String als, String fld, SqlDataType type, boolean notNull,
-        String sourceExpression, String owner) {
-      this.table = tbl;
-      this.alias = als;
-      this.field = fld;
-      this.type = type;
-      this.notNull = notNull;
-      this.sourceExpression = sourceExpression;
-      this.owner = owner;
+    public ColumnInfo(String alias, BeeField field, String colName, String locale, String parent,
+        String owner) {
+      this.colName = colName;
+      this.alias = alias;
+      this.field = field;
+      this.locale = locale;
+      this.parentName = parent;
+      this.ownerAlias = owner;
     }
 
     public String getAlias() {
       return alias;
     }
 
-    public String getField() {
+    public BeeField getField() {
       return field;
     }
 
-    public String getOwner() {
-      return owner;
+    public String getLocale() {
+      return locale;
     }
 
-    public String getSourceExpression() {
-      return sourceExpression;
+    public String getName() {
+      return colName;
     }
 
-    public String getTable() {
-      return table;
+    public String getOwnerAlias() {
+      return ownerAlias;
     }
 
-    public SqlDataType getType() {
-      return type;
-    }
-
-    public boolean isNotNull() {
-      return notNull;
+    public String getParent() {
+      return parentName;
     }
   }
 
-  enum JoinType {
-    INNER('-'), RIGHT('<'), LEFT('>'), FULL('+');
-
-    private final char joinChar;
-
-    private JoinType(char joinChar) {
-      this.joinChar = joinChar;
-    }
-
-    public char getJoinChar() {
-      return joinChar;
-    }
+  private enum JoinType {
+    INNER, RIGHT, LEFT, FULL;
   };
 
-  private static final int NAME = 0;
-  private static final int EXPRESSION = 1;
-  private static final int LOCALE = 2;
-
   private final String name;
-  private final String source;
-  private final String sourceIdName;
-  private final String sourceVersionName;
+  private final BeeTable source;
+  private final String sourceAlias;
   private String sourceFilter;
   private final boolean readOnly;
   private final SqlSelect query;
-  private final Map<String, String[]> columns = Maps.newLinkedHashMap();
-  private final Map<String, ViewField> expressions = Maps.newHashMap();
+  private final Map<String, ColumnInfo> columns = Maps.newLinkedHashMap();
   private final Map<String, Boolean> orders = Maps.newLinkedHashMap();
 
-  BeeView(String name, String source, String idName, String versionName, boolean readOnly) {
+  BeeView(String name, BeeTable source, boolean readOnly) {
     Assert.notEmpty(name);
-    Assert.notEmpty(source);
-    Assert.notEmpty(idName);
-    Assert.notEmpty(versionName);
+    Assert.notNull(source);
 
     this.name = name;
     this.source = source;
-    this.sourceIdName = idName;
-    this.sourceVersionName = versionName;
+    this.sourceAlias = getSourceName();
     this.readOnly = readOnly;
-    this.query = new SqlSelect().addFrom(source);
-  }
-
-  public String getAlias(String colName) {
-    return getViewField(getExpression(colName)).getAlias();
+    this.query = new SqlSelect().addFrom(getSourceName(), getSourceAlias());
   }
 
   public int getColumnCount() {
     return columns.size();
   }
 
+  public String getColumnField(String colName) {
+    return getColumnInfo(colName).getField().getName();
+  }
+
+  public String getColumnLocale(String colName) {
+    return getColumnInfo(colName).getLocale();
+  }
+
+  public String getColumnName(String colName) {
+    return getColumnInfo(colName).getName();
+  }
+
   public Collection<String> getColumnNames() {
     Collection<String> cols = Lists.newArrayList();
 
-    for (String[] col : columns.values()) {
-      cols.add(col[NAME]);
+    for (ColumnInfo col : columns.values()) {
+      cols.add(col.getName());
     }
     return cols;
   }
 
-  public IsCondition getCondition(ColumnColumnFilter filter) {
-    String firstName = filter.getColumn();
-    String secondName = filter.getValue();
-    IsExpression firstSrc = SqlUtils.field(getAlias(firstName), getField(firstName));
-    IsExpression secondSrc = SqlUtils.field(getAlias(secondName), getField(secondName));
-
-    return SqlUtils.compare(firstSrc, filter.getOperator(), secondSrc);
+  public String getColumnOwner(String colName) {
+    return getColumnInfo(colName).getOwnerAlias();
   }
 
-  public IsCondition getCondition(ColumnIsEmptyFilter filter) {
-    String colName = filter.getColumn();
-    String als = getAlias(colName);
-    String fld = getField(colName);
-    IsCondition condition = SqlUtils.equal(als, fld, getType(colName).getEmptyValue());
-
-    if (!isNotNull(colName)) {
-      condition = SqlUtils.or(SqlUtils.isNull(als, fld), condition);
-    }
-    return condition;
+  public String getColumnParent(String colName) {
+    return getColumnInfo(colName).getParent();
   }
 
-  public IsCondition getCondition(ColumnValueFilter filter) {
-    String colName = filter.getColumn();
-
-    return SqlUtils.compare(SqlUtils.field(getAlias(colName), getField(colName)),
-        filter.getOperator(), SqlUtils.constant(filter.getValue()));
+  public String getColumnSource(String colName) {
+    return getColumnInfo(colName).getAlias();
   }
 
-  public IsCondition getCondition(CompoundFilter filter) {
-    HasConditions condition = null;
-    List<Filter> subFilters = filter.getSubFilters();
+  public String getColumnTable(String colName) {
+    return getColumnInfo(colName).getField().getTable();
+  }
 
-    if (!BeeUtils.isEmpty(subFilters)) {
-      switch (filter.getJoinType()) {
-        case AND:
-          condition = SqlUtils.and();
-          break;
-        case OR:
-          condition = SqlUtils.or();
-          break;
-        default:
-          Assert.unsupported();
-          break;
-      }
-      for (Filter subFilter : subFilters) {
-        condition.add(getCondition(subFilter));
-      }
-    }
-    return condition;
+  public SqlDataType getColumnType(String colName) {
+    return getColumnInfo(colName).getField().getType();
   }
 
   public IsCondition getCondition(Filter filter) {
@@ -237,78 +190,27 @@ public class BeeView implements HasExtendedInfo {
     return null;
   }
 
-  public IsCondition getCondition(IdFilter filter) {
-    return SqlUtils.compare(SqlUtils.field(source, sourceIdName),
-        filter.getOperator(), SqlUtils.constant(filter.getValue()));
-  }
-
-  public IsCondition getCondition(NegationFilter filter) {
-    return SqlUtils.not(getCondition(filter.getSubFilter()));
-  }
-
-  public IsCondition getCondition(VersionFilter filter) {
-    return SqlUtils.compare(SqlUtils.field(source, sourceVersionName),
-        filter.getOperator(), SqlUtils.constant(filter.getValue()));
-  }
-
-  public String getExpression(String colName) {
-    return getColumnInfo(colName)[EXPRESSION];
-  }
-
-  public String getField(String colName) {
-    return getViewField(getExpression(colName)).getField();
-  }
-
   public String getFilter() {
     return sourceFilter;
   }
 
   public List<ExtendedProperty> getInfo() {
     List<ExtendedProperty> info = Lists.newArrayList();
-    PropertyUtils.addProperties(info, false, "Name", getName(), "Source", getSource(),
-        "Source Id Name", getSourceIdName(), "Source Version Name", getSourceVersionName(),
-        "Filter", getFilter(), "Read Only", isReadOnly(), "Query", query.getQuery(),
-        "Columns", columns.size());
 
-    String sub;
+    PropertyUtils.addProperties(info, false, "Name", getName(), "Source", getSourceName(),
+        "Source Alias", getSourceAlias(), "Source Id Name", getSourceIdName(),
+        "Source Version Name", getSourceVersionName(), "Filter", getFilter(),
+        "Read Only", isReadOnly(), "Query", query.getQuery(), "Columns", getColumnCount());
+
     int i = 0;
-    for (Map.Entry<String, String[]> entry : columns.entrySet()) {
-      String key = BeeUtils.concat(1, "Column", ++i, entry.getKey());
+    for (String col : getColumnNames()) {
+      String key = BeeUtils.concat(1, "Column", ++i, col);
 
-      int j = 0;
-      for (String value : entry.getValue()) {
-        switch (j++) {
-          case NAME:
-            sub = "name";
-            break;
-          case EXPRESSION:
-            sub = "expression";
-            break;
-          case LOCALE:
-            sub = "locale";
-            break;
-          default:
-            sub = null;
-        }
-        info.add(new ExtendedProperty(key, sub, value));
-      }
+      PropertyUtils.addChildren(info, key,
+          "Table", getColumnTable(col), "Alias", getColumnSource(col),
+          "Field", getColumnField(col), "Type", getColumnType(col), "Locale", getColumnLocale(col),
+          "Parent Column", getColumnParent(col), "Owner Alias", getColumnOwner(col));
     }
-
-    info.add(new ExtendedProperty("Expressions", BeeUtils.toString(expressions.size())));
-
-    i = 0;
-    for (Map.Entry<String, ViewField> entry : expressions.entrySet()) {
-      String key = BeeUtils.concat(1, "Expression", ++i, entry.getKey());
-      ViewField fld = entry.getValue();
-      if (fld == null) {
-        continue;
-      }
-
-      PropertyUtils.addChildren(info, key, "Table", fld.getTable(), "Alias", fld.getAlias(),
-          "Field", fld.getField(), "Type", fld.getType(), "Not Null", fld.isNotNull(),
-          "Source Expression", fld.getSourceExpression(), "Owner", fld.getOwner());
-    }
-
     info.add(new ExtendedProperty("Orders", BeeUtils.toString(orders.size())));
     i = 0;
     for (Map.Entry<String, Boolean> entry : orders.entrySet()) {
@@ -319,62 +221,33 @@ public class BeeView implements HasExtendedInfo {
     return info;
   }
 
-  public String getLocale(String colName) {
-    return getColumnInfo(colName)[LOCALE];
-  }
-
   public String getName() {
     return name;
   }
 
-  public String getName(String colName) {
-    return getColumnInfo(colName)[NAME];
-  }
-
   public SqlSelect getQuery() {
     Assert.state(!isEmpty());
-    return query.copyOf().addOrder(getSource(), sourceIdName);
-  }
-
-  public String getRelSource(String colName) {
-    String relSource = getViewField(getExpression(colName)).getSourceExpression();
-
-    if (!BeeUtils.isEmpty(relSource)) {
-      for (String[] colInfo : columns.values()) {
-        if (BeeUtils.equals(relSource, colInfo[EXPRESSION])) {
-          return colInfo[NAME];
-        }
-      }
-    }
-    return null;
+    return query.copyOf().addOrder(getSourceName(), getSourceIdName());
   }
 
   public IsCondition getRowCondition(long rowId) {
-    return SqlUtils.equal(source, sourceIdName, rowId);
+    return SqlUtils.equal(getSourceName(), getSourceIdName(), rowId);
   }
-  
-  public String getSource() {
-    return source;
+
+  public String getSourceAlias() {
+    return sourceAlias;
   }
 
   public String getSourceIdName() {
-    return sourceIdName;
+    return source.getIdName();
+  }
+
+  public String getSourceName() {
+    return source.getName();
   }
 
   public String getSourceVersionName() {
-    return sourceVersionName;
-  }
-
-  public String getTable(String colName) {
-    return getViewField(getExpression(colName)).getTable();
-  }
-
-  public SqlDataType getType(String colName) {
-    return getViewField(getExpression(colName)).getType();
-  }
-
-  public ViewField getViewField(String expression) {
-    return expressions.get(expression);
+    return source.getVersionName();
   }
 
   public boolean hasColumn(String colName) {
@@ -385,20 +258,16 @@ public class BeeView implements HasExtendedInfo {
     return BeeUtils.isEmpty(getColumnCount());
   }
 
-  public boolean isNotNull(String colName) {
-    return getViewField(getExpression(colName)).isNotNull();
-  }
-
   public boolean isReadOnly() {
     return readOnly;
   }
 
   public Filter parseFilter(String filter) {
     Assert.notEmpty(filter);
-    
+
     List<IsColumn> cols = Lists.newArrayListWithCapacity(columns.size());
     for (String col : columns.keySet()) {
-      cols.add(new BeeColumn(getType(col).toValueType(), col));
+      cols.add(new BeeColumn(getColumnType(col).toValueType(), col));
     }
 
     Filter flt = DataUtils.parseCondition(filter, cols, getSourceIdName(), getSourceVersionName());
@@ -407,39 +276,86 @@ public class BeeView implements HasExtendedInfo {
     }
     return flt;
   }
-  
+
   public Order parseOrder(String input) {
     Assert.notEmpty(input);
-    
+
     Set<String> colNames = Sets.newHashSet(getSourceIdName(), getSourceVersionName());
     colNames.addAll(getColumnNames());
-    
+
     return Order.parse(input, colNames);
   }
-  
-  void addColumn(String colName, String expression, String locale, Map<String, BeeTable> tables) {
-    Assert.notEmpty(colName);
-    Assert.notEmpty(expression);
-    Assert.state(!hasColumn(colName),
-        BeeUtils.concat(1, "Dublicate column name:", getName(), colName));
 
-    if (loadExpression(expression, locale, tables)) {
-      String[] colInfo = new String[Ints.max(NAME, EXPRESSION, LOCALE) + 1];
-      colInfo[NAME] = colName;
-      colInfo[EXPRESSION] = expressionKey(expression, locale);
-      colInfo[LOCALE] = locale;
-      columns.put(BeeUtils.normalize(colName), colInfo);
+  void addColumns(BeeTable table, String alias, Collection<XmlColumn> cols, String parent,
+      Map<String, BeeTable> tables) {
+    Assert.notNull(table);
+    Assert.notEmpty(alias);
+    Assert.notEmpty(cols);
 
-      query.addField(getAlias(colName), getField(colName), colName);
+    for (XmlColumn column : cols) {
+      if (column instanceof XmlJoinColumn) {
+        XmlJoinColumn col = (XmlJoinColumn) column;
+        BeeTable relTable;
+        BeeField field;
+        IsCondition join;
+        String als = alias;
+        String relAls = SqlUtils.uniqueName();
+
+        if (!BeeUtils.isEmpty(col.source)) {
+          relTable = tables.get(BeeUtils.normalize(col.source));
+          Assert.notEmpty(relTable);
+          field = relTable.getField(col.expression);
+
+          if (field.isExtended()) {
+            LogUtils.warning(LogUtils.getDefaultLogger(),
+                "Inverse join is not supported on extended fields:",
+                relTable.getName() + "." + field.getName(), "View:", getName());
+            continue;
+          }
+          join = SqlUtils.join(als, table.getIdName(), relAls, field.getName());
+        } else {
+          field = table.getField(col.expression);
+
+          if (field.isExtended()) {
+            als = table.joinExtField(query, alias, field);
+          }
+          relTable = tables.get(BeeUtils.normalize(field.getRelation()));
+          Assert.notEmpty(relTable);
+          join = SqlUtils.join(als, field.getName(), relAls, relTable.getIdName());
+        }
+        String relTbl = relTable.getName();
+
+        switch (JoinType.valueOf(col.joinType)) {
+          case INNER:
+            query.addFromInner(relTbl, relAls, join);
+            break;
+          case LEFT:
+            query.addFromLeft(relTbl, relAls, join);
+            break;
+          case RIGHT:
+            query.addFromRight(relTbl, relAls, join);
+            break;
+          case FULL:
+            query.addFromFull(relTbl, relAls, join);
+            break;
+        }
+        String colName = addColumn(alias, field, col.name, null, parent);
+        addColumns(relTable, relAls, col.columns, colName, tables);
+
+      } else if (column instanceof XmlSimpleColumn) {
+        XmlSimpleColumn col = (XmlSimpleColumn) column;
+        BeeField field = table.getField(col.expression);
+        addColumn(alias, field, BeeUtils.ifString(col.name, field.getName()), col.locale, parent);
+      }
     }
   }
 
   void addOrder(String colName, boolean descending) {
     Assert.state(hasColumn(colName));
-    orders.put(getName(colName), descending);
+    orders.put(getColumnName(colName), descending);
 
-    String als = getAlias(colName);
-    String fld = getField(colName);
+    String als = getColumnSource(colName);
+    String fld = getColumnField(colName);
 
     if (descending) {
       query.addOrderDesc(als, fld);
@@ -462,116 +378,106 @@ public class BeeView implements HasExtendedInfo {
     this.sourceFilter = strFilter;
   }
 
-  private String expressionKey(String expression, String locale) {
-    String xpr = expression;
+  private String addColumn(String alias, BeeField field, String col, String locale, String parent) {
+    String colName = BeeUtils.ifString(col, SqlUtils.uniqueName());
 
-    for (JoinType join : JoinType.values()) {
-      xpr = xpr.replace(join.getJoinChar(), '.');
-    }
-    return BeeUtils.concat(0, xpr, BeeUtils.parenthesize(BeeUtils.normalize(locale)));
-  }
+    Assert.state(!hasColumn(colName),
+        BeeUtils.concat(1, "Dublicate column name:", getName(), colName));
 
-  private String[] getColumnInfo(String colName) {
-    Assert.state(hasColumn(colName), "Unknown view column: " + getName() + " " + colName);
-    return columns.get(BeeUtils.normalize(colName));
-  }
-
-  private boolean loadExpression(String expression, String locale, Map<String, BeeTable> tables) {
-    String keyExpr = expressionKey(expression, locale);
-    Logger logger = LogUtils.getDefaultLogger();
-
-    if (expressions.containsKey(keyExpr)) {
-      return true;
-    }
-    JoinType joinType = null;
-    int pos = -1;
-
-    for (JoinType join : BeeView.JoinType.values()) {
-      int idx = expression.lastIndexOf(join.getJoinChar());
-      if (idx > pos) {
-        joinType = join;
-        pos = idx;
-      }
-    }
-    String xpr = null;
-    String fld = expression;
-
-    if (pos >= 0) {
-      xpr = expression.substring(0, pos);
-      fld = expression.substring(pos + 1);
-    }
-    String tbl;
-    String als = null;
-    String owner = null;
-    BeeTable table = null;
-
-    if (BeeUtils.isEmpty(xpr)) {
-      tbl = getSource();
-      als = tbl;
-      table = tables.get(BeeUtils.normalize(tbl));
-    } else {
-      if (!loadExpression(xpr, null, tables)) {
-        return false;
-      }
-      xpr = expressionKey(xpr, null);
-      ViewField src = expressions.get(xpr);
-      tbl = tables.get(BeeUtils.normalize(src.getTable())).getField(src.getField()).getRelation();
-
-      if (BeeUtils.isEmpty(tbl)) {
-        LogUtils.warning(logger, "Not a relation field:", xpr, "View:", getName());
-        return false;
-      }
-      table = tables.get(BeeUtils.normalize(tbl));
-
-      if (table == null) {
-        LogUtils.warning(logger, "Unknown relation table:", tbl, "View:", getName(), xpr);
-        return false;
-      }
-      for (ViewField v : expressions.values()) {
-        if (BeeUtils.same(v.getSourceExpression(), xpr) && BeeUtils.isEmpty(v.getOwner())) {
-          als = v.getAlias();
-          break;
-        }
-      }
-      if (BeeUtils.isEmpty(als)) {
-        als = SqlUtils.uniqueName();
-        IsCondition join = SqlUtils.join(src.getAlias(), src.getField(), als, table.getIdName());
-
-        switch (joinType) {
-          case RIGHT:
-            query.addFromRight(tbl, als, join);
-            break;
-
-          case LEFT:
-            query.addFromLeft(tbl, als, join);
-            break;
-
-          case INNER:
-            query.addFromInner(tbl, als, join);
-            break;
-
-          case FULL:
-            query.addFromFull(tbl, als, join);
-            break;
-        }
-      }
-    }
-    BeeField field = table.getField(fld);
+    BeeTable table = field.getOwner();
+    String ownerAlias = null;
 
     if (!BeeUtils.isEmpty(locale)) {
       if (field.isTranslatable()) {
-        owner = als;
-        als = table.joinTranslationField(query, owner, field, locale);
+        ownerAlias = alias;
+        alias = table.joinTranslationField(query, ownerAlias, field, locale);
       } else {
-        LogUtils.warning(logger, "Field is not translatable:", tbl + "." + fld, "View:", getName());
-        return false;
+        LogUtils.warning(LogUtils.getDefaultLogger(),
+            "Field is not translatable:", table.getName() + "." + field.getName(),
+            "View:", getName());
+        return null;
       }
     } else if (field.isExtended()) {
-      owner = als;
-      als = table.joinExtField(query, owner, field);
+      ownerAlias = alias;
+      alias = table.joinExtField(query, ownerAlias, field);
     }
-    expressions.put(keyExpr,
-        new ViewField(tbl, als, fld, field.getType(), field.isNotNull(), xpr, owner));
-    return true;
+    if (!BeeUtils.isEmpty(col)) {
+      query.addField(alias, field.getName(), colName);
+    }
+    columns.put(BeeUtils.normalize(colName),
+        new ColumnInfo(alias, field, colName, locale, parent, ownerAlias));
+
+    return colName;
+  }
+
+  private ColumnInfo getColumnInfo(String colName) {
+    Assert.state(hasColumn(colName), "Unknown view column: " + getName() + "." + colName);
+    return columns.get(BeeUtils.normalize(colName));
+  }
+
+  private IsCondition getCondition(ColumnColumnFilter filter) {
+    String firstName = filter.getColumn();
+    String secondName = filter.getValue();
+    IsExpression firstSrc = SqlUtils.field(getColumnSource(firstName), getColumnField(firstName));
+    IsExpression secondSrc =
+        SqlUtils.field(getColumnSource(secondName), getColumnField(secondName));
+
+    return SqlUtils.compare(firstSrc, filter.getOperator(), secondSrc);
+  }
+
+  private IsCondition getCondition(ColumnIsEmptyFilter filter) {
+    String colName = filter.getColumn();
+    String als = getColumnSource(colName);
+    String fld = getColumnField(colName);
+    IsCondition condition = SqlUtils.equal(als, fld, getColumnType(colName).getEmptyValue());
+
+    if (!getColumnInfo(colName).getField().isNotNull()) {
+      condition = SqlUtils.or(SqlUtils.isNull(als, fld), condition);
+    }
+    return condition;
+  }
+
+  private IsCondition getCondition(ColumnValueFilter filter) {
+    String colName = filter.getColumn();
+
+    return SqlUtils.compare(SqlUtils.field(getColumnSource(colName), getColumnField(colName)),
+        filter.getOperator(), SqlUtils.constant(filter.getValue()));
+  }
+
+  private IsCondition getCondition(CompoundFilter filter) {
+    HasConditions condition = null;
+    List<Filter> subFilters = filter.getSubFilters();
+
+    if (!BeeUtils.isEmpty(subFilters)) {
+      switch (filter.getJoinType()) {
+        case AND:
+          condition = SqlUtils.and();
+          break;
+        case OR:
+          condition = SqlUtils.or();
+          break;
+        default:
+          Assert.unsupported();
+          break;
+      }
+      for (Filter subFilter : subFilters) {
+        condition.add(getCondition(subFilter));
+      }
+    }
+    return condition;
+  }
+
+  private IsCondition getCondition(IdFilter filter) {
+    return SqlUtils.compare(SqlUtils.field(getSourceName(), getSourceIdName()),
+        filter.getOperator(), SqlUtils.constant(filter.getValue()));
+  }
+
+  private IsCondition getCondition(NegationFilter filter) {
+    return SqlUtils.not(getCondition(filter.getSubFilter()));
+  }
+
+  private IsCondition getCondition(VersionFilter filter) {
+    return SqlUtils.compare(SqlUtils.field(getSourceName(), getSourceVersionName()),
+        filter.getOperator(), SqlUtils.constant(filter.getValue()));
   }
 }

@@ -34,7 +34,7 @@ public class TestSqlDelete {
   public final void testGetSources() {
     SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
 
-    SqlDelete delete = new SqlDelete("Target_table", "target_alias");
+    SqlDelete delete = new SqlDelete("Target_table");
     delete.addFrom("From_source1");
     delete.addFrom("From_source2");
     delete.setWhere(SqlUtils.sqlFalse());
@@ -66,14 +66,14 @@ public class TestSqlDelete {
     SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
     SqlBuilder builder = SqlBuilderFactory.getBuilder();
 
-    SqlDelete delete = new SqlDelete("Target_table", "target_alias");
+    SqlDelete delete = new SqlDelete("Target_table");
     delete.addFrom("From_source1");
     delete.addFrom("From_source2");
 
     delete.setWhere(SqlUtils.equal(SqlUtils.name("username"), "root"));
 
     assertEquals(
-        "DELETE FROM Target_table target_alias FROM From_source1, From_source2 WHERE username = 'root'",
+        "DELETE FROM Target_table FROM From_source1, From_source2 WHERE username = 'root'",
         delete.getSqlString(builder));
   }
 

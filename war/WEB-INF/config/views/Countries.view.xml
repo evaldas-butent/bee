@@ -6,8 +6,8 @@
   source="Countries"
   >
   <BeeColumns>
-    <BeeColumn name="Name" expression="Name" />
-    <BeeColumn name="Code" expression="Code" />
+    <BeeSimpleColumn expression="Name" />
+    <BeeSimpleColumn expression="Code" />
   </BeeColumns>
   <BeeOrder>
     <OrderBy column="Name" />

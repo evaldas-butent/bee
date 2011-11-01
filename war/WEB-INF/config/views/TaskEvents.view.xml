@@ -6,15 +6,23 @@
   source="TaskEvents"
   >
   <BeeColumns>
-    <BeeColumn name="Task" expression="Task" />
-    <BeeColumn name="PublisherFirstName" expression="Publisher>Person>FirstName" />
-    <BeeColumn name="PublisherLastName" expression="Publisher>Person>LastName" />
-    <BeeColumn name="PublishTime" expression="PublishTime" />
-    <BeeColumn name="Comment" expression="Comment" />
-    <BeeColumn name="Event" expression="Event" />
-    <BeeColumn name="EventNote" expression="EventNote" />
-    <BeeColumn name="EventDuration" expression="EventDuration>DurationInMinutes" />
-    <BeeColumn name="DurationType" expression="EventDuration>DurationType>Name" />
+    <BeeSimpleColumn expression="Task" />
+    <BeeJoinColumn expression="Publisher" joinType="LEFT">
+      <BeeJoinColumn expression="Person" joinType="LEFT">
+        <BeeSimpleColumn name="PublisherFirstName" expression="FirstName" />
+        <BeeSimpleColumn name="PublisherLastName" expression="LastName" />
+      </BeeJoinColumn>
+    </BeeJoinColumn>
+    <BeeSimpleColumn expression="PublishTime" />
+    <BeeSimpleColumn expression="Comment" />
+    <BeeSimpleColumn expression="Event" />
+    <BeeSimpleColumn expression="EventNote" />
+    <BeeJoinColumn expression="EventDuration" joinType="LEFT">
+      <BeeSimpleColumn name="EventDuration" expression="DurationInMinutes" />
+      <BeeJoinColumn expression="DurationType" joinType="LEFT">
+        <BeeSimpleColumn name="DurationType" expression="Name" />
+      </BeeJoinColumn>
+    </BeeJoinColumn>
   </BeeColumns>
 </BeeView>
  
