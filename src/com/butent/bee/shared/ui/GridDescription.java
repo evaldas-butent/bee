@@ -7,6 +7,7 @@ import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.HasExtendedInfo;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.HasViewName;
+import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -29,10 +30,9 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
 
   private enum Serial {
     NAME, CAPTION, VIEW, ID_NAME, VERSION_NAME, FILTER, ORDER, HAS_HEADERS, HAS_FOOTERS,
-    ASYNC_THRESHOLD, PAGING_THRESHOLD, SEARCH_THRESHOLD, INITIAL_ROW_SET_SIZE, PAGE_SIZE,
+    CACHING, ASYNC_THRESHOLD, PAGING_THRESHOLD, SEARCH_THRESHOLD, INITIAL_ROW_SET_SIZE,
     READONLY, NEW_ROW_FORM, NEW_ROW_COLUMNS, EDIT_FORM, EDIT_COLUMNS, EDIT_MODE,
-    HEADER, BODY, FOOTER,
-    ROW_STYLES, ROW_MESSAGE, ROW_EDITABLE, ROW_VALIDATION,
+    HEADER, BODY, FOOTER, ROW_STYLES, ROW_MESSAGE, ROW_EDITABLE, ROW_VALIDATION,
     SHOW_COLUMN_WIDTHS, MIN_COLUMN_WIDTH, MAX_COLUMN_WIDTH, COLUMNS
   }
 
@@ -58,13 +58,13 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   private Boolean hasHeaders = null;
   private Boolean hasFooters = null;
 
+  private Boolean caching = null;
+
   private Integer asyncThreshold = null;
   private Integer pagingThreshold = null;
   private Integer searchThreshold = null;
   
   private Integer initialRowSetSize = null;
-
-  private Integer pageSize = null;
 
   private Boolean readOnly = null;
   private String editMode = null;
@@ -171,9 +171,6 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         case NEW_ROW_COLUMNS:
           setNewRowColumns(value);
           break;
-        case PAGE_SIZE:
-          setPageSize(BeeUtils.toIntOrNull(value));
-          break;
         case PAGING_THRESHOLD:
           setPagingThreshold(BeeUtils.toIntOrNull(value));
           break;
@@ -232,6 +229,9 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         case VERSION_NAME:
           setVersionName(value);
           break;
+        case CACHING:
+          setCaching(BeeUtils.toBooleanOrNull(value));
+          break;
       }
     }
   }
@@ -242,6 +242,10 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
 
   public GridComponentDescription getBody() {
     return body;
+  }
+
+  public CachingPolicy getCachingPolicy() {
+    return BeeUtils.isTrue(getCaching()) ? CachingPolicy.FULL : CachingPolicy.NONE; 
   }
 
   public String getCaption() {
@@ -297,11 +301,11 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         "Order", getOrder(),
         "Has Headers", hasHeaders(),
         "Has Footers", hasFooters(),
+        "Caching", getCaching(),
         "Async Threshold", getAsyncThreshold(),
         "Paging Threshold", getPagingThreshold(),
         "Search Threshold", getSearchThreshold(),
         "Initial Row Set Size", getInitialRowSetSize(),
-        "Page Size", getPageSize(),
         "Read Only", isReadOnly(),
         "New Row Form", getNewRowForm(),
         "New Row Columns", getNewRowColumns(),
@@ -384,10 +388,6 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
 
   public Order getOrder() {
     return order;
-  }
-
-  public Integer getPageSize() {
-    return pageSize;
   }
 
   public Integer getPagingThreshold() {
@@ -508,9 +508,6 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         case NEW_ROW_COLUMNS:
           arr[i++] = getNewRowColumns();
           break;
-        case PAGE_SIZE:
-          arr[i++] = getPageSize();
-          break;
         case PAGING_THRESHOLD:
           arr[i++] = getPagingThreshold();
           break;
@@ -559,6 +556,9 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         case VERSION_NAME:
           arr[i++] = getVersionName();
           break;
+        case CACHING:
+          arr[i++] = getCaching();
+          break;
       }
     }
     return Codec.beeSerialize(arr);
@@ -572,6 +572,10 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
     this.body = body;
   }
 
+  public void setCaching(Boolean caching) {
+    this.caching = caching;
+  }
+
   public void setCaption(String caption) {
     this.caption = caption;
   }
@@ -579,14 +583,14 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   public void setDefaults() {
     setHasHeaders(true);
     setHasFooters(true);
+    
+    setCaching(true);
 
     setAsyncThreshold(DataUtils.getDefaultAsyncThreshold());
     setSearchThreshold(DataUtils.getDefaultSearchThreshold());
     setPagingThreshold(DataUtils.getDefaultPagingThreshold());
     
     setInitialRowSetSize(DataUtils.getMaxInitialRowSetSize());
-
-    setPageSize(DataUtils.getDefaultPageSize());
   }
 
   public void setEditColumns(String editColumns) {
@@ -645,10 +649,6 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
     this.order = order;
   }
 
-  public void setPageSize(Integer pageSize) {
-    this.pageSize = pageSize;
-  }
-
   public void setPagingThreshold(Integer pagingThreshold) {
     this.pagingThreshold = pagingThreshold;
   }
@@ -680,9 +680,13 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   public void setShowColumnWidths(Boolean showColumnWidths) {
     this.showColumnWidths = showColumnWidths;
   }
-
+  
   public Boolean showColumnWidths() {
     return showColumnWidths;
+  }
+
+  private Boolean getCaching() {
+    return caching;
   }
 
   private void setIdName(String idName) {

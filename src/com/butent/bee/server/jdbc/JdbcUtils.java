@@ -186,7 +186,7 @@ public class JdbcUtils {
 
   public static int getColumnCount(Object obj) {
     Assert.notNull(obj);
-    int c = BeeConst.SIZE_UNKNOWN;
+    int c = BeeConst.UNDEF;
 
     try {
       if (obj instanceof ResultSetMetaData) {
@@ -398,7 +398,7 @@ public class JdbcUtils {
         c = rs.getRow();
       }
     } catch (SQLException ex) {
-      c = BeeConst.SIZE_UNKNOWN;
+      c = BeeConst.UNDEF;
     }
     return c;
   }
@@ -421,7 +421,7 @@ public class JdbcUtils {
 
   public static int getUpdateCount(Statement stmt) throws JdbcException {
     Assert.notNull(stmt);
-    int cnt = BeeConst.SIZE_UNKNOWN;
+    int cnt = BeeConst.UNDEF;
 
     try {
       cnt = stmt.getUpdateCount();

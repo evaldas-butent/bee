@@ -1,7 +1,6 @@
 package com.butent.bee.client.data;
 
 import com.google.common.collect.Lists;
-import com.google.gwt.view.client.Range;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.shared.Assert;
@@ -24,12 +23,15 @@ import java.util.List;
 public class AsyncProvider extends Provider {
 
   private class Callback implements Queries.RowSetCallback {
-    private final Range range;
+    private final int offset;
+    private final int limit;
     private final boolean updateActiveRow;
+
     private Integer rpcId = null;
 
-    private Callback(Range range, boolean updateActiveRow) {
-      this.range = range;
+    private Callback(int offset, int limit, boolean updateActiveRow) {
+      this.offset = offset;
+      this.limit = limit;
       this.updateActiveRow = updateActiveRow;
     }
 
@@ -41,19 +43,27 @@ public class AsyncProvider extends Provider {
       if (id != null) {
         if (getPendingRequests().contains(id)) {
           getPendingRequests().remove(id);
-          BeeKeeper.getLog().info("response", id, "range", range.getStart(), range.getLength());
+          BeeKeeper.getLog().info("response", id, "range", getOffset(), getLimit());
         } else {
           BeeKeeper.getLog().info("response", id, "ignored");
           return;
         }
       }
 
-      if (!getDisplay().getVisibleRange().equals(range)) {
+      if (getPageStart() != getOffset() || getPageSize() != getLimit()) {
         BeeKeeper.getLog().warning("range changed");
         return;
       }
 
-      updateDisplay(range.getStart(), range.getLength(), rowSet, updateActiveRow);
+      updateDisplay(getOffset(), getLimit(), rowSet, updateActiveRow());
+    }
+
+    private int getLimit() {
+      return limit;
+    }
+
+    private int getOffset() {
+      return offset;
     }
 
     private Integer getRpcId() {
@@ -62,6 +72,10 @@ public class AsyncProvider extends Provider {
 
     private void setRpcId(Integer rpcId) {
       this.rpcId = rpcId;
+    }
+
+    private boolean updateActiveRow() {
+      return updateActiveRow;
     }
   }
 
@@ -89,44 +103,36 @@ public class AsyncProvider extends Provider {
     goTop();
   }
   
+  @Override
+  public void requery(boolean updateActiveRow) {
+    onRequest(updateActiveRow);
+  }
+
   public void setCachingPolicy(CachingPolicy cachingPolicy) {
     this.cachingPolicy = cachingPolicy;
   }
 
-  public void updateDisplay(int start, int length, BeeRowSet data, boolean updateActiveRow) {
-    Assert.nonNegative(start);
-    int rowCount = data.getNumberOfRows();
-    
-    List<? extends IsRow> rowValues; 
-    if (length <= 0 || rowCount <= 0) {
-      rowValues = Lists.newArrayList();
-    } else if (length >= rowCount) {
-      rowValues = data.getRows().getList();
-    } else {
-      rowValues = data.getRows().getList().subList(0, length);
-    }
-
-    if (updateActiveRow) {
-      getDisplay().updateActiveRow(rowValues);
-    }
-    getDisplay().setRowData(start, rowValues);
+  @Override
+  protected void onRefresh() {
+    onRequest(true);
   }
 
   @Override
-  protected void onRangeChanged(boolean updateActiveRow) {
+  protected void onRequest(boolean updateActiveRow) {
     cancelPendingRequests();
     startLoading();
     
-    Range range = getRange();
+    int offset = getPageStart();
+    int limit = getPageSize();
 
     Filter flt = getFilter();
     Order ord = getOrder();
     
     CachingPolicy caching = isCacheEnabled() ? getCachingPolicy() : CachingPolicy.NONE;
-    Callback callback = new Callback(range, updateActiveRow);    
+    Callback callback = new Callback(offset, limit, updateActiveRow);    
 
     int rpcId = Queries.getRowSet(getViewName(), null, flt, ord,
-        range.getStart(), range.getLength(), caching, callback);
+        offset, limit, caching, callback);
 
     if (!Queries.isResponseFromCache(rpcId)) {
       callback.setRpcId(rpcId);
@@ -134,11 +140,6 @@ public class AsyncProvider extends Provider {
     }
   }
 
-  @Override
-  protected void onRefresh() {
-    onRangeChanged(true);
-  }
-  
   private void cancelPendingRequests() {
     if (!getPendingRequests().isEmpty()) {
       for (int rpcId : getPendingRequests()) {
@@ -147,8 +148,30 @@ public class AsyncProvider extends Provider {
       getPendingRequests().clear();
     }
   }
-
+  
   private List<Integer> getPendingRequests() {
     return pendingRequests;
+  }
+
+  private void updateDisplay(int start, int length, BeeRowSet data, boolean updateActiveRow) {
+    Assert.nonNegative(start);
+    int rowCount = data.getNumberOfRows();
+    
+    List<? extends IsRow> rowValues; 
+    if (rowCount <= 0) {
+      rowValues = Lists.newArrayList();
+    } else if (length <= 0 || length >= rowCount) {
+      rowValues = data.getRows().getList();
+    } else {
+      rowValues = data.getRows().getList().subList(0, length);
+    }
+
+    if (getPageSize() <= 0) {
+      getDisplay().setRowCount(rowCount, true);
+    }
+    if (updateActiveRow) {
+      getDisplay().updateActiveRow(rowValues);
+    }
+    getDisplay().setRowData(rowValues, true);
   }
 }

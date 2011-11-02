@@ -21,7 +21,7 @@ import java.util.logging.Logger;
 public class LogHandler implements Module {
   private Logger logger = null;
   private LogArea area = null;
-  private int hiddenSize = BeeConst.SIZE_UNKNOWN;
+  private int hiddenSize = BeeConst.UNDEF;
 
   public LogHandler() {
     super();
@@ -85,7 +85,7 @@ public class LogHandler implements Module {
   }
 
   public int getSize() {
-    int z = BeeConst.SIZE_UNKNOWN;
+    int z = BeeConst.UNDEF;
     if (getArea() == null) {
       return z;
     }
@@ -123,7 +123,7 @@ public class LogHandler implements Module {
       if (size <= 0) {
         hiddenSize = getSize();
       } else {
-        hiddenSize = BeeConst.SIZE_UNKNOWN;
+        hiddenSize = BeeConst.UNDEF;
       }
 
       ((Split) parent).setWidgetSize(getArea(), size);

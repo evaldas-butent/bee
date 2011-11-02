@@ -42,7 +42,7 @@ public interface FormView extends View, NotificationListener, HasEditState,
 
   FormCallback getFormCallback();
 
-  IsRow getRowData();
+  IsRow getRow();
 
   JavaScriptObject getRowJso();
 
@@ -53,8 +53,10 @@ public interface FormView extends View, NotificationListener, HasEditState,
   void prepareForInsert();
 
   void refreshCellContent(String columnSource);
+  
+  void setRow(IsRow row);
 
-  void showGrids(boolean show);
+  void showChildren(boolean show);
 
   void start(Integer rowCount);
 
@@ -62,5 +64,5 @@ public interface FormView extends View, NotificationListener, HasEditState,
 
   void updateCell(String columnId, String newValue);
 
-  void updateRowData(IsRow row);
+  void updateRow(IsRow row);
 }

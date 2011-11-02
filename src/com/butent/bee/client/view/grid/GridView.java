@@ -1,6 +1,5 @@
 package com.butent.bee.client.view.grid;
 
-import com.butent.bee.client.data.HasDataTable;
 import com.butent.bee.client.dialog.NotificationListener;
 import com.butent.bee.client.view.View;
 import com.butent.bee.client.view.add.HasAddEndHandlers;
@@ -37,7 +36,7 @@ public interface GridView extends View, NotificationListener,
 
   RowInfo getActiveRowInfo();
 
-  HasDataTable getGrid();
+  CellGrid getGrid();
 
   Collection<RowInfo> getSelectedRows();
 
@@ -52,6 +51,4 @@ public interface GridView extends View, NotificationListener,
   void setRelId(long relId);
   
   void startNewRow();
-
-  void updatePageSize(int pageSize, boolean init);
 }

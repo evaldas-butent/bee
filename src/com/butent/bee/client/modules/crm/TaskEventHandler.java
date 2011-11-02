@@ -225,7 +225,7 @@ public class TaskEventHandler {
           if (dialog != null) {
             dialog.hide();
           }
-          form.updateRowData(BeeRow.restore((String) response.getResponse()));
+          form.updateRow(BeeRow.restore((String) response.getResponse()));
         } else {
           Global.showError("Unknown response");
         }
@@ -234,7 +234,7 @@ public class TaskEventHandler {
   }
 
   private void doCreate(final FormView form) {
-    final IsRow data = form.getRowData();
+    final IsRow data = form.getRow();
     Assert.state(BeeUtils.isEmpty(data.getId()));
 
     List<BeeColumn> columns = Lists.newArrayList();
@@ -260,7 +260,7 @@ public class TaskEventHandler {
   }
 
   private void doVisit(final FormView form) {
-    final IsRow data = form.getRowData();
+    final IsRow data = form.getRow();
     Assert.notEmpty(data.getId());
 
     ParameterList args = createParams(TaskEvent.VISITED.name());
@@ -279,7 +279,7 @@ public class TaskEventHandler {
   }
 
   private void doComment(final FormView form) {
-    final IsRow data = form.getRowData();
+    final IsRow data = form.getRow();
     Assert.notEmpty(data.getId());
 
     final TaskDialog dialog = new TaskDialog("Užduoties komentaras, laiko registracija");
@@ -322,7 +322,7 @@ public class TaskEventHandler {
               Global.showError((Object[]) response.getErrors());
             } else {
               dialog.hide();
-              form.updateRowData(data);
+              form.updateRow(data);
             }
           }
         });
@@ -332,7 +332,7 @@ public class TaskEventHandler {
   }
 
   private void doForward(final FormView form) {
-    final IsRow data = form.getRowData();
+    final IsRow data = form.getRow();
     Assert.notEmpty(data.getId());
     final int ev = data.getInteger(form.getDataIndex("Event"));
 
@@ -382,7 +382,7 @@ public class TaskEventHandler {
   }
 
   private void doExtend(final FormView form) {
-    final IsRow data = form.getRowData();
+    final IsRow data = form.getRow();
     Assert.notEmpty(data.getId());
     final int ev = data.getInteger(form.getDataIndex("Event"));
 
@@ -428,7 +428,7 @@ public class TaskEventHandler {
   }
 
   private void doRenew(final FormView form) {
-    final IsRow data = form.getRowData();
+    final IsRow data = form.getRow();
     Assert.notEmpty(data.getId());
     final int evOld = data.getInteger(form.getDataIndex("Event"));
     final int evNew = TaskEvent.ACTIVATED.ordinal();
@@ -464,7 +464,7 @@ public class TaskEventHandler {
   }
 
   private void doSuspend(final FormView form) {
-    final IsRow data = form.getRowData();
+    final IsRow data = form.getRow();
     Assert.notEmpty(data.getId());
     final int evOld = data.getInteger(form.getDataIndex("Event"));
 
@@ -499,7 +499,7 @@ public class TaskEventHandler {
   }
 
   private void doCancel(final FormView form) {
-    final IsRow data = form.getRowData();
+    final IsRow data = form.getRow();
     Assert.notEmpty(data.getId());
     final int evOld = data.getInteger(form.getDataIndex("Event"));
 
@@ -534,7 +534,7 @@ public class TaskEventHandler {
   }
 
   private void doComplete(final FormView form) {
-    final IsRow data = form.getRowData();
+    final IsRow data = form.getRow();
     Assert.notEmpty(data.getId());
     final int evOld = data.getInteger(form.getDataIndex("Event"));
 
@@ -596,7 +596,7 @@ public class TaskEventHandler {
   }
 
   private void doApprove(final FormView form) {
-    final IsRow data = form.getRowData();
+    final IsRow data = form.getRow();
     Assert.notEmpty(data.getId());
     final int evOld = data.getInteger(form.getDataIndex("Event"));
 

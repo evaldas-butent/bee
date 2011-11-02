@@ -10,6 +10,7 @@ import com.butent.bee.client.layout.Absolute;
 import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.ui.FormDescription;
+import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.ui.FormFactory.FormCallback;
 import com.butent.bee.client.utils.BeeCommand;
 import com.butent.bee.client.utils.Evaluator;
@@ -28,6 +29,7 @@ import com.butent.bee.shared.ui.Calculation;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.List;
 
 /**
@@ -102,7 +104,8 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
     setHasSearch(hasData() && rowCount >= formDescription.getSearchThreshold());
 
     DataHeaderView header = new DataHeaderImpl();
-    header.create(formDescription.getCaption(), hasData(), formDescription.isReadOnly(), false);
+    header.create(formDescription.getCaption(), hasData(), formDescription.isReadOnly(),
+        EnumSet.of(UiOption.ROOT));
 
     FormView content = new FormImpl();
     content.create(formDescription, dataColumns, callback);
@@ -110,7 +113,7 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
     DataFooterView footer;
     if (hasData()) {
       footer = new DataFooterImpl();
-      footer.create(rowCount, BeeConst.UNDEF, true, false, hasSearch());
+      footer.create(rowCount, true, false, hasSearch());
     } else {
       footer = null;
     }
@@ -330,14 +333,14 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
 
   public void start(int rowCount) {
     if (getContent() != null && hasData() && rowCount >= 0) {
-      getContent().start(rowCount);
-
       Collection<PagerView> pagers = getPagers();
       if (pagers != null) {
         for (PagerView pager : pagers) {
           pager.start(getContent().getDisplay());
         }
       }
+
+      getContent().start(rowCount);
     }
   }
 

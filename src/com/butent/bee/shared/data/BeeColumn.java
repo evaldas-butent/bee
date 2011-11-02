@@ -37,7 +37,7 @@ public class BeeColumn extends TableColumn implements BeeSerializable, Transform
     return c;
   }
 
-  private int index = BeeConst.INDEX_UNKNOWN;
+  private int index = BeeConst.UNDEF;
 
   private String name = null;
 
@@ -49,7 +49,7 @@ public class BeeColumn extends TableColumn implements BeeSerializable, Transform
   private int sqlType = 0;
   private String typeName = null;
 
-  private int displaySize = BeeConst.SIZE_UNKNOWN;
+  private int displaySize = BeeConst.UNDEF;
 
   private int nullable = NULLABLE_UNKNOWN;
   private boolean signed = false;
@@ -396,7 +396,7 @@ public class BeeColumn extends TableColumn implements BeeSerializable, Transform
   }
 
   private String valueAsString(int v) {
-    if (v == BeeConst.INDEX_UNKNOWN || v == BeeConst.SIZE_UNKNOWN || v == BeeConst.TIME_UNKNOWN) {
+    if (BeeConst.isUndef(v)) {
       return BeeUtils.concat(1, v, BeeConst.UNKNOWN);
     } else {
       return Integer.toString(v);

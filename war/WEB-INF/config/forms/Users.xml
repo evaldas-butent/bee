@@ -34,7 +34,7 @@
     </ScrollPanel>
     </north>
     <center>
-      <Grid name="UserRoles" relColumn="User" style="width:300px" />
+      <ChildGrid name="UserRoles" relColumn="User" style="width:300px" />
     </center>
   </SplitPanel>
 </BeeForm>  

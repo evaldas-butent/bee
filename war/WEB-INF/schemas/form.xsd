@@ -477,24 +477,27 @@
       </xs:complexContent>
     </xs:complexType>
   </xs:element>
-  
-  <xs:complexType name="childGrid">
+
+  <xs:complexType name="hasName">
     <xs:complexContent>
-      <xs:extension base="bee:widgetType">
-        <xs:attribute name="relColumn" type="bee:nameType" use="required" />
-      </xs:extension>
+      <xs:restriction base="bee:widgetType">
+        <xs:attribute name="name" type="bee:nameType" use="required" />
+      </xs:restriction>
     </xs:complexContent>
   </xs:complexType>
-
-  <xs:element name="Grid" substitutionGroup="bee:widget">
+  
+  <xs:element name="ChildGrid" substitutionGroup="bee:widget">
     <xs:complexType>
       <xs:complexContent>
-        <xs:restriction base="bee:childGrid">
-          <xs:attribute name="name" type="bee:nameType" use="required" />
-        </xs:restriction>
+        <xs:extension base="bee:hasName">
+          <xs:attribute name="relColumn" type="bee:nameType" use="required" />
+          <xs:attribute name="source" type="bee:nameType" />
+        </xs:extension>
       </xs:complexContent>
     </xs:complexType>
   </xs:element>
+
+  <xs:element name="GridPanel" type="bee:hasName" substitutionGroup="bee:widget" />
 
   <xs:complexType name="hasOneChild">
     <xs:complexContent>

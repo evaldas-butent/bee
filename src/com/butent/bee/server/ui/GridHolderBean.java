@@ -89,11 +89,12 @@ public class GridHolderBean {
 
   private static final String ATTR_HAS_HEADERS = "hasHeaders";
   private static final String ATTR_HAS_FOOTERS = "hasFooters";
+  
+  private static final String ATTR_CACHING = "caching";
   private static final String ATTR_ASYNC_THRESHOLD = "asyncThreshold";
   private static final String ATTR_PAGING_THRESHOLD = "pagingThreshold";
   private static final String ATTR_SEARCH_THRESHOLD = "searchThreshold";
   private static final String ATTR_INITIAL_ROW_SET_SIZE = "initialRowSetSize";
-  private static final String ATTR_PAGE_SIZE = "pageSize";
 
   private static final String ATTR_READ_ONLY = "readOnly";
   private static final String ATTR_EDIT_MODE = "editMode";
@@ -665,6 +666,11 @@ public class GridHolderBean {
     if (showColumnWidths != null) {
       dst.setShowColumnWidths(showColumnWidths);
     }
+    
+    Boolean caching = XmlUtils.getAttributeBoolean(src, ATTR_CACHING);
+    if (caching != null) {
+      dst.setCaching(caching);
+    }
 
     Integer asyncThreshold = XmlUtils.getAttributeInteger(src, ATTR_ASYNC_THRESHOLD);
     if (asyncThreshold != null) {
@@ -677,11 +683,6 @@ public class GridHolderBean {
     Integer searchThreshold = XmlUtils.getAttributeInteger(src, ATTR_SEARCH_THRESHOLD);
     if (searchThreshold != null) {
       dst.setSearchThreshold(searchThreshold);
-    }
-
-    Integer pageSize = XmlUtils.getAttributeInteger(src, ATTR_PAGE_SIZE);
-    if (pageSize != null) {
-      dst.setPageSize(pageSize);
     }
 
     Integer initialRowSetSize = XmlUtils.getAttributeInteger(src, ATTR_INITIAL_ROW_SET_SIZE);

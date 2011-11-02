@@ -5,7 +5,6 @@ import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.CssResource;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
-import com.google.gwt.view.client.HasRows;
 
 import com.butent.bee.client.Global;
 import com.butent.bee.client.dom.DomUtils;
@@ -15,6 +14,7 @@ import com.butent.bee.client.utils.BeeCommand;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.Html;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.data.event.ScopeChangeEvent;
 import com.butent.bee.shared.utils.BeeUtils;
 
 /**
@@ -22,7 +22,7 @@ import com.butent.bee.shared.utils.BeeUtils;
  * several pages.
  */
 
-public class SimplePager extends AbstractPagerImpl {
+public class SimplePager extends AbstractPager {
 
   /**
    * Specifies which CSS style resources to use.
@@ -59,7 +59,7 @@ public class SimplePager extends AbstractPagerImpl {
 
       switch (goTo) {
         case FIRST:
-          getDisplay().setVisibleRange(0, getDisplay().getVisibleRange().getLength());
+          setPageStart(0);
           break;
         case REWIND:
           rewind();
@@ -74,8 +74,7 @@ public class SimplePager extends AbstractPagerImpl {
           forward();
           break;
         case LAST:
-          int length = getDisplay().getVisibleRange().getLength();
-          getDisplay().setVisibleRange(getDisplay().getRowCount() - length, length);
+          setPageStart(getRowCount() - getPageSize());
           break;
         default:
           Assert.untouchable();
@@ -184,15 +183,14 @@ public class SimplePager extends AbstractPagerImpl {
   }
 
   @Override
-  protected void onRangeOrRowCountChanged() {
-    HasRows display = getDisplay();
-    if (display == null) {
+  public void onScopeChange(ScopeChangeEvent event) {
+    if (event == null) {
       return;
     }
 
-    int start = BeeUtils.toNonNegativeInt(display.getVisibleRange().getStart());
-    int length = BeeUtils.toNonNegativeInt(display.getVisibleRange().getLength());
-    int rowCount = BeeUtils.toNonNegativeInt(display.getRowCount());
+    int start = BeeUtils.toNonNegativeInt(event.getStart());
+    int length = BeeUtils.toNonNegativeInt(event.getLength());
+    int rowCount = BeeUtils.toNonNegativeInt(event.getTotal());
     
     if (start >= rowCount) {
       start = Math.max(rowCount - 1, 0);
@@ -247,19 +245,18 @@ public class SimplePager extends AbstractPagerImpl {
   }
 
   private void forward() {
-    HasRows display = getDisplay();
-    if (display == null) {
+    if (getDisplay() == null) {
       return;
     }
 
-    int start = display.getVisibleRange().getStart();
-    int length = display.getVisibleRange().getLength();
-    int rowCount = display.getRowCount();
+    int start = getPageStart();
+    int length = getPageSize();
+    int rowCount = getRowCount();
 
     if (start < 0 || length <= 0 || rowCount <= length || start + length >= rowCount) {
       return;
     }
-    display.setVisibleRange(getForwardPosition(start, length, rowCount), length);
+    setPageStart(getForwardPosition(start, length, rowCount));
   }
 
   private int getFastStep(int pageSize, int rowCount) {
@@ -292,18 +289,17 @@ public class SimplePager extends AbstractPagerImpl {
   }
 
   private void rewind() {
-    HasRows display = getDisplay();
-    if (display == null) {
+    if (getDisplay() == null) {
       return;
     }
 
-    int start = display.getVisibleRange().getStart();
-    int length = display.getVisibleRange().getLength();
-    int rowCount = display.getRowCount();
+    int start = getPageStart();
+    int length = getPageSize();
+    int rowCount = getRowCount();
 
     if (start <= 0 || length <= 0 || rowCount <= length) {
       return;
     }
-    display.setVisibleRange(getRewindPosition(start, length, rowCount), length);
+    setPageStart(getRewindPosition(start, length, rowCount));
   }
 }

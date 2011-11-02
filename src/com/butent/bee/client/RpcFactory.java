@@ -156,11 +156,11 @@ public class RpcFactory implements Module {
   }
 
   public int makeGetRequest(ParameterList params) {
-    return makeRequest(RequestBuilder.GET, params, null, null, null, BeeConst.TIME_UNKNOWN);
+    return makeRequest(RequestBuilder.GET, params, null, null, null, BeeConst.UNDEF);
   }
 
   public int makeGetRequest(ParameterList params, ResponseCallback callback) {
-    return makeRequest(RequestBuilder.GET, params, null, null, callback, BeeConst.TIME_UNKNOWN);
+    return makeRequest(RequestBuilder.GET, params, null, null, callback, BeeConst.UNDEF);
   }
 
   public int makeGetRequest(ParameterList params, ResponseCallback callback, int timeout) {
@@ -169,12 +169,12 @@ public class RpcFactory implements Module {
 
   public int makeGetRequest(String svc) {
     return makeRequest(RequestBuilder.GET, createParameters(svc), null, null, null,
-        BeeConst.TIME_UNKNOWN);
+        BeeConst.UNDEF);
   }
 
   public int makeGetRequest(String svc, ResponseCallback callback) {
     return makeRequest(RequestBuilder.GET, createParameters(svc), null, null,
-        callback, BeeConst.TIME_UNKNOWN);
+        callback, BeeConst.UNDEF);
   }
 
   public int makeGetRequest(String svc, ResponseCallback callback, int timeout) {
@@ -182,12 +182,12 @@ public class RpcFactory implements Module {
   }
 
   public int makePostRequest(ParameterList params, ContentType ctp, String data) {
-    return makeRequest(RequestBuilder.POST, params, ctp, data, null, BeeConst.TIME_UNKNOWN);
+    return makeRequest(RequestBuilder.POST, params, ctp, data, null, BeeConst.UNDEF);
   }
 
   public int makePostRequest(ParameterList params, ContentType ctp,
       String data, ResponseCallback callback) {
-    return makeRequest(RequestBuilder.POST, params, ctp, data, callback, BeeConst.TIME_UNKNOWN);
+    return makeRequest(RequestBuilder.POST, params, ctp, data, callback, BeeConst.UNDEF);
   }
 
   public int makePostRequest(ParameterList params, ContentType ctp,
@@ -196,15 +196,15 @@ public class RpcFactory implements Module {
   }
 
   public int makePostRequest(ParameterList params, ResponseCallback callback) {
-    return makeRequest(RequestBuilder.POST, params, null, null, callback, BeeConst.TIME_UNKNOWN);
+    return makeRequest(RequestBuilder.POST, params, null, null, callback, BeeConst.UNDEF);
   }
 
   public int makePostRequest(ParameterList params, String data) {
-    return makeRequest(RequestBuilder.POST, params, null, data, null, BeeConst.TIME_UNKNOWN);
+    return makeRequest(RequestBuilder.POST, params, null, data, null, BeeConst.UNDEF);
   }
 
   public int makePostRequest(ParameterList params, String data, ResponseCallback callback) {
-    return makeRequest(RequestBuilder.POST, params, null, data, callback, BeeConst.TIME_UNKNOWN);
+    return makeRequest(RequestBuilder.POST, params, null, data, callback, BeeConst.UNDEF);
   }
 
   public int makePostRequest(ParameterList params, String data, ResponseCallback callback,
@@ -214,12 +214,12 @@ public class RpcFactory implements Module {
 
   public int makePostRequest(String svc, ContentType ctp, String data) {
     return makeRequest(RequestBuilder.POST, createParameters(svc), ctp, data,
-        null, BeeConst.TIME_UNKNOWN);
+        null, BeeConst.UNDEF);
   }
 
   public int makePostRequest(String svc, ContentType ctp, String data, ResponseCallback callback) {
     return makeRequest(RequestBuilder.POST, createParameters(svc), ctp, data,
-        callback, BeeConst.TIME_UNKNOWN);
+        callback, BeeConst.UNDEF);
   }
 
   public int makePostRequest(String svc, ContentType ctp, String data,
@@ -229,12 +229,12 @@ public class RpcFactory implements Module {
 
   public int makePostRequest(String svc, String data) {
     return makeRequest(RequestBuilder.POST, createParameters(svc), null, data,
-        null, BeeConst.TIME_UNKNOWN);
+        null, BeeConst.UNDEF);
   }
 
   public int makePostRequest(String svc, String data, ResponseCallback callback) {
     return makeRequest(RequestBuilder.POST, createParameters(svc), null, data,
-        callback, BeeConst.TIME_UNKNOWN);
+        callback, BeeConst.UNDEF);
   }
 
   public int makePostRequest(String svc, String data, ResponseCallback callback, int timeout) {

@@ -1,11 +1,13 @@
 package com.butent.bee.client.view;
 
+import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.view.grid.GridCallback;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.ui.GridDescription;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -18,7 +20,7 @@ public interface GridContainerView extends View {
   void bind();
 
   void create(GridDescription gridDescription, List<BeeColumn> dataColumns, int rowCount,
-      BeeRowSet rowSet, GridCallback gridCallback, boolean isChild);
+      BeeRowSet rowSet, GridCallback gridCallback, Collection<UiOption> options);
 
   GridView getContent();
 }

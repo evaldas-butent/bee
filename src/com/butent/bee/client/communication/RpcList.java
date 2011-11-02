@@ -177,13 +177,13 @@ public class RpcList extends LinkedHashMap<Integer, RpcInfo> {
     if (el == null) {
       return false;
     } else {
-      if (rows != BeeConst.SIZE_UNKNOWN) {
+      if (!BeeConst.isUndef(rows)) {
         el.setReqRows(rows);
       }
-      if (cols != BeeConst.SIZE_UNKNOWN) {
+      if (!BeeConst.isUndef(cols)) {
         el.setReqCols(cols);
       }
-      if (size != BeeConst.SIZE_UNKNOWN) {
+      if (!BeeConst.isUndef(size)) {
         el.setReqSize(size);
       }
     }

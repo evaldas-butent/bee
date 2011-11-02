@@ -7,13 +7,14 @@ import com.google.gwt.dom.client.Style.Position;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
-import com.google.gwt.event.dom.client.KeyUpEvent;
-import com.google.gwt.event.dom.client.KeyUpHandler;
+import com.google.gwt.event.dom.client.KeyDownEvent;
+import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
 
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.RadioGroup;
 import com.butent.bee.client.dialog.Popup;
+import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.layout.Absolute;
 import com.butent.bee.client.utils.XmlUtils;
 import com.butent.bee.client.widget.BeeButton;
@@ -35,6 +36,7 @@ import java.util.List;
  */
 
 public class Bee implements EntryPoint {
+
   public void onModuleLoad() {
     BeeConst.setClient();
 
@@ -50,6 +52,49 @@ public class Bee implements EntryPoint {
 
     bk.register();
     signIn();
+  }
+  
+  private void doSignIn(InputText userBox, InputPassword pswdBox, final Popup popup) {
+    String userName = userBox.getValue();
+    if (BeeUtils.isEmpty(userName)) {
+      Global.showError("Įveskite prisijungimo vardą");
+      userBox.setFocus(true);
+      return;
+    }
+
+    String password = pswdBox.getValue();
+    if (BeeUtils.isEmpty(password)) {
+      Global.showError("Įveskite slaptažodį");
+      pswdBox.setFocus(true);
+      return;
+    }
+
+    BeeKeeper.getRpc().makePostRequest(Service.LOGIN,
+        XmlUtils.createString(Service.XML_TAG_DATA,
+            Service.VAR_LOGIN, userName, Service.VAR_PASSWORD, Codec.md5(password)),
+        new ResponseCallback() {
+          public void onResponse(ResponseObject response) {
+            if (response == null) {
+              Global.showError("server error");
+              return;
+            }
+            if (!response.hasResponse(UserData.class)) {
+              if (response.hasMessages()) {
+                List<String> messages = Lists.newArrayList();
+                for (ResponseMessage msg : response.getMessages()) {
+                  messages.add(BeeUtils.concat(1, msg.getLevel(), msg.getMessage()));
+                }
+                Global.showError(messages);
+              } else {
+                Global.showError("Wrong server response");
+              }
+              return;
+            }
+            
+            popup.hide();
+            onSignIn(UserData.restore((String) response.getResponse()));
+          }
+    });
   }
 
   private void onSignIn(UserData userData) {
@@ -92,73 +137,38 @@ public class Bee implements EntryPoint {
     pswdBox.addStyleName("bee-SignIn-Password");
     panel.add(pswdBox);
 
-    final RadioGroup langWidget = new RadioGroup(false, 0,
+    RadioGroup langWidget = new RadioGroup(false, 0,
         Lists.newArrayList("lt", "lv", "et", "en", "de", "ru", "pl"));
     langWidget.addStyleName("bee-SignIn-Language");
     panel.add(langWidget);
 
-    final BeeButton button = new BeeButton("Prisijungti");
+    BeeButton button = new BeeButton("Prisijungti");
     button.setStyleName("bee-SignIn-Button");
     panel.add(button);
     
-    userBox.addKeyUpHandler(new KeyUpHandler() {
-      public void onKeyUp(KeyUpEvent event) {
-        if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER) {
+    userBox.addKeyDownHandler(new KeyDownHandler() {
+      public void onKeyDown(KeyDownEvent event) {
+        if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER
+            && !BeeUtils.isEmpty(userBox.getValue())) {
+          EventUtils.eatEvent(event);
           pswdBox.setFocus(true);
         }
       }
     });
 
-    pswdBox.addKeyUpHandler(new KeyUpHandler() {
-      public void onKeyUp(KeyUpEvent event) {
-        if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER) {
-          button.setFocus(true);
+    pswdBox.addKeyDownHandler(new KeyDownHandler() {
+      public void onKeyDown(KeyDownEvent event) {
+        if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER
+            && !BeeUtils.isEmpty(pswdBox.getValue())) {
+          EventUtils.eatEvent(event);
+          doSignIn(userBox, pswdBox, popup);
         }
       }
     });
     
     button.addClickHandler(new ClickHandler() {
       public void onClick(ClickEvent event) {
-        String userName = userBox.getValue();
-        if (BeeUtils.isEmpty(userName)) {
-          Global.showError("Įveskite prisijungimo vardą");
-          userBox.setFocus(true);
-          return;
-        }
-
-        String password = pswdBox.getValue();
-        if (BeeUtils.isEmpty(password)) {
-          Global.showError("Įveskite slaptažodį");
-          pswdBox.setFocus(true);
-          return;
-        }
-
-        BeeKeeper.getRpc().makePostRequest(Service.LOGIN,
-            XmlUtils.createString(Service.XML_TAG_DATA,
-                Service.VAR_LOGIN, userName, Service.VAR_PASSWORD, Codec.md5(password)),
-            new ResponseCallback() {
-              public void onResponse(ResponseObject response) {
-                if (response == null) {
-                  Global.showError("server error");
-                  return;
-                }
-                if (!response.hasResponse(UserData.class)) {
-                  if (response.hasMessages()) {
-                    List<String> messages = Lists.newArrayList();
-                    for (ResponseMessage msg : response.getMessages()) {
-                      messages.add(BeeUtils.concat(1, msg.getLevel(), msg.getMessage()));
-                    }
-                    Global.showError(messages);
-                  } else {
-                    Global.showError("Wrong server response");
-                  }
-                  return;
-                }
-                
-                popup.hide();
-                onSignIn(UserData.restore((String) response.getResponse()));
-              }
-        });
+        doSignIn(userBox, pswdBox, popup);
       }
     });
 

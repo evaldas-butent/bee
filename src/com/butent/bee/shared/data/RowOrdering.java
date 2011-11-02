@@ -13,9 +13,6 @@ import java.util.List;
 
 public class RowOrdering<RowType extends IsRow> implements Comparator<RowType> {
 
-  public static final int ID_INDEX = -2;
-  public static final int VERSION_INDEX = -3;
-
   private final List<Integer> indexes = Lists.newArrayList();
   private final List<Boolean> ascending = Lists.newArrayList();
   private final List<ValueType> types = Lists.newArrayList();
@@ -35,8 +32,8 @@ public class RowOrdering<RowType extends IsRow> implements Comparator<RowType> {
       }
 
       switch (index) {
-        case ID_INDEX:
-        case VERSION_INDEX:
+        case DataUtils.ID_INDEX:
+        case DataUtils.VERSION_INDEX:
           type = ValueType.LONG;
           break;
 
@@ -67,10 +64,10 @@ public class RowOrdering<RowType extends IsRow> implements Comparator<RowType> {
       int index = indexes.get(i);
 
       switch (index) {
-        case ID_INDEX:
+        case DataUtils.ID_INDEX:
           z = BeeUtils.compare(row1.getId(), row2.getId());
           break;
-        case VERSION_INDEX:
+        case DataUtils.VERSION_INDEX:
           z = BeeUtils.compare(row1.getVersion(), row2.getVersion());
           break;
 

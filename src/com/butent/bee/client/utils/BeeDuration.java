@@ -8,11 +8,12 @@ import com.butent.bee.shared.utils.BeeUtils;
  */
 
 public class BeeDuration {
-  private double start = BeeConst.TIME_UNKNOWN;
-  private double end = BeeConst.TIME_UNKNOWN;
 
-  private int timeout = BeeConst.TIME_UNKNOWN;
-  private int completed = BeeConst.TIME_UNKNOWN;
+  private double start = BeeConst.UNDEF;
+  private double end = BeeConst.UNDEF;
+
+  private int timeout = BeeConst.UNDEF;
+  private int completed = BeeConst.UNDEF;
 
   private String message = null;
 
@@ -96,7 +97,7 @@ public class BeeDuration {
   }
 
   public boolean isPending() {
-    return (completed == BeeConst.TIME_UNKNOWN);
+    return (BeeConst.isUndef(completed));
   }
 
   public void restart(String msg) {
@@ -138,15 +139,14 @@ public class BeeDuration {
   }
 
   private void clearCompleted() {
-    completed = BeeConst.TIME_UNKNOWN;
+    completed = BeeConst.UNDEF;
   }
 
   private void clearEnd() {
-    end = BeeConst.TIME_UNKNOWN;
+    end = BeeConst.UNDEF;
   }
 
   private void clearTimeout() {
-    timeout = BeeConst.TIME_UNKNOWN;
+    timeout = BeeConst.UNDEF;
   }
-
 }

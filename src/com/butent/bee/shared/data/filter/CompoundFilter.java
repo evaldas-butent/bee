@@ -9,6 +9,7 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -28,10 +29,18 @@ public class CompoundFilter extends Filter {
     return new CompoundFilter(CompoundType.AND, filters);
   }
 
+  public static Filter and(Collection<Filter> filters) {
+    return new CompoundFilter(CompoundType.AND, filters);
+  }
+  
   public static Filter or(Filter... filters) {
     return new CompoundFilter(CompoundType.OR, filters);
   }
 
+  public static Filter or(Collection<Filter> filters) {
+    return new CompoundFilter(CompoundType.OR, filters);
+  }
+  
   private CompoundType joinType;
   private final List<Filter> subFilters = Lists.newArrayList();
 
@@ -44,6 +53,13 @@ public class CompoundFilter extends Filter {
     add(filters);
   }
 
+  private CompoundFilter(CompoundType joinType, Collection<Filter> filters) {
+    this.joinType = joinType;
+    if (filters != null) {
+      subFilters.addAll(filters);
+    }
+  }
+  
   public Filter add(Filter... filters) {
     if (!BeeUtils.isEmpty(filters)) {
       for (Filter filter : filters) {

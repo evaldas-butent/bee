@@ -17,6 +17,7 @@ import java.util.Map;
  */
 
 public class Storage implements Module {
+  
   private Map<String, String> items = new HashMap<String, String>();
   private boolean localStorage;
 

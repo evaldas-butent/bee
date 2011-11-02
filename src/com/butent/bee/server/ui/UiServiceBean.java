@@ -330,7 +330,7 @@ public class UiServiceBean {
         }
 
       } else if (BeeUtils.same(dstType, "DataGrid")) {
-        dstType = "Grid";
+        dstType = "ChildGrid";
       }
 
       Element layerElement = dstDoc.createElement("layer");
@@ -391,7 +391,7 @@ public class UiServiceBean {
                 "source", source, "relView", relView, "relColumn", relColumn, "not a view column");
           }
 
-        } else if (BeeUtils.same(dstType, "Grid") && view != null) {
+        } else if (BeeUtils.same(dstType, "ChildGrid") && view != null) {
           String relColumn = view.getSourceIdName();
           widgetElement.setAttribute("name", source);
           widgetElement.setAttribute("relColumn", relColumn);

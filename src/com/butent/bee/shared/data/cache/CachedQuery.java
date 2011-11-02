@@ -23,7 +23,7 @@ class CachedQuery extends SimpleCache<Integer, Long> {
   private final String strFilter;
   private final String strOrder;
 
-  private int rowCount = BeeConst.SIZE_UNKNOWN;
+  private int rowCount = BeeConst.UNDEF;
 
   CachedQuery(Filter filter, Order order) {
     this(filter, order, defaultMaxSize, defaultReplacementPolicy);

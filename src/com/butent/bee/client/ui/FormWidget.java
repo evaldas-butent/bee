@@ -39,6 +39,7 @@ import com.butent.bee.client.dom.StyleUtils.ScrollBars;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.grid.FlexTable;
+import com.butent.bee.client.grid.GridPanel;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.layout.Absolute;
@@ -99,6 +100,7 @@ import com.butent.bee.shared.HasService;
 import com.butent.bee.shared.HasStage;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.RelationInfo;
 import com.butent.bee.shared.ui.Calculation;
@@ -121,6 +123,7 @@ public enum FormWidget {
   BUTTON("Button", EnumSet.of(Type.DISPLAY)),
   CANVAS("Canvas", EnumSet.of(Type.DISPLAY)),
   CHECK_BOX("CheckBox", EnumSet.of(Type.EDITABLE)),
+  CHILD_GRID("ChildGrid", EnumSet.of(Type.IS_CHILD, Type.IS_GRID)),
   COMPLEX_PANEL("ComplexPanel", EnumSet.of(Type.HAS_LAYERS)),
   CURRENCY_LABEL("CurrencyLabel", EnumSet.of(Type.DISPLAY)),
   DATA_SELECTOR("DataSelector", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE, Type.SELECTOR)),
@@ -131,7 +134,7 @@ public enum FormWidget {
   FLEX_TABLE("FlexTable", EnumSet.of(Type.TABLE)),
   FLOW_PANEL("FlowPanel", EnumSet.of(Type.HAS_CHILDREN)),
   FRAME("Frame", EnumSet.of(Type.DISPLAY)),
-  GRID("Grid", EnumSet.of(Type.IS_GRID)),
+  GRID_PANEL("GridPanel", EnumSet.of(Type.IS_GRID)),
   HEADER_CONTENT_FOOTER("HeaderContentFooter", EnumSet.of(Type.PANEL)),
   HORIZONTAL_PANEL("HorizontalPanel", EnumSet.of(Type.CELL_VECTOR)),
   HTML_LABEL("HtmlLabel", EnumSet.of(Type.DISPLAY)),
@@ -183,7 +186,7 @@ public enum FormWidget {
 
   private enum Type {
     FOCUSABLE, EDITABLE, IS_LABEL, DISPLAY, HAS_ONE_CHILD, HAS_CHILDREN, HAS_LAYERS,
-    TABLE, IS_GRID, PANEL, CELL_VECTOR, INPUT, SELECTOR
+    TABLE, IS_CHILD, IS_GRID, PANEL, CELL_VECTOR, INPUT, SELECTOR
   }
 
   private class HeaderAndContent {
@@ -439,6 +442,18 @@ public enum FormWidget {
         widget = new InputBoolean(html);
         break;
 
+      case CHILD_GRID:
+        String relColumn = attributes.get(ATTR_REL_COLUMN);
+        String source = attributes.get(ATTR_SOURCE);
+        int sourceIndex = BeeUtils.isEmpty(source) 
+            ? DataUtils.ID_INDEX : DataUtils.getColumnIndex(source, columns);
+
+        if (!BeeUtils.isEmpty(name) && !BeeUtils.isEmpty(relColumn)
+            && !BeeConst.isUndef(sourceIndex)) {
+          widget = new ChildGrid(name, sourceIndex, relColumn);
+        }
+        break;
+
       case COMPLEX_PANEL:
         widget = new Complex();
         break;
@@ -519,10 +534,9 @@ public enum FormWidget {
         }
         break;
 
-      case GRID:
-        String relColumn = attributes.get(ATTR_REL_COLUMN);
-        if (!BeeUtils.isEmpty(name) && !BeeUtils.isEmpty(relColumn)) {
-          widget = new ChildGrid(name, relColumn);
+      case GRID_PANEL:
+        if (!BeeUtils.isEmpty(name)) {
+          widget = new GridPanel(name);
         }
         break;
 
@@ -979,6 +993,10 @@ public enum FormWidget {
     return widget;
   }
 
+  public boolean isChild() {
+    return hasType(Type.IS_CHILD);
+  }
+  
   public boolean isDisplay() {
     return hasType(Type.DISPLAY);
   }

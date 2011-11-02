@@ -15,21 +15,23 @@ import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.layout.Direction;
 import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.presenter.Presenter;
+import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.utils.Evaluator;
 import com.butent.bee.client.view.add.AddEndEvent;
 import com.butent.bee.client.view.add.AddStartEvent;
 import com.butent.bee.client.view.edit.EditFormEvent;
+import com.butent.bee.client.view.grid.CellGrid;
 import com.butent.bee.client.view.grid.CellGridImpl;
 import com.butent.bee.client.view.grid.GridCallback;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.navigation.PagerView;
 import com.butent.bee.client.view.navigation.ScrollPager;
 import com.butent.bee.client.view.search.SearchView;
-import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.event.ActiveRowChangeEvent;
+import com.butent.bee.shared.data.event.DataRequestEvent;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -67,8 +69,6 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
   
   private String currentCaption = null;
   
-  private boolean child = false;
-  
   public GridContainerImpl() {
     this(-1);
   }
@@ -104,26 +104,18 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
   }
 
   public void create(GridDescription gridDescription, List<BeeColumn> dataColumns, int rowCount,
-      BeeRowSet rowSet, GridCallback gridCallback, boolean isChild) {
-    setChild(isChild);
+      BeeRowSet rowSet, GridCallback gridCallback, Collection<UiOption> options) {
 
     int minRows = BeeUtils.unbox(gridDescription.getPagingThreshold());
-    setHasPaging(!isChild && rowCount >= minRows);
+    setHasPaging(UiOption.hasPaging(options) && rowCount >= minRows);
 
     minRows = BeeUtils.unbox(gridDescription.getSearchThreshold());
-    setHasSearch(!isChild && rowCount >= minRows);
-
-    int pageSize;
-    if (hasPaging()) {
-      pageSize = Math.max(BeeUtils.unbox(gridDescription.getPageSize()), 1);
-    } else {
-      pageSize = rowCount;
-    }
+    setHasSearch(UiOption.hasSearch(options) && rowCount >= minRows);
 
     boolean readOnly = BeeUtils.isTrue(gridDescription.isReadOnly());
 
     DataHeaderView header = new DataHeaderImpl();
-    header.create(gridDescription.getCaption(), true, readOnly, isChild);
+    header.create(gridDescription.getCaption(), true, readOnly, options);
 
     GridView content = new CellGridImpl();
     content.create(dataColumns, rowCount, rowSet, gridDescription, gridCallback, hasSearch());
@@ -133,7 +125,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
 
     if (hasPaging() || hasSearch()) {
       footer = new DataFooterImpl();
-      footer.create(rowCount, pageSize, hasPaging(), true, hasSearch());
+      footer.create(rowCount, hasPaging(), true, hasSearch());
     } else {
       footer = null;
     }
@@ -329,8 +321,8 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
       EventUtils.eatEvent(event);
 
       int rc = display.getRowCount();
-      int start = display.getVisibleRange().getStart();
-      int length = display.getVisibleRange().getLength();
+      int start = display.getPageStart();
+      int length = display.getPageSize();
 
       if (length > 0 && rc > length) {
         int p = -1;
@@ -341,7 +333,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
         }
 
         if (p >= 0) {
-          display.setVisibleRange(p, length);
+          display.setPageStart(p, true, true);
         }
       }
     }
@@ -359,7 +351,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
   public void onResize() {
     if (isAttached()) {
       super.onResize();
-      adapt(false);
+      getContent().getGrid().updatePageSize();
     }
   }
 
@@ -409,7 +401,31 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     super.onLoad();
     Scheduler.get().scheduleDeferred(new ScheduledCommand() {
       public void execute() {
-        adapt(true);
+        CellGrid grid = getContent().getGrid();
+        if (!hasPaging()) {
+          grid.refresh();
+          return;
+        }
+
+        Collection<PagerView> pagers = getPagers();
+        if (pagers != null) {
+          for (PagerView pager : pagers) {
+            pager.start(grid);
+          }
+        }
+        
+        int ps = Math.min(estimatePageSize(), grid.getRowCount());
+        grid.setPageSize(ps, true, false);
+
+        int ds = grid.getDataSize();
+        if (ps > 0 && ps < ds) {
+          grid.getRowData().subList(ps, ds).clear();
+          grid.refresh();
+        } else if (ps > 0 && ps > ds) {
+          DataRequestEvent.fire(grid);
+        } else {
+          grid.refresh();
+        }
       }
     });
   }
@@ -422,10 +438,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     super.onUnload();
   }
 
-  private void adapt(boolean init) {
-    GridView content = getContent();
-    Assert.notNull(content);
-
+  private int estimatePageSize() {
     if (hasPaging()) {
       int w = getElement().getClientWidth();
       int h = getElement().getClientHeight();
@@ -437,24 +450,9 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
         h = DomUtils.getParentClientHeight(this);
       }
 
-      int pageSize = estimatePageSize(getContent(), w, h);
-      if (pageSize > 0 && (init || pageSize != getPageSize(content))) {
-        updatePageSize(content, pageSize, init);
-      }
-
-      if (init) {
-        Collection<PagerView> pagers = getPagers();
-        if (pagers != null) {
-          for (PagerView pager : pagers) {
-            pager.start(content.getGrid());
-          }
-        }
-      }
-    } else if (init && !isChild()) {
-      int rc = content.getGrid().getRowCount();
-      int pageSize = (rc > 0) ? rc : 10;
-      getContent().updatePageSize(pageSize, init);
+      return estimatePageSize(getContent(), w, h);
     }
+    return BeeConst.UNDEF;
   }
 
   private int estimatePageSize(GridView content, int containerWidth, int containerHeight) {
@@ -473,7 +471,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
       }
       return content.estimatePageSize(w, h);
     }
-    return BeeConst.SIZE_UNKNOWN;
+    return BeeConst.UNDEF;
   }
 
   private String getCurrentCaption() {
@@ -486,14 +484,6 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
 
   private Direction getHeaderDirection() {
     return headerDirection;
-  }
-
-  private int getPageSize(GridView content) {
-    if (content == null) {
-      return BeeConst.SIZE_UNKNOWN;
-    } else {
-      return content.getGrid().getVisibleRange().getLength();
-    }
   }
 
   private Evaluator getRowMessage() {
@@ -516,16 +506,8 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     return adding;
   }
 
-  private boolean isChild() {
-    return child;
-  }
-  
   private void setAdding(boolean adding) {
     this.adding = adding;
-  }
-
-  private void setChild(boolean child) {
-    this.child = child;
   }
 
   private void setCurrentCaption(String currentCaption) {
@@ -554,11 +536,5 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
 
   private void setScrollerDirection(Direction scrollerDirection) {
     this.scrollerDirection = scrollerDirection;
-  }
-
-  private void updatePageSize(GridView content, int pageSize, boolean init) {
-    if (content != null && pageSize > 0 && hasPaging()) {
-      content.updatePageSize(pageSize, init);
-    }
   }
 }

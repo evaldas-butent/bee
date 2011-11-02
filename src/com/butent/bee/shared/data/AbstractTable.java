@@ -129,7 +129,7 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
 
   public int addColumns(Collection<ColType> columnsToAdd) {
     Assert.hasLength(columnsToAdd);
-    int lastIndex = BeeConst.INDEX_UNKNOWN;
+    int lastIndex = BeeConst.UNDEF;
     for (ColType column : columnsToAdd) {
       lastIndex = addColumn(column);
     }
@@ -147,7 +147,7 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
 
   public int addRows(Collection<RowType> rowsToAdd) {
     Assert.hasLength(rowsToAdd);
-    int lastIndex = BeeConst.INDEX_UNKNOWN;
+    int lastIndex = BeeConst.UNDEF;
     for (RowType row : rowsToAdd) {
       lastIndex = addRow(row);
     }
@@ -156,7 +156,7 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
 
   public int addRows(int rowCount) {
     Assert.isPositive(rowCount);
-    int lastIndex = BeeConst.INDEX_UNKNOWN;
+    int lastIndex = BeeConst.UNDEF;
     for (int i = 0; i < rowCount; i++) {
       lastIndex = addRow();
     }
@@ -258,7 +258,7 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
         }
       }
     }
-    return BeeConst.INDEX_UNKNOWN;
+    return BeeConst.UNDEF;
   }
 
   public String getColumnLabel(int colIndex) {
@@ -411,7 +411,7 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
         return i;
       }
     }
-    return BeeConst.INDEX_UNKNOWN;
+    return BeeConst.UNDEF;
   }
 
   public CustomProperties getRowProperties(int rowIndex) {

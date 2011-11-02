@@ -9,6 +9,7 @@ import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.communication.RpcParameter;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
@@ -213,7 +214,8 @@ public class Queries {
 
   public static int getRowSet(String viewName, List<String> columns, Filter filter, Order order,
       CachingPolicy cachingPolicy, RowSetCallback callback) {
-    return getRowSet(viewName, columns, filter, order, -1, -1, cachingPolicy, callback);
+    return getRowSet(viewName, columns, filter, order, BeeConst.UNDEF, BeeConst.UNDEF,
+        cachingPolicy, callback);
   }
 
   public static int getRowSet(String viewName, List<String> columns, Filter filter, Order order,

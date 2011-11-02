@@ -10,7 +10,6 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.layout.Absolute;
 import com.butent.bee.client.presenter.Presenter;
-import com.butent.bee.client.view.navigation.PageResizer;
 import com.butent.bee.client.view.navigation.PagerView;
 import com.butent.bee.client.view.navigation.SimplePager;
 import com.butent.bee.client.view.search.SearchBox;
@@ -44,10 +43,6 @@ public class DataFooterImpl extends Absolute implements DataFooterView, HasNavig
     String container();
 
     int horizontalMargin();
-
-    String pageResizer();
-
-    int resizerWidth();
 
     String search();
 
@@ -83,7 +78,6 @@ public class DataFooterImpl extends Absolute implements DataFooterView, HasNavig
   private Presenter viewPresenter = null;
 
   private String pagerId = null;
-  private String resizerId = null;
   private String searchId = null;
   private String selectionCounterId = null;
 
@@ -96,8 +90,7 @@ public class DataFooterImpl extends Absolute implements DataFooterView, HasNavig
     addStyleName(StyleUtils.WINDOW_FOOTER);
   }
 
-  public void create(int rowCount, int pageSize, boolean addPaging, boolean showPageSize,
-      boolean addSearch) {
+  public void create(int rowCount, boolean addPaging, boolean showPageSize, boolean addSearch) {
     Style style = getDefaultStyle();
     addStyleName(style.container());
 
@@ -106,7 +99,6 @@ public class DataFooterImpl extends Absolute implements DataFooterView, HasNavig
     int margin = style.horizontalMargin();
 
     int pagerWidth = 256;
-    int resizerWidth = style.resizerWidth();
     int selectionCounterWidth = style.selectionCounterWidth();
 
     int left = margin;
@@ -117,14 +109,6 @@ public class DataFooterImpl extends Absolute implements DataFooterView, HasNavig
       add(pager, left, top);
       left += pagerWidth + spacing;
       pagerId = pager.getWidgetId();
-      
-      if (pageSize > 0) {
-        PageResizer pageResizer = new PageResizer(pageSize);
-        pageResizer.addStyleName(style.pageResizer());
-        add(pageResizer, left, top);
-        left += resizerWidth + spacing;
-        resizerId = pageResizer.getWidgetId();
-      }
     }
 
     if (addSearch) {
@@ -209,15 +193,10 @@ public class DataFooterImpl extends Absolute implements DataFooterView, HasNavig
 
     Style style = getDefaultStyle();
     int spacing = style.spacing();
-    int resizerWidth = style.resizerWidth();
     int margin = style.horizontalMargin();
 
     int left = margin + pagerWidth + spacing;
 
-    if (!BeeUtils.isEmpty(resizerId)) {
-      StyleUtils.setLeft(DomUtils.getChild(this, resizerId), left);
-      left += resizerWidth + spacing;
-    }
     if (!BeeUtils.isEmpty(searchId)) {
       StyleUtils.setLeft(DomUtils.getChild(this, searchId), left);
     }

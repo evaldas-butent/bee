@@ -1,5 +1,6 @@
 package com.butent.bee.client;
 
+import com.google.common.collect.Maps;
 import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.client.ui.Widget;
@@ -29,12 +30,18 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * creates and manages menu of the system using authorization and layout configuration.
  */
 
 public class MenuManager implements Module {
+  
+  public interface MenuCallback {
+    void onSelection(String parameters);
+  }
+
   private class DrawCommand extends BeeCommand {
     @Override
     public void execute() {
@@ -42,6 +49,8 @@ public class MenuManager implements Module {
     }
   }
 
+  private final Map<String, MenuCallback> menuCallbacks = Maps.newHashMap();
+  
   private List<MenuEntry> roots = null;
   private List<MenuEntry> items = null;
 
@@ -93,6 +102,11 @@ public class MenuManager implements Module {
     return layouts;
   }
 
+  public MenuCallback getMenuCallback(String service) {
+    Assert.notEmpty(service);
+    return menuCallbacks.get(BeeUtils.normalize(service));
+  }
+  
   public String getName() {
     return getClass().getName();
   }
@@ -172,6 +186,11 @@ public class MenuManager implements Module {
     BeeKeeper.getRpc().makeGetRequest(Service.LOAD_MENU);
   }
 
+  public void registerMenuCallback(String service, MenuCallback callback) {
+    Assert.notEmpty(service);
+    menuCallbacks.put(BeeUtils.normalize(service), callback);
+  }
+  
   public void setItems(List<MenuEntry> items) {
     this.items = items;
   }

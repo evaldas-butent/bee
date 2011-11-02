@@ -1,9 +1,8 @@
 package com.butent.bee.client.data;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.gwt.user.cellview.client.LoadingStateChangeEvent;
-import com.google.gwt.view.client.Range;
-import com.google.gwt.view.client.RangeChangeEvent;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 
 import com.butent.bee.client.BeeKeeper;
@@ -12,6 +11,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.HasViewName;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
+import com.butent.bee.shared.data.event.DataRequestEvent;
 import com.butent.bee.shared.data.event.HandlesAllDataEvents;
 import com.butent.bee.shared.data.event.MultiDeleteEvent;
 import com.butent.bee.shared.data.event.RowDeleteEvent;
@@ -24,6 +24,7 @@ import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Enables to manage ranges of data shown in user interface tables.
@@ -41,10 +42,10 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
 
   private final List<HandlerRegistration> handlerRegistry = Lists.newArrayList();
 
-  private boolean rangeChangeEnabled = true;
   private boolean cacheEnabled = true;
 
   private final Filter dataFilter;
+  private final Map<String, Filter> parentFilters = Maps.newHashMap();
   private Filter userFilter = null;
 
   private Order order = null;
@@ -59,11 +60,9 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
     this.versionColumnName = versionColumnName;
     this.dataFilter = dataFilter;
 
-    this.handlerRegistry.add(display.addRangeChangeHandler(new RangeChangeEvent.Handler() {
-      public void onRangeChange(RangeChangeEvent event) {
-        if (rangeChangeEnabled) {
-          onRangeChanged(false);
-        }
+    this.handlerRegistry.add(display.addDataRequestHandler(new DataRequestEvent.Handler() {
+      public void onDataRequest(DataRequestEvent event) {
+        onRequest(false);
       }
     }));
 
@@ -75,16 +74,8 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
     setCacheEnabled(false);
   }
 
-  public void disableRangeChange() {
-    setRangeChangeEnabled(false);
-  }
-
   public void enableCache() {
     setCacheEnabled(true);
-  }
-
-  public void enableRangeChange() {
-    setRangeChangeEnabled(true);
   }
 
   public List<BeeColumn> getColumns() {
@@ -100,12 +91,22 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
   }
 
   public Filter getQueryFilter(Filter filter) {
-    if (filter == null) {
-      return getDataFilter();
-    } else if (getDataFilter() == null) {
-      return filter;
+    List<Filter> lst = Lists.newArrayList();
+    
+    if (getDataFilter() != null) {
+      lst.add(getDataFilter());
+    }
+    if (!getParentFilters().isEmpty()) {
+      lst.addAll(getParentFilters().values());
+    }
+    if (filter != null) {
+      lst.add(filter);
+    }
+    
+    if (lst.isEmpty()) {
+      return null;
     } else {
-      return CompoundFilter.and(getDataFilter(), filter);
+      return CompoundFilter.and(lst);
     }
   }
 
@@ -125,10 +126,6 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
     return cacheEnabled;
   }
 
-  public boolean isRangeChangeEnabled() {
-    return rangeChangeEnabled;
-  }
-
   public void onCellUpdate(CellUpdateEvent event) {
     if (BeeUtils.same(getViewName(), event.getViewName())) {
       getDisplay().onCellUpdate(event);
@@ -137,7 +134,7 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
   
   public void onFilterChanged(Filter newFilter, int rowCount) {
     setUserFilter(newFilter);
-    getDisplay().setRowCount(rowCount);
+    getDisplay().setRowCount(rowCount, true);
     goTop();
   }
 
@@ -145,7 +142,7 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
     if (BeeUtils.same(getViewName(), event.getViewName())) {
       disableCache();
       getDisplay().onMultiDelete(event);
-      onRangeChanged(false);
+      onRequest(false);
       enableCache();
     }
   }
@@ -154,7 +151,7 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
     if (BeeUtils.same(getViewName(), event.getViewName())) {
       disableCache();
       getDisplay().onRowDelete(event);
-      onRangeChanged(false);
+      onRequest(false);
       enableCache();
     }
   }
@@ -190,11 +187,13 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
         if (result <= 0) {
           BeeKeeper.getLog().warning(getViewName(), flt, "refresh: row count", result);
         }
-        getDisplay().setRowCount(result);
+        getDisplay().setRowCount(result, true);
         onRefresh();
       }
     });
   }
+  
+  public abstract void requery(boolean updateActiveRow);
 
   public void setCacheEnabled(boolean cacheEnabled) {
     this.cacheEnabled = cacheEnabled;
@@ -203,9 +202,20 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
   public void setOrder(Order order) {
     this.order = order;
   }
-
-  public void setRangeChangeEnabled(boolean rangeChangeEnabled) {
-    this.rangeChangeEnabled = rangeChangeEnabled;
+  
+  public void setParentFilter(String key, Filter filter, boolean requery) {
+    Assert.notEmpty(key);
+    
+    boolean upd;
+    if (filter == null) {
+      upd = (getParentFilters().remove(key) != null);
+    } else {
+      upd = (getParentFilters().put(key, filter) != filter);
+    }
+    
+    if (upd && requery) {
+      requery(false);
+    }
   }
 
   public void setUserFilter(Filter userFilter) {
@@ -221,21 +231,21 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
   }
 
   protected int getPageSize() {
-    return getDisplay().getVisibleRange().getLength();
+    return getDisplay().getPageSize();
   }
 
-  protected Range getRange() {
-    return getDisplay().getVisibleRange();
+  protected int getPageStart() {
+    return getDisplay().getPageStart();
   }
-
+  
   protected void goTop() {
-    getDisplay().setPageStart(0);
-    onRangeChanged(true);
+    getDisplay().setPageStart(0, true, false);
+    onRequest(true);
   }
-
-  protected abstract void onRangeChanged(boolean updateActiveRow);
 
   protected abstract void onRefresh();
+
+  protected abstract void onRequest(boolean updateActiveRow);
 
   protected void startLoading() {
     getDisplay().fireLoadingStateChange(LoadingStateChangeEvent.LoadingState.LOADING);
@@ -243,5 +253,9 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
 
   private Filter getDataFilter() {
     return dataFilter;
+  }
+
+  private Map<String, Filter> getParentFilters() {
+    return parentFilters;
   }
 }

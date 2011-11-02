@@ -8,6 +8,7 @@ import com.google.gwt.user.client.ui.LayoutPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.modules.crm.TaskEventHandler;
+import com.butent.bee.client.modules.crm.TaskList;
 import com.butent.bee.client.ui.AbstractFormCallback;
 import com.butent.bee.client.ui.CompositeService;
 import com.butent.bee.client.ui.FormFactory;
@@ -120,6 +121,7 @@ public class BeeKeeper {
         }
       }
     });
+
     FormFactory.registerFormCallback("Tasks", new AbstractFormCallback() {
       @Override
       public void afterCreateWidget(final String name, final Widget widget) {
@@ -152,6 +154,12 @@ public class BeeKeeper {
         newRow.setValue(form.getDataIndex("Owner"), getUser().getUserId());
         newRow.setValue(form.getDataIndex("StartTime"), System.currentTimeMillis());
         newRow.setValue(form.getDataIndex("Event"), TaskEvent.ACTIVATED.ordinal());
+      }
+    });
+    
+    getMenu().registerMenuCallback("task_list", new MenuManager.MenuCallback() {
+      public void onSelection(String parameters) {
+        TaskList.open(parameters);
       }
     });
   }

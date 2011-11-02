@@ -6,6 +6,7 @@ import com.google.common.collect.Sets;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasExtendedInfo;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
@@ -77,7 +78,6 @@ public class CacheManager implements HandlesAllDataEvents {
 
     private void addRows(List<BeeRow> rows, Filter filter, Order order, int offset) {
       Assert.notNull(rows);
-      Assert.nonNegative(offset);
 
       CachedQuery query = getQuery(filter, order);
       if (query == null) {
@@ -85,7 +85,7 @@ public class CacheManager implements HandlesAllDataEvents {
         queries.add(query);
       }
 
-      int p = offset;
+      int p = Math.max(offset, 0);
       for (BeeRow row : rows) {
         data.add(row.getId(), row);
         query.add(p++, row.getId());
@@ -264,16 +264,15 @@ public class CacheManager implements HandlesAllDataEvents {
   }
 
   public void add(BeeRowSet rowSet, Filter filter, Order order) {
-    add(rowSet, filter, order, 0);
+    add(rowSet, filter, order, BeeConst.UNDEF);
   }
 
   public void add(BeeRowSet rowSet, Filter filter, Order order, int offset) {
-    add(rowSet, filter, order, offset, -1);
+    add(rowSet, filter, order, offset, BeeConst.UNDEF);
   }
 
   public void add(BeeRowSet rowSet, Filter filter, Order order, int offset, int limit) {
     Assert.notNull(rowSet);
-    Assert.nonNegative(offset);
 
     int rowCount = rowSet.getNumberOfRows();
     boolean isComplete = offset <= 0 && (limit <= 0 || limit > rowCount);

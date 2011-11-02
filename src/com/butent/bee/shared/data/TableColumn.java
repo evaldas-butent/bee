@@ -25,9 +25,9 @@ public class TableColumn implements HasInfo, IsColumn {
   
   private CustomProperties properties = null;
   
-  private int precision = BeeConst.SIZE_UNKNOWN;
+  private int precision = BeeConst.UNDEF;
 
-  private int scale = BeeConst.SIZE_UNKNOWN;
+  private int scale = BeeConst.UNDEF;
 
   public TableColumn(ValueType type) {
     this(type, null, null);

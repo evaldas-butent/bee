@@ -361,19 +361,19 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
           getGrid().autoFitColumn(colId);
           msg = "autoFitColumn " + colId;
         } else {
-          getGrid().autoFit();
+          getGrid().autoFit(true);
           msg = "autoFit";
         }
 
       } else if (cmd.startsWith("ps")) {
         if (xp[0] > 0) {
-          updatePageSize(xp[0], false);
+          getGrid().setPageSize(xp[0], true, true);
           msg = "updatePageSize " + xp[0];
         } else {
           int oldPageSize = getGrid().getPageSize();
           int newPageSize = getGrid().estimatePageSize();
           if (newPageSize > 0) {
-            updatePageSize(newPageSize, false);
+            getGrid().setPageSize(newPageSize, true, true);
           }
           msg = "page size: old " + oldPageSize + " new " + newPageSize;
         }
@@ -387,7 +387,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     }
 
     if (redraw) {
-      getGrid().redraw();
+      getGrid().refresh();
     }
   }
 
@@ -395,7 +395,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       GridDescription gridDescr, GridCallback gridCallback, boolean hasSearch) {
     Assert.notEmpty(dataCols);
     Assert.notNull(gridDescr);
-    
+
     if (gridCallback != null) {
       gridCallback.beforeCreate(dataCols, rowCount, gridDescr, hasSearch);
     }
@@ -459,7 +459,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     if (gridCallback != null) {
       gridCallback.beforeCreateColumns(dataCols, columnDescriptions);
     }
-    
+
     String idName = gridDescr.getIdName();
     String versionName = gridDescr.getVersionName();
 
@@ -472,7 +472,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
 
     for (ColumnDescription columnDescr : columnDescriptions) {
       String columnId = columnDescr.getName();
-      if (gridCallback != null && 
+      if (gridCallback != null &&
           !gridCallback.beforeCreateColumn(columnId, dataCols, columnDescr)) {
         continue;
       }
@@ -493,7 +493,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
           continue;
         }
       }
-      
+
       CellType cellType = columnDescr.getCellType();
 
       dataIndex = BeeConst.UNDEF;
@@ -578,11 +578,11 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       } else if (!BeeUtils.isEmpty(source)) {
         column.setSortBy(Lists.newArrayList(source));
       }
-      
+
       if (BeeUtils.isTrue(columnDescr.isSortable()) && !BeeUtils.isEmpty(column.getSortBy())) {
         column.setSortable(true);
       }
-      
+
       if (!BeeUtils.isEmpty(columnDescr.getFormat())) {
         Format.setFormat(column, column.getValueType(), columnDescr.getFormat());
       }
@@ -605,11 +605,11 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
         footer = null;
       }
 
-      if (gridCallback != null && 
+      if (gridCallback != null &&
           !gridCallback.afterCreateColumn(columnId, column, header, footer)) {
         continue;
       }
-      
+
       getGrid().addColumn(columnId, dataIndex, source, column, header, footer);
       getGrid().setColumnInfo(columnId, columnDescr, dataCols);
     }
@@ -617,16 +617,17 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     if (gridCallback != null) {
       gridCallback.afterCreateColumns(getGrid());
     }
-    
+
     initNewRowColumns(gridDescr.getNewRowColumns());
 
-    getGrid().setRowCount(rowCount);
+    getGrid().setRowCount(rowCount, false);
 
-    if (rowSet != null) {
-      getGrid().estimateColumnWidths(rowSet.getRows().getList());
+    if (rowSet != null && !rowSet.isEmpty()) {
+      getGrid().setRowData(rowSet.getRows().getList(), false);
+      getGrid().estimateColumnWidths();
     }
     getGrid().estimateHeaderWidths(true);
-    
+
     initOrder(gridDescr.getOrder());
 
     getGrid().addEditStartHandler(this);
@@ -667,7 +668,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
   public void finishNewRow(IsRow row) {
     if (useFormForInsert()) {
       showEditForm(false);
-      getEditForm().showGrids(true);
+      getEditForm().showChildren(true);
     } else {
       StyleUtils.hideDisplay(getNewRowWidget());
       StyleUtils.hideScroll(this, ScrollBars.BOTH);
@@ -685,7 +686,8 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
   }
 
   public RowInfo getActiveRowInfo() {
-    return getGrid().getActiveRowInfo();
+    IsRow row = getGrid().getActiveRowData();
+    return (row == null) ? null : new RowInfo(row);
   }
 
   public Filter getFilter(List<? extends IsColumn> columns, String idColumnName,
@@ -705,12 +707,12 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       if (BeeUtils.isEmpty(input)) {
         continue;
       }
-      
+
       List<String> sources = ((ColumnFooter) footer).getSources();
       if (BeeUtils.isEmpty(sources)) {
         continue;
       }
-      
+
       Filter flt = null;
       for (String source : sources) {
         Filter f = DataUtils.parseExpression(source + " " + input, columns, idColumnName,
@@ -718,9 +720,9 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
         if (f == null) {
           continue;
         }
-        
+
         if (flt == null) {
-          flt = f; 
+          flt = f;
         } else {
           flt = CompoundFilter.or(flt, f);
         }
@@ -837,7 +839,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       fireEvent(new EditFormEvent(State.OPEN));
       showGrid(false);
       showEditForm(true);
-      getEditForm().updateRowData(cloneRow(rowValue));
+      getEditForm().updateRow(cloneRow(rowValue));
 
       if (editableColumn != null) {
         Widget widget = getEditForm().getWidgetBySource(editableColumn.getColumnId());
@@ -907,10 +909,6 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     this.viewPresenter = presenter;
   }
 
-  public void setVisibleRange(int start, int length) {
-    getGrid().setVisibleRange(start, length);
-  }
-
   public void startNewRow() {
     if (!isEnabled() || getGrid().isReadOnly()) {
       return;
@@ -972,10 +970,8 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
         continue;
       }
       if (oldRow == null) {
-        if (getGrid().getActiveRow() >= 0
-            && getGrid().getActiveRow() < getGrid().getVisibleItemCount()) {
-          oldRow = getGrid().getVisibleItem(getGrid().getActiveRow());
-        } else {
+        oldRow = getGrid().getActiveRowData();
+        if (oldRow == null) {
           oldRow = createEmptyRow();
         }
       }
@@ -993,24 +989,11 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
         getEditForm().getFormCallback().onStartNewRow(getEditForm(), oldRow, newRow);
       }
 
-      getEditForm().showGrids(false);
-      getEditForm().updateRowData(newRow);
+      getEditForm().showChildren(false);
+      getEditForm().updateRow(newRow);
     } else {
       getNewRowWidget().start(newRow);
       StyleUtils.unhideDisplay(getNewRowWidget());
-    }
-  }
-
-  public void updatePageSize(int pageSize, boolean init) {
-    Assert.isPositive(pageSize);
-    int oldSize = getGrid().getPageSize();
-
-    if (oldSize == pageSize) {
-      if (init) {
-        getGrid().setVisibleRangeAndClearData(getGrid().getVisibleRange(), true);
-      }
-    } else {
-      getGrid().setVisibleRange(getGrid().getPageStart(), pageSize);
     }
   }
 
@@ -1130,7 +1113,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
   }
 
   private void editFormConfirm() {
-    IsRow row = getEditForm().getRowData();
+    IsRow row = getEditForm().getRow();
 
     if (isAdding()) {
       if (getEditForm().getFormCallback() != null
@@ -1256,17 +1239,17 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       setNewRowColumns(columnList);
     }
   }
-  
+
   private void initOrder(Order viewOrder) {
     if (viewOrder == null) {
       return;
     }
-    
+
     Order gridOrder = getGrid().getSortOrder();
     if (!gridOrder.isEmpty()) {
       gridOrder.clear();
     }
-    
+
     for (Order.Column oc : viewOrder.getColumns()) {
       String columnId = getGrid().getColumnIdBySource(oc.getName());
       if (!BeeUtils.isEmpty(columnId)) {

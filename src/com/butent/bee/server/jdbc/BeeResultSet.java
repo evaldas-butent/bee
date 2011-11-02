@@ -68,16 +68,16 @@ public class BeeResultSet implements Transformable {
   private int concurrency = 0;
   private String cursorName = null;
   private int fetchDirection = 0;
-  private int fetchSize = BeeConst.SIZE_UNKNOWN;
+  private int fetchSize = BeeConst.UNDEF;
   private int holdability = 0;
 
   private int type = 0;
   private int columnCount = 0;
 
   private BeeColumn[] columns = null;
-  private int maxFieldSize = BeeConst.SIZE_UNKNOWN;
-  private int maxRows = BeeConst.SIZE_UNKNOWN;
-  private int queryTimeout = BeeConst.TIME_UNKNOWN;
+  private int maxFieldSize = BeeConst.UNDEF;
+  private int maxRows = BeeConst.UNDEF;
+  private int queryTimeout = BeeConst.UNDEF;
 
   private boolean poolable = false;
   private final Set<State> states = EnumSet.noneOf(State.class);
@@ -404,7 +404,7 @@ public class BeeResultSet implements Transformable {
       setColumnCount(md.getColumnCount());
     } catch (SQLException ex) {
       handleError(ex);
-      setColumnCount(BeeConst.SIZE_UNKNOWN);
+      setColumnCount(BeeConst.UNDEF);
       return;
     }
 
@@ -457,7 +457,7 @@ public class BeeResultSet implements Transformable {
   }
 
   private String valueAsString(int v) {
-    if (v == BeeConst.INDEX_UNKNOWN || v == BeeConst.SIZE_UNKNOWN || v == BeeConst.TIME_UNKNOWN) {
+    if (BeeConst.isUndef(v)) {
       return BeeUtils.concat(1, v, BeeConst.UNKNOWN);
     } else {
       return Integer.toString(v);

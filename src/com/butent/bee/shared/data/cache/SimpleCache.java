@@ -70,7 +70,7 @@ public class SimpleCache<K, V> implements HasInfo {
 
   public int getHistorySize() {
     if (history == null) {
-      return BeeConst.SIZE_UNKNOWN;
+      return BeeConst.UNDEF;
     } else {
       return history.size();
     }

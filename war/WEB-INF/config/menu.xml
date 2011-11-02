@@ -9,10 +9,10 @@
   <item id="persons" parent="cont_menu" order="20" text="Asmenys" service="grid" parameters="Persons" separators="*" />
 
   <item id="task_menu" order="30" text="Užduotys" />
-  <item id="tasks" parent="task_menu" order="10" text="Gautos" service="grid" parameters="TaskUsers" />
-  <item id="tasks" parent="task_menu" order="20" text="Deleguotos" service="grid" parameters="DelegatedTasks" />
-  <item id="tasks" parent="task_menu" order="30" text="Stebimos" service="grid" parameters="ObservedTasks" />
-  <item id="tasks" parent="task_menu" order="100" text="Darbų tipai" service="grid" parameters="DurationTypes" separators="*" />
+  <item id="assigned_tasks" parent="task_menu" order="10" text="Gautos" service="task_list" parameters="a" />
+  <item id="delegated_tasks" parent="task_menu" order="20" text="Deleguotos" service="task_list" parameters="d" />
+  <item id="observed_tasks" parent="task_menu" order="30" text="Stebimos" service="task_list" parameters="o" />
+  <item id="duration_types" parent="task_menu" order="100" text="Darbų tipai" service="grid" parameters="DurationTypes" separators="*" />
 
   <item id="process_menu" order="40" text="Procesai" />
   <item id="tasks" parent="process_menu" order="10" text="Užduotys" service="grid" parameters="Tasks" />

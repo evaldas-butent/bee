@@ -9,11 +9,6 @@ import com.google.gwt.user.cellview.client.LoadingStateChangeEvent;
 import com.google.gwt.user.client.ui.Focusable;
 import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.Widget;
-import com.google.gwt.view.client.CellPreviewEvent;
-import com.google.gwt.view.client.Range;
-import com.google.gwt.view.client.RangeChangeEvent;
-import com.google.gwt.view.client.RowCountChangeEvent;
-import com.google.gwt.view.client.SelectionModel;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.data.HasDataTable;
@@ -46,9 +41,11 @@ import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.ActiveRowChangeEvent;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
+import com.butent.bee.shared.data.event.DataRequestEvent;
 import com.butent.bee.shared.data.event.MultiDeleteEvent;
 import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
+import com.butent.bee.shared.data.event.ScopeChangeEvent;
 import com.butent.bee.shared.data.event.SelectionCountChangeEvent;
 import com.butent.bee.shared.data.event.SortEvent;
 import com.butent.bee.shared.data.value.ValueType;
@@ -136,8 +133,8 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
         }
       }
 
-      if (type.isGrid() && hasData()) {
-        getGridWidgets().add(result);
+      if (type.isChild() && hasData()) {
+        getChildWidgets().add(result);
       }
     }
   }
@@ -252,7 +249,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
   private int pageStart = 0;
   private int rowCount = BeeConst.UNDEF;
 
-  private IsRow rowData = null;
+  private IsRow row = null;
   private IsRow rowBuffer = null;
   private JavaScriptObject rowJso = null;
 
@@ -264,7 +261,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
 
   private final Set<DisplayWidget> displayWidgets = Sets.newHashSet();
   private final List<EditableWidget> editableWidgets = Lists.newArrayList();
-  private final Set<WidgetDescription> gridWidgets = Sets.newHashSet();
+  private final Set<WidgetDescription> childWidgets = Sets.newHashSet();
 
   private final List<TabEntry> tabOrder = Lists.newArrayList();
 
@@ -273,7 +270,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
   }
 
   public HandlerRegistration addActiveRowChangeHandler(ActiveRowChangeEvent.Handler handler) {
-    return null;
+    return addHandler(handler, ActiveRowChangeEvent.getType());
   }
 
   public HandlerRegistration addAddEndHandler(AddEndEvent.Handler handler) {
@@ -284,16 +281,12 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     return addHandler(handler, AddStartEvent.getType());
   }
 
-  public HandlerRegistration addCellPreviewHandler(CellPreviewEvent.Handler<IsRow> handler) {
-    return null;
+  public HandlerRegistration addDataRequestHandler(DataRequestEvent.Handler handler) {
+    return addHandler(handler, DataRequestEvent.getType());
   }
 
   public HandlerRegistration addLoadingStateChangeHandler(LoadingStateChangeEvent.Handler handler) {
     return addHandler(handler, LoadingStateChangeEvent.TYPE);
-  }
-
-  public HandlerRegistration addRangeChangeHandler(RangeChangeEvent.Handler handler) {
-    return addHandler(handler, RangeChangeEvent.getType());
   }
 
   public HandlerRegistration addReadyForInsertHandler(ReadyForInsertEvent.Handler handler) {
@@ -304,8 +297,8 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     return addHandler(handler, ReadyForUpdateEvent.getType());
   }
 
-  public HandlerRegistration addRowCountChangeHandler(RowCountChangeEvent.Handler handler) {
-    return addHandler(handler, RowCountChangeEvent.getType());
+  public HandlerRegistration addScopeChangeHandler(ScopeChangeEvent.Handler handler) {
+    return addHandler(handler, ScopeChangeEvent.getType());
   }
 
   public HandlerRegistration addSelectionCountChangeHandler(
@@ -354,18 +347,19 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     fireEvent(new AddEndEvent());
 
     if (row != null) {
-      setRowData(row);
+      setRow(row);
     } else {
-      setRowData(getRowBuffer());
+      setRow(getRowBuffer());
     }
 
     refreshData(true);
-    showGrids(true);
+    showChildren(true);
 
     if (row != null) {
       int rc = getRowCount();
-      setPageStart(rc);
-      setRowCount(rc + 1);
+      setPageStart(rc, false, false);
+      setRowCount(rc + 1, false);
+      fireScopeChange();
     }
 
     setAdding(false);
@@ -378,10 +372,10 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
   }
 
   public RowInfo getActiveRowInfo() {
-    if (getRowData() == null) {
+    if (getRow() == null) {
       return null;
     }
-    return new RowInfo(getRowData());
+    return new RowInfo(getRow());
   }
 
   public List<BeeColumn> getDataColumns() {
@@ -411,29 +405,41 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     return formCallback;
   }
 
+  public int getPageSize() {
+    return 1;
+  }
+
+  public int getPageStart() {
+    return pageStart;
+  }
+
+  public IsRow getRow() {
+    return row;
+  }
+
   public int getRowCount() {
     return rowCount;
   }
 
-  public IsRow getRowData() {
-    return rowData;
+  public List<? extends IsRow> getRowData() {
+    List<IsRow> data = Lists.newArrayList();
+    if (getRow() != null) {
+      data.add(getRow());
+    }
+    return data;
   }
 
   public JavaScriptObject getRowJso() {
-    if (!hasData() || getRowData() == null) {
+    if (!hasData() || getRow() == null) {
       return null;
     }
 
     if (rowJso == null) {
       setRowJso(EvalHelper.createJso(getDataColumns()));
     }
-    EvalHelper.toJso(getDataColumns(), getRowData(), rowJso);
+    EvalHelper.toJso(getDataColumns(), getRow(), rowJso);
 
     return rowJso;
-  }
-
-  public SelectionModel<? super IsRow> getSelectionModel() {
-    return null;
   }
 
   public Order getSortOrder() {
@@ -442,22 +448,6 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
 
   public Presenter getViewPresenter() {
     return viewPresenter;
-  }
-
-  public IsRow getVisibleItem(int indexOnPage) {
-    return null;
-  }
-
-  public int getVisibleItemCount() {
-    return 1;
-  }
-
-  public Iterable<IsRow> getVisibleItems() {
-    return null;
-  }
-
-  public Range getVisibleRange() {
-    return new Range(getPageStart(), 1);
   }
 
   public Widget getWidgetBySource(String source) {
@@ -482,15 +472,11 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     return enabled;
   }
 
-  public boolean isRowCountExact() {
-    return true;
-  }
-
   public boolean isRowEditable(boolean warn) {
-    if (getRowData() == null || isReadOnly() || !isEnabled()) {
+    if (getRow() == null || isReadOnly() || !isEnabled()) {
       return false;
     }
-    return isRowEditable(getRowData(), warn);
+    return isRowEditable(getRow(), warn);
   }
 
   public void notifyInfo(String... messages) {
@@ -511,7 +497,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     String source = event.getColumnId();
     String value = event.getValue();
 
-    IsRow rowValue = getRowData();
+    IsRow rowValue = getRow();
     rowValue.setVersion(version);
     int dataIndex = getDataIndex(source);
     rowValue.setValue(dataIndex, value);
@@ -545,8 +531,8 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
         }
       }
 
-      if (getRowEditable() != null && hasGrids()) {
-        for (WidgetDescription widgetDescription : getGridWidgets()) {
+      if (getRowEditable() != null && hasChildren()) {
+        for (WidgetDescription widgetDescription : getChildWidgets()) {
           Widget widget = getWidget(widgetDescription.getWidgetId());
           if (widget instanceof HasEnabled && rowEnabled != ((HasEnabled) widget).isEnabled()) {
             ((HasEnabled) widget).setEnabled(rowEnabled);
@@ -561,7 +547,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
   public void onEditEnd(EditEndEvent event) {
     Assert.notNull(event);
 
-    IsRow rowValue = getRowData();
+    IsRow rowValue = getRow();
     IsColumn column = event.getColumn();
 
     int index = getDataIndex(column.getId());
@@ -571,6 +557,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     if (!BeeUtils.equalsTrimRight(oldValue, newValue)) {
       if (isAdding() || isEditing()) {
         rowValue.setValue(index, newValue);
+        BeeKeeper.getLog().info(column.getId(), index, "old:", oldValue, "new:", newValue);
       } else {
         fireEvent(new ReadyForUpdateEvent(rowValue, column, oldValue, newValue, event.isRowMode()));
       }
@@ -598,11 +585,11 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
   }
 
   public void onMultiDelete(MultiDeleteEvent event) {
-    setRowCount(getRowCount() - event.getRows().size());
+    setRowCount(getRowCount() - event.getRows().size(), true);
   }
 
   public void onRowDelete(RowDeleteEvent event) {
-    setRowCount(getRowCount() - 1);
+    setRowCount(getRowCount() - 1, true);
   }
 
   public void onRowUpdate(RowUpdateEvent event) {
@@ -610,15 +597,15 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     IsRow newRow = event.getRow();
     Assert.notNull(newRow);
 
-    setRowData(newRow);
+    setRow(newRow);
     refreshData(false);
   }
 
   public void prepareForInsert() {
-    if (getFormCallback() != null && !getFormCallback().onPrepareForInsert(this, getRowData())) {
+    if (getFormCallback() != null && !getFormCallback().onPrepareForInsert(this, getRow())) {
       return;
     }
-    if (!checkNewRow(getRowData())) {
+    if (!checkNewRow(getRow())) {
       return;
     }
 
@@ -626,7 +613,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     List<String> values = Lists.newArrayList();
 
     for (int i = 0; i < getDataColumns().size(); i++) {
-      String value = getRowData().getString(i);
+      String value = getRow().getString(i);
       if (BeeUtils.isEmpty(value)) {
         continue;
       }
@@ -639,6 +626,10 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
 
     Assert.notEmpty(columns);
     fireEvent(new ReadyForInsertEvent(columns, values));
+  }
+
+  public void refresh() {
+    refreshData(getRow() != null);
   }
 
   public void refreshCellContent(String columnSource) {
@@ -658,7 +649,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
       }
     }
 
-    for (WidgetDescription widgetDescription : getGridWidgets()) {
+    for (WidgetDescription widgetDescription : getChildWidgets()) {
       Widget widget = getWidget(widgetDescription.getWidgetId());
       if (widget instanceof HasEnabled && enabled != ((HasEnabled) widget).isEnabled()) {
         ((HasEnabled) widget).setEnabled(enabled);
@@ -666,61 +657,62 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     }
   }
 
-  public void setPageSize(int pageSize) {
+  public void setPageSize(int size, boolean fireScopeChange, boolean fireDataRequest) {
   }
 
-  public void setPageStart(int pageStart) {
-    this.pageStart = pageStart;
+  public void setPageStart(int start, boolean fireScopeChange, boolean fireDataRequest) {
+    Assert.nonNegative(start);
+    if (start == getPageStart()) {
+      return;
+    }
+    
+    this.pageStart = start;
+    
+    if (fireScopeChange) {
+      fireScopeChange();
+    }
+    if (fireDataRequest) {
+      fireDataRequest();
+    }
   }
 
-  public void setRowCount(int count) {
-    setRowCount(count, isRowCountExact());
+  public void setRow(IsRow row) {
+    this.row = row;
   }
 
-  public void setRowCount(int count, boolean isExact) {
+  public void setRowCount(int count, boolean fireScopeChange) {
     Assert.nonNegative(count);
     if (count == getRowCount()) {
       return;
     }
+
     this.rowCount = count;
 
     if (getPageStart() >= count) {
-      setPageStart(Math.max(count - 1, 0));
+      setPageStart(Math.max(count - 1, 0), true, true);
+    } else if (fireScopeChange) {
+      fireScopeChange();
     }
-    RowCountChangeEvent.fire(this, count, isExact);
   }
 
-  public void setRowData(int start, List<? extends IsRow> values) {
+  public void setRowData(List<? extends IsRow> values, boolean refresh) {
     if (BeeUtils.isEmpty(values)) {
-      setRowData(null);
-      refreshData(false);
+      setRow(null);
     } else {
-      setRowData(values.get(0));
-      refreshData(true);
+      setRow(values.get(0));
     }
-  }
-
-  public void setSelectionModel(SelectionModel<? super IsRow> selectionModel) {
+    
+    if (refresh) {
+      refresh();
+    }
   }
 
   public void setViewPresenter(Presenter presenter) {
     this.viewPresenter = presenter;
   }
 
-  public void setVisibleRange(int start, int length) {
-    setVisibleRow(start, false);
-  }
-
-  public void setVisibleRange(Range range) {
-    setVisibleRow(range.getStart(), false);
-  }
-
-  public void setVisibleRangeAndClearData(Range range, boolean forceRangeChangeEvent) {
-    setVisibleRow(range.getStart(), forceRangeChangeEvent);
-  }
-
-  public void showGrids(boolean show) {
-    for (WidgetDescription widgetDescription : getGridWidgets()) {
+  public void showChildren(boolean show) {
+    for (WidgetDescription widgetDescription : getChildWidgets()) {
       getWidget(widgetDescription.getWidgetId()).setVisible(show);
     }
   }
@@ -744,11 +736,11 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
       }
 
       if (count != null) {
-        setRowCount(count);
+        setRowCount(count, true);
         if (count > 0) {
-          RangeChangeEvent.fire(this, getVisibleRange());
+          fireDataRequest();
         } else {
-          setRowData(0, null);
+          setRow(null);
         }
       }
     }
@@ -758,7 +750,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     setAdding(true);
     fireEvent(new AddStartEvent());
 
-    IsRow oldRow = getRowData();
+    IsRow oldRow = getRow();
     setRowBuffer(oldRow);
     if (oldRow == null) {
       oldRow = createEmptyRow();
@@ -780,9 +772,9 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
       getFormCallback().onStartNewRow(this, oldRow, newRow);
     }
 
-    setRowData(newRow);
+    setRow(newRow);
     refreshData(true);
-    showGrids(false);
+    showChildren(false);
   }
 
   public void updateActiveRow(List<? extends IsRow> values) {
@@ -791,7 +783,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
   public void updateCell(String columnId, String newValue) {
     Assert.notEmpty(columnId);
 
-    IsRow rowValue = getRowData();
+    IsRow rowValue = getRow();
     if (rowValue == null) {
       notifySevere("update cell:", columnId, newValue, "form has no data");
       return;
@@ -817,12 +809,12 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     }
   }
 
-  public void updateRowData(IsRow row) {
-    setRowData(row);
+  public void updateRow(IsRow row) {
+    setRow(row);
 
     refreshEditableWidgets();
     refreshDisplayWidgets();
-    refreshGridWidgets(getRowId());
+    refreshChildWidgets(row);
   }
 
   private boolean checkNewRow(IsRow row) {
@@ -862,6 +854,14 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
   private IsRow createEmptyRow() {
     String[] arr = new String[getDataColumns().size()];
     return new BeeRow(0, arr);
+  }
+
+  private void fireDataRequest() {
+    fireEvent(new DataRequestEvent());
+  }
+  
+  private void fireScopeChange() {
+    fireEvent(new ScopeChangeEvent(getPageStart(), getPageSize(), getRowCount()));
   }
 
   private void focus(int index, boolean forward, boolean cycle) {
@@ -913,6 +913,10 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     }
   }
 
+  private Set<WidgetDescription> getChildWidgets() {
+    return childWidgets;
+  }
+
   private CreationCallback getCreationCallback() {
     return creationCallback;
   }
@@ -920,7 +924,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
   private Set<DisplayWidget> getDisplayWidgets() {
     return displayWidgets;
   }
-
+  
   private EditableWidget getEditableWidget(String columnId) {
     for (EditableWidget editableWidget : getEditableWidgets()) {
       if (BeeUtils.same(columnId, editableWidget.getColumnId())) {
@@ -934,16 +938,8 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     return editableWidgets;
   }
 
-  private Set<WidgetDescription> getGridWidgets() {
-    return gridWidgets;
-  }
-
   private Notification getNotification() {
     return notification;
-  }
-
-  private int getPageStart() {
-    return pageStart;
   }
 
   private Widget getRootWidget() {
@@ -958,14 +954,6 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     return rowEditable;
   }
 
-  private long getRowId() {
-    if (getRowData() == null) {
-      return 0;
-    } else {
-      return getRowData().getId();
-    }
-  }
-
   private List<TabEntry> getTabOrder() {
     return tabOrder;
   }
@@ -978,12 +966,12 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     }
   }
 
-  private boolean hasData() {
-    return hasData;
+  private boolean hasChildren() {
+    return !getChildWidgets().isEmpty();
   }
 
-  private boolean hasGrids() {
-    return !getGridWidgets().isEmpty();
+  private boolean hasData() {
+    return hasData;
   }
 
   private boolean isAdding() {
@@ -1064,12 +1052,26 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     focus(idx, forward, cycle);
   }
 
+  private void refreshChildWidgets(IsRow row) {
+    if (!hasChildren()) {
+      return;
+    }
+    boolean rowEnabled = !isReadOnly() && isEnabled() && isRowEditable(row, false);
+
+    for (WidgetDescription widgetDescription : getChildWidgets()) {
+      Widget widget = getWidget(widgetDescription.getWidgetId());
+      if (widget instanceof ChildGrid) {
+        ((ChildGrid) widget).refresh(row, rowEnabled);
+      }
+    }
+  }
+
   private void refreshData(boolean focus) {
     fireLoadingStateChange(LoadingStateChangeEvent.LoadingState.PARTIALLY_LOADED);
 
     refreshEditableWidgets();
     refreshDisplayWidgets();
-    refreshGridWidgets(getRowId());
+    refreshChildWidgets(getRow());
 
     fireLoadingStateChange(LoadingStateChangeEvent.LoadingState.LOADED);
 
@@ -1081,14 +1083,14 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
   private void refreshDisplayWidgets() {
     for (DisplayWidget displayWidget : getDisplayWidgets()) {
       displayWidget.getWidgetType().updateDisplay(this, displayWidget.getWidgetId(),
-          displayWidget.getValue(getRowData()));
+          displayWidget.getValue(getRow()));
     }
   }
 
   private void refreshEditableWidget(int dataIndex) {
     for (EditableWidget editableWidget : getEditableWidgets()) {
       if (editableWidget.getIndexForUpdate() == dataIndex) {
-        editableWidget.setValue(getRowData());
+        editableWidget.setValue(getRow());
       }
     }
   }
@@ -1104,32 +1106,18 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
 
       boolean editable;
 
-      if (getRowData() == null) {
+      if (getRow() == null) {
         editable = false;
       } else {
         editable = rowEnabled && !editableWidget.isReadOnly();
         if (editable) {
-          editable = editableWidget.isEditable(getRowData());
+          editable = editableWidget.isEditable(getRow());
         }
       }
 
-      editableWidget.setValue(getRowData());
+      editableWidget.setValue(getRow());
       if (editable != editor.isEnabled()) {
         editor.setEnabled(editable);
-      }
-    }
-  }
-
-  private void refreshGridWidgets(long rowId) {
-    if (!hasGrids()) {
-      return;
-    }
-    boolean rowEnabled = !isReadOnly() && isEnabled() && isRowEditable(getRowData(), false);
-
-    for (WidgetDescription widgetDescription : getGridWidgets()) {
-      Widget widget = getWidget(widgetDescription.getWidgetId());
-      if (widget instanceof ChildGrid) {
-        ((ChildGrid) widget).refresh(rowId, rowEnabled);
       }
     }
   }
@@ -1162,28 +1150,12 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     this.rowBuffer = rowBuffer;
   }
 
-  private void setRowData(IsRow rowData) {
-    this.rowData = rowData;
-  }
-
   private void setRowEditable(Evaluator rowEditable) {
     this.rowEditable = rowEditable;
   }
 
   private void setRowJso(JavaScriptObject rowJso) {
     this.rowJso = rowJso;
-  }
-
-  private void setVisibleRow(int index, boolean forceRangeChangeEvent) {
-    Assert.nonNegative(index);
-
-    boolean changed = (index != getPageStart());
-    if (changed) {
-      setPageStart(index);
-    }
-    if (changed || forceRangeChangeEvent) {
-      RangeChangeEvent.fire(this, getVisibleRange());
-    }
   }
 
   private void showNote(Level level, String... messages) {

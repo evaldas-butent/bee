@@ -15,6 +15,7 @@ import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.layout.Complex;
 import com.butent.bee.client.presenter.Action;
 import com.butent.bee.client.presenter.Presenter;
+import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.utils.BeeCommand;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.BeeLabel;
@@ -22,6 +23,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.HasId;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.Collection;
 import java.util.Set;
 
 /**
@@ -121,19 +123,22 @@ public class DataHeaderImpl extends Complex implements DataHeaderView {
     this.captionId = DomUtils.createUniqueId("caption");
   }
 
-  public void create(String caption, boolean hasData, boolean readOnly, boolean isChild) {
+  public void create(String caption, boolean hasData, boolean readOnly,
+      Collection<UiOption> options) {
     Style style = getDefaultStyle();
     addStyleName(StyleUtils.WINDOW_HEADER);
     addStyleName(style.container());
+    
+    boolean isWindow = UiOption.isWindow(options);
 
     BeeLabel label = new BeeLabel(BeeUtils.trim(caption));
     label.setId(captionId);
-    if (!isChild) {
+    if (isWindow) {
       label.addStyleName(StyleUtils.WINDOW_CAPTION);
     }
     addLeftTop(label, style.captionLeft(), style.captionTop());
-
-    int x = isChild ? style.closeRight() : style.controlsRight();
+    
+    int x = isWindow ? style.controlsRight() : style.closeRight();
     int y = style.controlTop();
     int w = style.controlWidth();
 
@@ -141,7 +146,7 @@ public class DataHeaderImpl extends Complex implements DataHeaderView {
 
     addRightTop(createControl(Global.getImages().configure(), Action.CONFIGURE, cst), x, y);
     addRightTop(createControl(Global.getImages().save(), Action.SAVE, cst), x += w, y);
-    if (!isChild) {
+    if (isWindow) {
       addRightTop(createControl(Global.getImages().bookmarkAdd(), Action.BOOKMARK, cst), x += w, y);
     }
 
@@ -159,7 +164,7 @@ public class DataHeaderImpl extends Complex implements DataHeaderView {
           x + style.loadingIndicatorRightMargin(), style.loadingIndicatorTop());
     }
     
-    if (!isChild) {
+    if (isWindow) {
       addRightTop(createControl(Global.getImages().close(), Action.CLOSE, style.close()),
           style.closeRight(), style.closeTop());
     }

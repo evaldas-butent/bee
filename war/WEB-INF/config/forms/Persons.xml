@@ -49,7 +49,7 @@
     </layer>
 
     <layer top="61" topUnit="%">
-      <Grid name="PersonCompanies" relColumn="Person" />
+      <ChildGrid name="PersonCompanies" relColumn="Person" />
     </layer>
   </LayoutPanel>
 </BeeForm>  

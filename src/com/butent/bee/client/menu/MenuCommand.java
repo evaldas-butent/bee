@@ -1,6 +1,8 @@
 package com.butent.bee.client.menu;
 
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
+import com.butent.bee.client.MenuManager.MenuCallback;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.utils.BeeCommand;
@@ -31,10 +33,21 @@ public class MenuCommand extends BeeCommand {
     
     if (BeeUtils.same(svc, "form") && !BeeUtils.isEmpty(args)) {
       FormFactory.openForm(args);
-    } else if (BeeUtils.same(svc, "grid") && !BeeUtils.isEmpty(args)) {
-      GridFactory.openGrid(args);
-    } else {
-      Global.showDialog(svc, args);
+      return;
     }
+    if (BeeUtils.same(svc, "grid") && !BeeUtils.isEmpty(args)) {
+      GridFactory.openGrid(args);
+      return;
+    }
+    
+    if (!BeeUtils.isEmpty(svc)) {
+      MenuCallback callback = BeeKeeper.getMenu().getMenuCallback(svc);
+      if (callback != null) {
+        callback.onSelection(args);
+        return;
+      }
+    }
+      
+    Global.showError("Menu service not recognized", svc, args);
   }
 }

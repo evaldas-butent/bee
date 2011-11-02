@@ -4,20 +4,20 @@ import com.google.gwt.event.dom.client.ScrollEvent;
 import com.google.gwt.event.dom.client.ScrollHandler;
 import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.Widget;
-import com.google.gwt.view.client.HasRows;
 
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.dom.StyleUtils.ScrollBars;
 import com.butent.bee.client.layout.Scroll;
 import com.butent.bee.client.widget.Html;
+import com.butent.bee.shared.data.event.ScopeChangeEvent;
 import com.butent.bee.shared.utils.BeeUtils;
 
 /**
  * Enables to use scroll function in pager user interface elements.
  */
 
-public class ScrollPager extends AbstractPagerImpl implements RequiresResize {
+public class ScrollPager extends AbstractPager implements RequiresResize {
 
   public static int maxHeight = 10000;
 
@@ -81,7 +81,7 @@ public class ScrollPager extends AbstractPagerImpl implements RequiresResize {
   }
 
   @Override
-  protected void onRangeOrRowCountChanged() {
+  public void onScopeChange(ScopeChangeEvent event) {
     if (isScrolling) {
       isScrolling = false;
       return;
@@ -129,15 +129,6 @@ public class ScrollPager extends AbstractPagerImpl implements RequiresResize {
       return UNKNOWN;
     }
     return outer.getVerticalScrollPosition();
-  }
-
-  private int getRowCount() {
-    HasRows display = getDisplay();
-    if (display == null) {
-      return UNKNOWN;
-    } else {
-      return display.getRowCount();
-    }
   }
 
   private int getWidgetHeight() {

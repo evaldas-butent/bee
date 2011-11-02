@@ -83,7 +83,7 @@
         </AbsolutePanel>
       </south>
       <center>
-        <Grid name="TaskEvents" relColumn="Task" />
+        <ChildGrid name="TaskEvents" relColumn="Task" />
       </center>
     </SplitPanel>
     </center>

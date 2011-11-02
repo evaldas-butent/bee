@@ -177,7 +177,7 @@ public class BeeUtils {
       return BeeConst.STRING_LEFT_BRACKET + s + BeeConst.STRING_RIGHT_BRACKET;
     }
   }
-  
+
   public static String camelize(String str, char sep) {
     if (str == null || str.indexOf(sep) < 0) {
       return str;
@@ -297,7 +297,7 @@ public class BeeUtils {
       return BeeConst.COMPARE_MORE;
     }
   }
-  
+
   /**
    * Compares objects {@code x1} and {@code x2}. This method allows to compare values even if one or
    * both of the specified values are {@code null}.
@@ -588,10 +588,10 @@ public class BeeUtils {
     if (str.equals(str.toLowerCase())) {
       return str;
     }
-    
+
     StringBuilder sb = new StringBuilder();
     char ch;
-    
+
     for (int i = 0; i < str.length(); i++) {
       ch = str.charAt(i);
       if (Character.isUpperCase(ch)) {
@@ -602,7 +602,7 @@ public class BeeUtils {
     }
     return sb.toString();
   }
-  
+
   /**
    * Deletes a part of a String from specified {@code start} to {@code end}.
    * 
@@ -962,7 +962,7 @@ public class BeeUtils {
     }
     return null;
   }
-  
+
   /**
    * Separates a string with separator value. Returns a string that goes after the separator.
    * 
@@ -1003,6 +1003,13 @@ public class BeeUtils {
     } else {
       return BeeConst.STRING_EMPTY;
     }
+  }
+  
+  public static boolean hasLength(CharSequence cs, int min) {
+    if (cs == null) {
+      return false;
+    }
+    return cs.length() >= min;
   }
 
   /**
@@ -2759,6 +2766,19 @@ public class BeeUtils {
     return same(s.trim().charAt(0), c);
   }
 
+  public static boolean startsWith(String str, String pfx) {
+    if (isEmpty(str) || isEmpty(pfx)) {
+      return false;
+    }
+
+    int len = pfx.trim().length();
+    if (len > 0 && len <= str.trim().length()) {
+      return str.trim().substring(0, len).equalsIgnoreCase(pfx.trim());
+    } else {
+      return false;
+    }
+  }
+  
   /**
    * Checks if {@code x} is a Boolean value.
    * 

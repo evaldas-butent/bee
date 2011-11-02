@@ -2063,7 +2063,7 @@ public class StyleUtils {
 
   private static int indexOfClassName(String className, String classes) {
     if (className == null || !BeeUtils.context(className.trim(), classes)) {
-      return BeeConst.INDEX_UNKNOWN;
+      return BeeConst.UNDEF;
     }
 
     int idx = 0;
@@ -2073,7 +2073,7 @@ public class StyleUtils {
       }
       idx++;
     }
-    return BeeConst.INDEX_UNKNOWN;
+    return BeeConst.UNDEF;
   }
 
   private static boolean isScroll(String value) {

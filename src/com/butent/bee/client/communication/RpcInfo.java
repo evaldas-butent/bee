@@ -82,22 +82,22 @@ public class RpcInfo {
 
   private String reqData = null;
   private ContentType reqType = null;
-  private int reqRows = BeeConst.SIZE_UNKNOWN;
-  private int reqCols = BeeConst.SIZE_UNKNOWN;
-  private int reqSize = BeeConst.SIZE_UNKNOWN;
+  private int reqRows = BeeConst.UNDEF;
+  private int reqCols = BeeConst.UNDEF;
+  private int reqSize = BeeConst.UNDEF;
 
   private Response response = null;
   private Collection<ExtendedProperty> respInfo = null;
 
   private ContentType respType = null;
   private String respData = null;
-  private int respRows = BeeConst.SIZE_UNKNOWN;
-  private int respCols = BeeConst.SIZE_UNKNOWN;
-  private int respSize = BeeConst.SIZE_UNKNOWN;
+  private int respRows = BeeConst.UNDEF;
+  private int respCols = BeeConst.UNDEF;
+  private int respSize = BeeConst.UNDEF;
 
-  private int respMsgCnt = BeeConst.SIZE_UNKNOWN;
+  private int respMsgCnt = BeeConst.UNDEF;
   private Collection<ResponseMessage> respMessages = null;
-  private int respPartCnt = BeeConst.SIZE_UNKNOWN;
+  private int respPartCnt = BeeConst.UNDEF;
   private int[] respPartSize = null;
 
   private String errMsg = null;
@@ -162,24 +162,24 @@ public class RpcInfo {
     setRespType(ctp);
     setRespData(data);
 
-    if (size != BeeConst.SIZE_UNKNOWN) {
+    if (!BeeConst.isUndef(size)) {
       setRespSize(size);
     }
-    if (rows != BeeConst.SIZE_UNKNOWN) {
+    if (!BeeConst.isUndef(rows)) {
       setRespRows(rows);
     }
-    if (cols != BeeConst.SIZE_UNKNOWN) {
+    if (!BeeConst.isUndef(cols)) {
       setRespCols(cols);
     }
 
-    if (msgCnt != BeeConst.SIZE_UNKNOWN) {
+    if (!BeeConst.isUndef(msgCnt)) {
       setRespMsgCnt(msgCnt);
     }
     if (messages != null) {
       setRespMessages(messages);
     }
 
-    if (partCnt != BeeConst.SIZE_UNKNOWN) {
+    if (!BeeConst.isUndef(partCnt)) {
       setRespPartCnt(partCnt);
     }
     if (partSizes != null) {
@@ -339,7 +339,7 @@ public class RpcInfo {
   }
 
   public String getSizeString(int z) {
-    if (z != BeeConst.SIZE_UNKNOWN) {
+    if (!BeeConst.isUndef(z)) {
       return BeeUtils.toString(z);
     } else {
       return BeeConst.STRING_EMPTY;

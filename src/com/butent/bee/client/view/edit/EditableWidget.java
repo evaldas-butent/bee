@@ -360,7 +360,7 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
     if (getForm() == null) {
       return null;
     }
-    return getForm().getRowData();
+    return getForm().getRow();
   }
 
   private Evaluator getValidation() {

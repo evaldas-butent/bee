@@ -8,6 +8,5 @@ import com.butent.bee.shared.data.event.SelectionCountChangeEvent;
  */
 
 public interface DataFooterView extends View, SelectionCountChangeEvent.Handler {
-  void create(int rowCount, int pageSize, boolean addPaging, boolean showPageSize,
-      boolean addSearch);
+  void create(int rowCount, boolean addPaging, boolean showPageSize, boolean addSearch);
 }

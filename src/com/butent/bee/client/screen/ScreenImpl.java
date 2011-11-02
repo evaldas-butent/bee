@@ -104,6 +104,9 @@ public class ScreenImpl implements Screen {
 
   private final String elGrid = "el-grid-type";
   private final String elCell = "el-cell-type";
+  
+  private BeeCheckBox logToggle = null;
+  private final String logVisible = "log-visible";
 
   private Notification notification = null;
 
@@ -360,7 +363,9 @@ public class ScreenImpl implements Screen {
     getRootPanel().add(p);
     setScreenPanel(p);
     
-    BeeKeeper.getLog().hide();
+    if (getLogToggle() != null && !getLogToggle().getValue()) {
+      BeeKeeper.getLog().hide();
+    }
   }
 
   protected HasWidgets getDataPanel() {
@@ -526,18 +531,22 @@ public class ScreenImpl implements Screen {
     fp.setWidget(r, 0, new BeeButton(Global.constants.refresh(), Service.REFRESH_MENU));
     fp.setWidget(r, 1, new BeeButton("BEE", new MenuService().name(), "stage_dummy"));
 
-    BeeCheckBox toggle = new BeeCheckBox("Log");
-    toggle.setValue(false);
-    toggle.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
+    BeeCheckBox log = new BeeCheckBox("Log");
+    log.setValue(BeeKeeper.getStorage().getBoolean(getLogVisible()));
+
+    log.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
       public void onValueChange(ValueChangeEvent<Boolean> event) {
         if (event.getValue()) {
           BeeKeeper.getLog().show();
         } else {
           BeeKeeper.getLog().hide();
         }
+        BeeKeeper.getStorage().setItem(getLogVisible(), event.getValue());
       }
     });
-    fp.setWidget(r + 1, 0, toggle);
+    fp.setWidget(r + 1, 0, log);
+    
+    setLogToggle(log);
 
     tp.add(fp, "Options");
 
@@ -648,6 +657,14 @@ public class ScreenImpl implements Screen {
     return elGrid;
   }
 
+  private BeeCheckBox getLogToggle() {
+    return logToggle;
+  }
+
+  private String getLogVisible() {
+    return logVisible;
+  }
+
   private HasWidgets getMenuPanel() {
     return menuPanel;
   }
@@ -672,9 +689,13 @@ public class ScreenImpl implements Screen {
       return !(p.getParent() instanceof TilePanel);
     }
   }
-
+  
   private void setActivePanel(TilePanel p) {
     activePanel = p;
+  }
+
+  private void setLogToggle(BeeCheckBox logToggle) {
+    this.logToggle = logToggle;
   }
 
   private void setMenuPanel(HasWidgets menuPanel) {

@@ -2,17 +2,16 @@ package com.butent.bee.client.data;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import com.google.gwt.view.client.Range;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.IsTable;
-import com.butent.bee.shared.data.RowOrdering;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
 import com.butent.bee.shared.data.event.MultiDeleteEvent;
 import com.butent.bee.shared.data.event.RowDeleteEvent;
@@ -153,9 +152,9 @@ public class CachedProvider extends Provider {
       for (Order.Column sortInfo : order.getColumns()) {
         for (String source : sortInfo.getSources()) {
           if (BeeUtils.same(source, getIdColumnName())) {
-            index = RowOrdering.ID_INDEX;
+            index = DataUtils.ID_INDEX;
           } else if (BeeUtils.same(source, getVersionColumnName())) {
-            index = RowOrdering.VERSION_INDEX;
+            index = DataUtils.VERSION_INDEX;
           } else {
             index = getTable().getColumnIndex(source);
             if (index < 0) {
@@ -186,29 +185,13 @@ public class CachedProvider extends Provider {
     super.refresh();
   }
 
-  public void updateDisplay(boolean updateActiveRow) {
-    Range range = getRange();
-    int start = range.getStart();
-    int length = range.getLength();
-    int rowCount = getRowCount();
-
-    List<? extends IsRow> rowValues;
-    if (length <= 0 || rowCount <= 0) {
-      rowValues = Lists.newArrayList();
-    } else if (start == 0 && length >= rowCount) {
-      rowValues = getRowList();
-    } else {
-      rowValues = getRowList().subList(start, BeeUtils.min(start + length, rowCount));
-    }
-
-    if (updateActiveRow) {
-      getDisplay().updateActiveRow(rowValues);
-    }
-    getDisplay().setRowData(start, rowValues);
+  @Override
+  public void requery(boolean updateActiveRow) {
+    refresh();
   }
 
   @Override
-  protected void onRangeChanged(boolean updateActiveRow) {
+  protected void onRequest(boolean updateActiveRow) {
     updateDisplay(updateActiveRow);
   }
 
@@ -234,7 +217,7 @@ public class CachedProvider extends Provider {
 
         int newTableSize = rowSet.getNumberOfRows();
         if (oldPageSize > 0 && oldPageSize >= oldTableSize && newTableSize != oldTableSize) {
-          getDisplay().setPageSize(newTableSize);
+          getDisplay().setPageSize(newTableSize, true, false);
         }
 
         updateDisplay(true);
@@ -288,6 +271,26 @@ public class CachedProvider extends Provider {
 
   private void setTable(IsTable<?, ?> table) {
     this.table = table;
+  }
+
+  private void updateDisplay(boolean updateActiveRow) {
+    int start = getPageStart();
+    int length = getPageSize();
+    int rowCount = getRowCount();
+
+    List<? extends IsRow> rowValues;
+    if (rowCount <= 0) {
+      rowValues = Lists.newArrayList();
+    } else if (length <= 0 || length >= rowCount) {
+      rowValues = getRowList();
+    } else {
+      rowValues = getRowList().subList(start, BeeUtils.min(start + length, rowCount));
+    }
+
+    if (updateActiveRow) {
+      getDisplay().updateActiveRow(rowValues);
+    }
+    getDisplay().setRowData(rowValues, true);
   }
 
   private void updateViewRows() {

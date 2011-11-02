@@ -17,6 +17,7 @@ import com.butent.bee.client.data.CachedProvider;
 import com.butent.bee.client.data.Provider;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.dom.StyleUtils;
+import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.utils.BeeCommand;
 import com.butent.bee.client.view.GridContainerImpl;
 import com.butent.bee.client.view.GridContainerView;
@@ -31,6 +32,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
 import com.butent.bee.shared.data.event.MultiDeleteEvent;
 import com.butent.bee.shared.data.event.RowDeleteEvent;
@@ -139,13 +141,14 @@ public class GridPresenter implements Presenter, ReadyForInsertEvent.Handler,
   private Filter lastFilter = null;
 
   public GridPresenter(String viewName, int rowCount, BeeRowSet rowSet, boolean async,
-      GridDescription gridDescription, GridCallback gridCallback, boolean isChild) {
+      GridDescription gridDescription, GridCallback gridCallback, Collection<UiOption> options) {
 
     this.gridContainer = createView(gridDescription, rowSet.getColumns(), rowCount, rowSet,
-        gridCallback, isChild);
+        gridCallback, options);
     this.dataProvider = createProvider(gridContainer, viewName, rowSet.getColumns(),
         gridDescription.getIdName(), gridDescription.getVersionName(),
-        gridDescription.getFilter(), gridDescription.getOrder(), rowSet, async);
+        gridDescription.getFilter(), gridDescription.getOrder(),
+        rowSet, async, gridDescription.getCachingPolicy());
 
     bind();
   }
@@ -318,29 +321,32 @@ public class GridPresenter implements Presenter, ReadyForInsertEvent.Handler,
 
   private Provider createProvider(GridContainerView view, String viewName, List<BeeColumn> columns,
       String idColumnName, String versionColumnName, Filter dataFilter, Order order,
-      BeeRowSet rowSet, boolean isAsync) {
+      BeeRowSet rowSet, boolean isAsync, CachingPolicy cachingPolicy) {
     Provider provider;
     GridView display = view.getContent();
 
     if (isAsync) {
       provider = new AsyncProvider(display.getGrid(), viewName, columns, 
           idColumnName, versionColumnName, dataFilter);
+      if (cachingPolicy != null) {
+        ((AsyncProvider) provider).setCachingPolicy(cachingPolicy);
+      }
     } else {
       provider = new CachedProvider(display.getGrid(), viewName, columns, 
           idColumnName, versionColumnName, dataFilter, rowSet);
     }
+
     if (order != null) {
       provider.setOrder(order);
     }
-
     return provider;
   }
 
   private GridContainerView createView(GridDescription gridDescription, List<BeeColumn> columns,
-      int rowCount, BeeRowSet rowSet, GridCallback gridCallback, boolean isChild) {
+      int rowCount, BeeRowSet rowSet, GridCallback gridCallback, Collection<UiOption> options) {
 
     GridContainerView view = new GridContainerImpl();
-    view.create(gridDescription, columns, rowCount, rowSet, gridCallback, isChild);
+    view.create(gridDescription, columns, rowCount, rowSet, gridCallback, options);
 
     return view;
   }

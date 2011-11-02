@@ -24,6 +24,7 @@ import com.butent.bee.client.grid.model.TableModelHelper.Request;
 import com.butent.bee.client.grid.model.TableModelHelper.Response;
 import com.butent.bee.client.grid.render.FixedWidthGridBulkRenderer;
 import com.butent.bee.client.presenter.GridPresenter;
+import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.view.grid.CellGrid;
 import com.butent.bee.client.view.grid.GridCallback;
 import com.butent.bee.client.widget.BeeImage;
@@ -36,7 +37,6 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.IsTable;
-import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.ui.CellType;
 import com.butent.bee.shared.ui.GridDescription;
@@ -46,6 +46,7 @@ import com.butent.bee.shared.utils.PropertyUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -61,6 +62,10 @@ public class GridFactory {
    */
 
   public interface DescriptionCallback extends Callback<GridDescription, String[]> {
+  }
+
+  public interface PresenterCallback {
+    void onCreate(GridPresenter presenter);
   }
 
   /**
@@ -142,11 +147,19 @@ public class GridFactory {
     }
   }
 
+  public static final PresenterCallback SHOW = new PresenterCallback() {
+    public void onCreate(GridPresenter presenter) {
+      if (presenter != null) {
+        BeeKeeper.getScreen().updateActivePanel(presenter.getWidget());
+      }
+    }
+  };
+
   private static final Map<String, GridDescription> descriptionCache = Maps.newHashMap();
   private static final Map<String, GridCallback> gridCallbacks = Maps.newHashMap();
 
   private static Widget loadingWidget = null;
-  
+
   public static Widget cellTable(Object data, TextCellType cellType, String... columnLabels) {
     Assert.notNull(data);
 
@@ -235,11 +248,37 @@ public class GridFactory {
     }
   }
 
+  public static void createGrid(String gridName, final GridCallback gridCallback,
+      final PresenterCallback presenterCallback, final Collection<UiOption> options) {
+    Assert.notEmpty(gridName);
+    Assert.notNull(presenterCallback);
+
+    getGrid(gridName, new DescriptionCallback() {
+      public void onFailure(String[] reason) {
+        BeeKeeper.getScreen().notifySevere(reason);
+      }
+
+      public void onSuccess(GridDescription result) {
+        Assert.notNull(result);
+        if (gridCallback != null && !gridCallback.onLoad(result)) {
+          return;
+        }
+        getInitialRowSet(result, gridCallback, presenterCallback, options);
+      }
+    });
+  }
+
+  public static void createGrid(String gridName, PresenterCallback presenterCallback,
+      Collection<UiOption> options) {
+    createGrid(gridName, getGridCallback(gridName), presenterCallback, options);
+  }
+
   public static void getGrid(String name, DescriptionCallback callback) {
     getGrid(name, callback, false);
   }
 
-  public static void getGrid(final String name, final DescriptionCallback callback, boolean reload) {
+  public static void getGrid(final String name, final DescriptionCallback callback,
+      boolean reload) {
     Assert.notEmpty(name);
     Assert.notNull(callback);
 
@@ -265,35 +304,25 @@ public class GridFactory {
     });
   }
 
+  public static GridCallback getGridCallback(String gridName) {
+    Assert.notEmpty(gridName);
+    return gridCallbacks.get(BeeUtils.normalize(gridName));
+  }
+
   public static void openGrid(String gridName) {
     openGrid(gridName, getGridCallback(gridName));
   }
-  
-  public static void openGrid(String gridName, final GridCallback gridCallback) {
-    Assert.notEmpty(gridName);
 
+  public static void openGrid(String gridName, GridCallback gridCallback) {
     BeeKeeper.getScreen().updateActivePanel(ensureLoadingWidget());
-
-    getGrid(gridName, new DescriptionCallback() {
-      public void onFailure(String[] reason) {
-        BeeKeeper.getScreen().notifySevere(reason);
-      }
-
-      public void onSuccess(GridDescription result) {
-        Assert.notNull(result);
-        if (gridCallback != null && !gridCallback.onLoad(result)) {
-          return;
-        }
-        getInitialRowSet(result, gridCallback);
-      }
-    });
+    createGrid(gridName, gridCallback, SHOW, EnumSet.of(UiOption.ROOT));
   }
 
   public static void registerGridCallback(String gridName, GridCallback callback) {
     Assert.notEmpty(gridName);
     gridCallbacks.put(BeeUtils.normalize(gridName), callback);
   }
-  
+
   public static Widget scrollGrid(int width, Object data, String... columnLabels) {
     Assert.notNull(data);
 
@@ -403,13 +432,15 @@ public class GridFactory {
     @SuppressWarnings("unused")
     CachedProvider provider = new CachedProvider(grid, table);
 
+    grid.setReadOnly(true);
+
     grid.setHeaderCellHeight(23);
     grid.setBodyCellHeight(20);
     grid.estimateColumnWidths(table.getRows().getList(), Math.min(r, 20));
     grid.estimateHeaderWidths(true);
 
-    grid.setRowData(table.getRows().getList());
-    grid.setReadOnly(true);
+    grid.setRowCount(r, false);
+    grid.setRowData(table.getRows().getList(), true);
 
     return grid;
   }
@@ -434,6 +465,18 @@ public class GridFactory {
     return cell;
   }
 
+  private static void createPresenter(int rowCount, BeeRowSet rowSet, boolean async,
+      GridDescription gridDescription, GridCallback gridCallback,
+      PresenterCallback presenterCallback, Collection<UiOption> options) {
+    GridPresenter presenter = new GridPresenter(gridDescription.getViewName(), rowCount, rowSet,
+        async, gridDescription, gridCallback, options);
+    if (gridCallback != null) {
+      gridCallback.onShow(presenter);
+    }
+
+    presenterCallback.onCreate(presenter);
+  }
+
   private static Widget ensureLoadingWidget() {
     if (loadingWidget == null) {
       loadingWidget = new BeeImage(Global.getImages().loading());
@@ -441,13 +484,9 @@ public class GridFactory {
     return loadingWidget;
   }
 
-  private static GridCallback getGridCallback(String gridName) {
-    Assert.notEmpty(gridName);
-    return gridCallbacks.get(BeeUtils.normalize(gridName));
-  }
-  
   private static void getInitialRowSet(final GridDescription gridDescription,
-      final GridCallback gridCallback) {
+      final GridCallback gridCallback, final PresenterCallback presenterCallback,
+      final Collection<UiOption> options) {
     final int threshold = BeeUtils.unbox(gridDescription.getAsyncThreshold());
     int limit = BeeUtils.unbox(gridDescription.getInitialRowSetSize());
     if (limit <= 0) {
@@ -455,7 +494,7 @@ public class GridFactory {
     }
 
     Queries.getRowSet(gridDescription.getViewName(), null, gridDescription.getFilter(),
-        gridDescription.getOrder(), 0, limit, CachingPolicy.FULL,
+        gridDescription.getOrder(), 0, limit, gridDescription.getCachingPolicy(),
         PropertyUtils.createProperties(Service.VAR_VIEW_SIZE, threshold),
         new Queries.RowSetCallback() {
           public void onFailure(String[] reason) {
@@ -463,16 +502,17 @@ public class GridFactory {
 
           public void onSuccess(final BeeRowSet rowSet) {
             Assert.notNull(rowSet);
-            
+
             int rc = BeeUtils.toInt(rowSet.getTableProperty(Service.VAR_VIEW_SIZE));
             boolean async = threshold <= 0 || rc >= threshold || rc != rowSet.getNumberOfRows();
             rc = Math.max(rc, rowSet.getNumberOfRows());
-            
-            showGrid(rc, rowSet, async, gridDescription, gridCallback);
+
+            createPresenter(rc, rowSet, async, gridDescription, gridCallback, presenterCallback,
+                options);
           }
         });
   }
-  
+
   private static String gridDescriptionKey(String name) {
     Assert.notEmpty(name);
     return name.trim().toLowerCase();
@@ -485,17 +525,6 @@ public class GridFactory {
     return descriptionCache.containsKey(gridDescriptionKey(name));
   }
 
-  private static void showGrid(int rowCount, BeeRowSet rowSet, boolean async,
-      GridDescription gridDescription, GridCallback gridCallback) {
-    GridPresenter presenter = new GridPresenter(gridDescription.getViewName(), rowCount, rowSet,
-        async, gridDescription, gridCallback, false);
-    if (gridCallback != null) {
-      gridCallback.onShow(presenter);
-    }
-
-    BeeKeeper.getScreen().updateActivePanel(presenter.getWidget());
-  }
-  
   private GridFactory() {
   }
 }

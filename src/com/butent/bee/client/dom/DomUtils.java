@@ -617,7 +617,7 @@ public class DomUtils {
   public static int getChildOffsetHeight(HasWidgets parent, String id) {
     Widget child = getChild(parent, id);
     if (child == null) {
-      return BeeConst.SIZE_UNKNOWN;
+      return BeeConst.UNDEF;
     } else {
       return child.getOffsetHeight();
     }
@@ -626,7 +626,7 @@ public class DomUtils {
   public static int getChildOffsetWidth(HasWidgets parent, String id) {
     Widget child = getChild(parent, id);
     if (child == null) {
-      return BeeConst.SIZE_UNKNOWN;
+      return BeeConst.UNDEF;
     } else {
       return child.getOffsetWidth();
     }

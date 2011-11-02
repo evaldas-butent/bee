@@ -2,17 +2,12 @@
 @def horizontalMargin 6px;
 @def spacing 15;
 
-@def resizerWidth 48px;
 @def selectionCounterWidth 32px;
 
 .container {
 }
 
 .simplePager {
-}  
-
-.pageResizer {
-  width: resizerWidth;
 }  
 
 .search {
