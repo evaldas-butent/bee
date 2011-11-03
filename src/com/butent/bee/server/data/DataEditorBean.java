@@ -173,8 +173,7 @@ public class DataEditorBean {
       }
       if (!response.hasErrors()) {
         if (returnAllFields) {
-          BeeRowSet newRs = sys.getViewData(view.getName(),
-              SqlUtils.equal(view.getSourceName(), view.getSourceIdName(), id), null, 0, 0);
+          BeeRowSet newRs = sys.getViewData(view.getName(), view.getRowCondition(id), null, 0, 0);
 
           if (newRs.isEmpty()) {
             response.addError("Optimistic lock exception");
@@ -595,22 +594,21 @@ public class DataEditorBean {
       }
     }
     Assert.notEmpty(id);
-    BeeRowSet res = qs.getViewData(
-        ss.setWhere(SqlUtils.equal(view.getSourceName(), view.getSourceIdName(), id)), view);
+    Map<String, String> res = qs.getRow(ss.setWhere(view.getRowCondition(id)));
 
-    if (res.isEmpty()) {
+    if (BeeUtils.isEmpty(res)) {
       return false;
     }
     for (TableInfo tblInfo : updates.values()) {
       String idColumn = tblInfo.tableAlias + "_" + sys.getIdName(tblInfo.tableName);
       String verColumn = tblInfo.tableAlias + "_" + sys.getVersionName(tblInfo.tableName);
 
-      tblInfo.id = res.getLong(0, res.getColumnIndex(idColumn));
-      tblInfo.version = res.getLong(0, res.getColumnIndex(verColumn));
+      tblInfo.id = BeeUtils.toLong(res.get(idColumn));
+      tblInfo.version = BeeUtils.toLong(res.get(verColumn));
 
       for (FieldInfo fldInfo : tblInfo.fields) {
         if (!BeeUtils.isEmpty(fldInfo.fieldAlias)) {
-          String value = res.getString(0, res.getColumnIndex(fldInfo.fieldAlias));
+          String value = res.get(fldInfo.fieldAlias);
 
           if (!BeeUtils.equals(value, fldInfo.oldValue)) {
             return false;

@@ -37,7 +37,7 @@
         <BeeSimpleColumn expression="LastAccess" />
     </BeeJoinColumn>
     <BeeJoinColumn source="TaskEvents" expression="Task" joinType="LEFT">
-        <BeeSimpleColumn expression="PublishTime" />
+        <BeeSimpleColumn name="LastPublish" expression="PublishTime" aggregate="MAX" />
     </BeeJoinColumn>
   </BeeColumns>
 </BeeView>

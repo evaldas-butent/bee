@@ -1,7 +1,9 @@
 package com.butent.bee.server.data;
 
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 
 import com.butent.bee.server.data.BeeTable.BeeField;
@@ -17,8 +19,10 @@ import com.butent.bee.shared.HasExtendedInfo;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
+import com.butent.bee.shared.data.XmlView;
 import com.butent.bee.shared.data.XmlView.XmlColumn;
 import com.butent.bee.shared.data.XmlView.XmlJoinColumn;
+import com.butent.bee.shared.data.XmlView.XmlOrder;
 import com.butent.bee.shared.data.XmlView.XmlSimpleColumn;
 import com.butent.bee.shared.data.filter.ColumnColumnFilter;
 import com.butent.bee.shared.data.filter.ColumnIsEmptyFilter;
@@ -51,17 +55,23 @@ public class BeeView implements HasExtendedInfo {
     private final String alias;
     private final BeeField field;
     private final String locale;
+    private final AggregateType aggregate;
     private final String parentName;
     private final String ownerAlias;
 
-    public ColumnInfo(String alias, BeeField field, String colName, String locale, String parent,
-        String owner) {
+    public ColumnInfo(String alias, BeeField field, String colName, String locale,
+        AggregateType aggregate, String parent, String owner) {
       this.colName = colName;
       this.alias = alias;
       this.field = field;
       this.locale = locale;
+      this.aggregate = aggregate;
       this.parentName = parent;
       this.ownerAlias = owner;
+    }
+
+    public AggregateType getAggregate() {
+      return aggregate;
     }
 
     public String getAlias() {
@@ -80,7 +90,7 @@ public class BeeView implements HasExtendedInfo {
       return colName;
     }
 
-    public String getOwnerAlias() {
+    public String getOwner() {
       return ownerAlias;
     }
 
@@ -88,6 +98,10 @@ public class BeeView implements HasExtendedInfo {
       return parentName;
     }
   }
+
+  private enum AggregateType {
+    MIN, MAX, SUM, AVG, COUNT, SUM_DISTINCT, AVG_DISTINCT, COUNT_DISTINCT;
+  };
 
   private enum JoinType {
     INNER, RIGHT, LEFT, FULL;
@@ -102,15 +116,33 @@ public class BeeView implements HasExtendedInfo {
   private final Map<String, ColumnInfo> columns = Maps.newLinkedHashMap();
   private final Map<String, Boolean> orders = Maps.newLinkedHashMap();
 
-  BeeView(String name, BeeTable source, boolean readOnly) {
+  BeeView(XmlView xmlView, Map<String, BeeTable> tables) {
+    Assert.notNull(xmlView);
+    this.name = xmlView.name;
     Assert.notEmpty(name);
+
+    this.source = tables.get(BeeUtils.normalize(xmlView.source));
     Assert.notNull(source);
 
-    this.name = name;
-    this.source = source;
     this.sourceAlias = getSourceName();
-    this.readOnly = readOnly;
+    this.readOnly = xmlView.readOnly;
+
     this.query = new SqlSelect().addFrom(getSourceName(), getSourceAlias());
+
+    addColumns(source, getSourceAlias(), xmlView.columns, null, tables);
+
+    setFilter(xmlView.filter);
+    setGrouping();
+
+    if (!BeeUtils.isEmpty(xmlView.orders)) {
+      for (XmlOrder order : xmlView.orders) {
+        setOrder(order.column, order.descending);
+      }
+    }
+  }
+
+  public AggregateType getColumnAggregate(String colName) {
+    return getColumnInfo(colName).getAggregate();
   }
 
   public int getColumnCount() {
@@ -139,7 +171,7 @@ public class BeeView implements HasExtendedInfo {
   }
 
   public String getColumnOwner(String colName) {
-    return getColumnInfo(colName).getOwnerAlias();
+    return getColumnInfo(colName).getOwner();
   }
 
   public String getColumnParent(String colName) {
@@ -209,6 +241,7 @@ public class BeeView implements HasExtendedInfo {
       PropertyUtils.addChildren(info, key,
           "Table", getColumnTable(col), "Alias", getColumnSource(col),
           "Field", getColumnField(col), "Type", getColumnType(col), "Locale", getColumnLocale(col),
+          "Aggregate Function", getColumnAggregate(col),
           "Parent Column", getColumnParent(col), "Owner Alias", getColumnOwner(col));
     }
     info.add(new ExtendedProperty("Orders", BeeUtils.toString(orders.size())));
@@ -225,13 +258,23 @@ public class BeeView implements HasExtendedInfo {
     return name;
   }
 
-  public SqlSelect getQuery() {
+  public SqlSelect getQuery(String... cols) {
     Assert.state(!isEmpty());
-    return query.copyOf().addOrder(getSourceName(), getSourceIdName());
+    SqlSelect ss = query.copyOf();
+
+    if (!BeeUtils.isEmpty(cols)) {
+      ss.resetFields();
+
+      for (String col : cols) {
+        setColumn(ss, col);
+      }
+    }
+    return ss.addFields(getSourceAlias(), getSourceIdName(), getSourceVersionName())
+        .addOrder(getSourceAlias(), getSourceIdName());
   }
 
   public IsCondition getRowCondition(long rowId) {
-    return SqlUtils.equal(getSourceName(), getSourceIdName(), rowId);
+    return SqlUtils.equal(getSourceAlias(), getSourceIdName(), rowId);
   }
 
   public String getSourceAlias() {
@@ -264,13 +307,13 @@ public class BeeView implements HasExtendedInfo {
 
   public Filter parseFilter(String filter) {
     Assert.notEmpty(filter);
+    List<IsColumn> cols = Lists.newArrayListWithCapacity(getColumnCount());
 
-    List<IsColumn> cols = Lists.newArrayListWithCapacity(columns.size());
-    for (String col : columns.keySet()) {
+    for (String col : getColumnNames()) {
       cols.add(new BeeColumn(getColumnType(col).toValueType(), col));
     }
-
     Filter flt = DataUtils.parseCondition(filter, cols, getSourceIdName(), getSourceVersionName());
+
     if (flt == null) {
       LogUtils.warning(LogUtils.getDefaultLogger(), "Error in filter expression:", filter);
     }
@@ -286,7 +329,48 @@ public class BeeView implements HasExtendedInfo {
     return Order.parse(input, colNames);
   }
 
-  void addColumns(BeeTable table, String alias, Collection<XmlColumn> cols, String parent,
+  private String addColumn(String alias, BeeField field, String col, String locale,
+      String aggregateType, String parent) {
+    String colName = BeeUtils.ifString(col, SqlUtils.uniqueName());
+    String fldName = field.getName();
+
+    Assert.state(!BeeUtils.inListSame(colName, getSourceIdName(), getSourceVersionName()),
+        BeeUtils.concat(1, "Reserved column name:", getName(), colName));
+    Assert.state(!hasColumn(colName),
+        BeeUtils.concat(1, "Dublicate column name:", getName(), colName));
+
+    BeeTable table = field.getOwner();
+    String ownerAlias = null;
+
+    if (!BeeUtils.isEmpty(locale)) {
+      if (field.isTranslatable()) {
+        ownerAlias = alias;
+        alias = table.joinTranslationField(query, ownerAlias, field, locale);
+      } else {
+        LogUtils.warning(LogUtils.getDefaultLogger(),
+            "Field is not translatable:", table.getName() + "." + fldName,
+            "View:", getName());
+        return null;
+      }
+    } else if (field.isExtended()) {
+      ownerAlias = alias;
+      alias = table.joinExtField(query, ownerAlias, field);
+    }
+    AggregateType aggregate = null;
+
+    if (!BeeUtils.isEmpty(aggregateType)) {
+      aggregate = AggregateType.valueOf(aggregateType);
+    }
+    columns.put(BeeUtils.normalize(colName),
+        new ColumnInfo(alias, field, colName, locale, aggregate, parent, ownerAlias));
+
+    if (!BeeUtils.isEmpty(col)) {
+      setColumn(query, col);
+    }
+    return colName;
+  }
+
+  private void addColumns(BeeTable table, String alias, Collection<XmlColumn> cols, String parent,
       Map<String, BeeTable> tables) {
     Assert.notNull(table);
     Assert.notEmpty(alias);
@@ -339,75 +423,16 @@ public class BeeView implements HasExtendedInfo {
             query.addFromFull(relTbl, relAls, join);
             break;
         }
-        String colName = addColumn(alias, field, col.name, null, parent);
+        String colName = addColumn(alias, field, col.name, null, null, parent);
         addColumns(relTable, relAls, col.columns, colName, tables);
 
       } else if (column instanceof XmlSimpleColumn) {
         XmlSimpleColumn col = (XmlSimpleColumn) column;
         BeeField field = table.getField(col.expression);
-        addColumn(alias, field, BeeUtils.ifString(col.name, field.getName()), col.locale, parent);
+        addColumn(alias, field, BeeUtils.ifString(col.name, field.getName()), col.locale,
+            col.aggregate, parent);
       }
     }
-  }
-
-  void addOrder(String colName, boolean descending) {
-    Assert.state(hasColumn(colName));
-    orders.put(getColumnName(colName), descending);
-
-    String als = getColumnSource(colName);
-    String fld = getColumnField(colName);
-
-    if (descending) {
-      query.addOrderDesc(als, fld);
-    } else {
-      query.addOrder(als, fld);
-    }
-  }
-
-  void setFilter(String filter) {
-    String strFilter = null;
-
-    if (!BeeUtils.isEmpty(filter)) {
-      Filter flt = parseFilter(filter);
-
-      if (flt != null) {
-        query.setWhere(getCondition(flt));
-        strFilter = flt.transform();
-      }
-    }
-    this.sourceFilter = strFilter;
-  }
-
-  private String addColumn(String alias, BeeField field, String col, String locale, String parent) {
-    String colName = BeeUtils.ifString(col, SqlUtils.uniqueName());
-
-    Assert.state(!hasColumn(colName),
-        BeeUtils.concat(1, "Dublicate column name:", getName(), colName));
-
-    BeeTable table = field.getOwner();
-    String ownerAlias = null;
-
-    if (!BeeUtils.isEmpty(locale)) {
-      if (field.isTranslatable()) {
-        ownerAlias = alias;
-        alias = table.joinTranslationField(query, ownerAlias, field, locale);
-      } else {
-        LogUtils.warning(LogUtils.getDefaultLogger(),
-            "Field is not translatable:", table.getName() + "." + field.getName(),
-            "View:", getName());
-        return null;
-      }
-    } else if (field.isExtended()) {
-      ownerAlias = alias;
-      alias = table.joinExtField(query, ownerAlias, field);
-    }
-    if (!BeeUtils.isEmpty(col)) {
-      query.addField(alias, field.getName(), colName);
-    }
-    columns.put(BeeUtils.normalize(colName),
-        new ColumnInfo(alias, field, colName, locale, parent, ownerAlias));
-
-    return colName;
   }
 
   private ColumnInfo getColumnInfo(String colName) {
@@ -468,7 +493,7 @@ public class BeeView implements HasExtendedInfo {
   }
 
   private IsCondition getCondition(IdFilter filter) {
-    return SqlUtils.compare(SqlUtils.field(getSourceName(), getSourceIdName()),
+    return SqlUtils.compare(SqlUtils.field(getSourceAlias(), getSourceIdName()),
         filter.getOperator(), SqlUtils.constant(filter.getValue()));
   }
 
@@ -477,7 +502,93 @@ public class BeeView implements HasExtendedInfo {
   }
 
   private IsCondition getCondition(VersionFilter filter) {
-    return SqlUtils.compare(SqlUtils.field(getSourceName(), getSourceVersionName()),
+    return SqlUtils.compare(SqlUtils.field(getSourceAlias(), getSourceVersionName()),
         filter.getOperator(), SqlUtils.constant(filter.getValue()));
+  }
+
+  private void setColumn(SqlSelect ss, String col) {
+    String alias = getColumnSource(col);
+    String fldName = getColumnField(col);
+    String colName = getColumnName(col);
+    AggregateType aggregate = getColumnAggregate(col);
+
+    if (aggregate == null) {
+      ss.addField(alias, fldName, colName);
+    } else {
+      switch (aggregate) {
+        case MIN:
+          ss.addMin(alias, fldName, colName);
+          break;
+        case MAX:
+          ss.addMax(alias, fldName, colName);
+          break;
+        case SUM:
+          ss.addSum(alias, fldName, colName);
+          break;
+        case AVG:
+          ss.addAvg(alias, fldName, colName);
+          break;
+        case COUNT:
+          ss.addCount(alias, fldName, colName);
+          break;
+        case SUM_DISTINCT:
+          ss.addSumDistinct(alias, fldName, colName);
+          break;
+        case AVG_DISTINCT:
+          ss.addAvgDistinct(alias, fldName, colName);
+          break;
+        case COUNT_DISTINCT:
+          ss.addCountDistinct(alias, fldName, colName);
+          break;
+      }
+    }
+  }
+
+  private void setFilter(String filter) {
+    String strFilter = null;
+
+    if (!BeeUtils.isEmpty(filter)) {
+      Filter flt = parseFilter(filter);
+
+      if (flt != null) {
+        query.setWhere(getCondition(flt));
+        strFilter = flt.transform();
+      }
+    }
+    this.sourceFilter = strFilter;
+  }
+
+  private void setGrouping() {
+    boolean hasAggregate = false;
+    Multimap<String, String> group = HashMultimap.create();
+
+    for (String col : getColumnNames()) {
+      if (BeeUtils.isEmpty(getColumnAggregate(col))) {
+        group.put(getColumnSource(col), getColumnField(col));
+      } else {
+        hasAggregate = true;
+      }
+    }
+    if (hasAggregate) {
+      query.addGroup(getSourceAlias(), getSourceIdName(), getSourceVersionName());
+
+      for (String src : group.keySet()) {
+        query.addGroup(src, group.get(src).toArray(new String[0]));
+      }
+    }
+  }
+
+  private void setOrder(String colName, boolean descending) {
+    Assert.state(hasColumn(colName));
+    orders.put(getColumnName(colName), descending);
+
+    String als = getColumnSource(colName);
+    String fld = getColumnField(colName);
+
+    if (descending) {
+      query.addOrderDesc(als, fld);
+    } else {
+      query.addOrder(als, fld);
+    }
   }
 }

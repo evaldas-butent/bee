@@ -21,6 +21,7 @@ import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.value.LongValue;
+import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -36,7 +37,7 @@ public class TaskList {
 
     private Editor dateFromWidget = null;
     private Editor dateToWidget = null;
-    
+
     private Editor overdueWidget = null;
 
     private FormHandler(Type type) {
@@ -49,7 +50,7 @@ public class TaskList {
       if (widget instanceof GridPanel) {
         setGridPanel((GridPanel) widget);
         getGridPanel().setGridCallback(new GridHandler(getType()));
-        
+
       } else if (widget instanceof HasClickHandlers && BeeUtils.same(name, "Filter")) {
         ((HasClickHandlers) widget).addClickHandler(this);
 
@@ -71,11 +72,11 @@ public class TaskList {
 
       String field = "FinishTime";
       List<Filter> filters = Lists.newArrayList();
-      
+
       if (getDateFromWidget() != null) {
         String dateFrom = getDateFromWidget().getNormalizedValue();
         if (!BeeUtils.isEmpty(dateFrom)) {
-          filters.add(new ColumnValueFilter(field, Operator.GE, 
+          filters.add(new ColumnValueFilter(field, Operator.GE,
               new LongValue(BeeUtils.toLong(dateFrom))));
         }
       }
@@ -83,7 +84,7 @@ public class TaskList {
       if (getDateToWidget() != null) {
         String dateTo = getDateToWidget().getNormalizedValue();
         if (!BeeUtils.isEmpty(dateTo)) {
-          filters.add(new ColumnValueFilter(field, Operator.LT, 
+          filters.add(new ColumnValueFilter(field, Operator.LT,
               new LongValue(BeeUtils.toLong(dateTo))));
         }
       }
@@ -92,8 +93,8 @@ public class TaskList {
         filters.add(new ColumnValueFilter(field, Operator.LT,
             new LongValue(new DateTime().getTime())));
       }
-      
-      Filter filter = filters.isEmpty() ? null : CompoundFilter.and(filters); 
+
+      Filter filter = filters.isEmpty() ? null : CompoundFilter.and(filters);
       getGridPanel().getPresenter().getDataProvider().setParentFilter("f1", filter, true);
     }
 
@@ -157,12 +158,22 @@ public class TaskList {
 
       if (getUserId() != null && getType() != null) {
         Filter filter = null;
+        Value user = new LongValue(getUserId());
+
         switch (getType()) {
           case ASSIGNED:
-            filter = new ColumnValueFilter("Executor", Operator.EQ, new LongValue(getUserId()));
+            filter = new ColumnValueFilter("Executor", Operator.EQ, user);
             break;
           case DELEGATED:
-            filter = new ColumnValueFilter("Owner", Operator.EQ, new LongValue(getUserId()));
+            filter = CompoundFilter.and(
+                new ColumnValueFilter("Owner", Operator.EQ, user),
+                new ColumnValueFilter("Executor", Operator.NE, user));
+            break;
+          case OBSERVED:
+            filter = CompoundFilter.and(
+                new ColumnValueFilter("User", Operator.EQ, user),
+                new ColumnValueFilter("Owner", Operator.NE, user),
+                new ColumnValueFilter("Executor", Operator.NE, user));
             break;
         }
         gridDescription.setFilter(filter);

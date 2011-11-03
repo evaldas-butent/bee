@@ -19,11 +19,14 @@
 
   <xs:simpleType name="aggregateType">
     <xs:restriction base="xs:string">
-      <xs:enumeration value="MAX" />
       <xs:enumeration value="MIN" />
+      <xs:enumeration value="MAX" />
       <xs:enumeration value="SUM" />
       <xs:enumeration value="AVG" />
       <xs:enumeration value="COUNT" />
+      <xs:enumeration value="SUM_DISTINCT" />
+      <xs:enumeration value="AVG_DISTINCT" />
+      <xs:enumeration value="COUNT_DISTINCT" />
     </xs:restriction>
   </xs:simpleType>
 

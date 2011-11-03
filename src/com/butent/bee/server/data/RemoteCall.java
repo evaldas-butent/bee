@@ -1,13 +1,12 @@
 package com.butent.bee.server.data;
 
+import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.DateTime;
-import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
-import com.butent.bee.shared.data.DataUtils;
-import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -98,11 +97,11 @@ public class RemoteCall {
     @XmlAttribute
     public String view;
     @XmlAttribute
-    public String[] columns;
+    public String columns;
     @XmlElement
     public String filter;
     @XmlAttribute
-    public String[] orderBy;
+    public String order;
     @XmlAttribute
     public Integer limit;
     @XmlAttribute
@@ -111,8 +110,6 @@ public class RemoteCall {
     public boolean showId;
     @XmlAttribute
     public boolean showVersion;
-    @XmlAttribute
-    public boolean skipColumns;
   }
 
   @EJB
@@ -123,6 +120,7 @@ public class RemoteCall {
   public String getViewData(String params) {
     Object rs = buildRequest(ParamHolder.class, params);
     ParamHolder prm = null;
+    boolean skipColumns = false;
 
     if (rs instanceof ParamHolder) {
       prm = (ParamHolder) rs;
@@ -134,47 +132,43 @@ public class RemoteCall {
         rs = null;
         Filter filter = null;
         Order order = null;
+        List<String> columns = Lists.newArrayList();
         BeeView view = sys.getView(prm.view);
 
         if (!BeeUtils.isEmpty(prm.columns)) {
-          for (String col : prm.columns) {
-            if (!view.hasColumn(col)) {
-              rs = "Unrecognized view column: " + col;
+          for (String col : Splitter
+              .on(BeeConst.CHAR_COMMA)
+              .omitEmptyStrings()
+              .trimResults()
+              .split(prm.columns)) {
+
+            if (col.equals(BeeConst.CHAR_MINUS)) {
+              skipColumns = true;
               break;
+            } else if (!view.hasColumn(col)) {
+              rs = "Wrong column: " + col;
+              break;
+            } else {
+              columns.add(col);
             }
           }
         }
         if (rs == null && !BeeUtils.isEmpty(prm.filter)) {
-          List<IsColumn> columns = Lists.newArrayList();
-
-          for (String col : view.getColumnNames()) {
-            columns.add(new BeeColumn(view.getColumnType(col).toValueType(), col));
-          }
-          filter = DataUtils.parseCondition(prm.filter, columns, view.getSourceIdName(),
-              view.getSourceVersionName());
-
+          filter = view.parseFilter(prm.filter);
           if (filter == null) {
             rs = "Wrong filter: " + prm.filter;
           }
         }
-        if (rs == null && !BeeUtils.isEmpty(prm.orderBy)) {
-          char prfx = '-';
-          order = new Order();
-
-          for (String ord : prm.orderBy) {
-            String col = BeeUtils.removePrefix(ord, prfx);
-
-            if (!view.hasColumn(col)) {
-              rs = "Unrecognized order column: " + col;
-              break;
-            }
-            order.add(ord, !BeeUtils.isPrefix(ord, prfx));
+        if (rs == null && !BeeUtils.isEmpty(prm.order)) {
+          order = view.parseOrder(prm.order);
+          if (order == null) {
+            rs = "Wrong order: " + prm.order;
           }
         }
         if (rs == null) {
           rs = sys.getViewData(prm.view, sys.getViewCondition(prm.view, filter), order,
               BeeUtils.toNonNegativeInt(prm.limit), BeeUtils.toNonNegativeInt(prm.offset),
-              prm.columns);
+              columns.toArray(new String[0]));
         }
       }
     }
@@ -186,7 +180,7 @@ public class RemoteCall {
       data.columns = Lists.newArrayList(rowSet.getColumnLabels());
       data.rows = Lists.newArrayList();
 
-      if (prm.showId || prm.showVersion || !prm.skipColumns) {
+      if (prm.showId || prm.showVersion || !skipColumns) {
         for (BeeRow r : rowSet.getRows()) {
           DataRow row = new DataRow();
 
@@ -196,7 +190,7 @@ public class RemoteCall {
           if (prm.showVersion) {
             row.version = BeeUtils.transform(new DateTime(r.getVersion()));
           }
-          if (!prm.skipColumns) {
+          if (!skipColumns) {
             for (String col : data.columns) {
               row.addColumn(col, r.getString(rowSet.getColumnIndex(col)));
             }

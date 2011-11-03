@@ -28,6 +28,8 @@ public class XmlView {
   public static class XmlSimpleColumn extends XmlColumn {
     @XmlAttribute
     public String locale;
+    @XmlAttribute
+    public String aggregate;
   }
 
   @XmlRootElement(name = "BeeJoinColumn", namespace = DataUtils.DEFAULT_NAMESPACE)

@@ -48,6 +48,7 @@
             </xs:restriction>
           </xs:simpleType>
         </xs:attribute>
+        <xs:attribute name="aggregate" type="bee:aggregateType" />
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>

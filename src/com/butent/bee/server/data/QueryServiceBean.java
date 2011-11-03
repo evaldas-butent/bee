@@ -176,7 +176,7 @@ public class QueryServiceBean {
 
       @Override
       public Object processResultSet(ResultSet rs) throws SQLException {
-        return rsToBeeRowSet(rs, null, null, null);
+        return rsToBeeRowSet(rs, null);
       }
 
       @Override
@@ -297,21 +297,6 @@ public class QueryServiceBean {
 
   public BeeRowSet getViewData(IsQuery query, final BeeView view) {
     Assert.notNull(query);
-    final String idName;
-    final String versionName;
-
-    if (!BeeUtils.isEmpty(view)) {
-      Assert.state(query instanceof SqlSelect);
-      idName = SqlUtils.uniqueName();
-      versionName = SqlUtils.uniqueName();
-
-      ((SqlSelect) query)
-          .addField(view.getSourceName(), view.getSourceIdName(), idName)
-          .addField(view.getSourceName(), view.getSourceVersionName(), versionName);
-    } else {
-      idName = null;
-      versionName = null;
-    }
     Assert.state(!query.isEmpty());
     activateTables(query);
 
@@ -324,7 +309,7 @@ public class QueryServiceBean {
 
       @Override
       public BeeRowSet processResultSet(ResultSet rs) throws SQLException {
-        return rsToBeeRowSet(rs, view, idName, versionName);
+        return rsToBeeRowSet(rs, view);
       }
 
       @Override
@@ -374,109 +359,6 @@ public class QueryServiceBean {
   public boolean isDbTable(String dbName, String dbSchema, String table) {
     Assert.notEmpty(table);
     return !BeeUtils.isEmpty(dbTables(dbName, dbSchema, table));
-  }
-
-  public BeeRowSet rsToBeeRowSet(ResultSet rs, BeeView view, String idName, String versionName)
-      throws SQLException {
-    BeeColumn[] rsCols = JdbcUtils.getColumns(rs);
-    List<BeeColumn> columns = Lists.newArrayList();
-    int idIndex = -1;
-    int versionIndex = -1;
-
-    for (BeeColumn col : rsCols) {
-      if (!BeeUtils.isEmpty(view)) {
-        String colName = col.getId();
-
-        if (view.hasColumn(colName)) {
-          switch (view.getColumnType(colName)) {
-            case BOOLEAN:
-              col.setType(ValueType.BOOLEAN);
-              break;
-            case DATE:
-              col.setType(ValueType.DATE);
-              break;
-            case DATETIME:
-              col.setType(ValueType.DATETIME);
-              break;
-            default:
-          }
-        } else if (BeeUtils.same(colName, idName)) {
-          idIndex = col.getIndex();
-          continue;
-        } else if (BeeUtils.same(colName, versionName)) {
-          versionIndex = col.getIndex();
-          continue;
-        }
-      }
-      columns.add(col);
-    }
-    int cols = columns.size();
-    BeeRowSet result = new BeeRowSet(columns);
-    long idx = 0;
-
-    while (rs.next()) {
-      String[] row = new String[cols];
-
-      for (int i = 0; i < cols; i++) {
-        BeeColumn column = columns.get(i);
-        int colIndex = column.getIndex();
-
-        switch (column.getType()) {
-          case BOOLEAN:
-            row[i] = BooleanValue.pack(rs.getBoolean(colIndex));
-            if (rs.wasNull()) {
-              row[i] = null;
-            }
-            break;
-          case NUMBER:
-          case DECIMAL:
-            if (column.getScale() > 0) {
-              row[i] = BeeUtils.removeTrailingZeros(rs.getString(colIndex));
-              break;
-            }
-            //$FALL-THROUGH$
-          default:
-            row[i] = rs.getString(colIndex);
-        }
-      }
-      if (idIndex < 0) {
-        idx++;
-      } else {
-        idx = rs.getLong(idIndex);
-      }
-      if (versionIndex < 0) {
-        result.addRow(idx, row);
-      } else {
-        result.addRow(idx, rs.getLong(versionIndex), row);
-      }
-    }
-    if (idIndex >= 0) {
-      result.setViewName(view.getName());
-    }
-    LogUtils.info(logger, "cols:", result.getNumberOfColumns(), "rows:", result.getNumberOfRows());
-    return result;
-  }
-
-  public SimpleRowSet rsToSimpleRowSet(ResultSet rs) throws SQLException {
-    BeeColumn[] rsCols = JdbcUtils.getColumns(rs);
-    int cols = rsCols.length;
-    String[] columns = new String[cols];
-
-    for (int i = 0; i < cols; i++) {
-      columns[i] = rsCols[i].getId();
-    }
-    SimpleRowSet res = new SimpleRowSet(columns);
-
-    while (rs.next()) {
-      String[] row = new String[cols];
-
-      for (int i = 0; i < cols; i++) {
-        row[i] = rs.getString(rsCols[i].getIndex());
-      }
-      res.addRow(row);
-    }
-    LogUtils.info(logger, "Retrieved rows:", res.getNumberOfRows());
-    return res;
   }
 
   public int updateData(IsQuery query) {
@@ -585,5 +467,108 @@ public class QueryServiceBean {
       JdbcUtils.closeConnection(con);
     }
     return result;
+  }
+
+  private BeeRowSet rsToBeeRowSet(ResultSet rs, BeeView view)
+      throws SQLException {
+    BeeColumn[] rsCols = JdbcUtils.getColumns(rs);
+    List<BeeColumn> columns = Lists.newArrayList();
+    int idIndex = -1;
+    int versionIndex = -1;
+
+    for (BeeColumn col : rsCols) {
+      if (!BeeUtils.isEmpty(view)) {
+        String colName = col.getId();
+
+        if (view.hasColumn(colName)) {
+          switch (view.getColumnType(colName)) {
+            case BOOLEAN:
+              col.setType(ValueType.BOOLEAN);
+              break;
+            case DATE:
+              col.setType(ValueType.DATE);
+              break;
+            case DATETIME:
+              col.setType(ValueType.DATETIME);
+              break;
+            default:
+          }
+        } else if (BeeUtils.same(colName, view.getSourceIdName())) {
+          idIndex = col.getIndex();
+          continue;
+        } else if (BeeUtils.same(colName, view.getSourceVersionName())) {
+          versionIndex = col.getIndex();
+          continue;
+        }
+      }
+      columns.add(col);
+    }
+    int cols = columns.size();
+    BeeRowSet result = new BeeRowSet(columns);
+    long idx = 0;
+
+    while (rs.next()) {
+      String[] row = new String[cols];
+
+      for (int i = 0; i < cols; i++) {
+        BeeColumn column = columns.get(i);
+        int colIndex = column.getIndex();
+
+        switch (column.getType()) {
+          case BOOLEAN:
+            row[i] = BooleanValue.pack(rs.getBoolean(colIndex));
+            if (rs.wasNull()) {
+              row[i] = null;
+            }
+            break;
+          case NUMBER:
+          case DECIMAL:
+            if (column.getScale() > 0) {
+              row[i] = BeeUtils.removeTrailingZeros(rs.getString(colIndex));
+              break;
+            }
+            //$FALL-THROUGH$
+          default:
+            row[i] = rs.getString(colIndex);
+        }
+      }
+      if (idIndex < 0) {
+        idx++;
+      } else {
+        idx = rs.getLong(idIndex);
+      }
+      if (versionIndex < 0) {
+        result.addRow(idx, row);
+      } else {
+        result.addRow(idx, rs.getLong(versionIndex), row);
+      }
+    }
+    if (idIndex >= 0) {
+      result.setViewName(view.getName());
+    }
+    LogUtils.info(logger, "cols:", result.getNumberOfColumns(), "rows:", result.getNumberOfRows());
+    return result;
+  }
+
+  private SimpleRowSet rsToSimpleRowSet(ResultSet rs) throws SQLException {
+    BeeColumn[] rsCols = JdbcUtils.getColumns(rs);
+    int cols = rsCols.length;
+    String[] columns = new String[cols];
+
+    for (int i = 0; i < cols; i++) {
+      columns[i] = rsCols[i].getId();
+    }
+    SimpleRowSet res = new SimpleRowSet(columns);
+
+    while (rs.next()) {
+      String[] row = new String[cols];
+
+      for (int i = 0; i < cols; i++) {
+        row[i] = rs.getString(rsCols[i].getIndex());
+      }
+      res.addRow(row);
+    }
+    LogUtils.info(logger, "Retrieved rows:", res.getNumberOfRows());
+    return res;
   }
 }

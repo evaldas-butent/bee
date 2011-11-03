@@ -37,7 +37,6 @@ import com.butent.bee.shared.data.XmlTable.XmlField;
 import com.butent.bee.shared.data.XmlTable.XmlKey;
 import com.butent.bee.shared.data.XmlView;
 import com.butent.bee.shared.data.XmlView.XmlColumn;
-import com.butent.bee.shared.data.XmlView.XmlOrder;
 import com.butent.bee.shared.data.XmlView.XmlSimpleColumn;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.DataInfo;
@@ -283,53 +282,40 @@ public class SystemBean {
       Order order, int limit, int offset, String... columns) {
 
     BeeView view = getView(viewName);
-    String source = view.getSourceName();
-
-    SqlSelect ss = getViewQuery(viewName);
-
-    if (!BeeUtils.isEmpty(columns)) {
-      ss.resetFields();
-
-      for (String col : columns) {
-        ss.addField(view.getColumnSource(col), view.getColumnField(col), col);
-      }
-    }
+    SqlSelect ss = view.getQuery(columns);
 
     if (!BeeUtils.isEmpty(condition)) {
       ss.setWhere(SqlUtils.and(ss.getWhere(), condition));
     }
-
     if (order != null) {
       ss.resetOrder();
-      String idCol = view.getSourceIdName();
-      String verCol = view.getSourceVersionName();
 
+      String source = view.getSourceAlias();
       String als;
-      String fld;
+      String col;
+      String idCol = view.getSourceIdName();
       boolean hasId = false;
 
       for (Order.Column ordCol : order.getColumns()) {
         for (String ordSrc : ordCol.getSources()) {
-          if (BeeUtils.same(ordSrc, idCol)) {
+          if (BeeUtils.inListSame(ordSrc, idCol, view.getSourceVersionName())) {
             als = source;
-            fld = ordSrc;
-            hasId = true;
-          } else if (BeeUtils.same(ordSrc, verCol)) {
-            als = source;
-            fld = ordSrc;
+            col = ordSrc;
+            hasId = hasId || BeeUtils.same(ordSrc, idCol);
+
           } else if (view.hasColumn(ordSrc)) {
             als = view.getColumnSource(ordSrc);
-            fld = view.getColumnField(ordSrc);
+            col = view.getColumnField(ordSrc);
+
           } else {
             LogUtils.warning(logger, "view: ", viewName, "order by:", ordSrc,
                 "column not reccognized");
             continue;
           }
-
           if (ordCol.isAscending()) {
-            ss.addOrder(als, fld);
+            ss.addOrder(als, col);
           } else {
-            ss.addOrderDesc(als, fld);
+            ss.addOrderDesc(als, col);
           }
         }
       }
@@ -337,14 +323,12 @@ public class SystemBean {
         ss.addOrder(source, idCol);
       }
     }
-
     if (limit > 0) {
       ss.setLimit(limit);
     }
     if (offset > 0) {
       ss.setOffset(offset);
     }
-
     return qs.getViewData(ss, view);
   }
 
@@ -830,17 +814,20 @@ public class SystemBean {
   }
 
   private BeeView getDefaultView(String tblName) {
-    BeeTable table = getTable(tblName);
     List<XmlColumn> columns = Lists.newArrayList();
 
-    for (BeeField field : table.getFields()) {
+    for (BeeField field : getTableFields(tblName)) {
       XmlColumn column = new XmlSimpleColumn();
       column.expression = field.getName();
       columns.add(column);
     }
-    BeeView view = new BeeView(tblName, table, true);
-    view.addColumns(table, view.getSourceAlias(), columns, null, tableCache);
-    return view;
+    XmlView xmlView = new XmlView();
+    xmlView.name = tblName;
+    xmlView.source = tblName;
+    xmlView.readOnly = true;
+    xmlView.columns = columns;
+
+    return new BeeView(xmlView, tableCache);
   }
 
   private Collection<BeeState> getStates() {
@@ -1097,23 +1084,8 @@ public class SystemBean {
         if (!isTable(src)) {
           LogUtils.warning(logger, "Unrecognized view source:", xmlView.name, src);
         } else {
-          BeeTable table = getTable(src);
-          view = new BeeView(xmlView.name, table, xmlView.readOnly);
-          view.addColumns(table, view.getSourceAlias(), xmlView.columns, null, tableCache);
+          view = new BeeView(xmlView, tableCache);
 
-          if (!BeeUtils.isEmpty(xmlView.orders)) {
-            for (XmlOrder order : xmlView.orders) {
-              if (!view.hasColumn(order.column)) {
-                LogUtils
-                    .warning(logger, "Unrecognized order column:", view.getName(), order.column);
-              } else {
-                view.addOrder(order.column, order.descending);
-              }
-            }
-          }
-          if (!BeeUtils.isEmpty(xmlView.filter)) {
-            view.setFilter(xmlView.filter);
-          }
           if (view.isEmpty()) {
             LogUtils.warning(logger, "View has no columns defined:", view.getName());
             view = null;

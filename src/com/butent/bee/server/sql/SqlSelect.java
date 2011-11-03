@@ -91,7 +91,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
   }
 
   /**
-   * Adds an AVG function with a specified distinct expression {@code expr} and alias {@code alias}.
+   * Adds an AVG DISTINCT function with a specified expression {@code expr} and alias {@code alias}.
    * 
    * @param expr the expression
    * @param alias the alias name
@@ -101,6 +101,19 @@ public class SqlSelect extends HasFrom<SqlSelect> {
     Assert.notNull(expr);
     addAggregate(SqlFunction.AVG, expr, true, alias);
     return getReference();
+  }
+
+  /**
+   * Adds an AVG DISTINCT function for {@code source} table and field {@code field} using an alias
+   * {@code alias}.
+   * 
+   * @param source the source's name
+   * @param field the field's name
+   * @param alias the alias name.
+   * @return object's SqlSelect instance.
+   */
+  public SqlSelect addAvgDistinct(String source, String field, String alias) {
+    return addAvgDistinct(SqlUtils.field(source, field), alias);
   }
 
   /**
@@ -162,7 +175,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
   }
 
   /**
-   * Adds a COUNT function with a specified distinct expression {@code expr} and alias {@code alias}
+   * Adds a COUNT DISTINCT function with a specified expression {@code expr} and alias {@code alias}
    * .
    * 
    * @param expr the expression
@@ -173,6 +186,19 @@ public class SqlSelect extends HasFrom<SqlSelect> {
     Assert.notNull(expr);
     addAggregate(SqlFunction.COUNT, expr, true, alias);
     return getReference();
+  }
+
+  /**
+   * Adds an COUNT DISTINCT function for {@code source} table and field {@code field} using an alias
+   * {@code alias}.
+   * 
+   * @param source the source's name
+   * @param field the field's name
+   * @param alias the alias name.
+   * @return object's SqlSelect instance.
+   */
+  public SqlSelect addCountDistinct(String source, String field, String alias) {
+    return addCountDistinct(SqlUtils.field(source, field), alias);
   }
 
   /**
@@ -496,7 +522,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
   }
 
   /**
-   * Adds a SUM function with a specified distinct expression {@code expr} and alias {@code alias}.
+   * Adds a SUM DISTINCT function with a specified expression {@code expr} and alias {@code alias}.
    * 
    * @param expr the expression
    * @param alias the alias name
@@ -506,6 +532,19 @@ public class SqlSelect extends HasFrom<SqlSelect> {
     Assert.notNull(expr);
     addAggregate(SqlFunction.SUM, expr, true, alias);
     return getReference();
+  }
+
+  /**
+   * Adds a SUM DISTINCT function with a specified table {@code source} and field {@code field}
+   * using an alias.
+   * 
+   * @param source the source table name
+   * @param field the field's name
+   * @param alias the alias name
+   * @return object's SqlSelect instance.
+   */
+  public SqlSelect addSumDistinct(String source, String field, String alias) {
+    return addSumDistinct(SqlUtils.field(source, field), alias);
   }
 
   /**
