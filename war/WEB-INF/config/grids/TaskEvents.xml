@@ -14,7 +14,8 @@
         </style>
         <calc>
           <function>
-            var s = row.PublishTime.getFullYear() + "." + (row.PublishTime.getMonth() + 1) + "."
+            var s = row.PublishTime.getFullYear() + "." + (row.PublishTime.getMonth() + 1)
+                  + (row.PublishTime.getDate() >= 10 ? "." : ".0")
                   + row.PublishTime.getDate() + " " + row.PublishTime.toLocaleTimeString() + "\n"
                   + (row.PublisherFirstName || "") + " " + (row.PublisherLastName || "");
             var ev = "";

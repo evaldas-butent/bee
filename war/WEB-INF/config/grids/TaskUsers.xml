@@ -4,6 +4,18 @@
 
   <BeeGrid name="TaskUsers" viewName="TaskUsers" caption="Stebimos užduotys" editForm="Tasks">
     <columns>
+      <BeeCalcColumn name="Mode" type="string" caption="*">
+        <calc>
+          <function>
+            if (!row.LastAccess) {
+              return "New";
+            } else if(row.LastAccess &lt; row.LastPublish) {
+              return "Upd";
+            }
+            return "";
+          </function>
+        </calc>
+      </BeeCalcColumn>
       <BeeIdColumn name="Id"  caption="ID" />
       <BeeCalcColumn name="Priority" type="string" caption="Prioritetas" sortBy="Priority">
         <calc>

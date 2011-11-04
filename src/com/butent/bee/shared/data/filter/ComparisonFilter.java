@@ -28,7 +28,7 @@ public abstract class ComparisonFilter extends Filter {
   public static Filter compareId(String column, Operator op, String value) {
     Assert.notEmpty(column);
     Assert.notNull(op);
-
+  
     if (!BeeUtils.isLong(value)) {
       LogUtils.warning(LogUtils.getDefaultLogger(), "Not an ID value:", value);
       return null;
@@ -43,13 +43,19 @@ public abstract class ComparisonFilter extends Filter {
     return new VersionFilter(column, op, DateTime.parse(value).getTime());
   }
 
+  public static Filter compareWithColumn(String leftColumn, Operator op, String rightColumn) {
+    Assert.notEmpty(leftColumn, rightColumn);
+    Assert.notNull(op);
+    return new ColumnColumnFilter(leftColumn, op, rightColumn);
+  }
+
   public static Filter compareWithColumn(IsColumn left, Operator op, IsColumn right) {
     Assert.noNulls(left, op, right);
     String leftColumn = left.getId();
     ValueType leftType = left.getType();
     String rightColumn = right.getId();
     ValueType rightType = right.getType();
-
+  
     if (!BeeUtils.same(leftType.getGroupCode(), rightType.getGroupCode())) {
       LogUtils.warning(LogUtils.getDefaultLogger(),
           "Incompatible column types: " +
@@ -57,18 +63,49 @@ public abstract class ComparisonFilter extends Filter {
               rightColumn + BeeUtils.parenthesize(rightType));
       return null;
     }
-    return new ColumnColumnFilter(leftColumn, op, rightColumn);
+    return compareWithColumn(leftColumn, op, rightColumn);
+  }
+
+  public static Filter compareWithValue(String column, Operator op, Value value) {
+    Assert.notEmpty(column);
+    Assert.notEmpty(value);
+    Assert.notNull(op);
+    return new ColumnValueFilter(column, op, value);
   }
 
   public static Filter compareWithValue(IsColumn column, Operator op, String value) {
-    Assert.noNulls(column, op, value);
-
+    Assert.noNulls(column, op);
+    Assert.notEmpty(value);
+  
     if (ValueType.isNumeric(column.getType()) && !BeeUtils.isDouble(value)) {
       LogUtils.warning(LogUtils.getDefaultLogger(), "Not a numeric value: " + value);
       return null;
     }
-    return new ColumnValueFilter(column.getId(), op,
-        Value.parseValue(column.getType(), value, true));
+    return compareWithValue(column.getId(), op, Value.parseValue(column.getType(), value, true));
+  }
+
+  public static Filter isEqual(String column, Value value) {
+    return compareWithValue(column, Operator.EQ, value);
+  }
+
+  public static Filter isLess(String column, Value value) {
+    return compareWithValue(column, Operator.LT, value);
+  }
+
+  public static Filter isLessEqual(String column, Value value) {
+    return compareWithValue(column, Operator.LE, value);
+  }
+
+  public static Filter isMore(String column, Value value) {
+    return compareWithValue(column, Operator.GT, value);
+  }
+
+  public static Filter isMoreEqual(String column, Value value) {
+    return compareWithValue(column, Operator.GE, value);
+  }
+
+  public static Filter isNotEqual(String column, Value value) {
+    return compareWithValue(column, Operator.NE, value);
   }
 
   private String column;

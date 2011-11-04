@@ -873,8 +873,6 @@ public class SqlSelect extends HasFrom<SqlSelect> {
   }
 
   private void addOrder(Boolean desc, String source, String... fields) {
-    Assert.notEmpty(source);
-
     for (String ord : fields) {
       String[] orderEntry = new String[3];
       orderEntry[ORDER_SRC] = source;

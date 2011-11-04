@@ -256,9 +256,10 @@ public abstract class SqlBuilder {
           query.append(", ");
         }
         String[] orderEntry = orderList.get(i);
-        IsExpression order = BeeUtils.isEmpty(ss.getUnion())
-            ? SqlUtils.field(orderEntry[SqlSelect.ORDER_SRC], orderEntry[SqlSelect.ORDER_FLD])
-            : SqlUtils.name(orderEntry[SqlSelect.ORDER_FLD]);
+        String src = orderEntry[SqlSelect.ORDER_SRC];
+        IsExpression order = BeeUtils.isEmpty(src) || !BeeUtils.isEmpty(ss.getUnion())
+            ? SqlUtils.name(orderEntry[SqlSelect.ORDER_FLD])
+            : SqlUtils.field(src, orderEntry[SqlSelect.ORDER_FLD]);
 
         query.append(order.getSqlString(this)).append(orderEntry[SqlSelect.ORDER_DESC]);
       }

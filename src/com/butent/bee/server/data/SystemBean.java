@@ -282,46 +282,10 @@ public class SystemBean {
       Order order, int limit, int offset, String... columns) {
 
     BeeView view = getView(viewName);
-    SqlSelect ss = view.getQuery(columns);
+    SqlSelect ss = view.getQuery(order, columns);
 
     if (!BeeUtils.isEmpty(condition)) {
       ss.setWhere(SqlUtils.and(ss.getWhere(), condition));
-    }
-    if (order != null) {
-      ss.resetOrder();
-
-      String source = view.getSourceAlias();
-      String als;
-      String col;
-      String idCol = view.getSourceIdName();
-      boolean hasId = false;
-
-      for (Order.Column ordCol : order.getColumns()) {
-        for (String ordSrc : ordCol.getSources()) {
-          if (BeeUtils.inListSame(ordSrc, idCol, view.getSourceVersionName())) {
-            als = source;
-            col = ordSrc;
-            hasId = hasId || BeeUtils.same(ordSrc, idCol);
-
-          } else if (view.hasColumn(ordSrc)) {
-            als = view.getColumnSource(ordSrc);
-            col = view.getColumnField(ordSrc);
-
-          } else {
-            LogUtils.warning(logger, "view: ", viewName, "order by:", ordSrc,
-                "column not reccognized");
-            continue;
-          }
-          if (ordCol.isAscending()) {
-            ss.addOrder(als, col);
-          } else {
-            ss.addOrderDesc(als, col);
-          }
-        }
-      }
-      if (!hasId) {
-        ss.addOrder(source, idCol);
-      }
     }
     if (limit > 0) {
       ss.setLimit(limit);

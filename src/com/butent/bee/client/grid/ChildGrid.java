@@ -12,10 +12,9 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.data.filter.ColumnValueFilter;
+import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
-import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.ui.GridDescription;
 
@@ -30,20 +29,20 @@ public class ChildGrid extends ResizePanel implements HasEnabled {
   private final int parentIndex;
   private final String relSource;
 
-  private final GridCallback gridCallback;  
+  private final GridCallback gridCallback;
   private GridDescription gridDescription = null;
   private GridPresenter presenter = null;
 
   private IsRow pendingRow = null;
   private Boolean pendingEnabled = null;
-  
+
   public ChildGrid(String gridName, int parentIndex, String relSource) {
     super();
     this.parentIndex = parentIndex;
     this.relSource = relSource;
-    
+
     this.gridCallback = GridFactory.getGridCallback(gridName);
-    
+
     addStyleName("bee-child-grid");
 
     GridFactory.getGrid(gridName, new GridFactory.DescriptionCallback() {
@@ -92,23 +91,23 @@ public class ChildGrid extends ResizePanel implements HasEnabled {
   private void createPresenter(final IsRow row) {
     final String viewName = getGridDescription().getViewName();
     Filter filter = CompoundFilter.and(getGridDescription().getFilter(), getFilter(row));
-    
-    Queries.getRowSet(viewName, null, filter, getGridDescription().getOrder(), 
+
+    Queries.getRowSet(viewName, null, filter, getGridDescription().getOrder(),
         getGridDescription().getCachingPolicy(), new Queries.RowSetCallback() {
           public void onFailure(String[] reason) {
           }
 
           public void onSuccess(BeeRowSet rowSet) {
             Assert.notNull(rowSet);
-            GridPresenter gp = new GridPresenter(viewName, rowSet.getNumberOfRows(), 
+            GridPresenter gp = new GridPresenter(viewName, rowSet.getNumberOfRows(),
                 rowSet, true, getGridDescription(), getGridCallback(), EnumSet.of(UiOption.CHILD));
-            
+
             gp.getView().getContent().setRelColumn(getRelSource());
             gp.getView().getContent().getGrid().setPageSize(BeeConst.UNDEF, false, false);
 
             setWidget(gp.getWidget());
             setPresenter(gp);
-            
+
             if (row == getPendingRow()) {
               updateFilter(row);
               resetState();
@@ -120,7 +119,7 @@ public class ChildGrid extends ResizePanel implements HasEnabled {
   }
 
   private Filter getFilter(IsRow row) {
-    return new ColumnValueFilter(getRelSource(), Operator.EQ, new LongValue(getParentValue(row)));
+    return ComparisonFilter.isEqual(getRelSource(), new LongValue(getParentValue(row)));
   }
 
   private GridCallback getGridCallback() {
@@ -164,12 +163,12 @@ public class ChildGrid extends ResizePanel implements HasEnabled {
     setPendingRow(null);
     setPendingEnabled(null);
   }
-  
+
   private void resolveState() {
     if (getGridDescription() == null || getPendingRow() == null) {
       return;
     }
-    
+
     if (getPresenter() == null) {
       createPresenter(getPendingRow());
     } else {
@@ -178,15 +177,15 @@ public class ChildGrid extends ResizePanel implements HasEnabled {
       resetState();
     }
   }
-  
+
   private void setGridDescription(GridDescription gridDescription) {
     this.gridDescription = gridDescription;
   }
-  
+
   private void setPendingEnabled(Boolean pendingEnabled) {
     this.pendingEnabled = pendingEnabled;
   }
-  
+
   private void setPendingRow(IsRow pendingRow) {
     this.pendingRow = pendingRow;
   }
@@ -194,7 +193,7 @@ public class ChildGrid extends ResizePanel implements HasEnabled {
   private void setPresenter(GridPresenter presenter) {
     this.presenter = presenter;
   }
-  
+
   private void updateFilter(IsRow row) {
     if (getPresenter() != null) {
       getPresenter().getDataProvider().setParentFilter(getId(), getFilter(row), false);

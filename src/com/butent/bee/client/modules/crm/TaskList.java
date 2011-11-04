@@ -1,6 +1,7 @@
 package com.butent.bee.client.modules.crm;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.HasClickHandlers;
@@ -10,35 +11,35 @@ import com.google.gwt.xml.client.Element;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.grid.GridPanel;
+import com.butent.bee.client.presenter.FormPresenter;
 import com.butent.bee.client.ui.AbstractFormCallback;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.grid.AbstractGridCallback;
-import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.DateTime;
-import com.butent.bee.shared.data.filter.ColumnValueFilter;
+import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
+import com.butent.bee.shared.data.value.IntegerValue;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.value.Value;
+import com.butent.bee.shared.modules.crm.CrmConstants.TaskEvent;
+import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
+import java.util.Map;
 
 public class TaskList {
 
   private static class FormHandler extends AbstractFormCallback implements ClickHandler {
 
     private final Type type;
-
     private GridPanel gridPanel = null;
-
-    private Editor dateFromWidget = null;
-    private Editor dateToWidget = null;
-
-    private Editor overdueWidget = null;
+    private Map<String, Editor> filterWidgets = Maps.newHashMap();
 
     private FormHandler(Type type) {
       super();
@@ -55,13 +56,7 @@ public class TaskList {
         ((HasClickHandlers) widget).addClickHandler(this);
 
       } else if (widget instanceof Editor) {
-        if (BeeUtils.same(name, "DateFrom")) {
-          setDateFromWidget((Editor) widget);
-        } else if (BeeUtils.same(name, "DateTo")) {
-          setDateToWidget((Editor) widget);
-        } else if (BeeUtils.same(name, "Overdue")) {
-          setOverdueWidget((Editor) widget);
-        }
+        this.filterWidgets.put(BeeUtils.normalize(name), (Editor) widget);
       }
     }
 
@@ -69,33 +64,47 @@ public class TaskList {
       if (getGridPanel() == null) {
         return;
       }
-
-      String field = "FinishTime";
       List<Filter> filters = Lists.newArrayList();
+      Value now = new LongValue(new DateTime().getTime());
 
-      if (getDateFromWidget() != null) {
-        String dateFrom = getDateFromWidget().getNormalizedValue();
-        if (!BeeUtils.isEmpty(dateFrom)) {
-          filters.add(new ColumnValueFilter(field, Operator.GE,
-              new LongValue(BeeUtils.toLong(dateFrom))));
+      Value dateFrom = getDateValue("DateFrom");
+      if (dateFrom != null) {
+        filters.add(ComparisonFilter.isMoreEqual("FinishTime", dateFrom));
+      }
+      Value dateTo = getDateValue("DateTo");
+      if (dateTo != null) {
+        filters.add(ComparisonFilter.isLess("FinishTime", dateTo));
+      }
+      if (isChecked("Overdue")) {
+        filters.add(ComparisonFilter.isLess("FinishTime", now));
+      }
+      if (isChecked("Updated")) {
+        filters.add(ComparisonFilter.compareWithColumn("LastAccess", Operator.LT, "LastPublish"));
+      }
+      List<Filter> orFilters = Lists.newArrayList();
+
+      if (isChecked("Scheduled")) {
+        orFilters.add(ComparisonFilter.isMore("StartTime", now));
+      }
+      if (isChecked("Executing")) {
+        Filter flt = ComparisonFilter.isEqual("Event",
+            new IntegerValue(TaskEvent.ACTIVATED.ordinal()));
+
+        if (!isChecked("Scheduled")) {
+          flt = CompoundFilter.and(flt, ComparisonFilter.isLessEqual("StartTime", now));
+        }
+        orFilters.add(flt);
+      }
+      for (TaskEvent flt : TaskEvent.values()) {
+        if (isChecked(flt.name())) {
+          orFilters.add(ComparisonFilter.isEqual("Event", new IntegerValue(flt.ordinal())));
         }
       }
-
-      if (getDateToWidget() != null) {
-        String dateTo = getDateToWidget().getNormalizedValue();
-        if (!BeeUtils.isEmpty(dateTo)) {
-          filters.add(new ColumnValueFilter(field, Operator.LT,
-              new LongValue(BeeUtils.toLong(dateTo))));
-        }
+      if (!orFilters.isEmpty()) {
+        filters.add(CompoundFilter.or(orFilters));
       }
-
-      if (getOverdueWidget() != null && BeeConst.isTrue(getOverdueWidget().getNormalizedValue())) {
-        filters.add(new ColumnValueFilter(field, Operator.LT,
-            new LongValue(new DateTime().getTime())));
-      }
-
       Filter filter = filters.isEmpty() ? null : CompoundFilter.and(filters);
-      getGridPanel().getPresenter().getDataProvider().setParentFilter("f1", filter, true);
+      getGridPanel().getPresenter().getDataProvider().setParentFilter("f1", filter, event != null);
     }
 
     @Override
@@ -104,40 +113,49 @@ public class TaskList {
       return true;
     }
 
-    private Editor getDateFromWidget() {
-      return dateFromWidget;
+    @Override
+    public void onShow(FormPresenter presenter) {
+      Editor widget = filterWidgets.get(BeeUtils.normalize("Executing"));
+
+      if (widget != null) {
+        widget.setValue("true");
+      }
+      // onClick(null);
     }
 
-    private Editor getDateToWidget() {
-      return dateToWidget;
+    private Value getDateValue(String filter) {
+      Value date = null;
+      String name = BeeUtils.normalize(filter);
+
+      if (filterWidgets.containsKey(name)) {
+        String dt = filterWidgets.get(name).getNormalizedValue();
+
+        if (!BeeUtils.isEmpty(dt)) {
+          date = new LongValue(BeeUtils.toLong(dt));
+        }
+      }
+      return date;
     }
 
     private GridPanel getGridPanel() {
       return gridPanel;
     }
 
-    private Editor getOverdueWidget() {
-      return overdueWidget;
-    }
-
     private Type getType() {
       return type;
     }
 
-    private void setDateFromWidget(Editor dateFromWidget) {
-      this.dateFromWidget = dateFromWidget;
-    }
+    private boolean isChecked(String filter) {
+      String name = BeeUtils.normalize(filter);
 
-    private void setDateToWidget(Editor dateToWidget) {
-      this.dateToWidget = dateToWidget;
+      if (filterWidgets.containsKey(name)) {
+        return BeeUtils.toBoolean(filterWidgets.get(name).getNormalizedValue());
+      }
+      return false;
     }
 
     private void setGridPanel(GridPanel gridPanel) {
       this.gridPanel = gridPanel;
-    }
-
-    private void setOverdueWidget(Editor overdueWidget) {
-      this.overdueWidget = overdueWidget;
     }
   }
 
@@ -153,6 +171,14 @@ public class TaskList {
     }
 
     @Override
+    public boolean beforeCreateColumn(String columnId, List<BeeColumn> dataColumns,
+        ColumnDescription columnDescription) {
+
+      return getType().equals(Type.ASSIGNED) && !BeeUtils.same(columnId, "Executor")
+          || getType().equals(Type.DELEGATED) && !BeeUtils.same(columnId, "Owner");
+    }
+
+    @Override
     public boolean onLoad(GridDescription gridDescription) {
       gridDescription.setCaption(null);
 
@@ -162,18 +188,18 @@ public class TaskList {
 
         switch (getType()) {
           case ASSIGNED:
-            filter = new ColumnValueFilter("Executor", Operator.EQ, user);
+            filter = ComparisonFilter.isEqual("Executor", user);
             break;
           case DELEGATED:
             filter = CompoundFilter.and(
-                new ColumnValueFilter("Owner", Operator.EQ, user),
-                new ColumnValueFilter("Executor", Operator.NE, user));
+                ComparisonFilter.isEqual("Owner", user),
+                ComparisonFilter.isNotEqual("Executor", user));
             break;
           case OBSERVED:
             filter = CompoundFilter.and(
-                new ColumnValueFilter("User", Operator.EQ, user),
-                new ColumnValueFilter("Owner", Operator.NE, user),
-                new ColumnValueFilter("Executor", Operator.NE, user));
+                ComparisonFilter.isEqual("User", user),
+                ComparisonFilter.isNotEqual("Owner", user),
+                ComparisonFilter.isNotEqual("Executor", user));
             break;
         }
         gridDescription.setFilter(filter);
