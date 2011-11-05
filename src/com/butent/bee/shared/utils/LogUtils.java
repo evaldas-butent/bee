@@ -1,10 +1,15 @@
 package com.butent.bee.shared.utils;
 
+import com.google.common.base.CharMatcher;
+import com.google.common.base.Splitter;
+import com.google.common.collect.Lists;
+
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.DateTime;
 
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -12,8 +17,14 @@ import java.util.logging.Logger;
  * Contains methods used for logging, changing logging level.
  */
 public class LogUtils {
-  private static Logger defaultLogger = null;
 
+  private static final Splitter WORD_SPLITTER =
+      Splitter.on(CharMatcher.WHITESPACE).omitEmptyStrings().trimResults();
+
+  private static Logger defaultLogger = null;
+  
+  private static int maxLineLength = 160; 
+  
   /**
    * @param dt the DateTime argument to convert
    * @return a human-readable String representation of DateTime
@@ -121,6 +132,14 @@ public class LogUtils {
     Assert.notNull(logger);
     logger.info(BeeUtils.concat(1, now(), obj));
   }
+  
+  public static void infoSplit(Logger logger, String head, String msg) {
+    infoSplit(logger, head, msg, maxLineLength);
+  }
+
+  public static void infoSplit(Logger logger, String head, String msg, int maxLength) {
+    split(logger, Level.INFO, head, msg, maxLength);
+  }
 
   /**
    * Forms a String with current time(in UTC) and Objects {@code obj} and logs it using INFO message
@@ -172,7 +191,7 @@ public class LogUtils {
     Assert.parameterCount(((obj == null) ? 0 : obj.length) + 2, 3);
     logger.log(level, BeeUtils.concat(1, obj));
   }
-
+  
   /**
    * @return the current time in a human-readable format.
    */
@@ -299,6 +318,53 @@ public class LogUtils {
     }
     if (obj != null && obj.length > 0) {
       logger.warning(BeeUtils.concat(1, obj));
+    }
+  }
+
+  private static void split(Logger logger, Level level, String head, String msg, int maxLength) {
+    Assert.notNull(logger);
+    if (BeeUtils.isEmpty(msg)) {
+      return;
+    }
+    
+    boolean hasHead = !BeeUtils.isEmpty(msg);
+    if (maxLength <= 0 || msg.trim().length() <= maxLength) {
+      if (hasHead) {
+        logger.log(level, BeeUtils.concat(1, head, msg));
+      } else {
+        logger.log(level, msg.trim());
+      }
+      return;
+    }
+    
+    List<String> lst = Lists.newArrayList();
+    StringBuilder sb = new StringBuilder();
+    
+    for (String word : WORD_SPLITTER.split(msg)) {
+      if (sb.length() + word.length() >= maxLength) {
+        if (sb.length() > 0) {
+          lst.add(sb.toString());
+          sb.setLength(0);
+        }
+      } else {
+        sb.append(BeeConst.CHAR_SPACE);
+      }
+      sb.append(word);
+    }
+    if (sb.length() > 0) {
+      lst.add(sb.toString());
+    }
+    if (lst.isEmpty()) {
+      return;
+    }
+    
+    if (lst.size() == 1) {
+      logger.log(level, BeeUtils.concat(1, head, lst.get(0)));
+      return;
+    }
+    
+    for (int i = 0; i < lst.size(); i++) {
+      logger.log(level, BeeUtils.concat(1, head, BeeUtils.progress(i + 1, lst.size()), lst.get(i)));
     }
   }
 

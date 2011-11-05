@@ -2,6 +2,7 @@ package com.butent.bee.client.data;
 
 import com.google.common.collect.Lists;
 import com.google.gwt.cell.client.NumberCell;
+import com.google.gwt.core.client.Callback;
 import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.TextColumn;
@@ -12,6 +13,7 @@ import com.google.gwt.view.client.SingleSelectionModel;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
+import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.utils.BeeCommand;
@@ -29,33 +31,21 @@ import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
  * Implements usage of data views in user interface.
  */
 
-public class Explorer implements HandlesDeleteEvents, RowInsertEvent.Handler {
+public class DataInfoProvider implements HandlesDeleteEvents, RowInsertEvent.Handler {
 
-  private class DataInfoCallback implements ResponseCallback {
-    private DataInfoCallback() {
+  public abstract static class DataInfoCallback implements Callback<DataInfo, String[]> {
+    public void onFailure(String[] reason) {
+      BeeKeeper.getScreen().notifySevere(reason);
     }
 
-    public void onResponse(ResponseObject response) {
-      Assert.notNull(response);
-      String[] info = Codec.beeDeserializeCollection((String) response.getResponse());
-
-      getViews().clear();
-      for (String s : info) {
-        getViews().add(DataInfo.restore(s));
-      }
-
-      if (getDataInfoWidget() == null) {
-        showDataInfo();
-      } else {
-        getDataInfoWidget().setRowData(getViews());
-      }
-    }
+    public abstract void onSuccess(DataInfo result);
   }
 
   private class DataInfoCreator extends BeeCommand {
@@ -74,22 +64,42 @@ public class Explorer implements HandlesDeleteEvents, RowInsertEvent.Handler {
   private CellTable<DataInfo> dataInfoWidget = null;
   private Widget loadingWidget = null;
 
-  public Explorer() {
+  public DataInfoProvider() {
     super();
   }
 
   public void create() {
     getDataInfoCreator().execute();
   }
-
-  public DataInfo getDataInfo(String name) {
-    Assert.notNull(name);
-    for (DataInfo dataInfo : getViews()) {
-      if (BeeUtils.same(dataInfo.getName(), name)) {
-        return dataInfo;
-      }
+  
+  public void getDataInfo(final String viewName, final DataInfoCallback callback) {
+    Assert.notEmpty(viewName);
+    Assert.notNull(callback);
+    
+    DataInfo dataInfo = getDataInfo(viewName);
+    if (dataInfo != null) {
+      callback.onSuccess(dataInfo);
+      return;
     }
-    return null;
+
+    ParameterList params = BeeKeeper.getRpc().createParameters(Service.GET_DATA_INFO);
+    params.addQueryItem(Service.VAR_VIEW_NAME, viewName);
+
+    BeeKeeper.getRpc().makeGetRequest(params, new ResponseCallback() {
+      public void onResponse(ResponseObject response) {
+        Assert.notNull(response);
+        
+        if (response.hasResponse(DataInfo.class)) {
+          DataInfo result = DataInfo.restore((String) response.getResponse());
+          getViews().add(result);
+          callback.onSuccess(result);
+        } else if (response.hasErrors()) {
+          callback.onFailure(response.getErrors());
+        } else {
+          callback.onFailure(new String[]{"get data info", viewName, "invalid response"});
+        }
+      }
+    });
   }
 
   public DataInfoCreator getDataInfoCreator() {
@@ -101,7 +111,24 @@ public class Explorer implements HandlesDeleteEvents, RowInsertEvent.Handler {
   }
 
   public void loadDataInfo() {
-    BeeKeeper.getRpc().makeGetRequest(Service.GET_VIEW_LIST, new DataInfoCallback());
+    BeeKeeper.getRpc().makeGetRequest(Service.GET_DATA_INFO, new ResponseCallback() {
+      public void onResponse(ResponseObject response) {
+        Assert.notNull(response);
+        String[] info = Codec.beeDeserializeCollection((String) response.getResponse());
+
+        getViews().clear();
+        for (String s : info) {
+          getViews().add(DataInfo.restore(s));
+        }
+        Collections.sort(getViews());
+
+        if (getDataInfoWidget() == null) {
+          showDataInfo();
+        } else {
+          getDataInfoWidget().setRowData(getViews());
+        }
+      }
+    });
   }
 
   public void onMultiDelete(MultiDeleteEvent event) {
@@ -151,14 +178,23 @@ public class Explorer implements HandlesDeleteEvents, RowInsertEvent.Handler {
     };
     grid.addColumn(nameColumn);
 
-    Column<DataInfo, Number> countColumn = new Column<DataInfo, Number>(new NumberCell()) {
+    Column<DataInfo, Number> columnCountColumn = new Column<DataInfo, Number>(new NumberCell()) {
       @Override
       public Number getValue(DataInfo object) {
-        return (object == null) ? -1 : object.getRowCount();
+        return (object == null) ? BeeConst.UNDEF : object.getColumnCount();
       }
     };
-    countColumn.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
-    grid.addColumn(countColumn);
+    columnCountColumn.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
+    grid.addColumn(columnCountColumn);
+
+    Column<DataInfo, Number> rowCountColumn = new Column<DataInfo, Number>(new NumberCell()) {
+      @Override
+      public Number getValue(DataInfo object) {
+        return (object == null) ? BeeConst.UNDEF : object.getRowCount();
+      }
+    };
+    rowCountColumn.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
+    grid.addColumn(rowCountColumn);
 
     grid.setRowData(getViews());
 
@@ -185,6 +221,15 @@ public class Explorer implements HandlesDeleteEvents, RowInsertEvent.Handler {
     return getLoadingWidget();
   }
 
+  private DataInfo getDataInfo(String name) {
+    for (DataInfo dataInfo : getViews()) {
+      if (BeeUtils.same(dataInfo.getName(), name)) {
+        return dataInfo;
+      }
+    }
+    return null;
+  }
+
   private CellTable<DataInfo> getDataInfoWidget() {
     return dataInfoWidget;
   }
@@ -200,5 +245,4 @@ public class Explorer implements HandlesDeleteEvents, RowInsertEvent.Handler {
   private void setLoadingWidget(Widget loadingWidget) {
     this.loadingWidget = loadingWidget;
   }
-
 }

@@ -192,7 +192,7 @@ public class BeeUtils {
         }
         cnt++;
       } else if (i < arr.length - 1) {
-        arr[i] = Character.toUpperCase(arr[i]);
+        arr[i + 1] = Character.toUpperCase(arr[i + 1]);
       }
     }
     if (cnt > 0) {

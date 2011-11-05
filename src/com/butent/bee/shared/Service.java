@@ -57,7 +57,7 @@ public class Service {
   public static final String REBUILD = DATA_SERVICE_PREFIX + "rebuild";
   public static final String DO_SQL = DATA_SERVICE_PREFIX + "do_sql";
   public static final String QUERY = DATA_SERVICE_PREFIX + "query";
-  public static final String GET_VIEW_LIST = DATA_SERVICE_PREFIX + "view_list";
+  public static final String GET_DATA_INFO = DATA_SERVICE_PREFIX + "data_info";
   public static final String GET_VIEW_INFO = DATA_SERVICE_PREFIX + "view_info";
   public static final String GET_TABLE_INFO = DATA_SERVICE_PREFIX + "table_info";
   public static final String GENERATE = DATA_SERVICE_PREFIX + "generate";

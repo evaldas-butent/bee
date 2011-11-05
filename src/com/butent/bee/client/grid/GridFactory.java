@@ -493,7 +493,7 @@ public class GridFactory {
       limit = DataUtils.getMaxInitialRowSetSize();
     }
 
-    Queries.getRowSet(gridDescription.getViewName(), null, gridDescription.getFilter(),
+    Queries.getRowSet(gridDescription.getViewName(), null, gridDescription.getInitialFilter(),
         gridDescription.getOrder(), 0, limit, gridDescription.getCachingPolicy(),
         PropertyUtils.createProperties(Service.VAR_VIEW_SIZE, threshold),
         new Queries.RowSetCallback() {

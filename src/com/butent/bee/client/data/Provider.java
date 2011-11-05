@@ -105,6 +105,8 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
     
     if (lst.isEmpty()) {
       return null;
+    } else if (lst.size() == 1) {
+      return lst.get(0);
     } else {
       return CompoundFilter.and(lst);
     }

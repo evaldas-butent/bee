@@ -28,7 +28,9 @@ import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.server.utils.XmlUtils;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.XmlState;
@@ -190,6 +192,32 @@ public class SystemBean {
     return ResponseObject.response(qs.getViewData(union, null));
   }
 
+  public List<DataInfo> getDataInfo() {
+    List<DataInfo> lst = Lists.newArrayList();
+
+    Set<String> viewNames = Sets.newHashSet(getViewNames());
+    viewNames.addAll(getTableNames());
+
+    for (String viewName : viewNames) {
+      lst.add(getDataInfo(viewName));
+    }
+    return lst;
+  }
+
+  public DataInfo getDataInfo(String viewName) {
+    BeeView view = getView(viewName);
+    BeeTable source = getTable(view.getSourceName());
+    
+    List<BeeColumn> columns = null; 
+    int cnt = BeeConst.UNDEF;
+
+    if (source.isActive()) {
+      cnt = getViewSize(viewName, null);
+      columns = qs.getViewColumns(view);
+    }
+    return new DataInfo(viewName, source.getIdName(), source.getVersionName(), columns, cnt);
+  }
+
   public String getDbName() {
     return dbName;
   }
@@ -258,7 +286,7 @@ public class SystemBean {
     }
     return states;
   }
-
+  
   public String getVersionName(String tblName) {
     return getTable(tblName).getVersionName();
   }
@@ -273,7 +301,7 @@ public class SystemBean {
     }
     return view;
   }
-
+  
   public IsCondition getViewCondition(String viewName, Filter filter) {
     return getView(viewName).getCondition(filter);
   }
@@ -294,23 +322,6 @@ public class SystemBean {
       ss.setOffset(offset);
     }
     return qs.getViewData(ss, view);
-  }
-
-  public List<DataInfo> getViewList() {
-    List<DataInfo> lst = Lists.newArrayList();
-    Set<String> views = Sets.newHashSet(getViewNames());
-    views.addAll(getTableNames());
-
-    for (String vw : views) {
-      BeeTable source = getTable(getView(vw).getSourceName());
-      int cnt = -1;
-
-      if (source.isActive()) {
-        cnt = getViewSize(vw, null);
-      }
-      lst.add(new DataInfo(vw, source.getIdName(), source.getVersionName(), cnt));
-    }
-    return lst;
   }
 
   public Collection<String> getViewNames() {

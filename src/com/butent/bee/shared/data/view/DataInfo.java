@@ -1,10 +1,15 @@
 package com.butent.bee.shared.data.view;
 
+import com.google.common.collect.Lists;
+
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeSerializable;
+import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
+
+import java.util.List;
 
 /**
  * Enables to get main information about data objects, like row count, ID column etc.
@@ -20,15 +25,26 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo> {
   }
 
   private String name;
+  
   private String idColumn;
   private String versionColumn;
+  
+  private List<BeeColumn> columns = Lists.newArrayList();
 
   private int rowCount;
 
-  public DataInfo(String name, String idColumn, String versionColumn, int rowCount) {
+  public DataInfo(String name, String idColumn, String versionColumn, List<BeeColumn> columns,
+      int rowCount) {
     this.name = name;
     this.idColumn = idColumn;
     this.versionColumn = versionColumn;
+    
+    if (columns != null) {
+      for (BeeColumn column : columns) {
+        this.columns.add(column);
+      }
+    }
+
     this.rowCount = rowCount;
   }
 
@@ -44,12 +60,21 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo> {
 
   public void deserialize(String s) {
     String[] arr = Codec.beeDeserializeCollection(s);
-    Assert.lengthEquals(arr, 4);
+    Assert.lengthEquals(arr, 5);
 
-    name = arr[0];
-    idColumn = arr[1];
-    versionColumn = arr[2];
-    setRowCount(BeeUtils.toInt(arr[3]));
+    setName(arr[0]);
+    setIdColumn(arr[1]);
+    setVersionColumn(arr[2]);
+    
+    getColumns().clear();
+    String[] cArr = Codec.beeDeserializeCollection(arr[3]);
+    if (!BeeUtils.isEmpty(cArr)) {
+      for (String col : cArr) {
+        getColumns().add(BeeColumn.restore(col));
+      }
+    }
+    
+    setRowCount(BeeUtils.toInt(arr[4]));
   }
 
   @Override
@@ -61,6 +86,14 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo> {
       return false;
     }
     return BeeUtils.same(getName(), ((DataInfo) obj).getName());
+  }
+  
+  public int getColumnCount() {
+    return (getColumns() == null) ? BeeConst.UNDEF : getColumns().size();
+  }
+
+  public List<BeeColumn> getColumns() {
+    return columns;
   }
 
   public String getIdColumn() {
@@ -86,10 +119,22 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo> {
 
   public String serialize() {
     return Codec.beeSerialize(
-        new Object[] {getName(), getIdColumn(), getVersionColumn(), getRowCount()});
+        new Object[] {getName(), getIdColumn(), getVersionColumn(), getColumns(), getRowCount()});
   }
 
   public void setRowCount(int rowCount) {
     this.rowCount = rowCount;
+  }
+
+  private void setIdColumn(String idColumn) {
+    this.idColumn = idColumn;
+  }
+
+  private void setName(String name) {
+    this.name = name;
+  }
+
+  private void setVersionColumn(String versionColumn) {
+    this.versionColumn = versionColumn;
   }
 }

@@ -47,6 +47,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -147,7 +148,7 @@ public class GridPresenter implements Presenter, ReadyForInsertEvent.Handler,
         gridCallback, options);
     this.dataProvider = createProvider(gridContainer, viewName, rowSet.getColumns(),
         gridDescription.getIdName(), gridDescription.getVersionName(),
-        gridDescription.getFilter(), gridDescription.getOrder(),
+        gridDescription.getFilter(), gridDescription.getParentFilters(), gridDescription.getOrder(),
         rowSet, async, gridDescription.getCachingPolicy());
 
     bind();
@@ -320,8 +321,9 @@ public class GridPresenter implements Presenter, ReadyForInsertEvent.Handler,
   }
 
   private Provider createProvider(GridContainerView view, String viewName, List<BeeColumn> columns,
-      String idColumnName, String versionColumnName, Filter dataFilter, Order order,
-      BeeRowSet rowSet, boolean isAsync, CachingPolicy cachingPolicy) {
+      String idColumnName, String versionColumnName, Filter dataFilter,
+      Map<String, Filter> parentFilters, Order order, BeeRowSet rowSet, boolean isAsync,
+      CachingPolicy cachingPolicy) {
     Provider provider;
     GridView display = view.getContent();
 
@@ -334,6 +336,16 @@ public class GridPresenter implements Presenter, ReadyForInsertEvent.Handler,
     } else {
       provider = new CachedProvider(display.getGrid(), viewName, columns, 
           idColumnName, versionColumnName, dataFilter, rowSet);
+    }
+    
+    if (parentFilters != null) {
+      for (Map.Entry<String, Filter> entry : parentFilters.entrySet()) {
+        String key = entry.getKey();
+        Filter value = entry.getValue();
+        if (!BeeUtils.isEmpty(key) && value != null) {
+          provider.setParentFilter(key, value, false);
+        }
+      }
     }
 
     if (order != null) {

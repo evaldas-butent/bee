@@ -2552,7 +2552,6 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
         return i;
       }
     }
-    BeeKeeper.getLog().warning("column source", source, "not found");
     return BeeConst.UNDEF;
   }
 

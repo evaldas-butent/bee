@@ -16,6 +16,7 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.communication.RpcUtils;
+import com.butent.bee.client.data.DataInfoProvider.DataInfoCallback;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.grid.FlexTable;
@@ -276,18 +277,10 @@ public class FormFactory {
       return;
     }
 
-    DataInfo dataInfo = Global.getDataExplorer().getDataInfo(viewName);
-    if (dataInfo != null) {
-      getInitialRowSet(viewName, dataInfo.getRowCount(), formDescription, callback);
-      return;
-    }
-
-    Queries.getRowCount(viewName, new Queries.IntCallback() {
-      public void onFailure(String[] reason) {
-      }
-
-      public void onSuccess(Integer result) {
-        getInitialRowSet(viewName, result, formDescription, callback);
+    Global.getDataInfo(viewName, new DataInfoCallback() {
+      @Override
+      public void onSuccess(DataInfo result) {
+        getInitialRowSet(viewName, result.getRowCount(), formDescription, callback);
       }
     });
   }

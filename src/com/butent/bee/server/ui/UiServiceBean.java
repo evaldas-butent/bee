@@ -116,8 +116,8 @@ public class UiServiceBean {
     } else if (BeeUtils.same(svc, Service.QUERY)) {
       response = getViewData(reqInfo);
 
-    } else if (BeeUtils.same(svc, Service.GET_VIEW_LIST)) {
-      response = getViewList();
+    } else if (BeeUtils.same(svc, Service.GET_DATA_INFO)) {
+      response = getDataInfo(reqInfo);
     } else if (BeeUtils.same(svc, Service.GENERATE)) {
       response = generateData(reqInfo);
     } else if (BeeUtils.same(svc, Service.COUNT_ROWS)) {
@@ -620,6 +620,15 @@ public class UiServiceBean {
     return response;
   }
 
+  private ResponseObject getDataInfo(RequestInfo reqInfo) {
+    String viewName = reqInfo.getParameter(Service.VAR_VIEW_NAME);
+    if (BeeUtils.isEmpty(viewName)) {
+      return ResponseObject.response(sys.getDataInfo());
+    } else {
+      return ResponseObject.response(sys.getDataInfo(viewName));
+    }
+  }
+
   private ResponseObject getDsns() {
     return ResponseObject.response(dsb.getDsns());
   }
@@ -746,10 +755,6 @@ public class UiServiceBean {
       }
     }
     return ResponseObject.response(info);
-  }
-
-  private ResponseObject getViewList() {
-    return ResponseObject.response(sys.getViewList());
   }
 
   private ResponseObject getViewSize(RequestInfo reqInfo) {

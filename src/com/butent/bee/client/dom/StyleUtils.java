@@ -300,6 +300,8 @@ public class StyleUtils {
   
   private static final String PROPERTY_CSS_TEXT = "cssText";
 
+  private static final char NAME_DELIMITER = '-';
+
   public static int addClassName(NodeList<Element> nodes, String className) {
     Assert.notNull(nodes);
     Assert.notEmpty(className);
@@ -333,7 +335,7 @@ public class StyleUtils {
     List<Property> properties = parseStyles(styles);
     if (properties != null) {
       for (Property property : properties) {
-        st.setProperty(property.getName(), property.getValue());
+        st.setProperty(camelize(property.getName()), property.getValue());
       }
     }
   }
@@ -2004,6 +2006,10 @@ public class StyleUtils {
   public static void zeroWidth(UIObject obj) {
     Assert.notNull(obj);
     zeroWidth(obj.getElement());
+  }
+  
+  private static String camelize(String name) {
+    return BeeUtils.camelize(name, NAME_DELIMITER);
   }
 
   private static void clearStyleProperty(Style style, String name) {

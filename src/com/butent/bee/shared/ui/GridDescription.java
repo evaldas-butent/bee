@@ -1,6 +1,7 @@
 package com.butent.bee.shared.ui;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeSerializable;
@@ -8,6 +9,7 @@ import com.butent.bee.shared.HasExtendedInfo;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.HasViewName;
 import com.butent.bee.shared.data.cache.CachingPolicy;
+import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -17,6 +19,7 @@ import com.butent.bee.shared.utils.PropertyUtils;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Implementation of a grid user interface component.
@@ -63,7 +66,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   private Integer asyncThreshold = null;
   private Integer pagingThreshold = null;
   private Integer searchThreshold = null;
-  
+
   private Integer initialRowSetSize = null;
 
   private Boolean readOnly = null;
@@ -89,6 +92,8 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   private Integer maxColumnWidth = null;
 
   private final List<ColumnDescription> columns = Lists.newArrayList();
+
+  private Map<String, Filter> parentFilters = null;
 
   public GridDescription(String name, String viewName, String idName, String versionName) {
     Assert.notEmpty(name);
@@ -245,7 +250,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   }
 
   public CachingPolicy getCachingPolicy() {
-    return BeeUtils.isTrue(getCaching()) ? CachingPolicy.FULL : CachingPolicy.NONE; 
+    return BeeUtils.isTrue(getCaching()) ? CachingPolicy.FULL : CachingPolicy.NONE;
   }
 
   public String getCaption() {
@@ -362,6 +367,29 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
     return info;
   }
 
+  public Filter getInitialFilter() {
+    List<Filter> lst = Lists.newArrayList();
+
+    if (getFilter() != null) {
+      lst.add(getFilter());
+    }
+    if (getParentFilters() != null && !getParentFilters().isEmpty()) {
+      for (Filter flt : getParentFilters().values()) {
+        if (flt != null) {
+          lst.add(flt);
+        }
+      }
+    }
+
+    if (lst.isEmpty()) {
+      return null;
+    } else if (lst.size() == 1) {
+      return lst.get(0);
+    } else {
+      return CompoundFilter.and(lst);
+    }
+  }
+
   public Integer getInitialRowSetSize() {
     return initialRowSetSize;
   }
@@ -392,6 +420,10 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
 
   public Integer getPagingThreshold() {
     return pagingThreshold;
+  }
+
+  public Map<String, Filter> getParentFilters() {
+    return parentFilters;
   }
 
   public Calculation getRowEditable() {
@@ -583,13 +615,13 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   public void setDefaults() {
     setHasHeaders(true);
     setHasFooters(true);
-    
+
     setCaching(true);
 
     setAsyncThreshold(DataUtils.getDefaultAsyncThreshold());
     setSearchThreshold(DataUtils.getDefaultSearchThreshold());
     setPagingThreshold(DataUtils.getDefaultPagingThreshold());
-    
+
     setInitialRowSetSize(DataUtils.getMaxInitialRowSetSize());
   }
 
@@ -653,6 +685,14 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
     this.pagingThreshold = pagingThreshold;
   }
 
+  public void setParentFilter(String key, Filter filter) {
+    Assert.notEmpty(key);
+    if (parentFilters == null) {
+      parentFilters = Maps.newHashMap();
+    }
+    parentFilters.put(key, filter);
+  }
+
   public void setReadOnly(Boolean readOnly) {
     this.readOnly = readOnly;
   }
@@ -680,7 +720,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   public void setShowColumnWidths(Boolean showColumnWidths) {
     this.showColumnWidths = showColumnWidths;
   }
-  
+
   public Boolean showColumnWidths() {
     return showColumnWidths;
   }

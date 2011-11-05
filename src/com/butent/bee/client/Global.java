@@ -4,7 +4,8 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.web.bindery.event.shared.Event;
 
-import com.butent.bee.client.data.Explorer;
+import com.butent.bee.client.data.DataInfoProvider;
+import com.butent.bee.client.data.DataInfoProvider.DataInfoCallback;
 import com.butent.bee.client.dialog.InputBoxes;
 import com.butent.bee.client.dialog.MessageBoxes;
 import com.butent.bee.client.grid.GridFactory;
@@ -44,7 +45,7 @@ public class Global implements Module {
 
   private static final MessageBoxes msgBoxen = new MessageBoxes();
   private static final InputBoxes inpBoxen = new InputBoxes();
-  private static final Explorer dataExplorer = new Explorer();
+  private static final DataInfoProvider dataInfoProvider = new DataInfoProvider();
 
   private static final Map<String, Variable> vars = new HashMap<String, Variable>();
 
@@ -106,9 +107,13 @@ public class Global implements Module {
   public static CacheManager getCache() {
     return cache;
   }
+  
+  public static void getDataInfo(String viewName, DataInfoCallback callback) {
+    getDataInfoProvider().getDataInfo(viewName, callback);
+  }
 
-  public static Explorer getDataExplorer() {
-    return dataExplorer;
+  public static DataInfoProvider getDataInfoProvider() {
+    return dataInfoProvider;
   }
 
   public static Images.Resources getImages() {
@@ -316,7 +321,7 @@ public class Global implements Module {
 
   public void init() {
     initCache();
-    initDataExplorer();
+    initDataInfoProvider();
     initVars();
     initImages();
 
@@ -334,11 +339,11 @@ public class Global implements Module {
     BeeKeeper.getBus().registerDataHandler(getCache());
   }
 
-  private void initDataExplorer() {
-    BeeKeeper.getBus().registerRowDeleteHandler(getDataExplorer());
-    BeeKeeper.getBus().registerMultiDeleteHandler(getDataExplorer());
+  private void initDataInfoProvider() {
+    BeeKeeper.getBus().registerRowDeleteHandler(getDataInfoProvider());
+    BeeKeeper.getBus().registerMultiDeleteHandler(getDataInfoProvider());
 
-    BeeKeeper.getBus().registerRowInsertHandler(getDataExplorer());
+    BeeKeeper.getBus().registerRowInsertHandler(getDataInfoProvider());
   }
 
   private void initImages() {

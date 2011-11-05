@@ -50,7 +50,7 @@ public class TaskList {
     public void afterCreateWidget(String name, Widget widget) {
       if (widget instanceof GridPanel) {
         setGridPanel((GridPanel) widget);
-        getGridPanel().setGridCallback(new GridHandler(getType()));
+        getGridPanel().setGridCallback(new GridHandler(getType(), this));
 
       } else if (widget instanceof HasClickHandlers && BeeUtils.same(name, "Filter")) {
         ((HasClickHandlers) widget).addClickHandler(this);
@@ -60,10 +60,7 @@ public class TaskList {
       }
     }
 
-    public void onClick(ClickEvent event) {
-      if (getGridPanel() == null) {
-        return;
-      }
+    public Filter getFilter() {
       List<Filter> filters = Lists.newArrayList();
       Value now = new LongValue(new DateTime().getTime());
 
@@ -103,8 +100,16 @@ public class TaskList {
       if (!orFilters.isEmpty()) {
         filters.add(CompoundFilter.or(orFilters));
       }
-      Filter filter = filters.isEmpty() ? null : CompoundFilter.and(filters);
-      getGridPanel().getPresenter().getDataProvider().setParentFilter("f1", filter, event != null);
+
+      return filters.isEmpty() ? null : CompoundFilter.and(filters);
+    }
+
+    public void onClick(ClickEvent event) {
+      if (getGridPanel() == null) {
+        return;
+      }
+      getGridPanel().getPresenter().getDataProvider().setParentFilter(FILTER_KEY, getFilter(),
+          true);
     }
 
     @Override
@@ -120,7 +125,6 @@ public class TaskList {
       if (widget != null) {
         widget.setValue("true");
       }
-      // onClick(null);
     }
 
     private Value getDateValue(String filter) {
@@ -162,11 +166,13 @@ public class TaskList {
   private static class GridHandler extends AbstractGridCallback {
 
     private final Type type;
+    private final FormHandler formHandler;
     private final Long userId;
 
-    private GridHandler(Type type) {
+    private GridHandler(Type type, FormHandler formHandler) {
       super();
       this.type = type;
+      this.formHandler = formHandler;
       this.userId = BeeKeeper.getUser().getUserId();
     }
 
@@ -203,6 +209,7 @@ public class TaskList {
             break;
         }
         gridDescription.setFilter(filter);
+        gridDescription.setParentFilter(FILTER_KEY, formHandler.getFilter());
       }
       return true;
     }
@@ -231,6 +238,8 @@ public class TaskList {
       return caption;
     }
   }
+
+  private static final String FILTER_KEY = "f1";
 
   public static void open(String args) {
     Type type = null;

@@ -511,7 +511,7 @@ public class ScreenImpl implements Screen {
     tp.add(new BeeLabel(), "Recent");
 
     BeeLayoutPanel dp = new BeeLayoutPanel();
-    tp.add(dp, Global.constants.data(), Global.getDataExplorer().getDataInfoCreator());
+    tp.add(dp, Global.constants.data(), Global.getDataInfoProvider().getDataInfoCreator());
     setDataPanel(dp);
 
     FlexTable fp = new FlexTable();

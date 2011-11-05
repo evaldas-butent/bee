@@ -294,6 +294,42 @@ public class QueryServiceBean {
     }
     return res.getValues(0);
   }
+  
+  public List<BeeColumn> getViewColumns(final BeeView view) {
+    Assert.notNull(view);
+
+    SqlSelect ss = view.getQuery().setWhere(SqlUtils.sqlFalse()).resetOrder();
+    activateTables(ss);
+
+    return processSql(ss.getQuery(), new SqlHandler<List<BeeColumn>>() {
+      @Override
+      public List<BeeColumn> processError(SQLException ex) {
+        LogUtils.error(logger, ex);
+        return null;
+      }
+
+      @Override
+      public List<BeeColumn> processResultSet(ResultSet rs) throws SQLException {
+        BeeColumn[] rsCols = JdbcUtils.getColumns(rs);
+        List<BeeColumn> columns = Lists.newArrayList();
+
+        for (BeeColumn col : rsCols) {
+          String colName = col.getId();
+          if (view.hasColumn(colName)) {
+            col.setType(view.getColumnType(colName).toValueType());
+            columns.add(col);
+          }
+        }
+        return columns;
+      }
+
+      @Override
+      public List<BeeColumn> processUpdateCount(int updateCount) {
+        LogUtils.warning(logger, "Query must return a ResultSet");
+        return null;
+      }
+    });
+  }
 
   public BeeRowSet getViewData(IsQuery query, final BeeView view) {
     Assert.notNull(query);
@@ -437,7 +473,7 @@ public class QueryServiceBean {
     ResultSet rs = null;
     T result = null;
 
-    LogUtils.info(logger, "SQL:", sql);
+    LogUtils.infoSplit(logger, "SQL:", sql);
 
     try {
       String dsn = SqlBuilderFactory.getDsn();
@@ -448,8 +484,10 @@ public class QueryServiceBean {
       }
       con = bds.getDs().getConnection();
       stmt = con.createStatement();
-
+      
+      long start = System.nanoTime();
       boolean isResultSet = stmt.execute(sql);
+      LogUtils.infoNow(logger, String.format("[%.6f]", (System.nanoTime() - start) / 1e9));
 
       if (isResultSet) {
         rs = stmt.getResultSet();
